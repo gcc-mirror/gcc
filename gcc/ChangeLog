@@ -1,3 +1,14 @@
+2004-06-03  Bernardo Innocenti  <bernie@develer.com>
+
+	PR target/15782
+	Backport from mainline:
+
+	2004-06-01  Peter Barada  <peter@the-baradas.com>
+	            Peter Jakubek  <peter@laseranimation.com>
+
+	* config/m68k/m68k.c(m68k_output_mi_thunk):  For ColdFire, use %d0 as
+	a scratch to perform an add to memory.
+
 2004-06-01  Paul Eggert  <eggert@cs.ucla.edu>
 
 	PR target/15626
