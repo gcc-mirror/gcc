@@ -1489,6 +1489,7 @@ standard_sun_fpa_constant_p (x)
    '!' for the cc register (used in an `and to cc' insn).
    '$' for the letter `s' in an op code, but only on the 68040.
    '&' for the letter `d' in an op code, but only on the 68040.
+   '/' for register prefix needed by longlong.h.
 
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
@@ -1562,6 +1563,10 @@ print_operand (file, op, letter)
 	{
 	  fprintf (file, "d");
 	}
+    }
+  else if (letter == '/')
+    {
+      asm_fprintf (file, "%R");
     }
   else if (GET_CODE (op) == REG)
     {
