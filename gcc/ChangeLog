@@ -1,3 +1,7 @@
+2004-02-26  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (TARGET_CPU_CPP_BUILTINS): Define __xtensa__.
+
 2004-02-25  James E Wilson  <wilson@specifixinc.com>
 
 	* gcc-simple.c (rtl_zone, tree_zone, garbage_zone, ggc_alloc_typed,
