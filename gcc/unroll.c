@@ -3155,28 +3155,6 @@ loop_iterations (loop_start, loop_end)
     /* iteration_info already printed a message.  */
     return 0;
 
-  if (increment == 0)
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Increment value can't be calculated.\n");
-      return 0;
-    }
-  if (GET_CODE (increment) != CONST_INT)
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Increment value not constant.\n");
-      return 0;
-    }
-  if (GET_CODE (initial_value) != CONST_INT)
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Initial value not constant.\n");
-      return 0;
-    }
-
   /* If the comparison value is an invariant register, then try to find
      its value from the insns before the start of the loop.  */
 
@@ -3225,7 +3203,28 @@ loop_iterations (loop_start, loop_end)
   loop_increment = increment;
   loop_final_value = final_value;
 
-  if (final_value == 0)
+  if (increment == 0)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop unrolling: Increment value can't be calculated.\n");
+      return 0;
+    }
+  else if (GET_CODE (increment) != CONST_INT)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop unrolling: Increment value not constant.\n");
+      return 0;
+    }
+  else if (GET_CODE (initial_value) != CONST_INT)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop unrolling: Initial value not constant.\n");
+      return 0;
+    }
+  else if (final_value == 0)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
