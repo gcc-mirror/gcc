@@ -101,6 +101,12 @@ struct work_stuff
 {
   int options;
   char **typevec;
+  char **ktypevec;
+  char **btypevec;
+  int numk;
+  int numb;
+  int ksize;
+  int bsize;
   int ntypes;
   int typevec_size;
   int constructor;
@@ -214,6 +220,7 @@ typedef struct string		/* Beware: these aren't required to be */
     string_prepend(str, " ");}
 #define APPEND_BLANK(str)	{if (!STRING_EMPTY(str)) \
     string_append(str, " ");}
+#define LEN_STRING(str)         ( (STRING_EMPTY(str))?0:((str)->p - (str)->b))
 
 #define ARM_VTABLE_STRING "__vtbl__"	/* Lucid/ARM virtual table prefix */
 #define ARM_VTABLE_STRLEN 8		/* strlen (ARM_VTABLE_STRING) */
@@ -223,10 +230,16 @@ typedef struct string		/* Beware: these aren't required to be */
 static char *
 mop_up PARAMS ((struct work_stuff *, string *, int));
 
+static char *
+squangle_mop_up PARAMS ((struct work_stuff *));
+
 #if 0
 static int
-demangle_method_args PARAMS ((struct work_stuff *work, const char **, string *));
+demangle_method_args PARAMS ((struct work_stuff *, const char **, string *));
 #endif
+
+static char *
+internal_cplus_demangle PARAMS ((struct work_stuff *, const char *, int));
 
 static int
 demangle_template_template_parm PARAMS ((struct work_stuff *work, 
@@ -326,7 +339,19 @@ static void
 remember_type PARAMS ((struct work_stuff *, const char *, int));
 
 static void
+remember_Btype PARAMS ((struct work_stuff *, const char *, int, int));
+
+static int
+register_Btype PARAMS ((struct work_stuff *));
+
+static void
+remember_Ktype PARAMS ((struct work_stuff *, const char *, int));
+
+static void
 forget_types PARAMS ((struct work_stuff *));
+
+static void
+forget_B_and_K_types PARAMS ((struct work_stuff *));
 
 static void
 string_prepends PARAMS ((string *, string *));
@@ -511,6 +536,7 @@ cplus_demangle_opname (opname, result, options)
 	  ret = 1;
 	}
     }
+  squangle_mop_up (work);
   return ret;
 
 }
@@ -572,18 +598,45 @@ cplus_demangle (mangled, options)
      const char *mangled;
      int options;
 {
+  char *ret;
+  struct work_stuff work[1];
+  memset ((char *) work, 0, sizeof (work));
+  work -> options = options;
+  if ((work -> options & DMGL_STYLE_MASK) == 0)
+    work -> options |= (int) current_demangling_style & DMGL_STYLE_MASK;
+
+  ret = internal_cplus_demangle (work, mangled, options);
+  squangle_mop_up (work);
+  return (ret);
+}
+  
+
+/* This function performs most of what cplus_demangle use to do, but 
+   to be able to demangle a name with a B, K or n code, we need to
+   have a longer term memory of what types have been seen. The original
+   now intializes and cleans up the squangle code info, while internal
+   calls go directly to this routine to avoid resetting that info. */
+
+static char *
+internal_cplus_demangle (work, mangled, options)
+     struct work_stuff *work;
+     const char *mangled;
+     int options;
+{
+
   string decl;
   int success = 0;
-  struct work_stuff work[1];
   char *demangled = NULL;
+  int s1,s2,s3,s4;
+  s1 = work->constructor;
+  s2 = work->destructor;
+  s3 = work->static_type;
+  s4 = work->const_type;
+  work->constructor = work->destructor = 0;
+  work->static_type = work->const_type = 0;
 
   if ((mangled != NULL) && (*mangled != '\0'))
     {
-      memset ((char *) work, 0, sizeof (work));
-      work -> options = options;
-      if ((work->options & DMGL_STYLE_MASK) == 0)
-	work->options |= (int)current_demangling_style & DMGL_STYLE_MASK;
-      
       string_init (&decl);
 
       /* First check to see if gnu style demangling is active and if the
@@ -607,18 +660,42 @@ cplus_demangle (mangled, options)
 	}
       if (work->constructor == 2)
         {
-          string_prepend(&decl, "global constructors keyed to ");
+          string_prepend (&decl, "global constructors keyed to ");
           work->constructor = 0;
         }
       else if (work->destructor == 2)
         {
-          string_prepend(&decl, "global destructors keyed to ");
+          string_prepend (&decl, "global destructors keyed to ");
           work->destructor = 0;
         }
       demangled = mop_up (work, &decl, success);
     }
+  work->constructor = s1;
+  work->destructor = s2;
+  work->static_type = s3;
+  work->const_type = s4;
   return (demangled);
 }
+
+
+/* Clear out and squangling related storage */
+static char *
+squangle_mop_up (work)
+     struct work_stuff *work;
+{
+  /* clean up the B and K type mangling types. */
+  forget_B_and_K_types (work);
+  if (work -> btypevec != NULL)
+    {
+      free ((char *) work -> btypevec);
+    }
+  if (work -> ktypevec != NULL)
+    {
+      free ((char *) work -> ktypevec);
+    }
+}
+
+/* Clear out any mangled storage */
 
 static char *
 mop_up (work, declp, success)
@@ -634,6 +711,7 @@ mop_up (work, declp, success)
   if (work -> typevec != NULL)
     {
       free ((char *) work -> typevec);
+      work -> typevec = NULL;
     }
   if (work->tmpl_argvec)
     {
@@ -644,6 +722,7 @@ mop_up (work, declp, success)
 	  free ((char*) work->tmpl_argvec[i]);
       
       free ((char*) work->tmpl_argvec);
+      work->tmpl_argvec = NULL;
     }
 
   /* If demangling was successful, ensure that the demangled string is null
@@ -716,6 +795,16 @@ demangle_signature (work, mangled, declp)
 	    {
 	      remember_type (work, oldmangled, *mangled - oldmangled);
 	    }
+	  if (AUTO_DEMANGLING || GNU_DEMANGLING)
+	    {
+	      expect_func = 1;
+	    }
+	  oldmangled = NULL;
+	  break;
+
+        case 'K':
+	  oldmangled = *mangled;
+	  success = demangle_qualified (work, mangled, declp, 1, 0);
 	  if (AUTO_DEMANGLING || GNU_DEMANGLING)
 	    {
 	      expect_func = 1;
@@ -1061,7 +1150,7 @@ demangle_integral_value (work, mangled, s)
 	  (*mangled)++;
 	}
     }
-  else if (**mangled == 'Q')
+  else if (**mangled == 'Q' || **mangled == 'K')
     success = demangle_qualified (work, mangled, s, 0, 1);
   else
     {
@@ -1119,6 +1208,10 @@ demangle_template_value_parm (work, mangled, s)
 	  continue;
 	case 'E':       /* expression */
 	case 'Q':	/* qualified name */
+	case 'K':	/* qualified name */
+	  done = is_integral = 1;
+	  break;
+	case 'B':	/* squangled name */
 	  done = is_integral = 1;
 	  break;
 	case 'T':	/* remembered type */
@@ -1247,7 +1340,7 @@ demangle_template_value_parm (work, mangled, s)
 	  char *p = xmalloc (symbol_len + 1), *q;
 	  strncpy (p, *mangled, symbol_len);
 	  p [symbol_len] = '\0';
-	  q = cplus_demangle (p, work->options);
+	  q = internal_cplus_demangle (work, p, work->options);
 	  string_appendn (s, "&", 1);
 	  if (q)
 	    {
@@ -1604,9 +1697,11 @@ demangle_class (work, mangled, declp)
      string *declp;
 {
   int success = 0;
+  int btype;
   string class_name;
 
   string_init (&class_name);
+  btype = register_Btype (work);
   if (demangle_class_name (work, mangled, &class_name))
     {
       if ((work->constructor & 1) || (work->destructor & 1))
@@ -1622,6 +1717,8 @@ demangle_class (work, mangled, declp)
 	      work -> constructor -= 1; 
 	    }
 	}
+      remember_Ktype (work, class_name.b, LEN_STRING(&class_name));
+      remember_Btype (work, class_name.b, LEN_STRING(&class_name), btype);
       string_prepend (declp, (work -> options & DMGL_JAVA) ? "." : "::");
       string_prepends (declp, &class_name);
       success = 1;
@@ -1745,7 +1842,7 @@ demangle_prefix (work, mangled, declp)
     }
   else if ((scan == *mangled)
 	   && (isdigit (scan[2]) || (scan[2] == 'Q') || (scan[2] == 't')
-	       || (scan[2] == 'H')))
+	       || (scan[2] == 'K') || (scan[2] == 'H')))
     {
       /* The ARM says nothing about the mangling of local variables.
 	 But cfront mangles local variables by prepending __<nesting_level>
@@ -1892,6 +1989,7 @@ gnu_special (work, mangled, declp)
 	  switch (**mangled)
 	    {
 	    case 'Q':
+	    case 'K':
 	      success = demangle_qualified (work, mangled, declp, 0, 1);
 	      break;
 	    case 't':
@@ -1946,6 +2044,7 @@ gnu_special (work, mangled, declp)
       switch (**mangled)
 	{
 	case 'Q':
+	case 'K':
 	  success = demangle_qualified (work, mangled, declp, 0, 1);
 	  break;
 	case 't':
@@ -1974,7 +2073,7 @@ gnu_special (work, mangled, declp)
   else if (strncmp (*mangled, "__thunk_", 8) == 0)
     {
       int delta = ((*mangled) += 8, consume_count (mangled));
-      char *method = cplus_demangle (++*mangled, work->options);
+      char *method = internal_cplus_demangle (work, ++*mangled, work->options);
       if (method)
 	{
 	  char buf[50];
@@ -1998,6 +2097,7 @@ gnu_special (work, mangled, declp)
       switch (**mangled)
 	{
 	case 'Q':
+	case 'K':
 	  success = demangle_qualified (work, mangled, declp, 0, 1);
 	  break;
 	case 't':
@@ -2132,7 +2232,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
      int isfuncname;
      int append;
 {
-  int qualifiers;
+  int qualifiers = 0;
   int namelength;
   int success = 1;
   const char *p;
@@ -2140,7 +2240,20 @@ demangle_qualified (work, mangled, result, isfuncname, append)
   string temp;
 
   string_init (&temp);
-  switch ((*mangled)[1])
+
+  if ((*mangled)[0] == 'K')
+    {
+    /* Squangling qualified name reuse */
+      int idx;
+      (*mangled)++;
+      idx = consume_count_with_underscores (mangled);
+      if (idx == -1 || idx > work -> numk)
+        success = 0;
+      else
+        string_append (&temp, work -> ktypevec[idx]);
+    }
+  else
+    switch ((*mangled)[1])
     {
     case '_':
       /* GNU mangled name with more than 9 classes.  The count is preceded
@@ -2198,6 +2311,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 
   while (qualifiers-- > 0)
     {
+      int remember_K = 1;
       if (*mangled[0] == '_') 
 	*mangled = *mangled + 1;
       if (*mangled[0] == 't')
@@ -2208,6 +2322,19 @@ demangle_qualified (work, mangled, result, isfuncname, append)
       else if (*mangled[0] == 'X')
 	{
 	  success = do_type (work, mangled, &temp);
+	  if (!success) break;
+	}
+      if (*mangled[0] == 'K')
+	{
+          int idx;
+          (*mangled)++;
+          idx = consume_count_with_underscores (mangled);
+          if (idx == -1 || idx > work->numk)
+            success = 0;
+          else
+            string_append (&temp, work->ktypevec[idx]);
+          remember_K = 0;
+
 	  if (!success) break;
 	}
       else
@@ -2222,6 +2349,12 @@ demangle_qualified (work, mangled, result, isfuncname, append)
       	  string_appendn (&temp, *mangled, namelength);
       	  *mangled += namelength;
 	}
+
+      if (remember_K)
+        {
+        remember_Ktype (work, temp.b, LEN_STRING (&temp));
+        }
+
       if (qualifiers > 0)
         {
           string_append (&temp, (work -> options & DMGL_JAVA) ? "." : "::");
@@ -2331,7 +2464,9 @@ do_type (work, mangled, result)
   const char *remembered_type;
   int constp;
   int volatilep;
+  string btype;
 
+  string_init (&btype);
   string_init (&decl);
   string_init (result);
 
@@ -2531,7 +2666,24 @@ do_type (work, mangled, result)
     {
       /* A qualified name, such as "Outer::Inner".  */
     case 'Q':
-      success = demangle_qualified (work, mangled, result, 0, 1);
+    case 'K':
+      {
+        int btype = register_Btype (work);
+        success = demangle_qualified (work, mangled, result, 0, 1);
+        remember_Btype (work, result->b, LEN_STRING (result), btype);
+
+        break;
+      }
+
+    /* A back reference to a previously seen squangled type */
+    case 'B':
+      (*mangled)++;
+      if (!get_count (mangled, &n) || n >= work -> numb)
+          success = 0;
+      else
+        {
+          string_append (result, work->btypevec[n]);
+        }
       break;
 
     case 'X':
@@ -2606,6 +2758,8 @@ demangle_fund_type (work, mangled, result)
 {
   int done = 0;
   int success = 1;
+  string btype;
+  string_init (&btype);
 
   /* First pick off any type qualifiers.  There can be more than one.  */
 
@@ -2731,15 +2885,28 @@ demangle_fund_type (work, mangled, result)
     case '7':
     case '8':
     case '9':
-      APPEND_BLANK (result);
-      if (!demangle_class_name (work, mangled, result)) {
-	--result->p;
-	success = 0;
+      {
+        int bindex = register_Btype (work);
+        string btype;
+        string_init (&btype);
+        if (demangle_class_name (work, mangled, &btype)) {
+          remember_Btype (work, btype.b, LEN_STRING (&btype), bindex);
+          APPEND_BLANK (result);
+          string_appends (result, &btype);
+        }
+        else 
+          success = 0;
+        string_delete (&btype);
+        break;
       }
-      break;
     case 't':
-      success = demangle_template(work,mangled, result, 0, 1);
-      break;
+      {
+        int bindex= register_Btype (work);
+        success = demangle_template (work, mangled, &btype, 0, 1);
+        remember_Btype (work, btype.b, LEN_STRING (&btype), bindex);
+        string_appends (result, &btype);
+        break;
+      }
     default:
       success = 0;
       break;
@@ -2799,6 +2966,112 @@ remember_type (work, start, len)
   work -> typevec[work -> ntypes++] = tem;
 }
 
+
+/* Remember a K type class qualifier. */
+static void
+remember_Ktype (work, start, len)
+     struct work_stuff *work;
+     const char *start;
+     int len;
+{
+  char *tem;
+
+  if (work -> numk >= work -> ksize)
+    {
+      if (work -> ksize == 0)
+	{
+	  work -> ksize = 5;
+	  work -> ktypevec
+	    = (char **) xmalloc (sizeof (char *) * work -> ksize);
+	}
+      else
+	{
+	  work -> ksize *= 2;
+	  work -> ktypevec
+	    = (char **) xrealloc ((char *)work -> ktypevec,
+				  sizeof (char *) * work -> ksize);
+	}
+    }
+  tem = xmalloc (len + 1);
+  memcpy (tem, start, len);
+  tem[len] = '\0';
+  work -> ktypevec[work -> numk++] = tem;
+}
+
+/* Register a B code, and get an index for it. B codes are registered
+   as they are seen, rather than as they are completed, so map<temp<char> >  
+   registers map<temp<char> > as B0, and temp<char> as B1 */
+
+static int
+register_Btype (work)
+     struct work_stuff *work;
+{
+  int ret;
+ 
+  if (work -> numb >= work -> bsize)
+    {
+      if (work -> bsize == 0)
+	{
+	  work -> bsize = 5;
+	  work -> btypevec
+	    = (char **) xmalloc (sizeof (char *) * work -> bsize);
+	}
+      else
+	{
+	  work -> bsize *= 2;
+	  work -> btypevec
+	    = (char **) xrealloc ((char *)work -> btypevec,
+				  sizeof (char *) * work -> bsize);
+	}
+    }
+  ret = work -> numb++;
+  work -> btypevec[ret] = NULL;
+  return(ret);
+}
+
+/* Store a value into a previously registered B code type. */
+
+static void
+remember_Btype (work, start, len, index)
+     struct work_stuff *work;
+     const char *start;
+     int len, index;
+{
+  char *tem;
+
+  tem = xmalloc (len + 1);
+  memcpy (tem, start, len);
+  tem[len] = '\0';
+  work -> btypevec[index] = tem;
+}
+
+/* Lose all the info related to B and K type codes. */
+static void
+forget_B_and_K_types (work)
+     struct work_stuff *work;
+{
+  int i;
+
+  while (work -> numk > 0)
+    {
+      i = --(work -> numk);
+      if (work -> ktypevec[i] != NULL)
+	{
+	  free (work -> ktypevec[i]);
+	  work -> ktypevec[i] = NULL;
+	}
+    }
+
+  while (work -> numb > 0)
+    {
+      i = --(work -> numb);
+      if (work -> btypevec[i] != NULL)
+	{
+	  free (work -> btypevec[i]);
+	  work -> btypevec[i] = NULL;
+	}
+    }
+}
 /* Forget the remembered types, but not the type vector itself.  */
 
 static void
