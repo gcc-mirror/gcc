@@ -10625,7 +10625,6 @@ patch_invoke (patch, method, args)
     func = method;
   else
     {
-      tree signature = build_java_signature (TREE_TYPE (method));
       switch (invocation_mode (method, CALL_USING_SUPER (patch)))
 	{
 	case INVOKE_VIRTUAL:
@@ -10650,9 +10649,12 @@ patch_invoke (patch, method, args)
 
 	case INVOKE_SUPER:
 	case INVOKE_STATIC:
-	  func = build_known_method_ref (method, TREE_TYPE (method),
-					 DECL_CONTEXT (method),
-					 signature, args);
+	  {
+	    tree signature = build_java_signature (TREE_TYPE (method));
+	    func = build_known_method_ref (method, TREE_TYPE (method),
+					   DECL_CONTEXT (method),
+					   signature, args);
+	  }
 	  break;
 
 	case INVOKE_INTERFACE:
@@ -10668,9 +10670,14 @@ patch_invoke (patch, method, args)
       func = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (method)), func);
     }
 
-  TREE_TYPE (patch) = TREE_TYPE (TREE_TYPE (method));
-  TREE_OPERAND (patch, 0) = func;
-  TREE_OPERAND (patch, 1) = args;
+  if (TREE_CODE (patch) == CALL_EXPR)
+    patch = build_call_or_builtin (method, func, args);
+  else
+    {
+      TREE_TYPE (patch) = TREE_TYPE (TREE_TYPE (method));
+      TREE_OPERAND (patch, 0) = func;
+      TREE_OPERAND (patch, 1) = args;
+    }
   original_call = patch;
 
   /* We're processing a `new TYPE ()' form. New is called and its

@@ -98,7 +98,6 @@ static void parse_source_file_1 PARAMS ((tree, FILE *));
 static void parse_source_file_2 PARAMS ((void));
 static void parse_class_file PARAMS ((void));
 static void set_source_filename PARAMS ((JCF *, int));
-static int predefined_filename_p PARAMS ((tree));
 static void ggc_mark_jcf PARAMS ((void**));
 static void jcf_parse PARAMS ((struct JCF*));
 static void load_inner_classes PARAMS ((tree));
@@ -945,14 +944,24 @@ parse_source_file_2 ()
   java_reorder_fields ();	    /* Reorder the fields */
 }
 
-static int
+void
+add_predefined_file (name)
+     tree name;
+{
+  predef_filenames = tree_cons (NULL_TREE, name, predef_filenames);
+}
+
+int
 predefined_filename_p (node)
      tree node;
 {
-  int i;
-  for (i = 0; i < PREDEF_FILENAMES_SIZE; i++)
-    if (predef_filenames [i] == node)
-      return 1;
+  tree iter;
+
+  for (iter = predef_filenames; iter != NULL_TREE; iter = TREE_CHAIN (iter))
+    {
+      if (TREE_VALUE (iter) == node)
+	return 1;
+    }
   return 0;
 }
 

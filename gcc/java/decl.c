@@ -327,8 +327,6 @@ int flag_traditional;
 
 tree java_global_trees[JTI_MAX];
   
-tree predef_filenames[PREDEF_FILENAMES_SIZE];
-
 /* Build (and pushdecl) a "promoted type" for all standard
    types shorter than int.  */
 
@@ -554,20 +552,17 @@ java_init_decl_processing ()
   rawdata_ptr_type_node
     = promote_type (lookup_class (get_identifier ("gnu.gcj.RawData")));
 
-  /* If you add to this section, don't forget to increase
-     PREDEF_FILENAMES_SIZE.  */
-  predef_filenames [0] = get_identifier ("java/lang/Class.java");
-  predef_filenames [1] = get_identifier ("java/lang/Error.java");
-  predef_filenames [2] = get_identifier ("java/lang/Object.java");
-  predef_filenames [3] = get_identifier ("java/lang/RuntimeException.java");
-  predef_filenames [4] = get_identifier ("java/lang/String.java");
-  predef_filenames [5] = get_identifier ("java/lang/Throwable.java");
-  predef_filenames [6] = get_identifier ("gnu/gcj/RawData.java");
-  predef_filenames [7] = get_identifier ("java/lang/Exception.java");
-  predef_filenames [8] =
-    get_identifier ("java/lang/ClassNotFoundException.java");
-  predef_filenames [9] =
-    get_identifier ("java/lang/NoClassDefFoundError.java");
+  add_predefined_file (get_identifier ("java/lang/Class.java"));
+  add_predefined_file (get_identifier ("java/lang/Error.java"));
+  add_predefined_file (get_identifier ("java/lang/Object.java"));
+  add_predefined_file (get_identifier ("java/lang/RuntimeException.java"));
+  add_predefined_file (get_identifier ("java/lang/String.java"));
+  add_predefined_file (get_identifier ("java/lang/Throwable.java"));
+  add_predefined_file (get_identifier ("gnu/gcj/RawData.java"));
+  add_predefined_file (get_identifier ("java/lang/Exception.java"));
+  add_predefined_file (get_identifier ("java/lang/ClassNotFoundException.java"));
+  add_predefined_file (get_identifier ("java/lang/NoClassDefFoundError.java"));
+  add_predefined_file (get_identifier ("gnu/gcj/RawData.java"));
 
   methodtable_type = make_node (RECORD_TYPE);
   layout_type (methodtable_type);
@@ -916,10 +911,10 @@ java_init_decl_processing ()
   /* Register nodes with the garbage collector.  */
   ggc_add_tree_root (java_global_trees, 
 		     sizeof (java_global_trees) / sizeof (tree));
-  ggc_add_tree_root (predef_filenames,
-		     sizeof (predef_filenames) / sizeof (tree));
   ggc_add_tree_root (&decl_map, 1);
   ggc_add_tree_root (&pending_local_decls, 1);
+
+  initialize_builtins ();
 }
 
 

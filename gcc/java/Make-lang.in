@@ -101,7 +101,7 @@ $(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/constants.o java/lang.o java/typeck.o java/except.o java/verify.o \
   java/zextract.o java/jcf-io.o java/jcf-parse.o java/mangle.o \
-  java/mangle_name.o \
+  java/mangle_name.o java/builtins.o \
   java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
   java/jcf-path.o java/xref.o java/boehm.o mkdeps.o
 
@@ -257,6 +257,8 @@ java/gjavah.o: $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) java/gjavah.c \
 java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(JAVA_TREE_H) \
   java/parse.h toplev.h
 java/buffer.o: java/buffer.c $(CONFIG_H) java/buffer.h $(SYSTEM_H) toplev.h
+java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) \
+  $(GGC_H) flags.h
 java/check-init.o: java/check-init.c $(CONFIG_H) \
   $(JAVA_TREE_H) $(SYSTEM_H) toplev.h
 java/class.o: java/class.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) java/jcf.h \

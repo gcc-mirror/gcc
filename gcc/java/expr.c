@@ -1780,7 +1780,8 @@ build_class_init (clas, expr)
 }
 
 tree
-build_known_method_ref (method, method_type, self_type, method_signature, arg_list)
+build_known_method_ref (method, method_type, self_type,
+			method_signature, arg_list)
      tree method, method_type ATTRIBUTE_UNUSED, self_type,
           method_signature ATTRIBUTE_UNUSED, arg_list ATTRIBUTE_UNUSED;
 {
@@ -1794,13 +1795,13 @@ build_known_method_ref (method, method_type, self_type, method_signature, arg_li
     {
       /* We don't know whether the method has been (statically) compiled.
 	 Compile this code to get a reference to the method's code:
-	 
+
 	 SELF_TYPE->methods[METHOD_INDEX].ncode
-	 
+
 	 This is guaranteed to work (assuming SELF_TYPE has
 	 been initialized), since if the method is not compiled yet,
 	 its ncode points to a trampoline that forces compilation. */
-      
+
       int method_index = 0;
       tree meth;
       tree ref = build_class_ref (self_type);
@@ -2110,8 +2111,8 @@ expand_invoke (opcode, method_ref_index, nargs)
 	func = build_invokeinterface (dtable, method);
     }
   func = build1 (NOP_EXPR, build_pointer_type (method_type), func);
-  call = build (CALL_EXPR, TREE_TYPE (method_type), func, arg_list, NULL_TREE);
-  TREE_SIDE_EFFECTS (call) = 1;
+
+  call = build_call_or_builtin (method, func, arg_list);
 
   if (check != NULL_TREE)
     {
