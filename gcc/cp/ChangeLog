@@ -1,3 +1,7 @@
+1999-02-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst): Allow an array of explicit size zero.
+
 1999-02-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* errfn.c: Change varargs code to look like toplev.c.
