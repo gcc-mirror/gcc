@@ -7,6 +7,13 @@ Wed Nov 25 08:02:23 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 Wed Nov 25 07:53:24 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload.h (form_sum): Add new parm, DIFF_P.
+	* reload.c (form_sum): Likewise.
+	(subst_indexed_address): Call it with new parm.
+	* reload1.c (eliminate_regs, case MINUS): Make common with PLUS.
+	(eliminate_regs_in_insn): Re-recognize if was MINUS.
+	* alpha.md: Add patterns for (plus (minus (mult ..) ...) ...).
+
 	* libgcc2.c (__bb_init_prg): Avoid use of bzero.
 
 	* combine.c (make_extraction): Make extraction even if may
