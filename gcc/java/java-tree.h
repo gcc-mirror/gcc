@@ -1615,12 +1615,12 @@ extern tree *type_map;
    inner class access function.  */
 #define OUTER_FIELD_ACCESS_IDENTIFIER_P(NODE) TREE_LANG_FLAG_6(NODE)
 
-/* Non null if NODE belongs to an inner class TYPE_DECL node.
+/* True if NODE belongs to an inner class TYPE_DECL node.
    Verifies that NODE as the attributes of a decl.  */
 #define INNER_CLASS_DECL_P(NODE) (TYPE_NAME (TREE_TYPE (NODE)) == NODE	\
 				  && DECL_CONTEXT (NODE))
 
-/* Non null if NODE is an top level class TYPE_DECL node: NODE isn't
+/* True if NODE is an top level class TYPE_DECL node: NODE isn't
    an inner class or NODE is a static class.  */
 #define TOPLEVEL_CLASS_DECL_P(NODE) (!INNER_CLASS_DECL_P (NODE) 	\
 				     || CLASS_STATIC (NODE))
@@ -1630,7 +1630,7 @@ extern tree *type_map;
 #define PURE_INNER_CLASS_DECL_P(NODE) \
   (INNER_CLASS_DECL_P (NODE) && !CLASS_STATIC (NODE))
 
-/* Non null if NODE belongs to an inner class RECORD_TYPE node. Checks
+/* True if NODE belongs to an inner class RECORD_TYPE node. Checks
    that TYPE_NAME bears a decl. An array type wouldn't.  */
 #define INNER_CLASS_TYPE_P(NODE) (TREE_CODE (TYPE_NAME (NODE)) == TYPE_DECL \
 				  && DECL_CONTEXT (TYPE_NAME (NODE)))
@@ -1643,7 +1643,7 @@ extern tree *type_map;
 #define PURE_INNER_CLASS_TYPE_P(NODE) \
   (INNER_CLASS_TYPE_P (NODE) && !CLASS_STATIC (TYPE_NAME (NODE)))
 
-/* Non null if NODE (a TYPE_DECL or a RECORD_TYPE) is an inner class.  */
+/* True if NODE (a TYPE_DECL or a RECORD_TYPE) is an inner class.  */
 #define INNER_CLASS_P(NODE) (TREE_CODE (NODE) == TYPE_DECL ? 		      \
 			     INNER_CLASS_DECL_P (NODE) :		      \
 			     (TREE_CODE (NODE) == RECORD_TYPE ? 	      \
