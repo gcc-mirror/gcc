@@ -230,7 +230,9 @@ public class GZIPInputStream
 	    tmp[i] = (byte) eof_read();
 	  }
 
-	int header_crc = read4(tmp, 0);
+	// Be careful to avoid sign extension here; CRC32.getValue()
+	// returns a long.
+	long header_crc = read4(tmp, 0) & 0xffffffffL;
 	if (crc.getValue() != header_crc)
 	  throw new ZipException("corrupted gzip file - crc mismatch");
 	int isize = read4(tmp, 4);

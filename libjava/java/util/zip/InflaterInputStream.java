@@ -70,6 +70,9 @@ public class InflaterInputStream extends FilterInputStream
    */
   protected int len;
 
+  // We just use this if we are decoding one byte at a time with the
+  // read() call.
+  private byte[] onebytebuffer = new byte[1];
 
   /**
    * Create an InflaterInputStream with the default decompresseor
@@ -153,6 +156,19 @@ public class InflaterInputStream extends FilterInputStream
       throw new ZipException("Deflated stream ends early.");
     
     inf.setInput(buf, 0, len);
+  }
+
+  /**
+   * Reads one byte of decompressed data.
+   *
+   * The byte is in the lower 8 bits of the int.
+   */
+  public int read() throws IOException
+  { 
+    int nread = read(onebytebuffer, 0, 1);
+    if (nread > 0)
+      return onebytebuffer[0] & 0xff;
+    return -1;
   }
 
   /**
