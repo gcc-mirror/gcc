@@ -6845,40 +6845,6 @@ schedule_insns (dump_file)
 	  break;
       }
 
-  /* After reload, remove inter-blocks dependences computed before reload.  */
-  if (reload_completed)
-    {
-      int b;
-      rtx insn;
-
-      for (b = 0; b < n_basic_blocks; b++)
-	for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
-	  {
-	    rtx link, prev;
-
-	    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	      {
-		prev = NULL_RTX;
-		link = LOG_LINKS (insn);
-		while (link)
-		  {
-		    rtx x = XEXP (link, 0);
-
-		    if (INSN_BLOCK (x) != b)
-		      {
-		        remove_dependence (insn, x);
-			link = prev ? XEXP (prev, 1) : LOG_LINKS (insn);
-		      }
-		    else
-		      prev = link, link = XEXP (prev, 1);
-		  }
-	      }
-
-	    if (insn == BLOCK_END (b))
-	      break;
-	  }
-    }
-
   nr_regions = 0;
   rgn_table = (region *) alloca ((n_basic_blocks) * sizeof (region));
   rgn_bb_table = (int *) alloca ((n_basic_blocks) * sizeof (int));
