@@ -130,29 +130,6 @@ java::io::File::isAbsolute (void)
   return path->charAt(0) == '/';
 }
 
-#ifdef HAVE_DIRENT_H
-#if defined(__JV_POSIX_THREADS__) && defined(HAVE_READDIR_R)
-
-static struct dirent *
-get_entry (DIR *dir, struct dirent *e)
-{
-  struct dirent *r;
-  if (readdir_r (dir, e, &r) || r == NULL)
-    return NULL;
-  return e;
-}
-
-#else /* defined(__JV_POSIX_THREADS__) && defined(HAVE_READDIR_R) */
-
-static struct dirent *
-get_entry (DIR *dir, struct dirent *)
-{
-  return readdir (dir);
-}
-
-#endif /* defined(__JV_POSIX_THREADS__) && defined(HAVE_READDIR_R) */
-#endif /* HAVE_DIRENT_H */
-
 jobjectArray
 java::io::File::performList (java::io::FilenameFilter *filter, 
 			     java::io::FileFilter *fileFilter, 
@@ -168,9 +145,16 @@ java::io::File::performList (java::io::FilenameFilter *filter,
   if (! dir)
     return NULL;
 
+
   java::util::ArrayList *list = new java::util::ArrayList ();
-  struct dirent *d, d2;
-  while ((d = get_entry (dir, &d2)) != NULL)
+  struct dirent *d;
+#ifdef HAVE_READDIR_R
+  int name_max = pathconf (buf, _PC_NAME_MAX);
+  char dbuf[sizeof (struct dirent) + name_max + 1];
+  while (readdir_r (dir, (struct dirent *) dbuf, &d) == 0 && d != NULL)
+#else /* HAVE_READDIR_R */
+  while ((d = readdir (dir)) != NULL)
+#endif /* HAVE_READDIR_R */
     {
       // Omit "." and "..".
       if (d->d_name[0] == '.'
