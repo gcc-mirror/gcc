@@ -1,5 +1,5 @@
 /* Prototypes.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -27,7 +27,9 @@ extern const char *machopic_non_lazy_ptr_name PARAMS ((const char*));
 extern const char *machopic_stub_name PARAMS ((const char*));
 
 extern void machopic_picsymbol_stub_section PARAMS ((void));
+extern void machopic_picsymbol_stub1_section PARAMS ((void));
 extern void machopic_symbol_stub_section PARAMS ((void));
+extern void machopic_symbol_stub1_section PARAMS ((void));
 extern void machopic_lazy_symbol_ptr_section PARAMS ((void));
 extern void machopic_nl_symbol_ptr_section PARAMS ((void));
 
