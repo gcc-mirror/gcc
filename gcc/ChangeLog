@@ -1,3 +1,8 @@
+2004-08-05  Andrew Pinski  <apinski@apple.com>
+
+	* objc/objc-act.c (build_objc_string_object): Mark the address
+	expression as constant.
+
 2004-08-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): Fix mask_operand
