@@ -4310,6 +4310,10 @@ to know something of how reload works in order to effectively use this,
 and it is quite easy to produce macros that build in too much knowledge
 of reload internals.
 
+@emph{Note}: This macro must be able to reload an address created by a
+previous invocation of this macro.  If it fails to handle such addresses
+then the compiler may generate incorrect code or abort.
+
 @findex push_reload
 The macro definition should use @code{push_reload} to indicate parts that
 need reloading; @var{opnum}, @var{type} and @var{ind_levels} are usually

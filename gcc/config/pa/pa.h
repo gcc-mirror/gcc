@@ -1638,14 +1638,22 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 #define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND, WIN) 	\
 do { 									\
   int offset, newoffset, mask;						\
+  rtx new, temp = NULL_RTX;						\
   mask = GET_MODE_CLASS (MODE) == MODE_FLOAT ? 0x1f : 0x3fff;		\
 									\
   if (optimize								\
-      && GET_CODE (AD) == PLUS						\
-      && GET_CODE (XEXP (AD, 0)) == REG					\
-      && GET_CODE (XEXP (AD, 1)) == CONST_INT)				\
+      && GET_CODE (AD) == PLUS)						\
+    temp = simplify_binary_operation (PLUS, Pmode,			\
+				      XEXP (AD, 0), XEXP (AD, 1));	\
+									\
+  new = temp ? temp : AD;						\
+									\
+  if (optimize								\
+      && GET_CODE (new) == PLUS						\
+      && GET_CODE (XEXP (new, 0)) == REG				\
+      && GET_CODE (XEXP (new, 1)) == CONST_INT)				\
     {									\
-      offset = INTVAL (XEXP ((AD), 1));					\
+      offset = INTVAL (XEXP ((new), 1));				\
 									\
       /* Choose rounding direction.  Round up if we are >= halfway.  */	\
       if ((offset & mask) >= ((mask + 1) / 2))				\
@@ -1656,11 +1664,8 @@ do { 									\
       if (newoffset != 0						\
 	  && VAL_14_BITS_P (newoffset))					\
 	{								\
-	  rtx temp;							\
 									\
-	  /* Unshare the sum as well.  */				\
-	  AD = copy_rtx (AD);						\
-	  temp = gen_rtx_PLUS (Pmode, XEXP (AD, 0),			\
+	  temp = gen_rtx_PLUS (Pmode, XEXP (new, 0),			\
 			       GEN_INT (newoffset));			\
 	  AD = gen_rtx_PLUS (Pmode, temp, GEN_INT (offset - newoffset));\
 	  push_reload (XEXP (AD, 0), 0, &XEXP (AD, 0), 0,		\
