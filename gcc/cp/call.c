@@ -584,7 +584,7 @@ standard_conversion (tree to, tree from, tree expr)
 		  (_class.member.lookup_) base class of D, a program
 		  that necessitates this conversion is ill-formed.  */
 	       /* Therefore, we use DERIVED_FROM_P, and not
-		  ACESSIBLY_UNIQUELY_DERIVED_FROM_P, in this test.  */
+		  ACCESSIBLY_UNIQUELY_DERIVED_FROM_P, in this test.  */
 	       && DERIVED_FROM_P (TREE_TYPE (to), TREE_TYPE (from)))
 	{
 	  from = 
@@ -5524,7 +5524,7 @@ compare_ics (tree ics1, tree ics2)
 	   A& is better than binding an expression of type C to a
 	   reference of type A&, 
 
-	 --onversion of B to A is better than conversion of C to A  */
+	 --conversion of B to A is better than conversion of C to A  */
       if (is_properly_derived_from (from_type1, to)
 	  && is_properly_derived_from (from_type2, to))
 	{
