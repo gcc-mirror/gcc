@@ -1,5 +1,16 @@
 1999-09-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (lang_decl_flags): Add global_ctor_p and
+	global_dtor_p.  Add init_priority.
+	(DECL_ACCESS): Adjust accordingly.
+	(DECL_GLOBAL_CTOR_P, DECL_GLOBAL_DTOR_P): New macros.
+	(GLOBAL_INIT_PRIORITY): Likewise.
+	* decl.c (lang_mark_tree): Adjust accordingly.
+	(start_objects): Set DECL_GLOBAL_CTOR_P, DECL_GLOBAL_DTOR_P, 
+	and GLOBAL_INIT_PRIORITY.
+	* dump.c (dequeue_and_dump): Print them.
+	* ir.texi: Document them.
+
 	* decl2.c (struct priority_info_s): Remove initialization_sequence
 	and destruction_sequence.
 	(start_static_storage_duration_function): Return the body of the
