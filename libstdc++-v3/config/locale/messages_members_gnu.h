@@ -1,6 +1,6 @@
 // std::messages implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,8 +66,9 @@
       uselocale(__old);
       return _M_convert_from_char(__msg);
 #else
-      setlocale(LC_ALL, _M_name_messages);
+      const char* __old = setlocale(LC_ALL, _M_name_messages);
       char* __msg = gettext(_M_convert_to_char(__dfault));
+      setlocale(LC_ALL, __old);
       return _M_convert_from_char(__msg);
 #endif
     }

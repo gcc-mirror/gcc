@@ -290,6 +290,23 @@ void test02()
   VERIFY( sanity5.size() );
   VERIFY( sanity5[1] == L'x' );
 }
+
+// libstdc++/5280
+void test03()
+{
+  // Set the global locale to non-"C".
+  std::locale loc_de("de_DE");
+  std::locale::global(loc_de);
+
+  // Set LANG environment variable to de_DE.
+  const char* oldLANG = getenv("LANG");
+  if (!setenv("LANG", "de_DE", 1))
+    {
+      test01();
+      test02();
+      setenv("LANG", oldLANG, 1);
+    }
+}
 #endif
 
 int main()
@@ -297,6 +314,7 @@ int main()
 #ifdef _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
+  test03();
 #endif
   return 0;
 }
@@ -304,3 +322,4 @@ int main()
 
 // Diana D. Brooks, former chief executive of Sotheby's
 // art-thief extraordinaire
+

@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,149 @@
 
 namespace std 
 {
+  // Specializations for all types used in num_get.
+  template<>
+    void
+    __convert_to_v(const char* __s, long& __v, ios_base::iostate& __err, 
+		   const __c_locale&, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+      {
+	char* __sanity;
+	errno = 0;
+	long __l = strtol(__s, &__sanity, __base);
+	if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	  __v = __l;
+	else
+	  __err |= ios_base::failbit;
+      }
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, unsigned long& __v, 
+		   ios_base::iostate& __err, const __c_locale&, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  unsigned long __ul = strtoul(__s, &__sanity, __base);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __ul;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+  template<>
+    void
+    __convert_to_v(const char* __s, long long& __v, ios_base::iostate& __err, 
+		   const __c_locale&, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  long long __ll = strtoll(__s, &__sanity, __base);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __ll;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, unsigned long long& __v, 
+		   ios_base::iostate& __err, const __c_locale&, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{      
+	  char* __sanity;
+	  errno = 0;
+	  unsigned long long __ull = strtoull(__s, &__sanity, __base);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __ull;
+	  else
+	    __err |= ios_base::failbit;
+	}  
+    }
+#endif
+
+  template<>
+    void
+    __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
+		   const __c_locale&, int) 	      
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  // Assumes __s formatted for "C" locale.
+	  const char* __old = setlocale(LC_ALL, "C");
+	  char* __sanity;
+	  errno = 0;
+#ifdef _GLIBCPP_USE_C99
+	  float __f = strtof(__s, &__sanity);
+#else
+	  float __f = static_cast<float>(strtod(__s, &__sanity));
+#endif
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __f;
+	  else
+	    __err |= ios_base::failbit;
+	  setlocale(LC_ALL, __old);
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
+		   const __c_locale&, int) 
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  // Assumes __s formatted for "C" locale.
+	  const char* __old = setlocale(LC_ALL, "C");
+	  char* __sanity;
+	  errno = 0;
+	  double __d = strtod(__s, &__sanity);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __d;
+	  else
+	    __err |= ios_base::failbit;
+	  setlocale(LC_ALL, __old);
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, long double& __v, 
+		   ios_base::iostate& __err, const __c_locale&, int) 
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  // Assumes __s formatted for "C" locale.
+	  const char* __old = setlocale(LC_ALL, "C");
+#if defined(_GLIBCPP_USE_C99) && !defined(__hpux)
+	  char* __sanity;
+	  errno = 0;
+	  long double __ld = strtold(__s, &__sanity);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __ld;
+#else
+	  typedef typename char_traits<_CharT>::int_type int_type;
+	  long double __ld;
+	  int __p = sscanf(__s, "%Lf", &__ld);
+	  if (__p && static_cast<int_type>(__p) != char_traits<_CharT>::eof())
+	    __v = __ld;
+#endif
+	  else
+	    __err |= ios_base::failbit;
+	  setlocale(LC_ALL, __old);
+	}
+    }
+
   void
   locale::facet::_S_create_c_locale(__c_locale& __cloc, const char*)
   { __cloc = NULL; }

@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,9 +44,9 @@
 
 #include <bits/c++config.h>
 #include <bits/c++locale.h>     // Defines __c_locale, config-specific includes
-#include <climits>	// For CHAR_BIT
-#include <cctype>	// For isspace, etc.
-#include <string> 	// For string
+#include <climits>		// For CHAR_BIT
+#include <cctype>		// For isspace, etc.
+#include <string> 		// For string
 #include <bits/functexcept.h>
 
 namespace std
@@ -295,7 +296,7 @@ namespace std
   };
 
 
-  // locale implementation object
+  // Implementation object for locale 
   class locale::_Impl
   {
   public:
@@ -390,11 +391,14 @@ namespace std
     friend class locale::_Impl;
     friend class __enc_traits;
 
+  private:
+    size_t _M_references;
+
   protected:
     // Contains data from the underlying "C" library for default "C"
-    // and "POSIX" locales.
+    // or "POSIX" locale.
     static __c_locale		     _S_c_locale;
-
+    
     explicit 
     facet(size_t __refs = 0) throw();
 
@@ -411,18 +415,16 @@ namespace std
     _S_destroy_c_locale(__c_locale& __cloc);
 
   private:
-    size_t _M_references;
-
     void 
     _M_add_reference() throw();
 
     void 
     _M_remove_reference() throw();
 
-    facet(const facet&);  // not defined
+    facet(const facet&);  // Not defined.
 
     void 
-    operator=(const facet&);  // not defined
+    operator=(const facet&);  // Not defined.
   };
 
 

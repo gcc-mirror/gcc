@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -371,6 +371,32 @@ namespace std
 					  const wchar_t*, streamsize, 
 					  streamsize, const bool);
 #endif // _GLIBCPP_USE_WCHAR_T
+
+  template
+    int
+    __convert_from_v(char*, const char*, double, const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const char*, long double, const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const char*, long, const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const char*, unsigned long, 
+		     const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const char*, long long, const __c_locale&, int);
+
+  template
+    int
+    __convert_from_v(char*, const char*, unsigned long long, 
+		     const __c_locale&, int);
 
   template 
     locale::facet** 

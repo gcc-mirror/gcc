@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +46,7 @@
 #ifdef _GLIBCPP_USE_WCHAR_T
 # include <cwctype>	// For wctype_t
 #endif 
-#include <ios>	// For ios_base
+#include <ios>		// For ios_base
 
 namespace std
 {
@@ -53,7 +54,7 @@ namespace std
   // Include host and configuration specific ctype enums for ctype_base.
   #include <bits/ctype_base.h>
 
-  // __ctype_abstract_base is the common base for ctype<_CharT>.  
+  // Common base for ctype<_CharT>.  
   template<typename _CharT>
     class __ctype_abstract_base : public locale::facet, public ctype_base
     {
@@ -417,9 +418,9 @@ namespace std
 
 
   // 22.2.2  The numeric category.
-  class __num_base
+  class __num_base 
   {
-  public:
+  protected:
     // Used to establish gating factor for base 16 input.
     static const double _S_scale_hex;
     
@@ -438,6 +439,7 @@ namespace std
       _M_size = 21 + 1
     };
 
+    // num_put
     // Construct and return valid scanf format for floating point types.
     static bool
     _S_format_float(const ios_base& __io, char* __fptr, char __mod, 
@@ -447,6 +449,7 @@ namespace std
     static void
     _S_format_int(const ios_base& __io, char* __fptr, char __mod, char __modl);
   };
+
 
   template<typename _CharT>
     class numpunct : public locale::facet
@@ -885,7 +888,7 @@ namespace std
 
   template<>
     size_t
-    collate<wchar_t>::_M_transform_helper(wchar_t*, const wchar_t*, 
+    collate<wchar_t>::_M_transform_helper(wchar_t*, const wchar_t*,
 					  size_t) const;
 #endif
 

@@ -1,6 +1,6 @@
 // 2001-09-09 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -105,12 +105,29 @@ void test01()
   VERIFY(static_cast<part>(neg1.field[2]) != static_cast<part>(neg2.field[2]));
   VERIFY(static_cast<part>(neg1.field[3]) != static_cast<part>(neg2.field[3]));
 }
+
+// libstdc++/5280
+void test02()
+{
+  // Set the global locale to non-"C".
+  std::locale loc_de("de_DE");
+  std::locale::global(loc_de);
+
+  // Set LANG environment variable to de_DE.
+  const char* oldLANG = getenv("LANG");
+  if (!setenv("LANG", "de_DE", 1))
+    {
+      test01();
+      setenv("LANG", oldLANG, 1);
+    }
+}
 #endif
 
 int main()
 {
 #ifdef _GLIBCPP_USE_WCHAR_T
   test01();
+  test02();
 #endif
   return 0;
 }

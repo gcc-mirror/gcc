@@ -1,6 +1,6 @@
 // std::time_get, std::time_put implementation, GNU version -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,8 +44,9 @@ namespace std
     _M_put_helper(char* __s, size_t __maxlen, const char* __format, 
 		  const tm* __tm) const
     {
-      setlocale(LC_ALL, _M_name_timepunct);
+      const char* __old = setlocale(LC_ALL, _M_name_timepunct);
       strftime(__s, __maxlen, __format, __tm);
+      setlocale(LC_ALL, __old);
     }
 
   template<> 
@@ -117,8 +118,9 @@ namespace std
     _M_put_helper(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
 		  const tm* __tm) const
     {
-      setlocale(LC_ALL, _M_name_timepunct);
+      const char* __old = setlocale(LC_ALL, _M_name_timepunct);
       wcsftime(__s, __maxlen, __format, __tm);
+      setlocale(LC_ALL, __old);
     }
 
   template<> 

@@ -289,10 +289,29 @@ void test03()
   VERIFY( rem2 == "Eleanor Roosevelt" );
 }
 
+// libstdc++/5280
+void test04()
+{
+  // Set the global locale to non-"C".
+  std::locale loc_de("de_DE");
+  std::locale::global(loc_de);
+
+  // Set LANG environment variable to de_DE.
+  const char* oldLANG = getenv("LANG");
+  if (!setenv("LANG", "de_DE", 1))
+    {
+      test01();
+      test02();
+      test03();
+      setenv("LANG", oldLANG, 1);
+    }
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
   return 0;
 }

@@ -193,6 +193,7 @@ void test02()
   //             ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
+  iss.imbue(loc_c);
   iss.str(L"Sunday");
   iterator_type is_it01(iss);
   tm time01;
@@ -315,6 +316,7 @@ void test03()
   //               ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
+  iss.imbue(loc_c);
   iss.str(L"April");
   iterator_type is_it01(iss);
   tm time01;
@@ -436,6 +438,7 @@ void test04()
   // get_year(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
+  iss.imbue(loc_c);
   iss.str(L"1971");
   iterator_type is_it01(iss);
   tm time01;
@@ -527,6 +530,7 @@ void test05()
   // get_date(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*) const
 
   // sanity checks for "C" locale
+  iss.imbue(loc_c);
   iss.str(L"04/04/71");
   iterator_type is_it01(iss);
   tm time01;
@@ -671,6 +675,27 @@ void test06()
   VERIFY( tm1.tm_year == time_sanity.tm_year );
   VERIFY( rem5 ==  L" Cindy Sherman" );
 }
+
+// libstdc++/5280
+void test07()
+{
+  // Set the global locale to non-"C".
+  std::locale loc_de("de_DE");
+  std::locale::global(loc_de);
+
+  // Set LANG environment variable to de_DE.
+  const char* oldLANG = getenv("LANG");
+  if (!setenv("LANG", "de_DE", 1))
+    {
+      test01();
+      test02();
+      test03();
+      test04();
+      test05();
+      test06();
+      setenv("LANG", oldLANG, 1);
+    }
+}
 #endif
 
 int main()
@@ -683,6 +708,8 @@ int main()
   test05();
 
   test06();
+
+  test07();
 #endif
   return 0;
 }

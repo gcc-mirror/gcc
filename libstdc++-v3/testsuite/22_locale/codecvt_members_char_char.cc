@@ -1,6 +1,6 @@
 // 2000-08-17 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000 Free Software Foundation
+// Copyright (C) 2000, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,9 +79,25 @@ void test01()
   delete [] c_arr;
 }
 
+// libstdc++/5280
+void test02()
+{
+  // Set the global locale to non-"C".
+  std::locale loc_de("de_DE");
+  std::locale::global(loc_de);
+
+  // Set LANG environment variable to de_DE.
+  const char* oldLANG = getenv("LANG");
+  if (!setenv("LANG", "de_DE", 1))
+    {
+      test01();
+      setenv("LANG", oldLANG, 1);
+    }
+}
+
 int main ()
 {
   test01();
-
+  test02();
   return 0;
 }
