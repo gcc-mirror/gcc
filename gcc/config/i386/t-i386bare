@@ -1,0 +1,3 @@
+# The i386 md has all of these taken care of, according to sef.
+LIBGCC1 = libgcc1.null
+CROSS_LIBGCC1 = libgcc1.null

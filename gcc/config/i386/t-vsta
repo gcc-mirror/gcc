@@ -1,0 +1,2 @@
+LIBGCC1 = libgcc1.null
+CROSS_LIBGCC1 = libgcc1.null
