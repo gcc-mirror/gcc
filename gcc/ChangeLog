@@ -1,3 +1,11 @@
+2003-06-16  Roger Sayle  <roger@eyesopen.com>
+	    Jeff Law  <law@redhat.com>
+
+	* fold-const.c (operand_equal_p): Consider two calls to "const"
+	functions with identical non-volatile arguments to be equal.
+	Consider the FUNCTION_DECL for the "__builtin_foo" form of a
+	built-in function to be equal to the "foo" form.
+
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/rs6000/sysv4le.h: Remove target-independent comment.
