@@ -111,30 +111,44 @@ public final class URI implements Comparable, Serializable
    * Index of fragment component in parsed URI.
    */
   private static final int FRAGMENT_GROUP = 10;
-  private String scheme;
-  private String rawSchemeSpecificPart;
-  private String schemeSpecificPart;
-  private String rawAuthority;
-  private String authority;
-  private String rawUserInfo;
-  private String userInfo;
-  private String rawHost;
-  private String host;
-  private int port;
-  private String rawPath;
-  private String path;
-  private String rawQuery;
-  private String query;
-  private String rawFragment;
-  private String fragment;
+  private transient String scheme;
+  private transient String rawSchemeSpecificPart;
+  private transient String schemeSpecificPart;
+  private transient String rawAuthority;
+  private transient String authority;
+  private transient String rawUserInfo;
+  private transient String userInfo;
+  private transient String rawHost;
+  private transient String host;
+  private transient int port;
+  private transient String rawPath;
+  private transient String path;
+  private transient String rawQuery;
+  private transient String query;
+  private transient String rawFragment;
+  private transient String fragment;
+  private String string;
 
   private void readObject(ObjectInputStream is)
     throws ClassNotFoundException, IOException
   {
+    this.string = (String) is.readObject();
+    try
+    {
+      parseURI(this.string);
+    }
+    catch (URISyntaxException x)
+    {
+      // Should not happen.
+      throw new RuntimeException(x);
+    }
   }
 
-  private void writeObject(ObjectOutputStream is) throws IOException
+  private void writeObject(ObjectOutputStream os) throws IOException
   {
+    if (string == null)
+      string = toString(); 
+    os.writeObject(string);
   }
 
   private static String getURIGroup(Matcher match, int group)
@@ -362,6 +376,7 @@ public final class URI implements Comparable, Serializable
    */
   public URI(String str) throws URISyntaxException
   {
+    this.string = str;
     parseURI(str);
   }
 

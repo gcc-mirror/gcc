@@ -1,5 +1,14 @@
 2004-08-18  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR libgcj/17081
+	* java/net/URI.java (string): New field. Make all other fields
+	transient.
+	(readObject): Implemented.
+	(writeObject): Implemented.
+	(URI): Set 'string'.
+
+2004-08-18  Bryce McKinlay  <mckinlay@redhat.com>
+
 	PR libgcj/17079
 	* java/util/logging/Handler.java (isLoggable): Accept record if its
 	log level equals the threshold level. From Robin Green.
