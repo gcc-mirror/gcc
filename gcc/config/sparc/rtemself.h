@@ -29,3 +29,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_assert ("system=rtems");	\
     }						\
   while (0)
+
+/* Use the default */
+#undef LINK_GCC_C_SEQUENCE_SPEC
