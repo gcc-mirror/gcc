@@ -1149,10 +1149,17 @@ v_message_with_decl (decl, prefix, s, ap)
 	}
     }
 
-  if (p > s)
-    fwrite (s, p - s, 1, stderr);
+  if (p > s)			/* Print the left-hand substring.  */
+    {
+      char fmt[sizeof "%.255s"];
+      long width = p - s;
+             
+      if (width > 255L) width = 255L;	/* arbitrary */
+      sprintf (fmt, "%%.%lds", width);
+      fprintf (stderr, fmt, s);
+    }
 
-  if (*p == '%')
+  if (*p == '%')		/* Print the name.  */
     {
       char *n = (DECL_NAME (decl)
 		 ? (*decl_printable_name) (decl, &junk)
@@ -1166,7 +1173,7 @@ v_message_with_decl (decl, prefix, s, ap)
 	}
     }
 
-  if (*p)
+  if (*p)			/* Print the rest of the message.  */
     vmessage ((char *)NULL, p, ap);
 
   fputc ('\n', stderr);
