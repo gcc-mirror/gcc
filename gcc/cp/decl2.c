@@ -2598,6 +2598,14 @@ finish_vtable_vardecl (t, data)
       if (flag_syntax_only)
 	TREE_ASM_WRITTEN (vars) = 1;
 
+      /* Since we're writing out the vtable here, also write the debug 
+	 info.  */
+      if (TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (ctype)))
+	{
+	  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (ctype)) = 0;
+	  rest_of_type_compilation (ctype, toplevel_bindings_p ());
+	}
+
       return 1;
     }
   else if (!DECL_NEEDED_P (vars))

@@ -4180,46 +4180,7 @@ finish_struct_1 (t)
   if (warn_overloaded_virtual)
     warn_hidden (t);
 
-#if 0
-  /* This has to be done after we have sorted out what to do with
-     the enclosing type.  */
-  if (write_symbols != DWARF_DEBUG)
-    {
-      /* Be smarter about nested classes here.  If a type is nested,
-	 only output it if we would output the enclosing type.  */
-      if (DECL_CLASS_SCOPE_P (TYPE_MAIN_DECL (t)))
-	DECL_IGNORED_P (TYPE_MAIN_DECL (t)) = TREE_ASM_WRITTEN (TYPE_MAIN_DECL (t));
-    }
-#endif
-
-  if (write_symbols != DWARF_DEBUG && write_symbols != DWARF2_DEBUG)
-    {
-      /* If the type has methods, we want to think about cutting down
-	 the amount of symbol table stuff we output.  The value stored in
-	 the TYPE_DECL's DECL_IGNORED_P slot is a first approximation.
-	 For example, if a member function is seen and we decide to
-	 write out that member function, then we can change the value
-	 of the DECL_IGNORED_P slot, and the type will be output when
-	 that member function's debug info is written out.
-
-	 We can't do this with DWARF, which does not support name
-	 references between translation units.  */
-      if (CLASSTYPE_METHOD_VEC (t))
-	{
-	  /* Don't output full info about any type
-	     which does not have its implementation defined here.  */
-	  if (CLASSTYPE_INTERFACE_ONLY (t))
-	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
-#if 0
-	  /* XXX do something about this.  */
-	  else if (CLASSTYPE_INTERFACE_UNKNOWN (t))
-	    /* Only a first approximation!  */
-	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
-#endif
-	}
-      else if (CLASSTYPE_INTERFACE_ONLY (t))
-	TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 1;
-    }
+  maybe_suppress_debug_info (t);
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel_bindings_p ());
@@ -4286,6 +4247,13 @@ finish_struct (t, attributes)
     popclass ();
   else
     error ("trying to finish struct, but kicked out due to previous parse errors.");
+
+  if (processing_template_decl)
+    {
+      tree scope = current_scope ();
+      if (scope && TREE_CODE (scope) == FUNCTION_DECL)
+	add_tree (build_min (TAG_DEFN, t));
+    }
 
   return t;
 }

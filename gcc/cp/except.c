@@ -369,7 +369,7 @@ build_eh_type_type_ref (type)
 }
 
 /* This routine is called to mark all the symbols representing runtime
-   type functions in the exception table as haveing been referenced.
+   type functions in the exception table as having been referenced.
    This will make sure code is emitted for them. Called from finish_file. */
 void 
 mark_all_runtime_matches () 
