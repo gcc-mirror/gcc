@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 91-94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-95, 1996 Free Software Foundation, Inc.b
 
 This file is part of GNU CC.
 
@@ -1505,7 +1505,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  else if (ultimate && GET_CODE (ultimate) != RETURN)
 		    ultimate = XEXP (ultimate, 0);
 
-		  if (ultimate)
+		  if (ultimate && JUMP_LABEL(insn) != ultimate)
 		    changed |= redirect_jump (insn, ultimate);
 		}
 	    }
