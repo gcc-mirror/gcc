@@ -1470,7 +1470,7 @@ dnl GLIBCPP_ENABLE_ATOMICITY
 AC_DEFUN(GLIBCPP_ENABLE_ATOMICITY, [
     AC_MSG_CHECKING([for atomicity.h])
     case "$target" in
-      *-*-linux* | sparc*-*-*)
+      *-*-linux* | sparc*-*-* | *-*-freebsd*)
         ATOMICITYH=$cpu_include_dir
         ;;    
       *-*-aix* | *-*-irix*)
