@@ -157,7 +157,10 @@ output_to_reg (dest, dies)
       else
 	{
 	  if (GET_MODE (dest) == XFmode)
-	    abort ();
+	    {
+	      output_asm_insn (AS1 (fstp%z3,%y0), xops);
+	      output_asm_insn (AS1 (fld%z3,%y0), xops);
+	    }
 	  else
 	    output_asm_insn (AS1 (fst%z3,%y0), xops);
 	}
