@@ -115,7 +115,7 @@ extern void ix86_expand_branch PARAMS ((enum rtx_code, rtx));
 extern int ix86_expand_setcc PARAMS ((enum rtx_code, rtx));
 extern int ix86_expand_int_movcc PARAMS ((rtx[]));
 extern int ix86_expand_fp_movcc PARAMS ((rtx[]));
-extern int ix86_split_long_move PARAMS ((rtx[]));
+extern void ix86_split_long_move PARAMS ((rtx[]));
 extern void ix86_split_ashldi PARAMS ((rtx *, rtx));
 extern void ix86_split_ashrdi PARAMS ((rtx *, rtx));
 extern void ix86_split_lshrdi PARAMS ((rtx *, rtx));

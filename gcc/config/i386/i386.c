@@ -6599,7 +6599,12 @@ ix86_split_to_parts (operand, parts, mode)
      rtx *parts;
      enum machine_mode mode;
 {
-  int size = mode == TFmode ? 3 : GET_MODE_SIZE (mode) / 4;
+  int size;
+
+  if (!TARGET_64BIT)
+    size = mode == TFmode ? 3 : (GET_MODE_SIZE (mode) / 4);
+  else
+    size = (GET_MODE_SIZE (mode) + 4) / 8;
 
   if (GET_CODE (operand) == REG && MMX_REGNO_P (REGNO (operand)))
     abort ();
@@ -6620,10 +6625,11 @@ ix86_split_to_parts (operand, parts, mode)
       if (! push_operand (operand, VOIDmode))
 	abort ();
 
-      PUT_MODE (operand, SImode);
+      operand = copy_rtx (operand);
+      PUT_MODE (operand, Pmode);
       parts[0] = parts[1] = parts[2] = operand;
     }
-  else
+  else if (!TARGET_64BIT)
     {
       if (mode == DImode)
 	split_di (&operand, 1, &parts[0], &parts[1]);
@@ -6640,7 +6646,7 @@ ix86_split_to_parts (operand, parts, mode)
 	    }
 	  else if (offsettable_memref_p (operand))
 	    {
-	      PUT_MODE (operand, SImode);
+	      operand = change_address (operand, SImode, XEXP (operand, 0));
 	      parts[0] = operand;
 	      parts[1] = adj_offsettable_operand (operand, 4);
 	      if (size == 3)
@@ -6672,6 +6678,42 @@ ix86_split_to_parts (operand, parts, mode)
 	    abort ();
 	}
     }
+  else
+    {
+      if (mode == XFmode || mode == TFmode)
+	{
+	  if (REG_P (operand))
+	    {
+	      if (!reload_completed)
+		abort ();
+	      parts[0] = gen_rtx_REG (DImode, REGNO (operand) + 0);
+	      parts[1] = gen_rtx_REG (SImode, REGNO (operand) + 1);
+	    }
+	  else if (offsettable_memref_p (operand))
+	    {
+	      operand = change_address (operand, DImode, XEXP (operand, 0));
+	      parts[0] = operand;
+	      parts[1] = adj_offsettable_operand (operand, 8);
+	      parts[1] = change_address (parts[1], SImode, XEXP (operand, 0));
+	    }
+	  else if (GET_CODE (operand) == CONST_DOUBLE)
+	    {
+	      REAL_VALUE_TYPE r;
+	      long l[3];
+
+	      REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
+	      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+	      /* Do not use shift by 32 to avoid warning on 32bit systems.  */
+	      if (HOST_BITS_PER_WIDE_INT >= 64)
+	        parts[0] = GEN_INT (l[0] + ((l[1] << 31) << 1));
+	      else
+	        parts[0] = immed_double_const (l[0], l[1], DImode);
+	      parts[1] = GEN_INT (l[2]);
+	    }
+	  else
+	    abort ();
+	}
+    }
 
   return size;
 }
@@ -6681,19 +6723,36 @@ ix86_split_to_parts (operand, parts, mode)
    insns have been emitted.  Operands 2-4 contain the input values
    int the correct order; operands 5-7 contain the output values.  */
 
-int
-ix86_split_long_move (operands1)
-     rtx operands1[];
+void
+ix86_split_long_move (operands)
+     rtx operands[];
 {
   rtx part[2][3];
-  rtx operands[2];
-  int size;
+  int nparts;
   int push = 0;
   int collisions = 0;
+  enum machine_mode mode = GET_MODE (operands[0]);
 
-  /* Make our own copy to avoid clobbering the operands.  */
-  operands[0] = copy_rtx (operands1[0]);
-  operands[1] = copy_rtx (operands1[1]);
+  /* The DFmode expanders may ask us to move double.
+     For 64bit target this is single move.  By hiding the fact
+     here we simplify i386.md splitters.  */
+  if (GET_MODE_SIZE (GET_MODE (operands[0])) == 8 && TARGET_64BIT)
+    {
+      /* Optimize constant pool reference to immediates.  This is used by fp moves,
+	 that force all constants to memory to allow combining.  */
+
+      if (GET_CODE (operands[1]) == MEM
+	  && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (operands[1], 0)))
+	operands[1] = get_pool_constant (XEXP (operands[1], 0));
+      if (push_operand (operands[0], VOIDmode))
+	operands[0] = change_address (operands[0], DImode, XEXP (operands[0], 0));
+      else
+        operands[0] = gen_lowpart (DImode, operands[0]);
+      operands[1] = gen_lowpart (DImode, operands[1]);
+      emit_move_insn (operands[0], operands[1]);
+      return;
+    }
 
   /* The only non-offsettable memory we handle is push.  */
   if (push_operand (operands[0], VOIDmode))
@@ -6702,14 +6761,14 @@ ix86_split_long_move (operands1)
 	   && ! offsettable_memref_p (operands[0]))
     abort ();
 
-  size = ix86_split_to_parts (operands[0], part[0], GET_MODE (operands1[0]));
-  ix86_split_to_parts (operands[1], part[1], GET_MODE (operands1[0]));
+  nparts = ix86_split_to_parts (operands[1], part[1], GET_MODE (operands[0]));
+  ix86_split_to_parts (operands[0], part[0], GET_MODE (operands[0]));
 
   /* When emitting push, take care for source operands on the stack.  */
   if (push && GET_CODE (operands[1]) == MEM
       && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
     {
-      if (size == 3)
+      if (nparts == 3)
 	part[1][1] = part[1][2];
       part[1][0] = part[1][1];
     }
@@ -6722,12 +6781,12 @@ ix86_split_long_move (operands1)
 	collisions++;
       if (reg_overlap_mentioned_p (part[0][1], XEXP (part[1][0], 0)))
 	collisions++;
-      if (size == 3
+      if (nparts == 3
 	  && reg_overlap_mentioned_p (part[0][2], XEXP (part[1][0], 0)))
 	collisions++;
 
       /* Collision in the middle part can be handled by reordering.  */
-      if (collisions == 1 && size == 3
+      if (collisions == 1 && nparts == 3
 	  && reg_overlap_mentioned_p (part[0][1], XEXP (part[1][0], 0)))
 	{
 	  rtx tmp;
@@ -6740,79 +6799,107 @@ ix86_split_long_move (operands1)
       else if (collisions > 1)
 	{
 	  collisions = 1;
-	  emit_insn (gen_rtx_SET (VOIDmode, part[0][size - 1],
+	  emit_insn (gen_rtx_SET (VOIDmode, part[0][nparts - 1],
 				  XEXP (part[1][0], 0)));
-	  part[1][0] = change_address (part[1][0], SImode, part[0][size - 1]);
-	  part[1][1] = adj_offsettable_operand (part[1][0], 4);
-	  if (size == 3)
+	  part[1][0] = change_address (part[1][0],
+				       TARGET_64BIT ? DImode : SImode,
+				       part[0][nparts - 1]);
+	  part[1][1] = adj_offsettable_operand (part[1][0],
+					        UNITS_PER_WORD);
+	  part[1][1] = change_address (part[1][1], GET_MODE (part[0][1]),
+			 	       XEXP (part[1][1], 0));
+	  if (nparts == 3)
 	    part[1][2] = adj_offsettable_operand (part[1][0], 8);
 	}
     }
 
   if (push)
     {
-      if (size == 3)
+      if (!TARGET_64BIT)
 	{
-	  /* We use only first 12 bytes of TFmode value, but for pushing we
-	     are required to adjust stack as if we were pushing real 16byte
-	     value.  */
-	  if (GET_MODE (operands1[0]) == TFmode)
-	    emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				   GEN_INT (-4)));
-	  emit_insn (gen_push (part[1][2]));
+	  if (nparts == 3)
+	    {
+	      /* We use only first 12 bytes of TFmode value, but for pushing we
+		 are required to adjust stack as if we were pushing real 16byte
+		 value.  */
+	      if (mode == TFmode && !TARGET_64BIT)
+		emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				       GEN_INT (-4)));
+	      emit_move_insn (part[0][2], part[1][2]);
+	    }
 	}
-      emit_insn (gen_push (part[1][1]));
-      emit_insn (gen_push (part[1][0]));
-      return 1;
+      else
+	{
+	  /* In 64bit mode we don't have 32bit push available.  In case this is
+	     register, it is OK - we will just use larger counterpart.  We also
+	     retype memory - these comes from attempt to avoid REX prefix on
+	     moving of second half of TFmode value.  */
+	  if (GET_MODE (part[1][1]) == SImode)
+	    {
+	      if (GET_CODE (part[1][1]) == MEM)
+		part[1][1] = change_address (part[1][1], DImode, XEXP (part[1][1], 0));
+	      else if (REG_P (part[1][1]))
+		part[1][1] = gen_rtx_REG (DImode, REGNO (part[1][1]));
+	      else
+		abort();
+	    }
+	}
+      emit_move_insn (part[0][1], part[1][1]);
+      emit_move_insn (part[0][0], part[1][0]);
+      return;
     }
 
   /* Choose correct order to not overwrite the source before it is copied.  */
   if ((REG_P (part[0][0])
        && REG_P (part[1][1])
        && (REGNO (part[0][0]) == REGNO (part[1][1])
-	   || (size == 3
+	   || (nparts == 3
 	       && REGNO (part[0][0]) == REGNO (part[1][2]))))
       || (collisions > 0
 	  && reg_overlap_mentioned_p (part[0][0], XEXP (part[1][0], 0))))
     {
-      if (size == 3)
+      if (nparts == 3)
 	{
-	  operands1[2] = part[0][2];
-	  operands1[3] = part[0][1];
-	  operands1[4] = part[0][0];
-	  operands1[5] = part[1][2];
-	  operands1[6] = part[1][1];
-	  operands1[7] = part[1][0];
+	  operands[2] = part[0][2];
+	  operands[3] = part[0][1];
+	  operands[4] = part[0][0];
+	  operands[5] = part[1][2];
+	  operands[6] = part[1][1];
+	  operands[7] = part[1][0];
 	}
       else
 	{
-	  operands1[2] = part[0][1];
-	  operands1[3] = part[0][0];
-	  operands1[5] = part[1][1];
-	  operands1[6] = part[1][0];
+	  operands[2] = part[0][1];
+	  operands[3] = part[0][0];
+	  operands[5] = part[1][1];
+	  operands[6] = part[1][0];
 	}
     }
   else
     {
-      if (size == 3)
+      if (nparts == 3)
 	{
-	  operands1[2] = part[0][0];
-	  operands1[3] = part[0][1];
-	  operands1[4] = part[0][2];
-	  operands1[5] = part[1][0];
-	  operands1[6] = part[1][1];
-	  operands1[7] = part[1][2];
+	  operands[2] = part[0][0];
+	  operands[3] = part[0][1];
+	  operands[4] = part[0][2];
+	  operands[5] = part[1][0];
+	  operands[6] = part[1][1];
+	  operands[7] = part[1][2];
 	}
       else
 	{
-	  operands1[2] = part[0][0];
-	  operands1[3] = part[0][1];
-	  operands1[5] = part[1][0];
-	  operands1[6] = part[1][1];
+	  operands[2] = part[0][0];
+	  operands[3] = part[0][1];
+	  operands[5] = part[1][0];
+	  operands[6] = part[1][1];
 	}
     }
+  emit_move_insn (operands[2], operands[5]);
+  emit_move_insn (operands[3], operands[6]);
+  if (nparts == 3)
+    emit_move_insn (operands[4], operands[7]);
 
-  return 0;
+  return;
 }
 
 void
