@@ -14,4 +14,4 @@ ALLOCA=alloca.o
 # Since ss-961013, the same happens for expr.c compiled by gcc, but not by cc;
 # and for cp/decl.c; aren't those files too big ?
 # With egcs-1.1.2, this also happens for f/expr.o and f/stb.o
-XCFLAGS=`case $@ in combine.o|expr.o|decl.o|stb.o) echo -Wa,-j;;esac`
+XCFLAGS=`case $@ in combine.o|expr.o|decl.o|stb.o|cse.o) echo -Wa,-j;;esac`
