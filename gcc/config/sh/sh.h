@@ -1720,8 +1720,6 @@ extern enum machine_mode sh_addr_diff_vec_mode;
 
 extern int optimize; /* needed for gen_casesi.  */
 
-extern short *label_align;
-
 /* Declare functions defined in sh.c and used in templates.  */
 
 extern char *output_branch();
