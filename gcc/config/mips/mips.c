@@ -592,7 +592,7 @@ char mips_reg_names[][8] =
  "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
- "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
+ "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
  "$fcc5","$fcc6","$fcc7","", "",     "",     "",     "",
  "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
  "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
@@ -621,7 +621,7 @@ char mips_sw_reg_names[][8] =
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
-  "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
+  "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
   "$fcc5","$fcc6","$fcc7","$rap", "",     "",     "",     "",
   "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
   "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
@@ -656,7 +656,7 @@ const enum reg_class mips_regno_to_class[] =
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  HI_REG,	LO_REG,		HILO_REG,	ST_REGS,
+  HI_REG,	LO_REG,		NO_REGS,	ST_REGS,
   ST_REGS,	ST_REGS,	ST_REGS,	ST_REGS,
   ST_REGS,	ST_REGS,	ST_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
@@ -1518,8 +1518,18 @@ hilo_operand (op, mode)
      enum machine_mode mode;
 {
   return ((mode == VOIDmode || mode == GET_MODE (op))
-	  && REG_P (op)
-	  && (REGNO (op) == HI_REGNUM || REGNO (op) == LO_REGNUM));
+	  && REG_P (op) && MD_REG_P (REGNO (op)));
+}
+
+/* Return true if OP is an extension operator.  */
+
+int
+extend_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((mode == VOIDmode || mode == GET_MODE (op))
+	  && (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND));
 }
 
 /* Return nonzero if the code of this rtx pattern is EQ or NE.  */
@@ -5555,7 +5565,6 @@ override_options ()
   mips_char_to_class['f'] = (TARGET_HARD_FLOAT ? FP_REGS : NO_REGS);
   mips_char_to_class['h'] = HI_REG;
   mips_char_to_class['l'] = LO_REG;
-  mips_char_to_class['a'] = HILO_REG;
   mips_char_to_class['x'] = MD_REGS;
   mips_char_to_class['b'] = ALL_REGS;
   mips_char_to_class['c'] = (TARGET_ABICALLS ? PIC_FN_ADDR_REG :
@@ -8541,20 +8550,6 @@ mips_secondary_reload_class (class, mode, x, in_p)
       && DANGEROUS_FOR_LA25_P (x))
     return LEA_REGS;
 
-  /* We always require a general register when copying anything to
-     HILO_REGNUM, except when copying an SImode value from HILO_REGNUM
-     to a general register, or when copying from register 0.  */
-  if (class == HILO_REG && regno != GP_REG_FIRST + 0)
-    return ((! in_p
-	     && gp_reg_p
-	     && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (SImode))
-	    ? NO_REGS : gr_regs);
-  else if (regno == HILO_REGNUM)
-    return ((in_p
-	     && class == gr_regs
-	     && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (SImode))
-	    ? NO_REGS : gr_regs);
-
   /* Copying from HI or LO to anywhere other than a general register
      requires a general register.  */
   if (class == HI_REG || class == LO_REG || class == MD_REGS)
@@ -8636,19 +8631,6 @@ mips_secondary_reload_class (class, mode, x, in_p)
 	}
       if (! gp_reg_p)
 	{
-	  /* The stack pointer isn't a valid operand to an add instruction,
-	     so we need to load it into M16_REGS first.  This can happen as
-	     a result of register elimination and form_sum converting
-	     (plus reg (plus SP CONST)) to (plus (plus reg SP) CONST).  We
-	     need an extra register if the dest is the same as the other
-	     register.  In that case, we can't fix the problem by loading SP
-	     into the dest first.  */
-	  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == REG
-	      && GET_CODE (XEXP (x, 1)) == REG
-	      && (XEXP (x, 0) == stack_pointer_rtx
-		  || XEXP (x, 1) == stack_pointer_rtx))
-	    return (class == M16_REGS ? M16_NA_REGS : M16_REGS);
-
 	  if (class == M16_REGS || class == M16_NA_REGS)
 	    return NO_REGS;
 	  return M16_REGS;
@@ -9775,10 +9757,10 @@ mips_reorg ()
    should do this if the `movM' pattern's constraints do not allow
    such copying.
 
-   ??? We make make the cost of moving from HI/LO/HILO/MD into general
+   ??? We make the cost of moving from HI/LO into general
    registers the same as for one of moving general registers to
-   HI/LO/HILO/MD for TARGET_MIPS16 in order to prevent allocating a
-   pseudo to HI/LO/HILO/MD.  This might hurt optimizations though, it
+   HI/LO for TARGET_MIPS16 in order to prevent allocating a
+   pseudo to HI/LO.  This might hurt optimizations though, it
    isn't clear if it is wise.  And it might not work in all cases.  We
    could solve the DImode LO reg problem by using a multiply, just
    like reload_{in,out}si.  We could solve the SImode/HImode HI reg
@@ -9813,8 +9795,7 @@ mips_register_move_cost (mode, to, from)
 	}
       else if (to == FP_REGS)
 	return 4;
-      else if (to == HI_REG || to == LO_REG || to == MD_REGS
-	       || to == HILO_REG)
+      else if (to == HI_REG || to == LO_REG || to == MD_REGS)
 	{
 	  if (TARGET_MIPS16)
 	    return 12;
@@ -9835,8 +9816,7 @@ mips_register_move_cost (mode, to, from)
       else if (to == ST_REGS)
 	return 8;
     }  /* from == FP_REGS */
-  else if (from == HI_REG || from == LO_REG || from == MD_REGS
-	   || from == HILO_REG)
+  else if (from == HI_REG || from == LO_REG || from == MD_REGS)
     {
       if (GR_REG_CLASS_P (to))
 	{
