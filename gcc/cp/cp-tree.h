@@ -1947,6 +1947,7 @@ extern tree build_new_method_call		PROTO((tree, tree, tree, tree, int));
 extern tree build_user_type_conversion		PROTO((tree, tree, int));
 extern tree build_new_function_call		PROTO((tree, tree, tree));
 extern tree build_new_op			PROTO((enum tree_code, int, tree, tree, tree));
+extern tree type_decays_to			PROTO((tree));
 
 /* in class.c */
 extern tree build_vbase_pointer			PROTO((tree, tree));

@@ -1125,6 +1125,32 @@ instantiate_class_template (type)
       CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 1;
     }
 
+  TYPE_HAS_CONSTRUCTOR (type) = TYPE_HAS_CONSTRUCTOR (pattern);
+  TYPE_HAS_DESTRUCTOR (type) = TYPE_HAS_DESTRUCTOR (pattern);
+  TYPE_HAS_ASSIGNMENT (type) = TYPE_HAS_ASSIGNMENT (pattern);
+  TYPE_OVERLOADS_CALL_EXPR (type) = TYPE_OVERLOADS_CALL_EXPR (pattern);
+  TYPE_OVERLOADS_ARRAY_REF (type) = TYPE_OVERLOADS_ARRAY_REF (pattern);
+  TYPE_OVERLOADS_ARROW (type) = TYPE_OVERLOADS_ARROW (pattern);
+  TYPE_GETS_NEW (type) = TYPE_GETS_NEW (pattern);
+  TYPE_GETS_DELETE (type) = TYPE_GETS_DELETE (pattern);
+  TYPE_VEC_DELETE_TAKES_SIZE (type) = TYPE_VEC_DELETE_TAKES_SIZE (pattern);
+  TYPE_HAS_ASSIGN_REF (type) = TYPE_HAS_ASSIGN_REF (pattern);
+  TYPE_HAS_CONST_ASSIGN_REF (type) = TYPE_HAS_CONST_ASSIGN_REF (pattern);
+  TYPE_HAS_ABSTRACT_ASSIGN_REF (type) = TYPE_HAS_ABSTRACT_ASSIGN_REF (pattern);
+  TYPE_HAS_INIT_REF (type) = TYPE_HAS_INIT_REF (pattern);
+  TYPE_HAS_CONST_INIT_REF (type) = TYPE_HAS_CONST_INIT_REF (pattern);
+  TYPE_GETS_INIT_AGGR (type) = TYPE_GETS_INIT_AGGR (pattern);
+  TYPE_HAS_DEFAULT_CONSTRUCTOR (type) = TYPE_HAS_DEFAULT_CONSTRUCTOR (pattern);
+  TYPE_HAS_CONVERSION (type) = TYPE_HAS_CONVERSION (pattern);
+  TYPE_USES_COMPLEX_INHERITANCE (type)
+    = TYPE_USES_COMPLEX_INHERITANCE (pattern);
+  TYPE_USES_MULTIPLE_INHERITANCE (type)
+    = TYPE_USES_MULTIPLE_INHERITANCE (pattern);
+  TYPE_USES_VIRTUAL_BASECLASSES (type)
+    = TYPE_USES_VIRTUAL_BASECLASSES (pattern);
+  TYPE_PACKED (type) = TYPE_PACKED (pattern);
+  TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
+
   {
     tree binfo = TYPE_BINFO (type);
     tree pbases = TYPE_BINFO_BASETYPES (pattern);
@@ -1214,6 +1240,13 @@ instantiate_class_template (type)
       }
 
   TYPE_METHODS (type) = tsubst_chain (TYPE_METHODS (pattern), args);
+  for (t = TYPE_METHODS (type); t; t = TREE_CHAIN (t))
+    {
+      if (DECL_CONSTRUCTOR_P (t))
+	grok_ctor_properties (type, t);
+      else if (IDENTIFIER_OPNAME_P (DECL_NAME (t)))
+	grok_op_properties (t, DECL_VIRTUAL_P (t), 0);
+    }
 
   DECL_FRIENDLIST (TYPE_MAIN_DECL (type))
     = tsubst (DECL_FRIENDLIST (TYPE_MAIN_DECL (pattern)),
@@ -1241,32 +1274,6 @@ instantiate_class_template (type)
 	  pushdecl (t);
       }
   }
-
-  TYPE_HAS_CONSTRUCTOR (type) = TYPE_HAS_CONSTRUCTOR (pattern);
-  TYPE_HAS_DESTRUCTOR (type) = TYPE_HAS_DESTRUCTOR (pattern);
-  TYPE_HAS_ASSIGNMENT (type) = TYPE_HAS_ASSIGNMENT (pattern);
-  TYPE_OVERLOADS_CALL_EXPR (type) = TYPE_OVERLOADS_CALL_EXPR (pattern);
-  TYPE_OVERLOADS_ARRAY_REF (type) = TYPE_OVERLOADS_ARRAY_REF (pattern);
-  TYPE_OVERLOADS_ARROW (type) = TYPE_OVERLOADS_ARROW (pattern);
-  TYPE_GETS_NEW (type) = TYPE_GETS_NEW (pattern);
-  TYPE_GETS_DELETE (type) = TYPE_GETS_DELETE (pattern);
-  TYPE_VEC_DELETE_TAKES_SIZE (type) = TYPE_VEC_DELETE_TAKES_SIZE (pattern);
-  TYPE_HAS_ASSIGN_REF (type) = TYPE_HAS_ASSIGN_REF (pattern);
-  TYPE_HAS_CONST_ASSIGN_REF (type) = TYPE_HAS_CONST_ASSIGN_REF (pattern);
-  TYPE_HAS_ABSTRACT_ASSIGN_REF (type) = TYPE_HAS_ABSTRACT_ASSIGN_REF (pattern);
-  TYPE_HAS_INIT_REF (type) = TYPE_HAS_INIT_REF (pattern);
-  TYPE_HAS_CONST_INIT_REF (type) = TYPE_HAS_CONST_INIT_REF (pattern);
-  TYPE_GETS_INIT_AGGR (type) = TYPE_GETS_INIT_AGGR (pattern);
-  TYPE_HAS_DEFAULT_CONSTRUCTOR (type) = TYPE_HAS_DEFAULT_CONSTRUCTOR (pattern);
-  TYPE_HAS_CONVERSION (type) = TYPE_HAS_CONVERSION (pattern);
-  TYPE_USES_COMPLEX_INHERITANCE (type)
-    = TYPE_USES_COMPLEX_INHERITANCE (pattern);
-  TYPE_USES_MULTIPLE_INHERITANCE (type)
-    = TYPE_USES_MULTIPLE_INHERITANCE (pattern);
-  TYPE_USES_VIRTUAL_BASECLASSES (type)
-    = TYPE_USES_VIRTUAL_BASECLASSES (pattern);
-  TYPE_PACKED (type) = TYPE_PACKED (pattern);
-  TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
 
   if (! uses_template_parms (type))
     {
@@ -1803,8 +1810,8 @@ tsubst (t, args, nargs, in_decl)
 	    for (; values && values != void_list_node;
 		 values = TREE_CHAIN (values))
 	      {
-		tree value
-		  = tsubst (TREE_VALUE (values), args, nargs, in_decl);
+		tree value = TYPE_MAIN_VARIANT (type_decays_to
+		  (tsubst (TREE_VALUE (values), args, nargs, in_decl)));
 		tree purpose = tsubst_expr (TREE_PURPOSE (values),
 					    args, nargs, in_decl);
 		tree x = build_tree_list (purpose, value);

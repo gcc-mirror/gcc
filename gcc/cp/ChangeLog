@@ -1,8 +1,29 @@
+Fri Dec 27 10:31:40 1996  Paul Eggert  <eggert@twinsun.com>
+
+	* Make-lang.in (g++spec.o): Don't use $< with an explicit target;
+	this isn't portable to some versions of `make' (e.g. Solaris 2.5.1).
+
+Tue Dec 24 10:24:03 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* decl.c (grokvardecl): Avoid ANSI style initialization.
+
+Sun Dec 22 04:22:06 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst): Tweak arg types for a FUNCTION_TYPE.
+
+Fri Dec 20 17:09:25 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): Call grok_{ctor,op}_properties.
+
 Fri Dec 20 12:17:12 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* g++spec.c (lang_specific_driver): Put missing hyphen in front of
 	arguments we compare against.  Start the count of I at 1, not 0,
 	since argv[0] is still the command.
+
+Thu Dec 19 11:53:57 1996  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* lang-specs.h: Accept .cp as an C++ extension.
 
 Mon Dec 16 22:43:31 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
