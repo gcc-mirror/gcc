@@ -57,7 +57,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)			\
-	fputs ("\tjsr $28,_mcount\n", (FILE))
+	fputs ("\tlda $28,_mcount\n\tjsr $28,($28),_mcount\n", (FILE))
 
 /* Generate calls to memcpy, etc., not bcopy, etc. */
 #define TARGET_MEM_FUNCTIONS

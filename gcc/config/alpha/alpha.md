@@ -215,20 +215,14 @@
 ;; First define the arithmetic insns.  Note that the 32-bit forms also
 ;; sign-extend.
 
-;; Note that we can do sign extensions in both FP and integer registers.
-;; However, the result must be in the same type of register as the input.
-;; The register preferencing code can't handle this case very well, so, for
-;; now, don't let the FP case show up here for preferencing.  Also,
-;; sign-extends in FP registers take two instructions.
 (define_insn "extendsidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,*f")
-	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m,*f")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
   ""
   "@
    addl %1,$31,%0
-   ldl %0,%1
-   cvtql %1,%0\;cvtlq %0,%0"
-  [(set_attr "type" "iadd,ld,fadd")])
+   ldl %0,%1"
+  [(set_attr "type" "iadd,ld")])
 
 ;; Do addsi3 the way expand_binop would do if we didn't have one.  This
 ;; generates better code.  We have the anonymous addsi3 pattern below in
@@ -1507,20 +1501,39 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=&f")
+	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
+  "cvt%-q%(c %R1,%0"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cvt%-qc %R1,%0"
-  [(set_attr "type" "fadd")])
+  "cvt%-q%(c %R1,%0"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=&f")
+	(fix:DI (float_extend:DF
+		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
+  "cvt%-q%(c %R1,%0"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
 
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (float_extend:DF
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "cvt%-qc %R1,%0"
-  [(set_attr "type" "fadd")])
+  "cvt%-q%(c %R1,%0"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")

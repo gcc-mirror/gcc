@@ -1,3 +1,15 @@
+Sun Apr 19 00:23:23 1998  Richard Henderson  <rth@cygnus.com>
+
+        * alpha.md (extendsidi2): Kill bogus cvtql+cvtlq case.
+
+        * alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Accept '(' for s/sv/svi.
+        * alpha.c (print_operand): Handle it.
+        * alpha.md (fix_truncsfdi2): Use it.  Add earlyclobber pattern
+        for ALPHA_TP_INSN.
+        (fix_truncdfdi2): Likewise.
+
+	* alpha/linux.h (FUNCTION_PROFILER): _mcount expects its pv in $28.
+
 Sat Apr 18 19:06:59 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (floatsidf2_loadaddr): rs6000_fpmem_offset will be

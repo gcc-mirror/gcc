@@ -1417,6 +1417,26 @@ print_operand (file, x, code)
 	fputs ("su", file);
       break;
 
+    case '(':
+      /* Generates trap-mode suffix for instructions that accept the
+	 v, sv, and svi suffix.  The only instruction that needs this
+	 is cvttq.  */
+      switch (alpha_fptm)
+	{
+	case ALPHA_FPTM_N:
+	  break;
+	case ALPHA_FPTM_U:
+	  fputs ("v", file);
+	  break;
+	case ALPHA_FPTM_SU:
+	  fputs ("sv", file);
+	  break;
+	case ALPHA_FPTM_SUI:
+	  fputs ("svi", file);
+	  break;
+	}
+      break;
+
     case ')':
       /* Generates trap-mode suffix for instructions that accept the u, su,
 	 and sui suffix.  This is the bulk of the IEEE floating point
