@@ -527,7 +527,11 @@ const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON_K8 | m_K6;
 const int x86_cmove = m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
 const int x86_3dnow_a = m_ATHLON_K8;
 const int x86_deep_branch = m_PPRO | m_K6 | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
-const int x86_branch_hints = m_PENT4 | m_NOCONA;
+/* Branch hints were put in P4 based on simulation result. But
+   after P4 was made, no performance benefit was observed with
+   branch hints. It also increases the code size. As the result,
+   icc never generates branch hints.  */
+const int x86_branch_hints = 0;
 const int x86_use_sahf = m_PPRO | m_K6 | m_PENT4 | m_NOCONA;
 const int x86_partial_reg_stall = m_PPRO;
 const int x86_use_loop = m_K6;
