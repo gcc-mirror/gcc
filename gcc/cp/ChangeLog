@@ -1,5 +1,8 @@
 1999-05-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl2.c (mark_vtable_entries): Don't make a copy of a function,
+	and then make it look like `abort'.  Just use `abort' instead.
+	
 	* typeck.c (build_static_cast): Don't allow static_casts that cast
 	away constness.
 	(casts_away_constness_r): New function.
