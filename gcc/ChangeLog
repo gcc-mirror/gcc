@@ -1,3 +1,7 @@
+2003-06-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* opts.sh: Remove path from sort.
+
 2003-06-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR/9680

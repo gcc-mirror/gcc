@@ -20,7 +20,7 @@
 # Usage: opts.sh outfile.c outfile.h file1.opt [file2.opt, ...]
 
 AWK=/usr/bin/awk
-SORT=/usr/bin/sort
+SORT=sort		# Could be /bin/sort or /usr/bin/sort
 
 C_FILE=$1; shift
 H_FILE=$1; shift
