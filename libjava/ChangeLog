@@ -1,3 +1,8 @@
+1999-07-31  Tom Tromey  <tromey@cygnus.com>
+
+	* NEWS: Likewise.
+	* THANKS: New file.
+
 1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in: Check for struct hostent_data and need for
