@@ -1,4 +1,5 @@
-/* Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2004
+   Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -262,9 +263,11 @@ static void frv_init_libfuncs			(void);
 static bool frv_in_small_data_p			(tree);
 static void frv_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
+static rtx frv_expand_builtin_saveregs		(void);
 static bool frv_rtx_costs			(rtx, int, int, int*);
 static void frv_asm_out_constructor		(rtx, int);
 static void frv_asm_out_destructor		(rtx, int);
+static rtx frv_struct_value_rtx			(tree, int);
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -297,6 +300,12 @@ static void frv_asm_out_destructor		(rtx, int);
 #define TARGET_SCHED_ISSUE_RATE frv_issue_rate
 #undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE frv_use_dfa_pipeline_interface
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX frv_struct_value_rtx
+
+#undef TARGET_EXPAND_BUILTIN_SAVEREGS
+#define TARGET_EXPAND_BUILTIN_SAVEREGS frv_expand_builtin_saveregs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -902,8 +911,8 @@ frv_stack_info (void)
   info_ptr->regs[STACK_REGS_STDARG].special_p = 1;
 
   info_ptr->regs[STACK_REGS_STRUCT].name      = "struct";
-  info_ptr->regs[STACK_REGS_STRUCT].first     = STRUCT_VALUE_REGNUM;
-  info_ptr->regs[STACK_REGS_STRUCT].last      = STRUCT_VALUE_REGNUM;
+  info_ptr->regs[STACK_REGS_STRUCT].first     = FRV_STRUCT_VALUE_REGNUM;
+  info_ptr->regs[STACK_REGS_STRUCT].last      = FRV_STRUCT_VALUE_REGNUM;
   info_ptr->regs[STACK_REGS_STRUCT].special_p = 1;
 
   info_ptr->regs[STACK_REGS_FP].name          = "fp";
@@ -998,7 +1007,7 @@ frv_stack_info (void)
 	case STACK_REGS_STRUCT:
 	  if (cfun->returns_struct)
 	    {
-	      info_ptr->save_p[STRUCT_VALUE_REGNUM] = REG_SAVE_1WORD;
+	      info_ptr->save_p[FRV_STRUCT_VALUE_REGNUM] = REG_SAVE_1WORD;
 	      size_1word += UNITS_PER_WORD;
 	    }
 	  break;
@@ -1136,8 +1145,8 @@ frv_stack_info (void)
 
       if (cfun->returns_struct)
 	{
-	  info_ptr->save_p[STRUCT_VALUE_REGNUM] = REG_SAVE_1WORD;
-	  info_ptr->reg_offset[STRUCT_VALUE_REGNUM] = offset + UNITS_PER_WORD;
+	  info_ptr->save_p[FRV_STRUCT_VALUE_REGNUM] = REG_SAVE_1WORD;
+	  info_ptr->reg_offset[FRV_STRUCT_VALUE_REGNUM] = offset + UNITS_PER_WORD;
 	  info_ptr->regs[STACK_REGS_STRUCT].size_1word = UNITS_PER_WORD;
 	}
 
@@ -1975,7 +1984,7 @@ frv_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
    If this macro is not defined, the compiler will output an ordinary call to
    the library function `__builtin_saveregs'.  */
 
-rtx
+static rtx
 frv_expand_builtin_saveregs (void)
 {
   int offset = UNITS_PER_WORD * FRV_NUM_ARG_REGS;
@@ -9562,4 +9571,13 @@ frv_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
   dtors_section ();
   assemble_align (POINTER_SIZE);
   assemble_integer_with_op ("\t.picptr\t", symbol);
+}
+
+/* Worker function for TARGET_STRUCT_VALUE_RTX.  */
+
+static rtx
+frv_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		      int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, FRV_STRUCT_VALUE_REGNUM);
 }
