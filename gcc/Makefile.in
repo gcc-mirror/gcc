@@ -1162,7 +1162,7 @@ s-under: $(GCC_PASSES)
 
 c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) \
 	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
-	$(EXPR_H)
+	$(EXPR_H) diagnostic.h
 
 c-semantics.o : c-semantics.c $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) \
 	c-lex.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \

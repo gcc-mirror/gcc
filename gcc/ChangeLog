@@ -1,3 +1,18 @@
+2000-09-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (c-common.o): Depend on diagnostic.h.
+
+	* c-common.c: Include diagnostic.h.
+	(tfaff): Delete.
+	(status_warning): New function.
+	(check_format_info, maybe_read_dollar_number, check_format_types,
+	finish_dollar_format_checking, check_function_format): Accept a
+	`status' parameter.  All callers changed.
+
+	* c-common.h (check_function_format): Accept a `status' parameter.
+
+	* c-typeck.c: Update call to `check_function_format'.
+
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
 	* c-decl.c (c_expand_body): Call mark_varargs before
