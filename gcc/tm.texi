@@ -5772,6 +5772,7 @@ between the name and the number will suffice.
 A C statement to output to the stdio stream @var{stream} assembler code
 which defines (equates) the symbol @var{name} to have the value @var{value}.
 
+@findex SET_ASM_OP
 If SET_ASM_OP is defined, a default definition is provided which is
 correct for most systems.
 
@@ -5792,6 +5793,7 @@ the difference of the two symbols @var{high} and @var{low}, i.e.
 and @var{low} are already known by the assembler so that the difference
 resolves into a constant.
 
+@findex SET_ASM_OP
 If SET_ASM_OP is defined, a default definition is provided which is
 correct for most systems.
 
