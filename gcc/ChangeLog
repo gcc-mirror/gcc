@@ -1,3 +1,12 @@
+Wed Mar 19 11:28:45 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (machine_function): New fields use_fast_prologue_epilogue.
+	* i386.c (use_fast_prologue_epilogue): Remove.
+	(ix86_frame): New field save_regs-using_mov;
+	(ix86_compute_frame_layout):  Decide on fast prologues;
+	allocate saved registers in red zone.
+	(ix86_expand_epilogue, ix86_expand_prolgoues): Obey new parameters.
+
 2003-03-19  Nick Clifton  <nickc@redhat.com>
 
 	* config/mcore/mcore.h (CPP_SPEC): Remove trailing semi-colon.

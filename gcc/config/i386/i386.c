@@ -530,10 +530,6 @@ const int x86_ext_80387_constants = m_K6 | m_ATHLON | m_PENT4 | m_PPRO;
    epilogue code.  */
 #define FAST_PROLOGUE_INSN_COUNT 20
 
-/* Set by prologue expander and used by epilogue expander to determine
-   the style used.  */
-static int use_fast_prologue_epilogue;
-
 /* Names for 8 (low), 8 (high), and 16-bit registers, respectively.  */
 static const char *const qi_reg_name[] = QI_REGISTER_NAMES;
 static const char *const qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;
@@ -724,6 +720,10 @@ struct ix86_frame
   HOST_WIDE_INT frame_pointer_offset;
   HOST_WIDE_INT hard_frame_pointer_offset;
   HOST_WIDE_INT stack_pointer_offset;
+
+  /* When save_regs_using_mov is set, emit prologue using
+     move instead of push instructions.  */
+  bool save_regs_using_mov;
 };
 
 /* Used to enable/disable debugging features.  */
@@ -4914,6 +4914,37 @@ ix86_compute_frame_layout (frame)
   frame->nregs = ix86_nsaved_regs ();
   total_size = size;
 
+  if (!optimize_size && !reload_completed)
+    {
+      int count = frame->nregs;
+
+      /* The fast prologue uses move instead of push to save registers.  This
+         is significantly longer, but also executes faster as modern hardware
+         can execute the moves in parallel, but can't do that for push/pop.
+	 
+	 Be careful about choosing what prologue to emit:  When function takes
+	 many instructions to execute we may use slow version as well as in
+	 case function is known to be outside hot spot (this is known with
+	 feedback only).  Weight the size of function by number of registers
+	 to save as it is cheap to use one or two push instructions but very
+	 slow to use many of them.  */
+      if (count)
+	count = (count - 1) * FAST_PROLOGUE_INSN_COUNT;
+      if (cfun->function_frequency < FUNCTION_FREQUENCY_NORMAL
+	  || (flag_branch_probabilities
+	      && cfun->function_frequency < FUNCTION_FREQUENCY_HOT))
+        cfun->machine->use_fast_prologue_epilogue = false;
+      else
+        cfun->machine->use_fast_prologue_epilogue
+	   = !expensive_function_p (count);
+    }
+  if (TARGET_PROLOGUE_USING_MOVE
+      && cfun->machine->use_fast_prologue_epilogue)
+    frame->save_regs_using_mov = true;
+  else
+    frame->save_regs_using_mov = false;
+
+
   /* Skip return address and saved base pointer.  */
   offset = frame_pointer_needed ? UNITS_PER_WORD * 2 : UNITS_PER_WORD;
 
@@ -4986,10 +5017,15 @@ ix86_compute_frame_layout (frame)
     (size + frame->padding1 + frame->padding2
      + frame->outgoing_arguments_size + frame->va_arg_size);
 
+  if (!frame->to_allocate && frame->nregs <= 1)
+    frame->save_regs_using_mov = false;
+
   if (TARGET_64BIT && TARGET_RED_ZONE && current_function_sp_is_unchanging
       && current_function_is_leaf)
     {
       frame->red_zone_size = frame->to_allocate;
+      if (frame->save_regs_using_mov)
+	frame->red_zone_size += frame->nregs * UNITS_PER_WORD;
       if (frame->red_zone_size > RED_ZONE_SIZE - RED_ZONE_RESERVE)
 	frame->red_zone_size = RED_ZONE_SIZE - RED_ZONE_RESERVE;
     }
@@ -5058,35 +5094,9 @@ ix86_expand_prologue ()
   rtx insn;
   bool pic_reg_used;
   struct ix86_frame frame;
-  int use_mov = 0;
   HOST_WIDE_INT allocate;
 
   ix86_compute_frame_layout (&frame);
-  if (!optimize_size)
-    {
-      int count = frame.nregs;
-
-      /* The fast prologue uses move instead of push to save registers.  This
-         is significantly longer, but also executes faster as modern hardware
-         can execute the moves in parallel, but can't do that for push/pop.
-	 
-	 Be careful about choosing what prologue to emit:  When function takes
-	 many instructions to execute we may use slow version as well as in
-	 case function is known to be outside hot spot (this is known with
-	 feedback only).  Weight the size of function by number of registers
-	 to save as it is cheap to use one or two push instructions but very
-	 slow to use many of them.  */
-      if (count)
-	count = (count - 1) * FAST_PROLOGUE_INSN_COUNT;
-      if (cfun->function_frequency < FUNCTION_FREQUENCY_NORMAL
-	  || (flag_branch_probabilities
-	      && cfun->function_frequency < FUNCTION_FREQUENCY_HOT))
-	use_fast_prologue_epilogue = 0;
-      else
-        use_fast_prologue_epilogue = !expensive_function_p (count);
-      if (TARGET_PROLOGUE_USING_MOVE)
-        use_mov = use_fast_prologue_epilogue;
-    }
 
   /* Note: AT&T enter does NOT have reversed args.  Enter is probably
      slower on all targets.  Also sdb doesn't like it.  */
@@ -5101,15 +5111,18 @@ ix86_expand_prologue ()
     }
 
   allocate = frame.to_allocate;
-  /* In case we are dealing only with single register and empty frame,
-     push is equivalent of the mov+add sequence.  */
-  if (allocate == 0 && frame.nregs <= 1)
-    use_mov = 0;
 
-  if (!use_mov)
+  if (!frame.save_regs_using_mov)
     ix86_emit_save_regs ();
   else
     allocate += frame.nregs * UNITS_PER_WORD;
+
+  /* When using red zone we may start register saving before allocating
+     the stack frame saving one cycle of the prologue.  */
+  if (TARGET_RED_ZONE && frame.save_regs_using_mov)
+    ix86_emit_save_regs_using_mov (frame_pointer_needed ? hard_frame_pointer_rtx
+				   : stack_pointer_rtx,
+				   -frame.nregs * UNITS_PER_WORD);
 
   if (allocate == 0)
     ;
@@ -5144,7 +5157,7 @@ ix86_expand_prologue ()
          call.  */
       emit_insn (gen_blockage (const0_rtx));
     }
-  if (use_mov)
+  if (frame.save_regs_using_mov && !TARGET_RED_ZONE)
     {
       if (!frame_pointer_needed || !frame.to_allocate)
         ix86_emit_save_regs_using_mov (stack_pointer_rtx, frame.to_allocate);
@@ -5243,11 +5256,12 @@ ix86_expand_epilogue (style)
      tuning in future.  */
   if ((!sp_valid && frame.nregs <= 1)
       || (TARGET_EPILOGUE_USING_MOVE
-	  && use_fast_prologue_epilogue
+	  && cfun->machine->use_fast_prologue_epilogue
 	  && (frame.nregs > 1 || frame.to_allocate))
       || (frame_pointer_needed && !frame.nregs && frame.to_allocate)
       || (frame_pointer_needed && TARGET_USE_LEAVE
-	  && use_fast_prologue_epilogue && frame.nregs == 1)
+	  && cfun->machine->use_fast_prologue_epilogue
+	  && frame.nregs == 1)
       || current_function_calls_eh_return)
     {
       /* Restore registers.  We can use ebp or esp to address the memory
@@ -5294,7 +5308,8 @@ ix86_expand_epilogue (style)
 		    GEN_INT (frame.to_allocate
 			     + frame.nregs * UNITS_PER_WORD)));
       /* If not an i386, mov & pop is faster than "leave".  */
-      else if (TARGET_USE_LEAVE || optimize_size || !use_fast_prologue_epilogue)
+      else if (TARGET_USE_LEAVE || optimize_size
+	       || !cfun->machine->use_fast_prologue_epilogue)
 	emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
       else
 	{
