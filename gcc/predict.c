@@ -905,7 +905,7 @@ propagate_freq (struct loop *loop)
 
   /* For each basic block we need to visit count number of his predecessors
      we need to visit first.  */
-  FOR_EACH_BB (bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
       if (BLOCK_INFO (bb)->tovisit)
 	{
