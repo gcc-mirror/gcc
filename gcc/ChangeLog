@@ -1,5 +1,13 @@
 2003-07-01  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/contrib.texi: Fix typos.
+	* doc/invoke.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
+2003-07-01  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* basic-block.h: Fix comment typos.
 	* bb-reorder.c: Likewise.
 	* c-format.c: Likewise.

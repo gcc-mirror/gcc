@@ -255,7 +255,7 @@ Peter Gerwinski for various bug fixes and the Pascal front end.
 
 @item
 Kaveh Ghazi for his direction via the steering committee,
-amazing work to make @samp{-W -Wall} useful, and continously testing
+amazing work to make @samp{-W -Wall} useful, and continuously testing
 GCC on a plethora of platforms.
 
 @item
