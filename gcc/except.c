@@ -1646,16 +1646,7 @@ expand_fixup_region_end (cleanup)
 }
 
 /* If we are using the setjmp/longjmp EH codegen method, we emit a
-   call to __sjthrow.
-
-   Otherwise, we emit a call to __throw and note that we threw
-   something, so we know we need to generate the necessary code for
-   __throw.
-
-   Before invoking throw, the __eh_pc variable must have been set up
-   to contain the PC being thrown from. This address is used by
-   __throw to determine which exception region (if any) is
-   responsible for handling the exception.  */
+   call to __sjthrow.  Otherwise, we emit a call to __throw.  */
 
 void
 emit_throw ()
@@ -2629,6 +2620,10 @@ static int
 can_throw (insn)
      rtx insn;
 {
+  if (GET_CODE (insn) == INSN
+      && GET_CODE (PATTERN (insn)) == SEQUENCE)
+    insn = XVECEXP (PATTERN (insn), 0, 0);
+
   /* Calls can always potentially throw exceptions, unless they have
      a REG_EH_REGION note with a value of 0 or less.  */
   if (GET_CODE (insn) == CALL_INSN)
@@ -2647,6 +2642,24 @@ can_throw (insn)
     }
 
   return 0;
+}
+
+/* Return nonzero if nothing in this function can throw.  */
+
+int
+nothrow_function_p ()
+{
+  rtx insn;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (can_throw (insn))
+      return 0;
+  for (insn = current_function_epilogue_delay_list; insn;
+       insn = XEXP (insn, 1))
+    if (can_throw (insn))
+      return 0;
+
+  return 1;
 }
 
 /* Scan a exception region looking for the matching end and then

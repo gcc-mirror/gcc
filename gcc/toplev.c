@@ -3674,9 +3674,11 @@ rest_of_compilation (decl)
 	print_rtl_graph_with_bb (dump_base_name, ".20.stack", insns);
     }
 
-   if (ggc_p)
-     ggc_collect ();
+  if (ggc_p)
+    ggc_collect ();
 #endif
+
+  current_function_nothrow = nothrow_function_p ();
 
   /* Now turn the rtl into assembler code.  */
 
