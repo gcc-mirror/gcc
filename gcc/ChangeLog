@@ -1,3 +1,8 @@
+Fri May 18 22:42:04 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (combine_simplify_rtx): Clear op0_mode if simplification
+	suceeded.
+
 Fri May 18 07:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* genrecog.c (enum decision_type): Add DT_elt_zero-wide_safe.
