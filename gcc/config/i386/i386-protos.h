@@ -80,6 +80,9 @@ extern int long_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int aligned_operand PARAMS ((rtx, enum machine_mode));
 extern enum machine_mode ix86_cc_mode PARAMS ((enum rtx_code, rtx, rtx));
 
+extern int ix86_expand_movstr PARAMS ((rtx, rtx, rtx, rtx));
+extern int ix86_expand_clrstr PARAMS ((rtx, rtx, rtx));
+extern int ix86_expand_strlen PARAMS ((rtx, rtx, rtx, rtx));
 
 extern int legitimate_pic_address_disp_p PARAMS ((rtx));
 extern int legitimate_address_p PARAMS ((enum machine_mode, rtx, int));
@@ -119,7 +122,6 @@ extern void ix86_split_long_move PARAMS ((rtx[]));
 extern void ix86_split_ashldi PARAMS ((rtx *, rtx));
 extern void ix86_split_ashrdi PARAMS ((rtx *, rtx));
 extern void ix86_split_lshrdi PARAMS ((rtx *, rtx));
-extern void ix86_expand_strlensi_unroll_1 PARAMS ((rtx, rtx, rtx));
 extern int ix86_address_cost PARAMS ((rtx));
 extern rtx ix86_find_base_term PARAMS ((rtx));
 
