@@ -3291,15 +3291,19 @@ pa_adjust_cost (insn, link, dep_insn, cost)
      rtx dep_insn;
      int cost;
 {
+  enum attr_type attr_type;
+
   if (! recog_memoized (insn))
     return 0;
+
+  attr_type = get_attr_type (insn);
 
   if (REG_NOTE_KIND (link) == 0)
     {
       /* Data dependency; DEP_INSN writes a register that INSN reads some
 	 cycles later.  */
 
-      if (get_attr_type (insn) == TYPE_FPSTORE)
+      if (attr_type == TYPE_FPSTORE)
 	{
 	  rtx pat = PATTERN (insn);
 	  rtx dep_pat = PATTERN (dep_insn);
@@ -3352,7 +3356,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
       /* Anti dependency; DEP_INSN reads a register that INSN writes some
 	 cycles later.  */
 
-      if (get_attr_type (insn) == TYPE_FPLOAD)
+      if (attr_type == TYPE_FPLOAD)
 	{
 	  rtx pat = PATTERN (insn);
 	  rtx dep_pat = PATTERN (dep_insn);
@@ -3390,7 +3394,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		}
 	    }
 	}
-      else if (get_attr_type (insn) == TYPE_FPALU)
+      else if (attr_type == TYPE_FPALU)
 	{
 	  rtx pat = PATTERN (insn);
 	  rtx dep_pat = PATTERN (dep_insn);
@@ -3433,7 +3437,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
     {
       /* Output dependency; DEP_INSN writes a register that INSN writes some
 	 cycles later.  */
-      if (get_attr_type (insn) == TYPE_FPLOAD)
+      if (attr_type == TYPE_FPLOAD)
 	{
 	  rtx pat = PATTERN (insn);
 	  rtx dep_pat = PATTERN (dep_insn);
@@ -3471,7 +3475,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		}
 	    }
 	}
-      else if (get_attr_type (insn) == TYPE_FPALU)
+      else if (attr_type == TYPE_FPALU)
 	{
 	  rtx pat = PATTERN (insn);
 	  rtx dep_pat = PATTERN (dep_insn);
