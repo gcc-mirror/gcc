@@ -791,3 +791,5 @@ extern void mark_seen_cases			PARAMS ((tree, unsigned char *,
 #endif
 
 extern int vector_mode_valid_p		PARAMS ((enum machine_mode));
+
+extern tree placeholder_list;
