@@ -1,6 +1,6 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1307,6 +1307,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 						   copy_rtx (xop0),
 						   copy_rtx (xop1)));
 	    }
+	  else
+	    target = xtarget;
 
 	  return target;
 	}
