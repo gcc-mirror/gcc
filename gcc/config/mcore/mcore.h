@@ -662,9 +662,6 @@ extern const enum reg_class reg_class_from_letter[];
    On the MCore, only r4 can return results.  */
 #define FUNCTION_VALUE_REGNO_P(REGNO)  ((REGNO) == FIRST_RET_REG)
 
-#define	MUST_PASS_IN_STACK(MODE,TYPE)  \
-  mcore_must_pass_on_stack (MODE, TYPE)
-
 /* 1 if N is a possible register number for function argument passing.  */
 #define FUNCTION_ARG_REGNO_P(REGNO)  \
   ((REGNO) >= FIRST_PARM_REG && (REGNO) < (NPARM_REGS + FIRST_PARM_REG))
@@ -721,7 +718,7 @@ extern const enum reg_class reg_class_from_letter[];
    the argument itself.  The pointer is passed in whatever way is
    appropriate for passing a pointer to that type.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
-  MUST_PASS_IN_STACK (MODE, TYPE)
+  targetm.calls.must_pass_in_stack (MODE, TYPE)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.

@@ -1,3 +1,61 @@
+2004-07-13  Richard Henderson  <rth@redhat.com>
+
+	* target-def.h (TARGET_MUST_PASS_IN_STACK): New.
+	* target.h (struct gcc_target): Add calls.must_pass_in_stack.
+	* expr.h (MUST_PASS_IN_STACK): Remove.
+	* system.h (MUST_PASS_IN_STACK): Poison.
+	* tree.h (must_pass_in_stack_var_size): Declare.
+	(must_pass_in_stack_var_size_or_pad): Declare.
+	* calls.c (must_pass_in_stack_var_size): New.
+	(must_pass_in_stack_var_size_or_pad): Rename from 
+	default_must_pass_in_stack.
+	* config/alpha/alpha.c (unicosmk_must_pass_in_stack): New.
+	(TARGET_MUST_PASS_IN_STACK): New.
+	* config/alpha/unicosmk.h (MUST_PASS_IN_STACK): Remove.
+	* config/fr30/fr30.c (fr30_must_pass_in_stack): New.
+	(TARGET_MUST_PASS_IN_STACK): New.
+	* config/fr30/fr30.h (MUST_PASS_IN_STACK): Remove.
+	* config/frv/frv.c (frv_must_pass_in_stack): New.
+	(TARGET_MUST_PASS_IN_STACK): New.
+	* config/frv/frv.h (MUST_PASS_IN_STACK): Remove.
+	* config/i386/i386-protos.h (ix86_must_pass_in_stack): Remove.
+	* config/i386/i386.c (TARGET_MUST_PASS_IN_STACK): New.
+	(ix86_must_pass_in_stack): Make static.
+	* config/i386/i386.h (MUST_PASS_IN_STACK): Remove.
+	* config/ia64/ia64.c (TARGET_MUST_PASS_IN_STACK): New.
+	* config/ia64/ia64.h (MUST_PASS_IN_STACK): Remove.
+	* config/m32r/m32r.c (TARGET_MUST_PASS_IN_STACK): New.
+	* config/m32r/m32r.h (MUST_PASS_IN_STACK): Remove.
+	* config/mcore/mcore-protos.h (mcore_must_pass_on_stack): Remove.
+	* config/mcore/mcore.c (TARGET_MUST_PASS_IN_STACK): New.
+	(mcore_must_pass_on_stack): Remove.
+	* config/mcore/mcore.h (MUST_PASS_IN_STACK): Remove.
+	* config/mips/mips.c (TARGET_MUST_PASS_IN_STACK): New.
+	* config/mips/mips.h (MUST_PASS_IN_STACK): Remove.
+	* config/pa/pa.c (TARGET_MUST_PASS_IN_STACK): New.
+	* config/pa/pa.h (MUST_PASS_IN_STACK): Remove.
+	* config/rs6000/aix.h (MUST_PASS_IN_STACK): Remove.
+	* config/rs6000/linux64.h (MUST_PASS_IN_STACK): Remove.
+	* config/rs6000/rs6000.c (rs6000_must_pass_in_stack): New.
+	(TARGET_MUST_PASS_IN_STACK): New.
+	* config/sh/sh.c (TARGET_MUST_PASS_IN_STACK): New.
+	* config/sh/sh.h (MUST_PASS_IN_STACK): Remove.
+	* config/sparc/sparc.c (TARGET_MUST_PASS_IN_STACK): New.
+	* config/sparc/sparc.h (MUST_PASS_IN_STACK): Remove.
+	* config/xtensa/xtensa.c (TARGET_MUST_PASS_IN_STACK): New.
+	* config/xtensa/xtensa.h (MUST_PASS_IN_STACK): Remove.
+	* doc/tm.texi (TARGET_MUST_PASS_IN_STACK): Update from
+	MUST_PASS_IN_STACK.
+
+	* calls.c, function.c, config/alpha/alpha.c, config/alpha/alpha.h,
+	config/alpha/unicosmk.h, config/alpha/vms.h, config/c4x/c4x.c,
+	config/cris/cris.h, config/fr30/fr30.c, config/fr30/fr30.h,
+	config/frv/frv.c, config/i386/i386.c, config/iq2000/iq2000.c,
+	config/mcore/mcore.c, config/mcore/mcore.h, config/mips/mips.c,
+	config/mmix/mmix.c, config/mmix/mmix.h, config/rs6000/rs6000.c,
+	config/sh/sh.c, config/sh/sh.h, config/stormy16/stormy16.c,
+	config/xtensa/xtensa.c: Use target hook.
+
 2004-07-13  Anthony Heading  <aheading@jpmorgan.com>
 
 	* configure.ac (gcc_cv_as_offsetable_lo10: Fix a typo.

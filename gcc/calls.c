@@ -1097,7 +1097,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	  = FUNCTION_ARG_PARTIAL_NREGS (*args_so_far, mode, type,
 					argpos < n_named_args);
 
-      args[i].pass_on_stack = MUST_PASS_IN_STACK (mode, type);
+      args[i].pass_on_stack = targetm.calls.must_pass_in_stack (mode, type);
 
       /* If FUNCTION_ARG returned a (parallel [(expr_list (nil) ...) ...]),
 	 it means that we are to pass this arg in the register(s) designated
@@ -4445,24 +4445,33 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
   return sibcall_failure;
 }
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.
-   We cannot do so in the following cases:
-
-   - if the type has variable size
-   - if the type is marked as addressable (it is required to be constructed
-     into the stack)
-   - if the padding and mode of the type is such that a copy into a register
-     would put it into the wrong part of the register.
-
-   Which padding can't be supported depends on the byte endianness.
-
-   A value in a register is implicitly padded at the most significant end.
-   On a big-endian machine, that is the lower end in memory.
-   So a value padded in memory at the upper end can't go in a register.
-   For a little-endian machine, the reverse is true.  */
+/* Nonzero if we do not know how to pass TYPE solely in registers.  */
 
 bool
-default_must_pass_in_stack (enum machine_mode mode, tree type)
+must_pass_in_stack_var_size (enum machine_mode mode ATTRIBUTE_UNUSED,
+			     tree type)
+{
+  if (!type)
+    return false;
+
+  /* If the type has variable size...  */
+  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    return true;
+
+  /* If the type is marked as addressable (it is required
+     to be constructed into the stack)...  */
+  if (TREE_ADDRESSABLE (type))
+    return true;
+
+  return false;
+}
+
+/* Another version of the TARGET_MUST_PASS_IN_STACK hook.  This one 
+   takes trailing padding of a structure into account.  */
+/* ??? Should be able to merge these two by examining BLOCK_REG_PADDING.  */
+
+bool
+must_pass_in_stack_var_size_or_pad (enum machine_mode mode, tree type)
 {
   if (!type)
     return false;

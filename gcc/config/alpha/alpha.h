@@ -1040,10 +1040,9 @@ extern int alpha_memory_latency;
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  if (MUST_PASS_IN_STACK (MODE, TYPE))					\
-    (CUM) = 6;								\
-  else									\
-    (CUM) += ALPHA_ARG_SIZE (MODE, TYPE, NAMED)
+  ((CUM) += 								\
+   (targetm.calls.must_pass_in_stack (MODE, TYPE))			\
+    ? 6 : ALPHA_ARG_SIZE (MODE, TYPE, NAMED))
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,

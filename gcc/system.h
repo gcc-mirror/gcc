@@ -584,7 +584,8 @@ extern int snprintf (char *, size_t, const char *, ...);
 	PROMOTE_FUNCTION_RETURN PROMOTE_PROTOTYPES STRUCT_VALUE_REGNUM	\
 	SETUP_INCOMING_VARARGS EXPAND_BUILTIN_SAVEREGS			\
 	DEFAULT_SHORT_ENUMS SPLIT_COMPLEX_ARGS MD_ASM_CLOBBERS		\
-	HANDLE_PRAGMA_REDEFINE_EXTNAME HANDLE_PRAGMA_EXTERN_PREFIX
+	HANDLE_PRAGMA_REDEFINE_EXTNAME HANDLE_PRAGMA_EXTERN_PREFIX	\
+	MUST_PASS_IN_STACK
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

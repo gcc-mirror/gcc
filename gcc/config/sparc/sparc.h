@@ -1713,13 +1713,6 @@ init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (FNDECL));
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
 function_arg_advance (& (CUM), (MODE), (TYPE), (NAMED))
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.  */
-
-#define MUST_PASS_IN_STACK(MODE,TYPE)			\
-  ((TYPE) != 0						\
-   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
-       || TREE_ADDRESSABLE (TYPE)))
-
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.

@@ -124,6 +124,7 @@ static struct fr30_frame_info 	zero_frame_info;
 static void fr30_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static tree fr30_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+static bool fr30_must_pass_in_stack (enum machine_mode, tree);
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
 #define RETURN_POINTER_MASK 	(1 << (RETURN_POINTER_REGNUM))
@@ -152,9 +153,11 @@ static tree fr30_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 #undef  TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
-
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
+#undef  TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK fr30_must_pass_in_stack
+
 #undef  TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR fr30_gimplify_va_arg_expr
 
@@ -664,6 +667,19 @@ fr30_print_operand (FILE *file, rtx x, int code)
 /*}}}*/
 /*{{{  Function arguments */ 
 
+/* Return true if we should pass an argument on the stack rather than
+   in registers.  */
+
+static bool
+fr30_must_pass_in_stack (enum machine_mode mode, tree type)
+{
+  if (mode == BLKmode)
+    return true;
+  if (type == NULL)
+    return false;
+  return AGGREGATE_TYPE_P (type);
+}
+
 /* Compute the number of word sized registers needed to hold a
    function argument of mode INT_MODE and tree type TYPE.  */
 int
@@ -671,7 +687,7 @@ fr30_num_arg_regs (enum machine_mode mode, tree type)
 {
   int size;
 
-  if (MUST_PASS_IN_STACK (mode, type))
+  if (targetm.calls.must_pass_in_stack (mode, type))
     return 0;
 
   if (type && mode == BLKmode)

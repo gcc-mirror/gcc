@@ -265,6 +265,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_STRUCT_VALUE_RTX pa_struct_value_rtx
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY pa_return_in_memory
+#undef TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS hppa_builtin_saveregs

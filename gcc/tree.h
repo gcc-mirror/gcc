@@ -3567,6 +3567,8 @@ extern int call_expr_flags (tree);
 
 extern int setjmp_call_p (tree);
 extern bool alloca_call_p (tree);
+extern bool must_pass_in_stack_var_size (enum machine_mode, tree);
+extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, tree);
 
 /* In attribs.c.  */
 

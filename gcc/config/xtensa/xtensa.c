@@ -255,6 +255,8 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_RETURN_IN_MEMORY xtensa_return_in_memory
 #undef TARGET_SPLIT_COMPLEX_ARG
 #define TARGET_SPLIT_COMPLEX_ARG hook_bool_tree_true
+#undef TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS xtensa_builtin_saveregs
@@ -2540,13 +2542,13 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   /* Check if the argument is in registers:
 
      if ((AP).__va_ndx <= __MAX_ARGS_IN_REGISTERS * 4
-         && !MUST_PASS_IN_STACK (type))
+         && !must_pass_in_stack (type))
         __array = (AP).__va_reg; */
 
   array = create_tmp_var (ptr_type_node, NULL);
 
   lab_over = NULL;
-  if (!MUST_PASS_IN_STACK (VOIDmode, type))
+  if (!targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
     {
       lab_false = create_artificial_label ();
       lab_over = create_artificial_label ();

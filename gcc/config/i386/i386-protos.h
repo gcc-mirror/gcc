@@ -216,7 +216,6 @@ extern int x86_field_alignment (tree, int);
 #endif
 
 extern rtx ix86_tls_get_addr (void);
-extern bool ix86_must_pass_in_stack (enum machine_mode mode, tree);
 
 extern void ix86_expand_vector_init (rtx, rtx);
 /* In winnt.c  */

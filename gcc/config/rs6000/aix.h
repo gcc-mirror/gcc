@@ -183,13 +183,6 @@
 #define AGGREGATE_PADDING_FIXED 1
 #define AGGREGATES_PAD_UPWARD_ALWAYS 1
 
-/* We don't want anything in the reg parm area being passed on the
-   stack.  */
-#define MUST_PASS_IN_STACK(MODE, TYPE)				\
-   ((TYPE) != 0							\
-    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST		\
-	|| TREE_ADDRESSABLE (TYPE)))
-
 /* Specify padding for the last element of a block move between
    registers and memory.  FIRST is nonzero if this is the only
    element.  */

@@ -2364,14 +2364,6 @@ typedef struct mips_args {
   (mips_abi == ABI_EABI && (NAMED)					\
    && FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))
 
-/* Modified version of the macro in expr.h.  Only return true if
-   the type has a variable size or if the front end requires it
-   to be passed by reference.  */
-#define MUST_PASS_IN_STACK(MODE,TYPE)			\
-  ((TYPE) != 0						\
-   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
-       || TREE_ADDRESSABLE (TYPE)))
-
 /* True if using EABI and varargs can be passed in floating-point
    registers.  Under these conditions, we need a more complex form
    of va_list, which tracks GPR, FPR and stack arguments separately.  */

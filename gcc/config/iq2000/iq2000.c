@@ -2498,7 +2498,7 @@ function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   /* We must pass by reference if we would be both passing in registers
      and the stack.  This is because any subsequent partial arg would be
      handled incorrectly in this case.  */
-  if (cum && MUST_PASS_IN_STACK (mode, type))
+  if (cum && targetm.calls.must_pass_in_stack (mode, type))
      {
        /* Don't pass the actual CUM to FUNCTION_ARG, because we would
 	  get double copies of any offsets generated for small structs
