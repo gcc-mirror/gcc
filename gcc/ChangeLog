@@ -1,3 +1,7 @@
+2002-04-30	Joel Sherrill <joel@OARcorp.com>
+
+	* config/arm/rtems-elf.h: Add #undef TARGET_VERSION to prevent warning.
+
 2002-04-30  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.c (emit_soft_tfmode_libcall,
