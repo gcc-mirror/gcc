@@ -4622,8 +4622,6 @@ override_options (void)
      defaults for the N32/N64 ABIs.  */
   if (TARGET_IRIX && !TARGET_SGI_O32_AS)
     {
-      flag_gnu_linker = 1;
-
       targetm.have_ctors_dtors = true;
       targetm.asm_out.constructor = default_named_section_asm_out_constructor;
       targetm.asm_out.destructor = default_named_section_asm_out_destructor;

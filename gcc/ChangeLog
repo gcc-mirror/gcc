@@ -1,5 +1,17 @@
+2003-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* common.opt: Remove -fgnu-linker.
+	* flags.h: Remove flag_gnu_linker.
+	* opts.c: Don't handle OPT_fgnu_linker.
+	* toplev.c: Don't initialize flag_gnu_linker.
+	Remove gnu-linker entry from f_options.
+	* config/dsp16xx/dsp16xx.h (OPTIMIZATION_OPTIONS):
+	Don't reset flag_gnu_linker.
+	* config/mips/mips.c (override_options): Likewise.
+	* doc/invoke.texi: Remove all mention of -fgnu-linker.
+
 2003-12-01  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* ggc-zone.c (ggc_pch_write_object): Calculate object size using
 	ggc_get_size (which accounts for large objects properly).
 
@@ -76,14 +88,14 @@
 
 2003-11-30  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390.md ("tmdi_reg", "tmsi_reg", "*movdi_64", "*movdi_31", 
+	* config/s390/s390.md ("tmdi_reg", "tmsi_reg", "*movdi_64", "*movdi_31",
 	"iordi3"): Insns now use multiple letter constraints.
 	("*movdi_lhi", "*movdi_lli", "*movdi_lay"): Insns deleted. They are now
 	covered by "*movdi_64".
 	("*movsi_lhi", "*movsi_lli", "*movsi_lay"): Insns deleted. They are now
 	covered by "*movsi_zarch" and "*movsi_esa".
 	("*movsi_zarch", "*movsi_!zarch"): New insns.
-	("*llgt_sisi_split", "*llgt_didi_split"): Insns deleted. Now covered 
+	("*llgt_sisi_split", "*llgt_didi_split"): Insns deleted. Now covered
 	by "*andsi3_zarch" and "anddi3".
 	("*anddi3_ni"): Insn merged with "anddi3".
 	("*andsi3_ni"): Insn merged with "*andsi3_zarch".
@@ -92,20 +104,20 @@
 	("*iorsi3_oi"): Insn merged with "*iorsi3_zarch".
 	("*iorsi3_zarch", "*iorsi3_esa"): New insns.
 
-	* config/s390/s390.c (s390_single_qi, s390_single_hi): Functions 
+	* config/s390/s390.c (s390_single_qi, s390_single_hi): Functions
 	merged to s390_single_part.
 	(s390_single_part): New function.
 	NOTE: Semantics have changed a bit. Now the value of the part must
 	be different from the others to get a non-negative return value.
-	(s390_extract_qi, s390_extract_hi): Functions merged to 
+	(s390_extract_qi, s390_extract_hi): Functions merged to
 	s390_extract_part.
 	(s390_extract_part, s390_extra_constraint_str,
-	s390_const_ok_for_constraint_p): New functions. The L constraint got a 
-	new meaning and the N constraint was added as a multiple letter 
+	s390_const_ok_for_constraint_p): New functions. The L constraint got a
+	new meaning and the N constraint was added as a multiple letter
 	constraint.
 	(s390_extra_constraint): Function deleted.
 	(print_operand): New output modifier 'i' and 'j' added.
-	All uses of CONST_OK_FOR_LETTER_P were replaced by 
+	All uses of CONST_OK_FOR_LETTER_P were replaced by
 	CONST_OK_FOR_CONSTRAINT_P.
 
 	* config/s390/s390-protos.h: Function prototypes adapted.
@@ -181,7 +193,7 @@
 
 	* config/gnu.h (HURD_TARGET_OS_CPP_BUILTINS): New.
 	* config/linux.h (LINUX_TARGET_OS_CPP_BUILTINS): New.
-	
+
 	* config/alpha/gnu.h, config/alpha/linux.h,
 	config/arm/linux-elf.h, config/cris/cris.h, config/cris/linux.h,
 	config/i370/linux.h, config/i386/gnu.h, config/i386/i386.h,
@@ -248,7 +260,7 @@
 2003-11-27  Randolph Chung  <tausq@debian.org>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	* pa.c (hppa_profile_hook): Split gen_call_profiler into separate 
+	* pa.c (hppa_profile_hook): Split gen_call_profiler into separate
 	insns.  Use the regular call expander for the call to the profiler.
 	* pa.md (call_profiler): Delete.
 	(load_offset_label_address): New insn to load the address of the
@@ -338,7 +350,7 @@
 	* configure: Regenerate.
 
 2003-11-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Olivier Hainque  <hainque@act-europe.fr>
+	    Olivier Hainque  <hainque@act-europe.fr>
 
 	PR target/6466
 	* config/sparc/sparc-protos.h (compute_frame_size): New prototype.
@@ -405,7 +417,7 @@
 	(start_function): Use.
 	(c_push_function_context): Ditto.
 	(c-pop_function_context): Ditto.
-        (language_function): Move...
+	(language_function): Move...
 	* c-tree.h: ... here. Add x_in_iteration_stmt, and
 	x_in_case_stmt.
 	* c-parse.in (do_stmt_start, select_or_iter_stmt, stmt): Use
@@ -995,7 +1007,7 @@
 	(umodsi3): Likewise.
 
 2003-11-13  Mark Mitchell  <mark@codesourcery.com>
-            Kean Johnston <jkj@sco.com>
+	    Kean Johnston <jkj@sco.com>
 
 	PR c/13029
 	* toplev.c (check_global_declarations): Do not warn about unused

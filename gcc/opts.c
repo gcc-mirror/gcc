@@ -1023,10 +1023,6 @@ common_handle_option (size_t scode, const char *arg,
       flag_gcse_las = value;
       break;
 
-    case OPT_fgnu_linker:
-      flag_gnu_linker = value;
-      break;
-
     case OPT_fguess_branch_probability:
       flag_guess_branch_prob = value;
       break;

@@ -293,8 +293,6 @@ extern int target_flags;
 
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)              \
 {                                                     \
-    flag_gnu_linker             = FALSE;              \
-                                                      \
     if (LEVEL >= 2)                                   \
     {                                                 \
         /* The dsp16xx family has so few registers    \

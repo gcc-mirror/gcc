@@ -366,10 +366,6 @@ fgcse-las
 Common
 Perform redundant load after store elimination in global common subexpression elimination
 
-fgnu-linker
-Common
-Output GNU ld formatted global initializers
-
 fguess-branch-probability
 Common
 Enable guessing of branch probabilities
