@@ -16211,8 +16211,8 @@ case "${host}" in
  sparc*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
- sh-*-linux* | sh[34]*-*-linux*)
-    SIGNAL_HANDLER=include/dwarf2-signal.h
+ sh*-*-linux*)
+    SIGNAL_HANDLER=include/sh-signal.h
     ;;
  *mingw*)
     SIGNAL_HANDLER=include/win32-signal.h
