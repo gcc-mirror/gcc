@@ -1465,7 +1465,8 @@ yylex ()
 
 	    /* Create a node with determined type and value.  */
 	    if (imag)
-	      yylval.ttype = build_complex (convert (type, integer_zero_node),
+	      yylval.ttype = build_complex (NULL_TREE,
+					    convert (type, integer_zero_node),
 					    build_real (type, value));
 	    else
 	      yylval.ttype = build_real (type, value);
@@ -1634,8 +1635,9 @@ yylex ()
 		if (TYPE_PRECISION (type)
 		    <= TYPE_PRECISION (integer_type_node))
 		  yylval.ttype
-		    = build_complex (integer_zero_node,
-				     convert (integer_type_node, yylval.ttype));
+		    = build_complex (NULL_TREE, integer_zero_node,
+				     convert (integer_type_node,
+					      yylval.ttype));
 		else
 		  error ("complex integer constant is too wide for `complex int'");
 	      }
