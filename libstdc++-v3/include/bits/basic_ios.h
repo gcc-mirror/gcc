@@ -38,6 +38,8 @@
 #pragma GCC system_header
 
 #include <bits/streambuf_iterator.h>
+#include <bits/localefwd.h>
+#include <bits/locale_classes.h>
 #include <bits/locale_facets.h>
 
 namespace std 
