@@ -2529,7 +2529,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 /* Emit the assembler code for doing shifts.  */
 
 const char *
-emit_a_shift (insn, operands)
+output_a_shift (insn, operands)
      rtx insn ATTRIBUTE_UNUSED;
      rtx *operands;
 {
@@ -3294,7 +3294,7 @@ h8300_adjust_insn_length (insn, length)
       shift = INTVAL (XEXP (src, 1));
       /* According to ANSI, negative shift is undefined.  It is
          considered to be zero in this case (see function
-         emit_a_shift above).  */
+         output_a_shift above).  */
       if (shift < 0)
 	shift = 0;
 
