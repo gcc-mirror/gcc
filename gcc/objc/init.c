@@ -59,7 +59,7 @@ static void __objc_class_add_protocols (Class, struct objc_protocol_list*);
    or a category is loaded into the runtime.  This may e.g. help a
    dynamic loader determine the classes that have been loaded when
    an object file is dynamically linked in */
-void (*_objc_load_callback)(Class class, Category* category) = 0; /* !T:SAFE */
+void (*_objc_load_callback)(Class class, Category* category); /* !T:SAFE */
 
 /* Is all categories/classes resolved? */
 BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
