@@ -1,5 +1,9 @@
 2000-07-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* parse.y (simple_name:): Fixed typo in error message.
+
+2000-07-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* parse.y (java_complete_lhs): LOOP_EXPR:, SWITCH_EXPR: the node
 	or its first operand can be error marks.
 
