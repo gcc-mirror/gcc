@@ -1412,16 +1412,7 @@ int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
       abort ();
     }
 
-  /* If this is for a sizetype, can be represented as one (signed)
-     HOST_WIDE_INT word, and doesn't overflow, use size_int since it caches
-     constants.  */
-  if (is_sizetype
-      && ((hi == 0 && (HOST_WIDE_INT) low >= 0)
-	  || (hi == -1 && (HOST_WIDE_INT) low < 0))
-      && overflow == 0 && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
-    return size_int_type (low, type);
-  else
-    t = build_int_cst (TREE_TYPE (arg1), low, hi);
+  t = build_int_cst (TREE_TYPE (arg1), low, hi);
 
   if (notrunc)
     {
@@ -1782,13 +1773,6 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 	     leave the conversion unfolded.  */
 	  if (TYPE_PRECISION (type) > 2 * HOST_BITS_PER_WIDE_INT)
 	    return NULL_TREE;
-
-	  /* If we are trying to make a sizetype for a small integer, use
-	     size_int to pick up cached types to reduce duplicate nodes.  */
-	  if (TREE_CODE (type) == INTEGER_TYPE && TYPE_IS_SIZETYPE (type)
-	      && !TREE_CONSTANT_OVERFLOW (arg1)
-	      && compare_tree_int (arg1, 10000) < 0)
-	    return size_int_type (TREE_INT_CST_LOW (arg1), type);
 
 	  /* Given an integer constant, make new constant with new type,
 	     appropriately sign-extended or truncated.  */
