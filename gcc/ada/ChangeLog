@@ -1,3 +1,52 @@
+2004-08-13  Olivier Hainque  <hainque@act-europe.fr>
+
+	* decl.c (gnat_to_gnu_entity) <E_Variable>: When building an allocator
+	for a global aliased object with a variable size and an unconstrained
+	nominal subtype, pretend there is no initializer if the one we have is
+	incomplete, and avoid referencing an inexistant component in there. The
+	part we have will be rebuilt anyway and the reference may confuse
+	further operations.
+
+2004-08-13  Thomas Quinot  <quinot@act-europe.fr>
+
+	* einfo.ads: Minor reformatting
+
+	* lib-writ.adb (Output_Main_Program_Line): Do not set parameter
+	restrictions in the ALI if we only want to warn about violations.
+
+2004-08-13  Vincent Celier  <celier@gnat.com>
+
+	* ali.adb (Scan_ALI): Initialize component Body_Needed_For_SAL to False
+	when creating a new Unit_Record in table Units.
+
+	* gnatls.adb (Output_Unit): In verbose mode, output the restrictions
+	that are violated, if any.
+
+	* prj-nmsc.adb (Ada_Check.Get_Path_Names_And_Record_Sources): Do not
+	add directory separator if path already ends with a directory separator.
+
+2004-08-13  Ed Schonberg  <schonberg@gnat.com>
+
+	* rtsfind.adb (Entity_Not_Defined): If the error ocurrs in a predefined
+	unit, this is an attempt to inline a construct that is not available in
+	the current restricted mode, so abort rather than trying to continue.
+
+	* sem_ch3.adb (Build_Underlying_Full_View): If the new type has
+	discriminants that rename those of the parent, recover names of
+	original discriminants for the constraint on the full view of the
+	parent.
+	(Complete_Private_Subtype): Do not create a subtype declaration if the
+	subtype is an itype.
+
+	* gnat_rm.texi: Added section on implementation of discriminated
+	records with default values for discriminants.
+
+2004-08-13  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15601
+	* sem_res.adb (Make_Call_Into_Operator): Handle properly the case where
+	the second operand is overloaded.
+
 2004-08-10  Richard Henderson  <rth@redhat.com>
 
 	* utils.c (gnat_install_builtins): Remove __builtin_stack_alloc,

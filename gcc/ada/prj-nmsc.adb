@@ -29,7 +29,6 @@ with Fmap;     use Fmap;
 with Hostparm;
 with MLib.Tgt;
 with Namet;    use Namet;
-with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with MLib.Tgt; use MLib.Tgt;
@@ -238,19 +237,15 @@ package body Prj.Nmsc is
    --  a spec suffix, a body suffix or a separate suffix.
 
    procedure Locate_Directory
-     (Name     : Name_Id;
-      Parent   : Name_Id;
-      Dir      : out Name_Id;
-      Display  : out Name_Id;
-      Project  : Project_Id := No_Project;
-      Kind     : String := "";
-      Location : Source_Ptr := No_Location);
-   --  Locate a directory. Dir is the canonical path name. Display is the
-   --  path name for display purpose.
-   --  When the directory does not exist, Setup_Projects is True and Kind is
-   --  not the empty string, an attempt is made to create the directory.
-   --  Returns No_Name in Dir and Display if directory does not exist or
-   --  cannot be created.
+     (Name    : Name_Id;
+      Parent  : Name_Id;
+      Dir     : out Name_Id;
+      Display : out Name_Id);
+   --  Locate a directory (returns No_Name for Dir and Display if directory
+   --  does not exist). Name is the directory name. Parent is the root
+   --  directory, if Name is a relative path name. Dir is the canonical case
+   --  path name of the directory, Display is the directory path name for
+   --  display purposes.
 
    function Path_Name_Of
      (File_Name : Name_Id;
@@ -386,7 +381,11 @@ package body Prj.Nmsc is
                      Source_Names.Set (Canonical_Name, NL);
                      Name_Len := Dir_Path'Length;
                      Name_Buffer (1 .. Name_Len) := Dir_Path;
-                     Add_Char_To_Name_Buffer (Directory_Separator);
+
+                     if Name_Buffer (Name_Len) /= Directory_Separator then
+                        Add_Char_To_Name_Buffer (Directory_Separator);
+                     end if;
+
                      Add_Str_To_Name_Buffer (Name_Str (1 .. Last));
                      Path := Name_Find;
 
@@ -1113,8 +1112,7 @@ package body Prj.Nmsc is
                --  the object directory or one of the source directories.
                --  This is the directory where copies of the interface
                --  sources will be copied. Note that this directory may be
-               --  the library directory. If setting up projects (gnat setup)
-               --  and the directory does not exist, attempt to create it.
+               --  the library directory.
 
                if Lib_Src_Dir.Value /= Empty_String then
                   declare
@@ -1124,18 +1122,11 @@ package body Prj.Nmsc is
                      Locate_Directory
                        (Dir_Id, Data.Display_Directory,
                         Data.Library_Src_Dir,
-                        Data.Display_Library_Src_Dir,
-                        Project  => Project,
-                        Kind     => "library interface copy",
-                        Location => Lib_Src_Dir.Location);
+                        Data.Display_Library_Src_Dir);
 
-                     --  If directory does not exist, report an error. No need
-                     --  to do that if Setup_Projects is True, as an error
-                     --  has already been reported by Locate_Directory.
+                     --  If directory does not exist, report an error
 
-                     if not Setup_Projects
-                       and then Data.Library_Src_Dir = No_Name
-                     then
+                     if Data.Library_Src_Dir = No_Name then
 
                         --  Get the absolute name of the library directory
                         --  that does not exist, to report an error.
@@ -2526,17 +2517,15 @@ package body Prj.Nmsc is
       end if;
 
       if For_Language = Lang_Ada then
-
-         --  If we have looked for sources and found none, then it is an
-         --  error, except if it is an extending project. If a non-extending
-         --  project is not supposed to contain any source, then we never
-         --  Find_Sources. No error is signalled when setting up projects
-         --  using gnat setup.
+         --  If we have looked for sources and found none, then
+         --  it is an error, except if it is an extending project.
+         --  If a non extending project is not supposed to contain
+         --  any source, then we never call Find_Sources.
 
          if Current_Source /= Nil_String then
             Data.Ada_Sources_Present := True;
 
-         elsif not Setup_Projects and then Data.Extends = No_Project then
+         elsif Data.Extends = No_Project then
             Error_Msg
               (Project,
                "there are no Ada sources in this project",
@@ -3306,20 +3295,15 @@ package body Prj.Nmsc is
                   Object_Dir.Location);
 
             else
-               --  Check that the specified object directory does exist, and
-               --  attempt to create it if setting up projects (gnat setup).
+               --  We check that the specified object directory
+               --  does exist.
 
                Locate_Directory
                  (Object_Dir.Value, Data.Display_Directory,
-                  Data.Object_Directory, Data.Display_Object_Dir,
-                  Project  => Project, Kind => "object",
-                  Location => Object_Dir.Location);
+                  Data.Object_Directory, Data.Display_Object_Dir);
 
-               if not Setup_Projects
-                 and then Data.Object_Directory = No_Name
-               then
+               if Data.Object_Directory = No_Name then
                   --  The object directory does not exist, report an error
-
                   Err_Vars.Error_Msg_Name_1 := Object_Dir.Value;
                   Error_Msg
                     (Project,
@@ -3327,9 +3311,10 @@ package body Prj.Nmsc is
                      Data.Location);
 
                   --  Do not keep a nil Object_Directory. Set it to the
-                  --  specified (relative or absolute) path. This is for the
-                  --  benefit of tools that recover from errors. For example,
-                  --  these tools could create the non-existent directory.
+                  --  specified (relative or absolute) path.
+                  --  This is for the benefit of tools that recover from
+                  --  errors; for example, these tools could create the
+                  --  non existent directory.
 
                   Data.Display_Object_Dir := Object_Dir.Value;
                   Get_Name_String (Object_Dir.Value);
@@ -3376,18 +3361,14 @@ package body Prj.Nmsc is
                   Exec_Dir.Location);
 
             else
-               --  We check that the specified exec directory does exist and
-               --  attempt to create it if setting up projects (gnat setup).
+               --  We check that the specified object directory
+               --  does exist.
 
                Locate_Directory
                  (Exec_Dir.Value, Data.Directory,
-                  Data.Exec_Directory, Data.Display_Exec_Dir,
-                  Project  => Project, Kind => "exec",
-                  Location => Exec_Dir.Location);
+                  Data.Exec_Directory, Data.Display_Exec_Dir);
 
-               if not Setup_Projects
-                 and then Data.Exec_Directory = No_Name
-               then
+               if Data.Exec_Directory = No_Name then
                   Err_Vars.Error_Msg_Name_1 := Exec_Dir.Value;
                   Error_Msg
                     (Project,
@@ -3447,10 +3428,10 @@ package body Prj.Nmsc is
 
          elsif Source_Dirs.Values = Nil_String then
 
-            --  If Source_Dirs is an empty string list, this means that this
-            --  contains no sources. For projects that do not extend other
-            --  projects, this also means that there is no need for an object
-            --  directory unless one is specified explicitly.
+            --  If Source_Dirs is an empty string list, this means
+            --  that this project contains no source. For projects that
+            --  don't extend other projects, this also means that there is no
+            --  need for an object directory, if not specified.
 
             if Data.Extends = No_Project
               and then  Data.Object_Directory = Data.Directory
@@ -3531,8 +3512,8 @@ package body Prj.Nmsc is
 
             begin
                --  If the project extended is a library project, we inherit
-               --  the library name, if it is not redefined, we check that
-               --  the library directory is specified, and we reset the
+               --  the library name, if it is not redefined; we check that
+               --  the library directory is specified; and we reset the
                --  library flag for the extended project.
 
                if Extended_Data.Library then
@@ -3579,16 +3560,13 @@ package body Prj.Nmsc is
             end if;
 
          else
-            --  Find path name, check that it is a directory, and attempt
-            --  to create it if setting up projects (gnat setup).
+            --  Find path name, check that it is a directory
 
             Locate_Directory
               (Lib_Dir.Value, Data.Display_Directory,
-               Data.Library_Dir, Data.Display_Library_Dir,
-               Project => Project, Kind => "library",
-               Location => Lib_Dir.Location);
+               Data.Library_Dir, Data.Display_Library_Dir);
 
-            if not Setup_Projects and then Data.Library_Dir = No_Name then
+            if Data.Library_Dir = No_Name then
 
                --  Get the absolute name of the library directory that
                --  does not exist, to report an error.
@@ -3773,26 +3751,26 @@ package body Prj.Nmsc is
             --  Check Spec_Suffix
 
             declare
-               Spec_Suffixes : Array_Element_Id :=
-                                 Util.Value_Of
-                                   (Name_Spec_Suffix,
-                                    Naming.Decl.Arrays);
+               Spec_Suffixs : Array_Element_Id :=
+                                Util.Value_Of
+                                  (Name_Spec_Suffix,
+                                   Naming.Decl.Arrays);
                Suffix  : Array_Element_Id;
                Element : Array_Element;
                Suffix2 : Array_Element_Id;
 
             begin
-               --  If some suffixes have been specified, we make sure that
+               --  If some suffixs have been specified, we make sure that
                --  for each language for which a default suffix has been
                --  specified, there is a suffix specified, either the one
                --  in the project file or if there were none, the default.
 
-               if Spec_Suffixes /= No_Array_Element then
+               if Spec_Suffixs /= No_Array_Element then
                   Suffix := Data.Naming.Spec_Suffix;
 
                   while Suffix /= No_Array_Element loop
                      Element := Array_Elements.Table (Suffix);
-                     Suffix2 := Spec_Suffixes;
+                     Suffix2 := Spec_Suffixs;
 
                      while Suffix2 /= No_Array_Element loop
                         exit when Array_Elements.Table (Suffix2).Index =
@@ -3800,8 +3778,9 @@ package body Prj.Nmsc is
                         Suffix2 := Array_Elements.Table (Suffix2).Next;
                      end loop;
 
-                     --  There is a registered default suffix, but no suffix is
-                     --  specified in the project file. Add default to array.
+                     --  There is a registered default suffix, but no
+                     --  suffix specified in the project file.
+                     --  Add the default to the array.
 
                      if Suffix2 = No_Array_Element then
                         Array_Elements.Increment_Last;
@@ -3810,16 +3789,16 @@ package body Prj.Nmsc is
                            Src_Index => Element.Src_Index,
                            Index_Case_Sensitive => False,
                            Value     => Element.Value,
-                           Next      => Spec_Suffixes);
-                        Spec_Suffixes := Array_Elements.Last;
+                           Next      => Spec_Suffixs);
+                        Spec_Suffixs := Array_Elements.Last;
                      end if;
 
                      Suffix := Element.Next;
                   end loop;
 
-                  --  Put the resulting array as the specification suffixes
+                  --  Put the resulting array as the specification suffixs
 
-                  Data.Naming.Spec_Suffix := Spec_Suffixes;
+                  Data.Naming.Spec_Suffix := Spec_Suffixs;
                end if;
             end;
 
@@ -3847,26 +3826,27 @@ package body Prj.Nmsc is
             --  Check Body_Suffix
 
             declare
-               Impl_Suffixes : Array_Element_Id :=
-                                 Util.Value_Of
-                                   (Name_Body_Suffix, Naming.Decl.Arrays);
+               Impl_Suffixs : Array_Element_Id :=
+                                Util.Value_Of
+                                  (Name_Body_Suffix,
+                                   Naming.Decl.Arrays);
 
                Suffix  : Array_Element_Id;
                Element : Array_Element;
                Suffix2 : Array_Element_Id;
 
             begin
-               --  If some suffixes have been specified, we make sure that
+               --  If some suffixs have been specified, we make sure that
                --  for each language for which a default suffix has been
                --  specified, there is a suffix specified, either the one
                --  in the project file or if there were noe, the default.
 
-               if Impl_Suffixes /= No_Array_Element then
+               if Impl_Suffixs /= No_Array_Element then
                   Suffix := Data.Naming.Body_Suffix;
 
                   while Suffix /= No_Array_Element loop
                      Element := Array_Elements.Table (Suffix);
-                     Suffix2 := Impl_Suffixes;
+                     Suffix2 := Impl_Suffixs;
 
                      while Suffix2 /= No_Array_Element loop
                         exit when Array_Elements.Table (Suffix2).Index =
@@ -3885,16 +3865,16 @@ package body Prj.Nmsc is
                            Src_Index => Element.Src_Index,
                            Index_Case_Sensitive => False,
                            Value => Element.Value,
-                           Next  => Impl_Suffixes);
-                        Impl_Suffixes := Array_Elements.Last;
+                           Next  => Impl_Suffixs);
+                        Impl_Suffixs := Array_Elements.Last;
                      end if;
 
                      Suffix := Element.Next;
                   end loop;
 
-                  --  Put the resulting array as the implementation suffixes
+                  --  Put the resulting array as the implementation suffixs
 
-                  Data.Naming.Body_Suffix := Impl_Suffixes;
+                  Data.Naming.Body_Suffix := Impl_Suffixs;
                end if;
             end;
 
@@ -3941,77 +3921,16 @@ package body Prj.Nmsc is
    ----------------------
 
    procedure Locate_Directory
-     (Name     : Name_Id;
-      Parent   : Name_Id;
-      Dir      : out Name_Id;
-      Display  : out Name_Id;
-      Project  : Project_Id := No_Project;
-      Kind     : String := "";
-      Location : Source_Ptr := No_Location)
+     (Name    : Name_Id;
+      Parent  : Name_Id;
+      Dir     : out Name_Id;
+      Display : out Name_Id)
    is
       The_Name   : constant String := Get_Name_String (Name);
       The_Parent : constant String :=
                      Get_Name_String (Parent) & Directory_Separator;
       The_Parent_Last : constant Natural :=
                      Compute_Directory_Last (The_Parent);
-
-      procedure Create_Directory (Absolute_Path : String);
-      --  Attempt to create a new directory
-
-      procedure Get_Names_For (Absolute_Path : String);
-      --  Create name ids Dir and Display for directory Absolute_Path
-
-      ----------------------
-      -- Create_Directory --
-      ----------------------
-
-      procedure Create_Directory (Absolute_Path : String) is
-      begin
-         --  Attempt to create the directory
-
-         Make_Dir (Absolute_Path);
-
-         --  Setup Dir and Display if creation was successful
-
-         Get_Names_For (Absolute_Path);
-
-      exception
-         when Directory_Error =>
-            Error_Msg
-              (Project,
-               "could not create " & Kind & " directory """ &
-               Absolute_Path & """",
-               Location);
-      end Create_Directory;
-
-      -------------------
-      -- Get_Names_For --
-      -------------------
-
-      procedure Get_Names_For (Absolute_Path : String) is
-         Normed         : constant String :=
-                            Normalize_Pathname
-                              (Absolute_Path,
-                               Resolve_Links  => False,
-                               Case_Sensitive => True);
-
-         Canonical_Path : constant String :=
-                            Normalize_Pathname
-                              (Normed,
-                               Resolve_Links  => True,
-                               Case_Sensitive => False);
-
-      begin
-         Name_Len := Normed'Length;
-         Name_Buffer (1 .. Name_Len) := Normed;
-         Display := Name_Find;
-
-         Name_Len := Canonical_Path'Length;
-         Name_Buffer (1 .. Name_Len) := Canonical_Path;
-         Dir := Name_Find;
-      end Get_Names_For;
-
-   --  Start of processing for Locate_Directory
 
    begin
       if Current_Verbosity = High then
@@ -4027,10 +3946,28 @@ package body Prj.Nmsc is
 
       if Is_Absolute_Path (The_Name) then
          if Is_Directory (The_Name) then
-            Get_Names_For (The_Name);
+            declare
+               Normed : constant String :=
+                          Normalize_Pathname
+                            (The_Name,
+                             Resolve_Links  => False,
+                             Case_Sensitive => True);
 
-         elsif Kind /= "" and then Setup_Projects then
-            Create_Directory (The_Name);
+               Canonical_Path : constant String :=
+                                  Normalize_Pathname
+                                    (Normed,
+                                     Resolve_Links  => True,
+                                     Case_Sensitive => False);
+
+            begin
+               Name_Len := Normed'Length;
+               Name_Buffer (1 .. Name_Len) := Normed;
+               Display := Name_Find;
+
+               Name_Len := Canonical_Path'Length;
+               Name_Buffer (1 .. Name_Len) := Canonical_Path;
+               Dir := Name_Find;
+            end;
          end if;
 
       else
@@ -4041,10 +3978,28 @@ package body Prj.Nmsc is
 
          begin
             if Is_Directory (Full_Path) then
-               Get_Names_For (Full_Path);
+               declare
+                  Normed : constant String :=
+                             Normalize_Pathname
+                               (Full_Path,
+                                Resolve_Links  => False,
+                                Case_Sensitive => True);
 
-            elsif Kind /= "" and then Setup_Projects then
-               Create_Directory (Full_Path);
+                  Canonical_Path : constant String :=
+                                     Normalize_Pathname
+                                       (Normed,
+                                        Resolve_Links  => True,
+                                        Case_Sensitive => False);
+
+               begin
+                  Name_Len := Normed'Length;
+                  Name_Buffer (1 .. Name_Len) := Normed;
+                  Display := Name_Find;
+
+                  Name_Len := Canonical_Path'Length;
+                  Name_Buffer (1 .. Name_Len) := Canonical_Path;
+                  Dir := Name_Find;
+               end;
             end if;
          end;
       end if;

@@ -1173,6 +1173,7 @@ package body ALI is
          Units.Table (Units.Last).First_Arg       := First_Arg;
          Units.Table (Units.Last).Elab_Position   := 0;
          Units.Table (Units.Last).Interface       := ALIs.Table (Id).Interface;
+         Units.Table (Units.Last).Body_Needed_For_SAL := False;
 
          if Debug_Flag_U then
             Write_Str (" ----> reading unit ");

@@ -3088,7 +3088,7 @@ package Einfo is
 --       Present in private subtypes that are the completion of other private
 --       types, or in private types that are derived from private subtypes.
 --       If the full view of a private type T is derived from another
---       private type  with discriminants Td, the full view of T is also
+--       private type with discriminants Td, the full view of T is also
 --       private, and there is no way to attach to it a further full view that
 --       would convey the structure of T to the back end. The Underlying_Full_
 --       View is an attribute of the full view that is a subtype of Td with

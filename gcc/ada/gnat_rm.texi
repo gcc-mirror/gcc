@@ -380,6 +380,7 @@ Implementation of Specific Ada Features
 * GNAT Implementation of Tasking::
 * GNAT Implementation of Shared Passive Packages::
 * Code Generation for Array Aggregates::
+* The Size of Discriminated Records with Default Discriminants::
 
 Project File Reference
 
@@ -12798,6 +12799,7 @@ facilities.
 * GNAT Implementation of Tasking::
 * GNAT Implementation of Shared Passive Packages::
 * Code Generation for Array Aggregates::
+* The Size of Discriminated Records with Default Discriminants::
 @end menu
 
 @node Machine Code Insertions
@@ -13341,6 +13343,98 @@ indexed components whose operands obey these rules.
 If any of these conditions are violated, the aggregate will be built in
 a temporary (created either by the front-end or the code generator) and then
 that temporary will be copied onto the target.
+
+
+@node The Size of Discriminated Records with Default Discriminants
+@section The Size of Discriminated Records with Default Discriminants
+
+@noindent
+If a discriminated type @code{T} has discriminants with default values, it is
+possible to declare an object of this type without providing an explicit
+constraint:
+
+@smallexample @c ada
+@group
+type Size is range 1..100;
+
+type Rec (D : Size := 15) is record
+   Name : String (1..D);
+end T;
+
+Word : Rec;
+@end group
+@end smallexample
+
+@noindent 
+Such an object is said to be @emph{unconstrained}.
+The discriminant of the object
+can be modified by a full assignment to the object, as long as it preserves the
+relation between the value of the discriminant, and the value of the components
+that depend on it:
+
+@smallexample @c ada
+@group
+Word := (3, "yes");
+
+Word := (5, "maybe");
+
+Word := (5, "no"); -- raises Constraint_Error
+@end group
+@end smallexample
+
+@noindent
+In order to support this behavior efficiently, an unconstrained object is
+given the maximum size that any value of the type requires. In the case
+above, @code{Word} has storage for the discriminant and for
+a @code{String} of length 100.
+It is important to note that unconstrained objects do not require dynamic
+allocation. It would be an improper implementation to place on the heap those
+components whose size depends on discriminants. (This improper implementation
+was used by some Ada83 compilers, where the @code{Name} component above
+would have
+been stored as a pointer to a dynamic string). Following the principle that
+dynamic storage management should never be introduced implicitly,
+an Ada95 compiler should reserve the full size for an unconstrained declared
+object, and place it on the stack.
+
+This maximum size approach
+has been a source of surprise to some users, who expect the default
+values of the discriminants to determine the size reserved for an
+unconstrained object: ``If the default is 15, why should the object occupy
+a larger size?''
+The answer, of course, is that the discriminant may be later modified,
+and its full range of values must be taken into account. This is why the
+declaration:
+
+@smallexample
+@group
+type Rec (D : Positive := 15) is record
+   Name : String (1..D);
+end record;
+
+Too_Large : Rec;
+@end group
+@end smallexample
+
+@noindent
+is flagged by the compiler with a warning:
+an attempt to create @code{Too_Large} will raise @code{Storage_Error},
+because the required size includes @code{Positive'Last}
+bytes. As the first example indicates, the proper approach is to declare an
+index type of ``reasonable'' range so that unconstrained objects are not too
+large.
+
+One final wrinkle: if the object is declared to be @code{aliased}, or if it is
+created in the heap by means of an allocator, then it is @emph{not}
+unconstrained:
+it is constrained by the default values of the discriminants, and those values
+cannot be modified by full assignment. This is because in the presence of
+aliasing all views of the object (which may be manipulated by different tasks,
+say) must be consistent, so it is imperative that the object, once created,
+remain invariant.
+
+
+
 
 @node Project File Reference
 @chapter Project File Reference
