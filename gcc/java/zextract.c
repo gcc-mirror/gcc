@@ -212,6 +212,7 @@ typedef unsigned long     ulg;  /*  predefined on some systems) & match zip  */
 
 static ush makeword PARAMS ((const uch *));
 static ulg makelong PARAMS ((const uch *));
+static long find_zip_file_start PARAMS ((int fd, long offset));
 
 /***********************/
 /* Function makeword() */
@@ -243,6 +244,32 @@ static ulg makelong(sig)
         + (((ulg)sig[2]) << 16)
         + (((ulg)sig[1]) << 8)
         + ((ulg)sig[0]);
+}
+
+/* Examine file's header in zip file and return the offset of the
+   start of the actual data.  Return -1 on error.  OFFSET is the
+   offset from the beginning of the zip file of the file's header.  */
+static long
+find_zip_file_start (fd, offset)
+     int fd;
+     long offset;
+{
+  int filename_length, extra_field_length;
+  unsigned char buffer[LREC_SIZE + 4];
+
+  if (lseek (fd, offset, SEEK_SET) < 0)
+    return -1;
+
+  if (read (fd, buffer, LREC_SIZE + 4) != LREC_SIZE + 4)
+    return -1;
+
+  if (buffer[0] != 'P' || strncmp (&buffer[1], LOCAL_HDR_SIG, 3))
+    return -1;
+
+  filename_length = makeword (&buffer[4 + L_FILENAME_LENGTH]);
+  extra_field_length = makeword (&buffer[4 + L_EXTRA_FIELD_LENGTH]);
+
+  return offset + (4 + LREC_SIZE) + filename_length + extra_field_length;
 }
 
 int
@@ -294,7 +321,6 @@ read_zip_archive (zipf)
       long uncompressed_size = makelong (&dir_ptr[4+C_UNCOMPRESSED_SIZE]);
       long filename_length = makeword (&dir_ptr[4+C_FILENAME_LENGTH]);
       long extra_field_length = makeword (&dir_ptr[4+C_EXTRA_FIELD_LENGTH]);
-      long file_comment_length = makeword (&dir_ptr[4+C_FILE_COMMENT_LENGTH]);
       int unpadded_direntry_length;
       if ((dir_ptr-zipf->central_directory)+filename_length+CREC_SIZE+4>zipf->dir_size)
 	return -1;
@@ -306,12 +332,8 @@ read_zip_archive (zipf)
 #else
 #define DIR_ALIGN sizeof(long)
 #endif
-      zipd->filestart = makelong (&dir_ptr[4+C_RELATIVE_OFFSET_LOCAL_HEADER])
-	  + (LREC_SIZE+4) + filename_length + file_comment_length +
-	  + (extra_field_length ? extra_field_length+4 : 0);
-      /* About the last term of the expression above. Should the same
-	 apply if file_comment_length is not zero ?  I've never seen
-	 the comment field uses so far. FIXME.  */
+      zipd->filestart = find_zip_file_start (zipf->fd, 
+					     makelong (&dir_ptr[4+C_RELATIVE_OFFSET_LOCAL_HEADER]));
       zipd->filename_offset = CREC_SIZE+4 - dir_last_pad;
       unpadded_direntry_length 
 	  = zipd->filename_offset + zipd->filename_length + extra_field_length;
