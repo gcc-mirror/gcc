@@ -1457,6 +1457,8 @@ char *ctime ();
 
 static struct bb *bb_head;
 
+static int num_digits (long value, int base) __attribute__ ((const));
+
 /* Return the number of digits needed to print a value */
 /* __inline__ */ static int num_digits (long value, int base)
 {
@@ -3974,6 +3976,8 @@ label:
 #endif /* inhibit_libc */
 
 #define MESSAGE "pure virtual method called\n"
+
+extern void __terminate (void) __attribute__ ((__noreturn__));
 
 void
 __pure_virtual ()
