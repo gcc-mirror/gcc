@@ -54,7 +54,7 @@ extern int rtx_length[];
 extern const char * const rtx_name[];
 #define GET_RTX_NAME(CODE)		(rtx_name[(int) (CODE)])
 
-extern char *rtx_format[];
+extern const char *rtx_format[];
 #define GET_RTX_FORMAT(CODE)		(rtx_format[(int) (CODE)])
 
 extern char rtx_class[];

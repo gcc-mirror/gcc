@@ -184,7 +184,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 {
   register enum rtx_code code = GET_CODE (x);
   register int i, j;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   /* Handle leaf items for which we set resource flags.  Also, special-case
      CALL, SET and CLOBBER operators.  */
@@ -591,7 +591,7 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 {
   register enum rtx_code code;
   register int i, j;
-  register char *format_ptr;
+  register const char *format_ptr;
 
  restart:
 

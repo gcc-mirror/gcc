@@ -2425,7 +2425,7 @@ int
 symbol_mentioned_p (x)
      rtx x;
 {
-  register char * fmt;
+  register const char * fmt;
   register int i;
 
   if (GET_CODE (x) == SYMBOL_REF)
@@ -2454,7 +2454,7 @@ int
 label_mentioned_p (x)
      rtx x;
 {
-  register char * fmt;
+  register const char * fmt;
   register int i;
 
   if (GET_CODE (x) == LABEL_REF)
@@ -4512,7 +4512,7 @@ eliminate_lr2ip (x)
   rtx x0 = * x;
   int code = GET_CODE (x0);
   register int i, j;
-  register char * fmt;
+  register const char * fmt;
   
   switch (code)
     {

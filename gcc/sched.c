@@ -1274,7 +1274,7 @@ sched_analyze_2 (x, insn)
   register int i;
   register int j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return;
@@ -2245,7 +2245,7 @@ attach_deaths (x, insn, set_p)
   register int i;
   register int j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return;

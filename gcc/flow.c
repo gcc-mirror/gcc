@@ -4012,7 +4012,7 @@ mark_used_regs (needed, live, x, final, insn)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register char *fmt = GET_RTX_FORMAT (code);
+    register const char *fmt = GET_RTX_FORMAT (code);
     register int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -4170,7 +4170,7 @@ find_use_as_address (x, reg, plusconst)
      HOST_WIDE_INT plusconst;
 {
   enum rtx_code code = GET_CODE (x);
-  char *fmt = GET_RTX_FORMAT (code);
+  const char *fmt = GET_RTX_FORMAT (code);
   register int i;
   register rtx value = 0;
   register rtx tem;
@@ -4230,7 +4230,7 @@ dump_flow_info (file)
      FILE *file;
 {
   register int i;
-  static char *reg_class_names[] = REG_CLASS_NAMES;
+  static const char * const reg_class_names[] = REG_CLASS_NAMES;
 
   fprintf (file, "%d registers.\n", max_regno);
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
@@ -4333,7 +4333,7 @@ dump_edge_info (file, e, do_succ)
 
   if (e->flags)
     {
-      static char * bitnames[] = {
+      static const char * const bitnames[] = {
 	"fallthru", "crit", "ab", "abcall", "eh", "fake"
       };
       int comma = 0;
@@ -4885,7 +4885,7 @@ count_reg_references (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register char *fmt = GET_RTX_FORMAT (code);
+    register const char *fmt = GET_RTX_FORMAT (code);
     register int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)

@@ -2706,7 +2706,7 @@ eliminate_regs (x, mem_mode, insn)
   int regno;
   rtx new;
   int i, j;
-  char *fmt;
+  const char *fmt;
   int copied = 0;
 
   if (! current_function_decl)
@@ -3987,7 +3987,7 @@ scan_paradoxical_subregs (x)
      register rtx x;
 {
   register int i;
-  register char *fmt;
+  register const char *fmt;
   register enum rtx_code code = GET_CODE (x);
 
   switch (code)
@@ -8134,7 +8134,7 @@ delete_address_reloads_1 (dead_insn, x, current_insn)
 
   if (code != REG)
     {
-      char *fmt= GET_RTX_FORMAT (code);
+      const char *fmt= GET_RTX_FORMAT (code);
       for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	{
 	  if (fmt[i] == 'e')
@@ -8393,7 +8393,7 @@ count_occurrences (x, find)
 {
   register int i, j;
   register enum rtx_code code;
-  register char *format_ptr;
+  register const char *format_ptr;
   int count;
 
   if (x == find)
@@ -8568,7 +8568,7 @@ reload_cse_mem_conflict_p (mem_base, val)
      rtx val;
 {
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
   int i;
 
   code = GET_CODE (val);
@@ -9859,7 +9859,7 @@ reload_combine_note_use (xp, insn)
 {
   rtx x = *xp;
   enum rtx_code code = x->code;
-  char *fmt;
+  const char *fmt;
   int i, j;
   rtx offset = const0_rtx; /* For the REG case below.  */
 
@@ -10234,7 +10234,7 @@ add_auto_inc_notes (insn, x)
      rtx x;
 {
   enum rtx_code code = GET_CODE (x);
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   if (code == MEM && auto_inc_p (XEXP (x, 0)))

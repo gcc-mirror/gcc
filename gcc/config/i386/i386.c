@@ -1454,7 +1454,7 @@ int
 symbolic_reference_mentioned_p (op)
      rtx op;
 {
-  register char *fmt;
+  register const char *fmt;
   register int i;
 
   if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
@@ -4513,7 +4513,7 @@ copy_all_rtx (orig)
   register rtx copy;
   register int i, j;
   register RTX_CODE code;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   code = GET_CODE (orig);
 
@@ -5074,7 +5074,7 @@ int
 reg_mentioned_in_mem (reg, rtl)
      rtx reg, rtl;
 {
-  register char *fmt;
+  register const char *fmt;
   register int i, j;
   register enum rtx_code code;
 

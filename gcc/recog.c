@@ -441,7 +441,7 @@ validate_replace_rtx_1 (loc, from, to, object)
      rtx from, to, object;
 {
   register int i, j;
-  register char *fmt;
+  register const char *fmt;
   register rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
 
@@ -744,7 +744,7 @@ find_single_use_1 (dest, loc)
   rtx *result = 0;
   rtx *this_result;
   int i;
-  char *fmt;
+  const char *fmt;
 
   switch (code)
     {

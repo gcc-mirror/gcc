@@ -755,7 +755,7 @@ rtx_cost (x, outer_code)
 {
   register int i, j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
   register int total;
 
   if (x == 0)
@@ -1059,7 +1059,7 @@ mention_regs (x)
 {
   register enum rtx_code code;
   register int i, j;
-  register char *fmt;
+  register const char *fmt;
   register int changed = 0;
 
   if (x == 0)
@@ -2099,7 +2099,7 @@ canon_hash (x, mode)
   register int i, j;
   register unsigned hash = 0;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   /* repeat is used to turn tail-recursion into iteration.  */
  repeat:
@@ -2309,7 +2309,7 @@ exp_equiv_p (x, y, validate, equal_values)
 {
   register int i, j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   /* Note: it is incorrect to assume an expression is equivalent to itself
      if VALIDATE is nonzero.  */
@@ -2465,7 +2465,7 @@ refers_to_p (x, y)
 {
   register int i;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
  repeat:
   if (x == y)
@@ -2725,7 +2725,7 @@ canon_reg (x, insn)
 {
   register int i;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return x;
@@ -5000,7 +5000,7 @@ fold_rtx (x, insn)
 {
   register enum rtx_code code;
   register enum machine_mode mode;
-  register char *fmt;
+  register const char *fmt;
   register int i;
   rtx new = 0;
   int copied = 0;
@@ -8053,7 +8053,7 @@ cse_process_notes (x, object)
      rtx object;
 {
   enum rtx_code code = GET_CODE (x);
-  char *fmt = GET_RTX_FORMAT (code);
+  const char *fmt = GET_RTX_FORMAT (code);
   int i;
 
   switch (code)
@@ -9019,7 +9019,7 @@ count_reg_usage (x, counts, dest, incr)
      int incr;
 {
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   if (x == 0)

@@ -3693,7 +3693,7 @@ mark_jump_label (x, insn, cross_jump)
 {
   register RTX_CODE code = GET_CODE (x);
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   switch (code)
     {
@@ -4345,7 +4345,7 @@ invert_exp (x, insn)
 {
   register RTX_CODE code;
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   code = GET_CODE (x);
 
@@ -4495,7 +4495,7 @@ redirect_exp (loc, olabel, nlabel, insn)
   register rtx x = *loc;
   register RTX_CODE code = GET_CODE (x);
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   if (code == LABEL_REF)
     {
@@ -4630,7 +4630,7 @@ rtx_renumbered_equal_p (x, y)
 {
   register int i;
   register RTX_CODE code = GET_CODE (x);
-  register char *fmt;
+  register const char *fmt;
       
   if (x == y)
     return 1;
@@ -5096,7 +5096,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
   register int i;
   register int j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   code = GET_CODE (x);
   /* Rtx's of different codes cannot be equal.  */

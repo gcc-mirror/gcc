@@ -1180,7 +1180,7 @@ oprs_unchanged_p (x, insn, avail_p)
 {
   int i;
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
 
   /* repeat is used to turn tail-recursion into iteration.  */
  repeat:
@@ -1323,7 +1323,7 @@ hash_expr_1 (x, mode, do_not_record_p)
   int i, j;
   unsigned hash = 0;
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
 
   /* repeat is used to turn tail-recursion into iteration.  */
  repeat:
@@ -1491,7 +1491,7 @@ expr_equiv_p (x, y)
 {
   register int i, j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == y)
     return 1;
@@ -2325,7 +2325,7 @@ oprs_not_set_p (x, insn)
 {
   int i;
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
 
   /* repeat is used to turn tail-recursion into iteration.  */
 repeat:
@@ -2709,7 +2709,7 @@ expr_killed_p (x, bb)
 {
   int i;
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
 
   /* repeat is used to turn tail-recursion into iteration.  */
  repeat:
@@ -3374,7 +3374,7 @@ compute_transp (x, indx, bmap, set_p)
 {
   int bb,i;
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
 
   /* repeat is used to turn tail-recursion into iteration.  */
  repeat:
@@ -3560,7 +3560,7 @@ find_used_regs (x)
 {
   int i;
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
 
   /* repeat is used to turn tail-recursion into iteration.  */
  repeat:
@@ -4617,7 +4617,7 @@ add_label_notes (x, insn)
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
-  char *fmt;
+  const char *fmt;
 
   if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
     {

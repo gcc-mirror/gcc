@@ -2385,7 +2385,7 @@ regs_used (x, is_dest)
      rtx x; int is_dest;
 {
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
   int i, used = 0;
 
   if (! x)
@@ -4731,7 +4731,7 @@ mark_use (x, reg_set_block)
       break;
     default:
       {
-	char *fmt = GET_RTX_FORMAT (code);
+	const char *fmt = GET_RTX_FORMAT (code);
 	int i, j;
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  {

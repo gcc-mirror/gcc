@@ -332,7 +332,7 @@ add_to_sequence (pattern, last, position)
     = (struct decision *) xmalloc (sizeof (struct decision));
   struct decision *this;
   char *newpos;
-  register char *fmt;
+  register const char *fmt;
   register size_t i;
   int depth = strlen (position);
   int len;

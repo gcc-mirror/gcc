@@ -409,7 +409,7 @@ int
 stack_regs_mentioned_p (pat)
      rtx pat;
 {
-  register char *fmt;
+  register const char *fmt;
   register int i;
 
   if (STACK_REG_P (pat))
@@ -595,7 +595,7 @@ record_label_references (insn, pat)
 {
   register enum rtx_code code = GET_CODE (pat);
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   if (code == LABEL_REF)
     {
@@ -910,7 +910,7 @@ record_reg_life_pat (pat, src, dest, douse)
      HARD_REG_SET *src, *dest;
      int douse;
 {
-  register char *fmt;
+  register const char *fmt;
   register int i;
 
   if (STACK_REG_P (pat)
@@ -1736,7 +1736,7 @@ static void
 swap_rtx_condition (pat)
      rtx pat;
 {
-  register char *fmt;
+  register const char *fmt;
   register int i;
 
   if (GET_RTX_CLASS (GET_CODE (pat)) == '<')
@@ -2719,7 +2719,7 @@ goto_block_pat (insn, regstack, pat)
      default:
      {
       int i, j;
-      char *fmt = GET_RTX_FORMAT (GET_CODE (pat));
+      const char *fmt = GET_RTX_FORMAT (GET_CODE (pat));
 
       for (i = GET_RTX_LENGTH (GET_CODE (pat)) - 1; i >= 0; i--)
 	{
@@ -2929,7 +2929,7 @@ print_blocks (file, insn, pat)
 {
   register RTX_CODE code = GET_CODE (pat);
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   if (code == LABEL_REF)
     {

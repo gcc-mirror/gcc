@@ -508,7 +508,7 @@ contains_replace_regs (x, reg_equiv_replace)
      char *reg_equiv_replace;
 {
   int i, j;
-  char *fmt;
+  const char *fmt;
   enum rtx_code code = GET_CODE (x);
 
   switch (code)
@@ -558,7 +558,7 @@ memref_referenced_p (memref, x)
      rtx memref;
 {
   int i, j;
-  char *fmt;
+  const char *fmt;
   enum rtx_code code = GET_CODE (x);
 
   switch (code)

@@ -321,7 +321,7 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 #endif
   va_list p;
   register int i;		/* Array indices...			*/
-  register char *fmt;		/* Current rtx's format...		*/
+  register const char *fmt;	/* Current rtx's format...		*/
   register rtx rt_val;		/* RTX to return to caller...		*/
 
   VA_START (p, mode);
@@ -1638,7 +1638,7 @@ copy_rtx_if_shared (orig)
   register rtx x = orig;
   register int i;
   register enum rtx_code code;
-  register char *format_ptr;
+  register const char *format_ptr;
   int copied = 0;
 
   if (x == 0)
@@ -1762,7 +1762,7 @@ reset_used_flags (x)
 {
   register int i, j;
   register enum rtx_code code;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   if (x == 0)
     return;

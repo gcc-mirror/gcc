@@ -403,7 +403,7 @@ vax_rtx_cost (x)
   enum machine_mode mode = GET_MODE (x);
   register int c;
   int i = 0;				/* may be modified in switch */
-  char *fmt = GET_RTX_FORMAT (code);	/* may be modified in switch */
+  const char *fmt = GET_RTX_FORMAT (code); /* may be modified in switch */
 
   switch (code)
     {

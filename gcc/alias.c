@@ -593,7 +593,7 @@ rtx_equal_for_memref_p (x, y)
   register int i;
   register int j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0 && y == 0)
     return 1;
@@ -696,7 +696,7 @@ find_symbolic_term (x)
 {
   register int i;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   code = GET_CODE (x);
   if (code == SYMBOL_REF || code == LABEL_REF)
