@@ -29,4 +29,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Add -lcrt for Dwarf2 abbreviation table */
 #undef  LIB_SPEC
-#define LIB_SPEC "%{!shared:%{!symbolic:-lc -lcrt}}"
+#define LIB_SPEC "%{pthread:-lthread} %{!shared:%{!symbolic:-lc -lcrt}}"
+
+#undef CPP_SPEC
+#define CPP_SPEC "%{pthread:-D_REENTRANT}"
