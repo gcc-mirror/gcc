@@ -613,6 +613,9 @@ java::lang::Class::getMethods (void)
 jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
 {
+  // Arguments may not have been initialized, given ".class" syntax.
+  _Jv_InitClass (this);
+  _Jv_InitClass (klass);
   return _Jv_IsAssignableFrom (this, klass);
 }
 
@@ -621,6 +624,7 @@ java::lang::Class::isInstance (jobject obj)
 {
   if (! obj || isPrimitive ())
     return false;
+  _Jv_InitClass (this);
   return isAssignableFrom (obj->getClass());
 }
 
@@ -919,6 +923,8 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
     {
       _Jv_IDispatchTable *cl_idt = source->idt;
       _Jv_IDispatchTable *if_idt = target->idt;
+      if (if_idt == NULL)
+	return false; // No class implementing TARGET has been loaded.    
       jshort cl_iindex = cl_idt->cls.iindex;
       if (cl_iindex <= if_idt->iface.ioffsets[0])
         {
@@ -927,7 +933,6 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
 	      && cl_idt->cls.itable[offset] == target)
 	    return true;
 	}
-      return false;
     }
     
   return false;
