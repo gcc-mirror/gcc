@@ -1719,13 +1719,15 @@
    && (INTVAL (operands[3]) >= 0 && INTVAL (operands[3]) < 32
        && INTVAL (operands[2]) > 0 
        && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
-       && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)"
+       && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)
+   && !reg_overlap_mentioned_p (operands[0], operands[4])"
   "#"
   "TARGET_ARM
    && (INTVAL (operands[3]) >= 0 && INTVAL (operands[3]) < 32
        && INTVAL (operands[2]) > 0 
        && INTVAL (operands[2]) + (INTVAL (operands[3]) & 1) <= 8
-       && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)"
+       && INTVAL (operands[2]) + INTVAL (operands[3]) <= 32)
+   && !reg_overlap_mentioned_p (operands[0], operands[4])"
   [(parallel [(set (reg:CC_NOOV CC_REGNUM)
 		   (compare:CC_NOOV (and:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
@@ -1751,9 +1753,9 @@
 			 (match_operand:SI 3 "arm_not_operand" "rIK")
 			 (const_int 0)))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM"
+  "TARGET_ARM && !reg_overlap_mentioned_p (operands[0], operands[3])"
   "#"
-  "TARGET_ARM"
+  "TARGET_ARM && !reg_overlap_mentioned_p (operands[0], operands[3])"
   [(parallel [(set (reg:CC_NOOV CC_REGNUM)
 		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
