@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -26,7 +26,7 @@ public final class String implements Serializable, Comparable, CharSequence
 {
   private Object data;
   private int boffset; // Note this is a byte offset - don't use in Java code!
-  private int count;
+  int count;
 
   // This is probably not necessary because this class is special cased already
   // but it will avoid showing up as a discrepancy when comparing SUIDs.

@@ -1,6 +1,6 @@
 // natStringBuffer.cc - Implementation of java.lang.StringBuffer native methods.
 
-/* Copyright (C) 2001  Free Software Foundation
+/* Copyright (C) 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -27,4 +27,16 @@ java::lang::StringBuffer::append (jint num)
     *dst++ = *src++;
   count = needed;
   return this;
+}
+
+jboolean
+java::lang::StringBuffer::regionMatches(jint toffset, jstring other)
+{
+  jint len = other->count;
+  jchar *tptr = elements(value) + toffset;
+  jchar *optr = JvGetStringChars(other);
+  while (--len >= 0)
+    if (*tptr++ != *optr++)
+      return false;
+  return true;
 }
