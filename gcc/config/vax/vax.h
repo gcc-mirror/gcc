@@ -884,7 +884,7 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 
 #define RTX_COSTS(RTX,CODE,OUTER_CODE) case FIX: case FLOAT:	\
  case MULT: case DIV: case UDIV: case MOD: case UMOD:		\
- case LSHIFT: case ASHIFT: case LSHIFTRT: case ASHIFTRT:	\
+ case ASHIFT: case LSHIFTRT: case ASHIFTRT:			\
  case ROTATE: case ROTATERT: case PLUS: case MINUS: case IOR:	\
  case XOR: case AND: case NEG: case NOT: case ZERO_EXTRACT:	\
  case SIGN_EXTRACT: case MEM: return vax_rtx_cost(RTX)
