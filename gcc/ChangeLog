@@ -1,3 +1,8 @@
+2002-03-12  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (ASM_OUTPUT_POOL_PROLOGUE): Switch
+	to function_section before writing out the constant pool.
+
 2002-03-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (PREDICATE_CODES): Add any_operand and
