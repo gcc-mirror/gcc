@@ -31,7 +31,7 @@ David S. Miller					davem@redhat.com
 Mark Mitchell					mark@codesourcery.com
 Bernd Schmidt					bernds@redhat.com
 Zack Weinberg					zack@codesourcery.com
-Jim Wilson					wilson@tuliptree.org
+Jim Wilson					wilson@specifixinc.com
 
 
 			CPU Port Maintainers	(CPU alphabetical order)
@@ -50,8 +50,8 @@ hppa port		Jeff Law		law@redhat.com
 hppa port		Dave Anglin		dave.anglin@nrc.ca
 i386 port		Richard Henderson	rth@redhat.com
 i860 port		Jason Eckhardt		jle@rice.edu
-i960 port		Jim Wilson		wilson@tuliptree.org
-ia64 port		Jim Wilson		wilson@tuliptree.org
+i960 port		Jim Wilson		wilson@specifixinc.com
+ia64 port		Jim Wilson		wilson@specifixinc.com
 ip2k port		Denis Chertykov		denisc@overta.ru
 m32r port		Nick Clifton		nickc@redhat.com
 m68hc11 port		Stephane Carrez		stcarrez@nerim.fr
@@ -113,14 +113,14 @@ mercury			Fergus Henderson	fjh@cs.mu.oz.au
 objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 alias analysis		John Carr		jfc@mit.edu
-loop unrolling		Jim Wilson		wilson@tuliptree.org
+loop unrolling		Jim Wilson		wilson@specifixinc.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
-scheduler (+ haifa)	Jim Wilson		wilson@tuliptree.org
+scheduler (+ haifa)	Jim Wilson		wilson@specifixinc.com
 scheduler (+ haifa)	Michael Meissner	gnu@the-meissners.org
 scheduler (+ haifa)	Jeff Law		law@redhat.com
 reorg			Jeff Law		law@redhat.com
 caller-save.c		Jeff Law		law@redhat.com
-debugging code		Jim Wilson		wilson@tuliptree.org
+debugging code		Jim Wilson		wilson@specifixinc.com
 dwarf debugging code	Jason Merrill		jason@redhat.com
 c++ runtime libs	Paolo Carlini		pcarlini@unitus.it
 c++ runtime libs        Gabriel Dos Reis        gdr@integrable-solutions.net
