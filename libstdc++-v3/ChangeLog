@@ -1,3 +1,9 @@
+2003-03-11  Carlo Wood  <carlo@alinoe.com>
+
+	* include/bits/demangle.h: Prepend accessors of
+	class qualifier with 'get_' in order to fix warnings
+	when compiling with -Wshadow.
+
 2003-03-11  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/os/bsd/freebsd/ctype_inline.h:  Support _M_table
@@ -25,8 +31,8 @@
 	_M_really_overflow, seekoff): Use the boolean parameter in the calls.
 	* include/std/std_fstream.h (sync): Likewise.
 	* src/fstream.cc (basic_filebuf<>::_M_underflow_common): Likewise.
-	* src/ios.cc (ios_base::Init::_S_ios_create(bool)): Revert libstdc++/8399
-	commit involving isatty(0).
+	* src/ios.cc (ios_base::Init::_S_ios_create(bool)): Revert
+	libstdc++/8399 commit involving isatty(0).
 	* acinclude.m4 (GLIBCPP_CHECK_UNISTD_DECL_AND_LINKAGE_1): Remove.
 	(GLIBCPP_CHECK_UNISTD_SUPPORT): Remove
 	* configure.in: Remove call.
@@ -59,9 +65,10 @@
 2003-03-08  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/26_numerics/c99_classification_macros_c.cc: Tweak test.
-
-	* config/locale/generic/c_locale.cc (locale::facet::_S_create_c_locale):
-	Throw runtime exception when unsupported language is specified.
+	
+	* config/locale/generic/c_locale.cc
+	(locale::facet::_S_create_c_locale): Throw runtime exception when
+	unsupported language is specified.
 	* testsuite/testsuite_hooks.h
 	(run_test_wrapped_generic_locale_exception_catcher): New function.
 	* testsuite/testsuite_hooks.cc (run_tests_wrapped_locale):
