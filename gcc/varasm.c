@@ -2284,6 +2284,7 @@ decode_addr_const (exp, value)
     case STRING_CST:
     case COMPLEX_CST:
     case CONSTRUCTOR:
+    case INTEGER_CST:
       x = TREE_CST_RTL (target);
       break;
 
@@ -2845,9 +2846,6 @@ output_constant_def (exp)
   char *found = 0;
   int reloc;
   register rtx def;
-
-  if (TREE_CODE (exp) == INTEGER_CST)
-    abort ();			/* No TREE_CST_RTL slot in these.  */
 
   if (TREE_CST_RTL (exp))
     return TREE_CST_RTL (exp);
