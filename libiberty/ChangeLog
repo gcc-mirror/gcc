@@ -1,3 +1,22 @@
+2001-03-06  Zack Weinberg  <zackw@stanford.edu>
+
+	* aclocal.m4 (libiberty_AC_FUNC_C_ALLOCA): New.
+	* configure.in: Replace all alloca logic with a simple use of
+	the above new macro.
+	* config.table: Kill *-*-beos* entry.
+	* config/mh-beos: Delete.
+	* configure, config.in: Regenerate.
+
+	* Makefile.in (ALLOCA, HFILES): Kill.
+	(REQUIRED_OFILES): Add alloca.o.
+	(alloca.o): Depend on libiberty.h.
+	(argv.o): Don't depend on alloca-conf.h.
+	* alloca-conf.h: Delete.
+	* alloca.c: Include libiberty.h.  Kill all #ifdef emacs
+	blocks.  Provide the C alloca unconditionally.  Use PTR where
+	appropriate.  Make i00afunc static.
+	* argv.c: Don't include alloca-conf.h.
+
 2001-03-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* cplus-dem.c (main): Cast enum style to int.
@@ -25,7 +44,7 @@
 	for Java demangling.
 	(demangle_builtin_type): Look up in java_builtin_type_names if doing
 	Java output.
-	* cplus-dem.c (cplus_demangle): Use java_demangle_v3 to do Java 
+	* cplus-dem.c (cplus_demangle): Use java_demangle_v3 to do Java
 	demangling.
 	(long_options): Remove obsolete `java' option.
 	(main): Remove explicit handling of `java' option. Instead, pass style
