@@ -1,3 +1,7 @@
+1999-08-03  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* decl.c (start_decl): Set attributes before duplicate_decls call.
+
 1999-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (CXX_SRCS): Add dump.c.
