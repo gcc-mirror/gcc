@@ -67,8 +67,9 @@ static tree grokfndecl (tree, tree, tree, tree, tree, int,
 static tree grokvardecl (tree, tree, const cp_decl_specifier_seq *,
 			 int, int, tree);
 static void record_unknown_type (tree, const char *);
-static tree builtin_function_1 (const char *, tree, tree, int,
-                                enum built_in_class, const char *,
+static tree builtin_function_1 (const char *, tree, tree,
+				enum built_in_function code,
+                                enum built_in_class cl, const char *,
 				tree);
 static tree build_library_fn_1 (tree, enum tree_code, tree);
 static int member_function_or_else (tree, tree, enum overload_flags);
@@ -3162,7 +3163,7 @@ static tree
 builtin_function_1 (const char* name,
                     tree type,
                     tree context,
-                    int code,
+		    enum built_in_function code,
                     enum built_in_class class,
                     const char* libname,
                     tree attrs)
@@ -3214,7 +3215,7 @@ tree
 builtin_function (const char* name,
                   tree type,
                   int code,
-                  enum built_in_class class,
+                  enum built_in_class cl,
                   const char* libname,
                   tree attrs)
 {
@@ -3223,12 +3224,12 @@ builtin_function (const char* name,
   if (name[0] != '_')
     {
       push_namespace (std_identifier);
-      builtin_function_1 (name, type, std_node, code, class, libname, attrs);
+      builtin_function_1 (name, type, std_node, code, cl, libname, attrs);
       pop_namespace ();
     }
 
   return builtin_function_1 (name, type, NULL_TREE, code,
-			     class, libname, attrs);
+			     cl, libname, attrs);
 }
 
 /* Generate a FUNCTION_DECL with the typical flags for a runtime library
