@@ -102,7 +102,7 @@ $1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
   else address="g++@cygnus.com";
 }
 /\/egcsh?((-[^ ]*)?\/|c?[ -])/ {
-  address="egcs@cygnus.com"; # testsuite-results@gcc.ml.org";
+  address="egcs@cygnus.com testsuite-results@gcc.ml.org";
   if (version == 0) version="egcs";
 }
 /--disable-haifa/ { prefix="haifa-disabled "; }
