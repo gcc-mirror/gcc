@@ -464,6 +464,10 @@ static int warnings_are_errors;
 
 int traditional;
 
+/* Nonzero for the 1989 C Standard, including corrigenda and amendments.  */
+
+int c89;
+
 /* Nonzero causes output not to be done,
    but directives such as #define that have side effects
    are still obeyed.  */
@@ -1502,15 +1506,15 @@ main (argc, argv)
 
       case 'l':
 	if (! strcmp (argv[i], "-lang-c"))
-	  cplusplus = 0, cplusplus_comments = 1, objc = 0;
+	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, objc = 0;
 	if (! strcmp (argv[i], "-lang-c89"))
-	  cplusplus = 0, cplusplus_comments = 0, objc = 0;
+	  cplusplus = 0, cplusplus_comments = 0, c89 = 1, objc = 0;
 	if (! strcmp (argv[i], "-lang-c++"))
-	  cplusplus = 1, cplusplus_comments = 1, objc = 0;
+	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, objc = 0;
 	if (! strcmp (argv[i], "-lang-objc"))
-	  objc = 1, cplusplus = 0, cplusplus_comments = 1;
+	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, objc = 1;
 	if (! strcmp (argv[i], "-lang-objc++"))
-	  objc = 1, cplusplus = 1, cplusplus_comments = 1;
+	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, objc = 1;
  	if (! strcmp (argv[i], "-lang-asm"))
  	  lang_asm = 1;
  	if (! strcmp (argv[i], "-lint"))
@@ -3061,16 +3065,17 @@ do { ip = &instack[indepth];		\
 	  }
 	  *obp++ = c;
 	  /* A sign can be part of a preprocessing number
-	     if it follows an e.  */
-	  if (c == 'e' || c == 'E') {
+	     if it follows an `e' or `p'.  */
+	  if (c == 'e' || c == 'E' || c == 'p' || c == 'P') {
 	    while (ibp[0] == '\\' && ibp[1] == '\n') {
 	      ++ip->lineno;
 	      ibp += 2;
 	    }
 	    if (*ibp == '+' || *ibp == '-') {
 	      *obp++ = *ibp++;
-	      /* But traditional C does not let the token go past the sign.  */
-	      if (traditional)
+	      /* But traditional C does not let the token go past the sign,
+		 and C89 does not allow `p'.  */
+	      if (traditional || (c89 && (c == 'p' || c == 'P')))
 		break;
 	    }
 	  }
