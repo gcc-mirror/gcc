@@ -1,3 +1,13 @@
+Wed Nov 19 12:03:04 1997  Philippe De Muyter  <phdm@macqel.be>
+
+	* dwarf2out.c (CIE_LENGTH_LABEL, FDE_LENGTH_LABEL): New macros.
+	(ASM_OUTPUT_DWARF_VALUE4): New macro.
+	(ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL): Define if SET_ASM_OP is
+	defined.
+	(output_call_frame_info): Do not output forward label differences
+	if ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL is defined.
+	* m68k/mot3300.h (SET_ASM_OP): Define when not using gas.
+
 Tue Nov 18 23:03:30 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (attribute "type"): Add nil.

@@ -184,6 +184,9 @@ Boston, MA 02111-1307, USA.  */
 #undef ASCII_DATA_ASM_OP
 #define	ASCII_DATA_ASM_OP "byte"
 
+#undef SET_ASM_OP
+#define SET_ASM_OP "set"
+
 #endif /* USE_GAS */
 
 #ifdef USE_GLD
