@@ -3248,6 +3248,7 @@ output_function_exception_table (void)
 
 #ifdef TARGET_UNWIND_INFO
   /* TODO: Move this into target file.  */
+  assemble_external_libcall (eh_personality_libfunc);
   fputs ("\t.personality\t", asm_out_file);
   output_addr_const (asm_out_file, eh_personality_libfunc);
   fputs ("\n\t.handlerdata\n", asm_out_file);
