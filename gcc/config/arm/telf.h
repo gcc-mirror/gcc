@@ -82,11 +82,13 @@ extern int arm_structure_size_boundary;
   do									\
     {									\
       if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
-        fprintf (STREAM, "\t.section %s,\"ax\",@progbits\n", (NAME));	\
+        fprintf (STREAM, "\t.section %s,\"ax\",%%progbits\n", NAME);	\
       else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))		\
-        fprintf (STREAM, "\t.section %s,\"a\"\n", (NAME));		\
+        fprintf (STREAM, "\t.section %s,\"a\"\n", NAME);		\
+      else if (! strncmp (NAME, ".bss", 4))      			\
+        fprintf (STREAM, "\t.section %s,\"aw\",%%nobits\n", NAME); 	\
       else								\
-        fprintf (STREAM, "\t.section %s,\"aw\"\n", (NAME));		\
+        fprintf (STREAM, "\t.section %s,\"aw\"\n", NAME);		\
     }									\
   while (0)
 

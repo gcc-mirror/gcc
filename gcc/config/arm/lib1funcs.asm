@@ -469,7 +469,7 @@ SYM (__div0):
 	
 	.text
 	.align 0
-	.code 16
+        .force_thumb
 .macro call_via register
 	.globl	SYM (_call_via_\register)
 	TYPE	(_call_via_\register)
