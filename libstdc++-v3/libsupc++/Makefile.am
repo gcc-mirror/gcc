@@ -51,7 +51,7 @@ CONFIG_CXXFLAGS = \
 
 # Warning flags to use.
 WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
+	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@

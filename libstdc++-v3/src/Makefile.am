@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.72 2001/02/16 00:43:41 bkoz Exp $
+## $Id: Makefile.am,v 1.73 2001/02/20 20:20:48 pme Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -47,7 +47,7 @@ CONFIG_CXXFLAGS = \
 
 # Warning flags to use.
 WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
+	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@

@@ -96,9 +96,7 @@ if test -n "$with_cross_host"; then
 	float.h inttypes.h])
 
 	# GLIBCPP_CHECK_COMPILER_FEATURES
-	WFMT_FLAGS='-fdiagnostics-show-location=once'
 	SECTION_FLAGS='-ffunction-sections -fdata-sections'
-	AC_SUBST(WFMT_FLAGS)
 	AC_SUBST(SECTION_FLAGS)
 	GLIBCPP_CHECK_LINKER_FEATURES
 	# GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT
