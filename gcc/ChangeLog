@@ -1,3 +1,8 @@
+2002-08-02  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in (FORBUILD): Use $build_alias.
+	* configure: Regenerated.
+
 2002-08-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc: Don't include mips/abi64.h in $tm_file.
