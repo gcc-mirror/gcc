@@ -199,7 +199,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
       _Unwind_Internal_Ptr a = (_Unwind_Internal_Ptr) p;
       a = (a + sizeof (void *) - 1) & - sizeof(void *);
       result = *(_Unwind_Internal_Ptr *) a;
-      p = (const unsigned char *) (a + sizeof (void *));
+      p = (const unsigned char *) (_Unwind_Internal_Ptr) (a + sizeof (void *));
     }
   else
     {
