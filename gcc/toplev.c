@@ -3349,6 +3349,10 @@ rest_of_compilation (decl)
 
   reload_completed = 1;
 
+  /* Do a very simple CSE pass over just the hard registers.  */
+  if (optimize > 0)
+    reload_cse_regs (insns);
+
   /* On some machines, the prologue and epilogue code, or parts thereof,
      can be represented as RTL.  Doing so lets us schedule insns between
      it and the rest of the code and also allows delayed branch
