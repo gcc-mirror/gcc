@@ -7743,8 +7743,8 @@ arm_expand_prologue ()
       else
 	insn = gen_movsi (ip_rtx, stack_pointer_rtx);
       
-      RTX_FRAME_RELATED_P (insn) = 1;
       insn = emit_insn (insn);
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   if (current_function_pretend_args_size)
