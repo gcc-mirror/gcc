@@ -1498,7 +1498,7 @@ move_by_pieces_ninsns (l, align)
 
   if (! SLOW_UNALIGNED_ACCESS (word_mode, align)
       || align > MOVE_MAX * BITS_PER_UNIT || align >= BIGGEST_ALIGNMENT)
-    align = MOVE_MAX;
+    align = MOVE_MAX * BITS_PER_UNIT;
 
   while (max_size > 1)
     {
