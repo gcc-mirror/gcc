@@ -6,6 +6,8 @@ Wed Oct 17 05:26:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Defer allocating alias set for restricted pointer until here.
 	Call find_placeholder with second arg nonzero.
 	Minor cleanups.
+	* c-common.c (c_apply_type_quals_to_decl): Defer getting alias
+	set for restricted pointer types.
 	* emit-rtl.c (set_mem_attributes): Set more attributes.
 	(set_mem_align, change_address, adjust_address_1): New functions.
 	(change_address_1): Now static.
