@@ -1449,7 +1449,8 @@ legitimize_pic_address (orig, mode, reg)
      enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx reg;
 {
-  if (GET_CODE (orig) == SYMBOL_REF)
+  if (GET_CODE (orig) == SYMBOL_REF
+      || GET_CODE (orig) == LABEL_REF)
     {
       rtx pic_ref, address;
       rtx insn;
@@ -1531,9 +1532,6 @@ legitimize_pic_address (orig, mode, reg)
 	}
       return gen_rtx_PLUS (Pmode, base, offset);
     }
-  else if (GET_CODE (orig) == LABEL_REF)
-    /* ??? Why do we do this?  */
-    current_function_uses_pic_offset_table = 1;
 
   return orig;
 }
@@ -1670,26 +1668,8 @@ emit_move_sequence (operands, mode)
 	}
     }
 
-  if (GET_CODE (operand1) == LABEL_REF
-      && mode == SImode && flag_pic)
-    {
-      if (TARGET_ARCH64)
-	abort ();
-      emit_insn (gen_move_pic_label_si (operand0, operand1));
-      return 1;
-    }
-  /* Non-pic LABEL_REF's in sparc64 are expensive to do the normal way,
-     so always use special code.  */
-  else if (GET_CODE (operand1) == LABEL_REF
-	   && mode == DImode)
-    {
-      if (! TARGET_ARCH64)
-	abort ();
-      emit_insn (gen_move_label_di (operand0, operand1));
-      return 1;
-    }
   /* DImode HIGH values in sparc64 need a clobber added.  */
-  else if (TARGET_ARCH64
+  if (TARGET_ARCH64
       && GET_CODE (operand1) == HIGH && GET_MODE (operand1) == DImode)
     {
       emit_insn (gen_sethi_di_sp64 (operand0, XEXP (operand1, 0)));

@@ -1727,61 +1727,6 @@
   "rd %%pc,%0"
   [(set_attr "type" "move")])
 
-;; Special pic pattern, for loading the address of a label into a register.
-;; It clobbers o7 because the call puts the return address (i.e. pc value)
-;; there.  The pic tablejump pattern also uses this.
-
-(define_insn "move_pic_label_si"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	; This was previously (label_ref:SI (match_operand 1 "" "")) but that
-	; loses the volatil and other flags of the original label_ref.
-	(match_operand:SI 1 "label_ref_operand" ""))
-   (set (reg:SI 15) (pc))]
-  "flag_pic"
-  "*
-{
-  if (get_attr_length (insn) == 2)
-    return \"\\n1:\;call 2f\;add %%o7,%%lo(%l1-1b),%0\\n2:\";
-  else
-    return \"\\n1:\;call 2f\;sethi %%hi(%l1-1b),%0\\n2:\\tor %0,%%lo(%l1-1b),%0\;add %0,%%o7,%0\";
-}"
-  [(set_attr "type" "multi")
-   ; 960 = 4096 bytes / 4 bytes/insn - 64 (for not always perfect length calcs)
-   (set (attr "length") (if_then_else (ltu (minus (match_dup 1) (pc))
-					   (const_int 960))
-				      (const_int 2)
-				      (const_int 4)))])
-
-;; Special sparc64 pattern for loading the address of a label into a register.
-;; The pic and non-pic cases are the same since it's the most efficient way.
-;;
-;; ??? The non-pic case doesn't need to use %o7, we could use a scratch
-;; instead.  But the pic case doesn't need to use %o7 either.  We handle them
-;; both here so that when this is fixed, they can both be fixed together.
-;; Don't forget that the pic jump table stuff uses %o7 (that will need to be
-;; changed too).
-
-(define_insn "move_label_di"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	; This was previously (label_ref:DI (match_operand 1 "" "")) but that
-	; loses the volatil and other flags of the original label_ref.
-	(match_operand:DI 1 "label_ref_operand" ""))
-   (set (reg:DI 15) (pc))]
-  "TARGET_ARCH64"
-  "*
-{
-  if (get_attr_length (insn) == 2)
-    return \"\\n1:\;rd %%pc,%%o7\;add %%o7,%l1-1b,%0\";
-  else
-    return \"\\n1:\;rd %%pc,%%o7\;sethi %%hi(%l1-1b),%0\;add %0,%%lo(%l1-1b),%0\;sra %0,0,%0\;add %0,%%o7,%0\";
-}"
-  [(set_attr "type" "multi")
-   ; 960 = 4096 bytes / 4 bytes/insn - 64 (for not always perfect length calcs)
-   (set (attr "length") (if_then_else (ltu (minus (match_dup 1) (pc))
-					   (const_int 960))
-				      (const_int 2)
-				      (const_int 5)))])
-
 (define_insn "*sethi_hi"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(high:HI (match_operand 1 "" "")))]
@@ -5604,33 +5549,18 @@ if (! TARGET_ARCH64)
   if (GET_MODE (operands[0]) != Pmode)
     abort ();
 
-  /* We need to use the PC value in %o7 that was set up when the address
-     of the label was loaded into a register, so we need different RTL.  */
+  /* In pic mode, our address differences are against the base of the
+     table.  Add that base value back in; CSE ought to be able to combine
+     the two address loads.  */
   if (flag_pic)
     {
-      if (!TARGET_PTR64)
-	emit_jump_insn (gen_pic_tablejump_32 (operands[0], operands[1]));
-      else
-	emit_jump_insn (gen_pic_tablejump_64 (operands[0], operands[1]));
-      DONE;
+      rtx tmp, tmp2;
+      tmp = gen_rtx_LABEL_REF (Pmode, operands[1]);
+      tmp2 = operands[0];
+      tmp = gen_rtx_PLUS (Pmode, tmp2, tmp);
+      operands[0] = memory_address (Pmode, tmp);
     }
 }")
-
-(define_insn "pic_tablejump_32"
-  [(set (pc) (match_operand:SI 0 "register_operand" "r"))
-   (use (label_ref (match_operand 1 "" "")))
-   (use (reg:SI 15))]
-  "! TARGET_PTR64"
-  "jmp %%o7+%0%#"
-  [(set_attr "type" "uncond_branch")])
-
-(define_insn "pic_tablejump_64"
-  [(set (pc) (match_operand:DI 0 "register_operand" "r"))
-   (use (label_ref (match_operand 1 "" "")))
-   (use (reg:DI 15))]
-  "TARGET_PTR64"
-  "jmp %%o7+%0%#"
-  [(set_attr "type" "uncond_branch")])
 
 (define_insn "*tablejump_sp32"
   [(set (pc) (match_operand:SI 0 "address_operand" "p"))

@@ -2933,12 +2933,10 @@ do {									\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\
   if (Pmode == SImode)							\
     fprintf (FILE, "\t.word\t");					\
-  else if (TARGET_CM_MEDLOW)						\
-    fprintf (FILE, "\t.word\t0\n\t.word\t");				\
   else									\
     fprintf (FILE, "\t.xword\t");					\
   assemble_name (FILE, label);						\
-  fprintf (FILE, "\n");							\
+  fputc ('\n', FILE);							\
 } while (0)
 
 /* This is how to output an element of a case-vector that is relative.
@@ -2950,12 +2948,13 @@ do {									\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\
   if (Pmode == SImode)							\
     fprintf (FILE, "\t.word\t");					\
-  else if (TARGET_CM_MEDLOW)						\
-    fprintf (FILE, "\t.word\t0\n\t.word\t");				\
   else									\
     fprintf (FILE, "\t.xword\t");					\
   assemble_name (FILE, label);						\
-  fprintf (FILE, "-1b\n");						\
+  ASM_GENERATE_INTERNAL_LABEL (label, "L", (REL));			\
+  fputc ('-', FILE);							\
+  assemble_name (FILE, label);						\
+  fputc ('\n', FILE);							\
 } while (0)
 
 /* This is how to output an assembler line
@@ -3106,6 +3105,7 @@ do {									\
       else if (GET_CODE (index) == REG)				\
 	fprintf (FILE, "+%s", reg_names[REGNO (index)]);	\
       else if (GET_CODE (index) == SYMBOL_REF			\
+	       || GET_CODE (index) == LABEL_REF			\
 	       || GET_CODE (index) == CONST)			\
 	fputc ('+', FILE), output_addr_const (FILE, index);	\
       else abort ();						\

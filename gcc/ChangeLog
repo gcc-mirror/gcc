@@ -1,3 +1,15 @@
+Mon Jan 11 20:23:34 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.c (legitimize_pic_address): Treat labels like symbols.
+	(emit_move_sequence): Likewise.
+	* sparc.h (PRINT_OPERAND_ADDRESS): Likewise.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Don't special case CM_MEDLOW.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.  Don't reference magic `1b'.
+	* sparc.md (move_pic_label_si): Kill.
+	(move_label_di): Kill.
+	(pic_tablejump_32, pic_tablejump_64): Kill.
+	(tablejump): Expose pic arithmetic to the compiler.
+
 Wed Jan  6 23:37:47 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* h8300.h (ASM_OUTPUT_LABELREF): Define.
