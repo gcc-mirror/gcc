@@ -1,3 +1,8 @@
+2003-09-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	*  config/stormy16/stormy16.c, config/stormy16/stormy16-protos.h:
+	Convert to ISO C90 function declarations and definitions.
+
 2003-09-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_constant_info): Add reloc field.
