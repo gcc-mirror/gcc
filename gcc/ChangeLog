@@ -1,3 +1,13 @@
+2002-05-03  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/sparc/netbsd-elf.c (CPP_SUBTARGET_SPEC64): Remove
+	-D__arch64__.  Add -D_LP64.
+	(CPP_ARCH32_SPEC): Redefine to match the non-bi-arch version
+	from sparc.h.
+	(CPP_ARCH64_SPEC): Likewise.
+	(NO_BUILTIN_PTRDIFF_TYPE): Undef.
+	(NO_BUILTIN_SIZE_TYPE): Undef.
+
 2002-05-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (min_issue_delay_pass_states): Change return type
