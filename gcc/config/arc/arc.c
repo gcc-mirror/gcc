@@ -96,6 +96,7 @@ static void arc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void arc_encode_section_info PARAMS ((tree, int));
 static void arc_internal_label PARAMS ((FILE *, const char *, unsigned long));
+static bool arc_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -114,7 +115,10 @@ static void arc_internal_label PARAMS ((FILE *, const char *, unsigned long));
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO arc_encode_section_info
 #undef TARGET_ASM_INTERNAL_LABEL
-#define  TARGET_ASM_INTERNAL_LABEL arc_internal_label
+#define TARGET_ASM_INTERNAL_LABEL arc_internal_label
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS arc_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2375,4 +2379,62 @@ arc_internal_label (stream, prefix, labelno)
 {
   arc_ccfsm_at_label (prefix, labelno);
   default_internal_label (stream, prefix, labelno);
+}
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+arc_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code;
+     int outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+      /* Small integers are as cheap as registers.  4 byte values can
+	 be fetched as immediate constants - let's give that the cost
+	 of an extra insn.  */
+    case CONST_INT:
+      if (SMALL_INT (INTVAL (x)))
+	{
+	  *total = 0;
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case CONST_DOUBLE:
+      {
+        rtx high, low;
+        split_double (x, &high, &low);
+	*total = COSTS_N_INSNS (!SMALL_INT (INTVAL (high))
+				+ !SMALL_INT (INTVAL (low)));
+	return true;
+      }
+
+    /* Encourage synth_mult to find a synthetic multiply when reasonable.
+       If we need more than 12 insns to do a multiply, then go out-of-line,
+       since the call overhead will be < 10% of the cost of the multiply.  */
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (TARGET_SHIFTER)
+        *total = COSTS_N_INSNS (1);
+      else if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+        *total = COSTS_N_INSNS (16);
+      else
+        *total = COSTS_N_INSNS (INTVAL (XEXP ((x), 1)));
+      return false;
+
+    default:
+      return false;
+    }
 }

@@ -1010,38 +1010,7 @@ struct cum_arg
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   LENGTH += h8300_adjust_insn_length (INSN, LENGTH);
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-
-#define DEFAULT_RTX_COSTS(RTX, CODE, OUTER_CODE) \
-  return (const_costs (RTX, CODE, OUTER_CODE));
-
 #define BRANCH_COST 0
-
-/* We say that MOD and DIV are so cheap because otherwise we'll
-   generate some really horrible code for division of a power of two.  */
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  */
-
-#define RTX_COSTS(RTX, CODE, OUTER_CODE)		\
-  case AND:						\
-    return COSTS_N_INSNS (h8300_and_costs (RTX));	\
-  case MOD:						\
-  case DIV:						\
-    return 60;						\
-  case MULT:						\
-    return 20;						\
-  case ASHIFT:						\
-  case ASHIFTRT:					\
-  case LSHIFTRT:					\
-    return COSTS_N_INSNS (h8300_shift_costs (RTX));	\
-  case ROTATE:						\
-  case ROTATERT:					\
-    if (GET_MODE (RTX) == HImode) return 2;		\
-    return 8;
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

@@ -59,6 +59,7 @@ static const char *singlemove_string PARAMS ((rtx *));
 static bool pdp11_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void pdp11_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void pdp11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static bool pdp11_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -79,6 +80,9 @@ static void pdp11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #define TARGET_ASM_OPEN_PAREN "["
 #undef TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN "]"
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS pdp11_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1013,6 +1017,116 @@ register_move_cost(c1, c2)
   enum reg_class c1, c2;
 {
     return move_costs[(int)c1][(int)c2];
+}
+
+static bool
+pdp11_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      if (INTVAL (x) == 0 || INTVAL (x) == -1 || INTVAL (x) == 1)
+	{
+	  *total = 0;
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      /* Twice as expensive as REG.  */
+      *total = 2;
+      return true;
+
+    case CONST_DOUBLE:
+      /* Twice (or 4 times) as expensive as 16 bit.  */
+      *total = 4;
+      return true;
+
+    case MULT:
+      /* ??? There is something wrong in MULT because MULT is not 
+         as cheap as total = 2 even if we can shift!  */
+      /* If optimizing for size make mult etc cheap, but not 1, so when 
+         in doubt the faster insn is chosen.  */
+      if (optimize_size)
+        *total = COSTS_N_INSNS (2);
+      else
+        *total = COSTS_N_INSNS (11);
+      return false;
+
+    case DIV:
+      if (optimize_size)
+        *total = COSTS_N_INSNS (2);
+      else
+        *total = COSTS_N_INSNS (25);
+      return false;
+
+    case MOD:
+      if (optimize_size)
+        *total = COSTS_N_INSNS (2);
+      else
+        *total = COSTS_N_INSNS (26);
+      return false;
+
+    case ABS:
+      /* Equivalent to length, so same for optimize_size.  */
+      *total = COSTS_N_INSNS (3);
+      return false;
+
+    case ZERO_EXTEND:
+      /* Only used for qi->hi.  */
+      *total = COSTS_N_INSNS (1);
+      return false;
+
+    case SIGN_EXTEND:
+      if (GET_MODE (x) == HImode)
+      	*total = COSTS_N_INSNS (1);
+      else if (GET_MODE (x) == SImode)
+	*total = COSTS_N_INSNS (6);
+      else
+	*total = COSTS_N_INSNS (2);
+      return false;
+
+    case ASHIFT:
+    case LSHIFTRT:
+    case ASHIFTRT:
+      if (optimize_size)
+        *total = COSTS_N_INSNS (1);
+      else if (GET_MODE (x) ==  QImode)
+        {
+          if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+   	    *total = COSTS_N_INSNS (8); /* worst case */
+          else
+	    *total = COSTS_N_INSNS (INTVAL (XEXP (x, 1)));
+        }
+      else if (GET_MODE (x) == HImode)
+        {
+          if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+            {
+	      if (abs (INTVAL (XEXP (x, 1))) == 1)
+                *total = COSTS_N_INSNS (1);
+              else
+	        *total = COSTS_N_INSNS (2.5 + 0.5 * INTVAL (XEXP (x, 1)));
+            }
+          else
+            *total = COSTS_N_INSNS (10); /* worst case */
+        }
+      else if (GET_MODE (x) == SImode)
+        {
+          if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	    *total = COSTS_N_INSNS (2.5 + 0.5 * INTVAL (XEXP (x, 1)));
+          else /* worst case */
+            *total = COSTS_N_INSNS (18);
+        }
+      return false;
+
+    default:
+      return false;
+    }
 }
 
 const char *

@@ -1461,103 +1461,10 @@ CUMULATIVE_ARGS;
 
 /* Descripting Relative Cost of Operations.  */
 
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE. 
-
-   Note that we return, rather than break so that rtx_cost doesn't
-   include CONST_COSTS otherwise expand_mult will think that it is
-   cheaper to synthesize a multiply rather than to use a multiply
-   instruction.  I think this is because the algorithm synth_mult
-   doesn't take into account the loading of the operands, whereas the
-   calculation of mult_cost does. 
-*/
-
-
-#define RTX_COSTS(RTX, CODE, OUTER_CODE)				\
-    case PLUS:								\
-    case MINUS:								\
-    case AND:								\
-    case IOR:								\
-    case XOR:								\
-    case ASHIFT:							\
-    case ASHIFTRT:							\
-    case LSHIFTRT:							\
-    return COSTS_N_INSNS (1);						\
-    case MULT:								\
-    return COSTS_N_INSNS (GET_MODE_CLASS (GET_MODE (RTX)) == MODE_FLOAT \
-			  || TARGET_MPYI ? 1 : 14);			\
-    case DIV:								\
-    case UDIV:								\
-    case MOD: 								\
-    case UMOD:								\
-    return COSTS_N_INSNS (GET_MODE_CLASS (GET_MODE (RTX)) == MODE_FLOAT	\
-			  ? 15 : 50);
-
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.
-
-   An insn is assumed to cost 4 units.
-   COSTS_N_INSNS (N) is defined as (N) * 4 - 2.
-
-   Some small integers are effectively free for the C40.  We should
-   also consider if we are using the small memory model.  With
-   the big memory model we require an extra insn for a constant
-   loaded from memory.  
-
-   This is used by expand_binop to decide whether to force a constant
-   into a register.  If the cost is greater than 2 and the constant
-   is used within a short loop, it gets forced into a register.  
-   Ideally, there should be some weighting as to how mnay times it is used
-   within the loop.  */
-
-#define SHIFT_CODE_P(C) ((C) == ASHIFT || (C) == ASHIFTRT || (C) == LSHIFTRT)
-
-#define LOGICAL_CODE_P(C) ((C) == NOT || (C) == AND \
-                           || (C) == IOR || (C) == XOR)
-
-#define NON_COMMUTATIVE_CODE_P ((C) == MINUS || (C) == COMPARE)
-
-#define CONST_COSTS(RTX,CODE,OUTER_CODE)			\
-	case CONST_INT:						\
-           if (c4x_J_constant (RTX))				\
-	     return 0;						\
-	   if (! TARGET_C3X					\
-	       && OUTER_CODE == AND				\
-               && GET_CODE (RTX) == CONST_INT			\
-	       && (INTVAL (RTX) == 255 || INTVAL (RTX) == 65535))	\
-	     return 0;						\
-	   if (! TARGET_C3X					\
-	       && (OUTER_CODE == ASHIFTRT || OUTER_CODE == LSHIFTRT)	\
-               && GET_CODE (RTX) == CONST_INT			\
-	       && (INTVAL (RTX) == 16 || INTVAL (RTX) == 24))	\
-	     return 0;						\
-           if (TARGET_C3X && SHIFT_CODE_P (OUTER_CODE))		\
-	     return 3;						\
-           if (LOGICAL_CODE_P (OUTER_CODE) 			\
-               ? c4x_L_constant (RTX) : c4x_I_constant (RTX))	\
-	     return 2;						\
-	case CONST:						\
-	case LABEL_REF:						\
-	case SYMBOL_REF:					\
-	   return 4;						\
-	case CONST_DOUBLE:					\
-	   if (c4x_H_constant (RTX))				\
-	     return 2;						\
-           if (GET_MODE (RTX) == QFmode)			\
-	     return 4;						\
-           else							\
-	     return 8;
-
 /* Compute the cost of an address.  This is meant to approximate the size
-   and/or execution delay of an insn using that address.  If the cost is
-   approximated by the RTL complexity, including CONST_COSTS above, as
-   is usually the case for CISC machines, this macro should not be defined.
-   For aggressively RISCy machines, only one insn format is allowed, so
-   this macro should be a constant.  The value of this macro only matters
-   for valid addresses.  We handle the most common address without 
-   a call to c4x_address_cost.  */
+   and/or execution delay of an insn using that address.  The value of this
+   macro only matters for valid addresses.  We handle the most common address
+   without a call to c4x_address_cost.  */
 
 #define ADDRESS_COST(ADDR) (REG_P (ADDR) ? 1 : c4x_address_cost (ADDR))
 

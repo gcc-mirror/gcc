@@ -2138,9 +2138,6 @@ typedef struct
   (   (X) == frame_pointer_rtx || (X) == stack_pointer_rtx	\
    || (X) == arg_pointer_rtx)
 
-#define DEFAULT_RTX_COSTS(X, CODE, OUTER_CODE)		\
-  return arm_rtx_costs (X, CODE, OUTER_CODE);
-
 /* Moves to and from memory are quite expensive */
 #define MEMORY_MOVE_COST(M, CLASS, IN)			\
   (TARGET_ARM ? 10 :					\

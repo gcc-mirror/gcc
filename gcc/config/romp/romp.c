@@ -59,6 +59,7 @@ static void romp_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void romp_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static void romp_encode_section_info PARAMS ((tree, int));
+static bool romp_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -69,6 +70,8 @@ static void romp_encode_section_info PARAMS ((tree, int));
 #define TARGET_ASM_SELECT_RTX_SECTION romp_select_rtx_section
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO romp_encode_section_info
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS romp_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2098,4 +2101,67 @@ romp_encode_section_info (decl, first)
 {
   if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+}
+
+static bool
+romp_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (x)
+    {
+    case CONST_INT:
+      if ((outer_code == IOR && exact_log2 (INTVAL (x)) >= 0)
+	  || (outer_code == AND && exact_log2 (~INTVAL (x)) >= 0)
+	  || ((outer_code == PLUS || outer_code == MINUS)
+	      && (unsigned HOST_WIDE_INT) (INTVAL (x) + 15) < 31)
+	  || (outer_code == SET && (unsigned HOST_WIDE_INT) INTVAL (x) < 16))
+	*total = 0;
+      else if ((unsigned HOST_WIDE_INT) (INTVAL (x) + 0x8000) < 0x10000
+	       || (INTVAL (x) & 0xffff0000) == 0)
+	*total = 0;
+      else
+	*total = COSTS_N_INSNS (2);
+      return true;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      if (current_function_operand (x, Pmode))
+	*total = 0;
+      else
+        *total = COSTS_N_INSNS (2);
+      return true;
+
+    case CONST_DOUBLE:
+      if (x == CONST0_RTX (GET_MODE (x)))
+	*total = 2;
+      else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	*total = COSTS_N_INSNS (5)
+      else
+	*total = COSTS_N_INSNS (4);
+      return true;
+
+    case MEM:
+      *total = current_function_operand (x, Pmode) ? 0 : COSTS_N_INSNS (2);
+      return true;
+
+    case MULT:
+      if (TARGET_IN_LINE_MUL && GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)
+	*total = COSTS_N_INSNS (19);
+      else
+	*total = COSTS_N_INSNS (25);
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      *total = COSTS_N_INSNS (45);
+      return true;
+
+    default:
+      return false;
+    }
 }

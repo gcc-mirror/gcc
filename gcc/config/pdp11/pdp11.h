@@ -934,28 +934,6 @@ extern int may_call_alloca;
    but a CALL with constant address is cheap.  */
 /* #define NO_FUNCTION_CSE */
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch. 
-
-   -1, 0, 1 are cheaper for add, sub ... 
-*/
-
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  case CONST_INT:						\
-    if (INTVAL(RTX) == 0					\
-	|| INTVAL(RTX) == -1					\
-	|| INTVAL(RTX) == 1)					\
-      return 0;							\
-  case CONST:							\
-  case LABEL_REF:						\
-  case SYMBOL_REF:						\
-    /* twice as expensive as REG */				\
-    return 2;							\
-  case CONST_DOUBLE:						\
-    /* twice (or 4 times) as expensive as 16 bit */		\
-    return 4;
 
 /* cost of moving one register class to another */
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
@@ -1211,89 +1189,6 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
       /* flag_unroll_loops			= 1; */			\
     }									\
 }
-
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE. 
-
-   we don't say how expensive SImode is - pretty expensive!!!
-
-   there is something wrong in MULT because MULT is not 
-   as cheap as total = 2 even if we can shift!
-
-   if optimizing for size make mult etc cheap, but not 1, so when 
-   in doubt the faster insn is chosen.
-*/
-
-#define RTX_COSTS(X,CODE,OUTER_CODE) \
-  case MULT:								\
-    if (optimize_size)							\
-      total = COSTS_N_INSNS(2);						\
-    else								\
-      total = COSTS_N_INSNS (11);					\
-    break;								\
-  case DIV:								\
-    if (optimize_size)							\
-      total = COSTS_N_INSNS(2);						\
-    else								\
-      total = COSTS_N_INSNS (25);					\
-    break;								\
-  case MOD:								\
-    if (optimize_size)							\
-      total = COSTS_N_INSNS(2);						\
-    else								\
-      total = COSTS_N_INSNS (26);					\
-    break;								\
-  case ABS:								\
-    /* equivalent to length, so same for optimize_size */		\
-    total = COSTS_N_INSNS (3);						\
-    break;								\
-  case ZERO_EXTEND:							\
-    /* only used for: qi->hi */						\
-    total = COSTS_N_INSNS(1);						\
-    break;								\
-  case SIGN_EXTEND:							\
-    if (GET_MODE(X) == HImode)						\
-      	total = COSTS_N_INSNS(1);					\
-    else if (GET_MODE(X) == SImode)					\
-	total = COSTS_N_INSNS(6);					\
-    else								\
-	total = COSTS_N_INSNS(2);					\
-    break;								\
-  /* case LSHIFT: */		       					\
-  case ASHIFT:								\
-  case LSHIFTRT:							\
-  case ASHIFTRT:							\
-    if (optimize_size)							\
-      total = COSTS_N_INSNS(1);						\
-    else if (GET_MODE(X) ==  QImode)					\
-    {									\
-      if (GET_CODE(XEXP (X,1)) != CONST_INT)				\
-   	total = COSTS_N_INSNS(8); /* worst case */ 			\
-      else                                                              \
-	total = COSTS_N_INSNS(INTVAL(XEXP (X,1)));			\
-    }									\
-    else if (GET_MODE(X) == HImode)					\
-    {									\
-      if (GET_CODE(XEXP (X,1)) == CONST_INT)				\
-      {									\
-	if (abs (INTVAL (XEXP (X, 1))) == 1)				\
-          total = COSTS_N_INSNS(1);					\
-        else								\
-	  total = COSTS_N_INSNS(2.5 + 0.5 *INTVAL(XEXP(X,1)));		\
-      }									\
-      else /* worst case */						\
-        total = COSTS_N_INSNS (10);					\
-    }									\
-    else if (GET_MODE(X) == SImode)					\
-    {									\
-      if (GET_CODE(XEXP (X,1)) == CONST_INT)				\
-	  total = COSTS_N_INSNS(2.5 + 0.5 *INTVAL(XEXP(X,1)));		\
-      else /* worst case */						\
-        total = COSTS_N_INSNS(18);					\
-    }									\
-    break;
-
 
 /* there is no point in avoiding branches on a pdp, 
    since branches are really cheap - I just want to find out

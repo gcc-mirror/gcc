@@ -901,21 +901,6 @@ enum reg_class
 
 #define FUNCTION_MODE QImode
 
-/* Compute the cost of computing a constant rtl expression RTX whose
-   rtx-code is CODE.  The body of this macro is a portion of a switch
-   statement.  If the code is computed here, return it with a return
-   statement.  Otherwise, break from the switch.  */
-
-#define CONST_COSTS(RTX, CODE, OUTERCODE)				\
-  case CONST_INT:							\
-    if ((unsigned) INTVAL (RTX) < 0xfff) return 1;			\
-  case CONST:								\
-  case LABEL_REF:							\
-  case SYMBOL_REF:							\
-    return 2;								\
-  case CONST_DOUBLE:							\
-    return 4;
-
 /*   A C statement (sans semicolon) to update the integer variable COST
      based on the relationship between INSN that is dependent on
      DEP_INSN through the dependence LINK.  The default is to make no

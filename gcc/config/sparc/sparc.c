@@ -181,6 +181,7 @@ static void sparc_encode_section_info PARAMS ((tree, int));
 static bool sparc_function_ok_for_sibcall PARAMS ((tree, tree));
 static void sparc_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					   HOST_WIDE_INT, tree));
+static bool sparc_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Option handling.  */
 
@@ -251,6 +252,9 @@ enum processor_type sparc_cpu;
 #define TARGET_ASM_OUTPUT_MI_THUNK sparc_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS sparc_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8156,10 +8160,10 @@ sparc_extra_constraint_check (op, c, strict)
    ??? scheduler description.  Some day, teach genautomata to output
    ??? the latencies and then CSE will just use that.  */
 
-int
-sparc_rtx_costs (x, code, outer_code)
+static bool
+sparc_rtx_costs (x, code, outer_code, total)
      rtx x;
-     enum rtx_code code, outer_code;
+     int code, outer_code, *total;
 {
   switch (code)
     {
@@ -8173,50 +8177,61 @@ sparc_rtx_costs (x, code, outer_code)
 	    {
 	    case PROCESSOR_ULTRASPARC:
 	    case PROCESSOR_ULTRASPARC3:
-	      return COSTS_N_INSNS (4);
+	      *total = COSTS_N_INSNS (4);
+	      return true;
 
 	    case PROCESSOR_SUPERSPARC:
-	      return COSTS_N_INSNS (3);
+	      *total = COSTS_N_INSNS (3);
+	      return true;
 
 	    case PROCESSOR_CYPRESS:
-	      return COSTS_N_INSNS (5);
+	      *total = COSTS_N_INSNS (5);
+	      return true;
 
 	    case PROCESSOR_HYPERSPARC:
 	    case PROCESSOR_SPARCLITE86X:
 	    default:
-	      return COSTS_N_INSNS (1);
+	      *total = COSTS_N_INSNS (1);
+	      return true;
 	    }
 	}
 
-      return COSTS_N_INSNS (1);
+      *total = COSTS_N_INSNS (1);
+      return true;
 
     case SQRT:
       switch (sparc_cpu)
 	{
 	case PROCESSOR_ULTRASPARC:
 	  if (GET_MODE (x) == SFmode)
-	    return COSTS_N_INSNS (13);
+	    *total = COSTS_N_INSNS (13);
 	  else
-	    return COSTS_N_INSNS (23);
+	    *total = COSTS_N_INSNS (23);
+	  return true;
 
 	case PROCESSOR_ULTRASPARC3:
 	  if (GET_MODE (x) == SFmode)
-	    return COSTS_N_INSNS (20);
+	    *total = COSTS_N_INSNS (20);
 	  else
-	    return COSTS_N_INSNS (29);
+	    *total = COSTS_N_INSNS (29);
+	  return true;
 
 	case PROCESSOR_SUPERSPARC:
-	  return COSTS_N_INSNS (12);
+	  *total = COSTS_N_INSNS (12);
+	  return true;
 
 	case PROCESSOR_CYPRESS:
-	  return COSTS_N_INSNS (63);
+	  *total = COSTS_N_INSNS (63);
+	  return true;
 
 	case PROCESSOR_HYPERSPARC:
 	case PROCESSOR_SPARCLITE86X:
-	  return COSTS_N_INSNS (17);
+	  *total = COSTS_N_INSNS (17);
+	  return true;
 
 	default:
-	  return COSTS_N_INSNS (30);
+	  *total = COSTS_N_INSNS (30);
+	  return true;
 	}
 
     case COMPARE:
@@ -8226,18 +8241,22 @@ sparc_rtx_costs (x, code, outer_code)
 	    {
 	    case PROCESSOR_ULTRASPARC:
 	    case PROCESSOR_ULTRASPARC3:
-	      return COSTS_N_INSNS (1);
+	      *total = COSTS_N_INSNS (1);
+	      return true;
 
 	    case PROCESSOR_SUPERSPARC:
-	      return COSTS_N_INSNS (3);
+	      *total = COSTS_N_INSNS (3);
+	      return true;
 
 	    case PROCESSOR_CYPRESS:
-	      return COSTS_N_INSNS (5);
+	      *total = COSTS_N_INSNS (5);
+	      return true;
 
 	    case PROCESSOR_HYPERSPARC:
 	    case PROCESSOR_SPARCLITE86X:
 	    default:
-	      return COSTS_N_INSNS (1);
+	      *total = COSTS_N_INSNS (1);
+	      return true;
 	    }
 	}
 
@@ -8245,7 +8264,8 @@ sparc_rtx_costs (x, code, outer_code)
 	 ??? all UltraSPARC processors because the result
 	 ??? can be bypassed to a branch in the same group.  */
 
-      return COSTS_N_INSNS (1);
+      *total = COSTS_N_INSNS (1);
+      return true;
 
     case MULT:
       if (FLOAT_MODE_P (GET_MODE (x)))
@@ -8254,20 +8274,25 @@ sparc_rtx_costs (x, code, outer_code)
 	    {
 	    case PROCESSOR_ULTRASPARC:
 	    case PROCESSOR_ULTRASPARC3:
-	      return COSTS_N_INSNS (4);
+	      *total = COSTS_N_INSNS (4);
+	      return true;
 
 	    case PROCESSOR_SUPERSPARC:
-	      return COSTS_N_INSNS (3);
+	      *total = COSTS_N_INSNS (3);
+	      return true;
 
 	    case PROCESSOR_CYPRESS:
-	      return COSTS_N_INSNS (7);
+	      *total = COSTS_N_INSNS (7);
+	      return true;
 
 	    case PROCESSOR_HYPERSPARC:
 	    case PROCESSOR_SPARCLITE86X:
-	      return COSTS_N_INSNS (1);
+	      *total = COSTS_N_INSNS (1);
+	      return true;
 
 	    default:
-	      return COSTS_N_INSNS (5);
+	      *total = COSTS_N_INSNS (5);
+	      return true;
 	    }
 	}
 
@@ -8304,20 +8329,28 @@ sparc_rtx_costs (x, code, outer_code)
 	 Since we do not play any such tricks currently the
 	 safest thing to do is report the worst case latency.  */
       if (sparc_cpu == PROCESSOR_ULTRASPARC)
-	return (GET_MODE (x) == DImode ?
-		COSTS_N_INSNS (34) : COSTS_N_INSNS (19));
+	{
+	  *total = (GET_MODE (x) == DImode
+		    ? COSTS_N_INSNS (34) : COSTS_N_INSNS (19));
+	  return true;
+	}
 
       /* Multiply latency on Ultra-III, fortunately, is constant.  */
       if (sparc_cpu == PROCESSOR_ULTRASPARC3)
-	return COSTS_N_INSNS (6);
+	{
+	  *total = COSTS_N_INSNS (6);
+	  return true;
+	}
 
       if (sparc_cpu == PROCESSOR_HYPERSPARC
 	  || sparc_cpu == PROCESSOR_SPARCLITE86X)
-	return COSTS_N_INSNS (17);
+	{
+	  *total = COSTS_N_INSNS (17);
+	  return true;
+	}
 
-      return (TARGET_HARD_MUL
-	      ? COSTS_N_INSNS (5)
-	      : COSTS_N_INSNS (25));
+      *total = (TARGET_HARD_MUL ? COSTS_N_INSNS (5) : COSTS_N_INSNS (25));
+      return true;
 
     case DIV:
     case UDIV:
@@ -8329,57 +8362,67 @@ sparc_rtx_costs (x, code, outer_code)
 	    {
 	    case PROCESSOR_ULTRASPARC:
 	      if (GET_MODE (x) == SFmode)
-		return COSTS_N_INSNS (13);
+		*total = COSTS_N_INSNS (13);
 	      else
-		return COSTS_N_INSNS (23);
+		*total = COSTS_N_INSNS (23);
+	      return true;
 
 	    case PROCESSOR_ULTRASPARC3:
 	      if (GET_MODE (x) == SFmode)
-		return COSTS_N_INSNS (17);
+		*total = COSTS_N_INSNS (17);
 	      else
-		return COSTS_N_INSNS (20);
+		*total = COSTS_N_INSNS (20);
+	      return true;
 
 	    case PROCESSOR_SUPERSPARC:
 	      if (GET_MODE (x) == SFmode)
-		return COSTS_N_INSNS (6);
+		*total = COSTS_N_INSNS (6);
 	      else
-		return COSTS_N_INSNS (9);
+		*total = COSTS_N_INSNS (9);
+	      return true;
 
 	    case PROCESSOR_HYPERSPARC:
 	    case PROCESSOR_SPARCLITE86X:
 	      if (GET_MODE (x) == SFmode)
-		return COSTS_N_INSNS (8);
+		*total = COSTS_N_INSNS (8);
 	      else
-		return COSTS_N_INSNS (12);
+		*total = COSTS_N_INSNS (12);
+	      return true;
 
 	    default:
-	      return COSTS_N_INSNS (7);
+	      *total = COSTS_N_INSNS (7);
+	      return true;
 	    }
 	}
 
       if (sparc_cpu == PROCESSOR_ULTRASPARC)
-	return (GET_MODE (x) == DImode ?
-		COSTS_N_INSNS (68) : COSTS_N_INSNS (37));
-      if (sparc_cpu == PROCESSOR_ULTRASPARC3)
-	return (GET_MODE (x) == DImode ?
-		COSTS_N_INSNS (71) : COSTS_N_INSNS (40));
-      return COSTS_N_INSNS (25);
+	*total = (GET_MODE (x) == DImode
+		  ? COSTS_N_INSNS (68) : COSTS_N_INSNS (37));
+      else if (sparc_cpu == PROCESSOR_ULTRASPARC3)
+	*total = (GET_MODE (x) == DImode
+		  ? COSTS_N_INSNS (71) : COSTS_N_INSNS (40));
+      else
+	*total = COSTS_N_INSNS (25);
+      return true;
 
     case IF_THEN_ELSE:
       /* Conditional moves. */
       switch (sparc_cpu)
 	{
 	case PROCESSOR_ULTRASPARC:
-	  return COSTS_N_INSNS (2);
+	  *total = COSTS_N_INSNS (2);
+	  return true;
 
 	case PROCESSOR_ULTRASPARC3:
 	  if (FLOAT_MODE_P (GET_MODE (x)))
-	    return COSTS_N_INSNS (3);
+	    *total = COSTS_N_INSNS (3);
 	  else
-	    return COSTS_N_INSNS (2);
+	    *total = COSTS_N_INSNS (2);
+	  return true;
 
 	default:
-	  return COSTS_N_INSNS (1);
+	  *total = COSTS_N_INSNS (1);
+	  return true;
 	}
 
     case MEM:
@@ -8390,9 +8433,10 @@ sparc_rtx_costs (x, code, outer_code)
 	{
 	case PROCESSOR_ULTRASPARC:
 	  if (outer_code == ZERO_EXTEND)
-	    return COSTS_N_INSNS (1);
+	    *total = COSTS_N_INSNS (1);
 	  else
-	    return COSTS_N_INSNS (2);
+	    *total = COSTS_N_INSNS (2);
+	  return true;
 
 	case PROCESSOR_ULTRASPARC3:
 	  if (outer_code == ZERO_EXTEND)
@@ -8400,75 +8444,87 @@ sparc_rtx_costs (x, code, outer_code)
 	      if (GET_MODE (x) == QImode
 		  || GET_MODE (x) == HImode
 		  || outer_code == SIGN_EXTEND)
-		return COSTS_N_INSNS (2);
+		*total = COSTS_N_INSNS (2);
 	      else
-		return COSTS_N_INSNS (1);
+		*total = COSTS_N_INSNS (1);
 	    }
 	  else
 	    {
 	      /* This handles sign extension (3 cycles)
 		 and everything else (2 cycles).  */
-	      return COSTS_N_INSNS (2);
+	      *total = COSTS_N_INSNS (2);
 	    }
+	  return true;
 
 	case PROCESSOR_SUPERSPARC:
 	  if (FLOAT_MODE_P (GET_MODE (x))
 	      || outer_code == ZERO_EXTEND
 	      || outer_code == SIGN_EXTEND)
-	    return COSTS_N_INSNS (0);
+	    *total = COSTS_N_INSNS (0);
 	  else
-	    return COSTS_N_INSNS (1);
+	    *total = COSTS_N_INSNS (1);
+	  return true;
 
 	case PROCESSOR_TSC701:
 	  if (outer_code == ZERO_EXTEND
 	      || outer_code == SIGN_EXTEND)
-	    return COSTS_N_INSNS (2);
+	    *total = COSTS_N_INSNS (2);
 	  else
-	    return COSTS_N_INSNS (3);
+	    *total = COSTS_N_INSNS (3);
+	  return true;
 	  
 	case PROCESSOR_CYPRESS:
 	  if (outer_code == ZERO_EXTEND
 	      || outer_code == SIGN_EXTEND)
-	    return COSTS_N_INSNS (1);
+	    *total = COSTS_N_INSNS (1);
 	  else
-	    return COSTS_N_INSNS (2);
+	    *total = COSTS_N_INSNS (2);
+	  return true;
 	  
 	case PROCESSOR_HYPERSPARC:
 	case PROCESSOR_SPARCLITE86X:
 	default:
 	  if (outer_code == ZERO_EXTEND
 	      || outer_code == SIGN_EXTEND)
-	    return COSTS_N_INSNS (0);
+	    *total = COSTS_N_INSNS (0);
 	  else
-	    return COSTS_N_INSNS (1);
+	    *total = COSTS_N_INSNS (1);
+	  return true;
 	}
 
     case CONST_INT:
       if (INTVAL (x) < 0x1000 && INTVAL (x) >= -0x1000)
-	return 0;
+	{
+	  *total = 0;
+	  return true;
+	}
+      /* FALLTHRU */
 
-    /* fallthru */
     case HIGH:
-      return 2;
+      *total = 2;
+      return true;
 
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      return 4;
+      *total = 4;
+      return true;
 
     case CONST_DOUBLE:
-      if (GET_MODE (x) == DImode)
-	if ((XINT (x, 3) == 0
-	     && (unsigned) XINT (x, 2) < 0x1000)
-	    || (XINT (x, 3) == -1
-		&& XINT (x, 2) < 0
-		&& XINT (x, 2) >= -0x1000))
-	  return 0;
-      return 8;
+      if (GET_MODE (x) == DImode
+	  && ((XINT (x, 3) == 0
+	       && (unsigned HOST_WIDE_INT) XINT (x, 2) < 0x1000)
+	      || (XINT (x, 3) == -1
+		  && XINT (x, 2) < 0
+		  && XINT (x, 2) >= -0x1000)))
+	*total = 0;
+      else
+	*total = 8;
+      return true;
 
     default:
-      abort();
-    };
+      return false;
+    }
 }
 
 /* If we are referencing a function make the SYMBOL_REF special.  In

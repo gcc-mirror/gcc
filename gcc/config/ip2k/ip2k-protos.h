@@ -43,7 +43,6 @@ extern int ip2k_address_cost PARAMS ((rtx));
 extern int ip2k_extra_constraint PARAMS ((rtx, int));
 extern rtx legitimize_address PARAMS ((rtx, rtx, enum machine_mode, rtx));
 extern int adjust_insn_length PARAMS ((rtx insn, int len));
-extern int default_rtx_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
 extern void asm_output_char PARAMS ((FILE *, rtx));
 extern void asm_output_short PARAMS ((FILE *, rtx));
 extern void asm_output_byte PARAMS ((FILE *, int));

@@ -1673,62 +1673,6 @@ do {									\
 
 /* Describing Relative Costs of Operations */
 
-/* A part of a C `switch' statement that describes the relative costs of
-   constant RTL expressions.  */
-
-/* ??? This is incomplete.  */
-
-#define CONST_COSTS(X, CODE, OUTER_CODE)				\
-  case CONST_INT:							\
-    if ((X) == const0_rtx)						\
-      return 0;								\
-    switch (OUTER_CODE)							\
-      {									\
-      case SET:								\
-	return CONST_OK_FOR_J (INTVAL (X)) ? 0 : COSTS_N_INSNS (1);	\
-      case PLUS:							\
-	if (CONST_OK_FOR_I (INTVAL (X)))				\
-	  return 0;							\
-	if (CONST_OK_FOR_J (INTVAL (X)))				\
-	  return 1;							\
-	return COSTS_N_INSNS (1);					\
-      default:								\
-	if (CONST_OK_FOR_K (INTVAL (X)) || CONST_OK_FOR_L (INTVAL (X)))	\
-	  return 0;							\
-	return COSTS_N_INSNS (1);					\
-      }									\
-  case CONST_DOUBLE:							\
-    return COSTS_N_INSNS (1);						\
-  case CONST:								\
-  case SYMBOL_REF:							\
-  case LABEL_REF:							\
-    return COSTS_N_INSNS (3);
-
-/* Like `CONST_COSTS' but applies to nonconstant RTL expressions.  */
-
-#define RTX_COSTS(X, CODE, OUTER_CODE)					\
-  case MULT:								\
-    /* For multiplies wider than HImode, we have to go to the FPU,	\
-       which normally involves copies.  Plus there's the latency	\
-       of the multiply itself, and the latency of the instructions to	\
-       transfer integer regs to FP regs.  */				\
-    if (GET_MODE_SIZE (GET_MODE (X)) > 2)				\
-      return COSTS_N_INSNS (10);					\
-    return COSTS_N_INSNS (2);						\
-  case PLUS:								\
-  case MINUS:								\
-  case ASHIFT:								\
-  case ASHIFTRT:							\
-  case LSHIFTRT:							\
-    return COSTS_N_INSNS (1);						\
-  case DIV:								\
-  case UDIV:								\
-  case MOD:								\
-  case UMOD:								\
-    /* We make divide expensive, so that divide-by-constant will be	\
-       optimized to a multiply.  */					\
-    return COSTS_N_INSNS (60);
-
 /* An expression giving the cost of an addressing mode that contains ADDRESS.
    If not defined, the cost is computed from the ADDRESS expression and the
    `CONST_COSTS' values.  */

@@ -72,6 +72,7 @@ const struct attribute_spec ns32k_attribute_table[];
 static void ns32k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ns32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ns32k_encode_section_info PARAMS ((tree, int));
+static bool ns32k_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -91,6 +92,9 @@ static void ns32k_encode_section_info PARAMS ((tree, int));
 #define TARGET_ASM_FUNCTION_EPILOGUE ns32k_output_function_epilogue
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO ns32k_encode_section_info
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS ns32k_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -488,6 +492,38 @@ hard_regno_mode_ok (regno, mode)
 	  || regno == STACK_POINTER_REGNUM))
     return 1;
   return 0;
+}
+
+static bool
+ns32k_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      if (INTVAL (x) <= 7 && INTVAL (x) >= -8)
+	*total = 0;
+      else if (INTVAL (x) < 0x2000 && INTVAL (x) >= -0x2000)
+        *total = 1;
+      else
+	*total = 3;
+      return true;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 3;
+      return true;
+
+    case CONST_DOUBLE:
+      *total = 5;
+      return true;
+
+    default:
+      return false;
+    }
 }
 
 int register_move_cost (CLASS1, CLASS2)

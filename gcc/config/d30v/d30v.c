@@ -54,6 +54,7 @@ static void d30v_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void d30v_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static int d30v_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int d30v_issue_rate PARAMS ((void));
+static bool d30v_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -98,6 +99,9 @@ enum reg_class reg_class_from_letter[256];
 #define TARGET_SCHED_ADJUST_COST d30v_adjust_cost
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE d30v_issue_rate
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS d30v_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3504,4 +3508,24 @@ rtx
 d30v_return_addr ()
 {
   return get_hard_reg_initial_val (Pmode, GPR_LINK);
+}
+
+static bool
+d30v_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code;
+     int outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+    case MULT:
+      *total = COSTS_N_INSNS ((GET_CODE (XEXP (x, 1)) == CONST_INT
+			       && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
+			      ? 1 : 2);
+      return true;
+
+    default:
+      return false;
+    }
 }

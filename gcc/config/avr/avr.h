@@ -1521,59 +1521,6 @@ do {									    \
    is a suitable definition for this macro on machines where anything
    `CONSTANT_P' is valid.  */
 
-#define CONST_COSTS(x,CODE,OUTER_CODE)		\
-    case CONST_INT:				\
-      if (OUTER_CODE == PLUS			\
-	  || OUTER_CODE == IOR			\
-	  || OUTER_CODE == AND			\
-	  || OUTER_CODE == MINUS		\
-	  || OUTER_CODE == SET			\
-	  || INTVAL (x) == 0)			\
-        return 2;				\
-      if (OUTER_CODE == COMPARE			\
-	  && INTVAL (x) >= 0			\
-	  && INTVAL (x) <= 255)			\
-        return 2;				\
-    case CONST:					\
-    case LABEL_REF:				\
-    case SYMBOL_REF:				\
-      return 4;					\
-    case CONST_DOUBLE:				\
-      return 4;
-
-/* A part of a C `switch' statement that describes the relative costs
-   of constant RTL expressions.  It must contain `case' labels for
-   expression codes `const_int', `const', `symbol_ref', `label_ref'
-   and `const_double'.  Each case must ultimately reach a `return'
-   statement to return the relative cost of the use of that kind of
-   constant value in an expression.  The cost may depend on the
-   precise value of the constant, which is available for examination
-   in X, and the rtx code of the expression in which it is contained,
-   found in OUTER_CODE.
-
-   CODE is the expression code--redundant, since it can be obtained
-   with `GET_CODE (X)'.  */
-
-#define DEFAULT_RTX_COSTS(x, code, outer_code)		\
-{							\
-  int cst = default_rtx_costs (x, code, outer_code);	\
-  if (cst>0)						\
-    return cst;			                \
-  else if (cst<0)					\
-    total += -cst;			                \
-  break;						\
-}
-
-/* Like `CONST_COSTS' but applies to nonconstant RTL expressions.
-   This can be used, for example, to indicate how costly a multiply
-   instruction is.  In writing this macro, you can use the construct
-   `COSTS_N_INSNS (N)' to specify a cost equal to N fast
-   instructions.  OUTER_CODE is the code of the expression in which X
-   is contained.
-
-   This macro is optional; do not define it if the default cost
-   assumptions are adequate for the target machine.  */
-
 #define ADDRESS_COST(ADDRESS) avr_address_cost (ADDRESS)
 
 /* An expression giving the cost of an addressing mode that contains

@@ -881,15 +881,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 /* Node: Costs */
 
-/* This one takes on both the RTX_COSTS and CONST_COSTS tasks.  */
-#define DEFAULT_RTX_COSTS(X, CODE, OUTER_CODE)			\
- {								\
-   int mmix_rtx_cost;						\
-   if (mmix_rtx_cost_recalculated (X, CODE, OUTER_CODE, 	\
-				   &mmix_rtx_cost))		\
-     return mmix_rtx_cost;					\
- }
-
 #define ADDRESS_COST(ADDRESS) mmix_address_cost (ADDRESS)
 
 /* The special registers can only move to and from general regs, and we

@@ -69,6 +69,10 @@ static void h8300_asm_named_section PARAMS ((const char *, unsigned int));
 static void h8300_encode_label PARAMS ((tree));
 static void h8300_encode_section_info PARAMS ((tree, int));
 static const char *h8300_strip_name_encoding PARAMS ((const char *));
+static int const_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
+static int h8300_and_costs PARAMS ((rtx));
+static int h8300_shift_costs PARAMS ((rtx));
+static bool h8300_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -112,6 +116,9 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES h8300_insert_attributes
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS h8300_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1097,7 +1104,7 @@ function_arg (cum, mode, type, named)
 
 /* Return the cost of the rtx R with code CODE.  */
 
-int
+static int
 const_costs (r, c, outer_code)
      rtx r;
      enum rtx_code c;
@@ -1144,7 +1151,7 @@ const_costs (r, c, outer_code)
     }
 }
 
-int
+static int
 h8300_and_costs (x)
      rtx x;
 {
@@ -1164,7 +1171,7 @@ h8300_and_costs (x)
   return compute_logical_op_length (GET_MODE (x), operands);
 }
 
-int
+static int
 h8300_shift_costs (x)
      rtx x;
 {
@@ -1180,6 +1187,49 @@ h8300_shift_costs (x)
   operands[2] = XEXP (x, 1);
   operands[3] = x;
   return compute_a_shift_length (NULL, operands);
+}
+
+static bool
+h8300_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+    case AND:
+      *total = COSTS_N_INSNS (h8300_and_costs (x));
+      return true;
+
+    /* We say that MOD and DIV are so expensive because otherwise we'll
+       generate some really horrible code for division of a power of two.  */
+    case MOD:
+    case DIV:
+      *total = 60;
+      return true;
+
+    case MULT:
+      *total = 20;
+      return true;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      *total = COSTS_N_INSNS (h8300_shift_costs (x));
+      return true;
+
+    case ROTATE:
+    case ROTATERT:
+      if (GET_MODE (x) == HImode)
+	*total = 2;
+      else
+	*total = 8;
+      return true;
+
+    default:
+      *total = const_costs (x, code, outer_code);
+      return true;
+    }
 }
 
 /* Documentation for the machine specific operand escapes:

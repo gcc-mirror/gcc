@@ -151,8 +151,10 @@ static const char *const lshift_right_asm_first[] =
 static int reg_save_size PARAMS ((void));
 static void dsp16xx_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void dsp16xx_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-
+static bool dsp16xx_rtx_costs PARAMS ((rtx, int, int, int *));
+
 /* Initialize the GCC target structure.  */
+
 #undef TARGET_ASM_BYTE_OP
 #define TARGET_ASM_BYTE_OP "\tint\t"
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -164,6 +166,9 @@ static void dsp16xx_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #define TARGET_ASM_FUNCTION_PROLOGUE dsp16xx_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE dsp16xx_output_function_epilogue
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS dsp16xx_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2568,4 +2573,89 @@ signed_comparison_operator (op, mode)
     }
 
   return 0;
+}
+
+static bool
+dsp16xx_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code;
+     int outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      *total = (unsigned HOST_WIDE_INT) INTVAL (x) < 65536 ? 0 : 2;
+      return true;
+
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case CONST_DOUBLE:
+      *total = COSTS_N_INSNS (2);
+      return true;
+
+    case MEM:
+      *total = COSTS_N_INSNS (GET_MODE (x) == QImode ? 2 : 4);
+      return true;
+
+    case DIV:
+    case MOD:
+      *total = COSTS_N_INSNS (38);
+      return true;
+
+    case MULT:
+      if (GET_MODE (x) == QImode)
+        *total = COSTS_N_INSNS (2);
+      else
+	*total = COSTS_N_INSNS (38);
+      return true;
+
+    case PLUS:
+    case MINUS:
+    case AND:
+    case IOR:
+    case XOR:
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
+	{
+	  *total = 1;
+	  return false;
+	}
+      else
+	{
+          *total = COSTS_N_INSNS (38);
+	  return true;
+	}
+
+    case NEG:
+    case NOT:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	{
+	  HOST_WIDE_INT number = INTVAL (XEXP (x, 1));
+	  if (number == 1 || number == 4 || number == 8
+	      || number == 16)
+	    *total = COSTS_N_INSNS (1);
+	  else if (TARGET_BMU)
+            *total = COSTS_N_INSNS (2);
+          else
+            *total = COSTS_N_INSNS (num_1600_core_shifts (number));
+	  return true;
+	}
+      break;
+    }
+
+  if (TARGET_BMU)
+    *total = COSTS_N_INSNS (1);
+  else
+    *total = COSTS_N_INSNS (15);
+  return true;
 }

@@ -1004,36 +1004,9 @@ extern const enum reg_class reg_class_from_letter[];
 #define Pmode          SImode
 #define FUNCTION_MODE  Pmode
 
-/* The relative costs of various types of constants.  Note that cse.c defines
-   REG = 1, SUBREG = 2, any node = (2 + sum of subnodes).  */
-#define CONST_COSTS(RTX, CODE, OUTER_CODE)      \
-  case CONST_INT:				\
-    return mcore_const_costs (RTX, OUTER_CODE); \
-  case CONST: 					\
-  case LABEL_REF:				\
-  case SYMBOL_REF:				\
-    return 5;					\
-  case CONST_DOUBLE:				\
-      return 10;
-
 /* provide the cost for an address calculation.
    All addressing modes cost the same on the MCore.  */
 #define	ADDRESS_COST(RTX)	1
-
-/* Provide the cost of an rtl expression. */
-#define RTX_COSTS(X, CODE, OUTER_CODE)			\
-  case AND:                                             \
-    return COSTS_N_INSNS (mcore_and_cost (X));          \
-  case IOR:                                             \
-    return COSTS_N_INSNS (mcore_ior_cost (X));          \
-  case DIV:						\
-  case UDIV:						\
-  case MOD:						\
-  case UMOD:						\
-    return COSTS_N_INSNS (100);				\
-  case FLOAT:						\
-  case FIX:						\
-    return 100;
 
 /* Compute extra cost of moving data between one register class
    and another.  All register moves are cheap.  */

@@ -131,3 +131,14 @@ hook_bool_rtx_false (a)
 {
   return false;
 }
+
+bool
+hook_bool_rtx_int_int_intp_false (a, b, c, d)
+     rtx a ATTRIBUTE_UNUSED;
+     int b ATTRIBUTE_UNUSED;
+     int c ATTRIBUTE_UNUSED;
+     int *d ATTRIBUTE_UNUSED;
+{
+  return false;
+}
+

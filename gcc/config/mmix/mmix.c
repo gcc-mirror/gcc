@@ -134,6 +134,8 @@ static void mmix_target_asm_function_epilogue
   PARAMS ((FILE *, HOST_WIDE_INT));
 static void mmix_asm_output_mi_thunk
   PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
+static bool mmix_rtx_costs
+  PARAMS ((rtx, int, int, int *));
 
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
@@ -170,6 +172,9 @@ static void mmix_asm_output_mi_thunk
 #define TARGET_ASM_OUTPUT_MI_THUNK mmix_asm_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS mmix_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1189,19 +1194,19 @@ mmix_reversible_cc_mode (mode)
   return mode != CC_FPmode;
 }
 
-/* DEFAULT_RTX_COSTS.  */
+/* TARGET_RTX_COSTS.  */
 
-int
-mmix_rtx_cost_recalculated (x, code, outer_code, costp)
+static bool
+mmix_rtx_costs (x, code, outer_code, total)
      rtx x ATTRIBUTE_UNUSED;
-     RTX_CODE code ATTRIBUTE_UNUSED;
-     RTX_CODE outer_code ATTRIBUTE_UNUSED;
-     int *costp ATTRIBUTE_UNUSED;
+     int code ATTRIBUTE_UNUSED;
+     int outer_code ATTRIBUTE_UNUSED;
+     int *total ATTRIBUTE_UNUSED;
 {
   /* For the time being, this is just a stub and we'll accept the
      generic calculations, until we can do measurements, at least.
      Say we did not modify any calculated costs.  */
-  return 0;
+  return false;
 }
 
 /* ADDRESS_COST.  */

@@ -227,6 +227,7 @@ static unsigned int rs6000_xcoff_section_type_flags PARAMS ((tree, const char *,
 static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
      ATTRIBUTE_UNUSED;
 static bool rs6000_binds_local_p PARAMS ((tree));
+static bool rs6000_rtx_costs PARAMS ((rtx, int, int, int *));
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
 static int rs6000_issue_rate PARAMS ((void));
@@ -403,6 +404,9 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL rs6000_function_ok_for_sibcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS rs6000_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13228,6 +13232,210 @@ rs6000_binds_local_p (decl)
      tree decl;
 {
   return default_binds_local_p_1 (decl, flag_pic || rs6000_flag_pic);
+}
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+rs6000_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+      /* On the RS/6000, if it is valid in the insn, it is free.
+	 So this always returns 0.  */
+    case CONST_INT:
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_DOUBLE:
+    case HIGH:
+      *total = 0;
+      return true;
+
+    case PLUS:
+      *total = ((GET_CODE (XEXP (x, 1)) == CONST_INT
+		 && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1))
+					       + 0x8000) >= 0x10000)
+		 && ((INTVAL (XEXP (x, 1)) & 0xffff) != 0))
+		? COSTS_N_INSNS (2)
+		: COSTS_N_INSNS (1));
+      return true;
+
+    case AND:
+    case IOR:
+    case XOR:
+      *total = ((GET_CODE (XEXP (x, 1)) == CONST_INT
+		 && (INTVAL (XEXP (x, 1)) & (~ (HOST_WIDE_INT) 0xffff)) != 0
+		 && ((INTVAL (XEXP (x, 1)) & 0xffff) != 0))
+		? COSTS_N_INSNS (2)
+		: COSTS_N_INSNS (1));
+      return true;
+
+    case MULT:
+      if (optimize_size)
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      switch (rs6000_cpu)
+	{
+	case PROCESSOR_RIOS1:
+	case PROCESSOR_PPC405:
+	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
+		    ? COSTS_N_INSNS (5)
+		    : (INTVAL (XEXP (x, 1)) >= -256
+		       && INTVAL (XEXP (x, 1)) <= 255)
+		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));
+	  return true;
+
+	case PROCESSOR_RS64A:
+	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
+		    ? GET_MODE (XEXP (x, 1)) != DImode
+		    ? COSTS_N_INSNS (20) : COSTS_N_INSNS (34)
+		    : (INTVAL (XEXP (x, 1)) >= -256
+		       && INTVAL (XEXP (x, 1)) <= 255)
+		    ? COSTS_N_INSNS (8) : COSTS_N_INSNS (12));
+	  return true;
+
+	case PROCESSOR_RIOS2:
+	case PROCESSOR_MPCCORE:
+	case PROCESSOR_PPC604e:
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+
+	case PROCESSOR_PPC601:
+	  *total = COSTS_N_INSNS (5);
+	  return true;
+
+	case PROCESSOR_PPC603:
+	case PROCESSOR_PPC7400:
+	case PROCESSOR_PPC750:
+	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
+		    ? COSTS_N_INSNS (5)
+		    : (INTVAL (XEXP (x, 1)) >= -256
+		       && INTVAL (XEXP (x, 1)) <= 255)
+		    ? COSTS_N_INSNS (2) : COSTS_N_INSNS (3));
+	  return true;
+
+	case PROCESSOR_PPC7450:
+	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
+		    ? COSTS_N_INSNS (4)
+		    : COSTS_N_INSNS (3));
+	  return true;
+
+	case PROCESSOR_PPC403:
+	case PROCESSOR_PPC604:
+	case PROCESSOR_PPC8540:
+	  *total = COSTS_N_INSNS (4);
+	  return true;
+
+	case PROCESSOR_PPC620:
+	case PROCESSOR_PPC630:
+	case PROCESSOR_POWER4:
+	  *total = (GET_CODE (XEXP (x, 1)) != CONST_INT
+		    ? GET_MODE (XEXP (x, 1)) != DImode
+		    ? COSTS_N_INSNS (5) : COSTS_N_INSNS (7)
+		    : (INTVAL (XEXP (x, 1)) >= -256
+		       && INTVAL (XEXP (x, 1)) <= 255)
+		    ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));
+	  return true;
+
+	default:
+	  abort ();
+	}
+
+    case DIV:
+    case MOD:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case UDIV:
+    case UMOD:
+      switch (rs6000_cpu)
+	{
+	case PROCESSOR_RIOS1:
+	  *total = COSTS_N_INSNS (19);
+	  return true;
+
+	case PROCESSOR_RIOS2:
+	  *total = COSTS_N_INSNS (13);
+	  return true;
+
+	case PROCESSOR_RS64A:
+	  *total = (GET_MODE (XEXP (x, 1)) != DImode
+		    ? COSTS_N_INSNS (65)
+		    : COSTS_N_INSNS (67));
+	  return true;
+
+	case PROCESSOR_MPCCORE:
+	  *total = COSTS_N_INSNS (6);
+	  return true;
+
+	case PROCESSOR_PPC403:
+	  *total = COSTS_N_INSNS (33);
+	  return true;
+
+	case PROCESSOR_PPC405:
+	  *total = COSTS_N_INSNS (35);
+	  return true;
+
+	case PROCESSOR_PPC601:
+	  *total = COSTS_N_INSNS (36);
+	  return true;
+
+	case PROCESSOR_PPC603:
+	  *total = COSTS_N_INSNS (37);
+	  return true;
+
+	case PROCESSOR_PPC604:
+	case PROCESSOR_PPC604e:
+	  *total = COSTS_N_INSNS (20);
+	  return true;
+
+	case PROCESSOR_PPC620:
+	case PROCESSOR_PPC630:
+	case PROCESSOR_POWER4:
+	  *total = (GET_MODE (XEXP (x, 1)) != DImode
+		    ? COSTS_N_INSNS (21)
+		    : COSTS_N_INSNS (37));
+	  return true;
+
+	case PROCESSOR_PPC750:
+	case PROCESSOR_PPC8540:
+	case PROCESSOR_PPC7400:
+	  *total = COSTS_N_INSNS (19);
+	  return true;
+
+	case PROCESSOR_PPC7450:
+	  *total = COSTS_N_INSNS (23);
+	  return true;
+
+	default:
+	  abort ();
+	}
+
+    case FFS:
+      *total = COSTS_N_INSNS (4);
+      return true;
+
+    case MEM:
+      /* MEM should be slightly more expensive than (plus (reg) (const)) */
+      *total = 5;
+      return true;
+
+    default:
+      return false;
+    }
 }
 
 /* A C expression returning the cost of moving data from a register of class

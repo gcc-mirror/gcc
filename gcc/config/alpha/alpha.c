@@ -123,6 +123,54 @@ extern GTY(()) int alpha_this_gpdisp_sequence_number;
 int alpha_this_literal_sequence_number;
 int alpha_this_gpdisp_sequence_number;
 
+/* Costs of various operations on the different architectures.  */
+
+struct alpha_rtx_cost_data
+{
+  unsigned char fp_add;
+  unsigned char fp_mult;
+  unsigned char fp_div_sf;
+  unsigned char fp_div_df;
+  unsigned char int_mult_si;
+  unsigned char int_mult_di;
+  unsigned char int_shift;
+  unsigned char int_cmov;
+};
+
+static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
+{
+  { /* EV4 */
+    COSTS_N_INSNS (6),		/* fp_add */
+    COSTS_N_INSNS (6),		/* fp_mult */
+    COSTS_N_INSNS (34),		/* fp_div_sf */
+    COSTS_N_INSNS (63),		/* fp_div_df */
+    COSTS_N_INSNS (23),		/* int_mult_si */
+    COSTS_N_INSNS (23),		/* int_mult_di */
+    COSTS_N_INSNS (2),		/* int_shift */
+    COSTS_N_INSNS (2),		/* int_cmov */
+  },
+  { /* EV5 */
+    COSTS_N_INSNS (4),		/* fp_add */
+    COSTS_N_INSNS (4),		/* fp_mult */
+    COSTS_N_INSNS (15),		/* fp_div_sf */
+    COSTS_N_INSNS (22),		/* fp_div_df */
+    COSTS_N_INSNS (8),		/* int_mult_si */
+    COSTS_N_INSNS (12),		/* int_mult_di */
+    COSTS_N_INSNS (1) + 1,	/* int_shift */
+    COSTS_N_INSNS (1),		/* int_cmov */
+  },
+  { /* EV6 */
+    COSTS_N_INSNS (4),		/* fp_add */
+    COSTS_N_INSNS (4),		/* fp_mult */
+    COSTS_N_INSNS (12),		/* fp_div_sf */
+    COSTS_N_INSNS (15),		/* fp_div_df */
+    COSTS_N_INSNS (7),		/* int_mult_si */
+    COSTS_N_INSNS (7),		/* int_mult_di */
+    COSTS_N_INSNS (1),		/* int_shift */
+    COSTS_N_INSNS (2),		/* int_cmov */
+  },
+};
+
 /* Declarations of static functions.  */
 static bool alpha_function_ok_for_sibcall
   PARAMS ((tree, tree));
@@ -144,6 +192,8 @@ static int some_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
 static int split_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
+static bool alpha_rtx_costs
+  PARAMS ((rtx, int, int, int *));
 static void alpha_set_memflags_1
   PARAMS ((rtx, int, int, int));
 static rtx alpha_emit_set_const_1
@@ -318,6 +368,9 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
 #endif
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS alpha_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2472,6 +2525,150 @@ alpha_legitimize_reload_address (x, mode, opnum, type, ind_levels)
     }
 
   return NULL_RTX;
+}
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+alpha_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  enum machine_mode mode = GET_MODE (x);
+  bool float_mode_p = FLOAT_MODE_P (mode);
+
+  switch (code)
+    {
+      /* If this is an 8-bit constant, return zero since it can be used
+	 nearly anywhere with no cost.  If it is a valid operand for an
+	 ADD or AND, likewise return 0 if we know it will be used in that
+	 context.  Otherwise, return 2 since it might be used there later.
+	 All other constants take at least two insns.  */
+    case CONST_INT:
+      if (INTVAL (x) >= 0 && INTVAL (x) < 256)
+	{
+	  *total = 0;
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case CONST_DOUBLE:
+      if (x == CONST0_RTX (mode))
+	*total = 0;
+      else if ((outer_code == PLUS && add_operand (x, VOIDmode))
+	       || (outer_code == AND && and_operand (x, VOIDmode)))
+	*total = 0;
+      else if (add_operand (x, VOIDmode) || and_operand (x, VOIDmode))
+	*total = 2;
+      else
+	*total = COSTS_N_INSNS (2);
+      return true;
+      
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      if (TARGET_EXPLICIT_RELOCS && small_symbolic_operand (x, VOIDmode))
+	*total = COSTS_N_INSNS (outer_code != MEM);
+      else if (TARGET_EXPLICIT_RELOCS && local_symbolic_operand (x, VOIDmode))
+	*total = COSTS_N_INSNS (1 + (outer_code != MEM));
+      else if (tls_symbolic_operand_type (x))
+	/* Estimate of cost for call_pal rduniq.  */
+	*total = COSTS_N_INSNS (15);
+      else
+	/* Otherwise we do a load from the GOT.  */
+	*total = COSTS_N_INSNS (alpha_memory_latency);
+      return true;
+    
+    case PLUS:
+    case MINUS:
+      if (float_mode_p)
+	*total = alpha_rtx_cost_data[alpha_cpu].fp_add;
+      else if (GET_CODE (XEXP (x, 0)) == MULT
+	       && const48_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
+	{
+	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0), outer_code)
+		    + rtx_cost (XEXP (x, 1), outer_code) + 2);
+	  return true;
+	}
+      return false;
+
+    case MULT:
+      if (float_mode_p)
+	*total = alpha_rtx_cost_data[alpha_cpu].fp_mult;
+      else if (mode == DImode)
+	*total = alpha_rtx_cost_data[alpha_cpu].int_mult_di;
+      else
+	*total = alpha_rtx_cost_data[alpha_cpu].int_mult_si;
+      return false;
+
+    case ASHIFT:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) <= 3)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return false;
+	}
+      /* FALLTHRU */
+
+    case ASHIFTRT:
+    case LSHIFTRT:
+      *total = alpha_rtx_cost_data[alpha_cpu].int_shift;
+      return false;
+
+    case IF_THEN_ELSE:
+      if (float_mode_p)
+        *total = alpha_rtx_cost_data[alpha_cpu].fp_add;
+      else
+        *total = alpha_rtx_cost_data[alpha_cpu].int_cmov;
+      return false;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      if (!float_mode_p)
+	*total = COSTS_N_INSNS (70);	/* ??? */
+      else if (mode == SFmode)
+        *total = alpha_rtx_cost_data[alpha_cpu].fp_div_sf;
+      else
+        *total = alpha_rtx_cost_data[alpha_cpu].fp_div_df;
+      return false;
+
+    case MEM:
+      *total = COSTS_N_INSNS (alpha_memory_latency);
+      return true;
+
+    case NEG:
+      if (! float_mode_p)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return false;
+	}
+      /* FALLTHRU */
+
+    case ABS:
+      if (! float_mode_p)
+	{
+	  *total = COSTS_N_INSNS (1) + alpha_rtx_cost_data[alpha_cpu].int_cmov;
+	  return false;
+	}
+      /* FALLTHRU */
+
+    case FLOAT:
+    case UNSIGNED_FLOAT:
+    case FIX:
+    case UNSIGNED_FIX:
+    case FLOAT_EXTEND:
+    case FLOAT_TRUNCATE:
+      *total = alpha_rtx_cost_data[alpha_cpu].fp_add;
+      return false;
+
+    default:
+      return false;
+    }
 }
 
 /* REF is an alignable memory location.  Place an aligned SImode

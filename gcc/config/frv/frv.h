@@ -2541,65 +2541,6 @@ __asm__("\n"								\
 
 /* Describing Relative Costs of Operations.  */
 
-/* A part of a C `switch' statement that describes the relative costs of
-   constant RTL expressions.  It must contain `case' labels for expression
-   codes `const_int', `const', `symbol_ref', `label_ref' and `const_double'.
-   Each case must ultimately reach a `return' statement to return the relative
-   cost of the use of that kind of constant value in an expression.  The cost
-   may depend on the precise value of the constant, which is available for
-   examination in X, and the rtx code of the expression in which it is
-   contained, found in OUTER_CODE.
-
-   CODE is the expression code--redundant, since it can be obtained with
-   `GET_CODE (X)'.  */
-#define CONST_COSTS(X, CODE, OUTER_CODE)				\
-  case CONST:								\
-  case LABEL_REF:							\
-  case SYMBOL_REF:							\
-  case CONST_DOUBLE:							\
-    return COSTS_N_INSNS (2);						\
-									\
-  case CONST_INT:							\
-    /* Make 12 bit integers really cheap */				\
-    return IN_RANGE_P (INTVAL (X), -2048, 2047) ? 0 : COSTS_N_INSNS (2); \
-
-/* Like `CONST_COSTS' but applies to nonconstant RTL expressions.  This can be
-   used, for example, to indicate how costly a multiply instruction is.  In
-   writing this macro, you can use the construct `COSTS_N_INSNS (N)' to specify
-   a cost equal to N fast instructions.  OUTER_CODE is the code of the
-   expression in which X is contained.
-
-   This macro is optional; do not define it if the default cost assumptions are
-   adequate for the target machine.  */
-#define RTX_COSTS(X, CODE, OUTER_CODE)					\
-  case PLUS:								\
-  case MINUS:								\
-  case AND:								\
-  case IOR:								\
-  case XOR:								\
-  case ASHIFT:								\
-  case ASHIFTRT:							\
-  case LSHIFTRT:							\
-  case NOT:								\
-  case NEG:								\
-  case COMPARE:								\
-    if (GET_MODE (X) == SImode)						\
-      return COSTS_N_INSNS (1);						\
-    else if (GET_MODE (X) == DImode)					\
-      return COSTS_N_INSNS (2);						\
-    else								\
-      return COSTS_N_INSNS (3);	/* guess */				\
-									\
-  case MULT:								\
-    if (GET_MODE (X) == SImode)						\
-      return COSTS_N_INSNS (2);						\
-    else								\
-      return COSTS_N_INSNS (6);	/* guess */				\
-									\
-  case DIV:								\
-  case UDIV:								\
-    return COSTS_N_INSNS (18);
-
 /* A C expression for the cost of moving data from a register in class FROM to
    one in class TO.  The classes are expressed using the enumeration values
    such as `GENERAL_REGS'.  A value of 4 is the default; other values are

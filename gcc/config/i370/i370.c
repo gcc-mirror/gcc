@@ -112,6 +112,7 @@ static int mvs_hash_alias PARAMS ((const char *));
 #endif
 static void i370_encode_section_info PARAMS ((tree, int));
 static void i370_internal_label PARAMS ((FILE *, const char *, unsigned long));
+static bool i370_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* ===================================================== */
 /* defines and functions specific to the HLASM assembler */
@@ -317,6 +318,8 @@ static const unsigned char ebcasc[256] =
 #define TARGET_ENCODE_SECTION_INFO i370_encode_section_info
 #undef TARGET_ASM_INTERNAL_LABEL
 #define  TARGET_ASM_INTERNAL_LABEL i370_internal_label
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS i370_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1612,4 +1615,36 @@ i370_internal_label (stream, prefix, labelno)
     mvs_add_label(labelno);
 
   default_internal_label (stream, prefix, labelno);
+}
+
+static bool
+i370_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code;
+     int outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      if ((unsigned HOST_WIDE_INT) INTVAL (x) < 0xfff)
+	{
+	  *total = 1;
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 2;
+      return true;
+
+    case CONST_DOUBLE:
+      *total = 4;
+      return true;
+
+    default:
+      return false;
+    }
 }

@@ -141,6 +141,10 @@ static void	  mcore_asm_named_section      PARAMS ((const char *,
 static void       mcore_unique_section	       PARAMS ((tree, int));
 static void mcore_encode_section_info		PARAMS ((tree, int));
 static const char *mcore_strip_name_encoding	PARAMS ((const char *));
+static int        mcore_const_costs            	PARAMS ((rtx, RTX_CODE));
+static int        mcore_and_cost               	PARAMS ((rtx));
+static int        mcore_ior_cost               	PARAMS ((rtx));
+static bool       mcore_rtx_costs		PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -163,6 +167,9 @@ static const char *mcore_strip_name_encoding	PARAMS ((const char *));
 #define TARGET_ENCODE_SECTION_INFO mcore_encode_section_info
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING mcore_strip_name_encoding
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS mcore_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -368,7 +375,7 @@ mcore_print_operand (stream, x, code)
 
 /* What does a constant cost ?  */
 
-int
+static int
 mcore_const_costs (exp, code)
      rtx exp;
      enum rtx_code code;
@@ -399,7 +406,7 @@ mcore_const_costs (exp, code)
    have been relaxed.   We want to ensure that cse will cse relaxed immeds
    out.  Otherwise we'll get bad code (multiple reloads of the same const).  */
 
-int
+static int
 mcore_and_cost (x)
      rtx x;
 {
@@ -426,7 +433,7 @@ mcore_and_cost (x)
 
 /* What does an or cost - see and_cost().  */
 
-int
+static int
 mcore_ior_cost (x)
      rtx x;
 {
@@ -449,6 +456,48 @@ mcore_ior_cost (x)
   
   /* Takes a lrw to load.  */
   return 5;
+}
+
+static bool
+mcore_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      *total = mcore_const_costs (x, outer_code);
+      return true;
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 5;
+      return true;
+    case CONST_DOUBLE:
+      *total = 10;
+      return true;
+
+    case AND:
+      *total = COSTS_N_INSNS (mcore_and_cost (x));
+      return true;
+
+    case IOR:
+      *total = COSTS_N_INSNS (mcore_ior_cost (x));
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+    case FLOAT:
+    case FIX:
+      *total = COSTS_N_INSNS (100);
+      return true;
+  
+    default:
+      return false;
+    }
 }
 
 /* Check to see if a comparison against a constant can be made more efficient

@@ -41,6 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "timevar.h"
 #include "except.h"
+#include "target.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -832,7 +833,7 @@ rtx_cost (x, outer_code)
     return 0;
 
   /* Compute the default costs of certain things.
-     Note that RTX_COSTS can override the defaults.  */
+     Note that targetm.rtx_costs can override the defaults.  */
 
   code = GET_CODE (x);
   switch (code)
@@ -867,17 +868,9 @@ rtx_cost (x, outer_code)
 			      + GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD);
       break;
 
-#ifdef RTX_COSTS
-      RTX_COSTS (x, code, outer_code);
-#endif
-#ifdef CONST_COSTS
-      CONST_COSTS (x, code, outer_code);
-#endif
-
     default:
-#ifdef DEFAULT_RTX_COSTS
-      DEFAULT_RTX_COSTS (x, code, outer_code);
-#endif
+      if ((*targetm.rtx_costs) (x, code, outer_code, &total))
+	return total;
       break;
     }
 

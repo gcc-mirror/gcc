@@ -120,7 +120,6 @@ extern char *sparc_v8plus_shift PARAMS ((rtx *, rtx, const char *));
 extern int sparc_check_64 PARAMS ((rtx, rtx));
 extern rtx gen_df_reg PARAMS ((rtx, int));
 extern int sparc_extra_constraint_check PARAMS ((rtx, int, int));
-extern int sparc_rtx_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
 #endif /* RTX_CODE */
 
 #endif /* __SPARC_PROTOS_H__ */

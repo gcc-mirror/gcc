@@ -97,6 +97,7 @@ hppa_fpstore_bypass_p (out_insn, in_insn)
 #endif
 #endif
 
+static bool hppa_rtx_costs PARAMS ((rtx, int, int, int *));
 static inline rtx force_mode PARAMS ((enum machine_mode, rtx));
 static void pa_combine_instructions PARAMS ((rtx));
 static int pa_can_combine_p PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
@@ -219,6 +220,9 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_ASM_DESTRUCTOR
 #define TARGET_ASM_DESTRUCTOR pa_asm_out_destructor
 #endif
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS hppa_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1313,6 +1317,87 @@ hppa_address_cost (X)
   else if (GET_CODE (X) == HIGH)
     return 2;
   return 4;
+}
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+hppa_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      if (INTVAL (x) == 0)
+	*total = 0;
+      else if (INT_14_BITS (x))
+	*total = 1;
+      else
+	*total = 2;
+      return true;
+
+    case HIGH:
+      *total = 2;
+      return true;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 4;
+      return true;
+
+    case CONST_DOUBLE:
+      if ((x == CONST0_RTX (DFmode) || x == CONST0_RTX (SFmode))
+	  && outer_code != SET)
+	*total = 0;
+      else
+        *total = 8;
+      return true;
+
+    case MULT:
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+        *total = COSTS_N_INSNS (3);
+      else if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
+	*total = COSTS_N_INSNS (8);
+      else
+	*total = COSTS_N_INSNS (20);
+      return true;
+
+    case DIV:
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	{
+	  *total = COSTS_N_INSNS (14);
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case UDIV:
+    case MOD:
+    case UMOD:
+      *total = COSTS_N_INSNS (60);
+      return true;
+
+    case PLUS: /* this includes shNadd insns */
+    case MINUS:
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	*total = COSTS_N_INSNS (3);
+      else
+        *total = COSTS_N_INSNS (1);
+      return true;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    default:
+      return false;
+    }
 }
 
 /* Ensure mode of ORIG, a REG rtx, is MODE.  Returns either ORIG or a

@@ -214,7 +214,11 @@ static void sh_media_init_builtins PARAMS ((void));
 static rtx sh_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static int flow_dependent_p PARAMS ((rtx, rtx));
 static void flow_dependent_p_1 PARAMS ((rtx, rtx, void *));
-
+static int shiftcosts PARAMS ((rtx));
+static int andcosts PARAMS ((rtx));
+static int addsubcosts PARAMS ((rtx));
+static int multcosts PARAMS ((rtx));
+static bool sh_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -265,6 +269,9 @@ static void flow_dependent_p_1 PARAMS ((rtx, rtx, void *));
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL sh_function_ok_for_sibcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS sh_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1274,7 +1281,7 @@ shift_insns_rtx (insn)
 
 /* Return the cost of a shift.  */
 
-int
+static inline int
 shiftcosts (x)
      rtx x;
 {
@@ -1314,7 +1321,7 @@ shiftcosts (x)
 
 /* Return the cost of an AND operation.  */
 
-int
+static inline int
 andcosts (x)
      rtx x;
 {
@@ -1354,7 +1361,7 @@ andcosts (x)
 
 /* Return the cost of an addition or a subtraction.  */
 
-int
+static inline int
 addsubcosts (x)
      rtx x;
 {
@@ -1395,7 +1402,7 @@ addsubcosts (x)
 }
 
 /* Return the cost of a multiply.  */
-int
+static inline int
 multcosts (x)
      rtx x ATTRIBUTE_UNUSED;
 {
@@ -1420,6 +1427,101 @@ multcosts (x)
   /* Otherwise count all the insns in the routine we'd be calling too.  */
   return 20;
 }
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+sh_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code, *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      if (TARGET_SHMEDIA)
+        {
+	  if (INTVAL (x) == 0)
+	    *total = 0;
+	  else if (outer_code == AND && and_operand ((x), DImode))
+	    *total = 0;
+	  else if ((outer_code == IOR || outer_code == XOR
+	            || outer_code == PLUS)
+		   && CONST_OK_FOR_P (INTVAL (x)))
+	    *total = 0;
+	  else if (CONST_OK_FOR_J (INTVAL (x)))
+            *total = COSTS_N_INSNS (outer_code != SET);
+	  else if (CONST_OK_FOR_J (INTVAL (x) >> 16))
+	    *total = COSTS_N_INSNS (2);
+	  else if (CONST_OK_FOR_J ((INTVAL (x) >> 16) >> 16))
+	    *total = COSTS_N_INSNS (3);
+          else
+	    *total = COSTS_N_INSNS (4);
+	  return true;
+        }
+      if (CONST_OK_FOR_I (INTVAL (x)))
+        *total = 0;
+      else if ((outer_code == AND || outer_code == IOR || outer_code == XOR)
+	       && CONST_OK_FOR_L (INTVAL (x)))
+        *total = 1;
+      else
+        *total = 8;
+      return true;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      if (TARGET_SHMEDIA64)
+        *total = COSTS_N_INSNS (4);
+      else if (TARGET_SHMEDIA32)
+        *total = COSTS_N_INSNS (2);
+      else
+	*total = 5;
+      return true;
+
+    case CONST_DOUBLE:
+      if (TARGET_SHMEDIA)
+        *total = COSTS_N_INSNS (4);
+      else
+        *total = 10;
+      return true;
+
+    case PLUS:
+      *total = COSTS_N_INSNS (addsubcosts (x));
+      return true;
+
+    case AND:
+      *total = COSTS_N_INSNS (andcosts (x));
+      return true;
+
+    case MULT:
+      *total = COSTS_N_INSNS (multcosts (x));
+      return true;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      *total = COSTS_N_INSNS (shiftcosts (x));
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      *total = COSTS_N_INSNS (20);
+      return true;
+
+    case FLOAT:
+    case FIX:
+      *total = 100;
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 
 /* Code to expand a shift.  */
 

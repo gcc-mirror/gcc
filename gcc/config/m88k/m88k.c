@@ -79,6 +79,7 @@ static void m88k_encode_section_info PARAMS ((tree, int));
 #ifdef AS_BUG_DOT_LABELS
 static void m88k_internal_label PARAMS ((FILE *, const char *, unsigned long));
 #endif
+static bool m88k_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -110,6 +111,9 @@ static void m88k_internal_label PARAMS ((FILE *, const char *, unsigned long));
 #undef TARGET_ASM_INTERNAL_LABEL
 #define  TARGET_ASM_INTERNAL_LABEL m88k_internal_label
 #endif
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS m88k_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3362,3 +3366,66 @@ m88k_internal_label (stream, prefix, labelno)
 	   prefix, labelno, INTERNAL_ASM_OP, prefix, labelno);
 }
 #endif
+
+static bool
+m88k_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+    /* We assume that any 16 bit integer can easily be recreated, so we
+       indicate 0 cost, in an attempt to get GCC not to optimize things
+       like comparison against a constant.  */
+    case CONST_INT:
+      if (SMALL_INT (x))
+        *total = 0;
+      else if (SMALL_INTVAL (- INTVAL (x)))
+        *total = 2;
+      else if (classify_integer (SImode, INTVAL (x)) != m88k_oru_or)
+        *total = 4;
+      else
+        *total = 7;
+      return true;
+
+    case HIGH:
+      *total = 2;
+      return true;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      if (flag_pic)
+        *total = (flag_pic == 2) ? 11 : 8;
+      else
+	*total = 5;
+      return true;
+
+    /* The cost of CONST_DOUBLE is zero (if it can be placed in an insn, it
+       is as good as a register; since it can't be placed in any insn, it
+       won't do anything in cse, but it will cause expand_binop to pass the
+       constant to the define_expands).  */
+    case CONST_DOUBLE:
+      *total = 0;
+      return true;
+
+    case MEM:
+      *total = COSTS_N_INSNS (2);
+      return true;
+
+    case MULT:
+      *total = COSTS_N_INSNS (3);
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      *total = COSTS_N_INSNS (38);
+      return true;
+
+    default:
+      return false;
+    }
+}

@@ -71,6 +71,8 @@ static unsigned int avr_section_type_flags PARAMS ((tree, const char *, int));
 
 static void   avr_asm_out_ctor PARAMS ((rtx, int));
 static void   avr_asm_out_dtor PARAMS ((rtx, int));
+static int default_rtx_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
+static bool avr_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Allocate registers from r25 to r8 for parameters for function calls */
 #define FIRST_CUM_REG 26
@@ -227,6 +229,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS avr_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4978,7 +4982,7 @@ order_regs_for_local_alloc ()
 /* Calculate the cost of X code of the expression in which it is contained,
    found in OUTER_CODE */
 
-int
+static int
 default_rtx_costs (X, code, outer_code)
      rtx X;
      enum rtx_code code;
@@ -5035,6 +5039,56 @@ default_rtx_costs (X, code, outer_code)
       break;
     }
   return cost;
+}
+
+static bool
+avr_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  int cst;
+
+  switch (code)
+    {
+    case CONST_INT:
+      if (outer_code == PLUS
+	  || outer_code == IOR
+	  || outer_code == AND
+	  || outer_code == MINUS
+	  || outer_code == SET
+	  || INTVAL (x) == 0)
+	{
+          *total = 2;
+	  return true;
+	}
+      if (outer_code == COMPARE
+	  && INTVAL (x) >= 0
+	  && INTVAL (x) <= 255)
+	{
+	  *total = 2;
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_DOUBLE:
+      *total = 4;
+      return true;
+
+    default:
+      cst = default_rtx_costs (x, code, outer_code);
+      if (cst > 0)
+	{
+	  *total = cst;
+	  return true;
+	}
+      else if (cst < 0)
+	*total += -cst;
+      return false;
+    }
 }
 
 /* Calculate the cost of a memory address */

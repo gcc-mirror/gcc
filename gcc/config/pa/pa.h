@@ -1595,28 +1595,6 @@ do { 									\
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  case CONST_INT:							\
-    if (INTVAL (RTX) == 0) return 0;					\
-    if (INT_14_BITS (RTX)) return 1;					\
-  case HIGH:								\
-    return 2;								\
-  case CONST:								\
-  case LABEL_REF:							\
-  case SYMBOL_REF:							\
-    return 4;								\
-  case CONST_DOUBLE:							\
-    if ((RTX == CONST0_RTX (DFmode) || RTX == CONST0_RTX (SFmode))	\
-	&& OUTER_CODE != SET)						\
-      return 0;								\
-    else								\
-      return 8;
-
 #define ADDRESS_COST(RTX) \
   (GET_CODE (RTX) == REG ? 1 : hppa_address_cost (RTX))
 
@@ -1635,34 +1613,6 @@ do { 									\
   : FP_REG_CLASS_P (CLASS1) && ! FP_REG_CLASS_P (CLASS2) ? 16	\
   : FP_REG_CLASS_P (CLASS2) && ! FP_REG_CLASS_P (CLASS1) ? 16	\
   : 2)
-
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  The purpose for the cost of MULT is to encourage
-   `synth_mult' to find a synthetic multiply when reasonable.  */
-
-#define RTX_COSTS(X,CODE,OUTER_CODE)					\
-  case MULT:								\
-    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
-      return COSTS_N_INSNS (3);						\
-    return (TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT) \
-	    ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20);	\
-  case DIV:								\
-    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
-      return COSTS_N_INSNS (14);					\
-  case UDIV:								\
-  case MOD:								\
-  case UMOD:								\
-    return COSTS_N_INSNS (60);						\
-  case PLUS: /* this includes shNadd insns */				\
-  case MINUS:								\
-    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
-      return COSTS_N_INSNS (3);						\
-    return COSTS_N_INSNS (1);						\
-  case ASHIFT:								\
-  case ASHIFTRT:							\
-  case LSHIFTRT:							\
-    return COSTS_N_INSNS (1);
 
 /* Adjust the cost of branches.  */
 #define BRANCH_COST (pa_cpu == PROCESSOR_8000 ? 2 : 1)

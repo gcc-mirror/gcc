@@ -204,6 +204,7 @@ static unsigned int xtensa_multibss_section_type_flags
 static void xtensa_select_rtx_section
   PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
 static void xtensa_encode_section_info PARAMS ((tree, int));
+static bool xtensa_rtx_costs PARAMS ((rtx, int, int, int *));
 
 static rtx frame_size_const;
 static int current_function_arg_words;
@@ -239,6 +240,9 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_ASM_SELECT_RTX_SECTION  xtensa_select_rtx_section
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  xtensa_encode_section_info
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS xtensa_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2836,6 +2840,218 @@ xtensa_encode_section_info (decl, first)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL && ! TREE_PUBLIC (decl))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+}
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+xtensa_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      switch (outer_code)
+	{
+	case SET:
+	  if (xtensa_simm12b (INTVAL (x)))
+	    {
+	      *total = 4;
+	      return true;
+	    }
+	  break;
+	case PLUS:
+	  if (xtensa_simm8 (INTVAL (x))
+	      || xtensa_simm8x256 (INTVAL (x)))
+	    {
+	      *total = 0;
+	      return true;
+	    }
+	  break;
+	case AND:
+	  if (xtensa_mask_immediate (INTVAL (x)))
+	    {
+	      *total = 0;
+	      return true;
+	    }
+	  break;
+	case COMPARE:
+	  if ((INTVAL (x) == 0) || xtensa_b4const (INTVAL (x)))
+	    {
+	      *total = 0;
+	      return true;
+	    }
+	  break;
+	case ASHIFT:
+	case ASHIFTRT:
+	case LSHIFTRT:
+	case ROTATE:
+	case ROTATERT:
+	  /* no way to tell if X is the 2nd operand so be conservative */
+	default: break;
+	}
+      if (xtensa_simm12b (INTVAL (x)))
+	*total = 5;
+      else
+	*total = 6;
+      return true;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 5;
+      return true;
+
+    case CONST_DOUBLE:
+      *total = 7;
+      return true;
+
+    case MEM:
+      {
+	int num_words =
+	  (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD) ?  2 : 1;
+
+	if (memory_address_p (GET_MODE (x), XEXP ((x), 0)))
+	  *total = COSTS_N_INSNS (num_words);
+	else
+	  *total = COSTS_N_INSNS (2*num_words);
+	return true;
+      }
+
+    case FFS:
+      *total = COSTS_N_INSNS (TARGET_NSA ? 5 : 50);
+      return true;
+
+    case NOT:
+      *total = COSTS_N_INSNS ((GET_MODE (x) == DImode) ? 3 : 2);
+      return true;
+
+    case AND:
+    case IOR:
+    case XOR:
+      if (GET_MODE (x) == DImode)
+	*total = COSTS_N_INSNS (2);
+      else
+	*total = COSTS_N_INSNS (1);
+      return true;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (GET_MODE (x) == DImode)
+	*total = COSTS_N_INSNS (50);
+      else
+	*total = COSTS_N_INSNS (1);
+      return true;
+
+    case ABS:
+      {
+	enum machine_mode xmode = GET_MODE (x);
+	if (xmode == SFmode)
+	  *total = COSTS_N_INSNS (TARGET_HARD_FLOAT ? 1 : 50);
+	else if (xmode == DFmode)
+	  *total = COSTS_N_INSNS (50);
+	else
+	  *total = COSTS_N_INSNS (4);
+	return true;
+      }
+
+    case PLUS:
+    case MINUS:
+      {
+	enum machine_mode xmode = GET_MODE (x);
+	if (xmode == SFmode)
+	  *total = COSTS_N_INSNS (TARGET_HARD_FLOAT ? 1 : 50);
+	else if (xmode == DFmode || xmode == DImode)
+	  *total = COSTS_N_INSNS (50);
+	else
+	  *total = COSTS_N_INSNS (1);
+	return true;
+      }
+
+    case NEG:
+      *total = COSTS_N_INSNS ((GET_MODE (x) == DImode) ? 4 : 2);
+      return true;
+
+    case MULT:
+      {
+	enum machine_mode xmode = GET_MODE (x);
+	if (xmode == SFmode)
+	  *total = COSTS_N_INSNS (TARGET_HARD_FLOAT ? 4 : 50);
+	else if (xmode == DFmode || xmode == DImode)
+	  *total = COSTS_N_INSNS (50);
+	else if (TARGET_MUL32)
+	  *total = COSTS_N_INSNS (4);
+	else if (TARGET_MAC16)
+	  *total = COSTS_N_INSNS (16);
+	else if (TARGET_MUL16)
+	  *total = COSTS_N_INSNS (12);
+	else
+	  *total = COSTS_N_INSNS (50);
+	return true;
+      }
+
+    case DIV:
+    case MOD:
+      {
+	enum machine_mode xmode = GET_MODE (x);
+	if (xmode == SFmode)
+	  {
+	    *total = COSTS_N_INSNS (TARGET_HARD_FLOAT_DIV ? 8 : 50);
+	    return true;
+	  }
+	else if (xmode == DFmode)
+	  {
+	    *total = COSTS_N_INSNS (50);
+	    return true;
+	  }
+      }
+      /* fall through */
+
+    case UDIV:
+    case UMOD:
+      {
+	enum machine_mode xmode = GET_MODE (x);
+	if (xmode == DImode)
+	  *total = COSTS_N_INSNS (50);
+	else if (TARGET_DIV32)
+	  *total = COSTS_N_INSNS (32);
+	else
+	  *total = COSTS_N_INSNS (50);
+	return true;
+      }
+
+    case SQRT:
+      if (GET_MODE (x) == SFmode)
+	*total = COSTS_N_INSNS (TARGET_HARD_FLOAT_SQRT ? 8 : 50);
+      else
+	*total = COSTS_N_INSNS (50);
+      return true;
+
+    case SMIN:
+    case UMIN:
+    case SMAX:
+    case UMAX:
+      *total = COSTS_N_INSNS (TARGET_MINMAX ? 1 : 50);
+      return true;
+
+    case SIGN_EXTRACT:
+    case SIGN_EXTEND:
+      *total = COSTS_N_INSNS (TARGET_SEXT ? 1 : 2);
+      return true;
+
+    case ZERO_EXTRACT:
+    case ZERO_EXTEND:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    default:
+      return false;
+    }
 }
 
 #include "gt-xtensa.h"

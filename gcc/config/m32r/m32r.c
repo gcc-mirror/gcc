@@ -80,6 +80,7 @@ static void m32r_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static void m32r_encode_section_info PARAMS ((tree, int));
 static const char *m32r_strip_name_encoding PARAMS ((const char *));
 static void init_idents PARAMS ((void));
+static bool m32r_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -112,6 +113,9 @@ static void init_idents PARAMS ((void));
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING m32r_strip_name_encoding
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS m32r_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1750,6 +1754,56 @@ m32r_variable_issue (stream, verbose, insn, how_many)
 }
 
 /* Cost functions.  */
+
+static bool
+m32r_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+      /* Small integers are as cheap as registers.  4 byte values can be
+         fetched as immediate constants - let's give that the cost of an
+         extra insn.  */
+    case CONST_INT:
+      if (INT16_P (INTVAL (x)))
+	{
+	  *total = 0;
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case CONST_DOUBLE:
+      {
+	rtx high, low;
+	split_double (x, &high, &low);
+	*total = COSTS_N_INSNS (!INT16_P (INTVAL (high))
+			        + !INT16_P (INTVAL (low)));
+	return true;
+      }
+
+    case MULT:
+      *total = COSTS_N_INSNS (3);
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      *total = COSTS_N_INSNS (10);
+      return true;
+
+    default:
+      return false;
+    }
+}
 
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.

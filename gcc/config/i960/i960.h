@@ -1154,36 +1154,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 #define	TARGET_MEM_FUNCTIONS	1
 #endif
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-
-/* Constants that can be (non-ldconst) insn operands are cost 0.  Constants
-   that can be non-ldconst operands in rare cases are cost 1.  Other constants
-   have higher costs.  */
-
-/* Must check for OUTER_CODE of SET for power2_operand, because
-   reload_cse_move2add calls us with OUTER_CODE of PLUS to decide when
-   to replace set with add.  */
-
-#define CONST_COSTS(RTX, CODE, OUTER_CODE)				\
-  case CONST_INT:							\
-    if ((INTVAL (RTX) >= 0 && INTVAL (RTX) < 32)			\
-	|| (OUTER_CODE == SET && power2_operand (RTX, VOIDmode)))	\
-      return 0; 							\
-    else if (INTVAL (RTX) >= -31 && INTVAL (RTX) < 0)			\
-      return 1;								\
-  case CONST:								\
-  case LABEL_REF:							\
-  case SYMBOL_REF:							\
-    return (TARGET_C_SERIES ? 6 : 8);					\
-  case CONST_DOUBLE:							\
-    if ((RTX) == CONST0_RTX (DFmode) || (RTX) == CONST0_RTX (SFmode)	\
-	|| (RTX) == CONST1_RTX (DFmode) || (RTX) == CONST1_RTX (SFmode))\
-      return 1;								\
-    return 12;
-
 /* The i960 offers addressing modes which are "as cheap as a register".
    See i960.c (or gcc.texinfo) for details.  */
 
