@@ -1450,6 +1450,8 @@ extern tree index_identifier;
 extern tree delta_identifier;
 extern tree delta2_identifier;
 extern tree pfn_or_delta2_identifier;
+extern tree tag_identifier;
+extern tree offset_identifier;
 
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
@@ -1656,7 +1658,6 @@ extern int current_function_parms_stored;
 #define SIGNATURE_FIELD_NAME_FORMAT "__s_%s"
 #define SIGNATURE_OPTR_NAME	"__optr"
 #define SIGNATURE_SPTR_NAME	"__sptr"
-#define SIGNATURE_VPTR_NAME	"__vptr"
 #define SIGNATURE_POINTER_NAME	"__sp_"
 #define SIGNATURE_POINTER_NAME_FORMAT "__%s%ssp_%s"
 #define SIGNATURE_REFERENCE_NAME "__sr_"
@@ -1665,9 +1666,8 @@ extern int current_function_parms_stored;
 #define SIGTABLE_PTR_TYPE	"__sigtbl_ptr_type"
 #define SIGTABLE_NAME_FORMAT	"__st_%s_%s"
 #define SIGTABLE_NAME_FORMAT_LONG "__st_%s_%s_%d"
-#define SIGTABLE_CODE_NAME	"__code"
+#define SIGTABLE_TAG_NAME	"__tag"
 #define SIGTABLE_OFFSET_NAME	"__offset"
-#define SIGTABLE_PFN_NAME	"__pfn"
 #define EXCEPTION_CLEANUP_NAME 	"exception cleanup"
 
 #define THIS_NAME_P(ID_NODE) (strcmp(IDENTIFIER_POINTER (ID_NODE), "this") == 0)
@@ -1916,6 +1916,7 @@ extern tree build_overload_call			PROTO((tree, tree, int, struct candidate *));
 extern tree build_overload_call_maybe		PROTO((tree, tree, int, struct candidate *));
 
 /* in class.c */
+extern char *dont_allow_type_definitions;
 extern tree build_vbase_pointer			PROTO((tree, tree));
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
 extern tree build_vtable_entry			PROTO((tree, tree));
@@ -2237,6 +2238,7 @@ extern tree hack_identifier			PROTO((tree, tree, int));
 extern tree build_component_type_expr		PROTO((tree, tree, tree, int));
 
 /* in pt.c */
+extern tree tsubst				PROTO ((tree, tree*, int, tree));
 extern void begin_template_parm_list		PROTO((void));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
@@ -2305,7 +2307,6 @@ extern tree build_signature_pointer_constructor	PROTO((tree, tree));
 extern tree build_signature_method_call		PROTO((tree, tree, tree, tree));
 extern tree build_optr_ref			PROTO((tree));
 extern tree build_sptr_ref			PROTO((tree));
-extern tree build_vptr_ref			PROTO((tree));
 
 /* in spew.c */
 extern void init_spew				PROTO((void));
