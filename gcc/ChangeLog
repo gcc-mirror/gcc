@@ -1,3 +1,14 @@
+2001-11-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/gcc.texi: Move several chapters out to ...
+	* doc/configterms.texi, doc/fragments.texi, doc/hostconfig.texi,
+	doc/include/linux-and-gnu.texi, doc/interface.texi,
+	doc/makefile.texi, doc/passes.texi, doc/portability.texi:
+	... here.  New files.
+	* doc/gcc.texi, doc/contrib.texi: Move section headings into
+	contrib.texi.
+	* Makefile.in ($(docdir)/gcc.info, gcc.dvi): Update dependencies.
+
 2001-11-12  Kazu Hirata  <kazu@hxi.com>
 
 	* config/alpha/alpha-interix.h: Fix comment formatting.

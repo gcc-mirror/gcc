@@ -1,0 +1,38 @@
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Portability
+@chapter GCC and Portability
+@cindex portability
+@cindex GCC and portability
+
+The main goal of GCC was to make a good, fast compiler for machines in
+the class that the GNU system aims to run on: 32-bit machines that address
+8-bit bytes and have several general registers.  Elegance, theoretical
+power and simplicity are only secondary.
+
+GCC gets most of the information about the target machine from a machine
+description which gives an algebraic formula for each of the machine's
+instructions.  This is a very clean way to describe the target.  But when
+the compiler needs information that is difficult to express in this
+fashion, I have not hesitated to define an ad-hoc parameter to the machine
+description.  The purpose of portability is to reduce the total work needed
+on the compiler; it was not of interest for its own sake.
+
+@cindex endianness
+@cindex autoincrement addressing, availability
+@findex abort
+GCC does not contain machine dependent code, but it does contain code
+that depends on machine parameters such as endianness (whether the most
+significant byte has the highest or lowest address of the bytes in a word)
+and the availability of autoincrement addressing.  In the RTL-generation
+pass, it is often necessary to have multiple strategies for generating code
+for a particular kind of syntax tree, strategies that are usable for different
+combinations of parameters.  Often I have not tried to address all possible
+cases, but only the common ones or only the ones that I have encountered.
+As a result, a new target may require additional strategies.  You will know
+if this happens because the compiler will call @code{abort}.  Fortunately,
+the new strategies can be added in a machine-independent fashion, and will
+affect only the target machines that need them.
