@@ -1,5 +1,8 @@
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR C++/18729
+	* g++.dg/parse/crash20.C: New.
+
 	PR c++/17431
 	* g++.dg/overload/arg1.C: New.
 	* g++.dg/overload/arg2.C: New.

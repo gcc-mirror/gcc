@@ -1,5 +1,9 @@
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/18729
+	* parser.c (cp_parser_class_name): Check decl's type is not
+	error_mark_node.
+
 	PR c++/17431
 	* call.c (standard_conversion): Add FLAGS parameter. Do not allow
 	derived to base conversion when checking constructor
