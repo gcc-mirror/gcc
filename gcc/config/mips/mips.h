@@ -875,30 +875,42 @@ while (0)
 %{mabi=*} \
 %{!mabi=*:%{mips1|mips2|mips32:-mabi=32} %{!mips1:%{!mips2:%{!mips32:-mabi=64}}}}"
 
-#elif MIPS_ABI_DEFAULT == ABI_32
+#else
+#if MIPS_ABI_DEFAULT == ABI_32
 #define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=32}"
 
-#elif MIPS_ABI_DEFAULT == ABI_N32
+#else
+#if MIPS_ABI_DEFAULT == ABI_N32
 #define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=n32}"
 
-#elif MIPS_ABI_DEFAULT == ABI_64
+#else
+#if MIPS_ABI_DEFAULT == ABI_64
 #define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=64}"
 
-#elif MIPS_ABI_DEFAULT == ABI_EABI
+#else
+#if MIPS_ABI_DEFAULT == ABI_EABI
 #define ABI_GAS_ASM_SPEC "%{mabi=*} %{!mabi=*:-mabi=eabi}"
 
-#elif MIPS_ABI_DEFAULT == ABI_O64
+#else
+#if MIPS_ABI_DEFAULT == ABI_O64
 #define ABI_GAS_ASM_SPEC "\
 %{mabi=*} \
 %{!mabi=*:%{mips1|mips2|mips32:-mabi=32} %{!mips1:%{!mips2:%{!mips32:-mabi=o64}}}}"
 
-#elif MIPS_ABI_DEFAULT == ABI_MEABI
+#else
+#if MIPS_ABI_DEFAULT == ABI_MEABI
 #define ABI_GAS_ASM_SPEC "\
 %{mabi=*} \
 %{!mabi=*:-mabi=meabi }"
 
 #else
  #error "Unhandled MIPS_ABI_DEFAULT"
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
 #endif
 
 

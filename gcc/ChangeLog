@@ -1,5 +1,12 @@
 Sat Oct 27 17:32:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/mips/mips-protos.h: Break up long lines.
+	Remove needless #ifdef/#endif blocks.
+	Don't declare functions declared in file made by genpreds or recog.h.
+	* config/mips/mips.c (mips_output_function_prologue): TSIZE
+	is now HOST_WIDE_INT; delete unneeded casts.
+	* config/mips/mips.h: Don't use #elif.
+	
 	* expr.c (stor_constructor_field): Always call adjust_address.
 	Copy TARGET before changing its alias set.
 	(store_field): Likewise, for TO_RTX.
