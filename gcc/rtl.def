@@ -385,7 +385,7 @@ DEF_RTL_EXPR(NOTE, "note", "iuusn", 'x')
    it contains helps to build the mapping function between the rtx's of
    the function to be inlined and the current function being expanded.  */
 
-DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEeEss", 'x')
+DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEeEsse", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
@@ -574,10 +574,11 @@ DEF_RTL_EXPR(CC0, "cc0", "", 'o')
 /* Reference to the address of a register.  Removed by purge_addressof after
    CSE has elided as many as possible.
    1st operand: the register we may need the address of.
-   2nd operand: the decl for the object in the register, for
+   2nd operand: the original pseudo regno we were generated for.
+   3rd operand: the decl for the object in the register, for
      put_reg_in_stack.  */
 
-DEF_RTL_EXPR(ADDRESSOF, "addressof", "e0", 'o')
+DEF_RTL_EXPR(ADDRESSOF, "addressof", "ei0", 'o')
 
 /* =====================================================================
    A QUEUED expression really points to a member of the queue of instructions

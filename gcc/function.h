@@ -200,6 +200,7 @@ struct function
   struct pool_sym **const_rtx_sym_hash_table;
   struct pool_constant *first_pool, *last_pool;
   int pool_offset;
+  rtx const_double_chain;
 };
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
@@ -238,7 +239,7 @@ extern void (*save_machine_status) ();
 extern void (*restore_machine_status) ();
 
 /* Save and restore varasm.c status for a nested function.  */
-extern void save_varasm_status		PROTO((struct function *));
+extern void save_varasm_status		PROTO((struct function *, tree));
 extern void restore_varasm_status	PROTO((struct function *));
 
 #ifdef rtx

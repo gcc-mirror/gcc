@@ -217,7 +217,8 @@ static rtx *insn_map;
 static tree *parmdecl_map;
 
 /* Keep track of first pseudo-register beyond those that are parms.  */
-static int max_parm_reg;
+extern int max_parm_reg;
+extern rtx *parm_reg_stack_loc;
 
 /* When an insn is being copied by copy_for_inline,
    this is nonzero if we have copied an ASM_OPERANDS.
@@ -343,7 +344,8 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
 				current_function_outgoing_args_size,
 				arg_vector, (rtx) DECL_INITIAL (fndecl),
 				(rtvec) regno_reg_rtx, regno_pointer_flag,
-				regno_pointer_align);
+				regno_pointer_align,
+				(rtvec) parm_reg_stack_loc);
 }
 
 /* Subroutine for `save_for_inline{copying,nocopy}'.  Finishes up the
@@ -3207,6 +3209,8 @@ output_inline_function (fndecl)
   regno_reg_rtx = (rtx *) INLINE_REGNO_REG_RTX (head);
   regno_pointer_flag = INLINE_REGNO_POINTER_FLAG (head);
   regno_pointer_align = INLINE_REGNO_POINTER_ALIGN (head);
+  max_parm_reg = MAX_PARMREG (head);
+  parm_reg_stack_loc = (rtx *) PARMREG_STACK_LOC (head);
   
   stack_slot_list = STACK_SLOT_LIST (head);
   forced_labels = FORCED_LABELS (head);

@@ -3253,14 +3253,20 @@ init_const_rtx_hash_table ()
 /* Save and restore status for a nested function.  */
 
 void
-save_varasm_status (p)
+save_varasm_status (p, context)
      struct function *p;
+     tree context;
 {
   p->const_rtx_hash_table = const_rtx_hash_table;
   p->const_rtx_sym_hash_table = const_rtx_sym_hash_table;
   p->first_pool = first_pool;
   p->last_pool = last_pool;
   p->pool_offset = pool_offset;
+  p->const_double_chain = const_double_chain;
+
+  /* If we are pushing to toplevel, we can't reuse const_double_chain.  */
+  if (context == NULL_TREE)
+    const_double_chain = 0;
 }
 
 void
@@ -3272,6 +3278,7 @@ restore_varasm_status (p)
   first_pool = p->first_pool;
   last_pool = p->last_pool;
   pool_offset = p->pool_offset;
+  const_double_chain = p->const_double_chain;
 }
 
 enum kind { RTX_DOUBLE, RTX_INT };

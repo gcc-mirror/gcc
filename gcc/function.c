@@ -302,12 +302,12 @@ static rtx last_parm_insn;
 
 /* 1 + last pseudo register number used for loading a copy
    of a parameter of this function.  */
-static int max_parm_reg;
+int max_parm_reg;
 
 /* Vector indexed by REGNO, containing location on stack in which
    to put the parm which is nominally in pseudo register REGNO,
    if we discover that that parm must go in the stack.  */
-static rtx *parm_reg_stack_loc;
+rtx *parm_reg_stack_loc;
 
 /* Nonzero once virtual register instantiation has been done.
    assign_stack_local uses frame_pointer_rtx when this is nonzero.  */
@@ -423,7 +423,7 @@ struct fixup_replacement
 static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
 static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
 				       enum machine_mode, enum machine_mode,
-				       int));
+				       int, int));
 static void fixup_var_refs	PROTO((rtx, enum machine_mode, int));
 static struct fixup_replacement
   *find_fixup_replacement	PROTO((struct fixup_replacement **, rtx));
@@ -538,7 +538,7 @@ push_function_context_to (context)
   init_emit ();
   save_expr_status (p);
   save_stmt_status (p);
-  save_varasm_status (p);
+  save_varasm_status (p, context);
 
   if (save_machine_status)
     (*save_machine_status) (p);
@@ -1376,7 +1376,7 @@ put_var_into_stack (decl)
       else
 	put_reg_into_stack (function, reg, TREE_TYPE (decl),
 			    promoted_mode, decl_mode,
-			    TREE_SIDE_EFFECTS (decl));
+			    TREE_SIDE_EFFECTS (decl), 0);
     }
   else if (GET_CODE (reg) == CONCAT)
     {
@@ -1387,14 +1387,14 @@ put_var_into_stack (decl)
 #ifdef FRAME_GROWS_DOWNWARD
       /* Since part 0 should have a lower address, do it second.  */
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl));
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl));
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
 #else
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl));
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl));
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
 #endif
 
       /* Change the CONCAT into a combined MEM for both parts.  */
@@ -1426,27 +1426,33 @@ put_var_into_stack (decl)
    VOLATILE_P is nonzero if this is for a "volatile" decl.  */
 
 static void
-put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p)
+put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
+		    original_regno)
      struct function *function;
      rtx reg;
      tree type;
      enum machine_mode promoted_mode, decl_mode;
      int volatile_p;
+     int original_regno;
 {
   rtx new = 0;
+  int regno = original_regno;
+
+  if (regno == 0)
+    regno = REGNO (reg);
 
   if (function)
     {
-      if (REGNO (reg) < function->max_parm_reg)
-	new = function->parm_reg_stack_loc[REGNO (reg)];
+      if (regno < function->max_parm_reg)
+	new = function->parm_reg_stack_loc[regno];
       if (new == 0)
 	new = assign_outer_stack_local (decl_mode, GET_MODE_SIZE (decl_mode),
 					0, function);
     }
   else
     {
-      if (REGNO (reg) < max_parm_reg)
-	new = parm_reg_stack_loc[REGNO (reg)];
+      if (regno < max_parm_reg)
+	new = parm_reg_stack_loc[regno];
       if (new == 0)
 	new = assign_stack_local (decl_mode, GET_MODE_SIZE (decl_mode), 0);
     }
@@ -2629,6 +2635,7 @@ gen_mem_addressof (reg, decl)
   tree type = TREE_TYPE (decl);
 
   rtx r = gen_rtx (ADDRESSOF, Pmode, gen_reg_rtx (GET_MODE (reg)));
+  ADDRESSOF_REGNO (r) = REGNO (reg);
   SET_ADDRESSOF_DECL (r, decl);
 
   XEXP (reg, 0) = r;
@@ -2654,7 +2661,8 @@ put_addressof_into_stack (r)
     abort ();
 
   put_reg_into_stack (0, reg, TREE_TYPE (decl), GET_MODE (reg),
-		      DECL_MODE (decl), TREE_SIDE_EFFECTS (decl));
+		      DECL_MODE (decl), TREE_SIDE_EFFECTS (decl),
+		      ADDRESSOF_REGNO (r));
 }
 
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC
@@ -3574,7 +3582,7 @@ assign_parms (fndecl, second_time)
       fnargs = function_result_decl;
     }
 			       
-  parm_reg_stack_loc = (rtx *) oballoc (nparmregs * sizeof (rtx));
+  parm_reg_stack_loc = (rtx *) savealloc (nparmregs * sizeof (rtx));
   bzero ((char *) parm_reg_stack_loc, nparmregs * sizeof (rtx));
 
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
@@ -4136,7 +4144,7 @@ assign_parms (fndecl, second_time)
 	      int old_nparmregs = nparmregs;
 
 	      nparmregs = regno + 5;
-	      new = (rtx *) oballoc (nparmregs * sizeof (rtx));
+	      new = (rtx *) savealloc (nparmregs * sizeof (rtx));
 	      bcopy ((char *) parm_reg_stack_loc, (char *) new,
 		     old_nparmregs * sizeof (rtx));
 	      bzero ((char *) (new + old_nparmregs),

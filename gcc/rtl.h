@@ -442,9 +442,12 @@ extern char *note_insn_name[];
 /* For goto labels inside bytecode functions.  */
 #define BYTECODE_BC_LABEL(X) (*(struct bc_label **) &XEXP ((X), 1))
 
+/* The original regno this ADDRESSOF was built for.  */
+#define ADDRESSOF_REGNO(RTX) ((RTX)->fld[1].rtint)
+
 /* The variable in the register we took the address of.  */
-#define ADDRESSOF_DECL(X) ((tree) XEXP ((X), 1))
-#define SET_ADDRESSOF_DECL(X, T) (XEXP ((X), 1) = (rtx) (T))
+#define ADDRESSOF_DECL(X) ((tree) XEXP ((X), 2))
+#define SET_ADDRESSOF_DECL(X, T) (XEXP ((X), 2) = (rtx) (T))
 
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
@@ -610,6 +613,7 @@ extern char *note_insn_name[];
 #define INLINE_REGNO_REG_RTX(RTX) ((RTX)->fld[16].rtvec)
 #define INLINE_REGNO_POINTER_FLAG(RTX) ((RTX)->fld[17].rtstr)
 #define INLINE_REGNO_POINTER_ALIGN(RTX) ((RTX)->fld[18].rtstr)
+#define PARMREG_STACK_LOC(RTX) ((RTX)->fld[19].rtvec)
 
 /* In FUNCTION_FLAGS we save some variables computed when emitting the code
    for the function and which must be `or'ed into the current flag values when
@@ -709,7 +713,7 @@ extern rtx gen_label_rtx		PROTO((void));
 extern rtx gen_inline_header_rtx	PROTO((rtx, rtx, int, int, int, int,
 					       int, int, rtx, rtx, int, int,
 					       rtvec, rtx,
-					       rtvec, char *, char *));
+					       rtvec, char *, char *, rtvec));
 extern rtx gen_lowpart_common		PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart			PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart_if_possible	PROTO((enum machine_mode, rtx));
