@@ -27,7 +27,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <bits/std_cmath.h>
 #include <bits/std_complex.h>
 
 // This is a ISO C 9X header.
@@ -45,62 +44,6 @@
 
 namespace std
 {
-//    template<>
-//    FLT
-//    abs(const complex<FLT>& __x)
-//    { 
-//      // We don't use cabs here because some systems (IRIX 6.5, for
-//      // example) define their own incompatible version.
-//      return hypot (__real__ __x._M_value, __imag__ __x._M_value); 
-//    }
-
-//    template<>
-//    FLT
-//    arg(const complex<FLT>& __x)
-//    { return carg(__x._M_value); }
-
-//    template<>
-//    complex<FLT>
-//    polar(const FLT& __rho, const FLT& __theta)
-//    {
-//  #if 0
-//  // XXX
-//  // defined(_GLIBCPP_HAVE_SINCOS) && !defined(__osf__)
-//      // Although sincos does exist on OSF3.2 and OSF4.0 we cannot use it
-//      // since the necessary types are not defined in the headers.
-//      FLT __sinx, __cosx;
-//      sincos(__theta, &__sinx, &__cosx);
-//      return complex<FLT>(__rho * __cosx, __rho * __sinx);
-//  #else
-//      return complex<FLT>(__rho * cos(__theta), __rho * sin(__theta));
-//  #endif
-//    }
-
-//    template<>
-//    complex<FLT>
-//    cos(const complex<FLT>& __x)
-//    { return complex<FLT>(ccos(__x._M_value)); }
-
-//    template<>
-//    complex<FLT>
-//    cosh(const complex<FLT>& __x)
-//    { return complex<FLT>(ccosh(__x._M_value)); }
-
-//    template<>
-//    complex<FLT>
-//    exp(const complex<FLT>& __x)
-//    { return complex<FLT>(cexp(__x._M_value)); }
-
-//    template<>
-//    complex<FLT>
-//    log(const complex<FLT>& __x)
-//    { return complex<FLT>(c_log(__x._M_value)); }
-
-//    template<>
-//    complex<FLT>
-//    log10(const complex<FLT>& __x)
-//    { return complex<FLT>(clog10(__x._M_value)); }
-  
   template<>
   complex<FLT>
   pow(const complex<FLT>& __x, int __n)
@@ -121,16 +64,6 @@ namespace std
   pow(const FLT& __x, const complex<FLT>& __y)
   { return complex<FLT>(cexp(__y._M_value * log(__x))); }
 
-//    template<>
-//    complex<FLT>
-//    sin(const complex<FLT>& __x)
-//    { return complex<FLT>(csin(__x._M_value)); }
-
-//    template<>
-//    complex<FLT>
-//    sinh(const complex<FLT>& __x)
-//    { return complex<FLT>(csinh(__x._M_value)); }
-  
   template<>
   complex<FLT>
   sqrt(const complex<FLT>& __x)

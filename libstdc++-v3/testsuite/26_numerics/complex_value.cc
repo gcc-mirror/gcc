@@ -1,7 +1,7 @@
-// 1999-06-29
-// bkoz 
+// 2000-11-20
+// Benjamin Kosnik bkoz@redhat.com
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,51 +19,46 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 23.2.4.1 vector constructors, copy, and assignment
-
-#include <vector>
+#include <complex>
 #include <debug_assert.h>
-
-template<typename T>
-  struct A { };
-
-struct B { };
 
 void test01()
 {
+ using namespace std;
+ bool test = true;
+ typedef complex<double> complex_type;
+ const double cd1 = -11.451;
+ const double cd2 = -442.1533;
 
-  // 1
-  bool test = true;
-  std::vector< A<B> > vec01;
-  std::vector< A<B> > vec02(5);
-  typedef std::vector< A<B> >::size_type size_type;
+ complex_type a(cd1, cd2);
+ double d;
+ d = a.real();
+ VERIFY( d == cd1);
 
-  vec01 = vec02;
+ d = a.imag();
+ VERIFY(d == cd2);
 
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-}
+ complex_type c(cd1, cd2);
+ double d6 = abs(c);
+ VERIFY( d6 >= 0);
 
-// 2
-template class std::vector<double>;
-template class std::vector< A<B> >;
+ double d7 = arg(c);
+ double d8 = atan2(c.imag(), c.real());
+ VERIFY( d7 == d8);
 
+ double d9 = norm(c);
+ double d10 = d6 * d6;
+ VERIFY(d9 - d10 == 0);
 
-// libstdc++/102
-void test02
-{
-  std::vector<int> v1;
-  std::vector<int> v2 (v1);
+ complex_type e = conj(c);
+ 
+ complex_type f = polar(c.imag(), 0.0);
+ VERIFY(f.real() != 0);
 }
 
 
 int main()
 {
   test01();
-  test02(); 
   return 0;
 }
-
-
-
