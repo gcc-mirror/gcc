@@ -2376,8 +2376,6 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
   edge e;
   edge_iterator ei;
 
-  /* This can get rather expensive if the implementation is naive in
-     how it finds the phi alternative associated with a particular edge.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       tree phi;

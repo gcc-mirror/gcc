@@ -1,3 +1,8 @@
+2005-03-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-dom.c (cprop_into_successor_phis): Remove an
+	obsolete comment.
+
 2005-03-31  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* cfgloopanal.c (mark_loop_exit_edges): Clean EDGE_LOOP_EXIT
