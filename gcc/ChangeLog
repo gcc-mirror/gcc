@@ -31,7 +31,7 @@
 
 2000-10-16  Kazu Hirata  <kazu@hxi.com>
 
-	* config/h8300/h8300.c: Remove obstack.
+	* config/h8300/h8300.c: Remove obstack.  Include ggc.h.
 
 2000-10-16  Jakub Jelinek  <jakub@redhat.com>
 
