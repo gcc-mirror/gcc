@@ -1,3 +1,8 @@
+2001-12-07  Stephane Carrez  <Stephane.Carrez@sun.com>
+
+	* gcc.dg/sparc-ret.c: New file, test return corruption bug for
+	ultrasparc.
+
 Fri Dec  7 06:29:03 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* g++-old.deja/g++.robertl/eb101.C: Deleted.
