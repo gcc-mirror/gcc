@@ -5,18 +5,15 @@ Some work remains in other areas; for example, GCC does not yet allow
 non-ASCII letters in identifiers.
 
 Not all of GCC's diagnostic messages have been internationalized. Programs
-like `enquire' and `genattr' (in fact all gen* programs) are not
-internationalized, as their users are GCC maintainers who typically need
-to be able to read English anyway; internationalizing them would thus
-entail needless work for the human translators. Messages used for
-debugging, such as used in dumped tables, should also not be translated.
+like `genattr' (in fact all gen* programs) are not internationalized, as
+their users are GCC maintainers who typically need to be able to read
+English anyway; internationalizing them would thus entail needless work for
+the human translators. Messages used for debugging, such as used in dumped
+tables, should also not be translated.
 
 The GCC library should not contain any messages that need
 internationalization, because it operates below the internationalization
 library.
-
-Currently, the only language translation supplied is en_UK (British
-English).
 
 Unlike some other GNU programs, the GCC sources contain few instances
 of explicit translation calls like _("string").  Instead, the
