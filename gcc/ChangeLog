@@ -1,3 +1,7 @@
+2002-01-23  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* loop.c [!HAVE_prefetch] (CODE_FOR_prefetch): Define to 0.
+
 2002-01-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR c/3504
