@@ -106,6 +106,7 @@ typedef struct
   unsigned char fde_encoding;
   unsigned char lsda_encoding;
   unsigned char saw_z;
+  void *eh_ptr;
 } _Unwind_FrameState;
 
 /* Read unaligned data from the instruction buffer.  */
@@ -220,6 +221,15 @@ extract_cie_info (struct dwarf_cie *cie, struct _Unwind_Context *context,
   const unsigned char *ret = NULL;
   _Unwind_Ptr tmp;
 
+  /* g++ v2 "eh" has pointer immediately following augmentation string,
+     so it must be handled first.  */
+  if (aug[0] == 'e' && aug[1] == 'h')
+    {
+      fs->eh_ptr = read_pointer (p);
+      p += sizeof (void *);
+      aug += 2;
+    }
+
   /* Immediately following the augmentation are the code and
      data alignment and return address column.  */
   p = read_uleb128 (p, &tmp); fs->code_align = tmp;
@@ -242,15 +252,8 @@ extract_cie_info (struct dwarf_cie *cie, struct _Unwind_Context *context,
   /* Iterate over recognized augmentation subsequences.  */
   while (*aug != '\0')
     {
-      /* "eh" was used by g++ v2; recognize and skip.  */
-      if (aug[0] == 'e' && aug[1] == 'h')
-	{
-	  p += sizeof (void *);
-	  aug += 2;
-	}
-
       /* "L" indicates a byte showing how the LSDA pointer is encoded.  */
-      else if (aug[0] == 'L')
+      if (aug[0] == 'L')
 	{
 	  fs->lsda_encoding = *p++;
 	  aug += 1;
@@ -937,8 +940,69 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 
   return _URC_NO_REASON;
 }
+
+typedef struct frame_state
+{
+  void *cfa;
+  void *eh_ptr;
+  long cfa_offset;
+  long args_size;
+  long reg_or_offset[DWARF_FRAME_REGISTERS+1];
+  unsigned short cfa_reg;
+  unsigned short retaddr_column;
+  char saved[DWARF_FRAME_REGISTERS+1];
+} frame_state;
 
+struct frame_state * __frame_state_for (void *, struct frame_state *);
 
+/* Called from pre-G++ 3.0 __throw to find the registers to restore for
+   a given PC_TARGET.  The caller should allocate a local variable of
+   `struct frame_state' and pass its address to STATE_IN.  */
+
+struct frame_state *
+__frame_state_for (void *pc_target, struct frame_state *state_in)
+{
+  struct _Unwind_Context context;
+  _Unwind_FrameState fs;
+  int reg;
+
+  memset (&context, 0, sizeof (struct _Unwind_Context));
+  context.ra = pc_target + 1;
+
+  if (uw_frame_state_for (&context, &fs) != _URC_NO_REASON)
+    return 0;
+
+  /* We have no way to pass a location expression for the CFA to our
+     caller.  It wouldn't understand it anyway.  */
+  if (fs.cfa_how == CFA_EXP)
+    return 0;
+
+  for (reg = 0; reg < DWARF_FRAME_REGISTERS + 1; reg++)
+    {
+      state_in->saved[reg] = fs.regs.reg[reg].how;
+      switch (state_in->saved[reg])
+	{
+	case REG_SAVED_REG:
+	  state_in->reg_or_offset[reg] = fs.regs.reg[reg].loc.reg;
+	  break;
+	case REG_SAVED_OFFSET:
+	  state_in->reg_or_offset[reg] = fs.regs.reg[reg].loc.offset;
+	  break;
+	default:
+	  state_in->reg_or_offset[reg] = 0;
+	  break;
+	}
+    }
+
+  state_in->cfa_offset = fs.cfa_offset;
+  state_in->cfa_reg = fs.cfa_reg;
+  state_in->retaddr_column = fs.retaddr_column;
+  state_in->args_size = context.args_size;
+  state_in->eh_ptr = fs.eh_ptr;
+
+  return state_in;
+}
+
 static void
 uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
