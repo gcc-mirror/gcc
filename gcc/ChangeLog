@@ -1,3 +1,7 @@
+Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* expr.c (store_constructor): Clear union if constructor is empty.
+
 Wed Oct 13 15:19:04 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* config/rs6000/sysv4.h (CC1_SPEC): Fix errors from Jan 19 change.

@@ -4073,7 +4073,14 @@ store_constructor (exp, target, align, cleared)
       /* Inform later passes that the whole union value is dead.  */
       if (TREE_CODE (type) == UNION_TYPE
 	  || TREE_CODE (type) == QUAL_UNION_TYPE)
-	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+	{
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+
+	  /* If the constructor is empty, clear the union.  */
+	  if (! CONSTRUCTOR_ELTS (exp)  && ! cleared)
+	    clear_storage (target, expr_size (exp),
+			   TYPE_ALIGN (type) / BITS_PER_UNIT);
+	}
 
       /* If we are building a static constructor into a register,
 	 set the initial value as zero so we can fold the value into
