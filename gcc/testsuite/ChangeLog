@@ -1,3 +1,8 @@
+2002-06-02  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/pure-1.c: Don't mark any of the 
+	test functions static.
+
 2002-06-02  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/loop-3c.x: Remove, the test should pass
