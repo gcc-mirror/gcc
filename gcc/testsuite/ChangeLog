@@ -1,5 +1,10 @@
 2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c++/16301
+	* g++.dg/lookup/strong-using-4.C: New test.
+
+2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/16567
         * gcc.c-torture/compile/nested-1.c: New test.
 
