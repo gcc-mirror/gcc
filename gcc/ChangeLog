@@ -1,3 +1,9 @@
+2000-03-10  Andreas Jaeger  <aj@suse.de>
+
+	* config/mips/linux.h: Undefine MD_EXEC_PREFIX and
+	MD_STARTFILE_PREFIX since those are not needed on linux.
+	(ASM_FILE_START): New, from mips/gnu.h.
+
 2000-03-09  Richard Henderson  <rth@cygnus.com>
 	    Alex Samuel  <samuel@codesourcery.com> and others
 	
