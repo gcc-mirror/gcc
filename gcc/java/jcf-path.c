@@ -23,7 +23,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Tom Tromey <tromey@cygnus.com>, October 1998.  */
 
-#include <config.h>
+#include "config.h"
 #include "system.h"
 
 #include "jcf.h"

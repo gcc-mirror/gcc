@@ -417,7 +417,7 @@ add_method_1 (handle_class, access_flags, name, function_type)
 
   DECL_LANG_SPECIFIC (fndecl)
     = (struct lang_decl *) permalloc (sizeof (struct lang_decl));
-  bzero (DECL_LANG_SPECIFIC (fndecl), sizeof (struct lang_decl));
+  bzero ((PTR) DECL_LANG_SPECIFIC (fndecl), sizeof (struct lang_decl));
 
   TREE_CHAIN (fndecl) = TYPE_METHODS (handle_class);
   TYPE_METHODS (handle_class) = fndecl;

@@ -1,3 +1,26 @@
+Mon Apr  5 15:43:51 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * class.c (add_method_1): Cast the argument of `bzero' to PTR.
+
+        * decl.c (copy_lang_decl): Likewise for `bcopy'.
+
+        * jcf-depend.c: Include "config.h", not <config.h>.
+
+        * jcf-parse.c (jcf_figure_file_type): Cast the arguments of
+	`bcopy' to PTR.
+
+        * jcf-path.c: Include "config.h", not <config.h>.
+
+        * lex.c: Don't include various system header files.
+	(java_init_lex): Cast the argument of `bzero' to PTR
+
+        * parse-scan.y (java_push_parser_context): Likewise.
+
+        * parse.y (java_push_parser_context): Likewise.
+	(patch_bc_statement): Match format specifier to variable argument.
+
+        * xref.c: Don't include <stdio.h>.
+
 Mon Apr  5 11:24:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (struct parser_ctxt *ctxp): Now global.

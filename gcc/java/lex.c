@@ -34,19 +34,7 @@ The lexical analysis conforms to the Java grammar described in "The
 Java(TM) Language Specification. J. Gosling, B. Joy, G. Steele.
 Addison Wesley 1996" (http://java.sun.com/docs/books/jls/html/3.doc.html)  */
 
-#include <stdio.h>
-#include <string.h>
-#include <strings.h>
-
-#ifdef JAVA_LEX_DEBUG
-#include <ctype.h>
-#endif
-
 #include "keyword.h"
-
-#ifndef SEEK_SET
-#include <unistd.h>
-#endif
 
 #ifndef JC1_LITE
 extern struct obstack *expression_obstack;
@@ -110,8 +98,8 @@ java_init_lex ()
   ctxp->static_initialized = ctxp->non_static_initialized = 
     ctxp->incomplete_class = NULL_TREE;
   
-  bzero (ctxp->modifier_ctx, 11*sizeof (ctxp->modifier_ctx[0]));
-  bzero (current_jcf, sizeof (JCF));
+  bzero ((PTR) ctxp->modifier_ctx, 11*sizeof (ctxp->modifier_ctx[0]));
+  bzero ((PTR) current_jcf, sizeof (JCF));
   ctxp->current_parsed_class = NULL;
   ctxp->package = NULL_TREE;
 #endif

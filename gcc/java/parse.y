@@ -2291,7 +2291,7 @@ java_push_parser_context ()
   struct parser_ctxt *new = 
     (struct parser_ctxt *)xmalloc(sizeof (struct parser_ctxt));
 
-  bzero (new, sizeof (struct parser_ctxt));
+  bzero ((PTR) new, sizeof (struct parser_ctxt));
   new->next = ctxp;
   ctxp = new;
   if (ctxp->next)
