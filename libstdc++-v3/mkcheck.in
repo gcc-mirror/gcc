@@ -382,7 +382,7 @@ test_file()
     #printf "\n: " >> $LOG_FILE
     printf "\n" >> $LOG_FILE
     COMP_TIME_START=$($TEST_DIR/printnow)
-    $compiler_invocation >> $LOG_FILE 2>&1
+    $compiler_invocation
     COMP_TIME_END=$($TEST_DIR/printnow)
 
     if [ $COMP_TIME_START -lt $COMP_TIME_END ]; then
@@ -427,6 +427,7 @@ test_file()
         fi
     else
         # the file did not compile/link.
+        $compiler_invocation >> $LOG_FILE 2>&1
         RESULT="-b"
         TEXT="0"
         DATA="0"

@@ -51,7 +51,7 @@ template class std::vector< A<B> >;
 
 
 // libstdc++/102
-void test02
+void test02()
 {
   std::vector<int> v1;
   std::vector<int> v2 (v1);
