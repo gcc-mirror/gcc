@@ -8869,7 +8869,8 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(sign_extract:SI (match_operand:SI 1 "s_register_operand" "r")
 			 (const_int 1)
-			 (match_operand:SI 2 "const_int_operand" "n")))]
+			 (match_operand:SI 2 "const_int_operand" "n")))
+    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
     operands[2] = GEN_INT (1 << INTVAL (operands[2]));
@@ -8885,7 +8886,8 @@
 	(not:SI
 	 (sign_extract:SI (match_operand:SI 1 "s_register_operand" "r")
 			  (const_int 1)
-			  (match_operand:SI 2 "const_int_operand" "n"))))]
+			  (match_operand:SI 2 "const_int_operand" "n"))))
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
     operands[2] = GEN_INT (1 << INTVAL (operands[2]));
