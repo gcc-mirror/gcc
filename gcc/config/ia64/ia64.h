@@ -1141,7 +1141,7 @@ enum reg_class
    address would be in b0 (rp).  */
 
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR) \
-  ((count == 0)								\
+  (((COUNT) == 0)							\
    ? gen_rtx_REG (Pmode, RETURN_ADDRESS_REGNUM)				\
    : (rtx) 0)
 
