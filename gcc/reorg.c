@@ -497,6 +497,12 @@ emit_delay_sequence (insn, list, length)
       PREV_INSN (tem) = XVECEXP (seq, 0, i - 1);
       NEXT_INSN (XVECEXP (seq, 0, i - 1)) = tem;
 
+      /* SPARC assembler, for instance, emit warning when debug info is output
+         into the delay slot.  */
+      if (INSN_LOCATOR (tem) && !INSN_LOCATOR (seq_insn))
+	INSN_LOCATOR (seq_insn) = INSN_LOCATOR (tem);
+      INSN_LOCATOR (tem) = 0;
+
       for (note = REG_NOTES (tem); note; note = next)
 	{
 	  next = XEXP (note, 1);
@@ -3841,5 +3847,17 @@ dbr_schedule (first, file)
     }
   free_resource_info ();
   free (uid_to_ruid);
+#ifdef DELAY_SLOTS_FOR_EPILOGUE
+  /* SPARC assembler, for instance, emit warning when debug info is output
+     into the delay slot.  */
+  {
+    rtx link;
+
+    for (link = current_function_epilogue_delay_list;
+         link;
+         link = XEXP (link, 1))
+      INSN_LOCATOR (XEXP (link, 0)) = 0;
+  }
+#endif
 }
 #endif /* DELAY_SLOTS */
