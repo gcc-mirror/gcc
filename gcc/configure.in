@@ -423,6 +423,9 @@ AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 # Always define _XOPEN_SOURCE.  It doesn't hurt, and it lets us
 # pick up CODESET from langinfo.h, among other things.
 AC_DEFINE(_XOPEN_SOURCE, 1, [Always define this])
+# If we define _XOPEN_SOURCE on a glibc2 system, it hides other
+# interfaces.  Make them visible again with _GNU_SOURCE.
+AC_DEFINE(_GNU_SOURCE, 1, [Always define this])
 
 # See if GNAT has been installed
 AC_CHECK_PROG(gnat, gnatbind, yes, no)

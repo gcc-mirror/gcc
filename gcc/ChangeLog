@@ -1,3 +1,9 @@
+2000-09-16  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Always define _GNU_SOURCE to make interfaces
+	visible that were hidden by only defining _GNU_SOURCE.
+	* configure: Regenerated.
+
 Sat 16-Sep-2000 08:13:45 BST  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (push_macro_context): Set an argument's level after
@@ -383,7 +389,7 @@ Tue Sep 12 08:53:57 2000  Jeffrey A Law  (law@cygnus.com)
 	(read_with_read, read_file): Merged into read_include_file.
 	(stack_include_file, purge_cache): New functions.
 	(close_cached_fd): Delete.
-	(lookup_include_file, read_include_file, _cpp_pop_file_buffer): 
+	(lookup_include_file, read_include_file, _cpp_pop_file_buffer):
 	Cache the in-memory buffer, not the file descriptor.
 
 	* cpphash.h (struct include_file): Add buffer, st, refcnt,
@@ -454,7 +460,7 @@ Tue Sep 12 01:51:38 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* loop.h (LOOP_REGS): New macro.
 	(struct loop_regs): New.
 	(struct loop_info): Add regs field.
-	* loop.c (set_in_loop): Remove global array and store 
+	* loop.c (set_in_loop): Remove global array and store
 	in loop_regs structure as part of loop_info structure.
 	(n_times_set, may_not_optimize): Likewise.
 	(reg_single_usage, moved_once): Likewise.
@@ -608,7 +614,7 @@ Mon Sep 11 10:48:41 2000  Ulrich Drepper <drepper@redhat.com>
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* varasm.c (make_decl_rtl): Restore leading star on
-	DECL_ASSEMBLER_NAME set for decls with an asmspec. 
+	DECL_ASSEMBLER_NAME set for decls with an asmspec.
 
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -717,7 +723,7 @@ Sun Sep 10 14:30:28 EDT 2000  John Wehle  (john@feith.com)
 	(loop_mems, loop_mems_idx, loop_mems_allocated): Likewise.
 	(unknown_address_altered, unknown_constant_address_altered): Likewise.
 	(num_mem_sets): Likewise.
- 	(replace_loop_mems, replace_loop_regs): New.
+	(replace_loop_mems, replace_loop_regs): New.
 	(struct loop_replace_args): New.
 	(load_mems): Use replace_loop_mems.
 	(try_copy_prop): Use replace_loop_regs.
@@ -739,7 +745,7 @@ Sun Sep 10 14:30:28 EDT 2000  John Wehle  (john@feith.com)
 	(num_movables): Move into struct movables.
 	(the_movables): Change type to struct movables.
 	(ignore_some_movables): Change struct movable arg to struct movables.
- 	(force_movables, combine_movables, regs_match_p): Likewise.
+	(force_movables, combine_movables, regs_match_p): Likewise.
 	(rtx_equal_for_loop_p, move_movables): Likewise.
 	(scan_loop): Change movables to be of type struct movables.
 	Replace last_movable with field in movables structure.
@@ -795,8 +801,8 @@ Sun Sep 10 14:30:28 EDT 2000  John Wehle  (john@feith.com)
 	addv4sf3, vmaddv4sf3, subv4sf3, vmsubv4sf3, mulv4sf3, vmmulv4sf3,
 	divv4sf3, vmdivv4sf3, rcpv4sf2, vmrcpv4sf2, rsqrtv4sf2, vmrsqrtv4sf2,
 	sqrtv4sf2, vmsqrtv4sf2, sse_andti3, sse_nandti3, sse_iorti3,
- 	sse_xorti3, maskcmpv4sf3, maskncmpv4sf3, vmmaskcmpv4sf3,
- 	vmmaskncmpv4sf3, sse_comi, sse_ucomi, sse_unpckhps, sse_unpcklps,
+	sse_xorti3, maskcmpv4sf3, maskncmpv4sf3, vmmaskcmpv4sf3,
+	vmmaskncmpv4sf3, sse_comi, sse_ucomi, sse_unpckhps, sse_unpcklps,
 	smaxv4sf3, vmsmaxv4sf3, sminv4sf3, vmsminv4sf3, cvtpi2ps, cvtps2pi,
 	cvttps2pi, cvtsi2ss, cvtss2si, cvttss2si, addv8qi3, addv4hi3,
 	addv2si3, ssaddv8qi3, ssaddv4hi3, usaddv8qi3, usaddv4hi3, subv8qi3,
@@ -2394,7 +2400,7 @@ Tue Aug 22 23:53:27 EDT 2000  John Wehle  (john@feith.com)
 
 	* vax.h (ASM_SPEC): Pass `-J' to assembler.
 	* x-vax-gcc: New file for bootstrapping with gcc.
- 	* x-vax: Use X_CFLAGS rather than X_CPPFLAGS to pass `-J'.
+	* x-vax: Use X_CFLAGS rather than X_CPPFLAGS to pass `-J'.
 	* configure.in: Use x-vax-gcc with gcc.
 	* configure: Rebuilt.
 
@@ -3658,7 +3664,7 @@ Sun Aug  6 11:54:03 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 2000-08-07  Michael Hayes  <mhayes@cygnus.com>
 
- 	* loop.c (try_swap_copy_prop): New function.
+	* loop.c (try_swap_copy_prop): New function.
 	(load_mems): Rename copies to load_copies and add new regset
 	store_copies.  Check for sets of shadow registers and mark
 	in store_copies.   Call try_swap_copy_prop for registers
@@ -4703,7 +4709,7 @@ Sun Jul 30 20:08:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(flow_loops_free): Free rc_order.
 	(flow_depth_first_order_compute): New parameter rc_order.
 	(flow_loops_find): Allocate rc_order and swap usage with
- 	dfs_order.
+	dfs_order.
 
 2000-07-30 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 	   Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
@@ -6884,4 +6890,3 @@ Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 	(load_symptr): Set RTX_UNCHANGING_P.
 
 See ChangeLog.3 for earlier changes.
-
