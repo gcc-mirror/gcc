@@ -550,7 +550,8 @@ static void compute_set_hash_table    PROTO ((void));
 static void alloc_expr_hash_table     PROTO ((int));
 static void free_expr_hash_table      PROTO ((void));
 static void compute_expr_hash_table   PROTO ((void));
-static void dump_hash_table	   PROTO ((FILE *, const char *, struct expr **, int, int));
+static void dump_hash_table	   PROTO ((FILE *, const char *, struct expr **,
+					   int, int));
 static struct expr *lookup_expr       PROTO ((rtx));
 static struct expr *lookup_set	PROTO ((int, rtx));
 static struct expr *next_set	  PROTO ((int, struct expr *));
@@ -564,6 +565,7 @@ static void mark_oprs_set	     PROTO ((rtx));
 static void alloc_cprop_mem	   PROTO ((int, int));
 static void free_cprop_mem	    PROTO ((void));
 static void compute_transp	    PROTO ((rtx, int, sbitmap *, int));
+static void compute_transpout	    PROTO ((void));
 static void compute_local_properties  PROTO ((sbitmap *, sbitmap *,
 					      sbitmap *, int));
 static void compute_cprop_avinout     PROTO ((void));
@@ -577,14 +579,10 @@ static int one_cprop_pass	     PROTO ((int, int));
 
 static void alloc_pre_mem	     PROTO ((int, int));
 static void free_pre_mem	      PROTO ((void));
-static void compute_pre_avinout       PROTO ((void));
-static void compute_pre_antinout      PROTO ((void));
-static void compute_pre_pavinout      PROTO ((void));
-static void compute_pre_ppinout       PROTO ((void));
 static void compute_pre_data	  PROTO ((void));
-static int pre_expr_reaches_here_p    PROTO ((struct occr *, struct expr *,
-					      int, char *));
-static void pre_insert_insn	   PROTO ((struct expr *, int));
+static int pre_expr_reaches_here_p    PROTO ((int, struct expr *,
+					      int, int, char *));
+static void insert_insn_end_bb	PROTO ((struct expr *, int, int));
 static void pre_insert		PROTO ((struct expr **));
 static void pre_insert_copy_insn      PROTO ((struct expr *, rtx));
 static void pre_insert_copies	 PROTO ((void));
@@ -3924,37 +3922,34 @@ one_cprop_pass (pass, alter_jumps)
   return changed;
 }
 
-/* Compute PRE working variables.  */
+/* Compute PRE+LCM working variables.  */
 
 /* Local properties of expressions.  */
 /* Nonzero for expressions that are transparent in the block.  */
-static sbitmap *pre_transp;
-/* Nonzero for expressions that are computed (available) in the block.  */
-static sbitmap *pre_comp;
-/* Nonzero for expressions that are locally anticipatable in the block.  */
-static sbitmap *pre_antloc;
-
-/* Global properties (computed from the expression local properties).  */
-/* Nonzero for expressions that are available on block entry/exit.  */
-static sbitmap *pre_avin;
-static sbitmap *pre_avout;
-/* Nonzero for expressions that are anticipatable on block entry/exit.  */
-static sbitmap *pre_antin;
-static sbitmap *pre_antout;
-/* Nonzero for expressions that are partially available on block entry/exit.  */
-static sbitmap *pre_pavin;
-static sbitmap *pre_pavout;
-/* Nonzero for expressions that are "placement possible" on block entry/exit.  */
-static sbitmap *pre_ppin;
-static sbitmap *pre_ppout;
+static sbitmap *transp;
 
 /* Nonzero for expressions that are transparent at the end of the block.
    This is only zero for expressions killed by abnormal critical edge
    created by a calls.  */
-static sbitmap *pre_transpout;
+static sbitmap *transpout;
 
-/* Used while performing PRE to denote which insns are redundant.  */
-static sbitmap pre_redundant;
+/* Nonzero for expressions that are computed (available) in the block.  */
+static sbitmap *comp;
+
+/* Nonzero for expressions that are locally anticipatable in the block.  */
+static sbitmap *antloc;
+
+/* Nonzero for expressions where this block is an optimal computation
+   point.  */
+static sbitmap *pre_optimal;
+
+/* Nonzero for expressions which are redundant in a particular block.  */
+static sbitmap *pre_redundant;
+
+static sbitmap *temp_bitmap;
+
+/* Redundant insns.  */
+static sbitmap pre_redundant_insns;
 
 /* Allocate vars used for PRE analysis.  */
 
@@ -3962,21 +3957,14 @@ static void
 alloc_pre_mem (n_blocks, n_exprs)
      int n_blocks, n_exprs;
 {
-  pre_transp = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_comp = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_antloc = sbitmap_vector_alloc (n_blocks, n_exprs);
+  transp = sbitmap_vector_alloc (n_blocks, n_exprs);
+  comp = sbitmap_vector_alloc (n_blocks, n_exprs);
+  antloc = sbitmap_vector_alloc (n_blocks, n_exprs);
 
-  pre_avin = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_avout = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_antin = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_antout = sbitmap_vector_alloc (n_blocks, n_exprs);
-
-  pre_pavin = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_pavout = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_ppin = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_ppout = sbitmap_vector_alloc (n_blocks, n_exprs);
-
-  pre_transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
+  temp_bitmap = sbitmap_vector_alloc (n_blocks, n_exprs);
+  pre_optimal = sbitmap_vector_alloc (n_blocks, n_exprs);
+  pre_redundant = sbitmap_vector_alloc (n_blocks, n_exprs);
+  transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
 }
 
 /* Free vars used for PRE analysis.  */
@@ -3984,279 +3972,13 @@ alloc_pre_mem (n_blocks, n_exprs)
 static void
 free_pre_mem ()
 {
-  free (pre_transp);
-  free (pre_comp);
-  free (pre_antloc);
-  free (pre_avin);
-  free (pre_avout);
-  free (pre_antin);
-  free (pre_antout);
+  free (transp);
+  free (comp);
+  free (antloc);
 
-  free (pre_pavin);
-  free (pre_pavout);
-  free (pre_ppin);
-  free (pre_ppout);
-  free (pre_transpout);
-}
-
-/* Compute expression availability at entrance and exit of each block.  */
-
-static void
-compute_pre_avinout ()
-{
-  int bb, changed, passes;
-
-  sbitmap_zero (pre_avin[0]);
-  sbitmap_vector_ones (pre_avout, n_basic_blocks);
-
-  passes = 0;
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-      for (bb = 0; bb < n_basic_blocks; bb++)
-	{
-	  if (bb != 0)
-	    sbitmap_intersect_of_predecessors (pre_avin[bb], pre_avout,
-					       bb, s_preds);
-	  changed |= sbitmap_a_or_b_and_c (pre_avout[bb], pre_comp[bb],
-					   pre_transp[bb], pre_avin[bb]);
-	}
-      passes++;
-    }
-
-  if (gcse_file)
-    fprintf (gcse_file, "avail expr computation: %d passes\n", passes);
-}
-
-/* Compute expression anticipatability at entrance and exit of each block.  */
-
-static void
-compute_pre_antinout ()
-{
-  int bb, changed, passes;
-
-  sbitmap_zero (pre_antout[n_basic_blocks - 1]);
-  sbitmap_vector_ones (pre_antin, n_basic_blocks);
-
-  passes = 0;
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-      /* We scan the blocks in the reverse order to speed up
-	 the convergence.  */
-      for (bb = n_basic_blocks - 1; bb >= 0; bb--)
-	{
-	  if (bb != n_basic_blocks - 1)
-	    sbitmap_intersect_of_successors (pre_antout[bb], pre_antin,
-					     bb, s_succs);
-	  changed |= sbitmap_a_or_b_and_c (pre_antin[bb], pre_antloc[bb],
-					   pre_transp[bb], pre_antout[bb]);
-	}
-      passes++;
-    }
-
-  if (gcse_file)
-    fprintf (gcse_file, "antic expr computation: %d passes\n", passes);
-}
-
-/* Compute expression partial availability at entrance and exit of
-   each block.  */
-
-static void
-compute_pre_pavinout ()
-{
-  int bb, changed, passes;
-
-  sbitmap_zero (pre_pavin[0]);
-  sbitmap_vector_zero (pre_pavout, n_basic_blocks);
-
-  passes = 0;
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-      for (bb = 0; bb < n_basic_blocks; bb++)
-	{
-	  if (bb != 0)
-	    sbitmap_union_of_predecessors (pre_pavin[bb], pre_pavout,
-					   bb, s_preds);
-	  changed |= sbitmap_a_or_b_and_c (pre_pavout[bb], pre_comp[bb],
-					   pre_transp[bb], pre_pavin[bb]);
-	}
-      passes++;
-    }
-
-  if (gcse_file)
-    fprintf (gcse_file, "partially avail expr computation: %d passes\n", passes);
-}
-
-/* Compute transparent outgoing information for each block.
-
-   An expression is transparent to an edge unless it is killed by
-   the edge itself.  This can only happen with abnormal control flow,
-   when the edge is traversed through a call.  This happens with
-   non-local labels and exceptions.
-
-   This would not be necessary if we split the edge.  While this is
-   normally impossible for abnormal critical edges, with some effort
-   it should be possible with exception handling, since we still have
-   control over which handler should be invoked.  But due to increased
-   EH table sizes, this may not be worthwhile.  */
-
-static void
-compute_pre_transpout ()
-{
-  int bb;
-
-  sbitmap_vector_ones (pre_transpout, n_basic_blocks);
-
-  for (bb = 0; bb < n_basic_blocks; ++bb)
-    {
-      int i;
-
-      /* Note that flow inserted a nop a the end of basic blocks that
-	 end in call instructions for reasons other than abnormal
-	 control flow.  */
-      if (GET_CODE (BLOCK_END (bb)) != CALL_INSN)
-	continue;
-
-      for (i = 0; i < expr_hash_table_size; i++)
-	{
-	  struct expr *expr;
-	  for (expr = expr_hash_table[i]; expr ; expr = expr->next_same_hash)
-	    if (GET_CODE (expr->expr) == MEM)
-	      {
-		rtx addr = XEXP (expr->expr, 0);
-
-		if (GET_CODE (addr) == SYMBOL_REF
-		    && CONSTANT_POOL_ADDRESS_P (addr))
-		  continue;
-		
-		/* ??? Optimally, we would use interprocedural alias
-		   analysis to determine if this mem is actually killed
-		   by this call.  */
-		RESET_BIT (pre_transpout[bb], expr->bitmap_index);
-	      }
-	}
-    }
-}   
-
-/* Compute "placement possible" information on entrance and exit of
-   each block.
-
-   From Fred Chow's Thesis:
-   A computation `e' is PP at a point `p' if it is anticipated at `p' and
-   all the anticipated e's can be rendered redundant by zero or more
-   insertions at that point and some other points in the procedure, and
-   these insertions satisfy the conditions that the insertions are always
-   at points that `e' is anticipated and the first anticipated e's after the
-   insertions are rendered redundant.  */
-
-static void
-compute_pre_ppinout ()
-{
-  int bb, i, changed, size, passes;
-
-  sbitmap_vector_ones (pre_ppin, n_basic_blocks);
-  /* ??? Inefficient as we set pre_ppin[0] twice, but simple.  */
-  sbitmap_zero (pre_ppin[0]);
-
-  sbitmap_vector_ones (pre_ppout, n_basic_blocks);
-  /* ??? Inefficient as we set pre_ppout[n_basic_blocks-1] twice, but simple.  */
-  sbitmap_zero (pre_ppout[n_basic_blocks - 1]);
-
-  size = pre_ppin[0]->size;
-  passes = 0;
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-      for (bb = 1; bb < n_basic_blocks; bb++)
-	{
-	  sbitmap_ptr antin = pre_antin[bb]->elms;
-	  sbitmap_ptr pavin = pre_pavin[bb]->elms;
-	  sbitmap_ptr antloc = pre_antloc[bb]->elms;
-	  sbitmap_ptr transp = pre_transp[bb]->elms;
-	  sbitmap_ptr ppout = pre_ppout[bb]->elms;
-	  sbitmap_ptr ppin = pre_ppin[bb]->elms;
-
-	  for (i = 0; i < size; i++)
-	    {
-	      int_list_ptr pred;
-	      SBITMAP_ELT_TYPE tmp = *antin & *pavin & (*antloc | (*transp & *ppout));
-	      SBITMAP_ELT_TYPE pred_val = (SBITMAP_ELT_TYPE) -1;
-
-	      for (pred = s_preds[bb]; pred != NULL; pred = pred->next)
-		{
-		  int pred_bb = INT_LIST_VAL (pred);
-		  sbitmap_ptr ppout_j,avout_j;
-
-		  if (pred_bb == ENTRY_BLOCK)
-		    continue;
-
-		  /* If this is a back edge, propagate info along the back
-		     edge to allow for loop invariant code motion.
-
-		     See FOLLOW_BACK_EDGES at the top of this file for a longer
-		     discussion about loop invariant code motion in pre.  */
-		  if (! FOLLOW_BACK_EDGES
-		      && (INSN_CUID (BLOCK_HEAD (bb))
-			  < INSN_CUID (BLOCK_END (pred_bb))))
-		    {
-		      pred_val = 0;
-		    }
-		  else
-		    {
-		      ppout_j = pre_ppout[pred_bb]->elms + i;
-		      avout_j = pre_avout[pred_bb]->elms + i;
-		      pred_val &= *ppout_j | *avout_j;
-		    }
-		}
-	      tmp &= pred_val;
-	      *ppin = tmp;
-	      antin++; pavin++; antloc++; transp++; ppout++; ppin++;
-	    }
-	}
-
-      for (bb = 0; bb < n_basic_blocks - 1; bb++)
-	{
-	  sbitmap_ptr ppout = pre_ppout[bb]->elms;
-	  sbitmap_ptr transpout = pre_transpout[bb]->elms;
-
-	  for (i = 0; i < size; i++)
-	    {
-	      int_list_ptr succ;
-	      SBITMAP_ELT_TYPE tmp = *transpout;
-
-	      for (succ = s_succs[bb]; succ != NULL; succ = succ->next)
-		{
-		  int succ_bb = INT_LIST_VAL (succ);
-		  sbitmap_ptr ppin;
-
-		  if (succ_bb == EXIT_BLOCK)
-		    continue;
-
-		  ppin = pre_ppin[succ_bb]->elms + i;
-		  tmp &= *ppin;
-		}
-
-	      if (*ppout != tmp)
-		{
-		  changed = 1;
-		  *ppout = tmp;
-		}
-
-	      ppout++; transpout++;
-	    }
-	}
-
-      passes++;
-    }
-
-  if (gcse_file)
-    fprintf (gcse_file, "placement possible computation: %d passes\n", passes);
+  free (pre_optimal);
+  free (pre_redundant);
+  free (transpout);
 }
 
 /* Top level routine to do the dataflow analysis needed by PRE.  */
@@ -4264,22 +3986,23 @@ compute_pre_ppinout ()
 static void
 compute_pre_data ()
 {
-  compute_local_properties (pre_transp, pre_comp, pre_antloc, 0);
-  compute_pre_avinout ();
-  compute_pre_antinout ();
-  compute_pre_pavinout ();
-  compute_pre_transpout ();
-  compute_pre_ppinout ();
-  if (gcse_file)
-    fprintf (gcse_file, "\n");
+  compute_local_properties (transp, comp, antloc, 0);
+  compute_transpout ();
+  pre_lcm (n_basic_blocks, n_exprs, s_preds, s_succs, transp,
+	   antloc, pre_redundant, pre_optimal);
 }
+
 
 /* PRE utilities */
 
-/* Return non-zero if occurrence OCCR of expression EXPR reaches block BB.
+/* Return non-zero if an occurrence of expression EXPR in OCCR_BB would reach
+   block BB.
 
    VISITED is a pointer to a working buffer for tracking which BB's have
    been visited.  It is NULL for the top-level call.
+
+   CHECK_PRE_COMP controls whether or not we check for a computation of
+   EXPR in OCCR_BB.
 
    We treat reaching expressions that go through blocks containing the same
    reaching expression as "not reaching".  E.g. if EXPR is generated in blocks
@@ -4289,10 +4012,11 @@ compute_pre_data ()
    the closest such expression.  */
 
 static int
-pre_expr_reaches_here_p (occr, expr, bb, visited)
-     struct occr *occr;
+pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp, visited)
+     int occr_bb;
      struct expr *expr;
      int bb;
+     int check_pre_comp;
      char *visited;
 {
   int_list_ptr pred;
@@ -4314,23 +4038,25 @@ pre_expr_reaches_here_p (occr, expr, bb, visited)
 	  /* Nothing to do.  */
 	}
       /* Does this predecessor generate this expression?  */
-      else if (TEST_BIT (pre_comp[pred_bb], expr->bitmap_index))
+      else if ((!check_pre_comp && occr_bb == pred_bb)
+	       || TEST_BIT (comp[pred_bb], expr->bitmap_index))
 	{
 	  /* Is this the occurrence we're looking for?
 	     Note that there's only one generating occurrence per block
 	     so we just need to check the block number.  */
-	  if (BLOCK_NUM (occr->insn) == pred_bb)
+	  if (occr_bb == pred_bb)
 	    return 1;
 	  visited[pred_bb] = 1;
 	}
       /* Ignore this predecessor if it kills the expression.  */
-      else if (! TEST_BIT (pre_transp[pred_bb], expr->bitmap_index))
+      else if (! TEST_BIT (transp[pred_bb], expr->bitmap_index))
 	visited[pred_bb] = 1;
       /* Neither gen nor kill.  */
       else
 	{
 	  visited[pred_bb] = 1;
-	  if (pre_expr_reaches_here_p (occr, expr, pred_bb, visited))
+	  if (pre_expr_reaches_here_p (occr_bb, expr, pred_bb,
+				       check_pre_comp, visited))
 	    return 1;
 	}
     }
@@ -4339,20 +4065,33 @@ pre_expr_reaches_here_p (occr, expr, bb, visited)
   return 0;
 }
 
-/* Add EXPR to the end of basic block BB.  */
+/* Add EXPR to the end of basic block BB.
+
+   This is used by both the PRE and code hoisting.
+
+   For PRE, we want to verify that the expr is either transparent
+   or locally anticipatable in the target block.  This check makes
+   no sense for code hoisting.  */
 
 static void
-pre_insert_insn (expr, bb)
+insert_insn_end_bb (expr, bb, pre)
      struct expr *expr;
      int bb;
+     int pre;
 {
   rtx insn = BLOCK_END (bb);
   rtx new_insn;
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
-  rtx pat;
+  rtx pat, copied_expr;
+  rtx first_new_insn;
 
-  pat = gen_rtx_SET (VOIDmode, reg, copy_rtx (expr->expr));
+  start_sequence ();
+  copied_expr = copy_rtx (expr->expr);
+  emit_move_insn (reg, copied_expr);
+  first_new_insn = get_insns ();
+  pat = gen_sequence ();
+  end_sequence ();
 
   /* If the last insn is a jump, insert EXPR in front [taking care to
      handle cc0, etc. properly].  */
@@ -4387,7 +4126,6 @@ pre_insert_insn (expr, bb)
 #endif
       /* FIXME: What if something in cc0/jump uses value set in new insn?  */
       new_insn = emit_insn_before (pat, insn);
-      add_label_notes (SET_SRC (pat), new_insn);
       if (BLOCK_HEAD (bb) == insn)
 	BLOCK_HEAD (bb) = new_insn;
     }
@@ -4405,11 +4143,11 @@ pre_insert_insn (expr, bb)
 	 presumtion that we'll get better code elsewhere as well.  */
 
       /* It should always be the case that we can put these instructions
-	 anywhere in the basic block.  Check this.  */
-      /* ??? Well, it would be the case if we'd split all critical edges.
-	 Since we didn't, we may very well abort.  */
-      if (!TEST_BIT (pre_antloc[bb], expr->bitmap_index)
-	  && !TEST_BIT (pre_transp[bb], expr->bitmap_index))
+	 anywhere in the basic block with performing PRE optimizations.
+	 Check this.  */
+      if (pre
+	  && !TEST_BIT (antloc[bb], expr->bitmap_index)
+          && !TEST_BIT (transp[bb], expr->bitmap_index))
 	abort ();
 
       /* Since different machines initialize their parameter registers
@@ -4449,62 +4187,101 @@ pre_insert_insn (expr, bb)
   else
     {
       new_insn = emit_insn_after (pat, insn);
-      add_label_notes (SET_SRC (pat), new_insn);
       BLOCK_END (bb) = new_insn;
     }
 
-  /* Keep block number table up to date.  */
-  set_block_num (new_insn, bb);
-  /* Keep register set table up to date.  */
-  record_one_set (regno, new_insn);
+  /* Keep block number table up to date.
+     Note, PAT could be a multiple insn sequence, we have to make
+     sure that each insn in the sequence is handled.  */
+  if (GET_CODE (pat) == SEQUENCE)
+    {
+      int i;
+
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx insn = XVECEXP (pat, 0, i);
+	  set_block_num (insn, bb);
+	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	    add_label_notes (PATTERN (insn), new_insn);
+	  record_set_insn = insn;
+	  note_stores (PATTERN (insn), record_set_info);
+	}
+    }
+  else
+    {
+      add_label_notes (SET_SRC (pat), new_insn);
+      set_block_num (new_insn, bb);
+      /* Keep register set table up to date.  */
+      record_one_set (regno, new_insn);
+    }
 
   gcse_create_count++;
 
   if (gcse_file)
     {
-      fprintf (gcse_file, "PRE: end of bb %d, insn %d, copying expression %d to reg %d\n",
+      fprintf (gcse_file, "PRE/HOIST: end of bb %d, insn %d, copying expression %d to reg %d\n",
 	       bb, INSN_UID (new_insn), expr->bitmap_index, regno);
     }
 }
 
 /* Insert partially redundant expressions at the ends of appropriate basic
-   blocks making them now redundant.  */
+   blocks making them fully redundant.  */
 
 static void
 pre_insert (index_map)
      struct expr **index_map;
 {
-  int bb, i, size;
+  int bb, i, set_size;
+  sbitmap *inserted;
 
-  /* Compute INSERT = PPOUT & (~AVOUT) & (~PPIN | ~TRANSP) for each
-     expression.  Where INSERT == TRUE, add the expression at the end of
-     the basic block.  */
+  /* Compute INSERT = PRE_OPTIMAL & ~PRE_REDUNDANT. 
+     Where INSERT is nonzero, we add the expression at the end of the basic
+     block if it reaches any of the deleted expressions.  */
 
-  size = pre_ppout[0]->size;
+  set_size = pre_optimal[0]->size;
+  inserted = sbitmap_vector_alloc (n_basic_blocks, n_exprs);
+  sbitmap_vector_zero (inserted, n_basic_blocks);
+
   for (bb = 0; bb < n_basic_blocks; bb++)
     {
       int indx;
-      sbitmap_ptr ppout = pre_ppout[bb]->elms;
-      sbitmap_ptr avout = pre_avout[bb]->elms;
-      sbitmap_ptr ppin = pre_ppin[bb]->elms;
-      sbitmap_ptr transp = pre_transp[bb]->elms;
 
-      for (i = indx = 0;
-	   i < size;
-	   i++, indx += SBITMAP_ELT_BITS, ppout++, avout++, ppin++, transp++)
+      /* This computes the number of potential insertions we need.  */
+      sbitmap_not (temp_bitmap[bb], pre_redundant[bb]);
+      sbitmap_a_and_b (temp_bitmap[bb], temp_bitmap[bb], pre_optimal[bb]);
+
+      /* TEMP_BITMAP[bb] now contains a bitmap of the expressions that we need
+	 to insert at the end of this basic block.  */
+      for (i = indx = 0; i < set_size; i++, indx += SBITMAP_ELT_BITS)
 	{
+	  SBITMAP_ELT_TYPE insert = temp_bitmap[bb]->elms[i];
 	  int j;
-	  SBITMAP_ELT_TYPE insert = *ppout & (~*avout) & (~*ppin | ~*transp);
 
-	  for (j = indx; insert != 0 && j < n_exprs; j++, insert >>= 1)
+	  for (j = indx; insert && j < n_exprs; j++, insert >>= 1)
 	    {
-	      if ((insert & 1) != 0
-		  /* If the basic block isn't reachable, PPOUT will be TRUE.
-		     However, we don't want to insert a copy here because the
-		     expression may not really be redundant.  So only insert
-		     an insn if the expression was deleted.  */
-		  && index_map[j]->reaching_reg != NULL)
-		pre_insert_insn (index_map[j], bb);
+	      if ((insert & 1) != 0 && index_map[j]->reaching_reg != NULL_RTX)
+		{
+		  struct expr *expr = index_map[j];
+		  struct occr *occr;
+
+		  /* Now look at each deleted occurence of this expression.  */
+		  for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
+		    {
+		      if (! occr->deleted_p)
+			continue;
+
+		      /* Insert this expression at the end of BB if it would
+			 reach the deleted occurence.  */
+		      if (!TEST_BIT (inserted[bb], j)
+			  && pre_expr_reaches_here_p (bb, expr,
+						   BLOCK_NUM (occr->insn), 0,
+						   NULL))
+			{
+			  SET_BIT (inserted[bb], j);
+			  insert_insn_end_bb (index_map[j], bb, 1);
+			}
+		    }
+		}
 	    }
 	}
     }
@@ -4548,7 +4325,12 @@ pre_insert_copy_insn (expr, insn)
 static void
 pre_insert_copies ()
 {
-  int i;
+  int i, bb;
+
+  for (bb = 0; bb < n_basic_blocks; bb++)
+    {
+      sbitmap_a_and_b (temp_bitmap[bb], pre_optimal[bb], pre_redundant[bb]);
+    }
 
   /* For each available expression in the table, copy the result to
      `reaching_reg' if the expression reaches a deleted one.
@@ -4583,17 +4365,21 @@ pre_insert_copies ()
 	      for (avail = expr->avail_occr; avail != NULL; avail = avail->next)
 		{
 		  rtx insn = avail->insn;
+		  int bb = BLOCK_NUM (insn);
+
+		  if (!TEST_BIT (temp_bitmap[bb], expr->bitmap_index))
+		    continue;
 
 		  /* No need to handle this one if handled already.  */
 		  if (avail->copied_p)
 		    continue;
 		  /* Don't handle this one if it's a redundant one.  */
-		  if (TEST_BIT (pre_redundant, INSN_CUID (insn)))
+		  if (TEST_BIT (pre_redundant_insns, INSN_CUID (insn)))
 		    continue;
 		  /* Or if the expression doesn't reach the deleted one.  */
-		  if (! pre_expr_reaches_here_p (avail, expr,
+		  if (! pre_expr_reaches_here_p (BLOCK_NUM (avail->insn), expr,
 						 BLOCK_NUM (occr->insn),
-						 NULL))
+						 1, NULL))
 		    continue;
 
 		  /* Copy the result of avail to reaching_reg.  */
@@ -4606,7 +4392,6 @@ pre_insert_copies ()
 }
 
 /* Delete redundant computations.
-   These are ones that satisy ANTLOC & PPIN.
    Deletion is done by changing the insn to copy the `reaching_reg' of
    the expression into the result of the SET.  It is left to later passes
    (cprop, cse2, flow, combine, regmove) to propagate the copy or eliminate it.
@@ -4616,7 +4401,15 @@ pre_insert_copies ()
 static int
 pre_delete ()
 {
-  int i, changed;
+  int i, bb, changed;
+
+  /* Compute the expressions which are redundant and need to be replaced by
+     copies from the reaching reg to the target reg.  */
+  for (bb = 0; bb < n_basic_blocks; bb++)
+    {
+      sbitmap_not (temp_bitmap[bb], pre_optimal[bb]);
+      sbitmap_a_and_b (temp_bitmap[bb], temp_bitmap[bb], pre_redundant[bb]);
+    }
 
   changed = 0;
   for (i = 0; i < expr_hash_table_size; i++)
@@ -4636,9 +4429,8 @@ pre_delete ()
 	      rtx insn = occr->insn;
 	      rtx set;
 	      int bb = BLOCK_NUM (insn);
-	      sbitmap ppin = pre_ppin[bb];
 
-	      if (TEST_BIT (ppin, indx))
+	      if (TEST_BIT (temp_bitmap[bb], indx))
 		{
 		  set = single_set (insn);
 		  if (! set)
@@ -4662,14 +4454,15 @@ pre_delete ()
 				       expr->reaching_reg, 0))
 		    {
 		      occr->deleted_p = 1;
-		      SET_BIT (pre_redundant, INSN_CUID (insn));
+		      SET_BIT (pre_redundant_insns, INSN_CUID (insn));
 		      changed = 1;
 		      gcse_subst_count++;
 		    }
 
 		  if (gcse_file)
 		    {
-		      fprintf (gcse_file, "PRE: redundant insn %d (expression %d) in bb %d, reaching reg is %d\n",
+		      fprintf (gcse_file,
+			       "PRE: redundant insn %d (expression %d) in bb %d, reaching reg is %d\n",
 			       INSN_UID (insn), indx, bb, REGNO (expr->reaching_reg));
 		    }
 		}
@@ -4684,10 +4477,9 @@ pre_delete ()
    This is called by one_pre_gcse_pass after all the dataflow analysis
    has been done.
 
-   This is based on the original Morel-Renvoise paper and Fred Chow's thesis.
-
-   The M-R paper uses "TRANSP" to describe an expression as being transparent
-   in a block where as Chow's thesis uses "ALTERED".  We use TRANSP.
+   This is based on the original Morel-Renvoise paper Fred Chow's thesis,
+   and lazy code motion from Knoop, Ruthing and Steffen as described in
+   Advanced Compiler Design and Implementation.
 
    ??? A new pseudo reg is created to hold the reaching expression.
    The nice thing about the classical approach is that it would try to
@@ -4722,8 +4514,8 @@ pre_gcse ()
     }
 
   /* Reset bitmap used to track which insns are redundant.  */
-  pre_redundant = sbitmap_alloc (max_cuid);
-  sbitmap_zero (pre_redundant);
+  pre_redundant_insns = sbitmap_alloc (max_cuid);
+  sbitmap_zero (pre_redundant_insns);
 
   /* Delete the redundant insns first so that
      - we know what register to use for the new insns and for the other
@@ -4739,7 +4531,7 @@ pre_gcse ()
      specially allocated pseudo-reg that reaches the redundant expression.  */
   pre_insert_copies ();
 
-  free (pre_redundant);
+  free (pre_redundant_insns);
 
   return changed;
 }
@@ -4822,5 +4614,56 @@ add_label_notes (x, insn)
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  add_label_notes (XVECEXP (x, i, j), insn);
+    }
+}
+
+/* Compute transparent outgoing information for each block.
+
+   An expression is transparent to an edge unless it is killed by
+   the edge itself.  This can only happen with abnormal control flow,
+   when the edge is traversed through a call.  This happens with
+   non-local labels and exceptions.
+
+   This would not be necessary if we split the edge.  While this is
+   normally impossible for abnormal critical edges, with some effort
+   it should be possible with exception handling, since we still have
+   control over which handler should be invoked.  But due to increased
+   EH table sizes, this may not be worthwhile.  */
+
+static void
+compute_transpout ()
+{
+  int bb;
+
+  sbitmap_vector_ones (transpout, n_basic_blocks);
+
+  for (bb = 0; bb < n_basic_blocks; ++bb)
+    {
+      int i;
+
+      /* Note that flow inserted a nop a the end of basic blocks that
+	 end in call instructions for reasons other than abnormal
+	 control flow.  */
+      if (GET_CODE (BLOCK_END (bb)) != CALL_INSN)
+	continue;
+
+      for (i = 0; i < expr_hash_table_size; i++)
+	{
+	  struct expr *expr;
+	  for (expr = expr_hash_table[i]; expr ; expr = expr->next_same_hash)
+	    if (GET_CODE (expr->expr) == MEM)
+	      {
+		rtx addr = XEXP (expr->expr, 0);
+
+		if (GET_CODE (addr) == SYMBOL_REF
+		    && CONSTANT_POOL_ADDRESS_P (addr))
+		  continue;
+		
+		/* ??? Optimally, we would use interprocedural alias
+		   analysis to determine if this mem is actually killed
+		   by this call.  */
+		RESET_BIT (transpout[bb], expr->bitmap_index);
+	      }
+	}
     }
 }
