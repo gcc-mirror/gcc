@@ -1700,10 +1700,6 @@ typedef int CUMULATIVE_ARGS;
 
 /* How Scalar Function Values are Returned */
 
-/* Define this macro if `-traditional' should not cause functions declared to
-   return `float' to convert the value to `double'.  */ /* #define
-   TRADITIONAL_RETURN_FLOAT */
-
 /* A C expression to create an RTX representing the place where a function
    returns a value of data type VALTYPE.  VALTYPE is a tree node representing a
    data type.  Write `TYPE_MODE (VALTYPE)' to get the machine mode used to
@@ -4605,13 +4601,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* Define this macro if you want to handle #pragma weak (HANDLE_SYSV_PRAGMA
    must also be defined).  */
 /* #define HANDLE_WEAK_PRAGMA */
-
-/* Define this macro to control use of the character `$' in identifier names.
-   The value should be 0, 1, or 2.  0 means `$' is not allowed by default; 1
-   means it is allowed by default if `-traditional' is used; 2 means it is
-   allowed by default provided `-ansi' is not used.  1 is the default; there is
-   no need to define this macro in that case.  */
-/* #define DOLLARS_IN_IDENTIFIERS */
 
 /* Define this macro if the assembler does not accept the character `$' in
    label names.  By default constructors and destructors in G++ have `$' in the

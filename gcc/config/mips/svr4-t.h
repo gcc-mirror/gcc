@@ -17,9 +17,7 @@
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt1.o%s}}\
 	%{ansi:/usr/lib/values-Xc.o%s} \
-                          %{!ansi: \
-                           %{traditional:/usr/lib/values-Xt.o%s} \
-                           %{!traditional:/usr/lib/values-Xa.o%s}}"
+        %{!ansi:/usr/lib/values-Xa.o%s}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "\

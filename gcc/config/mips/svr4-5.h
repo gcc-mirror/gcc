@@ -40,9 +40,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt1.o%s}}\
 	%{ansi:/svr4/usr/ccs/lib/values-Xc.o%s} \
-                          %{!ansi: \
-                           %{traditional:/svr4/usr/ccs/lib/values-Xt.o%s} \
-                           %{!traditional:/svr4/usr/ccs/lib/values-Xa.o%s}}"
+        %{!ansi:/svr4/usr/ccs/lib/values-Xa.o%s}"
 
 #define MACHINE_TYPE "RISC-OS System V.4 Mips"
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision$
+ *                             $Revision: 1.17 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -152,7 +152,6 @@ extern char **gnat_argv;
 
 /* Global Variables Expected by gcc: */
 
-int flag_traditional;		/* Used by dwarfout.c.  */
 int ggc_p = 1;
 
 static void internal_error_function	PARAMS ((const char *, va_list *));

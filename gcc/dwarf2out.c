@@ -3234,8 +3234,6 @@ limbo_die_node;
 /* Information concerning the compilation unit's programming
    language, and compiler version.  */
 
-extern int flag_traditional;
-
 /* Fixed size portion of the DWARF compilation unit header.  */
 #define DWARF_COMPILE_UNIT_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 3)
 
@@ -10756,8 +10754,6 @@ gen_compile_unit_die (filename)
     language = DW_LANG_Pascal83;
   else if (strcmp (language_string, "GNU Java") == 0)
     language = DW_LANG_Java;
-  else if (flag_traditional)
-    language = DW_LANG_C;
   else
     language = DW_LANG_C89;
 

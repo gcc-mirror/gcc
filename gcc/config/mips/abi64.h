@@ -209,11 +209,7 @@ Boston, MA 02111-1307, USA.  */
    does not make a copy.  Instead, it passes a pointer to the "live"
    value.  The called function must not modify this value.  If it can
    be determined that the value won't be modified, it need not make a
-   copy; otherwise a copy must be made.
-
-   ??? The MIPS EABI says that the caller should copy in ``K&R mode.''
-   I don't know how to detect that here, since flag_traditional is not
-   a back end flag.  */
+   copy; otherwise a copy must be made.  */
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
   (mips_abi == ABI_EABI && (NAMED)					\
    && FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))

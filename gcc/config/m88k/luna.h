@@ -46,13 +46,8 @@ Boston, MA 02111-1307, USA.  */
 #define	CPP_SPEC "%{m88000:-D__mc88000__} \
 		  %{!m88000:%{m88100:%{m88110:-D__mc88000__}}} \
 		  %{!m88000:%{!m88100:%{m88110:-D__mc88110__}}} \
-		  %{!m88000:%{!m88110:%{!ansi:%{traditional:-Dmc88100}} \
-				      -D__mc88100__ -D__mc88100}}"
+		  %{!m88000:%{!m88110:-D__mc88100__ -D__mc88100}}"
 
 /* Specify extra dir to search for include files.  */
 #undef	SYSTEM_INCLUDE_DIR
 #define SYSTEM_INCLUDE_DIR "/usr/mach/include"
-
-/* For the Omron Luna/88k, a float function returns a double in traditional
-   mode (and a float in ansi mode).  */
-#undef TRADITIONAL_RETURN_FLOAT

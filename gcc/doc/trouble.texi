@@ -443,8 +443,7 @@ Parse errors may occur compiling X11 on a Decstation running Ultrix 4.2
 because of problems in DEC's versions of the X11 header files
 @file{X11/Xlib.h} and @file{X11/Xutil.h}.  People recommend adding
 @option{-I/usr/include/mit} to use the MIT versions of the header files,
-using the @option{-traditional} switch to turn off ISO C, or fixing the
-header files by adding this:
+or fixing the header files by adding this:
 
 @example
 #ifdef __STDC__
@@ -484,9 +483,7 @@ MALLOC=gmalloc.o
 @opindex traditional
 
 There are several noteworthy incompatibilities between GNU C and K&R
-(non-ISO) versions of C@.  The @option{-traditional} option
-eliminates many of these incompatibilities, @emph{but not all}, by
-telling GCC to behave like a K&R C compiler.
+(non-ISO) versions of C@.
 
 @itemize @bullet
 @cindex string constants
@@ -516,7 +513,6 @@ The best solution to these problems is to change the program to use
 purposes instead of string constants.  But if this is not possible,
 you can use the @option{-fwritable-strings} flag, which directs GCC
 to handle string constants the same way most C compilers do.
-@option{-traditional} also has this effect, among others.
 
 @item
 @code{-2147483648} is positive.
@@ -535,9 +531,6 @@ string constants.  For example, the following macro in GCC
 
 @noindent
 will produce output @code{"a"} regardless of what the argument @var{a} is.
-
-The @option{-traditional} option directs GCC to handle such cases
-(among others) in the old-fashioned (non-ISO) fashion.
 
 @cindex @code{setjmp} incompatibilities
 @cindex @code{longjmp} incompatibilities
@@ -573,11 +566,6 @@ in it.
 If you use the @option{-W} option with the @option{-O} option, you will
 get a warning when GCC thinks such a problem might be possible.
 
-The @option{-traditional} option directs GCC to put variables in
-the stack by default, rather than in registers, in functions that
-call @code{setjmp}.  This results in the behavior found in
-traditional C compilers.
-
 @item
 Programs that use preprocessing directives in the middle of macro
 arguments do not work with GCC@.  For example, a program like this
@@ -591,9 +579,7 @@ foobar (
 @end group
 @end example
 
-ISO C does not permit such a construct.  It would make sense to support
-it when @option{-traditional} is used, but it is too much work to
-implement.
+ISO C does not permit such a construct.
 
 @item
 K&R compilers allow comments to cross over an inclusion boundary
@@ -611,9 +597,6 @@ have the same scope as any other declaration in the same place.
 In some other C compilers, a @code{extern} declaration affects all the
 rest of the file even if it happens within a block.
 
-The @option{-traditional} option directs GCC to treat all @code{extern}
-declarations as global, like traditional compilers.
-
 @item
 In traditional C, you can combine @code{long}, etc., with a typedef name,
 as shown here:
@@ -624,18 +607,15 @@ typedef long foo bar;
 @end example
 
 In ISO C, this is not allowed: @code{long} and other type modifiers
-require an explicit @code{int}.  Because this criterion is expressed
-by Bison grammar rules rather than C code, the @option{-traditional}
-flag cannot alter it.
+require an explicit @code{int}.
 
 @cindex typedef names as function parameters
 @item
-PCC allows typedef names to be used as function parameters.  The
-difficulty described immediately above applies here too.
+PCC allows typedef names to be used as function parameters.
 
 @item
-When in @option{-traditional} mode, GCC allows the following erroneous
-pair of declarations to appear together in a given scope:
+Traditional C allows the following erroneous pair of declarations to
+appear together in a given scope:
 
 @example
 typedef int foo;
@@ -643,19 +623,18 @@ typedef foo foo;
 @end example
 
 @item
-GCC treats all characters of identifiers as significant, even when in
-@option{-traditional} mode.  According to K&R-1 (2.2), ``No more than the
-first eight characters are significant, although more may be used.''.
-Also according to K&R-1 (2.2), ``An identifier is a sequence of letters
-and digits; the first character must be a letter.  The underscore _
-counts as a letter.'', but GCC also allows dollar signs in identifiers.
+GCC treats all characters of identifiers as significant.  According to
+K&R-1 (2.2), ``No more than the first eight characters are significant,
+although more may be used.''.  Also according to K&R-1 (2.2), ``An
+identifier is a sequence of letters and digits; the first character must
+be a letter.  The underscore _ counts as a letter.'', but GCC also
+allows dollar signs in identifiers.
 
 @cindex whitespace
 @item
 PCC allows whitespace in the middle of compound assignment operators
 such as @samp{+=}.  GCC, following the ISO standard, does not
-allow this.  The difficulty described immediately above applies here
-too.
+allow this.
 
 @cindex apostrophes
 @cindex '
@@ -673,8 +652,7 @@ You can't expect this to work.
 @end example
 
 The best solution to such a problem is to put the text into an actual
-C comment delimited by @samp{/*@dots{}*/}.  However,
-@option{-traditional} suppresses these error messages.
+C comment delimited by @samp{/*@dots{}*/}.
 
 @item
 Many user programs contain the declaration @samp{long time ();}.  In the
@@ -1296,12 +1274,11 @@ they write programs which have the same meaning in both C dialects.)
 
 @item
 @opindex ansi
-@opindex traditional
 @opindex std
 Undefining @code{__STDC__} when @option{-ansi} is not used.
 
-Currently, GCC defines @code{__STDC__} as long as you don't use
-@option{-traditional}.  This provides good results in practice.
+Currently, GCC defines @code{__STDC__} unconditionally.  This provides
+good results in practice.
 
 Programmers normally use conditionals on @code{__STDC__} to ask whether
 it is safe to use certain features of ISO C, such as function

@@ -27,15 +27,13 @@ Boston, MA 02111-1307, USA.  */
       external preprocessor if -save-temps or -traditional is given.  */
      "%{E|M|MM:%(trad_capable_cpp) -lang-objc %{ansi:-std=c89} %(cpp_options)}\
       %{!E:%{!M:%{!MM:\
-	%{save-temps:%(trad_capable_cpp) -lang-objc %{ansi:-std=c89}\
+	%{traditional|ftraditional|traditional-cpp:\
+%eGNU Objective C no longer supports traditional compilation}\
+	%{save-temps:cpp0 -lang-objc %{ansi:-std=c89}\
 	  %(cpp_options) %b.mi \n\
 	    cc1obj -fpreprocessed %b.mi %(cc1_options) %{gen-decls}}\
 	%{!save-temps:\
-	  %{traditional|ftraditional|traditional-cpp:\
-	    tradcpp0 -lang-objc %{ansi:-std=c89} %(cpp_options) %{!pipe:%g.mi} |\n\
-	    cc1obj -fpreprocessed %{!pipe:%g.mi} %(cc1_options) %{gen-decls}}\
-	  %{!traditional:%{!ftraditional:%{!traditional-cpp:\
-	    cc1obj %{ansi:-std=c89} %(cpp_unique_options) %(cc1_options) %{gen-decls}}}}}\
+	    cc1obj %{ansi:-std=c89} %(cpp_unique_options) %(cc1_options) %{gen-decls}}\
         %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {".mi", "@objc-cpp-output", 0},
   {"@objc-cpp-output",

@@ -129,8 +129,7 @@ Boston, MA 02111-1307, USA.  */
 /* Machine dependent ccp options.  */
 
 #undef	CPP_SPEC
-#define CPP_SPEC "%{!traditional: -D__STDC__}            \
-                  %{posixstrict:-D_POSIX_SOURCE}         \
+#define CPP_SPEC "%{posixstrict:-D_POSIX_SOURCE}         \
                   %{!posixstrict:%{bsd:-D__STRICT_BSD__} \
                   %{posix:-D_POSIX_SOURCE}               \
                   %{!ansi:-D_NEXT_SOURCE}}               \

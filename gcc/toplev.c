@@ -1182,8 +1182,6 @@ documented_lang_options[] =
 
   { "-ansi", 
     N_("Compile just for ISO C89") },
-  { "-fallow-single-precision",
-    N_("Do not promote floats to double if using -traditional") },
   { "-std= ", 
     N_("Determine language standard") },
 
@@ -1198,12 +1196,6 @@ documented_lang_options[] =
     N_("Make 'char' be unsigned by default") },
   { "-fno-signed-char", "" },
   { "-fno-unsigned-char", "" },
-
-  { "-ftraditional", "" },
-  { "-traditional", 
-    N_("Attempt to support traditional K&R style C") },
-  { "-fnotraditional", "" },
-  { "-fno-traditional", "" },
 
   { "-fasm", "" },
   { "-fno-asm", 
@@ -1332,7 +1324,7 @@ documented_lang_options[] =
     N_("Warn about non-prototyped function decls") },
   { "-Wno-strict-prototypes", "" },
   { "-Wtraditional", 
-    N_("Warn about constructs whose meaning change in ISO C") },
+    N_("Warn about constructs whose meanings change in ISO C") },
   { "-Wno-traditional", "" },
   { "-Wtrigraphs", 
     N_("Warn when trigraphs are encountered") },

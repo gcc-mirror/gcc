@@ -323,8 +323,6 @@ static tree named_labels;
 static tree shadowed_labels;
 #endif
 
-int flag_traditional;
-
 tree java_global_trees[JTI_MAX];
   
 /* Build (and pushdecl) a "promoted type" for all standard

@@ -58,7 +58,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Externals defined here. */
 
-int flag_traditional;		/* Shouldn't need this (C front end only)! */
 bool ffe_is_do_internal_checks_ = FALSE;
 bool ffe_is_90_ = FFETARGET_defaultIS_90;
 bool ffe_is_automatic_ = FFETARGET_defaultIS_AUTOMATIC;

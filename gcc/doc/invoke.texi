@@ -1144,75 +1144,13 @@ options for strict ISO C conformance) implies @option{-trigraphs}.
 @cindex traditional C language
 @cindex C language, traditional
 @item -traditional
-@opindex traditional
-Attempt to support some aspects of traditional C compilers.
-Specifically:
-
-@itemize @bullet
-@item
-All @code{extern} declarations take effect globally even if they
-are written inside of a function definition.  This includes implicit
-declarations of functions.
-
-@item
-The newer keywords @code{typeof}, @code{inline}, @code{signed}, @code{const}
-and @code{volatile} are not recognized.  (You can still use the
-alternative keywords such as @code{__typeof__}, @code{__inline__}, and
-so on.)
-
-@item
-Comparisons between pointers and integers are always allowed.
-
-@item
-Integer types @code{unsigned short} and @code{unsigned char} promote
-to @code{unsigned int}.
-
-@item
-Out-of-range floating point literals are not an error.
-
-@item
-Certain constructs which ISO regards as a single invalid preprocessing
-number, such as @samp{0xe-0xd}, are treated as expressions instead.
-
-@item
-String ``constants'' are not necessarily constant; they are stored in
-writable space, and identical looking constants are allocated
-separately.  (This is the same as the effect of
-@option{-fwritable-strings}.)
-
-@cindex @code{longjmp} and automatic variables
-@item
-All automatic variables not declared @code{register} are preserved by
-@code{longjmp}.  Ordinarily, GNU C follows ISO C: automatic variables
-not declared @code{volatile} may be clobbered.
-
-@item
-@cindex @samp{\x}
-@cindex @samp{\a}
-@cindex escape sequences, traditional
-The character escape sequences @samp{\x} and @samp{\a} evaluate as the
-literal characters @samp{x} and @samp{a} respectively.  Without
-@w{@option{-traditional}}, @samp{\x} is a prefix for the hexadecimal
-representation of a character, and @samp{\a} produces a bell.
-@end itemize
-
-This option is deprecated and may be removed.
-
-You may wish to use @option{-fno-builtin} as well as @option{-traditional}
-if your program uses names that are normally GNU C built-in functions for
-other purposes of its own.
-
-You cannot use @option{-traditional} if you include any header files that
-rely on ISO C features.  Some vendors are starting to ship systems with
-ISO C header files and you cannot use @option{-traditional} on such
-systems to compile files that include any system headers.
-
-The @option{-traditional} option also enables @option{-traditional-cpp}.
-
-@item -traditional-cpp
+@itemx -traditional-cpp
 @opindex traditional-cpp
-Attempt to support some aspects of traditional C preprocessors.
-See the GNU CPP manual for details.
+@opindex traditional
+Formerly, these options caused GCC to attempt to emulate a pre-standard
+C compiler.  They are now only supported with the @option{-E} switch.
+The preprocessor continues to support a pre-standard mode.  See the GNU
+CPP manual for details.
 
 @item -fcond-mismatch
 @opindex fcond-mismatch
@@ -1260,31 +1198,14 @@ declaration does not use either @code{signed} or @code{unsigned}.  By
 default, such a bit-field is signed, because this is consistent: the
 basic integer types such as @code{int} are signed types.
 
-However, when @option{-traditional} is used, bit-fields are all unsigned
-no matter what.
-
 @item -fwritable-strings
 @opindex fwritable-strings
 Store string constants in the writable data segment and don't uniquize
 them.  This is for compatibility with old programs which assume they can
-write into string constants.  The option @option{-traditional} also has
-this effect.
+write into string constants.
 
 Writing into string constants is a very bad idea; ``constants'' should
 be constant.
-
-@item -fallow-single-precision
-@opindex fallow-single-precision
-Do not promote single precision math operations to double precision,
-even when compiling with @option{-traditional}.
-
-Traditional K&R C promotes all floating point operations to double
-precision, regardless of the sizes of the operands.   On the
-architecture for which you are compiling, single precision may be faster
-than double precision.   If you must use @option{-traditional}, but want
-to use single precision operations when the operands are single
-precision, use this option.   This option has no effect when compiling
-with ISO or GNU C conventions (the default).
 
 @item -fshort-wchar
 @opindex fshort-wchar

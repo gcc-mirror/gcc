@@ -348,10 +348,6 @@ extern int warn_char_subscripts;
 
 extern int warn_main;
 
-/* Nonzero means to allow single precision math even if we're generally
-   being traditional.  */
-extern int flag_allow_single_precision;
-
 /* Warn if initializer is not completely bracketed.  */
 
 extern int warn_missing_braces;

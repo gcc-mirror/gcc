@@ -1,5 +1,39 @@
 2002-02-27  Zack Weinberg  <zack@codesourcery.com>
 
+	* c-common.c, c-common.h, c-decl.c, c-lex.c, c-parse.in,
+	c-tree.h, c-typeck.c, cppexp.c, cpplex.c, cpplib.c, cpplib.h,
+	cppmacro.c, objc/lang-specs.h, objc/objc-act.c,
+	builtin-types.def, builtins.def, dwarf2out.c, dwarfout.c,
+	gcc.c, toplev.c: Delete code implementing -traditional mode.
+
+	* doc/bugreport.texi, doc/cpp.texi, doc/extend.texi,
+	doc/invoke.texi, doc/standards.texi, doc/trouble.texi:
+	Document removal of -traditional mode for compilation, and
+	remove documentation only relevant to that mode.
+
+	* config/nextstep.h, config/ptx4.h, config/svr4.h,
+	config/convex/convex.h, config/d30v/d30v.h,
+	config/i386/dgux.h, config/i386/osf1elf.h,
+	config/i386/osfelf.h, config/i386/osfrose.h,
+	config/i386/sco5.h, config/i386/sol2.h, config/m68k/a-ux.h,
+	config/m68k/hp310.h, config/m88k/dgux.h,
+	config/m88k/dguxbcs.h, config/m88k/luna.h, config/m88k/m88k.c,
+	config/m88k/m88k.h, config/m88k/openbsd.h,
+	config/mips/abi64.h, config/mips/osfrose.h,
+	config/mips/svr4-5.h, config/mips/svr4-t.h,
+	config/sparc/sol2-sld-64.h, config/sparc/sol2.h,
+	config/stormy16/stormy16.h: Remove all references to
+	-traditional from target specs.  Delete all mention of the
+	no-longer-necessary TRADITIONAL_RETURN_FLOAT macro.  Also
+	delete a couple of commented-out definitions of
+	DOLLARS_IN_IDENTIFIERS, with (incorrect) commentary referring
+	to -traditional.
+
+	* system.h: Poison TRADITIONAL_RETURN_FLOAT.
+	* doc/tm.texi: Remove mention of TRADITIONAL_RETURN_FLOAT macro.
+
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
 	* mklibgcc.in: Don't use \n in a line subject to
 	interpretation by echo.
 

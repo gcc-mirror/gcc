@@ -1,3 +1,9 @@
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/920730-1t.c,
+	gcc.c-torture/execute/920730-1t.x, gcc.dg/ext-glob.c:
+	Delete test cases, only relevant to -traditional.
+
 2002-02-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/undef1.c: Remove.

@@ -420,10 +420,6 @@ extern int warn_pointer_arith;
 /* Nonzero means to warn about compile-time division by zero.  */
 extern int warn_div_by_zero;
 
-/* Nonzero means do some things the same way PCC does.  */
-
-extern int flag_traditional;
-
 /* Nonzero means enable C89 Amendment 1 features.  */
 
 extern int flag_isoc94;

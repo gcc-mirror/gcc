@@ -89,13 +89,6 @@ Errors in the 1999 ISO C standard were corrected in a Technical
 Corrigendum published in 2001.  GCC does not support the uncorrected
 version.
 
-@opindex traditional
-GCC also has some limited support for traditional (pre-ISO) C with the
-@option{-traditional} option.  This support may be of use for compiling
-some very old programs that have not been updated to ISO C, but should
-not be used for new programs.  It will not work with some modern C
-libraries such as the GNU C library.
-
 By default, GCC provides some extensions to the C language that on
 rare occasions conflict with the C standard.  @xref{C
 Extensions,,Extensions to the C Language Family}.  Use of the

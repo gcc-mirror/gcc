@@ -427,10 +427,6 @@ extern int warn_nested_externs;
 
 extern int warn_cast_qual;
 
-/* Warn about traditional constructs whose meanings changed in ANSI C.  */
-
-extern int warn_traditional;
-
 /* Warn about *printf or *scanf format/argument anomalies. */
 
 extern int warn_format;
@@ -446,10 +442,6 @@ extern int warn_conversion;
 /* Warn if switch labels aren't complete, or are duplicated */
 
 extern int warn_switch;
-
-/* Nonzero means do some things the same way PCC does.  */
-
-extern int flag_traditional;
 
 /* Nonzero means warn about suggesting putting in ()'s.  */
 

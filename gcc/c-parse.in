@@ -367,7 +367,7 @@ datadef:
 	  setspecs notype_initdecls ';'
 		{ if (pedantic)
 		    error ("ISO C forbids data definition with no type or storage class");
-		  else if (!flag_traditional)
+		  else
 		    warning ("data definition has no type or storage class"); 
 
 		  POP_DECLSPEC_STACK; }
@@ -3280,11 +3280,10 @@ struct resword
 
 /* Disable mask.  Keywords are disabled if (reswords[i].disable & mask) is
    _true_.  */
-#define D_TRAD	0x01	/* not in traditional C */
-#define D_C89	0x02	/* not in C89 */
-#define D_EXT	0x04	/* GCC extension */
-#define D_EXT89	0x08	/* GCC extension incorporated in C99 */
-#define D_OBJC	0x10	/* Objective C only */
+#define D_C89	0x01	/* not in C89 */
+#define D_EXT	0x02	/* GCC extension */
+#define D_EXT89	0x04	/* GCC extension incorporated in C99 */
+#define D_OBJC	0x08	/* Objective C only */
 
 static const struct resword reswords[] =
 {
@@ -3337,7 +3336,7 @@ static const struct resword reswords[] =
   { "break",		RID_BREAK,	0 },
   { "case",		RID_CASE,	0 },
   { "char",		RID_CHAR,	0 },
-  { "const",		RID_CONST,	D_TRAD },
+  { "const",		RID_CONST,	0 },
   { "continue",		RID_CONTINUE,	0 },
   { "default",		RID_DEFAULT,	0 },
   { "do",		RID_DO,		0 },
@@ -3349,24 +3348,24 @@ static const struct resword reswords[] =
   { "for",		RID_FOR,	0 },
   { "goto",		RID_GOTO,	0 },
   { "if",		RID_IF,		0 },
-  { "inline",		RID_INLINE,	D_TRAD|D_EXT89 },
+  { "inline",		RID_INLINE,	D_EXT89 },
   { "int",		RID_INT,	0 },
   { "long",		RID_LONG,	0 },
   { "register",		RID_REGISTER,	0 },
-  { "restrict",		RID_RESTRICT,	D_TRAD|D_C89 },
+  { "restrict",		RID_RESTRICT,	D_C89 },
   { "return",		RID_RETURN,	0 },
   { "short",		RID_SHORT,	0 },
-  { "signed",		RID_SIGNED,	D_TRAD },
+  { "signed",		RID_SIGNED,	0 },
   { "sizeof",		RID_SIZEOF,	0 },
   { "static",		RID_STATIC,	0 },
   { "struct",		RID_STRUCT,	0 },
   { "switch",		RID_SWITCH,	0 },
   { "typedef",		RID_TYPEDEF,	0 },
-  { "typeof",		RID_TYPEOF,	D_TRAD|D_EXT },
+  { "typeof",		RID_TYPEOF,	D_EXT },
   { "union",		RID_UNION,	0 },
   { "unsigned",		RID_UNSIGNED,	0 },
   { "void",		RID_VOID,	0 },
-  { "volatile",		RID_VOLATILE,	D_TRAD },
+  { "volatile",		RID_VOLATILE,	0 },
   { "while",		RID_WHILE,	0 },
 ifobjc
   { "id",		RID_ID,			D_OBJC },
@@ -3545,7 +3544,6 @@ init_reswords ()
   unsigned int i;
   tree id;
   int mask = (flag_isoc99 ? 0 : D_C89)
-	      | (flag_traditional ? D_TRAD : 0)
 	      | (flag_no_asm ? (flag_isoc99 ? D_EXT : D_EXT|D_EXT89) : 0);
 
   if (c_language != clk_objective_c)

@@ -527,7 +527,7 @@ extern void _cpp_backup_tokens PARAMS ((cpp_reader *, unsigned int));
 /* Evaluate a CPP_CHAR or CPP_WCHAR token.  */
 extern HOST_WIDE_INT
 cpp_interpret_charconst PARAMS ((cpp_reader *, const cpp_token *,
-				 int, int, unsigned int *));
+				 int, unsigned int *));
 
 extern void cpp_define PARAMS ((cpp_reader *, const char *));
 extern void cpp_assert PARAMS ((cpp_reader *, const char *));
@@ -575,7 +575,7 @@ extern const char *cpp_type2name	PARAMS ((enum cpp_ttype));
 extern unsigned int cpp_parse_escape	PARAMS ((cpp_reader *,
 						 const unsigned char **,
 						 const unsigned char *,
-						 unsigned HOST_WIDE_INT, int));
+						 unsigned HOST_WIDE_INT));
 
 /* In cpphash.c */
 
