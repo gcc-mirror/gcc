@@ -1300,7 +1300,11 @@ collect2.o : collect2.c $(CONFIG_H) system.h gansidecl.h gstab.h obstack.h \
 
 tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h toplev.h
 hash.o: hash.c hash.h system.h toplev.h
+
 cplus-dem.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
+	rm -f cplus-dem.c
+	$(LN_S) $(srcdir)/../libiberty/cplus-dem.c cplus-dem.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) cplus-dem.c
 
 underscore.c: s-under ; @true
 

@@ -1,5 +1,8 @@
 Tue Aug 18 10:33:30 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (cplus-dem.o): Provide explicit rules for building
+	cplus-dem.o
+
 	* regmove.c (optimize_reg_copy_1): Update REG_N_CALLS_CROSSED
 	and REG_LIVE_LENGTH as successful substitutions are made.
 
