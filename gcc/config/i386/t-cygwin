@@ -1,23 +1,18 @@
-LIB1ASMSRC = i386/cygwin.asm
-LIB1ASMFUNCS = _chkstk
-
-# cygwin always has a limits.h, but, depending upon how we are doing
-# the build, it may not be installed yet.
-LIMITS_H_TEST = true
-
-T_CPPFLAGS=-DCYGWIN_CROSS_DIR=\"$(build_tooldir)\"
+EXTRA_GCC_OBJS = cygwin1.o
 
 # If we are building next to winsup, this will let us find the real
 # limits.h when building libgcc2.  Otherwise, winsup must be installed
 # first.
-LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/include \
-	-I$(srcdir)/../winsup/cygwin/include \
-	-I$(srcdir)/../winsup/w32api/include
+LIBGCC2_INCLUDES += -I$(srcdir)/../winsup/include \
+	-I$(srcdir)/../winsup/cygwin/include
 
-winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
-  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c
+cygwin1.o: $(srcdir)/config/i386/cygwin1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(TM_H) $(TM_P_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/i386/cygwin1.c
 
-# Don't run fixproto
-STMP_FIXPROTO =
+cygwin2.o: $(srcdir)/config/i386/cygwin2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(TM_H) $(TM_P_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/i386/cygwin2.c
+

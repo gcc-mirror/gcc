@@ -1,3 +1,34 @@
+2003-03-21  Christopher Faylor  <cgf@redhat.com>
+
+	* config.gcc (i[34567]86-*-cygwin*): Use new common makefile
+	stub t-cygming. Use common target header cygming.h. Add extra
+	c_target_obj and cxx_target_obj file. Default cygwin to posix
+	threading. Enforce i386 as float format.
+	(i[34567]86-*-mingw*): Use new common makefile stub t-cygming.
+	Remove cygwin.h as target header. Use common target header
+	cygming.h  Enforce i386 as float format. Correct typo.
+	* config/i386/cygming.h: New file, containing definitions
+	common to mingw32 and cygwin.
+	* config/i386/cygwin.h: Remove definitions common to cygwin and
+	mingw.	Simplify special spec logic.  Define "wrappers" around
+	certain include path defines to accommodate -mno-cygwin.
+	Remove some #if 0'ed code.
+	(STANDARD_INCLUDE_DIR) Always define when not cross-compiling.	
+	(LINK_SPEC): Don't use cyg search prefix when -mno-cygwin.
+	(GCC_DRIVER_HOST_INITIALIZATION): Define as call to mingw_scan.
+	* config/i386/mingw32.h: Remove definitions common to cygwin and
+	mingw.
+	(EXTRA_OS_CPP_BUILTINS): Adjust.
+	(TARGET_VERSION): Define.
+	* config/i386/crtdll.h (EXTRA_OS_CPP_BUILTINS): Override
+	mingw32.h definitions.
+	(LIBGCC_SPEC): Add libmingwex.a as in mingw32.h.
+	* config/i386/t-cygwin (EXTRA_GCC_OBJS): Define as cygwin1.o.
+	Add compilation rules for cygwin1.o cygwin2.o.
+	* config/i386/cygwin1.c: New file.
+	* config/i386/cygwin2.c: New file.
+	* config/i386/t-cygming: New makefile stub.
+
 2003-03-20  Richard Henderson  <rth@redhat.com>
 
 	* fold-const.c (extract_muldiv_1): Revert changing order of
