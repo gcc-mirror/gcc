@@ -976,7 +976,7 @@
 
 (define_insn "adddi3_internal_2"
   [(set (match_operand:DI 0 "register_operand" "=d,d,d")
-	(plus:DI (match_operand:DI 1 "register_operand" "%d,%d,%d")
+	(plus:DI (match_operand:DI 1 "register_operand" "%d,d,d")
 		 (match_operand:DI 2 "small_int" "P,J,N")))
    (clobber (match_operand:SI 3 "register_operand" "=d,d,d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
