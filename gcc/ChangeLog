@@ -1,3 +1,7 @@
+Tue Apr  6 22:55:25 1999  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (compile_file): Typo flow_dump -> flow2_dump.
+
 1999-04-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* pdp11.c (simple_memory_operand): Add default case in switch.
