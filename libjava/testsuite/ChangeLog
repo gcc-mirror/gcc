@@ -1,6 +1,7 @@
 2000-03-06  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.compile/PR127.java: New file.
+	* libjava.compile/PR127.xfail: New file.
         PR 127 test case from Joerg Brunsmann.
 
 2000-03-05  Tom Tromey  <tromey@cygnus.com>
