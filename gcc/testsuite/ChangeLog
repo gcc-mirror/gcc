@@ -1,3 +1,7 @@
+2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c99-condexpr-1.c: New test.
+
 2000-11-20  Neil Booth  <neilb@earthling.net>
 
 	* gcc.dg/cpp/macsyntx.c: Use correct command line option.

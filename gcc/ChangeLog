@@ -1,3 +1,11 @@
+2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-typeck.c (build_conditional_expr): When merging type
+	qualifiers for conditional expressions between a pointer and a
+	pointer to a void type, merge the qualifiers on the target types
+	rather than the pointer type.  Remove obsolete conditioned out
+	code.
+
 2000-11-20  Neil Booth  <neilb@earthling.net>
 
 	* c-lang.c (lang_init_options): Update call to
