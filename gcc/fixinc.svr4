@@ -469,6 +469,39 @@ extern\
   rm -f /tmp/$base /tmp/$base.sed
 fi
 
+# Avoid the definition of the bool type in the Solaris 2.x curses.h when using
+# g++, since it's now an official type in the C++ language.
+# CYGNUS LOCAL
+file=curses.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  cp $file_to_fix /tmp/$base
+  chmod +w /tmp/$base
+  sed -e 's,^typedef[ 	]char[ 	]bool;$,#ifndef __cplusplus\
+typedef	char bool;\
+#endif /* !defined __cplusplus */,' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
+    chmod a+r ${LIB}/$file
+  fi
+  rm -f /tmp/$base /tmp/$base.sed
+fi
+
 # Add a `static' declaration of `getrnge' into <regexp.h>.
 
 # Don't do this if there is already a `static void getrnge' declaration
