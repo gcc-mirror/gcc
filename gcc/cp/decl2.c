@@ -2932,7 +2932,7 @@ finish_objects (method_type, initp, body)
 		  linker sorts in increasing order.  */
 	       MAX_INIT_PRIORITY - initp);
       named_section (NULL_TREE, buf, 0);
-      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, fnname),
+      assemble_integer (XEXP (DECL_RTL (fn), 0),
 			POINTER_SIZE / BITS_PER_UNIT, 1);
     }
 #endif
