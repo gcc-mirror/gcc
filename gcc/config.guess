@@ -67,15 +67,22 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     amiga:NetBSD:*:*)
       echo m68k-cbm-netbsd${UNAME_RELEASE}
       exit 0 ;;
+    amiga:OpenBSD:*:*)
+      echo m68k-cbm-openbsd${UNAME_RELEASE}
+      exit 0 ;;
     arm:RISC*:1.[012]*:*|arm:riscix:1.[012]*:*)
 	echo arm-acorn-riscix${UNAME_RELEASE}
 	exit 0;;
-    Pyramid*:OSx*:*:*)
+    Pyramid*:OSx*:*:*|MIS*:OSx*:*:*)
+	# akee@wpdis03.wpafb.af.mil (Earle F. Ake) contributed MIS and NILE.
 	if test "`(/bin/universe) 2>/dev/null`" = att ; then
 		echo pyramid-pyramid-sysv3
 	else
 		echo pyramid-pyramid-bsd
 	fi
+	exit 0 ;;
+    NILE:*:*:dcosx)
+	echo pyramid-pyramid-svr4
 	exit 0 ;;
     sun4*:SunOS:5.*:*)
 	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
@@ -104,11 +111,20 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     atari*:NetBSD:*:*)
 	echo m68k-atari-netbsd${UNAME_RELEASE}
 	exit 0 ;;
+    atari*:OpenBSD:*:*)
+	echo m68k-atari-openbsd${UNAME_RELEASE}
+	exit 0 ;;
     sun3*:NetBSD:*:*)
 	echo m68k-sun-netbsd${UNAME_RELEASE}
 	exit 0 ;;
+    sun3*:OpenBSD:*:*)
+	echo m68k-sun-openbsd${UNAME_RELEASE}
+	exit 0 ;;
     mac68k:NetBSD:*:*)
 	echo m68k-apple-netbsd${UNAME_RELEASE}
+	exit 0 ;;
+    mac68k:OpenBSD:*:*)
+	echo m68k-apple-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     RISC*:ULTRIX:*:*)
 	echo mips-dec-ultrix${UNAME_RELEASE}
@@ -179,10 +195,10 @@ EOF
     *:IRIX*:*:*)
 	echo mips-sgi-irix`echo ${UNAME_RELEASE}|sed -e 's/-/_/g'`
 	exit 0 ;;
-   ????????:AIX?:[12].1:2)   # AIX 2.2.1 or AIX 2.1.1 is RT/PC AIX.
+    ????????:AIX?:[12].1:2)   # AIX 2.2.1 or AIX 2.1.1 is RT/PC AIX.
 	echo romp-ibm-aix      # uname -m gives an 8 hex-code CPU id
 	exit 0 ;;              # Note that: echo "'`uname -s`'" gives 'AIX '
-    i[34]86:AIX:*:*)
+    i?86:AIX:*:*)
 	echo i386-ibm-aix
 	exit 0 ;;
     *:AIX:2:3)
@@ -331,7 +347,10 @@ EOF
     hp3[0-9][05]:NetBSD:*:*)
 	echo m68k-hp-netbsd${UNAME_RELEASE}
 	exit 0 ;;
-    i[34]86:BSD/386:*:* | *:BSD/OS:*:*)
+    hp3[0-9][05]:OpenBSD:*:*)
+	echo m68k-hp-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    i?86:BSD/386:*:* | *:BSD/OS:*:*)
 	echo ${UNAME_MACHINE}-pc-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     *:FreeBSD:*:*)
@@ -339,6 +358,9 @@ EOF
 	exit 0 ;;
     *:NetBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
+	exit 0 ;;
+    *:OpenBSD:*:*)
+	echo ${UNAME_MACHINE}-unknown-openbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
 	exit 0 ;;
     i*:CYGWIN*:*)
 	echo i386-pc-cygwin32
@@ -356,11 +378,11 @@ EOF
 	# The BFD linker knows what the default object file format is, so
 	# first see if it will tell us.
 	ld_help_string=`ld --help 2>&1`
-	if echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf_i[345]86"; then
+	if echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf_i.86"; then
 	  echo "${UNAME_MACHINE}-pc-linux-gnu" ; exit 0
-	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i[345]86linux"; then
+	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i.86linux"; then
 	  echo "${UNAME_MACHINE}-pc-linux-gnuaout" ; exit 0
-	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i[345]86coff"; then
+	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i.86coff"; then
 	  echo "${UNAME_MACHINE}-pc-linux-gnucoff" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68kelf"; then
 	  echo "${UNAME_MACHINE}-unknown-linux-gnu" ; exit 0
@@ -396,17 +418,17 @@ EOF
 	fi ;;
 # ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.  earlier versions
 # are messed up and put the nodename in both sysname and nodename.
-    i[34]86:DYNIX/ptx:4*:*)
+    i?86:DYNIX/ptx:4*:*)
 	echo i386-sequent-sysv4
 	exit 0 ;;
-    i[34]86:*:4.*:* | i[34]86:SYSTEM_V:4.*:*)
+    i?86:*:4.*:* | i?86:SYSTEM_V:4.*:*)
 	if grep Novell /usr/include/link.h >/dev/null 2>/dev/null; then
 		echo ${UNAME_MACHINE}-univel-sysv${UNAME_RELEASE}
 	else
 		echo ${UNAME_MACHINE}-pc-sysv${UNAME_RELEASE}
 	fi
 	exit 0 ;;
-    i[34]86:*:3.2:*)
+    i?86:*:3.2:*)
 	if test -f /usr/options/cb.name; then
 		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
 		echo ${UNAME_MACHINE}-pc-isc$UNAME_REL
@@ -437,7 +459,7 @@ EOF
 	# "miniframe"
 	echo m68010-convergent-sysv
 	exit 0 ;;
-    M680[234]0:*:R3V[567]*:*)
+    m68*:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
     3[34]??:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 4850:*:4.0:3.0)
 	UNAME_REL=4.3
@@ -451,20 +473,20 @@ EOF
     3[34]??:*:4.0:* | 3[34]??,*:*:4.0:*)
         uname -p 2>/dev/null | grep 86 >/dev/null \
           && echo i486-ncr-sysv4 && exit 0 ;;
-    m680[234]0:LynxOS:2.[23]*:*)
-	echo m68k-lynx-lynxos${UNAME_RELEASE}
+    m68*:LynxOS:2.*:*)
+	echo m68k-unknown-lynxos${UNAME_RELEASE}
 	exit 0 ;;
     mc68030:UNIX_System_V:4.*:*)
 	echo m68k-atari-sysv4
 	exit 0 ;;
-    i[34]86:LynxOS:2.[23]*:*)
-	echo i386-lynx-lynxos${UNAME_RELEASE}
+    i?86:LynxOS:2.*:*)
+	echo i386-unknown-lynxos${UNAME_RELEASE}
 	exit 0 ;;
-    TSUNAMI:LynxOS:2.[23]*:*)
-	echo sparc-lynx-lynxos${UNAME_RELEASE}
+    TSUNAMI:LynxOS:2.*:*)
+	echo sparc-unknown-lynxos${UNAME_RELEASE}
 	exit 0 ;;
-    rs6000:LynxOS:2.[23]*:*)
-	echo rs6000-lynx-lynxos${UNAME_RELEASE}
+    rs6000:LynxOS:2.*:* | PowerPC:LynxOS:2.*:*)
+	echo rs6000-unknown-lynxos${UNAME_RELEASE}
 	exit 0 ;;
     RM*:SINIX-*:*:*)
 	echo mips-sni-sysv4
@@ -476,6 +498,15 @@ EOF
 	else
 		echo ns32k-sni-sysv
 	fi
+	exit 0 ;;
+    *:UNIX_System_V:4*:FTX*)
+	# From Gerald Hewes <hewes@openmarket.com>.
+	# How about differentiating between stratus architectures? -djm
+	echo hppa1.1-stratus-sysv4
+	exit 0 ;;
+    *:*:*:FTX*)
+	# From seanf@swdc.stratus.com.
+	echo i860-stratus-sysv4
 	exit 0 ;;
     mc68*:A/UX:*:*)
 	echo m68k-apple-aux${UNAME_RELEASE}
