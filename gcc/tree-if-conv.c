@@ -114,7 +114,7 @@ static bool if_convertable_stmt_p (struct loop *, basic_block, tree);
 static bool if_convertable_bb_p (struct loop *, basic_block, bool);
 static bool if_convertable_loop_p (struct loop *, bool);
 static void add_to_predicate_list (basic_block, tree);
-static tree add_to_dst_predicate_list (struct loop * loop, tree, tree, tree,
+static tree add_to_dst_predicate_list (struct loop * loop, basic_block, tree, tree,
 				       block_stmt_iterator *);
 static void clean_predicate_lists (struct loop *loop);
 static basic_block find_phi_replacement_condition (basic_block, tree *,
@@ -271,14 +271,13 @@ static void
 tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
 			   block_stmt_iterator *bsi)
 {
-  tree then_clause, else_clause, c, c2, new_cond;
+  tree c, c2, new_cond;
+  edge true_edge, false_edge;
   new_cond = NULL_TREE;
 
   gcc_assert (TREE_CODE (stmt) == COND_EXPR);
 
   c = TREE_OPERAND (stmt, 0);
-  then_clause = TREE_OPERAND (stmt, 1);
-  else_clause = TREE_OPERAND (stmt, 2);
 
   /* Create temp. for condition.  */
   if (!is_gimple_condexpr (c))
@@ -289,10 +288,13 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
       c = TREE_OPERAND (new_stmt, 0);
     }
 
+  extract_true_false_edges_from_block (bb_for_stmt (stmt),
+ 				       &true_edge, &false_edge);
+
   /* Add new condition into destination's predicate list.  */
 
-  /* If 'c' is true then then_clause is reached.  */
-  new_cond = add_to_dst_predicate_list (loop, then_clause, cond,
+  /* If 'c' is true then TRUE_EDGE is taken.  */
+  new_cond = add_to_dst_predicate_list (loop, true_edge->dest, cond,
 					unshare_expr (c), bsi);
 
   if (!is_gimple_reg(c) && is_gimple_condexpr (c))
@@ -303,9 +305,9 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
       c = TREE_OPERAND (new_stmt, 0);
     }
 
-  /* If 'c' is false then else_clause is reached.  */
+  /* If 'c' is false then FALSE_EDGE is taken.  */
   c2 = invert_truthvalue (unshare_expr (c));
-  add_to_dst_predicate_list (loop, else_clause, cond, c2, bsi);
+  add_to_dst_predicate_list (loop, false_edge->dest, cond, c2, bsi);
 
   /* Now this conditional statement is redundant. Remove it.
      But, do not remove exit condition! Update exit condition
@@ -620,19 +622,16 @@ add_to_predicate_list (basic_block bb, tree new_cond)
   bb->aux = cond;
 }
 
-/* Add condition COND into DST's predicate list.  PREV_COND is
+/* Add condition COND into BB's predicate list.  PREV_COND is
    existing condition.  */
 
 static tree
-add_to_dst_predicate_list (struct loop * loop, tree dst,
+add_to_dst_predicate_list (struct loop * loop, basic_block bb,
 			   tree prev_cond, tree cond,
 			   block_stmt_iterator *bsi)
 {
-  basic_block bb;
   tree new_cond = NULL_TREE;
 
-  gcc_assert (TREE_CODE (dst) == GOTO_EXPR);
-  bb = label_to_block (TREE_OPERAND (dst, 0));
   if (!flow_bb_inside_loop_p (loop, bb))
     return NULL_TREE;
 
