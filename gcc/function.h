@@ -304,9 +304,9 @@ struct function GTY(())
   /* tm.h can use this to store whatever it likes.  */
   struct machine_function * GTY ((maybe_undef)) machine;
   /* The largest alignment of slot allocated on the stack.  */
-  int stack_alignment_needed;
+  unsigned int stack_alignment_needed;
   /* Preferred alignment of the end of stack frame.  */
-  int preferred_stack_boundary;
+  unsigned int preferred_stack_boundary;
   /* Set when the call to function itself has been emit.  */
   bool recursive_call_emit;
   /* Set when the tail call has been produced.  */

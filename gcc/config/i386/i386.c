@@ -819,7 +819,7 @@ const char *ix86_align_jumps_string;
 const char *ix86_preferred_stack_boundary_string;
 
 /* Preferred alignment for stack boundary in bits.  */
-int ix86_preferred_stack_boundary;
+unsigned int ix86_preferred_stack_boundary;
 
 /* Values 1-5: see jump.c */
 int ix86_branch_cost;
@@ -5084,13 +5084,16 @@ static void
 ix86_compute_frame_layout (struct ix86_frame *frame)
 {
   HOST_WIDE_INT total_size;
-  int stack_alignment_needed = cfun->stack_alignment_needed / BITS_PER_UNIT;
+  unsigned int stack_alignment_needed;
   HOST_WIDE_INT offset;
-  int preferred_alignment = cfun->preferred_stack_boundary / BITS_PER_UNIT;
+  unsigned int preferred_alignment;
   HOST_WIDE_INT size = get_frame_size ();
 
   frame->nregs = ix86_nsaved_regs ();
   total_size = size;
+
+  stack_alignment_needed = cfun->stack_alignment_needed / BITS_PER_UNIT;
+  preferred_alignment = cfun->preferred_stack_boundary / BITS_PER_UNIT;
 
   /* During reload iteration the amount of registers saved can change.
      Recompute the value as needed.  Do not recompute when amount of registers

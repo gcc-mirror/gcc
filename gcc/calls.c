@@ -143,7 +143,7 @@ static int check_sibcall_argument_overlap_1 (rtx);
 static int check_sibcall_argument_overlap (rtx, struct arg_data *, int);
 
 static int combine_pending_stack_adjustment_and_call (int, struct args_size *,
-						      int);
+						      unsigned int);
 static tree fix_unsafe_tree (tree);
 static bool shift_returned_value (tree, rtx *);
 
@@ -1582,14 +1582,14 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 static int
 combine_pending_stack_adjustment_and_call (int unadjusted_args_size,
 					   struct args_size *args_size,
-					   int preferred_unit_stack_boundary)
+					   unsigned int preferred_unit_stack_boundary)
 {
   /* The number of bytes to pop so that the stack will be
      under-aligned by UNADJUSTED_ARGS_SIZE bytes.  */
   HOST_WIDE_INT adjustment;
   /* The alignment of the stack after the arguments are pushed, if we
      just pushed the arguments without adjust the stack here.  */
-  HOST_WIDE_INT unadjusted_alignment;
+  unsigned HOST_WIDE_INT unadjusted_alignment;
 
   unadjusted_alignment
     = ((stack_pointer_delta + unadjusted_args_size)
@@ -1968,9 +1968,9 @@ expand_call (tree exp, rtx target, int ignore)
   tree addr = TREE_OPERAND (exp, 0);
   int i;
   /* The alignment of the stack, in bits.  */
-  HOST_WIDE_INT preferred_stack_boundary;
+  unsigned HOST_WIDE_INT preferred_stack_boundary;
   /* The alignment of the stack, in bytes.  */
-  HOST_WIDE_INT preferred_unit_stack_boundary;
+  unsigned HOST_WIDE_INT preferred_unit_stack_boundary;
   /* The static chain value to use for this call.  */
   rtx static_chain_value;
   /* See if this is "nothrow" function call.  */
