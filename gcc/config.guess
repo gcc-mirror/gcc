@@ -268,7 +268,7 @@ EOF
 	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     *:FreeBSD:*:*)
-	echo ${UNAME_MACHINE}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/(.*//'`
+	echo ${UNAME_MACHINE}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`
 	exit 0 ;;
     *:NetBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
