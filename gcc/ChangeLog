@@ -1,5 +1,9 @@
 2001-10-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/gcc.texi: Document preference for "nonzero" over "non-zero".
+
+2001-10-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* config/alpha/freebsd.h, config/alpha/lib1funcs.asm,
 	config/i386/i386elf.h, config/i386/netbsd-elf.h,
 	config/i386/netware.h, config/mcore/gfloat.h,
