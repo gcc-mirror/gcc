@@ -1,3 +1,8 @@
+2002-12-01  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/SecurityManager.java: Remerge comments, indenting and
+	checkXXX methods with Classpath.
+
 2002-11-29  Scott Gilbertson  <scottg@mantatest.com>
 
 	* java/awt/image/ColorModel.java (getUnnormalizedComponents,

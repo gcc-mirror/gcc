@@ -1,5 +1,5 @@
-/* java.lang.SecurityManager
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* SecurityManager.java -- security checks for privileged actions
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,736 +38,999 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.net.*;
-import java.util.*;
-import java.io.*;
+import java.awt.AWTPermission;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FilePermission;
+import java.lang.reflect.Member;
+import java.net.InetAddress;
+import java.net.SocketPermission;
+import java.security.AllPermission;
+import java.security.Permission;
+import java.security.Security;
+import java.security.SecurityPermission;
+import java.util.PropertyPermission;
 
 /**
- ** SecurityManager is a class you can extend to create
- ** your own Java security policy.  By default, there is
- ** no SecurityManager installed in 1.1, which means that
- ** all things are permitted to all people.<P>
- **
- ** The default methods in this class deny all
- ** things to all people.
- **
- ** @author  John Keiser
- ** @version 1.1.0, 31 May 1998
- ** @since JDK1.0
- **/
-public class SecurityManager {
-	/** Tells whether or not the SecurityManager is currently
-	 ** performing a security check.
-	 **/
-	protected boolean inCheck;
+ * SecurityManager is a class you can extend to create your own Java
+ * security policy.  By default, there is no SecurityManager installed in
+ * 1.1, which means that all things are permitted to all people. The security
+ * manager, if set, is consulted before doing anything with potentially
+ * dangerous results, and throws a <code>SecurityException</code> if the
+ * action is forbidden.
+ *
+ * <p>A typical check is as follows, just before the dangerous operation:<br>
+ * <pre>
+ * SecurityManager sm = System.getSecurityManager();
+ * if (sm != null)
+ *   sm.checkABC(<em>argument</em>, ...);
+ * </pre>
+ * Note that this is thread-safe, by caching the security manager in a local
+ * variable rather than risking a NullPointerException if the mangager is
+ * changed between the check for null and before the permission check.
+ *
+ * <p>The special method <code>checkPermission</code> is a catchall, and
+ * the default implementation calls
+ * <code>AccessController.checkPermission</code>. In fact, all the other
+ * methods default to calling checkPermission.
+ *
+ * <p>Sometimes, the security check needs to happen from a different context,
+ * such as when called from a worker thread. In such cases, use
+ * <code>getSecurityContext</code> to take a snapshot that can be passed
+ * to the worker thread:<br>
+ * <pre>
+ * Object context = null;
+ * SecurityManager sm = System.getSecurityManager();
+ * if (sm != null)
+ *   context = sm.getSecurityContext(); // defaults to an AccessControlContext
+ * // now, in worker thread
+ * if (sm != null)
+ *   sm.checkPermission(permission, context);
+ * <pre>
+ *
+ * <p>Permissions fall into these categories: File, Socket, Net, Security,
+ * Runtime, Property, AWT, Reflect, and Serializable. Each of these
+ * permissions have a property naming convention, that follows a hierarchical
+ * naming convention, to make it easy to grant or deny several permissions
+ * at once. Some permissions also take a list of permitted actions, such
+ * as "read" or "write", to fine-tune control even more. The permission
+ * <code>java.security.AllPermission</code> grants all permissions.
+ *
+ * <p>The default methods in this class deny all things to all people. You
+ * must explicitly grant permission for anything you want to be legal when
+ * subclassing this class.
+ *
+ * @author John Keiser
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see ClassLoader
+ * @see SecurityException
+ * @see #checkTopLevelWindow(Object)
+ * @see System#getSecurityManager()
+ * @see System#setSecurityManager(SecurityManager)
+ * @see AccessController
+ * @see AccessControlContext
+ * @see AccessControlException
+ * @see Permission
+ * @see BasicPermission
+ * @see java.io.FilePermission
+ * @see java.net.SocketPermission
+ * @see java.util.PropertyPermission
+ * @see RuntimePermission
+ * @see java.awt.AWTPermission
+ * @see Policy
+ * @see SecurityPermission
+ * @see ProtectionDomain
+ * @since 1.0
+ * @status still missing 1.4 functionality
+ */
+public class SecurityManager
+{
+  /**
+   * Tells whether or not the SecurityManager is currently performing a
+   * security check.
+   * @deprecated Use {@link #checkPermission(Permission)} instead.
+   */
+  protected boolean inCheck;
 
-	/** Tells whether or not the SecurityManager is currently
-	 ** performing a security check.
-	 **
-	 ** @return whether or not the SecurityManager is
-	 **         currently performing a security check.
-	 **/
-	public boolean getInCheck() {
-		return inCheck;
-	}
+  /**
+   * Construct a new security manager. There may be a security check, of
+   * <code>RuntimePermission("createSecurityManager")</code>.
+   *
+   * @throws SecurityException if permission is denied
+   */
+  public SecurityManager()
+  {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkPermission(new RuntimePermission("createSecurityManager"));
+  }
 
-	/** Get a list of all the classes currently executing
-	 ** methods on the Java stack.  getClassContext()[0] is
-	 ** the currently executing method
-	 ** <STRONG>Spec Note:</STRONG> does not say whether
-	 ** the stack will include the getClassContext() call or
-	 ** the one just before it.
-	 **
-	 ** @return an array containing all the methods on classes
-	 **         on the Java execution stack.
-	 **/
-	protected Class[] getClassContext() {
-		return VMSecurityManager.getClassContext();
-	}
+  /**
+   * Tells whether or not the SecurityManager is currently performing a
+   * security check.
+   *
+   * @return true if the SecurityManager is in a security check
+   * @see #inCheck
+   * @deprecated use {@link #checkPermission(Permission)} instead
+   */
+  public boolean getInCheck()
+  {
+    return inCheck;
+  }
 
-	/** Find the ClassLoader for the most recent class on the
-	 ** stack that was loaded by an explicit ClassLoader.  If
-	 ** everything on the stack was loaded by the system
-	 ** classloader, null is returned.
-	 **
-	 ** @return the most recent ClassLoader on the execution
-	 **         stack.
-	 **/
-	protected ClassLoader currentClassLoader() {
-		return VMSecurityManager.currentClassLoader();
-	}
+  /**
+   * Get a list of all the classes currently executing methods on the Java
+   * stack.  getClassContext()[0] is the currently executing method (ie. the
+   * class that CALLED getClassContext, not SecurityManager).
+   *
+   * @return an array of classes on the Java execution stack
+   */
+  protected Class[] getClassContext()
+  {
+    return VMSecurityManager.getClassContext();
+  }
 
-	/** Find the most recent class on the stack that was
-	 ** loaded by an explicit ClassLoader.  If everything on
-	 ** the stack was loaded by the system classloader, null
-	 ** is returned.
-	 **
-	 ** @return the most recent loaded Class on the execution
-	 **         stack.
-	 **/
-	protected Class currentLoadedClass() {
-		Class[] c = getClassContext();
-		for(int i=0;i<c.length;i++) {
-			if(c[i].getClassLoader() != null) {
-				return c[i];
-			}
-		}
-		return null;
-	}
+  /**
+   * Find the ClassLoader of the first non-system class on the execution
+   * stack. A non-system class is one whose ClassLoader is not equal to
+   * {@link ClassLoader#getSystemClassLoader()} or its ancestors. This
+   * will return null in three cases:<br><nl>
+   * <li>All methods on the stack are from system classes</li>
+   * <li>All methods on the stack up to the first "privileged" caller, as
+   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  are from system classes</li>
+   * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
+   * </nl>
+   * 
+   * @return the most recent non-system ClassLoader on the execution stack
+   * @deprecated use {@link #checkPermission(Permission)} instead
+   */
+  protected ClassLoader currentClassLoader()
+  {
+    return VMSecurityManager.currentClassLoader();
+  }
 
-	/** Get the depth on the execution stack of the most
-	 ** recent class that was loaded by an explicit
-	 ** ClassLoader.  This can be used as an index into
-	 ** getClassContext().
-	 **
-	 ** @return the index of the most recent loaded Class on
-	 **         the execution stack.
-	 **/
-	protected int classLoaderDepth() {
-		Class[] c = getClassContext();
-		for(int i=0;i<c.length;i++) {
-			if(c[i].getClassLoader() != null) {
-				return i;
-			}
-		}
-		return -1;
-	}
+  /**
+   * Find the first non-system class on the execution stack. A non-system
+   * class is one whose ClassLoader is not equal to
+   * {@link ClassLoader#getSystemClassLoader()} or its ancestors. This
+   * will return null in three cases:<br><nl>
+   * <li>All methods on the stack are from system classes</li>
+   * <li>All methods on the stack up to the first "privileged" caller, as
+   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  are from system classes</li>
+   * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
+   * </nl>
+   * 
+   * @return the most recent non-system Class on the execution stack
+   * @deprecated use {@link #checkPermission(Permission)} instead
+   */
+  protected Class currentLoadedClass()
+  {
+    Class[] c = getClassContext();
+    for (int i = 0; i < c.length; i++)
+      if (c[i].getClassLoader() != null)
+	return c[i];
+    return null;
+  }
 
-	/** Tell whether there is a class loaded with an explicit
-	 ** ClassLoader on the stack.
-	 **
-	 ** @return whether there is a class loaded with an
-	 **         explicit ClassLoader on the stack.
-	 **/
-	protected boolean inClassLoader() {
-		return classLoaderDepth() != -1;
-	}
+  /**
+   * Get the depth of a particular class on the execution stack.
+   *
+   * @param className the fully-qualified name to search for
+   * @return the index of the class on the stack, or -1
+   * @deprecated use {@link #checkPermission(Permission)} instead
+   */
+  protected int classDepth(String className)
+  {
+    Class[] c = getClassContext();
+    for (int i = 0; i < c.length; i++)
+      if (className.equals(c[i].getName()))
+        return i;
+    return -1;
+  }
 
+  /**
+   * Get the depth on the execution stack of the most recent non-system class.
+   * A non-system class is one whose ClassLoader is not equal to
+   * {@link ClassLoader#getSystemClassLoader()} or its ancestors. This
+   * will return -1 in three cases:<br><nl>
+   * <li>All methods on the stack are from system classes</li>
+   * <li>All methods on the stack up to the first "privileged" caller, as
+   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  are from system classes</li>
+   * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
+   * </nl>
+   * 
+   * @return the index of the most recent non-system Class on the stack
+   * @deprecated use {@link #checkPermission(Permission)} instead
+   */
+  protected int classLoaderDepth()
+  {
+    Class[] c = getClassContext();
+    for (int i = 0; i < c.length; i++)
+      if (c[i].getClassLoader() != null)
+	return i;
+    return -1;
+  }
 
-	/** Get the depth of a particular class on the execution
-	 ** stack.
-	 **
-	 ** @param className the fully-qualified name of the class
-	 **        to search for on the stack.
-	 ** @return the index of the class on the stack, or -1 if
-	 **         the class is not on the stack.
-	 **/
-	protected int classDepth(String className) {
-		Class[] c = getClassContext();
-		for(int i=0;i<c.length;i++) {
-			if(className.equals(c[i].getName())) {
-				return i;
-			}
-		}
-		return -1;
-	}
+  /**
+   * Tell whether the specified class is on the execution stack.
+   *
+   * @param className the fully-qualified name of the class to find
+   * @return whether the specified class is on the execution stack
+   * @deprecated use {@link #checkPermission(Permission)} instead
+   */
+  protected boolean inClass(String className)
+  {
+    return classDepth(className) != -1;
+  }
 
-	/** Tell whether the specified class is on the execution
-	 ** stack.
-	 **
-	 ** @param className the fully-qualified name of the class
-	 **        to search for on the stack.
-	 ** @return whether the specified class is on the
-	 **         execution stack.
-	 **/
-	protected boolean inClass(String className) {
-		return classDepth(className) != -1;
-	}
+  /**
+   * Tell whether there is a class loaded with an explicit ClassLoader on
+   * the stack.
+   *
+   * @return whether a class with an explicit ClassLoader is on the stack
+   * @deprecated use {@link #checkPermission(Permission)} instead
+   */
+  protected boolean inClassLoader()
+  {
+    return classLoaderDepth() != -1;
+  }
 
-	/** Get an implementation-dependent Object that contains
-	 ** enough information about the current environment to be
-	 ** able to perform standard security checks later.  This
-	 ** is used by trusted methods that need to verify that
-	 ** their callers have sufficient access to perform
-	 ** certain operations.<P>
-	 **
-	 ** Currently the only methods that use this are checkRead()
-	 ** and checkConnect().
-	 **
-	 ** @see checkConnect(java.lang.String,int,java.lang.Object)
-	 ** @see checkRead(java.lang.String,java.lang.Object)
-	 **/
-	public Object getSecurityContext() {
-		return new SecurityContext(getClassContext());
-	}
+  /**
+   * Get an implementation-dependent Object that contains enough information
+   * about the current environment to be able to perform standard security
+   * checks later.  This is used by trusted methods that need to verify that
+   * their callers have sufficient access to perform certain operations.
+   *
+   * <p>Currently the only methods that use this are checkRead() and
+   * checkConnect(). The default implementation returns an
+   * <code>AccessControlContext</code>.
+   *
+   * @return a security context
+   * @see #checkConnect(String, int, Object)
+   * @see #checkRead(String, Object)
+   * @see AccessControlContext
+   * @see AccessController#getContext()
+   */
+  public Object getSecurityContext()
+  {
+    // XXX Should be: return AccessController.getContext();
+    return new SecurityContext(getClassContext());
+  }
 
-	/** Check if the current thread is allowed to create a
-	 ** ClassLoader.<P>
-	 **
-	 ** This method is called from ClassLoader.ClassLoader(),
-	 ** in other words, whenever a ClassLoader is created.<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.ClassLoader#ClassLoader()
-	 **/
-	public void checkCreateClassLoader() {
-		throw new SecurityException("Cannot create new ClassLoaders.");
-	}
+  /**
+   * Check if the current thread is allowed to perform an operation that
+   * requires the specified <code>Permission</code>. This defaults to
+   * <code>AccessController.checkPermission</code>.
+   *
+   * @param perm the <code>Permission</code> required
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if perm is null
+   * @since 1.2
+   */
+  public void checkPermission(Permission perm)
+  {
+    // XXX Should be: AccessController.checkPermission(perm);
+    throw new SecurityException("Operation not allowed");
+  }
 
-	/** Check if the current thread is allowed to modify this
-	 ** other Thread.<P>
-	 **
-	 ** Called by Thread.stop(), suspend(), resume(), and
-	 ** interrupt(), destroy(), setPriority(), setName() and
-	 ** setDaemon().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param g the Thread to check against
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.Thread#stop()
-	 ** @see java.lang.Thread#suspend()
-	 ** @see java.lang.Thread#resume()
-	 ** @see java.lang.Thread#interrupt()
-	 ** @see java.lang.Thread#destroy()
-	 ** @see java.lang.Thread#setPriority(int)
-	 ** @see java.lang.Thread#setName(java.lang.String)
-	 ** @see java.lang.Thread#setDaemon(boolean)
-	 **/
-	public void checkAccess(Thread t) {
-		throw new SecurityException("Cannot modify Threads.");
-	}
+  /**
+   * Check if the current thread is allowed to perform an operation that
+   * requires the specified <code>Permission</code>. This is done in a
+   * context previously returned by <code>getSecurityContext()</code>. The
+   * default implementation expects context to be an AccessControlContext,
+   * and it calls <code>AccessControlContext.checkPermission(perm)</code>.
+   *
+   * @param perm the <code>Permission</code> required
+   * @param context a security context
+   * @throws SecurityException if permission is denied, or if context is
+   *         not an AccessControlContext
+   * @throws NullPointerException if perm is null
+   * @see #getSecurityContext()
+   * @see AccessControlContext#checkPermission(Permission)
+   * @since 1.2
+   */
+  public void checkPermission(Permission perm, Object context)
+  {
+    // XXX Should be:
+    // if (! (context instanceof AccessControlContext))
+    //   throw new SecurityException("Missing context");
+    // ((AccessControlContext) context).checkPermission(perm);
+    throw new SecurityException("Operation not allowed");
+  }
 
-	/** Check if the current thread is allowed to modify this
-	 ** ThreadGroup.<P>
-	 **
-	 ** Called by Thread.Thread() (to add a thread to the
-	 ** ThreadGroup), ThreadGroup.ThreadGroup() (to add this
-	 ** ThreadGroup to a parent), ThreadGroup.stop(),
-	 ** suspend(), resume(), interrupt(), destroy(),
-	 ** setDaemon(), and setMaxPriority().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param g the ThreadGroup to check against
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.Thread#Thread()
-	 ** @see java.lang.ThreadGroup#ThreadGroup()
-	 ** @see java.lang.ThreadGroup#stop()
-	 ** @see java.lang.ThreadGroup#suspend()
-	 ** @see java.lang.ThreadGroup#resume()
-	 ** @see java.lang.ThreadGroup#interrupt()
-	 ** @see java.lang.ThreadGroup#setDaemon(boolean)
-	 ** @see java.lang.ThreadGroup#setMaxPriority(int)
-	 **/
-	public void checkAccess(ThreadGroup g) {
-		throw new SecurityException("Cannot modify ThreadGroups.");
-	}
+  /**
+   * Check if the current thread is allowed to create a ClassLoader. This
+   * method is called from ClassLoader.ClassLoader(), and checks
+   * <code>RuntimePermission("createClassLoader")</code>. If you override
+   * this, you should call <code>super.checkCreateClassLoader()</code> rather
+   * than throwing an exception.
+   *
+   * @throws SecurityException if permission is denied
+   * @see ClassLoader#ClassLoader()
+   */
+  public void checkCreateClassLoader()
+  {
+    checkPermission(new RuntimePermission("createClassLoader"));
+  }
 
-	/** Check if the current thread is allowed to exit the
-	 ** JVM with the given status.<P>
-	 **
-	 ** This method is called from Runtime.exit().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param status the status to exit with
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.Runtime#exit()
-	 ** @see java.lang.Runtime#exit(int)
-	 **/
-	public void checkExit(int status) {
-		throw new SecurityException("Cannot exit JVM.");
-	}
+  /**
+   * Check if the current thread is allowed to modify another Thread. This is
+   * called by Thread.stop(), suspend(), resume(), interrupt(), destroy(),
+   * setPriority(), setName(), and setDaemon(). The default implementation
+   * checks <code>RuntimePermission("modifyThread") on system threads (ie.
+   * threads in ThreadGroup with a null parent), and returns silently on
+   * other threads.
+   *
+   * <p>If you override this, you must do two things. First, call
+   * <code>super.checkAccess(t)</code>, to make sure you are not relaxing
+   * requirements. Second, if the calling thread has
+   * <code>RuntimePermission("modifyThread")</code>, return silently, so that
+   * core classes (the Classpath library!) can modify any thread.
+   *
+   * @param t the other Thread to check
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if t is null
+   * @see Thread#stop()
+   * @see Thread#suspend()
+   * @see Thread#resume()
+   * @see Thread#setPriority(int)
+   * @see Thread#setName(String)
+   * @see Thread#setDaemon(boolean)
+   */
+  public void checkAccess(Thread t)
+  {
+    if (t.group != null && t.group.getParent() != null)
+      checkPermission(new RuntimePermission("modifyThread"));
+  }
 
-	/** Check if the current thread is allowed to execute the
-	 ** given program.<P>
-	 **
-	 ** This method is called from Runtime.exec().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param program the name of the program to exec
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.Runtime#exec(java.lang.String[],java.lang.String[])
-	 **/
-	public void checkExec(String program) {
-		throw new SecurityException("Cannot execute programs.");
-	}
+  /**
+   * Check if the current thread is allowed to modify a ThreadGroup. This is
+   * called by Thread.Thread() (to add a thread to the ThreadGroup),
+   * ThreadGroup.ThreadGroup() (to add this ThreadGroup to a parent),
+   * ThreadGroup.stop(), suspend(), resume(), interrupt(), destroy(),
+   * setDaemon(), and setMaxPriority(). The default implementation
+   * checks <code>RuntimePermission("modifyThread") on the system group (ie.
+   * the one with a null parent), and returns silently on other groups.
+   *
+   * <p>If you override this, you must do two things. First, call
+   * <code>super.checkAccess(t)</code>, to make sure you are not relaxing
+   * requirements. Second, if the calling thread has
+   * <code>RuntimePermission("modifyThreadGroup")</code>, return silently,
+   * so that core classes (the Classpath library!) can modify any thread.
+   *
+   * @param g the ThreadGroup to check
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if g is null
+   * @see Thread#Thread()
+   * @see ThreadGroup#ThreadGroup()
+   * @see ThreadGroup#stop()
+   * @see ThreadGroup#suspend()
+   * @see ThreadGroup#resume()
+   * @see ThreadGroup#interrupt()
+   * @see ThreadGroup#setDaemon(boolean)
+   * @see ThreadGroup#setMaxPriority(int)
+   */
+  public void checkAccess(ThreadGroup g)
+  {
+    if (g.getParent() != null)
+      checkPermission(new RuntimePermission("modifyThreadGroup"));
+  }
 
-	/** Check if the current thread is allowed to link in the
-	 ** given native library.<P>
-	 **
-	 ** This method is called from Runtime.load() (and hence,
-	 ** by loadLibrary() as well).<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param filename the full name of the library to load
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.Runtime#load(java.lang.String)
-	 **/
-	public void checkLink(String filename) {
-		throw new SecurityException("Cannot link native libraries.");
-	}
+  /**
+   * Check if the current thread is allowed to exit the JVM with the given
+   * status. This method is called from Runtime.exit() and Runtime.halt().
+   * The default implementation checks
+   * <code>RuntimePermission("exitVM")</code>. If you override this, call
+   * <code>super.checkExit</code> rather than throwing an exception.
+   *
+   * @param status the status to exit with
+   * @throws SecurityException if permission is denied
+   * @see Runtime#exit(int)
+   * @see Runtime#halt(int)
+   */
+  public void checkExit(int status)
+  {
+    checkPermission(new RuntimePermission("exitVM"));
+  }
 
-	/** Check if the current thread is allowed to read the
-	 ** given file using the FileDescriptor.<P>
-	 **
-	 ** This method is called from
-	 ** FileInputStream.FileInputStream().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param desc the FileDescriptor representing the file
-	 **        to access
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.io.FileInputStream#FileInputStream(java.io.FileDescriptor)
-	 **/
-	public void checkRead(FileDescriptor desc) {
-		throw new SecurityException("Cannot read files via file descriptors.");
-	}
+  /**
+   * Check if the current thread is allowed to execute the given program. This
+   * method is called from Runtime.exec(). If the name is an absolute path,
+   * the default implementation checks
+   * <code>FilePermission(program, "execute")</code>, otherwise it checks
+   * <code>FilePermission("&lt;&lt;ALL FILES&gt;&gt;", "execute")</code>. If
+   * you override this, call <code>super.checkExec</code> rather than
+   * throwing an exception.
+   *
+   * @param program the name of the program to exec
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if program is null
+   * @see Runtime#exec(String[], String[], File)
+   */
+  public void checkExec(String program)
+  {
+    if (! program.equals(new File(program).getAbsolutePath()))
+      program = "<<ALL FILES>>";
+    checkPermission(new FilePermission(program, "execute"));
+  }
 
-	/** Check if the current thread is allowed to read the
-	 ** given file.<P>
-	 **
-	 ** This method is called from
-	 ** FileInputStream.FileInputStream(),
-	 ** RandomAccessFile.RandomAccessFile(), File.exists(),
-	 ** canRead(), isFile(), isDirectory(), lastModified(),
-	 ** length() and list().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param filename the full name of the file to access
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.io.File
-	 ** @see java.io.FileInputStream#FileInputStream(java.lang.String)
-	 ** @see java.io.RandomAccessFile#RandomAccessFile(java.lang.String)
-	 **/
-	public void checkRead(String filename) {
-		throw new SecurityException("Cannot read files via file names.");
-	}
+  /**
+   * Check if the current thread is allowed to link in the given native
+   * library. This method is called from Runtime.load() (and hence, by
+   * loadLibrary() as well). The default implementation checks
+   * <code>RuntimePermission("loadLibrary." + filename)</code>. If you
+   * override this, call <code>super.checkLink</code> rather than throwing
+   * an exception.
+   *
+   * @param filename the full name of the library to load
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if filename is null
+   * @see Runtime#load(String)
+   */
+  public void checkLink(String filename)
+  {
+    // Use the toString() hack to do the null check.
+    checkPermission(new RuntimePermission("loadLibrary."
+                                          + filename.toString()));
+  }
 
-	/** Check if the current thread is allowed to read the
-	 ** given file. using the given SecurityContext.<P>
-	 **
-	 ** I know of no core class that calls this method.<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param filename the full name of the file to access
-	 ** @param securityContext the Security Context to
-	 **        determine access for.
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 **/
-	public void checkRead(String filename, Object securityContext) {
-		throw new SecurityException("Cannot read files via file names.");
-	}
+  /**
+   * Check if the current thread is allowed to read the given file using the
+   * FileDescriptor. This method is called from
+   * FileInputStream.FileInputStream(). The default implementation checks
+   * <code>RuntimePermission("readFileDescriptor")</code>. If you override
+   * this, call <code>super.checkRead</code> rather than throwing an
+   * exception.
+   *
+   * @param desc the FileDescriptor representing the file to access
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if desc is null
+   * @see FileInputStream#FileInputStream(FileDescriptor)
+   */
+  public void checkRead(FileDescriptor desc)
+  {
+    if (desc == null)
+      throw new NullPointerException();
+    checkPermission(new RuntimePermission("readFileDescriptor"));
+  }
 
-	/** Check if the current thread is allowed to write to the
-	 ** given file using the FileDescriptor.<P>
-	 **
-	 ** This method is called from
-	 ** FileOutputStream.FileOutputStream().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param desc the FileDescriptor representing the file
-	 **        to access
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.io.FileOutputStream#FileOutputStream(java.io.FileDescriptor)
-	 **/
-	public void checkWrite(FileDescriptor desc) {
-		throw new SecurityException("Cannot write files via file descriptors.");
-	}
+  /**
+   * Check if the current thread is allowed to read the given file. This
+   * method is called from FileInputStream.FileInputStream(),
+   * RandomAccessFile.RandomAccessFile(), File.exists(), canRead(), isFile(),
+   * isDirectory(), lastModified(), length() and list(). The default
+   * implementation checks <code>FilePermission(filename, "read")</code>. If
+   * you override this, call <code>super.checkRead</code> rather than
+   * throwing an exception.
+   *
+   * @param filename the full name of the file to access
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if filename is null
+   * @see File
+   * @see FileInputStream#FileInputStream(String)
+   * @see RandomAccessFile#RandomAccessFile(String)
+   */
+  public void checkRead(String filename)
+  {
+    checkPermission(new FilePermission(filename, "read"));
+  }
 
-	/** Check if the current thread is allowed to write to the
-	 ** given file.<P>
-	 **
-	 ** This method is called from
-	 ** FileOutputStream.FileOutputStream(),
-	 ** RandomAccessFile.RandomAccessFile(),
-	 ** File.canWrite(), mkdir(), and renameTo().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param filename the full name of the file to access
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.io.File#canWrite()
-	 ** @see java.io.File#mkdir()
-	 ** @see java.io.File#renameTo()
-	 ** @see java.io.FileOutputStream#FileOutputStream(java.lang.String)
-	 ** @see java.io.RandomAccessFile#RandomAccessFile(java.lang.String)
-	 **/
-	public void checkWrite(String filename) {
-		throw new SecurityException("Cannot write files via file names.");
-	}
+  /**
+   * Check if the current thread is allowed to read the given file. using the
+   * given security context. The context must be a result of a previous call
+   * to <code>getSecurityContext()</code>. The default implementation checks
+   * <code>AccessControlContext.checkPermission(new FilePermission(filename,
+   * "read"))</code>. If you override this, call <code>super.checkRead</code>
+   * rather than throwing an exception.
+   *
+   * @param filename the full name of the file to access
+   * @param context the context to determine access for
+   * @throws SecurityException if permission is denied, or if context is
+   *         not an AccessControlContext
+   * @throws NullPointerException if filename is null
+   * @see #getSecurityContext()
+   * @see AccessControlContext#checkPermission(Permission)
+   */
+  public void checkRead(String filename, Object context)
+  {
+    // XXX Should be:
+    // if (! (context instanceof AccessControlContext))
+    //   throw new SecurityException("Missing context");
+    // AccessControlContext ac = (AccessControlContext) context;
+    // ac.checkPermission(new FilePermission(filename, "read"));
+    throw new SecurityException("Cannot read files via file names.");
+  }
 
-	/** Check if the current thread is allowed to delete the
-	 ** given file.<P>
-	 **
-	 ** This method is called from File.delete().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param filename the full name of the file to delete
-	 ** @exception SecurityException if th operation is not
-	 **            permitted.
-	 ** @see java.io.File#delete()
-	 **/
-	public void checkDelete(String filename) {
-		throw new SecurityException("Cannot delete files.");
-	}
+  /**
+   * Check if the current thread is allowed to write the given file using the
+   * FileDescriptor. This method is called from
+   * FileOutputStream.FileOutputStream(). The default implementation checks
+   * <code>RuntimePermission("writeFileDescriptor")</code>. If you override
+   * this, call <code>super.checkWrite</code> rather than throwing an
+   * exception.
+   *
+   * @param desc the FileDescriptor representing the file to access
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if desc is null
+   * @see FileOutputStream#FileOutputStream(FileDescriptor)
+   */
+  public void checkWrite(FileDescriptor desc)
+  {
+    if (desc == null)
+      throw new NullPointerException();
+    checkPermission(new RuntimePermission("writeFileDescriptor"));
+  }
 
-	/** Check if the current thread is allowed to connect to a
-	 ** given host on a given port.<P>
-	 **
-	 ** This method is called from Socket.Socket().
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param host the host to connect to
-	 ** @param port the port to connect on
-	 ** @exception SecurityException if the operation is not
-	 **            permitted
-	 ** @see java.net.Socket#Socket()
-	 **/
-	public void checkConnect(String host, int port) {
-		throw new SecurityException("Cannot make network connections.");
-	}
+  /**
+   * Check if the current thread is allowed to write the given file. This
+   * method is called from FileOutputStream.FileOutputStream(),
+   * RandomAccessFile.RandomAccessFile(), File.canWrite(), mkdir(), and
+   * renameTo(). The default implementation checks
+   * <code>FilePermission(filename, "write")</code>. If you override this,
+   * call <code>super.checkWrite</code> rather than throwing an exception.
+   *
+   * @param filename the full name of the file to access
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if filename is null
+   * @see File
+   * @see File#canWrite()
+   * @see File#mkdir()
+   * @see File#renameTo()
+   * @see FileOutputStream#FileOutputStream(String)
+   * @see RandomAccessFile#RandomAccessFile(String)
+   */
+  public void checkWrite(String filename)
+  {
+    checkPermission(new FilePermission(filename, "write"));
+  }
 
-	/** Check if the current thread is allowed to connect to a
-	 ** given host on a given port using a specific security
-	 ** context to determine access.<P>
-	 **
-	 ** This method is not called in the 1.1 core classes.<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param host the host to connect to
-	 ** @param port the port to connect on
-	 ** @param securityContext the security context to
-	 **        determine access with
-	 ** @exception SecurityException if the operation is not
-	 **            permitted
-	 **/
-	public void checkConnect(String host, int port, Object securityContext) {
-		throw new SecurityException("Cannot make network connections.");
-	}
+  /**
+   * Check if the current thread is allowed to delete the given file. This
+   * method is called from File.delete(). The default implementation checks
+   * <code>FilePermission(filename, "delete")</code>. If you override this,
+   * call <code>super.checkDelete</code> rather than throwing an exception.
+   *
+   * @param filename the full name of the file to delete
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if filename is null
+   * @see File#delete()
+   */
+  public void checkDelete(String filename)
+  {
+    checkPermission(new FilePermission(filename, "delete"));
+  }
 
-	/** Check if the current thread is allowed to listen to a
-	 ** specific port for data.<P>
-	 **
-	 ** This method is called by ServerSocket.ServerSocket().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param port the port to listen on
-	 ** @exception SecurityException if the operation is not
-	 **            permitted
-	 ** @see java.net.ServerSocket#ServerSocket(int)
-	 **/
-	public void checkListen(int port) {
-		throw new SecurityException("Cannot listen for connections.");
-	}
+  /**
+   * Check if the current thread is allowed to connect to a given host on a
+   * given port. This method is called from Socket.Socket(). A port number
+   * of -1 indicates the caller is attempting to determine an IP address, so
+   * the default implementation checks
+   * <code>SocketPermission(host, "resolve")</code>. Otherwise, the default
+   * implementation checks
+   * <code>SocketPermission(host + ":" + port, "connect")</code>. If you
+   * override this, call <code>super.checkConnect</code> rather than throwing
+   * an exception.
+   *
+   * @param host the host to connect to
+   * @param port the port to connect on
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if host is null
+   * @see Socket#Socket()
+   */
+  public void checkConnect(String host, int port)
+  {
+    if (port == -1)
+      checkPermission(new SocketPermission(host, "resolve"));
+    else
+      // Use the toString() hack to do the null check.
+      checkPermission(new SocketPermission(host.toString() + ":" + port,
+                                           "connect"));
+  }
 
-	/** Check if the current thread is allowed to accept a
-	 ** connection from a particular host on a particular
-	 ** port.<P>
-	 **
-	 ** This method is called by ServerSocket.implAccept().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param host the host which wishes to connect
-	 ** @param port the port the connection will be on
-	 ** @exception SecurityException if the operation is not
-	 **            permitted
-	 ** @see java.net.ServerSocket#accept()
-	 **/
-	public void checkAccept(String host, int port) {
-		throw new SecurityException("Cannot accept connections.");
-	}
+  /**
+   * Check if the current thread is allowed to connect to a given host on a
+   * given port, using the given security context. The context must be a
+   * result of a previous call to <code>getSecurityContext</code>. A port
+   * number of -1 indicates the caller is attempting to determine an IP
+   * address, so the default implementation checks
+   * <code>AccessControlContext.checkPermission(new SocketPermission(host,
+   * "resolve"))</code>. Otherwise, the default implementation checks
+   * <code>AccessControlContext.checkPermission(new SocketPermission(host
+   * + ":" + port, "connect"))</code>. If you override this, call
+   * <code>super.checkConnect</code> rather than throwing an exception.
+   *
+   * @param host the host to connect to
+   * @param port the port to connect on
+   * @param context the context to determine access for
+   * @throws SecurityException if permission is denied, or if context is
+   *         not an AccessControlContext
+   * @throws NullPointerException if host is null
+   * @see #getSecurityContext()
+   * @see AccessControlContext#checkPermission(Permission)
+   */
+  public void checkConnect(String host, int port, Object securityContext)
+  {
+    // XXX Should be:
+    // if (! (context instanceof AccessControlContext))
+    //   throw new SecurityException("Missing context");
+    // AccessControlContext ac = (AccessControlContext) context;
+    // if (port == -1)
+    //   ac.checkPermission(new SocketPermission(host, "resolve"));
+    // else
+    //   // Use the toString() hack to do the null check.
+    //   ac.checkPermission(new SocketPermission(host.toString + ":" +port,
+    //                                           "connect"));
+    throw new SecurityException("Cannot make network connections.");
+  }
 
-	/** Check if the current thread is allowed to read and
-	 ** write multicast to a particular address.<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @XXX where is it called?
-	 **
-	 ** @param addr the address to multicast to.
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 **/
-	public void checkMulticast(InetAddress addr) {
-		throw new SecurityException("Cannot read or write multicast.");
-	}
+  /**
+   * Check if the current thread is allowed to listen to a specific port for
+   * data. This method is called by ServerSocket.ServerSocket(). The default
+   * implementation checks
+   * <code>SocketPermission("localhost:" + (port == 0 ? "1024-" : "" + port),
+   * "listen")</code>. If you override this, call
+   * <code>super.checkListen</code> rather than throwing an exception.
+   *
+   * @param port the port to listen on
+   * @throws SecurityException if permission is denied
+   * @see ServerSocket#ServerSocket(int)
+   */
+  public void checkListen(int port)
+  {
+    checkPermission(new SocketPermission("localhost:"
+                                         + (port == 0 ? "1024-" : "" +port),
+                                         "listen"));
+  }
 
-	/** Check if the current thread is allowed to read and
-	 ** write multicast to a particular address with a
-	 ** particular ttl value.<P>
-	 **
-	 ** SecurityManager's implementation always denies access.<P>
-	 **
-	 ** @XXX where is it called?
-	 **
-	 ** @XXX what the hell is ttl?  Expand abbreviation.
-	 **
-	 ** @param addr the address to multicast to.
-	 ** @param ttl the ttl value to use
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 **/
-	public void checkMulticast(InetAddress addr, byte ttl) {
-		throw new SecurityException("Cannot read or write multicast.");
-	}
+  /**
+   * Check if the current thread is allowed to accept a connection from a
+   * particular host on a particular port. This method is called by
+   * ServerSocket.implAccept(). The default implementation checks
+   * <code>SocketPermission(host + ":" + port, "accept")</code>. If you
+   * override this, call <code>super.checkAccept</code> rather than throwing
+   * an exception.
+   *
+   * @param host the host which wishes to connect
+   * @param port the port the connection will be on
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if host is null
+   * @see ServerSocket#accept()
+   */
+  public void checkAccept(String host, int port)
+  {
+    // Use the toString() hack to do the null check.
+    checkPermission(new SocketPermission(host.toString() + ":" + port,
+                                         "accept"));
+  }
 
-        /**
-         ** Check if the current thread is allowed to perform an
-         ** operation that requires the specified <code>Permission</code>.
-         **
-         ** @param perm The <code>Permission</code> required.
-         ** @exception SecurityException If the operation is not allowed.
-         **/
-         public void checkPermission(java.security.Permission perm) {
-		throw new SecurityException("Operation not allowed");
-	}
+  /**
+   * Check if the current thread is allowed to read and write multicast to
+   * a particular address. The default implementation checks
+   * <code>SocketPermission(addr.getHostAddress(), "accept,connect")</code>.
+   * If you override this, call <code>super.checkMulticast</code> rather than
+   * throwing an exception.
+   *
+   * @param addr the address to multicast to
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if host is null
+   * @since 1.1
+   */
+  public void checkMulticast(InetAddress addr)
+  {
+    checkPermission(new SocketPermission(addr.getHostAddress(),
+                                         "accept,connect"));
+  }
 
-        /**
-         ** Check if the current thread is allowed to perform an
-         ** operation that requires the specified <code>Permission</code>.
-         **
-         ** @param perm The <code>Permission</code> required.
-	 ** @param context A security context
-         ** @exception SecurityException If the operation is not allowed.
-	 ** @since 1.2
-         **/
-         public void checkPermission(java.security.Permission perm,
-				     Object context) {
-		throw new SecurityException("Operation not allowed");
-	}
+  /**
+   *Check if the current thread is allowed to read and write multicast to
+   * a particular address with a particular ttl (time-to-live) value. The
+   * default implementation ignores ttl, and checks
+   * <code>SocketPermission(addr.getHostAddress(), "accept,connect")</code>.
+   * If you override this, call <code>super.checkMulticast</code> rather than
+   * throwing an exception.
+   *
+   * @param addr the address to multicast to
+   * @param ttl value in use for multicast send
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if host is null
+   * @since 1.1
+   * @deprecated use {@link #checkPermission(Permission)} instead
+   */
+  public void checkMulticast(InetAddress addr, byte ttl)
+  {
+    checkPermission(new SocketPermission(addr.getHostAddress(),
+                                         "accept,connect"));
+  }
 
-	/** Check if the current thread is allowed to read or
-	 ** write all the system properties at once.<P>
-	 **
-	 ** This method is called by System.getProperties()
-	 ** and setProperties().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.System#getProperties()
-	 ** @see java.lang.System#setProperties(java.util.Properties)
-	 **/
-	public void checkPropertiesAccess() {
-		throw new SecurityException("Cannot access all system properties at once.");
-	}
+  /**
+   * Check if the current thread is allowed to read or write all the system
+   * properties at once. This method is called by System.getProperties()
+   * and setProperties(). The default implementation checks
+   * <code>PropertyPermission("*", "read,write")</code>. If you override
+   * this, call <code>super.checkPropertiesAccess</code> rather than
+   * throwing an exception.
+   *
+   * @throws SecurityException if permission is denied
+   * @see System#getProperties()
+   * @see System#setProperties(Properties)
+   */
+  public void checkPropertiesAccess()
+  {
+    checkPermission(new PropertyPermission("*", "read,write"));
+  }
 
-	/** Check if the current thread is allowed to read or
-	 ** write a particular system property.<P>
-	 **
-	 ** This method is called by System.getProperty() and
-	 ** setProperty().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @exception SecurityException is the operation is not
-	 **            permitted.
-	 ** @see java.lang.System#getProperty(java.lang.String)
-	 ** @see java.lang.System#setProperty(java.lang.String,java.lang.String)
-	 **/
-	public void checkPropertyAccess(String name) {
-		throw new SecurityException("Cannot access individual system properties.");
-	}
+  /**
+   * Check if the current thread is allowed to read a particular system
+   * property (writes are checked directly via checkPermission). This method
+   * is called by System.getProperty() and setProperty(). The default
+   * implementation checks <code>PropertyPermission(key, "read")</code>. If
+   * you override this, call <code>super.checkPropertyAccess</code> rather
+   * than throwing an exception.
+   *
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if key is null
+   * @throws IllegalArgumentException if key is ""
+   * @see System#getProperty(String)
+   */
+  public void checkPropertyAccess(String key)
+  {
+    checkPermission(new PropertyPermission(key, "read"));
+  }
 
-	/** Check if the current thread is allowed to create a
-	 ** top-level window.  If it is not, the operation should
-	 ** still go through, but some sort of nonremovable
-	 ** warning should be placed on the window to show that it
-	 ** is untrusted.<P>
-	 **
-	 ** This method is called by Window.Window().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param window the window to create
-	 ** @see java.awt.Window#Window(java.awt.Frame)
-	 **/
-	public boolean checkTopLevelWindow(Object window) {
-	  return false;
-	}
+  /**
+   * Check if the current thread is allowed to create a top-level window. If
+   * it is not, the operation should still go through, but some sort of
+   * nonremovable warning should be placed on the window to show that it
+   * is untrusted. This method is called by Window.Window(). The default
+   * implementation checks
+   * <code>AWTPermission("showWindowWithoutWarningBanner")</code>, and returns
+   * true if no exception was thrown. If you override this, use
+   * <code>return super.checkTopLevelWindow</code> rather than returning
+   * false.
+   *
+   * @param window the window to create
+   * @return true if there is permission to show the window without warning
+   * @throws NullPointerException if window is null
+   * @see Window#Window(Frame)
+   */
+  public boolean checkTopLevelWindow(Object window)
+  {
+    if (window == null)
+      throw new NullPointerException();
+    try
+      {
+        checkPermission(new AWTPermission("showWindowWithoutWarningBanner"));
+        return true;
+      }
+    catch (SecurityException e)
+      {
+        return false;
+      }
+  }
 
-	/** Check if the current thread is allowed to create a
-	 ** print job.<P>
-	 **
-	 ** This method is called by Toolkit.getPrintJob().  (I
-	 ** assume so, at least, it just don't say nothing about
-	 ** it in the spec.)<P>
-	 ** 
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.awt.Toolkit.getPrintJob(java.awt.Frame,java.lang.String,java.util.Properties)
-	 **/
-	public void checkPrintJobAccess() {
-		throw new SecurityException("Cannot create print jobs.");
-	}
+  /**
+   * Check if the current thread is allowed to create a print job. This
+   * method is called by Toolkit.getPrintJob(). The default implementation
+   * checks <code>RuntimePermission("queuePrintJob")</code>. If you override
+   * this, call <code>super.checkPrintJobAccess</code> rather than throwing
+   * an exception.
+   *
+   * @throws SecurityException if permission is denied
+   * @see Toolkit#getPrintJob(Frame, String, Properties)
+   * @since 1.1
+   */
+  public void checkPrintJobAccess()
+  {
+    checkPermission(new RuntimePermission("queuePrintJob"));
+  }
 
-	/** Check if the current thread is allowed to use the
-	 ** system clipboard.<P>
-	 **
-	 ** This method is called by Toolkit.getSystemClipboard().
-	 ** (I assume.)<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.awt.Toolkit#getSystemClipboard()
-	 **/
-	public void checkSystemClipboardAccess() {
-		throw new SecurityException("Cannot access the system clipboard.");
-	}
+  /**
+   * Check if the current thread is allowed to use the system clipboard. This
+   * method is called by Toolkit.getSystemClipboard(). The default
+   * implementation checks <code>AWTPermission("accessClipboard")</code>. If
+   * you override this, call <code>super.checkSystemClipboardAccess</code>
+   * rather than throwing an exception.
+   *
+   * @throws SecurityException if permission is denied
+   * @see Toolkit#getSystemClipboard()
+   * @since 1.1
+   */
+  public void checkSystemClipboardAccess()
+  {
+    checkPermission(new AWTPermission("accessClipboard"));
+  }
 
-	/** Check if the current thread is allowed to use the AWT
-	 ** event queue.<P>
-	 **
-	 ** This method is called by Toolkit.getSystemEventQueue().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.awt.Toolkit#getSystemEventQueue()
-	 **/
-	public void checkAwtEventQueueAccess() {
-		throw new SecurityException("Cannot access the AWT event queue.");
-	}
+  /**
+   * Check if the current thread is allowed to use the AWT event queue. This
+   * method is called by Toolkit.getSystemEventQueue(). The default
+   * implementation checks <code>AWTPermission("accessEventQueue")</code>.
+   * you override this, call <code>super.checkAwtEventQueueAccess</code>
+   * rather than throwing an exception.
+   *
+   * @throws SecurityException if permission is denied
+   * @see Toolkit#getSystemEventQueue()
+   * @since 1.1
+   */
+  public void checkAwtEventQueueAccess()
+  {
+    // Should be: checkPermission(new AWTPermission("accessEventQueue"));
+    throw new SecurityException("Cannot access the AWT event queue.");
+  }
 
-	/** Check if the current thread is allowed to access the
-	 ** specified package at all.<P>
-	 **
-	 ** This method is called by ClassLoader.loadClass() in
-	 ** user-created ClassLoaders.<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param packageName the package name to check access to
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.ClassLoader#loadClass(java.lang.String,boolean)
-	 **/
-	public void checkPackageAccess(String packageName) {
-		throw new SecurityException("Cannot access packages via the ClassLoader.");
-	}
+  /**
+   * Check if the current thread is allowed to access the specified package
+   * at all. This method is called by ClassLoader.loadClass() in user-created
+   * ClassLoaders. The default implementation gets a list of all restricted
+   * packages, via <code>Security.getProperty("package.access")</code>. Then,
+   * if packageName starts with or equals any restricted package, it checks
+   * <code>RuntimePermission("accessClassInPackage." + packageName)</code>.
+   * If you override this, you should call
+   * <code>super.checkPackageAccess</code> before doing anything else.
+   *
+   * @param packageName the package name to check access to
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if packageName is null
+   * @see ClassLoader#loadClass(String, boolean)
+   * @see Security#getProperty(String)
+   */
+  public void checkPackageAccess(String packageName)
+  {
+    checkPackageList(packageName, "access", "accessClassInPackage.");
+  }
 
-	/** Check if the current thread is allowed to define
-	 ** classes the specified package.  If the class already
-	 ** created, though, ClassLoader.loadClass() can still
-	 ** return the Class if checkPackageAccess() checks out.<P>
-	 **
-	 ** This method is called by ClassLoader.loadClass() in
-	 ** user-created ClassLoaders.<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param packageName the package name to check access to
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.ClassLoader#loadClass(java.lang.String,boolean)
-	 **/
-	public void checkPackageDefinition(String packageName) {
-		throw new SecurityException("Cannot load classes into any packages via the ClassLoader.");
-	}
+  /**
+   * Check if the current thread is allowed to define a class into the
+   * specified package. This method is called by ClassLoader.loadClass() in
+   * user-created ClassLoaders. The default implementation gets a list of all
+   * restricted packages, via
+   * <code>Security.getProperty("package.definition")</code>. Then, if
+   * packageName starts with or equals any restricted package, it checks
+   * <code>RuntimePermission("defineClassInPackage." + packageName)</code>.
+   * If you override this, you should call
+   * <code>super.checkPackageDefinition</code> before doing anything else.
+   *
+   * @param packageName the package name to check access to
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if packageName is null
+   * @see ClassLoader#loadClass(String, boolean)
+   * @see Security#getProperty(String)
+   */
+  public void checkPackageDefinition(String packageName)
+  {
+    checkPackageList(packageName, "definition", "defineClassInPackage.");
+  }
 
-	/** Check if the current thread is allowed to set the
-	 ** current socket factory.<P>
-	 **
-	 ** This method is called by Socket.setSocketImplFactory(),
-	 ** ServerSocket.setSocketFactory(), and
-	 ** URL.setURLStreamHandlerFactory().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.net.Socket#setSocketImplFactory(java.net.SocketImplFactory)
-	 ** @see java.net.ServerSocket#setSocketFactory(java.net.SocketImplFactory)
-	 ** @see java.net.URL#setURLStreamHandlerFactory(java.net.URLStreamHandlerFactory)
-	 **/
-	public void checkSetFactory() {
-		throw new SecurityException("Cannot set the socket factory.");
-	}
+  /**
+   * Check if the current thread is allowed to set the current socket factory.
+   * This method is called by Socket.setSocketImplFactory(),
+   * ServerSocket.setSocketFactory(), and URL.setURLStreamHandlerFactory().
+   * The default implementation checks
+   * <code>RuntimePermission("setFactory")</code>. If you override this, call
+   * <code>super.checkSetFactory</code> rather than throwing an exception.
+   *
+   * @throws SecurityException if permission is denied
+   * @see Socket#setSocketImplFactory(SocketImplFactory)
+   * @see ServerSocket#setSocketFactory(SocketImplFactory)
+   * @see URL#setURLStreamHandlerFactory(URLStreamHandlerFactory)
+   */
+  public void checkSetFactory()
+  {
+    checkPermission(new RuntimePermission("setFactory"));
+  }
 
-	/** Check if the current thread is allowed to get certain
-	 ** types of Methods, Fields and Constructors from a Class
-	 ** object.<P>
-	 **
-	 ** This method is called by Class.getMethod[s](),
-	 ** Class.getField[s](), Class.getConstructor[s],
-	 ** Class.getDeclaredMethod[s](),
-	 ** Class.getDeclaredField[s](), and
-	 ** Class.getDeclaredConstructor[s]().<P>
-	 **
-	 ** SecurityManager's implementation always denies access.
-	 **
-	 ** @param c the Class to check
-	 ** @param memberType the type of members to check
-	 **        against, either Member.DECLARED or
-	 **        Member.PUBLIC.
-	 ** @exception SecurityException if the operation is not
-	 **            permitted.
-	 ** @see java.lang.Class
-	 ** @see java.lang.reflect.Member#DECLARED
-	 ** @see java.lang.reflect.Member#PUBLIC
-	 **/
-	public void checkMemberAccess(Class c, int memberType) {
-		throw new SecurityException("Cannot access members of classes.");
-	}
+  /**
+   * Check if the current thread is allowed to get certain types of Methods,
+   * Fields and Constructors from a Class object. This method is called by
+   * Class.getMethod[s](), Class.getField[s](), Class.getConstructor[s],
+   * Class.getDeclaredMethod[s](), Class.getDeclaredField[s](), and
+   * Class.getDeclaredConstructor[s](). The default implementation allows
+   * PUBLIC access, and access to classes defined by the same classloader as
+   * the code performing the reflection. Otherwise, it checks
+   * <code>RuntimePermission("accessDeclaredMembers")</code>. If you override
+   * this, do not call <code>super.checkMemberAccess</code>, as this would
+   * mess up the stack depth check that determines the ClassLoader requesting
+   * the access.
+   *
+   * @param c the Class to check
+   * @param memberType either DECLARED or PUBLIC
+   * @throws SecurityException if permission is denied, including when
+   *         memberType is not DECLARED or PUBLIC
+   * @throws NullPointerException if c is null
+   * @see Class
+   * @see Member#DECLARED
+   * @see Member#PUBLIC
+   * @since 1.1
+   */
+  public void checkMemberAccess(Class c, int memberType)
+  {
+    if (c == null)
+      throw new NullPointerException();
+    if (memberType == Member.PUBLIC)
+      return;
+    // XXX Allow access to classes created by same classloader before next
+    // check.
+    checkPermission(new RuntimePermission("accessDeclaredMembers"));
+  }
 
-	/** Test whether a particular security action may be
-	 ** taken.
-	 ** @param action the desired action to take
-	 ** @exception SecurityException if the action is denied.
-	 ** @XXX I have no idea what actions must be tested
-	 **      or where.
-	 **/
-	public void checkSecurityAccess(String action) {
-		checkPermission (new java.security.SecurityPermission (action));
-	}
+  /**
+   * Test whether a particular security action may be taken. The default
+   * implementation checks <code>SecurityPermission(action)</code>. If you
+   * override this, call <code>super.checkSecurityAccess</code> rather than
+   * throwing an exception.
+   *
+   * @param action the desired action to take
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if action is null
+   * @throws IllegalArgumentException if action is ""
+   * @since 1.1
+   */
+  public void checkSecurityAccess(String action)
+  {
+    checkPermission(new SecurityPermission(action));
+  }
 
-	/** Get the ThreadGroup that a new Thread should belong
-	 ** to by default.<P>
-	 **
-	 ** Called by Thread.Thread().<P>
-	 **
-	 ** SecurityManager's implementation just uses the
-	 ** ThreadGroup of the current Thread.<P>
-	 **
-	 ** <STRONG>Spec Note:</STRONG> it is not clear whether
-	 ** the new Thread is guaranteed to pass the
-	 ** checkAccessThreadGroup() test when using this
-	 ** ThreadGroup.  I presume so.
-	 **
-	 ** @return the ThreadGroup to put the new Thread into.
-	 **/
-	public ThreadGroup getThreadGroup() {
-		return Thread.currentThread().getThreadGroup();
-	}
+  /**
+   * Get the ThreadGroup that a new Thread should belong to by default. Called
+   * by Thread.Thread(). The default implementation returns the current
+   * ThreadGroup of the current Thread. <STRONG>Spec Note:</STRONG> it is not
+   * clear whether the new Thread is guaranteed to pass the
+   * checkAccessThreadGroup() test when using this ThreadGroup, but I presume
+   * so.
+   *
+   * @return the ThreadGroup to put the new Thread into
+   * @since 1.1
+   */
+  public ThreadGroup getThreadGroup()
+  {
+    return Thread.currentThread().getThreadGroup();
+  }
 
-	public SecurityManager () {
-		if (System.getSecurityManager () != null)
-			throw new SecurityException ();
-	}
-}
+  /**
+   * Helper that checks a comma-separated list of restricted packages, from
+   * <code>Security.getProperty("package.definition")</code>, for the given
+   * package access permission. If packageName starts with or equals any
+   * restricted package, it checks
+   * <code>RuntimePermission(permission + packageName)</code>.
+   *
+   * @param packageName the package name to check access to
+   * @param restriction the list of restrictions, after "package."
+   * @param permission the base permission, including the '.'
+   * @throws SecurityException if permission is denied
+   * @throws NullPointerException if packageName is null
+   * @see #checkPackageAccess(String)
+   * @see #checkPackageDefinition(String)
+   */
+  void checkPackageList(String packageName, String restriction,
+                        String permission)
+  {
+    // Use the toString() hack to do the null check.
+    Permission p = new RuntimePermission(permission + packageName.toString());
+    String list = Security.getProperty("package." + restriction);
+    if (list == null)
+      return;
+    while (! "".equals(packageName))
+      {
+        for (int index = list.indexOf(packageName);
+             index != -1; index = list.indexOf(packageName, index + 1))
+          {
+	    int packageNameCount = packageName.length();
+            if (index + packageNameCount == list.length()
+                || list.charAt(index + packageNameCount) == ',')
+              {
+                checkPermission(p);
+                return;
+              }
+          }
+        int index = packageName.lastIndexOf('.');
+        packageName = index < 0 ? "" : packageName.substring(0, index);
+      }
+  }
+} // class SecurityManager
 
+// XXX This class is unnecessary.
 class SecurityContext {
 	Class[] classes;
 	SecurityContext(Class[] classes) {
