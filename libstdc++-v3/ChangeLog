@@ -1,3 +1,17 @@
+2005-01-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* Makefile.in: Regenerate.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2005-01-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (lexicographical_compare):
+	Fix concept check.
+
 2005-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4: Remove CCODECVT_H.
