@@ -5,15 +5,15 @@
 @setchapternewpage odd
 @c %**end of header
      
+@node Top, Executing code before main, (dir), (dir)
+@comment  node-name,  next,  previous,  up
+
 @menu
 * Executing code before main::  
 * Type encoding::               
 * Garbage Collection::          
 * Constant string objects::     
 @end menu
-
-@node Top, Executing code before main, (dir), (dir)
-@comment  node-name,  next,  previous,  up
 
 @chapter GNU Objective-C runtime features
 
