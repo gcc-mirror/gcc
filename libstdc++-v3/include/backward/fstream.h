@@ -30,11 +30,13 @@
 
 #include <bits/std_fstream.h>
 
+using std::filebuf;
 using std::ifstream;
 using std::ofstream;
 using std::fstream;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+using std::wfilebuf;
 using std::wifstream;
 using std::wofstream;
 using std::wfstream;
