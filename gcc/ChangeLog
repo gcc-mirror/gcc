@@ -1,3 +1,11 @@
+2004-02-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sol2-bi.h: Handle TARGET_CPU_ultrasparc3.
+	(CPP_CPU_SPEC): Handle -mcpu=ultrasparc3.
+	(ASM_CPU_SPEC): Likewise
+	* config/sparc/sol2.h: Handle TARGET_CPU_ultrasparc3.
+	(ASM_CPU_SPEC): Remove -mcpu=v8plus.  Handle -mcpu=ultrasparc3.
+
 2004-02-01  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/12850
