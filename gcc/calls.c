@@ -2061,36 +2061,12 @@ expand_call (exp, target, ignore)
     }
   else if (pcc_struct_value)
     {
-      if (target == 0)
-	{
-	  /* We used leave the value in the location that it is
-	     returned in, but that causes problems if it is used more
-	     than once in one expression.  Rather than trying to track
-	     when a copy is required, we always copy when TARGET is
-	     not specified.  This calling sequence is only used on
-	     a few machines and TARGET is usually nonzero.  */
-	  if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
-	    {
-	      target = assign_stack_temp (BLKmode,
-					  int_size_in_bytes (TREE_TYPE (exp)),
-					  0);
-
-	      MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
-
-	      /* Save this temp slot around the pop below.  */
-	      preserve_temp_slots (target);
-	    }
-	  else
-	    target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
-	}
-
-      if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
-	emit_move_insn (target, gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
-					 copy_to_reg (valreg)));
-      else
-	emit_block_move (target, gen_rtx (MEM, BLKmode, copy_to_reg (valreg)),
-			 expr_size (exp),
-			 TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
+      /* This is the special C++ case where we need to
+	 know what the true target was.  We take care to
+	 never use this value more than once in one expression.  */
+      target = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
+			copy_to_reg (valreg));
+      MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
     }
   /* Handle calls that return values in multiple non-contiguous locations.
      The Irix 6 ABI has examples of this.  */
