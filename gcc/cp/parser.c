@@ -2446,7 +2446,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
       return error_mark_node;
     }
 
-  /* Try to avoid the overhead of creating and destroying an obstac
+  /* Try to avoid the overhead of creating and destroying an obstack
      for the common case of just one string.  */
   if (!cp_parser_is_string_literal (cp_lexer_peek_nth_token (parser->lexer, 2)))
     {

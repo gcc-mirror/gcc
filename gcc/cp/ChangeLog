@@ -1,3 +1,7 @@
+2004-09-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* parser.c: Fix a comment typo.
+
 2004-09-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17620
