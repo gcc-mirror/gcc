@@ -3962,6 +3962,8 @@ loop_iterations (loop)
   else
     abort ();
 
+  abs_diff = trunc_int_for_mode (abs_diff, GET_MODE (iteration_var));
+
   /* For NE tests, make sure that the iteration variable won't miss
      the final value.  If abs_diff mod abs_incr is not zero, then the
      iteration variable will overflow before the loop exits, and we

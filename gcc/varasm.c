@@ -1984,7 +1984,7 @@ immed_double_const (i0, i1, mode)
 	 represented as a 64 bit value -1, and not as 0x00000000ffffffff.
 	 The later confuses the sparc backend.  */
 
-      if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT && BITS_PER_WORD == width
+      if (width < HOST_BITS_PER_WIDE_INT
 	  && (i0 & ((HOST_WIDE_INT) 1 << (width - 1))))
 	i0 |= ((HOST_WIDE_INT) (-1) << width);
 

@@ -702,13 +702,24 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       else if (GET_CODE (loc) != MEM)
 	{
 	  if (GET_MODE (loc) != TYPE_MODE (TREE_TYPE (arg)))
-	    /* The mode if LOC and ARG can differ if LOC was a variable
-	       that had its mode promoted via PROMOTED_MODE.  */
-	    arg_vals[i] = convert_modes (GET_MODE (loc),
-					 TYPE_MODE (TREE_TYPE (arg)),
-					 expand_expr (arg, NULL_RTX, mode,
-						      EXPAND_SUM),
-					 TREE_UNSIGNED (TREE_TYPE (formal)));
+	    {
+	      int unsignedp = TREE_UNSIGNED (TREE_TYPE (formal));
+	      enum machine_mode pmode = TYPE_MODE (TREE_TYPE (formal));
+
+	      pmode = promote_mode (TREE_TYPE (formal), pmode,
+				    &unsignedp, 0);
+
+	      if (GET_MODE (loc) != pmode)
+		abort ();
+
+	      /* The mode if LOC and ARG can differ if LOC was a variable
+		 that had its mode promoted via PROMOTED_MODE.  */
+	      arg_vals[i] = convert_modes (pmode,
+					   TYPE_MODE (TREE_TYPE (arg)),
+					   expand_expr (arg, NULL_RTX, mode,
+							EXPAND_SUM),
+					   unsignedp);
+	    }
 	  else
 	    arg_vals[i] = expand_expr (arg, NULL_RTX, mode, EXPAND_SUM);
 	}
