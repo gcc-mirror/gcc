@@ -31,20 +31,23 @@
 void test01()
 {
   using namespace std;
+  typedef ios::off_type off_type;
   typedef ios::pos_type pos_type;
 
   bool test __attribute__((unused)) = true;
   const char str_lit01[] = "istream_seeks-1.tst";
 
   // in
-  // test default ctors leave things in the same positions...
   istringstream ist1;
   pos_type p3 = ist1.tellg();
 
   ifstream ifs1;
   pos_type p4 = ifs1.tellg();
 
-  VERIFY( p3 == p4 );
+  // N.B. We implement the resolution of DR 453 and
+  // istringstream::tellg() doesn't fail.
+  VERIFY( p3 == pos_type(off_type(0)) );
+  VERIFY( p4 == pos_type(off_type(-1)) );
 
   // in
   // test ctors leave things in the same positions...

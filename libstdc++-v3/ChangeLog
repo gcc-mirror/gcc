@@ -1,3 +1,21 @@
+2004-09-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/10975 (DR 453)
+	* include/bits/sstream.tcc (seekoff): Don't fail if __beg == 0
+	and __off == 0.
+	* docs/html/ext/howto.html: Add an entry for DR 453.
+	* testsuite/27_io/basic_stringbuf/seekoff/char/10975.cc: New.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/10975.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/1.cc: Tweak consistently.
+	* testsuite/27_io/basic_ostream/tellp/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/2346-fstream.cc: Fix and
+	move to...
+	* testsuite/27_io/basic_istream/seekp/char/2346-fstream.cc: ... here.
+	* testsuite/27_io/basic_istream/seekg/char/2346-sstream.cc: Fix and
+	move to...
+	* testsuite/27_io/basic_istream/seekp/char/2346-sstream.cc: ... here.
+
 2004-09-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_sstream.h (basic_stringbuf(ios_base::openmode)):

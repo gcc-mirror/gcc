@@ -1,6 +1,6 @@
-// 2000-06-29 bkoz
+// 2004-09-30  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2000, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,46 +18,39 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.2.4 basic_ostream seek members
+// 27.7.1.3 Overridden virtual functions
 
-#include <ostream>
 #include <sstream>
-#include <fstream>
 #include <testsuite_hooks.h>
 
+// libstdc++/10975
 void test01()
 {
-  using namespace std;
-  typedef ios::off_type off_type;
-  typedef ios::pos_type pos_type;
-
   bool test __attribute__((unused)) = true;
-  const char str_lit01[] = "ostream_seeks-1.txt";
+  using namespace std;
+  typedef streambuf::pos_type pos_type;
+  typedef streambuf::off_type off_type;
 
-  // out
-  ostringstream ost1;
-  pos_type p1 = ost1.tellp();
+  const pos_type good = pos_type(off_type(0));
+  const pos_type bad = pos_type(off_type(-1));
+  pos_type p;
 
-  ofstream ofs1;
-  pos_type p2 = ofs1.tellp();
+  stringbuf sbuf;
+  
+  p = sbuf.pubseekoff(0, ios_base::cur, ios_base::in);
+  VERIFY( p == good );
 
-  // N.B. We implement the resolution of DR 453 and
-  // ostringstream::tellp() doesn't fail.
-  VERIFY( p1 == pos_type(off_type(0)) );
-  VERIFY( p2 == pos_type(off_type(-1)) );
+  p = sbuf.pubseekoff(0, ios_base::beg, ios_base::out);
+  VERIFY( p == good );
 
-  // out
-  // test ctors leave things in the same positions...
-  ostringstream ost2("bob_marley:kaya");
-  p1 = ost2.tellp();
+  p = sbuf.pubseekoff(0, ios_base::end);
+  VERIFY( p == good );
 
-  ofstream ofs2(str_lit01);
-  p2 = ofs2.tellp();
- 
-  VERIFY( p1 == p2 );
+  p = sbuf.pubseekoff(0, ios_base::cur);
+  VERIFY( p == bad );
 }
 
-int main()
+int main() 
 {
   test01();
   return 0;
