@@ -91,7 +91,7 @@ Boston, MA 02111-1307, USA.  */
 /* Output #ident as a .ident.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
+  fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
 
 /* Attach a special .ident directive to the end of the file to identify
    the version of GCC which compiled this code.  The format of the
@@ -104,7 +104,7 @@ Boston, MA 02111-1307, USA.  */
   do							\
     {				 			\
       if (!flag_no_ident)				\
-	fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",	\
+	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",	\
 		 IDENT_ASM_OP, version_string);		\
     }							\
   while (0)
@@ -133,7 +133,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
-  fprintf (FILE, "\t%s\t%u\n", SKIP_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (SIZE))
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
@@ -207,7 +207,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
   do									\
     {									\
-      fprintf ((FILE), "\t%s\t", COMMON_ASM_OP);			\
+      fprintf ((FILE), "%s", COMMON_ASM_OP);				\
       assemble_name ((FILE), (NAME));					\
       fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
     }									\
@@ -224,7 +224,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)	\
   do								\
     {								\
-      fprintf ((FILE), "\t%s\t", LOCAL_ASM_OP);			\
+      fprintf ((FILE), "%s", LOCAL_ASM_OP);			\
       assemble_name ((FILE), (NAME));				\
       fprintf ((FILE), "\n");					\
       ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);	\
@@ -311,7 +311,7 @@ const_section ()						\
     text_section ();						\
   else if (in_section != in_const)				\
     {								\
-      fprintf (asm_out_file, "\t%s\n", CONST_SECTION_ASM_OP);	\
+      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);	\
       in_section = in_const;					\
     }								\
 }
@@ -322,7 +322,7 @@ ctors_section ()						\
 {								\
   if (in_section != in_ctors)					\
     {								\
-      fprintf (asm_out_file, "\t%s\n", CTORS_SECTION_ASM_OP);	\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
       in_section = in_ctors;					\
     }								\
 }
@@ -333,7 +333,7 @@ dtors_section ()						\
 {								\
   if (in_section != in_dtors)					\
     {								\
-      fprintf (asm_out_file, "\t%s\n", DTORS_SECTION_ASM_OP);	\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
       in_section = in_dtors;					\
     }								\
 }
@@ -388,7 +388,7 @@ dtors_section ()						\
   do								\
     {								\
       ctors_section ();						\
-      fprintf (FILE, "\t%s\t ", INT_ASM_OP);			\
+      fprintf (FILE, "%s", INT_ASM_OP);				\
       assemble_name (FILE, NAME);				\
       fprintf (FILE, "\n");					\
     }								\
@@ -400,7 +400,7 @@ dtors_section ()						\
   do								\
     {								\
       dtors_section ();                   			\
-      fprintf (FILE, "\t%s\t ", INT_ASM_OP);			\
+      fprintf (FILE, "%s", INT_ASM_OP);				\
       assemble_name (FILE, NAME);              			\
       fprintf (FILE, "\n");					\
     }								\
@@ -557,7 +557,7 @@ dtors_section ()						\
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
   do							\
     {							\
-      fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);		\
+      fprintf (FILE, "%s", TYPE_ASM_OP);		\
       assemble_name (FILE, NAME);			\
       putc (',', FILE);					\
       fprintf (FILE, TYPE_OPERAND_FMT, "function");	\
@@ -574,7 +574,7 @@ dtors_section ()						\
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
   do								\
     {								\
-      fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);			\
+      fprintf (FILE, "%s", TYPE_ASM_OP);			\
       assemble_name (FILE, NAME);				\
       putc (',', FILE);						\
       fprintf (FILE, TYPE_OPERAND_FMT, "object");		\
@@ -586,7 +586,7 @@ dtors_section ()						\
 	  && (DECL) && DECL_SIZE (DECL))			\
 	{							\
 	  size_directive_output = 1;				\
-	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
+	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
 	  assemble_name (FILE, NAME);				\
 	  putc (',', FILE);					\
 	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,		\
@@ -616,7 +616,7 @@ dtors_section ()						\
 	  && !size_directive_output)				\
 	{							\
 	  size_directive_output = 1;				\
-	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
+	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
 	  assemble_name (FILE, name);				\
 	  putc (',', FILE);					\
 	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,		\
@@ -641,7 +641,7 @@ dtors_section ()						\
 	  ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	  ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);	\
 	  							\
-	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
+	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
 	  assemble_name (FILE, (FNAME));			\
 	  fprintf (FILE, ",");					\
 	  assemble_name (FILE, label);				\
@@ -707,7 +707,7 @@ dtors_section ()						\
 	(const unsigned char *) (STR);			\
       register unsigned ch;				\
       							\
-      fprintf ((FILE), "\t%s\t\"", STRING_ASM_OP);	\
+      fprintf ((FILE), "%s\"", STRING_ASM_OP);		\
       							\
       for (; (ch = *_limited_str); _limited_str++)	\
         {						\
@@ -778,7 +778,7 @@ dtors_section ()						\
 	      register unsigned ch;					\
       									\
 	      if (bytes_in_chunk == 0)					\
-		fprintf ((FILE), "\t%s\t\"", ASCII_DATA_ASM_OP);	\
+		fprintf ((FILE), "%s\"", ASCII_DATA_ASM_OP);		\
       									\
 	      switch (escape = ESCAPES[ch = *_ascii_bytes])		\
 		{							\

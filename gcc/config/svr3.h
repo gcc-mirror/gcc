@@ -266,7 +266,7 @@ init_section ()							\
 {								\
   if (in_section != in_init)					\
     {								\
-      fprintf (asm_out_file, "\t%s\n", INIT_SECTION_ASM_OP);	\
+      fprintf (asm_out_file, "%s\n", INIT_SECTION_ASM_OP);	\
       in_section = in_init;					\
     }								\
 }
@@ -277,7 +277,7 @@ fini_section ()							\
 {								\
   if (in_section != in_fini)					\
     {								\
-      fprintf (asm_out_file, "\t%s\n", FINI_SECTION_ASM_OP);	\
+      fprintf (asm_out_file, "%s\n", FINI_SECTION_ASM_OP);	\
       in_section = in_fini;					\
     }								\
 }
