@@ -203,7 +203,8 @@ struct dbx_file
    should always be 0 because we should not have needed any file numbers
    yet.  */
 
-#ifdef DBX_USE_BINCL
+#if (defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)) \
+    && defined (DBX_USE_BINCL)
 static struct dbx_file *current_file;
 #endif
 
