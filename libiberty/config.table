@@ -27,6 +27,7 @@ if [ "${shared}" = "yes" ]; then
     i[3456]86-*-*)	frags="${frags} ../../config/mh-x86pic" ;;
     powerpc*-*-aix*)	;;
     powerpc*-*-*)	frags="${frags} ../../config/mh-ppcpic" ;;
+    sparc*-*-*)		frags="${frags} ../../config/mh-sparcpic" ;;
     *-*-*)		frags="${frags} ../../config/mh-${host_cpu}pic" ;;
   esac
 fi

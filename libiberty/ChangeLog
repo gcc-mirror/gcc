@@ -1,3 +1,7 @@
+2000-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.table: Use mh-sparcpic for sparc*-*-*.
+
 2000-05-08  Nick Clifton  <nickc@cygnus.com>
 
 	* Makefile.in (CFILES): Add strncmp.c.
