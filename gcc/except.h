@@ -137,7 +137,7 @@ extern rtx expand_builtin_dwarf_fp_regnum	PARAMS ((void));
 extern void expand_builtin_eh_return		PARAMS ((tree, tree));
 extern void expand_eh_return			PARAMS ((void));
 
-extern rtx get_exception_pointer		PARAMS ((void));
+extern rtx get_exception_pointer		PARAMS ((struct function *));
 
 struct function;
 struct inline_remap;

@@ -8827,7 +8827,7 @@ expand_expr (exp, target, tmode, modifier)
       return expand_builtin_va_arg (TREE_OPERAND (exp, 0), type);
 
     case EXC_PTR_EXPR:
-      return get_exception_pointer ();
+      return get_exception_pointer (cfun);
 
     default:
       return (*lang_expand_expr) (exp, original_target, tmode, modifier);
