@@ -1,6 +1,6 @@
 // C++ IA64 / g++ v3 demangler  -*- C++ -*-
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 // Written by Carlo Wood <carlo@alinoe.com>
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -165,3 +165,27 @@ namespace __cxxabiv1
     return finish(result.data(), result.size(), buf, n, status);
   }
 } // namespace __cxxabiv1
+
+// Explicit instantiations.
+namespace __gnu_cxx
+{
+  template class demangler::qualifier_list<std::allocator<char> >;
+  template class demangler::session<std::allocator<char> >;
+} // namespace __gnu_cxx
+
+namespace std
+{
+  template
+    void vector<int>::_M_insert_aux(vector<int>::iterator, const int&);
+
+  typedef __gnu_cxx::demangler::substitution_st value_type1;
+  template
+    void vector<value_type1>::_M_insert_aux(vector<value_type1>::iterator, 
+					    const value_type1&);
+
+  typedef __gnu_cxx::demangler::qualifier<std::allocator<char> > value_type2;
+  template
+    void vector<value_type2>::_M_insert_aux(vector<value_type2>::iterator, 
+					    const value_type2&);
+}
+

@@ -1,3 +1,9 @@
+2004-01-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/demangle.cc: Add instantiations.
+	* src/Makefile.am: Remove special rules for demangle.lo, demangle.o.
+	* src/Makefile.in: Regenerate.
+	
 2004-01-30  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/allocator.cc: Protect _S_get_thread_id() and
