@@ -1,3 +1,14 @@
+2005-01-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR debug/19124
+	* dwarf2out.c (concat_loc_descriptor): We don't know we can use
+	fbreg, so we have to assume we can't.
+	(loc_descriptor_from_tree_1): Ditto.
+	(containing_function_has_frame_base): New function.
+	(add_location_or_const_value_attribute): Use it.
+	Also try to generate a frame_base from a single element location
+	list.
+	
 2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/15349
