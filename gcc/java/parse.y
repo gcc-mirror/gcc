@@ -8380,18 +8380,19 @@ verify_constructor_super (mdecl)
       for (sdecl = TYPE_METHODS (class); sdecl; sdecl = TREE_CHAIN (sdecl))
 	if (DECL_CONSTRUCTOR_P (sdecl))
 	  {
+	    tree m_arg_type;
 	    tree arg_type = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (sdecl)));
 	    if (super_inner)
 	      arg_type = TREE_CHAIN (arg_type);
-	    for (; (arg_type != end_params_node 
-		    && mdecl_arg_type != end_params_node);
+	    for (m_arg_type = mdecl_arg_type; 
+		 (arg_type != end_params_node 
+		  && m_arg_type != end_params_node);
 		 arg_type = TREE_CHAIN (arg_type), 
-		 mdecl_arg_type = TREE_CHAIN (mdecl_arg_type))
-	      if (TREE_VALUE (arg_type) != TREE_VALUE (mdecl_arg_type))
+		   m_arg_type = TREE_CHAIN (m_arg_type))
+	      if (TREE_VALUE (arg_type) != TREE_VALUE (m_arg_type))
 		break;
 
-	    if (arg_type == end_params_node && 
-		mdecl_arg_type == end_params_node)
+	    if (arg_type == end_params_node && m_arg_type == end_params_node)
 	      return 0;
 	  }
     }
