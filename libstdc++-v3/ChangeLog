@@ -1,3 +1,11 @@
+2004-04-29  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14975
+	* include/bits/fstream.tcc (basic_filebuf::imbue): Zero _M_codecvt
+	in case of error.
+	* testsuite/27_io/basic_filebuf/imbue/char/14975-1.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc: New.
+
 2004-04-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/istream.tcc: Fix comment.

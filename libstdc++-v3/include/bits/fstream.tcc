@@ -786,6 +786,8 @@ namespace std
 
       if (__testvalid)
 	_M_codecvt = _M_codecvt_tmp;
+      else
+	_M_codecvt = 0;
     }
 
   // Inhibit implicit instantiations for required instantiations,
