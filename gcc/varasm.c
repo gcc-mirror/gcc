@@ -805,7 +805,9 @@ assemble_string (p, size)
       if (output_bytecode)
 	BC_OUTPUT_ASCII (asm_out_file, p, thissize);
       else
-	ASM_OUTPUT_ASCII (asm_out_file, p, thissize);
+	{
+	  ASM_OUTPUT_ASCII (asm_out_file, p, thissize);
+	}
 
       pos += thissize;
       p += thissize;
