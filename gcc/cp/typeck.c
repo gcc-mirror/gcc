@@ -2821,66 +2821,65 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 					       NULL_TREE, 0));
       e3 = PFN_FROM_PTRMEMFUNC (function);
 
-      if (TYPE_SIZE (basetype) != NULL_TREE
-	  && ! TYPE_VIRTUAL_P (basetype))
-	/* If basetype doesn't have virtual functions, don't emit code to
-	   handle that case.  */
-	e1 = e3;
-      else
+      /* This used to avoid checking for virtual functions if basetype
+	 has no virtual functions, according to an earlier ANSI draft.
+	 With the final ISO C++ rules, such an optimization is
+	 incorrect: A pointer to a derived member can be static_cast
+	 to pointer-to-base-member, as long as the dynamic object
+	 later has the right member. */
+
+      /* Promoting idx before saving it improves performance on RISC
+	 targets.  Without promoting, the first compare used
+	 load-with-sign-extend, while the second used normal load then
+	 shift to sign-extend.  An optimizer flaw, perhaps, but it's
+	 easier to make this change.  */
+      idx = save_expr (default_conversion
+		       (build_component_ref (function,
+					     index_identifier,
+					     NULL_TREE, 0)));
+      e1 = build_binary_op (GE_EXPR, idx, integer_zero_node);
+
+      /* Convert down to the right base, before using the instance.  */
+      instance = convert_pointer_to_real (basetype, instance_ptr);
+      if (instance == error_mark_node && instance_ptr != error_mark_node)
+	return instance;
+
+      vtbl = convert_pointer_to (ptr_type_node, instance);
+      delta2 = DELTA2_FROM_PTRMEMFUNC (function);
+      vtbl = build
+	(PLUS_EXPR,
+	 build_pointer_type (build_pointer_type (vtable_entry_type)),
+	 vtbl, cp_convert (ptrdiff_type_node, delta2));
+      vtbl = build_indirect_ref (vtbl, NULL_PTR);
+      aref = build_array_ref (vtbl, build_binary_op (MINUS_EXPR,
+						     idx,
+						     integer_one_node));
+      if (! flag_vtable_thunks)
 	{
-	  /* Promoting idx before saving it improves performance on RISC
-	     targets.  Without promoting, the first compare used
-	     load-with-sign-extend, while the second used normal load then
-	     shift to sign-extend.  An optimizer flaw, perhaps, but it's
-	     easier to make this change.  */
-	  idx = save_expr (default_conversion
-			   (build_component_ref (function,
-						 index_identifier,
-						 NULL_TREE, 0)));
-	  e1 = build_binary_op (GE_EXPR, idx, integer_zero_node);
-
-	  /* Convert down to the right base, before using the instance.  */
-	  instance = convert_pointer_to_real (basetype, instance_ptr);
-	  if (instance == error_mark_node && instance_ptr != error_mark_node)
-	    return instance;
-
-	  vtbl = convert_pointer_to (ptr_type_node, instance);
-	  delta2 = DELTA2_FROM_PTRMEMFUNC (function);
-	  vtbl = build
+	  aref = save_expr (aref);
+	  
+	  delta = build_binary_op
 	    (PLUS_EXPR,
-	     build_pointer_type (build_pointer_type (vtable_entry_type)),
-	     vtbl, cp_convert (ptrdiff_type_node, delta2));
-	  vtbl = build_indirect_ref (vtbl, NULL_PTR);
-	  aref = build_array_ref (vtbl, build_binary_op (MINUS_EXPR,
-							 idx,
-							 integer_one_node));
-	  if (! flag_vtable_thunks)
-	    {
-	      aref = save_expr (aref);
-
-	      delta = build_binary_op
-		(PLUS_EXPR,
-		 build_conditional_expr (e1,
-					 build_component_ref (aref,
-							      delta_identifier,
-							      NULL_TREE, 0),
-					 integer_zero_node),
-		 delta);
-	    }
-
-	  if (flag_vtable_thunks)
-	    e2 = aref;
-	  else
-	    e2 = build_component_ref (aref, pfn_identifier, NULL_TREE, 0);
-	  TREE_TYPE (e2) = TREE_TYPE (e3);
-	  e1 = build_conditional_expr (e1, e2, e3);
-
-	  /* Make sure this doesn't get evaluated first inside one of the
-	     branches of the COND_EXPR.  */
-	  if (TREE_CODE (instance_ptr) == SAVE_EXPR)
-	    e1 = build (COMPOUND_EXPR, TREE_TYPE (e1),
-			instance_ptr, e1);
+	     build_conditional_expr (e1,
+				     build_component_ref (aref,
+							  delta_identifier,
+							  NULL_TREE, 0),
+				     integer_zero_node),
+	     delta);
 	}
+
+      if (flag_vtable_thunks)
+	e2 = aref;
+      else
+	e2 = build_component_ref (aref, pfn_identifier, NULL_TREE, 0);
+      TREE_TYPE (e2) = TREE_TYPE (e3);
+      e1 = build_conditional_expr (e1, e2, e3);
+      
+      /* Make sure this doesn't get evaluated first inside one of the
+	 branches of the COND_EXPR.  */
+      if (TREE_CODE (instance_ptr) == SAVE_EXPR)
+	e1 = build (COMPOUND_EXPR, TREE_TYPE (e1),
+		    instance_ptr, e1);
 
       *instance_ptrptr = build (PLUS_EXPR, TREE_TYPE (instance_ptr),
 				instance_ptr, delta);
