@@ -1,3 +1,7 @@
+Tue Sep  9 15:36:28 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* varasm.c (notice_global_symbol):  Properly deal with weak symbols.
+
 2003-09-08  Kelley Cook <kelleycook@wideopenwest.com>
 
 	* Makefile.in: Revert yesterday's change.
