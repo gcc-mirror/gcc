@@ -1543,6 +1543,22 @@ symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 
+/* Return true if OP is a memory reference that uses the stack pointer
+   as a base register.  */
+
+int
+stack_operand (rtx op, enum machine_mode mode)
+{
+  struct mips_address_info addr;
+
+  return ((mode == VOIDmode || mode == GET_MODE (op))
+	  && GET_CODE (op) == MEM
+	  && mips_classify_address (&addr, XEXP (op, 0),
+				    GET_MODE (op), false, true) == ADDRESS_REG
+	  && addr.reg == stack_pointer_rtx);
+}
+
+
 /* This function is used to implement GO_IF_LEGITIMATE_ADDRESS.  It
    returns a nonzero value if X is a legitimate address for a memory
    operand of the indicated MODE.  STRICT is nonzero if this function
