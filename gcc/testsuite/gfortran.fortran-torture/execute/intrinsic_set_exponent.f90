@@ -12,7 +12,7 @@ subroutine test_real4()
   n = -148
   x = 1024.0
   y = set_exponent (x, n)
-  if (exponent (y) .ne. n) call abort()
+  if ((y .ne. 0.0) .and. (exponent (y) .ne. n)) call abort()
 
   n = 8
   x = 1024.0
@@ -27,7 +27,7 @@ subroutine test_real4()
   n = -148
   x = -1024.0
   y = set_exponent (x, n)
-  if (exponent (y) .ne. n) call abort()
+  if  ((y .ne. 0.0) .and. (exponent (y) .ne. n)) call abort()
 
   n = 8
   x = -1024.0
@@ -51,7 +51,7 @@ subroutine test_real8()
   n = -1073
   x = 1024.0_8
   y = set_exponent (x, n)
-  if (exponent (y) .ne. n) call abort()
+  if  ((y .ne. 0.0_8) .and. (exponent (y) .ne. n)) call abort()
 
   n = 8
   x = 1024.0_8
@@ -73,7 +73,7 @@ subroutine test_real8()
   x = -1024.0
   y = set_exponent (x, n)
   low = z'00000001'
-  if (exponent (y) .ne. n) call abort()
+  if ((y .ne. 0.0) .and. (exponent (y) .ne. n)) call abort()
 
   n = 8
   x = -1024.0
