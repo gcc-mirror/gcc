@@ -4742,6 +4742,8 @@ retrofit_lang_decl (t)
   struct obstack *obstack = current_obstack;
   struct lang_decl *ld;
 
+  my_friendly_assert (CAN_HAVE_FULL_LANG_DECL_P (t), 19990816);
+
   if (! TREE_PERMANENT (t))
     obstack = saveable_obstack;
   else
@@ -4795,6 +4797,8 @@ build_lang_field_decl (code, name, type)
   else
     my_friendly_assert (obstack == &permanent_obstack, 235);
 
+  my_friendly_assert (!CAN_HAVE_FULL_LANG_DECL_P (t), 19990816);
+
   DECL_LANG_SPECIFIC (t) 
     = ((struct lang_decl *) 
        obstack_alloc (obstack, sizeof (struct lang_decl_flags)));
@@ -4812,7 +4816,7 @@ copy_lang_decl (node)
   if (! DECL_LANG_SPECIFIC (node))
     return;
 
-  if (TREE_CODE (node) == FIELD_DECL)
+  if (!CAN_HAVE_FULL_LANG_DECL_P (node))
     size = sizeof (struct lang_decl_flags);
   else
     size = sizeof (struct lang_decl);

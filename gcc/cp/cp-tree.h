@@ -1153,12 +1153,14 @@ struct lang_type
 
 
 /* If a DECL has DECL_LANG_SPECIFIC, it is either a lang_decl_flags or
-   a lang_decl (which has lang_decl_flags as its initial prefix).  A
-   FUNCTION_DECL, NAMESPACE_DECL, TYPE_DECL, or USING_DECL may have a
-   full lang_decl.  A FIELD_DECL, or a static data member VAR_DECL,
-   will have only lang_decl_flags.  Thus, one should only access the
-   members of lang_decl that are not in lang_decl_flags for DECLs that
-   are not FIELD_DECLs or VAR_DECLs.  */
+   a lang_decl (which has lang_decl_flags as its initial prefix).
+   This macro is nonzero for tree nodes whose DECL_LANG_SPECIFIC is
+   the full lang_decl, and not just lang_decl_flags.  */
+#define CAN_HAVE_FULL_LANG_DECL_P(NODE)		\
+  (!(TREE_CODE ((NODE)) == VAR_DECL		\
+     || TREE_CODE ((NODE)) == CONST_DECL	\
+     || TREE_CODE ((NODE)) == FIELD_DECL 	\
+     || TREE_CODE ((NODE)) == USING_DECL))
 
 struct lang_decl_flags
 {
