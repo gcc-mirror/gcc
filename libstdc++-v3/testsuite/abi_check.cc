@@ -134,7 +134,7 @@ const char*
 demangle(const std::string& mangled)
 {
   const char* name;
-  if (mangled[0] != '_' && mangled[1] != 'Z')
+  if (mangled[0] != '_' || mangled[1] != 'Z')
     {
       // This is not a mangled symbol, thus has "C" linkage.
       name = mangled.c_str();
@@ -365,6 +365,8 @@ main(int argc, char** argv)
     {
       vector<string> compatible_versions;
       compatible_versions.push_back("GLIBCPP_3.2.1");
+      compatible_versions.push_back("GLIBCPP_3.2.2");
+      compatible_versions.push_back("CXXABI_1.2.1");
 
       symbol_info test = test_symbols[added_names[i]];
       vector<string>::iterator end = compatible_versions.end();

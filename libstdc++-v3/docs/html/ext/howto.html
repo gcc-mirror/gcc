@@ -1,4 +1,9 @@
-<html>
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html
+          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
    <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
@@ -276,19 +281,16 @@
          same as <code>allocator&lt;T&gt;</code>.
      </li>
    </ul>
-   <p>An internal typedef, <code> __mem_interface </code>, is defined to be
-      <code>__new_alloc</code> by default.
-   </p>
    <p>Normally,
       <code> __default_alloc_template&lt;bool thr, int inst&gt; </code>
       is also available.  This is the high-speed pool, called the default
       node allocator.  The reusable memory is shared among identical
       instantiations of
-      this type.  It calls through <code>__mem_interface</code> to obtain
+      this type.  It calls through <code>__new_alloc</code> to obtain
       new memory when its lists run out.  If a client container requests a
       block larger than a certain threshold size, then the pool is bypassed,
       and the allocate/deallocate request is passed to
-      <code>__mem_interface</code> directly.
+      <code>__new_alloc</code> directly.
    </p>
    <p>Its <code>inst</code> parameter is described below.  The
       <code>thr</code> boolean determines whether the pool should be
@@ -309,17 +311,25 @@
    </p>
    <h3>A cannon to swat a fly:<code>  __USE_MALLOC</code></h3>
    <p>If you've already read <a href="../23_containers/howto.html#3">this
-      advice</a> and decided to define this macro, then the situation changes
-      thusly:
+      advice</a> but still think you remember how to use this macro from
+      SGI STL days.  We have removed it in gcc 3.3.  See next section
+      for the new way to get the same effect.
    </p>
-   <ol>
-     <li><code>__mem_interface</code>, and</li>
-     <li><code>__alloc</code>, and</li>
-     <li><code>__single_client_alloc</code> are all typedef'd to
-         <code>__malloc_alloc_template</code>.</li>
-     <li><code>__default_alloc_template</code> is no longer available.
-         At all.  Anywhere.</li>
-   </ol>
+   <h3>Globally disabling memory caching:<code>  GLIBCPP_FORCE_NEW</code></h3>
+   <p>Starting with gcc 3.3, if you want to globally disable memory
+      caching within the library for the default allocator (i.e.
+      the one you get for all library objects when you do not specify
+      which one to use), merely set GLIBCPP_FORCE_NEW (at this time,
+      with any value) into your environment before running the
+      program.  You will obtain a similar effect without having to
+      recompile your entire program and the entire library (the new
+      operator in gcc is a light wrapper around malloc).  If your
+      program crashes with GLIBCPP_FORCE_NEW in the environment,
+      it likely means that you linked against objects built against
+      the older library.  Code to support this extension is fully
+      compatible with 3.2 code if GLIBCPP_FORCE_NEW is not in the
+      environment.
+   </p>
    <h3>Writing your own allocators</h3>
    <p>Depending on your application (a specific program, a generic library,
       etc), allocator classes tend to be one of two styles:  &quot;SGI&quot;

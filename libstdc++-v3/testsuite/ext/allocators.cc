@@ -1,6 +1,6 @@
 // 2001-11-25  Phil Edwards  <pme@gcc.gnu.org>
 //
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,7 +20,6 @@
 
 // 20.4.1.1 allocator members
 
-#undef __USE_MALLOC
 #include <memory>
 #include <cstdlib>
 #include <testsuite_hooks.h>
@@ -75,7 +74,8 @@ void test()
 
   std::__allocator<big, arbitrary_SGIstyle_allocator>   a;
   big *p = a.allocate(10);
-  if (uses_global_new_and_delete)  VERIFY (requested >= (10*15*sizeof(long)));
+  if (uses_global_new_and_delete)  
+    VERIFY (requested >= (10 * 15 * sizeof(long)));
   // Touch the far end of supposedly-allocated memory to check that we got
   // all of it.  Why "3"?  Because it's my favorite integer between e and pi.
   p[9].f[14] = 3;

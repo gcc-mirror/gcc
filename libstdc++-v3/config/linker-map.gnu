@@ -204,8 +204,6 @@ GLIBCPP_3.2.1 {
   _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_S8_;
   _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_ERKS6_S8_;
 
-  _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
-
   # stub functions from libmath
   sinf;
   sinl;
@@ -241,6 +239,12 @@ GLIBCPP_3.2.1 {
   __signbitl;
 
 } GLIBCPP_3.2;
+
+GLIBCPP_3.2.2 {
+
+  _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
+
+} GLIBCPP_3.2.1;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.2 {

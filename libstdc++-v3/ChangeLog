@@ -1,3 +1,47 @@
+2002-12-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu: Put _S_force_new into GLIBCPP_3.2.2.
+	* testsuite/abi_check.cc: Add GLIBCPP_3.2.2.
+
+2002-12-05  Benjamin Kosnik  <bkoz@redhat.com>
+            Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR libstdc++/8230
+	* include/bits/stl_alloc.h: Use builtin_expect for the most
+	obvious limit checks.
+	(__default_alloc_template::allocate): Check for null, throw
+	bad_alloc.
+	* testsuite/20_util/allocator_members.cc (test02): Add.
+	* testsuite/23_containers/vector_capacity.cc (test03): Add.
+
+2002-12-05  Loren J. Rittle  <ljrittle@acm.org>
+	    Brad Spencer  <spencer@infointeractive.com> 
+	    (provided alternate patch and improvements)
+
+	PR libstdc++/8708
+	* docs/html/23_containers/howto.html (GLIBCPP_FORCE_NEW): Document
+	new environment variable which replaces all uses of __USE_MALLOC
+	macro.
+	* docs/html/ext/howto.html (GLIBCPP_FORCE_NEW): Likewise.
+	(__mem_interface): Remove all references to old internal typedef.
+	* include/backward/alloc.h (__USE_MALLOC): Remove it and all
+	guarded code.
+	* include/bits/c++config (__USE_MALLOC): Update related error
+	message and comment.
+	* include/bits/stl_alloc.h (__USE_MALLOC): Remove it and all
+	guarded code.  Update all related comments.
+	(__mem_interface): Unconditionally replace it with __new_alloc.
+	However, leave the typedef around in case anyone used it.
+	(__default_alloc_template<>::_S_force_new): New class static.
+	(__default_alloc_template<>::allocate, deallocate): Add
+	run-time controlled feature similar to what __USE_MALLOC code
+	path had provided.
+	* src/stl-inst.cc (__USE_MALLOC): Remove it and all
+	guarded code.
+	* testsuite/21_strings/capacity.cc: Remove reference to __USE_MALLOC.
+	Add documentation on GLIBCPP_FORCE_NEW environment variable.
+	* testsuite/ext/allocators.cc: Likewise.
+
 2002-12-05  Paolo Carlini  <pcarlini@unitus.it>
             Nathan Myers  <ncm@cantrip.org>
 

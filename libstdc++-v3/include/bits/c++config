@@ -74,13 +74,8 @@
 // so, please report any possible issues to libstdc++@gcc.gnu.org .
 // Do not define __USE_MALLOC on the command line.  Enforce it here:
 #ifdef __USE_MALLOC
-#error __USE_MALLOC should only be defined within \
-libstdc++-v3/include/bits/c++config before full recompilation of the library.
+#error __USE_MALLOC should never be defined.  Read the release notes.
 #endif
-// Define __USE_MALLOC after this point in the file in order to aid debugging
-// or globally change allocation policy.  This breaks the ABI, thus
-// completely recompile the library.  A patch to better support
-// changing the global allocator policy would be probably be accepted.
 
 // The remainder of the prewritten config is mostly automatic; all the
 // user hooks are listed above.
