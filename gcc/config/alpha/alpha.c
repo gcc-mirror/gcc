@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -1304,6 +1304,7 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
      int sign;
 {
   rtx meml, memh, addr, extl, exth;
+  enum machine_mode mode;
 
   meml = gen_reg_rtx (DImode);
   memh = gen_reg_rtx (DImode);
@@ -1332,31 +1333,39 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
       emit_insn (gen_extxl (extl, meml, GEN_INT (64), addr));
       emit_insn (gen_extqh (exth, memh, addr));
 
-      expand_binop (DImode, ior_optab, extl, exth, addr, 1, OPTAB_WIDEN);
-      expand_binop (DImode, ashr_optab, addr, GEN_INT (48), addr,
-		    1, OPTAB_WIDEN);
-      emit_move_insn (tgt, addr);
-      return;
+      addr = expand_binop (DImode, ior_optab, extl, exth, addr, 1, OPTAB_WIDEN);
+      addr = expand_binop (DImode, ashr_optab, addr, GEN_INT (48), 
+			   addr, 1, OPTAB_WIDEN);
     }
-
-  emit_move_insn (addr, plus_constant (XEXP (mem, 0), ofs));
-  emit_insn (gen_extxl (extl, meml, GEN_INT (size*8), addr));
-  switch (size)
+  else
     {
-    case 2:
-      emit_insn (gen_extwh (exth, memh, addr));
-      break;
+      emit_move_insn (addr, plus_constant (XEXP (mem, 0), ofs));
+      emit_insn (gen_extxl (extl, meml, GEN_INT (size*8), addr));
+      switch (size)
+	{
+	case 2:
+	  emit_insn (gen_extwh (exth, memh, addr));
+	  mode = HImode;
+	  break;
 
-    case 4:
-      emit_insn (gen_extlh (exth, memh, addr));
-      break;
+	case 4:
+	  emit_insn (gen_extlh (exth, memh, addr));
+	  mode = SImode;
+	  break;
 
-    case 8:
-      emit_insn (gen_extqh (exth, memh, addr));
-      break;
+	case 8:
+	  emit_insn (gen_extqh (exth, memh, addr));
+	  mode = DImode;
+	  break;
+	}
+
+      addr = expand_binop (mode, ior_optab, gen_lowpart (mode, extl),
+			   gen_lowpart (mode, exth), gen_lowpart (mode, tgt),
+			   sign, OPTAB_WIDEN);
     }
 
-  expand_binop (DImode, ior_optab, extl, exth, tgt, sign, OPTAB_WIDEN);
+  if (addr != tgt)
+    emit_move_insn (tgt, gen_lowpart(GET_MODE (tgt), addr));
 }
 
 /* Similarly, use ins and msk instructions to perform unaligned stores.  */
@@ -1389,7 +1398,8 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
 
   if (src != const0_rtx)
     {
-      emit_insn (gen_insxh (insh, src, GEN_INT (size*8), addr));
+      emit_insn (gen_insxh (insh, gen_lowpart (DImode, src),
+			    GEN_INT (size*8), addr));
 
       switch (size)
 	{
@@ -1429,8 +1439,8 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
 
   if (src != const0_rtx)
     {
-      expand_binop (DImode, ior_optab, insh, dsth, dsth, 0, OPTAB_WIDEN);
-      expand_binop (DImode, ior_optab, insl, dstl, dstl, 0, OPTAB_WIDEN);
+      dsth = expand_binop (DImode, ior_optab, insh, dsth, dsth, 0, OPTAB_WIDEN);
+      dstl = expand_binop (DImode, ior_optab, insl, dstl, dstl, 0, OPTAB_WIDEN);
     }
   
   /* Must store high before low for degenerate case of aligned.  */
@@ -1438,40 +1448,54 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
   emit_move_insn (meml, dstl);
 }
 
+/* The block move code tries to maximize speed by separating loads and
+   stores at the expense of register pressure: we load all of the data
+   before we store it back out.  There are two secondary effects worth
+   mentioning, that this speeds copying to/from aligned and unaligned
+   buffers, and that it makes the code significantly easier to write.  */
+
+#define MAX_MOVE_WORDS	8
+
 /* Load an integral number of consecutive unaligned quadwords.  */
 
-#define MAX_MOVE_WORDS	4
-
 static void
-alpha_expand_unaligned_load_words (data_regs, src_addr, words)
-     rtx data_regs[MAX_MOVE_WORDS+1];
-     rtx src_addr;
-     HOST_WIDE_INT words;
+alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
+     rtx *out_regs;
+     rtx smem;
+     HOST_WIDE_INT words, ofs;
 {
   rtx const im8 = GEN_INT (-8);
   rtx const i64 = GEN_INT (64);
-  rtx ext_tmps[MAX_MOVE_WORDS];
-  rtx src_reg, and_reg;
+  rtx ext_tmps[MAX_MOVE_WORDS], data_regs[MAX_MOVE_WORDS+1];
+  rtx sreg, areg;
   HOST_WIDE_INT i;
 
   /* Generate all the tmp registers we need.  */
   for (i = 0; i < words; ++i)
-    ext_tmps[i] = gen_reg_rtx(DImode);
+    {
+      data_regs[i] = out_regs[i];
+      ext_tmps[i] = gen_reg_rtx (DImode);
+    }
+  data_regs[words] = gen_reg_rtx (DImode);
+
+  if (ofs != 0)
+    smem = change_address (smem, GET_MODE (smem),
+			   plus_constant (XEXP (smem, 0), ofs));
   
   /* Load up all of the source data.  */
   for (i = 0; i < words; ++i)
     {
       emit_move_insn (data_regs[i],
-		      change_address (src_addr, DImode,
+		      change_address (smem, DImode,
 				      gen_rtx_AND (DImode,
-						   plus_constant (XEXP(src_addr,0),
+						   plus_constant (XEXP(smem,0),
 								  8*i),
 						   im8)));
     }
   emit_move_insn (data_regs[words],
-		  change_address (src_addr, DImode,
+		  change_address (smem, DImode,
 				  gen_rtx_AND (DImode,
-					       plus_constant (XEXP(src_addr,0),
+					       plus_constant (XEXP(smem,0),
 							      8*words - 1),
 					       im8)));
 
@@ -1479,25 +1503,26 @@ alpha_expand_unaligned_load_words (data_regs, src_addr, words)
      extxh with offset zero a noop instead of zeroing the register, so 
      we must take care of that edge condition ourselves with cmov.  */
 
-  src_reg = copy_addr_to_reg (XEXP (src_addr, 0));
-  and_reg = expand_binop (DImode, and_optab, src_reg, GEN_INT (7), NULL, 
-			  1, OPTAB_WIDEN);
+  sreg = copy_addr_to_reg (XEXP (smem, 0));
+  areg = expand_binop (DImode, and_optab, sreg, GEN_INT (7), NULL, 
+		       1, OPTAB_WIDEN);
   for (i = 0; i < words; ++i)
     {
-      emit_insn (gen_extxl (data_regs[i], data_regs[i], i64, src_reg));
+      emit_insn (gen_extxl (data_regs[i], data_regs[i], i64, sreg));
 
-      emit_insn (gen_extqh (ext_tmps[i], data_regs[i+1], src_reg));
+      emit_insn (gen_extqh (ext_tmps[i], data_regs[i+1], sreg));
       emit_insn (gen_rtx_SET (VOIDmode, ext_tmps[i],
 			      gen_rtx_IF_THEN_ELSE (DImode,
-						    gen_rtx_EQ (DImode, and_reg, const0_rtx),
+						    gen_rtx_EQ (DImode, areg,
+								const0_rtx),
 						    const0_rtx, ext_tmps[i])));
     }
 
   /* Merge the half-words into whole words.  */
   for (i = 0; i < words; ++i)
     {
-      expand_binop (DImode, ior_optab, data_regs[i], ext_tmps[i],
-		    data_regs[i], 1, OPTAB_WIDEN);
+      out_regs[i] = expand_binop (DImode, ior_optab, data_regs[i],
+				  ext_tmps[i], data_regs[i], 1, OPTAB_WIDEN);
     }
 }
 
@@ -1505,10 +1530,10 @@ alpha_expand_unaligned_load_words (data_regs, src_addr, words)
    may be NULL to store zeros.  */
 
 static void
-alpha_expand_unaligned_store_words (data_regs, dst_addr, words)
+alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
      rtx *data_regs;
-     rtx dst_addr;
-     HOST_WIDE_INT words;
+     rtx dmem;
+     HOST_WIDE_INT words, ofs;
 {
   rtx const im8 = GEN_INT (-8);
   rtx const i64 = GEN_INT (64);
@@ -1518,7 +1543,7 @@ alpha_expand_unaligned_store_words (data_regs, dst_addr, words)
   rtx const im1 = immed_double_const (0xffffffffffffffff, 0, DImode);
 #endif
   rtx ins_tmps[MAX_MOVE_WORDS];
-  rtx st_tmp_1, st_tmp_2, dst_reg;
+  rtx st_tmp_1, st_tmp_2, dreg;
   rtx st_addr_1, st_addr_2;
   HOST_WIDE_INT i;
 
@@ -1529,14 +1554,19 @@ alpha_expand_unaligned_store_words (data_regs, dst_addr, words)
   st_tmp_1 = gen_reg_rtx(DImode);
   st_tmp_2 = gen_reg_rtx(DImode);
   
-  st_addr_2 = change_address (dst_addr, DImode,
+  if (ofs != 0)
+    dmem = change_address (dmem, GET_MODE (dmem),
+			   plus_constant (XEXP (dmem, 0), ofs));
+  
+
+  st_addr_2 = change_address (dmem, DImode,
 			      gen_rtx_AND (DImode,
-					   plus_constant (XEXP(dst_addr,0),
+					   plus_constant (XEXP(dmem,0),
 							  words*8 - 1),
 				       im8));
-  st_addr_1 = change_address (dst_addr, DImode,
+  st_addr_1 = change_address (dmem, DImode,
 			      gen_rtx_AND (DImode, 
-					   XEXP (dst_addr, 0),
+					   XEXP (dmem, 0),
 					   im8));
 
   /* Load up the destination end bits.  */
@@ -1544,42 +1574,41 @@ alpha_expand_unaligned_store_words (data_regs, dst_addr, words)
   emit_move_insn (st_tmp_1, st_addr_1);
 
   /* Shift the input data into place.  */
-  dst_reg = copy_addr_to_reg (XEXP (dst_addr, 0));
-
+  dreg = copy_addr_to_reg (XEXP (dmem, 0));
   if (data_regs != NULL)
     {
       for (i = words-1; i >= 0; --i)
 	{
-	  emit_insn (gen_insxh (ins_tmps[i], data_regs[i], i64, dst_reg));
-	  emit_insn (gen_insql (data_regs[i], data_regs[i], dst_reg));
+	  emit_insn (gen_insxh (ins_tmps[i], data_regs[i], i64, dreg));
+	  emit_insn (gen_insql (data_regs[i], data_regs[i], dreg));
 	}
-
       for (i = words-1; i > 0; --i)
 	{
-	  expand_binop (DImode, ior_optab, data_regs[i], ins_tmps[i-1],
-			ins_tmps[i-1], 1, OPTAB_WIDEN);
+	  ins_tmps[i-1] = expand_binop (DImode, ior_optab, data_regs[i],
+					ins_tmps[i-1], ins_tmps[i-1], 1,
+					OPTAB_WIDEN);
 	}
     }
 
   /* Split and merge the ends with the destination data.  */
-  emit_insn (gen_mskxh (st_tmp_2, st_tmp_2, i64, dst_reg));
-  emit_insn (gen_mskxl (st_tmp_1, st_tmp_1, im1, dst_reg));
+  emit_insn (gen_mskxh (st_tmp_2, st_tmp_2, i64, dreg));
+  emit_insn (gen_mskxl (st_tmp_1, st_tmp_1, im1, dreg));
 
   if (data_regs != NULL)
     {
-      expand_binop (DImode, ior_optab, st_tmp_2, ins_tmps[words-1],
-		    st_tmp_2, 1, OPTAB_WIDEN);
-      expand_binop (DImode, ior_optab, st_tmp_1, data_regs[0],
-		    st_tmp_1, 1, OPTAB_WIDEN);
+      st_tmp_2 = expand_binop (DImode, ior_optab, st_tmp_2, ins_tmps[words-1],
+			       st_tmp_2, 1, OPTAB_WIDEN);
+      st_tmp_1 = expand_binop (DImode, ior_optab, st_tmp_1, data_regs[0],
+			       st_tmp_1, 1, OPTAB_WIDEN);
     }
 
   /* Store it all.  */
   emit_move_insn (st_addr_2, st_tmp_2);
   for (i = words-1; i > 0; --i)
     {
-      emit_move_insn (change_address (dst_addr, DImode,
+      emit_move_insn (change_address (dmem, DImode,
 				      gen_rtx_AND (DImode,
-						   plus_constant(XEXP (dst_addr,0),
+						   plus_constant(XEXP (dmem,0),
 								 i*8),
 					       im8)),
 		      data_regs ? ins_tmps[i-1] : const0_rtx);
@@ -1602,79 +1631,130 @@ alpha_expand_block_move (operands)
   rtx bytes_rtx	= operands[2];
   rtx align_rtx = operands[3];
   HOST_WIDE_INT bytes = INTVAL (bytes_rtx);
-  HOST_WIDE_INT align = INTVAL (align_rtx);
+  HOST_WIDE_INT src_align = INTVAL (align_rtx);
+  HOST_WIDE_INT dst_align = src_align;
   rtx orig_src	= operands[1];
   rtx orig_dst	= operands[0];
-  rtx tmp = NULL_RTX;
-  rtx data_regs[2*MAX_MOVE_WORDS];
-  HOST_WIDE_INT i, words, ofs = 0;
+  rtx data_regs[2*MAX_MOVE_WORDS+16];
+  rtx tmp;
+  int i, words, ofs, nregs = 0;
   
   if (bytes <= 0)
     return 1;
   if (bytes > MAX_MOVE_WORDS*8)
     return 0;
 
-  /* Ideally we would do nice things when noticing the addressof.  */
+  /* Look for additional alignment information from recorded register info.  */
+
+  tmp = XEXP (orig_src, 0);
+  if (GET_CODE (tmp) == REG)
+    {
+      if (REGNO_POINTER_ALIGN (REGNO (tmp)) > src_align)
+	src_align = REGNO_POINTER_ALIGN (REGNO (tmp));
+    }
+  else if (GET_CODE (tmp) == PLUS
+	   && GET_CODE (XEXP (tmp, 0)) == REG
+	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
+    {
+      HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
+      int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
+
+      if (a > src_align)
+	{
+          if (a >= 8 && c % 8 == 0)
+	    src_align = 8;
+          else if (a >= 4 && c % 4 == 0)
+	    src_align = 4;
+          else if (a >= 2 && c % 2 == 0)
+	    src_align = 2;
+	}
+    }
+	
+  tmp = XEXP (orig_dst, 0);
+  if (GET_CODE (tmp) == REG)
+    {
+      if (REGNO_POINTER_ALIGN (REGNO (tmp)) > dst_align)
+	dst_align = REGNO_POINTER_ALIGN (REGNO (tmp));
+    }
+  else if (GET_CODE (tmp) == PLUS
+	   && GET_CODE (XEXP (tmp, 0)) == REG
+	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
+    {
+      HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
+      int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
+
+      if (a > dst_align)
+	{
+          if (a >= 8 && c % 8 == 0)
+	    dst_align = 8;
+          else if (a >= 4 && c % 4 == 0)
+	    dst_align = 4;
+          else if (a >= 2 && c % 2 == 0)
+	    dst_align = 2;
+	}
+    }
+
+  /*
+   * Load the entire block into registers.
+   */
+
   if (GET_CODE (XEXP (orig_src, 0)) == ADDRESSOF)
-    orig_src = change_address (orig_src, GET_MODE (orig_src),
-			       copy_addr_to_reg (XEXP (orig_src, 0)));
-  if (GET_CODE (XEXP (orig_dst, 0)) == ADDRESSOF)
-    orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
-			       copy_addr_to_reg (XEXP (orig_dst, 0)));
+    {
+      enum machine_mode mode;
+      tmp = XEXP (XEXP (orig_src, 0), 0);
 
-  /* Handle a block of contiguous words first.  */
+      mode = mode_for_size (bytes, MODE_INT, 1);
+      if (mode != BLKmode
+	  && GET_MODE_SIZE (GET_MODE (tmp)) <= bytes)
+	{
+	  /* Whee!  Optimize the load to use the existing register.  */
+	  data_regs[nregs++] = gen_lowpart (mode, tmp);
+	  goto src_done;
+	}
 
-  if (align >= 8 && bytes >= 8)
+      /* ??? We could potentially be copying 3 bytes or whatnot from
+	 a wider reg.  Probably not worth worrying about.  */
+      /* No appropriate mode; fall back on memory.  */
+      orig_src = change_address (orig_src, GET_MODE (orig_src),
+				 copy_addr_to_reg (XEXP (orig_src, 0)));
+    }
+
+  ofs = 0;
+  if (src_align >= 8 && bytes >= 8)
     {
       words = bytes / 8;
 
-      /* Make some data registers. */
       for (i = 0; i < words; ++i)
-	data_regs[i] = gen_reg_rtx(DImode);
+	data_regs[nregs+i] = gen_reg_rtx(DImode);
 
-      /* Move in aligned hunks.  */
       for (i = 0; i < words; ++i)
 	{
-	  emit_move_insn (data_regs[i],
+	  emit_move_insn (data_regs[nregs+i],
 			  change_address(orig_src, DImode,
 					 plus_constant (XEXP (orig_src, 0),
 							i*8)));
 	}
-      for (i = 0; i < words; ++i)
-	{
-	  emit_move_insn (change_address(orig_dst, DImode,
-					 plus_constant (XEXP (orig_dst, 0),
-							i*8)),
-			  data_regs[i]);
-	}
 
+      nregs += words;
       bytes -= words * 8;
       ofs = words * 8;
     }
-  if (align >= 4 && bytes >= 4)
+  if (src_align >= 4 && bytes >= 4)
     {
       words = bytes / 4;
 
-      /* Make some data registers. */
       for (i = 0; i < words; ++i)
-	data_regs[i] = gen_reg_rtx(SImode);
+	data_regs[nregs+i] = gen_reg_rtx(SImode);
 
-      /* Move in aligned hunks.  */
       for (i = 0; i < words; ++i)
 	{
-	  emit_move_insn (data_regs[i],
+	  emit_move_insn (data_regs[nregs+i],
 			  change_address(orig_src, SImode,
 					 plus_constant (XEXP (orig_src, 0),
 							i*4)));
 	}
-      for (i = 0; i < words; ++i)
-	{
-	  emit_move_insn (change_address(orig_dst, SImode,
-					 plus_constant (XEXP (orig_dst, 0),
-							i*4)),
-			  data_regs[i]);
-	}
 
+      nregs += words;
       bytes -= words * 4;
       ofs = words * 4;
     }
@@ -1682,47 +1762,36 @@ alpha_expand_block_move (operands)
     {
       words = bytes / 8;
 
-      /* Make some data registers. */
       for (i = 0; i < words+1; ++i)
-	data_regs[i] = gen_reg_rtx(DImode);
+	data_regs[nregs+i] = gen_reg_rtx(DImode);
 
-      /* Move in unaligned hunks.  */
-      alpha_expand_unaligned_load_words (data_regs, orig_src, words);
-      alpha_expand_unaligned_store_words (data_regs, orig_dst, words);
+      alpha_expand_unaligned_load_words(data_regs+nregs, orig_src, words, ofs);
 
+      nregs += words;
       bytes -= words * 8;
       ofs = words * 8;
     }
-
-  /* Next clean up any trailing pieces.  We know from the contiguous
-     block move that there are no aligned SImode or DImode hunks left.  */
-
   if (!TARGET_BWX && bytes >= 8)
     {
-      tmp = gen_reg_rtx (DImode);
+      data_regs[nregs++] = tmp = gen_reg_rtx (DImode);
       alpha_expand_unaligned_load (tmp, orig_src, 8, ofs, 0);
-      alpha_expand_unaligned_store (orig_dst, tmp, 8, ofs);
-
       bytes -= 8;
       ofs += 8;
     }
   if (!TARGET_BWX && bytes >= 4)
     {
-      tmp = gen_reg_rtx (DImode);
+      data_regs[nregs++] = tmp = gen_reg_rtx (SImode);
       alpha_expand_unaligned_load (tmp, orig_src, 4, ofs, 0);
-      alpha_expand_unaligned_store (orig_dst, tmp, 4, ofs);
-
       bytes -= 4;
       ofs += 4;
     }
   if (bytes >= 2)
     {
-      if (align >= 2)
+      if (src_align >= 2)
 	{
 	  do {
-	    emit_move_insn (change_address (orig_dst, HImode,
-					    plus_constant (XEXP (orig_dst, 0),
-							   ofs)),
+	    data_regs[nregs++] = tmp = gen_reg_rtx (HImode);
+	    emit_move_insn (tmp,
 			    change_address (orig_src, HImode,
 					    plus_constant (XEXP (orig_src, 0),
 							   ofs)));
@@ -1732,24 +1801,154 @@ alpha_expand_block_move (operands)
 	}
       else if (!TARGET_BWX)
 	{
-	  tmp = gen_reg_rtx (DImode);
+	  data_regs[nregs++] = tmp = gen_reg_rtx (HImode);
 	  alpha_expand_unaligned_load (tmp, orig_src, 2, ofs, 0);
-	  alpha_expand_unaligned_store (orig_dst, tmp, 2, ofs);
 	  bytes -= 2;
 	  ofs += 2;
 	}
     }
   while (bytes > 0)
     {
-      emit_move_insn (change_address (orig_dst, QImode,
-				      plus_constant (XEXP (orig_dst, 0),
-						     ofs)),
+      data_regs[nregs++] = tmp = gen_reg_rtx (QImode);
+      emit_move_insn (tmp,
 		      change_address (orig_src, QImode,
 				      plus_constant (XEXP (orig_src, 0),
 						     ofs)));
       bytes -= 1;
       ofs += 1;
     }
+ src_done:
+
+  if (nregs > sizeof(data_regs)/sizeof(*data_regs))
+    abort();
+
+  /*
+   * Now save it back out again.
+   */
+
+  i = 0, ofs = 0;
+
+  if (GET_CODE (XEXP (orig_dst, 0)) == ADDRESSOF)
+    {
+      enum machine_mode mode;
+      tmp = XEXP (XEXP (orig_dst, 0), 0);
+
+      mode = mode_for_size (bytes, MODE_INT, 1);
+      if (GET_MODE (tmp) == mode && nregs == 1)
+	{
+	  emit_move_insn (tmp, data_regs[0]);
+	  i = 1;
+	  goto dst_done;
+	}
+
+      /* ??? If nregs > 1, consider reconstructing the word in regs.  */
+      /* ??? Optimize mode < dst_mode with strict_low_part.  */
+      /* No appropriate mode; fall back on memory.  */
+      orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
+				 copy_addr_to_reg (XEXP (orig_dst, 0)));
+    }
+
+  /* Write out the data in whatever chunks reading the source allowed.  */
+  if (dst_align >= 8)
+    {
+      while (i < nregs && GET_MODE (data_regs[i]) == DImode)
+	{
+	  emit_move_insn (change_address(orig_dst, DImode,
+					 plus_constant (XEXP (orig_dst, 0),
+							ofs)),
+			  data_regs[i]);
+	  ofs += 8;
+	  i++;
+	}
+    }
+  if (dst_align >= 4)
+    {
+      /* If the source has remaining DImode regs, write them out in
+	 two pieces.  */
+      while (i < nregs && GET_MODE (data_regs[i]) == DImode)
+	{
+	  tmp = expand_binop (DImode, lshr_optab, data_regs[i], GEN_INT (32),
+			      NULL_RTX, 1, OPTAB_WIDEN);
+
+	  emit_move_insn (change_address(orig_dst, SImode,
+					 plus_constant (XEXP (orig_dst, 0),
+							ofs)),
+			  gen_lowpart (SImode, data_regs[i]));
+	  emit_move_insn (change_address(orig_dst, SImode,
+					 plus_constant (XEXP (orig_dst, 0),
+							ofs+4)),
+			  gen_lowpart (SImode, tmp));
+	  ofs += 8;
+	  i++;
+	}
+
+      while (i < nregs && GET_MODE (data_regs[i]) == SImode)
+	{
+	  emit_move_insn (change_address(orig_dst, SImode,
+					 plus_constant (XEXP (orig_dst, 0),
+							ofs)),
+			  data_regs[i]);
+	  ofs += 4;
+	  i++;
+	}
+    }
+  if (i < nregs && GET_MODE (data_regs[i]) == DImode)
+    {
+      /* Write out a remaining block of words using unaligned methods.  */
+
+      for (words = 1; i+words < nregs ; ++words)
+	if (GET_MODE (data_regs[i+words]) != DImode)
+	  break;
+
+      if (words == 1)
+	alpha_expand_unaligned_store (orig_dst, data_regs[i], 8, ofs);
+      else
+        alpha_expand_unaligned_store_words (data_regs+i, orig_dst, words, ofs);
+     
+      i += words;
+      ofs += words * 8;
+    }
+
+  /* Due to the above, this won't be aligned.  */
+  /* ??? If we have more than one of these, consider constructing full
+     words in registers and using alpha_expand_unaligned_store_words.  */
+  while (i < nregs && GET_MODE (data_regs[i]) == SImode)
+    {
+      alpha_expand_unaligned_store (orig_dst, data_regs[i], 4, ofs);
+      ofs += 4;
+      i++;
+    }
+
+  if (dst_align >= 2)
+    while (i < nregs && GET_MODE (data_regs[i]) == HImode)
+      {
+	emit_move_insn (change_address (orig_dst, HImode,
+					plus_constant (XEXP (orig_dst, 0),
+						       ofs)),
+			data_regs[i]);
+	i++;
+	ofs += 2;
+      }
+  else
+    while (i < nregs && GET_MODE (data_regs[i]) == HImode)
+      {
+	alpha_expand_unaligned_store (orig_dst, data_regs[i], 2, ofs);
+	i++;
+	ofs += 2;
+      }
+  while (i < nregs && GET_MODE (data_regs[i]) == QImode)
+    {
+      emit_move_insn (change_address (orig_dst, QImode,
+				      plus_constant (XEXP (orig_dst, 0),
+						     ofs)),
+		      data_regs[i]);
+      i++;
+      ofs += 1;
+    }
+ dst_done:
+
+  if (i != nregs)
+    abort();
 
   return 1;
 }
@@ -1763,12 +1962,39 @@ alpha_expand_block_clear (operands)
   HOST_WIDE_INT bytes = INTVAL (bytes_rtx);
   HOST_WIDE_INT align = INTVAL (align_rtx);
   rtx orig_dst	= operands[0];
+  rtx tmp;
   HOST_WIDE_INT i, words, ofs = 0;
   
   if (bytes <= 0)
     return 1;
   if (bytes > MAX_MOVE_WORDS*8)
     return 0;
+
+  /* Look for stricter alignment.  */
+
+  tmp = XEXP (orig_dst, 0);
+  if (GET_CODE (tmp) == REG)
+    {
+      if (REGNO_POINTER_ALIGN (REGNO (tmp)) > align)
+	align = REGNO_POINTER_ALIGN (REGNO (tmp));
+    }
+  else if (GET_CODE (tmp) == PLUS
+	   && GET_CODE (XEXP (tmp, 0)) == REG
+	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
+    {
+      HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
+      int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
+
+      if (a > align)
+	{
+          if (a >= 8 && c % 8 == 0)
+	    align = 8;
+          else if (a >= 4 && c % 4 == 0)
+	    align = 4;
+          else if (a >= 2 && c % 2 == 0)
+	    align = 2;
+	}
+    }
 
   /* Handle a block of contiguous words first.  */
 
