@@ -1289,9 +1289,6 @@ void gfc_add_include_path (const char *);
 void gfc_release_include_path (void);
 FILE *gfc_open_included_file (const char *);
 
-locus *gfc_current_locus (void);
-void gfc_set_locus (locus *);
-
 int gfc_at_end (void);
 int gfc_at_eof (void);
 int gfc_at_bol (void);
@@ -1309,7 +1306,7 @@ try gfc_new_file (const char *, gfc_source_form);
 
 extern gfc_source_form gfc_current_form;
 extern char *gfc_source_file;
-/* extern locus gfc_current_locus; */
+extern locus gfc_current_locus;
 
 /* misc.c */
 void *gfc_getmem (size_t) ATTRIBUTE_MALLOC;

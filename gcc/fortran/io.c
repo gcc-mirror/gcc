@@ -819,7 +819,7 @@ gfc_match_format (void)
   mode = MODE_FORMAT;
   format_length = 0;
 
-  start = *gfc_current_locus ();
+  start = gfc_current_locus;
 
   if (check_format () == FAILURE)
     return MATCH_ERROR;
@@ -833,7 +833,7 @@ gfc_match_format (void)
   /* The label doesn't get created until after the statement is done
      being matched, so we have to leave the string for later.  */
 
-  gfc_set_locus (&start);	/* Back to the beginning */
+  gfc_current_locus = start;	/* Back to the beginning */
 
   new_st.loc = start;
   new_st.op = EXEC_NOP;
@@ -1480,7 +1480,7 @@ match_dt_format (gfc_dt * dt)
   gfc_expr *e;
   gfc_st_label *label;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   if (gfc_match_char ('*') == MATCH_YES)
     {
@@ -1520,7 +1520,7 @@ match_dt_format (gfc_dt * dt)
       return MATCH_YES;
     }
 
-  gfc_set_locus (&where);	/* The only case where we have to restore */
+  gfc_current_locus = where;	/* The only case where we have to restore */
 
   return MATCH_NO;
 
@@ -1617,13 +1617,13 @@ match_dt_element (io_kind k, gfc_dt * dt)
 
   m = match_ltag (&tag_end, &dt->end);
   if (m == MATCH_YES)
-    dt->end_where = *gfc_current_locus ();
+    dt->end_where = gfc_current_locus;
   if (m != MATCH_NO)
     return m;
 
   m = match_ltag (&tag_eor, &dt->eor);
   if (m == MATCH_YES)
-    dt->eor_where = *gfc_current_locus ();
+    dt->eor_where = gfc_current_locus;
   if (m != MATCH_NO)
     return m;
 
@@ -1818,7 +1818,7 @@ match_io_iterator (io_kind k, gfc_code ** result)
 
   iter = NULL;
   head = NULL;
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   if (gfc_match_char ('(') != MATCH_YES)
     return MATCH_NO;
@@ -1885,7 +1885,7 @@ syntax:
 cleanup:
   gfc_free_iterator (iter, 1);
   gfc_free_statements (head);
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return m;
 }
 
@@ -2093,7 +2093,7 @@ match_io (io_kind k)
   if (m == MATCH_ERROR)
     goto cleanup;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   if (gfc_match_name (name) == MATCH_YES
       && !gfc_find_symbol (name, NULL, 1, &sym)
@@ -2108,7 +2108,7 @@ match_io (io_kind k)
       goto next;
     }
 
-  gfc_set_locus (&where);
+  gfc_current_locus = where;
 
   goto loop;			/* No matches, try regular elements */
 

@@ -80,12 +80,12 @@ gfc_match_space (void)
   if (gfc_current_form == FORM_FIXED)
     return MATCH_YES;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   c = gfc_next_char ();
   if (!gfc_is_whitespace (c))
     {
-      gfc_set_locus (&old_loc);
+      gfc_current_locus = old_loc;
       return MATCH_NO;
     }
 
@@ -109,7 +109,7 @@ gfc_match_eos (void)
 
   for (;;)
     {
-      old_loc = *gfc_current_locus ();
+      old_loc = gfc_current_locus;
       gfc_gobble_whitespace ();
 
       c = gfc_next_char ();
@@ -135,7 +135,7 @@ gfc_match_eos (void)
       break;
     }
 
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return (flag) ? MATCH_YES : MATCH_NO;
 }
 
@@ -151,14 +151,14 @@ gfc_match_small_literal_int (int *value)
   char c;
   int i;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   gfc_gobble_whitespace ();
   c = gfc_next_char ();
 
   if (!ISDIGIT (c))
     {
-      gfc_set_locus (&old_loc);
+      gfc_current_locus = old_loc;
       return MATCH_NO;
     }
 
@@ -166,7 +166,7 @@ gfc_match_small_literal_int (int *value)
 
   for (;;)
     {
-      old_loc = *gfc_current_locus ();
+      old_loc = gfc_current_locus;
       c = gfc_next_char ();
 
       if (!ISDIGIT (c))
@@ -181,7 +181,7 @@ gfc_match_small_literal_int (int *value)
 	}
     }
 
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   *value = i;
   return MATCH_YES;
@@ -227,7 +227,7 @@ gfc_match_st_label (gfc_st_label ** label, int allow_zero)
   match m;
   int i;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   m = gfc_match_small_literal_int (&i);
   if (m != MATCH_YES)
@@ -240,7 +240,7 @@ gfc_match_st_label (gfc_st_label ** label, int allow_zero)
     }
 
   gfc_error ("Statement label at %C is out of range");
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
 
@@ -320,7 +320,7 @@ gfc_match_strings (mstring * a)
   no_match = p->tag;
 
   best_match = NULL;
-  match_loc = *gfc_current_locus ();
+  match_loc = gfc_current_locus;
 
   gfc_gobble_whitespace ();
 
@@ -356,7 +356,7 @@ gfc_match_strings (mstring * a)
 	  if (*p->mp == '\0')
 	    {
 	      /* Found a match.  */
-	      match_loc = *gfc_current_locus ();
+	      match_loc = gfc_current_locus;
 	      best_match = p;
 	      possibles--;
 	      p->mp = NULL;
@@ -364,7 +364,7 @@ gfc_match_strings (mstring * a)
 	}
     }
 
-  gfc_set_locus (&match_loc);
+  gfc_current_locus = match_loc;
 
   return (best_match == NULL) ? no_match : best_match->tag;
 }
@@ -379,13 +379,13 @@ gfc_match_name (char *buffer)
   locus old_loc;
   int i, c;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
   c = gfc_next_char ();
   if (!ISALPHA (c))
     {
-      gfc_set_locus (&old_loc);
+      gfc_current_locus = old_loc;
       return MATCH_NO;
     }
 
@@ -401,7 +401,7 @@ gfc_match_name (char *buffer)
 	  return MATCH_ERROR;
 	}
 
-      old_loc = *gfc_current_locus ();
+      old_loc = gfc_current_locus;
       c = gfc_next_char ();
     }
   while (ISALNUM (c)
@@ -409,7 +409,7 @@ gfc_match_name (char *buffer)
 	 || (gfc_option.flag_dollar_ok && c == '$'));
 
   buffer[i] = '\0';
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   return MATCH_YES;
 }
@@ -495,9 +495,9 @@ gfc_match_iterator (gfc_iterator * iter, int init_flag)
   /* Match the start of an iterator without affecting the symbol
      table.  */
 
-  start = *gfc_current_locus ();
+  start = gfc_current_locus;
   m = gfc_match (" %n =", name);
-  gfc_set_locus (&start);
+  gfc_current_locus = start;
 
   if (m != MATCH_YES)
     return MATCH_NO;
@@ -586,13 +586,13 @@ gfc_match_char (char c)
 {
   locus where;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
   gfc_gobble_whitespace ();
 
   if (gfc_next_char () == c)
     return MATCH_YES;
 
-  gfc_set_locus (&where);
+  gfc_current_locus = where;
   return MATCH_NO;
 }
 
@@ -624,7 +624,7 @@ gfc_match (const char *target, ...)
   void **vp;
   const char *p;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
   va_start (argp, target);
   m = MATCH_NO;
   matches = 0;
@@ -750,7 +750,7 @@ not_yes:
   if (m != MATCH_YES)
     {
       /* Clean up after a failed match.  */
-      gfc_set_locus (&old_loc);
+      gfc_current_locus = old_loc;
       va_start (argp, target);
 
       p = target;
@@ -832,7 +832,7 @@ gfc_match_assignment (void)
   locus old_loc;
   match m;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   lvalue = rvalue = NULL;
   m = gfc_match (" %v =", &lvalue);
@@ -852,7 +852,7 @@ gfc_match_assignment (void)
   return MATCH_YES;
 
 cleanup:
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   gfc_free_expr (lvalue);
   gfc_free_expr (rvalue);
   return m;
@@ -868,7 +868,7 @@ gfc_match_pointer_assignment (void)
   locus old_loc;
   match m;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   lvalue = rvalue = NULL;
 
@@ -890,7 +890,7 @@ gfc_match_pointer_assignment (void)
   return MATCH_YES;
 
 cleanup:
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   gfc_free_expr (lvalue);
   gfc_free_expr (rvalue);
   return m;
@@ -920,7 +920,7 @@ gfc_match_if (gfc_statement * if_type)
   if (n == MATCH_ERROR)
     return n;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   m = gfc_match (" if ( %e", &expr);
   if (m != MATCH_YES)
@@ -996,7 +996,7 @@ gfc_match_if (gfc_statement * if_type)
 
   gfc_free_expr (expr);
   gfc_undo_symbols ();
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   gfc_match (" if ( %e ) ", &expr);	/* Guaranteed to match */
 
@@ -1006,7 +1006,7 @@ gfc_match_if (gfc_statement * if_type)
 
   gfc_free_expr (expr);
   gfc_undo_symbols ();
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   gfc_match (" if ( %e ) ", &expr);	/* Guaranteed to match */
 
@@ -1066,7 +1066,7 @@ got_match:
   p = gfc_get_code ();
   p->next = gfc_get_code ();
   *p->next = new_st;
-  p->next->loc = *gfc_current_locus ();
+  p->next->loc = gfc_current_locus;
 
   p->expr = expr;
   p->op = EXEC_IF;
@@ -1182,7 +1182,7 @@ gfc_match_do (void)
   gfc_st_label *label;
   match m;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   label = NULL;
   iter.var = iter.start = iter.end = iter.step = NULL;
@@ -1222,7 +1222,7 @@ gfc_match_do (void)
   /* The abortive DO WHILE may have done something to the symbol
      table, so we start over: */
   gfc_undo_symbols ();
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   gfc_match_label ();		/* This won't error */
   gfc_match (" do ");		/* This will work */
@@ -1780,7 +1780,7 @@ gfc_match_nullify (void)
 
       /* build ' => NULL() ' */
       e = gfc_get_expr ();
-      e->where = *gfc_current_locus ();
+      e->where = gfc_current_locus;
       e->expr_type = EXPR_NULL;
       e->ts.type = BT_UNKNOWN;
 
@@ -1985,7 +1985,7 @@ gfc_match_call (void)
   i = 0;
   for (a = arglist; a; a = a->next)
     if (a->expr == NULL)
-      i = 1;
+	i = 1;
 
   if (i)
     {
@@ -2006,7 +2006,7 @@ gfc_match_call (void)
       c->expr->expr_type = EXPR_VARIABLE;
       c->expr->symtree = select_st;
       c->expr->ts = select_sym->ts;
-      c->expr->where = *gfc_current_locus ();
+      c->expr->where = gfc_current_locus;
 
       i = 0;
       for (a = arglist; a; a = a->next)
@@ -2069,7 +2069,7 @@ match_implicit_range (gfc_typespec * ts)
   int c, c1, c2, inner;
   locus cur_loc;
 
-  cur_loc = *gfc_current_locus ();
+  cur_loc = gfc_current_locus;
 
   gfc_gobble_whitespace ();
   c = gfc_next_char ();
@@ -2140,7 +2140,7 @@ match_implicit_range (gfc_typespec * ts)
 bad:
   gfc_syntax_error (ST_IMPLICIT);
 
-  gfc_set_locus (&cur_loc);
+  gfc_current_locus = cur_loc;
   return MATCH_ERROR;
 }
 
@@ -2191,7 +2191,7 @@ gfc_match_implicit (void)
       if (m == MATCH_NO)
 	goto syntax;
 
-      cur_loc = *gfc_current_locus ();
+      cur_loc = gfc_current_locus;
       m = match_implicit_range (&ts);
 
       if (m == MATCH_YES)
@@ -2202,7 +2202,7 @@ gfc_match_implicit (void)
 	  if ((c == '\n') || (c == ','))
 	    continue;
 
-	  gfc_set_locus (&cur_loc);
+	  gfc_current_locus = cur_loc;
 	}
 
       /* Last chance -- check <TYPE> (<KIND>) (<RANGE>).  */
@@ -3026,7 +3026,7 @@ gfc_match_data (void)
   for (;;)
     {
       new = gfc_get_data ();
-      new->where = *gfc_current_locus ();
+      new->where = gfc_current_locus;
 
       m = top_var_list (new);
       if (m != MATCH_YES)
@@ -3098,7 +3098,7 @@ match_case_selector (gfc_case ** cp)
   match m;
 
   c = gfc_get_case ();
-  c->where = *gfc_current_locus ();
+  c->where = gfc_current_locus;
 
   if (gfc_match_char (':') == MATCH_YES)
     {
@@ -3219,7 +3219,7 @@ gfc_match_case (void)
 
       new_st.op = EXEC_SELECT;
       c = gfc_get_case ();
-      c->where = *gfc_current_locus ();
+      c->where = gfc_current_locus;
       new_st.ext.case_list = c;
       return MATCH_YES;
     }
@@ -3417,7 +3417,7 @@ match_forall_iterator (gfc_forall_iterator ** result)
   locus where;
   match m;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
   iter = gfc_getmem (sizeof (gfc_forall_iterator));
 
   m = gfc_match_variable (&iter->var, 0);
@@ -3464,7 +3464,7 @@ syntax:
   m = MATCH_ERROR;
 
 cleanup:
-  gfc_set_locus (&where);
+  gfc_current_locus = where;
   gfc_free_forall_iterator (iter);
   return m;
 }

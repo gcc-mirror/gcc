@@ -159,7 +159,7 @@ match_digits (int signflag, int radix, char *buffer)
 
   for (;;)
     {
-      old_loc = *gfc_current_locus ();
+      old_loc = gfc_current_locus;
       c = gfc_next_char ();
 
       if (!check_digit (c, radix))
@@ -170,7 +170,7 @@ match_digits (int signflag, int radix, char *buffer)
       length++;
     }
 
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   return length;
 }
@@ -187,11 +187,11 @@ match_integer_constant (gfc_expr ** result, int signflag)
   char *buffer;
   gfc_expr *e;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
   length = match_digits (signflag, 10, NULL);
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   if (length == -1)
     return MATCH_NO;
 
@@ -214,7 +214,7 @@ match_integer_constant (gfc_expr ** result, int signflag)
       return MATCH_ERROR;
     }
 
-  e = gfc_convert_integer (buffer, kind, 10, gfc_current_locus ());
+  e = gfc_convert_integer (buffer, kind, 10, &gfc_current_locus);
 
   if (gfc_range_check (e) != ARITH_OK)
     {
@@ -241,7 +241,7 @@ match_boz_constant (gfc_expr ** result)
   gfc_expr *e;
   const char *rname;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
   switch (gfc_next_char ())
@@ -276,7 +276,7 @@ match_boz_constant (gfc_expr ** result)
   if (delim != '\'' && delim != '\"')
     goto backup;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   length = match_digits (0, radix, NULL);
   if (length == -1)
@@ -291,7 +291,7 @@ match_boz_constant (gfc_expr ** result)
       return MATCH_ERROR;
     }
 
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   buffer = alloca (length + 1);
   memset (buffer, '\0', length + 1);
@@ -300,7 +300,7 @@ match_boz_constant (gfc_expr ** result)
   gfc_next_char ();
 
   e = gfc_convert_integer (buffer, gfc_default_integer_kind (), radix,
-			   gfc_current_locus ());
+			   &gfc_current_locus);
 
   if (gfc_range_check (e) != ARITH_OK)
     {
@@ -314,7 +314,7 @@ match_boz_constant (gfc_expr ** result)
   return MATCH_YES;
 
 backup:
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return MATCH_NO;
 }
 
@@ -329,7 +329,7 @@ match_real_constant (gfc_expr ** result, int signflag)
   char *p, *buffer;
   gfc_expr *e;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
   e = NULL;
@@ -355,7 +355,7 @@ match_real_constant (gfc_expr ** result, int signflag)
 	    goto done;
 
 	  /* Check to see if "." goes with a following operator like ".eq.".  */
-	  temp_loc = *gfc_current_locus ();
+	  temp_loc = gfc_current_locus;
 	  c = gfc_next_char ();
 
 	  if (c == 'e' || c == 'd' || c == 'q')
@@ -368,7 +368,7 @@ match_real_constant (gfc_expr ** result, int signflag)
 	  if (ISALPHA (c))
 	    goto done;		/* Distinguish 1.e9 from 1.eq.2 */
 
-	  gfc_set_locus (&temp_loc);
+	  gfc_current_locus = temp_loc;
 	  seen_dp = 1;
 	  continue;
 	}
@@ -401,7 +401,7 @@ match_real_constant (gfc_expr ** result, int signflag)
       /* TODO: seen_digits is always true at this point */
       if (!seen_digits)
 	{
-	  gfc_set_locus (&old_loc);
+	  gfc_current_locus = old_loc;
 	  return MATCH_NO;	/* ".e" can be something else */
 	}
 
@@ -419,12 +419,12 @@ done:
   /* See what we've got!  */
   if (!seen_digits || (!seen_dp && exp_char == ' '))
     {
-      gfc_set_locus (&old_loc);
+      gfc_current_locus = old_loc;
       return MATCH_NO;
     }
 
   /* Convert the number.  */
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   gfc_gobble_whitespace ();
 
   buffer = alloca (count + 1);
@@ -478,7 +478,7 @@ done:
 	}
     }
 
-  e = gfc_convert_real (buffer, kind, gfc_current_locus ());
+  e = gfc_convert_real (buffer, kind, &gfc_current_locus);
 
   switch (gfc_range_check (e))
     {
@@ -520,7 +520,7 @@ match_substring (gfc_charlen * cl, int init, gfc_ref ** result)
   start = NULL;
   end = NULL;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   m = gfc_match_char ('(');
   if (m != MATCH_YES)
@@ -589,7 +589,7 @@ cleanup:
   gfc_free_expr (start);
   gfc_free_expr (end);
 
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return m;
 }
 
@@ -617,7 +617,7 @@ next_string_char (char delimiter)
 
   if (c == '\\')
     {
-      old_locus = *gfc_current_locus ();
+      old_locus = gfc_current_locus;
 
       switch (gfc_next_char_literal (1))
 	{
@@ -648,7 +648,7 @@ next_string_char (char delimiter)
 
 	default:
 	  /* Unknown backslash codes are simply not expanded */
-	  gfc_set_locus (&old_locus);
+	  gfc_current_locus = old_locus;
 	  break;
 	}
     }
@@ -656,12 +656,12 @@ next_string_char (char delimiter)
   if (c != delimiter)
     return c;
 
-  old_locus = *gfc_current_locus ();
+  old_locus = gfc_current_locus;
   c = gfc_next_char_literal (1);
 
   if (c == delimiter)
     return c;
-  gfc_set_locus (&old_locus);
+  gfc_current_locus = old_locus;
 
   return -1;
 }
@@ -696,7 +696,7 @@ match_charkind_name (char *name)
 
   for (;;)
     {
-      old_loc = *gfc_current_locus ();
+      old_loc = gfc_current_locus;
       c = gfc_next_char ();
 
       if (c == '_')
@@ -705,7 +705,7 @@ match_charkind_name (char *name)
 
 	  if (peek == '\'' || peek == '\"')
 	    {
-	      gfc_set_locus (&old_loc);
+	      gfc_current_locus = old_loc;
 	      *name = '\0';
 	      return MATCH_YES;
 	    }
@@ -743,11 +743,11 @@ match_string_constant (gfc_expr ** result)
   const char *q;
   match m;
 
-  old_locus = *gfc_current_locus ();
+  old_locus = gfc_current_locus;
 
   gfc_gobble_whitespace ();
 
-  start_locus = *gfc_current_locus ();
+  start_locus = gfc_current_locus;
 
   c = gfc_next_char ();
   if (c == '\'' || c == '"')
@@ -771,7 +771,7 @@ match_string_constant (gfc_expr ** result)
     }
   else
     {
-      gfc_set_locus (&old_locus);
+      gfc_current_locus = old_locus;
 
       m = match_charkind_name (name);
       if (m != MATCH_YES)
@@ -796,7 +796,7 @@ match_string_constant (gfc_expr ** result)
     goto no_match;
 
   gfc_gobble_whitespace ();
-  start_locus = *gfc_current_locus ();
+  start_locus = gfc_current_locus;
 
   c = gfc_next_char ();
   if (c != '\'' && c != '"')
@@ -834,7 +834,7 @@ got_delim:
 	break;
       if (c == -2)
 	{
-	  gfc_set_locus (&start_locus);
+	  gfc_current_locus = start_locus;
 	  gfc_error ("Unterminated character constant beginning at %C");
 	  return MATCH_ERROR;
 	}
@@ -853,7 +853,7 @@ got_delim:
   e->value.character.string = p = gfc_getmem (length + 1);
   e->value.character.length = length;
 
-  gfc_set_locus (&start_locus);
+  gfc_current_locus = start_locus;
   gfc_next_char ();		/* Skip delimiter */
 
   for (i = 0; i < length; i++)
@@ -872,7 +872,7 @@ got_delim:
   return MATCH_YES;
 
 no_match:
-  gfc_set_locus (&old_locus);
+  gfc_current_locus = old_locus;
   return MATCH_NO;
 }
 
@@ -910,7 +910,7 @@ match_logical_constant (gfc_expr ** result)
   e->value.logical = i;
   e->ts.type = BT_LOGICAL;
   e->ts.kind = kind;
-  e->where = *gfc_current_locus ();
+  e->where = gfc_current_locus;
 
   *result = e;
   return MATCH_YES;
@@ -999,7 +999,7 @@ match_const_complex_part (gfc_expr ** result)
   char *p, c, exp_char, *buffer;
   locus old_loc;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
   seen_dp = 0;
@@ -1064,7 +1064,7 @@ done:
     goto no_match;
 
   /* Convert the number.  */
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   gfc_gobble_whitespace ();
 
   buffer = alloca (count + 1);
@@ -1121,11 +1121,11 @@ done:
 	}
     }
 
-  *result = gfc_convert_real (buffer, kind, gfc_current_locus ());
+  *result = gfc_convert_real (buffer, kind, &gfc_current_locus);
   return MATCH_YES;
 
 no_match:
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return MATCH_NO;
 }
 
@@ -1157,7 +1157,7 @@ match_complex_constant (gfc_expr ** result)
   int kind;
   match m;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
   real = imag = e = NULL;
 
   m = gfc_match_char ('(');
@@ -1210,7 +1210,7 @@ match_complex_constant (gfc_expr ** result)
     gfc_convert_type (imag, &target, 2);
 
   e = gfc_convert_complex (real, imag, kind);
-  e->where = *gfc_current_locus ();
+  e->where = gfc_current_locus;
 
   gfc_free_expr (real);
   gfc_free_expr (imag);
@@ -1226,7 +1226,7 @@ cleanup:
   gfc_free_expr (e);
   gfc_free_expr (real);
   gfc_free_expr (imag);
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   return m;
 }
@@ -1284,7 +1284,7 @@ match_actual_arg (gfc_expr ** result)
   gfc_expr *e;
   int c;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   switch (gfc_match_name (name))
     {
@@ -1295,10 +1295,10 @@ match_actual_arg (gfc_expr ** result)
       break;
 
     case MATCH_YES:
-      w = *gfc_current_locus ();
+      w = gfc_current_locus;
       gfc_gobble_whitespace ();
       c = gfc_next_char ();
-      gfc_set_locus (&w);
+      gfc_current_locus = w;
 
       if (c != ',' && c != ')')
 	break;
@@ -1343,7 +1343,7 @@ match_actual_arg (gfc_expr ** result)
       return MATCH_YES;
     }
 
-  gfc_set_locus (&where);
+  gfc_current_locus = where;
   return gfc_match_expr (result);
 }
 
@@ -1358,7 +1358,7 @@ match_keyword_arg (gfc_actual_arglist * actual, gfc_actual_arglist * base)
   locus name_locus;
   match m;
 
-  name_locus = *gfc_current_locus ();
+  name_locus = gfc_current_locus;
   m = gfc_match_name (name);
 
   if (m != MATCH_YES)
@@ -1391,7 +1391,7 @@ match_keyword_arg (gfc_actual_arglist * actual, gfc_actual_arglist * base)
   return MATCH_YES;
 
 cleanup:
-  gfc_set_locus (&name_locus);
+  gfc_current_locus = name_locus;
   return m;
 }
 
@@ -1412,7 +1412,7 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist ** argp)
   match m;
 
   *argp = tail = NULL;
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   seen_keyword = 0;
 
@@ -1496,7 +1496,7 @@ syntax:
 
 cleanup:
   gfc_free_actual_arglist (head);
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
 
   return MATCH_ERROR;
 }
@@ -1766,7 +1766,7 @@ gfc_match_structure_constructor (gfc_symbol * sym, gfc_expr ** result)
   if (gfc_match_char ('(') != MATCH_YES)
     goto syntax;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   gfc_find_component (sym, NULL);
 
@@ -1862,7 +1862,7 @@ gfc_match_rvalue (gfc_expr ** result)
 
   sym = symtree->n.sym;
   e = NULL;
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   gfc_set_sym_referenced (sym);
 
@@ -1975,7 +1975,7 @@ gfc_match_rvalue (gfc_expr ** result)
       e->symtree = symtree;
       e->expr_type = EXPR_FUNCTION;
       e->value.function.actual = actual_arglist;
-      e->where = *gfc_current_locus ();
+      e->where = gfc_current_locus;
 
       if (sym->as != NULL)
 	e->rank = sym->as->rank;
@@ -2154,7 +2154,7 @@ gfc_match_variable (gfc_expr ** result, int equiv_flag)
   m = gfc_match_sym_tree (&st, 1);
   if (m != MATCH_YES)
     return m;
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   sym = st->n.sym;
   gfc_set_sym_referenced (sym);

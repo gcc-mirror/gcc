@@ -338,7 +338,7 @@ error_print (const char *type, const char *format0, va_list argp)
 
 	    case 'C':
 	      if (c == 'C')
-		loc = gfc_current_locus ();
+		loc = &gfc_current_locus;
 
 	      if (have_l1)
 		{
@@ -652,7 +652,7 @@ gfc_internal_error (const char *format, ...)
 
   va_start (argp, format);
 
-  show_loci (gfc_current_locus (), NULL);
+  show_loci (&gfc_current_locus, NULL);
   error_printf ("Internal Error at (1):");
 
   error_print ("", format, argp);

@@ -272,7 +272,7 @@ check_conflict (symbol_attribute * attr, locus * where)
   const char *a1, *a2;
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
 
   if (attr->pointer && attr->intent != INTENT_UNKNOWN)
     {
@@ -484,7 +484,7 @@ check_used (symbol_attribute * attr, locus * where)
     return 0;
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
 
   gfc_error ("Cannot change attributes of USE-associated symbol at %L",
              where);
@@ -506,7 +506,7 @@ check_done (symbol_attribute * attr, locus * where)
     return 0;
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
 
   gfc_error ("Cannot change attributes of symbol at %L"
              " after it has been used", where);
@@ -522,7 +522,7 @@ duplicate_attr (const char *attr, locus * where)
 {
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
 
   gfc_error ("Duplicate %s attribute specified at %L", attr, where);
 }
@@ -886,7 +886,7 @@ gfc_add_flavor (symbol_attribute * attr, sym_flavor f, locus * where)
   if (attr->flavor != FL_UNKNOWN)
     {
       if (where == NULL)
-	where = gfc_current_locus ();
+	where = &gfc_current_locus;
 
       gfc_error ("%s attribute conflicts with %s attribute at %L",
 		 gfc_code2string (flavors, attr->flavor),
@@ -913,7 +913,7 @@ gfc_add_procedure (symbol_attribute * attr, procedure_type t, locus * where)
     return FAILURE;
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
 
   if (attr->proc != PROC_UNKNOWN)
     {
@@ -951,7 +951,7 @@ gfc_add_intent (symbol_attribute * attr, sym_intent intent, locus * where)
     }
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
 
   gfc_error ("INTENT (%s) conflicts with INTENT(%s) at %L",
 	     gfc_intent_string (attr->intent),
@@ -974,7 +974,7 @@ gfc_add_access (symbol_attribute * attr, gfc_access access, locus * where)
     }
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
   gfc_error ("ACCESS specification at %L was already specified", where);
 
   return FAILURE;
@@ -990,7 +990,7 @@ gfc_add_explicit_interface (gfc_symbol * sym, ifsrc source,
     return FAILURE;
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
 
   if (sym->attr.if_source != IFSRC_UNKNOWN
       && sym->attr.if_source != IFSRC_DECL)
@@ -1019,7 +1019,7 @@ gfc_add_type (gfc_symbol * sym, gfc_typespec * ts, locus * where)
     return FAILURE;*/
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
 
   if (sym->ts.type != BT_UNKNOWN)
     {
@@ -1221,7 +1221,7 @@ gfc_add_component (gfc_symbol * sym, const char *name, gfc_component ** componen
     tail->next = p;
 
   strcpy (p->name, name);
-  p->loc = *gfc_current_locus ();
+  p->loc = gfc_current_locus;
 
   *component = p;
   return SUCCESS;
@@ -1565,7 +1565,7 @@ gfc_reference_st_label (gfc_st_label * lp, gfc_sl_type type)
   else
     {
       label_type = lp->referenced;
-      lp->where = *gfc_current_locus ();
+      lp->where = gfc_current_locus;
     }
 
   if (label_type == ST_LABEL_FORMAT && type == ST_LABEL_TARGET)
@@ -1811,7 +1811,7 @@ gfc_new_symbol (const char *name, gfc_namespace * ns)
   gfc_clear_attr (&p->attr);
   p->ns = ns;
 
-  p->declared_at = *gfc_current_locus ();
+  p->declared_at = gfc_current_locus;
 
   if (strlen (name) > GFC_MAX_SYMBOL_LEN)
     gfc_internal_error ("new_symbol(): Symbol name too long");

@@ -506,7 +506,7 @@ gfc_match_use (void)
     {
       /* Get a new rename struct and add it to the rename list.  */
       new = gfc_get_use_rename ();
-      new->where = *gfc_current_locus ();
+      new->where = gfc_current_locus;
       new->found = 0;
 
       if (gfc_rename_list == NULL)
@@ -1766,10 +1766,10 @@ mio_array_ref (gfc_array_ref * ar)
 
   if (iomode == IO_INPUT)
     {
-      ar->where = *gfc_current_locus ();
+      ar->where = gfc_current_locus;
 
       for (i = 0; i < ar->dimen; i++)
-	ar->c_where[i] = *gfc_current_locus ();
+	ar->c_where[i] = gfc_current_locus;
     }
 
   mio_rparen ();
@@ -2401,7 +2401,7 @@ mio_expr (gfc_expr ** ep)
 	bad_module ("Expected expression type");
 
       e = *ep = gfc_get_expr ();
-      e->where = *gfc_current_locus ();
+      e->where = gfc_current_locus;
       e->expr_type = (expr_t) find_enum (expr_types);
     }
 

@@ -77,7 +77,7 @@ match_subscript (gfc_array_ref * ar, int init)
 
   i = ar->dimen;
 
-  ar->c_where[i] = *gfc_current_locus ();
+  ar->c_where[i] = gfc_current_locus;
   ar->start[i] = ar->end[i] = ar->stride[i] = NULL;
 
   /* We can't be sure of the difference between DIMEN_ELEMENT and
@@ -143,7 +143,7 @@ gfc_match_array_ref (gfc_array_ref * ar, gfc_array_spec * as, int init)
 
   memset (ar, '\0', sizeof (ar));
 
-  ar->where = *gfc_current_locus ();
+  ar->where = gfc_current_locus;
   ar->as = as;
 
   if (gfc_match_char ('(') != MATCH_YES)
@@ -743,7 +743,7 @@ match_array_list (gfc_constructor ** result)
   match m;
   int n;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   if (gfc_match_char ('(') == MATCH_NO)
     return MATCH_NO;
@@ -809,7 +809,7 @@ match_array_list (gfc_constructor ** result)
   e->value.constructor = head;
 
   p = gfc_get_constructor ();
-  p->where = *gfc_current_locus ();
+  p->where = gfc_current_locus;
   p->iterator = gfc_get_iterator ();
   *p->iterator = iter;
 
@@ -825,7 +825,7 @@ syntax:
 cleanup:
   gfc_free_constructor (head);
   gfc_free_iterator (&iter, 0);
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return m;
 }
 
@@ -849,7 +849,7 @@ match_array_cons_element (gfc_constructor ** result)
     return m;
 
   p = gfc_get_constructor ();
-  p->where = *gfc_current_locus ();
+  p->where = gfc_current_locus;
   p->expr = expr;
 
   *result = p;
@@ -870,7 +870,7 @@ gfc_match_array_constructor (gfc_expr ** result)
   if (gfc_match (" (/") == MATCH_NO)
     return MATCH_NO;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
   head = tail = NULL;
 
   if (gfc_match (" /)") == MATCH_YES)
