@@ -1,3 +1,7 @@
+Fri Jul  9 03:51:52 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Drop "gcc-" prefix from version #.
+
 Thu Jul  8 18:06:30 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (dwarf2out_line): Emit a line number comment after
