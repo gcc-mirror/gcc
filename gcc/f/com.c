@@ -1,5 +1,5 @@
 /* com.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995-1998 Free Software Foundation, Inc.
+   Copyright (C) 1995-1999 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -952,7 +952,7 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 	{
 	  min = TYPE_MIN_VALUE (TYPE_DOMAIN (array));
 	  element = ffecom_expr_ (dims[i], NULL, NULL, NULL, FALSE, TRUE);
-	  if (ffe_is_subscript_check ())
+	  if (flag_bounds_check)
 	    element = ffecom_subscript_check_ (array, element, i, total_dims,
 					       array_name);
 	  if (element == error_mark_node)
@@ -998,7 +998,7 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 	  array = TYPE_MAIN_VARIANT (TREE_TYPE (item));
 
 	  element = ffecom_expr_ (dims[i], NULL, NULL, NULL, FALSE, TRUE);
-	  if (ffe_is_subscript_check ())
+	  if (flag_bounds_check)
 	    element = ffecom_subscript_check_ (array, element, i, total_dims,
 					       array_name);
 	  if (element == error_mark_node)
@@ -2126,7 +2126,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	    else
 	      {
 		end_tree = ffecom_expr (end);
-		if (ffe_is_subscript_check ())
+		if (flag_bounds_check)
 		  end_tree = ffecom_subscript_check_ (array, end_tree, 1, 0,
 						      char_name);
 		end_tree = convert (ffecom_f2c_ftnlen_type_node,
@@ -2144,7 +2144,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	else
 	  {
 	    start_tree = ffecom_expr (start);
-	    if (ffe_is_subscript_check ())
+	    if (flag_bounds_check)
 	      start_tree = ffecom_subscript_check_ (array, start_tree, 0, 0,
 						    char_name);
 	    start_tree = convert (ffecom_f2c_ftnlen_type_node,
@@ -2177,7 +2177,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	    else
 	      {
 		end_tree = ffecom_expr (end);
-		if (ffe_is_subscript_check ())
+		if (flag_bounds_check)
 		  end_tree = ffecom_subscript_check_ (array, end_tree, 1, 0,
 						      char_name);
 		end_tree = convert (ffecom_f2c_ftnlen_type_node,

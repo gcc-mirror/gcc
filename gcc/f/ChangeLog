@@ -1,3 +1,14 @@
+Fri Oct 15 15:18:12 1999  Greg McGary  <gkm@gnu.org>
+
+	* top.h (ffe_is_subscript_check_): Remove extern decl.
+	(ffe_is_subscript_check, ffe_set_is_subscript_check): Remove macros.
+	* top.c (ffe_is_subscript_check_): Remove global variable.
+	(ffe_decode_option): Remove "(no-)bounds-check" flag handling.
+	Set flag_bounds_check for "(no-)fortran-bounds-check".
+	* com.c
+	(ffecom_arrayref_): s/ffe_is_subscript_check ()/flag_bounds_check/
+	(ffecom_char_args_x_): Ditto.
+
 Sun Oct 10 08:40:18 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* proj.h: Use HAVE_GCC_VERSION instead of explicitly testing
@@ -60,7 +71,7 @@ Sat Sep  4 13:46:27 1999  Mark Mitchell  <mark@codesourcery.com>
 	* Make-lang.in (f771): Depend on ggc-callbacks.o.
 	* Makefile.in (OBJS): Add ggc-callbacks.o.
 	(OBJDEPS): Likewise.
-	
+
 Mon Aug 30 22:05:53 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (language_string): Constify.
