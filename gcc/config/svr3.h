@@ -119,6 +119,7 @@ Boston, MA 02111-1307, USA.
 
 /* Output #ident as a .ident.  */
 
+#undef  ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "\t.ident \"%s\"\n", NAME);
 
@@ -301,6 +302,7 @@ const_section ()							\
    or a constant of some sort.  RELOC indicates whether forming
    the initial value of DECL requires link-time relocations.  */
 
+#undef  SELECT_SECTION
 #define SELECT_SECTION(DECL,RELOC,ALIGN)				\
 {									\
   if (TREE_CODE (DECL) == STRING_CST)					\
@@ -331,4 +333,5 @@ const_section ()							\
    in the case of a `const_int' rtx.  Currently, these always
    go into the const section.  */
 
+#undef  SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(MODE,RTX,ALIGN) const_section()

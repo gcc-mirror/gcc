@@ -25,8 +25,6 @@ Boston, MA 02111-1307, USA.  */
    less duplicate all of svr4.h, sparc/sysv4.h, and sparc/sol2.h here
    (suitably cleaned up).  */
 
-#include "sparc/sol2.h"
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64-elf)")
 

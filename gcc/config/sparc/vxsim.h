@@ -19,7 +19,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
-#include "sparc/sysv4.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \

@@ -1,3 +1,52 @@
+2001-11-12  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc (sparc-tti-*, sparc64-wrs-vxworks*, sparc-wrs-vxworks*,
+	sparclite-wrs-vxworks*, sparc-*-aout*, sparc-*-netbsd*,
+	sparc-*-chorusos*, sparc-*-linux*aout*, sparc-*-linux*libc1*,
+	sparc-*-linux*, sparc-*-lynxos*, sparc-*-rtemsaout*, sparc-*-rtems*,
+	sparc-*-rtemself*, sparc-*-solaris2*, sparc-*-sunos3*, sparc-*-sysv4*,
+	sparc-*-vxsim*, sparclet-*-aout*, sparclite-*-coff*, sparclite-*-aout*,
+	sparc86x-*-aout*, sparc86x-*-elf*, sparc64-*-aout*, sparc64-*-elf*,
+	sparc64-*-linux*):  Include various CPU headers via tm_file.
+	* config/svr3.h (ASM_OUTPUT_IDENT): Undef before defining it.
+	(SELECT_SECTION): Likewise.
+	(SELECT_RTX_SECTION): Likewise.
+	* config/sparc/sparc_bi.h: New file.
+	* config/sparc/aout.h: Don't include sparc/sparc.h and aoutos.h.
+	* config/sparc/linux-aout.h: Likewise.
+	* config/sparc/linux.h: Don't include sparc/sysv4.h.
+	* config/sparc/linux64.h: Likewise.
+	(SPARC_BI_ARCH): Don't define.  sparc_bi.h will do it instead.
+	* config/sparc/lite.h:  Don't include sparc/sparc.h and gofast.h.
+	* config/sparc/litecoff.h: Don't include sparc/lite.h, svr3.h,
+	and dbxcoff.h
+	(ASM_OUTPUT_IDENT): Do not #undef.
+	(SELECT_SECTION): Likewise.
+	(SELECT_RTX_SECTION): Likewise.
+	* config/sparc/liteelf.h: Don't include gofast.h.
+	* config/sparc/lynx-ng.h: Don't include sparc/sparc.h and lynx-ng.h.
+	* config/sparc/lynx.h: Don't include sparc/sparc.h.
+	* config/sparc/pbd.h: Likewise.
+	* config/sparc/netbsd.h: Don't include sparc/sparc.h and netbsd.h.
+	* config/sparc/rtems.h: Don't include sparc/aout.h and rtems.h.
+	* config/sparc/rtemself.h: Don't include rtems.h.
+	* config/sparc/sol2-64.h: Don't include sparc/sol2-sld-64.h.
+	* config/sparc/sol2-sld-64.h (SPARC_BI_ARCH): Don't define, include
+	sparc_bi.h instead.
+	* config/sparc/sol2-sld.h: Don't include sparc/sol2.h.
+	* config/sparc/sol2.h: Include sparc/sparc.h directly.
+	* config/sparc/sp64-aout.h: Don't include sparc/sparc.h and aoutos.h.
+	* config/sparc/sp64-elf.h: Don't include sparc/sol2.h.
+	* config/sparc/sp86x-aout.h: Don't include sparc/sparc.h and gofast.h.
+	* config/sparc/sp86x-elf.h: Don't include gofast.h.
+	* config/sparc/splet.h: Don't include sparc/aout.h.
+	* config/sparc/sun4o3.h: Don't include sparc/sparc.h.
+	* config/sparc/sysv4.h: Don't include sparc/sparc.h directly.
+	* config/sparc/vxsim.h: Don't include sparc/sysv4.h.
+	* config/sparc/vxsparc.h: Don't include sparc/aout.h and gofast.h.
+	* config/sparc/vxsparc64.h: Don't include gofast.h.
+	(SPARC_BI_ARCH): Don't define.  sparc_bi.h will do it instead.
+
 2001-11-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/standards.texi: Mention C99 TC1.

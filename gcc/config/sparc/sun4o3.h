@@ -1,5 +1,3 @@
-#include "sparc/sparc.h"
-
 /* Override the name of the mcount profiling function.  */
 
 #undef MCOUNT_FUNCTION

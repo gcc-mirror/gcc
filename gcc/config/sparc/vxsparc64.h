@@ -19,8 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Specify this in a cover file to provide bi-architecture (32/64) support.  */
-#define SPARC_BI_ARCH
 
 /* Specify what to link with.  */
 /* VxWorks does all the library stuff itself.  */
@@ -90,6 +88,5 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE 8
 
 /* US Software GOFAST library support.  */
-#include "gofast.h"
 #undef INIT_SUBTARGET_OPTABS
 #define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS

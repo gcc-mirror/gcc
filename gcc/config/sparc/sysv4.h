@@ -20,8 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* TODO: convert includes to ${tm_file} list in config.gcc.  */
-#include "sparc/sparc.h"
 
 /* Undefine some symbols which are defined in "sparc.h" but which are
    appropriate only for SunOS 4.x, and not for svr4.  */
