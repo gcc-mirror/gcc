@@ -19,6 +19,9 @@
 	* function.c (thread_prologue_and_epilogue_insns): Remove i
 	and newinsn.
 
+	* tree-data-ref.c (array_base_name_differ_p): Remove ta and
+	tb.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed

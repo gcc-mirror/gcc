@@ -109,14 +109,10 @@ array_base_name_differ_p (struct data_reference *a,
 {
   tree base_a = DR_BASE_NAME (a);
   tree base_b = DR_BASE_NAME (b);
-  tree ta, tb;
 
   if (!base_a || !base_b)
     return false;
 
-  ta = TREE_TYPE (base_a);
-  tb = TREE_TYPE (base_b);
-  
   /* Determine if same base.  Example: for the array accesses
      a[i], b[i] or pointer accesses *a, *b, bases are a, b.  */
   if (base_a == base_b)
