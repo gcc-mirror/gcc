@@ -2,8 +2,20 @@
 *     hard to test things where you can't guarantee the result.  Have a
 *     good squint at what it prints, though detected errors will cause 
 *     starred messages.
+*
+* NOTE! This is the testsuite version, so it should compile and
+* execute on all targets, and either run to completion (with
+* success status) or fail (by calling abort).  The *other* version,
+* which is a bit more interactive and tests a couple of things
+* this one cannot, should be generally the same, and is in
+* libf2c/libU77/u77-test.f.  Please keep it up-to-date.
 
       implicit none
+
+      external hostnm
+*     intrinsic hostnm
+      integer hostnm
+
       integer i, j, k, ltarray (9), idat (3), count, rate, count_max,
      +     pid, mask
       real tarray1(2), tarray2(2), r1, r2, sum
@@ -40,7 +52,7 @@
         line = 'and 6 isn''t a tty device (ISATTY)'
       end if
       write (6,'(1X,A)') line(:lenstr(line))
-      
+
 *     regression test for compiler crash fixed by JCB 1998-08-04 com.c
       sigret = signal(2, ctrlc)
 
@@ -85,19 +97,19 @@ c consistency-check etime vs. dtime for first call
         write (6,*)
      +       'Results of ETIME and DTIME differ by more than a second:',
      +       r1, r2
-      call abort
+        call doabort
       end if
       call sgladd (sum, tarray1(1), tarray1(2))
       if (r1 .ne. sum) then
         write (6,*) '*** ETIME didn''t return sum of the array: ',
      +       r1, ' /= ', tarray1(1), '+', tarray1(2)
-        call abort
+        call doabort
       end if
       call sgladd (sum, tarray2(1), tarray2(2))
       if (r2 .ne. sum) then
         write (6,*) '*** DTIME didn''t return sum of the array: ',
      +       r2, ' /= ', tarray2(1), '+', tarray2(2)
-        call abort
+        call doabort
       end if
       write (6, '(A,3F10.3)')
      +     ' Elapsed total, user, system time (ETIME): ',
@@ -116,13 +128,13 @@ c now try to get times to change enough to see in etime/dtime
       if (r1 .ne. sum) then
         write (6,*) '*** ETIME didn''t return sum of the array: ',
      +       r1, ' /= ', tarray1(1), '+', tarray1(2)
-        call abort
+        call doabort
       end if
       call sgladd (sum, tarray2(1), tarray2(2))
       if (r2 .ne. sum) then
         write (6,*) '*** DTIME didn''t return sum of the array: ',
      +       r2, ' /= ', tarray2(1), '+', tarray2(2)
-        call abort
+        call doabort
       end if
       write (6, '(A,3F10.3)')
      +     ' Differences in total, user, system time (DTIME): ',
@@ -134,11 +146,11 @@ c now try to get times to change enough to see in etime/dtime
 
       call idate (i,j,k)
       call idate (idat)
-      write (6,*) 'IDATE d,m,y: ',idat
-      print *,  '... and the VXT version: ', i,j,k
+      write (6,*) 'IDATE (date,month,year): ',idat
+      print *,  '... and the VXT version (month,date,year): ', i,j,k
       if (i/=idat(2) .or. j/=idat(1) .or. k/=mod(idat(3),100)) then
-        print *, '*** vxt and u77 versions don''t agree'
-        call abort
+        print *, '*** VXT and U77 versions don''t agree'
+        call doabort
       end if
       call time(line(:8))
       print *, 'TIME: ', line(:8)
@@ -150,29 +162,27 @@ c now try to get times to change enough to see in etime/dtime
 *     compiler crash fixed by 1998-10-01 com.c change
       if (rand(0).lt.0.0 .or. rand(0).gt.1.0) then
         write (6,*) '*** rand(0) error'
-        call abort()
+        call doabort()
       end if
       i = getcwd(wd)
       if (i.ne.0) then
         call perror ('*** getcwd')
-        call abort
+        call doabort
       else
         write (6,*) 'Current directory is "'//wd(:lenstr(wd))//'"'
       end if
       call chdir ('.',i)
       if (i.ne.0) then
         write (6,*) '***CHDIR to ".": ', i
-        call abort
+        call doabort
       end if
-CCC   Don't do this, beacuse some targets need -lsocket, which we don't
-CCC   have a mechanism for supplying.
-CCC      i=hostnm(wd)
-CCC      if(i.ne.0) then
-CCC        call perror ('*** hostnm')
-CCC        call abort
-CCC      else
-CCC        write (6,*) 'Host name is ', wd(:lenstr(wd))
-CCC      end if
+      i=hostnm(wd)
+      if(i.ne.0) then
+        call perror ('*** hostnm')
+        call doabort
+      else
+        write (6,*) 'Host name is ', wd(:lenstr(wd))
+      end if
       i = access('/dev/null ', 'rw')
       if (i.ne.0) write (6,*) '***Read/write ACCESS to /dev/null: ', i
       write (6,*) 'Creating file "foo" for testing...'
@@ -188,41 +198,41 @@ C     the better to test with, my dear!  (-- burley)
       call fseek(3,0,0,*10)
       go to 20
  10   write(6,*) '***FSEEK failed'
-      call abort
+      call doabort
  20   call fgetc(3, c,i)
       if (i.ne.0) then
         write(6,*) '***FGETC: ', i
-        call abort
+        call doabort
       end if
       if (c.ne.'c') then
         write(6,*) '***FGETC read the wrong thing: ', ichar(c)
-        call abort
+        call doabort
       end if
       i= ftell(3)
       if (i.ne.1) then
         write(6,*) '***FTELL offset: ', i
-        call abort
+        call doabort
       end if
       call chmod ('foo', 'a+w',i)
       if (i.ne.0) then
         write (6,*) '***CHMOD of "foo": ', i
-        call abort
+        call doabort
       end if
       i = fstat (3, fstatb)
       if (i.ne.0) then
         write (6,*) '***FSTAT of "foo": ', i
-        call abort
+        call doabort
       end if
       i = stat ('foo', statb)
       if (i.ne.0) then
         write (6,*) '***STAT of "foo": ', i
-        call abort
+        call doabort
       end if
       write (6,*) '  with stat array ', statb
       if (statb(5).ne.getuid () .or. statb(6).ne.getgid() .or. statb(4)
      +     .ne. 1) then
         write (6,*) '*** FSTAT uid, gid or nlink is wrong'
-        call abort
+        call doabort
       end if
       do i=1,13
         if (fstatb (i) .ne. statb (i)) then
@@ -245,17 +255,17 @@ C     in case it exists already:
       call link ('foo ', 'bar ',i)
       if (i.ne.0) then
         write (6,*) '***LINK "foo" to "bar" failed: ', i
-        call abort
+        call doabort
       end if
       call unlink ('foo',i)
       if (i.ne.0) then
         write (6,*) '***UNLINK "foo" failed: ', i
-        call abort
+        call doabort
       end if
       call unlink ('foo',i)
       if (i.eq.0) then
         write (6,*) '***UNLINK "foo" again: ', i
-        call abort
+        call doabort
       end if
       call gerror (gerr)
       i = ierrno()
@@ -266,7 +276,7 @@ C     in case it exists already:
       call getarg (0, line)
       call perror (line (:lenstr (line)))
       call unlink ('bar')
-C      WRITE (6,*) 'You should see exit status 1'
+C     WRITE (6,*) 'You should see exit status 1'
       CALL EXIT(0)
  99   END
 
@@ -294,5 +304,20 @@ C     return >0
 *     signal handler
       subroutine ctrlc
       print *, 'Got ^C'
+      call doabort
+      end
+
+      subroutine doabort
+* For this version, call the ABORT intrinsic.
+      intrinsic abort
       call abort
+      end
+
+* Testsuite version only.
+* Don't actually reference the HOSTNM intrinsic, because some targets
+* need -lsocket, which we don't have a mechanism for supplying.
+      integer function hostnm(nm)
+      character*(*) nm
+      nm = 'not determined by this version of u77-test.f'
+      hostnm = 0
       end
