@@ -59,6 +59,9 @@ Sun Apr 12 10:03:51 1998  Noel Cragg  <noel@red-bean.com>
 
 Sun Apr 12 07:33:46 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* mips.c (large_int): Use HOST_WIDE_INT, not int.
+	(print_operand): Use HOST_WIDE_INT_PRINT_* macros.
+
 	* toplev.c (main): Sort order of handling of -d letters.
 	Use `F' instead of `D' for addressof_dump.
 
