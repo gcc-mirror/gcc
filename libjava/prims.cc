@@ -921,6 +921,8 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
 
   PROCESS_GCJ_PROPERTIES;
 
+  /* Threads must be initialized before the GC, so that it inherits the
+     signal mask.  */
   _Jv_InitThreads ();
   _Jv_InitGC ();
   _Jv_InitializeSyncMutex ();

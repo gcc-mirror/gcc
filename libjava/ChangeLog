@@ -1,3 +1,12 @@
+2005-02-15  David Daney <ddaney@avtrex.com>
+	    Bryce McKinlay  <mckinlay@redhat.com>
+	    
+	* prims.cc (_Jv_CreateJavaVM): Add comment about initialization order.
+	* posix-threads.cc (_Jv_InitThreads): Call block_sigchld() here to
+	ensure that GC threads inherit the new signal mask.
+	(block_sigchld): Call JvFail rather than throwing exception if
+	pthread_sigmask() fails.
+
 2005-02-15  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/jar/Attributes.java (Name.CLASS_PATH): Document that
