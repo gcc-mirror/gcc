@@ -2094,7 +2094,7 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
 #ifdef ENABLE_CHECKING
       gcc_assert (VARRAY_ACTIVE_SIZE (edge_leader) == 0);
       gcc_assert (VARRAY_ACTIVE_SIZE (stmt_list) == 0);
-      gcc_assert (bitmap_first_set_bit (leader_has_match) == -1);
+      gcc_assert (bitmap_empty_p (leader_has_match));
 #endif
     }
 

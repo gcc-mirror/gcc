@@ -174,7 +174,7 @@ bitmap_element_zerop (bitmap_element *element)
 #if BITMAP_ELEMENT_WORDS == 2
   return (element->bits[0] | element->bits[1]) == 0;
 #else
-  int i;
+  unsigned i;
 
   for (i = 0; i < BITMAP_ELEMENT_WORDS; i++)
     if (element->bits[i] != 0)
@@ -309,7 +309,7 @@ bitmap_copy (bitmap to, bitmap from)
 {
   bitmap_element *from_ptr, *to_ptr = 0;
 #if BITMAP_ELEMENT_WORDS != 2
-  int i;
+  unsigned i;
 #endif
 
   bitmap_clear (to);
@@ -444,112 +444,55 @@ bitmap_bit_p (bitmap head, int bit)
   return (ptr->bits[word_num] >> bit_num) & 1;
 }
 
-/* Return the bit number of the first set bit in the bitmap, or -1
-   if the bitmap is empty.  */
+/* Return the bit number of the first set bit in the bitmap.  The
+   bitmap must be non-empty.  */
 
-int
+unsigned
 bitmap_first_set_bit (bitmap a)
 {
-  bitmap_element *ptr = a->first;
+  bitmap_element *elt = a->first;
+  unsigned bit_no;
   BITMAP_WORD word;
-  unsigned word_num, bit_num;
-
-  if (ptr == NULL)
-    return -1;
-
-#if BITMAP_ELEMENT_WORDS == 2
-  word_num = 0, word = ptr->bits[0];
-  if (word == 0)
-    word_num = 1, word = ptr->bits[1];
-#else
-  for (word_num = 0; word_num < BITMAP_ELEMENT_WORDS; ++word_num)
-    if ((word = ptr->bits[word_num]) != 0)
-      goto word_found;
+  unsigned ix;
+  
+  gcc_assert (elt);
+  bit_no = elt->indx * BITMAP_ELEMENT_ALL_BITS;
+  for (ix = 0; ix != BITMAP_ELEMENT_WORDS; ix++)
+    {
+      word = elt->bits[ix];
+      if (word)
+	goto found_bit;
+    }
   gcc_unreachable ();
- word_found:
-#endif
+ found_bit:
+  bit_no += ix * BITMAP_WORD_BITS;
 
+#if GCC_VERSION >= 3004
+  gcc_assert (sizeof(long) == sizeof (word));
+  bit_no += __builtin_ctzl (word);
+#else
   /* Binary search for the first set bit.  */
-  /* ??? It'd be nice to know if ffs or ffsl was available.  */
-
-  bit_num = 0;
-  word = word & -word;
-
-#if nBITMAP_WORD_BITS > 64
- #error "Fill out the table."
+#if BITMAP_WORD_BITS > 64
+#error "Fill out the table."
 #endif
-#if nBITMAP_WORD_BITS > 32
-  if ((word & 0xffffffff) == 0)
-    word >>= 32, bit_num += 32;
+#if BITMAP_WORD_BITS > 32
+  if (!(word & 0xffffffff))
+    word >>= 32, bit_no += 32;
 #endif
-  if ((word & 0xffff) == 0)
-    word >>= 16, bit_num += 16;
-  if ((word & 0xff) == 0)
-    word >>= 8, bit_num += 8;
-  if (word & 0xf0)
-    bit_num += 4;
-  if (word & 0xcc)
-    bit_num += 2;
-  if (word & 0xaa)
-    bit_num += 1;
-
-  return (ptr->indx * BITMAP_ELEMENT_ALL_BITS
-	  + word_num * BITMAP_WORD_BITS
-	  + bit_num);
-}
-
-/* Return the bit number of the last set bit in the bitmap, or -1
-   if the bitmap is empty.  */
-
-int
-bitmap_last_set_bit (bitmap a)
-{
-  bitmap_element *ptr = a->first;
-  BITMAP_WORD word;
-  unsigned word_num, bit_num;
-
-  if (ptr == NULL)
-    return -1;
-
-  while (ptr->next != NULL)
-    ptr = ptr->next;
-
-#if BITMAP_ELEMENT_WORDS == 2
-  word_num = 1, word = ptr->bits[1];
-  if (word == 0)
-    word_num = 0, word = ptr->bits[0];
-#else
-  for (word_num = BITMAP_ELEMENT_WORDS; word_num-- > 0; )
-    if ((word = ptr->bits[word_num]) != 0)
-      goto word_found;
-  gcc_unreachable ();
- word_found:
+  if (!(word & 0xffff))
+    word >>= 16, bit_no += 16;
+  if (!(word & 0xff))
+    word >>= 8, bit_no += 8;
+  if (!(word & 0xf))
+    word >>= 4, bit_no += 4;
+  if (!(word & 0x3))
+    word >>= 2, bit_no += 2;
+  if (!(word & 0x1))
+    word >>= 1, bit_no += 1;
+  
+ gcc_assert (word & 1);
 #endif
-
-  /* Binary search for the last set bit.  */
-
-  bit_num = 0;
-#if nBITMAP_WORD_BITS > 64
- #error "Fill out the table."
-#endif
-#if nBITMAP_WORD_BITS > 32
-  if (word & ~(BITMAP_WORD)0xffffffff)
-    word >>= 32, bit_num += 32;
-#endif
-  if (word & 0xffff0000)
-    word >>= 16, bit_num += 16;
-  if (word & 0xff00)
-    word >>= 8, bit_num += 8;
-  if (word & 0xf0)
-    word >>= 4, bit_num += 4;
-  if (word & 0xc)
-    word >>= 2, bit_num += 2;
-  if (word & 0x2)
-    bit_num += 1;
-
-  return (ptr->indx * BITMAP_ELEMENT_ALL_BITS
-	  + word_num * BITMAP_WORD_BITS
-	  + bit_num);
+ return bit_no;
 }
 
 
