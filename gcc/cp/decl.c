@@ -9802,7 +9802,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  return NULL_TREE;
 
 	if (ctype == NULL_TREE && DECL_LANGUAGE (decl) != lang_c
-	    && (!DECL_TEMPLATE_SPECIALIZATION (decl) ||
+	    && (! DECL_USE_TEMPLATE (decl) ||
 		name_mangling_version < 1)) 
 	  DECL_ASSEMBLER_NAME (decl) = current_namespace_id (declarator);
 	

@@ -977,7 +977,7 @@ compute_access (basetype_path, field)
       else if (TREE_PROTECTED (field))
 	{
 	  if (current_class_type
-	      && static_mem
+	      && (static_mem || DECL_CONSTRUCTOR_P (field))
 	      && ACCESSIBLY_DERIVED_FROM_P (context, current_class_type))
 	    PUBLIC_RETURN;
 	  else

@@ -5469,9 +5469,11 @@ build_const_cast (type, expr)
 	}
 
       if (comp_ptr_ttypes_const (TREE_TYPE (type), intype))
-	return (convert_from_reference
-		(convert_to_reference (type, expr, CONV_CONST|CONV_IMPLICIT,
-				       LOOKUP_COMPLAIN, NULL_TREE)));
+	{
+	  expr = build_unary_op (ADDR_EXPR, expr, 0);
+	  expr = build1 (NOP_EXPR, type, expr);
+	  return convert_from_reference (expr);
+	}
     }
   else if (TREE_CODE (type) == POINTER_TYPE
 	   && TREE_CODE (intype) == POINTER_TYPE

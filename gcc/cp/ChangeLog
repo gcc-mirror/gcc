@@ -1,3 +1,63 @@
+Tue Feb 10 20:36:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
+			  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* decl.c (grokdeclarator): Use DECL_USE_TEMPLATE instead
+	when deciding to override DECL_ASSEMBLER_NAME.
+
+Sat Feb  7 16:48:54 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_decl): Call cp_finish_decl for vars even if we
+	don't define them yet.
+
+	* parse.y (nomods_initdcl0): Add constructor_declarator case.
+
+Thu Feb  5 19:10:40 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo2.cc: Add tinfo for signed char.
+
+Thu Feb  5 14:38:23 1998  Mike Stump  <mrs@wrs.com>
+
+	* search.c (compute_access): Handle protected constructors in derived
+	classes as accessible.
+
+Tue Jan  6 01:42:44 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* lex.c (file_name_nondirectory): Also check for '/'.
+
+Tue Jan 27 01:44:02 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (type_unification_real): Just accept function parms that
+	don't use any template parms.
+
+Sun Jan 25 03:30:00 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (typename_sub*): Fix std::.
+
+Fri Jan 23 18:34:37 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* lex.c (DIR_SEPARATOR): Define to be '/' if not already defined.
+	(file_name_nondirectory): Use.
+
+Mon Jan 19 22:40:03 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* call.c (build_user_type_conversion_1): Handle user-defined
+	template conversion operators correctly.
+
+Mon Jan 19 13:18:51 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (build_up_reference): A TARGET_EXPR has side effects.
+
+Wed Dec 17 17:08:52 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* pt.c (instantiate_class_template): Don't do injection when
+ 	processing_template_decl is true, as pollutes current_binding_level 
+        for base classes.
+
+Thu Nov 27 00:59:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_const_cast): Handle references here instead of
+	handing off to convert_to_reference.
+
 Mon Dec  8 23:17:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (copy_args_p): Handle copy elision for types with virtual

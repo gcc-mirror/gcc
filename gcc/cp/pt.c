@@ -1950,18 +1950,22 @@ instantiate_class_template (type)
     for (; d; d = TREE_CHAIN (d))
       TREE_VALUE (d) = xref_tag_from_type (TREE_VALUE (d), NULL_TREE, 1);
 
-    d = tsubst (DECL_TEMPLATE_INJECT (template), args,
+    /* This does injection for friend functions. */
+    if (!processing_template_decl)
+      {
+	d = tsubst (DECL_TEMPLATE_INJECT (template), args,
 		TREE_VEC_LENGTH (args), NULL_TREE);
 
-    for (; d; d = TREE_CHAIN (d))
-      {
-	tree t = TREE_VALUE (d);
+	for (; d; d = TREE_CHAIN (d))
+	  {
+	    tree t = TREE_VALUE (d);
 
-	if (TREE_CODE (t) == TYPE_DECL)
-	  /* Already injected.  */;
-	else
-	  pushdecl (t);
-      }
+	    if (TREE_CODE (t) == TYPE_DECL)
+	      /* Already injected.  */;
+	    else
+	      pushdecl (t);
+	  }
+      } 
   }
 
   if (! uses_template_parms (type))
@@ -3644,16 +3648,11 @@ type_unification_real (tparms, targs, parms, args, nsubsts, subr,
 	      if (comptypes (parm, type, 1))
 		continue;
 	    }
-	  else if (arg)
-	    {
-	      if (can_convert_arg (parm, type, arg))
-		continue;
-	    }
 	  else
-	    {
-	      if (can_convert (parm, type))
-		continue;
-	    }
+	    /* It might work; we shouldn't check now, because we might
+	       get into infinite recursion.  Overload resolution will
+	       handle it.  */
+	    continue;
 
 	  return 1;
 	}
@@ -4502,7 +4501,7 @@ instantiate_decl (d)
       pushclass (DECL_CONTEXT (d), 2);
       DECL_INITIAL (d) = tsubst_expr (DECL_INITIAL (code_pattern), args,
 				      TREE_VEC_LENGTH (args), tmpl);
-      popclass (1);
+      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0, LOOKUP_NORMAL);
     }
 
   /* import_export_decl has to happen after DECL_INITIAL is set up.  */

@@ -4352,8 +4352,11 @@ build_user_type_conversion_1 (totype, expr, flags)
       if (TREE_CODE (totype) == REFERENCE_TYPE)
 	convflags |= LOOKUP_NO_TEMP_BIND;
 
-      ics = implicit_conversion
-	(totype, TREE_TYPE (TREE_TYPE (fn)), 0, convflags);
+      if (TREE_CODE (fn) != TEMPLATE_DECL)
+	ics = implicit_conversion
+	  (totype, TREE_TYPE (TREE_TYPE (fn)), 0, convflags);
+      else
+	ics = implicit_conversion (totype, totype, 0, convflags);
 
       if (TREE_CODE (totype) == REFERENCE_TYPE && ics && ICS_BAD_FLAG (ics))
 	/* ignore the near match.  */;
