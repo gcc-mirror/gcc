@@ -898,6 +898,18 @@ DEFTREECODE (CATCH_EXPR, "catch_expr", 's', 2)
    expanding.  */
 DEFTREECODE (EH_FILTER_EXPR, "eh_filter_expr", 's', 2)
 
+/* Node used for describing a property that is known at compile
+   time.  */
+DEFTREECODE (SCEV_KNOWN, "scev_known", 'e', 0)
+
+/* Node used for describing a property that is not known at compile
+   time.  */
+DEFTREECODE (SCEV_NOT_KNOWN, "scev_not_known", 'e', 0)
+
+/* Polynomial chains of recurrences.
+   Under the form: cr = {CHREC_LEFT (cr), +, CHREC_RIGHT (cr)}.  */
+DEFTREECODE (POLYNOMIAL_CHREC, "polynomial_chrec", 'e', 3)
+
 /* Used to chain children of container statements together.
    Use the interface in tree-iterator.h to access this node.  */
 DEFTREECODE (STATEMENT_LIST, "statement_list", 'x', 0)

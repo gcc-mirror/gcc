@@ -1,3 +1,13 @@
+2004-06-30  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* Makefile.in (OBJS-common): Add tree-chrec.o.
+	(tree-chrec.o): New rule.
+	(GTFILES): Add tree-chrec.h.
+	* gengtype.c (open_base_files): Add tree-chrec.h.
+	* tree-chrec.c: New file.
+	* tree-chrec.h: New file.
+	* tree.def (SCEV_KNOWN, SCEV_NOT_KNOWN, POLYNOMIAL_CHREC): New nodes.
+
 2004-06-30  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c: Include "output.h" to define dump_file.
