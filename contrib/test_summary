@@ -82,6 +82,10 @@ for file in $files; do
 done &&
 $anyfile &&
 if $forcemail || $anychange; then :; else mailto=nobody; fi &&
+# We use cat instead of listing the files as arguments to AWK because
+# GNU awk 3.0.0 would break if any of the filenames contained `=' and
+# was preceded by an invalid ``variable'' name.
+cat ./config.status $files |
 $AWK '
 BEGIN {
   lang="";
@@ -122,7 +126,7 @@ END { if (lang != "") {
   print "Mail -s \"Results for " prefix version lang "testsuite on " host "\" '"${mailto}"' &&";
 }}
 { next; }
-' ./config.status $files | sed "s/\([\`\$\\\\]\)/\\\\\\1/g" &&
+' | sed "s/\([\`\$\\\\]\)/\\\\\\1/g" &&
 if $move; then
     for file in $files `ls -1 $files | sed s/sum$/log/`; do
       [ -f $file ] && echo "mv `pwd`/$file `pwd`/$file.sent &&"
