@@ -4,6 +4,11 @@ Tue Jul 14 21:35:30 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 Tue Jul 14 02:16:34 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in: stamp-lib* -> s-lib*.
+	* libU77/Makefile.in: Likewise.
+	* libF77/Makefile.in: Likewise.
+	* libI77/Makefile.in: Likewise.
+
 	* libU77/Makefile.in (ALL_CFLAGS): Add -I$(F2C_H_DIR).
 
 1998-07-06  Mike Stump  <mrs@wrs.com>
