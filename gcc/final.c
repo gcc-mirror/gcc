@@ -2099,11 +2099,11 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
 	  && ! exceptions_via_longjmp)
 	{
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_BLOCK_NUMBER (insn));
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_EH_HANDLER (insn));
           if (! flag_new_exceptions)
-            add_eh_table_entry (NOTE_BLOCK_NUMBER (insn));
+            add_eh_table_entry (NOTE_EH_HANDLER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_BEG
-	  ASM_OUTPUT_EH_REGION_BEG (file, NOTE_BLOCK_NUMBER (insn));
+	  ASM_OUTPUT_EH_REGION_BEG (file, NOTE_EH_HANDLER (insn));
 #endif
 	  break;
 	}
@@ -2111,11 +2111,11 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END
 	  && ! exceptions_via_longjmp)
 	{
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_BLOCK_NUMBER (insn));
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_EH_HANDLER (insn));
           if (flag_new_exceptions)
-            add_eh_table_entry (NOTE_BLOCK_NUMBER (insn));
+            add_eh_table_entry (NOTE_EH_HANDLER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_END
-	  ASM_OUTPUT_EH_REGION_END (file, NOTE_BLOCK_NUMBER (insn));
+	  ASM_OUTPUT_EH_REGION_END (file, NOTE_EH_HANDLER (insn));
 #endif
 	  break;
 	}

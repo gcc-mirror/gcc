@@ -1,3 +1,18 @@
+Tue Sep 14 16:47:08 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.c (expand_eh_region_start_for_decl): Use NOTE_EH_HANDLER,
+	not NOTE_BLOCK_NUMBER.
+	(expand_eh_region_end): Likewise.
+	(find_exception_handler_labels): Likewise.
+	(scan_region): Likewise.
+	(exception_optimize): Likewise.
+	(update_rethrow_references): Likewise.
+	(set_insn_eh_region): Likewise.
+	* final.c (final_scan_insn): Likewise.
+	* flow.c (make_edges): Likewise.
+	* integrate.c (expand_inline_function): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+
 Tue Sep 14 16:30:16 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ginclude/stdarg.h, ginclude/varargs.h: Implement in

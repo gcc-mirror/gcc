@@ -1437,7 +1437,7 @@ expand_eh_region_start_for_decl (decl)
 
   push_eh_entry (&ehstack);
   note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
-  NOTE_BLOCK_NUMBER (note)
+  NOTE_EH_HANDLER (note)
     = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
   if (exceptions_via_longjmp)
     start_dynamic_handler ();
@@ -1476,7 +1476,7 @@ expand_eh_region_end (handler)
   entry = pop_eh_entry (&ehstack);
 
   note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
-  ret = NOTE_BLOCK_NUMBER (note)
+  ret = NOTE_EH_HANDLER (note)
     = CODE_LABEL_NUMBER (entry->exception_handler_label);
   if (exceptions_via_longjmp == 0 && ! flag_new_exceptions
       /* We share outer_context between regions; only emit it once.  */
@@ -1498,7 +1498,7 @@ expand_eh_region_end (handler)
   entry->finalization = handler;
 
   /* create region entry in final exception table */
-  r = new_eh_region_entry (NOTE_BLOCK_NUMBER (note), entry->rethrow_label);
+  r = new_eh_region_entry (NOTE_EH_HANDLER (note), entry->rethrow_label);
 
   enqueue_eh_entry (&ehqueue, entry);
 
@@ -2018,7 +2018,7 @@ static int eh_table_max_size = 0;
 
    Called from final_scan_insn when a NOTE_INSN_EH_REGION_BEG is seen.
    (Or NOTE_INSN_EH_REGION_END sometimes)
-   N is the NOTE_BLOCK_NUMBER of the note, which comes from the code
+   N is the NOTE_EH_HANDLER of the note, which comes from the code
    label number of the exception handler for the region.  */
 
 void
@@ -2289,7 +2289,7 @@ find_exception_handler_labels ()
       if (GET_CODE (insn) == NOTE
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
 	{
-          ptr = get_first_handler (NOTE_BLOCK_NUMBER (insn));
+          ptr = get_first_handler (NOTE_EH_HANDLER (insn));
           for ( ; ptr; ptr = ptr->next) 
             {
               /* make sure label isn't in the list already */
@@ -2560,7 +2560,7 @@ scan_region (insn, n, delete_outer)
   if (insn == NULL_RTX
       || GET_CODE (insn) != NOTE
       || NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
-      || NOTE_BLOCK_NUMBER (insn) != n
+      || NOTE_EH_HANDLER (insn) != n
       || delete_outer == NULL)
     abort ();
 
@@ -2580,14 +2580,14 @@ scan_region (insn, n, delete_outer)
       if (GET_CODE (insn) == NOTE
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
 	{
-	  insn = scan_region (insn, NOTE_BLOCK_NUMBER (insn), &delete);
+	  insn = scan_region (insn, NOTE_EH_HANDLER (insn), &delete);
 	}
 
       insn = NEXT_INSN (insn);
     }
 
   /* The _BEG/_END NOTEs must match and nest.  */
-  if (NOTE_BLOCK_NUMBER (insn) != n)
+  if (NOTE_EH_HANDLER (insn) != n)
     abort ();
 
   /* If anything in this exception region can throw, we can throw.  */
@@ -2665,7 +2665,7 @@ exception_optimize ()
 	     inbetween. We are also guaranteed that the value of insn
 	     returned will be valid, as otherwise scan_region won't
 	     return.  */
-	  insn = scan_region (insn, NOTE_BLOCK_NUMBER (insn), &n);
+	  insn = scan_region (insn, NOTE_EH_HANDLER (insn), &n);
 	}
     }
 }
@@ -2706,7 +2706,7 @@ update_rethrow_references ()
         {
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
 	    {
-	      region = find_func_region (NOTE_BLOCK_NUMBER (insn));
+	      region = find_func_region (NOTE_EH_HANDLER (insn));
 	      saw_region[region] = 1;
 	    }
 	}
@@ -2946,10 +2946,10 @@ set_insn_eh_region (first, region_num)
 
   for (insn = *first; insn; insn = NEXT_INSN (insn))
     {
-      if ((GET_CODE (insn) == NOTE) && 
-                        (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG))
+      if ((GET_CODE (insn) == NOTE)
+	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG))
         {
-          rnum = NOTE_BLOCK_NUMBER (insn);
+          rnum = NOTE_EH_HANDLER (insn);
           insn_eh_region[INSN_UID (insn)] =  rnum;
           insn = NEXT_INSN (insn);
           set_insn_eh_region (&insn, rnum);
@@ -3147,12 +3147,12 @@ init_eh_nesting_info ()
 	{
           if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
             {
-	      int block = NOTE_BLOCK_NUMBER (insn);
+	      int block = NOTE_EH_HANDLER (insn);
 	      region_count++;
 	      info->region_index[block] = region_count;
               if (eh_note)
                 nested_eh_region [block] =
-                                     NOTE_BLOCK_NUMBER (XEXP (eh_note, 0));
+                                     NOTE_EH_HANDLER (XEXP (eh_note, 0));
               else
                 nested_eh_region [block] = 0;
               eh_note = gen_rtx_EXPR_LIST (VOIDmode, insn, eh_note);
