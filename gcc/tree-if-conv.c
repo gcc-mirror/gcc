@@ -815,7 +815,7 @@ process_phi_nodes (struct loop *loop)
       basic_block true_bb = NULL;
       bb = ifc_bbs[i];
 
-      if (bb == loop->header || bb == loop->latch)
+      if (bb == loop->header)
 	continue;
 
       phi = phi_nodes (bb);
@@ -863,9 +863,6 @@ combine_blocks (struct loop *loop)
 
       bb = ifc_bbs[i];
 
-      if (bb == loop->latch)
-	continue;
-
       if (!exit_bb && bb_with_exit_edge_p (bb))
 	  exit_bb = bb;
 
@@ -890,6 +887,9 @@ combine_blocks (struct loop *loop)
 	    }
 	  continue;
 	}
+
+      if (bb == loop->latch && empty_block_p (bb))
+	continue;
 
       /* It is time to remove this basic block.	 First remove edges.  */
       while (EDGE_COUNT (bb->succs) > 0)
@@ -921,6 +921,8 @@ combine_blocks (struct loop *loop)
 	delete_from_dominance_info (CDI_POST_DOMINATORS, bb);
 
       /* Remove basic block.  */
+      if (bb == loop->latch)
+	loop->latch = merge_target_bb;
       remove_bb_from_loops (bb);
       expunge_block (bb);
     }
@@ -928,7 +930,10 @@ combine_blocks (struct loop *loop)
   /* Now if possible, merge loop header and block with exit edge.
      This reduces number of basic blocks to 2. Auto vectorizer addresses
      loops with two nodes only.  FIXME: Use cleanup_tree_cfg().  */
-  if (exit_bb != loop->latch && empty_block_p (loop->latch))
+  if (exit_bb
+      && loop->header != loop->latch
+      && exit_bb != loop->latch 
+      && empty_block_p (loop->latch))
     {
       if (can_merge_blocks_p (loop->header, exit_bb))
 	{

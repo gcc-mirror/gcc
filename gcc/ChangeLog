@@ -1,3 +1,9 @@
+2004-10-14  Devang Patel  <dpatel@apple.com>
+
+	PR 17635
+	* tree-if-conv.c (process_phi_nodes): Process latch block.
+	(combine_blocks): Process latch block and update loop structure.
+	
 2004-10-14  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* tree-vectorizer.c (vect_generate_tmps_on_preheader):
