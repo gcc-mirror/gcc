@@ -128,7 +128,7 @@ extern void allocate_for_life_analysis	PROTO((void));
 extern int regno_uninitialized		PROTO((int));
 extern int regno_clobbered_at_setjmp	PROTO((int));
 extern void dump_flow_info		PROTO((FILE *));
-extern void find_basic_blocks         PROTO((rtx, int, FILE *, int));
+extern void find_basic_blocks         PROTO((rtx, int, FILE *));
 extern void free_basic_block_vars     PROTO((int));
 extern void set_block_num             PROTO((rtx, int));
 extern void life_analysis             PROTO((rtx, int, FILE *));

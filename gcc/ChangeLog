@@ -1,3 +1,11 @@
+Sun Oct 11 00:15:29 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (find_basic_blocks): Delte "live_reachable_p" argument.
+	(find_basic_blocks_1): Similarly.
+	* output.h (find_basic_blocks): Fix prototype.
+	* gcse.c, toplev.c: Don't pass "live_reachable_p" argument to
+	find_basic_blocks anymore.
+
 Sat Oct 10 22:00:34 1998  Richard Henderson  <rth@cygnus.com>
 
         * basic-block.h (EXECUTE_IF_SET_IN_SBITMAP): New macro.
