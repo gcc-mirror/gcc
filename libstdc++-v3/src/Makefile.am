@@ -62,13 +62,12 @@ WARN_CXXFLAGS = \
 GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
-LIBIO_INCLUDES = @LIBIO_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
 INCLUDES = \
 	-nostdinc++ \
 	$(GLIBCPP_INCLUDES) \
-	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
+	$(LIBSUPCXX_INCLUDES) $(LIBMATH_INCLUDES) \
 	$(TOPLEVEL_INCLUDES)
 
 # Source files linked in via configuration/make substitution for a
@@ -151,7 +150,7 @@ VPATH = $(top_srcdir)/src:$(top_srcdir)
 libstdc___la_SOURCES = $(sources)
 
 libstdc___la_LIBADD = \
-	$(top_builddir)/libmath/libmath.la @libio_la@ \
+	$(top_builddir)/libmath/libmath.la \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)

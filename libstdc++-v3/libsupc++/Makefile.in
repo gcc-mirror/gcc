@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -69,7 +69,6 @@ ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
 AWK = @AWK@
 BASIC_FILE_CC = @BASIC_FILE_CC@
 BASIC_FILE_H = @BASIC_FILE_H@
-CCODECVT_C = @CCODECVT_C@
 CCODECVT_CC = @CCODECVT_CC@
 CCODECVT_H = @CCODECVT_H@
 CCOLLATE_CC = @CCOLLATE_CC@
@@ -94,7 +93,6 @@ EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
-LIBIO_INCLUDES = @LIBIO_INCLUDES@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
@@ -124,6 +122,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_CXX = @glibcpp_CXX@
 glibcpp_MOFILES = @glibcpp_MOFILES@
+glibcpp_PCHFLAGS = @glibcpp_PCHFLAGS@
 glibcpp_POFILES = @glibcpp_POFILES@
 glibcpp_basedir = @glibcpp_basedir@
 glibcpp_builddir = @glibcpp_builddir@
@@ -135,7 +134,6 @@ glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
-libio_la = @libio_la@
 libtool_VERSION = @libtool_VERSION@
 toplevel_srcdir = @toplevel_srcdir@
 
@@ -164,11 +162,13 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS =  	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
+CONFIG_CXXFLAGS = \
+	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
 
 
 # Warning flags to use.
-WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
+WARN_CXXFLAGS = \
+	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
 LIBSUPCXX_CXXFLAGS = @LIBSUPCXX_PICFLAGS@
@@ -178,13 +178,41 @@ GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 GCC_INCLUDES = -I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include
 
-INCLUDES =  	$(GCC_INCLUDES) $(GLIBCPP_INCLUDES) $(LIBSUPCXX_INCLUDES)
+INCLUDES = \
+	$(GCC_INCLUDES) $(GLIBCPP_INCLUDES) $(LIBSUPCXX_INCLUDES)
 
 
-headers =  	exception new typeinfo cxxabi.h exception_defines.h 
+headers = \
+	exception new typeinfo cxxabi.h exception_defines.h 
 
 
-sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	eh_alloc.cc 	eh_aux_runtime.cc 	eh_catch.cc 	eh_exception.cc 	eh_globals.cc 	eh_personality.cc 	eh_term_handler.cc 	eh_terminate.cc 	eh_throw.cc 	eh_type.cc 	eh_unex_handler.cc 	guard.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	pure.cc 	tinfo.cc 	tinfo2.cc 	vec.cc 	vterminate.cc
+sources = \
+	del_op.cc \
+	del_opnt.cc \
+	del_opv.cc \
+	del_opvnt.cc \
+	eh_alloc.cc \
+	eh_aux_runtime.cc \
+	eh_catch.cc \
+	eh_exception.cc \
+	eh_globals.cc \
+	eh_personality.cc \
+	eh_term_handler.cc \
+	eh_terminate.cc \
+	eh_throw.cc \
+	eh_type.cc \
+	eh_unex_handler.cc \
+	guard.cc \
+	new_handler.cc \
+	new_op.cc \
+	new_opnt.cc \
+	new_opv.cc \
+	new_opvnt.cc \
+	pure.cc \
+	tinfo.cc \
+	tinfo2.cc \
+	vec.cc \
+	vterminate.cc
 
 
 libsupc___la_SOURCES = $(sources) 
@@ -198,10 +226,16 @@ glibcppinstall_HEADERS = $(headers)
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion call for it. 
-AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS) 
+AM_CXXFLAGS = \
+	-fno-implicit-templates \
+	$(LIBSUPCXX_CXXFLAGS) \
+	$(WARN_CXXFLAGS) \
+	$(OPTIMIZE_CXXFLAGS) \
+	$(CONFIG_CXXFLAGS) 
 
 
-AM_MAKEFLAGS =  	"gxx_include_dir=$(gxx_include_dir)"
+AM_MAKEFLAGS = \
+	"gxx_include_dir=$(gxx_include_dir)"
 
 
 # libstdc++ libtool notes
@@ -225,7 +259,9 @@ AM_MAKEFLAGS =  	"gxx_include_dir=$(gxx_include_dir)"
 #
 # We have to put --tag disable-shared after --tag CXX lest things
 # CXX undo the affect of disable-shared.
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared                --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
+               --mode=compile $(CXX) $(INCLUDES) \
+	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
 # 3) We'd have a problem when building the shared libstdc++ object if
@@ -234,7 +270,9 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared                --mode=c
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared           --mode=link $(CXX)           @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared \
+          --mode=link $(CXX) \
+          @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -271,7 +309,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(libsupc__convenience_la_SOURCES) $(libsupc___la_SOURCES)
 OBJECTS = $(libsupc__convenience_la_OBJECTS) $(libsupc___la_OBJECTS)

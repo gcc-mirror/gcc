@@ -490,7 +490,7 @@ AC_SUBST(LIBSUPCXX_PICFLAGS)
 # top_srcdir/{src,libsupc++}/Makefile.am, manually append it here.
 AC_OUTPUT(Makefile \
 include/Makefile src/Makefile \
-libmath/Makefile libio/Makefile libsupc++/Makefile \
+libmath/Makefile libsupc++/Makefile \
 po/Makefile testsuite/Makefile mkcheck testsuite_flags,
 [test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
  if test -n "$CONFIG_FILES"; then
@@ -532,7 +532,7 @@ ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 dnl  In autoconf 2.5x, AC_OUTPUT is replaced by three AC_ macros:
 dnl  AC_CONFIG_FILES(Makefile \
 dnl      include/Makefile src/Makefile \
-dnl      libmath/Makefile libio/Makefile libsupc++/Makefile \
+dnl      libmath/Makefile libsupc++/Makefile \
 dnl      po/Makefile testsuite/Makefile mkcheck testsuite_flags)
 dnl  AC_CONFIG_COMMANDS([default],
 dnl  [if test -n "$CONFIG_FILES"; then
