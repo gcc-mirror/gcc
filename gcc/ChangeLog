@@ -1,5 +1,8 @@
 Mon Aug 24 10:25:46 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* sparc.md (TFmode splits): Use reg_overlap_mentioned_p to detect
+	when the source and destination overlap.
+
 	* stmt.c (emit_case_nodes): Change rtx_function to rtx_fn to avoid
 	clash with global type.
 

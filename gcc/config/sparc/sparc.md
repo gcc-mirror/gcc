@@ -2661,7 +2661,7 @@
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
-  if (REGNO (dest1) == REGNO (src2))
+  if (reg_overlap_mentioned_p (dest1, src2))
     {
       emit_insn (gen_movsi (dest2, src2));
       emit_insn (gen_movsi (dest1, src1));
@@ -2692,8 +2692,8 @@
   rtx low_part = gen_lowpart (SImode, operands[0]);
   int self_reference;
 
-  self_reference = reg_mentioned_p (operands[0],
-                                    XEXP (XEXP (word1, 0), 0));
+  self_reference = reg_overlap_mentioned_p (operands[0],
+					    XEXP (XEXP (word1, 0), 0));
   if (self_reference != 0
       && WORDS_BIG_ENDIAN)
     {
@@ -3119,7 +3119,7 @@
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
-  if (REGNO(dest1) == REGNO(src2))
+  if (reg_overlap_mentioned_p (dest1, src2))
     {
       emit_insn (gen_movsf (dest2, src2));
       emit_insn (gen_movsf (dest1, src1));
@@ -3151,8 +3151,8 @@
 			      plus_constant_for_output (XEXP (word0, 0), 4));
   int self_reference;
 
-  self_reference = reg_mentioned_p (operands[0],
-                                    XEXP (XEXP (word1, 0), 0));
+  self_reference = reg_overlap_mentioned_p (operands[0],
+					    XEXP (XEXP (word1, 0), 0));
   if (GET_CODE (operands[0]) == SUBREG)
     operands[0] = alter_subreg (operands[0]);
 
@@ -3354,7 +3354,7 @@
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
-  if (REGNO(dest1) == REGNO(src2))
+  if (reg_overlap_mentioned_p (dest1, src2))
     {
       emit_insn (gen_movdf (dest2, src2));
       emit_insn (gen_movdf (dest1, src1));
@@ -3379,8 +3379,8 @@
   rtx word1 = change_address (operands[1], DFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 8));
   rtx dest1, dest2;
-  int self_reference = reg_mentioned_p (operands[0],
-                                        XEXP (XEXP (word1, 0), 0));
+  int self_reference = reg_overlap_mentioned_p (operands[0],
+						XEXP (XEXP (word1, 0), 0));
 
   /* Ugly, but gen_highpart will crap out here for 32-bit targets.  */
   dest1 = gen_rtx_SUBREG (DFmode, operands[0], WORDS_BIG_ENDIAN == 0);
