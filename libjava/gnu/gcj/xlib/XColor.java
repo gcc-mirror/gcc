@@ -38,5 +38,5 @@ public final class XColor
   public final native byte getFlags();
   public final native long getPixelValue();
   
-  RawData structure = 0;
+  RawData structure = null;
 }
