@@ -35,6 +35,7 @@
 # endif
 #endif
 
+#include "ansidecl.h"
 #include "md5.h"
 
 #ifdef _LIBC
