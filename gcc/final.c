@@ -1980,6 +1980,18 @@ final (first, file, optimize, prescan)
         max_uid = INSN_UID (insn);
       if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
         line_note_exists[NOTE_LINE_NUMBER (insn)] = 1;
+#ifdef HAVE_cc0
+      /* If CC tracking across branches is enabled, record the insn which
+	 jumps to each branch only reached from one place.  */
+      if (GET_CODE (insn) == JUMP_INSN)
+	{
+	  rtx lab = JUMP_LABEL (insn);
+	  if (lab && LABEL_NUSES (lab) == 1)
+	    {
+	      LABEL_REFS (lab) = insn;
+	    }
+	}
+#endif
     }
 
   /* Initialize insn_eh_region table if eh is being used. */
@@ -2283,7 +2295,30 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    ASM_OUTPUT_ALIGN (file, align);
 #endif
 	}
+#ifdef HAVE_cc0
       CC_STATUS_INIT;
+      /* If this label is reached from only one place, set the condition
+	 codes from the instruction just before the branch.  */
+      if (LABEL_NUSES (insn) == 1)
+	{
+	  rtx jump = LABEL_REFS (insn);
+	  rtx barrier = prev_nonnote_insn (insn);
+	  rtx prev;
+	  /* If the LABEL_REFS field of this label has been set to point
+	     at a branch, the predecessor of the branch is a regular
+	     insn, and that branch is the only way to reach this label,
+	     set the condition codes based on the branch and its
+	     predecessor.  */
+	  if (barrier && GET_CODE (barrier) == BARRIER
+	      && jump && GET_CODE (jump) == JUMP_INSN
+	      && (prev = prev_nonnote_insn (jump))
+	      && GET_CODE (prev) == INSN)
+	    {
+	      NOTICE_UPDATE_CC (PATTERN (prev), prev);
+	      NOTICE_UPDATE_CC (PATTERN (jump), jump);
+	    }
+	}
+#endif
       if (prescan > 0)
 	break;
       new_block = 1;
