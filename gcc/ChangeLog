@@ -1,3 +1,9 @@
+2002-03-22  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (print_operand): Fix incorrect mode
+	passed to adjust_address.  Fix comment formatting.
+
+
 2002-03-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* real.h: Don't define REAL_INFINITY or REAL_IS_NOT_DOUBLE.
