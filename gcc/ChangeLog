@@ -1,3 +1,9 @@
+2001-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (AC_CHECK_FUNCS): Delete strtoul, bsearch, popen,
+	strchr, strrchr, isascii, gettimeofday.
+	* config.in, configure: Regenerate.
+
 2001-11-30  Zoltan Hidvegi <hzoli@hzoli.2y.net>
 
 	* unroll.c (unroll_loop): Correct special exit cases.

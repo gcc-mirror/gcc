@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -99,9 +99,6 @@
 /* Define if you have the atoq function.  */
 #undef HAVE_ATOQ
 
-/* Define if you have the bsearch function.  */
-#undef HAVE_BSEARCH
-
 /* Define if you have the clock function.  */
 #undef HAVE_CLOCK
 
@@ -150,14 +147,8 @@
 /* Define if you have the getrusage function.  */
 #undef HAVE_GETRUSAGE
 
-/* Define if you have the gettimeofday function.  */
-#undef HAVE_GETTIMEOFDAY
-
 /* Define if you have the getuid function.  */
 #undef HAVE_GETUID
-
-/* Define if you have the isascii function.  */
-#undef HAVE_ISASCII
 
 /* Define if you have the kill function.  */
 #undef HAVE_KILL
@@ -173,9 +164,6 @@
 
 /* Define if you have the nl_langinfo function.  */
 #undef HAVE_NL_LANGINFO
-
-/* Define if you have the popen function.  */
-#undef HAVE_POPEN
 
 /* Define if you have the putc_unlocked function.  */
 #undef HAVE_PUTC_UNLOCKED
@@ -203,9 +191,6 @@
 
 /* Define if you have the strdup function.  */
 #undef HAVE_STRDUP
-
-/* Define if you have the strrchr function.  */
-#undef HAVE_STRRCHR
 
 /* Define if you have the strsignal function.  */
 #undef HAVE_STRSIGNAL

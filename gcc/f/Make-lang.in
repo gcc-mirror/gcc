@@ -91,7 +91,7 @@ g77-cross$(exeext): g77$(exeext)
 
 F77_OBJS = f/bad.o f/bit.o f/bld.o f/com.o f/data.o f/equiv.o f/expr.o \
  f/global.o f/implic.o f/info.o f/intrin.o f/lab.o f/lex.o f/malloc.o \
- f/name.o f/parse.o f/proj.o f/src.o f/st.o f/sta.o f/stb.o f/stc.o \
+ f/name.o f/parse.o f/src.o f/st.o f/sta.o f/stb.o f/stc.o \
  f/std.o f/ste.o f/storag.o f/stp.o f/str.o f/sts.o f/stt.o f/stu.o \
  f/stv.o f/stw.o f/symbol.o f/target.o f/top.o f/type.o f/version.o f/where.o
 
@@ -129,19 +129,13 @@ f/str-op.h f/str-op.j: f/fini$(build_exeext) f/str-op.fin
 f/str-ot.h f/str-ot.j: f/fini$(build_exeext) f/str-ot.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-ot.fin f/str-ot.j f/str-ot.h
 
-f/fini$(build_exeext): f/fini.o f/proj-h.o $(HOST_LIBDEPS)
+f/fini$(build_exeext): f/fini.o $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o f/fini$(build_exeext) \
-		f/fini.o f/proj-h.o $(HOST_LIBS)
+		f/fini.o $(HOST_LIBS)
 
 f/fini.o:
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	      -c $(srcdir)/f/fini.c $(OUTPUT_OPTION)
-
-# Like proj.o, but depends on hconfig.h instead of config.h.
-f/proj-h.o: f/proj.c f/proj.h $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(GLIMITS_H)
-	$(HOST_CC) -DUSE_HCONFIG \
-		$(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
-		-c $(srcdir)/f/proj.c $(OUTPUT_OPTION)
 
 #
 # Build hooks:
@@ -428,7 +422,6 @@ f/parse.o: f/parse.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h \
  f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h \
  f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h f/version.h flags.h
-f/proj.o: f/proj.c f/proj.h $(CONFIG_H) $(SYSTEM_H) glimits.h
 f/src.o: f/src.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/src.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/malloc.h
 f/st.o: f/st.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/st.h f/bad.h f/bad.def \
