@@ -1,3 +1,14 @@
+2000-04-02  Neil Booth  <NeilB@earthling.net>
+
+	* gcc.dg/cpp-cond.c  New tests.
+	* gcc.dg/cpp-ifparen.c New tests.  Amend existing tests to make
+	accidental success less likely.
+	* gcc.dg/cpp-missingop.c  New tests.
+	* gcc.dg/cpp-missingparen.c  New tests.
+	* gcc.dg/cpp-shift.c  New tests.
+	* gcc.dg/cpp-shortcircuit.c  New tests.
+	* gcc.dg/cpp-unary.c  New tests.
+
 Wed Mar 29 13:44:23 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000329-1.c: New test.
