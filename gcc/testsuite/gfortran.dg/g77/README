@@ -27,11 +27,11 @@ fcase-preserve.f		?
 ff90-1.f			?
 ffixed-form-1.f			Y
 ffixed-form-2.f			Y
-ffixed-line-length-0.f		F  PR 16464
-ffixed-line-length-132.f	F  PR 16464
-ffixed-line-length-7.f		F  PR 16464
-ffixed-line-length-72.f		F  PR 16464
-ffixed-line-length-none.f	F  PR 16464
+ffixed-line-length-0.f		Y
+ffixed-line-length-132.f	Y
+ffixed-line-length-7.f		F  PR 16465
+ffixed-line-length-72.f		Y
+ffixed-line-length-none.f	Y
 ffree-form-1.f			Y
 ffree-form-2.f			Y
 ffree-form-3.f			Y
