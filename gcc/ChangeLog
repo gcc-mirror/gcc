@@ -1,3 +1,7 @@
+Thu Jan 15 01:02:30 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Wed Jan 14 22:49:17 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alias.c: Change all uses of gen_rtx(FOO...) to gen_rtx_FOO;
