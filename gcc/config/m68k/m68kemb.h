@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  "embedded" 68XXX.
    This is meant to be included after m68k.h.
-   Copyright (C) 1994 Free Software Foundation, Inc.  */
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.  */
 
 #define PTRDIFF_TYPE "long int"
 #define SIZE_TYPE "long unsigned int"
@@ -37,3 +37,7 @@
 
 #undef NEEDS_UNTYPED_CALL
 #define NEEDS_UNTYPED_CALL 1
+
+/* crt0.o should be specified in the linker script.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC ""
