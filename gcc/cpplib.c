@@ -3880,7 +3880,7 @@ do_error (pfile, keyword, buf, limit)
      U_CHAR *buf, *limit;
 {
   int length = limit - buf;
-  U_CHAR *copy = (U_CHAR *) xmalloc (length + 1);
+  U_CHAR *copy = (U_CHAR *) alloca (length + 1);
   bcopy (buf, copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
@@ -3901,7 +3901,7 @@ do_warning (pfile, keyword, buf, limit)
      U_CHAR *buf, *limit;
 {
   int length = limit - buf;
-  U_CHAR *copy = (U_CHAR *) xmalloc (length + 1);
+  U_CHAR *copy = (U_CHAR *) alloca (length + 1);
   bcopy (buf, copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
