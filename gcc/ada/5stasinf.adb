@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,18 +56,18 @@ package body System.Task_Info is
 
    function New_Unbound_Thread_Attributes return Task_Info_Type is
    begin
-      return new Thread_Attributes' (False, False);
+      return new Thread_Attributes'(False, False);
    end New_Unbound_Thread_Attributes;
 
    function New_Bound_Thread_Attributes return Task_Info_Type is
    begin
-      return new Thread_Attributes' (False, True);
+      return new Thread_Attributes'(False, True);
    end New_Bound_Thread_Attributes;
 
    function New_Bound_Thread_Attributes (CPU : CPU_Number)
       return Task_Info_Type is
    begin
-      return new Thread_Attributes' (True, True, CPU);
+      return new Thread_Attributes'(True, True, CPU);
    end New_Bound_Thread_Attributes;
 
 end System.Task_Info;

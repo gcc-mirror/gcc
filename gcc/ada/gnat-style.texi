@@ -1,5 +1,6 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
+
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 @c                                                                            o
 @c                           GNAT DOCUMENTATION                               o
@@ -25,7 +26,7 @@
 @setfilename gnat-style.info
 @settitle GNAT Coding Style
 @dircategory Programming
-@direntry 
+@direntry
 * gnat-style: (gnat-style).      GNAT Coding Style
 @end direntry
 
@@ -71,7 +72,7 @@
 @noindent
 Most of GNAT is written in Ada using a consistent style to ensure
 readability of the code.  This document has been written to help
-maintain this consistent style, while having a large group of developers 
+maintain this consistent style, while having a large group of developers
 work on the compiler.
 
 @noindent
@@ -79,8 +80,8 @@ For the coding style in the C parts of the compiler and run time,
 see the GNU Coding Guidelines.
 
 @noindent
-This document is structured after the Ada Reference manual. 
-Those familiar with that document should be able to quickly 
+This document is structured after the Ada Reference manual.
+Those familiar with that document should be able to quickly
 lookup style rules for particular constructs.
 
 @c  -------------------------------------------------------------------------
@@ -94,11 +95,11 @@ lookup style rules for particular constructs.
 @itemize @bullet
 @item
 The character set used should be plain 7-bit ASCII@.
-The only separators allowed are space and the end-of-line sequence. 
-No other control character or format effector (such as HT, VT, FF) 
+The only separators allowed are space and the end-of-line sequence.
+No other control character or format effector (such as HT, VT, FF)
 should be used.
 The normal end-of-line sequence is used, which may be LF, CR/LF or CR,
-depending on the host system.  An optional SUB (16#1A#) may be present as the 
+depending on the host system.  An optional SUB (16#1A#) may be present as the
 last character in the file on hosts using that character as file terminator.
 
 @item
@@ -123,15 +124,15 @@ elements, see file @file{style.adb}.
 @itemize @bullet
 @item
 Identifiers will start with an upper case letter, and each letter following
-an underscore will be upper case.  Short acronyms may be all upper case. 
-All other letters are lower case.  
+an underscore will be upper case.  Short acronyms may be all upper case.
+All other letters are lower case.
 An exception is for identifiers matching a foreign language.  In particular,
 we use all lower case where appropriate for C@.
 
 @item
-Use underscores to separate words in an identifier.  
+Use underscores to separate words in an identifier.
 
-@item Try to limit your use of abbreviations in identifiers. 
+@item Try to limit your use of abbreviations in identifiers.
 It is ok to make a few abbreviations, explain what they mean, and then
 use them frequently, but don't use lots of obscure abbreviations.  An
 example is the @code{ALI} word which stands for Ada Library
@@ -145,7 +146,7 @@ used in entity names.
 @item
 Don't use the variable @samp{I}, use @samp{J} instead, @samp{I} is too
 easily mixed up with @samp{1} in some fonts.  Similarly don't use the
-variable @samp{O}, which is too easily mixed up with @samp{0}.
+variable @samp{O}, which is too easily mixed up with the number @samp{0}.
 @end itemize
 
 @subsection Numeric Literals
@@ -185,8 +186,8 @@ capitalized when used as @syntax{attribute_designator}.
 Comment start with @samp{--  } (i.e.@: @samp{--} followed by two spaces).
 The only exception to this rule (i.e.@: one space is tolerated) is when the
 comment ends with @samp{ --}.
-It also accepted to have only one space between @samp{--} and the start 
-of the comment when the comment is at the end of a line, 
+It also accepted to have only one space between @samp{--} and the start
+of the comment when the comment is at the end of a line,
 after some Ada code.
 
 @item
@@ -272,18 +273,18 @@ should be aligned.
 @end smallexample
 
 @item
-Declarations should be grouped in a logical order. 
+Declarations should be grouped in a logical order.
 Related groups of declarations may be preceded by a header comment.
 
 @item
 All local subprograms in a subprogram or package body should be declared
-before the first local subprogram body. 
+before the first local subprogram body.
 
 @item
 Don't declare local entities that hide global entities.
 
 @item
-Don't declare multiple variables in one declaration that spans lines. 
+Don't declare multiple variables in one declaration that spans lines.
 Start a new declaration on each line, instead.
 
 @item
@@ -292,7 +293,7 @@ comments of a sort.  So don't choose terse names, but look for names
 that give useful information instead.
 
 @item
-Local names can be shorter, because they are used only within 
+Local names can be shorter, because they are used only within
 one context, where comments explain their purpose.
 
 @end itemize
@@ -306,7 +307,7 @@ one context, where comments explain their purpose.
 @itemize @bullet
 
 @item
-Every operator must be surrounded by spaces, except for the 
+Every operator must be surrounded by spaces, except for the
 exponentiation operator.
 
 @smallexample
@@ -317,7 +318,8 @@ exponentiation operator.
 When folding a long line, fold before an operator, not after.
 
 @item
-Use parentheses where they make the intended order of evaluation clearer:
+Use parentheses where they clarify the intended association of operands
+with operators:
 @smallexample
        (A / B) * C
 @end smallexample
@@ -392,7 +394,7 @@ following is allowed:
 @end smallexample
 
 @item
-Conditions should use short-circuit forms (@samp{and then}, 
+Conditions should use short-circuit forms (@samp{and then},
 @samp{or else}).
 
 @item
@@ -552,7 +554,7 @@ format:
       begin
 @end smallexample
 
-Note that the name in the header is preceded by a single space, 
+Note that the name in the header is preceded by a single space,
 not two spaces as for other comments.
 
 @item
@@ -564,8 +566,8 @@ preceded by a blank line.
 
 @item
 If the declarations in a subprogram contain at least one nested
-subprogram body, then just before the of the enclosing subprogram
-@samp{begin}, there is a line:
+subprogram body, then just before the @samp{begin} of the enclosing
+subprogram, there is a line:
 
 @smallexample
         --  @r{Start of processing for @var{Enclosing_Subprogram}}
@@ -636,8 +638,8 @@ Filenames should be 8 characters or less followed by the @samp{.adb}
 extension for a body or @samp{.ads} for a spec.
 
 @item
-Unit names should be distinct when krunched to 8 characters 
-(see @file{krunch.ads}) and the filenames should match the unit name, 
+Unit names should be distinct when krunched to 8 characters
+(see @file{krunch.ads}) and the filenames should match the unit name,
 except that they are all lower case.
 @end itemize
 

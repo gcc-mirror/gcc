@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---            Copyright (C) 1997-2001 Free Software Foundation, Inc.        --
+--            Copyright (C) 1997-2002 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -364,7 +363,7 @@ package body Ada.Calendar is
       --  time based on 1 january 1970) and add there the sub-seconds part.
 
       declare
-         Sub_Sec  : Duration := Seconds - Duration (Int_Secs);
+         Sub_Sec : constant Duration := Seconds - Duration (Int_Secs);
       begin
          Date := Time ((Now - epoch_1970) * system_time_ns / Sec_Unit) +
            Sub_Sec;

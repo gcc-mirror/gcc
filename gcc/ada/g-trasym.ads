@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
 --           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
@@ -41,8 +40,10 @@
 --  is used to build a symbolic traceback.
 --
 --  In order to retrieve symbolic information, functions in this package will
---  read on disk all the debug information of the current executable and load
---  them in memory, causing a significant cpu and memory overhead.
+--  read on disk all the debug information of the executable file (found via
+--  Argument (0), so any path information needed to read the executable file
+--  need to be provided when launching the executable), and load then in
+--  memory, causing a significant cpu and memory overhead.
 --
 --  This package is not intended to be used within a shared library,
 --  symbolic tracebacks are only supported for the main executable

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
---              Copyright (C) 2000 Ada Core Technologies, Inc.              --
+--            Copyright (C) 2000-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,7 +70,7 @@ package GNAT.Exception_Traces is
    --  The following procedures can be used to activate and deactivate
    --  traces identified by the above trace kind values.
 
-   procedure Trace_On (Kind : in Trace_Kind);
+   procedure Trace_On (Kind : Trace_Kind);
    --  Activate the traces denoted by Kind.
 
    procedure Trace_Off;

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,13 +48,17 @@ package System.OS_Primitives is
    --  Calendar.Time is positive.
    --  See Ada.Calendar.Delays for more information on VMS Time.
 
-   Max_Sensible_Delay : constant Duration := 183 * 24 * 60 * 60.0;
+   Max_Sensible_Delay : constant Duration :=
+                          Duration'Min (183 * 24 * 60 * 60.0,
+                                        Duration'Last);
    --  Max of half a year delay, needed to prevent exceptions for large
    --  delay values. It seems unlikely that any test will notice this
    --  restriction, except in the case of applications setting the clock at
    --  at run time (see s-tastim.adb). Also note that a larger value might
    --  cause problems (e.g overflow, or more likely OS limitation in the
-   --  primitives used).
+   --  primitives used). In the case where half a year is too long (which
+   --  occurs in high integrity mode with 32-bit words, and possibly on
+   --  some specific ports of GNAT), Duration'Last is used instead.
 
    function OS_Clock return OS_Time;
    --  Returns "absolute" time, represented as an offset

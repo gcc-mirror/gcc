@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1998-1999 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1998-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -136,7 +135,9 @@ package GNAT.Regexp is
    --  Compiles a regular expression S. If the syntax of the given
    --  expression is invalid (does not match above grammar, Error_In_Regexp
    --  is raised. If Glob is True, the pattern is considered as a 'globbing
-   --  pattern', that is a pattern as given by the second grammar above
+   --  pattern', that is a pattern as given by the second grammar above.
+   --  As a special case, if Pattern is the empty string it will always
+   --  match.
 
    function Match (S : String; R : Regexp) return Boolean;
    --  True if S matches R, otherwise False. Raises Constraint_Error if

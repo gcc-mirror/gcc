@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
 --          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
@@ -27,7 +26,7 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- Extensive contributions were provided by Ada Core Technologies Inc.   --
+-- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -248,7 +247,7 @@ package body GNAT.Command_Line is
    begin
       if In_Expansion then
          declare
-            S : String := Expansion (Expansion_It);
+            S : constant String := Expansion (Expansion_It);
 
          begin
             if S'Length /= 0 then
@@ -767,11 +766,12 @@ package body GNAT.Command_Line is
       GNAT.Directory_Operations.Open
         (Iterator.Levels (1).Dir, Iterator.Dir_Name (1 .. Iterator.Start - 1));
 
-      --  If in the current directory and the pattern starts with "./",
-      --  drop the "./" from the pattern.
+      --  If in the current directory and the pattern starts with "./" or ".\",
+      --  drop the "./" or ".\" from the pattern.
 
       if Directory = "" and then Pat'Length > 2
-        and then Pat (Pat'First .. Pat'First + 1) = "./"
+        and then Pat (Pat'First) = '.'
+        and then Pat (Pat'First + 1) = Directory_Separator
       then
          First := Pat'First + 2;
       end if;

@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --                             (ASCII Version)                              --
 --                                                                          --
---                                                                          --
 --          Copyright (C) 1993-2000 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --

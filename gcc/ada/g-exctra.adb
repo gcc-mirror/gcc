@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---            Copyright (C) 2000-2001 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2000-2002 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,7 +113,7 @@ package body GNAT.Exception_Traces is
    -- Trace_On --
    --------------
 
-   procedure Trace_On (Kind : in Trace_Kind) is
+   procedure Trace_On (Kind : Trace_Kind) is
    begin
       case Kind is
          when Every_Raise =>

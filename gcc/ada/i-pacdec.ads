@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --            (Version for IBM Mainframe Packed Decimal Format)             --
 --                                                                          --
---                                                                          --
 --     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --

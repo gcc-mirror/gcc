@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --                         (VXWORKS Version Alpha)                          --
 --                                                                          --
---                                                                          --
 --          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --

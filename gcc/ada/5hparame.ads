@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,6 +93,11 @@ pragma Pure (Parameters);
    --    when Size = Unspecified_Size, return Default_Stack_Size
    --    when Size < Minimum_Stack_Size, return Minimum_Stack_Size
    --    otherwise return given Size
+
+   Default_Env_Stack_Size : constant Size_Type := 8_192_000;
+   --  Assumed size of the environment task, if no other information
+   --  is available. This value is used when stack checking is
+   --  enabled and no GNAT_STACK_LIMIT environment variable is set.
 
    Stack_Grows_Down  : constant Boolean := False;
    --  This constant indicates whether the stack grows up (False) or

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                                                                          --
---              Copyright (C) 1991-2001 Florida State University            --
+--         Copyright (C) 1998-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,13 +26,12 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the DEC Unix and IRIX version of this package.
+--  This is the DEC Unix version of this package.
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -43,6 +41,8 @@ pragma Polling (Off);
 --  tasking operations. It causes infinite loops and other problems.
 
 with Interfaces.C; use Interfaces.C;
+with System.Machine_Code; use System.Machine_Code;
+
 package body System.OS_Interface is
 
    ------------------
@@ -53,6 +53,20 @@ package body System.OS_Interface is
    begin
       null;
    end pthread_init;
+
+   ------------------
+   -- pthread_self --
+   ------------------
+
+   function pthread_self return pthread_t is
+      Self : pthread_t;
+   begin
+      Asm ("call_pal 0x9e" & ASCII.LF & ASCII.HT &
+           "bis $31, $0, %0",
+           Outputs => pthread_t'Asm_Output ("=r", Self),
+           Clobber => "$0");
+      return Self;
+   end pthread_self;
 
    -----------------
    -- To_Duration --
@@ -88,9 +102,13 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return timespec' (tv_sec => S,
-        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+      return timespec'(tv_sec => S,
+                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
+
+   ----------------
+   -- To_Timeval --
+   ----------------
 
    function To_Timeval (D : Duration) return struct_timeval is
       S : time_t;
@@ -108,8 +126,10 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return struct_timeval' (tv_sec => S,
-        tv_usec => time_t (Long_Long_Integer (F * 10#1#E6)));
+      return
+        struct_timeval'
+          (tv_sec => S,
+           tv_usec => time_t (Long_Long_Integer (F * 10#1#E6)));
    end To_Timeval;
 
 end System.OS_Interface;

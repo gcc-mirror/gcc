@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,7 +137,7 @@ package body Fname is
    is
       subtype Str8 is String (1 .. 8);
 
-      Predef_Names : array (1 .. 11) of Str8 :=
+      Predef_Names : constant array (1 .. 11) of Str8 :=
         ("ada     ",       -- Ada
          "calendar",       -- Calendar
          "interfac",       -- Interfaces

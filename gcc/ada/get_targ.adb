@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,5 +56,14 @@ package body Get_Targ is
          raise Program_Error;
       end if;
    end Width_From_Size;
+
+   -----------------------------
+   -- Get_Max_Unaligned_Field --
+   -----------------------------
+
+   function Get_Max_Unaligned_Field return Pos is
+   begin
+      return 64;  -- Can be different on some targets (e.g., AAMP)
+   end Get_Max_Unaligned_Field;
 
 end Get_Targ;

@@ -7,7 +7,6 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                                                                          --
 --          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --

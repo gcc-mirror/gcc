@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --                           (Compiler Interface)                           --
 --                                                                          --
---                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,6 +52,9 @@ package body System.Task_Primitives.Operations is
    use System.Tasking;
    use System.Parameters;
 
+   pragma Warnings (Off);
+   --  Turn off warnings since so many unreferenced parameters
+
    -----------------
    -- Stack_Guard --
    -----------------
@@ -86,7 +88,8 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
-      L    : access Lock) is
+      L    : access Lock)
+   is
    begin
       null;
    end Initialize_Lock;
@@ -120,7 +123,8 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False)
+     (L           : access RTS_Lock;
+      Global_Lock : Boolean := False)
    is
    begin
       null;
@@ -375,7 +379,9 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : OSI.Thread_Id) return Boolean is
+      Thread_Self : OSI.Thread_Id)
+      return        Boolean
+   is
    begin
       return False;
    end Suspend_Task;
@@ -386,7 +392,9 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : OSI.Thread_Id) return Boolean is
+      Thread_Self : OSI.Thread_Id)
+      return        Boolean
+   is
    begin
       return False;
    end Resume_Task;

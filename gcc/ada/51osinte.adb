@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1999-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 1999-2002 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,8 +77,8 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return timespec' (tv_sec => S,
-        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+      return timespec'(tv_sec => S,
+                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
    ----------------
@@ -102,8 +101,10 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return struct_timeval' (tv_sec => S,
-        tv_usec => long (Long_Long_Integer (F * 10#1#E6)));
+      return
+        struct_timeval'
+          (tv_sec => S,
+           tv_usec => long (Long_Long_Integer (F * 10#1#E6)));
    end To_Timeval;
 
    -------------------
@@ -112,14 +113,18 @@ package body System.OS_Interface is
 
    function clock_gettime
      (clock_id : clockid_t;
-      tp       : access timespec) return int
+      tp       : access timespec)
+      return     int
    is
+      pragma Warnings (Off, clock_id);
+
       Result : int;
       tv     : aliased struct_timeval;
 
       function gettimeofday
-        (tv : access struct_timeval;
-         tz : System.Address := System.Null_Address) return int;
+        (tv   : access struct_timeval;
+         tz   : System.Address := System.Null_Address)
+         return int;
       pragma Import (C, gettimeofday, "gettimeofday");
 
    begin
@@ -163,6 +168,8 @@ package body System.OS_Interface is
    end pthread_kill;
 
    function Get_Stack_Base (thread : pthread_t) return Address is
+      pragma Warnings (Off, thread);
+
    begin
       return Null_Address;
    end Get_Stack_Base;

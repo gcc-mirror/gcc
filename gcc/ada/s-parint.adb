@@ -7,7 +7,6 @@
 --                                  B o d y                                 --
 --                   (Dummy body for non-distributed case)                  --
 --                                                                          --
---                                                                          --
 --          Copyright (C) 1995-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --

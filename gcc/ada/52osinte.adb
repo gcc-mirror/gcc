@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                                                                          --
---           Copyright (C) 1999-2000 Free Software Foundation, Inc.         --
+--           Copyright (C) 1999-2002 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,12 +50,12 @@ package body System.OS_Interface is
    function clock_gettime
      (clock_id : clockid_t;
       tp       : access timespec)
-      return  int
+      return     int
    is
       function clock_gettime_base
         (clock_id : clockid_t;
          tp       : access timespec)
-         return  int;
+         return     int;
       pragma Import (C, clock_gettime_base, "clock_gettime");
 
    begin
@@ -101,7 +100,7 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return timespec' (tv_sec => S,
+      return timespec'(tv_sec => S,
         tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
@@ -125,7 +124,7 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return struct_timeval' (tv_sec => S,
+      return struct_timeval'(tv_sec => S,
         tv_usec => time_t (Long_Long_Integer (F * 10#1#E6)));
    end To_Timeval;
 
@@ -141,7 +140,7 @@ package body System.OS_Interface is
       function sigwait_base
         (set   : access sigset_t;
          value : System.Address)
-        return Signal;
+         return  Signal;
       pragma Import (C, sigwait_base, "sigwait");
 
    begin
@@ -561,6 +560,8 @@ package body System.OS_Interface is
    end pthread_getspecific;
 
    function Get_Stack_Base (thread : pthread_t) return Address is
+      pragma Warnings (Off, thread);
+
    begin
       return Null_Address;
    end Get_Stack_Base;

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---            Copyright (C) 1992-2001 Free Software Foundation, Inc.        --
+--            Copyright (C) 1992-2003 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Interfaces.C;
+
 package body Ada.Synchronous_Task_Control is
    use System.OS_Interface;
    use type Interfaces.C.int;
@@ -67,10 +67,12 @@ package body Ada.Synchronous_Task_Control is
 
    procedure Set_False (S : in out Suspension_Object) is
       St : STATUS;
+
    begin
       --  Need to get the semaphore into the "empty" state.
       --  On return, this task will have made the semaphore
       --  empty (St = OK) or have left it empty.
+
       St := semTake (S.Sema, NO_WAIT);
    end Set_False;
 
@@ -80,6 +82,7 @@ package body Ada.Synchronous_Task_Control is
 
    procedure Set_True (S : in out Suspension_Object) is
       St : STATUS;
+
    begin
       St := semGive (S.Sema);
    end Set_True;
@@ -91,17 +94,15 @@ package body Ada.Synchronous_Task_Control is
    procedure Suspend_Until_True (S : in out Suspension_Object) is
       St : STATUS;
 
-      --  Declare local exception so the mutex can still be reset
-      --  to full if Program_Error is raised
-
-      Task_Already_Pending : exception;
    begin
       --  Determine whether another task is pending on the suspension
       --  object. Should never be called from an ISR. Therefore semTake can
       --  be called on the mutex
+
       St := semTake (S.Mutex, NO_WAIT);
 
       if St = OK then
+
          --  Wait for suspension object
 
          St := semTake (S.Sema, WAIT_FOREVER);
@@ -110,15 +111,13 @@ package body Ada.Synchronous_Task_Control is
       else
          --  Another task is pending on the suspension object
 
-         raise Task_Already_Pending;
-      end if;
-   exception
-      when Task_Already_Pending =>
          raise Program_Error;
-      when others =>
-         St := semGive (S.Mutex);
-         raise;
+      end if;
    end Suspend_Until_True;
+
+   ----------------
+   -- Initialize --
+   ----------------
 
    procedure Initialize (S : in out Suspension_Object) is
    begin
@@ -131,8 +130,13 @@ package body Ada.Synchronous_Task_Control is
       S.Mutex := semBCreate (SEM_Q_FIFO, SEM_FULL);
    end Initialize;
 
+   --------------
+   -- Finalize --
+   --------------
+
    procedure Finalize (S : in out Suspension_Object) is
       St : STATUS;
+
    begin
       St := semDelete (S.Sema);
       St := semDelete (S.Mutex);

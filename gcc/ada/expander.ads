@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +50,8 @@
 --      subtree with an expression. Once the substitution is completed, the
 --      Expand routine must call Analyze on the resulting node to do any
 --      required semantic analysis. Note that references to children copied
---      from the old tree won't be reanalyzed, since their Analyze flag is set.
+--      from the old tree won't be reanalyzed, since their Analyzed flag
+--      is set.
 
 --    Nodes that are subexpressions (Nkind in N_Subexpr)
 

@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
 --          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
@@ -270,7 +269,7 @@ package body Exp_Code is
          --  know the type is right, it is sufficient to see if the
          --  referenced entity is in a runtime routine.
 
-         if Nkind (N) = N_Identifier
+         if Is_Entity_Name (N)
            and then
              Is_Predefined_File_Name (Unit_File_Name
                                        (Get_Source_Unit (Entity (N))))

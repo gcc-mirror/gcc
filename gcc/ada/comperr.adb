@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,7 +109,7 @@ package body Comperr is
 
       --  Debug flag K disables this behavior (useful for debugging)
 
-      if Total_Errors_Detected /= 0 and then not Debug_Flag_K then
+      if Serious_Errors_Detected /= 0 and then not Debug_Flag_K then
          Errout.Finalize;
 
          Set_Standard_Error;
@@ -278,7 +277,7 @@ package body Comperr is
                End_Line;
 
                Write_Str
-                 ("| concatenated together with no headers between files.");
+                 ("| (concatenated together with no headers between files).");
                End_Line;
 
             end if;
@@ -300,6 +299,9 @@ package body Comperr is
          Write_Eol;
 
          Write_Line ("Please include these source files with error report");
+         Write_Line ("Note that list may not be accurate in some cases, ");
+         Write_Line ("so please double check that the problem can still ");
+         Write_Line ("be reproduced with the set of files listed.");
          Write_Eol;
 
          for U in Main_Unit .. Last_Unit loop

@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,6 +72,7 @@ package body Eval_Fat is
    --  using biased rounding (halfway cases round away from zero), round to
    --  even, a floor operation or a ceiling operation depending on the setting
    --  of Mode (see corresponding descriptions in Urealp).
+   --
    --  In case rounding was specified, Rounding_Was_Biased is set True
    --  if the input was indeed halfway between to machine numbers and
    --  got rounded away from zero to an odd number.
@@ -444,7 +444,6 @@ package body Eval_Fat is
 
          Release_And_Save (Uintp_Mark, Fraction, Exponent);
       end Calculate_Fraction_And_Exponent;
-
    end Decompose_Int;
 
    ----------------
@@ -619,7 +618,6 @@ package body Eval_Fat is
          Z := Scaling (RT, Y, L);
          return Z;
       end if;
-
    end Leading_Part;
 
    -------------
@@ -712,7 +710,9 @@ package body Eval_Fat is
             return X - Eps_Denorm (RT);
 
          elsif X > Ureal_0 then
+
             --  Target does not support denorms, so predecessor is 0.0
+
             return Ureal_0;
 
          else
@@ -806,7 +806,6 @@ package body Eval_Fat is
       end if;
 
       return Sign_X * IEEE_Rem;
-
    end Remainder;
 
    --------------
@@ -830,7 +829,6 @@ package body Eval_Fat is
       else
          return Result;
       end if;
-
    end Rounding;
 
    -------------
@@ -933,7 +931,6 @@ package body Eval_Fat is
       else
          return X;
       end if;
-
    end Unbiased_Rounding;
 
 end Eval_Fat;

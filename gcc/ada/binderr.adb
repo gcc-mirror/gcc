@@ -6,8 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,6 +96,7 @@ package body Binderr is
 
    procedure Error_Msg_Output (Msg : String; Info : Boolean) is
       Use_Second_Name : Boolean := False;
+      Use_Second_Nat  : Boolean := False;
 
    begin
       if Warnings_Detected + Errors_Detected > Maximum_Errors then
@@ -115,8 +115,8 @@ package body Binderr is
          Write_Str ("error: ");
       end if;
 
-      for I in Msg'Range loop
-         if Msg (I) = '%' then
+      for J in Msg'Range loop
+         if Msg (J) = '%' then
 
             if Use_Second_Name then
                Get_Name_String (Error_Msg_Name_2);
@@ -129,7 +129,7 @@ package body Binderr is
             Write_Str (Name_Buffer (1 .. Name_Len));
             Write_Char ('"');
 
-         elsif Msg (I) = '&' then
+         elsif Msg (J) = '&' then
             Write_Char ('"');
 
             if Use_Second_Name then
@@ -141,8 +141,16 @@ package body Binderr is
 
             Write_Char ('"');
 
-         elsif Msg (I) /= '?' then
-            Write_Char (Msg (I));
+         elsif Msg (J) = '#' then
+            if Use_Second_Nat then
+               Write_Int (Error_Msg_Nat_2);
+            else
+               Use_Second_Nat := True;
+               Write_Int (Error_Msg_Nat_1);
+            end if;
+
+         elsif Msg (J) /= '?' then
+            Write_Char (Msg (J));
          end if;
       end loop;
 

@@ -7,8 +7,7 @@
 --                                 S p e c                                  --
 --                       (OpenVMS DEC Threads Version)                      --
 --                                                                          --
---                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -59,7 +58,7 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := 1.0;
+   Tick                  : constant := 0.01;
 
    --  Storage-related Declarations
 
@@ -120,11 +119,12 @@ private
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
    Denorm                    : constant Boolean := False;
+   Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
    Functions_Return_By_DSP   : constant Boolean := False;
-   Long_Shifts_Inlined       : constant Boolean := True;
    High_Integrity_Mode       : constant Boolean := False;
+   Long_Shifts_Inlined       : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := True;
