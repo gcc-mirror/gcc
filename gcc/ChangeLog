@@ -1,3 +1,7 @@
+2001-02-18  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md: Do not output an extra newline character.
+
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* toplev.c (note_deferral_of_defined_inlined_function): Argument
