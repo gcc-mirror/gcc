@@ -26,4 +26,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC  \
-  "-G 8 -O1 %{static:-non_shared} %{!static:-call_shared} -init __main"
+  "-G 8 -O1 %{!shared:-init __main} %{static:-non_shared}
+   %{!static:%{shared:-shared} %{!shared:-call_shared}}"
