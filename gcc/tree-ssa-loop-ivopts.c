@@ -766,10 +766,10 @@ determine_base_object (tree expr)
       base = get_base_address (obj);
 
       if (!base)
-	return fold_convert (ptr_type_node, expr);
+	return expr;
 
       if (TREE_CODE (base) == INDIRECT_REF)
-	return fold_convert (ptr_type_node, TREE_OPERAND (base, 0));
+	return determine_base_object (TREE_OPERAND (base, 0));
 
       return fold (build1 (ADDR_EXPR, ptr_type_node, base));
 
@@ -787,6 +787,10 @@ determine_base_object (tree expr)
 		: fold (build1 (NEGATE_EXPR, ptr_type_node, op1)));
 
       return fold (build (code, ptr_type_node, op0, op1));
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      return determine_base_object (TREE_OPERAND (expr, 0));
 
     default:
       return fold_convert (ptr_type_node, expr);
@@ -1737,6 +1741,105 @@ find_interesting_uses (struct ivopts_data *data)
   free (body);
 }
 
+/* Strips constant offsets from EXPR and stores them to OFFSET.  If INSIDE_ADDR
+   is true, assume we are inside an address.  */
+
+static tree
+strip_offset (tree expr, bool inside_addr, unsigned HOST_WIDE_INT *offset)
+{
+  tree op0 = NULL_TREE, op1 = NULL_TREE, step;
+  enum tree_code code;
+  tree type, orig_type = TREE_TYPE (expr);
+  unsigned HOST_WIDE_INT off0, off1, st;
+  tree orig_expr = expr;
+
+  STRIP_NOPS (expr);
+  type = TREE_TYPE (expr);
+  code = TREE_CODE (expr);
+  *offset = 0;
+
+  switch (code)
+    {
+    case INTEGER_CST:
+      if (!cst_and_fits_in_hwi (expr)
+	  || zero_p (expr))
+	return orig_expr;
+
+      *offset = int_cst_value (expr);
+      return build_int_cst_type (orig_type, 0);
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      op0 = TREE_OPERAND (expr, 0);
+      op1 = TREE_OPERAND (expr, 1);
+
+      op0 = strip_offset (op0, false, &off0);
+      op1 = strip_offset (op1, false, &off1);
+
+      *offset = (code == PLUS_EXPR ? off0 + off1 : off0 - off1);
+      if (op0 == TREE_OPERAND (expr, 0)
+	  && op1 == TREE_OPERAND (expr, 1))
+	return orig_expr;
+
+      if (zero_p (op1))
+	expr = op0;
+      else if (zero_p (op0))
+	{
+	  if (code == PLUS_EXPR)
+	    expr = op1;
+	  else
+	    expr = build1 (NEGATE_EXPR, type, op1);
+	}
+      else
+	expr = build2 (code, type, op0, op1);
+
+      return fold_convert (orig_type, expr);
+
+    case ARRAY_REF:
+      if (!inside_addr)
+	return orig_expr;
+
+      step = array_ref_element_size (expr);
+      if (!cst_and_fits_in_hwi (step))
+	break;
+
+      st = int_cst_value (step);
+      op1 = TREE_OPERAND (expr, 1);
+      op1 = strip_offset (op1, false, &off1);
+      *offset = off1 * st;
+      break;
+
+    case COMPONENT_REF:
+      if (!inside_addr)
+	return orig_expr;
+      break;
+
+    case ADDR_EXPR:
+      inside_addr = true;
+      break;
+
+    default:
+      return orig_expr;
+    }
+
+  /* Default handling of expressions for that we want to recurse into
+     the first operand.  */
+  op0 = TREE_OPERAND (expr, 0);
+  op0 = strip_offset (op0, inside_addr, &off0);
+  *offset += off0;
+
+  if (op0 == TREE_OPERAND (expr, 0)
+      && (!op1 || op1 == TREE_OPERAND (expr, 1)))
+    return orig_expr;
+
+  expr = copy_node (expr);
+  TREE_OPERAND (expr, 0) = op0;
+  if (op1)
+    TREE_OPERAND (expr, 1) = op1;
+
+  return fold_convert (orig_type, expr);
+}
+
 /* Adds a candidate BASE + STEP * i.  Important field is set to IMPORTANT and
    position to POS.  If USE is not NULL, the candidate is set as related to
    it.  If both BASE and STEP are NULL, we add a pseudocandidate for the
@@ -1962,7 +2065,8 @@ static void
 add_address_candidates (struct ivopts_data *data,
 			struct iv *iv, struct iv_use *use)
 {
-  tree base, abase, tmp, *act;
+  tree base, abase;
+  unsigned HOST_WIDE_INT offset;
 
   /* First, the trivial choices.  */
   add_iv_value_candidates (data, iv, use);
@@ -1991,26 +2095,9 @@ add_address_candidates (struct ivopts_data *data,
 
   /* Third, try removing the constant offset.  */
   abase = iv->base;
-  while (TREE_CODE (abase) == PLUS_EXPR
-	 && TREE_CODE (TREE_OPERAND (abase, 1)) != INTEGER_CST)
-    abase = TREE_OPERAND (abase, 0);
-  /* We found the offset, so make the copy of the non-shared part and
-     remove it.  */
-  if (TREE_CODE (abase) == PLUS_EXPR)
-    {
-      tmp = iv->base;
-      act = &base;
-
-      for (tmp = iv->base; tmp != abase; tmp = TREE_OPERAND (tmp, 0))
-	{
-	  *act = build2 (PLUS_EXPR, TREE_TYPE (tmp),
-			 NULL_TREE, TREE_OPERAND (tmp, 1));
-	  act = &TREE_OPERAND (*act, 0);
-	}
-      *act = TREE_OPERAND (tmp, 0);
-
-      add_candidate (data, base, iv->step, false, use);
-    }
+  base = strip_offset (abase, false, &offset);
+  if (offset)
+    add_candidate (data, base, iv->step, false, use);
 }
 
 /* Possibly adds pseudocandidate for replacing the final value of USE by
@@ -2472,53 +2559,6 @@ get_computation (struct loop *loop, struct iv_use *use, struct iv_cand *cand)
   return get_computation_at (loop, use, cand, use->stmt);
 }
 
-/* Strips constant offsets from EXPR and adds them to OFFSET.  */
-
-static void
-strip_offset (tree *expr, unsigned HOST_WIDE_INT *offset)
-{
-  tree op0, op1;
-  enum tree_code code;
-  
-  while (1)
-    {
-      if (cst_and_fits_in_hwi (*expr))
-	{
-	  *offset += int_cst_value (*expr);
-	  *expr = integer_zero_node;
-	  return;
-	}
-
-      code = TREE_CODE (*expr);
-     
-      if (code != PLUS_EXPR && code != MINUS_EXPR)
-	return;
-
-      op0 = TREE_OPERAND (*expr, 0);
-      op1 = TREE_OPERAND (*expr, 1);
-
-      if (cst_and_fits_in_hwi (op1))
-	{
-	  if (code == PLUS_EXPR)
-	    *offset += int_cst_value (op1);
-	  else
-	    *offset -= int_cst_value (op1);
-
-	  *expr = op0;
-	  continue;
-	}
-
-      if (code != PLUS_EXPR)
-	return;
-
-      if (!cst_and_fits_in_hwi (op0))
-	return;
-
-      *offset += int_cst_value (op0);
-      *expr = op1;
-    }
-}
-
 /* Returns cost of addition in MODE.  */
 
 static unsigned
@@ -2841,6 +2881,8 @@ force_var_cost (struct ivopts_data *data,
       costs_initialized = true;
     }
 
+  STRIP_NOPS (expr);
+
   if (depends_on)
     {
       fd_ivopts_data = data;
@@ -2875,6 +2917,8 @@ force_var_cost (struct ivopts_data *data,
     case MULT_EXPR:
       op0 = TREE_OPERAND (expr, 0);
       op1 = TREE_OPERAND (expr, 1);
+      STRIP_NOPS (op0);
+      STRIP_NOPS (op1);
 
       if (is_gimple_val (op0))
 	cost0 = 0;
@@ -3020,11 +3064,14 @@ difference_cost (struct ivopts_data *data,
 {
   unsigned cost;
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (e1));
+  unsigned HOST_WIDE_INT off1, off2;
 
-  strip_offset (&e1, offset);
-  *offset = -*offset;
-  strip_offset (&e2, offset);
-  *offset = -*offset;
+  e1 = strip_offset (e1, false, &off1);
+  e2 = strip_offset (e2, false, &off2);
+  *offset += off1 - off2;
+
+  STRIP_NOPS (e1);
+  STRIP_NOPS (e2);
 
   if (TREE_CODE (e1) == ADDR_EXPR)
     return ptr_difference_cost (data, e1, e2, symbol_present, var_present, offset,

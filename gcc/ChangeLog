@@ -1,3 +1,11 @@
+2005-02-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (determine_base_object): Ignore casts.
+	(strip_offset): Handle addresses.
+	(add_address_candidates): Use strip_offset.
+	(difference_cost): Reflect strip_offset change.
+	(force_var_cost, difference_cost): Strip nops.
+
 2005-02-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* df.h (DF_REF_MODE_CHANGE, DF_REF_MEM_OK): Remove.
