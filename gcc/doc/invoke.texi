@@ -270,8 +270,8 @@ in the following sections.
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
--fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -floop-optimize @gol
--fcrossjumping  -fif-conversion  -fif-conversion2 @gol
+-fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -fgcse-after-reload @gol
+-floop-optimize -fcrossjumping  -fif-conversion  -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmove-all-movables  -fnew-ra  -fno-branch-count-reg @gol
@@ -3677,7 +3677,8 @@ invoking @option{-O2} on programs that use computed gotos.
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified by
 @option{-O2} and also turns on the @option{-finline-functions},
-@option{-fweb} and @option{-frename-registers} options.
+@option{-fweb}, @option{-frename-registers}
+and @option{-fgcse-after-reload} options.
 
 @item -O0
 @opindex O0
@@ -3987,6 +3988,12 @@ elimination pass eliminates redundant loads that come after stores to the
 same memory location (both partial and full redundancies).
 
 Enabled by default when gcse is enabled.
+
+@item -fgcse-after-reload
+@opindex fgcse-after-reload
+When @option{-fgcse-after-reload} is enabled, a redundant load elimination
+pass is performed after reload. The purpose of this pass is to cleanup
+redundant spilling.
 
 @item -floop-optimize
 @opindex floop-optimize

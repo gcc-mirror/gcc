@@ -1,3 +1,7 @@
+2004-05-06  Stuart Hastings  <stuart@apple.com>
+	* gcc/doc/invoke.texi: Restore -fgcse-after-reload doc from 1.421,
+	mistakenly clobbered by 1.423.
+	
 2004-05-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Document -mvr4130-align.
