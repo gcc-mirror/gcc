@@ -1,6 +1,6 @@
 2004-08-13  Bud Davis  <bdavis9659@comcast.net>
 
-	PR gfortran/13965
+	PR gfortran/16935
 	* io/open.c (st_open): use flags instead of the unit structure.
 
 2004-08-10  Victor Leikehman  <lei@il.ibm.com>
