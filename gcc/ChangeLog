@@ -1,3 +1,17 @@
+2003-02-07  Roger Sayle  <roger@eyesopen.com>
+
+	* builtin-types.def (BT_FN_FLOAT_FLOAT_FLOAT): New built-in type.
+	(BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLE): Likewise.
+	(BT_FN_DOUBLE_DOUBLE_DOUBLE): Likewise.
+	* builtins.def: Define pow, powf, powl, atan2, atan2f and atan2l
+	builtin functions (and their __builtin_* variants).
+	* builtins.c (mathfn_built_in): Handle missing log{,f,l} cases.
+	(expand_builtin): Don't expand log{,f,l}, pow{,f,l} or atan2{,f,l}
+	when not optimizing.
+
+	* doc/extend.texi: Document new pow and atan2 builtins, and
+	their float and long double variants.  Realphabetize builtins.
+
 Fri Feb  7 23:24:28 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse2_nandv2di3): Fix.

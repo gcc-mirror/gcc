@@ -1507,6 +1507,11 @@ mathfn_built_in (type, fn)
       case BUILT_IN_EXPL:
 	fcode = BUILT_IN_EXP;
 	break;
+      case BUILT_IN_LOG:
+      case BUILT_IN_LOGF:
+      case BUILT_IN_LOGL:
+	fcode = BUILT_IN_LOG;
+	break;
       case BUILT_IN_FLOOR:
       case BUILT_IN_FLOORF:
       case BUILT_IN_FLOORL:
@@ -1558,6 +1563,11 @@ mathfn_built_in (type, fn)
       case BUILT_IN_EXPL:
 	fcode = BUILT_IN_EXPF;
 	break;
+      case BUILT_IN_LOG:
+      case BUILT_IN_LOGF:
+      case BUILT_IN_LOGL:
+	fcode = BUILT_IN_LOGF;
+	break;
       case BUILT_IN_FLOOR:
       case BUILT_IN_FLOORF:
       case BUILT_IN_FLOORL:
@@ -1608,6 +1618,11 @@ mathfn_built_in (type, fn)
       case BUILT_IN_EXPF:
       case BUILT_IN_EXPL:
 	fcode = BUILT_IN_EXPL;
+	break;
+      case BUILT_IN_LOG:
+      case BUILT_IN_LOGF:
+      case BUILT_IN_LOGL:
+	fcode = BUILT_IN_LOGL;
 	break;
       case BUILT_IN_FLOOR:
       case BUILT_IN_FLOORF:
@@ -3905,6 +3920,15 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       case BUILT_IN_EXP:
       case BUILT_IN_EXPF:
       case BUILT_IN_EXPL:
+      case BUILT_IN_LOG:
+      case BUILT_IN_LOGF:
+      case BUILT_IN_LOGL:
+      case BUILT_IN_POW:
+      case BUILT_IN_POWF:
+      case BUILT_IN_POWL:
+      case BUILT_IN_ATAN2:
+      case BUILT_IN_ATAN2F:
+      case BUILT_IN_ATAN2L:
       case BUILT_IN_MEMSET:
       case BUILT_IN_MEMCPY:
       case BUILT_IN_MEMCMP:
