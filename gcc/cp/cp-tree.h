@@ -871,6 +871,9 @@ struct language_function GTY(())
   int in_base_initializer;
   int x_expanding_p;
 
+  /* True if this function can throw an exception.  */
+  bool can_throw : 1;
+
   struct named_label_use_list *x_named_label_uses;
   struct named_label_list *x_named_labels;
   struct cp_binding_level *bindings;
@@ -3625,6 +3628,7 @@ extern void maybe_note_name_used_in_class       PARAMS ((tree, tree));
 extern void note_name_declared_in_class         PARAMS ((tree, tree));
 extern tree get_vtbl_decl_for_binfo             PARAMS ((tree));
 extern tree in_charge_arg_for_name              PARAMS ((tree));
+extern tree build_cxx_call                      PARAMS ((tree, tree, tree));
 extern tree get_vtt_name                        PARAMS ((tree));
 extern tree get_primary_binfo                   PARAMS ((tree));
 

@@ -6,7 +6,7 @@ template <int I> struct F
   int operator()()
     {
       F<I+1> f;			// { dg-error "" "" }
-      return f()*I;
+      return f()*I;             // { dg-error "" "" }
     }
 };
 

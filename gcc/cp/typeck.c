@@ -2646,7 +2646,6 @@ build_function_call_real (function, params, require_complete, flags)
      int require_complete, flags;
 {
   register tree fntype, fndecl;
-  register tree value_type;
   register tree coerced_params;
   tree result;
   tree name = NULL_TREE, assembler_name = NULL_TREE;
@@ -2751,20 +2750,7 @@ build_function_call_real (function, params, require_complete, flags)
 	return result;
     }
 
-  /* Some built-in function calls will be evaluated at
-     compile-time in fold ().  */
-  result = fold (build_call (function, coerced_params));
-  value_type = TREE_TYPE (result);
-
-  if (require_complete)
-    {
-      if (TREE_CODE (value_type) == VOID_TYPE)
-	return result;
-      result = require_complete_type (result);
-    }
-  if (IS_AGGR_TYPE (value_type))
-    result = build_cplus_new (value_type, result);
-  return convert_from_reference (result);
+  return build_cxx_call (function, params, coerced_params);
 }
 
 tree

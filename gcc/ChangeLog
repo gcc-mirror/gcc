@@ -1,5 +1,17 @@
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* Makefile.in (calls.o): Depend on except.h.
+	* calls.c: Include except.h.
+	(emit_call_1): Call note_eh_region_may_contain_throw if
+	appropriate.
+	* except.c (eh_region): Add may_contain_throw.
+	(expand_eh_region_end_cleanup): Do not include handler code when
+	it cannot be reached.
+	(note_eh_region_may_contain_throw): New function.
+	* except.h (note_eh_region_may_contain_throw): New function.
+
+2003-04-21  Mark Mitchell  <mark@codesourcery.com>
+
 	* config/i386/winnt.c (i386_pe_mark_dllimport): Revert previous
 	changes.
 

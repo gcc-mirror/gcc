@@ -35,6 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "sbitmap.h"
 #include "langhooks.h"
 #include "target.h"
+#include "except.h"
 
 #if !defined FUNCTION_OK_FOR_SIBCALL
 #define FUNCTION_OK_FOR_SIBCALL(DECL) 1
@@ -617,6 +618,8 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
   if (ecf_flags & ECF_NOTHROW)
     REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, const0_rtx,
 					       REG_NOTES (call_insn));
+  else
+    note_eh_region_may_contain_throw ();
 
   if (ecf_flags & ECF_NORETURN)
     REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_NORETURN, const0_rtx,

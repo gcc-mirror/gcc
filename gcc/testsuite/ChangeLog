@@ -1,3 +1,7 @@
+2003-04-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/template/recurse.C: Adjust location of error messages.
+
 2003-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9881

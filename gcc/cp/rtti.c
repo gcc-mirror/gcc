@@ -167,7 +167,7 @@ throw_bad_cast ()
     fn = push_throw_library_fn (fn, build_function_type (ptr_type_node,
 							 void_list_node));
   
-  return build_call (fn, NULL_TREE);
+  return build_cxx_call (fn, NULL_TREE, NULL_TREE);
 }
 
 static tree
@@ -183,7 +183,7 @@ throw_bad_typeid ()
       fn = push_throw_library_fn (fn, t);
     }
 
-  return build_call (fn, NULL_TREE);
+  return build_cxx_call (fn, NULL_TREE, NULL_TREE);
 }
 
 /* Return a pointer to type_info function associated with the expression EXP.
@@ -653,7 +653,7 @@ build_dynamic_cast_1 (type, expr)
               pop_nested_namespace (ns);
               dynamic_cast_node = dcast_fn;
 	    }
-          result = build_call (dcast_fn, elems);
+          result = build_cxx_call (dcast_fn, elems, elems);
 
 	  if (tc == REFERENCE_TYPE)
 	    {
