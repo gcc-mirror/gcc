@@ -1,3 +1,7 @@
+2003-07-23  Tom Tromey  <tromey@redhat.com>
+
+	* boehm.cc (_Jv_BuildGCDescr): Use `1ULL'.
+
 2003-07-22  Tom Tromey  <tromey@redhat.com>
 
 	* boehm.cc (_Jv_BuildGCDescr): Wrote.
