@@ -64,6 +64,13 @@ static GTY(()) int unnamed_struct_number;
 
 static GTY(()) varray_type deferred_global_decls;
 
+/* The C front end may call sdbout_symbol before sdbout_init runs.
+   We save all such decls in this list and output them when we get
+   to sdbout_init.  */
+
+static GTY(()) tree preinit_symbols;
+static GTY(()) bool sdbout_initialized;
+
 #ifdef SDB_DEBUGGING_INFO
 
 #include "rtl.h"
@@ -698,6 +705,14 @@ sdbout_symbol (tree decl, int local)
   rtx value;
   int regno = -1;
   const char *name;
+
+  /* If we are called before sdbout_init is run, just save the symbol
+     for later.  */
+  if (!sdbout_initialized)
+    {
+      preinit_symbols = tree_cons (0, decl, preinit_symbols);
+      return;
+    }
 
   sdbout_one_type (type);
 
@@ -1460,7 +1475,7 @@ sdbout_global_decl (tree decl)
 static void
 sdbout_finish (const char *main_filename ATTRIBUTE_UNUSED)
 {
-  int i;
+  size_t i;
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_global_decls); i++)
     sdbout_symbol (VARRAY_TREE (deferred_global_decls, i), 0);
@@ -1663,6 +1678,8 @@ sdbout_end_source_file (unsigned int line ATTRIBUTE_UNUSED)
 static void
 sdbout_init (const char *input_file_name ATTRIBUTE_UNUSED)
 {
+  tree t;
+
 #ifdef MIPS_DEBUGGING_INFO
   current_file = xmalloc (sizeof *current_file);
   current_file->next = NULL;
@@ -1670,6 +1687,14 @@ sdbout_init (const char *input_file_name ATTRIBUTE_UNUSED)
 #endif
 
   VARRAY_TREE_INIT (deferred_global_decls, 12, "deferred_global_decls");
+
+  /* Emit debug information which was queued by sdbout_symbol before
+     we got here.  */
+  sdbout_initialized = true;
+
+  for (t = nreverse (preinit_symbols); t; t = TREE_CHAIN (t))
+    sdbout_symbol (TREE_VALUE (t), 0);
+  preinit_symbols = 0;
 }
 
 #else  /* SDB_DEBUGGING_INFO */
