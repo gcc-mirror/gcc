@@ -193,7 +193,12 @@ compare_ptrs (const void *k1, const void *k2)
 static inline int 
 compare_strings (const void *k1, const void *k2)
 {
-  return !strcmp (k1, k2);
+  if (k1 == k2)
+    return 1;
+  else if (k1 == 0 || k2 == 0)
+    return 0;
+  else
+    return !strcmp (k1, k2);
 }
 
 
