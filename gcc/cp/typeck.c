@@ -2460,7 +2460,14 @@ build_indirect_ref (ptr, errorstring)
 	 types.  */
       tree t = canonical_type_variant (TREE_TYPE (type));
 
-      if (TREE_CODE (pointer) == ADDR_EXPR
+      if (same_type_p (TYPE_MAIN_VARIANT (t), void_type_node))
+        {
+          /* A pointer to incomplete type (other than cv void) can be
+             dereferenced [expr.unary.op]/1  */
+          cp_error ("`%T' is not a pointer-to-object type", type);
+          return error_mark_node;
+        }
+      else if (TREE_CODE (pointer) == ADDR_EXPR
 	  && !flag_volatile
 	  && same_type_p (t, TREE_TYPE (TREE_OPERAND (pointer, 0))))
 	/* The POINTER was something like `&x'.  We simplify `*&x' to
