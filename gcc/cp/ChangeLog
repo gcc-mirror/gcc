@@ -1,4 +1,4 @@
-1999-08-08  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+1999-08-10  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* decl2.c (set_decl_namespace): Do not complain about non-matching
 	decls if processing a template.
