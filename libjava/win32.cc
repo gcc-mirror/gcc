@@ -35,3 +35,12 @@ _Jv_platform_initialize (void)
   // Install exception handler
   SetUnhandledExceptionFilter (win32_exception_handler);
 }
+
+// gettimeofday implementation.
+void
+_Jv_platform_gettimeofday (struct timeval *tv)
+{
+  // FIXME
+  return;
+}
+

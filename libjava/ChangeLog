@@ -1,5 +1,10 @@
 2002-02-11  Adam Megacz <adam@xwt.org>
 
+	* include/win32.h: Added _Jv_platform_gettimeofday.
+	* win32.cc (_Jv_platform_gettimeofday): Added dummy function.
+
+2002-02-11  Adam Megacz <adam@xwt.org>
+
 	* java/io/natFileWin32.cc, java/io/natFileDescriptorWin32.cc:
 	Added #undef STRICT to make windows.h and
 	java/lang/reflect/Modifier.h cooperate.
