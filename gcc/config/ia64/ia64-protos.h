@@ -48,6 +48,7 @@ extern int reg_or_fp01_operand PARAMS((rtx, enum machine_mode));
 extern int normal_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int adjusted_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int call_multiple_values_operation PARAMS((rtx, enum machine_mode));
+extern int predicate_operator PARAMS((rtx, enum machine_mode));
 
 extern void ia64_expand_fetch_and_op PARAMS ((enum fetchop_code,
 					      enum machine_mode, rtx []));
