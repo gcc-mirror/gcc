@@ -1,3 +1,13 @@
+2005-02-20  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/do_iterator: Split loop, markup all lines for
+	which an error locus is printed.
+	* gfortran.dg/pr17708.f90: Markup all lines for which an error
+	locus is printed.
+	* gfortran.dg/select_4.f90: Likewise.
+	* lib/gfortran-dg.exp (gfortran-dg-test): Handle gfortran error
+	locuses in the various permutations.
+
 2005-02-20  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-optimization/19951
