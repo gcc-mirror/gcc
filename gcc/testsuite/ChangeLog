@@ -1,3 +1,7 @@
+2004-02-12  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.dg/debug/20020327-1.c: Disable for powerpc64.
+
 2004-02-12  Nathaniel Smith <njs@codesourcery.com>
 
 	* lib/scanasm.exp (dg-scan): Quote pattern before display.
