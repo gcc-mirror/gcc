@@ -26,7 +26,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define_std ("sparc");		\
 	builtin_define_std ("unix");		\
 	builtin_define ("__svr4__");		\
 	builtin_assert ("system=unix");		\

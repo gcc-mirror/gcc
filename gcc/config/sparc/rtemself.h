@@ -23,7 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_SUB_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define_std ("sparc");		\
 	builtin_define ("__rtems__");		\
 	builtin_define ("__USE_INIT_FINI__");	\
 	builtin_assert ("system=rtems");	\
