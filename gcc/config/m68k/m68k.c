@@ -478,7 +478,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 #endif
     }
 
-  /* on Coldfire add register save into initial stack frame setup, if possible */
+  /* on ColdFire add register save into initial stack frame setup, if possible */
   num_saved_regs = 0;
   if (TARGET_COLDFIRE && current_frame.reg_no > 2)
     num_saved_regs = current_frame.reg_no;
@@ -1667,7 +1667,7 @@ const_method (rtx constant)
   if (USE_MOVQ (i))
     return MOVQ;
 
-  /* The Coldfire doesn't have byte or word operations.  */
+  /* The ColdFire doesn't have byte or word operations.  */
   /* FIXME: This may not be useful for the m68060 either */
   if (!TARGET_COLDFIRE) 
     {
@@ -1982,7 +1982,7 @@ output_move_qimode (rtx *operands)
   /* This is probably useless, since it loses for pushing a struct
      of several bytes a byte at a time.	 */
   /* 68k family always modifies the stack pointer by at least 2, even for
-     byte pushes.  The 5200 (coldfire) does not do this.  */
+     byte pushes.  The 5200 (ColdFire) does not do this.  */
   if (GET_CODE (operands[0]) == MEM
       && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
       && XEXP (XEXP (operands[0], 0), 0) == stack_pointer_rtx
@@ -2032,7 +2032,7 @@ output_move_qimode (rtx *operands)
     return "sub%.l %0,%0";
   if (GET_CODE (operands[1]) != CONST_INT && CONSTANT_P (operands[1]))
     return "move%.l %1,%0";
-  /* 68k family (including the 5200 coldfire) does not support byte moves to
+  /* 68k family (including the 5200 ColdFire) does not support byte moves to
      from address registers.  */
   if (ADDRESS_REG_P (operands[0]) || ADDRESS_REG_P (operands[1]))
     return "move%.w %1,%0";
@@ -2452,7 +2452,7 @@ find_addr_reg (rtx addr)
   abort ();
 }
 
-/* Output assembler code to perform a 32 bit 3 operand add.  */
+/* Output assembler code to perform a 32-bit 3-operand add.  */
 
 const char *
 output_addsi3 (rtx *operands)

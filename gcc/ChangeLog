@@ -1,3 +1,10 @@
+2003-10-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m68k/lb1sf68.asm: Follow spelling conventions.
+	* config/m68k/m68k.c: Likewise.
+	* config/m68k/m68k.h: Likewise.
+	* config/m68k/m68k.md: Likewise.
+
 2003-10-11  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_memcpy): Optimize case when the two

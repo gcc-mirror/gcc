@@ -416,11 +416,11 @@ L4:	lsrl	IMM (1), d1	/* shift divisor */
 	lsrl	IMM (1), d0	/* shift dividend */
 	cmpl	IMM (0x10000), d1 /* still divisor >= 2 ^ 16 ?  */
 	jcc	L4
-	divu	d1, d0		/* now we have 16 bit divisor */
+	divu	d1, d0		/* now we have 16-bit divisor */
 	andl	IMM (0xffff), d0 /* mask out divisor, ignore remainder */
 
-/* Multiply the 16 bit tentative quotient with the 32 bit divisor.  Because of
-   the operand ranges, this might give a 33 bit product.  If this product is
+/* Multiply the 16-bit tentative quotient with the 32-bit divisor.  Because of
+   the operand ranges, this might give a 33-bit product.  If this product is
    greater than the dividend, the tentative quotient was too large. */
 	movel	d2, d1
 	mulu	d0, d1		/* low part, 32 bits */
@@ -440,7 +440,7 @@ L6:	movel	sp@+, d2
 
 #else /* __mcoldfire__ */
 
-/* Coldfire implementation of non-restoring division algorithm from
+/* ColdFire implementation of non-restoring division algorithm from
    Hennessy & Patterson, Appendix A. */
 	link	a6,IMM (-12)
 	moveml	d2-d4,sp@
