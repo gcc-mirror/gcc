@@ -1,3 +1,10 @@
+2005-01-24  Roger Sayle  <roger@eyesopen.com>
+
+	PR java/19295
+	* jcf-write.c (generate_bytecode_insns): Conversions between
+	integer types of the same precision shouldn't generate widening
+	or narrowing conversion bytecodes.
+
 2005-01-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* java-except.h, java-tree.h: Remove unused prototypes.

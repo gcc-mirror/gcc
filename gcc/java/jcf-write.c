@@ -2260,40 +2260,48 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	  }
 	else /* Convert numeric types. */
 	  {
-	    int wide_src = TYPE_PRECISION (src_type) > 32;
-	    int wide_dst = TYPE_PRECISION (dst_type) > 32;
-	    NOTE_POP (1 + wide_src);
-	    RESERVE (1);
+	    int src_prec = TYPE_PRECISION (src_type);
+	    int dst_prec = TYPE_PRECISION (dst_type);
+	    int wide_src = src_prec > 32;
+	    int wide_dst = dst_prec > 32;
 	    if (TREE_CODE (dst_type) == REAL_TYPE)
 	      {
+		NOTE_POP (1 + wide_src);
+		RESERVE (1);
 		if (TREE_CODE (src_type) == REAL_TYPE)
 		  OP1 (wide_dst ? OPCODE_f2d : OPCODE_d2f);
-		else if (TYPE_PRECISION (src_type) == 64)
+		else if (src_prec == 64)
 		  OP1 (OPCODE_l2f + wide_dst);
 		else
 		  OP1 (OPCODE_i2f + wide_dst);
+		NOTE_PUSH (1 + wide_dst);
 	      }
-	    else /* Convert to integral type. */
+	    /* Convert to integral type (but ignore non-widening
+	       and non-narrowing integer type conversions).  */
+	    else if (TREE_CODE (src_type) == REAL_TYPE
+		     || src_prec != dst_prec)
 	      {
+		NOTE_POP (1 + wide_src);
+		RESERVE (1);
 		if (TREE_CODE (src_type) == REAL_TYPE)
 		  OP1 (OPCODE_f2i + wide_dst + 3 * wide_src);
 		else if (wide_dst)
 		  OP1 (OPCODE_i2l);
 		else if (wide_src)
 		  OP1 (OPCODE_l2i);
-		if (TYPE_PRECISION (dst_type) < 32)
+		if (dst_prec < 32)
 		  {
 		    RESERVE (1);
 		    /* Already converted to int, if needed. */
-		    if (TYPE_PRECISION (dst_type) <= 8)
+		    if (dst_prec <= 8)
 		      OP1 (OPCODE_i2b);
 		    else if (TYPE_UNSIGNED (dst_type))
 		      OP1 (OPCODE_i2c);
 		    else
 		      OP1 (OPCODE_i2s);
 		  }
+		NOTE_PUSH (1 + wide_dst);
 	      }
-	    NOTE_PUSH (1 + wide_dst);
 	  }
       }
       break;
