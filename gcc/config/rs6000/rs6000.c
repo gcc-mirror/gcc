@@ -827,9 +827,9 @@ print_operand (file, x, code)
   switch (code)
     {
     case '.':
-      /* Write out the bit number for "cror" after a call.   This differs
-	 between AIX 3.2 and earlier versions.  */
-      fprintf (file, "%d", RS6000_CROR_BIT_NUMBER);
+      /* Write out an instruction after the call which may be replaced
+	 with glue code by the loader.  This depends on the AIX version.  */
+      asm_fprintf (file, RS6000_CALL_GLUE);
       return;
 
     case 'A':
@@ -893,7 +893,7 @@ print_operand (file, x, code)
 	output_operand_lossage ("invalid %%E value");
 
       fprintf(file, "%d", 4 * (REGNO (x) - 68) + 3);
-      break;
+      return;
 
     case 'f':
       /* X is a CR register.  Print the shift count needed to move it
@@ -1254,7 +1254,7 @@ print_operand (file, x, code)
 	}
       else
 	output_addr_const (file, x);
-      break;
+      return;
 
     default:
       output_operand_lossage ("invalid %%xn code");
