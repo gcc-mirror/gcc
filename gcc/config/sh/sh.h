@@ -804,6 +804,12 @@ extern int current_function_anonymous_args;
 	fprintf(STREAM, "	.long	LP%d\n", (LABELNO));	\
 }
 
+/* Define this macro if the code for function profiling should come
+   before the function prologue.  Normally, the profiling code comes
+   after.  */
+
+#define PROFILE_BEFORE_PROLOGUE
+
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
