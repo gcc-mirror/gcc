@@ -171,6 +171,14 @@ needs them, thus avoiding unnecessary creation of, for example,
 @file{stage1/f/runtime} when doing a non-bootstrap build.
 Other cleaning up of the configuration and build process
 has been performed as well.
+
+@item
+Upgrade to @code{libf2c} as of 1998-04-20.
+
+This should fix a variety of problems, including
+those involving some uses of the @samp{T} format
+specifier, and perhaps some build (porting) problems
+as well.
 @end itemize
 
 @heading In 0.5.22:
