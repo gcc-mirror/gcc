@@ -85,11 +85,12 @@ nat_files = $(nat_source_files:.cc=.lo)
 ## Objects from C sources in subdirs.
 c_files = $(c_source_files:.c=.lo)
 ## Objects from Java sources in subdirs.
-javao_files = $(java_source_files:.java=.lo)
+javao_files = $(java_source_files:.java=.lo) \
+	$(built_java_source_files:.java=.lo)
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
-	$(c_source_files) $(java_source_files)
+	$(c_source_files) $(java_source_files) $(built_java_source_files)
 libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS)
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
@@ -106,6 +107,14 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## hand-maintained headers.
 $(java_source_files:.java=.class): libgcj.zip
 
+## FIXME: this isn't really correct.
+$(built_java_source_files:.java=.class): $(built_java_source_files)
+## This little nastiness is here so that the backquoted stuff in the
+## GCJ definition can be correctly expanded, if required.
+	javac="$(JAVAC)"; \
+	$$javac $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
+	  -d $(here) $?
+
 ## We have the zip file depend on the java sources and not the class
 ## files, because we don't know the names of all the class files.
 ## FIXME: this method fails in a peculiar case: if libgcj.zip is
@@ -113,6 +122,9 @@ $(java_source_files:.java=.class): libgcj.zip
 ## `make libgcj.zip' will not rebuilt foo.class.  That's because
 ## libgcj.zip is not out-of-date with respect to foo.java.
 libgcj.zip: $(java_source_files)
+## FIXME: this ought to depend on built_java_source_files, but right
+## now it can't.  Ugly.
+	$(MAKE) $(built_java_source_files:.java=.class)
 ## This little nastiness is here so that the backquoted stuff in the
 ## GCJ definition can be correctly expanded, if required.
 	javac="$(JAVAC)"; cd $(srcdir); \
@@ -168,7 +180,8 @@ $(javao_files): %.lo: %.java
 	$(GCJH) -classpath $(top_builddir) $(basename $<)
 
 ## Header files used when compiling some of the nat* files.
-nat_headers = $(ordinary_java_source_files:.java=.h)
+nat_headers = $(ordinary_java_source_files:.java=.h) \
+	$(built_java_source_files:.java=.h)
 
 $(nat_headers): libgcj.zip
 
@@ -268,8 +281,10 @@ jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
 ## We explicitly link in the libraries we need.  This way we don't
 ## need -nodefaultlibs, so we can still rely on gcj picking up the
 ## system libraries we need (via the specs file).
+## We need the -L so that gcj can find libgcj with `-lgcj'.
+## FIXME: should be _libs on some systems.
 jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
-	$(GCLIBS) $(THREADLIBS) $(ZLIBS)
+	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
@@ -410,6 +425,10 @@ java/awt/peer/FramePeer.java \
 java/awt/peer/WindowPeer.java
 
 # $(awt_java_source_files)
+
+## Java files which are created by configure and thus are in the build
+## directory.
+built_java_source_files = java/lang/ConcreteProcess.java
 
 ## List of all .java files to be compiled.  Please keep this list
 ## alphabetical.  Please put files from gnu/gcj/convert into
@@ -679,6 +698,7 @@ java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
+java/lang/natConcreteProcess.cc \
 java/lang/natDouble.cc \
 java/lang/natFirstThread.cc \
 java/lang/natFloat.cc \

@@ -1,3 +1,24 @@
+1999-05-12  Tom Tromey  <tromey@cygnus.com>
+
+	* include/javaprims.h: Updated namespace declarations.
+	* classes.pl (scan): Uniquify class list.
+	* Makefile.in, configure: Rebuilt.
+	* Makefile.am (nat_source_files): Added natConcreteProcess.cc.
+	(built_java_source_files): New macro.
+	(nat_headers): Added built_java_source_files.
+	(javao_files): Likewise.
+	(EXTRA_libgcj_la_SOURCES): Likewise.
+	(libgcj.zip): Create built class files.
+	($(built_java_source_files:.java=.class)): New target.
+	(jv_convert_LDADD): Added -L$(here)/.libs.
+	* configure.in: Create links for ConcreteProcess.java and
+	natConcreteProcess.cc.
+	* java/lang/Runtime.java (exec): Create a ConcreteProcess.
+	* java/lang/natEcosProcess.cc: New file.
+	* java/lang/EcosProcess.java: New file.
+	* java/lang/PosixProcess.java: New file.
+	* java/lang/natPosixProcess.cc: New file.
+
 1999-05-12  Warren Levy  <warrenl@cygnus.com>
 
 	* java/net/PlainSocketImpl.java: Corrected copyright & header comments.

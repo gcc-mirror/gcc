@@ -106,6 +106,7 @@ extern "Java"
       class Cloneable;
       class Comparable;
       class Compiler;
+      class ConcreteProcess;
       class Double;
       class Error;
       class Exception;
@@ -161,7 +162,6 @@ extern "Java"
       class VerifyError;
       class VirtualMachineError;
       class Void;
-
       namespace reflect
       {
         class AccessibleObject;
@@ -197,6 +197,7 @@ extern "Java"
       class Observable;
       class Observer;
       class Properties;
+      class PropertyResourceBundle;
       class Random;
       class ResourceBundle;
       class SimpleTimeZone;
@@ -206,7 +207,6 @@ extern "Java"
       class TooManyListenersException;
       class Vector;
       class VectorEnumeration;
-
       namespace zip
       {
         class Adler32;
@@ -214,11 +214,13 @@ extern "Java"
         class Checksum;
         class Deflater;
         class DeflaterOutputStream;
+        class InflaterInputStream;
         class ZipConstants;
         class ZipEntry;
         class ZipEnumeration;
         class ZipException;
         class ZipFile;
+        class ZipInputStream;
         class ZipOutputStream;
       };
     };

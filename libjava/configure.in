@@ -55,9 +55,11 @@ TARGET_ECOS="$with_ecos"
 case "$TARGET_ECOS" in
    no)
       FILE_DESCRIPTOR=natFileDescriptorPosix.cc
+      PROCESS=Posix
       ;;
    *)
       FILE_DESCRIPTOR=natFileDescriptorEcos.cc
+      PROCESS=Ecos
       AC_DEFINE(ECOS)
       ;;
 esac
@@ -75,6 +77,11 @@ dnl to create the link will fail.
 test -d java || mkdir java
 test -d java/io || mkdir java/io
 AC_LINK_FILES(java/io/$FILE_DESCRIPTOR, java/io/natFileDescriptor.cc)
+
+dnl Likewise for ConcreteProcess.java and natConcreteProcess.cc.
+test -d java/lang || mkdir java/lang
+AC_LINK_FILES(java/lang/${PROCESS}Process.java, java/lang/ConcreteProcess.java)
+AC_LINK_FILES(java/lang/nat${PROCESS}Process.cc, java/lang/natConcreteProcess.cc)
 
 SYSTEMSPEC=
 AC_SUBST(SYSTEMSPEC)
