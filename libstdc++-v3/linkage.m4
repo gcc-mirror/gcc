@@ -8,7 +8,7 @@ dnl declared when using the c++ compiler
 dnl ASSUMES argument is a math function with ONE parameter
 dnl
 dnl GLIBCXX_CHECK_MATH_DECL_1
-AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_1, [
+AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_1], [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcxx_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
@@ -40,7 +40,7 @@ dnl
 dnl ASSUMES argument is a math function with ONE parameter
 dnl
 dnl GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1
-AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1, [
+AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1], [
   GLIBCXX_CHECK_MATH_DECL_1($1)
   if test x$glibcxx_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)
@@ -58,7 +58,7 @@ dnl Like GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1, but does a bunch of
 dnl of functions at once.  It's an all-or-nothing check -- either
 dnl HAVE_XYZ is defined for each of the functions, or for none of them.
 dnl Doing it this way saves significant configure time.
-AC_DEFUN(GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1, [
+AC_DEFUN([GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1], [
   AC_MSG_CHECKING([for $1 functions])
   AC_CACHE_VAL(glibcxx_cv_func_$2_use, [
     AC_LANG_SAVE
@@ -80,7 +80,7 @@ dnl declared when using the c++ compiler
 dnl ASSUMES argument is a math function with TWO parameters
 dnl
 dnl GLIBCXX_CHECK_MATH_DECL_2
-AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_2, [
+AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_2], [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcxx_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
@@ -107,7 +107,7 @@ dnl
 dnl ASSUMES argument is a math function with TWO parameters
 dnl
 dnl GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2
-AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2, [
+AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2], [
   GLIBCXX_CHECK_MATH_DECL_2($1)
   if test x$glibcxx_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)
@@ -126,7 +126,7 @@ dnl declared when using the c++ compiler
 dnl ASSUMES argument is a math function with THREE parameters
 dnl
 dnl GLIBCXX_CHECK_MATH_DECL_3
-AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_3, [
+AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_3], [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcxx_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
@@ -153,7 +153,7 @@ dnl
 dnl ASSUMES argument is a math function with THREE parameters
 dnl
 dnl GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3
-AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3, [
+AC_DEFUN([GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3], [
   GLIBCXX_CHECK_MATH_DECL_3($1)
   if test x$glibcxx_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)
@@ -176,7 +176,7 @@ dnl
 dnl ASSUMES argument is a stdlib function without parameters
 dnl
 dnl GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0
-AC_DEFUN(GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0, [
+AC_DEFUN([GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0], [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcxx_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
@@ -205,7 +205,7 @@ dnl
 dnl ASSUMES argument is a math function with TWO parameters
 dnl
 dnl GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2
-AC_DEFUN(GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2, [
+AC_DEFUN([GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2], [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcxx_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
@@ -234,7 +234,7 @@ dnl
 dnl ASSUMES argument is a function with THREE parameters
 dnl
 dnl GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3
-AC_DEFUN(GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3, [
+AC_DEFUN([GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3], [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcxx_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
@@ -266,7 +266,7 @@ dnl
 dnl ASSUMES argument is a math function with ONE parameter
 dnl
 dnl GLIBCXX_CHECK_BUILTIN_MATH_DECL_LINKAGE_1
-AC_DEFUN(GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1, [
+AC_DEFUN([GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1], [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcxx_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
@@ -316,7 +316,7 @@ dnl check for __builtin_cos
 dnl check for __builtin_cosl
 dnl
 dnl GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
-AC_DEFUN(GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT, [
+AC_DEFUN([GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT], [
   dnl Test for builtin math functions.
   dnl These are made in gcc/c-common.c
   GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_abs)
@@ -373,7 +373,7 @@ dnl Define HAVE_STRTOLD if "strtold" is declared and links
 dnl Define HAVE_STRTOF if "strtof" is declared and links
 dnl
 dnl GLIBCXX_CHECK_STDLIB_SUPPORT
-AC_DEFUN(GLIBCXX_CHECK_STDLIB_SUPPORT, [
+AC_DEFUN([GLIBCXX_CHECK_STDLIB_SUPPORT], [
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
@@ -394,7 +394,7 @@ dnl
 dnl Define HAVE_CARGF etc if "cargf" is found.
 dnl
 dnl GLIBCXX_CHECK_MATH_SUPPORT
-AC_DEFUN(GLIBCXX_CHECK_MATH_SUPPORT, [
+AC_DEFUN([GLIBCXX_CHECK_MATH_SUPPORT], [
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
@@ -505,7 +505,7 @@ dnl
 dnl Define USE_COMPLEX_LONG_DOUBLE etc if "copysignl" is found.
 dnl
 dnl GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
-AC_DEFUN(GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT, [
+AC_DEFUN([GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT], [
   dnl Check for complex versions of math functions of platform.  This will
   dnl always pass if libm is available, and fail if it isn't.  If it is
   dnl available, we assume we'll need it later, so add it to LIBS.
@@ -543,7 +543,7 @@ AC_DEFUN(GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT, [
 # serial 1
 #
 dnl AC_REPLACE_MATHFUNCS(FUNCTION...)
-AC_DEFUN(AC_REPLACE_MATHFUNCS,
+AC_DEFUN([AC_REPLACE_MATHFUNCS],
 [AC_CHECK_FUNCS([$1], , [LIBMATHOBJS="$LIBMATHOBJS ${ac_func}.lo"])])
 
 dnl vim:et:ts=2
