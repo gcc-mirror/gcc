@@ -1023,11 +1023,11 @@ mips_move_1word (operands, insn, unsignedp)
 		 target, so zero/sign extend can use this code as well.  */
 	      switch (GET_MODE (op1))
 		{
-		default:      break;
-		case SFmode: ret = "lw\t%0,%1"; break;
-		case SImode: ret = "lw\t%0,%1"; break;
-		case HImode: ret = (unsignedp) ? "lhu\t%0,%1" : "lh\t%0,%1"; break;
-		case QImode: ret = (unsignedp) ? "lbu\t%0,%1" : "lb\t%0,%1"; break;
+		default:							break;
+		case SFmode: ret = "lw\t%0,%1";					break;
+		case SImode: ret = "lw\t%0,%1";					break;
+		case HImode: ret = (unsignedp) ? "lhu\t%0,%1" : "lh\t%0,%1";	break;
+		case QImode: ret = (unsignedp) ? "lbu\t%0,%1" : "lb\t%0,%1";	break;
 		}
 	    }
 
@@ -1085,21 +1085,51 @@ mips_move_1word (operands, insn, unsignedp)
 	}
 
       else if (code1 == LABEL_REF)
-	ret = "la\t%0,%a1";
-
-      else if (code1 == SYMBOL_REF || code1 == CONST)
 	{
 	  if (TARGET_STATS)
 	    mips_count_memory_refs (op1, 1);
 
+	  ret = "la\t%0,%a1";
+	}
+
+      else if (code1 == SYMBOL_REF || code1 == CONST)
+	{
 	  if (HALF_PIC_P () && CONSTANT_P (op1) && HALF_PIC_ADDRESS_P (op1))
 	    {
-	      delay = DELAY_LOAD;
-	      ret = "lw\t%0,%2\t\t# pic reference";
-	      operands[2] = HALF_PIC_PTR (op1);
+	      rtx offset = const0_rtx;
+
+	      if (GET_CODE (op1) == CONST)
+		op1 = eliminate_constant_term (XEXP (op1, 0), &offset);
+
+	      if (GET_CODE (op1) == SYMBOL_REF)
+		{
+		  operands[2] = HALF_PIC_PTR (op1);
+
+		  if (TARGET_STATS)
+		    mips_count_memory_refs (operands[2], 1);
+
+		  if (INTVAL (offset) == 0)
+		    {
+		      delay = DELAY_LOAD;
+		      ret = "lw\t%0,%2";
+		    }
+		  else
+		    {
+		      dslots_load_total++;
+		      operands[3] = offset;
+		      ret = (SMALL_INT (offset))
+				? "lw\t%0,%2%#\n\tadd\t%0,%0,%3"
+				: "lw\t%0,%2%#\n\t%[li\t%@,%3\n\tadd\t%0,%0,%@%]";
+		    }
+		}
 	    }
 	  else
-	    ret = "la\t%0,%a1";
+	    {
+	      if (TARGET_STATS)
+		mips_count_memory_refs (op1, 1);
+
+	      ret = "la\t%0,%a1";
+	    }
 	}
 
       else if (code1 == PLUS)
