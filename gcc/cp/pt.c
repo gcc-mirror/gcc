@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "defaults.h"
 #include "ggc.h"
+#include "hashtab.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -72,6 +73,11 @@ static int template_header_count;
 static tree saved_trees;
 static varray_type inline_parm_levels;
 static size_t inline_parm_levels_used;
+
+/* A map from local variable declarations in the body of the template
+   presently being instantiated to the corresponding instantiated
+   local variables.  */
+static htab_t local_specializations;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -119,9 +125,9 @@ static tree build_template_parm_index PARAMS ((int, int, int, tree, tree));
 static int inline_needs_template_parms PARAMS ((tree));
 static void push_inline_template_parms_recursive PARAMS ((tree, int));
 static tree retrieve_specialization PARAMS ((tree, tree));
-static tree retrieve_local_specialization PARAMS ((tree, tree));
+static tree retrieve_local_specialization PARAMS ((tree));
 static tree register_specialization PARAMS ((tree, tree, tree));
-static tree register_local_specialization PARAMS ((tree, tree, tree));
+static tree register_local_specialization PARAMS ((tree, tree));
 static int unregister_specialization PARAMS ((tree, tree));
 static tree reduce_template_parm_level PARAMS ((tree, tree, int));
 static tree build_template_decl PARAMS ((tree, tree));
@@ -709,16 +715,13 @@ retrieve_specialization (tmpl, args)
   return NULL_TREE;
 }
 
-/* Like retrieve_speciailization, but for local declarations.  FN is
-   the function in which we are looking for an instantiation.  */
+/* Like retrieve_speciailization, but for local declarations.  */
 
 static tree
-retrieve_local_specialization (tmpl, fn)
+retrieve_local_specialization (tmpl)
      tree tmpl;
-     tree fn;
 {
-  tree s = purpose_member (fn, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
-  return s ? TREE_VALUE (s) : NULL_TREE;
+  return (tree) htab_find (local_specializations, tmpl);
 }
 
 /* Returns non-zero iff DECL is a specialization of TMPL.  */
@@ -885,18 +888,18 @@ unregister_specialization (spec, tmpl)
   return 0;
 }
 
-/* Like register_specialization, but for local declarations.  FN is
-   the function in which we are registering SPEC, an instantiation of
-   TMPL.  */
+/* Like register_specialization, but for local declarations.  We are
+   registering SPEC, an instantiation of TMPL.  */
 
 static tree
-register_local_specialization (spec, tmpl, fn)
+register_local_specialization (spec, tmpl)
      tree spec;
      tree tmpl;
-     tree fn;
 {
-  DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
-     = tree_cons (fn, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
+  void **slot;
+
+  slot = htab_find_slot (local_specializations, tmpl, INSERT);
+  *slot = spec;
 
   return spec;
 }
@@ -3307,10 +3310,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
    If REQUIRE_ALL_ARGUMENTS is non-zero, all arguments must be
    provided in ARGLIST, or else trailing parameters must have default
    values.  If REQUIRE_ALL_ARGUMENTS is zero, we will attempt argument
-   deduction for any unspecified trailing arguments.  
-
-   The resulting TREE_VEC is allocated on a temporary obstack, and
-   must be explicitly copied if it will be permanent.  */
+   deduction for any unspecified trailing arguments.  */
    
 static tree
 coerce_template_parms (parms, args, in_decl,
@@ -5857,7 +5857,8 @@ tsubst_decl (t, args, type, in_decl)
 	  r = TYPE_NAME (type);
 	  break;
 	}
-      else if (!DECL_LANG_SPECIFIC (t))
+      else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+	       || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
 	{
 	  /* For a template type parameter, we don't have to do
 	     anything special.  */
@@ -5874,28 +5875,33 @@ tsubst_decl (t, args, type, in_decl)
 	tree spec;
 	tree tmpl;
 	tree ctx;
+	int local_p;
 
-	/* Nobody should be tsubst'ing into non-template variables.  */
-	my_friendly_assert (DECL_LANG_SPECIFIC (t) 
-			    && DECL_TEMPLATE_INFO (t) != NULL_TREE, 0);
+	/* Assume this is a non-local variable.  */
+	local_p = 0;
 
 	if (TYPE_P (CP_DECL_CONTEXT (t)))
 	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
 				  /*complain=*/1,
 				  in_decl, /*entering_scope=*/1);
 	else
-	  /* Subsequent calls to pushdecl will fill this in.  */
-	  ctx = NULL_TREE;
+	  {
+	    /* Subsequent calls to pushdecl will fill this in.  */
+	    ctx = NULL_TREE;
+	    if (!DECL_NAMESPACE_SCOPE_P (t))
+	      local_p = 1;
+	  }
 
 	/* Check to see if we already have this specialization.  */
-	tmpl = DECL_TI_TEMPLATE (t);
-	gen_tmpl = most_general_template (tmpl);
-	argvec = tsubst (DECL_TI_ARGS (t), args, /*complain=*/1, in_decl);
-	if (ctx)
-	  spec = retrieve_specialization (gen_tmpl, argvec);
+	if (!local_p)
+	  {
+	    tmpl = DECL_TI_TEMPLATE (t);
+	    gen_tmpl = most_general_template (tmpl);
+	    argvec = tsubst (DECL_TI_ARGS (t), args, /*complain=*/1, in_decl);
+	    spec = retrieve_specialization (gen_tmpl, argvec);
+	  }
 	else
-	  spec = retrieve_local_specialization (gen_tmpl,
-						current_function_decl);
+	  spec = retrieve_local_specialization (t);
 
 	if (spec)
 	  {
@@ -5929,19 +5935,20 @@ tsubst_decl (t, args, type, in_decl)
 	if (TREE_CODE (r) == VAR_DECL)
 	  DECL_DEAD_FOR_LOCAL (r) = 0;
 
-	/* A static data member declaration is always marked external
-	   when it is declared in-class, even if an initializer is
-	   present.  We mimic the non-template processing here.  */
-	if (ctx)
-	  DECL_EXTERNAL (r) = 1;
+	if (!local_p)
+	  {
+	    /* A static data member declaration is always marked
+	       external when it is declared in-class, even if an
+	       initializer is present.  We mimic the non-template
+	       processing here.  */
+	    DECL_EXTERNAL (r) = 1;
 
-	DECL_TEMPLATE_INFO (r) = tree_cons (tmpl, argvec, NULL_TREE);
-	SET_DECL_IMPLICIT_INSTANTIATION (r);
-	if (ctx)
-	  register_specialization (r, gen_tmpl, argvec);
+	    register_specialization (r, gen_tmpl, argvec);
+	    DECL_TEMPLATE_INFO (r) = tree_cons (tmpl, argvec, NULL_TREE);
+	    SET_DECL_IMPLICIT_INSTANTIATION (r);
+	  }
 	else
-	  register_local_specialization (r, gen_tmpl,
-					 current_function_decl);
+	  register_local_specialization (r, t);
 
 	TREE_CHAIN (r) = NULL_TREE;
 	if (TREE_CODE (r) == VAR_DECL && TREE_CODE (type) == VOID_TYPE)
@@ -9616,6 +9623,13 @@ instantiate_decl (d, defer_ok)
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
+      /* Set up the list of local specializations.  */
+      my_friendly_assert (local_specializations == NULL, 20000422);
+      local_specializations = htab_create (37, 
+					   htab_hash_pointer,
+					   htab_eq_pointer,
+					   NULL);
+
       /* Set up context.  */
       start_function (NULL_TREE, d, NULL_TREE, SF_PRE_PARSED);
       store_parm_decls ();
@@ -9627,6 +9641,10 @@ instantiate_decl (d, defer_ok)
       /* Substitute into the body of the function.  */
       tsubst_expr (DECL_SAVED_TREE (code_pattern), args,
 		   /*complain=*/1, tmpl);
+
+      /* We don't need the local specializations any more.  */
+      htab_delete (local_specializations);
+      local_specializations = NULL;
 
       /* Finish the function.  */
       expand_body (finish_function (0));
