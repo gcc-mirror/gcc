@@ -841,7 +841,7 @@ s%^\([ 	]*#[ 	]*else\)[ 	]*[^/ 	].*%\1%' \
     #
     # Fix  21:  Endif_Label
     #
-    if ( test -n "`egrep '^[ 	]*#[ 	]*endif[ 	]+[!-.0-z{|}~]' ${file}`"
+    if ( test -n "`egrep '^[ 	]*#[ 	]*endif[ 	]+[!-.0-z{|}~]|^[ 	]*#[ 	]*endif[ 	]+/[^*]' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       endif_label"

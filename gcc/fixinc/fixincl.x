@@ -742,7 +742,7 @@ tSCC zEndif_LabelName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zEndif_LabelSelect0[] =
-       "^[ \t]*#[ \t]*endif[ \t]+[!-.0-z{|}~]";
+       "^[ \t]*#[ \t]*endif[ \t]+[!-.0-z{|}~]|^[ \t]*#[ \t]*endif[ \t]+/[^*]";
 
 #define    ENDIF_LABEL_TEST_CT  1
 #define    ENDIF_LABEL_RE_CT    1
