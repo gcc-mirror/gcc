@@ -1,4 +1,4 @@
-// Wrapper for underlying C-language localization -*- C++ -*-
+// std::time_get, std::time_put implementation, generic version -*- C++ -*-
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -28,14 +28,18 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 22.8  Standard locale categories.
+// ISO C++ 14882: 22.2.5.1.2 - time_get virtual functions
+// ISO C++ 14882: 22.2.5.3.2 - time_put virtual functions
 //
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-#include <clocale>
-
-namespace std
-{
-  typedef int*			__c_locale;
-}
+  template<typename _CharT>
+    void
+    __timepunct<_CharT>::_M_put_helper(char* __s, size_t __maxlen, 
+				       const char* __format, 
+				       const tm* __tm) const
+    {
+      setlocale(LC_ALL, _M_name_timepunct);
+      strftime(__s, __maxlen, __format, __tm); 
+    }

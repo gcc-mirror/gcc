@@ -166,7 +166,7 @@ namespace std
     void
     _Format_cache<_CharT>::_M_populate(ios_base& __io)
     {
-      locale __loc = __io.getloc ();
+      locale __loc = __io.getloc();
       numpunct<_CharT> const& __np = use_facet<numpunct<_CharT> >(__loc);
       _M_truename = __np.truename();
       _M_falsename = __np.falsename();
@@ -1509,6 +1509,83 @@ namespace std
         __io.flags(__fmt);
         __throw_exception_again;
       }
+    }
+
+  template<typename _CharT, typename _OutIter>
+    time_put<_CharT, _OutIter>::iter_type 
+    time_put<_CharT, _OutIter>::put(iter_type __s, ios_base& __io, 
+				    char_type, const tm* __tm, 
+				    const _CharT* __beg, 
+				    const _CharT* __end) const
+    {
+      locale __loc = __io.getloc();
+      ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
+      while (__beg != __end)
+	{
+	  char __c = __ctype.narrow(*__beg, 0);
+	  ++__beg;
+	  if (__c == '%')
+	    {
+	      char __format;
+	      char __mod = 0;
+	      size_t __len = 1; 
+	      __c = __ctype.narrow(*__beg, 0);
+	      ++__beg;
+	      if (__c == 'E' || __c == 'O')
+		{
+		  __mod = __c;
+		  __format = __ctype.narrow(*__beg, 0);
+		  ++__beg;
+		}
+	      else
+		__format = __c;
+	      this->do_put(__s, __io, char_type(), __tm, __format, __mod);
+	    }
+	  else
+	    __s = __c;
+	}
+      return __s;
+    }
+
+  template<typename _CharT, typename _OutIter>
+    time_put<_CharT, _OutIter>::iter_type 
+    time_put<_CharT, _OutIter>::do_put(iter_type __s, ios_base& __io, 
+				       char_type, const tm* __tm, 
+				       char __format, char __mod) const
+    { 
+      // NB: This size is arbitrary. Should this be a data member,
+      // initialized at construction?
+      const size_t __maxlen = 64;
+      char* __res = static_cast<char*>(__builtin_alloca(__maxlen));
+
+      // NB: In IEE 1003.1-200x, and perhaps other locale models, it
+      // is possible that the format character will be longer than one
+      // character. Possibilities include 'E' or 'O' followed by a
+      // format charcter: if __mod is not the default argument, assume
+      // it's a valid modifier.
+      char __fmt[4];
+      __fmt[0] = '%'; 
+      if (!__mod)
+	{
+	  __fmt[1] = __format;
+	  __fmt[2] = '\0';
+	}
+      else
+	{
+	  __fmt[1] = __mod;
+	  __fmt[2] = __format;
+	  __fmt[3] = '\0';
+	}
+
+      locale __loc = __io.getloc();
+      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
+      __tp._M_put_helper(__res, __maxlen, __fmt, __tm);
+
+      // Write resulting, fully-formatted string to output iterator.
+      size_t __len = strlen(__res);
+      for (size_t __i = 0; __i < __len; ++__i)
+	__s = __res[__i];
+      return __s;
     }
 
   // Support for time_get:
