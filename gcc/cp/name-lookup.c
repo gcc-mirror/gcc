@@ -1745,7 +1745,7 @@ identifier_type_value (tree id)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, REAL_IDENTIFIER_TYPE_VALUE (id));
   /* Have to search for it. It must be on the global level, now.
      Ask lookup_name not to return non-types.  */
-  id = lookup_name_real (id, 2, 1, 0, LOOKUP_COMPLAIN);
+  id = lookup_name_real (id, 2, 1, /*block_p=*/true, 0, LOOKUP_COMPLAIN);
   if (id)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, TREE_TYPE (id));
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
@@ -3998,10 +3998,13 @@ qualified_lookup_using_namespace (tree name, tree scope,
    Otherwise we prefer non-TYPE_DECLs.
 
    If NONCLASS is nonzero, we don't look for the NAME in class scope,
-   using IDENTIFIER_CLASS_VALUE.  */
+   using IDENTIFIER_CLASS_VALUE.  
+
+   If BLOCK_P is true, block scopes are examined; otherwise, they are
+   skipped.  */
 
 tree
-lookup_name_real (tree name, int prefer_type, int nonclass, 
+lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
 		  int namespaces_only, int flags)
 {
   cxx_binding *iter;
@@ -4044,29 +4047,30 @@ lookup_name_real (tree name, int prefer_type, int nonclass,
   if (current_class_type == NULL_TREE)
     nonclass = 1;
 
-  for (iter = IDENTIFIER_BINDING (name); iter; iter = iter->previous)
-    {
-      tree binding;
-
-      if (!LOCAL_BINDING_P (iter) && nonclass)
-	/* We're not looking for class-scoped bindings, so keep going.  */
-	continue;
-
-      /* If this is the kind of thing we're looking for, we're done.  */
-      if (qualify_lookup (iter->value, flags))
-	binding = iter->value;
-      else if ((flags & LOOKUP_PREFER_TYPES)
-	       && qualify_lookup (iter->type, flags))
-	binding = iter->type;
-      else
-	binding = NULL_TREE;
-
-      if (binding)
-	{
-	  val = binding;
-	  break;
-	}
-    }
+  if (block_p || !nonclass)
+    for (iter = IDENTIFIER_BINDING (name); iter; iter = iter->previous)
+      {
+	tree binding;
+	
+	/* Skip entities we don't want.  */
+	if (LOCAL_BINDING_P (iter) ? !block_p : nonclass)
+	  continue;
+	
+	/* If this is the kind of thing we're looking for, we're done.  */
+	if (qualify_lookup (iter->value, flags))
+	  binding = iter->value;
+	else if ((flags & LOOKUP_PREFER_TYPES)
+		 && qualify_lookup (iter->type, flags))
+	  binding = iter->type;
+	else
+	  binding = NULL_TREE;
+	
+	if (binding)
+	  {
+	    val = binding;
+	    break;
+	  }
+      }
 
   /* Now lookup in namespace scopes.  */
   if (!val)
@@ -4089,19 +4093,24 @@ lookup_name_real (tree name, int prefer_type, int nonclass,
 tree
 lookup_name_nonclass (tree name)
 {
-  return lookup_name_real (name, 0, 1, 0, LOOKUP_COMPLAIN);
+  return lookup_name_real (name, 0, 1, /*block_p=*/true, 0, LOOKUP_COMPLAIN);
 }
 
 tree
-lookup_function_nonclass (tree name, tree args)
+lookup_function_nonclass (tree name, tree args, bool block_p)
 {
-  return lookup_arg_dependent (name, lookup_name_nonclass (name), args);
+  return 
+    lookup_arg_dependent (name, 
+			  lookup_name_real (name, 0, 1, block_p, 0, 
+					    LOOKUP_COMPLAIN),
+			  args);
 }
 
 tree
 lookup_name (tree name, int prefer_type)
 {
-  return lookup_name_real (name, prefer_type, 0, 0, LOOKUP_COMPLAIN);
+  return lookup_name_real (name, prefer_type, 0, /*block_p=*/true, 
+			   0, LOOKUP_COMPLAIN);
 }
 
 /* Similar to `lookup_name' but look only in the innermost non-class

@@ -1,5 +1,17 @@
 2004-07-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (build_operator_new_call): Avoid using push_to_top_level.
+	(build_new_op): Adjust call to lookup_function_nonclass.
+	* name-lookup.c (identifier_type_value): Adjust call to
+	lookup_name_real.
+	(lookup_name_real): Add block_p parameter.
+	(lookup_name_nonclass): Adjust call to lookup_name_real.
+	(lookup_function_nonclass): Likewise.
+	(lookup_name): Likewise.
+	* name-lookup.h (lookup_name_real): Change prototype.
+	(lookup_name_nonclass): Likewise.
+	* parser.c (cp_parser_lookup_name): Likewise.
+
 	* cp-tree.h (saved_scope): Make old_bindings a vector.
 	(unuse_fields): Remove.
 	* name-lookup.h (cxx_saved_binding): Define it.

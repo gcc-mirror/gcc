@@ -2812,10 +2812,16 @@ build_operator_new_call (tree fnname, tree args, tree *size, tree *cookie_size)
   if (args == error_mark_node)
     return args;
 
-  /* A global operator new must be looked up only at global scope.  */
-  push_to_top_level();
-  fns = lookup_function_nonclass (fnname, args);
-  pop_from_top_level();
+  /* Based on:
+
+       [expr.new]
+
+       If this lookup fails to find the name, or if the allocated type
+       is not a class type, the allocation function's name is looked
+       up in the global scope.
+
+     we disregard block-scope declarations of "operator new".  */
+  fns = lookup_function_nonclass (fnname, args, /*block_p=*/false);
 
   /* Figure out what function is being called.  */
   cand = perform_overload_resolution (fns, args, &candidates, &any_viable_p);
@@ -3636,7 +3642,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 
   /* Add namespace-scope operators to the list of functions to
      consider.  */
-  add_candidates (lookup_function_nonclass (fnname, arglist),
+  add_candidates (lookup_function_nonclass (fnname, arglist, /*block_p=*/true),
 		  arglist, NULL_TREE, false, NULL_TREE, NULL_TREE,
 		  flags, &candidates);
   /* Add class-member operators to the candidate set.  */

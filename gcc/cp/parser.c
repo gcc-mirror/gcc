@@ -14245,7 +14245,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 				     /*protect=*/0, is_type);
       /* Look it up in the enclosing context, too.  */
       decl = lookup_name_real (name, is_type, /*nonclass=*/0,
-			       is_namespace,
+			       /*block_p=*/true, is_namespace,
 			       /*flags=*/0);
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
@@ -14255,7 +14255,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
   else
     {
       decl = lookup_name_real (name, is_type, /*nonclass=*/0,
-			       is_namespace,
+			       /*block_p=*/true, is_namespace,
 			       /*flags=*/0);
       parser->qualifying_scope = NULL_TREE;
       parser->object_scope = NULL_TREE;
