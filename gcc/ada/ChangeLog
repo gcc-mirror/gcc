@@ -1,3 +1,8 @@
+2001-11-19  Laurent Guerby  <guerby@acm.org>
+
+	* Makefile.in (INCLUDES_FOR_SUBDIR): Remove redundant system include
+	since it is of no apparent use and cause warnings.
+
 2001-11-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (gnat_decode_option, gnat_init_options): Make definitions
