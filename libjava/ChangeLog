@@ -1,3 +1,8 @@
+2002-04-02  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/IdentityHashMap.java (put): Set new threshold correctly
+	when resizing table.
+
 2002-04-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/posix-threads.h: Support <.../pal.h> on FreeBSD/alpha.
