@@ -1,3 +1,10 @@
+2004-10-06  Benjamin Kosnik  <bkoz@redhat.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/17780
+	* src/mt_allocator.cc (__pool<true>::_M_reserve_block): Revert
+	to old locking order.
+
 2004-10-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_sstream.h (_M_sync): When the caller is

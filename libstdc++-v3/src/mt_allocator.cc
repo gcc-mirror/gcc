@@ -298,10 +298,13 @@ namespace __gnu_cxx
     _Block_record* __block = NULL;
     if (__gthread_active_p())
       {
+	__gthread_mutex_lock(__bin._M_mutex);
 	if (__bin._M_first[0] == NULL)
 	  {
 	    // No need to hold the lock when we are adding a whole
 	    // chunk to our own list.
+	    __gthread_mutex_unlock(__bin._M_mutex);
+
 	    void* __v = ::operator new(__options._M_chunk_size);
 	    __bin._M_first[__thread_id] = static_cast<_Block_record*>(__v);
 	    __bin._M_free[__thread_id] = __block_count;
@@ -327,7 +330,6 @@ namespace __gnu_cxx
 	    // Is the number of required blocks greater than or equal
 	    // to the number that can be provided by the global free
 	    // list?
-	    __gthread_mutex_lock(__bin._M_mutex);
 	    __bin._M_first[__thread_id] = __bin._M_first[0];
 	    if (__block_count >= __bin._M_free[0])
 	      {
