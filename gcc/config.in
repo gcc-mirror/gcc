@@ -1,33 +1,4 @@
 /* config.in.  Generated automatically from configure.in by autoheader.  */
-/* Define if you want to enable namespaces (-fhonor-std) by default. */
-#undef ENABLE_STD_NAMESPACE
-#if !defined(ENABLE_STD_NAMESPACE)
-#  define ENABLE_STD_NAMESPACE 0
-#endif
-
-/* Define if you want more run-time sanity checks.  This one gets a grab
-   bag of miscellaneous but relatively cheap checks.  */
-#undef ENABLE_CHECKING
-
-/* Define if you want all operations on trees (the basic data
-   structure of the front ends) to be checked for dynamic type safety
-   at runtime.  This is moderately expensive.  */
-#undef ENABLE_TREE_CHECKING
-
-/* Define if you want all operations on RTL (the basic data structure
-   of the optimizer and back end) to be checked for dynamic type safety
-   at runtime.  This is quite expensive.  */
-#undef ENABLE_RTL_CHECKING
-
-/* Define if you want the garbage collector to do object poisoning and
-   other memory allocation checks.  This is quite expensive.  */
-#undef ENABLE_GC_CHECKING
-
-/* Define if you want the garbage collector to operate in maximally
-   paranoid mode, validating the entire heap and collecting garbage at
-   every opportunity.  This is extremely expensive.  */
-#undef ENABLE_GC_ALWAYS_COLLECT
-
 /* Define to 1 if NLS is requested.  */
 #undef ENABLE_NLS
 
@@ -370,6 +341,29 @@
 /* Define to enable the use of a default assembler. */
 #undef DEFAULT_ASSEMBLER
 
+/* Define if you want more run-time sanity checks.  This one gets a grab
+   bag of miscellaneous but relatively cheap checks. */
+#undef ENABLE_CHECKING
+
+/* Define if you want all operations on trees (the basic data
+   structure of the front ends) to be checked for dynamic type safety
+   at runtime.  This is moderately expensive. */
+#undef ENABLE_TREE_CHECKING
+
+/* Define if you want all operations on RTL (the basic data structure
+   of the optimizer and back end) to be checked for dynamic type safety
+   at runtime.  This is quite expensive. */
+#undef ENABLE_RTL_CHECKING
+
+/* Define if you want the garbage collector to do object poisoning and
+   other memory allocation checks.  This is quite expensive. */
+#undef ENABLE_GC_CHECKING
+
+/* Define if you want the garbage collector to operate in maximally
+   paranoid mode, validating the entire heap and collecting garbage at
+   every opportunity.  This is extremely expensive. */
+#undef ENABLE_GC_ALWAYS_COLLECT
+
 /* Define if your compiler understands volatile. */
 #undef HAVE_VOLATILE
 
@@ -428,4 +422,7 @@
 
 /* Define if you want to always select the new-abi for g++. */
 #undef ENABLE_NEW_GXX_ABI
+
+/* Define to 1 if you want to enable namespaces (-fhonor-std) by default. */
+#undef ENABLE_STD_NAMESPACE
 
