@@ -36,14 +36,9 @@ line, where MSGID does not contain `%' or `}', corresponds to a
 message MSGID that requires translation; this is needed to identify
 diagnostics in GCC spec strings.
 
-If you modify source files, you'll need to use a special version of the
+If you modify source files, you'll need at least version 0.10.37 of the
 GNU gettext package to propagate the modifications to the translation
 tables.
-
-All patches needed for GCC have been incorporated into the official
-gettext CVS. These sources may be accessed via anonymous cvs. The root for
-the gettext CVS is :pserver:anoncvs@anoncvs.cygnus.com:/cvs/gettext
-Password is `anoncvs' like for the GCC CVS.
 
 After having built and installed these gettext tools, you have to
 configure GCC with --enable-maintainer-mode to get the master catalog

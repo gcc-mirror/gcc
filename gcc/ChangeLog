@@ -1,3 +1,10 @@
+2001-04-22  Philipp Thomas  <pthomas@suse.de>
+
+	* ABOUT-GCC-NLS: Now that gettext 0.10.37 is out,
+	require it instead of the CVS version.
+        * cpperror.c (v_message): Put a blank before the macro
+        body to not confuse exgettext.
+
 2001-04-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* flow.c (proagate_one_insn): Remove useless assignment.
