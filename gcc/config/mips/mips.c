@@ -7924,16 +7924,6 @@ mips_in_small_data_p (decl)
 	  && (!DECL_INITIAL (decl) || TREE_CONSTANT (DECL_INITIAL (decl))))
 	return false;
     }
-  else if (TARGET_MIPS16)
-    {
-      /* Alhough it seems strange to have separate rules for -mips16,
-	 this behaviour is long-standing.  */
-      if (TREE_PUBLIC (decl)
-	  && (DECL_COMMON (decl)
-	      || DECL_ONE_ONLY (decl)
-	      || DECL_WEAK (decl)))
-	return false;
-    }
 
   size = int_size_in_bytes (TREE_TYPE (decl));
   return (size > 0 && size <= mips_section_threshold);
