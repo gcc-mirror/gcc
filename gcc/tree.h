@@ -751,7 +751,6 @@ struct tree_exp
 
 /* In a BLOCK node.  */
 #define BLOCK_VARS(NODE) (BLOCK_CHECK (NODE)->block.vars)
-#define BLOCK_TYPE_TAGS(NODE) (BLOCK_CHECK (NODE)->block.type_tags)
 #define BLOCK_SUBBLOCKS(NODE) (BLOCK_CHECK (NODE)->block.subblocks)
 #define BLOCK_SUPERCONTEXT(NODE) (BLOCK_CHECK (NODE)->block.supercontext)
 /* Note: when changing this, make sure to find the places
@@ -759,19 +758,6 @@ struct tree_exp
 #define BLOCK_CHAIN(NODE) TREE_CHAIN (NODE)
 #define BLOCK_ABSTRACT_ORIGIN(NODE) (BLOCK_CHECK (NODE)->block.abstract_origin)
 #define BLOCK_ABSTRACT(NODE) (BLOCK_CHECK (NODE)->block.abstract_flag)
-#define BLOCK_END_NOTE(NODE) (BLOCK_CHECK (NODE)->block.end_note)
-/* Nonzero means that this block has separate live range regions */
-#define BLOCK_LIVE_RANGE_FLAG(NOTE) (BLOCK_CHECK (NOTE)->block.live_range_flag)
-
-/* Nonzero means that this block has a variable declared in it
-   that is split into separate live ranges.  */
-#define BLOCK_LIVE_RANGE_VAR_FLAG(NOTE) (BLOCK_CHECK (NOTE)->block.live_range_var_flag)
-
-/* Index for marking the start of the block for live ranges.  */
-#define BLOCK_LIVE_RANGE_START(NOTE) (BLOCK_CHECK (NOTE)->block.live_range_start)
-
-/* Index for marking the end of the block for live ranges.  */
-#define BLOCK_LIVE_RANGE_END(NOTE) (BLOCK_CHECK (NOTE)->block.live_range_end)
 
 /* Nonzero means that this block is prepared to handle exceptions
    listed in the BLOCK_VARS slot.  */
@@ -783,17 +769,11 @@ struct tree_block
 
   unsigned handler_block_flag : 1;
   unsigned abstract_flag : 1;
-  unsigned live_range_flag : 1;
-  unsigned live_range_var_flag : 1;
 
   union tree_node *vars;
-  union tree_node *type_tags;
   union tree_node *subblocks;
   union tree_node *supercontext;
   union tree_node *abstract_origin;
-  struct rtx_def *end_note;
-  int live_range_start;
-  int live_range_end;
 };
 
 /* Define fields and accessors for nodes representing data types.  */
@@ -2439,7 +2419,6 @@ extern void expand_asm_operands		PROTO ((tree, tree, tree, tree, int,
 extern int any_pending_cleanups		PROTO ((int));
 extern void init_stmt			PROTO ((void));
 extern void init_stmt_for_function	PROTO ((void));
-extern void remember_end_note		PROTO ((tree));
 extern int drop_through_at_end_p	PROTO ((void));
 extern void expand_start_target_temps	PROTO ((void));
 extern void expand_end_target_temps	PROTO ((void));

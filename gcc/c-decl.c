@@ -1055,9 +1055,7 @@ poplevel (keep, reverse, functionbody)
   if (block != 0)
     {
       BLOCK_VARS (block) = decls;
-      BLOCK_TYPE_TAGS (block) = tags;
       BLOCK_SUBBLOCKS (block) = subblocks;
-      remember_end_note (block);
     }
 
   /* In each subblock, record that this is its superior.  */

@@ -15112,7 +15112,6 @@ poplevel (keep, reverse, functionbody)
     {
       BLOCK_VARS (block) = decls;
       BLOCK_SUBBLOCKS (block) = subblocks;
-      remember_end_note (block);
     }
 
   /* In each subblock, record that this is its superior.  */

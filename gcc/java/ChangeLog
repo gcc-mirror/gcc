@@ -1,3 +1,8 @@
+1999-10-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (poplevel): Don't set BLOCK_TYPE_TAGS or call
+	remember_end_note.
+
 1999-10-21  Tom Tromey  <tromey@cygnus.com>
 
 	* jvgenmain.c (main): _Jv_Compiler_Properties now an extern; set

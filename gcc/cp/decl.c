@@ -1233,11 +1233,10 @@ poplevel (keep, reverse, functionbody)
 	{
 	  if (decls || tags || subblocks)
 	    {
-	      if (BLOCK_VARS (block) || BLOCK_TYPE_TAGS (block))
+	      if (BLOCK_VARS (block))
 		warning ("internal compiler error: debugging info corrupted");
 
 	      BLOCK_VARS (block) = decls;
-	      BLOCK_TYPE_TAGS (block) = tags;
 
 	      /* We can have previous subblocks and new subblocks when
 		 doing fixup_gotos with complex cleanups.  We chain the new
@@ -1245,18 +1244,11 @@ poplevel (keep, reverse, functionbody)
 	      BLOCK_SUBBLOCKS (block) = chainon (BLOCK_SUBBLOCKS (block),
 						 subblocks);
 	    }
-	  /* If we created the block earlier on, and we are just
-	     diddling it now, then it already should have a proper
-	     BLOCK_END_NOTE value associated with it.  */
 	}
       else
 	{
 	  BLOCK_VARS (block) = decls;
-	  BLOCK_TYPE_TAGS (block) = tags;
 	  BLOCK_SUBBLOCKS (block) = subblocks;
-	  /* Otherwise, for a new block, install a new BLOCK_END_NOTE
-	     value.  */ 
-	  remember_end_note (block);
 	}
     }
 
