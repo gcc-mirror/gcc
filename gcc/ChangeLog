@@ -1,3 +1,7 @@
+2003-06-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* expr.c (clear_by_pieces): Fix prototype.
+
 2003-06-29  Andreas Jaeger  <aj@suse.de>
 
 	* cse.c: Convert prototypes to ISO C90.

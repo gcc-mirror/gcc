@@ -2788,7 +2788,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
    before calling. ALIGN is maximum alignment we can assume.  */
 
 static void
-clear_by_pieces (rtx to, long unsigned int len, unsigned int align)
+clear_by_pieces (rtx to, unsigned HOST_WIDE_INT len, unsigned int align)
 {
   struct store_by_pieces data;
 
