@@ -1,3 +1,7 @@
+Thu Apr 20 18:20:58 2000  Jason Schroeder  <shrode@subnature.com>
+
+	* jcf-dump.c (SPECIAL_IINC): Fixed typo printing iinc instruction.
+
 2000-04-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (yyerror): `msg' can be null, don't use it in that case.
