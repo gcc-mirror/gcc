@@ -179,6 +179,13 @@ extern void		sbss_section PARAMS ((void));
 #define HALF_PIC_FINISH(STREAM)
 #endif
 
+/* Macros to silence warnings about numbers being signed in traditional
+   C and unsigned in ISO C when compiled on 32-bit hosts.  */
+
+#define BITMASK_HIGH	(((unsigned long)1) << 31)	/* 0x80000000 */
+#define BITMASK_UPPER16	((unsigned long)0xffff << 16)	/* 0xffff0000 */
+#define BITMASK_LOWER16	((unsigned long)0xffff)		/* 0x0000ffff */
+
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

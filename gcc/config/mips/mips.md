@@ -2277,7 +2277,7 @@
 			       copy_to_mode_reg (SImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0x80000000)),
+			       copy_to_mode_reg (SImode, GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -2324,7 +2324,7 @@
 			       copy_to_mode_reg (DImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0x80000000)),
+			       copy_to_mode_reg (DImode, GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -2535,7 +2535,7 @@
 			       copy_to_mode_reg (SImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0x80000000)),
+			       copy_to_mode_reg (SImode, GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -2575,7 +2575,7 @@
 			       copy_to_mode_reg (DImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0x80000000)),
+			       copy_to_mode_reg (DImode, GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -2615,7 +2615,7 @@
 			       copy_to_mode_reg (SImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (0x80000000)),
+			       copy_to_mode_reg (SImode, GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -2655,7 +2655,7 @@
 			       copy_to_mode_reg (DImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (0x80000000)),
+			       copy_to_mode_reg (DImode, GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -4319,7 +4319,7 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx_MINUS (DFmode, operands[1], reg1));
-      emit_move_insn (reg3, GEN_INT (0x80000000));
+      emit_move_insn (reg3, GEN_INT (BITMASK_HIGH));
 
       emit_insn (gen_fix_truncdfsi2 (operands[0], reg2));
       emit_insn (gen_iorsi3 (operands[0], operands[0], reg3));
@@ -4362,7 +4362,7 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx_MINUS (DFmode, operands[1], reg1));
-      emit_move_insn (reg3, GEN_INT (0x80000000));
+      emit_move_insn (reg3, GEN_INT (BITMASK_HIGH));
       emit_insn (gen_ashldi3 (reg3, reg3, GEN_INT (32)));
 
       emit_insn (gen_fix_truncdfdi2 (operands[0], reg2));
@@ -4406,7 +4406,7 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx_MINUS (SFmode, operands[1], reg1));
-      emit_move_insn (reg3, GEN_INT (0x80000000));
+      emit_move_insn (reg3, GEN_INT (BITMASK_HIGH));
 
       emit_insn (gen_fix_truncsfsi2 (operands[0], reg2));
       emit_insn (gen_iorsi3 (operands[0], operands[0], reg3));
@@ -4449,7 +4449,7 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx_MINUS (SFmode, operands[1], reg1));
-      emit_move_insn (reg3, GEN_INT (0x80000000));
+      emit_move_insn (reg3, GEN_INT (BITMASK_HIGH));
       emit_insn (gen_ashldi3 (reg3, reg3, GEN_INT (32)));
 
       emit_insn (gen_fix_truncsfdi2 (operands[0], reg2));
@@ -5179,8 +5179,8 @@ move\\t%0,%z4\\n\\
 		(match_dup 3)))]
   "
 {
-  operands[2] = GEN_INT (INTVAL (operands[1]) & 0xffff0000);
-  operands[3] = GEN_INT (INTVAL (operands[1]) & 0x0000ffff);
+  operands[2] = GEN_INT (INTVAL (operands[1]) & BITMASK_UPPER16);
+  operands[3] = GEN_INT (INTVAL (operands[1]) & BITMASK_LOWER16);
 }")
 
 ;; Unlike most other insns, the move insns can't be split with
