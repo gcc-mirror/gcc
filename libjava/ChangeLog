@@ -1,3 +1,8 @@
+1999-04-13  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_MAKEFLAGS): Added JC1FLAGS.
+
 1999-04-13  Andrew Haley  <aph@cygnus.com>
 
         * include/i386-signal.h, include/default-signal.h: New files.   
