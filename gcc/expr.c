@@ -1911,9 +1911,13 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      && ((unsigned) INTVAL (size)
 		  < (1 << (GET_MODE_BITSIZE (QImode) - 1))))
 	    {
-	      emit_insn (gen_movstrqi (gen_rtx (MEM, BLKmode, temp),
-				       xinner, size, GEN_INT (align)));
-	      goto ret;
+	      rtx pat = gen_movstrqi (gen_rtx (MEM, BLKmode, temp),
+				      xinner, size, GEN_INT (align));
+	      if (pat != 0)
+		{
+		  emit_insn (pat);
+		  goto ret;
+		}
 	    }
 #endif
 #ifdef HAVE_movstrhi
@@ -1922,25 +1926,37 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      && ((unsigned) INTVAL (size)
 		  < (1 << (GET_MODE_BITSIZE (HImode) - 1))))
 	    {
-	      emit_insn (gen_movstrhi (gen_rtx (MEM, BLKmode, temp),
-				       xinner, size, GEN_INT (align)));
-	      goto ret;
+	      rtx pat = gen_movstrhi (gen_rtx (MEM, BLKmode, temp),
+				      xinner, size, GEN_INT (align));
+	      if (pat != 0)
+		{
+		  emit_insn (pat);
+		  goto ret;
+		}
 	    }
 #endif
 #ifdef HAVE_movstrsi
 	  if (HAVE_movstrsi)
 	    {
-	      emit_insn (gen_movstrsi (gen_rtx (MEM, BLKmode, temp),
-				       xinner, size, GEN_INT (align)));
-	      goto ret;
+	      rtx pat = gen_movstrsi (gen_rtx (MEM, BLKmode, temp),
+				      xinner, size, GEN_INT (align));
+	      if (pat != 0)
+		{
+		  emit_insn (pat);
+		  goto ret;
+		}
 	    }
 #endif
 #ifdef HAVE_movstrdi
 	  if (HAVE_movstrdi)
 	    {
-	      emit_insn (gen_movstrdi (gen_rtx (MEM, BLKmode, temp),
-				       xinner, size, GEN_INT (align)));
-	      goto ret;
+	      rtx pat = gen_movstrdi (gen_rtx (MEM, BLKmode, temp),
+				      xinner, size, GEN_INT (align));
+	      if (pat != 0)
+		{
+		  emit_insn (pat);
+		  goto ret;
+		}
 	    }
 #endif
 
