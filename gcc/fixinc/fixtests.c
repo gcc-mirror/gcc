@@ -271,12 +271,14 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
 
 TEST_FOR_FIX_PROC_HEAD( machine_name_test )
 {
+#ifndef MN_NAME_PAT
+  return SKIP_FIX;
+#else
   regex_t *label_re, *name_re;
   regmatch_t match[2];
   tCC *base, *limit;
 
-  if (mn_get_regexps(&label_re, &name_re, "machine_name_test"))
-    return SKIP_FIX;
+  mn_get_regexps(&label_re, &name_re, "machine_name_test");
 
   for (base = text;
        regexec (label_re, base, 2, match, 0) == 0;
@@ -314,6 +316,7 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
       /* Otherwise, keep looking... */
     }
   return SKIP_FIX;
+#endif
 }
 
 

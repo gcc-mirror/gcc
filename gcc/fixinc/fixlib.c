@@ -181,7 +181,7 @@ compile_re( pat, re, match, e1, e2 )
    Helper routine and data for the machine_name test and fix.
    machname.h is created by black magic in the Makefile.  */
 
-#include "machname.h"
+#ifdef MN_NAME_PAT
 
 tSCC mn_label_pat[] = "^[ \t]*#[ \t]*(if|ifdef|ifndef)[ \t]+";
 static regex_t mn_label_re;
@@ -191,16 +191,12 @@ static regex_t mn_name_re;
 
 static int mn_compiled = 0;
 
-int
+void
 mn_get_regexps( label_re, name_re, who )
      regex_t **label_re;
      regex_t **name_re;
      tCC *who;
 {
-  /* Maybe we don't need to do this fix at all?  */
-  if (mn_name_pat[0] == '\0')
-    return 1;
-
   if (! mn_compiled)
     {
       compile_re (mn_label_pat, &mn_label_re, 1, "label pattern", who);
@@ -209,5 +205,5 @@ mn_get_regexps( label_re, name_re, who )
     }
   *label_re = &mn_label_re;
   *name_re = &mn_name_re;
-  return 0;
 }
+#endif

@@ -560,16 +560,16 @@ FIX_PROC_HEAD( CTRL_defn_fix )
 
 FIX_PROC_HEAD( machine_name_fix )
 {
+#ifndef MN_NAME_PAT
+  fputs( "The target machine has no needed machine name fixes\n", stderr );
+#else
   regmatch_t match[2];
   char *line, *base, *limit, *p, *q;
   regex_t *label_re, *name_re;
   char scratch[SCRATCHSZ];
   size_t len;
 
-  if (mn_get_regexps (&label_re, &name_re, "machine_name_fix"))
-    /* This platform doesn't need this fix.  We can only get here if
-       someone is running fixfixes by hand, but let's be polite.  */
-    goto done;
+  mn_get_regexps (&label_re, &name_re, "machine_name_fix");
 
   scratch[0] = '_';
   scratch[1] = '_';
@@ -647,6 +647,7 @@ FIX_PROC_HEAD( machine_name_fix )
 	}
     }
  done:
+#endif
   fputs (text, stdout);
 }
 

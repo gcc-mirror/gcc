@@ -1,3 +1,28 @@
+2000-02-04  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/genfixes(machname.h):
+	Move the functionality from gen-machine.h into this file.
+	UNdef MN_NAME_PAT if there are no names to change.
+	Also, be a little kinder when AutoGen is not present.
+
+	* fixinc/Makefile.in(machname.h):
+	Change the generation rule to use genfixes.
+
+	* fixinc/fixfixes.c(machine_name):
+	machine_name_fix's functionality now dependent upon whether
+	MN_NAME_PAT is defined.
+
+	* fixinc/fixtests.c(machine_name):
+	ditto.
+
+	* fixinc/fixlib.c(mn_get_regexps): conditional on definition
+	of MN_NAME_PAT.
+
+	* fixinc/fixlib.h(mn_get_regexps):
+	ditto
+
+	* fixinc/gen-machine.h: DELETED
+
 2000-02-04  Jan Hubicka  <jh@suse.cz>
 	    Richard Henderson  <rth@cygnus.com>
 
