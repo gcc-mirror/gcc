@@ -910,12 +910,14 @@ package body Exp_Aggr is
                      Make_Selected_Component (Loc,
                        Prefix =>  New_Copy_Tree (Indexed_Comp),
                        Selector_Name =>
-                         New_Reference_To (Tag_Component (Comp_Type), Loc)),
+                         New_Reference_To
+                           (First_Tag_Component (Comp_Type), Loc)),
 
                    Expression =>
                      Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To (
-                         Access_Disp_Table (Comp_Type), Loc)));
+                       New_Reference_To
+                         (Node (First_Elmt (Access_Disp_Table (Comp_Type))),
+                          Loc)));
 
                Append_To (L, A);
             end if;
@@ -1711,8 +1713,9 @@ package body Exp_Aggr is
               Make_Procedure_Call_Statement (Loc,
                 Name =>
                   New_Reference_To
-                         (Find_Prim_Op (RTE (RE_Limited_Record_Controller),
-                    Name_Initialize), Loc),
+                    (Find_Prim_Op
+                       (RTE (RE_Limited_Record_Controller), Name_Initialize),
+                     Loc),
                 Parameter_Associations => New_List (New_Copy_Tree (Ref))));
 
          else
@@ -1727,8 +1730,10 @@ package body Exp_Aggr is
             Append_To (L,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  New_Reference_To (Find_Prim_Op (RTE (RE_Record_Controller),
-                    Name_Initialize), Loc),
+                  New_Reference_To
+                    (Find_Prim_Op
+                       (RTE (RE_Record_Controller), Name_Initialize),
+                     Loc),
                 Parameter_Associations => New_List (New_Copy_Tree (Ref))));
 
          end if;
@@ -1869,13 +1874,16 @@ package body Exp_Aggr is
                       Name =>
                         Make_Selected_Component (Loc,
                           Prefix => New_Copy_Tree (Target),
-                          Selector_Name => New_Reference_To (
-                            Tag_Component (Base_Type (Typ)), Loc)),
+                          Selector_Name =>
+                            New_Reference_To
+                              (First_Tag_Component (Base_Type (Typ)), Loc)),
 
                       Expression =>
                         Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Reference_To (
-                            Access_Disp_Table (Base_Type (Typ)), Loc)));
+                          New_Reference_To
+                            (Node (First_Elmt
+                               (Access_Disp_Table (Base_Type (Typ)))),
+                             Loc)));
 
                   Set_Assignment_OK (Name (Instr));
                   Append_To (L, Instr);
@@ -2090,12 +2098,14 @@ package body Exp_Aggr is
                         Make_Selected_Component (Loc,
                           Prefix =>  New_Copy_Tree (Comp_Expr),
                           Selector_Name =>
-                            New_Reference_To (Tag_Component (Comp_Type), Loc)),
+                            New_Reference_To
+                              (First_Tag_Component (Comp_Type), Loc)),
 
                       Expression =>
                         Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Reference_To (
-                            Access_Disp_Table (Comp_Type), Loc)));
+                          New_Reference_To
+                            (Node (First_Elmt (Access_Disp_Table (Comp_Type))),
+                             Loc)));
 
                   Append_To (L, Instr);
                end if;
@@ -2172,11 +2182,14 @@ package body Exp_Aggr is
                Make_Selected_Component (Loc,
                   Prefix => New_Copy_Tree (Target),
                  Selector_Name =>
-                   New_Reference_To (Tag_Component (Base_Type (Typ)), Loc)),
+                   New_Reference_To
+                     (First_Tag_Component (Base_Type (Typ)), Loc)),
 
              Expression =>
                Unchecked_Convert_To (RTE (RE_Tag),
-                 New_Reference_To (Access_Disp_Table (Base_Type (Typ)), Loc)));
+                 New_Reference_To
+                   (Node (First_Elmt (Access_Disp_Table (Base_Type (Typ)))),
+                    Loc)));
 
          Append_To (L, Instr);
       end if;
@@ -2186,9 +2199,10 @@ package body Exp_Aggr is
 
       if Present (Obj)
         and then Finalize_Storage_Only (Typ)
-        and then (Is_Library_Level_Entity (Obj)
-        or else Entity (Constant_Value (RTE (RE_Garbage_Collected)))
-                  = Standard_True)
+        and then
+          (Is_Library_Level_Entity (Obj)
+             or else Entity (Constant_Value (RTE (RE_Garbage_Collected))) =
+                                                              Standard_True)
       then
          Attach := Make_Integer_Literal (Loc, 0);
 
@@ -2232,8 +2246,9 @@ package body Exp_Aggr is
             Set_Assignment_OK (Ref);
             Append_To (L,
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (
-                  Find_Prim_Op (Init_Typ, Name_Initialize), Loc),
+                Name =>
+                  New_Reference_To
+                    (Find_Prim_Op (Init_Typ, Name_Initialize), Loc),
                 Parameter_Associations => New_List (New_Copy_Tree (Ref))));
          end if;
 
@@ -4282,7 +4297,9 @@ package body Exp_Aggr is
               Parent_Expr => A);
          else
             Expand_Record_Aggregate (N,
-              Orig_Tag    => New_Occurrence_Of (Access_Disp_Table (Typ), Loc),
+              Orig_Tag    =>
+                New_Occurrence_Of
+                  (Node (First_Elmt (Access_Disp_Table (Typ))), Loc),
               Parent_Expr => A);
          end if;
       end if;
@@ -4649,7 +4666,9 @@ package body Exp_Aggr is
             elsif Java_VM then
                Tag_Value := Empty;
             else
-               Tag_Value := New_Occurrence_Of (Access_Disp_Table (Typ), Loc);
+               Tag_Value :=
+                 New_Occurrence_Of
+                   (Node (First_Elmt (Access_Disp_Table (Typ))), Loc);
             end if;
 
             --  For a derived type, an aggregate for the parent is formed with
@@ -4712,7 +4731,8 @@ package body Exp_Aggr is
             elsif not Java_VM then
                declare
                   Tag_Name  : constant Node_Id :=
-                                New_Occurrence_Of (Tag_Component (Typ), Loc);
+                                New_Occurrence_Of
+                                  (First_Tag_Component (Typ), Loc);
                   Typ_Tag   : constant Entity_Id := RTE (RE_Tag);
                   Conv_Node : constant Node_Id :=
                                 Unchecked_Convert_To (Typ_Tag, Tag_Value);

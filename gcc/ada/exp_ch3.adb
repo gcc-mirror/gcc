@@ -1512,11 +1512,12 @@ package body Exp_Ch3 is
                   Make_Selected_Component (Loc,
                     Prefix =>  New_Copy_Tree (Lhs),
                     Selector_Name =>
-                      New_Reference_To (Tag_Component (Typ), Loc)),
+                      New_Reference_To (First_Tag_Component (Typ), Loc)),
 
                 Expression =>
                   Unchecked_Convert_To (RTE (RE_Tag),
-                    New_Reference_To (Access_Disp_Table (Typ), Loc))));
+                    New_Reference_To
+                      (Node (First_Elmt (Access_Disp_Table (Typ))), Loc))));
          end if;
 
          --  Adjust the component if controlled except if it is an
@@ -1825,10 +1826,11 @@ package body Exp_Ch3 is
                   Make_Selected_Component (Loc,
                     Prefix => Make_Identifier (Loc, Name_uInit),
                     Selector_Name =>
-                      New_Reference_To (Tag_Component (Rec_Type), Loc)),
+                      New_Reference_To (First_Tag_Component (Rec_Type), Loc)),
 
                 Expression =>
-                  New_Reference_To (Access_Disp_Table (Rec_Type), Loc));
+                  New_Reference_To
+                    (Node (First_Elmt (Access_Disp_Table (Rec_Type))), Loc));
 
             --  The tag must be inserted before the assignments to other
             --  components,  because the initial value of the component may
@@ -3497,18 +3499,20 @@ package body Exp_Ch3 is
                end;
             end if;
 
-            --  For tagged types, when an init value is given, the tag has
-            --  to be re-initialized separately in order to avoid the
-            --  propagation of a wrong tag coming from a view conversion
-            --  unless the type is class wide (in this case the tag comes
-            --  from the init value). Suppress the tag assignment when
-            --  Java_VM because JVM tags are represented implicitly
-            --  in objects. Ditto for types that are CPP_CLASS.
+            --  For tagged types, when an init value is given, the tag has to
+            --  be re-initialized separately in order to avoid the propagation
+            --  of a wrong tag coming from a view conversion unless the type
+            --  is class wide (in this case the tag comes from the init
+            --  value). Suppress the tag assignment when Java_VM because JVM
+            --  tags are represented implicitly in objects. Ditto for types
+            --  that are CPP_CLASS, and for initializations that are
+            --  aggregates, because they have to have the right tag.
 
             if Is_Tagged_Type (Typ)
               and then not Is_Class_Wide_Type (Typ)
               and then not Is_CPP_Class (Typ)
               and then not Java_VM
+              and then Nkind (Expr) /= N_Aggregate
             then
                --  The re-assignment of the tag has to be done even if
                --  the object is a constant
@@ -3517,7 +3521,7 @@ package body Exp_Ch3 is
                  Make_Selected_Component (Loc,
                     Prefix => New_Reference_To (Def_Id, Loc),
                     Selector_Name =>
-                      New_Reference_To (Tag_Component (Typ), Loc));
+                      New_Reference_To (First_Tag_Component (Typ), Loc));
 
                Set_Assignment_OK (New_Ref);
 
@@ -3527,7 +3531,10 @@ package body Exp_Ch3 is
                    Expression =>
                      Unchecked_Convert_To (RTE (RE_Tag),
                        New_Reference_To
-                         (Access_Disp_Table (Base_Type (Typ)), Loc))));
+                         (Node
+                           (First_Elmt
+                             (Access_Disp_Table (Base_Type (Typ)))),
+                          Loc))));
 
             --  For discrete types, set the Is_Known_Valid flag if the
             --  initializing value is known to be valid.
@@ -3553,8 +3560,8 @@ package body Exp_Ch3 is
                end if;
 
                --  For access types set the Is_Known_Non_Null flag if the
-               --  initializing value is known to be non-null. We can also
-               --  set Can_Never_Be_Null if this is a constant.
+               --  initializing value is known to be non-null. We can also set
+               --  Can_Never_Be_Null if this is a constant.
 
                if Known_Non_Null (Expr) then
                   Set_Is_Known_Non_Null (Def_Id);
@@ -3575,21 +3582,33 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-         if Is_Possibly_Unaligned_Slice (Expr) then
+         --  Cases where the back end cannot handle the initialization
+         --  directly. In such cases, we expand an assignment that will
+         --  be appropriately handled by Expand_N_Assignment_Statement.
 
-            --  Make a separate assignment that will be expanded into a
-            --  loop, to bypass back-end problems with misaligned arrays.
+         --  The exclusion of the unconstrained case is wrong, but for
+         --  now it is too much trouble ???
 
+         if (Is_Possibly_Unaligned_Slice (Expr)
+               or else (Is_Possibly_Unaligned_Object (Expr)
+                          and then not Represented_As_Scalar (Etype (Expr))))
+
+            --  The exclusion of the unconstrained case is wrong, but for
+            --  now it is too much trouble ???
+
+           and then not (Is_Array_Type (Etype (Expr))
+                           and then not Is_Constrained (Etype (Expr)))
+         then
             declare
                Stat : constant Node_Id :=
                        Make_Assignment_Statement (Loc,
-                         Name => New_Reference_To (Def_Id, Loc),
+                         Name       => New_Reference_To (Def_Id, Loc),
                          Expression => Relocate_Node (Expr));
-
             begin
                Set_Expression (N, Empty);
                Set_No_Initialization (N);
                Set_Assignment_OK (Name (Stat));
+               Set_No_Ctrl_Actions (Stat);
                Insert_After (N, Stat);
                Analyze (Stat);
             end;
@@ -3612,10 +3631,10 @@ package body Exp_Ch3 is
    -- Expand_N_Subtype_Indication --
    ---------------------------------
 
-   --  Add a check on the range of the subtype. The static case is
-   --  partially duplicated by Process_Range_Expr_In_Decl in Sem_Ch3,
-   --  but we still need to check here for the static case in order to
-   --  avoid generating extraneous expanded code.
+   --  Add a check on the range of the subtype. The static case is partially
+   --  duplicated by Process_Range_Expr_In_Decl in Sem_Ch3, but we still need
+   --  to check here for the static case in order to avoid generating
+   --  extraneous expanded code.
 
    procedure Expand_N_Subtype_Indication (N : Node_Id) is
       Ran : constant Node_Id   := Range_Expression (Constraint (N));
@@ -3634,18 +3653,17 @@ package body Exp_Ch3 is
    -- Expand_N_Variant_Part --
    ---------------------------
 
-   --  If the last variant does not contain the Others choice, replace
-   --  it with an N_Others_Choice node since Gigi always wants an Others.
-   --  Note that we do not bother to call Analyze on the modified variant
-   --  part, since it's only effect would be to compute the contents of
-   --  the Others_Discrete_Choices node laboriously, and of course we
-   --  already know the list of choices that corresponds to the others
-   --  choice (it's the list we are replacing!)
+   --  If the last variant does not contain the Others choice, replace it with
+   --  an N_Others_Choice node since Gigi always wants an Others. Note that we
+   --  do not bother to call Analyze on the modified variant part, since it's
+   --  only effect would be to compute the contents of the
+   --  Others_Discrete_Choices node laboriously, and of course we already know
+   --  the list of choices that corresponds to the others choice (it's the
+   --  list we are replacing!)
 
    procedure Expand_N_Variant_Part (N : Node_Id) is
       Last_Var    : constant Node_Id := Last_Non_Pragma (Variants (N));
       Others_Node : Node_Id;
-
    begin
       if Nkind (First (Discrete_Choices (Last_Var))) /= N_Others_Choice then
          Others_Node := Make_Others_Choice (Sloc (Last_Var));
@@ -3737,9 +3755,9 @@ package body Exp_Ch3 is
          Set_Null_Present (Comp_List, False);
 
       else
-         --  The controller cannot be placed before the _Parent field
-         --  since gigi lays out field in order and _parent must be
-         --  first to preserve the polymorphism of tagged types.
+         --  The controller cannot be placed before the _Parent field since
+         --  gigi lays out field in order and _parent must be first to
+         --  preserve the polymorphism of tagged types.
 
          First_Comp := First (Component_Items (Comp_List));
 
@@ -3757,9 +3775,9 @@ package body Exp_Ch3 is
       Set_Ekind (Ent, E_Component);
       Init_Component_Location (Ent);
 
-      --  Move the _controller entity ahead in the list of internal
-      --  entities of the enclosing record so that it is selected
-      --  instead of a potentially inherited one.
+      --  Move the _controller entity ahead in the list of internal entities
+      --  of the enclosing record so that it is selected instead of a
+      --  potentially inherited one.
 
       declare
          E    : constant Entity_Id := Last_Entity (T);
@@ -3818,7 +3836,7 @@ package body Exp_Ch3 is
 
       Comp_Decl :=
         Make_Component_Declaration (Sloc_N,
-          Defining_Identifier => Tag_Component (T),
+          Defining_Identifier => First_Tag_Component (T),
           Component_Definition =>
             Make_Component_Definition (Sloc_N,
               Aliased_Present => False,
@@ -3835,8 +3853,8 @@ package body Exp_Ch3 is
       end if;
 
       --  We don't Analyze the whole expansion because the tag component has
-      --  already been analyzed previously. Here we just insure that the
-      --  tree is coherent with the semantic decoration
+      --  already been analyzed previously. Here we just insure that the tree
+      --  is coherent with the semantic decoration
 
       Find_Type (Subtype_Indication (Component_Definition (Comp_Decl)));
 
@@ -3856,10 +3874,10 @@ package body Exp_Ch3 is
    begin
       if not Is_Bit_Packed_Array (Typ) then
 
-         --  If the component contains tasks, so does the array type.
-         --  This may not be indicated in the array type because the
-         --  component may have been a private type at the point of
-         --  definition. Same if component type is controlled.
+         --  If the component contains tasks, so does the array type. This may
+         --  not be indicated in the array type because the component may have
+         --  been a private type at the point of definition. Same if component
+         --  type is controlled.
 
          Set_Has_Task (Base, Has_Task (Component_Type (Typ)));
          Set_Has_Controlled_Component (Base,
@@ -3868,9 +3886,9 @@ package body Exp_Ch3 is
 
          if No (Init_Proc (Base)) then
 
-            --  If this is an anonymous array created for a declaration
-            --  with an initial value, its init_proc will never be called.
-            --  The initial value itself may have been expanded into assign-
+            --  If this is an anonymous array created for a declaration with
+            --  an initial value, its init_proc will never be called. The
+            --  initial value itself may have been expanded into assign-
             --  ments, in which case the object declaration is carries the
             --  No_Initialization flag.
 
@@ -3911,9 +3929,9 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-      --  For packed case, there is a default initialization, except
-      --  if the component type is itself a packed structure with an
-      --  initialization procedure.
+      --  For packed case, there is a default initialization, except if the
+      --  component type is itself a packed structure with an initialization
+      --  procedure.
 
       elsif Present (Init_Proc (Component_Type (Base)))
         and then No (Base_Init_Proc (Base))
@@ -3943,8 +3961,8 @@ package body Exp_Ch3 is
       pragma Warnings (Off, Func);
 
    begin
-      --  Various optimization are possible if the given representation
-      --  is contiguous.
+      --  Various optimization are possible if the given representation is
+      --  contiguous.
 
       Is_Contiguous := True;
       Ent := First_Literal (Typ);
@@ -3987,9 +4005,9 @@ package body Exp_Ch3 is
       --    typA : array (Natural range 0 .. num - 1) of ctype :=
       --             (v, v, v, v, v, ....)
 
-      --  where ctype is the corresponding integer type. If the
-      --  representation is contiguous, we only keep the first literal,
-      --  which provides the offset for Pos_To_Rep computations.
+      --  where ctype is the corresponding integer type. If the representation
+      --  is contiguous, we only keep the first literal, which provides the
+      --  offset for Pos_To_Rep computations.
 
       Arr :=
         Make_Defining_Identifier (Loc,
@@ -4044,22 +4062,22 @@ package body Exp_Ch3 is
       --  representation) raises Constraint_Error or returns a unique value
       --  of minus one. The latter case is used, e.g. in 'Valid code.
 
-      --  Note: the reason we use Enum_Rep values in the case here is to
-      --  avoid the code generator making inappropriate assumptions about
-      --  the range of the values in the case where the value is invalid.
-      --  ityp is a signed or unsigned integer type of appropriate width.
+      --  Note: the reason we use Enum_Rep values in the case here is to avoid
+      --  the code generator making inappropriate assumptions about the range
+      --  of the values in the case where the value is invalid. ityp is a
+      --  signed or unsigned integer type of appropriate width.
 
       --  Note: if exceptions are not supported, then we suppress the raise
       --  and return -1 unconditionally (this is an erroneous program in any
-      --  case and there is no obligation to raise Constraint_Error here!)
-      --  We also do this if pragma Restrictions (No_Exceptions) is active.
+      --  case and there is no obligation to raise Constraint_Error here!) We
+      --  also do this if pragma Restrictions (No_Exceptions) is active.
 
       --  Representations are signed
 
       if Enumeration_Rep (First_Literal (Typ)) < 0 then
 
          --  The underlying type is signed. Reset the Is_Unsigned_Type
-         --  explicitly, because it might have been inherited from a
+         --  explicitly, because it might have been inherited from
          --  parent type.
 
          Set_Is_Unsigned_Type (Typ, False);
@@ -4080,8 +4098,8 @@ package body Exp_Ch3 is
          end if;
       end if;
 
-      --  The body of the function is a case statement. First collect
-      --  case alternatives, or optimize the contiguous case.
+      --  The body of the function is a case statement. First collect case
+      --  alternatives, or optimize the contiguous case.
 
       Lst := New_List;
 
@@ -4303,10 +4321,10 @@ package body Exp_Ch3 is
       end loop;
 
       --  Creation of the Dispatch Table. Note that a Dispatch Table is
-      --  created for regular tagged types as well as for Ada types
-      --  deriving from a C++ Class, but not for tagged types directly
-      --  corresponding to the C++ classes. In the later case we assume
-      --  that the Vtable is created in the C++ side and we just use it.
+      --  created for regular tagged types as well as for Ada types deriving
+      --  from a C++ Class, but not for tagged types directly corresponding to
+      --  the C++ classes. In the later case we assume that the Vtable is
+      --  created in the C++ side and we just use it.
 
       if Is_Tagged_Type (Def_Id) then
          if Is_CPP_Class (Def_Id) then
@@ -4314,18 +4332,17 @@ package body Exp_Ch3 is
             Set_Default_Constructor (Def_Id);
 
          else
-            --  Usually inherited primitives are not delayed but the first
-            --  Ada extension of a CPP_Class is an exception since the
-            --  address of the inherited subprogram has to be inserted in
-            --  the new Ada Dispatch Table and this is a freezing action
-            --  (usually the inherited primitive address is inserted in the
-            --  DT by Inherit_DT)
+            --  Usually inherited primitives are not delayed but the first Ada
+            --  extension of a CPP_Class is an exception since the address of
+            --  the inherited subprogram has to be inserted in the new Ada
+            --  Dispatch Table and this is a freezing action (usually the
+            --  inherited primitive address is inserted in the DT by
+            --  Inherit_DT)
 
-            --  Similarly, if this is an inherited operation whose parent
-            --  is not frozen yet, it is not in the DT of the parent, and
-            --  we generate an explicit freeze node for the inherited
-            --  operation, so that it is properly inserted in the DT of the
-            --  current type.
+            --  Similarly, if this is an inherited operation whose parent is
+            --  not frozen yet, it is not in the DT of the parent, and we
+            --  generate an explicit freeze node for the inherited operation,
+            --  so that it is properly inserted in the DT of the current type.
 
             declare
                Elmt : Elmt_Id := First_Elmt (Primitive_Operations (Def_Id));
@@ -4355,11 +4372,10 @@ package body Exp_Ch3 is
                Expand_Tagged_Root (Def_Id);
             end if;
 
-            --  Unfreeze momentarily the type to add the predefined
-            --  primitives operations. The reason we unfreeze is so
-            --  that these predefined operations will indeed end up
-            --  as primitive operations (which must be before the
-            --  freeze point).
+            --  Unfreeze momentarily the type to add the predefined primitives
+            --  operations. The reason we unfreeze is so that these predefined
+            --  operations will indeed end up as primitive operations (which
+            --  must be before the freeze point).
 
             Set_Is_Frozen (Def_Id, False);
             Make_Predefined_Primitive_Specs
@@ -4369,22 +4385,22 @@ package body Exp_Ch3 is
             Set_All_DT_Position (Def_Id);
 
             --  Add the controlled component before the freezing actions
-            --  it is referenced in those actions.
+            --  referenced in those actions.
 
             if Has_New_Controlled_Component (Def_Id) then
                Expand_Record_Controller (Def_Id);
             end if;
 
-            --  Suppress creation of a dispatch table when Java_VM because
-            --  the dispatching mechanism is handled internally by the JVM.
+            --  Suppress creation of a dispatch table when Java_VM because the
+            --  dispatching mechanism is handled internally by the JVM.
 
             if not Java_VM then
                Append_Freeze_Actions (Def_Id, Make_DT (Def_Id));
             end if;
 
-            --  Make sure that the primitives Initialize, Adjust and
-            --  Finalize are Frozen before other TSS subprograms. We
-            --  don't want them Frozen inside.
+            --  Make sure that the primitives Initialize, Adjust and Finalize
+            --  are Frozen before other TSS subprograms. We don't want them
+            --  Frozen inside.
 
             if Is_Controlled (Def_Id) then
                if not Is_Limited_Type (Def_Id) then
@@ -4408,8 +4424,8 @@ package body Exp_Ch3 is
               (Def_Id, Predefined_Primitive_Freeze (Def_Id));
          end if;
 
-      --  In the non-tagged case, an equality function is provided only
-      --  for variant records (that are not unchecked unions).
+      --  In the non-tagged case, an equality function is provided only for
+      --  variant records (that are not unchecked unions).
 
       elsif Has_Discriminants (Def_Id)
         and then not Is_Limited_Type (Def_Id)
@@ -4428,10 +4444,10 @@ package body Exp_Ch3 is
       end if;
 
       --  Before building the record initialization procedure, if we are
-      --  dealing with a concurrent record value type, then we must go
-      --  through the discriminants, exchanging discriminals between the
-      --  concurrent type and the concurrent record value type. See the
-      --  section "Handling of Discriminants" in the Einfo spec for details.
+      --  dealing with a concurrent record value type, then we must go through
+      --  the discriminants, exchanging discriminals between the concurrent
+      --  type and the concurrent record value type. See the section "Handling
+      --  of Discriminants" in the Einfo spec for details.
 
       if Is_Concurrent_Record_Type (Def_Id)
         and then Has_Discriminants (Def_Id)
@@ -4472,10 +4488,9 @@ package body Exp_Ch3 is
       Adjust_Discriminants (Def_Id);
       Build_Record_Init_Proc (Type_Decl, Def_Id);
 
-      --  For tagged type, build bodies of primitive operations. Note
-      --  that we do this after building the record initialization
-      --  experiment, since the primitive operations may need the
-      --  initialization routine
+      --  For tagged type, build bodies of primitive operations. Note that we
+      --  do this after building the record initialization experiment, since
+      --  the primitive operations may need the initialization routine
 
       if Is_Tagged_Type (Def_Id) then
          Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
@@ -4525,15 +4540,16 @@ package body Exp_Ch3 is
    -- Freeze_Type --
    -----------------
 
-   --  Full type declarations are expanded at the point at which the type
-   --  is frozen. The formal N is the Freeze_Node for the type. Any statements
-   --  or declarations generated by the freezing (e.g. the procedure generated
+   --  Full type declarations are expanded at the point at which the type is
+   --  frozen. The formal N is the Freeze_Node for the type. Any statements or
+   --  declarations generated by the freezing (e.g. the procedure generated
    --  for initialization) are chained in the Acions field list of the freeze
    --  node using Append_Freeze_Actions.
 
-   procedure Freeze_Type (N : Node_Id) is
+   function Freeze_Type (N : Node_Id) return Boolean is
       Def_Id    : constant Entity_Id := Entity (N);
       RACW_Seen : Boolean := False;
+      Result    : Boolean := False;
 
    begin
       --  Process associated access types needing special processing
@@ -4566,13 +4582,13 @@ package body Exp_Ch3 is
          if Ekind (Def_Id) = E_Record_Type then
             Freeze_Record_Type (N);
 
-         --  The subtype may have been declared before the type was frozen.
-         --  If the type has controlled components it is necessary to create
-         --  the entity for the controller explicitly because it did not
-         --  exist at the point of the subtype declaration. Only the entity is
-         --  needed, the back-end will obtain the layout from the type.
-         --  This is only necessary if this is constrained subtype whose
-         --  component list is not shared with the base type.
+         --  The subtype may have been declared before the type was frozen. If
+         --  the type has controlled components it is necessary to create the
+         --  entity for the controller explicitly because it did not exist at
+         --  the point of the subtype declaration. Only the entity is needed,
+         --  the back-end will obtain the layout from the type. This is only
+         --  necessary if this is constrained subtype whose component list is
+         --  not shared with the base type.
 
          elsif Ekind (Def_Id) = E_Record_Subtype
            and then Has_Discriminants (Def_Id)
@@ -4596,8 +4612,20 @@ package body Exp_Ch3 is
                end if;
             end;
 
-         --  Similar process if the controller of the subtype is not
-         --  present but the parent has it. This can happen with constrained
+            if Is_Itype (Def_Id)
+              and then Is_Record_Type (Underlying_Type (Scope (Def_Id)))
+            then
+               --  The freeze node is only used to introduce the controller,
+               --  the back-end has no use for it for a discriminated
+               --   component.
+
+               Set_Freeze_Node (Def_Id, Empty);
+               Set_Has_Delayed_Freeze (Def_Id, False);
+               Result := True;
+            end if;
+
+         --  Similar process if the controller of the subtype is not present
+         --  but the parent has it. This can happen with constrained
          --  record components where the subtype is an itype.
 
          elsif Ekind (Def_Id) = E_Record_Subtype
@@ -4620,7 +4648,7 @@ package body Exp_Ch3 is
 
                Set_Freeze_Node (Def_Id, Empty);
                Set_Has_Delayed_Freeze (Def_Id, False);
-               Remove (N);
+               Result := True;
             end;
          end if;
 
@@ -4689,9 +4717,9 @@ package body Exp_Ch3 is
                   DT_Align : Node_Id;
 
                begin
-                  --  For unconstrained composite types we give a size of
-                  --  zero so that the pool knows that it needs a special
-                  --  algorithm for variable size object allocation.
+                  --  For unconstrained composite types we give a size of zero
+                  --  so that the pool knows that it needs a special algorithm
+                  --  for variable size object allocation.
 
                   if Is_Composite_Type (Desig_Type)
                     and then not Is_Constrained (Desig_Type)
@@ -4718,11 +4746,10 @@ package body Exp_Ch3 is
                     Make_Defining_Identifier (Loc,
                       Chars => New_External_Name (Chars (Def_Id), 'P'));
 
-                  --  We put the code associated with the pools in the
-                  --  entity that has the later freeze node, usually the
-                  --  acces type but it can also be the designated_type;
-                  --  because the pool code requires both those types to be
-                  --  frozen
+                  --  We put the code associated with the pools in the entity
+                  --  that has the later freeze node, usually the acces type
+                  --  but it can also be the designated_type; because the pool
+                  --  code requires both those types to be frozen
 
                   if Is_Frozen (Desig_Type)
                     and then (not Present (Freeze_Node (Desig_Type))
@@ -4784,16 +4811,16 @@ package body Exp_Ch3 is
                null;
             end if;
 
-            --  For access-to-controlled types (including class-wide types
-            --  and Taft-amendment types which potentially have controlled
-            --  components), expand the list controller object that will
-            --  store the dynamically allocated objects. Do not do this
+            --  For access-to-controlled types (including class-wide types and
+            --  Taft-amendment types which potentially have controlled
+            --  components), expand the list controller object that will store
+            --  the dynamically allocated objects. Do not do this
             --  transformation for expander-generated access types, but do it
             --  for types that are the full view of types derived from other
             --  private types. Also suppress the list controller in the case
             --  of a designated type with convention Java, since this is used
-            --  when binding to Java API specs, where there's no equivalent
-            --  of a finalization list and we don't want to pull in the
+            --  when binding to Java API specs, where there's no equivalent of
+            --  a finalization list and we don't want to pull in the
             --  finalization support if not needed.
 
             if not Comes_From_Source (Def_Id)
@@ -4864,20 +4891,21 @@ package body Exp_Ch3 is
         and then Freeze_Node (Full_View (Def_Id)) = N
       then
          Set_Entity (N, Full_View (Def_Id));
-         Freeze_Type (N);
+         Result := Freeze_Type (N);
          Set_Entity (N, Def_Id);
 
-      --  All other types require no expander action. There are such
-      --  cases (e.g. task types and protected types). In such cases,
-      --  the freeze nodes are there for use by Gigi.
+      --  All other types require no expander action. There are such cases
+      --  (e.g. task types and protected types). In such cases, the freeze
+      --  nodes are there for use by Gigi.
 
       end if;
 
       Freeze_Stream_Operations (N, Def_Id);
+      return Result;
 
    exception
       when RE_Not_Available =>
-         return;
+         return False;
    end Freeze_Type;
 
    -------------------------
@@ -4902,10 +4930,10 @@ package body Exp_Ch3 is
       --  These are the values computed by the procedure Check_Subtype_Bounds
 
       procedure Check_Subtype_Bounds;
-      --  This procedure examines the subtype T, and its ancestor subtypes
-      --  and derived types to determine the best known information about
-      --  the bounds of the subtype. After the call Lo_Bound is set either
-      --  to No_Uint if no information can be determined, or to a value which
+      --  This procedure examines the subtype T, and its ancestor subtypes and
+      --  derived types to determine the best known information about the
+      --  bounds of the subtype. After the call Lo_Bound is set either to
+      --  No_Uint if no information can be determined, or to a value which
       --  represents a known low bound, i.e. a valid value of the subtype can
       --  not be less than this value. Hi_Bound is similarly set to a known
       --  high bound (valid value cannot be greater than this).
@@ -4969,16 +4997,16 @@ package body Exp_Ch3 is
    begin
       --  For a private type, we should always have an underlying type
       --  (because this was already checked in Needs_Simple_Initialization).
-      --  What we do is to get the value for the underlying type and then
-      --  do an Unchecked_Convert to the private type.
+      --  What we do is to get the value for the underlying type and then do
+      --  an Unchecked_Convert to the private type.
 
       if Is_Private_Type (T) then
          Val := Get_Simple_Init_Val (Underlying_Type (T), Loc, Size);
 
-         --  A special case, if the underlying value is null, then qualify
-         --  it with the underlying type, so that the null is properly typed
-         --  Similarly, if it is an aggregate it must be qualified, because
-         --  an unchecked conversion does not provide a context for it.
+         --  A special case, if the underlying value is null, then qualify it
+         --  with the underlying type, so that the null is properly typed
+         --  Similarly, if it is an aggregate it must be qualified, because an
+         --  unchecked conversion does not provide a context for it.
 
          if Nkind (Val) = N_Null
            or else Nkind (Val) = N_Aggregate
@@ -5007,9 +5035,9 @@ package body Exp_Ch3 is
       elsif Is_Scalar_Type (T) then
          pragma Assert (Init_Or_Norm_Scalars);
 
-         --  Compute size of object. If it is given by the caller, we can
-         --  use it directly, otherwise we use Esize (T) as an estimate. As
-         --  far as we know this covers all cases correctly.
+         --  Compute size of object. If it is given by the caller, we can use
+         --  it directly, otherwise we use Esize (T) as an estimate. As far as
+         --  we know this covers all cases correctly.
 
          if Size = No_Uint or else Size <= Uint_0 then
             Size_To_Use := UI_Max (Uint_1, Esize (T));
@@ -5074,9 +5102,9 @@ package body Exp_Ch3 is
 
                begin
                   --  Normally we like to use the most negative number. The
-                  --  one exception is when this number is in the known subtype
-                  --  range and the largest positive number is not in the known
-                  --  subtype range.
+                  --  one exception is when this number is in the known
+                  --  subtype range and the largest positive number is not in
+                  --  the known subtype range.
 
                   --  For this exceptional case, use largest positive value
 
@@ -5491,18 +5519,6 @@ package body Exp_Ch3 is
    begin
       Renamed_Eq := Empty;
 
-      --  Spec of _Alignment
-
-      Append_To (Res, Predef_Spec_Or_Body (Loc,
-        Tag_Typ => Tag_Typ,
-        Name    => Name_uAlignment,
-        Profile => New_List (
-          Make_Parameter_Specification (Loc,
-            Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
-            Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
-
-        Ret_Type => Standard_Integer));
-
       --  Spec of _Size
 
       Append_To (Res, Predef_Spec_Or_Body (Loc,
@@ -5514,6 +5530,18 @@ package body Exp_Ch3 is
             Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
 
         Ret_Type => Standard_Long_Long_Integer));
+
+      --  Spec of _Alignment
+
+      Append_To (Res, Predef_Spec_Or_Body (Loc,
+        Tag_Typ => Tag_Typ,
+        Name    => Name_uAlignment,
+        Profile => New_List (
+          Make_Parameter_Specification (Loc,
+            Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
+            Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
+
+        Ret_Type => Standard_Integer));
 
       --  Specs for dispatching stream attributes. We skip these for limited
       --  types, since there is no question of dispatching in the limited case.

@@ -5179,7 +5179,7 @@ package body Sem_Prag is
 
                if Expander_Active and then Typ = Root_Type (Typ) then
 
-                  Tag_C := Tag_Component (Typ);
+                  Tag_C := First_Tag_Component (Typ);
                   C := First_Entity (Typ);
 
                   if C = Tag_C then
@@ -5313,7 +5313,7 @@ package body Sem_Prag is
             --    . DT_Position will be set at the freezing point
 
             if Arg_Count = 1 then
-               Set_DTC_Entity (Subp, Tag_Component (Typ));
+               Set_DTC_Entity (Subp, First_Tag_Component (Typ));
                return;
             end if;
 
@@ -5431,9 +5431,9 @@ package body Sem_Prag is
             --  If it is the first pragma Vtable, This becomes the default tag
 
             elsif (not Is_Tag (DTC))
-              and then DT_Entry_Count (Tag_Component (Typ)) = No_Uint
+              and then DT_Entry_Count (First_Tag_Component (Typ)) = No_Uint
             then
-               Set_Is_Tag (Tag_Component (Typ), False);
+               Set_Is_Tag (First_Tag_Component (Typ), False);
                Set_Is_Tag (DTC, True);
                Set_DT_Entry_Count (DTC, No_Uint);
             end if;

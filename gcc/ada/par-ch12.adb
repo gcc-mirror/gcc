@@ -487,13 +487,17 @@ package body Ch12 is
    --  | FORMAL_DECIMAL_FIXED_POINT_DEFINITION
    --  | FORMAL_ARRAY_TYPE_DEFINITION
    --  | FORMAL_ACCESS_TYPE_DEFINITION
+   --  | FORMAL_INTERFACE_TYPE_DEFINITION
 
    --  FORMAL_ARRAY_TYPE_DEFINITION ::= ARRAY_TYPE_DEFINITION
 
    --  FORMAL_ACCESS_TYPE_DEFINITION ::= ACCESS_TYPE_DEFINITION
 
+   --  FORMAL_INTERFACE_TYPE_DEFINITION ::= INTERFACE_TYPE_DEFINITION
+
    function P_Formal_Type_Definition return Node_Id is
-      Scan_State : Saved_Scan_State;
+      Scan_State   : Saved_Scan_State;
+      Typedef_Node : Node_Id;
 
    begin
       if Token_Name = Name_Abstract then
@@ -524,37 +528,88 @@ package body Ch12 is
                return P_Formal_Private_Type_Definition;
             end if;
 
-         when Tok_Private | Tok_Limited | Tok_Tagged =>
-            return P_Formal_Private_Type_Definition;
-
-         when Tok_New =>
-            return P_Formal_Derived_Type_Definition;
-
-         when Tok_Left_Paren =>
-            return P_Formal_Discrete_Type_Definition;
-
-         when Tok_Range =>
-            return P_Formal_Signed_Integer_Type_Definition;
-
-         when Tok_Mod =>
-            return P_Formal_Modular_Type_Definition;
-
-         when Tok_Digits =>
-            return P_Formal_Floating_Point_Definition;
-
-         when Tok_Delta =>
-            return P_Formal_Fixed_Point_Definition;
+         when Tok_Access =>
+            return P_Access_Type_Definition;
 
          when Tok_Array =>
             return P_Array_Type_Definition;
 
-         when Tok_Access =>
-            return P_Access_Type_Definition;
+         when Tok_Delta =>
+            return P_Formal_Fixed_Point_Definition;
+
+         when Tok_Digits =>
+            return P_Formal_Floating_Point_Definition;
+
+         when Tok_Interface => --  Ada 2005 (AI-251)
+            return P_Interface_Type_Definition (Is_Synchronized => False);
+
+         when Tok_Left_Paren =>
+            return P_Formal_Discrete_Type_Definition;
+
+         when Tok_Limited =>
+            Save_Scan_State (Scan_State);
+            Scan; --  past LIMITED
+
+            if Token = Tok_Interface then
+               Typedef_Node := P_Interface_Type_Definition
+                                (Is_Synchronized => False);
+               Set_Limited_Present (Typedef_Node);
+               return Typedef_Node;
+
+            else
+               Restore_Scan_State (Scan_State);
+               return P_Formal_Private_Type_Definition;
+            end if;
+
+         when Tok_Mod =>
+            return P_Formal_Modular_Type_Definition;
+
+         when Tok_New =>
+            return P_Formal_Derived_Type_Definition;
+
+         when Tok_Private |
+              Tok_Tagged  =>
+            return P_Formal_Private_Type_Definition;
+
+         when Tok_Range =>
+            return P_Formal_Signed_Integer_Type_Definition;
 
          when Tok_Record =>
             Error_Msg_SC ("record not allowed in generic type definition!");
             Discard_Junk_Node (P_Record_Definition);
             return Error;
+
+         --  Ada 2005 (AI-345)
+
+         when Tok_Protected    |
+              Tok_Synchronized |
+              Tok_Task         =>
+
+            Scan; -- past TASK, PROTECTED or SYNCHRONIZED
+
+            declare
+               Saved_Token  : constant Token_Type := Token;
+
+            begin
+               Typedef_Node := P_Interface_Type_Definition
+                                (Is_Synchronized => True);
+
+               case Saved_Token is
+                  when Tok_Task =>
+                     Set_Task_Present         (Typedef_Node);
+
+                  when Tok_Protected =>
+                     Set_Protected_Present    (Typedef_Node);
+
+                  when Tok_Synchronized =>
+                     Set_Synchronized_Present (Typedef_Node);
+
+                  when others =>
+                     null;
+               end case;
+
+               return Typedef_Node;
+            end;
 
          when others =>
             Error_Msg_BC ("expecting generic type definition here");
@@ -617,7 +672,7 @@ package body Ch12 is
    --------------------------------------------
 
    --  FORMAL_DERIVED_TYPE_DEFINITION ::=
-   --    [abstract] new SUBTYPE_MARK [with private]
+   --    [abstract] new SUBTYPE_MARK [[AND interface_list] with private]
 
    --  The caller has checked the initial token(s) is/are NEW or ASTRACT NEW
 
@@ -637,6 +692,26 @@ package body Ch12 is
       Scan; -- past NEW;
       Set_Subtype_Mark (Def_Node, P_Subtype_Mark);
       No_Constraint;
+
+      --  Ada 2005 (AI-251): Deal with interfaces
+
+      if Token = Tok_And then
+         Scan; -- past AND
+
+         if Ada_Version < Ada_05 then
+            Error_Msg_SP
+              ("abstract interface is an Ada 2005 extension");
+            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+         end if;
+
+         Set_Interface_List (Def_Node, New_List);
+
+         loop
+            Append (P_Qualified_Simple_Name, Interface_List (Def_Node));
+            exit when Token /= Tok_And;
+            Scan; -- past AND
+         end loop;
+      end if;
 
       if Token = Tok_With then
          Scan; -- past WITH

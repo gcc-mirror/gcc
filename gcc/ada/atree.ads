@@ -75,62 +75,73 @@ package Atree is
    --  a node contains a number of fields, much as though the nodes were
    --  defined as a record type. The fields in a node are as follows:
 
-   --   Nkind            Indicates the kind of the node. This field is present
-   --                    in all nodes. The type is Node_Kind, which is declared
-   --                    in the package Sinfo.
+   --   Nkind         Indicates the kind of the node. This field is present
+   --                 in all nodes. The type is Node_Kind, which is declared
+   --                 in the package Sinfo.
 
-   --   Sloc             Location (Source_Ptr) of the corresponding token
-   --                    in the Source buffer. The individual node definitions
-   --                    show which token is referenced by this pointer.
+   --   Sloc          Location (Source_Ptr) of the corresponding token
+   --                 in the Source buffer. The individual node definitions
+   --                 show which token is referenced by this pointer.
 
-   --   In_List          A flag used to indicate if the node is a member
+   --   In_List       A flag used to indicate if the node is a member
    --                    of a node list.
 
-   --   Rewrite_Sub      A flag set if the node has been rewritten using
-   --                    the Rewrite procedure. The original value of the
-   --                    node is retrievable with Original_Node.
+   --   Rewrite_Sub   A flag set if the node has been rewritten using
+   --                 the Rewrite procedure. The original value of the
+   --                 node is retrievable with Original_Node.
 
-   --   Rewrite_Ins      A flag set if a node is marked as a rewrite inserted
-   --                    node as a result of a call to Mark_Rewrite_Insertion.
+   --   Rewrite_Ins   A flag set if a node is marked as a rewrite inserted
+   --                 node as a result of a call to Mark_Rewrite_Insertion.
 
-   --   Paren_Count      A 2-bit count used on expression nodes to indicate
-   --                    the level of parentheses. Up to 3 levels can be
-   --                    accomodated. Anything more than 3 levels is treated
-   --                    as 3 levels (conformance tests that complain about
-   --                    this are hereby deemed pathological!) Set to zero
-   --                    for non-subexpression nodes.
+   --   Paren_Count   A 2-bit count used on expression nodes to indicate
+   --                 the level of parentheses. Up to 3 levels can be
+   --                 accomodated. Anything more than 3 levels is treated
+   --                 as 3 levels (conformance tests that complain about
+   --                 this are hereby deemed pathological!) Set to zero
+   --                 for non-subexpression nodes.
 
    --   Comes_From_Source
-   --                    This flag is present in all nodes. It is set if the
-   --                    node is built by the scanner or parser, and clear if
-   --                    the node is built by the analyzer or expander. It
-   --                    indicates that the node corresponds to a construct
-   --                    that appears in the original source program.
+   --                 This flag is present in all nodes. It is set if the
+   --                 node is built by the scanner or parser, and clear if
+   --                 the node is built by the analyzer or expander. It
+   --                 indicates that the node corresponds to a construct
+   --                 that appears in the original source program.
 
-   --   Analyzed         This flag is present in all nodes. It is set when
-   --                    a node is analyzed, and is used to avoid analyzing
-   --                    the same node twice. Analysis includes expansion if
-   --                    expansion is active, so in this case if the flag is
-   --                    set it means the node has been analyzed and expanded.
+   --   Analyzed      This flag is present in all nodes. It is set when
+   --                 a node is analyzed, and is used to avoid analyzing
+   --                 the same node twice. Analysis includes expansion if
+   --                 expansion is active, so in this case if the flag is
+   --                 set it means the node has been analyzed and expanded.
 
-   --   Error_Posted     This flag is present in all nodes. It is set when
-   --                    an error message is posted which is associated with
-   --                    the flagged node. This is used to avoid posting more
-   --                    than one message on the same node.
+   --   Error_Posted  This flag is present in all nodes. It is set when
+   --                 an error message is posted which is associated with
+   --                 the flagged node. This is used to avoid posting more
+   --                 than one message on the same node.
 
    --   Field1
    --   Field2
    --   Field3
    --   Field4
-   --   Field5           Five fields holding Union_Id values
+   --   Field5        Five fields holding Union_Id values
 
-   --   ElistN           Synonym for FieldN typed as Elist_Id
-   --   ListN            Synonym for FieldN typed as List_Id
-   --   NameN            Synonym for FieldN typed as Name_Id
-   --   NodeN            Synonym for FieldN typed as Node_Id
-   --   StrN             Synonym for FieldN typed as String_Id
-   --   UintN            Synonym for FieldN typed as Uint (Empty = Uint_0)
-   --   UrealN           Synonym for FieldN typed as Ureal
+   --   ElistN        Synonym for FieldN typed as Elist_Id (Empty = No_Elist)
+   --   ListN         Synonym for FieldN typed as List_Id
+   --   NameN         Synonym for FieldN typed as Name_Id
+   --   NodeN         Synonym for FieldN typed as Node_Id
+   --   StrN          Synonym for FieldN typed as String_Id
+   --   UintN         Synonym for FieldN typed as Uint (Empty = Uint_0)
+   --   UrealN        Synonym for FieldN typed as Ureal
+
+   --   Note: in the case of ElistN and UintN fields, it is common that we
+   --   end up with a value of Union_Id'(0) as the default value. This value
+   --   is meaningless as a Uint or Elist_Id value. We have two choices here.
+   --   We could require that all Uint and Elist fields be initialized to an
+   --   appropriate value, but that's error prone, since it would be easy to
+   --   miss an initialization. So instead we have the retrieval functions
+   --   generate an appropriate default value (Uint_0 or No_Elist). Probably
+   --   it would be cleaner to generate No_Uint in the Uint case but we got
+   --   stuck with representing an "unset" size value as zero early on, and
+   --   it will take a bit of fiddling to change that ???
 
    --   Note: the actual usage of FieldN (i.e. whether it contains a Elist_Id,
    --   List_Id, Name_Id, Node_Id, String_Id, Uint or Ureal), depends on the
@@ -146,46 +157,46 @@ package Atree is
    --   it is useful to be able to do untyped traversals, and an internal
    --   package in Atree allows for direct untyped accesses in such cases.
 
-   --   Flag4            Fifteen Boolean flags (use depends on Nkind and
-   --   Flag5            Ekind, as described for FieldN). Again the access
-   --   Flag6            is usually via subprograms in Sinfo and Einfo which
-   --   Flag7            provide high-level synonyms for these flags, and
-   --   Flag8            contain debugging code that checks that the values
-   --   Flag9            in Nkind and Ekind are appropriate for the access.
+   --   Flag4         Fifteen Boolean flags (use depends on Nkind and
+   --   Flag5         Ekind, as described for FieldN). Again the access
+   --   Flag6         is usually via subprograms in Sinfo and Einfo which
+   --   Flag7         provide high-level synonyms for these flags, and
+   --   Flag8         contain debugging code that checks that the values
+   --   Flag9         in Nkind and Ekind are appropriate for the access.
    --   Flag10
-   --   Flag11           Note that Flag1-3 are missing from this list. The
-   --   Flag12           first three flag positions are reserved for the
-   --   Flag13           standard flags (Comes_From_Source, Error_Posted,
-   --   Flag14           and Analyzed)
+   --   Flag11        Note that Flag1-3 are missing from this list. The
+   --   Flag12        first three flag positions are reserved for the
+   --   Flag13        standard flags (Comes_From_Source, Error_Posted,
+   --   Flag14        and Analyzed)
    --   Flag15
    --   Flag16
    --   Flag17
    --   Flag18
 
-   --   Link             For a node, points to the Parent. For a list, points
-   --                    to the list header. Note that in the latter case, a
-   --                    client cannot modify the link field. This field is
-   --                    private to the Atree package (but is also modified
-   --                    by the Nlists package).
+   --   Link          For a node, points to the Parent. For a list, points
+   --                 to the list header. Note that in the latter case, a
+   --                 client cannot modify the link field. This field is
+   --                 private to the Atree package (but is also modified
+   --                 by the Nlists package).
 
    --  The following additional fields are present in extended nodes used
    --  for entities (Nkind in N_Entity).
 
-   --   Ekind            Entity type. This field indicates the type of the
-   --                    entity, it is of type Entity_Kind which is defined
-   --                    in package Einfo.
+   --   Ekind         Entity type. This field indicates the type of the
+   --                 entity, it is of type Entity_Kind which is defined
+   --                 in package Einfo.
 
-   --   Flag19           197 additional flags
+   --   Flag19        197 additional flags
    --   ...
    --   Flag215
 
-   --   Convention       Entity convention (Convention_Id value)
+   --   Convention    Entity convention (Convention_Id value)
 
-   --   Field6           Additional Union_Id value stored in tree
+   --   Field6        Additional Union_Id value stored in tree
 
-   --   Node6            Synonym for Field6 typed as Node_Id
-   --   Elist6           Synonym for Field6 typed as Elist_Id
-   --   Uint6            Synonym for Field6 typed as Uint (Empty = Uint_0)
+   --   Node6         Synonym for Field6 typed as Node_Id
+   --   Elist6        Synonym for Field6 typed as Elist_Id (Empty = No_Elist)
+   --   Uint6         Synonym for Field6 typed as Uint (Empty = Uint_0)
 
    --   Similar definitions for Field7 to Field27 (and Node7-Node27,
    --   Elist7-Elist27, Uint7-Uint27, Ureal7-Ureal27). Note that not all
@@ -980,6 +991,9 @@ package Atree is
 
       function Elist23 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist23);
+
+      function Elist24 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist24);
 
       function Name1 (N : Node_Id) return Name_Id;
       pragma Inline (Name1);
@@ -1903,6 +1917,9 @@ package Atree is
       procedure Set_Elist23 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist23);
 
+      procedure Set_Elist24 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist24);
+
       procedure Set_Name1 (N : Node_Id; Val : Name_Id);
       pragma Inline (Set_Name1);
 
@@ -2601,7 +2618,6 @@ package Atree is
 
       procedure Set_Flag215 (N : Node_Id; Val : Boolean);
       pragma Inline (Set_Flag215);
-
 
       --  The following versions of Set_Noden also set the parent
       --  pointer of the referenced node if it is non_Empty

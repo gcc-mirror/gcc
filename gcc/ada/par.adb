@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -600,6 +600,17 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  Scan out a defining identifier. The parameter C controls the
       --  treatment of errors in case a reserved word is scanned. See the
       --  declaration of this type for details.
+
+      function P_Interface_Type_Definition
+        (Is_Synchronized : Boolean) return Node_Id;
+      --  Ada 2005 (AI-251): Parse the interface type definition part. The
+      --  parameter Is_Synchronized is True in case of task interfaces,
+      --  protected interfaces, and synchronized interfaces; it is used to
+      --  generate a record_definition node. In the rest of cases (limited
+      --  interfaces and interfaces) we generate a record_definition node if
+      --  the list of interfaces is empty; otherwise we generate a
+      --  derived_type_definition node (the first interface in this list is the
+      --  ancestor interface).
 
       function P_Null_Exclusion return Boolean;
       --  Ada 2005 (AI-231): Parse the null-excluding part. True indicates

@@ -82,9 +82,13 @@ package Exp_Ch3 is
    --  initialization call corresponds to a default initialized component
    --  of an aggregate.
 
-   procedure Freeze_Type (N : Node_Id);
-   --  This procedure executes the freezing actions associated with the given
-   --  freeze type node N.
+   function Freeze_Type (N : Node_Id) return Boolean;
+   --  This function executes the freezing actions associated with the given
+   --  freeze type node N and returns True if the node is to be deleted.
+   --  We delete the node if it is present just for front end purpose and
+   --  we don't want Gigi to see the node.  This function can't delete the
+   --  node itself since it would confuse any remaining processing of the
+   --  freeze node.
 
    function Needs_Simple_Initialization (T : Entity_Id) return Boolean;
    --  Certain types need initialization even though there is no specific

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -169,11 +170,12 @@ package body Tbuild is
 
       return
         Unchecked_Convert_To (
-          New_Occurrence_Of (Etype (Access_Disp_Table (Full_Type)), Loc),
+          New_Occurrence_Of
+            (Etype (Node (First_Elmt (Access_Disp_Table (Full_Type)))), Loc),
           Make_Selected_Component (Loc,
             Prefix => New_Copy (Rec),
             Selector_Name =>
-              New_Reference_To (Tag_Component (Full_Type), Loc)));
+              New_Reference_To (First_Tag_Component (Full_Type), Loc)));
    end Make_DT_Access;
 
    -----------------------
@@ -183,9 +185,9 @@ package body Tbuild is
    function Make_DT_Component
      (Loc : Source_Ptr;
       Typ : Entity_Id;
-      I   : Positive) return Node_Id
+      N   : Positive) return Node_Id
    is
-      X : Node_Id;
+      X         : Node_Id;
       Full_Type : Entity_Id := Typ;
 
    begin
@@ -193,10 +195,12 @@ package body Tbuild is
          Full_Type := Underlying_Type (Typ);
       end if;
 
-      X := First_Component (
-             Designated_Type (Etype (Access_Disp_Table (Full_Type))));
+      X :=
+        First_Component
+          (Designated_Type
+             (Etype (Node (First_Elmt (Access_Disp_Table (Full_Type))))));
 
-      for J in 2 .. I loop
+      for J in 2 .. N loop
          X := Next_Component (X);
       end loop;
 
@@ -216,6 +220,7 @@ package body Tbuild is
    is
    begin
       Check_Restriction (No_Implicit_Conditionals, Node);
+
       return Make_If_Statement (Sloc (Node),
         Condition,
         Then_Statements,
@@ -234,7 +239,6 @@ package body Tbuild is
    is
       N : constant Node_Id :=
             Make_Implicit_Label_Declaration (Loc, Defining_Identifier);
-
    begin
       Set_Label_Construct (N, Label_Construct);
       return N;
