@@ -1,3 +1,17 @@
+1999-04-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* pdp11.h (TARGET_SWITCHES): Add option to vary assembler syntax.
+	(TARGET_DEFAULT): Possibly use UNIX syntax.
+	(TARGET_UNIX_ASM, TARGET_UNIX_ASM_DEFAULT): New macros.
+	(REGISTER_NAMES): Use "r5" instead of "fp".
+	(ASM_OUTPUT_ALIGN): Use ".even" directive, and abort for any
+	greater alignment.
+	* 2bsd.h (TARGET_UNIX_ASM_DEFAULT): Default to UNIX assembler
+	syntax for 2BSD.
+	* pdp11.c (output_ascii): Use working syntax for ".byte".
+	(print_operand_address): Use "*" instead of "@" when using UNIX
+	assembler syntax.
+
 Sat Apr 10 03:50:12 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* rtl.h (local_alloc): Returns an integer now.
