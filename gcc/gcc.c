@@ -1379,6 +1379,10 @@ static const char *just_machine_suffix = 0;
 
 static const char *gcc_exec_prefix;
 
+/* Adjusted value of standard_libexec_prefix.  */
+
+static const char *gcc_libexec_prefix;
+
 /* Default prefixes to attach to command names.  */
 
 #ifdef CROSS_COMPILE  /* Don't use these prefixes for a cross compiler.  */
@@ -1401,7 +1405,7 @@ static const char *gcc_exec_prefix;
 /* Supply defaults for the standard prefixes.  */
 
 #ifndef STANDARD_EXEC_PREFIX
-#define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc-lib/"
+#define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc/"
 #endif
 #ifndef STANDARD_STARTFILE_PREFIX
 #define STANDARD_STARTFILE_PREFIX "/usr/local/lib/"
@@ -1414,7 +1418,8 @@ static const char *gcc_exec_prefix;
 #endif
 
 static const char *const standard_exec_prefix = STANDARD_EXEC_PREFIX;
-static const char *const standard_exec_prefix_1 = "/usr/lib/gcc/";
+static const char *const standard_exec_prefix_1 = "/usr/libexec/gcc/";
+static const char *const standard_exec_prefix_2 = "/usr/lib/gcc/";
 static const char *md_exec_prefix = MD_EXEC_PREFIX;
 
 static const char *md_startfile_prefix = MD_STARTFILE_PREFIX;
@@ -1427,6 +1432,8 @@ static const char *const tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
 static const char *tooldir_prefix;
 
 static const char *const standard_bindir_prefix = STANDARD_BINDIR_PREFIX;
+
+static const char *standard_libexec_prefix = STANDARD_LIBEXEC_PREFIX;
 
 /* Subdirectory to use for locating libraries.  Set by
    set_multilib_dir based on the compilation options.  */
@@ -3163,34 +3170,43 @@ process_command (int argc, const char *const *argv)
   /* Set up the default search paths.  If there is no GCC_EXEC_PREFIX,
      see if we can create it from the pathname specified in argv[0].  */
 
+  gcc_libexec_prefix = standard_libexec_prefix;
 #ifndef VMS
   /* FIXME: make_relative_prefix doesn't yet work for VMS.  */
   if (!gcc_exec_prefix)
     {
       gcc_exec_prefix = make_relative_prefix (argv[0], standard_bindir_prefix,
 					      standard_exec_prefix);
+      gcc_libexec_prefix = make_relative_prefix (argv[0], 
+						 standard_bindir_prefix,
+						 standard_libexec_prefix);
       if (gcc_exec_prefix)
 	putenv (concat ("GCC_EXEC_PREFIX=", gcc_exec_prefix, NULL));
     }
+  else
+    gcc_libexec_prefix = make_relative_prefix (gcc_exec_prefix,
+					       standard_exec_prefix,
+					       standard_libexec_prefix);
+#else
 #endif
 
   if (gcc_exec_prefix)
     {
       int len = strlen (gcc_exec_prefix);
 
-      if (len > (int) sizeof ("/lib/gcc-lib/") - 1
+      if (len > (int) sizeof ("/lib/gcc/") - 1
 	  && (IS_DIR_SEPARATOR (gcc_exec_prefix[len-1])))
 	{
-	  temp = gcc_exec_prefix + len - sizeof ("/lib/gcc-lib/") + 1;
+	  temp = gcc_exec_prefix + len - sizeof ("/lib/gcc/") + 1;
 	  if (IS_DIR_SEPARATOR (*temp)
 	      && strncmp (temp + 1, "lib", 3) == 0
 	      && IS_DIR_SEPARATOR (temp[4])
-	      && strncmp (temp + 5, "gcc-lib", 7) == 0)
-	    len -= sizeof ("/lib/gcc-lib/") - 1;
+	      && strncmp (temp + 5, "gcc", 7) == 0)
+	    len -= sizeof ("/lib/gcc/") - 1;
 	}
 
       set_std_prefix (gcc_exec_prefix, len);
-      add_prefix (&exec_prefixes, gcc_exec_prefix, "GCC",
+      add_prefix (&exec_prefixes, gcc_libexec_prefix, "GCC",
 		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
       add_prefix (&startfile_prefixes, gcc_exec_prefix, "GCC",
 		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
@@ -3729,17 +3745,21 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
   /* Use 2 as fourth arg meaning try just the machine as a suffix,
      as well as trying the machine and the version.  */
 #ifndef OS2
-  add_prefix (&exec_prefixes, standard_exec_prefix, "GCC",
+  add_prefix (&exec_prefixes, standard_libexec_prefix, "GCC",
 	      PREFIX_PRIORITY_LAST, 1, warn_std_ptr, 0);
+  add_prefix (&exec_prefixes, standard_libexec_prefix, "BINUTILS",
+	      PREFIX_PRIORITY_LAST, 2, warn_std_ptr, 0);
   add_prefix (&exec_prefixes, standard_exec_prefix, "BINUTILS",
 	      PREFIX_PRIORITY_LAST, 2, warn_std_ptr, 0);
   add_prefix (&exec_prefixes, standard_exec_prefix_1, "BINUTILS",
+	      PREFIX_PRIORITY_LAST, 2, warn_std_ptr, 0);
+  add_prefix (&exec_prefixes, standard_exec_prefix_2, "BINUTILS",
 	      PREFIX_PRIORITY_LAST, 2, warn_std_ptr, 0);
 #endif
 
   add_prefix (&startfile_prefixes, standard_exec_prefix, "BINUTILS",
 	      PREFIX_PRIORITY_LAST, 1, warn_std_ptr, 0);
-  add_prefix (&startfile_prefixes, standard_exec_prefix_1, "BINUTILS",
+  add_prefix (&startfile_prefixes, standard_exec_prefix_2, "BINUTILS",
 	      PREFIX_PRIORITY_LAST, 1, warn_std_ptr, 0);
 
   tooldir_prefix = concat (tooldir_base_prefix, spec_machine,

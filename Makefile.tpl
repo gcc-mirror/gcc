@@ -88,7 +88,7 @@ tooldir = @tooldir@
 build_tooldir = @build_tooldir@
 
 # Directory in which the compiler finds executables, libraries, etc.
-libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
+libsubdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)
 GDB_NLM_DEPS = 
 
 # This is the name of the environment variable used for the path to

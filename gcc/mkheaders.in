@@ -64,18 +64,22 @@ local_prefix=@local_prefix@
 exec_prefix=@exec_prefix@
 # Directory in which to put the directories used by the compiler.
 libdir=@libdir@
-# Directory in which the compiler finds executables, libraries, etc.
+libexecdir=@libexecdir@
+# Directory in which the compiler finds libraries, etc.
 libsubdir=${libdir}/gcc-lib/${target_alias}/${version}
+# Directory in which the compiler finds executables
+libexecsubdir=${libexecdir}/gcc/${target_alias}/${version}
 # Since gcc_tooldir does not exist at build-time, use -B${build_tooldir}/bin/
 build_tooldir=${exec_prefix}/${target_alias}
 # Directory to search for site-specific includes.
 local_includedir=${local_prefix}/include
 includedir=${prefix}/include
 
-itoolsdir=${libsubdir}/install-tools
+itoolsdir=${libexecsubdir}/install-tools
+itoolsdatadir=${libsubdir}/install-tools
 incdir=${libsubdir}/include
 
-. ${itoolsdir}/mkheaders.conf
+. ${itoolsdatadir}/mkheaders.conf
 
 cd ${itoolsdir}
 rm -rf ${incdir}/*
@@ -88,11 +92,11 @@ if [ x${STMP_FIXINC} != x ] ; then
 	if [ -f ${incdir}/limits.h ]; then
 	  mv ${incdir}/limits.h ${incdir}/syslimits.h
 	else
-	  cp gsyslimits.h ${incdir}/syslimits.h
+	  cp ${itoolsdatadir}/gsyslimits.h ${incdir}/syslimits.h
 	fi
 fi
 
-cp include/* ${incdir}
+cp ${itoolsdatadir}/include/* ${incdir}
 
 if [ x${STMP_FIXPROTO} != x ] ; then
   mkinstalldirs="${SHELL} ${itoolsdir}/mkinstalldirs"
