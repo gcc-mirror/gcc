@@ -464,6 +464,8 @@ namespace std
       { return traits_type::eof(); }
 
 #ifdef _GLIBCPP_DEPRECATED
+    // http://gcc.gnu.org/ml/libstdc++/2002-05/msg00168.html
+    // Annex D.6
     public:
       void 
       stossc() 
