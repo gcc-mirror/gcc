@@ -1,3 +1,8 @@
+2001-01-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* combine.c (try_combine): Fix SUBREG setting for
+	HOST_BITS_PER_WIDE_INT >= 2 * BITS_PER_WORD.
+
 2001-01-30  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* jump.c (comparison_dominates_p): Don't try to handle UNKNOWN
