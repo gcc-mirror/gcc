@@ -1,3 +1,25 @@
+2004-12-22  Jan Beulich  <jbeulich@novell.com>
+
+	* config.gcc: Add dbxelf.h to NetWare's tm_file.
+	* config/i386/netware-crt0.c: Prototype __init_environment and
+	__deinit_environment prior to their definition.
+	(__init_environment): Correct invokation of constructor function.
+	* config/i386/netware.h (TARGET_OS_CPP_BUILTINS): Use
+	builtin_define_std rather than builtin_define on IAPX386.
+	* config/i386/nwld.h: Disable stabs debugging info with the linker
+	this file supports.
+	* config/i386/t-nwld (SHLIB_LINK): Do not use a temporary file for
+	the output. Add -posix to the options as that is the more compatible
+	mode.
+	* gthr-nks.h: Formatting.
+	(__gthread_mutex_init_function): Kill the dubious use of
+	NX_MUTEX_RECURSIVE as it is now clear that the traditional mutexes
+	were not meant to be recursive.
+	(__gthread_recursive_mutex_t, __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION,
+	__gthread_recursive_mutex_init_function,
+	__gthread_recursive_mutex_lock, __gthread_recursive_mutex_trylock,
+	__gthread_recursive_mutex_unlock): New.
+
 2004-12-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/t-linux64: Remove code that messed with $(SPECS).

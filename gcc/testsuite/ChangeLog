@@ -1,3 +1,7 @@
+2004-12-22  Jan Beulich  <jbeulich@novell.com>
+
+	* gcc.dg/20040813-1.c: Skip for *-*-netware*.
+
 2004-12-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18378

@@ -23,6 +23,9 @@ Boston, MA 02111-1307, USA.  */
 #include <stdint.h>
 #include "unwind-dw2-fde.h"
 
+int __init_environment (void *);
+int __deinit_environment (void *);
+
 
 #define SECTION_DECL(name, decl) decl __attribute__((__section__(name)))
 
@@ -54,7 +57,7 @@ __init_environment (void *unused __attribute__((__unused__)))
 
   for (pctor = &__CTOR_END__ - 1; pctor > &__CTOR_LIST__; --pctor)
     if (*pctor != NULL)
-      pctor();
+      (*pctor)();
 
   return 0;
 }

@@ -1,23 +1,23 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
-GCC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
 
-GCC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
 
 /* As a special exception, if you link this library with other files,
    some of which are compiled with GCC, to produce an executable,
@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __gthr_nks_h
-#define __gthr_nks_h
+#ifndef GCC_GTHR_NKS_H
+#define GCC_GTHR_NKS_H
 
 /* NKS threads specific definitions.
    Easy, since the interface is mostly one-to-one mapping.  */
@@ -40,8 +40,10 @@ Boston, MA 02111-1307, USA.  */
 
 typedef NXKey_t __gthread_key_t;
 typedef NXMutex_t *__gthread_mutex_t;
+typedef NXMutex_t *__gthread_recursive_mutex_t;
 
 #define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
 
 static inline int
 __gthread_active_p (void)
@@ -65,19 +67,19 @@ static NXKey_t _objc_thread_storage;
 
 /* Initialize the threads subsystem.  */
 static inline int
-__gthread_objc_init_thread_system(void)
+__gthread_objc_init_thread_system (void)
 {
-  /* Initialize the thread storage key */
-  if (NXKeyCreate(NULL, NULL, &_objc_thread_storage) == 0)
+  /* Initialize the thread storage key.  */
+  if (NXKeyCreate (NULL, NULL, &_objc_thread_storage) == 0)
     return 0;
   return -1;
 }
 
 /* Close the threads subsystem.  */
 static inline int
-__gthread_objc_close_thread_system(void)
+__gthread_objc_close_thread_system (void)
 {
-  if (NXKeyDelete(_objc_thread_storage) == 0)
+  if (NXKeyDelete (_objc_thread_storage) == 0)
     return 0;
   return -1;
 }
@@ -86,19 +88,19 @@ __gthread_objc_close_thread_system(void)
 
 /* Create a new thread of execution.  */
 static inline objc_thread_t
-__gthread_objc_thread_detach(void (*func)(void *), void *arg)
+__gthread_objc_thread_detach (void (*func)(void *), void *arg)
 {
   objc_thread_t thread_id;
   NXContext_t context;
   NXThreadId_t new_thread_handle;
   int err;
 
-  if ((context = NXContextAlloc(func, arg, NX_PRIO_MED, 0, 0, 0, &err)) == NULL)
+  if ((context = NXContextAlloc (func, arg, NX_PRIO_MED, 0, 0, 0, &err)) == NULL)
     thread_id = NULL;
-  else if (NXThreadCreate(context, NX_THR_DETACHED, &new_thread_handle) == 0)
+  else if (NXThreadCreate (context, NX_THR_DETACHED, &new_thread_handle) == 0)
     thread_id = (objc_thread_t) new_thread_handle;
   else {
-    NXContextFree(context);
+    NXContextFree (context);
     thread_id = NULL;
   }
   
@@ -107,37 +109,37 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
 
 /* Set the current thread's priority.  */
 static inline int
-__gthread_objc_thread_set_priority(int priority)
+__gthread_objc_thread_set_priority (int priority)
 {
-  if (NXThreadSetPriority(NXThreadGetId(), priority) == 0)
+  if (NXThreadSetPriority (NXThreadGetId (), priority) == 0)
     return 0;
   return -1;
 }
 
 /* Return the current thread's priority.  */
 static inline int
-__gthread_objc_thread_get_priority(void)
+__gthread_objc_thread_get_priority (void)
 {
   int priority;
 
-  if (NXThreadGetPriority(NXThreadGetId(), &priority) == 0)
+  if (NXThreadGetPriority (NXThreadGetId (), &priority) == 0)
     return priority;
   return -1;
 }
 
 /* Yield our process time to another thread.  */
 static inline void
-__gthread_objc_thread_yield(void)
+__gthread_objc_thread_yield (void)
 {
-  NXThreadYield();
+  NXThreadYield ();
 }
 
 /* Terminate the current thread.  */
 static inline int
-__gthread_objc_thread_exit(void)
+__gthread_objc_thread_exit (void)
 {
   /* exit the thread */
-  NXThreadExit(&__objc_thread_exit_status);
+  NXThreadExit (&__objc_thread_exit_status);
 
   /* Failed if we reached here */
   return -1;
@@ -145,25 +147,25 @@ __gthread_objc_thread_exit(void)
 
 /* Returns an integer value which uniquely describes a thread.  */
 static inline objc_thread_t
-__gthread_objc_thread_id(void)
+__gthread_objc_thread_id (void)
 {
-  (objc_thread_t) NXThreadGetId();
+  (objc_thread_t) NXThreadGetId ();
 }
 
 /* Sets the thread's local storage pointer.  */
 static inline int
-__gthread_objc_thread_set_data(void *value)
+__gthread_objc_thread_set_data (void *value)
 {
-  return NXKeySetValue(_objc_thread_storage, value);
+  return NXKeySetValue (_objc_thread_storage, value);
 }
 
 /* Returns the thread's local storage pointer.  */
 static inline void *
-__gthread_objc_thread_get_data(void)
+__gthread_objc_thread_get_data (void)
 {
   void *value;
 
-  if (NXKeyGetValue(_objc_thread_storage, &value) == 0)
+  if (NXKeyGetValue (_objc_thread_storage, &value) == 0)
     return value;
   return NULL;
 }
@@ -172,22 +174,22 @@ __gthread_objc_thread_get_data(void)
 
 /* Allocate a mutex.  */
 static inline int
-__gthread_objc_mutex_allocate(objc_mutex_t mutex)
+__gthread_objc_mutex_allocate (objc_mutex_t mutex)
 {
-  static const NX_LOCK_INFO_ALLOC(info, "GNU ObjC", 0);
+  static const NX_LOCK_INFO_ALLOC (info, "GNU ObjC", 0);
 
-  if ((mutex->backend = NXMutexAlloc(NX_MUTEX_RECURSIVE/*???*/, 0, &info)) == NULL)
+  if ((mutex->backend = NXMutexAlloc (NX_MUTEX_RECURSIVE/*???*/, 0, &info)) == NULL)
     return 0;
   return -1;
 }
 
 /* Deallocate a mutex.  */
 static inline int
-__gthread_objc_mutex_deallocate(objc_mutex_t mutex)
+__gthread_objc_mutex_deallocate (objc_mutex_t mutex)
 {
-  while(NXMutexIsOwned((NXMutex_t *)mutex->backend))
-    NXUnlock((NXMutex_t *)mutex->backend);
-  if (NXMutexFree((NXMutex_t *)mutex->backend) != 0)
+  while (NXMutexIsOwned ((NXMutex_t *)mutex->backend))
+    NXUnlock ((NXMutex_t *)mutex->backend);
+  if (NXMutexFree ((NXMutex_t *)mutex->backend) != 0)
     return -1;
   mutex->backend = NULL;
   return 0;
@@ -195,34 +197,34 @@ __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
 
 /* Grab a lock on a mutex.  */
 static inline int
-__gthread_objc_mutex_lock(objc_mutex_t mutex)
+__gthread_objc_mutex_lock (objc_mutex_t mutex)
 {
-  return NXLock((NXMutex_t *)mutex->backend);
+  return NXLock ((NXMutex_t *)mutex->backend);
 }
 
 /* Try to grab a lock on a mutex.  */
 static inline int
-__gthread_objc_mutex_trylock(objc_mutex_t mutex)
+__gthread_objc_mutex_trylock (objc_mutex_t mutex)
 {
-  if (!NXTryLock((NXMutex_t *)mutex->backend))
+  if (!NXTryLock ((NXMutex_t *)mutex->backend))
     return -1;
   return 0;
 }
 
 /* Unlock the mutex */
 static inline int
-__gthread_objc_mutex_unlock(objc_mutex_t mutex)
+__gthread_objc_mutex_unlock (objc_mutex_t mutex)
 {
-  return NXUnlock((NXMutex_t *)mutex->backend);
+  return NXUnlock ((NXMutex_t *)mutex->backend);
 }
 
 /* Backend condition mutex functions */
 
 /* Allocate a condition.  */
 static inline int
-__gthread_objc_condition_allocate(objc_condition_t condition)
+__gthread_objc_condition_allocate (objc_condition_t condition)
 {
-  condition->backend = NXCondAlloc(NULL);
+  condition->backend = NXCondAlloc (NULL);
   if (condition->backend == NULL)
     return -1;
 
@@ -231,9 +233,9 @@ __gthread_objc_condition_allocate(objc_condition_t condition)
 
 /* Deallocate a condition.  */
 static inline int
-__gthread_objc_condition_deallocate(objc_condition_t condition)
+__gthread_objc_condition_deallocate (objc_condition_t condition)
 {
-   if (NXCondFree((NXCond_t *)condition->backend) != 0)
+   if (NXCondFree ((NXCond_t *)condition->backend) != 0)
      return -1;
    condition->backend = NULL;
    return 0;
@@ -241,23 +243,23 @@ __gthread_objc_condition_deallocate(objc_condition_t condition)
 
 /* Wait on the condition */
 static inline int
-__gthread_objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
+__gthread_objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
 {
-  return NXCondWait((NXCond_t *)condition->backend, (NXMutex_t *)mutex->backend);
+  return NXCondWait ((NXCond_t *)condition->backend, (NXMutex_t *)mutex->backend);
 }
 
 /* Wake up all threads waiting on this condition.  */
 static inline int
-__gthread_objc_condition_broadcast(objc_condition_t condition)
+__gthread_objc_condition_broadcast (objc_condition_t condition)
 {
-  return NXCondBroadcast((NXCond_t *)condition->backend);
+  return NXCondBroadcast ((NXCond_t *)condition->backend);
 }
 
 /* Wake up one thread waiting on this condition.  */
 static inline int
-__gthread_objc_condition_signal(objc_condition_t condition)
+__gthread_objc_condition_signal (objc_condition_t condition)
 {
-  return NXCondSignal((NXCond_t *)condition->backend);
+  return NXCondSignal ((NXCond_t *)condition->backend);
 }
 
 #else /* _LIBOBJC */
@@ -281,15 +283,15 @@ typedef volatile long __gthread_once_t;
 static inline int
 __gthread_once (__gthread_once_t *once, void (*func) (void))
 {
-  if (__compare_and_swap(once, 0, 1))
+  if (__compare_and_swap (once, 0, 1))
   {
     func();
     *once |= 2;
   }
   else
   {
-    while(!(*once & 2))
-      NXThreadYield();
+    while (!(*once & 2))
+      NXThreadYield ();
   }
   return 0;
 }
@@ -303,7 +305,7 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 static inline int
 __gthread_key_dtor (__gthread_key_t key, void *ptr)
 {
-  /* Just reset the key value to zero.  */
+  /* Just reset the key value to zero. */
   if (ptr)
     return NXKeySetValue (key, NULL);
   return 0;
@@ -320,7 +322,7 @@ __gthread_getspecific (__gthread_key_t key)
 {
   void *value;
 
-  if (NXKeyGetValue(key, &value) == 0)
+  if (NXKeyGetValue (key, &value) == 0)
     return value;
   return NULL;
 }
@@ -328,27 +330,27 @@ __gthread_getspecific (__gthread_key_t key)
 static inline int
 __gthread_setspecific (__gthread_key_t key, const void *ptr)
 {
-  return NXKeySetValue(key, (void *)ptr);
+  return NXKeySetValue (key, (void *)ptr);
 }
 
 static inline void
 __gthread_mutex_init_function (__gthread_mutex_t *mutex)
 {
-  static const NX_LOCK_INFO_ALLOC(info, "GTHREADS", 0);
+  static const NX_LOCK_INFO_ALLOC (info, "GTHREADS", 0);
 
-  *mutex = NXMutexAlloc (NX_MUTEX_RECURSIVE/*???*/, 0, &info);
+  *mutex = NXMutexAlloc (0, 0, &info);
 }
 
 static inline int
 __gthread_mutex_lock (__gthread_mutex_t *mutex)
 {
-  return NXLock(*mutex);
+  return NXLock (*mutex);
 }
 
 static inline int
 __gthread_mutex_trylock (__gthread_mutex_t *mutex)
 {
-  if (NXTryLock(*mutex))
+  if (NXTryLock (*mutex))
     return 0;
   return -1;
 }
@@ -356,9 +358,37 @@ __gthread_mutex_trylock (__gthread_mutex_t *mutex)
 static inline int
 __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
-  return NXUnlock(*mutex);
+  return NXUnlock (*mutex);
+}
+
+static inline void
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+{
+  static const NX_LOCK_INFO_ALLOC (info, "GTHREADS", 0);
+
+  *mutex = NXMutexAlloc (NX_MUTEX_RECURSIVE, 0, &info);
+}
+
+static inline int
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+{
+  return NXLock (*mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+{
+  if (NXTryLock (*mutex))
+    return 0;
+  return -1;
+}
+
+static inline int
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+{
+  return NXUnlock (*mutex);
 }
 
 #endif /* _LIBOBJC */
 
-#endif /* not __gthr_nks_h */
+#endif /* not GCC_GTHR_NKS_H */
