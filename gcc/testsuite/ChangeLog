@@ -1,5 +1,7 @@
 2003-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* g++.dg/parse/extern-C-1.C: New test.
+
 	* g++.dg/parse/namespace4.C: New test.
 
 	* g++.dg/template/nested1.C: New test.
