@@ -33,7 +33,7 @@ extern void cxx_initialize_diagnostics (struct diagnostic_context *);
 
 /* In cp/cp-lang.c and objcp/objcp-lang.c.  */
 
-extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t, 
+extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 					 tree, bool);
 
 /* Lang hooks that are shared between C++ and ObjC++ are defined here.  Hooks
@@ -158,7 +158,5 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE c_register_builtin_type
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR cp_gimplify_expr
-#undef LANG_HOOKS_FOLD_OBJ_TYPE_REF
-#define LANG_HOOKS_FOLD_OBJ_TYPE_REF cp_fold_obj_type_ref
 
 #endif /* GCC_CP_OBJCP_COMMON */

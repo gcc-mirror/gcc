@@ -49,6 +49,8 @@ static int cxx_types_compatible_p (tree, tree);
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P cxx_types_compatible_p
+#undef LANG_HOOKS_FOLD_OBJ_TYPE_REF
+#define LANG_HOOKS_FOLD_OBJ_TYPE_REF cp_fold_obj_type_ref
 
 /* Each front end provides its own lang hook initializer.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -119,8 +121,9 @@ static int cxx_types_compatible_p (tree x, tree y)
 /* The following function does something real, but only in Objective-C++.  */
 
 tree
-objcp_tsubst_copy_and_build (tree t ATTRIBUTE_UNUSED, tree args ATTRIBUTE_UNUSED, 
-			     tsubst_flags_t complain ATTRIBUTE_UNUSED, 
+objcp_tsubst_copy_and_build (tree t ATTRIBUTE_UNUSED,
+			     tree args ATTRIBUTE_UNUSED,
+			     tsubst_flags_t complain ATTRIBUTE_UNUSED,
 			     tree in_decl ATTRIBUTE_UNUSED,
 			     bool function_p ATTRIBUTE_UNUSED)
 {

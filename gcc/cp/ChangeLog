@@ -1,3 +1,11 @@
+2004-09-21  Ziemowit Laski  <zlaski@apple.com>
+
+	* cp-lang.c (LANG_HOOKS_FOLD_OBJ_TYPE_REF): Moved here from
+	cp-objcp-common.h.
+	(objcp_tsubst_copy_and_build): Reformat function signature.
+	* cp-objcp-common.h (objcp_tsubst_copy_and_build): Likewise.
+	(LANG_HOOKS_FOLD_OBJ_TYPE_REF): Moved to cp-lang.c.
+
 2004-09-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* parser.c (cp_lexer_peek_token, cp_lexer_consume_token):
