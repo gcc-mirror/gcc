@@ -1,3 +1,7 @@
+2004-03-15  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (thumb_expand_prologue): Tie prologue insns to fp.
+
 2004-03-15  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.c (pp_c_semicolon): Fix formatting.
