@@ -393,9 +393,12 @@ do {									\
 
 /* Define this macro to be the value 1 if instructions will fail to
    work if given data not on the nominal alignment.  If instructions
-   will merely go slower in that case, define this macro as 0.  */
+   will merely go slower in that case, define this macro as 0.
+
+   Note, little endian systems trap on unaligned addresses, so never
+   turn off strict alignment in that case. */
 #undef	STRICT_ALIGNMENT
-#define	STRICT_ALIGNMENT (TARGET_STRICT_ALIGN)
+#define	STRICT_ALIGNMENT (TARGET_STRICT_ALIGN || TARGET_LITTLE_ENDIAN)
 
 /* Alignment in bits of the stack boundary.  Note, in order to allow building
    one set of libraries with -mno-eabi instead of eabi libraries and non-eabi
@@ -972,38 +975,16 @@ do {									\
 %{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-solaris: -mlittle -msolaris} \
-    %{mcall-linux: -mbig} }}}}"
-
-#ifndef CC1_ENDIAN_BIG_SPEC
-#define CC1_ENDIAN_BIG_SPEC ""
-#endif
-
-#ifndef CC1_ENDIAN_LITTLE_SPEC
-#define CC1_ENDIAN_LITTLE_SPEC "\
-%{!mstrict-align: %{!mno-strict-align: \
-	-mstrict-align \
-}}"
-#endif
-
-#ifndef CC1_ENDIAN_DEFAULT_SPEC
-#define CC1_ENDIAN_DEFAULT_SPEC "%(cc1_endian_big_spec)"
-#endif
+    %{mcall-solaris: -mlittle -msolaris} %{mcall-linux: -mbig} }}}}"
 
 #undef CC1_SPEC
 /* Pass -G xxx to the compiler and set correct endian mode */
 #define CC1_SPEC "%{G*} \
-%{mlittle: %(cc1_endian_little)} %{!mlittle: %{mlittle-endian: %(cc1_endian_little)}} \
-%{mbig: %(cc1_endian_big)} %{!mbig: %{mbig-endian: %(cc1_endian_big)}} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-nt: -mlittle %{cc1_endian_little} } \
-    %{mcall-aixdesc: -mbig %{cc1_endian_big} } \
-    %{mcall-solaris: -mlittle %{cc1_endian_little} } \
-    %{mcall-linux: -mbig %{cc1_endian_big}}} \
-    %{!mcall-nt: %{!mcall-aixdesc: %{!mcall-solaris: %{!mcall-linux: \
-	    %(cc1_endian_default) \
-    }}}} \
-}}} \
+    %{mcall-nt: -mlittle } \
+    %{mcall-aixdesc: -mbig } \
+    %{mcall-solaris: -mlittle } \
+    %{mcall-linux: -mbig} }}}} \
 %{mcall-solaris: -mregnames } \
 %{mno-sdata: -msdata=none } \
 %{meabi: %{!mcall-*: -mcall-sysv }} \
@@ -1087,8 +1068,7 @@ do {									\
 #undef	LINK_TARGET_SPEC
 #define	LINK_TARGET_SPEC "\
 %{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
-%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-solaris: -oformat elf32-powerpcle}}}}}"
+%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: %{mcall-solaris: -oformat elf32-powerpcle}}}}}"
 
 /* Any specific OS flags */
 #ifndef LINK_OS_SPEC
@@ -1439,9 +1419,6 @@ do {									\
   { "link_os_linux",		LINK_OS_LINUX_SPEC },			\
   { "link_os_solaris",		LINK_OS_SOLARIS_SPEC },			\
   { "link_os_default",		LINK_OS_DEFAULT_SPEC },			\
-  { "cc1_endian_big",		CC1_ENDIAN_BIG_SPEC },			\
-  { "cc1_endian_little",	CC1_ENDIAN_LITTLE_SPEC },		\
-  { "cc1_endian_default",	CC1_ENDIAN_DEFAULT_SPEC },		\
   { "cpp_endian_big",		CPP_ENDIAN_BIG_SPEC },			\
   { "cpp_endian_little",	CPP_ENDIAN_LITTLE_SPEC },		\
   { "cpp_endian_solaris",	CPP_ENDIAN_SOLARIS_SPEC },		\

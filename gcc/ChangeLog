@@ -80,6 +80,56 @@ Thu Jan 14 13:52:42 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	* config/c4x/c4x.md (in_annul_slot_3): Correctly allow unarycc 
 	and binarycc operations in 3rd annulled delay slot!
 
+Wed Jan 13 16:16:44 1999  Catherine Moore  <clm@cygnus.com>
+
+        * config/arm.c (output_func_epilogue):  Check TARGET_ABORT_NORETURN
+        before generating a call to abort for volatile functions.
+        * config/arm.h (ARM_FLAG_ABORT_NORETURN):  Define.
+        (TARGET_ABORT_NORETURN):  Define.
+        (abort-on-noreturn):  New option.
+
+Wed Jan 13 13:30:08 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cccp.c (xstrdup): Renamed from `savestring'.  All callers changed.
+	Remove prototype which we get from libiberty.h.
+
+	* collect2.c (xstrdup): Likewise.
+
+	* genextract.c (xstrdup): Likewise for `copystr'.
+	(mybzero): Remove it and use `memset' instead.
+
+	* genoutput.c (mybcopy, mybzero): Remove these.  All callers changed
+	to use `memcpy' and `memset' instead.
+
+	* genrecog.c (xstrdup): Renamed from `copystr'.  All callers
+ 	changed.  Remove prototype.
+	(mybcopy, mybzero): Remove these and use memcpy/memset.
+
+Wed Jan 13 00:59:04 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.h (LOAD_EXTEND_OP): Correct for SImode and CCmode moves when
+	generating code for TARGET_64BIT.
+
+Tue Jan 12 14:05:37 1999   David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.c (print_operand, cases 'm' and 'M'): Do not depend on
+	HOST_WIDE_INT word-size.
+	(rs6000_stack_info): Remove redundant alignment of fpmem.
+
+Tue Jan 12 14:05:37 1999   Richard Henderson  <rth@cygnus.com>
+
+	* rs6000.c (short_cint_operand): Remove CONSTANT_P_RTX handling.
+	(u_short_cint_operand, reg_or_cint_operand, logical_operand): Likewise.
+	(input_operand): Adjust CONSTANT_P_RTX handling.
+	* rs6000.h (PREDICATE_CODES): Remove CONSTANT_P_RTX references.
+	* rs6000.md (movsi): Adjust CONSTANT_P_RTX handling.
+	(movhi, movqi): Remove CONSANT_P_RTX handling.
+	(movdi): Adjust CONSTANT_P_RTX handling.
+
+Tue Jan 12 10:23:24 1999  Stan Cox  <scox@cygnus.com>
+
+	* mips.md (call_value_internal3c): New pattern for -mips16 -mlong-calls.
+
 1999-01-12  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* m68k/mot3300.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Define to
@@ -138,43 +188,6 @@ Mon Jan 11 22:36:01 1999  Richard Henderson  <rth@cygnus.com>
 	* combine.c, flow.c, function.c, gcse.c, global.c: Likewise.
 	* graph.c, haifa-sched.c, local-alloc.c, regclass.c: Likewise.
 	* regmove.c, reload1.c, reorg.c, sched.c: Likewise.
-
-Thu Jan 11 18:37:50 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
-
-	* invoke.texi (-mcpu=740, -mcpu=750): New options.
-        (-m(no-)multiple, -m(no-)string): Describe cases for PPC740 &
-	PPC750.
-	
-1999-01-11  Michael Meissner  <meissner@cygnus.com>
-
-	* config/rs6000/rs6000.h ({ASM,CPP}_CPU_SPEC): Add support for all
-	machines supported with -mcpu=xxx.
-	(processor_type): Add PROCESSOR_PPC750.
-	(ADJUST_PRIORITY): Call rs6000_adjust_priority.
-	(RTX_COSTS): Supply costs for 750 multiply/divide operations.
-	(rs6000_adjust_priority): Add declaration.
-	
-	* config/rs6000/rs6000.c (rs6000_override_options):
-	-mcpu={750,740} now sets the processor type as 750, not 603.
-	Allow -mmultiple and -mstring on little endian 750 systems.
-	(rs6000_adjust_priority): Stub for now.
-	(get_issue_rate): The PowerPC 750 can issue 2 instructions/cycle.
-
-	* config/rs6000/rs6000.md (function/cpu attributes): Add initial
-	ppc750 support.
-
-	* config/rs6000/sysv4.h (STRICT_ALIGNMENT): Don't force strict
-	alignment if little endian.
-	(CC1_SPEC): Pass -mstrict-align if little endian, and not
-	overridden.
-	(CC1_ENDIAN_{LITTLE,BIG,DEFAULT}_SPEC): Endian specific configs.
-	(SUBTARGET_EXTRA_SPECS): Add cc1 endian specs.
-
-	* config/rs6000/{sysv4,eabi}le.h (CC1_ENDIAN_DEFAULT_SPEC):
-	Override, default is little endian.
-
-	* config/rs6000/t-ppcgas (MULTILIB_*): Delete obsolete Solaris
-	multilibs.
 
 Sat Jan  9 23:54:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
