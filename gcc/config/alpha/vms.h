@@ -527,3 +527,6 @@ do {									\
   { "/gnu/include", 0, 0, 0 },	        \
   { 0, 0, 0, 0 }			\
 }
+
+#define MD_EXEC_PREFIX "/gnu/lib/gcc-lib/"
+#define MD_STARTFILE_PREFIX "/gnu/lib/gcc-lib/"
