@@ -1,3 +1,8 @@
+Tue May 11 11:45:16 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* toplev.c (documented_lang_options): Add -MD, -MMD, -M and -MM for
+	cpplib-enabled compilers.
+
 Tue May 11 11:34:56 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
 
 	* config/sparc/sparc.h (GO_IF_LEGITIMATE_ADDRESS): Add parentheses
