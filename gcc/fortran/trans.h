@@ -481,6 +481,7 @@ extern GTY(()) tree gfor_fndecl_adjustr;
 /* Other misc. runtime library functions.  */
 extern GTY(()) tree gfor_fndecl_size0;
 extern GTY(()) tree gfor_fndecl_size1;
+extern GTY(()) tree gfor_fndecl_iargc;
 
 /* Implemented in FORTRAN.  */
 extern GTY(()) tree gfor_fndecl_si_kind;

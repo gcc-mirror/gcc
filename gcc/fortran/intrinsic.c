@@ -1104,6 +1104,10 @@ add_functions (void)
   make_generic ("iand", GFC_ISYM_IAND);
 
   add_sym_0 ("iargc", 1, 1, BT_INTEGER, di, NULL, NULL, NULL);	/* Extension, takes no arguments */
+  make_generic ("iargc", GFC_ISYM_IARGC);
+
+  add_sym_0 ("command_argument_count", 1, 1, BT_INTEGER, di, NULL, NULL, NULL);
+  make_generic ("command_argument_count", GFC_ISYM_COMMAND_ARGUMENT_COUNT);
 
   add_sym_2 ("ibclr", 1, 1, BT_INTEGER, di,
 	     gfc_check_ibclr, gfc_simplify_ibclr, gfc_resolve_ibclr,
@@ -1704,7 +1708,9 @@ add_subroutines (void)
     *h = "harvest", *dt = "date", *vl = "values", *pt = "put",
     *c = "count", *tm = "time", *tp = "topos", *gt = "get",
     *t = "to", *zn = "zone", *fp = "frompos", *cm = "count_max",
-    *f = "from", *sz = "size", *ln = "len", *cr = "count_rate";
+    *f = "from", *sz = "size", *ln = "len", *cr = "count_rate",
+    *com = "command", *length = "length", *st = "status",
+    *val = "value", *num = "number";
 
   int di, dr, dc;
 
@@ -1738,8 +1744,24 @@ add_subroutines (void)
 	     vl, BT_REAL, 4, 0, tm, BT_REAL, 4, 0);
 
   add_sym_2 ("getarg", 0, 1, BT_UNKNOWN, 0,
-	     NULL, NULL, NULL,
+	     NULL, NULL, gfc_resolve_getarg,
 	     c, BT_INTEGER, di, 0, vl, BT_CHARACTER, dc, 0);
+
+  /* F2003 commandline routines.  */
+
+  add_sym_3s ("get_command", 0, 1, BT_UNKNOWN, 0,
+	     NULL, NULL, gfc_resolve_get_command,
+	     com, BT_CHARACTER, dc, 1,
+	     length, BT_INTEGER, di, 1,
+	     st, BT_INTEGER, di, 1);
+
+  add_sym_4 ("get_command_argument", 0, 1, BT_UNKNOWN, 0,
+	     NULL, NULL, gfc_resolve_get_command_argument,
+	     num, BT_INTEGER, di, 0,
+	     val, BT_CHARACTER, dc, 1,
+	     length, BT_INTEGER, di, 1,
+	     st, BT_INTEGER, di, 1);
+	     
   /* Extension */
 
   add_sym_5 ("mvbits", 1, 1, BT_UNKNOWN, 0,

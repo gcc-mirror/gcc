@@ -125,6 +125,7 @@ tree gfor_fndecl_adjustr;
 
 tree gfor_fndecl_size0;
 tree gfor_fndecl_size1;
+tree gfor_fndecl_iargc;
 
 /* Intrinsic functions implemented in FORTRAN.  */
 tree gfor_fndecl_si_kind;
@@ -1518,6 +1519,11 @@ gfc_build_intrinsic_function_decls (void)
 				     gfc_array_index_type,
 				     2, pvoid_type_node,
 				     gfc_array_index_type);
+
+  gfor_fndecl_iargc =
+    gfc_build_library_function_decl (get_identifier (PREFIX ("iargc")),
+				     gfc_int4_type_node,
+				     0);
 }
 
 

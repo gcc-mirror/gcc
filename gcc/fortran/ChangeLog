@@ -1,3 +1,24 @@
+2004-07-04  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+	Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/15280
+	PR fortran/15665
+	* gfortran.h (enum gfc_generic_isym_id): Add GFC_ISYM_IARGC and
+	GFC_ISYM_COMMAND_ARGUMENT_COUNT.
+	* intrinsic.c (add_functions):  Identify iargc.  Add
+	command_argument_count.
+	(add_subroutines): Resolve getarg.  Add get_command and
+	get_command_argument.
+	* intrinsic.h (gfc_resolve_getarg, gfc_resolve_get_command,
+	gfc_resolve_get_command_argument): Add prototypes.
+	* iresolve.c (gfc_resolve_getarg, gfc_resolve_get_command,
+	gfc_resolve_get_command_argument): New functions.
+	* trans-decl.c (gfor_fndecl_iargc): New variable.
+	(gfc_build_intrinsic_function_decls): Set it.
+	* trans-intrinsic.c (gfc_conv_intrinsic_iargc): New function.
+	(gfc_conv_intrinsic_function): Use it.
+	* trans.h (gfor_fndecl_iargc): Declare.
+
 2004-07-04  Matthias Klose  <doko@debian.org>
 
 	* Make-lang.in: Generate and install gfortran man page.
