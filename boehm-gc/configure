@@ -2415,6 +2415,7 @@ EOF
 #define NO_EXECUTE_PERMISSION 1
 EOF
 
+    ;;
  sparc-sun-solaris2.3*)
     cat >> confdefs.h <<\EOF
 #define SUNOS53_SHARED_LIB 1
