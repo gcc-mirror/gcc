@@ -61,9 +61,12 @@ java::lang::Throwable::fillInStackTrace (void)
   int n = backtrace (p, 128) - 1;  
 #endif
 
-  // ???  Might this cause a problem if the byte array isn't aligned?
-  stackTrace = JvNewByteArray (n * sizeof p[0]);
-  memcpy (elements (stackTrace), p+1, (n * sizeof p[0]));
+  if (n > 0)
+    {
+      // ???  Might this cause a problem if the byte array isn't aligned?
+      stackTrace = JvNewByteArray (n * sizeof p[0]);
+      memcpy (elements (stackTrace), p+1, (n * sizeof p[0]));
+    }
 
 #endif
 
