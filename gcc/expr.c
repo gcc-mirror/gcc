@@ -3394,19 +3394,15 @@ emit_move_insn_1 (x, y)
 	  /* Note that the real part always precedes the imag part in memory
 	     regardless of machine's endianness.  */
 #ifdef STACK_GROWS_DOWNWARD
-	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_rtx_MEM (submode, XEXP (x, 0)),
-		      gen_imagpart (submode, y)));
-	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_rtx_MEM (submode, XEXP (x, 0)),
-		      gen_realpart (submode, y)));
+	  emit_move_insn (gen_rtx_MEM (submode, XEXP (x, 0)),
+			  gen_imagpart (submode, y));
+	  emit_move_insn (gen_rtx_MEM (submode, XEXP (x, 0)),
+			  gen_realpart (submode, y));
 #else
-	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_rtx_MEM (submode, XEXP (x, 0)),
-		      gen_realpart (submode, y)));
-	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_rtx_MEM (submode, XEXP (x, 0)),
-		      gen_imagpart (submode, y)));
+	  emit_move_insn (gen_rtx_MEM (submode, XEXP (x, 0)),
+			  gen_realpart (submode, y));
+	  emit_move_insn (gen_rtx_MEM (submode, XEXP (x, 0)),
+			  gen_imagpart (submode, y));
 #endif
 	}
       else
@@ -3481,10 +3477,8 @@ emit_move_insn_1 (x, y)
 		  || GET_CODE (imagpart_x) == SUBREG))
 	    emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
 
-	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (realpart_x, realpart_y));
-	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (imagpart_x, imagpart_y));
+	  emit_move_insn (realpart_x, realpart_y);
+	  emit_move_insn (imagpart_x, imagpart_y);
 	}
 
       return get_last_insn ();
