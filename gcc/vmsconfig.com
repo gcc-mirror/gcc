@@ -65,6 +65,12 @@ $! possible compilers.  We do this by editing the file Makefile.in, and
 $! generating the relevant files from it.
 $!
 $!
+$! Make a copy of the makefile if the sources are on a disk that is NFS 
+$!    mounted on a unix machine.
+$if f$search("Makefile.in").eqs."" .and. f$search("$M$akefile.in").nes."" -
+	then copy $M$akefile.in Makefile.in
+$!
+$!
 $echo "Now processing Makefile.in to generate linker option files."
 $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
    PROCEDURE generate_option_file (TAG_NAME, outfile)
