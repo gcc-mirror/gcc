@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #define	GLOBAL0(U,X)	CONCAT(U,__##X)
 #define	GLOBAL(X)	GLOBAL0(__USER_LABEL_PREFIX__,X)
 
-#if defined __SH5__ && ! defined __SH4_NOFPU__
+#if defined __SH5__ && ! defined __SH4_NOFPU__ && ! defined (__LITTLE_ENDIAN__)
 #define FMOVD_WORKS
 #endif
 

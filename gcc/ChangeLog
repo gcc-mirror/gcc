@@ -1,4 +1,7 @@
-Wed Jul 17 16:28:53 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Wed Jul 17 16:57:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/lib1funcs.asm (FMOVD_WORKS): Don't define for little endian.
+	* sh.h (OVERRIDE_OPTIONS): Don't set FMOVD_BIT for little endian.
 
 	* config/sh/lib1funcs.asm (init_trampoline): New entry point.
 	* sh-protos.h (sh_initialize_trampoline): Declare.

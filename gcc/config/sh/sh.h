@@ -422,7 +422,8 @@ do {									\
     {									\
       sh_cpu = CPU_SH5;							\
       target_flags |= DALIGN_BIT;					\
-      if (TARGET_FPU_ANY)						\
+      if (TARGET_FPU_ANY						\
+	  && ! (TARGET_SHCOMPACT && TARGET_LITTLE_ENDIAN))		\
 	target_flags |= FMOVD_BIT;					\
       if (TARGET_SHMEDIA)						\
 	{								\
