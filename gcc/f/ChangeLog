@@ -1,3 +1,8 @@
+2001-10-21  Craig Prescott  <prescott@phys.ufl.edu>
+
+	* target.h (FFETARGET_32bit_longs): Don't define 
+	for 64-bit hppa.
+
 2001-10-17  Richard Henderson  <rth@redhat.com>
 
 	* std.c (ffestd_labeldef_format): Fix variable/stmt ordering.
