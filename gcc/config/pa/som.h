@@ -256,9 +256,9 @@ do {								\
        if (!function_label_operand (RTL, VOIDmode))			\
 	 hppa_encode_label (RTL);					\
 									\
-       name = (*targetm.strip_name_encoding) (XSTR ((RTL), 0));		\
+       name = targetm.strip_name_encoding (XSTR ((RTL), 0));		\
        id = maybe_get_identifier (name);				\
-       if (! id || ! TREE_SYMBOL_REFERENCED (id))			\
+       if (!id || !TREE_SYMBOL_REFERENCED (id))				\
 	 {								\
 	   fputs ("\t.IMPORT ", FILE);					\
 	   assemble_name (FILE, XSTR ((RTL), 0));		       	\

@@ -3315,13 +3315,14 @@ output_64bit_ior (rtx *operands)
 }
 
 /* Target hook for assembling integer objects.  This code handles
-   aligned SI and DI integers specially, since function references must
-   be preceded by P%.  */
+   aligned SI and DI integers specially since function references
+   must be preceded by P%.  */
 
 static bool
 pa_assemble_integer (rtx x, unsigned int size, int aligned_p)
 {
-  if (size == UNITS_PER_WORD && aligned_p
+  if (size == UNITS_PER_WORD
+      && aligned_p
       && function_label_operand (x, VOIDmode))
     {
       fputs (size == 8? "\t.dword\tP%" : "\t.word\tP%", asm_out_file);
@@ -5608,8 +5609,6 @@ get_plabel (const char *fname)
      on the list, create a new entry on the list.  */
   if (deferred_plabels == NULL || i == n_deferred_plabels)
     {
-      const char *real_name;
-
       if (deferred_plabels == 0)
 	deferred_plabels = (struct deferred_plabel *)
 	  ggc_alloc (sizeof (struct deferred_plabel));
@@ -5623,10 +5622,10 @@ get_plabel (const char *fname)
       deferred_plabels[i].internal_label = gen_label_rtx ();
       deferred_plabels[i].name = ggc_strdup (fname);
 
-      /* Gross.  We have just implicitly taken the address of this function,
-	 mark it as such.  */
-      real_name = (*targetm.strip_name_encoding) (fname);
-      TREE_SYMBOL_REFERENCED (get_identifier (real_name)) = 1;
+      /* Gross.  We have just implicitly taken the address of
+	 this function, mark it as such.  */
+      fname = targetm.strip_name_encoding (fname);
+      TREE_SYMBOL_REFERENCED (get_identifier (fname)) = 1;
     }
 
   return &deferred_plabels[i];
@@ -7916,18 +7915,18 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 			HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 			tree function)
 {
-  const char *fname = XSTR (XEXP (DECL_RTL (function), 0), 0);
-  const char *tname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
+  static unsigned int current_thunk_number;
   int val_14 = VAL_14_BITS_P (delta);
   int nbytes = 0;
-  static unsigned int current_thunk_number;
   char label[16];
+  rtx xoperands[4];
 
-  ASM_OUTPUT_LABEL (file, tname);
+  xoperands[0] = XEXP (DECL_RTL (function), 0);
+  xoperands[1] = XEXP (DECL_RTL (thunk_fndecl), 0);
+  xoperands[2] = GEN_INT (delta);
+
+  ASM_OUTPUT_LABEL (file, XSTR (xoperands[1], 0));
   fprintf (file, "\t.PROC\n\t.CALLINFO FRAME=0,NO_CALLS\n\t.ENTRY\n");
-
-  fname = (*targetm.strip_name_encoding) (fname);
-  tname = (*targetm.strip_name_encoding) (tname);
 
   /* Output the thunk.  We know that the function is in the same
      translation unit (i.e., the same space) as the thunk, and that
@@ -7959,18 +7958,19 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 		       && last_address < 262132)))
 	      || (!targetm.have_named_sections && last_address < 262132))))
     {
+      if (!val_14)
+	output_asm_insn ("addil L'%2,%%r26", xoperands);
+
+      output_asm_insn ("b %0", xoperands);
+
       if (val_14)
 	{
-	  fprintf (file, "\tb %s\n\tldo " HOST_WIDE_INT_PRINT_DEC
-			 "(%%r26),%%r26\n", fname, delta);
+	  output_asm_insn ("ldo %2(%%r26),%%r26", xoperands);
 	  nbytes += 8;
 	}
       else
 	{
-	  fprintf (file, "\taddil L'" HOST_WIDE_INT_PRINT_DEC
-			 ",%%r26\n", delta);
-	  fprintf (file, "\tb %s\n\tldo R'" HOST_WIDE_INT_PRINT_DEC
-			 "(%%r1),%%r26\n", fname, delta);
+	  output_asm_insn ("ldo R'%2(%%r1),%%r26", xoperands);
 	  nbytes += 12;
 	}
     }
@@ -7979,53 +7979,54 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
       /* We only have one call-clobbered scratch register, so we can't
          make use of the delay slot if delta doesn't fit in 14 bits.  */
       if (!val_14)
-	fprintf (file, "\taddil L'" HOST_WIDE_INT_PRINT_DEC
-		       ",%%r26\n\tldo R'" HOST_WIDE_INT_PRINT_DEC
-		       "(%%r1),%%r26\n", delta, delta);
+	{
+	  output_asm_insn ("addil L'%2,%%r26", xoperands);
+	  output_asm_insn ("ldo R'%2(%%r1),%%r26", xoperands);
+	}
 
-      fprintf (file, "\tb,l .+8,%%r1\n");
+      output_asm_insn ("b,l .+8,%%r1", xoperands);
 
       if (TARGET_GAS)
 	{
-	  fprintf (file, "\taddil L'%s-$PIC_pcrel$0+4,%%r1\n", fname);
-	  fprintf (file, "\tldo R'%s-$PIC_pcrel$0+8(%%r1),%%r1\n", fname);
+	  output_asm_insn ("addil L'%0-$PIC_pcrel$0+4,%%r1", xoperands);
+	  output_asm_insn ("ldo R'%0-$PIC_pcrel$0+8(%%r1),%%r1", xoperands);
 	}
       else
 	{
-	  int off = val_14 ? 8 : 16;
-	  fprintf (file, "\taddil L'%s-%s-%d,%%r1\n", fname, tname, off);
-	  fprintf (file, "\tldo R'%s-%s-%d(%%r1),%%r1\n", fname, tname, off);
+	  xoperands[3] = GEN_INT (val_14 ? 8 : 16);
+	  output_asm_insn ("addil L'%0-%1-%3,%%r1", xoperands);
 	}
 
       if (val_14)
 	{
-	  fprintf (file, "\tbv %%r0(%%r1)\n\tldo ");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC "(%%r26),%%r26\n", delta);
+	  output_asm_insn ("bv %%r0(%%r1)", xoperands);
+	  output_asm_insn ("ldo %2(%%r26),%%r26", xoperands);
 	  nbytes += 20;
 	}
       else
 	{
-	  fprintf (file, "\tbv,n %%r0(%%r1)\n");
+	  output_asm_insn ("bv,n %%r0(%%r1)", xoperands);
 	  nbytes += 24;
 	}
     }
   else if (TARGET_PORTABLE_RUNTIME)
     {
-      fprintf (file, "\tldil L'%s,%%r1\n", fname);
-      fprintf (file, "\tldo R'%s(%%r1),%%r22\n", fname);
+      output_asm_insn ("ldil L'%0,%%r1", xoperands);
+      output_asm_insn ("ldo R'%0(%%r1),%%r22", xoperands);
+
+      if (!val_14)
+	output_asm_insn ("addil L'%2,%%r26", xoperands);
+
+      output_asm_insn ("bv %%r0(%%r22)", xoperands);
 
       if (val_14)
 	{
-	  fprintf (file, "\tbv %%r0(%%r22)\n\tldo ");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC "(%%r26),%%r26\n", delta);
+	  output_asm_insn ("ldo %2(%%r26),%%r26", xoperands);
 	  nbytes += 16;
 	}
       else
 	{
-	  fprintf (file, "\taddil L'" HOST_WIDE_INT_PRINT_DEC
-			 ",%%r26\n", delta);
-	  fprintf (file, "\tbv %%r0(%%r22)\n\tldo ");
-	  fprintf (file, "R'" HOST_WIDE_INT_PRINT_DEC "(%%r1),%%r26\n", delta);
+	  output_asm_insn ("ldo R'%2(%%r1),%%r26", xoperands);
 	  nbytes += 20;
 	}
     }
@@ -8036,99 +8037,92 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 	 call the function directly with an indirect sequence similar to
 	 that used by $$dyncall.  This is possible because $$dyncall acts
 	 as the import stub in an indirect call.  */
-      const char *lab;
-
       ASM_GENERATE_INTERNAL_LABEL (label, "LTHN", current_thunk_number);
-      lab = (*targetm.strip_name_encoding) (label);
+      xoperands[3] = gen_rtx_SYMBOL_REF (Pmode, label);
+      output_asm_insn ("addil LT'%3,%%r19", xoperands);
+      output_asm_insn ("ldw RT'%3(%%r1),%%r22", xoperands);
+      output_asm_insn ("ldw 0(%%sr0,%%r22),%%r22", xoperands);
+      output_asm_insn ("bb,>=,n %%r22,30,.+16", xoperands);
+      output_asm_insn ("depi 0,31,2,%%r22", xoperands);
+      output_asm_insn ("ldw 4(%%sr0,%%r22),%%r19", xoperands);
+      output_asm_insn ("ldw 0(%%sr0,%%r22),%%r22", xoperands);
 
-      fprintf (file, "\taddil LT'%s,%%r19\n", lab);
-      fprintf (file, "\tldw RT'%s(%%r1),%%r22\n", lab);
-      fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
-      fprintf (file, "\tbb,>=,n %%r22,30,.+16\n");
-      fprintf (file, "\tdepi 0,31,2,%%r22\n");
-      fprintf (file, "\tldw 4(%%sr0,%%r22),%%r19\n");
-      fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
       if (!val_14)
 	{
-	  fprintf (file, "\taddil L'" HOST_WIDE_INT_PRINT_DEC
-			 ",%%r26\n", delta);
+	  output_asm_insn ("addil L'%2,%%r26", xoperands);
 	  nbytes += 4;
 	}
+
       if (TARGET_PA_20)
 	{
-          fprintf (file, "\tbve (%%r22)\n\tldo ");
+	  output_asm_insn ("bve (%%r22)", xoperands);
+	  nbytes += 36;
+	}
+      else if (TARGET_NO_SPACE_REGS)
+	{
+	  output_asm_insn ("be 0(%%sr4,%%r22)", xoperands);
 	  nbytes += 36;
 	}
       else
 	{
-	  if (TARGET_NO_SPACE_REGS)
-	    {
-	      fprintf (file, "\tbe 0(%%sr4,%%r22)\n\tldo ");
-	      nbytes += 36;
-	    }
-	  else
-	    {
-	      fprintf (file, "\tldsid (%%sr0,%%r22),%%r21\n");
-	      fprintf (file, "\tmtsp %%r21,%%sr0\n");
-	      fprintf (file, "\tbe 0(%%sr0,%%r22)\n\tldo ");
-	      nbytes += 44;
-	    }
+	  output_asm_insn ("ldsid (%%sr0,%%r22),%%r21", xoperands);
+	  output_asm_insn ("mtsp %%r21,%%sr0", xoperands);
+	  output_asm_insn ("be 0(%%sr0,%%r22)", xoperands);
+	  nbytes += 44;
 	}
 
       if (val_14)
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC "(%%r26),%%r26\n", delta);
+	output_asm_insn ("ldo %2(%%r26),%%r26", xoperands);
       else
-	fprintf (file, "R'" HOST_WIDE_INT_PRINT_DEC "(%%r1),%%r26\n", delta);
+	output_asm_insn ("ldo R'%2(%%r1),%%r26", xoperands);
     }
   else if (flag_pic)
     {
-      if (TARGET_PA_20)
-	fprintf (file, "\tb,l .+8,%%r1\n");
-      else
-	fprintf (file, "\tbl .+8,%%r1\n");
+      output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
 
       if (TARGET_SOM || !TARGET_GAS)
 	{
-	  fprintf (file, "\taddil L'%s-%s-8,%%r1\n", fname, tname);
-	  fprintf (file, "\tldo R'%s-%s-8(%%r1),%%r22\n", fname, tname);
+	  output_asm_insn ("addil L'%0-%1-8,%%r1", xoperands);
+	  output_asm_insn ("ldo R'%0-%1-8(%%r1),%%r22", xoperands);
 	}
       else
 	{
-	  fprintf (file, "\taddil L'%s-$PIC_pcrel$0+4,%%r1\n", fname);
-	  fprintf (file, "\tldo R'%s-$PIC_pcrel$0+8(%%r1),%%r22\n", fname);
+	  output_asm_insn ("addil L'%0-$PIC_pcrel$0+4,%%r1", xoperands);
+	  output_asm_insn ("ldo R'%0-$PIC_pcrel$0+8(%%r1),%%r22", xoperands);
 	}
+
+      if (!val_14)
+	output_asm_insn ("addil L'%2,%%r26", xoperands);
+
+      output_asm_insn ("bv %%r0(%%r22)", xoperands);
 
       if (val_14)
 	{
-	  fprintf (file, "\tbv %%r0(%%r22)\n\tldo ");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC "(%%r26),%%r26\n", delta);
+	  output_asm_insn ("ldo %2(%%r26),%%r26", xoperands);
 	  nbytes += 20;
 	}
       else
 	{
-	  fprintf (file, "\taddil L'" HOST_WIDE_INT_PRINT_DEC
-			 ",%%r26\n", delta);
-	  fprintf (file, "\tbv %%r0(%%r22)\n\tldo ");
-	  fprintf (file, "R'" HOST_WIDE_INT_PRINT_DEC "(%%r1),%%r26\n", delta);
+	  output_asm_insn ("ldo R'%2(%%r1),%%r26", xoperands);
 	  nbytes += 24;
 	}
     }
   else
     {
       if (!val_14)
-	fprintf (file, "\taddil L'" HOST_WIDE_INT_PRINT_DEC ",%%r26\n", delta);
+	output_asm_insn ("addil L'%2,%%r26", xoperands);
 
-      fprintf (file, "\tldil L'%s,%%r22\n", fname);
-      fprintf (file, "\tbe R'%s(%%sr4,%%r22)\n\tldo ", fname);
+      output_asm_insn ("ldil L'%0,%%r22", xoperands);
+      output_asm_insn ("be R'%0(%%sr4,%%r22)", xoperands);
 
       if (val_14)
 	{
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC "(%%r26),%%r26\n", delta);
+	  output_asm_insn ("ldo %2(%%r26),%%r26", xoperands);
 	  nbytes += 12;
 	}
       else
 	{
-	  fprintf (file, "R'" HOST_WIDE_INT_PRINT_DEC "(%%r1),%%r26\n", delta);
+	  output_asm_insn ("ldo R'%2(%%r1),%%r26", xoperands);
 	  nbytes += 16;
 	}
     }
@@ -8138,9 +8132,9 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
   if (TARGET_SOM && flag_pic && TREE_PUBLIC (function))
     {
       data_section ();
-      fprintf (file, "\t.align 4\n");
+      output_asm_insn (".align 4", xoperands);
       ASM_OUTPUT_LABEL (file, label);
-      fprintf (file, "\t.word P'%s\n", fname);
+      output_asm_insn (".word P'%0", xoperands);
     }
   else if (TARGET_SOM && TARGET_GAS)
     forget_section ();
