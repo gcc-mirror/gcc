@@ -1,3 +1,8 @@
+2004-07-05  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/util/Locale.java (readObject): Intern strings read from object
+	stream.
+
 2004-07-04  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/gcj/runtime/FirstThread.java,
