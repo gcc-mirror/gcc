@@ -137,7 +137,7 @@ AM_CXXFLAGS = \
 TOPLEVEL_INCLUDES = -I$(includedir)
 @GLIBCPP_NEED_LIBIO_TRUE@LIBIO_INCLUDES = @GLIBCPP_NEED_LIBIO_TRUE@\
 @GLIBCPP_NEED_LIBIO_TRUE@	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
-@GLIBCPP_NEED_LIBIO_FALSE@LIBIO_INCLUDES = 
+@GLIBCPP_NEED_LIBIO_FALSE@LIBIO_INCLUDES = @GLIBCPP_NEED_LIBIO_FALSE@-I$(top_srcdir)/libio
 #CSHADOW_INCLUDES = \
 #	@CSHADOWFLAGS@ -I$(top_srcdir)/shadow -I$(top_builddir)/cshadow
 @GLIBCPP_USE_CSHADOW_TRUE@CSHADOW_INCLUDES = 
@@ -169,7 +169,7 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) \
 # rules automake generates would be used.  We cannot allow CXX to be used
 # in libtool since this would add -lstdc++ to the link line which of
 # course is impossible.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" -Wl,-O1 @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 headers = \
 	bits/cpp_type_traits.h \

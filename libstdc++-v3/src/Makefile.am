@@ -64,7 +64,7 @@ if GLIBCPP_NEED_LIBIO
 LIBIO_INCLUDES = \
 	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
 else
-LIBIO_INCLUDES = 
+LIBIO_INCLUDES = -I$(top_srcdir)/libio
 endif
 
 if GLIBCPP_USE_CSHADOW
@@ -98,7 +98,7 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) \
 # rules automake generates would be used.  We cannot allow CXX to be used
 # in libtool since this would add -lstdc++ to the link line which of
 # course is impossible.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" -Wl,-O1 @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 
 headers = \
