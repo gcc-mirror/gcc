@@ -1099,7 +1099,7 @@ __gnat_error_handler (sig, sip)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
-  char *msg;
+  const char *msg;
 
   /* If this was an explicit signal from a "kill", just resignal it.  */
   if (SI_FROMUSER (sip))

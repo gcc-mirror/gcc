@@ -1,3 +1,14 @@
+2003-01-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* init.c (__gnat_error_handler): Make msg const.
+
+	* gmem.c (convert_addresses): Move declaration ...
+	* adaint.h: ... here.
+	* adaint.c (convert_addresses): Adapt addrs type to match
+	prototype.
+
+	* adaint.c (__gnat_try_lock): Cast pid_t to long, adapt format.
+
 2003-01-24  Andreas Schwab  <schwab@suse.de>
 
 	* ada-tree.h (SET_TYPE_DIGITS_VALUE): Add intermediate cast to
