@@ -1,3 +1,8 @@
+2004-12-10  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.md (*cmpfp_sf): Change type
+	attribute to "multi".
+
 2004-12-09  Richard Henderson  <rth@redhat.com>
 
 	PR c/18282
