@@ -1,3 +1,20 @@
+2004-12-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_pod, has_trivial_constructor,
+	and has_trivial_destructor.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_constructor/has_trivial_constructor.cc: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_constructor/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_destructor/has_trivial_destructor.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_destructor/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_pod/is_pod.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_pod/typedefs.cc: Likewise.
+
 2004-12-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (is_enum): Minor tweak.
