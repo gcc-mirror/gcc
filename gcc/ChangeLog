@@ -1,5 +1,8 @@
 Wed Mar 18 05:54:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (fixup_var_refs_insns): Also delete insn storing pseudo
+	back into arg list.
+
 	* combine.c (gen_binary): Don't make AND that does nothing.
 	(simplify_comparison, case AND): Commute AND and SUBREG.
 	* i386.h (CONST_CONSTS, case CONST_INT): One-byte integers are cost 0.
