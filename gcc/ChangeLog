@@ -1,5 +1,11 @@
 2003-03-31  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_gen_movhi): Don't rely on REG_WAS_0
+	notes as they are boggus.
+	(m68hc11_gen_movqi): Likewise.
+
+2003-03-31  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.c (expand_prologue): For an interrupt handler
 	save the soft registers after the frame pointer so that gdb can unwind
 	the frame more easily.
