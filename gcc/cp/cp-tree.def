@@ -228,6 +228,7 @@ DEFTREECODE (BREAK_STMT, "break_stmt", 'e', 0)
 DEFTREECODE (CONTINUE_STMT, "continue_stmt", 'e', 0)
 DEFTREECODE (SWITCH_STMT, "switch_stmt", 'e', 2)
 DEFTREECODE (GOTO_STMT, "goto_stmt", 'e', 1)
+DEFTREECODE (LABEL_STMT, "label_stmt", 'e', 1)
 DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 5)
 /* A SUBOBJECT statement marks the point at which a sub-object is
    fully constructed.  After this point, the SUBOBJECT_CLEANUP must be

@@ -919,9 +919,22 @@ finish_label_stmt (name)
   tree decl = define_label (input_filename, lineno, name);
 
   if (building_stmt_tree ())
-    add_tree (decl);
+    add_tree (build_min_nt (LABEL_STMT, decl));
   else if (decl)
     expand_label (decl);
+}
+
+/* Finish a series of declarations for local labels.  G++ allows users
+   to declare "local" labels, i.e., labels with scope.  This extension
+   is useful when writing code involving statement-expressions.  */
+
+void
+finish_label_decl (name)
+     tree name;
+{
+  tree decl = declare_local_label (name);
+  if (building_stmt_tree ())
+    add_decl_stmt (decl);
 }
 
 /* Create a declaration statement for the declaration given by the
@@ -2019,17 +2032,22 @@ expand_stmt (t)
 	lineno = STMT_LINENO (t);
 	emit_line_note (input_filename, lineno);
 	decl = DECL_STMT_DECL (t);
-	/* We need to clear DECL_CONTEXT so that maybe_push_decl
-	   will push it into the current scope.  */
-	if (DECL_CONTEXT (decl) == current_function_decl)
-	  DECL_CONTEXT (decl) = NULL_TREE;
-	/* If we marked this variable as dead when we processed it
-	   before, we must undo that now.  The variable has been
-	   resuscitated.  */
-	if (TREE_CODE (decl) == VAR_DECL)
-	  DECL_DEAD_FOR_LOCAL (decl) = 0;
-	maybe_push_decl (decl);
-	cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
+	if (TREE_CODE (decl) == LABEL_DECL)
+	  finish_label_decl (DECL_NAME (decl));
+	else
+	  {
+	    /* We need to clear DECL_CONTEXT so that maybe_push_decl
+	       will push it into the current scope.  */
+	    if (DECL_CONTEXT (decl) == current_function_decl)
+	      DECL_CONTEXT (decl) = NULL_TREE;
+	    /* If we marked this variable as dead when we processed it
+	       before, we must undo that now.  The variable has been
+	       resuscitated.  */
+	    if (TREE_CODE (decl) == VAR_DECL)
+	      DECL_DEAD_FOR_LOCAL (decl) = 0;
+	    maybe_push_decl (decl);
+	    cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
+	  }
 	resume_momentary (i);
       }
       break;
@@ -2119,15 +2137,17 @@ expand_stmt (t)
       finish_case_label (CASE_LOW (t), CASE_HIGH (t));
       break;
 
-    case LABEL_DECL:
-      input_filename = DECL_SOURCE_FILE (t);
-      lineno = DECL_SOURCE_LINE (t);
-      finish_label_stmt (DECL_NAME (t));
+    case LABEL_STMT:
+      lineno = STMT_LINENO (t);
+      finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
       break;
 
     case GOTO_STMT:
       lineno = STMT_LINENO (t);
-      finish_goto_stmt (GOTO_DESTINATION (t));
+      if (TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL)
+	finish_goto_stmt (DECL_NAME (GOTO_DESTINATION (t)));
+      else
+	finish_goto_stmt (GOTO_DESTINATION (t));
       break;
 
     case ASM_STMT:

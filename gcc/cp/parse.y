@@ -3168,12 +3168,11 @@ label_decls:
 
 label_decl:
 	  LABEL identifiers_or_typenames ';'
-		{ tree link;
-		  for (link = $2; link; link = TREE_CHAIN (link))
+                { 
+		  while ($2)
 		    {
-		      tree label = shadow_label (TREE_VALUE (link));
-		      C_DECLARED_LABEL_FLAG (label) = 1;
-		      declare_nonlocal_label (label);
+		      finish_label_decl (TREE_VALUE ($2));
+		      $2 = TREE_CHAIN ($2);
 		    }
 		}
 	;

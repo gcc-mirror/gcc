@@ -1,3 +1,38 @@
+1999-08-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (LABEL_STMT): New tree node.
+	(LABEL_STMT_LABEL): New macro.
+	(shadow_label): Remove.
+	(declare_local_label): New function.
+	(finish_label_decl): Likewise.
+	* decl.c (make_label_decl): New function, split out from
+	lookup_label.
+	(shadowed_labels): Remove.
+	(binding_level): Add shadowed_labels.
+	(clear_binding_level): Remove.
+	(push_binding_level): Just bzero the new binding level.
+	(pushlevel): Fix indentation.
+	(pop_label): New function.
+	(pop_labels): Likewise, split out from poplevel.
+	(poplevel): Pop local labels.  Use pop_labels.
+	(maybe_push_to_top_level): Don't clear shadowed_labels.
+	(lookup_label): Use make_label_decl.
+	(shadow_label): Remove.
+	(declare_local_label): New function.
+	(define_label): Simplify.
+	(start_function): Don't clear shadowed_labels.
+	(cp_function): Remove shadowed_labels.
+	(push_cp_function_context): Don't save shadowed_labels.
+	(pop_cp_function_context): Don't restore it.
+	* dump.c (dequeue_and_dump): Handle LABEL_STMT.
+	* parse.y (label_decl): Use finish_label_decl.
+	* pt.c (tsubst_expr): Handle LABEL_STMTs, and local label
+	declarations.
+	* semantics.c (finish_label_stmt): Add a LABEL_STMT when
+	building_stmt_tree.
+	(finish_label_decl): New function.
+	(expand_stmt): Handle LABEL_STMTs and local label declarations.
+	
 1999-08-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (lookup_label): Build labels on the permanent obstack
