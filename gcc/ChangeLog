@@ -1,5 +1,6 @@
 2004-10-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	PR tree-optimization/16632
 	* fold-const.c (fold) [EQ_EXPR]: When seeing if D & ~C != 0 to
 	fold (A & C) == D into 0, fold ~C.  Similarly, for the case
 	where | is used instead of &.

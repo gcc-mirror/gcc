@@ -1,5 +1,6 @@
 2004-10-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	PR tree-optimization/16632
 	* gcc.dg/tree-ssa/20041002-1.c: New.
 
 2004-10-03  Paul Brook  <paul@codesourcery.com>
