@@ -5153,6 +5153,11 @@ gcse_emit_move_after (src, dest, insn)
 
   new = emit_insn_after (gen_rtx_SET (VOIDmode, dest, src), insn);
 
+  /* want_to_gcse_p verifies that this move will be valid.  Still this call
+     is mandatory as it may create clobbers required by the pattern.  */
+  if (insn_invalid_p (insn))
+    abort ();
+
   /* Note the equivalence for local CSE pass.  */
   if ((note = find_reg_equal_equiv_note (insn)))
     eqv = XEXP (note, 0);
