@@ -156,7 +156,7 @@ struct deferred_plabel GTY(())
 };
 static GTY((length ("n_deferred_plabels"))) struct deferred_plabel *
   deferred_plabels;
-static int n_deferred_plabels = 0;
+static size_t n_deferred_plabels = 0;
 
 /* Initialize the GCC target structure.  */
 
@@ -4703,7 +4703,7 @@ void
 output_deferred_plabels (file)
      FILE *file;
 {
-  int i;
+  size_t i;
   /* If we have deferred plabels, then we need to switch into the data
      section and align it to a 4 byte boundary before we output the
      deferred plabels.  */
@@ -6255,7 +6255,7 @@ output_call (insn, call_dest, sibcall)
       /* Don't have to worry about TARGET_PORTABLE_RUNTIME here since
 	 we don't have any direct calls in that case.  */
 	{
-	  int i;
+	  size_t i;
 	  const char *name = XSTR (call_dest, 0);
 
 	  /* See if we have already put this function on the list
@@ -6506,7 +6506,7 @@ void
 pa_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
      FILE *file;
      tree thunk_fndecl;
-     int delta;
+     HOST_WIDE_INT delta;
      tree function;
 {
   const char *target_name = XSTR (XEXP (DECL_RTL (function), 0), 0);
