@@ -128,6 +128,8 @@ Mon Sep 11 10:48:41 2000  Ulrich Drepper <drepper@redhat.com>
 
 2000-09-11  Kazu Hirata  <kazu@hxi.com>
 
+	* final.c: Fix formatting.
+
 	* integrate.c: Fix formatting.
 
 2000-09-11  Geoff Keating  <geoffk@cygnus.com>
