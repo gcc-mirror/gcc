@@ -30,6 +30,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 extern void free ();
+extern rtx read_rtx ();
 
 /* While tree-walking an instruction pattern, we keep a chain
    of these `struct link's to record how to get down to the
@@ -412,7 +413,6 @@ main (argc, argv)
 {
   rtx desc;
   FILE *infile;
-  extern rtx read_rtx ();
   register int c;
 
   max_opno = -1;

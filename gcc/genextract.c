@@ -31,6 +31,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 extern void free ();
+extern rtx read_rtx ();
 
 /* This structure contains all the information needed to describe one
    set of extractions methods.  Each method may be used by more than 
@@ -390,7 +391,6 @@ main (argc, argv)
 {
   rtx desc;
   FILE *infile;
-  extern rtx read_rtx ();
   register int c, i;
   struct extraction *p;
   struct code_ptr *link;
