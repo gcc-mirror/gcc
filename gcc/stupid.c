@@ -450,13 +450,13 @@ stupid_mark_refs (x, insn)
 
 		  /* The following line is for unused outputs;
 		     they do get stored even though never used again.  */
-		  MARK_LIVE_AFTER (insn, regno);
+		  MARK_LIVE_AFTER (insn, regno+j);
 
 		  /* When a hard reg is clobbered, mark it in use
 		     just before this insn, so it is live all through.  */
 		  if (code == CLOBBER && INSN_SUID (insn) > 0)
 		    SET_HARD_REG_BIT (after_insn_hard_regs[INSN_SUID (insn) - 1],
-				      regno);
+				      regno+j);
 		}
 	    }
 	  /* For pseudo regs, record where born, where dead, number of
