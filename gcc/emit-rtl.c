@@ -239,7 +239,6 @@ const_double_htab_eq (x, y)
      const void *y;
 {
   rtx a = (rtx)x, b = (rtx)y;
-  size_t i;
 
   if (GET_MODE (a) != GET_MODE (b))
     return 0;
