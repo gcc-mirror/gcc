@@ -1614,21 +1614,17 @@ unsigned long
 sfmode_constant_to_ulong (x)
      rtx x;
 {
-  union { double d; unsigned long i[2]; } u;
+  REAL_VALUE_TYPE d;
   union { float f; unsigned long i; } u2;
 
   if (GET_CODE (x) != CONST_DOUBLE || GET_MODE (x) != SFmode)
     abort ();
 
-#ifndef HOST_WORDS_BIG_ENDIAN
-  u.i[0] = CONST_DOUBLE_LOW (x);
-  u.i[1] = CONST_DOUBLE_HIGH (x);
-#else
-  u.i[0] = CONST_DOUBLE_HIGH (x);
-  u.i[1] = CONST_DOUBLE_LOW (x);
+#if TARGET_FLOAT_FORMAT != HOST_FLOAT_FORMAT
+# error IEEE emulation needed
 #endif
-
-  u2.f = u.d;
+  REAL_VALUE_FROM_CONST_DOUBLE (u.d, x);
+  u2.f = d;
   return u2.i;
 }
 
