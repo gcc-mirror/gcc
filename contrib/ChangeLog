@@ -1,3 +1,8 @@
+2005-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* warn_summary: Add -fortran subdir flag.
+	(subdirectoryFilter): Fix missing ada subdir.
+
 2004-11-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc_update (touch_files): Don't rely on "make" being GNU make;
