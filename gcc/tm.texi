@@ -4505,7 +4505,7 @@ between memory and a register of @var{class} but the reload mechanism is
 more complex than copying via an intermediate, define this macro to
 reflect the actual cost of the move.
 
-GNU CC defines the function @code{memory_move_secondary_cost if
+GNU CC defines the function @code{memory_move_secondary_cost} if
 secondary reloads are needed.  It computes the costs due to copying via
 a secondary register.  If your machine copies from memory using a
 secondary register in the conventional way but the default base value of
