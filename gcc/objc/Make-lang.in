@@ -303,9 +303,11 @@ objc.stage4: stage4-start
 
 # This target creates the files that can be rebuilt, but go in the
 # distribution anyway.  It then copies the files to the distdir directory.
-objc.distdir:
+# ??? Note that this should be fixed once the Makefile is fixed to do
+# the build in the inner directory.
+objc.distdir: $(srcdir)/objc/objc-parse.c
 	mkdir tmp/objc
-	cd objc ; $(MAKE) $(FLAGS_TO_PASS) objc-parse.c
+#	cd objc ; $(MAKE) $(FLAGS_TO_PASS) objc-parse.c
 	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/objc >/dev/null 2>&1 || cp $$file ../tmp/objc; \
