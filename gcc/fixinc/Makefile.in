@@ -68,12 +68,12 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. \
 LIBERTY = ../../libiberty/libiberty.a
 
 ALLOBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
-      gnu-regex.o fixlib.o
+      fixlib.o
 
-TESTOBJ = fixincl.o fixlib.o fixtests.o gnu-regex.o
-FIXOBJ  = fixfixes.o fixlib.o gnu-regex.o
+TESTOBJ = fixincl.o fixlib.o fixtests.o
+FIXOBJ  = fixfixes.o fixlib.o
 
-HDR = server.h gnu-regex.h fixlib.h machname.h
+HDR = server.h fixlib.h machname.h
 FI  = fixincl@build_exeext@
 AF  = applyfix@build_exeext@
 
@@ -96,8 +96,6 @@ $(AF): $(FIXOBJ) $(LIBERTY)
 
 # String length warnings
 fixincl.o-warn = -Wno-error
-# Signed/Unsigned warnings, but in code pulled from upstream.
-gnu-regex.o-warn = -Wno-error
 
 $(ALLOBJ)   : $(HDR)
 fixincl.o   : fixincl.c  $(srcdir)/fixincl.x
@@ -105,7 +103,6 @@ fixtests.o  : fixtests.c
 fixfixes.o  : fixfixes.c $(srcdir)/fixincl.x
 server.o    : server.c
 procopen.o  : procopen.c
-gnu-regex.o : gnu-regex.c
 fixlib.o    : fixlib.c
 
 #  'machname.h' is built in the build directory.

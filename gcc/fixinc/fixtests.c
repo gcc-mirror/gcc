@@ -82,7 +82,7 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
   mn_get_regexps(&label_re, &name_re, "machine_name_test");
 
   for (base = text;
-       regexec (label_re, base, 2, match, 0) == 0;
+       xregexec (label_re, base, 2, match, 0) == 0;
        base = limit)
     {
       base += match[0].rm_eo;
@@ -107,7 +107,7 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
 	 shouldn't matter since the name_re has no ^ anchor, but let's
 	 be accurate anyway.  */
 
-      if (regexec (name_re, base, 1, match, REG_NOTBOL))
+      if (xregexec (name_re, base, 1, match, REG_NOTBOL))
 	return SKIP_FIX;  /* No match in file - no fix needed */
 
       /* Match; is it on the line?  */

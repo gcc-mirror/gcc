@@ -291,7 +291,7 @@ FIX_PROC_HEAD( format_fix )
    *  Replace every copy of the text we find
    */
   compile_re (pz_pat, &re, 1, "format search-text", "format_fix" );
-  while (regexec (&re, text, 10, rm, 0) == 0)
+  while (xregexec (&re, text, 10, rm, 0) == 0)
     {
       fwrite( text, rm[0].rm_so, 1, stdout );
       format_write( pz_fmt, text, rm );
@@ -341,7 +341,7 @@ FIX_PROC_HEAD( char_macro_use_fix )
   compile_re (pat, &re, 1, "macro pattern", "char_macro_use_fix");
 
   for (p = text;
-       regexec (&re, p, 1, rm, 0) == 0;
+       xregexec (&re, p, 1, rm, 0) == 0;
        p = limit + 1)
     {
       /* p + rm[0].rm_eo is the first character of the macro replacement.
@@ -426,7 +426,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
   compile_re (pat, &re, 1, "macro pattern", "fix_char_macro_defines");
 
   for (p = text;
-       regexec (&re, p, 1, rm, 0) == 0;
+       xregexec (&re, p, 1, rm, 0) == 0;
        p = limit + 1)
     {
       /* p + rm[0].rm_eo is the first character of the macro name.
@@ -516,7 +516,7 @@ FIX_PROC_HEAD( machine_name_fix )
   scratch[1] = '_';
 
   for (base = text;
-       regexec (label_re, base, 2, match, 0) == 0;
+       xregexec (label_re, base, 2, match, 0) == 0;
        base = limit)
     {
       base += match[0].rm_eo;
@@ -547,7 +547,7 @@ FIX_PROC_HEAD( machine_name_fix )
           if (base == limit)
             break;
 
-          if (regexec (name_re, base, 1, match, REG_NOTBOL))
+          if (xregexec (name_re, base, 1, match, REG_NOTBOL))
             goto done;  /* No remaining match in this file */
 
           /* Match; is it on the line?  */
@@ -608,7 +608,7 @@ FIX_PROC_HEAD( wrap_fix )
    *  IF we do *not* match the no-wrap re, then we have a double negative.
    *  A double negative means YES.
    */
-  if (regexec( &no_wrapping_re, text, 0, NULL, 0 ) != 0)
+  if (xregexec( &no_wrapping_re, text, 0, NULL, 0 ) != 0)
     {
       /*
        *  A single file can get wrapped more than once by different fixes.
@@ -690,7 +690,7 @@ FIX_PROC_HEAD( gnu_type_fix )
 
   compile_re (pz_pat, &re, 1, "gnu type typedef", "gnu_type_fix");
 
-  while (regexec (&re, text, GTYPE_SE_CT+1, rm, 0) == 0)
+  while (xregexec (&re, text, GTYPE_SE_CT+1, rm, 0) == 0)
     {
       text = emit_gnu_type (text, rm);
     }
