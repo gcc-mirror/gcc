@@ -112,56 +112,60 @@ namespace __cxxabiv1
     if (!mangled_name || (buf && !n))
       return failure(invalid_argument, status);
 
-    std::string result;
-    if (mangled_name[0] == '_')		
-    {
-      // External name?
-      if (mangled_name[1] == 'Z')		
+    try {
+      std::string result;
+      if (mangled_name[0] == '_')		
       {
-	// C++ name?
-	int cnt = session_type::
-	    decode_encoding(result, mangled_name + 2, INT_MAX);
-	if (cnt < 0 || mangled_name[cnt + 2] != 0)
-	  return failure(invalid_mangled_name, status);
-	return finish(result.data(), result.size(), buf, n, status);
-      }
-      else if (mangled_name[1] == 'G')	
-      {
-	// Possible _GLOBAL__ extension?
-	if (!std::strncmp(mangled_name, "_GLOBAL__", 9) 
-	    && (mangled_name[9] == 'D' || mangled_name[9] == 'I')
-	    && mangled_name[10] == '_')
+	// External name?
+	if (mangled_name[1] == 'Z')		
 	{
-	  if (mangled_name[9] == 'D')
-	    result.assign("global destructors keyed to ", 28);
-	  else
-	    result.assign("global constructors keyed to ", 29);
-	  // Output the disambiguation part as-is.
-	  result += mangled_name + 11;
+	  // C++ name?
+	  int cnt = session_type::
+	      decode_encoding(result, mangled_name + 2, INT_MAX);
+	  if (cnt < 0 || mangled_name[cnt + 2] != 0)
+	    return failure(invalid_mangled_name, status);
 	  return finish(result.data(), result.size(), buf, n, status);
 	}
+	else if (mangled_name[1] == 'G')	
+	{
+	  // Possible _GLOBAL__ extension?
+	  if (!std::strncmp(mangled_name, "_GLOBAL__", 9) 
+	      && (mangled_name[9] == 'D' || mangled_name[9] == 'I')
+	      && mangled_name[10] == '_')
+	  {
+	    if (mangled_name[9] == 'D')
+	      result.assign("global destructors keyed to ", 28);
+	    else
+	      result.assign("global constructors keyed to ", 29);
+	    // Output the disambiguation part as-is.
+	    result += mangled_name + 11;
+	    return finish(result.data(), result.size(), buf, n, status);
+	  }
+	}
       }
-    }
 
-    // Ambiguities are possible between extern "C" object names and
-    // internal built-in type names, e.g. "i" may be either an object
-    // named "i" or the built-in "int" type.  Such ambiguities should
-    // be resolved to user names over built-in names.  Builtin types
-    // are any single lower case character.  Any other single
-    // character is not a mangled type so we can treat those the same
-    // here.
-    if (mangled_name[1] == 0)
-      return finish(mangled_name, 1, buf, n, status);
+      // Ambiguities are possible between extern "C" object names and
+      // internal built-in type names, e.g. "i" may be either an object
+      // named "i" or the built-in "int" type.  Such ambiguities should
+      // be resolved to user names over built-in names.  Builtin types
+      // are any single lower case character.  Any other single
+      // character is not a mangled type so we can treat those the same
+      // here.
+      if (mangled_name[1] == 0)
+	return finish(mangled_name, 1, buf, n, status);
 
-    // Not a built-in type or external name, try to demangle input as
-    // NTBS mangled type name.
-    session_type demangler_session(mangled_name, INT_MAX);
-    if (!demangler_session.decode_type(result) 
-	|| demangler_session.remaining_input_characters())
-    {
-      // Failure to demangle, assume extern "C" name.
-      result = mangled_name;		
+      // Not a built-in type or external name, try to demangle input as
+      // NTBS mangled type name.
+      session_type demangler_session(mangled_name, INT_MAX);
+      if (!demangler_session.decode_type(result) 
+	  || demangler_session.remaining_input_characters())
+      {
+	// Failure to demangle, assume extern "C" name.
+	result = mangled_name;		
+      }
+      return finish(result.data(), result.size(), buf, n, status);
+    } catch (const std::bad_alloc&) {
+      return failure(memory_allocation_failure, status);
     }
-    return finish(result.data(), result.size(), buf, n, status);
   }
 } // namespace __cxxabiv1
