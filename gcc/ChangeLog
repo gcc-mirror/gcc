@@ -1,5 +1,9 @@
 2000-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.c (gen_df_reg): Fix for 32bit SPARC.
+
+2000-01-03  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/sparc/sparc.c (gen_df_reg): New function.
 	* config/sparc/sparc-protos.h (gen_df_reg): Add prototype.
 	* config/sparc/sparc.md (movtf_no_e_insn_sp64+1,

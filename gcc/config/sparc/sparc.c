@@ -2277,7 +2277,7 @@ gen_df_reg (reg, low)
   int regno = REGNO (reg);
 
   if ((WORDS_BIG_ENDIAN == 0) ^ (low != 0))
-    regno += (regno < 32) ? 1 : 2;
+    regno += (TARGET_ARCH64 && regno < 32) ? 1 : 2;
   return gen_rtx_REG (DFmode, regno);
 }
 
