@@ -1,3 +1,8 @@
+2000-05-03  Richard Henderson  <rth@cygnus.com>
+
+	* mklibgcc.in: Restrict OLDCC=GCC test to native.  Equate
+	LIBGCC1 empty with libgcc1.null.
+
 Wed May  3 12:55:46 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* fold-const.c (extract_muldiv, case MAX_EXPR): Don't allow signedness
