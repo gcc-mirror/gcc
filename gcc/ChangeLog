@@ -1,3 +1,8 @@
+Thu Oct  7 12:00:53 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (add_to_sequence): Disable mode check for
+	wildcard matches.
+
 Thu Oct  7 20:14:16 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* ggc-simple.c (init_ggc): Set empty_string.
