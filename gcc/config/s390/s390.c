@@ -896,7 +896,7 @@ s390_split_ok_p (dst, src, mode, first_subword)
   if (FP_REG_P (src) || FP_REG_P (dst))
     return false;
 
-  /* We don't need to split if operands are directly accessable.  */
+  /* We don't need to split if operands are directly accessible.  */
   if (s_operand (src, mode) || s_operand (dst, mode))
     return false;
 
@@ -5645,7 +5645,7 @@ s390_emit_prologue ()
 	  insn = emit_insn (gen_move_insn (temp_reg, stack_pointer_rtx));
 	}
       
-      /* Substract frame size from stack pointer.  */
+      /* Subtract frame size from stack pointer.  */
 
       if (DISP_IN_RANGE (INTVAL (frame_off)))
 	{

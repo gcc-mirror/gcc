@@ -729,7 +729,7 @@ nonimmediate_nonstack_operand (op, mode)
 	  && ! xstormy16_extra_constraint_p (op, 'R'));
 }
 
-/* Splitter for the 'move' patterns, for modes not directly implemeted
+/* Splitter for the 'move' patterns, for modes not directly implemented
    by hardware.  Emit insns to copy a value of mode MODE from SRC to
    DEST.
 

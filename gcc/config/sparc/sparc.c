@@ -1368,7 +1368,7 @@ input_operand (op, mode)
 
 
 /* We know it can't be done in one insn when we get here,
-   the movsi expander guarentees this.  */
+   the movsi expander guarantees this.  */
 void
 sparc_emit_set_const32 (op0, op1)
      rtx op0;
@@ -4552,7 +4552,7 @@ static rtx function_arg_record_value
 	PARAMS ((tree, enum machine_mode, int, int, int));
 
 /* A subroutine of function_arg_record_value.  Traverse the structure
-   recusively and determine how many registers will be required.  */
+   recursively and determine how many registers will be required.  */
 
 static void
 function_arg_record_value_1 (type, startbitpos, parms)
@@ -4959,7 +4959,7 @@ function_arg (cum, mode, type, named, incoming_p)
 
 	     This is due to locate_and_pad_parm being called in
 	     expand_call whenever reg_parm_stack_space > 0, which
-	     while benefical to our example here, would seem to be
+	     while beneficial to our example here, would seem to be
 	     in error from what had been intended.  Ho hum...  -- r~ */
 #endif
 	    return reg;
@@ -6131,7 +6131,7 @@ sparc_splitdi_legitimate (reg, mem)
 }
 
 /* Return 1 if x and y are some kind of REG and they refer to
-   different hard registers.  This test is guarenteed to be
+   different hard registers.  This test is guaranteed to be
    run after reload.  */
 
 int

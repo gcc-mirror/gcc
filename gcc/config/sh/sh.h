@@ -634,7 +634,7 @@ do {									\
 /* get_mode_alignment assumes complex values are always held in multiple
    registers, but that is not the case on the SH; CQImode and CHImode are
    held in a single integer register.  SH5 also holds CSImode and SCmode
-   values in integer regsters.  This is relevant for argument passing on
+   values in integer registers.  This is relevant for argument passing on
    SHcompact as we use a stack temp in order to pass CSImode by reference.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
@@ -1359,7 +1359,7 @@ extern enum reg_class reg_class_from_letter[];
    unused CONST_INT constraint letters: LO
    unused EXTRA_CONSTRAINT letters: D T U Y */
 
-#if 1 /* check that the transistion went well.  */
+#if 1 /* check that the transition went well.  */
 #define CONSTRAINT_LEN(C,STR) \
   (((C) == 'L' || (C) == 'O' || (C) == 'D' || (C) == 'T' || (C) == 'U' \
     || (C) == 'Y' \

@@ -379,7 +379,7 @@ print_operand_address (stream, x)
    ','  print LOCAL_LABEL_PREFIX
    '@'  print trap, rte or rts depending upon pragma interruptness
    '#'  output a nop if there is nothing to put in the delay slot
-   '''  print likelyhood suffix (/u for unlikely).
+   '''  print likelihood suffix (/u for unlikely).
    'O'  print a constant without the #
    'R'  print the LSW of a dp value - changes if in little endian
    'S'  print the MSW of a dp value - changes if in little endian
@@ -3557,7 +3557,7 @@ gen_far_branch (bp)
     jump = emit_jump_insn_after (gen_return (), insn);
   /* Emit a barrier so that reorg knows that any following instructions
      are not reachable via a fall-through path.
-     But don't do this when not optimizing, since we wouldn't supress the
+     But don't do this when not optimizing, since we wouldn't suppress the
      alignment for the barrier then, and could end up with out-of-range
      pc-relative loads.  */
   if (optimize)

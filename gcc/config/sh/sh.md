@@ -3002,8 +3002,8 @@
     operands[1] = XEXP (operands[1], 0);
 }")
 
-;; ??? when a truncated input to a zero_extrend is reloaded, reload will
-;; reload the entrire truncate expression.
+;; ??? when a truncated input to a zero_extend is reloaded, reload will
+;; reload the entire truncate expression.
 (define_insn_and_split "*loaddi_trunc"
   [(set (match_operand 0 "int_gpr_dest" "=r")
 	(truncate (match_operand:DI 1 "memory_operand" "m")))]
