@@ -538,6 +538,7 @@ Objective-C and Objective-C++ Dialects}.
 -mips16  -mno-mips16  -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mxgot  -mno-xgot  -mgp32  -mgp64  -mfp32  -mfp64 @gol
 -mhard-float  -msoft-float  -msingle-float  -mdouble-float @gol
+-mpaired-single  -mips3d @gol
 -mint64  -mlong64  -mlong32 @gol
 -G@var{num}  -membedded-data  -mno-embedded-data @gol
 -muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
@@ -9261,6 +9262,19 @@ operations.
 @opindex mdouble-float
 Assume that the floating-point coprocessor supports double-precision
 operations.  This is the default.
+
+@itemx -mpaired-single
+@itemx -mno-paired-single
+@opindex mpaired-single
+@opindex mno-paired-single
+Use (do not use) the paired single instructions.
+
+@itemx -mips3d
+@itemx -mno-mips3d
+@opindex mips3d
+@opindex mno-mips3d
+Use (do not use) the MIPS-3D ASE.  The option @option{-mips3d} implies
+@option{-mpaired-single}.
 
 @item -mint64
 @opindex mint64

@@ -43,7 +43,7 @@
        (match_test "INTVAL (op) + 1 != 0")))
 
 (define_predicate "const_0_operand"
-  (and (match_code "const_int,const_double")
+  (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
 
 (define_predicate "reg_or_0_operand"
@@ -52,12 +52,18 @@
        (match_operand 0 "register_operand")))
 
 (define_predicate "const_1_operand"
-  (and (match_code "const_int,const_double")
+  (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST1_RTX (GET_MODE (op))")))
 
 (define_predicate "reg_or_1_operand"
   (ior (match_operand 0 "const_1_operand")
        (match_operand 0 "register_operand")))
+
+;; This is used for indexing into vectors, and hence only accepts const_int.
+(define_predicate "const_0_or_1_operand"
+  (and (match_code "const_int")
+       (ior (match_test "op == CONST0_RTX (GET_MODE (op))")
+	    (match_test "op == CONST1_RTX (GET_MODE (op))"))))
 
 (define_predicate "fpr_operand"
   (and (match_code "reg")

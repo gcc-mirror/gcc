@@ -48,7 +48,70 @@
 
    (UNSPEC_ADDRESS_FIRST	100)
 
-   (FAKE_CALL_REGNO		79)])
+   (FAKE_CALL_REGNO		79)
+
+   ;; For MIPS Paired-Singled Floating Point Instructions.
+
+   (UNSPEC_C_F			201)
+   (UNSPEC_C_UN			202)
+   (UNSPEC_C_EQ			203)
+   (UNSPEC_C_UEQ		204)
+   (UNSPEC_C_OLT		205)
+   (UNSPEC_C_ULT		206)
+   (UNSPEC_C_OLE		207)
+   (UNSPEC_C_ULE		208)
+   (UNSPEC_C_SF			209)
+   (UNSPEC_C_NGLE		210)
+   (UNSPEC_C_SEQ		211)
+   (UNSPEC_C_NGL		212)
+   (UNSPEC_C_LT			213)
+   (UNSPEC_C_NGE		214)
+   (UNSPEC_C_LE			215)
+   (UNSPEC_C_NGT		216)
+
+   ;; MIPS64/MIPS32R2 alnv.ps
+   (UNSPEC_ALNV_PS		217)
+
+   ;; MIPS-3D instructions
+
+   (UNSPEC_CABS_F		218)
+   (UNSPEC_CABS_UN		219)
+   (UNSPEC_CABS_EQ		220)
+   (UNSPEC_CABS_UEQ		221)
+   (UNSPEC_CABS_OLT		222)
+   (UNSPEC_CABS_ULT		223)
+   (UNSPEC_CABS_OLE		224)
+   (UNSPEC_CABS_ULE		225)
+   (UNSPEC_CABS_SF		226)
+   (UNSPEC_CABS_NGLE		227)
+   (UNSPEC_CABS_SEQ		228)
+   (UNSPEC_CABS_NGL		229)
+   (UNSPEC_CABS_LT		230)
+   (UNSPEC_CABS_NGE		231)
+   (UNSPEC_CABS_LE		232)
+   (UNSPEC_CABS_NGT		233)
+
+   (UNSPEC_ADDR_PS		234)
+   (UNSPEC_CVT_PW_PS		235)
+   (UNSPEC_CVT_PS_PW		236)
+   (UNSPEC_MULR_PS		237)
+
+   (UNSPEC_RECIP1_S		238)
+   (UNSPEC_RECIP1_D		239)
+   (UNSPEC_RECIP1_PS		240)
+   (UNSPEC_RECIP2_S		241)
+   (UNSPEC_RECIP2_D		242)
+   (UNSPEC_RECIP2_PS		243)
+
+   (UNSPEC_RSQRT1_S		244)
+   (UNSPEC_RSQRT1_D		245)
+   (UNSPEC_RSQRT1_PS		246)
+   (UNSPEC_RSQRT2_S		247)
+   (UNSPEC_RSQRT2_D		248)
+   (UNSPEC_RSQRT2_PS		249)
+
+  ]
+)
 
 (include "predicates.md")
 
@@ -471,6 +534,15 @@
   [(set_attr "type"	"fadd")
    (set_attr "mode"	"SF")])
 
+(define_insn "addv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(plus:V2SF (match_operand:V2SF 1 "register_operand" "f")
+		   (match_operand:V2SF 2 "register_operand" "f")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "add.ps\t%0,%1,%2"
+  [(set_attr "type" "fadd")
+   (set_attr "mode" "SF")])
+
 (define_expand "add<mode>3"
   [(set (match_operand:GPR 0 "register_operand")
 	(plus:GPR (match_operand:GPR 1 "register_operand")
@@ -719,6 +791,15 @@
   [(set_attr "type"	"fadd")
    (set_attr "mode"	"SF")])
 
+(define_insn "subv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(minus:V2SF (match_operand:V2SF 1 "register_operand" "f")
+		    (match_operand:V2SF 2 "register_operand" "f")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "sub.ps\t%0,%1,%2"
+  [(set_attr "type" "fadd")
+   (set_attr "mode" "SF")])
+
 (define_insn "sub<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=d")
 	(minus:GPR (match_operand:GPR 1 "register_operand" "d")
@@ -804,6 +885,14 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"8")])
 
+(define_insn "mulv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(mult:V2SF (match_operand:V2SF 1 "register_operand" "f")
+		   (match_operand:V2SF 2 "register_operand" "f")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "mul.ps\t%0,%1,%2"
+  [(set_attr "type" "fmul")
+   (set_attr "mode" "SF")])
 
 ;; The original R4000 has a cpu bug.  If a double-word or a variable
 ;; shift executes while an integer multiplication is in progress, the
@@ -1603,6 +1692,16 @@
    (set_attr "mode"	"SF")])
 
 (define_insn ""
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(plus:V2SF (mult:V2SF (match_operand:V2SF 1 "register_operand" "f")
+			      (match_operand:V2SF 2 "register_operand" "f"))
+		   (match_operand:V2SF 3 "register_operand" "f")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "madd.ps\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "SF")])
+
+(define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(minus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 			   (match_operand:DF 2 "register_operand" "f"))
@@ -1622,6 +1721,16 @@
   "msub.s\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
+
+(define_insn ""
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(minus:V2SF (mult:V2SF (match_operand:V2SF 1 "register_operand" "f")
+			       (match_operand:V2SF 2 "register_operand" "f"))
+		    (match_operand:V2SF 3 "register_operand" "f")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "msub.ps\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "SF")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1667,6 +1776,28 @@
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
 
+(define_insn "*nmaddv2sf"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(neg:V2SF (plus:V2SF (mult:V2SF 
+			      (match_operand:V2SF 1 "register_operand" "f")
+			      (match_operand:V2SF 2 "register_operand" "f"))
+			     (match_operand:V2SF 3 "register_operand" "f"))))]
+  "TARGET_PAIRED_SINGLE_FLOAT && HONOR_SIGNED_ZEROS (V2SFmode)"
+  "nmadd.ps\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "SF")])
+
+(define_insn "*nmaddv2sf_fastmath"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(minus:V2SF (mult:V2SF (neg:V2SF
+				(match_operand:V2SF 1 "register_operand" "f"))
+			       (match_operand:V2SF 2 "register_operand" "f"))
+		    (match_operand:V2SF 3 "register_operand" "f")))]
+  "TARGET_PAIRED_SINGLE_FLOAT && !HONOR_SIGNED_ZEROS (V2SFmode)"
+  "nmadd.ps\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "SF")])
+
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (minus:DF (mult:DF (match_operand:DF 2 "register_operand" "f")
@@ -1710,6 +1841,27 @@
   "nmsub.s\t%0,%1,%2,%3"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
+
+(define_insn "*nmsubv2sf"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(neg:V2SF (minus:V2SF
+		   (mult:V2SF (match_operand:V2SF 1 "register_operand" "f")
+			      (match_operand:V2SF 2 "register_operand" "f"))
+		   (match_operand:V2SF 3 "register_operand" "f"))))]
+  "TARGET_PAIRED_SINGLE_FLOAT && HONOR_SIGNED_ZEROS (V2SFmode)"
+  "nmsub.ps\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "SF")])
+
+(define_insn "*nmsubv2sf_fastmath"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(minus:V2SF (match_operand:V2SF 1 "register_operand" "f")
+		    (mult:V2SF (match_operand:V2SF 2 "register_operand" "f")
+			       (match_operand:V2SF 3 "register_operand" "f"))))]
+  "TARGET_PAIRED_SINGLE_FLOAT && !HONOR_SIGNED_ZEROS (V2SFmode)"
+  "nmsub.ps\t%0,%1,%2,%3"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "SF")])
 
 ;;
 ;;  ....................
@@ -2033,6 +2185,14 @@
   "abs.s\t%0,%1"
   [(set_attr "type"	"fabs")
    (set_attr "mode"	"SF")])
+
+(define_insn "absv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(abs:V2SF (match_operand:V2SF 1 "register_operand" "f")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "abs.ps\t%0,%1"
+  [(set_attr "type" "fabs")
+   (set_attr "mode" "SF")])
 
 ;;
 ;;  ....................
@@ -2132,6 +2292,14 @@ beq\t%2,%.,1b\;\
   "neg.s\t%0,%1"
   [(set_attr "type"	"fneg")
    (set_attr "mode"	"SF")])
+
+(define_insn "negv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(neg:V2SF (match_operand:V2SF 1 "register_operand" "f")))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "neg.ps\t%0,%1"
+  [(set_attr "type" "fneg")
+   (set_attr "mode" "SF")])
 
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -3749,6 +3917,26 @@ beq\t%2,%.,1b\;\
   [(set_attr "type" "fpidxload")
    (set_attr "mode" "DF")])
 
+(define_insn "*ldxc1_v2sf_si"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(mem:V2SF (plus:SI (match_operand:SI 1 "register_operand" "d")
+			   (match_operand:SI 2 "register_operand" "d"))))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "ldxc1\t%0,%1(%2)"
+  [(set_attr "type" "fpidxload")
+   (set_attr "mode" "SF")
+   (set_attr "length" "4")])
+
+(define_insn "*ldxc1_v2sf_di"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(mem:V2SF (plus:DI (match_operand:DI 1 "register_operand" "d")
+			   (match_operand:DI 2 "register_operand" "d"))))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "ldxc1\t%0,%1(%2)"
+  [(set_attr "type" "fpidxload")
+   (set_attr "mode" "SF")
+   (set_attr "length" "4")])
+
 (define_insn "*swxc1_<mode>"
   [(set (mem:SF (plus:P (match_operand:P 1 "register_operand" "d")
 			(match_operand:P 2 "register_operand" "d")))
@@ -3766,6 +3954,26 @@ beq\t%2,%.,1b\;\
   "sdxc1\t%0,%1(%2)"
   [(set_attr "type" "fpidxstore")
    (set_attr "mode" "DF")])
+
+(define_insn "*sdxc1_v2sf_si"
+  [(set (mem:V2SF (plus:SI (match_operand:SI 1 "register_operand" "d")
+			   (match_operand:SI 2 "register_operand" "d")))
+	(match_operand:V2SF 0 "register_operand" "f"))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "sdxc1\t%0,%1(%2)"
+  [(set_attr "type" "fpidxstore")
+   (set_attr "mode" "SF")
+   (set_attr "length" "4")])
+
+(define_insn "*sdxc1_v2sf_di"
+  [(set (mem:V2SF (plus:DI (match_operand:DI 1 "register_operand" "d")
+			   (match_operand:DI 2 "register_operand" "d")))
+	(match_operand:V2SF 0 "register_operand" "f"))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "sdxc1\t%0,%1(%2)"
+  [(set_attr "type" "fpidxstore")
+   (set_attr "mode" "SF")
+   (set_attr "length" "4")])
 
 ;; 16-bit Integer moves
 
@@ -4093,6 +4301,29 @@ beq\t%2,%.,1b\;\
   operands[2] = gen_lowpart (SImode, operands[0]);
   operands[3] = GEN_INT (-INTVAL (operands[1]));
 })
+
+;; 64-bit paired-single floating point moves
+
+(define_expand "movv2sf"
+  [(set (match_operand:V2SF 0)
+	(match_operand:V2SF 1))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+{
+  if (mips_legitimize_move (V2SFmode, operands[0], operands[1]))
+    DONE;
+})
+
+(define_insn "movv2sf_hardfloat_64bit"
+  [(set (match_operand:V2SF 0 "nonimmediate_operand" "=f,f,f,m,*f,*d,*d,*d,*m")
+	(match_operand:V2SF 1 "move_operand" "f,YG,m,fYG,*d,*f,*d*YG,*m,*d"))]
+  "TARGET_PAIRED_SINGLE_FLOAT
+   && TARGET_64BIT
+   && (register_operand (operands[0], V2SFmode)
+       || reg_or_0_operand (operands[1], V2SFmode))"
+  { return mips_output_move (operands[0], operands[1]); }
+  [(set_attr "type" "fmove,xfer,fpload,fpstore,xfer,xfer,arith,load,store")
+   (set_attr "mode" "SF")
+   (set_attr "length" "4,4,*,*,4,4,4,*,*")])
 
 ;; The HI and LO registers are not truly independent.  If we move an mthi
 ;; instruction before an mflo instruction, it will make the result of the
@@ -5815,3 +6046,7 @@ beq\t%2,%.,1b\;\
   "reload_completed"
   [(match_dup 0)]
   { operands[0] = mips_rewrite_small_data (operands[0]); })
+
+; The MIPS Paired-Single Floating Point and MIPS-3D Instructions.
+
+(include "mips-ps-3d.md")

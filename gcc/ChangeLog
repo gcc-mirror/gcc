@@ -1,3 +1,59 @@
+2004-08-29  Chao-ying Fu  <fu@mips.com>
+	    James E Wilson  <wilson@specifixinc.com>
+	
+	* config/mips/mips-modes.def (V2SF, CCV2, CCV4): New modes. Give CCV2
+	8 byte size and alignment.  Give CCV4 16 byte size and alignment.
+	* config/mips/mips-ps-3d.md: New file.
+	* config/mips/mips.c (TARGET_VECTOR_MODE_SUPPORTED_P,
+	TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN): Define.
+	(mips_const_insns): Handle CONST_VECTOR the same as CONST_DOUBLE.
+	(mips_output_move): Emit "mov.ps" for V2SFmode.
+	(mips_arg_info): Add checks for VECTOR_FLOAT_TYPE_P and
+	MODE_VECTOR_FLOAT.
+	(override_options): Check if TARGET_MIPS3D and there was an explicit
+	!TARGET_PAIRED_SINGLE_FLOAT.  Set MASK_PAIRED_SINGLE, if TARGET_MIPS3D.
+	Check if TARGET_FLOAT64 and TARGET_HARD_FLOAT are both true, when
+	TARGET_PAIRED_SINGLE_FLOAT is true.  Check if the ISA supports
+	TARGET_PAIRED_SINGLE_FLOAT.  Allow MODE_VECTOR_FLOAT in fp registers,
+	and allow CCV2 and CCV4 to occupy two and four CC registers.
+	(print_fcc_operand): New function.
+	(print_operand): Add %Y, %y, %V, %v, %Q for CCV2, CCV4, CC.  Modify
+	%Z to call print_fcc_operand.
+	(mips_function_value): Handle MODE_VECTOR_FLOAT.
+	(mips_class_max_nregs): Check for ST_REGS, and handle CCmodes.
+	(mips_vector_mode_supported_p): New function.
+	(mips_hard_regno_nregs): Check for ST_REG_P, and handle CCmodes.
+	(builtin_description): New struct.
+	(mips_bdesc): New array of struct builtin_description.
+	(mips_expand_builtin, mips_init_builtins,
+	mips_expand_ps_cond_move_builtin, mips_expand_4s_compare_builtin,
+	mips_expand_compare_builtin, mips_expand_ps_compare_builtin): New
+	functions.
+	* config/mips/mips.h (MASK_PAIRED_SINGLE, MASK_MIPS3D): New defines.
+	(TARGET_PAIRED_SINGLE_FLOAT, TARGET_MIPS3D): New defines.
+	(TARGET_CPU_CPP_BUILTINS): Add __mips_paired_single_float.
+	(TARGET_SWITCHES): Added "-mpaired-single", "-mno-paired-single",
+	"-mips3d", and "-mno-mips3d".
+	(ASM_SPEC): Map -mips3d to -mips3d in gas.
+	(EXTRA_CONSTRAINT_Y): New macro.
+	(EXTRA_CONSTRAINT_STR): Renamed from EXTRA_CONSTRAINT.  Add new
+	multi-letter constraint 'Y'.
+	(CONSTRAINT_LEN): New macro.
+	(enum mips_builtins): New for MIPS builtin functions.
+	(enum mips_function_type): New for the types of MIPS builtin functions.
+	(enum mips_cmp_choice): New for the MIPS comparison builtin functions.
+	* config/mips/mips.md: New constants for paired single and MIPS-3D 
+	instructions.  Include the new mips-ps-3d.md file.
+	(addv2sf3, subv2sf3, mulv2sf3, absv2sf2, negv2sf2, movv2sf,
+	movv2sf_hardfloat_64bit): New named patterns.
+	(madd.ps, msub.ps, nmaddv2sf, nmaddv2sf_fastmath, nmsubv2sf,
+	nmsubv2sf_fastmath, ldxc1_v2sf_si, ldxc1_v2sf_di, sdxc1_v2sf_si,
+	sdxc1_v2sf_di): New unnamed patterns.
+	* config/mips/predicates.md (const_0_operand, const_1_operand): Add
+	const_vector support.
+	(const_0_or_1_operand): New predicate.
+	* doc/invoke.texi (MIPS Options): Add -mpaired-single and -mips3d.
+
 2004-08-29  Diego Novillo  <dnovillo@redhat.com>
 
 	* Makefile.in (OBJS-common): Add tree-ssa-propagate.o
