@@ -37,6 +37,13 @@ test01()
   if (i != string::npos)
     aux.assign(aux, i + 1, string::npos);
   VERIFY(aux == "Hawaii");
+
+  aux = strlit;
+  i = aux.rfind("r/");
+  if (i != string::npos)
+    aux.assign(aux, i + 1, string::npos);
+  VERIFY(aux.c_str()[9] == 'B');
+  VERIFY(aux == "/Hanalei Bay/Kauai/Hawaii");
 }
 
 // assign(const basic_string& __str, size_type __pos, size_type __n)
