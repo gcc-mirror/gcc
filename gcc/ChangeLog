@@ -1,3 +1,9 @@
+Sat May 23 18:28:27 1998  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* c-decl.c (start_decl): Use new macro SET_DEFAULT_DECL_ATTRIBUTES.
+	* c-lex.c (check_newline): Put last read character back on input
+	stream.
+
 Sat May 23 18:13:53 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (floatsidf2_loadaddr): rs6000_fpmem_offset will be
