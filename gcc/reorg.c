@@ -3265,6 +3265,9 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	      if (own_thread)
 		{
 		  update_block (trial, thread);
+		  if (trial == thread)
+		    thread = next_active_insn (thread);
+
 		  delete_insn (trial);
 		}
 	      else
