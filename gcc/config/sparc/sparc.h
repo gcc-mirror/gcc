@@ -2946,6 +2946,20 @@ do {									\
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
 
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
+do { \
+  int big_delta = (DELTA) >= 4096 || (DELTA) < -4096; \
+  if (big_delta) \
+    fprintf (FILE, "\tset %d,%%g1\n\tadd %%o0,%%g1,%%o0\n", DELTA); \
+  fprintf (FILE, "\tset "); \
+  assemble_name (FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION))); \
+  fprintf (FILE, ",%%g1\n\tjmp %%g1\n");\
+  if (big_delta) fprintf (FILE, "\tnop\n"); \
+  else fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA); \
+} while (0)
+
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
 
