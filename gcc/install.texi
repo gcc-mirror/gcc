@@ -992,13 +992,7 @@ AMD Am29050 used in a system running a variant of BSD Unix.
 @item avr
 ATMEL AVR-family micro controllers.  These are used in embedded
 applications.  There are no standard Unix configurations.
-Supports following MCU's:
- - AT90S23xx
- - ATtiny22
- - AT90S44xx
- - AT90S85xx
- - ATmega603/603L
- - ATmega103/103L
+See @xref{AVR Options} for the list of supported MCU types.
 
 @item decstation-*
 MIPS-based DECstations can support three different personalities:

@@ -1349,13 +1349,16 @@ Registers from r16 to r23
 Registers from r16 to r31
 
 @item w
-Register from r24 to r31. This registers can be used in @samp{addw} command
+Registers from r24 to r31.  These registers can be used in @samp{adiw} command
 
 @item e
 Pointer register (r26 - r31)
 
 @item b
 Base pointer register (r28 - r31)
+
+@item q
+Stack pointer register (SPH:SPL)
 
 @item t
 Temporary register r0
@@ -1388,7 +1391,7 @@ Constant that fits in 8 bits
 Constant integer -1
 
 @item O
-Constant integer 8
+Constant integer 8, 16, or 24
 
 @item P
 Constant integer 1

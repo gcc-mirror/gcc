@@ -474,7 +474,7 @@ in the following sections.
 
 @emph{AVR Options}
 -mmcu=@var{mcu} -msize -minit-stack=@var{n} -mno-interrupts
--mcall-prologues
+-mcall-prologues -mno-tablejump -mtiny-stack
 
 @emph{MCore Options}
 -mhardlit, -mno-hardlit -mdiv -mno-div -mrelax-immediates 
@@ -7312,14 +7312,32 @@ These options are defined for AVR implementations:
 
 @table @code
 @item -mmcu=@var{mcu}
-Specify ATMEL AVR mcu (at90s23xx,attiny22,at90s44xx,at90s85xx,atmega603,
-atmega103).
+Specify ATMEL AVR instruction set or MCU type.
+
+Instruction set avr1 is for the minimal AVR core, not supported by the C
+compiler, only for assembler programs (MCU types: at90s1200, attiny10,
+attiny11, attiny12, attiny15, attiny28).
+
+Instruction set avr2 (default) is for the classic AVR core with up to
+8K program memory space (MCU types: at90s2313, at90s2323, attiny22,
+at90s2333, at90s2343, at90s4414, at90s4433, at90s4434, at90s8515,
+at90c8534, at90s8535).
+
+Instruction set avr3 is for the classic AVR core with up to 128K program
+memory space (MCU types: atmega103, atmega603).
+
+Instruction set avr4 is for the enhanced AVR core with up to 8K program
+memory space (MCU types: atmega83, atmega85).
+
+Instruction set avr5 is for the enhanced AVR core with up to 128K program
+memory space (MCU types: atmega161, atmega163, atmega32, at94k).
 
 @item -msize
-Output instruction size's to the asm file
+Output instruction sizes to the asm file.
 
 @item -minit-stack=@var{N}
-Specify the initial stack address
+Specify the initial stack address, which may be a symbol or numeric value,
+__stack is the default.
 
 @item -mno-interrupts
 Generated code is not compatible with hardware interrupts.
@@ -7328,6 +7346,12 @@ Code size will be smaller.
 @item -mcall-prologues
 Functions prologues/epilogues expanded as call to appropriate
 subroutines. Code size will be smaller.
+
+@item -mno-tablejump
+Do not generate tablejump insns which sometimes increase code size.
+
+@item -mtiny-stack
+Change only the low 8 bits of the stack pointer.
 @end table
 
 @node MCore Options
