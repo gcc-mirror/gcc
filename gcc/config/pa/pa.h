@@ -171,6 +171,11 @@ extern int target_flags;
 #define TARGET_64BIT 0
 #endif
 
+/* Generate code for ELF32 ABI. */
+#ifndef TARGET_ELF32
+#define TARGET_ELF32 0
+#endif
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -516,6 +521,12 @@ extern void hppa_init_pic_save PARAMS ((void));
 /* Register in which address to store a structure value
    is passed to a function.  */
 #define STRUCT_VALUE_REGNUM 28
+
+/* Describe how we implement __builtin_eh_return.  */
+#define EH_RETURN_DATA_REGNO(N)	\
+  ((N) < 3 ? (N) + 20 : (N) == 4 ? 31 : INVALID_REGNUM)
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 29)
+#define EH_RETURN_HANDLER_RTX	gen_rtx_REG (Pmode, 2)
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
