@@ -1,3 +1,8 @@
+Fri Oct 11 10:56:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* emit-rtl.c (gen_lowpart_common): When asked to make a vector from
+	an integer, use simplify_gen_subreg.
+
 2002-10-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* extend.texi (Vector Extensions): Remove comment about single
