@@ -1,5 +1,33 @@
 2000-02-09  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cpplib.h: Provide HASHNODE typedef and forward decl of
+	struct hashnode only.  Kill cpp_hashnode typedef.  MACRODEF,
+	DEFINITION, struct hashnode, struct macrodef, struct
+	definition, scan_decls prototype, default defn of
+	INCLUDE_LEN_FUDGE moved elsewhere.
+
+	* cpphash.h: MACRODEF, DEFINITION, struct macrodef, struct
+	definition, and struct hashnode moved here. Remove the unused
+	'predefined' field from struct definition.  Replace the 'args'
+	union with its sole member.  All users updated (cpphash.c).
+	Delete HASHSTEP and MAKE_POS macros, and hashf prototype.  Add
+	multiple include guard.
+
+	* cpphash.c (hashf): Make static; use better algorithm; drop
+	HASHSIZE parameter; return an unsigned int.
+	(cpp_lookup): Drop HASH parameter.  PFILE parameter is
+	used. Calculate HASHSIZE modulus here.
+	(cpp_install): Drop HASH parameter. Calculate HASHSIZE modulus
+	here.
+	(create_definition): Drop PREDEFINITION parameter.
+	* cpplib.c (do_define): Don't calculate a hash value here.
+	Don't pass (keyword == NULL) to create_definition.
+
+	* scan.h: Prototype scan_decls here.
+	* cppfiles.c: Move INCLUDE_LEN_FUDGE default defn here.
+	* cppexp.c, cppfiles.c, cppinit.c, cpplib.c, fix-header.c: All
+	callers of cpp_lookup and cpp_install updated.
+	
 	* cpphash.c (macarg): Hoist all the flag diddling out of the
 	function...
 	(macroexpand): ... and out of the loop that calls macarg.

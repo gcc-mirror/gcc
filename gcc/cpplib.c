@@ -654,7 +654,6 @@ do_define (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword;
 {
-  int hashcode;
   MACRODEF mdef;
   HASHNODE *hp;
   long here;
@@ -678,13 +677,11 @@ do_define (pfile, keyword)
 
   CPP_SET_WRITTEN (pfile, here);
 
-  mdef = create_definition (macro, end, pfile, keyword == NULL);
+  mdef = create_definition (macro, end, pfile);
   if (mdef.defn == 0)
     return 0;
 
-  hashcode = hashf (mdef.symnam, mdef.symlen, HASHSIZE);
-
-  if ((hp = cpp_lookup (pfile, mdef.symnam, mdef.symlen, hashcode)) != NULL)
+  if ((hp = cpp_lookup (pfile, mdef.symnam, mdef.symlen)) != NULL)
     {
       int ok = 0;
       /* Redefining a precompiled key is ok.  */
@@ -720,8 +717,7 @@ do_define (pfile, keyword)
 	}
     }
   else
-    cpp_install (pfile, mdef.symnam, mdef.symlen, new_type,
-		 (char *) mdef.defn, hashcode);
+    cpp_install (pfile, mdef.symnam, mdef.symlen, new_type, (char *)mdef.defn);
 
   if (keyword != NULL && keyword->type == T_DEFINE)
     {
@@ -1475,7 +1471,7 @@ do_undef (pfile, keyword)
 
   sym_length = check_macro_name (pfile, buf);
 
-  while ((hp = cpp_lookup (pfile, name, sym_length, -1)) != NULL)
+  while ((hp = cpp_lookup (pfile, name, sym_length)) != NULL)
     {
       /* If we are generating additional info for debugging (with -g) we
 	 need to pass through all effective #undef commands.  */
@@ -1923,7 +1919,7 @@ do_xifdef (pfile, keyword)
     }
   else if (token == CPP_NAME)
     {
-      HASHNODE *hp = cpp_lookup (pfile, ident, ident_length, -1);
+      HASHNODE *hp = cpp_lookup (pfile, ident, ident_length);
       skip = (hp == NULL) ^ (keyword->type == T_IFNDEF);
       if (start_of_file && !skip)
 	{
@@ -2617,7 +2613,7 @@ cpp_get_token (pfile)
 	      return CPP_NAME;
 	    ident = pfile->token_buffer + before_name_written;
 	    ident_len = CPP_PWRITTEN (pfile) - ident;
-	    hp = cpp_lookup (pfile, ident, ident_len, -1);
+	    hp = cpp_lookup (pfile, ident, ident_len);
 	    if (!hp)
 	      return CPP_NAME;
 	    if (hp->type == T_DISABLED)
@@ -3018,16 +3014,16 @@ do_assert (pfile, keyword)
 
   thislen = strlen (sym);
   baselen = index (sym, '(') - sym;
-  this = cpp_lookup (pfile, sym, thislen, -1);
+  this = cpp_lookup (pfile, sym, thislen);
   if (this)
     {
       cpp_warning (pfile, "`%s' re-asserted", sym);
       goto error;
     }
 
-  base = cpp_lookup (pfile, sym, baselen, -1);
+  base = cpp_lookup (pfile, sym, baselen);
   if (! base)
-    base = cpp_install (pfile, sym, baselen, T_ASSERT, 0, -1);
+    base = cpp_install (pfile, sym, baselen, T_ASSERT, 0);
   else if (base->type != T_ASSERT)
   {
     /* Token clash - but with what?! */
@@ -3036,7 +3032,7 @@ do_assert (pfile, keyword)
   }
 
   this = cpp_install (pfile, sym, thislen, T_ASSERT,
-		      (char *)base->value.aschain, -1);
+		      (char *)base->value.aschain);
   base->value.aschain = this;
   
   pfile->limit = (unsigned char *) sym; /* Pop */
@@ -3077,7 +3073,7 @@ do_unassert (pfile, keyword)
   thislen = strlen (sym);
   if (ret == 1)
     {
-      base = cpp_lookup (pfile, sym, thislen, -1);
+      base = cpp_lookup (pfile, sym, thislen);
       if (! base)
 	goto error;  /* It isn't an error to #undef what isn't #defined,
 			so it isn't an error to #unassert what isn't
@@ -3093,9 +3089,9 @@ do_unassert (pfile, keyword)
   else
     {
       baselen = index (sym, '(') - sym;
-      base = cpp_lookup (pfile, sym, baselen, -1);
+      base = cpp_lookup (pfile, sym, baselen);
       if (! base) goto error;
-      this = cpp_lookup (pfile, sym, thislen, -1);
+      this = cpp_lookup (pfile, sym, thislen);
       if (! this) goto error;
 
       next = base;
@@ -3144,7 +3140,7 @@ cpp_read_check_assertion (pfile)
     result = 0;
   else
     {
-      hp = cpp_lookup (pfile, name, CPP_PWRITTEN (pfile) - name, -1);
+      hp = cpp_lookup (pfile, name, CPP_PWRITTEN (pfile) - name);
       result = (hp != 0);
     }
 

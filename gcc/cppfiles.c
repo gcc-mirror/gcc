@@ -68,6 +68,10 @@ static void hack_vms_include_specification PARAMS ((char *));
 #define INO_T_EQ(a, b) ((a) == (b))
 #endif
 
+#ifndef INCLUDE_LEN_FUDGE
+#define INCLUDE_LEN_FUDGE 0
+#endif
+
 /* Merge the four include chains together in the order quote, bracket,
    system, after.  Remove duplicate dirs (as determined by
    INO_T_EQ()).  The system_include and after_include chains are never
@@ -282,7 +286,7 @@ redundant_include_p (pfile, ihash, ilist)
 	    included again if the string is the name of a defined macro. */
 	 return (i->control_macro
 		 && (i->control_macro[0] == '\0'
-		     || cpp_lookup (pfile, i->control_macro, -1, -1)))
+		     || cpp_lookup (pfile, i->control_macro, -1)))
 	     ? (struct include_hash *)-1 : i;
 
   return 0;

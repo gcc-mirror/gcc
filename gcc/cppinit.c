@@ -553,7 +553,7 @@ initialize_builtins (pfile)
       val = (b->flags & ULP) ? user_label_prefix : b->value;
       len = strlen (b->name);
 
-      cpp_install (pfile, b->name, len, b->type, val, -1);
+      cpp_install (pfile, b->name, len, b->type, val);
       if ((b->flags & DUMP) && CPP_OPTIONS (pfile)->debug_output)
 	dump_special_to_buffer (pfile, b->name);
     }

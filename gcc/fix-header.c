@@ -603,7 +603,7 @@ check_macro_names (pfile, names)
 {
   while (*names)
     {
-      if (cpp_lookup (pfile, names, -1, -1))
+      if (cpp_lookup (pfile, names, -1))
 	recognized_macro (names);
       names += strlen (names) + 1;
     }

@@ -332,7 +332,7 @@ parse_charconst (pfile, start, end)
   num_bits = num_chars * width;
       
   if (cpp_lookup (pfile, (const U_CHAR *)"__CHAR_UNSIGNED__",
-		  sizeof ("__CHAR_UNSIGNED__")-1, -1)
+		  sizeof ("__CHAR_UNSIGNED__")-1)
       || ((result >> (num_bits - 1)) & 1) == 0)
     op.value = result & ((unsigned HOST_WIDEST_INT) ~0
 			 >> (HOST_BITS_PER_WIDEST_INT - num_bits));
@@ -472,7 +472,7 @@ cpp_lex (pfile, skip_evaluation)
 		goto oops;
 	      ++ip->cur;
 	    }
-	  hp = cpp_lookup (pfile, tok, len, -1);
+	  hp = cpp_lookup (pfile, tok, len);
 	  if (hp != NULL)
 	    {
 	      if (hp->type == T_POISON)
