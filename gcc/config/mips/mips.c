@@ -4904,9 +4904,7 @@ mips_expand_prologue ()
   char *arg_name = (char *)0;
   tree fndecl	 = current_function_decl;
   tree fntype	 = TREE_TYPE (fndecl);
-  tree fnargs	 = (TREE_CODE (fntype) != METHOD_TYPE)
-			? DECL_ARGUMENTS (fndecl)
-			: 0;
+  tree fnargs	 = DECL_ARGUMENTS (fndecl);
   rtx next_arg_reg;
   int i;
   tree next_arg;
