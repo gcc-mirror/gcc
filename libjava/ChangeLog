@@ -1,3 +1,7 @@
+2001-07-30  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Integer.java: Merged with Classpath.
+
 2001-07-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/util/GregorianCalendar.java (GregorianCalendar): Call
