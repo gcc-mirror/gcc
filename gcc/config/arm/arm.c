@@ -3474,8 +3474,8 @@ arm_adjust_cost (insn, link, dep, cost)
      on precisely how certain input operands are used.  */
   if (arm_is_xscale
       && REG_NOTE_KIND (link) == 0
-      && recog_memoized (insn) < 0
-      && recog_memoized (dep) < 0)
+      && recog_memoized (insn) >= 0
+      && recog_memoized (dep) >= 0)
     {
       int shift_opnum = get_attr_shift (insn);
       enum attr_type attr_type = get_attr_type (dep);
