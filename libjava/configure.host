@@ -137,6 +137,12 @@ case "${host}" in
   *-*-freebsd*)
 	slow_pthread_self=
 	;;
+  *-cygwin*)
+  	# The cygwin linker doesn't do 8-byte alignment by default, so
+	# disable hash synchronization for now.
+	enable_hash_synchronization_default=no
+	slow_pthread_self=
+	;;
 esac
 
 libgcj_cflags="${libgcj_cflags} ${libgcj_flags}"
