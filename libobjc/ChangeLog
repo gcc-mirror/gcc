@@ -1,3 +1,7 @@
+Mon Jun 21 05:40:15 1999  John David Anglin <dave@hiauly1>
+
+	* init.c (__objc_force_linking): Make global.
+
 Thu May 20 03:20:59 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (AC_EXEEXT): Remove call.
