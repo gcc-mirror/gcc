@@ -25,12 +25,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-flags.h"
 
 /* Decide whether a function's arguments should be processed
-   from first to last or from last to first.  */
+   from first to last or from last to first.
 
-#ifdef STACK_GROWS_DOWNWARD
+   They should if the stack and args grow in opposite directions, but
+   only if we have push insns.  */
+
 #ifdef PUSH_ROUNDING
+
+#if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNARD)
 #define PUSH_ARGS_REVERSED	/* If it's last to first */
 #endif
+
 #endif
 
 /* Like STACK_BOUNDARY but in units of bytes, not bits.  */
