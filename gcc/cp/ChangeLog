@@ -1,3 +1,7 @@
+1999-10-31  Brendan Kehoe  <brendan@cygnus.com>
+
+	* cp-tree.h (flag_dump_translation_unit): Add decl.
+
 Sat Oct 30 22:42:50 1999  Stephen L Moshier <moshier@mediaone.net>
 
 	* lex.c (yylex): Accept 'f' in mantissa of hex float constant.
