@@ -9516,13 +9516,7 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
   if (new != 0)
     x = new;
   else
-    {
-      if (x == 0 || GET_CODE (x) != code || GET_MODE (x) != shift_mode)
-	x = gen_rtx_fmt_ee (code, shift_mode, varop, const_rtx);
-
-      SUBST (XEXP (x, 0), varop);
-      SUBST (XEXP (x, 1), const_rtx);
-    }
+    x = gen_rtx_fmt_ee (code, shift_mode, varop, const_rtx);
 
   /* If we have an outer operation and we just made a shift, it is
      possible that we could have simplified the shift were it not
