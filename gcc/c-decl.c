@@ -1406,7 +1406,10 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	 been written out yet.  */
       if (new_is_definition && DECL_INITIAL (olddecl))
 	{
-	  if (TREE_USED (olddecl))
+	  if (TREE_USED (olddecl)
+	      /* In unit-at-a-time mode we never inline re-defined extern
+	         inline functions. */
+	      && !flag_unit_at_a_time)
 	    (*debug_hooks->outlining_inline_function) (olddecl);
 
 	  /* The new defn must not be inline.  */

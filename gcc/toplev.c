@@ -3177,7 +3177,7 @@ rest_of_compilation (tree decl)
   /* We are now committed to emitting code for this function.  Do any
      preparation, such as emitting abstract debug info for the inline
      before it gets mangled by optimization.  */
-  if (DECL_INLINE (decl))
+  if (cgraph_function_possibly_inlined_p (decl))
     (*debug_hooks->outlining_inline_function) (decl);
 
   /* Remove any notes we don't need.  That will make iterating

@@ -1586,7 +1586,7 @@ dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) 
    $(RTL_H) dwarf2.h debug.h flags.h insn-config.h reload.h output.h $(DIAGNOSTIC_H) real.h \
    hard-reg-set.h $(REGS_H) $(EXPR_H) libfuncs.h toplev.h dwarf2out.h varray.h \
    $(GGC_H) except.h dwarf2asm.h $(TM_P_H) langhooks.h $(HASHTAB_H) \
-   gt-dwarf2out.h $(TARGET_H)
+   gt-dwarf2out.h $(TARGET_H) cgraph.h
 dwarf2asm.o : dwarf2asm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) flags.h $(RTL_H) \
    $(TREE_H) output.h dwarf2asm.h $(TM_P_H) $(GGC_H) gt-dwarf2asm.h
 vmsdbgout.o : vmsdbgout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
