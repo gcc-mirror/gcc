@@ -1,3 +1,11 @@
+2005-01-27  Joel Sherrill <joel.sherrill@oarcorp.com>
+	    Laurent GUERBY <laurent@guerby.net>
+
+	PR ada/19488
+	* 5rosinte.ads: Add No_Key constant.
+        * 5rtpopsp.adb: Initialize ATCB_Key with No_Key and fix style.
+        * gsocket.h: Do not include <sys/socket.h> with RTEMS either.
+
 2005-01-26  Laurent GUERBY <laurent@guerby.net>
 
 	PR ada/19414

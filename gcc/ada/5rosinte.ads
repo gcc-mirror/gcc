@@ -233,6 +233,8 @@ package System.OS_Interface is
    type pthread_condattr_t  is limited private;
    type pthread_key_t       is private;
 
+   No_Key : constant pthread_key_t;
+
    PTHREAD_CREATE_DETACHED : constant := 0;
 
    -----------
@@ -523,5 +525,7 @@ private
    type pthread_cond_t is new rtems_id;
 
    type pthread_key_t is new rtems_id;
+
+   No_Key : constant pthread_key_t := 0;
 
 end System.OS_Interface;
