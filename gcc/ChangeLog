@@ -1,3 +1,8 @@
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi (-Wtrigraphs, -fdump-translation-unit, -save-temps,
+	-time): Update.
+
 2000-11-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (mulsidi3adddi, umulsidi3adddi): Revert previous change.
