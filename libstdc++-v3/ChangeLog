@@ -1,3 +1,16 @@
+2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/c/bits/std_cwctype.h: #undef possible function-like
+	macro definitions of iswxxx functions, which might be brought in
+	by <wctype.h>.  Those macro definitions prevent build on some
+	linux-based systems.
+	
+	* include/bits/std_complex.h (complex<>): Comment out friend
+	declarations of abs<> specializations.
+	(abs): Define primary template.
+
+	* src/complex.cc (abs): Comment out specialization definition.
+
 2000-10-30  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_DEBUG):  Raise debugging level from
