@@ -1,3 +1,9 @@
+2005-02-11  Dale Johannesen  <dalej@apple.com>
+
+	* cselib.c (cselib_process_insn):  Clear out regs where
+	HARD_REGNO_CALL_PART_CLOBBERED is true at a call.
+	* reload.c (find_equiv_reg): Ditto.
+
 2005-02-11  Ian Lance Taylor  <ian@airs.com>
 
 	* read-rtl.c (read_rtx_1): Give fatal error if we see a vector
