@@ -1,3 +1,9 @@
+1999-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* java-tree.h (lang_printable_name): Constify a char*.
+
+	* lang.c (lang_printable_name): Likewise.
+
 Fri Aug 27 23:31:57 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gjavah.c, jcf-write.c, verify.c: Do not use C++ style

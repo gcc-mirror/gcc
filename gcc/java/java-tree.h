@@ -565,7 +565,7 @@ extern tree prepare_eh_table_type PROTO ((tree));
 extern void java_set_exception_lang_code PROTO ((void));
 extern tree generate_name PROTO ((void));
 extern void pop_labeled_block PROTO ((void));
-extern char *lang_printable_name PROTO ((tree, int));
+extern const char *lang_printable_name PROTO ((tree, int));
 extern tree maybe_add_interface PROTO ((tree, tree));
 extern void set_super_info PROTO ((int, tree, tree, int));
 extern int get_access_flags_from_decl PROTO ((tree));

@@ -440,7 +440,7 @@ put_decl_node (node)
    The value of the hook decl_printable_name is this function,
    which is also called directly by lang_print_error. */
 
-char *
+const char *
 lang_printable_name (decl, v)
      tree decl;
      int v  __attribute__ ((__unused__));
