@@ -40,9 +40,9 @@ template <class charT, class traits, class Allocator>
 inline void basic_string <charT, traits, Allocator>::Rep::
 operator delete (void * ptr)
 {
-  return Allocator::deallocate(ptr, sizeof(Rep) +
-			       reinterpret_cast<Rep *>(ptr)->res *
-			       sizeof (charT)); 
+  Allocator::deallocate(ptr, sizeof(Rep) +
+			reinterpret_cast<Rep *>(ptr)->res *
+			sizeof (charT)); 
 }
 
 template <class charT, class traits, class Allocator>

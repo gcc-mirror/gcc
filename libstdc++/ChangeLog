@@ -1,3 +1,8 @@
+1998-01-05  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* std/bastring.cc (basic_string::Rep::operator delete): Don't claim
+	to return from deallocate, since this is a void method.
+
 Sat Jan  3 12:15:41 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
 
 	* configure.in: Finalize support for {alpha|powerpc}*-*-linux-gnulibc1
