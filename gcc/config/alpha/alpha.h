@@ -51,8 +51,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O2 if we are optimizing,
    -O1 if we are not.  Pass -non_shared or -call_shared as appropriate.  */
+/* Disable -O2 to ld; it seems to have problems.  */
 #define LINK_SPEC  \
-  "-G 8 %{O*:-O2} %{!O*:-O1} %{static:-non_shared} %{!static:-call_shared}"
+  "-G 8 %{O*:-O1} %{!O*:-O1} %{static:-non_shared} %{!static:-call_shared}"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
@@ -804,13 +805,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 	    (16 + CUM,							\
 	     gen_rtx (MEM, BLKmode,					\
 		      plus_constant (virtual_incoming_args_rtx,		\
-				     ((CUM) - 6) * UNITS_PER_WORD)),	\
+				     ((CUM) + 6)* UNITS_PER_WORD)),	\
 	     6 - (CUM));						\
 	  move_block_from_reg						\
 	    (16 + 32 + CUM,						\
 	     gen_rtx (MEM, BLKmode,					\
 		      plus_constant (virtual_incoming_args_rtx,		\
-				     ((CUM) - 12) * UNITS_PER_WORD)),	\
+				     (CUM) * UNITS_PER_WORD)),		\
 	     6 - (CUM));						\
 	 }								\
       PRETEND_SIZE = 12 * UNITS_PER_WORD;				\
