@@ -68,7 +68,11 @@ SIGNAL_HANDLER (catch_segv)
 static java::lang::ArithmeticException *arithexception;
 SIGNAL_HANDLER (catch_fpe)
 {
+#ifdef HANDLE_DIVIDE_OVERFLOW
+  HANDLE_DIVIDE_OVERFLOW;
+#else
   MAKE_THROW_FRAME;
+#endif
   _Jv_Throw (arithexception);
 }
 #endif
@@ -97,7 +101,7 @@ _Jv_equalUtf8Consts (Utf8Const* a, Utf8Const *b)
 }
 
 /* True iff A is equal to STR.
-   HASH is STR->hashCode().
+   HASH is STR->hashCode().  
 */
 
 jboolean

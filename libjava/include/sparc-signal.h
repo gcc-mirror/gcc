@@ -51,7 +51,8 @@ while (0)
 #define INIT_FPE						\
 do								\
   {								\
-    arithexception = new java::lang::ArithmeticException ();	\
+    arithexception = new java::lang::ArithmeticException 	\
+      (JvNewStringLatin1 ("/ by zero"));			\
     struct sigaction act;					\
     act.sa_flags = SA_SIGINFO;					\
     act.sa_sigaction = catch_fpe;				\
