@@ -162,7 +162,6 @@ static tree determine_specialization PARAMS ((tree, tree, tree *, int));
 static int template_args_equal PARAMS ((tree, tree));
 static void tsubst_default_arguments PARAMS ((tree));
 static tree for_each_template_parm_r PARAMS ((tree *, int *, void *));
-static tree instantiate_clone PARAMS ((tree, tree));
 static tree copy_default_args_to_explicit_spec_1 PARAMS ((tree, tree));
 static void copy_default_args_to_explicit_spec PARAMS ((tree));
 static int invalid_nontype_parm_type_p PARAMS ((tree, int));
@@ -7533,43 +7532,6 @@ tsubst_expr (t, args, complain, in_decl)
   return tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
 }
 
-/* TMPL is a TEMPLATE_DECL for a cloned constructor or destructor.
-   Instantiate it with the ARGS.  */
-
-static tree
-instantiate_clone (tmpl, args)
-     tree tmpl;
-     tree args;
-{
-  tree spec;
-  tree clone;
-
-  /* Instantiated the cloned function, rather than the clone.  */
-  spec = instantiate_template (DECL_CLONED_FUNCTION (tmpl), args);
-
-  /* Then, see if we've already cloned the instantiation.  */
-  for (clone = TREE_CHAIN (spec);
-       clone && DECL_CLONED_FUNCTION_P (clone);
-       clone = TREE_CHAIN (clone))
-    if (DECL_NAME (clone) == DECL_NAME (tmpl))
-      return clone;
-
-  /* If we haven't, do so know.  */
-  if (!clone)
-    clone_function_decl (spec, /*update_method_vec_p=*/0);
-
-  /* Look again.  */
-  for (clone = TREE_CHAIN (spec);
-       clone && DECL_CLONED_FUNCTION_P (clone);
-       clone = TREE_CHAIN (clone))
-    if (DECL_NAME (clone) == DECL_NAME (tmpl))
-      return clone;
-
-  /* We should always have found the clone by now.  */
-  my_friendly_abort (20000411);
-  return NULL_TREE;
-}
-
 /* Instantiate the indicated variable or function template TMPL with
    the template arguments in TARG_PTR.  */
 
@@ -7577,7 +7539,6 @@ tree
 instantiate_template (tmpl, targ_ptr)
      tree tmpl, targ_ptr;
 {
-  tree clone;
   tree fndecl;
   tree gen_tmpl;
   tree spec;
@@ -7591,8 +7552,21 @@ instantiate_template (tmpl, targ_ptr)
 
   /* If this function is a clone, handle it specially.  */
   if (DECL_CLONED_FUNCTION_P (tmpl))
-    return instantiate_clone (tmpl, targ_ptr);
-
+    {
+      tree spec = instantiate_template (DECL_CLONED_FUNCTION (tmpl), targ_ptr);
+      tree clone;
+      
+      /* Look for the clone. */
+      for (clone = TREE_CHAIN (spec);
+	   clone && DECL_CLONED_FUNCTION_P (clone);
+	   clone = TREE_CHAIN (clone))
+	if (DECL_NAME (clone) == DECL_NAME (tmpl))
+	  return clone;
+      /* We should always have found the clone by now.  */
+      my_friendly_abort (20000411);
+      return NULL_TREE;
+    }
+  
   /* Check to see if we already have this specialization.  */
   spec = retrieve_specialization (tmpl, targ_ptr);
   if (spec != NULL_TREE)
@@ -7642,11 +7616,11 @@ instantiate_template (tmpl, targ_ptr)
     add_pending_template (fndecl);
 
   /* If we've just instantiated the main entry point for a function,
-     instantiate all the alternate entry points as well.  */
-  for (clone = TREE_CHAIN (gen_tmpl);
-       clone && DECL_CLONED_FUNCTION_P (clone);
-       clone = TREE_CHAIN (clone))
-    instantiate_template (clone, targ_ptr);
+     instantiate all the alternate entry points as well.  We do this
+     by cloning the instantiation of the main entry point, not by
+     instantiating the template clones.  */
+  if (TREE_CHAIN (gen_tmpl) && DECL_CLONED_FUNCTION_P (TREE_CHAIN (gen_tmpl)))
+    clone_function_decl (fndecl, /*update_method_vec_p=*/0);
 
   return fndecl;
 }
