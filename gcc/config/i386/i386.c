@@ -842,6 +842,7 @@ struct ix86_address
 static int ix86_decompose_address PARAMS ((rtx, struct ix86_address *));
 static int ix86_address_cost PARAMS ((rtx));
 static bool ix86_cannot_force_const_mem PARAMS ((rtx));
+static rtx ix86_delegitimize_address PARAMS ((rtx));
 
 static void ix86_encode_section_info PARAMS ((tree, int)) ATTRIBUTE_UNUSED;
 static const char *ix86_strip_name_encoding PARAMS ((const char *))
@@ -991,7 +992,7 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 #define TARGET_CANNOT_FORCE_CONST_MEM ix86_cannot_force_const_mem
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
-#define TARGET_DELEGITIMIZE_ADDRESS i386_simplify_dwarf_addr
+#define TARGET_DELEGITIMIZE_ADDRESS ix86_delegitimize_address
 
 #undef TARGET_MS_BITFIELD_LAYOUT_P
 #define TARGET_MS_BITFIELD_LAYOUT_P ix86_ms_bitfield_layout_p
@@ -5371,7 +5372,7 @@ ix86_find_base_term (x)
       return term;
     }
 
-  term = i386_simplify_dwarf_addr (x);
+  term = ix86_delegitimize_address (x);
 
   if (GET_CODE (term) != SYMBOL_REF
       && GET_CODE (term) != LABEL_REF)
@@ -6605,8 +6606,8 @@ i386_output_dwarf_dtprel (file, size, x)
    general assembler losage, recognize PIC+GOTOFF and turn it back
    into a direct symbol reference.  */
 
-rtx
-i386_simplify_dwarf_addr (orig_x)
+static rtx
+ix86_delegitimize_address (orig_x)
      rtx orig_x;
 {
   rtx x = orig_x, y;
@@ -8036,7 +8037,7 @@ static rtx
 maybe_get_pool_constant (x)
      rtx x;
 {
-  x = i386_simplify_dwarf_addr (XEXP (x, 0));
+  x = ix86_delegitimize_address (XEXP (x, 0));
 
   if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
     return get_pool_constant (x);

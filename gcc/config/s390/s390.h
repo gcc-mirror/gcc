@@ -911,10 +911,6 @@ extern int flag_pic;
 /* The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
 #define LOCAL_LABEL_PREFIX "."
 
-/* Either simplify a location expression, or return the original.  */
-#define ASM_SIMPLIFY_DWARF_ADDR(X) \
-  s390_simplify_dwarf_addr (X)
-
 /* How to refer to registers in assembler output.  This sequence is
    indexed by compiler's hard-register-number (see above).  */
 #define REGISTER_NAMES							\
