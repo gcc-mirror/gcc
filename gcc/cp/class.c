@@ -5642,16 +5642,20 @@ push_lang_context (name)
     }
   else if (name == lang_name_java)
     {
-      java_fundamental_type_kind jtk;
-
       strict_prototype = strict_prototypes_lang_cplusplus;
       current_lang_name = name;
       /* DECL_IGNORED_P is initially set for these types, to avoid clutter.
 	 (See record_builtin_java_type in decl.c.)  However, that causes
 	 incorrect debug entries if these types are actually used.
 	 So we re-enable debug output after extern "Java". */
-      for (jtk = jtk_first; jtk < jtk_last; ++jtk)
-	DECL_IGNORED_P (java_fundamental_types[jtk]) = 0;
+      DECL_IGNORED_P (java_byte_type_node) = 0;
+      DECL_IGNORED_P (java_short_type_node) = 0;
+      DECL_IGNORED_P (java_int_type_node) = 0;
+      DECL_IGNORED_P (java_long_type_node) = 0;
+      DECL_IGNORED_P (java_float_type_node) = 0;
+      DECL_IGNORED_P (java_double_type_node) = 0;
+      DECL_IGNORED_P (java_char_type_node) = 0;
+      DECL_IGNORED_P (java_boolean_type_node) = 0;
     }
   else if (name == lang_name_c)
     {
