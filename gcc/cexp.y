@@ -19,7 +19,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!
 
- Adapted from expread.y of GDB by Paul Rubin, July 1986.
+ Adapted from expread.y of GDB by Paul Rubin, July 1986.  */
 
 /* Parse a C expression from text in a string  */
    
