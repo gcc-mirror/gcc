@@ -1,3 +1,12 @@
+2000-10-05  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_CTYPE):  Tweaks to message texts
+	  for public relations purposes.
+	* aclocal.m4:  Regenerated.
+	* configure:  Regenerated.
+
+	* docs/ext/howto.html:  Additional explanation about hashing.
+
 2000-10-05  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* include: New directory.
