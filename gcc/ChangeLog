@@ -1,3 +1,13 @@
+2002-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (UNSPEC_GOTNTPOFF, UNSPEC_INDNTPOFF): New.
+	* config/i386/i386.c (legitimate_pic_address_disp_p): Handle
+	UNSPEC_GOTNTPOFF and UNSPEC_INDNTPOFF like UNSPEC_GOTTPOFF.
+	(legitimate_address_p): Likewise.
+	(legitimize_address): Use @gotntpoff and @indntpoff.
+	(output_pic_addr_const): Handle UNSPEC_GOTNTPOFF and UNSPEC_INDNTPOFF.
+	(output_addr_const_extra): Likewise.
+
 2002-09-20  Jim Wilson  <wilson@redhat.com>
 
 	* combine.c (try_combine): When split an instruction pair, where the
