@@ -89,6 +89,8 @@ extern int validate_replace_rtx_subexp	PARAMS ((rtx, rtx, rtx, rtx *));
 extern int validate_replace_rtx		PARAMS ((rtx, rtx, rtx));
 extern void validate_replace_rtx_group	PARAMS ((rtx, rtx, rtx));
 extern int validate_replace_src		PARAMS ((rtx, rtx, rtx));
+extern void validate_replace_src_group	PARAMS ((rtx, rtx, rtx));
+extern int num_changes_pending		PARAMS ((void));
 #ifdef HAVE_cc0
 extern int next_insn_tests_no_inequality PARAMS ((rtx));
 #endif

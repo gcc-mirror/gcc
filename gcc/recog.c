@@ -308,6 +308,13 @@ insn_invalid_p (insn)
   return 0;
 }
 
+/* Return number of changes made and not validated yet.  */
+int
+num_changes_pending ()
+{
+  return num_changes;
+}
+
 /* Apply a group of changes previously issued with `validate_change'.
    Return 1 if all changes are valid, zero otherwise.  */
 
@@ -671,11 +678,10 @@ validate_replace_src_1 (x, data)
 }
 
 /* Try replacing every occurrence of FROM in INSN with TO, avoiding
-   SET_DESTs.  After all changes have been made, validate by seeing if
-   INSN is still valid.  */
+   SET_DESTs.  */
 
-int
-validate_replace_src (from, to, insn)
+void
+validate_replace_src_group (from, to, insn)
      rtx from, to, insn;
 {
   struct validate_replace_src_data d;
@@ -684,6 +690,15 @@ validate_replace_src (from, to, insn)
   d.to = to;
   d.insn = insn;
   note_uses (&PATTERN (insn), validate_replace_src_1, &d);
+}
+
+/* Same as validate_repalace_src_group, but validate by seeing if
+   INSN is still valid.  */
+int
+validate_replace_src (from, to, insn)
+     rtx from, to, insn;
+{
+  validate_replace_src_group (from, to, insn);
   return apply_change_group ();
 }
 
