@@ -1,3 +1,14 @@
+2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/m68k/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Define.
+	(EXTRA_SPECS): Add netbsd_cpp_spec.
+	(CPP_SPEC): Use %(netbsd_cpp_spec).
+	(CPP_PREDEFINES): Remove.
+	* config/m68k/netbsd.h (TARGET_OS_CPP_BUILTINS): Define.
+	(EXTRA_SPECS): Define.
+	(CPP_SPEC): Use %(netbsd_cpp_spec).
+	(CPP_PREDEFINES): Remove.
+
 2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR preprocessor/6844
