@@ -35,4 +35,12 @@
       read(90) i, r
       if (i/=123 .or. nint(r)/=123) call abort
       close(90)
+*     Fails at 1998-09-01 on spurious recursive i/o check (fixed by
+*     1998-09-06 libI77 change):
+      open(90, status='scratch', form='formatted', recl=16,
+     +     access='direct')
+      write(90, '(i8,f8.1)',rec=1) 123, 123.0
+      read(90, '(i8,f8.1)', rec=1) i, r
+      if (i/=123 .or. nint(r)/=123) call abort
+      close(90)
       end
