@@ -1,3 +1,8 @@
+2002-03-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* cppmain.c (setup_callbacks): Disable #pragma and #ident
+	callbacks when processing assembly language.
+
 2002-03-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (ASM_FILE_END): Define.
