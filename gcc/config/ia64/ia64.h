@@ -589,7 +589,7 @@ while (0)
    all the FIXED_REGISTERS.  Until this problem has been
    resolved this macro can be used to overcome this situation.
    In particular, block_propagate() requires this list
-   be acurate, or we can remove registers which should be live.
+   be accurate, or we can remove registers which should be live.
    This macro is used in regs_invalidated_by_call.  */
 
 #define CALL_REALLY_USED_REGISTERS \

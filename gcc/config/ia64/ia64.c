@@ -1036,7 +1036,7 @@ ia64_move_ok (dst, src)
     return GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src);
 }
 
-/* Check if OP is a mask suitible for use with SHIFT in a dep.z instruction.
+/* Check if OP is a mask suitable for use with SHIFT in a dep.z instruction.
    Return the length of the field, or <= 0 on failure.  */
 
 int
@@ -1779,7 +1779,7 @@ ia64_compute_frame_size (size)
   i = regno - OUT_REG (0) + 1;
 
   /* When -p profiling, we need one output register for the mcount argument.
-     Likwise for -a profiling for the bb_init_func argument.  For -ax
+     Likewise for -a profiling for the bb_init_func argument.  For -ax
      profiling, we need two output registers for the two bb_init_trace_func
      arguments.  */
   if (current_function_profile)
@@ -2246,7 +2246,7 @@ do_restore (move_fn, reg, cfa_off)
 
 /* Wrapper functions that discards the CONST_INT spill offset.  These
    exist so that we can give gr_spill/gr_fill the offset they need and
-   use a consistant function interface.  */
+   use a consistent function interface.  */
 
 static rtx
 gen_movdi_x (dest, src, offset)
@@ -2861,7 +2861,7 @@ ia64_expand_epilogue (sibcall_p)
 	 first available call clobbered register.  If there was a frame_pointer 
 	 register, we may have swapped the names of r2 and HARD_FRAME_POINTER_REGNUM, 
 	 so we have to make sure we're using the string "r2" when emitting
-	 the register name for the assmbler.  */
+	 the register name for the assembler.  */
       if (current_frame_info.reg_fp && current_frame_info.reg_fp == GR_REG (2))
 	fp = HARD_FRAME_POINTER_REGNUM;
 
@@ -3392,7 +3392,7 @@ ia64_function_arg (cum, mode, type, named, incoming)
     }
 
   /* If there is a prototype, then FP values go in a FR register when
-     named, and in a GR registeer when unnamed.  */
+     named, and in a GR register when unnamed.  */
   else if (cum->prototype)
     {
       if (! named)
@@ -3532,7 +3532,7 @@ ia64_function_arg_advance (cum, mode, type, named)
     cum->int_regs = cum->words;
 
   /* If there is a prototype, then FP values go in a FR register when
-     named, and in a GR registeer when unnamed.  */
+     named, and in a GR register when unnamed.  */
   else if (cum->prototype)
     {
       if (! named)
@@ -3972,7 +3972,7 @@ ia64_print_operand (file, x, code)
   return;
 }
 
-/* Calulate the cost of moving data from a register in class FROM to
+/* Calculate the cost of moving data from a register in class FROM to
    one in class TO, using MODE.  */
 
 int
@@ -5209,7 +5209,7 @@ safe_group_barrier_needed_p (insn)
 }
 
 /* INSNS is a chain of instructions.  Scan the chain, and insert stop bits
-   as necessary to eliminate dependendencies.  This function assumes that
+   as necessary to eliminate dependencies.  This function assumes that
    a final instruction scheduling pass has been run which has already
    inserted most of the necessary stop bits.  This function only inserts
    new ones at basic block boundaries, since these are invisible to the
@@ -5484,7 +5484,7 @@ static const char *bundle_name [NR_BUNDLES] =
 
 int ia64_final_schedule = 0;
 
-/* Codes of the corrsponding quieryied units: */
+/* Codes of the corresponding quieryied units: */
 
 static int _0mii_, _0mmi_, _0mfi_, _0mmf_;
 static int _0bbb_, _0mbb_, _0mib_, _0mmb_, _0mfb_, _0mlx_;
@@ -5517,7 +5517,7 @@ static state_t temp_dfa_state = NULL;
 static state_t prev_cycle_state = NULL;
 
 /* The following array element values are TRUE if the corresponding
-   insn reuqires to add stop bits before it.  */
+   insn requires to add stop bits before it.  */
 
 static char *stops_p;
 

@@ -1465,7 +1465,7 @@ ia64_rse_rnat_addr (unsigned long *slot_addr)
   return (unsigned long *) ((unsigned long) slot_addr | (0x3f << 3));
 }
 
-/* Calcuate the number of registers in the dirty partition starting at
+/* Calculate the number of registers in the dirty partition starting at
    BSPSTORE with a size of DIRTY bytes.  This isn't simply DIRTY
    divided by eight because the 64th slot is used to store ar.rnat.  */
 static inline unsigned long
