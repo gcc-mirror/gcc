@@ -1,3 +1,8 @@
+2003-12-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/12573
+	* g++.dg/template/dependent-expr3.C: New test.
+
 2003-12-01  James Lemke  <jim@wasabisystems.com>
 
 	* gcc.dg/arm-g2.c: New test.
