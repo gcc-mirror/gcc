@@ -144,7 +144,6 @@ proc objc_target_compile { source dest type options } {
     global TOOL_OPTIONS
     global ld_library_path
     global objc_libgcc_s_path
-    global target_triplet
 
     set ld_library_path ".:${objc_libgcc_s_path}"
     lappend options "libs=-lobjc"
@@ -183,14 +182,6 @@ proc objc_target_compile { source dest type options } {
 	lappend options "additional_flags=${objc_link_flags}"
 	append ld_library_path ":${libobjc_dir}"
     }
-
-    # If we are running on Darwin, we'll need to point the linker at 
-    # the Foundation framework, where many goodies (e.g., NSConstantString)
-    # reside.
-    if { [string match "*-*-darwin*" $target_triplet] } {
-	lappend options "libs=-framework Foundation"
-    }
-
     lappend options "compiler=$OBJC_UNDER_TEST"
 
     # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
