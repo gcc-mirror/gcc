@@ -1,7 +1,9 @@
-/* libgcc1 routines for 68000 w/o floating-point hardware. */
-/* Copyright (C) 1994 Free Software Foundation, Inc.
+/* libgcc1 routines for 68000 w/o floating-point hardware.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
 
-This file is free software; you can redistribute it and/or modify it
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 2, or (at your option) any
 later version.
@@ -2658,162 +2660,92 @@ Lround$to$minus:
 | easier to write efficient versions of these routines someday.
 
 #ifdef  L_eqdf2
-LL0:
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	4
-	LS18	=	128
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__eqdf2)
 SYM (__eqdf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpdf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_eqdf2 */
 
 #ifdef  L_nedf2
-LL0:
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__nedf2)
 SYM (__nedf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpdf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_nedf2 */
 
 #ifdef  L_gtdf2
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__gtdf2)
 SYM (__gtdf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpdf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_gtdf2 */
 
 #ifdef  L_gedf2
-LL0:
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__gedf2)
 SYM (__gedf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpdf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_gedf2 */
 
 #ifdef  L_ltdf2
-LL0:
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__ltdf2)
 SYM (__ltdf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpdf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_ltdf2 */
 
 #ifdef  L_ledf2
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__ledf2)
 SYM (__ledf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(20),sp@-
 	movl	a6@(16),sp@-
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpdf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_ledf2 */
 
@@ -2823,144 +2755,77 @@ SYM (__ledf2):
 #ifdef  L_eqsf2
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	4
-	LS18	=	128
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__eqsf2)
 SYM (__eqsf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpsf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_eqsf2 */
 
 #ifdef  L_nesf2
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__nesf2)
 SYM (__nesf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpsf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_nesf2 */
 
 #ifdef  L_gtsf2
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__gtsf2)
 SYM (__gtsf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpsf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_gtsf2 */
 
 #ifdef  L_gesf2
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__gesf2)
 SYM (__gesf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpsf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_gesf2 */
 
 #ifdef  L_ltsf2
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__ltsf2)
 SYM (__ltsf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpsf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_ltsf2 */
 
 #ifdef  L_lesf2
 	.text
 	.proc
-|#PROC# 04
-	LF18	=	8
-	LS18	=	132
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
 	.globl	SYM (__lesf2)
 SYM (__lesf2):
-|#PROLOGUE# 0
 	link	a6,IMM (0)
-|#PROLOGUE# 1
 	movl	a6@(12),sp@-
 	movl	a6@(8),sp@-
 	jbsr	SYM (__cmpsf2)
-|#PROLOGUE# 2
 	unlk	a6
-|#PROLOGUE# 3
 	rts
 #endif /* L_lesf2 */
-
