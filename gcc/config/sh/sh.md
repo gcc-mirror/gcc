@@ -950,8 +950,7 @@
 	(gtu:DI (match_operand:DI 1 "arith_reg_or_0_operand" "Nr")
 		(match_operand:DI 2 "arith_reg_or_0_operand" "rN")))]
   "TARGET_SHMEDIA"
-  "@
-	cmpgtu	%N1, %N2, %0"
+  "cmpgtu	%N1, %N2, %0"
   [(set_attr "type" "cmp_media")])
 
 ;; We save the compare operands in the cmpxx patterns and use them when
