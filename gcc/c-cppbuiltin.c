@@ -426,6 +426,15 @@ c_cpp_builtins (cpp_reader *pfile)
   TARGET_CPU_CPP_BUILTINS ();
   TARGET_OS_CPP_BUILTINS ();
   TARGET_OBJFMT_CPP_BUILTINS ();
+
+  /* Support the __declspec keyword by turning them into attributes.
+     Note that the current way we do this may result in a collision
+     with predefined attributes later on.  This can be solved by using
+     one attribute, say __declspec__, and passing args to it.  The
+     problem with that approach is that args are not accumulated: each
+     new appearance would clobber any existing args.  */
+  if (TARGET_DECLSPEC)
+    builtin_define ("__declspec(x)=__attribute__((x))");
 }
 
 /* Pass an object-like macro.  If it doesn't lie in the user's

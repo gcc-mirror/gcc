@@ -54,6 +54,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_LOAD_ADDR(loc, reg)   "     leal " #loc "," #reg "\n"
 
+#define TARGET_DECLSPEC 1
+
 /* cpp handles __STDC__ */
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
@@ -64,7 +66,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("_X86_=1");					\
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
 	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
-	builtin_define ("__declspec(x)=__attribute__((x))");		\
 	builtin_assert ("system=unix");					\
 	builtin_assert ("system=interix");				\
 	if (preprocessing_asm_p ())					\

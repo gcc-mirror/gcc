@@ -415,6 +415,16 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #define PIC_OFFSET_TABLE_REGNUM INVALID_REGNUM
 #endif
 
+#ifndef TARGET_DECLSPEC
+#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+/* If the target supports the "dllimport" attribute, users are
+   probably used to the "__declspec" syntax.  */
+#define TARGET_DECLSPEC 1
+#else
+#define TARGET_DECLSPEC 0
+#endif
+#endif
+
 /* By default, the preprocessor should be invoked the same way in C++
    as in C.  */
 #ifndef CPLUSPLUS_CPP_SPEC

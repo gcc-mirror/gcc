@@ -72,14 +72,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define MAYBE_UWIN_CPP_BUILTINS() /* Nothing.  */
 
-/* Support the __declspec keyword by turning them into attributes.
-   We currently only support: dllimport and dllexport.
-   Note that the current way we do this may result in a collision with
-   predefined attributes later on.  This can be solved by using one attribute,
-   say __declspec__, and passing args to it.  The problem with that approach
-   is that args are not accumulated: each new appearance would clobber any
-   existing args.  */
-
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
@@ -88,7 +80,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
 	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
 	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
-	builtin_define ("__declspec(x)=__attribute__((x))");		\
 	if (!flag_iso)							\
 	  {								\
 	    builtin_define ("_stdcall=__attribute__((__stdcall__))");	\

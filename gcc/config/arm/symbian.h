@@ -30,7 +30,7 @@
    "memmove".  We cannot simply set flag_no_builtin in arm.c because
    (a) flag_no_builtin is not declared in language-independent code,
    and (b) that would prevent users from explicitly overriding the
-   default with -fno-builtin, which may sometimes be useful.
+   default with -fbuiltin, which may sometimes be useful.
 
    Make all symbols hidden by default.  Symbian OS expects that all
    exported symbols will be explicitly marked with
@@ -48,3 +48,6 @@
 #define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} "		\
   "%{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic} "	\
   "-X"
+
+/* Support the "dllimport" attribute.  */
+#define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
