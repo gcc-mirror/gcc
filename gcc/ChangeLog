@@ -1,3 +1,27 @@
+Sat Mar 24 23:15:19 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (cmpdi): Fix operand predicates.
+	(cmpdi_ccno_1_rex64, cmpdi_minus_1_rex64, cmpdi_1_rex64,
+	 cmpdi_1_insn_rex64): New patterns.
+	(adddi3): Turn to expander.
+	(adddi3_1, adddi3_carry_rex64, adddi3_cc_rex64): New patterns.
+	(addsi3_carry_zext): New pattern.
+	(adddi_?_rex64): New patterns and splitters.
+	(addsi_?_zext): New patterns.
+	(subsi3_carry_zext): New pattern.
+	(subdi_?_rex64): New patterns and splitters.
+	(iorsi_?_zext): New patterns.
+	(iordi_?_rex64): New patterns and splitters.
+	(iorsi_?_zext): New patterns.
+	(iorsi_?_zext_imm): New patterns.
+	(xorsi_?_zext): New patterns.
+	(xordi_?_rex64): New patterns and splitters.
+	(xorsi_?_zext): New patterns.
+	(negdi*): New patterns.
+	(one_cmpldi*): Likewise.
+	(one_cmplsi*_zext, negsi*_zext): Likewise.
+	(testqi_ext_3_rex64): New pattern.
+
 Sat Mar 24 21:13:28 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (ix86_split_long_move): Return void.
