@@ -1,5 +1,10 @@
 2004-07-14  Paolo Bonzini  <bonzini@gnu.org>
 
+	* tree-dfa.c (make_rename_temp): Work just like
+	create_tmp_var if called while outside SSA form.
+
+2004-07-14  Paolo Bonzini  <bonzini@gnu.org>
+
 	* expr.c (enqueue_insn, finish_expr_for_function,
 	protect_from_queue, queued_subexp_p, mark_queue,
 	emit_insns_enqueued_after_mark, emit_queue,
