@@ -4641,7 +4641,7 @@ tsubst_friend_class (friend_tmpl, args)
 
      Here, in the scope of (say) S<int>, `S' is bound to a TYPE_DECL
      for `S<int>', not the TEMPLATE_DECL.  */
-  if (!DECL_CLASS_TEMPLATE_P (tmpl))
+  if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
     {
       tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/1);
       tmpl = maybe_get_template_decl_from_type_decl (tmpl);
