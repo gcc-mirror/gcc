@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -149,8 +149,12 @@ extern int target_flags;
   {"padstruct", PADSTRUCT_BIT},    		\
   {"relax",	RELAX_BIT},			\
   {"space", 	SPACE_BIT},			\
+  SUBTARGET_SWITCHES                            \
   {"",   	TARGET_DEFAULT} 		\
 }
+
+/* This are meant to be redefined in the host dependent files */
+#define SUBTARGET_SWITCHES
 
 #define TARGET_DEFAULT  (0)
 
