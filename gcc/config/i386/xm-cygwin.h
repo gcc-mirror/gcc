@@ -27,11 +27,16 @@ Boston, MA 02111-1307, USA. */
 #define HAVE_RINDEX 1
 #define HAVE_INDEX 1
 
-/* Even though we support "/", allow "\" since everybody tests both.  */
-#define DIR_SEPARATOR '\\'
+/* We support both "/" and "\" since everybody tests both but we
+   default to "/".  This is important because if gcc produces Win32
+   paths containing backslashes, make and configure may treat the
+   backslashes as escape characters.  Many Win32 programs use forward
+   slashes so using a forward slash shouldn't be problematic from the
+   perspective of wanting gcc to produce native Win32 paths. */
+#define DIR_SEPARATOR '/'
 
 /* If we allow both '/' and '\' as dir separators, then
-   allow both unix and win32 PATH syntax */
+   allow both unix and win32 PATH syntax. */
 #undef GET_ENV_PATH_LIST
 #define GET_ENV_PATH_LIST(VAR,NAME)					\
 do {									\
