@@ -1650,6 +1650,8 @@ fix = {
           "s@ va_list@ __not_va_list__@\n"
           "s@\\*va_list@*__not_va_list__@\n"
           "s@ __va_list)@ __gnuc_va_list)@\n"
+          "s@typedef[ \t]\\(.*\\)[ \t]va_list[ \t]*;"
+           "@typedef \\1 __not_va_list__;@\n"
           "s@GNUC_VA_LIST@GNUC_Va_LIST@\n"
           "s@_NEED___VA_LIST@_NEED___Va_LIST@\n"
           "s@VA_LIST@DUMMY_VA_LIST@\n"
