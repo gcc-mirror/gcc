@@ -325,6 +325,5 @@ extern void output_printf (output_buffer *, const char *, ...)
 extern void output_verbatim (output_buffer *, const char *, ...);
 extern void verbatim (const char *, ...);
 extern char *file_name_as_prefix (const char *);
-extern void inform (const char *, ...);
 
 #endif /* ! GCC_DIAGNOSTIC_H */

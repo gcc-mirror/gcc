@@ -31,8 +31,6 @@ extern int read_integral_parameter	(const char *, const char *,
 					 const int);
 extern void strip_off_ending		(char *, int);
 extern const char *trim_filename	(const char *);
-extern void internal_error		(const char *, ...)
-     ATTRIBUTE_NORETURN;
 extern void _fatal_insn_not_found	(struct rtx_def *,
   					 const char *, int,
 					 const char *)
@@ -48,15 +46,28 @@ extern void _fatal_insn			(const char *,
 #define fatal_insn_not_found(insn) \
 	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
 
+/* If we haven't already defined a frontend specific diagnostics
+   style, use the generic one.  */
+#ifndef GCC_DIAG_STYLE
+#define GCC_DIAG_STYLE __gcc_diag__
+#endif
 /* None of these functions are suitable for ATTRIBUTE_PRINTF, because
    each language front end can extend them with its own set of format
-   specifiers.  */
-extern void warning			(const char *, ...);
-extern void error			(const char *, ...);
-extern void fatal_error			(const char *, ...)
+   specifiers.  We must use custom format checks.  */
+#if GCC_VERSION >= 3004
+#define ATTRIBUTE_GCC_DIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m, n))) ATTRIBUTE_NONNULL(m)
+#else
+#define ATTRIBUTE_GCC_DIAG(m, n) ATTRIBUTE_NONNULL(m)
+#endif
+extern void internal_error		(const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
-extern void pedwarn			(const char *, ...);
-extern void sorry			(const char *, ...);
+extern void warning			(const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void error			(const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void fatal_error			(const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
+     ATTRIBUTE_NORETURN;
+extern void pedwarn			(const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void sorry			(const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void inform                      (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 
 extern void rest_of_decl_compilation	(union tree_node *,
 					 const char *, int, int);
@@ -73,9 +84,9 @@ extern void error_with_decl		(union tree_node *,
 extern void announce_function		(union tree_node *);
 
 extern void error_for_asm		(struct rtx_def *,
-					 const char *, ...);
+					 const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void warning_for_asm		(struct rtx_def *,
-					 const char *, ...);
+					 const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void warn_deprecated_use		(union tree_node *);
 
 extern void output_clean_symbol_name    (FILE *, const char *);

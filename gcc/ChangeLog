@@ -1,3 +1,16 @@
+2003-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-aux-info.c: Include toplev.h after c-tree.h.
+	* c-common.c: Likewise.
+	(GCC_DIAG_STYLE): Undef.
+	* c-semantics.c (GCC_DIAG_STYLE): Define.
+	* c-tree.h (GCC_DIAG_STYLE): Likewise.
+	* diagnostic.h (inform): Move prototype to toplev.h.
+	* jump.c: Include diagnostic.h before toplev.h.
+	* toplev.h (GCC_DIAG_STYLE, ATTRIBUTE_GCC_DIAG): Define.
+	(warning, error, fatal_error, pedwarn, sorry, inform,
+	error_for_asm, warning_for_asm): Mark with ATTRIBUTE_GCC_CXXDIAG.
+
 2003-07-03  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfglayout.c (cfg_layout_duplicate_bb): Do not update frequencies
