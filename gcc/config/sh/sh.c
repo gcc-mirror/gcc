@@ -1273,6 +1273,11 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
       shift_gen_fun = gen_shifty_op;
     case 2:
     case 3:
+      /* If the topmost bit that matters is set, set the topmost bits
+	 that don't matter.  This way, we might be able to get a shorter
+	 signed constant.  */
+      if (mask & ((HOST_WIDE_INT)1 << 31 - total_shift))
+	mask |= (HOST_WIDE_INT)~0 << (31 - total_shift);
       /* Don't expand fine-grained when combining, because that will
          make the pattern fail.  */
       if (rtx_equal_function_value_matters
