@@ -1,3 +1,13 @@
+2004-12-18  Richard Henderson  <rth@redhat.com>
+
+	* tree-nested.c (save_tmp_var): New.
+	(struct walk_stmt_info): Add is_lhs.
+	(walk_stmts) <MODIFY_EXPR>: Be more accurate with setting of
+	val_only; set is_lhs.
+	(convert_nonlocal_reference): Use save_tmp_var when is_lhs;
+	clear is_lhs when appropriate.
+	(convert_local_reference): Likewise.
+
 2004-12-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/ieee754-sf.S (floatdisf): Fix label definition in FPA
