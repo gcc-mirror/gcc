@@ -1,5 +1,5 @@
 /* Name.java -- Name build up from different components
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,8 +37,8 @@ exception statement from your version. */
 
 package javax.naming;
 
-import java.util.Enumeration;
 import java.io.Serializable;
+import java.util.Enumeration;
 
 /**
  * Interface descriping a name build up from different components.
