@@ -1916,6 +1916,26 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	}
   }
 
+#ifdef HAVE_return
+  if (HAVE_return)
+    {
+      /* If we fall through to the epilogue, see if we can insert a RETURN insn
+	 in front of it.  If the machine allows it at this point (we might be
+	 after reload for a leaf routine), it will improve optimization for it
+	 to be there.  We do this both here and at the start of this pass since
+	 the RETURN might have been deleted by some of our optimizations.  */
+      insn = get_last_insn ();
+      while (insn && GET_CODE (insn) == NOTE)
+	insn = PREV_INSN (insn);
+
+      if (insn && GET_CODE (insn) != BARRIER)
+	{
+	  emit_jump_insn (gen_return ());
+	  emit_barrier ();
+	}
+    }
+#endif
+
   /* See if there is still a NOTE_INSN_FUNCTION_END in this function.
      If so, delete it, and record that this function can drop off the end.  */
 
