@@ -1,3 +1,8 @@
+2002-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5118
+	* class.c (get_vfield_name): Use the constructor_name.
+
 2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
