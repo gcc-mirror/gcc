@@ -1,3 +1,7 @@
+2000-10-19  Chandrakala Chavva   <cchavva@redhat.com>
+
+	* libgcc2.c: Added the missing #endif.
+
 Thu Oct 19 14:25:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (CONST_OK_FOR_LETTER): Re-add 'N'; document.
