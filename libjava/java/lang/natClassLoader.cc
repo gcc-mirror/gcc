@@ -204,7 +204,14 @@ gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
       // by `lib-gnu-pkg.so' and `lib-gnu.so'.  If loading one of
       // these causes the class to appear in the cache, then use it.
       java::lang::StringBuffer *sb = new java::lang::StringBuffer (JvNewStringLatin1("lib-"));
-      jstring so_base_name = (sb->append (name)->toString ())->replace ('.', '-');
+      // Skip inner classes
+      jstring cn;
+      jint ci = name->indexOf('$');
+      if (ci == -1)
+	cn = name;
+      else
+	cn = name->substring (0, ci);
+      jstring so_base_name = (sb->append (cn)->toString ())->replace ('.', '-');
 
       // Compare against `3' because that is the length of "lib".
       while (! klass && so_base_name && so_base_name->length() > 3)

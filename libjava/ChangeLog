@@ -1,3 +1,9 @@
+2002-10-11  Mark Wielaard  <mark@klomp.org>
+
+	Fix for PR libgcj/8142
+	* java/lang/natClassLoader.cc (findClass): Skip inner classes when
+	loading native modules.
+
 2002-10-10  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/AbstractListModel.java
