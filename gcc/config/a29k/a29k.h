@@ -928,12 +928,15 @@ extern int a29k_compare_fp_p;
 
    For the 29k, we need the prolog to contain one or two words prior to
    the declaration of the function name.  So just store away the name and
-   write it as part of the prolog.  */
+   write it as part of the prolog.  This also computes the register names,
+   which can't be done until after register allocation, but must be done
+   before final_start_function is called.  */
 
 extern char *a29k_function_name;
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)	\
-  a29k_function_name = NAME;
+  a29k_function_name = NAME; \
+  a29k_compute_reg_names ();
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
