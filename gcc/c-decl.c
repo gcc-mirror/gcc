@@ -3224,6 +3224,19 @@ init_decl_processing ()
 		    BUILT_IN_COS, "cos");
   builtin_function ("__builtin_cosl", ldouble_ftype_ldouble, 
 		    BUILT_IN_COS, "cosl");
+  builtin_function ("__builtin_setjmp",
+		    build_function_type (integer_type_node,
+					 tree_cons (NULL_TREE,
+						    ptr_type_node, endlink)),
+		    BUILT_IN_SETJMP, NULL_PTR);
+  builtin_function ("__builtin_longjmp",
+		    build_function_type
+		    (void_type_node,
+		     tree_cons (NULL, ptr_type_node,
+				tree_cons (NULL_TREE,
+					   integer_type_node,
+					   endlink))),
+		    BUILT_IN_LONGJMP, NULL_PTR);
 
   /* In an ANSI C program, it is okay to supply built-in meanings
      for these functions, since applications cannot validly use them
