@@ -1,5 +1,11 @@
 2004-08-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (cprestore): Provide two alternatives, one for
+	an in-range offset and one for an out-of-range offset.  Wrap the latter
+	in .set macro/.set nomacro if it's inside a .set nomacro block.
+
+2004-08-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (mips_gp_save_slot): Remove.
 	(mips_restore_gp): Declare.
 	* config/mips/mips.c (mips_add_offset): Add a scratch register

@@ -4787,16 +4787,21 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"none")
    (set_attr "length"	"0")])
 
-;; Emit a .cprestore directive, which expands to a single store instruction.
-;; Note that we continue to use .cprestore for explicit reloc code so that
-;; jals inside inlines asms will work correctly.
+;; Emit a .cprestore directive, which normally expands to a single store
+;; instruction.  Note that we continue to use .cprestore for explicit reloc
+;; code so that jals inside inline asms will work correctly.
 (define_insn "cprestore"
-  [(unspec_volatile [(match_operand 0 "const_int_operand" "")]
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "I,i")]
 		    UNSPEC_CPRESTORE)]
   ""
-  ".cprestore\t%0"
+{
+  if (set_nomacro && which_alternative == 1)
+    return ".set\tmacro\;.cprestore\t%0\;.set\tnomacro";
+  else
+    return ".cprestore\t%0";
+}
   [(set_attr "type" "store")
-   (set_attr "length" "4")])
+   (set_attr "length" "4,12")])
 
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination
