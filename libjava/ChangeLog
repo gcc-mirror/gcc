@@ -1,5 +1,13 @@
 2000-09-04  Anthony Green  <green@redhat.com>
 
+        Fix for PR java.io/203:
+        * java/io/File.java (createTempFile): Obey directory argument.
+	Use java.io.tmpdir if needed.  Don't leave FileDescripators open.
+        * java/lang/natSystem.cc (init_properties): Use TMPDIR environment
+	variable to set java.io.tmpdir on non-WIN32 systems.
+
+2000-09-04  Anthony Green  <green@redhat.com>
+
 	* java/io/File.java (deleteOnExit): New method.
 	* gnu/gcj/runtime/FileDeleter.java: New class.
 	* java/lang/natRuntime.cc (exit): Call

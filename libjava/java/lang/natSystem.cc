@@ -244,8 +244,10 @@ java::lang::System::init_properties (void)
   SET ("file.separator", "/");
   SET ("path.separator", ":");
   SET ("line.separator", "\n");
-  // FIXME: look at getenv("TMPDIR");
-  SET ("java.io.tmpdir", "/tmp");
+  char *tmpdir = ::getenv("TMPDIR");
+  if (! tmpdir)
+    tmpdir = "/tmp";
+  SET ("java.io.tmpdir", tmpdir);
 #endif
 
 #ifdef HAVE_UNAME
