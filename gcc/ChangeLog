@@ -1,3 +1,34 @@
+2003-08-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/install.texi (Prerequisites): Mention GNU make requirement.
+
+	* Makefile.in (AR_FOR_TARGET): Export it.
+	(AR_CREATE_FOR_TARGET): Likewise.
+	(AR_FLAGS_FOR_TARGET): Likewise.
+	(AR_EXTRACT_FOR_TARGET): Likewise.
+	(AWK): Likewise.
+	(BUILD_PREFIX): Likewise.
+	(BUILD_PREFIX_1): Likewise.
+	(DESTDIR): Likewise.
+	(GCC_FOR_TARGET): Likewise.
+	(INCLUDES): Likewise.
+	(INSTALL_DATA): Likewise.
+	(LIB1ASMSRC): Likewise.
+	(LIBGCC2_CFLAGS): Likewise.
+	(MACHMODE_H): Likewise.
+	(NM_FOR_TARGET): Likewise.
+	(RANLIB_FOR_TARGET): Likewise.
+	(libsubdir): Likewise.
+	(slibdir): Likewise.
+	(ORDINARY_FLAGS_TO_PASS): Remove stuff that we're
+	exporting.
+	(libgcc.a): Don't pass them here.
+	(stmp-multilib): Or here.
+	(install-libgcc): Or here.
+	(install-multilib): Or here.
+	(POSTSTAGE1_FLAGS_TO_PASS): Or here.
+	(stage1_build): Or here.
+
 2003-08-26  Andreas Krebbel <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*llgt_sisi", "*llgt_sisi_split", "*llgt_didi",

@@ -743,16 +743,30 @@ LANG_STAGESTUFF = @all_stagestuff@
 # because we need CC="stage1/xgcc -Bstage1/" to work in the language
 # subdirectories.
 # ??? The choices here will need some experimenting with.
+
+export AR_FOR_TARGET
+export AR_CREATE_FOR_TARGET
+export AR_FLAGS_FOR_TARGET
+export AR_EXTRACT_FOR_TARGET
+export AWK
+export BUILD_PREFIX
+export BUILD_PREFIX_1
+export DESTDIR
+export GCC_FOR_TARGET
+export INCLUDES
+export INSTALL_DATA
+export LIB1ASMSRC
+export LIBGCC2_CFLAGS
+export MACHMODE_H
+export NM_FOR_TARGET
+export RANLIB_FOR_TARGET
+export libsubdir
+export slibdir
+
 ORDINARY_FLAGS_TO_PASS = \
-	"AR_FLAGS_FOR_TARGET=$(AR_FLAGS_FOR_TARGET)" \
-	"AR_CREATE_FOR_TARGET=$(AR_CREATE_FOR_TARGET)" \
-	"AR_EXTRACT_FOR_TARGET=$(AR_EXTRACT_FOR_TARGET)" \
-	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
-	"DESTDIR=$(DESTDIR)" \
-	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"FLEX=$(FLEX)" \
 	"FLEXFLAGS=$(FLEXFLAGS)" \
@@ -761,7 +775,6 @@ ORDINARY_FLAGS_TO_PASS = \
 	"MAKEINFO=$(MAKEINFO)" \
 	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
 	"MAKEOVERRIDES=" \
-	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
 	"exeext=$(exeext)" \
 	"build_exeext=$(build_exeext)" \
@@ -773,7 +786,6 @@ ORDINARY_FLAGS_TO_PASS = \
 	"build_tooldir=$(build_tooldir)" \
 	"gcc_tooldir=$(gcc_tooldir)" \
 	"bindir=$(bindir)" \
-	"libsubdir=$(libsubdir)" \
 	"libexecsubdir=$(libsubdir)" \
 	"datadir=$(datadir)" \
 	"localedir=$(localedir)"
@@ -1134,18 +1146,9 @@ LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 libgcov.a: libgcc.a; @true
 
 libgcc.a: $(LIBGCC_DEPS)
-	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
-	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
-	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	$(MAKE) \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
-	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
-	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
-	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
-	  INCLUDES="$(INCLUDES)" \
-	  CONFIG_H="$(TCONFIG_H)" MACHMODE_H="$(MACHMODE_H)" TM_H="$(TM_H)" \
-	  LIB1ASMSRC='$(LIB1ASMSRC)' \
+	  CONFIG_H="$(TCONFIG_H)" TM_H="$(TM_H)" \
 	  MAKEOVERRIDES= \
 	  -f libgcc.mk all
 
@@ -1175,18 +1178,9 @@ s-mlib: $(srcdir)/genmultilib Makefile
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC_DEPS)
-	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
-	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
-	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	$(MAKE) \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
-	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
-	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
-	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
-	  INCLUDES="$(INCLUDES)" \
-	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
-	  LIB1ASMSRC='$(LIB1ASMSRC)' \
+	  CONFIG_H="$(CONFIG_H)" \
 	  MAKEOVERRIDES= \
 	  -f libgcc.mk all
 	$(STAMP) stmp-multilib
@@ -3089,44 +3083,18 @@ install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
 
 # Install the library.
 install-libgcc: libgcc.mk libgcc.a libgcov.a installdirs
-	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
-	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
-	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	$(MAKE) \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
-	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
-	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
-	  INCLUDES="$(INCLUDES)" \
-	  CONFIG_H="$(TCONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
-	  LIB1ASMSRC='$(LIB1ASMSRC)' \
+	  CONFIG_H="$(TCONFIG_H)" \
 	  MAKEOVERRIDES= \
-	  INSTALL_DATA="$(INSTALL_DATA)" \
-	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
-	  DESTDIR="$(DESTDIR)" \
-	  libsubdir="$(libsubdir)" \
-	  slibdir="$(slibdir)" \
 	  -f libgcc.mk install
 
 # Install multiple versions of libgcc.a, libgcov.a.
 install-multilib: stmp-multilib installdirs
-	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
-	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
-	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
-	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	$(MAKE) \
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
-	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
-	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
-	  INCLUDES="$(INCLUDES)" \
-	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
-	  LIB1ASMSRC='$(LIB1ASMSRC)' \
+	  CONFIG_H="$(CONFIG_H)" \
 	  MAKEOVERRIDES= \
-	  INSTALL_DATA="$(INSTALL_DATA)" \
-	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
-	  DESTDIR="$(DESTDIR)" \
-	  libsubdir="$(libsubdir)" \
-	  slibdir="$(slibdir)" \
 	  -f libgcc.mk install
 
 # Install all the header files built in the include subdirectory.
@@ -3479,7 +3447,6 @@ VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 
 POSTSTAGE1_FLAGS_TO_PASS = \
 	ADAC="\$$(CC)" \
-	GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
 	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \
@@ -3509,7 +3476,6 @@ STAGEFEEDBACK_FLAGS_TO_PASS = \
 stage1_build:
 	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
 		CFLAGS="$(STAGE1_CFLAGS)" MAKEINFO="$(MAKEINFO)" \
-		GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 		MAKEINFOFLAGS="$(MAKEINFOFLAGS)" COVERAGE_FLAGS= \
 		OBJS-onestep="$(OBJS)"
 	$(STAMP) stage1_build
