@@ -1,3 +1,7 @@
+2003-03-21  Magnus Fromreide  <gnats@magfr.user.lysator.liu.se>
+
+	* testsuite/testsuite_hooks.h: Fix warning nits.
+
 2003-03-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/cpu/mips/atomicity.h (__exchange_and_add, __atomic_add):
