@@ -107,7 +107,8 @@ static void add_virtual_function PROTO((tree *, tree *, int *, tree, tree));
 static tree delete_duplicate_fields_1 PROTO((tree, tree));
 static void delete_duplicate_fields PROTO((tree));
 static void finish_struct_bits PROTO((tree, int));
-static int alter_access PROTO((tree, tree, tree));
+static int alter_access PROTO((tree, tree, tree, tree));
+static void handle_using_decl PROTO((tree, tree, tree, tree));
 static int overrides PROTO((tree, tree));
 static int strictly_overrides PROTO((tree, tree));
 static void merge_overrides PROTO((tree, tree, int, tree));
@@ -1277,12 +1278,14 @@ delete_duplicate_fields (fields)
     TREE_CHAIN (x) = delete_duplicate_fields_1 (x, TREE_CHAIN (x));
 }
 
-/* Change the access of FDECL to ACCESS in T.
-   Return 1 if change was legit, otherwise return 0.  */
+/* Change the access of FDECL to ACCESS in T.  The access to FDECL is
+   along the path given by BINFO.  Return 1 if change was legit,
+   otherwise return 0.  */
 
 static int
-alter_access (t, fdecl, access)
+alter_access (t, binfo, fdecl, access)
      tree t;
+     tree binfo;
      tree fdecl;
      tree access;
 {
@@ -1306,12 +1309,100 @@ alter_access (t, fdecl, access)
     }
   else
     {
-      enforce_access (TYPE_BINFO (t), fdecl);
+      enforce_access (binfo, fdecl);
 
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }
   return 0;
+}
+
+/* Process the USING_DECL, which is a member of T.  The METHOD_VEC, if
+   non-NULL, is the methods of T.  The FIELDS are the fields of T.
+   Returns 1 if the USING_DECL was valid, 0 otherwise.  */
+
+void
+handle_using_decl (using_decl, t, method_vec, fields)
+     tree using_decl;
+     tree t;
+     tree method_vec;
+     tree fields;
+{
+  tree ctype = DECL_INITIAL (using_decl);
+  tree name = DECL_NAME (using_decl);
+  tree access
+    = TREE_PRIVATE (using_decl) ? access_private_node
+    : TREE_PROTECTED (using_decl) ? access_protected_node
+    : access_public_node;
+  tree fdecl, binfo;
+  tree flist = NULL_TREE;
+  tree tmp;
+  int i;
+  int n_methods;
+
+  binfo = binfo_or_else (ctype, t);
+  if (! binfo)
+    return;
+  
+  if (name == constructor_name (ctype)
+      || name == constructor_name_full (ctype))
+    cp_error_at ("using-declaration for constructor", using_decl);
+  
+  fdecl = lookup_member (binfo, name, 0, 0);
+  
+  if (!fdecl)
+    {
+      cp_error_at ("no members matching `%D' in `%#T'", using_decl, ctype);
+      return;
+    }
+
+  /* Functions are represented as TREE_LIST, with the purpose
+     being the type and the value the functions. Other members
+     come as themselves. */
+  if (TREE_CODE (fdecl) == TREE_LIST)
+    /* Ignore base type this came from. */
+    fdecl = TREE_VALUE (fdecl);
+
+  if (TREE_CODE (fdecl) == OVERLOAD)
+    {
+      /* We later iterate over all functions. */
+      flist = fdecl;
+      fdecl = OVL_FUNCTION (flist);
+    }
+  
+  name = DECL_NAME (fdecl);
+  n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
+  for (i = 2; i < n_methods; i++)
+    if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
+	== name)
+      {
+	cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
+	cp_error_at ("  because of local method `%#D' with same name",
+		     OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
+	return;
+      }
+  
+  for (tmp = fields; tmp; tmp = TREE_CHAIN (tmp))
+    if (DECL_NAME (tmp) == name)
+      {
+	cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
+	cp_error_at ("  because of local field `%#D' with same name", tmp);
+	return;
+      }
+  
+  /* Make type T see field decl FDECL with access ACCESS.*/
+  if (flist)
+    {
+      while (flist)
+	{
+	  if (alter_access (t, binfo, OVL_FUNCTION (flist), 
+			    access) == 0)
+	    return;
+	  flist = OVL_CHAIN (flist);
+	}
+    }
+  else
+    alter_access (t, binfo, fdecl, access);
 }
 
 /* If FOR_TYPE needs to reinitialize virtual function table pointers
@@ -3186,36 +3277,15 @@ finish_struct_1 (t, warn_anon)
 	  empty = 0;
 	}
 
-      /* Handle access declarations.  */
       if (TREE_CODE (x) == USING_DECL)
 	{
-	  tree ctype = DECL_INITIAL (x);
-	  tree sname = DECL_NAME (x);
-	  tree access
-	    = TREE_PRIVATE (x) ? access_private_node
-			       : TREE_PROTECTED (x) ? access_protected_node
-						    : access_public_node;
-	  tree fdecl, binfo;
-
+	  /* Save access declarations for later.  */
 	  if (last_x)
 	    TREE_CHAIN (last_x) = TREE_CHAIN (x);
 	  else
 	    fields = TREE_CHAIN (x);
-
-	  binfo = binfo_or_else (ctype, t);
-	  if (! binfo)
-	    continue;
-
-	  if (sname == constructor_name (ctype)
-	      || sname == constructor_name_full (ctype))
-	    cp_error_at ("using-declaration for constructor", x);
-
-	  fdecl = lookup_member (binfo, sname, 0, 0);
-
-	  if (fdecl)
-	    access_decls = scratch_tree_cons (access, fdecl, access_decls);
-	  else
-	    cp_error_at ("no members matching `%D' in `%#T'", x, ctype);
+	  
+	  access_decls = scratch_tree_cons (NULL_TREE, x, access_decls);
 	  continue;
 	}
 
@@ -3658,77 +3728,9 @@ finish_struct_1 (t, warn_anon)
       TYPE_HAS_DESTRUCTOR (t) = 0;
     }
 
-  {
-    int n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
-    
-    for (access_decls = nreverse (access_decls); access_decls;
-	 access_decls = TREE_CHAIN (access_decls))
-      {
-	tree fdecl = TREE_VALUE (access_decls);
-	tree flist = NULL_TREE;
-	tree name;
-	tree access = TREE_PURPOSE (access_decls);
-	int i = 2;
-	tree tmp;
-
-	/* Functions are represented as TREE_LIST, with the purpose
-	   being the type and the value the functions. Other members
-	   come as themselves. */
-	if (TREE_CODE (fdecl) == TREE_LIST)
-	  {
-	    /* Ignore base type this came from. */
-	    fdecl = TREE_VALUE (fdecl);
-	  }
-	if (TREE_CODE (fdecl) == OVERLOAD)
-	  {
-	    /* We later iterate over all functions. */
-	    flist = fdecl;
-	    fdecl = OVL_FUNCTION (flist);
-	  }
-
-	name = DECL_NAME (fdecl);
-
-	for (; i < n_methods; i++)
-	  if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
-		== name)
-	    {
-	      cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
-	      cp_error_at ("  because of local method `%#D' with same name",
-			   OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
-	      fdecl = NULL_TREE;
-	      break;
-	    }
-
-	if (! fdecl)
-	  continue;
-	
-	for (tmp = fields; tmp; tmp = TREE_CHAIN (tmp))
-	  if (DECL_NAME (tmp) == name)
-	    {
-	      cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
-	      cp_error_at ("  because of local field `%#D' with same name", tmp);
-	      fdecl = NULL_TREE;
-	      break;
-	    }
-
-	if (!fdecl)
-	  continue;
-	
-	/* Make type T see field decl FDECL with access ACCESS.*/
-	if (flist)
-	  {
-	    while (flist)
-	      {
-		if (alter_access (t, OVL_FUNCTION (flist), access) == 0)
-		  break;
-		flist = OVL_CHAIN (flist);
-	      }
-	  }
-	else
-	  alter_access (t, fdecl, access);
-      }
-    
-  }
+  for (access_decls = nreverse (access_decls); access_decls;
+       access_decls = TREE_CHAIN (access_decls))
+    handle_using_decl (TREE_VALUE (access_decls), t, method_vec, fields); 
 
   if (vfield == NULL_TREE && has_virtual)
     {
