@@ -1,3 +1,13 @@
+2001-05-01  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c (build_module_descriptor): Clear DECL_CONTEXT
+	of UOBJC_MODULES_decl.
+	(generate_strings): Clear DECL_CONTEXT of new decl nodes.
+	(generate_descriptor_table): Ditto.
+	(generate_protocols): Ditto.
+	(generate_protocol_list): Ditto.
+	(generate_classref_translation_entry): Ditto.
+
 2001-05-01  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* invoke.texi (Optimize Options): Add documentation for `--param

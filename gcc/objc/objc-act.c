@@ -1811,6 +1811,8 @@ build_module_descriptor ()
 
   DECL_ARTIFICIAL (UOBJC_MODULES_decl) = 1;
   DECL_IGNORED_P (UOBJC_MODULES_decl) = 1;
+  DECL_CONTEXT (UOBJC_MODULES_decl) = NULL_TREE;
+
   finish_decl (UOBJC_MODULES_decl,
 	       init_module_descriptor (TREE_TYPE (UOBJC_MODULES_decl)),
 	       NULL_TREE);
@@ -2022,6 +2024,7 @@ generate_strings ()
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
       decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+      DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
       finish_decl (decl, string_expr, NULL_TREE);
@@ -2036,6 +2039,7 @@ generate_strings ()
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
       decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+      DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
       finish_decl (decl, string_expr, NULL_TREE);
@@ -2050,6 +2054,7 @@ generate_strings ()
       decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULL_TREE);
       decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+      DECL_CONTEXT (decl) = NULL_TREE;
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				IDENTIFIER_POINTER (string));
       finish_decl (decl, string_expr, NULL_TREE);
@@ -2955,7 +2960,8 @@ generate_descriptor_table (type, name, size, list, proto)
   decl_specs = tree_cons (NULL_TREE, type, sc_spec);
 
   decl = start_decl (synth_id_with_class_suffix (name, proto),
-				decl_specs, 1, NULL_TREE, NULL_TREE);
+		     decl_specs, 1, NULL_TREE, NULL_TREE);
+  DECL_CONTEXT (decl) = NULL_TREE;
 
   initlist = build_tree_list (NULL_TREE, build_int_2 (size, 0));
   initlist = tree_cons (NULL_TREE, list, initlist);
@@ -3211,6 +3217,8 @@ generate_protocols ()
 
       decl = start_decl (synth_id_with_class_suffix ("_OBJC_PROTOCOL", p),
 			 decl_specs, 1, NULL_TREE, NULL_TREE);
+
+      DECL_CONTEXT (decl) = NULL_TREE;
 
       protocol_name_expr = add_objc_string (PROTOCOL_NAME (p), class_names);
 
@@ -4238,6 +4246,7 @@ generate_protocol_list (i_or_p)
   expr_decl = build1 (INDIRECT_REF, NULL_TREE, expr_decl);
 
   refs_decl = start_decl (expr_decl, decl_specs, 1, NULL_TREE, NULL_TREE);
+  DECL_CONTEXT (refs_decl) = NULL_TREE;
 
   finish_decl (refs_decl, build_constructor (TREE_TYPE (refs_decl),
 					     nreverse (initlist)),
@@ -8346,6 +8355,7 @@ generate_classref_translation_entry (chain)
   /* The decl that is returned from start_decl is the one that we
      forward declared in build_class_reference.  */
   decl = start_decl (name, decl_specs, 1, NULL_TREE, NULL_TREE);
+  DECL_CONTEXT (decl) = NULL_TREE;
   finish_decl (decl, expr, NULL_TREE);
   return;
 }
