@@ -2841,6 +2841,7 @@ expand_mult_highpart_adjust (enum machine_mode mode, rtx adj_operand, rtx op0,
   rtx tem;
   enum rtx_code adj_code = unsignedp ? PLUS : MINUS;
 
+  op1 = gen_int_mode (INTVAL (op1), mode);
   tem = expand_shift (RSHIFT_EXPR, mode, op0,
 		      build_int_2 (GET_MODE_BITSIZE (mode) - 1, 0),
 		      NULL_RTX, 0);
@@ -2895,7 +2896,8 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
   if (mul_highpart_cost[(int) mode] < max_cost)
     {
       moptab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
-      tem = expand_binop (mode, moptab, op0, op1, target,
+      tem = expand_binop (mode, moptab, op0,
+			  gen_int_mode (INTVAL (op1), mode), target,
 			  unsignedp, OPTAB_DIRECT);
       if (tem)
 	return tem;
@@ -2908,7 +2910,8 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
 	  < max_cost))
     {
       moptab = unsignedp ? smul_highpart_optab : umul_highpart_optab;
-      tem = expand_binop (mode, moptab, op0, op1, target,
+      tem = expand_binop (mode, moptab, op0,
+			  gen_int_mode (INTVAL (op1), mode), target,
 			  unsignedp, OPTAB_DIRECT);
       if (tem)
 	/* We used the wrong signedness.  Adjust the result.  */
@@ -2987,7 +2990,7 @@ expand_mult_highpart (enum machine_mode mode, rtx op0,
   if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
     abort ();
 
-  op1 = gen_int_mode (cnst1, mode);
+  op1 = gen_int_mode (cnst1, wider_mode);
   cnst1 &= GET_MODE_MASK (mode);
 
   /* We can't optimize modes wider than BITS_PER_WORD. 
