@@ -1481,6 +1481,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
   struct function *func = function ? function : cfun;
   rtx new = 0;
   unsigned int regno = original_regno;
+  int unsigned_p;
 
   if (regno == 0)
     regno = REGNO (reg);
@@ -1502,9 +1503,12 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
      previously generated stack slot, then we need to copy the bit in
      case it was set for other reasons.  For instance, it is set for
      __builtin_va_alist.  */
-  MEM_SET_IN_STRUCT_P (reg,
-		       AGGREGATE_TYPE_P (type) || MEM_IN_STRUCT_P (new));
-  MEM_ALIAS_SET (reg) = get_alias_set (type);
+  if (type)
+    {
+      MEM_SET_IN_STRUCT_P (reg,
+			   AGGREGATE_TYPE_P (type) || MEM_IN_STRUCT_P (new));
+      MEM_ALIAS_SET (reg) = get_alias_set (type);
+    }
   if (used_p)
     schedule_fixup_var_refs (function, reg, type, promoted_mode, ht);
 }
@@ -1520,6 +1524,8 @@ schedule_fixup_var_refs (function, reg, type, promoted_mode, ht)
      enum machine_mode promoted_mode;
      struct hash_table *ht;
 {
+  int unsigned_p = type ? TREE_UNSIGNED (type) : 0;
+
   if (function != 0)
     {
       struct var_refs_queue *temp;
@@ -1528,13 +1534,13 @@ schedule_fixup_var_refs (function, reg, type, promoted_mode, ht)
 	= (struct var_refs_queue *) xmalloc (sizeof (struct var_refs_queue));
       temp->modified = reg;
       temp->promoted_mode = promoted_mode;
-      temp->unsignedp = TREE_UNSIGNED (type);
+      temp->unsignedp = unsigned_p;
       temp->next = function->fixup_var_refs_queue;
       function->fixup_var_refs_queue = temp;
     }
   else
     /* Variable is local; fix it up now.  */
-    fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (type), ht);
+    fixup_var_refs (reg, promoted_mode, unsigned_p, ht);
 }
 
 static void
@@ -2807,7 +2813,6 @@ gen_mem_addressof (reg, decl)
      rtx reg;
      tree decl;
 {
-  tree type = TREE_TYPE (decl);
   rtx r = gen_rtx_ADDRESSOF (Pmode, gen_reg_rtx (GET_MODE (reg)),
 			     REGNO (reg), decl);
 
@@ -2817,14 +2822,21 @@ gen_mem_addressof (reg, decl)
   RTX_UNCHANGING_P (XEXP (r, 0)) = RTX_UNCHANGING_P (reg);
 
   PUT_CODE (reg, MEM);
-  PUT_MODE (reg, DECL_MODE (decl));
   XEXP (reg, 0) = r;
-  MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
-  MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (type));
-  MEM_ALIAS_SET (reg) = get_alias_set (decl);
+  if (decl)
+    {
+      tree type = TREE_TYPE (decl);
 
-  if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
-    fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), 0);
+      PUT_MODE (reg, DECL_MODE (decl));
+      MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
+      MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (type));
+      MEM_ALIAS_SET (reg) = get_alias_set (decl);
+
+      if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
+	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), 0);
+    }
+  else
+    fixup_var_refs (reg, GET_MODE (reg), 0, 0);
 
   return reg;
 }
@@ -2850,21 +2862,33 @@ put_addressof_into_stack (r, ht)
      rtx r;
      struct hash_table *ht;
 {
-  tree decl = ADDRESSOF_DECL (r);
+  tree decl, type;
+  int volatile_p, used_p;
+
   rtx reg = XEXP (r, 0);
 
   if (GET_CODE (reg) != REG)
     abort ();
 
-  put_reg_into_stack (0, reg, TREE_TYPE (decl), GET_MODE (reg),
-		      GET_MODE (reg),
-		      (TREE_CODE (decl) != SAVE_EXPR
-		       && TREE_THIS_VOLATILE (decl)),
-		      ADDRESSOF_REGNO (r),
-		      (TREE_USED (decl)
-		       || (TREE_CODE (decl) != SAVE_EXPR
-			   && DECL_INITIAL (decl) != 0)),
-		      ht);
+  decl = ADDRESSOF_DECL (r);
+  if (decl)
+    {
+      type = TREE_TYPE (decl);
+      volatile_p = (TREE_CODE (decl) != SAVE_EXPR
+		    && TREE_THIS_VOLATILE (decl));
+      used_p = (TREE_USED (decl)
+		|| (TREE_CODE (decl) != SAVE_EXPR
+		    && DECL_INITIAL (decl) != 0));
+    }
+  else
+    {
+      type = NULL_TREE;
+      volatile_p = 0;
+      used_p = 1;
+    }
+
+  put_reg_into_stack (0, reg, type, GET_MODE (reg), GET_MODE (reg),
+		      volatile_p, ADDRESSOF_REGNO (r), used_p, ht);
 }
 
 /* List of replacements made below in purge_addressof_1 when creating
