@@ -526,9 +526,10 @@ mf_build_check_statement_for (tree addr, tree size,
   
   /* A recap at this point: join_bb is the basic block at whose head
      is the gimple statement for which this check expression is being
-     built.  cond_bb is the new synthetic basic block which will
-     contain the cache-lookup code, and a conditional that jumps to
-     the cache-miss code or, much more likely, over to join_bb.  */
+     built.  cond_bb is the (possibly new, synthetic) basic block the
+     end of which will contain the cache-lookup code, and a
+     conditional that jumps to the cache-miss code or, much more
+     likely, over to join_bb.  */
 
   /* Create the bb that contains the cache-miss fallback block (mf_check).  */
   then_bb = create_empty_bb (cond_bb);
