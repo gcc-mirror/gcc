@@ -855,7 +855,8 @@ finish_call_expr (fn, args, koenig)
   result = build_x_function_call (fn, args, current_class_ref);
 
   if (TREE_CODE (result) == CALL_EXPR
-      && TREE_TYPE (result) != void_type_node)
+      && (! TREE_TYPE (result)
+          || TREE_CODE (TREE_TYPE (result)) != VOID_TYPE))
     result = require_complete_type (result);
 
   return result;

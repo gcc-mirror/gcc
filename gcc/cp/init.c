@@ -2163,7 +2163,7 @@ build_new_1 (exp)
       true_type = TREE_TYPE (true_type);
     }
 
-  if (!complete_type_or_else (true_type))
+  if (!complete_type_or_else (true_type, exp))
     return error_mark_node;
 
   if (has_array)
@@ -3014,7 +3014,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      if (!complete_type_or_else (type))
+      if (type != void_type_node && !complete_type_or_else (type, addr))
 	return error_mark_node;
       if (TREE_CODE (type) == ARRAY_TYPE)
 	goto handle_array;

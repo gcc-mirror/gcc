@@ -2023,6 +2023,7 @@ hack_identifier (value, name)
     {
       error ("request for member `%s' is ambiguous in multiple inheritance lattice",
 	     IDENTIFIER_POINTER (name));
+      print_candidates (value);
       return error_mark_node;
     }
 

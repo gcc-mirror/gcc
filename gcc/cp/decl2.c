@@ -3506,7 +3506,9 @@ reparse_absdcl_as_expr (type, decl)
 
   decl = build_x_function_call (decl, NULL_TREE, current_class_ref);
 
-  if (TREE_CODE (decl) == CALL_EXPR && TREE_TYPE (decl) != void_type_node)
+  if (TREE_CODE (decl) == CALL_EXPR
+      && (! TREE_TYPE (decl)
+          || TREE_CODE (TREE_TYPE (decl)) != VOID_TYPE))
     decl = require_complete_type (decl);
 
   return decl;

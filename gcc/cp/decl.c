@@ -14380,38 +14380,30 @@ cplus_expand_expr_stmt (exp)
   /* Arrange for all temps to disappear.  */
   expand_start_target_temps ();
 
-  if (TREE_TYPE (exp) == unknown_type_node)
+  exp = require_complete_type_in_void (exp);
+  
+  if (TREE_CODE (exp) == FUNCTION_DECL)
     {
-      if (TREE_CODE (exp) == COMPONENT_REF)
-	error ("invalid reference to a member function name, did you forget the ()?");
-      else
-	error ("address of overloaded function with no contextual type information");
+      cp_warning ("reference, not call, to function `%D'", exp);
+      warning ("at this point in file");
     }
-  else
-    {
-      if (TREE_CODE (exp) == FUNCTION_DECL)
-	{
-	  cp_warning ("reference, not call, to function `%D'", exp);
-	  warning ("at this point in file");
-	}
 
 #if 0
-      /* We should do this eventually, but right now this causes regex.o from
-	 libg++ to miscompile, and tString to core dump.  */
-      exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
+  /* We should do this eventually, but right now this causes regex.o from
+     libg++ to miscompile, and tString to core dump.  */
+  exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
 #endif
 
-      /* Strip unused implicit INDIRECT_REFs of references.  */
-      if (TREE_CODE (exp) == INDIRECT_REF
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == REFERENCE_TYPE)
-	exp = TREE_OPERAND (exp, 0);
+  /* Strip unused implicit INDIRECT_REFs of references.  */
+  if (TREE_CODE (exp) == INDIRECT_REF
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == REFERENCE_TYPE)
+    exp = TREE_OPERAND (exp, 0);
 
-      /* If we don't do this, we end up down inside expand_expr
-	 trying to do TYPE_MODE on the ERROR_MARK, and really
-	 go outside the bounds of the type.  */
-      if (exp != error_mark_node)
-	expand_expr_stmt (break_out_cleanups (exp));
-    }
+  /* If we don't do this, we end up down inside expand_expr
+     trying to do TYPE_MODE on the ERROR_MARK, and really
+     go outside the bounds of the type.  */
+  if (exp != error_mark_node)
+    expand_expr_stmt (break_out_cleanups (exp));
 
   /* Clean up any pending cleanups.  This happens when a function call
      returns a cleanup-needing value that nobody uses.  */

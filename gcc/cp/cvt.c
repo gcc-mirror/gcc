@@ -687,10 +687,11 @@ ocp_convert (type, expr, convtype, flags)
 
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
     {
-      if (type_unknown_p (e))
-	error ("address of overloaded function with no contextual type information");
+      e = require_complete_type_in_void (e);
+      if (e != error_mark_node)
+        e = build1 (CONVERT_EXPR, void_type_node, e);
 
-      return build1 (CONVERT_EXPR, type, e);
+      return e;
     }
 
 #if 0

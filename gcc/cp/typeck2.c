@@ -1,6 +1,6 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -213,55 +213,62 @@ incomplete_type_error (value, type)
      tree value;
      tree type;
 {
-  char *errmsg = 0;
-
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
+retry:
+  /* We must print an error message.  Be clever about what it says.  */
+
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case ENUMERAL_TYPE:
+      cp_error ("invalid use of undefined type `%#T'", type);
+      cp_error_at ("forward declaration of `%#T'", type);
+      break;
+
+    case VOID_TYPE:
+      cp_error ("invalid use of void expression");
+      break;
+
+    case ARRAY_TYPE:
+      if (TYPE_DOMAIN (type))
+        {
+          type = TREE_TYPE (type);
+          goto retry;
+        }
+      cp_error ("invalid use of array with unspecified bounds");
+      break;
+
+    case OFFSET_TYPE:
+    bad_member:
+      cp_error ("invalid use of member (did you forget the `&' ?)");
+      break;
+
+    case TEMPLATE_TYPE_PARM:
+      cp_error ("invalid use of template type parameter");
+      break;
+
+    case UNKNOWN_TYPE:
+      if (value && TREE_CODE (value) == COMPONENT_REF)
+        goto bad_member;
+      else if (value && TREE_CODE (value) == ADDR_EXPR)
+        cp_error ("address of overloaded function with no contextual type information");
+      else if (value && TREE_CODE (value) == OVERLOAD)
+        cp_error ("overloaded function with no contextual type information");
+      else
+        cp_error ("insufficient contextual information to determine type");
+      break;
+    
+    default:
+      my_friendly_abort (108);
+    }
+
   if (value != 0 && (TREE_CODE (value) == VAR_DECL
 		     || TREE_CODE (value) == PARM_DECL))
-    cp_error ("`%D' has incomplete type", value);
-  else
-    {
-    retry:
-      /* We must print an error message.  Be clever about what it says.  */
-
-      switch (TREE_CODE (type))
-	{
-	case RECORD_TYPE:
-	case UNION_TYPE:
-	case ENUMERAL_TYPE:
-	  errmsg = "invalid use of undefined type `%#T'";
-	  break;
-
-	case VOID_TYPE:
-	  error ("invalid use of void expression");
-	  return;
-
-	case ARRAY_TYPE:
-	  if (TYPE_DOMAIN (type))
-	    {
-	      type = TREE_TYPE (type);
-	      goto retry;
-	    }
-	  error ("invalid use of array with unspecified bounds");
-	  return;
-
-	case OFFSET_TYPE:
-	  error ("invalid use of member type (did you forget the `&' ?)");
-	  return;
-
-	case TEMPLATE_TYPE_PARM:
-	  error ("invalid use of template type parameter");
-	  return;
-
-	default:
-	  my_friendly_abort (108);
-	}
-
-      cp_error (errmsg, type);
-    }
+    cp_error_at ("incomplete `%D' defined here", value);
 }
 
 /* Like error(), but don't call report_error_function().  */

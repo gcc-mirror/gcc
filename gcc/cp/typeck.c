@@ -90,7 +90,7 @@ require_complete_type (value)
 {
   tree type;
 
-  if (processing_template_decl)
+  if (processing_template_decl || value == error_mark_node)
     return value;
 
   if (TREE_CODE (value) == OVERLOAD)
@@ -100,7 +100,7 @@ require_complete_type (value)
 
   /* First, detect a valid value with a complete type.  */
   if (TYPE_SIZE (type) != 0
-      && type != void_type_node
+      && TYPE_SIZE (type) != size_zero_node
       && ! (TYPE_LANG_SPECIFIC (type)
 	    && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type))
 	    && TYPE_SIZE (SIGNATURE_TYPE (type)) == 0))
@@ -122,10 +122,103 @@ require_complete_type (value)
       return require_complete_type (value);
     }
 
-  if (complete_type_or_else (type))
+  if (complete_type_or_else (type, value))
     return value;
   else
     return error_mark_node;
+}
+
+/* Makes sure EXPR is a complete type when used in a void context, like a
+   whole expression, or lhs of a comma operator. Issue a diagnostic and
+   return error_mark_node on failure. This is a little tricky, because some
+   valid void types look stunningly similar to invalid void types. We err on
+   the side of caution */
+
+tree
+require_complete_type_in_void (expr)
+     tree expr;
+{
+  switch (TREE_CODE (expr))
+    {
+    case COND_EXPR:
+      {
+        tree op;
+        
+        op = TREE_OPERAND (expr,2);
+        op = require_complete_type_in_void (op);
+        TREE_OPERAND (expr,2) = op;
+        if (op == error_mark_node)
+          {
+            expr = op;
+            break;
+          }
+        
+        /* fallthrough */
+      }
+    
+    case COMPOUND_EXPR:
+      {
+        tree op;
+        
+        op = TREE_OPERAND (expr,1);
+        op = require_complete_type_in_void (op);
+        TREE_OPERAND (expr,1) = op;
+        if (op == error_mark_node)
+          {
+            expr = op;
+            break;
+          }
+        
+        break;
+      }
+    
+    case NON_LVALUE_EXPR:
+    case NOP_EXPR:
+      {
+        tree op;
+        
+        op = TREE_OPERAND (expr,0);
+        op = require_complete_type_in_void (op);
+        TREE_OPERAND (expr,0) = op;
+        if (op == error_mark_node)
+          {
+            expr = op;
+            break;
+          }
+        break;
+      }
+    
+    case CALL_EXPR:   /* function call return can be ignored */
+    case RTL_EXPR:    /* RTL nodes have no value */
+    case DELETE_EXPR: /* delete expressions have no type */
+    case VEC_DELETE_EXPR:
+    case INTEGER_CST: /* used for null pointer */
+    case EXIT_EXPR:   /* have no return */
+    case LOOP_EXPR:   /* have no return */
+    case BIND_EXPR:   /* have no return */
+    case THROW_EXPR:  /* have no return */
+    case MODIFY_EXPR: /* sometimes this has a void type, but that's ok */
+    case CONVERT_EXPR:  /* sometimes has a void type */
+      break;
+    
+    case INDIRECT_REF:
+      {
+        tree op = TREE_OPERAND (expr,0);
+        
+        /* Calling a function returning a reference has an implicit
+           dereference applied. We don't want to make that an error. */
+        if (TREE_CODE (op) == CALL_EXPR
+            && TREE_CODE (TREE_TYPE (op)) == REFERENCE_TYPE)
+          break;
+        /* else fallthrough */
+      }
+    
+    default:
+      expr = require_complete_type (expr);
+      break;
+    }
+
+  return expr;
 }
 
 /* Try to complete TYPE, if it is incomplete.  For example, if TYPE is
@@ -161,20 +254,21 @@ complete_type (type)
 }
 
 /* Like complete_type, but issue an error if the TYPE cannot be
-   completed.  Returns NULL_TREE if the type cannot be made 
-   complete.  */
+   completed.  VALUE is used for informative diagnostics.
+   Returns NULL_TREE if the type cannot be made complete.  */
 
 tree
-complete_type_or_else (type)
+complete_type_or_else (type, value)
      tree type;
+     tree value;
 {
   type = complete_type (type);
   if (type == error_mark_node)
     /* We already issued an error.  */
     return NULL_TREE;
-  else if (!TYPE_SIZE (type))
+  else if (!TYPE_SIZE (type) || TYPE_SIZE (type) == size_zero_node)
     {
-      incomplete_type_error (NULL_TREE, type);
+      incomplete_type_error (value, type);
       return NULL_TREE;
     }
   else
@@ -1997,7 +2091,7 @@ build_component_ref (datum, component, basetype_path, protect)
       return error_mark_node;
     }
 
-  if (!complete_type_or_else (basetype))
+  if (!complete_type_or_else (basetype, datum))
     return error_mark_node;
 
   if (TREE_CODE (component) == BIT_NOT_EXPR)
@@ -2928,7 +3022,7 @@ build_function_call_real (function, params, require_complete, flags)
 
     if (require_complete)
       {
-	if (value_type == void_type_node)
+	if (TREE_CODE (value_type) == VOID_TYPE)
 	  return result;
 	result = require_complete_type (result);
       }
@@ -3003,7 +3097,7 @@ convert_arguments (typelist, values, fndecl, flags)
 	{
 	  if (fndecl)
 	    {
-	      cp_error_at ("too many arguments to %s `%+D'", called_thing,
+	      cp_error_at ("too many arguments to %s `%+#D'", called_thing,
 			   fndecl);
 	      error ("at this point in file");
 	    }
@@ -3032,8 +3126,6 @@ convert_arguments (typelist, values, fndecl, flags)
 	      || TREE_CODE (TREE_TYPE (val)) == FUNCTION_TYPE
 	      || TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE)
 	    val = default_conversion (val);
-
-	  val = require_complete_type (val);
 	}
 
       if (val == error_mark_node)
@@ -3108,9 +3200,8 @@ convert_arguments (typelist, values, fndecl, flags)
 	{
 	  if (fndecl)
 	    {
-	      char *buf = (char *)alloca (32 + strlen (called_thing));
-	      sprintf (buf, "too few arguments to %s `%%#D'", called_thing);
-	      cp_error_at (buf, fndecl);
+	      cp_error_at ("too few arguments to %s `%+#D'",
+	                   called_thing, fndecl);
 	      error ("at this point in file");
 	    }
 	  else
@@ -3990,7 +4081,7 @@ pointer_int_sum (resultcode, ptrop, intop)
 
   register tree result_type = TREE_TYPE (ptrop);
 
-  if (!complete_type_or_else (result_type))
+  if (!complete_type_or_else (result_type, ptrop))
     return error_mark_node;
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
@@ -4082,7 +4173,7 @@ pointer_diff (op0, op1, ptrtype)
   tree restype = ptrdiff_type_node;
   tree target_type = TREE_TYPE (ptrtype);
 
-  if (!complete_type_or_else (target_type))
+  if (!complete_type_or_else (target_type, NULL_TREE))
     return error_mark_node;
 
   if (pedantic || warn_pointer_arith)
@@ -5272,6 +5363,7 @@ build_compound_expr (list)
      tree list;
 {
   register tree rest;
+  tree first;
 
   if (TREE_READONLY_DECL_P (TREE_VALUE (list)))
     TREE_VALUE (list) = decl_constant_value (TREE_VALUE (list));
@@ -5291,14 +5383,21 @@ build_compound_expr (list)
 	return TREE_VALUE (list);
     }
 
+  first = TREE_VALUE (list);
+  first = require_complete_type_in_void (first);
+  if (first == error_mark_node)
+    return error_mark_node;
+  
   rest = build_compound_expr (TREE_CHAIN (list));
+  if (rest == error_mark_node)
+    return error_mark_node;
 
   /* When pedantic, a compound expression cannot be a constant expression.  */
-  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)) && ! pedantic)
+  if (! TREE_SIDE_EFFECTS (first) && ! pedantic)
     return rest;
 
   return build (COMPOUND_EXPR, TREE_TYPE (rest),
-		break_out_cleanups (TREE_VALUE (list)), rest);
+		break_out_cleanups (first), rest);
 }
 
 tree
@@ -5670,7 +5769,13 @@ build_c_cast (type, expr)
     warning ("cast to pointer from integer of different size");
 #endif
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TREE_CODE (type) == VOID_TYPE)
+    {
+      value = require_complete_type_in_void (value);
+      if (value != error_mark_node)
+        value = build1 (CONVERT_EXPR, void_type_node, value);
+    }
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
     value = (convert_from_reference
 	     (convert_to_reference (type, value, CONV_C_CAST,
 				    LOOKUP_COMPLAIN, NULL_TREE)));
@@ -6954,11 +7059,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
       return rhs;
     }      
 
-  rhs = require_complete_type (rhs);
-  if (rhs == error_mark_node)
-    return error_mark_node;
-
-  if (exp != 0) exp = require_complete_type (exp);
+  if (exp != 0)
+    exp = require_complete_type (exp);
   if (exp == error_mark_node)
     return error_mark_node;
 
@@ -7158,7 +7260,7 @@ c_expand_return (retval)
   if (retval == result
       || DECL_CONSTRUCTOR_P (current_function_decl))
     /* It's already done for us.  */;
-  else if (TREE_TYPE (retval) == void_type_node)
+  else if (TREE_CODE (TREE_TYPE (retval)) == VOID_TYPE)
     {
       pedwarn ("return of void value in function returning non-void");
       expand_expr_stmt (retval);

@@ -2078,7 +2078,7 @@ print_z_candidates (candidates)
       else if (TYPE_P (candidates->fn))
 	cp_error ("%s %T <conversion>", str, candidates->fn);
       else
-	cp_error_at ("%s %+D%s", str, candidates->fn,
+	cp_error_at ("%s %+#D%s", str, candidates->fn,
 		     candidates->viable == -1 ? " <near match>" : "");
       str = "               "; 
     }
@@ -3175,6 +3175,8 @@ convert_arg_to_ellipsis (arg)
     /* Convert `short' and `char' to full-size `int'.  */
     arg = default_conversion (arg);
 
+  arg = require_complete_type (arg);
+  
   return arg;
 }
 
@@ -3515,7 +3517,7 @@ build_over_call (cand, args, flags)
       }
 
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))), converted_args);
-  if (TREE_TYPE (fn) == void_type_node)
+  if (TREE_CODE (TREE_TYPE (fn)) == VOID_TYPE)
     return fn;
   fn = require_complete_type (fn);
   if (IS_AGGR_TYPE (TREE_TYPE (fn)))
