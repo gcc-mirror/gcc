@@ -108,9 +108,6 @@
 /* Whether fputs_unlocked must be declared even if <stdio.h> is included.  */
 #undef NEED_DECLARATION_FPUTS_UNLOCKED
 
-/* Define if you want expensive run-time checks. */
-#undef ENABLE_CHECKING
-
 /* Define to enable the use of a default assembler. */
 #undef DEFAULT_ASSEMBLER
 
