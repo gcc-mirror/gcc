@@ -1,3 +1,8 @@
+2001-10-25  Hans Boehm <Hans_Boehm@hp.com>
+
+	* include/boehm-gc.h: Call thread local allocation functions
+	if THREAD_LOCAL_ALLOC is defined.
+
 2001-10-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault): Use
