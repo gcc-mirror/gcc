@@ -712,13 +712,15 @@ fixup_reorder_chain (void)
 		  if (note
 		      && INTVAL (XEXP (note, 0)) < REG_BR_PROB_BASE / 2
 		      && invert_jump (bb_end_insn,
-				      label_for_bb (e_fall->dest), 0))
+				      (e_fall->dest == EXIT_BLOCK_PTR
+				       ? NULL_RTX
+				       : label_for_bb (e_fall->dest)), 0))
 		    {
+		      e_fall->flags &= ~EDGE_FALLTHRU;
 #ifdef ENABLE_CHECKING
 		      if (!could_fall_through (e_taken->src, e_taken->dest))
 			abort ();
 #endif
-		      e_fall->flags &= ~EDGE_FALLTHRU;
 		      e_taken->flags |= EDGE_FALLTHRU;
 		      update_br_prob_note (bb);
 		      e = e_fall, e_fall = e_taken, e_taken = e;
