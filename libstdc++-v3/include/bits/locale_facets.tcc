@@ -473,38 +473,36 @@ namespace std
 	  __use_cache<__cache_type> __uc;
 	  const locale& __loc = __io._M_getloc();
 	  const __cache_type* __lc = __uc(__loc);
-          const size_t __tn = __traits_type::length(__lc->_M_truename) - 1;
-          const size_t __fn = __traits_type::length(__lc->_M_falsename) - 1;
+	  const size_t __tn = __traits_type::length(__lc->_M_truename);
+	  const size_t __fn = __traits_type::length(__lc->_M_falsename);
 
-	  bool __testf = false;
-	  bool __testt = false;
-          for (size_t __n = 0; __beg != __end; ++__n)
+	  bool __testf = true;
+	  bool __testt = true;
+	  size_t __n;
+          for (__n = 0; __beg != __end; ++__n, ++__beg)
             {
-              const char_type __c = *__beg;
-	      ++__beg;
+	      if (__testf)
+		if (__n < __fn)
+		  __testf = __traits_type::eq(*__beg, __lc->_M_falsename[__n]);
+		else
+		  break;
 
-	      if (__n <= __fn)
-		__testf = __traits_type::eq(__c, __lc->_M_falsename[__n]);
+	      if (__testt)
+		if (__n < __tn)
+		  __testt = __traits_type::eq(*__beg, __lc->_M_truename[__n]);
+		else
+		  break;
 
-	      if (__n <= __tn)
-		__testt = __traits_type::eq(__c, __lc->_M_truename[__n]);
-
-              if (!(__testf || __testt))
-                {
-                  __err |= ios_base::failbit;
-                  break;
-                }
-              else if (__testf && __n == __fn)
-                {
-                  __v = 0;
-                  break;
-                }
-              else if (__testt && __n == __tn)
-                {
-                  __v = 1;
-                  break;
-                }
+	      if (!__testf && !__testt)
+		break;      
             }
+	  if (__testf && __n == __fn)
+	    __v = 0;
+	  else if (__testt && __n == __tn)
+	    __v = 1;
+	  else
+	    __err |= ios_base::failbit;
+
           if (__beg == __end)
             __err |= ios_base::eofbit;
         }

@@ -446,10 +446,10 @@ namespace std
     protected:
       __c_locale		_M_c_locale_ctype;
 
-      // Pre-computed narrowed and widened chars in the range 0-127.
-      bool                      _M_narrow_ok;      
+      // Pre-computed narrowed and widened chars.
+      bool                      _M_narrow_ok;
       char                      _M_narrow[128];
-      wint_t                    _M_widen[128];
+      wint_t                    _M_widen[1 + static_cast<unsigned char>(-1)];
 
     public:
       // Data Members:

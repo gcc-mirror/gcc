@@ -191,47 +191,25 @@ namespace std
   wchar_t
   ctype<wchar_t>::
   do_widen(char __c) const
-  {
-    const unsigned char __uc = static_cast<unsigned char>(__c);
-    if (__uc < 128)
-      return _M_widen[__uc];
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-    __c_locale __old = __uselocale(_M_c_locale_ctype);
-#endif
-    const wchar_t __wc = btowc(__uc);
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-    __uselocale(__old);
-#endif
-    return __wc;
-  }
+  { return _M_widen[static_cast<unsigned char>(__c)]; }
 
   const char* 
   ctype<wchar_t>::
   do_widen(const char* __lo, const char* __hi, wchar_t* __dest) const
   {
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-    __c_locale __old = __uselocale(_M_c_locale_ctype);
-#endif
     while (__lo < __hi)
       {
-	const unsigned char __uc = static_cast<unsigned char>(*__lo);	
-	if (__uc < 128)
-	  *__dest = _M_widen[__uc];
-	else
-	  *__dest = btowc(__uc);	
+	*__dest = _M_widen[static_cast<unsigned char>(*__lo)];
 	++__lo;
 	++__dest;
       }
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-    __uselocale(__old);
-#endif
     return __hi;
   }
 
   char
   ctype<wchar_t>::
   do_narrow(wchar_t __wc, char __dfault) const
-  { 
+  {
     if (__wc >= 0 && __wc < 128 && _M_narrow_ok)
       return _M_narrow[__wc];
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
@@ -298,7 +276,8 @@ namespace std
       _M_narrow_ok = true;
     else
       _M_narrow_ok = false;
-    for (int __i = 0; __i < 128; ++__i)
+    for (size_t __i = 0;
+	 __i < sizeof(_M_widen) / sizeof(wint_t); ++__i)
       _M_widen[__i] = btowc(__i);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);

@@ -1,3 +1,23 @@
+2003-12-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get::do_get(bool&)):
+	Fail as soon as the begins of both truename and falsename
+	stop to match; always leave __beg one position beyond the
+	last char successfully matched.
+	* testsuite/22_locale/num_get/get/char/8.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/8.cc: Likewise.
+
+2003-12-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h (_M_widen): Reserve space
+	for all the possible widened chars.	
+	* config/locale/generic/ctype_members.cc (_M_initialize_ctype):
+	Compute at construction time all the possible widened chars.
+	(do_widen): Tweak, simplify.
+	* config/locale/gnu/ctype_members.cc: Likewise.
+	* testsuite/performance/narrow_widen_wchar_t.cc: Add tests
+	for the array versions.
+
 2003-12-12  Paolo Carlini  <pcarlini@suse.de>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
