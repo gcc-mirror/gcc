@@ -43,7 +43,6 @@
 	descriptor.
 	* class.c (make_method_value): Compute `throws' field for method.
 
->>>>>>> 1.790
 2001-08-22  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (resolve_inner_class): Keep local_enclosing to NULL if
@@ -69,7 +68,6 @@
 	superclass if necessary.
 	Fixes PR java/4007
 
->>>>>>> 1.785
 2001-08-16  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-dump.c (main): Updated for change to jcf_path_seal.
