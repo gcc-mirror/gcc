@@ -1,3 +1,15 @@
+Sun Feb  1 01:06:53 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_expand_unaligned_load): Use expand_binop properly.
+	Make sure result winds up in TGT.
+	(alpha_expand_unaligned_store): Use expand_binop properly.  Allow
+	src to be other than DImode.
+	(alpha_expand_unaligned_load_words): Tidy.  Take an offset argument.
+	(alpha_expand_unaligned_store_words): Likewise.
+	(alpha_expand_block_move): Use REGNO_POINTER_ALIGN.  Restructure so
+	that source and destination are separately optimized for alignment.
+	(alpha_expand_block_clear): Use REGNO_POINTER_ALIGN.
+
 Sun Feb  1 01:55:09 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.md (adddi3_internal_2): Be consistent with adddi3 expander
