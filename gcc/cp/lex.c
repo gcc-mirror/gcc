@@ -94,6 +94,7 @@ static void pragma_ungetc PROTO((int));
 static int read_line_number PROTO((int *));
 static int token_getch PROTO ((void));
 static void token_put_back PROTO ((int));
+static void mark_impl_file_chain PROTO ((void *));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
@@ -184,6 +185,33 @@ extern int *token_count;
 
 static tree defarg_fns;
 static tree defarg_parm;
+
+/* Functions and data structures for #pragma interface.
+
+   `#pragma implementation' means that the main file being compiled
+   is considered to implement (provide) the classes that appear in
+   its main body.  I.e., if this is file "foo.cc", and class `bar'
+   is defined in "foo.cc", then we say that "foo.cc implements bar".
+
+   All main input files "implement" themselves automagically.
+
+   `#pragma interface' means that unless this file (of the form "foo.h"
+   is not presently being included by file "foo.cc", the
+   CLASSTYPE_INTERFACE_ONLY bit gets set.  The effect is that none
+   of the vtables nor any of the inline functions defined in foo.h
+   will ever be output.
+
+   There are cases when we want to link files such as "defs.h" and
+   "main.cc".  In this case, we give "defs.h" a `#pragma interface',
+   and "main.cc" has `#pragma implementation "defs.h"'.  */
+
+struct impl_files
+{
+  char *filename;
+  struct impl_files *next;
+};
+
+static struct impl_files *impl_file_chain;
 
 
 /* Return something to represent absolute declarators containing a *.
@@ -544,7 +572,7 @@ init_parse (filename)
   set_identifier_size (sizeof (struct lang_identifier));
   decl_printable_name = lang_printable_name;
 
-  init_cplus_unsave ();
+  init_tree ();
   init_cplus_expand ();
 
   memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
@@ -894,7 +922,8 @@ init_parse (filename)
   ggc_add_tree_root (&defarg_parm, 1);
   ggc_add_tree_root (&this_filename_time, 1);
   ggc_add_tree_root (&filename_times, 1);
-
+  ggc_add_root (&impl_file_chain, 1, sizeof (impl_file_chain),
+		mark_impl_file_chain);
   return filename;
 }
 
@@ -1091,32 +1120,18 @@ set_yydebug (value)
 }
 
 
-/* Functions and data structures for #pragma interface.
+/* Mark ARG (which is really a struct impl_files **) for GC.  */
 
-   `#pragma implementation' means that the main file being compiled
-   is considered to implement (provide) the classes that appear in
-   its main body.  I.e., if this is file "foo.cc", and class `bar'
-   is defined in "foo.cc", then we say that "foo.cc implements bar".
-
-   All main input files "implement" themselves automagically.
-
-   `#pragma interface' means that unless this file (of the form "foo.h"
-   is not presently being included by file "foo.cc", the
-   CLASSTYPE_INTERFACE_ONLY bit gets set.  The effect is that none
-   of the vtables nor any of the inline functions defined in foo.h
-   will ever be output.
-
-   There are cases when we want to link files such as "defs.h" and
-   "main.cc".  In this case, we give "defs.h" a `#pragma interface',
-   and "main.cc" has `#pragma implementation "defs.h"'.  */
-
-struct impl_files
+static void
+mark_impl_file_chain (arg)
+     void *arg;
 {
-  char *filename;
-  struct impl_files *next;
-};
+  struct impl_files *ifs;
 
-static struct impl_files *impl_file_chain;
+  ifs = *(struct impl_files **) arg;
+  if (ifs)
+    ggc_mark_string (ifs->filename);
+}
 
 /* Helper function to load global variables with interface
    information.  */
@@ -1202,7 +1217,8 @@ cp_pragma_interface (main_filename)
       TREE_INT_CST_LOW (fi) = 0;
       TREE_INT_CST_HIGH (fi) = 1;
       /* Get default.  */
-      impl_file_chain = (struct impl_files *)permalloc (sizeof (struct impl_files));
+      impl_file_chain 
+	= (struct impl_files *) xmalloc (sizeof (struct impl_files));
       impl_file_chain->filename = filename;
       impl_file_chain->next = 0;
 #endif
@@ -1237,7 +1253,7 @@ cp_pragma_implementation (main_filename)
 	}
       if (ifiles == 0)
 	{
-	  ifiles = (struct impl_files*) permalloc (sizeof (struct impl_files));
+	  ifiles = (struct impl_files*) xmalloc (sizeof (struct impl_files));
 	  ifiles->filename = main_filename;
 	  ifiles->next = impl_file_chain;
 	  impl_file_chain = ifiles;
@@ -1247,7 +1263,7 @@ cp_pragma_implementation (main_filename)
 	    && ! strcmp (main_input_filename, input_filename))
 	   || ! strcmp (main_filename, input_filename))
     {
-      impl_file_chain = (struct impl_files*) permalloc (sizeof (struct impl_files));
+      impl_file_chain = (struct impl_files*) xmalloc (sizeof (struct impl_files));
       impl_file_chain->filename = main_filename;
       impl_file_chain->next = 0;
     }
@@ -1289,7 +1305,7 @@ begin_definition_of_inclass_inline (pi)
 
   feed_input (pi->buf, pi->len, pi->filename, pi->lineno);
   yychar = PRE_PARSED_FUNCTION_DECL;
-  yylval.ttype = build_tree_list ((tree) pi, pi->fndecl);
+  yylval.pi = pi;
   /* Pass back a handle to the rest of the inline functions, so that they
      can be processed later.  */
   DECL_PENDING_INLINE_INFO (pi->fndecl) = 0;
@@ -1340,11 +1356,10 @@ do_pending_inlines ()
    do_pending_inlines).  */
 
 void
-process_next_inline (t)
-     tree t;
+process_next_inline (i)
+     struct pending_inline *i;
 {
   tree context;
-  struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
   context = hack_decl_function_context (i->fndecl);  
   if (context)
     pop_function_context_from (context);
@@ -2539,7 +2554,7 @@ linenum:
       body_time = this_time;
     }
 
-  if (!TREE_PERMANENT (yylval.ttype))
+  if (! ggc_p && !TREE_PERMANENT (yylval.ttype))
     {
       input_filename
 	= (char *) permalloc (TREE_STRING_LENGTH (yylval.ttype) + 1);
@@ -3254,8 +3269,7 @@ do_scoped_id (token, parsing)
   /* during parsing, this is ::name. Otherwise, it is black magic. */
   if (parsing)
     {
-      struct tree_binding _b;
-      id = binding_init (&_b);
+      id = make_node (CPLUS_BINDING);
       if (!qualified_lookup_using_namespace (token, global_namespace, id, 0))
 	id = NULL_TREE;
       else
@@ -4836,23 +4850,16 @@ tree
 make_lang_type (code)
      enum tree_code code;
 {
-  extern struct obstack *current_obstack, *saveable_obstack;
   register tree t = make_node (code);
 
   /* Set up some flags that give proper default behavior.  */
   if (IS_AGGR_TYPE_CODE (code))
     {
-      struct obstack *obstack = current_obstack;
       struct lang_type *pi;
 
       SET_IS_AGGR_TYPE (t, 1);
 
-      if (! TREE_PERMANENT (t))
-	obstack = saveable_obstack;
-      else
-	my_friendly_assert (obstack == &permanent_obstack, 236);
-
-      pi = (struct lang_type *) obstack_alloc (obstack, sizeof (struct lang_type));
+      pi = (struct lang_type *) xmalloc (sizeof (struct lang_type));
       bzero ((char *) pi, (int) sizeof (struct lang_type));
 
       TYPE_LANG_SPECIFIC (t) = pi;

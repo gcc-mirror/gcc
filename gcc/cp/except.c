@@ -838,7 +838,7 @@ end_anon_func ()
   poplevel (1, 0, 0);
   pop_momentary ();
 
-  finish_function (lineno, 0, 0);
+  finish_function (lineno, 0);
 
   pop_from_top_level ();
   pop_function_context_from (NULL_TREE);

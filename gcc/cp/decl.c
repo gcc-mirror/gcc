@@ -946,11 +946,6 @@ pushlevel_temporary (tag_transparent)
 #define BINDING_LEVEL(NODE) \
    (((struct tree_binding*)NODE)->scope.level)
 
-/* These are currently unused, but permanent, CPLUS_BINDING nodes.
-   They are kept here because they are allocated from the permanent
-   obstack and cannot be easily freed.  */
-static tree free_binding_nodes;
-
 /* Make DECL the innermost binding for ID.  The LEVEL is the binding
    level at which this declaration is being bound.  */
 
@@ -962,21 +957,7 @@ push_binding (id, decl, level)
 {
   tree binding;
 
-  if (!free_binding_nodes)
-    {
-      /* There are no free nodes, so we must build one here.  */
-      push_permanent_obstack ();
-      binding = make_node (CPLUS_BINDING);
-      pop_obstacks ();
-    }
-  else
-    {
-      /* There are nodes on the free list.  Grab the first one.  */
-      binding = free_binding_nodes;
-      
-      /* And update the free list.  */
-      free_binding_nodes = TREE_CHAIN (free_binding_nodes);
-    }
+  binding = make_node (CPLUS_BINDING);
 
   /* Now, fill in the binding information.  */
   BINDING_VALUE (binding) = decl;
@@ -984,6 +965,7 @@ push_binding (id, decl, level)
   BINDING_LEVEL (binding) = level;
   INHERITED_VALUE_BINDING_P (binding) = 0;
   LOCAL_BINDING_P (binding) = (level != class_binding_level);
+  BINDING_HAS_LEVEL_P (binding) = 1;
 
   /* And put it on the front of the list of bindings for ID.  */
   TREE_CHAIN (binding) = IDENTIFIER_BINDING (id);
@@ -1210,15 +1192,9 @@ pop_binding (id, decl)
     my_friendly_abort (0);
 
   if (!BINDING_VALUE (binding) && !BINDING_TYPE (binding))
-    {
-      /* We're completely done with the innermost binding for this
-	 identifier.  Unhook it from the list of bindings.  */
-      IDENTIFIER_BINDING (id) = TREE_CHAIN (binding);
-
-      /* And place it on the free list.  */
-      TREE_CHAIN (binding) = free_binding_nodes;
-      free_binding_nodes = binding;
-    }
+    /* We're completely done with the innermost binding for this
+       identifier.  Unhook it from the list of bindings.  */
+    IDENTIFIER_BINDING (id) = TREE_CHAIN (binding);
 }
 
 /* When a label goes out of scope, check to see if that label was used
@@ -2424,11 +2400,6 @@ mark_saved_scope (arg)
     }
 }
 
-/* A chain of the binding vecs created by store_bindings.  We create a
-   whole bunch of these during compilation, on permanent_obstack, so we
-   can't just throw them away.  */
-static tree free_binding_vecs;
-
 static tree
 store_bindings (names, old_bindings)
      tree names, old_bindings;
@@ -2454,13 +2425,7 @@ store_bindings (names, old_bindings)
 	if (TREE_VEC_ELT (t1, 0) == id)
 	  goto skip_it;
 
-      if (free_binding_vecs)
-	{
-	  binding = free_binding_vecs;
-	  free_binding_vecs = TREE_CHAIN (free_binding_vecs);
-	}
-      else
-	binding = make_tree_vec (4);
+      binding = make_tree_vec (4);
 
       if (id)
 	{
@@ -2567,9 +2532,8 @@ pop_from_top_level ()
   VARRAY_FREE (current_lang_base);
 
   scope_chain = s->prev;
-  for (t = s->old_bindings; t; )
+  for (t = s->old_bindings; t; t = TREE_CHAIN (t))
     {
-      tree save = t;
       tree id = TREE_VEC_ELT (t, 0);
       if (id)
 	{
@@ -2577,9 +2541,6 @@ pop_from_top_level ()
 	  IDENTIFIER_BINDING (id) = TREE_VEC_ELT (t, 2);
 	  IDENTIFIER_CLASS_VALUE (id) = TREE_VEC_ELT (t, 3);
  	}
-      t = TREE_CHAIN (t);
-      TREE_CHAIN (save) = free_binding_vecs;
-      free_binding_vecs = save;
     }
 
   if (current_lang_name == lang_name_cplusplus)
@@ -5262,7 +5223,6 @@ tree
 lookup_namespace_name (namespace, name)
      tree namespace, name;
 {
-  struct tree_binding _b;
   tree val;
   tree template_id = NULL_TREE;
 
@@ -5293,7 +5253,7 @@ lookup_namespace_name (namespace, name)
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 373);
   
-  val = binding_init (&_b);
+  val = make_node (CPLUS_BINDING);
   if (!qualified_lookup_using_namespace (name, namespace, val, 0))
     return error_mark_node;
 
@@ -5425,12 +5385,7 @@ build_typename_type (context, name, fullname, base_type)
   /* See if we already have this type.  */
   e = hash_lookup (&ht, t, /*create=*/false, /*copy=*/0);
   if (e)
-    {
-      /* This will free not only TREE_TYPE, but the lang-specific data
-	 and the TYPE_DECL as well.  */
-      obstack_free (&permanent_obstack, t);
-      t = (tree) e->key;
-    }
+    t = (tree) e->key;
   else
     /* Insert the type into the table.  */
     hash_lookup (&ht, t, /*create=*/true, /*copy=*/0);
@@ -5571,8 +5526,7 @@ unqualified_namespace_lookup (name, flags, spacesp)
      int flags;
      tree *spacesp;
 {
-  struct tree_binding _binding;
-  tree b = binding_init (&_binding);
+  tree b = make_node (CPLUS_BINDING);
   tree initial = current_decl_namespace();
   tree scope = initial;
   tree siter;
@@ -5750,8 +5704,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	    type = global_namespace;
 	  if (TREE_CODE (type) == NAMESPACE_DECL)
 	    {
-	      struct tree_binding b;
-	      val = binding_init (&b);
+	      val = make_node (CPLUS_BINDING);
 	      flags |= LOOKUP_COMPLAIN;
 	      if (!qualified_lookup_using_namespace (name, type, val, flags))
 		return NULL_TREE;
@@ -12930,11 +12883,7 @@ static int function_depth;
    For C++, we must first check whether that datum makes any sense.
    For example, "class A local_a(1,2);" means that variable local_a
    is an aggregate of type A, which should have a constructor
-   applied to it with the argument list [1, 2].
-
-   @@ There is currently no way to retrieve the storage
-   @@ allocated to FUNCTION (or all of its parms) if we return
-   @@ something we had previously.  */
+   applied to it with the argument list [1, 2].  */
 
 int
 start_function (declspecs, declarator, attrs, pre_parsed_p)
@@ -13550,16 +13499,12 @@ store_return_init (decl)
      2 - INCLASS_INLINE
        We just finished processing the body of an in-class inline
        function definition.  (This processing will have taken place
-       after the class definition is complete.)
-
-   NESTED is nonzero if we were in the middle of compiling another function
-   when we started on this one.  */
+       after the class definition is complete.)  */
 
 void
-finish_function (lineno, flags, nested)
+finish_function (lineno, flags)
      int lineno;
      int flags;
-     int nested;
 {
   register tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
@@ -13570,15 +13515,14 @@ finish_function (lineno, flags, nested)
   int call_poplevel = (flags & 1) != 0;
   int inclass_inline = (flags & 2) != 0;
   int expand_p;
+  int nested;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
   if (fndecl == NULL_TREE)
     return;
 
-  if (function_depth > 1)
-    nested = 1;
-
+  nested = function_depth > 1;
   fntype = TREE_TYPE (fndecl);
 
 /*  TREE_READONLY (fndecl) = 1;
@@ -13600,6 +13544,15 @@ finish_function (lineno, flags, nested)
 	  expand_end_bindings (decls, decls != NULL_TREE, 0);
 	  poplevel (decls != NULL_TREE, 0, 0);
 	}
+
+      /* Because we do not call expand_function_end, we won't call
+	 expand_end_bindings to match the call to
+	 expand_start_bindings we did in store_parm_decls.  Therefore,
+	 we explicitly call expand_end_bindings here.  However, we
+	 really shouldn't be calling expand_start_bindings at all when
+	 building_stmt_tree; it's conceptually an RTL-generation
+	 function, rather than a front-end function.  */
+      expand_end_bindings (0, 0, 0);
     }
   else
     {
@@ -14041,9 +13994,16 @@ finish_function (lineno, flags, nested)
 	   function is gone.  See save_tree_status.  */
 	flag_keep_inline_functions = 1;
 
+      /* If this is a nested function (like a template instantiation
+	 that we're compiling in the midst of compiling something
+	 else), push a new GC context.  That will keep local variables
+	 on the stack from being collected while we're doing the
+	 compilation of this function.  */
+      if (function_depth > 1)
+	ggc_push_context ();
+
       /* Run the optimizers and output the assembler code for this
          function.  */
-
       if (DECL_ARTIFICIAL (fndecl))
 	{
 	  /* Do we really *want* to inline this synthesized method?  */
@@ -14060,6 +14020,10 @@ finish_function (lineno, flags, nested)
 	}
       else
 	rest_of_compilation (fndecl);
+
+      /* Undo the call to ggc_push_context above.  */
+      if (function_depth > 1)
+	ggc_pop_context ();
 
       flag_keep_inline_functions = saved_flag_keep_inline_functions;
 
@@ -14557,6 +14521,9 @@ mark_cp_function_context (f)
 {
   struct language_function *p = f->language;
 
+  if (!p)
+    return;
+
   ggc_mark_tree (p->x_named_labels);
   ggc_mark_tree (p->x_ctor_label);
   ggc_mark_tree (p->x_dtor_label);
@@ -14588,7 +14555,7 @@ lang_mark_false_label_stack (l)
      struct label_node *l;
 {
   /* C++ doesn't use false_label_stack.  It better be NULL.  */
-  my_friendly_assert (l != NULL, 19990904);
+  my_friendly_assert (l == NULL, 19990904);
 }
 
 void
@@ -14611,6 +14578,18 @@ lang_mark_tree (t)
 	  ggc_mark_tree (li2->error_locus);
 	}
     }
+  else if (code == CPLUS_BINDING)
+    {
+      if (BINDING_HAS_LEVEL_P (t))
+	mark_binding_level (&BINDING_LEVEL (t));
+      else
+	ggc_mark_tree (BINDING_SCOPE (t));
+      ggc_mark_tree (BINDING_VALUE (t));
+    }
+  else if (code == OVERLOAD)
+    ggc_mark_tree (OVL_FUNCTION (t));
+  else if (code == TEMPLATE_PARM_INDEX)
+    ggc_mark_tree (TEMPLATE_PARM_DECL (t));
   else if (TREE_CODE_CLASS (code) == 'd')
     {
       struct lang_decl *ld = DECL_LANG_SPECIFIC (t);
@@ -14635,7 +14614,8 @@ lang_mark_tree (t)
     {
       struct lang_type *lt = TYPE_LANG_SPECIFIC (t);
 
-      if (lt)
+      if (lt && !(TREE_CODE (t) == POINTER_TYPE 
+		  && TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE))
 	{
 	  ggc_mark_tree (lt->vfields);
 	  ggc_mark_tree (lt->vbases);
@@ -14647,7 +14627,12 @@ lang_mark_tree (t)
 	  ggc_mark_tree (lt->rtti);
 	  ggc_mark_tree (lt->methods);
 	  ggc_mark_tree (lt->template_info);
+	  ggc_mark_tree (lt->befriending_classes);
 	}
+      else if (lt)
+	/* In the case of pointer-to-member function types, the
+	   TYPE_LANG_SPECIFIC is really just a tree.  */
+	ggc_mark_tree ((tree) lt);
     }
 }
 
@@ -14656,11 +14641,8 @@ lang_cleanup_tree (t)
      tree t;
 {
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
-      && TYPE_LANG_SPECIFIC (t) != NULL)
-    {
-#if 0
-      /* This is currently allocated with an obstack.  This will change.  */
-      free (TYPE_LANG_SPECIFIC (t));
-#endif
-    }
+      && TYPE_LANG_SPECIFIC (t) != NULL
+      && !(TREE_CODE (t) == POINTER_TYPE 
+		  && TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE))
+    free (TYPE_LANG_SPECIFIC (t));
 }

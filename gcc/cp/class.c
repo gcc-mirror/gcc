@@ -115,8 +115,6 @@ static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
 static int field_decl_cmp PROTO ((const tree *, const tree *));
 static int method_name_cmp PROTO ((const tree *, const tree *));
-static tree make_method_vec PROTO((int));
-static void free_method_vec PROTO((tree));
 static tree add_implicitly_declared_members PROTO((tree, int, int, int));
 static tree fixed_type_or_null PROTO((tree, int *));
 static tree resolve_address_of_overloaded_function PROTO((tree, tree, int,
@@ -1066,46 +1064,6 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
 struct obstack class_obstack;
 extern struct obstack *current_obstack;
 
-/* These are method vectors that were too small for the number of
-   methods in some class, and so were abandoned.  */
-static tree free_method_vecs;
-
-/* Returns a method vector with enough room for N methods.  N should
-   be a power of two.  */
-
-static tree
-make_method_vec (n)
-     int n;
-{
-  tree new_vec;
-  tree* t;
-  
-  for (t = &free_method_vecs; *t; t = &(TREE_CHAIN (*t)))
-    /* Note that we don't use >= n here because we don't want to
-       allocate a very large vector where it isn't needed.  */
-    if (TREE_VEC_LENGTH (*t) == n)
-      {
-	new_vec = *t;
-	*t = TREE_CHAIN (new_vec);
-	TREE_CHAIN (new_vec) = NULL_TREE;
-	bzero ((PTR) &TREE_VEC_ELT (new_vec, 0), n * sizeof (tree));
-	return new_vec;
-      }
-
-  new_vec = make_tree_vec (n);
-  return new_vec;
-}
-
-/* Free the method vector VEC.  */
-
-static void
-free_method_vec (vec)
-     tree vec;
-{
-  TREE_CHAIN (vec) = free_method_vecs;
-  free_method_vecs = vec;
-}
-
 /* Add method METHOD to class TYPE.
 
    If non-NULL, FIELDS is the entry in the METHOD_VEC vector entry of
@@ -1141,9 +1099,8 @@ add_method (type, fields, method)
 	   memory making the links in the list than we would by
 	   over-allocating the size of the vector here.  Furthermore,
 	   we would complicate all the code that expects this to be a
-	   vector.  We keep a free list of vectors that we outgrew so
-	   that we don't really waste any memory.  */
-	CLASSTYPE_METHOD_VEC (type) = make_method_vec (8);
+	   vector.  */
+	CLASSTYPE_METHOD_VEC (type) = make_tree_vec (8);
 
       method_vec = CLASSTYPE_METHOD_VEC (type);
       len = TREE_VEC_LENGTH (method_vec);
@@ -1165,11 +1122,10 @@ add_method (type, fields, method)
 	  if (slot == len)
 	    {
 	      /* We need a bigger method vector.  */
-	      tree new_vec = make_method_vec (2 * len);
+	      tree new_vec = make_tree_vec (2 * len);
 	      bcopy ((PTR) &TREE_VEC_ELT (method_vec, 0),
 		     (PTR) &TREE_VEC_ELT (new_vec, 0),
 		     len * sizeof (tree));
-	      free_method_vec (method_vec);
 	      len = 2 * len;
 	      method_vec = CLASSTYPE_METHOD_VEC (type) = new_vec;
 	    }
