@@ -1,3 +1,8 @@
+2000-11-07  Philipp Thomas  <pthomas@suse.de>
+
+	* ABOUT-GCC-NLS: Remove the patch for gettext as it has been
+	accepted my the gettext maintainer.
+
 2000-11-07  DJ Delorie  <dj@redhat.com>
 
 	* testsuite/gcc.dg/20000614-1.c: Add return so that test can pass.
