@@ -145,6 +145,20 @@ __objc_mutex_allocate(objc_mutex_t mutex)
 int
 __objc_mutex_deallocate(objc_mutex_t mutex)
 {
+  int count = 1;
+
+  /*
+   * Posix Threads specifically require that the thread be unlocked for
+   * pthread_mutex_destroy to work.
+   */
+
+  while ( count )
+    {
+      if (( count = pthread_mutex_unlock((pthread_mutex_t *)mutex->backend))
+          < 0 )
+        return -1;
+    }
+
   if (pthread_mutex_destroy((pthread_mutex_t *)mutex->backend))
     return -1;
 
