@@ -51,7 +51,7 @@ typedef void *__gthread_mutex_t;
  */
 
 /* generic per task variables */
-extern int rtems_gxx_once (__gthread_once_t *once, void (*func) ());
+extern int rtems_gxx_once (__gthread_once_t *once, void (*func) (void));
 extern int rtems_gxx_key_create (__gthread_key_t *key, void (*dtor) (void *));
 extern int rtems_gxx_key_dtor (__gthread_key_t key, void *ptr);
 extern int rtems_gxx_key_delete (__gthread_key_t key);
@@ -74,7 +74,7 @@ __gthread_active_p (void)
 
 /* Wrapper calls */
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) ())
+__gthread_once (__gthread_once_t *once, void (*func) (void))
 {
    return rtems_gxx_once( once, func );
 }
