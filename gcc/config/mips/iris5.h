@@ -61,7 +61,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.cc:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.cxx:	-D_LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D_LANGUAGE_C_PLUS_PLUS} \
-%{.m:	-D_LANGUAGE_OBJECTIVE_C} \
+%{.m:	-D_LANGUAGE_OBJECTIVE_C -D_LANGUAGE_C} \
 %{!.S: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}\
 %{!mfp64: -D_MIPS_FPSET=16}%{mfp64: -D_MIPS_FPSET=32} \
 %{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
