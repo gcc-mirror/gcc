@@ -1,5 +1,11 @@
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/sparc.c (sparc_encode_section_info): Remove.
+	(data_segment_operand): Use SYMBOL_REF_FUNCTION_P.
+	(text_segment_operand): Likewise.
+
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
 	* config/sh/sh.c (gen_datalabel_ref): Don't add SH_DATALABEL_ENCODING.
 	(tls_symbolic_operand): Use SYMBOL_REF_TLS_MODEL.
 	(legitimize_pic_address): Use SYMBOL_REF_LOCAL_P.
