@@ -112,6 +112,23 @@ extern int target_flags;
     {"align-300",	8192,  "Use H8/300 alignment rules"},		\
     { "", TARGET_DEFAULT, NULL}}
 
+#ifdef IN_LIBGCC2
+#undef TARGET_H8300H
+#undef TARGET_H8300S
+/* If compiling libgcc2, make these compile time constants based on what
+   flags are we actually compiling with.  */
+#ifdef __H8300H__
+#define TARGET_H8300H	1
+#else
+#define TARGET_H8300H	0
+#endif
+#ifdef __H8300S__
+#define TARGET_H8300S	1
+#else
+#define TARGET_H8300S	0
+#endif
+#endif /* !IN_LIBGCC2 */
+
 /* Do things that must be done once at start up.  */
 
 #define OVERRIDE_OPTIONS \
