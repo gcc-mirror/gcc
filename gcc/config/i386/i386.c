@@ -1727,7 +1727,7 @@ classify_argument (mode, type, classes, bit_offset)
 		     return 0;
 		   for (i = 0; i < num; i++)
 		     {
-		       int pos = (offset + bit_offset) / 8 / 8;
+		       int pos = (offset + (bit_offset % 64)) / 8 / 8;
 		       classes[i + pos] =
 			 merge_classes (subclasses[i], classes[i + pos]);
 		     }
