@@ -1,5 +1,21 @@
 2000-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* aclocal.m4 (gcc_AC_NEED_DECLARATION): This macro now requires
+	INCLUDES to search and does not provide any of its own.  Also it
+	now accepts optional ACTION-IF-NEEDED and ACTION-IF-NOT-NEEDED
+	parameters.  Also it does not call AC_DEFINE.
+	(gcc_AC_NEED_DECLARATIONS): Likewise.  Also this macro now calls
+	AC_DEFINE and provides for automatic entries for autoheader.
+	(gcc_AC_FUNC_PRINTF_PTR): Cleanup C code in test.
+
+	* configure.in (gcc_AC_NEED_DECLARATIONS): Save and restore CFLAGS
+	so we can pass -I flags and include gansidecl.h/system.h in this
+	test.
+
+	* acconfig.h: Delete all NEED_DECLARATION_* entries.
+
+2000-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
         * acconfig.h (ENABLE_STD_NAMESPACE, ENABLE_CHECKING,
 	ENABLE_TREE_CHECKING, ENABLE_RTL_CHECKING, ENABLE_GC_CHECKING,
 	ENABLE_GC_ALWAYS_COLLECT): Delete entries.

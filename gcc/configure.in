@@ -446,22 +446,26 @@ AC_FUNC_VFORK
 AC_FUNC_MMAP_ANYWHERE
 AC_FUNC_MMAP_FILE
 
+# We will need to find libiberty.h and ansidecl.h
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
 gcc_AC_NEED_DECLARATIONS(bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort atof getcwd getwd \
-	strsignal putc_unlocked fputs_unlocked strstr environ)
-
-gcc_AC_NEED_DECLARATIONS(malloc realloc calloc free, [
-#ifdef HAVE_MALLOC_H
-#include <malloc.h>
-#endif
-])
+	strsignal putc_unlocked fputs_unlocked strstr environ \
+	malloc realloc calloc free, [
+#include "gansidecl.h"
+#include "system.h"])
 
 gcc_AC_NEED_DECLARATIONS(getrlimit setrlimit getrusage, [
-#include <sys/types.h>
+#include "gansidecl.h"
+#include "system.h"
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
 ])
+
+# Restore CFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
+CFLAGS="$saved_CFLAGS"
 
 # mkdir takes a single argument on some systems. 
 gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG
