@@ -1,3 +1,14 @@
+2002-07-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* Makefile.am: Add SH support.
+	* Makefile.in: Regenerate.
+	* configure.in (sh-*-linux*, sh[34]*-*-linux*): Add target.
+	* configure: Regenerate.
+	* include/ffi.h.in: Add SH support.
+	* src/sh/ffi.c: New file.
+	* src/sh/sysv.S: New file.
+	* src/types.c: Add SH support.
+
 2002-07-16  Bo Thorsen  <bo@suse.de>
 
 	* src/x86/ffi64.c: New file that adds x86-64 support.
