@@ -1,5 +1,5 @@
 /* Analyze RTL for C-Compiler
-   Copyright (C) 1987, 88, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 9-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -177,8 +177,17 @@ rtx_addr_varies_p (x)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      if (rtx_addr_varies_p (XEXP (x, i)))
-	return 1;
+      {
+	if (rtx_addr_varies_p (XEXP (x, i)))
+	  return 1;
+      }
+    else if (fmt[i] == 'E')
+      {
+	int j;
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (rtx_addr_varies_p (XVECEXP (x, i, j)))
+	    return 1;
+      }
   return 0;
 }
 
