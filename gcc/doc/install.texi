@@ -3190,7 +3190,7 @@ On a System V release 4 system, make sure @file{/usr/bin} precedes
 <hr>
 @end html
 @heading @anchor{vax-dec-ultrix}vax-dec-ultrix
-Don't try compiling with Vax C (@code{vcc}).  It produces incorrect code
+Don't try compiling with VAX C (@code{vcc}).  It produces incorrect code
 in some cases (for example, when @code{alloca} is used).
 
 @html

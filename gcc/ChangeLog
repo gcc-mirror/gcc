@@ -1,3 +1,7 @@
+2001-08-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* doc/install.texi (vax-dec-ultrix): Change `Vax' to VAX.
+
 2001-08-10  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific, avr): Fix cross-reference to the
