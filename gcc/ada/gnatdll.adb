@@ -26,8 +26,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  GNATDLL is a Windows specific tool to build DLL.
---  Both relocatable and non-relocatable DLL are supported
+--  GNATDLL is a Windows specific tool for building a DLL.
+--  Both relocatable and non-relocatable DLL's are supported
 
 with Ada.Text_IO;
 with Ada.Strings.Unbounded;
@@ -50,57 +50,58 @@ procedure Gnatdll is
    use type OS_Lib.Argument_List;
 
    procedure Syntax;
-   --  print out usage.
+   --  Print out usage
 
    procedure Check (Filename : String);
-   --  check that filename exist.
+   --  Check that the file whose name is Filename exists
 
    procedure Parse_Command_Line;
-   --  parse the command line arguments of gnatdll.
+   --  Parse the command line arguments passed to gnatdll
 
    procedure Check_Context;
-   --  check the context before runing any commands to build the library.
+   --  Check the context before runing any commands to build the library
 
    Syntax_Error  : exception;
    Context_Error : exception;
+   --  What are these for ???
 
-   Help          : Boolean := False;
+   Help : Boolean := False;
+   --  What is this for ???
 
    Version : constant String := Gnatvsn.Gnat_Version_String;
-
-   --  default address for non relocatable DLL (Win32)
+   --  Why should it be necessary to make a copy of this
 
    Default_DLL_Address : constant String := "0x11000000";
+   --  Default address for non relocatable DLL (Win32)
 
    Lib_Filename        : Unbounded_String := Null_Unbounded_String;
    Def_Filename        : Unbounded_String := Null_Unbounded_String;
    List_Filename       : Unbounded_String := Null_Unbounded_String;
    DLL_Address         : Unbounded_String :=
-     To_Unbounded_String (Default_DLL_Address);
-
-   --  list of objects to put inside the library
+                           To_Unbounded_String (Default_DLL_Address);
+   --  What are the above ???
 
    Objects_Files : Argument_List_Access := Null_Argument_List_Access;
+   --  List of objects to put inside the library
 
-   --  for each Ada files specified we keep record of the corresponding
-   --  Ali. This list of ali is used to build the binder program.
+   Ali_Files : Argument_List_Access := Null_Argument_List_Access;
+   --  For each Ada file specified, we keep arecord of the corresponding
+   --  ALI file. This list of SLI files is used to build the binder program.
 
-   Ali_Files     : Argument_List_Access := Null_Argument_List_Access;
-
-   --  a list of options set in the command line.
-
-   Options       : Argument_List_Access := Null_Argument_List_Access;
-
-   --  gnat linker and binder args options
+   Options : Argument_List_Access := Null_Argument_List_Access;
+   --  A list of options set in the command line.
 
    Largs_Options : Argument_List_Access := Null_Argument_List_Access;
    Bargs_Options : Argument_List_Access := Null_Argument_List_Access;
+   --  GNAT linker and binder args options
 
    type Build_Mode_State is (Import_Lib, Dynamic_Lib, Nil);
+   --  Comments needed ???
 
    Build_Mode             : Build_Mode_State := Nil;
    Must_Build_Relocatable : Boolean := True;
    Build_Import           : Boolean := True;
+   --  Comments needed
 
    ------------
    -- Syntax --
@@ -168,35 +169,32 @@ procedure Gnatdll is
       --  for each ali file in Afiles set put a corresponding object file in
       --  Ofiles set.
 
-      --  these are arbitrary limits, a better way will be to use linked list.
-
       Max_Files   : constant := 5_000;
       Max_Options : constant :=   100;
-
-      --  objects files to put in the library
+      --  These are arbitrary limits, a better way will be to use linked list.
+      --  No, a better choice would be to use tables ???
+      --  Limits on what???
 
       Ofiles : OS_Lib.Argument_List (1 .. Max_Files);
       O      : Positive := Ofiles'First;
-
-      --  ali files.
+      --  List of object files to put in the library. O is the next entry
+      --  to be used.
 
       Afiles : OS_Lib.Argument_List (1 .. Max_Files);
       A      : Positive := Afiles'First;
-
-      --  gcc options.
+      --  List of ALI files. A is the next entry to be used.
 
       Gopts  : OS_Lib.Argument_List (1 .. Max_Options);
       G      : Positive := Gopts'First;
-
-      --  largs options
+      --  List of gcc options. G is the next entry to be used.
 
       Lopts  : OS_Lib.Argument_List (1 .. Max_Options);
       L      : Positive := Lopts'First;
-
-      --  bargs options
+      --  A list of -largs options (L is next entry to be used)
 
       Bopts  : OS_Lib.Argument_List (1 .. Max_Options);
       B      : Positive := Bopts'First;
+      --  A list of -bargs options (B is next entry to be used)
 
       --------------
       -- Add_File --
@@ -205,12 +203,13 @@ procedure Gnatdll is
       procedure Add_File (Filename : in String) is
       begin
          --  others files are to be put inside the dynamic library
+         --  ??? this makes no sense, should it be "Other files ..."
 
          if Files.Is_Ali (Filename) then
 
             Check (Filename);
 
-            --  record it to generate the binder program when
+            --  Record it to generate the binder program when
             --  building dynamic library
 
             Afiles (A) := new String'(Filename);
@@ -220,13 +219,13 @@ procedure Gnatdll is
 
             Check (Filename);
 
-            --  just record this object file
+            --  Just record this object file
 
             Ofiles (O) := new String'(Filename);
             O := O + 1;
 
          else
-            --  unknown file type
+            --  Unknown file type
 
             Exceptions.Raise_Exception
               (Syntax_Error'Identity,
@@ -242,6 +241,7 @@ procedure Gnatdll is
          File   : Text_IO.File_Type;
          Buffer : String (1 .. 500);
          Last   : Natural;
+
       begin
          Text_IO.Open (File, Text_IO.In_File, List_Filename);
 
@@ -265,8 +265,9 @@ procedure Gnatdll is
          end loop;
       end Ali_To_Object_List;
 
-   begin
+   --  Start of processing for Parse_Command_Line
 
+   begin
       Initialize_Option_Scan ('-', False, "bargs largs");
 
       --  scan gnatdll switches
@@ -285,7 +286,8 @@ procedure Gnatdll is
                G := G + 1;
 
             when 'v' =>
-               --  verbose mode on.
+
+               --  Turn verbose mode on
 
                MDLL.Verbose := True;
                if MDLL.Quiet then
@@ -295,7 +297,8 @@ procedure Gnatdll is
                end if;
 
             when 'q' =>
-               --  quiet mode on.
+
+               --  Turn quiet mode on
 
                MDLL.Quiet := True;
                if MDLL.Verbose then
@@ -312,7 +315,7 @@ procedure Gnatdll is
 
                if Parameter = "" then
 
-                  --  default address for a relocatable dynamic library.
+                  --  Default address for a relocatable dynamic library.
                   --  address for a non relocatable dynamic library.
 
                   DLL_Address := To_Unbounded_String (Default_DLL_Address);
@@ -329,7 +332,7 @@ procedure Gnatdll is
 
             when 'd' =>
 
-               --  build a non relocatable DLL.
+               --  Build a non relocatable DLL
 
                Lib_Filename := To_Unbounded_String (Parameter);
 
@@ -355,10 +358,9 @@ procedure Gnatdll is
                raise Invalid_Switch;
 
          end case;
-
       end loop;
 
-      --  get parameters
+      --  Get parameters
 
       loop
          declare
@@ -369,7 +371,7 @@ procedure Gnatdll is
          end;
       end loop;
 
-      --  get largs parameters
+      --  Get largs parameters
 
       Goto_Section ("largs");
 
@@ -386,7 +388,7 @@ procedure Gnatdll is
          end case;
       end loop;
 
-      --  get bargs parameters
+      --  Get bargs parameters
 
       Goto_Section ("bargs");
 
@@ -403,13 +405,13 @@ procedure Gnatdll is
          end case;
       end loop;
 
-      --  if list filename has been specified parse it
+      --  if list filename has been specified, parse it
 
       if List_Filename /= Null_Unbounded_String then
          Add_Files_From_List (To_String (List_Filename));
       end if;
 
-      --  check if the set of parameters are compatible.
+      --  Check if the set of parameters are compatible.
 
       if Build_Mode = Nil and then not Help and then not Verbose then
          Exceptions.Raise_Exception
@@ -417,8 +419,8 @@ procedure Gnatdll is
             "nothing to do.");
       end if;
 
-      --  check if we want to build an import library (option -e and no file
-      --  specified)
+      --  Check if we want to build an import library (option -e and
+      --  no file specified)
 
       if Build_Mode = Dynamic_Lib
         and then A = Afiles'First
@@ -470,16 +472,17 @@ procedure Gnatdll is
 
       Check (To_String (Def_Filename));
 
-      --  check that each object file specified exist
-      --  raises Context_Error if it does not.
+      --  Check that each object file specified exists and raise exception
+      --  Context_Error if it does not.
 
       for F in Objects_Files'Range loop
          Check (Objects_Files (F).all);
       end loop;
    end Check_Context;
 
-begin
+--  Start of processing for Gnatdll
 
+begin
    if Ada.Command_Line.Argument_Count = 0 then
       Help := True;
    else
