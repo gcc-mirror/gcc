@@ -3273,17 +3273,7 @@ static unsigned decl_die_table_in_use;
    of declaration scopes at the current scope and containing
    scopes.  This table is used to find the proper place to
    define type declaration DIE's.  */
-static tree *decl_scope_table;
-
-/* Number of elements currently allocated for the decl_scope_table.  */
-static int decl_scope_table_allocated;
-
-/* Current level of nesting of declaration scopes.  */
-static int decl_scope_depth;
-
-/* Size (in elements) of increments by which we may expand the
-   decl_scope_table.  */
-#define DECL_SCOPE_TABLE_INCREMENT 64
+varray_type decl_scope_table;
 
 /* A pointer to the base of a list of references to DIE's that
    are uniquely identified by their tag, presence/absence of
@@ -3368,20 +3358,11 @@ static unsigned ranges_table_in_use;
 static unsigned have_location_lists;
 
 /* A pointer to the base of a list of incomplete types which might be
-   completed at some later time.  */
-
-static tree *incomplete_types_list;
-
-/* Number of elements currently allocated for the incomplete_types_list.  */
-static unsigned incomplete_types_allocated;
-
-/* Number of elements of incomplete_types_list currently in use.  */
-static unsigned incomplete_types;
-
-/* Size (in elements) of increments by which we may expand the incomplete
-   types list.  Actually, a single hunk of space of this size should
-   be enough for most typical programs.	 */
-#define INCOMPLETE_TYPES_INCREMENT 64
+   completed at some later time.  incomplete_types_list needs to be a VARRAY
+   because we want to tell the garbage collector about it.  If we don't tell
+   the garbage collector about it, we can garbage collect live data.
+   Bug 4215.*/
+varray_type incomplete_types;
 
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
@@ -9166,26 +9147,16 @@ static void
 push_decl_scope (scope)
      tree scope;
 {
-  /* Make room in the decl_scope_table, if necessary.  */
-  if (decl_scope_table_allocated == decl_scope_depth)
-    {
-      decl_scope_table_allocated += DECL_SCOPE_TABLE_INCREMENT;
-      decl_scope_table
-	= (tree *) xrealloc (decl_scope_table,
-			     decl_scope_table_allocated * sizeof (tree));
-    }
-
-  decl_scope_table[decl_scope_depth] = scope;
-  decl_scope_depth++;
+  VARRAY_PUSH_TREE (decl_scope_table, scope);
 }
 
 /* Pop a declaration scope.  */
 static inline void
 pop_decl_scope ()
 {
-  if (decl_scope_depth <= 0)
+  if (VARRAY_ACTIVE_SIZE (decl_scope_table) <= 0)
     abort ();
-  --decl_scope_depth;
+  VARRAY_POP (decl_scope_table);
 }
 
 /* Return the DIE for the scope that immediately contains this type.
@@ -9227,8 +9198,8 @@ scope_die_for (t, context_die)
 	 first we check to see if we're in the middle of emitting it
 	 so we know where the new DIE should go.  */
 
-      for (i = decl_scope_depth - 1; i >= 0; --i)
-	if (decl_scope_table[i] == containing_scope)
+      for (i = VARRAY_ACTIVE_SIZE (decl_scope_table) - 1; i >= 0; --i)
+	if (VARRAY_TREE (decl_scope_table, i) == containing_scope)
 	  break;
 
       if (i < 0)
@@ -9482,20 +9453,11 @@ gen_entry_point_die (decl, context_die)
 #endif
 
 /* Remember a type in the incomplete_types_list.  */
-
 static void
 add_incomplete_type (type)
      tree type;
 {
-  if (incomplete_types == incomplete_types_allocated)
-    {
-      incomplete_types_allocated += INCOMPLETE_TYPES_INCREMENT;
-      incomplete_types_list
-	= (tree *) xrealloc (incomplete_types_list,
-			     sizeof (tree) * incomplete_types_allocated);
-    }
-
-  incomplete_types_list[incomplete_types++] = type;
+  VARRAY_PUSH_TREE (incomplete_types, type);
 }
 
 /* Walk through the list of incomplete types again, trying once more to
@@ -9504,13 +9466,10 @@ add_incomplete_type (type)
 static void
 retry_incomplete_types ()
 {
-  register tree type;
-
-  while (incomplete_types)
+  int i;
+  for (i = VARRAY_ACTIVE_SIZE (incomplete_types) - 1; i >= 0; i--)
     {
-      --incomplete_types;
-      type = incomplete_types_list[incomplete_types];
-      gen_type_die (type, comp_unit_die);
+      gen_type_die (VARRAY_TREE (incomplete_types, i), comp_unit_die);
     }
 }
 
@@ -11645,10 +11604,8 @@ dwarf2out_init (main_input_filename)
   decl_die_table_in_use = 0;
 
   /* Allocate the initial hunk of the decl_scope_table.  */
-  decl_scope_table
-    = (tree *) xcalloc (DECL_SCOPE_TABLE_INCREMENT, sizeof (tree));
-  decl_scope_table_allocated = DECL_SCOPE_TABLE_INCREMENT;
-  decl_scope_depth = 0;
+  VARRAY_TREE_INIT (decl_scope_table, 256, "decl_scope_table");
+  ggc_add_tree_varray_root (&decl_scope_table, 1);
 
   /* Allocate the initial hunk of the abbrev_die_table.  */
   abbrev_die_table
@@ -11672,6 +11629,9 @@ dwarf2out_init (main_input_filename)
      taken as being relative to the directory from which the compiler was
      invoked when the given (base) source file was compiled.  */
   comp_unit_die = gen_compile_unit_die (main_input_filename);
+
+  VARRAY_TREE_INIT (incomplete_types, 64, "incomplete_types");
+  ggc_add_tree_varray_root (&incomplete_types, 1);
 
   VARRAY_RTX_INIT (used_rtx_varray, 32, "used_rtx_varray");
   ggc_add_rtx_varray_root (&used_rtx_varray, 1);

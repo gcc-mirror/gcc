@@ -1,3 +1,9 @@
+2001-09-10  Tim Freeman <tim@fungibole.com>
+
+	* dwarf2out.c (incomplete_types, decl_scope_table): Make them
+	into varray's and register them as roots with the garbage
+	collector so they are not collected too soon.  
+
 Mon Sep 10 14:21:26 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (cfg.o, cfganal.o, cfgloop.o, cfgbuild.o, cfgcleanup.o):
