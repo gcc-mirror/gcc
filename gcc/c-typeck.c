@@ -2798,7 +2798,7 @@ build_unary_op (code, xarg, noconvert)
 		       ((code == PREINCREMENT_EXPR
 			 || code == POSTINCREMENT_EXPR)
 			? "increment" : "decrement"));
-	    inc = c_sizeof_nowarn (TREE_TYPE (result_type));
+	    inc = c_size_in_bytes (TREE_TYPE (result_type));
 	  }
 	else
 	  inc = integer_one_node;
