@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1072,23 +1072,24 @@ const_binop (code, arg1, arg2, notrunc)
       register tree t;
       int uns = TREE_UNSIGNED (TREE_TYPE (arg1));
       int overflow = 0;
+      int no_overflow = 0;
 
       switch (code)
 	{
 	case BIT_IOR_EXPR:
-	  t = build_int_2 (int1l | int2l, int1h | int2h);
+	  low = int1l | int2l, hi = int1h | int2h;
 	  break;
 
 	case BIT_XOR_EXPR:
-	  t = build_int_2 (int1l ^ int2l, int1h ^ int2h);
+	  low = int1l ^ int2l, hi = int1h ^ int2h;
 	  break;
 
 	case BIT_AND_EXPR:
-	  t = build_int_2 (int1l & int2l, int1h & int2h);
+	  low = int1l & int2l, hi = int1h & int2h;
 	  break;
 
 	case BIT_ANDTC_EXPR:
-	  t = build_int_2 (int1l & ~int2l, int1h & ~int2h);
+	  low = int1l & ~int2l, hi = int1h & ~int2h;
 	  break;
 
 	case RSHIFT_EXPR:
@@ -1101,14 +1102,8 @@ const_binop (code, arg1, arg2, notrunc)
 			 TYPE_PRECISION (TREE_TYPE (arg1)),
 			 &low, &hi,
 			 !uns);
-	  t = build_int_2 (low, hi);
-	  TREE_TYPE (t) = TREE_TYPE (arg1);
-	  if (!notrunc)
-	    force_fit_type (t, 0);
-	  TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2);
-	  TREE_CONSTANT_OVERFLOW (t)
-	    = TREE_CONSTANT_OVERFLOW (arg1) | TREE_CONSTANT_OVERFLOW (arg2);
-	  return t;
+	  no_overflow = 1;
+	  break;
 
 	case RROTATE_EXPR:
 	  int2l = - int2l;
@@ -1116,94 +1111,76 @@ const_binop (code, arg1, arg2, notrunc)
 	  lrotate_double (int1l, int1h, int2l,
 			  TYPE_PRECISION (TREE_TYPE (arg1)),
 			  &low, &hi);
-	  t = build_int_2 (low, hi);
 	  break;
 
 	case PLUS_EXPR:
-	  if (int1h == 0)
-	    {
-	      int2l += int1l;
-	      if ((unsigned HOST_WIDE_INT) int2l < int1l)
-		{
-		  hi = int2h++;
-		  overflow = int2h < hi;
-		}
-	      t = build_int_2 (int2l, int2h);
-	      break;
-	    }
-	  if (int2h == 0)
-	    {
-	      int1l += int2l;
-	      if ((unsigned HOST_WIDE_INT) int1l < int2l)
-		{
-		  hi = int1h++;
-		  overflow = int1h < hi;
-		}
-	      t = build_int_2 (int1l, int1h);
-	      break;
-	    }
 	  overflow = add_double (int1l, int1h, int2l, int2h, &low, &hi);
-	  t = build_int_2 (low, hi);
 	  break;
 
 	case MINUS_EXPR:
-	  if (int2h == 0 && int2l == 0)
-	    {
-	      t = build_int_2 (int1l, int1h);
-	      break;
-	    }
 	  neg_double (int2l, int2h, &low, &hi);
 	  add_double (int1l, int1h, low, hi, &low, &hi);
 	  overflow = overflow_sum_sign (hi, int2h, int1h);
-	  t = build_int_2 (low, hi);
 	  break;
 
 	case MULT_EXPR:
 	  overflow = mul_double (int1l, int1h, int2l, int2h, &low, &hi);
-	  t = build_int_2 (low, hi);
 	  break;
 
 	case TRUNC_DIV_EXPR:
 	case FLOOR_DIV_EXPR: case CEIL_DIV_EXPR:
 	case EXACT_DIV_EXPR:
-	  /* This is a shortcut for a common special case.
-	     It reduces the number of tree nodes generated
-	     and saves time.  */
+	  /* This is a shortcut for a common special case.  */
 	  if (int2h == 0 && int2l > 0
-	      && TREE_TYPE (arg1) == sizetype
 	      && ! TREE_CONSTANT_OVERFLOW (arg1)
 	      && ! TREE_CONSTANT_OVERFLOW (arg2)
 	      && int1h == 0 && int1l >= 0)
 	    {
 	      if (code == CEIL_DIV_EXPR)
-		int1l += int2l-1;
-	      return size_int (int1l / int2l);
+		int1l += int2l - 1;
+	      low = int1l / int2l, hi = 0;
+	      break;
 	    }
+
+	  /* ... fall through ... */
+
 	case ROUND_DIV_EXPR: 
 	  if (int2h == 0 && int2l == 1)
 	    {
-	      t = build_int_2 (int1l, int1h);
+	      low = int1l, hi = int1h;
 	      break;
 	    }
-	  if (int1l == int2l && int1h == int2h)
+	  if (int1l == int2l && int1h == int2h
+	      && ! (int1l == 0 && int1h == 0))
 	    {
-	      if ((int1l | int1h) == 0)
-		abort ();
-	      t = build_int_2 (1, 0);
+	      low = 1, hi = 0;
 	      break;
 	    }
 	  overflow = div_and_round_double (code, uns,
 					   int1l, int1h, int2l, int2h,
 					   &low, &hi, &garbagel, &garbageh);
-	  t = build_int_2 (low, hi);
 	  break;
 
-	case TRUNC_MOD_EXPR: case ROUND_MOD_EXPR: 
+	case TRUNC_MOD_EXPR:
 	case FLOOR_MOD_EXPR: case CEIL_MOD_EXPR:
+	  /* This is a shortcut for a common special case.  */
+	  if (int2h == 0 && int2l > 0
+	      && ! TREE_CONSTANT_OVERFLOW (arg1)
+	      && ! TREE_CONSTANT_OVERFLOW (arg2)
+	      && int1h == 0 && int1l >= 0)
+	    {
+	      if (code == CEIL_MOD_EXPR)
+		int1l += int2l - 1;
+	      low = int1l % int2l, hi = 0;
+	      break;
+	    }
+
+	  /* ... fall through ... */
+
+	case ROUND_MOD_EXPR: 
 	  overflow = div_and_round_double (code, uns,
 					   int1l, int1h, int2l, int2h,
 					   &garbagel, &garbageh, &low, &hi);
-	  t = build_int_2 (low, hi);
 	  break;
 
 	case MIN_EXPR:
@@ -1225,18 +1202,29 @@ const_binop (code, arg1, arg2, notrunc)
 			     < (unsigned HOST_WIDE_INT) int2l)));
 	    }
 	  if (low == (code == MIN_EXPR))
-	    t = build_int_2 (int1l, int1h);
+	    low = int1l, hi = int1h;
 	  else
-	    t = build_int_2 (int2l, int2h);
+	    low = int2l, hi = int2h;
 	  break;
 
 	default:
 	  abort ();
 	}
     got_it:
-      TREE_TYPE (t) = TREE_TYPE (arg1);
+      if (TREE_TYPE (arg1) == sizetype && hi == 0
+	  && low <= TREE_INT_CST_LOW (TYPE_MAX_VALUE (sizetype))
+	  && ! overflow
+	  && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
+	t = size_int (low);
+      else
+	{
+	  t = build_int_2 (low, hi);
+	  TREE_TYPE (t) = TREE_TYPE (arg1);
+	}
+
       TREE_OVERFLOW (t)
-	= ((notrunc ? !uns && overflow : force_fit_type (t, overflow && !uns))
+	= ((notrunc ? !uns && overflow
+	    : force_fit_type (t, overflow && !uns) && ! no_overflow)
 	   | TREE_OVERFLOW (arg1)
 	   | TREE_OVERFLOW (arg2));
       TREE_CONSTANT_OVERFLOW (t) = (TREE_OVERFLOW (t)
@@ -1430,6 +1418,7 @@ size_int (number)
     {
       t = build_int_2 (number, 0);
       TREE_TYPE (t) = sizetype;
+      TREE_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (t) = force_fit_type (t, 0);
     }
   return t;
 }
@@ -4018,7 +4007,6 @@ fold (expr)
 	    }
 	  else if (TREE_CODE (arg0) == REAL_CST)
 	    t = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
-	  TREE_TYPE (t) = type;
 	}
       else if (TREE_CODE (arg0) == NEGATE_EXPR)
 	return TREE_OPERAND (arg0, 0);
@@ -4057,7 +4045,6 @@ fold (expr)
 		t = build_real (type,
 				REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
 	    }
-	  TREE_TYPE (t) = type;
 	}
       else if (TREE_CODE (arg0) == ABS_EXPR || TREE_CODE (arg0) == NEGATE_EXPR)
 	return build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0));
@@ -4090,9 +4077,8 @@ fold (expr)
     case BIT_NOT_EXPR:
       if (wins)
 	{
-	  if (TREE_CODE (arg0) == INTEGER_CST)
-	    t = build_int_2 (~ TREE_INT_CST_LOW (arg0),
-			     ~ TREE_INT_CST_HIGH (arg0));
+	  t = build_int_2 (~ TREE_INT_CST_LOW (arg0),
+			   ~ TREE_INT_CST_HIGH (arg0));
 	  TREE_TYPE (t) = type;
 	  force_fit_type (t, 0);
 	  TREE_OVERFLOW (t) = TREE_OVERFLOW (arg0);
@@ -4259,7 +4245,9 @@ fold (expr)
 	{
 	  /* The return value should always have
 	     the same type as the original expression.  */
-	  TREE_TYPE (t1) = TREE_TYPE (t);
+	  if (TREE_TYPE (t1) != TREE_TYPE (t))
+	    t1 = convert (TREE_TYPE (t), t1);
+
 	  return t1;
 	}
       return t;
@@ -5091,6 +5079,9 @@ fold (expr)
 	    case LE_EXPR:
 	      if (INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
 		{
+		  if (type == integer_type_node)
+		    return integer_one_node;
+
 		  t = build_int_2 (1, 0);
 		  TREE_TYPE (t) = type;
 		  return t;
@@ -5106,6 +5097,9 @@ fold (expr)
 	      /* ... fall through ...  */
 	    case GT_EXPR:
 	    case LT_EXPR:
+	      if (type == integer_type_node)
+		return integer_zero_node;
+
 	      t = build_int_2 (0, 0);
 	      TREE_TYPE (t) = type;
 	      return t;
