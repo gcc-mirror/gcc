@@ -1,3 +1,24 @@
+2004-06-27  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.c-torture/compile/20021123-1.c: Remove duplicate of
+	20021110.c.
+	* gcc.c-torture/compile/20021123-4.c: Remove duplicate of
+	20021119-1.c.
+	* gcc.dg/vmx/5-05.c, gcc.dg/vmx/5-06.c, gcc.dg/vmx/5-07.c,
+	gcc.dg/vmx/5-08.c: Remove duplicates of 5-01.c, 5-02.c, 5-03.c,
+	5-04.c.
+	* gcc.dg/builtins-42.c: Remove duplicate of builtins-41.c.
+	* g++.dg/other/new1.C: Remove duplicate of g++.dg/init/new1.C.
+	* g++.dg/init/elide3.C: Remove duplicate of elide2.C.
+	* g++.old-deja/g++.law/enum8.C: Remove duplicate of
+	g++.brendan/enum14.C.
+	* g++.old-deja/g++.mike/ns8.C: Remove duplicate of ns6.C
+	* g++.old-deja/g++.ns/alias5.C: Remove duplicate of alias1.C.
+	* g++.old-deja/g++.other/virtual1.C: Remove duplicate of
+	g++.mike/virt1.C.
+	* g++.old-deja/g++.pt/memtemp27.C: Remove duplicate of
+	memtemp24.C.
+
 2004-06-27  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/20040527-1.c: New test case.
