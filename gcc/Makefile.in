@@ -81,6 +81,7 @@ srcdir = @srcdir@
 # from these defaults.
 parsedir = $(srcdir)
 docobjdir = $(srcdir)/doc
+docdir = $(srcdir)/doc
 
 # Top build directory, relative to here.
 top_builddir = ..
@@ -2608,8 +2609,6 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	$(STAMP) stmp-fixproto
 #
 # Remake the info files.
-
-docdir = $(srcdir)/doc
 
 stmp-docobjdir:
 	-test -d $(docobjdir) || mkdir $(docobjdir)
