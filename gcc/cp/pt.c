@@ -3962,6 +3962,9 @@ mark_decl_instantiated (result, extern_p)
     {
       DECL_INTERFACE_KNOWN (result) = 1;
       DECL_NOT_REALLY_EXTERN (result) = 1;
+
+      /* For WIN32 we also want to put explicit instantiations in
+	 linkonce sections.  */
       if (supports_one_only () && ! SUPPORTS_WEAK)
 	comdat_linkage (result);
     }
@@ -4297,8 +4300,16 @@ mark_class_instantiated (t, extern_p)
      int extern_p;
 {
   SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
-  SET_CLASSTYPE_INTERFACE_KNOWN (t);
-  CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
+
+  if (supports_one_only () && ! SUPPORTS_WEAK)
+    /* For WIN32 we also want to put explicit instantiations in
+       linkonce sections.  */;
+  else
+    {
+      SET_CLASSTYPE_INTERFACE_KNOWN (t);
+      CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
+    }
+
   CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! extern_p;
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = extern_p;
   if (! extern_p)
@@ -4373,7 +4384,7 @@ do_type_instantiation (t, storage)
 
     if (! static_p)
       for (tmp = TYPE_METHODS (t); tmp; tmp = TREE_CHAIN (tmp))
-	if (TREE_CODE (t) == FUNCTION_DECL
+	if (TREE_CODE (tmp) == FUNCTION_DECL
 	    && DECL_TEMPLATE_INSTANTIATION (tmp))
 	  {
 	    mark_decl_instantiated (tmp, extern_p);
