@@ -1,3 +1,8 @@
+2003-10-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* testsuite/demangle-expected: Update the expected output of
+	_GLOBAL__I__Z2fnv.
+
 2003-10-02  Daniel Jacobowitz  <drow@mvista.com>
 
 	* strerror.c: Revert last change.  Declare static sys_nerr
