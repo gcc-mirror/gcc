@@ -326,6 +326,8 @@ static tree saved_throw_type;
 static tree saved_throw_value;
 /* Holds the cleanup for the value being thrown.  */
 static tree saved_cleanup;
+/* Indicates if we are in a catch clause.  */
+static tree saved_in_catch;
 
 static int throw_used;
 
@@ -754,6 +756,13 @@ init_exception_processing ()
   DECL_COMMON (d) = 1;
   cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_cleanup = lookup_name (get_identifier ("__eh_cleanup"), 0);
+
+  declspecs = tree_cons (NULL_TREE, get_identifier ("bool"), NULL_TREE);
+  d = get_identifier ("__eh_in_catch");
+  d = start_decl (d, declspecs, 0, NULL_TREE);
+  DECL_COMMON (d) = 1;
+  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
+  saved_in_catch = lookup_name (get_identifier ("__eh_in_catch"), 0);
 }
 
 /* call this to begin a block of unwind protection (ie: when an object is
@@ -950,6 +959,9 @@ push_eh_cleanup ()
 
   /* Arrange to do a dynamically scoped cleanup upon exit from this region.  */
   tree cleanup = build_function_call (saved_cleanup, NULL_TREE);
+  cleanup = build (COMPOUND_EXPR, void_type_node, cleanup,
+		   build_modify_expr (saved_in_catch, NOP_EXPR,
+				      build_modify_expr (saved_throw_type, NOP_EXPR, integer_zero_node)));
   cp_expand_decl_cleanup (NULL_TREE, cleanup);
 
   resume_momentary (yes);
@@ -1045,6 +1057,7 @@ expand_start_catch_block (declspecs, declarator)
       /* Fall into the catch all section. */
     }
 
+  emit_move_insn (DECL_RTL (saved_in_catch), const1_rtx);
   /* This is the starting of something to protect.  */
   emit_label (protect_label_rtx);
 
@@ -1326,6 +1339,13 @@ expand_builtin_throw ()
   gotta_call_terminate = gen_label_rtx ();
   top_of_loop = gen_label_rtx ();
   unwind_first = gen_label_rtx ();
+
+  /* These two can be frontend specific.  If wanted, they can go in
+     expand_throw. */
+  /* Do we have a valid object we are throwing? */
+  emit_cmp_insn (DECL_RTL (saved_throw_type), const0_rtx, EQ, NULL_RTX,
+		 GET_MODE (DECL_RTL (saved_throw_type)), 0, 0);
+  emit_jump_insn (gen_beq (gotta_call_terminate));
 
   emit_jump (unwind_first);
 
@@ -1678,6 +1698,7 @@ expand_throw (exp)
 	{
 	  rtx cleanup_insns;
 	  tree object;
+
 	  /* Make a copy of the thrown object.  WP 15.1.5  */
 	  exp = build_new (NULL_TREE, TREE_TYPE (exp),
 			   build_tree_list (NULL_TREE, exp),

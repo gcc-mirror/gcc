@@ -2591,7 +2591,9 @@ finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
   if (write_virtuals >= 0
-      && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars))
+      && ! DECL_EXTERNAL (vars)
+      && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars) && ! DECL_ONE_ONLY (vars))
+	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars)))
       && ! TREE_ASM_WRITTEN (vars))
     {
       /* Write it out.  */
@@ -2630,7 +2632,7 @@ finish_vtable_vardecl (prev, vars)
       rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
       return 1;
     }
-  else if (! TREE_USED (vars))
+  else if (! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars)))
     /* We don't know what to do with this one yet.  */
     return 0;
 
@@ -3233,30 +3235,17 @@ finish_file ()
 		reconsider = 1;
 	      }
 
+	    /* Catch new template instantiations.  */
 	    if (decl != TREE_VALUE (*p))
-	      ;
-	    else if (TREE_ASM_WRITTEN (decl)
-		     || (DECL_SAVED_INSNS (decl) == 0
-			 && ! DECL_ARTIFICIAL (decl)))
+	      continue;
+
+	    if (TREE_ASM_WRITTEN (decl)
+		|| (DECL_SAVED_INSNS (decl) == 0 && ! DECL_ARTIFICIAL (decl)))
 	      *p = TREE_CHAIN (*p);
-	    else
+	    else if (DECL_INITIAL (decl) == 0)
 	      p = &TREE_CHAIN (*p);
-	  }
-      }
-
-    reconsider = 1;		/* More may be referenced; check again */
-    while (reconsider)
-      {
-	tree *p = &saved_inlines;
-	reconsider = 0;
-
-	while (*p)
-	  {
-	    tree decl = TREE_VALUE (*p);
-
-	    if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
-	      *p = TREE_CHAIN (*p);
-	    else if ((TREE_PUBLIC (decl) && ! DECL_WEAK (decl))
+	    else if ((TREE_PUBLIC (decl) && ! DECL_WEAK (decl)
+		      && ! DECL_ONE_ONLY (decl))
 		     || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 		     || flag_keep_inline_functions)
 	      {
@@ -3264,6 +3253,11 @@ finish_file ()
 		  {
 		    DECL_EXTERNAL (decl) = 0;
 		    reconsider = 1;
+		    /* We can't inline this function after it's been
+                       emitted, so just disable inlining.  We want a
+                       variant of output_inline_function that doesn't
+                       prevent subsequent integration... */
+		    flag_no_inline = 1;
 		    temporary_allocation ();
 		    output_inline_function (decl);
 		    permanent_allocation (1);

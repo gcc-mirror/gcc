@@ -1,3 +1,41 @@
+Mon May  6 01:23:32 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Don't try to emit functions that haven't
+ 	been compiled.
+
+Fri May  3 09:30:13 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_vtable_vardecl): Oops.
+
+	* decl.c (maybe_push_to_top_level): Do save previous_class_*.
+  	Also store the bindings from previous_class_values.
+	(pop_from_top_level): Restore them.
+
+Thu May  2 21:56:49 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_vtable_vardecl): Only write out vtable if its
+ 	symbol has been referenced.
+	(finish_file): Re-join synthesis/vtable loop with inline emission
+	loop, disable inlining when an inline is output.
+
+Thu May  2 17:20:02 1996  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (init_exception_processing): Setup saved_in_catch.
+	(push_eh_cleanup): Reset __eh_in_catch.
+	(expand_start_catch_block): Set __eh_in_catch.
+
+Thu May  2 16:21:17 1996  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (push_eh_cleanup): Add tracking for whether or not we
+	have an active exception object.
+	(expand_builtin_throw): Use it to make sure a rethrow without an
+	exception object is caught.
+
+Thu May  2 11:26:41 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (maybe_push_to_top_level): Clear out class-level bindings
+ 	cache.
+
 Wed May  1 11:26:52 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_file): Also use sentries for vars with
