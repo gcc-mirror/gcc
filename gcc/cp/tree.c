@@ -1439,7 +1439,6 @@ copy_tree_r (tp, walk_subtrees, data)
       || TREE_CODE_CLASS (code) == 'r'
       || TREE_CODE_CLASS (code) == 'c'
       || TREE_CODE_CLASS (code) == 's'
-      || code == PARM_DECL
       || code == TREE_LIST
       || code == TREE_VEC
       || code == OVERLOAD)
