@@ -3941,7 +3941,6 @@ thread_jumps_from_bb (basic_block bb)
       edge last, old;
       basic_block dest, tmp, curr, old_dest;
       tree phi;
-      int arg;
 
       /* If the edge is abnormal or its destination is not
 	 forwardable, then there's nothing to do.  */
@@ -4028,11 +4027,13 @@ thread_jumps_from_bb (basic_block bb)
 	     have the same value as the argument associated with LAST.
 	     Otherwise we would have changed our target block
 	     above.  */
+	  int arg = last->dest_idx;
+
 	  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
 	    {
-	      arg = phi_arg_from_edge (phi, last);
-	      gcc_assert (arg >= 0);
-	      add_phi_arg (phi, PHI_ARG_DEF (phi, arg), e);
+	      tree def = PHI_ARG_DEF (phi, arg);
+	      gcc_assert (def != NULL_TREE);
+	      add_phi_arg (phi, def, e);
 	    }
 	}
 
