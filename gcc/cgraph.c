@@ -353,7 +353,7 @@ dump_cgraph (FILE *f)
       if (DECL_SAVED_TREE (node->decl))
 	fprintf (f, " tree");
 
-      if (node->local.disgread_inline_limits)
+      if (node->local.disregard_inline_limits)
 	fprintf (f, " always_inline");
       else if (node->local.inlinable)
 	fprintf (f, " inlinable");

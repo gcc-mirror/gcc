@@ -1,3 +1,45 @@
+2003-08-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree.h (DID_INLINE_FUNC): Remove macro.
+	(DECL_DECLARED_INLINE_P): Move from c-tree.h and cp/cp-tree.h,
+	add tree check for FUNCTION_DECL.
+	(DECL_ESTIMATED_INSNS): Move from c-common.h and java/java-tree.h.
+	(struct tree_decl): Rename inlined_function_flag to
+	declared_inline_flag.
+	* c-common.h (c_lang_decl): Remove.
+	(DECL_ESTIMATED_INSNS): Remove.
+	* c-tree.h (struct lang_decl): Don't include c_lang_decl.
+	(DECL_DECLARED_INLINE_P): Remove.
+	* c-decl.c (grokdeclarator): Update comment.  With -finline-functions,
+	do not reset DECL_DECLARED_INLINE_P.  Don't use DID_INLINE_FUNC.
+	(finish_function): Make uninlinable a bool.  Fixup call to
+	tree_inlinable_function_p() and fix some code style issues.
+	* cgraph.h (disgread_inline_limits): Fix spelling: `disregard'.
+	* cgraph.c (dump_cgraph): Likewise.
+	* cgraphunit.c (cgraph_decide_inlining): Likewise
+	(cgraph_finalize_compilation_unit): Likewise.
+	Also update call to tree_inlinable_function_p().
+	(cgraph_default_inline_p): Don't use DID_INLINE_FUNC.  Instead
+	look at DECL_DECLARED_INLINE and reverse logic.
+	* print-tree.c (print_node): Likewise.
+	* toplev.c (rest_of_handle_inlining): Don't use DID_INLINE_FUNC.
+	* tree-inline.h (tree_inlinable_function_p): Make a bool.  Update
+	prototype.
+	* tree-inline.c (inlinable_function_p): Split up in this function to
+	check for basic inlining inhibiting conditions, and new
+	limits_allow_inlining() function.  Warn if inlining is impossible
+	because the inline candidate calls alloca or uses sjlj exceptions.
+	(limits_allow_inlining): this new function to check if the inlining
+	limits are satisfied.  Throttle from currfn_max_inline_insns, not from
+	MAX_INLINE_INSNS_SINGLE.  The latter only makes sense if
+	MAX_INLINE_INSNS_AUTO and MAX_INLINE_INSNS_SINGLE are equal.
+	Update prototypes.
+	(tree_inlinable_function_p): Make a bool.  Update call to
+	inlinable_function_p
+	(expand_call_inline): Use limits_allow_inlining() when not in
+	unit-at-a-time mode to decide on inlining.  Don't use DID_INLINE_FUNC,
+	instead see if the function was declared `inline'.
+
 2003-08-05  Josef Zlomek  <zlomekj@suse.cz>
 
 	* gcse.c (try_replace_reg): Fix updating of note.

@@ -1473,10 +1473,12 @@ struct tree_type GTY(())
    where it is called.  */
 #define DECL_INLINE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inline_flag)
 
-/* Nonzero in a FUNCTION_DECL means this function has been found inlinable
-   only by virtue of -finline-functions  */
-#define DID_INLINE_FUNC(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->decl.inlined_function_flag)
+/* Nonzero in a FUNCTION_DECL means that this function was declared inline,
+   such as via the `inline' keyword in C/C++.  This flag controls the linkage
+   semantics of 'inline'; whether or not the function is inlined is
+   controlled by DECL_INLINE.  */
+#define DECL_DECLARED_INLINE_P(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->decl.declared_inline_flag)
 
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.uninlinable)
@@ -1606,6 +1608,13 @@ struct tree_type GTY(())
 #define DECL_POINTER_ALIAS_SET_KNOWN_P(NODE) \
   (DECL_POINTER_ALIAS_SET (NODE) != - 1)
 
+/* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this is
+   the approximate number of statements in this function.  There is
+   no need for this number to be exact; it is only used in various
+   heuristics regarding optimization.  */
+#define DECL_ESTIMATED_INSNS(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
+
 struct function;
 
 struct tree_decl GTY(())
@@ -1646,7 +1655,7 @@ struct tree_decl GTY(())
   unsigned user_align : 1;
   unsigned uninlinable : 1;
   unsigned thread_local_flag : 1;
-  unsigned inlined_function_flag : 1;
+  unsigned declared_inline_flag : 1;
   unsigned unused : 3;
   /* three unused bits.  */
 

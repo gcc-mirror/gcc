@@ -4319,7 +4319,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	  }
 	else if (inlinep)
 	  {
-	    /* Assume that otherwise the function can be inlined.  */
+	    /* Record that the function is declared `inline'.  */
 	    DECL_DECLARED_INLINE_P (decl) = 1;
 
 	    /* Do not mark bare declarations as DECL_INLINE.  Doing so
@@ -4337,12 +4337,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	   two things: let the function be deferred until it is actually
 	   needed, and let dwarf2 know that the function is inlinable.  */
 	else if (flag_inline_trees == 2 && initialized)
-	  {
-	    if (!DECL_INLINE (decl))
-		DID_INLINE_FUNC (decl) = 1;
-	    DECL_INLINE (decl) = 1;
-	    DECL_DECLARED_INLINE_P (decl) = 0;
-	  }
+	  DECL_INLINE (decl) = 1;
       }
     else
       {
@@ -6157,7 +6152,7 @@ finish_function (int nested, int can_defer_p)
       /* Function is parsed.
 	 Generate RTL for the body of this function or defer
 	 it for later expansion.  */
-      int uninlinable = 1;
+      bool uninlinable = true;
 
       /* There's no reason to do any of the work here if we're only doing
 	 semantic analysis; this code just generates RTL.  */
@@ -6174,14 +6169,14 @@ finish_function (int nested, int can_defer_p)
 	     predicates depend on cfun and current_function_decl to
 	     function completely.  */
 	  timevar_push (TV_INTEGRATION);
-	  uninlinable = ! tree_inlinable_function_p (fndecl, 0);
+	  uninlinable = !tree_inlinable_function_p (fndecl);
 
 	  if (can_defer_p
 	      /* We defer functions marked inline *even if* the function
 		 itself is not inlinable.  This is because we don't yet
 		 know if the function will actually be used; we may be
 		 able to avoid emitting it entirely.  */
-	      && (! uninlinable || DECL_DECLARED_INLINE_P (fndecl))
+	      && (!uninlinable || DECL_DECLARED_INLINE_P (fndecl))
 	      /* Save function tree for inlining.  Should return 0 if the
 		 language does not support function deferring or the
 		 function could not be deferred.  */
