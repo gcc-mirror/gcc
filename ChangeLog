@@ -1,3 +1,9 @@
+2004-02-04  Geoffrey Keating  <geoffk@apple.com>
+
+	Partial merge from upstream:
+	* ltmain.in: When setting IFS to '~', be careful about user
+	arguments that contain '~'.
+
 2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Don't pass --with-stabs on IRIX 5 either.

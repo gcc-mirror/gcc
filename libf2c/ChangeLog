@@ -1,3 +1,11 @@
+Thu Feb  5 15:08:08 2004  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 12179
+	* aclocal.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Use 'gcc', not 'gcc-lib'.
+	Add comment about poorly-named variables.
+	* Makefile.in (libsubdir): Use 'gcc', not 'gcc-lib'.
+	* configure: Regenerate.
+
 2004-01-31  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/12884

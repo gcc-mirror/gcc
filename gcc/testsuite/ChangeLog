@@ -1,3 +1,9 @@
+2004-02-07 Geoffrey Keating  <geoffk@geoffk.org>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* objc.dg/call-super-2.m: Include stddef.h for size_t.
+	Update line numbers for the including of stddef.h.
+
 2004-02-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/string-opt-15.c: Define memcmp with void *

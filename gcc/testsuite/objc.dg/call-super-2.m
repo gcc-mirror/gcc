@@ -3,6 +3,7 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do compile } */
 
+#include <stddef.h>
 #include <objc/objc.h>
 #include <objc/Object.h>
 
@@ -45,9 +46,9 @@
 + (int) class_func1
 {
    int i = (size_t)[self class_func0];       /* { dg-warning ".Derived. may not respond to .\\+class_func0." } */
-       /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 47 } */
-       /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 47 } */
-       /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 47 } */
+       /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 48 } */
+       /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 48 } */
+       /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 48 } */
    return i + (size_t)[super class_func0];   /* { dg-warning ".Object. may not respond to .\\+class_func0." } */
 }
 + (int) class_func2
@@ -127,7 +128,7 @@
    int i = (size_t)[self instance_func0];    /* { dg-warning ".Derived. may not respond to .\\-instance_func0." } */
    i += [(Derived <Func> *)self categ_instance_func2];
    i += (size_t)[(Object <Func> *)self categ_instance_func2]; /* { dg-warning ".Object. may not respond to .\\-categ_instance_func2." } */
-   /* { dg-warning ".\\-categ_instance_func2. not implemented by protocol" "" { target *-*-* } 129 } */
+   /* { dg-warning ".\\-categ_instance_func2. not implemented by protocol" "" { target *-*-* } 130 } */
    i += (size_t)[(id <Func>)self categ_instance_func2];  /* { dg-warning ".\\-categ_instance_func2. not implemented by protocol" } */
    i += [(id)self categ_instance_func2];
    return i + (size_t)[super instance_func0];   /* { dg-warning ".Object. may not respond to .\\-instance_func0." } */
