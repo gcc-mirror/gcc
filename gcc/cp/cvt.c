@@ -201,6 +201,14 @@ cp_convert_to_pointer (type, expr)
   if (IS_AGGR_TYPE (intype))
     {
       tree rval;
+
+      if (TYPE_SIZE (complete_type (intype)) == NULL_TREE)
+	{
+	  cp_error ("can't convert from incomplete type `%T' to `%T'",
+		    intype, type);
+	  return error_mark_node;
+	}
+
       rval = build_type_conversion (CONVERT_EXPR, type, expr, 1);
       if (rval)
 	{
@@ -774,7 +782,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       if (TYPE_HAS_CONSTRUCTOR (type)
 	  && ! CLASSTYPE_ABSTRACT_VIRTUALS (type)
 	  && (rval = build_method_call
-	      (NULL_TREE, constructor_name_full (type),
+	      (NULL_TREE, ctor_identifier,
 	       build_tree_list (NULL_TREE, expr), TYPE_BINFO (type),
 	       LOOKUP_NO_CONVERSION|LOOKUP_SPECULATIVELY
 	       | LOOKUP_ONLYCONVERTING)))
@@ -785,7 +793,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	    {
 	      extern tree static_aggregates;
 	      tree t = get_temp_name (type, toplevel_bindings_p ());
-	      init = build_method_call (t, constructor_name_full (type),
+	      init = build_method_call (t, ctor_identifier,
 					build_tree_list (NULL_TREE, expr),
 					TYPE_BINFO (type),
 					LOOKUP_NORMAL|LOOKUP_NO_CONVERSION
@@ -800,7 +808,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	    }
 	  else
 	    {
-	      init = build_method_call (NULL_TREE, constructor_name_full (type),
+	      init = build_method_call (NULL_TREE, ctor_identifier,
 					build_tree_list (NULL_TREE, expr),
 					TYPE_BINFO (type),
 					LOOKUP_NORMAL|LOOKUP_NO_CONVERSION
@@ -919,47 +927,9 @@ convert_to_aggr (type, expr, msgp, protect)
   parmlist = tree_cons (NULL_TREE, integer_zero_node, parmlist);
   parmtypes = tree_cons (NULL_TREE, build_pointer_type (basetype), parmtypes);
 
-#if 0
-  method_name = build_decl_overload (name, parmtypes, 1);
-
-  /* constructors are up front.  */
-  fndecl = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 0);
-  if (TYPE_HAS_DESTRUCTOR (basetype))
-    fndecl = DECL_CHAIN (fndecl);
-
-  while (fndecl)
-    {
-      if (DECL_ASSEMBLER_NAME (fndecl) == method_name)
-	{
-	  function = fndecl;
-	  if (protect)
-	    {
-	      if (TREE_PRIVATE (fndecl))
-		{
-		  can_be_private =
-		    (basetype == current_class_type
-		     || is_friend (basetype, current_function_decl)
-		     || purpose_member (basetype, DECL_ACCESS (fndecl)));
-		  if (! can_be_private)
-		    goto found;
-		}
-	      else if (TREE_PROTECTED (fndecl))
-		{
-		  if (! can_be_protected)
-		    goto found;
-		}
-	    }
-	  goto found_and_ok;
-	}
-      fndecl = DECL_CHAIN (fndecl);
-    }
-#endif
-
   /* No exact conversion was found.  See if an approximate
      one will do.  */
   fndecl = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 0);
-  if (TYPE_HAS_DESTRUCTOR (basetype))
-    fndecl = DECL_CHAIN (fndecl);
 
   {
     int saw_private = 0;
@@ -1119,7 +1089,9 @@ convert_pointer_to_real (binfo, expr)
       binfo = NULL_TREE;
     }
 
-  ptr_type = build_pointer_type (type);
+  ptr_type = cp_build_type_variant (type, TYPE_READONLY (TREE_TYPE (intype)),
+				    TYPE_VOLATILE (TREE_TYPE (intype)));
+  ptr_type = build_pointer_type (ptr_type);
   if (ptr_type == TYPE_MAIN_VARIANT (intype))
     return expr;
 
@@ -1338,11 +1310,12 @@ cp_convert (type, expr, convtype, flags)
 	}
 
       if (TYPE_HAS_CONSTRUCTOR (complete_type (type)))
-	ctor = build_method_call (NULL_TREE, constructor_name_full (type),
+	ctor = build_method_call (NULL_TREE, ctor_identifier,
 				  build_tree_list (NULL_TREE, e),
 				  TYPE_BINFO (type),
 				  (flags & LOOKUP_NORMAL) | LOOKUP_SPECULATIVELY
-				  | (convtype&CONV_NONCONVERTING ? 0 : LOOKUP_ONLYCONVERTING)
+				  | (convtype & CONV_NONCONVERTING ? 0 : LOOKUP_ONLYCONVERTING)
+				  | (flags & LOOKUP_NO_CONVERSION)
 				  | (conversion ? LOOKUP_NO_CONVERSION : 0));
 
       if (ctor == error_mark_node)

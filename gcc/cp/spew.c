@@ -71,7 +71,7 @@ static int debug_yychar ();
 void
 init_spew ()
 {
-  gcc_obstack_init(&token_obstack);
+  gcc_obstack_init (&token_obstack);
 }
 
 #ifdef SPEW_DEBUG
@@ -81,7 +81,7 @@ init_spew ()
 static int
 num_tokens ()
 {
-  return (obstack_object_size(&token_obstack)/sizeof(struct token))
+  return (obstack_object_size (&token_obstack) / sizeof (struct token))
     - first_token;
 }
 
@@ -92,8 +92,8 @@ nth_token (n)
 {
   /* could just have this do slurp_ implicitly, but this way is easier
    * to debug... */
-  my_friendly_assert (n < num_tokens(), 298);
-  return ((struct token*)obstack_base(&token_obstack))+n+first_token;
+  my_friendly_assert (n < num_tokens (), 298);
+  return ((struct token*)obstack_base (&token_obstack)) + n + first_token;
 }
 
 /* Add a token to the token fifo. */
@@ -101,16 +101,16 @@ static void
 add_token (t)
      struct token* t;
 {
-  obstack_grow(&token_obstack,t,sizeof (struct token));
+  obstack_grow (&token_obstack, t, sizeof (struct token));
 }
 
 /* Consume the next token out of the fifo.  */
 static void
-consume_token()
+consume_token ()
 {
-  if (num_tokens() == 1)
+  if (num_tokens () == 1)
     {
-      obstack_free(&token_obstack, obstack_base (&token_obstack));
+      obstack_free (&token_obstack, obstack_base (&token_obstack));
       first_token = 0;
     }
   else
@@ -121,15 +121,15 @@ consume_token()
 /* ...otherwise use macros.  */
 
 #define num_tokens() \
-  ((obstack_object_size(&token_obstack)/sizeof(struct token)) - first_token)
+  ((obstack_object_size (&token_obstack) / sizeof (struct token)) - first_token)
 
 #define nth_token(N) \
-  (((struct token*)obstack_base(&token_obstack))+(N)+first_token)
+  (((struct token*)obstack_base (&token_obstack))+(N)+first_token)
 
-#define add_token(T) obstack_grow(&token_obstack, (T), sizeof (struct token))
+#define add_token(T) obstack_grow (&token_obstack, (T), sizeof (struct token))
 
 #define consume_token() \
-  (num_tokens() == 1							\
+  (num_tokens () == 1							\
    ? (obstack_free (&token_obstack, obstack_base (&token_obstack)),	\
       (first_token = 0))						\
    : first_token++)
@@ -158,11 +158,11 @@ scan_tokens (n)
 	goto pad_tokens;
     }
 
-  while (num_tokens() <= n)
+  while (num_tokens () <= n)
     {
-      obstack_blank(&token_obstack,sizeof (struct token));
+      obstack_blank (&token_obstack, sizeof (struct token));
       tmp = ((struct token *)obstack_next_free (&token_obstack))-1;
-      tmp->yychar = real_yylex();
+      tmp->yychar = real_yylex ();
       tmp->end_of_file = end_of_file;
       tmp->yylval = yylval;
       end_of_file = 0;
@@ -173,7 +173,7 @@ scan_tokens (n)
 	pad_tokens:
 	  while (num_tokens () <= n)
 	    {
-	      obstack_blank(&token_obstack,sizeof (struct token));
+	      obstack_blank (&token_obstack, sizeof (struct token));
 	      tmp = ((struct token *)obstack_next_free (&token_obstack))-1;
 	      tmp->yychar = EMPTY;
 	      tmp->end_of_file = 0;
@@ -216,14 +216,14 @@ tree got_scope;
 tree got_object;
 
 int
-peekyylex()
+peekyylex ()
 {
   scan_tokens (0);
   return nth_token (0)->yychar;
 }
 
 int
-yylex()
+yylex ()
 {
   struct token tmp_token;
   tree trrr;
@@ -233,14 +233,14 @@ yylex()
   if (spew_debug)
   {
     yylex_ctr ++;
-    fprintf(stderr, "\t\t## %d ##",yylex_ctr);
+    fprintf (stderr, "\t\t## %d ##", yylex_ctr);
   }
 #endif
 
   /* if we've got tokens, send them */
-  if (num_tokens())
+  if (num_tokens ())
     {
-      tmp_token= *nth_token(0);
+      tmp_token= *nth_token (0);
 
       /* TMP_TOKEN.YYLVAL.TTYPE may have been allocated on the wrong obstack.
 	 If we don't find it in CURRENT_OBSTACK's current or immediately
@@ -258,13 +258,13 @@ yylex()
       tmp_token.yychar = real_yylex ();
       tmp_token.yylval = yylval;
       tmp_token.end_of_file = end_of_file;
-      add_token(&tmp_token);
+      add_token (&tmp_token);
     }
 
   /* many tokens just need to be returned. At first glance, all we
    * have to do is send them back up, but some of them are needed to
    * figure out local context. */
-  switch(tmp_token.yychar)
+  switch (tmp_token.yychar)
     {
     case EMPTY:
       /* This is a lexical no-op.  */
@@ -341,7 +341,7 @@ yylex()
       break;
 
     case AGGR:
-      *nth_token(0) = tmp_token;
+      *nth_token (0) = tmp_token;
       do_aggr ();
       /* fall through to output... */
     case ENUM:
@@ -349,7 +349,7 @@ yylex()
       looking_for_typename = 1;
       /* fall through... */
     default:
-      consume_token();
+      consume_token ();
     }
 
   got_object = NULL_TREE;
@@ -358,7 +358,7 @@ yylex()
   end_of_file = tmp_token.end_of_file;
 #ifdef SPEW_DEBUG    
   if (spew_debug)
-    debug_yychar(yychar);
+    debug_yychar (yychar);
 #endif
   return yychar;
 }
@@ -423,7 +423,7 @@ debug_yychar (yy)
   
   int i;
   
-  if(yy<256) {
+  if (yy<256) {
     fprintf (stderr, "<%d: %c >\n", yy, yy);
     return 0;
   }

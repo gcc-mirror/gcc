@@ -1,3 +1,233 @@
+Wed Mar 20 14:51:55 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (named_complex_class_head_sans_basetype): Don't crash on
+ 	definition of nonexistent nested type.
+
+	* error.c (dump_decl, case TYPE_DECL): Fix decision for whether or
+ 	not to say 'typedef'.
+
+Wed Mar 20 00:11:47 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* cp-tree.h (struct lang_type): Make search_slot a tree, not a char*.
+	* search.c (dfs_walk, dfs_init_vbase_pointers,
+	expand_upcast_fixups): Remove cast of CLASSTYPE_SEARCH_SLOT.
+	(dfs_find_vbases): Remove cast for CLASSTYPE_SEARCH_SLOT init.
+
+Tue Mar 19 17:56:03 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (build_throw): Support minimal parse.
+	* pt.c (tsubst_copy): Support THROW_EXPR.
+	* decl2.c (build_expr_from_tree): Ditto.
+
+	* pt.c (mangle_class_name_for_template): Always allocate
+ 	scratch_firstobj.
+
+Tue Mar 19 16:34:31 1996  Bob Manson  <manson@beauty.cygnus.com>
+
+	* cvt.c (cp_convert_to_pointer): Give an appropriate error
+	when trying to cast from an incomplete type.
+
+Tue Mar 19 16:00:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): Don't bother setting up
+ 	CLASSTYPE_TAGS explicitly, as the nested types will add
+ 	themselves.
+
+Tue Mar 19 15:48:43 1996  Bob Manson  <manson@beauty.cygnus.com>
+
+	* decl.c (shadow_tag): Remove old error check for usage of
+	an enum without a previous declaration.
+	(xref_tag): Add error message about usage of enums without a
+	previous declaration.
+
+Tue Mar 19 09:21:35 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (do_identifier): Only do name consistency check if we're
+ 	parsing.
+
+	* pt.c (push_template_decl): Don't crash if we get a member defn
+	that doesn't match.
+
+	* decl.c (xref_tag_from_type): New function to do an xref without
+ 	always having to figure out code_type_node.
+	* cp-tree.h: Declare it.
+	* pt.c (instantiate_class_template): Use it for friend classes.
+  	(lookup_template_class): Use it.
+
+	* typeck2.c (build_functional_cast): Pull out a single parm before
+ 	passing it to build_c_cast.
+
+Tue Mar 19 09:07:15 1996  Bob Manson  <manson@beauty.cygnus.com>
+
+	* expr.c (do_case): Give an error message if a pointer is
+	given as a case value.
+
+Mon Mar 18 21:57:54 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_c_cast): Don't pull single TEMPLATE_DECL out of
+ 	an overload list.
+
+	* lex.c (cons_up_default_function): Really, now, interface hackery
+ 	does not apply to synthesized methods.
+
+Mon Mar 18 18:20:57 1996  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (build_method_call): Ctors and dtors now have special names
+	with respect to lookups.
+	* class.c (add_method): Ditto.
+	(grow_method): Ditto.
+	(finish_struct_methods): Ditto.
+	(warn_hidden): Ditto.
+	(finish_struct_1): Ditto.
+	* cvt.c (convert_to_reference): Ditto.
+	(convert_to_aggr): Ditto.
+	(cp_convert): Ditto.
+	* decl2.c (check_classfn): Ditto.
+	* init.c (expand_member_init): Ditto.
+	(expand_default_init): Ditto.
+	(expand_aggr_init_1): Ditto.
+	(build_offset_ref): Ditto.
+	(build_new): Ditto.
+	(build_delete): Ditto.
+	* lex.c (do_inline_function_hair): Ditto.
+	* search.c (lookup_field_1): Ditto.
+	(lookup_fnfields_here): Ditto.
+	(lookup_field): Ditto.
+	(lookup_fnfields): Ditto.
+	(get_virtual_destructor): Ditto.
+	(dfs_debug_mark): Ditto.
+	(dfs_pushdecls): Ditto.
+	(dfs_compress_decls): Ditto.
+	* tree.c (layout_basetypes): Ditto.
+	* typeck.c (build_component_ref): Ditto.
+	(build_x_function_call): Ditto.
+	(build_modify_expr): Ditto.
+	(convert_for_initialization): Ditto.
+	(build_functional_cast): Ditto.
+	* cp-tree.h (CLASSTYPE_FIRST_CONVERSION): Ditto.
+	(CTOR_NAME): New.
+	(DTOR_NAME): New.
+	* decl.c (ctor_identifier): New.
+	(dtor_identifier): New.
+	(init_decl_processing): Set them.
+
+Mon Mar 18 18:00:51 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_component_ref): Don't get confused by fields whose
+	context has no type name, like pointer to member functions.
+
+Mon Mar 18 13:19:03 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Handle typedef without declarator.
+
+	* pt.c (tsubst): Handle SCOPE_REF in declarator.
+
+	* parse.y (bad_parm): Catch another case of missing `typename'.
+
+	* lex.c (yyprint): Handle TYPE_DECLs.
+
+	* decl.c (start_function): Don't try to be clever.
+
+	* lex.c: Lose compiler_error_with_decl.
+	* typeck2.c: Lose error_with_aggr_type.
+	(incomplete_type_error): Use cp_* instead of old functions.
+	(readonly_error): Ditto.
+	* typeck.c (convert_arguments): Ditto.
+	* search.c (lookup_nested_field): Ditto.
+	* method.c (make_thunk): Ditto.
+	* decl.c (grokparms): Ditto.
+	* cp-tree.h: Update.
+
+	* tree.c (min_tree_cons): Call copy_to_permanent for the purpose
+ 	and value.
+
+Mon Mar 18 11:25:52 1996  Bob Manson  <manson@beauty.cygnus.com>
+
+	* method.c (build_opfncall): When deleting a pointer to an
+	array, build a new pointer to the tree past any ARRAY_TYPE
+	nodes.
+
+Mon Mar 18 10:11:46 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (lookup_name_real): Initialize local var TYPE to NULL_TREE.
+
+Fri Mar 15 11:03:57 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_decl): Only call import_export_decl if at_eof
+ 	and ! DECL_INLINE.
+
+	* decl.c (finish_function): Don't set nested based on
+ 	hack_decl_function_context.
+	* parse.y (function_try_block): Check for nested function.
+	(pending_inlines): Ditto.
+
+	* decl2.c (build_expr_from_tree): If a unary op already has a
+ 	type, just return it.
+
+	* decl2.c (finish_prevtable_vardecl): Use ADJUST_VTABLE_LINKAGE.
+
+	* decl2.c (walk_vtables): vardecl_fn returns int; return 1 if it does.
+	(finish_file): Check the return value of walk_vtables.
+	(finish_prevtable_vardecl): Return int.
+	(finish_vtable_vardecl): Ditto.
+	(prune_vtable_vardecl): Ditto.
+	* lex.c (set_vardecl_interface_info): Ditto.
+	* cp-tree.h: Adjust return types.
+
+	* class.c (delete_duplicate_fields_1): Don't complain about
+ 	duplicate nested types if they're the same type.
+	(finish_struct): Remove check for duplicate.
+	* decl2.c (grokfield): Don't check for typedef of anonymous type.
+
+Thu Mar 14 10:00:19 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h: Lose SIGNATURE_GROKKING_TYPEDEF.
+
+	* decl.c (grokdeclarator): Lose special handling of class-level
+ 	typedef.  Lose SIGNATURE_GROKKING_TYPEDEF.  Set
+ 	SIGNATURE_HAS_OPAQUE_TYPEDECLS later.
+
+	* cvt.c (convert_pointer_to_real): Retain cv-quals in conversion.
+
+	* pt.c (tsubst_copy): Strip cv-quals from destructor name types.
+
+	* search.c (compute_access): Fix handling of anonymous union
+ 	members.
+	* class.c (finish_struct_anon): Propagate TREE_{PRIVATE,PROTECTED}
+ 	from anonymous unions to their members.
+
+	* typeck.c (build_x_function_call): For static member functions,
+ 	hand off to build_member_call.
+
+Wed Mar 13 14:03:34 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_component_ref): Handle OFFSET_REFs.
+
+	* init.c (expand_vec_init): Fix init == 0 case.
+
+Tue Mar 12 14:36:02 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_new): Pedwarn about init and array new.
+	(expand_vec_init): Handle lists, use convert_for_initialization
+
+	* typeck.c (convert_for_initialization): Pass LOOKUP_NO_CONVERSION
+ 	when converting to an aggregate type.
+	* cvt.c (cp_convert): Pass it through.
+
+	* typeck.c (build_conditional_expr): Handle user-defined
+ 	conversions to slightly different types.
+
+	* decl.c (grokdeclarator): Force an array type in a parm to be
+ 	permanent.
+
+	* decl2.c (do_using_directive): Sorry.
+	(do_namespace_alias): Ditto.
+	* lex.c (real_yylex): Warn about using the `namespace' keyword.
+
+Sun Mar 10 22:26:09 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (datadef): Move call to note_list_got_semicolon up.
+
 Fri Mar  8 11:47:26 1996  Mike Stump  <mrs@cygnus.com>
 
 	* tree.c (unsave_expr): Don't unsave, UNSAVE_EXPRs.

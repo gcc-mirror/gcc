@@ -1226,22 +1226,22 @@ stands.
 
 Only exact type matching or reference matching of throw types works when
 -fno-rtti is used.  Only works on a SPARC (like Suns), i386, arm,
-rs6000, PowerPC, Alpha, mips and VAX machines.  Partial support is in
-for all other machines, but a stack unwinder called __unwind_function
-has to be written, and added to libgcc2 for them.  The new EH code
-doesn't rely upon the __unwind_function for C++ code, instead it creates
-per function unwinders right inside the function, unfortunately, on many
-platforms the definition of RETURN_ADDR_RTX in the tm.h file for the
-machine port is wrong.  The HPPA has a brain dead abi that prevents
-exception handling from just working.  See below for details on
-__unwind_function.  Don't expect exception handling to work right if you
-optimize, in fact the compiler will probably core dump.  RTL_EXPRs for
-EH cond variables for && and || exprs should probably be wrapped in
-UNSAVE_EXPRs, and RTL_EXPRs tweaked so that they can be unsaved, and the
-UNSAVE_EXPR code should be in the backend, or alternatively, UNSAVE_EXPR
-should be ripped out and exactly one finalization allowed to be expanded
-by the backend.  I talked with kenner about this, and we have to allow
-multiple expansions.
+rs6000, PowerPC, Alpha, mips, VAX, and m68k machines.  Partial support
+is in for all other machines, but a stack unwinder called
+__unwind_function has to be written, and added to libgcc2 for them.  The
+new EH code doesn't rely upon the __unwind_function for C++ code,
+instead it creates per function unwinders right inside the function,
+unfortunately, on many platforms the definition of RETURN_ADDR_RTX in
+the tm.h file for the machine port is wrong.  The HPPA has a brain dead
+abi that prevents exception handling from just working.  See below for
+details on __unwind_function.  Don't expect exception handling to work
+right if you optimize, in fact the compiler will probably core dump.
+RTL_EXPRs for EH cond variables for && and || exprs should probably be
+wrapped in UNSAVE_EXPRs, and RTL_EXPRs tweaked so that they can be
+unsaved, and the UNSAVE_EXPR code should be in the backend, or
+alternatively, UNSAVE_EXPR should be ripped out and exactly one
+finalization allowed to be expanded by the backend.  I talked with
+kenner about this, and we have to allow multiple expansions.
 
 We only do pointer conversions on exception matching a la 15.3 p2 case
 3: `A handler with type T, const T, T&, or const T& is a match for a

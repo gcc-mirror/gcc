@@ -499,10 +499,10 @@ datadef:
 	| typed_declspecs declarator ';'
 		{ tree d, specs, attrs;
 		  split_specs_attrs ($1, &specs, &attrs);
+		  note_list_got_semicolon (specs);
 		  d = start_decl ($<ttype>2, specs, 0, NULL_TREE);
 		  cplus_decl_attributes (d, NULL_TREE, attrs);
 		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
-		  note_list_got_semicolon ($<ttype>$);
 		}
         | declmods ';'
 	  { pedwarn ("empty declaration"); }
@@ -1990,7 +1990,9 @@ pending_inlines:
 	| pending_inlines fn.defpen maybe_return_init ctor_initializer_opt
 	  compstmt_or_error
 		{
-		  finish_function (lineno, (int)$4, 0);
+		  int nested = (hack_decl_function_context
+				(current_function_decl) != NULL_TREE);
+		  finish_function (lineno, (int)$4, nested);
 		  process_next_inline ($2);
 		}
 	| pending_inlines fn.defpen maybe_return_init function_try_block
@@ -2108,7 +2110,19 @@ named_class_head_sans_basetype_defn:
 
 named_complex_class_head_sans_basetype:
 	  aggr nested_name_specifier identifier
-		{ current_aggr = $$; $$ = $3; }
+		{
+		  current_aggr = $1;
+		  if (TREE_CODE ($3) == TYPE_DECL)
+		    $$ = $3;
+		  else
+		    {
+		      cp_error ("`%T' does not have a nested type named `%D'",
+				$2, $3);
+		      $$ = xref_tag
+			(current_aggr, make_anon_name (), NULL_TREE, 1);
+		      $$ = TYPE_MAIN_DECL ($$);
+		    }
+		}
 	| aggr template_type
 		{ current_aggr = $$; $$ = $2; }
 	| aggr nested_name_specifier template_type
@@ -3519,8 +3533,10 @@ function_try_block:
 		  expand_start_all_catch (); }
 	  handler_seq
 		{
+		  int nested = (hack_decl_function_context
+				(current_function_decl) != NULL_TREE);
 		  expand_end_all_catch ();
-		  finish_function (lineno, (int)$3, 0);
+		  finish_function (lineno, (int)$3, nested);
 		}
 	;
 
@@ -3820,6 +3836,9 @@ bad_parm:
 	| notype_declarator
 		{
 		  error ("type specifier omitted for parameter");
+		  if (TREE_CODE ($$) == SCOPE_REF
+		      && TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM)
+		    cp_error ("  perhaps you want `typename %E' to make it a type", $$);
 		  $$ = build_tree_list (integer_type_node, $$);
 		}
 	;

@@ -294,6 +294,7 @@ tree base_init_expr;
    Identifiers for `this' in member functions and the auto-delete
    parameter for destructors.  */
 tree this_identifier, in_charge_identifier;
+tree ctor_identifier, dtor_identifier;
 /* Used in pointer to member functions, in vtables, and in sigtables. */
 tree pfn_identifier, index_identifier, delta_identifier, delta2_identifier;
 tree pfn_or_delta2_identifier, tag_identifier;
@@ -1461,11 +1462,11 @@ print_binding_level (lvl)
       /* We can probably fit 3 names to a line?  */
       for (t = lvl->names; t; t = TREE_CHAIN (t))
 	{
-	  if (no_print_functions && (TREE_CODE(t) == FUNCTION_DECL)) 
+	  if (no_print_functions && (TREE_CODE (t) == FUNCTION_DECL)) 
 	    continue;
 	  if (no_print_builtins
-	      && (TREE_CODE(t) == TYPE_DECL)
-	      && (!strcmp(DECL_SOURCE_FILE(t),"<built-in>")))
+	      && (TREE_CODE (t) == TYPE_DECL)
+	      && (!strcmp (DECL_SOURCE_FILE (t),"<built-in>")))
 	    continue;
 
 	  /* Function decls tend to have longer names.  */
@@ -4298,16 +4299,25 @@ lookup_namespace_name (namespace, name)
      tree namespace, name;
 {
   struct binding_level *b = (struct binding_level *)NAMESPACE_LEVEL (namespace);
-  tree x;
+  tree x = NULL_TREE;
 
-  for (x = NULL_TREE; b && !x; b = b->level_chain)
+#if 1
+  /* This searches just one level.  */
+  if (b)
     {
       for (x = b->names; x; x = TREE_CHAIN (x))
 	if (DECL_NAME (x) == name || DECL_ASSEMBLER_NAME (x) == name)
 	  break;
-      /* Must find directly in the namespace.  */
-      break;
     }
+#else
+  /* This searches all levels.  */
+  for (; b && !x; b = b->level_chain)
+    {
+      for (x = b->names; x; x = TREE_CHAIN (x))
+	if (DECL_NAME (x) == name || DECL_ASSEMBLER_NAME (x) == name)
+	  break;
+    }
+#endif
   return x;
 }
 
@@ -4370,7 +4380,7 @@ lookup_name_real (name, prefer_type, nonclass)
   if (prefer_type == -2)
     {
       extern int looking_for_typename;
-      tree type;
+      tree type = NULL_TREE;
 
       yylex = 1;
       prefer_type = looking_for_typename;
@@ -4773,6 +4783,8 @@ init_decl_processing ()
 
   this_identifier = get_identifier (THIS_NAME);
   in_charge_identifier = get_identifier (IN_CHARGE_NAME);
+  ctor_identifier = get_identifier (CTOR_NAME);
+  dtor_identifier = get_identifier (DTOR_NAME);
   pfn_identifier = get_identifier (VTABLE_PFN_NAME);
   index_identifier = get_identifier (VTABLE_INDEX_NAME);
   delta_identifier = get_identifier (VTABLE_DELTA_NAME);
@@ -5525,7 +5537,7 @@ init_type_desc()
   tdecl = lookup_name (get_identifier ("type_info"), 0);
   if (tdecl == NULL_TREE)
     return 0;
-  __t_desc_type_node = TREE_TYPE(tdecl);
+  __t_desc_type_node = TREE_TYPE (tdecl);
 #if 0
   __tp_desc_type_node = build_pointer_type (__t_desc_type_node);
 #endif
@@ -5651,10 +5663,7 @@ shadow_tag (declspecs)
 	{
 	  my_friendly_assert (TYPE_NAME (value) != NULL_TREE, 261);
 
-	  if (code == ENUMERAL_TYPE && TYPE_SIZE (value) == 0)
-	    cp_error ("forward declaration of `%#T'", value);
-
-	  else if (IS_AGGR_TYPE (value) && CLASSTYPE_USE_TEMPLATE (value))
+	  if (IS_AGGR_TYPE (value) && CLASSTYPE_USE_TEMPLATE (value))
 	    {
 	      if (CLASSTYPE_IMPLICIT_INSTANTIATION (value)
 		  && TYPE_SIZE (value) == NULL_TREE)
@@ -7916,8 +7925,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	type = ctor_return_type;
       else if (current_class_type
 	       && IS_SIGNATURE (current_class_type)
-	       && (RIDBIT_SETP (RID_TYPEDEF, specbits)
-		   || SIGNATURE_GROKKING_TYPEDEF (current_class_type))
+	       && RIDBIT_SETP (RID_TYPEDEF, specbits)
 	       && (decl_context == FIELD || decl_context == NORMAL))
 	{
 	  explicit_int = 0;
@@ -8147,8 +8155,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
      is used in a signature member function declaration.  */
   if (decl_context == FIELD
       && IS_SIGNATURE (current_class_type)
-      && RIDBIT_NOTSETP(RID_TYPEDEF, specbits)
-      && !SIGNATURE_GROKKING_TYPEDEF (current_class_type))
+      && RIDBIT_NOTSETP (RID_TYPEDEF, specbits))
     {
       if (constp)
 	{
@@ -8192,82 +8199,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	  && (RIDBIT_SETP (RID_REGISTER, specbits)
 	      || RIDBIT_SETP (RID_AUTO, specbits)))
 	;
+      else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
+	;
       else if (decl_context == FIELD
-	       && RIDBIT_SETP (RID_TYPEDEF, specbits))
-	{
-	  /* Processing a typedef declaration nested within a class type
-	     definition.  */
-	  register tree scanner;
-	  register tree previous_declspec;
-  	  tree loc_typedecl;
-  
-	  if (initialized)
-	    error ("typedef declaration includes an initializer");
-  
-	  /* To process a class-local typedef declaration, we descend down
-	     the chain of declspecs looking for the `typedef' spec.  When
-	     we find it, we replace it with `static', and then recursively
-	     call `grokdeclarator' with the original declarator and with
-	     the newly adjusted declspecs.  This call should return a
-	     FIELD_DECL node with the TREE_TYPE (and other parts) set
-	     appropriately.  We can then just change the TREE_CODE on that
-	     from FIELD_DECL to TYPE_DECL and we're done.  */
-
-	  for (previous_declspec = NULL_TREE, scanner = declspecs;
-	       scanner;
-	       previous_declspec = scanner, scanner = TREE_CHAIN (scanner))
-  	    {
-	      if (TREE_VALUE (scanner) == ridpointers[(int) RID_TYPEDEF])
-		break;
-  	    }
-
-	  if (previous_declspec)
-	    TREE_CHAIN (previous_declspec) = TREE_CHAIN (scanner);
-	  else
-	    declspecs = TREE_CHAIN (scanner);
-
-	  declspecs = tree_cons (NULL_TREE, ridpointers[(int) RID_STATIC],
-				 declspecs);
-
-	  /* In the recursive call to grokdeclarator we need to know
-	     whether we are working on a signature-local typedef.  */
-	  if (IS_SIGNATURE (current_class_type))
-	    SIGNATURE_GROKKING_TYPEDEF (current_class_type) = 1;
-  
-	  loc_typedecl =
-	    grokdeclarator (declarator, declspecs, FIELD, 0, NULL_TREE, NULL_TREE);
-
-	  if (previous_declspec)
-	    TREE_CHAIN (previous_declspec) = scanner;
-  
-	  if (loc_typedecl != error_mark_node)
-  	    {
-	      register int i = sizeof (struct lang_decl_flags) / sizeof (int);
-	      register int *pi;
-  
-	      TREE_SET_CODE (loc_typedecl, TYPE_DECL);
-	      /* This is the same field as DECL_ARGUMENTS, which is set for
-		 function typedefs by the above grokdeclarator.  */
-	      DECL_NESTED_TYPENAME (loc_typedecl) = 0;
-  
-	      pi = (int *) permalloc (sizeof (struct lang_decl_flags));
-	      while (i > 0)
-	        pi[--i] = 0;
-	      DECL_LANG_SPECIFIC (loc_typedecl) = (struct lang_decl *) pi;
-	    }
-  
-	  if (IS_SIGNATURE (current_class_type))
-	    {
-	      SIGNATURE_GROKKING_TYPEDEF (current_class_type) = 0;
-	      if (loc_typedecl != error_mark_node && opaque_typedef)
-		SIGNATURE_HAS_OPAQUE_TYPEDECLS (current_class_type) = 1;
-	    }
-
-  	  return loc_typedecl;
-	}
-      else if (decl_context == FIELD
-	       && (! IS_SIGNATURE (current_class_type)
-		   || SIGNATURE_GROKKING_TYPEDEF (current_class_type))
+	       && ! IS_SIGNATURE (current_class_type)
  	       /* C++ allows static class elements  */
  	       && RIDBIT_SETP (RID_STATIC, specbits))
  	/* C++ also allows inlines and signed and unsigned elements,
@@ -8511,7 +8446,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 						  integer_one_node), 1));
 		if (! TREE_CONSTANT (itype))
 		  itype = variable_size (itype);
-		itype = build_index_type (itype);
+
+		/* If we're a parm, we need to have a permanent type so
+                   mangling checks for re-use will work right.  If both the
+                   element and index types are permanent, the array type
+                   will be, too.  */
+		if (decl_context == PARM
+		    && allocation_temporary_p () && TREE_PERMANENT (type))
+		  {
+		    push_obstacks (&permanent_obstack, &permanent_obstack);
+		    itype = build_index_type (itype);
+		    pop_obstacks ();
+		  }
+		else
+		  itype = build_index_type (itype);
+
 	      dont_grok_size:
 		resume_momentary (yes);
 	      }
@@ -8636,7 +8585,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
  		      }
 		    {
 		      RID_BIT_TYPE tmp_bits;
-		      bcopy ((void*)&specbits, (void*)&tmp_bits, sizeof(RID_BIT_TYPE));
+		      bcopy ((void*)&specbits, (void*)&tmp_bits, sizeof (RID_BIT_TYPE));
 		      RIDBIT_RESET (RID_INLINE, tmp_bits);
 		      RIDBIT_RESET (RID_STATIC, tmp_bits);
 		      if (RIDBIT_ANY_SET (tmp_bits))
@@ -9034,7 +8983,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	}
     }
 
-  if (RIDBIT_SETP (RID_TYPEDEF, specbits))
+  if (RIDBIT_SETP (RID_TYPEDEF, specbits) && decl_context != TYPENAME)
     {
       tree decl;
 
@@ -9076,7 +9025,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	  }
 	}
 
-      decl = build_decl (TYPE_DECL, declarator, type);
+      if (decl_context == FIELD)
+	{
+	  decl = build_lang_decl (TYPE_DECL, declarator, type);
+	  if (IS_SIGNATURE (current_class_type) && opaque_typedef)
+	    SIGNATURE_HAS_OPAQUE_TYPEDECLS (current_class_type) = 1;
+	}
+      else
+	decl = build_decl (TYPE_DECL, declarator, type);
+
       if (TREE_CODE (type) == OFFSET_TYPE || TREE_CODE (type) == METHOD_TYPE)
 	{
 	  cp_error_at ("typedef name may not be class-qualified", decl);
@@ -9802,8 +9759,7 @@ grokparms (first_parm, funcdef_flag)
 		{
 		  /* Give various messages as the need arises.  */
 		  if (TREE_CODE (decl) == STRING_CST)
-		    error ("invalid string constant `%s'",
-			   TREE_STRING_POINTER (decl));
+		    cp_error ("invalid string constant `%E'", decl);
 		  else if (TREE_CODE (decl) == INTEGER_CST)
 		    error ("invalid integer constant in parameter list, did you forget to give parameter name?");
 		  continue;
@@ -9824,10 +9780,10 @@ grokparms (first_parm, funcdef_flag)
 		  else if (TREE_CODE (type) == METHOD_TYPE)
 		    {
 		      if (DECL_NAME (decl))
-			/* Cannot use `error_with_decl' here because
+			/* Cannot use the decl here because
 			   we don't have DECL_CONTEXT set up yet.  */
-			error ("parameter `%s' invalidly declared method type",
-			       IDENTIFIER_POINTER (DECL_NAME (decl)));
+			cp_error ("parameter `%D' invalidly declared method type",
+				  DECL_NAME (decl));
 		      else
 			error ("parameter invalidly declared method type");
 		      type = build_pointer_type (type);
@@ -9836,8 +9792,8 @@ grokparms (first_parm, funcdef_flag)
 		  else if (TREE_CODE (type) == OFFSET_TYPE)
 		    {
 		      if (DECL_NAME (decl))
-			error ("parameter `%s' invalidly declared offset type",
-			       IDENTIFIER_POINTER (DECL_NAME (decl)));
+			cp_error ("parameter `%D' invalidly declared offset type",
+				  DECL_NAME (decl));
 		      else
 			error ("parameter invalidly declared offset type");
 		      type = build_pointer_type (type);
@@ -10345,7 +10301,7 @@ xref_tag (code_type_node, name, binfo, globalize)
 	}
       /* If we know we are defining this tag, only look it up in this scope
        * and don't try to find it as a type. */
-      if (t && TYPE_CONTEXT(t) && TREE_MANGLED (name))
+      if (t && TYPE_CONTEXT (t) && TREE_MANGLED (name))
 	ref = t;
       else
       	ref = lookup_tag (code, name, b, 1);
@@ -10387,6 +10343,8 @@ xref_tag (code_type_node, name, binfo, globalize)
 
       if (code == ENUMERAL_TYPE)
 	{
+	  cp_error ("use of enum `%#D' without previous declaration", name);
+
 	  ref = make_node (ENUMERAL_TYPE);
 
 	  /* Give the type a default layout like unsigned int
@@ -10460,6 +10418,25 @@ xref_tag (code_type_node, name, binfo, globalize)
   pop_obstacks ();
 
   return ref;
+}
+
+tree
+xref_tag_from_type (old, id, globalize)
+     tree old, id;
+     int globalize;
+{
+  tree code_type_node;
+
+  if (TREE_CODE (old) == RECORD_TYPE)
+    code_type_node = (CLASSTYPE_DECLARED_CLASS (old)
+		      ? class_type_node : record_type_node);
+  else
+    code_type_node = union_type_node;
+
+  if (id == NULL_TREE)
+    id = TYPE_IDENTIFIER (old);
+
+  return xref_tag (code_type_node, id, NULL_TREE, globalize);
 }
 
 void
@@ -11048,7 +11025,7 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
 
   announce_function (decl1);
 
-  if (! current_template_parms || ! uses_template_parms (TREE_TYPE (fntype)))
+  if (! current_template_parms)
     {
       if (TYPE_SIZE (complete_type (TREE_TYPE (fntype))) == NULL_TREE)
 	{
@@ -11533,9 +11510,6 @@ finish_function (lineno, call_poplevel, nested)
   if (fndecl == NULL_TREE)
     return;
 
-  if (! nested && hack_decl_function_context (fndecl) != NULL_TREE)
-    nested = 1;
-
   fntype = TREE_TYPE (fndecl);
 
 /*  TREE_READONLY (fndecl) = 1;
@@ -11715,7 +11689,7 @@ finish_function (lineno, call_poplevel, nested)
 	    }
 
 	  /* End of destructor.  */
-	  expand_end_bindings (NULL_TREE, getdecls() != NULL_TREE, 0);
+	  expand_end_bindings (NULL_TREE, getdecls () != NULL_TREE, 0);
 	  poplevel (2, 0, 0);	/* XXX change to 1 */
 
 	  /* Back to the top of destructor.  */

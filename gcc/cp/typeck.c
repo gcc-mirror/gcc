@@ -1767,6 +1767,12 @@ build_component_ref (datum, component, basetype_path, protect)
       basetype = TREE_TYPE (datum);
       code = TREE_CODE (basetype);
     }
+  if (TREE_CODE (datum) == OFFSET_REF)
+    {
+      datum = resolve_offset_ref (datum);
+      basetype = TREE_TYPE (datum);
+      code = TREE_CODE (basetype);
+    }
 
   /* First, see if there is a field or component with name COMPONENT. */
   if (TREE_CODE (component) == TREE_LIST)
@@ -1803,7 +1809,7 @@ build_component_ref (datum, component, basetype_path, protect)
 	  cp_error ("type `%T' has no destructor", basetype);
 	  return error_mark_node;
 	}
-      return TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 0);
+      return TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1);
     }
 
   /* Look up component name in the structure type definition.  */
@@ -1905,7 +1911,8 @@ build_component_ref (datum, component, basetype_path, protect)
     {
       tree context = DECL_FIELD_CONTEXT (field);
       tree base = context;
-      while (base != basetype && ANON_AGGRNAME_P (TYPE_IDENTIFIER (base)))
+      while (base != basetype && TYPE_NAME (base)
+	     && ANON_AGGRNAME_P (TYPE_IDENTIFIER (base)))
 	{
 	  base = TYPE_CONTEXT (base);
 	}
@@ -1935,7 +1942,7 @@ build_component_ref (datum, component, basetype_path, protect)
       basetype = base;
  
       /* Handle things from anon unions here...  */
-      if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (context)))
+      if (TYPE_NAME (context) && ANON_AGGRNAME_P (TYPE_IDENTIFIER (context)))
 	{
 	  tree subfield = lookup_anon_field (basetype, context);
 	  tree subdatum = build_component_ref (datum, subfield,
@@ -2231,12 +2238,34 @@ build_x_function_call (function, params, decl)
     return build_min_nt (CALL_EXPR, function, params, 0);
 
   type = TREE_TYPE (function);
+
+  if (TREE_CODE (type) == OFFSET_TYPE
+      && TREE_TYPE (type) == unknown_type_node
+      && TREE_CODE (function) == TREE_LIST
+      && TREE_CHAIN (function) == NULL_TREE)
+    {
+      /* Undo (Foo:bar)()... */
+      type = TYPE_OFFSET_BASETYPE (type);
+      function = TREE_VALUE (function);
+      my_friendly_assert (TREE_CODE (function) == TREE_LIST, 999);
+      my_friendly_assert (TREE_CHAIN (function) == NULL_TREE, 999);
+      function = TREE_VALUE (function);
+      my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 999);
+      function = DECL_NAME (function);
+      return build_method_call (decl, function, params, TYPE_BINFO (type), LOOKUP_NORMAL);
+    }
+    
   is_method = ((TREE_CODE (function) == TREE_LIST
 		&& current_class_type != NULL_TREE
 		&& IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (function)) == function)
 	       || TREE_CODE (function) == IDENTIFIER_NODE
 	       || TREE_CODE (type) == METHOD_TYPE
 	       || TYPE_PTRMEMFUNC_P (type));
+
+  if (TREE_CODE (function) == FUNCTION_DECL
+      && DECL_STATIC_FUNCTION_P (function))
+    return build_member_call
+      (DECL_CONTEXT (function), DECL_NAME (function), params);
 
   /* Handle methods, friends, and overloaded functions, respectively.  */
   if (is_method)
@@ -2712,9 +2741,8 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	{
 	  if (fndecl)
 	    {
-	      char *buf = (char *)alloca (40 + strlen (called_thing));
-	      sprintf (buf, "too many arguments to %s `%%s'", called_thing);
-	      error_with_decl (fndecl, buf);
+	      cp_error_at ("too many arguments to %s `%+D'", called_thing,
+			   fndecl);
 	      error ("at this point in file");
 	    }
 	  else
@@ -4877,30 +4905,42 @@ build_conditional_expr (ifexp, op1, op2)
 	  cp_error ("aggregate mismatch in conditional expression: `%T' vs `%T'", type1, type2);
 	  return error_mark_node;
 	}
+      /* Warning: this code assumes that conversion between cv-variants of
+         a type is done using NOP_EXPRs.  */
       if (code1 == RECORD_TYPE && TYPE_HAS_CONVERSION (type1))
 	{
-	  tree tmp = build_type_conversion (CONVERT_EXPR, type2, op1, 0);
+	  tree tmp = build_pointer_type
+	    (build_type_variant (TREE_TYPE (type2), 1, 1));
+	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op1, 0);
 	  if (tmp == NULL_TREE)
 	    {
-	      cp_error ("aggregate type `%T' could not convert on lhs of `:'", type1);
+	      cp_error ("incompatible types `%T' and `%T' in `?:'",
+			type1, type2);
 	      return error_mark_node;
 	    }
 	  if (tmp == error_mark_node)
 	    error ("ambiguous pointer conversion");
-	  result_type = type2;
+	  else
+	    STRIP_NOPS (tmp);
+	  result_type = common_type (type1, TREE_TYPE (tmp));
 	  op1 = tmp;
 	}
       else if (code2 == RECORD_TYPE && TYPE_HAS_CONVERSION (type2))
 	{
-	  tree tmp = build_type_conversion (CONVERT_EXPR, type1, op2, 0);
+	  tree tmp = build_pointer_type
+	    (build_type_variant (TREE_TYPE (type1), 1, 1));
+	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op2, 0);
 	  if (tmp == NULL_TREE)
 	    {
-	      cp_error ("aggregate type `%T' could not convert on rhs of `:'", type2);
+	      cp_error ("incompatible types `%T' and `%T' in `?:'",
+			type1, type2);
 	      return error_mark_node;
 	    }
 	  if (tmp == error_mark_node)
 	    error ("ambiguous pointer conversion");
-	  result_type = type1;
+	  else
+	    STRIP_NOPS (tmp);
+	  result_type = common_type (type1, TREE_TYPE (tmp));
 	  op2 = tmp;
 	}
       else if (flag_cond_mismatch)
@@ -5182,12 +5222,6 @@ build_c_cast (type, expr, allow_nonconverting)
       error ("cast specifies signature type");
       return error_mark_node;
     }
-
-  /* If there's only one function in the overloaded space,
-     just take it.  */
-  if (TREE_CODE (value) == TREE_LIST
-      && TREE_CHAIN (value) == NULL_TREE)
-    value = TREE_VALUE (value);
 
   if (current_template_parms)
     {
@@ -5471,9 +5505,9 @@ build_modify_expr (lhs, modifycode, rhs)
 	/* Do the default thing */;
       else
 	{
-	  result = build_method_call (lhs, constructor_name_full (lhstype),
+	  result = build_method_call (lhs, ctor_identifier,
 				      build_tree_list (NULL_TREE, rhs),
-				      NULL_TREE, LOOKUP_NORMAL);
+				      TYPE_BINFO (lhstype), LOOKUP_NORMAL);
 	  if (result == NULL_TREE)
 	    return error_mark_node;
 	  return result;
@@ -6688,7 +6722,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	{
 	  if (TYPE_HAS_INIT_REF (type))
 	    {
-	      tree init = build_method_call (exp, constructor_name_full (type),
+	      tree init = build_method_call (exp, ctor_identifier,
 					     build_tree_list (NULL_TREE, rhs),
 					     TYPE_BINFO (type), LOOKUP_NORMAL);
 
@@ -6721,7 +6755,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	  return rhs;
 	}
 
-      return cp_convert (type, rhs, CONV_OLD_CONVERT, flags);
+      return cp_convert (type, rhs, CONV_OLD_CONVERT,
+			 flags | LOOKUP_NO_CONVERSION);
     }
 
   if (type == TREE_TYPE (rhs))

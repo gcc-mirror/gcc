@@ -1398,7 +1398,7 @@ expand_builtin_throw ()
     /* Fall into epilogue to unwind prologue. */
   }
 
-  expand_end_bindings (getdecls(), 1, 0);
+  expand_end_bindings (getdecls (), 1, 0);
   poplevel (1, 0, 0);
   pop_momentary ();
 
@@ -1626,7 +1626,7 @@ start_anon_func ()
 void
 end_anon_func ()
 {
-  expand_end_bindings (getdecls(), 1, 0);
+  expand_end_bindings (getdecls (), 1, 0);
   poplevel (1, 0, 0);
   pop_momentary ();
 
@@ -1809,6 +1809,8 @@ build_throw (e)
 {
   if (e != error_mark_node)
     {
+      if (current_template_parms)
+	return build_min (THROW_EXPR, void_type_node, e);
       e = build1 (THROW_EXPR, void_type_node, e);
       TREE_SIDE_EFFECTS (e) = 1;
       TREE_USED (e) = 1;

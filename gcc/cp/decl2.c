@@ -757,27 +757,27 @@ grok_x_components (specs, components)
 	  /* This code may be needed for UNION_TYPEs as
 	     well.  */
 	  tcode = record_type_node;
-	  if (CLASSTYPE_DECLARED_CLASS(t))
+	  if (CLASSTYPE_DECLARED_CLASS (t))
 	    tcode = class_type_node;
-	  else if (IS_SIGNATURE(t))
+	  else if (IS_SIGNATURE (t))
 	    tcode = signature_type_node;
 	  
 	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
-	  if (TYPE_CONTEXT(t))
-	    CLASSTYPE_NO_GLOBALIZE(t) = 1;
+	  if (TYPE_CONTEXT (t))
+	    CLASSTYPE_NO_GLOBALIZE (t) = 1;
 	  return NULL_TREE;
 	  break;
 
 	case UNION_TYPE:
 	case ENUMERAL_TYPE:
-	  if (TREE_CODE(t) == UNION_TYPE)
+	  if (TREE_CODE (t) == UNION_TYPE)
 	    tcode = union_type_node;
 	  else
 	    tcode = enum_type_node;
 
 	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
-	  if (TREE_CODE(t) == UNION_TYPE && TYPE_CONTEXT(t))
-	    CLASSTYPE_NO_GLOBALIZE(t) = 1;
+	  if (TREE_CODE (t) == UNION_TYPE && TYPE_CONTEXT (t))
+	    CLASSTYPE_NO_GLOBALIZE (t) = 1;
 	  if (TREE_CODE (t) == UNION_TYPE
 	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
 	    {
@@ -1233,7 +1233,11 @@ check_classfn (ctype, function)
       end = TREE_VEC_END (method_vec);
 
       /* First suss out ctors and dtors.  */
-      if (*methods && fn_name == DECL_NAME (*methods))
+      if (*methods && fn_name == DECL_NAME (*methods)
+	  && DECL_CONSTRUCTOR_P (function))
+	goto got_it;
+      if (*++methods && fn_name == DECL_NAME (*methods)
+	  && DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function)))
 	goto got_it;
 
       while (++methods != end)
@@ -1295,8 +1299,8 @@ check_classfn (ctype, function)
 		function, ctype);
     }
 
-  /* If we did not find the method in the class, add it to
-     avoid spurious errors.  */
+  /* If we did not find the method in the class, add it to avoid
+     spurious errors.  */
   add_method (ctype, methods, function);
   return NULL_TREE;
 }
@@ -1380,16 +1384,6 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
       DECL_CONTEXT (value) = current_class_type;
       DECL_CLASS_CONTEXT (value) = current_class_type;
       CLASSTYPE_LOCAL_TYPEDECLS (current_class_type) = 1;
-
-      /* If we declare a typedef name for something that has no name,
-	 the typedef name is used for linkage.  See 7.1.3 p4 94/0158. */
-      if (TYPE_NAME (TREE_TYPE (value))
-	  && TREE_CODE (TYPE_NAME (TREE_TYPE (value))) == TYPE_DECL
-	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (TREE_TYPE (value))))
-	{
-	  TYPE_NAME (TREE_TYPE (value)) = value;
-	  TYPE_STUB_DECL (TREE_TYPE (value)) = value;
-	}
 
       pushdecl_class_level (value);
       return value;
@@ -2094,6 +2088,7 @@ get_temp_name (type, staticp)
     }
   TREE_USED (decl) = 1;
   TREE_STATIC (decl) = staticp;
+  DECL_ARTIFICIAL (decl) = 1;
 
   /* If this is a local variable, then lay out its rtl now.
      Otherwise, callers of this function are responsible for dealing
@@ -2529,7 +2524,7 @@ import_export_template (type)
     }
 }
     
-static void
+static int
 finish_prevtable_vardecl (prev, vars)
      tree prev, vars;
 {
@@ -2550,6 +2545,9 @@ finish_prevtable_vardecl (prev, vars)
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
 	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
 	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
+#ifdef ADJUST_VTABLE_LINKAGE
+	      ADJUST_VTABLE_LINKAGE (vars, method);
+#endif
 	      break;
 	    }
 	}
@@ -2570,14 +2568,17 @@ finish_prevtable_vardecl (prev, vars)
 	 at the top level.  */
       build_t_desc (ctype, 1);
     }
+
+  return 1;
 }
     
-static void
+static int
 finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
   if (write_virtuals >= 0
-      && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
+      && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars))
+      && ! TREE_ASM_WRITTEN (vars))
     {
 #if 0
       /* The long term plan it to make the TD entries statically initialized,
@@ -2622,29 +2623,33 @@ finish_vtable_vardecl (prev, vars)
 #endif /* DWARF_DEBUGGING_INFO */
 
       rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
+      return 1;
     }
   else if (! TREE_USED (vars))
     /* We don't know what to do with this one yet.  */
-    return;
+    return 0;
 
   /* We know that PREV must be non-zero here.  */
   TREE_CHAIN (prev) = TREE_CHAIN (vars);
+  return 0;
 }
 
-static void
+static int
 prune_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
   /* We know that PREV must be non-zero here.  */
   TREE_CHAIN (prev) = TREE_CHAIN (vars);
+  return 1;
 }
 
-void
+int
 walk_vtables (typedecl_fn, vardecl_fn)
      register void (*typedecl_fn)();
-     register void (*vardecl_fn)();
+     register int (*vardecl_fn)();
 {
   tree prev, vars;
+  int flag = 0;
 
   for (prev = 0, vars = getdecls (); vars; vars = TREE_CHAIN (vars))
     {
@@ -2652,7 +2657,8 @@ walk_vtables (typedecl_fn, vardecl_fn)
 
       if (TREE_CODE (vars) == VAR_DECL && DECL_VIRTUAL_P (vars))
 	{
-	  if (vardecl_fn) (*vardecl_fn) (prev, vars);
+	  if (vardecl_fn)
+	    flag |= (*vardecl_fn) (prev, vars);
 
 	  if (prev && TREE_CHAIN (prev) != vars)
 	    continue;
@@ -2667,6 +2673,8 @@ walk_vtables (typedecl_fn, vardecl_fn)
 
       prev = vars;
     }
+
+  return flag;
 }
 
 static void
@@ -2910,7 +2918,7 @@ finish_file ()
     expand_expr_stmt (build_function_call (TREE_VALUE (static_dtors),
 					   NULL_TREE));
       
-  expand_end_bindings (getdecls(), 1, 0);
+  expand_end_bindings (getdecls (), 1, 0);
   poplevel (1, 0, 0);
   pop_momentary ();
 
@@ -3027,7 +3035,7 @@ finish_file ()
 	expand_expr_stmt (build_function_call (TREE_VALUE (static_ctors),
 					       NULL_TREE));
       
-      expand_end_bindings (getdecls(), 1, 0);
+      expand_end_bindings (getdecls (), 1, 0);
       poplevel (1, 0, 0);
       pop_momentary ();
 
@@ -3107,7 +3115,7 @@ finish_file ()
 	SET_DECL_ARTIFICIAL (vars);
 	pushdecl (vars);
 
-	walk_vtables ((void (*)())0, finish_vtable_vardecl);
+	reconsider |= walk_vtables ((void (*)())0, finish_vtable_vardecl);
 
 	while (*p)
 	  {
@@ -3314,6 +3322,8 @@ build_expr_from_tree (t)
     case TRUTH_NOT_EXPR:
     case ADDR_EXPR:
     case CONVERT_EXPR:      /* Unary + */
+      if (TREE_TYPE (t))
+	return t;
       return build_x_unary_op (TREE_CODE (t),
 			       build_expr_from_tree (TREE_OPERAND (t, 0)));
 
@@ -3472,6 +3482,9 @@ build_expr_from_tree (t)
 	(build_expr_from_tree (TREE_OPERAND (t, 0)),
 	 TREE_OPERAND (t, 1), NULL_TREE, 1);
 
+    case THROW_EXPR:
+      return build_throw (build_expr_from_tree (TREE_OPERAND (t, 0)));
+
     default:
       return t;
     }
@@ -3599,6 +3612,7 @@ void
 do_namespace_alias (alias, namespace)
      tree alias, namespace;
 {
+  sorry ("namespace alias");
 }
 
 tree
@@ -3651,6 +3665,7 @@ void
 do_using_directive (namespace)
      tree namespace;
 {
+  sorry ("using directive");
 }
 
 void

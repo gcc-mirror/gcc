@@ -837,6 +837,11 @@ yyprint (file, yychar, yylval)
     case SCSPEC:
     case PRE_PARSED_CLASS_DECL:
       t = yylval.ttype;
+      if (TREE_CODE (t) == TYPE_DECL)
+	{
+	  fprintf (file, " `%s'", DECL_NAME (t));
+	  break;
+	}
       my_friendly_assert (TREE_CODE (t) == IDENTIFIER_NODE, 224);
       if (IDENTIFIER_POINTER (t))
 	  fprintf (file, " `%s'", IDENTIFIER_POINTER (t));
@@ -1076,7 +1081,7 @@ set_typedecl_interface_info (prev, vars)
     = interface_strcmp (FILE_NAME_NONDIRECTORY (DECL_SOURCE_FILE (vars)));
 }
 
-void
+int
 set_vardecl_interface_info (prev, vars)
      tree prev, vars;
 {
@@ -1090,7 +1095,9 @@ set_vardecl_interface_info (prev, vars)
 	CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 1;
       DECL_EXTERNAL (vars) = CLASSTYPE_INTERFACE_ONLY (type);
       TREE_PUBLIC (vars) = 1;
+      return 1;
     }
+  return 0;
 }
 
 /* Called from the top level: if there are any pending inlines to
@@ -1683,6 +1690,7 @@ cons_up_default_function (type, full_name, kind)
     }
 #endif
 
+#if 0
   if (CLASSTYPE_INTERFACE_KNOWN (type))
     {
       DECL_INTERFACE_KNOWN (fn) = 1;
@@ -1690,6 +1698,7 @@ cons_up_default_function (type, full_name, kind)
 				     && flag_implement_inlines);
     }
   else
+#endif
     DECL_NOT_REALLY_EXTERN (fn) = 1;
 
   mark_inline_for_output (fn);
@@ -1986,7 +1995,7 @@ check_newline ()
 			      goto skipline;
 			    }
 			  main_filename = TREE_STRING_POINTER (yylval.ttype);
-			  c = getch();
+			  c = getch ();
 			  put_back (c);
 			}
 
@@ -2063,7 +2072,7 @@ check_newline ()
 			      goto skipline;
 			    }
 			  main_filename = TREE_STRING_POINTER (yylval.ttype);
-			  c = getch();
+			  c = getch ();
 			  put_back (c);
 			}
 
@@ -2683,7 +2692,7 @@ see_typename ()
 {
   looking_for_typename = 1;
   if (yychar < 0)
-    if ((yychar = yylex()) < 0) yychar = 0;
+    if ((yychar = yylex ()) < 0) yychar = 0;
   looking_for_typename = 0;
   if (yychar == IDENTIFIER)
     {
@@ -2742,7 +2751,7 @@ do_identifier (token, parsing)
 
   /* Remember that this name has been used in the class definition, as per
      [class.scope0] */
-  if (id && current_class_type
+  if (id && current_class_type && parsing
       && TYPE_BEING_DEFINED (current_class_type)
       && ! IDENTIFIER_CLASS_VALUE (token))
     pushdecl_class_level (id);
@@ -3237,6 +3246,14 @@ real_yylex ()
 		  yylval.code = BIT_XOR_EXPR;
 		  token_buffer[0] = '^';
 		  token_buffer[1] = 0;
+		}
+	      else if (ptr->token == NAMESPACE)
+		{
+		  static int warned;
+		  if (! warned)
+		    warning ("namespaces are mostly broken in this version of g++");
+
+		  warned = 1;
 		}
 
 	      value = (int) ptr->token;
@@ -4037,7 +4054,7 @@ real_yylex ()
 	  skipnewline:
 	    c = getch ();
 	    if (c == EOF) {
-		error("Unterminated string");
+		error ("Unterminated string");
 		break;
 	    }
 	  }
@@ -4383,7 +4400,7 @@ build_lang_decl (code, name, type)
 #endif
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)lang_decl] += 1;
-  tree_node_sizes[(int)lang_decl] += sizeof(struct lang_decl);
+  tree_node_sizes[(int)lang_decl] += sizeof (struct lang_decl);
 #endif
 
   return t;
@@ -4480,7 +4497,7 @@ make_lang_type (code)
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)lang_type] += 1;
-  tree_node_sizes[(int)lang_type] += sizeof(struct lang_type);
+  tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
 #endif
 
   return t;
@@ -4509,7 +4526,7 @@ copy_decl_lang_specific (decl)
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)lang_decl] += 1;
-  tree_node_sizes[(int)lang_decl] += sizeof(struct lang_decl);
+  tree_node_sizes[(int)lang_decl] += sizeof (struct lang_decl);
 #endif
 }
 
@@ -4548,32 +4565,6 @@ compiler_error (s, v, v2)
   char buf[1024];
   sprintf (buf, s, v, v2);
   error_with_file_and_line (input_filename, lineno, "%s (compiler error)", buf);
-}
-
-void
-compiler_error_with_decl (decl, s)
-     tree decl;
-     char *s;
-{
-  char *name;
-  count_error (0);
-
-  report_error_function (0);
-
-  if (TREE_CODE (decl) == PARM_DECL)
-    fprintf (stderr, "%s:%d: ",
-	     DECL_SOURCE_FILE (DECL_CONTEXT (decl)),
-	     DECL_SOURCE_LINE (DECL_CONTEXT (decl)));
-  else
-    fprintf (stderr, "%s:%d: ",
-	     DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
-
-  name = lang_printable_name (decl);
-  if (name)
-    fprintf (stderr, s, name);
-  else
-    fprintf (stderr, s, "((anonymous))");
-  fprintf (stderr, " (compiler error)\n");
 }
 
 void

@@ -800,9 +800,9 @@ layout_basetypes (rec, binfos)
 	  vbase_decls = decl;
 
 	  if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (basetype)
-	      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 0)) == NULL_TREE)
+	      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1)) == NULL_TREE)
 	    {
-	      warning_with_decl (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 0),
+	      warning_with_decl (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1),
 				 "destructor `%s' non-virtual");
 	      warning ("in inheritance relationship `%s: virtual %s'",
 		       TYPE_NAME_STRING (rec),
@@ -827,9 +827,9 @@ layout_basetypes (rec, binfos)
 	     claim it as theirs and explain exactly what circumstances
 	     warrant the warning.  */ 
 	  if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (basetype)
-	      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 0)) == NULL_TREE)
+	      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1)) == NULL_TREE)
 	    {
-	      warning_with_decl (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 0),
+	      warning_with_decl (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1),
 				 "destructor `%s' non-virtual");
 	      warning ("in inheritance relationship `%s:%s %s'",
 		       TYPE_NAME_STRING (rec),
@@ -1950,7 +1950,8 @@ min_tree_cons (purpose, value, chain)
   register struct obstack *ambient_obstack = current_obstack;
   current_obstack = &permanent_obstack;
 
-  node = tree_cons (purpose, value, chain);
+  node = tree_cons (copy_to_permanent (purpose),
+		    copy_to_permanent (value), chain);
   current_obstack = ambient_obstack;
   return node;
 }

@@ -71,29 +71,6 @@ binfo_or_else (parent_or_type, type)
   return NULL_TREE;
 }
 
-/* Print an error message stemming from an invalid use of an
-   aggregate type.
-
-   TYPE is the type or binfo which draws the error.
-   MSG is the message to print.
-   ARG is an optional argument which may provide more information.  */
-void
-error_with_aggr_type (type, msg, arg)
-     tree type;
-     char *msg;
-     HOST_WIDE_INT arg;
-{
-  tree name;
-
-  if (TREE_CODE (type) == TREE_VEC)
-    type = BINFO_TYPE (type);
-
-  name = TYPE_NAME (type);
-  if (TREE_CODE (name) == TYPE_DECL)
-    name = DECL_NAME (name);
-  error (msg, IDENTIFIER_POINTER (name), arg);
-}
-
 /* According to ARM $7.1.6, "A `const' object may be initialized, but its
    value may not be changed thereafter.  Thus, we emit hard errors for these,
    rather than just pedwarns.  If `SOFT' is 1, then we just pedwarn.  (For
@@ -108,40 +85,37 @@ readonly_error (arg, string, soft)
   void (*fn)();
 
   if (soft)
-    fn = pedwarn;
+    fn = cp_pedwarn;
   else
-    fn = error;
+    fn = cp_error;
 
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
-        fmt = "%s of member `%s' in read-only structure";
+        fmt = "%s of member `%D' in read-only structure";
       else
-        fmt = "%s of read-only member `%s'";
-      (*fn) (fmt, string, lang_printable_name (TREE_OPERAND (arg, 1)));
+        fmt = "%s of read-only member `%D'";
+      (*fn) (fmt, string, TREE_OPERAND (arg, 1));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
     {
       if (DECL_LANG_SPECIFIC (arg)
 	  && DECL_IN_AGGR_P (arg)
 	  && !TREE_STATIC (arg))
-	fmt = "%s of constant field `%s'";
+	fmt = "%s of constant field `%D'";
       else
-	fmt = "%s of read-only variable `%s'";
-      (*fn) (fmt, string, lang_printable_name (arg));
+	fmt = "%s of read-only variable `%D'";
+      (*fn) (fmt, string, arg);
     }
   else if (TREE_CODE (arg) == PARM_DECL)
-    (*fn) ("%s of read-only parameter `%s'", string,
-	   lang_printable_name (arg));
+    (*fn) ("%s of read-only parameter `%D'", string, arg);
   else if (TREE_CODE (arg) == INDIRECT_REF
            && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REFERENCE_TYPE
            && (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL
                || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
-    (*fn) ("%s of read-only reference `%s'",
-	   string, lang_printable_name (TREE_OPERAND (arg, 0)));
+    (*fn) ("%s of read-only reference `%D'", string, TREE_OPERAND (arg, 0));
   else if (TREE_CODE (arg) == RESULT_DECL)
-    (*fn) ("%s of read-only named return value `%s'",
-	   string, lang_printable_name (arg));
+    (*fn) ("%s of read-only named return value `%D'", string, arg);
   else	       
     (*fn) ("%s of read-only location", string);
 }
@@ -239,8 +213,7 @@ incomplete_type_error (value, type)
 
   if (value != 0 && (TREE_CODE (value) == VAR_DECL
 		     || TREE_CODE (value) == PARM_DECL))
-    error ("`%s' has an incomplete type",
-	   IDENTIFIER_POINTER (DECL_NAME (value)));
+    cp_error ("`%D' has incomplete type", value);
   else
     {
     retry:
@@ -249,15 +222,9 @@ incomplete_type_error (value, type)
       switch (TREE_CODE (type))
 	{
 	case RECORD_TYPE:
-	  errmsg = "invalid use of undefined type `struct %s'";
-	  break;
-
 	case UNION_TYPE:
-	  errmsg = "invalid use of undefined type `union %s'";
-	  break;
-
 	case ENUMERAL_TYPE:
-	  errmsg = "invalid use of undefined type `enum %s'";
+	  errmsg = "invalid use of undefined type `%#T'";
 	  break;
 
 	case VOID_TYPE:
@@ -281,7 +248,7 @@ incomplete_type_error (value, type)
 	  my_friendly_abort (108);
 	}
 
-      error_with_aggr_type (type, errmsg);
+      cp_error (errmsg, type);
     }
 }
 
@@ -1410,28 +1377,23 @@ build_m_component_ref (datum, component)
   return build (OFFSET_REF, rettype, datum, component);
 }
 
-/* Return a tree node for the expression TYPENAME '(' PARMS ')'.
-
-   Because we cannot tell whether this construct is really a call to a
-   constructor or a request for a type conversion, we try both, and
-   report any ambiguities we find.  */
+/* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */
 tree
 build_functional_cast (exp, parms)
      tree exp;
      tree parms;
 {
+  tree binfo;
+
   /* This is either a call to a constructor,
      or a C cast in C++'s `functional' notation.  */
-  tree type, name = NULL_TREE;
-  tree expr_as_ctor = NULL_TREE;
+  tree type;
 
   if (exp == error_mark_node || parms == error_mark_node)
     return error_mark_node;
 
   if (TREE_CODE (exp) == IDENTIFIER_NODE)
     {
-      name = exp;
-
       if (IDENTIFIER_HAS_TYPE_VALUE (exp))
 	/* Either an enum or an aggregate type.  */
 	type = IDENTIFIER_TYPE_VALUE (exp);
@@ -1440,7 +1402,7 @@ build_functional_cast (exp, parms)
 	  type = lookup_name (exp, 1);
 	  if (!type || TREE_CODE (type) != TYPE_DECL)
 	    {
-	      cp_error ("`%T' fails to be a typedef or built-in type", name);
+	      cp_error ("`%T' fails to be a typedef or built-in type", exp);
 	      return error_mark_node;
 	    }
 	  type = TREE_TYPE (type);
@@ -1482,13 +1444,6 @@ build_functional_cast (exp, parms)
 	 
      then the slot being initialized will be filled in.  */
 
-  if (name == NULL_TREE)
-    {
-      name = TYPE_NAME (type);
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NESTED_TYPENAME (name);
-    }
-
   if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
     {
       cp_error ("type `%T' is not yet defined", type);
@@ -1496,15 +1451,15 @@ build_functional_cast (exp, parms)
     }
 
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
-    return build_c_cast (type, parms, 1);
+    return build_c_cast (type, TREE_VALUE (parms), 1);
 
-  expr_as_ctor = build_method_call (NULL_TREE, name, parms,
-				    NULL_TREE, LOOKUP_NORMAL);
+  exp = build_method_call (NULL_TREE, ctor_identifier, parms,
+			   TYPE_BINFO (type), LOOKUP_NORMAL);
 
-  if (expr_as_ctor == error_mark_node)
+  if (exp == error_mark_node)
     return error_mark_node;
 
-  return build_cplus_new (type, expr_as_ctor);
+  return build_cplus_new (type, exp);
 }
 
 /* Return the character string for the name that encodes the
