@@ -1664,8 +1664,6 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# aka the GNU/Linux C library 6.
 	tm_file=m68k/linux.h
 	tmake_file="t-slibgcc-elf-ver t-linux m68k/t-linux"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-	gnu_ld=yes
 	;;
 m68k-*-psos*)
 	tmake_file=m68k/t-m68kbare
