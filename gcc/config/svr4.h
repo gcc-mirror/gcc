@@ -1,6 +1,6 @@
 /* svr4.h  --  operating system specific defines to be used when
    targeting GCC for some generic System V Release 4 system.
-   Copyright (C) 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
@@ -565,7 +565,7 @@ dtors_section ()							\
 /* Switch into a generic section.
    This is currently only used to support section attributes.  */
 
-#define ASM_OUTPUT_SECTION(FILE, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
   fprintf (FILE, ".section\t%s,\"a\",@progbits\n", NAME)
 
 /* A C statement (sans semicolon) to output an element in the table of
