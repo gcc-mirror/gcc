@@ -4307,7 +4307,7 @@ process_insert_insn (expr)
   /* Otherwise, make a new insn to compute this expression and make sure the
      insn will be recognized (this also adds any needed CLOBBERs).  Copy the
      expression to make sure we don't have any sharing issues.  */
-  if (insn_invalid_p (emit_insn (gen_rtx_SET (VOIDmode, reg, exp))))
+  else if (insn_invalid_p (emit_insn (gen_rtx_SET (VOIDmode, reg, exp))))
     abort ();
   
   pat = gen_sequence ();
