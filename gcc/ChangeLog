@@ -1,3 +1,8 @@
+Fri Nov  6 00:10:00 1998  Jan Hubicka (hubicka@freesoft.cz)
+
+	* i386.md (extendsidi2): Use # in the output template.
+	(extendsidi splitters): New splitters.
+
 Thu Nov  5 07:59:05 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* jump.c (init_label_info, delete_barrier_successors,
