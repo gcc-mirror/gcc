@@ -795,8 +795,16 @@ expand_call (exp, target, ignore)
     {
       char *tname = name;
 
+      /* Disregard prefix _, __ or __x.  */
       if (name[0] == '_')
-	tname += ((name[1] == '_' && name[2] == 'x') ? 3 : 1);
+	{
+	  if (name[1] == '_' && name[2] == 'x')
+	    tname += 3;
+	  else if (name[1] == '_')
+	    tname += 2;
+	  else
+	    tname += 1;
+	}
 
       if (tname[0] == 's')
 	{
