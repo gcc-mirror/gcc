@@ -1,3 +1,8 @@
+Wed Aug 27 11:52:58 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* m68k.md (iorsi3_internal): Readd ! TARGET_5200 check lost in
+	last change.
+
 Wed Aug 27 01:56:18 1997  Doug Evans  <dje@seba.cygnus.com>
 
 	* loop.c (combine_movables): Earlier insns don't match later ones.
