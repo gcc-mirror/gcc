@@ -612,6 +612,7 @@ static int noce_try_cmove_arith (struct noce_if_info *);
 static rtx noce_get_alt_condition (struct noce_if_info *, rtx, rtx *);
 static int noce_try_minmax (struct noce_if_info *);
 static int noce_try_abs (struct noce_if_info *);
+static int noce_try_sign_mask (struct noce_if_info *);
 
 /* Helper function for noce_try_store_flag*.  */
 
@@ -1702,6 +1703,71 @@ noce_try_abs (struct noce_if_info *if_info)
   return TRUE;
 }
 
+/* Convert "if (m < 0) x = b; else x = 0;" to "x = (m >> C) & b;".  */
+
+static int
+noce_try_sign_mask (struct noce_if_info *if_info)
+{
+  rtx cond, t, m, c, seq;
+  enum machine_mode mode;
+  enum rtx_code code;
+
+  if (no_new_pseudos)
+    return FALSE;
+
+  cond = if_info->cond;
+  code = GET_CODE (cond);
+  m = XEXP (cond, 0);
+  c = XEXP (cond, 1);
+
+  t = NULL_RTX;
+  if (if_info->a == const0_rtx)
+    {
+      if ((code == LT && c == const0_rtx)
+	  || (code == LE && c == constm1_rtx))
+	t = if_info->b;
+    }
+  else if (if_info->b == const0_rtx)
+    {
+      if ((code == GE && c == const0_rtx)
+	  || (code == GT && c == constm1_rtx))
+	t = if_info->a;
+    }
+
+  if (! t || side_effects_p (t))
+    return FALSE;
+
+  /* We currently don't handle different modes.  */
+  mode = GET_MODE (t);
+  if (GET_MODE (m) != mode)
+    return FALSE;
+
+  /* This is only profitable if T is cheap.  */
+  if (rtx_cost (t, SET) >= COSTS_N_INSNS (2))
+    return FALSE;
+
+  start_sequence ();
+  c = gen_int_mode (GET_MODE_BITSIZE (mode) - 1, mode);
+  m = expand_binop (mode, ashr_optab, m, c, NULL_RTX, 0, OPTAB_DIRECT);
+  t = m ? expand_binop (mode, and_optab, m, t, NULL_RTX, 0, OPTAB_DIRECT)
+	: NULL_RTX;
+
+  if (!t)
+    {
+      end_sequence ();
+      return FALSE;
+    }
+
+  noce_emit_move_insn (if_info->x, t);
+  seq = get_insns ();
+  unshare_ifcvt_sequence (if_info, seq);
+  end_sequence ();
+  emit_insn_before_setloc (seq, if_info->jump,
+			   INSN_LOCATOR (if_info->insn_a));
+  return TRUE;
+}
+
+
 /* Similar to get_condition, only the resulting condition must be
    valid at JUMP, instead of at EARLIEST.  */
 
@@ -2003,6 +2069,8 @@ noce_process_if_block (struct ce_if_block * ce_info)
 	goto success;
       if (HAVE_conditional_move
 	  && noce_try_cmove_arith (&if_info))
+	goto success;
+      if (noce_try_sign_mask (&if_info))
 	goto success;
     }
 
