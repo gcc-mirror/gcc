@@ -203,6 +203,10 @@ clean-local:
 ## We just remove every .class file that was created.
 	find . -name '*.class' -print | xargs rm -f
 
+# Just remove the objects from C++ sources, for testing the C++ compiler.
+clean-nat:
+	rm -f $(nat_files) $(x_nat_files)
+
 SUFFIXES = .class .java .h
 
 .class.lo:
