@@ -2297,7 +2297,7 @@ iq2000_expand_epilogue (void)
 
   if (iq2000_can_use_return_insn ())
     {
-      emit_insn (gen_return ());
+      emit_jump_insn (gen_return ());
       return;
     }
 
