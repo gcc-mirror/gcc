@@ -253,9 +253,9 @@ namespace std
 	  // Work in-place.
 	  const size_type __pos = __s - _M_data();
 	  if (__pos >= __n)
-	    traits_type::copy(_M_data(), __s, __n);
+	    _M_copy(_M_data(), __s, __n);
 	  else if (__pos)
-	    traits_type::move(_M_data(), __s, __n);
+	    _M_move(_M_data(), __s, __n);
 	  _M_rep()->_M_set_length_and_sharable(__n);
 	  return *this;
 	}
