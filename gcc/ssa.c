@@ -1924,7 +1924,9 @@ mark_phi_and_copy_regs (phi_set)
 	rtx pattern;
 	rtx src;
 
-	if (insn == NULL)
+	if (insn == NULL
+	    || (GET_CODE (insn) == NOTE
+		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED))
 	  continue;
 	pattern = PATTERN (insn);
 	/* Sometimes we get PARALLEL insns.  These aren't phi nodes or
