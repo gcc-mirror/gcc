@@ -187,6 +187,9 @@ for machine in $build $host $target; do
 	# each machine entry.
 	cpu_type=`echo $machine | sed 's/-.*$//'`
 	case $machine in
+	alpha*-*-*)
+		cpu_type=alpha
+		;;
 	arm*-*-*)
 		cpu_type=arm
 		;;
@@ -255,18 +258,18 @@ for machine in $build $host $target; do
 	a29k-*-*)			# Default a29k environment.
 		use_collect2=yes
 		;;
-	alpha-*-linux-gnuecoff*)
+	alpha*-*-linux-gnuecoff*)
 		tm_file="${tm_file} alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		target_cpu_default=4
+		target_cpu_default=MASK_GAS
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
 		;;
-	alpha-*-linux-gnu*)
+	alpha*-*-linux-gnu*)
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		target_cpu_default=4
+		target_cpu_default=MASK_GAS
 		tmake_file="t-linux alpha/t-linux"
 		xmake_file=none
 		fixincludes=Makefile.in
@@ -276,7 +279,7 @@ for machine in $build $host $target; do
  			thread_file='posix'
  		fi
 		;;
-	alpha-dec-osf[[456789]]*)
+	alpha*-dec-osf[[456789]]*)
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file="${tm_file} dbx.h"
@@ -290,12 +293,12 @@ for machine in $build $host $target; do
 		# Some versions of OSF4 (specifically X4.0-9 296.7) have
 		# a broken tar, so we use cpio instead.
 		case $machine in
-		  alpha-dec-osf4*)
+		  alpha*-dec-osf4*)
 		    install_headers_dir=install-headers-cpio
 		    ;;
 		esac
 		;;
-	alpha-dec-osf[[23]]*)
+	alpha*-dec-osf[[23]]*)
 		tm_file="${tm_file} alpha/osf2or3.h"
 		if [[ x$stabs = xyes ]]
 		then
@@ -308,7 +311,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 		use_collect2=yes
 		;;
-	alpha-dec-osf1.2)
+	alpha*-dec-osf1.2)
 		tm_file="${tm_file} alpha/osf12.h"
 		if [[ x$stabs = xyes ]]
 		then
@@ -321,7 +324,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 		use_collect2=yes
 		;;
-	alpha-*-osf*)
+	alpha*-*-osf*)
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file="${tm_file} dbx.h"
@@ -333,9 +336,9 @@ for machine in $build $host $target; do
 		broken_install=yes
 		use_collect2=yes
 		;;
-	alpha-*-winnt3*)
+	alpha*-*-winnt3*)
 		tm_file="${tm_file} alpha/win-nt.h"
-		target_cpu_default=64
+		target_cpu_default=MASK_WINDOWS_NT
 		xm_file="${xm_file} config/winnt/xm-winnt.h alpha/xm-winnt.h"
 		tmake_file=t-libc-ok
 		xmake_file=winnt/x-winnt
@@ -350,7 +353,7 @@ for machine in $build $host $target; do
 			thread_file='win32'
 		fi
 		;;
-	alpha-dec-vms*)
+	alpha*-dec-vms*)
 		tm_file=alpha/vms.h
 		xm_file="${xm_file} alpha/xm-vms.h"
 		tmake_file=alpha/t-vms
@@ -2496,10 +2499,24 @@ for machine in $build $host $target; do
 	i686-*-*)
 		target_cpu_default2=3
 		;;
-	alpha-*-*)
+	alpha*-*-*)
+		case $machine in
+			alphaev56*)
+				target_cpu_default2="MASK_CPU_EV5|MASK_BYTE_OPS"
+				;;
+			alphaev5*)
+				target_cpu_default2="MASK_CPU_EV5"
+				;;
+		esac
+				
 		if [[ x$gas = xyes ]]
 		then
-			target_cpu_default2=4
+			if [[ x$target_cpu_default2 = x ]]
+			then
+				target_cpu_default2=MASK_GAS
+			else
+				target_cpu_default2=${target_cpu_default2}|MASK_GAS
+			fi
 		fi
 		;;
 	mips*-*-ecoff* | mips*-*-elf*)
