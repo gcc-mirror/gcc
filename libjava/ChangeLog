@@ -1,3 +1,12 @@
+2003-07-18  Graydon Hoare  <graydon@redhat.com>
+
+	* java/awt/geom/CubicCurve2D.java,
+	java/awt/geom/Line2D.java,
+	java/awt/geom/QuadCurve2D.java,
+	java/awt/geom/Rectangle2D.java: 
+	Fix path some calculations, make path iterators follow
+	a consistent style.
+
 2003-07-18  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/logging/Handler.java (isLoggable): Check record level

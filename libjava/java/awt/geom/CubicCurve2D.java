@@ -204,7 +204,7 @@ public abstract class CubicCurve2D implements Shape, Cloneable
     return new PathIterator()
     {
       /** Current coordinate. */
-      private int current;
+      private int current = 0;
 
       public int getWindingRule()
       {
@@ -213,7 +213,7 @@ public abstract class CubicCurve2D implements Shape, Cloneable
 
       public boolean isDone()
       {
-        return current < 2;
+        return current >= 2;
       }
 
       public void next()
@@ -223,52 +223,56 @@ public abstract class CubicCurve2D implements Shape, Cloneable
 
       public int currentSegment(float[] coords)
       {
-        if (current == 0)
+        int result;
+        switch (current)
           {
+          case 0:
             coords[0] = (float) getX1();
             coords[1] = (float) getY1();
-            if (at != null)
-              at.transform(coords, 0, coords, 0, 1);
-            return SEG_MOVETO;
-          }
-        if (current == 1)
-          {
+            result = SEG_MOVETO;
+            break;            
+          case 1:
             coords[0] = (float) getCtrlX1();
             coords[1] = (float) getCtrlY1();
             coords[2] = (float) getCtrlX2();
             coords[3] = (float) getCtrlY2();
             coords[4] = (float) getX2();
             coords[5] = (float) getY2();
-            if (at != null)
-              at.transform(coords, 0, coords, 0, 3);
-            return SEG_CUBICTO;
+            result = SEG_CUBICTO;
+            break;
+          default:
+            throw new NoSuchElementException("cubic iterator out of bounds");            
           }
-        throw new NoSuchElementException("cubic iterator out of bounds");
+        if (at != null)
+          at.transform(coords, 0, coords, 0, 3);
+        return result;
       }
 
       public int currentSegment(double[] coords)
       {
-        if (current == 0)
+        int result;
+        switch (current)
           {
+          case 0:
             coords[0] = getX1();
             coords[1] = getY1();
-            if (at != null)
-              at.transform(coords, 0, coords, 0, 1);
-            return SEG_MOVETO;
-          }
-        if (current == 1)
-          {
+            result = SEG_MOVETO;
+            break;
+          case 1:
             coords[0] = getCtrlX1();
             coords[1] = getCtrlY1();
             coords[2] = getCtrlX2();
             coords[3] = getCtrlY2();
             coords[4] = getX2();
             coords[5] = getY2();
-            if (at != null)
-              at.transform(coords, 0, coords, 0, 3);
-            return SEG_CUBICTO;
-          }
-        throw new NoSuchElementException("cubic iterator out of bounds");
+            result = SEG_CUBICTO;
+            break;
+          default:
+            throw new NoSuchElementException("cubic iterator out of bounds");
+          }        
+        if (at != null)
+          at.transform(coords, 0, coords, 0, 3);
+        return result;
       }
     };
   }

@@ -215,7 +215,7 @@ public abstract class QuadCurve2D implements Shape, Cloneable
     return new PathIterator()
     {
       /** Current coordinate. */
-      private int current;
+      private int current = 0;
 
       public int getWindingRule()
       {
@@ -224,7 +224,7 @@ public abstract class QuadCurve2D implements Shape, Cloneable
 
       public boolean isDone()
       {
-        return current < 2;
+        return current >= 2;
       }
 
       public void next()
@@ -234,48 +234,52 @@ public abstract class QuadCurve2D implements Shape, Cloneable
 
       public int currentSegment(float[] coords)
       {
-        if (current == 0)
+        int result;
+        switch (current)
           {
+          case 0:
             coords[0] = (float) getX1();
             coords[1] = (float) getY1();
-            if (at != null)
-              at.transform(coords, 0, coords, 0, 1);
-            return SEG_MOVETO;
-          }
-        if (current == 1)
-          {
+            result = SEG_MOVETO;
+            break;
+          case 1:
             coords[0] = (float) getCtrlX();
             coords[1] = (float) getCtrlY();
             coords[2] = (float) getX2();
             coords[3] = (float) getY2();
-            if (at != null)
-              at.transform(coords, 0, coords, 0, 2);
-            return SEG_QUADTO;
+            result = SEG_QUADTO;
+            break;
+          default:
+            throw new NoSuchElementException("quad iterator out of bounds");
           }
-        throw new NoSuchElementException("quad iterator out of bounds");
+        if (at != null)
+          at.transform(coords, 0, coords, 0, 2);
+        return result;
       }
 
       public int currentSegment(double[] coords)
       {
-        if (current == 0)
+        int result;
+        switch (current)
           {
+          case 0:
             coords[0] = getX1();
             coords[1] = getY1();
-            if (at != null)
-              at.transform(coords, 0, coords, 0, 1);
-            return SEG_MOVETO;
-          }
-        if (current == 1)
-          {
+            result = SEG_MOVETO;
+            break;
+          case 1:
             coords[0] = getCtrlX();
             coords[1] = getCtrlY();
             coords[2] = getX2();
             coords[3] = getY2();
-            if (at != null)
-              at.transform(coords, 0, coords, 0, 2);
-            return SEG_QUADTO;
+            result = SEG_QUADTO;
+            break;
+          default:
+            throw new NoSuchElementException("quad iterator out of bounds");
           }
-        throw new NoSuchElementException("quad iterator out of bounds");
+        if (at != null)
+          at.transform(coords, 0, coords, 0, 2);
+        return result;
       }
     };
   }
