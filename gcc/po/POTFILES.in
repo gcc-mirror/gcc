@@ -580,7 +580,6 @@ cp/ptree.c
 cp/repo.c
 cp/rtti.c
 cp/search.c
-cp/sig.c
 cp/spew.c
 cp/tinfo.h
 cp/tree.c
@@ -753,7 +752,6 @@ rtlanal.c
 #scan-decls.c is used only by GCC maintainers and installers
 #scan.c is used only by GCC maintainers and installers
 scan.h
-sched.c
 sdbout.c
 stack.h
 stmt.c
