@@ -1,3 +1,11 @@
+2004-08-03 Kelley Cook  <kcook@gcc.gnu.org>
+
+	* maintainer-scripts (snapshot_print): New function.
+	(announce_snapshot): Generate announcment on the fly.
+	Use a directory link for LATEST.
+	* snapshot-README: Delete.
+	* snapshot-index.html: Delete.
+
 2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc_release (build_sources): Move the libcpp gmo files
