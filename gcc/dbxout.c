@@ -361,7 +361,7 @@ dbxout_function_end ()
   assemble_name (asmfile, lscope_label_name);
   fputc ('-', asmfile);
   assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
-  fprintf (asmfile, "-1\n");
+  fprintf (asmfile, "\n");
 }
 
 /* At the beginning of compilation, start writing the symbol table.
