@@ -3530,7 +3530,6 @@
 {
   arm_compare_op0 = operands[0];
   arm_compare_op1 = operands[1];
-  arm_compare_fp = 0;
   DONE;
 }
 ")
@@ -3543,7 +3542,6 @@
 {
   arm_compare_op0 = operands[0];
   arm_compare_op1 = operands[1];
-  arm_compare_fp = 1;
   DONE;
 }
 ")
@@ -3556,7 +3554,6 @@
 {
   arm_compare_op0 = operands[0];
   arm_compare_op1 = operands[1];
-  arm_compare_fp = 1;
   DONE;
 }
 ")
@@ -3569,7 +3566,6 @@
 {
   arm_compare_op0 = operands[0];
   arm_compare_op1 = operands[1];
-  arm_compare_fp = 1;
   DONE;
 }
 ")
@@ -3748,8 +3744,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (EQ, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (EQ, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3761,8 +3756,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (NE, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (NE, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3774,8 +3768,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (GT, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (GT, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3787,8 +3780,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (LE, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (LE, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3800,8 +3792,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (GE, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (GE, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3813,8 +3804,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (LT, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (LT, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3826,8 +3816,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (GTU, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (GTU, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3839,8 +3828,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (LEU, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (LEU, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3852,8 +3840,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (GEU, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (GEU, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3865,8 +3852,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (LTU, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (LTU, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3921,8 +3907,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (EQ, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (EQ, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3932,8 +3917,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (NE, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (NE, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3943,8 +3927,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (GT, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (GT, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3954,8 +3937,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (LE, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (LE, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3965,8 +3947,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (GE, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (GE, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3976,8 +3957,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (LT, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (LT, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3987,8 +3967,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (GTU, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (GTU, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -3998,8 +3977,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (LEU, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (LEU, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -4009,8 +3987,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (GEU, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (GEU, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -4020,8 +3997,7 @@
   ""
   "
 {
-  operands[1] = gen_compare_reg (LTU, arm_compare_op0, arm_compare_op1,
-				 arm_compare_fp);
+  operands[1] = gen_compare_reg (LTU, arm_compare_op0, arm_compare_op1);
 }
 ")
 
@@ -4064,8 +4040,7 @@
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
-			       arm_compare_fp);
+  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
 
   operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 }")
@@ -4087,8 +4062,7 @@
       || (! fpu_add_operand (operands[3], SFmode)))
     operands[3] = force_reg (SFmode, operands[3]);
 
-  ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
-			   arm_compare_fp);
+  ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
 
   operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 }")
@@ -4102,8 +4076,7 @@
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
-			       arm_compare_fp);
+  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
 
   operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 }")

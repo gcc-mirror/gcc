@@ -48,9 +48,8 @@ extern int arm_structure_size_boundary;
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-extern int arm_valid_machine_decl_attribute ();
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-arm_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
+arm_valid_machine_decl_attribute (DECL, IDENTIFIER, ARGS)
 
 /* This is COFF, but prefer stabs.  */
 #define SDB_DEBUGGING_INFO

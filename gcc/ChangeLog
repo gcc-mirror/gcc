@@ -1,3 +1,40 @@
+Mon Mar 22 16:18:27 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/elf.h (VALID_MACHINE_DECL_ATTRIBUTE): Do not bother
+	passing ATTRIBUTES to arm_valid_machine_decl_attribute.
+	
+	* config/arm/coff.h (VALID_MACHINE_DECL_ATTRIBUTE): Do not bother 
+	passing ATTRIBUTES to arm_valid_machine_decl_attribute.
+	
+	* config/arm/arm.h (DEFAULT_RTX_COSTS): Do not bother passing
+	OUTER_CODE to arm_rtx_costs - it is not used.
+	(arm_compare_fp): Delete declaration.
+	(FINAL_PRESCAN_INSN): Do not bother passing OPVEC or NOPERANDS to
+	arm_final_prescan_insn - they are not used.
+	(const_ok_for_op): Remove prototype.
+	(arm_rtx_costs): Fix prototype.
+	(arm_valid_machine_decl_attribute): Fix prototype.
+	(final_prescan_insn): Fix prototype.
+
+	* config/arm/arm.md: Remove references to arm_compare_fp.
+
+	* config/arm/arm.c (arm_compare_fp): Delete.
+	(const_ok_for_op): Make function static.  Add prototype.  Remove
+	mode parameter - it is unused.
+	(arm_rtx_costs): Remove outer_code parameter.
+	(reload_memory_operand): Declare mode parameter unused.
+	(power_of_two_operand): Declare mode parameter unused.
+	(equality_operator): Declare mode parameter unused.
+	(load_multiple_operation): Declare mode parameter unused.
+	(store_multiple_operation): Declare mode parameter unused.
+	(multi_register_push): Declare mode parameter unused.
+	(arm_valid_machine_decl_attribute): Remove attributes parameter -
+	it is unused.
+	(select_dominance_cc_mode): Remove op parameter - it is unused.
+	(gen_compare_reg): Remove fp parameter - it is unused.
+	(final_prescan_insn): Remove opvec and noperands parameters - they
+	are unused.
+	
 Mon Mar 22 14:35:28 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* tm.texi (MD_SCHED_INIT): Add missing closing parenthesis.

@@ -1709,7 +1709,7 @@ extern struct rtx_def *legitimize_pic_address ();
    || (X) == arg_pointer_rtx)
 
 #define DEFAULT_RTX_COSTS(X,CODE,OUTER_CODE)		\
-   return arm_rtx_costs (X, CODE, OUTER_CODE);
+   return arm_rtx_costs (X, CODE);
 
 /* Moves to and from memory are quite expensive */
 #define MEMORY_MOVE_COST(MODE,CLASS,IN)  10
@@ -1808,7 +1808,6 @@ do								\
    since it hasn't been defined!  */
 
 extern struct rtx_def *arm_compare_op0, *arm_compare_op1;
-extern int arm_compare_fp;
 
 /* Define the codes that are matched by predicates in arm.c */
 #define PREDICATE_CODES							\
@@ -1892,7 +1891,7 @@ extern int arm_compare_fp;
    we're optimising.  Otherwise it's of no use anyway.  */
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)  \
   if (optimize)					    \
-    final_prescan_insn (INSN, OPVEC, NOPERANDS)
+    arm_final_prescan_insn (INSN)
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)	\
   ((CODE) == '?' || (CODE) == '|' || (CODE) == '@')
@@ -2087,7 +2086,6 @@ struct rtx_def;
 void   arm_override_options PROTO ((void));
 int    use_return_insn PROTO ((int));
 int    const_ok_for_arm PROTO ((Hint));
-int    const_ok_for_op RTX_CODE_PROTO ((Hint, Rcode, Mmode));
 int    arm_split_constant RTX_CODE_PROTO ((Rcode, Mmode, Hint, Rtx, Rtx, int));
 Rcode  arm_canonicalize_comparison RTX_CODE_PROTO ((Rcode,  Rtx *));
 int    arm_return_in_memory PROTO ((Tree));
@@ -2095,7 +2093,7 @@ int    legitimate_pic_operand_p PROTO ((Rtx));
 Rtx    legitimize_pic_address PROTO ((Rtx, Mmode, Rtx));
 int    is_pic PROTO ((Rtx));
 void   arm_finalize_pic PROTO ((void));
-int    arm_rtx_costs RTX_CODE_PROTO ((Rtx, Rcode, Rcode));
+int    arm_rtx_costs RTX_CODE_PROTO ((Rtx, Rcode));
 int    arm_adjust_cost PROTO ((Rtx, Rtx, Rtx, int));
 int    const_double_rtx_ok_for_fpu PROTO ((Rtx));
 int    neg_const_double_rtx_ok_for_fpu PROTO ((Rtx));
@@ -2133,7 +2131,7 @@ int    load_multiple_sequence PROTO ((Rtx *, int, int *, int *, Hint *));
 char * emit_ldm_seq PROTO ((Rtx *, int));
 int    store_multiple_sequence PROTO ((Rtx *, int, int *, int *, Hint *));
 char * emit_stm_seq PROTO ((Rtx *, int));
-int    arm_valid_machine_decl_attribute PROTO ((Tree, Tree, Tree, Tree));
+int    arm_valid_machine_decl_attribute PROTO ((Tree, Tree, Tree));
 Rtx    arm_gen_load_multiple PROTO ((int, int, Rtx, int, int, int, int, int));
 Rtx    arm_gen_store_multiple PROTO ((int, int, Rtx, int, int, int, int, int));
 int    arm_gen_movstrqi PROTO ((Rtx *));
@@ -2163,7 +2161,7 @@ void   output_func_prologue STDIO_PROTO ((FILE *, int));
 void   output_func_epilogue STDIO_PROTO ((FILE *, int));
 void   arm_expand_prologue PROTO ((void));
 void   arm_print_operand STDIO_PROTO ((FILE *, Rtx, int));
-void   final_prescan_insn PROTO ((Rtx, Rtx *, int));
+void   arm_final_prescan_insn PROTO ((Rtx));
 int    short_branch PROTO ((int, int));
 void   assemble_align PROTO((int)); /* Used in arm.md, but defined in output.c */
 int    multi_register_push PROTO ((Rtx, Mmode));
