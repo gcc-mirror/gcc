@@ -1,3 +1,8 @@
+2000-01-11  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natSystem.cc (getpwuid_adaptor): New adaptor for
+	HP/UX.  From David Scott Urban.
+
 2000-01-10  Jeff Sturm  <jsturm@sigma6.com>
 
 	* java/lang/natMath.cc (pow): Cast args to `double', not
