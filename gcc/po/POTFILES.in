@@ -204,15 +204,15 @@ config/elfos.h
 config/elxsi/elxsi-protos.h
 config/elxsi/elxsi.c
 config/elxsi/elxsi.h
-config/float-c4x.h
-config/float-i128.h
-config/float-i32.h
-config/float-i386.h
-config/float-i64.h
-config/float-m68k.h
-config/float-sh.h
-config/float-sparc.h
-config/float-vax.h
+#config/float-c4x.h is part of the GCC library
+#config/float-i128.h is part of the GCC library
+#config/float-i32.h is part of the GCC library
+#config/float-i386.h is part of the GCC library
+#config/float-i64.h is part of the GCC library
+#config/float-m68k.h is part of the GCC library
+#config/float-sh.h is part of the GCC library
+#config/float-sparc.h is part of the GCC library
+#config/float-vax.h is part of the GCC library
 config/fp-bit.c
 config/fp-bit.h
 config/fr30/fr30-protos.h
