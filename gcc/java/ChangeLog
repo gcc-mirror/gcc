@@ -1,3 +1,13 @@
+2001-07-05  Tom Tromey  <tromey@redhat.com>
+
+	* lang.c (flag_assume_compiled): Removed.
+	* java-tree.h (flag_assume_compiled): Removed.
+	* lang-options.h: Removed -ffile-list-file, -fuse-boehm-gc,
+	-fhash-synchronization, -fuse-divide-subroutine,
+	-fcheck-references, -femit-class-file, -femit-class-files,
+	-fassume-compiled.  Updated --encoding information.  Changed
+	-foutput-class-dir to `-d'.
+
 2001-07-04  Daniel Berlin  <dan@cgsoftware.com>
 
 	* jcf-parse.c (parse_class_file): Add lineno parameter to
