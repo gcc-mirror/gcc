@@ -212,13 +212,13 @@ make_phi_node (tree var, int len)
 
   phi = allocate_phi_node (capacity);
 
-  /* We do not have to clear a part of the PHI node that stores PHI
-     arguments, which is safe because we tell the garbage collector to
-     scan up to num_args elements in the array of PHI arguments.  In
-     other words, the garbage collector will not follow garbage
-     pointers in the unused portion of the array.  */
-  memset (phi, 0, sizeof (struct tree_phi_node) - sizeof (struct phi_arg_d));
+  /* We need to clear the entire PHI node, including the argument
+     portion, because we represent a "missing PHI argument" by placing
+     NULL_TREE in PHI_ARG_DEF.  */
+  memset (phi, 0, (sizeof (struct tree_phi_node) - sizeof (struct phi_arg_d)
+		   + sizeof (struct phi_arg_d) * len));
   TREE_SET_CODE (phi, PHI_NODE);
+  PHI_NUM_ARGS (phi) = len;
   PHI_ARG_CAPACITY (phi) = capacity;
   TREE_TYPE (phi) = TREE_TYPE (var);
   if (TREE_CODE (var) == SSA_NAME)
@@ -253,7 +253,7 @@ resize_phi_node (tree *phi, int len)
   int old_size;
   tree new_phi;
 
-  gcc_assert (len >= PHI_ARG_CAPACITY (*phi));
+  gcc_assert (len > PHI_ARG_CAPACITY (*phi));
 
   /* The garbage collector will not look at the PHI node beyond the
      first PHI_NUM_ARGS elements.  Therefore, all we have to copy is a
@@ -294,6 +294,17 @@ reserve_phi_args_for_new_edge (basic_block bb)
 
 	  release_phi_node (old_phi);
 	}
+
+      /* We represent a "missing PHI argument" by placing NULL_TREE in
+	 the corresponding slot.  If PHI arguments were added
+	 immediately after an edge is created, this zeroing would not
+	 be necessary, but unfortunately this is not the case.  For
+	 example, the loop optimizer duplicates several basic blocks,
+	 redirects edges, and then fixes up PHI arguments later in
+	 batch.  */
+      SET_PHI_ARG_DEF (*loc, len - 1, NULL_TREE);
+
+      PHI_NUM_ARGS (*loc)++;
     }
 }
 
@@ -326,13 +337,16 @@ void
 add_phi_arg (tree *phi, tree def, edge e)
 {
   basic_block bb = e->dest;
-  int i = PHI_NUM_ARGS (*phi);
 
   gcc_assert (bb == bb_for_stmt (*phi));
 
   /* We resize PHI nodes upon edge creation.  We should always have
      enough room at this point.  */
-  gcc_assert (PHI_NUM_ARGS (*phi) < PHI_ARG_CAPACITY (*phi));
+  gcc_assert (PHI_NUM_ARGS (*phi) <= PHI_ARG_CAPACITY (*phi));
+
+  /* We resize PHI nodes upon edge creation.  We should always have
+     enough room at this point.  */
+  gcc_assert (e->dest_idx < (unsigned int) PHI_NUM_ARGS (*phi));
 
   /* Copy propagation needs to know what object occur in abnormal
      PHI nodes.  This is a convenient place to record such information.  */
@@ -342,10 +356,8 @@ add_phi_arg (tree *phi, tree def, edge e)
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (*phi)) = 1;
     }
 
-  SET_PHI_ARG_DEF (*phi, i, def);
-  PHI_ARG_EDGE (*phi, i) = e;
-  PHI_ARG_NONZERO (*phi, i) = false;
-  PHI_NUM_ARGS (*phi)++;
+  SET_PHI_ARG_DEF (*phi, e->dest_idx, def);
+  PHI_ARG_NONZERO (*phi, e->dest_idx) = false;
 }
 
 /* Remove the Ith argument from PHI's argument list.  This routine assumes
@@ -365,14 +377,13 @@ remove_phi_arg_num (tree phi, int i)
   if (i != num_elem - 1)
     {
       SET_PHI_ARG_DEF (phi, i, PHI_ARG_DEF (phi, num_elem - 1));
-      PHI_ARG_EDGE (phi, i) = PHI_ARG_EDGE (phi, num_elem - 1);
       PHI_ARG_NONZERO (phi, i) = PHI_ARG_NONZERO (phi, num_elem - 1);
     }
 
   /* Shrink the vector and return.  Note that we do not have to clear
-     PHI_ARG_DEF, PHI_ARG_EDGE, or PHI_ARG_NONZERO because the garbage
-     collector will not look at those elements beyond the first
-     PHI_NUM_ARGS elements of the array.  */
+     PHI_ARG_DEF or PHI_ARG_NONZERO because the garbage collector will
+     not look at those elements beyond the first PHI_NUM_ARGS elements
+     of the array.  */
   PHI_NUM_ARGS (phi)--;
 }
 

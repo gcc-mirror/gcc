@@ -1374,7 +1374,7 @@ struct tree_ssa_name GTY(())
 #define PHI_NUM_ARGS(NODE)		PHI_NODE_CHECK (NODE)->phi.num_args
 #define PHI_ARG_CAPACITY(NODE)		PHI_NODE_CHECK (NODE)->phi.capacity
 #define PHI_ARG_ELT(NODE, I)		PHI_NODE_ELT_CHECK (NODE, I)
-#define PHI_ARG_EDGE(NODE, I)		PHI_NODE_ELT_CHECK (NODE, I).e
+#define PHI_ARG_EDGE(NODE, I) 		(EDGE_PRED (PHI_BB ((NODE)), (I)))
 #define PHI_ARG_NONZERO(NODE, I) 	PHI_NODE_ELT_CHECK (NODE, I).nonzero
 #define PHI_BB(NODE)			PHI_NODE_CHECK (NODE)->phi.bb
 #define PHI_DF(NODE)			PHI_NODE_CHECK (NODE)->phi.df
@@ -1384,7 +1384,6 @@ struct edge_def;
 struct phi_arg_d GTY(())
 {
   tree def;
-  struct edge_def * GTY((skip (""))) e;
   bool nonzero;
 };
 

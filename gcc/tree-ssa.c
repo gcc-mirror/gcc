@@ -64,7 +64,7 @@ ssa_redirect_edge (edge e, basic_block dest)
       next = PHI_CHAIN (phi);
 
       i = phi_arg_from_edge (phi, e);
-      if (i < 0)
+      if (PHI_ARG_DEF (phi, i) == NULL_TREE)
 	continue;
 
       src = PHI_ARG_DEF (phi, i);
@@ -277,7 +277,6 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
   edge e;
   bool err = false;
   unsigned i, phi_num_args = PHI_NUM_ARGS (phi);
-  edge_iterator ei;
 
   if (EDGE_COUNT (bb->preds) != phi_num_args)
     {
@@ -286,21 +285,26 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
       goto error;
     }
 
-  /* Mark all the incoming edges.  */
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    e->aux = (void *) 1;
-
   for (i = 0; i < phi_num_args; i++)
     {
       tree op = PHI_ARG_DEF (phi, i);
+
+      e = PHI_ARG_EDGE (phi, i);
+
+      if (op == NULL_TREE)
+	{
+	  error ("PHI argument is missing for edge %d->%d\n",
+	         e->src->index,
+		 e->dest->index);
+	  err = true;
+	  goto error;
+	}
 
       if (TREE_CODE (op) != SSA_NAME && !is_gimple_min_invariant (op))
 	{
 	  error ("PHI argument is not SSA_NAME, or invariant");
 	  err = true;
 	}
-
-      e = PHI_ARG_EDGE (phi, i);
 
       if (TREE_CODE (op) == SSA_NAME)
 	err = verify_use (e->src, definition_block[SSA_NAME_VERSION (op)], op,
@@ -315,21 +319,12 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
 	  err = true;
 	}
 
-      if (e->aux == (void *) 0)
-	{
-	  error ("PHI argument flowing through dead or duplicated edge %d->%d\n",
-	         e->src->index, e->dest->index);
-	  err = true;
-	}
-
       if (err)
 	{
 	  fprintf (stderr, "PHI argument\n");
 	  print_generic_stmt (stderr, op, TDF_VOPS);
 	  goto error;
 	}
-
-      e->aux = (void *) 0;
     }
 
 error:
