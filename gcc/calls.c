@@ -2837,7 +2837,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
      library functions shouldn't have many args.  */
 
   argvec = (struct arg *) alloca ((nargs + 1) * sizeof (struct arg));
-  bzero ((char *) argvec, nargs * sizeof (struct arg));
+  bzero ((char *) argvec, (nargs + 1) * sizeof (struct arg));
 
   INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun, 0);
 
