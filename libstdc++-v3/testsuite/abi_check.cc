@@ -28,6 +28,8 @@
 // the GNU General Public License.
 
 // Benjamin Kosnik  <bkoz@redhat.com>
+// Blame subsequent hacks on Loren J. Rittle <ljrittle@acm.org>, Phil
+// Edwards <pme@gcc.gnu.org>, and a cast of dozens at libstdc++@gcc.gnu.org.
 
 #include <string>
 #include <ext/hash_map>
@@ -259,63 +261,41 @@ report_symbol_info(const symbol_info& symbol, std::size_t n)
   cout << endl;
 }
 
-int main(int argc, char** argv)
+
+int
+main(int argc, char** argv)
 {
   using namespace std;
 
-  // Get arguments.
-  if (argc != 2)
+  // Get arguments.  (Heading towards getopt_long, I can feel it.)
+  string argv1;
+  if (argc < 4 || (string("--help") == (argv1 = argv[1])))
     {
-      cerr << "Usage:  abi_check baseline_file" << endl;
+      cerr << "Usage:  abi_check --check    cur baseline\n"
+              "                  --help\n\n"
+              "Where CUR is a file containing the current results from\n"
+              "extract_symvers, and BASELINE is one from config/abi.\n"
+	   << endl;
       exit(1);
     }
-  const char* baseline_file = argv[1];
-  const char* test_file = "current_symbols.txt";
-  const char* test_lib = "../src/.libs/libstdc++.so";
+
+  const char* test_file = argv[2];
+  const char* baseline_file = argv[3];
 
   // Quick sanity/setup check
+  if (access(test_file, R_OK) != 0)
+    {
+      cerr << "Cannot read symbols file " << test_file
+           << ", did you forget to build first?" << endl;
+      exit(1);
+    }
   if (access(baseline_file, R_OK) != 0)
     {
       cerr << "Cannot read baseline file " << baseline_file << endl;
       exit(1);
     }
-  if (access(test_lib, R_OK) != 0)
-    {
-      cerr << "Cannot read library " << test_lib
-           << ", did you forget to build first?" << endl;
-      exit(1);
-    }
 
-  // Get list of symbols.
-  // Assume external symbol list computed "as if" by
-  /*
-   readelf -s -W libstdc++.so | sed '/\.dynsym/,/^$/p;d' | egrep -v
-   ' (LOCAL|UND) ' | awk '{ if ($4 == "FUNC" || $4 == "NOTYPE") printf
-   "%s:%s\n", $4, $8; else if ($4 == "OBJECT") printf "%s:%s:%s\n", $4,
-   $3, $8;}' | sort >& current_symbols.txt
-   */
-
-  // GNU binutils, somewhere after version 2.11.2, requires -W/--wide
-  // to avoid default line truncation.  -W is not supported and
-  // truncation did not occur by default before that point.
-  bool readelf_need_wide =
-    (system("readelf --help | grep -- --wide >/dev/null") == 0);
-
-  ostringstream cmd;
-  cmd << "readelf -s " << (readelf_need_wide ? "-W " : "") << test_lib
-      << " | sed '/\\.dynsym/,/^$/p;d' | egrep -v ' (LOCAL|UND) ' | "
-         "awk '{ if ($4 == \"FUNC\" || $4 == \"NOTYPE\") "
-                   "printf \"%s:%s\\n\", $4, $8; "
-                 "else if ($4 == \"OBJECT\") "
-                   "printf \"%s:%s:%s\\n\", $4, $3, $8;}' | sort > "
-      << test_file << " 2>&1";
-  if (system(cmd.str().c_str()) != 0)
-    {
-      cerr << "Unable to generate the list of exported symbols." << endl;
-      exit(2);
-    }
-
-  // Input both list of symbols into container.
+  // Input both lists of symbols into container.
   symbol_infos  baseline_symbols;
   symbol_names  baseline_names;
   symbol_infos  test_symbols;
@@ -323,7 +303,7 @@ int main(int argc, char** argv)
   create_symbol_data(baseline_file, baseline_symbols, baseline_names);
   create_symbol_data(test_file, test_symbols, test_names);
 
-  // Basic sanity check. (Was: error checking, what's that?)
+  // More sanity checking.
   const symbol_names::size_type baseline_size = baseline_names.size();
   const symbol_names::size_type test_size = test_names.size();
   if (!baseline_size || !test_size)
