@@ -5624,7 +5624,9 @@ ia64_adjust_cost (insn, link, dep_insn, cost)
 	    addr = XVECEXP (addr, 0, 0);
 	  while (GET_CODE (addr) == SUBREG || GET_CODE (addr) == ZERO_EXTEND)
 	    addr = XEXP (addr, 0);
-	  if (GET_CODE (addr) == MEM)
+
+	  /* Note that LO_SUM is used for GOT loads.  */
+	  if (GET_CODE (addr) == MEM || GET_CODE (addr) == LO_SUM)
 	    addr = XEXP (addr, 0);
 	  else
 	    addr = 0;

@@ -576,6 +576,9 @@
 /* Define true if the assembler supports '.long foo@GOTOFF'. */
 #undef HAVE_AS_GOTOFF_IN_DATA
 
+/* Define if your assembler supports ltoffx and ldxmov relocations. */
+#undef HAVE_AS_LTOFFX_LDXMOV_RELOCS
+
 /* Define if your assembler supports dwarf2 .file/.loc directives,
    and preserves file table indices exactly as given. */
 #undef HAVE_AS_DWARF2_DEBUG_LINE

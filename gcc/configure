@@ -2356,7 +2356,7 @@ EOF
 fi
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -7985,10 +7985,52 @@ EOF
 
     echo "$ac_t""$gcc_cv_as_gotoff_in_data" 1>&6
     ;;
+
+  ia64*-*-*)
+    echo $ac_n "checking assembler supports ltoffx and ldxmov""... $ac_c" 1>&6
+echo "configure:7992: checking assembler supports ltoffx and ldxmov" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_ltoffx_ldxmov_relocs'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+	gcc_cv_as_ltoffx_ldxmov_relocs=unknown
+	if test x$gcc_cv_gas_major_version != x \
+		-a x$gcc_cv_gas_minor_version != x
+	then
+	   if test "$gcc_cv_gas_major_version" -eq 2 \
+	           -a "$gcc_cv_gas_minor_version" -ge 14 \
+	           -o "$gcc_cv_gas_major_version" -gt 2; then
+	      gcc_cv_as_ltoffx_ldxmov_relocs=yes
+	   fi
+	elif test x$gcc_cv_as != x; then
+	    cat > conftest.s << 'EOF'
+	.text
+	addl r15 = @ltoffx(x#), gp
+	;;
+	ld8.mov r16 = [r15], x#
+EOF
+	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_ltoffx_ldxmov_relocs=yes
+	    else
+		gcc_cv_as_ltoffx_ldxmov_relocs=no
+	    fi
+	    rm -f conftest.s conftest.o
+	fi
+    
+fi
+
+echo "$ac_t""$gcc_cv_as_ltoffx_ldxmov_relocs" 1>&6
+    if test "x$gcc_cv_as_ltoffx_ldxmov_relocs" = xyes; then
+	cat >> confdefs.h <<\EOF
+#define HAVE_AS_LTOFFX_LDXMOV_RELOCS 1
+EOF
+
+    fi
+    ;;
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:7992: checking assembler dwarf2 debug_line support" >&5
+echo "configure:8034: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -8045,7 +8087,7 @@ fi
 echo "$ac_t""$gcc_cv_as_dwarf2_debug_line" 1>&6
 
 echo $ac_n "checking assembler --gdwarf2 support""... $ac_c" 1>&6
-echo "configure:8049: checking assembler --gdwarf2 support" >&5
+echo "configure:8091: checking assembler --gdwarf2 support" >&5
 gcc_cv_as_gdwarf2_flag=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
 then
@@ -8074,7 +8116,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gdwarf2_flag" 1>&6
 
 echo $ac_n "checking assembler --gstabs support""... $ac_c" 1>&6
-echo "configure:8078: checking assembler --gstabs support" >&5
+echo "configure:8120: checking assembler --gstabs support" >&5
 gcc_cv_as_gstabs_flag=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
 then
@@ -8102,7 +8144,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gstabs_flag" 1>&6
 
 echo $ac_n "checking linker read-only and read-write section mixing""... $ac_c" 1>&6
-echo "configure:8106: checking linker read-only and read-write section mixing" >&5
+echo "configure:8148: checking linker read-only and read-write section mixing" >&5
 gcc_cv_ld_ro_rw_mix=unknown
 if test x$gcc_cv_gld_major_version != x -a x$gcc_cv_gld_minor_version != x; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8140,7 +8182,7 @@ fi
 echo "$ac_t""$gcc_cv_ld_ro_rw_mix" 1>&6
 
 echo $ac_n "checking linker PT_GNU_EH_FRAME support""... $ac_c" 1>&6
-echo "configure:8144: checking linker PT_GNU_EH_FRAME support" >&5
+echo "configure:8186: checking linker PT_GNU_EH_FRAME support" >&5
 gcc_cv_ld_eh_frame_hdr=no
 if test x$gcc_cv_gld_major_version != x -a x$gcc_cv_gld_minor_version != x; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 12 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8164,7 +8206,7 @@ echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 case "$target" in
   mips*-*-*)
     echo $ac_n "checking whether libgloss uses STARTUP directives consistently""... $ac_c" 1>&6
-echo "configure:8168: checking whether libgloss uses STARTUP directives consistently" >&5
+echo "configure:8210: checking whether libgloss uses STARTUP directives consistently" >&5
     gcc_cv_mips_libgloss_startup=no
     gcc_cv_libgloss_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/libgloss
     if test "x$exec_prefix" = xNONE; then
@@ -8368,7 +8410,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:8372: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8414: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
