@@ -4038,8 +4038,6 @@ static sbitmap *pre_delete_map;
 /* Contains the edge_list returned by pre_edge_lcm.  */
 static struct edge_list *edge_list;
 
-static sbitmap *temp_bitmap;
-
 /* Redundant insns.  */
 static sbitmap pre_redundant_insns;
 
@@ -4052,7 +4050,6 @@ alloc_pre_mem (n_blocks, n_exprs)
   transp = sbitmap_vector_alloc (n_blocks, n_exprs);
   comp = sbitmap_vector_alloc (n_blocks, n_exprs);
   antloc = sbitmap_vector_alloc (n_blocks, n_exprs);
-  temp_bitmap = sbitmap_vector_alloc (n_blocks, n_exprs);
 
   pre_optimal = NULL;
   pre_redundant = NULL;
@@ -4075,7 +4072,6 @@ free_pre_mem ()
   free (transp);
   free (comp);
   free (antloc);
-  free (temp_bitmap);
 
   if (pre_optimal)
     free (pre_optimal);
@@ -4595,11 +4591,6 @@ pre_delete ()
   struct expr *expr;
   struct occr *occr;
 
-  /* Compute the expressions which are redundant and need to be replaced by
-     copies from the reaching reg to the target reg.  */
-  for (bb = 0; bb < n_basic_blocks; bb++)
-    sbitmap_copy (temp_bitmap[bb], pre_delete_map[bb]);
-
   changed = 0;
   for (i = 0; i < expr_hash_table_size; i++)
     for (expr = expr_hash_table[i]; expr != NULL; expr = expr->next_same_hash)
@@ -4615,7 +4606,7 @@ pre_delete ()
 	    rtx set;
 	    int bb = BLOCK_NUM (insn);
 
-	    if (TEST_BIT (temp_bitmap[bb], indx))
+	    if (TEST_BIT (pre_delete_map[bb], indx))
 	      {
 		set = single_set (insn);
 		if (! set)

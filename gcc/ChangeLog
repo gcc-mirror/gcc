@@ -1,3 +1,9 @@
+Mon Jul 24 02:04:52 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcse.c (alloc_pre_mem, free_pre_mem): Delete unused bitmap
+	'temp_bitmap'.
+	(pre_delete): Corresponding changes.
+
 2000-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-semantics.c (make_rtl_for_local_static): Use TREE_ASM_WRITTEN
