@@ -1,3 +1,8 @@
+Thu Mar  8 23:22:26 2001  John Wehle  (john@feith.com)
+
+	* rtlanal.c (rtx_varies_p): Check operand 0 of a
+	LO_SUM unless for_alias is set.
+
 2001-03-08  Bruce Korb  <bkorb@gnu.org>
 
 	gcc.c(main): ensure SIGCHLD handling is set to SIG_DFL so that

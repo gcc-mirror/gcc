@@ -164,8 +164,10 @@ rtx_varies_p (x, for_alias)
 
     case LO_SUM:
       /* The operand 0 of a LO_SUM is considered constant
-	 (in fact is it related specifically to operand 1).  */
-      return rtx_varies_p (XEXP (x, 1), for_alias);
+	 (in fact it is related specifically to operand 1)
+	 during alias analysis.  */
+      return (! for_alias && rtx_varies_p (XEXP (x, 0), for_alias))
+	     || rtx_varies_p (XEXP (x, 1), for_alias);
       
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
