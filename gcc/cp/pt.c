@@ -496,12 +496,19 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  && !processing_explicit_specialization (template_count)
 	  && !is_friend)
 	{
-	  if (!have_def)
+	  if (!have_def && ! template_header_count)
 	    /* This is not an explicit specialization.  It must be
 	       an explicit instantiation.  */
 	    return 2;
+	  else if (template_header_count > template_count
+		   && !processing_specialization)
+	    {
+	      cp_error ("template-id `%D' in declaration of primary template",
+			declarator);
+	      return 0;
+	    }
 	  else if (pedantic)
-	    pedwarn ("Explicit specialization not preceeded by `template <>'");
+	    pedwarn ("explicit specialization not preceeded by `template <>'");
 	}
 
       if (TREE_CODE (declarator) != TEMPLATE_ID_EXPR)

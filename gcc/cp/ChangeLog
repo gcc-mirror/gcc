@@ -1,3 +1,12 @@
+Fri Nov 28 01:58:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (check_explicit_specialization): Complain about using a 
+	template-id for a non-specialization.
+
+Fri Nov 28 01:56:35 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+        * error.c (dump_decl): Handle TEMPLATE_ID_EXPR.
+
 Thu Nov 27 00:59:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_const_cast): Handle references here instead of
