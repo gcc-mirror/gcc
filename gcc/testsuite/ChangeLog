@@ -1,5 +1,10 @@
 2003-06-06  Roger Sayle  <roger@eyesopen.com>
 
+	* gcc.dg/builtins-2.c: Correct check-in of incorrect version.
+	* gcc.dg/builtins-19.c: Likewise.
+
+2003-06-06  Roger Sayle  <roger@eyesopen.com>
+
 	* gcc.dg/builtins-2.c: Add some more tests.
 	* gcc.dg/builtins-18.c: New test case.
 	* gcc.dg/builtins-19.c: New test case.

@@ -5,7 +5,7 @@
    Written by Roger Sayle, 1st June 2003.  */
 
 /* { dg-do link } */
-/* { dg-options "-O2 -ansi" } */
+/* { dg-options "-O2 -ffast-math" } */
 
 double cabs (__complex__ double);
 float cabsf (__complex__ float);

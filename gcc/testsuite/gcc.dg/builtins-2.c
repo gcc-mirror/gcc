@@ -123,12 +123,12 @@ float test10f(float x)
   return tanf(atanf(x));
 }
 
-floatf test11f(float x)
+float test11f(float x)
 {
   return fabsf(fabsf(x));
 }
 
-floatf test12f(float x)
+float test12f(float x)
 {
   return fabsf(atanf(x));
 }
