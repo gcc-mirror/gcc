@@ -498,6 +498,9 @@
 /* Define if you have the qfpclass function.  */
 #undef HAVE_QFPCLASS
 
+/* Define if you have the setenv function.  */
+#undef HAVE_SETENV
+
 /* Define if you have the signbitl function.  */
 #undef HAVE_SIGNBITL
 

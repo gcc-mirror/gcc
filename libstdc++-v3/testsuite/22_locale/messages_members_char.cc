@@ -84,6 +84,7 @@ void test01()
 // libstdc++/5280
 void test02()
 {
+#ifdef _GLIBCPP_HAVE_SETENV 
   // Set the global locale to non-"C".
   std::locale loc_de("de_DE");
   std::locale::global(loc_de);
@@ -95,6 +96,7 @@ void test02()
       test01();
       setenv("LANG", oldLANG, 1);
     }
+#endif
 }
 
 int main()
