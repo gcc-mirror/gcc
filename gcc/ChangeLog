@@ -1,3 +1,8 @@
+2003-02-25  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (function_arg): Pass variable sized
+	structures correctly on the stack.
+
 2003-02-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c (reload_cse_move2add): Use STRICT_LOW_PART if PLUS
