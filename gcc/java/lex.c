@@ -1657,7 +1657,7 @@ java_lex (java_lval)
 /* This is called by the parser to see if an error should be generated
    due to numeric overflow.  This function only handles the particular
    case of the largest negative value, and is only called in the case
-   where this value is not preceeded by `-'.  */
+   where this value is not preceded by `-'.  */
 static void
 error_if_numeric_overflow (value)
      tree value;

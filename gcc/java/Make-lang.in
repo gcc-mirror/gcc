@@ -53,7 +53,7 @@ GCJ = gcj
 java: jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) \
       gcjh$(exeext) jv-scan$(exeext) jcf-dump$(exeext)
 
-# Define the name of target independant tools to be installed in $(bindir)
+# Define the name of target independent tools to be installed in $(bindir)
 # Names are subject to changes
 JAVA_TARGET_INDEPENDENT_BIN_TOOLS = gcjh jv-scan jcf-dump
 

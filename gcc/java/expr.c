@@ -2395,7 +2395,7 @@ load_type_state (label)
 }
 
 /* Do the expansion of a Java switch. With Gcc, switches are front-end
-   dependant things, but they rely on gcc routines. This function is
+   dependent things, but they rely on gcc routines. This function is
    placed here because it uses things defined locally in parse.y. */
 
 static tree

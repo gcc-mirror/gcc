@@ -1260,7 +1260,7 @@ process_zip_dir (FILE *finput)
       class_name_in_zip_dir = ZIPDIR_FILENAME (zdir);
 
       /* We choose to not to process entries with a zero size or entries
-	 not bearing the .class extention.  */
+	 not bearing the .class extension.  */
       if (!zdir->size || !zdir->filename_offset ||
 	  strncmp (&class_name_in_zip_dir[zdir->filename_length-6], 
 		   ".class", 6))

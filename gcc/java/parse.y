@@ -1598,7 +1598,7 @@ switch_statement:
 	switch_block
 		{ 
 		  /* Make into "proper list" of COMPOUND_EXPRs.
-		     I.e. make the last statment also have its own
+		     I.e. make the last statement also have its own
 		     COMPOUND_EXPR. */
 		  maybe_absorb_scoping_blocks ();
 		  TREE_OPERAND ($1, 1) = exit_block ();
@@ -3852,7 +3852,7 @@ create_interface (flags, id, super)
   if ((flags & ACC_ABSTRACT) && flag_redundant)
     parse_warning_context 
       (MODIFIER_WFL (ABSTRACT_TK),
-       "Redundant use of `abstract' modifier. Interface `%s' is implicitely abstract", IDENTIFIER_POINTER (raw_name));
+       "Redundant use of `abstract' modifier. Interface `%s' is implicitly abstract", IDENTIFIER_POINTER (raw_name));
 
   /* Create a new decl if DECL is NULL, otherwise fix it */
   decl = maybe_create_class_interface_decl (decl, raw_name, q_name, id);
@@ -4063,13 +4063,13 @@ static void
 end_class_declaration (resume)
      int resume;
 {
-  /* If an error occured, context weren't pushed and won't need to be
+  /* If an error occurred, context weren't pushed and won't need to be
      popped by a resume. */
-  int no_error_occured = ctxp->next && GET_CPC () != error_mark_node;
+  int no_error_occurred = ctxp->next && GET_CPC () != error_mark_node;
 
   java_parser_context_pop_initialized_field ();
   POP_CPC ();
-  if (resume && no_error_occured)
+  if (resume && no_error_occurred)
     java_parser_context_resume ();
 
   /* We're ending a class declaration, this is a good time to reset
@@ -5634,7 +5634,7 @@ java_complete_class ()
 		  tree mdecl = JDEP_DECL (dep), signature;
 		  /* Recompute and reset the signature, check first that
 		     all types are now defined. If they're not,
-		     dont build the signature. */
+		     don't build the signature. */
 		  if (check_method_types_complete (mdecl))
 		    {
 		      signature = build_java_signature (TREE_TYPE (mdecl));
@@ -6257,7 +6257,7 @@ java_check_methods (class_decl)
 }
 
 /* Check all the methods of CLASS_DECL. Methods are first completed
-   then checked according to regular method existance rules.  If no
+   then checked according to regular method existence rules.  If no
    constructor for CLASS_DECL were encountered, then build its
    declaration.  */
 
@@ -6874,7 +6874,7 @@ read_import_dir (wfl)
 }
 
 /* Possibly find a type in the import on demands specified
-   types. Returns 1 if an error occured, 0 otherwise. Run throught the
+   types. Returns 1 if an error occurred, 0 otherwise. Run through the
    entire list, to detected potential double definitions.  */
 		 
 static int
@@ -7374,7 +7374,7 @@ create_artificial_method (class, flags, type, name, args)
   return mdecl;
 }
 
-/* Starts the body if an artifical method.  */
+/* Starts the body if an artificial method.  */
 
 static void
 start_artificial_method_body (mdecl)
@@ -9239,7 +9239,7 @@ static_ref_err (wfl, field_id, class_type)
      IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class_type))));
 }
 
-/* 15.10.1 Field Acess Using a Primary and/or Expression Name.
+/* 15.10.1 Field Access Using a Primary and/or Expression Name.
    We return something suitable to generate the field access. We also
    return the field decl in FIELD_DECL and its type in FIELD_TYPE.  If
    recipient's address can be null. */
@@ -9536,7 +9536,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      parse_error_context (wfl, "Can't reference `this' before the superclass constructor has been called");
 	      return 1;
 	    }
-	  /* We have to generate code for intermediate acess */
+	  /* We have to generate code for intermediate access */
 	  if (!from_type || TREE_TYPE (TREE_TYPE (current_this)) == type)
 	    {
 	      *where_found = decl = current_this;
@@ -9914,7 +9914,7 @@ not_accessible_p (reference, member, where, from_super)
       if (where && !inherits_from_p (reference, where))
 	return 1;
 
-      /* Otherwise, access is granted if occuring from the class where
+      /* Otherwise, access is granted if occurring from the class where
 	 member is declared or a subclass of it. Find the right
 	 context to perform the check */
       if (PURE_INNER_CLASS_TYPE_P (reference))
@@ -9943,7 +9943,7 @@ not_accessible_p (reference, member, where, from_super)
       return 1;
     }
 
-  /* Default access are permitted only when occuring within the
+  /* Default access are permitted only when occurring within the
      package in which the type (REFERENCE) is declared. In other words,
      REFERENCE is defined in the current package */
   if (ctxp->package)
@@ -12274,7 +12274,7 @@ build_expr_block (body, decls)
   return node;
 }
 
-/* Create a new function block and link it approriately to current
+/* Create a new function block and link it appropriately to current
    function block chain */
 
 static tree
@@ -12535,7 +12535,7 @@ patch_assignment (node, wfl_op1)
     {
       lhs_type = TREE_TYPE (lvalue);
     }
-  /* Or Lhs can be a array acccess. Should that be lvalue ? FIXME +
+  /* Or Lhs can be a array access. Should that be lvalue ? FIXME +
      comment on reason why */
   else if (TREE_CODE (wfl_op1) == ARRAY_REF)
     {
@@ -13342,7 +13342,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 	}
 
       /* Unary numeric promotion (5.6.1) is performed on each operand
-         separatly */
+         separately */
       op1 = do_unary_numeric_promotion (op1);
       op2 = do_unary_numeric_promotion (op2);
 
@@ -14813,7 +14813,7 @@ build_new_loop (loop_body)
        COMPOUND_EXPR		(loop main body)
          EXIT_EXPR		(this order is for while/for loops.
          LABELED_BLOCK_EXPR      the order is reversed for do loops)
-           LABEL_DECL           (a continue occuring here branches at the 
+           LABEL_DECL           (a continue occurring here branches at the 
            BODY			 end of this labeled block)
        INCREMENT		(if any)
 
@@ -15449,7 +15449,7 @@ patch_throw_statement (node, wfl_op1)
 
   SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
   /* An instance can't throw a checked exception unless that exception
-     is explicitely declared in the `throws' clause of each
+     is explicitly declared in the `throws' clause of each
      constructor. This doesn't apply to anonymous classes, since they
      don't have declared constructors. */
   if (!unchecked_ok 
