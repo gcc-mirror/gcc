@@ -27,8 +27,8 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "hashtab.h"
 #include "splay-tree.h"
+#include "vec.h"
 #include "varray.h"
-
 #include "c-common.h"
 #include "name-lookup.h"
 
@@ -1017,6 +1017,8 @@ struct lang_type_header GTY(())
   BOOL_BITFIELD has_const_assign_ref : 1;
 };
 
+DEF_VEC_P (tree);
+
 /* This structure provides additional information above and beyond
    what is provide in the ordinary tree_type.  In the past, we used it
    for the types of class types, template parameters types, typename
@@ -1087,7 +1089,7 @@ struct lang_type_class GTY(())
   tree vcall_indices;
   tree vtables;
   tree typeinfo_var;
-  tree vbases;
+  VEC (tree) *vbases;
   binding_table nested_udts;
   tree as_base;
   tree pure_virtuals;
@@ -1305,7 +1307,7 @@ struct lang_type GTY(())
 #define CLASSTYPE_PRIMARY_BINFO(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->primary_base)
 
-/* A chain of BINFOs for the direct and indirect virtual base classes
+/* A vector of BINFOs for the direct and indirect virtual base classes
    that this type uses in a post-order depth-first left-to-right
    order.  (In other words, these bases appear in the order that they
    should be initialized.)  */
@@ -4121,6 +4123,7 @@ extern tree context_for_name_lookup		(tree);
 extern tree lookup_conversions			(tree);
 extern tree binfo_for_vtable			(tree);
 extern tree binfo_from_vbase			(tree);
+extern tree binfo_for_vbase			(tree, tree);
 extern tree look_for_overrides_here		(tree, tree);
 extern int check_final_overrider		(tree, tree);
 extern tree dfs_walk                            (tree,

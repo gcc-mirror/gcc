@@ -1344,9 +1344,9 @@ set_primary_base (tree t, tree binfo)
 static void
 determine_primary_base (tree t)
 {
-  int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
-  tree vbases;
+  unsigned i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
   tree type_binfo;
+  tree vbase_binfo;
 
   /* If there are no baseclasses, there is certainly no primary base.  */
   if (n_baseclasses == 0)
@@ -1394,29 +1394,26 @@ determine_primary_base (tree t)
 
   /* Find the indirect primary bases - those virtual bases which are primary
      bases of something else in this hierarchy.  */
-  for (vbases = CLASSTYPE_VBASECLASSES (t);
-       vbases;
-       vbases = TREE_CHAIN (vbases)) 
+  for (i = 0; (vbase_binfo = VEC_iterate
+	       (tree, CLASSTYPE_VBASECLASSES (t), i)); i++)
     {
-      tree vbase_binfo = TREE_VALUE (vbases);
+      unsigned j;
 
-      /* See if this virtual base is an indirect primary base.  To be so,
-         it must be a primary base within the hierarchy of one of our
-         direct bases.  */
-      for (i = 0; i < n_baseclasses; ++i) 
+      /* See if this virtual base is an indirect primary base.  To be
+         so, it must be a primary base within the hierarchy of one of
+         our direct bases.  */
+      for (j = 0; j != n_baseclasses; ++j) 
 	{
-	  tree basetype = TYPE_BINFO_BASETYPE (t, i);
-	  tree v;
-
-	  for (v = CLASSTYPE_VBASECLASSES (basetype); 
-	       v; 
-	       v = TREE_CHAIN (v))
+	  unsigned k;
+	  tree base_vbase_binfo;
+	  tree basetype = TYPE_BINFO_BASETYPE (t, j);
+	  
+	  for (k = 0; (base_vbase_binfo = VEC_iterate
+		       (tree, CLASSTYPE_VBASECLASSES (basetype), k)); k++)
 	    {
-	      tree base_vbase = TREE_VALUE (v);
-	      
-	      if (BINFO_PRIMARY_P (base_vbase)
-		  && same_type_p (BINFO_TYPE (base_vbase),
-	                          BINFO_TYPE (vbase_binfo)))
+	      if (BINFO_PRIMARY_P (base_vbase_binfo)
+		  && same_type_p (BINFO_TYPE (base_vbase_binfo),
+				  BINFO_TYPE (vbase_binfo)))
 		{
 		  BINFO_INDIRECT_PRIMARY_P (vbase_binfo) = 1;
 		  break;
@@ -1923,9 +1920,8 @@ base_derived_from (tree derived, tree base)
 	/* If we meet a virtual base, we can't follow the inheritance
 	   any more.  See if the complete type of DERIVED contains
 	   such a virtual base.  */
-	return purpose_member (BINFO_TYPE (probe),
-			       CLASSTYPE_VBASECLASSES (BINFO_TYPE (derived)))
-	  != NULL_TREE;
+	return (binfo_for_vbase (BINFO_TYPE (probe), BINFO_TYPE (derived))
+		!= NULL_TREE);
     }
   return false;
 }
@@ -2169,10 +2165,8 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 	/* Find the equivalent binfo within the return type of the
 	   overriding function. We will want the vbase offset from
 	   there.  */
-	virtual_offset =
-	  TREE_VALUE (purpose_member
-		      (BINFO_TYPE (virtual_offset),
-		       CLASSTYPE_VBASECLASSES (TREE_TYPE (over_return))));
+	virtual_offset = binfo_for_vbase (BINFO_TYPE (virtual_offset),
+					  TREE_TYPE (over_return));
       else if (!same_type_p (TREE_TYPE (over_return),
 			     TREE_TYPE (base_return)))
 	{
@@ -3314,9 +3308,9 @@ walk_subobject_offsets (tree type,
 	    return r;
 	}
 
-      if (abi_version_at_least (2))
+      if (abi_version_at_least (2) && CLASSTYPE_VBASECLASSES (type))
 	{
-	  tree vbase;
+	  unsigned ix;
 
 	  /* Iterate through the virtual base classes of TYPE.  In G++
 	     3.2, we included virtual bases in the direct base class
@@ -3324,11 +3318,9 @@ walk_subobject_offsets (tree type,
 	     correct offsets for virtual bases are only known when
 	     working with the most derived type.  */
 	  if (vbases_p)
-	    for (vbase = CLASSTYPE_VBASECLASSES (type);
-		 vbase;
-		 vbase = TREE_CHAIN (vbase))
+	    for (ix = 0; (binfo = VEC_iterate
+			  (tree, CLASSTYPE_VBASECLASSES (type), ix)); ix++)
 	      {
-		binfo = TREE_VALUE (vbase);
 		r = walk_subobject_offsets (binfo,
 					    f,
 					    size_binop (PLUS_EXPR,
@@ -3345,7 +3337,8 @@ walk_subobject_offsets (tree type,
 	      /* We still have to walk the primary base, if it is
 		 virtual.  (If it is non-virtual, then it was walked
 		 above.)  */
-	      vbase = get_primary_binfo (type_binfo);
+	      tree vbase = get_primary_binfo (type_binfo);
+	      
 	      if (vbase && TREE_VIA_VIRTUAL (vbase)
 		  && BINFO_PRIMARY_BASE_OF (vbase) == type_binfo)
 		{
@@ -4525,11 +4518,10 @@ end_of_class (tree t, int include_virtuals_p)
 
   /* G++ 3.2 did not check indirect virtual bases.  */
   if (abi_version_at_least (2) && include_virtuals_p)
-    for (binfo = CLASSTYPE_VBASECLASSES (t); 
-	 binfo; 
-	 binfo = TREE_CHAIN (binfo))
+    for (i = 0; (binfo = VEC_iterate
+		 (tree, CLASSTYPE_VBASECLASSES (t), i)); i++)
       {
-	offset = end_of_base (TREE_VALUE (binfo));
+	offset = end_of_base (binfo);
 	if (INT_CST_LT_UNSIGNED (result, offset))
 	  result = offset;
       }
@@ -4551,8 +4543,8 @@ static void
 warn_about_ambiguous_bases (tree t)
 {
   int i;
-  tree vbases;
   tree basetype;
+  tree binfo;
 
   /* Check direct bases.  */
   for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
@@ -4566,11 +4558,10 @@ warn_about_ambiguous_bases (tree t)
 
   /* Check for ambiguous virtual bases.  */
   if (extra_warnings)
-    for (vbases = CLASSTYPE_VBASECLASSES (t); 
-	 vbases; 
-	 vbases = TREE_CHAIN (vbases))
+    for (i = 0; (binfo = VEC_iterate
+		 (tree, CLASSTYPE_VBASECLASSES (t), i)); i++)
       {
-	basetype = BINFO_TYPE (TREE_VALUE (vbases));
+	basetype = BINFO_TYPE (binfo);
 	
 	if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
 	  warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
@@ -7272,8 +7263,7 @@ dfs_accumulate_vtbl_inits (tree binfo,
 	 either case, we share our vtable with LAST, i.e. the
 	 derived-most base within B of which we are a primary.  */
       if (b == rtti_binfo
-	  || (b && purpose_member (BINFO_TYPE (b),
-				   CLASSTYPE_VBASECLASSES (BINFO_TYPE (rtti_binfo)))))
+	  || (b && binfo_for_vbase (BINFO_TYPE (b), BINFO_TYPE (rtti_binfo))))
 	/* Just set our BINFO_VTABLE to point to LAST, as we may not have
 	   set LAST's BINFO_VTABLE yet.  We'll extract the actual vptr in
 	   binfo_ctor_vtable after everything's been set up.  */
@@ -7351,8 +7341,9 @@ build_vtbl_initializer (tree binfo,
 {
   tree v, b;
   tree vfun_inits;
-  tree vbase;
   vtbl_init_data vid;
+  unsigned ix;
+  tree vbinfo;
 
   /* Initialize VID.  */
   memset (&vid, 0, sizeof (vid));
@@ -7375,12 +7366,12 @@ build_vtbl_initializer (tree binfo,
   VARRAY_TREE_INIT (vid.fns, 32, "fns");
   /* Add the vcall and vbase offset entries.  */
   build_vcall_and_vbase_vtbl_entries (binfo, &vid);
+  
   /* Clear BINFO_VTABLE_PATH_MARKED; it's set by
      build_vbase_offset_vtbl_entries.  */
-  for (vbase = CLASSTYPE_VBASECLASSES (t); 
-       vbase; 
-       vbase = TREE_CHAIN (vbase))
-    BINFO_VTABLE_PATH_MARKED (TREE_VALUE (vbase)) = 0;
+  for (ix = 0; (vbinfo = VEC_iterate
+		(tree, CLASSTYPE_VBASECLASSES (t), ix)); ix++)
+    BINFO_VTABLE_PATH_MARKED (vbinfo) = 0;
 
   /* If the target requires padding between data entries, add that now.  */
   if (TARGET_VTABLE_DATA_ENTRY_DISTANCE > 1)

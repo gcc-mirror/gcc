@@ -9044,7 +9044,7 @@ xref_basetypes (tree ref, tree base_list)
   /* In the declaration `A : X, Y, ... Z' we mark all the types
      (A, X, Y, ..., Z) so we can check for duplicates.  */
   tree *basep;
-
+  unsigned max_vbases = 0;
   int i;
   enum tag_types tag_code;
 
@@ -9093,6 +9093,8 @@ xref_basetypes (tree ref, tree base_list)
 	  tree basetype = TREE_VALUE (base_list);
 	  tree base_binfo;
 	  
+	  if (via_virtual)
+	    max_vbases++;
 	  if (access == access_default_node)
 	    /* The base of a derived struct is public by default.  */
 	    access = (tag_code == class_type
@@ -9169,6 +9171,8 @@ xref_basetypes (tree ref, tree base_list)
 	     	 base as well.  */
 	      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref)
 		|= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype);
+	      max_vbases += VEC_length
+		(tree, CLASSTYPE_VBASECLASSES (basetype));
 	    }
 	  i++;
 	}
@@ -9176,6 +9180,8 @@ xref_basetypes (tree ref, tree base_list)
 	TREE_VEC_LENGTH (accesses) = TREE_VEC_LENGTH (binfos) = i;
       else
 	BINFO_BASEACCESSES (binfo) = BINFO_BASETYPES (binfo) = NULL_TREE;
+      if (max_vbases)
+	CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, max_vbases);
       
       if (i > 1)
 	{
@@ -9189,7 +9195,6 @@ xref_basetypes (tree ref, tree base_list)
   /* Copy the base binfos, collect the virtual bases and set the
      inheritance order chain.  */
   copy_base_binfos (TYPE_BINFO (ref), ref, NULL_TREE);
-  CLASSTYPE_VBASECLASSES (ref) = nreverse (CLASSTYPE_VBASECLASSES (ref));
 
   if (TYPE_FOR_JAVA (ref))
     {

@@ -1,3 +1,23 @@
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Use vector API for vbase list.
+	* cp-tree.h: Include vec.h
+	(DEF_VEC_P (tree)): New type.
+	(struct lang_type_class): Change vbase's member type.
+	(binfo_for_vbase): Declare.
+	* class.c (determine_primary_base, base_derived_from,
+	update_vtable_entry_for_fn, walk_subobject_offsets, end_of_class,
+	warn_about_ambiguous_bases, dfs_accumulate_vtbl_inits,
+	build_vtbl_initializer): Adjust.
+	* decl.c (xref_basetypes): Adjust, accumulate upper bound of
+	vbases.
+	* init.c (sort_mem_initializers, expand_member_init,
+	push_base_cleanups): Adjust.
+	* method.c (do_build_copy_constructor): Adjust.
+	* search.c (get_pure_virtuals, copied_binfo, original_binfo): Adjust.
+	(binfo_for_vbase): New.
+	* tree.c (copy_base_binfos): Adjust.
+
 2004-06-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_set_decl_spec_type): Fix thinko.

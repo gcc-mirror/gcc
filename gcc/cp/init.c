@@ -468,9 +468,12 @@ sort_mem_initializers (tree t, tree mem_inits)
      TREE_VALUE will be the constructor arguments, or NULL if no
      explicit initialization was provided.  */
   sorted_inits = NULL_TREE;
+  
   /* Process the virtual bases.  */
-  for (base = CLASSTYPE_VBASECLASSES (t); base; base = TREE_CHAIN (base))
-    sorted_inits = tree_cons (TREE_VALUE (base), NULL_TREE, sorted_inits);
+  for (i = 0; (base = VEC_iterate
+	       (tree, CLASSTYPE_VBASECLASSES (t), i)); i++)
+    sorted_inits = tree_cons (base, NULL_TREE, sorted_inits);
+  
   /* Process the direct bases.  */
   for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
     {
@@ -988,13 +991,7 @@ expand_member_init (tree name)
       /* Look for a virtual base -- unless the direct base is itself
 	 virtual.  */
       if (!direct_binfo || !TREE_VIA_VIRTUAL (direct_binfo))
-	{
-	  virtual_binfo 
-	    = purpose_member (basetype,
-			      CLASSTYPE_VBASECLASSES (current_class_type));
-	  if (virtual_binfo)
-	    virtual_binfo = TREE_VALUE (virtual_binfo);
-	}
+	virtual_binfo = binfo_for_vbase (basetype, current_class_type);
 
       /* [class.base.init]
 	 
@@ -2874,27 +2871,23 @@ push_base_cleanups (void)
   /* Run destructors for all virtual baseclasses.  */
   if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
     {
-      tree vbases;
       tree cond = (condition_conversion
 		   (build (BIT_AND_EXPR, integer_type_node,
 			   current_in_charge_parm,
 			   integer_two_node)));
 
-      vbases = CLASSTYPE_VBASECLASSES (current_class_type);
-      /* The CLASSTYPE_VBASECLASSES list is in initialization
+      /* The CLASSTYPE_VBASECLASSES vector is in initialization
 	 order, which is also the right order for pushing cleanups.  */
-      for (; vbases;
-	   vbases = TREE_CHAIN (vbases))
+      for (i = 0; (binfos = VEC_iterate
+		   (tree, CLASSTYPE_VBASECLASSES (current_class_type), i));
+	   i++)
 	{
-	  tree vbase = TREE_VALUE (vbases);
-	  tree base_type = BINFO_TYPE (vbase);
-
-	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (base_type))
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (binfos)))
 	    {
 	      expr = build_special_member_call (current_class_ref, 
 						base_dtor_identifier,
 						NULL_TREE,
-						vbase,
+						binfos,
 						(LOOKUP_NORMAL 
 						 | LOOKUP_NONVIRTUAL));
 	      expr = build (COND_EXPR, void_type_node, cond,
@@ -2948,17 +2941,19 @@ push_base_cleanups (void)
 tree
 build_vbase_delete (tree type, tree decl)
 {
-  tree vbases = CLASSTYPE_VBASECLASSES (type);
+  unsigned ix;
+  tree binfo;
   tree result;
   tree addr = build_unary_op (ADDR_EXPR, decl, 0);
 
   my_friendly_assert (addr != error_mark_node, 222);
 
-  for (result = convert_to_void (integer_zero_node, NULL);
-       vbases; vbases = TREE_CHAIN (vbases))
+  result = convert_to_void (integer_zero_node, NULL);
+  for (ix = 0; (binfo = VEC_iterate
+		(tree, CLASSTYPE_VBASECLASSES (type), ix)); ix++)
     {
       tree base_addr = convert_force
-	(build_pointer_type (BINFO_TYPE (TREE_VALUE (vbases))), addr, 0);
+	(build_pointer_type (BINFO_TYPE (binfo)), addr, 0);
       tree base_delete = build_delete
 	(TREE_TYPE (base_addr), base_addr, sfk_base_destructor,
 	 LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
