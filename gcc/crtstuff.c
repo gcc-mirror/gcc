@@ -1,6 +1,6 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -250,6 +250,18 @@ __do_global_dtors ()
   __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
+
+#ifdef EH_FRAME_SECTION_ASM_OP
+/* Define a function here to call __register_frame.  crtend.o is linked in
+   after libgcc.a, and hence can't call libgcc.a functions directly.  That
+   can lead to unresolved function references.  */
+void
+__frame_dummy ()
+{
+  static struct object object;
+  __register_frame_info (__EH_FRAME_BEGIN__, &object);
+}
+#endif
 #endif
 
 #endif /* defined(INIT_SECTION_ASM_OP) */
@@ -384,15 +396,13 @@ __do_global_ctors_aux ()	/* prologue goes in .text section */
 /* This case is used by the Irix 6 port, which supports named sections but
    not an SVR4-style .init section.  __do_global_ctors can be non-static
    in this case because we protect it with -hidden_symbol.  */
-extern char __EH_FRAME_BEGIN__[];
 static func_ptr __CTOR_END__[];
 void
 __do_global_ctors ()
 {
   func_ptr *p;
 #ifdef EH_FRAME_SECTION_ASM_OP
-  static struct object object;
-  __register_frame_info (__EH_FRAME_BEGIN__, &object);
+  __frame_dummy ();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
     (*p) ();
