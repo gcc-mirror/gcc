@@ -1562,7 +1562,7 @@ struct lang_type
 
    there will be two copies of `A' and `B' in the TYPE_BINFO hierarchy
    for `E'.  On the CLASSTYPE_VBASECLASSES list, there will be just
-   one copy of `A' (distinct from the other two) with its own copy of `B'
+   one copy of `B' (distinct from the other two) with its own copy of `A'
    (also distinct from the copies in the TYPE_BINFO hierarchy.)  */
 #define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbases)
 
@@ -4388,7 +4388,6 @@ extern tree require_complete_type		PARAMS ((tree));
 extern tree complete_type			PARAMS ((tree));
 extern tree complete_type_or_else               PARAMS ((tree, tree));
 extern int type_unknown_p			PARAMS ((tree));
-extern int fntype_p				PARAMS ((tree));
 extern tree commonparms				PARAMS ((tree, tree));
 extern tree original_type			PARAMS ((tree));
 extern tree common_type				PARAMS ((tree, tree));

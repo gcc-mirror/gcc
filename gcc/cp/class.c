@@ -133,8 +133,7 @@ static void fixup_inline_methods PARAMS ((tree));
 static void set_primary_base PARAMS ((tree, int, int *));
 static tree dfs_propagate_binfo_offsets PARAMS ((tree, void *));
 static void propagate_binfo_offsets PARAMS ((tree, tree));
-static void layout_basetypes PARAMS ((tree));
-static void layout_virtual_bases PARAMS ((tree));
+static void layout_virtual_bases PARAMS ((tree, varray_type *));
 static tree dfs_set_offset_for_shared_vbases PARAMS ((tree, void *));
 static tree dfs_set_offset_for_unshared_vbases PARAMS ((tree, void *));
 static tree dfs_build_vbase_offset_vtbl_entries PARAMS ((tree, void *));
@@ -156,6 +155,12 @@ static void initialize_vtable PARAMS ((tree, tree));
 static void layout_nonempty_base_or_field PARAMS ((record_layout_info,
 						   tree, tree,
 						   varray_type));
+static tree dfs_record_base_offsets PARAMS ((tree, void *));
+static void record_base_offsets PARAMS ((tree, varray_type *));
+static tree dfs_search_base_offsets PARAMS ((tree, void *));
+static int layout_conflict_p PARAMS ((tree, varray_type));
+static unsigned HOST_WIDE_INT end_of_class PARAMS ((tree, int));
+static void layout_empty_base PARAMS ((tree, tree, varray_type));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -4130,6 +4135,26 @@ dfs_record_base_offsets (binfo, data)
   return NULL_TREE;
 }
 
+/* Add the offset of BINFO and its bases to BASE_OFFSETS.  */
+
+static void
+record_base_offsets (binfo, base_offsets)
+     tree binfo;
+     varray_type *base_offsets;
+{
+  int virtual_p;
+
+  /* If BINFO is virtual, we still want to mention its offset in
+     BASE_OFFSETS.  */
+  virtual_p = TREE_VIA_VIRTUAL (binfo);
+  TREE_VIA_VIRTUAL (binfo) = 0;
+  dfs_walk (binfo,
+	    dfs_record_base_offsets,
+	    dfs_skip_vbases,
+	    base_offsets);
+  TREE_VIA_VIRTUAL (binfo) = virtual_p;
+}
+
 /* Returns non-NULL if there is already an entry in DATA (which is
    really a `varray_type') indicating that an object with the same
    type of BINFO is already at the BINFO_OFFSET for BINFO.  */
@@ -4159,6 +4184,19 @@ dfs_search_base_offsets (binfo, data)
     }
 
   return NULL_TREE;
+}
+
+/* Returns non-zero if there's a conflict between BINFO and a base
+   already mentioned in BASE_OFFSETS if BINFO is placed at its current
+   BINFO_OFFSET.  */
+
+static int
+layout_conflict_p (binfo, base_offsets)
+     tree binfo;
+     varray_type base_offsets;
+{
+  return dfs_walk (binfo, dfs_search_base_offsets, dfs_skip_vbases,
+		   base_offsets) != NULL_TREE;
 }
 
 /* DECL is a FIELD_DECL corresponding either to a base subobject of a
@@ -4209,10 +4247,7 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
 	 empty class, have non-zero size, any overlap can happen only
 	 with a direct or indirect base-class -- it can't happen with
 	 a data member.  */
-      if (binfo && flag_new_abi && dfs_walk (binfo,
-					     dfs_search_base_offsets,
-					     dfs_skip_vbases,
-					     v))
+      if (binfo && flag_new_abi && layout_conflict_p (binfo, v))
 	{
 	  /* Undo the propogate_binfo_offsets call.  */
 	  offset = convert (sizetype,
@@ -4230,6 +4265,46 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
       else
 	/* There was no conflict.  We're done laying out this field.  */
 	break;
+    }
+}
+
+/* Layout the empty base BINFO.  EOC indicates the byte currently just
+   past the end of the class; BINFO_OFFSETS gives the offsets of the
+   other bases allocated so far.  */
+
+static void
+layout_empty_base (binfo, eoc, binfo_offsets)
+     tree binfo;
+     tree eoc;
+     varray_type binfo_offsets;
+{
+  tree basetype = BINFO_TYPE (binfo);
+  
+  /* This routine should only be used for empty classes.  */
+  my_friendly_assert (is_empty_class (basetype), 20000321);
+
+  /* This code assumes that zero-sized classes have one-byte
+     alignment.  There might someday be a system where that's not
+     true.  */
+  my_friendly_assert (TYPE_ALIGN (basetype) == BITS_PER_UNIT, 
+		      20000314);
+
+  /* This is an empty base class.  We first try to put it at offset
+     zero.  */
+  if (layout_conflict_p (binfo, binfo_offsets))
+    {
+      /* That didn't work.  Now, we move forward from the next
+	 available spot in the class.  */
+      propagate_binfo_offsets (binfo, eoc);
+      while (1) 
+	{
+	  if (!layout_conflict_p (binfo, binfo_offsets))
+	    /* We finally found a spot where there's no overlap.  */
+	    break;
+
+	  /* There's overlap here, too.  Bump along to the next spot.  */
+	  propagate_binfo_offsets (binfo, size_one_node);
+	}
     }
 }
 
@@ -4264,10 +4339,9 @@ build_base_field (rli, binfo, empty_p, base_align, v)
   if (! flag_new_abi)
     {
       /* Brain damage for backwards compatibility.  For no good
-	 reason, the old layout_basetypes made every base at least
+	 reason, the old basetype layout made every base have at least
 	 as large as the alignment for the bases up to that point,
-	 gratuitously wasting space.  So we do the same thing
-	 here.  */
+	 gratuitously wasting space.  So we do the same thing here.  */
       *base_align = MAX (*base_align, DECL_ALIGN (decl));
       DECL_SIZE (decl)
 	= size_binop (MAX_EXPR, DECL_SIZE (decl), bitsize_int (*base_align));
@@ -4288,34 +4362,9 @@ build_base_field (rli, binfo, empty_p, base_align, v)
       layout_nonempty_base_or_field (rli, decl, binfo, *v);
     }
   else
-    {
-      /* This code assumes that zero-sized classes have one-byte
-	 alignment.  There might someday be a system where that's not
-	 true.  */
-      my_friendly_assert (TYPE_ALIGN (basetype) == BITS_PER_UNIT, 
-			  20000314);
-
-      /* This is an empty base class.  We first try to put it at
-	 offset zero.  */
-      if (dfs_walk (binfo, dfs_search_base_offsets, dfs_skip_vbases, *v))
-	{
-	  /* That didn't work.  Now, we move forward from the next
-	     available spot in the class.  */
-	  propagate_binfo_offsets (binfo, 
-				   size_int (rli->const_size / BITS_PER_UNIT));
-	  while (1) 
-	    {
-	      if (!dfs_walk (binfo, dfs_search_base_offsets, 
-			     dfs_skip_vbases, *v))
-		/* We finally found a spot where there's no overlap.  */
-		break;
-
-	      /* There's overlap here, too.  Bump along to the next
-		 spot.  */
-	      propagate_binfo_offsets (binfo, size_one_node);
-	    }
-	}
-    }
+    layout_empty_base (binfo,
+		       size_int (CEIL (rli->const_size, BITS_PER_UNIT)),
+		       *v);
 
   /* Check for inaccessible base classes.  If the same base class
      appears more than once in the hierarchy, but isn't virtual, then
@@ -4325,10 +4374,7 @@ build_base_field (rli, binfo, empty_p, base_align, v)
 		basetype, rli->t);
   
   /* Record the offsets of BINFO and its base subobjects.  */
-  dfs_walk (binfo,
-	    dfs_record_base_offsets,
-	    dfs_skip_vbases,
-	    v);
+  record_base_offsets (binfo, v);
 }
 
 /* Layout all of the non-virtual base classes.  Returns a map from
@@ -4370,7 +4416,7 @@ build_base_fields (rli, empty_p)
 
       /* A primary virtual base class is allocated just like any other
 	 base class, but a non-primary virtual base is allocated
-	 later, in layout_basetypes.  */
+	 later, in layout_virtual_bases.  */
       if (TREE_VIA_VIRTUAL (base_binfo) 
 	  && !BINFO_PRIMARY_MARKED_P (base_binfo))
 	continue;
@@ -4764,14 +4810,26 @@ dfs_set_offset_for_unshared_vbases (binfo, data)
 }
 
 /* Set BINFO_OFFSET for all of the virtual bases for T.  Update
-   TYPE_ALIGN and TYPE_SIZE for T.  */
+   TYPE_ALIGN and TYPE_SIZE for T.  BASE_OFFSETS is a varray mapping
+   offsets to the types at those offsets.  */
 
 static void
-layout_virtual_bases (t)
+layout_virtual_bases (t, base_offsets)
      tree t;
+     varray_type *base_offsets;
 {
   tree vbase;
   unsigned HOST_WIDE_INT dsize;
+  unsigned HOST_WIDE_INT eoc;
+
+  if (CLASSTYPE_N_BASECLASSES (t) == 0)
+    return;
+
+#ifdef STRUCTURE_SIZE_BOUNDARY
+  /* Packed structures don't need to have minimum size.  */
+  if (! TYPE_PACKED (rec))
+    TYPE_ALIGN (rec) = MAX (TYPE_ALIGN (rec), STRUCTURE_SIZE_BOUNDARY);
+#endif
 
   /* DSIZE is the size of the class without the virtual bases.  */
   dsize = tree_low_cst (TYPE_SIZE (t), 1);
@@ -4792,19 +4850,39 @@ layout_virtual_bases (t)
 	unsigned int desired_align;
 
 	basetype = BINFO_TYPE (vbase);
-	desired_align = TYPE_ALIGN (basetype);
-	TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), desired_align);
 
-	/* Add padding so that we can put the virtual base class at an
-	   appropriately aligned offset.  */
-	dsize = CEIL (dsize, desired_align) * desired_align;
-	/* And compute the offset of the virtual base.  */
-	propagate_binfo_offsets (vbase, 
-				 size_int (CEIL (dsize, BITS_PER_UNIT)));
-	/* Every virtual baseclass takes a least a UNIT, so that we can
-	   take it's address and get something different for each base.  */
-	dsize += MAX (BITS_PER_UNIT,
-		      tree_low_cst (CLASSTYPE_SIZE (basetype), 0));
+	/* Under the new ABI, we try to squish empty virtual bases in
+	   just like ordinary empty bases.  */
+	if (flag_new_abi && is_empty_class (basetype))
+	  layout_empty_base (vbase,
+			     size_int (CEIL (dsize, BITS_PER_UNIT)),
+			     *base_offsets);
+	else
+	  {
+	    if (flag_new_abi)
+	      desired_align = CLASSTYPE_ALIGN (basetype);
+	    else
+	      /* Under the old ABI, virtual bases were aligned as for
+		 the entire base object (including its virtual bases).
+		 That's wasteful, in general.  */
+	      desired_align = TYPE_ALIGN (basetype);
+	    TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), desired_align);
+
+	    /* Add padding so that we can put the virtual base class at an
+	       appropriately aligned offset.  */
+	    dsize = CEIL (dsize, desired_align) * desired_align;
+	    /* And compute the offset of the virtual base.  */
+	    propagate_binfo_offsets (vbase, 
+				     size_int (CEIL (dsize, BITS_PER_UNIT)));
+	    /* Every virtual baseclass takes a least a UNIT, so that
+	       we can take it's address and get something different
+	       for each base.  */
+	    dsize += MAX (BITS_PER_UNIT,
+			  tree_low_cst (CLASSTYPE_SIZE (basetype), 0));
+	  }
+
+	/* Keep track of the offsets assigned to this virtual base.  */
+	record_base_offsets (vbase, base_offsets);
       }
 
   /* Make sure that all of the CLASSTYPE_VBASECLASSES have their
@@ -4827,6 +4905,13 @@ layout_virtual_bases (t)
        vbase = TREE_CHAIN (vbase))
     dfs_walk (vbase, dfs_set_offset_for_unshared_vbases, NULL, t);
 
+  /* If we had empty base classes that protruded beyond the end of the
+     class, we didn't update DSIZE above; we were hoping to overlay
+     multiple such bases at the same location.  */
+  eoc = end_of_class (t, /*include_virtuals_p=*/1);
+  if (eoc * BITS_PER_UNIT > dsize)
+    dsize = (eoc + 1) * BITS_PER_UNIT;
+
   /* Now, make sure that the total size of the type is a multiple of
      its alignment.  */
   dsize = CEIL (dsize, TYPE_ALIGN (t)) * TYPE_ALIGN (t);
@@ -4834,44 +4919,54 @@ layout_virtual_bases (t)
   TYPE_SIZE_UNIT (t) = convert (sizetype,
 				size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (t),
 					    bitsize_int (BITS_PER_UNIT)));
+
+  /* Check for ambiguous virtual bases.  */
+  if (extra_warnings)
+    for (vbase = CLASSTYPE_VBASECLASSES (t); 
+	 vbase; 
+	 vbase = TREE_CHAIN (vbase))
+      {
+	tree basetype = BINFO_TYPE (vbase);
+	if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
+	  cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
+		      basetype, t);
+      }
 }
 
-/* Finish the work of layout_record, now taking virtual bases into account.
-   Also compute the actual offsets that our base classes will have.
-   This must be performed after the fields are laid out, since virtual
-   baseclasses must lay down at the end of the record.  */
+/* Returns the offset of the byte just past the end of the base class
+   with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero, then
+   only non-virtual bases are included.  */
 
-static void
-layout_basetypes (rec)
-     tree rec;
+static unsigned HOST_WIDE_INT
+end_of_class (t, include_virtuals_p)
+     tree t;
+     int include_virtuals_p;
 {
-  tree vbase_types;
+  unsigned HOST_WIDE_INT result = 0;
+  int i;
 
-  if (CLASSTYPE_N_BASECLASSES (rec) == 0)
-    return;
+  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+    {
+      tree base_binfo;
+      tree offset;
+      unsigned HOST_WIDE_INT end_of_base;
 
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  /* Packed structures don't need to have minimum size.  */
-  if (! TYPE_PACKED (rec))
-    TYPE_ALIGN (rec) = MAX (TYPE_ALIGN (rec), STRUCTURE_SIZE_BOUNDARY);
-#endif
+      base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
 
-  /* Allocate the virtual base classes.  */
-  layout_virtual_bases (rec);
+      if (!include_virtuals_p
+	  && TREE_VIA_VIRTUAL (base_binfo) 
+	  && !BINFO_PRIMARY_MARKED_P (base_binfo))
+	continue;
 
-  /* Get all the virtual base types that this type uses.  The
-     TREE_VALUE slot holds the virtual baseclass type.  Note that
-     get_vbase_types makes copies of the virtual base BINFOs, so that
-     the vbase_types are unshared.  */
-  for (vbase_types = CLASSTYPE_VBASECLASSES (rec); vbase_types;
-       vbase_types = TREE_CHAIN (vbase_types))
-    if (extra_warnings)
-      {
-	tree basetype = BINFO_TYPE (vbase_types);
-	if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
-	  cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
-		      basetype, rec);
-      }
+      offset = size_binop (PLUS_EXPR, 
+			   BINFO_OFFSET (base_binfo),
+			   CLASSTYPE_SIZE_UNIT (BINFO_TYPE (base_binfo)));
+      end_of_base = tree_low_cst (offset, /*pos=*/1);
+      if (end_of_base > result)
+	result = end_of_base;
+    }
+
+  return result;
 }
 
 /* Calculate the TYPE_SIZE, TYPE_ALIGN, etc for T.  Calculate
@@ -4892,7 +4987,7 @@ layout_class_type (t, empty_p, has_virtual_p,
   tree vptr;
   record_layout_info rli;
   varray_type v;
-  int i;
+  unsigned HOST_WIDE_INT eoc;
 
   /* Keep track of the first non-static data member.  */
   non_static_data_members = TYPE_FIELDS (t);
@@ -5004,23 +5099,19 @@ layout_class_type (t, empty_p, has_virtual_p,
 	}
     }
 
-  /* Clean up.  */
-  VARRAY_FREE (v);
-  
   /* It might be the case that we grew the class to allocate a
      zero-sized base class.  That won't be reflected in RLI, yet,
      because we are willing to overlay multiple bases at the same
      offset.  However, now we need to make sure that RLI is big enough
      to reflect the entire class.  */
-  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+  eoc = end_of_class (t, /*include_virtuals_p=*/0);
+  if (eoc * BITS_PER_UNIT > rli->const_size)
     {
-      tree base_binfo;
-      unsigned HOST_WIDE_INT offset;
-
-      base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
-      offset = get_binfo_offset_as_int (base_binfo);
-      if (offset * BITS_PER_UNIT > rli->const_size)
-	rli->const_size = (offset + 1) * BITS_PER_UNIT;
+      /* We don't handle zero-sized base classes specially under the
+	 old ABI, so if we get here, we had better be operating under
+	 the new ABI rules.  */
+      my_friendly_assert (flag_new_abi, 20000321);
+      rli->const_size = (eoc + 1) * BITS_PER_UNIT;
     }
 
   /* We make all structures have at least one element, so that they
@@ -5088,7 +5179,10 @@ layout_class_type (t, empty_p, has_virtual_p,
      around.  We must get these done before we try to lay out the
      virtual function table.  As a side-effect, this will remove the
      base subobject fields.  */
-  layout_basetypes (t);
+  layout_virtual_bases (t, &v);
+
+  /* Clean up.  */
+  VARRAY_FREE (v);
 }
      
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration

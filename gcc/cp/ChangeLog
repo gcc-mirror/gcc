@@ -1,5 +1,24 @@
 2000-03-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (record_base_offsets): New function.
+	(layout_conflict_p): Likewise.
+	(layout_nonempty_base_or_field): Use it.
+	(layout_empty_base): New function.
+	(build_base_field): Use it.
+	(build_base_fields): Update comment.
+	(layout_virtual_bases): Fold in a little code form
+	layout_basetypes.  Use layout_empty_base.
+	(layout_basetypes): Remove.
+	(end_of_class): New function.
+	(layout_class_type): Use it.  Adjust.
+
+	* cp-tree.h (CLASSTYPE_VBASECLASSES): Fix typo in comment.
+	(fntype_p): Remove.
+	* search.c (dfs_skip_nonprimary_vbases_unmarkedp): Fix typo in
+	comment. 
+	(dfs_skip_nonprimary_vbases_markedp): Likewise.
+	* typeck.c (fntype_p): Remove.
+
 	* cp-tree.h (TI_SPEC_INFO): Remove.
 	(CLASSTYPE_TI_SPEC_INFO): Likewise.
 	* pt.c (process_partial_specialization): Likewise.

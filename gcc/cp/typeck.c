@@ -198,18 +198,6 @@ type_unknown_p (exp)
 	      && TREE_TYPE (TREE_TYPE (exp)) == unknown_type_node));
 }
 
-/* Return truthvalue of whether T is function (or pfn) type.  */
-
-int
-fntype_p (t)
-     tree t;
-{
-  return (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE
-	  || (TREE_CODE (t) == POINTER_TYPE
-	      && (TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE
-		  || TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE)));
-}
-
 /* Return a variant of TYPE which has all the type qualifiers of LIKE
    as well as those of TYPE.  */
 
