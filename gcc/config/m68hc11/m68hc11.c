@@ -293,6 +293,11 @@ m68hc11_override_options (void)
       flag_pic = 0;
     }
 
+  /* Do not enable -fweb because it breaks the 32-bit shift patterns
+     by breaking the match_dup of those patterns.  The shift patterns
+     will no longer be recognized after that.  */
+  flag_web = 0;
+
   /* Configure for a 68hc11 processor.  */
   if (TARGET_M6811)
     {
