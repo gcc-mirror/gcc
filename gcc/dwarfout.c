@@ -122,7 +122,7 @@ extern char *version_string;
 #endif
 
 #ifndef SHORT_TYPE_SIZE
-#define SHORT_TYPE_SIZE (BITS_PER_UNIT * 2)
+#define SHORT_TYPE_SIZE (BITS_PER_UNIT * MIN ((UNITS_PER_WORD + 1) / 2, 2))
 #endif
 
 #ifndef INT_TYPE_SIZE
