@@ -1,8 +1,10 @@
-// PR java/10145
-// Test that requesting an alignment of 1 does not increase the alignment
-// of a long long field.
+/* PR java/10145
+   Test that requesting an alignment of 1 does not increase the alignment
+   of a long long field.
 
-// { dg-do run }
+   { dg-do run }
+   { dg-options "" }
+*/
 
 struct A
 {
