@@ -1,5 +1,10 @@
 Thu Dec 10 07:21:44 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* xm-mn10200.h (free, malloc, realloc, calloc): Remove redundant decls.
+	* xm-mn10300.h, rs6000/xm-sysv4.h, xm-v850.h: Likewise.
+	* xm-alpha.h: Likewise.
+	(string.h): Remove reundant #include.
+
 	* aclocal.m4 (GCC_HEADER_INTTYPES, GCC_CHECK_STRINGIFY): New macros.
 	* configure.in: Use them instead of inline text.
 	(malloc.h): Check for presence.
