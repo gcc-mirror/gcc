@@ -2328,10 +2328,18 @@ structsp:
 		      tree type = TREE_TYPE ($1.t);
 
 		      if (TREE_CODE (type) == TYPENAME_TYPE)
-			/* In a definition of a member class template,
-                           we will get here with an implicit typename,
-                           a TYPENAME_TYPE with a type. */
-			type = TREE_TYPE (type);
+			{
+			  if (IMPLICIT_TYPENAME_P (type))
+			    /* In a definition of a member class template,
+			       we will get here with an implicit typename,
+			       a TYPENAME_TYPE with a type. */
+			    type = TREE_TYPE (type);
+			  else
+			    {
+			      error ("qualified name does not name a class");
+			      type = error_mark_node;
+			    }
+			}
 		      maybe_process_partial_specialization (type);
 		      xref_basetypes (type, $2);
 		    }
