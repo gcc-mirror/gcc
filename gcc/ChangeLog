@@ -1,3 +1,10 @@
+2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/altivec.h: Cleanups for tighter typechecking.
+        Cleanups for accepting modifiers on pointers.
+        Fix predicate typos.
+        Allow long pointers as well as int pointers.
+
 2002-05-15  Richard Henderson  <rth@redhat.com>
 
 	* varasm.c (merge_weak): Remove special case for extern and common.
