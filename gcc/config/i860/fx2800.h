@@ -21,6 +21,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+#define OUTPUT_TDESC
+
 #include "i860v4.h"
 
 /* The Alliant fx2800 running Concentrix 2.x is weird.  This is basically
@@ -279,6 +281,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)
 #undef ASM_OUTPUT_FUNCTION_PREFIX
+#define ASM_OUTPUT_FUNCTION_PREFIX(FILE,NAME) \
+  fputs("\tnop\n", (FILE));			\
+  current_function_original_name = (NAME)
 #undef ASM_OUTPUT_PROLOGUE_SUFFIX
 
 /* Overrides for svr4.h begin here */

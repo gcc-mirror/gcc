@@ -2039,15 +2039,49 @@ function_prologue (asm_file, local_bytes)
    instruction, so what the hell.
 */
 
+/* This corresponds to a version 4 TDESC structure. Lower numbered
+   versions successively omit the last word of the structure. We
+   don't try to handle version 5 here. */
+
+typedef struct TDESC_flags {
+	int version:4;
+	int reg_packing:1;
+	int callable_block:1;
+	int reserved:4;
+	int fregs:6;	/* fp regs 2-7 */
+	int iregs:16;	/* regs 0-15 */
+} TDESC_flags;
+
+typedef struct TDESC {
+	TDESC_flags flags;
+	int integer_reg_offset;		/* same as must_preserve_bytes */
+	int floating_point_reg_offset;
+	unsigned int positive_frame_size;	/* same as frame_upper_bytes */
+	unsigned int negative_frame_size;	/* same as frame_lower_bytes */
+} TDESC;
+
 void
 function_epilogue (asm_file, local_bytes)
      register FILE *asm_file;
      register unsigned local_bytes;
 {
   register unsigned frame_upper_bytes;
+  register unsigned frame_lower_bytes;
   register unsigned preserved_reg_bytes = 0;
   register unsigned i;
   register unsigned restored_so_far = 0;
+  register unsigned int_restored;
+  register unsigned mask;
+  unsigned intflags=0;
+  register TDESC_flags *flags = (TDESC_flags *) &intflags;
+
+  flags->version = 4;
+  flags->reg_packing = 1;
+  flags->iregs = 8;	/* old fp always gets saved */
+
+  /* Round-up the frame_lower_bytes so that it's a multiple of 16. */
+
+  frame_lower_bytes = (local_bytes + STACK_ALIGNMENT - 1) & -STACK_ALIGNMENT;
 
   /* Count the number of registers that were preserved in the prologue.
      Ignore r0.  It is never preserved.  */
@@ -2071,17 +2105,31 @@ function_epilogue (asm_file, local_bytes)
 
   /* Restore all of the "preserved" registers that need restoring.  */
 
-  for (i = 1; i < 32; i++)
-    if (regs_ever_live[i] && ! call_used_regs[i])
+  mask = 2;
+
+  for (i = 1; i < 32; i++, mask<<=1)
+    if (regs_ever_live[i] && ! call_used_regs[i]) {
       fprintf (asm_file, "\tld.l %d(%sfp),%s%s\n",
 	must_preserve_bytes + (4 * restored_so_far++),
 	i860_reg_prefix, i860_reg_prefix, reg_names[i]);
+      if (i > 3 && i < 16)
+	flags->iregs |= mask;
+    }
 
-  for (i = 32; i < 64; i++)
-    if (regs_ever_live[i] && ! call_used_regs[i])
+  int_restored = restored_so_far;
+  mask = 1;
+
+  for (i = 32; i < 64; i++) {
+    if (regs_ever_live[i] && ! call_used_regs[i]) {
       fprintf (asm_file, "\tfld.l %d(%sfp),%s%s\n",
 	must_preserve_bytes + (4 * restored_so_far++),
 	i860_reg_prefix, i860_reg_prefix, reg_names[i]);
+      if (i > 33 & i < 40)
+	flags->fregs |= mask;
+    }
+    if (i > 33 && i < 40)
+      mask<<=1;
+  }
 
   /* Get the value we plan to use to restore the stack pointer into r31.  */
 
@@ -2090,9 +2138,11 @@ function_epilogue (asm_file, local_bytes)
 
   /* Restore the return address and the old frame pointer.  */
 
-  if (must_preserve_r1)
+  if (must_preserve_r1) {
     fprintf (asm_file, "\tld.l 4(%sfp),%sr1\n",
       i860_reg_prefix, i860_reg_prefix);
+    flags->iregs |= 2;
+  }
 
   fprintf (asm_file, "\tld.l 0(%sfp),%sfp\n",
     i860_reg_prefix, i860_reg_prefix);
@@ -2101,4 +2151,37 @@ function_epilogue (asm_file, local_bytes)
 
   fprintf (asm_file, "\tbri %sr1\n\tmov %sr31,%ssp\n",
     i860_reg_prefix, i860_reg_prefix, i860_reg_prefix);
+
+#ifdef	OUTPUT_TDESC	/* Output an ABI-compliant TDESC entry */
+  if (! frame_lower_bytes) {
+    flags->version--;
+    if (! frame_upper_bytes) {
+      flags->version--;
+      if (restored_so_far == int_restored)	/* No FP saves */
+	flags->version--;
+    }
+  }
+  assemble_name(asm_file,current_function_original_name);
+  fputs(".TDESC:\n", asm_file);
+  fprintf(asm_file, "%s 0x%0x\n", ASM_LONG, intflags);
+  fprintf(asm_file, "%s %d\n", ASM_LONG,
+	int_restored ? must_preserve_bytes : 0);
+  if (flags->version > 1) {
+    fprintf(asm_file, "%s %d\n", ASM_LONG,
+	(restored_so_far == int_restored) ? 0 : must_preserve_bytes +
+	  (4 * int_restored));
+    if (flags->version > 2) {
+      fprintf(asm_file, "%s %d\n", ASM_LONG, frame_upper_bytes);
+      if (flags->version > 3)
+	fprintf(asm_file, "%s %d\n", ASM_LONG, frame_lower_bytes);
+    }
+  }
+  tdesc_section();
+  fprintf(asm_file, "%s ", ASM_LONG);
+  assemble_name(asm_file, current_function_original_name);
+  fprintf(asm_file, "\n%s ", ASM_LONG);
+  assemble_name(asm_file, current_function_original_name);
+  fputs(".TDESC\n", asm_file);
+  text_section();
+#endif
 }
