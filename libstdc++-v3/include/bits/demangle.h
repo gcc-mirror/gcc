@@ -172,7 +172,7 @@ namespace __gnu_cxx
 	{ }
 
 	int
-	start_pos(void) const
+	get_start_pos(void) const
 	{ return M_start_pos; }
 
 	char
@@ -187,7 +187,7 @@ namespace __gnu_cxx
 	}
 
 	string_type const&
-	optional_type(void) const
+	get_optional_type(void) const
 	{ return M_optional_type; }
 
 	bool
@@ -1382,7 +1382,7 @@ namespace __gnu_cxx
 	  {
 	    int saved_inside_substitution = M_demangler.M_inside_substitution;
 	    M_demangler.M_inside_substitution = 0;
-	    M_demangler.add_substitution((*iter).start_pos(), type);
+	    M_demangler.add_substitution((*iter).get_start_pos(), type);
 	    M_demangler.M_inside_substitution = saved_inside_substitution;
 	  }
 	  char qualifier_char = (*iter).first_qualifier();
@@ -1407,7 +1407,7 @@ namespace __gnu_cxx
 		continue;
 	      case 'A':
 	      {
-		string_type index = (*iter).optional_type();
+		string_type index = (*iter).get_optional_type();
 		if (++iter != M_qualifier_starts.rend()
 		    && (*iter).first_qualifier() != 'A')
 		{
@@ -1420,12 +1420,12 @@ namespace __gnu_cxx
 	      }
 	      case 'M':
 		prefix += " ";
-		prefix += (*iter).optional_type();
+		prefix += (*iter).get_optional_type();
 		prefix += "::*";
 		break;
 	      case 'U':
 		prefix += " ";
-		prefix += (*iter).optional_type();
+		prefix += (*iter).get_optional_type();
 		break;
 	      case 'G':	// Only here so we added a substitution.
 		break;
