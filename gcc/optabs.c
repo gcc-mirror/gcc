@@ -5050,13 +5050,6 @@ init_optabs ()
   fixunstfdi_libfunc = init_one_libfunc ("__fixunstfdi");
   fixunstfti_libfunc = init_one_libfunc ("__fixunstfti");
 
-  /* For check-memory-usage.  */
-  chkr_check_addr_libfunc = init_one_libfunc ("chkr_check_addr");
-  chkr_set_right_libfunc = init_one_libfunc ("chkr_set_right");
-  chkr_copy_bitmap_libfunc = init_one_libfunc ("chkr_copy_bitmap");
-  chkr_check_exec_libfunc = init_one_libfunc ("chkr_check_exec");
-  chkr_check_str_libfunc = init_one_libfunc ("chkr_check_str");
-
   /* For function entry/exit instrumentation.  */
   profile_function_entry_libfunc
     = init_one_libfunc ("__cyg_profile_func_enter");
