@@ -1,3 +1,11 @@
+2004-04-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/darwin7.h: New file.
+	* config.gcc (*-*-darwin*): Add darwin7.h if the
+	version is greater than 6.
+	* config/darwin.h (TARGET_C99_FUNCTIONS): Define.
+	(MATH_LIBRARY): Wrap in ifdefs.
+
 2004-04-23  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/arm/arm.c (arm_output_epilogue): Reverse the order of
