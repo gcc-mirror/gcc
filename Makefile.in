@@ -43,7 +43,7 @@ includedir=${prefix}/include
 oldincludedir=/usr/include
 infodir=${prefix}/info
 mandir=${prefix}/man
-gxx_include_dir=${includedir}/g++
+gxx_include_dir=@gxx_include_dir@
 
 tooldir = $(exec_prefix)/$(target_alias)
 build_tooldir = $(exec_prefix)/$(target_alias)
@@ -188,22 +188,22 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
-TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib winsup opcodes libf2c libobjc
+TARGET_CONFIGDIRS = @target_configdirs@
 
 # Target libraries are put under this directory:
 # Changed by configure to $(target_alias) if cross.
-TARGET_SUBDIR = .
+TARGET_SUBDIR = @target_subdir@
 
 BUILD_CONFIGDIRS = libiberty
-BUILD_SUBDIR = .
+BUILD_SUBDIR = @build_subdir@
 
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the target.
-TARGET_CONFIGARGS = 
+TARGET_CONFIGARGS = @target_configargs@
 
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the build system.
-BUILD_CONFIGARGS =
+BUILD_CONFIGARGS = @build_configargs@
 
 # This is set by configure to REALLY_SET_LIB_PATH if --enable-shared
 # was used.
@@ -243,11 +243,11 @@ INSTALL_TARGET_CROSS = installdirs \
 	$(INSTALL_DOSREL)
 
 # Should be substed by configure.in
-FLAGS_FOR_TARGET =
-CC_FOR_TARGET =
-CXX_FOR_TARGET =
-CXX_FOR_TARGET_FOR_RECURSIVE_MAKE =
-GCJ_FOR_TARGET =
+FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
+CC_FOR_TARGET = @CC_FOR_TARGET@
+CXX_FOR_TARGET = @CXX_FOR_TARGET@
+CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = @CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@
+GCJ_FOR_TARGET = @GCJ_FOR_TARGET@
 
 # If GCC_FOR_TARGET is not overriden on the command line, then this
 # variable is passed down to the gcc Makefile, where it is used to

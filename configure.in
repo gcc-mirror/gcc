@@ -1542,17 +1542,17 @@ qqCXX_FOR_TARGET=`echo "$qCXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
 
 sedtemp=sed.$$
 cat >$sedtemp <<EOF
-s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:
-s%^TARGET_CONFIGARGS[ 	]*=.*$%TARGET_CONFIGARGS = ${targargs}%
-s%^FLAGS_FOR_TARGET[ 	]*=.*$%FLAGS_FOR_TARGET = ${FLAGS_FOR_TARGET}%
-s%^CC_FOR_TARGET[ 	]*=.*$%CC_FOR_TARGET = \$(STAGE_CC_WRAPPER) ${CC_FOR_TARGET}%
-s%^GCJ_FOR_TARGET[      ]*=.*$%GCJ_FOR_TARGET = \$(STAGE_CC_WRAPPER) ${GCJ_FOR_TARGET}%
-s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = \$(STAGE_CC_WRAPPER) ${qCXX_FOR_TARGET}%
-s%^CXX_FOR_TARGET_FOR_RECURSIVE_MAKE[ 	]*=.*$%CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = \$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}%
-s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%
-s%^BUILD_SUBDIR[ 	]*=.*$%BUILD_SUBDIR = ${build_subdir}%
-s%^BUILD_CONFIGARGS[ 	]*=.*$%BUILD_CONFIGARGS = ${buildargs}%
-s%^gxx_include_dir[ 	]*=.*$%gxx_include_dir=${gxx_include_dir}%
+s:@target_configdirs@:${target_configdirs}:
+s%@target_configargs@%${targargs}%
+s%@FLAGS_FOR_TARGET@%${FLAGS_FOR_TARGET}%
+s%@CC_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${CC_FOR_TARGET}%
+s%@GCJ_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${GCJ_FOR_TARGET}%
+s%@CXX_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${qCXX_FOR_TARGET}%
+s%@CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%\$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}%
+s%@target_subdir@%${target_subdir}%
+s%@build_subdir@%${build_subdir}%
+s%@build_configargs@%${buildargs}%
+s%@gxx_include_dir@%${gxx_include_dir}%
 EOF
 sed -f $sedtemp Makefile > Makefile.tem
 rm -f Makefile $sedtemp
