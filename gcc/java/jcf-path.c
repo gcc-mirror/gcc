@@ -34,15 +34,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "jcf.h"
 
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-#define PATH_SEPARATOR ':'
-#endif
-
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 #ifndef DIR_UP
 #define DIR_UP ".."
 #endif
@@ -147,15 +138,15 @@ add_entry (struct entry **entp, const char *filename, int is_system)
 
   len = strlen (filename);
 
-  if (len > 4 && (COMPARE_FILENAMES (filename + len - 4, ".zip") == 0
-		  || COMPARE_FILENAMES (filename + len - 4, ".jar") == 0))
+  if (len > 4 && (FILENAME_CMP (filename + len - 4, ".zip") == 0
+		  || FILENAME_CMP (filename + len - 4, ".jar") == 0))
     {
       n->flags |= FLAG_ZIP;
       /* If the user uses -classpath then he'll have to include
 	 libgcj.jar in the value.  We check for this in a simplistic
 	 way.  Symlinks will fool this test.  This is only used for
 	 -MM and -MMD, so it probably isn't terribly important.  */
-      if (! COMPARE_FILENAMES (filename, LIBGCJ_ZIP_FILE))
+      if (! FILENAME_CMP (filename, LIBGCJ_ZIP_FILE))
 	n->flags |= FLAG_SYSTEM;
     }
 

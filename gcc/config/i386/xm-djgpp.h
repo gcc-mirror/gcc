@@ -23,13 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define HOST_EXECUTABLE_SUFFIX ".exe"
 
-/* Even though we support "/", allow "\" since everybody tests both.  */
-#define DIR_SEPARATOR '/'
-#define DIR_SEPARATOR_2 '\\'
-
-/* Allow test for DOS drive names.  */
-#define HAVE_DOS_BASED_FILE_SYSTEM
-
 /* System dependent initialization for collect2
    to tell system() to act like Unix.  */
 #define COLLECT2_HOST_INITIALIZATION \

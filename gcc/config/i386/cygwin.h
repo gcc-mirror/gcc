@@ -213,7 +213,7 @@ do \
 { \
   char *cprefix = concat (tooldir_base_prefix, spec_machine, \
 			  dir_separator_str, NULL); \
-  if (!IS_ABSOLUTE_PATHNAME (cprefix)) \
+  if (!IS_ABSOLUTE_PATH (cprefix)) \
     cprefix = concat (standard_exec_prefix, spec_machine, dir_separator_str, \
 		      spec_version, dir_separator_str, tooldir_prefix, NULL); \
   add_prefix (&exec_prefixes,\

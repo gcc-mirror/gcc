@@ -54,15 +54,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define JCF_USE_SCANDIR 0
 #endif 
 
-/* On case-insensitive file systems, file name components must be 
-   compared using "strcasecmp", if available, instead of "strcmp".
-   Assumes "config.h" has already been included.  */
-#if defined (HAVE_DOS_BASED_FILE_SYSTEM) && defined (HAVE_STRCASECMP)
-#define COMPARE_FILENAMES(X, Y) strcasecmp ((X), (Y))
-#else
-#define COMPARE_FILENAMES(X, Y) strcmp ((X), (Y))
-#endif
-
 /* On case-insensitive file systems, we need to ensure that a request
    to open a .java or .class file is honored only if the file to be
    opened is of the exact case we are asking for. In other words, we

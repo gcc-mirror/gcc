@@ -1,3 +1,23 @@
+2003-07-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* system.h: Include filenames.h.
+	(IS_DIR_SEPARATOR, IS_ABSOLUTE_PATHNAME): Don't define.
+	(DIR_SEPARATOR, DIR_SEPARATOR_2): If not already defined,
+	define based on HAVE_DOS_BASED_FILE_SYSTEM.
+	* config/i386/xm-cygwin.h, config/i386/xm-djgpp.h
+	* config/i386/xm-mingw32.h: Don't define
+	HAVE_DOS_BASED_FILE_SYSTEM,
+	DIR_SEPARATOR, or DIR_SEPARATOR_2.
+	* doc/hostconfig.texi: Update to match.
+
+	* cppfiles.c, gcc.c, gensupport.c, protoize.c,
+	config/i386/cygwin.h:
+	Use IS_ABSOLUTE_PATH throughout.
+	* gcc.c (DIR_UP): Delete, unused.
+	* protoize.c (IS_SAME_PATH): Define in terms of
+	FILENAME_CMP.
+	(is_abspath): Delete.
+
 2003-07-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/i386/emmintrin.h: Fix comment typos.
@@ -136,7 +156,7 @@ Wed Jul  2 08:12:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(DEFAULT_SIGNED_CHAR): Likewise.
 	(ASM_OUTPUT_ASCII): Moved here from iris4.h.
 	Fix IRIX spelling.
-	
+
 	* config/mips/iris3.h: Remove, unused.
 	* config/mips/iris4.h: Likewise.
 
@@ -148,7 +168,7 @@ Wed Jul  2 08:12:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/mips/iris5.h: Move explicit includes ...
 	* config.gcc (mips-sgi-irix6*o32, mips-sgi-irix5*): ... here.
-	
+
 	* config/mips/iris6.h (MIPS_ISA_DEFAULT, MIPS_ABI_DEFAULT): Move ...
 	* config.gcc (mips-sgi-irix6*, mips-sgi-irix5cross64): ... here to
 	tm_defines.
@@ -159,7 +179,7 @@ Wed Jul  2 08:12:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/mips/iris6.h: Fix IRIX spelling.
 	(MULTILIB_DEFAULTS): Undef before redefinition.
-	
+
 	* config/mips/iris6.h: Move explicit includes ...
 	* config.gcc (mips-sgi-irix6*, mips-sgi-irix5cross64): ... here.
 
@@ -210,7 +230,7 @@ Wed Jul  2 02:12:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* dbxout.c (DBXOUT_DECR_NESTING): Emit pending bincls, if required.
 	(binclstatus): New.
-	(struct dbx_file): New members - bincl_status, pending_bincl_name and 
+	(struct dbx_file): New members - bincl_status, pending_bincl_name and
 	prev.
 	(pending_bincls): New.
 	(dbxout_init): Initialize new dbx_file members.
@@ -218,7 +238,7 @@ Wed Jul  2 02:12:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(emit_bincl_stab): New function.
 	(emit_pending_bincls): Same.
 	(emit_pending_bincls_if_required): Same.
-	(dbxout_end_source_file): Emit EINCL stab only if BINCL is  already 
+	(dbxout_end_source_file): Emit EINCL stab only if BINCL is  already
 	processed.
 	(dbxout_begin_block): Emit pending BINCL stabs.
 	(dbxout_end_block): Same.
@@ -229,7 +249,7 @@ Wed Jul  2 02:12:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(dbxout_symbol): Same.
 	(dbxout_symbol_location): Same.
 	(dbxout_parms): Same.
-	
+
 2003-07-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-semantics.c (genrtl_case_label): Fix format specifier bug.
@@ -472,7 +492,7 @@ Wed Jul  2 02:12:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	displacements.
 
 2003-06-30  Hartmut Penner  <hpenner@de.ibm.com>
-            Ulrich Weigand  <uweigand@de.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/2084.md: New file.
 	* config/s390/s390.md: Include it.
@@ -607,8 +627,8 @@ Mon Jun 30 15:36:29 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-30 Hartmut Penner  <hpenner@de.ibm.com>
 
-        * config/rs6000/rs6000.c (rs6000_split_altivec_in_gprs): New function.
-        (altivec_in_gprs_p): New function.
+	* config/rs6000/rs6000.c (rs6000_split_altivec_in_gprs): New function.
+	(altivec_in_gprs_p): New function.
 
 	* config/rs6000/rs6000-protos (rs6000_split_altivec_in_gprs): New
 	prototype.
@@ -730,7 +750,7 @@ Sun Jun 29 23:06:32 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        * pa.c (update_total_code_bytes): New function.
+	* pa.c (update_total_code_bytes): New function.
 	(last_address): Number of bytes output for a function and its
 	associated thunks.
 	(compute_frame_size): Use BITS_PER_UNIT.

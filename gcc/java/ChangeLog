@@ -1,3 +1,11 @@
+2003-07-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* jcf-path.c: Don't default-define PATH_SEPARATOR nor
+	DIR_SEPARATOR.
+	Use FILENAME_CMP.
+	* jcf-write.c: Don't default-define DIR_SEPARATOR.
+	* jcf.h: Delete COMPARE_FILENAMES definition.
+
 2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.c (java_init_options): Update prototype.

@@ -458,29 +458,15 @@ extern void abort (void);
 #define PATH_SEPARATOR ':'
 #endif
 
+/* Filename handling macros.  */
+#include "filenames.h"
+
+/* These should be phased out in favor of IS_DIR_SEPARATOR, where possible.  */
 #ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
-/* Define IS_DIR_SEPARATOR.  */
-#ifndef DIR_SEPARATOR_2
-# define IS_DIR_SEPARATOR(CH) ((CH) == DIR_SEPARATOR)
-#else /* DIR_SEPARATOR_2 */
-# define IS_DIR_SEPARATOR(CH) \
-	(((CH) == DIR_SEPARATOR) || ((CH) == DIR_SEPARATOR_2))
-#endif /* DIR_SEPARATOR_2 */
-
-/* Say how to test for an absolute pathname.  On Unix systems, this is if
-   it starts with a leading slash or a '$', the latter meaning the value of
-   an environment variable is to be used.  On machine with DOS-based
-   file systems, it is also absolute if it starts with a drive identifier.  */
-#ifdef HAVE_DOS_BASED_FILE_SYSTEM
-#define IS_ABSOLUTE_PATHNAME(STR) \
-  (IS_DIR_SEPARATOR ((STR)[0]) || (STR)[0] == '$' \
-   || ((STR)[0] != '\0' && (STR)[1] == ':' && IS_DIR_SEPARATOR ((STR)[2])))
-#else
-#define IS_ABSOLUTE_PATHNAME(STR) \
-  (IS_DIR_SEPARATOR ((STR)[0]) || (STR)[0] == '$')
+# define DIR_SEPARATOR '/'
+# ifdef HAVE_DOS_BASED_FILE_SYSTEM
+#  define DIR_SEPARATOR_2 '\\'
+# endif
 #endif
 
 /* Get libiberty declarations.  */

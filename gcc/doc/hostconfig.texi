@@ -47,35 +47,40 @@ common thing to do in this hook is to detect stack overflow.
 @cindex configuration file
 @cindex @file{xm-@var{machine}.h}
 
-GCC supports some filesystems that are very different to standard Unix
-filesystems.  These macros, defined in @file{xm-@var{machine}.h},
-let you choose.
+GCC needs to know a number of things about the semantics of the host
+machine's filesystem.  Filesystems with Unix and MS-DOS semantics are
+automatically detected.  For other systems, you can define the
+following macros in @file{xm-@var{machine}.h}.
 
 @ftable @code
-@item VMS
-Define this macro if the host system is VMS@.
-
 @item HAVE_DOS_BASED_FILE_SYSTEM
-Define this macro if the host file system obeys the semantics defined by
-MS-DOS instead of Unix.  DOS file systems are case insensitive, file
-specifications may begin with a drive letter, and both forward slash and
-backslash (@samp{/} and @samp{\}) are directory separators.  If you
-define this macro, you probably need to define the next three macros too.
-
-@item PATH_SEPARATOR
-If defined, this macro should expand to a character constant specifying
-the separator for elements of search paths.  The default value is a
-colon (@samp{:}).  DOS-based systems usually use semicolon (@samp{;}).
+This macro is automatically defined by @file{system.h} if the host
+file system obeys the semantics defined by MS-DOS instead of Unix.
+DOS file systems are case insensitive, file specifications may begin
+with a drive letter, and both forward slash and backslash (@samp{/}
+and @samp{\}) are directory separators.
 
 @item DIR_SEPARATOR
 @itemx DIR_SEPARATOR_2
 If defined, these macros expand to character constants specifying
-separators for directory names within a file specification.  They are
-used somewhat inconsistently throughout the compiler.  If your system
-behaves like Unix (only forward slash separates pathnames), define
-neither of them.  If your system behaves like DOS (both forward and
-backward slash can be used), define @code{DIR_SEPARATOR} to @samp{/}
-and @code{DIR_SEPARATOR_2} to @samp{\}.
+separators for directory names within a file specification.
+@file{system.h} will automatically give them appropriate values on
+Unix and MS-DOS file systems.  If your file system is neither of
+these, define one or both appropriately in @file{xm-@var{machine}.h}.
+
+However, operating systems like VMS, where constructing a pathname is
+more complicated than just stringing together directory names
+separated by a special character, should not define either of these
+macros.
+
+@item PATH_SEPARATOR
+If defined, this macro should expand to a character constant
+specifying the separator for elements of search paths.  The default
+value is a colon (@samp{:}).  DOS-based systems usually, but not
+always, use semicolon (@samp{;}).
+
+@item VMS
+Define this macro if the host system is VMS@.
 
 @item HOST_OBJECT_SUFFIX
 Define this macro to be a C string representing the suffix for object
