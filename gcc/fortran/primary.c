@@ -1273,7 +1273,7 @@ match_keyword_arg (gfc_actual_arglist * actual, gfc_actual_arglist * base)
   if (name[0] != '\0')
     {
       for (a = base; a; a = a->next)
-	if (a->name != NULL && strcmp (a->name, name) == 0)
+	if (strcmp (a->name, name) == 0)
 	  {
 	    gfc_error
 	      ("Keyword '%s' at %C has already appeared in the current "
@@ -1282,7 +1282,7 @@ match_keyword_arg (gfc_actual_arglist * actual, gfc_actual_arglist * base)
 	  }
     }
 
-  actual->name = gfc_get_string (name);
+  strcpy (actual->name, name);
   return MATCH_YES;
 
 cleanup:

@@ -655,8 +655,7 @@ compare_true_names (void * _t1, void * _t2)
   t1 = (true_name *) _t1;
   t2 = (true_name *) _t2;
 
-  c = ((t1->sym->module > t2->sym->module)
-       - (t1->sym->module < t2->sym->module));
+  c = strcmp (t1->sym->module, t2->sym->module);
   if (c != 0)
     return c;
 
@@ -674,8 +673,8 @@ find_true_name (const char *name, const char *module)
   gfc_symbol sym;
   int c;
 
-  sym.name = gfc_get_string (name);
-  sym.module = gfc_get_string (module);
+  strcpy (sym.name, name);
+  strcpy (sym.module, module);
   t.sym = &sym;
 
   p = true_name_root;
@@ -1342,33 +1341,8 @@ mio_allocated_string (const char *s)
 }
 
 
-/* Read or write a string that is in static memory.  */
-
-static void
-mio_pool_string (const char **stringp)
-{
-  /* TODO: one could write the string only once, and refer to it via a
-     fixup pointer.  */
-
-  /* As a special case we have to deal with a NULL string.  This
-     happens for the 'module' member of 'gfc_symbol's that are not in a
-     module.  We read / write these as the empty string.  */
-  if (iomode == IO_OUTPUT)
-    {
-      const char *p = *stringp == NULL ? "" : *stringp;
-      write_atom (ATOM_STRING, p);
-    }
-  else
-    {
-      require_atom (ATOM_STRING);
-      *stringp = atom_string[0] == '\0' ? NULL : gfc_get_string (atom_string);
-      gfc_free (atom_string);
-    }
-}
-
-
-/* Read or write a string that is inside of some already-allocated
-   structure.  */
+/* Read or write a string that is in static memory or inside of some
+   already-allocated structure.  */
 
 static void
 mio_internal_string (char *string)
@@ -1828,7 +1802,7 @@ mio_component_ref (gfc_component ** cp, gfc_symbol * sym)
     p->type = P_COMPONENT;
 
   if (iomode == IO_OUTPUT)
-    mio_pool_string (&(*cp)->name);
+    mio_internal_string ((*cp)->name);
   else
     {
       mio_internal_string (name);
@@ -1877,7 +1851,7 @@ mio_component (gfc_component * c)
   if (p->type == P_UNKNOWN)
     p->type = P_COMPONENT;
 
-  mio_pool_string (&c->name);
+  mio_internal_string (c->name);
   mio_typespec (&c->ts);
   mio_array_spec (&c->as);
 
@@ -1933,7 +1907,7 @@ mio_actual_arg (gfc_actual_arglist * a)
 {
 
   mio_lparen ();
-  mio_pool_string (&a->name);
+  mio_internal_string (a->name);
   mio_expr (&a->expr);
   mio_rparen ();
 }
@@ -2625,14 +2599,14 @@ mio_interface (gfc_interface ** ip)
 /* Save/restore a named operator interface.  */
 
 static void
-mio_symbol_interface (const char **name, const char **module,
+mio_symbol_interface (char *name, char *module,
 		      gfc_interface ** ip)
 {
 
   mio_lparen ();
 
-  mio_pool_string (name);
-  mio_pool_string (module);
+  mio_internal_string (name);
+  mio_internal_string (module);
 
   mio_interface_rest (ip);
 }
@@ -2910,7 +2884,7 @@ load_needed (pointer_info * p)
 	}
 
       sym = gfc_new_symbol (p->u.rsym.true_name, ns);
-      sym->module = gfc_get_string (p->u.rsym.module);
+      strcpy (sym->module, p->u.rsym.module);
 
       associate_integer_pointer (p, sym);
     }
@@ -3063,7 +3037,7 @@ read_module (void)
 	      sym = info->u.rsym.sym =
 		gfc_new_symbol (info->u.rsym.true_name, gfc_current_ns);
 
-	      sym->module = gfc_get_string (info->u.rsym.module);
+	      strcpy (sym->module, info->u.rsym.module);
 	    }
 
 	  st->n.sym = sym;
@@ -3196,7 +3170,7 @@ write_common (gfc_symtree *st)
   write_common(st->right);
 
   mio_lparen();
-  mio_pool_string(&st->name);
+  mio_internal_string(st->name);
 
   p = st->n.common;
   mio_symbol_ref(&p->head);
@@ -3216,9 +3190,9 @@ write_symbol (int n, gfc_symbol * sym)
     gfc_internal_error ("write_symbol(): bad module symbol '%s'", sym->name);
 
   mio_integer (&n);
-  mio_pool_string (&sym->name);
+  mio_internal_string (sym->name);
 
-  mio_pool_string (&sym->module);
+  mio_internal_string (sym->module);
   mio_pointer_ref (&sym->ns);
 
   mio_symbol (sym);
@@ -3243,8 +3217,8 @@ write_symbol0 (gfc_symtree * st)
   write_symbol0 (st->right);
 
   sym = st->n.sym;
-  if (sym->module == NULL)
-    sym->module = gfc_get_string (module_name);
+  if (sym->module[0] == '\0')
+    strcpy (sym->module, module_name);
 
   if (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
       && !sym->attr.subroutine && !sym->attr.function)
@@ -3291,8 +3265,8 @@ write_symbol1 (pointer_info * p)
 
   /* FIXME: This shouldn't be necessary, but it works around
      deficiencies in the module loader or/and symbol handling.  */
-  if (p->u.wsym.sym->module == NULL && p->u.wsym.sym->attr.dummy)
-    p->u.wsym.sym->module = gfc_get_string (module_name);
+  if (p->u.wsym.sym->module[0] == '\0' && p->u.wsym.sym->attr.dummy)
+    strcpy (p->u.wsym.sym->module, module_name);
 
   p->u.wsym.state = WRITTEN;
   write_symbol (p->integer, p->u.wsym.sym);
@@ -3307,13 +3281,12 @@ static void
 write_operator (gfc_user_op * uop)
 {
   static char nullstring[] = "";
-  const char *p = nullstring;
 
   if (uop->operator == NULL
       || !gfc_check_access (uop->access, uop->ns->default_access))
     return;
 
-  mio_symbol_interface (&uop->name, &p, &uop->operator);
+  mio_symbol_interface (uop->name, nullstring, &uop->operator);
 }
 
 
@@ -3327,7 +3300,7 @@ write_generic (gfc_symbol * sym)
       || !gfc_check_access (sym->attr.access, sym->ns->default_access))
     return;
 
-  mio_symbol_interface (&sym->name, &sym->module, &sym->generic);
+  mio_symbol_interface (sym->name, sym->module, &sym->generic);
 }
 
 
@@ -3350,7 +3323,7 @@ write_symtree (gfc_symtree * st)
   if (p == NULL)
     gfc_internal_error ("write_symtree(): Symbol not written");
 
-  mio_pool_string (&st->name);
+  mio_internal_string (st->name);
   mio_integer (&st->ambiguous);
   mio_integer (&p->integer);
 }

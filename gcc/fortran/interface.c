@@ -340,9 +340,8 @@ gfc_compare_types (gfc_typespec * ts1, gfc_typespec * ts2)
      true names and module names are the same and the module name is
      nonnull, then they are equal.  */
   if (strcmp (ts1->derived->name, ts2->derived->name) == 0
-      && ((ts1->derived->module == NULL && ts2->derived->module == NULL)
-	  || (ts1->derived != NULL && ts2->derived != NULL
-	      && strcmp (ts1->derived->module, ts2->derived->module) == 0)))
+      && ts1->derived->module[0] != '\0'
+      && strcmp (ts1->derived->module, ts2->derived->module) == 0)
     return 1;
 
   /* Compare type via the rules of the standard.  Both types must have
@@ -1166,7 +1165,7 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 
   for (a = actual; a; a = a->next, f = f->next)
     {
-      if (a->name != NULL)
+      if (a->name[0] != '\0')
 	{
 	  i = 0;
 	  for (f = formal; f; f = f->next, i++)

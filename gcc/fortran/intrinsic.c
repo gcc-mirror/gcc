@@ -37,8 +37,7 @@ int gfc_init_expr = 0;
 /* Pointers to an intrinsic function and its argument names that are being
    checked.  */
 
-const char *gfc_current_intrinsic;
-const char *gfc_current_intrinsic_arg[MAX_INTRINSIC_ARGS];
+char *gfc_current_intrinsic, *gfc_current_intrinsic_arg[MAX_INTRINSIC_ARGS];
 locus *gfc_current_intrinsic_where;
 
 static gfc_intrinsic_sym *functions, *subroutines, *conversion, *next_sym;
@@ -108,7 +107,7 @@ gfc_get_intrinsic_sub_symbol (const char * name)
 /* Return a pointer to the name of a conversion function given two
    typespecs.  */
 
-static const char *
+static char *
 conv_name (gfc_typespec * from, gfc_typespec * to)
 {
   static char name[30];
@@ -116,7 +115,7 @@ conv_name (gfc_typespec * from, gfc_typespec * to)
   sprintf (name, "__convert_%c%d_%c%d", gfc_type_letter (from->type),
 	   from->kind, gfc_type_letter (to->type), to->kind);
 
-  return gfc_get_string (name);
+  return name;
 }
 
 
@@ -128,7 +127,7 @@ static gfc_intrinsic_sym *
 find_conv (gfc_typespec * from, gfc_typespec * to)
 {
   gfc_intrinsic_sym *sym;
-  const char *target;
+  char *target;
   int i;
 
   target = conv_name (from, to);
@@ -214,7 +213,7 @@ add_sym (const char *name, int elemental, int actual_ok ATTRIBUTE_UNUSED,
 	 bt type, int kind, int standard, gfc_check_f check,
 	 gfc_simplify_f simplify, gfc_resolve_f resolve, ...)
 {
-  char buf[GFC_MAX_SYMBOL_LEN + 11]; /* 10 for '_gfortran_', 1 for '\0'  */
+
   int optional, first_flag;
   va_list argp;
 
@@ -234,11 +233,10 @@ add_sym (const char *name, int elemental, int actual_ok ATTRIBUTE_UNUSED,
       break;
 
     case SZ_NOTHING:
-      next_sym->name = gfc_get_string (name);
+      strcpy (next_sym->name, name);
 
-      strcpy (buf, "_gfortran_");
-      strcat (buf, name);
-      next_sym->lib_name = gfc_get_string (buf);
+      strcpy (next_sym->lib_name, "_gfortran_");
+      strcat (next_sym->lib_name, name);
 
       next_sym->elemental = elemental;
       next_sym->ts.type = type;
@@ -787,11 +785,11 @@ make_generic (const char *name, gfc_generic_isym_id generic_id, int standard)
   g->generic = 1;
   g->specific = 1;
   g->generic_id = generic_id;
-  if ((g + 1)->name != NULL)
+  if ((g + 1)->name[0] != '\0')
     g->specific_head = g + 1;
   g++;
 
-  while (g->name != NULL)
+  while (g->name[0] != '\0')
     {
       g->next = g + 1;
       g->specific = 1;
@@ -830,7 +828,7 @@ make_alias (const char *name, int standard)
 
     case SZ_NOTHING:
       next_sym[0] = next_sym[-1];
-      next_sym->name = gfc_get_string (name);
+      strcpy (next_sym->name, name);
       next_sym++;
       break;
 
@@ -2154,8 +2152,8 @@ add_conv (bt from_type, int from_kind, bt to_type, int to_kind,
 
   sym = conversion + nconv;
 
-  sym->name =  conv_name (&from, &to);
-  sym->lib_name = sym->name;
+  strcpy (sym->name, conv_name (&from, &to));
+  strcpy (sym->lib_name, sym->name);
   sym->simplify.cc = simplify;
   sym->elemental = 1;
   sym->ts = to;
@@ -2361,7 +2359,7 @@ sort_actual (const char *name, gfc_actual_arglist ** ap,
       if (a == NULL)
 	goto optional;
 
-      if (a->name != NULL)
+      if (a->name[0] != '\0')
 	goto keywords;
 
       f->actual = a;

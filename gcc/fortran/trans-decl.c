@@ -272,7 +272,7 @@ gfc_sym_mangled_identifier (gfc_symbol * sym)
 {
   char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
 
-  if (sym->module == NULL)
+  if (sym->module[0] == 0)
     return gfc_sym_identifier (sym);
   else
     {
@@ -290,8 +290,8 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
   int has_underscore;
   char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
 
-  if (sym->module == NULL || sym->attr.proc == PROC_EXTERNAL
-      || (sym->module != NULL && sym->attr.if_source == IFSRC_IFBODY))
+  if (sym->module[0] == 0 || sym->attr.proc == PROC_EXTERNAL
+      || (sym->module[0] != 0 && sym->attr.if_source == IFSRC_IFBODY))
     {
       if (strcmp (sym->name, "MAIN__") == 0
 	  || sym->attr.proc == PROC_INTRINSIC)
@@ -404,7 +404,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       DECL_EXTERNAL (decl) = 1;
       TREE_PUBLIC (decl) = 1;
     }
-  else if (sym->module && !sym->attr.result && !sym->attr.dummy)
+  else if (sym->module[0] && !sym->attr.result && !sym->attr.dummy)
     {
       /* TODO: Don't set sym->module for result or dummy variables.  */
       gcc_assert (current_function_decl == NULL_TREE);
@@ -766,7 +766,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Symbols from modules should have their assembler names mangled.
      This is done here rather than in gfc_finish_var_decl because it
      is different for string length variables.  */
-  if (sym->module)
+  if (sym->module[0])
     SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_identifier (sym));
 
   if (sym->attr.dimension)
@@ -808,7 +808,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	{
 	  char name[GFC_MAX_MANGLED_SYMBOL_LEN + 2];
 
-	  if (sym->module)
+	  if (sym->module[0])
 	    {
 	      /* Also prefix the mangled name for symbols from modules.  */
 	      strcpy (&name[1], sym->name);
