@@ -1,3 +1,11 @@
+Tue Sep  9 23:16:35 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* Makefile (all): Remove sub-all.
+	(stmp-sub-all): New target. Renamed from sub-all.
+	(info, texinfo): Also depend on stmp-sub-all.
+	(clean): Also remove stmp*.
+	(maintainer-clean): New target. Same as realclean.
+
 Fri Sep  5 09:07:33 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* install-sh: Delete duplicate install script.
