@@ -1332,6 +1332,17 @@ do { char dstr[30];					\
     }						\
   while (0)
 
+/* This is how to output a reference to a user-level label named NAME.
+   `assemble_name' uses this.  */
+
+#undef ASM_OUTPUT_LABELREF
+#define ASM_OUTPUT_LABELREF(FILE, NAME)           \
+  do {                                            \
+  char* real_name;                                \
+  STRIP_NAME_ENCODING (real_name, (NAME));        \
+  asm_fprintf (FILE, "%U%s", real_name);          \
+  } while (0)
+
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.

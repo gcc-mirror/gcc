@@ -1,3 +1,7 @@
+2001-07-19  Catherine Moore  <clm@cygnus.com>
+
+        * config/v850/v850.h (ASM_OUTPUT_LABELREF): Restore. 
+
 2001-07-19  Geoffrey Keating  <geoffk@redhat.com>
 
 	* reload1.c (eliminate_regs_in_insn): When updating a set
