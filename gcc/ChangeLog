@@ -1,3 +1,8 @@
+2000-03-12  Neil Booth  <NeilB@earthling.net>
+
+	* cppinit.c (cpp_start_read): Update indirect function
+	call to K&R C.
+
 Sat Mar 11 16:18:12 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.h (ADDITIONAL_REGISTER_NAMES): Fix typo in loc79

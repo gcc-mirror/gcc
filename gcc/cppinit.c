@@ -924,7 +924,7 @@ cpp_start_read (pfile, fname)
   p = opts->pending->directive_head;
   while (p)
     {
-      p->handler (pfile, p->arg);
+      (*p->handler) (pfile, p->arg);
       q = p->next;
       free (p);
       p = q;
