@@ -1,3 +1,8 @@
+Tue Mar  2 16:45:31 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* unroll.c (copy_loop_body): Don't make extra copies of
+	NOTE_INSN_LOOP_CONT notes.
+
 Tue Mar  2 07:44:56 1999  Mark Mitchell  <mark@markmitchell.com>
 
 	* tree.c (save_tree_status): Don't treat functions with no context
