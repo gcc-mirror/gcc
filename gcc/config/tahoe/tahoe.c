@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "output.h"
 #include "insn-attr.h"
+#include "ggc.h"
 
 /* On tahoe, you have to go to memory to convert a register
    from sub-word to word.  */
@@ -50,8 +51,11 @@ extensible_operand (op, mode)
        || (GET_CODE (op) == SUBREG
 	   && GET_CODE (SUBREG_REG (op)) == REG))
       && tahoe_reg_conversion_loc == 0)
-    tahoe_reg_conversion_loc
-      = assign_stack_local (SImode, GET_MODE_SIZE (SImode));
+    {
+      tahoe_reg_conversion_loc
+	= assign_stack_local (SImode, GET_MODE_SIZE (SImode));
+      ggc_add_rtx_root (&tahoe_reg_conversion_loc, 1);
+    }
 
   return general_operand (op, mode);
 }
