@@ -2829,7 +2829,7 @@ split_address_cost (struct ivopts_data *data,
   int unsignedp, volatilep;
   
   core = get_inner_reference (addr, &bitsize, &bitpos, &toffset, &mode,
-			      &unsignedp, &volatilep);
+			      &unsignedp, &volatilep, false);
 
   if (toffset != 0
       || bitpos % BITS_PER_UNIT != 0

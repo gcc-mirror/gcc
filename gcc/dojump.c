@@ -315,7 +315,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
         /* Get description of this reference.  We don't actually care
            about the underlying object here.  */
         get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode,
-                             &unsignedp, &volatilep);
+                             &unsignedp, &volatilep, false);
 
         type = lang_hooks.types.type_for_size (bitsize, unsignedp);
         if (! SLOW_BYTE_ACCESS

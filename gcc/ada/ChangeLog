@@ -1,3 +1,8 @@
+2004-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+ 
+	* trans.c (Attribute_to_gnu): Adjust call to get_inner_reference.
+	* utils2.c (build_unary_op): Likewise.
+
 2004-12-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* trans.c (mark_visited): Set TYPE_SIZES_GIMPLIFIED.
