@@ -867,9 +867,8 @@ Optional Features:
   --enable-checking=LIST
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
-			  Categories are: none,assert,fold,gc,gcac,misc,
-			  rtlflag,rtl,tree,valgrind;
-			  default is assert,gc,misc,rtlflag,tree
+			  Categories are: assert,fold,gc,gcac,misc,
+			  rtlflag,rtl,tree,valgrind,release,yes,all;
   --enable-mapped-location   location_t is fileline integer cookie
   --enable-coverage=LEVEL
 			  enable compiler's code coverage collection.
@@ -3928,54 +3927,56 @@ fi
 # Check whether --enable-checking or --disable-checking was given.
 if test "${enable_checking+set}" = set; then
   enableval="$enable_checking"
-  ac_checking=
+  ac_checking_flags="${enableval}"
+else
+
+# Determine the default checks.
+if test x$is_release = x ; then
+  ac_checking_flags=yes
+else
+  ac_checking_flags=release
+fi
+fi;
+ac_assert_checking=1
+ac_checking=
 ac_tree_checking=
 ac_rtl_checking=
 ac_rtlflag_checking=
 ac_gc_checking=
 ac_gc_always_collect=
 ac_fold_checking=
-ac_assert_checking=
-case "${enableval}" in
-yes)	ac_checking=1 ; ac_tree_checking=1 ; ac_gc_checking=1 ;
-	ac_rtlflag_checking=1 ; ac_assert_checking=1 ;;
-no)	;;
-*)	IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
-	set fnord $enableval; shift
-	IFS="$ac_save_IFS"
-	ac_assert_checking=1
-	for check
-	do
-		case $check in
-		assert) ac_assert_checking=1 ;;
-		fold)	ac_fold_checking=1 ;;
-		gc)	ac_gc_checking=1 ;;
-		gcac)	ac_gc_always_collect=1 ;;
-		misc)	ac_checking=1 ;;
-		rtlflag)	ac_rtlflag_checking=1 ;;
-		rtl)	ac_rtl_checking=1 ;;
-		tree)	ac_tree_checking=1 ;;
-		valgrind)	ac_checking_valgrind=1 ;;
-		*)	{ { echo "$as_me:$LINENO: error: unknown check category $check" >&5
+IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
+for check in $ac_checking_flags
+do
+	case $check in
+	yes)		ac_assert_checking=1 ; ac_checking=1 ;
+			ac_tree_checking=1 ; ac_gc_checking=1 ;
+			ac_rtlflag_checking=1 ;;
+	no)		ac_assert_checking= ; ac_checking= ;
+			ac_tree_checking= ; ac_rtl_checking= ;
+			ac_rtlflag_checking= ; ac_gc_checking= ;
+			ac_gc_always_collect= ; ac_fold_checking= ;;
+	all)		ac_assert_checking=1 ; ac_checking=1 ;
+			ac_tree_checking=1 ; ac_rtl_checking=1 ;
+			ac_rtlflag_checking=1 ; ac_gc_checking=1 ;
+			ac_gc_always_collect=1 ; ac_fold_checking=1 ;;
+        release)	ac_assert_checking=1 ;;
+	assert) 	ac_assert_checking=1 ;;
+	fold)		ac_fold_checking=1 ;;
+	gc)		ac_gc_checking=1 ;;
+	gcac)		ac_gc_always_collect=1 ;;
+	misc)		ac_checking=1 ;;
+	rtlflag)	ac_rtlflag_checking=1 ;;
+	rtl)		ac_rtl_checking=1 ;;
+	tree)		ac_tree_checking=1 ;;
+	valgrind)	ac_checking_valgrind=1 ;;
+	*)	{ { echo "$as_me:$LINENO: error: unknown check category $check" >&5
 echo "$as_me: error: unknown check category $check" >&2;}
    { (exit 1); exit 1; }; } ;;
-		esac
-	done
-	;;
-esac
+	esac
+done
+IFS="$ac_save_IFS"
 
-else
-
-# Determine the default checks.
-if test x$is_release = x ; then
-  # Enable some checks for development versions of GCC
-  ac_assert_checking=1;
-  ac_checking=1; ac_tree_checking=1; ac_gc_checking=1; ac_rtlflag_checking=1;
-else
-  # Disable all but assertions for release versions of GCC.
-  ac_assert_checking=1;
-fi
-fi;
 nocommon_flag=""
 if test x$ac_checking != x ; then
 
@@ -5290,7 +5291,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:5293: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:5294: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
