@@ -178,11 +178,13 @@ struct attr_desc
 {
   char *name;			/* Name of attribute.  */
   struct attr_desc *next;	/* Next attribute.  */
-  int is_numeric;		/* Values of this attribute are numeric.  */
-  int negative_ok;		/* Allow negative numeric values.  */
-  int unsigned_p;		/* Make the output function unsigned int.  */
-  int is_const;			/* Attribute value constant for each run.  */
-  int is_special;		/* Don't call `write_attr_set'.  */
+  unsigned is_numeric	: 1;	/* Values of this attribute are numeric.  */
+  unsigned negative_ok	: 1;	/* Allow negative numeric values.  */
+  unsigned unsigned_p	: 1;	/* Make the output function unsigned int.  */
+  unsigned is_const	: 1;	/* Attribute value constant for each run.  */
+  unsigned is_special	: 1;	/* Don't call `write_attr_set'.  */
+  unsigned func_units_p	: 1;	/* this is the function_units attribute */
+  unsigned blockage_p	: 1;	/* this is the blockage range function */
   struct attr_value *first_value; /* First value of this attribute.  */
   struct attr_value *default_val; /* Default value for this attribute.  */
 };
@@ -435,6 +437,7 @@ static void write_attr_set	PROTO((struct attr_desc *, int, rtx, char *,
 				       char *, rtx, int, int));
 static void write_attr_case	PROTO((struct attr_desc *, struct attr_value *,
 				       int, char *, char *, int, rtx));
+static void write_unit_name	PROTO((char *, int, char *));
 static void write_attr_valueq	PROTO((struct attr_desc *, char *));
 static void write_attr_value	PROTO((struct attr_desc *, rtx));
 static void write_upcase	PROTO((char *));
@@ -1909,7 +1912,7 @@ expand_units ()
       unitsmask = attr_rtx (FFS, unitsmask);
     }
 
-  make_internal_attr ("*function_units_used", unitsmask, 2);
+  make_internal_attr ("*function_units_used", unitsmask, 10);
 
   /* Create an array of ops for each unit.  Add an extra unit for the
      result_ready_cost function that has the ops of all other units.  */
@@ -2128,7 +2131,7 @@ expand_units ()
 
 	      str = attr_printf (strlen (unit->name) + sizeof ("*_unit_blockage_range"),
 				 "*%s_unit_blockage_range", unit->name);
-	      make_internal_attr (str, newexp, 4);
+	      make_internal_attr (str, newexp, 20);
 	    }
 
 	  str = attr_printf (strlen (unit->name) + sizeof ("*_unit_ready_cost"),
@@ -5177,16 +5180,61 @@ write_toplevel_expr (p)
 /* Utilities to write names in various forms.  */
 
 static void
+write_unit_name (prefix, num, suffix)
+     char *prefix;
+     int num;
+     char *suffix;
+{
+  struct function_unit *unit;
+
+  for (unit = units; unit; unit = unit->next)
+    if (unit->num == num)
+      {
+	printf ("%s%s%s", prefix, unit->name, suffix);
+	return;
+      }
+
+  printf ("%s<unknown>%s", prefix, suffix);
+}
+
+static void
 write_attr_valueq (attr, s)
      struct attr_desc *attr;
      char *s;
 {
   if (attr->is_numeric)
     {
-      printf ("%s", s);
-      /* Make the blockage range values easier to read.  */
-      if (strlen (s) > 1)
-	printf (" /* 0x%x */", atoi (s));
+      int num = atoi (s);
+
+      printf ("%d", num);
+
+      /* Make the blockage range values and function units used values easier
+         to read.  */
+      if (attr->func_units_p)
+	{
+	  if (num == -1)
+	    printf (" /* units: none */");
+	  else if (num >= 0)
+	    write_unit_name (" /* units: ", num, " */");
+	  else
+	    {
+	      int i;
+	      char *sep = " /* units: ";
+	      for (i = 0, num = ~num; num; i++, num >>= 1)
+		if (num & 1)
+		  {
+		    write_unit_name (sep, i, (num == 1) ? " */" : "");
+		    sep = ", ";
+		  }
+	    }
+	}
+
+      else if (attr->blockage_p)
+	printf (" /* min %d, max %d */", num >> (HOST_BITS_PER_INT / 2),
+		num & ((1 << (HOST_BITS_PER_INT / 2)) - 1));
+
+      else if (num > 9 || num < 0)
+	printf (" /* 0x%x */", num);
     }
   else
     {
@@ -5626,6 +5674,8 @@ make_internal_attr (name, value, special)
   attr->is_special = (special & 1) != 0;
   attr->negative_ok = (special & 2) != 0;
   attr->unsigned_p = (special & 4) != 0;
+  attr->func_units_p = (special & 8) != 0;
+  attr->blockage_p = (special & 16) != 0;
   attr->default_val = get_attr_value (value, attr, -2);
 }
 
