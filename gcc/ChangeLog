@@ -1,3 +1,21 @@
+2002-02-17  Philipp Thomas  <pthomas@suse.de>
+
+	* final.c (output_operand_lossage): Changed to accept
+	printf style arguments. Change calls where necessary.
+	* output.h (output_operand_lossage): Change declaration
+	accordingly. Update copyright.
+	* config/arc/arc.c config/fr30/fr30.c config/m32r/m32r.c
+	config/m88k/m88k.c : Adapt all calls to output_operand_lossage.
+	Update copyright date where necessary.
+	
+	* config/i386/i386.c (print_operand): Likewise. Remove use of
+	sprintf.
+
+	* config/cris/cris.c (cris_operand_lossage): Likewise.
+	Rename parameter so that exgettext recognizes it as
+	translatable message.
+	(LOSE_AND_RETURN): Rename parameter to msgid.
+
 2002-02-17  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h (CONDITIONAL_REGISTER_USAGE): Replace a

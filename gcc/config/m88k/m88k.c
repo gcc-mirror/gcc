@@ -2879,7 +2879,7 @@ print_operand (file, x, code)
   if (sequencep)
     {
       if (code < 'B' || code > 'E')
-	output_operand_lossage ("%R not followed by %B/C/D/E");
+	output_operand_lossage ("%%R not followed by %%B/C/D/E");
       if (reversep)
 	xc = reverse_condition (xc);
       sequencep = 0;
@@ -2947,43 +2947,43 @@ print_operand (file, x, code)
       value >>= 16;
     case 'x': /* print the lower 16 bits of the integer constant in hex */
       if (xc != CONST_INT)
-	output_operand_lossage ("invalid %x/X value");
+	output_operand_lossage ("invalid %%x/X value");
       fprintf (file, "0x%x", value & 0xffff); return;
 
     case 'H': /* print the low 16 bits of the negated integer constant */
       if (xc != CONST_INT)
-	output_operand_lossage ("invalid %H value");
+	output_operand_lossage ("invalid %%H value");
       value = -value;
     case 'h': /* print the register or low 16 bits of the integer constant */
       if (xc == REG)
 	goto reg;
       if (xc != CONST_INT)
-	output_operand_lossage ("invalid %h value");
+	output_operand_lossage ("invalid %%h value");
       fprintf (file, "%d", value & 0xffff);
       return;
 
     case 'Q': /* print the low 8 bits of the negated integer constant */
       if (xc != CONST_INT)
-	output_operand_lossage ("invalid %Q value");
+	output_operand_lossage ("invalid %%Q value");
       value = -value;
     case 'q': /* print the register or low 8 bits of the integer constant */
       if (xc == REG)
 	goto reg;
       if (xc != CONST_INT)
-	output_operand_lossage ("invalid %q value");
+	output_operand_lossage ("invalid %%q value");
       fprintf (file, "%d", value & 0xff);
       return;
 
     case 'w': /* print the integer constant (X == 32 ? 0 : 32 - X) */
       if (xc != CONST_INT)
-	output_operand_lossage ("invalid %o value");
+	output_operand_lossage ("invalid %%o value");
       fprintf (file, "%d", value == 32 ? 0 : 32 - value);
       return;
 
     case 'p': /* print the logarithm of the integer constant */
       if (xc != CONST_INT
 	  || (value = exact_log2 (value)) < 0)
-	output_operand_lossage ("invalid %p value");
+	output_operand_lossage ("invalid %%p value");
       fprintf (file, "%d", value);
       return;
 
@@ -2996,12 +2996,12 @@ print_operand (file, x, code)
 	register int top, bottom;
 
 	if (xc != CONST_INT)
-	  output_operand_lossage ("invalid %s/S value");
+	  output_operand_lossage ("invalid %%s/S value");
 	/* All the "one" bits must be contiguous.  If so, MASK will be
 	   a power of two or zero.  */
 	mask = (uval | (uval - 1)) + 1;
 	if (!(uval && POWER_OF_2_or_0 (mask)))
-	  output_operand_lossage ("invalid %s/S value");
+	  output_operand_lossage ("invalid %%s/S value");
 	top = mask ? exact_log2 (mask) : 32;
 	bottom = exact_log2 (uval & ~(uval - 1));
 	fprintf (file,"%d<%d>", top - bottom, bottom);
@@ -3012,7 +3012,7 @@ print_operand (file, x, code)
       if (xc == LABEL_REF)
 	output_addr_const (file, x);
       else if (xc != PC)
-	output_operand_lossage ("invalid %P operand");
+	output_operand_lossage ("invalid %%P operand");
       return;
 
     case 'L': /* print 0 or 1 if operand is label_ref and then...  */
@@ -3043,7 +3043,7 @@ print_operand (file, x, code)
 	case LE: fputs ("le0", file); return;
 	case LT: fputs ("lt0", file); return;
 	case GE: fputs ("ge0", file); return;
-	default: output_operand_lossage ("invalid %B value");
+	default: output_operand_lossage ("invalid %%B value");
 	}
 
     case 'C': /* bb0/bb1 branch values for comparisons */
@@ -3060,7 +3060,7 @@ print_operand (file, x, code)
 	case LEU: fputs ("ls", file); return;
 	case LTU: fputs ("lo", file); return;
 	case GEU: fputs ("hs", file); return;
-	default:  output_operand_lossage ("invalid %C value");
+	default:  output_operand_lossage ("invalid %%C value");
 	}
 
     case 'D': /* bcnd branch values for float comparisons */
@@ -3073,7 +3073,7 @@ print_operand (file, x, code)
 	case LE: fputs ("0xe", file); return;
 	case LT: fputs ("0x4", file); return;
 	case GE: fputs ("0xb", file); return;
-	default: output_operand_lossage ("invalid %D value");
+	default: output_operand_lossage ("invalid %%D value");
 	}
 
     case 'E': /* bcnd branch values for special integers */
@@ -3081,12 +3081,12 @@ print_operand (file, x, code)
 	{
 	case EQ: fputs ("0x8", file); return;
 	case NE: fputs ("0x7", file); return;
-	default: output_operand_lossage ("invalid %E value");
+	default: output_operand_lossage ("invalid %%E value");
 	}
 
     case 'd': /* second register of a two register pair */
       if (xc != REG)
-	output_operand_lossage ("`%d' operand isn't a register");
+	output_operand_lossage ("`%%d' operand isn't a register");
       fputs (reg_names[REGNO (x) + 1], file);
       return;
 
@@ -3097,7 +3097,7 @@ print_operand (file, x, code)
 	  return;
 	}
       else if (xc != REG)
-	output_operand_lossage ("invalid %r value");
+	output_operand_lossage ("invalid %%r value");
     case 0:
     name:
       if (xc == REG)

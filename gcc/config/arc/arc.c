@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
-   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -1706,7 +1706,7 @@ arc_print_operand (file, x, code)
 	  fputc (']', file);
 	}
       else
-	output_operand_lossage ("invalid operand to %R code");
+	output_operand_lossage ("invalid operand to %%R code");
       return;
     case 'S' :
       if ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))
@@ -1738,7 +1738,7 @@ arc_print_operand (file, x, code)
 		   (long)(code == 'L' ? INTVAL (first) : INTVAL (second)));
 	}
       else
-	output_operand_lossage ("invalid operand to %H/%L code");
+	output_operand_lossage ("invalid operand to %%H/%%L code");
       return;
     case 'A' :
       {
@@ -1762,7 +1762,7 @@ arc_print_operand (file, x, code)
 	    fputs (".a", file);
 	}
       else
-	output_operand_lossage ("invalid operand to %U code");
+	output_operand_lossage ("invalid operand to %%U code");
       return;
     case 'V' :
       /* Output cache bypass indicator for a load/store insn.  Volatile memory
@@ -1773,7 +1773,7 @@ arc_print_operand (file, x, code)
 	    fputs (".di", file);
 	}
       else
-	output_operand_lossage ("invalid operand to %V code");
+	output_operand_lossage ("invalid operand to %%V code");
       return;
     case 0 :
       /* Do nothing special.  */

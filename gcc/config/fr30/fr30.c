@@ -1,5 +1,5 @@
 /* FR30 specific functions.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GNU CC.
@@ -480,7 +480,7 @@ fr30_print_operand (file, x, code)
       /* Compute the register name of the second register in a hi/lo
 	 register pair.  */
       if (GET_CODE (x) != REG)
-	output_operand_lossage ("fr30_print_operand: unrecognized %p code");
+	output_operand_lossage ("fr30_print_operand: unrecognized %%p code");
       else
 	fprintf (file, "r%d", REGNO (x) + 1);
       return;
@@ -500,7 +500,7 @@ fr30_print_operand (file, x, code)
 	case GTU: fprintf (file, "hi"); break;
 	case GEU: fprintf (file, "nc");  break;
 	default:
-	  output_operand_lossage ("fr30_print_operand: unrecognized %b code");
+	  output_operand_lossage ("fr30_print_operand: unrecognized %%b code");
 	  break;
 	}
       return;
@@ -521,7 +521,7 @@ fr30_print_operand (file, x, code)
 	case GTU: fprintf (file, "ls"); break;
 	case GEU: fprintf (file, "c"); break;
 	default:
-	  output_operand_lossage ("fr30_print_operand: unrecognized %B code");
+	  output_operand_lossage ("fr30_print_operand: unrecognized %%B code");
 	  break;
 	}
       return;
@@ -529,7 +529,7 @@ fr30_print_operand (file, x, code)
     case 'A':
       /* Print a signed byte value as an unsigned value.  */
       if (GET_CODE (x) != CONST_INT)
-	output_operand_lossage ("fr30_print_operand: invalid operand to %A code");
+	output_operand_lossage ("fr30_print_operand: invalid operand to %%A code");
       else
 	{
 	  HOST_WIDE_INT val;
@@ -546,14 +546,14 @@ fr30_print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT
 	  || INTVAL (x) < 16
 	  || INTVAL (x) > 32)
-	output_operand_lossage ("fr30_print_operand: invalid %x code");
+	output_operand_lossage ("fr30_print_operand: invalid %%x code");
       else
 	fprintf (file, "%d", INTVAL (x) - 16);
       return;
 
     case 'F':
       if (GET_CODE (x) != CONST_DOUBLE)
-	output_operand_lossage ("fr30_print_operand: invalid %F code");
+	output_operand_lossage ("fr30_print_operand: invalid %%F code");
       else
 	{
 	  REAL_VALUE_TYPE d;

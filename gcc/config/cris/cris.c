@@ -55,10 +55,10 @@ Boston, MA 02111-1307, USA.  */
 	abort ();						\
     } while (0)
 
-#define LOSE_AND_RETURN(msg, x)			\
+#define LOSE_AND_RETURN(msgid, x)			\
   do						\
     {						\
-      cris_operand_lossage (msg, x);		\
+      cris_operand_lossage (msgid, x);		\
       return;					\
     } while (0)
 
@@ -507,12 +507,12 @@ cris_op_str (x)
    categorization of the error.  */
 
 static void
-cris_operand_lossage (msg, op)
-     const char *msg;
+cris_operand_lossage (msgid, op)
+     const char *msgid;
      rtx op;
 {
   debug_rtx (op);
-  output_operand_lossage (msg);
+  output_operand_lossage ("%s", msgid);
 }
 
 /* Print an index part of an address to file.  */
