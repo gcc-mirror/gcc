@@ -1365,7 +1365,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 
       pred = insn_data[(int) CODE_FOR_allocate_stack].operand[1].predicate;
       if (pred && ! ((*pred) (size, mode)))
-	size = copy_to_mode_reg (mode, size);
+	size = copy_to_mode_reg (mode, convert_to_mode (mode, size, 1));
 
       emit_insn (gen_allocate_stack (target, size));
     }
