@@ -561,6 +561,7 @@ extern int target_flags;
   {"fmovd",  	FMOVD_BIT, "" },		\
   {"hitachi",	HITACHI_BIT, "Follow Renesas (formerly Hitachi) / SuperH calling conventions" },		\
   {"renesas",	HITACHI_BIT, "Follow Renesas (formerly Hitachi) / SuperH calling conventions" },		\
+  {"no-renesas",-HITACHI_BIT,"Follow the GCC calling conventions" },	\
   {"nomacsave", NOMACSAVE_BIT, "Mark MAC register as call-clobbered" },		\
   {"ieee",  	IEEE_BIT, "Increase the IEEE compliance for floating-point code" },			\
   {"isize", 	ISIZE_BIT, "" },		\
