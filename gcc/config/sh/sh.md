@@ -2961,7 +2961,15 @@
 		   (match_dup 2))
 	      (clobber (scratch:SI))])]
   ""
-  "")
+  "
+{
+  if (TARGET_SH3E)
+    {
+      emit_insn (gen_movsf_ie (operands[2], operands[1], get_fpscr_rtx ()));
+      emit_insn (gen_movsf_ie (operands[0], operands[2], get_fpscr_rtx ()));
+      DONE;
+    }
+}")
 
 ;; If the output is a register and the input is memory or a register, we have
 ;; to be careful and see which word needs to be loaded first.  
