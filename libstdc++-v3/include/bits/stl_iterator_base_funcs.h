@@ -107,7 +107,7 @@ distance(_InputIterator __first, _InputIterator __last)
 }
 
 template <class _InputIter, class _Distance>
-inline void __advance_InputIter& __i, _Distance __n, input_iterator_tag)
+inline void __advance(_InputIter& __i, _Distance __n, input_iterator_tag)
 {
   // concept requirements
   __glibcpp_function_requires(_InputIteratorConcept<_InputIter>);
