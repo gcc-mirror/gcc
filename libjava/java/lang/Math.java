@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.util.Random;
 import gnu.classpath.Configuration;
+
+import java.util.Random;
 
 /**
  * Helper class containing useful mathematical functions and constants.
@@ -50,7 +51,7 @@ import gnu.classpath.Configuration;
  *
  * @author Paul Fisher
  * @author John Keiser
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.0
  */
 public final class Math

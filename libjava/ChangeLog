@@ -1,3 +1,15 @@
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/Math.java,
+	java/lang/Package.java,
+	java/lang/Runtime.java,
+	java/lang/StrictMath.java,
+	java/lang/System.java,
+	java/lang/Thread.java,
+	java/lang/ThreadLocal.java,
+	java/lang/Void.java:
+	Reworked import statements, HTML in javadocs and modifier orders.
+
 2004-10-18  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/util/Timer.java
