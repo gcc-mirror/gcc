@@ -1463,6 +1463,17 @@ build_external_ref (id, fun)
       ref = DECL_INITIAL (ref);
       TREE_CONSTANT (ref) = 1;
     }
+  else if (current_function_decl != 0
+	   && DECL_CONTEXT (current_function_decl) != 0
+	   && (TREE_CODE (ref) == VAR_DECL
+	       || TREE_CODE (ref) == PARM_DECL
+	       || TREE_CODE (ref) == FUNCTION_DECL))
+    {
+      tree context = decl_function_context (ref);
+    
+      if (context != 0 && context != current_function_decl)
+	DECL_NONLOCAL (ref) = 1;
+    }
 
   return ref;
 }

@@ -1,3 +1,12 @@
+2003-04-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/7675
+	* c-typeck.c (build_external_ref): Set the DECL_NONLOCAL flag
+	on VAR_DECL, PARM_DECL and FUNCTION_DECL from within
+	nested functions if they refer to declarations from parent functions.
+	* stmt.c (expand_decl): Don't put automatic variables in registers
+	if the DECL_NONLOCAL flag is set.
+
 2003-04-18  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcse.c (compute_ld_motion_mems): For MEM destinations, only

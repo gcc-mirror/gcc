@@ -1,3 +1,7 @@
+2003-04-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20030418-1.c: New test.
+
 2003-04-17  Janis Johnson  <janis187@us.ibm.com>
 
 	* README.compat: Remove; content moved to doc/sourcebuild.texi.
