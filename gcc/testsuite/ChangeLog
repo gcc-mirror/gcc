@@ -1,3 +1,12 @@
+2004-11-24  Devang Patel  <dpatel@apple.com>
+
+	PR/18555
+	* gcc.dg/cpp/isysroot-1.c: New test.
+	* gcc.dg/cpp/usr/include/stdio.h: New file.
+	* gcc.dg/cpp/isysroot-2.c: New test.
+	* gcc.dg/cpp/System/Library/Framework/Carbon.framework/Headers/Carbon.h:
+	New file.
+
 2004-11-24  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/8929
