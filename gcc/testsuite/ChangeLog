@@ -1,3 +1,17 @@
+2004-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lib/target-supports.exp (check_profiling_available): Check
+	argument to determine whether we support a profiling type.
+	* lib/gcc-dg.exp (dg-require-profiling): Pass argument to
+	check_profiling_available.
+	* g++.dg/bprob/bprob.exp: Likewise
+	* g77.dg/bprob/bprob.exp: Likewise.
+	* gcc.misc-tests/bprob.exp: Likewise.
+	* g++.old-deja/g++.law/profile1.C: Pass profiling type to
+	dg-require-profiling and delete expected error handling.
+	* gcc.dg/20021014-1.c: Likewise.
+	* gcc.dg/nest.c: Likewise.
+
 2004-02-20  Falk Hueffner  <falk@debian.org>
 
 	PR target/14201
