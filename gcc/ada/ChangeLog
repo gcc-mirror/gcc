@@ -1,3 +1,8 @@
+2004-11-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* ada-tree.h: Minor reformatting of previous change to avoid lines
+	longer than 79 characters.
+
 2004-11-25  Olivier Hainque  <hainque@adacore.com>
 
 	* tb-gcc.c: GCC infrastructure based implementation of
