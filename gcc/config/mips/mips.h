@@ -1244,8 +1244,6 @@ extern const struct mips_cpu_info *mips_tune_info;
    SFmode register saves.  */
 #define DWARF_CIE_DATA_ALIGNMENT 4
 
-#define FIND_BASE_TERM(X) mips_delegitimize_address (X)
-
 /* Correct the offset of automatic variables and arguments.  Note that
    the MIPS debug format wants all automatic variables and arguments
    to be in terms of the virtual frame pointer (stack pointer before
@@ -2028,9 +2026,7 @@ extern enum reg_class mips_char_to_class[256];
    part of a call sequence and allow a global 'foo' to be lazily bound.  */
 
 #define DANGEROUS_FOR_LA25_P(OP)					\
-  (TARGET_ABICALLS							\
-   && !TARGET_EXPLICIT_RELOCS						\
-   && mips_global_pic_constant_p (OP))
+  (!TARGET_EXPLICIT_RELOCS && global_got_operand (OP, VOIDmode))
 
 /* Letters in the range `Q' through `U' may be defined in a
    machine-dependent fashion to stand for arbitrary operand types.
@@ -2798,7 +2794,11 @@ typedef struct mips_args {
 #define PREDICATE_CODES							\
   {"uns_arith_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
   {"symbolic_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
-  {"const_arith_operand",	{ CONST, CONST_INT }},			\
+  {"global_got_operand",	{ CONST, SYMBOL_REF, LABEL_REF }},	\
+  {"local_got_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
+  {"const_arith_operand",	{ CONST_INT }},				\
+  {"small_data_pattern",	{ SET, PARALLEL, UNSPEC,		\
+				  UNSPEC_VOLATILE }},			\
   {"arith_operand",		{ REG, CONST_INT, CONST, SUBREG, ADDRESSOF }},	\
   {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG, ADDRESSOF }}, \
   {"small_int",			{ CONST_INT }},				\

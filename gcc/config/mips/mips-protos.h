@@ -30,11 +30,12 @@ extern int mips_reg_mode_ok_for_base_p (rtx, enum machine_mode, int);
 extern int mips_address_insns (rtx, enum machine_mode);
 extern int mips_const_insns (rtx);
 extern int mips_fetch_insns (rtx);
-extern bool mips_global_pic_constant_p (rtx);
 extern bool mips_legitimate_address_p (enum machine_mode, rtx, int);
 extern bool mips_legitimize_address (rtx *, enum machine_mode);
+extern rtx mips_gotoff_global (rtx);
+extern rtx mips_load_got_page (rtx);
+extern rtx mips_load_got_global (rtx, rtx);
 extern bool mips_legitimize_move (enum machine_mode, rtx, rtx);
-extern rtx mips_delegitimize_address (rtx);
 
 extern int m16_uimm3_b (rtx, enum machine_mode);
 extern int m16_simm4_1 (rtx, enum machine_mode);
@@ -110,6 +111,7 @@ extern void mips_declare_object (FILE *, const char *, const char *,
 extern void mips_declare_object_name (FILE *, const char *, tree);
 extern void mips_finish_declare_object (FILE *, tree, int, int);
 
+extern rtx mips_rewrite_small_data (rtx);
 extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT);
 extern int mips_initial_elimination_offset (int, int);
 extern rtx mips_return_addr (int, rtx);
