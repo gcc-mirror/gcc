@@ -1,3 +1,9 @@
+Thu Jan 20 10:02:07 2000  Richard Henderson  <rth@cygnus.com>
+
+	2000-01-03  Anthony Green  <green@cygnus.com>
+        * config/i386/i386.md (builtin_setjmp_receiver): New pattern.
+        Restore the pic register if required.
+
 Fri Jan  7 14:40:05 2000  Richard Henderson  <rth@cygnus.com>
 
 	Thu Oct 28 18:06:50 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
