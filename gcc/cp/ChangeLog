@@ -1,5 +1,7 @@
 2000-04-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl2.c (finish_file): Fix typo in comment.
+
 	* method.c (emit_thunk): Don't try to return a `void' value.
 
 	* optimize.c (initialize_inlined_parameters): If the parameter is

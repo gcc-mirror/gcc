@@ -3523,7 +3523,7 @@ finish_file ()
 	     in reverse order so that the most recently constructed
 	     variable is the first destroyed.  If we're using
 	     __cxa_atexit, then we don't need to do this; functions
-	     we're registered at initialization time to destroy the
+	     were registered at initialization time to destroy the
 	     local statics.  */
 	  if (!flag_use_cxa_atexit)
 	    {
