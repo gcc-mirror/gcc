@@ -148,7 +148,7 @@ enum dwarf_attribute {
     AT_public			= (0x0280|FORM_STRING),
     AT_pure_virtual		= (0x0290|FORM_STRING),
     AT_return_addr		= (0x02a0|FORM_BLOCK2),
-    AT_specification		= (0x02b0|FORM_REF),
+    AT_abstract_origin		= (0x02b0|FORM_REF),
     AT_start_scope		= (0x02c0|FORM_DATA4),
     AT_stride_size		= (0x02e0|FORM_DATA4),
         AT_upper_bound_ref	= (0x02f0|FORM_REF),
