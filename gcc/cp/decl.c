@@ -3543,7 +3543,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
 	  /* If newdecl is not a specialization, then it is not a
 	     template-related function at all.  And that means that we
-	     shoud have exited above, returning 0.  */
+	     should have exited above, returning 0.  */
 	  my_friendly_assert (DECL_TEMPLATE_SPECIALIZATION (newdecl),
 			      0);
 

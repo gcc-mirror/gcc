@@ -945,7 +945,7 @@ package body System.Task_Primitives.Operations is
 
       --  Arrange to unlock Self_ID's ATCB lock. The following check
       --  may be unnecessary because the specification of Sleep says
-      --  the caller shoud hold its own ATCB lock before calling Sleep
+      --  the caller should hold its own ATCB lock before calling Sleep
 
       if Self_ID.Common.LL.L.Owner = To_Address (Self_ID) then
          Self_ID.Common.LL.L.Owner := System.Null_Address;
