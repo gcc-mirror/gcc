@@ -79,7 +79,6 @@ extern char  *mktemp ();
 extern rtx    adj_offsettable_operand ();
 extern rtx    copy_to_reg ();
 extern void   error ();
-extern void   fatal ();
 extern tree   lookup_name ();
 extern void   pfatal_with_name ();
 extern void   warning ();

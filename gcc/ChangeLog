@@ -1,3 +1,18 @@
+Thu Dec 18 17:05:10 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+ 
+        * mips.c (fatal): Remove declaration.
+
+1997-12-18  Mark Mitchell  <mmitchell@usa.net>
+
+	* integrate.c (get_label_from_map): New function.
+	(expand_inline_function): Use it.  Initialize the label_map to
+	NULL_RTX instead of gen_label_rtx.
+	(copy_rtx_and_substitute): Use get_label_from_map.
+	* integrate.h (get_label_from_map): New function.
+	(set_label_from_map): New macro.
+	* unroll.c (unroll_loop): Use them.
+	(copy_loop_body): Ditto.
+
 Thu Dec 18 19:19:57 1997  Ian Lance Taylor  <ian@cygnus.com>
 
 	* mips/mips.h (INIT_SUBTARGET_OPTABS): Define if not defined.
