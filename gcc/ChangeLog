@@ -1,3 +1,9 @@
+Thu Jun  4 01:26:57 1998  Craig Burley  <burley@gnu.org>
+
+	* expr.c (safe_from_p): Avoid combinatorial explosion
+	over duplicate SAVE_EXPRs by ensuring we never recurse
+	on one that has already been visited.
+
 Thu Jun  4 00:54:21 1998  Graham  <grahams@rcp.co.uk>
 
 	* loop.c (check_dbra_loop): Initialise final_value before
