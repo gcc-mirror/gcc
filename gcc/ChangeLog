@@ -1,5 +1,7 @@
 Mon Feb  2 01:22:46 1998  Hans-Peter Nilsson  <hp@axis.se>
 
+	* expr.c (emit_push_insn): Add code to use movstrti if present.
+
 	* expr.c (emit_push_insn): Use same max-move-amount for movstrhi
 	and movstrqi as in emit_block_move ().
 
