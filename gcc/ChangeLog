@@ -1,3 +1,16 @@
+2003-12-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcse.c (reg_clear_last_set): New function.
+	(reg_set_info): If data is non-null, treat it as an sbitmap of
+	registers, set the bit for the register being set.
+	(compute_store_table): Allocate last_set_in with xcalloc.  Do not
+	memset this array on each iteration.  Pass reg_set_in_block[bb->index]
+	to note_stores while computing last_set_in instead of scanning
+	last_set_in after the first pass through the insns.
+	Clear last_set_in using reg_clear_last_set instead of explicitly
+	rescanning after each insn.  If checking is enabled, assert that
+	last_set_in is completely zeroed after each bb has been processed.
+
 2003-12-02  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* df.c (df_uses_record) <MEM>: The argument of a MEM is read-only,
