@@ -1,3 +1,7 @@
+2004-02-20  Richard Henderson  <rth@redhat.com>
+
+	* Make-lang.in (treelang-warn): Add -Wno-variadic-macros.
+
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (doc/treelang.dvi): Use $(abs_docdir). 
