@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -2592,7 +2592,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	    {
 	      /* If value is not a constant, register, or register plus
 		 constant, then compute its value into a register before
-		 loop start.  This prevents illegal rtx sharing, and should
+		 loop start.  This prevents invalid rtx sharing, and should
 		 generate better code.  We can use bl->initial_value here
 		 instead of splittable_regs[bl->regno] because this code
 		 is going before the loop start.  */
@@ -2700,7 +2700,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		    {
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
-				 "Illegal address for giv at insn %d\n",
+				 "Invalid address for giv at insn %d\n",
 				 INSN_UID (v->insn));
 		      continue;
 		    }
@@ -2733,7 +2733,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
-				 "Illegal init insn, rewritten.\n");
+				 "Invalid init insn, rewritten.\n");
 		    }
 		}
 	      else
@@ -2741,7 +2741,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		  v->dest_reg = value;
 		  
 		  /* Check the resulting address for validity, and fail
-		     if the resulting address would be illegal.  */
+		     if the resulting address would be invalid.  */
 		  if (! memory_address_p (v->mem_mode, v->dest_reg)
 		      || ! memory_address_p (v->mem_mode,
 				     plus_constant (v->dest_reg,
@@ -2750,7 +2750,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		    {
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
-				 "Illegal address for giv at insn %d\n",
+				 "Invalid address for giv at insn %d\n",
 				 INSN_UID (v->insn));
 		      continue;
 		    }
