@@ -1,5 +1,5 @@
 /* Comparator.java -- Interface for objects that specify an ordering
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,4 +61,13 @@ public interface Comparator
    *   compared by this ordering.
    */
   int compare(Object o1, Object o2);
+
+  /**
+   * Return true if the object is equal to this object.  To be
+   * considered equal, the argument object must satisfy the constraints
+   * of <code>Object.equals()</code>, be a Comparator, and impose the
+   * same ordering as this Comparator.
+   * @param obj The object
+   */
+  boolean equals(Object obj);
 }
