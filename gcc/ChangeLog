@@ -1,3 +1,8 @@
+2001-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* reg-stack.c (stack_result): Unconditionally use
+	FUNCTION_OUTGOING_VALUE resp. FUNCTION_VALUE.
+
 2001-03-13  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.c (find_gr_spill): Subtract frame_pointer_needed
