@@ -110,7 +110,7 @@
 #define LOOP_UNSIGNED_FLAG  0x0004000 /* Allow unsigned loop counters.  */
 #define FORCE_FLAG          0x0008000 /* Force op0 and op1 to be same.  */
 #define PRESERVE_FLOAT_FLAG 0x0010000 /* Save all 40 bits for floats.  */
-#define PARALLEL_PACK_FLAG  0x0020000 /* Allow parallel insn packing.  */
+#define PARALLEL_INSN_FLAG  0x0020000 /* Allow parallel insns.  */
 #define PARALLEL_MPY_FLAG   0x0040000 /* Allow MPY||ADD, MPY||SUB insns.  */
 #define ALIASES_FLAG	    0x0080000 /* Assume mem refs possibly aliased.  */
 
@@ -207,13 +207,13 @@
     "Preserve all 40 bits of FP reg across call" }, \
   { "no-preserve-float", -PRESERVE_FLOAT_FLAG, \
     "Only preserve 32 bits of FP reg across call" }, \
-  { "parallel-insns", PARALLEL_PACK_FLAG, \
+  { "parallel-insns", PARALLEL_INSN_FLAG, \
     "Enable parallel instructions" }, \
-  { "no-parallel-mpy", -PARALLEL_MPY_FLAG, \
+  { "no-parallel-insns", -PARALLEL_INSN_FLAG, \
     "Disable parallel instructions" }, \
   { "parallel-mpy", PARALLEL_MPY_FLAG, \
     "Enable MPY||ADD and MPY||SUB instructions" }, \
-  { "no-parallel-insns", -PARALLEL_PACK_FLAG, \
+  { "no-parallel-mpy", -PARALLEL_MPY_FLAG, \
     "Disable MPY||ADD and MPY||SUB instructions" }, \
   { "aliases", ALIASES_FLAG, \
     "Assume that pointers may be aliased" }, \
@@ -224,7 +224,7 @@
 /* Default target switches.  */
 
 /* Play safe, not the fastest code.  */
-#define TARGET_DEFAULT		ALIASES_FLAG | PARALLEL_PACK_FLAG \
+#define TARGET_DEFAULT		ALIASES_FLAG | PARALLEL_INSN_FLAG \
 				| PARALLEL_MPY_FLAG | RPTB_FLAG
 
 /* Caveats:
@@ -236,7 +236,6 @@
 extern int target_flags;
 
 #define TARGET_INLINE		(! optimize_size) /* Inline MPYI.  */
-#define TARGET_PARALLEL	        1 /* Enable parallel insns in MD.  */
 #define TARGET_SMALL_REG_CLASS	0
 
 #define TARGET_SMALL		(target_flags & SMALL_MEMORY_FLAG)
@@ -256,10 +255,9 @@ extern int target_flags;
 #define TARGET_LOOP_UNSIGNED	(target_flags & LOOP_UNSIGNED_FLAG)
 #define TARGET_FORCE		(target_flags & FORCE_FLAG)
 #define	TARGET_PRESERVE_FLOAT	(target_flags & PRESERVE_FLOAT_FLAG)
-#define TARGET_PARALLEL_PACK	(TARGET_RPTB \
-				 && (target_flags & PARALLEL_PACK_FLAG) \
+#define TARGET_PARALLEL		((target_flags & PARALLEL_INSN_FLAG) \
 				 && optimize >= 2)
-#define TARGET_PARALLEL_MPY	(TARGET_PARALLEL_PACK \
+#define TARGET_PARALLEL_MPY	(TARGET_PARALLEL \
 				 && (target_flags & PARALLEL_MPY_FLAG))
 #define	TARGET_ALIASES		(target_flags & ALIASES_FLAG)
 
@@ -2424,10 +2422,14 @@ do { fprintf (asm_out_file, "\t.sdef\t");	\
 	   "\t.sdef\t.bf%s\t.val\t.%s\t.scl\t101%s\t.line\t%d%s\t.endef\n", \
 	   SDB_DELIM, SDB_DELIM, SDB_DELIM, (LINE), SDB_DELIM)
 
+/* Note we output relative line numbers for .ef which gas converts
+   to absolute line numbers.  The TI compiler outputs absolute line numbers
+   in the .sym directive which gas does not support.  */
 #define PUT_SDB_FUNCTION_END(LINE)		\
   fprintf (asm_out_file,			\
 	   "\t.sdef\t.ef%s\t.val\t.%s\t.scl\t101%s\t.line\t%d%s\t.endef\n", \
-	   SDB_DELIM, SDB_DELIM, SDB_DELIM, (LINE), SDB_DELIM)
+	   SDB_DELIM, SDB_DELIM, SDB_DELIM, \
+           (LINE), SDB_DELIM)
 
 #define PUT_SDB_EPILOGUE_END(NAME)			\
 do { fprintf (asm_out_file, "\t.sdef\t");		\

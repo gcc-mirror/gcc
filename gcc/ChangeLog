@@ -1,3 +1,10 @@
+2000-03-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (PARALLEL_INSN_FLAG): Add.
+	(PARALLEL_PACK_FLAG): Delete.
+	(TARGET_SWITCHES): Update.
+	(TARGET_PARALLEL): Use PARALLEL_INSN_FLAG.
+
 Thu Mar 16 18:52:32 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (fold): Fix a few cases when the returned result
