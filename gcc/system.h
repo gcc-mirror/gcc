@@ -490,6 +490,13 @@ extern void abort PARAMS ((void));
 #endif /* ! __FUNCTION__ */
 #endif
 
+/* __builtin_expect(A, B) evaluates to A, but notifies the compiler that
+   the most likely value of A is B.  This feature was added at some point
+   between 2.95 and 3.0.  Let's use 3.0 as the lower bound for now.  */
+#if (GCC_VERSION < 3000)
+#define __builtin_expect(a, b) (a)
+#endif
+
 /* Provide some sort of boolean type.  We use stdbool.h if it's
   available.  This must be after all inclusion of system headers,
   as some of them will mess us up.  */

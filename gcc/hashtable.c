@@ -162,7 +162,7 @@ ht_lookup (table, str, len, insert)
 
   HT_LEN (node) = len;
   if (insert == HT_ALLOC)
-    HT_STR (node) = obstack_copy (&table->stack, str, len + 1);
+    HT_STR (node) = obstack_copy0 (&table->stack, str, len);
   else
     HT_STR (node) = str;
 
