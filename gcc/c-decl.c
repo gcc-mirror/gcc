@@ -2295,21 +2295,14 @@ c_init_decl_processing (void)
 
   c_common_nodes_and_builtins ();
 
-  boolean_type_node = integer_type_node;
-  boolean_true_node = integer_one_node;
-  boolean_false_node = integer_zero_node;
+  /* In C, comparisons and TRUTH_* expressions have type int.  */
+  truthvalue_type_node = integer_type_node;
+  truthvalue_true_node = integer_one_node;
+  truthvalue_false_node = integer_zero_node;
 
-  c_bool_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
-  TREE_SET_CODE (c_bool_type_node, BOOLEAN_TYPE);
-  TYPE_MAX_VALUE (c_bool_type_node) = build_int_2 (1, 0);
-  TREE_TYPE (TYPE_MAX_VALUE (c_bool_type_node)) = c_bool_type_node;
-  TYPE_PRECISION (c_bool_type_node) = 1;
+  /* Even in C99, which has a real boolean type.  */
   pushdecl (build_decl (TYPE_DECL, get_identifier ("_Bool"),
-			c_bool_type_node));
-  c_bool_false_node = build_int_2 (0, 0);
-  TREE_TYPE (c_bool_false_node) = c_bool_type_node;
-  c_bool_true_node = build_int_2 (1, 0);
-  TREE_TYPE (c_bool_true_node) = c_bool_type_node;
+			boolean_type_node));
 
   endlink = void_list_node;
   ptr_ftype_void = build_function_type (ptr_type_node, endlink);
@@ -5033,7 +5026,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
       if (DECL_INITIAL (x) && pedantic
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != integer_type_node
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != unsigned_type_node
-	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != c_bool_type_node
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != boolean_type_node
 	  /* Accept an enum that's equivalent to int or unsigned int.  */
 	  && !(TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
 	       && (TYPE_PRECISION (TREE_TYPE (x))
@@ -5046,7 +5039,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
       if (DECL_INITIAL (x))
 	{
 	  int max_width
-	    = (TYPE_MAIN_VARIANT (TREE_TYPE (x)) == c_bool_type_node
+	    = (TYPE_MAIN_VARIANT (TREE_TYPE (x)) == boolean_type_node
 	       ? CHAR_TYPE_SIZE : TYPE_PRECISION (TREE_TYPE (x)));
 
 	  if (tree_int_cst_sgn (DECL_INITIAL (x)) < 0)

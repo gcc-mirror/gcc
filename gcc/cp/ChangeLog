@@ -1,3 +1,7 @@
+2003-07-24  Jason Merrill  <jason@redhat.com>
+
+	* decl.c: Just set truthvalue_* to boolean_*.
+
 2003-07-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (reshape_init): Remove unreachable code.
