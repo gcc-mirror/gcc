@@ -1,3 +1,8 @@
+2001-10-26  Richard Kenner <kenner@gnat.com>
+
+	* decl.c (validate_size): Modify message for bad size to avoid 
+	implication that compiler is modifying the size.
+
 2001-10-26  Robert Dewar <dewar@gnat.com>
 
 	* prj-util.adb: Minor reformatting. Fix bad header format.

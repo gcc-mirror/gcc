@@ -5560,7 +5560,7 @@ validate_size (uint_size, gnu_type, gnat_object, kind, component_p, zero_ok)
 	  && TREE_CODE (rm_size (gnu_type)) == INTEGER_CST
 	  && ! tree_int_cst_lt (size, rm_size (gnu_type)))
 	post_error_ne_tree_2
-	  ("\\size of ^ rounded up to multiple of alignment (^ bits)",
+	  ("\\size of ^ is not a multiple of alignment (^ bits)",
 	   gnat_error_node, gnat_object, rm_size (gnu_type),
 	   TYPE_ALIGN (gnu_type));
 
