@@ -1,3 +1,8 @@
+2001-09-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* testsuite/gcc.c-torture/execute/990208-1.x: New. XFAIL at -O3
+	on ia64.
+
 Thu Sep 20 09:00:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (hashtab.h): Include.
