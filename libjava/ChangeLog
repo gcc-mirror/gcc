@@ -1,5 +1,18 @@
 2004-09-10  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/file/Connection.java
+	(lineSeparator): Made non-final.
+	(static): Removed.
+	(connect): Initialize lineSeparator lazily. Use ByteArrayInputStream
+	instead of StringBufferInputStream.
+
+2004-09-10  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/file/Connection.java
+	(connect): Handle file is a directory case.
+
+2004-09-10  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.am
 	(xlib_includes): Removed.
 	(AM_CPPFLAGS): Renamed from INCLUDES.
