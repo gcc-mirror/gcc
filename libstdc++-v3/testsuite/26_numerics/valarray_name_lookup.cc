@@ -70,7 +70,7 @@ namespace My
 
   Number cos(Number);
   Number cosh(Number);
-  Number acosh(Number);
+  Number acos(Number);
 
   Number sin(Number);
   Number sinh(Number);
@@ -102,7 +102,7 @@ int main()
   
   v = cos(u);
   v = cosh(u);
-  //  v = acos(u); // 2003-02-01 XFAIL
+  v = acos(u);
 
   v = sin(u);
   v = sinh(u);
