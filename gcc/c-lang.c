@@ -230,7 +230,7 @@ static void
 c_initialize_diagnostics (diagnostic_context *context)
 {
   pretty_printer *base = context->printer;
-  c_pretty_printer pp = xmalloc (sizeof *pp);
+  c_pretty_printer *pp = xmalloc (sizeof (c_pretty_printer));
   memcpy (pp_base (pp), base, sizeof (pretty_printer));
   pp_c_pretty_printer_init (pp);
   context->printer = (pretty_printer *) pp;

@@ -1,3 +1,66 @@
+2003-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (pp_cxx_flag_default_argument): New flag.
+	(cxx_pretty_printer): Adjust base type.
+	(pp_cxx_function_specifier): Declare.
+	* cxx-pretty-print.c (pp_cxx_whitespace): New macro.
+	(pp_cxx_left_paren): Likewise.
+	(pp_cxx_right_paren): Likewise.
+	(pp_cxx_dot): Likewise.
+	(pp_cxx_arrow): Likewise.
+	(pp_cxx_semicolon): Likewise.
+	(pp_cxx_identifier): Likewise.
+	(pp_cxx_cv_qualifier_seq): Likewise.
+	(pp_cxx_storage_class_specifier): Likewise.
+	(pp_cxx_expression_list): Likewise.
+	(pp_cxx_space_for_pointer_operator): Likewise.
+	(pp_cxx_init_declarator): Likewise.
+	(pp_cxx_call_argument_list): Likewise.
+	(pp_cxx_nonconsecutive_character): Tidy.
+	(pp_cxx_conversion_function_id): New function.
+	(pp_cxx_template_id): Likewise.
+	(pp_cxx_class_name): Likewise.
+	(pp_cxx_template_keyword_if_needed): Likewise.
+	(pp_cxx_nested_name_specifier): Likewise.
+	(pp_cxx_unqualified_id): Tidy
+	(pp_cxx_qualified_id): Handle more nodes.
+	(pp_cxx_primary_expression): Tidy.
+	(pp_cxx_postfix_expression): Likewise.
+	(pp_cxx_new_expression): Tidy.
+	(pp_cxx_delete_expression): Likewise.
+	(pp_cxx_cast_expression): New function.
+	(pp_cxx_pm_expression): Tidy.
+	(pp_cxx_conditional_expression): Likewise.
+	(pp_cxx_assignment_operator): New function.
+	(pp_cxx_assignment_expression): Tidy.
+	(pp_cxx_expression): New function.
+	(pp_cxx_function_specifier): Likewise.
+	(pp_cxx_decl_specifier_seq): Likewise.
+	(pp_cxx_simple_type_specifier): Tidy.
+	(pp_cxx_type_specifier_seq): Likewise.
+	(pp_cxx_ptr_operator): New function.
+	(pp_cxx_implicit_parameter_type): Likewise.
+	(pp_cxx_parameter_declaration): Tidy.
+	(pp_cxx_parameter_declaration_clause): New function.
+	(pp_cxx_exception_specification): Likewise.
+	(pp_cxx_direct_declarator): Tidy.
+	(pp_cxx_declarator): Likewise.
+	(pp_cxx_ctor_initializer): New function.
+	(pp_cxx_function_definition): Likewise.
+	(pp_cxx_abstract_declarator): Tidy.
+	(pp_cxx_direct_abstract_declarator): Likewise.
+	(pp_cxx_type_id): Likewise.
+	(pp_cxx_exception_declaration): New function.
+	(pp_cxx_statement): Likewise.
+	(pp_cxx_simple_declaration): Likewise.
+	(pp_cxx_template_parameter_list): Likewise.
+	(pp_cxx_template_parameter): Likewise.
+	(pp_cxx_template_declaration): Likewise.
+	(pp_cxx_explicit_specialization): Likewise.
+	(pp_cxx_explicit_instantiation): Likewise.
+	(pp_cxx_declaration): Tidy.
+	(pp_cxx_pretty_printer_init): Initialize more fields.
+
 2003-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8795

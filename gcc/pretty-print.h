@@ -203,6 +203,8 @@ struct pretty_print_info
     pp_base_indent (pp_base (PP));   \
     pp_needs_newline (PP) = false;   \
   } while (0)
+#define pp_maybe_newline_and_indent(PP, N) \
+  if (pp_needs_newline (PP)) pp_newline_and_indent (PP, N)
 #define pp_separate_with(PP, C)     \
    do {                             \
      pp_character (PP, C);          \
