@@ -315,11 +315,23 @@ prepare_move_operands (operands, mode)
      rtx operands[];
      enum machine_mode mode;
 {
-  /* Copy the source to a register if both operands aren't registers.  */
-  if (! reload_in_progress && ! reload_completed
-      && ! register_operand (operands[0], mode)
-      && ! register_operand (operands[1], mode))
-    operands[1] = copy_to_mode_reg (mode, operands[1]);
+  if (! reload_in_progress && ! reload_completed)
+    {
+      /* Copy the source to a register if both operands aren't registers.  */
+      if (! register_operand (operands[0], mode)
+	  && ! register_operand (operands[1], mode))
+	operands[1] = copy_to_mode_reg (mode, operands[1]);
+
+      /* This case can happen while generating code to move the result
+	 of a library call to the target.  Reject `st r0,@(rX,rY)' because
+	 reload will fail to find a spill register for rX, since r0 is already
+	 being used for the source.  */
+      else if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 0
+	       && GET_CODE (operands[0]) == MEM
+	       && GET_CODE (XEXP (operands[0], 0)) == PLUS
+	       && GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == REG)
+	operands[1] = copy_to_mode_reg (mode, operands[1]);
+    }
 
   return 0;
 }
