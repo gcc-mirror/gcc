@@ -1,3 +1,8 @@
+2000-09-13  Kazu Hirata  <kazu@hxi.com>
+
+	* loop.c: Fix formatting.
+	* loop.h: Likewise.
+
 2000-09-13  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.md (divsf3): New.
