@@ -109,7 +109,7 @@ then
 	echo "install:	no input file specified"
 	exit 1
 else
-	:
+	true
 fi
 
 if [ x"$dir_arg" != x ]; then
@@ -120,7 +120,7 @@ if [ x"$dir_arg" != x ]; then
 		instcmd=:
 		chmodcmd=""
 	else
-		instcmd=$mkdirprog
+		instcmd=mkdir
 	fi
 else
 
@@ -130,7 +130,7 @@ else
 
 	if [ -f $src -o -d $src ]
 	then
-		:
+		true
 	else
 		echo "install:  $src does not exist"
 		exit 1
@@ -141,7 +141,7 @@ else
 		echo "install:	no destination specified"
 		exit 1
 	else
-		:
+		true
 	fi
 
 # If destination is a directory, append the input filename; if your system
@@ -151,7 +151,7 @@ else
 	then
 		dst="$dst"/`basename $src`
 	else
-		:
+		true
 	fi
 fi
 
@@ -163,8 +163,8 @@ dstdir=`echo $dst | sed -e 's,[^/]*$,,;s,/$,,;s,^$,.,'`
 
 # Skip lots of stat calls in the usual case.
 if [ ! -d "$dstdir" ]; then
-defaultIFS='
-	'
+defaultIFS='	
+'
 IFS="${IFS-${defaultIFS}}"
 
 oIFS="${IFS}"
@@ -183,7 +183,7 @@ while [ $# -ne 0 ] ; do
         then
 		$mkdirprog "${pathcomp}"
 	else
-		:
+		true
 	fi
 
 	pathcomp="${pathcomp}/"
@@ -194,10 +194,10 @@ if [ x"$dir_arg" != x ]
 then
 	$doit $instcmd $dst &&
 
-	if [ x"$chowncmd" != x ]; then $doit $chowncmd $dst; else : ; fi &&
-	if [ x"$chgrpcmd" != x ]; then $doit $chgrpcmd $dst; else : ; fi &&
-	if [ x"$stripcmd" != x ]; then $doit $stripcmd $dst; else : ; fi &&
-	if [ x"$chmodcmd" != x ]; then $doit $chmodcmd $dst; else : ; fi
+	if [ x"$chowncmd" != x ]; then $doit $chowncmd $dst; else true ; fi &&
+	if [ x"$chgrpcmd" != x ]; then $doit $chgrpcmd $dst; else true ; fi &&
+	if [ x"$stripcmd" != x ]; then $doit $stripcmd $dst; else true ; fi &&
+	if [ x"$chmodcmd" != x ]; then $doit $chmodcmd $dst; else true ; fi
 else
 
 # If we're going to rename the final executable, determine the name now.
@@ -216,7 +216,7 @@ else
 	then
 		dstfile=`basename $dst`
 	else
-		:
+		true
 	fi
 
 # Make a temp file name in the proper directory.
@@ -235,10 +235,10 @@ else
 # ignore errors from any of these, just make sure not to ignore
 # errors from the above "$doit $instcmd $src $dsttmp" command.
 
-	if [ x"$chowncmd" != x ]; then $doit $chowncmd $dsttmp; else :;fi &&
-	if [ x"$chgrpcmd" != x ]; then $doit $chgrpcmd $dsttmp; else :;fi &&
-	if [ x"$stripcmd" != x ]; then $doit $stripcmd $dsttmp; else :;fi &&
-	if [ x"$chmodcmd" != x ]; then $doit $chmodcmd $dsttmp; else :;fi &&
+	if [ x"$chowncmd" != x ]; then $doit $chowncmd $dsttmp; else true;fi &&
+	if [ x"$chgrpcmd" != x ]; then $doit $chgrpcmd $dsttmp; else true;fi &&
+	if [ x"$stripcmd" != x ]; then $doit $stripcmd $dsttmp; else true;fi &&
+	if [ x"$chmodcmd" != x ]; then $doit $chmodcmd $dsttmp; else true;fi &&
 
 # Now rename the file to the real destination.
 
