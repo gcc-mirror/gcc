@@ -41,7 +41,7 @@ enum typekind {
 typedef struct options {
   struct options *next;
   const char *name;
-  void *info;
+  const void *info;
 } *options_p;
 
 typedef struct pair *pair_p;
@@ -56,6 +56,8 @@ struct pair {
   struct fileloc line;
   options_p opt;
 };
+
+#define NUM_PARAM 10
 
 /* A description of a type.  */
 struct type {
@@ -85,7 +87,7 @@ struct type {
     } a;
     struct {
       type_p stru;
-      type_p param;
+      type_p param[NUM_PARAM];
       struct fileloc line;
     } param_struct;
   } u;

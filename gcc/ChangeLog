@@ -1,3 +1,90 @@
+2002-09-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* ggc-common.c (ggc_mark_rtx_children_1): Update for changed name
+	mangling.
+
+	The following changes are merged from pch-branch:
+
+	* doc/gty.texi (GTY Options): Document %a.
+	* gengtype.c (do_scalar_typedef): New function.
+	(process_gc_options): Handle `length' option.
+	(set_gc_used_type): A pointer to an array of structures doesn't
+	qualify as a pointer to a structure.
+	(output_escaped_param): Add `%a' escape.
+	(write_gc_structure_fields): Allow 'desc' on array of unions.
+	(main): Define `uint8', `jword' and `JCF_u2' as scalars; use
+	do_scalar_typedef.
+
+	* gengtype.c (enum rtx_code): Make global.
+	(rtx_format): Make global.
+	(rtx_next): New.
+	(gen_rtx_next): New.
+	(write_rtx_next): New.
+	(adjust_field_rtx_def): Skip fields marked by chain_next.
+	(open_base_files): Delete redundant prototype.
+	(write_enum_defn): New.
+	(output_mangled_typename): Correct abort call.
+	(write_gc_marker_routine_for_structure): Handle chain_next and
+	chain_prev options.
+	(finish_root_table): Don't output redundant \n.
+	(main): Call gen_rtx_next, write_rtx_next, write_enum_defn.
+	* c-tree.h (union lang_tree_node): Add chain_next option.
+
+	* gengtype.h (NUM_PARAM): New definition.
+	(struct type): For TYPE_PARAM_STRUCT, allow multiple parameters.
+	* gengtype.c (find_param_structure): New.
+	(adjust_field_type): Handle param<n>_is option.
+	(process_gc_options): Detect use_params option.  Update callers.
+	(set_gc_used_type): Add 'param' parameter, update callers.  Handle
+	'use_params' option.
+	(open_base_files): Add splay-tree.h to list of files included.
+	(output_mangled_typename): New.
+	(write_gc_structure_fields): Update 'param' parameter to support
+	multiple parameters.  Change name mangling.  Allow parameterized
+	fields to have an apparent scalar type.  Handle param<n>_is options,
+	use_param option.
+	(write_gc_marker_routine_for_structure): Update for change to name
+	mangling.  Better guess the output file for parameterized types.
+	(write_gc_types): Update for change to name mangling.
+	(write_gc_root): Update for change to name mangling.  Handle (ignore)
+	param<n>_is options.
+	* doc/gty.texi (GTY Options): Add description of param<n>_is
+	options, use_params option.
+	* ggc.h (ggc_mark_rtx): Update for changed name mangling.
+	* gengtype-lex.l: Produce token for param<n>_is.
+	* gengtype-yacc.y: Parse param<n>_is.
+
+	* gengtype.c (adjust_field_tree_exp): Don't name a variable 'rindex'.
+
+	* rtl.c: Update comment describing rtx_format.
+	* rtl.h (union rtunion): Separate definition and typedef.
+	(struct rtx_def): Use gengtype to mark.
+	* Makefile.in (gengtype.o): Also depend on rtl.def.
+	* ggc.h (ggc_mark_rtx_children): Delete prototype.
+	(ggc_mark_rtx): Change to alias of gengtype-generated routine.
+	* ggc-common.c (ggc_mark_rtx_children): Delete.
+	(ggc_mark_rtx_children_1): Delete.
+	(gt_ggc_m_rtx_def): Delete.
+	* gengtype.c (adjust_field_rtx_def): New.
+	(adjust_field_type): Call adjust_field_rtx_def.
+	(write_gc_structure_fields): Add 'default' case to switch if none
+	is specified; remove unused code.
+
+	* tree.h (struct tree_exp): Update for change to meaning
+	of special.
+	* gengtype.c (adjust_field_tree_exp): New function.
+	(adjust_field_type): Handle `tree_exp' special here.
+	(write_gc_structure_fields): Don't handle `tree_exp' special here.
+	Handle new `dot' option.
+
+	* gengtype.h: Make `info' a pointer-to-const.
+	* gengtype-yacc.y (yacc_ids): Use xasprintf.
+
+	* gengtype.c (write_gc_structure_fields): Remove implementation
+	of `always' option, add `default' option.
+	* doc/gty.texi (GTY Options): Remove documentation of `always',
+	add `default'.
+
 2002-09-16  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* output.h: Remove #ifdef RTX_CODE and #ifdef TREE_CODE.

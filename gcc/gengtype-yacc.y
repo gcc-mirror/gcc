@@ -42,7 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 %token STRUCT "struct"
 %token ENUM "enum"
 %token ALIAS "ptr_alias"
-%token PARAM_IS "param_is"
+%token <s>PARAM_IS
 %token NUM
 %token PERCENTPERCENT "%%"
 %token <t>SCALAR
@@ -174,8 +174,7 @@ yacc_ids: /* empty */
 	  p->opt = xmalloc (sizeof (*(p->opt)));
 	  p->opt->name = "tag";
 	  p->opt->next = NULL;
-	  p->opt->info = xmalloc (3 + strlen ($2));
-	  sprintf (p->opt->info, "'%s'", $2);
+	  p->opt->info = xasprintf ("'%s'", $2);
 	  $$ = p;
 	}
      ;
@@ -263,14 +262,14 @@ options: GTY_TOKEN '(' '(' optionseqopt ')' ')'
 type_option : ALIAS
 	        { $$ = "ptr_alias"; }
 	      | PARAM_IS
-	        { $$ = "param_is"; }
+	        { $$ = $1; }
 	      ;
 
 option:	type_option '(' type ')'
 	   {
 	     options_p o = xmalloc (sizeof (*o));
 	     o->name = $1;
-	     o->info = $3;
+	     o->info = adjust_field_type ($3, NULL);
 	     $$ = o;
 	   }
 	| ID '(' STRING ')'

@@ -203,8 +203,11 @@ ITYPE	{IWORD}({WS}{IWORD})*
 "struct"/[^[:alnum:]_]		{ return STRUCT; }
 "enum"/[^[:alnum:]_]		{ return ENUM; }
 "ptr_alias"/[^[:alnum:]_]	{ return ALIAS; }
-"param_is"/[^[:alnum:]_]	{ return PARAM_IS; }
 [0-9]+				{ return NUM; }
+"param"[0-9]*"_is"/[^[:alnum:]_]		{ 
+  yylval.s = xmemdup (yytext, yyleng, yyleng+1);
+  return PARAM_IS;
+}
 
 {IWORD}({WS}{IWORD})*/[^[:alnum:]_]		|
 "ENUM_BITFIELD"{WS}?"("{WS}?{ID}{WS}?")"	{

@@ -62,6 +62,8 @@ extern const char * const rtx_format[NUM_RTX_CODE];
 
 extern const char rtx_class[NUM_RTX_CODE];
 #define GET_RTX_CLASS(CODE)		(rtx_class[(int) (CODE)])
+
+extern const unsigned char rtx_next[NUM_RTX_CODE];
 
 /* The flags and bitfields of an ADDR_DIFF_VEC.  BASE is the base label
    relative to which the offsets are calculated, as explained in rtl.def.  */
@@ -103,7 +105,7 @@ typedef struct mem_attrs GTY(())
 
 /* Common union for an element of an rtx.  */
 
-typedef union rtunion_def
+union rtunion_def
 {
   HOST_WIDE_INT rtwint;
   int rtint;
@@ -118,11 +120,13 @@ typedef union rtunion_def
   tree rttree;
   struct basic_block_def *bb;
   mem_attrs *rtmem;
-} rtunion;
+};
+typedef union rtunion_def rtunion;
 
 /* RTL expression ("rtx").  */
 
-struct rtx_def
+struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"), 
+		    chain_prev ("RTX_PREV (&%h)")))
 {
   /* The kind of expression this is.  */
   ENUM_BITFIELD(rtx_code) code: 16;
@@ -198,10 +202,28 @@ struct rtx_def
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
      by the `code' field, according to rtl.def.  */
-  rtunion fld[1];
+  rtunion GTY ((special ("rtx_def"),
+		desc ("GET_CODE (&%0)"))) fld[1];
 };
 
 #define NULL_RTX (rtx) 0
+
+/* The "next" and "previous" RTX, relative to this one.  */
+
+#define RTX_NEXT(X) (rtx_next[GET_CODE (X)] == 0 ? NULL			\
+		     : *(rtx *)(((char *)X) + rtx_next[GET_CODE (X)]))
+
+/* FIXME: the "NEXT_INSN (PREV_INSN (X)) == X" condition shouldn't be needed.
+ */
+#define RTX_PREV(X) ((GET_CODE (X) == INSN              \
+                      || GET_CODE (X) == CALL_INSN      \
+                      || GET_CODE (X) == JUMP_INSN      \
+                      || GET_CODE (X) == NOTE           \
+                      || GET_CODE (X) == BARRIER        \
+                      || GET_CODE (X) == CODE_LABEL)    \
+                     && PREV_INSN (X) != NULL           \
+                     && NEXT_INSN (PREV_INSN (X)) == X  \
+                     ? PREV_INSN (X) : NULL)
 
 /* Define macros to access the `code' field of the rtx.  */
 

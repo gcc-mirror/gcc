@@ -72,6 +72,10 @@ immediately contains the current structure.
 @item %0
 This expands to an expression that evaluates to the outermost structure
 that contains the current structure.
+@item %a
+This expands to the string of the form @code{[i1][i2]...} that indexes
+the array item currently being marked.  For instance, if the field
+being marked is @code{foo}, then @code{%1.foo%a} is the same as @code{%h}.
 @end table
 
 The available options are:
@@ -121,10 +125,10 @@ field really isn't ever used.
 
 @findex desc
 @findex tag
-@findex always
+@findex default
 @item desc
 @itemx tag
-@itemx always
+@itemx default
 
 The type machinery needs to be told which field of a @code{union} is
 currently active.  This is done by giving each field a constant @code{tag}
@@ -146,7 +150,9 @@ it discriminates.  Use @code{%1} to mean the structure containing it.
 (There are no escapes available to the @code{tag} option, since it's
 supposed to be a constant.)
 
-You can use @code{always} to mean that this field is always used.
+Each @code{tag} should be different.  If no @code{tag} is matched,
+the field marked with @code{default} is used if there is one, otherwise
+no field in the union will be marked.
 
 @findex param_is
 @findex use_param
@@ -154,14 +160,38 @@ You can use @code{always} to mean that this field is always used.
 @itemx use_param
 
 Sometimes it's convenient to define some data structure to work on
-generic pointers (that is, @code{PTR}), and then use it with specific types.
-@code{param_is} specifies the real type pointed to, and @code{use_param}
-says where in the generic data structure that type should be put.
+generic pointers (that is, @code{PTR}) and then use it with a specific
+type.  @code{param_is} specifies the real type pointed to, and
+@code{use_param} says where in the generic data structure that type
+should be put.
 
 For instance, to have a @code{htab_t} that points to trees, one should write
 @verbatim
   htab_t GTY ((param_is (union tree_node))) ict;
 @end verbatim
+
+@findex param@var{n}_is
+@findex use_param@var{n}
+@item param@var{n}_is
+@itemx use_param@var{n}
+
+In more complicated cases, the data structure might need to work on
+several different types, which might not necessarily all be pointers.
+For this, @code{param1_is} through @code{param9_is} may be used to
+specify the real type of a field identified by @code{use_param1} through
+@code{use_param9}.
+
+@findex use_params
+@item use_params
+
+When a structure contains another structure that is parameterised,
+there's no need to do anything special, the inner stucture inherits the
+parameters of the outer one.  When a structure contains a pointer to a
+parameterised structure, the type machinery won't automatically detect
+this (it could, it just doesn't yet), so it's necessary to tell it that
+the pointed-to structure should use the same parameters as the outer
+structure.  This is done by marking the pointer with the
+@code{use_params} option.
 
 @findex deletable
 @item deletable

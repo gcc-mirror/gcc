@@ -186,6 +186,7 @@ const char * const rtx_format[NUM_RTX_CODE] = {
      "u" a pointer to another insn
          prints the uid of the insn.
      "b" is a pointer to a bitmap header.
+     "B" is a basic block pointer.
      "t" is a tree pointer.  */
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   FORMAT ,
