@@ -34,7 +34,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    is the kind of rtx's they make and what arguments they use.  */
 
 #include "config.h"
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -277,19 +281,23 @@ extern int max_stack_depth;
 
 /*VARARGS2*/
 rtx
-gen_rtx (va_alist)
-     va_dcl
+gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 {
-  va_list p;
+#ifndef __STDC__
   enum rtx_code code;
   enum machine_mode mode;
+#endif
+  va_list p;
   register int i;		/* Array indices...			*/
   register char *fmt;		/* Current rtx's format...		*/
   register rtx rt_val;		/* RTX to return to caller...		*/
 
-  va_start (p);
+  VA_START (p, mode);
+
+#ifndef __STDC__
   code = va_arg (p, enum rtx_code);
   mode = va_arg (p, enum machine_mode);
+#endif
 
   if (code == CONST_INT)
     {
@@ -397,20 +405,26 @@ gen_rtx (va_alist)
 
 /*VARARGS1*/
 rtvec
-gen_rtvec (va_alist)
-     va_dcl
+gen_rtvec VPROTO((int n, ...))
 {
-  int n, i;
+#ifndef __STDC__
+  int n;
+#endif
+  int i;
   va_list p;
   rtx *vector;
 
-  va_start (p);
+  VA_START (p, n);
+
+#ifndef __STDC__
   n = va_arg (p, int);
+#endif
 
   if (n == 0)
     return NULL_RTVEC;		/* Don't allocate an empty rtvec...	*/
 
   vector = (rtx *) alloca (n * sizeof (rtx));
+
   for (i = 0; i < n; i++)
     vector[i] = va_arg (p, rtx);
   va_end (p);

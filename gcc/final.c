@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -44,7 +44,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    FUNCTION_EPILOGUE.  Those instructions never exist as rtl.  */
 
 #include "config.h"
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -2679,19 +2683,24 @@ output_addr_const (file, x)
    We handle alternate assembler dialects here, just like output_asm_insn.  */
 
 void
-asm_fprintf (va_alist)
-     va_dcl
+asm_fprintf VPROTO((FILE *file, char *p, ...))
 {
-  va_list argptr;
+#ifndef __STDC__
   FILE *file;
+  char *p;
+#endif
+  va_list argptr;
   char buf[10];
-  char *p, *q, c;
+  char *q, c;
   int i;
 
-  va_start (argptr);
+  VA_START (argptr, p);
 
-  file = va_arg (argptr, FILE *);
-  p = va_arg (argptr, char *);
+#ifndef __STDC__
+  file = va_arg (argptr, FILE*);
+  p = va_arg (argptr, char*);
+#endif
+
   buf[0] = '%';
 
   while (c = *p++)
