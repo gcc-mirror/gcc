@@ -1,3 +1,10 @@
+2001-05-16  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in (toplev.o): Add dependency on dwarf2asm.h.
+
+	* toplev.c: Include dwarf2asm.h for prototype of
+	dw2_output_indirect_constants.
+
 Wed May 16 19:53:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* stmt.c (expand_asm_operands): Be able to offload addressof
@@ -24,7 +31,7 @@ Wed May 16 18:53:23 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-05-16  Jakub Jelinek  <jakub@redhat.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
-	    
+
         * gcc.c (give_switch): Don't write before start of string.
 	Always append suffix.
 
@@ -273,7 +280,7 @@ cp:
 	* final.c (final_start_function): Always call dwarf2out_begin_prologue.
 	(final_end_function): Don't call output_function_exception_table.
 	* toplev.c (compile_file): Call dw2_output_indirect_constants.
-	(rest_of_compilation): Invoke output_function_exception_table 
+	(rest_of_compilation): Invoke output_function_exception_table
 	for ia64 before assemble_end_function.
 	* tm.texi (ASM_PREFERRED_EH_DATA_FORMAT): Document.
 	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Document.
