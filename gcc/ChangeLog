@@ -1,3 +1,10 @@
+2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("bitcmpqi"): New pattern for bitb
+	instruction.
+	("bitcmpqi2"): New pattern for bit-extract and test.
+	("bitcmphi"): New pattern for bitb/bita instructions.
+
 2001-05-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gccbug.in: Use a temporary directory when the mktemp command is
