@@ -900,6 +900,12 @@ translate_options (argcp, argvp)
 	  else if (! strcmp (p, "Xlinker"))
 	    nskip += 1;
 
+	  /* Watch out for an option at the end of the command line that
+	     is missing arguments, and avoid skipping past the end of the
+	     command line.  */
+	  if (nskip + i > argc)
+	    nskip = argc - i;
+
 	  while (nskip > 0)
 	    {
 	      newv[newindex++] = argv[i++];
