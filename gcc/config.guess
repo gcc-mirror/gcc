@@ -377,7 +377,14 @@ main ()
      I don't know....  */
   printf ("mips-sony-bsd\n"); exit (0);
 #else
-  printf ("m68k-sony-newsos\n"); exit (0);
+#include <sys/param.h>
+  printf ("m68k-sony-newsos%s\n",
+#ifdef NEWSOS4
+          "4"
+#else
+	  ""
+#endif
+         ); exit (0);
 #endif
 #endif
 
