@@ -1,3 +1,8 @@
+2002-03-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* combine.c (simplify_comparison): If simplifying a logical shift
+	right and compare with constant, force the comparison to unsigned.
+
 2002-03-07  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* genextract.c (walk_rtx): Recurse into MATCH_PAR_DUP.

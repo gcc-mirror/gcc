@@ -10885,6 +10885,11 @@ simplify_comparison (code, pop0, pop1)
 		  || (floor_log2 (const_op) + INTVAL (XEXP (op0, 1))
 		      < mode_width)))
 	    {
+	      /* If the shift was logical, then we must make the condition
+		 unsigned.  */
+	      if (GET_CODE (op0) == LSHIFTRT)
+		code = unsigned_condition (code);
+
 	      const_op <<= INTVAL (XEXP (op0, 1));
 	      op1 = GEN_INT (const_op);
 	      op0 = XEXP (op0, 0);
