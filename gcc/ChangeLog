@@ -1,3 +1,8 @@
+Wed Jun 17 15:20:00 PDT 1998  Catherine Moore  <clm@cygnus.com>
+
+         * reload1.c (spill_hard_reg):  Check mode of register when
+         spilling from scratch_list.
+ 
 Wed Jun 17 16:25:38 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
 
 	* except.c (add_new_handler): fix bug in finding last region handler.
