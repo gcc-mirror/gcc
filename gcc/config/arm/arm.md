@@ -2167,20 +2167,20 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == MEM)
+  if (arm_arch4 && GET_CODE (operands[1]) == MEM)
     {
-      if (TARGET_SHORT_BY_BYTES)
-        {
-	  emit_insn (gen_movhi_bytes (operands[0], operands[1]));
-          DONE;
-        }
-      else if (arm_arch4)
-        {
-          emit_insn (gen_rtx_SET (VOIDmode,
-				  operands[0],
-				  gen_rtx_ZERO_EXTEND (SImode, operands[1])));
-          DONE;
-        }
+     /* Note: We do not have to worry about TARGET_SHORT_BY_BYTES
+	here because the insn below will generate an LDRH instruction
+	rather than an LDR instruction, so we cannot get an unaligned
+	word access.  */
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_ZERO_EXTEND (SImode, operands[1])));
+      DONE;
+    }
+  if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
+    {
+      emit_insn (gen_movhi_bytes (operands[0], operands[1]));
+      DONE;
     }
   if (! s_register_operand (operands[1], HImode))
     operands[1] = copy_to_mode_reg (HImode, operands[1]);
@@ -2273,20 +2273,22 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == MEM)
+  if (arm_arch4 && GET_CODE (operands[1]) == MEM)
     {
-      if (TARGET_SHORT_BY_BYTES)
-        {
-          emit_insn (gen_extendhisi2_mem (operands[0], operands[1]));
-          DONE;
-        }
-      else if (arm_arch4)
-        {
-          emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-		     gen_rtx_SIGN_EXTEND (SImode, operands[1])));
-          DONE;
-        }
-     }
+     /* Note: We do not have to worry about TARGET_SHORT_BY_BYTES
+	here because the insn below will generate an LDRH instruction
+	rather than an LDR instruction, so we cannot get an unaligned
+	word access.  */
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+		 gen_rtx_SIGN_EXTEND (SImode, operands[1])));
+      DONE;
+    }
+
+  if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
+    {
+      emit_insn (gen_extendhisi2_mem (operands[0], operands[1]));
+      DONE;
+    }
   if (! s_register_operand (operands[1], HImode))
     operands[1] = copy_to_mode_reg (HImode, operands[1]);
   operands[1] = gen_lowpart (SImode, operands[1]);
@@ -2894,6 +2896,10 @@
 	}
       else if (! arm_arch4)
 	{
+	 /* Note: We do not have to worry about TARGET_SHORT_BY_BYTES
+	    for v4 and up architectures because LDRH instructions will
+	    be used to access the HI values, and these cannot generate
+	    unaligned word access faults in the MMU.  */
 	  if (GET_CODE (operands[1]) == MEM)
 	    {
 	      if (TARGET_SHORT_BY_BYTES)

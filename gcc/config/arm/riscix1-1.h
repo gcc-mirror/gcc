@@ -80,6 +80,12 @@ Boston, MA 02111-1307, USA.  */
 /* Override the normal default CPU */
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm2
 
+/* r10 is reserved by RISCiX  */
+#define SUBTARGET_CONDITIONAL_REGISTER_USAGE 	\
+  fixed_regs[10] = 1;				\
+  call_used_regs[10] = 1;
+
+
 #include "arm/aout.h"
 
 #undef CPP_SPEC
