@@ -35,6 +35,8 @@
 /* System-specific #define, typedefs, corrections, etc, go here.  This
    file will come before all others. */
 
+#define __glibcpp_long_double_bits __glibcpp_double_bits
+
 #define _GLIBCPP_AVOID_FSEEK 1
 
 #endif
