@@ -1048,11 +1048,20 @@ method_header:
 		  RECOVER;
 		}
 |	modifiers type error
-		{RECOVER;}
+		{
+		  yyerror ("Identifier expected");
+		  RECOVER;
+		}
 |	VOID_TK error
-		{yyerror ("Identifier expected"); RECOVER;}
+		{
+		  yyerror ("Identifier expected");
+		  RECOVER;
+		}
 |	modifiers VOID_TK error
-		{yyerror ("Identifier expected"); RECOVER;}
+		{
+		  yyerror ("Identifier expected");
+		  RECOVER;
+		}
 |	modifiers error
 		{
 		  yyerror ("Invalid method declaration, return type required");
