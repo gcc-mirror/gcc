@@ -3015,7 +3015,8 @@ eliminate_regs (x, mem_mode, insn)
 	/* If SET_DEST changed from a REG to a MEM and INSN is an insn,
 	   write a CLOBBER insn.  */
 	if (GET_CODE (SET_DEST (x)) == REG && GET_CODE (new0) == MEM
-	    && insn != 0 && GET_CODE (insn) != EXPR_LIST)
+	    && insn != 0 && GET_CODE (insn) != EXPR_LIST
+	    && GET_CODE (insn) != INSN_LIST)
 	  emit_insn_after (gen_rtx (CLOBBER, VOIDmode, SET_DEST (x)), insn);
 
 	if (new0 != SET_DEST (x) || new1 != SET_SRC (x))
