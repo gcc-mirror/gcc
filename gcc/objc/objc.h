@@ -19,10 +19,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.9 1991/12/10 12:04:22 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.10 1991/12/31 20:16:08 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/12/10 12:04:22 $
+  $Date: 1991/12/31 20:16:08 $
   $Log: ObjC.h,v $
+ * Revision 0.10  1991/12/31  20:16:08  dennisg
+ * Deleted index variable stuff.  Index variables are a hack to the language.
+ * Cleaned up some documentation.
+ *
  * Revision 0.9  1991/12/10  12:04:22  dennisg
  * Cleaned up file format for a distribution.
  *
@@ -69,12 +73,12 @@ extern "C" {
 #endif
 
 #include  <sys/types.h>
-#include  <hash.h>
+#include  <record-inline.h>
 #include  <stdarg.h>
 
 
-#define nil ( id )0                             /* id of Nil instance */
-#define Nil ( Class_t )0                        /* id of Nil class */
+#define nil (id)0                               /* id of Nil instance */
+#define Nil (Class_t)0                          /* id of Nil class */
 typedef char* STR;                              /* String alias */
 
                                                 /* Boolean typedefs */
@@ -292,11 +296,8 @@ typedef struct objc_metaClass {
                                                 Object.  Should be ignored. */
   MethodList_t            methods;            /* Linked List of factory methods 
                                                 for the class. */
-  Cache_t                 cache;              /* Used to cache factory methods
-                                                defined for the class and its 
-                                                super classes.  Entries are
-                                                made to the cache as the
-                                                messager receives them. */
+  Record_t*               cache;              /* Pointer to factory method
+																								dispatch table. */
 } MetaClass, *MetaClass_t;
 
 
@@ -334,11 +335,8 @@ typedef struct objc_class {
   MethodList_t        methods;                /* Linked list of instance
                                                 methods defined for the 
                                                 class. */
-  Cache_t             cache;                  /* Used to cache instance methods
-                                                defined for the class and its 
-                                                super classes.  Entries are
-                                                made to the cache as the
-                                                messager receives them. */
+  Record_t*           cache;                  /* Pointer to instance method 
+																								dispatch table. */
 } Class, *Class_t;
 
 
