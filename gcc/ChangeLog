@@ -1,3 +1,7 @@
+2001-01-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* mkdeps.c (deps_add_dep): Fix vector re-allocation.
+
 Sat Jan  6 00:09:34 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* integrate.c (copy_rtx_and_substitute): When copying
