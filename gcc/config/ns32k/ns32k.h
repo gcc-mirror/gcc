@@ -552,9 +552,6 @@ enum reg_class
 
 #define INCOMING_FRAME_SP_OFFSET 4
 
-/* Offset of the CFA from the argument pointer register value.  */
-#define ARG_POINTER_CFA_OFFSET 8
-
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
    On the 32000, sp@- in a byte insn really pushes a BYTE.  */

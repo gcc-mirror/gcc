@@ -559,7 +559,7 @@ reg_number (rtl)
 {
   register unsigned regno = REGNO (rtl);
 
-  if (regno >= DWARF_FRAME_REGISTERS)
+  if (regno >= FIRST_PSEUDO_REGISTER)
     {
       warning ("internal regno botch: regno = %d\n", regno);
       regno = 0;
@@ -882,6 +882,9 @@ reg_save (label, reg, sreg, offset)
 	}
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
     }
+  else if (sreg == reg)
+    /* We could emit a DW_CFA_same_value in this case, but don't bother.  */
+    return;
   else
     {
       cfi->dw_cfi_opc = DW_CFA_register;
@@ -975,7 +978,7 @@ initial_return_save (rtl)
     {
     case REG:
       /* RA is in a register.  */
-      reg = reg_number (rtl);
+      reg = DWARF_FRAME_REGNUM (REGNO (rtl));
       break;
     case MEM:
       /* RA is on the stack.  */
@@ -1174,10 +1177,11 @@ dwarf2out_frame_debug_expr (expr, label)
         case REG:
           if (cfa_reg != (unsigned) REGNO (src))
             abort ();
-          if (REGNO (dest) != STACK_POINTER_REGNUM
-	      && !(frame_pointer_needed
-		   && REGNO (dest) == HARD_FRAME_POINTER_REGNUM))
-            abort ();
+
+	  /* We used to require that dest be either SP or FP, but the
+	     ARM copies SP to a temporary register, and from there to
+	     FP.  So we just rely on the backends to only set
+	     RTX_FRAME_RELATED_P on appropriate insns.  */
           cfa_reg = REGNO (dest);
           break;
 
@@ -1221,32 +1225,19 @@ dwarf2out_frame_debug_expr (expr, label)
             {
 	      /* Either setting the FP from an offset of the SP,
 		 or adjusting the FP */
-	      if (! frame_pointer_needed
-		  || REGNO (dest) != HARD_FRAME_POINTER_REGNUM)
+	      if (! frame_pointer_needed)
 		abort ();
 
-	      if (XEXP (src, 0) == stack_pointer_rtx
+	      if (GET_CODE (XEXP (src, 0)) == REG
+		  && (unsigned) REGNO (XEXP (src, 0)) == cfa_reg
 		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
 		{
-		  if (cfa_reg != STACK_POINTER_REGNUM)
-		    abort ();
 		  offset = INTVAL (XEXP (src, 1));
 		  if (GET_CODE (src) == PLUS)
 		    offset = -offset;
 		  cfa_offset += offset;
 		  cfa_reg = HARD_FRAME_POINTER_REGNUM;
 		}
-	      else if (XEXP (src, 0) == hard_frame_pointer_rtx
-		       && GET_CODE (XEXP (src, 1)) == CONST_INT)
-		{
-		  if (cfa_reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
-		    abort ();
-		  offset = INTVAL (XEXP (src, 1));
-		  if (GET_CODE (src) == PLUS)
-		    offset = -offset;
-		  cfa_offset += offset;
-		}
-
 	      else 
 		abort();
             }

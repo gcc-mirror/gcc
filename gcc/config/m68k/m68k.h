@@ -925,9 +925,6 @@ extern enum reg_class regno_reg_class[];
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL) 8
 
-/* Offset of the CFA from the argument pointer register value.  */
-#define ARG_POINTER_CFA_OFFSET 8
-
 /* Value is the number of byte of arguments automatically
    popped when returning from a subroutine call.
    FUNDECL is the declaration node of the function (as a tree),

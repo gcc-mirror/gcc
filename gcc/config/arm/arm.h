@@ -2275,6 +2275,13 @@ extern struct rtx_def * arm_compare_op1;
    ? gen_rtx_MEM (Pmode, plus_constant (FRAME, -4)) \
    : NULL_RTX)
 
+/* Pick up the return address upon entry to a procedure. Used for
+   dwarf2 unwind information.  This also enables the table driven
+   mechanism.  */
+
+#define INCOMING_RETURN_ADDR_RTX	gen_rtx_REG (Pmode, LR_REGNUM)
+#define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGNUM (LR_REGNUM)
+
 /* Used to mask out junk bits from the return address, such as
    processor state, interrupt status, condition codes and the like.  */
 #define MASK_RETURN_ADDR \

@@ -2292,6 +2292,9 @@ the stack.
 You only need to define this macro if you want to support call frame
 debugging information like that provided by DWARF 2.
 
+If this RTL is a @code{REG}, you should also define
+DWARF_FRAME_RETURN_COLUMN to @code{DWARF_FRAME_REGNUM (REGNO)}.
+
 @findex INCOMING_FRAME_SP_OFFSET
 @item INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
@@ -2304,15 +2307,20 @@ You only need to define this macro if you want to support call frame
 debugging information like that provided by DWARF 2.
 
 @findex ARG_POINTER_CFA_OFFSET
-@item ARG_POINTER_CFA_OFFSET
+@item ARG_POINTER_CFA_OFFSET (@var{fundecl})
 A C expression whose value is an integer giving the offset, in bytes,
 from the argument pointer to the canonical frame address (cfa).  The
 final value should coincide with that calculated by 
 @code{INCOMING_FRAME_SP_OFFSET}.  Which is unfortunately not usable
 during virtual register instantiation.
 
-You only need to define this macro if you want to support call frame
-debugging information like that provided by DWARF 2.
+The default value for this macro is @code{FIRST_PARM_OFFSET (fundecl)},
+which is correct for most machines; in general, the arguments are found
+immediately before the stack frame.  See @file{function.c} for details.
+
+You only need to define this macro if this default is incorrect, and you
+want to support call frame debugging information like that provided by
+DWARF 2.
 
 @findex SMALL_STACK
 @item SMALL_STACK
