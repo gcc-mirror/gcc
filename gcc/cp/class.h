@@ -149,7 +149,7 @@ struct candidate
 };
 int rank_for_overload ();
 
-/* Variables shared between cp-class.c and cp-call.c.  */
+/* Variables shared between class.c and call.c.  */
 
 extern int n_vtables;
 extern int n_vtable_entries;

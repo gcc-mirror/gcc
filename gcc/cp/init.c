@@ -1872,7 +1872,7 @@ get_type_value (name)
 }
   
 
-/* This code could just as well go in `cp-class.c', but is placed here for
+/* This code could just as well go in `class.c', but is placed here for
    modularity.  */
 
 /* For an expression of the form CNAME :: NAME (PARMLIST), build
@@ -1992,7 +1992,7 @@ build_member_call (cname, name, parmlist)
    @@ Prints out lousy diagnostics for operator <typename>
    @@ fields.
 
-   @@ This function should be rewritten and placed in cp-search.c.  */
+   @@ This function should be rewritten and placed in search.c.  */
 tree
 build_offset_ref (cname, name)
      tree cname, name;
@@ -2024,12 +2024,8 @@ build_offset_ref (cname, name)
 		      name);
 	  return error_mark_node;
 	}
-      if (TREE_CODE (t) == TYPE_DECL)
-	{
-	  cp_error ("member `%D' is just a type declaration", t);
-	  return error_mark_node;
-	}
-      if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == CONST_DECL)
+      if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (t) == VAR_DECL
+	  || TREE_CODE (t) == CONST_DECL)
 	{
 	  TREE_USED (t) = 1;
 	  return t;
@@ -2170,8 +2166,8 @@ build_offset_ref (cname, name)
 
   if (TREE_CODE (t) == TYPE_DECL)
     {
-      cp_error ("member `%D' is just a type declaration", t);
-      return error_mark_node;
+      TREE_USED (t) = 1;
+      return t;
     }
   /* static class members and class-specific enum
      values can be returned without further ado.  */
@@ -3036,6 +3032,13 @@ build_new (placement, decl, init, use_global_new)
 	  /* probably meant to be a vec new */
 	  tree this_nelts;
 
+	  while (TREE_OPERAND (absdcl, 0)
+		 && TREE_CODE (TREE_OPERAND (absdcl, 0)) == ARRAY_REF)
+	    {
+	      last_absdcl = absdcl;
+	      absdcl = TREE_OPERAND (absdcl, 0);
+	    }
+
 	  has_array = 1;
 	  this_nelts = TREE_OPERAND (absdcl, 1);
 	  if (this_nelts != error_mark_node)
@@ -3369,6 +3372,12 @@ build_new (placement, decl, init, use_global_new)
 	}
     }
  done:
+  if (rval && TREE_TYPE (rval) != build_pointer_type (type))
+    {
+      /* The type of new int [3][3] is not int *, but int [3] * */
+      rval = build_c_cast (build_pointer_type (type), rval);
+    }
+
   if (pending_sizes)
     rval = build_compound_expr (chainon (pending_sizes,
 					 build_tree_list (NULL_TREE, rval)));

@@ -83,7 +83,7 @@ tree the_null_vtable_entry;
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;
-static int current_lang_stacksize;
+int current_lang_stacksize;
 
 /* Names of languages we recognize.  */
 tree lang_name_c, lang_name_cplusplus;
@@ -94,7 +94,7 @@ tree current_lang_name;
    via this node.  */
 static tree base_layout_decl;
 
-/* Variables shared between cp-class.c and cp-call.c.  */
+/* Variables shared between class.c and call.c.  */
 
 int n_vtables = 0;
 int n_vtable_entries = 0;
@@ -471,7 +471,8 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
 	vtbl = build_indirect_ref (build_vfield_ref (instance, basetype),
 				   NULL_PTR);
     }
-  assemble_external (vtbl);
+  if (!flag_vtable_hack)
+    assemble_external (vtbl);
   aref = build_array_ref (vtbl, idx);
 
   /* Save the intermediate result in a SAVE_EXPR so we don't have to
@@ -777,7 +778,8 @@ prepare_fresh_vtable (binfo, base_binfo, for_type)
 
 /* Access the virtual function table entry that logically
    contains BASE_FNDECL.  VIRTUALS is the virtual function table's
-   initializer.  */
+   initializer.  We can run off the end, when dealing with virtual
+   destructors in MI situations, return NULL_TREE in that case.  */
 static tree
 get_vtable_entry (virtuals, base_fndecl)
      tree virtuals, base_fndecl;
@@ -794,7 +796,7 @@ get_vtable_entry (virtuals, base_fndecl)
   n_vtable_searches += i;
 #endif
 
-  while (i > 0)
+  while (i > 0 && virtuals)
     {
       virtuals = TREE_CHAIN (virtuals);
       i -= 1;
@@ -1276,13 +1278,15 @@ modify_vtable_entries (t, fndecl, base_fndecl, pfn)
 	    prepare_fresh_vtable (binfo, base, t);
 	}
 
-      saved_pfn = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (get_vtable_entry (BINFO_VIRTUALS (binfo), base_fndecl))), 0);
+      saved_pfn = get_vtable_entry (BINFO_VIRTUALS (binfo), base_fndecl);
+      if (saved_pfn)
+	saved_pfn = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (saved_pfn)), 0);
 #ifdef NOTQUITE
       cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (binfo)));
 #endif
       /* The this_offset can be wrong, if we try and modify an entry
 	 that had been modified once before. */
-      if (! SAME_FN (saved_pfn, fndecl))
+      if (saved_pfn && ! SAME_FN (saved_pfn, fndecl))
         {
 	  modify_vtable_entry (get_vtable_entry (BINFO_VIRTUALS (binfo), base_fndecl),
 			       build_vtable_entry (this_offset, pfn),
@@ -1738,12 +1742,15 @@ alter_access (t, fdecl, access)
   return 0;
 }
 
-static tree
+/* Return the offset to the main vtable for a given base BINFO.  */
+tree
 get_vfield_offset (binfo)
      tree binfo;
 {
   return size_binop (PLUS_EXPR,
-		     DECL_FIELD_BITPOS (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))),
+		     size_binop (FLOOR_DIV_EXPR,
+				 DECL_FIELD_BITPOS (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))),
+				 size_int (BITS_PER_UNIT)),
 		     BINFO_OFFSET (binfo));
 }
 
@@ -2148,6 +2155,22 @@ finish_base_struct (t, b, t_binfo)
 	  b->cant_synth_copy_ctor = 1;
 	}
     }
+  {
+    tree v = get_vbase_types (t_binfo);
+
+    for (; v; v = TREE_CHAIN (v))
+      {
+	tree basetype = BINFO_TYPE (v);
+	if (get_base_distance (basetype, t_binfo, 0, (tree*)0) == -2)
+	  {
+	    if (extra_warnings)
+	      cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
+			  basetype, t);
+	    b->cant_synth_asn_ref = 1;
+	    b->cant_synth_copy_ctor = 1;
+	  }
+      }
+  }    
 
   {
     tree vfields;
@@ -2726,7 +2749,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   enum tree_code code = TREE_CODE (t);
   register tree x, last_x, method_vec;
   int needs_virtual_dtor;
-  tree name = TYPE_NAME (t), fields, fn_fields, tail;
+  tree name = TYPE_NAME (t), fields, fn_fields, *tail;
+  tree *tail_user_methods = &CLASSTYPE_METHODS (t);
   enum access_type access;
   int all_virtual;
   int has_virtual;
@@ -2902,8 +2926,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   CLASSTYPE_VFIELDS (t) = vfields;
   CLASSTYPE_VFIELD (t) = vfield;
 
-  fn_fields = NULL_TREE;
-  tail = NULL_TREE;
+  tail = &fn_fields;
   if (last_x && list_of_fieldlists)
     TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
 
@@ -2961,11 +2984,11 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
 	      if (last_x)
 		TREE_CHAIN (last_x) = TREE_CHAIN (x);
-	      if (! fn_fields)
-		fn_fields = x;
-	      else
-		TREE_CHAIN (tail) = x;
-	      tail = x;
+	      /* Link x onto end of fn_fields and CLASSTYPE_METHODS. */
+	      *tail = x;
+	      tail = &TREE_CHAIN (x);
+	      *tail_user_methods = x;
+	      tail_user_methods = &DECL_NEXT_METHOD (x);
 
 #if 0
 	      /* ??? What if we have duplicate declarations
@@ -3284,8 +3307,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	}
     }
 
-  if (tail) TREE_CHAIN (tail) = NULL_TREE;
-
   /* If this type has any constant members which did not come
      with their own initialization, mark that fact here.  It is
      not an error here, since such types can be saved either by their
@@ -3306,11 +3327,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	TYPE_NEEDS_DESTRUCTOR (t) = 0;
       else
 	{
-	  if (! fn_fields)
-	    fn_fields = dtor;
-	  else
-	    TREE_CHAIN (tail) = dtor;
-	  tail = dtor;
+	  /* Link dtor onto end of fn_fields. */
+	  *tail = dtor;
+	  tail = &TREE_CHAIN (dtor);
 
 	  if (DECL_VINDEX (dtor) == NULL_TREE
 	      && ! CLASSTYPE_DECLARED_EXCEPTION (t)
@@ -3324,6 +3343,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  nonprivate_method = 1;
 	}
     }
+
+  *tail = NULL_TREE;
+  *tail_user_methods = NULL_TREE;
 
   TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
 

@@ -39,7 +39,7 @@ extern int inhibit_warnings;
 extern int flag_assume_nonnull_objects;
 extern tree ctor_label, dtor_label;
 
-/* From cp-typeck.c:  */
+/* From typeck.c:  */
 extern tree unary_complex_lvalue ();
 
 /* Compute the ease with which a conversion can be performed
@@ -2821,6 +2821,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  cp_error ("call to destructor for non-type `%D'", name);
 	  return void_zero_node;
 	}
+      if (basetype != TREE_TYPE(instance))
+	basetype = TREE_TYPE(instance);
       if (! TYPE_HAS_DESTRUCTOR (basetype))
 	return void_zero_node;
       instance = default_conversion (instance);
@@ -3095,6 +3097,11 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  /* Convert OFFSET_TYPE entities to their normal selves.  */
 	  TREE_VALUE (parm) = resolve_offset_ref (TREE_VALUE (parm));
 	  t = TREE_TYPE (TREE_VALUE (parm));
+	}
+      if (TREE_CODE (TREE_VALUE (parm)) == OFFSET_REF
+	  && TREE_CODE (t) == METHOD_TYPE)
+	{
+	  TREE_VALUE (parm) = build_unary_op (ADDR_EXPR, TREE_VALUE (parm), 0);
 	}
       if (TREE_CODE (t) == ARRAY_TYPE)
 	{

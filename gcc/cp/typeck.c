@@ -541,10 +541,10 @@ comptypes (type1, type2, strict)
 	t1 = type_for_size (TYPE_PRECISION (t1), 1);
       if (TREE_CODE (t2) == ENUMERAL_TYPE)
 	t2 = type_for_size (TYPE_PRECISION (t2), 1);
-    }
 
-  if (t1 == t2)
-    return 1;
+      if (t1 == t2)
+	return 1;
+    }
 
   /* Different classes of types can't be compatible.  */
 
@@ -643,6 +643,8 @@ comptypes (type1, type2, strict)
       /* Target types must match incl. qualifiers.  */
       return comp_array_types (comptypes, t1, t2, strict);
 
+    case TEMPLATE_TYPE_PARM:
+      return 1;
     }
   return 0;
 }
@@ -2109,8 +2111,15 @@ get_member_function_from_ptrfunc (instance_ptrptr, instance, function)
       tree e2;
       tree e3;
       tree aref, vtbl;
+      tree aux_delta;
 
-      vtbl = build1 (ADDR_EXPR, ptr_type_node, instance);
+      /* convert down to the right base, before using the instance. */
+      instance = convert_pointer_to_real (TYPE_METHOD_BASETYPE (TREE_TYPE (fntype)),
+					  build_unary_op (ADDR_EXPR, instance, 0));
+      if (instance == error_mark_node)
+	return instance;
+
+      vtbl = convert_pointer_to (ptr_type_node, instance);
       vtbl = build (PLUS_EXPR,
 		    build_pointer_type (build_pointer_type (vtable_entry_type)),
 		    vtbl, convert (sizetype, delta2));
@@ -2397,6 +2406,12 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	      error ("insufficient type information in parameter list");
 	      val = integer_zero_node;
 	    }
+	}
+      else if (TREE_CODE (val) == OFFSET_REF
+	    && TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE)
+	{
+	  /* This is unclean.  Should be handled elsewhere. */
+	  val = build_unary_op (ADDR_EXPR, val, 0);
 	}
       else if (TREE_CODE (val) == OFFSET_REF)
 	val = resolve_offset_ref (val);
@@ -3075,7 +3090,11 @@ build_binary_op_nodefault (code, op0, op1, error_code)
 	    }
 	  else
 	    index1 = integer_neg_one_node;
-	  op1 = build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type0), op1);
+	  {
+	    tree nop1 = build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type0), op1);
+	    TREE_CONSTANT (nop1) = TREE_CONSTANT (op1);
+	    op1 = nop1;
+	  }
 	  e1 = build_binary_op (EQ_EXPR, index0, index1, 1);
 	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node, 1);
 	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e2, build_binary_op (EQ_EXPR, delta20, delta21, 1), 1);
@@ -3577,11 +3596,14 @@ build_component_addr (arg, argtype, msg)
 
   if (TREE_CODE (field) == FIELD_DECL
       && TYPE_USES_COMPLEX_INHERITANCE (basetype))
-    /* Can't convert directly to ARGTYPE, since that
-       may have the same pointer type as one of our
-       baseclasses.  */
-    rval = build1 (NOP_EXPR, argtype,
-		   convert_pointer_to (basetype, rval));
+    {
+      /* Can't convert directly to ARGTYPE, since that
+	 may have the same pointer type as one of our
+	 baseclasses.  */
+      rval = build1 (NOP_EXPR, argtype,
+		     convert_pointer_to (basetype, rval));
+      TREE_CONSTANT (rval) == TREE_CONSTANT (TREE_OPERAND (rval, 0));
+    }
   else
     /* This conversion is harmless.  */
     rval = convert (argtype, rval);
@@ -4787,20 +4809,6 @@ build_c_cast (type, expr)
 	}
     }
 
-  /* When converting into a reference type, just convert into a pointer to
-     the new type and deference it.  While this is not exactly what ARM 5.4
-     calls for [why not? -jason], it is pretty close for now.
-     (int &)ri ---> *(int*)&ri  */
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    {
-      value = build_unary_op (ADDR_EXPR, value, 0);
-      if (value != error_mark_node)
-	value = convert (build_pointer_type (TREE_TYPE (type)), value);
-      if (value != error_mark_node)
-	value = build_indirect_ref (value, "reference conversion");
-      return value;
-    }
-
   if (IS_SIGNATURE (type))
     {
       error ("cast specifies signature type");
@@ -5819,6 +5827,59 @@ language_lvalue_valid (exp)
   return 1;
 }
 
+/* Get differnce in deltas for different pointer to member function
+   types.  Return inetger_zero_node, if FROM cannot be converted to a
+   TO type.  If FORCE is true, then allow reverse conversions as well.  */
+static tree
+get_delta_difference (from, to, force)
+     tree from, to;
+{
+  tree delta = integer_zero_node;
+  tree binfo;
+  
+  if (to == from)
+    return delta;
+
+  binfo = get_binfo (from, to, 1);
+  if (binfo == error_mark_node)
+    {
+      error ("   in pointer to member function conversion");
+      return delta;
+    }
+  if (binfo == 0)
+    {
+      if (!force)
+	{
+	  error_not_base_type (from, to);
+	  error ("   in pointer to member function conversion");
+	  return delta;
+	}
+      binfo = get_binfo (to, from, 1);
+      if (binfo == error_mark_node)
+	{
+	  error ("   in pointer to member function conversion");
+	  return delta;
+	}
+      if (binfo == 0)
+	{
+	  error ("cannot convert pointer to member of type %T to unrelated pointer to member of type %T", from, to);
+	  return delta;
+	}
+      if (TREE_VIA_VIRTUAL (binfo))
+	{
+	  warning ("pointer to member conversion from virtual base class will only work if your very careful");
+	}
+      return fold (size_binop (MINUS_EXPR,
+			       integer_zero_node,
+			       BINFO_OFFSET (binfo)));
+    }
+  if (TREE_VIA_VIRTUAL (binfo))
+    {
+      warning ("pointer to member conversion from virtual base class will only work if your very careful");
+    }
+  return BINFO_OFFSET (binfo);
+}
+
 /* Build a constructor for a pointer to member function.  It can be
    used to initialize global variables, local variable, or used
    as a value in expressions.  TYPE is the POINTER to METHOD_TYPE we
@@ -5826,62 +5887,104 @@ language_lvalue_valid (exp)
 
    If FORCE is non-zero, then force this conversion, even if
    we would rather not do it.  Usually set when using an explicit
-   cast.  */
+   cast.
+
+   Return error_mark_node, if something goes wrong.  */
 
 tree
 build_ptrmemfunc (type, pfn, force)
      tree type, pfn;
      int force;
 {
-  tree index;
+  tree index = integer_zero_node;
   tree delta = integer_zero_node;
   tree delta2 = integer_zero_node;
   tree vfield_offset;
   tree npfn;
   tree u;
 
+  /* Handle multiple conversions of pointer to member fucntions. */
+  if (TYPE_PTRMEMFUNC_P (TREE_TYPE (pfn)))
+    {
+      tree ndelta, ndelta2, nindex;
+      /* Is is already the right type? */
+#if 0
+      /* Sorry, can't do this, the backend is too stupid. */
+      if (TYPE_METHOD_BASETYPE (TREE_TYPE (type))
+	  == TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))))
+	{
+	  if (type != TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))
+	    {
+	      npfn = build1 (NOP_EXPR, TYPE_GET_PTRMEMFUNC_TYPE (type), pfn);
+	      TREE_CONSTANT (npfn) = TREE_CONSTANT (pfn);
+	    }
+	  return pfn;
+	}
+#else
+      if (type == TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))
+	return pfn;
+#endif
+
+      if (TREE_CODE (pfn) != CONSTRUCTOR)
+	{
+	  tree e1, e2, e3;
+	  ndelta = convert (sizetype, build_component_ref (pfn, delta_identifier, 0, 0));
+	  ndelta2 = convert (sizetype, DELTA2_FROM_PTRMEMFUNC (pfn));
+	  index = build_component_ref (pfn, index_identifier, 0, 0);
+	  delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))),
+					TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
+					force);
+	  delta = fold (size_binop (PLUS_EXPR, delta, ndelta));
+	  delta2 = fold (size_binop (PLUS_EXPR, ndelta2, delta2));
+	  e1 = fold (build (GT_EXPR, integer_type_node, index, integer_zero_node));
+	  
+	  u = build_nt (CONSTRUCTOR, 0, tree_cons (delta2_identifier, delta2, NULL_TREE));
+	  u = build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, delta,
+						   tree_cons (NULL_TREE, index,
+							      tree_cons (NULL_TREE, u, NULL_TREE))));
+	  e2 = digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
+
+	  pfn = PFN_FROM_PTRMEMFUNC (pfn);
+	  npfn = build1 (NOP_EXPR, type, pfn);
+	  TREE_CONSTANT (npfn) = TREE_CONSTANT (pfn);
+
+	  u = build_nt (CONSTRUCTOR, 0, tree_cons (pfn_identifier, npfn, NULL_TREE));
+	  u = build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, delta,
+						   tree_cons (NULL_TREE, index,
+							      tree_cons (NULL_TREE, u, NULL_TREE))));
+	  e3 = digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
+	  return build_conditional_expr (e1, e2, e3);
+	}
+
+      ndelta = TREE_VALUE (CONSTRUCTOR_ELTS (pfn));
+      nindex = TREE_VALUE (TREE_CHAIN (CONSTRUCTOR_ELTS (pfn)));
+      npfn = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (pfn))));
+      npfn = TREE_VALUE (CONSTRUCTOR_ELTS (npfn));
+      if (integer_zerop (nindex))
+	pfn = integer_zero_node;
+      else
+	{
+	  sorry ("value casting of varible nonnull pointer to member functions not supported");
+	  return error_mark_node;
+	}
+    }
+
   /* Handle null pointer to member function conversions. */
   if (integer_zerop (pfn))
     {
       pfn = build_c_cast (type, integer_zero_node);
       u = build_nt (CONSTRUCTOR, 0, tree_cons (pfn_identifier, pfn, NULL_TREE));
-      return build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, integer_zero_node,
-						  tree_cons (NULL_TREE, integer_zero_node,
-							     tree_cons (NULL_TREE, u, NULL_TREE))));
+      u = build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, integer_zero_node,
+					       tree_cons (NULL_TREE, integer_zero_node,
+							  tree_cons (NULL_TREE, u, NULL_TREE))));
+      return digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
     }
 
   /* Allow pointer to member conversions here. */
-  if (type != TREE_TYPE (pfn))
-    {
-      tree binfo
-	= get_binfo (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn))),
-		     TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
-		     1);
-      if (binfo == error_mark_node)
-	{
-	  error ("   in pointer to member function conversion");
-	  return NULL_TREE;
-	}
-      if (binfo == 0)
-	{
-	  if (!force)
-	    {
-	      error_not_base_type (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn))),
-				   TYPE_METHOD_BASETYPE (TREE_TYPE (type)));
-	      error ("   in pointer to member function conversion");
-	      return NULL_TREE;
-	    }
-	  /* Just something handy with an offset of zero. */
-	  binfo = TYPE_BINFO (TYPE_METHOD_BASETYPE (TREE_TYPE (type)));
-	}
-      if (TREE_VIA_VIRTUAL (binfo))
-	{
-	  sorry ("pointer to member conversion from virtual base class");
-	}
-      delta = BINFO_OFFSET (binfo);
-      delta2 = size_binop (PLUS_EXPR, delta2, delta);
-    }
-  
+  delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn))),
+				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
+				force);
+  delta2 = fold (size_binop (PLUS_EXPR, delta2, delta));
 
   if (TREE_CODE (TREE_OPERAND (pfn, 0)) != FUNCTION_DECL)
     warning ("assuming pointer to member function is non-virtual");
@@ -5890,10 +5993,10 @@ build_ptrmemfunc (type, pfn, force)
       && DECL_VINDEX (TREE_OPERAND (pfn, 0)))
     {
       /* Find the offset to the vfield pointer in the object. */
-      vfield_offset = TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn)));
-      vfield_offset = CLASSTYPE_VFIELD (vfield_offset);
-      vfield_offset = DECL_FIELD_BITPOS (vfield_offset);
-      vfield_offset = size_binop (FLOOR_DIV_EXPR, vfield_offset, size_int (BITS_PER_UNIT));
+      vfield_offset = get_binfo (DECL_CONTEXT (TREE_OPERAND (pfn, 0)),
+				 DECL_CLASS_CONTEXT (TREE_OPERAND (pfn, 0)),
+				 0);
+      vfield_offset = get_vfield_offset (vfield_offset);
       delta2 = size_binop (PLUS_EXPR, vfield_offset, delta2);
 
       /* Map everything down one to make room for the null pointer to member.  */
@@ -5901,22 +6004,21 @@ build_ptrmemfunc (type, pfn, force)
 			  DECL_VINDEX (TREE_OPERAND (pfn, 0)),
 			  integer_one_node);
       u = build_nt (CONSTRUCTOR, 0, tree_cons (delta2_identifier, delta2, NULL_TREE));
-
-      return build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, delta,
-						  tree_cons (NULL_TREE, index,
-							     tree_cons (NULL_TREE, u, NULL_TREE))));
     }
   else
-    index = size_binop (MINUS_EXPR, integer_zero_node, integer_one_node);
+    {
+      index = fold (size_binop (MINUS_EXPR, integer_zero_node, integer_one_node));
 
-  npfn = build1 (NOP_EXPR, type, pfn);
-  TREE_CONSTANT (npfn) = TREE_CONSTANT (pfn);
+      npfn = build1 (NOP_EXPR, type, pfn);
+      TREE_CONSTANT (npfn) = TREE_CONSTANT (pfn);
 
-  u = build_nt (CONSTRUCTOR, 0, tree_cons (pfn_identifier, npfn, NULL_TREE));
+      u = build_nt (CONSTRUCTOR, 0, tree_cons (pfn_identifier, npfn, NULL_TREE));
+    }
 
-  return build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, delta,
-					      tree_cons (NULL_TREE, index,
-							 tree_cons (NULL_TREE, u, NULL_TREE))));
+  u = build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, delta,
+					   tree_cons (NULL_TREE, index,
+						      tree_cons (NULL_TREE, u, NULL_TREE))));
+  return digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment
@@ -6125,21 +6227,6 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	    else
 	      pedwarn ("ANSI C++ forbids implicit conversion from `void *' in %s",
 		       errtype);
-	  else if (pedantic
-	      && ((TYPE_MAIN_VARIANT (ttl) == void_type_node
-		   && (TREE_CODE (ttr) == FUNCTION_TYPE
-		       || TREE_CODE (ttr) == METHOD_TYPE))
-		  ||
-		  (TYPE_MAIN_VARIANT (ttr) == void_type_node
-		   && (TREE_CODE (ttl) == FUNCTION_TYPE
-		       || TREE_CODE (ttl) == METHOD_TYPE))))
-	    {
-	      if (fndecl)
-		cp_pedwarn ("passing `%T' as argument %P of `%D'",
-			    rhstype, parmnum, fndecl);
-	      else
-		cp_pedwarn ("%s to `void *' from `%T'", errtype, rhstype);
-	    }
 	  /* Const and volatile mean something different for function types,
 	     so the usual warnings are not appropriate.  */
 	  else if ((TREE_CODE (ttr) != FUNCTION_TYPE && TREE_CODE (ttr) != METHOD_TYPE)
@@ -6334,14 +6421,12 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   else if (((coder == POINTER_TYPE && TREE_CODE (rhs) == ADDR_EXPR
 	     && TREE_CODE (rhstype) == POINTER_TYPE
 	     && TREE_CODE (TREE_TYPE (rhstype)) == METHOD_TYPE)
-	    || integer_zerop (rhs))
+	    || integer_zerop (rhs)
+	    || TYPE_PTRMEMFUNC_P (TREE_TYPE (rhs)))
 	   && TYPE_PTRMEMFUNC_P (type))
     {
       /* compatible pointer to member functions. */
-      rhs = build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), rhs, 0);
-      if (rhs == 0)
-	return error_mark_node;
-      return digest_init (type, rhs, (tree *)0);
+      return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), rhs, 0);
     }
   else if (codel == ERROR_MARK || coder == ERROR_MARK)
     return error_mark_node;
@@ -6353,7 +6438,11 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
     /* Force an abort.  */
     my_friendly_assert (codel != REFERENCE_TYPE, 317);
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (rhs)))
-    return build1 (NOP_EXPR, type, rhs);
+    {
+      tree nrhs = build1 (NOP_EXPR, type, rhs);
+      TREE_CONSTANT (nrhs) = TREE_CONSTANT (rhs);
+      return nrhs;
+    }
   else if (TYPE_HAS_CONSTRUCTOR (type) || IS_AGGR_TYPE (TREE_TYPE (rhs)))
     return convert (type, rhs);
 
@@ -6512,7 +6601,11 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	  if (TREE_CODE (TREE_TYPE (rhs)) == REFERENCE_TYPE)
 	    rhs = convert_from_reference (rhs);
 	  if (type != rhstype)
-	    return build1 (NOP_EXPR, type, rhs);
+	    {
+	      tree nrhs = build1 (NOP_EXPR, type, rhs);
+	      TREE_CONSTANT (nrhs) = TREE_CONSTANT (rhs);
+	      rhs = nrhs;
+	    }
 	  return rhs;
 	}
 

@@ -22,6 +22,8 @@ Questions and comments to mrs@@cygnus.com.
 * Templates::                   
 * Access Control::              
 * Error Reporting::             
+* Parser::                      
+* Copying Objects::             
 * Concept Index::               
 @end menu
 
@@ -77,19 +79,19 @@ An example would be:
 
 @example
 extern "C" int printf(const char*, ...);
-struct A { virtual void f() { } };
-struct B : virtual A { int b; B() : b(0) {} void f() { b++; } };
-struct C : B {};
-struct D : B {};
-struct E : C, D {};
+struct A @{ virtual void f() @{ @} @};
+struct B : virtual A @{ int b; B() : b(0) @{@} void f() @{ b++; @} @};
+struct C : B @{@};
+struct D : B @{@};
+struct E : C, D @{@};
 int main()
-{
+@{
   E e;
   C& c = e; D& d = e;
   c.f(); d.f();
   printf ("C::b = %d, D::b = %d\n", e.C::b, e.D::b);
   return 0;
-}
+@}
 @end example
 
 This will print out 2, 0, instead of 1,1.
@@ -984,7 +986,7 @@ TREE_PROTECTED and TREE_PRIVATE are used to record the access levels
 granted by the containing class.  BEWARE: TREE_PUBLIC means something
 completely unrelated to access control!
 
-@node Error Reporting, Concept Index, Access Control, Top
+@node Error Reporting, Parser, Access Control, Top
 @section Error Reporting
 
 The C++ frontend uses a call-back mechanism to allow functions to print
@@ -1022,7 +1024,110 @@ To have the line number on the error message indicate the line of the
 DECL, use @code{cp_error_at} and its ilk; to indicate which argument you want,
 use @code{%+D}, or it will default to the first.
 
-@node Concept Index,  , Error Reporting, Top
+@node Parser, Copying Objects, Error Reporting, Top
+@section Parser
+
+Some comments on the parser:
+
+The @code{after_type_declarator} / @code{notype_declarator} hack is
+necessary in order to allow redeclarations of @code{TYPENAME}s, for
+instance
+
+@example
+typedef int foo;
+class A @{
+  char *foo;
+@};
+@end example
+
+In the above, the first @code{foo} is parsed as a @code{notype_declarator},
+and the second as a @code{after_type_declarator}.
+
+Ambiguities:
+
+There are currently four reduce/reduce ambiguities in the parser.  They are:
+
+1) Between @code{template_parm} and
+@code{named_class_head_sans_basetype}, for the tokens @code{aggr
+identifier}.  This situation occurs in code looking like
+
+@example
+template <class T> class A @{ @};
+@end example
+
+It is ambiguous whether @code{class T} should be parsed as the
+declaration of a template type parameter named @code{T} or an unnamed
+constant parameter of type @code{class T}.  Section 14.6, paragraph 3 of
+the January '94 working paper states that the first interpretation is
+the correct one.  This ambiguity results in four reduce/reduce conflicts.
+
+2) Between @code{primary} and @code{typename} for code like @samp{int()}
+in places where both can be accepted, such as the argument to
+@code{sizeof}.  Section 8.1 of the pre-San Diego working paper specifies
+that these ambiguous constructs will be interpreted as @code{typename}s.
+This ambiguity results in six reduce/reduce conflicts.
+
+3) Between @code{primary}/@code{functional_cast} and
+@code{expr_or_declarator}/@code{complex_direct_notype_declarator}, for
+various token strings.  This situation occurs in code looking like
+
+@example
+int (*a);
+@end example
+
+This code is ambiguous; it could be a declaration of the variable
+@samp{a} as a pointer to @samp{int}, or it could be a functional cast of
+@samp{*a} to @samp{int}.  Section 6.8 specifies that the former
+interpretation is correct.  This ambiguity results in 12 reduce/reduce
+conflicts.  Ack.
+
+4) Between @code{after_type_declarator} and @code{parm}, for the token
+@code{TYPENAME}.  This occurs in (as one example) code like
+
+@example
+typedef int foo, bar;
+class A @{
+  foo (bar);
+@};
+@end example
+
+What is @code{bar} inside the class definition?  We currently interpret
+it as a @code{parm}, as does Cfront, but IBM xlC interprets it as an
+@code{after_type_declarator}.  I suspect that xlC is correct, in light
+of 7.1p2, which says "The longest sequence of @i{decl-specifiers} that
+could possibly be a type name is taken as the @i{decl-specifier-seq} of
+a @i{declaration}."  However, it seems clear that this rule must be
+violated in the case of constructors, so...
+
+Unlike the others, this ambiguity is not recognized by the Working Paper.
+
+@node  Copying Objects, Concept Index, Parser, Top
+@section Copying Objects
+
+The generated copy assignment operator in g++ does not currently do the
+right thing for multiple inheritance involving virtual bases; it just
+calls the copy assignment operators for its direct bases.  What it
+should probably do is:
+
+1) Split up the copy assignment operator for all classes that have
+vbases into "copy my vbases" and "copy everything else" parts.  Or do
+the trickiness that the constructors do to ensure that vbases don't get
+initialized by intermediate bases.
+
+2) Wander through the class lattice, find all vbases for which no
+intermediate base has a user-defined copy assignment operator, and call
+their "copy everything else" routines.  If not all of my vbases satisfy
+this criterion, warn, because this may be surprising behavior.
+
+3) Call the "copy everything else" routine for my direct bases.
+
+If we only have one direct base, we can just foist everything off onto
+them.
+
+This issue is currently under discussion in the core reflector
+(2/28/94).
+
+@node Concept Index,  , Copying Objects, Top
 @section Concept Index
 
 @printindex cp

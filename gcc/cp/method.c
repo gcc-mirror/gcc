@@ -929,6 +929,8 @@ build_typename_overload (type)
   build_overload_name (type, 0, 1);
   id = get_identifier (obstack_base (&scratch_obstack));
   IDENTIFIER_OPNAME_P (id) = 1;
+  IDENTIFIER_GLOBAL_VALUE (id) = TYPE_NAME (type);
+  TREE_TYPE (id) = type;
   return id;
 }
 

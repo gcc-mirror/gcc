@@ -58,7 +58,7 @@ static int temp_name_counter;
    can have the same name.  */
 static int global_temp_name_counter;
 
-/* Flag used when debugging cp-spew.c */
+/* Flag used when debugging spew.c */
 
 extern int spew_debug;
 
@@ -128,6 +128,10 @@ int warn_implicit = 1;
    has no friends.  */
 
 int warn_ctor_dtor_privacy = 1;
+
+/* True if we want output of vtables to be controlled by whether
+   we seen the class's first non-inline virtual function. */
+int flag_vtable_hack = 0;
 
 /* Nonzero means give string constants the type `const char *'
    to get extra warnings from them.  These warnings will be too numerous
@@ -360,6 +364,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"ansi-overloading", &flag_ansi_overloading, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
+  {"vtable-hack", &flag_vtable_hack, 1},
 };
 
 /* Decode the string P as a language-specific option.
@@ -1619,107 +1624,12 @@ groktypefield (declspecs, parmlist)
   return decl;
 }
 
-/* The precedence rules of this grammar (or any other deterministic LALR
-   grammar, for that matter), place the CALL_EXPR somewhere where we
-   may not want it.  The solution is to grab the first CALL_EXPR we see,
-   pretend that that is the one that belongs to the parameter list of
-   the type conversion function, and leave everything else alone.
-   We pull it out in place.
-
-   CALL_REQUIRED is non-zero if we should complain if a CALL_EXPR
-   does not appear in DECL.  */
 tree
-grokoptypename (decl, call_required)
-     tree decl;
-     int call_required;
+grokoptypename (declspecs, declarator)
+     tree declspecs, declarator;
 {
-  tree tmp, last;
-
-  my_friendly_assert (TREE_CODE (decl) == TYPE_EXPR, 195);
-
-  tmp = TREE_OPERAND (decl, 0);
-  last = NULL_TREE;
-
-  while (tmp)
-    {
-      switch (TREE_CODE (tmp))
-	{
-	case CALL_EXPR:
-	  {
-	    tree parms = TREE_OPERAND (tmp, 1);
-
-	    if (last)
-	      TREE_OPERAND (last, 0) = TREE_OPERAND (tmp, 0);
-	    else
-	      TREE_OPERAND (decl, 0) = TREE_OPERAND (tmp, 0);
-
-	    last = grokdeclarator (TREE_OPERAND (decl, 0),
-				   TREE_TYPE (decl),
-				   TYPENAME, 0, NULL_TREE);
-	    TREE_OPERAND (tmp, 0) = build_typename_overload (last);
-	    TREE_TYPE (TREE_OPERAND (tmp, 0)) = last;
-
-	    if (parms
-		&& TREE_CODE (TREE_VALUE (parms)) == TREE_LIST)
-	      TREE_VALUE (parms)
-		= grokdeclarator (TREE_VALUE (TREE_VALUE (parms)),
-				  TREE_PURPOSE (TREE_VALUE (parms)),
-				  TYPENAME, 0, NULL_TREE);
-	    if (parms)
-	      {
-		if (TREE_VALUE (parms) != void_type_node)
-		  cp_error ("`operator %T' requires empty parameter list",
-			    last);
-		else
-		  /* Canonicalize parameter lists.  */
-		  TREE_OPERAND (tmp, 1) = void_list_node;
-	      }
-
-	    return tmp;
-	  }
-
-	case INDIRECT_REF:
-	case ADDR_EXPR:
-	case ARRAY_REF:
-	  break;
-
-	case SCOPE_REF:
-	  /* This is legal when declaring a conversion to
-	     something of type pointer-to-member.  */
-	  if (TREE_CODE (TREE_OPERAND (tmp, 1)) == INDIRECT_REF)
-	    {
-	      tmp = TREE_OPERAND (tmp, 1);
-	    }
-	  else
-	    {
-#if 0
-	      /* We may need to do this if grokdeclarator cannot handle this.  */
-	      error ("type `member of class %s' invalid return type",
-		     TYPE_NAME_STRING (TREE_OPERAND (tmp, 0)));
-	      TREE_OPERAND (tmp, 1) = build_parse_node (INDIRECT_REF, TREE_OPERAND (tmp, 1));
-#endif
-	      tmp = TREE_OPERAND (tmp, 1);
-	    }
-	  break;
-
-	default:
-	  my_friendly_abort (196);
-	}
-      last = tmp;
-      tmp = TREE_OPERAND (tmp, 0);
-    }
-
-  last = grokdeclarator (TREE_OPERAND (decl, 0),
-			 TREE_TYPE (decl),
-			 TYPENAME, 0, NULL_TREE);
-
-  if (call_required)
-    cp_error ("`operator %T' construct requires parameter list", last);
-
-  tmp = build_parse_node (CALL_EXPR, build_typename_overload (last),
-			  void_list_node, NULL_TREE);
-  TREE_TYPE (TREE_OPERAND (tmp, 0)) = last;
-  return tmp;
+  tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL_TREE);
+  return build_typename_overload (t);
 }
 
 /* When a function is declared with an initializer,
@@ -2420,6 +2330,22 @@ static void
 finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
+  tree ctype = DECL_CONTEXT (vars);
+  if (flag_vtable_hack && !CLASSTYPE_INTERFACE_KNOWN (ctype))
+    {
+      tree method;
+      for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
+	   method = DECL_NEXT_METHOD (method))
+	{
+	  if (DECL_VINDEX (method) != NULL_TREE && !DECL_SAVED_INSNS (method))
+	    {
+	      TREE_PUBLIC (vars) = 1;
+	      DECL_EXTERNAL (vars) = DECL_EXTERNAL (method);
+	      break;
+	    }
+	}
+    }
+
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
     {
@@ -2468,6 +2394,8 @@ finish_vtable_vardecl (prev, vars)
 
       rest_of_decl_compilation (vars, 0, 1, 1);
     }
+  else if (TREE_USED (vars) && flag_vtable_hack)
+    assemble_external (vars);
   /* We know that PREV must be non-zero here.  */
   TREE_CHAIN (prev) = TREE_CHAIN (vars);
 }
@@ -2783,7 +2711,7 @@ finish_file ()
      There are several ways of getting the same effect, from changing the
      way that iterators over the chain treat the elements that pertain to
      virtual function tables, moving the implementation of this code to
-     cp-decl.c (where we can manipulate global_binding_level directly),
+     decl.c (where we can manipulate global_binding_level directly),
      popping the garbage after pushing it and slicing away the vtable
      stuff, or just leaving it alone. */
 
@@ -2820,4 +2748,135 @@ finish_file ()
 
   if (flag_detailed_statistics)
     dump_time_statistics ();
+}
+
+/* This is something of the form 'A()()()()()+1' that has turned out to be an
+   expr.  Since it was parsed like a type, we need to wade through and fix
+   that.  Unfortunately, since operator() is left-associative, we can't use
+   tail recursion.  In the above example, TYPE is `A', and DECL is
+   `()()()()()'.
+
+   Maybe this shouldn't be recursive, but how often will it actually be
+   used?  (jason) */
+tree
+reparse_absdcl_as_expr (type, decl)
+     tree type, decl;
+{
+  /* do build_functional_cast (type, NULL_TREE) at bottom */
+  if (TREE_OPERAND (decl, 0) == NULL_TREE)
+    return build_functional_cast (type, NULL_TREE);
+
+  /* recurse */
+  decl = reparse_decl_as_expr (type, TREE_OPERAND (decl, 0));
+
+  decl = build_x_function_call (decl, NULL_TREE, current_class_decl);
+
+  if (TREE_CODE (decl) == CALL_EXPR && TREE_TYPE (decl) != void_type_node)
+    decl = require_complete_type (decl);
+
+  return decl;
+}
+
+/* This is something of the form `int ((int)(int)(int)1)' that has turned
+   out to be an expr.  Since it was parsed like a type, we need to wade
+   through and fix that.  Since casts are right-associative, we are
+   reversing the order, so we don't have to recurse.
+
+   In the above example, DECL is the `(int)(int)(int)', and EXPR is the
+   `1'.  */
+tree
+reparse_absdcl_as_casts (decl, expr)
+     tree decl, expr;
+{
+  tree type;
+  
+  if (TREE_CODE (expr) == CONSTRUCTOR)
+    {
+      type = groktypename (TREE_VALUE (TREE_OPERAND (decl, 1)));
+      decl = TREE_OPERAND (decl, 0);
+
+      if (IS_SIGNATURE (type))
+	{
+	  error ("cast specifies signature type");
+	  return error_mark_node;
+	}
+
+      expr = digest_init (type, expr, (tree *) 0);
+      if (TREE_CODE (type) == ARRAY_TYPE && TYPE_SIZE (type) == 0)
+	{
+	  int failure = complete_array_type (type, expr, 1);
+	  if (failure)
+	    my_friendly_abort (78);
+	}
+    }
+
+  while (decl)
+    {
+      type = groktypename (TREE_VALUE (TREE_OPERAND (decl, 1)));
+      decl = TREE_OPERAND (decl, 0);
+      expr = build_c_cast (type, expr);
+    }
+
+  return expr;
+}
+
+/* Recursive helper function for reparse_decl_as_expr.  It may be a good
+   idea to reimplement this using an explicit stack, rather than recursion. */
+static tree
+reparse_decl_as_expr1 (decl)
+     tree decl;
+{
+  switch (TREE_CODE (decl))
+    {
+    case IDENTIFIER_NODE:
+      return do_identifier (decl);
+    case INDIRECT_REF:
+      return build_x_indirect_ref
+	(reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)), "unary *");
+    case ADDR_EXPR:
+      return build_x_unary_op (ADDR_EXPR,
+			       reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)));
+    case BIT_NOT_EXPR:
+      return build_x_unary_op (BIT_NOT_EXPR,
+			       reparse_decl_as_expr1 (TREE_OPERAND (decl, 0)));
+    }
+  my_friendly_abort (5);
+}
+
+/* This is something of the form `int (*a)++' that has turned out to be an
+   expr.  It was only converted into parse nodes, so we need to go through
+   and build up the semantics.  Most of the work is done by
+   reparse_decl_as_expr1, above.
+
+   In the above example, TYPE is `int' and DECL is `*a'.  */
+tree
+reparse_decl_as_expr (type, decl)
+     tree type, decl;
+{
+  decl = build_tree_list (NULL_TREE, reparse_decl_as_expr1 (decl));
+  return build_functional_cast (type, decl);
+}
+
+/* This is something of the form `int (*a)' that has turned out to be a
+   decl.  It was only converted into parse nodes, so we need to do the
+   checking that make_{pointer,reference}_declarator do. */
+
+tree
+finish_decl_parsing (decl)
+     tree decl;
+{
+  switch (TREE_CODE (decl))
+    {
+    case IDENTIFIER_NODE:
+      return decl;
+    case INDIRECT_REF:
+      return make_pointer_declarator
+	(NULL_TREE, finish_decl_parsing (TREE_OPERAND (decl, 0)));
+    case ADDR_EXPR:
+      return make_reference_declarator
+	(NULL_TREE, finish_decl_parsing (TREE_OPERAND (decl, 0)));
+    case BIT_NOT_EXPR:
+      TREE_OPERAND (decl, 0) = finish_decl_parsing (TREE_OPERAND (decl, 0));
+      return decl;
+    }
 }

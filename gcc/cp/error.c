@@ -76,6 +76,7 @@ static char *scratch_firstobj;
 # define OB_FINISH() (obstack_1grow (&scratch_obstack, '\0'))
 # define OB_PUTI(CST) do { sprintf (digit_buffer, "%d", (CST)); \
 			   OB_PUTCP (digit_buffer); } while (0)
+# define OB_UNPUT(N) obstack_blank (&scratch_obstack, - (N));
 
 # define NEXT_CODE(t) (TREE_CODE (TREE_TYPE (t)))
 
@@ -131,11 +132,11 @@ dump_type (t, v)
   switch (TREE_CODE (t))
     {
     case ERROR_MARK:
-      OB_PUTS ("<error>");
+      OB_PUTS ("{error}");
       break;
 
     case UNKNOWN_TYPE:
-      OB_PUTS ("<unknown type>");
+      OB_PUTS ("{unknown type}");
       break;
 
     case TREE_LIST:
@@ -206,9 +207,7 @@ dump_type (t, v)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      OB_PUTS ("<template type parm ");
       OB_PUTID (TYPE_IDENTIFIER (t));
-      OB_PUTC ('>');
       break;
 
     case UNINSTANTIATED_P_TYPE:
@@ -230,9 +229,25 @@ dump_type (t, v)
       break;
 
     default:
-      my_friendly_abort (68);
-      
+      sorry ("`%s' not supported by dump_type",
+	     tree_code_name[(int) TREE_CODE (t)]);
     }
+}
+
+static char *
+aggr_variety (t)
+     tree t;
+{
+  if (TREE_CODE (t) == ENUMERAL_TYPE)
+    return "enum";
+  else if (TREE_CODE (t) == UNION_TYPE)
+    return "union";
+  else if (TYPE_LANG_SPECIFIC (t) && CLASSTYPE_DECLARED_CLASS (t))
+    return "class";
+  else if (TYPE_LANG_SPECIFIC (t) && IS_SIGNATURE (t))
+    return "signature";
+  else
+    return "struct";
 }
 
 /* Print out a class declaration, in the form `class foo'. */
@@ -242,18 +257,7 @@ dump_aggr_type (t, v)
      int v;			/* verbose? */
 {
   tree name;
-  char *variety;
-
-  if (TREE_CODE (t) == ENUMERAL_TYPE)
-    variety = "enum";
-  else if (TREE_CODE (t) == UNION_TYPE)
-    variety = "union";
-  else if (TYPE_LANG_SPECIFIC (t) && CLASSTYPE_DECLARED_CLASS (t))
-    variety = "class";
-  else if (TYPE_LANG_SPECIFIC (t) && IS_SIGNATURE (t))
-    variety = "signature";
-  else
-    variety = "struct";
+  char *variety = aggr_variety (t);
 
   dump_readonly_or_volatile (t, after);
 
@@ -278,13 +282,13 @@ dump_aggr_type (t, v)
 
   if (ANON_AGGRNAME_P (name))
     {
-      OB_PUTS ("<anonymous");
+      OB_PUTS ("{anonymous");
       if (!v)
 	{
 	  OB_PUTC (' ');
 	  OB_PUTCP (variety);
 	}
-      OB_PUTC ('>');
+      OB_PUTC ('}');
     }
   else
     OB_PUTID (name);
@@ -369,13 +373,12 @@ dump_type_prefix (t, v)
     case OFFSET_TYPE:
     offset_type:
       dump_type_prefix (TREE_TYPE (t), v);
-      if (NEXT_CODE (t) != FUNCTION_TYPE && NEXT_CODE (t) != METHOD_TYPE)
-	OB_PUTC (' ');
-      if (TREE_CODE (t) == OFFSET_TYPE)
-	dump_type (TYPE_OFFSET_BASETYPE (t), 0);
-      else			/* pointer to member function */
-	dump_type (TYPE_METHOD_BASETYPE (TREE_TYPE (t)), 0);
-      OB_PUTC2 (':', ':');
+      if (TREE_CODE (t) == OFFSET_TYPE)	/* pmfs deal with this in d_t_p */
+	{
+	  OB_PUTC (' ');
+	  dump_type (TYPE_OFFSET_BASETYPE (t), 0);
+	  OB_PUTC2 (':', ':');
+	}
       OB_PUTC ('*');
       dump_readonly_or_volatile (t, none);
       break;
@@ -416,7 +419,8 @@ dump_type_prefix (t, v)
       break;
       
     default:
-      my_friendly_abort (65);
+      sorry ("`%s' not supported by dump_type_prefix",
+	     tree_code_name[(int) TREE_CODE (t)]);
     }
 }
 
@@ -483,7 +487,8 @@ dump_type_suffix (t, v)
       break;
 
     default:
-      my_friendly_abort (67);
+      sorry ("`%s' not supported by dump_type_suffix",
+	     tree_code_name[(int) TREE_CODE (t)]);
     }
 }
 
@@ -576,7 +581,7 @@ dump_decl (t, v)
       if (DECL_NAME (t))
 	dump_decl (DECL_NAME (t), v);
       else
-	OB_PUTS ("<anon>");
+	OB_PUTS ("{anon}");
       if (v > 0) dump_type_suffix (TREE_TYPE (t), v);
       break;
 
@@ -636,16 +641,41 @@ dump_decl (t, v)
       break;
 
     case TEMPLATE_DECL:
-      switch (NEXT_CODE (t))
-	{
-	case METHOD_TYPE:
-	case FUNCTION_TYPE:
-	  dump_function_decl (t, v);
-	  break;
+      {
+	tree args = DECL_TEMPLATE_PARMS (t);
+	int i, len = TREE_VEC_LENGTH (args);
+	OB_PUTS ("template <");
+	for (i = 0; i < len; i++)
+	  {
+	    tree arg = TREE_VEC_ELT (args, i);
+	    if (TREE_CODE (arg) == IDENTIFIER_NODE)
+	      {
+		OB_PUTS ("class ");
+		OB_PUTID (arg);
+	      }
+	    else
+	      dump_decl (arg, 1);
+	    OB_PUTC2 (',', ' ');
+	  }
+	OB_UNPUT (2);
+	OB_PUTC2 ('>', ' ');
 
-	default:
-	  my_friendly_abort (353);
-	}
+	if (DECL_TEMPLATE_IS_CLASS (t))
+	  {
+	    OB_PUTS ("class ");
+	    OB_PUTID (DECL_NAME (t));
+	  }
+	else switch (NEXT_CODE (t))
+	  {
+	  case METHOD_TYPE:
+	  case FUNCTION_TYPE:
+	    dump_function_decl (t, v);
+	    break;
+
+	  default:
+	    my_friendly_abort (353);
+	  }
+      }
       break;
 
     case LABEL_DECL:
@@ -667,7 +697,8 @@ dump_decl (t, v)
       break;
 
     default:
-      my_friendly_abort (70);
+      sorry ("`%s' not supported by dump_decl",
+	     tree_code_name[(int) TREE_CODE (t)]);
     }
 }
 
@@ -1157,6 +1188,22 @@ dump_expr (t, nop)
       OB_PUTC ('}');
       break;
 
+    case OFFSET_REF:
+      {
+	tree ob = TREE_OPERAND (t, 0);
+	if (TREE_CODE (ob) == NOP_EXPR
+	    && TREE_OPERAND (ob, 0) == error_mark_node
+	    && TREE_CODE (TREE_OPERAND (t, 1)) == FUNCTION_DECL)
+	    /* A::f */
+	  dump_expr (TREE_OPERAND (t, 1), 0);
+	else
+	  {
+	    sorry ("operand of OFFSET_REF not understood");
+	    goto error;
+	  }
+	break;
+      }
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
@@ -1167,7 +1214,7 @@ dump_expr (t, nop)
       /* fall through to ERROR_MARK...  */
     case ERROR_MARK:
     error:
-      OB_PUTCP ("/* error */");
+      OB_PUTCP ("{error}");
       break;
     }
 }
@@ -1321,7 +1368,7 @@ op_as_string (p, v)
   static char buf[] = "operator                ";
 
   if (p == 0)
-    return "<unknown>";
+    return "{unknown}";
   
   strcpy (buf + 9, opname_tab [p]);
   return buf;

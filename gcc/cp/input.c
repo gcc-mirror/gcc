@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the GNU library available, so FILE objects just don't cut it.
 
    This file is written as a separate module, but can be included by
-   cp-lex.c for very minor efficiency gains (primarily in function
+   lex.c for very minor efficiency gains (primarily in function
    inlining).  */
 
 #include <stdio.h>
@@ -97,7 +97,7 @@ free_input (inp)
 static int putback_char = -1;
 
 /* Some of these external functions are declared inline in case this file
-   is included in cp-lex.c.  */
+   is included in lex.c.  */
 
 inline
 void

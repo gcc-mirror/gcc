@@ -581,7 +581,11 @@ build_up_reference (type, arg, flags, checkconst)
   if (TYPE_USES_COMPLEX_INHERITANCE (argtype))
     {
       TREE_TYPE (rval) = TYPE_POINTER_TO (argtype);
-      rval = convert_pointer_to (target_type, rval);
+      if (flags & LOOKUP_PROTECT)
+	rval = convert_pointer_to (target_type, rval);
+      else
+	rval
+	  = convert_to_pointer_force (build_pointer_type (target_type), rval);
       TREE_TYPE (rval) = type;
     }
   TREE_CONSTANT (rval) = literal_flag;
@@ -1439,18 +1443,16 @@ convert_force (type, expr)
   if (code == POINTER_TYPE)
     return fold (convert_to_pointer_force (type, e));
 
-  /* From cp-typeck.c convert_for_assignment */
+  /* From typeck.c convert_for_assignment */
   if (((TREE_CODE (TREE_TYPE (e)) == POINTER_TYPE && TREE_CODE (e) == ADDR_EXPR
 	&& TREE_CODE (TREE_TYPE (e)) == POINTER_TYPE
 	&& TREE_CODE (TREE_TYPE (TREE_TYPE (e))) == METHOD_TYPE)
-       || integer_zerop (e))
+       || integer_zerop (e)
+       || TYPE_PTRMEMFUNC_P (TREE_TYPE (e)))
       && TYPE_PTRMEMFUNC_P (type))
     {
       /* compatible pointer to member functions. */
-      e = build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), e, 1);
-      if (e == 0)
-	return error_mark_node;
-      return digest_init (type, e, (tree *)0);
+      return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), e, 1);
     }
   {
     int old_equiv = flag_int_enum_equivalence;

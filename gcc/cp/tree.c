@@ -83,13 +83,8 @@ lvalue_p (ref)
       case OFFSET_REF:
 	if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
 	  return 1;
-	if (TREE_CODE (TREE_OPERAND (ref, 1)) == VAR_DECL)
-	  if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
-	      && DECL_LANG_SPECIFIC (ref)
-	      && DECL_IN_AGGR_P (ref))
-	    return 0;
-	  else
-	    return 1;
+	return lvalue_p (TREE_OPERAND (ref, 0))
+	  && lvalue_p (TREE_OPERAND (ref, 1));
 	break;
 
       case ADDR_EXPR:
@@ -940,6 +935,44 @@ hash_chainon (list1, list2)
 			  hash_chainon (TREE_CHAIN (list1), list2));
 }
 
+static tree
+get_identifier_list (value)
+     tree value;
+{
+  tree list = IDENTIFIER_AS_LIST (value);
+  if (list != NULL_TREE
+      && (TREE_CODE (list) != TREE_LIST
+	  || TREE_VALUE (list) != value))
+    list = NULL_TREE;
+  else if (IDENTIFIER_HAS_TYPE_VALUE (value)
+	   && TREE_CODE (IDENTIFIER_TYPE_VALUE (value)) == RECORD_TYPE)
+    {
+      tree type = IDENTIFIER_TYPE_VALUE (value);
+
+      if (TYPE_PTRMEMFUNC_P (type))
+	list = NULL_TREE;
+      else if (type == current_class_type)
+	/* Don't mess up the constructor name.  */
+	list = tree_cons (NULL_TREE, value, NULL_TREE);
+      else
+	{
+	  register tree id;
+	  /* This will return the correct thing for regular types,
+	     nested types, and templates.  Yay! */
+	  if (TYPE_NESTED_NAME (type))
+	    id = TYPE_NESTED_NAME (type);
+	  else
+	    id = TYPE_IDENTIFIER (type);
+
+	  if (CLASSTYPE_ID_AS_LIST (type) == NULL_TREE)
+	    CLASSTYPE_ID_AS_LIST (type)
+	      = perm_tree_cons (NULL_TREE, id, NULL_TREE);
+	  list = CLASSTYPE_ID_AS_LIST (type);
+	}
+    }
+  return list;
+}
+
 tree
 get_decl_list (value)
      tree value;
@@ -947,35 +980,7 @@ get_decl_list (value)
   tree list = NULL_TREE;
 
   if (TREE_CODE (value) == IDENTIFIER_NODE)
-    {
-      list = IDENTIFIER_AS_LIST (value);
-      if (list != NULL_TREE
-	  && (TREE_CODE (list) != TREE_LIST
-	      || TREE_VALUE (list) != value))
-	list = NULL_TREE;
-      else if (IDENTIFIER_HAS_TYPE_VALUE (value)
-	       && TREE_CODE (IDENTIFIER_TYPE_VALUE (value)) == RECORD_TYPE)
-	{
-	  register tree id;
-	  tree type = IDENTIFIER_TYPE_VALUE (value);
-
-	  if (TYPE_PTRMEMFUNC_P (type))
-	    list = NULL_TREE;
-	  else
-	    {
-	      /* This will return the correct thing for regular types,
-		 nested types, and templates.  Yay! */
-	      if (DECL_NESTED_TYPENAME (TYPE_NAME (type)))
-		value = DECL_NESTED_TYPENAME (TYPE_NAME (type));
-	      id = value;
-
-	      if (CLASSTYPE_ID_AS_LIST (type) == NULL_TREE)
-		CLASSTYPE_ID_AS_LIST (type) = perm_tree_cons (NULL_TREE,
-							      id, NULL_TREE);
-	      list = CLASSTYPE_ID_AS_LIST (type);
-	    }
-	}
-    }
+    list = get_identifier_list (value);
   else if (TREE_CODE (value) == RECORD_TYPE
 	   && TYPE_LANG_SPECIFIC (value))
     list = CLASSTYPE_AS_LIST (value);
@@ -1003,39 +1008,7 @@ list_hash_lookup_or_cons (value)
   tree list = NULL_TREE;
 
   if (TREE_CODE (value) == IDENTIFIER_NODE)
-    {
-      list = IDENTIFIER_AS_LIST (value);
-      if (list != NULL_TREE
-	  && (TREE_CODE (list) != TREE_LIST
-	      || TREE_VALUE (list) != value))
-	list = NULL_TREE;
-      else if (IDENTIFIER_HAS_TYPE_VALUE (value)
-	       && TREE_CODE (IDENTIFIER_TYPE_VALUE (value)) == RECORD_TYPE)
-	{
-	  /* If the type name and constructor name are different, don't
-	     write constructor name into type.  */
-	  if (identifier_typedecl_value (value)
-	      && identifier_typedecl_value (value) != constructor_name (value))
-	    list = tree_cons (NULL_TREE, value, NULL_TREE);
-	  else
-	    {
-	      tree type = IDENTIFIER_TYPE_VALUE (value);
-	      if (TYPE_PTRMEMFUNC_P (type))
-		list = NULL_TREE;
-	      else
-		{
-		  if (CLASSTYPE_ID_AS_LIST (type) == NULL_TREE)
-		    {
-		      /* Not just `value', which could be a template parm.  */
-		      tree id = DECL_NAME (TYPE_NAME (type));
-		      CLASSTYPE_ID_AS_LIST (type) =
-			perm_tree_cons (NULL_TREE, id, NULL_TREE);
-		    }
-		  list = CLASSTYPE_ID_AS_LIST (type);
-		}
-	    }
-	}
-    }
+    list = get_identifier_list (value);
   else if (TREE_CODE (value) == TYPE_DECL
 	   && TREE_CODE (TREE_TYPE (value)) == RECORD_TYPE
 	   && TYPE_LANG_SPECIFIC (TREE_TYPE (value)))
