@@ -1881,10 +1881,8 @@ lex_line (pfile, list)
       cur_token++->type = CPP_EOF;
     }
 
-  /* Directives, known or not, always start a new line.  */
-  if (first_token == 0 || list->tokens[first_token].type == CPP_HASH)
-    first->flags |= BOL;
-  else
+  first->flags |= BOL;
+  if (first_token != 0)
     /* 6.10.3.10: Within the sequence of preprocessing tokens making
        up the invocation of a function-like macro, new line is
        considered a normal white-space character.  */
