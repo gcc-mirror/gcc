@@ -1,3 +1,9 @@
+2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/6980
+	* c-typeck.c (build_c_cast): Improve wording of
+	-Wbad-function-cast diagnostic.
+
 2004-09-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/17626
