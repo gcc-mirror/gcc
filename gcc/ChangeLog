@@ -1,5 +1,19 @@
 Sat Mar  7 00:54:15 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (is_cfg_nonregular): Change return type to
+	an int.  No longer compute "estimated" number of edges.  Use
+	computed_jump_p instead of duplicating the code.  Fixup/add
+	some comments.
+	(build_control_flow): Returns a value indicating an irregularity
+	in the cfg was detected.  Count the number of edges in the cfg.
+	allocate various edge tables.
+	(find_rgns): No longer look for unreachable blocks.
+	(schedule_insns): Do not allocate memory for edge tables here.
+	Free memory for edge tables before returning.  Do not perform
+	cross block scheduling if build_control_flow returns nonzero.
+	* flow.c (compute_preds_succs): More accurately determine when
+	a block drops in.
+
 	* basic-block.h (free_basic_block_vargs): Provide prototype.
 
 	* cccp.c (main): Fix dumb mistakes in last change.

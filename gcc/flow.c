@@ -3269,13 +3269,29 @@ compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
 	 uid_block_number as needed.  */
       for (bb = 0; bb < n_basic_blocks; bb++)
 	{
-	  rtx insn;
+	  rtx insn, stop_insn;
 
+	  if (bb == 0)
+	    stop_insn = NULL_RTX;
+	  else
+	    stop_insn = basic_block_end[bb-1];
+
+	  /* Look backwards from the start of this block.  Stop if we
+	     hit the start of the function or the end of a previous
+	     block.  Don't walk backwards through blocks that are just
+	     deleted insns!  */
 	  for (insn = PREV_INSN (basic_block_head[bb]);
-	       insn && GET_CODE (insn) == NOTE; insn = PREV_INSN (insn))
+	       insn && insn != stop_insn && GET_CODE (insn) == NOTE;
+	       insn = PREV_INSN (insn))
 	    ;
 
-	  basic_block_drops_in[bb] = insn && GET_CODE (insn) != BARRIER;
+	  /* Never set basic_block_drops_in for the first block.  It is
+	     implicit.
+
+	     If we stopped on anything other than a BARRIER, then this
+	     block drops in.  */
+	  if (bb != 0)
+	    basic_block_drops_in[bb] = (insn ? GET_CODE (insn) != BARRIER : 1);
 
 	  insn = basic_block_head[bb];
 	  while (insn)
@@ -3286,9 +3302,8 @@ compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
 	      insn = NEXT_INSN (insn);
 	    }
 	}
-      
-      
     }
+      
   for (bb = 0; bb < n_basic_blocks; bb++)
     {
       rtx head;
@@ -3300,8 +3315,14 @@ compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
 	for (jump = LABEL_REFS (head);
 	     jump != head;
 	     jump = LABEL_NEXTREF (jump))
-	  add_pred_succ (BLOCK_NUM (CONTAINING_INSN (jump)), bb,
-			 s_preds, s_succs, num_preds, num_succs);
+	  {
+	    if (! INSN_DELETED_P (CONTAINING_INSN (jump))
+		&& (GET_CODE (CONTAINING_INSN (jump)) != NOTE
+		    || (NOTE_LINE_NUMBER (CONTAINING_INSN (jump))
+			!= NOTE_INSN_DELETED)))
+	      add_pred_succ (BLOCK_NUM (CONTAINING_INSN (jump)), bb,
+			     s_preds, s_succs, num_preds, num_succs);
+	  }
 
       jump = BLOCK_END (bb);
       /* If this is a RETURN insn or a conditional jump in the last

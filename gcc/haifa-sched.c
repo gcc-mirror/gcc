@@ -517,10 +517,9 @@ static int *out_edges;
 extern rtx forced_labels;
 
 
-static char is_cfg_nonregular PROTO ((void));
-static int uses_reg_or_mem PROTO ((rtx));
+static int is_cfg_nonregular PROTO ((void));
 void debug_control_flow PROTO ((void));
-static void build_control_flow PROTO ((void));
+static int build_control_flow PROTO ((void));
 static void new_edge PROTO ((int, int));
 
 
@@ -1078,37 +1077,35 @@ static rtx *bb_sched_before_next_call;
 /* functions for construction of the control flow graph.  */
 
 /* Return 1 if control flow graph should not be constructed, 0 otherwise.
-   Estimate in nr_edges the number of edges on the graph.
-   We decide not to build the control flow graph if there is possibly more
-   than one entry to the function, or if computed branches exist.  */
 
-static char
+   We decide not to build the control flow graph if there is possibly more
+   than one entry to the function, if computed branches exist, of if we
+   have nonlocal gotos.  */
+
+static int
 is_cfg_nonregular ()
 {
   int b;
   rtx insn;
   RTX_CODE code;
 
-  rtx nonlocal_label_list = nonlocal_label_rtx_list ();
+  /* If we have a label that could be the target of a nonlocal goto, then
+     the cfg is not well structured.  */
+  if (nonlocal_label_rtx_list () != NULL)
+    return 1;
 
-  /* check for non local labels */
-  if (nonlocal_label_list)
-    {
-      return 1;
-    }
-
-  /* check for labels which cannot be deleted */
+  /* If we have any forced labels, then the cfg is not well structured.  */
   if (forced_labels)
-    {
-      return 1;
-    }
+    return 1;
 
-  /* check for labels which probably cannot be deleted */
+  /* If we have exception handlers, then we consider the cfg not well
+     structured.  ?!?  We should be able to handle this now that flow.c
+     computes an accurate cfg for EH.  */
   if (exception_handler_labels)
-    {
-      return 1;
-    }
+    return 1;
 
+  /* If we have non-jumping insns which refer to labels, then we consider
+     the cfg not well structured.  */
   /* check for labels referred to other thn by jumps */
   for (b = 0; b < n_basic_blocks; b++)
     for (insn = basic_block_head[b];; insn = NEXT_INSN (insn))
@@ -1120,149 +1117,30 @@ is_cfg_nonregular ()
 
 	    for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	      if (REG_NOTE_KIND (note) == REG_LABEL)
-		{
-		  return 1;
-		}
+		return 1;
 	  }
 
 	if (insn == basic_block_end[b])
 	  break;
       }
 
-  nr_edges = 0;
-
-  /* check for computed branches */
+  /* If this function has a computed jump, then we consider the cfg
+     not well structured.  */
   for (b = 0; b < n_basic_blocks; b++)
     {
       for (insn = basic_block_head[b];; insn = NEXT_INSN (insn))
 	{
-
-	  if (GET_CODE (insn) == JUMP_INSN)
-	    {
-	      rtx pat = PATTERN (insn);
-	      int i;
-
-	      if (GET_CODE (pat) == PARALLEL)
-		{
-		  int len = XVECLEN (pat, 0);
-		  int has_use_labelref = 0;
-
-		  for (i = len - 1; i >= 0; i--)
-		    if (GET_CODE (XVECEXP (pat, 0, i)) == USE
-			&& (GET_CODE (XEXP (XVECEXP (pat, 0, i), 0))
-			    == LABEL_REF))
-		      {
-			nr_edges++;
-			has_use_labelref = 1;
-		      }
-
-		  if (!has_use_labelref)
-		    for (i = len - 1; i >= 0; i--)
-		      if (GET_CODE (XVECEXP (pat, 0, i)) == SET
-			  && SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
-			  && uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
-			{
-			  return 1;
-			}
-		}
-	      /* check for branch table */
-	      else if (GET_CODE (pat) == ADDR_VEC
-		       || GET_CODE (pat) == ADDR_DIFF_VEC)
-		{
-		  int diff_vec_p = GET_CODE (pat) == ADDR_DIFF_VEC;
-		  int len = XVECLEN (pat, diff_vec_p);
-
-		  nr_edges += len;
-		}
-	      else
-		{
-		  /* check for computed branch */
-		  if (GET_CODE (pat) == SET
-		      && SET_DEST (pat) == pc_rtx
-		      && uses_reg_or_mem (SET_SRC (pat)))
-		    {
-		      return 1;
-		    }
-		}
-	    }
+	  if (computed_jump_p (insn))
+	    return 1;
 
 	  if (insn == basic_block_end[b])
 	    break;
 	}
     }
 
-  /* count for the fallthrough edges */
-  for (b = 0; b < n_basic_blocks; b++)
-    {
-      for (insn = PREV_INSN (basic_block_head[b]);
-	   insn && GET_CODE (insn) == NOTE; insn = PREV_INSN (insn))
-	;
-
-      if (!insn && b != 0)
-	nr_edges++;
-      else if (insn && GET_CODE (insn) != BARRIER)
-	nr_edges++;
-    }
-
-  nr_edges++;
-
+  /* All the tests passed.  Consider the cfg well structured.  */
   return 0;
 }
-
-
-/* Returns 1 if x uses a reg or a mem (function was taken from flow.c).
-   x is a target of a jump. Used for the detection of computed
-   branches. For each label seen, updates the edges estimation
-   counter nr_edges.  */
-
-static int
-uses_reg_or_mem (x)
-     rtx x;
-{
-  enum rtx_code code = GET_CODE (x);
-  int i, j;
-  char *fmt;
-
-  if (code == REG)
-    return 1;
-
-  if (code == MEM
-      && !(GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-	   && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0))))
-    return 1;
-
-  if (code == IF_THEN_ELSE)
-    {
-      if (uses_reg_or_mem (XEXP (x, 1))
-	  || uses_reg_or_mem (XEXP (x, 2)))
-	return 1;
-      else
-	return 0;
-    }
-
-  if (code == LABEL_REF)
-    {
-      nr_edges++;
-
-      return 0;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e'
-	  && uses_reg_or_mem (XEXP (x, i)))
-	return 1;
-
-      if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (uses_reg_or_mem (XVECEXP (x, i, j)))
-	    return 1;
-    }
-
-  return 0;
-}
-
 
 /* Print the control flow graph, for debugging purposes.
    Callable from the debugger.  */
@@ -1312,9 +1190,12 @@ debug_control_flow ()
 /* Build the control flow graph and set nr_edges.
 
    Instead of trying to build a cfg ourselves, we rely on flow to
-   do it for us.  Stamp out useless code (and bug) duplication.  */
+   do it for us.  Stamp out useless code (and bug) duplication.
 
-static void
+   Return nonzero if an irregularity in the cfg is found which would
+   prevent cross block scheduling.  */
+
+static int
 build_control_flow ()
 {
   int i, j;
@@ -1323,6 +1204,7 @@ build_control_flow ()
   int_list_ptr succ;
   int *num_preds;
   int *num_succs;
+  int unreachable;
 
   /* The scheduler runs after flow; therefore, we can't blindly call
      back into find_basic_blocks since doing so could invalidate the
@@ -1341,6 +1223,27 @@ build_control_flow ()
   num_succs = (int *) alloca (n_basic_blocks * sizeof (int));
   compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
+  /* Count the number of edges in the cfg.  */
+  nr_edges = 0;
+  unreachable = 0;
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      nr_edges += num_succs[i];
+      if (num_preds[i] == 0)
+	unreachable = 1;
+    }
+
+  /* Account for entry/exit edges.  */
+  nr_edges += 2;
+
+  in_edges = (int *) xmalloc (n_basic_blocks * sizeof (int));
+  out_edges = (int *) xmalloc (n_basic_blocks * sizeof (int));
+  bzero ((char *) in_edges, n_basic_blocks * sizeof (int));
+  bzero ((char *) out_edges, n_basic_blocks * sizeof (int));
+
+  edge_table = (edge *) xmalloc ((nr_edges) * sizeof (edge));
+  bzero ((char *) edge_table, ((nr_edges) * sizeof (edge)));
+
   nr_edges = 0;
   for (i = 0; i < n_basic_blocks; i++)
     for (succ = s_succs[i]; succ; succ = succ->next)
@@ -1355,6 +1258,7 @@ build_control_flow ()
   /* For now.  This will move as more and more of haifa is converted
      to using the cfg code in flow.c  */
   free_bb_mem ();
+  return unreachable;
 }
 
 
@@ -1627,7 +1531,6 @@ find_rgns ()
   int count = 0, sp, idx = 0, current_edge = out_edges[0];
   int num_bbs, num_insns;
   int too_large_failure;
-  char *reachable;
 
   /*
      The following data structures are computed by the first traversal and
@@ -1664,8 +1567,6 @@ find_rgns ()
   bzero ((char *) passed, nr_edges * sizeof (char));
   in_stack = (char *) alloca (nr_edges * sizeof (char));
   bzero ((char *) in_stack, nr_edges * sizeof (char));
-  reachable = (char *) alloca (n_basic_blocks * sizeof (char));
-  bzero ((char *) reachable, n_basic_blocks * sizeof (char));
 
   in_queue = (char *) alloca (n_basic_blocks * sizeof (char));
 
@@ -1677,7 +1578,6 @@ find_rgns ()
 
   /* First traversal: DFS, finds inner loops in control flow graph */
 
-  reachable[0] = 1;
   sp = -1;
   while (1)
     {
@@ -1711,7 +1611,6 @@ find_rgns ()
       dfs_nr[node] = ++count;
       in_stack[node] = 1;
       child = TO_BLOCK (current_edge);
-      reachable[child] = 1;
 
       /* found a loop header */
       if (in_stack[child])
@@ -1741,19 +1640,6 @@ find_rgns ()
       passed[current_edge] = 1;
       current_edge = OUT_EDGES (child);
     }				/* while (1); */
-
-  /* if there are unreachable blocks, or more than one entry to
-     the subroutine, give up on interblock scheduling */
-  for (i = 1; i < n_basic_blocks; i++)
-    {
-      if (reachable[i] == 0)
-	{
-	  find_single_block_region ();
-	  if (sched_verbose >= 3)
-	    fprintf (stderr, "sched: warning: found an unreachable block %d \n", i);
-	  return;
-	}
-    }
 
   /* Second travsersal: find reducible inner loops, and sort
      topologically the blocks of each region */
@@ -8547,31 +8433,20 @@ schedule_insns (dump_file)
     }
   else
     {
-      /* an estimation for nr_edges is computed in is_cfg_nonregular () */
-      nr_edges = 0;
-
       /* verify that a 'good' control flow graph can be built */
-      if (is_cfg_nonregular ()
-	  || nr_edges <= 1)
+      if (is_cfg_nonregular ())
 	{
 	  find_single_block_region ();
 	}
       else
 	{
-	  /* build control flow graph */
-	  in_edges = (int *) alloca (n_basic_blocks * sizeof (int));
-	  out_edges = (int *) alloca (n_basic_blocks * sizeof (int));
-	  bzero ((char *) in_edges, n_basic_blocks * sizeof (int));
-	  bzero ((char *) out_edges, n_basic_blocks * sizeof (int));
-
-	  edge_table =
-	    (edge *) alloca ((nr_edges) * sizeof (edge));
-	  bzero ((char *) edge_table,
-		 ((nr_edges) * sizeof (edge)));
-	  build_control_flow ();
-
-	  /* identify reducible inner loops and compute regions */
-	  find_rgns ();
+	  /* build_control_flow will return nonzero if it detects unreachable
+	     blocks or any other irregularity with the cfg which prevents
+	     cross block scheduling.  */
+	  if (build_control_flow () != 0)
+	    find_single_block_region ();
+	  else
+	    find_rgns ();
 
 	  if (sched_verbose >= 3)
 	    {
@@ -8711,5 +8586,22 @@ schedule_insns (dump_file)
 
   if (bb_live_regs)
     FREE_REG_SET (bb_live_regs);
+
+  if (edge_table)
+    {
+      free (edge_table);
+      edge_table = NULL;
+    }
+
+  if (in_edges)
+    {
+      free (in_edges);
+      in_edges = NULL;
+    }
+  if (out_edges)
+    {
+      free (out_edges);
+      out_edges = NULL;
+    }
 }
 #endif /* INSN_SCHEDULING */
