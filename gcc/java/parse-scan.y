@@ -1126,7 +1126,8 @@ report_main_declaration (declarator)
       && !strcmp (declarator->method_name, "main") 
       && declarator->args 
       && declarator->args [0] == '[' 
-      && !strcmp( declarator->args+1, "String")
+      && (! strcmp (declarator->args+1, "String")
+	  || ! strcmp (declarator->args + 1, "java.lang.String"))
       && current_class)
     {
       if (!previous_output)
