@@ -2988,9 +2988,26 @@ do_identifier (token, parsing, args)
   else
     id = hack_identifier (id, token);
 
+  /* We must look up dependent names when the template is
+     instantiated, not while parsing it.  For now, we don't
+     distinguish between dependent and independent names.  So, for
+     example, we look up all overloaded functions at
+     instantiation-time, even though in some cases we should just use
+     the DECL we have here.  We also use LOOKUP_EXPRs to find things
+     like local variables, rather than created TEMPLATE_DECLs for the
+     local variables and then finding matching instantiations.  */
   if (current_template_parms
       && (is_overloaded_fn (id) 
+	  /* If it's not going to be around at instantiation time, we
+	     look it up then.  This is a hack, and should go when we
+	     really get dependent/independent name lookup right.  */
 	  || !TREE_PERMANENT (id)
+	  /* Some local VAR_DECLs (such as those for local variables
+	     in member functions of local classes) are built on the
+	     permanent obstack.  */
+	  || (TREE_CODE (id) == VAR_DECL 
+	      && CP_DECL_CONTEXT (id)
+	      && TREE_CODE (CP_DECL_CONTEXT (id)) == FUNCTION_DECL)
 	  || TREE_CODE (id) == PARM_DECL
 	  || TREE_CODE (id) == USING_DECL))
     id = build_min_nt (LOOKUP_EXPR, token);

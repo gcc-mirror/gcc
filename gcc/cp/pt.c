@@ -85,7 +85,7 @@ static tree tsubst_expr_values PROTO((tree, tree));
 static int list_eq PROTO((tree, tree));
 static tree get_class_bindings PROTO((tree, tree, tree));
 static tree coerce_template_parms PROTO((tree, tree, tree, int, int));
-static tree tsubst_enum	PROTO((tree, tree, tree *));
+static tree tsubst_enum	PROTO((tree, tree));
 static tree add_to_template_args PROTO((tree, tree));
 static tree add_outermost_template_args PROTO((tree, tree));
 static void maybe_adjust_types_for_deduction PROTO((unification_kind_t, tree*,
@@ -254,15 +254,29 @@ template_class_depth_real (type, count_specializations)
   int depth;
 
   for (depth = 0; 
-       type && TREE_CODE (type) != FUNCTION_DECL 
-	 && TREE_CODE (type) != NAMESPACE_DECL;
-       type = TYPE_CONTEXT (type))
-    if (CLASSTYPE_TEMPLATE_INFO (type)
-	&& PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
-	&& ((count_specializations
-	     && CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
-	    || uses_template_parms (CLASSTYPE_TI_ARGS (type))))
-      ++depth;
+       type && TREE_CODE (type) != NAMESPACE_DECL;
+       type = (TREE_CODE (type) == FUNCTION_DECL) 
+	 ? DECL_REAL_CONTEXT (type) : TYPE_CONTEXT (type))
+    {
+      if (TREE_CODE (type) != FUNCTION_DECL)
+	{
+	  if (CLASSTYPE_TEMPLATE_INFO (type)
+	      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
+	      && ((count_specializations
+		   && CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
+		  || uses_template_parms (CLASSTYPE_TI_ARGS (type))))
+	    ++depth;
+	}
+      else 
+	{
+	  if (DECL_TEMPLATE_INFO (type)
+	      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (type))
+	      && ((count_specializations
+		   && DECL_TEMPLATE_SPECIALIZATION (type))
+		  || uses_template_parms (DECL_TI_ARGS (type))))
+	    ++depth;
+	}
+    }
 
   return depth;
 }
@@ -1802,10 +1816,14 @@ push_template_decl_real (decl, is_friend)
 	cp_error ("template with C linkage");
       if (TREE_CODE (decl) == TYPE_DECL && ANON_AGGRNAME_P (DECL_NAME (decl)))
 	cp_error ("template class without a name");
+      if (TREE_CODE (decl) == TYPE_DECL 
+	  && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	cp_error ("template declaration of `%#T'", TREE_TYPE (decl));
     }
 
   /* Partial specialization.  */
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
+      && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
       && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
     {
       tree type = TREE_TYPE (decl);
@@ -1930,10 +1948,11 @@ push_template_decl_real (decl, is_friend)
 		  ctx, decl);
       if (TREE_CODE (decl) == TYPE_DECL)
 	{
-	  if (IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (decl)))
-	      && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl))
-	      && CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl)))
-	    tmpl = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl));
+	  if ((IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (decl)))
+	       || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	      && TYPE_TEMPLATE_INFO (TREE_TYPE (decl))
+	      && TYPE_TI_TEMPLATE (TREE_TYPE (decl)))
+	    tmpl = TYPE_TI_TEMPLATE (TREE_TYPE (decl));
 	  else
 	    {
 	      cp_error ("`%D' does not declare a template type", decl);
@@ -2037,8 +2056,9 @@ push_template_decl_real (decl, is_friend)
 
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
     {
-      CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (tmpl)) = info;
-      if (!ctx || TREE_CODE (ctx) != FUNCTION_DECL)
+      SET_TYPE_TEMPLATE_INFO (TREE_TYPE (tmpl), info);
+      if ((!ctx || TREE_CODE (ctx) != FUNCTION_DECL)
+	  && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE)
 	DECL_NAME (decl) = classtype_mangled_name (TREE_TYPE (decl));
     }
   else if (! DECL_LANG_SPECIFIC (decl))
@@ -3124,9 +3144,11 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       template = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d1));
       d1 = DECL_NAME (template);
     }
-  else if (TREE_CODE_CLASS (TREE_CODE (d1)) == 't' && IS_AGGR_TYPE (d1))
+  else if (TREE_CODE (d1) == ENUMERAL_TYPE 
+	   || (TREE_CODE_CLASS (TREE_CODE (d1)) == 't' 
+	       && IS_AGGR_TYPE (d1)))
     {
-      template = CLASSTYPE_TI_TEMPLATE (d1);
+      template = TYPE_TI_TEMPLATE (d1);
       d1 = DECL_NAME (template);
     }
   else if (TREE_CODE (d1) == TEMPLATE_DECL
@@ -3229,7 +3251,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	      return error_mark_node;
 	    }
 
-	  arglist = add_to_template_args (CLASSTYPE_TI_ARGS (context),
+	  arglist = add_to_template_args (TYPE_TI_ARGS (context),
 					  arglist);
 	  arg_depth = TMPL_ARGS_DEPTH (arglist);
 	}
@@ -3286,7 +3308,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 
 	 the `C<T>' is just the same as `C'.  Outside of the
 	 class, however, such a reference is an instantiation.  */
-      if (comp_template_args (CLASSTYPE_TI_ARGS (template_type),
+      if (comp_template_args (TYPE_TI_ARGS (template_type),
 			      arglist))
 	{
 	  found = template_type;
@@ -3338,45 +3360,67 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       push_obstacks (&permanent_obstack, &permanent_obstack);
       
       /* Create the type.  */
-      t = make_lang_type (TREE_CODE (template_type));
-      CLASSTYPE_DECLARED_CLASS (t) 
-	= CLASSTYPE_DECLARED_CLASS (template_type);
-      TYPE_CONTEXT (t) = FROB_CONTEXT (context);
+      if (TREE_CODE (template_type) == ENUMERAL_TYPE)
+	{
+	  if (!uses_template_parms (arglist))
+	    t = tsubst_enum (template_type, arglist);
+	  else
+	    /* We don't want to call tsubst_enum for this type, since
+	       the values for the enumeration constants may involve
+	       template parameters.  And, no one should be interested
+	       in the enumeration constants for such a type.  */
+	    t = make_node (ENUMERAL_TYPE);
+	}
+      else
+	{
+	  t = make_lang_type (TREE_CODE (template_type));
+	  CLASSTYPE_DECLARED_CLASS (t) 
+	    = CLASSTYPE_DECLARED_CLASS (template_type);
+	  CLASSTYPE_GOT_SEMICOLON (t) = 1;
+	  SET_CLASSTYPE_IMPLICIT_INSTANTIATION (t);
+	}
+
+      /* If we called tsubst_enum above, this information will already
+	 be set up.  */
+      if (!TYPE_NAME (t))
+	{
+	  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
 	  
-      /* Create a stub TYPE_DECL for it.  */
-      type_decl = build_decl (TYPE_DECL, DECL_NAME (template), t);
-      SET_DECL_ARTIFICIAL (type_decl);
-      DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
-      DECL_SOURCE_FILE (type_decl) 
-	= DECL_SOURCE_FILE (TYPE_STUB_DECL (template_type));
-      DECL_SOURCE_LINE (type_decl) 
-	= DECL_SOURCE_LINE (TYPE_STUB_DECL (template_type));
-      TYPE_STUB_DECL (t) = TYPE_NAME (t) = type_decl;
+	  /* Create a stub TYPE_DECL for it.  */
+	  type_decl = build_decl (TYPE_DECL, DECL_NAME (template), t);
+	  SET_DECL_ARTIFICIAL (type_decl);
+	  DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
+	  DECL_SOURCE_FILE (type_decl) 
+	    = DECL_SOURCE_FILE (TYPE_STUB_DECL (template_type));
+	  DECL_SOURCE_LINE (type_decl) 
+	    = DECL_SOURCE_LINE (TYPE_STUB_DECL (template_type));
+	  TYPE_STUB_DECL (t) = TYPE_NAME (t) = type_decl;
+	}
+      else
+	type_decl = TYPE_NAME (t);
 
       /* We're done with the permanent obstack, now.  */
       pop_obstacks ();
 
-      /* Seems to be wanted.  */
-      CLASSTYPE_GOT_SEMICOLON (t) = 1;
-
       /* Set up the template information.  */
       arglist = copy_to_permanent (arglist);
-      CLASSTYPE_TEMPLATE_INFO (t)
-	= perm_tree_cons (template, arglist, NULL_TREE);
+      SET_TYPE_TEMPLATE_INFO (t,
+			      perm_tree_cons (template, arglist, NULL_TREE));
       DECL_TEMPLATE_INSTANTIATIONS (template) = perm_tree_cons
 	(arglist, t, DECL_TEMPLATE_INSTANTIATIONS (template));
-      SET_CLASSTYPE_IMPLICIT_INSTANTIATION (t);
 
       /* Reset the name of the type, now that CLASSTYPE_TEMPLATE_INFO
 	 is set up.  */
-      DECL_NAME (type_decl) = classtype_mangled_name (t);
+      if (TREE_CODE (t) != ENUMERAL_TYPE)
+	DECL_NAME (type_decl) = classtype_mangled_name (t);
       DECL_ASSEMBLER_NAME (type_decl) = DECL_NAME (type_decl);
       if (! uses_template_parms (arglist))
 	{
 	  DECL_ASSEMBLER_NAME (type_decl)
 	    = get_identifier (build_overload_name (t, 1, 1));
 	  
-	  if (flag_external_templates
+	  if (TREE_CODE (t) != ENUMERAL_TYPE
+	      && flag_external_templates
 	      && CLASSTYPE_INTERFACE_KNOWN (TREE_TYPE (template))
 	      && ! CLASSTYPE_INTERFACE_ONLY (TREE_TYPE (template)))
 	    add_pending_template (t);
@@ -3449,15 +3493,19 @@ for_each_template_parm (t, fn, data)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       return for_each_template_parm (TREE_TYPE (t), fn, data);
+
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_FLAG (t))
 	return for_each_template_parm (TYPE_PTRMEMFUNC_FN_TYPE (t),
 				       fn, data);
+      /* Fall through.  */
+
     case UNION_TYPE:
-      if (! CLASSTYPE_TEMPLATE_INFO (t))
+    case ENUMERAL_TYPE:
+      if (! TYPE_TEMPLATE_INFO (t))
 	return 0;
       return for_each_template_parm (TREE_VALUE
-				     (CLASSTYPE_TEMPLATE_INFO (t)),
+				     (TYPE_TEMPLATE_INFO (t)),
 				     fn, data);
     case FUNCTION_TYPE:
       if (for_each_template_parm (TYPE_ARG_TYPES (t), fn, data))
@@ -3539,16 +3587,6 @@ for_each_template_parm (t, fn, data)
     case VOID_TYPE:
     case BOOLEAN_TYPE:
     case NAMESPACE_DECL:
-      return 0;
-
-    case ENUMERAL_TYPE:
-      {
-	tree v;
-
-	for (v = TYPE_VALUES (t); v != NULL_TREE; v = TREE_CHAIN (v))
-	  if (for_each_template_parm (TREE_VALUE (v), fn, data))
-	    return 1;
-      }
       return 0;
 
       /* constants */
@@ -4207,24 +4245,46 @@ instantiate_class_template (type)
       tree name = TYPE_IDENTIFIER (tag);
       tree newtag;
 
-      if (TREE_CODE (tag) == ENUMERAL_TYPE)
+      newtag = tsubst (tag, args, NULL_TREE);
+      if (TREE_CODE (newtag) == ENUMERAL_TYPE)
 	{
-	  newtag = tsubst_enum (tag, args, field_chain);
-	  while (*field_chain)
+	  extern tree current_local_enum;
+	  tree prev_local_enum = current_local_enum;
+
+	  if (TYPE_VALUES (newtag))
 	    {
-	      DECL_FIELD_CONTEXT (*field_chain) = type;
-	      field_chain = &TREE_CHAIN (*field_chain);
+	      tree v;
+
+	      /* We must set things up so that CURRENT_LOCAL_ENUM is the
+		 CONST_DECL for the last enumeration constant, since the
+		 CONST_DECLs are chained backwards.  */
+	      for (v = TYPE_VALUES (newtag); TREE_CHAIN (v); 
+		   v = TREE_CHAIN (v))
+		;
+
+	      current_local_enum 
+		= IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (v));
+	      *field_chain = grok_enum_decls (NULL_TREE);
+	      current_local_enum = prev_local_enum;
+
+	      while (*field_chain)
+		{
+		  DECL_FIELD_CONTEXT (*field_chain) = type;
+		  field_chain = &TREE_CHAIN (*field_chain);
+		}
 	    }
 	}
       else
-	newtag = tsubst (tag, args, NULL_TREE);
-
-      /* Now, we call pushtag to put this NEWTAG into the scope of
-	 TYPE.  We first set up the IDENTIFIER_TYPE_VALUE to avoid
-	 pushtag calling push_template_decl.  */
-      if (name)
-	SET_IDENTIFIER_TYPE_VALUE (name, newtag);
-      pushtag (name, newtag, /*globalize=*/0);
+	{
+	  /* Now, we call pushtag to put this NEWTAG into the scope of
+	     TYPE.  We first set up the IDENTIFIER_TYPE_VALUE to avoid
+	     pushtag calling push_template_decl.  We don't have to do
+	     this for enums because it will already have been done in
+	     tsubst_enum.  */
+	  if (name)
+	    SET_IDENTIFIER_TYPE_VALUE (name, newtag);
+	  pushtag (name, newtag, /*globalize=*/0);
+	}
     }
 
   /* Don't replace enum constants here.  */
@@ -4371,24 +4431,6 @@ list_eq (t1, t2)
   return list_eq (TREE_CHAIN (t1), TREE_CHAIN (t2));
 }
 
-tree 
-lookup_nested_type_by_name (ctype, name)
-        tree ctype, name;
-{
-  tree t;
-
-  complete_type (ctype);
-
-  for (t = CLASSTYPE_TAGS (ctype); t; t = TREE_CHAIN (t))
-    {
-      if (name == TREE_PURPOSE (t)
-	  /* this catches typedef enum { foo } bar; */
-	  || name == TYPE_IDENTIFIER (TREE_VALUE (t)))
-	return TREE_VALUE (t);
-    }
-  return NULL_TREE;
-}
-
 /* If arg is a non-type template parameter that does not depend on template
    arguments, fold it like we weren't in the body of a template.  */
 
@@ -4507,11 +4549,11 @@ tsubst_template_parms (parms, args)
   return r;
 }
 
-/* Substitute the ARGS into the indicated aggregate type T.  If T is
-   not an aggregate type, it is handled as if by tsubst.  IN_DECL is
-   as for tsubst.  If ENTERING_SCOPE is non-zero, T is the context for
-   a template which we are presently tsubst'ing.  Return the
-   subsituted value.  */
+/* Substitute the ARGS into the indicated aggregate (or enumeration)
+   type T.  If T is not an aggregate or enumeration type, it is
+   handled as if by tsubst.  IN_DECL is as for tsubst.  If
+   ENTERING_SCOPE is non-zero, T is the context for a template which
+   we are presently tsubst'ing.  Return the subsituted value.  */
 
 tree
 tsubst_aggr_type (t, args, in_decl, entering_scope)
@@ -4535,6 +4577,7 @@ tsubst_aggr_type (t, args, in_decl, entering_scope)
 	}
 
       /* else fall through */
+    case ENUMERAL_TYPE:
     case UNION_TYPE:
       if (uses_template_parms (t))
 	{
@@ -4559,7 +4602,7 @@ tsubst_aggr_type (t, args, in_decl, entering_scope)
 	     and supposing that we are instantiating f<int, double>,
 	     then our ARGS will be {int, double}, but, when looking up
 	     S we only want {double}.  */
-	  argvec = tsubst (CLASSTYPE_TI_ARGS (t), args, in_decl);
+	  argvec = tsubst (TYPE_TI_ARGS (t), args, in_decl);
 
   	  r = lookup_template_class (t, argvec, in_decl, context,
 				     entering_scope);
@@ -4614,6 +4657,7 @@ tsubst (t, args, in_decl)
     {
     case RECORD_TYPE:
     case UNION_TYPE:
+    case ENUMERAL_TYPE:
       return tsubst_aggr_type (t, args, in_decl, /*entering_scope=*/0);
 
     case ERROR_MARK:
@@ -4628,18 +4672,6 @@ tsubst (t, args, in_decl)
     case STRING_CST:
     case NAMESPACE_DECL:
       return t;
-
-    case ENUMERAL_TYPE:
-      {
-	tree ctx = tsubst_aggr_type (TYPE_CONTEXT (t), args, in_decl,
-				     /*entering_scope=*/1);
-	if (ctx == NULL_TREE || TREE_CODE (ctx) == NAMESPACE_DECL)
-	  return t;
-	else if (ctx == current_function_decl)
-	  return lookup_name (TYPE_IDENTIFIER (t), 1);
-	else
-	  return lookup_nested_type_by_name (ctx, TYPE_IDENTIFIER (t));
-      }
 
     case INTEGER_TYPE:
       if (t == integer_type_node)
@@ -5496,12 +5528,45 @@ tsubst_copy (t, args, in_decl)
       return do_identifier (DECL_NAME (t), 0, NULL_TREE);
 
     case CONST_DECL:
+      {
+	tree enum_type;
+	tree v;
+
+	if (!DECL_CONTEXT (t))
+	  /* This is a global enumeration constant.  */
+	  return t;
+
+	/* Unfortunately, we cannot just call lookup_name here.
+	 Consider:
+
+	 template <int I> int f() {
+	   enum E { a = I };
+	   struct S { void g() { E e = a; } };
+	 };
+
+	 When we instantiate f<7>::S::g(), say, lookup_name is not
+	 clever enough to find f<7>::a.  */
+	enum_type 
+	  = tsubst_aggr_type (TREE_TYPE (t), args, in_decl, 
+			      /*entering_scope=*/0);
+
+	for (v = TYPE_VALUES (enum_type); 
+	     v != NULL_TREE; 
+	     v = TREE_CHAIN (v))
+	  if (TREE_PURPOSE (v) == DECL_NAME (t))
+	    return TREE_VALUE (v);
+
+	  /* We didn't find the name.  That should never happen; if
+	     name-lookup found it during preliminary parsing, we
+	     should find it again here during instantiation.  */
+	my_friendly_abort (0);
+      }
+      break;
+
     case FIELD_DECL:
       if (DECL_CONTEXT (t))
 	{
 	  tree ctx;
-	  if (TREE_CODE (DECL_CONTEXT (t)) == FUNCTION_DECL)
-	    return lookup_name (DECL_NAME (t), 0);
 
 	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, in_decl,
 				  /*entering_scope=*/1);
@@ -5984,7 +6049,7 @@ tsubst_expr (t, args, in_decl)
       lineno = TREE_COMPLEXITY (t);
       t = TREE_TYPE (t);
       if (TREE_CODE (t) == ENUMERAL_TYPE)
-	tsubst_enum (t, args, NULL);
+	tsubst (t, args, NULL_TREE);
       break;
 
     default:
@@ -7823,13 +7888,11 @@ add_maybe_template (d, fns)
   DECL_MAYBE_TEMPLATE (d) = 1;
 }
 
-/* Instantiate an enumerated type.  Used by instantiate_class_template and
-   tsubst_expr.  */
+/* Instantiate an enumerated type.  */
 
 static tree
-tsubst_enum (tag, args, field_chain)
+tsubst_enum (tag, args)
      tree tag, args;
-     tree * field_chain;
 {
   extern tree current_local_enum;
   tree prev_local_enum = current_local_enum;
@@ -7839,17 +7902,25 @@ tsubst_enum (tag, args, field_chain)
 
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
-      tree elt = build_enumerator (TREE_PURPOSE (e),
-				   tsubst_expr (TREE_VALUE (e), args,
-						NULL_TREE));
+      tree value;
+      tree elt;
+
+      value = TREE_VALUE (e);
+      if (value)
+	{
+	  if (TREE_CODE (value) == NOP_EXPR)
+	    /* This is the special case where the value is really a
+	   TEMPLATE_PARM_INDEX.  See finish_enum.  */
+	    value = TREE_OPERAND (value, 0);
+	  value = tsubst_expr (value, args, NULL_TREE);
+	}
+
+      elt = build_enumerator (TREE_PURPOSE (e), value);
       TREE_CHAIN (elt) = values;
       values = elt;
     }
 
   finish_enum (newtag, values);
-
-  if (NULL != field_chain)
-    *field_chain = grok_enum_decls (NULL_TREE);
 
   current_local_enum = prev_local_enum;
 

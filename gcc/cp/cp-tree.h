@@ -1245,15 +1245,38 @@ struct lang_decl
 
 /* For a VAR_DECL or FUNCTION_DECL: template-specific information.  */
 #define DECL_TEMPLATE_INFO(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.template_info)
+
+/* Template information for a RECORD_TYPE or UNION_TYPE.  */
 #define CLASSTYPE_TEMPLATE_INFO(NODE) (TYPE_LANG_SPECIFIC(NODE)->template_info)
+
+/* Template information for an ENUMERAL_TYPE.  Although an enumeration may
+   not be a primary template, it may be declared within the scope of a
+   primary template and the enumeration constants may depend on
+   non-type template parameters.  */
+#define ENUM_TEMPLATE_INFO(NODE) (TYPE_BINFO (NODE))
+
+/* Template information for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
+#define TYPE_TEMPLATE_INFO(NODE)					\
+  (TREE_CODE (NODE) == ENUMERAL_TYPE 					\
+   ? ENUM_TEMPLATE_INFO (NODE) : CLASSTYPE_TEMPLATE_INFO (NODE))
+
+/* Set the template information for an ENUMERAL_, RECORD_, or
+   UNION_TYPE to VAL.  */
+#define SET_TYPE_TEMPLATE_INFO(NODE, VAL) 	\
+  (TREE_CODE (NODE) == ENUMERAL_TYPE 		\
+   ? (ENUM_TEMPLATE_INFO (NODE) = VAL) 		\
+   : (CLASSTYPE_TEMPLATE_INFO (NODE) = VAL))
+
 #define TI_TEMPLATE(NODE) (TREE_PURPOSE (NODE))
 #define TI_ARGS(NODE) (TREE_VALUE (NODE))
 #define TI_SPEC_INFO(NODE) (TREE_CHAIN (NODE))
 #define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
+
 /* TI_PENDING_SPECIALIZATION_FLAG on a template-info node indicates
    that the template is a specialization of a member template, but
    that we don't yet know which one.  */
 #define TI_PENDING_SPECIALIZATION_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
+
 /* The TEMPLATE_DECL instantiated or specialized by NODE.  This
    TEMPLATE_DECL will be the immediate parent, not the most general
    template.  For example, in:
@@ -1273,6 +1296,7 @@ struct lang_decl
    the DECL_TI_TEMPLATE will be a LOOKUP_EXPR for `f' and the
    DECL_TI_ARGS will be {int}.  */ 
 #define DECL_TI_TEMPLATE(NODE)      TI_TEMPLATE (DECL_TEMPLATE_INFO (NODE))
+
 /* The template arguments used to obtain this decl from the most
    general form of DECL_TI_TEMPLATE.  For the example given for
    DECL_TI_TEMPLATE, the DECL_TI_ARGS will be {int, double}.  These
@@ -1282,6 +1306,19 @@ struct lang_decl
 #define CLASSTYPE_TI_TEMPLATE(NODE) TI_TEMPLATE (CLASSTYPE_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_ARGS(NODE)     TI_ARGS (CLASSTYPE_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_SPEC_INFO(NODE) TI_SPEC_INFO (CLASSTYPE_TEMPLATE_INFO (NODE))
+#define ENUM_TI_TEMPLATE(NODE) 			\
+  TI_TEMPLATE (ENUM_TEMPLATE_INFO (NODE))
+#define ENUM_TI_ARGS(NODE)			\
+  TI_ARGS (ENUM_TEMPLATE_INFO (NODE))
+
+/* Like DECL_TI_TEMPLATE, but for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
+#define TYPE_TI_TEMPLATE(NODE)			\
+  (TI_TEMPLATE (TYPE_TEMPLATE_INFO (NODE)))
+
+/* Like DECL_TI_ARGS, , but for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
+#define TYPE_TI_ARGS(NODE)			\
+  (TI_ARGS (TYPE_TEMPLATE_INFO (NODE)))
+
 #define INNERMOST_TEMPLATE_PARMS(NODE)  TREE_VALUE(NODE)
 
 #define TEMPLATE_PARMS_FOR_INLINE(NODE) TREE_LANG_FLAG_1 (NODE)
@@ -2783,7 +2820,6 @@ extern void mark_class_instantiated		PROTO((tree, int));
 extern void do_decl_instantiation		PROTO((tree, tree, tree));
 extern void do_type_instantiation		PROTO((tree, tree));
 extern tree instantiate_decl			PROTO((tree));
-extern tree lookup_nested_type_by_name		PROTO((tree, tree));
 extern tree do_poplevel				PROTO((void));
 extern tree get_bindings			PROTO((tree, tree, tree));
 /* CONT ... */

@@ -1,3 +1,38 @@
+1998-08-06  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (ENUM_TEMPLATE_INFO): New macro.
+	(TYPE_TEMPLATE_INFO): Likewise.
+	(SET_TYPE_TEMPLATE_INFO): Likewise.
+	(ENUM_TI_TEMPLATE): Likewise.
+	(ENUM_TI_ARGS): Likewise.
+	(lookup_nested_type_by_name): Remove.
+	* decl.c (maybe_process_template_type_declaration): Handle enums.
+	(start_enum): Don't check for primary-template enum declarations
+	here. 
+	(finish_enum): Clean up, document.  Make sure template enum
+	constants get the correct type.
+	(build_enumerator): Copy initializers for template enumerations,
+	too. 
+	(grok_enum_decls): Document.
+	* lex.c (do_identifier): Document use of LOOKUP_EXPR a bit
+	better.  Build LOOKUP_EXPRs for local variables, even if they are
+	TREE_PERMANENT.
+	* pt.c (tsubst_enum): Remove field_chain parameter.
+	(template_class_depth): Include the depth of surrounding function
+	contexts.
+	(push_template_decl): Check for primary-template enum declarations
+	here.  Deal with enumeration templates.
+	(lookup_template_class): Likewise.
+	(for_each_template_parm): Likewise.
+	(instantiate_class_template): Don't call tsubst_enum directly,
+	call tsubst instead, to instantiate enums.  Deal with all
+	field_chain issues here, not in tsubst_enum.
+	(lookup_nested_type_by_name): Remove.
+	(tsubst_aggr_type): Revise handling of enumeration types.
+	(tsubst): Likewise.
+	(tsubst_copy): Likewise.
+	(tsubst_expr): Call tsubst, not tsubst_enum for TAG_DEFNs.
+	
 1998-08-04  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (pushtag): Don't mangle the name of a TYPE_DECL if it
