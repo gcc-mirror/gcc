@@ -1,5 +1,93 @@
 2003-04-19  Kean Johnston  <jkj@sco.com>
 
+	* unwind-dw2.c (_Unwind_GetCFA): cast return to avoid warning
+	* config.gcc: make SCO use dbxelf.h and elfos.h; only use one
+	target fragment now: t-sco5; dont compile crti.o.
+	* config/i386/sco5.h: major overhaul to remove all COFF remnants
+	and to use elfos.h for most definitions.
+	(BSS_SECTION_ASM_OP): set correct segment attributes.
+	(PREFERED_DEBUGGING_TYPE): set to DWARF-2.
+	(DWARF2_UNWIND_INFO): Always set to 1.
+	(MD_STARTFILE_PREFIX): Make /usr/gnu/lib the default.
+	(MD_STARTFILE_PREFIX_1): Define.
+	(MD_EXEC_PREFIX): Adjust to /usr/gnu/bin if using GAS.
+	(DEFAULT_LINKER): Define if not specified to configure.
+	(CTORS_SECTION_ASM_OP): Remove COFF crud.
+	(DTORS_SECTION_ASM_OP): Remove COFF crud.
+	(WINT_TYPE): Define.
+	(SDB_DEBUGGING_INFO): Remove.
+	(EXTRA_SECTIONS): Likewise.
+	(EXTRA_SECTION_FUNCTIONS): Likewise.
+	(CTOR_LIST_BEGIN): Likewise.
+	(CTOR_LIST_END): Likewise.
+	(INIT_SECTION_FUNCTION): Likewise.
+	(FINI_SECTION_FUNCTION): Likewise.
+	(SUBTARGET_FRAME_POINTER_REQUIRED): Likewise.
+	(LOCAL_LABEL_PREFIX): Likewise.
+	(NON_SAVING_SETJMP): Likewise.
+	(RETURN_POPS_ARGS): Likewise.
+	(ASM_OUTPUT_SKIP): Likewise.
+	(TARGET_ASM_NAMED_SECTION): Likewise.
+	(ASM_OUTPUT_INTERNAL_LABEL): Likewise.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Likewise.
+	(ASM_OUTPUT_IDENT): Likewise.
+	(ASM_OUTPUT_CASE_LABEL): Likewise.
+	(ASM_OUTPUT_ASCII): Likewise.
+	(ASM_OUTPUT_LIMITED_STRING): Likewise.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Likewise.
+	(ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	(ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	(ASM_FINISH_DECLARE_OBJECT): Likewise.
+	(ASM_DECLARE_OBJECT_NAME): Likewise.
+	(ASM_DECLARE_FUNCTION_SIZE): Likewise.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+	(ASM_DECLARE_RESULT): Likewise.
+	(ASM_WEAKEN_LABEL): Likewise.
+	(SUPPORTS_WEAK): Likewise.
+	(APPLY_RESULT_SIZE): Likewise.
+	(LPREFIX): Likewise.
+	(ALIGN_ASM_OP): Likewise.
+	(ASCII_DATA_ASM_OP): Likewise.
+	(IDENT_ASM_OP): Likewise.
+	(ASM_SHORT): Likewise.
+	(ASM_LONG): Likewise.
+	(TYPE_ASM_OP): Likewise.
+	(SIZE_ASM_OP): Likewise.
+	(STRING_ASM_OP): Likewise.
+	(SKIP_ASM_OP): Likewise.
+	(EH_FRAME_SECTION_ASM_OP): Likewise.
+	(READONLY_DATA_SECTION_ASM_OP): Likewise.
+	(INIT_SECTION_ASM_OP): Likewise.
+	(FINI_SECTION_ASM_OP): Likewise.
+	(TEXT_SECTION_ASM_OP): Likewise.
+	(DATA_SECTION_ASM_OP): Likewise.
+	(TYPE_OPERANT_FORMAT): Likewise.
+	(ASM_SPEC): Remove COFF code.
+	(STARTFILE_SPEC): Likewise. Always use crti.o; add -p and -pp support;
+	cause -pg to emit an error; use pcrt1elf.o with -pp
+	(ENDFILE_SPEC): Likewise.
+	(TARGET_OS_CPP_BUILTINS): Add _SCO_DS_LL.
+	(CPP_SPEC): Remove COFF crud; always look in /usr/gnu/include first.
+	(LINK_SPEC): Remove COFF crud; use -E for environment switch not -R;
+	add -z alt_resolve to support weak symbols the way GCC wants them.
+	(LIB_SPEC): Use the profiler libraries in -p or -pp mode.
+	(LIBGCC_SPEC): Dont use -lgcc in -G mode.
+	(ASM_PREFERED_EH_DATA_FORMAT): Remove.
+	* config/i386/t-sco5 (TARGET_LIBGCC2_CFLAGS): Remove.
+	(CRTSTUFF_T_CFLAGS_S): Define.
+	(MULTILIB_OPTIONS): Likewise.
+	(MULTILIB_DIRNAMES): Likewise.
+	(MULTILIB_MATCHES): Likewise.
+	(MULTILIB_EXTRA_OPTS): Likewise.
+	(LIBGCC): Likewise.
+	(INSTALL_LIBGCC): Likewise.
+	(crti.o): Remove.
+	* config/i386/t-sco5gas: Remove.
+	* doc/install.texi: Updated for new OpenServer instructions.
+	* testsuite/gcc.dg/nest.c: Allow failure on SCO (-pg not supported)
+
+2003-04-19  Kean Johnston  <jkj@sco.com>
+
 	* fixinc/check.tpl: Allow user to over-ride diff program.
 	* fixinc/inclhack.def: Removed extraneous #ifndef SVR5.
 	(sco_math): Added test for SCO math header files.
