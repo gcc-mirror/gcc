@@ -18,6 +18,10 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+// The ARM simulator does not provide support for "fstat", which
+// causes "in_avail" to return an incorrect value.
+// { dg-do run { xfail arm-none-elf } }
+
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>

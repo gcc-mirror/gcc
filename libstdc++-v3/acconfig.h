@@ -16,6 +16,9 @@
 // Include I/O support for 'long long' and 'unsigned long long'.
 #undef _GLIBCXX_USE_LONG_LONG
 
+// Define if C99 math functions (like fpclassify) should be exposed.
+#undef _GLIBCXX_USE_C99_MATH
+
 // Define if C99 features such as lldiv_t, llabs, lldiv should be exposed.
 #undef _GLIBCXX_USE_C99
 

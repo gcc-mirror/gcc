@@ -866,6 +866,10 @@ AC_DEFUN(GLIBCXX_ENABLE_C99, [
                  [isunordered(0.0,0.0);],, [ac_c99_math=no])
   AC_MSG_RESULT($ac_c99_math)
 
+  if test x"$ac_c99_math" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_MATH)
+  fi
+
   # Check for the existence in <stdio.h> of vscanf, et. al.
   ac_c99_stdio=yes;
   AC_MSG_CHECKING([for ISO C99 support in <stdio.h>])
@@ -941,6 +945,10 @@ AC_DEFUN(GLIBCXX_ENABLE_C99, [
     enable_c99=no;
   fi;
   AC_MSG_RESULT($enable_c99)
+
+  if test x"$ac_99_math" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_MATH)
+  fi
 
   # Option parsed, now set things appropriately
   if test x"$enable_c99" = x"yes"; then

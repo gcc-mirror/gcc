@@ -220,6 +220,9 @@ else
     AC_DEFINE(HAVE_SQRTF)
     AC_DEFINE(HAVE_TANF)
     AC_DEFINE(HAVE_TANHF)
+
+    AC_DEFINE(HAVE_S_ISREG)
+    AC_DEFINE(HAVE_S_IFREG)
   else
     m4_include([crossconfig.m4])
   fi
