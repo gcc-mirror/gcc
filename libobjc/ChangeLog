@@ -1,3 +1,33 @@
+2002-06-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Object.m: Fix signed/unsigned warning.
+	* Protocol.m: Likewise.
+	* archive.c: Always include stdlib.h.
+	(objc_read_short, objc_read_unsigned_short, objc_read_int,
+	objc_read_long, __objc_read_nbyte_uint, __objc_read_nbyte_ulong):
+	Fix signed/unsigned warning.
+	(objc_write_type, objc_read_type, objc_write_types,
+	objc_read_types): Ensure ctype 8-bit safety.
+	(__objc_no_write, __objc_no_read): Mark unused parameters.
+	* class.c (class_table_setup): Specify void arg.
+	* encoding.c (atoi, objc_sizeof_type, objc_alignof_type,
+	objc_skip_typespec, objc_skip_offset,
+	objc_layout_structure_next_member): Ensure ctype 8-bit safety.
+	(objc_layout_structure_next_member): Ensure variables are
+	initialized.
+	* gc.c (__objc_generate_gc_type_description,
+	class_ivar_set_gcinvisible): Mark unused parameters.
+	* init.c (__objc_send_load, __objc_destroy_class_tree_node): Mark
+	unused parameters.
+	(__objc_init_protocols) Fix signed/unsigned warning.
+	* nil_method.c (nil_method): Mark unused parameters.
+	* thr.h (objc_thread_callback): Specify void arg.
+	* sarray.c (sarray_new, sarray_realloc, sarray_free): Fix
+	signed/unsigned warning.
+	(sarray_free): Fix formatting.
+	* selector.c (sel_types_match): Ensure ctype 8-bit safety.
+	* sendmsg.c (__objc_init_install_dtable) Mark unused parameters.
+
 2002-06-09  Andreas Jaeger  <aj@suse.de>
 
 	* encoding.c (objc_layout_structure_next_member): Remove unused

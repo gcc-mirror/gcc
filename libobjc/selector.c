@@ -164,8 +164,8 @@ sel_types_match (const char* t1, const char* t2)
     {
       if (*t1 == '+') t1++;
       if (*t2 == '+') t2++;
-      while (isdigit(*t1)) t1++;
-      while (isdigit(*t2)) t2++;
+      while (isdigit((unsigned char)*t1)) t1++;
+      while (isdigit((unsigned char)*t2)) t2++;
       /* xxx Remove these next two lines when qualifiers are put in
 	 all selectors, not just Protocol selectors. */
       t1 = objc_skip_type_qualifiers(t1);

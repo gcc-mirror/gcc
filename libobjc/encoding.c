@@ -87,7 +87,7 @@ atoi (const char* str)
 {
   int res = 0;
 
-  while (isdigit (*str))
+  while (isdigit ((unsigned char)*str))
     res *= 10, res += (*str++ - '0');
 
   return res;
@@ -180,7 +180,7 @@ objc_sizeof_type (const char* type)
   case _C_ARY_B:
     {
       int len = atoi(type+1);
-      while (isdigit(*++type));
+      while (isdigit((unsigned char)*++type));
       return len*objc_aligned_size (type);
     }
     break;
@@ -192,7 +192,7 @@ objc_sizeof_type (const char* type)
       int startByte, endByte;
 
       position = atoi (type + 1);
-      while (isdigit (*++type));
+      while (isdigit ((unsigned char)*++type));
       size = atoi (type + 1);
 
       startByte = position / BITS_PER_UNIT;
@@ -321,7 +321,7 @@ objc_alignof_type(const char* type)
     break;
 
   case _C_ARY_B:
-    while (isdigit(*++type)) /* do nothing */;
+    while (isdigit((unsigned char)*++type)) /* do nothing */;
     return objc_alignof_type (type);
 
   case _C_STRUCT_B:
@@ -487,7 +487,7 @@ objc_skip_typespec (const char* type)
   case _C_ARY_B:
     /* skip digits, typespec and closing ']' */
 
-    while(isdigit(*++type));
+    while(isdigit((unsigned char)*++type));
     type = objc_skip_typespec(type);
     if (*type == _C_ARY_E)
       return ++type;
@@ -499,8 +499,8 @@ objc_skip_typespec (const char* type)
 
   case _C_BFLD:
     /* The new encoding of bitfields is: b 'position' 'type' 'size' */
-    while (isdigit (*++type));	/* skip position */
-    while (isdigit (*++type));	/* skip type and size */
+    while (isdigit ((unsigned char)*++type));	/* skip position */
+    while (isdigit ((unsigned char)*++type));	/* skip type and size */
     return type;
 
   case _C_STRUCT_B:
@@ -538,7 +538,7 @@ inline const char*
 objc_skip_offset (const char* type)
 {
   if (*type == '+') type++;
-  while(isdigit(*++type));
+  while(isdigit((unsigned char)*++type));
   return type;
 }
 
@@ -753,8 +753,8 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
   register int desired_align = 0;
 
   /* The following are used only if the field is a bitfield */
-  register const char *bfld_type;
-  register int bfld_type_size, bfld_type_align, bfld_field_size;
+  register const char *bfld_type = 0;
+  register int bfld_type_size, bfld_type_align = 0, bfld_field_size = 0;
 
   /* The current type without the type qualifiers */
   const char *type;
@@ -769,7 +769,7 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
       else {
         /* Get the bitfield's type */
         for (bfld_type = type + 1;
-             isdigit(*bfld_type);
+             isdigit((unsigned char)*bfld_type);
              bfld_type++)
           /* do nothing */;
 
@@ -798,7 +798,7 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
     {
       desired_align = 1;
       /* Skip the bitfield's offset */
-      for (bfld_type = type + 1; isdigit(*bfld_type); bfld_type++)
+      for (bfld_type = type + 1; isdigit((unsigned char)*bfld_type); bfld_type++)
         /* do nothing */;
 
       bfld_type_size = objc_sizeof_type (bfld_type) * BITS_PER_UNIT;

@@ -199,7 +199,7 @@ extern int errno;
 
 + (BOOL) conformsTo: (Protocol*)aProtocol
 {
-  int i;
+  size_t i;
   struct objc_protocol_list* proto_list;
   id parent;
 

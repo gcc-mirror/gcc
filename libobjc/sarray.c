@@ -211,7 +211,7 @@ sarray_new (int size, void* default_element)
   size_t num_indices = ((size-1)/BUCKET_SIZE)+1;
   struct sbucket ** new_buckets;
 #endif
-  int counter;
+  size_t counter;
 
   assert(size > 0);
 
@@ -302,7 +302,7 @@ sarray_realloc(struct sarray* array, int newsize)
   
 #endif
 
-  int counter;
+  size_t counter;
 
   assert(newsize > 0);
 
@@ -382,8 +382,8 @@ sarray_realloc(struct sarray* array, int newsize)
 /* Free a sparse array allocated with sarray_new */
 
 void 
-sarray_free(struct sarray* array) {
-
+sarray_free(struct sarray* array)
+{
 #ifdef OBJC_SPARSE3
   size_t old_max_index = (array->capacity-1)/INDEX_CAPACITY;
   struct sindex ** old_indices;
@@ -391,7 +391,7 @@ sarray_free(struct sarray* array) {
   size_t old_max_index = (array->capacity-1)/BUCKET_SIZE;
   struct sbucket ** old_buckets;
 #endif
-  int counter = 0;
+  size_t counter = 0;
 
   assert(array->ref_count != 0);	/* Freed multiple times!!! */
 

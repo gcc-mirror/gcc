@@ -28,10 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "runtime.h"
 #include "typedstream.h"
 #include "encoding.h"
-
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 
 extern int fflush(FILE*);
 
@@ -566,7 +563,7 @@ objc_read_short (struct objc_typed_stream* stream, short* value)
 	{
 	  int pos = 1;
 	  int nbytes = buf[0] & _B_NUMBER;
-	  if (nbytes > sizeof (short))
+	  if (nbytes > (int) sizeof (short))
 	    objc_error(nil, OBJC_ERR_BAD_DATA,
 		       "expected short, got bigger (%dbits)", nbytes*8);
 	  len = (*stream->read)(stream->physical, buf+1, nbytes);
@@ -595,7 +592,7 @@ objc_read_unsigned_short (struct objc_typed_stream* stream,
 	{
 	  int pos = 1;
 	  int nbytes = buf[0] & _B_NUMBER;
-	  if (nbytes > sizeof (short))
+	  if (nbytes > (int) sizeof (short))
 	    objc_error(nil, OBJC_ERR_BAD_DATA,
 		       "expected short, got int or bigger");
 	  len = (*stream->read)(stream->physical, buf+1, nbytes);
@@ -622,7 +619,7 @@ objc_read_int (struct objc_typed_stream* stream, int* value)
 	{
 	  int pos = 1;
 	  int nbytes = buf[0] & _B_NUMBER;
-	  if (nbytes > sizeof (int))
+	  if (nbytes > (int) sizeof (int))
 	    objc_error(nil, OBJC_ERR_BAD_DATA, "expected int, got bigger");
 	  len = (*stream->read)(stream->physical, buf+1, nbytes);
 	  (*value) = 0;
@@ -649,7 +646,7 @@ objc_read_long (struct objc_typed_stream* stream, long* value)
 	{
 	  int pos = 1;
 	  int nbytes = buf[0] & _B_NUMBER;
-	  if (nbytes > sizeof (long))
+	  if (nbytes > (int) sizeof (long))
 	    objc_error(nil, OBJC_ERR_BAD_DATA, "expected long, got bigger");
 	  len = (*stream->read)(stream->physical, buf+1, nbytes);
 	  (*value) = 0;
@@ -666,7 +663,8 @@ __inline__ int
 __objc_read_nbyte_uint (struct objc_typed_stream* stream,
 		       unsigned int nbytes, unsigned int* val)
 {
-  int len, pos = 0;
+  int len;
+  unsigned int pos = 0;
   unsigned char buf[sizeof(unsigned int)+1];
 
   if (nbytes > sizeof (int))
@@ -702,7 +700,8 @@ int
 __objc_read_nbyte_ulong (struct objc_typed_stream* stream,
 		       unsigned int nbytes, unsigned long* val)
 {
-  int len, pos = 0;
+  int len;
+  unsigned int pos = 0;
   unsigned char buf[sizeof(unsigned long)+1];
 
   if (nbytes > sizeof (long))
@@ -1043,7 +1042,7 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
   case _C_ARY_B:
     {
       int len = atoi(type+1);
-      while (isdigit(*++type))
+      while (isdigit((unsigned char)*++type))
 	;
       return objc_write_array (stream, type, len, data);
     }
@@ -1139,7 +1138,7 @@ objc_read_type(TypedStream* stream, const char* type, void* data)
   case _C_ARY_B:
     {
       int len = atoi(type+1);
-      while (isdigit(*++type))
+      while (isdigit((unsigned char)*++type))
 	;
       return objc_read_array (stream, type, len, data);
     }
@@ -1257,7 +1256,7 @@ objc_write_types (TypedStream* stream, const char* type, ...)
 	{
 	  int len = atoi(c+1);
 	  const char* t = c;
-	  while (isdigit(*++t))
+	  while (isdigit((unsigned char)*++t))
 	    ;
 	  res = objc_write_array (stream, t, len, va_arg(args, void*));
 	  t = objc_skip_typespec (t);
@@ -1349,7 +1348,7 @@ objc_read_types(TypedStream* stream, const char* type, ...)
 	{
 	  int len = atoi(c+1);
 	  const char* t = c;
-	  while (isdigit(*++t))
+	  while (isdigit((unsigned char)*++t))
 	    ;
 	  res = objc_read_array (stream, t, len, va_arg(args, void*));
 	  t = objc_skip_typespec (t);
@@ -1428,14 +1427,18 @@ __objc_feof(FILE* file)
 }
 
 static int 
-__objc_no_write(FILE* file, char* data, int len)
+__objc_no_write(FILE* file __attribute__ ((__unused__)),
+		const char *data __attribute__ ((__unused__)),
+		int len __attribute__ ((__unused__)))
 {
   objc_error (nil, OBJC_ERR_NO_WRITE, "TypedStream not open for writing");
   return 0;
 }
 
 static int 
-__objc_no_read(FILE* file, char* data, int len)
+__objc_no_read(FILE* file __attribute__ ((__unused__)),
+	       const char *data __attribute__ ((__unused__)),
+	       int len __attribute__ ((__unused__)))
 {
   objc_error (nil, OBJC_ERR_NO_READ, "TypedStream not open for reading");
   return 0;

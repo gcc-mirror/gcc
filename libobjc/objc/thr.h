@@ -111,7 +111,7 @@ void objc_thread_remove(void);
   it can be informed; for example, the GNUstep Base Library sets it 
   so it can implement the NSBecomingMultiThreaded notification.
   */
-typedef void (*objc_thread_callback)();
+typedef void (*objc_thread_callback)(void);
 objc_thread_callback objc_set_thread_callback(objc_thread_callback func);
 
 /* Backend initialization functions */

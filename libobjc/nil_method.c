@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "runtime.h"
 
 id
-nil_method(id receiver, SEL op, ...)
+nil_method(id receiver, SEL op __attribute__ ((__unused__)), ...)
 {
   return receiver;
 }

@@ -329,7 +329,8 @@ __objc_send_message_in_list (MethodList_t method_list, Class class, SEL op)
 }
 
 static void
-__objc_send_load (objc_class_tree *tree, int level)
+__objc_send_load (objc_class_tree *tree,
+		  int level __attribute__ ((__unused__)))
 {
   static SEL load_sel = 0;
   Class class = tree->class;
@@ -342,7 +343,8 @@ __objc_send_load (objc_class_tree *tree, int level)
 }
 
 static void
-__objc_destroy_class_tree_node (objc_class_tree *tree, int level)
+__objc_destroy_class_tree_node (objc_class_tree *tree,
+				int level __attribute__ ((__unused__)))
 {
   objc_free (tree);
 }
@@ -776,7 +778,7 @@ static void init_check_module_version(Module_t module)
 static void
 __objc_init_protocols (struct objc_protocol_list* protos)
 {
-  int i;
+  size_t i;
   static Class proto_class = 0;
 
   if (! protos)
