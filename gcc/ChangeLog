@@ -1,5 +1,8 @@
 Tue Nov  4 16:07:15 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (USE_ALLOCA): Always include alloca.o.
+	(USE_HOST_ALLOCA): Likewise.
+
 	* alias.c (find_base_value): When copying arguments, return the
 	tenative value for a hard register.
 
