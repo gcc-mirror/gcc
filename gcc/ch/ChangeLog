@@ -1,3 +1,8 @@
+2001-02-15  Jim Meyering  <meyering@lucent.com>
+
+        * Make-lang.in (CHILL.install-common): Depend on `installdirs'.
+        (CHILL.install-info): Likewise.
+
 Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* convert.c (convert): Call abort instead of fatal.

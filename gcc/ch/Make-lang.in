@@ -127,7 +127,7 @@ chill.dvi: $(srcdir)/ch/chill.texi $(srcdir)/extend.texi $(srcdir)/invoke.texi $
 CHILL.install-normal:
 
 # Install the driver program
-CHILL.install-common:
+CHILL.install-common: installdirs
 	-if [ -f cc1chill$(exeext) ] ; then \
 	  if [ -f chill.install ] ; then \
 	    if [ -f gcc-cross$(exeext) ]; then \
@@ -144,7 +144,7 @@ CHILL.install-common:
 
 # Don't delete $(infodir)/ch.info* unless there's actually new
 # docs to install (in case LANGUAGES didn't contain chill earlier).
-CHILL.install-info:
+CHILL.install-info: installdirs
 	-cd $(srcdir)/ch; for i in chill.info*; do \
 	  rm -f $(infodir)/chill.info*; \
 	  realfile=`echo $$i | sed -e 's|.*/\([^/]*\)$$|\1|'`; \

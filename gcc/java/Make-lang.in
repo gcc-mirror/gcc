@@ -158,7 +158,7 @@ java.dvi: java/gcj.dvi
 # Nothing to do here.
 java.install-normal:
 
-java.install-common:
+java.install-common: installdirs
 	-if [ -f $(GCJ)$(exeext) ]; then \
 	  if [ -f $(GCJ)-cross$(exeext) ]; then \
 	    rm -f $(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
@@ -184,7 +184,7 @@ java.uninstall:
 	-rm -rf $(bindir)/$(JAVA_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(JAVA_CROSS_NAME)$(exeext)
 
-java.install-info:
+java.install-info: installdirs
 	if [ -f jc1$(exeext) ] ; then \
 	  if [ -f $(srcdir)/java/gcj.info ]; then \
 	    rm -f $(infodir)/gcj.info*; \

@@ -147,7 +147,7 @@ c++.install-normal:
 
 # Install the driver program as $(target)-g++
 # and also as either g++ (if native) or $(tooldir)/bin/g++.
-c++.install-common:
+c++.install-common: installdirs
 	-if [ -f cc1plus$(exeext) ] ; then \
 	  if [ -f g++-cross$(exeext) ] ; then \
 	    rm -f $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
@@ -185,7 +185,7 @@ c++.install-common:
 	  fi ; \
 	fi
 
-c++.install-info: c++.info
+c++.install-info: c++.info installdirs
 	if [ -f cc1plus$(exeext) ] ; then \
 	  if [ -f $(srcdir)/cp/g++int.info ]; then \
 	    rm -f $(infodir)/g++int.info*; \
@@ -202,7 +202,7 @@ c++.install-info: c++.info
 	  else true; fi; \
 	else true; fi
 
-c++.install-man: $(srcdir)/cp/g++.1
+c++.install-man: installdirs $(srcdir)/cp/g++.1
 	-if [ -f cc1plus$(exeext) ] ; then \
 	  if [ -f g++-cross$(exeext) ] ; then \
 	    rm -f $(man1dir)/$(GXX_CROSS_NAME)$(manext); \

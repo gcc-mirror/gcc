@@ -2493,7 +2493,7 @@ installdirs:
 	-if [ -d $(man1dir) ] ; then true ; else mkdir $(man1dir) ; chmod a+rx $(man1dir) ; fi
 
 # Install the compiler executables built during cross compilation.
-install-common: native installdirs $(EXTRA_PARTS) lang.install-common
+install-common: native $(EXTRA_PARTS) lang.install-common
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
 	    rm -f $(libsubdir)/$$file; \
@@ -2552,7 +2552,7 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 
 # Install the driver program as $(target_alias)-gcc
 # and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
-install-driver: xgcc$(exeext)
+install-driver: installdirs xgcc$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) gcc-cross$(exeext) $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
