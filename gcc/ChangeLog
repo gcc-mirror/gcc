@@ -1,3 +1,8 @@
+Tue Aug 24 23:26:44 1999  Michael Tiemann  <tiemann@holodeck.cygnus.com>
+
+	* loop.c (insert_bct): Replace use of sdiv_optab with asr_optab
+	and delete comment that code should be rewritten.
+
 Tue Aug 24 22:56:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (find_rgns): Mark a block found during the DFS search
