@@ -3598,7 +3598,7 @@ warn_for_assignment (const char *msgid, const char *opname, tree function,
 	    {
 	      /* Function name is known; supply it.  */
 	      const char *const argstring = _("passing arg of `%s'");
-	      new_opname = alloca (IDENTIFIER_LENGTH (function)
+	      new_opname = (char *) alloca (IDENTIFIER_LENGTH (function)
 				   + strlen (argstring) + 1 + 1);
 	      sprintf (new_opname, argstring,
 		       IDENTIFIER_POINTER (function));
@@ -3607,7 +3607,7 @@ warn_for_assignment (const char *msgid, const char *opname, tree function,
 	    {
 	      /* Function name unknown (call through ptr).  */
 	      const char *const argnofun = _("passing arg of pointer to function");
-	      new_opname = alloca (strlen (argnofun) + 1 + 1);
+	      new_opname = (char *) alloca (strlen (argnofun) + 1 + 1);
 	      sprintf (new_opname, argnofun);
 	    }
 	}
@@ -3615,7 +3615,7 @@ warn_for_assignment (const char *msgid, const char *opname, tree function,
 	{
 	  /* Function name is known; supply it.  */
 	  const char *const argstring = _("passing arg %d of `%s'");
-	  new_opname = alloca (IDENTIFIER_LENGTH (function)
+	  new_opname = (char *) alloca (IDENTIFIER_LENGTH (function)
 			       + strlen (argstring) + 1 + 25 /*%d*/ + 1);
 	  sprintf (new_opname, argstring, argnum,
 		   IDENTIFIER_POINTER (function));
@@ -3624,7 +3624,7 @@ warn_for_assignment (const char *msgid, const char *opname, tree function,
 	{
 	  /* Function name unknown (call through ptr); just give arg number.  */
 	  const char *const argnofun = _("passing arg %d of pointer to function");
-	  new_opname = alloca (strlen (argnofun) + 1 + 25 /*%d*/ + 1);
+	  new_opname = (char *) alloca (strlen (argnofun) + 1 + 25 /*%d*/ + 1);
 	  sprintf (new_opname, argnofun, argnum);
 	}
       opname = new_opname;
@@ -3849,7 +3849,7 @@ error_init (const char *msgid)
   char *ofwhat;
 
   error ("%s", _(msgid));
-  ofwhat = print_spelling (alloca (spelling_length () + 1));
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     error ("(near initialization for `%s')", ofwhat);
 }
@@ -3864,7 +3864,7 @@ pedwarn_init (const char *msgid)
   char *ofwhat;
 
   pedwarn ("%s", _(msgid));
-  ofwhat = print_spelling (alloca (spelling_length () + 1));
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     pedwarn ("(near initialization for `%s')", ofwhat);
 }
@@ -3879,7 +3879,7 @@ warning_init (const char *msgid)
   char *ofwhat;
 
   warning ("%s", _(msgid));
-  ofwhat = print_spelling (alloca (spelling_length () + 1));
+  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     warning ("(near initialization for `%s')", ofwhat);
 }

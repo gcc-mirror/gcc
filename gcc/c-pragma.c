@@ -554,7 +554,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
       const char *id = IDENTIFIER_POINTER (DECL_NAME (decl));
       size_t ilen = IDENTIFIER_LENGTH (DECL_NAME (decl));
 	
-      char *newname = alloca (plen + ilen + 1);
+      char *newname = (char *) alloca (plen + ilen + 1);
 
       memcpy (newname,        prefix, plen);
       memcpy (newname + plen, id, ilen + 1);

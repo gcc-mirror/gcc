@@ -889,8 +889,8 @@ init_dollar_format_checking (int first_arg_num, tree params)
       if (dollar_arguments_pointer_p)
 	free (dollar_arguments_pointer_p);
       dollar_arguments_alloc = dollar_arguments_count;
-      dollar_arguments_used = xmalloc (dollar_arguments_alloc);
-      dollar_arguments_pointer_p = xmalloc (dollar_arguments_alloc);
+      dollar_arguments_used = XNEWVEC (char, dollar_arguments_alloc);
+      dollar_arguments_pointer_p = XNEWVEC (char, dollar_arguments_alloc);
     }
   if (dollar_arguments_alloc)
     {
@@ -980,9 +980,10 @@ maybe_read_dollar_number (const char **format,
     {
       int nalloc;
       nalloc = 2 * dollar_arguments_alloc + 16;
-      dollar_arguments_used = xrealloc (dollar_arguments_used, nalloc);
-      dollar_arguments_pointer_p = xrealloc (dollar_arguments_pointer_p,
-					     nalloc);
+      dollar_arguments_used = XRESIZEVEC (char, dollar_arguments_used,
+					  nalloc);
+      dollar_arguments_pointer_p = XRESIZEVEC (char, dollar_arguments_pointer_p,
+					       nalloc);
       memset (dollar_arguments_used + dollar_arguments_alloc, 0,
 	      nalloc - dollar_arguments_alloc);
       dollar_arguments_alloc = nalloc;
@@ -1207,7 +1208,7 @@ static void
 check_format_arg (void *ctx, tree format_tree,
 		  unsigned HOST_WIDE_INT arg_num)
 {
-  format_check_context *format_ctx = ctx;
+  format_check_context *format_ctx = (format_check_context *) ctx;
   format_check_results *res = format_ctx->res;
   function_format_info *info = format_ctx->info;
   tree params = format_ctx->params;
@@ -2307,7 +2308,8 @@ init_dynamic_asm_fprintf_info (void)
 	abort ();
 
       /* Create a new (writable) copy of asm_fprintf_length_specs.  */
-      new_asm_fprintf_length_specs = xmemdup (asm_fprintf_length_specs,
+      new_asm_fprintf_length_specs = (format_length_info *)
+				     xmemdup (asm_fprintf_length_specs,
 					      sizeof (asm_fprintf_length_specs),
 					      sizeof (asm_fprintf_length_specs));
 
@@ -2333,7 +2335,7 @@ static void
 init_dynamic_diag_info (void)
 {
   static tree t, loc, hwi;
-      
+
   if (!loc || !t || !hwi)
     {
       static format_char_info *diag_fci, *cdiag_fci, *cxxdiag_fci;
@@ -2368,7 +2370,8 @@ init_dynamic_diag_info (void)
 	dynamic_format_types[gcc_diag_format_type].length_char_specs =
 	  dynamic_format_types[gcc_cdiag_format_type].length_char_specs =
 	  dynamic_format_types[gcc_cxxdiag_format_type].length_char_specs =
-	  diag_ls = xmemdup (gcc_diag_length_specs,
+	  diag_ls = (format_length_info *)
+		    xmemdup (gcc_diag_length_specs,
 			     sizeof (gcc_diag_length_specs),
 			     sizeof (gcc_diag_length_specs)); 
       if (hwi)
@@ -2386,7 +2389,8 @@ init_dynamic_diag_info (void)
       /* Handle the __gcc_diag__ format specifics.  */
       if (! diag_fci)
 	dynamic_format_types[gcc_diag_format_type].conversion_specs =
-	  diag_fci = xmemdup (gcc_diag_char_table,
+	  diag_fci = (format_char_info *)
+		     xmemdup (gcc_diag_char_table,
 			      sizeof(gcc_diag_char_table),
 			      sizeof(gcc_diag_char_table));
       if (loc)
@@ -2405,7 +2409,8 @@ init_dynamic_diag_info (void)
       /* Handle the __gcc_cdiag__ format specifics.  */
       if (! cdiag_fci)
 	dynamic_format_types[gcc_cdiag_format_type].conversion_specs =
-	  cdiag_fci = xmemdup (gcc_cdiag_char_table,
+	  cdiag_fci = (format_char_info *)
+		      xmemdup (gcc_cdiag_char_table,
 			       sizeof(gcc_cdiag_char_table),
 			       sizeof(gcc_cdiag_char_table));
       if (loc)
@@ -2428,7 +2433,8 @@ init_dynamic_diag_info (void)
       /* Handle the __gcc_cxxdiag__ format specifics.  */
       if (! cxxdiag_fci)
 	dynamic_format_types[gcc_cxxdiag_format_type].conversion_specs =
-	  cxxdiag_fci = xmemdup (gcc_cxxdiag_char_table,
+	  cxxdiag_fci = (format_char_info *)
+			xmemdup (gcc_cxxdiag_char_table,
 				 sizeof(gcc_cxxdiag_char_table),
 				 sizeof(gcc_cxxdiag_char_table));
       if (loc)
@@ -2530,7 +2536,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       /* Our first time through, we have to make sure that our
          format_type data is allocated dynamically and is modifiable.  */
       if (!dynamic_format_types)
-	format_types = dynamic_format_types =
+	format_types = dynamic_format_types = (format_kind_info *)
 	  xmemdup (format_types_orig, sizeof (format_types_orig),
 		   sizeof (format_types_orig));
 

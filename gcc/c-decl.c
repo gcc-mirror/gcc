@@ -2963,7 +2963,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     {
       /* ASMSPEC is given, and not the name of a register.  Mark the
       name with a star so assemble_name won't munge it.  */
-      char *starred = alloca (strlen (asmspec) + 2);
+      char *starred = (char *) alloca (strlen (asmspec) + 2);
       starred[0] = '*';
       strcpy (starred + 1, asmspec);
 

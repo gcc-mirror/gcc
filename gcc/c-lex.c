@@ -628,7 +628,7 @@ interpret_float (const cpp_token *token, unsigned int flags)
     /* I or J suffix.  */
     copylen--;
 
-  copy = alloca (copylen + 1);
+  copy = (char *) alloca (copylen + 1);
   memcpy (copy, token->val.str.text, copylen);
   copy[copylen] = '\0';
 
@@ -710,7 +710,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 	    }
 	}
       while (tok->type == CPP_STRING || tok->type == CPP_WSTRING);
-      strs = obstack_finish (&str_ob);
+      strs = (cpp_string *) obstack_finish (&str_ob);
     }
 
   /* We have read one more token than we want.  */

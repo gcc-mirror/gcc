@@ -740,7 +740,7 @@ fname_as_string (int pretty_p)
       int len = strlen (name) + 3; /* Two for '"'s.  One for NULL.  */
       cpp_string cstr = { 0, 0 }, strname;
 
-      namep = xmalloc (len);
+      namep = XNEWVEC (char, len);
       snprintf (namep, len, "\"%s\"", name);
       strname.text = (unsigned char *) namep;
       strname.len = len - 1;
@@ -1394,7 +1394,7 @@ verify_sequence_points (tree expr)
   if (tlist_firstobj == 0)
     {
       gcc_obstack_init (&tlist_obstack);
-      tlist_firstobj = obstack_alloc (&tlist_obstack, 0);
+      tlist_firstobj = (char *) obstack_alloc (&tlist_obstack, 0);
     }
 
   verify_tree (expr, &before_sp, &after_sp, 0);
@@ -2762,7 +2762,7 @@ c_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
     }
   else
     {
-      if (op == SIZEOF_EXPR)
+      if (op == (enum tree_code) SIZEOF_EXPR)
 	/* Convert in case a char is more than one unit.  */
 	value = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
 			    size_int (TYPE_PRECISION (char_type_node)
@@ -3658,7 +3658,7 @@ static int
 match_case_to_enum (splay_tree_node node, void *data)
 {
   tree label = (tree) node->value;
-  tree type = data;
+  tree type = (tree) data;
 
   /* Skip default case.  */
   if (!CASE_LOW (label))
@@ -4280,7 +4280,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
       if (len > 4 && p[0] == '_' && p[1] == '_'
 	  && p[len - 1] == '_' && p[len - 2] == '_')
 	{
-	  char *newp = alloca (len - 1);
+	  char *newp = (char *) alloca (len - 1);
 
 	  strcpy (newp, &p[2]);
 	  newp[len - 4] = '\0';
@@ -5199,8 +5199,9 @@ check_function_arguments_recurse (void (*callback)
 int
 field_decl_cmp (const void *x_p, const void *y_p)
 {
-  const tree *const x = x_p;
-  const tree *const y = y_p;
+  const tree *const x = (const tree *const) x_p;
+  const tree *const y = (const tree *const) y_p;
+
   if (DECL_NAME (*x) == DECL_NAME (*y))
     /* A nontype is "greater" than a type.  */
     return (TREE_CODE (*y) == TYPE_DECL) - (TREE_CODE (*x) == TYPE_DECL);
@@ -5224,8 +5225,8 @@ pointer operator in resort_data.  */
 static int
 resort_field_decl_cmp (const void *x_p, const void *y_p)
 {
-  const tree *const x = x_p;
-  const tree *const y = y_p;
+  const tree *const x = (const tree *const) x_p;
+  const tree *const y = (const tree *const) y_p;
 
   if (DECL_NAME (*x) == DECL_NAME (*y))
     /* A nontype is "greater" than a type.  */

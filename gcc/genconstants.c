@@ -42,8 +42,8 @@ static int print_md_constant (void **, void *);
 static int
 print_md_constant (void **slot, void *info)
 {
-  struct md_constant *def = *slot;
-  FILE *file = info;
+  struct md_constant *def = (struct md_constant *) *slot;
+  FILE *file = (FILE *) info;
 
   fprintf (file, "#define %s %s\n", def->name, def->value);
   return 1;
