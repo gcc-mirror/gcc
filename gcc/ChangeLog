@@ -1,3 +1,75 @@
+2004-08-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* genpreds.c: Add capability to generate predicate bodies as
+	well as function prototypes.  Write function prototypes for
+	the generic predicates too.
+	(process_define_predicate, write_tm_preds_h, write_insn_preds_c)
+	(write_predicate_subfunction, mark_mode_tests, add_mode_tests)
+	(write_match_code, write_predicate_expr, write_one_predicate_function)
+	(parse_option): New functions.
+	(output_predicate_decls): Delete.
+	(main): Read the machine description, process DEFINE_PREDICATE or
+	DEFINE_SPECIAL_PREDICATE patterns, write tm-preds.h or insn-preds.c
+	as appropriate.
+
+	* genrecog.c (struct decision_test): Replace index with
+	struct pred_data pointer.
+	(next_index): Remove, unused.
+	(pred_table, preds, special_mode_pred_table): Delete.
+	(compute_predicate_codes, process_define_predicate): New functions.
+	(validate_pattern, add_to_sequence, write_switch): Update for
+	new data structures.
+	(main): Handle DEFINE_PREDICATE and DEFINE_SPECIAL_PREDICATE.
+	Check both error_count and have_error.
+
+	* gensupport.c (in_fname, first_predicate): New globals.
+	(define_pred_queue, define_pred_tail): New RTL-pattern queue.
+	(predicate_table, last_predicate, old_pred_table)
+	(old_special_pred_table): New statics.
+	(hash_struct_pred_data, eq_struct_pred_data, lookup_predicate)
+	(add_predicate, init_predicate_table): New functions.
+	(process_rtx): Handle DEFINE_PREDICATE and DEFINE_SPECIAL_PREDICATE.
+	(init_md_reader_args_cb): Use the global in_fname.  No need to zero
+	it or max_include_len.  Call init_predicate_table.
+	(read_rtx): Run the predicate queue after the attribute queue
+	but before all the others.
+	* gensupport.h (in_fname, struct pred_data, first_predicate)
+	(lookup_predicate, add_predicate, FOR_ALL_PREDICATES): Declare.
+	* rtl.def (MATCH_CODE, MATCH_TEST, DEFINE_PREDICATE)
+	(DEFINE_SPECIAL_PREDICATE): New RTL codes.
+	* dummy-conditions.c: Don't include bconfig.h, system.h,
+	coretypes.h, tm.h, or system.h.  Do include stddef.h.
+	Duplicate declaration of struct c_test from gensupport.h.
+
+	* Makefile.in (OBJS-common): Add insn-preds.o.
+	(STAGESTUFF, .PRECIOUS): Add insn-preds.c.
+	(insn-preds.c, insn-preds.o): New rules.
+	(s-preds): Also generate insn-preds.c.
+	(dummy-conditions.o, genpreds$(build_exeext), genpreds.o):
+	Update dependencies.
+	(print-rtl.o, print-rtl1.o): Correct dependencies.
+
+	* recog.h: Delete prototypes of predicate functions.
+
+	* doc/md.texi (Predicates): New section with complete
+	documentation of operand/operator predicates.  Remove some
+	incomplete documentation of predicates from other places.
+	* doc/tm.texi (Misc): Move SPECIAL_MODE_PREDICATES next to
+	PREDICATE_CODES; indicate that both are deprecated in favor
+	of define_predicate/define_special_predicate.
+
+	* config/ia64/ia64.c: All predicate function definitions moved
+	to ia64.md, except
+	(small_addr_symbolic_operand, tls_symbolic_operand): Delete.
+	(ia64_expand_load_address, ia64_expand_move):
+	Check SYMBOL_REF_TLS_MODEL directly, don't use tls_symbolic_operand.
+
+	* config/ia64/ia64.md: All predicates now defined here.
+	(symbolic_operand): Is now a special predicate.
+
+	* config/ia64/ia64.h: Declare ia64_section_threshold.
+	(PREDICATE_CODES): Delete.
+
 2004-08-12  Richard Henderson  <rth@redhat.com>
 
 	* c-common.h (STATEMENT_LIST_HAS_LABEL): New.
@@ -8,7 +80,7 @@
 2004-08-12  Richard Henderson  <rth@redhat.com>
 
 	* stor-layout.c (round_up, round_down): Move ...
-	* fold-const.c (round_up, round_down): ... here.  Use 
+	* fold-const.c (round_up, round_down): ... here.  Use
 	multiple_of_p to avoid any arithmetic at all.
 
 2004-08-12  Richard Henderson  <rth@redhat.com>
@@ -56,7 +128,7 @@
 	(LINK_SPEC): Same.
 	* doc/invoke.texi (Darwin Options): Document -dead_strip and
 	-no_dead_strip_inits_and_terms.
-	
+
 2004-08-11  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_finalize_pic) Rename ...
@@ -102,15 +174,15 @@
 	get_vuse_ops,get_v_must_def_ops): Add operand structure reference.
 	(get_v_may_def_result_ptr, get_v_may_def_op_ptr): New access struct.
 	(start_ssa_stmt_operands): Delete.
-	* tree-flow.h (struct stmt_ann_d): Replace operand vectors with new 
+	* tree-flow.h (struct stmt_ann_d): Replace operand vectors with new
 	struct stmt_operands_d.
 	(build_ssa_operands): New extern entry point.
-	* tree-ssa-dom.c (record_equivalences_from_stmt): Remove operand 
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Remove operand
 	building code, replace with create_ssa_artficial_load_stmt().
 	* tree-ssa-operands.c (struct voperands_d): Delete.
 	(allocate_v_may_def_optype): Allocate v_may_def_operand_type_t vector.
 	(allocate_v_must_def_optype): Use sizeof (tree), not sizeof (tree *).
-	(free_uses, free_defs, free_vuses, free_v_may_defs, 
+	(free_uses, free_defs, free_vuses, free_v_may_defs,
 	free_v_must_defs): Remove dealloc parameter.
 	(remove_vuses, remove_v_may_def, remove_v_must_defs): Delete.
 	(finalize_ssa_defs, finalize_ssa_uses, finalize_ssa_v_may_defs,
@@ -125,7 +197,7 @@
 	duplicates and simple accumulation.
 	(free_ssa_operands): Free vectors in a stmt_operand structure.
 	(build_ssa_operands): New. Create a new stmt_operand structure from
-	a stmt and an old set of stmt_operands.  
+	a stmt and an old set of stmt_operands.
 	(get_stmt_operands): Simplify and call build_ssa_operands.
 	(get_expr_operands, get_asm_expr_operands, get_indirect_ref_operands,
 	get_call_expr_operands, add_stmt_operand, add_call_clobber_ops,

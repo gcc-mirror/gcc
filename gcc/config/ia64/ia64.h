@@ -146,6 +146,10 @@ extern int target_flags;
 
 #define TARGET_DWARF2_ASM	(target_flags & MASK_DWARF2_ASM)
 
+/* Variables which are this size or smaller are put in the sdata/sbss
+   sections.  */
+extern unsigned int ia64_section_threshold;
+
 /* If the assembler supports thread-local storage, assume that the
    system does as well.  If a particular target system has an
    assembler that supports TLS -- but the rest of the system does not
@@ -2139,53 +2143,6 @@ do {									\
 #define SYMBOL_FLAG_SMALL_ADDR		(SYMBOL_FLAG_MACH_DEP << 0)
 #define SYMBOL_REF_SMALL_ADDR_P(X)	\
 	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_SMALL_ADDR) != 0)
-
-/* Define this if you have defined special-purpose predicates in the file
-   `MACHINE.c'.  For each predicate, list all rtl codes that can be in
-   expressions matched by the predicate.  */
-
-#define PREDICATE_CODES \
-{ "call_operand", {SUBREG, REG, SYMBOL_REF}},				\
-{ "got_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
-{ "sdata_symbolic_operand", {SYMBOL_REF, CONST}},			\
-{ "small_addr_symbolic_operand", {SYMBOL_REF}},				\
-{ "symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},			\
-{ "tls_symbolic_operand", {SYMBOL_REF}},				\
-{ "function_operand", {SYMBOL_REF}},					\
-{ "destination_operand", {SUBREG, REG, MEM}},				\
-{ "not_postinc_memory_operand", {MEM}},					\
-{ "move_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		     SYMBOL_REF, CONST, LABEL_REF}},			\
-{ "gr_register_operand", {SUBREG, REG}},				\
-{ "fr_register_operand", {SUBREG, REG}},				\
-{ "grfr_register_operand", {SUBREG, REG}},				\
-{ "gr_nonimmediate_operand", {SUBREG, REG, MEM}},			\
-{ "fr_nonimmediate_operand", {SUBREG, REG, MEM}},			\
-{ "grfr_nonimmediate_operand", {SUBREG, REG, MEM}},			\
-{ "gr_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
-{ "gr_reg_or_5bit_operand", {SUBREG, REG, CONST_INT}},			\
-{ "gr_reg_or_6bit_operand", {SUBREG, REG, CONST_INT}},			\
-{ "gr_reg_or_8bit_operand", {SUBREG, REG, CONST_INT}},			\
-{ "grfr_reg_or_8bit_operand", {SUBREG, REG, CONST_INT}}, 		\
-{ "gr_reg_or_8bit_adjusted_operand", {SUBREG, REG, CONST_INT}},		\
-{ "gr_reg_or_8bit_and_adjusted_operand", {SUBREG, REG, CONST_INT}},	\
-{ "gr_reg_or_14bit_operand", {SUBREG, REG, CONST_INT}}, 		\
-{ "gr_reg_or_22bit_operand", {SUBREG, REG, CONST_INT}}, 		\
-{ "shift_count_operand", {SUBREG, REG, CONST_INT}},			\
-{ "shift_32bit_count_operand", {SUBREG, REG, CONST_INT}},		\
-{ "shladd_operand", {CONST_INT}},					\
-{ "fetchadd_operand", {CONST_INT}},					\
-{ "fr_reg_or_fp01_operand", {SUBREG, REG, CONST_DOUBLE}},		\
-{ "normal_comparison_operator", {EQ, NE, GT, LE, GTU, LEU}},		\
-{ "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
-{ "signed_inequality_operator", {GE, GT, LE, LT}},			\
-{ "predicate_operator", {NE, EQ}},					\
-{ "condop_operator", {PLUS, MINUS, IOR, XOR, AND}},			\
-{ "ar_lc_reg_operand", {REG}},						\
-{ "ar_ccv_reg_operand", {REG}},						\
-{ "ar_pfs_reg_operand", {REG}},						\
-{ "xfreg_or_fp01_operand", {REG, CONST_DOUBLE}},			\
-{ "basereg_operand", {SUBREG, REG}},
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */

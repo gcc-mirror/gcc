@@ -1,5 +1,5 @@
 /* Support for calculating constant conditions.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -18,15 +18,21 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#include "bconfig.h"
-#include "system.h"
-#include "coretypes.h"
-#include "tm.h"
-#include "gensupport.h"
+#include <stddef.h>  /* for size_t */
 
 /* MD generators that are run before insn-conditions.c exists should
    link against this file instead.  Currently that is genconditions
    and genconstants.  */
+
+/* In order to avoid dragging in all the headers that are needed to
+   declare things that gensupport.h uses, we duplicate the declaration
+   of struct c_test here.  (In particular we do not want to have to
+   include tm.h nor rtl.h in this file.)  */
+struct c_test
+{
+  const char *expr;
+  int value;
+};
 
 /* Empty conditions table to prevent link errors.  */
 const struct c_test insn_conditions[1] = { { 0, 0 } };
