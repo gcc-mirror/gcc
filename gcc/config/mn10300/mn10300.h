@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10300 series
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -251,19 +251,19 @@ enum reg_class {
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS  			\
-{      0,		/* No regs      */	\
-   0x0000f,		/* DATA_REGS */		\
-   0x001f0,		/* ADDRESS_REGS */	\
-   0x00200,		/* SP_REGS */		\
-   0x001ff,		/* DATA_OR_ADDRESS_REGS */\
-   0x003f0,		/* SP_OR_ADDRESS_REGS */\
-   0x2fc00,		/* EXTENDED_REGS */	\
-   0x2fc0f,		/* DATA_OR_EXTENDED_REGS */	\
-   0x2fdf0,		/* ADDRESS_OR_EXTENDED_REGS */	\
-   0x2fe00,		/* SP_OR_EXTENDED_REGS */	\
-   0x2fff0,		/* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
-   0x2fdff,		/* GENERAL_REGS */    	\
-   0x2ffff,		/* ALL_REGS 	*/	\
+{      {0},		/* No regs      */	\
+   {0x0000f},		/* DATA_REGS */		\
+   {0x001f0},		/* ADDRESS_REGS */	\
+   {0x00200},		/* SP_REGS */		\
+   {0x001ff},		/* DATA_OR_ADDRESS_REGS */\
+   {0x003f0},		/* SP_OR_ADDRESS_REGS */\
+   {0x2fc00},		/* EXTENDED_REGS */	\
+   {0x2fc0f},		/* DATA_OR_EXTENDED_REGS */	\
+   {0x2fdf0},		/* ADDRESS_OR_EXTENDED_REGS */	\
+   {0x2fe00},		/* SP_OR_EXTENDED_REGS */	\
+   {0x2fff0},		/* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
+   {0x2fdff},		/* GENERAL_REGS */    	\
+   {0x2ffff},		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
@@ -504,7 +504,6 @@ struct cum_arg {int nbytes; };
 
 /* On the MN10300 all args are pushed.  */   
 
-extern struct rtx_def *function_arg ();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED)
 
@@ -606,16 +605,13 @@ extern struct rtx_def *function_arg ();
    Ordinarily they are not call used registers, but they are for
    _builtin_saveregs, so we must make this explicit.  */
 
-extern struct rtx_def *mn10300_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS() mn10300_builtin_saveregs ()
 
 /* Implement `va_start' for varargs and stdarg.  */
-extern void mn10300_va_start();
 #define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
   mn10300_va_start (stdarg, valist, nextarg)
 
 /* Implement `va_arg'.  */
-extern struct rtx_def *mn10300_va_arg();
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   mn10300_va_arg (valist, type)
 
@@ -754,7 +750,6 @@ extern struct rtx_def *mn10300_va_arg();
    It is always safe for this macro to do nothing.  It exists to recognize
    opportunities to optimize the output.   */
 
-extern struct rtx_def *legitimize_address ();
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)  \
 { rtx orig_x = (X);				\
   (X) = legitimize_address (X, OLDX, MODE);	\
@@ -1088,16 +1083,3 @@ do { char dstr[30];					\
 
 #define FILE_ASM_OP "\t.file\n"
 
-extern void asm_file_start ();
-extern int const_costs ();
-extern void print_operand ();
-extern void print_operand_address ();
-extern void expand_prologue ();
-extern void expand_epilogue ();
-extern void notice_update_cc ();
-extern int call_address_operand ();
-extern int impossible_plus_operand ();
-extern enum reg_class secondary_reload_class ();
-extern int initial_offset ();
-extern char *output_tst ();
-int symbolic_operand ();
