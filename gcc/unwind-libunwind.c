@@ -105,6 +105,15 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
   return ret;
 }
 
+/* Get the value of the CFA as saved in CONTEXT.  */
+
+_Unwind_Word
+_Unwind_GetCFA (struct _Unwind_Context *context)
+{
+  /* ??? Is there any way to get this information?  */
+  return NULL;
+} 
+
 /* Overwrite the saved value for register REG in CONTEXT with VAL.  */
 
 void
