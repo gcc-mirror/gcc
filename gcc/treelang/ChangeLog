@@ -1,3 +1,8 @@
+2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
+	* Make-lang.in: Remove commented out code.
+	* lang-specs.h: Always pass -dumpbase to tree1.
+
 2005-02-25  James A. Morrrison  <phython@gcc.gnu.org>
 
 	* treelang.texi: Remove extra contribution notice.

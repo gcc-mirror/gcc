@@ -293,7 +293,6 @@ treelang.check: $(TESTSUITEDIR)/site.exp
 	gcc_extras="-B`cd ..;${PWD_COMMAND}` -B`cd ..;${PWD_COMMAND}`/treelang"; export gcc_extras; \
 	$(RUNTEST) --tool treelang $(RUNTESTFLAGS)
 	rm $(srcdir)/testsuite/treelang/{a01gcco01runpgmerr,a01gcc.out01,a01gcc.out01err}
-#	GCC_EXTRAS="$(GCC_EXTRAS)"; export GCC_EXTRAS; \
 
 # copy the output files from the current test to source ie say the new results are OK
 treelang.check.fix: force
