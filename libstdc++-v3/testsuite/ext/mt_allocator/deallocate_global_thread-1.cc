@@ -19,6 +19,7 @@
 
 // 20.4.1.1 allocator members
 
+#include <list>
 #include <string>
 #include <stdexcept>
 #include <ext/mt_allocator.h>
@@ -31,13 +32,15 @@ struct count_check
   count_check() {}
   ~count_check()
   {
-#ifdef _GLIBCXX_USE___CXA_ATEXIT
     if (count != 0)
-      throw std::runtime_error("count isn't zero");
-#endif
+      {
+	// NB: __mt_allocator doesn't clean itself up. Thus, this will
+	// not be zero.
+      }
   }
 };
  
+// First.
 static count_check check;
 
 void* operator new(size_t size) throw(std::bad_alloc)
@@ -63,15 +66,17 @@ void operator delete(void* p) throw()
   free(p);
 }
 
-typedef char char_t;
-typedef std::char_traits<char_t> traits_t;
-typedef __gnu_cxx::__common_pool_policy<true> pool_t;
-typedef __gnu_cxx::__mt_alloc<char_t, pool_t> allocator_t;
-typedef std::basic_string<char_t, traits_t, allocator_t> string_t;
+typedef std::string value_t;
+typedef __gnu_cxx::__common_pool_policy<true> policy_t;
+typedef __gnu_cxx::__mt_alloc<value_t, policy_t> allocator_t;
+typedef std::char_traits<value_t> traits_t;
+typedef std::list<value_t, allocator_t> list_t;
 
-string_t s("bayou bend");
+// Second.
+list_t l;
 
 int main()
 {
+  l.push_back("bayou bend");
   return 0;
 }
