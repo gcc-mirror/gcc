@@ -2312,7 +2312,7 @@ allocation has been done (for example, because the saved registers are
 between these two locations).  On those machines, define
 @code{FRAME_POINTER_REGNUM} the number of a special, fixed register to
 be used internally until the offset is known, and define
-@code{HARD_FRAME_POINTER_REGNUM} to be actual the hard register number
+@code{HARD_FRAME_POINTER_REGNUM} to be the actual hard register number
 used for the frame pointer.
 
 You should define this macro only in the very rare circumstances when it
@@ -5948,7 +5948,7 @@ operands to @code{asm_fprintf}.
 
 Define the macros @code{REGISTER_PREFIX}, @code{LOCAL_LABEL_PREFIX},
 @code{USER_LABEL_PREFIX} and @code{IMMEDIATE_PREFIX} if you can express
-the variations in assemble language syntax with that mechanism.  Define
+the variations in assembler language syntax with that mechanism.  Define
 @code{ASSEMBLER_DIALECT} and use the @samp{@{option0|option1@}} syntax
 if the syntax variant are larger and involve such things as different
 opcodes or operand order.
@@ -6802,7 +6802,7 @@ incorrect definitions that omit an rtl code that may be matched by the
 predicate can cause the compiler to malfunction).  Instead, it allows
 the table built by @file{genrecog} to be more compact and efficient,
 thus speeding up the compiler.  The most important predicates to include
-in the list specified by this macro are thoses used in the most insn
+in the list specified by this macro are those used in the most insn
 patterns.
 
 @findex CASE_VECTOR_MODE
