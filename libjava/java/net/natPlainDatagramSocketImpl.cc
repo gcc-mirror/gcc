@@ -427,7 +427,16 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
   else if (len == 16)
     {
       level = IPPROTO_IPV6;
-      opname = join ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
+
+      /* Prefer new RFC 2553 names.  */
+#ifndef IPV6_JOIN_GROUP
+#define IPV6_JOIN_GROUP IPV6_ADD_MEMBERSHIP
+#endif
+#ifndef IPV6_LEAVE_GROUP
+#define IPV6_LEAVE_GROUP IPV6_DROP_MEMBERSHIP
+#endif
+
+      opname = join ? IPV6_JOIN_GROUP : IPV6_LEAVE_GROUP;
       memcpy (&u.mreq6.ipv6mr_multiaddr, bytes, len);
       // FIXME:  If a non-default interface is set, use it; see Stevens p. 501.
       // Maybe not, see note in last paragraph at bottom of Stevens p. 497.
