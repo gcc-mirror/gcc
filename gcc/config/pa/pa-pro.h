@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef TARGET_DEFAULT
-/* JUMP_IN_DELAY + PORTABLE_RUNTIME + GAS + NO_SPAEC_REGS */
-#define TARGET_DEFAULT (4 + 8 + 64 + 128)
+/* JUMP_IN_DELAY + PORTABLE_RUNTIME + GAS + NO_SPACE_REGS + SOFT_FLOAT */
+#define TARGET_DEFAULT (4 + 8 + 64 + 128 + 256)
 #endif
 
 /* Global constructor and destructor support.  */
