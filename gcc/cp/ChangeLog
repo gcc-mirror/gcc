@@ -1,5 +1,11 @@
 2004-01-26  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13663
+	* semantics.c (finish_for_expr): Check for unresolved overloaded
+	functions.
+
+2004-01-26  Mark Mitchell  <mark@codesourcery.com>
+
 	* class.c (add_method): Just check processing_template_decl to
 	determine whether or not we are within a template.
 	* decl2.c (maybe_retrofit_in_chrg): Likewise.
