@@ -1,3 +1,7 @@
+2004-02-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.dg/ext/typeof8.C: New test.
+
 2004-02-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	Backport from mainline:
