@@ -886,7 +886,7 @@ if test "${enable_generated_files_in_srcdir+set}" = set; then
   enableval="$enable_generated_files_in_srcdir"
   case ${enableval} in
   no)    parsedir='$(objdir)'; docobjdir='$(objdir)/doc';;
-  yes,*) parsedir='$(srcdir)'; docobjdir='$(srcdir)/doc';;
+  *)     parsedir='$(srcdir)'; docobjdir='$(srcdir)/doc';;
 esac
 else
   parsedir='$(objdir)'; docobjdir='$(objdir)/doc';

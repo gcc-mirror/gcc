@@ -1,3 +1,9 @@
+2003-10-22  Chris Demetriou  <cgd@broadcom.com>
+
+	* configure.in: In --enable-generated-files-in-srcdir option
+	handling, fix default case handling.
+	* configure: Regenerate.
+
 2003-10-22  Phil Edwards  <phil@codesourcery.com>
 
 	* config.gcc:  Update *-*-vxworks* generic hook and comments.
