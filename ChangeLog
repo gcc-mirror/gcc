@@ -1,5 +1,8 @@
 2004-01-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Don't share a cache file for host dirs.
+	* configure: Regenerate.
+
 	* config-ml.in: Don't mess with the cache file.
 
 2004-01-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
