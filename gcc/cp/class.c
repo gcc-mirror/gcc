@@ -426,22 +426,34 @@ build_simple_base_path (tree expr, tree binfo)
   gcc_unreachable ();
 }
 
-/* Convert OBJECT to the base TYPE.  If CHECK_ACCESS is true, an error
-   message is emitted if TYPE is inaccessible.  OBJECT is assumed to
-   be non-NULL.  */
+/* Convert OBJECT to the base TYPE.  OBJECT is an expression whose
+   type is a class type or a pointer to a class type.  In the former
+   case, TYPE is also a class type; in the latter it is another
+   pointer type.  If CHECK_ACCESS is true, an error message is emitted
+   if TYPE is inaccessible.  If OBJECT has pointer type, the value is
+   assumed to be non-NULL.  */
 
 tree
-convert_to_base (tree object, tree type, bool check_access)
+convert_to_base (tree object, tree type, bool check_access, bool nonnull)
 {
   tree binfo;
+  tree object_type;
 
-  binfo = lookup_base (TREE_TYPE (object), type, 
+  if (TYPE_PTR_P (TREE_TYPE (object)))
+    {
+      object_type = TREE_TYPE (TREE_TYPE (object));
+      type = TREE_TYPE (type);
+    }
+  else
+    object_type = TREE_TYPE (object);
+
+  binfo = lookup_base (object_type, type,
 		       check_access ? ba_check : ba_unique, 
 		       NULL);
   if (!binfo || binfo == error_mark_node)
     return error_mark_node;
 
-  return build_base_path (PLUS_EXPR, object, binfo, /*nonnull=*/1);
+  return build_base_path (PLUS_EXPR, object, binfo, nonnull);
 }
 
 /* EXPR is an expression with unqualified class type.  BASE is a base
@@ -485,7 +497,8 @@ build_vfield_ref (tree datum, tree type)
 
   /* First, convert to the requested type.  */
   if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (datum), type))
-    datum = convert_to_base (datum, type, /*check_access=*/false);
+    datum = convert_to_base (datum, type, /*check_access=*/false,
+			     /*nonnull=*/true);
 
   /* Second, the requested type may not be the owner of its own vptr.
      If not, convert to the base class that owns it.  We cannot use

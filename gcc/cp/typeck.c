@@ -52,7 +52,7 @@ static bool comp_except_types (tree, tree, bool);
 static bool comp_array_types (tree, tree, bool);
 static tree common_base_type (tree, tree);
 static tree pointer_diff (tree, tree, tree);
-static tree get_delta_difference (tree, tree, int);
+static tree get_delta_difference (tree, tree, bool, bool);
 static void casts_away_constness_r (tree *, tree *);
 static bool casts_away_constness (tree, tree);
 static void maybe_warn_about_returning_address_of_local (tree);
@@ -4146,7 +4146,8 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	    && TREE_CODE (TREE_TYPE (argtype)) == METHOD_TYPE)
 	  {
 	    build_ptrmemfunc_type (argtype);
-	    addr = build_ptrmemfunc (argtype, addr, 0);
+	    addr = build_ptrmemfunc (argtype, addr, 0,
+				     /*c_cast_p=*/false);
 	  }
 
 	return addr;
@@ -4485,6 +4486,38 @@ check_for_casting_away_constness (tree src_type, tree dest_type,
 	   description, src_type, dest_type);
 }
 
+/* Convert EXPR (an expression with pointer-to-member type) to TYPE
+   (another pointer-to-member type in the same hierarchy) and return
+   the converted expression.  If ALLOW_INVERSE_P is permitted, a
+   pointer-to-derived may be converted to pointer-to-base; otherwise,
+   only the other direction is permitted.  If C_CAST_P is true, this
+   conversion is taking place as part of a C-style cast.  */
+
+tree 
+convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
+		bool c_cast_p)
+{
+  if (TYPE_PTRMEM_P (type))
+    {
+      tree delta;
+
+      if (TREE_CODE (expr) == PTRMEM_CST)
+	expr = cplus_expand_constant (expr);
+      delta = get_delta_difference (TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (expr)),
+				    TYPE_PTRMEM_CLASS_TYPE (type), 
+				    allow_inverse_p,
+				    c_cast_p);
+      if (!integer_zerop (delta))
+	expr = cp_build_binary_op (PLUS_EXPR, 
+				   build_nop (ptrdiff_type_node, expr),
+				   delta);
+      return build_nop (type, expr);
+    }
+  else
+    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 
+			     allow_inverse_p, c_cast_p);
+}
+
 /* Perform a static_cast from EXPR to TYPE.  When C_CAST_P is true,
    this static_cast is being attempted as one of the possible casts
    allowed by a C-style cast.  (In that case, accessibility of base
@@ -4691,23 +4724,10 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       if (can_convert (t1, t2))
 	{
 	  if (!c_cast_p)
-	    check_for_casting_away_constness (intype, type, diag_fn, desc);
-	  if (TYPE_PTRMEM_P (type))
-	    {
-	      tree delta;
-
-	      if (TREE_CODE (expr) == PTRMEM_CST)
-		expr = cplus_expand_constant (expr);
-	      delta = get_delta_difference (c1, c2, /*force=*/1);
-	      if (!integer_zerop (delta))
-		expr = cp_build_binary_op (PLUS_EXPR, 
-					   build_nop (ptrdiff_type_node, expr),
-					   delta);
-	      return build_nop (type, expr);
-	    }
-	  else
-	    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 
-				     /*force=*/1);
+	    check_for_casting_away_constness (intype, type, diag_fn, 
+					      desc);
+	  return convert_ptrmem (type, expr, /*allow_inverse_p=*/1,
+				 c_cast_p);
 	}
     }
     
@@ -4945,6 +4965,8 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
       expr = decl_constant_value (expr);
       return fold_if_not_in_template (build_nop (type, expr));
     }
+  else if (TREE_CODE (type) == VECTOR_TYPE)
+    return fold_if_not_in_template (convert_to_vector (type, expr));
   else
     {
       if (valid_p)
@@ -5546,8 +5568,10 @@ build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 
 /* Get difference in deltas for different pointer to member function
    types.  Returns an integer constant of type PTRDIFF_TYPE_NODE.  If
-   the conversion is invalid, the constant is zero.  If FORCE is true,
-   then allow reverse conversions as well.
+   the conversion is invalid, the constant is zero.  If
+   ALLOW_INVERSE_P is true, then allow reverse conversions as well.
+   If C_CAST_P is true this conversion is taking place as part of a
+   C-style cast.
 
    Note that the naming of FROM and TO is kind of backwards; the return
    value is what we add to a TO in order to get a FROM.  They are named
@@ -5555,7 +5579,9 @@ build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
    a pointer to member of FROM to a pointer to member of TO.  */
 
 static tree
-get_delta_difference (tree from, tree to, int force)
+get_delta_difference (tree from, tree to, 
+		      bool allow_inverse_p,
+		      bool c_cast_p)
 {
   tree binfo;
   tree virt_binfo;
@@ -5564,19 +5590,20 @@ get_delta_difference (tree from, tree to, int force)
 
   /* Assume no conversion is required.  */
   result = integer_zero_node;
-  binfo = lookup_base (to, from, ba_check, &kind);
+  binfo = lookup_base (to, from, c_cast_p ? ba_unique : ba_check, &kind);
   if (kind == bk_inaccessible || kind == bk_ambig)
     error ("   in pointer to member function conversion");
   else if (!binfo)
     {
-      if (!force)
+      if (!allow_inverse_p)
 	{
 	  error_not_base_type (from, to);
 	  error ("   in pointer to member conversion");
 	}
       else
 	{
-	  binfo = lookup_base (from, to, ba_check, &kind);
+	  binfo = lookup_base (from, to, c_cast_p ? ba_unique : ba_check, 
+			       &kind);
 	  if (binfo)
 	    {
 	      virt_binfo = binfo_from_vbase (binfo);
@@ -5597,7 +5624,7 @@ get_delta_difference (tree from, tree to, int force)
       else
 	{
 	  /* This is a reinterpret cast, we choose to do nothing.  */
-	  if (force)
+	  if (allow_inverse_p)
 	    warning ("pointer to member cast via virtual base %qT",
 		     BINFO_TYPE (virt_binfo));
 	  else
@@ -5648,12 +5675,12 @@ build_ptrmemfunc1 (tree type, tree delta, tree pfn)
 
    If FORCE is nonzero, then force this conversion, even if
    we would rather not do it.  Usually set when using an explicit
-   cast.
+   cast.  A C-style cast is being processed iff C_CAST_P is true.
 
    Return error_mark_node, if something goes wrong.  */
 
 tree
-build_ptrmemfunc (tree type, tree pfn, int force)
+build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p)
 {
   tree fn;
   tree pfn_type;
@@ -5679,7 +5706,8 @@ build_ptrmemfunc (tree type, tree pfn, int force)
 
       n = get_delta_difference (TYPE_PTRMEMFUNC_OBJECT_TYPE (pfn_type),
 				TYPE_PTRMEMFUNC_OBJECT_TYPE (to_type),
-				force);
+				force,
+				c_cast_p);
 
       /* We don't have to do any conversion to convert a
 	 pointer-to-member to its own type.  But, we don't want to
@@ -5754,7 +5782,8 @@ expand_ptrmemfunc_cst (tree cst, tree *delta, tree *pfn)
   ptr_class = TYPE_PTRMEMFUNC_OBJECT_TYPE (type);
 
   /* First, calculate the adjustment to the function's class.  */
-  *delta = get_delta_difference (fn_class, ptr_class, /*force=*/0);
+  *delta = get_delta_difference (fn_class, ptr_class, /*force=*/0,
+				 /*c_cast_p=*/0);
 
   if (!DECL_VIRTUAL_P (fn))
     *pfn = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), build_addr_func (fn));
