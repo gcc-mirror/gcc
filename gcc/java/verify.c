@@ -471,7 +471,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
       if (start_pc < 0 || start_pc >= length
 	  || end_pc < 0 || end_pc > length || start_pc >= end_pc
 	  || handler_pc < 0 || handler_pc >= length
-	  || (handler_pc >= start_pc && handler_pc < end_pc)
 	  || ! (instruction_bits [start_pc] & BCODE_INSTRUCTION_START)
 	  || (end_pc < length &&
 	     ! (instruction_bits [end_pc] & BCODE_INSTRUCTION_START))
@@ -481,6 +480,9 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  free (starts);
 	  return 0;
 	}
+
+      if  (handler_pc >= start_pc && handler_pc < end_pc)
+	warning ("exception handler inside code that is being protected");
 
       add_handler (start_pc, end_pc,
 		   lookup_label (handler_pc),

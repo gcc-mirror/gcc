@@ -61,9 +61,9 @@ static struct eh_range *cache_next_child;
 struct eh_range whole_range;
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
-int binding_depth;
-int is_class_level;
-int current_pc;
+extern int binding_depth;
+extern int is_class_level;
+extern int current_pc;
 extern void indent ();
 
 #endif
@@ -172,6 +172,7 @@ link_handler (range, outer)
       h->handlers = build_tree_list (TREE_PURPOSE (range->handlers),
 				     TREE_VALUE (range->handlers));
       h->next_sibling = NULL;
+      h->expanded = 0;
       /* Restart both from the top to avoid having to make this
 	 function smart about reentrancy.  */
       link_handler (h, &whole_range);
