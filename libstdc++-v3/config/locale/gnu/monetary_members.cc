@@ -69,16 +69,15 @@ namespace std
 	    if (__precedes)
 	      {
 		__ret.field[1] = symbol;
-		__ret.field[2] = space;
 		__ret.field[3] = value;
 	      }
 	    else
 	      {
 		__ret.field[1] = value;
-		__ret.field[2] = space;
 		__ret.field[3] = symbol;
 	      }
 	    __ret.field[0] = sign;
+	    __ret.field[2] = space;
 	  }
 	else
 	  {

@@ -1,5 +1,10 @@
 2003-11-21  Paolo Carlini  <pcarlini@suse.de>
 
+	* config/locale/gnu/monetary_members.cc
+	(money_base::_S_construct_pattern): Factor out an assignment.
+
+2003-11-21  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/12882 (partial)
 	* acinclude.m4 (GLIBCXX_CHECK_LFS): Check fseeko64
 	and ftello64 too.
