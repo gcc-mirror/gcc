@@ -3458,12 +3458,13 @@ static HOST_WIDE_INT
 add_constant (x, mode, address_only)
      rtx x;
      enum machine_mode mode;
-     int *address_only;
+     int * address_only;
 {
   int i;
   HOST_WIDE_INT offset;
 
-  *address_only = 0;
+  * address_only = 0;
+  
   if (mode == SImode && GET_CODE (x) == MEM && CONSTANT_P (XEXP (x, 0))
       && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
     x = get_pool_constant (XEXP (x, 0));
@@ -3593,7 +3594,7 @@ find_barrier (from, max_count)
   while (from && count < max_count)
     {
       rtx tmp;
-
+      
       if (GET_CODE (from) == BARRIER)
 	found_barrier = from;
 
@@ -3628,28 +3629,27 @@ find_barrier (from, max_count)
       from = NEXT_INSN (from);
     }
 
-  if (!found_barrier)
+  if (! found_barrier)
     {
       /* We didn't find a barrier in time to
-	 dump our stuff, so we'll make one */
+	 dump our stuff, so we'll make one.  */
       rtx label = gen_label_rtx ();
-
+      
       if (from)
 	from = PREV_INSN (last);
       else
 	from = get_last_insn ();
-
-      /* Walk back to be just before any jump */
+      
+      /* Walk back to be just before any jump.  */
       while (GET_CODE (from) == JUMP_INSN
              || GET_CODE (from) == NOTE
 	     || GET_CODE (from) == CODE_LABEL)
 	from = PREV_INSN (from);
-
+      
       from = emit_jump_insn_after (gen_jump (label), from);
       JUMP_LABEL (from) = label;
       found_barrier = emit_barrier_after (from);
       emit_label_after (label, found_barrier);
-      return found_barrier;
     }
 
   return found_barrier;
@@ -3897,7 +3897,12 @@ output_call (operands)
       output_asm_insn ("mov%?\t%0, %|lr", operands);
     }
   output_asm_insn ("mov%?\t%|lr, %|pc", operands);
-  output_asm_insn ("mov%?\t%|pc, %0", operands);
+  
+  if (TARGET_THUMB_INTERWORK)
+    output_asm_insn ("bx%?\t%0", operands);
+  else
+    output_asm_insn ("mov%?\t%|pc, %0", operands);
+  
   return "";
 }
 
@@ -3945,8 +3950,18 @@ output_call_mem (operands)
   if (eliminate_lr2ip (&operands[0]))
     output_asm_insn ("mov%?\t%|ip, %|lr", operands);
 
-  output_asm_insn ("mov%?\t%|lr, %|pc", operands);
-  output_asm_insn ("ldr%?\t%|pc, %0", operands);
+  if (TARGET_THUMB_INTERWORK)
+    {
+      output_asm_insn ("ldr%?\t%|ip, %0", operands);
+      output_asm_insn ("mov%?\t%|lr, %|pc", operands);
+      output_asm_insn ("bx%?\t%|ip", operands);
+    }
+  else
+    {
+      output_asm_insn ("mov%?\t%|lr, %|pc", operands);
+      output_asm_insn ("ldr%?\t%|pc, %0", operands);
+    }
+
   return "";
 }
 
@@ -4815,15 +4830,29 @@ output_return_instruction (operand, really_return, reverse)
           strcat (instr, reg_names[13]);
           strcat (instr, ", ");
 	  strcat (instr, "%|");
-          strcat (instr, really_return ? reg_names[15] : reg_names[14]);
+	  strcat (instr, TARGET_THUMB_INTERWORK || (! really_return)
+		  ? reg_names[14] : reg_names[15] );
         }
       else
 	{
 	  strcat (instr, "%|");
-	  strcat (instr, really_return ? reg_names[15] : reg_names[14]);
+	  if (TARGET_THUMB_INTERWORK && really_return)
+	    strcat (instr, reg_names[12]);
+	  else
+	    strcat (instr, really_return ? reg_names[15] : reg_names[14]);
 	}
       strcat (instr, (TARGET_APCS_32 || !really_return) ? "}" : "}^");
       output_asm_insn (instr, &operand);
+
+      if (TARGET_THUMB_INTERWORK && really_return)
+	{
+	  strcpy (instr, "bx%?");
+	  strcat (instr, reverse ? "%D0" : "%d0");
+	  strcat (instr, "\t%|");
+	  strcat (instr, frame_pointer_needed ? "lr" : "ip");
+
+	  output_asm_insn (instr, & operand);
+	}
     }
   else if (really_return)
     {
@@ -4832,7 +4861,8 @@ output_return_instruction (operand, really_return, reverse)
       else
 	sprintf (instr, "mov%%?%%%s0%s\t%%|pc, %%|lr",
 		 reverse ? "D" : "d", TARGET_APCS_32 ? "" : "s");
-      output_asm_insn (instr, &operand);
+      
+      output_asm_insn (instr, & operand);
     }
 
   return "";
@@ -5020,7 +5050,7 @@ output_func_epilogue (f, frame_size)
 		     REGISTER_PREFIX, reg_names[reg + 1],
 		     start_reg - reg, REGISTER_PREFIX, floats_offset);
 	}
-
+      
       if (TARGET_THUMB_INTERWORK)
 	{
 	  live_regs_mask |= 0x6800;
