@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running system V.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "svr3.h"
 
 /* Use the ATT assembler syntax.
-   This overrides at least one macro (ASM_OUTPUT_LABELREF) from svr3.h.  */
+   This overrides at least one macro (USER_LABEL_PREFIX) from svr3.h.  */
 
 #include "i386/att.h"
 
