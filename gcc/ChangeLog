@@ -1,3 +1,8 @@
+2001-03-21  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (movsi_h8300hs): Split the 2nd alternative
+	into two parts.
+
 2001-03-20  Jason Merrill  <jason@redhat.com>
 
 	* collect2.c (is_ctor_dtor): Always use '_' in the file fn names,
