@@ -2907,7 +2907,6 @@ extern int making_const_table;
 enum arm_builtins
 {
   ARM_BUILTIN_CLZ,
-  ARM_BUILTIN_PREFETCH,
   ARM_BUILTIN_MAX
 };
 #endif /* ! GCC_ARM_H */

@@ -9151,11 +9151,6 @@ arm_init_builtins ()
   /* Initialize arm V5 builtins.  */
   if (arm_arch5)
     def_builtin ("__builtin_clz", int_ftype_int, ARM_BUILTIN_CLZ);
-
-  /* Initialize arm V5E builtins.  */
-  if (arm_arch5e)
-    def_builtin ("__builtin_prefetch", void_ftype_pchar,
-		 ARM_BUILTIN_PREFETCH);
 }
 
 /* Expand an expression EXP that calls a built-in function,
@@ -9199,19 +9194,6 @@ arm_expand_builtin (exp, target, subtarget, mode, ignore)
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
       pat = GEN_FCN (icode) (target, op0);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
-    case ARM_BUILTIN_PREFETCH:
-      icode = CODE_FOR_prefetch;
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-
-      op0 = gen_rtx_MEM (SImode, copy_to_mode_reg (Pmode, op0));
-
-      pat = GEN_FCN (icode) (op0);
       if (! pat)
 	return 0;
       emit_insn (pat);
