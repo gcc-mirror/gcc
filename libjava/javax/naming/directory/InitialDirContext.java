@@ -17,4 +17,14 @@ public class InitialDirContext extends InitialContext implements DirContext
   {
     throw new Error ("javax.naming.directory.InitialDirContext not implemented");
   }
+
+  public Attributes getAttributes (String name)
+  {
+    throw new Error ("getAttributes  not implemented");
+  }
+
+  public Attributes getAttributes (String name, String[] attrIds)
+  {
+    throw new Error ("getAttributes  not implemented");
+  }
 }
