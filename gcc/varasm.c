@@ -704,6 +704,9 @@ make_decl_rtl (decl, asmspec, top_level)
 	    {
 	      /* Make this register global, so not usable for anything
 		 else.  */
+#ifdef ASM_DECLARE_REGISTER_GLOBAL
+	      ASM_DECLARE_REGISTER_GLOBAL (asm_out_file, decl, reg_number, name);
+#endif
 	      nregs = HARD_REGNO_NREGS (reg_number, DECL_MODE (decl));
 	      while (nregs > 0)
 		globalize_reg (reg_number + --nregs);

@@ -1,3 +1,30 @@
+1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* config/sparc/sparc.h (ASM_DECLARE_REGISTER_GLOBAL): New macro.
+	(RTX_OK_FOR_OLO10): Likewise.
+	(GO_IF_LEGITIMATE_ADDRESS): If assembler supports offsetable
+	%lo(), allow it in addresses...
+	(PRINT_OPERAND_ADDRESS): ... and print it appropriately.
+	* config/sparc/sparc.md (sethi_di_medlow_embmedany_pic): sethi %lo()
+	does not make sense.
+	* config/sparc/sparc.c (sparc_hard_reg_printed): New array.
+	(sparc_output_scratch_registers): New function.
+	(output_function_prologue, sparc_flat_output_function_prologue): Use
+	it.
+	* varasm.c (make_decl_rtl): Use ASM_DECLARE_REGISTER_GLOBAL if
+	defined.
+	* tm.texi (ASM_DECLARE_REGISTER_GLOBAL): Document it.
+	* configure.in: Add check for .register pseudo-op support in as and
+	check for offsetable %lo().
+	* acconfig.h: Add templates for the above checks.
+	* configure: Regenerate.
+
+1999-08-02  Richard Henderson  <rth@cygnus.com>
+
+	* sparc/linux64.h (TARGET_DEFAULT): Remove MASK_APP_REGS.
+	* sparc/sol2-sld-64.h (TARGET_DEFAULT): Likewise.
+	* sparc/sol2.h (TARGET_DEFAULT): Likewise.
+
 Mon Aug  2 23:46:45 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): When doing biv->giv conversion, fix up

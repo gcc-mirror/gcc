@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
   (MASK_V9 + MASK_PTR64 + MASK_64BIT /* + MASK_HARD_QUAD */ \
-   + MASK_STACK_BIAS + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+   + MASK_STACK_BIAS + MASK_EPILOGUE + MASK_FPU)
 #endif
 
 /* Output at beginning of assembler file.  */

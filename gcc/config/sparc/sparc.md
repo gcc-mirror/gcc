@@ -2495,7 +2495,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (match_operand:DI 1 "sp64_medium_pic_operand" "")))]
   "(TARGET_CM_MEDLOW || TARGET_CM_EMBMEDANY) && check_pic (1)"
-  "sethi\\t%%lo(%a1), %0"
+  "sethi\\t%%hi(%a1), %0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
