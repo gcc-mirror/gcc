@@ -7158,17 +7158,12 @@
     FAIL;
 
   if (TARGET_64BIT)
-    {
-      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 64
-          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 63)
-	FAIL;
-      emit_insn (gen_extzv_64 (operands[0], operands[1],
-			       operands[2], operands[3]));
-    }
+    emit_insn (gen_extzv_64 (operands[0], operands[1],
+			     operands[2], operands[3]));
   else
     {
-      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 32
-          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 31)
+      if (! uint5_operand (operands[2], SImode)
+	  || ! uint5_operand (operands[3], SImode))
 	FAIL;
       emit_insn (gen_extzv_32 (operands[0], operands[1],
 			       operands[2], operands[3]));
@@ -7179,8 +7174,8 @@
 (define_insn "extzv_32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
-			 (match_operand:SI 2 "uint32_operand" "")
-			 (match_operand:SI 3 "uint32_operand" "")))]
+			 (match_operand:SI 2 "uint5_operand" "")
+			 (match_operand:SI 3 "uint5_operand" "")))]
   ""
   "{extru|extrw,u} %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
@@ -7229,17 +7224,12 @@
     FAIL;
 
   if (TARGET_64BIT)
-    {
-      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 64
-          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 63)
-	FAIL;
-      emit_insn (gen_extv_64 (operands[0], operands[1],
-			      operands[2], operands[3]));
-    }
+    emit_insn (gen_extv_64 (operands[0], operands[1],
+			    operands[2], operands[3]));
   else
     {
-      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 32
-          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 31)
+      if (! uint5_operand (operands[2], SImode)
+	  || ! uint5_operand (operands[3], SImode))
 	FAIL;
       emit_insn (gen_extv_32 (operands[0], operands[1],
 			      operands[2], operands[3]));
@@ -7250,8 +7240,8 @@
 (define_insn "extv_32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extract:SI (match_operand:SI 1 "register_operand" "r")
-			 (match_operand:SI 2 "uint32_operand" "")
-			 (match_operand:SI 3 "uint32_operand" "")))]
+			 (match_operand:SI 2 "uint5_operand" "")
+			 (match_operand:SI 3 "uint5_operand" "")))]
   ""
   "{extrs|extrw,s} %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
@@ -7297,17 +7287,12 @@
   "
 {
   if (TARGET_64BIT)
-    {
-      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 64
-          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 63)
-	FAIL;
-      emit_insn (gen_insv_64 (operands[0], operands[1],
-			      operands[2], operands[3]));
-    }
+    emit_insn (gen_insv_64 (operands[0], operands[1],
+			    operands[2], operands[3]));
   else
     {
-      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 32
-          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 31)
+      if (! uint5_operand (operands[2], SImode)
+	  || ! uint5_operand (operands[3], SImode))
 	FAIL;
       emit_insn (gen_insv_32 (operands[0], operands[1],
 			      operands[2], operands[3]));
@@ -7317,8 +7302,8 @@
 
 (define_insn "insv_32"
   [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r,r")
-			 (match_operand:SI 1 "uint32_operand" "")
-			 (match_operand:SI 2 "uint32_operand" ""))
+			 (match_operand:SI 1 "uint5_operand" "")
+			 (match_operand:SI 2 "uint5_operand" ""))
 	(match_operand:SI 3 "arith5_operand" "r,L"))]
   ""
   "@

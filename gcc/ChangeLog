@@ -1,3 +1,8 @@
+2003-07-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/11607 and PR target/11516
+	* pa.md (extzv, extv, insv): Revert latter half of last patch.
+
 2003-07-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* fold-const.c (force_fit_type): Handle OFFSET_TYPE.
