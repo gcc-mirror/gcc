@@ -1,3 +1,8 @@
+2005-03-23  Mike Stump  <mrs@apple.com>
+
+	* src/powerpc/darwin.S: Update for -m64 multilib.
+	* src/powerpc/darwin_closure.S: Likewise.
+
 2005-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.ac: Do not invoke TL_AC_GCC_VERSION.
