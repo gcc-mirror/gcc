@@ -1,3 +1,8 @@
+2004-03-10  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.md (divsi3, udivsi3): Remove unused variable
+	twon34_r.
+
 2004-03-09  James E Wilson  <wilson@specifixinc.com>
 
 	* alias.c (alias_sets_might_conflict_p): New.
