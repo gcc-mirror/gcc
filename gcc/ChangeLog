@@ -1,3 +1,14 @@
+1998-10-18 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* reorg.c (steal_delay_list_from_target) Check for insns that
+	modify the condition codes and effect the direction of the jump
+	in the sequence.
+
+Sat Oct 17 13:09:09 1998  Graham  <grahams@rcp.co.uk>
+
+	* function.c (purge_addressof_1): Replace call to
+        emit_insns_before() with emit_insn_before().
+
 Mon Oct 19 19:34:03 1998  Mike Stump <mrs@wrs.com>
 
 	* libgcc2.c (__pure_virtual): Call __terminate instead of _exit.

@@ -61,6 +61,10 @@ Boston, MA 02111-1307, USA.  */
    we can hoist insns from the fall-through path for forward branches or
    steal insns from the target of backward branches.
 
+   The TMS320C3x and C4x have three branch delay slots.  When the three
+   slots are filled, the branch penalty is zero.  Most insns can fill the
+   delay slots except jump insns.
+
    Three techniques for filling delay slots have been implemented so far:
 
    (1) `fill_simple_delay_slots' is the simplest, most efficient way
@@ -1687,6 +1691,7 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
   int must_annul = *pannul_p;
   int i;
   int used_annul = 0;
+  struct resources cc_set;
 
   /* We can't do anything if there are more delay slots in SEQ than we
      can handle, or if we don't know that it will be a taken branch.
@@ -1696,7 +1701,23 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
      Also, exit if the branch has more than one set, since then it is computing
      other results that can't be ignored, e.g. the HPPA mov&branch instruction.
      ??? It may be possible to move other sets into INSN in addition to
-     moving the instructions in the delay slots.  */
+     moving the instructions in the delay slots.
+
+     We can not steal the delay list if one of the instructions in the
+     current delay_list modifies the condition codes and the jump in the 
+     sequence is a conditional jump. We can not do this because we can
+     not change the direction of the jump because the condition codes
+     will effect the direction of the jump in the sequence. */
+
+  CLEAR_RESOURCE (&cc_set);
+  for (temp = delay_list; temp; temp = XEXP (temp, 1))
+    {
+      rtx trial = XEXP (temp, 0);
+
+      mark_set_resources (trial, &cc_set, 0, 1);
+      if (insn_references_resource_p (XVECEXP (seq , 0, 0), &cc_set, 0))
+        return delay_list;
+    }
 
   if (XVECLEN (seq, 0) - 1 > slots_remaining
       || ! condition_dominates_p (condition, XVECEXP (seq, 0, 0))
@@ -3716,8 +3737,6 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
 		  delay_list = add_to_delay_list (temp, delay_list);
 
-		  mark_set_resources (trial, &opposite_needed, 0, 1);
-
 		  if (slots_to_fill == ++(*pslots_filled))
 		    {
 		      /* Even though we have filled all the slots, we
@@ -3795,9 +3814,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
     {
       /* If this is the `true' thread, we will want to follow the jump,
 	 so we can only do this if we have taken everything up to here.  */
-      if (thread_if_true && trial == new_thread
-	  && ! insn_references_resource_p (XVECEXP (PATTERN (trial), 0, 0),
-					   &opposite_needed, 0))
+      if (thread_if_true && trial == new_thread)
 	delay_list
 	  = steal_delay_list_from_target (insn, condition, PATTERN (trial),
 					  delay_list, &set, &needed,
