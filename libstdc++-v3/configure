@@ -7876,7 +7876,7 @@ EOF
 
       os_include_dir="config/os/mingw32"
       ;;
-    *-qnx6.12*)
+    *-qnx6.[12]*)
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
        
       

@@ -158,7 +158,9 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
       GLIBCPP_CHECK_WCHAR_T_SUPPORT
       os_include_dir="config/os/mingw32"
       ;;
+changequote(,)dnl
     *-qnx6.[12]*)
+changequote([,])dnl
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS) 
       GLIBCPP_CHECK_LINKER_FEATURES
