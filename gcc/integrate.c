@@ -1999,6 +1999,16 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   BLOCK_ABSTRACT_ORIGIN (block) = (DECL_ABSTRACT_ORIGIN (fndecl) == NULL
 				   ? fndecl : DECL_ABSTRACT_ORIGIN (fndecl));
   poplevel (0, 0, 0);
+
+  /* Must mark the line number note after inlined functions as a repeat, so
+     that the test coverage code can avoid counting the call twice.  This
+     just tells the code to ignore the immediately following line note, since
+     there already exists a copy of this note before the expanded inline call.
+     This line number note is still needed for debugging though, so we can't
+     delete it.  */
+  if (flag_test_coverage)
+    emit_note (0, NOTE_REPEATED_LINE_NUMBER);
+
   emit_line_note (input_filename, lineno);
 
   if (structure_value_addr)
