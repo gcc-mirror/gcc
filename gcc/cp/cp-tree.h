@@ -1065,7 +1065,8 @@ struct lang_decl_flags
   unsigned not_really_extern : 1;
   unsigned comdat : 1;
   unsigned needs_final_overrider : 1;
-  unsigned dummy : 3;
+  unsigned bitfield : 1;
+  unsigned dummy : 2;
 
   tree access;
   tree context;
@@ -1397,6 +1398,12 @@ extern int flag_new_for_scope;
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))
+
+/* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
+#define DECL_C_BIT_FIELD(NODE) \
+  (DECL_LANG_SPECIFIC (NODE) && DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield)
+#define SET_DECL_C_BIT_FIELD(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield = 1)
 
 /* Nonzero if the type T promotes to itself.
    ANSI C states explicitly the list of types that promote;

@@ -1538,7 +1538,7 @@ expr_sizeof (e)
     return build_min (SIZEOF_EXPR, sizetype, e);
 
   if (TREE_CODE (e) == COMPONENT_REF
-      && DECL_BIT_FIELD (TREE_OPERAND (e, 1)))
+      && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
     error ("sizeof applied to a bit-field");
   /* ANSI says arrays and functions are converted inside comma.
      But we can't really convert them in build_compound_expr
@@ -2291,7 +2291,7 @@ build_indirect_ref (ptr, errorstring)
   if (ptr == current_class_ptr)
     return current_class_ref;
 
-  if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
+  if (TYPE_PTR_P (type) || TREE_CODE (type) == REFERENCE_TYPE)
     {
       /* [expr.unary.op]
 	 
@@ -2326,8 +2326,8 @@ build_indirect_ref (ptr, errorstring)
     }
   /* `pointer' won't be an error_mark_node if we were given a
      pointer to member, so it's cool to check for this here.  */
-  else if (TYPE_PTRMEMFUNC_P (type))
-    error ("invalid use of `%s' on pointer to member function", errorstring);
+  else if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+    error ("invalid use of `%s' on pointer to member", errorstring);
   else if (TREE_CODE (type) == RECORD_TYPE
 	   && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type)))
     error ("cannot dereference signature pointer/reference");
@@ -4248,7 +4248,7 @@ build_component_addr (arg, argtype, msg)
   tree basetype = decl_type_context (field);
   tree rval = build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0), 0);
 
-  if (DECL_BIT_FIELD (field))
+  if (DECL_C_BIT_FIELD (field))
     {
       error (msg, IDENTIFIER_POINTER (DECL_NAME (field)));
       return error_mark_node;
