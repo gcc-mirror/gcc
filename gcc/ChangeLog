@@ -1,11 +1,15 @@
 Sun Mar  1 05:50:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* varasm.c (compare_constant_1): Fix typo in previous change.
-
-	* Makefile.in (TAGS): Use tmp-tags instead of temp.
+	* Makefile.in (tmp-gcc.xtar): Renamed from gcc.xtar.
+	(gcc.xtar.gz): Deleted; merged with `dist'.
+	(diff): Create gcc-$(oldversion)-$(version).diff.
 	(distdir): Depend on distdir-cvs.
 	(distdir-cvs): New rule.
 	(distdir-start): Depend on version.c and TAGS.
+	(TAGS): Use tmp-tags instead of temp.
+	(dist): Create gcc-$(version).tar.gz.
+
+	* varasm.c (compare_constant_1): Fix typo in previous change.
 
 	* objc/Make-lang.in (objc-distdir): Properly rebuild objc-parse.c.
 
