@@ -2281,7 +2281,7 @@ compile_file (name)
 	  {
 	    temporary_allocation ();
 	    output_inline_function (decl);
-	    permanent_allocation ();
+	    permanent_allocation (1);
 	  }
 
 	/* Warn about any function
