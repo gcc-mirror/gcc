@@ -308,6 +308,7 @@ java_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_MF:
       jcf_dependency_set_dep_file (arg);
+      dependency_tracking |= DEPEND_FILE_ALREADY_SET;
       break;
 
     case OPT_MM:
