@@ -9,6 +9,9 @@
 	* java/lang/Float.java: As above.
 	(floatToRawIntBits): New method.
 
+	* java/io/OutputStreamWriter.java: (flush, writeChars): Throw 
+	IOException if stream closed.
+
 2001-02-08  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Float.java (parseFloat): New method.
