@@ -1271,4 +1271,6 @@ extern int m68k_last_compare_had_fp_operands;
   {"valid_dbcc_comparison_p", {EQ, NE, GTU, LTU, GEU, LEU,		\
 			       GT, LT, GE, LE}},			\
   {"extend_operator", {SIGN_EXTEND, ZERO_EXTEND}},			\
-  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},
+  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
+  {"post_inc_operand", {MEM}},						\
+  {"pre_dec_operand", {MEM}},
