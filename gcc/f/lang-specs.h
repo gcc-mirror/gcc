@@ -31,7 +31,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   {"@f77-cpp-input",
    "cc1 -E -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
         %{E|M|MM:%(cpp_debug_options)}\
-        %{!M:%{!MM:%{!E: %|.f |\n\
+        %{!M:%{!MM:%{!E: -o %|.f |\n\
     f771 %|.f %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {".r", "@ratfor", 0},
   {"@ratfor",
