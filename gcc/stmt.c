@@ -1588,7 +1588,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       /* Make sure constraint has neither `=' nor `+'.  */
 
-      for (p = TREE_STRING_POINTER (TREE_PURPOSE (tail)); *p != 0; p++);
+      for (p = TREE_STRING_POINTER (TREE_PURPOSE (tail)); *p != 0; p++)
 	switch (*p)
 	  {
 	  case '+':   case '=':
