@@ -3455,7 +3455,7 @@ purge_addressof (insns)
       insn = XEXP (postponed_insns, 0);
       tmp = postponed_insns;
       postponed_insns = XEXP (postponed_insns, 1);
-      free_EXPR_LIST_node (tmp);
+      free_INSN_LIST_node (tmp);
 
       if (! purge_addressof_1 (&PATTERN (insn), insn,
 			       asm_noperands (PATTERN (insn)) > 0, 0, 0, ht))
