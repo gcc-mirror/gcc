@@ -2172,8 +2172,7 @@ field_access:
 		{ $$ = build_binop (COMPONENT_REF, $2.location, $1, $3); } */
 |	SUPER_TK DOT_TK identifier
 		{
-		  tree super_wfl = 
-		    build_wfl_node (super_identifier_node);
+		  tree super_wfl = build_wfl_node (super_identifier_node);
 		  EXPR_WFL_LINECOL (super_wfl) = $1.location;
 		  $$ = make_qualified_name (super_wfl, $3, $2.location);
 		}
@@ -10741,6 +10740,17 @@ qualify_ambiguous_name (id)
     /* If we have a THIS (from a primary), we set the context accordingly */
     if (name == this_identifier_node)
       {
+	/* This isn't really elegant. One more added irregularity
+	   before I start using COMPONENT_REF (hopefully very soon.)  */
+	if (TREE_CODE (TREE_PURPOSE (qual)) == ARRAY_REF
+	    && TREE_CODE (TREE_OPERAND (TREE_PURPOSE (qual), 0)) ==
+	       EXPR_WITH_FILE_LOCATION
+	    && EXPR_WFL_NODE (TREE_OPERAND (TREE_PURPOSE (qual), 0)) == 
+	       this_identifier_node)
+	    {
+	      qual = TREE_OPERAND (TREE_PURPOSE (qual), 0);
+	      qual = EXPR_WFL_QUALIFICATION (qual);
+	    }
 	qual = TREE_CHAIN (qual);
 	qual_wfl = QUAL_WFL (qual);
 	if (TREE_CODE (qual_wfl) == CALL_EXPR)

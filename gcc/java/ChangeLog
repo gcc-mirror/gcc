@@ -1,3 +1,25 @@
+Tue Oct  3 13:44:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (find_local_variable): Removed uncessary type check and
+	fixed range check typo. From Corey Minyard.
+
+Wed Sep 13 16:06:52 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (give_name_to_locals): New local `code_offset'. Call
+ 	`maybe_adjust_start_pc.'
+	* expr.c (note_instructions): New function.
+	(expand_byte_code): Don't collect insn starts here.
+	(peek_opcode_at_pc): New function.
+	(maybe_adjust_start_pc): Likewise.
+	* java-tree.h (maybe_adjust_start_pc): Declare.
+	(note_instructions): Likewise.
+	* jcf-parse.c (parse_class_file): Call `note_instructions.'
+
+Wed Sep 13 11:50:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (field_access:): Fixed indentation.
+	(qualify_ambiguous_name): Properly qualify `this.a[b].c'.
+
 2000-09-07  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR gcj/307:

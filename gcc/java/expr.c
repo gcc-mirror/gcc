@@ -80,6 +80,7 @@ static tree build_java_throw_out_of_bounds_exception PARAMS ((tree));
 static tree build_java_check_indexed_type PARAMS ((tree, tree)); 
 static tree java_array_data_offset PARAMS ((tree)); 
 static tree case_identity PARAMS ((tree, tree)); 
+static unsigned char peek_opcode_at_pc PARAMS ((struct JCF *, int, int));
 
 static tree operand_type[59];
 extern struct obstack permanent_obstack;
@@ -2479,16 +2480,20 @@ java_lang_expand_expr (exp, target, tmode, modifier)
     }
 }
 
+/* Go over METHOD's bytecode and note instruction starts in
+   instruction_bits[].  */
+
 void
-expand_byte_code (jcf, method)
+note_instructions (jcf, method)
      JCF *jcf;
      tree method;
 {
-  int PC;
-  int i;
+  int PC; 
+  unsigned char* byte_ops;
+  long length = DECL_CODE_LENGTH (method);
+
   int saw_index;
-  const unsigned char *linenumber_pointer;
-  int dead_code_index = -1;
+  jint INT_temp;
 
 #undef RET /* Defined by config/i386/i386.h */
 #undef AND /* Causes problems with opcodes for iand and land. */
@@ -2503,14 +2508,6 @@ expand_byte_code (jcf, method)
 #define FLOAT_type_node float_type_node
 #define DOUBLE_type_node double_type_node
 #define VOID_type_node void_type_node
-  jint INT_temp;
-  unsigned char* byte_ops;
-  long length = DECL_CODE_LENGTH (method);
-
-  stack_pointer = 0;
-  JCF_SEEK (jcf, DECL_CODE_OFFSET (method));
-  byte_ops = jcf->read_ptr;
-
 #define CONST_INDEX_1 (saw_index = 1, IMMEDIATE_u1)
 #define CONST_INDEX_2 (saw_index = 1, IMMEDIATE_u2)
 #define VAR_INDEX_1 (saw_index = 1, IMMEDIATE_u1)
@@ -2518,28 +2515,12 @@ expand_byte_code (jcf, method)
 
 #define CHECK_PC_IN_RANGE(PC) ((void)1) /* Already handled by verifier. */
 
+  JCF_SEEK (jcf, DECL_CODE_OFFSET (method));
+  byte_ops = jcf->read_ptr;
   instruction_bits = oballoc (length + 1);
   bzero (instruction_bits, length + 1);
 
-  /* We make an initial pass of the line number table, to note
-     which instructions have associated line number entries. */
-  linenumber_pointer = linenumber_table;
-  for (i = 0; i < linenumber_count; i++)
-    {
-      int pc = GET_u2 (linenumber_pointer);
-      linenumber_pointer += 4;
-      if (pc >= length)
-	warning ("invalid PC in line number table");
-      else
-	{
-	  if ((instruction_bits[pc] & BCODE_HAS_LINENUMBER) != 0)
-	    instruction_bits[pc] |= BCODE_HAS_MULTI_LINENUMBERS;
-	  instruction_bits[pc] |= BCODE_HAS_LINENUMBER;
-	}
-    }  
-
-  /* Do a preliminary pass.
-   * This figures out which PC can be the targets of jumps. */
+  /* This pass figures out which PC can be the targets of jumps. */
   for (PC = 0; PC < length;)
     {
       int oldpc = PC; /* PC at instruction start. */
@@ -2585,8 +2566,6 @@ expand_byte_code (jcf, method)
 	(void) IMMEDIATE_u2;	/* indexbyte1 and indexbyte2 */ \
       } \
   }
-
-/* nothing */ /* XXX JH */
 
 #define PRE_IMPL(IGNORE1, IGNORE2) /* nothing */
 
@@ -2647,6 +2626,40 @@ expand_byte_code (jcf, method)
 #undef JAVAOP
 	}
     } /* for */
+}
+
+void
+expand_byte_code (jcf, method)
+     JCF *jcf;
+     tree method;
+{
+  int PC;
+  int i;
+  const unsigned char *linenumber_pointer;
+  int dead_code_index = -1;
+  unsigned char* byte_ops;
+  long length = DECL_CODE_LENGTH (method);
+
+  stack_pointer = 0;
+  JCF_SEEK (jcf, DECL_CODE_OFFSET (method));
+  byte_ops = jcf->read_ptr;
+
+  /* We make an initial pass of the line number table, to note
+     which instructions have associated line number entries. */
+  linenumber_pointer = linenumber_table;
+  for (i = 0; i < linenumber_count; i++)
+    {
+      int pc = GET_u2 (linenumber_pointer);
+      linenumber_pointer += 4;
+      if (pc >= length)
+	warning ("invalid PC in line number table");
+      else
+	{
+	  if ((instruction_bits[pc] & BCODE_HAS_LINENUMBER) != 0)
+	    instruction_bits[pc] |= BCODE_HAS_MULTI_LINENUMBERS;
+	  instruction_bits[pc] |= BCODE_HAS_LINENUMBER;
+	}
+    }  
 
   if (! verify_jvm_instructions (jcf, byte_ops, length))
     return;
@@ -3062,6 +3075,134 @@ process_jvm_instruction (PC, byte_ops, length)
     fprintf (stderr, "%3d: unknown(%3d)\n", oldpc, byte_ops[PC]);
   }
   return PC;
+}
+
+/* Return the opcode at PC in the code section pointed to by
+   CODE_OFFSET.  */
+
+static unsigned char
+peek_opcode_at_pc (jcf, code_offset, pc)
+    JCF *jcf;
+    int code_offset, pc;
+{
+  unsigned char opcode;
+  long absolute_offset = (long)JCF_TELL (jcf);
+
+  JCF_SEEK (jcf, code_offset);
+  opcode = jcf->read_ptr [pc];
+  JCF_SEEK (jcf, absolute_offset);
+  return opcode;
+}
+
+/* Some bytecode compilers are emitting accurate LocalVariableTable
+   attributes. Here's an example:
+   
+     PC   <t>store_<n>
+     PC+1 ...
+     
+     Attribute "LocalVariableTable"
+     slot #<n>: ... (PC: PC+1 length: L)
+   
+   This is accurate because the local in slot <n> really exists after
+   the opcode at PC is executed, hence from PC+1 to PC+1+L.
+
+   This procedure recognizes this situation and extends the live range
+   of the local in SLOT to START_PC-1 or START_PC-2 (depending on the
+   length of the store instruction.)
+
+   This function is used by `give_name_to_locals' so that a local's
+   DECL features a DECL_LOCAL_START_PC such that the first related
+   store operation will use DECL as a destination, not a unrelated
+   temporary created for the occasion.
+
+   This function uses a global (instruction_bits) `note_instructions' should
+   have allocated and filled properly.  */
+
+int
+maybe_adjust_start_pc (jcf, code_offset, start_pc, slot)
+     struct JCF *jcf;
+     int code_offset, start_pc, slot;
+{
+  int first, index, opcode;
+  int pc, insn_pc;
+  int wide_found = 0;
+
+  if (!start_pc)
+    return start_pc;
+
+  first = index = -1;
+
+  /* Find last previous instruction and remember it */
+  for (pc = start_pc-1; pc; pc--) 
+    if (instruction_bits [pc] & BCODE_INSTRUCTION_START)
+      break;
+  insn_pc = pc;
+
+  /* Retrieve the instruction, handle `wide'. */  
+  opcode = (int) peek_opcode_at_pc (jcf, code_offset, pc++);
+  if (opcode == OPCODE_wide)
+    {
+      wide_found = 1;
+      opcode = (int) peek_opcode_at_pc (jcf, code_offset, pc++);
+    }
+
+  switch (opcode)
+    {
+    case OPCODE_astore_0:
+    case OPCODE_astore_1:
+    case OPCODE_astore_2:
+    case OPCODE_astore_3:
+      first = OPCODE_astore_0;
+      break;
+
+    case OPCODE_istore_0:
+    case OPCODE_istore_1:
+    case OPCODE_istore_2:
+    case OPCODE_istore_3:
+      first = OPCODE_istore_0;
+      break;
+      
+    case OPCODE_lstore_0:
+    case OPCODE_lstore_1:
+    case OPCODE_lstore_2:
+    case OPCODE_lstore_3:
+      first = OPCODE_lstore_0;
+      break;
+
+    case OPCODE_fstore_0:
+    case OPCODE_fstore_1:
+    case OPCODE_fstore_2:
+    case OPCODE_fstore_3:
+      first = OPCODE_fstore_0;
+      break;
+
+    case OPCODE_dstore_0:
+    case OPCODE_dstore_1:
+    case OPCODE_dstore_2:
+    case OPCODE_dstore_3:
+      first = OPCODE_dstore_0;
+      break;
+
+    case OPCODE_astore:
+    case OPCODE_istore:
+    case OPCODE_lstore:
+    case OPCODE_fstore:
+    case OPCODE_dstore:
+      index = peek_opcode_at_pc (jcf, code_offset, pc);
+      if (wide_found)
+	{
+	  int other = peek_opcode_at_pc (jcf, code_offset, ++pc);
+	  index = (other << 8) + index;
+	}
+      break;
+    }
+
+  /* Now we decide: first >0 means we have a <t>store_<n>, index >0
+     means we have a <t>store. */
+  if ((first > 0 && opcode - first == slot) || (index > 0 && index == slot))
+    start_pc = insn_pc;
+
+  return start_pc;
 }
 
 /* Force the (direct) sub-operands of NODE to be evaluated in left-to-right
