@@ -840,9 +840,9 @@ scan_loop (loop_start, end, unroll_p, bct_p)
 	  else if (/* The set is not guaranteed to be executed one
 		      the loop starts, or the value before the set is
 		      needed before the set occurs... */
-		   && (maybe_never
-		       || loop_reg_used_before_p (set, p, loop_start,
-						  scan_start, end))
+		   (maybe_never
+		    || loop_reg_used_before_p (set, p, loop_start,
+					       scan_start, end))
 		   /* And the register is used in basic blocks other
 		      than the one where it is set (meaning that
 		      something after this point in the loop might
