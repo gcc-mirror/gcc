@@ -1,3 +1,7 @@
+2004-01-08  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc.dg/altivec-11.c: New test.
+
 2004-01-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/vbase10.C: Use -mstructure-size-boundary=8 on ARM.
