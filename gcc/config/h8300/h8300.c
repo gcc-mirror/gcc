@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 
 /* Forward declarations.  */
+static const char *byte_reg PARAMS ((rtx, int));
 static int h8300_interrupt_function_p PARAMS ((tree));
 static int h8300_monitor_function_p PARAMS ((tree));
 static int h8300_os_task_function_p PARAMS ((tree));
@@ -143,7 +144,7 @@ h8300_init_once ()
     }
 }
 
-const char *
+static const char *
 byte_reg (x, b)
      rtx x;
      int b;

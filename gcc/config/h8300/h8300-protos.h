@@ -30,7 +30,6 @@ extern const char *output_a_shift PARAMS ((rtx *));
 extern const char *emit_a_rotate PARAMS ((enum rtx_code, rtx *));
 extern const char *output_simode_bld PARAMS ((int, rtx[]));
 extern void print_operand_address PARAMS ((FILE *, rtx));
-extern const char *byte_reg PARAMS ((rtx, int));
 extern int const_costs PARAMS ((rtx, enum rtx_code));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
