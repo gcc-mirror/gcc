@@ -38,6 +38,13 @@
    (LAST_ARM_REGNUM 15)
   ]
 )
+;; 3rd operand to select_dominance_cc_mode
+(define_constants
+  [(DOM_CC_X_AND_Y  0)
+   (DOM_CC_NX_OR_Y  1)
+   (DOM_CC_X_OR_Y   2)
+  ]
+)
 
 ;; UNSPEC Usage:
 ;; Note: sin and cos are no-longer used.
@@ -6744,6 +6751,58 @@
   [(set_attr "conds" "set")
    (set_attr "length" "8")]
 )
+
+(define_insn_and_split "*ior_scc_scc"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(ior:SI (match_operator:SI 3 "arm_comparison_operator"
+		 [(match_operand:SI 1 "s_register_operand" "r")
+		  (match_operand:SI 2 "arm_add_operand" "rIL")])
+		(match_operator:SI 6 "arm_comparison_operator"
+		 [(match_operand:SI 4 "s_register_operand" "r")
+		  (match_operand:SI 5 "arm_add_operand" "rIL")])))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_ARM
+   && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_OR_Y)
+       != CCmode)"
+  "#"
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 7)
+	(compare
+	 (ior:SI
+	  (match_op_dup 3 [(match_dup 1) (match_dup 2)])
+	  (match_op_dup 6 [(match_dup 4) (match_dup 5)]))
+	 (const_int 0)))
+   (set (match_dup 0) (ne:SI (match_dup 7) (const_int 0)))]
+  "operands[7]
+     = gen_rtx_REG (arm_select_dominance_cc_mode (operands[3], operands[6],
+						  DOM_CC_X_OR_Y),
+		    CC_REGNUM);")
+
+(define_insn_and_split "*and_scc_scc"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(and:SI (match_operator:SI 3 "arm_comparison_operator"
+		 [(match_operand:SI 1 "s_register_operand" "r")
+		  (match_operand:SI 2 "arm_add_operand" "rIL")])
+		(match_operator:SI 6 "arm_comparison_operator"
+		 [(match_operand:SI 4 "s_register_operand" "r")
+		  (match_operand:SI 5 "arm_add_operand" "rIL")])))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_ARM
+   && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_AND_Y)
+       != CCmode)"
+  "#"
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 7)
+	(compare
+	 (and:SI
+	  (match_op_dup 3 [(match_dup 1) (match_dup 2)])
+	  (match_op_dup 6 [(match_dup 4) (match_dup 5)]))
+	 (const_int 0)))
+   (set (match_dup 0) (ne:SI (match_dup 7) (const_int 0)))]
+  "operands[7]
+     = gen_rtx_REG (arm_select_dominance_cc_mode (operands[3], operands[6],
+						  DOM_CC_X_AND_Y),
+		    CC_REGNUM);")
 
 (define_insn "*negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")

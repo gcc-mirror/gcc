@@ -117,6 +117,8 @@ extern rtx    arm_gen_store_multiple	PARAMS ((int, int, rtx, int, int, int,
 extern int    arm_gen_movstrqi		PARAMS ((rtx *));
 extern rtx    arm_gen_rotated_half_load	PARAMS ((rtx));
 extern enum machine_mode arm_select_cc_mode PARAMS ((RTX_CODE, rtx, rtx));
+extern enum machine_mode arm_select_dominance_cc_mode PARAMS ((rtx, rtx,
+							       HOST_WIDE_INT));
 extern rtx    arm_gen_compare_reg	PARAMS ((RTX_CODE, rtx, rtx));
 extern rtx    arm_gen_return_addr_mask	PARAMS ((void));
 extern void   arm_reload_in_hi		PARAMS ((rtx *));

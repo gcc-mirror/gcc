@@ -92,7 +92,6 @@ static Hint      int_log2			PARAMS ((Hint));
 static rtx       is_jump_table 			PARAMS ((rtx));
 static Ccstar    output_multi_immediate		PARAMS ((rtx *, Ccstar, Ccstar, int, Hint));
 static void      print_multi_reg		PARAMS ((FILE *, Ccstar, int, int));
-static Mmode     select_dominance_cc_mode	PARAMS ((rtx, rtx, Hint));
 static Ccstar    shift_op			PARAMS ((rtx, Hint *));
 static struct machine_function * arm_init_machine_status PARAMS ((void));
 static int       number_of_first_bit_set        PARAMS ((int));
@@ -5504,16 +5503,18 @@ arm_gen_rotated_half_load (memref)
   return gen_rtx_ROTATE (SImode, base, GEN_INT (16));
 }
 
-/* Select a dominance comparison mode if possible.  We support three forms.
-   COND_OR == 0 => (X && Y) 
-   COND_OR == 1 => ((! X( || Y)
-   COND_OR == 2 => (X || Y) 
-   If we are unable to support a dominance comparison we return CC mode.  
-   This will then fail to match for the RTL expressions that generate this
-   call.  */
+/* Select a dominance comparison mode if possible for a test of the general
+   form (OP (COND_OR (X) (Y)) (const_int 0)).  We support three forms.
+   COND_OR == DOM_CC_X_AND_Y => (X && Y) 
+   COND_OR == DOM_CC_NX_OR_Y => ((! X) || Y)
+   COND_OR == DOM_CC_X_OR_Y => (X || Y) 
+   In all cases OP will be either EQ or NE, but we don't need to know which
+   here.  If we are unable to support a dominance comparison we return 
+   CC mode.  This will then fail to match for the RTL expressions that
+   generate this call.  */
 
-static enum machine_mode
-select_dominance_cc_mode (x, y, cond_or)
+enum machine_mode
+arm_select_dominance_cc_mode (x, y, cond_or)
      rtx x;
      rtx y;
      HOST_WIDE_INT cond_or;
@@ -5533,7 +5534,7 @@ select_dominance_cc_mode (x, y, cond_or)
   /* The if_then_else variant of this tests the second condition if the
      first passes, but is true if the first fails.  Reverse the first
      condition to get a true "inclusive-or" expression.  */
-  if (cond_or == 1)
+  if (cond_or == DOM_CC_NX_OR_Y)
     cond1 = reverse_condition (cond1);
 
   /* If the comparisons are not equal, and one doesn't dominate the other,
@@ -5553,7 +5554,7 @@ select_dominance_cc_mode (x, y, cond_or)
   switch (cond1)
     {
     case EQ:
-      if (cond2 == EQ || !cond_or)
+      if (cond2 == EQ || cond_or == DOM_CC_X_AND_Y)
 	return CC_DEQmode;
 
       switch (cond2)
@@ -5568,7 +5569,7 @@ select_dominance_cc_mode (x, y, cond_or)
       break;
 
     case LT:
-      if (cond2 == LT || !cond_or)
+      if (cond2 == LT || cond_or == DOM_CC_X_AND_Y)
 	return CC_DLTmode;
       if (cond2 == LE)
 	return CC_DLEmode;
@@ -5577,7 +5578,7 @@ select_dominance_cc_mode (x, y, cond_or)
       break;
 
     case GT:
-      if (cond2 == GT || !cond_or)
+      if (cond2 == GT || cond_or == DOM_CC_X_AND_Y)
 	return CC_DGTmode;
       if (cond2 == GE)
 	return CC_DGEmode;
@@ -5586,7 +5587,7 @@ select_dominance_cc_mode (x, y, cond_or)
       break;
       
     case LTU:
-      if (cond2 == LTU || !cond_or)
+      if (cond2 == LTU || cond_or == DOM_CC_X_AND_Y)
 	return CC_DLTUmode;
       if (cond2 == LEU)
 	return CC_DLEUmode;
@@ -5595,7 +5596,7 @@ select_dominance_cc_mode (x, y, cond_or)
       break;
 
     case GTU:
-      if (cond2 == GTU || !cond_or)
+      if (cond2 == GTU || cond_or == DOM_CC_X_AND_Y)
 	return CC_DGTUmode;
       if (cond2 == GEU)
 	return CC_DGEUmode;
@@ -5696,19 +5697,21 @@ arm_select_cc_mode (op, x, y)
 	  || XEXP (x, 2) == const1_rtx)
       && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
       && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
-    return select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 
-				     INTVAL (XEXP (x, 2)));
+    return arm_select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 
+					 INTVAL (XEXP (x, 2)));
 
   /* Alternate canonicalizations of the above.  These are somewhat cleaner.  */
   if (GET_CODE (x) == AND
       && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
       && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
-    return select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 0);
+    return arm_select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1),
+					 DOM_CC_X_AND_Y);
 
   if (GET_CODE (x) == IOR
       && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
       && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
-    return select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 2);
+    return arm_select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1),
+					 DOM_CC_X_OR_Y);
 
   /* An operation that sets the condition codes as a side-effect, the
      V flag is not set correctly, so we can only use comparisons where
