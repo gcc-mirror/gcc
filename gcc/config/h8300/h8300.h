@@ -1217,7 +1217,7 @@ readonly_data ()							\
   while (0)
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
-   ASM_OUTPUT_LABEL(FILE, NAME)
+   ASM_OUTPUT_LABEL (FILE, NAME)
 
 /* The prefix to add to user-visible assembler symbols.  */
 
