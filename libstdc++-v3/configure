@@ -43,7 +43,7 @@ ac_help="$ac_help
   --enable-threads=LIB    use LIB thread package for target GCC."
 ac_help="$ac_help
   --enable-cxx-flags=FLAGS      pass compiler FLAGS when building library;
-                                [default=]"
+                                [default=none]"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -2452,19 +2452,19 @@ fi
   
   
 
-#GLIBCPP_ENABLE_NAMESPACES(yes)
 #GLIBCPP_ENABLE_RELIBGCC([../..])
 # Check whether --enable-cxx-flags or --disable-cxx-flags was given.
 if test "${enable_cxx_flags+set}" = set; then
   enableval="$enable_cxx_flags"
   case "x$enableval" in
  xyes)   { echo "configure: error: --enable-cxx-flags needs compiler flags as arguments" 1>&2; exit 1; } ;;
- xno|x)  enable_cxx_flags= ;;
+ xno|x)  enable_cxx_flags='' ;;
  *)      enable_cxx_flags="$enableval" ;;
  esac
 else
-  enable_cxx_flags=''
+  enable_cxx_flags='none'
 fi
+if test "$enable_cxx_flags" = "none"; then enable_cxx_flags=''; fi
 if test -n "$enable_cxx_flags"; then
     for f in $enable_cxx_flags; do
         case "$f" in
@@ -3621,7 +3621,7 @@ cross_compiling=$ac_cv_prog_cc_cross
         ctype_default=no
       else
         ctype_include_dir="config/solaris/solaris2.7"
-        echo "$ac_t"""solaris2.6,7"" 1>&6
+        echo "$ac_t"""solaris2.7,8"" 1>&6
         ctype_default=no
       fi
     fi
