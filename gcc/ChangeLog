@@ -1,5 +1,26 @@
 Wed Sep  9 21:58:41 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
+	* reload1.c (reload): Break out several subroutines and make some
+	variables global.
+	(calculate_needs_all_insns): New function, broken out of reload.
+	(calculate_needs): Likewise.
+	(find_reload_regs): Likewise.
+	(find_group): Likewise.
+	(find_tworeg_group): Likewise.
+	(something_needs_reloads): New global variable, formerly in reload.
+	(something_needs_elimination): Likewise.
+	(caller_save_spill_class): Likewise.
+	(caller_save_group_size): Likewise.
+	(max_needs): Likewise.
+	(group_size): Likewise.
+	(max_groups): Likewise.
+	(max_nongroups): Likewise.
+	(group_mode): Likewise.
+	(max_needs_insn): Likewise.
+	(max_groups_insn): Likewise.
+	(max_nongroups_insn): Likewise.
+	(failure): Likewise.
+
 	* print-rtl.c (print_rtx): For MEMs, print MEM_ALIAS_SET.
 
 Wed Sep  9 13:14:41 1998  Richard Henderson  <rth@cygnus.com>
