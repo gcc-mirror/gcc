@@ -1,3 +1,8 @@
+2003-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* unwind-dw2-fde.h (last_fde): Mark parameter with __attribute__
+	((__unused__)).
+
 2003-01-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* expr.c (expand_expr <RDIV_EXPR>): Correct recursive call args.
