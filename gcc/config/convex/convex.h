@@ -1119,7 +1119,6 @@ enum reg_class {
     else break;								\
   case MULT:								\
     return 4 * (char) (0x03060403 >> target_cpu * 8);			\
-  case LSHIFT:								\
   case ASHIFT:								\
   case LSHIFTRT:							\
   case ASHIFTRT:							\

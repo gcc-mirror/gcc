@@ -1361,7 +1361,7 @@ notice_update_cc (exp, insn)
       {
       case PLUS: case MINUS: case MULT:
       case DIV: case UDIV: case MOD: case UMOD: case NEG:
-      case ASHIFT: case LSHIFT: case ASHIFTRT: case LSHIFTRT:
+      case ASHIFT: case ASHIFTRT: case LSHIFTRT:
       case ROTATE: case ROTATERT:
 	if (GET_MODE (cc_status.value2) != VOIDmode)
 	  cc_status.flags |= CC_NO_OVERFLOW;

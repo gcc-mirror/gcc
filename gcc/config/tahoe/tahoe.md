@@ -1,6 +1,5 @@
-;;- Machine description for GNU compiler
-;;- Tahoe version
-;;   Copyright (C) 1989 Free Software Foundation, Inc.
+;; Machine description for GNU compiler, Tahoe version
+;; Copyright (C) 1989, 1994 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -849,42 +848,6 @@
 
 
 ; shifts are very expensive, try some magic first...
-
-(define_insn "lshlsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
-	(lshift:SI (match_operand:SI 1 "general_operand" "g")
-		   (match_operand:QI 2 "general_operand" "g")))]
-  ""
-  "*
-{
-  if (GET_CODE(operands[2]) == REG)
-      return \"mull3 ___shtab[%2],%1,%0\";
-  /* if (GET_CODE(operands[2]) == REG)
-  if (rtx_equal_p (operands[0], operands[1]))
-    return \"mull2 ___shtab[%2],%1\";
-  else
-    return \"mull3 ___shtab[%2],%1,%0\"; */
-  if (GET_CODE(operands[1]) == REG)
-    {
-      if (operands[2] == const1_rtx)
-        {
-	  CC_STATUS_INIT;
-	  return \"movaw 0[%1],%0\";
-	}
-      if (GET_CODE(operands[2]) == CONST_INT && INTVAL(operands[2]) == 2)
-        {
-	  CC_STATUS_INIT;
-	  return \"moval 0[%1],%0\";
-	}
-    }
-  if (GET_CODE(operands[2]) != CONST_INT || INTVAL(operands[2]) == 1)
-    return \"shll %2,%1,%0\";
-  if (rtx_equal_p (operands[0], operands[1]))
-    return \"mull2 %s2,%1\";
-  else
-    return \"mull3 %s2,%1,%0\";
-}")
-
 
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "general_operand" "=g")

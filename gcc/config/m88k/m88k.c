@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 88000.
-   Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1990, 1991, 1994 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
    Version 2 port by Tom Wood (twood@pets.sps.mot.com)
@@ -3057,12 +3057,6 @@ print_operand_address (file, addr)
 
       fprintf (file, "%s[%s]",
 	       reg_names[0], reg_names[REGNO (XEXP (addr, 0))]);
-      break;
-
-    case LSHIFT:
-      fprintf (file, "%s,%shi16(", reg_names[0], m88k_pound_sign);
-      output_addr_const (file, XEXP (addr, 0));
-      fputc (')', file);
       break;
 
     case CONST_INT:

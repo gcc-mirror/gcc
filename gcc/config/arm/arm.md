@@ -1,5 +1,5 @@
 ;;- Machine description Acorn RISC Machine for GNU compiler
-;;  Copyright (C) 1991, 1993 Free Software Foundation, Inc.
+;;  Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;             and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -1470,18 +1470,6 @@
   ""
   "*
   return (output_shifted_move (ASHIFTRT, operands));
-")
-
-;; lshlsi3 is not defined because shift counts cannot be negative
-;; An unnamed pattern is needed for expansion of zero_extend.
-
-(define_insn ""
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(lshift:SI (match_operand:SI 1 "s_register_operand" "r")
-		   (match_operand:SI 2 "arm_rhs_operand" "rn")))]
-  ""
-  "*
-  return (output_shifted_move (LSHIFT, operands));
 ")
 
 (define_insn "lshrsi3"

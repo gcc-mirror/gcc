@@ -1,6 +1,5 @@
-;;- Machine description for GNU compiler
-;;- Convex Version
-;;   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
+;;- Machine description for GNU compiler, Convex Version
+;;  Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1040,81 +1039,6 @@
 
 ;; SImode
 
-;; Logical left 1, 1 cycle on all machines via add
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(lshift:SI (match_operand:SI 1 "register_operand" "0")
-		   (const_int 1)))]
-  ""
-  "add.w %0,%0")
-
-;; C34 general shift is 1 cycle
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,a")
-	(lshift:SI (match_operand:SI 1 "register_operand" "0,0")
-		   (match_operand:SI 2 "nonmemory_operand" "di,ai")))]
-  "TARGET_C34"
-  "@
-   shf.w %2,%0
-   shf %2,%0"
-  [(set_attr "type" "shfw,shfw")])
-
-;; else shift left 0..7 is 1 cycle if we use an A register
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a,?d")
-	(lshift:SI (match_operand:SI 1 "register_operand" "0,0")
-		   (match_operand:SI 2 "immediate_operand" "ai,di")))]
-  "TARGET_C1 && INTVAL (operands[2]) < (unsigned) 8"
-  "@
-   shf %2,%0
-   shf %2,%0"
-  [(set_attr "type" "alu,shfl")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a,?d")
-	(lshift:SI (match_operand:SI 1 "register_operand" "0,0")
-		   (match_operand:SI 2 "immediate_operand" "ai,di")))]
-  "INTVAL (operands[2]) < (unsigned) 8"
-  "@
-   shf %2,%0
-   shf.w %2,%0"
-  [(set_attr "type" "alu,shfw")])
-
-;; else general left shift
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,a")
-	(lshift:SI (match_operand:SI 1 "register_operand" "0,0")
-		   (match_operand:SI 2 "nonmemory_operand" "di,ai")))]
-  "TARGET_C1"
-  "@
-   shf %2,%0
-   shf %2,%0"
-  [(set_attr "type" "shfl,shfw")])
-
-;; (but C2 shift left by a constant can is faster via multiply)
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(lshift:SI (match_operand:SI 1 "register_operand" "0")
-		   (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_C2 && INTVAL (operands[2]) < (unsigned) 32"
-  "mul.w %z2,%0"
-  [(set_attr "type" "mulw")])
-
-(define_insn "lshlsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d,a")
-	(lshift:SI (match_operand:SI 1 "register_operand" "0,0")
-		   (match_operand:SI 2 "nonmemory_operand" "di,ai")))]
-  ""
-  "@
-   shf.w %2,%0
-   shf %2,%0"
-  [(set_attr "type" "shfw,shfw")])
-
 ;; Arithmetic left 1, 1 cycle on all machines via add
 
 (define_insn ""
@@ -1276,25 +1200,6 @@
   [(set_attr "type" "shfl")])
 
 ;; DImode
-;; Logical left, 1-cycle
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(lshift:DI (match_operand:DI 1 "register_operand" "0")
-		   (const_int 1)))]
-  ""
-  "add.l %0,%0")
-
-;; Logical left, general
-
-(define_insn "lshldi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(lshift:DI (match_operand:DI 1 "register_operand" "0")
-		   (match_operand:SI 2 "nonmemory_operand" "di")))]
-  ""
-  "shf %2,%0"
-  [(set_attr "type" "shfl")])
-
 ;; Arithmetic left, 1-cycle
 
 (define_insn ""

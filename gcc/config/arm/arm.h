@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Acorn RISC Machine.
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
               and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -998,7 +998,7 @@ do									\
 	    goto LABEL;							\
 	}								\
       if (GET_MODE_SIZE (MODE) <= 4					\
-	  && (code == LSHIFTRT || code == ASHIFTRT || code == LSHIFT	\
+	  && (code == LSHIFTRT || code == ASHIFTRT			\
 	      || code == ASHIFT || code == ROTATERT))			\
 	{								\
 	  rtx op = XEXP (INDEX, 1);					\
@@ -1239,7 +1239,6 @@ do									\
         && exact_log2 (INTVAL (XEXP (X, 1))) >= 0)                      \
       return rtx_cost (XEXP (X, 0), GET_CODE (X))+1;                    \
     return COSTS_N_INSNS (9);                                           \
-  case LSHIFT:								\
   case ASHIFT:								\
   case LSHIFTRT:							\
   case ASHIFTRT:							\
@@ -1256,8 +1255,7 @@ do									\
 	  return COSTS_N_INSNS (1);					\
 	break;								\
       }									\
-    else if (code == ASHIFT || code == LSHIFT || code == ASHIFTRT	\
-	     || code == LSHIFTRT)					\
+    else if (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT)	\
       return COSTS_N_INSNS (1);						\
   } /* fall through */							\
   case PLUS:								\
@@ -1275,8 +1273,7 @@ do									\
 	  return COSTS_N_INSNS (12);					\
 	break;								\
       }									\
-    else if (code == ASHIFT || code == LSHIFT || code == ASHIFTRT	\
-	     || code == LSHIFTRT)					\
+    else if (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT)	\
       return COSTS_N_INSNS (1);						\
     break;								\
   }									\
@@ -1342,7 +1339,7 @@ do									\
 	  || GET_CODE (X) == AND || GET_CODE (X) == IOR			\
 	  || GET_CODE (X) == XOR || GET_CODE (X) == MULT		\
 	  || GET_CODE (X) == NOT || GET_CODE (X) == NEG			\
-	  || GET_CODE (X) == LSHIFT || GET_CODE (X) == LSHIFTRT		\
+	  || GET_CODE (X) == LSHIFTRT					\
 	  || GET_CODE (X) == ASHIFT || GET_CODE (X) == ASHIFTRT		\
 	  || GET_CODE (X) == ROTATERT || GET_CODE (X) == ZERO_EXTRACT)	\
       ? CC_NOOVmode							\
@@ -1367,7 +1364,7 @@ extern int arm_compare_fp;
   {"arm_not_operand", {SUBREG, REG, CONST_INT}},			\
   {"shiftable_operator", {PLUS, MINUS, AND, IOR, XOR}},			\
   {"minmax_operator", {SMIN, SMAX, UMIN, UMAX}},			\
-  {"shift_operator", {ASHIFT, LSHIFT, ASHIFTRT, LSHIFTRT, MULT}},	\
+  {"shift_operator", {ASHIFT, ASHIFTRT, LSHIFTRT, MULT}},	\
   {"di_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}},		\
   {"load_multiple_operation", {PARALLEL}},				\
   {"store_multiple_operation", {PARALLEL}},				\
@@ -1780,7 +1777,6 @@ do { char dstr[30];							\
 	  case ASHIFTRT:						\
 	  case LSHIFTRT:						\
 	  case ASHIFT:							\
-	  case LSHIFT:							\
 	  case ROTATERT:						\
 	  {								\
 	    char *shift_type = shift_instr (GET_CODE (index),		\

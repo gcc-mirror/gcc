@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM/RISCiX.
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -443,8 +443,7 @@ shift_operator (x, mode)
 
       if (code == MULT)
 	return power_of_two_operand (XEXP (x, 1));
-      return (code == ASHIFT || code == LSHIFT
-	      || code == ASHIFTRT || code == LSHIFTRT);
+      return (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT);
     }
 } /* shift_operator */
 
@@ -1343,9 +1342,6 @@ shift_instr (op, shift_ptr)
     {
     case ASHIFT:
       mnem = "asl";
-      break;
-    case LSHIFT:
-      mnem = "lsl";
       break;
     case ASHIFTRT:
       mnem = "asr";
