@@ -6,5 +6,5 @@
 void
 foo (void)
 {
-  __func__ "foo"; /* { dg-error "(parse|syntax) error" "before string constant" } */
+  __func__ "foo"; /* { dg-error "parse error|syntax error|expected" "before string constant" } */
 }

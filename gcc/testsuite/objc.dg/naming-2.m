@@ -4,7 +4,7 @@
 
 @interface Foo
 @end
-float Foo;  /* { dg-error "(parse|syntax) error" } */
+float Foo;  /* { dg-error "parse error|syntax error|expected" } */
 
 double Bar;
 @interface Bar

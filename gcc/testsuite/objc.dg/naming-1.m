@@ -15,5 +15,5 @@ void foo(void)
 void bar(void)
 {
 	View *view;	/* ok */
-	View = 1;	/* { dg-error "(parse|syntax) error" } */
+	View = 1;	/* { dg-error "parse error|syntax error|expected" } */
 }
