@@ -1,3 +1,10 @@
+Wed Jan  6 16:20:06 1999  Per Bothner  <bothner@cygnus.com>
+
+	* lex.h:  Moved static function declarations to lex.c,
+	to shut up some -Wall warnings.
+	* lex.c:  Static function declarations moved here.
+	* jcf-dump.c:  Small fixes to shut up -Wall warnings.
+
 Tue Jan  5 22:15:40 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Make-lang.in ($(GCJ).o): Depend on prefix.h.

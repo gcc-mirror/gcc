@@ -505,23 +505,4 @@ static tree build_wfl_node ();
 #define JAVA_READ_BUFFER 256
 #define UEOF (unicode_t)0xffff
 
-/* Function declaration  */
-static int java_lineterminator PROTO ((unicode_t));
-static char *java_sprint_unicode PROTO ((struct java_line *, int));
-static void java_unicode_2_utf8 PROTO ((unicode_t));
-static void java_lex_error PROTO ((char *, int));
-static int java_is_eol PROTO ((FILE *, int));
-static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
-static unicode_t java_parse_escape_sequence PROTO (());
-static int java_letter_or_digit_p PROTO ((unicode_t));
-static int java_parse_doc_section PROTO ((unicode_t));
-static void java_parse_end_comment PROTO (());
-static unicode_t java_get_unicode PROTO (());
-static unicode_t java_read_unicode PROTO ((int, int *));
-static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
-static unicode_t java_read_char PROTO (());
-static void java_allocate_new_line PROTO (());
-static void java_unget_unicode PROTO (());
-static unicode_t java_sneak_unicode PROTO (());
-
 #endif
