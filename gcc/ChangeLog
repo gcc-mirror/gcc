@@ -1,3 +1,7 @@
+Mon Jun 22 23:13:47 1998  John Wehle  (john@feith.com)
+
+	* i386.md (exception_receiver): Define.
+
 Mon Jun 22 12:01:48 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (PROTOIZE_INSTALL_NAME, UNPROTOIZE_INSTALL_NAME,
