@@ -799,6 +799,7 @@ java/beans/Beans.java \
 java/beans/Customizer.java \
 java/beans/DesignMode.java \
 java/beans/EventSetDescriptor.java \
+java/beans/ExceptionListener.java \
 java/beans/FeatureDescriptor.java \
 java/beans/IndexedPropertyDescriptor.java \
 java/beans/IntrospectionException.java \
@@ -807,6 +808,7 @@ java/beans/MethodDescriptor.java \
 java/beans/ParameterDescriptor.java \
 java/beans/PropertyChangeEvent.java \
 java/beans/PropertyChangeListener.java \
+java/beans/PropertyChangeListenerProxy.java \
 java/beans/PropertyChangeSupport.java \
 java/beans/PropertyDescriptor.java \
 java/beans/PropertyEditor.java \
@@ -815,6 +817,7 @@ java/beans/PropertyEditorSupport.java \
 java/beans/PropertyVetoException.java \
 java/beans/SimpleBeanInfo.java \
 java/beans/VetoableChangeListener.java \
+java/beans/VetoableChangeListenerProxy.java \
 java/beans/VetoableChangeSupport.java \
 java/beans/Visibility.java
 
