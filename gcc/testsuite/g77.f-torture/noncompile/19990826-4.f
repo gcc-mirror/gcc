@@ -1,9 +1,3 @@
-* Date: Mon, 26 May 1997 13:00:19 +0200 (GMT+0200)
-* From: "D. O'Donoghue" <dod@da.saao.ac.za>
-* To: Craig Burley <burley@gnu.ai.mit.edu>
-* Cc: fortran@gnu.ai.mit.edu
-* Subject: Re: g77 problems
-
 * Culled from 970528-1.f in Burley's g77 test suite.  Copyright
 * status not clear.  Feel free to chop down if the bug is still
 * reproducible (see end of test case for how bug shows up in gdb
@@ -11,6 +5,12 @@
 * case, other than that I didn't want to spend time "fixing" it
 * to compile cleanly (with -O0, which works) while making sure the
 * ICE remained reproducible.  -- burley 1999-08-26
+
+* Date: Mon, 26 May 1997 13:00:19 +0200 (GMT+0200)
+* From: "D. O'Donoghue" <dod@da.saao.ac.za>
+* To: Craig Burley <burley@gnu.ai.mit.edu>
+* Cc: fortran@gnu.ai.mit.edu
+* Subject: Re: g77 problems
 
 	program dophot
 	parameter (napple = 4)

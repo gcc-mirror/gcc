@@ -1,3 +1,12 @@
+1999-09-05  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/compile/980519-2.f: New test.
+	* g77.f-torture/compile/19990905-0.f: New test.
+	* g77.f-torture/compile/19990905-1.f: New test.
+	* g77.f-torture/compile/19990905-2.f: New test.
+
+	* g77.f-torture/noncompile/19990826-4.f: Clarify who wrote what.
+
 Fri Sep  3 10:39:38 BST 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	* gcc.c-torture/execute/990827-1.c: Fix typo.
