@@ -1,3 +1,8 @@
+2001-04-24  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/v850/v850.h (STRICT_ALIGNMENT): Always set, even for the
+	v850e.
+
 2001-04-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-convert.c (convert): When converting to a BOOLEAN_TYPE, avoid
