@@ -8014,7 +8014,7 @@ cp_parser_template_id (cp_parser *parser,
      the effort required to do the parse, nor will we issue duplicate
      error messages about problems during instantiation of the
      template.  */
-  if (start_of_id >= 0)
+  if (start_of_id >= 0 && !cp_parser_error_occurred (parser))
     {
       cp_token *token;
 

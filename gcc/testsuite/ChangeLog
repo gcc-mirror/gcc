@@ -1,3 +1,8 @@
+2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/parse/typename5.C: Adjust for new error.
+	* g++.dg/parse/typename7.C: New.
+
 2004-12-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR other/19093

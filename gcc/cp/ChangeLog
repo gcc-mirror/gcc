@@ -1,3 +1,9 @@
+2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/18757
+	* parser.c (cp_parser_template_id): Don't create a CPP_TEMPLATE_ID
+	if parsing failed.
+
 2004-12-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18975
