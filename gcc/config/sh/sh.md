@@ -428,20 +428,20 @@
 
 (define_insn ""
   [(set (reg:SI 21)
-	(mult:SI (zero_extend:SI (match_operand:HI 1 "arith_reg_operand" "r"))
-		 (zero_extend:SI (match_operand:HI 2 "arith_reg_operand" "r"))))]
+	(mult:SI (zero_extend:SI (match_operand:HI 0 "arith_reg_operand" "r"))
+		 (zero_extend:SI (match_operand:HI 1 "arith_reg_operand" "r"))))]
   ""
-  "mulu	%2,%1"
+  "mulu	%1,%0"
   [(set_attr "type" "smpy")])
 
 (define_insn ""
   [(set (reg:SI 21)
 	(mult:SI (sign_extend:SI
-		  (match_operand:HI 1 "arith_reg_operand" "r"))
+		  (match_operand:HI 0 "arith_reg_operand" "r"))
 		 (sign_extend:SI
-		  (match_operand:HI 2 "arith_reg_operand" "r"))))]
+		  (match_operand:HI 1 "arith_reg_operand" "r"))))]
   ""
-  "muls	%2,%1"
+  "muls	%1,%0"
   [(set_attr "type" "smpy")])
 
 (define_expand "mulhisi3"
@@ -527,12 +527,12 @@
     }
 }")
 
-(define_insn ""
+(define_insn "mulsidi3_i"
   [(set (reg:DI 20)
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
-		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+	(mult:DI (sign_extend:DI (match_operand:SI 0 "arith_reg_operand" "r"))
+		 (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))))]
   "TARGET_SH2"
-  "dmuls.l	%2,%1"
+  "dmuls.l	%1,%0"
   [(set_attr "type" "dmpy")])
 
 (define_expand "mulsidi3"
@@ -542,14 +542,30 @@
    (set (match_operand:DI 0 "arith_reg_operand" "")
 	(reg:DI 20))]
   "TARGET_SH2"
-  "")
+  "
+{
+  /* We must swap the two words when copying them from MACH/MACL to the
+     output register.  */
+  if (TARGET_LITTLE_ENDIAN)
+    {
+      rtx low_dst = operand_subword (operands[0], 0, 1, DImode);
+      rtx high_dst = operand_subword (operands[0], 1, 1, DImode);
 
-(define_insn ""
+      emit_insn (gen_mulsidi3_i (operands[1], operands[2]));
+
+      emit_insn (gen_rtx (CLOBBER, VOIDmode, operands[0]));
+      emit_move_insn (low_dst, gen_rtx (REG, SImode, 21));
+      emit_move_insn (high_dst, gen_rtx (REG, SImode, 20));
+      DONE;
+    }
+}")
+
+(define_insn "umulsidi3_i"
   [(set (reg:DI 20)
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
-		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+	(mult:DI (zero_extend:DI (match_operand:SI 0 "arith_reg_operand" "r"))
+		 (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))))]
   "TARGET_SH2"
-  "dmulu.l	%2,%1"
+  "dmulu.l	%1,%0"
   [(set_attr "type" "dmpy")])
 
 (define_expand "umulsidi3"
@@ -559,17 +575,33 @@
    (set (match_operand:DI 0 "arith_reg_operand" "")
 	(reg:DI 20))]
   "TARGET_SH2"
-  "")
+  "
+{
+  /* We must swap the two words when copying them from MACH/MACL to the
+     output register.  */
+  if (TARGET_LITTLE_ENDIAN)
+    {
+      rtx low_dst = operand_subword (operands[0], 0, 1, DImode);
+      rtx high_dst = operand_subword (operands[0], 1, 1, DImode);
+
+      emit_insn (gen_umulsidi3_i (operands[1], operands[2]));
+
+      emit_insn (gen_rtx (CLOBBER, VOIDmode, operands[0]));
+      emit_move_insn (low_dst, gen_rtx (REG, SImode, 21));
+      emit_move_insn (high_dst, gen_rtx (REG, SImode, 20));
+      DONE;
+    }
+}")
 
 (define_insn ""
   [(set (reg:SI 20)
 	(truncate:SI
-	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
-			       (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "r")))
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 0 "arith_reg_operand" "r"))
+			       (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r")))
 		      (const_int 32))))
    (clobber (reg:SI 21))]
   "TARGET_SH2"
-  "dmuls.l	%2,%1"
+  "dmuls.l	%1,%0"
   [(set_attr "type" "dmpy")])
 
 (define_expand "smulsi3_highpart"
@@ -587,12 +619,12 @@
 (define_insn ""
   [(set (reg:SI 20)
 	(truncate:SI
-	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
-			       (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "r")))
+	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 0 "arith_reg_operand" "r"))
+			       (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r")))
 		      (const_int 32))))
    (clobber (reg:SI 21))]
   "TARGET_SH2"
-  "dmulu.l	%2,%1"
+  "dmulu.l	%1,%0"
   [(set_attr "type" "dmpy")])
 
 (define_expand "umulsi3_highpart"
