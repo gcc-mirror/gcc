@@ -1,3 +1,7 @@
+Thu Sep 14 12:10:45 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Make-lang.in (cplib2.txt): Depend on cp/Makefile.
+
 2000-09-13  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* init.c (begin_init_stmts): Don't use // comments.

@@ -179,8 +179,9 @@ vec.o: cc1plus$(exeext) $(srcdir)/cp/vec.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/vec.cc -o vec.o
 
-# We want to update cplib2.txt if any of the source files change...
-cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS)
+# We want to update cplib2.txt if any of the source files change or if the
+# Makefile (which contains the list of sources) changes.
+cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cp/Makefile
 	case " $(LANGUAGES) " in \
 	*" "[cC]"++ "*) \
 	  echo $(CXX_LIB2FUNCS) > cplib2.new;; \
