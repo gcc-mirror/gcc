@@ -1,4 +1,8 @@
 2003-08-06  Peter Barada <peter@baradas.org>
+
+	* longlong.h (umul_ppmm): Add ColdFire support.
+
+2003-08-06  Peter Barada <peter@baradas.org>
             Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k-none.h: Introduce new ColdFire archs.
