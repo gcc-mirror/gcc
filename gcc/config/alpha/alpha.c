@@ -4855,13 +4855,14 @@ alpha_expand_prologue ()
   if (TARGET_ABI_OPEN_VMS)
     {
       if (!vms_is_stack_procedure)
-	/* Register frame procedures fave the fp.  */
-	FRP (emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
-			     hard_frame_pointer_rtx));
+	/* Register frame procedures save the fp.  */
+	/* ??? Ought to have a dwarf2 save for this.  */
+	emit_move_insn (gen_rtx_REG (DImode, vms_save_fp_regno),
+			hard_frame_pointer_rtx);
 
       if (vms_base_regno != REG_PV)
-	FRP (emit_move_insn (gen_rtx_REG (DImode, vms_base_regno),
-			     gen_rtx_REG (DImode, REG_PV)));
+	emit_insn (gen_force_movdi (gen_rtx_REG (DImode, vms_base_regno),
+				    gen_rtx_REG (DImode, REG_PV)));
 
       if (vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
 	FRP (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));

@@ -47,6 +47,7 @@
    (UNSPECV_MCOUNT	8)
    (UNSPECV_LDGP1	9)
    (UNSPECV_LDGP2	10)
+   (UNSPECV_FORCE_MOV	11)
   ])
 
 ;; Processor type -- this attribute must exactly match the processor_type
@@ -4879,6 +4880,18 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    ftoit %1,%0
    itoft %1,%0"
   [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")])
+
+;; VMS needs to set up "vms_base_regno" for unwinding.  This move
+;; often appears dead to the life analysis code, at which point we
+;; abort for emitting dead prologue instructions.  Force this live.
+
+(define_insn "force_movdi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "r")]
+			    UNSPECV_FORCE_MOV))]
+  ""
+  "mov %1,%0"
+  [(set_attr "type" "ilog")])
 
 ;; We do three major things here: handle mem->mem, put 64-bit constants in
 ;; memory, and construct long 32-bit constants.
