@@ -2258,9 +2258,9 @@ perform_relocations (state)
 	      *--new_ptr = 0;
 	      *--new_ptr = - reloc->kind;
 	    }
-	  if (new_ptr != chunk->data)
-	    fatal ("internal error - perform_relocations");
 	}
+      if (new_ptr != chunk->data)
+	fatal ("internal error - perform_relocations");
     }
   state->code_length = pc;
 }
