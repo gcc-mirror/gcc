@@ -1668,7 +1668,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 	      loop_head = max_hdr[i];
 
 	      /* Decrease degree of all I's successors for topological
-		 ordering.
+		 ordering.  */
 	      for (ps = s_succs[i]; ps; ps = ps->next)
 		if (INT_LIST_VAL (ps) != EXIT_BLOCK
 		    && INT_LIST_VAL (ps) != ENTRY_BLOCK)
