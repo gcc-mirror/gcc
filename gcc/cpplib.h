@@ -431,6 +431,9 @@ struct cpp_options {
   /* Nonzero means try to imitate old fashioned non-ANSI preprocessor.  */
   char traditional;
 
+  /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
+  char warn_undef;
+
   /* Nonzero for the 1989 C Standard, including corrigenda and amendments.  */
   char c89;
 
@@ -495,6 +498,7 @@ struct cpp_options {
 };
 
 #define CPP_TRADITIONAL(PFILE) (CPP_OPTIONS(PFILE)-> traditional)
+#define CPP_WARN_UNDEF(PFILE) (CPP_OPTIONS(PFILE)->warn_undef)
 #define CPP_C89(PFILE) (CPP_OPTIONS(PFILE)->c89)
 #define CPP_PEDANTIC(PFILE) (CPP_OPTIONS (PFILE)->pedantic)
 #define CPP_PRINT_DEPS(PFILE) (CPP_OPTIONS (PFILE)->print_deps)
