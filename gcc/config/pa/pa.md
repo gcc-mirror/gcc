@@ -198,15 +198,6 @@
 
 ;; scc insns.
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operator:CCFP 1 "comparison_operator" [(reg:CCFP 0)
-						      (const_int 0)]))]
-  ""
-  "copy 0,%0\;ftest\;ldi 1,%0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "3")])
-
 (define_expand "seq"
   [(set (match_operand:SI 0 "register_operand" "")
 	(eq:SI (match_dup 1)
@@ -214,12 +205,9 @@
   ""
   "
 {
+  /* fp scc patterns rarely match, and are not a win on the PA.  */
   if (hppa_branch_type != CMP_SI)
-    {
-      emit_insn (gen_cmp_fp (EQ, hppa_compare_op0, hppa_compare_op1));
-      emit_insn (gen_scond_fp (EQ, operands[0]));
-      DONE;
-    }
+    FAIL;
   /* set up operands from compare.  */
   operands[1] = hppa_compare_op0;
   operands[2] = hppa_compare_op1;
@@ -233,12 +221,9 @@
   ""
   "
 {
+  /* fp scc patterns rarely match, and are not a win on the PA.  */
   if (hppa_branch_type != CMP_SI)
-    {
-      emit_insn (gen_cmp_fp (NE, hppa_compare_op0, hppa_compare_op1));
-      emit_insn (gen_scond_fp (NE, operands[0]));
-      DONE;
-    }
+    FAIL;
   operands[1] = hppa_compare_op0;
   operands[2] = hppa_compare_op1;
 }")
@@ -250,12 +235,9 @@
   ""
   "
 {
+  /* fp scc patterns rarely match, and are not a win on the PA.  */
   if (hppa_branch_type != CMP_SI)
-    {
-      emit_insn (gen_cmp_fp (LT, hppa_compare_op0, hppa_compare_op1));
-      emit_insn (gen_scond_fp (LT, operands[0]));
-      DONE;
-    }
+    FAIL;
   operands[1] = hppa_compare_op0;
   operands[2] = hppa_compare_op1;
 }")
@@ -267,12 +249,9 @@
   ""
   "
 {
+  /* fp scc patterns rarely match, and are not a win on the PA.  */
   if (hppa_branch_type != CMP_SI)
-    {
-      emit_insn (gen_cmp_fp (GT, hppa_compare_op0, hppa_compare_op1));
-      emit_insn (gen_scond_fp (GT, operands[0]));
-      DONE;
-    }
+    FAIL;
   operands[1] = hppa_compare_op0;
   operands[2] = hppa_compare_op1;
 }")
@@ -284,12 +263,9 @@
   ""
   "
 {
+  /* fp scc patterns rarely match, and are not a win on the PA.  */
   if (hppa_branch_type != CMP_SI)
-    {
-      emit_insn (gen_cmp_fp (LE, hppa_compare_op0, hppa_compare_op1));
-      emit_insn (gen_scond_fp (LE, operands[0]));
-      DONE;
-    }
+    FAIL;
   operands[1] = hppa_compare_op0;
   operands[2] = hppa_compare_op1;
 }")
@@ -301,12 +277,9 @@
   ""
   "
 {
+  /* fp scc patterns rarely match, and are not a win on the PA.  */
   if (hppa_branch_type != CMP_SI)
-    {
-      emit_insn (gen_cmp_fp (GE, hppa_compare_op0, hppa_compare_op1));
-      emit_insn (gen_scond_fp (GE, operands[0]));
-      DONE;
-    }
+    FAIL;
   operands[1] = hppa_compare_op0;
   operands[2] = hppa_compare_op1;
 }")
