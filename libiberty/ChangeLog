@@ -1,3 +1,13 @@
+2003-11-29  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (d_demangle): Only return success if we consumed
+	the entire demangled string.
+	(is_ctor_or_dtor): Likewise.
+
+	* testsuite/demangle-expected: Revert one part of 2003-06-26 patch
+	to restore expected result of EDG test case to original expected
+	result.
+
 2003-11-26  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (struct d_print_mod): Add templates field.
