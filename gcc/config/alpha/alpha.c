@@ -728,9 +728,12 @@ alpha_emit_set_const (target, mode, c, n)
     }
 
   /* If we couldn't do it that way, try some other methods.  But if we have
-     no instructions left, don't bother.  */
+     no instructions left, don't bother.  Likewise, if this is SImode and
+     we can't make pseudos, we can't do anything since the expand_binop
+     and expand_unop calls will widen and try to make pseudos.  */
 
-  if (n == 1)
+  if (n == 1
+      || (mode == SImode && ! rtx_equal_function_value_matters))
     return 0;
 
 #if HOST_BITS_PER_WIDE_INT == 64
