@@ -1,6 +1,6 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -118,7 +118,7 @@ namespace _GLIBCXX_STD
     vector<_Tp,_Alloc>::
     erase(iterator __first, iterator __last)
     {
-      iterator __i(copy(__last, end(), __first));
+      iterator __i(std::copy(__last, end(), __first));
       std::_Destroy(__i, end());
       this->_M_impl._M_finish = this->_M_impl._M_finish - (__last - __first);
       return __first;
@@ -143,7 +143,7 @@ namespace _GLIBCXX_STD
         }
         else if (size() >= __xlen)
         {
-          iterator __i(copy(__x.begin(), __x.end(), begin()));
+          iterator __i(std::copy(__x.begin(), __x.end(), begin()));
           std::_Destroy(__i, end());
         }
         else
@@ -209,7 +209,7 @@ namespace _GLIBCXX_STD
       }
       else if (size() >= __len)
       {
-        iterator __new_finish(copy(__first, __last, this->_M_impl._M_start));
+        iterator __new_finish(std::copy(__first, __last, this->_M_impl._M_start));
         std::_Destroy(__new_finish, end());
         this->_M_impl._M_finish = __new_finish.base();
       }

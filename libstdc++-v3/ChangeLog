@@ -1,3 +1,9 @@
+2004-12-29  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/vector.tcc (erase(iterator, iterator),
+	operator=, _M_assign_aux(_ForwardIterator, _ForwardIterator,
+	forward_iterator_tag)): Qualify all calls to std::copy().
+
 2004-12-23  Paolo Carlini  <pcarlini@suse.de>
 
 	Minimal fixes for -fno-exceptions.
