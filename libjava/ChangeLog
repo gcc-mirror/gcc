@@ -8,9 +8,9 @@
 2001-02-21  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Disable libgcjx by default.
-        * configure.in: Add support for --enable-java-awt configure option. 
+	* configure.in: Add support for --enable-java-awt configure option. 
 	Use --enable-java-awt=xlib to build the xlib peers (libgcjx).
-        * Makefile.am: Make libgcjx conditional on XLIB_AWT, instead of NO_X.
+	* Makefile.am: Make libgcjx conditional on XLIB_AWT, instead of NO_X.
 	* Makefile.in: Rebuilt.
 	* configure: Rebuilt.
 
