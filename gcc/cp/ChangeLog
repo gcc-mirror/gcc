@@ -1,3 +1,7 @@
+Sun Nov  9 18:00:26 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Make-lang.in (c++.distdir): Make inc subdirectory.
+
 Fri Nov  7 11:57:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_file): Put back some code.
