@@ -3,7 +3,7 @@
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
 ;;  Brendan Eich, brendan@microunity.com.
-;;  Copyright (C) 1989, 90-96, 1997 Free Software Foundation, Inc.
+;;  Copyright (C) 1989, 90-97, 1998 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -4075,10 +4075,11 @@ move\\t%0,%z4\\n\\
 
 (define_insn "loadgp"
   [(set (reg:DI 28)
-	(unspec_volatile:DI [(match_operand:DI 0 "address_operand" "")] 2))
+	(unspec_volatile:DI [(match_operand:DI 0 "address_operand" "")
+			     (match_operand:DI 1 "register_operand" "")] 2))
    (clobber (reg:DI 1))]
   ""
-  "%[lui\\t$1,%%hi(%%neg(%%gp_rel(%a0)))\\n\\taddiu\\t$1,$1,%%lo(%%neg(%%gp_rel(%a0)))\\n\\tdaddu\\t$gp,$1,$25%]"
+  "%[lui\\t$1,%%hi(%%neg(%%gp_rel(%a0)))\\n\\taddiu\\t$1,$1,%%lo(%%neg(%%gp_rel(%a0)))\\n\\tdaddu\\t$gp,$1,%1%]"
   [(set_attr "type"	"move")
    (set_attr "mode"	"DI")
    (set_attr "length"	"3")])
@@ -6462,13 +6463,19 @@ move\\t%0,%z4\\n\\
 
 ;; For n32/n64, we need to restore gp after a builtin setjmp.   We do this
 ;; by making use of the fact that we've just called __dummy.
+;; ??? Note that nothing guarantees that we're *right* after the return, but
+;; we usually are.  There seems to be no way to make that guarantee.
 
 (define_expand "builtin_setjmp_receiver"
   [(const_int 0)]
   "TARGET_ABICALLS && mips_abi != ABI_32"
   "
 {
-  emit_insn (gen_loadgp (gen_rtx (SYMBOL_REF, Pmode, \"__dummy\")));
+  rtx label = gen_label_rtx ();
+
+  emit_label (label);
+  emit_insn (gen_loadgp (gen_rtx (LABEL_REF, Pmode, label),
+			 gen_rtx (REG, DImode, 31)));
   emit_insn (gen_blockage ());
 }")
 
