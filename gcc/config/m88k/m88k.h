@@ -204,9 +204,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"07 Apr 1992"
+#define VERSION_INFO2	"21 Apr 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.1.3.1 07 Apr 1992 17:24:45"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.1.4.5 21 Apr 1992 08:02:51"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1469,6 +1469,11 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    so give the MEM rtx word mode.  */
 #define FUNCTION_MODE SImode
 
+/* A barrier will be aligned so account for the possible expansion.  */
+#define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
+  if (GET_CODE (INSN) == BARRIER)		\
+    LENGTH += 1;
+
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
    of a switch statement.  If the code is computed here,
@@ -1551,7 +1556,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* Allow pseudo-ops to be overridden.  Override these in svr[34].h.  */
 #undef	INT_ASM_OP
 #undef	ASCII_DATA_ASM_OP
-#undef	INIT_SECTION_ASM_OP
 #undef	CONST_SECTION_ASM_OP
 #undef	CTORS_SECTION_ASM_OP
 #undef	DTORS_SECTION_ASM_OP
@@ -2261,6 +2265,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 #else /* m88kluna or other not based on svr[34].h.  */
 
+#undef INIT_SECTION_ASM_OP
 #define EXTRA_SECTIONS in_const, in_tdesc, in_sdata
 #define CONST_SECTION_FUNCTION						\
 void									\

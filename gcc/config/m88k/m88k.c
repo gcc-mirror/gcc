@@ -46,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.1.3.1 07 Apr 1992 17:23:59";
+static char out_sccs_id[] = "@(#)m88k.c	2.1.4.6 20 Apr 1992 14:30:40";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -718,11 +718,14 @@ output_call (operands, addr)
   if (final_sequence)
     {
       rtx jump;
+      rtx seq_insn;
 
       /* This can be generalized, but there is currently no need.  */
       if (XVECLEN (final_sequence, 0) != 2)
 	abort ();
 
+      /* The address of interior insns is not computed, so use the sequence.  */
+      seq_insn = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
       jump = XVECEXP (final_sequence, 0, 1);
       if (GET_CODE (jump) == JUMP_INSN)
 	{
@@ -730,7 +733,8 @@ output_call (operands, addr)
 	  char *last;
 	  rtx dest = XEXP (SET_SRC (PATTERN (jump)), 0);
 	  int delta = 4 * (insn_addresses[INSN_UID (dest)]
-			   - insn_addresses[INSN_UID (jump)]);
+			   - insn_addresses[INSN_UID (seq_insn)]
+			   - 2);
 #if (MONITOR_GCC & 0x2) /* How often do long branches happen?  */
 	  if ((unsigned) (delta + 0x8000) >= 0x10000)
 	    warning ("Internal gcc monitor: short-branch(%x)", delta);
@@ -816,6 +820,92 @@ output_short_branch_defs (stream)
     }
   if (sb_name || sb_high || sb_low)
     abort ();
+}
+
+/* Return truth value of the statement that this conditional branch is likely
+   to fall through.  CONDITION, is the condition that JUMP_INSN is testing.  */
+
+int
+mostly_false_jump (jump_insn, condition)
+     rtx jump_insn, condition;
+{
+  rtx target_label = JUMP_LABEL (jump_insn);
+  rtx insnt, insnj;
+
+  /* Much of this isn't computed unless we're optimizing.  */
+  if (optimize == 0)
+    return 0;
+
+  /* Determine if one path or the other leads to a return.  */
+  for (insnt = NEXT_INSN (target_label);
+       insnt;
+       insnt = NEXT_INSN (insnt))
+    if (GET_CODE (insnt) == JUMP_INSN
+	|| (GET_CODE (insnt) == SEQUENCE
+	    && GET_CODE (XVECEXP (insnt, 0, 0)) == JUMP_INSN))
+      break;
+  if (insnt && GET_CODE (PATTERN (insnt)) == RETURN)
+    insnt = 0;
+
+  for (insnj = NEXT_INSN (jump_insn);
+       insnj;
+       insnj = NEXT_INSN (insnj))
+    if (GET_CODE (insnj) == JUMP_INSN
+	|| (GET_CODE (insnj) == SEQUENCE
+	    && GET_CODE (XVECEXP (insnj, 0, 0)) == JUMP_INSN))
+      break;
+  if (insnj && GET_CODE (PATTERN (insnj)) == RETURN)
+    insnj = 0;
+
+  /* Predict to not return.  */
+  if (insnt != insnj)
+    return (insnt == 0);
+
+  /* Predict loops to loop.  */
+  for (insnt = PREV_INSN (target_label);
+       insnt && GET_CODE (insnt) == NOTE;
+       insnt = PREV_INSN (insnt))
+    if (NOTE_LINE_NUMBER (insnt) == NOTE_INSN_LOOP_END)
+      return 1;
+    else if (NOTE_LINE_NUMBER (insnt) == NOTE_INSN_LOOP_BEG)
+      return 0;
+    else if (NOTE_LINE_NUMBER (insnt) == NOTE_INSN_LOOP_CONT)
+      return 0;
+
+  /* Predict backward branches usually take.  */
+  if (final_sequence)
+    insnj = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
+  else
+    insnj = jump_insn;
+  if (insn_addresses[INSN_UID (insnj)]
+      > insn_addresses[INSN_UID (target_label)])
+    return 0;
+
+  /* EQ tests are usually false and NE tests are usually true.  Also,
+     most quantities are positive, so we can make the appropriate guesses
+     about signed comparisons against zero.  */
+  switch (GET_CODE (condition))
+    {
+    case CONST_INT:
+      /* Unconditional branch.  */
+      return 0;
+    case EQ:
+      return 1;
+    case NE:
+      return 0;
+    case LE:
+    case LT:
+      if (XEXP (condition, 1) == const0_rtx)
+        return 1;
+      break;
+    case GE:
+    case GT:
+      if (XEXP (condition, 1) == const0_rtx)
+	return 0;
+      break;
+    }
+
+  return 0;
 }
 
 /* Report errors on floating point, if we are given NaN's, or such.  Leave
