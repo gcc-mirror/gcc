@@ -270,6 +270,7 @@ java/awt/AWTEventMulticaster.java \
 java/awt/AWTException.java \
 java/awt/ActiveEvent.java \
 java/awt/Adjustable.java \
+java/awt/Button.java \
 java/awt/BorderLayout.java \
 java/awt/CheckboxGroup.java \
 java/awt/Color.java \
@@ -1048,14 +1049,15 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
 .deps/java/awt/AWTEventMulticaster.P .deps/java/awt/AWTException.P \
 .deps/java/awt/ActiveEvent.P .deps/java/awt/Adjustable.P \
-.deps/java/awt/BorderLayout.P .deps/java/awt/CheckboxGroup.P \
-.deps/java/awt/Color.P .deps/java/awt/Component.P \
-.deps/java/awt/ComponentOrientation.P .deps/java/awt/Container.P \
-.deps/java/awt/Cursor.P .deps/java/awt/Dimension.P \
-.deps/java/awt/Event.P .deps/java/awt/EventDispatchThread.P \
-.deps/java/awt/EventQueue.P .deps/java/awt/Font.P \
-.deps/java/awt/FontMetrics.P .deps/java/awt/Frame.P \
-.deps/java/awt/Graphics.P .deps/java/awt/GraphicsConfiguration.P \
+.deps/java/awt/BorderLayout.P .deps/java/awt/Button.P \
+.deps/java/awt/CheckboxGroup.P .deps/java/awt/Color.P \
+.deps/java/awt/Component.P .deps/java/awt/ComponentOrientation.P \
+.deps/java/awt/Container.P .deps/java/awt/Cursor.P \
+.deps/java/awt/Dimension.P .deps/java/awt/Event.P \
+.deps/java/awt/EventDispatchThread.P .deps/java/awt/EventQueue.P \
+.deps/java/awt/Font.P .deps/java/awt/FontMetrics.P \
+.deps/java/awt/Frame.P .deps/java/awt/Graphics.P \
+.deps/java/awt/GraphicsConfiguration.P \
 .deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
 .deps/java/awt/Insets.P .deps/java/awt/ItemSelectable.P \
 .deps/java/awt/Label.P .deps/java/awt/LayoutManager.P \

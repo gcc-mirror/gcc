@@ -406,7 +406,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
   _Jv_word *pool_data   = defining_class->constants.data;
   
   /* these two are used in the invokeXXX instructions */
-  void (*fun)(...);
+  void (*fun)();
   _Jv_ResolvedMethod* rmeth;
 
 #define INSN_LABEL(op) &&insn_##op
@@ -684,13 +684,13 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  {
 	    // final methods do not appear in the vtable,
 	    // if it does not appear in the superclass.
-	    fun = (void (*) (...)) rmeth->method->ncode;
+	    fun = (void (*)()) rmeth->method->ncode;
 	  }
 	else
 	  {
 	    jobject rcv = sp[0].o;
 	    _Jv_VTable *table = *(_Jv_VTable**)rcv;
-	    fun = (void (*) (...))table->method[rmeth->vtable_index];
+	    fun = (void (*)()) table->method[rmeth->vtable_index];
 	  }
       }
       goto perform_invoke;
@@ -2149,7 +2149,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	NULLCHECK(sp[0]);
 
-	fun = (void (*) (...))rmeth->method->ncode;
+	fun = (void (*)()) rmeth->method->ncode;
       }
       goto perform_invoke;
 
@@ -2163,7 +2163,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	sp -= rmeth->stack_item_count;
 
 	_Jv_InitClass (rmeth->klass);
-	fun = (void (*) (...))rmeth->method->ncode;
+	fun = (void (*)()) rmeth->method->ncode;
       }
       goto perform_invoke;
 
@@ -2182,7 +2182,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	jobject rcv = sp[0].o;
 
-	fun = (void (*) (...))
+	fun = (void (*)())
 	  _Jv_LookupInterfaceMethod (rcv->getClass (),
 				     rmeth->method->name,
 				     rmeth->method->signature);

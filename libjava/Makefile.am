@@ -494,6 +494,7 @@ java/awt/AWTEventMulticaster.java \
 java/awt/AWTException.java \
 java/awt/ActiveEvent.java \
 java/awt/Adjustable.java \
+java/awt/Button.java \
 java/awt/BorderLayout.java \
 java/awt/CheckboxGroup.java \
 java/awt/Color.java \

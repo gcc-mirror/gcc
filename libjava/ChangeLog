@@ -1,3 +1,21 @@
+2000-08-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+        * interpret.cc (_Jv_InterpMethod::continue1): Type of `fun' changed
+	to match C declaration in ffi.h.
+	* Makefile.am: Add java/awt/Button.java.
+	* Makefile.in: Rebuilt.
+
+2000-07-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Type of the
+        cast of the second argument to `ffi_raw_call' changed to match
+        prototype.
+
+2000-07-26  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * jni.cc (_Jv_JNIMethod::call): Type of the cast of the second
+        argument to `ffi_raw_call' changed to match prototype.
+
 2000-07-31  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/awt/Component.java (toString): Implemented.
