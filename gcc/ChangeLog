@@ -1,3 +1,14 @@
+2000-12-07  Neil Booth  <neilb@earthling.net>
+
+        * c-common.c (parse_in): Make a cpp_reader *.
+        * cppfiles.c (_cpp_fake_include): Remove.
+        * cpphash.h: Similarly.
+        * cpplib.c (do_line): Don't call _cpp_fake_include.  A valid
+        #line always creates a callback; FC_RENAME if there are no
+        #line flags.
+        * fix-header.c (read_scan_file): cpp_push_buffer cannot fail.
+        The first EOF must be our get_char buffer.
+
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (warn_format_security): New variable.
