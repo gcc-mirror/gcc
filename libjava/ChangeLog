@@ -1,3 +1,10 @@
+2003-09-19  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java (getLocalAddress):
+	Renamed result variable to localAddr.
+	* java/net/MulticastSocket.java:
+	No need to import gnu.java.net.PlainDatagramSocketImpl.
+
 2003-09-18  Sascha Brawer  <brawer@dandelis.ch>
 
 	* java/awt/Toolkit.java (getSystemEventQueue, getSystemEventQueueImpl):

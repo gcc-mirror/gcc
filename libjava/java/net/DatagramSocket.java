@@ -266,26 +266,26 @@ public class DatagramSocket
 	|| closed)
       return null;
     
-    InetAddress result;
+    InetAddress localAddr;
     
     try
       {
-        result = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
+	localAddr = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
 
 	SecurityManager s = System.getSecurityManager();
 	if (s != null)
-	  s.checkConnect (result.getHostName(), -1);
+	  s.checkConnect (localAddr.getHostName(), -1);
       }
     catch (SecurityException e)
       {
-	result = InetAddress.ANY_IF;
+	localAddr = InetAddress.ANY_IF;
       }
     catch (SocketException e)
       {
-	result = InetAddress.ANY_IF;
+        return null;
       }
 
-    return result;
+    return localAddr;
   }
 
   /**
