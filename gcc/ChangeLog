@@ -8,6 +8,15 @@
 
 Fri Feb 16 12:41:30 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcse.c (hash_scan_set): If cprop, see if REG_EQUAL or REG_EQUIV.
+	Don't CSE a nop.
+	(hash_scan_insn): Clean up calls to hash_scan_set.
+	(compute_kill_rd): REGNO now unsigned.
+	(try_replace_reg): Rework to use simplify_replace_rtx.
+	(cprop_jump, cprop_cc0_jump): Likewise.
+	(cprop_insn): Call find_reg_equal_equiv_note.
+	Reflect changes to cprop_jump and cprop_cc0_jump.
+
 	* recog.c (validate_replace_rtx): Replace in operands of
 	ZERO_EXTRACT in SET_DEST.
 
