@@ -1557,8 +1557,8 @@ read_specs (filename, main_p)
 	fatal ("specs file malformed after %d characters", p - buffer);
 
       p1 = p;
-      /* Find next blank line.  */
-      while (*p1 && !(*p1 == '\n' && p1[1] == '\n'))
+      /* Find next blank line or end of string.  */
+      while (*p1 && !(*p1 == '\n' && (p1[1] == '\n' || p1[1] == '\0')))
 	p1++;
 
       /* Specs end at the blank line and do not include the newline.  */
