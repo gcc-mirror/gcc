@@ -1995,53 +1995,17 @@ static __inline__ double fake_hypot (x, y)\
     #
     # Fix Machine_Name
     #
-    if ( test -n "`egrep '^#[ 	]*(if|elif).*[^a-zA-Z0-9_](_*[MSRrhim]|[Mbimnpstuv])[a-zA-Z0-9_]' ${file}`"
-       ) > /dev/null 2>&1 ; then
+    if ${FIXTESTS} ${file} machine_name
+    then
     fixlist="${fixlist}
       machine_name"
     if [ ! -r ${DESTFILE} ]
     then infile=${file}
     else infile=${DESTFILE} ; fi 
-
-    sed -e ':loop
-/\\$/N
-s/\\$/\\+++fixinc_eol+++/
-/\\$/b loop
-s/\\+++fixinc_eol+++/\\/g
-/#[	 ]*[el]*if/ {
-	s/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g
-	s/ M32 / __M32__ /g
-	s/ _*MIPSE\([LB]\) / __MIPSE\1__ /g
-	s/ _*SYSTYPE_\([A-Z0-9]*\) / __SYSTYPE_\1__ /g
-	s/ _*\([Rr][34]\)000 / __\1000__ /g
-	s/ _*host_mips / __host_mips__ /g
-	s/ _*i386 / __i386__ /g
-	s/ _*mips / __mips__ /g
-	s/ bsd4\([0-9]\) / __bsd4\1__ /g
-	s/ is68k / __is68k__ /g
-	s/ m68k / __m68k__ /g
-	s/ m88k / __m88k__ /g
-	s/ mc680\([0-9]\)0 / __mc680\10__ /g
-	s/ news\([0-9]*\) / __news\1__ /g
-	s/ ns32000 / __ns32000__ /g
-	s/ pdp11 / __pdp11__ /g
-	s/ pyr / __pyr__ /g
-	s/ sel / __sel__ /g
-	s/ sony_news / __sony_news__ /g
-	s/ sparc / __sparc__ /g
-	s/ sun\([a-z0-9]*\) / __sun\1__ /g
-	s/ tahoe / __tahoe__ /g
-	s/ tower\([_0-9]*\) / __tower\1__ /g
-	s/ u370 / __u370__ /g
-	s/ u3b\([0-9]*\) / __u3b\1__ /g
-	s/ unix / __unix__ /g
-	s/ vax / __vax__ /g
-	s/ \([a-zA-Z0-9_][a-zA-Z0-9_]*\) /\1/g
-	}' \
-          < $infile > ${DESTDIR}/fixinc.tmp
+    ${FIXFIXES} ${file} machine_name < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    fi # end of select 'if'
+    fi # end of c_test 'if'
 
 
     #

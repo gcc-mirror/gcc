@@ -21,16 +21,21 @@
    along with this program; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-/* AIX requires this to be the first thing in the file. */
-#if defined _AIX && !defined REGEX_MALLOC
-  #pragma alloca
-#endif
-
 #undef	_GNU_SOURCE
 #define _GNU_SOURCE
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
+#endif
+
+/* Do not use a C alloca, we will leak memory and crash.  */
+#ifdef C_ALLOCA
+# define REGEX_MALLOC
+#endif
+
+/* AIX requires this to be the first thing in the file. */
+#if defined _AIX && !defined REGEX_MALLOC
+  #pragma alloca
 #endif
 
 #ifndef PARAMS
@@ -152,11 +157,6 @@ char *realloc ();
 
 /* How many characters in the character set.  */
 # define CHAR_SET_SIZE 256
-
-/* GDB LOCAL: define _REGEX_RE_COMP to get BSD style re_comp and re_exec */
-#ifndef _REGEX_RE_COMP
-#define _REGEX_RE_COMP
-#endif
 
 # ifdef SYNTAX_TABLE
 
@@ -5561,7 +5561,8 @@ re_exec (s)
        REG_EXTENDED bit in CFLAGS is set; otherwise, to
        RE_SYNTAX_POSIX_BASIC;
      `newline_anchor' to REG_NEWLINE being set in CFLAGS;
-     `fastmap' and `fastmap_accurate' to zero;
+     `fastmap' to an allocated space for the fastmap;
+     `fastmap_accurate' to 1;
      `re_nsub' to the number of subexpressions in PATTERN.
 
    PATTERN is the address of the pattern string.
@@ -5600,11 +5601,8 @@ regcomp (preg, pattern, cflags)
   preg->allocated = 0;
   preg->used = 0;
 
-  /* Don't bother to use a fastmap when searching.  This simplifies the
-     REG_NEWLINE case: if we used a fastmap, we'd have to put all the
-     characters after newlines into the fastmap.  This way, we just try
-     every character.  */
-  preg->fastmap = 0;
+  /* Try to allocate space for the fastmap.  */
+  preg->fastmap = (char *) malloc (1 << BYTEWIDTH);
 
   if (cflags & REG_ICASE)
     {
@@ -5643,6 +5641,19 @@ regcomp (preg, pattern, cflags)
   /* POSIX doesn't distinguish between an unmatched open-group and an
      unmatched close-group: both are REG_EPAREN.  */
   if (ret == REG_ERPAREN) ret = REG_EPAREN;
+
+  if (ret == REG_NOERROR && preg->fastmap)
+    {
+      /* Compute the fastmap now, since regexec cannot modify the pattern
+        buffer.  */
+      if (re_compile_fastmap (preg) == -2)
+       {
+         /* Some error occured while computing the fastmap, just forget
+            about it.  */
+         free (preg->fastmap);
+         preg->fastmap = NULL;
+       }
+    }
 
   return (int) ret;
 }

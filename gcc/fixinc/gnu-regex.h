@@ -36,11 +36,6 @@ extern "C" {
 # include <stddef.h>
 #endif
 
-/* GDB LOCAL: define _REGEX_RE_COMP to get BSD style re_comp and re_exec */
-#ifndef _REGEX_RE_COMP
-#define _REGEX_RE_COMP
-#endif
-
 /* The following two types have to be signed and unsigned integer type
    wide enough to hold a value of a pointer.  For most ANSI compilers
    ptrdiff_t and size_t should be likely OK.  Still size of these two

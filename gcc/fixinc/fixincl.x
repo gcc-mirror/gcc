@@ -2341,56 +2341,18 @@ tSCC zMachine_NameName[] =
 #define apzMachine_NameMachs (const char**)NULL
 
 /*
- *  content selection pattern - do fix if pattern found
- *  This is a special pattern that not all egrep commands
- *  are capable of coping with.  We use the GNU library, tho :)
+ *  perform the C function call test
  */
-tSCC zMachine_NameSelect0[] =
-       "^#[ \t]*(if|elif).*[^a-zA-Z0-9_](M32|_*MIPSE[LB]|_*SYSTYPE_[A-Z0-9]|_*[Rr][34]000|_*host_mips|_*i386|_*mips|bsd4|is68k|m[68]8k|mc680|news|ns32000|pdp11|pyr|sel|sony_news|sparc|sun|tahoe|tower|u370|u3b|unix|vax)";
+tSCC zMachine_NameFTst0[] = "machine_name";
 
 #define    MACHINE_NAME_TEST_CT  1
 tTestDesc aMachine_NameTests[] = {
-  { TT_EGREP,    zMachine_NameSelect0, (regex_t*)NULL }, };
+  { TT_FUNCTION, zMachine_NameFTst0,   0 /* unused */ }, };
 
 /*
  *  Fix Command Arguments for Machine_Name
  */
-const char* apzMachine_NamePatch[] = { "sed",
-    "-e", ":loop\n\
-/\\\\$/N\n\
-s/\\\\$/\\\\+++fixinc_eol+++/\n\
-/\\\\$/b loop\n\
-s/\\\\+++fixinc_eol+++/\\\\/g\n\
-/#[\t ]*[el]*if/ {\n\
-\ts/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g\n\
-\ts/ M32 / __M32__ /g\n\
-\ts/ _*MIPSE\\([LB]\\) / __MIPSE\\1__ /g\n\
-\ts/ _*SYSTYPE_\\([A-Z0-9]*\\) / __SYSTYPE_\\1__ /g\n\
-\ts/ _*\\([Rr][34]\\)000 / __\\1000__ /g\n\
-\ts/ _*host_mips / __host_mips__ /g\n\
-\ts/ _*i386 / __i386__ /g\n\
-\ts/ _*mips / __mips__ /g\n\
-\ts/ bsd4\\([0-9]\\) / __bsd4\\1__ /g\n\
-\ts/ is68k / __is68k__ /g\n\
-\ts/ m68k / __m68k__ /g\n\
-\ts/ m88k / __m88k__ /g\n\
-\ts/ mc680\\([0-9]\\)0 / __mc680\\10__ /g\n\
-\ts/ news\\([0-9]*\\) / __news\\1__ /g\n\
-\ts/ ns32000 / __ns32000__ /g\n\
-\ts/ pdp11 / __pdp11__ /g\n\
-\ts/ pyr / __pyr__ /g\n\
-\ts/ sel / __sel__ /g\n\
-\ts/ sony_news / __sony_news__ /g\n\
-\ts/ sparc / __sparc__ /g\n\
-\ts/ sun\\([a-z0-9]*\\) / __sun\\1__ /g\n\
-\ts/ tahoe / __tahoe__ /g\n\
-\ts/ tower\\([_0-9]*\\) / __tower\\1__ /g\n\
-\ts/ u370 / __u370__ /g\n\
-\ts/ u3b\\([0-9]*\\) / __u3b\\1__ /g\n\
-\ts/ unix / __unix__ /g\n\
-\ts/ vax / __vax__ /g\n\
-\ts/ \\([a-zA-Z0-9_][a-zA-Z0-9_]*\\) /\\1/g\n\
-\t}",
+const char* apzMachine_NamePatch[] = {"machine_name",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4696,7 +4658,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zMachine_NameName,    zMachine_NameList,
      apzMachine_NameMachs, (regex_t*)NULL,
-     MACHINE_NAME_TEST_CT, FD_MACH_ONLY,
+     MACHINE_NAME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aMachine_NameTests,   apzMachine_NamePatch },
 
   {  zMath_ExceptionName,    zMath_ExceptionList,

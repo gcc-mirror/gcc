@@ -77,7 +77,8 @@ typedef struct {
   _FT_( "IO_use",	    IO_use_fix ) \
   _FT_( "CTRL_use",	    CTRL_use_fix) \
   _FT_( "IO_defn",	    IO_defn_fix ) \
-  _FT_( "CTRL_defn",	    CTRL_defn_fix )
+  _FT_( "CTRL_defn",	    CTRL_defn_fix ) \
+  _FT_( "machine_name",	    machine_name_fix )
 
 
 #define FIX_PROC_HEAD( fix ) \
@@ -545,6 +546,104 @@ FIX_PROC_HEAD( IO_defn_fix )
 FIX_PROC_HEAD( CTRL_defn_fix )
 {
   fix_char_macro_defines (text, "CTRL");
+}
+
+
+/* Fix for machine name #ifdefs that are not in the namespace reserved
+   by the C standard.  They won't be defined if compiling with -ansi,
+   and the headers will break.  We go to some trouble to only change
+   #ifdefs where the macro is defined by GCC in non-ansi mode; this
+   minimizes the number of headers touched.  */
+
+#define SCRATCHSZ 64   /* hopefully long enough */
+
+FIX_PROC_HEAD( machine_name_fix )
+{
+  regmatch_t match[2];
+  char *line, *base, *limit, *p, *q;
+  regex_t *label_re, *name_re;
+  char scratch[SCRATCHSZ];
+  size_t len;
+
+  mn_get_regexps (&label_re, &name_re, "machine_name_fix");
+  scratch[0] = '_';
+  scratch[1] = '_';
+
+  for (base = text;
+       regexec (label_re, base, 2, match, 0) == 0;
+       base = limit)
+    {
+      base += match[0].rm_eo;
+      /* We're looking at an #if or #ifdef.  Scan forward for the
+	 next non-escaped newline.  */
+      line = limit = base;
+      do
+	{
+	  limit++;
+	  limit = strchr (limit, '\n');
+	  if (!limit)
+	    goto done;
+	}
+      while (limit[-1] == '\\');
+
+      /* If the 'name_pat' matches in between base and limit, we have
+	 a bogon.  It is not worth the hassle of excluding comments
+	 because comments on #if/#ifdef lines are rare, and strings on
+	 such lines are illegal.
+
+	 REG_NOTBOL means 'base' is not at the beginning of a line, which
+	 shouldn't matter since the name_re has no ^ anchor, but let's
+	 be accurate anyway.  */
+
+      for (;;)
+	{
+	again:
+	  if (base == limit)
+	    break;
+
+	  if (regexec (name_re, base, 1, match, REG_NOTBOL))
+	    goto done;  /* No remaining match in this file */
+
+	  /* Match; is it on the line?  */
+	  if (match[0].rm_eo > limit - base)
+	    break;
+
+	  p = base + match[0].rm_so;
+	  base += match[0].rm_eo;
+
+	  /* One more test: if on the same line we have the same string
+	     with the appropriate underscores, then leave it alone.
+	     We want exactly two leading and trailing underscores.  */
+	  if (*p == '_')
+	    {
+	      len = base - p - ((*base == '_') ? 2 : 1);
+	      q = p + 1;
+	    }
+	  else
+	    {
+	      len = base - p - ((*base == '_') ? 1 : 0);
+	      q = p;
+	    }
+	  if (len + 4 > SCRATCHSZ)
+	    abort ();
+	  memcpy (&scratch[2], q, len);
+	  len += 2;
+	  scratch[len++] = '_';
+	  scratch[len++] = '_';
+
+	  for (q = line; q <= limit - len; q++)
+	    if (*q == '_' && !strncmp (q, scratch, len))
+	      goto again;
+	  
+	  fwrite (text, 1, p - text, stdout);
+	  fwrite (scratch, 1, len, stdout);
+
+	  text = base;
+	}
+    }
+ done:
+  fputs (text, stdout);
+  free (scratch);
 }
 
 
