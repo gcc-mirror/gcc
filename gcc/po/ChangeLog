@@ -1,3 +1,7 @@
+2004-05-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.pot: Regenerate.
+
 2004-03-18  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* be.po, da.po, el.po, es.po, ja.po, nl.po, sv.po, tr.po: Update.
