@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000 Free Software Foundation, Inc. 
+   2000, 2001 Free Software Foundation, Inc. 
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -4315,6 +4315,7 @@ alpha_va_arg (valist, type)
   tree t;
   tree offset_field, base_field, addr_tree, addend;
   tree wide_type, wide_ofs;
+  int indirect = 0;
 
   if (TARGET_OPEN_VMS)
     return std_expand_builtin_va_arg (valist, type);
@@ -4333,7 +4334,13 @@ alpha_va_arg (valist, type)
   wide_ofs = save_expr (build1 (CONVERT_EXPR, wide_type, offset_field));
 
   addend = wide_ofs;
-  if (FLOAT_TYPE_P (type))
+
+  if (TYPE_MODE (type) == TFmode || TYPE_MODE (type) == TCmode)
+    {
+      indirect = 1;
+      tsize = UNITS_PER_WORD;
+    }
+  else if (FLOAT_TYPE_P (type))
     {
       tree fpaddend, cond;
 
@@ -4358,6 +4365,12 @@ alpha_va_arg (valist, type)
 		    offset_field, build_int_2 (tsize, 0)));
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  if (indirect)
+    {
+      addr = force_reg (Pmode, addr);
+      addr = gen_rtx_MEM (Pmode, addr);
+    }
 
   return addr;
 }
