@@ -1729,7 +1729,7 @@ i960_alignment (size, align)
 /* Modes for quad-float quantities.  */
 #define TF_MODES (DF_MODES | (1 << (int) TFmode) | (1 << (int) DCmode))
 
-short hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] = {
+unsigned int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] = {
   T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, D_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,

@@ -448,7 +448,7 @@ main (argc, argv)
       {
 	char *q = p;
 	while (*q && *q != ' ') q++;
-	if (*p == '-' && (p[1] == 'm' || p[1] == 'f'))
+	if (*p == '-' && p[1] == 'm')
 	  num_c_args++;
 
 	if (*q) q++;
@@ -965,14 +965,14 @@ write_c_file (stream, name)
 
   fprintf (stream, "typedef void entry_pt();\n\n");
     
-  write_list_with_asm (stream, "entry_pt ", constructors.first);
+  write_list_with_asm (stream, "extern entry_pt ", constructors.first);
     
   fprintf (stream, "\nentry_pt * __CTOR_LIST__[] = {\n");
   fprintf (stream, "\t(entry_pt *) %d,\n", constructors.number);
   write_list (stream, "\t", constructors.first);
   fprintf (stream, "\t0\n};\n\n");
 
-  write_list_with_asm (stream, "entry_pt ", destructors.first);
+  write_list_with_asm (stream, "extern entry_pt ", destructors.first);
 
   fprintf (stream, "\nentry_pt * __DTOR_LIST__[] = {\n");
   fprintf (stream, "\t(entry_pt *) %d,\n", destructors.number);
@@ -1136,20 +1136,22 @@ scan_prog_file (prog_name, which_pass)
 #ifdef OBJECT_FORMAT_COFF
 
 #if defined(EXTENDED_COFF)
-#   define GCC_SYMBOLS(X) (SYMHEADER(X).isymMax+SYMHEADER(X).iextMax)
-#   define GCC_SYMENT SYMR
-#   define GCC_OK_SYMBOL(X) ((X).st == stProc && (X).sc == scText)
-#   define GCC_SYMINC(X) (1)
-#   define GCC_SYMZERO(X) (SYMHEADER(X).isymMax)
+#   define GCC_SYMBOLS(X)	(SYMHEADER(X).isymMax + SYMHEADER(X).iextMax)
+#   define GCC_SYMENT		SYMR
+#   define GCC_OK_SYMBOL(X)	((X).st == stProc && (X).sc == scText)
+#   define GCC_SYMINC(X)	(1)
+#   define GCC_SYMZERO(X)	(SYMHEADER(X).isymMax)
+#   define GCC_CHECK_HDR(X)	(PSYMTAB(X) != 0)
 #else
-#   define GCC_SYMBOLS(X) (HEADER(ldptr).f_nsyms)
-#   define GCC_SYMENT SYMENT
+#   define GCC_SYMBOLS(X)	(HEADER(ldptr).f_nsyms)
+#   define GCC_SYMENT		SYMENT
 #   define GCC_OK_SYMBOL(X) \
      (((X).n_sclass == C_EXT) && \
         (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) || \
          ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT)))
-#   define GCC_SYMINC(X) ((X).n_numaux+1)
-#   define GCC_SYMZERO(X) 0
+#   define GCC_SYMINC(X)	((X).n_numaux+1)
+#   define GCC_SYMZERO(X)	0
+#   define GCC_CHECK_HDR(X)	(1)
 #endif
 
 extern char *ldgetname ();
@@ -1180,54 +1182,57 @@ scan_prog_file (prog_name, which_pass)
   if (!ISCOFF (HEADER(ldptr).f_magic))
     fatal ("%s: not a COFF file", prog_name);
 
-  sym_count = GCC_SYMBOLS (ldptr);
-  sym_index = GCC_SYMZERO (ldptr);
-  while (sym_index < sym_count)
+  if (GCC_CHECK_HDR (ldptr))
     {
-      GCC_SYMENT symbol;
-
-      if (ldtbread (ldptr, sym_index, &symbol) <= 0)
-	break;
-      sym_index += GCC_SYMINC (symbol);
-
-      if (GCC_OK_SYMBOL (symbol))
+      sym_count = GCC_SYMBOLS (ldptr);
+      sym_index = GCC_SYMZERO (ldptr);
+      while (sym_index < sym_count)
 	{
-	  char *name;
+	  GCC_SYMENT symbol;
 
-	  if ((name = ldgetname (ldptr, &symbol)) == NULL)
-	    continue;		/* should never happen */
+	  if (ldtbread (ldptr, sym_index, &symbol) <= 0)
+	    break;
+	  sym_index += GCC_SYMINC (symbol);
+
+	  if (GCC_OK_SYMBOL (symbol))
+	    {
+	      char *name;
+
+	      if ((name = ldgetname (ldptr, &symbol)) == NULL)
+		continue;		/* should never happen */
 
 #ifdef _AIX
-	  /* All AIX function names begin with a dot. */
-	  if (*name++ != '.')
-	    continue;
+	      /* All AIX function names begin with a dot. */
+	      if (*name++ != '.')
+		continue;
 #endif
 
-	  switch (is_ctor_dtor (name))
-	    {
-	    case 1:
-	      add_to_list (&constructors, name);
-	      break;
+	      switch (is_ctor_dtor (name))
+		{
+		case 1:
+		  add_to_list (&constructors, name);
+		  break;
 
-	    case 2:
-	      add_to_list (&destructors, name);
-	      break;
+		case 2:
+		  add_to_list (&destructors, name);
+		  break;
 
-	    default:		/* not a constructor or destructor */
-	      continue;
-	    }
+		default:		/* not a constructor or destructor */
+		  continue;
+		}
 
 #if !defined(EXTENDED_COFF)
-	  if (debug)
-	    fprintf (stderr, "\tsec=%d class=%d type=%s%o %s\n",
-		     symbol.n_scnum, symbol.n_sclass,
-		     (symbol.n_type ? "0" : ""), symbol.n_type,
-		     name);
+	      if (debug)
+		fprintf (stderr, "\tsec=%d class=%d type=%s%o %s\n",
+			 symbol.n_scnum, symbol.n_sclass,
+			 (symbol.n_type ? "0" : ""), symbol.n_type,
+			 name);
 #else
-	  if (debug)
-	    fprintf (stderr, "\tiss = %5d, value = %5d, index = %5d, name = %s\n",
-		     symbol.iss, symbol.value, symbol.index, name);
+	      if (debug)
+		fprintf (stderr, "\tiss = %5d, value = %5d, index = %5d, name = %s\n",
+			 symbol.iss, symbol.value, symbol.index, name);
 #endif
+	    }
 	}
     }
 
