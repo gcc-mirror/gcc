@@ -1460,19 +1460,26 @@ reload (first, global, dumpfile)
       /* If we have caller-saves, set up the save areas and see if caller-save
 	 will need a spill register.  */
 
-      if (caller_save_needed
-	  && ! setup_save_areas (&something_changed)
-	  && caller_save_spill_class  == NO_REGS)
+      if (caller_save_needed)
 	{
-	  /* The class we will need depends on whether the machine
-	     supports the sum of two registers for an address; see
-	     find_address_reloads for details.  */
+	  /* Set the offsets for setup_save_areas.  */
+	  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
+	       ep++)
+	    ep->previous_offset = ep->max_offset;
 
-	  caller_save_spill_class
-	    = double_reg_address_ok ? INDEX_REG_CLASS : BASE_REG_CLASS;
-	  caller_save_group_size
-	    = CLASS_MAX_NREGS (caller_save_spill_class, Pmode);
-	  something_changed = 1;
+	  if ( ! setup_save_areas (&something_changed)
+	      && caller_save_spill_class  == NO_REGS)
+	    {
+	      /* The class we will need depends on whether the machine
+		 supports the sum of two registers for an address; see
+	      find_address_reloads for details.  */
+
+	      caller_save_spill_class
+		= double_reg_address_ok ? INDEX_REG_CLASS : BASE_REG_CLASS;
+	      caller_save_group_size
+		= CLASS_MAX_NREGS (caller_save_spill_class, Pmode);
+	      something_changed = 1;
+	    }
 	}
 
       /* See if anything that happened changes which eliminations are valid.
