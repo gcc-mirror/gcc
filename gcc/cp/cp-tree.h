@@ -3762,7 +3762,6 @@ extern void clone_function_decl                 PARAMS ((tree, int));
 
 /* decl.c */
 /* resume_binding_level */
-extern void set_identifier_local_value		PARAMS ((tree, tree));
 extern int global_bindings_p			PARAMS ((void));
 extern int toplevel_bindings_p			PARAMS ((void));
 extern int namespace_bindings_p			PARAMS ((void));
