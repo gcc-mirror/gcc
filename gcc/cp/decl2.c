@@ -1443,14 +1443,14 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	}
     }
 
-  /* The corresponding pop_obstacks is in finish_decl.  */
+  /* The corresponding pop_obstacks is in cp_finish_decl.  */
   push_obstacks_nochange ();
 
   if (TREE_CODE (value) == VAR_DECL)
     {
       /* We cannot call pushdecl here, because that would
 	 fill in the value of our TREE_CHAIN.  Instead, we
-	 modify finish_decl to do the right thing, namely, to
+	 modify cp_finish_decl to do the right thing, namely, to
 	 put this decl out straight away.  */
       if (TREE_PUBLIC (value))
 	{
@@ -1482,7 +1482,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
 
-      finish_decl (value, init, asmspec_tree, 1, flags);
+      cp_finish_decl (value, init, asmspec_tree, 1, flags);
       pushdecl_class_level (value);
       return value;
     }
@@ -1497,7 +1497,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	}
       if (DECL_INITIAL (value) == error_mark_node)
 	init = error_mark_node;
-      finish_decl (value, init, asmspec_tree, 1, flags);
+      cp_finish_decl (value, init, asmspec_tree, 1, flags);
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
       return value;
@@ -1519,7 +1519,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	  DECL_RTL (value) = NULL_RTX;
 	  DECL_ASSEMBLER_NAME (value) = get_identifier (asmspec);
 	}
-      finish_decl (value, init, asmspec_tree, 1, flags);
+      cp_finish_decl (value, init, asmspec_tree, 1, flags);
 
       /* Pass friends back this way.  */
       if (DECL_FRIEND_P (value))
@@ -1580,7 +1580,7 @@ grokbitfield (declarator, declspecs, width)
       cp_error ("static member `%D' cannot be a bitfield", value);
       return NULL_TREE;
     }
-  finish_decl (value, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (value, NULL_TREE, NULL_TREE, 0, 0);
 
   if (width != error_mark_node)
     {
@@ -1772,7 +1772,7 @@ groktypefield (declspecs, parmlist)
       return void_type_node;
     }
 
-  finish_decl (decl, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (decl, NULL_TREE, NULL_TREE, 0, 0);
 
   /* If this declaration is common to another declaration
      complain about such redundancy, and return NULL_TREE
@@ -2331,7 +2331,7 @@ finish_table (name, type, init, publicp)
 	  DECL_INITIAL (empty_table) = init;
 	  asmspec = build_string (IDENTIFIER_LENGTH (DECL_NAME (empty_table)),
 				  IDENTIFIER_POINTER (DECL_NAME (empty_table)));
-	  finish_decl (empty_table, NULL_TREE, asmspec, 0, 0);
+	  cp_finish_decl (empty_table, NULL_TREE, asmspec, 0, 0);
 	}
       is_empty = 1;
     }
@@ -2369,7 +2369,7 @@ finish_table (name, type, init, publicp)
 			      IDENTIFIER_POINTER (DECL_NAME (empty_table)));
     }
 
-  finish_decl (decl, NULL_TREE, asmspec, 0, 0);
+  cp_finish_decl (decl, NULL_TREE, asmspec, 0, 0);
   return decl;
 }
 

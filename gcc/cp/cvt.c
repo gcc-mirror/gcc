@@ -598,7 +598,7 @@ build_up_reference (type, arg, flags, checkconst)
 	      /* Give this new temp some rtl and initialize it.  */
 	      DECL_INITIAL (temp) = targ;
 	      TREE_STATIC (temp) = 1;
-	      finish_decl (temp, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+	      cp_finish_decl (temp, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
 	      /* Do this after declaring it static.  */
 	      rval = build_unary_op (ADDR_EXPR, temp, 0);
 	      TREE_TYPE (rval) = type;
@@ -1319,7 +1319,7 @@ cp_convert (type, expr, convtype, flags)
 	  sig_ptr = get_temp_name (type, 1);
 	  DECL_INITIAL (sig_ptr) = constructor;
 	  CLEAR_SIGNATURE (sig_ty);
-	  finish_decl (sig_ptr, constructor, NULL_TREE, 0, 0);
+	  cp_finish_decl (sig_ptr, constructor, NULL_TREE, 0, 0);
 	  SET_SIGNATURE (sig_ty);
 	  TREE_READONLY (sig_ptr) = 1;
 

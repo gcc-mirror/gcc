@@ -1,5 +1,5 @@
 /* Functions dealing with signatures and signature pointers/references.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995 Free Software Foundation, Inc.
    Contributed by Gerald Baumgartner (gb@cs.purdue.edu)
 
 This file is part of GNU CC.
@@ -650,7 +650,7 @@ build_signature_table_constructor (sig_ty, rhs)
    as initialization expression, we don't need a new signature table
    variable and just hand back the init expression.
 
-   The declaration processing is done by hand instead of using `finish_decl'
+   The declaration processing is done by hand instead of using `cp_finish_decl'
    so that we can make signature pointers global variables instead of
    static ones.  */
 

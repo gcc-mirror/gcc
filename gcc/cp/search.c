@@ -2651,7 +2651,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, t, vbase_offsets)
 	      TREE_READONLY (nvtbl) = 0;
 	      nvtbl = pushdecl (nvtbl);
 	      init = NULL_TREE;
-	      finish_decl (nvtbl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+	      cp_finish_decl (nvtbl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
 	      DECL_VIRTUAL_P (nvtbl) = 1;
 	      DECL_CONTEXT (nvtbl) = t;
 	      init = build (MODIFY_EXPR, TREE_TYPE (nvtbl),
