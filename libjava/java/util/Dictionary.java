@@ -1,6 +1,6 @@
 /* Dictionary.java -- an abstract (and essentially worthless) 
    class which is Hashtable's superclass
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,18 +47,21 @@ package java.util;
  * People at Javasoft are probably embarrassed by it.  At this point,
  * it might as well be an interface rather than a class, but it remains
  * this poor, laughable skeleton for the sake of backwards compatibility.
- * At any rate, this was what came before the <pre>Map</pre> interface 
+ * At any rate, this was what came before the {@link Map} interface 
  * in the Collections framework.
  *
  * @author Jon Zeppieri
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Map
  * @see Hashtable
  * @since 1.0
  * @status updated to 1.4
  */
-public abstract class Dictionary extends Object
+public abstract class Dictionary
 {
+  // WARNING: Dictionary is a CORE class in the bootstrap cycle. See the
+  // comments in vm/reference/java/lang/Runtime for implications of this fact.
+
   /**
    * Sole constructor (often called implicitly).
    */
@@ -130,4 +133,4 @@ public abstract class Dictionary extends Object
    * @return the number of keys in the Dictionary
    */
   public abstract int size();
-}
+} // class Dictionary

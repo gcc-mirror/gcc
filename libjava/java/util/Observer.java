@@ -1,6 +1,5 @@
-/* Implemented when a class wants to be informed of changes in Observable
-   objects.
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* Observer.java -- an object that will be informed of changes in an Observable
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,21 +38,23 @@ exception statement from your version. */
 
 package java.util;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct
- */
-
 /**
  * Interface that is implemented when a class wants to be informed of changes
  * in Observable objects.
  *
- * @see java.util.Observable
  * @author Warren Levy <warrenl@cygnus.com>
- * @date August 25, 1998.
+ * @see Observable
+ * @status updated to 1.4
  */
 public interface Observer
 {
+  /**
+   * This method is called whenever the observable object changes, and has
+   * called <code>notifyObservers</code>. The Observable object can pass
+   * arbitrary information in the second parameter.
+   *
+   * @param observable the Observable object that changed
+   * @param arg arbitrary information, usually relating to the change
+   */
   public void update(Observable observable, Object arg);
 }

@@ -1,5 +1,6 @@
-/* java.util.TooManyListenersException
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* TooManyListenersException.java -- thrown when a unicast event can't accept
+   another Listener
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,26 +39,24 @@ exception statement from your version. */
 
 package java.util;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 /**
  * This exception is part of the java event model.  It is thrown if an
  * event listener is added via the addXyzEventListener method, but the
  * object doesn't support any more listeners, e.g. it only supports a
  * single event listener.
  *
+ * @author Jochen Hoenicke
+ * @author Warren Levy <warrenl@cygnus.com>
  * @see EventListener
  * @see EventObject
- * @author Jochen Hoenicke 
- * @author Warren Levy <warrenl@cygnus.com>
+ * @since 1.1
+ * @status updated to 1.4
  */
-
 public class TooManyListenersException extends Exception
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
   private static final long serialVersionUID = 5074640544770687831L;
 
   /**
@@ -69,7 +68,8 @@ public class TooManyListenersException extends Exception
 
   /**
    * Constructs a TooManyListenersException with a detail message.
-   * @param detail the detail message.
+   *
+   * @param detail the detail message
    */
   public TooManyListenersException(String detail)
   {

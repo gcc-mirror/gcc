@@ -1,5 +1,5 @@
-/* java.util.MissingResourceException
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* MissingResourceException.java -- thrown for a missing resource
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,38 +38,42 @@ exception statement from your version. */
 
 package java.util;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 /**
  * This exception is thrown when a resource is missing.
  *
- * @see ResourceBundle
  * @author Jochen Hoenicke
  * @author Warren Levy <warrenl@cygnus.com>
+ * @see ResourceBundle
+ * @since 1.1
+ * @status updated to 1.4
  */
 public class MissingResourceException extends RuntimeException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
   private static final long serialVersionUID = -4876345176062000401L;
 
   /**
    * The name of the resource bundle requested by user.
+   *
+   * @serial the class name of the resource bundle
    */
-  private String className;
+  private final String className;
 
   /**
    * The key of the resource in the bundle requested by user.
+   *
+   * @serial the name of the resouce
    */
-  private String key;
+  private final String key;
 
   /**
    * Creates a new exception, with the specified parameters.
-   * @param s the detail message.
-   * @param className the name of the resource bundle.
-   * @param key the key of the missing resource.
+   *
+   * @param s the detail message
+   * @param className the name of the resource bundle
+   * @param key the key of the missing resource
    */
   public MissingResourceException(String s, String className, String key)
   {
@@ -80,7 +84,8 @@ public class MissingResourceException extends RuntimeException
 
   /**
    * Gets the name of the resource bundle, for which a resource is missing.
-   * @return the name of the resource bundle.
+   *
+   * @return the name of the resource bundle
    */
   public String getClassName()
   {
@@ -90,7 +95,8 @@ public class MissingResourceException extends RuntimeException
   /**
    * Gets the key of the resource that is missing bundle, this is an empty
    * string if the whole resource bundle is missing.
-   * @return the name of the resource bundle.
+   *
+   * @return the name of the resource bundle
    */
   public String getKey()
   {

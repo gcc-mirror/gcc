@@ -160,7 +160,7 @@ public class ArrayList extends AbstractList
   /**
    * Guarantees that this list will have at least enough capacity to
    * hold minCapacity elements. This implementation will grow the list to
-   * max(current * 2, minCapacity) if (minCapacity > current). The JCL says
+   * max(current * 2, minCapacity) if (minCapacity &gt; current). The JCL says
    * explictly that "this method increases its capacity to minCap", while
    * the JDK 1.3 online docs specify that the list will grow to at least the
    * size specified.
