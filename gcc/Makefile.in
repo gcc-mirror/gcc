@@ -224,6 +224,8 @@ libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
 # Directory in which the compiler finds g++ includes.
 gxx_include_dir= @gxx_include_dir@
 # Directory in which the old g++ header files may be found.
+# The reason we use $(libdir)/g++-include rather than using libsubdir
+# is for compatibility with older versions of libg++.
 old_gxx_include_dir= $(libdir)/g++-include
 # Directory to search for site-specific includes.
 includedir = $(local_prefix)/include
@@ -1736,8 +1738,6 @@ $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
 
 cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
-# The reason we use $(libdir)/g++-include rather than using libsubdir
-# is for compatibility with the current version of libg++.
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \

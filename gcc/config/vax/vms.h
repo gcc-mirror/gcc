@@ -304,9 +304,9 @@ const_section ()					\
 
 /* The following definitions are used in libgcc2.c with the __main
    function.  The _SHR symbol is used when the sharable image library
-   for libg++ is used - this is picked up automatically by the linker
-   and this symbol points to the start of the __CTOR_LIST__ from libg++.
-   If libg++ is not being used, then __CTOR_LIST_SHR__ occurs just after
+   for the C++ library is used - this is picked up automatically by the linker
+   and this symbol points to the start of __CTOR_LIST__ from the C++ library.
+   If the C++ library is not used, then __CTOR_LIST_SHR__ occurs just after
    __CTOR_LIST__, and essentially points to the same list as __CTOR_LIST.  */
 
 #ifdef L__main
