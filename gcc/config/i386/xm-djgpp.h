@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #define DIR_SEPARATOR_2 '\\'
 
 /* Allow test for DOS drive names.  */
-#define HAVE_DOS_BASED_FILESYSTEM
+#define HAVE_DOS_BASED_FILE_SYSTEM
 
 #define LIBSTDCXX "-lstdcxx"
 
