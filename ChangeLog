@@ -1,3 +1,10 @@
+2001-07-22  Timothy Wall  <twall@redhat.com>
+
+	* ltcf-c.sh: Don't disable shared libraries for AIX5/IA64.  Preserve 
+	default settings if using GNU tools with that configuration.
+	* ltcf-cxx.sh: Ditto.
+	* ltcf-gcj.sh: Ditto.
+
 2001-07-21  Michael Chastain  <chastain@redhat.com>
 
 	* ltconfig: Set max_cmd_len to a maximum of 512Kb, as it seems some
