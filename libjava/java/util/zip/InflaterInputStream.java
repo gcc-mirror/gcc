@@ -79,7 +79,7 @@ public class InflaterInputStream extends FilterInputStream
    */
   public InflaterInputStream(InputStream in) 
   {
-    this(in, new Inflater(), 512);
+    this(in, new Inflater(), 4096);
   }
 
   /**
@@ -91,7 +91,7 @@ public class InflaterInputStream extends FilterInputStream
    */
   public InflaterInputStream(InputStream in, Inflater inf) 
   {
-    this(in, inf, 512);
+    this(in, inf, 4096);
   }
 
   /**
@@ -149,8 +149,10 @@ public class InflaterInputStream extends FilterInputStream
     
     len = in.read(buf, 0, buf.length);
 
-    if (len != -1)
-      inf.setInput(buf, 0, len);
+    if (len < 0)
+      throw new ZipException("Deflated stream ends early.");
+    
+    inf.setInput(buf, 0, len);
   }
 
   /**
@@ -170,7 +172,7 @@ public class InflaterInputStream extends FilterInputStream
       return -1;
 
     int count = 0;
-    while (count == 0)
+    for (;;)
       {
 	if (inf.needsInput())
 	  fill();
@@ -193,8 +195,10 @@ public class InflaterInputStream extends FilterInputStream
 	  {
 	    throw new ZipException(dfe.getMessage());
 	  }
+
+	if (count > 0)
+	  return count;
       }
-    return count;
   }
 
   /**
@@ -212,18 +216,18 @@ public class InflaterInputStream extends FilterInputStream
     if (n == 0)
       return 0;
 
-    int buflen = (int) Math.min(n, 1024);
+    int buflen = (int) Math.min(n, 2048);
     byte[] tmpbuf = new byte[buflen];
 
     long skipped = 0L;
     while (n > 0L)
       {
 	int numread = read(tmpbuf, 0, buflen);
-	if (numread == -1)
+	if (numread <= 0)
 	  break;
 	n -= numread;
 	skipped += numread;
-	buflen = (int) Math.min(n, 1024);
+	buflen = (int) Math.min(n, 2048);
       }
 
     return skipped;
