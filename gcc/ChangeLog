@@ -1,3 +1,8 @@
+Thu Apr 15 23:13:35 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h:  Tweaked comment formatting.
+	* config/c4x/c4x.c:  Likewise.
+
 Thu Apr 15 02:45:19 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
         * aclocal.m4 (GCC_FUNC_MKDIR_TAKES_ONE_ARG): Define.

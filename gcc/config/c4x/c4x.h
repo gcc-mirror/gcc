@@ -67,7 +67,7 @@
 %{mcpu=31:--architecture c3x} \
 %{mcpu=32:--architecture c3x}"
 
-/* Define C preprocessor options. */
+/* Define C preprocessor options.  */
 
 #define CPP_SPEC "\
 %{!m30:%{!m31:%{!m32:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=40:%{!mcpu=44:\
@@ -88,7 +88,7 @@
 %{!msmall:%{!mbig:-D_BIGMODEL }} \
 %{finline-functions:-D_INLINE }"
 
-/* Specify the startup file to link with. */
+/* Specify the startup file to link with.  */
 
 #define STARTFILE_SPEC "\
 %{!mmemparm:%{m30:%{msmall:crt0_3sr%O%s} %{!msmall:crt0_3br%O%s}}} \
@@ -256,7 +256,7 @@
 
 /* Default target switches */
 
-/* Play safe, not the fastest code. */
+/* Play safe, not the fastest code.  */
 #define TARGET_DEFAULT		ALIASES_FLAG | PARALLEL_PACK_FLAG \
 				| PARALLEL_MPY_FLAG | RPTB_FLAG
 
@@ -307,7 +307,7 @@ extern int target_flags;
 
 /* -mrpts            allows the use of the RPTS instruction irregardless.
    -mrpts=max-cycles will use RPTS if the number of cycles is constant
-   and less than max-cycles. */
+   and less than max-cycles.  */
 
 #define TARGET_RPTS_CYCLES(CYCLES) (TARGET_RPTS || (CYCLES) < c4x_rpts_cycles)
 
@@ -344,7 +344,7 @@ extern char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
    on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
    defined, is executed once just after all the command options have
-   been parsed. */
+   been parsed.  */
 
 extern void c4x_override_options ();
 #define OVERRIDE_OPTIONS c4x_override_options ()
@@ -364,7 +364,7 @@ extern void c4x_optimization_options ();
 #define WORDS_BIG_ENDIAN	0
 
 /* Technically, we are little endian, but we put the floats out as
-   whole longs and this makes GCC put them out in the right order. */
+   whole longs and this makes GCC put them out in the right order.  */
 
 #define FLOAT_WORDS_BIG_ENDIAN	1
 
@@ -372,7 +372,7 @@ extern void c4x_optimization_options ();
    all integral and floating point data types are stored in memory as
    32-bits (floating point types can be stored as 40-bits in the
    extended precision registers), so sizeof(char) = sizeof(short) =
-   sizeof(int) = sizeof(long) = sizeof(float) = sizeof(double) = 1. */
+   sizeof(int) = sizeof(long) = sizeof(float) = sizeof(double) = 1.  */
 
 #define BITS_PER_UNIT		32
 #define BITS_PER_WORD		32
@@ -393,7 +393,7 @@ extern void c4x_optimization_options ();
 #define BITS_PER_LO_SUM 16
 
 /* Use the internal floating point stuff in the compiler and not the
-   host floating point stuff. */
+   host floating point stuff.  */
 
 #define REAL_ARITHMETIC
 
@@ -535,7 +535,7 @@ extern void c4x_optimization_options ();
 #define IS_RC_OR_PSEUDO_REGNO(op)    (IS_RC_OR_PSEUDO_REG(REGNO(op)))
 
 /* 1 for registers that have pervasive standard uses
-   and are not available for the register allocator. */
+   and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
 {									\
@@ -564,7 +564,7 @@ extern void c4x_optimization_options ();
     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  1,  1,  1	\
 }
 
-/* Macro to conditionally modify fixed_regs/call_used_regs. */
+/* Macro to conditionally modify fixed_regs/call_used_regs.  */
 
 #define CONDITIONAL_REGISTER_USAGE			\
   {							\
@@ -627,7 +627,7 @@ extern void c4x_optimization_options ();
  ((CLASS) == INDEX_REGS)
 
 /* CCmode is wrongly defined in machmode.def  It should have a size
-   of UNITS_PER_WORD. */
+   of UNITS_PER_WORD.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)				\
 (((MODE) == CCmode || (MODE) == CC_NOOVmode) ? 1 : ((MODE) == HFmode) ? 1 : \
@@ -1013,7 +1013,7 @@ c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
 /* Basic Stack Layout  */
      
 /* The stack grows upward, stack frame grows upward, and args grow
-   downward. */
+   downward.  */
 
 #define STARTING_FRAME_OFFSET		C4X_LOC0
 #define FIRST_PARM_OFFSET(FNDECL)      (C4X_ARG0 + 1)
@@ -1128,7 +1128,7 @@ extern struct rtx_def *c4x_function_arg();
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
-/* 1 if N is a possible register number for function argument passing. */
+/* 1 if N is a possible register number for function argument passing.  */
 
 #define FUNCTION_ARG_REGNO_P(REGNO) \
 	(  (   ((REGNO) == AR2_REGNO)	/* AR2 */	\
@@ -1566,7 +1566,7 @@ extern struct rtx_def *c4x_function_arg();
 
 /* CC_NOOVmode should be used when the first operand is a PLUS, MINUS, NEG
    or MULT.
-   CCmode should be used when no special processing is needed. */
+   CCmode should be used when no special processing is needed.  */
 #define SELECT_CC_MODE(OP,X,Y) \
   ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS		\
     || GET_CODE (X) == NEG || GET_CODE (X) == MULT		\
@@ -1841,7 +1841,7 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
 
 #define	WORD_REGISTER_OPERATIONS
 
-/* Dividing the Output into Sections  */
+/* Dividing the Output into Sections.  */
 
 #define TEXT_SECTION_ASM_OP "\t.text"
 
@@ -1852,7 +1852,7 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
 #define CONST_SECTION_ASM_OP "\t.sect\t\".const\""
 
 /* Do not use .init section so __main will be called on startup. This will
-   call __do_global_ctors and prepare for __do_global_dtors on exit. */
+   call __do_global_ctors and prepare for __do_global_dtors on exit.  */
 
 #if 0
 #define INIT_SECTION_ASM_OP  "\t.sect\t\".init\""
@@ -1866,7 +1866,7 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
    READONLY_DATA_SECTION (giving it some code which switches to the
    readonly data section) or else you can #define the symbols
    EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, SELECT_SECTION, and
-   SELECT_RTX_SECTION.  We do both here just to be on the safe side. */
+   SELECT_RTX_SECTION.  We do both here just to be on the safe side.  */
 
 /* Define a few machine-specific details of the implementation of
    constructors.
@@ -1892,7 +1892,7 @@ do {								\
     (*--p) ();							\
 } while (0)
 
-/* The TI tooling uses atexit. */
+/* The TI tooling uses atexit.  */
 #define	HAVE_ATEXIT
 
 #undef EXTRA_SECTIONS
@@ -2067,7 +2067,7 @@ dtors_section ()							\
 /* We need to have a data section we can identify so that we can set
    the DP register back to a data pointer in the small memory model.
    This is only required for ISRs if we are paranoid that someone
-   may have quietly changed this register on the sly. */
+   may have quietly changed this register on the sly.  */
 
 #define ASM_IDENTIFY_GCC(FILE) \
     if (! TARGET_TI) fputs ("gcc2_compiled.:\n", FILE);	\
@@ -2283,7 +2283,7 @@ extern void c4x_print_operand ();
 #define PRINT_OPERAND(FILE, X, CODE) c4x_print_operand(FILE, X, CODE)
 
 /* Determine which codes are valid without a following integer.  These must
-   not be alphabetic. */
+   not be alphabetic.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '#')
 
@@ -2318,7 +2318,7 @@ extern int c4x_valid_type_attribute_p ();
 
 #define ASM_NO_SKIP_IN_TEXT 1
 
-/* I'm not sure about this one.  FIXME. */
+/* I'm not sure about this one.  FIXME.  */
 
 #define ASM_OUTPUT_ALIGN(FILE, LOG)	\
   if ((LOG) != 0)			\
@@ -2515,7 +2515,7 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 #define MOVE_MAX 1
 
 /* MOVE_RATIO is the number of move instructions that is better than a
-   block move. */
+   block move.  */
 
 #define MOVE_RATIO 2		/* Default value */
 
