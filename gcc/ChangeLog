@@ -4,6 +4,10 @@ Wed Feb 18 09:37:29 1998  Paul Eggert  <eggert@twinsun.com>
 
 Wed Feb 18 07:32:11 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* i960.c (emit_move_sequence): Handle unaligned stores to pseudos.
+	* i960.md (store_unaligned_[dt]i_reg): Handle register dest.
+	(store_unaligned_ti_reg): Likewise.
+
 	* m68k.h (MACHINE_STATE_{SAVE,RESTORE} [MOTOROLA]): Add %# and %/;
 	add : to make them into extended asms.
 
