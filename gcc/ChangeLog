@@ -1,3 +1,8 @@
+Sun Jan 31 00:52:37 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (mov patterns): Emit the assembler aliases mov and fmov
+	instead of bis and cpys.  Combine alternatives where possible.
+
 Sat Jan 30 23:14:13 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcov.c (fnotice): Add missing FILE* parameter.
