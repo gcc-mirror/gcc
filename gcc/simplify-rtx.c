@@ -99,7 +99,6 @@ Boston, MA 02111-1307, USA.  */
 static rtx simplify_plus_minus		PARAMS ((enum rtx_code,
 						 enum machine_mode, rtx, rtx));
 static void check_fold_consts		PARAMS ((PTR));
-static rtx avoid_constant_pool_reference PARAMS ((rtx));
 
 /* Make a binary operation by properly ordering the operands and 
    seeing if the expression folds.  */
@@ -138,7 +137,7 @@ simplify_gen_binary (code, mode, op0, op1)
 
 /* If X is a MEM referencing the constant pool, return the real value.
    Otherwise return X.  */
-static rtx
+rtx
 avoid_constant_pool_reference (x)
      rtx x;
 {

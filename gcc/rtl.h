@@ -1345,6 +1345,7 @@ extern rtx simplify_gen_subreg		PARAMS ((enum machine_mode,
 						 unsigned int));
 extern rtx simplify_replace_rtx		PARAMS ((rtx, rtx, rtx));
 extern rtx simplify_rtx			PARAMS ((rtx));
+extern rtx avoid_constant_pool_reference PARAMS ((rtx));
 
 /* In function.c  */
 extern rtx gen_mem_addressof		PARAMS ((rtx, union tree_node *));

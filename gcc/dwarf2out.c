@@ -8215,7 +8215,7 @@ add_const_value_attribute (die, rtl)
 	  {
 	    if ((unsigned long) val != (unsigned HOST_WIDE_INT) val)
 	      abort ();
-	    add_AT_int (die, DW_AT_const_value, (unsigned long) val);
+	    add_AT_unsigned (die, DW_AT_const_value, (unsigned long) val);
 	  }
       }
       break;
@@ -8473,6 +8473,11 @@ add_location_or_const_value_attribute (die, decl)
   rtl = rtl_for_decl_location (decl);
   if (rtl == NULL_RTX)
     return;
+
+  /* If we don't look past the constant pool, we risk emitting a
+     reference to a constant pool entry that isn't referenced from
+     code, and thus is not emitted.  */
+  rtl = avoid_constant_pool_reference (rtl);
 
   switch (GET_CODE (rtl))
     {
