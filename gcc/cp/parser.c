@@ -6518,8 +6518,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 {
   tree decl_specs = NULL_TREE;
   bool friend_p = false;
-  bool constructor_possible_p = true;
-
+  bool constructor_possible_p = !parser->in_declarator_p;
+  
   /* Assume no class or enumeration type is declared.  */
   *declares_class_or_enum = false;
 
