@@ -157,11 +157,6 @@ end ifc
 %token INTERFACE IMPLEMENTATION END SELECTOR DEFS ENCODE
 %token CLASSNAME PUBLIC PRIVATE PROTECTED PROTOCOL OBJECTNAME CLASS ALIAS
 
-/* Objective-C string constants in raw form.
-   yylval is an STRING_CST node.  */
-%token OBJC_STRING
-
-
 %type <code> unop
 %type <ttype> ENUM STRUCT UNION IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
 %type <ttype> BREAK CONTINUE RETURN GOTO ASM_KEYWORD SIZEOF TYPEOF ALIGNOF
@@ -231,7 +226,7 @@ ifobjc
 %type <ttype> selectorarg keywordnamelist keywordname objcencodeexpr
 %type <ttype> objc_string non_empty_protocolrefs protocolrefs identifier_list objcprotocolexpr
 
-%type <ttype> CLASSNAME OBJC_STRING OBJECTNAME
+%type <ttype> CLASSNAME OBJECTNAME
 end ifobjc
 
 %{
@@ -767,9 +762,10 @@ ifobjc
 /* Produces an STRING_CST with perhaps more STRING_CSTs chained
    onto it, which is to be read as an ObjC string object.  */
 objc_string:
-	  OBJC_STRING
-	| objc_string OBJC_STRING
-		{ $$ = chainon ($1, $2); }
+	  '@' STRING
+		{ $$ = $2; }
+	| objc_string '@' STRING
+		{ $$ = chainon ($1, $3); }
 	;
 end ifobjc
 
@@ -3407,19 +3403,25 @@ static const struct resword reswords[] =
   { "volatile",		RID_VOLATILE,	D_TRAD },
   { "while",		RID_WHILE,	0 },
 ifobjc
-  { "@class",		RID_AT_CLASS,		D_OBJC },
-  { "@compatibility_alias", RID_AT_ALIAS,	D_OBJC },
-  { "@defs",		RID_AT_DEFS,		D_OBJC },
-  { "@encode",		RID_AT_ENCODE,		D_OBJC },
-  { "@end",		RID_AT_END,		D_OBJC },
-  { "@implementation",	RID_AT_IMPLEMENTATION,	D_OBJC },
-  { "@interface",	RID_AT_INTERFACE,	D_OBJC },
-  { "@private",		RID_AT_PRIVATE,		D_OBJC },
-  { "@protected",	RID_AT_PROTECTED,	D_OBJC },
-  { "@protocol",	RID_AT_PROTOCOL,	D_OBJC },
-  { "@public",		RID_AT_PUBLIC,		D_OBJC },
-  { "@selector",	RID_AT_SELECTOR,	D_OBJC },
   { "id",		RID_ID,			D_OBJC },
+
+  /* These objc keywords are recognized only immediately after
+     an '@'.  */
+  { "class",		RID_AT_CLASS,		D_OBJC },
+  { "compatibility_alias", RID_AT_ALIAS,	D_OBJC },
+  { "defs",		RID_AT_DEFS,		D_OBJC },
+  { "encode",		RID_AT_ENCODE,		D_OBJC },
+  { "end",		RID_AT_END,		D_OBJC },
+  { "implementation",	RID_AT_IMPLEMENTATION,	D_OBJC },
+  { "interface",	RID_AT_INTERFACE,	D_OBJC },
+  { "private",		RID_AT_PRIVATE,		D_OBJC },
+  { "protected",	RID_AT_PROTECTED,	D_OBJC },
+  { "protocol",		RID_AT_PROTOCOL,	D_OBJC },
+  { "public",		RID_AT_PUBLIC,		D_OBJC },
+  { "selector",		RID_AT_SELECTOR,	D_OBJC },
+
+  /* These are recognized only in protocol-qualifier context
+     (see above) */
   { "bycopy",		RID_BYCOPY,		D_OBJC },
   { "byref",		RID_BYREF,		D_OBJC },
   { "in",		RID_IN,			D_OBJC },
@@ -3568,13 +3570,6 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_AT_IMPLEMENTATION */	IMPLEMENTATION
 };
 
-ifobjc
-/* Lookup table for ObjC keywords beginning with '@'.  Crude but
-   hopefully effective.  */
-#define N_at_reswords ((int) RID_AT_IMPLEMENTATION - (int)RID_AT_ENCODE + 1)
-static tree objc_rid_sans_at[N_at_reswords];
-end ifobjc
-
 static void
 init_reswords ()
 {
@@ -3602,16 +3597,6 @@ init_reswords ()
       C_RID_CODE (id) = reswords[i].rid;
       C_IS_RESERVED_WORD (id) = 1;
       ridpointers [(int) reswords[i].rid] = id;
-
-ifobjc
-      /* Enter ObjC @-prefixed keywords into the "sans" table
-	 _without_ their leading at-sign.  Again, all these
-	 identifiers are reachable by the get_identifer table, so it's
-	 not necessary to make objc_rid_sans_at a GC root.  */
-      if (reswords[i].word[0] == '@')
-	objc_rid_sans_at[(int) reswords[i].rid - (int) RID_AT_ENCODE]
-	  = get_identifier (reswords[i].word + 1);
-end ifobjc
     }
 }
 
@@ -3680,8 +3665,8 @@ yylexname ()
       enum rid rid_code = C_RID_CODE (yylval.ttype);
 
 ifobjc
-      if (!((unsigned int) rid_code - (unsigned int) RID_FIRST_PQ < 6)
-	  || objc_pq_context)
+      if (!OBJC_IS_AT_KEYWORD (rid_code)
+	  && (!OBJC_IS_PQ_KEYWORD (rid_code) || objc_pq_context))
 end ifobjc
       {
 	int yycode = rid_to_yy[(int) rid_code];
@@ -3730,9 +3715,6 @@ _yylex ()
 {
  get_next:
   last_token = c_lex (&yylval.ttype);
-ifobjc
- reconsider:
-end ifobjc
   switch (last_token)
     {
     case CPP_EQ:					return '=';
@@ -3809,23 +3791,27 @@ end ifobjc
 	 token special significance.  */
     case CPP_ATSIGN:
 ifobjc
-      last_token = c_lex (&yylval.ttype);
-      if (last_token == CPP_STRING)
-	return OBJC_STRING;
-      else if (last_token == CPP_NAME)
-	{
-	  int i;
-	  for (i = 0; i < N_at_reswords; i++)
-	    if (objc_rid_sans_at[i] == yylval.ttype)
-	      {
-		int rid_code = i + (int) RID_AT_ENCODE;
-		yylval.ttype = ridpointers[rid_code];
-		return rid_to_yy[rid_code];
-	      }
-	}
-      error ("syntax error at '@' token");
-      goto reconsider;
+      {
+	tree after_at;
+	enum cpp_ttype after_at_type;
+
+	cpp_start_lookahead (parse_in);
+	after_at_type = c_lex (&after_at);
+
+	if (after_at_type == CPP_NAME
+	    && C_IS_RESERVED_WORD (after_at)
+	    && OBJC_IS_AT_KEYWORD (C_RID_CODE (after_at)))
+	  {
+	    cpp_stop_lookahead (parse_in, 1);  /* accept this token */
+	    yylval.ttype = after_at;
+	    last_token = after_at_type;
+	    return rid_to_yy [(int) C_RID_CODE (after_at)];
+	  }
+	cpp_stop_lookahead (parse_in, 0);  /* put back this token */
+	return '@';
+      }
 end ifobjc
+
       /* These tokens are C++ specific (and will not be generated
          in C mode, but let's be cautious).  */
     case CPP_SCOPE:

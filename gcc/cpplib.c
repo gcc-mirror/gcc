@@ -438,14 +438,17 @@ lex_macro_node (pfile)
      cpp_reader *pfile;
 {
   cpp_token token;
+  cpp_hashnode *node;
 
   /* Lex the macro name directly.  */
   _cpp_lex_token (pfile, &token);
 
   /* The token immediately after #define must be an identifier.  That
-     identifier is not allowed to be "defined".  See predefined macro
-     names (6.10.8.4).  In C++, it is not allowed to be any of the
-     <iso646.h> macro names (which are keywords in C++) either.  */
+     identifier may not be "defined", per C99 6.10.8p4.
+     In C++, it may not be any of the "named operators" either,
+     per C++98 [lex.digraph], [lex.key].
+     Finally, the identifier may not have been poisoned.  (In that case
+     the lexer has issued the error message for us.)  */
 
   if (token.type != CPP_NAME)
     {
@@ -454,25 +457,26 @@ lex_macro_node (pfile)
 		   pfile->directive->name);
       else if (token.flags & NAMED_OP)
 	cpp_error (pfile,
-		   "\"%s\" cannot be used as a macro name as it is an operator in C++",
+	   "\"%s\" cannot be used as a macro name as it is an operator in C++",
 		   NODE_NAME (token.val.node));
       else
 	cpp_error (pfile, "macro names must be identifiers");
+
+      return 0;
     }
-  else
+
+  node = token.val.node;
+  if (node->flags & NODE_POISONED)
+    return 0;
+
+  if (node == pfile->spec_nodes.n_defined)
     {
-      cpp_hashnode *node = token.val.node;
-
-      /* In Objective C, some keywords begin with '@', but general
-	 identifiers do not, and you're not allowed to #define them.  */
-      if (node == pfile->spec_nodes.n_defined || NODE_NAME (node)[0] == '@')
-	cpp_error (pfile, "\"%s\" cannot be used as a macro name",
-		   NODE_NAME (node));
-      else if (!(node->flags & NODE_POISONED))
-	return node;
+      cpp_error (pfile, "\"%s\" cannot be used as a macro name",
+		 NODE_NAME (node));
+      return 0;
     }
 
-  return 0;
+  return node;
 }
 
 /* Process a #define directive.  Most work is done in cppmacro.c.  */
