@@ -2880,7 +2880,7 @@ hfa_element_mode (type, nested)
 	return VOIDmode;
 
     case ARRAY_TYPE:
-      return TYPE_MODE (TREE_TYPE (type));
+      return hfa_element_mode (TREE_TYPE (type), 1);
 
     case RECORD_TYPE:
     case UNION_TYPE:
