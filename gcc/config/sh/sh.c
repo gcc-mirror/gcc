@@ -1879,7 +1879,10 @@ calc_live_regs (count_ptr, live_regs_mask2)
 	{
 	  /* Need to save all the regs ever live.  */
 	  if ((regs_ever_live[reg]
-	       || (call_used_regs[reg] && regs_ever_live[PR_REG]))
+	       || (call_used_regs[reg] && ! fixed_regs[reg]
+		   && regs_ever_live[PR_REG])
+	       || reg == MACH_REG
+	       || reg == MACL_REG)
 	      && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	      && reg != T_REG && reg != GBR_REG)
 	    {
