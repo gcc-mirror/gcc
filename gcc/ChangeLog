@@ -1,3 +1,8 @@
+2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_tiny_constant_address_p): Use a
+	switch statement instead of a chain of if statements.
+
 2004-01-26  Jeff Law  <law@redhat.com>
 
 	* doc/contrib.texi: Minor cleanup for Paolo Carlini's entry.  Add
