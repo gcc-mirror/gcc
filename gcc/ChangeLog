@@ -1,3 +1,11 @@
+2001-06-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/mips.h (CPP_SPEC): Simplify .s/.S handling.
+	Don't define _LANGUAGE_C and variants for .cpp/.cp/.c++ files.
+	Move definition of _LANGUAGE_C_PLUS_PLUS ...
+	(CPLUSPLUS_CPP_SPEC): ... here.
+	Fixes PRs c++/3047, target/441.
+
 2001-06-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi2html (MAKEINFO): Keep value if set already.
