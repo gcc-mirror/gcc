@@ -56,7 +56,7 @@ modename="$progname"
 PROGRAM=ltmain.sh
 PACKAGE=libtool
 VERSION=1.4a
-TIMESTAMP=" (1.641.2.198 2001/03/20 05:47:28)"
+TIMESTAMP=" (1.641.2.226 2001/04/12 02:39:36)"
 
 default_mode=
 help="Try \`$progname --help' for more information."
@@ -136,13 +136,21 @@ do
         ;;
       esac
 
-      if grep "^### BEGIN LIBTOOL TAG CONFIG: $tagname$" < "$0" > /dev/null; then
-        taglist="$taglist $tagname"
-	# Evaluate the configuration.
-	eval "`sed -n -e '/^### BEGIN LIBTOOL TAG CONFIG: '$tagname'$/,/^### END LIBTOOL TAG CONFIG: '$tagname'$/p' < $0`"
-      else
-	echo "$progname: ignoring unknown tag $tagname" 1>&2
-      fi
+      case $tagname in
+      CC)
+	# Don't test for the "default" C tag, as we know, it's there, but
+	# not specially marked.
+	;;
+      *)
+        if grep "^### BEGIN LIBTOOL TAG CONFIG: $tagname$" < "$0" > /dev/null; then
+          taglist="$taglist $tagname"
+	  # Evaluate the configuration.
+	  eval "`sed -n -e '/^### BEGIN LIBTOOL TAG CONFIG: '$tagname'$/,/^### END LIBTOOL TAG CONFIG: '$tagname'$/p' < $0`"
+        else
+	  echo "$progname: ignoring unknown tag $tagname" 1>&2
+        fi
+        ;;
+      esac
       ;;
     *)
       eval "$prev=\$arg"
@@ -1205,9 +1213,10 @@ EOF
 	    # These systems don't actually have c library (as such)
 	    continue
 	    ;;
-	  *-*-rhapsody* | *-*-darwin*)
-	    # Darwin C library is in the System framework
+	  *-*-rhapsody* | *-*-darwin1.[012])
+	    # Rhapsody C library is in the System framework
 	    deplibs="$deplibs -framework System"
+	    continue
 	    ;;
 	  esac
 	elif test "$arg" = "-lm"; then
@@ -1216,9 +1225,10 @@ EOF
 	    # These systems don't actually have math library (as such)
 	    continue
 	    ;;
-	  *-*-rhapsody* | *-*-darwin*)
-	    # Darwin math library is in the System framework
+	  *-*-rhapsody* | *-*-darwin1.[012])
+	    # Rhapsody math library is in the System framework
 	    deplibs="$deplibs -framework System"
+	    continue
 	    ;;
 	  esac
 	fi
@@ -1244,10 +1254,6 @@ EOF
 	  $echo "$modename: warning: \`-no-install' is ignored for $host" 1>&2
 	  $echo "$modename: warning: assuming \`-no-fast-install' instead" 1>&2
 	  fast_install=no
-	  ;;
-	*-*-rhapsody* | *-*-darwin*)
-	  # Darwin C library is in the System framework
-	  deplibs="$deplibs -framework System"
 	  ;;
 	*)
 	  no_install=yes
@@ -1632,6 +1638,18 @@ EOF
 
     if test $linkmode = lib; then
       libs="$predeps $libs $compiler_lib_search_path $postdeps"
+
+      # Compute libraries that are listed more than once in $predeps
+      # $postdeps and mark them as special (i.e., whose duplicates are
+      # not to be eliminated).
+      pre_post_deps=
+      for pre_post_dep in $predeps $postdeps; do
+        case "$pre_post_deps " in
+	*" $pre_post_dep "*) specialdeplibs="$specialdeplibs $pre_post_deps" ;;
+	esac
+	pre_post_deps="$pre_post_deps $pre_post_dep"
+      done
+      pre_post_deps=
     fi
 
     deplibs=
@@ -2081,13 +2099,25 @@ EOF
 	    realname="$2"
 	    shift; shift
 	    libname=`eval \\$echo \"$libname_spec\"`
-	    if test -n "$soname_spec"; then
+	    # use dlname if we got it. it's perfectly good, no?
+	    if test -n "$dlname"; then
+	      soname="$dlname"
+	    elif test -n "$soname_spec"; then
+	      # bleh windows
+	      case $host in
+	      *cygwin*)
+		major=`expr $current - $age`
+		versuffix="-$major"
+		;;
+	      esac
 	      eval soname=\"$soname_spec\"
 	    else
 	      soname="$realname"
 	    fi
 
 	    # Make a new name for the extract_expsyms_cmds to use
+	    soroot="$soname"
+	    soname=`echo $soroot | sed -e 's/^.*\///'`
 	    newlib="libimp-`echo $soname | sed 's/^lib//;s/\.dll$//'`.a"
 
 	    # If the library has no export list, then create one now
@@ -2350,25 +2380,44 @@ EOF
 	  vars="compile_deplibs finalize_deplibs"
 	fi
 	for var in $vars dependency_libs; do
-	  # Make sure that $var contains only unique libraries
-	  # and add them in reverse order
+	  # Add libraries to $var in reverse order
 	  eval tmp_libs=\"\$$var\"
 	  new_libs=
 	  for deplib in $tmp_libs; do
+	    # FIXME: Pedantically, this is the right thing to do, so
+	    #        that some nasty dependency loop isn't accidentally
+	    #        broken:
+	    #new_libs="$deplib $new_libs"
+	    # Pragmatically, this seems to cause very few problems in
+	    # practice:
 	    case $deplib in
-	    -L*) new_libs="$deplib $new_libs" ;;
-	    *)
-	      case " $specialdeplibs " in
-	      *" $deplib "*) new_libs="$deplib $new_libs" ;;
-	      *)
-		case " $new_libs " in
-		*" $deplib "*) ;;
-		*) new_libs="$deplib $new_libs" ;;
-		esac
-		;;
-	      esac
-	      ;;
-	    esac
+            -L*) new_libs="$deplib $new_libs" ;;
+            *)
+	      # And here is the reason: when a library appears more
+	      # than once as an explicit dependence of a library, or
+	      # is implicitly linked in more than once by the
+	      # compiler, it is considered special, and multiple
+	      # occurrences thereof are not removed.  Compare this
+	      # with having the same library being listed as a
+	      # dependency of multiple other libraries: in this case,
+	      # we know (pedantically, we assume) the library does not
+	      # need to be listed more than once, so we keep only the
+	      # last copy.  This is not always right, but it is rare
+	      # enough that we require users that really mean to play
+	      # such unportable linking tricks to link the library
+	      # using -Wl,-lname, so that libtool does not consider it
+	      # for duplicate removal.
+              case " $specialdeplibs " in
+              *" $deplib "*) new_libs="$deplib $new_libs" ;;
+              *)
+                case " $new_libs " in
+                *" $deplib "*) ;;
+                *) new_libs="$deplib $new_libs" ;;
+                esac
+                ;;
+              esac
+              ;;
+            esac
 	  done
 	  tmp_libs=
 	  for deplib in $new_libs; do
@@ -2510,7 +2559,7 @@ EOF
 
 	# Check that each of the things are valid numbers.
 	case $current in
-	0 | [1-9] | [1-9][0-9]*) ;;
+	0 | [1-9] | [1-9][0-9] | [1-9][0-9][0-9]) ;;
 	*)
 	  $echo "$modename: CURRENT \`$current' is not a nonnegative integer" 1>&2
 	  $echo "$modename: \`$vinfo' is not valid version information" 1>&2
@@ -2519,7 +2568,7 @@ EOF
 	esac
 
 	case $revision in
-	0 | [1-9] | [1-9][0-9]*) ;;
+	0 | [1-9] | [1-9][0-9] | [1-9][0-9][0-9]) ;;
 	*)
 	  $echo "$modename: REVISION \`$revision' is not a nonnegative integer" 1>&2
 	  $echo "$modename: \`$vinfo' is not valid version information" 1>&2
@@ -2528,7 +2577,7 @@ EOF
 	esac
 
 	case $age in
-	0 | [1-9] | [1-9][0-9]*) ;;
+	0 | [1-9] | [1-9][0-9] | [1-9][0-9][0-9]) ;;
 	*)
 	  $echo "$modename: AGE \`$age' is not a nonnegative integer" 1>&2
 	  $echo "$modename: \`$vinfo' is not valid version information" 1>&2
@@ -2548,6 +2597,26 @@ EOF
 	verstring=
 	case $version_type in
 	none) ;;
+
+	darwin)
+	  # Like Linux, but with the current version available in
+	  # verstring for coding it into the library header
+	  major=.`expr $current - $age`
+	  versuffix="$major.$age.$revision"
+	  # Darwin ld doesn't like 0 for these options...
+	  minor_current=`expr $current + 1`
+	  verstring="-compatibility_version $minor_current -current_version $minor_current.$revision"
+	  ;;
+
+	freebsd-aout)
+	  major=".$current"
+	  versuffix=".$current.$revision";
+	  ;;
+
+	freebsd-elf)
+	  major=".$current"
+	  versuffix=".$current";
+	  ;;
 
 	irix)
 	  major=`expr $current - $age + 1`
@@ -2591,16 +2660,6 @@ EOF
 	sunos)
 	  major=".$current"
 	  versuffix=".$current.$revision"
-	  ;;
-
-	freebsd-aout)
-	  major=".$current"
-	  versuffix=".$current.$revision";
-	  ;;
-
-	freebsd-elf)
-	  major=".$current"
-	  versuffix=".$current";
 	  ;;
 
 	windows)
@@ -2724,6 +2783,10 @@ EOF
 	  case $host in
 	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2* | *-*-beos*)
 	    # these systems don't actually have a c library (as such)!
+	    ;;
+	  *-*-rhapsody* | *-*-darwin1.[012])
+	    # Rhapsody C library is in the System framework
+	    deplibs="$deplibs -framework System"
 	    ;;
 	  *)
  	    # Add libc to deplibs on all other systems if necessary.
@@ -2884,6 +2947,40 @@ EOF
 	    fi
 	  done # Gone through all deplibs.
 	  ;;
+	match_pattern*)
+	  set dummy $deplibs_check_method
+	  match_pattern_regex=`expr "$deplibs_check_method" : "$2 \(.*\)"`
+	  for a_deplib in $deplibs; do
+	    name="`expr $a_deplib : '-l\(.*\)'`"
+	    # If $name is empty we are operating on a -L argument.
+	    if test "$name" != "" -a "$name" != "0"; then
+	      libname=`eval \\$echo \"$libname_spec\"`
+	      for i in $lib_search_path $sys_lib_search_path $shlib_search_path; do
+		potential_libs=`ls $i/$libname[.-]* 2>/dev/null`
+		for potent_lib in $potential_libs; do
+		  if eval echo \"$potent_lib\" 2>/dev/null \
+		      | sed 10q \
+		      | egrep "$match_pattern_regex" > /dev/null; then
+		    newdeplibs="$newdeplibs $a_deplib"
+		    a_deplib=""
+		    break 2
+		  fi
+		done
+	      done
+	      if test -n "$a_deplib" ; then
+		droppeddeps=yes
+		echo
+		echo "*** Warning: This library needs some functionality provided by $a_deplib."
+		echo "*** I have the capability to make that library automatically link in when"
+		echo "*** you link to this library.  But I can only do this if you have a"
+		echo "*** shared version of the library, which you do not appear to have."
+	      fi
+	    else
+	      # Add a -L argument.
+	      newdeplibs="$newdeplibs $a_deplib"
+	    fi
+	  done # Gone through all deplibs.
+	  ;;
 	none | unknown | *)
 	  newdeplibs=""
 	  if $echo "X $deplibs" | $Xsed -e 's/ -lc$//' \
@@ -3024,6 +3121,9 @@ EOF
 	  eval soname=\"$soname_spec\"
 	else
 	  soname="$realname"
+	fi
+	if test x$dlname = x; then
+	  dlname=$soname
 	fi
 
 	lib="$output_objdir/$realname"
@@ -3434,6 +3534,9 @@ EOF
       ;;
 
     prog)
+      case $host in
+        *cygwin*) output=`echo $output | sed -e 's,.exe$,,;s,$,.exe,'` ;;
+      esac
       if test -n "$vinfo"; then
 	$echo "$modename: warning: \`-version-info' is ignored for programs" 1>&2
       fi
@@ -3877,6 +3980,11 @@ static const void *lt_preloaded_setup() {
 	case $output in
 	  *.exe) output=`echo $output|sed 's,.exe$,,'` ;;
 	esac
+	# test for cygwin because mv fails w/o .exe extensions
+	case $host in
+	  *cygwin*) exeext=.exe ;;
+	  *) exeext= ;;
+	esac
 	$rm $output
 	trap "$rm $output; exit 1" 1 2 15
 
@@ -3955,7 +4063,7 @@ else
 
 	if test "$fast_install" = yes; then
 	  echo >> $output "\
-  program=lt-'$outputname'
+  program=lt-'$outputname'$exeext
   progdir=\"\$thisdir/$objdir\"
 
   if test ! -f \"\$progdir/\$program\" || \\
@@ -4263,6 +4371,11 @@ fi\
 	    dlprefiles="$newdlprefiles"
 	  fi
 	  $rm $output
+	  # place dlname in correct position for cygwin
+	  tdlname=$dlname
+	  case $host,$output,$installed,$module,$dlname in
+	    *cygwin*,*lai,yes,no,*.dll) tdlname=../bin/$dlname ;;
+	  esac
 	  $echo > $output "\
 # $outputname - a libtool library file
 # Generated by $PROGRAM - GNU $PACKAGE $VERSION$TIMESTAMP
@@ -4271,7 +4384,7 @@ fi\
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname='$dlname'
+dlname='$tdlname'
 
 # Names of this library.
 library_names='$library_names'
@@ -4695,6 +4808,25 @@ relink_command=\"$relink_command\""
 	  fi
 	fi
 
+
+	# remove .exe since cygwin /usr/bin/install will append another
+	# one anyways
+	case $install_prog,$host in
+	*/usr/bin/install*,*cygwin*)
+	  case $file:$destfile in
+	  *.exe:*.exe)
+	    # this is ok
+	    ;;
+	  *.exe:*)
+	    destfile=$destfile.exe
+	    ;;
+	  *:*.exe)
+	    destfile=`echo $destfile | sed -e 's,.exe$,,'`
+	    ;;
+	  esac
+	  ;;
+	esac
+
 	$show "$install_prog$stripme $file $destfile"
 	$run eval "$install_prog\$stripme \$file \$destfile" || exit $?
 	test -n "$outputname" && ${rm}r "$tmpdir"
@@ -4786,7 +4918,7 @@ relink_command=\"$relink_command\""
     echo
     echo "If you ever happen to want to link against installed libraries"
     echo "in a given directory, LIBDIR, you must either use libtool, and"
-    echo "specify the full pathname of the library, or use \`-LLIBDIR'"
+    echo "specify the full pathname of the library, or use the \`-LLIBDIR'"
     echo "flag during linking and do at least one of the following:"
     if test -n "$shlibpath_var"; then
       echo "   - add LIBDIR to the \`$shlibpath_var' environment variable"
@@ -4962,6 +5094,8 @@ relink_command=\"$relink_command\""
     modename="$modename: $mode"
     rm="$nonopt"
     files=
+    rmforce=
+    exit_status=0
 
     # This variable tells wrapper scripts just to set variables rather
     # than running their programs.
@@ -4970,6 +5104,7 @@ relink_command=\"$relink_command\""
     for arg
     do
       case $arg in
+      -f) rm="$rm $arg"; rmforce=yes ;;
       -*) rm="$rm $arg" ;;
       *) files="$files $arg" ;;
       esac
@@ -5001,6 +5136,16 @@ relink_command=\"$relink_command\""
 	  *) rmdirs="$rmdirs $objdir" ;;
 	esac
       fi
+      
+      # Don't error if the file doesn't exist and rm -f was used.
+      if test -L "$file" >/dev/null 2>&1 || test -f "$file"; then
+        :
+      elif test -d "$file"; then
+        exit_status=1
+	continue
+      elif test "$rmforce" = yes; then
+        continue
+      fi
 
       rmfiles="$file"
 
@@ -5026,6 +5171,9 @@ relink_command=\"$relink_command\""
 		IFS="$save_ifs"
 		$show "$cmd"
 		$run eval "$cmd"
+		if test $? != 0 && test "$rmforce" != yes; then
+		  exit_status=1
+		fi
 	      done
 	      IFS="$save_ifs"
 	    fi
@@ -5038,6 +5186,9 @@ relink_command=\"$relink_command\""
 		IFS="$save_ifs"
 		$show "$cmd"
 		$run eval "$cmd"
+		if test $? != 0 && test "$rmforce" != yes; then
+		  exit_status=1
+		fi
 	      done
 	      IFS="$save_ifs"
 	    fi
@@ -5082,7 +5233,7 @@ relink_command=\"$relink_command\""
 	;;
       esac
       $show "$rm $rmfiles"
-      $run $rm $rmfiles
+      $run $rm $rmfiles || exit_status=1
     done
 
     # Try to remove the ${objdir}s in the directories where we deleted files
@@ -5093,7 +5244,7 @@ relink_command=\"$relink_command\""
       fi
     done
 
-    exit 0
+    exit $exit_status
     ;;
 
   "")
