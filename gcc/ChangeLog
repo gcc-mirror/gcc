@@ -1,3 +1,7 @@
+2005-02-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcse.c: Remove an obsolete comment.
+
 2005-02-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/extend.texi (Function Attributes) <Attribute const>: The
