@@ -3180,18 +3180,18 @@ install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
 	if [ x$(STMP_FIXINC) != x ] ; then \
 	  $(INSTALL_DATA) $(srcdir)/README-fixinc \
 	    $(DESTDIR)$(itoolsdir)/include/README ; \
-	  $(INSTALL_PROGRAM) fixinc.sh $(DESTDIR)$(itoolsdir)/fixinc.sh ; \
+	  $(INSTALL_SCRIPT) fixinc.sh $(DESTDIR)$(itoolsdir)/fixinc.sh ; \
 	  $(INSTALL_PROGRAM) fixinc/fixincl $(DESTDIR)$(itoolsdir)/fixincl ; \
 	  $(INSTALL_DATA) $(srcdir)/gsyslimits.h $(DESTDIR)$(itoolsdir)/gsyslimits.h ; \
 	else :; fi
 	if [ x$(STMP_FIXPROTO) != x ] ; then \
-	  $(INSTALL_PROGRAM) $(srcdir)/mkinstalldirs \
+	  $(INSTALL_SCRIPT) $(srcdir)/mkinstalldirs \
 		$(DESTDIR)$(itoolsdir)/mkinstalldirs ; \
-	  $(INSTALL_PROGRAM) $(srcdir)/fixproto $(DESTDIR)$(itoolsdir)/fixproto ; \
+	  $(INSTALL_SCRIPT) $(srcdir)/fixproto $(DESTDIR)$(itoolsdir)/fixproto ; \
 	  $(INSTALL_PROGRAM) fix-header$(build_exeext) \
 		$(DESTDIR)$(itoolsdir)/fix-header$(build_exeext) ; \
 	else :; fi
-	$(INSTALL_PROGRAM) mkheaders $(DESTDIR)$(itoolsdir)/mkheaders
+	$(INSTALL_SCRIPT) mkheaders $(DESTDIR)$(itoolsdir)/mkheaders
 	echo 'SYSTEM_HEADER_DIR="'"$(SYSTEM_HEADER_DIR)"'"' \
 		> $(DESTDIR)$(itoolsdir)/mkheaders.conf
 	echo 'OTHER_FIXINCLUDES_DIRS="$(OTHER_FIXINCLUDES_DIRS)"' \
