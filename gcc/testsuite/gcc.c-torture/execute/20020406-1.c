@@ -1,6 +1,8 @@
 // Origin: abbott@dima.unige.it
 // PR c/5120
 
+extern void * malloc (__SIZE_TYPE__);
+
 typedef unsigned int FFelem;
 
 FFelem FFmul(const FFelem x, const FFelem y)
