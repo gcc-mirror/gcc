@@ -6017,9 +6017,9 @@ tsubst (t, args, complain, in_decl)
 	return t;
 
       {
-	tree max = TREE_OPERAND (TYPE_MAX_VALUE (t), 0);
+	tree max, omax = TREE_OPERAND (TYPE_MAX_VALUE (t), 0);
 
-	max = tsubst_expr (max, args, complain, in_decl);
+	max = tsubst_expr (omax, args, complain, in_decl);
 	if (max == error_mark_node)
 	  return error_mark_node;
 
@@ -6032,7 +6032,13 @@ tsubst (t, args, complain, in_decl)
 	    return itype;
 	  }
 
-	if (integer_zerop (max) || INT_CST_LT (max, integer_zero_node))
+	if (integer_zerop (omax))
+	  {
+	    /* Still allow an explicit array of size zero.  */
+	    if (pedantic)
+	      pedwarn ("creating array with size zero");
+	  }
+	else if (integer_zerop (max) || INT_CST_LT (max, integer_zero_node))
 	  {
 	    /* [temp.deduct]
 
