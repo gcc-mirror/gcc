@@ -42,17 +42,21 @@
 
 #pragma GCC system_header
 
-#include <cstring> 	// For memmove, memset, memchr
-#include <bits/fpos.h> 		// For streampos
+#include <cstring>            // For memmove, memset, memchr
+#include <bits/fpos.h>        // For streampos
 
 namespace std 
 {
-  // 21.1.2
+  // 21.1
   /**
    *  @brief  Basis for explicit traits specializations.
    *
    *  @note  For any given actual character type, this definition is
    *  probably wrong.
+   *
+   *  See http://gcc.gnu.org/onlinedocs/libstdc++/21_strings/howto.html#5
+   *  for advice on how to make use of this class for "unusual" character
+   *  types.
   */
   template<class _CharT>
     struct char_traits
@@ -108,7 +112,7 @@ namespace std
     };
 
 
-  /// 21.1.4  char_traits specializations
+  /// 21.1.3.1  char_traits specializations
   template<>
     struct char_traits<char>
     {
@@ -178,6 +182,7 @@ namespace std
 
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+  /// 21.1.3.2  char_traits specializations
   template<>
     struct char_traits<wchar_t>
     {

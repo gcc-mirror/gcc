@@ -24,7 +24,7 @@
       <ul>
          <li><a href="17_intro/COPYING">License</a>
          - GPL v2 license terms
-	 <li><a href="abi.txt">ABI Policy and Guidelines</a> 
+         <li><a href="abi.txt">ABI Policy and Guidelines</a> 
          <li><a href="17_intro/BUGS">BUGS</a>
          <li><a href="17_intro/PROBLEMS">PROBLEMS</a>
          - target-specific known issues
@@ -84,121 +84,127 @@
 <br>
 <h2><a name="3">Chapter-Specific Documentation</a></h2>
 <p>Information, extensions, notes and advice on specific implementation 
-   capabilites and or liabilities broken down into chapter names based on the 
+   capabilites and/or liabilities broken down into chapter names based on the 
    C++ standard.
 </p>
-      <ul>
-         <li>Intro (Chapter 17)
-	 <ul>
-         <li><a href="17_intro/howto.html#1">Header files</a>
-         <li><a href="17_intro/howto.html#3">Using &lt;foo&gt; vs &lt;foo.h&gt;</a>
-         <li><a href="17_intro/howto.html#2">Multithreading</a>
-         <li><a href="17_intro/howto.html#4">Porting</a>
-         <li><a href="17_intro/howto.html#5">Implementation-specific behavior</a>
-         <li><a href="17_intro/howto.html#6">Using preprocessor macros to change behavior of the library</a>
-	 </ul>
+<!--
+  The list below is automatically generated.  To make changes in the text,
+  edit the appropriate HOWTO file and run "make" in this directory.  In
+  those files, you may reorder entries as you like, but DO NOT change the
+  "#number"s in anchors, for they are used elsewhere and in bookmarks.
+-->
+<!-- beginlist -->
+  <ul>
+   <li>Library Introduction (Chapter 17)</li>
+   <ul>
+     <li><a href="17_intro/howto.html#2">The Standard C++ header files</a></li>
+     <li><a href="17_intro/howto.html#3">The Standard C++ library and multithreading</a></li>
+     <li><a href="17_intro/howto.html#4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a></li>
+     <li><a href="17_intro/porting-howto.html">Porting HOWTO</a></li>
+     <li><a href="17_intro/howto.html#5">Behavior specific to libstdc++-v3</a></li>
+     <li><a href="17_intro/howto.html#6">Preprocessor macros controlling the library</a></li>
+   </ul>
 
-         <li>Library Support (Chapter 18)
-	 <ul>
-         <li><a href="18_support/howto.html#1">Types</a>
-         <li><a href="18_support/howto.html#2">Implementation properties</a>
-         <li><a href="18_support/howto.html#3">Start and Termination</a>
-         <li><a href="18_support/howto.html#4">Dynamic memory management</a>
-         <li><a href="18_support/howto.html#5">RTTI, the ABI, and demangling</a>
-	 </ul>
+   <li>Library Support (Chapter 18)</li>
+   <ul>
+     <li><a href="18_support/howto.html#1">Types</a></li>
+     <li><a href="18_support/howto.html#2">Implementation properties</a></li>
+     <li><a href="18_support/howto.html#3">Start and Termination</a></li>
+     <li><a href="18_support/howto.html#4">Dynamic memory management</a></li>
+     <li><a href="18_support/howto.html#5">RTTI, the ABI, and demangling</a></li>
+   </ul>
 
+   <li>Diagnostics (Chapter 19)</li>
+   <ul>
+     <li><a href="19_diagnostics/howto.html#1">Adding data to exceptions</a></li>
+     <li><a href="19_diagnostics/howto.html#2">Exception class hierarchy diagram</a></li>
+     <li><a href="19_diagnostics/howto.html#3">Concept checkers -- <strong>new and improved!</strong></a></li>
+     <li><a href="19_diagnostics/howto.html#4">Verbose <code>terminate</code></a></li>
+   </ul>
 
-         <li>Diagnostics (Chapter 19)
-	 <ul>
-         <li><a href="19_diagnostics/howto.html#1">Adding data to exceptions</a>
-         <li><a href="19_diagnostics/howto.html#2">Exception class hierarchy diagram</a>
-         <li><a href="19_diagnostics/howto.html#3">Concept checkers -- new and improved!</a>
-         <li><a href="19_diagnostics/howto.html#4">Verbose terminate</a>
-	 </ul>
+   <li>General Utilities (Chapter 20)</li>
+   <ul>
+     <li><a href="20_util/howto.html#1"><code>auto_ptr</code> is not omnipotent</a></li>
+     <li><a href="20_util/howto.html#2"><code>auto_ptr</code> inside container classes</a></li>
+     <li><a href="20_util/howto.html#3">Functors</a></li>
+     <li><a href="20_util/howto.html#4">Pairs</a></li>
+   </ul>
 
-         <li>Utilities (Chapter 20)
-	 <ul>
-         <li><a href="20_util/howto.html#1">auto_ptr is not omnipotent</a>
-         <li><a href="20_util/howto.html#1">auto_ptr inside container classes</a>
-         <li><a href="20_util/howto.html#1">Functors</a>
-         <li><a href="20_util/howto.html#1">Pairs</a>
-	 </ul>
+   <li>Strings (Chapter 21)</li>
+   <ul>
+     <li><a href="21_strings/howto.html#1">MFC's CString</a></li>
+     <li><a href="21_strings/howto.html#2">A case-insensitive string class</a></li>
+     <li><a href="21_strings/howto.html#3">Breaking a C++ string into tokens</a></li>
+     <li><a href="21_strings/howto.html#4">Simple transformations</a></li>
+     <li><a href="21_strings/howto.html#5">Making strings of arbitrary character types</a></li>
+   </ul>
 
+   <li>Localization (Chapter 22)</li>
+   <ul>
+     <li><a href="22_locale/howto.html#1">class locale</a></li>
+     <li><a href="22_locale/howto.html#2">class codecvt</a></li>
+     <li><a href="22_locale/howto.html#3">class ctype</a></li>
+     <li><a href="22_locale/howto.html#4">class messages</a></li>
+     <li><a href="22_locale/howto.html#5">Bjarne Stroustrup on Locales</a></li>
+     <li><a href="22_locale/howto.html#6">Nathan Myers on Locales   </a></li>
+     <li><a href="22_locale/howto.html#7">Correct Transformations</a></li>
+   </ul>
 
-         <li>Strings (Chapter 21)
-	 <ul>
-         <li><a href="21_strings/howto.html#1">MFC's CString</a>
-         <li><a href="21_strings/howto.html#2">A case-insensitive string class</a>
-         <li><a href="21_strings/howto.html#3">Breaking a C++ string into tokens</a>
-         <li><a href="21_strings/howto.html#4">Simple transformations</a>
-	 </ul>
+   <li>Containers (Chapter 23)</li>
+   <ul>
+     <li><a href="23_containers/howto.html#1">Making code unaware of the container/array difference</a></li>
+     <li><a href="23_containers/howto.html#2">Variable-sized bitmasks</a></li>
+     <li><a href="23_containers/howto.html#3">Containers and multithreading</a></li>
+     <li><a href="23_containers/howto.html#4">&quot;Hinting&quot; during insertion</a></li>
+     <li><a href="23_containers/howto.html#5">Bitmasks and string arguments</a></li>
+     <li><a href="23_containers/howto.html#6"><code>std::list::size()</code> is O(n)!</a></li>
+     <li><a href="23_containers/howto.html#7">Space overhead management for vectors</a></li>
+   </ul>
 
-         <li>Localization (Chapter 22)
-	 <ul>
-         <li><a href="22_locale/howto.html#1">Class locale</a>
-         <li><a href="22_locale/howto.html#2">Class codecvt</a>
-         <li><a href="22_locale/howto.html#3">Class ctype</a>
-         <li><a href="22_locale/howto.html#4">Class messages</a>
-         <li><a href="22_locale/howto.html#5">Bjarne Stroustrup on Locales</a>
-         <li><a href="22_locale/howto.html#6">Nathan Myers on Locales</a>
-         <li><a href="22_locale/howto.html#7">Correct Transformations </a>
-	 </ul>
+   <li>Iterators (Chapter 24)</li>
+   <ul>
+     <li><a href="24_iterators/howto.html#1">They ain't pointers!</a></li>
+     <li><a href="24_iterators/howto.html#2">It ends <em>where?</em></a></li>
+   </ul>
 
-         <li>Containers (Chapter 23)
-	 <ul>
-         <li><a href="23_containers/howto.html#1">Making code unaware of the container/array difference</a>
-         <li><a href="23_containers/howto.html#2">Variable-sized bitmasks</a>
-         <li><a href="23_containers/howto.html#3">Containers and multithreading</a>
-         <li><a href="23_containers/howto.html#4">&quot;Hinting&quot; during insertion</a>
-         <li><a href="23_containers/howto.html#5">Bitmasks and string arguments</a>
-         <li><a href="23_containers/howto.html#6"><code>std::list::size()</code> is O(n)!</a>
-         <li><a href="23_containers/howto.html#7">Space overhead management for vectors </a>
-	 </ul>
+   <li>Algorithms (Chapter 25)</li>
+   <ul>
+     <li><a href="25_algorithms/howto.html#1">Prerequisites</a></li>
+     <li><a href="25_algorithms/howto.html#2">Special <code>swap</code>s</a></li>
+   </ul>
 
-         <li>Iterators (Chapter24)
-	 <ul>
-         <li><a href="24_iterators/howto.html#1">They aren't pointers!</a>
-         <li><a href="24_iterators/howto.html#1">It ends where?</a>
-	 </ul>
+   <li>Numerics (Chapter 26)</li>
+   <ul>
+     <li><a href="26_numerics/howto.html#1">Complex Number Processing</a></li>
+     <li><a href="26_numerics/howto.html#2">Array Processing</a></li>
+     <li><a href="26_numerics/howto.html#3">Numerical Functions</a></li>
+     <li><a href="26_numerics/howto.html#4">C99</a></li>
+   </ul>
 
-         <li>Algorithms (Chapter 25)
-	 <ul>
-         <li><a href="25_algorithms/howto.html#1">Prerequisites</a>
-         <li><a href="25_algorithms/howto.html#2">Special swaps</a>
-	 </ul>
+   <li>Input/Output (Chapter 27)</li>
+   <ul>
+     <li><a href="27_io/howto.html#1">Copying a file</a></li>
+     <li><a href="27_io/howto.html#2">The buffering is screwing up my program!</a></li>
+     <li><a href="27_io/howto.html#3">Binary I/O</a></li>
+     <li><a href="27_io/howto.html#5">What is this &lt;sstream&gt;/stringstreams thing?</a></li>
+     <li><a href="27_io/howto.html#6">Deriving a stream buffer</a></li>
+     <li><a href="27_io/howto.html#7">More on binary I/O</a></li>
+     <li><a href="27_io/howto.html#8">Pathetic performance?  Ditch C.</a></li>
+     <li><a href="27_io/howto.html#9">Threads and I/O</a></li>
+   </ul>
 
-         <li>Numerics (Chapter 26)
-	 <ul>
-         <li><a href="26_numerics/howto.html#1">Complex Number Processing</a>
-         <li><a href="26_numerics/howto.html#2">Array Processing</a>
-         <li><a href="26_numerics/howto.html#3">Numerical Functions</a>
-         <li><a href="26_numerics/howto.html#4">C99</a>
-	 </ul>
+   <li>Extensions to the Standard Library</li>
+   <ul>
+     <li><a href="ext/howto.html#1">Ropes and trees and hashes, oh my!</a></li>
+     <li><a href="ext/howto.html#2">Added members and types</a></li>
+     <li><a href="ext/howto.html#3">Allocators (versions 3.0, 3.1, 3.2)</a></li>
+     <li><a href="ext/howto.html#6">Allocators (version 3.3)</a></li>
+     <li><a href="ext/howto.html#4">Compile-time checks</a></li>
+     <li><a href="ext/howto.html#5">LWG Issues</a></li>
+   </ul>
 
-         <li>I/O (Chapter 27)
-	 <ul>
-         <li><a href="27_io/howto.html#1">Copying a file</a>
-         <li><a href="27_io/howto.html#2">The buffering is screwing up my program!</a>
-	 </ul>
-	 <ul>
-         <li><a href="27_io/howto.html#3">Binary I/O</a>
-         <li><a href="27_io/howto.html#6">More on binary I/O</a>
-         <li><a href="27_io/howto.html#5">Deriving a stream buffer</a>
-         <li><a href="27_io/howto.html#4">What is this &lt;sstream&gt;/stringstreams thing?</a>
-         <li><a href="27_io/howto.html#7">Pathetic performance? Ditch C.</a>
-         <li><a href="27_io/howto.html#8">Threads and I/O</a>
-	 </ul>
-
-         <li>Extensions to the Standard Library
-	 <ul>
-         <li><a href="ext/howto.html#1">Ropes and trees and hashes, oh my!</a>
-         <li><a href="ext/howto.html#2">Added members and types</a>
-         <li><a href="ext/howto.html#3">Allocators (versions 3.0, 3.1, 3.2)</a>
-         <li><a href="ext/howto.html#4">Allocators (version 3.3)</a>
-         <li><a href="ext/howto.html#5">Compile-time checks</a>
-         <li><a href="ext/howto.html#6">LWG Issues</a>
-	 </ul>
-      </ul>
+  </ul>
+<!-- endlist -->
 
 <hr />
 <br>
