@@ -678,7 +678,9 @@ operands on the 32k are stored).  */
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
   fprintf (FILE, "\taddr .,r2\n" );					\
-  fprintf (FILE, "\tjump @__trampoline\n" );				\
+  fprintf (FILE, "\tjump " );						\
+  PUT_ABSOLUTE_PREFIX (FILE);						\
+  fprintf (FILE, "__trampoline\n" );					\
   ASM_OUTPUT_INT (FILE, const0_rtx);					\
   ASM_OUTPUT_INT (FILE, const0_rtx);					\
 }
