@@ -242,11 +242,11 @@ static enum shift_alg shift_alg_si[3][3][32] = {
     { INL, INL, INL, INL, INL, LOP, LOP, LOP,
       SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_ASHIFT   */
+      SPC, LOP, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
     { INL, INL, INL, INL, INL, LOP, LOP, LOP,
       SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_LSHIFTRT */
+      SPC, LOP, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, LOP, LOP, LOP,
       SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
@@ -261,11 +261,11 @@ static enum shift_alg shift_alg_si[3][3][32] = {
     { INL, INL, INL, INL, INL, INL, INL, INL,
       INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, SPC, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_ASHIFT   */
+      SPC, SPC, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
     { INL, INL, INL, INL, INL, INL, INL, INL,
       INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, SPC, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_LSHIFTRT */
+      SPC, SPC, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, INL, INL, INL,
       INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
       SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
@@ -2723,6 +2723,78 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      info->shift1  = "shar.l\t%S0";
 	      info->shift2  = "shar.l\t#2,%S0";
 	      goto end;
+	    }
+	}
+      else if (!TARGET_H8300 && count == 28)
+	{
+	  switch (shift_type)
+	    {
+	    case SHIFT_ASHIFT:
+	      if (TARGET_H8300H)
+		info->special = "sub.w\t%e0,%e0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
+	      else
+		info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\trotr.l\t#2,%S0\n\tsub.w\t%f0,%f0";
+	      info->shift1  = "";
+	      info->shift2  = "";
+	      goto end;
+	    case SHIFT_LSHIFTRT:
+	      if (TARGET_H8300H)
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\tsub.w\t%e0,%e0";
+	      else
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\tsub.w\t%e0,%e0";
+	      info->shift1  = "";
+	      info->shift2  = "";
+	      goto end;
+	    case SHIFT_ASHIFTRT:
+	      abort ();
+	    }
+	}
+      else if (!TARGET_H8300 && count == 29)
+	{
+	  switch (shift_type)
+	    {
+	    case SHIFT_ASHIFT:
+	      if (TARGET_H8300H)
+		info->special = "sub.w\t%e0,%e0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
+	      else
+		info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
+	      info->shift1  = "";
+	      info->shift2  = "";
+	      goto end;
+	    case SHIFT_LSHIFTRT:
+	      if (TARGET_H8300H)
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\tsub.w\t%e0,%e0";
+	      else
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t%S0\n\tsub.w\t%e0,%e0";
+	      info->shift1  = "";
+	      info->shift2  = "";
+	      goto end;
+	    case SHIFT_ASHIFTRT:
+	      abort ();
+	    }
+	}
+      else if (!TARGET_H8300 && count == 30)
+	{
+	  switch (shift_type)
+	    {
+	    case SHIFT_ASHIFT:
+	      if (TARGET_H8300H)
+		info->special = "sub.w\t%e0,%e0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
+	      else
+		info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\tsub.w\t%f0,%f0";
+	      info->shift1  = "";
+	      info->shift2  = "";
+	      goto end;
+	    case SHIFT_LSHIFTRT:
+	      if (TARGET_H8300H)
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\tsub.w\t%e0,%e0";
+	      else
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\tsub.w\t%e0,%e0";
+	      info->shift1  = "";
+	      info->shift2  = "";
+	      goto end;
+	    case SHIFT_ASHIFTRT:
+	      abort ();
 	    }
 	}
       else if (count == 31)

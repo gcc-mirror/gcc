@@ -1,3 +1,10 @@
+2002-12-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (shift_alg_si): Optimize ashift:HI and
+	lshiftrt:SI by 28, 29, and 30 bits when !TARGET_H8300.
+	(get_shift_alg): Return optimal assembly instructions for the
+	shifts mentioned above.
+
 2002-12-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_init_once): Do not use loop to
