@@ -326,7 +326,7 @@ struct cse_reg_info
 };
 
 /* A table of cse_reg_info indexed by register numbers.  */
-struct cse_reg_info *cse_reg_info_table;
+static struct cse_reg_info *cse_reg_info_table;
 
 /* The size of the above table.  */
 static unsigned int cse_reg_info_table_size;
