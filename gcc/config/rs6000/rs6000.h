@@ -145,6 +145,9 @@ extern int target_flags;
 /* Disable use of FPRs.  */
 #define MASK_NO_FPR		0x800
 
+/* Enable load/store multiple, even on powerpc */
+#define	MASK_MULTIPLE		0x1000
+
 #define TARGET_POWER			(target_flags & MASK_POWER)
 #define TARGET_POWER2			(target_flags & MASK_POWER2)
 #define TARGET_POWERPC			(target_flags & MASK_POWERPC)
@@ -157,6 +160,7 @@ extern int target_flags;
 #define TARGET_MINIMAL_TOC		(target_flags & MASK_MINIMAL_TOC)
 #define TARGET_64BIT			(target_flags & MASK_64BIT)
 #define TARGET_NO_FPR			(target_flags & MASK_NO_FPR)
+#define	TARGET_MULTIPLE			(target_flags & MASK_MULTIPLE)
 
 /* Run-time compilation parameters selecting different hardware subsets.
 
@@ -165,6 +169,11 @@ extern int target_flags;
    each pair being { "NAME", VALUE }
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
+
+/* This is meant to be redefined in the host dependent files */
+#ifndef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES
+#endif
 
 #define TARGET_SWITCHES						\
  {{"power",		MASK_POWER},				\
@@ -191,9 +200,12 @@ extern int target_flags;
   {"no-minimal-toc",	- MASK_MINIMAL_TOC},			\
   {"fp-regs",		- MASK_NO_FPR},				\
   {"no-fp-regs",	MASK_NO_FPR},				\
+  {"multiple",		MASK_MULTIPLE},				\
+  {"no-multiple",	- MASK_MULTIPLE},			\
+  SUBTARGET_SWITCHES						\
   {"",			TARGET_DEFAULT}}
 
-#define TARGET_DEFAULT MASK_POWER
+#define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE)
 
 /* Processor type.  */
 enum processor_type
@@ -1630,6 +1642,19 @@ extern int rs6000_trunc_used;
 
 #define RS6000_ITRUNC "itrunc"
 #define RS6000_UITRUNC "uitrunc"
+
+/* Prefix and suffix to use to saving floating point */
+#ifndef SAVE_FP_PREFIX
+#define	SAVE_FP_PREFIX "._savef"
+#define SAVE_FP_SUFFIX ""
+#endif
+
+/* Prefix and suffix to use to restoring floating point */
+#ifndef RESTORE_FP_PREFIX
+#define	RESTORE_FP_PREFIX "._restf"
+#define RESTORE_FP_SUFFIX ""
+#endif
+
 
 /* Control the assembler format that we output.  */
 
