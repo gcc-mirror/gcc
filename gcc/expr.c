@@ -2709,6 +2709,8 @@ emit_move_insn (x, y)
      rtx x, y;
 {
   enum machine_mode mode = GET_MODE (x);
+  rtx y_cst = NULL_RTX;
+  rtx last_insn;
 
   x = protect_from_queue (x, 1);
   y = protect_from_queue (y, 0);
@@ -2720,7 +2722,10 @@ emit_move_insn (x, y)
   if (GET_CODE (y) == CONSTANT_P_RTX)
     ;
   else if (CONSTANT_P (y) && ! LEGITIMATE_CONSTANT_P (y))
-    y = force_const_mem (mode, y);
+    {
+      y_cst = y;
+      y = force_const_mem (mode, y);
+    }
 
   /* If X or Y are memory references, verify that their addresses are valid
      for the machine.  */
@@ -2740,7 +2745,13 @@ emit_move_insn (x, y)
   if (mode == BLKmode)
     abort ();
 
-  return emit_move_insn_1 (x, y);
+  last_insn = emit_move_insn_1 (x, y);
+
+  if (y_cst && GET_CODE (x) == REG)
+    REG_NOTES (last_insn)
+      = gen_rtx_EXPR_LIST (REG_EQUAL, y_cst, REG_NOTES (last_insn));
+
+  return last_insn;
 }
 
 /* Low level part of emit_move_insn.
