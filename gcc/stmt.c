@@ -428,6 +428,9 @@ static int using_eh_for_cleanups_p = 0;
 static int n_occurrences		PROTO((int, char *));
 static void expand_goto_internal	PROTO((tree, rtx, rtx));
 static int expand_fixup			PROTO((tree, rtx, rtx));
+static void expand_nl_handler_label	PROTO((rtx, rtx));
+static void expand_nl_goto_receiver	PROTO((void));
+static void expand_nl_goto_receivers	PROTO((struct nesting *));
 static void fixup_gotos			PROTO((struct nesting *, rtx, tree,
 					       rtx, int));
 static void expand_null_return_1	PROTO((rtx, int));
@@ -632,16 +635,18 @@ void
 declare_nonlocal_label (label)
      tree label;
 {
+  rtx slot = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
+
   nonlocal_labels = tree_cons (NULL_TREE, label, nonlocal_labels);
   LABEL_PRESERVE_P (label_rtx (label)) = 1;
-  if (nonlocal_goto_handler_slot == 0)
+  if (nonlocal_goto_handler_slots == 0)
     {
-      nonlocal_goto_handler_slot
-	= assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
       emit_stack_save (SAVE_NONLOCAL,
 		       &nonlocal_goto_stack_level,
 		       PREV_INSN (tail_recursion_reentry));
     }
+  nonlocal_goto_handler_slots
+    = gen_rtx_EXPR_LIST (VOIDmode, slot, nonlocal_goto_handler_slots);
 }
 
 /* Generate RTL code for a `goto' statement with target label LABEL.
@@ -660,7 +665,15 @@ expand_goto (label)
     {
       struct function *p = find_function_data (context);
       rtx label_ref = gen_rtx_LABEL_REF (Pmode, label_rtx (label));
-      rtx temp;
+      rtx temp, handler_slot;
+      tree link;
+
+      /* Find the corresponding handler slot for this label.  */
+      handler_slot = p->nonlocal_goto_handler_slots;
+      for (link = p->nonlocal_labels; TREE_VALUE (link) != label;
+	   link = TREE_CHAIN (link))
+	handler_slot = XEXP (handler_slot, 1);
+      handler_slot = XEXP (handler_slot, 0);
 
       p->has_nonlocal_label = 1;
       current_function_has_nonlocal_goto = 1;
@@ -673,7 +686,7 @@ expand_goto (label)
 #if HAVE_nonlocal_goto
       if (HAVE_nonlocal_goto)
 	emit_insn (gen_nonlocal_goto (lookup_static_chain (label),
-				      copy_rtx (p->nonlocal_goto_handler_slot),
+				      copy_rtx (handler_slot),
 				      copy_rtx (p->nonlocal_goto_stack_level),
 				      label_ref));
       else
@@ -695,7 +708,7 @@ expand_goto (label)
 
 	  /* Get addr of containing function's current nonlocal goto handler,
 	     which will do any cleanups and then jump to the label.  */
-	  addr = copy_rtx (p->nonlocal_goto_handler_slot);
+	  addr = copy_rtx (handler_slot);
 	  temp = copy_to_reg (replace_rtx (addr, virtual_stack_vars_rtx,
 					   hard_frame_pointer_rtx));
 	  
@@ -708,13 +721,10 @@ expand_goto (label)
 
 	  emit_stack_restore (SAVE_NONLOCAL, addr, NULL_RTX);
 
-	  /* Put in the static chain register the nonlocal label address.  */
-	  emit_move_insn (static_chain_rtx, label_ref);
 	  /* USE of hard_frame_pointer_rtx added for consistency; not clear if
 	     really needed.  */
 	  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
 	  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-	  emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
 	  emit_indirect_jump (temp);
 	}
      }
@@ -2992,6 +3002,161 @@ remember_end_note (block)
   last_block_end_note = NULL_RTX;
 }
 
+/* Emit a handler label for a nonlocal goto handler.
+   Also emit code to store the handler label in SLOT before BEFORE_INSN.  */
+
+static void
+expand_nl_handler_label (slot, before_insn)
+     rtx slot, before_insn;
+{
+  rtx insns;
+  rtx handler_label = gen_label_rtx ();
+
+  /* Don't let jump_optimize delete the handler.  */
+  LABEL_PRESERVE_P (handler_label) = 1;
+
+  start_sequence ();
+  emit_move_insn (slot, gen_rtx_LABEL_REF (Pmode, handler_label));
+  insns = get_insns ();
+  end_sequence ();
+  emit_insns_before (insns, before_insn);
+
+  emit_label (handler_label);
+}
+
+/* Emit code to restore vital registers at the beginning of a nonlocal goto
+   handler.  */
+static void
+expand_nl_goto_receiver ()
+{
+#ifdef HAVE_nonlocal_goto
+  if (! HAVE_nonlocal_goto)
+#endif
+    /* First adjust our frame pointer to its actual value.  It was
+       previously set to the start of the virtual area corresponding to
+       the stacked variables when we branched here and now needs to be
+       adjusted to the actual hardware fp value.
+
+       Assignments are to virtual registers are converted by
+       instantiate_virtual_regs into the corresponding assignment
+       to the underlying register (fp in this case) that makes
+       the original assignment true.
+       So the following insn will actually be
+       decrementing fp by STARTING_FRAME_OFFSET.  */
+    emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+
+#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+  if (fixed_regs[ARG_POINTER_REGNUM])
+    {
+#ifdef ELIMINABLE_REGS
+      /* If the argument pointer can be eliminated in favor of the
+	 frame pointer, we don't need to restore it.  We assume here
+	 that if such an elimination is present, it can always be used.
+	 This is the case on all known machines; if we don't make this
+	 assumption, we do unnecessary saving on many machines.  */
+      static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
+      size_t i;
+
+      for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
+	if (elim_regs[i].from == ARG_POINTER_REGNUM
+	    && elim_regs[i].to == HARD_FRAME_POINTER_REGNUM)
+	  break;
+
+      if (i == sizeof elim_regs / sizeof elim_regs [0])
+#endif
+	{
+	  /* Now restore our arg pointer from the address at which it
+	     was saved in our stack frame.
+	     If there hasn't be space allocated for it yet, make
+	     some now.  */
+	  if (arg_pointer_save_area == 0)
+	    arg_pointer_save_area
+	      = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
+	  emit_move_insn (virtual_incoming_args_rtx,
+			  /* We need a pseudo here, or else
+			     instantiate_virtual_regs_1 complains.  */
+			  copy_to_reg (arg_pointer_save_area));
+	}
+    }
+#endif
+
+#ifdef HAVE_nonlocal_goto_receiver
+  if (HAVE_nonlocal_goto_receiver)
+    emit_insn (gen_nonlocal_goto_receiver ());
+#endif
+}
+
+/* Make handlers for nonlocal gotos taking place in the function calls in
+   block THISBLOCK.  */
+
+static void
+expand_nl_goto_receivers (thisblock)
+     struct nesting *thisblock;
+{
+  tree link;
+  rtx afterward = gen_label_rtx ();
+  rtx insns, slot;
+  int any_invalid;
+
+  /* Record the handler address in the stack slot for that purpose,
+     during this block, saving and restoring the outer value.  */
+  if (thisblock->next != 0)
+    for (slot = nonlocal_goto_handler_slots; slot; slot = XEXP (slot, 1))
+      {
+	rtx save_receiver = gen_reg_rtx (Pmode);
+	emit_move_insn (XEXP (slot, 0), save_receiver);
+
+	start_sequence ();
+	emit_move_insn (save_receiver, XEXP (slot, 0));
+	insns = get_insns ();
+	end_sequence ();
+	emit_insns_before (insns, thisblock->data.block.first_insn);
+      }
+
+  /* Jump around the handlers; they run only when specially invoked.  */
+  emit_jump (afterward);
+
+  /* Make a separate handler for each label.  */
+  link = nonlocal_labels;
+  slot = nonlocal_goto_handler_slots;
+  for (; link; link = TREE_CHAIN (link), slot = XEXP (slot, 1))
+    /* Skip any labels we shouldn't be able to jump to from here,
+       we generate one special handler for all of them below which just calls
+       abort.  */
+    if (! DECL_TOO_LATE (TREE_VALUE (link)))
+      {
+	expand_nl_handler_label (XEXP (slot, 0),
+				 thisblock->data.block.first_insn);
+	expand_nl_goto_receiver ();
+
+	/* Jump to the "real" nonlocal label.  */
+	expand_goto (TREE_VALUE (link));
+      }
+
+  /* A second pass over all nonlocal labels; this time we handle those
+     we should not be able to jump to at this point.  */
+  link = nonlocal_labels;
+  slot = nonlocal_goto_handler_slots;
+  any_invalid = 0;
+  for (; link; link = TREE_CHAIN (link), slot = XEXP (slot, 1))
+    if (DECL_TOO_LATE (TREE_VALUE (link)))
+      {
+	expand_nl_handler_label (XEXP (slot, 0),
+				 thisblock->data.block.first_insn);
+	any_invalid = 1;
+      }
+
+  if (any_invalid)
+    {
+      expand_nl_goto_receiver ();
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "abort"), 0,
+			 VOIDmode, 0);
+      emit_barrier ();
+    }
+
+  emit_label (afterward);
+}
+
 /* Generate RTL code to terminate a binding contour.
    VARS is the chain of VAR_DECL nodes
    for the variables bound in this contour.
@@ -3042,7 +3207,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       emit_label (thisblock->exit_label);
     }
 
-  /* If necessary, make a handler for nonlocal gotos taking
+  /* If necessary, make handlers for nonlocal gotos taking
      place in the function calls in this block.  */
   if (function_call_count != thisblock->data.block.function_call_count
       && nonlocal_labels
@@ -3053,119 +3218,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	     special to do when you jump out of it.  */
 	  : (thisblock->data.block.cleanups != 0
 	     || thisblock->data.block.stack_level != 0)))
-    {
-      tree link;
-      rtx afterward = gen_label_rtx ();
-      rtx handler_label = gen_label_rtx ();
-      rtx save_receiver = gen_reg_rtx (Pmode);
-      rtx insns;
-
-      /* Don't let jump_optimize delete the handler.  */
-      LABEL_PRESERVE_P (handler_label) = 1;
-
-      /* Record the handler address in the stack slot for that purpose,
-	 during this block, saving and restoring the outer value.  */
-      if (thisblock->next != 0)
-	{
-	  emit_move_insn (nonlocal_goto_handler_slot, save_receiver);
-
-	  start_sequence ();
-	  emit_move_insn (save_receiver, nonlocal_goto_handler_slot);
-	  insns = get_insns ();
-	  end_sequence ();
-	  emit_insns_before (insns, thisblock->data.block.first_insn);
-	}
-
-      start_sequence ();
-      emit_move_insn (nonlocal_goto_handler_slot,
-		      gen_rtx_LABEL_REF (Pmode, handler_label));
-      insns = get_insns ();
-      end_sequence ();
-      emit_insns_before (insns, thisblock->data.block.first_insn);
-
-      /* Jump around the handler; it runs only when specially invoked.  */
-      emit_jump (afterward);
-      emit_label (handler_label);
-
-#ifdef HAVE_nonlocal_goto
-      if (! HAVE_nonlocal_goto)
-#endif
-	/* First adjust our frame pointer to its actual value.  It was
-	   previously set to the start of the virtual area corresponding to
-	   the stacked variables when we branched here and now needs to be
-	   adjusted to the actual hardware fp value.
-
-	   Assignments are to virtual registers are converted by
-	   instantiate_virtual_regs into the corresponding assignment
-	   to the underlying register (fp in this case) that makes
-	   the original assignment true.
-	   So the following insn will actually be
-	   decrementing fp by STARTING_FRAME_OFFSET.  */
-	emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
-
-#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      if (fixed_regs[ARG_POINTER_REGNUM])
-	{
-#ifdef ELIMINABLE_REGS
-	  /* If the argument pointer can be eliminated in favor of the
-	     frame pointer, we don't need to restore it.  We assume here
-	     that if such an elimination is present, it can always be used.
-	     This is the case on all known machines; if we don't make this
-	     assumption, we do unnecessary saving on many machines.  */
-	  static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
-	  size_t i;
-
-	  for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
-	    if (elim_regs[i].from == ARG_POINTER_REGNUM
-		&& elim_regs[i].to == HARD_FRAME_POINTER_REGNUM)
-	      break;
-
-	  if (i == sizeof elim_regs / sizeof elim_regs [0])
-#endif
-	    {
-	      /* Now restore our arg pointer from the address at which it
-		 was saved in our stack frame.
-		 If there hasn't be space allocated for it yet, make
-		 some now.  */
-	      if (arg_pointer_save_area == 0)
-		arg_pointer_save_area
-		  = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
-	      emit_move_insn (virtual_incoming_args_rtx,
-			      /* We need a pseudo here, or else
-				 instantiate_virtual_regs_1 complains.  */
-			      copy_to_reg (arg_pointer_save_area));
-	    }
-	}
-#endif
-
-#ifdef HAVE_nonlocal_goto_receiver
-      if (HAVE_nonlocal_goto_receiver)
-	emit_insn (gen_nonlocal_goto_receiver ());
-#endif
-
-      /* The handler expects the desired label address in the static chain
-	 register.  It tests the address and does an appropriate jump
-	 to whatever label is desired.  */
-      for (link = nonlocal_labels; link; link = TREE_CHAIN (link))
-	/* Skip any labels we shouldn't be able to jump to from here.  */
-	if (! DECL_TOO_LATE (TREE_VALUE (link)))
-	  {
-	    rtx not_this = gen_label_rtx ();
-	    rtx this = gen_label_rtx ();
-	    do_jump_if_equal (static_chain_rtx,
-			      gen_rtx_LABEL_REF (Pmode, DECL_RTL (TREE_VALUE (link))),
-			      this, 0);
-	    emit_jump (not_this);
-	    emit_label (this);
-	    expand_goto (TREE_VALUE (link));
-	    emit_label (not_this);
-	  }
-      /* If label is not recognized, abort.  */
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "abort"), 0,
-			 VOIDmode, 0);
-      emit_barrier ();
-      emit_label (afterward);
-    }
+    expand_nl_goto_receivers (thisblock);
 
   /* Don't allow jumping into a block that has a stack level.
      Cleanups are allowed, though.  */
@@ -3219,7 +3272,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	{
 	  emit_stack_restore (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
 			      thisblock->data.block.stack_level, NULL_RTX);
-	  if (nonlocal_goto_handler_slot != 0)
+	  if (nonlocal_goto_handler_slots != 0)
 	    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level,
 			     NULL_RTX);
 	}
@@ -3266,8 +3319,6 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
   /* Pop the stack slot nesting and free any slots at this level.  */
   pop_temp_slots ();
 }
-
-
 
 /* Generate RTL for the automatic variable declaration DECL.
    (Other kinds of declarations are simply ignored if seen here.)  */

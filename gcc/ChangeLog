@@ -1,4 +1,34 @@
-Thu Nov 19 23:44:38 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+Fri Nov 20 08:34:00 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* function.c (nonlocal_goto_handler_slots): Renamed from
+	nonlocal_goto_handler_slot; now an EXPR_LIST chain.
+	(push_function_context_to): Adjust for this change.
+	(pop_function_context_from): Likewise.
+	(init_function_start): Likewise.
+	(expand_function_end): Likewise.
+	* function.h (struct function): Likewise.
+	* calls.c (expand_call): Likewise.
+	* explow.c (allocate_dynamic_stack_space): Likewise.
+	* expr.h (nonlocal_goto_handler_slots): Rename its declaration.
+	* stmt.c (declare_nonlocal_label): Make a new handler slot for each
+	label.
+	(expand_goto): When doing a nonlocal goto, find corresponding handler
+	slot for it.  Don't put the label address in the static chain register.
+	(expand_end_bindings): Break out nonlocal goto handling code into
+	three new functions.
+	(expand_nl_handler_label, expand_nl_goto_receiver,
+	expand_nl_goto_receivers): New static functions, broken out of
+	expand_end_bindings and adapted to create one handler per nonlocal
+	label.
+	* function.c (delete_handlers): Delete insn if it references any of
+	the nonlocal goto handler slots.
+	* i960.md (nonlocal_goto): Comment out code that modifies
+	static_chain_rtx.
+	* sparc.md (nonlocal_goto): Likewise.
+	(goto_handler_and_restore_v9): Comment out.
+	(goto_handler_and_restore_v9_sp64): Comment out.
+
+Thu Nov 19 23:44:38 1998  
 
 	* expr.c (STACK_BYTES): Delete unused macro.
 	* calls.c: Provide default for PREFERRED_STACK_BOUNDARY.

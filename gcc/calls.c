@@ -2204,7 +2204,7 @@ expand_call (exp, target, ignore)
      Check for the handler slots since we might not have a save area
      for non-local gotos.  */
 
-  if (may_be_alloca && nonlocal_goto_handler_slot != 0)
+  if (may_be_alloca && nonlocal_goto_handler_slots != 0)
     emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
 
   pop_temp_slots ();
