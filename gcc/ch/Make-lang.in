@@ -61,7 +61,6 @@ CHILL_FLAGS_TO_PASS = \
 	"CHILLFLAGS=$(CHILLFLAGS)" \
 	"CHILL_FOR_TARGET=$(CHILL_FOR_TARGET)" \
 	"CHILL_LIB=$(CHILL_LIB)" \
-	"CC=$(CC)" \
 	"GNUCHILL_VERSION=$(GNUCHILL_VERSION)"
 #
 # Define the names for selecting languages in LANGUAGES.
