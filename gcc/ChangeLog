@@ -1,3 +1,8 @@
+2002-07-24  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (expand_expr) [TRY_FINALLY_EXPR]: Use GOTO_SUBROUTINE_EXPR
+	form when not optimizing.
+
 2002-07-24  David Mosberger  <davidm@hpl.hp.com>
 
 	* config/ia64/ia64.c (gen_thread_pointer): Fix typo in marking
