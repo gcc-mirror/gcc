@@ -817,6 +817,7 @@ extern enum reg_class reg_preferred_class PROTO((int));
 extern enum reg_class reg_alternate_class PROTO((int));
 
 extern rtx get_first_nonparm_insn	PROTO((void));
+extern rtx replace_regs			PROTO((rtx, rtx *, int, int));
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
 extern rtx pc_rtx;
