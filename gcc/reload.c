@@ -3477,7 +3477,9 @@ find_reloads_toplev (x, ind_levels, is_set_dest)
 #endif
 	       && (reg_equiv_address[regno] != 0
 		   || (reg_equiv_mem[regno] != 0
-		       && ! offsettable_memref_p (reg_equiv_mem[regno]))))
+		       && (! strict_memory_address_p (GET_MODE (x), 
+						      XEXP (reg_equiv_mem[regno], 0))
+			   || ! offsettable_memref_p (reg_equiv_mem[regno])))))
 	{
 	  int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
 	  rtx addr = (reg_equiv_address[regno] ? reg_equiv_address[regno]
