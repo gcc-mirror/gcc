@@ -1621,12 +1621,12 @@ expr_sizeof (e)
   if (is_overloaded_fn (e))
     {
       pedwarn ("ISO C++ forbids applying `sizeof' to an expression of function type");
-      e = char_type_node;
+      return c_sizeof (char_type_node);
     }
   else if (type_unknown_p (e))
     {
       incomplete_type_error (e, TREE_TYPE (e));
-      e = char_type_node;
+      return c_sizeof (char_type_node);
     }
   /* It's illegal to say `sizeof (X::i)' for `i' a non-static data
      member unless you're in a non-static member of X.  So hand off to
