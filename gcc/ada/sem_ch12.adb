@@ -534,8 +534,10 @@ package body Sem_Ch12 is
 
    --  Three kinds of source nodes have associated nodes:
 
-   --    a) those that contain entities, that is to say identifiers,
-   --       expanded_names, and operators (N_Has_Entity)
+   --    a) those that can reference (denote) entities, that is identifiers,
+   --       character literals, expanded_names, operator symbols, operators,
+   --       and attribute reference nodes. These nodes have an Entity field
+   --       and are the set of nodes that are in N_Has_Entity.
 
    --    b) aggregates (N_Aggregate and N_Extension_Aggregate)
 
@@ -4660,6 +4662,7 @@ package body Sem_Ch12 is
 
       elsif Nkind (N) = N_Allocator
         and then Nkind (Expression (N)) = N_Qualified_Expression
+        and then Is_Entity_Name (Subtype_Mark (Expression (N)))
         and then Instantiating
       then
          declare
@@ -8207,8 +8210,13 @@ package body Sem_Ch12 is
 
       procedure Save_Entity_Descendants (N : Node_Id);
       --  Apply Save_Global_References to the two syntactic descendants of
-      --  nodes that carry entities, i.e. identifiers, character literals,
-      --  expanded names, and operators.
+      --  non-terminal nodes that carry an Associated_Node and are processed
+      --  through Reset_Entity. Once the global entity (if any) has been
+      --  captured together with its type, only two syntactic descendants
+      --  need to be traversed to complete the processing of the tree rooted
+      --  at N. This applies to Selected_Components, Expanded_Names, and to
+      --  Operator nodes. N can also be a character literal, identifier, or
+      --  operator symbol node, but the call has no effect in these cases.
 
       procedure Save_Global_Defaults (N1, N2 : Node_Id);
       --  Default actuals in nested instances must be handled specially
@@ -8449,14 +8457,25 @@ package body Sem_Ch12 is
       -----------------------------
 
       procedure Save_Entity_Descendants (N : Node_Id) is
-
-         use Atree.Unchecked_Access;
-         --  This code section is part of the implementation of an untyped
-         --  tree traversal, so it needs direct access to node fields.
-
       begin
-         Save_Global_Descendant (Field2 (N));
-         Save_Global_Descendant (Field3 (N));
+         case Nkind (N) is
+            when N_Binary_Op =>
+               Save_Global_Descendant (Union_Id (Left_Opnd (N)));
+               Save_Global_Descendant (Union_Id (Right_Opnd (N)));
+
+            when N_Unary_Op =>
+               Save_Global_Descendant (Union_Id (Right_Opnd (N)));
+
+            when N_Expanded_Name | N_Selected_Component =>
+               Save_Global_Descendant (Union_Id (Prefix (N)));
+               Save_Global_Descendant (Union_Id (Selector_Name (N)));
+
+            when N_Identifier | N_Character_Literal | N_Operator_Symbol =>
+               null;
+
+            when others =>
+               raise Program_Error;
+         end case;
       end Save_Entity_Descendants;
 
       --------------------------
@@ -8715,9 +8734,12 @@ package body Sem_Ch12 is
                end if;
             end if;
 
-            --  Complete the check on operands
+            --  Complete the check on operands, if node has not been
+            --  constant-folded.
 
-            Save_Entity_Descendants (N);
+            if Nkind (N) in N_Op then
+               Save_Entity_Descendants (N);
+            end if;
 
          elsif Nkind (N) = N_Identifier then
             if Nkind (N) = Nkind (Get_Associated_Node (N)) then
