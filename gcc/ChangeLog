@@ -1,5 +1,12 @@
 2003-08-18  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (muldf3, mulsf3): Don't call a gen_* function.
+	(muldf3_internal, muldf3_r4300): Select based on TARGET_4300_MUL_FIX
+	rather than TARGET_MIPS4300.
+	(mulsf3_internal, mulsf3_r4300): Likewise.
+
+2003-08-18  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md: Renumber unspecs.  Clean up comments.
 
 2003-08-17  Roger Sayle  <roger@eyesopen.com>
