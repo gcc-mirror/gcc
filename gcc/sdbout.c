@@ -659,7 +659,7 @@ sdbout_symbol (decl, local)
       if (DECL_RTL (decl) == 0)
 	return;
 
-      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, 0);
+      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, NULL_RTX);
 #ifdef LEAF_REG_REMAP
       if (leaf_function)
 	leaf_renumber_regs_insn (DECL_RTL (decl));
