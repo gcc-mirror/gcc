@@ -1,3 +1,10 @@
+2002-10-18  Richard Henderson  <rth@redhat.com>
+
+	* real.c (cmp_significand_0, rtd_divmod, ten_to_mptwo): New.
+	(real_to_decimal): Re-implement using the logic from the
+	gcc 3.2 etoasc.  Comment heavily.
+	(div_significands): Simplify loop startup and comparison logic.
+
 2002-10-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* target-def.h (TARGET_ASM_OUTPUT_MI_THUNK): Default to NULL.
