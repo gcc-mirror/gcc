@@ -1,3 +1,11 @@
+2001-07-19  Mark Kettenis  <kettenis@wins.uva.nl>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.c (_Unwind_FrameState): Add eh_ptr.
+	(extract_cie_info): Handle "eh" augmentation properly,
+	remember eh_ptr.
+	(struct frame_state, __frame_state_for): New.
+
 2001-07-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/alpha/osf.h (ASM_OUTPUT_WEAK_ALIAS, ASM_WEAKEN_LABEL,
