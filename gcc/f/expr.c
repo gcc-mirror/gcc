@@ -16467,19 +16467,22 @@ ffeexpr_sym_impdoitem_ (ffesymbol sp, ffelexToken t)
 					   version. */
 	  if (!ffeimplic_establish_symbol (sp))
 	    ffesymbol_error (sp, t);
-	  ffesymbol_set_info (sp,
-			      ffeinfo_new (ffesymbol_basictype (sp),
-					   ffesymbol_kindtype (sp),
-					   ffesymbol_rank (sp),
-					   kind,
-					   where,
-					   ffesymbol_size (sp)));
-	  ffesymbol_set_attrs (sp, na);
-	  ffesymbol_set_state (sp, ns);
-	  ffesymbol_resolve_intrin (sp);
-	  if (!ffesymbol_state_is_specable (ns))
-	    sp = ffecom_sym_learned (sp);
-	  ffesymbol_signal_unreported (sp);	/* For debugging purposes. */
+	  else
+	    {
+	      ffesymbol_set_info (sp,
+				  ffeinfo_new (ffesymbol_basictype (sp),
+					       ffesymbol_kindtype (sp),
+					       ffesymbol_rank (sp),
+					       kind,
+					       where,
+					       ffesymbol_size (sp)));
+	      ffesymbol_set_attrs (sp, na);
+	      ffesymbol_set_state (sp, ns);
+	      ffesymbol_resolve_intrin (sp);
+	      if (!ffesymbol_state_is_specable (ns))
+		sp = ffecom_sym_learned (sp);
+	      ffesymbol_signal_unreported (sp);	/* For debugging purposes. */
+	    }
 	}
     }
 
