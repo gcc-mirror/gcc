@@ -259,7 +259,7 @@ merge_type_state (tree label)
       LABEL_TYPE_STATE (label) = vec;
 
       while (--cur_length >= 0)
-	TREE_VEC_ELT (vec, cur_length) = type_map [cur_length];
+	TREE_VEC_ELT (vec, cur_length) = type_map[cur_length];
       return 1;
     }
   else
@@ -278,7 +278,7 @@ merge_type_state (tree label)
       for (i = 0; i < cur_length; i++)
 	{
 	  tree old_type = TREE_VEC_ELT (vec, i);
-	  tree new_type = merge_types (old_type, type_map [i]);
+	  tree new_type = merge_types (old_type, type_map[i]);
 	  if (TREE_VEC_ELT (vec, i) != new_type)
 	    {
 	      /* If there has been a change, note that since we must re-verify.
@@ -309,33 +309,33 @@ merge_type_state (tree label)
 static void
 type_stack_dup (int size, int offset)
 {
-  tree type [4];
+  tree type[4];
   int index;
   for (index = 0;  index < size + offset; index++)
     {
-      type [index] = stack_type_map [stack_pointer - 1];
-      if (type [index] == void_type_node)
+      type[index] = stack_type_map[stack_pointer - 1];
+      if (type[index] == void_type_node)
 	{
 	  index++;
-	  type [index] = stack_type_map [stack_pointer - 2];
-	  if (! TYPE_IS_WIDE (type [index]))
+	  type[index] = stack_type_map[stack_pointer - 2];
+	  if (! TYPE_IS_WIDE (type[index]))
 	    abort ();
 	  if (index == size || index == size + offset)
 	    /* Dup operation splits 64-bit number.  */
 	    abort ();
 	}
-      pop_type (type [index]);
+      pop_type (type[index]);
     }
   for (index = size;  --index >= 0; )
     {
-      if (type [index] != void_type_node)
-	push_type (type [index]);
+      if (type[index] != void_type_node)
+	push_type (type[index]);
     }
 
   for (index = size + offset;  --index >= 0; )
     {
-      if (type [index] != void_type_node)
-	push_type (type [index]);
+      if (type[index] != void_type_node)
+	push_type (type[index]);
     }
 }
 
@@ -452,8 +452,8 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
   starts = xmalloc (eh_count * sizeof (struct pc_index));
   for (i = 0; i < eh_count; ++i)
     {
-      starts [i].start_pc = GET_u2 (jcf->read_ptr + 8 * i);
-      starts [i].index = i;
+      starts[i].start_pc = GET_u2 (jcf->read_ptr + 8 * i);
+      starts[i].index = i;
     }
   qsort (starts, eh_count, sizeof (struct pc_index), start_pc_cmp);
 
@@ -461,7 +461,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
     {
       int start_pc, end_pc, handler_pc, catch_type;
 
-      p = jcf->read_ptr + 8 * starts [i].index;
+      p = jcf->read_ptr + 8 * starts[i].index;
 
       start_pc = GET_u2 (p);
       end_pc = GET_u2 (p+2);
@@ -471,10 +471,10 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
       if (start_pc < 0 || start_pc >= length
 	  || end_pc < 0 || end_pc > length || start_pc >= end_pc
 	  || handler_pc < 0 || handler_pc >= length
-	  || ! (instruction_bits [start_pc] & BCODE_INSTRUCTION_START)
+	  || ! (instruction_bits[start_pc] & BCODE_INSTRUCTION_START)
 	  || (end_pc < length &&
-	     ! (instruction_bits [end_pc] & BCODE_INSTRUCTION_START))
-	  || ! (instruction_bits [handler_pc] & BCODE_INSTRUCTION_START))
+	     ! (instruction_bits[end_pc] & BCODE_INSTRUCTION_START))
+	  || ! (instruction_bits[handler_pc] & BCODE_INSTRUCTION_START))
 	{
 	  error ("bad pc in exception_table");
 	  free (starts);
@@ -486,7 +486,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 		   catch_type == 0 ? NULL_TREE
 		   : get_class_constant (jcf, catch_type));
 
-      instruction_bits [handler_pc] |= BCODE_EXCEPTION_TARGET;
+      instruction_bits[handler_pc] |= BCODE_EXCEPTION_TARGET;
     }
 
   free (starts);
@@ -497,7 +497,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
       tree type, tmp;
 
       if (((PC != INVALID_PC
-	   && instruction_bits [PC] & BCODE_TARGET) != 0)
+	   && instruction_bits[PC] & BCODE_TARGET) != 0)
 	  || PC == 0)
 	{
 	  PUSH_PENDING (lookup_label (PC));
@@ -553,11 +553,11 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 			     that were in effect at the jsr.  */
 			  for (index = size; --index >= 0; )
 			    {
-			      type_map [index]
+			      type_map[index]
                                 = TREE_VEC_ELT (ret_map, index);
 
-			      if (type_map [index] == TYPE_UNUSED)
-				type_map [index]
+			      if (type_map[index] == TYPE_UNUSED)
+				type_map[index]
 				  = TREE_VEC_ELT (return_state, index);
 			    }
 			}
@@ -595,14 +595,14 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 
       oldpc = PC;
 
-      if (! (instruction_bits [PC] & BCODE_INSTRUCTION_START) && ! wide)
+      if (! (instruction_bits[PC] & BCODE_INSTRUCTION_START) && ! wide)
 	VERIFICATION_ERROR ("PC not at instruction start");
 
-      instruction_bits [PC] |= BCODE_VERIFIED;
+      instruction_bits[PC] |= BCODE_VERIFIED;
 
       eh_ranges = find_handler (oldpc);
 
-      op_code = byte_ops [PC++];
+      op_code = byte_ops[PC++];
       switch (op_code)
 	{
 	  int is_static, is_putting;
@@ -616,8 +616,8 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	  i = op_code - OPCODE_iconst_0;
 	  goto push_int;
 	push_int:
-	  if (byte_ops [PC] == OPCODE_newarray
-	      || byte_ops [PC] == OPCODE_anewarray)
+	  if (byte_ops[PC] == OPCODE_newarray
+	      || byte_ops[PC] == OPCODE_anewarray)
 	    int_value = i;
 	  PUSH_TYPE (int_type_node);  break;
 
@@ -673,13 +673,13 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 		>= DECL_MAX_LOCALS (current_function_decl)))
 	  VERIFICATION_ERROR_WITH_INDEX
 	    ("invalid local variable index %d in load");
-	tmp = type_map [index];
+	tmp = type_map[index];
 	if (tmp == TYPE_UNKNOWN)
 	  VERIFICATION_ERROR_WITH_INDEX
 	    ("loading local variable %d which has unknown type");
 	else if (tmp == TYPE_SECOND
 	    || (TYPE_IS_WIDE (type)
-		&& type_map [index+1] != void_type_node)
+		&& type_map[index+1] != void_type_node)
 	    || (type == ptr_type_node
 		? TREE_CODE (tmp) != POINTER_TYPE
 		: type == int_type_node
@@ -728,7 +728,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	    return 0;
 	  }
 	POP_TYPE_CONV (type, type, NULL);
-	type_map [index] = type;
+	type_map[index] = type;
 
 	/* If a local variable has changed, we need to reconsider exception
         handlers.  */
@@ -739,7 +739,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	find_local_variable (index, type, oldpc);
 
         if (TYPE_IS_WIDE (type))
-          type_map [index+1] = TYPE_SECOND;
+          type_map[index+1] = TYPE_SECOND;
 
 	/* ... fall through to note_used ... */
 	note_used:
@@ -821,7 +821,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	  wide = 0;
 	  if (index < 0 || index >= DECL_MAX_LOCALS (current_function_decl))
 	    VERIFICATION_ERROR ("invalid local variable index in iinc");
-	  tmp = type_map [index];
+	  tmp = type_map[index];
 	  if (tmp == NULL_TREE
 	      || ! INTEGRAL_TYPE_P (tmp) || TYPE_PRECISION (tmp) > 32)
 	    VERIFICATION_ERROR ("invalid local variable type in iinc");
@@ -896,7 +896,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	  break;
 
 	case OPCODE_wide:
-	  switch (byte_ops [PC])
+	  switch (byte_ops[PC])
 	    {
 	    case OPCODE_iload:  case OPCODE_lload:
 	    case OPCODE_fload:  case OPCODE_dload:  case OPCODE_aload:
@@ -1011,14 +1011,14 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	    VERIFICATION_ERROR ("stack underflow (in swap)");
 	  else
 	    {
-	      tree type1 = stack_type_map [stack_pointer - 1];
-	      tree type2 = stack_type_map [stack_pointer - 2];
+	      tree type1 = stack_type_map[stack_pointer - 1];
+	      tree type2 = stack_type_map[stack_pointer - 2];
 
 	      if (type1 == void_type_node || type2 == void_type_node)
 		VERIFICATION_ERROR ("verifier (swap):  double or long value");
 
-	      stack_type_map [stack_pointer - 2] = type1;
-	      stack_type_map [stack_pointer - 1] = type2;
+	      stack_type_map[stack_pointer - 2] = type1;
+	      stack_type_map[stack_pointer - 1] = type2;
 	    }
 	  break;
 
@@ -1210,7 +1210,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	    {
 	      /* If the previous instruction pushed an int constant,
 		 we want to use it. */
-	      switch (byte_ops [prevpc])
+	      switch (byte_ops[prevpc])
 		{
 		case OPCODE_iconst_0: case OPCODE_iconst_1:
 		case OPCODE_iconst_2: case OPCODE_iconst_3:
@@ -1279,7 +1279,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 
 	    while (PC%4)
 	      {
-	        if (byte_ops [PC++])
+	        if (byte_ops[PC++])
 		  VERIFICATION_ERROR ("bad alignment in tableswitch pad");
 	      }
 
@@ -1305,7 +1305,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 
 	    while (PC%4)
 	      {
-	        if (byte_ops [PC++])
+	        if (byte_ops[PC++])
 		  VERIFICATION_ERROR ("bad alignment in lookupswitch pad");
 	      }
 
@@ -1400,7 +1400,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 		while (--len >= 0)
 		  {
 		    if (TREE_VEC_ELT (return_map, len) != TYPE_UNUSED)
-		      type_map [len] = TREE_VEC_ELT (return_map, len);
+		      type_map[len] = TREE_VEC_ELT (return_map, len);
 		  }
 		current_subr = LABEL_SUBR_CONTEXT (target);
 		if (RETURN_MAP_ADJUSTED (return_map))
@@ -1423,7 +1423,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	      wide = 0;
 	      INVALIDATE_PC;
 	      if (index < 0 || index >= DECL_MAX_LOCALS (current_function_decl)
-		  || type_map [index] != TYPE_RETURN_ADDR)
+		  || type_map[index] != TYPE_RETURN_ADDR)
 		VERIFICATION_ERROR ("invalid ret index");
 
 	      /* The next chunk of code is similar to an inlined version of
@@ -1440,7 +1440,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 		  for (index = size;  --index >= 0; )
 		    {
 		      if (TREE_VEC_ELT (ret_map, index) != TYPE_UNUSED)
-			TREE_VEC_ELT (ret_map, index) = type_map [index];
+			TREE_VEC_ELT (ret_map, index) = type_map[index];
 		    }
 		  RETURN_MAP_ADJUSTED (ret_map) = 1;
 		}
@@ -1453,7 +1453,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 		      tree type = TREE_VEC_ELT (ret_map, index);
 		      if (type != TYPE_UNUSED)
 			{
-			  type = merge_types (type, type_map [index]);
+			  type = merge_types (type, type_map[index]);
 			  TREE_VEC_ELT (ret_map, index) = type;
 			  if (type == TYPE_UNKNOWN)
 			    {
@@ -1487,7 +1487,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	{
 	  int save_stack_pointer = stack_pointer;
 	  int index = DECL_MAX_LOCALS (current_function_decl);
-	  tree save_type = type_map [index];
+	  tree save_type = type_map[index];
 	  tree save_current_subr = current_subr;
 	  struct eh_range *ranges = find_handler (oldpc);
 	  stack_pointer = 1;
@@ -1532,14 +1532,14 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 		  if (type == NULL_TREE)  /* a finally handler */
 		    type = throwable_type_node;
 
-		  type_map [index] = promote_type (type);
+		  type_map[index] = promote_type (type);
 
 		  PUSH_PENDING (handler);
 		}
 	    }
 	  stack_pointer = save_stack_pointer;
 	  current_subr = save_current_subr;
-	  type_map [index] = save_type;
+	  type_map[index] = save_type;
 	  prev_eh_ranges = eh_ranges;
 	}
     }
