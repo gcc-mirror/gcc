@@ -1,3 +1,8 @@
+2002-03-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* expr.c (expand_expr, case NE_EXPR): Do not call copy_to_reg with
+	VOIDmode operand.  Add compile-time optimization for constant results.
+
 2002-03-13  Hartmut Penner  <hpenner@de.ibm.com>
 
         * config/s390/s390.h (PROFILE_BEFORE_PROLOGUE): Emit profile code
