@@ -1,14 +1,24 @@
 #!/bin/sh 
 
 # Run this from /tmp.
-CVSROOT=/cvs/gcc
+CVSROOT=${CVSROOT:-/cvs/gcc}
 export CVSROOT
 /bin/rm -rf /tmp/$$
 /bin/mkdir /tmp/$$
 cd /tmp/$$
 
+# The path to cvs.
+CVS=${CVS:-/usr/local/bin/cvs}
+
+# Compute the branches which we should update.
+$CVS co gcc/ChangeLog
+BRANCHES=`$CVS status -v gcc/ChangeLog \
+          | awk '{print $1;}' \
+          | egrep 'gcc-[0-9]+_[0-9]+-branch$'`
+# Always update the mainline.
+BRANCHES="${BRANCHES} HEAD"
+
 # ARGS is passed to 'cvs co'
-ARGS="$*"
 CURR_DATE=`/bin/date +"%Y%m%d"`
 
 # version is contained within a char*
@@ -17,25 +27,54 @@ textstring_FILES="gcc/gcc/version.c gcc/gcc/f/version.c gcc/libf2c/libF77/Versio
 # version is contained within a #define
 cppdefine_FILES="gcc/libstdc++-v3/include/bits/c++config"
 
-/usr/local/bin/cvs co $ARGS $textstring_FILES $cppdefine_FILES
+# Assume all will go well.
+RESULT=0
 
-for file in $textstring_FILES; do
-  OLD_VERSION=`/bin/cat $file`
-  /bin/sed -e "s/\(.*\"[^ ]*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
-$OLD_VERSION
+for BRANCH in $BRANCHES; do
+  # Check out the files on the branch.  HEAD is a special case; if
+  # you check out files with -r HEAD, CVS will not let you check 
+  # in changes.
+  if test "$BRANCH" = HEAD; then 
+    ${CVS} co $textstring_FILES $cppdefine_FILES
+  else
+    ${CVS} co -r $BRANCH $textstring_FILES $cppdefine_FILES
+  fi
+
+  # There are no files to commit yet.
+  COMMIT_FILES=""
+
+  for file in $textstring_FILES; do
+    if test -f $file; then 
+      OLD_VERSION=`/bin/cat $file`
+      /bin/sed -e "s/\(.*\"[^ ]*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
+        $OLD_VERSION
 HERE
-done
 
-for file in $cppdefine_FILES; do
-  OLD_VERSION=`/bin/cat $file`
-  /bin/sed -e "s/\(#.*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
-$OLD_VERSION
+      COMMIT_FILES="$COMMIT_FILES $file"
+    fi
+  done
+
+  for file in $cppdefine_FILES; do
+    if test -f $file; then 
+      OLD_VERSION=`/bin/cat $file`
+      /bin/sed -e "s/\(#.*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
+        $OLD_VERSION
 HERE
-done
 
-/usr/local/bin/cvs commit -m "Daily bump." $textstring_FILES $cppdefine_FILES
-commit_results=$?
+      COMMIT_FILES="$COMMIT_FILES $file"
+    fi
+  done
+
+  if test -n "$COMMIT_FILES" \
+     && ! ${CVS} commit -m "Daily bump." $COMMIT_FILES; then
+    # If we could not commit the files, indicate failure.
+    RESULT=1
+  fi
+
+  # Remove the files.
+  rm -rf gcc
+done
 
 /bin/rm -rf /tmp/$$
-exit $commit_results
+exit $RESULT
 
