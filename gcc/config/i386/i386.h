@@ -80,6 +80,11 @@ extern int target_flags;
    generated in such cases, in which case this isn't needed.  */
 #define TARGET_IEEE_FP (target_flags & 0100)
 
+/* Functions that return a floating point value may return that value
+   in the 387 FPU or in 386 integer registers.  If set, this flag causes
+   the 387 to be used, which is compatible with most calling conventions. */
+#define TARGET_FLOAT_RETURNS_IN_80387 (target_flags & 0200)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -88,18 +93,22 @@ extern int target_flags;
 
 #define TARGET_SWITCHES  \
   { { "80387", 1},				\
+    { "no-80387", -1},				\
     { "soft-float", -1},			\
+    { "no-soft-float", 1},			\
     { "486", 2},				\
-    { "no486", -2},				\
+    { "no-486", -2},				\
     { "386", -2},				\
     { "rtd", 8},				\
-    { "nortd", -8},				\
+    { "no-rtd", -8},				\
     { "regparm", 020},				\
-    { "noregparm", -020},			\
+    { "no-regparm", -020},			\
     { "svr3-shlib", 040},			\
-    { "nosvr3-shlib", -040},			\
+    { "no-svr3-shlib", -040},			\
     { "ieee-fp", 0100},				\
-    { "noieee-fp", -0100},			\
+    { "no-ieee-fp", -0100},			\
+    { "fp-ret-in-387", 0200},			\
+    { "no-fp-ret-in-387", -0200},		\
     SUBTARGET_SWITCHES                          \
     { "", TARGET_DEFAULT}}
 
@@ -230,6 +239,15 @@ extern int target_flags;
       {							\
 	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
 	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
+      }							\
+    if (! TARGET_80387 && ! TARGET_FLOAT_RETURNS_IN_80387) \
+      { 						\
+	int i; 						\
+	HARD_REG_SET x;					\
+        COPY_HARD_REG_SET (x, reg_class_contents[(int)FLOAT_REGS]); \
+        for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )	\
+         if (TEST_HARD_REG_BIT (x, i)) 			\
+	  fixed_regs[i] = call_used_regs[i] = 1; 	\
       }							\
   }
 
@@ -438,16 +456,22 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Get reg_class from a letter such as appears in the machine description.  */
 
 #define REG_CLASS_FROM_LETTER(C)	\
-  ((C) == 'r' ? GENERAL_REGS :		\
-   (C) == 'q' ? Q_REGS :		\
-   (C) == 'f' ? FLOAT_REGS :		\
-   (C) == 't' ? FP_TOP_REG :		\
-   (C) == 'u' ? FP_SECOND_REG :		\
-   (C) == 'a' ? AREG :			\
-   (C) == 'b' ? BREG :			\
-   (C) == 'c' ? CREG :			\
-   (C) == 'd' ? DREG :			\
-   (C) == 'D' ? DIREG :			\
+  ((C) == 'r' ? GENERAL_REGS :					\
+   (C) == 'q' ? Q_REGS :					\
+   (C) == 'f' ? (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387	\
+		 ? FLOAT_REGS					\
+		 : NO_REGS) :					\
+   (C) == 't' ? (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387	\
+		 ? FP_TOP_REG					\
+		 : NO_REGS) :					\
+   (C) == 'u' ? (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387	\
+		 ? FP_SECOND_REG				\
+		 : NO_REGS) :					\
+   (C) == 'a' ? AREG :						\
+   (C) == 'b' ? BREG :						\
+   (C) == 'c' ? CREG :						\
+   (C) == 'd' ? DREG :						\
+   (C) == 'D' ? DIREG :						\
    (C) == 'S' ? SIREG : NO_REGS)
 
 /* The letters I, J, K, L and M in a register constraint string
@@ -568,6 +592,10 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 	      == void_type_node))) ? (SIZE)			\
    : (aggregate_value_p (FUNTYPE)) ? GET_MODE_SIZE (Pmode) : 0)
 
+/* Define how to find the value returned by a function.
+   VALTYPE is the data type of the value (as a tree).
+   If the precise function being called is known, FUNC is its FUNCTION_DECL;
+   otherwise, FUNC is 0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
    gen_rtx (REG, TYPE_MODE (VALTYPE), \
 	    VALUE_REGNO (TYPE_MODE (VALTYPE)))
@@ -718,16 +746,16 @@ do {						\
      mov #STATIC,ecx
      mov #FUNCTION,eax
      jmp @eax  */
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  ASM_OUTPUT_CHAR (FILE, gen_rtx (CONST_INT, VOIDmode, 0xb9));		\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_CHAR (FILE, gen_rtx (CONST_INT, VOIDmode, 0xb8));		\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_CHAR (FILE, gen_rtx (CONST_INT, VOIDmode, 0xff));		\
-  ASM_OUTPUT_CHAR (FILE, gen_rtx (CONST_INT, VOIDmode, 0xe0));		\
+#define TRAMPOLINE_TEMPLATE(FILE)			\
+{							\
+  ASM_OUTPUT_CHAR (FILE, GEN_INT (0xb9));		\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);			\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);			\
+  ASM_OUTPUT_CHAR (FILE, GEN_INT (0xb8));		\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);			\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);			\
+  ASM_OUTPUT_CHAR (FILE, GEN_INT (0xff));		\
+  ASM_OUTPUT_CHAR (FILE, GEN_INT (0xe0));		\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
