@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #define NO_PROFILE_COUNTERS
 
 #undef MCOUNT_NAME
-#define MCOUNT_NAME mcount
+#define MCOUNT_NAME "mcount"
 
 #undef SIZE_TYPE
 #define SIZE_TYPE (TARGET_64BIT ? "long unsigned int" : "unsigned int")
