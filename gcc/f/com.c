@@ -14804,7 +14804,7 @@ init_decl_processing ()
   malloc_init ();
 
   /* Record our roots.  */
-  for (i = 0; i < sizeof(tree_roots)/sizeof(tree_roots[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (tree_roots); i++)
     ggc_add_tree_root (tree_roots[i], 1);
   ggc_add_tree_root (&ffecom_tree_type[0][0], 
 		     FFEINFO_basictype*FFEINFO_kindtype);
