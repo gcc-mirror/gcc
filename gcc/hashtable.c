@@ -32,6 +32,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 static unsigned int calc_hash (const unsigned char *, unsigned int);
 static void ht_expand (hash_table *);
+static double approx_sqrt (double);
 
 /* Calculate the hash of the string STR of length LEN.  */
 
@@ -275,7 +276,7 @@ ht_dump_statistics (hash_table *table)
 
 /* Return the approximate positive square root of a number N.  This is for
    statistical reports, not code generation.  */
-double
+static double
 approx_sqrt (double x)
 {
   double s, d;

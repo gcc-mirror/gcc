@@ -78,8 +78,4 @@ extern void ht_forall (hash_table *, ht_cb, const void *);
 /* Dump allocation statistics to stderr.  */
 extern void ht_dump_statistics (hash_table *);
 
-/* Approximate positive square root of a host double.  This is for
-   statistical reports, not code generation.  */
-extern double approx_sqrt (double);
-
 #endif /* GCC_HASHTABLE_H */

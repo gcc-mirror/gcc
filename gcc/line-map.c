@@ -30,7 +30,7 @@ static void trace_include (const struct line_maps *, const struct line_map *);
 /* Initialize a line map set.  */
 
 void
-init_line_maps (struct line_maps *set)
+linemap_init (struct line_maps *set)
 {
   set->maps = 0;
   set->allocated = 0;
@@ -43,7 +43,7 @@ init_line_maps (struct line_maps *set)
 /* Free a line map set.  */
 
 void
-free_line_maps (struct line_maps *set)
+linemap_free (struct line_maps *set)
 {
   if (set->maps)
     {
@@ -68,9 +68,9 @@ free_line_maps (struct line_maps *set)
    function.  */
 
 const struct line_map *
-add_line_map (struct line_maps *set, enum lc_reason reason,
-	      unsigned int sysp, unsigned int from_line,
-	      const char *to_file, unsigned int to_line)
+linemap_add (struct line_maps *set, enum lc_reason reason,
+	     unsigned int sysp, unsigned int from_line,
+	     const char *to_file, unsigned int to_line)
 {
   struct line_map *map;
 
@@ -151,7 +151,7 @@ add_line_map (struct line_maps *set, enum lc_reason reason,
    the list is sorted and we can use a binary search.  */
 
 const struct line_map *
-lookup_line (struct line_maps *set, unsigned int line)
+linemap_lookup (struct line_maps *set, unsigned int line)
 {
   unsigned int md, mn = 0, mx = set->used;
 
@@ -175,7 +175,8 @@ lookup_line (struct line_maps *set, unsigned int line)
    the most recently listed stack is the same as the current one.  */
 
 void
-print_containing_files (struct line_maps *set, const struct line_map *map)
+linemap_print_containing_files (struct line_maps *set,
+				const struct line_map *map)
 {
   if (MAIN_FILE_P (map) || set->last_listed == map->included_from)
     return;

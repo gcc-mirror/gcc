@@ -898,8 +898,8 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 		     const char *to_file, unsigned int file_line,
 		     unsigned int sysp)
 {
-  pfile->map = add_line_map (&pfile->line_maps, reason, sysp,
-			     pfile->line, to_file, file_line);
+  pfile->map = linemap_add (&pfile->line_maps, reason, sysp,
+			    pfile->line, to_file, file_line);
 
   if (pfile->cb.file_change)
     pfile->cb.file_change (pfile, pfile->map);
