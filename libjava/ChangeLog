@@ -1,3 +1,12 @@
+2001-06-05  Martin Kahlert  <martin.kahlert@infineon.com>
+	    Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Ensure that ancestors
+	table index is within allowed bounds. Ensure that we dont try to access
+	class itable at a negative offset. Avoid an ancestor table lookup if
+	source is a primitive type class.
+	(isInstance): Remove redundant isPrimitive() check.
+
 2001-06-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/security/PublicKey.java: Extend Key.
