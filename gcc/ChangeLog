@@ -1,3 +1,9 @@
+2000-11-11  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def (avoid_bool_type): avoid commenting out #endif
+	(avoid_wchar_t_type): ditto
+	* fixinc/fixinc.irix: obsoleted
+
 2000-11-11  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* configure.in: Don't add $outputs to all_lang_makefiles.  Add

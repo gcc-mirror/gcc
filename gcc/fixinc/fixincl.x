@@ -1290,7 +1290,6 @@ static const char* apzAvoid_Bool_TypePatch[] = {
     "#ifndef __cplusplus\n\
 %0\n\
 #endif",
-    "^[ \t]*typedef[ \t].*[ \t]bool[ \t]*;.*",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1328,7 +1327,6 @@ static const char* apzAvoid_Wchar_T_TypePatch[] = {
     "#ifndef __cplusplus\n\
 %0\n\
 #endif",
-    "^[ \t]*typedef[ \t].*[ \t]wchar_t[ \t]*;.*",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
