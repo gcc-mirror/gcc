@@ -324,6 +324,20 @@ DEF_LIB_BUILTIN(BUILT_IN_COS,
 		BT_FN_DOUBLE_DOUBLE,
 		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
 					       : ATTR_PURE_NOTHROW_LIST)
+DEF_LIB_BUILTIN(BUILT_IN_EXP,
+		"__builtin_exp",
+		BT_FN_DOUBLE_DOUBLE,
+		flag_errno_math ? ATTR_NOTHROW_LIST
+				: (flag_unsafe_math_optimizations
+				   ? ATTR_CONST_NOTHROW_LIST
+				   : ATTR_PURE_NOTHROW_LIST))
+DEF_LIB_BUILTIN(BUILT_IN_LOG,
+		"__builtin_log",
+		BT_FN_DOUBLE_DOUBLE,
+		flag_errno_math ? ATTR_NOTHROW_LIST
+				: (flag_unsafe_math_optimizations
+				   ? ATTR_CONST_NOTHROW_LIST
+				   : ATTR_PURE_NOTHROW_LIST))
 DEF_LIB_BUILTIN(BUILT_IN_SQRTF,
 		"__builtin_sqrtf",
 		BT_FN_FLOAT_FLOAT,
@@ -341,6 +355,20 @@ DEF_LIB_BUILTIN(BUILT_IN_COSF,
 		BT_FN_FLOAT_FLOAT,
 		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
 					       : ATTR_PURE_NOTHROW_LIST)
+DEF_LIB_BUILTIN(BUILT_IN_EXPF,
+		"__builtin_expf",
+		BT_FN_FLOAT_FLOAT,
+		flag_errno_math ? ATTR_NOTHROW_LIST
+				: (flag_unsafe_math_optimizations
+				   ? ATTR_CONST_NOTHROW_LIST
+				   : ATTR_PURE_NOTHROW_LIST))
+DEF_LIB_BUILTIN(BUILT_IN_LOGF,
+		"__builtin_logf",
+		BT_FN_FLOAT_FLOAT,
+		flag_errno_math ? ATTR_NOTHROW_LIST
+				: (flag_unsafe_math_optimizations
+				   ? ATTR_CONST_NOTHROW_LIST
+				   : ATTR_PURE_NOTHROW_LIST))
 DEF_LIB_BUILTIN(BUILT_IN_SQRTL,
 		"__builtin_sqrtl",
 		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
@@ -358,6 +386,20 @@ DEF_LIB_BUILTIN(BUILT_IN_COSL,
 		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
 		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
 					       : ATTR_PURE_NOTHROW_LIST)
+DEF_LIB_BUILTIN(BUILT_IN_EXPL,
+		"__builtin_expl",
+		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		flag_errno_math ? ATTR_NOTHROW_LIST
+				: (flag_unsafe_math_optimizations
+				   ? ATTR_CONST_NOTHROW_LIST
+				   : ATTR_PURE_NOTHROW_LIST))
+DEF_LIB_BUILTIN(BUILT_IN_LOGL,
+		"__builtin_logl",
+		BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		flag_errno_math ? ATTR_NOTHROW_LIST
+				: (flag_unsafe_math_optimizations
+				   ? ATTR_CONST_NOTHROW_LIST
+				   : ATTR_PURE_NOTHROW_LIST))
 
 DEF_UNUSED_BUILTIN(BUILT_IN_GETEXP)
 DEF_UNUSED_BUILTIN(BUILT_IN_GETMAN)

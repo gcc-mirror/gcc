@@ -1,3 +1,22 @@
+2002-08-03  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.def: Define new builtin functions exp, expf, expl,
+	log, logf and logl (and their __builtin_* variants).
+	* optabs.h (enum optab_index): Add new OTI_exp and OTI_log.
+	Define exp_optab and log_optab.
+	* optabs.c (init_optans): Initialize exp_optab and log_optab.
+	* genopinit.c (optabs): Implement exp_optab and log_optab
+	using exp?f2 and log?f2 patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_EXP*
+	and BUILT_IN_LOG* using exp_optab and log_optab respectively.
+	(expand_builtin): Ignore the new builtins (and all cos and
+	sin variants) when not optimizing.  Expand new builtins via
+	expand_builtin_mathfn when flag_unsafe_math_optimizations.
+
+	* doc/extend.texi: Document new exp and log builtins.
+	* doc/md.texi: Document new exp?f2 and log?f2 patterns
+	(and previously undocumented cos?f2 and sin?f2 patterns).
+
 2002-08-03  Jason Merrill  <jason@redhat.com>
 
 	* explow.c (int_expr_size): New fn.
