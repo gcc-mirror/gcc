@@ -1,3 +1,12 @@
+2004-09-29  Richard Henderson  <rth@redhat.com>
+
+	* unwind-dw2.c (_Unwind_GetGR): Honor DWARF_ZERO_REG.
+	* doc/tm.texi (DWARF_ZERO_REG): New.
+
+	* config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
+	alpha_expand_epilogue): Revert 2003-09-30 change to store zero.
+	* config/alpha/alpha.h (DWARF_ZERO_REG): New.
+
 2004-09-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* builtins.c (expand_builtin_strlen): Do not call emit_move_insn
