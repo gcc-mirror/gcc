@@ -1,5 +1,5 @@
 /* DriverManager.java -- Manage JDBC drivers
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -264,8 +264,13 @@ getDrivers()
   while(e.hasMoreElements())
     {
       Object obj = e.nextElement();
-      if (!obj.getClass().getClassLoader().equals(cl))
-        continue;
+
+      ClassLoader loader = obj.getClass().getClassLoader();
+
+      if (loader == null)
+	loader = ClassLoader.getSystemClassLoader();
+      if (!loader.equals(cl))
+	continue;
 
       v.addElement(obj);
     } 
