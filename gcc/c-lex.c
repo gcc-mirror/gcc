@@ -1568,7 +1568,7 @@ yylex ()
 	  {
 	    if (c == '.')
 	      {
-		if (base == 16 && pedantic)
+		if (base == 16 && pedantic && !flag_isoc99)
 		  pedwarn ("floating constant may not be in radix 16");
 		if (floatflag == TOO_MANY_POINTS)
 		  /* We have already emitted an error.  Don't need another.  */
