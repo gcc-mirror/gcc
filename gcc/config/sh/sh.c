@@ -218,6 +218,8 @@ static int shiftcosts PARAMS ((rtx));
 static int andcosts PARAMS ((rtx));
 static int addsubcosts PARAMS ((rtx));
 static int multcosts PARAMS ((rtx));
+static bool unspec_caller_rtx_p PARAMS ((rtx));
+static bool sh_cannot_copy_insn_p PARAMS ((rtx));
 static bool sh_rtx_costs PARAMS ((rtx, int, int, int *));
 static int sh_address_cost PARAMS ((rtx));
 
@@ -271,6 +273,8 @@ static int sh_address_cost PARAMS ((rtx));
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL sh_function_ok_for_sibcall
 
+#undef TARGET_CANNOT_COPY_INSN_P
+#define TARGET_CANNOT_COPY_INSN_P sh_cannot_copy_insn_p
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS sh_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -1213,6 +1217,59 @@ output_file_start (file)
   else if (TARGET_SHMEDIA)
     fprintf (file, "\t.mode\tSHmedia\n\t.abi\t%i\n",
 	     TARGET_SHMEDIA64 ? 64 : 32);
+}
+
+/* Check if PAT includes UNSPEC_CALLER unspec pattern.  */
+
+static bool
+unspec_caller_rtx_p (pat)
+     rtx pat;
+{
+  switch (GET_CODE (pat))
+    {
+    case CONST:
+      return unspec_caller_rtx_p (XEXP (pat, 0));
+    case PLUS:
+    case MINUS:
+      if (unspec_caller_rtx_p (XEXP (pat, 0)))
+	return true;
+      return unspec_caller_rtx_p (XEXP (pat, 1));
+    case UNSPEC:
+      if (XINT (pat, 1) == UNSPEC_CALLER)
+	return true;
+    default:
+      break;
+    }
+
+  return false;
+}
+
+/* Indicate that INSN cannot be duplicated.  This is true for insn
+   that generates an unique label.  */
+
+static bool
+sh_cannot_copy_insn_p (insn)
+     rtx insn;
+{
+  rtx pat;
+
+  if (!reload_completed || !flag_pic)
+    return false;
+
+  if (GET_CODE (insn) != INSN)
+    return false;
+  if (asm_noperands (insn) >= 0)
+    return false;
+
+  pat = PATTERN (insn);
+  if (GET_CODE (pat) != SET)
+    return false;
+  pat = SET_SRC (pat);
+
+  if (unspec_caller_rtx_p (pat))
+    return true;
+
+  return false;
 }
 
 /* Actual number of instructions used to make a shift by N.  */
