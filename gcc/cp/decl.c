@@ -11645,22 +11645,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      inlinep = 0;
 	    }
 
-	  /* Until core issue 180 is resolved, allow 'friend typename A::B'.
-	     But don't allow implicit typenames except with a class-key.  */
-	  if (!current_aggr && (TREE_CODE (type) != TYPENAME_TYPE
-				|| IMPLICIT_TYPENAME_P (type)))
+	  if (!current_aggr)
 	    {
+	      /* Don't allow friend declaration without a class-key.  */
 	      if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-	        pedwarn ("template parameters cannot be friends");
+		pedwarn ("template parameters cannot be friends");
 	      else if (TREE_CODE (type) == TYPENAME_TYPE)
-	        pedwarn ("\
-friend declaration requires class-key, i.e. `friend class %T::%T'",
-			    constructor_name (current_class_type),
-			    TYPE_IDENTIFIER (type));
+	        pedwarn ("friend declaration requires class-key, "
+			 "i.e. `friend class %T::%D'",
+			 TYPE_CONTEXT (type), TYPENAME_TYPE_FULLNAME (type));
 	      else
-	        pedwarn ("\
-friend declaration requires class-key, i.e. `friend %#T'",
-			    type);
+	        pedwarn ("friend declaration requires class-key, "
+			 "i.e. `friend %#T'",
+			 type);
 	    }
 
 	  /* Only try to do this stuff if we didn't already give up.  */

@@ -1,3 +1,9 @@
+2002-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	DR 180
+	* decl.c (grokdeclarator): Require class-key for all friend class.
+	Output the correct type and context in the error message.
+
 2002-12-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/5919

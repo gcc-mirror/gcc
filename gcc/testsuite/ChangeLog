@@ -1,3 +1,8 @@
+2002-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	DR 180
+	* g++.old-deja/g++.pt/crash32.C: Expect error.
+
 2002-12-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/5919
