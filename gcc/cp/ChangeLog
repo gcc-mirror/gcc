@@ -1,5 +1,8 @@
 1999-12-14  Jason Merrill  <jason@casey.cygnus.com>
 
+	* optimize.c (expand_call_inline): Set BLOCK_ABSTRACT_ORIGIN on the
+	outermost block to point to the inlined function decl.
+
 	* error.c (dump_decl): operator==, not operator ==.
 	(op_to_string): Likewise.
 
