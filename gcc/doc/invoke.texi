@@ -2250,7 +2250,13 @@ Warn if a user-supplied include directory does not exist.
 Warn if parentheses are omitted in certain contexts, such
 as when there is an assignment in a context where a truth value
 is expected, or when operators are nested whose precedence people
-often get confused about.
+often get confused about.  Only the warning for an assignment used as
+a truth value is supported when compiling C++; the other warnings are
+only supported when compiling C@.
+
+Also warn if a comparison like @samp{x<=y<=z} appears; this is
+equivalent to @samp{(x<=y ? 1 : 0) <= z}, which is a different
+interpretation from that of ordinary mathematical notation.
 
 Also warn about constructions where there may be confusion to which
 @code{if} statement an @code{else} branch belongs.  Here is an example of
@@ -2567,11 +2573,6 @@ but @samp{x[(void)i,j]} will not.
 
 @item
 An unsigned value is compared against zero with @samp{<} or @samp{>=}.
-
-@item
-A comparison like @samp{x<=y<=z} appears; this is equivalent to
-@samp{(x<=y ? 1 : 0) <= z}, which is a different interpretation from
-that of ordinary mathematical notation.
 
 @item
 Storage-class specifiers like @code{static} are not the first things in

@@ -1,3 +1,9 @@
+2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/Wparentheses-2.c, gcc.dg/Wparentheses-3.c,
+	gcc.dg/Wparentheses-4.c, Wparentheses-5.c, Wparentheses-6.c,
+	Wparentheses-7.c, Wparentheses-8.c, Wparentheses-9.c: New tests.
+
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/compile/20020210-1.c: Remove XFAIL.

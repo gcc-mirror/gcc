@@ -1,3 +1,10 @@
+2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-typeck.c (parser_build_binary_op): Condition warnings for
+	X<=Y<=Z on -Wparentheses instead of -Wextra.
+	* doc/invoke.texi: Update.  Document that most of -Wparentheses is
+	supported for C only.
+
 2004-07-17  Steven Bosscher  <stevenb@suse.de>
 
 	* cfgcleanup.c (try_simplify_condjump): Don't remove line
