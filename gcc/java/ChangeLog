@@ -1,3 +1,23 @@
+2004-07-11  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (java_truthvalue_conversion, flush_quick_stack,
+	java_stack_swap, java_stack_dup, build_java_athrow, build_java_jsr,
+	build_java_ret, build_java_throw_out_of_bounds_exception,
+	build_java_array_length_access, java_check_reference,
+	build_java_arrayaccess, build_java_arraystore_check, build_newarray,
+	build_anewarray, expand_java_multianewarray, expand_java_arraystore,
+	expand_java_arrayload, build_java_monitor, expand_java_return,
+	expand_load_internal, expand_java_NEW, build_get_class,
+	build_instanceof, expand_java_CHECKCAST, expand_iinc,
+	build_java_soft_divmod, build_java_binop, build_field_ref,
+	expand_compare, expand_java_goto, expand_java_switch,
+	expand_java_add_case, build_class_init, build_known_method_ref,
+	invoke_build_dtable, build_invokevirtual, build_invokeinterface,
+	expand_invoke, build_jni_stub, expand_java_field_op,
+	java_expand_expr, expand_byte_code, STORE_INTERNAL,
+	force_evaluation_order, emit_init_test_initialization): Convert
+	calls to "build" into calls to the prefered "buildN" functions.
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* java-tree.h (set_block): Remove.
