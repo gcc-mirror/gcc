@@ -7416,6 +7416,7 @@ mips_function_value (valtype, func)
 
   return gen_rtx_REG (mode, reg);
 }
+#endif
 
 /* The implementation of FUNCTION_ARG_PASS_BY_REFERENCE.  Return
    nonzero when an argument must be passed by reference.  */
@@ -7451,7 +7452,6 @@ function_arg_pass_by_reference (cum, mode, type, named)
   size = int_size_in_bytes (type);
   return size == -1 || size > UNITS_PER_WORD;
 }
-#endif
 
 /* This function returns the register class required for a secondary
    register when copying between one of the registers in CLASS, and X,
