@@ -95,6 +95,7 @@ extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 extern jlong _Jv_platform_gettimeofday ();
 extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
+extern int _Jv_pipe (int filedes[2]);
 
 inline void
 _Jv_platform_close_on_exec (jint)

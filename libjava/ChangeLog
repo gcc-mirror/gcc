@@ -1,3 +1,11 @@
+2003-10-17  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* win32.cc (_Jv_pipe): Implemented.
+	* gnu/java/nio/natPipeImpl.cc (nativeInit): Use
+	_Jv_pipe instead of ::pipe.
+	* include/posix.h (_Jv_pipe): New inline.
+	* include/win32.h (_Jv_pipe): New declaration.
+	
 2003-10-17  Ralph Loader  <rcl@ihug.co.nz>
 
 	* java/lang/StringBuffer.java (getChars): Fix array index checks.
