@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP-UX.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_GDB_EXTENSIONS 0
 
 /* Like the default, except no -lg.  */
+#undef LIB_SPEC
 #define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}}"
 
 #undef CPP_PREDEFINES
