@@ -1,3 +1,8 @@
+2000-12-20  Robert Lipe <robertlipe@usa.net>
+
+	* haifa-sched.c (schedule_block): Provide empty source statement
+	if not MD_SCHED_REORDER2.
+
 2000-12-20  Richard Henderson  <rth@redhat.com>
 
 	* rtl.h (REG_NON_LOCAL_GOTO): New.
