@@ -1,3 +1,10 @@
+2005-02-02  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/19738
+	* gjavah.c (jni_print_float): Do not emit floating-point
+	initialiser for a static final field.
+	(jni_print_double): Likewise.
+
 2005-02-01  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert:

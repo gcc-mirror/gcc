@@ -1,7 +1,7 @@
 /* Program to write C++-suitable header files from a Java(TM) .class
    file.  This is similar to SUN's javah.
 
-Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -281,19 +281,22 @@ jni_print_float (FILE *stream, jfloat f)
      work in data initializers.  FIXME.  */
   if (JFLOAT_FINITE (f))
     {
-      fputs (flag_jni ? " " : " = ", out);
-      if (f.negative)
-	putc ('-', stream);
-      if (f.exponent)
-	fprintf (stream, "0x1.%.6xp%+df",
-		 ((unsigned int)f.mantissa) << 1,
-		 f.exponent - JFLOAT_EXP_BIAS);
-      else
-	/* Exponent of 0x01 is -125; exponent of 0x00 is *also* -125,
-	   because the implicit leading 1 bit is no longer present.  */
-	fprintf (stream, "0x0.%.6xp%+df",
-		 ((unsigned int)f.mantissa) << 1,
-		 f.exponent + 1 - JFLOAT_EXP_BIAS);
+      if (flag_jni)
+        {
+          fputs (" ", out);
+          if (f.negative)
+            putc ('-', stream);
+          if (f.exponent)
+            fprintf (stream, "0x1.%.6xp%+df",
+                     ((unsigned int)f.mantissa) << 1,
+                     f.exponent - JFLOAT_EXP_BIAS);
+          else
+            /* Exponent of 0x01 is -125; exponent of 0x00 is *also* -125,
+               because the implicit leading 1 bit is no longer present.  */
+            fprintf (stream, "0x0.%.6xp%+df",
+                     ((unsigned int)f.mantissa) << 1,
+                     f.exponent + 1 - JFLOAT_EXP_BIAS);
+        }
     }
   if (! flag_jni)
     fputs (";\n", stream);
@@ -307,19 +310,22 @@ jni_print_double (FILE *stream, jdouble f)
      work in data initializers.  FIXME.  */
   if (JDOUBLE_FINITE (f))
     {
-      fputs (flag_jni ? " " : " = ", out);
-      if (f.negative)
-	putc ('-', stream);
-      if (f.exponent)
-	fprintf (stream, "0x1.%.5x%.8xp%+d",
-		 f.mantissa0, f.mantissa1,
-		 f.exponent - JDOUBLE_EXP_BIAS);
-      else
-	/* Exponent of 0x001 is -1022; exponent of 0x000 is *also* -1022,
-	   because the implicit leading 1 bit is no longer present.  */
-	fprintf (stream, "0x0.%.5x%.8xp%+d",
-		 f.mantissa0, f.mantissa1,
-		 f.exponent + 1 - JDOUBLE_EXP_BIAS);
+      if (flag_jni)
+        {
+          fputs (" ", out);
+          if (f.negative)
+            putc ('-', stream);
+          if (f.exponent)
+            fprintf (stream, "0x1.%.5x%.8xp%+d",
+                     f.mantissa0, f.mantissa1,
+                     f.exponent - JDOUBLE_EXP_BIAS);
+          else
+            /* Exponent of 0x001 is -1022; exponent of 0x000 is *also* -1022,
+               because the implicit leading 1 bit is no longer present.  */
+            fprintf (stream, "0x0.%.5x%.8xp%+d",
+                     f.mantissa0, f.mantissa1,
+                     f.exponent + 1 - JDOUBLE_EXP_BIAS);
+        }
     }
   fputs (flag_jni ? "\n" : ";\n", stream);
 }
