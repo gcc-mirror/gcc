@@ -1793,7 +1793,7 @@ process_template_parm (list, next)
       
       if (parm && TREE_CODE (parm) == TEMPLATE_DECL)
 	{
-	  t = make_lang_type (TEMPLATE_TEMPLATE_PARM);
+	  t = make_aggr_type (TEMPLATE_TEMPLATE_PARM);
 	  /* This is for distinguishing between real templates and template 
 	     template parameters */
 	  TREE_TYPE (parm) = t;
@@ -1802,7 +1802,7 @@ process_template_parm (list, next)
 	}
       else
 	{
-	  t = make_lang_type (TEMPLATE_TYPE_PARM);
+	  t = make_aggr_type (TEMPLATE_TYPE_PARM);
 	  /* parm is either IDENTIFIER_NODE or NULL_TREE */
 	  decl = build_decl (TYPE_DECL, parm, t);
 	}
@@ -3904,7 +3904,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	}
       else
 	{
-	  t = make_lang_type (TREE_CODE (template_type));
+	  t = make_aggr_type (TREE_CODE (template_type));
 	  CLASSTYPE_DECLARED_CLASS (t) 
 	    = CLASSTYPE_DECLARED_CLASS (template_type);
 	  CLASSTYPE_GOT_SEMICOLON (t) = 1;

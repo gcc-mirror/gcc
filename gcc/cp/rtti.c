@@ -811,7 +811,7 @@ expand_class_desc (tdecl, type)
 
       /* A reasonably close approximation of __class_type_info::base_info */
 
-      base_info_type_node = make_lang_type (RECORD_TYPE);
+      base_info_type_node = make_aggr_type (RECORD_TYPE);
 
       /* Actually const __user_type_info * */
       fields [0] = build_lang_decl

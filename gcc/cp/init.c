@@ -62,7 +62,7 @@ void init_init_processing ()
 
   /* Define the structure that holds header information for
      arrays allocated via operator new.  */
-  BI_header_type = make_lang_type (RECORD_TYPE);
+  BI_header_type = make_aggr_type (RECORD_TYPE);
   nelts_identifier = get_identifier ("nelts");
   fields[0] = build_lang_decl (FIELD_DECL, nelts_identifier, sizetype);
 

@@ -4784,8 +4784,6 @@ cp_make_lang_type (code)
     {
       struct lang_type *pi;
 
-      SET_IS_AGGR_TYPE (t, 1);
-
       pi = (struct lang_type *) ggc_alloc (sizeof (struct lang_type));
       bzero ((char *) pi, (int) sizeof (struct lang_type));
 
@@ -4815,6 +4813,18 @@ cp_make_lang_type (code)
      all types.  */
   if (IS_AGGR_TYPE_CODE (code) || code == TEMPLATE_TYPE_PARM)
     TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE);
+
+  return t;
+}
+
+tree
+make_aggr_type (code)
+     enum tree_code code;
+{
+  tree t = cp_make_lang_type (code);
+
+  if (IS_AGGR_TYPE_CODE (code))
+    SET_IS_AGGR_TYPE (t, 1);
 
   return t;
 }

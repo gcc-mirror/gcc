@@ -1,3 +1,18 @@
+1999-12-15  Richard Henderson  <rth@cygnus.com>
+
+	* cp-tree.h (make_aggr_type): Declare.
+	* lex.c (cp_make_lang_type): Don't SET_IS_AGGR_TYPE.
+	(make_aggr_type): New.
+
+	* decl.c (build_typename_type, init_decl_processing): Use it.
+	(build_ptrmemfunc_type, xref_tag): Likewise.
+	* except.c (call_eh_info): Likewise.
+	* init.c (init_init_processing): Likewise.
+	* pt.c (process_template_parm, lookup_template_class): Likewise.
+	* rtti.c (expand_class_desc): Likewise.
+	* semantics.c (begin_class_definition, finish_typeof): Likewise.
+	* tree.c (copy_template_template_parm): Likewise.
+
 1999-12-15  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.def (TEMPLATE_PARM_INDEX): Calculate size using
@@ -176,7 +191,7 @@
 	(generate_ctor_or_dtor_function): Adjust accordingly.
 	
 1999-11-24  Geoffrey Keating  <geoffk@cygnus.com>
-            Greg McGary  <gkm@gnu.org>
+	    Greg McGary  <gkm@gnu.org>
 
 	* decl.c (duplicate_decls): Merge
  	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT,
@@ -585,7 +600,7 @@ Thu Nov 11 12:42:11 MST 1999	Diego Novillo <dnovillo@cygnus.com>
 	* pt.c (tsubst_enum): Adjust according to build_enumerator changes.
 	
 Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
-                          Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	                  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h: Test `GCC_VERSION', not `HAVE_GCC_VERSION'.
 
@@ -696,8 +711,8 @@ Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
 
 1999-11-02  Scott Snyder  <snyder@fnal.gov>
 
-        * decl2.c (build_expr_from_tree): Handle REALPART_EXPR and
-        IMAGPART_EXPR.
+	* decl2.c (build_expr_from_tree): Handle REALPART_EXPR and
+	IMAGPART_EXPR.
 	* pt.c (tsubst_copy): Likewise.
 
 1999-11-01  Jason Merrill  <jason@yorick.cygnus.com>
@@ -934,9 +949,9 @@ Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 1999-10-7   Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
-        * cp-tree.h (cp_make_lake_type): Renamed from make_lang_type.
-        * lex.c (cp_make_lake_type): Likewise.
-        * tree.c (init_tree): Init make_lang_type_fn.
+	* cp-tree.h (cp_make_lake_type): Renamed from make_lang_type.
+	* lex.c (cp_make_lake_type): Likewise.
+	* tree.c (init_tree): Init make_lang_type_fn.
 	
 1999-10-07  Mark Mitchell  <mark@codesourcery.com>
 
@@ -1241,19 +1256,19 @@ Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 	
 1999-09-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-        * pt.c (most_general_template): Adjust declaration.
+	* pt.c (most_general_template): Adjust declaration.
 
-        * cp-tree.h: (most_general_template): Declare.
+	* cp-tree.h: (most_general_template): Declare.
 
-        * error.c (dump_template_value): Rename to ...
-        (dump_template_argument): This.
-        (dump_template_argument_list): New function.
-        (dump_type): Use it.
-        (dump_template_parameter): New function.
-        (dump_template_decl): Use it.
-        (dump_template_bindings): New function.
-        (dump_function_decl): Use it. Pretty print function template
-        instantiations.
+	* error.c (dump_template_value): Rename to ...
+	(dump_template_argument): This.
+	(dump_template_argument_list): New function.
+	(dump_type): Use it.
+	(dump_template_parameter): New function.
+	(dump_template_decl): Use it.
+	(dump_template_bindings): New function.
+	(dump_function_decl): Use it. Pretty print function template
+	instantiations.
 
 1999-09-28  Nathan Sidwell  <nathan@acm.org>
 
@@ -1654,7 +1669,7 @@ Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 1999-09-17  Mark Mitchell  <mark@codesourcery.com>
 
-        Turn on function-at-a-time processing.  
+	Turn on function-at-a-time processing.  
 	* cp-tree.h (doing_semantic_analysis_p): New macro.
 	(SF_DEFAULT): Define to zero, not SF_EXPAND.
 	(start_handler_parms): Change prototype.
@@ -2475,8 +2490,8 @@ Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(init_search_processing): Use vptr_identifier.
 	
 1999-09-05  Richard Henderson  <rth@cygnus.com>
-            Bernd Schmidt <bernds@cygnus.co.uk>
-            Mark Mitchell  <mark@codesourcery.com>
+	    Bernd Schmidt <bernds@cygnus.co.uk>
+	    Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (parse.o): Depend on ggc.h.
 	(decl2.o): Depend on ggc.h.
@@ -3033,7 +3048,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	* typeck.c (common_type): Use same_type_p, not pointer equality,
 	to compare types.
 
-        * cp-tree.h (build_lang_field_decl): Remove.
+	* cp-tree.h (build_lang_field_decl): Remove.
 	* class.c (build_vtable): Replace calls to build_lang_field_decl
 	with build_lang_decl.
 	(prepare_fresh_vtable): Likewise.
@@ -3489,7 +3504,7 @@ Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 1999-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-        * lex.c (lang_identify): Likewise.
+	* lex.c (lang_identify): Likewise.
 
 1999-08-09  Bernd Schmidt  <bernds@cygnus.co.uk>
 
@@ -4079,10 +4094,10 @@ Tue Jul 20 11:24:19 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Sat Jul 17 23:51:30 1999  Jeffrey A Law  (law@cygnus.com)
 
-        * Makefile.in (INTERFACE): Bump to 2.
+	* Makefile.in (INTERFACE): Bump to 2.
 
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
-        
+	
 	* typeck2.c (my_friendly_abort): Updated URL with bug reporting
 	instructions to gcc.gnu.org.  Removed e-mail address.
 
@@ -4206,7 +4221,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 1999-06-28  Richard Henderson  <rth@cygnus.com>
 
-        * decl.c (cp_finish_decl): Fix typo in cp_warning_at call.
+	* decl.c (cp_finish_decl): Fix typo in cp_warning_at call.
 
 1999-06-28  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -4466,7 +4481,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	result in a valid non-type template argument.
 
 1999-05-21  Mark Mitchell  <mark@codesourcery.com>
-            Nathan Sidwell  <nathan@acm.org>
+	    Nathan Sidwell  <nathan@acm.org>
 	
 	* Make-lang.in (cc1plus): Make it depend on gxx.gperf.
 	* cp-tree.h: Fix typo in documentation on pointers-to-members.

@@ -5225,7 +5225,7 @@ build_typename_type (context, name, fullname, base_type)
     }
 
   /* Build the TYPENAME_TYPE.  */
-  t = make_lang_type (TYPENAME_TYPE);
+  t = make_aggr_type (TYPENAME_TYPE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
   TYPENAME_TYPE_FULLNAME (t) = fullname;
   TREE_TYPE (t) = base_type;
@@ -6163,7 +6163,7 @@ init_decl_processing ()
 
   /* This is just some anonymous class type.  Nobody should ever
      need to look inside this envelope.  */
-  class_star_type_node = build_pointer_type (make_lang_type (RECORD_TYPE));
+  class_star_type_node = build_pointer_type (make_aggr_type (RECORD_TYPE));
 
   if (flag_huge_objects)
     delta_type_node = long_integer_type_node;
@@ -6234,7 +6234,7 @@ init_decl_processing ()
     }
   else
     {
-      vtable_entry_type = make_lang_type (RECORD_TYPE);
+      vtable_entry_type = make_aggr_type (RECORD_TYPE);
       fields[0] = build_lang_decl (FIELD_DECL, delta_identifier,
 				   delta_type_node);
       fields[1] = build_lang_decl (FIELD_DECL, index_identifier,
@@ -8615,7 +8615,7 @@ build_ptrmemfunc_type (type)
     unqualified_variant 
       = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
 
-  u = make_lang_type (UNION_TYPE);
+  u = make_aggr_type (UNION_TYPE);
   SET_IS_AGGR_TYPE (u, 0);
   fields[0] = build_lang_decl (FIELD_DECL, pfn_identifier, type);
   fields[1] = build_lang_decl (FIELD_DECL, delta2_identifier,
@@ -8623,7 +8623,7 @@ build_ptrmemfunc_type (type)
   finish_builtin_type (u, "__ptrmemfunc_type", fields, 1, ptr_type_node);
   TYPE_NAME (u) = NULL_TREE;
 
-  t = make_lang_type (RECORD_TYPE);
+  t = make_aggr_type (RECORD_TYPE);
 
   /* Let the front-end know this is a pointer to member function...  */
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
@@ -12121,7 +12121,7 @@ xref_tag (code_type_node, name, globalize)
 	{
 	  struct binding_level *old_b = class_binding_level;
 
-	  ref = make_lang_type (code);
+	  ref = make_aggr_type (code);
 	  TYPE_CONTEXT (ref) = context;
 
 #ifdef NONNESTED_CLASSES
