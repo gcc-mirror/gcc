@@ -4370,13 +4370,13 @@ simplify_set (x)
 
   if (GET_CODE (dest) != PC
       && GET_CODE (src) == IF_THEN_ELSE
-#ifdef HAVE_conditional_move
-      && ! HAVE_conditional_move
-#endif
       && GET_MODE_CLASS (GET_MODE (src)) == MODE_INT
       && (GET_CODE (XEXP (src, 0)) == EQ || GET_CODE (XEXP (src, 0)) == NE)
       && XEXP (XEXP (src, 0), 1) == const0_rtx
       && GET_MODE (src) == GET_MODE (XEXP (XEXP (src, 0), 0))
+#ifdef HAVE_conditional_move
+      && ! can_conditionally_move_p (GET_MODE (src))
+#endif
       && (num_sign_bit_copies (XEXP (XEXP (src, 0), 0),
 			       GET_MODE (XEXP (XEXP (src, 0), 0)))
 	  == GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (src, 0), 0))))
