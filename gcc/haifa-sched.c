@@ -364,7 +364,7 @@ static rtx move_insn PARAMS ((rtx, rtx));
    on the first cycle.  It is used only for DFA based scheduler.  */
 static rtx ready_element PARAMS ((struct ready_list *, int));
 static rtx ready_remove PARAMS ((struct ready_list *, int));
-static int max_issue PARAMS ((struct ready_list *, state_t, int *));
+static int max_issue PARAMS ((struct ready_list *, int *));
 
 static rtx choose_ready PARAMS ((struct ready_list *));
 
@@ -1773,87 +1773,127 @@ move_insn (insn, last)
   return retval;
 }
 
+/* The following structure describe an entry of the stack of choices.  */
+struct choice_entry
+{
+  /* Ordinal number of the issued insn in the ready queue.  */
+  int index;
+  /* The number of the rest insns whose issues we should try.  */
+  int rest;
+  /* The number of issued essential insns.  */
+  int n;
+  /* State after issuing the insn.  */
+  state_t state;
+};
+
+/* The following array is used to implement a stack of choices used in
+   function max_issue.  */
+static struct choice_entry *choice_stack;
+
+/* The following variable value is number of essential insns issued on
+   the current cycle.  An insn is essential one if it changes the
+   processors state.  */
+static int cycle_issued_insns;
+
+/* The following variable value is maximal number of tries of issuing
+   insns for the first cycle multipass insn scheduling.  We define
+   this value as constant*(DFA_LOOKAHEAD**ISSUE_RATE).  We would not
+   need this constraint if all real insns (with non-negative codes)
+   had reservations because in this case the algorithm complexity is
+   O(DFA_LOOKAHEAD**ISSUE_RATE).  Unfortunately, the dfa descriptions
+   might be incomplete and such insn might occur.  For such
+   descriptions, the complexity of algorithm (without the constraint)
+   could achieve DFA_LOOKAHEAD ** N , where N is the queue length.  */
+static int max_lookahead_tries;
+
+/* The following value is value of hook
+   `first_cycle_multipass_dfa_lookahead' at the last call of
+   `max_issue'.  */
+static int cached_first_cycle_multipass_dfa_lookahead = 0;
+
+/* The following value is value of `issue_rate' at the last call of
+   `sched_init'.  */
+static int cached_issue_rate = 0;
+
 /* The following function returns maximal (or close to maximal) number
    of insns which can be issued on the same cycle and one of which
-   insns is insns with the best rank (the last insn in READY).  To
+   insns is insns with the best rank (the first insn in READY).  To
    make this function tries different samples of ready insns.  READY
    is current queue `ready'.  Global array READY_TRY reflects what
-   insns are already issued in this try.  STATE is current processor
-   state.  If the function returns nonzero, INDEX will contain index
+   insns are already issued in this try.  INDEX will contain index
    of the best insn in READY.  The following function is used only for
    first cycle multipass scheduling.  */
-
 static int
-max_issue (ready, state, index)
-     struct ready_list *ready;
-     state_t state;
-     int *index;
+max_issue (ready, index)
+  struct ready_list *ready;
+  int *index;
 {
-  int i, best, n, temp_index, delay;
-  state_t temp_state;
+  int n, i, all, n_ready, best, delay, tries_num;
+  struct choice_entry *top;
   rtx insn;
-  int max_lookahead = (*targetm.sched.first_cycle_multipass_dfa_lookahead) ();
 
-  if (state_dead_lock_p (state))
-    return 0;
-
-  temp_state = alloca (dfa_state_size);
   best = 0;
-  
-  for (i = 0; i < ready->n_ready; i++)
+  memcpy (choice_stack->state, curr_state, dfa_state_size);
+  top = choice_stack;
+  top->rest = cached_first_cycle_multipass_dfa_lookahead;
+  top->n = 0;
+  n_ready = ready->n_ready;
+  for (all = i = 0; i < n_ready; i++)
     if (!ready_try [i])
-      {
-	insn = ready_element (ready, i);
-	
-	if (INSN_CODE (insn) < 0)
-	  continue;
-	
-	memcpy (temp_state, state, dfa_state_size);
-	
-	delay = state_transition (temp_state, insn);
-	
-	if (delay == 0)
-	  {
-	    if (!targetm.sched.dfa_bubble)
-	      continue;
-	    else
-	      {
-		int j;
-		rtx bubble;
-		
-		for (j = 0;
-		     (bubble = (*targetm.sched.dfa_bubble) (j)) != NULL_RTX;
-		     j++)
-		  if (state_transition (temp_state, bubble) < 0
-		      && state_transition (temp_state, insn) < 0)
-		    break;
-		
-		if (bubble == NULL_RTX)
-		  continue;
-	      }
-	  }
-	else if (delay > 0)
-	  continue;
-	
-	--max_lookahead;
-	
-	if (max_lookahead < 0)
-	  break;
-	
-	ready_try [i] = 1;
-
-	n = max_issue (ready, temp_state, &temp_index);
-	if (n > 0 || ready_try[0])
-	  n += 1;
-
-	if (best < n)
-	  {
-	    best = n;
-	    *index = i;
-	  }
-	ready_try [i] = 0;
-      }
-  
+      all++;
+  i = 0;
+  tries_num = 0;
+  for (;;)
+    {
+      if (top->rest == 0 || i >= n_ready)
+	{
+	  if (top == choice_stack)
+	    break;
+	  if (best < top - choice_stack && ready_try [0])
+	    {
+	      best = top - choice_stack;
+	      *index = choice_stack [1].index;
+	      if (top->n == issue_rate - cycle_issued_insns || best == all)
+		break;
+	    }
+	  i = top->index;
+	  ready_try [i] = 0;
+	  top--;
+	  memcpy (curr_state, top->state, dfa_state_size);
+	}
+      else if (!ready_try [i])
+	{
+	  tries_num++;
+	  if (tries_num > max_lookahead_tries)
+	    break;
+	  insn = ready_element (ready, i);
+	  delay = state_transition (curr_state, insn);
+	  if (delay < 0)
+	    {
+	      if (state_dead_lock_p (curr_state))
+		top->rest = 0;
+	      else
+		top->rest--;
+	      n = top->n;
+	      if (memcmp (top->state, curr_state, dfa_state_size) != 0)
+		n++;
+	      top++;
+	      top->rest = cached_first_cycle_multipass_dfa_lookahead;
+	      top->index = i;
+	      top->n = n;
+	      memcpy (top->state, curr_state, dfa_state_size);
+	      ready_try [i] = 1;
+	      i = -1;
+	    }
+	}
+      i++;
+    }
+  while (top != choice_stack)
+    {
+      ready_try [top->index] = 0;
+      top--;
+    }
+  memcpy (curr_state, choice_stack->state, dfa_state_size);
   return best;
 }
 
@@ -1865,15 +1905,34 @@ static rtx
 choose_ready (ready)
      struct ready_list *ready;
 {
-  if (!targetm.sched.first_cycle_multipass_dfa_lookahead
-      || (*targetm.sched.first_cycle_multipass_dfa_lookahead) () <= 0)
+  int lookahead = 0;
+
+  if (targetm.sched.first_cycle_multipass_dfa_lookahead)
+    lookahead = (*targetm.sched.first_cycle_multipass_dfa_lookahead) ();
+  if (lookahead <= 0 || SCHED_GROUP_P (ready_element (ready, 0)))
     return ready_remove_first (ready);
   else
     {
       /* Try to choose the better insn.  */
-      int index;
+      int index, i;
+      rtx insn;
 
-      if (max_issue (ready, curr_state, &index) == 0)
+      if (cached_first_cycle_multipass_dfa_lookahead != lookahead)
+	{
+	  cached_first_cycle_multipass_dfa_lookahead = lookahead;
+	  max_lookahead_tries = 100;
+	  for (i = 0; i < issue_rate; i++)
+	    max_lookahead_tries *= lookahead;
+	}
+      insn = ready_element (ready, 0);
+      if (INSN_CODE (insn) < 0)
+	return ready_remove_first (ready);
+      for (i = 1; i < ready->n_ready; i++)
+	{
+	  insn = ready_element (ready, i);
+	  ready_try [i] = INSN_CODE (insn) < 0;
+	}
+      if (max_issue (ready, &index) == 0)
 	return ready_remove_first (ready);
       else
 	return ready_remove (ready, index);
@@ -1901,6 +1960,7 @@ schedule_block (b, rgn_n_insns)
      int rgn_n_insns;
 {
   struct ready_list ready;
+  int i;
   int first_cycle_insn_p;
   int can_issue_more;
   state_t temp_state = NULL;  /* It is used for multipass scheduling.  */
@@ -1955,6 +2015,11 @@ schedule_block (b, rgn_n_insns)
       temp_state = alloca (dfa_state_size);
       ready_try = (char *) xmalloc ((rgn_n_insns + 1) * sizeof (char));
       memset (ready_try, 0, (rgn_n_insns + 1) * sizeof (char));
+      choice_stack
+	= (struct choice_entry *) xmalloc ((rgn_n_insns + 1)
+					   * sizeof (struct choice_entry));
+      for (i = 0; i <= rgn_n_insns; i++)
+	choice_stack[i].state = (state_t) xmalloc (dfa_state_size);
     }
 
   (*current_sched_info->init_ready_list) (&ready);
@@ -2019,6 +2084,7 @@ schedule_block (b, rgn_n_insns)
 	can_issue_more = issue_rate;
 
       first_cycle_insn_p = 1;
+      cycle_issued_insns = 0;
       for (;;)
 	{
 	  rtx insn;
@@ -2153,7 +2219,11 @@ schedule_block (b, rgn_n_insns)
 
 	  if (targetm.sched.use_dfa_pipeline_interface
 	      && (*targetm.sched.use_dfa_pipeline_interface) ())
-	    memcpy (curr_state, temp_state, dfa_state_size);
+	    {
+	      if (memcmp (curr_state, temp_state, dfa_state_size) != 0)
+		cycle_issued_insns++;
+	      memcpy (curr_state, temp_state, dfa_state_size);
+	    }
 	    
 	  if (targetm.sched.variable_issue)
 	    can_issue_more =
@@ -2248,7 +2318,12 @@ schedule_block (b, rgn_n_insns)
 
   if (targetm.sched.use_dfa_pipeline_interface
       && (*targetm.sched.use_dfa_pipeline_interface) ())
-    free (ready_try);
+    {
+      free (ready_try);
+      for (i = 0; i <= rgn_n_insns; i++)
+	free (choice_stack [i].state);
+      free (choice_stack);
+    }
 }
 
 /* Set_priorities: compute priority of each insn in the block.  */
@@ -2312,6 +2387,13 @@ sched_init (dump_file)
     issue_rate = (*targetm.sched.issue_rate) ();
   else
     issue_rate = 1;
+
+  if (cached_issue_rate != issue_rate)
+    {
+      cached_issue_rate = issue_rate;
+      /* To invalidate max_lookahead_tries:  */
+      cached_first_cycle_multipass_dfa_lookahead = 0;
+    }
 
   /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
      pseudos which do not cross calls.  */

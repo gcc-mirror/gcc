@@ -1,3 +1,16 @@
+2003-06-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* haifa-sched.c (max_isse): Backport from the mainline.
+	(choice_entry): New structure.
+	(choice_stack, cycle_issued_insns, max_lookahead_tries,
+	cached_first_cycle_multipass_dfa_lookahead, cached_issue_rate):
+	New variables.
+	(choose_ready): Calculate max_lookahead_tries.  Initiate
+	ready_try.
+	(schedule_block): Allocate/deallocate choice_stack.  Change
+	cycle_issued_insns value as necessary.
+	(sched_init): Check cached_issue_rate.
+
 2003-06-20  Daniel Egger  <degger@fhm.edu>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
