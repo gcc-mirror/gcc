@@ -1,3 +1,8 @@
+2001-12-11  Momchil Velikov  <velco@fadata.bg>
+  
+	* config/fp-bit.c (pack_d): Cast to ``fractype'' for long long
+	shifts.
+
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.h (TARGET_FIXUP_EV5_PREFETCH): New.

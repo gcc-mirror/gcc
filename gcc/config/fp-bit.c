@@ -222,7 +222,7 @@ pack_d ( fp_number_type *  src)
 	    }
 	  else
 	    {
-	      int lowbit = (fraction & ((1 << shift) - 1)) ? 1 : 0;
+	      int lowbit = (fraction & (((fractype)1 << shift) - 1)) ? 1 : 0;
 	      fraction = (fraction >> shift) | lowbit;
 	    }
 	  if ((fraction & GARDMASK) == GARDMSB)
