@@ -2196,7 +2196,7 @@ c4x_process_after_reload (first)
 	    {
 	      const char *template;
 
-	      template = insn_data[insn_code_number].template;
+	      template = get_insn_template (insn_code_number, insn);
 	      if (template && template[0] == '#' && template[1] == '\0')
 		{
 		  rtx new = try_split (PATTERN(insn), insn, 0);

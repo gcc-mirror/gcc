@@ -123,6 +123,9 @@ extern int only_leaf_regs_used	PROTO((void));
    available in leaf functions.  */
 extern void leaf_renumber_regs_insn PROTO((rtx));
 
+/* Locate the proper template for the given insn-code.  */
+extern const char *get_insn_template PROTO((int, rtx));
+
 /* Functions in flow.c */
 extern void allocate_for_life_analysis	PROTO((void));
 extern int regno_uninitialized		PROTO((int));

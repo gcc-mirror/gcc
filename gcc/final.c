@@ -2034,6 +2034,27 @@ final (first, file, optimize, prescan)
   free_insn_eh_region ();
 }
 
+const char *
+get_insn_template (code, insn)
+     int code;
+     rtx insn;
+{
+  const void *output = insn_data[code].output;
+  switch (insn_data[code].output_format)
+    {
+    case INSN_OUTPUT_FORMAT_SINGLE:
+      return (const char *) output;
+    case INSN_OUTPUT_FORMAT_MULTI:
+      return ((const char * const *) output)[which_alternative];
+    case INSN_OUTPUT_FORMAT_FUNCTION:
+      if (insn == NULL)
+	abort ();
+      return (* (insn_output_fn) output) (recog_data.operand, insn);
+
+    default:
+      abort ();
+    }
+}
 /* The final scan for one insn, INSN.
    Args are same as in `final', except that INSN
    is the insn being scanned.
@@ -2895,25 +2916,18 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  dwarf2out_frame_debug (insn);
 #endif
 
-	/* If the proper template needs to be chosen by some C code,
-	   run that code and get the real template.  */
+	/* Find the proper template for this insn.  */
+	template = get_insn_template (insn_code_number, insn);
 
-	template = insn_data[insn_code_number].template;
+	/* If the C code returns 0, it means that it is a jump insn
+	   which follows a deleted test insn, and that test insn
+	   needs to be reinserted.  */
 	if (template == 0)
 	  {
-	    template = ((*insn_data[insn_code_number].outfun)
-			(recog_data.operand, insn));
-
-	    /* If the C code returns 0, it means that it is a jump insn
-	       which follows a deleted test insn, and that test insn
-	       needs to be reinserted.  */
-	    if (template == 0)
-	      {
-		if (prev_nonnote_insn (insn) != last_ignored_compare)
-		  abort ();
-		new_block = 0;
-		return prev_nonnote_insn (insn);
-	      }
+	    if (prev_nonnote_insn (insn) != last_ignored_compare)
+	      abort ();
+	    new_block = 0;
+	    return prev_nonnote_insn (insn);
 	  }
 
 	/* If the template is the string "#", it means that this insn must

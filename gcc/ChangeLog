@@ -1,3 +1,23 @@
+Mon Sep 13 21:06:01 1999  Richard Henderson  <rth@cygnus.com>
+
+	* recog.h (INSN_OUTPUT_FORMAT_*): New.
+	(struct insn_data): Merge `template' and `outfun' into `output'.
+	Add `output_format'.
+	* genoutput.c (INSN_OUTPUT_FORMAT_*): New.
+	(struct data): Remove `outfun'; add `output_format'.
+	(name_for_index): Remove declaration.
+	(output_insn_data): Handle output formats.
+	(process_template): Emit the bare array for @.
+	(gen_expand, gen_split): Set output_format to NONE.
+	* output.h (get_insn_template): Declare.
+	* final.c (get_insn_template): New.
+	(final_scan_insn): Use it.
+	* toplev.c (compile_file): Likewise.
+
+	* c4x/c4x.c (c4x_process_after_reload): Likewise.
+	* i860/i860.c (output_delayed_branch): Likewise.
+	(output_delay_insn): Likewise.
+
 1999-09-13  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* rtl.c (obstack_alloc_rtx): Removed.

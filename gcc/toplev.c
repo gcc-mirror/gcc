@@ -3172,7 +3172,7 @@ compile_file (name)
       /* It's best if we can write a nop here since some
 	 assemblers don't tolerate zeros in the text section.  */
       if (insn_data[CODE_FOR_nop].template != 0)
-	output_asm_insn (insn_data[CODE_FOR_nop].template, NULL_PTR);
+	output_asm_insn (get_insn_template (CODE_FOR_nop, NULL), NULL_PTR);
       else
 	assemble_zeros (UNITS_PER_WORD);
     }

@@ -211,17 +211,24 @@ struct insn_operand_data
   char strict_low;
 };
 
+/* Legal values for insn_data.output_format.  Indicate what type of data
+   is stored in insn_data.output.  */
+#define INSN_OUTPUT_FORMAT_NONE		0	/* abort */
+#define INSN_OUTPUT_FORMAT_SINGLE	1	/* const char * */
+#define INSN_OUTPUT_FORMAT_MULTI	2	/* const char * const * */
+#define INSN_OUTPUT_FORMAT_FUNCTION	3	/* const char * (*)(...) */
+
 struct insn_data
 {
   const char *name;
-  const char *template;
-  insn_output_fn outfun;
+  const PTR output;
   insn_gen_fn genfun;
   const struct insn_operand_data *operand;
 
   unsigned char n_operands;
   unsigned char n_dups;
   unsigned char n_alternatives;
+  unsigned char output_format;
 };
 
 extern const struct insn_data insn_data[];
