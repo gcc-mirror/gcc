@@ -550,8 +550,12 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
     if (uid_luid[i] == 0)
       uid_luid[i] = uid_luid[i - 1];
 
-  /* Create a mapping from loops to BLOCK tree nodes.  */
-  if (unroll_p && write_symbols != NO_DEBUG)
+  /* If debugging and unrolling loops, we must replicate the tree
+     nodes corresponding to the BLOCKs inside the loop, so that the
+     original one to one mapping will remain.  We sometimes unroll
+     loops even when unroll_p is false, so we must always do this when
+     debugging.  */
+  if (write_symbols != NO_DEBUG)
     find_loop_tree_blocks ();
 
   /* Determine if the function has indirect jump.  On some systems
@@ -565,10 +569,8 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
       scan_loop (loop_number_loop_starts[i], loop_number_loop_ends[i],
 		 loop_number_loop_cont[i], unroll_p, bct_p);
 
-  /* If debugging and unrolling loops, we must replicate the tree nodes
-     corresponding to the blocks inside the loop, so that the original one
-     to one mapping will remain.  */
-  if (unroll_p && write_symbols != NO_DEBUG)
+  /* Replicate the BLOCKs.  */
+  if (write_symbols != NO_DEBUG)
     unroll_block_trees ();
 
   end_alias_analysis ();
