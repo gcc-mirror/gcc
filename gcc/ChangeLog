@@ -1,3 +1,8 @@
+2000-11-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.h (MODES_TIEABLE_P): Don't tie SFmode to other FP
+	modes.
+
 2000-11-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi, gcov.texi: Update dates and version numbers.
