@@ -1,6 +1,6 @@
 2001-02-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
-	* inline19.c: Remove XFAIL.
+	* g++.old-deja/g++.other/inline19.c: Remove XFAIL.
 
 2001-02-16  Zack Weinberg  <zackw@stanford.edu>
 
