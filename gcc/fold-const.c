@@ -2177,6 +2177,12 @@ operand_equal_p (arg0, arg1, only_const)
 				  TREE_OPERAND (arg1, 0), 0));
 
     case 'r':
+      /* If either of the pointer (or reference) expressions we are dereferencing
+	 contain a side effect, these cannot be equal. */
+      if (TREE_SIDE_EFFECTS (arg0)
+	  || TREE_SIDE_EFFECTS (arg1))
+	return 0;
+
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
@@ -3557,10 +3563,6 @@ fold_range_test (exp)
   tree lhs = make_range (TREE_OPERAND (exp, 0), &in0_p, &low0, &high0);
   tree rhs = make_range (TREE_OPERAND (exp, 1), &in1_p, &low1, &high1);
   tree tem;
-
-  /* Fail if anything is volatile.  */
-  if (TREE_SIDE_EFFECTS (lhs) || TREE_SIDE_EFFECTS (rhs))
-    return 0;
 
   /* If this is an OR operation, invert both sides; we will invert
      again at the end.  */

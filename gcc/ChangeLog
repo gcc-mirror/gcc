@@ -1,5 +1,12 @@
 Tue Oct 19 02:03:00 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Revert this change.  Gavin's patch to operand_equal_p is a better fix.
+	* fold-const.c (fold_range_test): Do not try to fold the range
+	test if the rhs or lhs has side effects.
+
+	Fri Sep 17 15:05:27 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+	* fold-const.c (operand_equal_p): Pay attention to side effects.
+
 	* reg-stack.c (stack_result): Aggregates are not returned in
 	stack registers.
 
