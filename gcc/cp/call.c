@@ -4741,11 +4741,14 @@ maybe_handle_ref_bind (ics, target_type)
 {
   if (TREE_CODE (*ics) == REF_BIND)
     {
+      tree old_ics = *ics;
       *target_type = TREE_TYPE (TREE_TYPE (*ics));
       *ics = TREE_OPERAND (*ics, 0);
+      ICS_USER_FLAG (*ics) = ICS_USER_FLAG (old_ics);
+      ICS_BAD_FLAG (*ics) = ICS_BAD_FLAG (old_ics);
       return 1;
     }
-  
+
   return 0;
 }
 
