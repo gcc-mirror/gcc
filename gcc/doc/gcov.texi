@@ -27,12 +27,12 @@ English.
 @end ignore
 
 @node Gcov
-@chapter @code{gcov}: a Test Coverage Program
+@chapter @command{gcov}: a Test Coverage Program
 
-@code{gcov} is a tool you can use in conjunction with @sc{gnu} CC to
+@command{gcov} is a tool you can use in conjunction with @sc{gnu} CC to
 test code coverage in your programs.
 
-This chapter describes version 1.5 of @code{gcov}.
+This chapter describes version 1.5 of @command{gcov}.
 
 @menu
 * Gcov Intro::         	        Introduction to gcov.
@@ -42,19 +42,19 @@ This chapter describes version 1.5 of @code{gcov}.
 @end menu
 
 @node Gcov Intro
-@section Introduction to @code{gcov}
+@section Introduction to @command{gcov}
 @c man begin DESCRIPTION
 
-@code{gcov} is a test coverage program.  Use it in concert with @sc{gnu}
+@command{gcov} is a test coverage program.  Use it in concert with @sc{gnu}
 CC to analyze your programs to help create more efficient, faster
-running code.  You can use @code{gcov} as a profiling tool to help
+running code.  You can use @command{gcov} as a profiling tool to help
 discover where your optimization efforts will best affect your code.  You
-can also use @code{gcov} along with the other profiling tool,
-@code{gprof}, to assess which parts of your code use the greatest amount
+can also use @command{gcov} along with the other profiling tool,
+@command{gprof}, to assess which parts of your code use the greatest amount
 of computing time.
 
 Profiling tools help you analyze your code's performance.  Using a
-profiler such as @code{gcov} or @code{gprof}, you can find out some
+profiler such as @command{gcov} or @command{gprof}, you can find out some
 basic performance statistics, such as:
 
 @itemize @bullet
@@ -70,7 +70,7 @@ how much computing time each section of code uses
 
 Once you know these things about how your code works when compiled, you
 can look at each module to see which modules should be optimized.
-@code{gcov} helps you determine where to work on optimization.
+@command{gcov} helps you determine where to work on optimization.
 
 Software developers also use coverage testing in concert with
 testsuites, to make sure software is actually good enough for a release.
@@ -81,10 +81,10 @@ to be added to the testsuites to create both better testing and a better
 final product.
 
 You should compile your code without optimization if you plan to use
-@code{gcov} because the optimization, by combining some lines of code
+@command{gcov} because the optimization, by combining some lines of code
 into one function, may not give you as much information as you need to
 look for `hot spots' where the code is using a great deal of computer
-time.  Likewise, because @code{gcov} accumulates statistics by line (at
+time.  Likewise, because @command{gcov} accumulates statistics by line (at
 the lowest resolution), it works best with a programming style that
 places only one statement on each line.  If you use complicated macros
 that expand to loops or to other control structures, the statistics are
@@ -92,14 +92,14 @@ less helpful---they only report on the line where the macro call
 appears.  If your complex macros behave like functions, you can replace
 them with inline functions to solve this problem.
 
-@code{gcov} creates a logfile called @file{@var{sourcefile}.gcov} which
+@command{gcov} creates a logfile called @file{@var{sourcefile}.gcov} which
 indicates how many times each line of a source file @file{@var{sourcefile}.c}
-has executed.  You can use these logfiles along with @code{gprof} to aid
-in fine-tuning the performance of your programs.  @code{gprof} gives
+has executed.  You can use these logfiles along with @command{gprof} to aid
+in fine-tuning the performance of your programs.  @command{gprof} gives
 timing information you can use along with the information you get from
-@code{gcov}.
+@command{gcov}.
 
-@code{gcov} works only on code compiled with @sc{gnu} CC.  It is not
+@command{gcov} works only on code compiled with @sc{gnu} CC.  It is not
 compatible with any other profiling or test coverage mechanism.
 
 @c man end
@@ -121,7 +121,7 @@ gcc(1) and the Info entry for @file{gcc}.
 @end ignore
 
 @c man begin OPTIONS
-@table @code
+@table @gcctabopt
 @item -b
 Write branch frequencies to the output file, and write branch summary
 info to the standard output.  This option allows you to see how often
@@ -132,28 +132,28 @@ Write branch frequencies as the number of branches taken, rather than
 the percentage of branches taken.
 
 @item -v
-Display the @code{gcov} version number (on the standard error stream).
+Display the @command{gcov} version number (on the standard error stream).
 
 @item -n
-Do not create the @code{gcov} output file.
+Do not create the @command{gcov} output file.
 
 @item -l
 Create long file names for included source files.  For example, if the
-header file @samp{x.h} contains code, and was included in the file
-@samp{a.c}, then running @code{gcov} on the file @samp{a.c} will produce
-an output file called @samp{a.c.x.h.gcov} instead of @samp{x.h.gcov}.
-This can be useful if @samp{x.h} is included in multiple source files.
+header file @file{x.h} contains code, and was included in the file
+@file{a.c}, then running @command{gcov} on the file @file{a.c} will produce
+an output file called @file{a.c.x.h.gcov} instead of @file{x.h.gcov}.
+This can be useful if @file{x.h} is included in multiple source files.
 
 @item -f
 Output summaries for each function in addition to the file level summary.
 
 @item -o
-The directory where the object files live.  Gcov will search for @code{.bb},
-@code{.bbg}, and @code{.da} files in this directory.
+The directory where the object files live.  Gcov will search for @file{.bb},
+@file{.bbg}, and @file{.da} files in this directory.
 @end table
 
 @need 3000
-When using @code{gcov}, you must first compile your program with two
+When using @command{gcov}, you must first compile your program with two
 special @sc{gnu} CC options: @samp{-fprofile-arcs -ftest-coverage}.
 This tells the compiler to generate additional information needed by
 gcov (basically a flow graph of the program) and also includes
@@ -162,13 +162,13 @@ information needed by gcov.  These additional files are placed in the
 directory where the source code is located.
 
 Running the program will cause profile output to be generated.  For each
-source file compiled with -fprofile-arcs, an accompanying @code{.da}
+source file compiled with @option{-fprofile-arcs}, an accompanying @file{.da}
 file will be placed in the source directory.
 
-Running @code{gcov} with your program's source file names as arguments
+Running @command{gcov} with your program's source file names as arguments
 will now produce a listing of the code along with frequency of execution
-for each line.  For example, if your program is called @samp{tmp.c}, this
-is what you see when you use the basic @code{gcov} facility:
+for each line.  For example, if your program is called @file{tmp.c}, this
+is what you see when you use the basic @command{gcov} facility:
 
 @smallexample
 $ gcc -fprofile-arcs -ftest-coverage tmp.c
@@ -178,7 +178,7 @@ $ gcov tmp.c
 Creating tmp.c.gcov.
 @end smallexample
 
-The file @file{tmp.c.gcov} contains output from @code{gcov}.
+The file @file{tmp.c.gcov} contains output from @command{gcov}.
 Here is a sample:
 
 @smallexample
@@ -199,7 +199,7 @@ Here is a sample:
 @end smallexample
 
 @need 450
-When you use the @samp{-b} option, your output looks like this:
+When you use the @option{-b} option, your output looks like this:
 
 @smallexample
 $ gcov -b tmp.c
@@ -257,7 +257,7 @@ of times the call was executed will be printed.  This will usually be
 and thus may not return every time they are called.
 
 The execution counts are cumulative.  If the example program were
-executed again without removing the @code{.da} file, the count for the
+executed again without removing the @file{.da} file, the count for the
 number of times each line in the source was executed would be added to
 the results of the previous run(s).  This is potentially useful in
 several ways.  For example, it could be used to accumulate data over a
@@ -265,17 +265,17 @@ number of program runs as part of a test verification suite, or to
 provide more accurate long-term information over a large number of
 program runs.
 
-The data in the @code{.da} files is saved immediately before the program
-exits.  For each source file compiled with -fprofile-arcs, the profiling
-code first attempts to read in an existing @code{.da} file; if the file
+The data in the @file{.da} files is saved immediately before the program
+exits.  For each source file compiled with @option{-fprofile-arcs}, the profiling
+code first attempts to read in an existing @file{.da} file; if the file
 doesn't match the executable (differing number of basic block counts) it
 will ignore the contents of the file.  It then adds in the new execution
 counts and finally writes the data to the file.
 
 @node Gcov and Optimization
-@section Using @code{gcov} with GCC Optimization
+@section Using @command{gcov} with GCC Optimization
 
-If you plan to use @code{gcov} to help optimize your code, you must
+If you plan to use @command{gcov} to help optimize your code, you must
 first compile your program with two special @sc{gnu} CC options:
 @samp{-fprofile-arcs -ftest-coverage}.  Aside from that, you can use any
 other @sc{gnu} CC options; but if you want to prove that every single line
@@ -293,9 +293,9 @@ else
 
 @noindent
 can be compiled into one instruction on some machines.  In this case,
-there is no way for @code{gcov} to calculate separate execution counts
+there is no way for @command{gcov} to calculate separate execution counts
 for each line because there isn't separate code for each line.  Hence
-the @code{gcov} output looks like this if you compiled the program with
+the @command{gcov} output looks like this if you compiled the program with
 optimization:
 
 @smallexample
@@ -313,21 +313,21 @@ many times the result was 1.
 @c man end
 
 @node Gcov Data Files
-@section Brief description of @code{gcov} data files
+@section Brief description of @command{gcov} data files
 
-@code{gcov} uses three files for doing profiling.  The names of these
+@command{gcov} uses three files for doing profiling.  The names of these
 files are derived from the original @emph{source} file by substituting
-the file suffix with either @code{.bb}, @code{.bbg}, or @code{.da}.  All
+the file suffix with either @file{.bb}, @file{.bbg}, or @file{.da}.  All
 of these files are placed in the same directory as the source file, and
 contain data stored in a platform-independent method.
 
-The @code{.bb} and @code{.bbg} files are generated when the source file
-is compiled with the @sc{gnu} CC @samp{-ftest-coverage} option.  The
-@code{.bb} file contains a list of source files (including headers),
+The @file{.bb} and @file{.bbg} files are generated when the source file
+is compiled with the @sc{gnu} CC @option{-ftest-coverage} option.  The
+@file{.bb} file contains a list of source files (including headers),
 functions within those files, and line numbers corresponding to each
 basic block in the source file.
 
-The @code{.bb} file format consists of several lists of 4-byte integers
+The @file{.bb} file format consists of several lists of 4-byte integers
 which correspond to the line numbers of each basic block in the
 file.  Each list is terminated by a line number of 0.  A line number of -1
 is used to designate that the source file name (padded to a 4-byte
@@ -335,13 +335,13 @@ boundary and followed by another -1) follows.  In addition, a line number
 of -2 is used to designate that the name of a function (also padded to a
 4-byte boundary and followed by a -2) follows.
 
-The @code{.bbg} file is used to reconstruct the program flow graph for
+The @file{.bbg} file is used to reconstruct the program flow graph for
 the source file.  It contains a list of the program flow arcs (possible
 branches taken from one basic block to another) for each function which,
-in combination with the @code{.bb} file, enables gcov to reconstruct the
+in combination with the @file{.bb} file, enables gcov to reconstruct the
 program flow.
 
-In the @code{.bbg} file, the format is:
+In the @file{.bbg} file, the format is:
 @smallexample
         number of basic blocks for function #0 (4-byte number)
         total number of arcs for function #0 (4-byte number)
@@ -363,24 +363,24 @@ A -1 (stored as a 4-byte number) is used to separate each function's
 list of basic blocks, and to verify that the file has been read
 correctly.
 
-The @code{.da} file is generated when a program containing object files
-built with the @sc{gnu} CC @samp{-fprofile-arcs} option is executed.  A
-separate @code{.da} file is created for each source file compiled with
-this option, and the name of the @code{.da} file is stored as an
+The @file{.da} file is generated when a program containing object files
+built with the @sc{gnu} CC @option{-fprofile-arcs} option is executed.  A
+separate @file{.da} file is created for each source file compiled with
+this option, and the name of the @file{.da} file is stored as an
 absolute pathname in the resulting object file.  This path name is
-derived from the source file name by substituting a @code{.da} suffix.
+derived from the source file name by substituting a @file{.da} suffix.
 
-The format of the @code{.da} file is fairly simple.  The first 8-byte
+The format of the @file{.da} file is fairly simple.  The first 8-byte
 number is the number of counts in the file, followed by the counts
 (stored as 8-byte numbers).  Each count corresponds to the number of
 times each arc in the program is executed.  The counts are cumulative;
 each time the program is executed, it attempts to combine the existing
-@code{.da} files with the new counts for this invocation of the
-program.  It ignores the contents of any @code{.da} files whose number of
+@file{.da} files with the new counts for this invocation of the
+program.  It ignores the contents of any @file{.da} files whose number of
 arcs doesn't correspond to the current program, and merely overwrites
 them instead.
 
-All three of these files use the functions in @code{gcov-io.h} to store
+All three of these files use the functions in @file{gcov-io.h} to store
 integers; the functions in this header provide a machine-independent
 mechanism for storing and retrieving data from a stream.
 
