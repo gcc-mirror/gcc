@@ -1,3 +1,9 @@
+2004-08026  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/13506
+	* toplev.c (crash_signal): If we crashed while emitting
+	a user asm, then die more gracefully.
+
 2004-08-26  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	PR target/17119.

@@ -598,6 +598,15 @@ static void
 crash_signal (int signo)
 {
   signal (signo, SIG_DFL);
+
+  /* If we crashed while processing an ASM statement, then be a little more
+     graceful.  It's most likely the user's fault.  */
+  if (this_is_asm_operands)
+    {
+      output_operand_lossage ("unrecoverable error");
+      exit (FATAL_EXIT_CODE);
+    }
+
   internal_error ("%s", strsignal (signo));
 }
 
