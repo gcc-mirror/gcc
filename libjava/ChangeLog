@@ -10,7 +10,7 @@
 	(win32_exception_handler): Now throws an exception out of
 	the signal handler; assumes SJLJ.
 	
-2002-02-01  Adam Megacz
+2002-02-01  Adam Megacz <adam@xwt.org>
 
         * win32-threads.cc:
         (_Jv_CondWait, _Jv_CondNotify, _Jv_CondNotifyAll): Corrected
