@@ -1,3 +1,8 @@
+Tue Mar 30 11:39:27 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* extend.texi (Extended Asm): Delete spurious `b' before
+	`@end example', which was confusing texi2html.
+
 Tue Mar 30 00:26:34 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (output_line_info): Don't emit redundant info.

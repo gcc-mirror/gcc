@@ -2543,7 +2543,7 @@ the @code{asm}.  For example:
 (@{ int __old; \
    asm volatile ("get_and_set_priority %0, %1": "=g" (__old) : "g" (new)); \
    __old; @})
-b@end example
+@end example
 
 @noindent
 If you write an @code{asm} instruction with no outputs, GNU CC will know
