@@ -29,8 +29,6 @@
 	Don't dereference a RESULT_DECL directly inside a RETURN_EXPR.
 	(cp_genericize): Handle the RESULT_DECL.  Unset TREE_ADDRESSABLE.
 
-	* gimplify.c (gimplify_call_expr): Make return in memory explicit.
-	(gimplify_modify_expr_rhs): Likewise.
 	* c-common.c (c_warn_unused_result): Check TREE_USED before
 	warning about a CALL_EXPR with an unused value.
 
