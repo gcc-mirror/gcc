@@ -1,6 +1,6 @@
 #! /bin/sh
 # Attempt to guess a canonical system name.
-#   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -667,6 +667,13 @@ EOF
 		echo ${UNAME_MACHINE}-pc-sysv${UNAME_RELEASE}
 	fi
 	exit 0 ;;
+    i?86:*:5:7)
+       UNAME_REL=`(/bin/uname -X|egrep Release|sed -e 's/.*= //')`
+       (/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
+       (/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
+               && UNAME_MACHINE=i586
+       echo ${UNAME_MACHINE}-${UNAME_SYSTEM}${UNAME_VERSION}-sysv${UNAME_RELEASE}
+       exit 0 ;;
     i?86:*:3.2:*)
 	if test -f /usr/options/cb.name; then
 		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
