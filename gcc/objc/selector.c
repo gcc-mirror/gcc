@@ -26,6 +26,7 @@ You should have received a copy of the GNU General Public License along with
 
 #include "runtime.h"
 #include "objc/sarray.h"
+#include "encoding.h"
 
 /* Initial selector hash table size. Value doesnt matter much */
 #define SELECTOR_HASH_SIZE 128
@@ -87,6 +88,34 @@ register_selectors_from_list (MethodList_t method_list)
     }
 }
 
+
+/* Returns YES iff t1 and t2 have same method types, but we ignore
+   the argframe layout */
+BOOL
+sel_types_match (const char* t1, const char* t2)
+{
+  if (!t1 || !t2)
+    return NO;
+  while (*t1 && *t2)
+    {
+      if (*t1 == '+') t1++;
+      if (*t2 == '+') t2++;
+      while (isdigit(*t1)) t1++;
+      while (isdigit(*t2)) t2++;
+      /* xxx Remove these next two lines when qualifiers are put in
+	 all selectors, not just Protocol selectors. */
+      t1 = objc_skip_type_qualifiers(t1);
+      t2 = objc_skip_type_qualifiers(t2);
+      if (!*t1 && !*t2)
+	return YES;
+      if (*t1 != *t2)
+	return NO;
+      t1++;
+      t2++;
+    }
+  return NO;
+}
+
 /* return selector representing name */
 SEL
 sel_get_typed_uid (const char *name, const char *types)
@@ -109,7 +138,7 @@ sel_get_typed_uid (const char *name, const char *types)
 	      return s;
 	    }
 	}
-      else if (! strcmp (s->sel_types, types))
+      else if (sel_types_match (s->sel_types, types))
 	{
 	  return s;
 	}
@@ -150,7 +179,7 @@ sel_get_name (SEL selector)
 {
   if ((soffset_decode((sidx)selector->sel_id) > 0)
       && (soffset_decode((sidx)selector->sel_id) <= __objc_selector_max_index))
-    return sarray_get (__objc_selector_array, (sidx) selector->sel_id);
+    return sarray_get (__objc_selector_names, (sidx) selector->sel_id);
   else
     return 0;
 }
@@ -205,7 +234,7 @@ __sel_register_typed_name (const char *name, const char *types,
 		    return s;
 		}
 	    }
-	  else if (strcmp (s->sel_types, types))
+	  else if (!strcmp (s->sel_types, types))
 	    {
 	      if (orig)
 		{
