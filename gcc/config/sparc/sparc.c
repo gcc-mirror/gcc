@@ -227,6 +227,9 @@ static int num_gfregs;
 /* The alias set for prologue/epilogue register save/restore.  */
 static GTY(()) int sparc_sr_alias_set;
 
+/* The alias set for the structure return value.  */
+static GTY(()) int struct_value_alias_set;
+
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
 rtx sparc_compare_op0, sparc_compare_op1;
@@ -700,8 +703,9 @@ sparc_override_options (void)
   /* Do various machine dependent initializations.  */
   sparc_init_modes ();
 
-  /* Acquire a unique set number for our register saves and restores.  */
+  /* Acquire unique alias sets for our private stuff.  */
   sparc_sr_alias_set = new_alias_set ();
+  struct_value_alias_set = new_alias_set ();
 
   /* Set up function hooks.  */
   init_machine_status = sparc_init_machine_status;
@@ -6086,12 +6090,17 @@ sparc_struct_value_rtx (tree fndecl ATTRIBUTE_UNUSED, int incoming)
     return 0;
   else
     {
+      rtx mem;
+
       if (incoming)
-	return gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,
-						  STRUCT_VALUE_OFFSET));
+	mem = gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,
+						 STRUCT_VALUE_OFFSET));
       else
-	return gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx,
-						  STRUCT_VALUE_OFFSET));
+	mem = gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx,
+						 STRUCT_VALUE_OFFSET));
+
+      set_mem_alias_set (mem, struct_value_alias_set);
+      return mem;
     }
 }
 
