@@ -2491,10 +2491,15 @@ do_type (work, mangled, result)
 	case 'A':
 	  {
 	    ++(*mangled);
-	    string_prepend (&decl, "(");
-	    string_append (&decl, ")[");
-	    success = demangle_template_value_parm (work, mangled, &decl,
-						    tk_integral);
+	    if (!STRING_EMPTY (&decl) && decl.b[0] == '*')
+	      {
+		string_prepend (&decl, "(");
+		string_append (&decl, ")");
+	      }
+	    string_append (&decl, "[");
+	    if (**mangled != '_')
+	      success = demangle_template_value_parm (work, mangled, &decl,
+						      tk_integral);
 	    if (**mangled == '_')
 	      ++(*mangled);
 	    string_append (&decl, "]");
@@ -2651,7 +2656,7 @@ do_type (work, mangled, result)
 	}
     }
 
-  switch (**mangled)
+  if (success) switch (**mangled)
     {
       /* A qualified name, such as "Outer::Inner".  */
     case 'Q':
@@ -2665,7 +2670,7 @@ do_type (work, mangled, result)
     case 'B':
       (*mangled)++;
       if (!get_count (mangled, &n) || n >= work -> numb)
-          success = 0;
+	success = 0;
       else
 	string_append (result, work->btypevec[n]);
       break;

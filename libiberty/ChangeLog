@@ -1,3 +1,8 @@
+1998-08-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cplus-dem.c (do_type): Fix simple array handling.  If we fail,
+	stay failed.
+
 Mon Aug 17 10:40:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c: Include config.h if it exists.  Also, only
