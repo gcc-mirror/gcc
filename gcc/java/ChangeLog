@@ -1,3 +1,9 @@
+2000-11-11  Anthony Green  <green@redhat.com>
+
+	* jcf-parse.c (process_zip_dir): Add finput parameter.
+	(jcf_figure_file_type): Call process_zip_dir with appropriate
+	argument.
+
 2000-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (copy_lang_decl): Use memcpy, not bcopy.
