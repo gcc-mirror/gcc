@@ -1,3 +1,32 @@
+2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in: Update.
+	* c-decl.c (print_lang_decl, print_lang_type): Remove.
+	(print_lang_identifier): Rename c_print_identifier.
+	* c-lang.c (LANG_HOOKS_PRINT_IDENTIFIER, LANG_HOOKS_SET_YYDEBUG): New.
+	(print_lang_statistics, lang_print_xnode): Remove.
+	* c-parse.in (set_yydebug): Rename c_set_yydebug.
+	* c-tree.h (c_set_yydebug, c_print_identifier): New.
+	* langhooks-def.h (lhd_print_tree_nothing, lhd_set_yydebug): New.
+	LANG_HOOKS_PRINT_STATISTICS, LANG_HOOKS_PRINT_XNODE,
+	LANG_HOOKS_PRINT_DECL, LANG_HOOKS_PRINT_TYPE,
+	LANG_HOOKS_PRINT_IDENTIFIER, LANG_HOOKS_SET_YYDEBUG): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct lang_hooks): New members.
+	(lang_print_tree_hook): New.
+	* langhooks.c (lhd_print_tree_nothing, lhd_set_yydebug): New.
+	* print-tree.c: Include langhooks.h.
+	(print_node): Update.
+	* toplev.c (decode_d_option): Update.
+	* tree.c: Include langhooks.h.
+	(dump_tree_statistics): Update.
+	* tree.h (print_lang_statistics, print_lang_decl, print_lang_type,
+	print_lang_identifier, set_yydebug, lang_print_xnode): Remove.
+objc:
+	* objc-act.c (LANG_HOOKS_PRINT_IDENTIFIER,
+	LANG_HOOKS_SET_YYDEBUG): Override.
+	(lang_print_xnode, print_lang_statistics): Remove.
+
 2001-11-09  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2asm.c (dw2_force_const_mem): Invoke STRIP_NAME_ENCODING

@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.9 $
+ *                             $Revision: 1.10 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -113,6 +113,8 @@ static void gnat_init			PARAMS ((void));
 static void gnat_init_options		PARAMS ((void));
 static int gnat_decode_option		PARAMS ((int, char **));
 static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
+static void gnat_print_decl		PARAMS ((FILE *, tree, int));
+static void gnat_print_type		PARAMS ((FILE *, tree, int));
 
 /* Structure giving our language-specific hooks.  */
 
@@ -130,6 +132,10 @@ static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
 #define LANG_HOOKS_HONOR_READONLY	1
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
+#undef LANG_HOOKS_PRINT_DECL
+#define LANG_HOOKS_PRINT_DECL		gnat_print_decl
+#undef LANG_HOOKS_PRINT_TYPE
+#define LANG_HOOKS_PRINT_TYPE		gnat_print_type
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -372,20 +378,6 @@ maybe_build_cleanup (decl)
   return NULL_TREE;
 }
 
-/* Print any language-specific compilation statistics.  */
-
-void
-print_lang_statistics ()
-{}
-
-void
-lang_print_xnode (file, node, indent)
-     FILE *file ATTRIBUTE_UNUSED;
-     tree node ATTRIBUTE_UNUSED;
-     int indent ATTRIBUTE_UNUSED;
-{
-}
-
 /* integrate_decl_tree calls this function, but since we don't use the
    DECL_LANG_SPECIFIC field, this is a no-op.  */
 
@@ -397,8 +389,8 @@ copy_lang_decl (node)
 
 /* Hooks for print-tree.c:  */
 
-void
-print_lang_decl (file, node, indent)
+static void
+gnat_print_decl (file, node, indent)
      FILE *file;
      tree node;
      int indent;
@@ -420,8 +412,8 @@ print_lang_decl (file, node, indent)
     }
 }
 
-void
-print_lang_type (file, node, indent)
+static void
+gnat_print_type (file, node, indent)
      FILE *file;
      tree node;
      int indent;
@@ -471,13 +463,6 @@ print_lang_type (file, node, indent)
       break;
     }
 }
-
-void
-print_lang_identifier (file, node, indent)
-     FILE *file ATTRIBUTE_UNUSED;
-     tree node ATTRIBUTE_UNUSED;
-     int indent ATTRIBUTE_UNUSED;
-{}
 
 /* Expands GNAT-specific GCC tree nodes.  The only ones we support
    here are TRANSFORM_EXPR, UNCHECKED_CONVERT_EXPR, ALLOCATE_EXPR,
@@ -897,14 +882,6 @@ init_parse (filename)
 
 void
 finish_parse ()
-{
-}
-
-/* Sets some debug flags for the parsed. It does nothing here.  */
-
-void
-set_yydebug (value)
-     int value ATTRIBUTE_UNUSED;
 {
 }
 

@@ -907,7 +907,7 @@ print_parse_statistics ()
    in order to build the compiler.  */
 
 void
-set_yydebug (value)
+cxx_set_yydebug (value)
      int value;
 {
 #if YYDEBUG != 0

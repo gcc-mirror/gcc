@@ -1,5 +1,13 @@
 2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* java-tree.h (java_set_yydebug): New.
+	* jcf-parse.c (set_yydebug): Rename java_set_yydebug.
+	* lang.c (LANG_HOOKS_SET_YYDEBUG): Override.
+	(print_lang_decl, print_lang_type, print_lang_identifier,
+	print_lang_statistics, lang_print_xnode): Remove.
+
+2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* jcf-parse.c (init_lex): Remove.
 	* lang.c (language_string, lang_identify): Remove.
 	(struct lang_hooks): Constify.

@@ -47,6 +47,26 @@ lhd_decode_option (argc, argv)
   return 0;
 }
 
+/* Called from by print-tree.c.  */
+
+void
+lhd_print_tree_nothing (file, node, indent)
+     FILE *file ATTRIBUTE_UNUSED;
+     tree node ATTRIBUTE_UNUSED;
+     int indent ATTRIBUTE_UNUSED;
+{
+}
+
+/* Called when -dy is given on the command line.  */
+
+void
+lhd_set_yydebug (value)
+     int value;
+{
+  if (value)
+    fprintf (stderr, "warning: no yacc/bison-generated output to debug!\n");
+}
+
 /* Provide a default routine to clear the binding stack.  This is used
    by languages that don't need to do anything special.  */
 void

@@ -1276,7 +1276,7 @@ extern int depth_reached;
 #endif
 
 void
-print_lang_statistics ()
+cxx_print_statistics ()
 {
   print_search_statistics ();
   print_class_statistics ();

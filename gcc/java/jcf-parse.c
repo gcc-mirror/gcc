@@ -262,7 +262,7 @@ parse_signature (jcf, sig_index)
 }
 
 void
-set_yydebug (value)
+java_set_yydebug (value)
      int value;
 {
   yydebug = value;

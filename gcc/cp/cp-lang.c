@@ -45,6 +45,18 @@ static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 #define LANG_HOOKS_POST_OPTIONS cxx_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET cxx_get_alias_set
+#undef LANG_HOOKS_PRINT_STATISTICS
+#define LANG_HOOKS_PRINT_STATISTICS cxx_print_statistics
+#undef LANG_HOOKS_PRINT_XNODE
+#define LANG_HOOKS_PRINT_XNODE cxx_print_xnode
+#undef LANG_HOOKS_PRINT_DECL
+#define LANG_HOOKS_PRINT_DECL cxx_print_decl
+#undef LANG_HOOKS_PRINT_TYPE
+#define LANG_HOOKS_PRINT_TYPE cxx_print_type
+#undef LANG_HOOKS_PRINT_IDENTIFIER
+#define LANG_HOOKS_PRINT_IDENTIFIER cxx_print_identifier
+#undef LANG_HOOKS_SET_YYDEBUG
+#define LANG_HOOKS_SET_YYDEBUG cxx_set_yydebug
 
 #undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES \

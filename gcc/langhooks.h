@@ -21,6 +21,9 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_LANG_HOOKS_H
 #define GCC_LANG_HOOKS_H
 
+/* A print hook for print_tree ().  */
+typedef void (*lang_print_tree_hook) PARAMS ((FILE *, tree, int indent));
+
 /* The following hooks are documented in langhooks.c.  Must not be
    NULL.  */
 
@@ -87,6 +90,25 @@ struct lang_hooks
 
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
+
+  /* The front end can add its own statistics to -fmem-report with
+     this hook.  It should output to stderr.  */
+  void (*print_statistics) PARAMS ((void));
+
+  /* Called by print_tree when there is a tree of class 'x' that it
+     doesn't know how to display.  */
+  lang_print_tree_hook print_xnode;
+
+  /* Called to print language-dependent parts of a class 'd', class
+     't', and IDENTIFIER_NODE nodes.  */
+  lang_print_tree_hook print_decl;
+  lang_print_tree_hook print_type;
+  lang_print_tree_hook print_identifier;
+
+  /* Set yydebug for bison-based parsers, when -dy is given on the
+     command line.  By default, if the parameter is non-zero, prints a
+     warning that the front end does not use such a parser.  */
+  void (*set_yydebug) PARAMS ((int));
 
   struct lang_hooks_for_tree_inlining tree_inlining;
 
