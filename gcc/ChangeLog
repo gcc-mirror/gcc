@@ -1,3 +1,9 @@
+2003-03-16  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+        PR target/9164
+        * tree.c (get_narrower): For extensions with unchanged bit number,
+        return the unsignedness of the outer mode.
+
 2003-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Don't call
