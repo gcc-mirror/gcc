@@ -17,12 +17,8 @@ These extensions are available in C and Objective C.  Most of them are
 also available in C++.  @xref{C++ Extensions,,Extensions to the
 C++ Language}, for extensions that apply @emph{only} to C++.
 
-@c FIXME: document clearly which features are in ISO C99, but also
-@c accepted as extensions for -std=gnu89 and possibly for C++.
-@c See PR other/930.
-
-@c FIXME: the documentation for preprocessor extensions here is out of
-@c date.  See PR other/928.
+Some features that are in ISO C99 but not C89 or C++ are also, as
+extensions, accepted by GCC in C89 mode and in C++.
 
 @c The only difference between the two versions of this menu is that the
 @c version for clear INTERNALS has an extra node, "Constraints" (which
@@ -49,11 +45,12 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
 * Initializers::        Non-constant initializers.
-* Constructors::        Constructor expressions give structures, unions
+* Compound Literals::   Compound literals give structures, unions
                          or arrays as values.
-* Labeled Elements::	Labeling elements of initializers.
+* Designated Inits::	Labeling elements of initializers.
 * Cast to Union::       Casting to union type from any member of the union.
 * Case Ranges::		`case 1 ... 9' and such.
+* Mixed Declarations::	Mixing declarations and code.
 * Function Attributes:: Declaring that functions have no side effects,
                          or that they can never return.
 * Attribute Syntax::    Formal syntax for attributes.
@@ -99,11 +96,12 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
 * Initializers::        Non-constant initializers.
-* Constructors::        Constructor expressions give structures, unions
+* Compound Literals::   Compound literals give structures, unions
                          or arrays as values.
-* Labeled Elements::	Labeling elements of initializers.
+* Designated Inits::	Labeling elements of initializers.
 * Cast to Union::       Casting to union type from any member of the union.
 * Case Ranges::		`case 1 ... 9' and such.
+* Mixed Declarations::	Mixing declarations and code.
 * Function Attributes:: Declaring that functions have no side effects,
                          or that they can never return.
 * Attribute Syntax::    Formal syntax for attributes.
@@ -788,9 +786,12 @@ effects of recomputing it.
 @cindex @code{long long} data types
 @cindex double-word arithmetic
 @cindex multiprecision arithmetic
+@cindex @code{LL} integer suffix
+@cindex @code{ULL} integer suffix
 
-GNU C supports data types for integers that are twice as long as
-@code{int}.  Simply write @code{long long int} for a signed integer, or
+ISO C99 supports data types for integers that are at least 64 bits wide,
+and as an extension GCC supports them in C89 mode and in C++.
+Simply write @code{long long int} for a signed integer, or
 @code{unsigned long long int} for an unsigned integer.  To make an
 integer constant of type @code{long long int}, add the suffix @code{LL}
 to the integer.  To make an integer constant of type @code{unsigned long
@@ -815,30 +816,48 @@ Likewise, if the function expects @code{long long int} and you pass
 @node Complex
 @section Complex Numbers
 @cindex complex numbers
+@cindex @code{_Complex} keyword
+@cindex @code{__complex__} keyword
 
-GNU C supports complex data types.  You can declare both complex integer
-types and complex floating types, using the keyword @code{__complex__}.
+ISO C99 supports complex floating data types, and as an extension GCC
+supports them in C89 mode and in C++, and supports complex integer data
+types which are not part of ISO C99.  You can declare complex types
+using the keyword @code{_Complex}.  As an extension, the older GNU
+keyword @code{__complex__} is also supported.
 
-For example, @samp{__complex__ double x;} declares @code{x} as a
+For example, @samp{_Complex double x;} declares @code{x} as a
 variable whose real part and imaginary part are both of type
-@code{double}.  @samp{__complex__ short int y;} declares @code{y} to
+@code{double}.  @samp{_Complex short int y;} declares @code{y} to
 have real and imaginary parts of type @code{short int}; this is not
 likely to be useful, but it shows that the set of complex types is
 complete.
 
 To write a constant with a complex data type, use the suffix @samp{i} or
 @samp{j} (either one; they are equivalent).  For example, @code{2.5fi}
-has type @code{__complex__ float} and @code{3i} has type
-@code{__complex__ int}.  Such a constant always has a pure imaginary
+has type @code{_Complex float} and @code{3i} has type
+@code{_Complex int}.  Such a constant always has a pure imaginary
 value, but you can form any complex value you like by adding one to a
-real constant.
+real constant.  This is a GNU extension; if you have an ISO C99
+conforming C library (such as GNU libc), and want to construct complex
+constants of floating type, you should include @code{<complex.h>} and
+use the macros @code{I} or @code{_Complex_I} instead.
 
+@cindex @code{__real__} keyword
+@cindex @code{__imag__} keyword
 To extract the real part of a complex-valued expression @var{exp}, write
 @code{__real__ @var{exp}}.  Likewise, use @code{__imag__} to
-extract the imaginary part.
+extract the imaginary part.  This is a GNU extension; for values of
+floating type, you should use the ISO C99 functions @code{crealf},
+@code{creal}, @code{creall}, @code{cimagf}, @code{cimag} and
+@code{cimagl}, declared in @code{<complex.h>} and also provided as
+builtin functions by GCC.
 
+@cindex complex conjugation
 The operator @samp{~} performs complex conjugation when used on a value
-with a complex type.
+with a complex type.  This is a GNU extension; for values of
+floating type, you should use the ISO C99 functions @code{conjf},
+@code{conj} and @code{conjl}, declared in @code{<complex.h>} and also
+provided as builtin functions by GCC.
 
 GNU CC can allocate complex automatic variables in a noncontiguous
 fashion; it's even possible for the real part to be in a register while
@@ -857,9 +876,11 @@ them as a single variable with a complex type.
 @section Hex Floats
 @cindex hex floats
 
-GNU CC recognizes floating-point numbers written not only in the usual
+ISO C99 supports floating-point numbers written not only in the usual
 decimal notation, such as @code{1.55e1}, but also numbers such as
-@code{0x1.fp3} written in hexadecimal format.  In that format the
+@code{0x1.fp3} written in hexadecimal format.  As a GNU extension, GCC
+supports this in C89 mode (except in some cases when strictly
+conforming) and in C++.  In that format the
 @code{0x} hex introducer and the @code{p} or @code{P} exponent field are
 mandatory.  The exponent is a decimal number that indicates the power of
 2 by which the significant part will be multiplied.  Thus @code{0x1.f} is
@@ -968,8 +989,12 @@ struct foo d[1] = @{ @{ 1 @{ 2, 3, 4 @} @} @};  // Illegal.
 @section Arrays of Variable Length
 @cindex variable-length arrays
 @cindex arrays of variable length
+@cindex VLAs
 
-Variable-length automatic arrays are allowed in GNU C.  These arrays are
+Variable-length automatic arrays are allowed in ISO C99, and as an
+extension GCC accepts them in C89 mode and in C++.  (However, GCC's
+implementation of variable-length arrays does not yet conform in detail
+to the ISO C99 standard.)  These arrays are
 declared like any other automatic arrays, but with a length that is not
 a constant expression.  The storage is allocated at the point of
 declaration and deallocated when the brace-level is exited.  For
@@ -1040,7 +1065,8 @@ You can write any number of such parameter forward declarations in the
 parameter list.  They can be separated by commas or semicolons, but the
 last one must end with a semicolon, which is followed by the ``real''
 parameter declarations.  Each forward declaration must match a ``real''
-declaration in parameter name and data type.
+declaration in parameter name and data type.  ISO C99 does not support
+parameter forward declarations.
 
 @node Variadic Macros
 @section Macros with a Variable Number of Arguments.
@@ -1142,8 +1168,10 @@ removed.
 
 @cindex subscripting and function values
 Subscripting is allowed on arrays that are not lvalues, even though the
-unary @samp{&} operator is not.  For example, this is valid in GNU C though
-not valid in other C dialects:
+unary @samp{&} operator is not.  (In ISO C99, both are allowed (though
+the array may not be used after the next sequence point), but this ISO
+C99 feature is not yet fully supported in GCC.)  For example,
+this is valid in GNU C though not valid in C89:
 
 @example
 @group
@@ -1180,7 +1208,7 @@ are used.
 @cindex initializers, non-constant
 @cindex non-constant initializers
 
-As in standard C++, the elements of an aggregate initializer for an
+As in standard C++ and ISO C99, the elements of an aggregate initializer for an
 automatic variable are not required to be constant expressions in GNU C.
 Here is an example of an initializer with run-time varying elements:
 
@@ -1192,17 +1220,21 @@ foo (float f, float g)
 @}
 @end example
 
-@node Constructors
-@section Constructor Expressions
+@node Compound Literals
+@section Compound Literals
 @cindex constructor expressions
 @cindex initializations in expressions
 @cindex structures, constructor expression
 @cindex expressions, constructor
+@cindex compound literals
+@c The GNU C name for what C99 calls compound literals was "constructor expressions".
 
-GNU C supports constructor expressions.  A constructor looks like
+ISO C99 supports compound literals.  A compound literal looks like
 a cast containing an initializer.  Its value is an object of the
 type specified in the cast, containing the elements specified in
-the initializer.
+the initializer.  (GCC does not yet implement the full ISO C99 semantics
+for compound literals.)  As an extension, GCC supports compound literals
+in C89 mode and in C++.
 
 Usually, the specified type is a structure.  Assume that
 @code{struct foo} and @code{structure} are declared as shown:
@@ -1212,7 +1244,7 @@ struct foo @{int a; char b[2];@} structure;
 @end example
 
 @noindent
-Here is an example of constructing a @code{struct foo} with a constructor:
+Here is an example of constructing a @code{struct foo} with a compound literal:
 
 @example
 structure = ((struct foo) @{x + y, 'a', 0@});
@@ -1228,36 +1260,40 @@ This is equivalent to writing the following:
 @}
 @end example
 
-You can also construct an array.  If all the elements of the constructor
+You can also construct an array.  If all the elements of the compound literal
 are (made up of) simple constant expressions, suitable for use in
-initializers, then the constructor is an lvalue and can be coerced to a
+initializers, then the compound literal is an lvalue and can be coerced to a
 pointer to its first element, as shown here:
 
 @example
 char **foo = (char *[]) @{ "x", "y", "z" @};
 @end example
 
-Array constructors whose elements are not simple constants are
-not very useful, because the constructor is not an lvalue.  There
-are only two valid ways to use it: to subscript it, or initialize
+Array compound literals whose elements are not simple constants are
+not very useful, because the compound literal is not an lvalue; ISO C99
+specifies that it is, being a temporary object with automatic storage
+duration associated with the enclosing block, but GCC does not yet
+implement this.  There are currently only two valid ways to use it with
+GCC: to subscript it, or initialize
 an array variable with it.  The former is probably slower than a
 @code{switch} statement, while the latter does the same thing an
 ordinary C initializer would do.  Here is an example of
-subscripting an array constructor:
+subscripting an array compound literal:
 
 @example
 output = ((int[]) @{ 2, x, 28 @}) [input];
 @end example
 
-Constructor expressions for scalar types and union types are is
-also allowed, but then the constructor expression is equivalent
+Compound literals for scalar types and union types are is
+also allowed, but then the compound literal is equivalent
 to a cast.
 
-@node Labeled Elements
-@section Labeled Elements in Initializers
+@node Designated Inits
+@section Designated Initializers
 @cindex initializers with labeled elements
 @cindex labeled elements in initializers
 @cindex case labels in initializers
+@cindex designated initializers
 
 Standard C89 requires the elements of an initializer to appear in a fixed
 order, the same as the order of the elements in the array or structure
@@ -1335,9 +1371,11 @@ Another syntax which has the same meaning, obsolete since GCC 2.5, is
 struct point p = @{ y: yvalue, x: xvalue @};
 @end example
 
-You can also use an element label (with either the colon syntax or the
-period-equal syntax) when initializing a union, to specify which element
-of the union should be used.  For example,
+@cindex designators
+The @samp{[@var{index}]} or @samp{.@var{fieldname}} is known as a
+@dfn{designator}.  You can also use a designator (or the obsolete colon
+syntax) when initializing a union, to specify which element of the union
+should be used.  For example,
 
 @example
 union foo @{ int i; double d; @};
@@ -1353,7 +1391,7 @@ an integer.  (@xref{Cast to Union}.)
 
 You can combine this technique of naming elements with ordinary C
 initialization of successive elements.  Each initializer element that
-does not have a label applies to the next consecutive element of the
+does not have a designator applies to the next consecutive element of the
 array or structure.  For example,
 
 @example
@@ -1377,8 +1415,9 @@ int whitespace[256]
       ['\f'] = 1, ['\n'] = 1, ['\r'] = 1 @};
 @end example
 
+@cindex designator lists
 You can also write a series of @samp{.@var{fieldname}} and
-@samp{[@var{index}]} element labels before an @samp{=} to specify a
+@samp{[@var{index}]} designators before an @samp{=} to specify a
 nested subobject to initialize; the list is taken relative to the
 subobject corresponding to the closest surrounding brace pair.  For
 example, with the @samp{struct point} declaration above:
@@ -1439,7 +1478,7 @@ A cast to union type is similar to other casts, except that the type
 specified is a union type.  You can specify the type either with
 @code{union @var{tag}} or with a typedef name.  A cast to union is actually
 a constructor though, not a cast, and hence does not yield an lvalue like
-normal casts.  (@xref{Constructors}.)
+normal casts.  (@xref{Compound Literals}.)
 
 The types that may be cast to the union type are those of the members
 of the union.  Thus, given the following union and variables:
@@ -1470,6 +1509,26 @@ void hack (union foo);
 @dots{}
 hack ((union foo) x);
 @end example
+
+@node Mixed Declarations
+@section Mixed Declarations and Code
+@cindex mixed declarations and code
+@cindex declarations, mixed with code
+@cindex code, mixed with declarations
+
+ISO C99 and ISO C++ allow declarations and code to be freely mixed
+within compound statements.  As an extension, GCC also allows this in
+C89 mode.  For example, you could do:
+
+@example
+int i;
+@dots{}
+i++;
+int j = i + 2;
+@end example
+
+Each identifier is visible from where it is declared until the end of
+the enclosing block.
 
 @node Function Attributes
 @section Declaring Attributes of Functions
@@ -2741,6 +2800,10 @@ inlining, depending on the particular case.  Inlining of functions is an
 optimization and it really ``works'' only in optimizing compilation.  If
 you don't use @samp{-O}, no function is really inline.
 
+Inline functions are included in the ISO C99 standard, but there are
+currently substantial differences between what GCC implements and what
+the ISO C99 standard requires.
+
 To declare a function inline, use the @code{inline} keyword in its
 declaration, like this:
 
@@ -2811,6 +2874,12 @@ definition (lacking @code{inline} and @code{extern}) in a library file.
 The definition in the header file will cause most calls to the function
 to be inlined.  If any uses of the function remain, they will refer to
 the single copy in the library.
+
+For future compatibility with when GCC implements ISO C99 semantics for
+inline functions, it is best to use @code{static inline} only.  (The
+existing semantics will remain available when @option{-std=gnu89} is
+specified, but eventually the default will be @option{-std=gnu99} and
+that will implement the C99 semantics, though it does not do so yet.)
 
 GNU C does not inline any functions when not optimizing.  It is not
 clear whether it is better to inline or not, in this case, but we found
@@ -3479,6 +3548,9 @@ This extension is not supported by GNU C++.
 
 @node Function Names
 @section Function Names as Strings
+@cindex @code{__FUNCTION__} identifier
+@cindex @code{__PRETTY_FUNCTION__} identifier
+@cindex @code{__func__} identifier
 
 GNU CC predefines two magic identifiers to hold the name of the current
 function. The identifier @code{__FUNCTION__} holds the name of the function
@@ -3535,7 +3607,7 @@ meaning inside a function, since the preprocessor does not do anything
 special with the identifier @code{__FUNCTION__}.
 
 GNU CC also supports the magic word @code{__func__}, defined by the
-ISO standard C-99:
+ISO standard C99:
 
 @display
 The identifier @code{__func__} is implicitly declared by the translator
@@ -3750,7 +3822,7 @@ You may use this builtin function in either a macro or an inline
 function.  However, if you use it in an inlined function and pass an
 argument of the function as the argument to the builtin, GNU CC will
 never return 1 when you call the inline function with a string constant
-or constructor expression (@pxref{Constructors}) and will not return 1
+or compound literal (@pxref{Compound Literals}) and will not return 1
 when you pass a constant numeric value to the inline function unless you
 specify the @samp{-O} option.
 
