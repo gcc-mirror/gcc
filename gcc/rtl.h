@@ -1847,9 +1847,7 @@ extern int function_invariant_p		PARAMS ((rtx));
 extern void reload_cse_regs		PARAMS ((rtx));
 extern void init_reload			PARAMS ((void));
 extern void mark_home_live		PARAMS ((int));
-#ifdef BUFSIZ
-extern int reload			PARAMS ((rtx, int, FILE *));
-#endif
+extern int reload			PARAMS ((rtx, int));
 
 /* In caller-save.c */
 extern void init_caller_save		PARAMS ((void));

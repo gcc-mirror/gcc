@@ -272,8 +272,6 @@ static void find_reloads_address_part PARAMS ((rtx, rtx *, enum reg_class,
 static rtx find_reloads_subreg_address PARAMS ((rtx, int, int, enum reload_type,
 					      int, rtx));
 static int find_inc_amount	PARAMS ((rtx, rtx));
-extern void debug_reload_to_stream PARAMS ((FILE *));
-extern void debug_reload PARAMS ((void));
 
 #ifdef HAVE_SECONDARY_RELOADS
 

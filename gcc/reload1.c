@@ -373,10 +373,9 @@ static int num_labels;
 static void maybe_fix_stack_asms	PARAMS ((void));
 static void copy_reloads		PARAMS ((struct insn_chain *));
 static void calculate_needs_all_insns	PARAMS ((int));
-static int find_reg			PARAMS ((struct insn_chain *, int,
-					       FILE *));
-static void find_reload_regs		PARAMS ((struct insn_chain *, FILE *));
-static void select_reload_regs		PARAMS ((FILE *));
+static int find_reg			PARAMS ((struct insn_chain *, int));
+static void find_reload_regs		PARAMS ((struct insn_chain *));
+static void select_reload_regs		PARAMS ((void));
 static void delete_caller_save_insns	PARAMS ((void));
 
 static void spill_failure		PARAMS ((rtx, enum reg_class));
@@ -395,13 +394,13 @@ static void set_initial_label_offsets	PARAMS ((void));
 static void set_offsets_for_label	PARAMS ((rtx));
 static void init_elim_table		PARAMS ((void));
 static void update_eliminables		PARAMS ((HARD_REG_SET *));
-static void spill_hard_reg		PARAMS ((unsigned int, FILE *, int));
-static int finish_spills		PARAMS ((int, FILE *));
+static void spill_hard_reg		PARAMS ((unsigned int, int));
+static int finish_spills		PARAMS ((int));
 static void ior_hard_reg_set		PARAMS ((HARD_REG_SET *, HARD_REG_SET *));
 static void scan_paradoxical_subregs	PARAMS ((rtx));
 static void count_pseudo		PARAMS ((int));
 static void order_regs_for_reload	PARAMS ((struct insn_chain *));
-static void reload_as_needed		PARAMS ((int, FILE *));
+static void reload_as_needed		PARAMS ((int));
 static void forget_old_reloads_1	PARAMS ((rtx, rtx, void *));
 static int reload_reg_class_lower	PARAMS ((const PTR, const PTR));
 static void mark_reload_reg_in_use	PARAMS ((unsigned int, int,
@@ -431,7 +430,7 @@ static void do_input_reload		PARAMS ((struct insn_chain *,
 						 struct reload *, int));
 static void do_output_reload		PARAMS ((struct insn_chain *,
 						 struct reload *, int));
-static void emit_reload_insns		PARAMS ((struct insn_chain *, FILE *));
+static void emit_reload_insns		PARAMS ((struct insn_chain *));
 static void delete_output_reload	PARAMS ((rtx, int, int));
 static void delete_address_reloads	PARAMS ((rtx, rtx));
 static void delete_address_reloads_1	PARAMS ((rtx, rtx, rtx));
@@ -455,7 +454,7 @@ static void failed_reload		PARAMS ((rtx, int));
 static int set_reload_reg		PARAMS ((int, int));
 static void reload_cse_delete_noop_set	PARAMS ((rtx, rtx));
 static void reload_cse_simplify		PARAMS ((rtx));
-extern void dump_needs			PARAMS ((struct insn_chain *, FILE *));
+extern void dump_needs			PARAMS ((struct insn_chain *));
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -595,19 +594,13 @@ static int failure;
    If GLOBAL is zero, we do not have enough information to do that,
    so any pseudo reg that is spilled must go to the stack.
 
-   DUMPFILE is the global-reg debugging dump file stream, or 0.
-   If it is nonzero, messages are written to it to describe
-   which registers are seized as reload regs, which pseudo regs
-   are spilled from them, and where the pseudo regs are reallocated to.
-
    Return value is nonzero if reload failed
    and we must not do any more for this function.  */
 
 int
-reload (first, global, dumpfile)
+reload (first, global)
      rtx first;
      int global;
-     FILE *dumpfile;
 {
   register int i;
   register rtx insn;
@@ -824,13 +817,13 @@ reload (first, global, dumpfile)
   CLEAR_HARD_REG_SET (used_spill_regs);
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     if (! ep->can_eliminate)
-      spill_hard_reg (ep->from, dumpfile, 1);
+      spill_hard_reg (ep->from, 1);
 
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
   if (frame_pointer_needed)
-    spill_hard_reg (HARD_FRAME_POINTER_REGNUM, dumpfile, 1);
+    spill_hard_reg (HARD_FRAME_POINTER_REGNUM, 1);
 #endif
-  finish_spills (global, dumpfile);
+  finish_spills (global);
 
   /* From now on, we may need to generate moves differently.  We may also
      allow modifications of insns which cause them to not be recognized.
@@ -946,7 +939,7 @@ reload (first, global, dumpfile)
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	  if (TEST_HARD_REG_BIT (to_spill, i))
 	    {
-	      spill_hard_reg (i, dumpfile, 1);
+	      spill_hard_reg (i, 1);
 	      did_spill = 1;
 
 	      /* Regardless of the state of spills, if we previously had
@@ -962,12 +955,12 @@ reload (first, global, dumpfile)
 	    }
       }
 
-      select_reload_regs (dumpfile);
+      select_reload_regs ();
       if (failure)
 	goto failed;
 
       if (insns_need_reload != 0 || did_spill)
-	something_changed |= finish_spills (global, dumpfile);
+	something_changed |= finish_spills (global);
 
       if (! something_changed)
 	break;
@@ -1023,7 +1016,7 @@ reload (first, global, dumpfile)
     {
       int old_frame_size = get_frame_size ();
 
-      reload_as_needed (global, dumpfile);
+      reload_as_needed (global);
 
       if (old_frame_size != get_frame_size ())
 	abort ();
@@ -1585,10 +1578,9 @@ count_spilled_pseudo (spilled, spilled_nregs, reg)
 /* Find reload register to use for reload number ORDER.  */
 
 static int
-find_reg (chain, order, dumpfile)
+find_reg (chain, order)
      struct insn_chain *chain;
      int order;
-     FILE *dumpfile;
 {
   int rnum = reload_order[order];
   struct reload *rl = rld + rnum;
@@ -1659,8 +1651,8 @@ find_reg (chain, order, dumpfile)
   if (best_reg == -1)
     return 0;
 
-  if (dumpfile)
-    fprintf (dumpfile, "Using reg %d for reload %d\n", best_reg, rnum);
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "Using reg %d for reload %d\n", best_reg, rnum);
 
   rl->nregs = HARD_REGNO_NREGS (best_reg, rl->mode);
   rl->regno = best_reg;
@@ -1694,9 +1686,8 @@ find_reg (chain, order, dumpfile)
    for a smaller class even though it belongs to that class.  */
 
 static void
-find_reload_regs (chain, dumpfile)
+find_reload_regs (chain)
      struct insn_chain *chain;
-     FILE *dumpfile;
 {
   int i;
 
@@ -1724,8 +1715,8 @@ find_reload_regs (chain, dumpfile)
 
   CLEAR_HARD_REG_SET (used_spill_regs_local);
 
-  if (dumpfile)
-    fprintf (dumpfile, "Spilling for insn %d.\n", INSN_UID (chain->insn));
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "Spilling for insn %d.\n", INSN_UID (chain->insn));
 
   qsort (reload_order, n_reloads, sizeof (short), reload_reg_class_lower);
 
@@ -1741,7 +1732,7 @@ find_reload_regs (chain, dumpfile)
       if ((rld[r].out != 0 || rld[r].in != 0 || rld[r].secondary_p)
 	  && ! rld[r].optional
 	  && rld[r].regno == -1)
-	if (! find_reg (chain, i, dumpfile))
+	if (! find_reg (chain, i))
 	  {
 	    spill_failure (chain->insn, rld[r].class);
 	    failure = 1;
@@ -1756,15 +1747,14 @@ find_reload_regs (chain, dumpfile)
 }
 
 static void
-select_reload_regs (dumpfile)
-     FILE *dumpfile;
+select_reload_regs ()
 {
   struct insn_chain *chain;
 
   /* Try to satisfy the needs for each insn.  */
   for (chain = insns_need_reload; chain != 0;
        chain = chain->next_need_reload)
-    find_reload_regs (chain, dumpfile);
+    find_reload_regs (chain);
 }
 
 /* Delete all insns that were inserted by emit_caller_save_insns during
@@ -3450,7 +3440,6 @@ init_elim_table ()
 }
 
 /* Kick all pseudos out of hard register REGNO.
-   If DUMPFILE is nonzero, log actions taken on that file.
 
    If CANT_ELIMINATE is nonzero, it means that we are doing this spill
    because we found we can't eliminate some register.  In the case, no pseudos
@@ -3461,9 +3450,8 @@ init_elim_table ()
    Return nonzero if any pseudos needed to be kicked out.  */
 
 static void
-spill_hard_reg (regno, dumpfile, cant_eliminate)
+spill_hard_reg (regno, cant_eliminate)
      unsigned int regno;
-     FILE *dumpfile ATTRIBUTE_UNUSED;
      int cant_eliminate;
 {
   register int i;
@@ -3503,9 +3491,8 @@ ior_hard_reg_set (set1, set2)
    spill_regs array for use by choose_reload_regs.  */
 
 static int
-finish_spills (global, dumpfile)
+finish_spills (global)
      int global;
-     FILE *dumpfile;
 {
   struct insn_chain *chain;
   int something_changed = 0;
@@ -3636,12 +3623,12 @@ finish_spills (global, dumpfile)
 
       alter_reg (i, reg_old_renumber[i]);
       reg_old_renumber[i] = regno;
-      if (dumpfile)
+      if (rtl_dump_file)
 	{
 	  if (regno == -1)
-	    fprintf (dumpfile, " Register %d now on stack.\n\n", i);
+	    fprintf (rtl_dump_file, " Register %d now on stack.\n\n", i);
 	  else
-	    fprintf (dumpfile, " Register %d now in %d.\n\n",
+	    fprintf (rtl_dump_file, " Register %d now in %d.\n\n",
 		     i, reg_renumber[i]);
 	}
     }
@@ -3717,9 +3704,8 @@ scan_paradoxical_subregs (x)
    as the insns are scanned.  */
 
 static void
-reload_as_needed (live_known, dumpfile)
+reload_as_needed (live_known)
      int live_known;
-     FILE *dumpfile;
 {
   struct insn_chain *chain;
 #if defined (AUTO_INC_DEC)
@@ -3820,7 +3806,7 @@ reload_as_needed (live_known, dumpfile)
 
 	      /* Generate the insns to reload operands into or out of
 		 their reload regs.  */
-	      emit_reload_insns (chain, dumpfile);
+	      emit_reload_insns (chain);
 
 	      /* Substitute the chosen reload regs from reload_reg_rtx
 		 into the insn's body (or perhaps into the bodies of other
@@ -6771,9 +6757,8 @@ do_output_reload (chain, rl, j)
 /* Output insns to reload values in and out of the chosen reload regs.  */
 
 static void
-emit_reload_insns (chain, dumpfile)
+emit_reload_insns (chain)
      struct insn_chain *chain;
-     FILE *dumpfile;
 {
   rtx insn = chain->insn;
 
@@ -6795,10 +6780,10 @@ emit_reload_insns (chain, dumpfile)
   other_operand_reload_insns = 0;
 
   /* Dump reloads into the dump file.  */
-  if (dumpfile)
+  if (rtl_dump_file)
     {
-      fprintf (dumpfile, "\nReloads for insn # %d\n", INSN_UID (insn));
-      debug_reload_to_stream (dumpfile);
+      fprintf (rtl_dump_file, "\nReloads for insn # %d\n", INSN_UID (insn));
+      debug_reload_to_stream (rtl_dump_file);
     }
 
   /* Now output the instructions to copy the data into and out of the
