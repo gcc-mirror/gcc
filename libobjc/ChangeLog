@@ -1,3 +1,7 @@
+Fri Oct  2 07:12:14 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (INCLUDES): Add -I$(srcdir)/../gcc.
+
 Thu Oct  1 22:33:03 1998 Robert Lipe  <robertl@dgii.com>
 			 Jeffrey A Law  (law@cygnus.com)
 
