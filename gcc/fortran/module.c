@@ -3198,9 +3198,6 @@ write_symbol (int n, gfc_symbol * sym)
   mio_integer (&n);
   mio_internal_string (sym->name);
 
-  if (sym->module[0] == '\0')
-    strcpy (sym->module, module_name);
-
   mio_internal_string (sym->module);
   mio_pointer_ref (&sym->ns);
 
@@ -3226,6 +3223,8 @@ write_symbol0 (gfc_symtree * st)
   write_symbol0 (st->right);
 
   sym = st->n.sym;
+  if (sym->module[0] == '\0')
+    strcpy (sym->module, module_name);
 
   if (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
       && !sym->attr.subroutine && !sym->attr.function)
