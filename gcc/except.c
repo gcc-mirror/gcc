@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -729,38 +729,53 @@ add_partial_entry (handler)
    This routine is here to facilitate the porting of this code to
    systems with threads.  One can either replace the routine we emit a
    call for here in libgcc2.c, or one can modify this routine to work
-   with their thread system.  */
+   with their thread system.
+
+   Ideally, we really only want one per real function, not one
+   per inlined function.  */
 
 rtx
 get_dynamic_handler_chain ()
 {
-#if 0
-  /* Do this once we figure out how to get this to the front of the
-     function, and we really only want one per real function, not one
-     per inlined function.  */
-  if (current_function_dhc == 0)
+  static tree fn;
+  tree expr;
+  rtx insns;
+
+  if (current_function_dhc)
+    return current_function_dhc;
+
+  if (fn == NULL_TREE)
     {
-      rtx dhc, insns;
-      start_sequence ();
-
-      dhc = emit_library_call_value (get_dynamic_handler_chain_libfunc,
-				     NULL_RTX, 1,
-				     Pmode, 0);
-      current_function_dhc = copy_to_reg (dhc);
-      insns = get_insns ();
-      end_sequence ();
-      emit_insns_before (insns, get_first_nonparm_insn ());
+      tree fntype;
+      fn = get_identifier ("__get_dynamic_handler_chain");
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+      fntype = build_pointer_type (build_pointer_type
+				   (build_pointer_type (void_type_node)));
+      fntype = build_function_type (fntype, NULL_TREE);
+      fn = build_decl (FUNCTION_DECL, fn, fntype);
+      DECL_EXTERNAL (fn) = 1;
+      TREE_PUBLIC (fn) = 1;
+      DECL_ARTIFICIAL (fn) = 1;
+      TREE_READONLY (fn) = 1;
+      make_decl_rtl (fn, NULL_PTR, 1);
+      assemble_external (fn);
+      pop_obstacks ();
     }
-#else
-  rtx dhc;
-  dhc = emit_library_call_value (get_dynamic_handler_chain_libfunc,
-				 NULL_RTX, 1,
-				 Pmode, 0);
-  current_function_dhc = copy_to_reg (dhc);
-#endif
 
-  /* We don't want a copy of the dhc, but rather, the single dhc.  */
-  return gen_rtx (MEM, Pmode, current_function_dhc);
+  expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
+  expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+		expr, NULL_TREE, NULL_TREE);
+  TREE_SIDE_EFFECTS (expr) = 1;
+  expr = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
+
+  start_sequence ();
+  current_function_dhc = expand_expr (expr, NULL_RTX, VOIDmode, 0);
+  insns = get_insns ();
+  end_sequence ();
+  emit_insns_before (insns, get_first_nonparm_insn ());
+
+  return current_function_dhc;
 }
 
 /* Get a reference to the dynamic cleanup chain.  It points to the
@@ -993,6 +1008,7 @@ expand_eh_region_start_tree (decl, cleanup)
     }
 
   expand_eh_region_start_for_decl (decl);
+  ehstack.top->entry->finalization = cleanup;
 
   return 0;
 }
@@ -1116,6 +1132,57 @@ expand_eh_region_end (handler)
       /* Maybe do this to prevent jumping in and so on...  */
       expand_end_bindings (NULL_TREE, 0, 0);
     }
+}
+
+/* End the EH region for a goto fixup.  We only need them in the region-based
+   EH scheme.  */
+
+void
+expand_fixup_region_start ()
+{
+  if (! doing_eh (0) || exceptions_via_longjmp)
+    return;
+
+  expand_eh_region_start ();
+}
+
+/* End the EH region for a goto fixup.  CLEANUP is the cleanup we just
+   expanded; to avoid running it twice if it throws, we look through the
+   ehqueue for a matching region and rethrow from its outer_context.  */
+
+void
+expand_fixup_region_end (cleanup)
+     tree cleanup;
+{
+  tree t;
+  struct eh_node *node;
+  int yes;
+
+  if (! doing_eh (0) || exceptions_via_longjmp)
+    return;
+
+  for (node = ehstack.top; node && node->entry->finalization != cleanup; )
+    node = node->chain;
+  if (node == 0)
+    for (node = ehqueue.head; node && node->entry->finalization != cleanup; )
+      node = node->chain;
+  if (node == 0)
+    abort ();
+
+  yes = suspend_momentary ();
+
+  t = build (RTL_EXPR, void_type_node, NULL_RTX, const0_rtx);
+  TREE_SIDE_EFFECTS (t) = 1;
+  do_pending_stack_adjust ();
+  start_sequence_for_rtl_expr (t);
+  expand_internal_throw (node->entry->outer_context);
+  do_pending_stack_adjust ();
+  RTL_EXPR_SEQUENCE (t) = get_insns ();
+  end_sequence ();
+
+  resume_momentary (yes);
+
+  expand_eh_region_end (t);
 }
 
 /* If we are using the setjmp/longjmp EH codegen method, we emit a
