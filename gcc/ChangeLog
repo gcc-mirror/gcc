@@ -1,5 +1,15 @@
 2003-10-28  Zack Weinberg  <zack@codesourcery.com>
 
+	* config/ia64/ia64.c (cmptf_libfunc): New static.
+	(ia64_expand_compare): Add logic to open-code calls to
+	_U_Qfcmp for TFmode comparisons.
+	(ia64_hpux_init_libfuncs): Initialize cmptf_libfunc.
+	Set libfuncs for TFmode eq/ne/gt/ge/lt/gt to 0; these should
+	never be generated anymore.
+	* config/ia64/ia64.md (cmptf): New expander.
+
+2003-10-28  Zack Weinberg  <zack@codesourcery.com>
+
 	* ia64.md (UNSPEC_SETF_EXP,UNSPEC_FR_SQRT_RECIP_APPROX): New constants.
 	(*sqrt_approx): New instruction pattern for approximate square roots.
 	(*setf_exp_xf): New instruction pattern for exponentiation.

@@ -1465,6 +1465,8 @@ spill_xfmode_operand (rtx in, int force)
 /* Emit comparison instruction if necessary, returning the expression
    that holds the compare result in the proper mode.  */
 
+static GTY(()) rtx cmptf_libfunc;
+
 rtx
 ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
 {
@@ -1479,6 +1481,59 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
 	cmp = op0;
       else
 	abort ();
+    }
+  /* HPUX TFmode compare requires a library call to _U_Qfcmp, which takes a
+     magic number as its third argument, that indicates what to do.
+     The return value is an integer to be compared against zero.  */
+  else if (TARGET_HPUX && GET_MODE (op0) == TFmode)
+    {
+      enum qfcmp_magic {
+	QCMP_INV = 1,	/* Raise FP_INVALID on SNaN as a side effect.  */
+	QCMP_UNORD = 2,
+	QCMP_EQ = 4,
+	QCMP_LT = 8,
+	QCMP_GT = 16
+      } magic;
+      enum rtx_code ncode;
+      rtx ret, insns;
+      if (GET_MODE (op1) != TFmode)
+	abort ();
+      switch (code)
+	{
+	  /* 1 = equal, 0 = not equal.  Equality operators do
+	     not raise FP_INVALID when given an SNaN operand.  */
+	case EQ:        magic = QCMP_EQ;                  ncode = NE; break;
+	case NE:        magic = QCMP_EQ;                  ncode = EQ; break;
+	  /* isunordered() from C99.  */
+	case UNORDERED: magic = QCMP_UNORD;               ncode = NE; break;
+	  /* Relational operators raise FP_INVALID when given
+	     an SNaN operand.  */
+	case LT:        magic = QCMP_LT        |QCMP_INV; ncode = NE; break;
+	case LE:        magic = QCMP_LT|QCMP_EQ|QCMP_INV; ncode = NE; break;
+	case GT:        magic = QCMP_GT        |QCMP_INV; ncode = NE; break;
+	case GE:        magic = QCMP_GT|QCMP_EQ|QCMP_INV; ncode = NE; break;
+	  /* FUTURE: Implement UNEQ, UNLT, UNLE, UNGT, UNGE, LTGT.
+	     Expanders for buneq etc. weuld have to be added to ia64.md
+	     for this to be useful.  */
+	default: abort ();
+	}
+
+      start_sequence ();
+
+      ret = emit_library_call_value (cmptf_libfunc, 0, LCT_CONST, DImode, 3,
+				     op0, TFmode, op1, TFmode,
+				     GEN_INT (magic), DImode);
+      cmp = gen_reg_rtx (BImode);
+      emit_insn (gen_rtx_SET (VOIDmode, cmp,
+			      gen_rtx_fmt_ee (ncode, BImode,
+					      ret, const0_rtx)));
+
+      insns = get_insns ();
+      end_sequence ();
+
+      emit_libcall_block (insns, cmp, cmp,
+			  gen_rtx_fmt_ee (code, BImode, op0, op1));
+      code = NE;
     }
   else
     {
@@ -8338,12 +8393,16 @@ ia64_hpux_init_libfuncs (void)
   set_optab_libfunc (abs_optab, TFmode, "_U_Qfabs");
   set_optab_libfunc (neg_optab, TFmode, "_U_Qfneg");
 
-  set_optab_libfunc (eq_optab, TFmode, "_U_Qfeq");
-  set_optab_libfunc (ne_optab, TFmode, "_U_Qfne");
-  set_optab_libfunc (gt_optab, TFmode, "_U_Qfgt");
-  set_optab_libfunc (ge_optab, TFmode, "_U_Qfge");
-  set_optab_libfunc (lt_optab, TFmode, "_U_Qflt");
-  set_optab_libfunc (le_optab, TFmode, "_U_Qfle");
+  /* ia64_expand_compare uses this.  */
+  cmptf_libfunc = init_one_libfunc ("_U_Qfcmp");
+
+  /* These should never be used.  */
+  set_optab_libfunc (eq_optab, TFmode, 0);
+  set_optab_libfunc (ne_optab, TFmode, 0);
+  set_optab_libfunc (gt_optab, TFmode, 0);
+  set_optab_libfunc (ge_optab, TFmode, 0);
+  set_optab_libfunc (lt_optab, TFmode, 0);
+  set_optab_libfunc (le_optab, TFmode, 0);
 
   set_conv_libfunc (sext_optab,   TFmode, SFmode, "_U_Qfcnvff_sgl_to_quad");
   set_conv_libfunc (sext_optab,   TFmode, DFmode, "_U_Qfcnvff_dbl_to_quad");
