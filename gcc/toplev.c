@@ -1589,7 +1589,7 @@ randomize (void)
       }
 #else
       {
-	time_t now = time ();
+	time_t now = time (NULL);
 
 	if (now != (time_t)-1)
 	  local_tick = (unsigned) now;
