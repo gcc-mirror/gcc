@@ -168,6 +168,12 @@ static void sparc_sched_init PARAMS ((FILE *, int, int));
 static int sparc_use_dfa_pipeline_interface PARAMS ((void));
 static int sparc_use_sched_lookahead PARAMS ((void));
 static rtx sparc_cycle_display PARAMS ((int, rtx));
+
+static void emit_soft_tfmode_libcall PARAMS ((const char *, int, rtx *));
+static void emit_soft_tfmode_binop PARAMS ((enum rtx_code, rtx *));
+static void emit_soft_tfmode_unop PARAMS ((enum rtx_code, rtx *));
+static void emit_soft_tfmode_cvt PARAMS ((enum rtx_code, rtx *));
+static void emit_hard_tfmode_operation PARAMS ((enum rtx_code, rtx *));
 
 /* Option handling.  */
 
@@ -2454,6 +2460,304 @@ gen_df_reg (reg, low)
   if ((WORDS_BIG_ENDIAN == 0) ^ (low != 0))
     regno += (TARGET_ARCH64 && regno < 32) ? 1 : 2;
   return gen_rtx_REG (DFmode, regno);
+}
+
+/* Generate a call to FUNC with OPERANDS.  Operand 0 is the return value.
+   Unlike normal calls, TFmode operands are passed by reference.  It is
+   assumed that no more than 3 operands are required.  */
+
+static void
+emit_soft_tfmode_libcall (func_name, nargs, operands)
+     const char *func_name;
+     int nargs;
+     rtx *operands;
+{
+  rtx ret_slot = NULL, arg[3], func_sym;
+  int i;
+
+  /* We only expect to be called for conversions, unary, and binary ops.  */
+  if (nargs < 2 || nargs > 3)
+    abort ();
+
+  for (i = 0; i < nargs; ++i)
+    {
+      rtx this_arg = operands[i];
+      rtx this_slot;
+
+      /* TFmode arguments and return values are passed by reference.  */
+      if (GET_MODE (this_arg) == TFmode)
+	{
+	  if (GET_CODE (this_arg) == MEM)
+	    this_arg = XEXP (this_arg, 0);
+	  else if (CONSTANT_P (this_arg))
+	    {
+	      this_slot = force_const_mem (TFmode, this_arg);
+	      this_arg = XEXP (this_slot, 0);
+	    }
+	  else
+	    {
+	      this_slot = assign_stack_temp (TFmode, GET_MODE_SIZE (TFmode), 0);
+
+	      /* Operand 0 is the return value.  We'll copy it out later.  */
+	      if (i > 0)
+		emit_move_insn (this_slot, this_arg);
+	      else
+		ret_slot = this_slot;
+
+	      this_arg = XEXP (this_slot, 0);
+	    }
+	}
+
+      arg[i] = this_arg;
+    }
+
+  func_sym = gen_rtx_SYMBOL_REF (Pmode, func_name);
+
+  if (GET_MODE (operands[0]) == TFmode)
+    {
+      if (nargs == 2)
+	emit_library_call (func_sym, LCT_NORMAL, VOIDmode, 2,
+			   arg[0], GET_MODE (arg[0]),
+			   arg[1], GET_MODE (arg[1]));
+      else
+	emit_library_call (func_sym, LCT_NORMAL, VOIDmode, 3,
+			   arg[0], GET_MODE (arg[0]),
+			   arg[1], GET_MODE (arg[1]),
+			   arg[2], GET_MODE (arg[2]));
+
+      if (ret_slot)
+	emit_move_insn (operands[0], ret_slot);
+    }
+  else
+    {
+      rtx ret;
+
+      if (nargs != 2)
+	abort ();
+
+      ret = emit_library_call_value (func_sym, operands[0], LCT_NORMAL,
+				     GET_MODE (operands[0]), 1,
+				     arg[1], GET_MODE (arg[1]));
+
+      if (ret != operands[0])
+	emit_move_insn (operands[0], ret);
+    }
+}
+
+/* Expand soft-float TFmode calls to sparc abi routines.  */
+
+static void
+emit_soft_tfmode_binop (code, operands)
+     enum rtx_code code;
+     rtx *operands;
+{
+  const char *func;
+
+  switch (code)
+    {
+    case PLUS:
+      func = "_Qp_add";
+      break;
+    case MINUS:
+      func = "_Qp_sub";
+      break;
+    case MULT:
+      func = "_Qp_mul";
+      break;
+    case DIV:
+      func = "_Qp_div";
+      break;
+    default:
+      abort ();
+    }
+
+  emit_soft_tfmode_libcall (func, 3, operands);
+}
+
+static void
+emit_soft_tfmode_unop (code, operands)
+     enum rtx_code code;
+     rtx *operands;
+{
+  const char *func;
+
+  switch (code)
+    {
+    case SQRT:
+      func = "_Qp_sqrt";
+      break;
+    default:
+      abort ();
+    }
+
+  emit_soft_tfmode_libcall (func, 2, operands);
+}
+
+static void
+emit_soft_tfmode_cvt (code, operands)
+     enum rtx_code code;
+     rtx *operands;
+{
+  const char *func;
+
+  switch (code)
+    {
+    case FLOAT_EXTEND:
+      switch (GET_MODE (operands[1]))
+	{
+	case SFmode:
+	  func = "_Qp_stoq";
+	  break;
+	case DFmode:
+	  func = "_Qp_dtoq";
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+
+    case FLOAT_TRUNCATE:
+      switch (GET_MODE (operands[0]))
+	{
+	case SFmode:
+	  func = "_Qp_qtos";
+	  break;
+	case DFmode:
+	  func = "_Qp_qtod";
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+
+    case FLOAT:
+      switch (GET_MODE (operands[1]))
+	{
+	case SImode:
+	  func = "_Qp_itoq";
+	  break;
+	case DImode:
+	  func = "_Qp_xtoq";
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+
+    case UNSIGNED_FLOAT:
+      switch (GET_MODE (operands[1]))
+	{
+	case SImode:
+	  func = "_Qp_uitoq";
+	  break;
+	case DImode:
+	  func = "_Qp_uxtoq";
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+
+    case FIX:
+      switch (GET_MODE (operands[0]))
+	{
+	case SImode:
+	  func = "_Qp_qtoi";
+	  break;
+	case DImode:
+	  func = "_Qp_qtox";
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+
+    case UNSIGNED_FIX:
+      switch (GET_MODE (operands[0]))
+	{
+	case SImode:
+	  func = "_Qp_qtoui";
+	  break;
+	case DImode:
+	  func = "_Qp_qtoux";
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+
+    default:
+      abort ();
+    }
+
+  emit_soft_tfmode_libcall (func, 2, operands);
+}
+
+/* Expand a hard-float tfmode operation.  All arguments must be in
+   registers.  */
+
+static void
+emit_hard_tfmode_operation (code, operands)
+     enum rtx_code code;
+     rtx *operands;
+{
+  rtx op, dest;
+
+  if (GET_RTX_CLASS (code) == '1')
+    {
+      operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
+      op = gen_rtx_fmt_e (code, GET_MODE (operands[0]), operands[1]);
+    }
+  else
+    {
+      operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
+      operands[2] = force_reg (GET_MODE (operands[2]), operands[2]);
+      op = gen_rtx_fmt_ee (code, GET_MODE (operands[0]),
+			   operands[1], operands[2]);
+    }
+
+  if (register_operand (operands[0], VOIDmode))
+    dest = operands[0];
+  else
+    dest = gen_reg_rtx (GET_MODE (operands[0]));
+
+  emit_insn (gen_rtx_SET (VOIDmode, dest, op));
+
+  if (dest != operands[0])
+    emit_move_insn (operands[0], dest);
+}
+
+void
+emit_tfmode_binop (code, operands)
+     enum rtx_code code;
+     rtx *operands;
+{
+  if (TARGET_HARD_QUAD)
+    emit_hard_tfmode_operation (code, operands);
+  else
+    emit_soft_tfmode_binop (code, operands);
+}
+
+void
+emit_tfmode_unop (code, operands)
+     enum rtx_code code;
+     rtx *operands;
+{
+  if (TARGET_HARD_QUAD)
+    emit_hard_tfmode_operation (code, operands);
+  else
+    emit_soft_tfmode_unop (code, operands);
+}
+
+void
+emit_tfmode_cvt (code, operands)
+     enum rtx_code code;
+     rtx *operands;
+{
+  if (TARGET_HARD_QUAD)
+    emit_hard_tfmode_operation (code, operands);
+  else
+    emit_soft_tfmode_cvt (code, operands);
 }
 
 /* Return nonzero if a return peephole merging return with

@@ -1,3 +1,15 @@
+2002-04-30  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.c (emit_soft_tfmode_libcall,
+	emit_soft_tfmode_binop, emit_soft_tfmode_unop, emit_soft_tfmode_cvt,
+	emit_hard_tfmode_operation, emit_tfmode_binop, emit_tfmode_unop,
+	emit_tfmode_cvt): New.
+	* config/sparc/sparc.md (extendsftf2, extenddftf2, trunctfsf2,
+	trunctfdf2, floatsitf2, floatunssitf2, floatditf2, floatunsditf2,
+	fix_trunctfsi2, fixuns_trunctfsi2, fix_trunctfdi2, fixuns_trunctfdi2,
+	addtf3, subtf3, multf3, divtf3, sqrttf2): Use them.
+	* config/sparc/sparc-protos.h: Update.
+
 2002-04-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* install.texi (Final install): Add to the list of info to include
