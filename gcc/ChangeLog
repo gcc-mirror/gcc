@@ -1,3 +1,9 @@
+Wed Oct  7 12:55:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (c-gperf.h): Add -L KR-C -F ', 0, 0' flags to gperf.
+	(c-parse.gperf): Update comments describing invocation flags.
+	(c-gperf.h): Regenerate using gperf 2.7.1 (19981006 egcs).
+
 1998-10-07  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* reload1.c (reload): Call free before clobbering the memory
