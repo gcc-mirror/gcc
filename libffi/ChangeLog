@@ -1,3 +1,12 @@
+2003-09-11  Alan Modra  <amodra@bigpond.net.au>
+
+	* src/types.c (double, longdouble): Merge identical SH and ARM
+	typedefs, and add POWERPC64.
+	* src/powerpc/ffi.c (ffi_prep_args64): Correct next_arg calc for
+	struct split over gpr and rest.
+	(ffi_prep_cif_machdep): Correct intarg_count for structures.
+	* src/powerpc/linux64.S (ffi_call_LINUX64): Fix gpr offsets.
+
 2003-09-09  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/powerpc/ffi.c (ffi_closure_helper_SYSV) Handle struct
