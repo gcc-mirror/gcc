@@ -232,7 +232,6 @@ of tree node types when referencing fields of that node.  This does not
 change the generated code, but adds error checking within the compiler.
 This will slow down the compiler and may only work properly if you
 are building the compiler with GNU C.
-@end table
 
 The @file{configure} script searches subdirectories of the source
 directory for other compilers that are to be integrated into GNU CC.
@@ -277,6 +276,7 @@ A file named @file{tm.h} is created which includes the
 machine-description macro file for your target machine.  It should be in
 the subdirectory @file{config} and its name is often
 @file{@var{machine}.h}.
+@end itemize
 
 @cindex Native Language Support
 @cindex NLS
