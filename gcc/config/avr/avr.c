@@ -259,6 +259,16 @@ avr_override_options ()
 }
 
 
+void
+avr_optimization_options (level, size)
+     int level ATTRIBUTE_UNUSED;
+     int size;
+{
+  if (size)
+    flag_reorder_blocks = 0;
+}
+
+
 /* Initialize TMP_REG_RTX and ZERO_REG_RTX */
 void
 avr_init_once ()
@@ -443,6 +453,21 @@ initial_elimination_offset (from, to)
       offset += avr_regs_to_save (NULL);
       return get_frame_size () + 2 + 1 + offset;
     }
+}
+
+/* Return 1 if the function epilogue is just a single "ret".  */
+
+int
+avr_simple_epilogue ()
+{
+  return (! frame_pointer_needed
+	  && get_frame_size () == 0
+	  && avr_regs_to_save (NULL) == 0
+	  && ! interrupt_function_p (current_function_decl)
+	  && ! signal_function_p (current_function_decl)
+	  && ! avr_naked_function_p (current_function_decl)
+	  && ! MAIN_NAME_P (DECL_NAME (current_function_decl))
+	  && ! TREE_THIS_VOLATILE (current_function_decl));
 }
 
 /* This function checks sequence of live registers */

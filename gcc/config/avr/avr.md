@@ -1966,7 +1966,7 @@
 			       (const_int 0))
 			   (label_ref (match_dup 1))
 			   (pc)))]
-  "operands[2] = GEN_INT (0x80000000);")
+  "operands[2] = GEN_INT (-2147483647 - 1);")
 
 (define_peephole2
   [(set (cc0) (match_operand:SI 0 "register_operand" ""))
@@ -1978,7 +1978,7 @@
 			       (const_int 0))
 			   (label_ref (match_dup 1))
 			   (pc)))]
-  "operands[2] = GEN_INT (0x80000000);")
+  "operands[2] = GEN_INT (-2147483647 - 1);")
 
 ;; ************************************************************************
 ;; Implementation of conditional jumps here.
@@ -2142,6 +2142,13 @@
 			  (if_then_else (eq_attr "mcu_mega" "yes")
 					(const_int 2)
 					(const_int 1))])])
+
+(define_insn "return"
+  [(return)]
+  "reload_completed && avr_simple_epilogue ()"
+  "ret"
+  [(set_attr "cc" "none")
+   (set_attr "length" "1")])
 
 (define_insn "nop"
   [(const_int 0)]
