@@ -687,49 +687,46 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 <hr>
    <h2><a name="5_6">5.6 Is libstdc++-v3 thread-safe?</a></h2>
       <p>When the system's libc is itself thread-safe, a non-generic
-         implementation of atomicity.h exists for the architecture, and
-	 gcc itself reports a thread model other than single; libstdc++-v3
+         implementation of atomicity.h exists for the architecture, and gcc
+         itself reports a thread model other than single; libstdc++-v3
          strives to be thread-safe.  The user-code must guard against
-         concurrent method calls which may access any particular
-         library object's state.  Typically, the application
-         programmer may infer what object locks must be held based on
-         the objects referenced in a method call.  Without getting
-         into great detail, here is an example which requires
+         concurrent method calls which may access any particular library
+         object's state.  Typically, the application programmer may infer
+         what object locks must be held based on the objects referenced in
+         a method call.  Without getting into great detail, here is an
+         example which requires user-level locks:
+         <pre>
+     library_class_a shared_object_a;
+
+     thread_main () {
+       library_class_b *object_b = new library_class_b;
+       shared_object_a.add_b (object_b);   // must hold lock for shared_object_a
+       shared_object_a.mutate ();          // must hold lock for shared_object_a
+     }
+
+     // Multiple copies of thread_main() are started in independent threads.</pre>
+      </p>
+      <p>Under the assumption that object_a and object_b are never exposed to
+         another thread, here is an example that should not require any
          user-level locks:
-      </p>
          <pre>
-       library_class_a shared_object_a;
-
-       thread_main () {
-         library_class_b *object_b = new library_class_b;
-	 shared_object_a.add_b (object_b); // must hold lock for shared_object_a
-	 shared_object_a.mutate (); // must hold lock for shared_object_a
-       }
-
-       // Multiple copies of thread_main() are started in independent threads.
-         </pre>
-      <p>Under the assumption that object_a and object_b are never
-         exposed to another thread, here is an example that should not
-         require any user-level locks:
+     thread_main () {
+       library_class_a object_a;
+       library_class_b *object_b = new library_class_b;
+       object_a.add_b (object_b);
+       object_a.mutate ();
+     } </pre>
       </p>
-         <pre>
-       thread_main () {
-         library_class_a object_a;
-         library_class_b *object_b = new library_class_b;
-	 object_a.add_b (object_b);
-	 object_a.mutate ();
-       }
-         </pre>
-      <p>All library objects are safe to use in a multithreaded
-         program as long as each thread carefully locks out access by
-         any other thread while it uses any object visible to another
-         thread.  This requirement includes both read and write access
-         to objects; do not assume that two threads may read a shared
-         standard container at the same time.
+      <p>All library objects are safe to use in a multithreaded program as
+         long as each thread carefully locks out access by any other thread
+         while it uses any object visible to another thread.  This requirement
+         includes both read and write access to objects; do not assume that
+         two threads may read a shared standard container at the same time.
       </p>
-      <p>See chapters <a href="../17_intro/howto.html#3">17</a>,
-         <a href="../23_containers/howto.html#3">23</a> and
-	 <a href="../27_io/howto.html#9">27</a> for more information.
+      <p>See chapters <a href="../17_intro/howto.html#3">17</a> (library
+         introduction), <a href="../23_containers/howto.html#3">23</a>
+         (containers), and <a href="../27_io/howto.html#9">27</a> (I/O) for
+         more information.
       </p>
 
 <hr>
