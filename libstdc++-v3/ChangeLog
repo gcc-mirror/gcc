@@ -1,3 +1,9 @@
+2004-08-12  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in, aclocal.m4, configure, include/Makefile.in,
+	libmath/Makefile.in, libsupc++/Makefile.in, po/Makefile.in,
+	src/Makefile.in, testsuite/Makefile.in: Regenerate
+
 2004-08-12  Jan Beulich  <jbeulich@novell.com>
 
 	* config/locale/generic/ctype_members.cc
