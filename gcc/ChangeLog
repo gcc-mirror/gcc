@@ -1,3 +1,8 @@
+Sun May  9 22:51:04 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix gcc.dg/990506-0.c:
+	* c-typeck.c (require_complete_type): Handle ERROR_MARK input.
+
 Sun May  9 13:19:12 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcse.c (cprop_insn): Do not try to simplify a simple jump.

@@ -1,3 +1,7 @@
+1999-05-08  Craig Burley  <craig@jcb-sc.com>
+
+	* gcc.dg/990506-0.c: New test.
+
 1999-05-08  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.benjamin/p12475.C: Use LONG_MAX to find
