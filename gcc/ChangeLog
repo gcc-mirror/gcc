@@ -1,3 +1,7 @@
+Fri Oct 30 10:43:29 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* configure.in: Ignore non-absolute value in $AS.
+
 Fri Oct 30 00:54:25 1998  Peter Jakubek <pjak@snafu.de>
 
 	* m68k.h (INDIRECTABLE_1_ADDRESS_P): Fix thinko.
