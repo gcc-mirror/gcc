@@ -1097,8 +1097,8 @@ struct tree_decl
   char common[sizeof (struct tree_common)];
   char *filename;
   int linenum;
-  union tree_node *size;
   unsigned int uid;
+  union tree_node *size;
 #ifdef ONLY_INT_FIELDS
   int mode : 8;
 #else
@@ -1133,6 +1133,15 @@ struct tree_decl
   unsigned lang_flag_6 : 1;
   unsigned lang_flag_7 : 1;
 
+  /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
+     If built-in, this is the code for which built-in function.
+     For other kinds of decls, this is DECL_ALIGN.  */
+  union {
+    int i;
+    unsigned int u;
+    enum built_in_function f;
+  } frame_size;
+
   union tree_node *name;
   union tree_node *context;
   union tree_node *arguments;
@@ -1144,14 +1153,6 @@ struct tree_decl
   union tree_node *machine_attributes;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
-  /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
-     If built-in, this is the code for which built-in function.
-     For other kinds of decls, this is DECL_ALIGN.  */
-  union {
-    int i;
-    unsigned int u;
-    enum built_in_function f;
-  } frame_size;
   /* For FUNCTION_DECLs: points to insn that constitutes its definition
      on the permanent obstack.  For any other kind of decl, this is the
      alignment.  */
