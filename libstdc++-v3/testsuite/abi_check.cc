@@ -317,7 +317,7 @@ main(int argc, char** argv)
   string argv1 = argc > 1 ? argv[1] : "";
   if (argv1 == "--help" || argc < 4)
     {
-      cerr << "usage: abi_check --check current baseline\n"
+      cerr << "usage: abi_check --check         current baseline\n"
               "                 --check-verbose current baseline\n"
               "                 --help\n\n"
               "Where CURRENT is a file containing the current results from\n"

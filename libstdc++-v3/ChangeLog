@@ -1,3 +1,17 @@
+2003-07-05  Phil Edwards  <pme@gcc.gnu.org>
+
+	* scripts/create_testsuite_files:  New file.
+	* testsuite/Makefile.am (all-local, check-performance):  Use it.
+	* testsuite/lib/libstdc++-v3-dg.exp (v3-computer-tests):  Remove.
+	* testsuite/Makefile.in:  Regenerated.
+
+	* testsuite/performance/filebuf_sputc.cc:  Remove the temporary
+	files at the end.
+	* testsuite/performance/fstream_seek_write.cc:  Likewise.
+	* testsuite/performance/ofstream_insert_float.cc:  Likewise.
+	* testsuite/performance/ofstream_insert_int.cc:  Likewise.
+	* testsuite/abi_check.cc (main):  Nicer spacing in usage output.
+
 2003-07-05  Gawain Bolton  <gp.bolton@computer.org>
 
 	* include/bits/stl_list.h: Performance and memory usage

@@ -69,5 +69,6 @@ int main()
   stop_counters(time, resource);
   report_performance(__FILE__, "C++", time, resource);
 
+  unlink("tmp");
   return 0;
 }

@@ -38,6 +38,7 @@ RUNTEST = `if [ -f @glibcxx_srcdir@/../dejagnu/runtest ] ; then \
 AM_MAKEFLAGS = -j1
 AM_RUNTESTFLAGS =
 RUNTESTFLAGS =
+PWD_COMMAND = $${PWDCMD-pwd}
 
 ## CXX is actually a "C" compiler. These are real C++ programs.
 glibcxx_srcdir=@glibcxx_srcdir@
@@ -57,6 +58,13 @@ INCLUDES = \
 	-nostdinc++ \
 	@GLIBCXX_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
 
+# Generated lists of files to run.  All of these names are valid make
+# targets, if you wish to generate a list manually.
+lists_of_files = \
+   testsuite_files \
+   testsuite_files_interactive \
+   testsuite_files_performance
+
 ## Build support library.
 noinst_LIBRARIES = libv3test.a
 libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
@@ -69,7 +77,7 @@ noinst_PROGRAMS =
 endif
 abi_check_SOURCES = abi_check.cc
 
-all-local: stamp_wchar
+all-local: stamp_wchar testsuite_files
 
 # Enable wchar_t tests if capable.
 if GLIBCXX_TEST_WCHAR_T
@@ -144,9 +152,16 @@ check-script-install: ${survey_script}
 # ammounts of memory, or otherwise tie up machine resources. Thus,
 # running this is off by default.
 performance_script=${glibcxx_srcdir}/scripts/check_performance
-check-performance: ${performance_script}
+check-performance: testsuite_files_performance ${performance_script}
 	-@(chmod + ${performance_script}; \
 	  ${performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
+
+
+# This rule generates all of the testsuite_files* lists at once.
+${lists_of_files}:
+	${glibcxx_srcdir}/scripts/create_testsuite_files \
+	  ${glibcxx_srcdir}/testsuite `${PWD_COMMAND}`
+
 
 .PHONY: baseline_symbols new-abi-baseline check-abi check-abi-verbose \
 check-script check-script-install check-performance
