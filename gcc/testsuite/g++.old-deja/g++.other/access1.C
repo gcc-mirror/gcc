@@ -1,0 +1,14 @@
+// Build don't link:
+
+class X{
+    unsigned int i;
+  public:
+    void f();
+};
+
+void X::f()
+{
+  union {
+    int foo[sizeof (i)];
+  };
+}
