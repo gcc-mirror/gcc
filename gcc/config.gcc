@@ -278,7 +278,7 @@ mips*-*-*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
-	extra_headers="ppc-asm.h altivec.h"
+	extra_headers="ppc-asm.h altivec.h spe.h"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -2025,6 +2025,11 @@ powerpc-*-eabiaix*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabiaix.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
+	;;
+powerpc-*-eabispe*)
+	xm_defines=POSIX
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabispe.h"
+	tmake_file="rs6000/t-ppcendian rs6000/t-ppccomm"
 	;;
 powerpc-*-eabisimaltivec*)
 	xm_defines=POSIX
