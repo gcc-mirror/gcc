@@ -42,7 +42,7 @@ But note the following (thanks to Bryce McKinlay):
 > Makefile?
 Yup, you need the magic libgcj automake ;-)
 
-<ftp://ftp.freesoftware.com/.0/sourceware/java/automake-gcj-1.4.tar.gz>
+<ftp://sources.redhat.com/pub/java/automake-gcj-1.4.tar.gz>
 
 Install that (don't worry, it should still work for other projects), add your
 files to the Makefile.am, then just type "automake" and it will regenerate the
