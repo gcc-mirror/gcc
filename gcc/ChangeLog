@@ -1,6 +1,7 @@
 2000-09-15  Kazu Hirata  <kazu@hxi.com>
 
 	* config/i386/i386.md: Fix a comment typo.
+	* gcc.c: Fix formatting.
 
 2000-09-15  Bernd Schmidt  <bernds@redhat.co.uk>
 
