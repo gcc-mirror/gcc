@@ -322,7 +322,7 @@ in the following sections.
 -mabicalls  -mcpu=@var{cpu type}  -membedded-data
 -membedded-pic  -mfp32  -mfp64  -mgas  -mgp32  -mgp64
 -mgpopt  -mhalf-pic  -mhard-float  -mint64  -mips1
--mips2  -mips3 -mips4 -mlong64  -mlong-calls  -mmemcpy
+-mips2  -mips3 -mips4 -mlong64  -mlong32 -mlong-calls  -mmemcpy
 -mmips-as  -mmips-tfile  -mno-abicalls
 -mno-embedded-data  -mno-embedded-pic
 -mno-gpopt  -mno-long-calls
@@ -4788,14 +4788,25 @@ Assume that 32 64-bit general purpose registers are available.  This is
 the default when the @samp{-mips3} option is used.
 
 @item -mint64
-Force int and long types to be 64 bits wide.  See @samp{-mlong64} for an
-explanation of the width of pointers.
+Force int and long types to be 64 bits wide.  See @samp{-mlong32} for an
+explanation of the default, and the width of pointers.
 
 @item -mlong64
-Force long types to be 64 bits wide.
+Force long types to be 64 bits wide.  See @samp{-mlong32} for an
+explanation of the default, and the width of pointers.
 
-The width of pointer types is the smaller of the width of longs
-or the width of general purpose registers.
+@item -mlong32
+Force long, int, and pointer types to be 32 bits wide.
+
+If none of @samp{-mlong32}, @samp{-mlong64}, or @samp{-mint64} are set,
+the size of ints, longs, and pointers depends on the ABI and ISA choosen.
+For @samp{-mabi=32}, and @samp{-mabi=n32}, ints and longs are 32 bits
+wide.  For @samp{-mabi=64}, ints are 32 bits, and longs are 64 bits wide.
+For @samp{-mabi=eabi} and either @samp{-mips1} or @samp{-mips2}, ints
+and longs are 32 bits wide.  For @samp{-mabi=eabi} and higher ISAs, ints
+are 32 bits, and longs are 64 bits wide.  The width of pointer types is
+the smaller of the width of longs or the width of general purpose
+registers (which in turn depends on the ISA).
 
 @itemx -mabi=32
 @itemx -mabi=n32

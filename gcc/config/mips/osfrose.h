@@ -76,6 +76,7 @@ Boston, MA 02111-1307, USA.  */
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{mips1:-mfp32 -mgp32} %{mips2:-mfp32 -mgp32} %{mips3:-mfp64 -mgp64} \
+%{mint64|mlong64|mlong32:-mexplicit-type-size }\
 %{G*} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \

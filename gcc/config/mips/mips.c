@@ -221,6 +221,11 @@ int mips16;
    just a way to avoid using up another bit in target_flags.  */
 const char *mips_no_mips16_string;
 
+/* This is only used to determine if an type size setting option was 
+   explicitly specified (-mlong64, -mint64, -mlong32).  The specs
+   set this option if such an option is used. */
+char *mips_explicit_type_size_string;
+
 /* Whether we are generating mips16 hard float code.  In mips16 mode
    we always set TARGET_SOFT_FLOAT; this variable is nonzero if
    -msoft-float was not specified by the user, which means that we
@@ -4122,10 +4127,12 @@ override_options ()
   if (mips_abi == ABI_32)
     target_flags &= ~ (MASK_FLOAT64|MASK_64BIT);
 
-  /* In the EABI in 64 bit mode, longs and pointers are 64 bits.  Likewise
-   for the SGI Irix6 N64 ABI.  */
-  if ((mips_abi == ABI_EABI && TARGET_64BIT)
-      || mips_abi == ABI_64)
+  /* If no type size setting options (-mlong64,-mint64,-mlong32) were used
+     then set the type sizes.  In the EABI in 64 bit mode, longs and
+     pointers are 64 bits.  Likewise for the SGI Irix6 N64 ABI.  */
+  if (mips_explicit_type_size_string == NULL
+      && ((mips_abi == ABI_EABI && TARGET_64BIT)
+	  || mips_abi == ABI_64))
     target_flags |= MASK_LONG64;
 
   /* ??? This doesn't work yet, so don't let people try to use it.  */
