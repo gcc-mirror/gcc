@@ -562,6 +562,7 @@ extern void parse_error_context VPROTO ((tree cl, char *msg, ...));
 extern tree build_primtype_type_ref PROTO ((char *));
 extern tree java_get_real_method_name PROTO ((tree));
 extern void finish_class PROTO ((tree));
+extern void java_layout_seen_class_methods PROTO (());
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
@@ -843,10 +844,3 @@ extern tree *type_map;
      if (java_error_count)						\
        return;								\
    }
-
-#define LAYOUT_SEEN_CLASS_METHODS()					    \
-  {									    \
-    tree current;							    \
-    for (current = all_class_list; current; current = TREE_CHAIN (current)) \
-      layout_class_methods (TREE_TYPE (TREE_VALUE (current)));		    \
-  }

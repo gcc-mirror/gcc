@@ -444,6 +444,12 @@ static jdeplist *reverse_jdep_list ();
 	  }								\
       }									\
   }
+/* Promote a type if it won't be registered as a patch */
+#define PROMOTE_RECORD_IF_COMPLETE(TYPE, IS_INCOMPLETE)		\
+  {								\
+    if (!(IS_INCOMPLETE) && TREE_CODE (TYPE) == RECORD_TYPE)	\
+      (TYPE) = promote_type (TYPE);				\
+  }
 
 /* Insert a DECL in the current block */
 #define BLOCK_CHAIN_DECL(NODE)						    \

@@ -1,3 +1,23 @@
+Thu Dec  3 17:11:12 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (java_layout_seen_class_methods): New function
+ 	prototype.
+	(LAYOUT_SEEN_CLASS_METHODS): Macro removed.
+	* jcf-parse.c (parse_class_file): Call java_layout_seen_class_methods.
+	* parse.h (PROMOTE_RECORD_IF_COMPLETE): New macro.
+	* parse.y (method_declarator:): Defined action.
+	(issue_warning_error_from_context): input_filename saved, set to
+ 	the appropriate value and restored after java_error is called.
+	(build_unresolved_array_type): Fixed comment.
+	(register_fields): Use PROMOTE_RECORD_IF_COMPLETE.
+	(method_header): Deal with return type the same way type are
+ 	handled for fields and method's parameters and local variables
+ 	types are handled.
+	(check_method_redefinition): Removed extra CR.
+	(declare_local_variables): Use PROMOTE_RECORD_IF_COMPLETE.
+	(java_layout_seen_class_methods): New function.
+	(java_layout_classes): Call java_layout_seen_class_methods.
+	
 Thu Dec  3 15:56:50 1998  Per Bothner  <bothner@cygnus.com>
 
 	* parse,y (patch_synchronized_statement):  Set CAN_COMPLETE_NORMALLY.

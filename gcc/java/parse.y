@@ -838,8 +838,12 @@ method_declarator:
 		{ $$ = method_declarator ($1, $3); }
 |	method_declarator OSB_TK CSB_TK
 		{
-		  /* Issue a warning here: obsolete declaration. FIXME */
-		  $$ = NULL;	/* FIXME */
+		  EXPR_WFL_LINECOL (wfl_operator) = $2.location;
+		  TREE_PURPOSE ($1) = 
+		    build_unresolved_array_type (TREE_PURPOSE ($1));
+		  parse_warning_context 
+		    (wfl_operator, 
+		     "Discouraged form of returned type specification");
 		}
 |	identifier OP_TK error
 		{yyerror ("')' expected"); DRECOVER(method_declarator);}
@@ -2408,7 +2412,7 @@ issue_warning_error_from_context (cl, msg, ap)
      char *msg;
      va_list ap;
 {
-  char *saved;
+  char *saved, *saved_input_filename;
   char buffer [4096];
   vsprintf (buffer, msg, ap);
   force_error = 1;
@@ -2421,9 +2425,12 @@ issue_warning_error_from_context (cl, msg, ap)
   saved = ctxp->filename;
   if (TREE_CODE (cl) == EXPR_WITH_FILE_LOCATION && EXPR_WFL_FILENAME_NODE (cl))
     ctxp->filename = EXPR_WFL_FILENAME (cl);
+  saved_input_filename = input_filename;
+  input_filename = ctxp->filename;
   java_error (NULL);
   java_error (buffer);
   ctxp->filename = saved;
+  input_filename = saved_input_filename;
   force_error = 0;
 }
 
@@ -2672,7 +2679,7 @@ build_unresolved_array_type (type_or_wfl)
 {
   char *ptr;
 
-  /* TYPE_OR_WFL might be an array on a primitive type. In this case,
+  /* TYPE_OR_WFL might be an array on a resolved type. In this case,
      just create a array type */
   if (TREE_CODE (type_or_wfl) == RECORD_TYPE)
     {
@@ -3061,8 +3068,7 @@ register_fields (flags, type, variable_list)
   SET_TYPE_FOR_RESOLUTION (type, wfl, must_chain);
 
   /* If TYPE is fully resolved and we don't have a reference, make one */
-  if (!must_chain && TREE_CODE (type) == RECORD_TYPE)
-    type = promote_type (type);
+  PROMOTE_RECORD_IF_COMPLETE (type, must_chain);
 
   for (current = variable_list, saved_type = type; current; 
        current = TREE_CHAIN (current), type = saved_type)
@@ -3082,8 +3088,7 @@ register_fields (flags, type, variable_list)
 	 change the name if we have an init. */
       if (type != saved_type)
 	{
-	  if (!must_chain && (TREE_CODE (type) == RECORD_TYPE))
-	    type = promote_type (type);
+	  PROMOTE_RECORD_IF_COMPLETE (type, must_chain);
 	  if (init)
 	    EXPR_WFL_NODE (TREE_OPERAND (init, 0)) = current_name;
 	}
@@ -3232,9 +3237,10 @@ method_header (flags, type, mdecl, throws)
   tree meth = TREE_VALUE (mdecl);
   tree id = TREE_PURPOSE (mdecl);
   tree this_class = TREE_TYPE (ctxp->current_parsed_class);
-  tree meth_name, returned_type, current, orig_arg;
+  tree type_wfl = NULL_TREE;
+  tree meth_name, current, orig_arg, saved_type;
   int saved_lineno;
-  int constructor_ok = 0;
+  int constructor_ok = 0, must_chain;
   
   check_modifiers_consistency (flags);
   
@@ -3311,24 +3317,22 @@ method_header (flags, type, mdecl, throws)
   else
     meth_name = EXPR_WFL_NODE (id);
 
-  if (unresolved_type_p (type, &returned_type))
+  /* Do the returned type resolution and registration if necessary */
+  SET_TYPE_FOR_RESOLUTION (type, type_wfl, must_chain);
+
+  saved_type = type;
+  type = build_array_from_name (type, type_wfl, meth_name, &meth_name);
+  EXPR_WFL_NODE (id) = meth_name;
+  PROMOTE_RECORD_IF_COMPLETE (type, must_chain);
+
+  if (must_chain)
     {
-      if (returned_type)
-	TREE_TYPE (meth) = returned_type;
-      else 
-	{
-	  tree itype;
-	  patch_stage = JDEP_METHOD_RETURN;
-	  itype = register_incomplete_type (patch_stage, type, id, NULL_TREE);
-	  TREE_TYPE (meth) = GET_REAL_TYPE (itype);
-	}
+      patch_stage = JDEP_METHOD_RETURN;
+      register_incomplete_type (patch_stage, type_wfl, id, type);
+      TREE_TYPE (meth) = GET_REAL_TYPE (type);
     }
   else
-    {
-      if (TREE_CODE (type) == RECORD_TYPE)
-	type = promote_type (type);
-      TREE_TYPE (meth) = type;
-    }
+    TREE_TYPE (meth) = type;
 
   saved_lineno = lineno;
   /* When defining an abstract or interface method, the curly
@@ -4375,7 +4379,6 @@ check_method_redefinition (class, method)
     return 0;
 
   name = DECL_NAME (method);
-  
   for (redef = TYPE_METHODS (class); redef; redef = TREE_CHAIN (redef))
     {
       if (redef == method)
@@ -5193,8 +5196,7 @@ declare_local_variables (modifier, type, vlist)
   SET_TYPE_FOR_RESOLUTION (type, type_wfl, must_chain);
 
   /* If TYPE is fully resolved and we don't have a reference, make one */
-  if (!must_chain && TREE_CODE (type) == RECORD_TYPE)
-    type = promote_type (type);
+  PROMOTE_RECORD_IF_COMPLETE (type, must_chain);
 
   /* Go through all the declared variables */
   for (current = vlist, saved_type = type; current;
@@ -5219,9 +5221,7 @@ declare_local_variables (modifier, type, vlist)
       /* Type adjustment. We may have just readjusted TYPE because
 	 the variable specified more dimensions. Make sure we have
 	 a reference if we can and don't have one already. */
-      if (type != saved_type && !must_chain 
-	  && (TREE_CODE (type) == RECORD_TYPE))
-	type = promote_type (type);
+      PROMOTE_RECORD_IF_COMPLETE (type, must_chain);
 
       real_type = GET_REAL_TYPE (type);
       /* Never layout this decl. This will be done when its scope
@@ -5462,6 +5462,28 @@ add_stmt_to_compound (existing, type, stmt)
 /* Hold THIS for the scope of the current public method decl.  */
 static tree current_this;
 
+void java_layout_seen_class_methods ()
+{
+  tree previous_list = all_class_list;
+  tree end = NULL_TREE;
+  tree current;
+
+  while (1)
+    {
+      for (current = previous_list; 
+	   current != end; current = TREE_CHAIN (current))
+	layout_class_methods (TREE_TYPE (TREE_VALUE (current)));
+      
+      if (previous_list != all_class_list)
+	{
+	  end = previous_list;
+	  previous_list = all_class_list;
+	}
+      else
+	break;
+    }
+}
+
 /* Layout the methods of all classes loaded in one way on an
    other. Check methods of source parsed classes. Then reorder the
    fields and layout the classes or the type of all source parsed
@@ -5473,7 +5495,7 @@ java_layout_classes ()
   tree current;
 
   /* Layout the methods of all classes seen so far */
-  LAYOUT_SEEN_CLASS_METHODS ();
+  java_layout_seen_class_methods ();
   java_parse_abort_on_error ();
   all_class_list = NULL_TREE;
 
@@ -5525,7 +5547,7 @@ java_layout_classes ()
   /* We might have reloaded classes durign the process of laying out
      classes for code generation. We must layout the methods of those
      late additions, as constructor checks might use them */
-  LAYOUT_SEEN_CLASS_METHODS ();
+  java_layout_seen_class_methods ();
   java_parse_abort_on_error ();
 }
 

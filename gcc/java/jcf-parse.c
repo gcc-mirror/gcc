@@ -635,7 +635,7 @@ parse_class_file ()
   char *save_input_filename = input_filename;
   int save_lineno = lineno;
 
-  LAYOUT_SEEN_CLASS_METHODS ();
+  java_layout_seen_class_methods ();
 
   input_filename = DECL_SOURCE_FILE (TYPE_NAME (current_class));
   lineno = 0;
