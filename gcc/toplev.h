@@ -116,6 +116,11 @@ extern bool exit_after_options;
 
 extern int target_flags_explicit;
 
+/* True if the user has tagged the function with the 'section'
+   attribute.  */
+
+extern bool user_defined_section_attribute;
+
 /* See toplev.c.  */
 extern int flag_loop_optimize;
 extern int flag_crossjumping;

@@ -56,6 +56,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "cfglayout.h"
 #include "expr.h"
+#include "target.h"
 
 
 /* The labels mentioned in non-jump rtl.  Valid during find_basic_blocks.  */
@@ -488,6 +489,7 @@ rtl_split_block (basic_block bb, void *insnp)
 
   /* Create the new basic block.  */
   new_bb = create_basic_block (NEXT_INSN (insn), BB_END (bb), bb);
+  new_bb->partition = bb->partition;
   BB_END (bb) = insn;
 
   /* Redirect the outgoing edges.  */
@@ -681,7 +683,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
      and cold sections.  */
   
   if (flag_reorder_blocks_and_partition
-      && find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX))
+      && (find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)
+	  || (src->partition != target->partition)))
     return NULL;
 
   /* Verify that all targets will be TARGET.  */
@@ -1092,7 +1095,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
       /* Make sure new block ends up in correct hot/cold section.  */
 
       jump_block->partition = e->src->partition;
-      if (flag_reorder_blocks_and_partition)
+      if (flag_reorder_blocks_and_partition
+	  && targetm.have_named_sections)
 	{
 	  if (e->src->partition == COLD_PARTITION)
 	    {
@@ -1350,9 +1354,13 @@ rtl_split_edge (edge edge_in)
 	  && NOTE_LINE_NUMBER (before) == NOTE_INSN_LOOP_END)
 	before = NEXT_INSN (before);
       bb = create_basic_block (before, NULL, edge_in->src);
+      bb->partition = edge_in->src->partition;
     }
   else
-    bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
+    {
+      bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
+      bb->partition = edge_in->dest->partition;
+    }
 
   /* ??? This info is likely going to be out of date very soon.  */
   if (edge_in->dest->global_live_at_start)
@@ -1590,13 +1598,11 @@ commit_one_edge_insertion (edge e, int watch_calls)
 	  bb = split_edge (e);
 	  after = BB_END (bb);
 
-	  /* If we are partitioning hot/cold basic blocks, we must make sure
-	     that the new basic block ends up in the correct section.  */
-
-	  bb->partition = e->src->partition;
 	  if (flag_reorder_blocks_and_partition
+	      && targetm.have_named_sections
 	      && e->src != ENTRY_BLOCK_PTR
-	      && e->src->partition == COLD_PARTITION)
+	      && e->src->partition == COLD_PARTITION
+	      && !e->crossing_edge)
 	    {
 	      rtx bb_note, new_note, cur_insn;
 
@@ -1980,8 +1986,11 @@ rtl_verify_flow_info_1 (void)
 	  if (e->flags & EDGE_FALLTHRU)
 	    {
 	      n_fallthru++, fallthru = e;
-	      if (e->crossing_edge)
-		{ 
+	      if (e->crossing_edge
+		  || (e->src->partition != e->dest->partition
+		      && e->src != ENTRY_BLOCK_PTR
+		      && e->dest != EXIT_BLOCK_PTR))
+	    { 
 		  error ("Fallthru edge crosses section boundary (bb %i)",
 			 e->src->index);
 		  err = 1;

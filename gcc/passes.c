@@ -454,6 +454,8 @@ rest_of_handle_final (void)
     output_function_exception_table ();
 #endif
 
+    user_defined_section_attribute = false;
+
     if (! quiet_flag)
       fflush (asm_out_file);
 
@@ -1857,7 +1859,9 @@ rest_of_compilation (void)
      sections of the .o file does not work well with exception handling.
      Don't call it if there are exceptions.  */
 
-  if (optimize > 0 && flag_reorder_blocks_and_partition && !flag_exceptions)
+  if (flag_reorder_blocks_and_partition 
+      && !DECL_ONE_ONLY (current_function_decl)
+      && !user_defined_section_attribute)
     rest_of_handle_partition_blocks ();
 
   if (optimize > 0 && (flag_regmove || flag_expensive_optimizations))

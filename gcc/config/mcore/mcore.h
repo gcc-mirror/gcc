@@ -968,6 +968,7 @@ switch_to_section (enum in_section section, tree decl)		\
   switch (section)						\
     {								\
       case in_text: text_section (); break;			\
+      case in_unlikely_executed_text: unlikely_text_section (); break;   \
       case in_data: data_section (); break;			\
       case in_named: named_section (decl, NULL, 0); break;	\
       SUBTARGET_SWITCH_SECTIONS      				\

@@ -654,10 +654,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define HOT_TEXT_SECTION_NAME ".text.hot"
 #endif
 
-#ifndef NORMAL_TEXT_SECTION_NAME
-#define NORMAL_TEXT_SECTION_NAME ".text"
-#endif
-
 #ifndef UNLIKELY_EXECUTED_TEXT_SECTION_NAME
 #define UNLIKELY_EXECUTED_TEXT_SECTION_NAME ".text.unlikely"
 #endif

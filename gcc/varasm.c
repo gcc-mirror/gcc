@@ -222,18 +222,42 @@ text_section (void)
 void
 unlikely_text_section (void)
 {
-  if ((in_section != in_unlikely_executed_text)
-      &&  (in_section != in_named 
-	   || strcmp (in_named_name, UNLIKELY_EXECUTED_TEXT_SECTION_NAME) != 0))
+  const char *name;
+  int len;
+
+  if (! unlikely_text_section_name)
     {
-      if (targetm.have_named_sections)
-        named_section (NULL_TREE, UNLIKELY_EXECUTED_TEXT_SECTION_NAME, 0);
+      if (DECL_SECTION_NAME (current_function_decl)
+	  && (strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME
+					   (current_function_decl)),
+		      HOT_TEXT_SECTION_NAME) != 0)
+	  && (strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME
+					   (current_function_decl)),
+		      UNLIKELY_EXECUTED_TEXT_SECTION_NAME) != 0))
+	{
+	  name = TREE_STRING_POINTER (DECL_SECTION_NAME 
+				                   (current_function_decl));
+	  len = strlen (name);
+	  unlikely_text_section_name = xmalloc ((len + 10) * sizeof (char));
+	  strcpy (unlikely_text_section_name, name);
+	  strcat (unlikely_text_section_name, "_unlikely");
+	}
       else
 	{
-	  in_section = in_unlikely_executed_text;
-	  fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
+	  len = strlen (UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
+	  unlikely_text_section_name = xmalloc (len+1 * sizeof (char));
+	  strcpy (unlikely_text_section_name, 
+		  UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
 	}
-      
+    }
+
+  if ((in_section != in_unlikely_executed_text)
+      &&  (in_section != in_named 
+	   || strcmp (in_named_name, unlikely_text_section_name) != 0))
+    {
+      named_section (NULL_TREE, unlikely_text_section_name, 0);
+      in_section = in_unlikely_executed_text;
+
       if (!unlikely_section_label_printed)
 	{
 	  ASM_OUTPUT_LABEL (asm_out_file, unlikely_section_label);
@@ -289,7 +313,14 @@ in_text_section (void)
 int
 in_unlikely_text_section (void)
 {
-  return in_section == in_unlikely_executed_text;
+  bool ret_val;
+
+  ret_val = ((in_section == in_unlikely_executed_text)
+	     || (in_section == in_named
+		 && unlikely_text_section_name
+		 && strcmp (in_named_name, unlikely_text_section_name) == 0));
+
+  return ret_val;
 }
 
 /* Determine if we're in the data section.  */
@@ -423,6 +454,16 @@ named_section (tree decl, const char *name, int reloc)
   if (name == NULL)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 
+  if (strcmp (name, UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0
+      && !unlikely_text_section_name)
+    {
+      unlikely_text_section_name = xmalloc 
+	     (strlen (UNLIKELY_EXECUTED_TEXT_SECTION_NAME) + 1 
+	      * sizeof (char));
+      strcpy (unlikely_text_section_name, 
+	      UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
+    }
+
   flags = targetm.section_type_flags (decl, name, reloc);
 
   /* Sanity check user variables for flag changes.  Non-user
@@ -533,14 +574,11 @@ function_section (tree decl)
 {
   if (scan_ahead_for_unlikely_executed_note (get_insns()))
     unlikely_text_section ();
+  else if (decl != NULL_TREE
+	   && DECL_SECTION_NAME (decl) != NULL_TREE)
+    named_section (decl, (char *) 0, 0);
   else
-    {
-      if (decl != NULL_TREE
-	  && DECL_SECTION_NAME (decl) != NULL_TREE)
-	named_section (decl, (char *) 0, 0);
-      else
-	text_section (); 
-    }
+    text_section (); 
 }
 
 /* Switch to read-only data section associated with function DECL.  */
@@ -1153,7 +1191,7 @@ assemble_start_function (tree decl, const char *fnname)
     free (unlikely_section_label);
   unlikely_section_label = xmalloc ((strlen (fnname) + 18) * sizeof (char));
   sprintf (unlikely_section_label, "%s_unlikely_section", fnname);
-
+  
   /* The following code does not need preprocessing in the assembler.  */
 
   app_disable ();
@@ -4481,7 +4519,8 @@ default_section_type_flags_1 (tree decl, const char *name, int reloc,
     flags = SECTION_CODE;
   else if (decl && decl_readonly_section_1 (decl, reloc, shlib))
     flags = 0;
-  else if (strcmp (name, UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0)
+  else if (unlikely_text_section_name
+	   && strcmp (name, unlikely_text_section_name) == 0)
     flags = SECTION_CODE;
   else
     flags = SECTION_WRITE;
