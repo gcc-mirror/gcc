@@ -180,18 +180,12 @@ AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
 	       isascii gettimeofday strsignal)
 
 GCC_FUNC_VFPRINTF_DOPRNT
-
-GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
-		      index rindex getenv atol sbrk abort strerror getcwd \
-		      getwd strsignal)
-
-GCC_FUNC_VFPRINTF_DOPRNT
 GCC_FUNC_PRINTF_PTR
 AC_FUNC_VFORK
 
 GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
-	index rindex getenv atol sbrk abort atof strerror getcwd getwd \
-	strsignal)
+		      index rindex getenv atol sbrk abort strerror getcwd \
+		      getwd strsignal)
 
 GCC_NEED_DECLARATIONS(getrlimit setrlimit, [
 #include <sys/types.h>
