@@ -29,4 +29,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Enable sparclite and epilogue options.  Do not enable the fpu.  */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 130
+#define TARGET_DEFAULT 1024+130
