@@ -28,9 +28,10 @@ cbrtl (double x)
   double r,s,w;
   double lt;
   unsigned sign;
+  typedef unsigned unsigned32 __attribute__((mode(SI)));
   union {
     double t;
-    unsigned long pt[2];
+    unsigned32 pt[2];
   } ut, ux;
   int n0;
 
