@@ -4879,7 +4879,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
 
-  /* Perform postincrements before expanding builtin functions.  */
+  /* Perform postincrements before expanding builtin functions.  */
   emit_queue ();
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
@@ -4887,96 +4887,11 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
   /* When not optimizing, generate calls to library functions for a certain
      set of builtins.  */
-  if (!optimize && !CALLED_AS_BUILT_IN (fndecl))
-    switch (fcode)
-      {
-      case BUILT_IN_SQRT:
-      case BUILT_IN_SQRTF:
-      case BUILT_IN_SQRTL:
-      case BUILT_IN_SIN:
-      case BUILT_IN_SINF:
-      case BUILT_IN_SINL:
-      case BUILT_IN_COS:
-      case BUILT_IN_COSF:
-      case BUILT_IN_COSL:
-      case BUILT_IN_EXP:
-      case BUILT_IN_EXPF:
-      case BUILT_IN_EXPL:
-      case BUILT_IN_LOG:
-      case BUILT_IN_LOGF:
-      case BUILT_IN_LOGL:
-      case BUILT_IN_TAN:
-      case BUILT_IN_TANF:
-      case BUILT_IN_TANL:
-      case BUILT_IN_ATAN:
-      case BUILT_IN_ATANF:
-      case BUILT_IN_ATANL:
-      case BUILT_IN_POW:
-      case BUILT_IN_POWF:
-      case BUILT_IN_POWL:
-      case BUILT_IN_ATAN2:
-      case BUILT_IN_ATAN2F:
-      case BUILT_IN_ATAN2L:
-      case BUILT_IN_MEMSET:
-      case BUILT_IN_MEMCPY:
-      case BUILT_IN_MEMCMP:
-      case BUILT_IN_MEMPCPY:
-      case BUILT_IN_MEMMOVE:
-      case BUILT_IN_BCMP:
-      case BUILT_IN_BZERO:
-      case BUILT_IN_BCOPY:
-      case BUILT_IN_INDEX:
-      case BUILT_IN_RINDEX:
-      case BUILT_IN_SPRINTF:
-      case BUILT_IN_STPCPY:
-      case BUILT_IN_STRCHR:
-      case BUILT_IN_STRRCHR:
-      case BUILT_IN_STRLEN:
-      case BUILT_IN_STRCPY:
-      case BUILT_IN_STRNCPY:
-      case BUILT_IN_STRNCMP:
-      case BUILT_IN_STRSTR:
-      case BUILT_IN_STRPBRK:
-      case BUILT_IN_STRCAT:
-      case BUILT_IN_STRNCAT:
-      case BUILT_IN_STRSPN:
-      case BUILT_IN_STRCSPN:
-      case BUILT_IN_STRCMP:
-      case BUILT_IN_FFS:
-      case BUILT_IN_PUTCHAR:
-      case BUILT_IN_PUTS:
-      case BUILT_IN_PRINTF:
-      case BUILT_IN_FPUTC:
-      case BUILT_IN_FPUTS:
-      case BUILT_IN_FWRITE:
-      case BUILT_IN_FPRINTF:
-      case BUILT_IN_PUTCHAR_UNLOCKED:
-      case BUILT_IN_PUTS_UNLOCKED:
-      case BUILT_IN_PRINTF_UNLOCKED:
-      case BUILT_IN_FPUTC_UNLOCKED:
-      case BUILT_IN_FPUTS_UNLOCKED:
-      case BUILT_IN_FWRITE_UNLOCKED:
-      case BUILT_IN_FPRINTF_UNLOCKED:
-      case BUILT_IN_FLOOR:
-      case BUILT_IN_FLOORF:
-      case BUILT_IN_FLOORL:
-      case BUILT_IN_CEIL:
-      case BUILT_IN_CEILF:
-      case BUILT_IN_CEILL:
-      case BUILT_IN_TRUNC:
-      case BUILT_IN_TRUNCF:
-      case BUILT_IN_TRUNCL:
-      case BUILT_IN_ROUND:
-      case BUILT_IN_ROUNDF:
-      case BUILT_IN_ROUNDL:
-      case BUILT_IN_NEARBYINT:
-      case BUILT_IN_NEARBYINTF:
-      case BUILT_IN_NEARBYINTL:
-	return expand_call (exp, target, ignore);
-
-      default:
-	break;
-      }
+  if (!optimize
+      && !CALLED_AS_BUILT_IN (fndecl)
+      && DECL_ASSEMBLER_NAME_SET_P (fndecl)
+      && fcode != BUILT_IN_ALLOCA)
+    return expand_call (exp, target, ignore);
 
   /* The built-in function expanders test for target == const0_rtx
      to determine whether the function's result will be ignored.  */
