@@ -2228,17 +2228,6 @@ choose_ready (struct ready_list *ready)
     }
 }
 
-/* Called from backends from targetm.sched.reorder to emit stuff into
-   the instruction stream.  */
-
-rtx
-sched_emit_insn (rtx pat)
-{
-  rtx insn = emit_insn_after (pat, last_scheduled_insn);
-  last_scheduled_insn = insn;
-  return insn;
-}
-
 /* Use forward list scheduling to rearrange insns of block B in region RGN,
    possibly bringing insns from subsequent blocks in the same region.  */
 
