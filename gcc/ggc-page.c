@@ -67,7 +67,7 @@
    ggc_collect is invoked.  Otherwise, collection is performed only
    when a significant amount of memory has been allocated since the
    last collection.  */
-#undef GGC_ALWAYS_COLLECT.
+#undef GGC_ALWAYS_COLLECT
 
 /* If ENABLE_CHECKING is defined, enable GGC_POISON and
    GGC_ALWAYS_COLLECT automatically.  */
