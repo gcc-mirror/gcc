@@ -40,6 +40,13 @@
 
 #ifdef __linux__
 #include <malloc.h>
+#elif defined (__FreeBSD__)
+extern "C"
+{
+  struct mallinfo { int uordblks; };
+  struct mallinfo mallinfo(void)
+    { struct mallinfo m = { (((size_t) sbrk (0) + 1023) / 1024) }; return m; }
+}
 #else
 extern "C"
 {
