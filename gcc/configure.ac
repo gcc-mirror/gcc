@@ -2405,7 +2405,7 @@ foo:
 	or %g1, %lo(ab) + 12, %g1
 	or %g1, %lo(ab + 12), %g1],
       [if test x$gcc_cv_objdump != x \
-       && %gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
+       && $gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
           | grep ' 82106000 82106000' > /dev/null 2>&1; then
 	 gcc_cv_as_offsetable_lo10=yes
        fi],
