@@ -1,3 +1,7 @@
+Wed Feb 10 13:59:18 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* mbchar.c (local_mb_cur_max): Handle the case where MB_CUR_MAX is 0.
+
 Wed Feb 10 10:35:05 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* tmp-emsgids.c: Delete.
