@@ -110,7 +110,7 @@ struct fr30_frame_info
   unsigned int frame_size;      /* # Bytes in current frame.  */
   unsigned int gmask;		/* Mask of saved registers. */
   unsigned int save_fp;		/* Nonzero if frame pointer must be saved. */
-  unsigned int save_rp;		/* Nonzero if return popinter must be saved. */
+  unsigned int save_rp;		/* Nonzero if return pointer must be saved. */
   int          initialised;	/* Nonzero if frame size already calculated. */
 };
 
@@ -686,7 +686,7 @@ fr30_num_arg_regs (int_mode, type)
 /* Implements the FUNCTION_ARG_PARTIAL_NREGS macro.
    Returns the number of argument registers required to hold *part* of
    a parameter of machine mode MODE and tree type TYPE (which may be
-   NULL if the type is not known).  If the argument fits entirly in
+   NULL if the type is not known).  If the argument fits entirely in
    the argument registers, or entirely on the stack, then 0 is returned.
    CUM is the number of argument registers already used by earlier
    parameters to the function.  */
@@ -973,7 +973,7 @@ fr30_const_double_is_zero (operand)
 
 /* Output a double word move.
    It must be REG<-REG, REG<-MEM, MEM<-REG or REG<-CONST.
-   On the FR30 we are contrained by the fact that it does not
+   On the FR30 we are constrained by the fact that it does not
    support offsetable addresses, and so we have to load the
    address of the secnd word into the second destination register
    before we can use it.  */

@@ -2875,7 +2875,7 @@ struct sh_args {
    used to use the encodings 245..260, but that doesn't make sense:
    PR_REG and PR_MEDIA_REG are actually the same register, and likewise
    the FP registers stay the same when switching between compact and media
-   mode.  Hence, we also need to use the same dwarf frame coloumns.
+   mode.  Hence, we also need to use the same dwarf frame columns.
    Likewise, we need to support unwind information for SHmedia registers
    even in compact code.  */
 #define SH_DBX_REGISTER_NUMBER(REGNO) \

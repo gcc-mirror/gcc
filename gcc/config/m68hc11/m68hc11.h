@@ -1420,7 +1420,7 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
    macro is used in only one place: `find_reloads_address' in reload.c.
 
    For M68HC11, we handle large displacements of a base register
-   by splitting the addend accors an addhi3 insn.
+   by splitting the addend across an addhi3 insn.
 
    For M68HC12, the 64K offset range is available.
    */

@@ -1585,10 +1585,10 @@ xtensa_setup_frame_addresses (void)
    a comment showing where the end of the loop is.  However, if there is a
    label or a branch at the end of the loop then we need to place a nop
    there.  If the loop ends with a label we need the nop so that branches
-   targetting that label will target the nop (and thus remain in the loop),
-   instead of targetting the instruction after the loop (and thus exiting
+   targeting that label will target the nop (and thus remain in the loop),
+   instead of targeting the instruction after the loop (and thus exiting
    the loop).  If the loop ends with a branch, we need the nop in case the
-   branch is targetting a location inside the loop.  When the branch
+   branch is targeting a location inside the loop.  When the branch
    executes it will cause the loop count to be decremented even if it is
    taken (because it is the last instruction in the loop), so we need to
    nop after the branch to prevent the loop count from being decremented

@@ -65,7 +65,7 @@
 ;; d - non-pointer registers (not SP, DP, IP)
 ;; u - non-SP registers (everything except SP)
 ;;
-;; R - Indirect thru IP - Avoid this except for QI mode, since we
+;; R - Indirect through IP - Avoid this except for QI mode, since we
 ;;     can't access extra bytes.
 ;; S - Short (stack/dp address). Pointer with 0..127 displacement
 ;;     Note that 0(SP) has undefined contents due to post-decrement push

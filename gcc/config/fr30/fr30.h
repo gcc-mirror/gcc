@@ -926,7 +926,7 @@ enum reg_class
    jmp    @r0
 
    The no-ops are to guarantee that the static chain and final
-   target are 32 bit ailgned within the trampoline.  That allows us to
+   target are 32 bit aligned within the trampoline.  That allows us to
    initialize those locations with simple SImode stores.   The alternative
    would be to use HImode stores.  */
    

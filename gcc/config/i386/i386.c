@@ -1666,7 +1666,7 @@ ix86_comp_type_attributes (tree type1, tree type2)
 
 /* Return the regparm value for a fuctio with the indicated TYPE and DECL.
    DECL may be NULL when calling function indirectly
-   or considerling a libcall.  */
+   or considering a libcall.  */
 
 static int
 ix86_function_regparm (tree type, tree decl)
@@ -5082,7 +5082,7 @@ ix86_emit_save_regs_using_mov (rtx pointer, HOST_WIDE_INT offset)
       }
 }
 
-/* Expand prologue or epilogue stack adjustement.
+/* Expand prologue or epilogue stack adjustment.
    The pattern exist to put a dependency on all ebp-based memory accesses.
    STYLE should be negative if instructions should be marked as frame related,
    zero if %r11 register is live and cannot be freely used and positive

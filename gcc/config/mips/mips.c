@@ -6649,7 +6649,7 @@ mips_expand_prologue (void)
   /* Set up the frame pointer, if we're using one.  In mips16 code,
      we point the frame pointer ahead of the outgoing argument area.
      This should allow more variables & incoming arguments to be
-     acceesed with unextended instructions.  */
+     accessed with unextended instructions.  */
   if (frame_pointer_needed)
     {
       if (TARGET_MIPS16 && cfun->machine->frame.args_size != 0)

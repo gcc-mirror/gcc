@@ -151,7 +151,7 @@ typedef struct
        nested compares can be done.  The csubcc and caddcc instructions don't
        have enough bits to specify both a CC register to be set and a CR register
        to do the test on, so the same bit number is used for both.  Needless to
-       say, this is rather inconvient for GCC.  */
+       say, this is rather inconvenient for GCC.  */
     rtx nested_cc_reg;
 
     /* Extra CR registers used for &&, ||.  */
@@ -1644,7 +1644,7 @@ frv_expand_prologue (void)
 
 
 /* Under frv, all of the work is done via frv_expand_epilogue, but
-   this function provides a convient place to do cleanup.  */
+   this function provides a convenient place to do cleanup.  */
 
 static void
 frv_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
@@ -2300,7 +2300,7 @@ frv_final_prescan_insn (rtx insn, rtx *opvec, int noperands ATTRIBUTE_UNUSED)
 
   /* Set frv_insn_packing_flag to FALSE if the next instruction should
      be packed with this one.  Set it to TRUE otherwise.  If the next
-     instruction is an asm insntruction, this statement will set the
+     instruction is an asm instruction, this statement will set the
      flag to TRUE, and that value will still hold when the asm operands
      themselves are printed.  */
   frv_insn_packing_flag = ! (insn && INSN_P (insn)
@@ -3757,7 +3757,7 @@ pic_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 /* Return 1 if operand is a symbolic reference when a PIC option is specified
-   that takes 3 seperate instructions to form.  */
+   that takes 3 separate instructions to form.  */
 
 int
 pic_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
@@ -5830,7 +5830,7 @@ frv_emit_scc (enum rtx_code test, rtx target)
 
 
 /* Split a SCC instruction into component parts, returning a SEQUENCE to hold
-   the seperate insns.  */
+   the separate insns.  */
 
 rtx
 frv_split_scc (rtx dest, rtx test, rtx cc_reg, rtx cr_reg, HOST_WIDE_INT value)
@@ -5941,7 +5941,7 @@ frv_emit_cond_move (rtx dest, rtx test_rtx, rtx src1, rtx src2)
 }
 
 
-/* Split a conditonal move into constituent parts, returning a SEQUENCE
+/* Split a conditional move into constituent parts, returning a SEQUENCE
    containing all of the insns.  */
 
 rtx
@@ -8444,7 +8444,7 @@ frv_pack_insns (void)
 	}
 
       /* Clear the VLIW start flag on random USE and CLOBBER insns, which is
-         set on the USE insn that preceeds the return, and potentially on
+         set on the USE insn that precedes the return, and potentially on
          CLOBBERs for setting multiword variables.  Also skip the ADDR_VEC
          holding the case table labels.  */
       pattern_code = GET_CODE (PATTERN (insn));
@@ -9000,7 +9000,7 @@ frv_legitimize_target (enum insn_code icode, rtx target)
 }
 
 /* Given that ARG is being passed as operand OPNUM to instruction ICODE,
-   check whether ARG satisfies the operand's contraints.  If it doesn't,
+   check whether ARG satisfies the operand's constraints.  If it doesn't,
    copy ARG to a temporary register and return that.  Otherwise return ARG
    itself.  */
 

@@ -31,7 +31,7 @@
 ;; There are several instructions that are orthogonal in size, and seems
 ;; they could be matched by a single pattern without a specified size
 ;; for the operand that is orthogonal.  However, this did not work on
-;; gcc-2.7.2 (and problably not on gcc-2.8.1), relating to that when a
+;; gcc-2.7.2 (and probably not on gcc-2.8.1), relating to that when a
 ;; constant is substituted into an operand, the actual mode must be
 ;; deduced from the pattern.  There is reasonable hope that that has been
 ;; fixed, so FIXME: try again.
@@ -77,7 +77,7 @@
 ;; The possible values are "yes", "no" and "has_slot".  Yes/no means if
 ;; the insn is slottable or not.  Has_slot means that the insn is a
 ;; return insn or branch insn (which are not considered slottable since
-;; that is generally true).  Having the semmingly illogical value
+;; that is generally true).  Having the seemingly illogical value
 ;; "has_slot" means we do not have to add another attribute just to say
 ;; that an insn has a delay-slot, since it also infers that it is not
 ;; slottable.  Better names for the attribute were found to be longer and
@@ -1354,7 +1354,7 @@
   "movs.b %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
 
-;; To do a byte->word exension, extend to dword, exept that the top half
+;; To do a byte->word extension, extend to dword, exept that the top half
 ;; of the register will be clobbered.  FIXME: Perhaps this is not needed.
 
 (define_insn "extendqihi2"
