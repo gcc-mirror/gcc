@@ -124,6 +124,13 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
       throw new FileNotFoundException (JvNewStringLatin1 (msg));
     }
 
+  // For APPEND mode, move the file pointer to the end of the file.
+  if (jflags & APPEND)
+    {
+      DWORD low = SetFilePointer (handle, 0, NULL, FILE_END);
+      if ((low == 0xffffffff) && (GetLastError () != NO_ERROR)) 
+        throw new FileNotFoundException (JvNewStringLatin1 (winerr ()));
+    }
   return (jint)handle;
 }
 
