@@ -2702,7 +2702,16 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	  /* If possible, avoid refetching from the bitfield itself.  */
 	  if (width_mask != 0
 	      && ! (GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
-	    return expand_and (temp, GEN_INT (width_mask), NULL_RTX);
+	    {
+	      rtx count;
+	      enum machine_mode tmode;
+	      if (unsignedp)
+		return expand_and (temp, GEN_INT (width_mask), NULL_RTX);
+	      tmode = GET_MODE (temp);
+	      count = build_int_2 (GET_MODE_BITSIZE (tmode) - bitsize, 0);
+	      temp = expand_shift (LSHIFT_EXPR, tmode, temp, count, 0, 0);
+	      return expand_shift (RSHIFT_EXPR, tmode, temp, count, 0, 0);
+	    }
 	  return extract_bit_field (target, bitsize, bitpos, unsignedp,
 				    NULL_RTX, value_mode, 0, align,
 				    total_size);
