@@ -1,3 +1,8 @@
+2002-04-23  Adam Megacz <adam@xwt.org>
+
+	* win32.cc, include/win32.cc (backtrace): Added this function
+	because Win32 does not supply it.
+
 2002-04-21  David S. Miller  <davem@redhat.com>
 
 	* include/dwarf2-signal.h (MAKE_THROW_FRAME, sparc32): Document
