@@ -655,7 +655,6 @@ PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
 	-e 's|%% *|../|g' \
 	-e 's|%||g'
 SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
-  "CC=`echo @cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
   "CC=`echo @quoted_cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
 #
 # Lists of files for various purposes.
