@@ -1,6 +1,6 @@
 /* Definitions for Intel 386 running SCO Unix System V 3.2 Version 4.
    Written by Chip Salzenberg.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -79,3 +79,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     -DM_COFF -DM_BITFIELDS -DM_WORDSWAP \
     %{scointl:-D_M_INTERNAT -DM_INTERNAT} \
     %{traditional:-D_KR -D_SVID -D_NO_PROTOTYPE}}}}"
+
+/* The system headers are C++-aware.  */
+#define NO_IMPLICIT_EXTERN_C
