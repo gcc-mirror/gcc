@@ -5919,6 +5919,13 @@ expand_expr (exp, target, tmode, modifier)
       placeholder_list = TREE_CHAIN (placeholder_list);
       return target;
 
+    case GOTO_EXPR:
+      if (TREE_CODE (TREE_OPERAND (exp, 0)) == LABEL_DECL)
+	expand_goto (TREE_OPERAND (exp, 0));
+      else
+	expand_computed_goto (TREE_OPERAND (exp, 0));
+      return const0_rtx;
+
     case EXIT_EXPR:
       expand_exit_loop_if_false (NULL_PTR,
 				 invert_truthvalue (TREE_OPERAND (exp, 0)));
