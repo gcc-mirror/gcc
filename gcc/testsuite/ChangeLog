@@ -1,3 +1,8 @@
+2004-09-17  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/17513
+	* gcc.dg/20040916-1.c: New test.
+
 2004-09-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17501
