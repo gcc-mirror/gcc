@@ -1,3 +1,7 @@
+2002-01-22  Jason Merrill  <jason@redhat.com>
+
+	* class.c (build_base_path): Tweak formatting.
+
 2002-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Fix regression introduced with patch for c++/775
@@ -25,6 +29,7 @@
 
 2002-01-10  Ira Ruben	<ira@apple.com>
 
+	PR c++/907
 	* decl.c (start_method): Handle attrlist.
 
 2002-01-10  Jakub Jelinek  <jakub@redhat.com>
@@ -40,7 +45,7 @@
 
 2002-01-09  Graham Stott  <grahams@redhat.com>
 
-	* decl.h ( grokdeclarator): Wrap long line.
+	* decl.h (grokdeclarator): Wrap long line.
 
 	* semantics.c (FINISH_COND): Uppercase macro paramaters and
 	add parenthesis.
@@ -86,26 +91,27 @@
 	* decl2.c (coerce_new_type): Downgrade error for size_t mismatch
 	to pedwarn.
 
+	PR c++/3536
 	* method.c (make_thunk): If !flag_weak, give the thunk the
 	function's linkage.
 	(use_thunk): Here, too.
 
 2002-01-07  Graham Stott  <grahams@redhat.com>
 
-        * error.c: Update copyright date.
-        (print_scope_operator): Add parenthesis.
-        (print_left_paren): Likewise.
-        (print_right_paren): Likewise.
-        (print_left_bracket): Likewise.
-        (print_right_bracket): Likewise.
-        (print_template_argument_list_start): Likewise.
-        (print_template_argument_list_end): Likewise.
-        (print_non_consecutive_character): Likewise.
-        (print_tree_identifier): Likewise.
-        (print_identifier): Likewise.
-        (NEXT_CODE): Uppercase macro parameter.
-        (ident_fndecl): Delete unused.
-        (GLOBAL_THING): Likewise.
+	* error.c: Update copyright date.
+	(print_scope_operator): Add parenthesis.
+	(print_left_paren): Likewise.
+	(print_right_paren): Likewise.
+	(print_left_bracket): Likewise.
+	(print_right_bracket): Likewise.
+	(print_template_argument_list_start): Likewise.
+	(print_template_argument_list_end): Likewise.
+	(print_non_consecutive_character): Likewise.
+	(print_tree_identifier): Likewise.
+	(print_identifier): Likewise.
+	(NEXT_CODE): Uppercase macro parameter.
+	(ident_fndecl): Delete unused.
+	(GLOBAL_THING): Likewise.
 
 2002-01-06  Graham Stott  <grahams@redhat.com>
 
@@ -240,76 +246,76 @@
 	(CLASSTYPE_VFIELDS): Whitespace.
 	(VF_DERIVED_VALUE): Wrap long line.
 	(NAMESPACE_LEVEL): Whitespace.
-        (CAN_HAVE_FULL_LANG_DECL_P): Remove parenthesis.
-        (DEFARG_POINTER): Whitespace.
-        (DECL_NEEDED_P): Remove parenthesis.
-        (DECL_LANGUAGE): Whitespace.
-        (SET_DECL_LANGUAGE): Add parenthesis.
-        (DECL_CONSTRUCTOR_P): Whitespace and wrap.
-        (DECL_OVERLOADED_OPERATOR_P): Remove parenthesis.
-        (DECL_IN_AGGR_P): Whitespace.
-        (DECL_FRIEND_P): Likewise.
-        (DECL_BEFRIENDING_CLASSES): Likewise.
-        (DECL_STATIC_FUNCTION_P): Whitespace and wrap.
-        (DECL_NONCONVERTING_P): Whitespace.
-        (DECL_PURE_VIRTUAL_P): Likewise.
-        (DECL_NEEDS_FINAL_OVERRIDER_P): Likewise.
-        (DECL_PENDING_INLINE_INFO): Whitespace.
-        (DECL_SORTED_FIELDS): Likewise.
-        (DECL_DEFERRED_FN): Likewise.
-        (DECL_TEMPLATE_INFO): Likewise.
-        (CLASSTYPE_TEMPLATE_INFO): Whitespace and wrap.
-        (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO); Likewise.
-        (SET_TYPE_TEMPLATE_INFO): Add parenthesis.
-        (TMPL_ARGS_LEVEL): Likewise.
-        (SET_TMPL_ARGS_LEVEL): Likewise.
-        (INNERMOST_TEMPLATE_PARMS): Whitespace.
-        (C_TYPEDEF_EXPLICITLY_SIGNED): Uppercase macro parameter.
-        (INTEGRAL_CODE_P(CODE): Add parenthesis.
-        (CP_INTEGRAL_TYPE_P): Remove parenthesis.
-        (TYPE_HAS_CONSTRUCTOR): Whitespace.
-        (TREE_HAS_CONSTRUCTOR): Likewise.
-        (TYPE_HAS_DESTRUCTOR): Likewise.
-        (TYPE_HAS_REAL_ASSIGN_REF): Likewise.
-        (TYPE_HAS_COMPLEX_ASSIGN_REF): Likewise.
-        (TYPE_HAS_ABSTRACT_ASSIGN_REF): Likewise.
-        (TYPE_HAS_COMPLEX_INIT_REF): Likewise.
-        (TYPE_HAS_NONTRIVIAL_DESTRUCTOR): Likewise.
-        (TYPE_PTRMEMFUNC_P): Likewise.
-        (TYPE_PTRMEMFUNC_FLAG): Likewise.
-        (TYPE_GET_PTRMEMFUNC_TYPE): Likewise.
-        (TYPE_SET_PTRMEMFUNC_TYPE): Likewise.
-        (TYPE_PTRMEM_CLASS_TYPE): Remove parenthesis.
-        (TYPE_PTRMEM_POINTED_TO_TYPE): Likewise.
-        (DECL_ACCESS): Whitespace.
-        (DECL_GLOBAL_CTOR_P): Remove parenthesis.
-        (DECL_GLOBAL_DTOR_P): Likewise.
-        (GLOBAL_INIT_PRIORITY): Likewise.
+	(CAN_HAVE_FULL_LANG_DECL_P): Remove parenthesis.
+	(DEFARG_POINTER): Whitespace.
+	(DECL_NEEDED_P): Remove parenthesis.
+	(DECL_LANGUAGE): Whitespace.
+	(SET_DECL_LANGUAGE): Add parenthesis.
+	(DECL_CONSTRUCTOR_P): Whitespace and wrap.
+	(DECL_OVERLOADED_OPERATOR_P): Remove parenthesis.
+	(DECL_IN_AGGR_P): Whitespace.
+	(DECL_FRIEND_P): Likewise.
+	(DECL_BEFRIENDING_CLASSES): Likewise.
+	(DECL_STATIC_FUNCTION_P): Whitespace and wrap.
+	(DECL_NONCONVERTING_P): Whitespace.
+	(DECL_PURE_VIRTUAL_P): Likewise.
+	(DECL_NEEDS_FINAL_OVERRIDER_P): Likewise.
+	(DECL_PENDING_INLINE_INFO): Whitespace.
+	(DECL_SORTED_FIELDS): Likewise.
+	(DECL_DEFERRED_FN): Likewise.
+	(DECL_TEMPLATE_INFO): Likewise.
+	(CLASSTYPE_TEMPLATE_INFO): Whitespace and wrap.
+	(TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO); Likewise.
+	(SET_TYPE_TEMPLATE_INFO): Add parenthesis.
+	(TMPL_ARGS_LEVEL): Likewise.
+	(SET_TMPL_ARGS_LEVEL): Likewise.
+	(INNERMOST_TEMPLATE_PARMS): Whitespace.
+	(C_TYPEDEF_EXPLICITLY_SIGNED): Uppercase macro parameter.
+	(INTEGRAL_CODE_P(CODE): Add parenthesis.
+	(CP_INTEGRAL_TYPE_P): Remove parenthesis.
+	(TYPE_HAS_CONSTRUCTOR): Whitespace.
+	(TREE_HAS_CONSTRUCTOR): Likewise.
+	(TYPE_HAS_DESTRUCTOR): Likewise.
+	(TYPE_HAS_REAL_ASSIGN_REF): Likewise.
+	(TYPE_HAS_COMPLEX_ASSIGN_REF): Likewise.
+	(TYPE_HAS_ABSTRACT_ASSIGN_REF): Likewise.
+	(TYPE_HAS_COMPLEX_INIT_REF): Likewise.
+	(TYPE_HAS_NONTRIVIAL_DESTRUCTOR): Likewise.
+	(TYPE_PTRMEMFUNC_P): Likewise.
+	(TYPE_PTRMEMFUNC_FLAG): Likewise.
+	(TYPE_GET_PTRMEMFUNC_TYPE): Likewise.
+	(TYPE_SET_PTRMEMFUNC_TYPE): Likewise.
+	(TYPE_PTRMEM_CLASS_TYPE): Remove parenthesis.
+	(TYPE_PTRMEM_POINTED_TO_TYPE): Likewise.
+	(DECL_ACCESS): Whitespace.
+	(DECL_GLOBAL_CTOR_P): Remove parenthesis.
+	(DECL_GLOBAL_DTOR_P): Likewise.
+	(GLOBAL_INIT_PRIORITY): Likewise.
 	(DECL_TEMPLATE_PARMS): Likewise.
-        (DECL_TEMPLATE_RESULT): Likewise.
-        (DECL_TEMPLATE_INSTANTIATIONS): Likewise.
-        (DECL_TEMPLATE_SPECIALIZATIONS): Likewise.
-        (DECL_IMPLICIT_TYPEDEF_P): Remove parenthesis.
-        (SET_DECL_IMPLICIT_TYPEDEF_P): Likewise.
-        (PRIMARY_TEMPLATE_P): Add parenthesis.
-        (DECL_USE_TEMPLATE): Whitespace.
-        (CLASSTYPE_IMPLICIT_INSTANTIATION): Likewise.
-        (SET_CLASSTYPE_IMPLICIT_INSTANTIATION): Likewise.
-        (CLASSTYPE_EXPLICIT_INSTANTIATION): Likewise.
-        (SET_CLASSTYPE_EXPLICIT_INSTANTIATION): Likewise.
-        (CALL_DECLARATOR_PARMS): Remove parenthesis.
-        (CALL_DECLARATOR_QUALS): Likewise.
-        (CALL_DECLARATOR_EXCEPTION_SPEC): Likewise.
-        (TEMP_NAME_P): Wrap.
-        (VFIELD_NAME_P): Likewise.
-        (B_SET): Uppercase macro parameters and add parenthesis.
-        (B_CLR): Likewise.
-        (B_TST): Likewise.
-        (LOOKUP_NAMESPACES_ONLY): Uppercase macro parameters.
-        (LOOKUP_TYPES_ONLY): Uppercase macro parameters.
-        (LOOKUP_QUALIFIERS_ONLY): Uppercase macro parameters.
-        (same_or_base_type_p): Likewise.
-        (cp_deprecated): Likewise.
+	(DECL_TEMPLATE_RESULT): Likewise.
+	(DECL_TEMPLATE_INSTANTIATIONS): Likewise.
+	(DECL_TEMPLATE_SPECIALIZATIONS): Likewise.
+	(DECL_IMPLICIT_TYPEDEF_P): Remove parenthesis.
+	(SET_DECL_IMPLICIT_TYPEDEF_P): Likewise.
+	(PRIMARY_TEMPLATE_P): Add parenthesis.
+	(DECL_USE_TEMPLATE): Whitespace.
+	(CLASSTYPE_IMPLICIT_INSTANTIATION): Likewise.
+	(SET_CLASSTYPE_IMPLICIT_INSTANTIATION): Likewise.
+	(CLASSTYPE_EXPLICIT_INSTANTIATION): Likewise.
+	(SET_CLASSTYPE_EXPLICIT_INSTANTIATION): Likewise.
+	(CALL_DECLARATOR_PARMS): Remove parenthesis.
+	(CALL_DECLARATOR_QUALS): Likewise.
+	(CALL_DECLARATOR_EXCEPTION_SPEC): Likewise.
+	(TEMP_NAME_P): Wrap.
+	(VFIELD_NAME_P): Likewise.
+	(B_SET): Uppercase macro parameters and add parenthesis.
+	(B_CLR): Likewise.
+	(B_TST): Likewise.
+	(LOOKUP_NAMESPACES_ONLY): Uppercase macro parameters.
+	(LOOKUP_TYPES_ONLY): Uppercase macro parameters.
+	(LOOKUP_QUALIFIERS_ONLY): Uppercase macro parameters.
+	(same_or_base_type_p): Likewise.
+	(cp_deprecated): Likewise.
 
 2002-01-05  Richard Henderson  <rth@redhat.com>
 
