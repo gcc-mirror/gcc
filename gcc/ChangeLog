@@ -1,3 +1,7 @@
+2004-07-07  Per Bothner  <per@bothner.com>
+
+	* flow.c (attempt_auto_inc):  Remove now-redundant PUT_CODE.
+
 2004-07-07  Mike Stump  <mrs@apple.com>
 
 	* darwin.h (ASM_OUTPUT_LABELREF): Fix -fno-leading-underscore.
