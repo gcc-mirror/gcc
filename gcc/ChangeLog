@@ -1,3 +1,8 @@
+2000-11-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* toplev.c (wrapup_global_declarations): Don't write out
+	artificial static variables that aren't needed.
+
 2000-11-15  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* ia64.c (struct group): New structure.

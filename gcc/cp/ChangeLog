@@ -1,3 +1,8 @@
+2000-11-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (wrapup_globals_for_namespace): Don't mark things
+	TREE_ASM_WRITTEN when they're not.
+
 2000-11-15  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.c (friendly_abort): Uncount the error before handing

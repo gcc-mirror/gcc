@@ -1926,20 +1926,8 @@ wrapup_globals_for_namespace (namespace, data)
 
   /* Process the decls in reverse order--earliest first.
      Put them into VEC from back to front, then take out from front.  */
-
   for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
-    {
-      /* Pretend we've output an unused static variable.  This ensures
-         that the toplevel __FUNCTION__ etc won't be emitted, unless
-         needed. */
-      if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl)
-	  && !TREE_PUBLIC (decl) && !TREE_USED (decl))
-	{
-	  TREE_ASM_WRITTEN (decl) = 1;
-	  DECL_IGNORED_P (decl) = 1;
-	}
-      vec[len - i - 1] = decl;
-    }
+    vec[len - i - 1] = decl;
 
   if (last_time)
     {
