@@ -74,7 +74,7 @@ XCFLAGS =
 TCFLAGS =
 CFLAGS = -g
 STAGE1_CFLAGS = -g @stage1_cflags@
-BOOT_CFLAGS = -g -O2
+BOOT_CFLAGS = -g -O2 -funroll-loops -fpeel-loops
 
 # Flags to determine code coverage. When coverage is disabled, this will
 # contain the optimization flags, as you normally want code coverage
@@ -768,7 +768,7 @@ C_OBJS = c-parse.o c-lang.o c-pretty-print.o $(C_AND_OBJC_OBJS)
 
 OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfglayout.o cfgloop.o		   \
- cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o		   \
+ cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
  cfgrtl.o combine.o conflict.o convert.o cse.o cselib.o dbxout.o	   \
  debug.o df.o diagnostic.o doloop.o dominance.o		                   \
  dwarf2asm.o dwarf2out.o dwarfout.o emit-rtl.o except.o explow.o	   \
@@ -1610,6 +1610,9 @@ loop-init.o : loop-init.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) gcov-io.h \
    gcov-iov.h $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h profile.h \
    coretypes.h $(TM_H)
 loop-unswitch.o : loop-unswitch.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
+   $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h params.h \
+   output.h $(EXPR_H) coretypes.h $(TM_H)
+loop-unroll.o: loop-unroll.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h params.h \
    output.h $(EXPR_H) coretypes.h $(TM_H)
 dominance.o : dominance.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \

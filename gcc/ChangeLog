@@ -1,3 +1,32 @@
+2003-02-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cse.c (count_reg_usage): Fix handling of REG_EQUAL notes.
+
+	* Makefile.in (loop-unroll.o): New.
+	* cfgloop.h (UAP_PEEL, UAP_UNROLL, UAP_UNROLL_ALL): New.
+	(unroll_and_peel_loops): Declare.
+	* alias.c (init_alias_analysis): Flag_unroll_loops renamed to
+	flag_old_unroll_loops.
+	* loop.c (loop_invariant_p): Ditto.
+	* unroll.c (unroll_loop): Flag_unroll_all_loops renamed to
+	flag_old_unroll_all_loops.
+	* flags.h (flag_unroll_loops): Renamed to flag_old_unroll_loops.
+	(flag_unroll_all_loops): Renamed to flag_old_unroll_all_loops.
+	* params.def (PARAM_MAX_UNROLLED_INSNS): Default value changed.
+	(PARAM_MAX_AVERAGE_UNROLLED_INSNS, PARAM_MAX_UNROLL_TIMES,
+	PARAM_MAX_PEELED_INSNS, PARAM_MAX_PEEL_TIMES,
+	PARAM_MAX_COMPLETELY_PEELED_INSNS, PARAM_MAX_COMPLETELY_PEEL_TIMES,
+	PARAM_MAX_ONCE_PEELED_INSNS): New.
+	* toplev.h (flag_old_unroll_loops, flag_old_unroll_all_loops): New.
+	(flag_unroll_loops, flag_unroll_all_loops): Used for new unroller
+	instead of old one.
+	(flag_peel_loops): New.
+	(lang_independent_options): The new flags added.
+	(rest_of_compilation): Call new unroller.
+	(process_options): Setup flags for coexistence of old and new unroller.
+	* doc/invoke.texi: Document new options.
+	* doc/passes.texi: Document new unroller pass.
+
 2003-02-26  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* fixinc/fixincl.x: Regenerate

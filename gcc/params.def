@@ -149,7 +149,43 @@ DEFPARAM(PARAM_MAX_GCSE_PASSES,
 DEFPARAM(PARAM_MAX_UNROLLED_INSNS,
 	 "max-unrolled-insns",
 	 "The maximum number of instructions to consider to unroll in a loop",
-	 100)
+	 200)
+/* This parameter limits how many times the loop is unrolled depending
+   on number of insns really executed in each iteration.  */
+DEFPARAM(PARAM_MAX_AVERAGE_UNROLLED_INSNS,
+	 "max-average-unrolled-insns",
+	 "The maximum number of instructions to consider to unroll in a loop on average",
+	 80)
+/* The maximum number of unrollings of a single loop.  */
+DEFPARAM(PARAM_MAX_UNROLL_TIMES,
+	"max-unroll-times",
+	"The maximum number of unrollings of a single loop",
+	8)
+/* The maximum number of insns of a peeled loop.  */
+DEFPARAM(PARAM_MAX_PEELED_INSNS,
+	"max-peeled-insns",
+	"The maximum number of insns of a peeled loop",
+	120)
+/* The maximum number of peelings of a single loop.  */
+DEFPARAM(PARAM_MAX_PEEL_TIMES,
+	"max-peel-times",
+	"The maximum number of peelings of a single loop",
+	16)
+/* The maximum number of insns of a peeled loop.  */
+DEFPARAM(PARAM_MAX_COMPLETELY_PEELED_INSNS,
+	"max-completely-peeled-insns",
+	"The maximum number of insns of a completely peeled loop",
+	120)
+/* The maximum number of peelings of a single loop that is peeled completely.  */
+DEFPARAM(PARAM_MAX_COMPLETELY_PEEL_TIMES,
+	"max-completely-peel-times",
+	"The maximum number of peelings of a single loop that is peeled completely",
+	16)
+/* The maximum number of insns of a peeled loop that rolls only once.  */
+DEFPARAM(PARAM_MAX_ONCE_PEELED_INSNS,
+	"max-once-peeled-insns",
+	"The maximum number of insns of a peeled loop that rolls only once",
+	200)
 
 /* The maximum number of insns of an unswitched loop.  */
 DEFPARAM(PARAM_MAX_UNSWITCH_INSNS,
