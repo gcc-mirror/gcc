@@ -112,3 +112,7 @@
 
 /* Define if java.net native functions should be stubbed out.  */
 #undef DISABLE_JAVA_NET
+
+/* Define if system properties shouldn't be read from
+   getenv("GCJ_PROPERTIES").  */
+#undef DISABLE_GETENV_PROPERTIES

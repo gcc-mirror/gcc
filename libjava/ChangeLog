@@ -1,3 +1,28 @@
+1999-10-13  Anthony Green  <green@cygnus.com>
+
+	* libtool-version: Catch up by incrementing current.
+
+	* configure.host: Disable use of GCJ_PROPERTIES for mips-tx39.
+	* configure, include/config.h.in: Rebuilt.
+	* acconfig.h (DISABLE_GETENV_PROPERTIES): Undefine.
+	* configure.in: Added --disable-getenv-properties and new define
+	`DISABLE_GETENV_PROPERTIES'.
+
+	* prims.cc (PROCESS_GCJ_PROPERTIES): Define.
+	(next_property_key): New function.
+	(next_property_value): New function.
+	(process_gcj_properties): New function.
+	(JvRunMain): Call process_gcj_properties.
+	(_JvRunMain): Ditto.
+
+	* java/lang/natSystem.cc (init_properties): Set properties defined
+	in GCJ_PROPERTIES.
+
+	* include/java-props.h: New file.
+
+	* java/lang/natSystem.cc (init_properties): Add new properties to
+	conform with Java Product Versioning Specification.
+
 1999-10-12  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.

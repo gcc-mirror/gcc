@@ -40,6 +40,7 @@ details.  */
 
 #include <gcj/cni.h>
 #include <jvm.h>
+#include <java-props.h>
 #include <java/lang/System.h>
 #include <java/lang/Class.h>
 #include <java/lang/ArrayStoreException.h>
@@ -52,6 +53,7 @@ details.  */
 #define SystemClass _CL_Q34java4lang6System
 extern java::lang::Class SystemClass;
 
+extern property_pair *_Jv_Environment_Properties;
 
 
 #if defined (ECOS)
@@ -274,10 +276,23 @@ java::lang::System::init_properties (void)
   // A convenience define.
 #define SET(Prop,Val) \
 	properties->put(JvNewStringLatin1 (Prop), JvNewStringLatin1 (Val))
+
+  // A mixture of the Java Product Versioning Specification
+  // (introduced in 1.2), and earlier versioning properties.
   SET ("java.version", VERSION);
   SET ("java.vendor", "Cygnus Solutions");
   SET ("java.vendor.url", "http://sourceware.cygnus.com/java/");
   SET ("java.class.version", GCJVERSION);
+  SET ("java.vm.specification.version", "1.1");
+  SET ("java.vm.specification.name", "Java(tm) Virtual Machine Specification");
+  SET ("java.vm.specification.vendor", "Sun Microsystems Inc.");
+  SET ("java.vm.version", GCJVERSION);
+  SET ("java.vm.vendor", "Cygnus Solutions");
+  SET ("java.vm.name", "libgcj");
+  SET ("java.specification.version", "1.1");
+  SET ("java.specification.name", "Java(tm) Language Specification");
+  SET ("java.specification.vendor", "Sun Microsystems Inc.");
+
   // FIXME: how to set these given location-independence?
   // SET ("java.home", "FIXME");
   // SET ("java.class.path", "FIXME");
@@ -363,4 +378,17 @@ java::lang::System::init_properties (void)
   if (buffer != NULL)
     free (buffer);
 #endif
+
+  // Set the system properties from the user's environment.
+  if (_Jv_Environment_Properties)
+    {
+      size_t i = 0;
+
+      while (_Jv_Environment_Properties[i].key)
+	{
+	  SET (_Jv_Environment_Properties[i].key, 
+	       _Jv_Environment_Properties[i].value);
+	  i++;
+	}
+    }
 }
