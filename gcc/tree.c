@@ -3958,10 +3958,10 @@ get_narrower (op, unsignedp_ptr)
 
       /* See what's inside this conversion.  If we decide to strip it,
 	 we will set WIN.  */
-      op = TREE_OPERAND (op, 0);
 
       if (bitschange > 0)
 	{
+	  op = TREE_OPERAND (op, 0);
 	  /* An extension: the outermost one can be stripped,
 	     but remember whether it is zero or sign extension.  */
 	  if (first)
@@ -3980,6 +3980,7 @@ get_narrower (op, unsignedp_ptr)
 	  if (first)
 	    uns = TREE_UNSIGNED (TREE_TYPE (op));
 	  first = 0;
+	  op = TREE_OPERAND (op, 0);
 	}
 
       win = op;
