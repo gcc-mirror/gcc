@@ -1,6 +1,6 @@
 // prims.cc - Code for core of runtime environment.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -510,57 +510,21 @@ _Jv_NewMultiArray (jclass array_type, jint dimensions, ...)
 
 
 
-class _Jv_PrimClass : public java::lang::Class
+// Initialize Class object for primitive types. The `return' statement
+// does the actuall job.
+static java::lang::Class
+init_prim_class (jobject cname, jbyte sig, jint len, jobject array_vtable)
 {
-public:
-  // FIXME: calling convention is weird.  If we use the natural types
-  // then the compiler will complain because they aren't Java types.
-  _Jv_PrimClass (jobject cname, jbyte sig, jint len, jobject array_vtable)
-    {
-      using namespace java::lang::reflect;
-
-      // We must initialize every field of the class.  We do this in
-      // the same order they are declared in Class.h.
-      next = NULL;
-      name = _Jv_makeUtf8Const ((char *) cname, -1);
-      accflags = Modifier::PUBLIC | Modifier::FINAL | Modifier::ABSTRACT;
-      superclass = NULL;
-      constants.size = 0;
-      constants.tags = NULL;
-      constants.data = NULL;
-      methods = NULL;
-      method_count = sig;
-      vtable_method_count = 0;
-      fields = NULL;
-      size_in_bytes = len;
-      field_count = 0;
-      static_field_count = 0;
-      vtable = JV_PRIMITIVE_VTABLE;
-      interfaces = NULL;
-      loader = NULL;
-      interface_count = 0;
-      state = JV_STATE_DONE;
-      thread = NULL;
-      depth = -1;
-      ancestors = NULL;
-      idt = NULL;
-
-      // Note that we have to set `methods' to NULL.
-      if (sig != 'V')
-	_Jv_NewArrayClass (this, NULL, (_Jv_VTable *) array_vtable);
-      else
-        arrayclass = NULL;
-    }
-};
-
-// We use this to define both primitive classes and the vtables for
-// arrays of primitive classes.  The latter are given names so that we
-// can refer to them from the compiler, allowing us to construct
-// arrays of primitives statically.
-#define DECLARE_PRIM_TYPE(NAME, SIG, LEN) \
-  _Jv_ArrayVTable _Jv_##NAME##VTable; \
-  _Jv_PrimClass _Jv_##NAME##Class((jobject) #NAME, (jbyte) SIG, (jint) LEN, \
-                                  (jobject) &_Jv_##NAME##VTable)
+  static java::lang::Class iclass;
+  iclass.initializePrim (cname, sig, len, array_vtable);
+  return iclass;
+}
+  
+#define DECLARE_PRIM_TYPE(NAME, SIG, LEN)				\
+  _Jv_ArrayVTable _Jv_##NAME##VTable;					\
+  java::lang::Class _Jv_##NAME##Class = 				\
+    init_prim_class ((jobject) #NAME, (jbyte) SIG,			\
+                     (jint) LEN, (jobject) &_Jv_##NAME##VTable);
 
 DECLARE_PRIM_TYPE(byte, 'B', 1);
 DECLARE_PRIM_TYPE(short, 'S', 2);

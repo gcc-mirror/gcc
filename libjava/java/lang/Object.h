@@ -1,6 +1,6 @@
 // Object.h - Header file for java.lang.Object.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -15,23 +15,22 @@ details.  */
 
 #include <gcj/javaprims.h>
 
-// This class is mainly here as a kludge to get G++ to allocate
-// vtable pointer as the *first* word of each Object, instead of
-// the second word (following sync_info).  Note that various pieces of
-// code know that finalize() is the first method.  For instance,
-// Object.java knows this, as does _Jv_AllocObject.
+// This class is mainly here as a kludge to get G++ to allocate two
+// extra entries in the vtable. We will use them to store data.  This
+// allows us to support the new C++ ABI.
 
 struct _JvObjectPrefix
 {
 protected:
-  // This is disguised as the C++ vtbl.
-  // _Jv_VTable*  vtable;
-
-  virtual void finalize () = 0;
+  // New ABI Compatibility Dummy, #1 and 2.
+  virtual void nacd_1 (void) {};
+  virtual void nacd_2 (void) {};
 };
 
 class java::lang::Object : public _JvObjectPrefix
 {
+protected:
+  virtual void finalize (void);
 public:
   // Order must match order in Object.java.
   jclass getClass (void);
@@ -61,7 +60,6 @@ public:
 
 protected:
   virtual jobject clone (void);
-  virtual void finalize (void);
 
 private:
   // This does not actually refer to a Java object.  Instead it is a

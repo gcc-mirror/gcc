@@ -1,6 +1,6 @@
 // array.h - Header file for CNI arrays.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -60,10 +60,10 @@ typedef JArray<jfloat> *jfloatArray;
 typedef JArray<jdouble> *jdoubleArray;
 typedef JArray<jstring> *jstringArray;
 
-extern class _Jv_PrimClass _Jv_byteClass, _Jv_shortClass, _Jv_intClass,
+extern java::lang::Class _Jv_byteClass, _Jv_shortClass, _Jv_intClass,
   _Jv_longClass, _Jv_booleanClass, _Jv_charClass, _Jv_floatClass,
   _Jv_doubleClass, _Jv_voidClass;
-#define JvPrimClass(TYPE) ((jclass) & _Jv_##TYPE##Class)
+#define JvPrimClass(TYPE) (& _Jv_##TYPE##Class)
 
 extern "C" jobjectArray _Jv_NewObjectArray(jsize length, jclass, jobject init);
 extern "C" jobject _Jv_NewPrimArray (jclass eltype, jint count);
