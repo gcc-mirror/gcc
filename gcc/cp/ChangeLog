@@ -1,3 +1,9 @@
+2004-02-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14250
+	* cvt.c (build_expr_type_conversion): Type must be complete before
+	looking up for conversions.
+
 2004-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14199
