@@ -3093,6 +3093,39 @@ duplicate_decls (newdecl, olddecl)
       || TREE_TYPE (olddecl) == error_mark_node)
     types_match = 1;
 
+  if (DECL_P (olddecl)
+      && TREE_CODE (newdecl) == FUNCTION_DECL
+      && TREE_CODE (olddecl) == FUNCTION_DECL
+      && (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl)))
+    {
+      if (DECL_DECLARED_INLINE_P (newdecl)
+	  && DECL_UNINLINABLE (newdecl)
+	  && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
+	/* Already warned elsewhere.  */;
+      else if (DECL_DECLARED_INLINE_P (olddecl)
+	       && DECL_UNINLINABLE (olddecl)
+	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
+	/* Already warned.  */;
+      else if (DECL_DECLARED_INLINE_P (newdecl)
+	       && DECL_UNINLINABLE (olddecl)
+	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
+	{
+	  warning_with_decl (newdecl,
+			     "function `%s' redeclared as inline");
+	  warning_with_decl (olddecl,
+			     "previous declaration of function `%s' with attribute noinline");
+	}
+      else if (DECL_DECLARED_INLINE_P (olddecl)
+	       && DECL_UNINLINABLE (newdecl)
+	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
+	{
+	  warning_with_decl (newdecl,
+			     "function `%s' redeclared with attribute noinline");
+	  warning_with_decl (olddecl,
+			     "previous declaration of function `%s' was inline");
+	}
+    }
+
   /* Check for redeclaration and other discrepancies. */
   if (TREE_CODE (olddecl) == FUNCTION_DECL
       && DECL_ARTIFICIAL (olddecl))
@@ -3639,6 +3672,9 @@ duplicate_decls (newdecl, olddecl)
       if (DECL_INLINE (newdecl) && DECL_INITIAL (olddecl) == NULL_TREE)
 	DECL_INLINE (olddecl) = 1;
       DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
+
+      DECL_UNINLINABLE (newdecl) = DECL_UNINLINABLE (olddecl)
+	= (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl));
 
       /* Preserve abstractness on cloned [cd]tors.  */
       DECL_ABSTRACT (newdecl) = DECL_ABSTRACT (olddecl);
@@ -7131,6 +7167,13 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   cplus_decl_attributes (&decl, attributes, 0);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (decl)
+      && DECL_UNINLINABLE (decl)
+      && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
+    warning_with_decl (decl,
+		       "inline function `%s' given attribute noinline");
 
   if (context && COMPLETE_TYPE_P (complete_type (context)))
     {
@@ -13327,6 +13370,11 @@ start_function (declspecs, declarator, attrs, flags)
 	    }
 	}
     }
+
+  if (DECL_DECLARED_INLINE_P (decl1)
+      && lookup_attribute ("noinline", attrs))
+    warning_with_decl (decl1,
+		       "inline function `%s' given attribute noinline");
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
     /* This is a constructor, we must ensure that any default args
