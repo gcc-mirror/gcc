@@ -1,5 +1,10 @@
 2002-03-02  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.h (ENCODE_SECTION_INFO): MODULE_LOCAL_P applies
+	to functions as well.
+
+2002-03-02  Richard Henderson  <rth@redhat.com>
+
 	* attribs.c (handle_alias_attribute): Don't call assemble_alias.
 	(handle_visibility_attribute): Don't call assemble_visibility.
 	* toplev.c (rest_of_decl_compilation): Invoke make_decl_rtl even

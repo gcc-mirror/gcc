@@ -2264,8 +2264,7 @@ do {								\
 	    SYMBOL_REF_FLAG (XEXP (rtl, 0))			\
 	      = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'	\
 		 || ! TREE_PUBLIC (DECL)			\
-		 || (TREE_CODE (DECL) == VAR_DECL		\
-		     && MODULE_LOCAL_P (DECL)));		\
+		 || MODULE_LOCAL_P (DECL));			\
 	  }							\
       }								\
 } while (0)
