@@ -603,8 +603,7 @@ extern char leaf_reg_backmap[];
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
-  ((C) == 'G' ? CONST_DOUBLE_HIGH (VALUE) == 0		\
-   && CONST_DOUBLE_LOW (VALUE) == 0			\
+  ((C) == 'G' ? fp_zero_operand (VALUE)			\
    : (C) == 'H' ? arith_double_operand (VALUE, DImode)	\
    : 0)
 
