@@ -186,7 +186,7 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
   void *ptr;
 
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
-  if (index >= sizeof(dwarf_reg_size_table))
+  if (index >= (int) sizeof(dwarf_reg_size_table))
     abort ();
   size = dwarf_reg_size_table[index];
   ptr = context->reg[index];
@@ -224,7 +224,7 @@ _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
   void *ptr;
 
   index = DWARF_REG_TO_UNWIND_COLUMN (index);
-  if (index >= sizeof(dwarf_reg_size_table))
+  if (index >= (int) sizeof(dwarf_reg_size_table))
     abort ();
   size = dwarf_reg_size_table[index];
   ptr = context->reg[index];

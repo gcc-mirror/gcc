@@ -1,3 +1,9 @@
+2003-10-26  Andreas Jaeger  <aj@suse.de>
+
+	* unwind-dw2.c (_Unwind_GetGR): Avoid warning about unsigned
+	comparison.
+	(_Unwind_SetGR): Likewise.
+
 2003-10-26  Ottavio Campana <ottavio@campana.vi.it>
 
 	PR target/12690
