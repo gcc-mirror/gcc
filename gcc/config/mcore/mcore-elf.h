@@ -40,18 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #define DWARF_DEBUGGING_INFO 1
 #endif
 
-/* The numbers used to denote specific machine registers in the System V
-   Release 4 DWARF debugging information are quite likely to be totally
-   different from the numbers used in BSD stabs debugging information
-   for the same kind of target machine.  Thus, we undefine the macro
-   DBX_REGISTER_NUMBER here as an extra inducement to get people to
-   provide proper machine-specific definitions of DBX_REGISTER_NUMBER
-   (which is also used to provide DWARF registers numbers in dwarfout.c)
-   in their tm.h files which include this file.  */
-
-#undef  DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* MCore defines .long and .short to NOT force any alignment.
    This lets you misalign as much as you wish.  */
 #define	UNALIGNED_INT_ASM_OP	"\t.long\t"

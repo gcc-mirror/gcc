@@ -2574,8 +2574,6 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* We need to use direct addressing for large constants and addresses
    that cannot fit within an instruction.  We must check for these
    after after the final jump optimisation pass, since this may

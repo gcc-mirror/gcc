@@ -279,8 +279,6 @@ do {                                                                    \
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)  \
   (fputs (".globl ", FILE), assemble_name (FILE, NAME), fputs ("\n", FILE))
 
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* Select section for constant in constant pool. 
    We are in the right section. 
    undef for 64 bit mode (linux64.h).

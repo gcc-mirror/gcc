@@ -1,3 +1,43 @@
+2001-11-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* 1750a.h (DBX_REGISTER_NUMBER): Don't define.
+	* alpha.h (DBX_REGISTER_NUMBER): Likewise.
+	* arc.h (DBX_REGISTER_NUMBER): Likewise.
+	* arm/aout.h (DBX_REGISTER_NUMBER): Likewise.
+	* avr.h (DBX_REGISTER_NUMBER): Likewise.
+	* c4x.h (DBX_REGISTER_NUMBER): Likewise.
+	* clipper.h (DBX_REGISTER_NUMBER): Likewise.
+	* convex.h (DBX_REGISTER_NUMBER): Likewise.
+	* cris.h (DBX_REGISTER_NUMBER): Likewise.
+	* dsp16xx.h (DBX_REGISTER_NUMBER): Likewise.
+	* elxsi.h (DBX_REGISTER_NUMBER): Likewise.
+	* fr30.h (DBX_REGISTER_NUMBER): Likewise.
+	* h8300.h (DBX_REGISTER_NUMBER): Likewise.
+	* i370.h (DBX_REGISTER_NUMBER): Likewise.
+	* i860.h (DBX_REGISTER_NUMBER): Likewise.
+	* i860/paragon.h (DBX_REGISTER_NUMBER): Likewise.
+	* i860/sysv3.h (DBX_REGISTER_NUMBER): Likewise.
+	* i860/sysv4.h (DBX_REGISTER_NUMBER): Likewise.
+	* m32r.h (DBX_REGISTER_NUMBER): Likewise.
+	* m68hc11.h (DBX_REGISTER_NUMBER): Likewise.
+	* m88k.h (DBX_REGISTER_NUMBER): Likewise.
+	* mcore/mcore-elf.h (DBX_REGISTER_NUMBER): Likewise.
+	* mcore.h (DBX_REGISTER_NUMBER): Likewise.
+	* mn10200.h (DBX_REGISTER_NUMBER): Likewise.
+	* mn10300.h (DBX_REGISTER_NUMBER): Likewise.
+	* pdp11.h (DBX_REGISTER_NUMBER): Likewise.
+	* romp.h (DBX_REGISTER_NUMBER): Likewise.
+	* rs6000.h (DBX_REGISTER_NUMBER): Likewise.
+	* rs6000/sysv4.h (DBX_REGISTER_NUMBER): Likewise.
+	* s390/linux.h (DBX_REGISTER_NUMBER): Likewise.
+	* stormy16.h (DBX_REGISTER_NUMBER): Likewise.
+	* v850.h (DBX_REGISTER_NUMBER): Likewise.
+	* vax.h (DBX_REGISTER_NUMBER): Likewise.
+	* we32k.h (DBX_REGISTER_NUMBER): Likewise.
+	
+	* defaults.h (DBX_REGISTER_NUMBER): Provide a default.
+	* doc/tm.texi (DBX_REGISTER_NUMBER): Update.
+
 2001-11-21  H.J. Lu <hjl@gnu.org>
 
 	* config/rs6000/sysv4.h (LIB_SPEC): Fix a typo.

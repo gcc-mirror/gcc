@@ -2023,9 +2023,6 @@ extern char m32r_punct_chars[];
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* Turn off splitting of long stabs.  */
 #define DBX_CONTIN_LENGTH 0
 

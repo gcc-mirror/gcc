@@ -3063,7 +3063,5 @@ extern struct rtx_def *ldi_reg_rtx;
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#define DBX_REGISTER_NUMBER(r) (r)
-
 /* Get the standard ELF stabs definitions.  */
 #include "dbxelf.h"

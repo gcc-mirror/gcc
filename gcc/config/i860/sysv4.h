@@ -48,8 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT      "\"%s\""
 
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* The following macro definition overrides the one in i860.h
    because the svr4 i860 assembler requires a different syntax
    for getting parts of constant/relocatable values.  */

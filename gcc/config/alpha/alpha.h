@@ -1876,10 +1876,6 @@ do {						\
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",\
  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "FP"}
 
-/* How to renumber registers for dbx and gdb.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* Strip name encoding when emitting labels.  */
 
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)	\

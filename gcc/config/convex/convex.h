@@ -1204,10 +1204,6 @@ enum reg_class {
 
 #define DBX_DEBUGGING_INFO
 
-/* How to renumber registers for dbx and gdb.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* Do not break .stabs pseudos into continuations.  */
 
 #define DBX_CONTIN_LENGTH 0

@@ -1892,8 +1892,6 @@ const_section ()                                                   \
 
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-#define DBX_REGISTER_NUMBER(REGNO)   (REGNO)
-
 #define ASM_OUTPUT_DEF(asm_out_file, LABEL1, LABEL2) \
          do {						\
 	 fprintf (asm_out_file, ".alias " ); \

@@ -270,6 +270,13 @@ do {								\
 #define DWARF_FRAME_REGISTERS FIRST_PSEUDO_REGISTER
 #endif
 
+/* How to renumber registers for dbx and gdb.  If not defined, assume
+   no renumbering is necessary.  */
+
+#ifndef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+#endif
+
 /* Default sizes for base C types.  If the sizes are different for
    your target, you should override these values by defining the
    appropriate symbols in your tm.h file.  */

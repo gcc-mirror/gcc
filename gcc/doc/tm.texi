@@ -7377,11 +7377,11 @@ These macros affect all debugging formats.
 @findex DBX_REGISTER_NUMBER
 @item DBX_REGISTER_NUMBER (@var{regno})
 A C expression that returns the DBX register number for the compiler
-register number @var{regno}.  In simple cases, the value of this
-expression may be @var{regno} itself.  But sometimes there are some
-registers that the compiler knows about and DBX does not, or vice
-versa.  In such cases, some register may need to have one number in
-the compiler and another for DBX@.
+register number @var{regno}.  In the default macro provided, the value
+of this expression will be @var{regno} itself.  But sometimes there are
+some registers that the compiler knows about and DBX does not, or vice
+versa.  In such cases, some register may need to have one number in the
+compiler and another for DBX@.
 
 If two registers have consecutive numbers inside GCC, and they can be
 used as a pair to hold a multiword value, then they @emph{must} have

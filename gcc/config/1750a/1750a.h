@@ -967,10 +967,6 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
  { "0", "1", "2", "3", "4", "5", "6", "7", \
    "8", "9","10","11","12","13","14","15" }
 
-/* How to renumber registers for dbx and gdb.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /******************  Assembler output formatting  **********************/
 
 #define ASM_COMMENT_START  ";"
