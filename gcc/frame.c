@@ -600,7 +600,7 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
   /* Then the insns in the FDE up to our target PC.  */
   end = next_fde (f);
   pc = f->pc_begin;
-  while (insn < end && pc < pc_target)
+  while (insn < end && pc <= pc_target)
     insn = execute_cfa_insn (insn, &state, &info, &pc);
 
   memcpy (state_in, &state.s, sizeof (state.s));
