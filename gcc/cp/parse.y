@@ -2434,12 +2434,22 @@ class_head_defn:
 		  yyungetc ('{', 1);
 		  $$.t = $1;
 		  $$.new_type_flag = 0;
+		  if (TREE_CODE (TREE_TYPE ($1)) == RECORD_TYPE)
+		    /* We might be specializing a template with a different
+		       class-key.  */
+		    CLASSTYPE_DECLARED_CLASS (TREE_TYPE ($1))
+		      = (current_aggr == class_type_node);
 		}
 	| class_head_apparent_template ':'
 		{
 		  yyungetc (':', 1);
 		  $$.t = $1;
 		  $$.new_type_flag = 0;
+		  if (TREE_CODE (TREE_TYPE ($1)) == RECORD_TYPE)
+		    /* We might be specializing a template with a different
+		       class-key.  */
+		    CLASSTYPE_DECLARED_CLASS (TREE_TYPE ($1))
+		      = (current_aggr == class_type_node);
 		}
 	| aggr identifier_defn '{'
 		{
