@@ -1,5 +1,9 @@
 2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt/instantiate13.C: New test.
+
+2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.other/defarg7.C: New test.
 	* g++.old-deja/g++.other/defarg8.C: New test.
 
