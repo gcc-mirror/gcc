@@ -4238,7 +4238,7 @@ converted into the appropriate multiplication by a power of two.
 @cindex @code{and}, canonicalization of
 @cindex De Morgan's law
 @item
-De`Morgan's Law is used to move bitwise negation inside a bitwise
+De Morgan's Law is used to move bitwise negation inside a bitwise
 logical-and or logical-or operation.  If this results in only one
 operand being a @code{not} expression, it will be the first one.
 

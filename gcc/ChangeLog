@@ -1,3 +1,7 @@
+2004-10-12  Tom Tromey  <tromey@redhat.com>
+
+	* doc/md.texi (Insn Canonicalizations): Removed extraneous quote.
+
 2004-10-13  Dale Johannesen  <dalej@apple.com>
 
 	* doc/extend.texi (Extended Asm):  Rewrite asm volatile description.
