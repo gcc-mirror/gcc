@@ -1,3 +1,8 @@
+Thu Dec 25 00:34:03 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/libstdc++.exp (test_libstdc++): Set LD_LIBRARY_PATH
+	and SHLIB_PATH appropriately.
+
 Wed Sep  3 09:39:36 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/libstdc++.exp: Remove libg++_link_flags.

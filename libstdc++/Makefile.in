@@ -23,8 +23,9 @@ SUBLIBS = $(STAMP)-string $(STAMP)-complx
 HEADERS= cassert cctype cerrno cfloat ciso646 climits clocale cmath complex \
 	 csetjmp csignal cstdarg cstddef cstdio cstdlib cstring ctime \
 	 cwchar cwctype string stdexcept \
-	 algorithm deque list map queue set stack vector utility functional \
-	 iterator memory numeric
+	 algorithm deque functional hash_map hash_set iterator list map \
+	 memory numeric pthread_alloc queue rope set slist stack utility \
+	 vector fstream iomanip iostream strstream iosfwd
 
 ARLIB   = libstdc++.a
 SHLIB   = libstdc++.so.$(VERSION)
@@ -301,17 +302,15 @@ force:
 stuff:
 	$(MAKE) clean
 	$(MAKE) -C ../libio c++clean
-	$(MAKE) -C ../libg++ clean
-	$(MAKE) $(MAKEFLAGS) check
-	$(MAKE) -C ../libio check
-	$(MAKE) -C ../libg++ check
+	-$(MAKE) $(MAKEFLAGS) check
+	-$(MAKE) -C ../libio check
+	-$(MAKE) -C ../../gcc check-g++
 
 stuff1:
 	$(MAKE) clean
 	$(MAKE) -C ../libio c++clean
-	$(MAKE) -C ../libg++ clean
 
 stuff2:
-	$(MAKE) check
-	$(MAKE) -C ../libio check
-	$(MAKE) -C ../libg++ check
+	-$(MAKE) check
+	-$(MAKE) -C ../libio check
+	-$(MAKE) -C ../../gcc check-g++

@@ -29,15 +29,24 @@
 #include <std/bastring.h>
 
 extern "C++" {
-template <class charT, class traits>
-inline void * basic_string <charT, traits>::Rep::
+template <class charT, class traits, class Allocator>
+inline void * basic_string <charT, traits, Allocator>::Rep::
 operator new (size_t s, size_t extra)
 {
-  return ::operator new (s + extra * sizeof (charT));
+  return Allocator::allocate(s + extra * sizeof (charT));
 }
 
-template <class charT, class traits>
-inline size_t basic_string <charT, traits>::Rep::
+template <class charT, class traits, class Allocator>
+inline void basic_string <charT, traits, Allocator>::Rep::
+operator delete (void * ptr)
+{
+  Allocator::deallocate(ptr, sizeof(Rep) +
+			reinterpret_cast<Rep *>(ptr)->res *
+			sizeof (charT)); 
+}
+
+template <class charT, class traits, class Allocator>
+inline size_t basic_string <charT, traits, Allocator>::Rep::
 #if _G_ALLOC_CONTROL
 default_frob (size_t s)
 #else
@@ -49,8 +58,9 @@ frob_size (size_t s)
   return i;
 }
 
-template <class charT, class traits>
-inline basic_string <charT, traits>::Rep * basic_string <charT, traits>::Rep::
+template <class charT, class traits, class Allocator>
+inline basic_string <charT, traits, Allocator>::Rep *
+basic_string <charT, traits, Allocator>::Rep::
 create (size_t extra)
 {
   extra = frob_size (extra + 1);
@@ -61,8 +71,8 @@ create (size_t extra)
   return p;
 }
 
-template <class charT, class traits>
-charT * basic_string <charT, traits>::Rep::
+template <class charT, class traits, class Allocator>
+charT * basic_string <charT, traits, Allocator>::Rep::
 clone ()
 {
   Rep *p = Rep::create (len);
@@ -71,8 +81,8 @@ clone ()
   return p->data ();
 }
 
-template <class charT, class traits>
-inline bool basic_string <charT, traits>::Rep::
+template <class charT, class traits, class Allocator>
+inline bool basic_string <charT, traits, Allocator>::Rep::
 #ifdef _G_ALLOC_CONTROL
 default_excess (size_t s, size_t r)
 #else
@@ -82,19 +92,20 @@ excess_slop (size_t s, size_t r)
   return 2 * (s <= 16 ? 16 : s) < r;
 }
 
-template <class charT, class traits>
-inline bool basic_string <charT, traits>::
-check_realloc (size_t s) const
+template <class charT, class traits, class Allocator>
+inline bool basic_string <charT, traits, Allocator>::
+check_realloc (basic_string::size_type s) const
 {
   s += sizeof (charT);
+  rep ()->selfish = false;
   return (rep ()->ref > 1
 	  || s > capacity ()
 	  || Rep::excess_slop (s, capacity ()));
 }
 
-template <class charT, class traits>
-void basic_string <charT, traits>::
-alloc (size_t size, bool save)
+template <class charT, class traits, class Allocator>
+void basic_string <charT, traits, Allocator>::
+alloc (basic_string::size_type size, bool save)
 {
   if (! check_realloc (size))
     return;
@@ -112,10 +123,11 @@ alloc (size_t size, bool save)
   repup (p);
 }
 
-template <class charT, class traits>
-basic_string <charT, traits>& basic_string <charT, traits>::
-replace (size_t pos1, size_t n1,
-	 const basic_string& str, size_t pos2, size_t n2)
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>&
+basic_string <charT, traits, Allocator>::
+replace (size_type pos1, size_type n1,
+	 const basic_string& str, size_type pos2, size_type n2)
 {
   const size_t len2 = str.length ();
 
@@ -130,27 +142,28 @@ replace (size_t pos1, size_t n1,
   return replace (pos1, n1, str.data () + pos2, n2);
 }
 
-template <class charT, class traits>
-inline void basic_string <charT, traits>::Rep::
+template <class charT, class traits, class Allocator>
+inline void basic_string <charT, traits, Allocator>::Rep::
 copy (size_t pos, const charT *s, size_t n)
 {
   if (n)
     traits::copy (data () + pos, s, n);
 }
 
-template <class charT, class traits>
-inline void basic_string <charT, traits>::Rep::
+template <class charT, class traits, class Allocator>
+inline void basic_string <charT, traits, Allocator>::Rep::
 move (size_t pos, const charT *s, size_t n)
 {
   if (n)
     traits::move (data () + pos, s, n);
 }
 
-template <class charT, class traits>
-basic_string <charT, traits>& basic_string <charT, traits>::
-replace (size_t pos, size_t n1, const charT* s, size_t n2)
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>&
+basic_string <charT, traits, Allocator>::
+replace (size_type pos, size_type n1, const charT* s, size_type n2)
 {
-  const size_t len = length ();
+  const size_type len = length ();
   OUTOFRANGE (pos > len);
   if (n1 > len - pos)
     n1 = len - pos;
@@ -175,16 +188,16 @@ replace (size_t pos, size_t n1, const charT* s, size_t n2)
   return *this;
 }
 
-template <class charT, class traits>
-inline void basic_string <charT, traits>::Rep::
+template <class charT, class traits, class Allocator>
+inline void basic_string <charT, traits, Allocator>::Rep::
 set (size_t pos, const charT c, size_t n)
 {
   traits::set  (data () + pos, c, n);
 }
 
-template <class charT, class traits>
-basic_string <charT, traits>& basic_string <charT, traits>::
-replace (size_t pos, size_t n1, size_t n2, charT c)
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>& basic_string <charT, traits, Allocator>::
+replace (size_type pos, size_type n1, size_type n2, charT c)
 {
   const size_t len = length ();
   OUTOFRANGE (pos > len);
@@ -211,9 +224,9 @@ replace (size_t pos, size_t n1, size_t n2, charT c)
   return *this;
 }
 
-template <class charT, class traits>
-void basic_string <charT, traits>::
-resize (size_t n, charT c)
+template <class charT, class traits, class Allocator>
+void basic_string <charT, traits, Allocator>::
+resize (size_type n, charT c)
 {
   LENGTHERROR (n > max_size ());
 
@@ -223,9 +236,10 @@ resize (size_t n, charT c)
     erase (n);
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-copy (charT* s, size_t n, size_t pos)
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+copy (charT* s, size_type n, size_type pos)
 {
   OUTOFRANGE (pos > length ());
 
@@ -236,9 +250,10 @@ copy (charT* s, size_t n, size_t pos)
   return n;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-find (const charT* s, size_t pos, size_t n) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+find (const charT* s, size_type pos, size_type n) const
 {
   size_t xpos = pos;
   for (; xpos + n <= length (); ++xpos)
@@ -248,9 +263,10 @@ find (const charT* s, size_t pos, size_t n) const
   return npos;
 }
 
-template <class charT, class traits>
-inline size_t basic_string <charT, traits>::
-_find (const charT* ptr, charT c, size_t xpos, size_t len)
+template <class charT, class traits, class Allocator>
+inline basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+_find (const charT* ptr, charT c, size_type xpos, size_type len)
 {
   for (; xpos < len; ++xpos)
     if (traits::eq (ptr [xpos], c))
@@ -258,16 +274,18 @@ _find (const charT* ptr, charT c, size_t xpos, size_t len)
   return npos;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-find (charT c, size_t pos) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+find (charT c, size_type pos) const
 {
   return _find (data (), c, pos, length ());
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-rfind (const charT* s, size_t pos, size_t n) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+rfind (const charT* s, size_type pos, size_type n) const
 {
   if (n > length ())
     return npos;
@@ -283,9 +301,10 @@ rfind (const charT* s, size_t pos, size_t n) const
   return npos;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-rfind (charT c, size_t pos) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+rfind (charT c, size_type pos) const
 {
   if (1 > length ())
     return npos;
@@ -300,9 +319,10 @@ rfind (charT c, size_t pos) const
   return npos;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-find_first_of (const charT* s, size_t pos, size_t n) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+find_first_of (const charT* s, size_type pos, size_type n) const
 {
   size_t xpos = pos;
   for (; xpos < length (); ++xpos)
@@ -311,9 +331,10 @@ find_first_of (const charT* s, size_t pos, size_t n) const
   return npos;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-find_last_of (const charT* s, size_t pos, size_t n) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+find_last_of (const charT* s, size_type pos, size_type n) const
 {
   size_t xpos = length () - 1;
   if (xpos > pos)
@@ -324,9 +345,10 @@ find_last_of (const charT* s, size_t pos, size_t n) const
   return npos;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-find_first_not_of (const charT* s, size_t pos, size_t n) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+find_first_not_of (const charT* s, size_type pos, size_type n) const
 {
   size_t xpos = pos;
   for (; xpos < length (); ++xpos)
@@ -335,9 +357,10 @@ find_first_not_of (const charT* s, size_t pos, size_t n) const
   return npos;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-find_first_not_of (charT c, size_t pos) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+find_first_not_of (charT c, size_type pos) const
 {
   size_t xpos = pos;
   for (; xpos < length (); ++xpos)
@@ -346,9 +369,10 @@ find_first_not_of (charT c, size_t pos) const
   return npos;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-find_last_not_of (const charT* s, size_t pos, size_t n) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+find_last_not_of (const charT* s, size_type pos, size_type n) const
 {
   size_t xpos = length () - 1;
   if (xpos > pos)
@@ -359,9 +383,10 @@ find_last_not_of (const charT* s, size_t pos, size_t n) const
   return npos;
 }
 
-template <class charT, class traits>
-size_t basic_string <charT, traits>::
-find_last_not_of (charT c, size_t pos) const
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::
+find_last_not_of (charT c, size_type pos) const
 {
   size_t xpos = length () - 1;
   if (xpos > pos)
@@ -372,9 +397,9 @@ find_last_not_of (charT c, size_t pos) const
   return npos;
 }
 
-template <class charT, class traits>
-int basic_string <charT, traits>::
-compare (const basic_string& str, size_t pos, size_t n) const
+template <class charT, class traits, class Allocator>
+int basic_string <charT, traits, Allocator>::
+compare (const basic_string& str, size_type pos, size_type n) const
 {
   OUTOFRANGE (pos > length ());
 
@@ -391,9 +416,9 @@ compare (const basic_string& str, size_t pos, size_t n) const
   return (length () - pos) - str.length ();
 }
 
-template <class charT, class traits>
-int basic_string <charT, traits>::
-compare (const charT* s, size_t pos, size_t n) const
+template <class charT, class traits, class Allocator>
+int basic_string <charT, traits, Allocator>::
+compare (const charT* s, size_type pos, size_type n) const
 {
   OUTOFRANGE (pos > length ());
 
@@ -408,9 +433,9 @@ compare (const charT* s, size_t pos, size_t n) const
 
 #include <iostream.h>
 
-template <class charT, class traits>
+template <class charT, class traits, class Allocator>
 istream &
-operator>> (istream &is, basic_string <charT, traits> &s)
+operator>> (istream &is, basic_string <charT, traits, Allocator> &s)
 {
   int w = is.width (0);
   if (is.ipfx0 ())
@@ -443,16 +468,16 @@ operator>> (istream &is, basic_string <charT, traits> &s)
   return is;
 }
 
-template <class charT, class traits>
+template <class charT, class traits, class Allocator>
 ostream &
-operator<< (ostream &o, const basic_string <charT, traits>& s)
+operator<< (ostream &o, const basic_string <charT, traits, Allocator>& s)
 {
   return o.write (s.data (), s.length ());
 }
 
-template <class charT, class traits>
+template <class charT, class traits, class Allocator>
 istream&
-getline (istream &is, basic_string <charT, traits>& s, charT delim)
+getline (istream &is, basic_string <charT, traits, Allocator>& s, charT delim)
 {
   if (is.ipfx1 ())
     {
@@ -493,22 +518,22 @@ getline (istream &is, basic_string <charT, traits>& s, charT delim)
   return is;
 }
 
-template <class charT, class traits>
-basic_string <charT, traits>::Rep
-basic_string<charT, traits>::nilRep = { 0, 0, 1 };
+template <class charT, class traits, class Allocator>
+basic_string <charT, traits, Allocator>::Rep
+basic_string<charT, traits, Allocator>::nilRep = { 0, 0, 1 };
 
-template <class charT, class traits>
-const basic_string <charT, traits>::size_type
-basic_string <charT, traits>::npos;
+template <class charT, class traits, class Allocator>
+const basic_string <charT, traits, Allocator>::size_type
+basic_string <charT, traits, Allocator>::npos;
 
 #ifdef _G_ALLOC_CONTROL
-template <class charT, class traits>
-bool (*basic_string <charT, traits>::Rep::excess_slop) (size_t, size_t)
-     = basic_string <charT, traits>::Rep::default_excess;
+template <class charT, class traits, class Allocator>
+bool (*basic_string <charT, traits, Allocator>::Rep::excess_slop) (size_t, size_t)
+     = basic_string <charT, traits, Allocator>::Rep::default_excess;
 
-template <class charT, class traits>
-size_t (*basic_string <charT, traits>::Rep::frob_size) (size_t)
-     = basic_string <charT, traits>::Rep::default_frob;
+template <class charT, class traits, class Allocator>
+size_t (*basic_string <charT, traits, Allocator>::Rep::frob_size) (size_t)
+     = basic_string <charT, traits, Allocator>::Rep::default_frob;
 #endif
 
 } // extern "C++"

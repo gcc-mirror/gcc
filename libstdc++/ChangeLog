@@ -3,9 +3,50 @@ Mon Feb  9 00:09:16 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* Makefile.in (install): Remove the shared library symlink even if
 	we aren't installing it.
 
+1998-01-05  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* std/bastring.cc (basic_string::Rep::operator delete): Don't claim
+	to return from deallocate, since this is a void method.
+
+Sat Jan  3 12:15:41 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+
+	* configure.in: Finalize support for {alpha|powerpc}*-*-linux-gnulibc1
+
+Sun Dec  7 02:34:40 1997  Jody Goldberg	<jodyg@idt.net>
+
+	* libstdc++/std/bastring.h : Move closer to the draft standard
+	implementation of basic_string by adding 3 paramter 'Allocator'.
+	NOTE: this still differs from the standard in not offering per
+	instance allocators.
+	* libstdc++/std/bastring.cc : Likewise.
+	* libstdc++/stlinst.cc : Handle thread safe allocators if they are the
+	default.
+
+Sun Dec  7 02:32:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* iosfwd: New header.
+	* Makefile.in (HEADERS): Add it.
+
+Sun Dec  7 02:32:20 1997  Gregory L. Galloway (gregg@eoeml.gtri.gatech.edu)
+
+	* Makefile.in (HEADERS): Modified list of headers to 
+	install to include all of SGI STL headers especially hash_set and 
+	hash_map, and added ANSI C++ style wrappers for fstream, iomanip, 
+	iostream, and strstream.
+
+	* fstream, iomanip, iostream, strstream: New forwarding headers
+	added.
+
 Thu Nov 27 01:33:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (install): Change gxx_includedir to gxx_include_dir.
+
+Tue Nov 25 23:16:44 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	London changes to string:
+	* std/bastring.cc (check_realloc): Don't be selfish anymore.
+	* std/bastring.h (non-const operator[]): Be selfish.
+	(iterator forms of insert and erase): Stay selfish.
 
 Tue Nov 25 14:03:43 1997  H.J. Lu  (hjl@gnu.org)
 
