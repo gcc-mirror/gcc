@@ -264,7 +264,6 @@ static int next_type_uid = 1;
 extern char *mode_name[];
 
 void gcc_obstack_init ();
-static tree stabilize_reference_1 ();
 
 /* Init the principal obstacks.  */
 
@@ -2443,7 +2442,7 @@ stabilize_reference (ref)
    operator should be allowed, and that cse should take care of coalescing
    multiple utterances of the same expression should that prove fruitful.  */
 
-static tree
+tree
 stabilize_reference_1 (e)
      tree e;
 {
