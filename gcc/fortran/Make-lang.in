@@ -295,6 +295,6 @@ fortran/trans-array.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-intrinsic.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   gt-fortran-trans-intrinsic.h
 fortran/dependency.o: fortran/gfortran.h fortran/dependency.h
-fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS) fortran/gfortran.h
-fortran/data.c: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS)
+fortran/data.o: $(GFORTRAN_TRANS_DEPS)
 
