@@ -95,9 +95,6 @@ cp_convert_to_pointer (type, expr)
 	}
     }
 
-  if (TYPE_PTRMEMFUNC_P (type))
-    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-
   /* Handle anachronistic conversions from (::*)() to cv void* or (*)().  */
   if (TREE_CODE (type) == POINTER_TYPE
       && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
@@ -128,16 +125,14 @@ cp_convert_to_pointer (type, expr)
       intype = TREE_TYPE (expr);
     }
 
-  if (TYPE_PTRMEMFUNC_P (intype))
-    intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
-
   form = TREE_CODE (intype);
 
-  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
+  if (POINTER_TYPE_P (intype))
     {
       intype = TYPE_MAIN_VARIANT (intype);
 
       if (TYPE_MAIN_VARIANT (type) != intype
+	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (type)) == RECORD_TYPE
 	  && IS_AGGR_TYPE (TREE_TYPE (type))
 	  && IS_AGGR_TYPE (TREE_TYPE (intype))
@@ -181,12 +176,9 @@ cp_convert_to_pointer (type, expr)
 		}
 	    }
 	}
-      if (TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE
-	  && TREE_CODE (type) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
-	return build_ptrmemfunc (type, expr, 1);
 
-      if (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
+      if (TREE_CODE (type) == POINTER_TYPE
+	  && TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
 	  && TREE_CODE (TREE_TYPE (intype)) == OFFSET_TYPE)
 	{
 	  tree b1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (type));
@@ -205,10 +197,7 @@ cp_convert_to_pointer (type, expr)
 	  if (binfo && ! TREE_VIA_VIRTUAL (binfo))
 	    expr = size_binop (code, expr, BINFO_OFFSET (binfo));
 	}
-
-      if (TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE
-	  || (TREE_CODE (type) == POINTER_TYPE
-	      && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE))
+      else if (TYPE_PTRMEMFUNC_P (type))
 	{
 	  cp_error ("cannot convert `%E' from type `%T' to type `%T'",
 		    expr, intype, type);
@@ -219,6 +208,14 @@ cp_convert_to_pointer (type, expr)
       TREE_CONSTANT (rval) = TREE_CONSTANT (expr);
       return rval;
     }
+  else if (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype))
+    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 1);
+  else if (TYPE_PTRMEMFUNC_P (intype))
+    {
+      cp_error ("cannot convert `%E' from type `%T' to type `%T'",
+		expr, intype, type);
+      return error_mark_node;
+    }
 
   my_friendly_assert (form != OFFSET_TYPE, 186);
 
@@ -228,7 +225,7 @@ cp_convert_to_pointer (type, expr)
 
   if (integer_zerop (expr))
     {
-      if (TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
+      if (TYPE_PTRMEMFUNC_P (type))
 	return build_ptrmemfunc (type, expr, 0);
       expr = build_int_2 (0, 0);
       TREE_TYPE (expr) = type;

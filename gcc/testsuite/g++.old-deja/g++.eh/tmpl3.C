@@ -3,9 +3,9 @@
 // Posted by Trevor Taylor <ttaylor@powerup.com.au>
 
 template<class T> struct A {
-    void X() throw(T); // gets bogus error - previous decl - XFAIL *-*-*
+    void X() throw(T);
 };
 
 template<class T>
 inline void A<T>::X() 
-throw(T) { } // gets bogus error - different throws - XFAIL *-*-*
+throw(T) { } 

@@ -180,7 +180,8 @@ static void check_for_uninitialized_const_var PROTO((tree));
 static unsigned long typename_hash PROTO((hash_table_key));
 static boolean typename_compare PROTO((hash_table_key, hash_table_key));
 static void push_binding PROTO((tree, tree, struct binding_level*));
-static void pop_binding PROTO((tree));
+static void add_binding PROTO((tree, tree));
+static void pop_binding PROTO((tree, tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -602,7 +603,10 @@ push_decl_level (stack, obstack)
    to catch class-local declarations.  It is otherwise nonexistent.
 
    Also there may be binding levels that catch cleanups that must be
-   run when exceptions occur.  */
+   run when exceptions occur.  Thus, to see whether a name is bound in
+   the current scope, it is not enough to look in the
+   CURRENT_BINDING_LEVEL.  You should use lookup_name_current_level
+   instead.  */
 
 /* Note that the information in the `names' component of the global contour
    is duplicated in the IDENTIFIER_GLOBAL_VALUEs of all identifiers.  */
@@ -637,7 +641,8 @@ struct binding_level
        is the name of an entity bound in the class; the TREE_VALUE is
        the IDENTIFIER_CLASS_VALUE before we entered the class.  Thus,
        when leaving class scope, we can restore the
-       IDENTIFIER_CLASS_VALUE by walking this list.  */
+       IDENTIFIER_CLASS_VALUE by walking this list.  The TREE_TYPE is
+       the DECL bound by this name in the class.  */
     tree class_shadowed;
 
     /* Similar to class_shadowed, but for IDENTIFIER_TYPE_VALUE, and
@@ -1072,12 +1077,45 @@ push_binding (id, decl, level)
 
   /* Now, fill in the binding information.  */
   BINDING_VALUE (binding) = decl;
+  BINDING_TYPE (binding) = NULL_TREE;
   BINDING_LEVEL (binding) = level;
   LOCAL_BINDING_P (binding) = (level != class_binding_level);
 
   /* And put it on the front of the ilst of bindings for ID.  */
   TREE_CHAIN (binding) = IDENTIFIER_BINDING (id);
   IDENTIFIER_BINDING (id) = binding;
+}
+
+/* ID is already bound in the current scope.  But, DECL is an
+   additional binding for ID in the same scope.  This is the `struct
+   stat' hack whereby a non-typedef class-name or enum-name can be
+   bound at the same level as some other kind of entity.  It's the
+   responsibility of the caller to check that inserting this name is
+   legal here.  */
+static void
+add_binding (id, decl)
+     tree id;
+     tree decl;
+{
+  tree binding = IDENTIFIER_BINDING (id);
+
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    /* The new name is the type name.  */
+    BINDING_TYPE (binding) = decl;
+  else 
+    {
+      /* The old name must be the type name.  It was placed in
+	 IDENTIFIER_VALUE because it was thought, at the point it
+	 was declared, to be the only entity with such a name.  */
+      my_friendly_assert (TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
+			  && DECL_ARTIFICIAL (BINDING_VALUE (binding)),
+			  0);
+
+      /* Move the type name into the type slot; it is now hidden by
+	 the new binding.  */
+      BINDING_TYPE (binding) = BINDING_VALUE (binding);
+      BINDING_VALUE (binding) = decl;
+    }
 }
 
 /* Bind DECL to ID in the current_binding_level.  */
@@ -1087,15 +1125,19 @@ push_local_binding (id, decl)
      tree id;
      tree decl;
 {
-  tree d = decl;;
+  tree d = decl;
 
   if (TREE_CODE (decl) == OVERLOAD)
     /* We must put the OVERLOAD into a TREE_LIST since the
        TREE_CHAIN of an OVERLOAD is already used.  */
     decl = build_tree_list (NULL_TREE, decl);
 
-  /* Create a binding, hanging off of ID.  */
-  push_binding (id, d, current_binding_level);
+  if (lookup_name_current_level (id))
+    /* Supplement the existing binding.  */
+    add_binding (id, decl);
+  else
+    /* Create a new binding.  */
+    push_binding (id, d, current_binding_level);
 
   /* And put DECL on the list of things declared by the current
      binding level.  */
@@ -1110,32 +1152,63 @@ push_class_binding (id, decl)
      tree id;
      tree decl;
 {
-  push_binding (id, decl, class_binding_level);
+  if (IDENTIFIER_BINDING (id)
+      && BINDING_LEVEL (IDENTIFIER_BINDING (id)) == class_binding_level)
+    /* Supplement the existing binding.  */
+    add_binding (id, decl);
+  else
+    /* Create a new binding.  */
+    push_binding (id, decl, class_binding_level);
+
+  /* Update the IDENTIFIER_CLASS_VALUE for this ID to be the
+     class-level declaration.  Note that we do not use DECL here
+     because of the possibility of the `struct stat' hack; if DECL is
+     a class-name or enum-name we might prefer a field-name, or some
+     such.  */
+  IDENTIFIER_CLASS_VALUE (id) = BINDING_VALUE (IDENTIFIER_BINDING (id));
 }
 
-/* Remove the innermost binding for ID; it has gone out of scope.  */
+/* Remove the binding for DECL which should be the innermost binding
+   for ID.  */
 
 static void 
-pop_binding (id) 
+pop_binding (id, decl) 
      tree id;
+     tree decl;
 {
   tree binding;
-
+    
   if (id == NULL_TREE)
     /* It's easiest to write the loops that call this function without
        checking whether or not the entities involved have names.  We
        get here for such an entity.  */
     return;
 
-  my_friendly_assert (IDENTIFIER_BINDING (id) != NULL_TREE, 0);
-
-  /* Unhook the innermost binding from the list of bindings.  */
+  /* Get the innermost binding for ID.  */
   binding = IDENTIFIER_BINDING (id);
-  IDENTIFIER_BINDING (id) = TREE_CHAIN (binding);
 
-  /* And place this list node on the free list.  */
-  TREE_CHAIN (binding) = free_binding_nodes;
-  free_binding_nodes = binding;
+  /* The name should be bound.  */
+  my_friendly_assert (binding != NULL_TREE, 0);
+
+  /* The DECL will be either the ordinary binding or the type
+     binding for this identifier.  Remove that binding.  */
+  if (BINDING_VALUE (binding) == decl)
+    BINDING_VALUE (binding) = NULL_TREE;
+  else if (BINDING_TYPE (binding) == decl)
+    BINDING_TYPE (binding) = NULL_TREE;
+  else
+    my_friendly_abort (0);
+
+  if (!BINDING_VALUE (binding) && !BINDING_TYPE (binding))
+    {
+      /* We're completely done with the innermost binding for this
+	 identifier.  Unhook it from the list of bindings.  */
+      IDENTIFIER_BINDING (id) = TREE_CHAIN (binding);
+
+      /* And place it on the free list.  */
+      TREE_CHAIN (binding) = free_binding_nodes;
+      free_binding_nodes = binding;
+    }
 }
 
 /* Exit a binding level.
@@ -1303,7 +1376,7 @@ poplevel (keep, reverse, functionbody)
 		 
 	       and we are leaving the `for' scope.  There's no reason to
 	       keep the binding of the inner `i' in this case.  */
-	    pop_binding (DECL_NAME (link));
+	    pop_binding (DECL_NAME (link), link);
 	  else if ((outer_binding 
 		    && (TREE_CODE (BINDING_VALUE (outer_binding)) 
 			== TYPE_DECL))
@@ -1319,7 +1392,7 @@ poplevel (keep, reverse, functionbody)
 
 	       We must pop the for-scope binding so we know what's a
 	       type and what isn't.  */
-	    pop_binding (DECL_NAME (link));
+	    pop_binding (DECL_NAME (link), link);
 	  else
 	    {
 	      /* Mark this VAR_DECL as dead so that we can tell we left it
@@ -1350,10 +1423,11 @@ poplevel (keep, reverse, functionbody)
 	{
 	  /* Remove the binding.  */
 	  if (TREE_CODE_CLASS (TREE_CODE (link)) == 'd')
-	    pop_binding (DECL_NAME (link));
+	    pop_binding (DECL_NAME (link), link);
 	  else if (TREE_CODE (link) == TREE_LIST)
-	    pop_binding (DECL_NAME (OVL_FUNCTION (TREE_VALUE (link))));
-	  else
+	    pop_binding (DECL_NAME (OVL_FUNCTION (TREE_VALUE (link))), 
+			 TREE_VALUE (link));
+	  else 
 	    my_friendly_abort (0);
 	}
     }
@@ -1362,7 +1436,7 @@ poplevel (keep, reverse, functionbody)
      that we kept around.  */
   for (link = current_binding_level->dead_vars_from_for;
        link; link = TREE_CHAIN (link))
-    pop_binding (DECL_NAME (TREE_VALUE (link)));
+    pop_binding (DECL_NAME (TREE_VALUE (link)), TREE_VALUE (link));
 
   /* Restore the IDENTIFIER_TYPE_VALUEs.  */
   for (link = current_binding_level->type_shadowed;
@@ -1607,7 +1681,7 @@ poplevel_class (force)
   for (shadowed = level->class_shadowed; 
        shadowed; 
        shadowed = TREE_CHAIN (shadowed))
-    pop_binding (TREE_PURPOSE (shadowed));
+    pop_binding (TREE_PURPOSE (shadowed), TREE_TYPE (shadowed));
 
   GNU_xref_end_scope ((HOST_WIDE_INT) class_binding_level,
 		      (HOST_WIDE_INT) class_binding_level->level_chain,
@@ -3617,12 +3691,6 @@ pushdecl (x)
             set_identifier_type_value_with_scope (DECL_NAME (x), type, 
 						  current_binding_level);
 
-	  if (TREE_CODE (x) == TYPE_DECL
-	      && DECL_ARTIFICIAL (x)
-	      && t != NULL_TREE)
-	    /* We don't want an artificial TYPE_DECL is we already
-	       have another DECL with the same name.  */
-	    need_new_binding = 0;
 	}
 
       /* Multiple external decls of the same identifier ought to match.
@@ -3663,7 +3731,8 @@ pushdecl (x)
 	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && TREE_PUBLIC (x))
 	    TREE_PUBLIC (name) = 1;
 
-	  if (need_new_binding)
+	  if (!(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
+		&& t != NULL_TREE))
 	    {
 	      if (TREE_CODE (x) == FUNCTION_DECL)
 		my_friendly_assert 
@@ -3999,23 +4068,20 @@ push_class_level_binding (name, x)
   if (!class_binding_level)
     return;
 
-  if (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
-      && purpose_member (name, class_binding_level->class_shadowed))
-    return;
-
   /* If this declaration shadows a declaration from an enclosing
      class, then we will need to restore IDENTIFIER_CLASS_VALUE when
      we leave this class.  Record the shadowed declaration here.  */
   maybe_push_cache_obstack ();
   class_binding_level->class_shadowed
-      = tree_cons (name, IDENTIFIER_CLASS_VALUE (name),
-		   class_binding_level->class_shadowed);
+    = tree_cons (name, IDENTIFIER_CLASS_VALUE (name),
+		 class_binding_level->class_shadowed);
+  TREE_TYPE (class_binding_level->class_shadowed)
+    = x;
   pop_obstacks ();
 
   /* Put the binding on the stack of bindings for the identifier, and
      update IDENTIFIER_CLASS_VALUE.  */
   push_class_binding (name, x);
-  IDENTIFIER_CLASS_VALUE (name) = x;
 
   obstack_ptr_grow (&decl_obstack, x);
 }
@@ -4155,8 +4221,8 @@ push_overloaded_decl (decl, forgettable)
       /* We only create an OVERLOAD if there was a previous binding at
 	 this level.  In that case, we need to remove the old binding
 	 and replace it with the new binding.  We must also run
-	 through the NAMES on the current binding level to update the
-	 chain.  */
+	 through the NAMES on the binding level where the name was
+	 bound to update the chain.  */
       if (TREE_CODE (new_binding) == OVERLOAD)
 	{
 	  tree *d;
@@ -4168,11 +4234,21 @@ push_overloaded_decl (decl, forgettable)
 		|| (TREE_CODE (*d) == TREE_LIST
 		    && TREE_VALUE (*d) == old))
 	      {
-		*d = TREE_CHAIN (*d);
-		break;
+		if (TREE_CODE (*d) == TREE_LIST)
+		  /* Just replace the old binding with the new.  */
+		  TREE_VALUE (*d) = new_binding;
+		else
+		  /* Build a TREE_LIST to wrap the OVERLOAD.  */
+		  *d = build_tree_list (NULL_TREE, new_binding);
+
+		/* And update the CPLUS_BINDING node.  */
+		BINDING_VALUE (IDENTIFIER_BINDING (name))
+		  = new_binding;
+		return decl;
 	      }
 
-	  pop_binding (name);
+	  /* We should always find a previous binding in this case.  */
+	  my_friendly_abort (0);
 	}
 
       /* Install the new binding.  */
@@ -4887,9 +4963,16 @@ lookup_namespace_name (namespace, name)
 
   my_friendly_assert (TREE_CODE (namespace) == NAMESPACE_DECL, 370);
 
-  /* This happens for A::B<int> when B is a namespace. */
   if (TREE_CODE (name) == NAMESPACE_DECL)
+    /* This happens for A::B<int> when B is a namespace. */
     return name;
+  else if (TREE_CODE (name) == TEMPLATE_DECL)
+    {
+      /* This happens for A::B where B is a template, and there are no
+	 template arguments.  */
+      cp_error ("invalid use of `%D'", name);
+      return error_mark_node;
+    }
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 373);
   
@@ -5321,15 +5404,27 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
   else
     flags = lookup_flags (prefer_type, namespaces_only);
 
-  /* First, look in a non-global scope, carefully avoiding any
-     class-scope bindings if required.  */
+  /* First, look in non-namespace scopes.  */
   val = IDENTIFIER_BINDING (name); 
-  while (val && nonclass && !LOCAL_BINDING_P (val))
-    val = TREE_CHAIN (val);
-
-  /* Get the DECL actually bound.  */
-  if (val)
-    val = BINDING_VALUE (val);
+  for (val = IDENTIFIER_BINDING (name); val; val = TREE_CHAIN (val))
+    {
+      if (!LOCAL_BINDING_P (val) && nonclass)
+	/* We're not looking for class-scoped bindings, so keep going.  */
+	continue;
+      
+      /* If this is the kind of thing we're looking for, we're done.  */
+      if (qualify_lookup (BINDING_VALUE (val), flags))
+	{
+	  val = BINDING_VALUE (val);
+	  break;
+	}
+      else if ((flags & LOOKUP_PREFER_TYPES) 
+	       && qualify_lookup (BINDING_TYPE (val), flags))
+	{
+	  val = BINDING_TYPE (val);
+	  break;
+	}
+    }
 
   /* If VAL is a type from a dependent base, we're not really supposed
      to be able to see it; the fact that we can is the "implicit
@@ -5341,10 +5436,6 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       && !currently_open_class (DECL_CONTEXT (val))
       && uses_template_parms (current_class_type))
     val = lookup_field (current_class_type, name, 0, 1);
-
-  /* Make sure that this binding is the sort of thing we're looking
-     for.  */
-  val = qualify_lookup (val, flags);
 
   /* We don't put names from baseclasses onto the IDENTIFIER_BINDING
      list when we're defining a type.  It would probably be simpler to
@@ -5361,8 +5452,8 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
     }
   
   /* If we found a type from a dependent base class (using the
-     implicit typename extension), turn it into the TYPE_DECL for a
-     TYPENAME_TYPE here.  */
+     implicit typename extension) make sure that there's not some
+     global name which should be chosen instead.  */
   if (val && TREE_CODE (val) == TYPE_DECL
       && IMPLICIT_TYPENAME_P (TREE_TYPE (val)))
     {
@@ -8575,7 +8666,8 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
   return decl;
 }
 
-/* Create a canonical pointer to member function type.  */
+/* Create and return a canonical pointer to member function type, for
+   TYPE, which is a POINTER_TYPE to a METHOD_TYPE.  */
 
 tree
 build_ptrmemfunc_type (type)
@@ -9790,7 +9882,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		/* If this involves a template parameter, it'll be
 		   constant, but we don't know what the value is yet.  */
-		if (processing_template_decl)
+		if (uses_template_parms (size))
 		  {
 		    /* Resolve a qualified reference to an enumerator or
 		       static const data member of ours.  */
@@ -10141,9 +10233,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		type = build_reference_type (type);
 	    }
 	  else if (TREE_CODE (type) == METHOD_TYPE)
-	    {
-	      type = build_ptrmemfunc_type (build_pointer_type (type));
-	    }
+	    type = build_ptrmemfunc_type (build_pointer_type (type));
 	  else
 	    type = build_pointer_type (type);
 
@@ -13976,7 +14066,7 @@ finish_method (decl)
   for (link = current_binding_level->names; link; link = TREE_CHAIN (link))
     {
       if (DECL_NAME (link) != NULL_TREE)
-	pop_binding (DECL_NAME (link));
+	pop_binding (DECL_NAME (link), link);
       my_friendly_assert (TREE_CODE (link) != FUNCTION_DECL, 163);
       DECL_CONTEXT (link) = NULL_TREE;
     }

@@ -2710,9 +2710,6 @@ convert_nontype_argument (type, expr)
 
     case RECORD_TYPE:
       {
-	tree fns;
-	tree fn;
-
 	if (!TYPE_PTRMEMFUNC_P (type))
 	  /* This handles templates like
 	       template<class T, T t> void f();
@@ -2743,16 +2740,11 @@ convert_nontype_argument (type, expr)
 	if (TREE_CODE (expr) != ADDR_EXPR)
 	  return error_mark_node;
 
-	fns = TREE_OPERAND (expr, 0);
+	expr = instantiate_type (type, expr, 0);
 	
-	fn = instantiate_type (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)),
-			       fns, 0);
-	
-	if (fn == error_mark_node)
+	if (expr == error_mark_node)
 	  return error_mark_node;
 
-	expr = build_unary_op (ADDR_EXPR, fn, 0);
-	
 	my_friendly_assert (same_type_p (type, TREE_TYPE (expr)),
 			    0);
 	return expr;
@@ -6972,8 +6964,7 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
 	 deduction.  */
       if (TREE_CODE (*arg) == ARRAY_TYPE)
 	*arg = build_pointer_type (TREE_TYPE (*arg));
-      else if (TREE_CODE (*arg) == FUNCTION_TYPE
-	  || TREE_CODE (*arg) == METHOD_TYPE)
+      else if (TREE_CODE (*arg) == FUNCTION_TYPE)
 	*arg = build_pointer_type (*arg);
       else
 	*arg = TYPE_MAIN_VARIANT (*arg);
@@ -7163,6 +7154,11 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
   if (TREE_CODE (arg) == ADDR_EXPR)
     arg = TREE_OPERAND (arg, 0);
 
+  if (TREE_CODE (arg) == COMPONENT_REF)
+    /* Handle `&x' where `x' is some static or non-static member
+       function name.  */
+    arg = TREE_OPERAND (arg, 1);
+
   /* Strip baselink information.  */
   while (TREE_CODE (arg) == TREE_LIST)
     arg = TREE_VALUE (arg);
@@ -7188,6 +7184,8 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
 	  if (subargs)
 	    {
 	      elem = tsubst (TREE_TYPE (fn), subargs, NULL_TREE);
+	      if (TREE_CODE (elem) == METHOD_TYPE)
+		elem = build_ptrmemfunc_type (build_pointer_type (elem));
 	      good += try_one_overload (tparms, targs, tempargs, parm, elem,
 					strict, sub_strict, explicit_mask);
 	    }
@@ -7196,9 +7194,14 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
   else if (TREE_CODE (arg) == OVERLOAD)
     {
       for (; arg; arg = OVL_NEXT (arg))
-	good += try_one_overload (tparms, targs, tempargs, parm,
-				  TREE_TYPE (OVL_CURRENT (arg)),
-				  strict, sub_strict, explicit_mask);
+	{
+	  tree type = TREE_TYPE (OVL_CURRENT (arg));
+	  if (TREE_CODE (type) == METHOD_TYPE)
+	    type = build_ptrmemfunc_type (build_pointer_type (type));
+	  good += try_one_overload (tparms, targs, tempargs, parm,
+				    type,
+				    strict, sub_strict, explicit_mask);
+	}
     }
   else
     my_friendly_abort (981006);

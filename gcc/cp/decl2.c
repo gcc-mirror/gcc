@@ -3547,7 +3547,7 @@ reparse_absdcl_as_expr (type, decl)
     return build_functional_cast (type, NULL_TREE);
 
   /* recurse */
-  decl = reparse_decl_as_expr (type, TREE_OPERAND (decl, 0));
+  decl = reparse_absdcl_as_expr (type, TREE_OPERAND (decl, 0));
 
   decl = build_x_function_call (decl, NULL_TREE, current_class_ref);
 
@@ -3770,11 +3770,28 @@ build_expr_from_tree (t)
 	     TREE_OPERAND (ref, 1),
 	     build_expr_from_tree (TREE_OPERAND (t, 2)));
 	}
-      return build_method_call
-	(build_expr_from_tree (TREE_OPERAND (t, 1)),
-	 TREE_OPERAND (t, 0),
-	 build_expr_from_tree (TREE_OPERAND (t, 2)),
-	 NULL_TREE, LOOKUP_NORMAL);
+      else 
+	{
+	  tree fn = TREE_OPERAND (t, 0);
+	  
+	  /* We can get a TEMPLATE_ID_EXPR here on code like:
+
+	       x->f<2>();
+	      
+	     so we must resolve that.  However, we can also get things
+	     like a BIT_NOT_EXPR here, when referring to a destructor,
+	     and things like that are not correctly resolved by
+	     build_expr_from_tree.  So, just use build_expr_from_tree
+	     when we really need it.  */
+	  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
+	    fn = build_expr_from_tree (fn);
+
+	  return build_method_call
+	    (build_expr_from_tree (TREE_OPERAND (t, 1)),
+	     fn,
+	     build_expr_from_tree (TREE_OPERAND (t, 2)),
+	     NULL_TREE, LOOKUP_NORMAL);
+	}
 
     case CALL_EXPR:
       if (TREE_CODE (TREE_OPERAND (t, 0)) == SCOPE_REF)
