@@ -114,6 +114,9 @@ int avr_mega_p = 0;
 /* Enhanced core: use "movw", "mul", ...  */
 int avr_enhanced_p = 0;
 
+/* Assembler only.  */
+static int avr_asm_only_p = 0;
+
 enum avr_arch {
   AVR1 = 1,
   AVR2,
@@ -227,7 +230,7 @@ avr_override_options ()
     {
     case AVR1:
     default:
-      error ("MCU `%s' not supported", avr_mcu_name);
+      avr_asm_only_p = 1;
       /* ... fall through ... */
     case AVR2: avr_enhanced_p = 0; avr_mega_p = 0; break;
     case AVR3: avr_enhanced_p = 0; avr_mega_p = 1; break;
@@ -4792,6 +4795,9 @@ void
 asm_file_start (file)
      FILE *file;
 {
+  if (avr_asm_only_p)
+    error ("MCU `%s' supported for assembler only", avr_mcu_name);
+
   output_file_directive (file, main_input_filename);
   fprintf (file, "\t.arch %s\n", avr_mcu_name);
   fputs ("__SREG__ = 0x3f\n"
