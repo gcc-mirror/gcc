@@ -231,7 +231,7 @@ proc compat-execute { src1 use_alt } {
 	set files [glob -nocomplain *.o]
 	if { $files != "" } {
 	    foreach objfile $files {
-		if { [info exists gluefile] && $objfile != $gluefile } {
+		if { ![info exists gluefile] || $objfile != $gluefile } {
 		    eval "remote_file build delete $objfile"
 		}
 	    }
