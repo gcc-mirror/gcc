@@ -371,7 +371,7 @@ write_rtx_next (void)
       oprintf (f, "  0,\n");
     else
       oprintf (f,
-	       "  offsetof (struct rtx_def, fld) + %d * sizeof (rtunion),\n",
+	       "  RTX_HDR_SIZE + %d * sizeof (rtunion),\n",
 	       rtx_next_new[i]);
   oprintf (f, "};\n");
 }
@@ -395,10 +395,10 @@ adjust_field_rtx_def (type_p t, options_p opt ATTRIBUTE_UNUSED)
 #undef DEF_RTL_EXPR
   };
 
-  if (t->kind != TYPE_ARRAY)
+  if (t->kind != TYPE_UNION)
     {
       error_at_line (&lexer_line,
-		     "special `rtx_def' must be applied to an array");
+		     "special `rtx_def' must be applied to a union");
       return &string_type;
     }
 
@@ -578,7 +578,7 @@ adjust_field_rtx_def (type_p t, options_p opt ATTRIBUTE_UNUSED)
 	  subfields = xmalloc (sizeof (*subfields));
 	  subfields->next = old_subf;
 	  subfields->type = t;
-	  subfields->name = xasprintf ("[%lu].%s", (unsigned long)aindex,
+	  subfields->name = xasprintf (".fld[%lu].%s", (unsigned long)aindex,
 				       subname);
 	  subfields->line.file = __FILE__;
 	  subfields->line.line = __LINE__;

@@ -79,7 +79,7 @@ Print the rtx-code and machine mode of the rtx that is $.
 end
 
 define pi
-print $.fld[0].rtx@7
+print $.u.fld[0].rtx@7
 end
 
 document pi

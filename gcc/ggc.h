@@ -199,9 +199,7 @@ extern void *ggc_realloc (void *, size_t);
 /* Like ggc_alloc_cleared, but performs a multiplication.  */
 extern void *ggc_calloc (size_t, size_t);
 
-#define ggc_alloc_rtx(NSLOTS)						  \
-  ((rtx) ggc_alloc (sizeof (struct rtx_def)				  \
-		    + ((NSLOTS) - 1) * sizeof (rtunion)))
+#define ggc_alloc_rtx(CODE) ((rtx) ggc_alloc (RTX_SIZE (CODE)))
 
 #define ggc_alloc_rtvec(NELT)						  \
   ((rtvec) ggc_alloc (sizeof (struct rtvec_def)				  \

@@ -1,3 +1,34 @@
+2003-10-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* rtl.h (rtl_size): Declare.
+	(rtunion): Remove rtwint.
+	(rtx_def): Replace 'fld' with a union of an rtunion or a HOST_WIDE_INT.
+	(RTX_HDR_SIZE, RTX_SIZE): New macros.
+	(RTL_CHECK1): Adjust for new rtx_def layout.
+	(RTL_CHECK2, RTL_CHECKC1, RTL_CHECKC2): Likewise.
+	(XWINT, XCWINT): Likewise.  Access the rtx structure directly.
+	(X0WINT): Remove.
+	(X0ANY): New macro.
+	* rtl.def: Adjust comments for new rtx_def layout.
+	* ggc.h (ggc_alloc_rtx): Take the rtx code as argument, not the
+	number of slots.
+	* rtl.c (rtx_size): New array.
+	(rtx_alloc): Adjust call to ggc_alloc_rtx.  Use RTX_HDR_SIZE.
+	(copy_rtx): Use RTX_HDR_SIZE.  Adjust for new rtx_def layout.
+	(shallow_copy_rtx): Adjust call to ggc_alloc_rtx.  Use RTX_SIZE.
+	* integrate.c (copy_rtx_and_substitute): Use X0ANY to copy '0' fields.
+	* emit-rtl.c (copy_most_rtx): Likewise.
+	(copy_rtx_if_shared): Use RTX_SIZE.
+	(copy_insn_1): Use RTX_HDR_SIZE.  Adjust for new rtx_def layout.
+	* gengenrtl.c (gendef): Adjust ggc_alloc_rtx call.  Use RTX_HDR_SIZE.
+	* gengtype.c (write_rtx_next): Use RTX_HDR_SIZE.
+	(adjust_field_rtx_def): Expect "rtx_def" to be a union rather than
+	an array.  Adjust output for new rtx_def layout.
+	* ggc-page.c (RTL_SIZE): Use RTX_HDR_SIZE.
+	* reload1.c (eliminate_regs): Use RTX_SIZE.
+	* rtlanal.c (loc_mentioned_in_p): Adjust for new rtx_def layout.
+	* gdbinit.in (pi): Likewise.
+
 2003-10-18  Jan Hubicka  <jh@suse.cz>
 
 	* integrate.c (copy_decl_for_inlining): Fix copying of copies.

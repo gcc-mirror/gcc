@@ -2341,8 +2341,7 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
       switch (*format_ptr++)
 	{
 	case '0':
-	  /* Copy this through the wide int field; that's safest.  */
-	  X0WINT (copy, i) = X0WINT (orig, i);
+	  X0ANY (copy, i) = X0ANY (orig, i);
 	  break;
 
 	case 'e':
