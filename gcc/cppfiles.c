@@ -268,6 +268,20 @@ stack_include_file (pfile, inc)
 {
   size_t len = 0;
   cpp_buffer *fp;
+  int sysp, deps_sysp;
+
+  /* We'll try removing deps_sysp after the release of 3.0.  */
+  deps_sysp = pfile->system_include_depth != 0;
+  sysp = ((pfile->buffer && pfile->buffer->sysp)
+	  || (inc->foundhere && inc->foundhere->sysp));
+
+  /* For -M, add the file to the dependencies on its first inclusion.  */
+  if (CPP_OPTION (pfile, print_deps) > deps_sysp && !inc->include_count)
+    deps_add_dep (pfile->deps, inc->name);
+
+  /* We don't want multiple include guard advice for the main file.  */
+  if (pfile->buffer)
+    inc->include_count++;
 
   /* Not in cache?  */
   if (! inc->buffer)
@@ -280,8 +294,7 @@ stack_include_file (pfile, inc)
   fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, inc->name);
   fp->inc = inc;
   fp->inc->refcnt++;
-  if (inc->foundhere)
-    fp->sysp = inc->foundhere->sysp;
+  fp->sysp = sysp;
 
   /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
      see do_include */
@@ -566,7 +579,6 @@ report_missing_guard (n, b)
   return 0;
 }
 
-#define PRINT_THIS_DEP(p, b) (CPP_PRINT_DEPS(p) > (b||p->system_include_depth))
 void
 _cpp_execute_include (pfile, header, no_reinclude, include_next)
      cpp_reader *pfile;
@@ -579,6 +591,7 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
   unsigned int angle_brackets = header->type == CPP_HEADER_NAME;
   struct include_file *inc;
   char *fname;
+  int print_dep;
 
   /* Help protect #include or similar from recursion.  */
   if (pfile->buffer_stack_depth >= CPP_STACK_MAX)
@@ -636,19 +649,12 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
     }
 
   inc = find_include_file (pfile, fname, search_start);
-
   if (inc)
     {
-      /* For -M, add the file to the dependencies on its first inclusion. */
-      if (!inc->include_count && PRINT_THIS_DEP (pfile, angle_brackets))
-	deps_add_dep (pfile->deps, inc->name);
-      inc->include_count++;
-
-      /* Actually process the file.  */
-      stack_include_file (pfile, inc);
-
       if (angle_brackets)
 	pfile->system_include_depth++;
+
+      stack_include_file (pfile, inc);
 
       if (! DO_NOT_REREAD (inc))
 	{
@@ -668,8 +674,10 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
       return;
     }
       
-  if (CPP_OPTION (pfile, print_deps_missing_files)
-      && PRINT_THIS_DEP (pfile, angle_brackets))
+  /* We will try making the RHS pfile->buffer->sysp after 3.0.  */
+  print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets
+				       || pfile->system_include_depth);
+  if (CPP_OPTION (pfile, print_deps_missing_files) && print_dep)
     {
       if (!angle_brackets || IS_ABSOLUTE_PATHNAME (fname))
 	deps_add_dep (pfile->deps, fname);
@@ -704,8 +712,7 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
      can't produce correct output, because there may be
      dependencies we need inside the missing file, and we don't
      know what directory this missing file exists in. */
-  else if (CPP_PRINT_DEPS (pfile)
-	   && ! PRINT_THIS_DEP (pfile, angle_brackets))
+  else if (CPP_PRINT_DEPS (pfile) && ! print_dep)
     cpp_warning (pfile, "No include path in which to find %s", fname);
   else
     cpp_error_from_errno (pfile, fname);
@@ -766,9 +773,6 @@ _cpp_read_file (pfile, fname)
       cpp_error_from_errno (pfile, fname);
       return 0;
     }
-
-  if (CPP_OPTION (pfile, print_deps))
-    deps_add_dep (pfile->deps, f->name);
 
   stack_include_file (pfile, f);
   return 1;
