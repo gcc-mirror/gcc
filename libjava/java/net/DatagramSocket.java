@@ -466,7 +466,7 @@ public class DatagramSocket
       }
     catch (SocketException e)
       {
-        // This means simply not connected.
+        // This means simply not connected or connect not implemented.
       }
   }
 

@@ -199,7 +199,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
   }
 
   /**
-   * Tells whether or not this buffer is backed by an accessible byte array.
+   * Tells whether or not this buffer is backed by an accessible array.
    */
   public final boolean hasArray ()
   {

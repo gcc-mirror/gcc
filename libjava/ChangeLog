@@ -1,5 +1,12 @@
 2003-03-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(connect): Fixed comment.
+	* java/nio/ByteBuffer.java
+	(hasArray): Fixed comment.
+
+2003-03-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/beans/Beans.java:
 	Explicitely import classes not packages.
 	* java/beans/FeatureDescriptor.java
