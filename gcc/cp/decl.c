@@ -9607,11 +9607,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      type = TREE_TYPE (type);
 	    }
 
-	  if (decl_context == PARM && TREE_CODE (type) == ARRAY_TYPE
-	      && TYPE_DOMAIN (type) == NULL_TREE)
-	    cp_error ("parameter type includes pointer to array of unknown bound `%T'",
-		      type);
-
 	  /* Merge any constancy or volatility into the target type
 	     for the pointer.  */
 
@@ -10825,6 +10820,17 @@ grokparms (first_parm, funcdef_flag)
                       signature_error (decl, type);
                       any_error = 1;  /* Seems like a good idea. */
                     }
+		  else if (POINTER_TYPE_P (type))
+		    {
+		      tree t = type;
+		      while (POINTER_TYPE_P (t)
+			     || (TREE_CODE (t) == ARRAY_TYPE
+				 && TYPE_DOMAIN (t) != NULL_TREE))
+			t = TREE_TYPE (t);
+		      if (TREE_CODE (t) == ARRAY_TYPE)
+			cp_error ("parameter type `%T' includes pointer to array of unknown bound",
+				  type);
+		    }
 		}
 
 	      if (TREE_CODE (decl) == VOID_TYPE)
