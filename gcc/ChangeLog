@@ -1,3 +1,14 @@
+2003-07-02  Jeff Law  <law@redhat.com>
+
+	* expr.c (do_store_flag): Remove special case folding for
+	single bit tests.  Instead call back into the commonized folder
+	routine.
+	* fold-const.c (fold_single_bit_test): New function, mostly
+	extracted from do_store_flag, with an additional case extracted
+	from fold.
+	(fold): Call fold_single_bit_test appropriately.
+	* tree.h (fold_single_bit_test): Prototype.
+
 2003-07-02  Zack Weinberg  <zack@codesourcery.com>
 
 	* system.h: Include filenames.h.

@@ -4797,6 +4797,111 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
   return NULL_TREE;
 }
 
+/* If CODE with arguments ARG0 and ARG1 represents a single bit
+   equality/inequality test, then return a simplified form of
+   the test using shifts and logical operations.  Otherwise return
+   NULL.  TYPE is the desired result type.  */
+ 
+tree
+fold_single_bit_test (code, arg0, arg1, result_type)
+    enum tree_code code;
+    tree arg0;
+    tree arg1;
+    tree result_type;
+{
+  /* If this is a TRUTH_NOT_EXPR, it may have a single bit test inside
+     operand 0.  */
+  if (code == TRUTH_NOT_EXPR)
+    {
+      code = TREE_CODE (arg0);
+      if (code != NE_EXPR && code != EQ_EXPR)
+	return NULL_TREE;
+
+      /* Extract the arguments of the EQ/NE.  */
+      arg1 = TREE_OPERAND (arg0, 1);
+      arg0 = TREE_OPERAND (arg0, 0);
+
+      /* This requires us to invert the code.  */ 
+      code = (code == EQ_EXPR ? NE_EXPR : EQ_EXPR);
+    }
+
+  /* If this is testing a single bit, we can optimize the test.  */
+  if ((code == NE_EXPR || code == EQ_EXPR)
+      && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
+      && integer_pow2p (TREE_OPERAND (arg0, 1)))
+    {
+      tree inner = TREE_OPERAND (arg0, 0);
+      tree type = TREE_TYPE (arg0);
+      int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
+      enum machine_mode operand_mode = TYPE_MODE (type);
+      int ops_unsigned;
+      tree signed_type, unsigned_type;
+      tree arg00;
+  
+      /* If we have (A & C) != 0 where C is the sign bit of A, convert
+	 this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
+      arg00 = sign_bit_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg0, 1));
+      if (arg00 != NULL_TREE)
+	{
+	  tree stype = (*lang_hooks.types.signed_type) (TREE_TYPE (arg00));
+	  return fold (build (code == EQ_EXPR ? GE_EXPR : LT_EXPR, type,
+			      convert (stype, arg00),
+			      convert (stype, integer_zero_node)));
+	}
+      
+      /* Otherwise we have (A & C) != 0 where C is a single bit, 
+	 convert that into ((A >> C2) & 1).  Where C2 = log2(C).
+	 Similarly for (A & C) == 0.  */
+
+      /* If INNER is a right shift of a constant and it plus BITNUM does
+	 not overflow, adjust BITNUM and INNER.  */
+      if (TREE_CODE (inner) == RSHIFT_EXPR
+	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
+	  && TREE_INT_CST_HIGH (TREE_OPERAND (inner, 1)) == 0
+	  && bitnum < TYPE_PRECISION (type)
+	  && 0 > compare_tree_int (TREE_OPERAND (inner, 1),
+				   bitnum - TYPE_PRECISION (type)))
+	{
+	  bitnum += TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
+	  inner = TREE_OPERAND (inner, 0);
+	}
+
+      /* If we are going to be able to omit the AND below, we must do our
+	 operations as unsigned.  If we must use the AND, we have a choice.
+	 Normally unsigned is faster, but for some machines signed is.  */
+      ops_unsigned = (bitnum == TYPE_PRECISION (type) - 1 ? 1
+#ifdef LOAD_EXTEND_OP
+		      : (LOAD_EXTEND_OP (operand_mode) == SIGN_EXTEND ? 0 : 1)
+#else
+		      : 1
+#endif
+		      );
+
+      signed_type = (*lang_hooks.types.type_for_mode) (operand_mode, 0);
+      unsigned_type = (*lang_hooks.types.type_for_mode) (operand_mode, 1);
+
+      if (bitnum != 0)
+	inner = build (RSHIFT_EXPR, ops_unsigned ? unsigned_type : signed_type,
+		       inner, size_int (bitnum));
+
+      if (code == EQ_EXPR)
+	inner = build (BIT_XOR_EXPR, ops_unsigned ? unsigned_type : signed_type,
+		       inner, integer_one_node);
+
+      /* Put the AND last so it can combine with more things.  */
+      if (bitnum != TYPE_PRECISION (type) - 1)
+	inner = build (BIT_AND_EXPR, ops_unsigned ? unsigned_type : signed_type,
+		       inner, integer_one_node);
+
+      /* Make sure to return the proper type.  */
+      if (TREE_TYPE (inner) != result_type)
+	inner = convert (result_type, inner);
+
+      return inner;
+    }
+  return NULL_TREE;
+}
+ 
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -6320,7 +6425,12 @@ fold (tree expr)
       tem = invert_truthvalue (arg0);
       /* Avoid infinite recursion.  */
       if (TREE_CODE (tem) == TRUTH_NOT_EXPR)
-	return t;
+	{
+	  tem = fold_single_bit_test (code, arg0, arg1, type);
+	  if (tem)
+	    return tem;
+	  return t;
+	}
       return convert (type, tem);
 
     case TRUTH_ANDIF_EXPR:
@@ -7012,22 +7122,11 @@ fold (tree expr)
 	return fold (build (code == EQ_EXPR ? NE_EXPR : EQ_EXPR, type,
 			    arg0, integer_zero_node));
 
-      /* If we have (A & C) != 0 where C is the sign bit of A, convert
-	 this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
-      if ((code == EQ_EXPR || code == NE_EXPR)
-	  && TREE_CODE (arg0) == BIT_AND_EXPR
-	  && integer_zerop (arg1))
-	{
-	  tree arg00 = sign_bit_p (TREE_OPERAND (arg0, 0),
-				   TREE_OPERAND (arg0, 1));
-	  if (arg00 != NULL_TREE)
-	  {
-	    tree stype = (*lang_hooks.types.signed_type) (TREE_TYPE (arg00));
-	    return fold (build (code == EQ_EXPR ? GE_EXPR : LT_EXPR, type,
-			        convert (stype, arg00),
-				convert (stype, integer_zero_node)));
-	  }
-	}
+      /* If we have (A & C) != 0 or (A & C) == 0 and C is a power of
+	 2, then fold the expression into shifts and logical operations.  */
+      tem = fold_single_bit_test (code, arg0, arg1, type);
+      if (tem)
+	return tem;
 
       /* If X is unsigned, convert X < (1 << Y) into X >> Y == 0
 	 and similarly for >= into !=.  */

@@ -9990,65 +9990,17 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
      do this by shifting the bit being tested to the low-order bit and
      masking the result with the constant 1.  If the condition was EQ,
      we xor it with 1.  This does not require an scc insn and is faster
-     than an scc insn even if we have it.  */
+     than an scc insn even if we have it.
+
+     The code to make this transformation was moved into fold_single_bit_test,
+     so we just call into the folder and expand its result.  */
 
   if ((code == NE || code == EQ)
       && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
       && integer_pow2p (TREE_OPERAND (arg0, 1)))
-    {
-      tree inner = TREE_OPERAND (arg0, 0);
-      int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
-      int ops_unsignedp;
-
-      /* If INNER is a right shift of a constant and it plus BITNUM does
-	 not overflow, adjust BITNUM and INNER.  */
-
-      if (TREE_CODE (inner) == RSHIFT_EXPR
-	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
-	  && TREE_INT_CST_HIGH (TREE_OPERAND (inner, 1)) == 0
-	  && bitnum < TYPE_PRECISION (type)
-	  && 0 > compare_tree_int (TREE_OPERAND (inner, 1),
-				   bitnum - TYPE_PRECISION (type)))
-	{
-	  bitnum += TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
-	  inner = TREE_OPERAND (inner, 0);
-	}
-
-      /* If we are going to be able to omit the AND below, we must do our
-	 operations as unsigned.  If we must use the AND, we have a choice.
-	 Normally unsigned is faster, but for some machines signed is.  */
-      ops_unsignedp = (bitnum == TYPE_PRECISION (type) - 1 ? 1
-#ifdef LOAD_EXTEND_OP
-		       : (LOAD_EXTEND_OP (operand_mode) == SIGN_EXTEND ? 0 : 1)
-#else
-		       : 1
-#endif
-		       );
-
-      if (! get_subtarget (subtarget)
-	  || GET_MODE (subtarget) != operand_mode
-	  || ! safe_from_p (subtarget, inner, 1))
-	subtarget = 0;
-
-      op0 = expand_expr (inner, subtarget, VOIDmode, 0);
-
-      if (bitnum != 0)
-	op0 = expand_shift (RSHIFT_EXPR, operand_mode, op0,
-			    size_int (bitnum), subtarget, ops_unsignedp);
-
-      if (GET_MODE (op0) != mode)
-	op0 = convert_to_mode (mode, op0, ops_unsignedp);
-
-      if ((code == EQ && ! invert) || (code == NE && invert))
-	op0 = expand_binop (mode, xor_optab, op0, const1_rtx, subtarget,
-			    ops_unsignedp, OPTAB_LIB_WIDEN);
-
-      /* Put the AND last so it can combine with more things.  */
-      if (bitnum != TYPE_PRECISION (type) - 1)
-	op0 = expand_and (mode, op0, const1_rtx, subtarget);
-
-      return op0;
-    }
+    return expand_expr (fold_single_bit_test (code == NE ? NE_EXPR : EQ_EXPR,
+					      arg0, arg1, type), 
+			target, VOIDmode, EXPAND_NORMAL);
 
   /* Now see if we are likely to be able to do this.  Return if not.  */
   if (! can_compare_p (code, operand_mode, ccp_store_flag))
