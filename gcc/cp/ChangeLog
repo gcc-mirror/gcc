@@ -1,3 +1,9 @@
+Wed Oct  7 12:32:44 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (hash.h): Add -L KR-C -F ', 0, 0' flags to gperf.
+	(gxx.gperf): Update comments describing invocation flags.
+	(hash.h): Regenerate using gperf 2.7.1 (19981006 egcs).
+
 1998-10-07  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (finish_struct_1): Add commentary on prevous change.

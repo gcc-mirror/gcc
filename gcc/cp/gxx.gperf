@@ -1,5 +1,5 @@
 %{
-/* Command-line: gperf -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
+/* Command-line: gperf -L KR-C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
 %}
 struct resword { char *name; short token; enum rid rid;};
 %%
