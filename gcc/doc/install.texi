@@ -1087,6 +1087,11 @@ want to disable optimization, for performance analysis you want to
 enable optimization. When coverage is enabled, the default level is
 without optimization.
 
+@item --enable-gather-detailed-mem-stats
+When this option is specfied more detailed information on memory
+allocation is gathered.  This information is printed when using
+@option{-fmem-report}. 
+
 @item --enable-nls
 @itemx --disable-nls
 The @option{--enable-nls} option enables Native Language Support (NLS),

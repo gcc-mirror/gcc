@@ -1457,6 +1457,7 @@ extern void set_reg_attrs_for_parm (rtx, rtx);
 extern rtx rtx_alloc (RTX_CODE);
 extern rtvec rtvec_alloc (int);
 extern rtx copy_rtx (rtx);
+extern void dump_rtx_statistics (void);
 
 /* In emit-rtl.c */
 extern rtx copy_rtx_if_shared (rtx);
