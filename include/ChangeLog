@@ -1,3 +1,10 @@
+Sun Nov  8 17:42:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansidecl.h: Wrap problematic macros with !IN_GCC.
+
+	* demangle.h: Never define PARAMS().
+	* splay-tree.h: Likewise.
+
 Sat Nov  7 16:04:03 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* demangle.h: Don't include gansidecl.h.
