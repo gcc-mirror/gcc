@@ -477,6 +477,9 @@
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETRUSAGE
 
+/* Define to `long' if <sys/resource.h> doesn't define. */
+#undef rlim_t
+
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_TIMES
 
