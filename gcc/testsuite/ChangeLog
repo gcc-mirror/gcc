@@ -1,3 +1,7 @@
+2000-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/cast4.C: New test.
+
 Wed Jan  5 00:26:20 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000105-2.c: New test.
