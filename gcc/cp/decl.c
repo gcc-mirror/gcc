@@ -7968,6 +7968,14 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	   orig_declarator);
       else
 	{
+	  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+	    {
+	      /* Something like `template <class T> friend void f<T>()'.  */
+	      cp_error ("template-id `%D' in declaration of primary template", 
+			orig_declarator);
+	      return error_mark_node;
+	    }
+
 	  /* A friend declaration of the form friend void f<>().  Record
 	     the information in the TEMPLATE_ID_EXPR.  */
 	  SET_DECL_IMPLICIT_INSTANTIATION (decl);

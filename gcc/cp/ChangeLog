@@ -1,5 +1,8 @@
 1998-08-30  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (grokfndecl): Issue error on declaration of friend
+	templates with explicit template arguments.
+
 	* pt.c (convert_template_argument): New function, split out
 	from...
 	(coerce_template_parms): Here.
