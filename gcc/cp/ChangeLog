@@ -1,3 +1,7 @@
+Thu Feb 12 12:46:51 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* decl.c (shadow_tag): Give error for typedef-ing built-in types.
+
 Wed Feb 11 16:42:04 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* tree.c (is_overloaded_fn): Use really_overloaded_fn.
