@@ -146,6 +146,12 @@ extern int target_flags;
 #define MASK_SIO 8192
 #define TARGET_SIO (target_flags & MASK_SIO)
 
+/* Assume GNU linker by default.  */
+#define MASK_GNU_LD 16384
+#ifndef TARGET_GNU_LD
+#define TARGET_GNU_LD (target_flags & MASK_GNU_LD)
+#endif
+
 #ifndef TARGET_PA_10
 #define TARGET_PA_10 (target_flags & (MASK_PA_11 | MASK_PA_20) == 0)
 #endif

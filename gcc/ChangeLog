@@ -1,3 +1,12 @@
+2002-10-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* config.gcc (hppa*64*-*-hpux11*): Check gnu_ld.
+	* config/pa/pa.h (MASK_GNU_LD): New.
+	(TARGET_GNU_LD): New.
+	* config/pa/pa64-hpux.h (LINK_SPEC): Set based 
+	on gnu-ld and MASK_GNU_LD.
+	(SUBTARGET_SWITCHES): New gnu-ld & hp-ld flags.
+
 Thu Oct  3 23:35:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (athlon_cost): Fix the move costs.
