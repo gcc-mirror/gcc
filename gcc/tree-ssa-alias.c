@@ -2729,8 +2729,21 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_t) **fieldstack,
 	continue;
       if (var_can_have_subvars (field))
 	{
+	  size_t before = VEC_length (fieldoff_t, *fieldstack);
 	  push_fields_onto_fieldstack (TREE_TYPE (field), fieldstack, 
 				       offset + bitpos_of_field (field));
+      /* Empty structures may have actual size, like in C++. So see if we
+	 actually end up pushing a field, and if not, if the size is non-zero,
+	 push the field onto the stack */
+	  if (before == VEC_length (fieldoff_t, *fieldstack)
+	      && DECL_SIZE (field)
+	      && !integer_zerop (DECL_SIZE (field)))
+	    {
+	      pair = xmalloc (sizeof (struct fieldoff));
+	      pair->field = field;
+	      pair->offset = offset + bitpos_of_field (field);
+	      VEC_safe_push (fieldoff_t, *fieldstack, pair);
+	    }
 	}
       else
 	{
