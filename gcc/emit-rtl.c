@@ -2677,10 +2677,10 @@ gen_sequence ()
     {
       /* Ensure that this rtl goes in saveable_obstack, since we may be
 	 caching it.  */
-      int in_current_obstack = rtl_in_saveable_obstack ();
+      push_obstacks_nochange ();
+      rtl_in_saveable_obstack ();
       result = gen_rtx (SEQUENCE, VOIDmode, rtvec_alloc (len));
-      if (in_current_obstack)
-	rtl_in_current_obstack ();
+      pop_obstacks ();
     }
 
   for (i = 0, tem = first_insn; tem; tem = NEXT_INSN (tem), i++)
