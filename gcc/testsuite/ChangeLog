@@ -1,3 +1,8 @@
+2001-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20011119-1.c: New test.
+	* gcc.c-torture/compile/20011119-2.c: New test.
+
 2001-11-17  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-1.c: Fix typo.
