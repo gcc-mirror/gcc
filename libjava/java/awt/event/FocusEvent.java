@@ -16,7 +16,7 @@ import java.awt.*;
 
 /* Status: Believed complete and correct to JDK 1.2.  */
 
-public class FocusEvent extends AWTEvent
+public class FocusEvent extends ComponentEvent
 {
   public static final int FOCUS_FIRST = 1004;
   public static final int FOCUS_GAINED = 1004;

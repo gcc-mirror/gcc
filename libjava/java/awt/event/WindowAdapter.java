@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -10,12 +10,12 @@ package java.awt.event;
 
 /**
  * @author Per Bothner <bothner@cygnus.com>
- * @date Fenruary, 1999.
+ * @date February, 1999.
  */
 
 /* Status:  Believed complete and correct. */
 
-public class WindowAdapter implements WindowListener
+public abstract class WindowAdapter implements WindowListener
 {
   public void windowActivated (WindowEvent w) { }
   public void windowClosed (WindowEvent w) { }
