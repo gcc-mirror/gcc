@@ -1,3 +1,7 @@
+Tue Aug 11 18:12:53 1998  Dave Love  <d.love@dl.ac.uk>
+
+	* README.g77: Update from Craig.
+
 Tue Aug 11 04:46:01 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (sparc_emit_set_const32): INTVAL is of
