@@ -193,7 +193,7 @@ int tree_code_length[MAX_TREE_CODES] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 
-char *tree_code_name[MAX_TREE_CODES] = {
+const char *tree_code_name[MAX_TREE_CODES] = {
 #include "tree.def"
 };
 #undef DEFTREECODE

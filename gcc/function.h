@@ -186,7 +186,7 @@ struct function
   /* For function.c.  */
 
   /* Name of this function.  */
-  char *name;
+  const char *name;
   /* Points to the FUNCTION_DECL of this function. */
   tree decl;
 
@@ -280,7 +280,7 @@ struct function
 
   /* Language-specific reason why the current function cannot be made
      inline.  */
-  char *cannot_inline;
+  const char *cannot_inline;
 
   /* Nonzero if instrumentation calls for function entry and exit should be
      generated.  */

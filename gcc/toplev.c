@@ -183,7 +183,7 @@ void pedwarn_with_file_and_line PVPROTO((const char *file,
 					 int line, const char *s, ...));
 void sorry PVPROTO((const char *s, ...));
 static void set_target_switch PROTO((const char *));
-static char *decl_name PROTO((tree, int));
+static const char *decl_name PROTO((tree, int));
 static void vmessage PROTO((const char *, const char *, va_list));
 static void v_message_with_file_and_line PROTO((const char *, int, int,
 						const char *, va_list));
@@ -359,7 +359,7 @@ int sorrycount = 0;
      2: and any other information that might be interesting, such as function
         parameter types in C++.  */
 
-char *(*decl_printable_name)		PROTO ((tree, int));
+const char *(*decl_printable_name)	PROTO ((tree, int));
 
 /* Pointer to function to compute rtl for a language-specific tree code.  */
 
@@ -1455,7 +1455,7 @@ fatal_io_error (name)
 
 /* This is the default decl_printable_name function.  */
 
-static char *
+static const char *
 decl_name (decl, verbosity)
      tree decl;
      int verbosity ATTRIBUTE_UNUSED;

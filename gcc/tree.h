@@ -63,7 +63,7 @@ extern int tree_code_length[MAX_TREE_CODES];
 
 /* Names of tree components.  */
 
-extern char *tree_code_name[MAX_TREE_CODES];
+extern const char *tree_code_name[MAX_TREE_CODES];
 
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */
@@ -1928,7 +1928,7 @@ extern int all_types_permanent;
      2: and any other information that might be interesting, such as function
         parameter types in C++.  */
 
-extern char *(*decl_printable_name)		PROTO((tree, int));
+extern const char *(*decl_printable_name)	PROTO((tree, int));
 
 /* Pointer to function to finish handling an incomplete decl at the
    end of compilation.  */
