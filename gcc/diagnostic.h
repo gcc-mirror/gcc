@@ -88,7 +88,7 @@ typedef struct
   /* Nonzero if current PREFIX was emitted at least once.  */
   bool emitted_prefix_p;
 
-  /* Nonzero means one should emit a newline before outputing anything.  */
+  /* Nonzero means one should emit a newline before outputting anything.  */
   bool need_newline_p;
 
   /* Current prefixing rule.  */

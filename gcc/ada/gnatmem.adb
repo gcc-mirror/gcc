@@ -315,7 +315,7 @@ procedure Gnatmem is
          --  At this point, gdb knows about __gnat_malloc and __gnat_free
       end if;
 
-      --  Make sure that outputing long backtraces do not pause
+      --  Make sure that outputting long backtraces do not pause
 
       Put_Line (FD, "set height 0");
       Put_Line (FD, "set width 0");

@@ -9870,7 +9870,7 @@ write_automata (void)
     fatal ("Errors in DFA description");
   ticker_on (&all_time);
   output_time = create_ticker ();
-  fprintf (stderr, "Forming and outputing automata tables...");
+  fprintf (stderr, "Forming and outputting automata tables...");
   fflush (stderr);
   output_dfa_max_issue_rate ();
   output_tables ();
