@@ -582,8 +582,8 @@ DEFTREECODE (FFS_EXPR, "ffs_expr", "1", 1)
    unsigned type, arithmetic shift on a signed type.
    The second operand is the number of bits to
    shift by; it need not be the same type as the first operand and result.  */
-DEFTREECODE (LSHIFT_EXPR, "alshift_expr", "2", 2)
-DEFTREECODE (RSHIFT_EXPR, "arshift_expr", "2", 2)
+DEFTREECODE (LSHIFT_EXPR, "lshift_expr", "2", 2)
+DEFTREECODE (RSHIFT_EXPR, "rshift_expr", "2", 2)
 DEFTREECODE (LROTATE_EXPR, "lrotate_expr", "2", 2)
 DEFTREECODE (RROTATE_EXPR, "rrotate_expr", "2", 2)
 
