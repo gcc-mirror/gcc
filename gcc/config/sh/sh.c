@@ -4440,7 +4440,7 @@ calc_live_regs (count_ptr, live_regs_mask)
 		  && pr_live))
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
-	     && reg != T_REG && reg != GBR_REG && reg != FPSCR_REG)
+	     && reg != T_REG && reg != GBR_REG)
 	  : (/* Only push those regs which are used and need to be saved.  */
 	     regs_ever_live[reg] && ! call_used_regs[reg]))
 	{
@@ -5675,6 +5675,11 @@ sh_handle_interrupt_handler_attribute (node, name, args, flags, no_add_attrs)
     {
       warning ("`%s' attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TARGET_SHCOMPACT)
+    {
+      error ("attribute interrupt_handler is not compatible with -m5-compact");
       *no_add_attrs = true;
     }
 
