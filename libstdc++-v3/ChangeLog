@@ -1,3 +1,16 @@
+2002-06-07  Steve Ellcey  <sje@cup.hp.com>
+
+	* src/locale-inst.cc (__codecvt_abstract_base):
+	Put inside _GLIBCPP_USE_WCHAR_T ifdef.
+	* include/bits/istream.tcc (basic_istream): Ditto.
+	(ws) Ditto.
+	(operator>>) Ditto.
+	* include/bits/ostream.tcc (basic_ostream): Ditto. 
+	(endl): Ditto.
+	(ends): Ditto.
+	(flush): Ditto.
+	(operator<<): Ditto.
+
 2002-06-07  Phil Edwards  <pme@gcc.gnu.org>
 
 	* mkcheck.in:  Link against local testsuite library.
