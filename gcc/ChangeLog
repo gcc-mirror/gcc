@@ -1,3 +1,8 @@
+2004-05-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	2003-11-19  Richard Sandiford  <rsandifo@redhat.com>
+	* config/frv/frv.md (*return_true, *return_false): New patterns.
+
 2004-05-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* rtl.h (PHI_NODE_P): Remove.

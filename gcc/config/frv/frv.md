@@ -5539,6 +5539,30 @@
   [(set_attr "length" "4")
    (set_attr "type" "jump,jumpl")])
 
+(define_insn "*return_true"
+  [(set (pc)
+	(if_then_else (match_operator:CC 0 "signed_relational_operator"
+					 [(match_operand 1 "icc_operand" "t")
+					  (const_int 0)])
+		      (return)
+		      (pc)))]
+  "direct_return_p ()"
+  "b%c0lr %1,%#"
+  [(set_attr "length" "4")
+   (set_attr "type" "jump")])
+
+(define_insn "*return_false"
+  [(set (pc)
+	(if_then_else (match_operator:CC 0 "signed_relational_operator"
+					 [(match_operand 1 "icc_operand" "t")
+					  (const_int 0)])
+		      (pc)
+		      (return)))]
+  "direct_return_p ()"
+  "b%C0lr %1,%#"
+  [(set_attr "length" "4")
+   (set_attr "type" "jump")])
+
 (define_insn "*return_unsigned_true"
   [(set (pc)
 	(if_then_else (match_operator:CC_UNS 0 "unsigned_relational_operator"
