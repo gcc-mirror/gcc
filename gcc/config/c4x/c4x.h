@@ -306,11 +306,14 @@ extern int target_flags;
 #define TARGET_C40		(target_flags & C40_FLAG)
 #define TARGET_C44		(target_flags & C44_FLAG)
 
-/* Define some options to control code generation.  */
+/* Nonzero to use load_immed_addr pattern rather than forcing memory
+   addresses into memory.  */
 #define TARGET_LOAD_ADDRESS	(1 || (! TARGET_C3X && ! TARGET_SMALL))
+
 /* Nonzero to convert direct memory references into HIGH/LO_SUM pairs
    during RTL generation.  */
 #define TARGET_EXPOSE_LDP	0
+
 /* Nonzero to force loading of direct memory references into a register.  */
 #define TARGET_LOAD_DIRECT_MEMS	0
 
@@ -319,8 +322,6 @@ extern int target_flags;
    and less than max-cycles.  */
 
 #define TARGET_RPTS_CYCLES(CYCLES) (TARGET_RPTS || (CYCLES) < c4x_rpts_cycles)
-
-#define	BCT_CHECK_LOOP_ITERATIONS  !(TARGET_LOOP_UNSIGNED)
 
 /* -mcpu=XX    with XX = target DSP version number.  */
 
@@ -1284,6 +1285,7 @@ CUMULATIVE_ARGS;
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN) \
 {									\
   rtx new;								\
+									\
   new = c4x_legitimize_address (X, MODE);				\
   if (new != NULL_RTX)							\
   {									\
@@ -1918,3 +1920,8 @@ enum c4x_builtins
   C4X_BUILTIN_FRIEEE,	/*	frieee	   (only C4x)	*/
   C4X_BUILTIN_RCPF	/*	fast_invf  (only C4x)	*/
 };
+
+
+/* Hack to overcome use of libgcc2.c using auto-host.h to determine
+   HAVE_GAS_HIDDEN.  */
+#undef HAVE_GAS_HIDDEN
