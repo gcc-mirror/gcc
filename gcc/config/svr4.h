@@ -613,17 +613,14 @@ do {									\
     if (!strcmp (NAME, s->name))					\
       break;								\
 									\
-  if (DECL)								\
-    {									\
-      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-	type = SECT_EXEC, mode = "ax";					\
-      else if (TREE_READONLY(DECL))					\
-	type = SECT_RO, mode = "a";					\
-      else								\
-	type = SECT_RW, mode = "aw";					\
-    }									\
+  if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
+    type = SECT_EXEC, mode = "ax";					\
+  else if (DECL && TREE_READONLY (DECL))				\
+    type = SECT_RO, mode = "a";						\
+  else									\
+    type = SECT_RW, mode = "aw";					\
 									\
-  if (s == 0 && DECL)							\
+  if (s == 0)								\
     {									\
       s = (struct section_info *) xmalloc (sizeof (struct section_info));  \
       s->name = xmalloc ((strlen (NAME) + 1) * sizeof (*NAME));		\
