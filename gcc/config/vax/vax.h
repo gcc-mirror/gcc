@@ -66,15 +66,15 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES  \
-  { {"unix", 1},  \
-    {"gnu", -1},  \
-    {"vaxc-alignment", 2}, \
-    {"g", 4}, \
-    {"g-float", 4}, \
-    {"d", -4},	\
-    {"d-float", -4}, \
-    { "", TARGET_DEFAULT}}
+#define TARGET_SWITCHES						\
+  { {"unix", 1, "Generate code for UNIX assembler"},  		\
+    {"gnu", -1, "Generate code for GNU assembler (gas)"},  	\
+    {"vaxc-alignment", 2, "Use VAXC structure conventions"}, 	\
+    {"g", 4, "Generate GFLOAT double precision code"},		\
+    {"g-float", 4, "Generate GFLOAT double precision code"},	\
+    {"d", -4, "Generate DFLOAT double precision code"},		\
+    {"d-float", -4, "Generate DFLOAT double precision code"},	\
+    { "", TARGET_DEFAULT, 0}}
 
 /* Default target_flags if no switches specified.  */
 
