@@ -1779,6 +1779,11 @@ try_merge_delay_insns (insn, thread)
       && ! INSN_ANNULLED_BRANCH_P (XVECEXP (PATTERN (trial), 0, 0)))
     {
       rtx pat = PATTERN (trial);
+      rtx filled_insn = XVECEXP (pat, 0, 0);
+
+      /* Account for resources set/needed by the filled insn.  */
+      mark_set_resources (filled_insn, &set, 0, 1);
+      mark_referenced_resources (filled_insn, &needed, 1);
 
       for (i = 1; i < XVECLEN (pat, 0); i++)
 	{
