@@ -4644,7 +4644,12 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 	  DECL_HARD_REGISTER (decl) = 1;
 	}
       else
-	set_user_assembler_name (decl, asmspec);
+	{
+	  if (TREE_CODE (decl) == FUNCTION_DECL
+	      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	    set_builtin_user_assembler_name (decl, asmspec);
+	  set_user_assembler_name (decl, asmspec);
+	}
     }
 
   /* Handle non-variables up front.  */

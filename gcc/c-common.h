@@ -674,6 +674,8 @@ extern tree c_build_qualified_type (tree, int);
    frontends.  */
 extern void c_common_nodes_and_builtins (void);
 
+extern void set_builtin_user_assembler_name (tree decl, const char *asmspec);
+
 extern void disable_builtin_function (const char *);
 
 extern tree build_va_arg (tree, tree);
