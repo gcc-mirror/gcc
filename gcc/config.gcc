@@ -375,7 +375,7 @@ case $machine in
 	# ELF configurations.  We will clear extra_parts in the
 	# a.out configurations.
 	case $machine in
-	*-*-netbsd*1.[7-9]* | *-*-netbsd*[2-9]*)
+	*-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 		;;
 	esac
