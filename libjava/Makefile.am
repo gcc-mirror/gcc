@@ -353,6 +353,9 @@ java/io/ObjectOutputStream$$PutField.h: libgcj.jar
 ## Headers we maintain by hand and which we want to install.
 extra_headers = java/lang/Object.h java/lang/Class.h
 
+$(extra_headers):
+	@:
+
 ## Install the headers.  It is fairly ugly that we have to do this by
 ## hand.
 install-data-local:
@@ -1485,7 +1488,7 @@ AM_MAKEFLAGS = \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
 
-CONFIG_STATUS_DEPENDENCIES = $(libgcj_basedir)/configure.host
+CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 MAKEOVERRIDES=
 

@@ -1,10 +1,6 @@
 dnl Process this with autoconf to create configure
 AC_INIT(java/lang/System.java)
 
-dnl Can't be done in LIBGCJ_CONFIGURE because that confuses automake.
-AC_CONFIG_AUX_DIR(..)
-
-AC_CANONICAL_SYSTEM
 AC_PROG_LN_S
 
 dnl We use these options to decide which functions to include.
@@ -26,6 +22,8 @@ if test -z "${with_cross_host}"; then
    AC_DEFINE(USE_LTDL)
    # Sigh.  Libtool's macro doesn't do the right thing.
    INCLTDL="-I\$(top_srcdir)/libltdl $INCLTDL"
+   # FIXME: this is a hack.
+   ac_configure_args="$ac_configure_args --with-auxdir=../$ac_aux_dir"
 fi
 AC_SUBST(INCLTDL)
 AC_SUBST(LIBLTDL)
@@ -375,7 +373,7 @@ NULL_TARGET=no
 NATIVE=yes
 
 # We're in the tree with gcc, and need to include some of its headers.
-GCC_UNWIND_INCLUDE='-I$(top_srcdir)/../gcc'
+GCC_UNWIND_INCLUDE='-I$(libgcj_basedir)/../gcc'
 
 if test -n "${with_cross_host}"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
@@ -847,7 +845,7 @@ h=`pwd`
 changequote(<<,>>)
 	 d=`echo $f | sed -e 's,/[^/]*$,,'`
 changequote([,])
-	 $srcdir/../mkinstalldirs $d
+	 $libgcj_basedir/../mkinstalldirs $d
 	 echo > $f
       }
    done
