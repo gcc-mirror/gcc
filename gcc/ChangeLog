@@ -10,6 +10,9 @@
 
 2004-09-10  James E Wilson  <wilson@specifixinc.com>
 
+	* Makefile.in (LIBGCC_DEPS): Delete duplicate stmp-int-hdrs reference.
+	(stmp-fixproto): Change stmp-int-headers to stmp-int-hdrs in comment.
+
 	* convert.c (convert_to_vector): Replace recursive call with
 	error_mark_node.
 
