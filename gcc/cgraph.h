@@ -169,7 +169,6 @@ struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 				        tree);
 struct cgraph_node *cgraph_node (tree decl);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, tree call_expr);
-bool cgraph_calls_p (tree, tree);
 struct cgraph_local_info *cgraph_local_info (tree);
 struct cgraph_global_info *cgraph_global_info (tree);
 struct cgraph_rtl_info *cgraph_rtl_info (tree);
