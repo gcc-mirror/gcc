@@ -79,38 +79,42 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifdef EXTENDED_FLOAT_STUBS
-__truncxfsf2 (){ abort(); }
-__extendsfxf2 (){ abort(); }
-__addxf3 (){ abort(); }
-__divxf3 (){ abort(); }
-__eqxf2 (){ abort(); }
-__extenddfxf2 (){ abort(); }
-__gtxf2 (){ abort(); }
-__lexf2 (){ abort(); }
-__ltxf2 (){ abort(); }
-__mulxf3 (){ abort(); }
-__negxf2 (){ abort(); }
-__nexf2 (){ abort(); }
-__subxf3 (){ abort(); }
-__truncxfdf2 (){ abort(); }
+extern void abort (void);
+void __extendsfxf2 (void) { abort(); }
+void __extenddfxf2 (void) { abort(); }
+void __truncxfdf2 (void) { abort(); }
+void __truncxfsf2 (void) { abort(); }
+void __fixxfsi (void) { abort(); }
+void __floatsixf (void) { abort(); }
+void __addxf3 (void) { abort(); }
+void __subxf3 (void) { abort(); }
+void __mulxf3 (void) { abort(); }
+void __divxf3 (void) { abort(); }
+void __negxf2 (void) { abort(); }
+void __eqxf2 (void) { abort(); }
+void __nexf2 (void) { abort(); }
+void __gtxf2 (void) { abort(); }
+void __gexf2 (void) { abort(); }
+void __lexf2 (void) { abort(); }
+void __ltxf2 (void) { abort(); }
 
-__trunctfsf2 (){ abort(); }
-__extendsftf2 (){ abort(); }
-__addtf3 (){ abort(); }
-__divtf3 (){ abort(); }
-__eqtf2 (){ abort(); }
-__extenddftf2 (){ abort(); }
-__gttf2 (){ abort(); }
-__letf2 (){ abort(); }
-__lttf2 (){ abort(); }
-__multf3 (){ abort(); }
-__negtf2 (){ abort(); }
-__netf2 (){ abort(); }
-__subtf3 (){ abort(); }
-__trunctfdf2 (){ abort(); }
-__gexf2 (){ abort(); }
-__fixxfsi (){ abort(); }
-__floatsixf (){ abort(); }
+void __extendsftf2 (void) { abort(); }
+void __extenddftf2 (void) { abort(); }
+void __trunctfdf2 (void) { abort(); }
+void __trunctfsf2 (void) { abort(); }
+void __fixtfsi (void) { abort(); }
+void __floatsitf (void) { abort(); }
+void __addtf3 (void) { abort(); }
+void __subtf3 (void) { abort(); }
+void __multf3 (void) { abort(); }
+void __divtf3 (void) { abort(); }
+void __negtf2 (void) { abort(); }
+void __eqtf2 (void) { abort(); }
+void __netf2 (void) { abort(); }
+void __gttf2 (void) { abort(); }
+void __getf2 (void) { abort(); }
+void __letf2 (void) { abort(); }
+void __lttf2 (void) { abort(); }
 #else	/* !EXTENDED_FLOAT_STUBS, rest of file */
 
 /* IEEE "special" number predicates */
