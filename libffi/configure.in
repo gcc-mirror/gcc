@@ -48,6 +48,7 @@ TARGETDIR="unknown"
 case "$host" in
 mips-sgi-irix5.* | mips-sgi-irix6.*) TARGET=MIPS; TARGETDIR=mips;;
 i*86-*-linux*) TARGET=X86; TARGETDIR=x86;;
+i*86-*-sco3.2v5*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-solaris*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-beos*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-freebsd*) TARGET=X86; TARGETDIR=x86;;

@@ -18,6 +18,10 @@ details.  */
 #include <sys/stat.h>
 #include <sys/param.h>
 
+#ifndef MAXPATHLEN
+# define MAXPATHLEN 1024
+#endif
+
 #ifdef HAVE_SYS_IOCTL_H
 #define BSD_COMP /* Get FIONREAD on Solaris2. */
 #include <sys/ioctl.h>

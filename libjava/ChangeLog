@@ -1,3 +1,9 @@
+2003-08-08  Kean Johnston  <jkj@sco.com>
+
+	* java/io/natFilePosix.cc: HAVE_READDIR_R is broken on SCO. Undefine.
+	  If MAXPATHLEN is not defined by the system, define it.
+	* java/io/natFileDescriptorPosix.cc: Ditto.
+
 2003-08-04  Release Manager
 
 	* GCC 3.3.1 Released.

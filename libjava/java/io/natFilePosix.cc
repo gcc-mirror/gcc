@@ -26,6 +26,10 @@ details.  */
 #include <string.h>
 #include <utime.h>
 
+#ifndef MAXPATHLEN
+# define MAXPATHLEN 1024
+#endif
+
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java/io/File.h>
@@ -35,6 +39,10 @@ details.  */
 #include <java/io/FilenameFilter.h>
 #include <java/io/FileFilter.h>
 #include <java/lang/System.h>
+
+#ifdef _SCO_DS
+# undef HAVE_READDIR_R
+#endif
 
 jboolean
 java::io::File::_access (jint query)

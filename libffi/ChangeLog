@@ -1,3 +1,8 @@
+2003-08-08  Kean Johnston  <jkj@sco.com>
+
+	* configure.in: Add support for sco3.2v5.0*
+	* configure: Regenerated
+
 2003-08-04  Release Manager
 
 	* GCC 3.3.1 Released.
