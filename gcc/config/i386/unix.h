@@ -87,7 +87,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	    \
 do {									    \
   tree parm;								    \
-  rtx xops[2];								    \
+  rtx xops[3];								    \
 									    \
   if (ix86_regparm > 0)							    \
     parm = TYPE_ARG_TYPES (TREE_TYPE (function));			    \
@@ -110,6 +110,7 @@ do {									    \
     {									    \
       xops[0] = pic_offset_table_rtx;					    \
       xops[1] = gen_label_rtx ();					    \
+      xops[2] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");        \
 									    \
       if (ix86_regparm > 2)						    \
 	abort ();							    \
@@ -117,7 +118,7 @@ do {									    \
       output_asm_insn ("call\t%P1", xops);				    \
       ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", CODE_LABEL_NUMBER (xops[1]));   \
       output_asm_insn ("pop{l}\t%0", xops);				    \
-      output_asm_insn ("add{l}\t{$_GLOBAL_OFFSET_TABLE_+[.-%P1], %0|%0, OFFSET FLAT: _GLOBAL_OFFSET_TABLE_+[.-%P1]}", xops); \
+      output_asm_insn ("add{l}\t{%2+[.-%P1], %0|%0, OFFSET FLAT: %2+[.-%P1]}", xops); \
       xops[0] = gen_rtx_MEM (SImode, XEXP (DECL_RTL (FUNCTION), 0));	    \
       output_asm_insn ("mov{l}\t{%0@GOT(%%ebx), %%ecx|%%ecx, %0@GOT[%%ebx]}",\
 	               xops);						    \

@@ -1,3 +1,8 @@
+2001-09-14  Marc Espie <espie@openbsd.org>
+
+	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK):  Generate reference to GOT
+	correctly.
+
 2001-09-13  Markus Werle <numerical.simulation@web.de>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
