@@ -3539,24 +3539,14 @@ static tree
 decl_ultimate_origin (decl)
      register tree decl;
 {
-  register tree immediate_origin = DECL_ABSTRACT_ORIGIN (decl);
+#ifdef ENABLE_CHECKING 
+  if (DECL_FROM_INLINE (DECL_ORIGIN (decl)))
+    /* Since the DECL_ABSTRACT_ORIGIN for a DECL is supposed to be the
+       most distant ancestor, this should never happen.  */
+    abort ();
+#endif
 
-  if (immediate_origin == NULL_TREE)
-    return NULL_TREE;
-  else
-    {
-      register tree ret_val;
-      register tree lookahead = immediate_origin;
-
-      do
-	{
-	  ret_val = lookahead;
-	  lookahead = DECL_ABSTRACT_ORIGIN (ret_val);
-	}
-      while (lookahead != NULL && lookahead != ret_val);
-
-      return ret_val;
-    }
+  return DECL_ABSTRACT_ORIGIN (decl);
 }
 
 /* Determine the "ultimate origin" of a block.  The block may be an inlined
@@ -9432,7 +9422,7 @@ dwarf2out_decl (decl)
   if (DECL_IGNORED_P (decl))
     {
       if (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_INITIAL (decl) != NULL)
+          && DECL_INITIAL (decl) != NULL)
 	abort ();
 
       return;

@@ -1101,6 +1101,11 @@ struct tree_type
    definition.  */
 #define DECL_ABSTRACT_ORIGIN(NODE) (DECL_CHECK (NODE)->decl.abstract_origin)
 
+/* Like DECL_ABSTRACT_ORIGIN, but returns NODE if there's no abstract
+   origin.  This is useful when setting the DECL_ABSTRACT_ORIGIN.  */
+#define DECL_ORIGIN(NODE) \
+  (DECL_ABSTRACT_ORIGIN (NODE) ? DECL_ABSTRACT_ORIGIN (NODE) : NODE)
+
 /* Nonzero for any sort of ..._DECL node means this decl node represents
    an inline instance of some original (abstract) decl from an inline function;
    suppress any warnings about shadowing some other variable.  */

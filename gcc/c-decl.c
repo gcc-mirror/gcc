@@ -2020,7 +2020,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	  DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
 	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 	  if (DECL_INLINE (newdecl))
-	    DECL_ABSTRACT_ORIGIN (newdecl) = olddecl;
+	    DECL_ABSTRACT_ORIGIN (newdecl) = DECL_ORIGIN (olddecl);
 	}
     }
   if (different_binding_level)
@@ -2384,7 +2384,7 @@ pushdecl (x)
 		      DECL_ARGUMENTS (x) = DECL_ARGUMENTS (oldglobal);
 		      DECL_RESULT (x) = DECL_RESULT (oldglobal);
 		      TREE_ASM_WRITTEN (x) = TREE_ASM_WRITTEN (oldglobal);
-		      DECL_ABSTRACT_ORIGIN (x) = oldglobal;
+		      DECL_ABSTRACT_ORIGIN (x) = DECL_ORIGIN (oldglobal);
 		    }
 		  /* Inner extern decl is built-in if global one is.  */
 		  if (DECL_BUILT_IN (oldglobal))

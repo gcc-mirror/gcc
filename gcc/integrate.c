@@ -78,6 +78,7 @@ static void set_decl_origin_self PROTO((tree));
 static void set_block_abstract_flags PROTO((tree, int));
 
 void set_decl_abstract_flags	PROTO((tree, int));
+static tree copy_and_set_decl_abstract_origin PROTO((tree));
 
 /* Returns the Ith entry in the label_map contained in MAP.  If the
    Ith entry has not yet been set, return a fresh label.  This function
@@ -752,11 +753,30 @@ save_for_inline_copying (fndecl)
     free (label_map);
 }
 
+/* Copy NODE (as with copy_node).  NODE must be a DECL.  Set the
+   DECL_ABSTRACT_ORIGIN for the new accordinly.  */
+
+static tree
+copy_and_set_decl_abstract_origin (node)
+     tree node;
+{
+  tree copy = copy_node (node);
+  if (DECL_ABSTRACT_ORIGIN (copy) != NULL_TREE)
+    /* That means that NODE already had a DECL_ABSTRACT_ORIGIN.  (This
+       situation occurs if we inline a function which itself made
+       calls to inline functions.)  Since DECL_ABSTRACT_ORIGIN is the
+       most distant ancestor, we don't have to do anything here.  */
+    ;
+  else
+    /* The most distant ancestor must be NODE.  */
+    DECL_ABSTRACT_ORIGIN (copy) = node;
+
+  return copy;
+}
+
 /* Return a copy of a chain of nodes, chained through the TREE_CHAIN field.
    For example, this can copy a list made of TREE_LIST nodes.  While copying,
-   for each node copied which doesn't already have is DECL_ABSTRACT_ORIGIN
-   set to some non-zero value, set the DECL_ABSTRACT_ORIGIN of the copy to
-   point to the corresponding (abstract) original node.  */
+   set DECL_ABSTRACT_ORIGIN appropriately.  */
 
 static tree
 copy_decl_list (list)
@@ -768,17 +788,13 @@ copy_decl_list (list)
   if (list == 0)
     return 0;
 
-  head = prev = copy_node (list);
-  if (DECL_ABSTRACT_ORIGIN (head) == NULL_TREE)
-    DECL_ABSTRACT_ORIGIN (head) = list;
+  head = prev = copy_and_set_decl_abstract_origin (head);
   next = TREE_CHAIN (list);
   while (next)
     {
       register tree copy;
 
-      copy = copy_node (next);
-      if (DECL_ABSTRACT_ORIGIN (copy) == NULL_TREE)
-	DECL_ABSTRACT_ORIGIN (copy) = next;
+      copy = copy_and_set_decl_abstract_origin (next);
       TREE_CHAIN (prev) = copy;
       prev = copy;
       next = TREE_CHAIN (next);
@@ -2192,7 +2208,7 @@ integrate_parm_decls (args, map, arg_vector)
       /* These args would always appear unused, if not for this.  */
       TREE_USED (decl) = 1;
       /* Prevent warning for shadowing with these.  */
-      DECL_ABSTRACT_ORIGIN (decl) = tail;
+      DECL_ABSTRACT_ORIGIN (decl) = DECL_ORIGIN (tail);
       pushdecl (decl);
       /* Fully instantiate the address with the equivalent form so that the
 	 debugging information contains the actual register, instead of the
@@ -2231,7 +2247,7 @@ integrate_decl_tree (let, level, map)
 
       push_obstacks_nochange ();
       saveable_allocation ();
-      d = copy_node (t);
+      d = copy_and_set_decl_abstract_origin (t);
       pop_obstacks ();
 
       if (DECL_RTL (t) != 0)
@@ -2246,8 +2262,6 @@ integrate_decl_tree (let, level, map)
 	}
       /* These args would always appear unused, if not for this.  */
       TREE_USED (d) = 1;
-      /* Prevent warning for shadowing with these.  */
-      DECL_ABSTRACT_ORIGIN (d) = t;
 
       if (DECL_LANG_SPECIFIC (d))
 	copy_lang_decl (d);

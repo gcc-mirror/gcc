@@ -1,3 +1,15 @@
+Thu Sep 10 10:46:01 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* tree.h (DECL_ORIGIN): New macro.
+	* integrate.c (copy_and_set_decl_abstract_origin): New function.
+	(copy_decl_list): Use it.
+	(integrate_parm_decls): Likewise.
+	(integrate_decl_tree): Likewise.
+	* dwarf2out.c (decl_ultimate_origin): Simplify.
+	* dwarfout.c (decl_ultimate_origin): Likewise.
+	* c-decl.c (duplicate_decls): Use DECL_ORIGIN.
+	(pushdecl): Likewise.
+
 Thu Sep 10 08:01:31 1998  Anthony Green  <green@cygnus.com>
 
 	* config/rs6000/rs6000.c (output_epilog): Add Java support.
@@ -388,7 +400,6 @@ Thu Sep  3 18:05:16 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 	(movdf): Remove TARGET_POWERPC64 explicit secondary-reload-like
 	functionality.
 
->>>>>>> 1.2012
 Thu Sep  3 11:41:40 1998  Robert Lipe   <robertl@dgii.com>
 
 	* fixinc.sco: Borrow code to wrap 'bool' typedefs from tinfo.h
