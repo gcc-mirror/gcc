@@ -1,3 +1,9 @@
+2000-08-28  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (new_loc_descr): Use calloc.
+	(splice_child_die): Remove the die from the right parent.
+	(gen_struct_or_union_die): Don't add AT_name to a specification DIE.
+
 Mon Aug 28 19:02:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* toplev.c (decode_g_option): Don't give warning for unknown -g

@@ -2470,10 +2470,11 @@ new_loc_descr (op, oprnd1, oprnd2)
      register unsigned long oprnd1;
      register unsigned long oprnd2;
 {
+  /* Use xcalloc here so we clear out all of the long_long constant in
+     the union.  */
   register dw_loc_descr_ref descr
-    = (dw_loc_descr_ref) xmalloc (sizeof (dw_loc_descr_node));
+    = (dw_loc_descr_ref) xcalloc (1, sizeof (dw_loc_descr_node));
 
-  descr->dw_loc_next = NULL;
   descr->dw_loc_opc = op;
   descr->dw_loc_oprnd1.val_class = dw_val_class_unsigned_const;
   descr->dw_loc_oprnd1.v.val_unsigned = oprnd1;
@@ -4649,7 +4650,7 @@ splice_child_die (parent, child)
       && child->die_parent != get_AT_ref (parent, DW_AT_specification))
     abort ();
 
-  for (p = &(parent->die_child); *p; p = &((*p)->die_sib))
+  for (p = &(child->die_parent->die_child); *p; p = &((*p)->die_sib))
     if (*p == child)
       {
 	*p = child->die_sib;
@@ -9185,9 +9186,10 @@ gen_struct_or_union_type_die (type, context_die)
 			  ? DW_TAG_structure_type : DW_TAG_union_type,
 			  scope_die);
       equate_type_number_to_die (type, type_die);
-      add_name_attribute (type_die, type_tag (type));
       if (old_die)
 	add_AT_die_ref (type_die, DW_AT_specification, old_die);
+      else
+	add_name_attribute (type_die, type_tag (type));
     }
   else
     remove_AT (type_die, DW_AT_declaration);
