@@ -1,3 +1,9 @@
+2004-08-31  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/other/offsetof1.C: Include cstddef, use non-builtin
+	form of offsetof.
+	* g++.dg/other/offsetof5.C: Remove duplicate.
+
 2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17244
