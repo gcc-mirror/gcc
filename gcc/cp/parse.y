@@ -4156,22 +4156,9 @@ parse_finish_call_expr (tree fn, tree args, int koenig)
 				  BASELINK_FUNCTIONS (fn),
 				  template_args);
 		}
-	      if (BASELINK_P (fn) 
-		  && current_class_type 
-		  && DERIVED_FROM_P (scope, current_class_type))
-		{
-		  scope = lookup_base (current_class_type, scope,
-				       ba_ignore | ba_quiet, NULL);
-		  if (scope)
-		    {
-		      BASELINK_ACCESS_BINFO (fn) = scope;
-		      BASELINK_BINFO (fn) 
-			= lookup_base (scope,
-				       BINFO_TYPE (BASELINK_BINFO (fn)),
-				       ba_ignore | ba_quiet,
-				       NULL);
-		    }
-		}
+	      if (current_class_type)
+		fn = (adjust_result_of_qualified_name_lookup 
+		      (fn, scope, current_class_type));
 	    }
 	}
       disallow_virtual = true;

@@ -838,8 +838,7 @@ standard_conversion (to, from, expr)
 		  (TREE_TYPE (TREE_TYPE (from)),
 		   TREE_TYPE (TREE_TYPE (to)))))
 	    {
-	      from = build_offset_type (tbase, TREE_TYPE (TREE_TYPE (from)));
-	      from = build_pointer_type (from);
+	      from = build_ptrmem_type (tbase, TREE_TYPE (TREE_TYPE (from)));
 	      conv = build_conv (PMEM_CONV, from, conv);
 	    }
 	}

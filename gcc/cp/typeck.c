@@ -203,28 +203,33 @@ qualify_type_recursive (t1, t2)
   if ((TYPE_PTR_P (t1) && TYPE_PTR_P (t2))
       || (TYPE_PTRMEM_P (t1) && TYPE_PTRMEM_P (t2)))
     {
-      tree tt1 = TREE_TYPE (t1);
-      tree tt2 = TREE_TYPE (t2);
+      tree tt1;
+      tree tt2;
       tree b1;
       int type_quals;
       tree tgt;
       tree attributes = (*targetm.merge_type_attributes) (t1, t2);
 
-      if (TREE_CODE (tt1) == OFFSET_TYPE)
+      if (TYPE_PTRMEM_P (t1))
 	{
-	  b1 = TYPE_OFFSET_BASETYPE (tt1);
-	  tt1 = TREE_TYPE (tt1);
-	  tt2 = TREE_TYPE (tt2);
+	  b1 = TYPE_PTRMEM_CLASS_TYPE (t1);
+	  tt1 = TYPE_PTRMEM_POINTED_TO_TYPE (t1);
+	  tt2 = TYPE_PTRMEM_POINTED_TO_TYPE (t2);
 	}
       else
-	b1 = NULL_TREE;
+	{
+	  b1 = NULL_TREE;
+	  tt1 = TREE_TYPE (t1);
+	  tt2 = TREE_TYPE (t2);
+	}
 
       type_quals = (cp_type_quals (tt1) | cp_type_quals (tt2));
       tgt = qualify_type_recursive (tt1, tt2);
       tgt = cp_build_qualified_type (tgt, type_quals);
       if (b1)
-	tgt = build_offset_type (b1, tgt);
-      t1 = build_pointer_type (tgt);
+	t1 = build_ptrmem_type (b1, tgt);
+      else
+	t1 = build_pointer_type (tgt);
       t1 = build_type_attribute_variant (t1, attributes);
     }
   return t1;
@@ -4390,9 +4395,7 @@ unary_complex_lvalue (code, arg)
 	      return error_mark_node;
 	    }
 
-	  type = build_offset_type (DECL_FIELD_CONTEXT (t), TREE_TYPE (t));
-	  type = build_pointer_type (type);
-
+	  type = build_ptrmem_type (DECL_FIELD_CONTEXT (t), TREE_TYPE (t));
 	  t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
 	  return t;
 	}
