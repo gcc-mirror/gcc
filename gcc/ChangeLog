@@ -1,3 +1,9 @@
+2004-07-10  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+            James Morrison  <phython@gcc.gnu.org>
+
+        * doc/contrib.texi (Contributors): Add gfortran contributors and
+	fix a couple of typos.
+
 2004-07-10  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* calls.c (check_sibcall_argument_overlap_1): Handle pointers
