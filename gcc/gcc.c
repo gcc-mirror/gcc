@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 89, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2540,9 +2540,9 @@ process_command (argc, argv)
 				    1, 0, NULL_PTR);
 		      else
 			{
-			  char *string = xmalloc (len + 1);
+			  char *string = xmalloc (len);
 			  strncpy (string, value, len-7);
-			  strcat (string, "include");
+			  strcpy (string+len-7, "include");
 			  add_prefix (&include_prefixes, string,
 				      1, 0, NULL_PTR);
 			}
