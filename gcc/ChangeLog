@@ -13,9 +13,12 @@ Fri Apr  3 17:02:13 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.md (movqi recognizer): Don't perfom byte increment into
+	a NON_QI_REG_P.
+
 	* configure.in (x86-dg-dgux): Run fixinc.dgux.
 
-	* i386.h: Fix typo in GEN_INT changes.
+	* i370.h: Fix typo in GEN_INT changes.
 
 	* bitmap.c (bitmap_element_allocate): Use "void" for arglist instead
 	of an empty arglist in prototype.
