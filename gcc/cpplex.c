@@ -1106,7 +1106,7 @@ parse_string (pfile, list, token, terminator)
 	  if (is_vspace (c))
 	    {
 	      /* Drop a backslash newline, and continue. */
-	      if (namebuf[-1] == '\\')
+	      if (namebuf > list->namebuf && namebuf[-1] == '\\')
 		{
 		  handle_newline (cur, buffer->rlimit, c);
 		  namebuf--;
