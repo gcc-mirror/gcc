@@ -1660,6 +1660,7 @@ print_lang_statistics ()
   print_obstack_statistics ("decl_obstack", &decl_obstack);
   print_obstack_statistics ("permanent_obstack", &permanent_obstack);
   print_obstack_statistics ("maybepermanent_obstack", &maybepermanent_obstack);
+  print_inline_obstack_statistics ();
   print_search_statistics ();
   print_class_statistics ();
 #ifdef GATHER_STATISTICS
