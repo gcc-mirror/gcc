@@ -1,3 +1,8 @@
+Tue Oct 14 12:01:00 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* cplus-dem.c (demangle_signature): Don't look for return types on
+	constructors.  Handle member template constructors.
+
 Tue Oct 14 11:30:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (expr_tree_cons, build_expr_list, expralloc): New fns.
