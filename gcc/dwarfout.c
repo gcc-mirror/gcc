@@ -762,6 +762,26 @@ is_pseudo_reg (rtl)
 	      && (REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER)));
 }
 
+inline tree
+type_main_variant (type)
+     register tree type;
+{
+  type = TYPE_MAIN_VARIANT (type);
+
+  /* There really should be only one main variant among any group of variants
+     of a given type (and all of the MAIN_VARIANT values for all members of
+     the group should point to that one type) but sometimes the C front-end
+     messes this up for array types, so we work around that bug here.  */
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      while (type != TYPE_MAIN_VARIANT (type))
+        type = TYPE_MAIN_VARIANT (type);
+    }
+
+  return type;
+}
+
 /* Return non-zero if the given type node represents a tagged type.  */
 
 inline int
@@ -1317,10 +1337,10 @@ root_type (type)
 
       case POINTER_TYPE:
       case REFERENCE_TYPE:
-	return TYPE_MAIN_VARIANT (root_type (TREE_TYPE (type)));
+	return type_main_variant (root_type (TREE_TYPE (type)));
 
       default:
-	return TYPE_MAIN_VARIANT (type);
+	return type_main_variant (type);
     }
 }
 
@@ -1455,7 +1475,7 @@ equate_type_number_to_die_number (type)
      to get the equate to come out right, we need to get the main variant
      itself here.  */
 
-  type = TYPE_MAIN_VARIANT (type);
+  type = type_main_variant (type);
 
   sprintf (type_label, TYPE_NAME_FMT, TYPE_UID (type));
   sprintf (die_label, DIE_BEGIN_LABEL_FMT, current_dienum);
@@ -2186,8 +2206,8 @@ location_or_const_value_attribute (decl)
     if (rtl == NULL_RTX || is_pseudo_reg (rtl))
       {
 	/* This decl represents a formal parameter which was optimized out.  */
-        register tree declared_type = TYPE_MAIN_VARIANT (TREE_TYPE (decl));
-        register tree passed_type = TYPE_MAIN_VARIANT (DECL_ARG_TYPE (decl));
+        register tree declared_type = type_main_variant (TREE_TYPE (decl));
+        register tree passed_type = type_main_variant (DECL_ARG_TYPE (decl));
 
 	/* Note that DECL_INCOMING_RTL may be NULL in here, but we handle
 	   *all* cases where (rtl == NULL_RTX) just below.  */
@@ -2871,7 +2891,7 @@ type_attribute (type, decl_const, decl_volatile)
     if (root_type_modified)
 	mod_u_d_type_attribute (type, decl_const, decl_volatile);
     else
-	/* We have to get the TYPE_MAIN_VARIANT here (and pass that to the
+	/* We have to get the type_main_variant here (and pass that to the
 	   `user_def_type_attribute' routine) because the ..._TYPE node we
 	   have might simply be a *copy* of some original type node (where
 	   the copy was created to help us keep track of typedef names)
@@ -2880,7 +2900,7 @@ type_attribute (type, decl_const, decl_volatile)
 	   is labeling a given type DIE for future reference, it always and
 	   only creates labels for DIEs representing *main variants*, and it
 	   never even knows about non-main-variants.)  */
-	user_def_type_attribute (TYPE_MAIN_VARIANT (type));
+	user_def_type_attribute (type_main_variant (type));
 }
 
 /* Given a tree pointer to a struct, class, union, or enum type node, return
@@ -3910,7 +3930,7 @@ output_type (type, containing_scope)
      of this type (i.e. without any const or volatile qualifiers) so get
      the main variant (i.e. the unqualified version) of this type now.  */
 
-  type = TYPE_MAIN_VARIANT (type);
+  type = type_main_variant (type);
 
   if (TREE_ASM_WRITTEN (type))
     return;
@@ -4154,7 +4174,7 @@ output_tagged_type_instantiation (type)
      sure that we have the main variant (i.e. the unqualified version) of
      this type now.  */
 
-  assert (type == TYPE_MAIN_VARIANT (type));
+  assert (type == type_main_variant (type));
 
   assert (TREE_ASM_WRITTEN (type));
 
