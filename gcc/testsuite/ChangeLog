@@ -1,3 +1,7 @@
+2002-02-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/compile/20020110.c: New test.
+
 2002-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20020219-1.c: New test.
