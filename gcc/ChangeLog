@@ -1,3 +1,12 @@
+2002-01-02  Kazu Hirata  <kazu@hxi.com>
+
+	* config/romp/romp.c: Fix comment formatting.
+	* config/romp/romp.h: Likewise.
+	* config/romp/romp.md: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+
 2002-01-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-common.h (genrtl_expr_stmt_value): Declare.

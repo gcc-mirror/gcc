@@ -190,7 +190,7 @@ update_cc (body, insn)
       break;
 
     case CC_CLOBBER:
-      /* Insn clobbers CC. */
+      /* Insn clobbers CC.  */
       CC_STATUS_INIT;
       break;
 
@@ -221,7 +221,7 @@ update_cc (body, insn)
       break;
 
     case CC_TBIT:
-      /* Insn sets T bit if result is non-zero.  Next insn must be branch. */
+      /* Insn sets T bit if result is non-zero.  Next insn must be branch.  */
       CC_STATUS_INIT;
       cc_status.flags = CC_IN_TB | CC_NOT_NEGATIVE;
       break;
@@ -323,7 +323,7 @@ zero_memory_operand (op, mode)
   return memory_offset_in_range_p (op, mode, 0, 0);
 }
 
-/* Return 1 if OP is a valid operand for a `short' memory reference insn. */
+/* Return 1 if OP is a valid operand for a `short' memory reference insn.  */
 
 int
 short_memory_operand (op, mode)
@@ -339,7 +339,7 @@ short_memory_operand (op, mode)
 }
 
 /* Returns 1 if OP is a memory reference involving a symbolic constant
-   that is not in the constant pool. */
+   that is not in the constant pool.  */
 
 int
 symbolic_memory_operand (op, mode)
@@ -479,7 +479,7 @@ reg_or_any_cint_operand (op, mode)
      return GET_CODE (op) == CONST_INT || register_operand (op, mode);
 }
 
-/* Return 1 if the operand is either a register or a valid D-type operand. */
+/* Return 1 if the operand is either a register or a valid D-type operand.  */
 
 int
 reg_or_D_operand (op, mode)
@@ -693,7 +693,7 @@ print_operand (file, x, code)
       break;
 
     case 's':
-      /* Null or "16" depending on whether the constant is greater than 16. */
+      /* Null or "16" depending on whether the constant is greater than 16.  */
       if (GET_CODE (x) != CONST_INT)
 	output_operand_lossage ("invalid %%s value");
 
@@ -1169,10 +1169,10 @@ output_encoded_offset (file, reg_offset)
      FILE *file;
      unsigned reg_offset;
 {
-  /* Convert the offset value to 4-byte words rather than bytes. */
+  /* Convert the offset value to 4-byte words rather than bytes.  */
   reg_offset = (reg_offset + 3) / 4;
 
-  /* Now output 1-4 bytes in encoded form. */
+  /* Now output 1-4 bytes in encoded form.  */
   if (reg_offset < (1 << 6))
     /* Fits into one byte */
     fprintf (file, "\t.byte %d\n", reg_offset);
@@ -1413,12 +1413,12 @@ check_precision (opmode, op1, op2)
 /* Structure to describe a floating-point operation.  */
 
 struct fp_op {
-  struct fp_op *next_same_hash;		/* Next op with same hash code. */
-  struct fp_op *next_in_mem;		/* Next op in memory. */
+  struct fp_op *next_same_hash;		/* Next op with same hash code.  */
+  struct fp_op *next_in_mem;		/* Next op in memory.  */
   int mem_offset;			/* Offset from data area.  */
   short size;				/* Size of block in bytes.  */
   short noperands;			/* Number of operands in block.  */
-  rtx ops[3];				/* RTL for operands. */
+  rtx ops[3];				/* RTL for operands.  */
   enum rtx_code opcode;			/* Operation being performed.  */
 };
 
@@ -1437,7 +1437,7 @@ static struct fp_op *last_fpop_in_mem;
 /* Subroutine number in file, to get unique "LF" labels.  */
 static int subr_number = 0;
 
-/* Current word offset in data area (includes header and any constant pool). */
+/* Current word offset in data area (includes header and any constant pool).  */
 int data_offset;
 
 /* Compute hash code for an RTX used in floating-point.  */
@@ -1557,7 +1557,7 @@ output_fpop (code, op0, op1, op2, insn)
 
   /* Compute the size using the rules in Appendix A of the RT Linkage
      Convention (4.3/RT-PSD:5) manual.  These rules are a bit ambiguous,
-     but if we guess wrong, it will effect only efficiency, not correctness. */
+     but if we guess wrong, it will effect only efficiency, not correctness.  */
 
   /* Size = 24 + 32 for each non-fp (or fr7) */
   size = 24;
@@ -1588,11 +1588,11 @@ output_fpop (code, op0, op1, op2, insn)
   if (op2 && GET_MODE (op2) != opmode)
     size += 12;
 
-  /* 12 more if first and third operand types not the same. */
+  /* 12 more if first and third operand types not the same.  */
   if (op2 && GET_MODE (op0) != GET_MODE (op2))
     size += 12;
 
-  /* CMP and CMPT need additional.  Also, compute size of save/restore here. */
+  /* CMP and CMPT need additional.  Also, compute size of save/restore here.  */
   if (code == EQ)
     size += 32;
   else if (code == GE)
@@ -1641,7 +1641,7 @@ output_fpop (code, op0, op1, op2, insn)
 	    {
 	      if (REGNO (op0) == REGNO (op2))
 #if 1
-		/* This triggers a bug on the RT. */
+		/* This triggers a bug on the RT.  */
 		abort ();
 #else
 		size += fr0_avail ? 0 : 64;
@@ -1699,7 +1699,7 @@ output_fpop (code, op0, op1, op2, insn)
         size += 4;
     }
 
-  /* Done with size computation!  Chain this in. */
+  /* Done with size computation!  Chain this in.  */
   fpop->size = size;
   data_offset += size / UNITS_PER_WORD;
   fpop->next_in_mem = 0;
@@ -2015,20 +2015,20 @@ romp_debugger_auto_correction(offset)
 
   /* We really want to go from STACK_POINTER_REGNUM to
      FRAME_POINTER_REGNUM, but this isn't defined. So go the other
-     direction and negate. */
+     direction and negate.  */
   INITIAL_ELIMINATION_OFFSET (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM,
 			      fp_to_sp);
 
   /* The offset value points somewhere between the frame pointer and
      the stack pointer. What is up from the frame pointer is down from the
-     stack pointer. Therefore the negation in the offset value too. */
+     stack pointer. Therefore the negation in the offset value too.  */
 
   return -(offset+fp_to_sp+4);
 }
 
 /* Return the offset value of an argument having
    the given offset. Basically, we correct by going from a arg pointer to
-   stack pointer value. */
+   stack pointer value.  */
 
 int
 romp_debugger_arg_correction (offset)

@@ -211,12 +211,12 @@ Boston, MA 02111-1307, USA.  */
 /* #define MULTILIB_DEFAULTS {} */
 
 /* Define this macro to tell `gcc' that it should only translate a `-B' prefix
-   into a `-L' linker option if the prefix indicates an absolute file name. */
+   into a `-L' linker option if the prefix indicates an absolute file name.  */
 /* #define RELATIVE_PREFIX_NOT_LINKDIR */
 
 /* Define this macro as a C string constant if you wish to override the
    standard choice of `/usr/local/lib/gcc-lib/' as the default prefix to try
-   when searching for the executable files of the compiler. */
+   when searching for the executable files of the compiler.  */
 /* #define STANDARD_EXEC_PREFIX "" */
 
 /* If defined, this macro is an additional prefix to try after
@@ -228,7 +228,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define this macro as a C string constant if you wish to override the
    standard choice of `/usr/local/lib/' as the default prefix to try when
-   searching for startup files such as `crt0.o'. */
+   searching for startup files such as `crt0.o'.  */
 /* #define STANDARD_STARTFILE_PREFIX "" */
 
 /* If defined, this macro supplies an additional prefix to try after the
@@ -240,13 +240,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* If defined, this macro supplies yet another prefix to try after the standard
    prefixes.  It is not searched when the `-b' option is used, or when the
-   compiler is built as a cross compiler. */
+   compiler is built as a cross compiler.  */
 /* #define MD_STARTFILE_PREFIX_1 "" */
 
 /* Define this macro as a C string constant if you with to set environment
    variables for programs called by the driver, such as the assembler and
    loader.  The driver passes the value of this macro to `putenv' to initialize
-   the necessary environment variables. */
+   the necessary environment variables.  */
 /* #define INIT_ENVIRONMENT "" */
 
 /* Define this macro as a C string constant if you wish to override the
@@ -264,7 +264,7 @@ Boston, MA 02111-1307, USA.  */
    search order.
 
    Cross compilers do not use this macro and do not search the directory
-   specified. */
+   specified.  */
 /* #define SYSTEM_INCLUDE_DIR "" */
 
 /* Define this macro as a C string constant if you wish to override the
@@ -272,7 +272,7 @@ Boston, MA 02111-1307, USA.  */
    searching for header files.
 
    Cross compilers do not use this macro and do not search either
-   `/usr/include' or its replacement. */
+   `/usr/include' or its replacement.  */
 /* #define STANDARD_INCLUDE_DIR "" */
 
 /* Define this macro if you wish to override the entire default search path for
@@ -376,7 +376,7 @@ extern int target_flags;
    instruction patterns.  Note how `TARGET_68020' appears frequently in the
    68000 machine description file, `m68k.md'.  Another place they are used is
    in the definitions of the other macros in the `MACHINE.h' file.  */
-/* #define TARGET_... */
+/* #define TARGET_...  */
 
 /* This macro defines names of command options to set and clear bits in
    `target_flags'.  Its definition is an initializer with a subgrouping for
@@ -2802,7 +2802,7 @@ typedef int CUMULATIVE_ARGS;
 
    On most machines, you don't need to define any of these macros, because the
    C compiler that comes with the system takes care of doing them.  */
-/* #define perform_... */
+/* #define perform_...  */
 
 /* Define this macro to generate code for Objective C message sending using the
    calling convention of the NeXT system.  This calling convention involves
@@ -4574,7 +4574,7 @@ do {									\
    This does nothing if the expected type does not exist.
 
    See the function `init_decl_processing' in `c-decl.c' to find the names to
-   use for all the built-in C types. */
+   use for all the built-in C types.  */
 /* #define DBX_OUTPUT_STANDARD_TYPES(SYMS) */
 
 /* Some stabs encapsulation formats (in particular ECOFF), cannot
@@ -4673,7 +4673,7 @@ do {									\
    assembler directives.  See `sdbout.c' for a list of these macros and their
    arguments.  If the standard syntax is used, you need not define them
    yourself.  */
-/* #define PUT_SDB_... */
+/* #define PUT_SDB_...  */
 
 /* Some assemblers do not support a semicolon as a delimiter, even between SDB
    assembler directives.  In that case, define this macro to be the delimiter
@@ -4734,7 +4734,7 @@ do {									\
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 /* #define CASE_VECTOR_PC_RELATIVE 1 */
 
 /* Define this if control falls through a `case' insn when the index value is
@@ -4978,7 +4978,7 @@ do {									\
 #define HANDLE_SYSV_PRAGMA
 
 /* Define this macro if you want to support the Win32 style pragmas
-   #pragma pack(push,<n>) and #pragma pack(pop). */
+   #pragma pack(push,<n>) and #pragma pack(pop).  */
 /* HANDLE_PRAGMA_PACK_PUSH_POP 1 */
    
 /* Define this macro to control use of the character `$' in identifier names.
@@ -5063,7 +5063,7 @@ do {									\
 /* #define MAX_CONDITIONAL_EXECUTE */
 
 /* A C statement that adds to tree CLOBBERS a set of STRING_CST trees for any
-   hard regs the port wishes to automatically clobber for all asms. */
+   hard regs the port wishes to automatically clobber for all asms.  */
 /* #define MD_ASM_CLOBBERS(CLOBBERS) */
 
 /* Indicate how many instructions can be issued at the same time.  */
@@ -5072,7 +5072,7 @@ do {									\
 /* A C statement which is executed by the Haifa scheduler at the beginning of
    each block of instructions that are to be scheduled.  FILE is either a null
    pointer, or a stdio stream to write any debug output to.  VERBOSE is the
-   verbose level provided by -fsched-verbose-<n>. */
+   verbose level provided by -fsched-verbose-<n>.  */
 /* #define MD_SCHED_INIT (FILE, VERBOSE) */
 
 /* A C statement which is executed by the Haifa scheduler after it has scheduled
@@ -5093,7 +5093,7 @@ do {									\
    to write any debug output to.  VERBOSE is the verbose level provided by
    -fsched-verbose-<n>.  INSN is the instruction that was scheduled.  MORE is the
    number of instructions that can be issued in the current cycle.  This macro
-   is responsible for updating the value of MORE (typically by (MORE)--). */
+   is responsible for updating the value of MORE (typically by (MORE)--).  */
 /* #define MD_SCHED_VARIABLE_ISSUE (FILE, VERBOSE, INSN, MORE) */
 
 /* Define this to the largest integer machine mode which can be used for
@@ -5104,7 +5104,7 @@ do {									\
 
 /* Define this macro as a C string constant for the linker argument to link in the
    system math library, or "" if the target does not have a separate math library.
-   You need only define this macro if the default of "-lm" is wrong. */
+   You need only define this macro if the default of "-lm" is wrong.  */
 /* #define  MATH_LIBRARY */
 
 /* Define the information needed to generate branch and scc insns.  This is
