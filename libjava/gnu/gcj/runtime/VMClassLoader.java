@@ -47,58 +47,58 @@ public final class VMClassLoader extends java.net.URLClassLoader
 	String e = st.nextToken ();
 	try
 	  {
-	    if (!e.endsWith (File.separator) && new File (e).isDirectory ())
+	    File path = new File(e);
+	    // Ignore invalid paths.
+	    if (!path.exists())
+	      continue;
+	    if (!e.endsWith (File.separator) && path.isDirectory ())
 	      addURL(new URL("file", "", -1, e + File.separator));
 	    else
 	      addURL(new URL("file", "", -1, e));
 	  } 
 	catch (java.net.MalformedURLException x)
 	  {
-	    /* Ignore this path element */
+	    // This should never happen.
+	    throw new RuntimeException(x);
 	  }
       }
 
     // Add the contents of the extensions directories.  
     st = new StringTokenizer (System.getProperty ("java.ext.dirs"),
 			      System.getProperty ("path.separator", ":"));
-    while (st.hasMoreElements ())
+
+    try
       {
-	String dirname = st.nextToken ();
-	try
+	while (st.hasMoreElements ())
 	  {
+	    String dirname = st.nextToken ();
 	    File dir = new File (dirname);
             if (dir.exists ())
             {
               if (! dirname.endsWith (File.separator))
-                  dirname = dirname + File.separator;
+        	  dirname = dirname + File.separator;
               String files[] 
-                = dir.list (new FilenameFilter ()
+        	= dir.list (new FilenameFilter ()
                             { 
                               public boolean accept (File dir, String name)
                               {
-                                return (name.endsWith (".jar") 
-                                        || name.endsWith (".zip"));
+                        	return (name.endsWith (".jar") 
+                                	|| name.endsWith (".zip"));
                               }
                             });
               for (int i = files.length - 1; i >= 0; i--)
-                addURL(new URL("file", "", -1, dirname + files[i]));
+        	addURL(new URL("file", "", -1, dirname + files[i]));
             }
 	  }
-	catch (Exception x)
-	  {
-	    // Just ignore any badness.  
-	  }
-      }
 
-    // Add core:/ to the end of the java.class.path so any resources
-    // compiled into this executable may be found.
-    try
-      {
+	// Add core:/ to the end of the java.class.path so any resources
+	// compiled into this executable may be found.
 	addURL(new URL("core", "", -1, "/"));
       }
     catch (java.net.MalformedURLException x)
       {
 	// This should never happen.
+	throw new RuntimeException(x);
       }
   }
 
