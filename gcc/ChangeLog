@@ -1,3 +1,9 @@
+2001-06-28  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* i386/i386.c (ix86_valid_type_attribute_p): Give external
+	linkage, move declaration to...
+	* i386/i386-protos.h: ...here.
+
 2001-06-27  H.J. Lu  (hjl@gnu.org)
 
 	* build-make (CC): Removed.

@@ -607,7 +607,6 @@ static int ix86_fp_comparison_sahf_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
 static int ix86_save_reg PARAMS ((int, int));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
-static int ix86_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -877,7 +876,7 @@ optimization_options (level, size)
    attribute for TYPE.  The attributes in ATTRIBUTES have previously been
    assigned to TYPE.  */
 
-static int
+int
 ix86_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
      tree attributes ATTRIBUTE_UNUSED;
