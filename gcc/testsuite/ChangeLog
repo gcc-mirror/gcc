@@ -1,3 +1,7 @@
+2003-12-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/warn/noreturn-3.C: Also test instantiation.
+
 2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/13387

@@ -7,3 +7,7 @@
 // PR c++/13106: No return warning when return type is a dependent type.
 
 template <typename T> T dummy() { }
+
+int main() { 
+    dummy<void>(); 
+}
