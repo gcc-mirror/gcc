@@ -1,5 +1,9 @@
 2000-05-14  Geoffrey Keating  <geoffk@cygnus.com>
 
+	* rs6000.c (output_cbranch): Don't output prediction codes
+	when old mnemonics are in use.  Print register names
+	for cc registers when requested.
+
 	* optabs.c (expand_float): Don't allow mode widening that causes
 	double rounding.
 

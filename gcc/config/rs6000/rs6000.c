@@ -4051,7 +4051,8 @@ output_cbranch (op, label, reversed, insn)
       abort();
     }
   
-  /* Maybe we have a guess as to how likely the branch is.  */
+  /* Maybe we have a guess as to how likely the branch is.  
+     The old mnemonics don't have a way to specify this information.  */
   note = find_reg_note (insn, REG_BR_PROB, NULL_RTX);
   if (note != NULL_RTX)
     {
@@ -4069,11 +4070,11 @@ output_cbranch (op, label, reversed, insn)
     pred = "";
 
   if (label == NULL)
-    s += sprintf (s, "{b%sr|b%slr}%s ", ccode, ccode, pred);
+    s += sprintf (s, "{b%sr|b%slr%s} ", ccode, ccode, pred);
   else
-    s += sprintf (s, "b%s%s ", ccode, pred);
+    s += sprintf (s, "{b%s|b%s%s} ", ccode, ccode, pred);
 
-  s += sprintf (s, "%d", cc_regno);
+  s += sprintf (s, "%s", reg_names[cc_regno + CR0_REGNO]);
 
   if (label != NULL)
     {
