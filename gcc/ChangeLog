@@ -1,3 +1,7 @@
+2002-12-10  Devang Patel  <dpatel@appple.com>
+	* config/darwin.h(LINK_SPEC): Add darwin specific linker options.
+	* doc/invoke.texi: Add new "Darwin Options" section.
+	
 2002-12-10  Jim Wilson  <wilson@redhat.com>
 
 	* rs6000.h (RETURN_IN_MEMORY): If ABI_V4, then TFmode is returned in

@@ -84,10 +84,183 @@ Boston, MA 02111-1307, USA.  */
 #undef	DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
+/* This table intercepts weirdo options whose names would interfere
+   with normal driver conventions, and either translates them into
+   standardly-named options, or adds a 'Z' so that they can get to
+   specs processing without interference.
+
+   Do not expand a linker option to "-Xlinker -<option>", since that
+   forfeits the ability to control via spec strings later.  However,
+   as a special exception, do this translation with -filelist, because
+   otherwise the driver will think there are no input files and quit.
+   (The alternative would be to hack the driver to recognize -filelist
+   specially, but it's simpler to use the translation table.)
+
+   Note that an option name with a prefix that matches another option
+   name, that also takes an argument, needs to be modified so the
+   prefix is different, otherwise a '*' after the shorter option will
+   match with the longer one.  */
+/* Ignore -dynamic for now */
+#define TARGET_OPTION_TRANSLATE_TABLE \
+  { "-all_load", "-Zall_load" },  \
+  { "-allowable_client", "-Zallowable_client" },  \
+  { "-arch_errors_fatal", "-Zarch_errors_fatal" },  \
+  { "-bind_at_load", "-Zbind_at_load" },  \
+  { "-bundle", "-Zbundle" },  \
+  { "-bundle_loader", "-Zbundle_loader" },  \
+  { "-weak_reference_mismatches", "-Zweak_reference_mismatches" },  \
+  { "-dependency-file", "-MF" }, \
+  { "-dylib_file", "-Zdylib_file" }, \
+  { "-dynamic", " " },  \
+  { "-dynamiclib", "-Zdynamiclib" },  \
+  { "-exported_symbols_list", "-Zexported_symbols_list" },  \
+  { "-seg_addr_table_filename", "-Zseg_addr_table_filename" }, \
+  { "-filelist", "-Xlinker -filelist -Xlinker" },  \
+  { "-flat_namespace", "-Zflat_namespace" },  \
+  { "-force_cpusubtype_ALL", "-Zforce_cpusubtype_ALL" },  \
+  { "-force_flat_namespace", "-Zforce_flat_namespace" },  \
+  { "-image_base", "-Zimage_base" },  \
+  { "-init", "-Zinit" },  \
+  { "-install_name", "-Zinstall_name" },  \
+  { "-multiply_defined_unused", "-Zmultiplydefinedunused" },  \
+  { "-multiply_defined", "-Zmultiply_defined" },  \
+  { "-multi_module", "-Zmulti_module" },  \
+  { "-static", "-static -Wa,-static" },  \
+  { "-single_module", "-Zsingle_module" },  \
+  { "-unexported_symbols_list", "-Zunexported_symbols_list" }
+
+/* These compiler options take n arguments.  */
+
+#undef  WORD_SWITCH_TAKES_ARG
+#define WORD_SWITCH_TAKES_ARG(STR)              \
+  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR) ? 1 :    \
+   !strcmp (STR, "Zallowable_client") ? 1 :     \
+   !strcmp (STR, "arch") ? 1 :                  \
+   !strcmp (STR, "arch_only") ? 1 :             \
+   !strcmp (STR, "Zbundle_loader") ? 1 :        \
+   !strcmp (STR, "client_name") ? 1 :           \
+   !strcmp (STR, "compatibility_version") ? 1 : \
+   !strcmp (STR, "current_version") ? 1 :       \
+   !strcmp (STR, "Zdylib_file") ? 1 :           \
+   !strcmp (STR, "Zexported_symbols_list") ? 1 : \
+   !strcmp (STR, "Zimage_base") ? 1 :           \
+   !strcmp (STR, "Zinit") ? 1 :                 \
+   !strcmp (STR, "Zinstall_name") ? 1 :         \
+   !strcmp (STR, "Zmultiplydefinedunused") ? 1 : \
+   !strcmp (STR, "Zmultiply_defined") ? 1 :     \
+   !strcmp (STR, "precomp-trustfile") ? 1 :     \
+   !strcmp (STR, "read_only_relocs") ? 1 :      \
+   !strcmp (STR, "sectcreate") ? 3 :            \
+   !strcmp (STR, "sectorder") ? 3 :             \
+   !strcmp (STR, "Zseg_addr_table_filename") ?1 :\
+   !strcmp (STR, "seg1addr") ? 1 :              \
+   !strcmp (STR, "segprot") ? 3 :               \
+   !strcmp (STR, "seg_addr_table") ? 1 :        \
+   !strcmp (STR, "sub_library") ? 1 :           \
+   !strcmp (STR, "sub_umbrella") ? 1 :          \
+   !strcmp (STR, "umbrella") ? 1 :              \
+   !strcmp (STR, "undefined") ? 1 :             \
+   !strcmp (STR, "Zunexported_symbols_list") ? 1 : \
+   !strcmp (STR, "Zweak_reference_mismatches") ? 1 : \
+   !strcmp (STR, "pagezero_size") ? 1 :         \
+   !strcmp (STR, "segs_read_only_addr") ? 1 :   \
+   !strcmp (STR, "segs_read_write_addr") ? 1 :  \
+   !strcmp (STR, "sectalign") ? 3 :             \
+   !strcmp (STR, "sectobjectsymbols") ? 2 :     \
+   !strcmp (STR, "segcreate") ? 3 :             \
+   !strcmp (STR, "dylinker_install_name") ? 1 : \
+   0)
+
 /* Machine dependent cpp options.  */
 
 #undef	CPP_SPEC
 #define CPP_SPEC "%{static:-D__STATIC__}%{!static:-D__DYNAMIC__}"
+
+/* This is mostly a clone of the standard LINK_COMMAND_SPEC, plus
+   precomp, libtool, and fat build additions.  Also we
+   don't specify a second %G after %L because libSystem is
+   self-contained and doesn't need to link against libgcc.a.  */
+/* In general, random Darwin linker flags should go into LINK_SPEC
+   instead of LINK_COMMAND_SPEC.  The command spec is better for
+   specifying the handling of options understood by generic Unix
+   linkers, and for positional arguments like libraries.  */
+#define LINK_COMMAND_SPEC "\
+%{!fdump=*:%{!fsyntax-only:%{!precomp:%{!c:%{!M:%{!MM:%{!E:%{!S:\
+    %{!Zdynamiclib:%(linker)}%{Zdynamiclib:/usr/bin/libtool} \
+    %l %X %{d} %{s} %{t} %{Z} \
+    %{!Zdynamiclib:%{A} %{e*} %{m} %{N} %{n} %{r} %{u*} %{x} %{z}} \
+    %{@:-o %f%u.out}%{!@:%{o*}%{!o:-o a.out}} \
+    %{!Zdynamiclib:%{!A:%{!nostdlib:%{!nostartfiles:%S}}}} \
+    %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%G %L}} \
+    %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} \
+    %{!--help:%{!no-c++filt|c++filt:| c++filt3 }} }}}}}}}}"
+
+/* Please keep the random linker options in alphabetical order (modulo
+   'Z' and 'no' prefixes).  Options that can only go to one of libtool
+   or ld must be listed twice, under both !Zdynamiclib and
+   Zdynamiclib, with one of the cases reporting an error.  */
+/* Note that options taking arguments may appear multiple times on a
+   command line with different arguments each time, so put a * after
+   their names so all of them get passed.  */
+#define LINK_SPEC  \
+  "%{static}%{!static:-dynamic} \
+   %{!Zdynamiclib: \
+     %{Zbundle:-bundle} \
+     %{Zbundle_loader*:-bundle_loader %*} \
+     %{client_name*} \
+     %{compatibility_version*:%e-compatibility_version only allowed with -dynamiclib\
+} \
+     %{current_version*:%e-current_version only allowed with -dynamiclib} \
+     %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
+     %{Zforce_flat_namespace:-force_flat_namespace} \
+     %{Zinstall_name*:%e-install_name only allowed with -dynamiclib} \
+     %{keep_private_externs} \
+     %{private_bundle} \
+    } \
+   %{Zdynamiclib: \
+     %{Zbundle:%e-bundle not allowed with -dynamiclib} \
+     %{Zbundle_loader*:%e-bundle_loader not allowed with -dynamiclib} \
+     %{client_name*:%e-client_name not allowed with -dynamiclib} \
+     %{compatibility_version*} \
+     %{current_version*} \
+     %{Zforce_cpusubtype_ALL:%e-force_cpusubtype_ALL not allowed with -dynamiclib} \
+     %{Zforce_flat_namespace:%e-force_flat_namespace not allowed with -dynamiclib} \
+     %{Zinstall_name*:-install_name %*} \
+     %{keep_private_externs:%e-keep_private_externs not allowed with -dynamiclib} \
+     %{private_bundle:%e-private_bundle not allowed with -dynamiclib} \
+    } \
+   %{Zall_load:-all_load}%{Zdynamiclib:%{!Zall_load:-noall_load}} \
+   %{Zallowable_client*:-allowable_client %*} \
+   %{Zbind_at_load:-bind_at_load} \
+   %{Zarch_errors_fatal:-arch_errors_fatal} \
+   %{Zdylib_file*:-dylib_file %*} \
+   %{Zexported_symbols_list*:-exported_symbols_list %*} \
+   %{Zflat_namespace:-flat_namespace} \
+   %{headerpad_max_install_names*} \
+   %{Zimage_base*:-image_base %*} \
+   %{Zinit*:-init %*} \
+   %{nomultidefs} \
+   %{Zmulti_module:-multi_module} %{Zsingle_module:-single_module} \
+   %{Zmultiply_defined*:-multiply_defined %*} \
+   %{Zmultiplydefinedunused*:-multiply_defined_unused %*} \
+   %{prebind} %{noprebind} %{prebind_all_twolevel_modules} \
+   %{read_only_relocs} \
+   %{sectcreate*} %{sectorder*} %{seg1addr*} %{segprot*} %{seg_addr_table*} \
+   %{Zseg_addr_table_filename*:-seg_addr_table_filename %*} \
+   %{sub_library*} %{sub_umbrella*} \
+   %{twolevel_namespace} %{twolevel_namespace_hints} \
+   %{umbrella*} \
+   %{undefined*} \
+   %{Zunexported_symbols_list*:-unexported_symbols_list %*} \
+   %{Zweak_reference_mismatches*:-weak_reference_mismatches %*} \
+   %{X} \
+   %{y*} \
+   %{w} \
+   %{pagezero_size*} %{segs_read_*} %{seglinkedit} %{noseglinkedit}  \
+   %{sectalign*} %{sectobjectsymbols*} %{segcreate*} %{whyload} \
+   %{whatsloaded} %{dylinker_install_name*} \
+   %{dylinker} %{Mach} "
+
 
 /* Machine dependent libraries.  */
 
@@ -96,10 +269,17 @@ Boston, MA 02111-1307, USA.  */
 
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 
-#undef	STARTFILE_SPEC
+#undef  STARTFILE_SPEC
 #define STARTFILE_SPEC  \
-  "%{pg:%{static:-lgcrt0.o}%{!static:-lgcrt1.o} -lcrt2.o} \
-    %{!pg:%{static:-lcrt0.o}%{!static:-lcrt1.o} -lcrt2.o}"
+  "%{!Zdynamiclib:%{Zbundle:%{!static:-lbundle1.o}} \
+     %{!Zbundle:%{pg:%{static:-lgcrt0.o} \
+                     %{!static:%{object:-lgcrt0.o} \
+                               %{!object:%{preload:-lgcrt0.o} \
+                                 %{!preload:-lgcrt1.o -lcrt2.o}}}} \
+                %{!pg:%{static:-lcrt0.o} \
+                      %{!static:%{object:-lcrt0.o} \
+                                %{!object:%{preload:-lcrt0.o} \
+                                  %{!preload:-lcrt1.o -lcrt2.o}}}}}}"
 
 /* The native Darwin linker doesn't necessarily place files in the order
    that they're specified on the link line.  Thus, it is pointless

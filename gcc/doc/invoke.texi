@@ -463,6 +463,28 @@ in the following sections.
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
 -msdata=@var{opt}  -mvxworks -mwindiss -G @var{num} -pthread}
 
+@emph{Darwin Options}
+@gccoptlist{
+-all_load -allowable_client -arch -arch_errors_fatal @gol
+-arch_only -bind_at_load -bundle -bundle_loader @gol
+-client_name -compatibility_version -current_version @gol
+-dependency-file -dylib_file -dylinker_install_name @gol
+-dynamic -dynamiclib -exported_symbols_list @gol
+-filelist -flat_namespace -force_cpusubtype_ALL @gol
+-force_flat_namespace -headerpad_max_install_names @gol
+-image_base -init -install_name -keep_private_externs @gol
+-multi_module -multiply_defined -multiply_defined_unused @gol
+-noall_load -nomultidefs -noprebind -noseglinkedit @gol
+-pagezero_size -prebind -prebind_all_twolevel_modules @gol
+-private_bundle -read_only_relocs -sectalign @gol
+-sectobjectsymbols -whyload -seg1addr @gol
+-sectcreate -sectobjectsymbols -sectorder @gol
+-seg_addr_table -seg_addr_table_filename -seglinkedit @gol
+-segprot -segs_read_only_addr -segs_read_write_addr @gol
+-single_module -static -sub_library -sub_umbrella @gol
+-twolevel_namespace -umbrella -undefined @gol
+-unexported_symbols_list -weak_reference_mismatches -whatsloaded}
+
 @emph{RT Options}
 @gccoptlist{
 -mcall-lib-mul  -mfp-arg-in-fpregs  -mfp-arg-in-gregs @gol
@@ -5202,6 +5224,7 @@ that macro, which enables you to change the defaults.
 * M32R/D Options::
 * M88K Options::
 * RS/6000 and PowerPC Options::
+* Darwin Options::
 * RT Options::
 * MIPS Options::
 * i386 and x86-64 Options::
@@ -7226,6 +7249,138 @@ Adds support for multithreading with the @dfn{pthreads} library.
 This option sets flags for both the preprocessor and linker.
 
 @end table
+
+@node Darwin Options
+@subsection Darwin Options
+@cindex Darwin options
+@table @gcctabopt
+@item -all_load    
+@item -allowable_client  
+@item -arch    
+@item -arch_errors_fatal
+@item -arch_only
+@item -bind_at_load
+@item -bundle     
+@item -bundle_loader
+@item -client_name       
+@item -compatibility_version
+@item -current_version    
+@item -dependency-file
+@item -dylib_file    
+@item -dylinker_install_name
+@item -dynamic
+@item -dynamiclib   
+@item -exported_symbols_list  
+@item -filelist
+@item -flat_namespace   
+@item -force_cpusubtype_ALL
+@item -force_flat_namespace   
+@item -headerpad_max_install_names
+@item -image_base  
+@item -init
+@item -install_name
+@item -keep_private_externs
+@item -multi_module
+@item -multiply_defined      
+@item -multiply_defined_unused      
+@item -noall_load  
+@item -nomultidefs
+@item -noprebind     
+@item -noseglinkedit
+@item -pagezero_size    
+@item -prebind
+@item -prebind_all_twolevel_modules
+@item -private_bundle
+@item -read_only_relocs
+@item -sectalign  
+@item -sectobjectsymbols    
+@item -whyload
+@item -seg1addr 
+@item -sectcreate
+@item -sectobjectsymbols
+@item -sectorder
+@item -seg_addr_table
+@item -seg_addr_table_filename
+@item -seglinkedit
+@item -segprot   
+@item -segs_read_only_addr
+@item -segs_read_write_addr
+@item -single_module   
+@item -static
+@item -sub_library
+@item -sub_umbrella 
+@item -twolevel_namespace
+@item -umbrella
+@item -undefined
+@item -unexported_symbols_list
+@item -weak_reference_mismatches
+@item -whatsloaded  
+@opindex all_load   
+@opindex allowable_client
+@opindex arch
+@opindex arch_errors_fatal
+@opindex arch_only    
+@opindex bind_at_load
+@opindex bundle
+@opindex bundle_loader
+@opindex client_name
+@opindex compatibility_version
+@opindex current_version
+@opindex dependency-file
+@opindex dylib_file
+@opindex dylinker_install_name
+@opindex dynamic
+@opindex dynamiclib
+@opindex exported_symbols_list
+@opindex filelist  
+@opindex flat_namespace    
+@opindex force_cpusubtype_ALL
+@opindex force_flat_namespace
+@opindex headerpad_max_install_names
+@opindex image_base
+@opindex init     
+@opindex install_name
+@opindex keep_private_externs
+@opindex multi_module   
+@opindex multiply_defined
+@opindex multiply_defined_unused   
+@opindex noall_load  
+@opindex nomultidefs   
+@opindex noprebind
+@opindex noseglinkedit      
+@opindex pagezero_size
+@opindex prebind
+@opindex prebind_all_twolevel_modules
+@opindex private_bundle 
+@opindex read_only_relocs
+@opindex sectalign   
+@opindex sectobjectsymbols    
+@opindex whyload  
+@opindex seg1addr
+@opindex sectcreate       
+@opindex sectobjectsymbols 
+@opindex sectorder     
+@opindex seg_addr_table
+@opindex seg_addr_table_filename
+@opindex seglinkedit
+@opindex segprot
+@opindex segs_read_only_addr
+@opindex segs_read_write_addr
+@opindex single_module
+@opindex static
+@opindex sub_library
+@opindex sub_umbrella
+@opindex twolevel_namespace
+@opindex umbrella
+@opindex undefined
+@opindex unexported_symbols_list
+@opindex weak_reference_mismatches
+@opindex whatsloaded
+
+This options are available for Darwin linker. Darwin linker man page
+describes them in detail.
+@end table
+
 
 @node RT Options
 @subsection IBM RT Options
