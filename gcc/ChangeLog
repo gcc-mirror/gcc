@@ -1,3 +1,10 @@
+2002-01-26  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md: Remove bit extraction patterns that
+	cannot be triggered.
+	Restrict each bit extraction pattern to a variant on which the
+	pattern is tested.
+
 2002-01-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/include/texinfo.tex: Update to version 2002-01-04.07.
