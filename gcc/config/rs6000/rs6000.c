@@ -75,7 +75,7 @@ rs6000_override_options ()
   /* Simplify the entries below by making a mask for any POWER
      variant and any PowerPC variant.  */
 
-#define POWER_MASKS (MASK_POWER | MASK_POWER2)
+#define POWER_MASKS (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE)
 #define POWERPC_MASKS (MASK_POWERPC | MASK_PPC_GPOPT \
 		       | MASK_PPC_GFXOPT | MASK_POWERPC64)
 #define POWERPC_OPT_MASKS (MASK_PPC_GPOPT | MASK_PPC_GFXOPT)
@@ -89,34 +89,34 @@ rs6000_override_options ()
     } processor_target_table[]
       = {{"common", PROCESSOR_COMMON, 0, POWER_MASKS | POWERPC_MASKS},
 	 {"power", PROCESSOR_POWER,
-	    MASK_POWER,
+	    MASK_POWER | MASK_MULTIPLE,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"powerpc", PROCESSOR_POWERPC,
 	    MASK_POWERPC | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"rios", PROCESSOR_RIOS1,
-	    MASK_POWER,
+	    MASK_POWER | MASK_MULTIPLE,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"rios1", PROCESSOR_RIOS1,
-	    MASK_POWER,
+	    MASK_POWER | MASK_MULTIPLE,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"rsc", PROCESSOR_PPC601,
-	    MASK_POWER,
+	    MASK_POWER | MASK_MULTIPLE,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"rsc1", PROCESSOR_PPC601,
-	    MASK_POWER,
+	    MASK_POWER | MASK_MULTIPLE,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"rios2", PROCESSOR_RIOS2,
-	    MASK_POWER | MASK_POWER2,
+	    MASK_POWER | MASK_MULTIPLE | MASK_POWER2,
 	    POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"mpc601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"ppc601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"603", PROCESSOR_PPC603,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
@@ -1601,6 +1601,12 @@ output_prolog (file, size)
       common_mode_defined = 1;
     }
 
+#ifdef USING_SVR4_H
+  /* If we have a relocatable GOT section, we need to save the LR. */
+  if (TARGET_RELOCATABLE && get_pool_size () != 0)
+    regs_ever_live[65] = 1;
+#endif
+
   /* If we have to call a function to save fpr's, or if we are doing profiling,
      then we will be using LR.  */
   if (first_fp_reg < 62 || profile_flag)
@@ -1673,12 +1679,38 @@ output_prolog (file, size)
      TOC_TABLE address into register 30.  */
   if (TARGET_MINIMAL_TOC && get_pool_size () != 0)
     {
-      char buf[100];
+      char buf[256];
 
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
-      asm_fprintf (file, "\t{l|lwz} 30,");
-      assemble_name (file, buf);
-      asm_fprintf (file, "(2)\n");
+#ifdef USING_SVR4_H
+      if (TARGET_RELOCATABLE)
+	{
+	  static int labelno = 0;
+
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", labelno);
+	  fprintf (file, "\tbl ");
+	  assemble_name (file, buf);
+	  fprintf (file, "\n");
+
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
+	  fprintf (file, (TARGET_POWERPC64) ? "\t.quad " : "\t.long ");
+	  assemble_name (file, buf);
+	  fprintf (file, "-.\n");
+
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", labelno);
+	  fprintf (file, "\tmflr 30\n");
+
+	  asm_fprintf (file, (TARGET_POWERPC64) ? "\tld 0,0(30)\n" : "\t{l|lwz} 0,0(30)\n");
+	  asm_fprintf (file, "\t{cax|add} 30,0,30\n");
+	  labelno++;
+	}
+      else
+#endif /* USING_SVR4_H */
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
+	  asm_fprintf (file, "\t{l|lwz} 30,");
+	  assemble_name (file, buf);
+	  asm_fprintf (file, "(2)\n");
+	}
     }
 }
 
@@ -1973,7 +2005,17 @@ output_toc (file, x, labelno)
   rtx base = x;
   int offset = 0;
 
-  ASM_OUTPUT_INTERNAL_LABEL (file, "LC", labelno);
+#ifdef USING_SVR4_H
+  if (TARGET_MINIMAL_TOC)
+    {
+      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LC");
+      fprintf (file, "%d = .-", labelno);
+      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LCTOC");
+      fprintf (file, "1\n");
+    }
+  else
+#endif /* USING_SVR4_H */
+    ASM_OUTPUT_INTERNAL_LABEL (file, "LC", labelno);
 
   /* Handle FP constants specially.  Note that if we have a minimal
      TOC, things we put here aren't actually in the TOC, so we can allow
