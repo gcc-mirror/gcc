@@ -1,3 +1,8 @@
+2003-03-10  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.c (m68hc11_gen_rotate): Set carry before
+	each 16-bit rotation.
+
 2003-03-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-opts.c (add_prefixed_path): Don't use concat.  When
