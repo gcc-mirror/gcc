@@ -164,4 +164,4 @@ while (0)
    `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mlittle", "mlittle-endian", "mcall-solaris", "mno-sdata" }
+#define	MULTILIB_DEFAULTS { "mlittle", "mcall-solaris" }

@@ -1347,4 +1347,4 @@ do {									\
    `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-sysv-noeabi", "mno-sdata" }
+#define	MULTILIB_DEFAULTS { "mbig", "mcall-sysv" }
