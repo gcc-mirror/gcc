@@ -1,3 +1,8 @@
+2002-03-29  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (check_inner_circular_reference): Ignore incomplete
+	types.
+
 2002-03-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Make-lang.in (builtins.o): Update.
