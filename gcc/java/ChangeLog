@@ -1,3 +1,8 @@
+2001-08-28  Per Bothner  <per@bothner.com>
+
+	* jcf-write.c  (generate_bytecode_insns):  For increments and
+        decrements just recurse to push constant.  Improvement on Mark's patch.
+
 2001-08-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* jcf-write.c (generate_bytecode_insns): Generate an integer to
