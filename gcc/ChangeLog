@@ -1,3 +1,8 @@
+2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_fputs): Use size_one_node when
+	transforming into fwrite.
+
 2001-01-27  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* extend.texi (Attribute Syntax): New section.
