@@ -1819,9 +1819,7 @@ resolve_offset_ref (exp)
   if (TREE_CODE (member) == FIELD_DECL
       && (base == current_class_ref || is_dummy_object (base)))
     {
-      tree expr;
-
-      basetype = DECL_CONTEXT (member);
+      tree binfo = TYPE_BINFO (current_class_type);
 
       /* Try to get to basetype from 'this'; if that doesn't work,
          nothing will.  */
@@ -1829,30 +1827,15 @@ resolve_offset_ref (exp)
 
       /* First convert to the intermediate base specified, if appropriate.  */
       if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
-	base = build_scoped_ref (base, TYPE_OFFSET_BASETYPE (type));
-
-      /* Don't check access on the conversion; we might be after a member
-	 promoted by an access- or using-declaration, and we have already
-	 checked access for the member itself.  */
-      basetype = lookup_base (TREE_TYPE (base), basetype, ba_ignore, NULL);
-      expr = build_base_path (PLUS_EXPR, base, basetype, 1);
-
-      if (expr == error_mark_node)
-	return error_mark_node;
-
-      type = TREE_TYPE (member);
-      if (TREE_CODE (type) != REFERENCE_TYPE)
 	{
-	  int quals = cp_type_quals (type) | cp_type_quals (TREE_TYPE (expr));
-
-	  if (DECL_MUTABLE_P (member))
-	    quals &= ~TYPE_QUAL_CONST;
-	  
-	  type = cp_build_qualified_type (type, quals);
+	  binfo = binfo_or_else (TYPE_OFFSET_BASETYPE (type),
+				 current_class_type);
+	  if (!binfo)
+	    return error_mark_node;
+	  base = build_base_path (PLUS_EXPR, base, binfo, 1);
 	}
-      
-      expr = build (COMPONENT_REF, type, expr, member);
-      return convert_from_reference (expr);
+
+      return build_component_ref (base, member, binfo, 1);
     }
 
   /* Ensure that we have an object.  */

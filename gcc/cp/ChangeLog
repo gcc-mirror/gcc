@@ -1,6 +1,9 @@
 2002-03-18  Jason Merrill  <jason@redhat.com>
 
-	PR c++/5995
+	PR c++/2039
+	* init.c (resolve_offset_ref): Hand off to build_component_ref.
+
+	PR c++/4222, c++/5995
 	* call.c (build_over_call): Fix empty class logic.
 
 	PR c++/3870
