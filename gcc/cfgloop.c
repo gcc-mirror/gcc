@@ -737,26 +737,26 @@ flow_loops_find (loops, flags)
       /* Find and record information about all the natural loops
 	 in the CFG.  */
       num_loops = 0;
-      for (b = 0; b < n_basic_blocks; b++)
+      for (b = n_basic_blocks - 1; b >= 0; b--)
 	{
-	  basic_block header;
+	  basic_block latch;
 
 	  /* Search the nodes of the CFG in reverse completion order
 	     so that we can find outer loops first.  */
-	  header = BASIC_BLOCK (rc_order[b]);
+	  latch = BASIC_BLOCK (rc_order[b]);
 
-	  /* Look for all the possible latch blocks for this header.  */
-	  for (e = header->pred; e; e = e->pred_next)
+	  /* Look for all the possible headers for this latch block.  */
+	  for (e = latch->succ; e; e = e->succ_next)
 	    {
-	      basic_block latch = e->src;
+	      basic_block header = e->dest;
 
-	      /* Look for back edges where a predecessor is dominated
-		 by this block.  A natural loop has a single entry
-		 node (header) that dominates all the nodes in the
-		 loop.  It also has single back edge to the header
-		 from a latch node.  Note that multiple natural loops
-		 may share the same header.  */
-	      if (latch != ENTRY_BLOCK_PTR
+	      /* Look for forward edges where this block is dominated by
+		 a successor of this block.  A natural loop has a single
+		 entry node (header) that dominates all the nodes in the
+		 loop.  It also has single back edge to the header from a
+		 latch node.  Note that multiple natural loops may share
+		 the same header.  */
+	      if (header != EXIT_BLOCK_PTR
 		  && TEST_BIT (dom[latch->index], header->index))
 		{
 		  struct loop *loop;
