@@ -3027,8 +3027,12 @@ AC_ARG_WITH(gc,
 [  --with-gc={page,zone}   choose the garbage collection mechanism to use
                           with the compiler],
 [case "$withval" in
-  page | zone)
+  page)
     GGC=ggc-$withval
+    ;;
+  zone)
+    GGC=ggc-$withval
+    AC_DEFINE(GGC_ZONE, 1, [Define if the zone collector is in use])
     ;;
   *)
     AC_MSG_ERROR([$withval is an invalid option to --with-gc])

@@ -14959,8 +14959,16 @@ fi
 if test "${with_gc+set}" = set; then
   withval="$with_gc"
   case "$withval" in
-  page | zone)
+  page)
     GGC=ggc-$withval
+    ;;
+  zone)
+    GGC=ggc-$withval
+
+cat >>confdefs.h <<\_ACEOF
+#define GGC_ZONE 1
+_ACEOF
+
     ;;
   *)
     { { echo "$as_me:$LINENO: error: $withval is an invalid option to --with-gc" >&5

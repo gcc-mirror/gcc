@@ -54,7 +54,8 @@ typedef void (*gt_handle_reorder) (void *, void *, gt_pointer_operator,
 				   void *);
 
 /* Used by the gt_pch_n_* routines.  Register an object in the hash table.  */
-extern int gt_pch_note_object (void *, void *, gt_note_pointers);
+extern int gt_pch_note_object (void *, void *, gt_note_pointers,
+			       enum gt_types_enum);
 
 /* Used by the gt_pch_n_* routines.  Register that an object has a reorder
    function.  */
@@ -169,9 +170,10 @@ extern struct ggc_pch_data *init_ggc_pch (void);
 
 /* The second parameter and third parameters give the address and size
    of an object.  Update the ggc_pch_data structure with as much of
-   that information as is necessary. The last argument should be true
+   that information as is necessary. The bool argument should be true
    if the object is a string.  */
-extern void ggc_pch_count_object (struct ggc_pch_data *, void *, size_t, bool);
+extern void ggc_pch_count_object (struct ggc_pch_data *, void *, size_t, bool,
+				  enum gt_types_enum);
 
 /* Return the total size of the data to be written to hold all
    the objects previously passed to ggc_pch_count_object.  */
@@ -183,8 +185,9 @@ extern void ggc_pch_this_base (struct ggc_pch_data *, void *);
 
 /* Assuming that the objects really do end up at the address
    passed to ggc_pch_this_base, return the address of this object.
-   The last argument should be true if the object is a string.  */
-extern char *ggc_pch_alloc_object (struct ggc_pch_data *, void *, size_t, bool);
+   The bool argument should be true if the object is a string.  */
+extern char *ggc_pch_alloc_object (struct ggc_pch_data *, void *, size_t, bool,
+				   enum gt_types_enum);
 
 /* Write out any initial information required.  */
 extern void ggc_pch_prepare_write (struct ggc_pch_data *, FILE *);
@@ -203,30 +206,18 @@ extern void ggc_pch_read (FILE *, void *);
 
 /* Allocation.  */
 
-/* For single pass garbage.  */
-extern struct alloc_zone *garbage_zone;
-/* For regular rtl allocations.  */
-extern struct alloc_zone *rtl_zone;
-/* For regular tree allocations.  */
-extern struct alloc_zone *tree_zone;
 /* When set, ggc_collect will do collection.  */
 extern bool ggc_force_collect;
 
 /* The internal primitive.  */
 extern void *ggc_alloc_stat (size_t MEM_STAT_DECL);
 #define ggc_alloc(s) ggc_alloc_stat (s MEM_STAT_INFO)
-/* Allocate an object into the specified allocation zone.  */
-extern void *ggc_alloc_zone_stat (size_t, struct alloc_zone * MEM_STAT_DECL);
-#define ggc_alloc_zone(s,z) ggc_alloc_zone_stat (s,z MEM_STAT_INFO)
 /* Allocate an object of the specified type and size.  */
 extern void *ggc_alloc_typed_stat (enum gt_types_enum, size_t MEM_STAT_DECL);
 #define ggc_alloc_typed(s,z) ggc_alloc_typed_stat (s,z MEM_STAT_INFO)
 /* Like ggc_alloc, but allocates cleared memory.  */
 extern void *ggc_alloc_cleared_stat (size_t MEM_STAT_DECL);
 #define ggc_alloc_cleared(s) ggc_alloc_cleared_stat (s MEM_STAT_INFO)
-/* Like ggc_alloc_zone, but allocates cleared memory.  */
-extern void *ggc_alloc_cleared_zone (size_t, struct alloc_zone * MEM_STAT_DECL);
-#define ggc_alloc_cleared_zone(s,z) ggc_alloc_cleared_stat (s,z MEM_STAT_INFO)
 /* Resize a block.  */
 extern void *ggc_realloc_stat (void *, size_t MEM_STAT_DECL);
 #define ggc_realloc(s,z) ggc_realloc_stat (s,z MEM_STAT_INFO)
@@ -249,11 +240,11 @@ extern void dump_ggc_loc_statistics (void);
 #define GGC_NEWVAR(T, S)	((T *) ggc_alloc ((S)))
 #define GGC_CNEWVAR(T, S)	((T *) ggc_alloc_cleared ((S)))
 
-#define ggc_alloc_rtvec(NELT)						  \
-  ((rtvec) ggc_alloc_typed (gt_ggc_e_9rtvec_def, sizeof (struct rtvec_def) \
-		      + ((NELT) - 1) * sizeof (rtx)))
+#define ggc_alloc_rtvec(NELT)						 \
+  ((rtvec) ggc_alloc_zone (sizeof (struct rtvec_def) + ((NELT) - 1)	 \
+			   * sizeof (rtx), &rtl_zone))
 
-#define ggc_alloc_tree(LENGTH) ((tree) ggc_alloc_zone (LENGTH, tree_zone))
+#define ggc_alloc_tree(LENGTH) ((tree) ggc_alloc_zone (LENGTH, &tree_zone))
 
 #define htab_create_ggc(SIZE, HASH, EQ, DEL) \
   htab_create_alloc (SIZE, HASH, EQ, DEL, ggc_calloc, NULL)
@@ -308,5 +299,30 @@ extern void stringpool_statistics (void);
 extern int ggc_min_expand_heuristic (void);
 extern int ggc_min_heapsize_heuristic (void);
 extern void init_ggc_heuristics (void);
+
+/* Zone collection.  */
+#if defined (GGC_ZONE) && !defined (GENERATOR_FILE)
+
+/* For regular rtl allocations.  */
+extern struct alloc_zone rtl_zone;
+/* For regular tree allocations.  */
+extern struct alloc_zone tree_zone;
+/* For IDENTIFIER_NODE allocations.  */
+extern struct alloc_zone tree_id_zone;
+
+/* Allocate an object into the specified allocation zone.  */
+extern void *ggc_alloc_zone_stat (size_t, struct alloc_zone * MEM_STAT_DECL);
+# define ggc_alloc_zone(s,z) ggc_alloc_zone_stat (s,z MEM_STAT_INFO)
+
+#else
+
+# define ggc_alloc_zone(s, z) ggc_alloc (s)
+# ifdef GATHER_STATISTICS
+#  define ggc_alloc_zone_stat(s, z, n, l, f) ggc_alloc_stat (s, n, l, f)
+# else
+#  define ggc_alloc_zone_stat(s, z) ggc_alloc_stat (s)
+# endif
+
+#endif
 
 #endif

@@ -333,6 +333,9 @@ void dump_alloc_pool_statistics (void)
 #ifdef GATHER_STATISTICS
   struct output_info info;
 
+  if (!alloc_pool_hash)
+    return;
+
   fprintf (stderr, "\nAlloc-pool Kind        Pools  Allocated      Peak        Leak\n");
   fprintf (stderr, "-------------------------------------------------------------\n");
   info.count = 0;
