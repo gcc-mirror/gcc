@@ -1402,7 +1402,7 @@ init_web_parts (struct df *df)
 	    num_webs++;
 	}
       else
-	/* The last iteration might have left .ref set, while df_analyse()
+	/* The last iteration might have left .ref set, while df_analyze()
 	   removed that ref (due to a removed copy insn) from the df->defs[]
 	   array.  As we don't check for that in realloc_web_parts()
 	   we do that here.  */

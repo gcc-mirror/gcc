@@ -752,7 +752,7 @@ reg_alloc (void)
       /* First collect all the register refs and put them into
 	 chains per insn, and per regno.  In later passes only update
          that info from the new and modified insns.  */
-      df_analyse (df, (ra_pass == 1) ? 0 : (bitmap) -1,
+      df_analyze (df, (ra_pass == 1) ? 0 : (bitmap) -1,
 		  DF_HARD_REGS | DF_RD_CHAIN | DF_RU_CHAIN | DF_FOR_REGALLOC);
 
       if ((debug_new_regalloc & DUMP_DF) != 0)

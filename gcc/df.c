@@ -46,7 +46,7 @@ Here's an example of using the dataflow routines.
 
       df = df_init ();
 
-      df_analyse (df, 0, DF_ALL);
+      df_analyze (df, 0, DF_ALL);
 
       df_dump (df, DF_ALL, stderr);
 
@@ -58,7 +58,7 @@ passed to all the dataflow routines.  df_finish destroys this
 object and frees up any allocated memory.   DF_ALL says to analyse
 everything.
 
-df_analyse performs the following:
+df_analyze performs the following:
 
 1. Records defs and uses by scanning the insns in each basic block
    or by scanning the insns queued by df_insn_modify.
@@ -83,7 +83,7 @@ deleted or created insn.  If the dataflow information requires
 updating then all the changed, new, or deleted insns needs to be
 marked with df_insn_modify (or df_insns_modify) either directly or
 indirectly (say through calling df_insn_delete).  df_insn_modify
-marks all the modified insns to get processed the next time df_analyse
+marks all the modified insns to get processed the next time df_analyze
  is called.
 
 Beware that tinkering with insns may invalidate the dataflow information.
@@ -91,7 +91,7 @@ The philosophy behind these routines is that once the dataflow
 information has been gathered, the user should store what they require
 before they tinker with any insn.  Once a reg is replaced, for example,
 then the reg-def/reg-use chains will point to the wrong place.  Once a
-whole lot of changes have been made, df_analyse can be called again
+whole lot of changes have been made, df_analyze can be called again
 to update the dataflow information.  Currently, this is not very smart
 with regard to propagating changes to the dataflow so it should not
 be called very often.
@@ -128,7 +128,7 @@ When shadowing loop mems we create new uses and defs for new pseudos
 so we do not affect the existing dataflow information.
 
 My current strategy is to queue up all modified, created, or deleted
-insns so when df_analyse is called we can easily determine all the new
+insns so when df_analyze is called we can easily determine all the new
 or deleted refs.  Currently the global dataflow information is
 recomputed from scratch but this could be propagated more efficiently.
 
@@ -151,7 +151,7 @@ Similarly, should the first entry in the use list be the last use
 
 Often the whole CFG does not need to be analyzed, for example,
 when optimizing a loop, only certain registers are of interest.
-Perhaps there should be a bitmap argument to df_analyse to specify
+Perhaps there should be a bitmap argument to df_analyze to specify
 which registers should be analyzed?
 
 
@@ -261,7 +261,7 @@ static int df_refs_queue (struct df *);
 static int df_refs_process (struct df *);
 static int df_bb_refs_update (struct df *, basic_block);
 static int df_refs_update (struct df *);
-static void df_analyse_1 (struct df *, bitmap, int, int);
+static void df_analyze_1 (struct df *, bitmap, int, int);
 
 static void df_insns_modify (struct df *, basic_block, rtx, rtx);
 static int df_rtx_mem_replace (rtx *, void *);
@@ -1827,7 +1827,7 @@ df_luids_set (struct df *df, bitmap blocks)
 /* Perform dataflow analysis using existing DF structure for blocks
    within BLOCKS.  If BLOCKS is zero, use all basic blocks in the CFG.  */
 static void
-df_analyse_1 (struct df *df, bitmap blocks, int flags, int update)
+df_analyze_1 (struct df *df, bitmap blocks, int flags, int update)
 {
   int aflags;
   int dflags;
@@ -2169,7 +2169,7 @@ df_modified_p (struct df *df, bitmap blocks)
    BLOCKS, or for the whole CFG if BLOCKS is zero, or just for the
    modified blocks if BLOCKS is -1.  */
 int
-df_analyse (struct df *df, bitmap blocks, int flags)
+df_analyze (struct df *df, bitmap blocks, int flags)
 {
   int update;
 
@@ -2190,7 +2190,7 @@ df_analyse (struct df *df, bitmap blocks, int flags)
 	    }
 	  /* Allocate and initialize data structures.  */
 	  df_alloc (df, max_reg_num ());
-	  df_analyse_1 (df, 0, flags, 0);
+	  df_analyze_1 (df, 0, flags, 0);
 	  update = 1;
 	}
       else
@@ -2201,7 +2201,7 @@ df_analyse (struct df *df, bitmap blocks, int flags)
 	  if (! df->n_bbs)
 	    abort ();
 
-	  df_analyse_1 (df, blocks, flags, 1);
+	  df_analyze_1 (df, blocks, flags, 1);
 	  bitmap_zero (df->bbs_modified);
 	  bitmap_zero (df->insns_modified);
 	}
@@ -2400,7 +2400,7 @@ df_insn_mem_replace (struct df *df, basic_block bb, rtx insn, rtx mem, rtx reg)
      in INSN.  REG should be a new pseudo so it won't affect the
      dataflow information that we currently have.  We should add
      the new uses and defs to INSN and then recreate the chains
-     when df_analyse is called.  */
+     when df_analyze is called.  */
   return args.modified;
 }
 
@@ -2660,7 +2660,7 @@ df_insn_move_before (struct df *df, basic_block bb, rtx insn, basic_block before
      are likely to be increased.  */
 
   /* ???? Perhaps all the insns moved should be stored on a list
-     which df_analyse removes when it recalculates data flow.  */
+     which df_analyze removes when it recalculates data flow.  */
 
   return emit_insn_before (insn, before_insn);
 }
