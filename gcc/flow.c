@@ -3390,7 +3390,6 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
 	    }
 	}
 
-      PUT_CODE (incr, NOTE);
       SET_INSN_DELETED (incr);
     }
 
