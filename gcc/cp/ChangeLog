@@ -1,3 +1,11 @@
+1999-09-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (pushdecl): Don't make local declarations of extern
+	variables give the variable a DECL_CONTEXT for the function.
+	(make_rtl_for_nonlocal_decl): Don't fuss with obstacks.  Simplify.
+	Don't accidentally make RTL for local declarations.
+	(emit_local_var): Handle declarations with asm-specifiers here.
+	
 1999-09-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* ir.texi: Improve documentation for TARGET_EXPRs.  Discuss
