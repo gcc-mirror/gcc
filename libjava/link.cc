@@ -1395,9 +1395,7 @@ _Jv_Linker::ensure_class_linked (jclass klass)
       // a reference to a class we can't access.  This can validly
       // occur in an obscure case involving the InnerClasses
       // attribute.
-#ifdef INTERPRETER
       if (! _Jv_IsInterpretedClass (klass))
-#endif
 	{
 	  // Resolve class constants first, since other constant pool
 	  // entries may rely on these.
@@ -1652,11 +1650,7 @@ _Jv_Linker::print_class_loaded (jclass klass)
 
   // We use a somewhat bogus test for the ABI here.
   char *abi;
-#ifdef INTERPRETER
   if (_Jv_IsInterpretedClass (klass))
-#else
-  if (false)
-#endif
     abi = "bytecode";
   else if (klass->state == JV_STATE_PRELOADING)
     abi = "BC-compiled";
@@ -1693,10 +1687,7 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
   if (gcj::verbose_class_flag
       && (klass->state == JV_STATE_COMPILED
 	  || klass->state == JV_STATE_PRELOADING)
-#ifdef INTERPRETER
-      && ! _Jv_IsInterpretedClass (klass)
-#endif
-      )
+      && ! _Jv_IsInterpretedClass (klass))
     print_class_loaded (klass);
 
   try

@@ -1,5 +1,14 @@
 2005-03-16  Tom Tromey  <tromey@redhat.com>
 
+	* link.cc (ensure_class_linked): Removed #ifdef.
+	(print_class_loaded): Likewise.
+	(wait_for_state): Likewise.
+	* java/lang/Class.h (_Jv_IsInterpretedClass): Always declare.
+	* include/jvm.h (_Jv_IsInterpretedClass): Moved from...
+	* include/java-interp.h: ... here.
+
+2005-03-16  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/java/lang/MainThread.java (run): Load main class using
 	system class loader.
 

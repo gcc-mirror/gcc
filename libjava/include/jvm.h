@@ -586,4 +586,13 @@ _Jv_CheckABIVersion (unsigned long value)
 	  || value == (GCJ_VERSION + GCJ_BINARYCOMPAT_ADDITION));
 }
 
+// It makes the source cleaner if we simply always define this
+// function.  If the interpreter is not built, it will never return
+// 'true'.
+extern inline jboolean
+_Jv_IsInterpretedClass (jclass c)
+{
+  return (c->accflags & java::lang::reflect::Modifier::INTERPRETED) != 0;
+}
+
 #endif /* __JAVA_JVM_H__ */

@@ -234,8 +234,9 @@ jboolean _Jv_CheckAccess (jclass self_klass, jclass other_klass,
 			  jint flags);
 jclass _Jv_GetArrayClass (jclass klass, java::lang::ClassLoader *loader);
 
-#ifdef INTERPRETER
 jboolean _Jv_IsInterpretedClass (jclass);
+
+#ifdef INTERPRETER
 void _Jv_InitField (jobject, jclass, int);
 
 class _Jv_ClassReader;	
@@ -466,8 +467,9 @@ private:
   friend jclass (::_Jv_GetArrayClass) (jclass klass,
 				       java::lang::ClassLoader *loader);
 
-#ifdef INTERPRETER
   friend jboolean (::_Jv_IsInterpretedClass) (jclass);
+
+#ifdef INTERPRETER
   friend void ::_Jv_InitField (jobject, jclass, int);
 
   friend class ::_Jv_ClassReader;	

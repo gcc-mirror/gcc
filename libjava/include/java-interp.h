@@ -1,6 +1,6 @@
 // java-interp.h - Header file for the bytecode interpreter.  -*- c++ -*-
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -25,12 +25,6 @@ details.  */
 
 extern "C" {
 #include <ffi.h>
-}
-
-extern inline jboolean
-_Jv_IsInterpretedClass (jclass c)
-{
-  return (c->accflags & java::lang::reflect::Modifier::INTERPRETED) != 0;
 }
 
 struct _Jv_ResolvedMethod;
