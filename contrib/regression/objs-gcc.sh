@@ -113,13 +113,15 @@ else
   make install || exit 1
 fi
 
-mkdir -p $PREFIX/share/gdb-testsuite || exit 1
-cd $SOURCE/gdb/testsuite || exit 1
-find . -print | cpio -pdmu $PREFIX/share/gdb-testsuite || exit 1
-# selftest.exp requires keeping old sources around, which is impractical
-rm $PREFIX/share/gdb-testsuite/gdb.base/selftest.exp
-# these tests seem to be broken and randomly failing
-rm -r $PREFIX/share/gdb-testsuite/gdb.mi
+if [ -x $PREFIX/bin/$TARGET-gdb ] ; then
+  mkdir -p $PREFIX/share/gdb-testsuite || exit 1
+  cd $SOURCE/gdb/testsuite || exit 1
+  find . -print | cpio -pdmu $PREFIX/share/gdb-testsuite || exit 1
+  # selftest.exp requires keeping old sources around, which is impractical
+  rm $PREFIX/share/gdb-testsuite/gdb.base/selftest.exp
+  # these tests seem to be broken and randomly failing
+  rm -r $PREFIX/share/gdb-testsuite/gdb.mi
+fi
 
 echo pass > $RESULT
 exit 0

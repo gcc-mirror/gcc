@@ -127,6 +127,7 @@ make check-target-libstdc++-v3
 
 # Test the just-built GCC with the GDB testsuite.
 mkdir test-gdb || exit 1
+if [ -d $GDB_TESTSUITE ] ; then
 cd $GDB_TESTSUITE || exit 1
 for i in gdb.* ; do
   if [ -d $i ] ; then
@@ -142,6 +143,9 @@ echo "set build_alias $H_BUILD" >> site.exp
 echo "set build_triplet $H_BUILD" >> site.exp
 echo "set srcdir $GDB_TESTSUITE" >> site.exp
 runtest --tool gdb
+else
+  echo 'gdb tests not run' > $BUILD/test-gdb/gdb.sum
+fi
 
 # Sanity-check the testlogs.  They should contain at least one PASS.
 cd $BUILD || exit 1
