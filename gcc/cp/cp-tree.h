@@ -1931,8 +1931,10 @@ extern tree opaque_type_node, signature_type_node;
 #define vfunc_ptr_type_node \
   (flag_vtable_thunks ? vtable_entry_type : ptr_type_node)
 
-/* Array type `(void *)[]' */
+/* The type of a vtbl, i.e., an array of vtable entries.  */
 extern tree vtbl_type_node;
+/* The type of a class vtbl pointer, i.e., a pointer to a vtable entry.  */
+extern tree vtbl_ptr_type_node;
 extern tree delta_type_node;
 extern tree std_node;
 

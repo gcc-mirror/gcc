@@ -1,3 +1,13 @@
+1998-10-07  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (vtbl_ptr_type_node): New variable.
+	* class.c (build_vtbl_ref): Don't indirect through the vptr; it's
+	already of the right type.
+	(finish_struct_1): Make the vptr be of type vtbl_ptr_type_node.
+	Simplify code to grow vtable.
+	* decl.c (vtbl_ptr_type_node): Define.
+	(init_decl_processing): Initialize it.
+	
 1998-10-06  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.def (PTRMEM_CST): New tree node.
