@@ -1,5 +1,14 @@
 2004-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtin-attrs.def (ATTR_NOTHROW_SENTINEL_1): New.
+	* builtins.def (BUILT_IN_EXECLE): Set ATTR_NOTHROW_SENTINEL_1.
+	* c-common.c (c_common_attribute_table): Accept parameters to
+	sentinel attribute.
+	(check_function_sentinel, handle_sentinel_attribute): Likewise.
+	* doc/extend.texi: Update accordingly.
+
+2004-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* builtin-attrs.def (ATTR_SENTINEL, ATTR_SENTINEL_NOTHROW_LIST):
 	New.
 	* builtins.def (BUILT_IN_EXECL, BUILT_IN_EXECLP): Add `sentinel'

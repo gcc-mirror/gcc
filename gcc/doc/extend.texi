@@ -2113,15 +2113,30 @@ section, consider using the facilities of the linker instead.
 
 @item sentinel
 @cindex @code{sentinel} function attribute
-This function attribute ensures that the last parameter in a function
-call is an explicit @code{NULL}.  The attribute is only valid on
-variadic functions.  For example the attribute is automatically set for
-the built-in functions @code{execl} and @code{execlp} where @code{NULL}
-is the marker for argument list termination.  A valid @code{NULL} in
-this context is defined as zero with any pointer type.  If your system
-defines the @code{NULL} macro with an integer type then you need to add
-an explicit cast.  The warnings for missing or incorrect sentinels are
-enabled with @option{-Wformat}.
+This function attribute ensures that a parameter in a function call is
+an explicit @code{NULL}.  The attribute is only valid on variadic
+functions.  By default, the sentinel is located at position zero, the
+last parameter of the function call.  If an optional integer position
+argument P is supplied to the attribute, the sentinel must be located at
+position P counting backwards from the end of the argument list.
+
+@smallexample
+__attribute__ ((sentinel))
+is equivalent to
+__attribute__ ((sentinel(0)))
+@end smallexample
+
+The attribute is automatically set with a position of 0 for the built-in
+functions @code{execl} and @code{execlp}.  The built-in function
+@code{execle} has the attribute set set with a position of 1.
+
+A valid @code{NULL} in this context is defined as zero with any pointer
+type.  If your system defines the @code{NULL} macro with an integer type
+then you need to add an explicit cast.  GCC replaces @code{stddef.h}
+with a copy that redefines NULL appropriately.
+
+The warnings for missing or incorrect sentinels are enabled with
+@option{-Wformat}.
 
 @item short_call
 See long_call/short_call.
