@@ -331,30 +331,39 @@ __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
 static inline int
 __gthread_objc_mutex_lock(objc_mutex_t mutex)
 {
-  if (__gthread_active_p ())
-    return pthread_mutex_lock((pthread_mutex_t *)mutex->backend);
-  else
-    return 0;
+  if (__gthread_active_p () 
+      && pthread_mutex_lock((pthread_mutex_t *)mutex->backend) != 0)
+    {
+      return -1;
+    }
+
+  return 0;
 }
 
 /* Try to grab a lock on a mutex. */
 static inline int
 __gthread_objc_mutex_trylock(objc_mutex_t mutex)
 {
-  if (__gthread_active_p ())
-    return pthread_mutex_trylock((pthread_mutex_t *)mutex->backend);
-  else
-    return 0;
+  if (__gthread_active_p () 
+      && pthread_mutex_trylock((pthread_mutex_t *)mutex->backend) != 0)
+    {
+      return -1;
+    }
+
+  return 0;
 }
 
 /* Unlock the mutex */
 static inline int
 __gthread_objc_mutex_unlock(objc_mutex_t mutex)
 {
-  if (__gthread_active_p ())
-    return pthread_mutex_unlock((pthread_mutex_t *)mutex->backend);
-  else
-    return 0;
+  if (__gthread_active_p () 
+      && pthread_mutex_unlock((pthread_mutex_t *)mutex->backend) != 0)
+    {
+      return -1;
+    }
+
+  return 0;
 }
 
 /* Backend condition mutex functions */
