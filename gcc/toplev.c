@@ -290,6 +290,7 @@ int sched_dump = 0;
 int local_reg_dump = 0;
 int global_reg_dump = 0;
 int flow2_dump = 0;
+int peephole2_dump = 0;
 int sched2_dump = 0;
 int jump2_opt_dump = 0;
 #ifdef DELAY_SLOTS
@@ -761,6 +762,9 @@ int flag_instrument_function_entry_exit = 0;
 
 int flag_no_ident = 0;
 
+/* This will perform a peephole pass before sched2. */
+int flag_peephole2 = 0;
+
 /* Table of supported debugging formats.  */
 static struct
 {
@@ -966,7 +970,9 @@ lang_independent_options f_options[] =
   {"leading-underscore", &flag_leading_underscore, 1,
    "External symbols have a leading underscore" },
   {"ident", &flag_no_ident, 0,
-   "Process #ident directives"}
+   "Process #ident directives"},
+  { "peephole2", &flag_peephole2, 1,
+    "Enables an rtl peephole pass run before sched2" }
 };
 
 #define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))
@@ -3004,6 +3010,12 @@ compile_file (name)
       if (graph_dump_format != no_graph)
 	clean_graph_dump_file (dump_base_name, ".flow2");
     }
+  if (peephole2_dump)
+    {
+      clean_dump_file (".peephole2");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".peephole2");
+    }
   if (sched2_dump)
     {
       clean_dump_file (".sched2");
@@ -4226,6 +4238,23 @@ rest_of_compilation (decl)
 	print_rtl_graph_with_bb (dump_base_name, ".flow2", insns);
     }
 
+#ifdef HAVE_peephole2
+  if (optimize > 0 && flag_peephole2)
+    {
+      if (peephole2_dump)
+	open_dump_file (".peephole2", decl_printable_name (decl, 2));
+
+      peephole2_optimize (rtl_dump_file);
+
+      if (peephole2_dump)
+	{
+	  close_dump_file (print_rtl_with_bb, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".peephole2", insns);
+	}
+    }
+#endif
+
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
       if (sched2_dump)
@@ -4822,6 +4851,7 @@ main (argc, argv)
       flag_rerun_loop_opt = 1;
       flag_caller_saves = 1;
       flag_force_mem = 1;
+      flag_peephole2 = 1;
 #ifdef INSN_SCHEDULING
       flag_schedule_insns = 1;
       flag_schedule_insns_after_reload = 1;
@@ -4917,6 +4947,7 @@ main (argc, argv)
 #ifdef MACHINE_DEPENDENT_REORG
 		    mach_dep_reorg_dump = 1;
 #endif
+		    peephole2_dump = 1;
 		    break;
 		  case 'A':
 		    flag_debug_asm = 1;
@@ -4996,11 +5027,14 @@ main (argc, argv)
 		  case 'w':
 		    flow2_dump = 1;
 		    break;
+		  case 'x':
+		    rtl_dump_and_exit = 1;
+		    break;
 		  case 'y':
 		    set_yydebug (1);
 		    break;
-		  case 'x':
-		    rtl_dump_and_exit = 1;
+		  case 'z':
+		    peephole2_dump = 1;
 		    break;
 		  case 'D':	/* these are handled by the preprocessor */
 		  case 'I':

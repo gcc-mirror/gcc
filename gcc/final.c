@@ -284,7 +284,9 @@ struct bb_str {
   int length;			/* string length */
 };
 
+#ifdef HAVE_peephole
 extern rtx peephole		PROTO((rtx));
+#endif
 
 static struct bb_str *sbb_head	= 0;		/* Head of string list.  */
 static struct bb_str **sbb_tail	= &sbb_head;	/* Ptr to store next bb str */
@@ -2825,6 +2827,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 #endif
 
+#ifdef HAVE_peephole
 	/* Do machine-specific peephole optimizations if desired.  */
 
 	if (optimize && !flag_no_peephole && !nopeepholes)
@@ -2855,6 +2858,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    /* PEEPHOLE might have changed this.  */
 	    body = PATTERN (insn);
 	  }
+#endif
 
 	/* Try to recognize the instruction.
 	   If successful, verify that the operands satisfy the

@@ -207,6 +207,10 @@ DEF_RTL_EXPR(DEFINE_PEEPHOLE, "define_peephole", "EssV", 'x')
 	(`operands' is an alias here for `recog_operand').   */
 DEF_RTL_EXPR(DEFINE_SPLIT, "define_split", "EsES", 'x')
 
+/* Definition of an RTL peephole operation.
+   Follows the same arguments as define_split.  */
+DEF_RTL_EXPR(DEFINE_PEEPHOLE2, "define_peephole2", "EsES", 'x')
+
 /* Definition of a combiner pattern.
    Operands not defined yet.  */
 DEF_RTL_EXPR(DEFINE_COMBINE, "define_combine", "Ess", 'x')

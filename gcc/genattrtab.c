@@ -6018,6 +6018,9 @@ from the machine description file `md'.  */\n\n");
       else if (GET_CODE (desc) == DEFINE_SPLIT)
 	insn_code_number++, insn_index_number++;
 
+      else if (GET_CODE (desc) == DEFINE_PEEPHOLE2)
+	insn_code_number++, insn_index_number++;
+
       else if (GET_CODE (desc) == DEFINE_ATTR)
 	{
 	  gen_attr (desc);

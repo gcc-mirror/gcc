@@ -1239,17 +1239,20 @@ mark_end_of_function_resources (trial, include_delayed_effects)
 			     include_delayed_effects);
 }
 
-/* Try to find an available hard register of mode MODE at
-   CURRENT_INSN, matching the register class in CLASS_STR. Registers
-   that already have bits set in REG_SET will not be considered.
+/* Try to find a hard register of mode MODE, matching the register class in
+   CLASS_STR, which is available at the beginning of insn CURRENT_INSN and
+   remains available until the end of LAST_INSN.  LAST_INSN may be NULL_RTX,
+   in which case the only condition is that the register must be available
+   before CURRENT_INSN.
+   Registers that already have bits set in REG_SET will not be considered.
 
    If an appropriate register is available, it will be returned and the
    corresponding bit(s) in REG_SET will be set; otherwise, NULL_RTX is
    returned.  */
 
 rtx
-find_free_register (current_insn, class_str, mode, reg_set)
-     rtx current_insn;
+find_free_register (current_insn, last_insn, class_str, mode, reg_set)
+     rtx current_insn, last_insn;
      char *class_str;
      int mode;
      HARD_REG_SET *reg_set;
@@ -1261,6 +1264,14 @@ find_free_register (current_insn, class_str, mode, reg_set)
     = (clet == 'r' ? GENERAL_REGS :  REG_CLASS_FROM_LETTER (clet));
 
   mark_target_live_regs (get_insns (), current_insn, &used);
+  if (last_insn)
+    while (current_insn != last_insn)
+      {
+	/* Exclude anything set in this insn.  */
+	mark_set_resources (PATTERN (current_insn), &used, 0, 1);
+	current_insn = next_nonnote_insn (current_insn);
+      }
+
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
