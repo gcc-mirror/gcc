@@ -490,8 +490,7 @@ delete_sanity (tree exp, tree size, int doing_vec, int use_global_delete)
   if (TREE_CODE (exp) == OFFSET_REF)
     exp = resolve_offset_ref (exp);
   exp = convert_from_reference (exp);
-  t = stabilize_reference (exp);
-  t = build_expr_type_conversion (WANT_POINTER, t, true);
+  t = build_expr_type_conversion (WANT_POINTER, exp, true);
 
   if (t == NULL_TREE || t == error_mark_node)
     {
