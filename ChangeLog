@@ -1,3 +1,7 @@
+2002-06-28  Graham Stott  <graham.stott@btinternet.com>
+
+	* MAINTAINERS: Update my email address.
+
 2002-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config.if (libstdcxx_incdir): Version C++ headers.
