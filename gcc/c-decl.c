@@ -428,6 +428,7 @@ int flag_traditional;
 /* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
 
 int flag_signed_bitfields = 1;
+int explicit_flag_signed_bitfields = 0;
 
 /* Nonzero means handle `#ident' directives.  0 means ignore them.  */
 
@@ -536,14 +537,18 @@ c_decode_option (p)
     flag_signed_char = 0;
   else if (!strcmp (p, "-fno-unsigned-char"))
     flag_signed_char = 1;
-  else if (!strcmp (p, "-fsigned-bitfields"))
-    flag_signed_bitfields = 1;
-  else if (!strcmp (p, "-funsigned-bitfields"))
-    flag_signed_bitfields = 0;
-  else if (!strcmp (p, "-fno-signed-bitfields"))
-    flag_signed_bitfields = 0;
-  else if (!strcmp (p, "-fno-unsigned-bitfields"))
-    flag_signed_bitfields = 1;
+  else if (!strcmp (p, "-fsigned-bitfields")
+	   || !strcmp (p, "-fno-unsigned-bitfields"))
+    {
+      flag_signed_bitfields = 1;
+      explicit_flag_signed_bitfields = 1;
+    }
+  else if (!strcmp (p, "-funsigned-bitfields")
+	   || !strcmp (p, "-fno-signed-bitfields"))
+    {
+      flag_signed_bitfields = 0;
+      explicit_flag_signed_bitfields = 1;
+    }
   else if (!strcmp (p, "-fshort-enums"))
     flag_short_enums = 1;
   else if (!strcmp (p, "-fno-short-enums"))
@@ -2016,7 +2021,7 @@ pushdecl (x)
 	  /* Maybe warn if shadowing something else.  */
 	  else if (warn_shadow && !DECL_EXTERNAL (x)
 		   /* No shadow warnings for internally generated vars.  */
-		   && !DECL_IGNORED_P (x)
+		   && DECL_SOURCE_LINE (x) != 0
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
@@ -2487,10 +2492,10 @@ init_decl_processing ()
   /* Define `char', which is like either `signed char' or `unsigned char'
      but not the same as either.  */
 
-  char_type_node =
-    (flag_signed_char
-     ? make_signed_type (CHAR_TYPE_SIZE)
-     : make_unsigned_type (CHAR_TYPE_SIZE));
+  char_type_node
+    = (flag_signed_char
+       ? make_signed_type (CHAR_TYPE_SIZE)
+       : make_unsigned_type (CHAR_TYPE_SIZE));
   pushdecl (build_decl (TYPE_DECL, get_identifier ("char"),
 			char_type_node));
 
@@ -2982,7 +2987,7 @@ shadow_tag_warned (declspecs, warned)
       else
 	{
 	  if (!warned)
-	    warning ("useless keyword or type name in empty declaration");
+	    pedwarn ("useless keyword or type name in empty declaration");
 	  warned = 1;
 	}
     }
@@ -3205,13 +3210,15 @@ finish_decl (decl, init, asmspec_tree)
 	}
     }
 
-  /* For top-level declaration, the initial value was read in
-     the temporary obstack.  MAXINDEX, rtl, etc. to be made below
-     must go in the permanent obstack; but don't discard the
+  /* Pop back to the obstack that is current for this binding level.
+     This is because MAXINDEX, rtl, etc. to be made below
+     must go in the permanent obstack.  But don't discard the
      temporary data yet.  */
-
+  pop_obstacks ();
+#if 0 /* pop_obstacks was near the end; this is what was here.  */
   if (current_binding_level == global_binding_level && temporary)
     end_temporary_allocation ();
+#endif
 
   /* Deduce size of array from initialization, if not already known */
 
@@ -3338,12 +3345,16 @@ finish_decl (decl, init, asmspec_tree)
 	DECL_INITIAL (decl) = error_mark_node;
     }
 
+#if 0
   /* Resume permanent allocation, if not within a function.  */
   /* The corresponding push_obstacks_nochange is in start_decl,
      and in push_parm_decl and in grokfield.  */
   pop_obstacks ();
-  if (current_binding_level == global_binding_level && temporary)
-    /* Actually free the temporary space that we no longer need.  */
+#endif
+
+  /* If we have gone back from temporary to permanent allocation,
+     actually free the temporary space that we no longer need.  */
+  if (temporary && !allocation_temporary_p ())
     permanent_allocation ();
 
   /* At the end of a declaration, throw away any variable type sizes
@@ -3729,7 +3740,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
      Optionally treat bitfields as signed by default.  */
   if (specbits & 1 << (int) RID_UNSIGNED
       /* Traditionally, all bitfields are unsigned.  */
-      || (bitfield && flag_traditional)
+      || (bitfield && flag_traditional
+	  && (! explicit_flag_signed_bitfields || !flag_signed_bitfields))
       || (bitfield && ! flag_signed_bitfields
 	  && (explicit_int || explicit_char
 	      /* A typedef for plain `int' without `signed'
@@ -4279,7 +4291,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	decl = build_decl (FUNCTION_DECL, declarator, type);
 
-	if (pedantic && (constp || volatilep))
+	if (pedantic && (constp || volatilep)
+	    && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ANSI C forbids const or volatile functions");
 
 	if (extern_ref)
@@ -4706,7 +4719,10 @@ xref_tag (code, name)
 
 /* Make sure that the tag NAME is defined *in the current binding level*
    at least as a forward reference.
-   CODE says which kind of tag NAME ought to be.  */
+   CODE says which kind of tag NAME ought to be.
+
+   We also do a push_obstacks_nochange
+   whose matching pop is in finish_struct.  */
 
 tree
 start_struct (code, name)
@@ -4717,6 +4733,10 @@ start_struct (code, name)
      (as a forward reference), just return it.  */
 
   register tree ref = 0;
+
+  push_obstacks_nochange ();
+  if (current_binding_level == global_binding_level)
+    end_temporary_allocation ();
 
   if (name != 0)
     ref = lookup_tag (code, name, current_binding_level, 1);
@@ -4776,7 +4796,9 @@ field_decl_cmp (x, y)
 }
 
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
-   FIELDLIST is a chain of FIELD_DECL nodes for the fields.  */
+   FIELDLIST is a chain of FIELD_DECL nodes for the fields.
+
+   We also do a pop_obstacks to match the push in start_struct.  */
 
 tree
 finish_struct (t, fieldlist)
@@ -5074,6 +5096,9 @@ finish_struct (t, fieldlist)
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel);
 
+  /* The matching push is in start_struct.  */
+  pop_obstacks ();
+
   return t;
 }
 
@@ -5106,6 +5131,12 @@ start_enum (name)
 
   if (name != 0)
     enumtype = lookup_tag (ENUMERAL_TYPE, name, current_binding_level, 1);
+
+  /* The corresponding pop_obstacks is in finish_enum.  */
+  push_obstacks_nochange ();
+  /* If these symbols and types are global, make them permanent.  */
+  if (current_binding_level == global_binding_level)
+    end_temporary_allocation ();
 
   if (enumtype == 0 || TREE_CODE (enumtype) != ENUMERAL_TYPE)
     {
@@ -5147,6 +5178,7 @@ finish_enum (enumtype, values)
   register int i;
   unsigned precision = 0;
   int toplevel = global_binding_level == current_binding_level;
+  int temporary = allocation_temporary_p ();
 
   if (in_parm_level_p ())
     warning ("enum defined inside parms");
@@ -5231,6 +5263,9 @@ finish_enum (enumtype, values)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, toplevel);
+
+  /* This matches a push in start_enum.  */
+  pop_obstacks ();
 
   return enumtype;
 }
@@ -5486,8 +5521,23 @@ store_parm_decls ()
       prototype = 1;
 
       if (parmdecls != 0)
-	error_with_decl (fndecl,
-			 "parm types given both in parmlist and separately");
+	{
+	  tree decl, link;
+
+	  error_with_decl (fndecl,
+			   "parm types given both in parmlist and separately");
+	  /* Get rid of the erroneous decls; don't keep them on
+	     the list of parms, since they might not be PARM_DECLs.  */
+	  for (decl = current_binding_level->names;
+	       decl; decl = TREE_CHAIN (decl))
+	    if (DECL_NAME (decl))
+	      IDENTIFIER_LOCAL_VALUE (DECL_NAME (decl)) = 0;
+	  for (link = current_binding_level->shadowed;
+	       link; link = TREE_CHAIN (link))
+	    IDENTIFIER_LOCAL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+	  current_binding_level->names = 0;
+	  current_binding_level->shadowed = 0;
+	}
 
       specparms = nreverse (specparms);
       for (parm = specparms; parm; parm = next)
