@@ -27,95 +27,32 @@
 #ifndef __SGI_STL_TEMPBUF_H
 #define __SGI_STL_TEMPBUF_H
 
+#ifndef __SGI_STL_PAIR_H
+#include <pair.h>
+#endif
 #include <limits.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <pair.h>
+#ifndef __TYPE_TRAITS_H
 #include <type_traits.h>
+#endif
+#ifndef __SGI_STL_INTERNAL_CONSTRUCT_H
+#include <stl_construct.h>
+#endif
+#ifndef __SGI_STL_INTERNAL_TEMPBUF_H
+#include <stl_tempbuf.h>
+#endif
 
-template <class T>
-pair<T*, ptrdiff_t> get_temporary_buffer(ptrdiff_t len, T*) {
-  if (len > ptrdiff_t(INT_MAX / sizeof(T)))
-    len = INT_MAX / sizeof(T);
+#ifdef __STL_USE_NAMESPACES
 
-  while (len > 0) {
-    T* tmp = (T*) malloc((size_t)len * sizeof(T));
-    if (tmp != 0)
-      return pair<T*, ptrdiff_t>(tmp, len);
-    len /= 2;
-  }
+using __STD::get_temporary_buffer;
+using __STD::return_temporary_buffer;
+using __STD::temporary_buffer;
 
-  return pair<T*, ptrdiff_t>((T*)0, 0);
-}
-
-template <class T>
-void return_temporary_buffer(T* p) {
-  free(p);
-}
-
-template <class ForwardIterator,
-          class T /* = iterator_traits<ForwardIterator>::value_type */>
-class temporary_buffer {
-private:
-  ptrdiff_t original_len;
-  ptrdiff_t len;
-  T* buffer;
-
-  void allocate_buffer() {
-    original_len = len;
-    buffer = 0;
-
-    if (len > (ptrdiff_t)(INT_MAX / sizeof(T)))
-      len = INT_MAX / sizeof(T);
-
-    while (len > 0) {
-      buffer = (T*) malloc(len * sizeof(T));
-      if (buffer)
-        break;
-      len /= 2;
-    }
-  }
-
-  void initialize_buffer(const T&, __true_type) {}
-  void initialize_buffer(const T& val, __false_type) {
-    uninitialized_fill_n(buffer, len, val);
-  }
-
-public:
-  ptrdiff_t size() const { return len; }
-  ptrdiff_t requested_size() const { return original_len; }
-  T* begin() { return buffer; }
-  T* end() { return buffer + len; }
-
-  temporary_buffer(ForwardIterator first, ForwardIterator last) {
-#ifdef __STL_USE_EXCEPTIONS
-    try {
-#endif      
-      len = 0;
-      distance(first, last, len);
-      allocate_buffer();
-      if (len > 0)
-        initialize_buffer(*first,
-                          __type_traits<T>::has_trivial_default_constructor());
-#ifdef __STL_USE_EXCEPTIONS
-    }
-    catch(...) {
-      free(buffer);
-      buffer = 0;
-      len = 0;
-      throw;
-    }
-#endif      
-  }
- 
-  ~temporary_buffer() {  
-    destroy(buffer, buffer + len);
-    free(buffer);
-  }
-
-private:
-  temporary_buffer(const temporary_buffer&) {}
-  void operator=(const temporary_buffer&) {}
-};
+#endif /* __STL_USE_NAMESPACES */
 
 #endif /* __SGI_STL_TEMPBUF_H */
+
+// Local Variables:
+// mode:C++
+// End:
