@@ -275,7 +275,7 @@ cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
 cp/dump.o: cp/dump.c $(CXX_TREE_H) tree-dump.h
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) rtl.h integrate.h insn-config.h \
   input.h $(PARAMS_H) debug.h tree-inline.h
-cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h real.h
+cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h real.h $(TM_P_H)
 
 cp/parse.o: cp/parse.c $(CXX_TREE_H) flags.h cp/lex.h except.h output.h \
 	cp/decl.h $(SYSTEM_H) toplev.h $(GGC_H) gt-cp-parse.h
