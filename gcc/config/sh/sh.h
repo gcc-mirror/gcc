@@ -594,19 +594,9 @@ do {									\
 
 /* The Hitachi calling convention doesn't quite fit into this scheme since
    the address is passed like an invisible argument, but one that is always
-   passed in memory.  We approximate this by saying where the pointer is;
-   however, this will put any actual arguments that are passed in memory
-   in the wrong place.
-   If we wanted to implement this exactly, we'd need a STRUCT_VALUE of 0,
-   an extra field in CUMULATIVE_ARGS, initialize it in INIT_CUMULATIVE_ARGS,
-   and hack FUNCTION_ARG (actually PASS_IN_REG_P) / FUNCTION_ARG_ADVANCE
-   to look directly at DECL_RESULT of the current function in conjunction
-   with CUM to determine if the argument in question it is a struct value
-   pointer, and if it is, pass it in memory.  */
+   passed in memory.  */
 #define STRUCT_VALUE \
-  (TARGET_HITACHI \
-   ? gen_rtx_MEM (Pmode, arg_pointer_rtx) \
-   : gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM))
+  (TARGET_HITACHI ? 0 : gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM))
 
 #define RETURN_IN_MEMORY(TYPE) \
   (TYPE_MODE (TYPE) == BLKmode \
@@ -969,6 +959,7 @@ extern enum reg_class reg_class_from_letter[];
 enum sh_arg_class { SH_ARG_INT = 0, SH_ARG_FLOAT = 1 };
 struct sh_args {
     int arg_count[2];
+    int force_mem;
 };
 
 #define CUMULATIVE_ARGS  struct sh_args
@@ -1003,12 +994,17 @@ struct sh_args {
    For a library call, FNTYPE is 0.
 
    On SH, the offset always starts at 0: the first parm reg is always
-   the same reg for a given argument class.  */
+   the same reg for a given argument class.
+
+   For TARGET_HITACHI, the structure value pointer is passed in memory.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) \
   do {								\
     (CUM).arg_count[(int) SH_ARG_INT] = 0;			\
     (CUM).arg_count[(int) SH_ARG_FLOAT] = 0;			\
+    (CUM).force_mem						\
+      = (TARGET_HITACHI && FNTYPE				\
+	 && aggregate_value_p (TREE_TYPE (FNTYPE)));		\
   } while (0)
 
 /* Update the data in CUM to advance over an argument
@@ -1017,7 +1013,9 @@ struct sh_args {
    available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
- if (! TARGET_SH4 || PASS_IN_REG_P ((CUM), (MODE), (TYPE))) \
+ if ((CUM).force_mem)					\
+   (CUM).force_mem = 0;					\
+ else if (! TARGET_SH4 || PASS_IN_REG_P ((CUM), (MODE), (TYPE))) \
    ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)]	\
     = (ROUND_REG ((CUM), (MODE))			\
        + ((MODE) == BLKmode				\
@@ -1031,6 +1029,7 @@ struct sh_args {
   (((TYPE) == 0 \
     || (! TREE_ADDRESSABLE ((tree)(TYPE)) \
 	&& (! TARGET_HITACHI || ! AGGREGATE_TYPE_P (TYPE)))) \
+   && ! (CUM).force_mem \
    && (TARGET_SH3E \
        ? ((MODE) == BLKmode \
 	  ? (((CUM).arg_count[(int) SH_ARG_INT] * UNITS_PER_WORD \

@@ -1,3 +1,10 @@
+Wed Apr 12 20:51:20 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (STRUCT_VALUE): Just 0 for TARGET_HITACHI.
+	(struct sh_args): Add new field force_mem.
+	(INIT_CUMULATIVE_ARGS): Initialize it.
+	(FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Act on it.
+
 Wed Apr 12 17:20:41 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	(expand_call): Do not reverse args in "equal from" field.
