@@ -1,3 +1,8 @@
+2002-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7224
+	* class.c (add_method): Simplify.
+
 2002-07-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/7279
