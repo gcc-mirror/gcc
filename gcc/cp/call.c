@@ -5603,6 +5603,11 @@ compare_qual (ics1, ics2)
   tree to1 = TREE_TYPE (ics1);
   tree to2 = TREE_TYPE (ics2);
 
+  if (TYPE_PTRMEMFUNC_P (to1))
+    to1 = TYPE_PTRMEMFUNC_FN_TYPE (to1);
+  if (TYPE_PTRMEMFUNC_P (to2))
+    to2 = TYPE_PTRMEMFUNC_FN_TYPE (to2);
+
   to1 = TREE_TYPE (to1);
   to2 = TREE_TYPE (to2);
 
