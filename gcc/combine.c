@@ -5321,13 +5321,23 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	}
     }
 
-  /* If INNER is not memory, we can always get it into the proper mode. */
+  /* If INNER is not memory, we can always get it into the proper mode.  If we
+     are changing its mode, POS must be a constant and smaller than the size
+     of the new mode.  */
   else if (GET_CODE (inner) != MEM)
-    inner = force_to_mode (inner, wanted_inner_mode,
-			   pos_rtx || len + orig_pos >= HOST_BITS_PER_WIDE_INT
-			   ? GET_MODE_MASK (extraction_mode)
-			   : (((HOST_WIDE_INT) 1 << len) - 1) << orig_pos,
-			   NULL_RTX, 0);
+    {
+      if (GET_MODE (inner) != wanted_inner_mode
+	  && (pos_rtx != 0
+	      || orig_pos + len > GET_MODE_BITSIZE (wanted_inner_mode)))
+	return 0;
+
+      inner = force_to_mode (inner, wanted_inner_mode,
+			     pos_rtx
+			     || len + orig_pos >= HOST_BITS_PER_WIDE_INT
+			     ? GET_MODE_MASK (wanted_inner_mode)
+			     : (((HOST_WIDE_INT) 1 << len) - 1) << orig_pos,
+			     NULL_RTX, 0);
+    }
 
   /* Adjust mode of POS_RTX, if needed.  If we want a wider mode, we
      have to zero extend.  Otherwise, we can just use a SUBREG.  */
