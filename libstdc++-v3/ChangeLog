@@ -3,7 +3,8 @@
 	* include/bits/fpos.h (fpos::operator-): Don't return reference,
 	return original, non-modified version.
 	(fpos::operator+): Same.
-
+	* testsuite/27_io/fpos.cc: Add test.
+	
 2001-06-12  Loren J. Rittle  <ljrittle@acm.org>
 
 	libstdc++/2071
