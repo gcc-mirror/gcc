@@ -1,3 +1,8 @@
+2004-06-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/sourcebuild.texi (Front End): Add details of more
+	installation documentation required.
+
 2004-06-10  Brian Booth  <bbooth@redhat.com>
 
 	* doc/tree-ssa.texi: Remove references to VDEF and add descriptions
