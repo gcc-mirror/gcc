@@ -7042,7 +7042,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	    if (mode == BLKmode)
 	      {
-		tree nt = build_qualified_type (type_for_size (ext_mode, 0),
+		tree nt = build_qualified_type (type_for_mode (ext_mode, 0),
 						TYPE_QUAL_CONST);
 		rtx new = assign_temp (nt, 0, 1, 1);
 

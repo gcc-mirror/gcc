@@ -1,3 +1,7 @@
+2000-12-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case COMPONENT_REF): Fix typo in last change.
+
 2000-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (validate_arglist): New function, use it.
