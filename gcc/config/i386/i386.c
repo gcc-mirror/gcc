@@ -2488,6 +2488,32 @@ function_arg (cum, mode, type, named)
   return ret;
 }
 
+/* A C expression that indicates when an argument must be passed by
+   reference.  If nonzero for an argument, a copy of that argument is
+   made in memory and a pointer to the argument is passed instead of
+   the argument itself.  The pointer is passed in whatever way is
+   appropriate for passing a pointer to that type.  */
+
+int
+function_arg_pass_by_reference (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     tree type;
+     int named ATTRIBUTE_UNUSED;
+{
+  if (!TARGET_64BIT)
+    return 0;
+
+  if (type && int_size_in_bytes (type) == -1)
+    {
+      if (TARGET_DEBUG_ARG)
+	fprintf (stderr, "function_arg_pass_by_reference\n");
+      return 1;
+    }
+
+  return 0;
+}
+
 /* Gives the alignment boundary, in bits, of an argument with the specified mode
    and type.   */
 
@@ -2843,6 +2869,7 @@ ix86_va_arg (valist, type)
   rtx lab_false, lab_over = NULL_RTX;
   rtx addr_rtx, r;
   rtx container;
+  int indirect_p = 0;
 
   /* Only 64bit target needs something special.  */
   if (!TARGET_64BIT)
@@ -2862,6 +2889,13 @@ ix86_va_arg (valist, type)
   sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
 
   size = int_size_in_bytes (type);
+  if (size == -1)
+    {
+      /* Passed by reference.  */
+      indirect_p = 1;
+      type = build_pointer_type (type);
+      size = int_size_in_bytes (type);
+    }
   rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   container = construct_container (TYPE_MODE (type), type, 0,
@@ -3051,6 +3085,13 @@ ix86_va_arg (valist, type)
 
   if (container)
     emit_label (lab_over);
+
+  if (indirect_p)
+    {
+      r = gen_rtx_MEM (Pmode, addr_rtx);
+      set_mem_alias_set (r, get_varargs_alias_set ());
+      emit_move_insn (addr_rtx, r);
+    }
 
   return addr_rtx;
 }
