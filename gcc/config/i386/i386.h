@@ -851,9 +851,12 @@ extern int ix86_arch;
    */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
-  (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO) ? 1 \
+  (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
+   ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
    : (MODE == TFmode							\
-      ? 3								\
+      ? (TARGET_64BIT ? 2 : 3)						\
+      : MODE == TCmode							\
+      ? (TARGET_64BIT ? 4 : 6)						\
       : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
 
 #define VALID_SSE_REG_MODE(MODE) \
@@ -1067,9 +1070,11 @@ enum reg_class
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
+#define INTEGER_CLASS_P(CLASS) (reg_class_subset_p (CLASS, GENERAL_REGS))
 #define FLOAT_CLASS_P(CLASS) (reg_class_subset_p (CLASS, FLOAT_REGS))
 #define SSE_CLASS_P(CLASS) (reg_class_subset_p (CLASS, SSE_REGS))
 #define MMX_CLASS_P(CLASS) (reg_class_subset_p (CLASS, MMX_REGS))
+#define MAYBE_INTEGER_CLASS_P(CLASS) (reg_classes_intersect_p (CLASS, GENERAL_REGS))
 #define MAYBE_FLOAT_CLASS_P(CLASS) (reg_classes_intersect_p (CLASS, FLOAT_REGS))
 #define MAYBE_SSE_CLASS_P(CLASS) (reg_classes_intersect_p (SSE_REGS, CLASS))
 #define MAYBE_MMX_CLASS_P(CLASS) (reg_classes_intersect_p (MMX_REGS, CLASS))
@@ -1314,11 +1319,15 @@ enum reg_class
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On the 80386, this is the size of MODE in words,
-   except in the FP regs, where a single reg is always enough.  */
+   except in the FP regs, where a single reg is always enough.
+   The TFmodes are really just 80bit values, so we use only 3 registers
+   to hold them, instead of 4, as the size would suggest.
+ */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
- (FLOAT_CLASS_P (CLASS) || SSE_CLASS_P (CLASS) || MMX_CLASS_P (CLASS)	\
-  ? 1									\
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+ (!MAYBE_INTEGER_CLASS_P (CLASS)					\
+  ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
+  : ((GET_MODE_SIZE ((MODE) == TFmode ? XFmode : (MODE))		\
+     + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* A C expression whose value is nonzero if pseudos that have been
    assigned to registers of class CLASS would likely be spilled

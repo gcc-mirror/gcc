@@ -1,3 +1,15 @@
+Mon Apr  9 16:18:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (expand_fp_movcc): Fix condition reversal code.
+
+	* i386.c (ix86_register_move_cost): Fix handling of reformating penalty
+	* i386.h (INTEGER_CLASS_P, MAYBE_INTEGER_CLASS_P): New.
+	(CLASS_MAX_NREGS): Use it.
+
+	* i386.h (HARD_REGNO_NREGS): Handle properly TF and TCmodes on 64bit;
+	handle properly complex values.
+	(CLASS_MAX_NREGS): Likewise; update comment.
+
 2001-04-05  Bernd Schmidt  <bernds@redhat.com>
 
 	* ia64.c (ia64_flag_schedule_insns2): New variable.
