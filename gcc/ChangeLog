@@ -1,5 +1,10 @@
 2004-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.def (BUILT_IN_ISDIGIT, BUILT_IN_ISXDIGIT): Mark with
+	ATTR_CONST_NOTHROW_LIST.
+
+2004-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	PR/middle-end 14915
 	* builtins.c (expand_builtin_signbit): Test BYTES_BIG_ENDIAN, not
 	BITS_BIG_ENDIAN.
