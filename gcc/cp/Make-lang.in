@@ -301,7 +301,7 @@ cp/optimize.o: cp/optimize.c $(CXX_TREE_H) rtl.h integrate.h insn-config.h \
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h real.h
 
 cp/parse.o: cp/parse.c $(CXX_TREE_H) flags.h cp/lex.h except.h output.h \
-	$(SYSTEM_H) toplev.h $(GGC_H) gt-cp-parse.h
+	cp/decl.h $(SYSTEM_H) toplev.h $(GGC_H) gt-cp-parse.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
 		$(srcdir)/cp/parse.c $(OUTPUT_OPTION)
 #

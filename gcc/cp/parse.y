@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "flags.h"
 #include "cp-tree.h"
+#include "decl.h"
 #include "lex.h"
 #include "c-pragma.h"		/* For YYDEBUG definition.  */
 #include "output.h"
@@ -132,6 +133,7 @@ static void check_class_key PARAMS ((tree, tree));
 static tree parse_scoped_id PARAMS ((tree));
 static tree parse_xref_tag (tree, tree, int);
 static tree parse_handle_class_head (tree, tree, tree, int, int *);
+static void parse_decl_instantiation (tree, tree, tree);
 
 /* Cons up an empty parameter list.  */
 static inline tree
@@ -1047,13 +1049,13 @@ explicit_instantiation:
           end_explicit_instantiation
 	| TEMPLATE begin_explicit_instantiation typed_declspecs declarator
 		{ tree specs = strip_attrs ($3.t);
-		  do_decl_instantiation (specs, $4, NULL_TREE); }
+		  parse_decl_instantiation (specs, $4, NULL_TREE); }
           end_explicit_instantiation
 	| TEMPLATE begin_explicit_instantiation notype_declarator
-		{ do_decl_instantiation (NULL_TREE, $3, NULL_TREE); }
+		{ parse_decl_instantiation (NULL_TREE, $3, NULL_TREE); }
           end_explicit_instantiation
 	| TEMPLATE begin_explicit_instantiation constructor_declarator
-		{ do_decl_instantiation (NULL_TREE, $3, NULL_TREE); }
+		{ parse_decl_instantiation (NULL_TREE, $3, NULL_TREE); }
           end_explicit_instantiation
 	| SCSPEC TEMPLATE begin_explicit_instantiation typespec ';'
 		{ do_type_instantiation ($4.t, $1, 1);
@@ -1063,15 +1065,15 @@ explicit_instantiation:
 	| SCSPEC TEMPLATE begin_explicit_instantiation typed_declspecs
           declarator
 		{ tree specs = strip_attrs ($4.t);
-		  do_decl_instantiation (specs, $5, $1); }
+		  parse_decl_instantiation (specs, $5, $1); }
           end_explicit_instantiation
 		{}
 	| SCSPEC TEMPLATE begin_explicit_instantiation notype_declarator
-		{ do_decl_instantiation (NULL_TREE, $4, $1); }
+		{ parse_decl_instantiation (NULL_TREE, $4, $1); }
           end_explicit_instantiation
 		{}
 	| SCSPEC TEMPLATE begin_explicit_instantiation constructor_declarator
-		{ do_decl_instantiation (NULL_TREE, $4, $1); }
+		{ parse_decl_instantiation (NULL_TREE, $4, $1); }
           end_explicit_instantiation
 		{}
 	;
@@ -4072,7 +4074,7 @@ parse_xref_tag (tree aggr, tree name, int globalize)
   return xref_tag (tag_kind, name, attributes, globalize);
 }
 
-/* Like handle_class_head, but AGGR may be as for parse_xref_tag. */
+/* Like handle_class_head, but AGGR may be as for parse_xref_tag.  */
 
 static tree
 parse_handle_class_head (tree aggr, tree scope, tree id, 
@@ -4083,6 +4085,16 @@ parse_handle_class_head (tree aggr, tree scope, tree id,
   parse_split_aggr (aggr, &tag_kind, &attributes);
   return handle_class_head (tag_kind, scope, id, attributes, 
 			    defn_p, new_type_p);
+}
+
+/* Like do_decl_instantiation, but the declarator has not yet been
+   parsed.  */
+
+static void
+parse_decl_instantiation (tree declspecs, tree declarator, tree storage)
+{
+  tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, NULL);
+  do_decl_instantiation (decl, storage);
 }
 
 #include "gt-cp-parse.h"
