@@ -1866,7 +1866,7 @@ build_member_call (cname, name, parmlist)
 	{
 	  tree newtype = build_type_variant (type, TYPE_READONLY (oldtype),
 					     TYPE_VOLATILE (oldtype));
-	  decl = convert_force (TYPE_POINTER_TO (newtype), olddecl);
+	  decl = convert_force (build_pointer_type (newtype), olddecl);
 	}
       else
 	decl = olddecl;

@@ -542,7 +542,9 @@ comp_array_types (cmp, t1, t2, strict)
 	2 : strict, except that if one type is a reference and
 	    the other is not, compare the target type of the
 	    reference to the type that's not a reference (ARM, p308).
+	    This is used for checking for illegal overloading.
 	1 : strict (compared according to ANSI C)
+	    This is used for checking whether two function decls match.
 	0 : <= (compared according to C++)
 	-1: <= or >= (relaxed)
 
@@ -608,7 +610,7 @@ comptypes (type1, type2, strict)
 
   if (TYPE_READONLY (t1) != TYPE_READONLY (t2))
     return 0;
-  if (TREE_THIS_VOLATILE (t1) != TREE_THIS_VOLATILE (t2))
+  if (TYPE_VOLATILE (t1) != TYPE_VOLATILE (t2))
     return 0;
 
   /* Allow for two different type nodes which have essentially the same
@@ -739,7 +741,13 @@ comp_target_types (ttl, ttr, nptrs)
     return 0;
 
   if (TREE_CODE (ttr) == POINTER_TYPE)
-    return comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), nptrs - 1);
+    {
+      if (TREE_CODE (TREE_TYPE (ttl)) == POINTER_TYPE
+	  || TREE_CODE (TREE_TYPE (ttl)) == ARRAY_TYPE)
+	return comp_ptr_ttypes (TREE_TYPE (ttl), TREE_TYPE (ttr));
+      else
+	return comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), nptrs - 1);
+    }
 
   if (TREE_CODE (ttr) == REFERENCE_TYPE)
     return comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), nptrs);
@@ -2425,12 +2433,9 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	    called_thing = "constructor";
 	  else
 	    called_thing = "member function";
-	  i -= 1;
 	}
       else
-	{
-	  called_thing = "function";
-	}
+	called_thing = "function";
     }
 
   for (valtail = values, typetail = typelist;
@@ -2510,7 +2515,8 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
       /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
 	 Strip such NOP_EXPRs, since VAL is used in non-lvalue context.  */
       if (TREE_CODE (val) == NOP_EXPR
-	  && TREE_TYPE (val) == TREE_TYPE (TREE_OPERAND (val, 0)))
+	  && TREE_TYPE (val) == TREE_TYPE (TREE_OPERAND (val, 0))
+	  && (type == 0 || TREE_CODE (type) != REFERENCE_TYPE))
 	val = TREE_OPERAND (val, 0);
 
       if ((type == 0 || TREE_CODE (type) != REFERENCE_TYPE)
@@ -2886,6 +2892,17 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	{
+	  if (TREE_CODE (op1) == INTEGER_CST && integer_zerop (op1))
+	    {
+	      error ("division by zero");
+	      op1 = integer_one_node;
+	    }
+	  else if (TREE_CODE (op1) == REAL_CST && real_zerop (op1))
+	    {
+	      error ("division by zero");
+	      op1 = build_real (TREE_TYPE (op1), dconst1);
+	    }
+	      
 	  if (!(code0 == INTEGER_TYPE && code1 == INTEGER_TYPE))
 	    resultcode = RDIV_EXPR;
 	  else
@@ -2936,6 +2953,17 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
+      if (code1 == INTEGER_TYPE && integer_zerop (op1))
+	{
+	  error ("division by zero");
+	  op1 = integer_one_node;
+	}
+      else if (code1 == REAL_TYPE && real_zerop (op1))
+	{
+	  error ("division by zero");
+	  op1 = build_real (TREE_TYPE (op1), dconst1);
+	}
+      
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  /* Although it would be tempting to shorten always here, that loses
@@ -4001,17 +4029,15 @@ build_unary_op (code, xarg, noconvert)
 	  TREE_REFERENCE_EXPR (arg) = 1;
 	  return arg;
 	}
-      else if (TREE_CODE (arg) == FUNCTION_DECL
+      else if (pedantic
+	       && TREE_CODE (arg) == FUNCTION_DECL
 	       && DECL_NAME (arg)
 	       && DECL_CONTEXT (arg) == NULL_TREE
 	       && IDENTIFIER_LENGTH (DECL_NAME (arg)) == 4
 	       && IDENTIFIER_POINTER (DECL_NAME (arg))[0] == 'm'
 	       && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (arg)), "main"))
-	{
-	  /* ARM $3.4 */
-	  error ("attempt to take address of function `main'");
-	  return error_mark_node;
-	}
+	/* ARM $3.4 */
+	pedwarn ("taking address of function `main'");
 
       /* Let &* cancel out to simplify resulting code.  */
       if (TREE_CODE (arg) == INDIRECT_REF)
@@ -4911,6 +4937,13 @@ build_c_cast (type, expr)
 	}
     }
 
+  if (TREE_CODE (type) == FUNCTION_TYPE
+      || TREE_CODE (type) == METHOD_TYPE)
+    {
+      cp_error ("casting to function type `%T'", type);
+      return error_mark_node;
+    }
+
   if (IS_SIGNATURE (type))
     {
       error ("cast specifies signature type");
@@ -5396,6 +5429,33 @@ build_modify_expr (lhs, modifycode, rhs)
       }
     }
 
+  if (TREE_CODE (lhs) == OFFSET_REF)
+    {
+      if (TREE_OPERAND (lhs, 0) == NULL_TREE)
+	{
+	  /* Static class member?  */
+	  tree member = TREE_OPERAND (lhs, 1);
+	  if (TREE_CODE (member) == VAR_DECL)
+	    lhs = member;
+	  else
+	    {
+	      compiler_error ("invalid static class member");
+	      return error_mark_node;
+	    }
+	}
+      else
+	lhs = resolve_offset_ref (lhs);
+
+      olhstype = lhstype = TREE_TYPE (lhs);
+    }
+
+  if (TREE_CODE (lhstype) == REFERENCE_TYPE
+      && modifycode != INIT_EXPR)
+    {
+      lhs = convert_from_reference (lhs);
+      olhstype = lhstype = TREE_TYPE (lhs);
+    }
+
   /* If a binary op has been requested, combine the old LHS value with the RHS
      producing the value we should actually store into the LHS.  */
 
@@ -5413,9 +5473,6 @@ build_modify_expr (lhs, modifycode, rhs)
     }
   else if (modifycode == NOP_EXPR)
     {
-      /* must deal with overloading of `operator=' here.  */
-      if (TREE_CODE (lhstype) == REFERENCE_TYPE)
-	lhstype = TREE_TYPE (lhstype);
 #if 1
       /* `operator=' is not an inheritable operator.  */
       if (TYPE_LANG_SPECIFIC (lhstype) && TYPE_HAS_ASSIGNMENT (lhstype))
@@ -5490,7 +5547,6 @@ build_modify_expr (lhs, modifycode, rhs)
       newrhs = build_binary_op (modifycode, lhs, rhs, 1);
     }
 
-#if 0
   /* Handle a cast used as an "lvalue".
      We have already performed any binary operator using the value as cast.
      Now convert the result to the cast type of the lhs,
@@ -5515,6 +5571,9 @@ build_modify_expr (lhs, modifycode, rhs)
       {
 	tree inner_lhs = TREE_OPERAND (lhs, 0);
 	tree result;
+	if (! lvalue_p (lhs) && pedantic)
+	  pedwarn ("cast to non-reference type used as lvalue");
+
 	result = build_modify_expr (inner_lhs, NOP_EXPR,
 				    convert (TREE_TYPE (inner_lhs),
 					     convert (lhstype, newrhs)));
@@ -5522,25 +5581,6 @@ build_modify_expr (lhs, modifycode, rhs)
 	  return result;
 	return convert_force (TREE_TYPE (lhs), result);
       }
-    }
-#endif
-
-  if (TREE_CODE (lhs) == OFFSET_REF)
-    {
-      if (TREE_OPERAND (lhs, 0) == NULL_TREE)
-	{
-	  /* Static class member?  */
-	  tree member = TREE_OPERAND (lhs, 1);
-	  if (TREE_CODE (member) == VAR_DECL)
-	    lhs = member;
-	  else
-	    {
-	      compiler_error ("invalid static class member");
-	      return error_mark_node;
-	    }
-	}
-      else
-	lhs = resolve_offset_ref (lhs);
     }
 
   /* Now we have handled acceptable kinds of LHS that are not truly lvalues.
@@ -5576,7 +5616,18 @@ build_modify_expr (lhs, modifycode, rhs)
       && (TREE_CODE (lhstype) == INTEGER_TYPE
 	  || TREE_CODE (lhstype) == REAL_TYPE
 	  || TREE_CODE (lhstype) == ENUMERAL_TYPE))
-    lhstype = TREE_TYPE (get_unwidened (lhs, 0));
+    {
+      lhstype = TREE_TYPE (get_unwidened (lhs, 0));
+
+      /* If storing in a field that is in actuality a short or narrower
+	 than one, we must store in the field in its actual type.  */
+
+      if (lhstype != TREE_TYPE (lhs))
+	{
+	  lhs = copy_node (lhs);
+	  TREE_TYPE (lhs) = lhstype;
+	}
+    }
 
   /* check to see if there is an assignment to `this' */
   if (lhs == current_class_decl)
@@ -5732,15 +5783,6 @@ build_modify_expr (lhs, modifycode, rhs)
 			  result);
       return build_compound_expr (result);
 #endif
-    }
-
-  /* If storing in a field that is in actuality a short or narrower than one,
-     we must store in the field in its actual type.  */
-
-  if (lhstype != TREE_TYPE (lhs))
-    {
-      lhs = copy_node (lhs);
-      TREE_TYPE (lhs) = lhstype;
     }
 
   /* Convert new value to destination type.  */
@@ -6081,6 +6123,14 @@ build_ptrmemfunc (type, pfn, force)
       return digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
     }
 
+  if (TREE_CODE (pfn) == TREE_LIST)
+    {
+      pfn = instantiate_type (type, pfn, 1);
+      if (pfn == error_mark_node)
+	return error_mark_node;
+      pfn = build_unary_op (ADDR_EXPR, pfn, 0);
+    }
+
   /* Allow pointer to member conversions here. */
   delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn))),
 				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
@@ -6399,45 +6449,63 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	}
       else
 	{
-	  int const_parity = TYPE_READONLY (type) ^ TYPE_READONLY (rhstype);
-	  int volatile_parity = TYPE_VOLATILE (type) ^ TYPE_VOLATILE (rhstype);
+	  int add_quals = 0, const_parity = 0, volatile_parity = 0;
+	  int left_const = 1;
 	  int unsigned_parity;
 	  int nptrs = 0;
 
-	  while (TREE_CODE (ttl) == POINTER_TYPE
-		 && TREE_CODE (ttr) == POINTER_TYPE)
+	  /* This code is basically a duplicate of comp_ptr_ttypes_real.  */
+	  for (; ; ttl = TREE_TYPE (ttl), ttr = TREE_TYPE (ttr))
 	    {
 	      nptrs -= 1;
-	      const_parity |= TYPE_READONLY (ttl) ^ TYPE_READONLY (ttr);
-	      volatile_parity |= TYPE_VOLATILE (ttl) ^ TYPE_VOLATILE (ttr);
-	      ttl = TREE_TYPE (ttl);
-	      ttr = TREE_TYPE (ttr);
+	      const_parity |= TYPE_READONLY (ttl) < TYPE_READONLY (ttr);
+	      volatile_parity |= TYPE_VOLATILE (ttl) < TYPE_VOLATILE (ttr);
+
+	      if (! left_const
+		  && (TYPE_READONLY (ttl) > TYPE_READONLY (ttr)
+		      || TYPE_VOLATILE (ttl) > TYPE_VOLATILE (ttr)))
+		add_quals = 1;
+	      left_const &= TYPE_READONLY (ttl);
+
+	      if (TREE_CODE (ttl) != POINTER_TYPE)
+		break;
 	    }
 	  unsigned_parity = TREE_UNSIGNED (ttl) - TREE_UNSIGNED (ttr);
 	  if (unsigned_parity)
-	    if (TREE_UNSIGNED (ttl))
-	      ttr = unsigned_type (ttr);
-	    else
-	      ttl = unsigned_type (ttl);
+	    {
+	      if (TREE_UNSIGNED (ttl))
+		ttr = unsigned_type (ttr);
+	      else
+		ttl = unsigned_type (ttl);
+	    }
 
 	  if (comp_target_types (ttl, ttr, nptrs))
 	    {
+	      if (add_quals)
+		{
+		  if (fndecl)
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' adds cv-quals without intervening `const'",
+				rhstype, parmnum, fndecl);
+		  else
+		    cp_pedwarn ("%s to `%T' from `%T' adds cv-quals without intervening `const'",
+				errtype, type, rhstype);
+		}
 	      if (const_parity)
 		{
 		  if (fndecl)
-		    cp_warning ("passing `%T' as argument %P of `%D' discards const",
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_warning ("%s to `%T' from `%T' discards const",
+		    cp_pedwarn ("%s to `%T' from `%T' discards const",
 				errtype, type, rhstype);
 		}
 	      if (volatile_parity)
 		{
 		  if (fndecl)
-		    cp_warning ("passing `%T' as argument %P of `%D' discards volatile",
+		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards volatile",
 				rhstype, parmnum, fndecl);
 		  else
-		    cp_warning ("%s to `%T' from `%T' discards volatile",
+		    cp_pedwarn ("%s to `%T' from `%T' discards volatile",
 				errtype, type, rhstype);
 		}
 	      if (unsigned_parity > 0)
@@ -6591,7 +6659,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs, since RHS is used in non-lvalue context.  */
   if (TREE_CODE (rhs) == NOP_EXPR
-      && TREE_TYPE (rhs) == TREE_TYPE (TREE_OPERAND (rhs, 0)))
+      && TREE_TYPE (rhs) == TREE_TYPE (TREE_OPERAND (rhs, 0))
+      && codel != REFERENCE_TYPE)
     rhs = TREE_OPERAND (rhs, 0);
 
   if (rhs == error_mark_node
@@ -7142,4 +7211,41 @@ c_expand_start_case (exp)
   expand_start_case (1, exp, type, "switch statement");
 
   return exp;
+}
+
+/* CONSTP remembers whether or not all the intervening pointers in the `to'
+   type have been const.  */
+int
+comp_ptr_ttypes_real (to, from, constp)
+     tree to, from;
+     int constp;
+{
+  for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
+    {
+      if (TREE_CODE (to) != TREE_CODE (from))
+	return 0;
+
+      if (TYPE_READONLY (from) > TYPE_READONLY (to)
+	  || TYPE_VOLATILE (from) > TYPE_VOLATILE (to))
+	return 0;
+
+      if (! constp
+	  && (TYPE_READONLY (to) > TYPE_READONLY (from)
+	      || TYPE_VOLATILE (to) > TYPE_READONLY (from)))
+	return 0;
+      constp &= TYPE_READONLY (to);
+
+      if (TREE_CODE (to) != POINTER_TYPE)
+	return comptypes (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from), 1);
+    }
+}
+
+/* When comparing, say, char ** to char const **, this function takes the
+   'char *' and 'char const *'.  Do not pass non-pointer types to this
+   function.  */
+int
+comp_ptr_ttypes (to, from)
+     tree to, from;
+{
+  return comp_ptr_ttypes_real (to, from, 1);
 }

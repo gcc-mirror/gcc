@@ -116,7 +116,7 @@ process_template_parm (list, next)
   else
     {
       tree t = make_node (TEMPLATE_TYPE_PARM);
-      decl = build_lang_decl (TYPE_DECL, TREE_PURPOSE (parm), t);
+      decl = build_decl (TYPE_DECL, TREE_PURPOSE (parm), t);
       TYPE_NAME (t) = decl;
       TREE_VALUE (parm) = t;
     }
@@ -581,7 +581,7 @@ lookup_template_class (d1, arglist, in_decl)
       tree t = make_lang_type (UNINSTANTIATED_P_TYPE);
       tree d;
       id = make_anon_name ();
-      d = build_lang_decl (TYPE_DECL, id, t);
+      d = build_decl (TYPE_DECL, id, t);
       TYPE_NAME (t) = d;
       TYPE_VALUES (t) = build_tree_list (template, arglist);
       pushdecl_top_level (d);
@@ -635,7 +635,7 @@ push_template_decls (parmlist, arglist, class_level)
 	    }
 	  decl = arg;
 	  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 't', 273);
-	  decl = build_lang_decl (TYPE_DECL, parm, decl);
+	  decl = build_decl (TYPE_DECL, parm, decl);
 	}
       else
 	{
@@ -987,7 +987,7 @@ instantiate_class_template (classname, setup_parse)
       if (!TREE_TYPE (classname))
 	{
 	  tree t = make_lang_type (RECORD_TYPE);
-	  tree d = build_lang_decl (TYPE_DECL, classname, t);
+	  tree d = build_decl (TYPE_DECL, classname, t);
 	  DECL_NAME (d) = classname;
 	  TYPE_NAME (t) = d;
 	  pushdecl (d);
@@ -1320,7 +1320,7 @@ tsubst (t, args, nargs, in_decl)
 	      tree decls;
 	      int got_it = 0;
 
-	      decls = lookup_name (r, 0);
+	      decls = lookup_name_nonclass (r);
 	      if (decls == NULL_TREE)
 		/* no match */;
 	      else if (TREE_CODE (decls) == TREE_LIST)
@@ -1645,11 +1645,18 @@ instantiate_template (tmpl, targ_ptr)
       DECL_ARGUMENTS (fndecl) = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
     }
      
+  t = DECL_TEMPLATE_INFO (tmpl);
+
   /* If we have a preexisting version of this function, don't expand
      the template version, use the other instead.  */
-  t = DECL_TEMPLATE_INFO (tmpl);
-  if (t->text && !(DECL_INLINE (fndecl) && DECL_SAVED_INSNS (fndecl)))
+  if (DECL_INLINE (fndecl) && DECL_SAVED_INSNS (fndecl))
     {
+      SET_DECL_TEMPLATE_SPECIALIZATION (fndecl);
+      p = (struct pending_inline *)0;
+    }
+  else if (t->text)
+    {
+      SET_DECL_IMPLICIT_INSTANTIATION (fndecl);
       p = (struct pending_inline *) permalloc (sizeof (struct pending_inline));
       p->parm_vec = t->parm_vec;
       p->bindings = targs;
@@ -1819,7 +1826,7 @@ end_template_instantiation (name)
   my_friendly_assert (t != NULL_TREE
 		      && TREE_CODE_CLASS (TREE_CODE (t)) == 't',
 		      287);
-  CLASSTYPE_USE_TEMPLATE (t) = 2;
+  SET_CLASSTYPE_IMPLICIT_INSTANTIATION (t);
   /* Make methods of template classes static, unless
      -fexternal-templates is given.  */
   if (!flag_external_templates)
@@ -2227,8 +2234,10 @@ do_pending_expansions ()
       if (TREE_ASM_WRITTEN (t))
 	DECIDE (0);
 
-      if (DECL_EXPLICITLY_INSTANTIATED (t))
+      if (DECL_EXPLICIT_INSTANTIATION (t))
 	DECIDE (1);
+      else if (! flag_implicit_templates)
+	DECIDE (0);
 
       /* If it's a method, let the class type decide it.
 	 @@ What if the method template is in a separate file?
@@ -2357,7 +2366,12 @@ do_function_instantiation (declspecs, declarator)
   if (! result)
     cp_error ("no matching template for `%D' found", decl);
 
-  DECL_EXPLICITLY_INSTANTIATED (result) = 1;
+  if (flag_external_templates)
+    return;
+
+  SET_DECL_EXPLICIT_INSTANTIATION (result);
+  TREE_PUBLIC (result) = 1;
+  DECL_EXTERNAL (result) = DECL_INLINE (result) && ! flag_implement_inlines;
 }
 
 void
@@ -2366,14 +2380,24 @@ do_type_instantiation (name)
 {
   tree t = TREE_TYPE (name);
 
-  CLASSTYPE_EXPLICITLY_INSTANTIATED (t) = 1;
+  if (flag_external_templates)
+    return;
+
+  SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
   CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
+  SET_CLASSTYPE_INTERFACE_KNOWN (t);
+  CLASSTYPE_INTERFACE_ONLY (t) = 0;
 
   /* this should really be done by instantiate_member_templates */
   {
     tree method = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
     for (; method; method = TREE_CHAIN (method))
-      DECL_EXPLICITLY_INSTANTIATED (method) = 1;
+      {
+	SET_DECL_EXPLICIT_INSTANTIATION (method);
+	TREE_PUBLIC (method) = 1;
+	DECL_EXTERNAL (method) = (DECL_INLINE (method)
+				  && ! flag_implement_inlines);
+      }
   }
 
   /* and data member templates, too */
@@ -2384,7 +2408,7 @@ create_nested_upt (scope, name)
      tree scope, name;
 {
   tree t = make_lang_type (UNINSTANTIATED_P_TYPE);
-  tree d = build_lang_decl (TYPE_DECL, name, t);
+  tree d = build_decl (TYPE_DECL, name, t);
 
   TYPE_NAME (t) = d;
   TYPE_VALUES (t) = TYPE_VALUES (scope);

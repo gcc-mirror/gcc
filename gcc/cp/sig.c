@@ -512,8 +512,8 @@ build_signature_table_constructor (sig_ty, rhs)
 	{
 	  if (! IS_DEFAULT_IMPLEMENTATION (sig_method))
 	    {
-	      cp_error ("class `%T' does not contain method `%s'",
-			rhstype, (int) IDENTIFIER_POINTER (sig_mname));
+	      cp_error ("class `%T' does not contain method `%D'",
+			rhstype, sig_mname);
 	      undo_casts (sig_ty);
 	      return error_mark_node;
 	    }

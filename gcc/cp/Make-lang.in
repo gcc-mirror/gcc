@@ -41,6 +41,15 @@ CXX_FLAGS_TO_PASS = \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)"
 
+# Actual names to use when installing a native compiler.
+CXX_INSTALL_NAME = c++
+GXX_INSTALL_NAME = g++
+
+# Actual names to use when installing a cross-compiler.
+CXX_CROSS_NAME = $(target)-c++
+GXX_CROSS_NAME = $(target)-g++
+
+
 # Define the names for selecting c++ in LANGUAGES.
 # Note that it would be nice to move the dependency on g++
 # into the C++ rule, but that needs a little bit of work
@@ -90,17 +99,17 @@ c++.install-normal:
 c++.install-common:
 	-if [ -f cc1plus ] ; then \
 	  if [ -f g++-cross ] ; then \
-	    rm -f $(bindir)/$(target)-g++; \
-	    $(INSTALL_PROGRAM) g++-cross $(bindir)/$(target)-g++; \
-	    chmod a+x $(bindir)/$(target)-g++; \
-	    rm -f $(bindir)/$(target)-c++; \
-	    ln $(bindir)/$(target)-g++ $(bindir)/$(target)-c++; \
+	    rm -f $(bindir)/$(GXX_CROSS_NAME); \
+	    $(INSTALL_PROGRAM) g++-cross $(bindir)/$(GXX_CROSS_NAME); \
+	    chmod a+x $(bindir)/$(GXX_CROSS_NAME); \
+	    rm -f $(bindir)/$(CXX_CROSS_NAME); \
+	    ln $(bindir)/$(GXX_CROSS_NAME) $(bindir)/$(CXX_CROSS_NAME); \
 	  else \
-	    rm -f $(bindir)/g++; \
-	    $(INSTALL_PROGRAM) g++ $(bindir)/g++; \
-	    chmod a+x $(bindir)/g++; \
-	    rm -f $(bindir)/c++; \
-	    ln $(bindir)/g++ $(bindir)/c++; \
+	    rm -f $(bindir)/$(GXX_INSTALL_NAME); \
+	    $(INSTALL_PROGRAM) g++ $(bindir)/$(GXX_INSTALL_NAME); \
+	    chmod a+x $(bindir)/$(GXX_INSTALL_NAME); \
+	    rm -f $(bindir)/$(CXX_INSTALL_NAME); \
+	    ln $(bindir)/$(GXX_INSTALL_NAME) $(bindir)/$(CXX_INSTALL_NAME); \
 	  fi ; \
 	fi
 
@@ -113,8 +122,10 @@ c++.install-man: $(srcdir)/cp/g++.1
 	else true; fi
 
 c++.uninstall:
-	-rm -rf $(bindir)/g++ $(bindir)/c++
-	-rm -rf $(bindir)/$(target)-g++ $(bindir)/$(target)-c++
+	-rm -rf $(bindir)/$(CXX_INSTALL_NAME)
+	-rm -rf $(bindir)/$(CXX_CROSS_NAME)
+	-rm -rf $(bindir)/$(GXX_INSTALL_NAME)
+	-rm -rf $(bindir)/$(GXX_CROSS_NAME)
 	-rm -rf $(mandir)/g++$(manext)
 
 # Clean hooks:

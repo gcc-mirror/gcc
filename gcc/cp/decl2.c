@@ -116,6 +116,10 @@ int flag_external_templates = 0;
 
 int flag_alt_external_templates = 0;
 
+/* Nonzero means that implicit instantiations will be emitted if needed.  */
+
+int flag_implicit_templates = 1;
+
 /* Nonzero means warn about implicit declarations.  */
 
 int warn_implicit = 1;
@@ -352,6 +356,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"nonnull-objects", &flag_assume_nonnull_objects, 1},
   {"implement-inlines", &flag_implement_inlines, 1},
   {"external-templates", &flag_external_templates, 1},
+  {"implicit-templates", &flag_implicit_templates, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
@@ -1181,7 +1186,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 
   value = grokdeclarator (declarator, declspecs, FIELD, init != 0, raises);
   if (! value)
-    return NULL_TREE; /* friends went bad.  */
+    return value; /* friend or constructor went bad.  */
 
   /* Pass friendly classes back.  */
   if (TREE_CODE (value) == VOID_TYPE)
@@ -1236,21 +1241,13 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	  grok_function_init (value, init);
 	  init = NULL_TREE;
 	}
-      else if (pedantic)
-	{
-#if 0
-	  /* Already warned in grokdeclarator.  */
-	  if (DECL_NAME (value))
-	    pedwarn ("ANSI C++ forbids initialization of member `%s'",
-		     IDENTIFIER_POINTER (DECL_NAME (value)));
-	  else
-	    pedwarn ("ANSI C++ forbids initialization of fields");
-#endif
-	  init = NULL_TREE;
-	}
+      else if (pedantic && ! TREE_STATIC (value))
+	/* Already complained in grokdeclarator.  */
+	init = NULL_TREE;
       else
 	{
-	  /* We allow initializers to become parameters to base initializers.  */
+	  /* We allow initializers to become parameters to base
+             initializers.  */
 	  if (TREE_CODE (init) == TREE_LIST)
 	    {
 	      if (TREE_CHAIN (init) == NULL_TREE)
@@ -1352,8 +1349,6 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
     }
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
-      /* grokdeclarator defers setting this.  */
-      TREE_PUBLIC (value) = 1;
       if (DECL_CHAIN (value) != NULL_TREE)
 	{
 	  /* Need a fresh node here so that we don't get circularity
@@ -1368,7 +1363,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
       if (DECL_FRIEND_P (value))
 	return void_type_node;
 
-      if (current_function_decl)
+      if (current_function_decl && ! IS_SIGNATURE (current_class_type))
 	cp_error ("method `%#D' of local class must be defined in class body",
 		  value);
 
@@ -2345,7 +2340,8 @@ finish_vtable_vardecl (prev, vars)
       for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
 	   method = DECL_NEXT_METHOD (method))
 	{
-	  if (DECL_VINDEX (method) != NULL_TREE && !DECL_SAVED_INSNS (method))
+	  if (DECL_VINDEX (method) != NULL_TREE && !DECL_SAVED_INSNS (method)
+	      && !DECL_ABSTRACT_VIRTUAL_P (method))
 	    {
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
 	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
@@ -2376,20 +2372,6 @@ finish_vtable_vardecl (prev, vars)
       mark_vtable_entries (vars);
       if (TREE_TYPE (DECL_INITIAL (vars)) == 0)
 	  store_init_value (vars, DECL_INITIAL (vars));
-      if (flag_vtable_thunks)
-	{
-	  tree list = CONSTRUCTOR_ELTS (DECL_INITIAL (vars));
-	  for (; list; list = TREE_CHAIN (list))
-	    {
-	      tree vfunc = TREE_VALUE (list);
-	      if (TREE_CODE (vfunc) == ADDR_EXPR)
-		{
-		  vfunc = TREE_OPERAND (vfunc, 0);
-		  if (TREE_CODE (vfunc) == THUNK_DECL)
-		    emit_thunk (vfunc);
-		}
-	    }
-	}
 
 #ifdef DWARF_DEBUGGING_INFO
       if (write_symbols == DWARF_DEBUG)
@@ -2737,6 +2719,12 @@ finish_file ()
 
   walk_vtables ((void (*)())0, finish_vtable_vardecl);
 
+  for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
+    {
+      if (TREE_CODE (vars) == THUNK_DECL)
+	emit_thunk (vars);
+    }
+
   /* Now write out inline functions which had their addresses taken
      and which were not declared virtual and which were not declared
      `extern inline'.  */
@@ -2752,12 +2740,16 @@ finish_file ()
 	  if (CLASSTYPE_INTERFACE_KNOWN (ctype))
 	    {
 	      TREE_PUBLIC (decl) = 1;
-	      DECL_EXTERNAL (decl) = CLASSTYPE_INTERFACE_ONLY (ctype);
+	      DECL_EXTERNAL (decl)
+		= (CLASSTYPE_INTERFACE_ONLY (ctype)
+		   || (DECL_INLINE (decl) && ! flag_implement_inlines));
 	    }
 	}
       if (TREE_PUBLIC (decl) || TREE_ADDRESSABLE (decl))
 	{
-	  if (DECL_EXTERNAL (decl))
+	  if (DECL_EXTERNAL (decl)
+	      || (DECL_IMPLICIT_INSTANTIATION (decl)
+		  && ! flag_implicit_templates))
 	    assemble_external (decl);
 	  else
 	    {	
