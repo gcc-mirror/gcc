@@ -1,3 +1,7 @@
+Fri Sep  8 14:34:56 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (validate_replace_rtx_1): Fix confusion about equality
+	testing; simplify subregs of constants and nested subregs.
 2000-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (symPLT_label2reg): Use operand3 for PIC reg.

@@ -482,10 +482,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 	 in that case.  If it fails, substitute in something that we know
 	 won't be recognized.  */
       if (GET_MODE (to) == VOIDmode
-	  && (XEXP (x, 0) == from
-	      || (GET_CODE (XEXP (x, 0)) == REG && GET_CODE (from) == REG
-		  && GET_MODE (XEXP (x, 0)) == GET_MODE (from)
-		  && REGNO (XEXP (x, 0)) == REGNO (from))))
+	  && rtx_equal_p (XEXP (x, 0), from))
 	{
 	  rtx new = simplify_unary_operation (code, GET_MODE (x), to,
 					      GET_MODE (from));
@@ -498,14 +495,69 @@ validate_replace_rtx_1 (loc, from, to, object)
       break;
 	
     case SUBREG:
+      /* In case we are replacing by constant, attempt to simplify it to non-SUBREG
+         expression.  We can't do this later, since the information about inner mode
+         may be lost.  */
+      if (CONSTANT_P (to) && rtx_equal_p (SUBREG_REG (x), from))
+        {
+	  if (GET_MODE_SIZE (GET_MODE (x)) == UNITS_PER_WORD
+	      && GET_MODE_SIZE (GET_MODE (from)) > UNITS_PER_WORD
+	      && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
+	    {
+	      rtx temp = operand_subword (to, SUBREG_WORD (x),
+					  0, GET_MODE (x));
+	      if (temp)
+		{
+		  validate_change (object, loc, temp, 1);
+		  return;
+		}
+	    }
+	  if (subreg_lowpart_p (x))
+	    {
+	      rtx new =  gen_lowpart_if_possible (GET_MODE (x), to);
+	      if (new)
+		{
+		  validate_change (object, loc, new, 1);
+		  return;
+		}
+	    }
+
+	  /* A paradoxical SUBREG of a VOIDmode constant is the same constant,
+	     since we are saying that the high bits don't matter.  */
+	  if (GET_MODE (to) == VOIDmode
+	      && GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (GET_MODE (from)))
+	    {
+	      validate_change (object, loc, to, 1);
+	      return;
+	    }
+        }
+
+      /* Changing mode twice with SUBREG => just change it once,
+	 or not at all if changing back to starting mode.  */
+      if (GET_CODE (to) == SUBREG
+	  && rtx_equal_p (SUBREG_REG (x), from))
+	{
+	  if (GET_MODE (x) == GET_MODE (SUBREG_REG (to))
+	      && SUBREG_WORD (x) == 0 && SUBREG_WORD (to) == 0)
+	    {
+	      validate_change (object, loc, SUBREG_REG (to), 1);
+	      return;
+	    }
+
+	  validate_change (object, loc,
+			   gen_rtx_SUBREG (GET_MODE (x), SUBREG_REG (to),
+					   SUBREG_WORD (x) + SUBREG_WORD (to)), 1);
+	  return;
+	}
+
       /* If we have a SUBREG of a register that we are replacing and we are
 	 replacing it with a MEM, make a new MEM and try replacing the
 	 SUBREG with it.  Don't do this if the MEM has a mode-dependent address
 	 or if we would be widening it.  */
 
-      if (SUBREG_REG (x) == from
-	  && GET_CODE (from) == REG
+      if (GET_CODE (from) == REG
 	  && GET_CODE (to) == MEM
+	  && rtx_equal_p (SUBREG_REG (x), from)
 	  && ! mode_dependent_address_p (XEXP (to, 0))
 	  && ! MEM_VOLATILE_P (to)
 	  && GET_MODE_SIZE (GET_MODE (x)) <= GET_MODE_SIZE (GET_MODE (to)))
@@ -533,7 +585,8 @@ validate_replace_rtx_1 (loc, from, to, object)
 	 likely to be an insertion operation; if it was, nothing bad will
 	 happen, we might just fail in some cases).  */
 
-      if (XEXP (x, 0) == from && GET_CODE (from) == REG && GET_CODE (to) == MEM
+      if (GET_CODE (from) == REG && GET_CODE (to) == MEM
+	  && rtx_equal_p (XEXP (x, 0), from)
 	  && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && GET_CODE (XEXP (x, 2)) == CONST_INT
 	  && ! mode_dependent_address_p (XEXP (to, 0))
