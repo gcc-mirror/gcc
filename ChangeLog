@@ -1,3 +1,7 @@
+2002-04-25  Loren J. Rittle <ljrittle@acm.org>
+
+	(OS Port Maintainers: freebsd): Add myself.
+
 2003-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* MAINTAINERS (java): Remove Alexandre Petit-Bianco.
