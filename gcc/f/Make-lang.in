@@ -90,8 +90,6 @@ F77_OBJS = f/bad.o f/bit.o f/bld.o f/com.o f/data.o f/equiv.o f/expr.o \
 
 # Use loose warnings for this front end.
 f-warn = $(WERROR)
-# type-punning warning
-f/sta.o-warn = -Wno-error
 
 f771$(exeext): $(F77_OBJS) $(BACKEND) $(LIBDEPS)
 	rm -f f771$(exeext)
