@@ -1,5 +1,11 @@
 2004-12-07  Steven Bosscher  <stevenb@suse.de>
 
+	PR c/18867
+	* c-typeck.c (c_start_case): Set orig_type to error_mark_node
+	when the type of the controlling expression is not a valid type.
+
+2004-12-07  Steven Bosscher  <stevenb@suse.de>
+
 	PR tree-optimization/17340
 	* tree-ssa-pre.c (compute_antic): Fix comment.
 	(compute_avail): Do not recurse, instead do a DFS using a stack

@@ -1,3 +1,7 @@
+2004-12-07  Steven Bosscher  <stevenb@suse.de>
+
+	* gcc.dg/noncompile/20041207.c: New test.
+
 2004-12-07  Volker Reichelt  <reichelt@gcc.gnu.org>
 
 	* g++.dg/other/unreachable-1.C: New test.

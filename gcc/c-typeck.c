@@ -6507,6 +6507,7 @@ c_start_case (tree exp)
 	{
 	  error ("switch quantity not an integer");
 	  exp = integer_zero_node;
+	  orig_type = error_mark_node;
 	}
       else
 	{
