@@ -1,5 +1,10 @@
 2003-05-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
+	* snapshot-index.html: Refer to .bz2 files instead of .gz files. 
+	Simplify the note on not using unannounced snapshots.
+	
+2003-05-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	
 	* snapshot-README: Refer to .bz2 files instead of .gz files.
 	Add a note on where to find the diff files.
 	Simplify the note on not using unannounced snapshots.
