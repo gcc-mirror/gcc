@@ -5257,7 +5257,7 @@ override_options ()
 	    temp = ((regno & 1) == 0 || size <= UNITS_PER_WORD);
 
 	  else if (FP_REG_P (regno))
-	    temp = ((TARGET_FLOAT64 || ((regno & 1) == 0)
+	    temp = (((regno % FP_INC) == 0
 		      /* I think this change is OK regardless of abi, but
                         I'm being cautions untill I can test this more.
                         HARD_REGNO_MODE_OK is about whether or not you
@@ -5268,7 +5268,7 @@ override_options ()
 		    && (class == MODE_FLOAT
 			|| class == MODE_COMPLEX_FLOAT
 			|| (TARGET_DEBUG_H_MODE && class == MODE_INT))
-		    && (! TARGET_SINGLE_FLOAT || size <= 4));
+		    && size <= UNITS_PER_FPVALUE);
 
 	  else if (MD_REG_P (regno))
 	    temp = (class == MODE_INT
@@ -6415,8 +6415,6 @@ compute_frame_size (size)
   HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs */
   long mask;			/* mask of saved gp registers */
   long fmask;			/* mask of saved fp registers */
-  int  fp_inc;			/* 1 or 2 depending on the size of fp regs */
-  long fp_bits;			/* bitmask to use for each fp register */
   tree return_type;
 
   gp_reg_size = 0;
@@ -6488,28 +6486,16 @@ compute_frame_size (size)
 	}
     }
 
-  /* Calculate space needed for fp registers.  */
-  if (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT)
-    {
-      fp_inc = 1;
-      fp_bits = 1;
-    }
-  else
-    {
-      fp_inc = 2;
-      fp_bits = 3;
-    }
-
   /* This loop must iterate over the same space as its companion in
      save_restore_insns.  */
-  for (regno = (FP_REG_LAST - fp_inc + 1);
+  for (regno = (FP_REG_LAST - FP_INC + 1);
        regno >= FP_REG_FIRST;
-       regno -= fp_inc)
+       regno -= FP_INC)
     {
       if (regs_ever_live[regno] && !call_used_regs[regno])
 	{
-	  fp_reg_size += fp_inc * UNITS_PER_FPREG;
-	  fmask |= fp_bits << (regno - FP_REG_FIRST);
+	  fp_reg_size += FP_INC * UNITS_PER_FPREG;
+	  fmask |= ((1 << FP_INC) - 1) << (regno - FP_REG_FIRST);
 	}
     }
 
@@ -6555,7 +6541,7 @@ compute_frame_size (size)
   current_frame_info.fmask = fmask;
   current_frame_info.initialized = reload_completed;
   current_frame_info.num_gp = gp_reg_size / UNITS_PER_WORD;
-  current_frame_info.num_fp = fp_reg_size / (fp_inc * UNITS_PER_FPREG);
+  current_frame_info.num_fp = fp_reg_size / (FP_INC * UNITS_PER_FPREG);
 
   if (mask)
     {
@@ -6582,7 +6568,7 @@ compute_frame_size (size)
     {
       unsigned long offset = (args_size + extra_size + var_size
 			      + gp_reg_rounded + fp_reg_size
-			      - fp_inc * UNITS_PER_FPREG);
+			      - FP_INC * UNITS_PER_FPREG);
       current_frame_info.fp_sp_offset = offset;
       current_frame_info.fp_save_offset = offset - total_size;
     }
