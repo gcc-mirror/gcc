@@ -646,12 +646,21 @@ combine_instructions (f, nregs)
 	  /* Try each sequence of three linked insns ending with this one.  */
 
 	  for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
-	    for (nextlinks = LOG_LINKS (XEXP (links, 0)); nextlinks;
-		 nextlinks = XEXP (nextlinks, 1))
-	      if ((next = try_combine (insn, XEXP (links, 0),
-				       XEXP (nextlinks, 0),
-				       &new_direct_jump_p)) != 0)
-		goto retry;
+	    {
+	      rtx link = XEXP (links, 0);
+
+	      /* If the linked insn has been replaced by a note, then there
+		 is no point in persuing this chain any further.  */
+	      if (GET_CODE (link) == NOTE)
+		break;
+
+	      for (nextlinks = LOG_LINKS (link);
+		   nextlinks;
+		   nextlinks = XEXP (nextlinks, 1))
+		if ((next = try_combine (insn, XEXP (links, 0),
+					 XEXP (nextlinks, 0))) != 0)
+		  goto retry;
+	    }
 
 #ifdef HAVE_cc0
 	  /* Try to combine a jump insn that uses CC0
