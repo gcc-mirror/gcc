@@ -467,11 +467,14 @@ format_item:
       goto data_desc;
 
     case FMT_P:
-      /* P and X require a prior number.  */
+      /* P requires a prior number.  */
       error = "P descriptor requires leading scale factor";
       goto syntax;
 
     case FMT_X:
+      /* X requires a prior number if we're being pedantic.  */
+      if (!pedantic)
+	goto between_desc;
       error = "X descriptor requires leading space count";
       goto syntax;
 
