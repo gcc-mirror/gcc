@@ -215,7 +215,8 @@ void unroll_loop PROTO((rtx, int, rtx, rtx, struct loop_info *, int));
 rtx biv_total_increment PROTO((struct iv_class *, rtx, rtx));
 unsigned HOST_WIDE_INT loop_iterations PROTO((rtx, rtx, struct loop_info *));
 int precondition_loop_p PROTO((rtx, struct loop_info *, 
-			       rtx *, rtx *, rtx *));
+			       rtx *, rtx *, rtx *, 
+			       enum machine_mode *mode));
 rtx final_biv_value PROTO((struct iv_class *, rtx, rtx,
 			   unsigned HOST_WIDE_INT));
 rtx final_giv_value PROTO((struct induction *, rtx, rtx,
