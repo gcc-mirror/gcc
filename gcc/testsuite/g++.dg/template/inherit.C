@@ -9,5 +9,5 @@ struct Z : X<int> { };
 int main()
 {
   Z z;
-  z.X::f();
+  z.X::f();                     // { dg-error "invalid" "" }
 }
