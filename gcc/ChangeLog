@@ -1,5 +1,10 @@
 2003-09-26  Richard Sandiford  <rsandifo@redhat.com>
 
+	* expr.c (emit_move_insn_1): If there is no move pattern for the
+	original mode, try using a pattern for the corresponding integer mode.
+
+2003-09-26  Richard Sandiford  <rsandifo@redhat.com>
+
 	* combine.c (if_then_else_cond): Tighten mode check.
 
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
