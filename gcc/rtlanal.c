@@ -1849,6 +1849,8 @@ side_effects_p (x)
     case PRE_DEC:
     case POST_INC:
     case POST_DEC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
     case CALL:
     case UNSPEC_VOLATILE:
  /* case TRAP_IF: This isn't clear yet.  */
