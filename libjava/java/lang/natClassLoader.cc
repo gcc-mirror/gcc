@@ -14,6 +14,7 @@ details.  */
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <gcj/cni.h>
 #include <jvm.h>
@@ -452,7 +453,17 @@ _Jv_RegisterClassHookDefault (jclass klass)
 	{
 	  // If you get this, it means you have the same class in two
 	  // different libraries.
-	  throw new java::lang::VirtualMachineError (JvNewStringLatin1 ("class registered twice"));
+	  char *message;
+	  asprintf (&message, "Duplicate class registration: %s", 
+		    klass->name->data);
+	  if (! gcj::runtimeInitialized)
+	    JvFail (message);
+	  else
+	    {
+	      java::lang::String *str = JvNewStringLatin1 (message);
+	      free (message);
+	      throw new java::lang::VirtualMachineError (str);
+	    }
 	}
 
       check_class = check_class->next;

@@ -1,3 +1,13 @@
+2001-10-23  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* prims.cc (_Jv_Abort): Always print error message using fprintf,
+	don't try to allocate.
+	(_Jv_CreateJavaVM): Set gcj::runTimeInitialized.
+	* include/jvm.h (gcj::runTimeInitialized): New variable declaration.
+	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault): Handle
+	duplicate class registration with JvFail if the runtime hasn't been
+	initialized yet.
+
 2001-10-22  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/GregorianCalendar.java (getGregorianChange): Removed
