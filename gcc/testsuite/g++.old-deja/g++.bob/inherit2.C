@@ -5,7 +5,7 @@ public:
   A(void) {}
 private:
   A(const A &) { abort(); } // ERROR - 
-  const A& operator =(const A &) { abort(); }
+  const A& operator =(const A &) { abort(); } // WARNING - no return stmt XFAIL *-*-*
 };
 
 class B : public A {

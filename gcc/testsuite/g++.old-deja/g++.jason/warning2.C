@@ -2,10 +2,10 @@
 // Build don't link:
 
 struct A {
-  virtual int f () = 0;
+  virtual void f () = 0;
 };
 
-struct B: public A { int f () { } };
+struct B: public A { void f () { } };
 
 int main()
 {

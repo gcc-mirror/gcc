@@ -5,7 +5,7 @@
 
 struct A
 {
-  int  f(int a) { }
+  int  f(int a) { return 0; }
   void f(int a, int b) { }
 };
 

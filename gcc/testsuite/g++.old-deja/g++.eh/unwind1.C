@@ -1,7 +1,7 @@
 // Test that unwinding properly restores SP.
 // Contributed by Jason Merrill <jason@cygnus.com>
 
-int f (int i)
+void f (int i)
 {
   throw i;
 }
