@@ -855,6 +855,7 @@ truthvalue_conversion (expr)
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
     case ERROR_MARK:
       return expr;
 
