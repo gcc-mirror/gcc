@@ -9939,7 +9939,8 @@ memory_address_length (addr)
       if (disp)
 	{
 	  if (GET_CODE (disp) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (disp), 'K'))
+	      && CONST_OK_FOR_LETTER_P (INTVAL (disp), 'K')
+	      && base)
 	    len = 1;
 	  else
 	    len = 4;
@@ -10002,6 +10003,26 @@ ix86_attr_length_address_default (insn)
      rtx insn;
 {
   int i;
+
+  if (get_attr_type (insn) == TYPE_LEA)
+    {
+      rtx set = PATTERN (insn);
+      if (GET_CODE (set) == SET)
+	;
+      else if (GET_CODE (set) == PARALLEL
+	       && GET_CODE (XVECEXP (set, 0, 0)) == SET)
+	set = XVECEXP (set, 0, 0);
+      else
+	{
+#ifdef ENABLE_CHECKING
+	  abort ();
+#endif
+	  return 0;
+	}
+
+      return memory_address_length (SET_SRC (set));
+    }
+
   extract_insn_cached (insn);
   for (i = recog_data.n_operands - 1; i >= 0; --i)
     if (GET_CODE (recog_data.operand[i]) == MEM)
