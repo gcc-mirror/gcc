@@ -243,6 +243,9 @@ core, @samp{V} is equivalent to @samp{E}, but when the object is read
 from an @samp{md} file, the vector value of this operand may be omitted.
 An omitted vector is effectively the same as a vector of no elements.
 
+@item B
+@samp{B} indicates a pointer to basic block strucure.
+
 @item 0
 @samp{0} means a slot whose contents do not fit any normal category.
 @samp{0} slots are not printed at all in dumps, and are often used in
