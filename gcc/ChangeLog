@@ -1,3 +1,8 @@
+2004-10-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-phinodes.c (allocate_phi_node): New.
+	(make_phi_node, resize_phi_node): Use it.
+
 2004-10-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/sysv4.h (TARGET_POWER): Define as 0.
