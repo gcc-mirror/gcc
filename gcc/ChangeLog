@@ -1,3 +1,7 @@
+Sun Sep 13 22:10:18 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* invoke.texi (C Dialect Options): Put back missing @end itemize.
+
 Mon Sep 14 02:33:46 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in: remove usage of `!' to negate the result of a
