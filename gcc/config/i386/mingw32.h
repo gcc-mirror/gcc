@@ -57,12 +57,22 @@ Boston, MA 02111-1307, USA. */
                   -luser32 -lkernel32 -ladvapi32 -lshell32"
 
 /* Include in the mingw32 libraries with libgcc */
+#undef LINK_SPEC
+#define LINK_SPEC "%{mwindows:--subsystem windows} \
+  %{mconsole:--subsystem console} \
+  %{shared: %{mdll: %eshared and mdll are not compatible}} \
+  %{shared: --shared} %{mdll:--dll} \
+  %{static:-Bstatic} %{!static:-Bdynamic} \
+  %{shared|mdll: -e _DllMainCRTStartup@12}"
+
+/* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC \
   "%{mthreads:-lmingwthrd} -lmingw32 -lgcc -lmoldname -lmsvcrt"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{mdll:dllcrt2%O%s} %{!mdll:crt2%O%s} %{pg:gcrt2%O%s}"
+#define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
+  %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s}"
 
 /* MS runtime does not need a separate math library. */
 #define MATH_LIBRARY ""

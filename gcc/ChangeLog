@@ -1,3 +1,8 @@
+2001-01-29  Thomas Pfaff  <tpfaff@gmx.net>
+
+	* mingw32.h: Override STARTFILE_SPEC and LINK_SPEC declared in
+	cygwin.h.
+
 2001-01-29  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* config/mips/iris6.h (SUPPORTS_INIT_PRIORITY): Revise definition
