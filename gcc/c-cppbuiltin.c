@@ -281,7 +281,7 @@ define__GNUC__ ()
 
 /* Hook that registers front end and target-specific built-ins.  */
 void
-cb_register_builtins (pfile)
+c_cpp_builtins (pfile)
      cpp_reader *pfile;
 {
   /* -undef turns off target-specific built-ins.  */

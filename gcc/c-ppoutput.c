@@ -95,8 +95,6 @@ init_pp_output (out_stream)
 {
   cpp_callbacks *cb = cpp_get_callbacks (parse_in);
 
-  cb->register_builtins = cb_register_builtins;
-
   if (!flag_no_output)
     {
       cb->line_change = cb_line_change;

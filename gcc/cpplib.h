@@ -213,9 +213,6 @@ struct cpp_options
   /* Characters between tab stops.  */
   unsigned int tabstop;
 
-  /* Pending options - -D, -U, -A, -I, -ixxx.  */
-  struct cpp_pending *pending;
-
   /* Map between header names and file names, used only on DOS where
      file names are limited in length.  */
   struct file_name_map_list *map_list;
@@ -380,9 +377,6 @@ struct cpp_callbacks
   void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
   void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
   void (*def_pragma) PARAMS ((cpp_reader *, unsigned int));
-  /* Called when the client has a chance to properly register
-     built-ins with cpp_define() and cpp_assert().  */
-  void (*register_builtins) PARAMS ((cpp_reader *));
   int (*valid_pch) PARAMS ((cpp_reader *, const char *, int));
   void (*read_pch) PARAMS ((cpp_reader *, const char *, int, const char *));
 };
@@ -517,11 +511,6 @@ extern const struct line_maps *cpp_get_line_maps PARAMS ((cpp_reader *));
 extern cpp_callbacks *cpp_get_callbacks PARAMS ((cpp_reader *));
 extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
 
-/* Now call cpp_handle_option to handle 1 switch.  The return value is
-   the number of arguments used.  Options processing is not completed
-   until you call cpp_finish_options.  */
-extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
-
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the
    input file, except for preprocessed input.  This will generate at
@@ -535,12 +524,8 @@ extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern const char *cpp_read_main_file PARAMS ((cpp_reader *, const char *,
 					       struct ht *));
 
-/* Deferred handling of command line options that can generate debug
-   callbacks, such as -D and -imacros.  Call this after
-   cpp_read_main_file.  The front ends need this separation so they
-   can initialize debug output with the original file name, returned
-   from cpp_read_main_file, before they get debug callbacks.  */
-extern void cpp_finish_options PARAMS ((cpp_reader *));
+/* Set up built-ins like __FILE__.  */
+extern void cpp_init_builtins PARAMS ((cpp_reader *));
 
 /* Call this to finish preprocessing.  If you requested dependency
    generation, pass an open stream to write the information to,
@@ -578,7 +563,7 @@ extern cppchar_t
 cpp_interpret_charconst PARAMS ((cpp_reader *, const cpp_token *,
 				 unsigned int *, int *));
 
-/* Used to register builtins during the register_builtins callback.
+/* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */
 extern void cpp_define PARAMS ((cpp_reader *, const char *));
 extern void cpp_assert PARAMS ((cpp_reader *, const char *));

@@ -25,53 +25,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "tm.h"
 #include "cpplib.h"
 #include "cpphash.h"
-#include "intl.h"
 #include "mkdeps.h"
 
-/* Internal structures and prototypes.  */
-
-/* A `struct pending_option' remembers one -D, -A, -U, -include, or
-   -imacros switch.  */
-typedef void (* cl_directive_handler) PARAMS ((cpp_reader *, const char *));
-struct pending_option
-{
-  struct pending_option *next;
-  const char *arg;
-  cl_directive_handler handler;
-};
-
-/* The `pending' structure accumulates all the options that are not
-   actually processed until we hit cpp_read_main_file.  It consists of
-   several lists, one for each type of option.  We keep both head and
-   tail pointers for quick insertion.  */
-struct cpp_pending
-{
-  struct pending_option *directive_head, *directive_tail;
-};
-
-#ifdef __STDC__
-#define APPEND(pend, list, elt) \
-  do {  if (!(pend)->list##_head) (pend)->list##_head = (elt); \
-	else (pend)->list##_tail->next = (elt); \
-	(pend)->list##_tail = (elt); \
-  } while (0)
-#else
-#define APPEND(pend, list, elt) \
-  do {  if (!(pend)->list/**/_head) (pend)->list/**/_head = (elt); \
-	else (pend)->list/**/_tail->next = (elt); \
-	(pend)->list/**/_tail = (elt); \
-  } while (0)
-#endif
-
 static void init_library		PARAMS ((void));
-static void init_builtins		PARAMS ((cpp_reader *));
 static void mark_named_operators	PARAMS ((cpp_reader *));
-static void free_chain			PARAMS ((struct pending_option *));
 static void read_original_filename	PARAMS ((cpp_reader *));
-static void new_pending_directive	PARAMS ((struct cpp_pending *,
-						 const char *,
-						 cl_directive_handler));
-static int parse_option			PARAMS ((const char *));
 static void post_options		PARAMS ((cpp_reader *));
 
 /* If we have designated initializers (GCC >2.7) these tables can be
@@ -153,21 +111,7 @@ cpp_set_lang (pfile, lang)
   CPP_OPTION (pfile, digraphs)		 = l->digraphs;
 }
 
-#ifdef HOST_EBCDIC
-static int opt_comp PARAMS ((const void *, const void *));
-
-/* Run-time sorting of options array.  */
-static int
-opt_comp (p1, p2)
-     const void *p1, *p2;
-{
-  return strcmp (((struct cl_option *) p1)->opt_text,
-		 ((struct cl_option *) p2)->opt_text);
-}
-#endif
-
-/* init initializes library global state.  It might not need to
-   do anything depending on the platform and compiler.  */
+/* Initialize library global state.  */
 static void
 init_library ()
 {
@@ -176,12 +120,6 @@ init_library ()
   if (! initialized)
     {
       initialized = 1;
-
-#ifdef HOST_EBCDIC
-      /* For non-ASCII hosts, the cl_options array needs to be sorted at
-	 runtime.  */
-      qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
-#endif
 
       /* Set up the trigraph map.  This doesn't need to do anything if
 	 we were compiled with a compiler that supports C99 designated
@@ -215,9 +153,6 @@ cpp_create_reader (lang)
   CPP_OPTION (pfile, warn_endif_labels) = 1;
   CPP_OPTION (pfile, warn_deprecated) = 1;
   CPP_OPTION (pfile, warn_long_long) = !CPP_OPTION (pfile, c99);
-
-  CPP_OPTION (pfile, pending) =
-    (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */
@@ -276,7 +211,6 @@ cpp_destroy (pfile)
   cpp_context *context, *contextn;
   tokenrun *run, *runn;
 
-  free (CPP_OPTION (pfile, pending));
   free (pfile->op_stack);
 
   while (CPP_BUFFER (pfile) != NULL)
@@ -391,10 +325,10 @@ mark_named_operators (pfile)
     }
 }
 
-/* Subroutine of cpp_read_main_file; reads the builtins table above and
-   enters them, and language-specific macros, into the hash table.  */
-static void
-init_builtins (pfile)
+/* Read the builtins table above and enter them, and language-specific
+   macros, into the hash table.  */
+void
+cpp_init_builtins (pfile)
      cpp_reader *pfile;
 {
   const struct builtin *b;
@@ -422,24 +356,6 @@ init_builtins (pfile)
 
   if (CPP_OPTION (pfile, objc))
     _cpp_define_builtin (pfile, "__OBJC__ 1");
-
-  if (pfile->cb.register_builtins)
-    (*pfile->cb.register_builtins) (pfile);
-}
-
-/* Frees a pending_option chain.  */
-static void
-free_chain (head)
-     struct pending_option *head;
-{
-  struct pending_option *next;
-
-  while (head)
-    {
-      next = head->next;
-      free (head);
-      head = next;
-    }
 }
 
 /* Sanity-checks are dependent on command-line options, so it is
@@ -587,29 +503,6 @@ read_original_filename (pfile)
   _cpp_backup_tokens (pfile, 1);
 }
 
-/* Handle pending command line options: -D, -U, -A, -imacros and
-   -include.  This should be called after debugging has been properly
-   set up in the front ends.  */
-void
-cpp_finish_options (pfile)
-     cpp_reader *pfile;
-{
-  /* Install builtins and process command line macros etc. in the order
-     they appeared, but only if not already preprocessed.  */
-  if (! CPP_OPTION (pfile, preprocessed))
-    {
-      struct pending_option *p;
-
-      _cpp_do_file_change (pfile, LC_RENAME, _("<built-in>"), 1, 0);
-      init_builtins (pfile);
-      _cpp_do_file_change (pfile, LC_RENAME, _("<command line>"), 1, 0);
-      for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)
-	(*p->handler) (pfile, p->arg);
-    }
-
-  free_chain (CPP_OPTION (pfile, pending)->directive_head);
-}
-
 /* This is called at the end of preprocessing.  It pops the last
    buffer and writes dependency output, and returns the number of
    errors.
@@ -648,203 +541,6 @@ cpp_finish (pfile, deps_stream)
     _cpp_report_missing_guards (pfile);
 
   return pfile->errors;
-}
-
-/* Add a directive to be handled later in the initialization phase.  */
-static void
-new_pending_directive (pend, text, handler)
-     struct cpp_pending *pend;
-     const char *text;
-     cl_directive_handler handler;
-{
-  struct pending_option *o = (struct pending_option *)
-    xmalloc (sizeof (struct pending_option));
-
-  o->arg = text;
-  o->next = NULL;
-  o->handler = handler;
-  APPEND (pend, directive, o);
-}
-
-/* Irix6 "cc -n32" and OSF4 cc have problems with char foo[] = ("string");
-   I.e. a const string initializer with parens around it.  That is
-   what N_("string") resolves to, so we make no_* be macros instead.  */
-#define no_ass N_("assertion missing after %s")
-#define no_mac N_("macro name missing after %s")
-
-/* This is the list of all command line options, with the leading
-   "-" removed.  It must be sorted in ASCII collating order.  */
-#define COMMAND_LINE_OPTIONS                                                  \
-  DEF_OPT("A",                        no_ass, OPT_A)                          \
-  DEF_OPT("D",                        no_mac, OPT_D)                          \
-  DEF_OPT("U",                        no_mac, OPT_U)                          \
-
-
-#define DEF_OPT(text, msg, code) code,
-enum opt_code
-{
-  COMMAND_LINE_OPTIONS
-  N_OPTS
-};
-#undef DEF_OPT
-
-struct cl_option
-{
-  const char *opt_text;
-  const char *msg;
-  size_t opt_len;
-  enum opt_code opt_code;
-};
-
-#define DEF_OPT(text, msg, code) { text, msg, sizeof(text) - 1, code },
-#ifdef HOST_EBCDIC
-static struct cl_option cl_options[] =
-#else
-static const struct cl_option cl_options[] =
-#endif
-{
-  COMMAND_LINE_OPTIONS
-};
-#undef DEF_OPT
-#undef COMMAND_LINE_OPTIONS
-
-/* Perform a binary search to find which, if any, option the given
-   command-line matches.  Returns its index in the option array,
-   negative on failure.  Complications arise since some options can be
-   suffixed with an argument, and multiple complete matches can occur,
-   e.g. -pedantic and -pedantic-errors.  */
-static int
-parse_option (input)
-     const char *input;
-{
-  unsigned int md, mn, mx;
-  size_t opt_len;
-  int comp;
-
-  mn = 0;
-  mx = N_OPTS;
-
-  while (mx > mn)
-    {
-      md = (mn + mx) / 2;
-
-      opt_len = cl_options[md].opt_len;
-      comp = strncmp (input, cl_options[md].opt_text, opt_len);
-
-      if (comp > 0)
-	mn = md + 1;
-      else if (comp < 0)
-	mx = md;
-      else
-	{
-	  if (input[opt_len] == '\0')
-	    return md;
-	  /* We were passed more text.  If the option takes an argument,
-	     we may match a later option or we may have been passed the
-	     argument.  The longest possible option match succeeds.
-	     If the option takes no arguments we have not matched and
-	     continue the search (e.g. input="stdc++" match was "stdc").  */
-	  mn = md + 1;
-	  if (cl_options[md].msg)
-	    {
-	      /* Scan forwards.  If we get an exact match, return it.
-		 Otherwise, return the longest option-accepting match.
-		 This loops no more than twice with current options.  */
-	      mx = md;
-	      for (; mn < (unsigned int) N_OPTS; mn++)
-		{
-		  opt_len = cl_options[mn].opt_len;
-		  if (strncmp (input, cl_options[mn].opt_text, opt_len))
-		    break;
-		  if (input[opt_len] == '\0')
-		    return mn;
-		  if (cl_options[mn].msg)
-		    mx = mn;
-		}
-	      return mx;
-	    }
-	}
-    }
-
-  return -1;
-}
-
-/* Handle one command-line option in (argc, argv).
-   Can be called multiple times, to handle multiple sets of options.
-   Returns number of strings consumed.  */
-int
-cpp_handle_option (pfile, argc, argv)
-     cpp_reader *pfile;
-     int argc;
-     char **argv;
-{
-  int i = 0;
-  struct cpp_pending *pend = CPP_OPTION (pfile, pending);
-
-    {
-      enum opt_code opt_code;
-      int opt_index;
-      const char *arg = 0;
-
-      /* Skip over '-'.  */
-      opt_index = parse_option (&argv[i][1]);
-      if (opt_index < 0)
-	return i;
-
-      opt_code = cl_options[opt_index].opt_code;
-      if (cl_options[opt_index].msg)
-	{
-	  arg = &argv[i][cl_options[opt_index].opt_len + 1];
-	  if (arg[0] == '\0')
-	    {
-	      arg = argv[++i];
-	      if (!arg)
-		{
-		  cpp_error (pfile, DL_ERROR,
-			     cl_options[opt_index].msg, argv[i - 1]);
-		  return argc;
-		}
-	    }
-	}
-
-      switch (opt_code)
-	{
-	case N_OPTS: /* Shut GCC up.  */
-	  break;
-
-	case OPT_D:
-	  new_pending_directive (pend, arg, cpp_define);
-	  break;
-
-	case OPT_A:
-	  if (arg[0] == '-')
-	    {
-	      /* -A with an argument beginning with '-' acts as
-		 #unassert on whatever immediately follows the '-'.
-		 If "-" is the whole argument, we eliminate all
-		 predefined macros and assertions, including those
-		 that were specified earlier on the command line.
-		 That way we can get rid of any that were passed
-		 automatically in from GCC.  */
-
-	      if (arg[1] == '\0')
-		{
-		  free_chain (pend->directive_head);
-		  pend->directive_head = NULL;
-		  pend->directive_tail = NULL;
-		}
-	      else
-		new_pending_directive (pend, arg + 1, cpp_unassert);
-	    }
-	  else
-	    new_pending_directive (pend, arg, cpp_assert);
-	  break;
-	case OPT_U:
-	  new_pending_directive (pend, arg, cpp_undef);
-	  break;
-	}
-    }
-  return i + 1;
 }
 
 static void
