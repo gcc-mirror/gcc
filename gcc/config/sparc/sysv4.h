@@ -100,6 +100,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define PUSHSECTION_FORMAT	"\t%s\t\"%s\"\n"
 
+#undef ASM_OUTPUT_CASE_LABEL
+#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
+do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
+     ASM_OUTPUT_INTERNAL_LABEL ((FILE), PREFIX, NUM);			\
+   } while (0)
+
 /* This is how to equate one symbol to another symbol.  The syntax used is
    `SYM1=SYM2'.  Note that this is different from the way equates are done
    with most svr4 assemblers, where the syntax is `.set SYM1,SYM2'.  */
