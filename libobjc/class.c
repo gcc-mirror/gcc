@@ -1,5 +1,6 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993, 1995, 1996, 1997, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 2001, 2002
+     Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup and Dennis Glatting.
 
    Lock-free class table code designed and written from scratch by
@@ -166,7 +167,7 @@ static void
 class_table_setup (void)
 {
   /* Start - nothing in the table.  */
-  memset (class_table_array, 0, sizeof(class_node_ptr) * CLASS_TABLE_SIZE);
+  memset (class_table_array, 0, sizeof (class_node_ptr) * CLASS_TABLE_SIZE);
 
   /* The table writing mutex.  */
   __class_table_lock = objc_mutex_allocate ();
@@ -339,7 +340,7 @@ class_table_next (struct class_table_enumerator **e)
 #if 0 /* DEBUGGING FUNCTIONS */
 /* Debugging function - print the class table.  */
 void
-class_table_print ()
+class_table_print (void)
 {
   int i;
   
@@ -362,7 +363,7 @@ class_table_print ()
    function of hash key values.  Useful to evaluate the hash function
    in real cases.  */
 void
-class_table_print_histogram ()
+class_table_print_histogram (void)
 {
   int i, j;
   int counter = 0;
@@ -408,64 +409,66 @@ class_table_print_histogram ()
 /* This is a hook which is called by objc_get_class and
    objc_lookup_class if the runtime is not able to find the class.  
    This may e.g. try to load in the class using dynamic loading.  */
-Class (*_objc_lookup_class)(const char* name) = 0;      /* !T:SAFE */
+Class (*_objc_lookup_class) (const char *name) = 0;      /* !T:SAFE */
 
 
 /* True when class links has been resolved.  */     
 BOOL __objc_class_links_resolved = NO;                  /* !T:UNUSED */
 
 
-void __objc_init_class_tables()
+void
+__objc_init_class_tables (void)
 {
   /* Allocate the class hash table.  */
   
-  if(__class_table_lock)
+  if (__class_table_lock)
     return;
   
-  objc_mutex_lock(__objc_runtime_mutex);
+  objc_mutex_lock (__objc_runtime_mutex);
   
   class_table_setup ();
 
-  objc_mutex_unlock(__objc_runtime_mutex);
+  objc_mutex_unlock (__objc_runtime_mutex);
 }  
 
 /* This function adds a class to the class hash table, and assigns the
    class a number, unless it's already known.  */
 void
-__objc_add_class_to_hash(Class class)
+__objc_add_class_to_hash (Class class)
 {
   Class h_class;
 
-  objc_mutex_lock(__objc_runtime_mutex);
+  objc_mutex_lock (__objc_runtime_mutex);
 
   /* Make sure the table is there.  */
-  assert(__class_table_lock);
+  assert (__class_table_lock);
 
   /* Make sure it's not a meta class.  */
-  assert(CLS_ISCLASS(class));
+  assert (CLS_ISCLASS (class));
 
   /* Check to see if the class is already in the hash table.  */
   h_class = class_table_get_safe (class->name);
-  if (!h_class)
+  if (! h_class)
     {
       /* The class isn't in the hash table.  Add the class and assign a class
          number.  */
       static unsigned int class_number = 1;
 
-      CLS_SETNUMBER(class, class_number);
-      CLS_SETNUMBER(class->class_pointer, class_number);
+      CLS_SETNUMBER (class, class_number);
+      CLS_SETNUMBER (class->class_pointer, class_number);
 
       ++class_number;
       class_table_insert (class->name, class);
     }
 
-  objc_mutex_unlock(__objc_runtime_mutex);
+  objc_mutex_unlock (__objc_runtime_mutex);
 }
 
 /* Get the class object for the class named NAME.  If NAME does not
    identify a known class, the hook _objc_lookup_class is called.  If
    this fails, nil is returned.  */
-Class objc_lookup_class (const char* name)
+Class
+objc_lookup_class (const char *name)
 {
   Class class;
 
@@ -475,7 +478,7 @@ Class objc_lookup_class (const char* name)
     return class;
 
   if (_objc_lookup_class)
-    return (*_objc_lookup_class)(name);
+    return (*_objc_lookup_class) (name);
   else
     return 0;
 }
@@ -494,20 +497,20 @@ objc_get_class (const char *name)
     return class;
 
   if (_objc_lookup_class)
-    class = (*_objc_lookup_class)(name);
+    class = (*_objc_lookup_class) (name);
 
-  if(class)
+  if (class)
     return class;
   
-  objc_error(nil, OBJC_ERR_BAD_CLASS, 
-             "objc runtime: cannot find class %s\n", name);
+  objc_error (nil, OBJC_ERR_BAD_CLASS, 
+              "objc runtime: cannot find class %s\n", name);
   return 0;
 }
 
 MetaClass
-objc_get_meta_class(const char *name)
+objc_get_meta_class (const char *name)
 {
-  return objc_get_class(name)->class_pointer;
+  return objc_get_class (name)->class_pointer;
 }
 
 /* This function provides a way to enumerate all the classes in the
@@ -516,22 +519,22 @@ objc_get_meta_class(const char *name)
    For example: 
        id class; 
        void *es = NULL;
-       while ((class = objc_next_class(&es)))
+       while ((class = objc_next_class (&es)))
          ... do something with class; 
 */
 Class
-objc_next_class(void **enum_state)
+objc_next_class (void **enum_state)
 {
   Class class;
 
-  objc_mutex_lock(__objc_runtime_mutex);
+  objc_mutex_lock (__objc_runtime_mutex);
   
   /* Make sure the table is there.  */
-  assert(__class_table_lock);
+  assert (__class_table_lock);
 
-  class = class_table_next ((struct class_table_enumerator **)enum_state);
+  class = class_table_next ((struct class_table_enumerator **) enum_state);
 
-  objc_mutex_unlock(__objc_runtime_mutex);
+  objc_mutex_unlock (__objc_runtime_mutex);
   
   return class;
 }
@@ -539,33 +542,34 @@ objc_next_class(void **enum_state)
 /* Resolve super/subclass links for all classes.  The only thing we
    can be sure of is that the class_pointer for class objects point to
    the right meta class objects.  */
-void __objc_resolve_class_links()
+void
+__objc_resolve_class_links (void)
 {
   struct class_table_enumerator *es = NULL;
   Class object_class = objc_get_class ("Object");
   Class class1;
 
-  assert(object_class);
+  assert (object_class);
 
-  objc_mutex_lock(__objc_runtime_mutex);
+  objc_mutex_lock (__objc_runtime_mutex);
 
   /* Assign subclass links.  */
   while ((class1 = class_table_next (&es)))
     {
       /* Make sure we have what we think we have.  */
-      assert (CLS_ISCLASS(class1));
-      assert (CLS_ISMETA(class1->class_pointer));
+      assert (CLS_ISCLASS (class1));
+      assert (CLS_ISMETA (class1->class_pointer));
 
       /* The class_pointer of all meta classes point to Object's meta
          class.  */
       class1->class_pointer->class_pointer = object_class->class_pointer;
 
-      if (!(CLS_ISRESOLV(class1)))
+      if (! CLS_ISRESOLV (class1))
         {
-          CLS_SETRESOLV(class1);
-          CLS_SETRESOLV(class1->class_pointer);
+          CLS_SETRESOLV (class1);
+          CLS_SETRESOLV (class1->class_pointer);
               
-          if(class1->super_class)
+          if (class1->super_class)
             {   
               Class a_super_class 
                 = objc_get_class ((char *) class1->super_class);
@@ -607,12 +611,12 @@ void __objc_resolve_class_links()
            sub_class = sub_class->sibling_class)
         {
           sub_class->super_class = class1;
-          if(CLS_ISCLASS(sub_class))
+          if (CLS_ISCLASS (sub_class))
             sub_class->class_pointer->super_class = class1->class_pointer;
         }
     }
 
-  objc_mutex_unlock(__objc_runtime_mutex);
+  objc_mutex_unlock (__objc_runtime_mutex);
 }
 
 
@@ -622,7 +626,7 @@ void __objc_resolve_class_links()
 Class
 class_pose_as (Class impostor, Class super_class)
 {
-  if (!CLS_ISRESOLV (impostor))
+  if (! CLS_ISRESOLV (impostor))
     __objc_resolve_class_links ();
 
   /* Preconditions */
@@ -685,11 +689,11 @@ class_pose_as (Class impostor, Class super_class)
      keys of the hashtable is, change all values that are superclass
      into impostor.  */
 
-  objc_mutex_lock(__objc_runtime_mutex);
+  objc_mutex_lock (__objc_runtime_mutex);
 
   class_table_replace (super_class, impostor);
 
-  objc_mutex_unlock(__objc_runtime_mutex);
+  objc_mutex_unlock (__objc_runtime_mutex);
 
   /* Next, we update the dispatch tables...  */
   __objc_update_dispatch_table_for_class (CLASSOF (impostor));

@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime nil receiver function
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 2002 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -30,11 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "runtime.h"
 
 id
-nil_method(id receiver, SEL op __attribute__ ((__unused__)), ...)
+nil_method (id receiver, SEL op __attribute__ ((__unused__)), ...)
 {
   return receiver;
 }
-
-
-
-

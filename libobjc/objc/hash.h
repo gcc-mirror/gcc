@@ -60,7 +60,7 @@ typedef struct cache_node
  * typedef.  Therefore, to remove compiler warnings the functions passed to
  * hash_new will have to be casted to this type. 
  */
-typedef unsigned int (*hash_func_type)(void *, const void *);
+typedef unsigned int (*hash_func_type) (void *, const void *);
 
 /*
  * This data type is the function that compares two hash keys and returns an
@@ -69,7 +69,7 @@ typedef unsigned int (*hash_func_type)(void *, const void *);
  * second. 
  */
 
-typedef int (*compare_func_type)(const void *, const void *);
+typedef int (*compare_func_type) (const void *, const void *);
 
 
 /*
@@ -174,8 +174,8 @@ hash_string (cache_ptr cache, const void *key)
   unsigned int ctr = 0;
         
         
-  while (*(char*)key) {
-    ret ^= *(char*)key++ << ctr;
+  while (*(char *) key) {
+    ret ^= *(char *) key++ << ctr;
     ctr = (ctr + 1) % sizeof (void *);
   }
 
@@ -187,7 +187,7 @@ hash_string (cache_ptr cache, const void *key)
 static inline int 
 compare_ptrs (const void *k1, const void *k2)
 {
-  return !(k1 - k2);
+  return ! (k1 - k2);
 }
 
 
@@ -200,7 +200,7 @@ compare_strings (const void *k1, const void *k2)
   else if (k1 == 0 || k2 == 0)
     return 0;
   else
-    return !strcmp (k1, k2);
+    return ! strcmp (k1, k2);
 }
 
 

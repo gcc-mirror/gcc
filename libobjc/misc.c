@@ -1,5 +1,6 @@
 /* GNU Objective C Runtime Miscellaneous 
-   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 2002
+   Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -37,25 +38,25 @@ static objc_error_handler _objc_error_handler = NULL;
 
 /* Trigger an objc error */
 void
-objc_error(id object, int code, const char* fmt, ...)
+objc_error (id object, int code, const char *fmt, ...)
 {
   va_list ap;
 
-  va_start(ap, fmt);
-  objc_verror(object, code, fmt, ap);
-  va_end(ap);
+  va_start (ap, fmt);
+  objc_verror (object, code, fmt, ap);
+  va_end (ap);
 }
 
 /* Trigger an objc error */
 void
-objc_verror(id object, int code, const char* fmt, va_list ap)
+objc_verror (id object, int code, const char *fmt, va_list ap)
 {
   BOOL result = NO;
 
   /* Call the error handler if its there
      Otherwise print to stderr */
   if (_objc_error_handler)
-    result = (*_objc_error_handler)(object, code, fmt, ap);
+    result = (*_objc_error_handler) (object, code, fmt, ap);
   else
     vfprintf (stderr, fmt, ap);
 
@@ -64,12 +65,12 @@ objc_verror(id object, int code, const char* fmt, va_list ap)
   if (result)
     return;
   else
-    abort();
+    abort ();
 }
 
 /* Set the error handler */
 objc_error_handler
-objc_set_error_handler(objc_error_handler func)
+objc_set_error_handler (objc_error_handler func)
 {
   objc_error_handler temp = _objc_error_handler;
   _objc_error_handler = func;
@@ -84,54 +85,54 @@ objc_set_error_handler(objc_error_handler func)
 */
 
 void *
-objc_malloc(size_t size)
+objc_malloc (size_t size)
 {
-  void* res = (void*) (*_objc_malloc)(size);
-  if(!res)
-    objc_error(nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
+  void *res = (void *) (*_objc_malloc) (size);
+  if (! res)
+    objc_error (nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
   return res;
 }
 
 void *
-objc_atomic_malloc(size_t size)
+objc_atomic_malloc (size_t size)
 {
-  void* res = (void*) (*_objc_atomic_malloc)(size);
-  if(!res)
-    objc_error(nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
+  void *res = (void *) (*_objc_atomic_malloc) (size);
+  if (! res)
+    objc_error (nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
   return res;
 }
 
 void *
-objc_valloc(size_t size)
+objc_valloc (size_t size)
 {
-  void* res = (void*) (*_objc_valloc)(size);
-  if(!res)
-    objc_error(nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
+  void *res = (void *) (*_objc_valloc) (size);
+  if (! res)
+    objc_error (nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
   return res;
 }
 
 void *
-objc_realloc(void *mem, size_t size)
+objc_realloc (void *mem, size_t size)
 {
-  void* res = (void*) (*_objc_realloc)(mem, size);
-  if(!res)
-    objc_error(nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
+  void *res = (void *) (*_objc_realloc) (mem, size);
+  if (! res)
+    objc_error (nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
   return res;
 }
 
 void *
-objc_calloc(size_t nelem, size_t size)
+objc_calloc (size_t nelem, size_t size)
 {
-  void* res = (void*) (*_objc_calloc)(nelem, size);
-  if(!res)
-    objc_error(nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
+  void *res = (void *) (*_objc_calloc) (nelem, size);
+  if (! res)
+    objc_error (nil, OBJC_ERR_MEMORY, "Virtual memory exhausted\n");
   return res;
 }
 
 void
-objc_free(void *mem)
+objc_free (void *mem)
 {
-  (*_objc_free)(mem);
+  (*_objc_free) (mem);
 }
 
 /*
@@ -148,33 +149,37 @@ objc_free(void *mem)
 #if OBJC_WITH_GC
 #include <gc.h>
 
-static void *GC_calloc (size_t nelem, size_t size)
+static void *
+GC_calloc (size_t nelem, size_t size)
 {
-  void* p = GC_malloc (nelem * size);
-  if (!p)
+  void *p = GC_malloc (nelem * size);
+  if (! p)
     objc_error (nil, OBJC_ERR_MEMORY, "Virtual memory exhausted!\n");
 
   memset (p, 0, nelem * size);
   return p;
 }
 
-static void noFree (void* p) {}
+static void
+noFree (void *p)
+{
+}
 
-void *(*_objc_malloc)(size_t) = GC_malloc;
-void *(*_objc_atomic_malloc)(size_t) = GC_malloc_atomic;
-void *(*_objc_valloc)(size_t) = GC_malloc;
-void *(*_objc_realloc)(void *, size_t) = GC_realloc;
-void *(*_objc_calloc)(size_t, size_t) = GC_calloc;
-void (*_objc_free)(void *) = noFree;
+void *(*_objc_malloc) (size_t) = GC_malloc;
+void *(*_objc_atomic_malloc) (size_t) = GC_malloc_atomic;
+void *(*_objc_valloc) (size_t) = GC_malloc;
+void *(*_objc_realloc) (void *, size_t) = GC_realloc;
+void *(*_objc_calloc) (size_t, size_t) = GC_calloc;
+void (*_objc_free) (void *) = noFree;
 
-#else
+#else	/* !OBJC_WITH_GC */
 
-void *(*_objc_malloc)(size_t) = malloc;
-void *(*_objc_atomic_malloc)(size_t) = malloc;
-void *(*_objc_valloc)(size_t) = malloc;
-void *(*_objc_realloc)(void *, size_t) = realloc;
-void *(*_objc_calloc)(size_t, size_t) = calloc;
-void (*_objc_free)(void *) = free;
+void *(*_objc_malloc) (size_t) = malloc;
+void *(*_objc_atomic_malloc) (size_t) = malloc;
+void *(*_objc_valloc) (size_t) = malloc;
+void *(*_objc_realloc) (void *, size_t) = realloc;
+void *(*_objc_calloc) (size_t, size_t) = calloc;
+void (*_objc_free) (void *) = free;
 
 
-#endif
+#endif	/* !OBJC_WITH_GC */

@@ -1,5 +1,5 @@
 /* Basic data types for Objective C.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
    Contributed by Ovidiu Predescu.
 
 This file is part of GNU CC.
@@ -58,11 +58,11 @@ typedef GC_signed_word signed_word;
    The offset is incremented with the size of the type.  */
 
 #define ROUND(V, A) \
-  ({ typeof(V) __v=(V); typeof(A) __a=(A); \
-     __a*((__v+__a-1)/__a); })
+  ({ typeof (V) __v = (V); typeof (A) __a = (A); \
+     __a * ((__v+__a - 1)/__a); })
 
 #define SET_BIT_FOR_OFFSET(mask, offset) \
-  GC_set_bit(mask, offset / sizeof (void*))
+  GC_set_bit (mask, offset / sizeof (void *))
 
 /* Some prototypes */
 static void
@@ -74,9 +74,9 @@ __objc_gc_setup_union (GC_bitmap mask, const char *type, int offset);
 static void
 __objc_gc_setup_array (GC_bitmap mask, const char *type, int offset)
 {
-  int i, len = atoi(type + 1);
+  int i, len = atoi (type + 1);
 
-  while (isdigit(*++type))
+  while (isdigit (*++type))
     /* do nothing */;		/* skip the size of the array */
 
   switch (*type) {
@@ -138,8 +138,8 @@ __objc_gc_setup_struct (GC_bitmap mask, const char *type, int offset)
       case _C_PTR:
       case _C_CHARPTR:
       case _C_ATOM:
-	if (!gc_invisible)
-	  SET_BIT_FOR_OFFSET(mask, position);
+	if (! gc_invisible)
+	  SET_BIT_FOR_OFFSET (mask, position);
 	break;
 
       case _C_ARY_B:
@@ -178,11 +178,11 @@ __objc_gc_setup_union (GC_bitmap mask, const char *type, int offset)
   size = objc_sizeof_type (type);
   align = objc_alignof_type (type);
 
-  offset = ROUND(offset, align);
-  for (i = 0; i < size; i += sizeof (void*))
+  offset = ROUND (offset, align);
+  for (i = 0; i < size; i += sizeof (void *))
     {
-      SET_BIT_FOR_OFFSET(mask, offset);
-      offset += sizeof (void*);
+      SET_BIT_FOR_OFFSET (mask, offset);
+      offset += sizeof (void *);
     }
 }
 
@@ -223,8 +223,8 @@ __objc_gc_type_description_from_type (GC_bitmap mask, const char *type)
       case _C_SEL:
       case _C_PTR:
       case _C_CHARPTR:
-        if (!gc_invisible)
-          SET_BIT_FOR_OFFSET(mask, offset);
+        if (! gc_invisible)
+          SET_BIT_FOR_OFFSET (mask, offset);
 	break;
 
       case _C_ARY_B:
@@ -254,9 +254,9 @@ __objc_class_structure_encoding (Class class, char **type, int *size,
                                  int *current)
 {
   int i, ivar_count;
-  struct objc_ivar_list* ivars;
+  struct objc_ivar_list *ivars;
 
-  if (!class)
+  if (! class)
     {
       strcat (*type, "{");
       *current++;
@@ -267,7 +267,7 @@ __objc_class_structure_encoding (Class class, char **type, int *size,
   __objc_class_structure_encoding (class->super_class, type, size, current);
 
   ivars = class->ivars;
-  if (!ivars)
+  if (! ivars)
     return;
 
   ivar_count = ivars->ivar_count;
@@ -282,7 +282,7 @@ __objc_class_structure_encoding (Class class, char **type, int *size,
         {
           /* Increase the size of the encoding string so that it
              contains this ivar's type. */
-          *size = ROUND(*current + len + 1, 10);
+          *size = ROUND (*current + len + 1, 10);
           *type = objc_realloc (*type, *size);
         }
       strcat (*type + *current, ivar_type);
@@ -302,7 +302,7 @@ __objc_generate_gc_type_description (Class class)
   int type_size = 10, current;
   char *class_structure_type;
 
-  if (!CLS_ISCLASS(class))
+  if (! CLS_ISCLASS (class))
     return;
 
   /* We have to create a mask in which each bit counts for a pointer member.
@@ -311,9 +311,9 @@ __objc_generate_gc_type_description (Class class)
 
   /* The number of bits in the mask is the size of an instance in bytes divided
      by the size of a pointer. */
-  bits_no = (ROUND(class_get_instance_size (class), sizeof(void*))
-             / sizeof (void*));
-  size = ROUND(bits_no, BITS_PER_WORD) / BITS_PER_WORD;
+  bits_no = (ROUND (class_get_instance_size (class), sizeof (void *))
+             / sizeof (void *));
+  size = ROUND (bits_no, BITS_PER_WORD) / BITS_PER_WORD;
   mask = objc_atomic_malloc (size * sizeof (int));
   memset (mask, 0, size * sizeof (int));
 
@@ -342,7 +342,7 @@ __objc_generate_gc_type_description (Class class)
   puts ("");
 #endif
 
-  class->gc_object_type = (void*)GC_make_descriptor (mask, bits_no);
+  class->gc_object_type = (void *) GC_make_descriptor (mask, bits_no);
 }
 
 
@@ -370,17 +370,17 @@ __objc_ivar_pointer (const char *type)
    This operation only makes sense on instance variables that are
    pointers.  */
 void
-class_ivar_set_gcinvisible (Class class, const char* ivarname,
+class_ivar_set_gcinvisible (Class class, const char *ivarname,
                             BOOL gc_invisible)
 {
   int i, ivar_count;
-  struct objc_ivar_list* ivars;
+  struct objc_ivar_list *ivars;
 
-  if (!class || !ivarname)
+  if (! class || ! ivarname)
     return;
 
   ivars = class->ivars;
-  if (!ivars)
+  if (! ivars)
     return;
 
   ivar_count = ivars->ivar_count;
@@ -390,7 +390,7 @@ class_ivar_set_gcinvisible (Class class, const char* ivarname,
       struct objc_ivar *ivar = &(ivars->ivar_list[i]);
       const char *type;
 
-      if (!ivar->ivar_name || strcmp (ivar->ivar_name, ivarname))
+      if (! ivar->ivar_name || strcmp (ivar->ivar_name, ivarname))
 	continue;
 
       assert (ivar->ivar_type);
@@ -407,7 +407,7 @@ class_ivar_set_gcinvisible (Class class, const char* ivarname,
 	{
 	  char *new_type;
 
-	  if (gc_invisible || !__objc_ivar_pointer (type))
+	  if (gc_invisible || ! __objc_ivar_pointer (type))
 	    return;	/* The type of the variable already matches the
 			   requested gc_invisible type */
 
@@ -422,7 +422,7 @@ class_ivar_set_gcinvisible (Class class, const char* ivarname,
 	{
 	  char *new_type;
 
-	  if (!gc_invisible || !__objc_ivar_pointer (type))
+	  if (! gc_invisible || ! __objc_ivar_pointer (type))
 	    return;	/* The type of the variable already matches the
 			   requested gc_invisible type */
 
@@ -451,7 +451,7 @@ __objc_generate_gc_type_description (Class class __attribute__ ((__unused__)))
 }
 
 void class_ivar_set_gcinvisible (Class class __attribute__ ((__unused__)),
-				 const char* ivarname __attribute__ ((__unused__)),
+				 const char *ivarname __attribute__ ((__unused__)),
 				 BOOL gc_invisible __attribute__ ((__unused__)))
 {
 }
