@@ -73,6 +73,11 @@ Boston, MA 02111-1307, USA.  */
 /* Like STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
 
+/* Assume that case vectors are not pc-relative.  */
+#ifndef CASE_VECTOR_PC_RELATIVE
+#define CASE_VECTOR_PC_RELATIVE 0
+#endif
+
 /* If this is nonzero, we do not bother generating VOLATILE
    around volatile memory references, and we are willing to
    output indirect addresses.  If cse is to follow, we reject
@@ -11320,12 +11325,10 @@ do_tablejump (index, mode, range, table_label, default_label)
 
   emit_jump_insn (gen_tablejump (temp, table_label));
 
-#ifndef CASE_VECTOR_PC_RELATIVE
   /* If we are generating PIC code or if the table is PC-relative, the
      table and JUMP_INSN must be adjacent, so don't output a BARRIER.  */
-  if (! flag_pic)
+  if (! CASE_VECTOR_PC_RELATIVE && ! flag_pic)
     emit_barrier ();
-#endif
 }
 
 #endif /* HAVE_tablejump */

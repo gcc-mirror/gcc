@@ -86,7 +86,7 @@ extern int frame_pointer_needed;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm2
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_2__"
 #else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm6 || TARGET_CPU_DEFUALT == TARGET_CPU_arm610 || TARGET_CPU_DEFAULT == TARGET_CPU_arm7500fe
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm6 || TARGET_CPU_DEFAULT == TARGET_CPU_arm610 || TARGET_CPU_DEFAULT == TARGET_CPU_arm7500fe
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3__"
 #else
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm7m
@@ -346,7 +346,7 @@ extern char *target_fp_name;
   {"apcs-float",		ARM_FLAG_APCS_FLOAT},	\
   {"no-apcs-float",	       -ARM_FLAG_APCS_FLOAT},	\
   {"apcs-reentrant",		ARM_FLAG_APCS_REENT},	\
-  {"no-apcs-rentrant",	       -ARM_FLAG_APCS_REENT},	\
+  {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT},	\
   {"short-load-bytes",		ARM_FLAG_SHORT_BYTE},	\
   {"no-short-load-bytes",      -ARM_FLAG_SHORT_BYTE},	\
   {"short-load-words",	       -ARM_FLAG_SHORT_BYTE},	\
@@ -437,7 +437,7 @@ extern enum floating_point_type arm_fpu;
 /* What type of floating point instructions are available */
 extern enum floating_point_type arm_fpu_arch;
 
-/* Default floating point archtitecture.  Override in sub-target if
+/* Default floating point architecture.  Override in sub-target if
    necessary.  */
 #define FP_DEFAULT FP_SOFT2
 
@@ -482,6 +482,11 @@ extern int arm_arch4;
 	UNSIGNEDP = TARGET_SHORT_BY_BYTES != 0;	\
       (MODE) = SImode;				\
     }
+
+/* Define this macro if the promotion described by `PROMOTE_MODE'
+   should also be done for outgoing function arguments.  */
+/* This is required to ensure that push insns always push a word.  */
+#define PROMOTE_FUNCTION_ARGS
 
 /* Define for XFmode extended real floating point support.
    This will automatically cause REAL_ARITHMETIC to be defined.  */
@@ -905,7 +910,13 @@ enum reg_class
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.  */
-#define PUSH_ROUNDING(NPUSHED)  (((NPUSHED) + 3) & ~3)
+/* The push insns do not do this rounding implicitly.  So don't define this. */
+/* #define PUSH_ROUNDING(NPUSHED)  (((NPUSHED) + 3) & ~3) */
+
+/* Define this if the maximum size of all the outgoing args is to be
+   accumulated and pushed during the prologue.  The amount can be
+   found in the variable current_function_outgoing_args_size.  */
+#define ACCUMULATE_OUTGOING_ARGS
 
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL)  4
@@ -1102,8 +1113,10 @@ enum reg_class
   int volatile_func = arm_volatile_func ();				\
   if ((FROM) == ARG_POINTER_REGNUM && (TO) == HARD_FRAME_POINTER_REGNUM)\
     (OFFSET) = 0;							\
-  else if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)\
-    (OFFSET) = (get_frame_size () + 3 & ~3);				\
+  else if ((FROM) == FRAME_POINTER_REGNUM				\
+	   && (TO) == STACK_POINTER_REGNUM)				\
+    (OFFSET) = (current_function_outgoing_args_size			\
+		+ (get_frame_size () + 3 & ~3));			\
   else									\
     {									\
       int regno;							\
@@ -1125,8 +1138,10 @@ enum reg_class
 	{								\
 	   if (! frame_pointer_needed)					\
 	     offset -= 16;						\
-	   if (! volatile_func && (regs_ever_live[14] || saved_hard_reg)) \
+	   if (! volatile_func						\
+	       && (regs_ever_live[14] || saved_hard_reg)) 		\
 	     offset += 4;						\
+	   offset += current_function_outgoing_args_size;		\
 	   (OFFSET) = (get_frame_size () + 3 & ~3) + offset;		\
          }								\
     }									\
@@ -1390,14 +1405,15 @@ do									\
       else if (BASE_REGISTER_RTX_P (xop1))				\
 	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL);	\
     }									\
-  else if (GET_CODE (X) == MINUS)					\
+  /* Reload currently can't handle MINUS, so disable this for now */	\
+  /* else if (GET_CODE (X) == MINUS)					\
     {									\
       rtx xop0 = XEXP (X,0);						\
       rtx xop1 = XEXP (X,1);						\
 									\
       if (BASE_REGISTER_RTX_P (xop0))					\
 	GO_IF_LEGITIMATE_INDEX (MODE, -1, xop1, LABEL);			\
-    }									\
+    } */								\
   else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				\
 	   && GET_CODE (X) == SYMBOL_REF				\
 	   && CONSTANT_POOL_ADDRESS_P (X))				\
@@ -1500,10 +1516,11 @@ extern struct rtx_def *legitimize_pic_address ();
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE SImode
 
-/* Define this if the tablejump instruction expects the table
-   to contain offsets from the address of the table.
-   Do not define this if the table should contain absolute addresses.  */
-/* #define CASE_VECTOR_PC_RELATIVE */
+/* Define as C expression which evaluates to nonzero if the tablejump
+   instruction expects the table to contain offsets from the address of the
+   table.
+   Do not define this if the table should contain absolute addresses. */
+/* #define CASE_VECTOR_PC_RELATIVE 1 */
 
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR  FIX_ROUND_EXPR
@@ -1742,26 +1759,22 @@ extern int arm_compare_fp;
   goto JUMPTO
 
 /* Output an internal label definition.  */
-#define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)  \
-  do                                    	      	   		\
-    {						      	   		\
-      char *s = (char *) alloca (40 + strlen (PREFIX));	   		\
-      extern int arm_target_label, arm_ccfsm_state;	   		\
-      extern rtx arm_target_insn;					\
-						           		\
-      if (arm_ccfsm_state == 3 && arm_target_label == (NUM)   		\
-	&& !strcmp (PREFIX, "L"))					\
-	{								\
-	  arm_ccfsm_state = 0;				        	\
-	  arm_target_insn = NULL;					\
-	}								\
-	ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));   		\
-	arm_asm_output_label (STREAM, s);		                \
+#define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)  	\
+  do                                    	      	   	\
+    {						      	   	\
+      char *s = (char *) alloca (40 + strlen (PREFIX));	   	\
+      extern int arm_target_label, arm_ccfsm_state;	   	\
+      extern rtx arm_target_insn;				\
+						           	\
+      if (arm_ccfsm_state == 3 && arm_target_label == (NUM)   	\
+	&& !strcmp (PREFIX, "L"))				\
+	{							\
+	  arm_ccfsm_state = 0;				        \
+	  arm_target_insn = NULL;				\
+	}							\
+	ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));   	\
+	ASM_OUTPUT_LABEL (STREAM, s);		                \
     } while (0)
-
-/* Output a label definition.  */
-#define ASM_OUTPUT_LABEL(STREAM,NAME)		\
-  arm_asm_output_label ((STREAM), (NAME))
 
 /* Output a push or a pop instruction (only used when profiling).  */
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO) \
@@ -1916,9 +1929,10 @@ do {									\
 	  shift += 8;							\
 	}								\
     }									\
-  fprintf (FILE, "\tldr\t%spc, [%spc, #-4]\n", REGISTER_PREFIX,		\
-	   REGISTER_PREFIX);						\
-  ASM_OUTPUT_INT (FILE, XEXP (DECL_RTL (FUNCTION), 0));			\
+  fputs ("\tb\t", FILE);						\
+  assemble_name (FILE,							\
+		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+  fputc ('\n', FILE);							\
 } while (0)
 
 /* A C expression whose value is RTL representing the value of the return
@@ -1927,7 +1941,7 @@ do {									\
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
   ((COUNT == 0)				\
    ? gen_rtx (MEM, Pmode, plus_constant (FRAME, -4)) \
-   : (rtx) 0)
+   : NULL_RTX)
 
 /* Used to mask out junk bits from the return address, such as
    processor state, interrupt status, condition codes and the like.  */
@@ -2003,9 +2017,9 @@ int arm_valid_machine_decl_attribute (/* union tree_node *, union tree_node *,
 					 union tree_node *,
 					 union tree_node * */);
 struct rtx_def *arm_gen_load_multiple (/* int, int, struct rtx_def *, 
-					  int, int */);
+					  int, int, int, int */);
 struct rtx_def *arm_gen_store_multiple (/* int, int, struct rtx_def *,
-					   int, int */);
+					   int, int, int, int */);
 int arm_gen_movstrqi (/* struct rtx_def ** */);
 struct rtx_def *gen_rotated_half_load (/* struct rtx_def * */);
 enum machine_mode arm_select_cc_mode (/* enum rtx_code, struct rtx_def *,
@@ -2024,7 +2038,7 @@ char *output_mov_long_double_arm_from_fpu (/* struct rtx_def ** */);
 char *output_mov_long_double_arm_from_arm (/* struct rtx_def ** */);
 char *output_mov_double_fpu_from_arm (/* struct rtx_def ** */);
 char *output_mov_double_arm_from_fpu (/* struct rtx_def ** */);
-char *output_mov_double (/* struct rtx_def ** */);
+char *output_move_double (/* struct rtx_def ** */);
 char *output_mov_immediate (/* struct rtx_def ** */);
 char *output_add_immediate (/* struct rtx_def ** */);
 char *arithmetic_instr (/* struct rtx_def *, int */);
@@ -2035,8 +2049,6 @@ void output_func_prologue (/* FILE *, int */);
 void output_func_epilogue (/* FILE *, int */);
 void arm_expand_prologue (/* void */);
 void arm_print_operand (/* FILE *, struct rtx_def *, int */);
-void arm_asm_output_label (/* FILE *, char * */);
-void output_lcomm_directive (/* FILE *, char *, int, int */);
 void final_prescan_insn (/* struct rtx_def *, struct rtx_def **, int */);
 #ifdef AOF_ASSEMBLER
 struct rtx_def *aof_pic_entry (/* struct rtx_def * */);

@@ -575,9 +575,11 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 
 #define CASE_VECTOR_MODE HImode
 
-/* each of the table elements in a case are relative to the jump address */
-
-#define CASE_VECTOR_PC_RELATIVE
+/* Define as C expression which evaluates to nonzero if the tablejump
+   instruction expects the table to contain offsets from the address of the
+   table.
+   Do not define this if the table should contain absolute addresses. */
+#define CASE_VECTOR_PC_RELATIVE 1
 
 /* tahoe case instructions just fall through to the next instruction */
 /* if not satisfied. It doesn't support a default action	     */
