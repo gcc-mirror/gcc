@@ -732,35 +732,6 @@ unqualified_fn_lookup_error (tree name)
   return unqualified_name_lookup_error (name);
 }
 
-#ifdef GATHER_STATISTICS
-/* The original for tree_node_kind is in the toplevel tree.c; changes there
-   need to be brought into here, unless this were actually put into a header
-   instead.  */
-/* Statistics-gathering stuff.  */
-typedef enum
-{
-  d_kind,
-  t_kind,
-  b_kind,
-  s_kind,
-  r_kind,
-  e_kind,
-  c_kind,
-  id_kind,
-  op_id_kind,
-  perm_list_kind,
-  temp_list_kind,
-  vec_kind,
-  x_kind,
-  lang_decl,
-  lang_type,
-  all_kinds
-} tree_node_kind;
-
-extern int tree_node_counts[];
-extern int tree_node_sizes[];
-#endif
-
 tree
 build_lang_decl (enum tree_code code, tree name, tree type)
 {
