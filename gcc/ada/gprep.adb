@@ -45,7 +45,6 @@ with GNAT.Command_Line;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
-
 package body GPrep is
 
    Copyright_Displayed : Boolean := False;
@@ -133,9 +132,8 @@ package body GPrep is
    procedure Display_Copyright is
    begin
       if not Copyright_Displayed then
-         Write_Line ("GNAT Preprocessor " &
-                     Gnatvsn.Gnat_Version_String &
-                     " Copyright 1996-2004 Free Software Foundation, Inc.");
+         Write_Line ("GNAT Preprocessor " & Gnatvsn.Gnat_Version_String);
+         Write_Line ("Copyright 1996-2004 Free Software Foundation, Inc.");
          Copyright_Displayed := True;
       end if;
    end Display_Copyright;

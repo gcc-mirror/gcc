@@ -1484,7 +1484,8 @@ begin
       Write_Eol;
       Write_Str ("GNATLS ");
       Write_Str (Gnat_Version_String);
-      Write_Str (" Copyright 1997-2004 Free Software Foundation, Inc.");
+      Write_Eol;
+      Write_Str ("Copyright 1997-2004 Free Software Foundation, Inc.");
       Write_Eol;
       Write_Eol;
       Write_Str ("Source Search Path:");

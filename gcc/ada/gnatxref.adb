@@ -209,8 +209,8 @@ procedure Gnatxref is
 
    procedure Write_Usage is
    begin
-      Put_Line ("GNATXREF " & Gnatvsn.Gnat_Version_String
-                & " Copyright 1998-2004, Ada Core Technologies Inc.");
+      Put_Line ("GNATXREF " & Gnatvsn.Gnat_Version_String);
+      Put_Line ("Copyright 1998-2004, Ada Core Technologies Inc.");
       Put_Line ("Usage: gnatxref [switches] file1 file2 ...");
       New_Line;
       Put_Line ("  file ... list of source files to xref, " &
