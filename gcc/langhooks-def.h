@@ -82,6 +82,8 @@ extern int lhd_tree_inlining_start_inlining (tree);
 extern void lhd_tree_inlining_end_inlining (tree);
 extern tree lhd_tree_inlining_convert_parm_for_inlining (tree, tree, tree);
 extern void lhd_initialize_diagnostics (struct diagnostic_context *);
+extern tree lhd_callgraph_analyze_expr (tree *, int *, tree);
+
 
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
@@ -174,15 +176,15 @@ extern void lhd_initialize_diagnostics (struct diagnostic_context *);
   LANG_HOOKS_TREE_INLINING_END_INLINING, \
   LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING, \
   LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS \
-} \
+}
 
-#define LANG_HOOKS_CALLGRAPH_LOWER_FUNCTION NULL
+#define LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR lhd_callgraph_analyze_expr
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION NULL
 
 #define LANG_HOOKS_CALLGRAPH_INITIALIZER { \
-  LANG_HOOKS_CALLGRAPH_LOWER_FUNCTION, \
+  LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR, \
   LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION, \
-} \
+}
 
 #define LANG_HOOKS_FUNCTION_INITIALIZER {	\
   LANG_HOOKS_FUNCTION_INIT,			\

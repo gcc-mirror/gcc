@@ -1,3 +1,14 @@
+2003-09-10  Richard Henderson  <rth@redhat.com>
+
+	* cgraph.h (struct cgraph_node): Rename lowered to analyzed.
+	* cgraphunit.c: Update to match.
+	(record_call_1): Rearrange.  Call lang hook for language nodes.
+	(cgraph_analyze_function): Don't call lower_function.
+	* langhooks.h (struct lang_hooks_for_callgraph): Replace 
+	lower_function with analyze_expr.
+	* langhooks-def.h: Update to match.
+	* langhooks.c (lhd_callgraph_analyze_expr): New.
+
 2003-09-10  Martin Husemann  <martin@duskware.de>
 
 	PR target/11965

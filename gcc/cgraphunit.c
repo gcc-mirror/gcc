@@ -165,7 +165,7 @@ cgraph_finalize_function (tree decl)
       memset (&node->local, 0, sizeof (node->local));
       memset (&node->global, 0, sizeof (node->global));
       memset (&node->rtl, 0, sizeof (node->rtl));
-      node->lowered = false;
+      node->analyzed = false;
       if (node->output)
 	abort ();
       while (node->callees)
@@ -209,41 +209,66 @@ cgraph_finalize_function (tree decl)
 static tree
 record_call_1 (tree *tp, int *walk_subtrees, void *data)
 {
-  if (TREE_CODE (*tp) == VAR_DECL && TREE_STATIC (*tp))
-    cgraph_varpool_mark_needed_node (cgraph_varpool_node (*tp));
-  /* Record dereferences to the functions.  This makes the functions
-     reachable unconditionally.  */
-  else if (TREE_CODE (*tp) == ADDR_EXPR && flag_unit_at_a_time)
+  tree t = *tp;
+
+  switch (TREE_CODE (t))
     {
-      tree decl = TREE_OPERAND (*tp, 0);
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-        cgraph_mark_needed_node (cgraph_node (decl));
-    }
-  else if (TREE_CODE (*tp) == CALL_EXPR)
-    {
-      tree decl = get_callee_fndecl (*tp);
-      if (decl && TREE_CODE (decl) == FUNCTION_DECL)
+    case VAR_DECL:
+      /* ??? Really, we should mark this decl as *potentially* referenced
+	 by this function and re-examine whether the decl is actually used
+	 after rtl has been generated.  */
+      if (TREE_STATIC (t))
+        cgraph_varpool_mark_needed_node (cgraph_varpool_node (t));
+      break;
+
+    case ADDR_EXPR:
+      if (flag_unit_at_a_time)
 	{
-	  if (DECL_BUILT_IN (decl))
-	    return NULL;
-	  cgraph_record_call (data, decl);
-
-	  /* When we see a function call, we don't want to look at the
-	     function reference in the ADDR_EXPR that is hanging from
-	     the CALL_EXPR we're examining here, because we would
-	     conclude incorrectly that the function's address could be
-	     taken by something that is not a function call.  So only
-	     walk the function parameter list, skip the other subtrees.  */
-
-	  walk_tree (&TREE_OPERAND (*tp, 1), record_call_1, data,
-		     visited_nodes);
-	  *walk_subtrees = 0;
+	  /* Record dereferences to the functions.  This makes the
+	     functions reachable unconditionally.  */
+	  tree decl = TREE_OPERAND (*tp, 0);
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    cgraph_mark_needed_node (cgraph_node (decl));
 	}
+      break;
+
+    case CALL_EXPR:
+      {
+	tree decl = get_callee_fndecl (*tp);
+	if (decl && TREE_CODE (decl) == FUNCTION_DECL)
+	  {
+	    if (DECL_BUILT_IN (decl))
+	      return NULL;
+	    cgraph_record_call (data, decl);
+
+	    /* When we see a function call, we don't want to look at the
+	       function reference in the ADDR_EXPR that is hanging from
+	       the CALL_EXPR we're examining here, because we would
+	       conclude incorrectly that the function's address could be
+	       taken by something that is not a function call.  So only
+	       walk the function parameter list, skip the other subtrees.  */
+
+	    walk_tree (&TREE_OPERAND (*tp, 1), record_call_1, data,
+		       visited_nodes);
+	    *walk_subtrees = 0;
+	  }
+	break;
+      }
+
+    default:
+      /* Save some cycles by not walking types and declaration as we
+	 won't find anything useful there anyway.  */
+      if (DECL_P (*tp) || TYPE_P (*tp))
+	{
+	  *walk_subtrees = 0;
+	  break;
+	}
+
+      if ((unsigned int) TREE_CODE (t) >= LAST_AND_UNUSED_TREE_CODE)
+	return (*lang_hooks.callgraph.analyze_expr) (tp, walk_subtrees, data);
+      break;
     }
-  /* Save some cycles by not walking types and declaration as we won't find anything
-     usefull there anyway.  */
-  if (DECL_P (*tp) || TYPE_P (*tp))
-    *walk_subtrees = 0;
+
   return NULL;
 }
 
@@ -267,10 +292,7 @@ cgraph_analyze_function (struct cgraph_node *node)
 {
   tree decl = node->decl;
 
-  if (lang_hooks.callgraph.lower_function)
-    (*lang_hooks.callgraph.lower_function) (decl);
-
-  current_function_decl = node->decl;
+  current_function_decl = decl;
 
   /* First kill forward declaration so reverse inlining works properly.  */
   cgraph_create_edges (decl, DECL_SAVED_TREE (decl));
@@ -286,13 +308,13 @@ cgraph_analyze_function (struct cgraph_node *node)
 
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   node->global.insns = node->local.self_insns;
-  if (!DECL_EXTERNAL (node->decl))
+  if (!DECL_EXTERNAL (decl))
     {
       node->global.cloned_times = 1;
       node->global.will_be_output = true;
     }
 
-  node->lowered = true;
+  node->analyzed = true;
   current_function_decl = NULL;
 }
 
@@ -341,7 +363,7 @@ cgraph_finalize_compilation_unit (void)
       if (!DECL_SAVED_TREE (decl))
 	continue;
 
-      if (node->lowered || !node->reachable || !DECL_SAVED_TREE (decl))
+      if (node->analyzed || !node->reachable || !DECL_SAVED_TREE (decl))
 	abort ();
 
       cgraph_analyze_function (node);

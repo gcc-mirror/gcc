@@ -53,9 +53,10 @@ struct lang_hooks_for_tree_inlining
 
 struct lang_hooks_for_callgraph
 {
-  /* Function passed as argument is needed and will be compiled.
-     Lower the representation so the calls are explicit.  */
-  void (*lower_function) (tree);
+  /* The node passed is a language-specific tree node.  If its contents
+     are relevant to use of other declarations, mark them.  */
+  tree (*analyze_expr) (tree *, int *, tree);
+
   /* Produce RTL for function passed as argument.  */
   void (*expand_function) (tree);
 };

@@ -2557,10 +2557,15 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
   return 0;
 }
 
-/* Callgraph code does not understand the member pointers.  Mark the methods
-   referenced as used.  */
-static tree
-mark_member_pointers (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+/* Called via LANGHOOK_CALLGRAPH_ANALYZE_EXPR.  It is supposed to mark
+   decls referenced from frontend specific constructs; it will be called
+   only for language-specific tree nodes.
+
+   Here we must deal with member pointers.  */
+
+tree
+cxx_callgraph_analyze_expr (tree *tp, int *walk_subtrees,
+			    tree from ATTRIBUTE_UNUSED)
 {
   tree t = *tp;
 
@@ -2572,22 +2577,10 @@ mark_member_pointers (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       break;
 
     default:
-      /* Avoid useless walking of complex type and declaration nodes.  */
-      if (TYPE_P (t) || DECL_P (t))
-	*walk_subtrees = 0;
       break;
     }
 
-  return 0;
-}
-
-/* Called via LANGHOOK_CALLGRAPH_LOWER_FUNCTION.  It is supposed to lower
-   frontend specific constructs that would otherwise confuse the middle end.  */
-void
-lower_function (tree fn)
-{
-  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
-		  		mark_member_pointers, NULL);
+  return NULL;
 }
 
 /* This routine is called from the last rule in yyparse ().
