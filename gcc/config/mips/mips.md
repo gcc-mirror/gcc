@@ -110,6 +110,7 @@
    (UNSPEC_RSQRT2_D		248)
    (UNSPEC_RSQRT2_PS		249)
 
+   (UNSPEC_MOVE_TF_PS		250)
   ]
 )
 
