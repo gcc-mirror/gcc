@@ -1,3 +1,20 @@
+1999-04-05  Tom Tromey  <tromey@cygnus.com>
+
+	* testsuite/regress-demangle: New file.
+	* testsuite/demangle-expected: New file.
+
+	* Makefile.in (all, check, installcheck, info, install-info,
+	clean-info, dvi, install, etags, tags, mostlyclean, clean,
+	distclean, maintainer-clean, realclean): Depend on corresponding
+	`-subdir' target.
+	(all-subdir check-subdir installcheck-subdir info-subdir
+	install-info-subdir clean-info-subdir dvi-subdir
+	install-info-subdir etags-subdir mostlyclean-subdir clean-subdir
+	distclean-subdir maintainer-clean-subdir): New target.
+	* testsuite/Makefile.in: New file.
+	* configure: Rebuilt.
+	* configure.in: Create testsuite/Makefile.
+
 1999-04-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (splay_tree_compare_pointers): Define.

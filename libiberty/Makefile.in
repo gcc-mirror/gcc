@@ -1,6 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1990, 91, 92, 93, 94, 95, 96, 97, 1998
+#   Copyright (C) 1990, 91, 92, 93, 94, 95, 96, 97, 98, 1999
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -87,11 +87,12 @@ FLAGS_TO_PASS = \
 	"RANLIB=$(RANLIB)" \
 	"SHELL=$(SHELL)"
 
-all: stamp-picdir $(TARGETLIB) needed-list required-list
+all: stamp-picdir $(TARGETLIB) needed-list required-list all-subdir
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
 
 .PHONY: check installcheck
-check installcheck:
+check: check-subdir
+installcheck: installcheck-subdir
 
 @host_makefile_frag@
 
@@ -103,7 +104,10 @@ COMPILE.c = $(CC) -c @DEFS@ $(LIBCFLAGS) -I. -I$(INCDIR) $(HDEFINES)
 	  $(COMPILE.c) $(PICFLAG) $< -o pic/$@
 	$(COMPILE.c) $<
 
-info install-info clean-info dvi:
+info: info-subdir
+install-info: install-info-subdir
+clean-info: clean-info-subdir
+dvi: dvi-subdir
 
 # Include files that are in this directory.
 HFILES = alloca-conf.h
@@ -136,7 +140,7 @@ $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
 	$(RANLIB) $(TARGETLIB)
 
 INSTALL_DEST = @INSTALL_DEST@
-install: install_to_$(INSTALL_DEST)
+install: install_to_$(INSTALL_DEST) install-subdir
 
 install_to_libdir: all
 	$(INSTALL_DATA) $(TARGETLIB) $(libdir)$(MULTISUBDIR)/$(TARGETLIB).n
@@ -171,7 +175,7 @@ stamp-picdir:
 
 .PHONY: all etags tags ls clean stage1 stage2
 
-etags tags: TAGS
+etags tags: TAGS etags-subdir
 
 TAGS: $(CFILES) $(HFILES)
 	etags `for i in $(HFILES) $(CFILES); do echo $(srcdir)/$$i ; done`
@@ -187,19 +191,19 @@ ls:
 
 # Need to deal with profiled libraries, too.
 
-mostlyclean:
+mostlyclean: mostlyclean-subdir
 	rm -rf *.o pic core errs \#* *.E a.out
 	rm -f needed.awk needed2.awk errors dummy needed-list config.h stamp-*
 	rm -f $(CONFIG_H) $(NEEDED_LIST) stamp-picdir
 	@$(MULTICLEAN) multi-clean DO=mostlyclean
-clean: mostlyclean
+clean: mostlyclean clean-subdir
 	rm -f *.a required-list tmpmulti.out
 	@$(MULTICLEAN) multi-clean DO=clean
-distclean: clean
+distclean: clean distclean-subdir
 	@$(MULTICLEAN) multi-clean DO=distclean
 	rm -f *~ Makefile config.status xhost-mkfrag TAGS multilib.out
 	rm -f config.log
-maintainer-clean realclean: distclean
+maintainer-clean realclean: distclean maintainer-clean-subdir
 
 force:
 
@@ -212,6 +216,14 @@ stamp-h: config.in config.status
 
 config.status: $(srcdir)/configure $(srcdir)/config.table
 	$(SHELL) ./config.status --recheck
+
+
+all-subdir check-subdir installcheck-subdir info-subdir	\
+install-info-subdir clean-info-subdir dvi-subdir install-subdir	\
+etags-subdir mostlyclean-subdir clean-subdir distclean-subdir \
+maintainer-clean-subdir:
+	@target=`echo $@ | sed -e 's/-subdir//'`; \
+	cd testsuite && $(MAKE) $$target
 
 $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA): stamp-picdir
 
