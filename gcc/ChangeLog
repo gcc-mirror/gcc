@@ -1,3 +1,8 @@
+2004-04-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config.gcc (i[34567]86-*-solaris2*): Default to DWARF-2
+	debugging on Solaris 7 and up.
+
 2004-04-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, mips-sgi-irix5): Reflect working
