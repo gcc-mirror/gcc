@@ -1,3 +1,7 @@
+2002-09-30  Bo Thorsen  <bo@suse.de>
+
+	* sysdep/x86-64/locks.h (compare_and_swap): Fix multilib support.
+
 2002-09-30  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/ObjectInputStream.java (resolveProxyClass): New method
