@@ -5049,7 +5049,8 @@ build_enumerator (name, value)
   /* Validate and default VALUE.  */
 
   /* Remove no-op casts from the value.  */
-  STRIP_NOPS (value);
+  if (value)
+    STRIP_NOPS (value);
 
   if (value != 0 && TREE_CODE (value) != INTEGER_CST)
     {
