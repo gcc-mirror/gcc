@@ -33,6 +33,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "c-tree.h"
 #include "flags.h"
 
+extern char *index ();
+extern char *rindex ();
+
 int mark_addressable ();
 static tree convert_for_assignment ();
 static void warn_for_assignment ();
@@ -1384,21 +1387,6 @@ init_format_info_table ()
 }
 
 static char	tfaff[] = "too few arguments for format";
-
-/* Don't rely on existence of strchr.  */
-
-static char *
-my_strchr (string, c)
-     char *string;
-     int c;
-{
-  char *p;
-  for (p = string; *p; p++)
-    if (*p == c)
-      return p;
-
-  return 0;
-}
 
 /* Check the argument list of a call to printf, scanf, etc.
    INFO points to the element of function_info_table.
@@ -1502,9 +1490,9 @@ check_format (info, params)
 	}
       else
 	{
-	  while (*format_chars != 0 && my_strchr (" +#0-", *format_chars) != 0)
+	  while (*format_chars != 0 && index (" +#0-", *format_chars) != 0)
 	    {
-	      if (my_strchr (flag_chars, *format_chars) != 0)
+	      if (index (flag_chars, *format_chars) != 0)
 		{
 		  sprintf (message, "repeated `%c' flag in format",
 			   *format_chars);
@@ -1516,13 +1504,13 @@ check_format (info, params)
 	    }
 	  /* "If the space and + flags both appear, 
 	     the space flag will be ignored."  */
-	  if (my_strchr (flag_chars, ' ') != 0
-	      && my_strchr (flag_chars, '+') != 0)
+	  if (index (flag_chars, ' ') != 0
+	      && index (flag_chars, '+') != 0)
 	    warning ("use of both ` ' and `+' flags in format");
 	  /* "If the 0 and - flags both appear,
 	     the 0 flag will be ignored."  */
-	  if (my_strchr (flag_chars, '0') != 0
-	      && my_strchr (flag_chars, '-') != 0)
+	  if (index (flag_chars, '0') != 0
+	      && index (flag_chars, '-') != 0)
 	    warning ("use of both `0' and `-' flags in format");
 	  if (*format_chars == '*')
 	    {
@@ -1563,7 +1551,7 @@ check_format (info, params)
 	      /* "For d, i, o, u, x, and X conversions,
 		 if a precision is specified, the 0 flag will be ignored.
 		 For other conversions, the behavior is undefined."  */
-	      if (my_strchr (flag_chars, '0') != 0)
+	      if (index (flag_chars, '0') != 0)
 		warning ("precision and `0' flag both used in one %%-sequence");
 	      ++format_chars;
 	      if (*format_chars != '*' && !ISDIGIT (*format_chars))
@@ -1621,7 +1609,7 @@ check_format (info, params)
       while (1)
 	{
 	  if (fci->format_chars == 0
-	      || my_strchr (fci->format_chars, format_char) != 0)
+	      || index (fci->format_chars, format_char) != 0)
 	    break;
 	  ++fci;
 	}
@@ -1638,13 +1626,13 @@ check_format (info, params)
 	  warning (message);
 	  continue;
 	}
-      if (wide && my_strchr (fci->flag_chars, 'w') == 0)
+      if (wide && index (fci->flag_chars, 'w') == 0)
 	{
 	  sprintf (message, "width used with `%c' format",
 		   format_char);
 	  warning (message);
 	}
-      if (precise && my_strchr (fci->flag_chars, 'p') == 0)
+      if (precise && index (fci->flag_chars, 'p') == 0)
 	{
 	  sprintf (message, "precision used with `%c' format",
 		   format_char);
@@ -1652,7 +1640,7 @@ check_format (info, params)
 	}
       if (suppressed)
 	{
-	  if (my_strchr (fci->flag_chars, '*') == 0)
+	  if (index (fci->flag_chars, '*') == 0)
 	    {
 	      sprintf (message,
 		       "suppression of `%c' conversion in format",
@@ -1663,7 +1651,7 @@ check_format (info, params)
 	}
       for (i = 0; flag_chars[i] != 0; ++i)
 	{
-	  if (my_strchr (fci->flag_chars, flag_chars[i]) == 0)
+	  if (index (fci->flag_chars, flag_chars[i]) == 0)
 	    {
 	      sprintf (message, "flag `%c' used with type `%c'",
 		       flag_chars[i], format_char);
