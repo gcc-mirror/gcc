@@ -3181,7 +3181,14 @@ i586-*-*)
 	esac
 	;;
 i686-*-* | i786-*-*)
-	target_cpu_default2=3
+	case $target_alias in
+		athlon-*)
+			target_cpu_default2=5
+			;;
+		*)
+			target_cpu_default2=3
+			;;
+	esac
 	;;
 alpha*-*-*)
 	case $machine in
