@@ -2072,6 +2072,84 @@ replace_equiv_address_nv (memref, addr)
 {
   return change_address_1 (memref, VOIDmode, addr, 0);
 }
+
+/* Return a memory reference like MEMREF, but with its mode widened to
+   MODE and offset by OFFSET.  This would be used by targets that e.g.
+   cannot issue QImode memory operations and have to use SImode memory
+   operations plus masking logic.  */
+
+rtx
+widen_memory_access (memref, mode, offset)
+     rtx memref;
+     enum machine_mode mode;
+     HOST_WIDE_INT offset;
+{
+  rtx new = adjust_address_1 (memref, mode, offset, 1, 1);
+  tree expr = MEM_EXPR (new);
+  rtx memoffset = MEM_OFFSET (new);
+  unsigned int size = GET_MODE_SIZE (mode);
+
+  /* If we don't know what offset we were at within the expression, then
+     we can't know if we've overstepped the bounds.  */
+  if (! memoffset && offset != 0)
+    expr = NULL_TREE;
+
+  while (expr)
+    {
+      if (TREE_CODE (expr) == COMPONENT_REF)
+	{
+	  tree field = TREE_OPERAND (expr, 1);
+
+	  if (! DECL_SIZE_UNIT (field))
+	    {
+	      expr = NULL_TREE;
+	      break;
+	    }
+
+	  /* Is the field at least as large as the access?  If so, ok,
+	     otherwise strip back to the containing structure.  */
+	  if (compare_tree_int (DECL_SIZE_UNIT (field), size) >= 0
+	      && INTVAL (memoffset) >= 0)
+	    break;
+
+	  if (! host_integerp (DECL_FIELD_OFFSET (field), 1))
+	    {
+	      expr = NULL_TREE;
+	      break;
+	    }
+
+	  expr = TREE_OPERAND (expr, 0);
+	  memoffset = (GEN_INT (INTVAL (memoffset)
+		       + tree_low_cst (DECL_FIELD_OFFSET (field), 1)
+		       + (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+		          / BITS_PER_UNIT)));
+	}
+      /* Similarly for the decl.  */
+      else if (DECL_P (expr)
+	       && DECL_SIZE_UNIT (expr)
+	       && compare_tree_int (DECL_SIZE_UNIT (expr), size) >= 0
+	       && (! memoffset || INTVAL (memoffset) >= 0))
+	break;
+      else
+	{
+	  /* The widened memory access overflows the expression, which means
+	     that it could alias another expression.  Zap it.  */
+	  expr = NULL_TREE;
+	  break;
+	}
+    }
+
+  if (! expr)
+    memoffset = NULL_RTX;
+
+  /* The widened memory may alias other stuff, so zap the alias set.  */
+  /* ??? Maybe use get_alias_set on any remaining expression.  */
+
+  MEM_ATTRS (new) = get_mem_attrs (0, expr, memoffset, GEN_INT (size),
+				   MEM_ALIGN (new), mode);
+
+  return new;
+}
 
 /* Return a newly created CODE_LABEL rtx with a unique label number.  */
 

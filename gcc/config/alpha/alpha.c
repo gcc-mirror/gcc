@@ -1822,12 +1822,8 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
-  *paligned_mem = gen_rtx_MEM (SImode, plus_constant (base, offset & ~3));
-  MEM_COPY_ATTRIBUTES (*paligned_mem, ref);
-
-  /* Sadly, we cannot use alias sets here because we may overlap other
-     data in a different alias set.  */
-  set_mem_alias_set (*paligned_mem, 0);
+  *paligned_mem
+    = widen_memory_access (ref, SImode, (offset & ~3) - offset);
 
   if (WORDS_BIG_ENDIAN)
     *pbitnum = GEN_INT (32 - (GET_MODE_BITSIZE (GET_MODE (ref))

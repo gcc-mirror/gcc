@@ -646,6 +646,10 @@ extern rtx replace_equiv_address PARAMS ((rtx, rtx));
 /* Likewise, but the reference is not required to be valid.  */
 extern rtx replace_equiv_address_nv PARAMS ((rtx, rtx));
 
+/* Return a memory reference like MEMREF, but with its mode widened to
+   MODE and adjusted by OFFSET.  */
+extern rtx widen_memory_access PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT));
+
 /* Return a memory reference like MEMREF, but which is known to have a
    valid address.  */
 extern rtx validize_mem PARAMS ((rtx));
