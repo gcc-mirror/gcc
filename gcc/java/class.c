@@ -1839,8 +1839,10 @@ layout_class (this_class)
 
   if (super_class)
     {
-      super_class = maybe_layout_super_class (super_class, this_class);
-      if (TREE_CODE (TYPE_SIZE (super_class)) == ERROR_MARK)
+      tree maybe_super_class 
+	= maybe_layout_super_class (super_class, this_class);
+      if (maybe_super_class == NULL
+	  || TREE_CODE (TYPE_SIZE (maybe_super_class)) == ERROR_MARK)
 	{
 	  TYPE_SIZE (this_class) = error_mark_node;
 	  CLASS_BEING_LAIDOUT (this_class) = 0;
