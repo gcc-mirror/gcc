@@ -1,3 +1,7 @@
+Wed Jun 25 06:52:12 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* top.c (ffe_handle_option): Add missing break;.
+
 2003-06-24  Scott Snyder  <snyder@fnal.gov>
 
 	PR fortran/11299
