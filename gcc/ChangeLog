@@ -1,3 +1,7 @@
+2002-05-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (output_toc): Mask longs to 32 bits.
+
 2002-05-23  Hans Boehm  <Hans_Boehm@hp.com>
 	* config/ia64/linux.h (IA64_GATE_AREA_END): Adjust for 64K
 	pages.
