@@ -1423,7 +1423,7 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 	 We _MUST_ have a separate temporary at this point,
 	 if we don't barf immediately instead of generating
 	 incorrect code.  */
-      if (temp1 == op0)
+      if (rtx_equal_p (temp1, op0))
 	abort ();
 
       emit_insn (gen_sethh (op0, op1));
