@@ -86,7 +86,7 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
 	  /* The "field" can be a FUNCTION_DECL or an OVERLOAD in some
 	     situations.  */
 	  && TREE_CODE (TREE_OPERAND (ref, 1)) == FIELD_DECL
-	  && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
+	  && DECL_C_BIT_FIELD (TREE_OPERAND (ref, 1)))
 	{
 	  /* Clear the ordinary bit.  If this object was a class
 	     rvalue we want to preserve that information.  */

@@ -4830,7 +4830,7 @@ make_lang_type (code)
        clear it here.  */
     TYPE_ALIAS_SET (t) = 0;
 
-  /* We need to allocate a TYPE_BINFO even for TEMPALTE_TYPE_PARMs
+  /* We need to allocate a TYPE_BINFO even for TEMPLATE_TYPE_PARMs
      since they can be virtual base types, and we then need a
      canonical binfo for them.  Ideally, this would be done lazily for
      all types.  */

@@ -1,3 +1,12 @@
+1999-10-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (lvalue_p_1): Use DECL_C_BIT_FIELD to check for
+	bitfields, rather than DECL_BIT_FIELD.
+	* ir.texi: Document how to tell whether or not a field is a
+	bitfield.
+	
+	* lex.c (make_lang_type): Fix typo in comment.
+
 1999-10-01  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (decay_conversion): Strip cv-quals from non-class rvalues.
