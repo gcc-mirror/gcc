@@ -75,6 +75,9 @@ enum internal_test {
 #define SINGLE_WORD_MODE_P(MODE) \
   ((MODE) != BLKmode && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)
 
+/* True if the given SYMBOL_REF is for an internally-generated symbol.  */
+#define INTERNAL_SYMBOL_P(SYM) \
+  (XSTR (SYM, 0)[0] == '*' && XSTR (SYM, 0)[1] == LOCAL_LABEL_PREFIX[0])
 
 /* Classifies a non-literal integer constant.
 
@@ -857,9 +860,7 @@ mips_classify_symbol (rtx x)
       return SYMBOL_GENERAL;
     }
 
-  if (XSTR (x, 0)[0] == '*'
-      && strncmp (XSTR (x, 0) + 1, LOCAL_LABEL_PREFIX,
-		  sizeof LOCAL_LABEL_PREFIX - 1) == 0)
+  if (INTERNAL_SYMBOL_P (x))
     {
       /* The symbol is a local label.  For TARGET_MIPS16, SYMBOL_REF_FLAG
 	 will be set if the symbol refers to a string in the current
@@ -2086,9 +2087,7 @@ m16_usym8_4 (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   if (GET_CODE (op) == SYMBOL_REF
       && SYMBOL_REF_FLAG (op)
       && cfun->machine->insns_len > 0
-      && XSTR (op, 0)[0] == '*'
-      && strncmp (XSTR (op, 0) + 1, LOCAL_LABEL_PREFIX,
-		  sizeof LOCAL_LABEL_PREFIX - 1) == 0
+      && INTERNAL_SYMBOL_P (op)
       && (cfun->machine->insns_len + get_pool_size () + mips_string_length
 	  < 4 * 0x100))
     {
@@ -2111,9 +2110,7 @@ m16_usym5_4 (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   if (GET_CODE (op) == SYMBOL_REF
       && SYMBOL_REF_FLAG (op)
       && cfun->machine->insns_len > 0
-      && XSTR (op, 0)[0] == '*'
-      && strncmp (XSTR (op, 0) + 1, LOCAL_LABEL_PREFIX,
-		  sizeof LOCAL_LABEL_PREFIX - 1) == 0
+      && INTERNAL_SYMBOL_P (op)
       && (cfun->machine->insns_len + get_pool_size () + mips_string_length
 	  < 4 * 0x20))
     {
