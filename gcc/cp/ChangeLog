@@ -1,5 +1,13 @@
 1999-05-20  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* class.c (finish_struct_1): Still check for ANON_AGGR_TYPE_P.
+
+	* class.c (finish_base_struct): Allow non-COM bases for COM classes
+	except at the leftmost position.
+	(modify_one_vtable, fixup_vtable_deltas1, override_one_vtable):
+	Pass the binfo's class, not the most derived, to skip_rtti_stuff.
+	* search.c (get_abstract_virtuals, expand_upcast_fixups): Likewise.
+
 	* tree.c (lvalue_p_1): A NOP_EXPR can be an lvalue.
 	(build_cplus_new): Make sure that what we return is of the right type.
 
