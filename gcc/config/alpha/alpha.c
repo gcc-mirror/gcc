@@ -2923,7 +2923,7 @@ alpha_expand_block_move (operands)
       /* No appropriate mode; fall back on memory.  */
       orig_src = change_address (orig_src, GET_MODE (orig_src),
 				 copy_addr_to_reg (XEXP (orig_src, 0)));
-      src_align = GET_MODE_BITSIZE (GET_MODE (XEXP (tmp, 0)));
+      src_align = GET_MODE_BITSIZE (GET_MODE (tmp));
     }
 
   ofs = 0;
@@ -3077,7 +3077,7 @@ alpha_expand_block_move (operands)
 	 up by recognizing extra alignment information.  */
       orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
 				 copy_addr_to_reg (XEXP (orig_dst, 0)));
-      dst_align = GET_MODE_BITSIZE (GET_MODE (XEXP (tmp, 0)));
+      dst_align = GET_MODE_BITSIZE (GET_MODE (tmp));
     }
 
   /* Write out the data in whatever chunks reading the source allowed.  */
