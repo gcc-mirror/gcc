@@ -1,3 +1,12 @@
+2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
+
+	* libsupc++/eh_term_handler.cc:  Add comment about embedded systems.
+	* docs/html/debug.html:  Cosmetic and HTML changes.  Point to
+	verb-term notes.
+	* docs/html/documentation.html:  Link to the FAQ.
+	* docs/html/17_intro/howto.html:  Mention use of isatty(3).
+	* docs/html/19_diagnostics/howto.html:  Update verb-term description.
+
 2002-12-25  Phil Edwards  <pme@gcc.gnu.org>
 
 	* src/vterminate.cc:  Move to...

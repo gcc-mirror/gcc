@@ -169,6 +169,13 @@
    %</pre>
    <p>The 'Aborted' line comes from the call to abort(), of course.
    </p>
+   <p><strong>UPDATE:</strong> Starting with GCC 3.4, this is the default
+      termination handler; nothing need be done to use it.  To go back to
+      the previous &quot;silent death&quot; method, simply include
+      <code>&lt;exception&gt;<code> and <code>&lt;cstdlib&gt;<code>, and call
+   </p>
+   <pre>
+       std::set_terminate (std::abort);</pre>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>

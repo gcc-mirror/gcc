@@ -29,6 +29,12 @@
 
 #include "unwind-cxx.h"
 
+/* We default to the talkative, informative handler.  This pulls in the
+   demangler, the dyn-string utilities, and elements of the I/O library.
+   For a low-memory environment, you can return to the earlier "silent death"
+   handler by including <cstdlib>, initializg to "std::abort", and rebuilding
+   the library.  */
+
 /* The current installed user handler.  */
 std::terminate_handler __cxxabiv1::__terminate_handler =
                                        __gnu_cxx::__verbose_terminate_handler;
