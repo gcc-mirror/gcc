@@ -145,7 +145,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 #endif
 
-#ifdef NEED_DECLARATION_ENVIRON
+#if defined (HAVE_DECL_ENVIRON) && !HAVE_DECL_ENVIRON
 extern char **environ;
 #endif
 

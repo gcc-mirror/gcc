@@ -1,3 +1,9 @@
+2000-05-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* getopt.h (getopt): Also check HAVE_DECL_* when prototyping.
+
+	* libiberty.h (basename): Likewise.
+
 2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
 
  	* ansidecl.h: #define __extension__ to nothing if

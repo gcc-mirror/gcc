@@ -48,7 +48,7 @@ compilation is specified by a string called a "spec".  */
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
-#ifdef NEED_DECLARATION_GETRUSAGE
+#if defined (HAVE_DECL_GETRUSAGE) && !HAVE_DECL_GETRUSAGE
 extern int getrusage PARAMS ((int, struct rusage *));
 #endif
 
