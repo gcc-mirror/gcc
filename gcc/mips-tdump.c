@@ -47,30 +47,36 @@ Boston, MA 02111-1307, USA.  */
 #define MIPS_UNMARK_STAB(code) ((code)-CODE_MASK)
 #endif
 
-#ifdef __STDC__
-typedef void *PTR_T;
-typedef const void *CPTR_T;
-#define __proto(x) x
-#else
-
-#if defined(_STDIO_H_) || defined(__STDIO_H__)		/* Ultrix 4.0, SGI */
-typedef void *PTR_T;
-typedef void *CPTR_T;
-
-#else
-typedef char *PTR_T;					/* Ultrix 3.1 */
-typedef char *CPTR_T;
-#endif
-
-#define __proto(x) ()
-#define const
-#endif
+#define __proto(x) PARAMS(x)
+typedef PTR PTR_T;
+typedef const PTR_T CPTR_T;
 
 #define uchar	unsigned char
 #define ushort	unsigned short
 #define uint	unsigned int
 #define ulong	unsigned long
 
+
+static void
+fatal(s)
+  const char *s;
+{
+  fprintf(stderr, "%s\n", s);
+  exit(FATAL_EXIT_CODE);
+}
+
+/* Same as `malloc' but report error if no memory available.  */
+/* Do this before size_t is fiddled with so it matches the prototype
+   in libiberty.h . */
+PTR
+xmalloc (size)
+  size_t size;
+{
+  register PTR value = (PTR) malloc (size);
+  if (value == 0)
+    fatal ("Virtual memory exhausted.");
+  return value;
+}
 
 /* Do to size_t being defined in sys/types.h and different
    in stddef.h, we have to do this by hand.....  Note, these
@@ -270,10 +276,15 @@ char *lang_to_string	__proto((lang_t));
 char *type_to_string	__proto((AUXU *, int, FDR *));
 
 #ifndef __alpha
+# ifdef NEED_DECLARATION_MALLOC
 extern PTR_T	malloc	__proto((size_t));
+# endif
+# ifdef NEED_DECLARATION_CALLOC
 extern PTR_T	calloc	__proto((size_t, size_t));
+# endif
+# ifdef NEED_DECLARATION_REALLOC
 extern PTR_T	realloc	__proto((PTR_T, size_t));
-extern void	free	__proto((PTR_T));
+# endif
 #endif
 
 extern char *optarg;
@@ -1589,24 +1600,4 @@ fancy_abort ()
 {
   fprintf (stderr, "mips-tdump internal error");
   exit (1);
-}
-
-void
-fatal(s)
-char *s;
-{
-  fprintf(stderr, "%s\n", s);
-  exit(1);
-}
-
-/* Same as `malloc' but report error if no memory available.  */
-
-PTR_T
-xmalloc (size)
-     unsigned size;
-{
-  register PTR_T value = malloc (size);
-  if (value == 0)
-    fatal ("Virtual memory exhausted.");
-  return value;
 }

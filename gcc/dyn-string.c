@@ -22,9 +22,6 @@
 #include "system.h"
 #include "dyn-string.h"
 
-extern char *xmalloc ();
-extern char *xrealloc ();
-
 /* Create a new dynamic string capable of holding at least SPACE
    characters, including the terminating NUL.  If SPACE is 0, it
    will be silently increased to 1.  */

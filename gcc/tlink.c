@@ -32,8 +32,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern char * xmalloc PARAMS((unsigned));
-
 /* Defined in collect2.c.  */
 extern int vflag, debug;
 extern char *ldout;

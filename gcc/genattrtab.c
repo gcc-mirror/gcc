@@ -453,8 +453,6 @@ static struct attr_value *find_most_used  PROTO((struct attr_desc *));
 static rtx find_single_value	PROTO((struct attr_desc *));
 static rtx make_numeric_value	PROTO((int));
 static void extend_range	PROTO((struct range *, int, int));
-char *xrealloc			PROTO((char *, unsigned));
-char *xmalloc			PROTO((unsigned));
 
 #define oballoc(size) obstack_alloc (hash_obstack, size)
 
@@ -5752,22 +5750,22 @@ extend_range (range, min, max)
   if (range->max < max) range->max = max;
 }
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
+  PTR ptr;
+  size_t size;
 {
-  char *result = (char *) realloc (ptr, size);
+  register PTR result = (PTR) realloc (ptr, size);
   if (!result)
     fatal ("virtual memory exhausted");
   return result;
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *val = (char *) malloc (size);
+  register PTR val = (PTR) malloc (size);
 
   if (val == 0)
     fatal ("virtual memory exhausted");

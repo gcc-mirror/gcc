@@ -98,8 +98,6 @@ static struct code_ptr *peepholes;
 static void gen_insn PROTO ((rtx));
 static void walk_rtx PROTO ((rtx, char *));
 static void print_path PROTO ((char *));
-char *xmalloc PROTO ((unsigned));
-char *xrealloc PROTO ((char *, unsigned));
 static void fatal PVPROTO ((char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 static char *copystr PROTO ((char *));
@@ -348,23 +346,23 @@ print_path (path)
     }
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *val = (char *) malloc (size);
+  register PTR val = (PTR) malloc (size);
 
   if (val == 0)
     fatal ("virtual memory exhausted");
   return val;
 }
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
+  PTR ptr;
+  size_t size;
 {
-  char *result = (char *) realloc (ptr, size);
+  register PTR result = (PTR) realloc (ptr, size);
   if (!result)
     fatal ("virtual memory exhausted");
   return result;

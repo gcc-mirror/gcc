@@ -1251,7 +1251,7 @@ int dump_time;
 
 /* Return time used so far, in microseconds.  */
 
-int
+long
 get_run_time ()
 {
   if (quiet_flag)
@@ -2173,16 +2173,16 @@ botch (s)
 
 /* Same as `malloc' but report error if no memory available.  */
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *value;
+  register PTR value;
 
   if (size == 0)
     size = 1;
 
-  value = (char *) malloc (size);
+  value = (PTR) malloc (size);
   if (value == 0)
     fatal ("virtual memory exhausted");
   return value;
@@ -2190,16 +2190,16 @@ xmalloc (size)
 
 /* Same as `calloc' but report error if no memory available.  */
 
-char *
+PTR
 xcalloc (size1, size2)
-     unsigned size1, size2;
+  size_t size1, size2;
 {
-  register char *value;
+  register PTR value;
 
   if (size1 == 0 || size2 == 0)
     size1 = size2 = 1;
 
-  value = (char *) calloc (size1, size2);
+  value = (PTR) calloc (size1, size2);
   if (value == 0)
     fatal ("virtual memory exhausted");
   return value;
@@ -2209,19 +2209,17 @@ xcalloc (size1, size2)
 /* Same as `realloc' but report error if no memory available.  
    Also handle null PTR even if the vendor realloc gets it wrong.  */
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     int size;
+  PTR ptr;
+  size_t size;
 {
-  char *result;
+  register PTR result;
 
   if (size == 0)
     size = 1;
 
-  result = (ptr
-	    ? (char *) realloc (ptr, size)
-	    : (char *) malloc (size));
+  result = (ptr ? (PTR) realloc (ptr, size) : (PTR) malloc (size));
 
   if (!result)
     fatal ("virtual memory exhausted");
@@ -2233,7 +2231,7 @@ xrealloc (ptr, size)
 
 char *
 xstrdup (s)
-     register char *s;
+  register const char *s;
 {
   register char *result = (char *) malloc (strlen (s) + 1);
 

@@ -33,7 +33,6 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-char *xmalloc PROTO((unsigned));
 static void fatal PVPROTO ((char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
@@ -57,23 +56,23 @@ gen_insn (insn)
 	    insn_code_number);
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *val = (char *) malloc (size);
+  register PTR val = (PTR) malloc (size);
 
   if (val == 0)
     fatal ("virtual memory exhausted");
   return val;
 }
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
+  PTR ptr;
+  size_t size;
 {
-  char *result = (char *) realloc (ptr, size);
+  register PTR result = (PTR) realloc (ptr, size);
   if (!result)
     fatal ("virtual memory exhausted");
   return result;

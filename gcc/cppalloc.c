@@ -35,22 +35,22 @@ memory_full ()
   exit (FATAL_EXIT_CODE);
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *ptr = (char *) malloc (size);
+  register PTR ptr = (PTR) malloc (size);
   if (ptr == 0)
     memory_full ();
   return ptr;
 }
 
-char *
+PTR
 xrealloc (old, size)
-     char *old;
-     unsigned size;
+  PTR old;
+  size_t size;
 {
-  register char *ptr = (char *) realloc (old, size);
+  register PTR ptr = (PTR) realloc (old, size);
   if (ptr == 0)
     memory_full ();
   return ptr;

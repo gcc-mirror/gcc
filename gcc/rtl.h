@@ -842,19 +842,6 @@ extern rtvec gen_rtvec			PVPROTO((int, ...));
 extern rtx read_rtx			PROTO((FILE *));
 #endif
 
-#if 0
-/* At present, don't prototype xrealloc, since all of the callers don't
-   cast their pointers to char *, and all of the xrealloc's don't use
-   void * yet.  */
-extern char *xmalloc			PROTO((size_t));
-extern char *xcalloc			PROTO((size_t, size_t));
-extern char *xrealloc			PROTO((void *, size_t));
-#else
-extern char *xmalloc ();
-extern char *xcalloc ();
-extern char *xrealloc ();
-#endif
-
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern rtx rtx_alloc			PROTO((RTX_CODE));

@@ -38,18 +38,9 @@ compilation is specified by a string called a "spec".  */
 
 #include "obstack.h"
 
-
 /* ??? Need to find a GCC header to put these in.  */
-extern int pexecute PROTO ((const char *, char * const *, const char *,
-			    const char *, char **, char **, int));
-extern int pwait PROTO ((int, int *, int));
 extern char *update_path PROTO((char *, char *));
 extern void set_std_prefix PROTO((char *, int));
-/* Flag arguments to pexecute.  */
-#define PEXECUTE_FIRST   1
-#define PEXECUTE_LAST    2
-#define PEXECUTE_SEARCH  4
-#define PEXECUTE_VERBOSE 8
 
 #ifdef VMS
 #define exit __posix_exit
@@ -195,7 +186,6 @@ static void clear_failure_queue PROTO((void));
 static int check_live_switch	PROTO((int, int));
 static char *handle_braces	PROTO((char *));
 static char *save_string	PROTO((char *, int));
-static char *concat		PVPROTO((char *, ...));
 extern int do_spec		PROTO((char *));
 static int do_spec_1		PROTO((char *, int, char *));
 static char *find_file		PROTO((char *));
@@ -215,8 +205,6 @@ static void error		PVPROTO((char *, ...));
 static void display_help 	PROTO((void));
 
 void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
-char *xmalloc ();
-char *xrealloc ();
 
 #ifdef LANG_SPECIFIC_DRIVER
 /* Called before processing to change/add/remove arguments. */
@@ -1292,8 +1280,6 @@ static struct temp_name {
   int filename_length;	/* strlen (filename).  */
   struct temp_name *next;
 } *temp_names;
-#else
-extern char *choose_temp_base PROTO((void));
 #endif
 
 
@@ -5220,79 +5206,25 @@ lookup_compiler (name, length, language)
   return 0;
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *value = (char *) malloc (size);
+  register PTR value = (PTR) malloc (size);
   if (value == 0)
     fatal ("virtual memory exhausted");
   return value;
 }
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
+  PTR ptr;
+  size_t size;
 {
-  register char *value = (char *) realloc (ptr, size);
+  register PTR value = (PTR) realloc (ptr, size);
   if (value == 0)
     fatal ("virtual memory exhausted");
   return value;
-}
-
-/* This function is based on the one in libiberty.  */
-
-static char *
-concat VPROTO((char *first, ...))
-{
-  register int length;
-  register char *newstr;
-  register char *end;
-  register char *arg;
-  va_list args;
-#ifndef ANSI_PROTOTYPES
-  char *first;
-#endif
-
-  /* First compute the size of the result and get sufficient memory.  */
-
-  VA_START (args, first);
-#ifndef ANSI_PROTOTYPES
-  first = va_arg (args, char *);
-#endif
-
-  arg = first;
-  length = 0;
-
-  while (arg != 0)
-    {
-      length += strlen (arg);
-      arg = va_arg (args, char *);
-    }
-
-  newstr = (char *) xmalloc (length + 1);
-  va_end (args);
-
-  /* Now copy the individual pieces to the result string.  */
-
-  VA_START (args, first);
-#ifndef ANSI_PROTOTYPES
-  first = va_arg (args, char *);
-#endif
-
-  end = newstr;
-  arg = first;
-  while (arg != 0)
-    {
-      while (*arg)
-	*end++ = *arg++;
-      arg = va_arg (args, char *);
-    }
-  *end = '\000';
-  va_end (args);
-
-  return (newstr);
 }
 
 static char *

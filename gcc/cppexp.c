@@ -28,9 +28,6 @@ Written by Per Bothner 1994.  */
 #include "system.h"
 #include "cpplib.h"
 
-extern char *xmalloc PARAMS ((unsigned));
-extern char *xrealloc PARAMS ((void *, unsigned));
-
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif

@@ -218,7 +218,6 @@ static void read_files PROTO ((void));
 static void scan_for_source_files PROTO ((void));
 static void output_data PROTO ((void));
 static void print_usage PROTO ((void)) ATTRIBUTE_NORETURN;
-char * xmalloc ();
 
 int
 main (argc, argv)
@@ -238,11 +237,11 @@ main (argc, argv)
   return 0;
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *value = (char *) malloc (size);
+  register PTR value = (PTR) malloc (size);
   if (value == 0)
     {
       fprintf (stderr, "error: virtual memory exhausted");

@@ -20,8 +20,6 @@
 #define GUESSPATHLEN 100
 #endif /* (defined (USG) || defined (VMS)) */
 
-char *xmalloc ();
-
 #if !(defined (VMS) || (defined(_WIN32) && !defined(__CYGWIN__)))
 
 /* Get the working directory.  Use the PWD environment variable if it's

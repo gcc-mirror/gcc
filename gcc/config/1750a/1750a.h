@@ -66,7 +66,7 @@ extern struct jumplabel_array jmplbl[];
 extern int datalbl_ndx, jmplbl_ndx, label_pending, program_counter;
 extern enum section current_section;
 extern char *sectname[4];
-extern char *xstrdup(), *float_label();
+extern char *float_label();
 extern struct rtx_def *function_arg ();
 extern char *movcnt_regno_adjust ();
 extern char *mod_regno_adjust ();

@@ -73,7 +73,6 @@ static char *std_prefix = PREFIX;
 
 static char *get_key_value	PROTO((char *));
 static char *translate_name	PROTO((char *));
-static char *concat		PVPROTO((char *, ...));
 static char *save_string	PROTO((char *, int));
 
 #ifdef _WIN32
@@ -110,23 +109,23 @@ get_key_value (key)
 
    This function is based on the one in libiberty.  */
 
-static char *
-concat VPROTO((char *first, ...))
+char *
+concat VPROTO((const char *first, ...))
 {
   register int length;
   register char *newstr;
   register char *end;
-  register char *arg;
+  register const char *arg;
   va_list args;
 #ifndef ANSI_PROTOTYPES
-  char *first;
+  const char *first;
 #endif
 
   /* First compute the size of the result and get sufficient memory.  */
 
   VA_START (args, first);
 #ifndef ANSI_PROTOTYPES
-  first = va_arg (args, char *);
+  first = va_arg (args, const char *);
 #endif
 
   arg = first;
@@ -135,7 +134,7 @@ concat VPROTO((char *first, ...))
   while (arg != 0)
     {
       length += strlen (arg);
-      arg = va_arg (args, char *);
+      arg = va_arg (args, const char *);
     }
 
   newstr = (char *) malloc (length + 1);
@@ -154,7 +153,7 @@ concat VPROTO((char *first, ...))
     {
       while (*arg)
 	*end++ = *arg++;
-      arg = va_arg (args, char *);
+      arg = va_arg (args, const char *);
     }
   *end = '\000';
   va_end (args);

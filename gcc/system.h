@@ -370,4 +370,7 @@ extern void abort ();
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
+/* Get libiberty declarations. */
+#include "libiberty.h"
+
 #endif /* __GCC_SYSTEM_H__ */

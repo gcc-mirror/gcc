@@ -28,8 +28,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern char * xmalloc ();
-
 /* The default number of entries to use when creating a hash table.  */
 #define DEFAULT_SIZE (1009)
 

@@ -1,3 +1,66 @@
+Fri Nov 27 12:28:56 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Include libiberty.h.
+
+	* c-aux-info.c: Remove prototypes for concat/concat3.  Change
+	function `concat' from fixed parameters to variable parameters,
+	as is done in libiberty.  All callers of concat/concat3
+	changed to use the new `concat' with variable args.
+
+	* cccp.c: Remove things made redundant by libiberty.h and/or
+	conform to libiberty standards.
+	* cexp.y: Likewise.
+	* collect2.c: Likewise.
+	* config/1750a/1750a.h: Likewise.
+	* cppalloc.c: Likewise.
+	* cppexp.c: Likewise.
+	* cppfiles.c: Likewise.
+	* cpphash.c: Likewise.
+	* cpplib.c: Likewise.
+	* dyn-string.c: Likewise.
+	* fix-header.c: Likewise.
+	* gcc.c: Likewise.
+	* gcov.c: Likewise.
+	* genattr.c: Likewise.
+	* genattrtab.c: Likewise.
+	* gencheck.c: Likewise.
+	* gencodes.c: Likewise.
+	* genconfig.c: Likewise.
+	* genemit.c: Likewise.
+	* genextract.c: Likewise.
+	* genflags.c: Likewise.
+	* gengenrtl.c: Likewise.
+	* genopinit.c: Likewise.
+	* genoutput.c: Likewise.
+	* genpeep.c: Likewise.
+	* genrecog.c: Likewise.
+	* getpwd.c: Likewise.
+	* halfpic.c: Likewise.
+	* hash.c: Likewise.
+	* mips-tdump.c: Likewise.  Wrap malloc/realloc/calloc prototypes
+	in NEED_DECLARATION_* macros.
+
+	* mips-tfile.c: Remove things made redundant by libiberty.h and/or
+	conform to libiberty standards.
+	(fatal): Fix const-ification of variable `format' in
+	!ANSI_PROTOTYPES case.
+
+	* prefix.c: Remove things made redundant by libiberty.h and/or
+	conform to libiberty standards.
+
+	* print-rtl.c: Rename variable `spaces' to `xspaces' to avoid
+	conflicting with function `spaces' from libiberty.
+
+	* profile.c: Remove things made redundant by libiberty.h and/or
+	conform to libiberty standards.
+	* protoize.c: Likewise.
+	* rtl.h: Likewise.
+	* scan.h: Likewise.
+	* tlink.c: Likewise.
+	* toplev.c: Likewise.
+	* toplev.h: Likewise.
+	* tree.h: Likewise.
+
 Thu Nov 26 08:38:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppfiles.c (simplify_pathname): Un-ANSI-fy function definition.

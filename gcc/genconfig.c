@@ -49,7 +49,6 @@ static int max_insns_per_split = 1;
 static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
-char *xmalloc PROTO((unsigned));
 static void fatal PVPROTO ((char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
@@ -245,11 +244,11 @@ gen_peephole (peep)
     walk_insn_part (XVECEXP (peep, 0, i), 1, 0);
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *val = (char *) malloc (size);
+  register PTR val = (PTR) malloc (size);
 
   if (val == 0)
     fatal ("virtual memory exhausted");
@@ -257,12 +256,12 @@ xmalloc (size)
   return val;
 }
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
+  PTR ptr;
+  size_t size;
 {
-  char *result = (char *) realloc (ptr, size);
+  register PTR result = (PTR) realloc (ptr, size);
   if (!result)
     fatal ("virtual memory exhausted");
   return result;

@@ -47,10 +47,6 @@ static void simplify_pathname		PROTO ((char *));
 static void hack_vms_include_specification PROTO ((char *));
 #endif
 
-/* Not safe to prototype these. */
-extern char *xmalloc();
-extern char *xrealloc();
-
 /* Windows does not natively support inodes, and neither does MSDOS.
    VMS has non-numeric inodes. */
 #ifdef VMS
