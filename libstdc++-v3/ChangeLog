@@ -1,3 +1,11 @@
+2002-06-19  Steve Ellcey  <sje@cup.hp.com>
+
+	* configure.in (HAVE_FINITE*, HAVE_ISINF*, HAVE_ISNAN*):  Remove
+	definitions in hpux11 cross-build because these functions do
+	not exist on hpux11 (but some exist on hpux10); move defaults out
+	into existing sections.
+	* configure:  Regenerate.
+
 2002-06-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c/std_cwchar.h: Guard. Add mbstate_t bits.
