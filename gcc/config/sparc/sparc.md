@@ -1629,7 +1629,7 @@
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(float:TF (match_operand:SI 1 "register_operand" "f")))]
   "TARGET_FPU"
-  "fitox %1,%0"
+  "fitoq %1,%0"
   [(set_attr "type" "fp")])
 
 ;; Convert a float to an actual integer.
