@@ -1797,13 +1797,16 @@ __gnat_initialize (void)
      call the appropriate function here. We'll never unload that, so there is
      no de-registration to worry about.
 
-     We can differentiate between the two cases by looking at the
-     __module_has_ctors value provided by each class of crt objects. As of
-     today, selecting the crt set intended for applications to be statically
-     linked with the kernel is triggered by adding "-static" to the gcc *link*
-     command line options.  */
+     We can differentiate by looking at the __module_has_ctors value provided
+     by each class of crt objects. As of today, selecting the crt set intended
+     for applications to be statically linked with the kernel is triggered by
+     adding "-static" to the gcc *link* command line options.
 
-#if 0
+     This is a first approach, tightly synchronized with a number of GCC
+     configuration and crtstuff changes. We need to ensure that those changes
+     are there to activate this circuitry.  */
+
+#if DWARF2_UNWIND_INFO && defined (_ARCH_PPC)
  {
    extern const int __module_has_ctors;
    extern void __do_global_ctors ();

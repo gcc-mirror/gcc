@@ -2114,8 +2114,7 @@ package body Atree is
 
       --  Since we are doing a replace, we assume that the original node
       --  is intended to become the new replaced node. The call would be
-      --  to Rewrite_Substitute_Node if there were an intention to save
-      --  the original node.
+      --  to Rewrite if there were an intention to save the original node.
 
       Orig_Nodes.Table (Old_Node) := Old_Node;
 

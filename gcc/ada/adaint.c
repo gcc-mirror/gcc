@@ -147,6 +147,8 @@ struct vstring
 #if defined (_WIN32)
 #include <dir.h>
 #include <windows.h>
+#undef DIR_SEPARATOR
+#define DIR_SEPARATOR '\\'
 #endif
 
 #include "adaint.h"
@@ -2525,4 +2527,3 @@ get_gcc_version (void)
 {
   return 3;
 }
-

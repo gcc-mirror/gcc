@@ -1,3 +1,37 @@
+2004-04-06  Pascal Obry  <obry@gnat.com>
+
+	* adaint.c (DIR_SEPARATOR): Properly set DIR_SEPARATOR on Win32.
+
+	* osint.adb (Program_Name): Do not look past a directory separator.
+
+2004-04-06  Thomas Quinot  <quinot@act-europe.fr>
+
+	* atree.adb: Update comment (Rewrite_Substitute_Node no longer exists).
+
+	* exp_ch6.adb (Rewrite_Function_Call): Clarify documentation of
+	requirement for preserving a copy of the original assignment node.
+
+	* sinfo.ads: Update comment (Original_Tree -> Original_Node).
+
+2004-04-06  Olivier Hainque  <hainque@act-europe.fr>
+
+	(__gnat_initialize [Vxworks]): Enable references to the crtstuff bits
+	when supported.
+
+2004-04-06  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch4.adb (Remove_Abstract_Operations): Extend previous changes to
+	operator calls in functional notation, and apply
+	Universal_Interpretation to operands, not to their type.
+
+2004-04-06  Robert Dewar  <dewar@gnat.com>
+
+	* 5wdirval.adb: Minor reformatting
+
+2004-04-06  Ed Falis  <falis@gnat.com>
+
+	* gnat_rm.texi: Improve a reference to the GCC manual
+
 2004-04-05  Vincent Celier  <celier@gnat.com>
 
 	* adaint.h, adaint.c: Add function __gnat_named_file_length

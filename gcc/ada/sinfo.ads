@@ -1519,7 +1519,7 @@ package Sinfo is
    --    stub. During the analysis procedure, stubs in some situations
    --    get rewritten by the corresponding bodies, and we set this flag
    --    to remember that this happened. Note that it is not good enough
-   --    to rely on the use of Original_Tree here because of the case of
+   --    to rely on the use of Original_Node here because of the case of
    --    nested instantiations where the substituted node can be copied.
 
    --  Zero_Cost_Handling (Flag5-Sem)
