@@ -1,3 +1,9 @@
+2004-11-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/power4.md: Remove delay between dispatch and issue
+	associated with dispatch group slots 3 and 4.
+	* config/rs6000/power5.md: Same.
+
 2004-11-21  Jeff Law  <law@redhat.com>
 
 	* cfg.c (cached_make_edge): Use find_edge rather than an inlined
