@@ -583,15 +583,22 @@ combine_strings (strings)
 	    }
 	  else
 	    {
-	      int i;
+	      int i, j;
 	      for (i = 0; i < len; i++)
 		{
-		  if (WCHAR_TYPE_SIZE == HOST_BITS_PER_SHORT)
-		    ((short *) q)[i] = TREE_STRING_POINTER (t)[i];
+		  if (BYTES_BIG_ENDIAN)
+		    {
+		      for (j=0; j<(WCHAR_TYPE_SIZE / BITS_PER_UNIT)-1; j++)
+			*q++ = 0;
+		      *q++ = TREE_STRING_POINTER (t)[i];
+		    }
 		  else
-		    ((int *) q)[i] = TREE_STRING_POINTER (t)[i];
+		    {
+		      *q++ = TREE_STRING_POINTER (t)[i];
+		      for (j=0; j<(WCHAR_TYPE_SIZE / BITS_PER_UNIT)-1; j++)
+			*q++ = 0;
+		    }
 		}
-	      q += len * wchar_bytes;
 	    }
 	}
       if (wide_flag)
