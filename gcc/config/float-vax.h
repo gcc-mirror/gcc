@@ -37,6 +37,68 @@
 #undef FLT_MAX_10_EXP
 #define FLT_MAX_10_EXP 38
 
+#ifdef __GFLOAT
+
+   /* The GFLOAT numbers may be problematic since gcc uses DFLOAT */
+
+   /* Number of base-FLT_RADIX digits in the significand of a double */
+#undef DBL_MANT_DIG
+#define DBL_MANT_DIG 53
+   /* Number of decimal digits of precision in a double */
+#undef DBL_DIG
+#define DBL_DIG 15
+   /* Difference between 1.0 and the minimum double greater than 1.0 */
+#undef DBL_EPSILON
+#define DBL_EPSILON 2.2204460492503131e-016
+   /* Minimum int x such that FLT_RADIX**(x-1) is a normalised double */
+#undef DBL_MIN_EXP
+#define DBL_MIN_EXP (-1023)
+   /* Minimum normalised double */
+#undef DBL_MIN
+#define DBL_MIN 5.5626846462680035e-309
+   /* Minimum int x such that 10**x is a normalised double */
+#undef DBL_MIN_10_EXP
+#define DBL_MIN_10_EXP (-308)
+   /* Maximum int x such that FLT_RADIX**(x-1) is a representable double */
+#undef DBL_MAX_EXP
+#define DBL_MAX_EXP 1023
+   /* Maximum double */
+#undef DBL_MAX
+#define DBL_MAX 8.9884656743115775e+307
+   /* Maximum int x such that 10**x is a representable double */
+#undef DBL_MAX_10_EXP
+#define DBL_MAX_10_EXP 307
+
+   /* Number of base-FLT_RADIX digits in the significand of a long double */
+#undef LDBL_MANT_DIG
+#define LDBL_MANT_DIG 53
+   /* Number of decimal digits of precision in a long double */
+#undef LDBL_DIG
+#define LDBL_DIG 15
+   /* Difference between 1.0 and the minimum long double greater than 1.0 */
+#undef LDBL_EPSILON
+#define LDBL_EPSILON 2.2204460492503131e-016L
+   /* Minimum int x such that FLT_RADIX**(x-1) is a normalised long double */
+#undef LDBL_MIN_EXP
+#define LDBL_MIN_EXP (-1023)
+   /* Minimum normalised long double */
+#undef LDBL_MIN
+#define LDBL_MIN 5.5626846462680035e-309L
+   /* Minimum int x such that 10**x is a normalised long double */
+#undef LDBL_MIN_10_EXP
+#define LDBL_MIN_10_EXP (-308)
+   /* Maximum int x such that FLT_RADIX**(x-1) is a representable long double */
+#undef LDBL_MAX_EXP
+#define LDBL_MAX_EXP 1023
+   /* Maximum long double */
+#undef LDBL_MAX
+#define LDBL_MAX 8.9884656743115775e+307L
+   /* Maximum int x such that 10**x is a representable long double */
+#undef LDBL_MAX_10_EXP
+#define LDBL_MAX_10_EXP 307
+
+#else /* !__GFLOAT */
+
    /* Number of base-FLT_RADIX digits in the significand of a double */
 #undef DBL_MANT_DIG
 #define DBL_MANT_DIG 56
@@ -60,7 +122,7 @@
 #define DBL_MAX_EXP 127
    /* Maximum double */
 #undef DBL_MAX
-#define DBL_MAX 1.70141183460469229e+38
+#define DBL_MAX 1.70141183460469227e+38
    /* Maximum int x such that 10**x is a representable double */
 #undef DBL_MAX_10_EXP
 #define DBL_MAX_10_EXP 38
@@ -73,13 +135,13 @@
 #define LDBL_DIG 16
    /* Difference between 1.0 and the minimum long double greater than 1.0 */
 #undef LDBL_EPSILON
-#define LDBL_EPSILON 2.77555756156289135e-17
+#define LDBL_EPSILON 2.77555756156289135e-17L
    /* Minimum int x such that FLT_RADIX**(x-1) is a normalised long double */
 #undef LDBL_MIN_EXP
 #define LDBL_MIN_EXP (-127)
    /* Minimum normalised long double */
 #undef LDBL_MIN
-#define LDBL_MIN 2.93873587705571877e-39
+#define LDBL_MIN 2.93873587705571877e-39L
    /* Minimum int x such that 10**x is a normalised long double */
 #undef LDBL_MIN_10_EXP
 #define LDBL_MIN_10_EXP (-38)
@@ -88,9 +150,10 @@
 #define LDBL_MAX_EXP 127
    /* Maximum long double */
 #undef LDBL_MAX
-#define LDBL_MAX 1.70141183460469229e+38
+#define LDBL_MAX 1.70141183460469227e+38L
    /* Maximum int x such that 10**x is a representable long double */
 #undef LDBL_MAX_10_EXP
 #define LDBL_MAX_10_EXP 38
 
+#endif /* __GFLOAT */
 #endif /*  _FLOAT_H_ */
