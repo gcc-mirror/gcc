@@ -1,3 +1,10 @@
+2001-02-08  Jason Merrill  <jason@redhat.com>
+
+	* config/arm/arm.c (arm_expand_prologue): Do tell the dwarf2 backend
+	about the SP adjustment for saving the static chain pointer.
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Use the specified
+	offset when setting a temporary CFA register.
+
 2001-02-08  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* config.gcc : New targets, i386-*-chorusos*, sparc-*-chorusos*,

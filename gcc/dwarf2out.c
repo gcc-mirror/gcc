@@ -1321,8 +1321,6 @@ dw_cfa_location cfa_temp;
   Rules  1- 4: Setting a register's value to cfa.reg or an expression
   	       with cfa.reg as the first operand changes the cfa.reg and its
 	       cfa.offset.
-	       (For an unknown reason, Rule 4 does not fully obey the
-	       invariant.)
 
   Rules  6- 9: Set a non-cfa.reg register value to a constant or an
 	       expression yielding a constant.  This sets cfa_temp.reg
@@ -1362,8 +1360,6 @@ dw_cfa_location cfa_temp;
   constraints: <reg1> != fp
   	       <reg1> != sp
   effects: cfa.reg = <reg1>
-  questions: Where is <const_int> used?
-	     Should cfa.offset be changed?
 
   Rule 5:
   (set <reg1> (plus <reg2>:cfa_temp.reg sp:cfa.reg))
@@ -1547,9 +1543,15 @@ dwarf2out_frame_debug_expr (expr, label)
 	      if (GET_CODE (XEXP (src, 0)) == REG
 		  && REGNO (XEXP (src, 0)) == cfa.reg
 		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
-		/* Setting a temporary CFA register that will be copied
-		   into the FP later on.  */
-		cfa.reg = REGNO (dest);
+		{
+		  /* Setting a temporary CFA register that will be copied
+		     into the FP later on.  */
+		  offset = INTVAL (XEXP (src, 1));
+		  if (GET_CODE (src) == PLUS)
+		    offset = -offset;
+		  cfa.offset += offset;
+		  cfa.reg = REGNO (dest);
+		}
 	      /* Rule 5 */
 	      else
 		{
