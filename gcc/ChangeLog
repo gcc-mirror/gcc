@@ -1,3 +1,8 @@
+2003-02-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Wrap in
+	#ifndef __mips16.
+
 2003-02-27   Geert Bosch <bosch@gnat.com>
 
 	* toplev.c (print_version): Add indentation for GGC heuristics and

@@ -4686,6 +4686,7 @@ while (0)
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
 
+#ifndef __mips16
 /* Since the bits of the _init and _fini function is spread across
    many object files, each potentially with its own GP, we must assume
    we need to load our GP.  We don't preserve $gp or $ra, since each
@@ -4713,4 +4714,5 @@ while (0)
 	.cpsetup $31, $2, 1b\n\
 	jal " USER_LABEL_PREFIX #FUNC "\n\
 	" TEXT_SECTION_ASM_OP);
+#endif
 #endif
