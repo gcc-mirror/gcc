@@ -20,11 +20,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Output a string of assembler code, substituting insn operands.
    Defined in final.c.  */
-void output_asm_insn ();
+extern void output_asm_insn ();
 
 /* Output a string of assembler code, substituting numbers, strings
    and fixed syntactic prefixes.  */
-void asm_fprintf ();
+extern void asm_fprintf ();
+
+/* Replace a SUBREG with a REG or a MEM, based on the thing it is a
+   subreg of.  */
+extern rtx alter_subreg ();
 
 /* When outputting assembler code, indicates which alternative
    of the constraints was actually satisfied.  */
