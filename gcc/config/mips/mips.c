@@ -4587,6 +4587,7 @@ override_options (void)
       switch ((int) mips_arch)
 	{
 	case PROCESSOR_R4100:
+	case PROCESSOR_R4111:
 	case PROCESSOR_R4120:
 	  target_flags |= MASK_SOFT_FLOAT;
 	  break;

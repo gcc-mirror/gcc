@@ -1,6 +1,7 @@
 2003-11-06  Momchil Velikov  <velco@fadata.bg>
 
-	* mips.c (override_options): Set MASK_SOFT_FLOAT for VR4111 too.
+	* config/mips/mips.c (override_options): Set MASK_SOFT_FLOAT
+	for VR4111 too.
 
 2003-11-06  Jan Hubicka  <jh@suse.cz>
 
