@@ -61,9 +61,6 @@ read(int s, void *buf, int len)
 #include <bstring.h>
 #endif
 
-#ifndef HAVE_SOCKLEN_T
-typedef int socklen_t;
-#endif
 
 #include <gcj/cni.h>
 #include <gcj/javaprims.h>
