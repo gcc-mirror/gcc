@@ -1,3 +1,9 @@
+2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*cmphi_h8300): Rename to
+	*cmphi_h8300_znvc.
+	(*cmphi_h8300hs): Rename to *cmphi_h8300hs_znvc.
+
 2004-03-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/14356
