@@ -1266,7 +1266,7 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
       ;;
     posix | pthreads)
       THREADS=posix
-      case "$host" in
+      case "$target" in
         *-*-linux*)
 	;;
       esac
