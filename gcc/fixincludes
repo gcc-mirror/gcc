@@ -2078,13 +2078,17 @@ for files in curses.h; do
 
     echo Fixing $file
     sed -e '/^#[ 	]*define[ 	][ 	]*bool[ 	][ 	]*char[ 	]*$/i\
-#ifndef __cplusplus'\
+#ifndef __cplusplus
+'\
 	-e '/^#[ 	]*define[ 	][ 	]*bool[ 	][ 	]*char[ 	]*$/a\
-#endif'\
+#endif
+'\
 	-e '/^typedef[ 	][ 	]*char[ 	][ 	]*bool[ 	]*;/i\
-#ifndef __cplusplus'\
+#ifndef __cplusplus
+'\
 	-e '/^typedef[ 	][ 	]*char[ 	][ 	]*bool[ 	]*;/a\
-#endif'\
+#endif
+'\
 	${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     if cmp $file ${LIB}/$file >/dev/null 2>&1; then

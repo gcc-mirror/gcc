@@ -1,9 +1,8 @@
 #! /bin/sh
-#
-#   fixinc.svr4  --  Install modified versions of certain ANSI-incompatible
-#   native System V Release 4 system include files.
-#
-#   Written by Ron Guilmette (rfg@ncd.com).
+# Install modified versions of certain ANSI-incompatible
+# native System V Release 4 system include files.
+# Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+# Contributed by Ron Guilmette (rfg@monkeys.com).
 #
 # This file is part of GNU CC.
 # 
@@ -476,14 +475,16 @@ else
 static\
 #else\
 extern\
-#endif'\
+#endif
+'\
   -e 's/extern \(int ftw(const.*\)$/\1/' \
   -e '/^extern int nftw/i\
 #if defined(_STYPES)\
 static\
 #else\
 extern\
-#endif'\
+#endif
+'\
   -e 's/extern \(int nftw.*\)$/\1/' \
   -e '/^extern int ftw(),/c\
 #if !defined(_STYPES)\
@@ -1029,9 +1030,11 @@ fi
 #     true
 #   else
 #     sed -e '/#ifdef INKERNEL/i\
-# #ifdef _KERNEL' \
+# #ifdef _KERNEL
+# ' \
 #     -e '/#endif[ 	]*\/\* INKERNEL \*\//a\
-# #endif /* _KERNEL */' \
+# #endif /* _KERNEL */
+# ' \
 #     $file_to_fix > ${LIB}/${file}.sed
 #     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
 #     echo Fixed $file_to_fix
@@ -1057,10 +1060,12 @@ if [ \! -z "$file_to_fix" ]; then
     true
   else
     sed -e '/#	ifdef	__STDC__/i\
-#   if !defined (__GNUC__) && !defined (__GNUG__)' \
+#   if !defined (__GNUC__) && !defined (__GNUG__)
+' \
     -e '/#		include	<sys\/byteorder.h>/s/		/   /'\
     -e '/#   include	<sys\/byteorder.h>/i\
-#   endif /* !defined (__GNUC__) && !defined (__GNUG__) */'\
+#   endif /* !defined (__GNUC__) && !defined (__GNUG__) */
+'\
     $file_to_fix > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     echo Fixed $file_to_fix
@@ -1336,29 +1341,41 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   sed -e '/[ 	]FLT_MIN[ 	]/i\
-#ifndef FLT_MIN'\
+#ifndef FLT_MIN
+'\
       -e '/[ 	]FLT_MIN[ 	]/a\
-#endif'\
+#endif
+'\
       -e '/[ 	]FLT_MAX[ 	]/i\
-#ifndef FLT_MAX'\
+#ifndef FLT_MAX
+'\
       -e '/[ 	]FLT_MAX[ 	]/a\
-#endif'\
+#endif
+'\
       -e '/[ 	]FLT_DIG[ 	]/i\
-#ifndef FLT_DIG'\
+#ifndef FLT_DIG
+'\
       -e '/[ 	]FLT_DIG[ 	]/a\
-#endif'\
+#endif
+'\
       -e '/[ 	]DBL_MIN[ 	]/i\
-#ifndef DBL_MIN'\
+#ifndef DBL_MIN
+'\
       -e '/[ 	]DBL_MIN[ 	]/a\
-#endif'\
+#endif
+'\
       -e '/[ 	]DBL_MAX[ 	]/i\
-#ifndef DBL_MAX'\
+#ifndef DBL_MAX
+'\
       -e '/[ 	]DBL_MAX[ 	]/a\
-#endif'\
+#endif
+'\
       -e '/[ 	]DBL_DIG[ 	]/i\
-#ifndef DBL_DIG'\
+#ifndef DBL_DIG
+'\
       -e '/[ 	]DBL_DIG[ 	]/a\
-#endif' $file_to_fix > /tmp/$base
+#endif
+' $file_to_fix > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
     true
   else
@@ -1409,9 +1426,11 @@ fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   sed -e '/define[ 	]HUGE_VAL[ 	]/i\
-#ifndef HUGE_VAL'\
+#ifndef HUGE_VAL
+'\
       -e '/define[ 	]HUGE_VAL[ 	]/a\
-#endif' $file_to_fix > /tmp/$base
+#endif
+' $file_to_fix > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
     true
   else
@@ -1440,9 +1459,11 @@ for file in math.h floatingpoint.h; do
   if [ \! -z "$file_to_fix" ]; then
     echo Checking $file_to_fix
     sed -e '/^#define[ 	]*__P/i\
-#ifndef __P'\
+#ifndef __P
+'\
         -e '/^#define[ 	]*__P/a\
-#endif' $file_to_fix > /tmp/$base
+#endif
+' $file_to_fix > /tmp/$base
     if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
       true
     else

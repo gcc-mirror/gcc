@@ -129,7 +129,8 @@ if [ \! -z "$file_to_fix" ]; then
 \
 #if defined(__STDC__) || defined(__cplusplus)\
 #include <stdio.h>\
-#endif  /* __STDC__ */' \
+#endif  /* __STDC__ */
+' \
     $file_to_fix > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     echo Fixed $file_to_fix
@@ -183,10 +184,11 @@ if [ \! -z "$file_to_fix" ]; then
 \
 #if defined (__GNUC__) || defined (__GNUG__)\
 #include <sys/byteorder.h>\
-#else  /* not __GNUC__ */\
+#else  /* not __GNUC__ */
 ' \
     -e '/#endif[ 	]*\/\* NETSWAP \*\//i\
-#endif /* not __GNUC__ */' \
+#endif /* not __GNUC__ */
+' \
     $file_to_fix > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     echo Fixed $file_to_fix
