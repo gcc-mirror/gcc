@@ -1,5 +1,5 @@
 /* Utility to pick a temporary filename prefix.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -117,11 +117,7 @@ choose_temp_base ()
  
   /* If all else fails, use the current directory!  */
   if (base == 0)
-#ifdef VMS
-    base = "[";
-#else
     base = ".";
-#endif
 
 #else /* MPW */
   base = ":";
