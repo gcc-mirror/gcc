@@ -5469,6 +5469,18 @@ which defines (equates) the symbol @var{name} to have the value @var{value}.
 If SET_ASM_OP is defined, a default definition is provided which is
 correct for most systems.
 
+@findex ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+@item ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (@var{stream}, @var{symbol}, @var{high}, @var{low})
+A C statement to output to the stdio stream @var{stream} assembler code
+which defines (equates) the symbol @var{symbol} to have a value equal to
+the difference of the two symbols @var{high} and @var{low}, i.e.
+@var{high} minus @var{low}.  GNU CC guarantees that the symbols @var{high}
+and @var{low} are already known by the assembler so that the difference
+resolves into a constant.
+
+If SET_ASM_OP is defined, a default definition is provided which is
+correct for most systems.
+
 @findex ASM_OUTPUT_WEAK_ALIAS
 @item ASM_OUTPUT_WEAK_ALIAS (@var{stream}, @var{name}, @var{value})
 A C statement to output to the stdio stream @var{stream} assembler code
