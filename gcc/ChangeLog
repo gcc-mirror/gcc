@@ -1,3 +1,13 @@
+2004-03-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/freebsd-spec.h, config/arc/arc-protos.h,
+	config/arm/aout.h, config/arm/elf.h, config/arm/freebsd.h,
+	config/arm/linux-gas.h, config/arm/semi.h,
+	config/cris/cris-protos.h, config/i386/xm-djgpp.h,
+	config/ia64/freebsd.h, config/mips/7000.md,
+	config/mips/9000.md, config/ns32k/ns32k-protos.h,
+	config/sparc/pbd.h: Update copyright.
+
 2004-03-16  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
 
 	PR target/14577
