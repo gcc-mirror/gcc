@@ -194,7 +194,7 @@ dump_prediction (predictor, probability, bb, used)
   if (!rtl_dump_file)
     return;
 
-  while (e->flags & EDGE_FALLTHRU)
+  while (e && (e->flags & EDGE_FALLTHRU))
     e = e->succ_next;
 
   fprintf (rtl_dump_file, "  %s heuristics%s: %.1f%%",
@@ -205,9 +205,12 @@ dump_prediction (predictor, probability, bb, used)
     {
       fprintf (rtl_dump_file, "  exec ");
       fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
-      fprintf (rtl_dump_file, " hit ");
-      fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, e->count);
-      fprintf (rtl_dump_file, " (%.1f%%)", e->count * 100.0 / bb->count);
+      if (e)
+	{
+	  fprintf (rtl_dump_file, " hit ");
+	  fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, e->count);
+	  fprintf (rtl_dump_file, " (%.1f%%)", e->count * 100.0 / bb->count);
+	}
     }
 
   fprintf (rtl_dump_file, "\n");
