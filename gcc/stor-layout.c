@@ -451,7 +451,7 @@ byte_from_pos (offset, bitpos)
 {
   return size_binop (PLUS_EXPR, offset,
 		     convert (sizetype,
-			      size_binop (CEIL_DIV_EXPR, bitpos,
+			      size_binop (TRUNC_DIV_EXPR, bitpos,
 					  bitsize_unit_node)));
 }
 

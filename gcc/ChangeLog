@@ -1,3 +1,8 @@
+2000-04-03  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* stor-layout.c (byte_from_pos): Use TRUNC_DIV_EXPR rather than
+	CEIL_DIV_EXPR.
+
 2000-04-03  Philipp Thomas  <pthomas@suse.de>
 
 	* i386.h (TARGET_SWITCHES): Remove bogus empty strings, fix typo.
