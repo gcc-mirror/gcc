@@ -779,8 +779,9 @@ identifier_defn:
 
 explicit_instantiation:
 	  TEMPLATE aggr template_type
+		{ do_type_instantiation ($3); }
 	| TEMPLATE typed_declspecs declarator
-	  { do_function_instantiation ($2, $3); }
+		{ do_function_instantiation ($2, $3); }
 	;
 
 template_type:
@@ -844,6 +845,8 @@ template_instantiate_once:
 		      pop_obstacks ();
 		      pushdecl_top_level (decl);
 		    }
+		  /* Kludge; see instantiate_class_template.  */
+		  TYPE_BEING_DEFINED (t) = 0;
 		}
 	  left_curly opt.component_decl_list '}'
 		{

@@ -111,8 +111,10 @@ do_inline_function_hair (type, friend_list)
 	      args = TREE_CHAIN (args);
 	    }
 
-	  /* Allow this decl to be seen in global scope */
-	  IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (method)) = method;
+	  /* Allow this decl to be seen in global scope.  Don't do this for
+             local class methods, though.  */
+	  if (! current_function_decl)
+	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (method)) = method;
 	}
       method = TREE_CHAIN (method);
     }
@@ -1698,6 +1700,7 @@ emit_thunk (thunk_fndecl)
   int delta = THUNK_DELTA (thunk_fndecl);
   int tem;
   int failure = 0;
+  extern int current_call_is_indirect; /* Needed for (at least) HPPA. */
 
   /* Used to remember which regs we need to emit a USE rtx for. */
   rtx need_use[FIRST_PSEUDO_REGISTER];

@@ -339,28 +339,11 @@ build_vbase_path (code, type, expr, path, alias_this)
 
 /* Virtual function things.  */
 
-/* Virtual functions to be dealt with after laying out our
-   base classes.  Usually this is used only when classes have virtual
-   baseclasses, but it can happen also when classes have non-virtual
-   baseclasses if the derived class overrides baseclass functions
-   at different offsets.  */
+/* Virtual functions to be dealt with after laying out our base
+   classes.  We do all overrides after we layout virtual base classes.
+   */
 static tree pending_hard_virtuals;
 static int doing_hard_virtuals;
-
-/* XXX This is set but never used.  (bpk) */
-#if 0
-/* Temporary binfo list to memoize lookups of the left-most non-virtual
-   baseclass B in a lattice topped by T.  B can appear multiple times
-   in the lattice.
-   TREE_PURPOSE is B's TYPE_MAIN_VARIANT.
-   TREE_VALUE is the path by which B is reached from T.
-   TREE_TYPE is B's real type.
-
-   If TREE_TYPE is NULL_TREE, it means that B was reached via
-   a virtual baseclass.
-   N.B.: This list consists of nodes on the temporary obstack.  */
-static tree leftmost_baseclasses;
-#endif
 
 /* Build an entry in the virtual function table.
    DELTA is the offset for the `this' pointer.
@@ -371,18 +354,6 @@ tree
 build_vtable_entry (delta, pfn)
      tree delta, pfn;
 {
-  extern tree abort_fndecl;
-  if (TREE_CODE (pfn) == ADDR_EXPR)
-    {
-      tree fndecl = TREE_OPERAND (pfn, 0);
-      if (TREE_CODE(fndecl) == FUNCTION_DECL
-	  && DECL_ABSTRACT_VIRTUAL_P(fndecl))
-	{
-	  tree d = copy_node (fndecl);
-	  DECL_RTL (d) = DECL_RTL (abort_fndecl);
-	  TREE_OPERAND (pfn, 0) = d;
-	}
-    }
 
   if (flag_vtable_thunks)
     {
@@ -525,32 +496,6 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
     }
 }
 
-/* Set TREE_PUBLIC and/or TREE_EXTERN on the vtable DECL,
-   based on TYPE and other static flags.
-
-   Note that anything public is tagged TREE_PUBLIC, whether
-   it's public in this file or in another one.  */
-
-static void
-import_export_vtable (decl, type)
-  tree decl, type;
-{
-  if (write_virtuals >= 2)
-    {
-      if (CLASSTYPE_INTERFACE_KNOWN (type))
-	{
-	  TREE_PUBLIC (decl) = 1;
-	  DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
-	}
-    }
-  else if (write_virtuals != 0)
-    {
-      TREE_PUBLIC (decl) = 1;
-      if (write_virtuals < 0)
-	DECL_EXTERNAL (decl) = 1;
-    }
-}
-
 /* Return the name of the virtual function table (as an IDENTIFIER_NODE)
    for the given TYPE.  */
 static tree
@@ -602,8 +547,10 @@ build_vtable (binfo, type)
   n_vtable_elems += list_length (virtuals);
 #endif
 
+#if 0				/* Now done from finish_vtable_vardecl */
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
   import_export_vtable (decl, type);
+#endif
 
   IDENTIFIER_GLOBAL_VALUE (name) = decl = pushdecl_top_level (decl);
   /* Initialize the association list for this type, based
@@ -624,17 +571,9 @@ build_vtable (binfo, type)
   /* Why is this conditional? (mrs) */
   if (binfo && write_virtuals >= 0)
     DECL_VIRTUAL_P (decl) = 1;
-#if 0
-  /* Remember which class this vtable is really for.  */
-  if (binfo)
-    DECL_VPARENT (decl) = BINFO_TYPE (binfo);
-  else
-    DECL_VPARENT (decl) = type;
-#endif
   DECL_CONTEXT (decl) = type;
 
   binfo = TYPE_BINFO (type);
-  SET_BINFO_VTABLE_PATH_MARKED (binfo);
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
   return decl;
 }
@@ -710,25 +649,21 @@ build_type_pathname (format, parent, type)
    FOR_TYPE is the derived type which caused this table to
    be needed.
 
-   BINFO is the type association which provided TYPE for FOR_TYPE.
-
-   The way we update BASE_BINFO's vtable information is just to change the
-   association information in FOR_TYPE's association list.  */
+   BINFO is the type association which provided TYPE for FOR_TYPE.  */
 static void
-prepare_fresh_vtable (binfo, base_binfo, for_type)
-     tree binfo, base_binfo, for_type;
+prepare_fresh_vtable (binfo, for_type)
+     tree binfo, for_type;
 {
   tree basetype = BINFO_TYPE (binfo);
   tree orig_decl = BINFO_VTABLE (binfo);
+  /* This name is too simplistic.  We can have multiple basetypes for
+     for_type, and we really want different names.  (mrs) */
   tree name = build_type_pathname (VTABLE_NAME_FORMAT, basetype, for_type);
   tree new_decl = build_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
   tree path;
   int result;
 
   /* Remember which class this vtable is really for.  */
-#if 0
-  DECL_VPARENT (new_decl) = BINFO_TYPE (base_binfo);
-#endif
   DECL_CONTEXT (new_decl) = for_type;
 
   TREE_STATIC (new_decl) = 1;
@@ -753,64 +688,16 @@ prepare_fresh_vtable (binfo, base_binfo, for_type)
   n_vtable_elems += list_length (BINFO_VIRTUALS (binfo));
 #endif
 
+#if 0 /* Now done in finish_vtable_vardecl */
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
   import_export_vtable (new_decl, for_type);
+#endif
 
   if (TREE_VIA_VIRTUAL (binfo))
     my_friendly_assert (binfo == binfo_member (BINFO_TYPE (binfo),
 				   CLASSTYPE_VBASECLASSES (current_class_type)),
 			170);
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
-  SET_BINFO_VTABLE_PATH_MARKED (binfo);
-
-  /* Mark all types between FOR_TYPE and TYPE as having been
-     touched, so that if we change virtual function table entries,
-     new vtables will be initialized.  We may reach the virtual
-     baseclass via ambiguous intervening baseclasses.  This
-     loop makes sure we get through to the actual baseclass we marked.
-
-     Also, update the vtable entries to reflect the overrides
-     of the top-most class (short of the top type).  */
-
-  do
-    {
-      result = get_base_distance (basetype, for_type, 0, &path);
-      for_type = path;
-      while (path)
-	{
-	  tree path_binfo = path;
-	  tree path_type = BINFO_TYPE (path);
-
-	  if (TREE_VIA_VIRTUAL (path))
-	    path_binfo = binfo_member (path_type,
-				       CLASSTYPE_VBASECLASSES (current_class_type));
-
-	  SET_BINFO_VTABLE_PATH_MARKED (path_binfo);
-	  if (BINFO_INHERITANCE_CHAIN (path)
-	      && CLASSTYPE_VFIELD (path_type) != NULL_TREE
-	      && (DECL_NAME (CLASSTYPE_VFIELD (BINFO_TYPE (binfo)))
-		  == DECL_NAME (CLASSTYPE_VFIELD (path_type)))
-	      /* This is the baseclass just before the original FOR_TYPE.  */
-	      && BINFO_INHERITANCE_CHAIN (BINFO_INHERITANCE_CHAIN (path)) == NULL_TREE)
-	    {
-	      tree old_virtuals = TREE_CHAIN (BINFO_VIRTUALS (binfo));
-	      tree new_virtuals = TREE_CHAIN (BINFO_VIRTUALS (path_binfo));
-	      if (flag_dossier)
-		{
-		  old_virtuals = TREE_CHAIN (old_virtuals);
-		  new_virtuals = TREE_CHAIN (new_virtuals);
-		}
-	      while (old_virtuals)
-		{
-		  TREE_VALUE (old_virtuals) = TREE_VALUE (new_virtuals);
-		  old_virtuals = TREE_CHAIN (old_virtuals);
-		  new_virtuals = TREE_CHAIN (new_virtuals);
-		}
-	    }
-	  path = BINFO_INHERITANCE_CHAIN (path);
-	}
-    }
-  while (result == -2);
 }
 
 /* Access the virtual function table entry that logically
@@ -822,9 +709,6 @@ get_vtable_entry (virtuals, base_fndecl)
      tree virtuals, base_fndecl;
 {
   unsigned HOST_WIDE_INT i = (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD
-#ifdef VTABLE_USES_MASK
-	   && 0
-#endif
 	   ? (TREE_INT_CST_LOW (DECL_VINDEX (base_fndecl))
 	      & (((unsigned HOST_WIDE_INT)1<<(BITS_PER_WORD-1))-1))
 	   : TREE_INT_CST_LOW (DECL_VINDEX (base_fndecl)));
@@ -850,107 +734,22 @@ static void
 modify_vtable_entry (old_entry_in_list, new_entry, fndecl)
      tree old_entry_in_list, new_entry, fndecl;
 {
-  tree base_pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (old_entry_in_list));
-  tree vindex;
+  tree base_fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (old_entry_in_list)), 0);
 
 #ifdef NOTQUITE
-  cp_warning ("replaced %D with %D", DECL_ASSEMBLER_NAME (TREE_OPERAND (base_pfn, 0)), DECL_ASSEMBLER_NAME (fndecl));
+  cp_warning ("replaced %D with %D", DECL_ASSEMBLER_NAME (base_fndecl),
+	      DECL_ASSEMBLER_NAME (fndecl));
 #endif
-  /* We can't put in the really right offset information
-     here, since we have not yet laid out the class to
-     take into account virtual base classes.  */
   TREE_VALUE (old_entry_in_list) = new_entry;
-  vindex = DECL_VINDEX (TREE_OPERAND (base_pfn, 0));
+
+  /* Now assign virtual dispatch information, if unset.  */
+  /* We can dispatch this, through any overridden base function. */
   if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
-    DECL_VINDEX (fndecl) = vindex;
-  else
     {
-      if (! tree_int_cst_equal (DECL_VINDEX (fndecl), vindex)
-	  && ! doing_hard_virtuals)
-	{
-	  pending_hard_virtuals
-	    = tree_cons (fndecl, FNADDR_FROM_VTABLE_ENTRY (new_entry),
-			 pending_hard_virtuals);
-	  TREE_TYPE (pending_hard_virtuals) = TREE_OPERAND (base_pfn, 0);
-	  return;
-	}
+      DECL_VINDEX (fndecl) = DECL_VINDEX (base_fndecl);
+      DECL_CONTEXT (fndecl) = DECL_CONTEXT (base_fndecl);
     }
 }
-
-/* Check to ensure that the virtual function table slot in VFIELD,
-   found by DECL_VINDEX of the BASE_FNDECL is in fact from a parent
-   virtual function table that is the same parent as for the
-   BASE_FNDECL given to us.  */
-
-static int
-related_vslot (base_fndecl, vfields, type)
-     tree base_fndecl, vfields, type;
-{
-  tree base_context = TYPE_MAIN_VARIANT (DECL_CONTEXT (base_fndecl));
-  tree base;
-  tree path;
-  int distance;
-
-  if (TREE_CODE (vfields) != TREE_LIST)
-    abort ();
-  base = VF_NORMAL_VALUE (vfields);
-  if (base == NULL_TREE)
-    base = VF_BASETYPE_VALUE (vfields);
-
-  /* The simple right way to do this is to ensure that the context of
-     the base virtual function is found along the leftmost path
-     between the most derived type associated with the vfield and the
-     current type.  */
-  distance = get_base_distance (base, type, 0, &path);
-  if (distance == -1)
-    abort ();
-  while (path)
-    {
-      if (BINFO_TYPE (path) == base_context)
-	return 1;
-      path = BINFO_INHERITANCE_CHAIN (path);
-    }
-
-  /* given:
-		Rr
-	       / \
-	      Mm  Hh
-	       \ /
-	        P
-
-     make sure we fill in P's vtable for H with overrides of r,
-     but be cautious of virtual base classes.  */
-  /* Combine the two below after debugging. */
-  if (get_base_distance (base_context, base, 0, &path) != -1)
-    {
-      while (path)
-	{
-	  if (TREE_VIA_VIRTUAL (path))
-	    return 0;
-	  path = BINFO_INHERITANCE_CHAIN (path);
-	}
-      /* Make sure that:
-
-		 RRB
-		 |
-	    RL   RR
-	      \ /
-	   L   R
-	    \ /
-	     C
-
-	 returns 0.   VF_BASETYPE_VALUE is RL, base_context is RRB, type is C,
-	 and the vfield we are checking is R.  */
-      if (VF_BASETYPE_VALUE (vfields)
-	  && get_base_distance (base_context, VF_BASETYPE_VALUE (vfields), 0, &path) == -1
-	  && get_base_distance (VF_BASETYPE_VALUE (vfields), base_context, 0, &path) == -1)
-	return 0;
-      return 1;
-    }
-  return 0;
-}
-
-static void modify_vtable_entries ();
 
 /* Access the virtual function table entry i.  VIRTUALS is the virtual
    function table's initializer.  */
@@ -967,462 +766,42 @@ get_vtable_entry_n (virtuals, i)
   return virtuals;
 }
 
-#if 0
-/* Find the vfield (in the CLASSTYPE_VFIELDS chain) of the given binfo. */
+/* Add a virtual function to all the appropriate vtables for the class
+   T.  DECL_VINDEX(X) should be error_mark_node, if we want to
+   allocate a new slot in our table.  If it is error_mark_node, we
+   know that no other function from another vtable is overridden by X.
+   HAS_VIRTUAL keeps track of how many virtuals there are in our main
+   vtable for the type, and we build upon the PENDING_VIRTUALS list
+   and return it.  */
 static tree
-find_associated_vfield (binfo, t)
-     tree t, binfo;
-{
-  tree vfields;
-  tree save_vfields = 0;
-  for (vfields = CLASSTYPE_VFIELDS (t); vfields; vfields = TREE_CHAIN (vfields))
-    {
-      if (VF_BINFO_VALUE (vfields) == binfo)
-	return vfields;
-    }
-  for (vfields = CLASSTYPE_VFIELDS (t); vfields; vfields = TREE_CHAIN (vfields))
-    {
-      tree path;
-      get_base_distance (VF_BASETYPE_VALUE (vfields), t, 0, &path);
-      while (path)
-	{
-	  if (path == binfo)
-	    return vfields;
-	  path = BINFO_INHERITANCE_CHAIN (path);
-	}
-    }      
-  /* This is from a virtual base class's vtable, hopefully. */
-  return 0;
-}
-#endif
-
-
-/* Returns != 0 is the BINFO is the normal one for the main vfield, 0
-   otherwise. We don't have to worry about the finding BINFO in
-   CLASSTYPE_VBASECLASSES, if it is virtual, as we never inherit
-   vtables from virtual base classes.  */
-static int
-is_normal (binfo, t)
-     tree t, binfo;
-{
-  int i = CLASSTYPE_VFIELD_PARENT (t);
-  if (i != -1)
-    {
-      tree base_binfo = TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (t)), i);
-      if (base_binfo == binfo)
-	return 1;
-    }
-  return 0;
-}
-
-/* Modify virtual function tables in lattice topped by T to place
-   FNDECL in tables which previously held BASE_FNDECL.  This marches
-   through the vtables directly, looking for exact mactes to
-   modify. */
-static void
-modify_other_vtable_entries (t, binfo, fndecl, base_fndecl, pfn)
-     tree t, binfo;
-     tree fndecl, base_fndecl, pfn;
-{
-  tree virtuals;
-  tree binfos;
-  int i, n_baselinks;
-  unsigned HOST_WIDE_INT n;
-#if 0
-  tree vfields;
-#endif
-  
-  virtuals = BINFO_VIRTUALS (binfo);
-  n = 0;
-  while (virtuals)
-    {
-      tree current_fndecl = TREE_VALUE (virtuals);
-      tree *binfo2_ptr;
-      current_fndecl = FNADDR_FROM_VTABLE_ENTRY (current_fndecl);
-      current_fndecl = TREE_OPERAND (current_fndecl, 0);
-      if (current_fndecl && SAME_FN (current_fndecl, base_fndecl))
-	{
-	  /* Most of the below was copied from
-	     modify_vtable_entries (t, fndecl, base_fndecl, pfn); */
-	  tree base_offset, offset;
-	  tree context = DECL_CLASS_CONTEXT (fndecl);
-	  tree vfield = CLASSTYPE_VFIELD (t);
-	  int normal = 1;
-	  tree binfo2, this_offset;
-	  tree base, path;
-
-	  offset = integer_zero_node;
-	  if (context != t && TYPE_USES_COMPLEX_INHERITANCE (t))
-	    {
-	      offset = virtual_offset (context, CLASSTYPE_VBASECLASSES (t), offset);
-	      if (offset == NULL_TREE)
-		{
-		  tree binfo = get_binfo (context, t, 0);
-		  offset = BINFO_OFFSET (binfo);
-		}
-	    }
-
-	  /* Get the path starting from the deepest base class CONTEXT
-	     of T (i.e., first defn of BASE_FNDECL).  */
-	  get_base_distance (binfo, t, 0, &path);
-	  binfo2_ptr = 0;
-
-	  /* Get our best approximation of what to use for constructing
-	     the virtual function table for T.  */
-	  do
-	    {
-	      /* Walk from base toward derived, stopping at the
-		 most derived baseclass that matters.  That baseclass
-		 is exactly the one which provides the vtable along
-		 the VFIELD spine, but no more.  */
-	      if (TREE_VIA_VIRTUAL (path))
-		{
-		  base = path;
-		  binfo2 = binfo_member (BINFO_TYPE (base), CLASSTYPE_VBASECLASSES (t));
-		  /* This should never have TREE_USED set. */
-		  binfo2_ptr = 0;
-		  break;
-		}
-	      if (BINFO_INHERITANCE_CHAIN (path) == NULL_TREE
-		  || (BINFO_TYPE (BINFO_BASETYPE (BINFO_INHERITANCE_CHAIN (path), 0))
-		      != BINFO_TYPE (path))
-		  || BINFO_INHERITANCE_CHAIN (BINFO_INHERITANCE_CHAIN (path)) == NULL_TREE)
-		{
-		  base = path;
-		  binfo2 = base;
-		  binfo2_ptr = 0;
-		  break;
-		}
-	      path = BINFO_INHERITANCE_CHAIN (path);
-	      binfo2_ptr = &BINFO_INHERITANCE_CHAIN (path);
-	    }
-	  while (1);
-
-	  /* Find the right offset for the this pointer based on the base
-	     class we just found.  */
-	  base_offset = BINFO_OFFSET (binfo2);
-	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
-
-	  /* Make sure we can modify the derived association with immunity.  */
-	  if (TREE_USED (binfo2)) {
-	    my_friendly_assert (*binfo2_ptr == binfo2, 999);
-	    *binfo2_ptr = copy_binfo (binfo2);
-	  }
-
-#if 0
-	  vfields = find_associated_vfield (binfo2, t);
-
-	  /* We call this case NORMAL iff this virtual function table
-	     pointer field has its storage reserved in this class.
-	     This is normally the case without virtual baseclasses
-	     or off-center multiple baseclasses.  */
-	  normal = (vfields && vfield != NULL_TREE
-		    && VF_BASETYPE_VALUE (vfields) == DECL_FCONTEXT (vfield)
-		    && (VF_BINFO_VALUE (vfields) == NULL_TREE
-			|| ! TREE_VIA_VIRTUAL (VF_BINFO_VALUE (vfields))));
-
-	  if (normal && VF_BINFO_VALUE (vfields))
-	    /* Everything looks normal so far...check that we are really
-	       working from VFIELD's basetype, and not some other appearance
-	       of that basetype in the lattice.  */
-	    normal = (VF_BINFO_VALUE (vfields)
-		      == get_binfo (VF_BASETYPE_VALUE (vfields), t, 0));
-#else
-	  normal = is_normal (binfo2, t);
-#endif
-
-	  if (normal)
-	    {
-	      /* In this case, it is *type*'s vtable we are modifying.
-		 We start with the approximation that it's vtable is that
-		 of the immediate base class.  */
-	      binfo2 = TYPE_BINFO (t);
-	      if (! BINFO_NEW_VTABLE_MARKED (binfo2))
-		build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
-	    }
-	  else
-	    {
-	      /* This is our very own copy of `basetype' to play with.
-		 Later, we will fill in all the virtual functions
-		 that override the virtual functions in these base classes
-		 which are not defined by the current type.  */
-	      if (! BINFO_NEW_VTABLE_MARKED (binfo2))
-		prepare_fresh_vtable (binfo2, base, t);
-	    }
-
-#ifdef NOTQUITE
-	  cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (binfo2)));
-#endif
-	  modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo2), n),
-			       build_vtable_entry (this_offset, pfn),
-			       fndecl);
-	} else if (current_fndecl && DECL_NAME (current_fndecl) == DECL_NAME (base_fndecl))
-	  {
-#ifdef NOTQUITE
-	    cp_warning ("%D not replaced (looking for %D) in %D", DECL_ASSEMBLER_NAME (current_fndecl), DECL_ASSEMBLER_NAME (base_fndecl), DECL_NAME (BINFO_VTABLE (binfo)));
-#endif
-	  }
-      ++n;
-      virtuals = TREE_CHAIN (virtuals);
-    }
-  binfos = BINFO_BASETYPES (binfo);
-  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      /* Don't modify virtual bases, as we share them down this way. */
-      /* We hope that other places will get things down this direction. */
-      if (TREE_VIA_VIRTUAL (base_binfo))
-	continue;
-      modify_other_vtable_entries (t, base_binfo, fndecl, base_fndecl, pfn);
-    }
-}
-
-/* Modify virtual function tables in lattice topped by T to
-   place FNDECL in tables which previously held BASE_FNDECL.
-   PFN is just FNDECL wrapped in an ADDR_EXPR, so that it
-   is suitable for placement directly into an initializer.
-
-   All distinct virtual function tables that this type uses
-   must be updated.  */
-static void
-modify_vtable_entries (t, fndecl, base_fndecl, pfn)
-     tree t;
-     tree fndecl, base_fndecl, pfn;
-{
-  tree base_offset, offset;
-  tree base_context = DECL_CONTEXT (base_fndecl);
-  tree context = DECL_CLASS_CONTEXT (fndecl);
-  tree vfield = CLASSTYPE_VFIELD (t);
-  tree vfields, vbases;
-  tree saved_pfn;
-
-#ifdef NOTQUITE
-  cp_warning ("modifing all %D into %D for %T", base_fndecl, fndecl, t);
-  if (DECL_CONTEXT (fndecl) != DECL_CONTEXT (base_fndecl))
-    {
-      cp_warning ("switching contexts from %T to %T for %x",
-		  DECL_CONTEXT (fndecl),
-		  DECL_CONTEXT (base_fndecl), fndecl);
-      cp_warning ("base was %D, new is %D", DECL_ASSEMBLER_NAME (base_fndecl),
-		  DECL_ASSEMBLER_NAME(fndecl));
-    }
-#endif
-#if 0
-  /* this is wrong, see p4736a.C testcase */
-  DECL_CONTEXT (fndecl) = DECL_CONTEXT (base_fndecl);
-#endif
-
-  offset = integer_zero_node;
-  if (context != t && TYPE_USES_COMPLEX_INHERITANCE (t))
-    {
-      offset = virtual_offset (context, CLASSTYPE_VBASECLASSES (t), offset);
-      if (offset == NULL_TREE)
-	{
-	  tree binfo = get_binfo (context, t, 0);
-	  offset = BINFO_OFFSET (binfo);
-	}
-    }
-
-  /* For each layer of base class (i.e., the first base class, and each
-     virtual base class from that one), modify the virtual function table
-     of the derived class to contain the new virtual function.
-     A class has as many vfields as it has virtual base classes (total).  */
-  for (vfields = CLASSTYPE_VFIELDS (t); vfields; vfields = TREE_CHAIN (vfields))
-    {
-      int normal = 1;
-      tree binfo, this_offset;
-      tree base, path;
-
-      if (!related_vslot (base_fndecl, vfields, t))
-	  continue;
-
-      /* Find the right base class for this derived class, call it BASE.  */
-      base = VF_BASETYPE_VALUE (vfields);
-
-      /* Get the path starting from the deepest base class CONTEXT
-	 of T (i.e., first defn of BASE_FNDECL).  */
-      get_base_distance (DECL_CONTEXT (base_fndecl), t, 0, &path);
-
-      /* Get our best approximation of what to use for constructing
-	 the virtual function table for T.  */
-      do
-	{
-	  /* Walk from base toward derived, stopping at the
-	     most derived baseclass that matters.  That baseclass
-	     is exactly the one which provides the vtable along
-	     the VFIELD spine, but no more.  */
-	  if (TREE_VIA_VIRTUAL (path))
-	    {
-	      base = path;
-	      binfo = binfo_member (BINFO_TYPE (base), CLASSTYPE_VBASECLASSES (t));
-	      break;
-	    }
-	  if (BINFO_INHERITANCE_CHAIN (path) == NULL_TREE
-	      || (BINFO_TYPE (BINFO_BASETYPE (BINFO_INHERITANCE_CHAIN (path), 0))
-		  != BINFO_TYPE (path))
-	      || BINFO_INHERITANCE_CHAIN (BINFO_INHERITANCE_CHAIN (path)) == NULL_TREE)
-	    {
-	      base = path;
-	      binfo = base;
-	      break;
-	    }
-	  path = BINFO_INHERITANCE_CHAIN (path);
-	}
-      while (1);
-
-      /* Find the right offset for the this pointer based on the base
-	 class we just found.  */
-      base_offset = BINFO_OFFSET (binfo);
-      this_offset = size_binop (MINUS_EXPR, offset, base_offset);
-
-      /* Make sure we can modify the derived association with immunity.  */
-      if (TREE_USED (TYPE_BINFO (t)))
-	TYPE_BINFO (t) = copy_binfo (TYPE_BINFO (t));
-
-      /* We call this case NORMAL iff this virtual function table
-	 pointer field has its storage reserved in this class.
-	 This is normally the case without virtual baseclasses
-	 or off-center multiple baseclasses.  */
-      normal = (vfield != NULL_TREE
-		&& VF_BASETYPE_VALUE (vfields) == DECL_FCONTEXT (vfield)
-		&& (VF_BINFO_VALUE (vfields) == NULL_TREE
-		    || ! TREE_VIA_VIRTUAL (VF_BINFO_VALUE (vfields))));
-
-      if (normal && VF_BINFO_VALUE (vfields))
-	/* Everything looks normal so far...check that we are really
-	   working from VFIELD's basetype, and not some other appearance
-	   of that basetype in the lattice.  */
-	normal = (VF_BINFO_VALUE (vfields)
-		  == get_binfo (VF_BASETYPE_VALUE (vfields), t, 0));
-
-      if (normal)
-	{
-	  /* In this case, it is *type*'s vtable we are modifying.
-	     We start with the approximation that it's vtable is that
-	     of the immediate base class.  */
-	  base_context = t;
-	  binfo = TYPE_BINFO (t);
-	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
-	    build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
-	}
-      else
-	{
-	  /* This is our very own copy of `basetype' to play with.
-	     Later, we will fill in all the virtual functions
-	     that override the virtual functions in these base classes
-	     which are not defined by the current type.  */
-	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
-	    prepare_fresh_vtable (binfo, base, t);
-	}
-
-      saved_pfn = get_vtable_entry (BINFO_VIRTUALS (binfo), base_fndecl);
-      if (saved_pfn)
-	saved_pfn = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (saved_pfn)), 0);
-#ifdef NOTQUITE
-      cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (binfo)));
-#endif
-      /* The this_offset can be wrong, if we try and modify an entry
-	 that had been modified once before. */
-      if (saved_pfn && ! SAME_FN (saved_pfn, fndecl))
-        {
-	  modify_vtable_entry (get_vtable_entry (BINFO_VIRTUALS (binfo), base_fndecl),
-			       build_vtable_entry (this_offset, pfn),
-			       fndecl);
-	  modify_other_vtable_entries (t, TYPE_BINFO (t), fndecl, saved_pfn, pfn);
-	}
-    }
-  for (vbases = CLASSTYPE_VBASECLASSES (t); vbases; vbases = TREE_CHAIN (vbases))
-    {
-      tree this_offset;
-      tree base, path;
-
-      if (! BINFO_VTABLE (vbases))
-	/* There are only two ways that a type can fail to have
-	   virtual functions: neither it nor any of its base
-	   types define virtual functions (in which case
-	   no updating need be done), or virtual functions
-	   accessible to it come from virtual base classes
-	   (in which case we have or will get them modified
-	   in other passes of this loop).  */
-	continue;
-
-      base = BINFO_TYPE (vbases);
-      path = NULL_TREE;
-
-      if (base != base_context
-	  && get_base_distance (base_context, base, 0, &path) == -1)
-	continue;
-
-      if (path)
-	this_offset = size_binop (MINUS_EXPR, offset, BINFO_OFFSET (path));
-      else
-	this_offset = offset;
-
-      /* Doesn't matter if not actually from this virtual base class,
-         but shouldn't come from deeper virtual baseclasses.  The enclosing
-	 loop should take care of such baseclasses.  */
-      while (path)
-	{
-	  if (TREE_VIA_VIRTUAL (path))
-	    goto skip;
-	  path = BINFO_INHERITANCE_CHAIN (path);
-	}
-
-      base_offset = BINFO_OFFSET (vbases);
-      this_offset = size_binop (MINUS_EXPR, this_offset, base_offset);
-
-      /* Make sure we can modify the derived association with immunity.  */
-      if (TREE_USED (TYPE_BINFO (t)))
-	TYPE_BINFO (t) = copy_binfo (TYPE_BINFO (t));
-
-      /* This is our very own copy of `basetype' to play with.  */
-      if (! BINFO_NEW_VTABLE_MARKED (vbases))
-	{
-	  tree context_binfo = binfo_value (base_context, base);
-	  prepare_fresh_vtable (vbases, context_binfo, t);
-	}
-      saved_pfn = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (get_vtable_entry (BINFO_VIRTUALS (vbases), base_fndecl))), 0);
-#ifdef NOTQUITE
-      cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (vbases)));
-#endif
-      /* The this_offset can be wrong, if we try and modify an entry
-	 that had been modified once before. */
-      if (! SAME_FN (saved_pfn, fndecl))
-	{
-	  modify_vtable_entry (get_vtable_entry (BINFO_VIRTUALS (vbases),
-						 base_fndecl),
-			       build_vtable_entry (this_offset, pfn),
-			       fndecl);
-	  modify_other_vtable_entries (t, TYPE_BINFO (t), fndecl, saved_pfn, pfn);
-	}
-    skip: {}
-    }
-}
-
-static tree
-add_virtual_function (pending_virtuals, has_virtual, x, t)
+add_virtual_function (pending_virtuals, has_virtual, fndecl, t)
      tree pending_virtuals;
      int *has_virtual;
-     tree x;
+     tree fndecl;
      tree t; /* Structure type. */
 {
-  int debug_vbase = 1;
-
   /* FUNCTION_TYPEs and OFFSET_TYPEs no longer freely
      convert to void *.  Make such a conversion here.  */
-  tree vfn = build1 (ADDR_EXPR, ptr_type_node, x);
+  tree vfn = build1 (ADDR_EXPR, ptr_type_node, fndecl);
   TREE_CONSTANT (vfn) = 1;
 
-  /* current_class_type may be NULL_TREE in case of error.  */
-  if (current_class_type && !flag_vtable_thunks)
-    TREE_ADDRESSABLE (x) = CLASSTYPE_VTABLE_NEEDS_WRITING (current_class_type);
+#ifndef DUMB_USER
+  if (current_class_type == 0)
+    cp_warning ("internal problem, current_class_type is zero when adding `%D', please report",
+		fndecl);
+  if (current_class_type && t != current_class_type)
+    cp_warning ("internal problem, current_class_type differs when adding `%D', please report",
+		fndecl);
+#endif
+
+  if (!flag_vtable_thunks)
+    TREE_ADDRESSABLE (fndecl) = CLASSTYPE_VTABLE_NEEDS_WRITING (t);
 
   /* If the virtual function is a redefinition of a prior one,
      figure out in which base class the new definition goes,
      and if necessary, make a fresh virtual function table
      to hold that entry.  */
-  if (DECL_VINDEX (x) == error_mark_node)
+  if (DECL_VINDEX (fndecl) == error_mark_node)
     {
       tree entry;
 
@@ -1434,9 +813,6 @@ add_virtual_function (pending_virtuals, has_virtual, x, t)
         }
 
       /* Build a new INT_CST for this DECL_VINDEX.  */
-#ifdef VTABLE_USES_MASK
-      SET_DECL_VINDEX (x, build_int_2 (++(*has_virtual), 0));
-#else
       {
 	static tree index_table[256];
 	tree index;
@@ -1451,66 +827,20 @@ add_virtual_function (pending_virtuals, has_virtual, x, t)
 	else
 	  index = index_table[i];
 
-	DECL_VINDEX (x) = index;
+	/* Now assign virtual dispatch information. */
+	DECL_VINDEX (fndecl) = index;
+	DECL_CONTEXT (fndecl) = t;
       }
-#endif
       entry = build_vtable_entry (integer_zero_node, vfn);
-      pending_virtuals = tree_cons (DECL_VINDEX (x), entry, pending_virtuals);
+      pending_virtuals = tree_cons (DECL_VINDEX (fndecl), entry, pending_virtuals);
     }
-  /* Happens if declared twice in class or we're not in a class definition.
-     We will give error later or we've already given it.  */
-  else if (TREE_CODE (DECL_VINDEX (x)) == INTEGER_CST
-	   || current_class_type == NULL_TREE)
-    return pending_virtuals;
-  else if (debug_vbase && TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+  /* Might already be INTEGER_CST if declared twice in class.  We will
+     give error later or we've already given it.  */
+  else if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
     {
       /* Need an entry in some other virtual function table.
          Deal with this after we have laid out our virtual base classes.  */
-      pending_hard_virtuals = temp_tree_cons (x, vfn, pending_hard_virtuals);
-    }
-  else
-    {
-      /* Need an entry in some other virtual function table.
-         We can do this now.  */
-      tree base_fndecl_list = DECL_VINDEX (x), base_fndecls, prev = 0;
-      tree vtable_context = DECL_FCONTEXT (CLASSTYPE_VFIELD (current_class_type));
-      tree true_base_fndecl = 0;
-
-      /* First assign DECL_VINDEX from the base vfn with which
-	 we share our vtable.  */
-      base_fndecls = base_fndecl_list;
-      while (base_fndecls)
-	{
-	  if (TREE_CHAIN (base_fndecls) == NULL_TREE
-	      || DECL_FCONTEXT (CLASSTYPE_VFIELD (DECL_CLASS_CONTEXT (TREE_VALUE (base_fndecls)))) == vtable_context)
-	    {
-	      true_base_fndecl = TREE_VALUE (base_fndecls);
-	      modify_vtable_entries (current_class_type, x,
-				     true_base_fndecl, vfn);
-	      if (prev)
-		TREE_CHAIN (prev) = TREE_CHAIN (base_fndecls);
-	      else
-		base_fndecl_list = prev;
-	      break;
-	    }
-	  prev = base_fndecls;
-	  base_fndecls = TREE_CHAIN (base_fndecls);
-	}
-
-      /* Now fill in the rest of the vtables.  */
-      base_fndecls = base_fndecl_list;
-      while (base_fndecls)
-	{
-	  /* If we haven't found one we like, first one wins.  */
-	  if (true_base_fndecl == 0)
-	    true_base_fndecl = TREE_VALUE (base_fndecls);
-
-	  modify_vtable_entries (current_class_type, x,
-				 TREE_VALUE (base_fndecls), vfn);
-	  base_fndecls = TREE_CHAIN (base_fndecls);
-	}
-
-      DECL_CONTEXT (x) = DECL_CONTEXT (true_base_fndecl);
+      pending_hard_virtuals = temp_tree_cons (fndecl, vfn, pending_hard_virtuals);
     }
   return pending_virtuals;
 }
@@ -2112,6 +1442,11 @@ finish_base_struct (t, b, t_binfo)
 	      tree vfields;
 	      first_vfn_base_index = i;
 
+	      /* Update these two, now that we know what vtable we are
+		 going to extend.  This is so that we can add virtual
+		 functions, and override them properly.  */
+	      BINFO_VTABLE (t_binfo) = TYPE_BINFO_VTABLE (basetype);
+	      BINFO_VIRTUALS (t_binfo) = TYPE_BINFO_VIRTUALS (basetype);
 	      b->has_virtual = CLASSTYPE_VSIZE (basetype);
 	      b->vfield = CLASSTYPE_VFIELD (basetype);
 	      b->vfields = copy_list (CLASSTYPE_VFIELDS (basetype));
@@ -2645,12 +1980,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
       }
   }
 
-#if 0
-  TYPE_METHODS (t) = TREE_VEC_ELT (method_vec, 0)
-    ? TREE_VEC_ELT (method_vec, 0) : TREE_VEC_ELT (method_vec, 1);
-#else
   TYPE_METHODS (t) = method_vec;
-#endif
 
   return method_vec;
 }
@@ -2714,6 +2044,224 @@ duplicate_tag_error (t)
   TYPE_METHODS (t) = NULL_TREE;
   TYPE_VFIELD (t) = NULL_TREE;
   TYPE_CONTEXT (t) = NULL_TREE;
+}
+
+/* finish up all new vtables. */
+static void
+finish_vtbls (binfo, do_self, t)
+     tree binfo, t;
+     int do_self;
+{
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  /* Should we use something besides CLASSTYPE_VFIELDS? */
+  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      if (BINFO_NEW_VTABLE_MARKED (binfo))
+	{
+	  tree decl, context;
+
+	  decl = BINFO_VTABLE (binfo);
+	  context = DECL_CONTEXT (decl);
+	  DECL_CONTEXT (decl) = 0;
+	  if (write_virtuals >= 0
+	      && DECL_INITIAL (decl) != BINFO_VIRTUALS (binfo))
+	    DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE,
+					    BINFO_VIRTUALS (binfo));
+	  finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
+	  DECL_CONTEXT (decl) = context;
+	}
+      CLEAR_BINFO_NEW_VTABLE_MARKED (binfo);
+    }
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      int is_not_base_vtable =
+	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	{
+	  base_binfo = binfo_member (BINFO_TYPE (base_binfo), CLASSTYPE_VBASECLASSES (t));
+	}
+      finish_vtbls (base_binfo, is_not_base_vtable, t);
+    }
+}
+
+/* True if we should override the given BASE_FNDECL with the given
+   FNDECL.  */
+static int
+overrides (fndecl, base_fndecl)
+     tree fndecl, base_fndecl;
+{
+  /* Destructors have special names. */
+  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl)) &&
+      DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+    return 1;
+  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl)) ||
+      DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+    return 0;
+  if (DECL_NAME (fndecl) == DECL_NAME (base_fndecl))
+    {
+      tree rettype, base_rettype, types, base_types;
+#if 0
+      retypes = TREE_TYPE (TREE_TYPE (fndecl));
+      base_retypes = TREE_TYPE (TREE_TYPE (base_fndecl));
+#endif
+      types = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+      base_types = TYPE_ARG_TYPES (TREE_TYPE (base_fndecl));
+      if ((TYPE_READONLY (TREE_TYPE (TREE_VALUE (base_types)))
+	   == TYPE_READONLY (TREE_TYPE (TREE_VALUE (types))))
+	  && compparms (TREE_CHAIN (base_types), TREE_CHAIN (types), 3))
+	return 1;
+    }
+  return 0;
+}
+
+static void
+modify_one_vtable (binfo, t, fndecl, pfn)
+     tree binfo, t, fndecl, pfn;
+{
+  tree virtuals;
+  unsigned HOST_WIDE_INT n;
+  
+  virtuals = BINFO_VIRTUALS (binfo);
+  n = 0;
+  /* Skip RTTI fake object. */
+  if (flag_dossier)
+    {
+      ++n;
+      virtuals = TREE_CHAIN (virtuals);
+    }
+  while (virtuals)
+    {
+      tree current_fndecl = TREE_VALUE (virtuals);
+      current_fndecl = FNADDR_FROM_VTABLE_ENTRY (current_fndecl);
+      current_fndecl = TREE_OPERAND (current_fndecl, 0);
+      if (current_fndecl && overrides (fndecl, current_fndecl))
+	{
+	  tree base_offset, offset;
+	  tree context = DECL_CLASS_CONTEXT (fndecl);
+	  tree vfield = CLASSTYPE_VFIELD (t);
+	  tree this_offset;
+
+	  offset = integer_zero_node;
+	  if (context != t && TYPE_USES_COMPLEX_INHERITANCE (t))
+	    {
+	      offset = virtual_offset (context, CLASSTYPE_VBASECLASSES (t), offset);
+	      if (offset == NULL_TREE)
+		{
+		  tree binfo = get_binfo (context, t, 0);
+		  offset = BINFO_OFFSET (binfo);
+		}
+	    }
+
+	  /* Find the right offset for the this pointer based on the base
+	     class we just found.  */
+	  base_offset = BINFO_OFFSET (binfo);
+	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
+
+	  /* Make sure we can modify the derived association with immunity.  */
+	  if (TREE_USED (binfo)) {
+	    my_friendly_assert (0, 999);
+#if 0
+	    my_friendly_assert (*binfo2_ptr == binfo, 999);
+	    *binfo2_ptr = copy_binfo (binfo);
+#endif
+	  }
+	  if (binfo == TYPE_BINFO (t))
+	    {
+	      /* In this case, it is *type*'s vtable we are modifying.
+		 We start with the approximation that it's vtable is that
+		 of the immediate base class.  */
+	      if (! BINFO_NEW_VTABLE_MARKED (binfo))
+		build_vtable (TYPE_BINFO (DECL_CONTEXT (vfield)), t);
+	    }
+	  else
+	    {
+	      /* This is our very own copy of `basetype' to play with.
+		 Later, we will fill in all the virtual functions
+		 that override the virtual functions in these base classes
+		 which are not defined by the current type.  */
+	      if (! BINFO_NEW_VTABLE_MARKED (binfo))
+		prepare_fresh_vtable (binfo, t);
+	    }
+
+#ifdef NOTQUITE
+	  cp_warning ("in %D", DECL_NAME (BINFO_VTABLE (binfo)));
+#endif
+	  modify_vtable_entry (get_vtable_entry_n (BINFO_VIRTUALS (binfo), n),
+			       build_vtable_entry (this_offset, pfn),
+			       fndecl);
+	}
+      ++n;
+      virtuals = TREE_CHAIN (virtuals);
+    }
+}
+
+/* These are the ones that are not through virtual base classes. */
+static void
+modify_all_direct_vtables (binfo, do_self, t, fndecl, pfn)
+     tree binfo, t, fndecl, pfn;
+     int do_self;
+{
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  /* Should we use something besides CLASSTYPE_VFIELDS? */
+  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      modify_one_vtable (binfo, t, fndecl, pfn);
+    }
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      int is_not_base_vtable =
+	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      if (! TREE_VIA_VIRTUAL (base_binfo))
+	modify_all_direct_vtables (base_binfo, is_not_base_vtable, t, fndecl, pfn);
+    }
+}
+
+/* These are the ones that are through virtual base classes. */
+static void
+modify_all_indirect_vtables (binfo, do_self, via_virtual, t, fndecl, pfn)
+     tree binfo, t, fndecl, pfn;
+     int do_self, via_virtual;
+{
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  /* Should we use something besides CLASSTYPE_VFIELDS? */
+  if (do_self && via_virtual && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      modify_one_vtable (binfo, t, fndecl, pfn);
+    }
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      int is_not_base_vtable =
+	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	{
+	  via_virtual = 1;
+	  base_binfo = binfo_member (BINFO_TYPE (base_binfo), CLASSTYPE_VBASECLASSES (t));
+	}
+      modify_all_indirect_vtables (base_binfo, is_not_base_vtable, via_virtual, t, fndecl, pfn);
+    }
+}
+
+static void
+modify_all_vtables (t, fndecl, vfn)
+     tree t, fndecl, vfn;
+{
+  /* Do these first, so that we will make use of any non-virtual class's
+     vtable, over a virtual classes vtable. */
+  modify_all_direct_vtables (TYPE_BINFO (t), 1, t, fndecl, vfn);
+  if (TYPE_USES_VIRTUAL_BASECLASSES (t))
+    modify_all_indirect_vtables (TYPE_BINFO (t), 1, 0, t, fndecl, vfn);
 }
 
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
@@ -2849,10 +2397,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (name))
     warning ("anonymous class type not used to declare any objects");
 
-#if 0
-  /* This is set here, but it's never actually used anywhere.  (bpk) */
-  leftmost_baseclasses = NULL_TREE;
-#endif
   if (TYPE_SIZE (t))
     {
       if (IS_AGGR_TYPE (t))
@@ -3030,12 +2574,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      *tail_user_methods = x;
 	      tail_user_methods = &DECL_NEXT_METHOD (x);
 
-#if 0
-	      /* ??? What if we have duplicate declarations
-		 in T's definition?  */
-	      if (DECL_CLASS_CONTEXT (x))
-		continue;
-#endif
 	      DECL_CLASS_CONTEXT (x) = t;
 
 	      DECL_FIELD_SIZE (x) = 0;
@@ -3125,19 +2663,20 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      if (DECL_INITIAL (x) == NULL_TREE)
 		ref_sans_init = 1;
 
-	      /* ARM $12.6.2: [A member initializer list] is the only
-		 way to initialize a nonstatic const and reference
-		 [member].  */
+	      /* ARM $12.6.2: [A member initializer list] (or, for an
+		 aggregate, initialization by a brace-enclosed list) is the
+		 only way to initialize nonstatic const and reference
+		 members.  */
 	      cant_synth_asn_ref = 1;
 	      cant_have_default_ctor = 1;
 	      TYPE_HAS_COMPLEX_INIT_REF (t) = 1;
 
-	      if (! TYPE_HAS_CONSTRUCTOR (t))
+	      if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
 		{
 		  if (DECL_NAME (x))
-		    cp_pedwarn_at ("non-static reference `%#D' in class without a constructor", x);
+		    cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
 		  else
-		    cp_pedwarn_at ("non-static reference in class without a constructor", x);
+		    cp_warning_at ("non-static reference in class without a constructor", x);
 		}
 	    }
 
@@ -3148,19 +2687,21 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      if (DECL_INITIAL (x) == NULL_TREE)
 		const_sans_init = 1;
 
-	      /* ARM $12.6.2: [A member initializer list] is the only
-		 way to initialize a nonstatic const and reference
-		 [member].  */
+	      /* ARM $12.6.2: [A member initializer list] (or, for an
+		 aggregate, initialization by a brace-enclosed list) is the
+		 only way to initialize nonstatic const and reference
+		 members.  */
 	      cant_synth_asn_ref = 1;
 	      cant_have_default_ctor = 1;
 	      TYPE_HAS_COMPLEX_INIT_REF (t) = 1;
 
-	      if (! TYPE_HAS_CONSTRUCTOR (t) && !IS_SIGNATURE (t))
+	      if (! TYPE_HAS_CONSTRUCTOR (t) && !IS_SIGNATURE (t)
+		  && extra_warnings)
 		{
 		  if (DECL_NAME (x))
-		    cp_pedwarn_at ("non-static const member `%#D' in class without a constructor", x);
+		    cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
 		  else
-		    cp_pedwarn_at ("non-static const member in class without a constructor", x);
+		    cp_warning_at ("non-static const member in class without a constructor", x);
 		}
 	    }
 	  else
@@ -3379,7 +2920,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	    DECL_VINDEX (dtor) = error_mark_node;
 	  if (DECL_VINDEX (dtor))
 	    pending_virtuals = add_virtual_function (pending_virtuals,
-						     &has_virtual, dtor, NULL_TREE);
+						     &has_virtual, dtor, t);
 	  nonprivate_method = 1;
 	}
     }
@@ -3711,9 +3252,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   if (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
     layout_decl (TYPE_NAME (t), 0);
 
-  /* Now fix up any virtual base class types that we
-     left lying around.  We must get these done
-     before we try to lay out the virtual function table.  */
+  /* Now fix up any virtual base class types that we left lying
+     around.  We must get these done before we try to lay out the
+     virtual function table.  */
   doing_hard_virtuals = 1;
   pending_hard_virtuals = nreverse (pending_hard_virtuals);
 
@@ -3729,7 +3270,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	{
 	  /* Update dossier info with offsets for virtual baseclasses.  */
 	  if (flag_dossier && ! BINFO_NEW_VTABLE_MARKED (vbases))
-	    prepare_fresh_vtable (vbases, vbases, t);
+	    prepare_fresh_vtable (vbases, t);
 
 	  vbases = TREE_CHAIN (vbases);
 	}
@@ -3740,112 +3281,10 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 #endif
   while (pending_hard_virtuals)
     {
-      /* Need an entry in some other virtual function table.  */
-      if (TREE_TYPE (pending_hard_virtuals))
-	{
-	  /* This is how we modify entries when a vfn's index changes
-	     between derived and base type.  */
-	  modify_vtable_entries (t, TREE_PURPOSE (pending_hard_virtuals),
-				 TREE_TYPE (pending_hard_virtuals),
-				 TREE_VALUE (pending_hard_virtuals));
-	}
-      else
-	{
-	  /* This is how we modify entries when a vfn comes from
-	     a virtual baseclass.  */
-	  tree base_fndecls = DECL_VINDEX (TREE_PURPOSE (pending_hard_virtuals));
-	  /* Only do this, if it was missed before. */
-	  if (TREE_CODE (base_fndecls) != INTEGER_CST)
-	    {
-	      my_friendly_assert (base_fndecls != error_mark_node, 176);
-	      while (base_fndecls)
-		{
-		  modify_vtable_entries (t, TREE_PURPOSE (pending_hard_virtuals),
-					 TREE_VALUE (base_fndecls),
-					 TREE_VALUE (pending_hard_virtuals));
-		  modify_other_vtable_entries (t, TYPE_BINFO (t),
-					       TREE_PURPOSE (pending_hard_virtuals),
-					       TREE_VALUE (base_fndecls),
-					       TREE_VALUE (pending_hard_virtuals));
-		  base_fndecls = TREE_CHAIN (base_fndecls);
-		}
-	    } else {
-#ifdef NOTQUITE
-	      cp_warning ("missed bases for `%D'", TREE_PURPOSE (pending_hard_virtuals));
-#endif
-	    }
-	}
+      modify_all_vtables (t,
+			  TREE_PURPOSE (pending_hard_virtuals),
+			  TREE_VALUE (pending_hard_virtuals));
       pending_hard_virtuals = TREE_CHAIN (pending_hard_virtuals);
-    }
-
-  if (TYPE_USES_VIRTUAL_BASECLASSES (t))
-    {
-      tree vbases;
-
-      vbases = CLASSTYPE_VBASECLASSES (t);
-      CLASSTYPE_N_VBASECLASSES (t) = list_length (vbases);
-
-      /* This loop makes all the entries in the virtual function tables
-	 of interest contain the "latest" version of the functions
-	 we have defined.  */
-
-      while (vbases)
-	{
-	  tree virtuals = BINFO_VIRTUALS (vbases);
-
-	  if (virtuals)
-	    {
-	      /* Get past the `null' vtable entry...  */
-	      virtuals = TREE_CHAIN (virtuals);
-	      /* and the `dossier' vtable entry if we're doing dossiers.  */
-	      if (flag_dossier)
-		virtuals = TREE_CHAIN (virtuals);
-	    }
-
-	  while (virtuals != NULL_TREE)
-	    {
-	      tree pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals));
-	      tree base_fndecl = TREE_OPERAND (pfn, 0);
-	      tree decl = get_first_matching_virtual (TYPE_BINFO (t), base_fndecl,
-						      DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl)));
-	      tree context = DECL_CLASS_CONTEXT (decl);
-	      if (! SAME_FN (decl, base_fndecl))
-		{
-		  tree base_context = DECL_CLASS_CONTEXT (base_fndecl);
-		  tree binfo = NULL_TREE;
-#if 0
-		  tree these_virtuals;
-		  unsigned HOST_WIDE_INT i
-		    = (TREE_INT_CST_LOW (DECL_VINDEX (base_fndecl))
-		       & (((unsigned HOST_WIDE_INT)1<<(BITS_PER_WORD-1))-1));
-#endif
-
-		  if (TYPE_USES_VIRTUAL_BASECLASSES (context))
-		    binfo = virtual_member (base_context,
-					    CLASSTYPE_VBASECLASSES (context));
-		  if (binfo == NULL_TREE)
-		    binfo = binfo_value (base_context, context);
-		  if (binfo != NULL_TREE)
-		    {
-#if 1
-		      pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (get_vtable_entry (BINFO_VIRTUALS (binfo), base_fndecl)));
-#else
-		      these_virtuals = BINFO_VIRTUALS (binfo);
-
-		      while (i-- > 0)
-			these_virtuals = TREE_CHAIN (these_virtuals);
-		      pfn = FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (these_virtuals));
-#endif
-		      pfn = build1 (ADDR_EXPR, ptr_type_node, decl);
-		      TREE_CONSTANT (pfn) = 1;
-		      modify_vtable_entries (t, decl, base_fndecl, pfn);
-		    }
-		}
-	      virtuals = TREE_CHAIN (virtuals);
-	    }
-
-	  vbases = TREE_CHAIN (vbases);
-	}
     }
   doing_hard_virtuals = 0;
 
@@ -3890,13 +3329,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   else if (first_vfn_base_index >= 0)
     {
       tree binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), first_vfn_base_index);
-#if 0
-      /* For testing. */
-      tree binfo1 = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
-      if (binfo != binfo1)
-	warning ("binfos are different in vtable creation");
-#endif
-
       /* This class contributes nothing new to the virtual function
 	 table.  However, it may have declared functions which
 	 went into the virtual function table "inherited" from the
@@ -3916,13 +3348,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     max_has_virtual = has_virtual;
   if (max_has_virtual || first_vfn_base_index >= 0)
     {
-#ifdef VTABLE_USES_MASK
-      if (max_has_virtual >= VINDEX_MAX)
-	{
-	  cp_error ("too many virtual functions for `%#T' (VINDEX_MAX < %d)",
-		    t, has_virtual);
-	}
-#endif
       TYPE_VIRTUAL_P (t) = 1;
       CLASSTYPE_VSIZE (t) = has_virtual;
       if (first_vfn_base_index >= 0)
@@ -4118,7 +3543,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
   /* Make the rtl for any new vtables we have created, and unmark
      the base types we marked.  */
-  unmark_finished_struct (t);
+  finish_vtbls (TYPE_BINFO (t), 1, t);
   TYPE_BEING_DEFINED (t) = 0;
 
   if (flag_dossier && CLASSTYPE_VTABLE_NEEDS_WRITING (t))
@@ -4142,9 +3567,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  build_t_desc (variants, 1);
 	  variants = TYPE_NEXT_VARIANT (variants);
 	}
-#if 0
-      DECL_VPARENT (tdecl) = t;
-#endif
       DECL_CONTEXT (tdecl) = t;
     }
   /* Still need to instantiate this C struct's type descriptor.  */

@@ -1162,11 +1162,13 @@ do_pending_inlines ()
   /* Pass back a handle on the rest of the inline functions, so that they
      can be processed later.  */
   yylval.ttype = build_tree_list ((tree) t, t->fndecl);
+#if 0
   if (flag_default_inline && t->fndecl
       /* If we're working from a template, don't change
 	 the `inline' state.  */
       && t->parm_vec == NULL_TREE)
     DECL_INLINE (t->fndecl) = 1;
+#endif
   DECL_PENDING_INLINE_INFO (t->fndecl) = 0;
 }
 
@@ -1215,11 +1217,13 @@ process_next_inline (t)
       input_filename = i->filename;
       yychar = PRE_PARSED_FUNCTION_DECL;
       yylval.ttype = build_tree_list ((tree) i, i->fndecl);
+#if 0
       if (flag_default_inline
 	  /* If we're working from a template, don't change
 	     the `inline' state.  */
 	  && i->parm_vec == NULL_TREE)
 	DECL_INLINE (i->fndecl) = 1;
+#endif
       DECL_PENDING_INLINE_INFO (i->fndecl) = 0;
     }
   if (i)
@@ -2577,7 +2581,7 @@ check_newline ()
 		      else
 			error ("`#pragma implementation' can only appear at top-level");
 		      interface_only = 0;
-#if 0
+#if 1
 		      /* We make this non-zero so that we infer decl linkage
 			 in the impl file only for variables first declared
 			 in the interface file.  */
@@ -4576,6 +4580,7 @@ build_lang_decl (code, name, type)
   if (current_lang_name == lang_name_cplusplus)
     {
       DECL_LANGUAGE (t) = lang_cplusplus;
+#if 0
 #ifndef NO_AUTO_OVERLOAD
       if (code == FUNCTION_DECL && name != 0
 	  && ! (IDENTIFIER_LENGTH (name) == 4
@@ -4586,6 +4591,7 @@ build_lang_decl (code, name, type)
 		&& IDENTIFIER_POINTER (name)[1] == '_'
 		&& strncmp (IDENTIFIER_POINTER (name)+2, "builtin_", 8) == 0))
 	TREE_OVERLOADED (name) = 1;
+#endif
 #endif
     }
   else if (current_lang_name == lang_name_c)

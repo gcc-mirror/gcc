@@ -235,9 +235,6 @@ tree opaque_type_node, signature_type_node;
 tree sigtable_entry_type;
 tree maybe_gc_cleanup;
 
-/* Used for virtual function tables.  */
-tree vtbl_mask;
-
 /* Array type `vtable_entry_type[]' */
 tree vtbl_type_node;
 
@@ -310,11 +307,6 @@ static tree named_label_uses;
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;
 
-/* A list of overloaded functions which we should forget ever
-   existed, such as functions declared in a function's scope,
-   once we leave that function's scope.  */
-static tree overloads_to_forget;
-
 /* -- end of C++ */
 
 /* Two expressions that are constants with value zero.
@@ -339,6 +331,10 @@ int pending_invalid_xref_line;
    constant value.  */
 
 static tree enum_next_value;
+
+/* Nonzero means that there was overflow computing enum_next_value.  */
+
+static int enum_overflow;
 
 /* Parsing a function declarator leaves a list of parameter names
    or a chain or parameter decls here.  */
@@ -534,6 +530,9 @@ struct binding_level
 
     /* Same, for IDENTIFIER_TYPE_VALUE.  */
     tree type_shadowed;
+
+    /* Same, for IDENTIFIER_GLOBAL_VALUE for overloaded functions.  */
+    tree overloads_shadowed;
 
     /* For each level (except not the global one),
        a chain of BLOCK nodes for all the levels
@@ -1026,6 +1025,9 @@ poplevel (keep, reverse, functionbody)
   for (link = current_binding_level->type_shadowed;
        link; link = TREE_CHAIN (link))
     IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+  for (link = current_binding_level->overloads_shadowed;
+       link; link = TREE_CHAIN (link))
+    IDENTIFIER_GLOBAL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
 
   /* If the level being exited is the top level of a function,
      check over all the labels.  */
@@ -1739,7 +1741,8 @@ pushtag (name, type, globalize)
      int globalize;
 {
   register struct binding_level *b;
-  tree t_context = 0;
+  tree context = 0;
+  tree cdecl = 0;
 
   b = inner_binding_level;
   while (b->tag_transparent
@@ -1753,9 +1756,12 @@ pushtag (name, type, globalize)
 
   if (name)
     {
-      t_context = type ? TYPE_CONTEXT(type) : NULL_TREE;
-      if (!t_context && !globalize)
-        t_context = current_class_type;
+      context = type ? TYPE_CONTEXT (type) : NULL_TREE;
+      if (! context && ! globalize)
+        context = current_scope ();
+      if (context)
+	cdecl = TREE_CODE (context) == FUNCTION_DECL
+	  ? context : TYPE_NAME (context);
 
       /* Record the identifier as the type's name if it has none.  */
       if (TYPE_NAME (type) == NULL_TREE)
@@ -1774,8 +1780,7 @@ pushtag (name, type, globalize)
 	      || TYPE_SIZE (current_class_type) != NULL_TREE)
 	    {
 	      if (current_lang_name == lang_name_cplusplus)
-		d = lookup_nested_type (type, 
-			t_context ? TYPE_NAME (t_context) : NULL_TREE);
+		d = lookup_nested_type (type, cdecl);
 	      else
 		d = NULL_TREE;
 
@@ -1849,29 +1854,27 @@ pushtag (name, type, globalize)
 	    }
 	  TYPE_NAME (type) = d;
 
-	  if ((t_context == NULL_TREE
-	       && current_function_decl == NULL_TREE)
-	      || current_lang_name != lang_name_cplusplus)
+	  if (context == NULL_TREE || current_lang_name != lang_name_cplusplus)
 	    /* Non-nested class.  */
 	    DECL_NESTED_TYPENAME (d) = name;
-	  else if (current_function_decl != NULL_TREE)
+	  else if (context && TREE_CODE (context) == FUNCTION_DECL)
 	    {
 	      /* Function-nested class.  */
-	      set_nested_typename (d, 
-		DECL_ASSEMBLER_NAME (current_function_decl), name, type);
+	      set_nested_typename (d, DECL_ASSEMBLER_NAME (cdecl),
+				   name, type);
 	      /* This builds the links for classes nested in fn scope.  */
-	      DECL_CONTEXT (d) = current_function_decl;
+	      DECL_CONTEXT (d) = context;
 	    }
 /*        else if (TYPE_SIZE (current_class_type) == NULL_TREE)
 */
-	  else if (t_context && TREE_CODE (t_context) == RECORD_TYPE)
+	  else if (context && TREE_CODE (context) == RECORD_TYPE)
 	    {
 	      /* Class-nested class.  */
-	      set_nested_typename (d, 
-		DECL_NESTED_TYPENAME (TYPE_NAME (t_context)), name, type);
+	      set_nested_typename (d, DECL_NESTED_TYPENAME (cdecl),
+				   name, type);
 	      /* This builds the links for classes nested in type scope.  */
-	      DECL_CONTEXT (d) = t_context;
-	      DECL_CLASS_CONTEXT (d) = t_context;
+	      DECL_CONTEXT (d) = context;
+	      DECL_CLASS_CONTEXT (d) = context;
 	    }
 	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
 	  if (newdecl)
@@ -2315,6 +2318,7 @@ duplicate_decls (newdecl, olddecl)
 	  CLASSTYPE_FRIEND_CLASSES (newtype)
 	    = CLASSTYPE_FRIEND_CLASSES (oldtype);
 	}
+#if 0
       /* why assert here?  Just because debugging information is
 	 messed up? (mrs) */
       /* it happens on something like:
@@ -2323,7 +2327,6 @@ duplicate_decls (newdecl, olddecl)
 		        int     x;
 		} Thing;
       */
-#if 0
       my_friendly_assert (DECL_IGNORED_P (olddecl) == DECL_IGNORED_P (newdecl),
 			  139);
 #endif
@@ -2709,7 +2712,9 @@ pushdecl (x)
 	      if (current_function_decl == x)
 		current_function_decl = t;
 #endif
-	      
+	      if (TREE_CODE (t) == TYPE_DECL)
+		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (t));
+
 	      return t;
 	    }
 	}
@@ -3088,6 +3093,31 @@ pushdecl_class_level (x)
   return x;
 }
 
+/* This function is used to push the mangled decls for nested types into
+   the appropriate scope.  Previously pushdecl_top_level was used, but that
+   is incorrect for members of local classes.  */
+tree
+pushdecl_nonclass_level (x)
+     tree x;
+{
+  struct binding_level *b = current_binding_level;
+
+#if 0
+  /* Get out of class scope -- this isn't necessary, because class scope
+     doesn't make it into current_binding_level.  */
+  while (b->parm_flag == 2)
+    b = b->level_chain;
+#else
+  my_friendly_assert (b->parm_flag != 2, 180);
+#endif
+
+  /* Get out of template binding levels */
+  while (b->pseudo_global)
+    b = b->level_chain;
+
+  pushdecl_with_scope (x, b);
+}
+
 /* Make the declaration(s) of X appear in CLASS scope
    under the name NAME.  */
 void
@@ -3142,13 +3172,6 @@ push_overloaded_decl (decl, forgettable)
   tree orig_name = DECL_NAME (decl);
   tree glob = IDENTIFIER_GLOBAL_VALUE (orig_name);
 
-  if (forgettable
-      && ! flag_traditional
-      && (glob == NULL_TREE || TREE_PERMANENT (glob) == 1)
-      && !global_bindings_p ()
-      && !pseudo_global_level_p ())
-    overloads_to_forget = tree_cons (orig_name, glob, overloads_to_forget);
-
   if (glob)
     {
       /* We cache the value of builtin functions as ADDR_EXPRs
@@ -3197,6 +3220,16 @@ push_overloaded_decl (decl, forgettable)
 	    }
 	}
     }
+
+  if (forgettable
+      && ! flag_traditional
+      && (glob == NULL_TREE || TREE_PERMANENT (glob) == 1)
+      && !global_bindings_p ()
+      && !pseudo_global_level_p ())
+    current_binding_level->overloads_shadowed
+      = tree_cons (orig_name, glob,
+		   current_binding_level->overloads_shadowed);
+
   if (glob || TREE_CODE (decl) == TEMPLATE_DECL)
     {
       if (glob && is_overloaded_fn (glob))
@@ -3832,7 +3865,6 @@ lookup_name (name, prefer_type)
 	  else
 	    val = lookup_field (got_scope, name, 0, 0);
 
-	  got_scope = NULL_TREE;
 	  goto done;
 	}
     }
@@ -4628,16 +4660,6 @@ init_decl_processing ()
     vtable_entry_type = ptr_type_node;
   else
     vtable_entry_type = memptr_type;
-
-#ifdef VTABLE_USES_MASK
-  /* This is primarily for virtual function definition.  We
-     declare an array of `void *', which can later be
-     converted to the appropriate function pointer type.
-     To do pointers to members, we need a mask which can
-     distinguish an index value into a virtual function table
-     from an address.  */
-  vtbl_mask = build_int_2 (~((HOST_WIDE_INT) VINDEX_MAX - 1), -1);
-#endif
 
   vtbl_type_node
     = build_array_type (vtable_entry_type, NULL_TREE);
@@ -6562,7 +6584,7 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
       if (check)
 	check_classfn (ctype, declarator, decl);
       grok_ctor_properties (ctype, decl);
-      if (check == 0)
+      if (check == 0 && ! current_function_decl)
 	{
 	  /* FIXME: this should only need to look at IDENTIFIER_GLOBAL_VALUE.  */
 	  tmp = lookup_name (DECL_ASSEMBLER_NAME (decl), 0);
@@ -6596,25 +6618,27 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
       if (ctype == NULL_TREE || check)
 	return decl;
 
-      /* Now install the declaration of this function so that
-	 others may find it (esp. its DECL_FRIENDLIST).
-	 Pretend we are at top level, we will get true
-	 reference later, perhaps.
-
-	 FIXME: This should only need to look at IDENTIFIER_GLOBAL_VALUE.  */
-      tmp = lookup_name (DECL_ASSEMBLER_NAME (decl), 0);
-      if (tmp == NULL_TREE)
-	IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl)) = decl;
-      else if (TREE_CODE (tmp) != TREE_CODE (decl))
-	cp_error ("inconsistent declarations for `%D'", decl);
-      else
+      /* Now install the declaration of this function so that others may
+	 find it (esp. its DECL_FRIENDLIST).  Don't do this for local class
+	 methods, though.  */
+      if (! current_function_decl)
 	{
-	  duplicate_decls (decl, tmp);
-	  decl = tmp;
-	  /* avoid creating circularities.  */
-	  DECL_CHAIN (decl) = NULL_TREE;
+	  /* FIXME: this should only need to look at
+             IDENTIFIER_GLOBAL_VALUE.  */
+	  tmp = lookup_name (DECL_ASSEMBLER_NAME (decl), 0);
+	  if (tmp == NULL_TREE)
+	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (decl)) = decl;
+	  else if (TREE_CODE (tmp) != TREE_CODE (decl))
+	    cp_error ("inconsistent declarations for `%D'", decl);
+	  else
+	    {
+	      duplicate_decls (decl, tmp);
+	      decl = tmp;
+	      /* avoid creating circularities.  */
+	      DECL_CHAIN (decl) = NULL_TREE;
+	    }
+	  make_decl_rtl (decl, NULL_PTR, 1);
 	}
-      make_decl_rtl (decl, NULL_PTR, 1);
 
       /* If this declaration supersedes the declaration of
 	 a method declared virtual in the base class, then
@@ -6629,8 +6653,8 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 	    if (TYPE_VIRTUAL_P (BINFO_TYPE (base_binfo))
 		|| flag_all_virtual == 1)
 	      {
-		tmp = get_first_matching_virtual (base_binfo, decl,
-						  flags == DTOR_FLAG);
+		tmp = get_matching_virtual (base_binfo, decl,
+					    flags == DTOR_FLAG);
 		if (tmp)
 		  {
 		    /* If this function overrides some virtual in some base
@@ -6652,34 +6676,25 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 		      }
 		    virtualp = 1;
 
-#if 0
-		    /* Disable this as we want the most recent fndecl, not the most
-		       base fndecl. */
-		    if ((TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (base_binfo))
-			 || TYPE_USES_MULTIPLE_INHERITANCE (ctype))
-			&& BINFO_TYPE (base_binfo) != DECL_CONTEXT (tmp))
-		      tmp = get_first_matching_virtual (TYPE_BINFO (DECL_CONTEXT (tmp)),
-							decl, flags == DTOR_FLAG);
-#endif
-		    if (value_member (tmp, DECL_VINDEX (decl)) == NULL_TREE)
-		      {
-			/* The argument types may have changed... */
-			tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
-			tree base_variant = TREE_TYPE (TREE_VALUE (argtypes));
+		    {
+		      /* The argument types may have changed... */
+		      tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
+		      tree base_variant = TREE_TYPE (TREE_VALUE (argtypes));
 
-			argtypes = commonparms (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (tmp))),
-						TREE_CHAIN (argtypes));
-			/* But the return type has not.  */
-			type = build_cplus_method_type (base_variant, TREE_TYPE (type), argtypes);
-			if (raises)
-			  {
-			    type = build_exception_variant (ctype, type, raises);
-			    raises = TYPE_RAISES_EXCEPTIONS (type);
-			  }
-			TREE_TYPE (decl) = type;
-			DECL_VINDEX (decl)
-			  = tree_cons (NULL_TREE, tmp, DECL_VINDEX (decl));
-		      }
+		      argtypes = commonparms (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (tmp))),
+					      TREE_CHAIN (argtypes));
+		      /* But the return type has not.  */
+		      type = build_cplus_method_type (base_variant, TREE_TYPE (type), argtypes);
+		      if (raises)
+			{
+			  type = build_exception_variant (ctype, type, raises);
+			  raises = TYPE_RAISES_EXCEPTIONS (type);
+			}
+		      TREE_TYPE (decl) = type;
+		      DECL_VINDEX (decl)
+			= tree_cons (NULL_TREE, tmp, DECL_VINDEX (decl));
+		    }
+		    break;
 		  }
 	      }
 	  }
@@ -8852,9 +8867,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		   by the draft ANSI standard, though it appears to be in
 		   common practice.  12.6.2: The argument list is used to
 		   initialize the named nonstatic member....  This (or an
-		   aggregate) is the only way to initialize nonstatic const
-		   and reference members.  */
-		else
+		   initializer list) is the only way to initialize
+		   nonstatic const and reference members.  */
+		else if (pedantic || flag_ansi || ! constp)
 		  pedwarn ("ANSI C++ forbids initialization of %s `%s'",
 			   constp ? "const member" : "member",
 			   IDENTIFIER_POINTER (declarator));
@@ -9706,7 +9721,7 @@ xref_defn_tag (code_type_node, name, binfo)
       else
 	n1 = current_class_name;
 */
-      n1 = TYPE_NAME(current_class_type);
+      n1 = TYPE_NAME (current_class_type);
       if (n1)
 	n1 = DECL_NESTED_TYPENAME(n1);
       else
@@ -9737,7 +9752,7 @@ xref_defn_tag (code_type_node, name, binfo)
 	if (write_symbols == DWARF_DEBUG)
 	  DECL_IGNORED_P (type_decl) = 1;
 #endif /* DWARF_DEBUGGING_INFO */
-	pushdecl_top_level (type_decl);
+	pushdecl_nonclass_level (type_decl);
       }
     }
   else
@@ -10160,6 +10175,7 @@ start_enum (name)
   /* We copy this value because enumerated type constants
      are really of the type of the enumerator, not integer_type_node.  */
   enum_next_value = copy_node (integer_zero_node);
+  enum_overflow = 0;
 
   GNU_xref_decl (current_function_decl, enumtype);
   return enumtype;
@@ -10299,7 +10315,11 @@ build_enumerator (name, value)
      to keep that from happening.  */
   /* Default based on previous value.  */
   if (value == NULL_TREE)
-    value = enum_next_value;
+    {
+      value = enum_next_value;
+      if (enum_overflow)
+	cp_error ("overflow in enumeration values at `%D'", name);
+    }
 
   /* Remove no-op casts from the value.  */
   if (value)
@@ -10322,26 +10342,8 @@ build_enumerator (name, value)
 
   /* C++ associates enums with global, function, or class declarations.  */
 
-  /* There are a number of cases we need to be aware of here:
-				current_class_type	current_function_decl
-     * global enums		NULL			NULL
-     * fn-local enum		NULL			SET
-     * class-local enum		SET			NULL
-     * class->fn->enum		SET			SET
-     * fn->class->enum		SET			SET
-
-     Those last two make life interesting.  If it's a fn-local enum which is
-     itself inside a class, we need the enum to go into the fn's decls (our
-     second case below).  But if it's a class-local enum and the class itself
-     is inside a function, we need that enum to go into the decls for the
-     class.  To achieve this last goal, we must see if, when both
-     current_class_decl and current_function_decl are set, the class was
-     declared inside that function.  If so, we know to put the enum into
-     the class's scope.  */
-     
-  if ((current_class_type && ! current_function_decl)
-      || (current_class_type && current_function_decl
-	  && TYPE_CONTEXT (current_class_type) == current_function_decl))
+  decl = current_scope ();
+  if (decl && decl == current_class_type)
     {
       /* This enum declaration is local to the class, so we must put
 	 it in that class's list of decls.  */
@@ -10366,6 +10368,8 @@ build_enumerator (name, value)
   /* Set basis for default for next value.  */
   enum_next_value = build_binary_op_nodefault (PLUS_EXPR, value,
 					       integer_one_node, PLUS_EXPR);
+  enum_overflow = tree_int_cst_lt (enum_next_value, value);
+  
   if (enum_next_value == integer_one_node)
     enum_next_value = copy_node (enum_next_value);
 
@@ -10610,9 +10614,9 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   if (interface_unknown == 0)
     {
       TREE_PUBLIC (decl1) = 1;
-      DECL_EXTERNAL (decl1) = (interface_only
-			       || (DECL_INLINE (decl1)
-				   && ! flag_implement_inlines));
+      DECL_EXTERNAL (decl1)
+	= ((interface_only && !DECL_EXPLICITLY_INSTANTIATED (decl1))
+	   || (DECL_INLINE (decl1) && ! flag_implement_inlines));
     }
   else
     /* This is a definition, not a reference.
@@ -11246,9 +11250,9 @@ finish_function (lineno, call_poplevel)
       /* Make all virtual function table pointers in non-virtual base
 	 classes point to CURRENT_CLASS_TYPE's virtual function
 	 tables.  */
-      init_vtbl_ptrs (binfo, 1, 0);
+      expand_direct_vtbls_init (binfo, binfo, 1, 0, current_class_decl);
       if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	expand_vbase_vtables_init (binfo, binfo, C_C_D, current_class_decl, 0);
+	expand_indirect_vtbls_init (binfo, C_C_D, current_class_decl, 0);
       if (! ok_to_optimize_dtor)
 	{
 	  cond = build_binary_op (NE_EXPR,
@@ -11516,15 +11520,6 @@ finish_function (lineno, call_poplevel)
     }
   else
     pop_memoized_context (1);
-
-  /* Forget about all overloaded functions defined in
-     this scope which go away.  */
-  while (overloads_to_forget)
-    {
-      IDENTIFIER_GLOBAL_VALUE (TREE_PURPOSE (overloads_to_forget))
-	= TREE_VALUE (overloads_to_forget);
-      overloads_to_forget = TREE_CHAIN (overloads_to_forget);
-    }
 
   /* Generate rtl for function exit.  */
   expand_function_end (input_filename, lineno, 1);

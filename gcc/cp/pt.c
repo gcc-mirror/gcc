@@ -1013,6 +1013,8 @@ instantiate_class_template (classname, setup_parse)
       /* Get interface/implementation back in sync.  */
       extract_interface_info ();
       overload_template_name (classname, 0);
+      /* Kludge so that we don't get screwed by our own base classes.  */
+      TYPE_BEING_DEFINED (TREE_TYPE (classname)) = 1;
       yychar = PRE_PARSED_CLASS_DECL;
       yylval.ttype = classname;
       processing_template_defn++;
@@ -2187,6 +2189,10 @@ do_pending_expansions ()
 			  || TREE_CODE (t) == VAR_DECL, 294);
       if (TREE_ASM_WRITTEN (t))
 	DECIDE (0);
+
+      if (DECL_EXPLICITLY_INSTANTIATED (t))
+	DECIDE (1);
+
       /* If it's a method, let the class type decide it.
 	 @@ What if the method template is in a separate file?
 	 Maybe both file contexts should be taken into account?
@@ -2311,8 +2317,29 @@ do_function_instantiation (declspecs, declarator)
 	      }
 	  }
     }
-  if (!result)
+  if (! result)
     cp_error ("no matching template for `%D' found", decl);
+
+  DECL_EXPLICITLY_INSTANTIATED (result) = 1;
+}
+
+void
+do_type_instantiation (name)
+     tree name;
+{
+  tree t = TREE_TYPE (name);
+
+  CLASSTYPE_EXPLICITLY_INSTANTIATED (t) = 1;
+  CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
+
+  /* this should really be done by instantiate_member_templates */
+  {
+    tree method = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
+    for (; method; method = TREE_CHAIN (method))
+      DECL_EXPLICITLY_INSTANTIATED (method) = 1;
+  }
+
+  /* and data member templates, too */
 }
 
 tree

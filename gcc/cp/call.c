@@ -3810,7 +3810,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   if (need_vtbl == needed)
     {
-      function = build_vfn_ref (&TREE_VALUE (parms), instance, DECL_VINDEX (function));
+      function = build_vfn_ref (&TREE_VALUE (parms), instance,
+				DECL_VINDEX (function));
       TREE_TYPE (function) = build_pointer_type (fntype);
     }
 
@@ -3975,7 +3976,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       return error_mark_node;
     }
 
-  if (! TREE_OVERLOADED (fnname))
+  if (TREE_CODE (functions) == FUNCTION_DECL)
     {
       functions = DECL_MAIN_VARIANT (functions);
       if (final_cp)

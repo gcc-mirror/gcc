@@ -1071,11 +1071,11 @@ struct lang_decl
    or virtual baseclasses.  */
 #define TYPE_USES_COMPLEX_INHERITANCE(NODE) (TREE_LANG_FLAG_1 (NODE))
 
+#if 0				/* UNUSED */
 /* Nonzero in IDENTIFIER_NODE means that this name is overloaded, and
    should be looked up in a non-standard way.  */
 #define TREE_OVERLOADED(NODE) (TREE_LANG_FLAG_0 (NODE))
-#if 0				/* UNUSED */
-#define DECL_OVERLOADED(NODE) (DECL_LANG_FLAG_4 (NODE))
+#define DECL_OVERLOADED(NODE) (NOTHING)
 #endif
 
 /* Nonzero if this (non-TYPE)_DECL has its virtual attribute set.
@@ -1251,7 +1251,13 @@ struct lang_decl
 #define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT(NODE)
 #define DECL_TEMPLATE_INSTANTIATIONS(NODE) DECL_VINDEX(NODE)
 
-#define THUNK_DELTA(DECL) ((DECL)->decl.frame_size)
+/* Macros for a DECL or TYPE generated from a template to indicate that it
+   was explicitly instantiated.  */
+#define DECL_EXPLICITLY_INSTANTIATED(NODE) (DECL_LANG_FLAG_4 (NODE))
+#define CLASSTYPE_EXPLICITLY_INSTANTIATED(NODE) \
+  (DECL_EXPLICITLY_INSTANTIATED (TYPE_NAME (NODE)))
+
+#define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.u)
 
 /* ...and for unexpanded-parameterized-type nodes.  */
 #define UPT_TEMPLATE(NODE)      TREE_PURPOSE(TYPE_VALUES(NODE))
@@ -1333,14 +1339,6 @@ extern tree ptr_type_node, const_ptr_type_node;
 extern tree class_type_node, record_type_node, union_type_node, enum_type_node;
 extern tree exception_type_node, unknown_type_node;
 extern tree opaque_type_node, signature_type_node;
-
-/* The largest size a virtual function table can be.
-   Must be a (power of 2).  */
-#ifndef VINDEX_MAX
-#define VINDEX_MAX ((unsigned)128)
-/* This is the integer ~ (vindex_max - 1).  */
-#endif
-extern tree vtbl_mask;
 
 /* Array type `(void *)[]' */
 extern tree vtbl_type_node;
@@ -1952,7 +1950,7 @@ extern tree build_dynamic_cast			PROTO((tree, tree));
 /* in init.c */
 extern void emit_base_init			PROTO((tree, int));
 extern void check_base_init			PROTO((tree));
-extern void init_vtbl_ptrs			PROTO((tree, int, int));
+extern void expand_direct_vtbls_init		PROTO((tree, tree, int, int, tree));
 extern void do_member_init			PROTO((tree, tree, tree));
 extern void expand_member_init			PROTO((tree, tree, tree));
 extern void expand_aggr_init			PROTO((tree, tree, int));
@@ -2101,12 +2099,12 @@ extern tree lookup_nested_tag			PROTO((tree, tree));
 extern HOST_WIDE_INT breadth_first_search	PROTO((tree, int (*)(), int (*)()));
 extern int tree_needs_constructor_p		PROTO((tree, int));
 extern int tree_has_any_destructor_p		PROTO((tree, int));
-extern tree get_first_matching_virtual		PROTO((tree, tree, int));
+extern tree get_matching_virtual		PROTO((tree, tree, int));
 extern tree get_abstract_virtuals		PROTO((tree));
 extern tree get_baselinks			PROTO((tree, tree, tree));
 extern tree next_baselink			PROTO((tree));
 extern tree init_vbase_pointers			PROTO((tree, tree));
-extern void expand_vbase_vtables_init		PROTO((tree, tree, tree, tree, int));
+extern void expand_indirect_vtbls_init		PROTO((tree, tree, tree, int));
 extern void clear_search_slots			PROTO((tree));
 extern tree get_vbase_types			PROTO((tree));
 extern void build_mi_matrix			PROTO((tree));
