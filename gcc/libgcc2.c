@@ -340,11 +340,27 @@ __ashrdi3 (DWtype u, word_type b)
 }
 #endif
 
+#ifdef L_ffssi2
+#undef int
+extern int __ffsSI2 (UWtype u);
+int
+__ffsSI2 (UWtype u)
+{
+  UWtype count;
+
+  if (u == 0)
+    return 0;
+
+  count_trailing_zeros (count, u);
+  return count + 1;
+}
+#endif
+
 #ifdef L_ffsdi2
 #undef int
-extern int __ffsdi2 (DWtype u);
+extern int __ffsDI2 (DWtype u);
 int
-__ffsdi2 (DWtype u)
+__ffsDI2 (DWtype u)
 {
   DWunion uu;
   UWtype word, count, add;
