@@ -1,3 +1,16 @@
+2004-09-02  Jan Beulich  <jbeulich@novell.com>
+
+	* Makefile.in (LIB2ADDEHDEP): Add unwind.h and unwind-pe.h.
+	* mklibgcc.in (libgcc_dep): New, covering general dependencies, but
+	not unwind code specific ones.
+	(libgcc2_c_dep): Replace general dependencies with use of libgcc_dep.
+	Remove unwind code specific dependencies.
+	(libgcov_c_dep): Replace general dependencies with use of libgcc_dep.
+	Remove gbl-ctors.h.
+	Add libgcc_dep to output generated for LIB2ADD, LIB2ADDEH, and
+	LIB2ADD_ST. Add LIB2ADDEHDEP to output generated for LIB2ADDEH.
+	* tsystem.h: Declare memcpy and memset when inhibit_libc.
+
 2004-09-02  Roman Zippel  <zippel@linux-m68k.org>
  
 	* combine.c (try_combine): Delay modifying of insns which cannot
@@ -178,7 +191,7 @@
 2004-09-01  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (enum alg_code): Remove long unused enumeration values.
-        (struct mult_cost): New structure to hold the "score" of a synthetic
+	(struct mult_cost): New structure to hold the "score" of a synthetic
 	multiply sequence, including both a rtx_cost and a latency field.
 	(MULT_COST_LESS): New macro to compare mult_cost to a constant.
 	(CHEAPER_MULT_COST): New macro to compare two mult_costs.
@@ -301,8 +314,8 @@
 
 2004-09-01  Richard Henderson  <rth@redhat.com>
 
-        * config/ns32k/ns32k.h (TRANSFER_FROM_TRAMPOLINE): Remove.
-        (TRAMPOLINE_TEMPLATE): Merge code from __trampoline inline.
+	* config/ns32k/ns32k.h (TRANSFER_FROM_TRAMPOLINE): Remove.
+	(TRAMPOLINE_TEMPLATE): Merge code from __trampoline inline.
 
 2004-09-01  Jakub Jelinek  <jakub@redhat.com>
 
