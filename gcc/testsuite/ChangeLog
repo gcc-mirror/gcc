@@ -1,5 +1,9 @@
 2002-02-06  Nick Clifton  <nickc@cambridge.redhat.com>
 
+	* g++.dg/ext/align1.C: Do not use an explicit alignment value
+        as certain file formats cannot support particularly large
+        alignments.
+
 	* g++.dg/warn/weak1.C: Expect a warning from COFF toolchains,
 	and do not expect to be able to link the executable.
 
