@@ -13,7 +13,7 @@
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1, 5_6.
 -->
-<!-- $Id: index.html,v 1.21 2000/03/26 03:44:35 pme Exp $ -->
+<!-- $Id: index.html,v 1.1 2000/04/21 20:33:32 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -106,7 +106,7 @@ HREF="ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz">the
 
 <HR>
    <H2><A NAME="1_2">1.2 Why should I use libstdc++?</A></H2>
-      <P>The recent completion of the ISO C++ standardization gave the
+      <P>The completion of the ISO C++ standardization gave the
          C++ community a powerful set of reuseable tools in the form
          of the C++ Standard Library.  However, all existing C++
          implementations are (as the Draft Standard used to say)
@@ -117,10 +117,10 @@ HREF="ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz">the
          (<TT>gcc</TT>, <TT>g++</TT>, etc) is widely considered to be
          one of the leading compilers in the world.  Its development
          has recently been taken over by the 
-         <A HREF="http://egcs.cygnus.com/">GCC team</A>.  All of
+         <A HREF="http://gcc.gnu.org/">GCC team</A>.  All of
          the rapid development and near-legendary
      <A
-HREF="http://egcs.cygnus.com/gcc-2.95/buildstat.html">portability</A>
+HREF="http://gcc.gnu.org/gcc-2.95/buildstat.html">portability</A>
          that are the hallmarks of an open-source project are being
          applied to libstdc++.
       </P>
@@ -214,7 +214,7 @@ HREF="ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz">
          stuff&quot; classes will probably migrate there.)
       </P>
       <P>For the bold and/or desperate, the
-         <A HREF="http://egcs.cygnus.com/faq.html#libg++">GCC FAQ</A>
+         <A HREF="http://gcc.gnu.org/faq.html#libg++">GCC FAQ</A>
          describes where to find the last libg++ source.
       </P>
 
@@ -271,32 +271,13 @@ HREF="http://sourceware.cygnus.com/automake/">automake</A>.
       <P>Yes, as of 2.90.8, it is intended as such.</P>
       <P>The installation instructions cover this in more detail, but
          replacing the older library requires rebuilding some of the
-         code that comes with g++.  If you do not want to do that,
-         then you'll be missing out on a lot of functionality, but it
-         can still be done.
+         code that comes with g++.  You will need sources for the 2.95.2
+         compiler in order to build this snapshot.  Building the library
+         on its own and then using -I/-L will no longer work.
       </P>
-      <P>In that case, you can use the same procedure that used to be
-         required:
-         <OL>
-            <LI> Build GCC as usual.
-            <LI> Build libstdc++-v3 as described in the installation
-                 document, under the section &quot;without GCC
-                 sources.&quot;  Be aware that you will lose the std::
-                 namespace encapsulation.
-            <LI> Build your code using -I and -L options so that GCC
-                 finds the libstdc++-v3 headers and library before the
-                 older headers in the GCC include tree.
-         </OL>
-      </P>
-      <P>If you configured libstdc++-v3 to install under a directory
-         called <B>/lib3</B>, for example, the command line would look
-         something like
-         <!-- Careful, the leading spaces in PRE show up directly. -->
-         <PRE>
-      g++ -Wall -I/lib3/include/g++-v3 -L/lib3/lib foo.cc -o foo
-         </PRE>
-         More information (such as using SGI or GNU extensions, and
-         setting the runtime library path) can be found in the RELEASE-NOTES.
+      <P>After the 2.90.8 snapshot, the library sources were integrated
+         into the compiler sources.  Future releases of the compiler will
+         ship with libstdc++-v3.
       </P>
 
 <HR>
@@ -511,7 +492,7 @@ to the list</A>, Nathan Myers announced that he has started a list of
    <H2><A NAME="4_5">4.5 Aw, that's easy to fix!</A></H2>
       <P>If you have found a bug in the library and you think you have
          a working fix, then send it in!  The main GCC site has a page
-         on <A HREF="http://egcs.cygnus.com/contribute.html">submitting
+         on <A HREF="http://gcc.gnu.org/contribute.html">submitting
          patches</A> that covers the procedure, but for libstdc++ you
          should of course send the patch to our mailing list, not the
          GCC mailing list.  The libstdc++
@@ -664,7 +645,7 @@ HREF="http://sourceware.cygnus.com/ml/libstdc++/1999/msg00084.html">speculation<
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: index.html,v 1.21 2000/03/26 03:44:35 pme Exp $
+<BR> $Id: index.html,v 1.1 2000/04/21 20:33:32 bkoz Exp $
 </EM></P>
 
 

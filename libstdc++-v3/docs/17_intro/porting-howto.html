@@ -15,8 +15,17 @@
   <li><a href = "#nocreate">File-flags: <tt>ios::nocreate</tt> and
   <tt>ios::noreplace</tt></a>
   <li><a href = "#headers">The new headers</a>
+  <li><a href = "#iterators">Iterator-changes</a>
+  <li><a href = "#macros">Libc-macros</a>
   <li><a href = "#about">Comments, suggestions, corrections, questions...</a>
   </center>
+
+  <p>
+In the following, when I say portable, I will refer to "portable among ISO
+14882-implementations". On the other hand, if I say "backportable" or
+"conservative", I am talking about "compiles with older
+libstdc++-implementations".
+</p>
 
     <a name = "std">
 	<h2>Namespace std::</h2>
@@ -25,29 +34,40 @@
 The latest C++-standard (ISO-14882) requires that the standard C++-library
 is defined in namespace std::. Thus, to use classes from the standard c++
 library, you can do one of three things:
-<ul>
-  <li>wrap your code in <tt>namespace std { ... }</tt>
-=> This is not an option because only symbols from the standard c++-library are
-defined in namespace std::.
-  <li>put a kind of <dfn>using-declaration</dfn> in your source
-(either <tt>using namespace std;</tt> or i.e. <tt>using std::string;</tt>)
-=> works well for source-files, but cannot be used in header-files
-  <li>use a <dfn>fully qualified name</dfn> for each libstdc++-symbol
-(i.e. <tt>std::string</tt>, <tt>std::cout</tt>)
-=> can always be used
-</ul>
+  <ul>
+    <li>wrap your code in <tt>namespace std { ... }</tt> => This is not an
+   option because only symbols from the standard c++-library are defined in
+   namespace std::.
+
+    <li>put a kind of <dfn>using-declaration</dfn> in your source (either
+	<tt>using namespace std;</tt> or i.e. <tt>using std::string;</tt>)
+	=> works well for source-files, but cannot be used in header-files
+
+	<li>use a <dfn>fully qualified name</dfn> for each libstdc++-symbol
+	(i.e. <tt>std::string</tt>, <tt>std::cout</tt>) => can always be used
+  </ul>
 </p>
       <p>
-Namespace portability-issues are not a problem with g++, because versions
-of g++ that do not have libstdc++ in std:: use <tt>-fno-honor-std</tt>
-(ignore <tt>std::</tt>, <tt>:: = std::</tt>) by default. This probably
-applies to some other compilers as well.
-
+Because there are many compilers which still use an implementation that
+does not have the standard C++-library in namespace <tt>std::</tt>, some
+care is required to support these as well.
+</p>
+      <p>
+Namespace back-portability-issues are generally not a problem with g++,
+because versions of g++ that do not have libstdc++ in <tt>std::</tt> use
+<tt>-fno-honor-std</tt> (ignore <tt>std::</tt>, <tt>:: = std::</tt>) by
+default. That is, the responsibility for enabling or disabling
+<tt>std::</tt> is on the user; the maintainer does not have to care about it.
+This probably applies to some other compilers as well.
+</p>
+      <p>
 The following sections list some possible solutions to support compilers
 that cannot ignore std::.
 </p> 
+      <a name = "gtkmm">
       <h3>Using <dfn>namespace composition</dfn> if the project uses a separate
       namespace</h3>
+	  </a>
 
 	    <p>
 <a href = "http://gtkmm.sourcforge.net">Gtk--</a> defines most of its
@@ -55,8 +75,7 @@ classes in namespace Gtk::. Thus, it was possible to adapt Gtk-- to
 namespace std:: by using a C++-feature called <dfn>namespace
 composition</dfn>. This is what happens if you put a
 <dfn>using</dfn>-declaration into a namespace-definition: the imported
-symbol(s) gets imported into the currently active namespace(s). This is
-what it looks like in Gtk--:
+symbol(s) gets imported into the currently active namespace(s). For example:
 <pre>
 namespace Gtk {
 	using std::string;
@@ -64,16 +83,23 @@ namespace Gtk {
 }
 </pre>
 In this example, <tt>std::string</tt> gets imported into namespace Gtk::.
-The result is that you don't have to use <tt>std::string</tt> in this header,
-but still <tt>std::string</tt> does not get imported into user-space (the
-global namespace ::) unless the user does <tt>using namespace Gtk;</tt>
-(which is not recommended practice for Gtk--, so it is not a problem).
+The result is that you don't have to use <tt>std::string</tt> in this
+header, but still <tt>std::string</tt> does not get imported into
+user-space (the global namespace ::) unless the user does <tt>using
+namespace Gtk;</tt> (which is not recommended practice for Gtk--, so it is
+not a problem).  Additionally, the <tt>using</tt>-declarations are wrapped
+in macros that are set based on autoconf-tests to either "" or
+i.e. <tt>using std::string;</tt> (depending on whether the system has
+libstdc++ in <tt>std::</tt> or not).
+(ideas from llewelly@dbritsch.dsl.xmission.com,
+Karl Nelson <kenelson@ece.ucdavis.edu>)
 </p>
 
-      <h3>Defining an empty namespace std for backwards-compatibility</h3>
+      <h3>Defining an empty namespace std</h3>
 	    <p>
-By defining an (empty) namespace std:: before using it, you can avoid
-getting errors on systems where no part of the library is in std:
+By defining an (empty) namespace <tt>std::</tt> before using it, you can
+avoid getting errors on systems where no part of the library is in
+namespace std:
 <pre>
 namespace std { }
 using namespace std;
@@ -82,12 +108,12 @@ using namespace std;
       <h3>Avoid to use fully qualified names (i.e. std::string)</h3>
 	    <p>
 If some compilers complain about <tt>using std::string;</tt>, and if the
-hack for gtk-- mentioned above does not work, then it might be a good idea
+"hack" for gtk-- mentioned above does not work, then it might be a good idea
 to define a macro <tt>NS_STD</tt>, which is defined to either "" or "std"
 based on an autoconf-test. Then you should be able to use
 <tt>NS_STD::string</tt>, which will evaluate to <tt>::string</tt> ("string
 in the global namespace") on systems that do not put string in std::.
-(This is untested and might not even be necessary)
+(This is untested)
 </p>
 
       <h3>How some open-source-projects deal with this</h3>
@@ -103,7 +129,7 @@ in the global namespace") on systems that do not put string in std::.
   <tr><td><a href = "http://www.mnemonic.org">mnemonic</a></td> <td>none</td>
   </tr>
   <tr><td><a href = "http://libsigc.sourceforge.net">libsigc++</a></td>
-      <td>portable-impl</td>
+      <td>conservative-impl</td>
   </tr>
 </table>
 
@@ -117,11 +143,14 @@ in the global namespace") on systems that do not put string in std::.
     <td>none</td> <td>no namespace std at all</td>
   </tr>
   <tr>
-    <td>portable-impl</td> <td>wrap all namespace-handling in macros to support
-	compilers without namespace-support (no libstdc++ used in headers)</td>
+    <td>conservative-impl</td> <td>wrap all namespace-handling in macros to
+	support compilers without namespace-support (no libstdc++ used in
+	headers)</td>
   </tr>
 </table>
-	
+As you can see, this currently lacks an example of a project which uses
+libstdc++-symbols in headers in a back-portable way
+(except for the <a href = "#gtkmm">Gtk-- "hack"</a>).
 </p>
     <a name = "nocreate">    
     <h2>there is no ios::nocreate/ios::noreplace in ISO 14882</h2>
@@ -136,7 +165,8 @@ input-streams.
 For output streams, "nocreate" is probably the default, unless you specify
 <tt>std::ios::trunc</tt> ? To be safe, you can open the file for
 reading, check if it has been opened, and then decide whether you want to
-create/replace or not.
+create/replace or not. To my knowledge, even older implementations support
+<tt>app</tt>, <tt>ate</tt> and <tt>trunc</tt> (except for <tt>app</tt> ?).
 </p>
     <a name = "attach">    
 	<h2><tt>stream::attach(int fd)</tt> is not in the standard any more</h2>
@@ -166,32 +196,108 @@ headers and tell users of old compilers that they should create links
 (which is what they will have to do sometime anyway).
 </p>
 
-	  <h3><tt>&lt;ctype.h&gt;</tt> introduces ambiguity when used with
-	  <tt>&lt;cctype&gt;</tt></h3>
-	  <p>
-The best solution I came up with so far is to include <tt>cctype</tt>
-instead of <tt>ctype.h</tt> wherever possible, and then use fully
-qualified names to refer to the libstdc++-versions: std::islower,
-std::isalnum etc.  (you will need to as soon as any header includes
-<tt>&lt;ctype.h&gt;</tt>, because then there will be an ambiguity with the
-C-versions in the global namespace defined in <tt>&lt;ctype.h&gt;</tt>)
+      <a name = "cheaders">
+      <h3>New headers replacing C-headers</h3>
+	  </a>
+	    <p>
+You should not use the C-headers (except for system-level headers) from C++
+programs. Instead, you should use a set of headers that are named by
+prepending 'c' and, as usual, ommiting the extension (.h). For example,
+instead of using <tt>&lt;math.h&gt;</tt>, you should use
+<tt>&lt;cmath&gt;</tt>. The standard specifies that if you include the
+C-style header (<tt>&lt;math.h&gt;</tt> in this case), the symbols will be
+available both in the global namespace and in namespace <tt>std::</tt>
+(libstdc++-v3, version 2.90.8 currently puts them in <tt>std::</tt> only)
+On the other hand, if you include only the new header
+(i.e. <tt>&lt;cmath&gt;</tt>), the symbols will only be defined in
+namespace <tt>std::</tt> (and macros will be converted to
+inline-functions).
 </p>
-
+        <p>
+For more information on this, and for information on how the GNU C++
+implementation reuses ("shadows") the C library-functions, have
+a look at <a href = "http://www.cantrip.org/cheaders.html">www.cantrip.org</a>.
+</p>
+	  
       <h3><tt>&lt;fstream&gt;</tt> does not define <tt>std::cout</tt>,
       <tt>std::cin</tt> etc.</h3>
         <p>
 In previous versions of the standard, <tt>&lt;fstream.h&gt;</tt>,
 <tt>&lt;ostream.h&gt;</tt> and <tt>&lt;istream.h&gt;</tt> used to define
-<tt>cout</tt>, <tt>cin</tt> and so on. With libstdc++-v3, you need
-to include <tt>&lt;iostream&gt;</tt> to define these.
+<tt>cout</tt>, <tt>cin</tt> and so on. Because of the templatized iostreams
+in libstdc++-v3, you need to include <tt>&lt;iostream&gt;</tt> explicitly
+to define these.
 </p>
+
+    <a name = "iterators">
+	<h2>Iterators</h2>
+	</a>
+      <p>
+The following are not proper uses of iterators, but may be working fixes
+for existing uses of iterators.
+  <ul>
+    <li>you cannot do <tt>ostream::operator<<(iterator)</tt> to print the
+    address of the iterator => use <tt><< &*iterator</tt> instead ?
+    <li>you cannot clear an iterator's reference (<tt>iterator = 0</tt>)
+	=> use <tt>iterator = iterator_type();</tt> ?
+	<li><tt>if (iterator)</tt> won't work any more
+	=> use <tt>if (iterator != iterator_type())</tt> ?
+  </ul>
+</p>
+
+    <a name = "macros">
+	<h2>Libc-macros (i.e. <tt>isspace</tt> from <tt>&lt;cctype&gt;</tt>)</h2>
+	</a>
+	  <p>
+Glibc 2.0.x and 2.1.x define the <tt>&lt;ctype.h&gt;</tt>-functionality
+as macros (isspace, isalpha etc.). Libstdc++-v3 "shadows" these macros
+as described in the <a href = "#cheaders">section on C-headers</a>.
+</p>
+      <p>
+Older implementations of libstdc++ (g++-2 for egcs 1.x and g++-3 for
+gcc 2.95.2), however, keep these functions as macros, and so it is not
+back-portable to use fully qualified names. For example:
+<pre>
+#include &lt;cctype&gt;
+int main() { std::isspace('X'); }
+</pre>
+will result in something like this (unless using g++-v3):
+<pre>
+std:: (__ctype_b[(int) ( ( 'X' ) )] & (unsigned short int)   _ISspace )  ;
+</pre>
+Another problem arises if you put a <tt>using namespace std;</tt>
+declaration at the top, and include <tt>&lt;ctype.h&gt;</tt>. This will
+result in ambiguities between the definitions in the global namespace
+(<tt>&lt;ctype.h&gt;</tt>) and the definitions in namespace <tt>std::</tt>
+(<tt>&lt;cctype&gt;</tt>).
+</p>
+      <p>
+One solution I can think of is to test for -v3 using autoconf-macros, and
+define macros for each of the C-functions (maybe that is possible with one
+"wrapper" macro as well ?).
+</p>
+      <p>
+Another solution which would fix g++ is to tell the user to modify
+a header-file so that g++-2 (egcs 1.x) and g++-3 (gcc 2.95.2)
+enable a macro which tells &lt;ctype.h&gt; to define functions instead of
+macros:
+<pre>
+// This keeps isanum, et al from being propagated as macros.
+#if __linux__
+#define __NO_CTYPE 1
+#endif
+
+[ now include &lt;ctype.h&gt; ]
+</pre>
+</p>
+
     <a name = "about">
 	<h2>About...</h2>
 	</a>
       <p>
-Please send any experience, additions, corrections or questions to <a href =
-"mailto:fnatter@gmx.net">fnatter@gmx.net</a> or for discussion to
-the libstdc++-v3-mailing-list.
+Please send any experience, additions, corrections or questions to <a href
+= "mailto:fnatter@gmx.net">fnatter@gmx.net</a> or for discussion to the
+libstdc++-v3-mailing-list.
 </p>
 	
   </body>
