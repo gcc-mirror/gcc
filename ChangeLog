@@ -1,3 +1,8 @@
+2004-12-01  Eric Christopher  <echristo@redhat.com>
+
+	* Makefile.in (clean-target-libgcc): Add stmp-dirs to list
+	of things to remove.
+
 2004-11-29  Matt Kraai  <kraai@ftbfs.org>
 
 	* MAINTAINERS (Write After Approval): Update my e-mail address.
@@ -234,7 +239,7 @@
 	* MAINTAINERS: Add self as c++ and type-safe vector maintainer.
 
 2004-09-09  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* Makefile.def: Remove libbanshee.
 	* Makefile.tpl: Ditto.
 	* configure.in: Ditto.
@@ -255,7 +260,7 @@
 	* config.sub: Import latest version from master repository.
 	* config.guess: Likewise.
 	This includes these changes:
-	
+
 	2004-08-27  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config.sub: Handle crisv32, alias etraxfs.
@@ -378,7 +383,7 @@
 	* Makefile.in: Move BOOT_CFLAGS above host makefile fragment include.
 	* configure.in: add test for powerpc-*-darwin* to specify makefile frag
 	* configure: regenerate
-	* config/mh-ppc-darwin: create file, override BOOT_CFLAGS for 
+	* config/mh-ppc-darwin: create file, override BOOT_CFLAGS for
         -mdynamic-no-pic
 
 
@@ -610,7 +615,7 @@
 	Use autoconf's AC_PROG_CC to find a C compiler.  Define
 	BUILD_DIR_PREFIX.  Look for flex, makeinfo and m4.
 	* configure: Regenerate.
-	
+
 2004-06-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (HOST_EXPORTS): Fix pasto.
