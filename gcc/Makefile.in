@@ -2734,7 +2734,7 @@ bootstrap bootstrap-lean: force
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
-	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
+	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" LANG_LIB2FUNCS=
 	$(MAKE) stage1
 	-if test $@ = bootstrap-lean; then cd stage1 ; rm -f $(VOL_FILES); else true; fi
 # This used to define ALLOCA as empty, but that would lead to bad results
