@@ -1,3 +1,7 @@
+2003-01-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/h8300-stack-1.c: New.
+
 2002-12-31  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/profopt.exp: Change the name of a global variable to avoid
