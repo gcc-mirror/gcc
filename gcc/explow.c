@@ -670,7 +670,16 @@ set_mem_attributes (ref, t, objectp)
      here, because, in C and C++, the fact that a location is accessed
      through a const expression does not mean that the value there can
      never change.  */
+
+  /* If we have already set DECL_RTL = ref, get_alias_set will get the
+     wrong answer, as it assumes that DECL_RTL already has the right alias
+     info.  Callers should not set DECL_RTL until after the call to
+     set_mem_attributes.  */
+  if (DECL_P (t) && ref == DECL_RTL_IF_SET (t))
+    abort ();
+
   set_mem_alias_set (ref, get_alias_set (t));
+
   MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
 
