@@ -1,3 +1,10 @@
+2002-04-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5607
+	* search.c (check_final_overrider): No longer static.
+	* class.c (update_vtable_entry_for_fn): Call it.
+	* cp-tree.h: Adjust.
+
 2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_SET_YYDEBUG): Remove.

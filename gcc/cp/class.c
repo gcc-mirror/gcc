@@ -2555,6 +2555,10 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
   if (overrider == error_mark_node)
     return;
 
+  /* Check for unsupported covariant returns again now that we've
+     calculated the base offsets.  */
+  check_final_overrider (TREE_PURPOSE (overrider), fn);
+
   /* Assume that we will produce a thunk that convert all the way to
      the final overrider, and not to an intermediate virtual base.  */
   virtual_base = NULL_TREE;
