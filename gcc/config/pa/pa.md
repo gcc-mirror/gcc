@@ -4006,37 +4006,29 @@
       operands[0] = reg;
     }
 
-  if (!INT_11_BITS (operands[2]))
+  if (!INT_5_BITS (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
 
-  emit_jump_insn (gen_casesi0 (operands[0], operands[2],
-			       operands[3], operands[4]));
+  emit_insn (gen_cmpsi (operands[0], operands[2]));
+  emit_jump_insn (gen_bgtu (operands[4]));
+  if (TARGET_BIG_SWITCH)
+    {
+      rtx temp = gen_reg_rtx (SImode);
+      emit_move_insn (temp, gen_rtx (PLUS, SImode, operands[0], operands[0]));
+      operands[0] = temp;
+    }
+  emit_jump_insn (gen_casesi0 (operands[0], operands[3]));
   DONE;
 }")
 
 (define_insn "casesi0"
-  [(set (pc)
-	(if_then_else (leu (match_operand:SI 0 "register_operand" "r")
-			   (match_operand:SI 1 "arith11_operand" "rI"))
-		      (plus:SI (mem:SI (plus:SI (pc) (match_dup 0)))
-			       (label_ref (match_operand 2 "" "")))
-		      (pc)))
-   (use (label_ref (match_operand 3 "" "")))]
+  [(set (pc) (plus:SI
+	       (mem:SI (plus:SI (pc) (match_operand 0 "register_operand" "r")))
+	       (label_ref (match_operand 1 "" ""))))]
   ""
-  "*
-{
-  if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      operands[1] = GEN_INT (~INTVAL (operands[1]));
-      return \"addi,uv %1,%0,0\;blr,n %0,0\;b,n %l3\";
-    }
-  else
-    {
-      return \"sub,>> %0,%1,0\;blr,n %0,0\;b,n %l3\";
-    }
-}"
+  "blr %0,0\;nop"
   [(set_attr "type" "multi")
-   (set_attr "length" "12")])
+   (set_attr "length" "8")])
 
 ;; Need nops for the calls because execution is supposed to continue
 ;; past; we don't want to nullify an instruction that we need.

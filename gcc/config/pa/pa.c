@@ -5807,7 +5807,7 @@ pa_reorg (insns)
   pa_combine_instructions (get_insns ());
 
   /* This is fairly cheap, so always run it if optimizing.  */
-  if (optimize > 0)
+  if (optimize > 0 && !TARGET_BIG_SWITCH)
     {
       /* Find and explode all ADDR_VEC insns.  */
       insns = get_insns ();
@@ -5831,28 +5831,33 @@ pa_reorg (insns)
 
 	  for (i = 0; i < length; i++)
 	    {
+	      /* Emit a label before each jump to keep jump.c from
+		 removing this code.  */
+	      tmp = gen_label_rtx ();
+	      LABEL_NUSES (tmp) = 1;
+	      emit_label_after (tmp, location);
+	      location = NEXT_INSN (location);
+
 	      /* Emit the jump itself.  */
 	      tmp = gen_switch_jump (XEXP (XVECEXP (pattern, 0, i), 0));
 	      tmp = emit_jump_insn_after (tmp, location);
 	      JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 0, i), 0);
 	      LABEL_NUSES (JUMP_LABEL (tmp))++;
+	      location = NEXT_INSN (location);
 
 	      /* Emit a BARRIER after the jump.  */
-	      location = NEXT_INSN (location);
 	      emit_barrier_after (location);
-
-	      /* Put a CODE_LABEL before each so jump.c does not optimize
-		 the jumps away.  */
-	      location = NEXT_INSN (location);
-	      tmp = gen_label_rtx ();
-	      LABEL_NUSES (tmp) = 1;
-	      emit_label_after (tmp, location);
 	      location = NEXT_INSN (location);
 	    }
 
 	  /* If needed, emit marker for the end of the branch table.  */
 	  if (TARGET_GAS)
-	    emit_insn_before (gen_end_brtab (), location);
+	    {
+	      emit_insn_before (gen_end_brtab (), location);
+	      location = NEXT_INSN (location);
+	      emit_barrier_after (location);
+	    }
+
 	  /* Delete the ADDR_VEC.  */
 	  delete_insn (insn);
 	}

@@ -112,6 +112,10 @@ extern int target_flags;
 /* Use a faster sequence for indirect calls.  */
 #define TARGET_FAST_INDIRECT_CALLS (target_flags & 1024)
 
+/* Generate code with big switch statements to avoid out of range branches
+   occuring within the switch table.  */
+#define TARGET_BIG_SWITCH (target_flags & 2048)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -143,6 +147,8 @@ extern int target_flags;
    {"no-long-load-store", -512},\
    {"fast-indirect-calls", 1024},\
    {"no-fast-indirect-calls", -1024},\
+   {"big-switch", 2048},	\
+   {"no-big-switch", -2048},	\
    {"linker-opt", 0},		\
    { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
@@ -1677,14 +1683,8 @@ while (0)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE DImode
+#define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? TImode : DImode)
 
-/* Define this if the tablejump instruction expects the table
-   to contain offsets from the address of the table.
-   Do not define this if the table should contain absolute addresses.  */
-/* #define CASE_VECTOR_PC_RELATIVE */
-
-#define CASE_DROPS_THROUGH
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
 
@@ -2205,7 +2205,10 @@ DTORS_SECTION_FUNCTION
    impossible.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
+  if (TARGET_BIG_SWITCH)					\
+    fprintf (FILE, "\tstw %%r1,-16(%%r30)\n\tldil LR'L$%04d,%%r1\n\tbe RR'L$%04d(%%sr4,%%r1)\n\tldw -16(%%r30),%%r1\n", VALUE, VALUE);		\
+  else								\
+    fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
 
 /* Jump tables are executable code and live in the TEXT section on the PA.  */
 #define JUMP_TABLES_IN_TEXT_SECTION
@@ -2218,7 +2221,10 @@ DTORS_SECTION_FUNCTION
    rather than a table of absolute addresses.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
-  fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
+  if (TARGET_BIG_SWITCH)					\
+    fprintf (FILE, "\tstw %%r1,-16(%%r30)\n\tldw T'L$%04d(%%r19),%%r1\n\tbv 0(%%r1)\n\tldw -16(%%r30),%%r1\n", VALUE);				\
+  else								\
+    fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
 
 /* This is how to output an assembler line
    that says to advance the location counter
