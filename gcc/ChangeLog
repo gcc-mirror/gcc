@@ -1,3 +1,8 @@
+2003-11-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/invoke.texi: Update dump file names.
+	Remove de, dW, and dX.
+
 2003-11-20  James E Wilson  <wilson@specifixinc.com>
 
 	PR c/13133
