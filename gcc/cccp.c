@@ -403,6 +403,10 @@ static enum {dump_none, dump_only, dump_names, dump_definitions}
    where they are defined.  */
 static int debug_output = 0;
 
+/* Nonzero means pass #include lines through to the output,
+   even if they are ifdeffed out.  */
+static int dump_includes;
+
 /* Nonzero indicates special processing used by the pcp program.  The
    special effects of this mode are: 
      
@@ -957,12 +961,9 @@ struct directive {
   int (*func) DO_PROTO;	/* Function to handle directive */
   char *name;			/* Name of directive */
   enum node_type type;		/* Code which describes which directive.  */
-  char angle_brackets;		/* Nonzero => <...> is special.  */
-  char traditional_comments;	/* Nonzero: keep comments if -traditional.  */
-  char pass_thru;		/* Copy directive to output:
-				   if 1, copy if dumping definitions;
-				   if 2, always copy, after preprocessing.  */
 };
+
+#define IS_INCLUDE_DIRECTIVE_TYPE(t) (T_INCLUDE <= (t) && (t) <= T_IMPORT)
 
 /* These functions are declared to return int instead of void since they
    are going to be placed in the table and some old compilers have trouble with
@@ -990,7 +991,7 @@ static int do_xifdef DO_PROTO;
 /* Here is the actual list of #-directives, most-often-used first.  */
 
 static struct directive directive_table[] = {
-  {  6, do_define, "define", T_DEFINE, 0, 1, 1},
+  {  6, do_define, "define", T_DEFINE},
   {  2, do_if, "if", T_IF},
   {  5, do_xifdef, "ifdef", T_IFDEF},
   {  6, do_xifdef, "ifndef", T_IFNDEF},
@@ -998,16 +999,16 @@ static struct directive directive_table[] = {
   {  4, do_else, "else", T_ELSE},
   {  4, do_elif, "elif", T_ELIF},
   {  4, do_line, "line", T_LINE},
-  {  7, do_include, "include", T_INCLUDE, 1},
-  { 12, do_include, "include_next", T_INCLUDE_NEXT, 1},
-  {  6, do_include, "import", T_IMPORT, 1},
+  {  7, do_include, "include", T_INCLUDE},
+  { 12, do_include, "include_next", T_INCLUDE_NEXT},
+  {  6, do_include, "import", T_IMPORT},
   {  5, do_undef, "undef", T_UNDEF},
   {  5, do_error, "error", T_ERROR},
   {  7, do_warning, "warning", T_WARNING},
 #ifdef SCCS_DIRECTIVE
   {  4, do_sccs, "sccs", T_SCCS},
 #endif
-  {  6, do_pragma, "pragma", T_PRAGMA, 0, 0, 2},
+  {  6, do_pragma, "pragma", T_PRAGMA},
   {  5, do_ident, "ident", T_IDENT},
   {  6, do_assert, "assert", T_ASSERT},
   {  8, do_unassert, "unassert", T_UNASSERT},
@@ -1643,6 +1644,9 @@ main (argc, argv)
 	      break;
 	    case 'D':
 	      dump_macros = dump_definitions;
+	      break;
+	    case 'I':
+	      dump_includes = 1;
 	      break;
 	    }
 	  }
@@ -3722,7 +3726,7 @@ handle_directive (ip, op)
       limit = ip->buf + ip->length;
       unterminated = 0;
       already_output = 0;
-      keep_comments = traditional && kt->traditional_comments;
+      keep_comments = traditional && kt->type == T_DEFINE;
       /* #import is defined only in Objective C, or when on the NeXT.  */
       if (kt->type == T_IMPORT
 	  && !(objc || lookup ((U_CHAR *) "__NeXT__", -1, -1)))
@@ -3767,7 +3771,7 @@ handle_directive (ip, op)
 
 	  /* <...> is special for #include.  */
 	case '<':
-	  if (!kt->angle_brackets)
+	  if (! IS_INCLUDE_DIRECTIVE_TYPE (kt->type))
 	    break;
 	  while (bp < limit && *bp != '>' && *bp != '\n') {
 	    if (*bp == '\\' && bp[1] == '\n') {
@@ -3826,10 +3830,12 @@ handle_directive (ip, op)
 	 RESUME_P is the next interesting data after the directive.
 	 A comment may come between.  */
 
-      /* If a directive should be copied through, and -E was given,
+      /* If a directive should be copied through, and -C was given,
 	 pass it through before removing comments.  */
       if (!no_output && put_out_comments
-	  && (dump_macros != dump_definitions) < kt->pass_thru) {
+	  && (kt->type == T_DEFINE ? dump_macros == dump_definitions
+	      : IS_INCLUDE_DIRECTIVE_TYPE (kt->type) ? dump_includes
+	      : kt->type == T_PRAGMA)) {
         int len;
 
 	/* Output directive name.  */
@@ -3878,7 +3884,7 @@ handle_directive (ip, op)
 
 	    /* <...> is special for #include.  */
 	  case '<':
-	    if (!kt->angle_brackets)
+	    if (! IS_INCLUDE_DIRECTIVE_TYPE (kt->type))
 	      break;
 	    while (xp < bp && c != '>') {
 	      c = *xp++;
@@ -3953,10 +3959,12 @@ handle_directive (ip, op)
 
       /* Some directives should be written out for cc1 to process,
 	 just as if they were not defined.  And sometimes we're copying
-	 definitions through.  */
+	 directives through.  */
 
       if (!no_output && already_output == 0
-	  && (dump_macros < dump_names) < kt->pass_thru) {
+	  && (kt->type == T_DEFINE ? dump_names <= dump_macros
+	      : IS_INCLUDE_DIRECTIVE_TYPE (kt->type) ? dump_includes
+	      : kt->type == T_PRAGMA)) {
         int len;
 
 	/* Output directive name.  */
@@ -3965,13 +3973,8 @@ handle_directive (ip, op)
         bcopy (kt->name, (char *) op->bufp, kt->length);
         op->bufp += kt->length;
 
-	if ((dump_macros != dump_definitions) < kt->pass_thru) {
-	  /* Output arguments.  */
-	  len = (cp - buf);
-	  check_expand (op, len);
-	  bcopy (buf, (char *) op->bufp, len);
-	  op->bufp += len;
-	} else if (kt->type == T_DEFINE && dump_macros == dump_names) {
+	if (kt->type == T_DEFINE && dump_macros == dump_names) {
+	  /* Output `#define name' only.  */
 	  U_CHAR *xp = buf;
 	  U_CHAR *yp;
 	  SKIP_WHITE_SPACE (xp);
@@ -3980,9 +3983,14 @@ handle_directive (ip, op)
 	  len = (xp - yp);
 	  check_expand (op, len + 1);
 	  *op->bufp++ = ' ';
-	  bcopy (yp, op->bufp, len);
-	  op->bufp += len;
+	  bcopy (yp, (char *) op->bufp, len);
+	} else {
+	  /* Output entire directive.  */
+	  len = (cp - buf);
+	  check_expand (op, len);
+	  bcopy (buf, (char *) op->bufp, len);
 	}
+	op->bufp += len;
       }				/* Don't we need a newline or #line? */
 
       /* Call the appropriate directive handler.  buf now points to
@@ -6796,7 +6804,7 @@ do_once ()
     }
 }
 
-/* #ident has already been copied to the output file, so just ignore it.  */
+/* Report program identification.  */
 
 static int
 do_ident (buf, limit, op, keyword)
@@ -6812,22 +6820,17 @@ do_ident (buf, limit, op, keyword)
     pedwarn ("ANSI C does not allow `#ident'");
 
   trybuf = expand_to_temp_buffer (buf, limit, 0, 0);
-  buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
-  bcopy ((char *) trybuf.buf, (char *) buf, trybuf.bufp - trybuf.buf);
-  limit = buf + (trybuf.bufp - trybuf.buf);
-  len = (limit - buf);
-  free (trybuf.buf);
+  buf = trybuf.buf;
+  len = trybuf.bufp - buf;
 
-  /* Output directive name.  */
-  check_expand (op, 7);
+  /* Output expanded directive.  */
+  check_expand (op, 7 + len);
   bcopy ("#ident ", (char *) op->bufp, 7);
   op->bufp += 7;
-
-  /* Output the expanded argument line.  */
-  check_expand (op, len);
   bcopy ((char *) buf, (char *) op->bufp, len);
   op->bufp += len;
 
+  free (buf);
   return 0;
 }
 
@@ -6856,7 +6859,7 @@ do_pragma (buf, limit, op, keyword)
     int h;
     U_CHAR *p = buf + 14, *fname;
     SKIP_WHITE_SPACE (p);
-    if (*p == '\n' || *p != '\"')
+    if (*p != '\"')
       return 0;
 
     fname = p + 1;
