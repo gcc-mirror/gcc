@@ -300,7 +300,7 @@ emit_local_var (tree decl)
 void
 genrtl_do_pushlevel (void)
 {
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   clear_last_expr ();
 }
 
@@ -317,7 +317,7 @@ genrtl_goto_stmt (tree destination)
   if (TREE_CODE (destination) == LABEL_DECL)
     TREE_USED (destination) = 1;
 
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
 
   if (TREE_CODE (destination) == LABEL_DECL)
     {
@@ -350,7 +350,7 @@ genrtl_expr_stmt_value (tree expr, int want_value, int maybe_last)
 {
   if (expr != NULL_TREE)
     {
-      emit_line_note (input_filename, input_line);
+      emit_line_note (input_location);
 
       if (stmts_are_full_exprs_p ())
 	expand_start_target_temps ();
@@ -369,7 +369,7 @@ void
 genrtl_decl_stmt (tree t)
 {
   tree decl;
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   decl = DECL_STMT_DECL (t);
   /* If this is a declaration for an automatic local
      variable, initialize it.  Note that we might also see a
@@ -405,7 +405,7 @@ genrtl_if_stmt (tree t)
   tree cond;
   genrtl_do_pushlevel ();
   cond = expand_cond (IF_COND (t));
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   expand_start_cond (cond, 0);
   if (THEN_CLAUSE (t))
     {
@@ -435,14 +435,14 @@ genrtl_while_stmt (tree t)
   tree cond = WHILE_COND (t);
 
   emit_nop ();
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   expand_start_loop (1);
   genrtl_do_pushlevel ();
 
   if (cond && !integer_nonzerop (cond))
     {
       cond = expand_cond (cond);
-      emit_line_note (input_filename, input_line);
+      emit_line_note (input_location);
       expand_exit_loop_top_cond (0, cond);
       genrtl_do_pushlevel ();
     }
@@ -472,25 +472,25 @@ genrtl_do_stmt_1 (tree cond, tree body)
   else if (integer_nonzerop (cond))
     {
       emit_nop ();
-      emit_line_note (input_filename, input_line);
+      emit_line_note (input_location);
       expand_start_loop (1);
 
       expand_stmt (body);
 
-      emit_line_note (input_filename, input_line);
+      emit_line_note (input_location);
       expand_end_loop ();
     }
   else
     {
       emit_nop ();
-      emit_line_note (input_filename, input_line);
+      emit_line_note (input_location);
       expand_start_loop_continue_elsewhere (1);
 
       expand_stmt (body);
 
       expand_loop_continue_here ();
       cond = expand_cond (cond);
-      emit_line_note (input_filename, input_line);
+      emit_line_note (input_location);
       expand_exit_loop_if_false (0, cond);
       expand_end_loop ();
     }
@@ -521,7 +521,7 @@ genrtl_return_stmt (tree stmt)
 
   expr = RETURN_STMT_EXPR (stmt);
 
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   if (!expr)
     expand_null_return ();
   else
@@ -547,7 +547,7 @@ genrtl_for_stmt (tree t)
 
   /* Expand the initialization.  */
   emit_nop ();
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   if (FOR_EXPR (t))
     expand_start_loop_continue_elsewhere (1);
   else
@@ -562,7 +562,7 @@ genrtl_for_stmt (tree t)
   if (cond && !integer_nonzerop (cond))
     {
       cond = expand_cond (cond);
-      emit_line_note (input_filename, input_line);
+      emit_line_note (input_location);
       expand_exit_loop_top_cond (0, cond);
       genrtl_do_pushlevel ();
     }
@@ -572,7 +572,7 @@ genrtl_for_stmt (tree t)
 
   /* Expand the increment expression.  */
   input_location = saved_loc;
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   if (FOR_EXPR (t))
     {
       expand_loop_continue_here ();
@@ -594,7 +594,7 @@ build_break_stmt (void)
 void
 genrtl_break_stmt (void)
 {
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   if ( ! expand_exit_something ())
     error ("break statement not within loop or switch");
 }
@@ -612,7 +612,7 @@ build_continue_stmt (void)
 void
 genrtl_continue_stmt (void)
 {
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   if (! expand_continue_loop (0))
     error ("continue statement not within a loop");
 }
@@ -674,7 +674,7 @@ genrtl_switch_stmt (tree t)
        crash.  */
     cond = boolean_false_node;
 
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   expand_start_case (1, cond, TREE_TYPE (cond), "switch statement");
   expand_stmt (expand_unreachable_stmt (SWITCH_BODY (t), warn_notreached));
   expand_end_case_type (cond, SWITCH_TYPE (t));
@@ -746,7 +746,7 @@ genrtl_asm_stmt (tree cv_qualifier, tree string, tree output_operands,
       cv_qualifier = NULL_TREE;
     }
 
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   if (asm_input_p)
     expand_asm (string, cv_qualifier != NULL_TREE);
   else

@@ -2839,7 +2839,7 @@ extern void check_max_integer_computation_mode (tree);
 
 /* In emit-rtl.c */
 extern void start_sequence_for_rtl_expr (tree);
-extern rtx emit_line_note (const char *, int);
+extern rtx emit_line_note (location_t);
 
 /* In calls.c */
 

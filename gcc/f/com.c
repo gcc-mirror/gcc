@@ -13116,7 +13116,7 @@ ffecom_which_entrypoint_decl (void)
 static void
 bison_rule_pushlevel_ (void)
 {
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   pushlevel (0);
   clear_last_expr ();
   expand_start_bindings (0);
@@ -13132,7 +13132,7 @@ bison_rule_compstmt_ (void)
   if (! keep)
     current_binding_level->names = NULL_TREE;
 
-  emit_line_note (input_filename, input_line);
+  emit_line_note (input_location);
   expand_end_bindings (getdecls (), keep, 0);
   t = poplevel (keep, 1, 0);
 

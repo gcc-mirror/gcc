@@ -141,7 +141,7 @@ static void ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt);
 /* Internal macros. */
 
 #define ffeste_emit_line_note_() \
-  emit_line_note (input_filename, input_line)
+  emit_line_note (input_location)
 #define ffeste_check_simple_() \
   assert(ffeste_statelet_ == FFESTE_stateletSIMPLE_)
 #define ffeste_check_start_() \

@@ -456,17 +456,15 @@ init_stmt_for_function (void)
 }
 
 /* Record the current file and line.  Called from emit_line_note.  */
+
 void
-set_file_and_line_for_stmt (const char *file, int line)
+set_file_and_line_for_stmt (location_t location)
 {
   /* If we're outputting an inline function, and we add a line note,
      there may be no CFUN->STMT information.  So, there's no need to
      update it.  */
   if (cfun->stmt)
-    {
-      emit_locus.file = file;
-      emit_locus.line = line;
-    }
+    emit_locus = location;
 }
 
 /* Emit a no-op instruction.  */
@@ -3991,7 +3989,7 @@ expand_decl_init (tree decl)
     }
   else if (DECL_INITIAL (decl) && TREE_CODE (DECL_INITIAL (decl)) != TREE_LIST)
     {
-      emit_line_note (DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
+      emit_line_note (DECL_SOURCE_LOCATION (decl));
       expand_assignment (decl, DECL_INITIAL (decl), 0, 0);
       emit_queue ();
     }
