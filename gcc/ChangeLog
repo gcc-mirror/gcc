@@ -1,3 +1,8 @@
+Thu Aug  5 00:20:47 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k.md (xordi3, anddi3): These patterns are not available on
+	the coldfire.
+
 Wed Aug  4 23:39:20 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* real.c (GET_REAL): Don't violate ANSI/ISO aliasing rules.
