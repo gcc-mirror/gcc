@@ -3438,10 +3438,10 @@ void *__eh_pc;
 
 /* See expand_builtin_throw for details.  */
 
-void **__eh_ffetmnpc () {
+void **__eh_pcnthrow () {
   static void *buf[2] = {
-    &__find_first_exception_table_match,
-    &__eh_pc
+    &__eh_pc,
+    &__throw
   };
   return buf;
 }
