@@ -1848,9 +1848,11 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	}
 
       /* Compute which register lead different lives in the successors.  */
-      if (bitmap_xor (diff, bb_true->global_live_at_start,
-		      bb_false->global_live_at_start))
-	{
+      bitmap_xor (diff, bb_true->global_live_at_start,
+		  bb_false->global_live_at_start);
+      
+      if (!bitmap_empty_p (diff))
+	  {
 	  /* Extract the condition from the branch.  */
 	  rtx set_src = SET_SRC (pc_set (BB_END (bb)));
 	  rtx cond_true = XEXP (set_src, 0);

@@ -1,3 +1,8 @@
+2004-11-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* flow.c (init_propagate_block_info): Use bitmap_empty_p on result
+	of bitmap_xor.
+
 2004-11-02  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-lang.c (LANG_HOOKS_TYPES_COMPATIBLE_P): Remove.
