@@ -641,12 +641,6 @@ case "${target}" in
   *-*-lynxos*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;; 
-  *-*-macos* | \
-  *-*-mpw*)
-    # Macs want a resource compiler.
-    configdirs="$configdirs grez"
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;    
   *-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;

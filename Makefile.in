@@ -549,7 +549,6 @@ ALL_MODULES = \
 	all-gnuserv \
 	all-gprof \
 	all-grep \
-	all-grez \
 	all-gzip \
 	all-hello \
 	all-indent \
@@ -691,7 +690,6 @@ INSTALL_MODULES = \
 	install-gnuserv \
 	install-gprof \
 	install-grep \
-	install-grez \
 	install-gzip \
 	install-hello \
 	install-indent \
@@ -853,7 +851,6 @@ CLEAN_MODULES = \
 	clean-gnuserv \
 	clean-gprof \
 	clean-grep \
-	clean-grez \
 	clean-gzip \
 	clean-hello \
 	clean-indent \
@@ -1687,7 +1684,6 @@ configure-target-gperf: $(ALL_GCC_CXX)
 all-target-gperf: configure-target-gperf all-target-libiberty all-target-libstdc++-v3
 all-gprof: all-libiberty all-bfd all-opcodes all-intl
 all-grep: all-libiberty
-all-grez: all-libiberty all-bfd all-opcodes
 all-gui: all-gdb all-libproc
 all-guile:
 all-gzip: all-libiberty
