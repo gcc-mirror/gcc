@@ -1,3 +1,8 @@
+2001-02-15  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* expr.c (build_instanceof): Check for arrays when trying fold to
+	false.
+
 2001-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Make-lang.in (jvspec.o): Modify rule to match that of cp/g++spec.o.
@@ -5,12 +10,12 @@
 2001-02-14  Tom Tromey  <tromey@redhat.com>
             Alexandre Petit-Bianco  <apbianco@redhat.com>
 
-        Fix for PR java/1261.
-        * typeck.c (build_java_array_type): Add public `clone' method to
-        arrays.
-        * parse.y (resolve_qualified_expression_name): Use current_class
+	Fix for PR java/1261.
+	* typeck.c (build_java_array_type): Add public `clone' method to
+	arrays.
+	* parse.y (resolve_qualified_expression_name): Use current_class
 	when checking for inaccessibility.
-        (patch_method_invocation): Fixed error message when accessibility
+	(patch_method_invocation): Fixed error message when accessibility
 	denied.  Added `from_super' argument.
 
 2001-02-14  Alexandre Petit-Bianco  <apbianco@redhat.com>

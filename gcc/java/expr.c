@@ -1157,7 +1157,9 @@ build_instanceof (value, type)
 		    value,
 		    boolean_true_node, boolean_false_node);
     }
-  else if (DECL_P (klass) && DECL_P (valclass)
+  else if (! TYPE_ARRAY_P (type)
+	   && ! TYPE_ARRAY_P (valtype)
+	   && DECL_P (klass) && DECL_P (valclass)
 	   && ! CLASS_INTERFACE (valclass)
 	   && ! CLASS_INTERFACE (klass)
 	   && ! inherits_from_p (type, valtype)
