@@ -993,7 +993,7 @@ gfc_finish_type (tree type)
   TYPE_STUB_DECL (type) = decl;
   layout_type (type);
   rest_of_type_compilation (type, 1);
-  rest_of_decl_compilation (decl, NULL, 1, 0);
+  rest_of_decl_compilation (decl, 1, 0);
 }
 
 /* Add a field of given NAME and TYPE to the context of a UNION_TYPE

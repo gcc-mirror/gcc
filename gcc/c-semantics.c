@@ -195,41 +195,6 @@ build_stmt (enum tree_code code, ...)
   return ret;
 }
 
-/* Create RTL for the local static variable DECL.  */
-
-void
-make_rtl_for_local_static (tree decl)
-{
-  const char *asmspec = NULL;
-
-  /* If we inlined this variable, we could see it's declaration
-     again.  */
-  if (TREE_ASM_WRITTEN (decl))
-    return;
-
-  /* If the DECL_ASSEMBLER_NAME is not the same as the DECL_NAME, then
-     either we already created RTL for this DECL (and since it was a
-     local variable, its DECL_ASSEMBLER_NAME got hacked up to prevent
-     clashes with other local statics with the same name by a previous
-     call to make_decl_rtl), or the user explicitly requested a
-     particular assembly name for this variable, using the GNU
-     extension for this purpose:
-
-       int i asm ("j");
-
-     There's no way to know which case we're in, here.  But, it turns
-     out we're safe.  If there's already RTL, then
-     rest_of_decl_compilation ignores the ASMSPEC parameter, so we
-     may as well not pass it in.  If there isn't RTL, then we didn't
-     already create RTL, which means that the modification to
-     DECL_ASSEMBLER_NAME came only via the explicit extension.  */
-  if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl)
-      && !DECL_RTL_SET_P (decl))
-    asmspec = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
-  rest_of_decl_compilation (decl, asmspec, /*top_level=*/0, /*at_end=*/0);
-}
-
 /* Let the back-end know about DECL.  */
 
 void
@@ -241,9 +206,7 @@ emit_local_var (tree decl)
       if (DECL_HARD_REGISTER (decl))
 	/* The user specified an assembler name for this variable.
 	   Set that up now.  */
-	rest_of_decl_compilation
-	  (decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
-	   /*top_level=*/0, /*at_end=*/0);
+	rest_of_decl_compilation (decl, 0, 0);
       else
 	expand_decl (decl);
     }

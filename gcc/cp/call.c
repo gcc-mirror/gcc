@@ -6516,7 +6516,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	    }
 	  else
 	    {
-	      rest_of_decl_compilation (var, NULL, /*toplev=*/1, at_eof);
+	      rest_of_decl_compilation (var, /*toplev=*/1, at_eof);
 	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 		static_aggregates = tree_cons (NULL_TREE, var,
 					       static_aggregates);

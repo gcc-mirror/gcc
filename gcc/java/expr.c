@@ -1829,7 +1829,7 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
       if (!flag_indirect_dispatch
 	  || (!TREE_PUBLIC (method) && DECL_CONTEXT (method)))
 	{
-	  make_decl_rtl (method, NULL);
+	  make_decl_rtl (method);
 	  func = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (method)),
 			 method);
 	}

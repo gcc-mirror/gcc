@@ -1368,10 +1368,7 @@ init_block_move_fn (const char *asmspec)
     }
 
   if (asmspec)
-    {
-      SET_DECL_RTL (block_move_fn, NULL_RTX);
-      SET_DECL_ASSEMBLER_NAME (block_move_fn, get_identifier (asmspec));
-    }
+    set_user_assembler_name (block_move_fn, asmspec);
 }
 
 static tree
@@ -1385,7 +1382,7 @@ emit_block_move_libcall_fn (int for_call)
   if (for_call && !emitted_extern)
     {
       emitted_extern = true;
-      make_decl_rtl (block_move_fn, NULL);
+      make_decl_rtl (block_move_fn);
       assemble_external (block_move_fn);
     }
 
@@ -2432,10 +2429,7 @@ init_block_clear_fn (const char *asmspec)
     }
 
   if (asmspec)
-    {
-      SET_DECL_RTL (block_clear_fn, NULL_RTX);
-      SET_DECL_ASSEMBLER_NAME (block_clear_fn, get_identifier (asmspec));
-    }
+    set_user_assembler_name (block_clear_fn, asmspec);
 }
 
 static tree
@@ -2449,7 +2443,7 @@ clear_storage_libcall_fn (int for_call)
   if (for_call && !emitted_extern)
     {
       emitted_extern = true;
-      make_decl_rtl (block_clear_fn, NULL);
+      make_decl_rtl (block_clear_fn);
       assemble_external (block_clear_fn);
     }
 
@@ -6044,7 +6038,7 @@ expand_var (tree var)
       else if (TREE_CODE (var) == VAR_DECL && !TREE_STATIC (var))
 	expand_decl (var);
       else if (TREE_CODE (var) == VAR_DECL && TREE_STATIC (var))
-	rest_of_decl_compilation (var, NULL, 0, 0);
+	rest_of_decl_compilation (var, 0, 0);
       else if (TREE_CODE (var) == TYPE_DECL
 	       || TREE_CODE (var) == CONST_DECL
 	       || TREE_CODE (var) == FUNCTION_DECL

@@ -320,18 +320,16 @@ close_dump_file (enum dump_file_index index,
    and TYPE_DECL nodes.
 
    This does nothing for local (non-static) variables, unless the
-   variable is a register variable with an ASMSPEC.  In that case, or
-   if the variable is not an automatic, it sets up the RTL and
-   outputs any assembler code (label definition, storage allocation
-   and initialization).
+   variable is a register variable with DECL_ASSEMBLER_NAME set.  In
+   that case, or if the variable is not an automatic, it sets up the
+   RTL and outputs any assembler code (label definition, storage
+   allocation and initialization).
 
-   DECL is the declaration.  If ASMSPEC is nonzero, it specifies
-   the assembler symbol name to be used.  TOP_LEVEL is nonzero
+   DECL is the declaration.  TOP_LEVEL is nonzero
    if this declaration is not within a function.  */
 
 void
 rest_of_decl_compilation (tree decl,
-			  const char *asmspec,
 			  int top_level,
 			  int at_end)
 {
@@ -348,15 +346,17 @@ rest_of_decl_compilation (tree decl,
       }
   }
 
+  /* Can't defer this, because it needs to happen before any
+     later function definitions are processed.  */
+  if (DECL_REGISTER (decl) && DECL_ASSEMBLER_NAME_SET_P (decl))
+    make_decl_rtl (decl);
+
   /* Forward declarations for nested functions are not "external",
      but we need to treat them as if they were.  */
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl)
       || TREE_CODE (decl) == FUNCTION_DECL)
     {
       timevar_push (TV_VARCONST);
-
-      if (asmspec)
-	make_decl_rtl (decl, asmspec);
 
       /* Don't output anything when a tentative file-scope definition
 	 is seen.  But at end of compilation, do output code for them.
@@ -392,22 +392,6 @@ rest_of_decl_compilation (tree decl,
 #endif
 
       timevar_pop (TV_VARCONST);
-    }
-  else if (DECL_REGISTER (decl) && asmspec != 0)
-    {
-      if (decode_reg_name (asmspec) >= 0)
-	{
-	  SET_DECL_RTL (decl, NULL_RTX);
-	  make_decl_rtl (decl, asmspec);
-	}
-      else
-	{
-	  error ("%Hinvalid register name `%s' for register variable",
-		 &DECL_SOURCE_LOCATION (decl), asmspec);
-	  DECL_REGISTER (decl) = 0;
-	  if (!top_level)
-	    expand_decl (decl);
-	}
     }
   else if (TREE_CODE (decl) == TYPE_DECL)
     {

@@ -1091,7 +1091,7 @@ create_builtin_decl (enum tree_code code, tree type, const char *name)
   if (code == VAR_DECL)
     {
       TREE_STATIC (decl) = 1;
-      make_decl_rtl (decl, 0);
+      make_decl_rtl (decl);
       pushdecl (decl);
       DECL_ARTIFICIAL (decl) = 1;
     }
@@ -1488,7 +1488,7 @@ objc_add_static_instance (tree constructor, tree class_decl)
      Postpone till end of input.  */
   DECL_DEFER_OUTPUT (decl) = 1;
   pushdecl_top_level (decl);
-  rest_of_decl_compilation (decl, 0, 1, 0);
+  rest_of_decl_compilation (decl, 1, 0);
 
   /* Add the DECL to the head of this CLASS' list.  */
   TREE_PURPOSE (*chain) = tree_cons (NULL_TREE, decl, TREE_PURPOSE (*chain));
@@ -1892,7 +1892,7 @@ build_module_descriptor (void)
     DECL_ARTIFICIAL (execclass_decl) = 1;
     TREE_PUBLIC (execclass_decl) = 1;
     pushdecl (execclass_decl);
-    rest_of_decl_compilation (execclass_decl, 0, 0, 0);
+    rest_of_decl_compilation (execclass_decl, 0, 0);
     assemble_external (execclass_decl);
 
     /* void _GLOBAL_$I$<gnyf> () {objc_execClass (&L_OBJC_MODULES);}  */
@@ -2022,7 +2022,7 @@ generate_static_references (void)
   expr = objc_build_constructor (TREE_TYPE (static_instances_decl),
 			    nreverse (decls));
   finish_decl (static_instances_decl, expr, NULL_TREE);
-  rest_of_decl_compilation (static_instances_decl, 0, 0, 0);
+  rest_of_decl_compilation (static_instances_decl, 0, 0);
 }
 
 /* Output all strings.  */
@@ -2102,7 +2102,7 @@ build_selector_reference_decl (void)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_CONTEXT (decl) = 0;
 
-  make_decl_rtl (decl, 0);
+  make_decl_rtl (decl);
   pushdecl_top_level (decl);
 
   return decl;
@@ -2309,7 +2309,7 @@ build_class_reference_decl (void)
   DECL_CONTEXT (decl) = 0;
   DECL_ARTIFICIAL (decl) = 1;
 
-  make_decl_rtl (decl, 0);
+  make_decl_rtl (decl);
   pushdecl_top_level (decl);
 
   return decl;
@@ -2459,7 +2459,7 @@ build_objc_string_decl (enum string_section section)
   DECL_CONTEXT (decl) = 0;
   DECL_ARTIFICIAL (decl) = 1;
 
-  make_decl_rtl (decl, 0);
+  make_decl_rtl (decl);
   pushdecl_top_level (decl);
 
   return decl;
@@ -5951,7 +5951,7 @@ build_protocol_reference (tree p)
       TREE_USED (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
 
-      make_decl_rtl (decl, 0);
+      make_decl_rtl (decl);
       pushdecl_top_level (decl);
    }
 
@@ -8954,7 +8954,7 @@ handle_class_ref (tree chain)
   TREE_PUBLIC (decl) = 1;
 
   pushdecl (decl);
-  rest_of_decl_compilation (decl, 0, 0, 0);
+  rest_of_decl_compilation (decl, 0, 0);
 
   /* Make a decl for the address.  */
   sprintf (string, "%sobjc_class_ref_%s",
@@ -8966,7 +8966,7 @@ handle_class_ref (tree chain)
   TREE_USED (decl) = 1;
 
   pushdecl (decl);
-  rest_of_decl_compilation (decl, 0, 0, 0);
+  rest_of_decl_compilation (decl, 0, 0);
 }
 
 static void

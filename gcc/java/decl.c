@@ -506,7 +506,7 @@ builtin_function (const char *name,
   TREE_PUBLIC (decl) = 1;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl, NULL);
+  make_decl_rtl (decl);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = cl;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -1983,7 +1983,7 @@ java_mark_decl_local (tree decl)
   /* If we've already constructed DECL_RTL, give encode_section_info
      a second chance, now that we've changed the flags.  */
   if (DECL_RTL_SET_P (decl))
-    make_decl_rtl (decl, NULL);
+    make_decl_rtl (decl);
 }
 
 void

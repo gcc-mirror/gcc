@@ -1,3 +1,9 @@
+2004-08-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* decl.c (make_rtl_for_nonlocal_decl): Set DECL_ASSEMBLER_NAME rather
+	than passing it as a parameter to rest_of_decl_compilation.
+	* decl2.c (grokfield): Use set_user_assembler_name.
+
 2004-08-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (complete_array_type): Don't gratuitously copy

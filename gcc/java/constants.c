@@ -411,7 +411,7 @@ build_constant_data_ref (void)
 
       decl = build_decl (VAR_DECL, decl_name, type);
       TREE_STATIC (decl) = 1;
-      make_decl_rtl (decl, NULL);
+      make_decl_rtl (decl);
       TYPE_CPOOL_DATA_REF (output_class) = decl;
     }
 
@@ -468,7 +468,7 @@ build_constants_constructor (void)
 						    data_list);
       DECL_SIZE (data_decl) = TYPE_SIZE (TREE_TYPE (data_decl));
       DECL_SIZE_UNIT (data_decl) = TYPE_SIZE_UNIT (TREE_TYPE (data_decl));
-      rest_of_decl_compilation (data_decl, (char *) 0, 1, 0);
+      rest_of_decl_compilation (data_decl, 1, 0);
       data_value = build_address_of (data_decl);
 
       tags_type = build_array_type (unsigned_byte_type_node, index_type);
@@ -477,7 +477,7 @@ build_constants_constructor (void)
 			      tags_type);
       TREE_STATIC (tags_decl) = 1;
       DECL_INITIAL (tags_decl) = build_constructor (tags_type, tags_list);
-      rest_of_decl_compilation (tags_decl, (char*) 0, 1, 0);
+      rest_of_decl_compilation (tags_decl, 1, 0);
       tags_value = build_address_of (tags_decl);
     }
   else

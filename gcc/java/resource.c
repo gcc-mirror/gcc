@@ -91,8 +91,8 @@ compile_resource_data (const char *name, const char *buffer, int length)
   DECL_INITIAL (decl) = rinit;
   layout_decl (decl, 0);
   pushdecl (decl);
-  rest_of_decl_compilation (decl, (char*) 0, global_bindings_p (), 0);
-  make_decl_rtl (decl, (char*) 0);
+  rest_of_decl_compilation (decl, global_bindings_p (), 0);
+  make_decl_rtl (decl);
   assemble_variable (decl, 1, 0, 0);
 
   resources = tree_cons (NULL_TREE, decl, resources);

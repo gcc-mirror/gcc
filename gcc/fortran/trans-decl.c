@@ -1318,7 +1318,7 @@ gfc_build_library_function_decl (tree name, tree rettype, int nargs, ...)
 
   pushdecl (fndecl);
 
-  rest_of_decl_compilation (fndecl, NULL, 1, 0);
+  rest_of_decl_compilation (fndecl, 1, 0);
 
   return fndecl;
 }
@@ -1802,7 +1802,7 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   /* Create the variable.  */
   pushdecl (decl);
-  rest_of_decl_compilation (decl, NULL, 1, 0);
+  rest_of_decl_compilation (decl, 1, 0);
 
   /* Also add length of strings.  */
   if (sym->ts.type == BT_CHARACTER)
@@ -1813,7 +1813,7 @@ gfc_create_module_variable (gfc_symbol * sym)
       if (!INTEGER_CST_P (length))
         {
           pushdecl (length);
-          rest_of_decl_compilation (length, NULL, 1, 0);
+          rest_of_decl_compilation (length, 1, 0);
         }
     }
 }
@@ -1969,11 +1969,11 @@ gfc_generate_function_code (gfc_namespace * ns)
   if (DECL_CONTEXT (fndecl) == NULL_TREE)
     {
       /* create RTL for function declaration */
-      rest_of_decl_compilation (fndecl, NULL, 1, 0);
+      rest_of_decl_compilation (fndecl, 1, 0);
     }
 
   /* create RTL for function definition */
-  make_decl_rtl (fndecl, NULL);
+  make_decl_rtl (fndecl);
 
   /* Set the line and filename.  sym->decalred_at seems to point to the last
      statement for subroutines, but it'll do for now.  */
@@ -2135,9 +2135,9 @@ gfc_generate_constructors (void)
 
   current_function_decl = fndecl;
 
-  rest_of_decl_compilation (fndecl, NULL, 1, 0);
+  rest_of_decl_compilation (fndecl, 1, 0);
 
-  make_decl_rtl (fndecl, NULL);
+  make_decl_rtl (fndecl);
 
   init_function_start (fndecl, input_filename, input_line);
 
