@@ -181,6 +181,13 @@ static void loop_movables_add PARAMS((struct loop_movables *,
 				      struct movable *));
 static void loop_movables_free PARAMS((struct loop_movables *));
 static int count_nonfixed_reads PARAMS ((const struct loop *, rtx));
+static void loop_bivs_find PARAMS((struct loop *));
+static void loop_bivs_init_find PARAMS((struct loop *));
+static void loop_bivs_check PARAMS((struct loop *));
+static void loop_givs_find PARAMS((struct loop *));
+static void loop_givs_check PARAMS((struct loop *));
+static void loop_biv_eliminable_p PARAMS((struct loop *, struct iv_class *,
+					  int, int));
 static void strength_reduce PARAMS ((struct loop *, int, int));
 static void find_single_use_in_loop PARAMS ((rtx, rtx, varray_type));
 static int valid_initial_value_p PARAMS ((rtx, rtx, int, rtx));
@@ -3621,25 +3628,12 @@ for_each_insn_in_loop (loop, fncall)
     }
 }
 
-/* Perform strength reduction and induction variable elimination.
-
-   Pseudo registers created during this function will be beyond the
-   last valid index in several tables including regs->n_times_set and
-   regno_last_uid.  This does not cause a problem here, because the
-   added registers cannot be givs outside of their loop, and hence
-   will never be reconsidered.  But scan_loop must check regnos to
-   make sure they are in bounds.  */
-
 static void
-strength_reduce (loop, insn_count, flags)
+loop_bivs_find (loop)
      struct loop *loop;
-     int insn_count;
-     int flags;
 {
-  struct loop_info *loop_info = LOOP_INFO (loop);
   struct loop_regs *regs = LOOP_REGS (loop);
   struct loop_ivs *ivs = LOOP_IVS (loop);
-  rtx p;
   /* Temporary list pointers for traversing ivs->loop_iv_list.  */
   struct iv_class *bl, **backbl;
   /* Ratio of extra register life span we can justify
@@ -3647,40 +3641,17 @@ strength_reduce (loop, insn_count, flags)
      since in that case saving an insn makes more difference
      and more registers are available.  */
   /* ??? could set this to last value of threshold in move_movables */
-  int threshold = (loop_info->has_call ? 1 : 2) * (3 + n_non_fixed_regs);
-  /* Map of pseudo-register replacements.  */
-  rtx *reg_map = NULL;
-  int reg_map_size;
-  int call_seen;
-  rtx test;
-  rtx end_insert_before;
-  int unrolled_insn_copies = 0;
-  rtx loop_start = loop->start;
-  rtx loop_end = loop->end;
-  rtx test_reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
+
+  ivs->loop_iv_list = 0;
 
   VARRAY_INT_INIT (ivs->reg_iv_type, max_reg_before_loop, "reg_iv_type");
-  VARRAY_GENERIC_PTR_INIT (ivs->reg_iv_info, max_reg_before_loop, "reg_iv_info");
+  VARRAY_GENERIC_PTR_INIT (ivs->reg_iv_info, max_reg_before_loop,
+			   "reg_iv_info");
   ivs->reg_biv_class = (struct iv_class **)
     xcalloc (max_reg_before_loop, sizeof (struct iv_class *));
 
-  ivs->loop_iv_list = 0;
-  addr_placeholder = gen_reg_rtx (Pmode);
-
-  /* Save insn immediately after the loop_end.  Insns inserted after loop_end
-     must be put before this insn, so that they will appear in the right
-     order (i.e. loop order).
-
-     If loop_end is the end of the current function, then emit a
-     NOTE_INSN_DELETED after loop_end and set end_insert_before to the
-     dummy note insn.  */
-  if (NEXT_INSN (loop_end) != 0)
-    end_insert_before = NEXT_INSN (loop_end);
-  else
-    end_insert_before = emit_note_after (NOTE_INSN_DELETED, loop_end);
-
   for_each_insn_in_loop (loop, check_insn_for_bivs);
-
+  
   /* Scan ivs->loop_iv_list to remove all regs that proved not to be bivs.
      Make a sanity check against regs->n_times_set.  */
   for (backbl = &ivs->loop_iv_list, bl = *backbl; bl; bl = bl->next)
@@ -3712,17 +3683,20 @@ strength_reduce (loop, insn_count, flags)
 	    fprintf (loop_dump_stream, "Reg %d: biv verified\n", bl->regno);
 	}
     }
+}
 
-  /* Exit if there are no bivs.  */
-  if (! ivs->loop_iv_list)
-    {
-      /* Can still unroll the loop anyways, but indicate that there is no
-	 strength reduction info available.  */
-      if (flags & LOOP_UNROLL)
-	unroll_loop (loop, insn_count, end_insert_before, 0);
 
-      goto egress;
-    }
+/* Determine how BIVS are initialised by looking through pre-header
+   extended basic block.  */
+static void
+loop_bivs_init_find (loop)
+     struct loop *loop;
+{
+  struct loop_info *loop_info = LOOP_INFO (loop);
+  struct loop_ivs *ivs = LOOP_IVS (loop);
+  /* Temporary list pointers for traversing ivs->loop_iv_list.  */
+  struct iv_class *bl;
+  basic_block ebb;
 
   /* Find initial value for each biv by searching backwards from loop_start,
      halting at first label.  Also record any test condition.  */
@@ -3762,10 +3736,21 @@ strength_reduce (loop, insn_count, flags)
 	    bl->initial_test = test;
 	}
     }
+}
 
-  /* Look at the each biv and see if we can say anything better about its
-     initial value from any initializing insns set up above.  (This is done
-     in two passes to avoid missing SETs in a PARALLEL.)  */
+
+/* Look at the each biv and see if we can say anything better about its
+   initial value from any initializing insns set up above.  (This is done
+   in two passes to avoid missing SETs in a PARALLEL.)  */
+static void
+loop_bivs_check (loop)
+     struct loop *loop;
+{
+  struct loop_ivs *ivs = LOOP_IVS (loop);
+  /* Temporary list pointers for traversing ivs->loop_iv_list.  */
+  struct iv_class *bl;
+  struct iv_class **backbl;
+
   for (backbl = &ivs->loop_iv_list; (bl = *backbl); backbl = &bl->next)
     {
       rtx src;
@@ -3791,7 +3776,7 @@ strength_reduce (loop, insn_count, flags)
 
       if ((GET_MODE (src) == GET_MODE (regno_reg_rtx[bl->regno])
 	   || GET_MODE (src) == VOIDmode)
-	  && valid_initial_value_p (src, bl->init_insn, call_seen, loop_start))
+	  && valid_initial_value_p (loop, src, bl->init_insn))
 	{
 	  bl->initial_value = src;
 
@@ -3799,7 +3784,8 @@ strength_reduce (loop, insn_count, flags)
 	    {
 	      if (GET_CODE (src) == CONST_INT)
 		{
-		  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (src));
+		  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, 
+			   INTVAL (src));
 		  fputc ('\n', loop_dump_stream);
 		}
 	      else
@@ -3810,26 +3796,33 @@ strength_reduce (loop, insn_count, flags)
 	    }
 	}
       /* If we can't make it a giv,
-       let biv keep initial value of "itself".  */
+	 let biv keep initial value of "itself".  */
       else if (loop_dump_stream)
 	fprintf (loop_dump_stream, "is complex\n");
     }
+}
 
-  /* Search the loop for general induction variables.  */
 
+/* Search the loop for general induction variables.  */
+
+static void
+loop_givs_find (loop)
+     struct loop* loop;
+{
   for_each_insn_in_loop (loop, check_insn_for_givs);
+}
 
-  /* Try to calculate and save the number of loop iterations.  This is
-     set to zero if the actual number can not be calculated.  This must
-     be called after all giv's have been identified, since otherwise it may
-     fail if the iteration variable is a giv.  */
 
-  loop_iterations (loop);
+/* For each giv for which we still don't know whether or not it is
+   replaceable, check to see if it is replaceable because its final value
+   can be calculated.   */
 
-  /* Now for each giv for which we still don't know whether or not it is
-     replaceable, check to see if it is replaceable because its final value
-     can be calculated.  This must be done after loop_iterations is called,
-     so that final_giv_value will work correctly.  */
+static void
+loop_givs_check (loop)
+     struct loop *loop;
+{
+  struct loop_ivs *ivs = LOOP_IVS (loop);
+  struct iv_class *bl;
 
   for (bl = ivs->loop_iv_list; bl; bl = bl->next)
     {
@@ -3839,6 +3832,140 @@ strength_reduce (loop, insn_count, flags)
 	if (! v->replaceable && ! v->not_replaceable)
 	  check_final_value (loop, v);
     }
+}
+
+
+static void
+loop_biv_eliminable_p (loop, bl, threshold, insn_count)
+     struct loop *loop;
+     struct iv_class *bl;
+     int threshold;
+     int insn_count;
+{
+  /* Test whether it will be possible to eliminate this biv
+     provided all givs are reduced.  This is possible if either
+     the reg is not used outside the loop, or we can compute
+     what its final value will be.
+     
+     For architectures with a decrement_and_branch_until_zero insn,
+     don't do this if we put a REG_NONNEG note on the endtest for
+     this biv.  */
+  
+  /* Compare against bl->init_insn rather than loop_start.
+     We aren't concerned with any uses of the biv between
+     init_insn and loop_start since these won't be affected
+     by the value of the biv elsewhere in the function, so
+     long as init_insn doesn't use the biv itself.
+     March 14, 1989 -- self@bayes.arc.nasa.gov */
+  
+  if ((REGNO_LAST_LUID (bl->regno) < INSN_LUID (loop->end)
+       && bl->init_insn
+       && INSN_UID (bl->init_insn) < max_uid_for_loop
+       && REGNO_FIRST_LUID (bl->regno) >= INSN_LUID (bl->init_insn)
+#ifdef HAVE_decrement_and_branch_until_zero
+       && ! bl->nonneg
+#endif
+       && ! reg_mentioned_p (bl->biv->dest_reg, SET_SRC (bl->init_set)))
+      || ((final_value = final_biv_value (loop, bl))
+#ifdef HAVE_decrement_and_branch_until_zero
+	  && ! bl->nonneg
+#endif
+	  ))
+    return maybe_eliminate_biv (loop, bl, 0, threshold,	insn_count);
+  else
+    return 0;
+}
+
+
+/* Perform strength reduction and induction variable elimination.
+
+   Pseudo registers created during this function will be beyond the
+   last valid index in several tables including regs->n_times_set and
+   regno_last_uid.  This does not cause a problem here, because the
+   added registers cannot be givs outside of their loop, and hence
+   will never be reconsidered.  But scan_loop must check regnos to
+   make sure they are in bounds.  */
+
+static void
+strength_reduce (loop, insn_count, flags)
+     struct loop *loop;
+     int insn_count;
+     int flags;
+{
+  struct loop_info *loop_info = LOOP_INFO (loop);
+  struct loop_regs *regs = LOOP_REGS (loop);
+  struct loop_ivs *ivs = LOOP_IVS (loop);
+  rtx p;
+  /* Temporary list pointers for traversing ivs->loop_iv_list.  */
+  struct iv_class *bl, **backbl;
+  /* Ratio of extra register life span we can justify
+     for saving an instruction.  More if loop doesn't call subroutines
+     since in that case saving an insn makes more difference
+     and more registers are available.  */
+  /* ??? could set this to last value of threshold in move_movables */
+  int threshold = (loop_info->has_call ? 1 : 2) * (3 + n_non_fixed_regs);
+  /* Map of pseudo-register replacements.  */
+  rtx *reg_map = NULL;
+  int reg_map_size;
+  int call_seen;
+  rtx test;
+  rtx end_insert_before;
+  int unrolled_insn_copies = 0;
+  rtx loop_start = loop->start;
+  rtx loop_end = loop->end;
+  rtx test_reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
+
+  addr_placeholder = gen_reg_rtx (Pmode);
+
+  /* Save insn immediately after the loop_end.  Insns inserted after loop_end
+     must be put before this insn, so that they will appear in the right
+     order (i.e. loop order).
+
+     If loop_end is the end of the current function, then emit a
+     NOTE_INSN_DELETED after loop_end and set end_insert_before to the
+     dummy note insn.  */
+  if (NEXT_INSN (loop_end) != 0)
+    end_insert_before = NEXT_INSN (loop_end);
+  else
+    end_insert_before = emit_note_after (NOTE_INSN_DELETED, loop_end);
+
+
+  /* Find all BIVs in loop.  */
+  loop_bivs_find (loop);
+
+  /* Exit if there are no bivs.  */
+  if (! ivs->loop_iv_list)
+    {
+      /* Can still unroll the loop anyways, but indicate that there is no
+	 strength reduction info available.  */
+      if (flags & LOOP_UNROLL)
+	unroll_loop (loop, insn_count, end_insert_before, 0);
+
+      goto egress;
+    }
+
+  /* Determine how BIVS are initialised by looking through pre-header
+     extended basic block.  */
+  loop_bivs_init_find (loop);
+
+  /* Look at the each biv and see if we can say anything better about its
+     initial value from any initializing insns set up above.  */
+  loop_bivs_check (loop);
+
+  /* Search the loop for general induction variables.  */
+  loop_givs_find (loop);
+
+  /* Try to calculate and save the number of loop iterations.  This is
+     set to zero if the actual number can not be calculated.  This must
+     be called after all giv's have been identified, since otherwise it may
+     fail if the iteration variable is a giv.  */
+  loop_iterations (loop);
+
+  /* Now for each giv for which we still don't know whether or not it is
+     replaceable, check to see if it is replaceable because its final value
+     can be calculated.  This must be done after loop_iterations is called,
+     so that final_giv_value will work correctly.  */
+  loop_givs_check (loop);
 
   /* Try to prove that the loop counter variable (if any) is always
      nonnegative; if so, record that fact with a REG_NONNEG note
@@ -3860,39 +3987,11 @@ strength_reduce (loop, insn_count, flags)
       int benefit;
       int all_reduced;
       rtx final_value = 0;
-
+      
       /* Test whether it will be possible to eliminate this biv
-	 provided all givs are reduced.  This is possible if either
-	 the reg is not used outside the loop, or we can compute
-	 what its final value will be.
-
-	 For architectures with a decrement_and_branch_until_zero insn,
-	 don't do this if we put a REG_NONNEG note on the endtest for
-	 this biv.  */
-
-      /* Compare against bl->init_insn rather than loop_start.
-	 We aren't concerned with any uses of the biv between
-	 init_insn and loop_start since these won't be affected
-	 by the value of the biv elsewhere in the function, so
-	 long as init_insn doesn't use the biv itself.
-	 March 14, 1989 -- self@bayes.arc.nasa.gov */
-
-      if ((REGNO_LAST_LUID (bl->regno) < INSN_LUID (loop_end)
-	   && bl->init_insn
-	   && INSN_UID (bl->init_insn) < max_uid_for_loop
-	   && REGNO_FIRST_LUID (bl->regno) >= INSN_LUID (bl->init_insn)
-#ifdef HAVE_decrement_and_branch_until_zero
-	   && ! bl->nonneg
-#endif
-	   && ! reg_mentioned_p (bl->biv->dest_reg, SET_SRC (bl->init_set)))
-	  || ((final_value = final_biv_value (loop, bl))
-#ifdef HAVE_decrement_and_branch_until_zero
-	      && ! bl->nonneg
-#endif
-	      ))
-	bl->eliminable = maybe_eliminate_biv (loop, bl, 0, threshold,
-					      insn_count);
-      else
+	 provided all givs are reduced.  */
+      if (!(bl->eliminable = loop_biv_eliminable_p (loop, bl, 
+						    threshold, insn_count)))
 	{
 	  if (loop_dump_stream)
 	    {
@@ -3906,7 +4005,7 @@ strength_reduce (loop, insn_count, flags)
 	    }
 	}
 
-      /* Check each extension dependant giv in this class to see if its
+      /* Check each extension dependent giv in this class to see if its
 	 root biv is safe from wrapping in the interior mode.  */
       check_ext_dependant_givs (bl, loop_info);
 
@@ -3997,8 +4096,9 @@ strength_reduce (loop, insn_count, flags)
 	     of such giv's whether or not we know they are used after the loop
 	     exit.  */
 
-	  if ( ! flag_reduce_all_givs && v->lifetime * threshold * benefit < insn_count
-	      && ! bl->reversed )
+	  if (! flag_reduce_all_givs
+	      && v->lifetime * threshold * benefit < insn_count
+	      && ! bl->reversed)
 	    {
 	      if (loop_dump_stream)
 		fprintf (loop_dump_stream,
