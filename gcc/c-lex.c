@@ -149,6 +149,8 @@ static tree lex_string		PARAMS ((const char *, unsigned int, int));
 static tree lex_charconst	PARAMS ((const char *, unsigned int, int));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
+static int mark_splay_tree_node PARAMS ((splay_tree_node, void *));
+static void mark_splay_tree     PARAMS ((void *));
 
 #if !USE_CPPLIB
 static int skip_white_space		PARAMS ((int));
@@ -176,7 +178,10 @@ init_c_lex (filename)
   file_info_tree = splay_tree_new ((splay_tree_compare_fn)strcmp,
 				   0,
 				   (splay_tree_delete_value_fn)free);
-  toplevel = get_fileinfo ("<top level>");
+  /* Make sure to mark the filenames in the tree for GC.  */
+  ggc_add_root (&file_info_tree, 1, sizeof (file_info_tree), 
+		mark_splay_tree);
+  toplevel = get_fileinfo (ggc_strdup ("<top level>"));
   if (flag_detailed_statistics)
     {
       header_time = 0;
@@ -2539,4 +2544,26 @@ lex_charconst (str, len, wide)
     }
 
   return value;
+}
+
+/* Mark for GC a node in a splay tree whose keys are strings.  */
+
+static int
+mark_splay_tree_node (n, data)
+     splay_tree_node n;
+     void *data ATTRIBUTE_UNUSED;
+{
+  ggc_mark_string ((char *) n->key);
+  return 0;
+}
+
+/* Mark for GC a splay tree whose keys are strings.  */
+
+static void
+mark_splay_tree (p)
+     void *p;
+{
+  splay_tree st = *(splay_tree *) p;
+  
+  splay_tree_foreach (st, mark_splay_tree_node, NULL);
 }

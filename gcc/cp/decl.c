@@ -14647,14 +14647,6 @@ mark_cp_function_context (f)
 }
 
 void
-lang_mark_false_label_stack (l)
-     struct label_node *l;
-{
-  /* C++ doesn't use false_label_stack.  It better be NULL.  */
-  my_friendly_assert (l == NULL, 19990904);
-}
-
-void
 lang_mark_tree (t)
      tree t;
 {

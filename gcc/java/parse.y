@@ -323,6 +323,7 @@ static void add_inner_class_fields PARAMS ((tree, tree));
 static tree build_dot_class_method PARAMS ((tree));
 static tree build_dot_class_method_invocation PARAMS ((tree));
 static void create_new_parser_context PARAMS ((int));
+static void mark_parser_ctxt PARAMS ((void *));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -332,7 +333,7 @@ int java_warning_count;
 int do_not_fold;
 /* Cyclic inheritance report, as it can be set by layout_class */
 char *cyclic_inheritance_report;
-
+ 
 /* Tell when we're within an instance initializer */
 static int in_instance_initializer;
 
@@ -597,6 +598,12 @@ goal:
 		  ggc_add_tree_root (&package_list, 1);
 		  ggc_add_tree_root (&current_this, 1);
 		  ggc_add_tree_root (&currently_caught_type_list, 1);
+		  ggc_add_root (&ctxp, 1, 
+				sizeof (struct parser_ctxt *),
+				mark_parser_ctxt);
+		  ggc_add_root (&ctxp_for_generation, 1, 
+				sizeof (struct parser_ctxt *),
+				mark_parser_ctxt);
 		}
 	compilation_unit
 		{}
@@ -15215,3 +15222,39 @@ resolve_qualified_name (name, context)
 {
 }
 #endif
+
+/* Mark P, which is really a `struct parser_ctxt **' for GC.  */
+
+static void
+mark_parser_ctxt (p)
+     void *p;
+{
+  struct parser_ctxt *pc = *((struct parser_ctxt **) p);
+  int i;
+
+  if (!pc)
+    return;
+
+#ifndef JC1_LITE
+  for (i = 0; i < 11; ++i)
+    ggc_mark_tree (pc->modifier_ctx[i]);
+  ggc_mark_tree (pc->class_type);
+  ggc_mark_tree (pc->function_decl);
+  ggc_mark_tree (pc->package);
+  ggc_mark_tree (pc->incomplete_class);
+  ggc_mark_tree (pc->gclass_list);
+  ggc_mark_tree (pc->class_list);
+  ggc_mark_tree (pc->current_parsed_class);
+  ggc_mark_tree (pc->current_parsed_class_un);
+  ggc_mark_tree (pc->non_static_initialized);
+  ggc_mark_tree (pc->static_initialized);
+  ggc_mark_tree (pc->instance_initializers);
+  ggc_mark_tree (pc->import_list);
+  ggc_mark_tree (pc->import_demand_list);
+  ggc_mark_tree (pc->current_loop);
+  ggc_mark_tree (pc->current_labeled_block);
+#endif /* JC1_LITE */
+
+  if (pc->next)
+    mark_parser_ctxt (&pc->next);
+}

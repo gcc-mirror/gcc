@@ -55,6 +55,10 @@ static tree create_primitive_vtable PARAMS ((const char *));
    before static field references.  */
 extern int always_initialize_class_p;
 
+/* Use garbage collection.  */
+
+int ggc_p = 1;
+
 /* The DECL_MAP is a mapping from (index, type) to a decl node.
    If index < max_locals, it is the index of a local variable.
    if index >= max_locals, then index-max_locals is a stack slot.
@@ -68,7 +72,7 @@ tree decl_map;
 /* A list of local variables VAR_DECLs for this method that we have seen
    debug information, but we have not reached their starting (byte) PC yet. */
 
-tree pending_local_decls = NULL_TREE;
+static tree pending_local_decls = NULL_TREE;
 
 tree throw_node [2];
 
@@ -126,7 +130,7 @@ push_jvm_slot (index, decl)
   if (DECL_LANG_SPECIFIC (decl) == NULL)
     {
       DECL_LANG_SPECIFIC (decl)
-	= (struct lang_decl *) permalloc (sizeof (struct lang_decl_var));
+	= (struct lang_decl *) ggc_alloc (sizeof (struct lang_decl_var));
       DECL_LOCAL_START_PC (decl) = 0;
       DECL_LOCAL_END_PC (decl) = DECL_CODE_LENGTH (current_function_decl);
       DECL_LOCAL_SLOT_NUMBER (decl) = index;
@@ -851,6 +855,8 @@ init_decl_processing ()
 		     sizeof (throw_node) / sizeof (tree));
   ggc_add_tree_root (predef_filenames,
 		     sizeof (predef_filenames) / sizeof (tree));
+  ggc_add_tree_root (&decl_map, 1);
+  ggc_add_tree_root (&pending_local_decls, 1);
 }
 
 
@@ -1548,7 +1554,7 @@ give_name_to_locals (jcf)
 	      end_pc = DECL_CODE_LENGTH (current_function_decl);
 	    }
 	  DECL_LANG_SPECIFIC (decl)
-	    = (struct lang_decl *) permalloc (sizeof (struct lang_decl_var));
+	    = (struct lang_decl *) ggc_alloc (sizeof (struct lang_decl_var));
 	  DECL_LOCAL_SLOT_NUMBER (decl) = slot;
 	  DECL_LOCAL_START_PC (decl) = start_pc;
 #if 0
@@ -1817,4 +1823,58 @@ end_java_method ()
   current_function_decl = NULL_TREE;
   permanent_allocation (1);
   asynchronous_exceptions = flag_asynchronous_exceptions;
+}
+
+/* Mark language-specific parts of T for garbage-collection.  */
+
+void
+lang_mark_tree (t)
+     tree t;
+{
+  if (TREE_CODE (t) == IDENTIFIER_NODE)
+    {
+      struct lang_identifier *li = (struct lang_identifier *) t;
+      ggc_mark_tree (li->global_value);
+      ggc_mark_tree (li->local_value);
+      ggc_mark_tree (li->utf8_ref);
+    }
+  else if (TREE_CODE (t) == VAR_DECL
+	   || TREE_CODE (t) == PARM_DECL)
+    {
+      struct lang_decl_var *ldv = 
+	((struct lang_decl_var *) DECL_LANG_SPECIFIC (t));
+      if (ldv)
+	{
+	  ggc_mark (ldv);
+	  ggc_mark_tree (ldv->slot_chain);
+	}
+    }
+  else if (TREE_CODE (t) == FUNCTION_DECL)
+    {
+      struct lang_decl *ld = DECL_LANG_SPECIFIC (t);
+      
+      if (ld)
+	{
+	  ggc_mark (ld);
+	  ggc_mark_tree (ld->throws_list);
+	  ggc_mark_tree (ld->function_decl_body);
+	  ggc_mark_tree (ld->called_constructor);
+	  ggc_mark_tree (ld->inner_access);
+	}
+    }
+  else if (TYPE_P (t))
+    {
+      struct lang_type *lt = TYPE_LANG_SPECIFIC (t);
+      
+      if (lt)
+	{
+	  ggc_mark (lt);
+	  ggc_mark_tree (lt->signature);
+	  ggc_mark_tree (lt->cpool_data_ref);
+	  ggc_mark_tree (lt->finit_stmt_list);
+	  ggc_mark_tree (lt->clinit_stmt_list);
+	  ggc_mark_tree (lt->ii_block);
+	  ggc_mark_tree (lt->dot_class);
+	}
+    }
 }

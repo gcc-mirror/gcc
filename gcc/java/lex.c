@@ -1081,14 +1081,7 @@ java_lex (java_lval)
       if (!no_error || (c != '"'))
 	java_lval->node = error_mark_node; /* Requires futher testing FIXME */
       else
-	{
-	  tree s = make_node (STRING_CST);
-	  TREE_STRING_LENGTH (s) = strlen (string);
-	  TREE_STRING_POINTER (s) = 
-	    obstack_alloc (expression_obstack, TREE_STRING_LENGTH (s)+1);
-	  strcpy (TREE_STRING_POINTER (s), string);
-	  java_lval->node = s;
-	}
+	java_lval->node = build_string (strlen (string), string);
 #endif
       return STRING_LIT_TK;
     }

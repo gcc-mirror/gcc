@@ -305,8 +305,8 @@ splay_tree_insert (sp, key, value)
 	  node->right->left = 0;
 	}
 
-    sp->root = node;
-  }
+      sp->root = node;
+    }
 
   return sp->root;
 }

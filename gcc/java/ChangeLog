@@ -1,3 +1,26 @@
+2000-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	Convert to GC.
+	* Make-lang.in (s-java): Don't depend on ggc-callbacks.o.
+	* Makefile.in (BACKEND): Don't include ggc-callbacks.o.
+	(typeck.o): Depend on ggc.h.
+	* class.c (add_method_1): Use GC functions for allocation.
+	(init_class_processing): Register roots.
+	* decl.c (ggc_p): Set to 1.
+	(pending_local_decls): Make it static.
+	(push_jvm_slot): Use GC functions for allocation.
+	(init_decl_processing): Register roots.
+	(give_name_to_locals): Use GC functions for allocation.
+	(lang_mark_tree): New function.
+	* java-tree.h (MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC): Use GC
+	functions for allocation.
+	* jcf-parse.c (jcf_parse_source): Use ggc_strdup.
+	* lex.c (java_lex): Use build_string, rather than replicating it
+	inline.
+	* parse.y (goal): Add more roots.
+	(mark_parser_ctxt): New function.
+	* typeck.c: Include ggc.h.
+	
 2000-09-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (maybe_yank_clinit): Also keep <clinit> if its body

@@ -33,6 +33,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Statistics about the allocation.  */
 static ggc_statistics *ggc_stats;
 
+/* The FALSE_LABEL_STACK, declared in except.h, has language-dependent
+   semantics.  If a front-end needs to mark the false label stack, it
+   should set this pointer to a non-NULL value.  Otherwise, no marking
+   will be done.  */
+void (*lang_mark_false_label_stack) PARAMS ((struct label_node *));
+
 /* Trees that have been marked, but whose children still need marking.  */
 varray_type ggc_pending_trees;
 

@@ -33,6 +33,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "convert.h"
 #include "toplev.h"
+#include "ggc.h"
 
 static tree convert_ieee_real_to_integer PARAMS ((tree, tree));
 static tree parse_signature_type PARAMS ((const unsigned char **,

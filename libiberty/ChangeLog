@@ -1,3 +1,7 @@
+2000-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.c (splay_tree_insert): Fix formatting.
+
 2000-09-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.c (splay_tree_predecessor): Fix typo in comment.

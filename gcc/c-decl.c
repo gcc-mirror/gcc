@@ -6705,6 +6705,11 @@ c_expand_body (fndecl, nested_p)
      tree fndecl;
      int nested_p;
 {
+  /* There's no reason to do any of the work here if we're only doing
+     semantic analysis; this code just generates RTL.  */
+  if (flag_syntax_only)
+    return;
+
   /* Squirrel away our current state.  */
   if (nested_p)
     push_function_context ();
@@ -6980,17 +6985,6 @@ copy_lang_decl (decl)
   bcopy ((char *)DECL_LANG_SPECIFIC (decl), (char *)ld, 
 	 sizeof (struct lang_decl));
   DECL_LANG_SPECIFIC (decl) = ld;
-}
-
-/* Mark ARG for GC.  */
-
-void
-lang_mark_false_label_stack (arg)
-     struct label_node *arg;
-{
-  /* C doesn't use false_label_stack.  It better be NULL.  */
-  if (arg != NULL)
-    abort ();
 }
 
 /* Mark the language specific bits in T for GC.  */
