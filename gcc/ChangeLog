@@ -1,3 +1,8 @@
+2000-08-31  Jeff Law <law@cygnus.com>
+
+        * arm.c (legitimize_pic_address): Use no_new_pseudos to determine
+        when we can safely allocate new registers.
+
 2000-08-31  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* stmt.c (expand_asm_operands): Twiddle generating_concat_p
