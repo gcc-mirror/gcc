@@ -2795,6 +2795,10 @@ init_emit_once (line_numbers)
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
     }
 
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_CC); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    const_tiny_rtx[0][(int) mode] = const0_rtx;
+
   stack_pointer_rtx = gen_rtx (REG, Pmode, STACK_POINTER_REGNUM);
   frame_pointer_rtx = gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM);
 
