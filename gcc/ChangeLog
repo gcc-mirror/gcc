@@ -1,3 +1,8 @@
+2002-04-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (output_profile_hook): Do not increment
+	labelno.
+
 2002-04-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/invoke.texi: Remove Chill references.
