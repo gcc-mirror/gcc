@@ -1,3 +1,10 @@
+Mon Apr 16 08:02:14 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* install.texi (mips-mips-bsd): Update list of functions
+	required to include memmove.
+	* tm.texi (TARGET_MEM_FUNCTIONS): Update list of implicitly
+	used functions to include memmove.
+
 2001-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-dump.c (dequeue_and_dump): Don't look at DECL_ASSEMBLER_NAME
