@@ -1,5 +1,13 @@
 2004-09-10  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/frv/frv.md (UNSPEC_MASACCS, UNSPEC_MDASACCS): New constants.
+	(maddaccs, msubaccs, *maddacc): Turn operand 0 into a single ACC/ACCG
+	pair.  Remove match_dup from inputs.  Remove masaccs handling.
+	(mdaddaccs, mdsubaccs, *mdaddacc): Likewise a dual ACC/ACCG pair.
+	(masaccs, mdasaccs): Turn into define_insns.
+
+2004-09-10  Richard Sandiford  <rsandifo@redhat.com>
+
 	* tree-tailcall.c (process_assignment): Only do accumulator transforms
 	for floating-point types if flag_unsafe_math_optimizations.
 
