@@ -1,6 +1,9 @@
 LIB1ASMSRC = sh/lib1funcs.asm
 LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movstr \
-  _movstr_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr
+  _movstr_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \
+  $(LIB1ASMFUNCS_CACHE)
+
+LIB2FUNCS_EXTRA=$(srcdir)/config/sh/embed_bb.c
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.

@@ -1,3 +1,50 @@
+Tue Apr  9 19:15:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config.gcc (sh-*-elf*): Use sh/embed-elf.h instead of sh/elf.h.
+	(sh64-*-elf*, sh-*-rtemself*): Likewise.
+	* config/sh/embed_bb.c: New file.
+	* config/sh/embed-elf.h: New file.
+	* sh.h (CPP_SPEC): Supply __SIZE_TYPE__ and __PTRDIFF_TYPE__
+	if -m[12345]* option is given.  Don't use subtarget_cpp_ptr_spec.
+	(CPP_DEFAULT_CPU_SPEC): Add settings for __SIZE_TYPE__ and
+	__PTRDIFF_TYPE__ .
+	(SUBTARGET_CPP_PTR_SPEC): Don't define.
+	(EXTRA_SPECS): Remove subtarget_cpp_ptr_spec.
+	Add subtarget_asm_endian_spec.
+	(ASM_SPEC): Use subtarget_asm_endian_spec.
+	(SUBTARGET_ASM_ENDIAN_SPEC): Define.
+	(RETURN_ADDR_RTX): Use PR_MEDIA_REG for TARGET_SH5.
+	(WCHAR_UNSIGNED): Define.
+	(SH_ELF_WCHAR_TYPE, SH_DBX_REGISTER_NUMBER): Define.
+	(DBX_REGISTER_NUMBER): Use SH_DBX_REGISTER_NUMBER.
+	(ALLOCATE_INITIAL_VALUE): Use PR_MEDIA_REG for TARGET_SH5.
+	Fix value.
+	* sh.c (calc_live_regs): Use PR_MEDIA_REG for TARGET_SH5.
+	(sh_adjust_cost): Likewise.
+	sh64.h (CPP_DEFAULT_CPU_SPEC): Add settings for __SIZE_TYPE__ and
+	__PTRDIFF_TYPE__ .
+	(SUBTARGET_CPP_PTR_SPEC, WCHAR_TYPE): Don't #undef/ #define.
+	(WCHAR_TYPE_SIZE): Likewise.
+	(ASM_SPEC): Use subtarget_asm_endian_spec.
+	(SH_ELF_WCHAR_TYPE): #undef/ #define.
+	(MAX_WCHAR_TYPE_SIZE): Don't #undef.
+	* config/sh/elf.h (WCHAR_UNSIGNED): #undef .
+	(MAX_WCHAR_TYPE_SIZE): Don't #define .
+	(WCHAR_TYPE, WCHAR_TYPE_SIZE): #undef / #define .
+	(USER_LABEL_PREFIX): Don't #undef /#define .
+	(DBX_REGISTER_NUMBER): Use SH_DBX_REGISTER_NUMBER.
+	* config/elf/linux.h (USER_LABEL_PREFIX): Don't #undef /#define .
+	(SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE, WCHAR_TYPE_SIZE): Likewise.
+	(ASM_SPEC): Likewise.
+	(SUBTARGET_ASM_ENDIAN_SPEC): #undef / #define .
+	(CC1_SPEC): don't supply -m3 for -m4*, -m5*.
+	* t-sh: (LIB1ASMFUNCS): Use LIB1ASMFUNCS_CACHE.
+	(LIB2FUNCS_EXTRA): Define.
+	* t-sh64 (LIB2FUNCS_EXTRA): Define.
+	* config/sh/t-linux (LIB1ASMFUNCS): Don't redefine.
+	(LIB1ASMFUNCS_CACHE): Define.
+	(LIB2FUNCS_EXTRA): Redefine empty.
+
 2002-04-08  Richard Henderson  <rth@redhat.com>
 
 	* reorg.c (get_branch_condition): Use reversed_comparison_code.

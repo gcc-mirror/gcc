@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler for Hitachi / SuperH SH
+/* Definitions of target machine for GNU compiler for Hitachi / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).

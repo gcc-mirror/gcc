@@ -6,6 +6,8 @@ LIB1ASMFUNCS = \
   _shcompact_incoming_args _ic_invalidate _nested_trampoline \
   _push_pop_shmedia_regs
 
+LIB2FUNCS_EXTRA=$(srcdir)/config/sh/embed_bb.c
+
 MULTILIB_OPTIONS= ml m5-32media-nofpu/m5-compact/m5-compact-nofpu/m5-64media/m5-64media-nofpu
 MULTILIB_DIRNAMES= ml nofpu compact nofpu/compact media64 nofpu/media64
 MULTILIB_MATCHES=

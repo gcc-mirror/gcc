@@ -56,10 +56,11 @@ extern int code_for_indirect_jump_scratch;
 %{m4-single:-D__SH4_SINGLE__} \
 %{m4-nofpu:-D__sh3__ -D__SH4_NOFPU__} \
 %{m4:-D__SH4__} \
+%{m1|m2|m3*|m4*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{m5*:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
 %{!m1:%{!m2:%{!m3*:%{!m4*:%{!m5*:%(cpp_default_cpu_spec)}}}}} \
 %{mhitachi:-D__HITACHI__} \
 %(subtarget_cpp_spec) \
-%(subtarget_cpp_ptr_spec) \
 %(subtarget_cpp_endian_spec) "
 
 #ifndef SUBTARGET_CPP_ENDIAN_SPEC
@@ -71,25 +72,24 @@ extern int code_for_indirect_jump_scratch;
 #endif
 
 #ifndef CPP_DEFAULT_CPU_SPEC
-#define CPP_DEFAULT_CPU_SPEC "-D__sh1__"
+#define CPP_DEFAULT_CPU_SPEC \
+  "-D__sh1__ -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int"
 #endif
 
-#ifndef SUBTARGET_CPP_PTR_SPEC
-#define SUBTARGET_CPP_PTR_SPEC "\
-%{m5-64media|m5-64media-nofpu|m5-32media|m5-32media-nofpu|m5-compact|m5-compact-nofpu:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-%{!m5-64media:%{!m5-64media-nofpu:%{!m5-32media:%{!m5-32media-nofpu:%{!m5-compact:%{!m5-compact-nofpu:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}} \
-"
-#endif
 
 #define EXTRA_SPECS						\
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },			\
   { "subtarget_cpp_endian_spec", SUBTARGET_CPP_ENDIAN_SPEC },	\
-  { "subtarget_cpp_ptr_spec", SUBTARGET_CPP_PTR_SPEC },		\
-  { "cpp_default_cpu_spec", CPP_DEFAULT_CPU_SPEC },
+  { "cpp_default_cpu_spec", CPP_DEFAULT_CPU_SPEC },		\
+  { "subtarget_asm_endian_spec", SUBTARGET_ASM_ENDIAN_SPEC },
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu=sh -Amachine=sh"
 
-#define ASM_SPEC  "%{ml:-little} %{mrelax:-relax}"
+#define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax}"
+
+#ifndef SUBTARGET_ASM_ENDIAN_SPEC
+#define SUBTARGET_ASM_ENDIAN_SPEC "%{ml:-little}"
+#endif
 
 #define LINK_SPEC "%{ml:-m shl} %{mrelax:-relax}"
 
@@ -2057,7 +2057,7 @@ while (0)
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
   (((COUNT) == 0)				\
-   ? get_hard_reg_initial_val (Pmode, PR_REG) \
+   ? get_hard_reg_initial_val (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG) \
    : (rtx) 0)
 
 /* Generate necessary RTL for __builtin_saveregs().  */
@@ -2522,6 +2522,9 @@ while (0)
 
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
+#define WCHAR_UNSIGNED 1
+
+#define SH_ELF_WCHAR_TYPE "long int"
 
 /* Don't cse the address of the function being compiled.  */
 /*#define NO_RECURSIVE_FUNCTION_CSE 1*/
@@ -2892,8 +2895,11 @@ while (0)
 /* DBX register number for a given compiler register number.  */
 /* GDB has FPUL at 23 and FP0 at 25, so we must add one to all FP registers
    to match gdb.  */
-/* If you change this macro, make sure you update it in elf.h too.  */
-#define DBX_REGISTER_NUMBER(REGNO) \
+/* svr4.h undefines this macro, yet we really want to use the same numbers
+   for coff as for elf, so we go via another macro: SH_DBX_REGISTER_NUMBER.  */
+#define DBX_REGISTER_NUMBER(REGNO) SH_DBX_REGISTER_NUMBER (REGNO)
+
+#define SH_DBX_REGISTER_NUMBER(REGNO) \
   (GENERAL_REGISTER_P (REGNO) \
    ? ((REGNO) - FIRST_GENERAL_REG) \
    : FP_REGISTER_P (REGNO) \
@@ -3298,10 +3304,13 @@ extern struct rtx_def *fpscr_rtx;
 #endif /* (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__ */
 
 #define ALLOCATE_INITIAL_VALUE(hard_reg) \
-  (REGNO (hard_reg) == PR_REG \
+  (REGNO (hard_reg) == (TARGET_SH5 ? PR_MEDIA_REG : PR_REG) \
    ? (current_function_is_leaf && ! sh_pr_n_sets () \
       ? (hard_reg) \
-      : gen_rtx_MEM (Pmode, arg_pointer_rtx)) \
+      : gen_rtx_MEM (Pmode, TARGET_SH5 \
+			    ? (plus_constant (arg_pointer_rtx, \
+					      TARGET_SHMEDIA64 ? -8 : -4)) \
+			    : frame_pointer_rtx)) \
    : NULL_RTX)
 
 #endif /* ! GCC_SH_H */
