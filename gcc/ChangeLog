@@ -1,5 +1,7 @@
 Wed Sep  5 17:28:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
+	* profile.c (branch_prob): Call add_noreturn_fake_exit_edges.
+
 	* i386.c (size_cost): New static variable.
 	(override_function): Use size_cost when -Os is specified.
 
