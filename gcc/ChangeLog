@@ -1,3 +1,13 @@
+2004-06-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* fold-const.c (fold_cond_expr_with_comparison):
+	New function, extracted from fold.
+	(fold): Extract code to fold A op B ? A : C, use
+	it to fold A op B ? C : A.  Really optimize
+	A & N ? N : 0 where N is a power of two.  Avoid
+	relying on canonicalization and recursion for
+	foldings of COND_EXPR to happen.
+	
 2004-06-20  David Ayers  <d.ayers@inode.at>
 
 	* objc/objc-act.h (get_object_reference): Rename to
