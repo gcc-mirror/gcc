@@ -56,9 +56,6 @@ MAKEOVERRIDES =
 # Standard autoconf-set variables
 # -------------------------------
 
-# Directory where sources are, from where we are.
-VPATH = @srcdir@
-
 build=@build@
 host=@host@
 target=@target@
@@ -87,6 +84,20 @@ top_builddir = ..
 # objdir is set by configure.
 # It's normally the absolute path to the current directory.
 objdir = @objdir@
+
+# --------
+# Defined vpaths
+# --------
+
+# Directory where sources are, from where we are.
+VPATH = @srcdir@
+
+# We define a vpath for the sources of the .texi files here because they 
+# are split between multiple directories and we would rather use one implicit
+# pattern rule for everything.
+# This vpath could be extended within the Make-lang fragments.
+
+vpath %.texi $(docdir):$(docdir)/include
 
 # --------
 # UNSORTED
@@ -2617,39 +2628,30 @@ stmp-docobjdir:
 	$(STAMP) stmp-docobjdir
 
 doc: $(BUILD_INFO) $(GENERATED_MANPAGES) gccbug
-info:: $(docobjdir)/cpp.info $(docobjdir)/gcc.info $(docobjdir)/gccint.info $(docobjdir)/gccinstall.info $(docobjdir)/cppinternals.info
+info:: $(docobjdir)/cpp.info $(docobjdir)/gcc.info $(docobjdir)/gccint.info \
+	 $(docobjdir)/gccinstall.info $(docobjdir)/cppinternals.info
 
-TEXI_CPP_FILES = $(docdir)/cpp.texi $(docdir)/include/fdl.texi \
-  $(docdir)/cppenv.texi $(docdir)/cppopts.texi
+TEXI_CPP_FILES = cpp.texi fdl.texi cppenv.texi cppopts.texi
 
-TEXI_GCC_FILES = $(docdir)/gcc.texi $(docdir)/include/gcc-common.texi \
-	 $(docdir)/frontends.texi $(docdir)/standards.texi \
-	 $(docdir)/invoke.texi $(docdir)/extend.texi $(docdir)/md.texi \
-	 $(docdir)/objc.texi $(docdir)/gcov.texi $(docdir)/trouble.texi \
-	 $(docdir)/bugreport.texi $(docdir)/service.texi \
-	 $(docdir)/contribute.texi $(docdir)/compat.texi \
-	 $(docdir)/include/funding.texi $(docdir)/gnu.texi \
-	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
-	 $(docdir)/contrib.texi $(docdir)/cppenv.texi $(docdir)/cppopts.texi
+TEXI_GCC_FILES = gcc.texi gcc-common.texi frontends.texi standards.texi \
+	 invoke.texi extend.texi md.texi objc.texi gcov.texi trouble.texi \
+	 bugreport.texi service.texi contribute.texi compat.texi funding.texi \
+	 gnu.texi gpl.texi fdl.texi contrib.texi cppenv.texi cppopts.texi
 
-TEXI_GCCINT_FILES = $(docdir)/gccint.texi \
-	 $(docdir)/include/gcc-common.texi $(docdir)/contribute.texi \
-	 $(docdir)/makefile.texi $(docdir)/configterms.texi \
-	 $(docdir)/portability.texi $(docdir)/interface.texi \
-	 $(docdir)/passes.texi $(docdir)/c-tree.texi \
-	 $(docdir)/rtl.texi $(docdir)/md.texi $(docdir)/tm.texi \
-	 $(docdir)/hostconfig.texi $(docdir)/fragments.texi \
-	 $(docdir)/configfiles.texi $(docdir)/collect2.texi \
-	 $(docdir)/headerdirs.texi $(docdir)/include/funding.texi \
-	 $(docdir)/gnu.texi $(docdir)/include/gpl.texi \
-	 $(docdir)/include/fdl.texi $(docdir)/contrib.texi \
-	 $(docdir)/languages.texi $(docdir)/sourcebuild.texi \
-	 $(docdir)/gty.texi $(docdir)/libgcc.texi
+TEXI_GCCINT_FILES = gccint.texi gcc-common.texi contribute.texi makefile.texi \
+	 configterms.texi portability.texi interface.texi passes.texi \
+	 c-tree.texi rtl.texi md.texi tm.texi hostconfig.texi fragments.texi \
+	 configfiles.texi collect2.texi headerdirs.texi funding.texi gnu.texi \
+	 gpl.texi fdl.texi contrib.texi languages.texi sourcebuild.texi \
+	 gty.texi libgcc.texi
 
-TEXI_GCCINSTALL_FILES = $(docdir)/install.texi $(docdir)/install-old.texi \
-	 $(docdir)/include/fdl.texi
+TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi
 
-TEXI_CPPINT_FILES = $(docdir)/cppinternals.texi
+TEXI_CPPINT_FILES = cppinternals.texi
+
+# The *.1, *.7, *.info, and *.dvi files are being generated from implicit 
+# patterns.   To use them, put each of the specific target with with their 
+# specific dependencies but no build commands.
 
 $(docobjdir)/cpp.info cpp.dvi: $(TEXI_CPP_FILES)
 $(docobjdir)/gcc.info gcc.dvi: $(TEXI_GCC_FILES)
@@ -2657,7 +2659,7 @@ $(docobjdir)/gccint.info gccint.dvi: $(TEXI_GCCINT_FILES)
 $(docobjdir)/gccinstall.info gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
 $(docobjdir)/cppinternals.info cppinternals.dvi: $(TEXI_CPPINT_FILES)
 
-$(docobjdir)/%.info: $(docdir)/%.texi stmp-docobjdir
+$(docobjdir)/%.info: %.texi stmp-docobjdir
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 		$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) \
 			-I $(docdir)/include -o $@ $<; \
@@ -2665,7 +2667,7 @@ $(docobjdir)/%.info: $(docdir)/%.texi stmp-docobjdir
 
 dvi:: gcc.dvi gccint.dvi gccinstall.dvi cpp.dvi cppinternals.dvi
 
-%.dvi: $(docdir)/%.texi
+%.dvi: %.texi stmp-docobjdir
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $<
 
 gccinstall.dvi:
@@ -2676,32 +2678,37 @@ generated-manpages:: $(docobjdir)/gcov.1 $(docobjdir)/cpp.1 \
 	$(docobjdir)/gcc.1 $(docobjdir)/gfdl.7 $(docobjdir)/gpl.7 \
 	$(docobjdir)/fsf-funding.7
 
-$(docobjdir)/gcov.1: $(docdir)/gcov.texi
-$(docobjdir)/cpp.1: $(docdir)/cpp.texi $(docdir)/cppenv.texi \
-  $(docdir)/cppopts.texi
-$(docobjdir)/gcc.1: $(docdir)/invoke.texi $(docdir)/cppenv.texi \
-  $(docdir)/cppopts.texi
-$(docobjdir)/gfdl.7: $(docdir)/include/fdl.texi
-$(docobjdir)/gpl.7: $(docdir)/include/gpl.texi
-$(docobjdir)/fsf-funding.7: $(docdir)/include/funding.texi
-
-$(docobjdir)/%.1: $(docdir)/%.texi stmp-docobjdir
+$(docobjdir)/%.1: %.pod stmp-docobjdir
 	$(STAMP) $@
-	-$(TEXI2POD) $< > $(basename $(notdir $@)).pod
-	-($(POD2MAN) --section=1 \
-			$(basename $(notdir $@)).pod > $(@).T$$$$ && \
+	-($(POD2MAN) --section=1 $< > $(@).T$$$$ && \
 		mv -f $(@).T$$$$ $@) || \
 		(rm -f $(@).T$$$$ && exit 1)
-	-rm -f $(basename $(notdir $@)).pod
 
-$(docobjdir)/%.7: $(docdir)/%.texi stmp-docobjdir
+$(docobjdir)/%.7: %.pod stmp-docobjdir
 	$(STAMP) $@
-	-$(TEXI2POD) $< > $(basename $(notdir $@)).pod
-	-($(POD2MAN) --section=7 \
-			$(basename $(notdir $@)).pod > $(@).T$$$$ && \
+	-($(POD2MAN) --section=7 $< > $(@).T$$$$ && \
 		mv -f $(@).T$$$$ $@) || \
 		(rm -f $(@).T$$$$ && exit 1)
-	-rm -f $(basename $(notdir $@)).pod
+
+%.pod: %.texi
+	$(STAMP) $@
+	-$(TEXI2POD) $< > $@
+
+.INTERMEDIATE: cpp.pod gcc.pod gfdl.pod fsf-funding.pod
+cpp.pod: cpp.texi cppenv.texi cppopts.texi
+
+# These next rules exist because the output name is not the same as
+# the input name, so our implict %.pod rule will not work.
+
+gcc.pod: invoke.texi cppenv.texi cppopts.texi
+	$(STAMP) $@
+	-$(TEXI2POD) $< > $@
+gfdl.pod: fdl.texi
+	$(STAMP) $@
+	-$(TEXI2POD) $< > $@
+fsf-funding.pod: funding.texi
+	$(STAMP) $@
+	-$(TEXI2POD) $< > $@
 
 #
 # Deletion of files made during compilation.
