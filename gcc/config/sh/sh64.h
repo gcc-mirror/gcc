@@ -23,9 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION \
   fputs (" (SuperH SH)", stderr);
 
-#undef CPP_DEFAULT_CPU_SPEC
-#define CPP_DEFAULT_CPU_SPEC "-D__SH5__=32 -D__SHMEDIA__"
-
 #undef ASM_SPEC
 #define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax} \
 %{m5-compact*:--isa=SHcompact} \
@@ -34,19 +31,11 @@ Boston, MA 02111-1307, USA.  */
 %{!m1:%{!m2:%{!m3*:%{!m4*:%{!m5*:--isa=SHmedia --abi=32}}}}} \
 "
 
-#undef LINK_SPEC
-#define LINK_SPEC " \
-%{m5-compact:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
-%{m5-compact-nofpu:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
-%{m5-32media:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
-%{m5-32media-nofpu:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
-%{m5-64media:%{!ml:-m shelf64} %{ml:-m shlelf64}} \
-%{m5-64media-nofpu:%{!ml:-m shelf64} %{ml:-m shlelf64}} \
-%{!m1:%{!m2:%{!m3:%{!m3e:%{!m4:%{!m4-single:%{!m4-single-only:%{!m4-nofpu:%{!m5-64media:%{!m5-64media-nofpu:%{!m5-32media:%{!m5-32media-nofpu:%{!m5-compact:%{!m5-compact-nofpu:%{!ml:-m shelf32} %{ml:-m shlelf32}}}}}}}}}}}}}}} \
-%{mrelax:-relax}"
+#undef LINK_DEFAULT_CPU_EMUL
+#define LINK_DEFAULT_CPU_EMUL "32"
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT  (SH5_BIT|SH4_BIT|SH3E_BIT)
+#define TARGET_DEFAULT  (SH5_BIT|SH4_BIT|SH3E_BIT|TARGET_ENDIAN_DEFAULT)
 
 #undef SH_ELF_WCHAR_TYPE
 #define SH_ELF_WCHAR_TYPE "int"

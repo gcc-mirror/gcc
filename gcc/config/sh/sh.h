@@ -32,63 +32,55 @@ Boston, MA 02111-1307, USA.  */
 /* ??? No longer true.  */
 extern int code_for_indirect_jump_scratch;
 
-/* Generate SDB debugging information.  */
-
-#define SDB_DEBUGGING_INFO
-
-/* Output DBX (stabs) debugging information if doing -gstabs.  */
-
-#include "dbxcoff.h"
-
-#define SDB_DELIM ";"
-
-#define CPP_SPEC " \
-%{m5-64media|m5-64media-nofpu|m5-32media|m5-32media-nofpu:-D__SHMEDIA__=1} \
-%{m5-compact|m5-compact-nofpu:-D__SHMEDIA__=0} \
-%{m5-64media|m5-64media-nofpu:-D__SH5__=64 -D__LONG_MAX__=9223372036854775807L} \
-%{m5-32media|m5-32media-nofpu|m5-compact|m5-compact-nofpu:-D__SH5__=32} \
-%{m5-64media-nofpu|m5-32media-nofpu|m5-compact-nofpu:-D__SH4_NOFPU__} \
-%{m1:-D__sh1__} \
-%{m2:-D__sh2__} \
-%{m3:-D__sh3__} \
-%{m3e:-D__SH3E__} \
-%{m4-single-only:-D__SH4_SINGLE_ONLY__} \
-%{m4-single:-D__SH4_SINGLE__} \
-%{m4-nofpu:-D__sh3__ -D__SH4_NOFPU__} \
-%{m4:-D__SH4__} \
-%{!m1:%{!m2:%{!m3*:%{!m4*:%{!m5*:%(cpp_default_cpu_spec)}}}}} \
-%{mhitachi:-D__HITACHI__} \
-%(subtarget_cpp_spec) \
-%(subtarget_cpp_endian_spec) "
-
-#ifndef SUBTARGET_CPP_ENDIAN_SPEC
-#define SUBTARGET_CPP_ENDIAN_SPEC "%{ml:-D__LITTLE_ENDIAN__}"
-#endif
-
-#ifndef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC ""
-#endif
-
-#ifndef CPP_DEFAULT_CPU_SPEC
-#define CPP_DEFAULT_CPU_SPEC "-D__sh1__"
-#endif
-
-
-#define EXTRA_SPECS						\
-  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },			\
-  { "subtarget_cpp_endian_spec", SUBTARGET_CPP_ENDIAN_SPEC },	\
-  { "cpp_default_cpu_spec", CPP_DEFAULT_CPU_SPEC },		\
-  { "subtarget_asm_endian_spec", SUBTARGET_ASM_ENDIAN_SPEC },
-
-#define CPP_PREDEFINES "-D__sh__ -Acpu=sh -Amachine=sh"
-
-#define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax}"
-
-#ifndef SUBTARGET_ASM_ENDIAN_SPEC
-#define SUBTARGET_ASM_ENDIAN_SPEC "%{ml:-little}"
-#endif
-
-#define LINK_SPEC "%{ml:-m shl} %{mrelax:-relax}"
+#define TARGET_CPU_CPP_BUILTINS() \
+do { \
+  builtin_define ("__sh__"); \
+  builtin_assert ("cpu=sh"); \
+  builtin_assert ("machine=sh"); \
+  switch ((int) sh_cpu) \
+    { \
+    case PROCESSOR_SH1: \
+      builtin_define ("__sh1__"); \
+      break; \
+    case PROCESSOR_SH2: \
+      builtin_define ("__sh2__"); \
+      break; \
+    case PROCESSOR_SH3: \
+      builtin_define ("__sh3__"); \
+      builtin_define ("__SH3__"); \
+      if (TARGET_HARD_SH4) \
+	builtin_define ("__SH4_NOFPU__"); \
+      break; \
+    case PROCESSOR_SH3E: \
+      builtin_define (TARGET_HARD_SH4 ? "__SH4_SINGLE_ONLY__" : "__SH3E__"); \
+      break; \
+    case PROCESSOR_SH4: \
+      builtin_define (TARGET_FPU_SINGLE ? "__SH4_SINGLE__" : "__SH4__"); \
+      break; \
+    case PROCESSOR_SH5: \
+      { \
+	builtin_define_with_value ("__SH5__", \
+				   TARGET_SHMEDIA64 ? "64" : "32", 0); \
+	builtin_define_with_value ("__SHMEDIA__", \
+				   TARGET_SHMEDIA ? "1" : "0", 0); \
+	if (! TARGET_FPU_DOUBLE) \
+	  builtin_define ("__SH4_NOFPU__"); \
+	if (TARGET_SHMEDIA64) \
+	  builtin_define_with_value ("__LONG_MAX__", \
+				     "9223372036854775807L", 0); \
+      } \
+    } \
+  if (TARGET_HITACHI) \
+    builtin_define ("__HITACHI__"); \
+  builtin_define (TARGET_LITTLE_ENDIAN \
+		  ? "__LITTLE_ENDIAN__" : "__BIG_ENDIAN__"); \
+  if (flag_pic) \
+    { \
+      builtin_define ("__pic__"); \
+      builtin_define ("__PIC__"); \
+    } \
+  TARGET_OBJFMT_CPP_BUILTINS (); \
+} while (0)
 
 /* We can not debug without a frame pointer.  */
 /* #define CAN_DEBUG_WITHOUT_FP */
@@ -315,7 +307,53 @@ extern int target_flags;
 /* This are meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
 
-#define TARGET_DEFAULT  (SH1_BIT)
+/* This defaults us to big-endian.  */
+#ifndef TARGET_ENDIAN_DEFAULT
+#define TARGET_ENDIAN_DEFAULT 0
+#endif
+
+#define TARGET_DEFAULT  (SH1_BIT|TARGET_ENDIAN_DEFAULT)
+
+#define CPP_SPEC " %(subtarget_cpp_spec) "
+
+#ifndef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC ""
+#endif
+
+#define EXTRA_SPECS						\
+  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },			\
+  { "link_emul_prefix", LINK_EMUL_PREFIX },			\
+  { "link_default_cpu_emul", LINK_DEFAULT_CPU_EMUL },		\
+  { "subtarget_link_emul_suffix", SUBTARGET_LINK_EMUL_SUFFIX },	\
+  { "subtarget_link_spec", SUBTARGET_LINK_SPEC },		\
+  { "subtarget_asm_endian_spec", SUBTARGET_ASM_ENDIAN_SPEC },
+
+#define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax}"
+
+#ifndef SUBTARGET_ASM_ENDIAN_SPEC
+#if TARGET_ENDIAN_DEFAULT == LITTLE_ENDIAN_BIT
+#define SUBTARGET_ASM_ENDIAN_SPEC "%{mb:-big} %{!mb:-little}"
+#else
+#define SUBTARGET_ASM_ENDIAN_SPEC "%{ml:-little} %{!ml:-big}"
+#endif
+#endif
+
+#define LINK_EMUL_PREFIX "sh%{ml:l}"
+#define LINK_DEFAULT_CPU_EMUL ""
+#define SUBTARGET_LINK_EMUL_SUFFIX ""
+#define SUBTARGET_LINK_SPEC ""
+
+/* svr4.h redefines LINK_SPEC inappropriately, so go via SH_LINK_SPEC,
+   so that we can undo the damage without code replication.  */
+#define LINK_SPEC SH_LINK_SPEC
+
+#define SH_LINK_SPEC "\
+-m %(link_emul_prefix)\
+%{m5-compact*|m5-32media*:32}\
+%{m5-64media*:64}\
+%{!m1:%{!m2:%{!m3*:%{!m4*:%{!m5*:%(link_default_cpu_emul)}}}}}\
+%(subtarget_link_emul_suffix) \
+%{mrelax:-relax} %(subtarget_link_spec)"
 
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 do {									\
@@ -485,10 +523,6 @@ do {									\
   ((TREE_CODE (EXP) == STRING_CST	\
     && (ALIGN) < FASTEST_ALIGNMENT)	\
     ? FASTEST_ALIGNMENT : (ALIGN))
-
-#ifndef MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT 128
-#endif
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
@@ -2686,7 +2720,8 @@ while (0)
    nor can we indirect via the constant pool.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)				\
 	(! nonpic_symbol_mentioned_p (X)			\
-	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
+	 && (GET_CODE (X) != SYMBOL_REF				\
+	     || ! CONSTANT_POOL_ADDRESS_P (X)			\
 	     || ! nonpic_symbol_mentioned_p (get_pool_constant (X))))
 
 #define SYMBOLIC_CONST_P(X)	\
@@ -2758,12 +2793,9 @@ while (0)
 #define ASM_FILE_START(STREAM) \
   output_file_start (STREAM)
 
-#define ASM_FILE_END(STREAM)
-
 #define ASM_APP_ON  		""
 #define ASM_APP_OFF  		""
 #define FILE_ASM_OP 		"\t.file\n"
-#define IDENT_ASM_OP 		"\t.ident\t"
 #define SET_ASM_OP		"\t.set\t"
 
 /* How to change between sections.  */
@@ -2809,9 +2841,6 @@ while (0)
 /* Define this so that jump tables go in same section as the current function,
    which could be text or it could be a user defined section.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
-
-/* Switch into a generic section.  */
-#define TARGET_ASM_NAMED_SECTION  sh_asm_named_section
 
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
@@ -2915,31 +2944,11 @@ while (0)
   if ((LOG) != 0)			\
     fprintf ((FILE), "\t.align %d\n", (LOG))
 
-/* Output a function label definition.  */
-#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL) \
-    ASM_OUTPUT_LABEL((STREAM), (NAME))
-
 /* Output a globalising directive for a label.  */
 #define ASM_GLOBALIZE_LABEL(STREAM,NAME)	\
   (fprintf ((STREAM), "\t.global\t"),		\
    assemble_name ((STREAM), (NAME)),		\
    fputc ('\n', (STREAM)))
-
-/* The prefix to add to user-visible assembler symbols.  */
-
-#define USER_LABEL_PREFIX "_"
-
-/* The prefix to add to an internally generated label.  */
-
-#define LOCAL_LABEL_PREFIX ""
-
-/* Make an internal label into a string.  */
-#define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
-  sprintf ((STRING), "*%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
-
-/* Output an internal label definition.  */
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM) \
-  asm_fprintf ((FILE), "%L%s%d:\n", (PREFIX), (NUM))
 
 /* #define ASM_OUTPUT_CASE_END(STREAM,NUM,TABLE)	    */
 
@@ -2988,36 +2997,10 @@ while (0)
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  				\
   if (TARGET_BIGTABLE) 							\
-    asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 			\
+    asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 		\
   else									\
-    asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE)); 			\
+    asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE));
 
-/* Output various types of constants.  */
-
-/* Loop alignment is now done in machine_dependent_reorg, so that
-   branch shortening can know about it.  */
-
-/* This is how to output an assembler line
-   that says to advance the location counter by SIZE bytes.  */
-
-#define ASM_OUTPUT_SKIP(FILE,SIZE) \
-  fprintf ((FILE), "\t.space %d\n", (SIZE))
-
-/* This says how to output an assembler line
-   to define a global common symbol.  */
-
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
-( fputs ("\t.comm ", (FILE)),			\
-  assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%d\n", (SIZE)))
-
-/* This says how to output an assembler line
-   to define a local common symbol.  */
-
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
-( fputs ("\t.lcomm ", (FILE)),				\
-  assemble_name ((FILE), (NAME)),			\
-  fprintf ((FILE), ",%d\n", (SIZE)))
 
 /* A C statement to be executed just prior to the output of
    assembler code for INSN, to modify the extracted operands so
