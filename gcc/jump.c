@@ -231,11 +231,13 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 
   mark_all_labels (f, cross_jump);
 
-  /* Keep track of labels used from static data;
-     they cannot ever be deleted.  */
+  /* Keep track of labels used from static data; we don't track them
+     closely enough to delete them here, so make sure their reference
+     count doesn't drop to zero.  */
 
   for (insn = forced_labels; insn; insn = XEXP (insn, 1))
-    LABEL_NUSES (XEXP (insn, 0))++;
+    if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
+      LABEL_NUSES (XEXP (insn, 0))++;
 
   check_exception_handler_labels ();
 
@@ -380,14 +382,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 		  changed = 1;
 		}
 	    }
-
-	  /* If a jump references the end of the function, try to turn
-	     it into a RETURN insn, possibly a conditional one.  */
-	  if (JUMP_LABEL (insn) != 0
-	      && (next_active_insn (JUMP_LABEL (insn)) == 0
-		  || GET_CODE (PATTERN (next_active_insn (JUMP_LABEL (insn))))
-		      == RETURN))
-	    changed |= redirect_jump (insn, NULL_RTX);
 
 	  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
 
@@ -2261,6 +2255,8 @@ int
 returnjump_p (insn)
      rtx insn;
 {
+  if (GET_CODE (insn) != JUMP_INSN)
+    return 0;
   return for_each_rtx (&PATTERN (insn), returnjump_p_1, NULL);
 }
 

@@ -1,3 +1,14 @@
+2000-05-16  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (commit_one_edge_insertion): Be prepared for a return
+	insn to be inserted on the edge with a normal jump.
+	* jump.c (jump_optimize_1): Don't look to create return isns.
+
+	* flow.c (flow_delete_insn): Don't adjust reference count of notes.
+	* jump.c (jump_optimize_1): Likewise.
+	(returnjump_p): Verify the argument is a JUMP_INSN.
+	* rtl.def (NOTE): Add 5th element for NOTE_INSN_DELETED_LABEL.
+
 2000-05-16  Nick Clifton  <nickc@cygnus.com>
 
 	* config/m32r/m32r.c (small_insn_p): Use INSN_P() to replace
@@ -307,23 +318,23 @@ Fri May 12 19:03:58 2000  Philippe De Muyter  <phdm@macqel.be>
 
 2000-05-12  Zack Weinberg <zack@wolery.cumb.org>
 
-        * fixinc/fixfixes.c (IO_use_fix, IO_defn_fix, CTRL_use_fix,
-        CTRL_defn_fix): Delete.
-        (fix_char_macro_defines, fix_char_macro_uses): Rename to
-        char_macro_def_fix and char_macro_use_fix, respectively.  Put
-        them into the FIXUP_TABLE.  Get the string to search for from
-        a c_fix_arg.
+	* fixinc/fixfixes.c (IO_use_fix, IO_defn_fix, CTRL_use_fix,
+	CTRL_defn_fix): Delete.
+	(fix_char_macro_defines, fix_char_macro_uses): Rename to
+	char_macro_def_fix and char_macro_use_fix, respectively.  Put
+	them into the FIXUP_TABLE.  Get the string to search for from
+	a c_fix_arg.
 
-        (format_write): New function.
-        (format_fix): Use it.
+	(format_write): New function.
+	(format_fix): Use it.
 
-        (FIX_PROC_HEAD): Constify text parameter.
-        (machine_name_fix): Constify all char *s.
-        * fixtests.c (skip_quote): Remove double static.
+	(FIX_PROC_HEAD): Constify text parameter.
+	(machine_name_fix): Constify all char *s.
+	* fixtests.c (skip_quote): Remove double static.
 
-        * inclhack.def (io_def_quotes, io_use_quotes, ctrl_def_quotes,
-        ctrl_use_quotes): Update for new scheme.
-        * fixincl.x: Regenerate.
+	* inclhack.def (io_def_quotes, io_use_quotes, ctrl_def_quotes,
+	ctrl_use_quotes): Update for new scheme.
+	* fixincl.x: Regenerate.
 
 2000-05-12  Alexandre Oliva  <aoliva@cygnus.com>
 
@@ -492,9 +503,9 @@ Wed 10 May 09:36:47 2000  Neil Booth  <NeilB@earthling.net>
 
 Wed 10 May 09:08:30 2000  Neil Booth  <NeilB@earthling.net>
 
-        * cpplex.c (_cpp_lex_line): Maintain PREV_WHITESPACE flag
-        when removing escaped newlines.  Reverse sense of test for
-        escaped newline.
+	* cpplex.c (_cpp_lex_line): Maintain PREV_WHITESPACE flag
+	when removing escaped newlines.  Reverse sense of test for
+	escaped newline.
 
 2000-05-09  Richard Henderson  <rth@cygnus.com>
 
@@ -1206,17 +1217,17 @@ Thu May  4 09:45:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	MEM_COPY_ATTRIBUTES.
 
 2000-05-03  Robert Lipe <robertlipe@usa.net>
-        
-        * configure.in (i[34567]86-*-isc*) [tmake_file]: Add t-i386bare
-        to suppress libgcc1.
-        (i[34567]86-*-sco3.2v5*) Likewise.
-        (i[34567]86-*-sco3.2v4*) Likewise.
-        (i[34567]86-*-sco) Likewise.
-        (i[34567]86-*-solaris2) Likewise.
-        (i[34567]86-*-sysv5*) Likewise.
-        (i[34567]86-*-sysv4*) Likewise.
-        (i[34567]86-*-udk*) Likewise.
-        (i[34567]86-*-sysv*) Likewise.
+	
+	* configure.in (i[34567]86-*-isc*) [tmake_file]: Add t-i386bare
+	to suppress libgcc1.
+	(i[34567]86-*-sco3.2v5*) Likewise.
+	(i[34567]86-*-sco3.2v4*) Likewise.
+	(i[34567]86-*-sco) Likewise.
+	(i[34567]86-*-solaris2) Likewise.
+	(i[34567]86-*-sysv5*) Likewise.
+	(i[34567]86-*-sysv4*) Likewise.
+	(i[34567]86-*-udk*) Likewise.
+	(i[34567]86-*-sysv*) Likewise.
 
 2000-05-03  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -1242,14 +1253,14 @@ Thu May  4 09:45:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Wed May  3 21:01:46 2000  Jason Eckhardt  <jle@cygnus.com>
 
-        * bb-reorder.c (struct reorder_block_def): Member succ removed.
-        (REORDER_BLOCK_SUCC): Removed.
-        (enum reorder_skip_type): Removed.
-        (skip_insns_between_block): Renamed to skip_insns_after_block.
-        Removed second argument. Removed dead code and cleaned up.
-        (make_reorder_chain): Removed use of REORDER_BLOCK_SUCC.
-        (reorder_basic_blocks): Remove use of REORDER_SKIP_AFTER. Removed
-        second parameter to skip_insns_after_block.
+	* bb-reorder.c (struct reorder_block_def): Member succ removed.
+	(REORDER_BLOCK_SUCC): Removed.
+	(enum reorder_skip_type): Removed.
+	(skip_insns_between_block): Renamed to skip_insns_after_block.
+	Removed second argument. Removed dead code and cleaned up.
+	(make_reorder_chain): Removed use of REORDER_BLOCK_SUCC.
+	(reorder_basic_blocks): Remove use of REORDER_SKIP_AFTER. Removed
+	second parameter to skip_insns_after_block.
 
 Wed May  3 13:29:54 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
