@@ -22,6 +22,8 @@
 
 # Initialization and defaults
 AC_INIT(tree.c)
+AC_CONFIG_HEADER(config.h:config.in)
+
 native_prefix=/usr
 remove=rm
 hard_link=ln
@@ -122,6 +124,12 @@ AC_PROG_INSTALL
 # Find the native compiler
 AC_PROG_CC
 AC_PROG_MAKE_SET
+
+AC_CHECK_HEADERS(stddef.h string.h strings.h stdlib.h time.h unistd.h)
+
+GCC_NEED_DECLARATION(malloc)
+GCC_NEED_DECLARATION(realloc)
+GCC_NEED_DECLARATION(free)
 
 # File extensions
 manext='.1'
@@ -2675,8 +2683,10 @@ fi
 # Set up the header files.
 # $links is the list of header files to create.
 # $vars is the list of shell variables with file names to include.
+# config2.h is the old config.h.  It is included by the new config.h which
+# created from config.in.  The goal is to simplify the transition to autoconf.
 vars="host_xm_file tm_file xm_file build_xm_file"
-links="config.h tm.h tconfig.h hconfig.h"
+links="config2.h tm.h tconfig.h hconfig.h"
 
 rm -f config.bak
 if [[ -f config.status ]]; then mv -f config.status config.bak; fi
@@ -3037,7 +3047,14 @@ fi
 # Create the Makefile
 # and configure language subdirectories
 AC_OUTPUT(Makefile,
-. $srcdir/configure.lang,
+[
+. $srcdir/configure.lang
+case x$CONFIG_HEADERS in
+xconfig.h:config.in)
+echo > stamp-h ;;
+esac
+],
+[
 host='${host}'
 build='${build}'
 target='${target}'
@@ -3065,4 +3082,4 @@ host_overrides='${host_overrides}'
 cross_defines='${cross_defines}'
 cross_overrides='${cross_overrides}'
 build_overrides='${build_overrides}'
-)
+])
