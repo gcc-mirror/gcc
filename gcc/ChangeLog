@@ -1,3 +1,8 @@
+Fri Apr 12 08:06:54 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (widen_memory_access): Don't do anything if MEMOFFSET
+	not specified.
+
 2002-04-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* function.c (fixup_var_refs_1) <SET, handling VAR in SET_SRC>:
