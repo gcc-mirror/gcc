@@ -1,3 +1,13 @@
+Thu Jan  7 00:01:38 1999  Lutz Vieweg <lkv@mania.robin.de>
+
+	* pa.h (reg_class): Add FPUPPER_REGS.
+	(REG_CLASS_NAMES): Similarly.
+	(REG_CLASS_CONTENTS): Similarly
+	(REGNO_REG_CLASS): Handle FPUPPER_REGS.
+	(FP_REG_CLASS_P): Likewise.
+	(REG_CLASS_FROM_LETTER): Similarly.
+	(CLASS_MAX_NREGS): Similarly.
+
 1999-01-06  Brendan Kehoe  <brendan@cygnus.com>
 
 	* fixincludes: For HP/UX 10.20, also look in curses_colr/curses.h

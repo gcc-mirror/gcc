@@ -687,7 +687,7 @@ do {								\
      1.1 fp regs, and the high 1.1 fp regs, to which the operands of
      fmpyadd and fmpysub are restricted.  */
 
-enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
+enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES};
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -695,7 +695,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
-  {"NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS",			\
+  {"NO_REGS", "R1_REGS", "GENERAL_REGS", "FPUPPER_REGS", "FP_REGS", \
    "GENERAL_OR_FP_REGS", "SHIFT_REGS", "ALL_REGS"}
 
 /* Define which registers fit in which classes.
@@ -707,6 +707,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
  {{0x00000000, 0x00000000, 0x00000000},	/* NO_REGS */			\
   {0x00000002, 0x00000000, 0x00000000},	/* R1_REGS */			\
   {0xfffffffe, 0x00000000, 0x00000000},	/* GENERAL_REGS */		\
+  {0x00000000, 0xff000000, 0x00ffffff},	/* FPUPPER_REGS */			\
   {0x00000000, 0xffffffff, 0x00ffffff},	/* FP_REGS */			\
   {0xfffffffe, 0xffffffff, 0x00ffffff},	/* GENERAL_OR_FP_REGS */	\
   {0x00000000, 0x00000000, 0x01000000},	/* SHIFT_REGS */		\
@@ -721,7 +722,8 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   ((REGNO) == 0 ? NO_REGS 						\
    : (REGNO) == 1 ? R1_REGS						\
    : (REGNO) < 32 ? GENERAL_REGS					\
-   : (REGNO) < 88 ? FP_REGS						\
+   : (REGNO) < 56 ? FP_REGS						\
+   : (REGNO) < 88 ? FPUPPER_REGS						\
    : SHIFT_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -729,12 +731,13 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define BASE_REG_CLASS GENERAL_REGS
 
 #define FP_REG_CLASS_P(CLASS) \
-  ((CLASS) == FP_REGS)
+  ((CLASS) == FP_REGS || (CLASS) == FPUPPER_REGS)
 
 /* Get reg_class from a letter such as appears in the machine description.  */
 /* Keep 'x' for backward compatibility with user asm.   */
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'f' ? FP_REGS :					\
+   (C) == 'y' ? FPUPPER_REGS :					\
    (C) == 'x' ? FP_REGS :					\
    (C) == 'q' ? SHIFT_REGS :					\
    (C) == 'a' ? R1_REGS :					\
@@ -808,7 +811,7 @@ int zdepi_cint_p ();
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
-  (!TARGET_SNAKE && (CLASS) == FP_REGS ? 1 :				\
+  (!TARGET_SNAKE && ((CLASS) == FP_REGS || (CLASS) == FPUPPER_REGS) ? 1 :				\
    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Stack layout; function entry, exit and calling.  */
