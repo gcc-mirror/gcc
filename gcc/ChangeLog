@@ -1,3 +1,13 @@
+2003-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/s390/s390.c (s390_output_dwarf_dtprel): New.
+	* config/s390/s390-protos.h (s390_output_dwarf_dtprel): New proto.
+	* config/s390/s390.h (ASM_OUTPUT_DWARF_DTPREL): Define.
+
+	* config/ia64/ia64.c (ia64_output_dwarf_dtprel): New.
+	* config/ia64/ia64-protos.h (ia64_output_dwarf_dtprel): New proto.
+	* config/ia64/ia64.h (ASM_OUTPUT_DWARF_DTPREL): Define.
+
 2003-03-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in (emit-rtl.o): Add gt-emit-rtl.h to dependencies.

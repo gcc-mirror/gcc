@@ -3056,6 +3056,30 @@ s390_expand_cmpstr (target, op0, op1, len)
     }
 }
 
+/* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
+   We need to emit DTP-relative relocations.  */
+
+void
+s390_output_dwarf_dtprel (file, size, x)
+     FILE *file;
+     int size;
+     rtx x;
+{
+  switch (size)
+    {
+    case 4:
+      fputs ("\t.long\t", file);
+      break;
+    case 8:
+      fputs ("\t.quad\t", file);
+      break;
+    default:
+      abort ();
+    }
+  output_addr_const (file, x);
+  fputs ("@DTPOFF", file);
+}
+
 /* In the name of slightly smaller debug output, and to cater to
    general assembler losage, recognize various UNSPEC sequences
    and turn them back into a direct symbol reference.  */

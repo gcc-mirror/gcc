@@ -921,6 +921,13 @@ extern int flag_pic;
   "%ap",  "%cc",  "%fp"							\
 }
 
+/* Emit a dtp-relative reference to a TLS variable.  */
+
+#ifdef HAVE_AS_TLS
+#define ASM_OUTPUT_DWARF_DTPREL(FILE, SIZE, X) \
+  s390_output_dwarf_dtprel (FILE, SIZE, X)
+#endif
+
 /* Print operand X (an rtx) in assembler syntax to file FILE.  */
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)

@@ -1994,6 +1994,13 @@ do {									\
   { "loc79", LOC_REG (79) }, 						\
 }
 
+/* Emit a dtp-relative reference to a TLS variable.  */
+
+#ifdef HAVE_AS_TLS
+#define ASM_OUTPUT_DWARF_DTPREL(FILE, SIZE, X) \
+  ia64_output_dwarf_dtprel (FILE, SIZE, X)
+#endif
+
 /* A C compound statement to output to stdio stream STREAM the assembler syntax
    for an instruction operand X.  X is an RTL expression.  */
 

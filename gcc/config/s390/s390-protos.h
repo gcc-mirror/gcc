@@ -76,6 +76,7 @@ extern void s390_output_constant_pool PARAMS ((rtx, rtx));
 extern void s390_trampoline_template PARAMS ((FILE *));
 extern void s390_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx s390_gen_rtx_const_DI PARAMS ((int, int));
+extern void s390_output_dwarf_dtprel PARAMS ((FILE*, int, rtx));
 extern void s390_machine_dependent_reorg PARAMS ((rtx));
 extern int s390_agen_dep_p PARAMS ((rtx, rtx));
 
