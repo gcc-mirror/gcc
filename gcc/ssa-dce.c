@@ -370,17 +370,15 @@ find_inherently_necessary (x)
     return !0;
   else
     switch (GET_CODE (x))
-      {
+      {  
       case CALL_INSN:
+      case BARRIER:
 	return !0;
       case CODE_LABEL:
       case NOTE:
-      case BARRIER:
 	return 0;
-	break;
       case JUMP_INSN:
 	return JUMP_TABLE_DATA_P (x) || computed_jump_p (x) != 0;
-	break;
       case INSN:
 	{
 	  int inherently_necessary_set = 0;
@@ -626,50 +624,126 @@ ssa_eliminate_dead_code ()
   {
     if (any_condjump_p (insn))
       {
-      /* Convert unnecessary conditional insn to an unconditional
-	 jump to immediate postdominator block.  */
-	rtx old_label = JUMP_LABEL (insn);
-	int pdom_block_number =
-	  find_pdom (pdom, BLOCK_FOR_INSN (insn))->index;
+	basic_block bb = BLOCK_FOR_INSN (insn);
+	basic_block pdom_bb = find_pdom (pdom, bb);
+	rtx lbl;
+	edge e;
 
-	/* Prevent the conditional jump's label from being deleted so
-	   we do not have to modify the basic block structure.  */
-	++LABEL_NUSES (old_label);
+	/* Egad.  The immediate post dominator is the exit block.  We
+	   would like to optimize this conditional jump to jump directly
+	   to the exit block.  That can be difficult as we may not have
+	   a suitable CODE_LABEL that allows us to fall unmolested into
+	   the exit block.
 
-	if (pdom_block_number != EXIT_BLOCK
-	    && pdom_block_number != INVALID_BLOCK)
+	   So, we just delete the conditional branch by turning it into
+	   a deleted note.   That is safe, but just not as optimal as
+	   it could be.  */
+	if (pdom_bb == EXIT_BLOCK_PTR)
 	  {
-	    rtx lbl = find_block_label (BASIC_BLOCK (pdom_block_number));
-	    rtx new_jump = emit_jump_insn_before (gen_jump (lbl), insn);
+	    /* Since we're going to just delete the branch, we need
+	       look at all the edges and remove all those which are not
+	       a fallthru edge.  */
+	    e = bb->succ;
+	    while (e)
+	      {
+		edge temp = e;
 
-	    /* Let jump know that label is in use.  */
-	    JUMP_LABEL (new_jump) = lbl;
-	    ++LABEL_NUSES (lbl);
+		e = e->succ_next;
+		if ((temp->flags & EDGE_FALLTHRU) == 0)
+		  {
+		    /* We've found a non-fallthru edge, find any PHI nodes
+		       at the target and clean them up.  */
+		    if (temp->dest != EXIT_BLOCK_PTR)
+		      {
+		        rtx insn
+			  = first_insn_after_basic_block_note (temp->dest);
 
-	    delete_insn_bb (insn);
+		        while (PHI_NODE_P (insn))
+			  {
+			    remove_phi_alternative (PATTERN (insn), temp->src);
+			    insn = NEXT_INSN (insn);
+			  }
+		      }
 
-	    /* A conditional branch is unnecessary if and only if any
-	       block control-dependent on it is unnecessary.  Thus,
-	       any phi nodes in these unnecessary blocks are also
-	       removed and these nodes need not be updated.  */
+		    remove_edge (temp);
+		  }
+	      }
 
-	    /* A barrier must follow any unconditional jump.  Barriers
-	       are not in basic blocks so this must occur after
-	       deleting the conditional jump.  */
-	    emit_barrier_after (new_jump);
+	    /* Now "delete" the conditional jump.  */
+	    PUT_CODE (insn, NOTE);
+	    NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	    continue;
 	  }
-	else
-	  /* The block drops off the end of the function and the
-	     ending conditional jump is not needed.  */
-	  delete_insn_bb (insn);
+
+	/* We've found a conditional branch that is unnecessary.
+
+	   First, remove all outgoing edges from this block, updating
+	   PHI nodes as appropriate.  */
+	e = bb->succ;
+	while (e)
+	  {
+	    edge temp = e;
+
+	    e = e->succ_next;
+
+	    if (temp->flags & EDGE_ABNORMAL)
+	      continue;
+
+	    /* We found an edge that is not executable.  First simplify
+	       the PHI nodes in the target block.  */
+	    if (temp->dest != EXIT_BLOCK_PTR)
+	      {
+		rtx insn = first_insn_after_basic_block_note (temp->dest);
+
+		while (PHI_NODE_P (insn))
+		  {
+		    remove_phi_alternative (PATTERN (insn), temp->src);
+		    insn = NEXT_INSN (insn);
+		  }
+	      }
+
+	    remove_edge (temp);
+	  }
+
+	/* Create an edge from this block to the post dominator.  
+	   What about the PHI nodes at the target?  */
+	make_edge (NULL, bb, pdom_bb, 0);
+
+	/* Third, transform this insn into an unconditional
+	   jump to the label for the immediate postdominator.  */
+	lbl = find_block_label (pdom_bb);
+	SET_SRC (PATTERN (insn)) = gen_rtx_LABEL_REF (VOIDmode, lbl);
+	INSN_CODE (insn) = -1;
+	JUMP_LABEL (insn) = lbl;
+	LABEL_NUSES (lbl)++;
+
+	/* A barrier must follow any unconditional jump.  Barriers
+	   are not in basic blocks so this must occur after
+	   deleting the conditional jump.  */
+	emit_barrier_after (insn);
       }
     else if (!JUMP_P (insn))
       delete_insn_bb (insn);
   });
-
+  
   /* Remove fake edges from the CFG.  */
   remove_fake_edges ();
 
+  /* Find any blocks with no successors and ensure they are followed
+     by a BARRIER.  delete_insn has the nasty habit of deleting barriers
+     when deleting insns.  */
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+
+      if (bb->succ == NULL)
+	{
+	  rtx next = NEXT_INSN (bb->end);
+
+	  if (!next || GET_CODE (next) != BARRIER)
+	    emit_barrier_after (bb->end);
+	}
+    }
   /* Release allocated memory.  */
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
     RESURRECT_INSN (insn);
