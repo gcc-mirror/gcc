@@ -1,5 +1,6 @@
 2003-06-13  Richard Henderson  <rth@redhat.com>
 
+	PR debug/9864
         * com.c (ffecom_sym_transform_): Install FFEINFO_whereGLOBAL
         symbols in the global binding level.
 
