@@ -165,7 +165,7 @@ lr		.req	r14
 pc		.req	r15
 #endif
 /* ------------------------------------------------------------------------ */
-/*		Bodies of the divsion and modulo routines.		    */
+/*		Bodies of the division and modulo routines.		    */
 /* ------------------------------------------------------------------------ */	
 .macro ARM_DIV_MOD_BODY modulo
 LSYM(Loop1):

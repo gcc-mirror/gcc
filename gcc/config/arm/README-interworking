@@ -404,7 +404,7 @@ Instead the pseudo op is attached to a new label .real_start_of_<name>
 (where <name> is the name of the function) which indicates the start
 of the Thumb code.  This does have the interesting side effect in that
 if this function is now called from a Thumb mode piece of code
-outsside of the current file, the linker will generate a calling stub
+outside of the current file, the linker will generate a calling stub
 to switch from Thumb mode into ARM mode, and then this is immediately
 overridden by the function's header which switches back into Thumb
 mode. 

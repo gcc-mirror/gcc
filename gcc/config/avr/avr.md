@@ -2255,7 +2255,7 @@
 
 
 ;; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-;; This instructin sets Z flag
+;; This instruction sets Z flag
 
 (define_insn "sez"
   [(set (cc0) (const_int 0))]

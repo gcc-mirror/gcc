@@ -233,7 +233,7 @@ override_options (void)
       flag_pic = 0;
     }
 
-  /* On Unicos/Mk, the native compiler consistenly generates /d suffices for 
+  /* On Unicos/Mk, the native compiler consistently generates /d suffices for 
      floating-point instructions.  Make that the default for this target.  */
   if (TARGET_ABI_UNICOSMK)
     alpha_fprm = ALPHA_FPRM_DYN;
@@ -3481,7 +3481,7 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
      be shared.  */
 
   if (f == 0 && exact_log2 (diff) > 0
-      /* On EV6, we've got enough shifters to make non-arithmatic shifts
+      /* On EV6, we've got enough shifters to make non-arithmetic shifts
 	 viable over a longer latency cmove.  On EV5, the E0 slot is a
 	 scarce resource, and on EV4 shift has the same latency as a cmove.  */
       && (diff <= 8 || alpha_cpu == PROCESSOR_EV6))
@@ -5120,7 +5120,7 @@ alpha_use_dfa_pipeline_interface (void)
 
    For EV4, loads can be issued to either IB0 or IB1, thus we have 2
    alternative schedules.  For EV5, we can choose between E0/E1 and
-   FA/FM.  For EV6, an arithmatic insn can be issued to U0/U1/L0/L1.  */
+   FA/FM.  For EV6, an arithmetic insn can be issued to U0/U1/L0/L1.  */
 
 static int
 alpha_multipass_dfa_lookahead (void)
