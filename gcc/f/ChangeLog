@@ -1,3 +1,11 @@
+2003-12-05  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/12633
+	Revert 2002-05-09  Hassan Aurag  <aurag@cae.com>
+
+		* expr.c (ffeexpr_reduced_ugly2log_): Allow logicals-as-integers
+		under -fugly-logint as arguments of .and., .or., .xor.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.

@@ -11502,24 +11502,6 @@ ffeexpr_reduced_ugly2log_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
       /* else Leave it alone. */
     }
 
-  if (lbt == FFEINFO_basictypeLOGICAL)
-  {
-	  ffebld_set_left (reduced, ffeexpr_convert (ffebld_left (reduced),
-				  l->token, op->token, FFEINFO_basictypeINTEGER,
-				  FFEINFO_kindtypeINTEGERDEFAULT, 0,
-				  FFETARGET_charactersizeNONE,
-				  FFEEXPR_contextLET));
-  }
-
-  if (rbt == FFEINFO_basictypeLOGICAL)
-  {
-	  ffebld_set_right (reduced, ffeexpr_convert (ffebld_right (reduced),
-				  r->token, op->token, FFEINFO_basictypeINTEGER,
-				  FFEINFO_kindtypeINTEGERDEFAULT, 0,
-				  FFETARGET_charactersizeNONE,
-				  FFEEXPR_contextLET));
-  }
-  
   return reduced;
 }
 
