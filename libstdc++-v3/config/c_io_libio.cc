@@ -39,10 +39,12 @@ namespace std {
   
   __basic_file::__basic_file(__c_lock* __lock)
   {
+#ifdef _IO_MTSAFE_IO
     _lock = __lock;
-    _IO_init(this, 0);     
-    _IO_file_init((_IO_FILE_plus*) this); 
-    _IO_file_attach(this, -1);
+#endif
+    _IO_no_init(this, 0 /* ??? */, -1, 0, 0);
+    _IO_JUMPS(this) = &_IO_file_jumps;
+    _IO_file_init((_IO_FILE_plus*)this);
   }
 
   int 
@@ -50,15 +52,7 @@ namespace std {
   { return _fileno; }
  
   __basic_file::~__basic_file()
-  {
-    if (this->is_open())
-      {
-	_IO_do_flush(this);
-	if (!(_flags & _IO_DELETE_DONT_CLOSE))
-	  _IO_SYSCLOSE((_IO_FILE*)this);
-      }
-    _IO_default_finish(this, 0);
-  }
+  { _IO_file_finish(this, 0); }
       
   void 
   __basic_file::_M_open_mode(ios_base::openmode __mode, int& __p_mode, 
@@ -116,13 +110,19 @@ namespace std {
     int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
 
     _M_open_mode(__mode, __p_mode, __rw_mode);
-    if (__fd >= 0)
+    // _IO_file_attach 
+    //  sets _IO_DELETE_DONT_CLOSE
+    //  clears _IO_NO_READS + _IO_NO_WRITES
+    if (_IO_file_attach(this, __fd) != NULL)
       {
-	_fileno = __fd;
+	// Set flags appropriately for openmode...
 	int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
-	_flags = (_flags & ~__mask) | (__rw_mode & __mask);
-	_IO_link_in((_IO_FILE_plus*) this); 
-	__retval = this;
+	_IO_mask_flags(this, __rw_mode, __mask);
+      }
+    else
+      {
+	_IO_un_link((_IO_FILE_plus*) this);
+	// XXX Extended error checking?? Note that v2 does not even have this.
       }
     return __retval;
   }
@@ -138,22 +138,11 @@ namespace std {
     _M_open_mode(__mode, __p_mode, __rw_mode);
     if (!_IO_file_is_open(this))
       {
-#if _G_HAVE_IO_FILE_OPEN
+	//#if _G_HAVE_IO_FILE_OPEN
 	__c_file_type* __f;
 	__f = _IO_file_open(this, __name, __p_mode, __prot, __rw_mode, 0);
-	_flags &= ~_IO_DELETE_DONT_CLOSE;
+	//	_flags &= ~_IO_DELETE_DONT_CLOSE;
 	__retval = __f ? this: NULL;
-#else
-	int __fd = ::open(__name, __p_mode, __prot);
-	if (__fd >= 0)
-	  {
-	    _fileno = __fd;	   
-	    int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
-	    _flags = (_flags & ~__mask) | (__rw_mode & __mask);
-	    _IO_link_in(this);
-	    __retval = this;
-	  }
-#endif      
       }
     return __retval;
   }
@@ -167,15 +156,18 @@ namespace std {
 
   // NB: Unused.
   int 
-  __basic_file::overflow(int __c) { return _IO_file_overflow(this, __c); }
+  __basic_file::overflow(int __c) 
+  { return _IO_file_overflow(this, __c); }
 
   // NB: Unused.
   int 
-  __basic_file::underflow()  { return _IO_file_underflow(this); }
+  __basic_file::underflow()  
+  { return _IO_file_underflow(this); }
 
   // NB: Unused.
   int 
-  __basic_file::uflow()  { return _IO_default_uflow(this); }
+  __basic_file::uflow()  
+  { return _IO_default_uflow(this); }
   
   // NB: Unused.
   int 
@@ -188,7 +180,7 @@ namespace std {
   
   streamsize 
   __basic_file::xsgetn(char* __s, streamsize __n)
-  { return _IO_default_xsgetn(this, __s, __n); }
+  { return _IO_file_xsgetn(this, __s, __n); }
 
   streamoff
   __basic_file::seekoff(streamoff __off, ios_base::seekdir __way, 
@@ -230,11 +222,13 @@ namespace std {
   
   // NB: Unused.
   int 
-  __basic_file::sys_close() { return _IO_file_close(this); }
+  __basic_file::sys_close() 
+  { return _IO_file_close(this); }
 
   // NB: Unused.
   int 
-  __basic_file::sys_stat(void* __v) { return _IO_file_stat(this, __v); }
+  __basic_file::sys_stat(void* __v) 
+  { return _IO_file_stat(this, __v); }
 
   // NB: Unused.
   int 

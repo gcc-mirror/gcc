@@ -48,10 +48,11 @@ namespace std {
     public:
       // Types:
       typedef _CharT                     	       	  char_type;
+      typedef _Traits                    		  traits_type;
       typedef typename _Traits::int_type 		  int_type;
       typedef typename _Traits::pos_type 		  pos_type;
       typedef typename _Traits::off_type 		  off_type;
-      typedef _Traits                    		  traits_type;
+
 
       // Non-standard Types:
       typedef basic_streambuf<_CharT, _Traits> 		  __streambuf_type;
@@ -69,7 +70,7 @@ namespace std {
       __state_type		_M_state_cur;// Current state type for codecvt.
       __state_type 		_M_state_beg; 	
       const __codecvt_type*	_M_fcvt;       // Cached value from use_facet.
-      __mutext_type           	_M_lock;
+      __c_lock          	_M_lock;
       bool			_M_last_overflowed;  // XXX Needed?
  
     public:

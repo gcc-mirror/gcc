@@ -930,6 +930,10 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
 
     dnl At the moment, only enable wchar_t specializations if all the
     dnl above support is present.
+    dnl 2000-07-07-bkoz-hack-xxx
+#    ac_isoC9X_wchar_t=no
+    dnl 2000-07-07-bkoz-hack-xxx
+
     AC_MSG_CHECKING([for enabled wchar_t specializations])
     if test x"$ac_isoC9X_wchar_t" = xyes && test x"$ac_XPG2_wchar_t" = xyes; then
       libinst_wstring_la="libinst-wstring.la"
@@ -1165,54 +1169,72 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
   dnl Check if a valid thread package
   case x${enable_cstdio_flag} in
-	xlibio | x | xno | xnone | xyes)
-	  # default
-	  CSTDIO_H=config/c_io_libio.h
-	  CSTDIO_CC=config/c_io_libio.cc
- 	  AC_MSG_RESULT(libio)
+    xlibio | x | xno | xnone | xyes)
+      # default
+      CSTDIO_H=config/c_io_libio.h
+      CSTDIO_CC=config/c_io_libio.cc
+      AC_MSG_RESULT(libio)
 
-	  # see if we are on a system with libio native (ie, linux)
-  	  AC_CHECK_HEADER(libio.h,  has_libio=yes, has_libio=no)
+      # see if we are on a system with libio native (ie, linux)
+      AC_CHECK_HEADER(libio.h,  has_libio=yes, has_libio=no)
 
-	  # bkoz XXX hack hack need version checks, this is temporary
-	  has_libio=no
+      # Need to check and see what version of glibc is being used. If
+      # it's not glibc-2.2 or higher, then we'll need to go ahead and 
+      # compile most of libio for linux systems.
+      if test x$has_libio = x"yes"; then
+        case "$target" in
+          *-*-linux*)
+  	    AC_MSG_CHECKING([for glibc version >= 2.2])
+  	    AC_EGREP_CPP([ok], [
+  	    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
+    		ok
+  	    #endif
+  	    ], glibc_satisfactory=yes, glibc_satisfactory=no)
+  	    AC_MSG_RESULT($glibc_satisfactory)
+	    ;;
+        esac
 
-  	  if test $has_libio = "yes"; then
-   	    BUILD_LIBIO_INCLUDE=
-	    need_libio=no
-  	  else
-   	  BUILD_LIBIO_INCLUDE='-I../libio'
-     	    need_libio=yes
-  	  fi
-  	  AC_SUBST(BUILD_LIBIO_INCLUDE)
+  	if test x$glibc_satisfactory = x"yes"; then
+   	  BUILD_LIBIO_INCLUDE=
+	  need_libio=no
+	  need_xtra_libio=no
+      	  need_wlibio=no	
+      	else
+	  BUILD_LIBIO_INCLUDE='-I../libio'	  
+	  need_libio=yes
+	  need_xtra_libio=yes
+          # bkoz XXX need to add checks to enable this
+          need_wlibio=yes
+	fi
 
-	  # see if the _G_config.h header needs to be built. 
-	  # NB: This replaces the _G_CONFIG_H machinery in libio-v2
-	  AC_CHECK_HEADER(_G_config.h,  has_gconf_h=yes, has_gconf_h=no)
-  	  AM_CONDITIONAL(GLIBCPP_NEED_LIBIO_CONFIG_H, test "$has_gconf_h" = no)
-	  # bkoz XXX hack need to add support for non-glibc systems here
-	   has_gconf=no
+      # Using libio, but <libio.h> doesn't exist on the target system. . .
+      else
+	BUILD_LIBIO_INCLUDE='-I../libio'	  
+	need_libio=yes
+        need_xtra_libio=no
+        # bkoz XXX need to add checks to enable this
+        need_wlibio=no
+      fi
+      ;;
 
-	  # bkoz XXX need to add checks for this
-	  need_wlibio=yes
-	  ;;
-        xwince)
-    	  CSTDIO_H=config/c_io_wince.h
-          CSTDIO_CC=config/c_io_wince.cc
-          AC_MSG_RESULT(wince)
+    xwince)
+      CSTDIO_H=config/c_io_wince.h
+      CSTDIO_CC=config/c_io_wince.cc
+      AC_MSG_RESULT(wince)
 
-          need_libio=no
-          BUILD_LIBIO_INCLUDE=
-          AC_SUBST(BUILD_LIBIO_INCLUDE)
-          ;;
-	*)
-	  echo "$enable_cstdio is an unknown io package" 1>&2
-	  exit 1
-	  ;;
+      need_libio=no
+      BUILD_LIBIO_INCLUDE=
+      AC_SUBST(BUILD_LIBIO_INCLUDE)
+      ;;
+    *)
+      echo "$enable_cstdio is an unknown io package" 1>&2
+      exit 1
+      ;;
   esac
   AC_LINK_FILES($CSTDIO_H, bits/c++io.h)
   AC_LINK_FILES($CSTDIO_CC, src/c++io.cc)
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
+  AM_CONDITIONAL(GLIBCPP_NEED_XTRA_LIBIO, test "$need_xtra_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
 ])
 
@@ -1492,7 +1514,7 @@ dnl Then, if any (well almost any) other make is called, and GNU make also
 dnl exists, then the other make wraps the GNU make.
 dnl
 dnl @author John Darrington <j.darrington@elvis.murdoch.edu.au>
-dnl @version $Id: check_gnu_make.m4,v 1.1 2000/06/15 10:49:36 simons Exp $
+dnl @version $Id: acinclude.m4,v 1.42 2000/07/17 18:17:33 pme Exp $
 dnl
 dnl #### Changes for libstdc++-v3:  reformatting and linewrapping; prepending
 dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the

@@ -189,10 +189,11 @@ cpu_headers = \
 
 
 sources = \
-	limitsMEMBERS.cc c++io.cc \
+	limitsMEMBERS.cc \
 	cmath.cc \
 	complex.cc complexf.cc complexl.cc complex_io.cc \
-	stdexcept.cc ios.cc stdstreams.cc strstream.cc \
+	stdexcept.cc \
+	c++io.cc ios.cc stdstreams.cc strstream.cc \
 	locale.cc localename.cc  \
 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 

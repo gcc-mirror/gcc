@@ -49,22 +49,25 @@ namespace std {
       
       // Try to put back __c into input sequence in one of three ways.
       // Order these tests done in is unspecified by the standard.
-      if (!__testeof && __testpos 
-	  && traits_type::eq(traits_type::to_char_type(__c), this->gptr()[-1]))
+      if (__testpos)
 	{
-	  --_M_in_cur;
-	  __retval = __c;
-	}
-      else if (!__testeof && __testpos)
-	{
-	  --_M_in_cur;
-	  *_M_in_cur = traits_type::to_char_type(__c);
-	  __retval = __c;
-	}
-      else if (__testeof && __testpos)
-	{
-	  --_M_in_cur;
-	  __retval = traits_type::not_eof(__c);
+	  if (traits_type::eq(traits_type::to_char_type(__c), this->gptr()[-1])
+	      && !__testeof)
+	    {
+	      --_M_in_cur;
+	      __retval = __c;
+	    }
+	  else if (!__testeof)
+	    {
+	      --_M_in_cur;
+	      *_M_in_cur = traits_type::to_char_type(__c);
+	      __retval = __c;
+	    }
+	  else if (__testeof)
+	    {
+	      --_M_in_cur;
+	      __retval = traits_type::not_eof(__c);
+	    }
 	}
       return __retval;
     }
