@@ -2898,7 +2898,7 @@ simplify_unary_operation (code, mode, op, op_mode)
       if (GET_CODE (op) == CONST_INT)
 	lv = INTVAL (op), hv = INTVAL (op) < 0 ? -1 : 0;
       else
-	lv = CONST_DOUBLE_HIGH (op),  hv = CONST_DOUBLE_LOW (op);
+	lv = CONST_DOUBLE_LOW (op),  hv = CONST_DOUBLE_HIGH (op);
 
 #ifdef REAL_ARITHMETIC
       REAL_VALUE_FROM_INT (d, lv, hv);
@@ -2931,7 +2931,7 @@ simplify_unary_operation (code, mode, op, op_mode)
       if (GET_CODE (op) == CONST_INT)
 	lv = INTVAL (op), hv = INTVAL (op) < 0 ? -1 : 0;
       else
-	lv = CONST_DOUBLE_HIGH (op),  hv = CONST_DOUBLE_LOW (op);
+	lv = CONST_DOUBLE_LOW (op),  hv = CONST_DOUBLE_HIGH (op);
 
       if (GET_MODE_BITSIZE (op_mode) >= HOST_BITS_PER_WIDE_INT * 2)
 	;
