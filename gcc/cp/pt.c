@@ -2598,7 +2598,6 @@ coerce_template_template_parms (parm_parms, arg_parms, in_decl, outer_args)
   return 1;
 }
 
-
 /* Convert the indicated template ARG as necessary to match the
    indicated template PARM.  Returns the converted ARG, or
    error_mark_node if the conversion was unsuccessful.  Error messages

@@ -477,6 +477,11 @@ extern int flag_do_squangling;
    required.  */
 extern int flag_optional_diags;
 
+/* Nonzero means do not consider empty argument prototype to mean function
+   takes no arguments.  */
+
+extern int flag_strict_prototype;
+
 /* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
 extern int flag_vtable_gc;
 

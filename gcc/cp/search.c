@@ -1030,9 +1030,12 @@ lookup_field (xbasetype, name, protect, want_type)
       basetype_chain = TREE_CHAIN (basetype_chain);
       basetype_path = TREE_VALUE (basetype_chain);
       if (TREE_CHAIN (basetype_chain))
-	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
-			    == TREE_VALUE (TREE_CHAIN (basetype_chain)),
-			    980827);
+	my_friendly_assert
+	  ((BINFO_INHERITANCE_CHAIN (basetype_path)
+	    == TREE_VALUE (TREE_CHAIN (basetype_chain)))
+	   /* We only approximate base info for partial instantiations.  */ 
+	   || current_template_parms,
+	   980827);
       else
 	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
 			    == NULL_TREE, 980827);
@@ -1187,7 +1190,6 @@ lookup_field (xbasetype, name, protect, want_type)
 
   /* Do implicit typename stuff.  */
   if (rval && TREE_CODE (rval) == TYPE_DECL
-      && ! DECL_ARTIFICIAL (rval)
       && processing_template_decl
       && ! currently_open_class (BINFO_TYPE (rval_binfo))
       && uses_template_parms (type))
@@ -1480,9 +1482,12 @@ lookup_fnfields (basetype_path, name, complain)
       basetype_chain = TREE_CHAIN (basetype_chain);
       basetype_path = TREE_VALUE (basetype_chain);
       if (TREE_CHAIN (basetype_chain))
-	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
-			    == TREE_VALUE (TREE_CHAIN (basetype_chain)),
-			    980827);
+	my_friendly_assert
+	  ((BINFO_INHERITANCE_CHAIN (basetype_path)
+	    == TREE_VALUE (TREE_CHAIN (basetype_chain)))
+	   /* We only approximate base info for partial instantiations.  */ 
+	   || current_template_parms,
+	   980827);
       else
 	my_friendly_assert (BINFO_INHERITANCE_CHAIN (basetype_path)
 			    == NULL_TREE, 980827);

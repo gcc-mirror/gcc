@@ -1114,13 +1114,7 @@ begin_constructor_declarator (scope, name)
      tree name;
 {
   tree result = build_parse_node (SCOPE_REF, scope, name);
-
-  if (scope != current_class_type)
-    {
-      push_nested_class (scope, 3);
-      TREE_COMPLEXITY (result) = current_class_depth;
-    }
-
+  enter_scope_of (result);
   return result;
 }
 
@@ -1214,24 +1208,27 @@ tree
 begin_class_definition (t)
      tree t;
 {
-  tree new_type = t;
-
   push_obstacks_nochange ();
   end_temporary_allocation ();
   
   if (t == error_mark_node
       || ! IS_AGGR_TYPE (t))
     {
-      t = new_type = make_lang_type (RECORD_TYPE);
+      t = make_lang_type (RECORD_TYPE);
       pushtag (make_anon_name (), t, 0);
     }
+
+  /* In a definition of a member class template, we will get here with an
+     implicit typename, a TYPENAME_TYPE with a type.  */
+  if (TREE_CODE (t) == TYPENAME_TYPE)
+    t = TREE_TYPE (t);
+
   if (TYPE_SIZE (t))
     duplicate_tag_error (t);
   if (TYPE_SIZE (t) || TYPE_BEING_DEFINED (t))
     {
       t = make_lang_type (TREE_CODE (t));
       pushtag (TYPE_IDENTIFIER (t), t, 0);
-      new_type = t;
     }
   if (processing_template_decl && TYPE_CONTEXT (t)
       && TREE_CODE (TYPE_CONTEXT (t)) != NAMESPACE_DECL
@@ -1267,9 +1264,9 @@ begin_class_definition (t)
       CLASSTYPE_VTABLE_NEEDS_WRITING (t) = needs_writing;
     }
 #if 0
-  t = TYPE_IDENTIFIER ($<ttype>0);
-  if (t && IDENTIFIER_TEMPLATE (t))
-    overload_template_name (t, 1);
+  tmp = TYPE_IDENTIFIER ($<ttype>0);
+  if (tmp && IDENTIFIER_TEMPLATE (tmp))
+    overload_template_name (tmp, 1);
 #endif
   reset_specialization();
   
@@ -1278,7 +1275,7 @@ begin_class_definition (t)
      that we can get it back later.  */
   begin_tree ();
 
-  return new_type;
+  return t;
 }
 
 /* Finish a class definition T, with the indicated COMPONENTS, and
@@ -1432,6 +1429,13 @@ enter_scope_of (sr)
     }
   else if (scope != current_class_type)
     {
+      if (TREE_CODE (scope) == TYPENAME_TYPE)
+	{
+	  /* In a declarator for a template class member, the scope will
+	     get here as an implicit typename, a TYPENAME_TYPE with a type.  */
+	  scope = TREE_TYPE (scope);
+	  TREE_OPERAND (sr, 0) = scope;
+	}
       push_nested_class (scope, 3);
       TREE_COMPLEXITY (sr) = current_class_depth;
     }
