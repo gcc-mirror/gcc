@@ -1,3 +1,7 @@
+Sat Mar 20 22:26:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.h (TARGET_SWITCHES): Add null description to default case.
+
 Sat Mar 20 21:46:06 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-lex.c (yylex): Remove unused variable `bytes'.
