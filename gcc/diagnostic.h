@@ -32,8 +32,9 @@ typedef struct output_buffer output_buffer;
 #define DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE 0x2
 
 /* The type of front-end specific hook that formats trees into an
-   output_buffer.  */
-typedef void (*printer_fn) PARAMS ((output_buffer *));
+   output_buffer.  A language specific printer returns a truth value if
+   everything goes well. */
+typedef int (*printer_fn) PARAMS ((output_buffer *));
 
 /* The output buffer datatype.  This is best seen as an abstract datatype.  */
 struct output_buffer
@@ -109,14 +110,15 @@ int output_space_left		PARAMS ((const output_buffer *));
 void output_append		PARAMS ((output_buffer *, const char *,
                                          const char *));
 void output_add_character	PARAMS ((output_buffer *, int));
-void output_add_integer		PARAMS ((output_buffer *, HOST_WIDE_INT));
+void output_decimal		PARAMS ((output_buffer *, int));
 void output_add_string		PARAMS ((output_buffer *, const char *));
 const char *output_finish	PARAMS ((output_buffer *));
-void output_flush_on		PARAMS ((output_buffer *, FILE *));
 void output_printf		PARAMS ((output_buffer *, const char *,
                                          ...)) ATTRIBUTE_PRINTF_2;
-void output_format		PARAMS ((output_buffer *, const char *));
 int output_is_line_wrapping	PARAMS ((output_buffer *));
 void set_message_prefixing_rule PARAMS ((int));
+void output_verbatim            PARAMS ((output_buffer *, const char *, ...))
+     ATTRIBUTE_PRINTF_2;
+void verbatim PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
 #endif /* __GCC_DIAGNOSTIC_H__ */

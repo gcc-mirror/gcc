@@ -1,3 +1,40 @@
+2000-07-09  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (diagnostic_args): New macro.
+	(diagnostic_msg): Likewise.
+	(output_formatted_integer): Likewise.
+	(output_state): New data type.
+	(digit_buffer): Make global.
+	(output_add_integer): Rename to output_decimal. Squeeze
+	digit_buffer. 
+	(output_long_decimal, output_unsigned_decimal,
+	output_long_unsigned_decimal, output_octal, output_long_octal,
+	output_hexadecimal, output_long_hexadecimal): New functions.
+	(output_append_r): New function.
+	(output_append): Tweak.
+	(output_flush_on): Rename to output_to_stream.
+	(output_format): Change prototype.  Improve documentation. Handle
+	more format specifiers.
+	(build_location_prefix): Rename to context_as_prefix.
+	(output_notice): Rename to output_do_printf.
+	(output_printf): Tweak.
+	(line_wrapper_printf): Likewise.
+	(vline_wrapper_message_with_location): Adjust call to renamed
+	functions. 
+	(v_message_with_decl): Likewise.
+	(default_print_error_function): Likewise.
+	(save_output_state): New function.
+	(restore_output_state): Likewise.
+	(output_do_verbatim): Likewise.
+	(output_verbatim): Define.
+	(verbatim): Likewise.
+
+	* diagnostic.h (printer_fn): Change return type from void to int.
+	Improve documentation.
+	(output_add_integer): Rename to output_decimal.
+	(output_flush_on, output_format): Don't export.
+	(output_verbatim, verbatim): Declare.
+
 2000-07-08  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* fold-const.c (extract_muldiv) case PLUS_EXPR, MINUS_EXPR:
