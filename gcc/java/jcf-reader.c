@@ -308,6 +308,9 @@ DEFUN(jcf_parse_one_method, (jcf),
       if (code != 0)
 	return code;
     }
+#ifdef HANDLE_END_METHOD
+  HANDLE_END_METHOD ();
+#endif
   return 0;
 }
 

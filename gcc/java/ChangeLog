@@ -1,3 +1,14 @@
+1998-12-13  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf-reader.c (jcf_parse_one_method): Recognize
+	HANDLE_END_METHOD.
+	* gjavah.c (HANDLE_END_METHOD): New macro.
+	(HANDLE_CODE_ATTRIBUTE): New macro.
+	(decompile_method): New function.
+	(print_method_info): Don't print `;\n' at end of function decl.
+	Include java-opcodes.h.
+	(decompiled): New global.
+
 Sat Dec 12 20:13:19 1998  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (build_class_ref):  Handle PRIMTYPE.class if
