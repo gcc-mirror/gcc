@@ -768,10 +768,10 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
  mmix_function_outgoing_value (VALTYPE, FUNC)
 
 #define LIBCALL_VALUE(MODE) \
- gen_rtx_REG (MODE, MMIX_OUTGOING_RETURN_VALUE_REGNUM)
+ gen_rtx_REG (MODE, MMIX_RETURN_VALUE_REGNUM)
 
 #define FUNCTION_VALUE_REGNO_P(REGNO) \
- ((REGNO) == MMIX_OUTGOING_RETURN_VALUE_REGNUM)
+ mmix_function_value_regno_p (REGNO)
 
 
 /* Node: Aggregate Return */

@@ -660,6 +660,15 @@ mmix_function_outgoing_value (valtype, func)
   return gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nregs, vec));
 }
 
+/* FUNCTION_VALUE_REGNO_P.  */
+
+int
+mmix_function_value_regno_p (regno)
+     int regno;
+{
+  return regno == MMIX_RETURN_VALUE_REGNUM;
+}
+
 /* EH_RETURN_DATA_REGNO. */
 
 int
