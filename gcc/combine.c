@@ -10320,6 +10320,14 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case MINUS:
+	  /* (op (minus A B) 0) -> (op A B) */
+	  if (op1 == const0_rtx)
+	    {
+	      op1 = XEXP (op0, 1);
+	      op0 = XEXP (op0, 0);
+	      continue;
+	    }
+
 	  /* (eq (minus A B) C) -> (eq A (plus B C)) or
 	     (eq B (minus A C)), whichever simplifies.  We can only do
 	     this for equality comparisons due to pathological cases involving
