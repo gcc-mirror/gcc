@@ -1,3 +1,9 @@
+2001-06-22  David Mosberger  <davidm@hpl.hp.com>
+
+	* config/ia64/crtfastmath.c: New file.
+	* config/ia64/t-ia64 (EXTRA_PARTS): Include it.
+	* config/ia64/linux.h (ENDFILE_SPEC): New.
+
 2001-06-22  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
 	* config/h8300/h8300.c (asm_file_start): Remove reference to

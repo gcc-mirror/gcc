@@ -16,6 +16,12 @@
 #undef ASM_SPEC
 #define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic}"
 
+/* Similar to standard Linux, but adding -ffast-math support.  */
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   %{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+
 /* Define this for shared library support because it isn't in the main
    linux.h file.  */
 
