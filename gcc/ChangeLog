@@ -1,3 +1,7 @@
+2001-07-23  Kazu Hirata  <kazu@hxi.com>
+
+	* reload.c: Fix comment typos.
+
 2001-07-23  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_setcc): Don't use method 0

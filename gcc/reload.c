@@ -2749,7 +2749,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  register char *p = constraints[i];
 	  register int win = 0;
 	  int did_match = 0;
-	  /* 0 => this operand can be reloaded somehow for this alternative */
+	  /* 0 => this operand can be reloaded somehow for this alternative.  */
 	  int badop = 1;
 	  /* 0 => this operand can be reloaded if the alternative allows regs.  */
 	  int winreg = 0;
@@ -3142,7 +3142,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			|| (REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			    && reg_renumber[REGNO (operand)] < 0)))
 		  win = 1;
-		/* Drop through into 'r' case */
+		/* Drop through into 'r' case.  */
 
 	      case 'r':
 		this_alternative[i]
@@ -4487,7 +4487,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
       regno = REGNO (ad);
 
       /* If the register is equivalent to an invariant expression, substitute
-	 the invariant, and eliminate any eliminable register references. */
+	 the invariant, and eliminate any eliminable register references.  */
       tem = reg_equiv_constant[regno];
       if (tem != 0
 	  && (tem = eliminate_regs (tem, mode, insn))
