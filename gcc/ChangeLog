@@ -1,5 +1,8 @@
 2000-11-22  Nick Clifton  <nickc@redhat.com>
 
+	* config/arm/arm.c (arm_encode_call_attribute): Make 'newstr' a
+	const char * to avoid a compile time warning.
+
 	* config/arm/arm.md (define_constants): Define symbolic names for
 	the link register, last integer register and the fake CC register.
 	Update patterns to use these symbolic names.
