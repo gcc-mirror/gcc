@@ -1253,7 +1253,6 @@ process_zip_dir (FILE *finput)
       char *class_name, *file_name, *class_name_in_zip_dir;
       tree class;
       JCF  *jcf;
-      int   j;
 
       class_name_in_zip_dir = ZIPDIR_FILENAME (zdir);
 

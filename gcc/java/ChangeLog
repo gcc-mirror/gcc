@@ -1,3 +1,7 @@
+2003-01-22 Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* jcf-parse.c (process_zip_dir): Remove unused variable.
+
 2003-01-22  Tom Tromey  <tromey@redhat.com>
 
 	* expr.c (build_invokeinterface): Abort if method's context is not
