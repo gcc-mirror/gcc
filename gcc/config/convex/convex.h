@@ -751,7 +751,7 @@ enum reg_class {
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST: \
   case LABEL_REF: \
   case SYMBOL_REF: \
@@ -764,7 +764,7 @@ enum reg_class {
    switch on CODE. 
    On C1 and C2, multiply is faster than shift. */
 
-#define RTX_COSTS(RTX,CODE) \
+#define RTX_COSTS(RTX,CODE,OUTER_CODE) \
   case MULT:								\
     total = COSTS_N_INSNS (4);						\
     break;								\

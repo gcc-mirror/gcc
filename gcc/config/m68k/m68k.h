@@ -1285,7 +1285,7 @@ __transfer_from_trampoline ()					\
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     /* Constant zero is super cheap due to clr instruction.  */	\
     if (RTX == const0_rtx) return 0;				\
@@ -1293,7 +1293,8 @@ __transfer_from_trampoline ()					\
     if (INTVAL (RTX) >= -128 && INTVAL (RTX) <= 127) return 1;	\
     /* Constants between -136 and 254 are easily generated */	\
     /* by intelligent uses of moveq, add[q], and subq 	   */   \
-    if (INTVAL (RTX) >= -136 && INTVAL (RTX) <= 254) return 2;	\
+    if (OUTER_CODE == SET && INTVAL (RTX) >= -136		\
+	&& INTVAL (RTX) <= 254) return 2;			\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
@@ -1310,7 +1311,7 @@ __transfer_from_trampoline ()					\
 #define MULL_COST (TARGET_68040 ? 5 : 13)
 #define MULW_COST (TARGET_68040 ? 3 : 8)
 
-#define RTX_COSTS(X,CODE)					\
+#define RTX_COSTS(X,CODE,OUTER_CODE)				\
   case PLUS:							\
     /* An lea costs about three times as much as a simple add.  */  \
     if (GET_MODE (X) == SImode					\

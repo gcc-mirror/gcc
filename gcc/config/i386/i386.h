@@ -1093,14 +1093,18 @@ while (0)
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE. */
 
-#define RTX_COSTS(X,CODE)				\
+#define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
     return COSTS_N_INSNS (10);				\
   case DIV:						\
   case UDIV:						\
   case MOD:						\
   case UMOD:						\
-    return COSTS_N_INSNS (40);
+    return COSTS_N_INSNS (40);				\
+  case PLUS:						\
+    if (GET_CODE (XEXP (RTX, 0)) == REG			\
+        && GET_CODE (XEXP (RTX, 1)) == CONST_INT)	\
+      return 1;
 
 
 /* Compute the cost of computing a constant rtl expression RTX
@@ -1108,7 +1112,7 @@ while (0)
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
   case CONST:							\
   case LABEL_REF:						\
@@ -1120,11 +1124,7 @@ while (0)
       return code == 1 ? 0 :					\
 	     code == 2 ? 1 :					\
 			 2;					\
-    }								\
-  case PLUS:							\
-    if (GET_CODE (XEXP (RTX, 0)) == REG				\
-        && GET_CODE (XEXP (RTX, 1)) == CONST_INT)		\
-      return 1;
+    }
 
 /* Compute the cost of an address.  This is meant to approximate the size
    and/or execution delay of an insn using that address.  If the cost is

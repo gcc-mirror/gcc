@@ -999,7 +999,7 @@ __transfer_from_trampoline ()		\
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     if (INTVAL (RTX) <= 7 && INTVAL (RTX) >= -8) return 0;	\
     if (INTVAL (RTX) < 0x4000 && INTVAL (RTX) >= -0x4000)	\

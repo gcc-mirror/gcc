@@ -1221,7 +1221,7 @@ extern char *a29k_function_name;
    instruction are those involving floating-point or address.  So 
    only these need be expensive.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     return 0;							\
   case CONST:							\
@@ -1239,7 +1239,7 @@ extern char *a29k_function_name;
 
    The multiply cost depends on whether this is a 29050 or not.  */
 
-#define RTX_COSTS(X,CODE)				\
+#define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
     return TARGET_29050 ? COSTS_N_INSNS (2) : COSTS_N_INSNS (40);  \
   case DIV:						\

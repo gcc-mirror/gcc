@@ -299,7 +299,7 @@ init_loop ()
   rtx lea;
   int i;
 
-  add_cost = rtx_cost (gen_rtx (PLUS, SImode, reg, reg));
+  add_cost = rtx_cost (gen_rtx (PLUS, SImode, reg, reg), SET);
 
   /* We multiply by 2 to reconcile the difference in scale between
      these two ways of computing costs.  Otherwise the cost of a copy
@@ -4796,7 +4796,7 @@ general_induction_var (x, src_reg, add_val, mult_val)
   if (GET_CODE (*mult_val) == USE)
     *mult_val = XEXP (*mult_val, 0);
 
-  benefit += rtx_cost (orig_x);
+  benefit += rtx_cost (orig_x, SET);
 
   /* Always return some benefit if this is a giv so it will be detected
      as such.  This allows elimination of bivs that might otherwise
