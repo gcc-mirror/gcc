@@ -116,6 +116,7 @@ typedef union
 extern DItype __fixunssfdi (SFtype a);
 extern DItype __fixunsdfdi (DFtype a);
 extern DItype __fixunsxfdi (XFtype a);
+extern DItype __fixunstfdi (TFtype a);
 
 #if defined (L_negdi2) || defined (L_divdi3) || defined (L_moddi3)
 #if defined (L_divdi3) || defined (L_moddi3)
