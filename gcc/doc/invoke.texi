@@ -7261,7 +7261,7 @@ See man ld(1) for more information.
 
 @item -arch_errors_fatal
 @opindex arch_errors_fatal
-Cause the errors having to do with files that have the wron architecture
+Cause the errors having to do with files that have the wrong architecture
 to be fatal.
 
 @item -bind_at_load
@@ -7277,7 +7277,7 @@ See man ld(1) for more information.
 @item -bundle_loader @var{executable}
 @opindex bundle_loader
 This specifies the @var{executable} that will be loading the build
-outout file being linked. See man ld(1) for more information.
+output file being linked. See man ld(1) for more information.
 
 @item -allowable_client  @var{client_name}
 @item -arch_only
