@@ -1,3 +1,9 @@
+Mon Feb 19 16:20:04 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (next_flags_user): Use current_block->end
+	(swap_rtx_condition): Look for next user if flags don't die;
+	give up on CALL_INSNs; use current_block->end.
+
 2001-02-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* invoke.texi (-fsquangle): Remove documentation.

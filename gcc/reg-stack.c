@@ -334,22 +334,18 @@ next_flags_user (insn)
 {
   /* Search forward looking for the first use of this value. 
      Stop at block boundaries.  */
-  /* ??? This really cries for BLOCK_END!  */
 
-  while (1)
+  while (insn != current_block->end)
     {
       insn = NEXT_INSN (insn);
-      if (!insn)
-	return NULL_RTX;
 
       if (INSN_P (insn) && reg_mentioned_p (ix86_flags_rtx, PATTERN (insn)))
         return insn;
 
-      if (GET_CODE (insn) == JUMP_INSN
-	  || GET_CODE (insn) == CODE_LABEL
-	  || GET_CODE (insn) == CALL_INSN)
+      if (GET_CODE (insn) == CALL_INSN)
 	return NULL_RTX;
     }
+  return NULL_RTX;
 }
 
 /* Reorganise the stack into ascending numbers,
@@ -1230,17 +1226,12 @@ swap_rtx_condition (insn)
 
       /* Search forward looking for the first use of this value. 
 	 Stop at block boundaries.  */
-      /* ??? This really cries for BLOCK_END!  */
-      while (1)
+      while (insn != current_block->end)
 	{
 	  insn = NEXT_INSN (insn);
-	  if (insn == NULL_RTX)
-	    return 0;
 	  if (INSN_P (insn) && reg_mentioned_p (dest, insn))
 	    break;
-	  if (GET_CODE (insn) == JUMP_INSN)
-	    return 0;
-	  if (GET_CODE (insn) == CODE_LABEL)
+	  if (GET_CODE (insn) == CALL_INSN)
 	    return 0;
 	}
 
@@ -1263,8 +1254,19 @@ swap_rtx_condition (insn)
 
   if (swap_rtx_condition_1 (pat))
     {
+      int fail = 0;
       INSN_CODE (insn) = -1;
       if (recog_memoized (insn) == -1)
+	fail = 1;
+      /* In case the flags don't die here, recurse to try fix
+         following user too.  */
+      else if (! dead_or_set_p (insn, ix86_flags_rtx))
+	{
+	  insn = next_flags_user (insn);
+	  if (!insn || !swap_rtx_condition (insn))
+	    fail = 1;
+	}
+      if (fail)
 	{
 	  swap_rtx_condition_1 (pat);
 	  return 0;
