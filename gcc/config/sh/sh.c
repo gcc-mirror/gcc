@@ -1278,7 +1278,7 @@ output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
 static void
 print_slot (rtx insn)
 {
-  final_scan_insn (XVECEXP (insn, 0, 1), asm_out_file, optimize, 0, 1, NULL);
+  final_scan_insn (XVECEXP (insn, 0, 1), asm_out_file, optimize, 1, NULL);
 
   INSN_DELETED_P (XVECEXP (insn, 0, 1)) = 1;
 }
@@ -9869,7 +9869,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     dbr_schedule (insns, dump_file);
   shorten_branches (insns);
   final_start_function (insns, file, 1);
-  final (insns, file, 1, 0);
+  final (insns, file, 1);
   final_end_function ();
 
   if (optimize > 0 && flag_schedule_insns_after_reload)
