@@ -9680,10 +9680,10 @@ recog_for_combine (pnewpat, insn, pnotes)
   if (num_clobbers_to_add)
     {
       rtx newpat = gen_rtx_PARALLEL (VOIDmode,
-				     gen_rtvec (GET_CODE (pat) == PARALLEL
-						? (XVECLEN (pat, 0)
-						   + num_clobbers_to_add)
-						: num_clobbers_to_add + 1));
+				     rtvec_alloc (GET_CODE (pat) == PARALLEL
+						  ? (XVECLEN (pat, 0)
+						     + num_clobbers_to_add)
+						  : num_clobbers_to_add + 1));
 
       if (GET_CODE (pat) == PARALLEL)
 	for (i = 0; i < XVECLEN (pat, 0); i++)
