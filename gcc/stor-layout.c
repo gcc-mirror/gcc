@@ -351,7 +351,7 @@ layout_decl (decl, known_align)
       register enum machine_mode xmode
 	= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
 
-      if (xmode != BLKmode && known_align > GET_MODE_ALIGNMENT (xmode))
+      if (xmode != BLKmode && known_align >= GET_MODE_ALIGNMENT (xmode))
 	{
 	  DECL_ALIGN (decl) = MAX (GET_MODE_ALIGNMENT (xmode),
 				   DECL_ALIGN (decl));
@@ -363,7 +363,7 @@ layout_decl (decl, known_align)
   /* Turn off DECL_BIT_FIELD if we won't need it set.  */
   if (code == FIELD_DECL && DECL_BIT_FIELD (decl)
       && TYPE_MODE (type) == BLKmode && DECL_MODE (decl) == BLKmode
-      && known_align > TYPE_ALIGN (type)
+      && known_align >= TYPE_ALIGN (type)
       && DECL_ALIGN (decl) >= TYPE_ALIGN (type)
       && DECL_SIZE_UNIT (decl) != 0)
     DECL_BIT_FIELD (decl) = 0;
