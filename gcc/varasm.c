@@ -1245,7 +1245,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   last_assemble_variable_decl = 0;
 
-  if (GET_CODE (DECL_RTL (decl)) == REG)
+  if (DECL_RTL_SET_P (decl) && GET_CODE (DECL_RTL (decl)) == REG)
     {
       /* Do output symbol info for global register variables, but do nothing
 	 else for them.  */

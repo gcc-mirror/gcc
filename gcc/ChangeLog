@@ -1,3 +1,7 @@
+2001-03-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (assemble_variable): Use DECL_RTL_SET_P.
+
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* varasm.c (assemble_alias): Use DECL_ASSEMBLER_NAME, not the
