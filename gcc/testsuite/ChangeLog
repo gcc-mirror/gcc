@@ -1,3 +1,7 @@
+2004-06-23  Andrew Pinski  <apinski@apple.com>
+
+	* gcc.dg/c90-array-quals-2.c: New test.
+
 2006-06-23  Nitin Yewale <NitinY@KPITCummins.com>
 
 	* gcc.dg/kpice1.c: New test.

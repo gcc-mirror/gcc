@@ -1,3 +1,12 @@
+2004-06-23  Andrew Pinski  <apinski@apple.com>
+
+	* c-typeck.c (composite_type, <case ARRAY_TYPE>): Abort if we have
+	type qualifiers at all.
+	If both of the type domains are null and the new element type is
+	the same as one of the, return the one which the element type.
+	matches.
+	Do not call qualify_type on the new type.
+
 2004-06-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (DEFAULT_MAIN_RETURN): Remove.

@@ -260,15 +260,25 @@ composite_type (tree t1, tree t2)
     case ARRAY_TYPE:
       {
 	tree elt = composite_type (TREE_TYPE (t1), TREE_TYPE (t2));
+	
+	/* We should not have any type quals on arrays at all.  */
+	if (TYPE_QUALS (t1) || TYPE_QUALS (t2))
+	  abort ();
+	
 	/* Save space: see if the result is identical to one of the args.  */
 	if (elt == TREE_TYPE (t1) && TYPE_DOMAIN (t1))
 	  return build_type_attribute_variant (t1, attributes);
 	if (elt == TREE_TYPE (t2) && TYPE_DOMAIN (t2))
 	  return build_type_attribute_variant (t2, attributes);
+	
+	if (elt == TREE_TYPE (t1) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
+	  return build_type_attribute_variant (t1, attributes);
+	if (elt == TREE_TYPE (t2) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
+	  return build_type_attribute_variant (t2, attributes);
+	
 	/* Merge the element types, and have a size if either arg has one.  */
 	t1 = build_array_type (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
-	t1 = build_type_attribute_variant (t1, attributes);
-	return qualify_type (t1, t2);
+	return build_type_attribute_variant (t1, attributes);
       }
 
     case FUNCTION_TYPE:
