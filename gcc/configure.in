@@ -3147,9 +3147,15 @@ case x$CONFIG_HEADERS in
 xconfig.h:config.in)
 echo > cstamp-h ;;
 esac
-# Make sure we create things so -Bstage1/ will work.
-for d in .. ${subdirs} ; do
-  if [ $d != .. ]; then
+# If the host supports symlinks, point stage[1234] at ../stage[1234] so
+# bootstrapping and the installation procedure can still use
+# CC="stage1/xgcc -Bstage1/".  If the host doesn't support symlinks,
+# FLAGS_TO_PASS has been modified to solve the problem there.
+# This is virtually a duplicate of what happens in configure.lang; we do
+# an extra check to make sure this only happens if ln -s can be used.
+if [[ "$symbolic_link" = "ln -s" ]]; then
+ for d in .. ${subdirs} ; do
+   if [[ $d != .. ]]; then
 	STARTDIR=`pwd`
 	cd $d
 	for t in stage1 stage2 stage3 stage4 include
@@ -3158,8 +3164,9 @@ for d in .. ${subdirs} ; do
 		$symbolic_link ../$t $t 2>/dev/null
 	done
 	cd $STARTDIR
-  fi
-done
+   fi
+ done
+else true ; fi
 ],
 [
 host='${host}'
