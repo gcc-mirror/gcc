@@ -84,7 +84,12 @@ Note:
 #define STARTFILE_SPEC "crt1%O%s"
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define CPP_PREDEFINES		"-Dmc68hc1x"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("mc68hc1x");		\
+    }						\
+  while (0)
 
 /* As an embedded target, we have no libc.  */
 #define inhibit_libc

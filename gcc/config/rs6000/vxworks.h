@@ -18,11 +18,14 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* N.B. Only big endian PPC is supported by VxWorks.  */
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
-  "-D__vxworks -D__vxworks__ -D_BIG_ENDIAN -D__BIG_ENDIAN__"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__vxworks");		\
+      builtin_define ("__vxworks__");		\
+    }						\
+  while (0)
 
 /* We have to kill off the entire specs set created by rs6000/sysv4.h
    and substitute our own set.  The top level vxworks.h has done some

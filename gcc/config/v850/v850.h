@@ -65,7 +65,12 @@
  { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC } 
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define CPP_PREDEFINES "-D__v851__ -D__v850"
+#define TARGET_CPU_CPP_BUILTINS() do {		\
+  builtin_define( "__v851__" );			\
+  builtin_define( "__v850" );			\
+  builtin_assert( "machine=v850" );		\
+  builtin_assert( "cpu=v850" );			\
+} while(0)
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

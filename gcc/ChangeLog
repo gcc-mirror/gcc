@@ -1,3 +1,24 @@
+2003-03-09  Neil Booth  <neil@daikokuya.co.uk>
+
+	* config/frv/frv.h: Use TARGET_CPU_CPP_BUILTINS, not CPP_PREDEFINES.
+	* config/ip2k/ip2k.h: Similarly.
+	* config/m32r/m32r.h: Similarly.
+	* config/m68hc11/m68hc11.h: Similarly.
+	* config/mn10200/mn10200.h: Similarly.
+	* config/mn10300/mn10300.h: Similarly.
+	* config/pdp11/pdp11.h: Similarly.
+	* config/v850/v850.h: Similarly.
+	* config/rs6000/vxworks.h: Similarly for TARGET_OS_CPP_BUILTINS.
+	* config/v850/retms.h: Similarly for TARGET_OS_CPP_BUILTINS.
+	* config/mips/iris3.h: Remove #if 0 block.
+
+2003-03-09  Roger Sayle  <roger@eyesopen.com>
+	    Joern Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c (do_spec_1) ['{']: Revert 2003-02-24 patch.  Don't handle
+	pending argument upon return from handle_braces here.
+	(do_spec_2): Instead handle it upon return from do_spec_1 here.
+
 2003-03-09  Roger Sayle  <roger@eyesopen.com>
 	    Joern Rennecke <joern.rennecke@superh.com>
 

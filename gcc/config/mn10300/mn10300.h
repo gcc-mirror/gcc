@@ -33,7 +33,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D__mn10300__ -D__MN10300__"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__mn10300__");		\
+      builtin_define ("__MN10300__");		\
+    }						\
+  while (0)
 
 #define CPP_SPEC "%{mam33:-D__AM33__}"
 

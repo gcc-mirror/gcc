@@ -20,16 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SGI_TARGET 1		/* inform other mips files this is SGI */
 
-/* Names to predefine in the preprocessor for this target machine.  */
-/* Temporarily #if 0'd until Irix header consolidation.  */
-#if 0
-#define CPP_PREDEFINES	"\
--Dunix -Dmips -Dsgi -DSVR3 -Dhost_mips -DMIPSEB -DSYSTYPE_SYSV \
--Asystem=unix -Asystem=svr3 -Acpu=mips -Amachine=mips"
-#define SUBTARGET_CPP_SPEC "\
-%{!ansi:-D__EXTENSIONS__} -D_MIPSEB -D_SYSTYPE_SYSV"
-#endif
-
 #define STARTFILE_SPEC	"%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}"
 #define LIB_SPEC	\
 	"%{!p:%{!pg:%{!static:%{!g*:-lc_s}} -lc}}%{p:-lc_p}%{pg:-lc_p} crtn.o%s"

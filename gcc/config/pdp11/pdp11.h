@@ -30,7 +30,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dpdp11"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("pdp11");		\
+    }						\
+  while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (pdp11)");
