@@ -1010,6 +1010,11 @@ update_equiv_regs (void)
 	  if (! INSN_P (insn))
 	    continue;
 
+	  /* Don't substitute into a non-local goto, this confuses CFG.  */
+	  if (JUMP_P (insn)
+	      && find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
+	    continue;
+
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	    {
 	      if (REG_NOTE_KIND (link) == REG_DEAD
