@@ -87,7 +87,7 @@ struct hash_entry *
 hash_lookup (table, key, create, copy)
      struct hash_table *table;
      hash_table_key key;
-     bool create;
+     int create;
      hash_table_key (*copy) PARAMS ((struct obstack* memory, 
 				     hash_table_key key));
 {
