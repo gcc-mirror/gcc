@@ -178,6 +178,20 @@ verify_flow_info (void)
 	      fputc ('\n', stderr);
 	      err = 1;
 	    }
+
+	  if (ei.index != e->dest_idx)
+	    {
+	      error ("basic block %d pred edge is corrupted", bb->index);
+	      error ("its dest_idx should be %d, not %d",
+		     ei.index, e->dest_idx);
+	      fputs ("Predecessor: ", stderr);
+	      dump_edge_info (stderr, e, 0);
+	      fputs ("\nSuccessor: ", stderr);
+	      dump_edge_info (stderr, e, 1);
+	      fputc ('\n', stderr);
+	      err = 1;
+	    }
+
 	  edge_checksum[e->dest->index + 2] -= (size_t) e;
 	}
     }

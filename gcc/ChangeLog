@@ -1,3 +1,13 @@
+2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h (edge_def): Add dest_idx.
+	* cfg.c (unchecked_make_edge): Initialize dest_idx.
+	(remove_edge): Simplify the disconnection of an edge from its
+	destination.
+	(redirect_edge_succ): Likewise.
+	* cfghooks.c (verify_flow_info): Check the consistency of
+	dest_idx for each edge.
+
 2004-11-19  Aldy Hernandez  <aldyh@redhat.com>
 
         * simplify-rtx.c (simplify_ternary_operation): Use
