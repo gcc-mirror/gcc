@@ -144,6 +144,7 @@ F77="$GFORTRAN"
 AC_PROG_F77(gfortran)
 FFLAGS="$FFLAGS -Wall -fno-repack-arrays -fno-underscoring"
 
+AC_SYS_LARGEFILE
 AC_FUNC_MMAP
 AC_TYPE_OFF_T
 
