@@ -40,7 +40,9 @@ union  tree_node;
 struct varasm_status;
 
 /* Constants for general use.  */
-extern const char empty_string[];
+extern const char empty_string[];	/* empty string */
+extern const char digit_vector[];	/* "0" .. "9" */
+#define digit_string(d) (digit_vector + ((d) * 2))
 
 /* Trees that have been marked, but whose children still need marking.  */
 extern varray_type ggc_pending_trees;
@@ -53,9 +55,6 @@ void ggc_add_rtx_varray_root PARAMS ((struct varray_head_tag **, int nelt));
 void ggc_add_tree_varray_root PARAMS ((struct varray_head_tag **, int nelt));
 void ggc_add_tree_hash_table_root PARAMS ((struct hash_table **, int nelt));
 void ggc_del_root PARAMS ((void *base));
-
-/* Temporary */
-#define ggc_add_string_root(ptr, nelt)  /* nothing */
 
 /* Mark nodes from the gc_add_root callback.  These functions follow
    pointers to mark other objects too.  */
@@ -92,9 +91,6 @@ extern void ggc_mark_rtvec_children PARAMS ((struct rtvec_def *));
     if (ggc_test_and_set_mark (v__))            \
       ggc_mark_rtvec_children (v__);            \
   } while (0)
-
-/* Temporary */
-#define ggc_mark_string(EXPR)  /* nothing */
 
 #define ggc_mark(EXPR)				\
   do {						\

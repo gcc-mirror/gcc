@@ -1677,7 +1677,6 @@ ix86_can_use_return_insn_p ()
 
 static const char *pic_label_name;
 static int pic_label_output;
-static const char *global_offset_table_name;
 
 /* This function generates code for -fpic that loads %ebx with
    the return address of the caller and then returns.  */
@@ -1721,13 +1720,7 @@ load_pic_register ()
 {
   rtx gotsym, pclab;
 
-  if (global_offset_table_name == NULL)
-    {
-      global_offset_table_name =
-	ggc_alloc_string ("_GLOBAL_OFFSET_TABLE_", 21);
-      ggc_add_string_root (&global_offset_table_name, 1);
-    }
-  gotsym = gen_rtx_SYMBOL_REF (Pmode, global_offset_table_name);
+  gotsym = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
 
   if (TARGET_DEEP_BRANCH_PREDICTION)
     {
@@ -1735,8 +1728,7 @@ load_pic_register ()
 	{
 	  char buf[32];
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LPR", 0);
-	  pic_label_name = ggc_alloc_string (buf, -1);
-	  ggc_add_string_root (&pic_label_name, 1);
+	  pic_label_name = ggc_strdup (buf);
 	}
       pclab = gen_rtx_MEM (QImode, gen_rtx_SYMBOL_REF (Pmode, pic_label_name));
     }

@@ -5114,10 +5114,10 @@ rs6000_emit_load_toc_table (fromprolog)
 	      rtx symL;
 	  
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
-	      symF = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
+	      symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
-	      symL = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
+	      symL = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 
 	      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1 (tempLR, 
 								   symF)));
@@ -5131,11 +5131,10 @@ rs6000_emit_load_toc_table (fromprolog)
 	      rtx tocsym;
 	      static int reload_toc_labelno = 0;
 
-	      tocsym = gen_rtx_SYMBOL_REF (Pmode, 
-		      ggc_alloc_string (toc_label_name, -1));
+	      tocsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
 
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCG", reload_toc_labelno++);
-	      symF = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
+	      symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 
 	      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1b (tempLR, 
 								    symF, 
@@ -5152,7 +5151,7 @@ rs6000_emit_load_toc_table (fromprolog)
 	  char buf[30];
 	  rtx realsym;
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-	  realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
+	  realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 	  
 	  rs6000_maybe_dead (emit_insn (gen_elf_high (dest, realsym)));
 	  rs6000_maybe_dead (emit_insn (gen_elf_low (dest, dest, realsym)));
@@ -5205,12 +5204,11 @@ rtx
 create_TOC_reference(symbol) 
     rtx symbol;
 {
-    return gen_rtx_PLUS (Pmode, 
-	     gen_rtx_REG (Pmode, TOC_REGISTER),
-	       gen_rtx_CONST (Pmode, 
-		 gen_rtx_MINUS (Pmode, symbol, 
-		   gen_rtx_SYMBOL_REF (Pmode,
-		     ggc_alloc_string (toc_label_name, -1)))));
+  return gen_rtx_PLUS (Pmode, 
+	   gen_rtx_REG (Pmode, TOC_REGISTER),
+	     gen_rtx_CONST (Pmode, 
+	       gen_rtx_MINUS (Pmode, symbol, 
+		 gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name)))));
 }
 
 #if TARGET_AIX
@@ -5613,7 +5611,7 @@ rs6000_emit_prologue()
 						       LINK_REGISTER_REGNUM));
       sprintf (rname, "%s%d%s", SAVE_FP_PREFIX,
 	       info->first_fp_reg_save - 32, SAVE_FP_SUFFIX);
-      alloc_rname = ggc_alloc_string (rname, -1);
+      alloc_rname = ggc_strdup (rname);
       RTVEC_ELT (p, 1) = gen_rtx_USE (VOIDmode,
 				      gen_rtx_SYMBOL_REF (Pmode,
 							  alloc_rname));
@@ -6061,7 +6059,7 @@ rs6000_emit_epilogue(sibcall)
 
 	  sprintf (rname, "%s%d%s", RESTORE_FP_PREFIX, 
 		   info->first_fp_reg_save - 32, RESTORE_FP_SUFFIX);
-	  alloc_rname = ggc_alloc_string (rname, -1);
+	  alloc_rname = ggc_strdup (rname);
 	  RTVEC_ELT (p, 2) = gen_rtx_USE (VOIDmode,
 					  gen_rtx_SYMBOL_REF (Pmode,
 							      alloc_rname));

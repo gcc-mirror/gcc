@@ -600,7 +600,6 @@ goal:
 		  ggc_add_tree_root (&package_list, 1);
 		  ggc_add_tree_root (&current_this, 1);
 		  ggc_add_tree_root (&currently_caught_type_list, 1);
-		  ggc_add_string_root (&cyclic_inheritance_report, 1);
 		  ggc_add_root (&ctxp, 1, 
 				sizeof (struct parser_ctxt *),
 				mark_parser_ctxt);

@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "toplev.h"
 #include "intl.h"
-#include "ggc.h"
 #include "tm_p.h"
 #include "splay-tree.h"
 
@@ -149,8 +148,6 @@ static tree lex_string		PARAMS ((const char *, unsigned int, int));
 static tree lex_charconst	PARAMS ((const char *, unsigned int, int));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
-static int mark_splay_tree_node PARAMS ((splay_tree_node, void *));
-static void mark_splay_tree     PARAMS ((void *));
 
 #if !USE_CPPLIB
 static int skip_white_space		PARAMS ((int));
@@ -177,10 +174,7 @@ init_c_lex (filename)
   file_info_tree = splay_tree_new ((splay_tree_compare_fn)strcmp,
 				   0,
 				   (splay_tree_delete_value_fn)free);
-  /* Make sure to mark the filenames in the tree for GC.  */
-  ggc_add_root (&file_info_tree, 1, sizeof (file_info_tree), 
-		mark_splay_tree);
-  toplevel = get_fileinfo (ggc_strdup ("<top level>"));
+  toplevel = get_fileinfo ("<top level>");
   if (flag_detailed_statistics)
     {
       header_time = 0;
@@ -698,7 +692,7 @@ cb_enter_file (pfile)
   if (ip->prev)
     {
       lex_lineno = lineno = ip->prev->lineno - 1;
-      push_srcloc (ggc_alloc_string (ip->nominal_fname, -1), 1);
+      push_srcloc (ip->nominal_fname, 1);
       input_file_stack->indent_level = indent_level;
       debug_start_source_file (ip->nominal_fname);
     }
@@ -769,7 +763,7 @@ cb_rename_file (pfile)
   cpp_buffer *ip = CPP_BUFFER (pfile);
   /* Bleah, need a better interface to this.  */
   const char *flags = cpp_syshdr_flags (pfile, ip);
-  input_filename = ggc_alloc_string (ip->nominal_fname, -1);
+  input_filename = ip->nominal_fname;
   lex_lineno = ip->lineno;
   in_system_header = (flags[0] != 0);
 
@@ -2549,26 +2543,4 @@ lex_charconst (str, len, wide)
     }
 
   return value;
-}
-
-/* Mark for GC a node in a splay tree whose keys are strings.  */
-
-static int
-mark_splay_tree_node (n, data)
-     splay_tree_node n;
-     void *data ATTRIBUTE_UNUSED;
-{
-  ggc_mark_string ((char *) n->key);
-  return 0;
-}
-
-/* Mark for GC a splay tree whose keys are strings.  */
-
-static void
-mark_splay_tree (p)
-     void *p;
-{
-  splay_tree st = *(splay_tree *) p;
-  
-  splay_tree_foreach (st, mark_splay_tree_node, NULL);
 }

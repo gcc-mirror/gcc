@@ -393,9 +393,6 @@ struct stmt_status
 /* Non-zero if we are using EH to handle cleanus.  */
 static int using_eh_for_cleanups_p = 0;
 
-/* Character strings, each containing a single decimal digit.  */
-static const char *digit_strings[10];
-
 static int n_occurrences		PARAMS ((int, const char *));
 static void expand_goto_internal	PARAMS ((tree, rtx, rtx));
 static int expand_fixup			PARAMS ((tree, rtx, rtx));
@@ -597,18 +594,7 @@ mark_stmt_status (p)
 void
 init_stmt ()
 {
-  int i;
-  char buf[2];
-
   gcc_obstack_init (&stmt_obstack);
-
-  buf[1] = 0;
-  for (i = 0; i < 10; i++)
-    {
-      buf[0] = '0' + i;
-      digit_strings[i] = ggc_alloc_string (buf, 1);
-    }
-  ggc_add_string_root (digit_strings, 10);
 }
 
 void
@@ -1809,7 +1795,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       ASM_OPERANDS_INPUT (body, ninputs - ninout + i)
 	= output_rtx[j];
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, ninputs - ninout + i)
-	= gen_rtx_ASM_INPUT (inout_mode[i], digit_strings[j]);
+	= gen_rtx_ASM_INPUT (inout_mode[i], digit_string (j));
     }
 
   generating_concat_p = old_generating_concat_p;

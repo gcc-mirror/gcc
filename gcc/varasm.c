@@ -319,7 +319,7 @@ named_section (decl, name, reloc)
       abort ();
 #endif
 
-      in_named_name = ggc_alloc_string (name, -1);
+      in_named_name = ggc_strdup (name);
       in_section = in_named;
     }
 }
@@ -1808,7 +1808,7 @@ assemble_static_space (size)
 
   ASM_GENERATE_INTERNAL_LABEL (name, "LF", const_labelno);
   ++const_labelno;
-  namestring = ggc_alloc_string (name, -1);
+  namestring = ggc_strdup (name);
 
   x = gen_rtx_SYMBOL_REF (Pmode, namestring);
 
@@ -1864,7 +1864,7 @@ assemble_trampoline_template ()
 
   /* Record the rtl to refer to it.  */
   ASM_GENERATE_INTERNAL_LABEL (label, "LTRAMP", 0);
-  name = ggc_alloc_string (label, -1);
+  name = ggc_strdup (label);
   return gen_rtx_SYMBOL_REF (Pmode, name);
 }
 #endif
@@ -2369,7 +2369,6 @@ mark_const_hash_entry (ptr)
 
   while (desc)
     {
-      ggc_mark_string ((const char *)desc->label);
       ggc_mark_rtx (desc->rtl);
       desc = desc->next;
     }
@@ -3176,7 +3175,7 @@ output_constant_def (exp, defer)
 
       desc = record_constant (exp);
       desc->next = const_hash_table[hash];
-      desc->label = ggc_alloc_string (label, -1);
+      desc->label = ggc_strdup (label);
       const_hash_table[hash] = desc;
   
       /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
@@ -3381,7 +3380,6 @@ mark_pool_constant (pc)
     {
       ggc_mark (pc);
       ggc_mark_rtx (pc->constant);
-      ggc_mark_string (pc->label);
       pc = pc->next;
     }
 }
@@ -3693,7 +3691,7 @@ force_const_mem (mode, x)
 
       ++const_labelno;
 
-      desc->label = found = ggc_alloc_string (label, -1);
+      desc->label = found = ggc_strdup (label);
 
       /* Add label to symbol hash table.  */
       hash = SYMHASH (found);
@@ -4894,7 +4892,6 @@ init_varasm_once ()
 		mark_const_hash_entry);
   ggc_add_root (&const_str_htab, 1, sizeof const_str_htab,
 		mark_const_str_htab);
-  ggc_add_string_root (&in_named_name, 1);
 }
 
 /* Extra support for EH values.  */

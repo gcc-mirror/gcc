@@ -1027,7 +1027,7 @@ init_edge_profiler ()
   /* Generate and save a copy of this so it can be shared.  */
   char buf[20];
   ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", 2);
-  profiler_label = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
+  profiler_label = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
   ggc_add_rtx_root (&profiler_label, 1);
 }
 
@@ -1124,10 +1124,8 @@ output_func_start_profiler ()
   /* Actually generate the code to call __bb_init_func. */
   ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", 0);
   table_address = force_reg (Pmode,
-			     gen_rtx_SYMBOL_REF (Pmode,
-						 ggc_alloc_string (buf, -1)));
-  emit_library_call (gen_rtx_SYMBOL_REF 
-		     (Pmode, ggc_alloc_string ("__bb_init_func", 14)), 0,
+			     gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf)));
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_init_func"), 0,
 		     mode, 1, table_address, Pmode);
 
   expand_function_end (input_filename, lineno, 0);

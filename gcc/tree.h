@@ -2645,7 +2645,6 @@ extern tree type_hash_lookup		PARAMS ((unsigned int, tree));
 extern void type_hash_add		PARAMS ((unsigned int, tree));
 extern unsigned int type_hash_list	PARAMS ((tree));
 extern int simple_cst_list_equal	PARAMS ((tree, tree));
-extern void init_tree_codes		PARAMS ((void));
 extern void dump_tree_statistics	PARAMS ((void));
 extern void print_obstack_statistics	PARAMS ((const char *,
 						struct obstack *));

@@ -40,6 +40,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* The "" allocated string.  */
 const char empty_string[] = "";
 
+/* Character strings, each containing a single decimal digit.
+   Written this way to save space.  */
+const char digit_vector[] = {
+  '0', 0, '1', 0, '2', 0, '3', 0, '4', 0,
+  '5', 0, '6', 0, '7', 0, '8', 0, '9', 0
+};
+
 static struct obstack string_stack;
 
 /* This is the hash entry associated with each string.  It lives in
@@ -262,6 +269,8 @@ ggc_alloc_string (contents, length)
 
   if (length == 0)
     return empty_string;
+  if (length == 1 && contents[0] >= '0' && contents[0] <= '9')
+    return digit_string (contents[0] - '0');
 
   str = alloc_string (contents, length, INSERT);
   return str->ptr;
