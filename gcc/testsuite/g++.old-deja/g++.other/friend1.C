@@ -24,6 +24,6 @@ void f()
 {
     ((B*)0)->i = 3; // ERROR - protected
     ((D*)0)->i = 4;
-    B::j = 5;
+    B::j = 5;			// gets bogus error - XFAIL *-*-*
     D::j = 6;
 }

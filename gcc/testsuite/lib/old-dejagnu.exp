@@ -198,9 +198,6 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 #
 # Other keywords: "Build don't link:", "Build don't run:".
 
-    # FIXME: none of the current test cases use this, so It's not implemented
-    # set tmp [grep $prog "remove -sanitize"]
-
     set name "[file tail [file dirname $prog]]/[file tail $prog]"
 
     set tmp [grep $prog "FIXME -.*"]
