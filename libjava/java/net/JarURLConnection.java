@@ -12,6 +12,7 @@ import java.net.*;
 import java.io.*;
 import java.util.jar.*;
 import java.util.zip.*;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
 
@@ -212,6 +213,20 @@ public abstract class JarURLConnection extends URLConnection
 	return null;
       }
     return (String) hdrHash.get(name.toLowerCase());
+  }
+
+  // Override default method in URLConnection.
+  public Map getHeaderFields()
+  {
+    try
+      {
+        getHeaders();
+      }
+    catch (IOException x)
+      {
+        return null;
+      }
+    return hdrHash;
   }
 
   // Override default method in URLConnection.
