@@ -2062,7 +2062,8 @@ flag on the line is equivalent to specifying the @code{packed}
 attribute on all @code{enum} definitions.
 
 You may only specify this attribute after a closing curly brace on an
-@code{enum} definition, not in a @code{typedef} declaration.
+@code{enum} definition, not in a @code{typedef} declaration, unless that
+declaration also contains the definition of the @code{enum}.
 
 @item transparent_union
 This attribute, attached to a @code{union} type definition, indicates
