@@ -1834,7 +1834,7 @@ Objective-C and Objective-C++ programs; you can use the other options with
 any language supported by GCC@.
 
 Note that since Objective-C is an extension of the C language, Objective-C
-compilations may also use options specific to the C front-end (e.g., 
+compilations may also use options specific to the C front-end (e.g.,
 @option{-Wtraditional}).  Similarly, Objective-C++ compilations may use
 C++-specific options (e.g., @option{-Wabi}).
 
@@ -3516,7 +3516,7 @@ loop optimization pass, to @file{@var{file}.06.loop}.  @option{-dL} and
 @itemx -fdump-rtl-sms
 @opindex dm
 @opindex fdump-rtl-sms
-Dump after modulo scheduling, to @file{@var{file}.20.sms}. 
+Dump after modulo scheduling, to @file{@var{file}.20.sms}.
 
 @item -dM
 @itemx -fdump-rtl-mach
@@ -3842,7 +3842,7 @@ file name.
 
 @item vect
 @opindex fdump-tree-vect
-Dump each function after applying vectorization of loops.  The file name is 
+Dump each function after applying vectorization of loops.  The file name is
 made by appending @file{.vect} to the source file name.
 
 @item all
@@ -4650,7 +4650,7 @@ Perform loop optimizations on trees.  This flag is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-loop-linear
-Perform linear loop transformations on tree. This flag can improve cache 
+Perform linear loop transformations on tree. This flag can improve cache
 performance and allow further loop optimizations to take place.
 
 @item -ftree-lim
@@ -4733,7 +4733,7 @@ This optimization is enabled by default.
 
 @item -fvariable-expansion-in-unroller
 @opindex -fvariable-expansion-in-unroller
-With this option, the compiler will create multiple copies of some 
+With this option, the compiler will create multiple copies of some
 local variables when unrolling a loop which can result in superior code.
 
 @item -fprefetch-loop-arrays
@@ -7252,14 +7252,14 @@ Emit debugging information for all symbols and types.
 @item -mone-byte-bool
 @opindex -mone-byte-bool
 Override the defaults for @samp{bool} so that @samp{sizeof(bool)==1}.
-By default @samp{sizeof(bool)} is @samp{4} when compiling for 
+By default @samp{sizeof(bool)} is @samp{4} when compiling for
 Darwin/PowerPC and @samp{1} when compiling for Darwin/x86, so this
 option has no effect on x86.
 
 @strong{Warning:} The @option{-mone-byte-bool} switch causes GCC
 to generate code that is not binary compatible with code generated
 without that switch.  Using this switch may require recompiling all
-other modules in a program, including system libraries.  Use this 
+other modules in a program, including system libraries.  Use this
 switch to conform to a non-default data model.
 
 @item -mfix-and-continue
@@ -10837,18 +10837,18 @@ In order to provide a backchain the address of the caller's frame
 is stored within the callee's stack frame.
 A backchain may be needed to allow debugging using tools that do not understand
 DWARF-2 call frame information.
-For @option{-mno-backchain} no backchain is maintained at all which is the 
-default. 
-If one of the other options is present the backchain pointer is placed either 
+For @option{-mno-backchain} no backchain is maintained at all which is the
+default.
+If one of the other options is present the backchain pointer is placed either
 on top of the stack frame  (@option{-mkernel-backchain}) or on
 the bottom (@option{-mbackchain}).
 Beside the different backchain location @option{-mkernel-backchain}
 also changes stack frame layout breaking the ABI. This option
 is intended to be used for code which internally needs a backchain but has
-to get by with a limited stack size e.g.@: the linux kernel. 
+to get by with a limited stack size e.g.@: the linux kernel.
 Internal unwinding code not using DWARF-2 info has to be able to locate the
 return address of a function. That will be eased be the fact that
-the return address of a function is placed two words below the backchain 
+the return address of a function is placed two words below the backchain
 pointer.
 
 @item -msmall-exec
@@ -10936,8 +10936,8 @@ hardware floating point is used.
 @opindex mwarn-framesize
 Emit a warning if the current function exceeds the given frame size.  Because
 this is a compile time check it doesn't need to be a real problem when the program
-runs.  It is intended to identify functions which most probably cause 
-a stack overflow.  It is useful to be used in an environment with limited stack 
+runs.  It is intended to identify functions which most probably cause
+a stack overflow.  It is useful to be used in an environment with limited stack
 size e.g.@: the linux kernel.
 
 @item -mwarn-dynamicstack
@@ -10951,11 +10951,11 @@ sized arrays.  This is generally a bad idea with a limited stack size.
 @opindex mstack-size
 These arguments always have to be used in conjunction.  If they are present the s390
 back end emits additional instructions in the function prologue which trigger a trap
-if the stack size is @var{stack-guard} bytes above the @var{stack-size} 
-(remember that the stack on s390 grows downward).  These options are intended to 
-be used to help debugging stack overflow problems.  The additionally emitted code 
-cause only little overhead and hence can also be used in production like systems 
-without greater performance degradation.  The given values have to be exact 
+if the stack size is @var{stack-guard} bytes above the @var{stack-size}
+(remember that the stack on s390 grows downward).  These options are intended to
+be used to help debugging stack overflow problems.  The additionally emitted code
+cause only little overhead and hence can also be used in production like systems
+without greater performance degradation.  The given values have to be exact
 powers of 2 and @var{stack-size} has to be greater than @var{stack-guard}.
 In order to be efficient the extra code makes the assumption that the stack starts
 at an address aligned to the value given by @var{stack-size}.
@@ -12181,7 +12181,7 @@ load times of shared object libraries, produce more optimized
 code, provide near-perfect API export and prevent symbol clashes.
 It is @strong{strongly} recommended that you use this in any shared objects
 you distribute.
-     
+
 Despite the nomenclature, @code{default} always means public ie;
 available to be linked against from outside the shared object.
 @code{protected} and @code{internal} are pretty useless in real-world
@@ -12190,7 +12190,7 @@ The default if @option{-fvisibility} isn't specified is
 @code{default}, i.e., make every
 symbol public---this causes the same behavior as previous versions of
 GCC.
-     
+
 A good explanation of the benefits offered by ensuring ELF
 symbols have the correct visibility is given by ``How To Write
 Shared Libraries'' by Ulrich Drepper (which can be found at

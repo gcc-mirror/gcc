@@ -61,7 +61,7 @@ static GTY(()) int @var{counter};        /* @r{save counter in a PCH} */
 @end smallexample
 
 The parser understands simple typedefs such as
-@code{typedef struct @var{tag} *@var{name};} and 
+@code{typedef struct @var{tag} *@var{name};} and
 @code{typedef int @var{name};}.
 These don't need to be marked.
 

@@ -3310,14 +3310,14 @@ above in recent GCC versions.
 @subsection ARM Type Attributes
 
 On those ARM targets that support @code{dllimport} (such as Symbian
-OS), you can use the @code{notshared} attribute to indicate that the 
+OS), you can use the @code{notshared} attribute to indicate that the
 virtual table and other similar data for a class should not be
 exported from a DLL.  For example:
 
 @smallexample
 class __declspec(notshared) C @{
 public:
-  __declspec(dllimport) C(); 
+  __declspec(dllimport) C();
   virtual void f();
 @}
 
@@ -3689,7 +3689,7 @@ int foo ()
   int result;
   asm ("magic stuff accessing an 'int' pointed to by '%1'"
         "=&d" (r) : "a" (y), "m" (*y));
-  return result;     
+  return result;
 @}
 @end smallexample
 
@@ -3790,10 +3790,10 @@ The @code{volatile} keyword indicates that the instruction has
 important side-effects.  GCC will not delete a volatile @code{asm} if
 it is reachable.  (The instruction can still be deleted if GCC can
 prove that control-flow will never reach the location of the
-instruction.)  Note that even a volatile @code{asm} instruction 
+instruction.)  Note that even a volatile @code{asm} instruction
 can be moved relative to other code, including across jump
-instructions.  For example, on many targets there is a system 
-register which can be set to control the rounding mode of 
+instructions.  For example, on many targets there is a system
+register which can be set to control the rounding mode of
 floating point operations.  You might try
 setting it with a volatile @code{asm}, like this PowerPC example:
 

@@ -5024,7 +5024,7 @@ you define this macro, the compiler will use it instead of
 A C expression which is nonzero if @var{x} (assumed to be a @code{reg} RTX)
 is suitable for use as a base register in base plus index operand addresses,
 accessing memory in mode @var{mode}.  It may be either a suitable hard
-register or a pseudo register that has been allocated such a hard register. 
+register or a pseudo register that has been allocated such a hard register.
 You should define this macro if base plus index addresses have different
 requirements than other base register uses.
 @end defmac

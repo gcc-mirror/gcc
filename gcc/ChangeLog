@@ -1,3 +1,10 @@
+2004-11-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* doc/c-tree.texi, doc/cfg.texi, doc/extend.texi, doc/gty.texi,
+	doc/install.texi, doc/invoke.texi, doc/md.texi, doc/passes.texi,
+	doc/rtl.texi, doc/tm.texi, doc/tree-ssa.texi: Remove trailing
+	whitespace.
+
 2004-11-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/arm.c (arm_handle_notshared_attribute): New function.

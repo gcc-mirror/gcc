@@ -919,7 +919,7 @@ logical operators, which have the semantics of the C operators
 @end table
 
 @item
-An optional block of C code, which should execute 
+An optional block of C code, which should execute
 @samp{@w{return true}} if the predicate is found to match and
 @samp{@w{return false}} if it does not.  It must not have any side
 effects.  The predicate arguments, @var{op} and @var{mode}, are
