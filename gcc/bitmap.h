@@ -111,7 +111,7 @@ extern int bitmap_operation (bitmap, bitmap, bitmap, enum bitmap_bits);
 #define bitmap_xor_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_XOR)
 
 /* `or' into one bitmap the `and' of a second bitmap witih the complement
-   of a third. Return nonzero if the bitmap changes. */
+   of a third. Return nonzero if the bitmap changes.  */
 extern bool bitmap_ior_and_compl_into (bitmap, bitmap, bitmap);
 extern bool bitmap_ior_and_compl (bitmap, bitmap, bitmap, bitmap);
 

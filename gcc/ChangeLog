@@ -1,5 +1,9 @@
 2004-11-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* bitmap.h, dbxout.c, tree-mudflap.c: Fix comment formatting.
+
+2004-11-03  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (find_taken_edge): Abort if we are given a
 	statement that is neither COND_EXPR nor SWITCH_EXPR.
 
