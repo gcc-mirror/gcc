@@ -1,5 +1,11 @@
 2001-06-11  Zack Weinberg  <zackw@stanford.edu>
 
+	* gcc.pot: Regenerate, again.  You go away for five minutes
+	and someone tweaks the messages on you.
+	* cat-id-tbl.c: Regenerate this too.
+
+2001-06-11  Zack Weinberg  <zackw@stanford.edu>
+
 	* Makefile.in.in: Take --defines switch off of xgettext   
 	command line.                                           
 	* POTFILES.in: Massive update, removing all dead files and

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2001-06-11 14:27-0700\n"
+"POT-Creation-Date: 2001-06-11 15:00-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -10312,8 +10312,8 @@ msgstr ""
 msgid "Do not recognise GNU defined keywords"
 msgstr ""
 
-#: cp/lang-options.h:68
-msgid "Treat the namespace `std' as a normal namespace"
+#: cp/lang-options.h:69
+msgid "Do not treat the namespace `std' as a normal namespace"
 msgstr ""
 
 #: cp/lang-options.h:71
