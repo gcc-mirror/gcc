@@ -855,9 +855,6 @@ extern enum reg_class xtensa_char_to_class[256];
 #define FUNCTION_ARG_REGNO_P(N)						\
   ((N) >= GP_OUTGOING_ARG_FIRST && (N) <= GP_OUTGOING_ARG_LAST)
 
-/* Use IEEE floating-point format.  */
-#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself

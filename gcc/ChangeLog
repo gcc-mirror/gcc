@@ -1,3 +1,13 @@
+2002-09-20  Richard Henderson  <rth@redhat.com>
+
+	* real.h (UNKNOWN_FLOAT_FORMAT, IEEE_FLOAT_FORMAT, VAX_FLOAT_FORMAT,
+	IBM_FLOAT_FORMAT, C4X_FLOAT_FORMAT, TARGET_FLOAT_FORMAT): Move ...
+	* defaults.h: ... here.
+	* config/arm/arm.h, config/avr/avr.h, config/d30v/d30v.h,
+	config/fr30/fr30.h, config/frv/frv.h, config/ia64/ia64.h,
+	config/ip2k/ip2k.h, config/mips/mips.h, config/stormy16/stormy16.h,
+	config/xtensa/xtensa.h (TARGET_FLOAT_FORMAT): Remove.
+
 2002-09-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md ("negdf2"): Rewrite.

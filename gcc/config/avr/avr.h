@@ -2690,8 +2690,6 @@ extern struct rtx_def *tmp_reg_rtx;
 extern struct rtx_def *zero_reg_rtx;
 extern struct rtx_def *ldi_reg_rtx;
 
-#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* Get the standard ELF stabs definitions.  */

@@ -2687,10 +2687,6 @@ extern enum reg_class mips_char_to_class[256];
 	(PRETEND_SIZE) = mips_setup_incoming_varargs (&(CUM), (MODE),	\
 						      (TYPE), (NO_RTL))
 
-
-#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
-
-
 #define STRICT_ARGUMENT_NAMING (mips_abi != ABI_32 && mips_abi != ABI_O64)
 
 /* Define a data type for recording info about an argument list
