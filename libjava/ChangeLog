@@ -1,5 +1,10 @@
 2001-12-21  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/ObjectInputStream.java (enableResolveObject): Use
+	correct security check.
+	* java/io/ObjectOutputStream.java (enableReplaceObject): Use
+	correct security check.
+
 	Fix for PR java/5165:
 	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass):
 	Convert any constant string field to a String; not just final
