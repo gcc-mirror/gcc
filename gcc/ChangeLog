@@ -1,3 +1,8 @@
+2001-11-25  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h (FUNCTION_PROFILER): Fix label name
+	passed to mcount.
+
 Sun Nov 25 06:22:09 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms-ld.c, config/alpha/vms-cc.c: New files.
