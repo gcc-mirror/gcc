@@ -1,3 +1,8 @@
+2004-03-04  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_return_in_msb): New function.
+	(TARGET_RETURN_IN_MSB): Define to xtensa_return_in_msb.
+
 2004-03-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* real.c (encode_ibm_extended): Don't bother rounding low double.
