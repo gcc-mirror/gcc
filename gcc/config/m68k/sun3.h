@@ -224,23 +224,33 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    There's no way to output a NaN's fraction, so we lose it.  */
   
 #undef ASM_OUTPUT_FLOAT_OPERAND
-#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)			\
- do { if (REAL_VALUE_ISINF (VALUE))					\
-        {								\
-          if (REAL_VALUE_NEGATIVE (VALUE))				\
-            asm_fprintf (FILE, "%I0r-99e999");				\
-          else								\
-            asm_fprintf (FILE, "%I0r99e999");				\
-        }								\
-      else if (REAL_VALUE_MINUS_ZERO (VALUE))				\
-        {								\
-          asm_fprintf (FILE, "%I0r-0.0");				\
-        }								\
-      else								\
-        { char dstr[30];						\
-          REAL_VALUE_TO_DECIMAL ((VALUE), "%.9g", dstr);		\
-          asm_fprintf (FILE, "%I0r%s", dstr);				\
-        }								\
+#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)		\
+ do { 								\
+      if (CODE != 'f')						\
+        {							\
+          long l;						\
+          REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
+          if (sizeof (int) == sizeof (long))			\
+            asm_fprintf ((FILE), "%I0x%x", l);			\
+          else							\
+            asm_fprintf ((FILE), "%I0x%lx", l);			\
+        }							\
+      else if (REAL_VALUE_ISINF (VALUE))			\
+        {							\
+          if (REAL_VALUE_NEGATIVE (VALUE))			\
+            asm_fprintf (FILE, "%I0r-99e999");			\
+          else							\
+            asm_fprintf (FILE, "%I0r99e999");			\
+        }							\
+      else if (REAL_VALUE_MINUS_ZERO (VALUE))			\
+        {							\
+          asm_fprintf (FILE, "%I0r-0.0");			\
+        }							\
+      else							\
+        { char dstr[30];					\
+          REAL_VALUE_TO_DECIMAL ((VALUE), "%.9g", dstr);	\
+          asm_fprintf (FILE, "%I0r%s", dstr);			\
+        }							\
     } while (0)
 
 #undef ASM_OUTPUT_DOUBLE_OPERAND
