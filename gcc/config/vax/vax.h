@@ -1210,7 +1210,7 @@ VAX operand formatting codes:
   else if (CODE == 'C')							\
     fputs (rev_cond_name (X), FILE);					\
   else if (CODE == 'D' && GET_CODE (X) == CONST_INT && INTVAL (X) < 0)	\
-    fprintf (FILE, "0xffffffff%08x", INTVAL (X));			\
+    fprintf (FILE, "$0xffffffff%08x", INTVAL (X));			\
   else if (CODE == 'P' && GET_CODE (X) == CONST_INT)			\
     fprintf (FILE, "$%d", INTVAL (X) + 1);				\
   else if (CODE == 'N' && GET_CODE (X) == CONST_INT)			\
