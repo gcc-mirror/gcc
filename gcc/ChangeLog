@@ -1,3 +1,42 @@
+Wed Aug 19 13:28:41 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* rtl.h (rtx_function): New type.
+	(for_each_rtx): New function.
+	* rtlanal.c (for_each_rtx): Define it.
+	
+	* recog.c (change_t): New type.
+	(change_objects, change_old_codes, change_locs, change_olds):
+	Replace with ...
+	(changes): New variable.
+	(validate_change): Dynamically allocate room for more changes, if
+	necessary.  Uses changes array instead of change_objects, etc.
+	(apply_change_group):  Use changes array instead of
+	change_objects, etc.
+	
+	* loop.c (loop_mem_info): New type.
+	(loop_mems): New variable.
+	(loop_mems_idx): Likewise.
+	(looop_mems_allocated): Likewise.
+	(scan_loop): Remove nregs parameter.
+	(next_insn_in_loop): New function.
+	(load_mems_and_recount_loop_regs_set): Likewise.
+	(load_mems): Likewise.
+	(insert_loop_mem): Likewise.
+	(replace_loop_mem): Likewise.
+	(replace_label): Likewise.
+	(INSN_IN_RANGE_P): New macro.
+	(loop_optimize): Don't pass max_reg_num() to scan_loop.
+	(scan_loop): Remove nregs parameter, compute it after any new
+	registers are created by load_mems.  Use INSN_IN_RANGE_P and
+	next_insn_in_loop rather than expanding them inline.  Call
+	load_mems to load memory into pseudos, if appropriate.
+	(prescan_loop): Figure out whether or not there are jumps from the
+	loop to targets other than the label immediately following the
+	loop.  Call insert_loop_mem to notice all the MEMs used in the
+	loop, if it could be safe to pull MEMs into REGs for the duration
+	of the loop.
+	(strength_reduce): Use next_insn_in_loop.  Tweak comments.
+
 Wed Aug 19 08:29:44 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (arm_override_options): Remove lie about ignoring PIC flag.

@@ -195,6 +195,27 @@ static rtx loop_store_mems[NUM_STORES];
 /* Index of first available slot in above array.  */
 static int loop_store_mems_idx;
 
+typedef struct loop_mem_info {
+  rtx mem;      /* The MEM itself.  */
+  rtx reg;      /* Corresponding pseudo, if any.  */
+  int optimize; /* Nonzero if we can optimize access to this MEM.  */
+} loop_mem_info;
+
+/* Array of MEMs that are used (read or written) in this loop, but
+   cannot be aliased by anything in this loop, except perhaps
+   themselves.  In other words, if loop_mems[i] is altered during the
+   loop, it is altered by an expression that is rtx_equal_p to it.  */
+
+static loop_mem_info *loop_mems;
+
+/* The index of the next available slot in LOOP_MEMS.  */
+
+static int loop_mems_idx;
+
+/* The number of elements allocated in LOOP_MEMs.  */
+
+static int loop_mems_allocated;
+
 /* Nonzero if we don't know what MEMs were changed in the current loop.
    This happens if the loop contains a call (in which case `loop_has_call'
    will also be set) or if we store into more than NUM_STORES MEMs.  */
@@ -288,7 +309,7 @@ static int labels_in_range_p PROTO((rtx, int));
 static void count_loop_regs_set PROTO((rtx, rtx, char *, rtx *, int *, int));
 static void note_addr_stored PROTO((rtx, rtx));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
-static void scan_loop PROTO((rtx, rtx, int, int));
+static void scan_loop PROTO((rtx, rtx, int));
 #if 0
 static void replace_call_address PROTO((rtx, rtx, rtx));
 #endif
@@ -325,6 +346,29 @@ static int maybe_eliminate_biv_1 PROTO((rtx, rtx, struct iv_class *, int, rtx));
 static int last_use_this_basic_block PROTO((rtx, rtx));
 static void record_initial PROTO((rtx, rtx));
 static void update_reg_last_use PROTO((rtx, rtx));
+static rtx next_insn_in_loop PROTO((rtx, rtx, rtx, rtx));
+static void load_mems_and_recount_loop_regs_set PROTO((rtx, rtx, rtx,
+						       rtx, rtx *, int *));
+static void load_mems PROTO((rtx, rtx, rtx, rtx));
+static int insert_loop_mem PROTO((rtx *, void *));
+static int replace_loop_mem PROTO((rtx *, void *));
+static int replace_label PROTO((rtx *, void *));
+
+typedef struct rtx_and_int {
+  rtx r;
+  int i;
+} rtx_and_int;
+
+typedef struct rtx_pair {
+  rtx r1;
+  rtx r2;
+} rtx_pair;
+
+/* Nonzero iff INSN is between START and END, inclusive.  */
+#define INSN_IN_RANGE_P(INSN, START, END) 	\
+  (INSN_UID (INSN) < max_uid_for_loop 		\
+   && INSN_LUID (INSN) >= INSN_LUID (START)	\
+   && INSN_LUID (INSN) <= INSN_LUID (END))
 
 #ifdef HAIFA
 /* This is extern from unroll.c */
@@ -543,7 +587,7 @@ loop_optimize (f, dumpfile, unroll_p)
   for (i = max_loop_num-1; i >= 0; i--)
     if (! loop_invalid[i] && loop_number_loop_ends[i])
       scan_loop (loop_number_loop_starts[i], loop_number_loop_ends[i],
-		 max_reg_num (), unroll_p);
+		 unroll_p);
 
   /* If debugging and unrolling loops, we must replicate the tree nodes
      corresponding to the blocks inside the loop, so that the original one
@@ -554,6 +598,38 @@ loop_optimize (f, dumpfile, unroll_p)
   end_alias_analysis ();
 }
 
+/* Returns the next insn, in execution order, after INSN.  START and
+   END are the NOTE_INSN_LOOP_BEG and NOTE_INSN_LOOP_END for the loop,
+   respectively.  LOOP_TOP, if non-NULL, is the top of the loop in the
+   insn-stream; it is used with loops that are entered near the
+   bottom.  */
+
+static rtx
+next_insn_in_loop (insn, start, end, loop_top)
+     rtx insn;
+     rtx start;
+     rtx end;
+     rtx loop_top;
+{
+  insn = NEXT_INSN (insn);
+
+  if (insn == end)
+    {
+      if (loop_top)
+	/* Go to the top of the loop, and continue there.  */
+	insn = loop_top;
+      else
+	/* We're done.  */
+	insn = NULL_RTX;
+    }
+
+  if (insn == start)
+    /* We're done.  */
+    insn = NULL_RTX;
+
+  return insn;
+}
+
 /* Optimize one loop whose start is LOOP_START and end is END.
    LOOP_START is the NOTE_INSN_LOOP_BEG and END is the matching
    NOTE_INSN_LOOP_END.  */
@@ -565,13 +641,12 @@ loop_optimize (f, dumpfile, unroll_p)
    write, then we can also mark the memory read as invariant.  */
 
 static void
-scan_loop (loop_start, end, nregs, unroll_p)
+scan_loop (loop_start, end, unroll_p)
      rtx loop_start, end;
-     int nregs;
      int unroll_p;
 {
   register int i;
-  register rtx p;
+  rtx p;
   /* 1 if we are scanning insns that could be executed zero times.  */
   int maybe_never = 0;
   /* 1 if we are scanning insns that might never be executed
@@ -606,10 +681,7 @@ scan_loop (loop_start, end, nregs, unroll_p)
   rtx *reg_single_usage = 0;
   /* Nonzero if we are scanning instructions in a sub-loop.  */
   int loop_depth = 0;
-
-  n_times_set = (int *) alloca (nregs * sizeof (int));
-  n_times_used = (int *) alloca (nregs * sizeof (int));
-  may_not_optimize = (char *) alloca (nregs);
+  int nregs;
 
   /* Determine whether this loop starts with a jump down to a test at
      the end.  This will occur for a small number of loops with a test
@@ -660,9 +732,7 @@ scan_loop (loop_start, end, nregs, unroll_p)
 	     do {..} while (0).  If this label was generated previously
 	     by loop, we can't tell anything about it and have to reject
 	     the loop.  */
-	  && INSN_UID (JUMP_LABEL (p)) < max_uid_for_loop
-	  && INSN_LUID (JUMP_LABEL (p)) >= INSN_LUID (loop_start)
-	  && INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (end))
+	  && INSN_IN_RANGE_P (JUMP_LABEL (p), loop_start, end))
 	{
 	  loop_top = next_label (scan_start);
 	  scan_start = JUMP_LABEL (p);
@@ -690,7 +760,13 @@ scan_loop (loop_start, end, nregs, unroll_p)
      Set may_not_optimize[I] if it is not safe to move out
      the setting of register I.  If this loop has calls, set
      reg_single_usage[I].  */
-
+  
+  /* Allocate extra space for REGS that might be created by
+     load_mems.  */
+  nregs = max_reg_num () + loop_mems_idx;
+  n_times_set = (int *) alloca (nregs * sizeof (int));
+  n_times_used = (int *) alloca (nregs * sizeof (int));
+  may_not_optimize = (char *) alloca (nregs);
   bzero ((char *) n_times_set, nregs * sizeof (int));
   bzero (may_not_optimize, nregs);
 
@@ -729,24 +805,10 @@ scan_loop (loop_start, end, nregs, unroll_p)
      When MAYBE_NEVER is 0, all insns will be executed at least once
      so that is not a problem.  */
 
-  p = scan_start;
-  while (1)
+  for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top); 
+       p != NULL_RTX;
+       p = next_insn_in_loop (p, scan_start, end, loop_top))
     {
-      p = NEXT_INSN (p);
-      /* At end of a straight-in loop, we are done.
-	 At end of a loop entered at the bottom, scan the top.  */
-      if (p == scan_start)
-	break;
-      if (p == end)
-	{
-	  if (loop_top != 0)
-	    p = loop_top;
-	  else
-	    break;
-	  if (p == scan_start)
-	    break;
-	}
-
       if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
 	  && find_reg_note (p, REG_LIBCALL, NULL_RTX))
 	in_libcall = 1;
@@ -1092,6 +1154,13 @@ scan_loop (loop_start, end, nregs, unroll_p)
   for (i = 0; i < nregs; i++)
     if (n_times_set[i] < 0)
       n_times_set[i] = n_times_used[i];
+
+  /* Now that we've moved some things out of the loop, we able to
+     hoist even more memory references.  There's no need to pass
+     reg_single_usage this time, since we're done with it.  */
+  load_mems_and_recount_loop_regs_set (scan_start, end, loop_top,
+				       loop_start, 0,
+				       &insn_count);
 
   if (flag_strength_reduce)
     {
@@ -2293,20 +2362,29 @@ constant_high_bytes (p, loop_start)
 
 /* Scan a loop setting the variables `unknown_address_altered',
    `num_mem_sets', `loop_continue', loops_enclosed', `loop_has_call',
-   and `loop_has_volatile'.
-   Also, fill in the array `loop_store_mems'.  */
+   and `loop_has_volatile'.  Also, fill in the arrays `loop_mems' and
+   `loop_store_mems'.  */
 
 static void
 prescan_loop (start, end)
      rtx start, end;
 {
   register int level = 1;
-  register rtx insn;
+  rtx insn;
+  int loop_has_multiple_exit_targets = 0;
+  /* The label after END.  Jumping here is just like falling off the
+     end of the loop.  We use next_nonnote_insn instead of next_label
+     as a hedge against the (pathological) case where some actual insn
+     might end up between the two.  */
+  rtx exit_target = next_nonnote_insn (end);
+  if (exit_target == NULL_RTX || GET_CODE (exit_target) != CODE_LABEL)
+    loop_has_multiple_exit_targets = 1;
 
   unknown_address_altered = 0;
   loop_has_call = 0;
   loop_has_volatile = 0;
   loop_store_mems_idx = 0;
+  loop_mems_idx = 0;
 
   num_mem_sets = 0;
   loops_enclosed = 1;
@@ -2344,17 +2422,75 @@ prescan_loop (start, end)
 	    unknown_address_altered = 1;
 	  loop_has_call = 1;
 	}
-      else
+      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
 	{
-	  if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
-	    {
-	      if (volatile_refs_p (PATTERN (insn)))
-		loop_has_volatile = 1;
+	  rtx label1 = NULL_RTX;
+	  rtx label2 = NULL_RTX;
 
-	      note_stores (PATTERN (insn), note_addr_stored);
+	  if (volatile_refs_p (PATTERN (insn)))
+	    loop_has_volatile = 1;
+	  
+	  note_stores (PATTERN (insn), note_addr_stored);
+
+	  if (!loop_has_multiple_exit_targets
+	      && GET_CODE (insn) == JUMP_INSN
+	      && GET_CODE (PATTERN (insn)) == SET
+	      && SET_DEST (PATTERN (insn)) == pc_rtx)
+	    {
+	      if (GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE)
+		{
+		  label1 = XEXP (SET_SRC (PATTERN (insn)), 1);
+		  label2 = XEXP (SET_SRC (PATTERN (insn)), 2);
+		}
+	      else
+		{
+		  label1 = SET_SRC (PATTERN (insn));
+		}
+
+	      do {
+		if (label1 && label1 != pc_rtx)
+		  {
+		    if (GET_CODE (label1) != LABEL_REF)
+		      {
+			/* Something tricky.  */
+			loop_has_multiple_exit_targets = 1;
+			break;
+		      }
+		    else if (XEXP (label1, 0) != exit_target
+			     && LABEL_OUTSIDE_LOOP_P (label1))
+		      {
+			/* A jump outside the current loop.  */
+			loop_has_multiple_exit_targets = 1;
+			break;
+		      }
+		  }
+
+		label1 = label2;
+		label2 = NULL_RTX;
+	      } while (label1);
 	    }
 	}
+      else if (GET_CODE (insn) == RETURN)
+	loop_has_multiple_exit_targets = 1;
     }
+
+  /* Now, rescan the loop, setting up the LOOP_MEMS array.  */
+  if (/* We can't tell what MEMs are aliased by what.  */
+      !unknown_address_altered 
+      /* An exception thrown by a called function might land us
+	 anywhere.  */
+      && !loop_has_call
+      /* We don't want loads for MEMs moved to a location before the
+	 one at which their stack memory becomes allocated.  (Note
+	 that this is not a problem for malloc, etc., since those
+	 require actual function calls.  */
+      && !current_function_calls_alloca
+      /* There are ways to leave the loop other than falling off the
+	 end.  */
+      && !loop_has_multiple_exit_targets)
+    for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
+	 insn = NEXT_INSN (insn))
+      for_each_rtx (&insn, insert_loop_mem, 0);
 }
 
 /* Scan the function looking for loops.  Record the start and end of each loop.
@@ -3360,18 +3496,6 @@ static rtx addr_placeholder;
 /* ??? Unfinished optimizations, and possible future optimizations,
    for the strength reduction code.  */
 
-/* ??? There is one more optimization you might be interested in doing: to
-   allocate pseudo registers for frequently-accessed memory locations.
-   If the same memory location is referenced each time around, it might
-   be possible to copy it into a register before and out after.
-   This is especially useful when the memory location is a variable which
-   is in a stack slot because somewhere its address is taken.  If the
-   loop doesn't contain a function call and the variable isn't volatile,
-   it is safe to keep the value in a register for the duration of the
-   loop. One tricky thing is that the copying of the value back from the
-   register has to be done on all exits from the loop.  You need to check that
-   all the exits from the loop go to the same place.  */
-
 /* ??? The interaction of biv elimination, and recognition of 'constant'
    bivs, may cause problems.  */
 
@@ -3396,13 +3520,18 @@ static rtx addr_placeholder;
    was rerun in loop_optimize whenever a register was added or moved.
    Also, some of the optimizations could be a little less conservative.  */
 
-/* Perform strength reduction and induction variable elimination.  */
+/* Perform strength reduction and induction variable elimination.  
 
-/* Pseudo registers created during this function will be beyond the last
+   Pseudo registers created during this function will be beyond the last
    valid index in several tables including n_times_set and regno_last_uid.
    This does not cause a problem here, because the added registers cannot be
    givs outside of their loop, and hence will never be reconsidered.
-   But scan_loop must check regnos to make sure they are in bounds.  */
+   But scan_loop must check regnos to make sure they are in bounds. 
+   
+   SCAN_START is the first instruction in the loop, as the loop would
+   actually be executed.  END is the NOTE_INSN_LOOP_END.  LOOP_TOP is
+   the first instruction in the loop, as it is layed out in the
+   instruction stream.  LOOP_START is the NOTE_INSN_LOOP_BEG.  */
 
 static void
 strength_reduce (scan_start, end, loop_top, insn_count,
@@ -3470,24 +3599,10 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
   /* Scan through loop to find all possible bivs.  */
 
-  p = scan_start;
-  while (1)
+  for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top);
+       p != NULL_RTX;
+       p = next_insn_in_loop (p, scan_start, end, loop_top))
     {
-      p = NEXT_INSN (p);
-      /* At end of a straight-in loop, we are done.
-	 At end of a loop entered at the bottom, scan the top.  */
-      if (p == scan_start)
-	break;
-      if (p == end)
-	{
-	  if (loop_top != 0)
-	    p = loop_top;
-	  else
-	    break;
-	  if (p == scan_start)
-	    break;
-	}
-
       if (GET_CODE (p) == INSN
 	  && (set = single_set (p))
 	  && GET_CODE (SET_DEST (set)) == REG)
@@ -8208,3 +8323,385 @@ indirect_jump_in_function_p (start)
 
   return 0;
 }
+
+/* Add MEM to the LOOP_MEMS array, if appropriate.  See the
+   documentation for LOOP_MEMS for the definition of `appropriate'.
+   This function is called from prescan_loop via for_each_rtx.  */
+
+static int
+insert_loop_mem (mem, data)
+     rtx *mem;
+     void *data;
+{
+  int i;
+  rtx m = *mem;
+
+  if (m == NULL_RTX)
+    return 0;
+
+  switch (GET_CODE (m))
+    {
+    case MEM:
+      break;
+
+    case CONST_DOUBLE:
+      /* We're not interested in the MEM associated with a
+	 CONST_DOUBLE, so there's no need to traverse into this.  */
+      return -1;
+
+    default:
+      /* This is not a MEM.  */
+      return 0;
+    }
+
+  /* See if we've already seen this MEM.  */
+  for (i = 0; i < loop_mems_idx; ++i)
+    if (rtx_equal_p (m, loop_mems[i].mem)) 
+      {
+	if (GET_MODE (m) != GET_MODE (loop_mems[i].mem))
+	  /* The modes of the two memory accesses are different.  If
+	     this happens, something tricky is going on, and we just
+	     don't optimize accesses to this MEM.  */
+	  loop_mems[i].optimize = 0;
+
+	return 0;
+      }
+
+  /* Resize the array, if necessary.  */
+  if (loop_mems_idx == loop_mems_allocated) 
+    {
+      if (loop_mems_allocated != 0)
+	loop_mems_allocated *= 2;
+      else
+	loop_mems_allocated = 32;
+
+      loop_mems = (loop_mem_info*) 
+	xrealloc (loop_mems,
+		  loop_mems_allocated * sizeof (loop_mem_info)); 
+    }
+
+  /* Actually insert the MEM.  */
+  loop_mems[loop_mems_idx].mem = m;
+  /* We can't hoist this MEM out of the loop if it's a BLKmode MEM
+     because we can't put it in a register.  We still store it in the
+     table, though, so that if we see the same address later, but in a
+     non-BLK mode, we'll not think we can optimize it at that point.  */
+  loop_mems[loop_mems_idx].optimize = (GET_MODE (m) != BLKmode);
+  loop_mems[loop_mems_idx].reg = NULL_RTX;
+  ++loop_mems_idx;
+}
+
+/* Like load_mems, but also ensures that N_TIMES_SET,
+   MAY_NOT_OPTIMIZE, REG_SINGLE_USAGE, and INSN_COUNT have the correct
+   values after load_mems.  */
+
+static void
+load_mems_and_recount_loop_regs_set (scan_start, end, loop_top, start,
+				     reg_single_usage, insn_count)
+     rtx scan_start;
+     rtx end;
+     rtx loop_top;
+     rtx start;
+     rtx *reg_single_usage;
+     int *insn_count;
+{
+  int nregs = max_reg_num ();
+
+  load_mems (scan_start, end, loop_top, start);
+  
+  /* Recalculate n_times_set and friends since load_mems may have
+     created new registers.  */
+  if (max_reg_num () > nregs)
+    {
+      int i;
+      int old_nregs;
+
+      old_nregs = nregs;
+      nregs = max_reg_num ();
+
+      /* Note that we assume here that enough room was allocated in
+	 the various arrays to accomodate the extra registers created
+	 by load_mems.  */
+      bzero ((char *) n_times_set, nregs * sizeof (int));
+      bzero (may_not_optimize, nregs);
+      if (loop_has_call && reg_single_usage)
+	bzero ((char *) reg_single_usage, nregs * sizeof (rtx));
+
+      count_loop_regs_set (loop_top ? loop_top : start, end,
+			   may_not_optimize, reg_single_usage,
+			   insn_count, nregs); 
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	may_not_optimize[i] = 1, n_times_set[i] = 1;
+      
+      /* Set n_times_used for the new registers.  */
+      bcopy ((char *) (n_times_set + old_nregs),
+	     (char *) (n_times_used + old_nregs),
+	     (nregs - old_nregs) * sizeof (int));
+    }
+}
+
+/* Move MEMs into registers for the duration of the loop.  SCAN_START
+   is the first instruction in the loop (as it is executed).  The
+   other parameters are as for next_insn_in_loop.  */
+
+static void
+load_mems (scan_start, end, loop_top, start)
+     rtx scan_start;
+     rtx end;
+     rtx loop_top;
+     rtx start;
+{
+  int maybe_never = 0;
+  int i;
+  rtx p;
+  rtx label = NULL_RTX;
+  rtx end_label;
+
+  if (loop_mems_idx > 0) 
+    {
+      /* Nonzero if the next instruction may never be executed.  */
+      int next_maybe_never = 0;
+
+      /* Check to see if it's possible that some instructions in the
+	 loop are never executed.  */
+      for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top); 
+	   p != NULL_RTX && !maybe_never; 
+	   p = next_insn_in_loop (p, scan_start, end, loop_top))
+	{
+	  if (GET_CODE (p) == CODE_LABEL)
+	    maybe_never = 1;
+	  else if (GET_CODE (p) == JUMP_INSN
+		   /* If we enter the loop in the middle, and scan
+		      around to the beginning, don't set maybe_never
+		      for that.  This must be an unconditional jump,
+		      otherwise the code at the top of the loop might
+		      never be executed.  Unconditional jumps are
+		      followed a by barrier then loop end.  */
+		   && ! (GET_CODE (p) == JUMP_INSN 
+			 && JUMP_LABEL (p) == loop_top
+			 && NEXT_INSN (NEXT_INSN (p)) == end
+			 && simplejump_p (p)))
+	    {
+	      if (!condjump_p (p))
+		/* Something complicated.  */
+		maybe_never = 1;
+	      else
+		/* If there are any more instructions in the loop, they
+		   might not be reached.  */
+		next_maybe_never = 1; 
+	    } 
+	  else if (next_maybe_never)
+	    maybe_never = 1;
+	}
+
+      /* Actually move the MEMs.  */
+      for (i = 0; i < loop_mems_idx; ++i) 
+	{
+	  int j;
+	  int written = 0;
+	  rtx reg;
+	  rtx mem = loop_mems[i].mem;
+
+	  if (MEM_VOLATILE_P (mem) 
+	      || invariant_p (XEXP (mem, 0)) != 1)
+	    /* There's no telling whether or not MEM is modified.  */
+	    loop_mems[i].optimize = 0;
+
+	  /* Go through the MEMs written to in the loop to see if this
+	     one is aliased by one of them.  */
+	  for (j = 0; j < loop_store_mems_idx; ++j) 
+	    {
+	      if (rtx_equal_p (mem, loop_store_mems[j]))
+		written = 1;
+	      else if (true_dependence (loop_store_mems[j], VOIDmode,
+					mem, rtx_varies_p))
+		{
+		  /* MEM is indeed aliased by this store.  */
+		  loop_mems[i].optimize = 0;
+		  break;
+		}
+	    }
+	  
+	  /* If this MEM is written to, we must be sure that there
+	     are no reads from another MEM that aliases this one.  */ 
+	  if (loop_mems[i].optimize && written)
+	    {
+	      int j;
+
+	      for (j = 0; j < loop_mems_idx; ++j)
+		{
+		  if (j == i)
+		    continue;
+		  else if (true_dependence (mem,
+					    VOIDmode,
+					    loop_mems[j].mem,
+					    rtx_varies_p))
+		    {
+		      /* It's not safe to hoist loop_mems[i] out of
+			 the loop because writes to it might not be
+			 seen by reads from loop_mems[j].  */
+		      loop_mems[i].optimize = 0;
+		      break;
+		    }
+		}
+	    }
+
+	  if (maybe_never && may_trap_p (mem))
+	    /* We can't access the MEM outside the loop; it might
+	       cause a trap that wouldn't have happened otherwise.  */
+	    loop_mems[i].optimize = 0;
+	  
+	  if (!loop_mems[i].optimize)
+	    /* We thought we were going to lift this MEM out of the
+	       loop, but later discovered that we could not.  */
+	    continue;
+
+	  /* Allocate a pseudo for this MEM.  We set REG_USERVAR_P in
+	     order to keep scan_loop from moving stores to this MEM
+	     out of the loop just because this REG is neither a
+	     user-variable nor used in the loop test.  */
+	  reg = gen_reg_rtx (GET_MODE (mem));
+	  REG_USERVAR_P (reg) = 1;
+	  loop_mems[i].reg = reg;
+
+	  /* Now, replace all references to the MEM with the
+	     corresponding pesudos.  */
+	  for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top);
+	       p != NULL_RTX;
+	       p = next_insn_in_loop (p, scan_start, end, loop_top))
+	    {
+	      rtx_and_int ri = { p, i };
+	      for_each_rtx (&p, replace_loop_mem, &ri);
+	    }
+
+	  if (!apply_change_group ())
+	    /* We couldn't replace all occurrences of the MEM.  */
+	    loop_mems[i].optimize = 0;
+	  else
+	    {
+	      rtx set;
+
+	      /* Load the memory immediately before START, which is
+		 the NOTE_LOOP_BEG.  */
+	      set = gen_rtx_SET (GET_MODE (reg), reg, mem);
+	      emit_insn_before (set, start);
+
+	      if (written)
+		{
+		  if (label == NULL_RTX)
+		    {
+		      /* We must compute the former
+			 right-after-the-end label before we insert
+			 the new one.  */
+		      end_label = next_label (end);
+		      label = gen_label_rtx ();
+		      emit_label_after (label, end);
+		    }
+
+		  /* Store the memory immediately after END, which is
+		   the NOTE_LOOP_END.  */
+		  set = gen_rtx_SET (GET_MODE (reg), mem, reg); 
+		  emit_insn_after (set, label);
+		}
+
+	      if (loop_dump_stream)
+		{
+		  fprintf (loop_dump_stream, "Hoisted regno %d %s from ",
+			   REGNO (reg), (written ? "r/w" : "r/o"));
+		  print_rtl (loop_dump_stream, mem);
+		  fputc ('\n', loop_dump_stream);
+		}
+	    }
+	}
+    }
+
+  if (label != NULL_RTX)
+    {
+      /* Now, we need to replace all references to the previous exit
+	 label with the new one.  */
+      rtx_pair rr = { end_label, label };
+
+      for (p = start; p != end; p = NEXT_INSN (p))
+	for_each_rtx (&p, replace_label, &rr);
+    }
+}
+
+/* Replace MEM with its associated pseudo register.  This function is
+   called from load_mems via for_each_rtx.  DATA is actually an
+   rtx_and_int * describing the instruction currently being scanned
+   and the MEM we are currently replacing.  */
+
+static int
+replace_loop_mem (mem, data)
+     rtx *mem;
+     void *data;
+{
+  rtx_and_int *ri; 
+  rtx insn;
+  int i;
+  rtx m = *mem;
+
+  if (m == NULL_RTX)
+    return 0;
+
+  switch (GET_CODE (m))
+    {
+    case MEM:
+      break;
+
+    case CONST_DOUBLE:
+      /* We're not interested in the MEM associated with a
+	 CONST_DOUBLE, so there's no need to traverse into one.  */
+      return -1;
+
+    default:
+      /* This is not a MEM.  */
+      return 0;
+    }
+
+  ri = (rtx_and_int*) data;
+  i = ri->i;
+
+  if (!rtx_equal_p (loop_mems[i].mem, m))
+    /* This is not the MEM we are currently replacing.  */
+    return 0;
+
+  insn = ri->r;
+
+  /* Actually replace the MEM.  */
+  validate_change (insn, mem, loop_mems[i].reg, 1);
+
+  return 0;
+}
+
+/* Replace occurrences of the old exit label for the loop with the new
+   one.  DATA is an rtx_pair containing the old and new labels,
+   respectively.  */
+
+static int
+replace_label (x, data)
+     rtx *x;
+     void *data;
+{
+  rtx l = *x;
+  rtx old_label = ((rtx_pair*) data)->r1;
+  rtx new_label = ((rtx_pair*) data)->r2;
+
+  if (l == NULL_RTX)
+    return 0;
+
+  if (GET_CODE (l) != LABEL_REF)
+    return 0;
+
+  if (XEXP (l, 0) != old_label)
+    return 0;
+  
+  XEXP (l, 0) = new_label;
+  ++LABEL_NUSES (new_label);
+  --LABEL_NUSES (old_label);
+
+  return 0;
+}
+
+     
