@@ -44,9 +44,10 @@ Boston, MA 02111-1307, USA.  */
    -- If this is a Win32 OS, then the Registry will be examined for
       an entry of "key" in 
 
-      HKEY_LOCAL_MACHINE\SOFTWARE\Free Software Foundation\
+      HKEY_LOCAL_MACHINE\SOFTWARE\Free Software Foundation\<KEY>
 
-      if found, that value will be used.
+      if found, that value will be used. <KEY> defaults to GCC version
+      string, but can be overridden at configuration time.
 
    -- If not found (or not a Win32 OS), the environment variable
       key_ROOT (the value of "key" concatenated with the constant "_ROOT")
@@ -65,7 +66,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#ifdef _WIN32
+#if defined(_WIN32) && defined(ENABLE_WIN32_REGISTRY)
 #include <windows.h>
 #endif
 #include "prefix.h"
@@ -76,7 +77,7 @@ static const char *get_key_value	PROTO((char *));
 static const char *translate_name	PROTO((const char *));
 static char *save_string		PROTO((const char *, int));
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(ENABLE_WIN32_REGISTRY)
 static char *lookup_key		PROTO((char *));
 static HKEY reg_key = (HKEY) INVALID_HANDLE_VALUE;
 #endif
@@ -101,7 +102,7 @@ get_key_value (key)
   const char *prefix = 0;
   char *temp = 0;
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(ENABLE_WIN32_REGISTRY)
   prefix = lookup_key (key);
 #endif
 
@@ -187,7 +188,7 @@ save_string (s, len)
   return result;
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(ENABLE_WIN32_REGISTRY)
 
 /* Look up "key" in the registry, as above.  */
 
@@ -207,6 +208,10 @@ lookup_key (key)
 
       if (res == ERROR_SUCCESS)
 	res = RegOpenKeyExA (reg_key, "Free Software Foundation", 0,
+			     KEY_READ, &reg_key);
+
+      if (res == ERROR_SUCCESS)
+	res = RegOpenKeyExA (reg_key, WIN32_REGISTRY_KEY, 0,
 			     KEY_READ, &reg_key);
 
       if (res != ERROR_SUCCESS)

@@ -10,6 +10,13 @@
 /* Define to 1 if NLS is requested.  */
 #undef ENABLE_NLS
 
+/* Define to 1 if installation paths should be looked up in Windows32
+   Registry. Ignored on non windows32 hosts. */
+#undef ENABLE_WIN32_REGISTRY
+
+/* Define to be the last portion of registry key on windows hosts.  */
+#undef WIN32_REGISTRY_KEY
+
 /* Define as 1 if you have catgets and don't want to use GNU gettext.  */
 #undef HAVE_CATGETS
 

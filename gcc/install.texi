@@ -305,6 +305,25 @@ inferior @code{catgets} interface, the GCC build procedure normally
 ignores @code{catgets} and instead uses GCC's copy of the GNU
 @code{gettext} library.  The @samp{--with-catgets} option causes the
 build procedure to use the host's @code{catgets} in this situation.
+
+@cindex Windows32 Registry support
+@item --enable-win32-registry
+@itemx --enable-win32-registry=@var{KEY}
+@itemx --disable-win32-registry
+The @samp{--enable-win32-registry} option enables Windows-hosted GCC
+to look up installations paths in the registry using the following key:
+
+@smallexample
+@code{HKEY_LOCAL_MACHINE\SOFTWARE\Free Software Foundation\<KEY>}
+@end smallexample
+
+<KEY> defaults to GCC version number, and can be overridden by the
+@code{--enable-win32-registry=KEY} option. Vendors and distributors
+who use custom installers are encouraged to provide a different key,
+perhaps one comprised of vendor name and GCC version number, to
+avoid conflict with existing installations. This feature is enabled
+by default, and can be disabled by @code{--disable-win32-registry}
+option.  This option has no effect on the other hosts.
 @end table
 
 @item
