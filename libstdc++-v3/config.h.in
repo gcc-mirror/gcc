@@ -6,9 +6,6 @@
 // Define if GCC supports weak symbols.
 #undef _GLIBCPP_SUPPORTS_WEAK
 
-// Define if gthr-default.h exists (meaning that threading support is enabled).
-#undef HAVE_GTHR_DEFAULT
-
 // Include I/O support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG
 
@@ -37,6 +34,9 @@
 #else
   #define _GLIBCPP_ASM_SYMVER(cur, old, version)
 #endif
+
+// Define if gthr-default.h exists (meaning that threading support is enabled).
+#undef HAVE_GTHR_DEFAULT
 
 // Define if mbstate_t exists in wchar.h.
 #undef HAVE_MBSTATE_T

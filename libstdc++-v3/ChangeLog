@@ -1,5 +1,14 @@
 2002-12-02  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* acconfig.h (HAVE_DRAND48): Add.
+	(HAVE_GETPAGESIZE): Add.
+	(HAVE_SETENV): Add.	
+	(HAVE_SIGSETJMP): Add.		
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2002-12-02  Benjamin Kosnik  <bkoz@redhat.com>
+
         PR libstdc++/8230
         * include/bits/stl_vector.h (vector::reserve): Throw length_error if
         requested size is bigger than max_size().
