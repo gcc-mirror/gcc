@@ -1,3 +1,8 @@
+2002-05-20  Richard Henderson  <rth@redhat.com>
+
+	* cse.c (canon_hash): Reorder do_not_record test.  Always
+	allow pic_offset_table_rtx.
+
 2002-05-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* doc/contrib.texi: Update my entry.
