@@ -1,5 +1,9 @@
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc (alpha64*-dec-*vms*, alpha*-dec-*vms*,
+	powerpc-*-eabisim*, powerpc-*-eabi*, powerpcle-*-eabisim*,
+	powerpcle-*-eabi*): Disable fixproto.
+
 	* config.gcc: Move use_fixproto=no from generic FreeBSD clause to
 	specific FreeBSD clauses.
 	* config.gcc: Move use_fixproto=no from generic NetBSD clause to
