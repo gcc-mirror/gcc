@@ -1,3 +1,15 @@
+2004-04-23  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c (init_gcc_specs): Test USE_LD_AS_NEEDED, not HAVE_LD_AS_NEEDED.
+	* config/linux.h (USE_LD_AS_NEEDED): Define.
+	* gcc/config/alpha/linux.h (USE_LD_AS_NEEDED): Define.
+	* gcc/config/arm/linux-elf.h (USE_LD_AS_NEEDED): Define.
+	* gcc/config/rs6000/linux.h (USE_LD_AS_NEEDED): Define.
+	* gcc/config/rs6000/linux64.h (USE_LD_AS_NEEDED): Define.
+	* gcc/config/sh/linux.h (USE_LD_AS_NEEDED): Define.
+	* gcc/config/sparc/linux.h (USE_LD_AS_NEEDED): Define.
+	* gcc/config/sparc/linux64.h (USE_LD_AS_NEEDED): Define.
+
 2004-04-22  Per Bothner  <per@bothner.com>
 
 	* cppinit.c (cpp_read_main_file):  Return NULL rather than false.
