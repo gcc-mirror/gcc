@@ -1,3 +1,8 @@
+Mon Mar  3 19:09:06 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation):  Avoid cfg_cleanup calls when not
+	optimizing.
+
 Fri Feb 28 12:38:46 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (gen_lowpart_for_combine): Update handling of subregs_of_mode
