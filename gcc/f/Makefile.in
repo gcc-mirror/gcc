@@ -459,10 +459,11 @@ fini: fini.o proj-h.o
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o fini fini.o proj-h.o
 
 fini.o:
-	$(HOST_CC) -c -DUSE_HCONFIG $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	      `echo $(srcdir)/fini.c | sed 's,^\./,,'` -o $@
 
-proj-h.o: proj.o
+# Like proj.o, but depends on hconfig.h instead of config.h.
+proj-h.o: proj.c proj.h $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(GLIMITS_H)
 	$(HOST_CC) -c -DUSE_HCONFIG $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	      `echo $(srcdir)/proj.c | sed 's,^\./,,'` -o $@
 

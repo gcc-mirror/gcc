@@ -3,6 +3,14 @@
 	* Makefile.in (LDFLAGS): Set from BOOT_LDFLAGS.
 	(F771_LDFLAGS): Variable dispensed with.
 
+Fri Sep  4 18:35:52 1998  Craig Burley  <burley@gnu.org>
+
+	* Makefile.in (fini.o): Don't define USE_HCONFIG here.
+	* fini.c: Define USE_HCONFIG here instead, so deps-kinda
+	picks up correct dependency.
+
+	* Makefile.in (proj-h.o): Fix dependencies list.
+
 Wed Sep 02 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lex.c (ffe_lex_hash):  Change how HANDLE_PRAGMA and
