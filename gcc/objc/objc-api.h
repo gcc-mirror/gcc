@@ -236,7 +236,8 @@ struct objc_protocol_list {
 */
 #define CLS_GETNUMBER(cls) (__CLS_INFO(cls) >> (HOST_BITS_PER_LONG/2))
 #define CLS_SETNUMBER(cls, num) \
-  ({ assert(CLS_GETNUMBER(cls)==0); \
+  ({ (cls)->info <<= (HOST_BITS_PER_LONG/2); \
+     (cls)->info >>= (HOST_BITS_PER_LONG/2); \
      __CLS_SETINFO(cls, (((unsigned long)num) << (HOST_BITS_PER_LONG/2))); })
 
 /*
@@ -274,11 +275,9 @@ typedef struct objc_super {
 
 IMP objc_msg_lookup_super(Super_t super, SEL sel);
 
-retval_t objc_msg_sendv(id, SEL, size_t, arglist_t);
+retval_t objc_msg_sendv(id, SEL, arglist_t);
 
 
-
-static const ARGSIZE = 96;		/* for `method_get_argsize()' */
 
 /*
 ** This is a hook which is called by objc_lookup_class and
@@ -362,12 +361,6 @@ class_set_version(Class* class, long version)
 {
   if (CLS_ISCLASS(class))
     class->version = version;
-}
-
-static inline unsigned int
-method_get_argsize(Method_t method)
-{
-  return ARGSIZE;		/* This was a magic number (96)... */
 }
 
 static inline IMP
