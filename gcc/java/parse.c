@@ -12344,9 +12344,12 @@ patch_unaryop (node, wfl_op)
     case PREDECREMENT_EXPR:
       decl = strip_out_static_field_access_decl (op);
       if (!JDECL_P (decl) 
-	  && !((TREE_CODE (decl) == INDIRECT_REF 
-		|| TREE_CODE (decl) == COMPONENT_REF) 
-	       && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))))
+	  && TREE_CODE (decl) != COMPONENT_REF
+	  && !(flag_emit_class_files && TREE_CODE (decl) == ARRAY_REF)
+	  && TREE_CODE (decl) != INDIRECT_REF
+	  && !(TREE_CODE (decl) == COMPOUND_EXPR
+	       && TREE_OPERAND (decl, 1)
+	       && (TREE_CODE (TREE_OPERAND (decl, 1)) == INDIRECT_REF)))
 	{
 	  tree lvalue;
 	  /* Before screaming, check that we're not in fact trying to
