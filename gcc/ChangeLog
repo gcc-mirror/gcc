@@ -1,3 +1,14 @@
+2000-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpplex.c (_cpp_get_line): If index is 0, return line 0 col 0.
+	(_cpp_get_token): Don't macro expand a just pasted token if it
+	was pasted at no_expand_level.
+
+2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppmacro.c (find_param, count_params, save_expansion):
+	Permit 'defined' as a macro parameter name.
+
 2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in: Rename cpp to cpp0, tradcpp to tradcpp0, and
