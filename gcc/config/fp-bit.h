@@ -66,6 +66,8 @@ Boston, MA 02111-1307, USA.  */
 #define L_le_df
 #define L_unord_sf
 #define L_unord_df
+#define L_usi_to_sf
+#define L_usi_to_df
 #define L_si_to_sf
 #define L_si_to_df
 #define L_sf_to_si
@@ -193,6 +195,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #		define _lt_f2 		__ltsf2
 #		define _le_f2 		__lesf2
 #		define _unord_f2	__unordsf2
+#		define usi_to_float 	__floatunsisf
 #		define si_to_float 	__floatsisf
 #		define float_to_si 	__fixsfsi
 #		define float_to_usi 	__fixunssfsi
@@ -211,6 +214,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #		define _lt_f2 		__ltdf2
 #		define _le_f2 		__ledf2
 #		define _unord_f2	__unorddf2
+#		define usi_to_float 	__floatunsidf
 #		define si_to_float 	__floatsidf
 #		define float_to_si 	__fixdfsi
 #		define float_to_usi 	__fixunsdfsi

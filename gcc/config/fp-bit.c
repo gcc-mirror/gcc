@@ -1169,6 +1169,38 @@ si_to_float (SItype arg_a)
 }
 #endif /* L_si_to_sf || L_si_to_df */
 
+#if defined(L_usi_to_sf) || defined(L_usi_to_df)
+FLO_type
+usi_to_float (USItype arg_a)
+{
+  fp_number_type in;
+
+  in.sign = 0;
+  if (!arg_a)
+    {
+      in.class = CLASS_ZERO;
+    }
+  else
+    {
+      in.class = CLASS_NUMBER;
+      in.normal_exp = FRACBITS + NGARDS;
+      in.fraction.ll = arg_a;
+
+      while (in.fraction.ll > (1LL << (FRACBITS + NGARDS)))
+        {
+          in.fraction.ll >>= 1;
+          in.normal_exp += 1;
+        }
+      while (in.fraction.ll < (1LL << (FRACBITS + NGARDS)))
+	{
+	  in.fraction.ll <<= 1;
+	  in.normal_exp -= 1;
+	}
+    }
+  return pack_d (&in);
+}
+#endif
+
 #if defined(L_sf_to_si) || defined(L_df_to_si)
 SItype
 float_to_si (FLO_type arg_a)
