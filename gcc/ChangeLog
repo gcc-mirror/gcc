@@ -1,3 +1,9 @@
+Wed Apr  5 23:17:10 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (sh_insn_length_adjustment): New function.
+	* sh-protos.h (sh_insn_length_adjustment): Declare.
+	* sh.h (ADJUST_INSN_LENGTH): Use it.
+
 Wed Apr  5 12:35:18 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* optabs.c (emit_libcall_block): Remove spurious REG_EQUAL notes
