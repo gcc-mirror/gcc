@@ -1,3 +1,7 @@
+Tue Sep 30 08:51:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (build_decl_overload_real): Reformat.
+
 Tue Sep 30 00:18:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (synthesize_method): If at_eof, determine our linkage.
