@@ -1,3 +1,8 @@
+2005-03-15  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.h (DWARF_CIE_DATA_ALIGNMENT): Change for
+        STACK_GROWS_DOWNWARD.
+
 2005-03-15  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Don't clear

@@ -1234,7 +1234,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* Offsets recorded in opcodes are a multiple of this alignment factor.
    The default for this in 64-bit mode is 8, which causes problems with
    SFmode register saves.  */
-#define DWARF_CIE_DATA_ALIGNMENT 4
+#define DWARF_CIE_DATA_ALIGNMENT -4
 
 /* Correct the offset of automatic variables and arguments.  Note that
    the MIPS debug format wants all automatic variables and arguments
