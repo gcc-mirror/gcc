@@ -6,7 +6,7 @@ template <bool> struct C {};
 
 template <typename T> struct D
 {
-   C<T::X> c;                   // { dg-error "names a type" }
+   C<T::X> c;                   // { dg-error "parsed as a non-type|if a type is meant" }
 };
 
-D<B> d;                         // { dg-error "" }
+D<B> d;                         // { dg-error "instantiated from here" }
