@@ -1,3 +1,29 @@
+2003-04-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* hashtable.c (gcc_obstack_init): Delete this function
+	and everything related to it.
+	* hashtable.h: Remove prototype.
+	* bitmap.c (bitmap_element_allocate): Cleanup redundant
+	defines.  Cleanup some unnecessary whitespace.
+	* defaults.h (obstack_chunk_alloc): Redefine with
+	appropriate casts for libiberty obstacks.
+	(obstack_chunk_free): Ditto.
+	(OBSTACK_CHUNK_SIZE): Define, default to 0.
+	(gcc_obstack_init): Define as a call to _obstack_begin.
+	* tree.c (print_obstack_statistics): Delete this unused
+	function.
+	* tree.h (obstack): Don't forward-declare.
+	(print_obstack_statistics): Delete prototype.
+	(print_obstack_name): Ditto.
+	(gcc_obstack_init): Ditto.
+	* rtl.h (gcc_obstack_init): Ditto.
+	* java/jv-scan.c (gcc_obstack_init): Delete this
+	function, its prototype and related defines.
+	* java/jvgenmain.c (gcc_obstack_init): Delete this
+	function, and related defines.
+	* java/parse-scan.y (obstack_chunk_alloc): Don't define.
+	(obstack_chunk_free): Ditto
+
 2003-04-06  Geoffrey Keating  <geoffk@apple.com>
 
 	* dbxout.c (dbxout_handle_pch): Move prototype out from

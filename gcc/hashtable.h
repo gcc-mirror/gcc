@@ -58,8 +58,6 @@ struct ht
   unsigned int collisions;
 };
 
-extern void gcc_obstack_init PARAMS ((struct obstack *));
-
 /* Initialize the hashtable with 2 ^ order entries.  */
 extern hash_table *ht_create PARAMS ((unsigned int order));
 

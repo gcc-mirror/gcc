@@ -27,8 +27,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GET_ENVIRONMENT(VALUE, NAME) do { (VALUE) = getenv (NAME); } while (0)
 #endif
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
+#define obstack_chunk_alloc	((void *(*) (long)) xmalloc)
+#define obstack_chunk_free	((void (*) (void *)) free)
+#define OBSTACK_CHUNK_SIZE	0
+#define gcc_obstack_init(OBSTACK)			\
+  _obstack_begin ((OBSTACK), OBSTACK_CHUNK_SIZE, 0,	\
+		  obstack_chunk_alloc,			\
+		  obstack_chunk_free)
 
 /* Define default standard character escape sequences.  */
 #ifndef TARGET_BELL

@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 extern void fatal_error (const char *s, ...)
      ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void warning (const char *s, ...) ATTRIBUTE_PRINTF_1;
-void gcc_obstack_init (struct obstack *obstack);
 void report (void);
 
 static void usage (void) ATTRIBUTE_NORETURN;
@@ -261,23 +260,4 @@ warning (const char *s, ...)
   vfprintf (stderr, s, ap);
   fputc ('\n', stderr);
   va_end (ap);
-}
-
-void
-gcc_obstack_init (struct obstack *obstack)
-{
-  /* Let particular systems override the size of a chunk.  */
-#ifndef OBSTACK_CHUNK_SIZE
-#define OBSTACK_CHUNK_SIZE 0
-#endif
-  /* Let them override the alloc and free routines too.  */
-#ifndef OBSTACK_CHUNK_ALLOC
-#define OBSTACK_CHUNK_ALLOC xmalloc
-#endif
-#ifndef OBSTACK_CHUNK_FREE
-#define OBSTACK_CHUNK_FREE free
-#endif
-  _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) (long)) OBSTACK_CHUNK_ALLOC,
-		  (void (*) (void *)) OBSTACK_CHUNK_FREE);
 }
