@@ -19,26 +19,17 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
 #include "insn-config.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
-extern rtx read_rtx ();
 
 /* Names for patterns.  Need to allow linking with print-rtl.  */
 char **insn_name_ptr;
@@ -104,14 +95,14 @@ static int dupnums[MAX_DUP_OPERANDS];
 
 static struct code_ptr *peepholes;
 
-static void walk_rtx ();
-static void print_path ();
-char *xmalloc ();
-char *xrealloc ();
+static void walk_rtx PROTO ((rtx, char *));
+static void print_path PROTO ((char *));
+char *xmalloc PROTO ((unsigned));
+char *xrealloc PROTO ((char *, unsigned));
 static void fatal ();
-static char *copystr ();
+static char *copystr PROTO ((char *));
 static void mybzero ();
-void fancy_abort ();
+void fancy_abort PROTO ((void));
 
 static void
 gen_insn (insn)

@@ -20,25 +20,16 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
-extern rtx read_rtx ();
 
 /* flags to determine output of machine description dependent #define's.  */
 static int max_recog_operands;  /* Largest operand number seen.  */
@@ -55,9 +46,9 @@ static int max_insns_per_split = 1;
 static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
-char *xmalloc ();
+char *xmalloc PROTO((unsigned));
 static void fatal ();
-void fancy_abort ();
+void fancy_abort PROTO((void));
 
 /* RECOG_P will be non-zero if this pattern was seen in a context where it will
    be used to recognize, rather than just generate an insn. 

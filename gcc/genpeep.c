@@ -19,25 +19,16 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
-extern rtx read_rtx ();
 
 /* While tree-walking an instruction pattern, we keep a chain
    of these `struct link's to record how to get down to the
@@ -52,10 +43,10 @@ struct link
   int vecelt;
 };
 
-char *xmalloc ();
-static void match_rtx ();
+char *xmalloc PROTO((unsigned));
+static void match_rtx PROTO((rtx, struct link *, int));
 static void fatal ();
-void fancy_abort ();
+void fancy_abort PROTO((void));
 
 static int max_opno;
 
@@ -68,8 +59,8 @@ static int n_operands;
 
 static int insn_code_number = 0;
 
-static void print_path ();
-static void print_code ();
+static void print_path PROTO((struct link *));
+static void print_code PROTO((RTX_CODE));
 
 static void
 gen_peephole (peep)

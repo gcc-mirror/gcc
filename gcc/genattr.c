@@ -20,25 +20,16 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "hconfig.h"
+#include "system.h"
 #include "rtl.h"
 #include "obstack.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-#ifdef NEED_DECLARATION_FREE
-extern void free PROTO((void *));
-#endif
-extern rtx read_rtx PROTO((FILE *));
 
 char *xmalloc PROTO((unsigned));
 static void fatal ();

@@ -102,27 +102,12 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <varargs.h>
 #endif
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-# include <sys/time.h>
-# else
-#  include <time.h>
-#endif
-#endif
-
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
 #endif
 
 /* We must include obstack.h after <sys/time.h>, to avoid lossage with
@@ -140,13 +125,8 @@ struct obstack *temp_obstack = &obstack2;
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 char **insn_name_ptr = 0;
 
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
-extern rtx read_rtx ();
-
 static void fatal ();
-void fancy_abort ();
+void fancy_abort PROTO((void));
 
 /* enough space to reserve for printing out ints */
 #define MAX_DIGITS (HOST_BITS_PER_INT * 3 / 10 + 3)
