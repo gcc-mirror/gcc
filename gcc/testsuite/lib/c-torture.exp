@@ -19,6 +19,8 @@
 
 # This file was written by Rob Savoye. (rob@cygnus.com)
 
+load_lib file-format.exp
+
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
 

@@ -24,59 +24,10 @@
 # Load support procs.
 load_lib gcc-dg.exp
 
-###################################
-# proc gcc_target_object_format { }
-###################################
-
-proc gcc_target_object_format { } { 
-    global gcc_target_object_format_saved
-
-    if [info exists gcc_target_object_format_saved] {
-        verbose "gcc_target_object_format returning saved $gcc_target_object_format_saved" 2
-        return $gcc_target_object_format_saved
-    } else {
-
-        set objdump_name [find_binutils_prog objdump]
-        set open_file [open objfmtst.c w]
-        puts $open_file "void foo(void) { }"
-        close $open_file
-        
-        gcc_target_compile objfmtst.c objfmtst.o object ""
-        
-        set output [exec $objdump_name --file-headers objfmtst.o ]
-        
-        file delete objfmtst.o
-        
-        if ![ regexp "file format (.*)arch" $output dummy objformat ]  {
-            verbose "Could not parse objdump output" 2
-            set gcc_target_object_format_saved unknown
-        } else {
-            switch -regexp $objformat {
-                elf          {
-                    verbose "gcc_target_object_format returning elf" 2
-                    set gcc_target_object_format_saved elf
-                } 
-                ecoff        {
-                    verbose "gcc_target_object_format returning ecoff" 2
-                    set gcc_target_object_format_saved ecoff
-                }
-                coff         {
-                    verbose "gcc_target_object_format returning coff" 2
-                    set gcc_target_object_format_saved coff
-                }
-                a\.out       {
-                    verbose "gcc_target_object_format returning a.out" 2
-                    set gcc_target_object_format_saved a.out
-                }
-                default      {
-                    verbose "gcc_target_object_format returning unknown" 2
-                    set gcc_target_object_format_saved unknown
-                }
-            }
-        }
-        return $gcc_target_object_format_saved
-    }
-}
+###############################
+# proc gcc_target_object_format {}
+###############################
+# has been moved to:  gcc/testsuite/lib/file-format.exp
 
 ###############################
 # proc check_weak_available { }

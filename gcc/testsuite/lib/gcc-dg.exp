@@ -1,4 +1,4 @@
-#   Copyright (C) 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1999 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 # Define gcc callbacks for dg.exp.
 
 load_lib dg.exp
+load_lib file-format.exp
 
 proc gcc-dg-test { prog do_what extra_tool_flags } {
     # Set up the compiler flags, based on what we're going to do.
