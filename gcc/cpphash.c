@@ -991,7 +991,7 @@ special_symbol (hp, pfile)
     case T_SPECLINE:
       {
 	long line;
-	cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, NULL);
+	cpp_buf_line_and_col (cpp_file_buffer (pfile), &line, NULL);
 
 	CPP_RESERVE (pfile, 10);
 	sprintf (CPP_PWRITTEN (pfile), "%ld", line);

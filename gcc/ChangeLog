@@ -1,3 +1,8 @@
+1999-04-09 22:58 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cpphash.c (special_symbol): When expanding __LINE__, use the
+	top file buffer, not the top buffer.
+
 Fri Apr  9 13:41:04 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (check-g++, check-gcc, check-g77, check-objc): Add
