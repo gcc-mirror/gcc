@@ -1,3 +1,8 @@
+2000-05-04  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* Makefile.in ($(HOST_PREFIX_1)gensupport.o): Add build rule.
+	(libgcc.a): Pass LIB1ASMSRC to libgcc.mk.
+
 2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bb-reorder.c (get_next_bb_note, get_prev_bb_note): Prototype.
