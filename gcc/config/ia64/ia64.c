@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <ctype.h>
 #include "config.h"
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
