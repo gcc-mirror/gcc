@@ -233,6 +233,7 @@ extern int target_flags;
    Hence, we assume the upper 32 bits of symbolic addresses are zero, and
    avoid generating %uhi and %ulo terms.
    Pointers are still 64 bits though!  This option is for v9 only.  */
+/* ??? This option is deprecated.  Try to use -mcode-model=medium-low.  */
 #define MASK_ENV32 0x10000
 #define TARGET_ENV32 (target_flags & MASK_ENV32)
 
@@ -307,16 +308,15 @@ extern int target_flags;
 /* ??? code models should be selected with -mcode-model=xxx.  */
 #ifdef SPARCV9
 #define V9_SWITCHES \
-    {"v9", MASK_V9},			\
-    {"no-v9", -MASK_V9},		\
+/*  {"v9", MASK_V9}, */			\
     {"int64", MASK_INT64+MASK_LONG64},	\
     {"int32", -MASK_INT64},		\
+    {"int32", MASK_LONG64},		\
+    {"long64", -MASK_INT64},		\
     {"long64", MASK_LONG64},		\
-    {"long32", -MASK_LONG64},		\
-    {"ptr64", MASK_PTR64},		\
-    {"ptr32", -MASK_PTR64},		\
-    {"env32", MASK_ENV32},		\
-    {"no-env32", -MASK_ENV32},		\
+    {"long32", -(MASK_INT64+MASK_LONG64)}, \
+/*  {"ptr64", MASK_PTR64}, */		\
+/*  {"ptr32", -MASK_PTR64}, */		\
     {"stack-bias", MASK_STACK_BIAS},	\
     {"no-stack-bias", -MASK_STACK_BIAS},
 #else
