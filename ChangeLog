@@ -1,3 +1,8 @@
+2002-05-22  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.guess: Update to 2002-05-22 version.
+	* config.sub: Likewise.
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Allow for PWDCMD to override hardcoded pwd.

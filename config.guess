@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-03-20'
+timestamp='2002-05-22'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -142,6 +142,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	UNAME_MACHINE_ARCH=`(/sbin/$sysctl 2>/dev/null || \
 	    /usr/sbin/$sysctl 2>/dev/null || echo unknown)`
 	case "${UNAME_MACHINE_ARCH}" in
+	    armeb) machine=armeb-unknown ;;
 	    arm*) machine=arm-unknown ;;
 	    sh3el) machine=shl-unknown ;;
 	    sh3eb) machine=sh-unknown ;;
@@ -427,6 +428,9 @@ EOF
 	exit 0 ;;
     Motorola:PowerMAX_OS:*:*)
 	echo powerpc-motorola-powermax
+	exit 0 ;;
+    Night_Hawk:*:*:PowerMAX_OS)
+	echo powerpc-harris-powermax
 	exit 0 ;;
     Night_Hawk:Power_UNIX:*:*)
 	echo powerpc-harris-powerunix
@@ -958,7 +962,7 @@ EOF
 	exit 0 ;;
     M68*:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
-    3[34]??:*:4.0:3.0 | 3[34]??A:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 3[34]??/*:*:4.0:3.0 | 4850:*:4.0:3.0 | SKA40:*:4.0:3.0)
+    3[34]??:*:4.0:3.0 | 3[34]??A:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 3[34]??/*:*:4.0:3.0 | 4400:*:4.0:3.0 | 4850:*:4.0:3.0 | SKA40:*:4.0:3.0)
 	OS_REL=''
 	test -r /etc/.relid \
 	&& OS_REL=.`sed -n 's/[^ ]* [^ ]* \([0-9][0-9]\).*/\1/p' < /etc/.relid`
