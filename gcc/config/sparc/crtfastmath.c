@@ -32,12 +32,16 @@
  *    the executable file might be covered by the GNU General Public License.
  */
 
+#if defined (__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN_DATA__)
+#define FPRS_NS		(1 << 14)	/* Non-Standard fpu results */
+#else
 #define FPRS_NS		(1 << 22)	/* Non-Standard fpu results */
+#endif
 
 static void __attribute__((constructor))
 set_fast_math (void)
 {
-  unsigned long fsr;
+  unsigned int fsr;
 
   /* This works for the 64-bit case because, even if 32-bit ld/st of
      the fsr register modified the upper 32-bit, the only thing up there
