@@ -1,3 +1,14 @@
+Wed Feb 14 11:12:38 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (ix86_memory_move_cost): Move offline.
+	* i386.c (ix86_register_move_cost): Compute properly cost of
+	SSE, MMX and i387 instructions.
+	(*_cost): Add costs of SSE/MMX moves.
+	(ix86_memory_move_cost): Move offline from ....; Likewise.
+	* i386.h (MEMORY_MOVE_COST): .... here;
+	(struct processor costs): Add new fields to represent costs
+	of SSE/MMX moves.
+
 Wed Feb 14 10:08:26 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (init_reg_sets_1): Reinstall the optimization of
