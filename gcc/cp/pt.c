@@ -7396,18 +7396,28 @@ tsubst_qualified_id (tree qualified_id, tree args,
     }
   
   if (DECL_P (expr))
-    check_accessibility_of_qualified_id (expr, /*object_type=*/NULL_TREE,
-					 scope);
-  
-  /* Remember that there was a reference to this entity.  */
-  if (DECL_P (expr))
-    mark_used (expr);
+    {
+      check_accessibility_of_qualified_id (expr, /*object_type=*/NULL_TREE,
+					   scope);
+      /* Remember that there was a reference to this entity.  */
+      mark_used (expr);
+    }
+
+  if (expr == error_mark_node || TREE_CODE (expr) == TREE_LIST)
+    {
+      if (complain & tf_error)
+	qualified_name_lookup_error (scope, 
+				     TREE_OPERAND (qualified_id, 1),
+				     expr);
+      return error_mark_node;
+    }
 
   if (is_template)
     expr = lookup_template_function (expr, template_args);
 
   if (expr == error_mark_node && complain & tf_error)
-    qualified_name_lookup_error (scope, TREE_OPERAND (qualified_id, 1));
+    qualified_name_lookup_error (scope, TREE_OPERAND (qualified_id, 1),
+				 expr);
   else if (TYPE_P (scope))
     {
       expr = (adjust_result_of_qualified_name_lookup 
@@ -7855,8 +7865,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    decl = lookup_qualified_name (scope, name,
 					  /*is_type_p=*/false,
 					  /*complain=*/false);
-	    if (decl == error_mark_node)
-	      qualified_name_lookup_error (scope, name);
+	    if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
+	      qualified_name_lookup_error (scope, name, decl);
 	    else
 	      do_local_using_decl (decl, scope, name);
 	  }
@@ -8510,7 +8520,8 @@ tsubst_copy_and_build (tree t,
 			    args);
 	    else
 	      {
-		qualified_name_lookup_error (TREE_TYPE (object), tmpl);
+		qualified_name_lookup_error (TREE_TYPE (object), tmpl,
+					     member);
 		return error_mark_node;
 	      }
 	  }

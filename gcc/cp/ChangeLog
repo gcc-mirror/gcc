@@ -1,3 +1,24 @@
+2004-08-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16965
+	* cp-tree.h (qualified_name_lookup_error): Add parameter.
+	* name-lookup.c (do_class_using_decl): Restrict set of entities
+	passed to cp_emit_debug_info_for_using more carefully.
+	(lookup_qualified_name): Allow lookup_member to return sets of
+	ambiguous entries.
+	* parser.c (cp_parser_lookup_name): Add ambiguous_p parameter.
+	(cp_parser_primary_expression): Handle ambiguous lookups.
+	(cp_parser_template_name): Adjust use of cp_parser_lookup_name.
+	(cp_parser_template_argument): Likewise.
+	(cp_parser_elaborate_type_specifier): Likewise.
+	(cp_parser_namespace_name): Likewise.
+	(cp_parser_class_name): Likewise.
+	(cp_parser_lookup_name_simple): Likewise.
+	* pt.c (tsubst_qualified_id): Handle ambiguous results.
+	(tsubst_expr): Likewise.
+	* semantics.c (qualified_name_lookup_error): Add decl paramter.
+	For ambiguous lookups, print candidates.
+
 2004-08-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6749
