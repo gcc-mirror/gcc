@@ -4688,7 +4688,7 @@ store_bindings (tree names, cxx_saved_binding *old_bindings)
 }
 
 void
-maybe_push_to_top_level (int pseudo)
+push_to_top_level (void)
 {
   struct saved_scope *s;
   struct cp_binding_level *b;
@@ -4723,7 +4723,7 @@ maybe_push_to_top_level (int pseudo)
 	 inserted into namespace level, finish_file wouldn't find them
 	 when doing pending instantiations. Therefore, don't stop at
 	 namespace level, but continue until :: .  */
-      if (global_scope_p (b) || (pseudo && b->kind == sk_template_parms))
+      if (global_scope_p (b))
 	break;
 
       old_bindings = store_bindings (b->names, old_bindings);
@@ -4749,12 +4749,6 @@ maybe_push_to_top_level (int pseudo)
   current_lang_name = lang_name_cplusplus;
   current_namespace = global_namespace;
   timevar_pop (TV_NAME_LOOKUP);
-}
-
-void
-push_to_top_level (void)
-{
-  maybe_push_to_top_level (0);
 }
 
 void
