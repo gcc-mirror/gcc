@@ -1,3 +1,8 @@
+2000-10-06   Benjamin Kosnik  <bkoz@gnu.org>
+
+	* Makefile.am (libio_la_DEPENDENCIES): Remove extaneous cruft.
+	(libio_la_SOURCES): Remove.
+	
 2000-10-05  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* Makefile.am (INCLUDES): Add glibcpp_includedir.

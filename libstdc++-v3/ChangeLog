@@ -1,3 +1,20 @@
+2000-10-06  Benjamin Kosnik  <bkoz@cygnus.com>
+            Richard Henderson  <rth@cygnus.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+	
+	* libsupc++: New directory.
+	* libsupc++/*: Populate.
+	* libsupc++/Makefile.am (INCLUDES): Add -I../../gcc for
+	eh-common.h, gansidecl.h.
+	* configure.in: Add in libsupc++/Makefile to AC_OUTPUT.
+	* configure: Regenerate.
+	* Makefile.am (SUBDIRS): Add libsupc++.
+	* Makefile.in: Regenerate.
+	* src/Makefile.am (libstdc___la_LIBADD): Add in libsupc++.la
+	* src/Makefile.in: Regenerate.
+	* libio/Makefile.am: Remove extraneous, confusing bits.
+	* libio/Makefile.in: Regeneate.
+	
 2000-10-05  Brent Verner  <brent@rcfile.org>
 
         * bits/istream.tcc [basic_istream::get(basic_streambuf&)]: Removed

@@ -96,7 +96,11 @@ endif
 
 EXTRA_DIST = iostreamP.h
 
-libio_la_LIBADD = $(LIBIO_SRCS) $(LIBIO_WSRCS) $(LIBIO_XTRASRCS)
-libio_la_DEPENDENCIES = $(libio_la_LIBADD)
 libio_la_SOURCES = $(LIBIO_SRCS) $(LIBIO_WSRCS) $(LIBIO_XTRASRCS)
+
+
+
+
+
+
 

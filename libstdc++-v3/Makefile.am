@@ -29,7 +29,7 @@ MAINT_CHARSET = latin1
 INTERFACE = v3
 gxx_include_dir=$(includedir)/g++
 
-SUBDIRS = math libio src
+SUBDIRS = math libio libsupc++ src
 
 # Use $(blddir) instead of $(top_builddir) for arguments to "mkcheck"
 # because then the paths will be full pathnames, not relative
