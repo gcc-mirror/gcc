@@ -2215,19 +2215,11 @@ dbxout_symbol_name (decl, suffix, letter)
      const char *suffix;
      int letter;
 {
-  const char *name;
-
-  if (TYPE_P (DECL_CONTEXT (decl)))
-    /* One slight hitch: if this is a VAR_DECL which is a static
-       class member, we must put out the mangled name instead of the
-       DECL_NAME.  Note also that static member (variable) names DO NOT begin
-       with underscores in .stabs directives.  */
-    name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  else
-    /* ...but if we're function-local, we don't want to include the junk
-       added by ASM_FORMAT_PRIVATE_NAME.  */
-    name = IDENTIFIER_POINTER (DECL_NAME (decl));
-
+  /* One slight hitch: if this is a VAR_DECL which is a static
+     class member, we must put out the mangled name instead of the
+     DECL_NAME.  Note also that static member (variable) names DO NOT begin
+     with underscores in .stabs directives.  */
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   if (name == 0)
     name = "(anon)";
   fprintf (asmfile, "%s \"%s%s:", ASM_STABS_OP, name,
