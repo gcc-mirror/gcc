@@ -455,6 +455,10 @@ int warn_float_equal = 0;
 
 int warn_multichar = 1;
 
+/* Wrapper since C and C++ expand_expr_stmt are different. */
+
+expand_expr_stmt_fn lang_expand_expr_stmt = c_expand_expr_stmt;
+
 /* The variant of the C language being processed.  */
 
 c_language_kind c_language = clk_c;
@@ -6792,4 +6796,70 @@ lang_mark_tree (t)
     }
   else if (TYPE_P (t) && TYPE_LANG_SPECIFIC (t))
     ggc_mark (TYPE_LANG_SPECIFIC (t));
+}
+
+/* The functions below are required for functionality of doing
+   function at once processing in the C front end. Currently these
+   functions are not called from anywhere in the C front end, but as
+   these changes continue, that will change. */
+
+/* Returns non-zero if the current statement is a full expression,
+   i.e. temporaries created during that statement should be destroyed
+   at the end of the statement.  */
+
+int
+stmts_are_full_exprs_p ()
+{
+  return 0;
+}
+
+/* Nonzero if TYPE is an anonymous union or struct type.  Always 0 in
+   C. */
+
+int 
+anon_aggr_type_p (node)
+     tree node;
+{
+  return 0;
+}
+
+/* One if we have already declared __FUNCTION__ (and related
+   variables) in the current function.  Two if we are in the process
+   of doing so.  */
+
+int
+current_function_name_declared ()
+{
+  abort ();
+  return 0;
+}
+
+/* Code to generate the RTL for a case label in C. */
+
+void
+do_case (low_value, high_value)
+     tree low_value;
+     tree high_value;
+{
+  abort ();
+}
+
+/* Language specific handler of tree nodes used when generating RTL
+   from a tree. */
+
+tree
+lang_expand_stmt (t)
+     tree t;
+{
+  abort ();
+  return NULL_TREE;
+}
+
+/* Accessor to set the 'current_function_name_declared' flag. */
+
+void
+set_current_function_name_declared (i)
+     int i;
+{
+  abort ();
 }

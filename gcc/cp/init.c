@@ -1223,12 +1223,12 @@ build_aggr_init (exp, init, flags)
 
   TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
   begin_init_stmts (&stmt_expr, &compound_stmt);
-  destroy_temps = stmts_are_full_exprs_p;
-  stmts_are_full_exprs_p = 0;
+  destroy_temps = stmts_are_full_exprs_p ();
+  current_stmt_tree->stmts_are_full_exprs_p = 0;
   expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
 		      init, LOOKUP_NORMAL|flags);
   stmt_expr = finish_init_stmts (stmt_expr, compound_stmt);
-  stmts_are_full_exprs_p = destroy_temps;
+  current_stmt_tree->stmts_are_full_exprs_p = destroy_temps;
   TREE_TYPE (exp) = type;
   TREE_READONLY (exp) = was_const;
   TREE_THIS_VOLATILE (exp) = was_volatile;
@@ -2850,8 +2850,8 @@ build_vec_init (decl, base, maxindex, init, from_array)
      of blocks of memory.  */
 
   begin_init_stmts (&stmt_expr, &compound_stmt);
-  destroy_temps = stmts_are_full_exprs_p;
-  stmts_are_full_exprs_p = 0;
+  destroy_temps = stmts_are_full_exprs_p ();
+  current_stmt_tree->stmts_are_full_exprs_p = 0;
   rval = get_temp_regvar (ptype, 
 			  cp_convert (ptype, default_conversion (base)));
   base = get_temp_regvar (ptype, rval);
@@ -3013,9 +3013,9 @@ build_vec_init (decl, base, maxindex, init, from_array)
 	}
       else
 	{
-	  stmts_are_full_exprs_p = 1;
+	  current_stmt_tree->stmts_are_full_exprs_p = 1;
 	  finish_expr_stmt (elt_init);
-	  stmts_are_full_exprs_p = 0;
+	  current_stmt_tree->stmts_are_full_exprs_p = 0;
 	}
 
       finish_expr_stmt (build_modify_expr
@@ -3065,7 +3065,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
   finish_expr_stmt (rval);
 
   stmt_expr = finish_init_stmts (stmt_expr, compound_stmt);
-  stmts_are_full_exprs_p = destroy_temps;
+  current_stmt_tree->stmts_are_full_exprs_p = destroy_temps;
   return stmt_expr;
 }
 

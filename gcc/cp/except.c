@@ -923,7 +923,7 @@ expand_throw (exp)
 	     first.  Since there could be temps in the expression, we need
 	     to handle that, too.  */
 
-	  my_friendly_assert (stmts_are_full_exprs_p == 1, 19990926);
+	  my_friendly_assert (stmts_are_full_exprs_p () == 1, 19990926);
 
 	  /* Store the throw expression into a temp.  This can be less
 	     efficient than storing it into the allocated space directly, but

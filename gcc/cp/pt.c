@@ -9712,7 +9712,7 @@ instantiate_decl (d, defer_ok)
 
       /* We already set up __FUNCTION__, etc., so we don't want to do
 	 it again now.  */
-      current_function_name_declared = 1;
+      cp_function_chain->name_declared = 1;
 
       /* Substitute into the body of the function.  */
       tsubst_expr (DECL_SAVED_TREE (code_pattern), args,

@@ -19,6 +19,20 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Usage of TREE_LANG_FLAG_?:
+   0: COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
+      TREE_NEGATED_INT (in INTEGER_CST).
+      IDENTIFIER_MARKED (used by search routines).
+      SCOPE_BEGIN_P (in SCOPE_STMT)
+      DECL_PRETTY_FUNCTION_P (in VAR_DECL)
+      NEW_FOR_SCOPE_P (in FOR_STMT)
+   1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
+      STMT_IS_FULL_EXPR_P (in _STMT)
+   2: STMT_LINENO_FOR_FN_P (in _STMT)
+   3: SCOPE_NO_CLEANUPS_P (in SCOPE_STMT)
+   4: SCOPE_PARTIAL_P (in SCOPE_STMT)
+*/
+
 /* Reserved identifiers.  */
 
 enum rid
@@ -262,7 +276,6 @@ extern tree build_va_arg			PARAMS ((tree, tree));
 extern int self_promoting_args_p		PARAMS ((tree));
 extern tree simple_type_promotes_to		PARAMS ((tree));
 
-
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
 
@@ -392,6 +405,9 @@ extern tree simple_type_promotes_to		PARAMS ((tree));
 #define STMT_LINENO_FOR_FN_P(NODE) 		\
   (TREE_LANG_FLAG_2 ((NODE)))
 
+/* Nonzero if we want the new ISO rules for pushing a new scope for `for'
+   initialization variables. */
+#define NEW_FOR_SCOPE_P(NODE) (TREE_LANG_FLAG_0 (NODE)) 
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 
@@ -404,7 +420,52 @@ enum c_tree_code {
 #undef DEFTREECODE
 
 extern void add_c_tree_codes		        PARAMS ((void));
-
+extern void genrtl_do_pushlevel                 PARAMS ((void));
+extern void genrtl_clear_out_block              PARAMS ((void));
+extern void genrtl_goto_stmt                    PARAMS ((tree));
+extern void genrtl_expr_stmt                    PARAMS ((tree));
+extern void genrtl_decl_stmt                    PARAMS ((tree));
+extern void genrtl_if_stmt                      PARAMS ((tree));
+extern void genrtl_while_stmt                   PARAMS ((tree));
+extern void genrtl_do_stmt                      PARAMS ((tree));
+extern void genrtl_return_stmt                  PARAMS ((tree));
+extern void genrtl_for_stmt                     PARAMS ((tree));
+extern void genrtl_break_stmt                   PARAMS ((void));
+extern void genrtl_continue_stmt                PARAMS ((void));
+extern void genrtl_scope_stmt                   PARAMS ((tree));
+extern void genrtl_switch_stmt                  PARAMS ((tree));
+extern void genrtl_case_label                   PARAMS ((tree, tree));
+extern tree genrtl_begin_compound_stmt          PARAMS ((int));
+extern tree genrtl_finish_compound_stmt         PARAMS ((int));
+extern tree genrtl_compound_stmt                PARAMS ((tree));
+extern void genrtl_asm_stmt                     PARAMS ((tree, tree,
+							 tree, tree,
+							 tree));
+extern void genrtl_decl_cleanup                 PARAMS ((tree, tree));
+extern int stmts_are_full_exprs_p               PARAMS ((void));
+typedef void (*expand_expr_stmt_fn)             PARAMS ((tree));
+extern expand_expr_stmt_fn lang_expand_expr_stmt;
+extern int anon_aggr_type_p                     PARAMS ((tree));
+
+/* For a VAR_DECL that is an anonymous union, these are the various
+   sub-variables that make up the anonymous union.  */
+#define DECL_ANON_UNION_ELEMS(NODE) DECL_ARGUMENTS ((NODE))
+
+extern void emit_local_var                      PARAMS ((tree));
+extern void make_rtl_for_local_static           PARAMS ((tree));
+extern tree expand_cond                         PARAMS ((tree));
+extern tree expand_stmt                         PARAMS ((tree));
+extern tree lang_expand_stmt                    PARAMS ((tree));
+extern void c_expand_return			PARAMS ((tree));
+extern tree c_expand_start_case			PARAMS ((tree));
+extern void do_case				PARAMS ((tree, tree));
+extern tree build_case_label                    PARAMS ((tree, tree));
+
+#define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
+
+extern void c_expand_asm_operands		PARAMS ((tree, tree, tree, tree, int, const char *, int));
+extern int current_function_name_declared       PARAMS ((void));
+extern void set_current_function_name_declared  PARAMS ((int));
 
 /* These functions must be defined by each front-end which implements
    a variant of the C language.  They are used in c-common.c.  */
@@ -420,4 +481,3 @@ extern tree default_conversion                  PARAMS ((tree));
    Given two compatible ANSI C types, returns the merged type.  */
 
 extern tree common_type                         PARAMS ((tree, tree));
-

@@ -675,7 +675,7 @@ LANG_FLAGS_TO_PASS = $(SUBDIR_FLAGS_TO_PASS) \
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = c-lex.o c-pragma.o c-decl.o c-typeck.o c-convert.o \
-  c-aux-info.o c-common.o c-iterate.o @extra_c_objs@
+  c-aux-info.o c-common.o c-iterate.o c-semantics.o @extra_c_objs@
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
@@ -1155,6 +1155,10 @@ s-under: $(GCC_PASSES)
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) \
+	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
+	$(EXPR_H)
+
+c-semantics.o : c-semantics.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
 	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H)
 
