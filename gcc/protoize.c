@@ -1,4 +1,4 @@
-/* Protoize program - Original version by Ron Guilmette at MCC.
+/* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
    Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -64,10 +64,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef WINNT
 #if defined(POSIX) || defined(CONCURRENT)
 #include <dirent.h>
 #else
 #include <sys/dir.h>
+#endif
 #endif
 #include <setjmp.h>
 
@@ -158,7 +160,9 @@ typedef char * const_pointer_type;
 typedef void voidfn ();
 extern VOLATILE voidfn abort;
 #endif
+#ifndef WINNT
 extern int kill ();
+#endif
 extern int creat ();
 #if 0 /* These conflict with stdio.h on some systems.  */
 extern int fprintf (FILE *, const char *, ...);
