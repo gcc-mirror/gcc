@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -24,6 +24,10 @@
  *                                                                          *
  ****************************************************************************/
 
+#ifdef VMS
+#define _POSIX_EXIT 1
+#endif
+
 #include "config.h"
 #include "system.h"
 
@@ -31,13 +35,6 @@
 #include <process.h>
 #endif
 #include "adaint.h"
-
-#ifdef VMS
-#ifdef exit
-#undef exit
-#endif
-#define exit __posix_exit
-#endif
 
 /* These can be set by command line arguments */
 char *binder_path = 0;
@@ -138,7 +135,7 @@ process_args (int *p_argc, char *argv[])
 
       if (! strcmp (argv[i], "-gnatbind"))
 	{
-	  /* Explicit naming of binder.  Grab the value then remove the
+	  /* Explicit naming of binder. Grab the value then remove the
 	     two arguments from the argument list. */
 	  if ( i + 1 >= *p_argc )
 	    {
