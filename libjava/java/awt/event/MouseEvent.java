@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2002  Free Software Foundation
 
    This file is part of libjava.
 
@@ -106,8 +106,6 @@ public class MouseEvent extends InputEvent
     this.y += y;
   }
 
-  private long when;
-  private int modifiers;
   private int x;
   private int y;
   private int clickCount;

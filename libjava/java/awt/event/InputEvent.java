@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
    This file is part of libjava.
 
@@ -73,6 +73,6 @@ public abstract class InputEvent extends ComponentEvent
     consumed = true;
   }
 
-  private long when;
-  private int modifiers;
+  long when;
+  int modifiers;
 }
