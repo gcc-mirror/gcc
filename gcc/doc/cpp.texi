@@ -3512,19 +3512,21 @@ The preprocessor and compiler interpret character constants in the
 same way; i.e.@: escape sequences such as @samp{\a} are given the
 values they would have on the target machine.
 
-Multi-character character constants are interpreted a character at a
-time, shifting the previous result left by the number of bits per
-target character and or-ing the value of the new character truncated
-to the width of a target character.  They have type @code{int}, and
-are treated as signed regardless of whether single characters are
-signed or not (a slight change from versions 3.1 and earlier of GCC).
-If there are more characters in the constant than would fit in the
-target @code{int} an error is issued.
+The compiler values a multi-character character constant a character
+at a time, shifting the previous value left by the number of bits per
+target character, and then or-ing in the bit-pattern of the new
+character truncated to the width of a target character.  The final
+bit-pattern is given type @code{int}, and is therefore signed,
+regardless of whether single characters are signed or not (a slight
+change from versions 3.1 and earlier of GCC).  If there are more
+characters in the constant than would fit in the target @code{int} the
+compiler issues a warning, and the excess leading characters are
+ignored.
 
 For example, 'ab' for a target with an 8-bit @code{char} would be
 interpreted as @w{(int) ((unsigned char) 'a' * 256 + (unsigned char)
-'b')}, and 'a\234' as @w{(int) ((unsigned char) 'a' * 256 + (unsigned
-char) '\234')}.
+'b')}, and '\234a' as @w{(int) ((unsigned char) '\234' * 256 + (unsigned
+char) 'a')}.
 
 @item Source file inclusion.
 

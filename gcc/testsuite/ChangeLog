@@ -1,3 +1,7 @@
+2002-05-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/charconst-4.c: More tests.
+
 2002-05-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c/6569
