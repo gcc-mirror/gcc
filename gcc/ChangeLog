@@ -1,3 +1,11 @@
+2004-03-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/vax/vax-protos.h: Add a prototype for
+	vax_notice_update_cc.
+	* config/vax/vax.c (vax_notice_update_cc): New.
+	* config/vax/vax.h (NOTICE_UPDATE_CC): Call
+	vax_notice_update_cc.
+
 2004-03-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* collect2.c (main): Only export initfunc and finifunc if

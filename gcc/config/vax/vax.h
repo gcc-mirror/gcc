@@ -866,61 +866,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    Do not alter them if the instruction would not alter the cc's.  */
 
 #define NOTICE_UPDATE_CC(EXP, INSN) \
-{ if (GET_CODE (EXP) == SET)					\
-    { if (GET_CODE (SET_SRC (EXP)) == CALL)			\
-	CC_STATUS_INIT;						\
-      else if (GET_CODE (SET_DEST (EXP)) != ZERO_EXTRACT	\
-	       && GET_CODE (SET_DEST (EXP)) != PC)		\
-	{							\
-	  cc_status.flags = 0;					\
-	  /* The integer operations below don't set carry or	\
-	     set it in an incompatible way.  That's ok though	\
-	     as the Z bit is all we need when doing unsigned	\
-	     comparisons on the result of these insns (since	\
-	     they're always with 0).  Set CC_NO_OVERFLOW to	\
-	     generate the correct unsigned branches.  */	\
-	  switch (GET_CODE (SET_SRC (EXP)))			\
-	    {							\
-	    case NEG:						\
-	      if (GET_MODE_CLASS (GET_MODE (EXP)) == MODE_FLOAT)\
-	 	break;						\
-	    case AND:						\
-	    case IOR:						\
-	    case XOR:						\
-	    case NOT:						\
-	    case MEM:						\
-	    case REG:						\
-	      cc_status.flags = CC_NO_OVERFLOW;			\
-	      break;						\
-	    default:						\
-	      break;						\
-	    }							\
-	  cc_status.value1 = SET_DEST (EXP);			\
-	  cc_status.value2 = SET_SRC (EXP); } }			\
-  else if (GET_CODE (EXP) == PARALLEL				\
-	   && GET_CODE (XVECEXP (EXP, 0, 0)) == SET)		\
-    {								\
-      if (GET_CODE (SET_SRC (XVECEXP (EXP, 0, 0))) == CALL)	\
-	CC_STATUS_INIT;					        \
-      else if (GET_CODE (SET_DEST (XVECEXP (EXP, 0, 0))) != PC) \
-	{ cc_status.flags = 0;					\
-	  cc_status.value1 = SET_DEST (XVECEXP (EXP, 0, 0));	\
-	  cc_status.value2 = SET_SRC (XVECEXP (EXP, 0, 0)); }   \
-      else							\
-	/* PARALLELs whose first element sets the PC are aob,   \
-	   sob insns.  They do change the cc's.  */		\
-	CC_STATUS_INIT; }					\
-  else CC_STATUS_INIT;						\
-  if (cc_status.value1 && GET_CODE (cc_status.value1) == REG	\
-      && cc_status.value2					\
-      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))	\
-    cc_status.value2 = 0;					\
-  if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM	\
-      && cc_status.value2					\
-      && GET_CODE (cc_status.value2) == MEM)			\
-    cc_status.value2 = 0; }
-/* Actual condition, one line up, should be that value2's address
-   depends on value1, but that is too much of a pain.  */
+  vax_notice_update_cc ((EXP), (INSN))
 
 #define OUTPUT_JUMP(NORMAL, FLOAT, NO_OV)  \
 { if (cc_status.flags & CC_NO_OVERFLOW)				\
