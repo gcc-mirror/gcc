@@ -1,6 +1,7 @@
 /* Copyright (C) 2001 Free Software Foundation, Inc.  */
 
 /* { dg-do compile } */
+/* { dg-options "-fsigned-char" } */
 
 /* Crosscompiling from i686-linux (32-bit) to x86_64-linux (64-bit)
    gave extra warnings on the two assignments:
