@@ -2073,7 +2073,8 @@ do {						\
   {"reg_no_subreg_operand", {REG}},					\
   {"addition_operation", {PLUS}},					\
   {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
-  {"some_small_symbolic_mem_operand", {SET, PARALLEL}},
+  {"some_small_symbolic_operand", {SET, PARALLEL, PREFETCH, UNSPEC,	\
+				   UNSPEC_VOLATILE}},
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \
