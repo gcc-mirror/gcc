@@ -221,12 +221,13 @@ static hashval_t
 const_double_htab_hash (x)
      const void *x;
 {
-  hashval_t h = 0;
-  size_t i;
   rtx value = (rtx) x;
+  hashval_t h;
 
-  for (i = 0; i < sizeof(CONST_DOUBLE_FORMAT)-1; i++)
-    h ^= XWINT (value, i);
+  if (GET_MODE (value) == VOIDmode)
+    h = CONST_DOUBLE_LOW (value) ^ CONST_DOUBLE_HIGH (value);
+  else
+    h = real_hash (CONST_DOUBLE_REAL_VALUE (value));
   return h;
 }
 

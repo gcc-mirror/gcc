@@ -11412,18 +11412,34 @@ static unsigned
 rs6000_hash_constant (k)
      rtx k;
 {
-  unsigned result = (GET_CODE (k) << 3) ^ GET_MODE (k);
-  const char *format = GET_RTX_FORMAT (GET_CODE (k));
-  int flen = strlen (format);
-  int fidx;
+  enum rtx_code code = GET_CODE (k);
+  enum machine_mode mode = GET_MODE (k);
+  unsigned result = (code << 3) ^ mode;
+  const char *format;
+  int flen, fidx;
   
-  if (GET_CODE (k) == LABEL_REF)
-    return result * 1231 + (unsigned) INSN_UID (XEXP (k, 0));
+  format = GET_RTX_FORMAT (code);
+  flen = strlen (format);
+  fidx = 0;
 
-  if (GET_CODE (k) == CODE_LABEL)
-    fidx = 3;
-  else
-    fidx = 0;
+  switch (code)
+    {
+    case LABEL_REF:
+      return result * 1231 + (unsigned) INSN_UID (XEXP (k, 0));
+
+    case CONST_DOUBLE:
+      if (mode != VOIDmode)
+	return real_hash (CONST_DOUBLE_REAL_VALUE (k)) * result;
+      flen = 2;
+      break;
+
+    case CODE_LABEL:
+      fidx = 3;
+      break;
+
+    default:
+      break;
+    }
 
   for (; fidx < flen; fidx++)
     switch (format[fidx])
@@ -11460,6 +11476,7 @@ rs6000_hash_constant (k)
       default:
 	abort ();
       }
+
   return result;
 }
 

@@ -1,3 +1,27 @@
+2002-09-20  Richard Henderson  <rth@redhat.com>
+
+	* real.c (real_hash): New.
+	* real.h: Declare it.
+	* cse.c (canon_hash): Use it.
+	* cselib.c (hash_rtx): Likewise.
+	* emit-rtl.c (const_double_htab_hash): Likewise.
+	* rtl.h (CONST_DOUBLE_REAL_VALUE): New.
+	* varasm.c (struct rtx_const): Reduce vector size; separate
+	integer and fp vectors.
+	(HASHBITS): Remove.
+	(const_hash_1): Rename from const_hash.  Use real_hash.  Do not
+	take modulus MAX_HASH_TABLE.
+	(const_hash): New.  Do take modulus MAX_HASH_TABLE.
+	(output_constant_def): Do not take modulus MAX_HASH_TABLE.
+	(SYMHASH): Don't use HASHBITS.
+	(decode_rtx_const): Copy only active bits from REAL_VALUE_TYPE.
+	Fix CONST_VECTOR thinko wrt fp vectors.  Fix kind comparison.
+	(simplify_subtraction): Fix kind comparison.
+	(const_hash_rtx): Return unsigned int.  Don't use HASHBITS.
+	Use a union to pun integer array.
+	* config/rs6000/rs6000.c (rs6000_hash_constant): Use real_hash;
+	only hash two words of integral CONST_DOUBLE.
+
 2002-09-20  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (STARTFILE_SPEC): Modify.

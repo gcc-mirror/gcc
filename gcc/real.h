@@ -169,6 +169,8 @@ extern bool real_nan		PARAMS ((REAL_VALUE_TYPE *, const char *,
 
 extern void real_2expN		PARAMS ((REAL_VALUE_TYPE *, int));
 
+extern unsigned int real_hash	PARAMS ((const REAL_VALUE_TYPE *));
+
 /* ====================================================================== */
 /* Crap.  */
 
