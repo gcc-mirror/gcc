@@ -261,6 +261,7 @@ most consistent with the @code{g77} product in that version.
 @ifset INTERNALS
 * Adding Options::  Guidance on teaching @code{g77} about new options.
 * Projects::        Projects for @code{g77} internals hackers.
+* Front End::       Design and implementation of the @code{g77} front end.
 @end ifset
 
 * M: Diagnostics.   Diagnostics produced by @code{g77}.
@@ -1259,7 +1260,7 @@ whenever the distinction is important.
 @cindex GNU Fortran Front End (FFE)
 @cindex FFE
 @cindex @code{g77}, front end
-@cindex front end, g77
+@cindex front end, @code{g77}
 The other chunk of @code{f771} is the
 majority of what is unique about GNU Fortran---the code that knows how
 to interpret Fortran programs to determine what they are intending to
@@ -14117,6 +14118,9 @@ END
 is processed in the context of executable, not specification,
 statements.)
 @end itemize
+
+@include ffe.texi
+
 @end ifset
 
 @ifset USING

@@ -1,3 +1,12 @@
+Sat Apr 17 14:05:53 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Make a place for front-end internals documentation:
+	* Make-lang.in (f/g77.info, f/g77.dvi): Depend on f/ffe.texi.
+	* ffe.texi: New file, containing docs on front-end internals.
+	* g77.texi: New chapter for, and inclusion of, ffe.texi.
+
+	* g77.texi: Fix an index entry.
+
 Sat Apr 17 13:53:43 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Rewrite to use block/scope structure of GBE and to ensure
