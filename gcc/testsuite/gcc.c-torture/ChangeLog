@@ -1,3 +1,7 @@
+1999-01-28  Michael Meissner  <meissner@cygnus.com>
+
+	* execute/990128-1.c: New test.
+
 1999-01-27  Michael Meissner  <meissner@cygnus.com>
 
 	* execute/990127-{1,2}.c: New tests.
