@@ -1,3 +1,9 @@
+Wed Jun 10 08:56:27 1998  John Carr  <jfc@mit.edu>
+
+	* reload1.c (reload_cse_simplify_operands): Do not call gen_rtx_REG
+	for each alternative.  Do not replace a CONST_INT with a REG unless
+	the reg is cheaper.
+
 Wed Jun 10 02:11:55 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload.c (find_reloads_toplev): Use gen_lowpart common to convert

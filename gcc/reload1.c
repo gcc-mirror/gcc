@@ -8481,6 +8481,11 @@ reload_cse_simplify_set (set, insn)
       && MEMORY_MOVE_COST (GET_MODE (src), dclass, 1) < 2)
     return 0;
 
+  /* If the constant is cheaper than a register, don't change it.  */
+  if (CONSTANT_P (src)
+      && rtx_cost (src, SET) < 2)
+    return 0;
+
   dest_mode = GET_MODE (SET_DEST (set));
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -8542,6 +8547,7 @@ reload_cse_simplify_operands (insn)
   int *op_alt_regno[MAX_RECOG_OPERANDS];
   /* Array of alternatives, sorted in order of decreasing desirability.  */
   int *alternative_order;
+  rtx reg = gen_rtx_REG (VOIDmode, -1);
   
   /* Find out some information about this insn.  */
   insn_code_number = recog_memoized (insn);
@@ -8608,6 +8614,9 @@ reload_cse_simplify_operands (insn)
 	  if (! reload_cse_regno_equal_p (regno, recog_operand[i], mode))
 	    continue;
 
+	  REGNO (reg) = regno;
+	  PUT_MODE (reg, mode);
+
 	  /* We found a register equal to this operand.  Now look for all
 	     alternatives that can accept this register and have not been
 	     assigned a register they can use yet.  */
@@ -8647,10 +8656,12 @@ reload_cse_simplify_operands (insn)
 		case ',': case '\0':
 		  /* See if REGNO fits this alternative, and set it up as the
 		     replacement register if we don't have one for this
-		     alternative yet.  */
+		     alternative yet and the operand being replaced is not
+		     a cheap CONST_INT. */
 		  if (op_alt_regno[i][j] == -1
-		      && reg_fits_class_p (gen_rtx_REG (mode, regno), class,
-					   0, mode))
+		      && reg_fits_class_p (reg, class, 0, mode)
+		      && (GET_CODE (recog_operand[i]) != CONST_INT
+			  || rtx_cost (recog_operand[i], SET) > rtx_cost (reg, SET)))
 		    {
 		      alternative_nregs[j]++;
 		      op_alt_regno[i][j] = regno;
