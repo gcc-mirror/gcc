@@ -731,15 +731,15 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
  : (GET_CODE (PROD) == MULT						\
     &&									\
     (xfoo0 = XEXP (PROD, 0), xfoo1 = XEXP (PROD, 1),			\
-     ((GET_CODE (xfoo0) == CONST_INT					\
-       && INTVAL (xfoo0) == GET_MODE_SIZE (MODE)			\
-       && GET_CODE (xfoo1) == REG					\
-       && REG_OK_FOR_INDEX_P (xfoo1))					\
-      ||								\
-      (GET_CODE (xfoo1) == CONST_INT					\
-       && INTVAL (xfoo1) == GET_MODE_SIZE (MODE)			\
-       && GET_CODE (xfoo0) == REG					\
-       && REG_OK_FOR_INDEX_P (xfoo0))))))
+     ((((GET_CODE (xfoo0) == CONST_INT					\
+         && GET_CODE (xfoo1) == REG)					\
+         && INTVAL (xfoo0) == (int)GET_MODE_SIZE (MODE))		\
+         && REG_OK_FOR_INDEX_P (xfoo1))					\
+        ||								\
+      (((GET_CODE (xfoo1) == CONST_INT					\
+         && GET_CODE (xfoo0) == REG)					\
+         && INTVAL (xfoo1) == (int)GET_MODE_SIZE (MODE))		\
+         && REG_OK_FOR_INDEX_P (xfoo0))))))
 
 /* Go to ADDR if X is the sum of a register
    and a valid index term for mode MODE.  */
