@@ -1,3 +1,8 @@
+2002-05-24  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+        * config/alpha/unicosmk.h (REAL_VALUE_TO_TARGET_SINGLE,
+        REAL_VALUE_TO_TARGET_DOUBLE): Define for native builds.
+
 2002-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/6782

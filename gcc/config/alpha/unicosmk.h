@@ -574,6 +574,30 @@ ssib_section ()			\
 #ifndef REAL_ARITHMETIC
 #define REAL_VALUE_ATOF(x,s) atof(x)
 #define REAL_VALUE_HTOF(x,s) atof(x)
+
+#define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT)			\
+do {								\
+  union {							\
+    float f;							\
+    HOST_WIDE_INT l;						\
+  } u;								\
+								\
+  u.f = (IN);							\
+  (OUT) = (u.l >> 32) & 0xFFFFFFFF;				\
+} while (0) 
+
+#define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT)			\
+do {								\
+  union {							\
+    REAL_VALUE_TYPE f;						\
+    HOST_WIDE_INT l;						\
+  } u;								\
+								\
+  u.f = (IN);							\
+  (OUT)[0] = (u.l >> 32) & 0xFFFFFFFF;				\
+  (OUT)[1] = (u.l & 0xFFFFFFFF);				\
+} while (0)
+
 #endif
 
 #undef NM_FLAGS
