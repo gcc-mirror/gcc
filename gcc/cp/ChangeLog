@@ -1,3 +1,16 @@
+2005-02-02  Matt Austern  <austern@apple.com>
+
+	PR c++/19628
+	* cp-tree.h (builtin_valid_in_constant_expr_p): Declare.
+	* parser.c (cp_parser_postfix_expression): Accept function call in
+	constant expression if builtin_valid_in_constant_expr_p is true
+	for that function. 
+	* pt.c (value_dependent_expression_p): Handle CALL_EXPRs properly.
+	* semantics.c (finish_id_expression): Accept function call in constant
+	expression if builtin_valid_in_constant_expr_p is true for that
+	function. 
+	* tree.c (builtin_valid_in_constant_expr_p): New.
+	
 2005-02-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/17413

@@ -12020,6 +12020,36 @@ value_dependent_expression_p (tree expression)
   if (TREE_CODE (expression) == COMPONENT_REF)
     return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
 	    || value_dependent_expression_p (TREE_OPERAND (expression, 1)));
+
+  /* A CALL_EXPR is value-dependent if any argument is
+     value-dependent.  Why do we have to handle CALL_EXPRs in this
+     function at all?  First, some function calls, those for which
+     value_dependent_expression_p is true, man appear in constant
+     expressions.  Second, there appear to be bugs which result in
+     other CALL_EXPRs reaching this point. */
+  if (TREE_CODE (expression) == CALL_EXPR)
+    {
+      tree function = TREE_OPERAND (expression, 0);
+      tree args = TREE_OPERAND (expression, 1);
+
+      if (value_dependent_expression_p (function))
+	return true;
+      else if (! args)
+	return false;
+      else if (TREE_CODE (args) == TREE_LIST)
+	{
+	  do
+	    {
+	      if (value_dependent_expression_p (TREE_VALUE (args)))
+		return true;
+	      args = TREE_CHAIN (args);
+	    }
+	  while (args);
+	  return false;
+	}
+      else
+	return value_dependent_expression_p (args);
+    }
   /* A constant expression is value-dependent if any subexpression is
      value-dependent.  */
   if (EXPR_P (expression))
