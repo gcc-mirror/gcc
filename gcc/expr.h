@@ -202,19 +202,11 @@ enum direction {none, upward, downward};  /* Value has this type.  */
    - if the type is marked as addressable (it is required to be constructed
      into the stack)
    - if the padding and mode of the type is such that a copy into a register
-     would put it into the wrong part of the register
-   - when STRICT_ALIGNMENT and the type is BLKmode and is is not
-     aligned to a boundary corresponding to what can be loaded into a
-     register.  */
+     would put it into the wrong part of the register.
 
-#define MUST_PASS_IN_STACK_BAD_ALIGN(MODE,TYPE)			\
-  (STRICT_ALIGNMENT && MODE == BLKmode			        \
-   && TYPE_ALIGN (TYPE) < (BIGGEST_ALIGNMENT < BITS_PER_WORD	\
-			   ? BIGGEST_ALIGNMENT : BITS_PER_WORD))
-  
-/* Which padding can't be supported depends on the byte endianness.  */
+/* Which padding can't be supported depends on the byte endianness.
 
-/* A value in a register is implicitly padded at the most significant end.
+   A value in a register is implicitly padded at the most significant end.
    On a big-endian machine, that is the lower end in memory.
    So a value padded in memory at the upper end can't go in a register.
    For a little-endian machine, the reverse is true.  */
@@ -231,8 +223,7 @@ enum direction {none, upward, downward};  /* Value has this type.  */
        || TREE_ADDRESSABLE (TYPE)			\
        || ((MODE) == BLKmode 				\
 	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
-	       == MUST_PASS_IN_STACK_BAD_PADDING))	\
-       || MUST_PASS_IN_STACK_BAD_ALIGN (MODE, TYPE)))
+	       == MUST_PASS_IN_STACK_BAD_PADDING))))
 
 /* Nonzero if type TYPE should be returned in memory
    (even though its mode is not BLKmode).
