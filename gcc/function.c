@@ -1661,7 +1661,10 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	     If it has a REG_LIBCALL note, delete the REG_LIBCALL
 	     and REG_RETVAL notes too.  */
  	  if (GET_CODE (PATTERN (insn)) == CLOBBER
-	      && XEXP (PATTERN (insn), 0) == var)
+	      && (XEXP (PATTERN (insn), 0) == var
+		  || (GET_CODE (XEXP (PATTERN (insn), 0)) == CONCAT
+		      && (XEXP (XEXP (PATTERN (insn), 0), 0) == var
+			  || XEXP (XEXP (PATTERN (insn), 0), 1) == var))))
 	    {
 	      if ((note = find_reg_note (insn, REG_LIBCALL, NULL_RTX)) != 0)
 		/* The REG_LIBCALL note will go away since we are going to

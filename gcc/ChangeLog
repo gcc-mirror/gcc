@@ -1,3 +1,7 @@
+Mon Jul 20 01:13:19 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* function.c (fixup_var_refs_insns): Handle CLOBBER of a CONCAT.
+
 Sat Jul 18 15:20:19 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* loop.c (maybe_eliminate_biv_1): Avoid signed/unsigned comparison
