@@ -4346,11 +4346,11 @@ output_decl (decl, containing_scope)
 
     case FUNCTION_DECL:
       /* If we are in terse mode, don't output any DIEs to represent
-	 mere external function declarations.  Also, if we are conforming
+	 mere function declarations.  Also, if we are conforming
 	 to the DWARF version 1 specification, don't output DIEs for
-	 mere external function declarations.  */
+	 mere function declarations.  */
 
-      if (DECL_EXTERNAL (decl))
+      if (DECL_INITIAL (decl) == NULL_TREE)
 #if (DWARF_VERSION > 1)
 	if (debug_info_level <= DINFO_LEVEL_TERSE)
 #endif
@@ -4393,11 +4393,11 @@ output_decl (decl, containing_scope)
 	 ends with a void_type_node then there should *not* be an ellipsis
 	 at the end.  */
 
-      /* In the case where we are describing an external function, all
+      /* In the case where we are describing a mere function declaration, all
 	 we need to do here (and all we *can* do here) is to describe
 	 the *types* of its formal parameters.  */
 
-      if (DECL_EXTERNAL (decl))
+      if (DECL_INITIAL (decl) == NULL_TREE)
 	output_formal_types (TREE_TYPE (decl));
       else
 	{
@@ -4738,17 +4738,37 @@ dwarfout_file_scope_decl (decl, set_finalizing)
       if (DECL_EXTERNAL (decl) && DECL_FUNCTION_CODE (decl))
         return;
 
-      /* Ignore this FUNCTION_DECL if it refers to a file-scope extern
-	 function declaration and if the declaration was never even
-	 referenced from within this entire compilation unit.  We
-	 suppress these DIEs in order to save space in the .debug section
-	 (by eliminating entries which are probably useless).  Note that
-	 we must not suppress block-local extern declarations (whether
-	 used or not) because that would screw-up the debugger's name
-	 lookup mechanism and cause it to miss things which really ought
-	 to be in scope at a given point.  */
+      /* What we would really like to do here is to filter out all mere
+	 file-scope declarations of file-scope functions which are never
+	 referenced later within this translation unit (and keep all of
+	 ones that *are* referenced later on) but we aren't clarvoiant,
+	 so we have no idea which functions will be referenced in the
+	 future (i.e. later on within the current translation unit).
+	 So here we just ignore all file-scope function declarations
+	 which are not also definitions.  If and when the debugger needs
+	 to know something about these funcstion, it wil have to hunt
+	 around and find the DWARF information associated with the
+	 *definition* of the function.
 
-      if (DECL_EXTERNAL (decl) && !TREE_USED (decl))
+	 Note that we can't just check `DECL_EXTERNAL' to find out which
+	 FUNCTION_DECL nodes represent definitions and which ones represent
+	 mere declarations.  We have to check `DECL_INITIAL' instead.  That's
+	 because the C front-end supports some weird semantics for "extern
+	 inline" function definitions.  These can get inlined within the
+	 current translation unit (an thus, we need to generate DWARF info
+	 for their abstract instances so that the DWARF info for the
+	 concrete inlined instances can have something to refer to) but
+	 the compiler never generates any out-of-lines instances of such
+	 things (despite the fact that they *are* definitions).  The
+	 important point is that the C front-end marks these "extern inline"
+	 functions as DECL_EXTERNAL, but we need to generate DWARf for them
+	 anyway.
+
+	 Note that the C++ front-end also plays some similar games for inline
+	 function definitions appearing within include files which also
+	 contain `#pragma interface' pragmas.  */
+
+      if (DECL_INITIAL (decl) == NULL_TREE)
 	return;
 
       if (TREE_PUBLIC (decl)
