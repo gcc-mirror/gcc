@@ -300,33 +300,54 @@ fde_insert (fde_accumulator *accu, fde *this_fde)
 
 /* Split LINEAR into a linear sequence with low values and an erratic
    sequence with high values, put the linear one (of longest possible
-   length) into LINEAR and the erratic one into ERRATIC. This is O(N).  */
+   length) into LINEAR and the erratic one into ERRATIC. This is O(N).
+   
+   Because the longest linear sequence we are trying to locate within the
+   incoming LINEAR array can be interspersed with (high valued) erratic
+   entries.  We construct a chain indicating the sequenced entries.
+   To avoid having to allocate this chain, we overlay it onto the space of
+   the ERRATIC array during construction.  A final pass iterates over the
+   chain to determine what should be placed in the ERRATIC array, and
+   what is the linear sequence.  This overlay is safe from aliasing.  */
 static inline void
 fde_split (fde_vector *linear, fde_vector *erratic)
 {
+  static fde *marker;
   size_t count = linear->count;
-  size_t linear_max = (size_t) -1;
-  size_t previous_max[count];
-  size_t i, j;
+  fde **chain_end = &marker;
+  size_t i, j, k;
 
+  /* This should optimize out, but it is wise to make sure this assumption
+     is correct. Should these have different sizes, we cannot cast between
+     them and the overlaying onto ERRATIC will not work.  */
+  if (sizeof (fde *) != sizeof (fde **))
+    abort ();
+  
   for (i = 0; i < count; i++)
     {
-      for (j = linear_max;
-           j != (size_t) -1
-           && fde_compare (linear->array[i], linear->array[j]) < 0;
-           j = previous_max[j])
+      fde **probe;
+      
+      for (probe = chain_end;
+           probe != &marker && fde_compare (linear->array[i], *probe) < 0;
+           probe = chain_end)
         {
-          erratic->array[erratic->count++] = linear->array[j];
-          linear->array[j] = (fde *) NULL;
+          chain_end = (fde **)erratic->array[probe - linear->array];
+          erratic->array[probe - linear->array] = NULL;
         }
-      previous_max[i] = j;
-      linear_max = i;
+      erratic->array[i] = (fde *)chain_end;
+      chain_end = &linear->array[i];
     }
 
-  for (i = 0, j = 0; i < count; i++)
-    if (linear->array[i] != (fde *) NULL)
+  /* Each entry in LINEAR which is part of the linear sequence we have
+     discovered will correspond to a non-NULL entry in the chain we built in
+     the ERRATIC array.  */
+  for (i = j = k = 0; i < count; i++)
+    if (erratic->array[i])
       linear->array[j++] = linear->array[i];
+    else
+      erratic->array[k++] = linear->array[i];
   linear->count = j;
+  erratic->count = k;
 }
 
 /* This is O(n log(n)).  BSD/OS defines heapsort in stdlib.h, so we must
