@@ -1,4 +1,24 @@
 2002-03-12  Benjamin Kosnik  <bkoz@redhat.com>
+            Per Liboriussen  <liborius@stofanet.dk>
+	
+	* config/os/gnu-linux/bits/ctype_noninline.h: Cast to
+	unsigned char.
+	* config/os/gnu-linux/bits/ctype_inline.h: Same.
+
+	* config/os/irix/irix6.5/bits/ctype_inline.h: Same.
+
+	* config/os/solaris/solaris2.5/bits/ctype_inline.h: Same.
+	* config/os/solaris/solaris2.5/bits/ctype_noninline.h: Same.
+
+	* config/os/solaris/solaris2.6/bits/ctype_inline.h: Same.
+	* config/os/solaris/solaris2.6/bits/ctype_noninline.h: Same.
+
+	* config/os/solaris/solaris2.7/bits/ctype_inline.h: Same.
+	* config/os/solaris/solaris2.7/bits/ctype_noninline.h: Same.
+
+	* testsuite/22_locale/ctype_members_char.cc (main): Add tests.
+	
+2002-03-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/basic_string.tcc (string::_S_construct(_InIter,
 	_InIter, const _Alloc&, forward_iterator_tag): Check for null.
