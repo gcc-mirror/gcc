@@ -1,3 +1,8 @@
+2003-02-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* root.texi: Bump version.
+	* version.c (ffe_version_string): Update.
+
 2003-02-05  Release Manager
 
 	* GCC 3.2.2 Released.
