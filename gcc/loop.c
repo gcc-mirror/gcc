@@ -7067,8 +7067,8 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 	      bl->biv->add_val = new_add_val;
 
 	      /* Update loop info.  */
-	      loop_info->initial_value = bl->initial_value;
-	      loop_info->initial_equiv_value = bl->initial_value;
+	      loop_info->initial_value = reg;
+	      loop_info->initial_equiv_value = reg;
 	      loop_info->final_value = const0_rtx;
 	      loop_info->final_equiv_value = const0_rtx;
 	      loop_info->comparison_value = const0_rtx;
