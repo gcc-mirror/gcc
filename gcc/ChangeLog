@@ -1,3 +1,8 @@
+2004-07-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/t-stormy16 (TARGET_LIBGCC2_CFLAGS): Define.
+	Set to -Os.
+
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
 	* except.c (expand_eh_region_start, expand_eh_region_end, 
