@@ -1,3 +1,9 @@
+2005-01-20  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/19508
+	* decl2.c (grokfield): Do not apply attributes to template parameters
+	as they are ignored by tsubst anyway.
+
 2005-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19813
