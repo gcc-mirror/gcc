@@ -5624,7 +5624,7 @@ force_operand (rtx value, rtx target)
       return target;
     }
 
-  if (GET_RTX_CLASS (code) == '2' || GET_RTX_CLASS (code) == 'c')
+  if (ARITHMETIC_P (value))
     {
       op2 = XEXP (value, 1);
       if (!CONSTANT_P (op2) && !(GET_CODE (op2) == REG && op2 != subtarget))
@@ -5693,7 +5693,7 @@ force_operand (rtx value, rtx target)
 				      target, 1, OPTAB_LIB_WIDEN);
 	}
     }
-  if (GET_RTX_CLASS (code) == '1')
+  if (UNARY_P (value))
     {
       op1 = force_operand (XEXP (value, 0), NULL_RTX);
       return expand_simple_unop (GET_MODE (value), code, op1, target, 0);

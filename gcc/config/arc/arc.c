@@ -709,11 +709,11 @@ const_uint32_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 proper_comparison_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  enum rtx_code code = GET_CODE (op);
-
-  if (GET_RTX_CLASS (code) != '<')
+  enum rtx_code code;
+  if (!COMPARISON_P (op))
     return 0;
 
+  code = GET_CODE (op);
   if (GET_MODE (XEXP (op, 0)) == CCZNmode)
     return (code == EQ || code == NE);
   if (GET_MODE (XEXP (op, 0)) == CCZNCmode)

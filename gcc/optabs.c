@@ -153,8 +153,11 @@ add_equal_note (rtx insns, rtx target, enum rtx_code code, rtx op0, rtx op1)
       || NEXT_INSN (insns) == NULL_RTX)
     abort ();
 
-  if (GET_RTX_CLASS (code) != '1' && GET_RTX_CLASS (code) != '2'
-      && GET_RTX_CLASS (code) != 'c' && GET_RTX_CLASS (code) != '<')
+  if (GET_RTX_CLASS (code) != RTX_COMM_ARITH
+      && GET_RTX_CLASS (code) != RTX_BIN_ARITH
+      && GET_RTX_CLASS (code) != RTX_COMM_COMPARE
+      && GET_RTX_CLASS (code) != RTX_COMPARE
+      && GET_RTX_CLASS (code) != RTX_UNARY)
     return 1;
 
   if (GET_CODE (target) == ZERO_EXTRACT)
@@ -190,7 +193,7 @@ add_equal_note (rtx insns, rtx target, enum rtx_code code, rtx op0, rtx op1)
 	}
     }
 
-  if (GET_RTX_CLASS (code) == '1')
+  if (GET_RTX_CLASS (code) == RTX_UNARY)
     note = gen_rtx_fmt_e (code, GET_MODE (target), copy_rtx (op0));
   else
     note = gen_rtx_fmt_ee (code, GET_MODE (target), copy_rtx (op0), copy_rtx (op1));
@@ -718,7 +721,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
      try to make the first operand a register.
      Even better, try to make it the same as the target.
      Also try to make the last operand a constant.  */
-  if (GET_RTX_CLASS (binoptab->code) == 'c'
+  if (GET_RTX_CLASS (binoptab->code) == RTX_COMM_ARITH
       || binoptab == smul_widen_optab
       || binoptab == umul_widen_optab
       || binoptab == smul_highpart_optab

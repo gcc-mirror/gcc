@@ -1,6 +1,6 @@
 /* Try to unroll loops, and split induction variables.
    Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003
+   2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
@@ -2872,7 +2872,6 @@ static int
 reg_dead_after_loop (const struct loop *loop, rtx reg)
 {
   rtx insn, label;
-  enum rtx_code code;
   int jump_count = 0;
   int label_count = 0;
 
@@ -2902,8 +2901,7 @@ reg_dead_after_loop (const struct loop *loop, rtx reg)
       insn = NEXT_INSN (XEXP (label, 0));
       while (insn)
 	{
-	  code = GET_CODE (insn);
-	  if (GET_RTX_CLASS (code) == 'i')
+	  if (INSN_P (insn))
 	    {
 	      rtx set, note;
 
@@ -2917,18 +2915,18 @@ reg_dead_after_loop (const struct loop *loop, rtx reg)
 	      set = single_set (insn);
 	      if (set && rtx_equal_p (SET_DEST (set), reg))
 		break;
-	    }
 
-	  if (code == JUMP_INSN)
-	    {
-	      if (GET_CODE (PATTERN (insn)) == RETURN)
-		break;
-	      else if (!any_uncondjump_p (insn)
-		       /* Prevent infinite loop following infinite loops.  */
-		       || jump_count++ > 20)
-		return 0;
-	      else
-		insn = JUMP_LABEL (insn);
+	      if (GET_CODE (insn) == JUMP_INSN)
+		{
+		  if (GET_CODE (PATTERN (insn)) == RETURN)
+		    break;
+		  else if (!any_uncondjump_p (insn)
+		           /* Prevent infinite loop following infinite loops.  */
+		           || jump_count++ > 20)
+		    return 0;
+		  else
+		    insn = JUMP_LABEL (insn);
+		}
 	    }
 
 	  insn = NEXT_INSN (insn);

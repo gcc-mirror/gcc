@@ -1,3 +1,132 @@
+2004-03-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	* alias.c (rtx_equal_for_memref_p): Use predicates
+	to test rtx classes and new rtx class codes, possibly
+	splitting conditionals that tested against '<' and 'o'.
+	* caller-save.c (save_call_clobbered_regs): Likewise.
+	* combine.c (contains_muldiv, find_split_point, subst,
+	combine_simplify_rtx, simplify_if_then_else,
+	simplify_set, simplify_logical, expand_compound_operation,
+	make_compound_operation, if_then_else_cond, known_cond,
+	apply_distributive_law, cached_nonzero_bits,
+	cached_num_sign_bit_copies, simplify_shift_const,
+	gen_binary, simplify_comparison, update_table_tick,
+	record_value_for_reg, get_lsat_value_validate): Likewise.
+	* cse.c (mention_regs, find_best_addr, find_comparison_args,
+	fold_rtx, cse_insn, invalidate_memory, cse_basic_block):
+	Likewise.
+	* emit-rtl.c (copy_insn_1): Likewise.
+	* expr.c (force_operand): Likewise.
+	* final.c (final_scan_insn, get_mem_expr_from_op): Likewise.
+	* flow.c (notice_stack_pointer_modification_1,
+	invalidate_mems_from_autoinc, ior_reg_cond, not_reg_cond,
+	and_reg_cond, elim_reg_cond): Likewise.
+	* function.c (update_epilogue_consts): Likewise.
+	* genattrtab.c (attr_rtx_1): Likewise.
+	* genopinit.c (gen_insn): Likewise.
+	* integrate.c (subst_constants): Likewise.
+	* jump.c (reversed_comparison_code_parts,
+	reversed_comparison_code, delete_related_insns,
+	rtx_renumbered_equal_p): Likewise.
+	* local-alloc.c (block_alloc): Likewise.
+	* loop.c (rtx_equal_for_prefetch_p, maybe_eliminate_biv,
+	canonicalize_condition): Likewise.
+	* loop-iv.c (simplify_using_conditions, iv_number_of_iterations):
+	Likewise.
+	* optabs.c (add_equal_node, expand_binop): Likewise.
+	* predict.c (estimate_probability): Likewise.
+	* ra-debug.c (ra_print_rtx_2op, ra_print_rtx): Likewise.
+	* recog.c (validate_replace_rtx_1, comparison_operator,
+	offsettable_address_p, constrain_operands): Likewise.
+	* reg-stack.c (swap_rtx_condition_1, subst_stack_regs_pat):
+	Likewise.
+	* regclass.c (scan_one_insn): Likewise.
+	* regmove.c (stable_and_no_regs_but_for_p): Likewise.
+	* regrename.c (kill_autoinc_value): Likewise.
+	* reload.c (find_reusable_reload, find_reloads,
+	reg_overlap_mentioned_for_reload_p): Likewise.
+	* reload1.c (gen_reload, delete_address_reloads_1): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	* rtl.h (CONSTANT_P, INSN_P): Likewise.
+	* rtlanal.c (commutative_operand_precedence): Likewise.
+	* sched-deps.c (conditions_mutex_p): Likewise.
+	* sched-rgn.c (is_cfg_nonregular): Likewise.
+	* simplify-rtx.c (simplify_gen_binary,
+	simplify_gen_relational, simplify_replace_rtx,
+	simplify_unary_operation, simplify_binary_operation,
+	simplify_ternary_operation, simplify_rtx): Likewise.
+	* unroll.c (reg_dead_after_loop): Likewise.
+	* config/alpha/alpha.c (alpha_swapped_comparison_operator,
+	print_operand): Likewise.
+	* config/arc/arc.c (proper_comparison_operator): Likewise.
+	* config/arm/arm.c (arm_arm_address_cost, arm_select_cc_mode):
+	Likewise.
+	* config/avr/avr.c (_reg_unused_after): Likewise.
+	* config/frv/frv.c (frv_ifcvt_modify_tests,
+	frv_ifcvt_modify_insn, frv_pack_insn): Likewise.
+	* config/i386/i386.c (ix86_comparison_operator,
+	ix86_carry_flag_operator, fcmov_comparison_operator,
+	arith_or_logical_operator, print_operand,
+	ix86_expand_binary_operator, ix86_binary_operator_ok):
+	Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/ia64/ia64.c (not_postinc_memory_operand,
+	ia64_print_operand, update_set_flags, errata_emit_nops):
+	Likewise.
+	* config/ia64/ia64.h (PREFERRED_RELOAD_CLASS,
+	CONSTRAINT_OK_FOR_S): Likewise.
+	* config/ip2k/ip2k.c (mdr_resequence_xy_yx,
+	mdr_try_move_dp_reload, ip2k_check_can_adjust_stack_ref,
+	ip2k_xexp_not_uses_reg_for_mem, ip2k_xexp_not_uses_reg_p,
+	ip2k_composite_xexp_not_uses_reg_p, ip2k_unary_operator):
+	Likewise.
+	* config/iq2000/iq2000.c (cmp_op, symbolic_expression_p,
+	eqne_comparison_operator, signed_comparison_operator):
+	Likewise.
+	* config/mips/mips.c (cmp_op, symbolic_expression_p):
+	Likewise.
+	* config/mmix/mmix (mmix_foldable_comparison_operator,
+	mmix_comparison_operator): Likewise.
+	* config/pa/pa.c (hppa_legitimize_address): Likewise.
+	* config/rs6000/rs6000.c (stmw_operation,
+	branch_comparison_operator, trap_comparison_operator,
+	ccr_bit): Likewise.
+	* config/rs6000/rs6000.h (SELECT_CC_MODE): Likewise.
+	* config/s390/s390.c (s390_alc_comparison,
+	s390_slb_comparison):L Likewise.
+	* config/sh/sh.c (gen_block_redirect, reg_unused_after):
+	Likewise.
+	* config/sparc/sparc.c (eq_or_neq, normal_comp_operator,
+	noov_compare_op, noov_compare64_op, v9_regcmp_op,
+	emit_hard_tfmode_operation, reg_unused_after)
+	* doc/md.texi, doc/rtl.texi: Likewise.
+
+	* ra-debug.c: Add 2004 to list of copyright years.
+	* unroll.c: Likewise.
+
+	* combine.c (simplify_logical): Remove dummy test,
+	(apply_distributive_law): Fix typo in comment.
+	GET_CODE (x) == AND so x is a commutative binary op.
+	* jump.c (delete_related_insns): simplify loop
+	condition, move testing of RTX codes inside the loop.
+	(rtx_renumbered_equal_p): do not use RTX_CODE.
+	* rtl.c (rtx_class): Declare as enum rtx_class.
+	* rtl.def (EQ, NE, UNEQ, LTGT, UNORDERED, ORDERED):
+	Move to RTX_COMM_COMPARE class.
+	(HIGH, SYMBOL_REF, LABEL_REF, CONST, CONST_INT, CONST_DOUBLE):
+	Move to RTX_CONST_OBJ class.
+	* rtl.h (enum rtx_class): New declaration,
+	(RTX_OBJ_MASK, RTX_OBJ_RESULT, RTX_COMPARE_MASK,
+	RTX_COMPARE_RESULT, RTX_ARITHMETIC_MASK, RTX_ARITHMETIC_RESULT,
+	RTX_BINARY_MASK, RTX_BINARY_RESULT, RTX_COMMUTATIVE_MASK,
+	RTX_COMMUTATIVE_RESULT, RTX_NON_COMMUTATIVE_RESULT,
+	RTX_EXPR_FIRST, RTX_EXPR_LAST, UNARY_P, BINARY_P,
+	ARITHMETIC_P, COMMUTATIVE_ARITHMETIC_P, COMPARISON_P,
+	SWAPPABLE_OPERANDS_P, NON_COMMUTATIVE_P, COMMUTATIVE_P,
+	OBJECT_P): New macros.
+	* config/sparc/sparc.c (noov_compare_op): Remove register
+	from parameter.
+
 2004-03-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* target.h: Remove texi jargons in comments.

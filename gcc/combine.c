@@ -1340,18 +1340,14 @@ contains_muldiv (rtx x)
       return ! (GET_CODE (XEXP (x, 1)) == CONST_INT
 		&& exact_log2 (INTVAL (XEXP (x, 1))) >= 0);
     default:
-      switch (GET_RTX_CLASS (GET_CODE (x)))
-	{
-	case 'c':  case '<':  case '2':
-	  return contains_muldiv (XEXP (x, 0))
+      if (BINARY_P (x))
+	return contains_muldiv (XEXP (x, 0))
 	    || contains_muldiv (XEXP (x, 1));
 
-	case '1':
-	  return contains_muldiv (XEXP (x, 0));
+      if (UNARY_P (x))
+	return contains_muldiv (XEXP (x, 0));
 
-	default:
-	  return 0;
-	}
+      return 0;
     }
 }
 
@@ -2959,10 +2955,9 @@ find_split_point (rtx *loc, rtx insn)
 	     This will occur on machines that just support REG + CONST
 	     and have a constant moved through some previous computation.  */
 
-	  else if (GET_RTX_CLASS (GET_CODE (XEXP (XEXP (x, 0), 0))) != 'o'
+	  else if (!OBJECT_P (XEXP (XEXP (x, 0), 0))
 		   && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
-			 && (GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (XEXP (x, 0), 0))))
-			     == 'o')))
+			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
 	    return &XEXP (XEXP (x, 0), 0);
 	}
       break;
@@ -2977,9 +2972,9 @@ find_split_point (rtx *loc, rtx insn)
       if (SET_DEST (x) == cc0_rtx
 	  && GET_CODE (SET_SRC (x)) != COMPARE
 	  && GET_CODE (SET_SRC (x)) != ZERO_EXTRACT
-	  && GET_RTX_CLASS (GET_CODE (SET_SRC (x))) != 'o'
+	  && !OBJECT_P (SET_SRC (x))
 	  && ! (GET_CODE (SET_SRC (x)) == SUBREG
-		&& GET_RTX_CLASS (GET_CODE (SUBREG_REG (SET_SRC (x)))) == 'o'))
+		&& OBJECT_P (SUBREG_REG (SET_SRC (x)))))
 	return &SET_SRC (x);
 #endif
 
@@ -3170,14 +3165,11 @@ find_split_point (rtx *loc, rtx insn)
       /* See if this is a simple operation with a constant as the second
 	 operand.  It might be that this constant is out of range and hence
 	 could be used as a split point.  */
-      if ((GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == '2'
-	   || GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == 'c'
-	   || GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == '<')
+      if (BINARY_P (SET_SRC (x))
 	  && CONSTANT_P (XEXP (SET_SRC (x), 1))
-	  && (GET_RTX_CLASS (GET_CODE (XEXP (SET_SRC (x), 0))) == 'o'
+	  && (OBJECT_P (XEXP (SET_SRC (x), 0))
 	      || (GET_CODE (XEXP (SET_SRC (x), 0)) == SUBREG
-		  && (GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (SET_SRC (x), 0))))
-		      == 'o'))))
+		  && OBJECT_P (SUBREG_REG (XEXP (SET_SRC (x), 0))))))
 	return &XEXP (SET_SRC (x), 1);
 
       /* Finally, see if this is a simple operation with its first operand
@@ -3185,10 +3177,7 @@ find_split_point (rtx *loc, rtx insn)
 	 register, so return it as a split point.  We can always do this
 	 because if the first operand were another operation, we would have
 	 already found it as a split point.  */
-      if ((GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == '2'
-	   || GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == 'c'
-	   || GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == '<'
-	   || GET_RTX_CLASS (GET_CODE (SET_SRC (x))) == '1')
+      if ((BINARY_P (SET_SRC (x)) || UNARY_P (SET_SRC (x)))
 	  && ! register_operand (XEXP (SET_SRC (x), 0), VOIDmode))
 	return &XEXP (SET_SRC (x), 0);
 
@@ -3228,20 +3217,21 @@ find_split_point (rtx *loc, rtx insn)
   /* Otherwise, select our actions depending on our rtx class.  */
   switch (GET_RTX_CLASS (code))
     {
-    case 'b':			/* This is ZERO_EXTRACT and SIGN_EXTRACT.  */
-    case '3':
+    case RTX_BITFIELD_OPS:		/* This is ZERO_EXTRACT and SIGN_EXTRACT.  */
+    case RTX_TERNARY:
       split = find_split_point (&XEXP (x, 2), insn);
       if (split)
 	return split;
       /* ... fall through ...  */
-    case '2':
-    case 'c':
-    case '<':
+    case RTX_BIN_ARITH:
+    case RTX_COMM_ARITH:
+    case RTX_COMPARE:
+    case RTX_COMM_COMPARE:
       split = find_split_point (&XEXP (x, 1), insn);
       if (split)
 	return split;
       /* ... fall through ...  */
-    case '1':
+    case RTX_UNARY:
       /* Some machines have (and (shift ...) ...) insns.  If X is not
 	 an AND, but XEXP (X, 0) is, use it as our split point.  */
       if (GET_CODE (x) != AND && GET_CODE (XEXP (x, 0)) == AND)
@@ -3251,10 +3241,11 @@ find_split_point (rtx *loc, rtx insn)
       if (split)
 	return split;
       return loc;
-    }
 
-  /* Otherwise, we don't have a split point.  */
-  return 0;
+    default:
+      /* Otherwise, we don't have a split point.  */
+      return 0;
+    }
 }
 
 /* Throughout X, replace FROM with TO, and return the result.
@@ -3313,7 +3304,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int unique_copy)
 
   /* If this is an object, we are done unless it is a MEM or LO_SUM, both
      of which may contain things that can be combined.  */
-  if (code != MEM && code != LO_SUM && GET_RTX_CLASS (code) == 'o')
+  if (code != MEM && code != LO_SUM && OBJECT_P (x))
     return x;
 
   /* It is possible to have a subexpression appear twice in the insn.
@@ -3560,7 +3551,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 
   /* If this is a commutative operation, put a constant last and a complex
      expression first.  We don't need to do this for comparisons here.  */
-  if (GET_RTX_CLASS (code) == 'c'
+  if (COMMUTATIVE_ARITH_P (x)
       && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
     {
       temp = XEXP (x, 0);
@@ -3616,21 +3607,17 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 
      Don't do anything if all operands are very simple.  */
 
-  if (((GET_RTX_CLASS (code) == '2' || GET_RTX_CLASS (code) == 'c'
-	|| GET_RTX_CLASS (code) == '<')
-       && ((GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) != 'o'
+  if ((BINARY_P (x)
+       && ((!OBJECT_P (XEXP (x, 0))
 	    && ! (GET_CODE (XEXP (x, 0)) == SUBREG
-		  && (GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0))))
-		      == 'o')))
-	   || (GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) != 'o'
+		  && OBJECT_P (SUBREG_REG (XEXP (x, 0)))))
+	   || (!OBJECT_P (XEXP (x, 1))
 	       && ! (GET_CODE (XEXP (x, 1)) == SUBREG
-		     && (GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 1))))
-			 == 'o')))))
-      || (GET_RTX_CLASS (code) == '1'
-	  && ((GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) != 'o'
+		     && OBJECT_P (SUBREG_REG (XEXP (x, 1)))))))
+      || (UNARY_P (x)
+          && (!OBJECT_P (XEXP (x, 0))
 	       && ! (GET_CODE (XEXP (x, 0)) == SUBREG
-		     && (GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0))))
-			 == 'o'))))))
+		     && OBJECT_P (SUBREG_REG (XEXP (x, 0)))))))
     {
       rtx cond, true_rtx, false_rtx;
 
@@ -3638,14 +3625,13 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
       if (cond != 0
 	  /* If everything is a comparison, what we have is highly unlikely
 	     to be simpler, so don't use it.  */
-	  && ! (GET_RTX_CLASS (code) == '<'
-		&& (GET_RTX_CLASS (GET_CODE (true_rtx)) == '<'
-		    || GET_RTX_CLASS (GET_CODE (false_rtx)) == '<')))
+	  && ! (COMPARISON_P (x)
+		&& (COMPARISON_P (true_rtx) || COMPARISON_P (false_rtx))))
 	{
 	  rtx cop1 = const0_rtx;
 	  enum rtx_code cond_code = simplify_comparison (NE, &cond, &cop1);
 
-	  if (cond_code == NE && GET_RTX_CLASS (GET_CODE (cond)) == '<')
+	  if (cond_code == NE && COMPARISON_P (cond))
 	    return x;
 
 	  /* Simplify the alternative arms; this may collapse the true and
@@ -3711,12 +3697,13 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
   temp = 0;
   switch (GET_RTX_CLASS (code))
     {
-    case '1':
+    case RTX_UNARY:
       if (op0_mode == VOIDmode)
 	op0_mode = GET_MODE (XEXP (x, 0));
       temp = simplify_unary_operation (code, mode, XEXP (x, 0), op0_mode);
       break;
-    case '<':
+    case RTX_COMPARE:
+    case RTX_COMM_COMPARE:
       {
 	enum machine_mode cmp_mode = GET_MODE (XEXP (x, 0));
 	if (cmp_mode == VOIDmode)
@@ -3739,14 +3726,16 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 	}
 #endif
       break;
-    case 'c':
-    case '2':
+    case RTX_COMM_ARITH:
+    case RTX_BIN_ARITH:
       temp = simplify_binary_operation (code, mode, XEXP (x, 0), XEXP (x, 1));
       break;
-    case 'b':
-    case '3':
+    case RTX_BITFIELD_OPS:
+    case RTX_TERNARY:
       temp = simplify_ternary_operation (code, mode, op0_mode, XEXP (x, 0),
 					 XEXP (x, 1), XEXP (x, 2));
+      break;
+    default:
       break;
     }
 
@@ -3785,7 +3774,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 
 	  /* Make sure we pass the constant operand if any as the second
 	     one if this is a commutative operation.  */
-	  if (CONSTANT_P (inner_op0) && GET_RTX_CLASS (code) == 'c')
+	  if (CONSTANT_P (inner_op0) && COMMUTATIVE_ARITH_P (x))
 	    {
 	      rtx tem = inner_op0;
 	      inner_op0 = inner_op1;
@@ -3798,7 +3787,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 
 	  /* For commutative operations, try the other pair if that one
 	     didn't simplify.  */
-	  if (inner == 0 && GET_RTX_CLASS (code) == 'c')
+	  if (inner == 0 && COMMUTATIVE_ARITH_P (x))
 	    {
 	      other = XEXP (XEXP (x, 0), 1);
 	      inner = simplify_binary_operation (code, mode,
@@ -4006,7 +3995,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
          but it works even if the comparison is done in a mode larger
          than HOST_BITS_PER_WIDE_INT.  */
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+	  && COMPARISON_P (XEXP (x, 0))
 	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0)
 	return gen_lowpart (mode, XEXP (x, 0));
 
@@ -4016,7 +4005,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0
 	  && (temp = get_last_value (XEXP (x, 0)))
-	  && GET_RTX_CLASS (GET_CODE (temp)) == '<')
+	  && COMPARISON_P (temp))
 	return gen_lowpart (mode, XEXP (x, 0));
 
       break;
@@ -4182,7 +4171,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 	 C is 1 and STORE_FLAG_VALUE is -1 or if C is -1 and STORE_FLAG_VALUE
 	 is 1.  This produces better code than the alternative immediately
 	 below.  */
-      if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+      if (COMPARISON_P (XEXP (x, 0))
 	  && ((STORE_FLAG_VALUE == -1 && XEXP (x, 1) == const1_rtx)
 	      || (STORE_FLAG_VALUE == 1 && XEXP (x, 1) == constm1_rtx))
 	  && (reversed = reversed_comparison (XEXP (x, 0), mode,
@@ -4232,7 +4221,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 	 by reversing the comparison code if valid.  */
       if (STORE_FLAG_VALUE == 1
 	  && XEXP (x, 0) == const1_rtx
-	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<'
+	  && COMPARISON_P (XEXP (x, 1))
 	  && (reversed = reversed_comparison (XEXP (x, 1), mode,
 					      XEXP (XEXP (x, 1), 0),
 					      XEXP (XEXP (x, 1), 1))))
@@ -4625,7 +4614,7 @@ simplify_if_then_else (rtx x)
   rtx true_rtx = XEXP (x, 1);
   rtx false_rtx = XEXP (x, 2);
   enum rtx_code true_code = GET_CODE (cond);
-  int comparison_p = GET_RTX_CLASS (true_code) == '<';
+  int comparison_p = COMPARISON_P (cond);
   rtx temp;
   int i;
   enum rtx_code false_code;
@@ -4710,11 +4699,9 @@ simplify_if_then_else (rtx x)
 	  || (CONSTANT_P (true_rtx)
 	      && GET_CODE (false_rtx) != CONST_INT && false_rtx != pc_rtx)
 	  || true_rtx == const0_rtx
-	  || (GET_RTX_CLASS (GET_CODE (true_rtx)) == 'o'
-	      && GET_RTX_CLASS (GET_CODE (false_rtx)) != 'o')
-	  || (GET_CODE (true_rtx) == SUBREG
-	      && GET_RTX_CLASS (GET_CODE (SUBREG_REG (true_rtx))) == 'o'
-	      && GET_RTX_CLASS (GET_CODE (false_rtx)) != 'o')
+	  || (OBJECT_P (true_rtx) && !OBJECT_P (false_rtx))
+	  || (GET_CODE (true_rtx) == SUBREG && OBJECT_P (SUBREG_REG (true_rtx))
+	      && !OBJECT_P (false_rtx))
 	  || reg_mentioned_p (true_rtx, false_rtx)
 	  || rtx_equal_p (false_rtx, XEXP (cond, 0))))
     {
@@ -4731,7 +4718,7 @@ simplify_if_then_else (rtx x)
 
       /* It is possible that the conditional has been simplified out.  */
       true_code = GET_CODE (cond);
-      comparison_p = GET_RTX_CLASS (true_code) == '<';
+      comparison_p = COMPARISON_P (cond);
     }
 
   /* If the two arms are identical, we don't need the comparison.  */
@@ -4984,7 +4971,7 @@ simplify_set (rtx x)
        || CC0_P (dest))
       && (cc_use = find_single_use (dest, subst_insn, &other_insn)) != 0
       && (undobuf.other_insn == 0 || other_insn == undobuf.other_insn)
-      && GET_RTX_CLASS (GET_CODE (*cc_use)) == '<'
+      && COMPARISON_P (*cc_use)
       && rtx_equal_p (XEXP (*cc_use, 0), dest))
     {
       enum rtx_code old_code = GET_CODE (*cc_use);
@@ -5147,7 +5134,7 @@ simplify_set (rtx x)
      as long as M1 and M2 have the same number of words.  */
 
   if (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)
-      && GET_RTX_CLASS (GET_CODE (SUBREG_REG (src))) != 'o'
+      && !OBJECT_P (SUBREG_REG (src))
       && (((GET_MODE_SIZE (GET_MODE (src)) + (UNITS_PER_WORD - 1))
 	   / UNITS_PER_WORD)
 	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
@@ -5351,9 +5338,8 @@ simplify_logical (rtx x, int last)
 	  if (GET_CODE (x) != AND)
 	    return x;
 
-	  if (GET_RTX_CLASS (GET_CODE (x)) == 'c'
-	      || GET_RTX_CLASS (GET_CODE (x)) == '2')
-	    op0 = XEXP (x, 0), op1 = XEXP (x, 1);
+	  op0 = XEXP (x, 0);
+	  op1 = XEXP (x, 1);
 	}
 
       /* Convert (A | B) & A to A.  */
@@ -5548,7 +5534,7 @@ simplify_logical (rtx x, int last)
 	 comparison if STORE_FLAG_VALUE is 1.  */
       if (STORE_FLAG_VALUE == 1
 	  && op1 == const1_rtx
-	  && GET_RTX_CLASS (GET_CODE (op0)) == '<'
+	  && COMPARISON_P (op0)
 	  && (reversed = reversed_comparison (op0, mode, XEXP (op0, 0),
 					      XEXP (op0, 1))))
 	return reversed;
@@ -5570,7 +5556,7 @@ simplify_logical (rtx x, int last)
 	  && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
 	      == (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1))
 	  && op1 == const_true_rtx
-	  && GET_RTX_CLASS (GET_CODE (op0)) == '<'
+	  && COMPARISON_P (op0)
 	  && (reversed = reversed_comparison (op0, mode, XEXP (op0, 0),
 					      XEXP (op0, 1))))
 	return reversed;
@@ -5734,7 +5720,7 @@ expand_compound_operation (rtx x)
          than HOST_WIDE_INT.  */
       if (GET_CODE (XEXP (x, 0)) == TRUNCATE
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == GET_MODE (x)
-	  && GET_RTX_CLASS (GET_CODE (XEXP (XEXP (x, 0), 0))) == '<'
+	  && COMPARISON_P (XEXP (XEXP (x, 0), 0))
 	  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
 	      <= HOST_BITS_PER_WIDE_INT)
 	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE
@@ -5745,7 +5731,7 @@ expand_compound_operation (rtx x)
       if (GET_CODE (XEXP (x, 0)) == SUBREG
 	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == GET_MODE (x)
 	  && subreg_lowpart_p (XEXP (x, 0))
-	  && GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0)))) == '<'
+	  && COMPARISON_P (SUBREG_REG (XEXP (x, 0)))
 	  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
 	      <= HOST_BITS_PER_WIDE_INT)
 	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE
@@ -6426,7 +6412,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
      but once inside, go back to our default of SET.  */
 
   next_code = (code == MEM || code == PLUS || code == MINUS ? MEM
-	       : ((code == COMPARE || GET_RTX_CLASS (code) == '<')
+	       : ((code == COMPARE || COMPARISON_P (x))
 		  && XEXP (x, 1) == const0_rtx) ? COMPARE
 	       : in_code == COMPARE ? SET : in_code);
 
@@ -6592,9 +6578,9 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	 also do this for some cases of SIGN_EXTRACT, but it doesn't
 	 seem worth the effort; the case checked for occurs on Alpha.  */
 
-      if (GET_RTX_CLASS (GET_CODE (lhs)) != 'o'
+      if (!OBJECT_P (lhs)
 	  && ! (GET_CODE (lhs) == SUBREG
-		&& (GET_RTX_CLASS (GET_CODE (SUBREG_REG (lhs))) == 'o'))
+		&& (OBJECT_P (SUBREG_REG (lhs))))
 	  && GET_CODE (rhs) == CONST_INT
 	  && INTVAL (rhs) < HOST_BITS_PER_WIDE_INT
 	  && (new = extract_left_shift (lhs, INTVAL (rhs))) != 0)
@@ -7277,7 +7263,7 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
 
   /* If this is a unary operation whose operand has one of two values, apply
      our opcode to compute those values.  */
-  else if (GET_RTX_CLASS (code) == '1'
+  else if (UNARY_P (x)
 	   && (cond0 = if_then_else_cond (XEXP (x, 0), &true0, &false0)) != 0)
     {
       *ptrue = simplify_gen_unary (code, mode, true0, GET_MODE (XEXP (x, 0)));
@@ -7294,8 +7280,7 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
   /* If this is a binary operation, see if either side has only one of two
      values.  If either one does or if both do and they are conditional on
      the same value, compute the new true and false values.  */
-  else if (GET_RTX_CLASS (code) == 'c' || GET_RTX_CLASS (code) == '2'
-	   || GET_RTX_CLASS (code) == '<')
+  else if (BINARY_P (x))
     {
       cond0 = if_then_else_cond (XEXP (x, 0), &true0, &false0);
       cond1 = if_then_else_cond (XEXP (x, 1), &true1, &false1);
@@ -7331,8 +7316,8 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
 	  cond0 = XEXP (XEXP (x, 0), 0);
 	  cond1 = XEXP (XEXP (x, 1), 0);
 
-	  if (GET_RTX_CLASS (GET_CODE (cond0)) == '<'
-	      && GET_RTX_CLASS (GET_CODE (cond1)) == '<'
+	  if (COMPARISON_P (cond0)
+	      && COMPARISON_P (cond1)
 	      && ((GET_CODE (cond0) == combine_reversed_comparison_code (cond1)
 		   && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 0))
 		   && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 1)))
@@ -7362,8 +7347,8 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
 	  cond0 = XEXP (XEXP (x, 0), 0);
 	  cond1 = XEXP (XEXP (x, 1), 0);
 
-	  if (GET_RTX_CLASS (GET_CODE (cond0)) == '<'
-	      && GET_RTX_CLASS (GET_CODE (cond1)) == '<'
+	  if (COMPARISON_P (cond0)
+	      && COMPARISON_P (cond1)
 	      && ((GET_CODE (cond0) == combine_reversed_comparison_code (cond1)
 		   && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 0))
 		   && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 1)))
@@ -7497,14 +7482,14 @@ known_cond (rtx x, enum rtx_code cond, rtx reg, rtx val)
   /* The only other cases we handle are MIN, MAX, and comparisons if the
      operands are the same as REG and VAL.  */
 
-  else if (GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == 'c')
+  else if (COMPARISON_P (x) || COMMUTATIVE_ARITH_P (x))
     {
       if (rtx_equal_p (XEXP (x, 0), val))
 	cond = swap_condition (cond), temp = val, val = reg, reg = temp;
 
       if (rtx_equal_p (XEXP (x, 0), reg) && rtx_equal_p (XEXP (x, 1), val))
 	{
-	  if (GET_RTX_CLASS (code) == '<')
+	  if (COMPARISON_P (x))
 	    {
 	      if (comparison_dominates_p (cond, code))
 		return const_true_rtx;
@@ -7796,8 +7781,7 @@ apply_distributive_law (rtx x)
 
   /* If either operand is a primitive we can't do anything, so get out
      fast.  */
-  if (GET_RTX_CLASS (GET_CODE (lhs)) == 'o'
-      || GET_RTX_CLASS (GET_CODE (rhs)) == 'o')
+  if (OBJECT_P (lhs) || OBJECT_P (rhs))
     return x;
 
   lhs = expand_compound_operation (lhs);
@@ -7859,15 +7843,15 @@ apply_distributive_law (rtx x)
 
   /* Set LHS and RHS to the inner operands (A and B in the example
      above) and set OTHER to the common operand (C in the example).
-     These is only one way to do this unless the inner operation is
+     There is only one way to do this unless the inner operation is
      commutative.  */
-  if (GET_RTX_CLASS (inner_code) == 'c'
+  if (COMMUTATIVE_ARITH_P (lhs)
       && rtx_equal_p (XEXP (lhs, 0), XEXP (rhs, 0)))
     other = XEXP (lhs, 0), lhs = XEXP (lhs, 1), rhs = XEXP (rhs, 1);
-  else if (GET_RTX_CLASS (inner_code) == 'c'
+  else if (COMMUTATIVE_ARITH_P (lhs)
 	   && rtx_equal_p (XEXP (lhs, 0), XEXP (rhs, 1)))
     other = XEXP (lhs, 0), lhs = XEXP (lhs, 1), rhs = XEXP (rhs, 0);
-  else if (GET_RTX_CLASS (inner_code) == 'c'
+  else if (COMMUTATIVE_ARITH_P (lhs)
 	   && rtx_equal_p (XEXP (lhs, 1), XEXP (rhs, 0)))
     other = XEXP (lhs, 1), lhs = XEXP (lhs, 0), rhs = XEXP (rhs, 1);
   else if (rtx_equal_p (XEXP (lhs, 1), XEXP (rhs, 1)))
@@ -8036,8 +8020,7 @@ cached_nonzero_bits (rtx x, enum machine_mode mode, rtx known_x,
      nonzero_bits1 on X with the subexpressions as KNOWN_X and the
      precomputed value for the subexpression as KNOWN_RET.  */
 
-  if (GET_RTX_CLASS (GET_CODE (x)) == '2'
-      || GET_RTX_CLASS (GET_CODE (x)) == 'c')
+  if (ARITHMETIC_P (x))
     {
       rtx x0 = XEXP (x, 0);
       rtx x1 = XEXP (x, 1);
@@ -8048,14 +8031,12 @@ cached_nonzero_bits (rtx x, enum machine_mode mode, rtx known_x,
 			      nonzero_bits_with_known (x0, mode));
 
       /* Check the second level.  */
-      if ((GET_RTX_CLASS (GET_CODE (x0)) == '2'
-	   || GET_RTX_CLASS (GET_CODE (x0)) == 'c')
+      if (ARITHMETIC_P (x0)
 	  && (x1 == XEXP (x0, 0) || x1 == XEXP (x0, 1)))
 	return nonzero_bits1 (x, mode, x1, mode,
 			      nonzero_bits_with_known (x1, mode));
 
-      if ((GET_RTX_CLASS (GET_CODE (x1)) == '2'
-	   || GET_RTX_CLASS (GET_CODE (x1)) == 'c')
+      if (ARITHMETIC_P (x1)
 	  && (x0 == XEXP (x1, 0) || x0 == XEXP (x1, 1)))
 	return nonzero_bits1 (x, mode, x0, mode,
 			 nonzero_bits_with_known (x0, mode));
@@ -8565,8 +8546,7 @@ cached_num_sign_bit_copies (rtx x, enum machine_mode mode, rtx known_x,
      num_sign_bit_copies1 on X with the subexpressions as KNOWN_X and
      the precomputed value for the subexpression as KNOWN_RET.  */
 
-  if (GET_RTX_CLASS (GET_CODE (x)) == '2'
-      || GET_RTX_CLASS (GET_CODE (x)) == 'c')
+  if (ARITHMETIC_P (x))
     {
       rtx x0 = XEXP (x, 0);
       rtx x1 = XEXP (x, 1);
@@ -8578,15 +8558,13 @@ cached_num_sign_bit_copies (rtx x, enum machine_mode mode, rtx known_x,
 				num_sign_bit_copies_with_known (x0, mode));
 
       /* Check the second level.  */
-      if ((GET_RTX_CLASS (GET_CODE (x0)) == '2'
-	   || GET_RTX_CLASS (GET_CODE (x0)) == 'c')
+      if (ARITHMETIC_P (x0)
 	  && (x1 == XEXP (x0, 0) || x1 == XEXP (x0, 1)))
 	return
 	  num_sign_bit_copies1 (x, mode, x1, mode,
 				num_sign_bit_copies_with_known (x1, mode));
 
-      if ((GET_RTX_CLASS (GET_CODE (x1)) == '2'
-	   || GET_RTX_CLASS (GET_CODE (x1)) == 'c')
+      if (ARITHMETIC_P (x1)
 	  && (x0 == XEXP (x1, 0) || x0 == XEXP (x1, 1)))
 	return
 	  num_sign_bit_copies1 (x, mode, x0, mode,
@@ -9801,7 +9779,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
      If we were passed a value for X, see if we can use any pieces of
      it.  If not, make new rtx.  */
 
-  if (x && GET_RTX_CLASS (GET_CODE (x)) == '2'
+  if (x && GET_RTX_CLASS (GET_CODE (x)) == RTX_BIN_ARITH
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) == count)
     const_rtx = XEXP (x, 1);
@@ -9860,7 +9838,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	/* This means that we have determined that the result is
 	   equivalent to a constant.  This should be rare.  */
 	x = GEN_INT (outer_const);
-      else if (GET_RTX_CLASS (outer_op) == '1')
+      else if (GET_RTX_CLASS (outer_op) == RTX_UNARY)
 	x = simplify_gen_unary (outer_op, result_mode, x, result_mode);
       else
 	x = gen_binary (outer_op, result_mode, x, GEN_INT (outer_const));
@@ -10069,7 +10047,7 @@ gen_lowpart_for_combine (enum machine_mode mode, rtx x)
 
   /* If X is a comparison operator, rewrite it in a new mode.  This
      probably won't match, but may allow further simplifications.  */
-  else if (GET_RTX_CLASS (GET_CODE (x)) == '<')
+  else if (COMPARISON_P (x))
     return gen_rtx_fmt_ee (GET_CODE (x), mode, XEXP (x, 0), XEXP (x, 1));
 
   /* If we couldn't simplify X any other way, just enclose it in a
@@ -10110,11 +10088,12 @@ gen_binary (enum rtx_code code, enum machine_mode mode, rtx op0, rtx op1)
   else if (GET_CODE (op1) == CLOBBER)
     return op1;
   
-  if (GET_RTX_CLASS (code) == 'c'
+  if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
       && swap_commutative_operands_p (op0, op1))
     tem = op0, op0 = op1, op1 = tem;
 
-  if (GET_RTX_CLASS (code) == '<')
+  if (GET_RTX_CLASS (code) == RTX_COMPARE
+      || GET_RTX_CLASS (code) == RTX_COMM_COMPARE)
     {
       enum machine_mode op_mode = GET_MODE (op0);
 
@@ -10138,7 +10117,7 @@ gen_binary (enum rtx_code code, enum machine_mode mode, rtx op0, rtx op1)
     return result;
 
   /* Put complex operands first and constants second.  */
-  if (GET_RTX_CLASS (code) == 'c'
+  if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
       && swap_commutative_operands_p (op0, op1))
     return gen_rtx_fmt_ee (code, mode, op1, op0);
 
@@ -10338,8 +10317,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
       if (GET_MODE_CLASS (mode) != MODE_INT
 	  && ! (mode == VOIDmode
-		&& (GET_CODE (op0) == COMPARE
-		    || GET_RTX_CLASS (GET_CODE (op0)) == '<')))
+		&& (GET_CODE (op0) == COMPARE || COMPARISON_P (op0))))
 	break;
 
       /* Get the constant we are comparing against and turn off all bits
@@ -10914,9 +10892,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      mask = ((INTVAL (XEXP (op0, 1)) & GET_MODE_MASK (mode))
 		      << INTVAL (XEXP (XEXP (op0, 0), 1)));
 	      if ((~STORE_FLAG_VALUE & mask) == 0
-		  && (GET_RTX_CLASS (GET_CODE (XEXP (XEXP (op0, 0), 0))) == '<'
+		  && (COMPARISON_P (XEXP (XEXP (op0, 0), 0))
 		      || ((tem = get_last_value (XEXP (XEXP (op0, 0), 0))) != 0
-			  && GET_RTX_CLASS (GET_CODE (tem)) == '<')))
+			  && COMPARISON_P (tem))))
 		{
 		  op0 = XEXP (XEXP (op0, 0), 0);
 		  continue;
@@ -11396,9 +11374,7 @@ update_table_tick (rtx x)
 	/* Check for identical subexpressions.  If x contains
 	   identical subexpression we only have to traverse one of
 	   them.  */
-	if (i == 0
-	    && (GET_RTX_CLASS (code) == '2'
-		|| GET_RTX_CLASS (code) == 'c'))
+	if (i == 0 && ARITHMETIC_P (x))
 	  {
 	    /* Note that at this point x1 has already been
 	       processed.  */
@@ -11413,15 +11389,13 @@ update_table_tick (rtx x)
 	    /* If x0 is identical to a subexpression of x1 then while
 	       processing x1, x0 has already been processed.  Thus we
 	       are done with x.  */
-	    if ((GET_RTX_CLASS (GET_CODE (x1)) == '2'
-		 || GET_RTX_CLASS (GET_CODE (x1)) == 'c')
+	    if (ARITHMETIC_P (x1)
 		&& (x0 == XEXP (x1, 0) || x0 == XEXP (x1, 1)))
 	      break;
 
 	    /* If x1 is identical to a subexpression of x0 then we
 	       still have to process the rest of x0.  */
-	    if ((GET_RTX_CLASS (GET_CODE (x0)) == '2'
-		 || GET_RTX_CLASS (GET_CODE (x0)) == 'c')
+	    if (ARITHMETIC_P (x0)
 		&& (x1 == XEXP (x0, 0) || x1 == XEXP (x0, 1)))
 	      {
 		update_table_tick (XEXP (x0, x1 == XEXP (x0, 0) ? 1 : 0));
@@ -11464,8 +11438,7 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
 
       if (tem)
 	{
-	  if ((GET_RTX_CLASS (GET_CODE (tem)) == '2'
-	       || GET_RTX_CLASS (GET_CODE (tem)) == 'c')
+	  if (ARITHMETIC_P (tem)
 	      && GET_CODE (XEXP (tem, 0)) == CLOBBER
 	      && GET_CODE (XEXP (tem, 1)) == CLOBBER)
 	    tem = XEXP (tem, 0);
@@ -11775,9 +11748,7 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
 	  /* Check for identical subexpressions.  If x contains
 	     identical subexpression we only have to traverse one of
 	     them.  */
-	  if (i == 1
-	      && (GET_RTX_CLASS (GET_CODE (x)) == '2'
-		  || GET_RTX_CLASS (GET_CODE (x)) == 'c'))
+	  if (i == 1 && ARITHMETIC_P (x))
 	    {
 	      /* Note that at this point x0 has already been checked
 		 and found valid.  */
@@ -11791,15 +11762,13 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
 	      /* If x1 is identical to a subexpression of x0 then
 		 while checking x0, x1 has already been checked.  Thus
 		 it is valid and so as x.  */
-	      if ((GET_RTX_CLASS (GET_CODE (x0)) == '2'
-		   || GET_RTX_CLASS (GET_CODE (x0)) == 'c')
+	      if (ARITHMETIC_P (x0)
 		  && (x1 == XEXP (x0, 0) || x1 == XEXP (x0, 1)))
 		return 1;
 
 	      /* If x0 is identical to a subexpression of x1 then x is
 		 valid iff the rest of x1 is valid.  */
-	      if ((GET_RTX_CLASS (GET_CODE (x1)) == '2'
-		   || GET_RTX_CLASS (GET_CODE (x1)) == 'c')
+	      if (ARITHMETIC_P (x1)
 		  && (x0 == XEXP (x1, 0) || x0 == XEXP (x1, 1)))
 		return
 		  get_last_value_validate (&XEXP (x1,

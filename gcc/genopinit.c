@@ -222,7 +222,9 @@ gen_insn (rtx insn)
 		    /* We have to be concerned about matching "gt" and
 		       missing "gtu", e.g., so verify we have reached the
 		       end of thing we are to match.  */
-		    if (*p == 0 && *q == 0 && GET_RTX_CLASS(op) == '<')
+		    if (*p == 0 && *q == 0
+			&& (GET_RTX_CLASS (op) == RTX_COMPARE
+			    || GET_RTX_CLASS (op) == RTX_COMM_COMPARE))
 		      break;
 		  }
 

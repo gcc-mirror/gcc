@@ -140,58 +140,67 @@ of an RTX code with the macro @code{GET_RTX_CLASS (@var{code})}.
 Currently, @file{rtx.def} defines these classes:
 
 @table @code
-@item o
+@item RTX_OBJ
 An RTX code that represents an actual object, such as a register
 (@code{REG}) or a memory location (@code{MEM}, @code{SYMBOL_REF}).
-Constants and basic transforms on objects (@code{ADDRESSOF},
-@code{HIGH}, @code{LO_SUM}) are also included.  Note that @code{SUBREG}
-and @code{STRICT_LOW_PART} are not in this class, but in class @code{x}.
+@code{LO_SUM}) is also included; instead, @code{SUBREG} and
+@code{STRICT_LOW_PART} are not in this class, but in class @code{x}.
 
-@item <
-An RTX code for a comparison, such as @code{NE} or @code{LT}.
+@item RTX_CONST_OBJ
+An RTX code that represents a constant object.  @code{HIGH} is also
+included in this class.
 
-@item 1
+@item RTX_COMPARE
+An RTX code for a non-symmetric comparison, such as @code{GEU} or
+@code{LT}.
+
+@item RTX_COMM_COMPARE
+An RTX code for a symmetric (commutative) comparison, such as @code{EQ}
+or @code{ORDERED}.
+
+@item RTX_UNARY
 An RTX code for a unary arithmetic operation, such as @code{NEG},
 @code{NOT}, or @code{ABS}.  This category also includes value extension
 (sign or zero) and conversions between integer and floating point.
 
-@item c
+@item RTX_COMM_ARITH
 An RTX code for a commutative binary operation, such as @code{PLUS} or
 @code{AND}.  @code{NE} and @code{EQ} are comparisons, so they have class
 @code{<}.
 
-@item 2
+@item RTX_BIN_ARITH
 An RTX code for a non-commutative binary operation, such as @code{MINUS},
 @code{DIV}, or @code{ASHIFTRT}.
 
-@item b
+@item RTX_BITFIELD_OPS
 An RTX code for a bit-field operation.  Currently only
 @code{ZERO_EXTRACT} and @code{SIGN_EXTRACT}.  These have three inputs
 and are lvalues (so they can be used for insertion as well).
 @xref{Bit-Fields}.
 
-@item 3
+@item RTX_TERNARY
 An RTX code for other three input operations.  Currently only
-@code{IF_THEN_ELSE}.
+@code{IF_THEN_ELSE} and @code{VEC_MERGE}.
 
-@item i
+@item RTX_INSN
 An RTX code for an entire instruction:  @code{INSN}, @code{JUMP_INSN}, and
 @code{CALL_INSN}.  @xref{Insns}.
 
-@item m
+@item RTX_MATCH
 An RTX code for something that matches in insns, such as
 @code{MATCH_DUP}.  These only occur in machine descriptions.
 
-@item a
+@item RTX_AUTOINC
 An RTX code for an auto-increment addressing mode, such as
 @code{POST_INC}.
 
-@item x
+@item RTX_EXTRA
 All other RTX codes.  This category includes the remaining codes used
 only in machine descriptions (@code{DEFINE_*}, etc.).  It also includes
 all the codes describing side effects (@code{SET}, @code{USE},
 @code{CLOBBER}, etc.) and the non-insns that may appear on an insn
 chain, such as @code{NOTE}, @code{BARRIER}, and @code{CODE_LABEL}.
+@code{SUBREG} is also part of this class.
 @end table
 
 @cindex RTL format

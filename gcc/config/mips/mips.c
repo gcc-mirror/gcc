@@ -1465,7 +1465,7 @@ cmp_op (rtx op, enum machine_mode mode)
   if (mode != GET_MODE (op))
     return 0;
 
-  return GET_RTX_CLASS (GET_CODE (op)) == '<';
+  return COMPARISON_P (op);
 }
 
 /* Return nonzero if the code is a relational operation suitable for a
@@ -7213,11 +7213,10 @@ symbolic_expression_p (rtx x)
   if (GET_CODE (x) == CONST)
     return symbolic_expression_p (XEXP (x, 0));
 
-  if (GET_RTX_CLASS (GET_CODE (x)) == '1')
+  if (UNARY_P (x))
     return symbolic_expression_p (XEXP (x, 0));
 
-  if (GET_RTX_CLASS (GET_CODE (x)) == 'c'
-      || GET_RTX_CLASS (GET_CODE (x)) == '2')
+  if (ARITHMETIC_P (x))
     return (symbolic_expression_p (XEXP (x, 0))
 	    || symbolic_expression_p (XEXP (x, 1)));
 

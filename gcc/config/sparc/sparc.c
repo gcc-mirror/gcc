@@ -958,15 +958,16 @@ eq_or_neq (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 normal_comp_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  enum rtx_code code = GET_CODE (op);
+  enum rtx_code code;
 
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op))
     return 0;
 
   if (GET_MODE (XEXP (op, 0)) == CCFPmode
       || GET_MODE (XEXP (op, 0)) == CCFPEmode)
     return 1;
 
+  code = GET_CODE (op);
   return (code != NE && code != EQ && code != GEU && code != LTU);
 }
 
@@ -974,13 +975,14 @@ normal_comp_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    MATCH_OPERATOR to recognize all the branch insns.  */
 
 int
-noov_compare_op (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+noov_compare_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  enum rtx_code code = GET_CODE (op);
+  enum rtx_code code;
 
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op))
     return 0;
 
+  code = GET_CODE (op);
   if (GET_MODE (XEXP (op, 0)) == CC_NOOVmode
       || GET_MODE (XEXP (op, 0)) == CCX_NOOVmode)
     /* These are the only branches which work with CC_NOOVmode.  */
@@ -994,14 +996,15 @@ noov_compare_op (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 noov_compare64_op (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  enum rtx_code code = GET_CODE (op);
+  enum rtx_code code;
 
   if (! TARGET_V9)
     return 0;
 
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op));
     return 0;
 
+  code = GET_CODE (op);
   if (GET_MODE (XEXP (op, 0)) == CCX_NOOVmode)
     /* These are the only branches which work with CCX_NOOVmode.  */
     return (code == EQ || code == NE || code == GE || code == LT);
@@ -1012,13 +1015,14 @@ noov_compare64_op (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    conditional move or branch on register contents instructions.  */
 
 int
-v9_regcmp_op (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+v9_regcmp_op (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  enum rtx_code code = GET_CODE (op);
+  enum rtx_code code;
 
-  if (GET_RTX_CLASS (code) != '<')
+  if (!COMPARISON_P (op))
     return 0;
 
+  code = GET_CODE (op);
   return v9_regcmp_p (code);
 }
 
@@ -2687,7 +2691,7 @@ emit_hard_tfmode_operation (enum rtx_code code, rtx *operands)
 {
   rtx op, dest;
 
-  if (GET_RTX_CLASS (code) == '1')
+  if (GET_RTX_CLASS (code) == RTX_UNARY)
     {
       operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
       op = gen_rtx_fmt_e (code, GET_MODE (operands[0]), operands[1]);
@@ -3073,7 +3077,7 @@ reg_unused_after (rtx reg, rtx insn)
       if (GET_CODE (insn) == CODE_LABEL)
 	return 1;
 
-      if (GET_RTX_CLASS (code) == 'i')
+      if (INSN_P (insn))
 	{
 	  rtx set = single_set (insn);
 	  int in_src = set && reg_overlap_mentioned_p (reg, SET_SRC (set));

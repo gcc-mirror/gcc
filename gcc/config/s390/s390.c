@@ -467,7 +467,7 @@ s390_alc_comparison (rtx op, enum machine_mode mode)
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
 
-  if (GET_RTX_CLASS (GET_CODE (op)) != '<')
+  if (!COMPARISON_P (op))
     return 0;
 
   if (GET_CODE (XEXP (op, 0)) != REG
@@ -509,7 +509,7 @@ s390_slb_comparison (rtx op, enum machine_mode mode)
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
 
-  if (GET_RTX_CLASS (GET_CODE (op)) != '<')
+  if (!COMPARISON_P (op))
     return 0;
 
   if (GET_CODE (XEXP (op, 0)) != REG

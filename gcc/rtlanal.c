@@ -3031,7 +3031,6 @@ int
 commutative_operand_precedence (rtx op)
 {
   enum rtx_code code = GET_CODE (op);
-  char class;
   
   /* Constants always come the second operand.  Prefer "nice" constants.  */
   if (code == CONST_INT)
@@ -3039,41 +3038,52 @@ commutative_operand_precedence (rtx op)
   if (code == CONST_DOUBLE)
     return -6;
   op = avoid_constant_pool_reference (op);
-  if (code == CONST_INT)
-    return -5;
-  if (code == CONST_DOUBLE)
-    return -4;
-  if (CONSTANT_P (op))
-    return -3;
 
-  /* SUBREGs of objects should come second.  */
-  if (code == SUBREG
-      && GET_RTX_CLASS (GET_CODE (SUBREG_REG (op))) == 'o')
-    return -2;
+  switch (GET_RTX_CLASS (code))
+    {
+    case RTX_CONST_OBJ:
+      if (code == CONST_INT)
+        return -5;
+      if (code == CONST_DOUBLE)
+        return -4;
+      return -3;
 
-  class = GET_RTX_CLASS (code);
+    case RTX_EXTRA:
+      /* SUBREGs of objects should come second.  */
+      if (code == SUBREG && OBJECT_P (SUBREG_REG (op)))
+        return -2;
 
-  /* Prefer operands that are themselves commutative to be first.
-     This helps to make things linear.  In particular,
-     (and (and (reg) (reg)) (not (reg))) is canonical.  */
-  if (class == 'c')
-    return 4;
+      if (!CONSTANT_P (op))
+        return 0;
+      else
+	/* As for RTX_CONST_OBJ.  */
+	return -3;
 
-  /* If only one operand is a binary expression, it will be the first
-     operand.  In particular,  (plus (minus (reg) (reg)) (neg (reg)))
-     is canonical, although it will usually be further simplified.  */
-  if (class == '2')
-    return 2;
+    case RTX_OBJ:
+      /* Complex expressions should be the first, so decrease priority
+         of objects.  */
+      return -1;
+
+    case RTX_COMM_ARITH:
+      /* Prefer operands that are themselves commutative to be first.
+         This helps to make things linear.  In particular,
+         (and (and (reg) (reg)) (not (reg))) is canonical.  */
+      return 4;
+
+    case RTX_BIN_ARITH:
+      /* If only one operand is a binary expression, it will be the first
+         operand.  In particular,  (plus (minus (reg) (reg)) (neg (reg)))
+         is canonical, although it will usually be further simplified.  */
+      return 2;
   
-  /* Then prefer NEG and NOT.  */
-  if (code == NEG || code == NOT)
-    return 1;
+    case RTX_UNARY:
+      /* Then prefer NEG and NOT.  */
+      if (code == NEG || code == NOT)
+        return 1;
 
-  /* Complex expressions should be the first, so decrease priority
-     of objects.  */
-  if (GET_RTX_CLASS (code) == 'o')
-    return -1;
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Return 1 iff it is necessary to swap operands of commutative operation

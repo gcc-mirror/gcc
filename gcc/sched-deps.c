@@ -171,8 +171,8 @@ get_condition (rtx insn)
 static int
 conditions_mutex_p (rtx cond1, rtx cond2)
 {
-  if (GET_RTX_CLASS (GET_CODE (cond1)) == '<'
-      && GET_RTX_CLASS (GET_CODE (cond2)) == '<'
+  if (COMPARISON_P (cond1)
+      && COMPARISON_P (cond2)
       && GET_CODE (cond1) == reverse_condition (GET_CODE (cond2))
       && XEXP (cond1, 0) == XEXP (cond2, 0)
       && XEXP (cond1, 1) == XEXP (cond2, 1))

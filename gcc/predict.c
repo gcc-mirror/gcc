@@ -533,7 +533,7 @@ estimate_probability (struct loops *loops_info)
       /* Try "pointer heuristic."
 	 A comparison ptr == 0 is predicted as false.
 	 Similarly, a comparison ptr1 == ptr2 is predicted as false.  */
-      if (GET_RTX_CLASS (GET_CODE (cond)) == '<'
+      if (COMPARISON_P (cond)
 	  && ((REG_P (XEXP (cond, 0)) && REG_POINTER (XEXP (cond, 0)))
 	      || (REG_P (XEXP (cond, 1)) && REG_POINTER (XEXP (cond, 1)))))
 	{

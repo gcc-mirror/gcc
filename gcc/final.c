@@ -2217,7 +2217,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    && GET_CODE (body) == SET
 	    && SET_DEST (body) == pc_rtx
 	    && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE
-	    && GET_RTX_CLASS (GET_CODE (XEXP (SET_SRC (body), 0))) == '<'
+	    && COMPARISON_P (XEXP (SET_SRC (body), 0))
 	    && XEXP (XEXP (SET_SRC (body), 0), 0) == cc0_rtx
 	    /* This is done during prescan; it is not done again
 	       in final scan when prescan has been done.  */
@@ -2845,8 +2845,8 @@ get_mem_expr_from_op (rtx op, int *paddressp)
 	   && (expr = get_mem_expr_from_op (XEXP (op, 1), &inner_addressp)))
     return expr;
 
-  while (GET_RTX_CLASS (GET_CODE (op)) == '1'
-	 || GET_RTX_CLASS (GET_CODE (op)) == '2')
+  while (GET_RTX_CLASS (GET_CODE (op)) == RTX_UNARY
+	 || GET_RTX_CLASS (GET_CODE (op)) == RTX_BIN_ARITH)
     op = XEXP (op, 0);
 
   expr = get_mem_expr_from_op (op, &inner_addressp);

@@ -771,10 +771,10 @@ find_reusable_reload (rtx *p_in, rtx out, enum reg_class class,
 				  true_regnum (rld[i].reg_rtx)))
 	&& out == 0 && rld[i].out == 0 && rld[i].in != 0
 	&& ((GET_CODE (in) == REG
-	     && GET_RTX_CLASS (GET_CODE (rld[i].in)) == 'a'
+	     && GET_RTX_CLASS (GET_CODE (rld[i].in)) == RTX_AUTOINC
 	     && MATCHES (XEXP (rld[i].in, 0), in))
 	    || (GET_CODE (rld[i].in) == REG
-		&& GET_RTX_CLASS (GET_CODE (in)) == 'a'
+		&& GET_RTX_CLASS (GET_CODE (in)) == RTX_AUTOINC
 		&& MATCHES (XEXP (in, 0), rld[i].in)))
 	&& (rld[i].out == 0 || ! earlyclobber_operand_p (rld[i].out))
 	&& (reg_class_size[(int) class] == 1 || SMALL_REGISTER_CLASSES)
@@ -2706,7 +2706,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 	  /* If we now have a simple operand where we used to have a
 	     PLUS or MULT, re-recognize and try again.  */
-	  if ((GET_RTX_CLASS (GET_CODE (*recog_data.operand_loc[i])) == 'o'
+	  if ((OBJECT_P (*recog_data.operand_loc[i])
 	       || GET_CODE (*recog_data.operand_loc[i]) == SUBREG)
 	      && (GET_CODE (recog_data.operand[i]) == MULT
 		  || GET_CODE (recog_data.operand[i]) == PLUS))
@@ -2762,7 +2762,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 	  substed_operand[i] = recog_data.operand[i] = op;
 	}
-      else if (code == PLUS || GET_RTX_CLASS (code) == '1')
+      else if (code == PLUS || GET_RTX_CLASS (code) == RTX_UNARY)
 	/* We can get a PLUS as an "operand" as a result of register
 	   elimination.  See eliminate_regs and gen_reload.  We handle
 	   a unary operator by reloading the operand.  */
@@ -2890,7 +2890,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	  /* If the predicate accepts a unary operator, it means that
 	     we need to reload the operand, but do not do this for
 	     match_operator and friends.  */
-	  if (GET_RTX_CLASS (GET_CODE (operand)) == '1' && *p != 0)
+	  if (UNARY_P (operand) && *p != 0)
 	    operand = XEXP (operand, 0);
 
 	  /* If the operand is a SUBREG, extract
@@ -6271,7 +6271,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
 
   /* Overly conservative.  */
   if (GET_CODE (x) == STRICT_LOW_PART
-      || GET_RTX_CLASS (GET_CODE (x)) == 'a')
+      || GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
     x = XEXP (x, 0);
 
   /* If either argument is a constant, then modifying X can not affect IN.  */

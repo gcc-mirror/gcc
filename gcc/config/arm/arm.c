@@ -3938,13 +3938,10 @@ arm_arm_address_cost (rtx x)
 
   if (c == PLUS || c == MINUS)
     {
-      char cl0 = GET_RTX_CLASS (GET_CODE (XEXP (x, 0)));
-      char cl1 = GET_RTX_CLASS (GET_CODE (XEXP (x, 1)));
-
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
 	return 2;
 
-      if (cl0 == '2' || cl0 == 'c' || cl1 == '2' || cl1 == 'c')
+      if (ARITHMETIC_P (XEXP (x, 0)) || ARITHMETIC_P (XEXP (x, 1)))
 	return 3;
 
       return 4;
@@ -6175,21 +6172,21 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
   if (GET_CODE (x) == IF_THEN_ELSE
       && (XEXP (x, 2) == const0_rtx
 	  || XEXP (x, 2) == const1_rtx)
-      && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
-      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
+      && COMPARISON_P (XEXP (x, 0))
+      && COMPARISON_P (XEXP (x, 1)))
     return arm_select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1), 
 					 INTVAL (XEXP (x, 2)));
 
   /* Alternate canonicalizations of the above.  These are somewhat cleaner.  */
   if (GET_CODE (x) == AND
-      && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
-      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
+      && COMPARISON_P (XEXP (x, 0))
+      && COMPARISON_P (XEXP (x, 1)))
     return arm_select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1),
 					 DOM_CC_X_AND_Y);
 
   if (GET_CODE (x) == IOR
-      && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
-      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<')
+      && COMPARISON_P (XEXP (x, 0))
+      && COMPARISON_P (XEXP (x, 1)))
     return arm_select_dominance_cc_mode (XEXP (x, 0), XEXP (x, 1),
 					 DOM_CC_X_OR_Y);
 

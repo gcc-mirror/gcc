@@ -908,8 +908,6 @@ eqne_comparison_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   enum rtx_code code = GET_CODE (op);
 
-  if (GET_RTX_CLASS (code) != '<')
-    return 0;
   return (code == EQ || code == NE);
 }
 
@@ -920,10 +918,9 @@ signed_comparison_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   enum rtx_code code = GET_CODE (op);
 
-  if (GET_RTX_CLASS (code) != '<')
-    return 0;
-  return (code == EQ || code == NE
-	  || code == LT || code == LE || code == GT || code == GE);
+  return (COMPARISON_P (op)
+  	  && (code == EQ || code == NE
+	      || code == LT || code == LE || code == GT || code == GE);
 }
 
 /* Return 1 if OP is (mem (reg ...)).

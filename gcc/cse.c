@@ -1214,7 +1214,7 @@ mention_regs (rtx x)
      call that expensive function in the most common case where the only
      use of the register is in the comparison.  */
 
-  if (code == COMPARE || GET_RTX_CLASS (code) == '<')
+  if (code == COMPARE || COMPARISON_P (x))
     {
       if (GET_CODE (XEXP (x, 0)) == REG
 	  && ! REGNO_QTY_VALID_P (REGNO (XEXP (x, 0))))
@@ -2953,8 +2953,7 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
      code on the Alpha for unaligned byte stores.  */
 
   if (flag_expensive_optimizations
-      && (GET_RTX_CLASS (GET_CODE (*loc)) == '2'
-	  || GET_RTX_CLASS (GET_CODE (*loc)) == 'c')
+      && ARITHMETIC_P (*loc)
       && GET_CODE (XEXP (*loc, 0)) == REG)
     {
       rtx op1 = XEXP (*loc, 1);
@@ -3068,7 +3067,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
       /* If ARG1 is a comparison operator and CODE is testing for
 	 STORE_FLAG_VALUE, get the inner arguments.  */
 
-      else if (GET_RTX_CLASS (GET_CODE (arg1)) == '<')
+      else if (COMPARISON_P (arg1))
 	{
 #ifdef FLOAT_STORE_FLAG_VALUE
 	  REAL_VALUE_TYPE fsfv;
@@ -3157,7 +3156,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 			   REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 		   )
-		  && GET_RTX_CLASS (GET_CODE (p->exp)) == '<'))
+		  && COMPARISON_P (p->exp)))
 	    {
 	      x = p->exp;
 	      break;
@@ -3177,7 +3176,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 			    REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 		    )
-		   && GET_RTX_CLASS (GET_CODE (p->exp)) == '<')
+		   && COMPARISON_P (p->exp))
 	    {
 	      reverse_code = 1;
 	      x = p->exp;
@@ -3210,7 +3209,7 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	  else
 	    code = reversed;
 	}
-      else if (GET_RTX_CLASS (GET_CODE (x)) == '<')
+      else if (COMPARISON_P (x))
 	code = GET_CODE (x);
       arg1 = XEXP (x, 0), arg2 = XEXP (x, 1);
     }
@@ -3391,9 +3390,9 @@ fold_rtx (rtx x, rtx insn)
 		enum rtx_code eltcode = GET_CODE (elt->exp);
 
 	        /* Just check for unary and binary operations.  */
-	        if (GET_RTX_CLASS (GET_CODE (elt->exp)) == '1'
-		    && GET_CODE (elt->exp) != SIGN_EXTEND
-		    && GET_CODE (elt->exp) != ZERO_EXTEND
+	        if (UNARY_P (elt->exp)
+		    && eltcode != SIGN_EXTEND
+		    && eltcode != ZERO_EXTEND
 		    && GET_CODE (XEXP (elt->exp, 0)) == SUBREG
 		    && GET_MODE (SUBREG_REG (XEXP (elt->exp, 0))) == mode
 		    && (GET_MODE_CLASS (mode)
@@ -3409,8 +3408,7 @@ fold_rtx (rtx x, rtx insn)
 		      new = simplify_unary_operation (GET_CODE (elt->exp), mode,
 						      op0, mode);
 		  }
-	        else if ((GET_RTX_CLASS (GET_CODE (elt->exp)) == '2'
-			  || GET_RTX_CLASS (GET_CODE (elt->exp)) == 'c')
+	        else if (ARITHMETIC_P (elt->exp)
 		         && eltcode != DIV && eltcode != MOD
 		         && eltcode != UDIV && eltcode != UMOD
 		         && eltcode != ASHIFTRT && eltcode != LSHIFTRT
@@ -3768,9 +3766,8 @@ fold_rtx (rtx x, rtx insn)
 	    if (validate_change (insn, &XEXP (x, i), replacements[j], 0))
 	      break;
 
-	    if (code == NE || code == EQ || GET_RTX_CLASS (code) == 'c'
-		|| code == LTGT || code == UNEQ || code == ORDERED
-		|| code == UNORDERED)
+	    if (GET_RTX_CLASS (code) == RTX_COMM_COMPARE
+		|| GET_RTX_CLASS (code) == RTX_COMM_ARITH)
 	      {
 		validate_change (insn, &XEXP (x, i), XEXP (x, 1 - i), 1);
 		validate_change (insn, &XEXP (x, 1 - i), replacements[j], 1);
@@ -3802,9 +3799,7 @@ fold_rtx (rtx x, rtx insn)
      operand unless the first operand is also a constant integer.  Otherwise,
      place any constant second unless the first operand is also a constant.  */
 
-  if (code == EQ || code == NE || GET_RTX_CLASS (code) == 'c'
-      || code == LTGT || code == UNEQ || code == ORDERED
-      || code == UNORDERED)
+  if (COMMUTATIVE_P (x))
     {
       if (must_swap
 	  || swap_commutative_operands_p (const_arg0 ? const_arg0
@@ -3834,7 +3829,7 @@ fold_rtx (rtx x, rtx insn)
 
   switch (GET_RTX_CLASS (code))
     {
-    case '1':
+    case RTX_UNARY:
       {
 	int is_const = 0;
 
@@ -3857,7 +3852,8 @@ fold_rtx (rtx x, rtx insn)
       }
       break;
 
-    case '<':
+    case RTX_COMPARE:
+    case RTX_COMM_COMPARE:
       /* See what items are actually being compared and set FOLDED_ARG[01]
 	 to those values and CODE to the actual comparison code.  If any are
 	 constant, set CONST_ARG0 and CONST_ARG1 appropriately.  We needn't
@@ -4039,8 +4035,8 @@ fold_rtx (rtx x, rtx insn)
 #endif
       break;
 
-    case '2':
-    case 'c':
+    case RTX_BIN_ARITH:
+    case RTX_COMM_ARITH:
       switch (code)
 	{
 	case PLUS:
@@ -4245,7 +4241,7 @@ fold_rtx (rtx x, rtx insn)
 				       const_arg1 ? const_arg1 : folded_arg1);
       break;
 
-    case 'o':
+    case RTX_OBJ:
       /* (lo_sum (high X) X) is simply X.  */
       if (code == LO_SUM && const_arg0 != 0
 	  && GET_CODE (const_arg0) == HIGH
@@ -4253,15 +4249,15 @@ fold_rtx (rtx x, rtx insn)
 	return const_arg1;
       break;
 
-    case '3':
-    case 'b':
+    case RTX_TERNARY:
+    case RTX_BITFIELD_OPS:
       new = simplify_ternary_operation (code, mode, mode_arg0,
 					const_arg0 ? const_arg0 : folded_arg0,
 					const_arg1 ? const_arg1 : folded_arg1,
 					const_arg2 ? const_arg2 : XEXP (x, 2));
       break;
 
-    case 'x':
+    case RTX_EXTRA:
       /* Eliminate CONSTANT_P_RTX if its constant.  */
       if (code == CONSTANT_P_RTX)
 	{
@@ -4270,6 +4266,9 @@ fold_rtx (rtx x, rtx insn)
 	  if (optimize == 0 || !flag_gcse)
 	    return const0_rtx;
 	}
+      break;
+
+    default:
       break;
     }
 
@@ -5647,7 +5646,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 #ifdef PUSH_ROUNDING
 	  /* Stack pushes invalidate the stack pointer.  */
 	  rtx addr = XEXP (dest, 0);
-	  if (GET_RTX_CLASS (GET_CODE (addr)) == 'a'
+	  if (GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC
 	      && XEXP (addr, 0) == stack_pointer_rtx)
 	    invalidate (stack_pointer_rtx, Pmode);
 #endif
@@ -6313,7 +6312,7 @@ invalidate_memory (void)
 static int
 addr_affects_sp_p (rtx addr)
 {
-  if (GET_RTX_CLASS (GET_CODE (addr)) == 'a'
+  if (GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC
       && GET_CODE (XEXP (addr, 0)) == REG
       && REGNO (XEXP (addr, 0)) == STACK_POINTER_REGNUM)
     {
@@ -7193,7 +7192,7 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
       if (GET_MODE (insn) == QImode)
 	PUT_MODE (insn, VOIDmode);
 
-      if (GET_RTX_CLASS (code) == 'i')
+      if (GET_RTX_CLASS (code) == RTX_INSN)
 	{
 	  rtx p;
 

@@ -6831,7 +6831,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 
 		      else if (CR_P (regno)
 			       && (src_code == IF_THEN_ELSE
-				   || GET_RTX_CLASS (src_code) == '<'))
+				   || COMPARISON_P (src)))
 			skip_nested_if = TRUE;
 		    }
 		}
@@ -7371,9 +7371,7 @@ frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
       enum machine_mode mode = GET_MODE (dest);
 
       /* Check for normal binary operators.  */
-      if (mode == SImode
-	  && (GET_RTX_CLASS (GET_CODE (src)) == '2'
-	      || GET_RTX_CLASS (GET_CODE (src)) == 'c'))
+      if (mode == SImode && ARITHMETIC_P (src))
 	{
 	  op0 = XEXP (src, 0);
 	  op1 = XEXP (src, 1);
@@ -7486,7 +7484,7 @@ frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
       /* Rewrite a nested set cccr in terms of IF_THEN_ELSE.  Also deal with
          rewriting the CC register to be the same as the paired CC/CR register
          for nested ifs.  */
-      else if (mode == CC_CCRmode && GET_RTX_CLASS (GET_CODE (src)) == '<')
+      else if (mode == CC_CCRmode && COMPARISON_P (src))
 	{
 	  int regno = REGNO (XEXP (src, 0));
 	  rtx if_else;
@@ -8830,7 +8828,7 @@ frv_pack_insns (void)
 	}
 
       /* Things like labels reset everything.  */
-      if (GET_RTX_CLASS (code) != 'i')
+      if (!INSN_P (insn))
 	{
 	  next_start_vliw_p = TRUE;
 	  continue;

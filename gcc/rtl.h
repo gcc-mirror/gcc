@@ -52,6 +52,48 @@ enum rtx_code  {
 #define NUM_RTX_CODE ((int) LAST_AND_UNUSED_RTX_CODE)
 				/* The cast here, saves many elsewhere.  */
 
+/* Register Transfer Language EXPRESSIONS CODE CLASSES */
+
+enum rtx_class  {
+  /* We check bit 0-1 of some rtx class codes in the predicates below.  */
+
+  /* Bit 0 = comparison if 0, arithmetic is 1
+     Bit 1 = 1 if commutative.  */
+  RTX_COMPARE,		/* 0 */
+  RTX_COMM_COMPARE,
+  RTX_BIN_ARITH,
+  RTX_COMM_ARITH,
+
+  /* Must follow the four preceding values.  */
+  RTX_UNARY,		/* 4 */
+
+  RTX_EXTRA,
+  RTX_MATCH,
+  RTX_INSN,
+
+  /* Bit 0 = 1 if constant.  */
+  RTX_OBJ,		/* 8 */
+  RTX_CONST_OBJ,
+
+  RTX_TERNARY,
+  RTX_BITFIELD_OPS,
+  RTX_AUTOINC
+};
+
+#define RTX_OBJ_MASK (~1)
+#define RTX_OBJ_RESULT (RTX_OBJ & RTX_OBJ_MASK)
+#define RTX_COMPARE_MASK (~1)
+#define RTX_COMPARE_RESULT (RTX_COMPARE & RTX_COMPARE_MASK)
+#define RTX_ARITHMETIC_MASK (~1)
+#define RTX_ARITHMETIC_RESULT (RTX_COMM_ARITH & RTX_ARITHMETIC_MASK)
+#define RTX_BINARY_MASK (~3)
+#define RTX_BINARY_RESULT (RTX_COMPARE & RTX_BINARY_MASK)
+#define RTX_COMMUTATIVE_MASK (~2)
+#define RTX_COMMUTATIVE_RESULT (RTX_COMM_COMPARE & RTX_COMMUTATIVE_MASK)
+#define RTX_NON_COMMUTATIVE_RESULT (RTX_COMPARE & RTX_COMMUTATIVE_MASK)
+#define RTX_EXPR_FIRST (RTX_COMPARE)
+#define RTX_EXPR_LAST (RTX_UNARY)
+
 extern const unsigned char rtx_length[NUM_RTX_CODE];
 #define GET_RTX_LENGTH(CODE)		(rtx_length[(int) (CODE)])
 
@@ -61,7 +103,7 @@ extern const char * const rtx_name[NUM_RTX_CODE];
 extern const char * const rtx_format[NUM_RTX_CODE];
 #define GET_RTX_FORMAT(CODE)		(rtx_format[(int) (CODE)])
 
-extern const char rtx_class[NUM_RTX_CODE];
+extern const enum rtx_class rtx_class[NUM_RTX_CODE];
 #define GET_RTX_CLASS(CODE)		(rtx_class[(int) (CODE)])
 
 extern const unsigned char rtx_size[NUM_RTX_CODE];
@@ -288,14 +330,68 @@ struct rtvec_def GTY(()) {
   (JUMP_P (INSN) && (GET_CODE (PATTERN (INSN)) == ADDR_VEC || \
 		     GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC))
 
+
+/* 1 if X is an insn.  */
+#define INSN_P(X)    \
+  (GET_RTX_CLASS (GET_CODE(X)) == RTX_INSN)
+
+/* 1 if X is a unary operator.  */
+
+#define UNARY_P(X)   \
+  (GET_RTX_CLASS (GET_CODE (X)) == RTX_UNARY)
+
+/* 1 if X is a binary operator.  */
+
+#define BINARY_P(X)   \
+  ((GET_RTX_CLASS (GET_CODE (X)) & RTX_BINARY_MASK) == RTX_BINARY_RESULT)
+
+/* 1 if X is an arithmetic operator.  */
+
+#define ARITHMETIC_P(X)   \
+  ((GET_RTX_CLASS (GET_CODE (X)) & RTX_ARITHMETIC_MASK)			\
+    == RTX_ARITHMETIC_RESULT)
+
+/* 1 if X is an arithmetic operator.  */
+
+#define COMMUTATIVE_ARITH_P(X)   \
+  (GET_RTX_CLASS (GET_CODE (X)) == RTX_COMM_ARITH)
+
+/* 1 if X is a commutative arithmetic operator or a comparison operator.
+   These two are sometimes selected together because it is possible to
+   swap the two operands.  */
+
+#define SWAPPABLE_OPERANDS_P(X)   \
+  ((1 << GET_RTX_CLASS (GET_CODE (X)))					\
+    & ((1 << RTX_COMM_ARITH) | (1 << RTX_COMM_COMPARE)			\
+       | (1 << RTX_COMPARE)))
+
+/* 1 if X is a non-commutative operator.  */
+
+#define NON_COMMUTATIVE_P(X)   \
+  ((GET_RTX_CLASS (GET_CODE (X)) & RTX_COMMUTATIVE_MASK)		\
+    == RTX_NON_COMMUTATIVE_RESULT)
+
+/* 1 if X is a commutative operator on integers.  */
+
+#define COMMUTATIVE_P(X)   \
+  ((GET_RTX_CLASS (GET_CODE (X)) & RTX_COMMUTATIVE_MASK)		\
+    == RTX_COMMUTATIVE_RESULT)
+
+/* 1 if X is a relational operator.  */
+
+#define COMPARISON_P(X)   \
+  ((GET_RTX_CLASS (GET_CODE (X)) & RTX_COMPARE_MASK) == RTX_COMPARE_RESULT)
+
 /* 1 if X is a constant value that is an integer.  */
 
 #define CONSTANT_P(X)   \
-  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST_DOUBLE		\
-   || GET_CODE (X) == CONST || GET_CODE (X) == HIGH			\
+  (GET_RTX_CLASS (GET_CODE (X)) == RTX_CONST_OBJ			\
    || GET_CODE (X) == CONST_VECTOR	                                \
    || GET_CODE (X) == CONSTANT_P_RTX)
+
+/* 1 if X can be used to represent an object.  */
+#define OBJECT_P(X)							\
+  ((GET_RTX_CLASS (GET_CODE (X)) & RTX_OBJ_MASK) == RTX_OBJ_RESULT)
 
 /* General accessor macros for accessing the fields of an rtx.  */
 
@@ -554,9 +650,6 @@ do {				\
 #define XC2EXP(RTX, N, C1, C2)      (RTL_CHECKC2 (RTX, N, C1, C2).rtx)
 
 /* ACCESS MACROS for particular fields of insns.  */
-
-/* Determines whether X is an insn.  */
-#define INSN_P(X)       (GET_RTX_CLASS (GET_CODE(X)) == 'i')
 
 /* Holds a unique number for each insn.
    These are not necessarily sequentially increasing.  */

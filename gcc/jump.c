@@ -637,7 +637,8 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
   enum machine_mode mode;
 
   /* If this is not actually a comparison, we can't reverse it.  */
-  if (GET_RTX_CLASS (code) != '<')
+  if (GET_RTX_CLASS (code) != RTX_COMPARE
+      && GET_RTX_CLASS (code) != RTX_COMM_COMPARE)
     return UNKNOWN;
 
   mode = GET_MODE (arg0);
@@ -748,7 +749,7 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
 enum rtx_code
 reversed_comparison_code (rtx comparison, rtx insn)
 {
-  if (GET_RTX_CLASS (GET_CODE (comparison)) != '<')
+  if (!COMPARISON_P (comparison))
     return UNKNOWN;
   return reversed_comparison_code_parts (GET_CODE (comparison),
 					 XEXP (comparison, 0),
@@ -1764,24 +1765,24 @@ delete_related_insns (rtx insn)
 
   if (was_code_label && prev && GET_CODE (prev) == BARRIER)
     {
-      RTX_CODE code;
-      while (next != 0
-	     && (GET_RTX_CLASS (code = GET_CODE (next)) == 'i'
-		 || code == NOTE || code == BARRIER
-		 || (code == CODE_LABEL && INSN_DELETED_P (next))))
+      enum rtx_code code;
+      while (next)
 	{
+	  code = GET_CODE (next);
 	  if (code == NOTE
 	      && NOTE_LINE_NUMBER (next) != NOTE_INSN_FUNCTION_END)
 	    next = NEXT_INSN (next);
 	  /* Keep going past other deleted labels to delete what follows.  */
 	  else if (code == CODE_LABEL && INSN_DELETED_P (next))
 	    next = NEXT_INSN (next);
-	  else
+	  else if (code == BARRIER || INSN_P (next))
 	    /* Note: if this deletes a jump, it can cause more
 	       deletion of unreachable code, after a different label.
 	       As long as the value from this recursive call is correct,
 	       this invocation functions correctly.  */
 	    next = delete_related_insns (next);
+	  else
+	    break;
 	}
     }
 
@@ -2186,7 +2187,7 @@ int
 rtx_renumbered_equal_p (rtx x, rtx y)
 {
   int i;
-  RTX_CODE code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
   const char *fmt;
 
   if (x == y)
@@ -2296,16 +2297,15 @@ rtx_renumbered_equal_p (rtx x, rtx y)
      order.  Also handle the simple binary and unary cases without a loop.
 
      ??? Don't consider PLUS a commutative operator; see comments above.  */
-  if ((code == EQ || code == NE || GET_RTX_CLASS (code) == 'c')
-      && code != PLUS)
+  if (COMMUTATIVE_P (x) && code != PLUS)
     return ((rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 0))
 	     && rtx_renumbered_equal_p (XEXP (x, 1), XEXP (y, 1)))
 	    || (rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 1))
 		&& rtx_renumbered_equal_p (XEXP (x, 1), XEXP (y, 0))));
-  else if (GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == '2')
+  else if (NON_COMMUTATIVE_P (x))
     return (rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 0))
 	    && rtx_renumbered_equal_p (XEXP (x, 1), XEXP (y, 1)));
-  else if (GET_RTX_CLASS (code) == '1')
+  else if (UNARY_P (x))
     return rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 0));
 
   /* Compare the elements.  If any pair of corresponding elements

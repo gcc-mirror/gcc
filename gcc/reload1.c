@@ -7512,7 +7512,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 #endif
 
   /* If IN is a simple operand, use gen_move_insn.  */
-  else if (GET_RTX_CLASS (GET_CODE (in)) == 'o' || GET_CODE (in) == SUBREG)
+  else if (OBJECT_P (in) || GET_CODE (in) == SUBREG)
     emit_insn (gen_move_insn (out, in));
 
 #ifdef HAVE_reload_load_address
@@ -7779,7 +7779,7 @@ delete_address_reloads_1 (rtx dead_insn, rtx x, rtx current_insn)
       code = GET_CODE (prev);
       if (code == CODE_LABEL || code == JUMP_INSN)
 	return;
-      if (GET_RTX_CLASS (code) != 'i')
+      if (!INSN_P (prev))
 	continue;
       if (reg_set_p (x, PATTERN (prev)))
 	break;

@@ -90,7 +90,7 @@ const char * const rtx_format[NUM_RTX_CODE] = {
 /* Indexed by rtx code, gives a character representing the "class" of
    that rtx code.  See rtl.def for documentation on the defined classes.  */
 
-const char rtx_class[NUM_RTX_CODE] = {
+const enum rtx_class rtx_class[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   CLASS,
 #include "rtl.def"		/* rtl expressions are defined here */
 #undef DEF_RTL_EXPR
@@ -260,7 +260,7 @@ copy_rtx (rtx orig)
   RTX_FLAG (copy, used) = 0;
 
   /* We do not copy FRAME_RELATED for INSNs.  */
-  if (GET_RTX_CLASS (code) == 'i')
+  if (INSN_P (orig))
     RTX_FLAG (copy, frame_related) = 0;
   RTX_FLAG (copy, jump) = RTX_FLAG (orig, jump);
   RTX_FLAG (copy, call) = RTX_FLAG (orig, call);

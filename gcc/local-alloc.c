@@ -1392,9 +1392,7 @@ block_alloc (int b)
 
 	      /* Here we care if the operation to be computed is
 		 commutative.  */
-	      else if ((GET_CODE (XEXP (note, 0)) == EQ
-			|| GET_CODE (XEXP (note, 0)) == NE
-			|| GET_RTX_CLASS (GET_CODE (XEXP (note, 0))) == 'c')
+	      else if (COMMUTATIVE_P (XEXP (note, 0))
 		       && (r1 = XEXP (XEXP (note, 0), 1),
 			   (GET_CODE (r1) == REG || GET_CODE (r1) == SUBREG))
 		       && no_conflict_p (insn, r0, r1))

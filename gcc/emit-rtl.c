@@ -4982,7 +4982,7 @@ copy_insn_1 (rtx orig)
   RTX_FLAG (copy, used) = 0;
 
   /* We do not copy JUMP, CALL, or FRAME_RELATED for INSNs.  */
-  if (GET_RTX_CLASS (code) == 'i')
+  if (INSN_P (orig))
     {
       RTX_FLAG (copy, jump) = 0;
       RTX_FLAG (copy, call) = 0;
