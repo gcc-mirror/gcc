@@ -306,6 +306,12 @@ static tree empty_cleanup_list;
    assign_stack_local uses frame_pointer_rtx when this is nonzero.  */
 static int virtuals_instantiated;
 
+/* These variables hold pointers to functions to
+   save and restore machine-specific data,
+   in push_function_context and pop_function_context.  */
+void (*save_machine_status) ();
+void (*restore_machine_status) ();
+
 /* Nonzero if we need to distinguish between the return value of this function
    and the return value of a function called by this function.  This helps
    integrate.c  */
@@ -480,6 +486,9 @@ push_function_context ()
   save_expr_status (p);
   save_stmt_status (p);
   save_varasm_status (p);
+
+  if (save_machine_status)
+    (*save_machine_status) (p);
 }
 
 /* Restore the last saved context, at the end of a nested function.
@@ -541,6 +550,9 @@ pop_function_context ()
   restore_emit_status (p);
   restore_stmt_status (p);
   restore_varasm_status (p);
+
+  if (restore_machine_status)
+    (*restore_machine_status) (p);
 
   /* Finish doing put_var_into_stack for any of our variables
      which became addressable during the nested function.  */
