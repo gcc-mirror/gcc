@@ -2635,8 +2635,7 @@ hash_rtx (x, mode, create)
       if (! e)
 	return 0;
 
-      hash += e->value;
-      return hash;
+      return e->value;
 
     case CONST_INT:
       hash += ((unsigned) CONST_INT << 7) + (unsigned) mode + INTVAL (x);
