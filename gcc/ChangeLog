@@ -1,3 +1,7 @@
+Sat Apr  3 14:54:46 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* tree.def (BLOCK): Fix typo in comment.
+
 Sat Apr  3 00:53:29 EST 1999  John Wehle  (john@feith.com)
 
 	* i386.md (floatsisf2, floatdisf2, floatsidf2, floatdidf2,
