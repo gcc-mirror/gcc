@@ -4162,8 +4162,8 @@ mips_va_arg (tree valist, tree type)
 	  lab_over = gen_label_rtx ();
 
 	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl);
-
-	  if (TREE_CODE (type) == REAL_TYPE)
+	  if (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT
+	      && GET_MODE_SIZE (TYPE_MODE (type)) <= UNITS_PER_FPVALUE)
 	    {
 	      top = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop);
 	      off = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
