@@ -2177,15 +2177,15 @@ charge:
 @itemize @bullet
 @item
 @html
-<a href="http://us-support.external.hp.com">US, Canada, Asia-Pacific, and
+<a href="http://us.itrc.hp.com/service/home/home.do">US, Canada, Asia-Pacific, and
 Latin-America</a>
 @end html
 @ifnothtml
-@uref{http://us-support.external.hp.com,,}US, Canada, Asia-Pacific, and
-Latin-America
+@uref{http://us.itrc.hp.com/service/home/home.do,,} US, Canada, Asia-Pacific,
+and Latin-America.
 @end ifnothtml
 @item
-@uref{http://europe-support.external.hp.com,,Europe}
+@uref{http://europe.itrc.hp.com/service/home/home.do,,} Europe.
 @end itemize
 
 The HP assembler on these systems is much better than the hpux9 assembler,
@@ -2210,6 +2210,13 @@ type based on the type compiler detected during configuration.  You must
 set your @env{PATH} or define @env{CC} so that configure finds an appropriate
 compiler for the initial bootstrap.  Different prefixes must be used if
 both ports are to be installed on the same system.
+
+It is best to explicitly configure the @samp{hppa64-hp-hpux11*} target
+with the @option{--with-ld=@dots{}} option.  We support both the HP
+and GNU linkers for this target.  The two linkers require different
+link commands.  Thus, it's not possible to switch linkers during a
+GCC build.  This has been been reported to occur in a unified build
+of binutils and GCC.
 
 GCC 2.95.x is not supported under HP-UX 11 and cannot be used to
 compile GCC 3.0 and up.  Refer to @uref{binaries.html,,binaries} for
@@ -2244,10 +2251,29 @@ by the HP linker.  So, again a recent linker patch is recommended.
 The HP assembler has many limitations and is not recommended for either
 the 32 or 64-bit ports.  For example, it does not support weak symbols
 or alias definitions.  As a result, explicit template instantiations
-are required when using C++.  You also can't generate debugging information
-when using the HP assembler.  Either the HP or GNU linker can be used
-with the 64-bit port but it may be necessary to use the GNU linker
-when dwarf2 exception support is implemented.
+are required when using C++.  This will make it difficult if not
+impossible to build many C++ applications.  You also can't generate
+debugging information when using the HP assembler with GCC.
+
+There are a number of issues to consider in selecting which linker to
+use with the 64-bit port.  The  GNU 64-bit linker can only create dynamic
+binaries.  The @option{-static} option causes linking with archive
+libraries but doesn't produce a truly static binary.  Dynamic binaries
+still require final binding by the dynamic loader to resolve a set of
+dynamic-loader-defined symbols.  The default behavior of the HP linker
+is the same as the GNU linker.  However, it can generate true 64-bit
+static binaries using the @option{+compat} option.
+
+The HP 64-bit linker doesn't support linkonce semantics.  As a
+result, C++ programs have many more sections than they should.
+
+The GNU 64-bit linker has some issues with shared library support
+and exceptions.  As a result, we only support libgcc in archive
+format.  For similar reasons, dwarf2 unwind and exception support
+are disabled.  The GNU linker also has problems creating binaries
+with @option{-static}.  It doesn't provide stubs for internal
+calls to global functions in shared libraries, so these calls
+can't be overloaded.
 
 There are several possible approaches to building the distribution.
 Binutils can be built first using the HP tools.  Then, the GCC

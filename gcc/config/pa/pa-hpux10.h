@@ -82,10 +82,12 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC \
   "%{!shared:\
      %{!p:%{!pg:\
-       %{!threads:-lc}\
+       %{!threads:-lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}\
        %{threads:-lcma -lc_r}}}\
-     %{p: -L/lib/libp/ -lc}\
-     %{pg: -L/lib/libp/ -lc}}"
+     %{p: -L/lib/libp/ -lc\
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}\
+     %{pg: -L/lib/libp/ -lc\
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}"
 
 #undef THREAD_MODEL_SPEC
 #define THREAD_MODEL_SPEC "%{!threads:single}%{threads:dce}"
