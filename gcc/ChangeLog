@@ -1,6 +1,13 @@
 2004-12-29  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/18179
+	* tree-vectorizer.c (vect_get_base_and_offset): Rename (previous name
+	vect_get_base_and_bit_offset).
+	(vect_get_memtag_and_dr): Rename (previous name vect_get_symbl_and_dr).
+
+2004-12-29  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/18179
 	* tree-vectorizer.h (struct _stmt_vec_info): Add new fields:
 	initial_offset, step, misalignment and base_aligned_p and macros
 	to access them.
