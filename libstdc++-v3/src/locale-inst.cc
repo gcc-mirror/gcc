@@ -41,6 +41,7 @@ namespace std
   // moneypunct, money_get, and money_put
   template class moneypunct<char, false>;
   template class moneypunct<char, true>;
+  template struct __moneypunct_cache<char>;
   template class moneypunct_byname<char, false>;
   template class moneypunct_byname<char, true>;
   template class money_get<char, istreambuf_iterator<char> >;
@@ -49,6 +50,7 @@ namespace std
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class moneypunct<wchar_t, false>;
   template class moneypunct<wchar_t, true>;
+  template struct __moneypunct_cache<wchar_t>;
   template class moneypunct_byname<wchar_t, false>;
   template class moneypunct_byname<wchar_t, true>;
   template class money_get<wchar_t, istreambuf_iterator<wchar_t> >;
@@ -147,6 +149,7 @@ namespace std
 
   // time_get and time_put
   template class __timepunct<char>;
+  template struct __timepunct_cache<char>;
   template class time_put<char, ostreambuf_iterator<char> >;
   template class time_put_byname<char, ostreambuf_iterator<char> >;
   template class time_get<char, istreambuf_iterator<char> >;
@@ -154,6 +157,7 @@ namespace std
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class __timepunct<wchar_t>;
+  template struct __timepunct_cache<wchar_t>;
   template class time_put<wchar_t, ostreambuf_iterator<wchar_t> >;
   template class time_put_byname<wchar_t, ostreambuf_iterator<wchar_t> >;
   template class time_get<wchar_t, istreambuf_iterator<wchar_t> >;

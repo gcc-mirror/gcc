@@ -1701,7 +1701,7 @@ namespace std
 		    {
 		      int __tmp;
 		      _M_extract_name(__beg, __end, __tmp, 
-				      __timepunct<_CharT>::_S_timezones, 
+				      __timepunct_cache<_CharT>::_S_timezones, 
 				      14, __err);
 		      
 		      // GMT requires special effort.

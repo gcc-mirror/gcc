@@ -36,12 +36,12 @@
   // Non-virtual member functions.
   template<typename _CharT>
      messages<_CharT>::messages(size_t __refs)
-     : locale::facet(__refs)
+     : facet(__refs)
      { _M_c_locale_messages = _S_c_locale; }
 
   template<typename _CharT>
      messages<_CharT>::messages(__c_locale, const char*, size_t __refs) 
-     : locale::facet(__refs)
+     : facet(__refs)
      { _M_c_locale_messages = _S_c_locale; }
 
   template<typename _CharT>

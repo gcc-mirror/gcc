@@ -1,6 +1,6 @@
 // std::moneypunct implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,41 +47,47 @@ namespace std
     void
     moneypunct<char, true>::_M_initialize_moneypunct(__c_locale, const char*)
     {
-      // "C" locale
-      _M_decimal_point = '.';
-      _M_thousands_sep = ',';
-      _M_grouping = "";
-      _M_curr_symbol = "";
-      _M_positive_sign = "";
-      _M_negative_sign = "";
-      _M_frac_digits = 0;
-      _M_pos_format = money_base::_S_default_pattern;
-      _M_neg_format = money_base::_S_default_pattern;
+      // "C" locale.
+      if (!_M_data)
+	_M_data = new __moneypunct_cache<char>;
+
+      _M_data->_M_decimal_point = '.';
+      _M_data->_M_thousands_sep = ',';
+      _M_data->_M_grouping = "";
+      _M_data->_M_curr_symbol = "";
+      _M_data->_M_positive_sign = "";
+      _M_data->_M_negative_sign = "";
+      _M_data->_M_frac_digits = 0;
+      _M_data->_M_pos_format = money_base::_S_default_pattern;
+      _M_data->_M_neg_format = money_base::_S_default_pattern;
     }
 
   template<> 
     void
     moneypunct<char, false>::_M_initialize_moneypunct(__c_locale, const char*)
     {
-      // "C" locale
-      _M_decimal_point = '.';
-      _M_thousands_sep = ',';
-      _M_grouping = "";
-      _M_curr_symbol = "";
-      _M_positive_sign = "";
-      _M_negative_sign = "";
-      _M_frac_digits = 0;
-      _M_pos_format = money_base::_S_default_pattern;
-      _M_neg_format = money_base::_S_default_pattern;
+      // "C" locale.
+      if (!_M_data)
+	_M_data = new __moneypunct_cache<char>;
+
+      _M_data->_M_decimal_point = '.';
+      _M_data->_M_thousands_sep = ',';
+      _M_data->_M_grouping = "";
+      _M_data->_M_curr_symbol = "";
+      _M_data->_M_positive_sign = "";
+      _M_data->_M_negative_sign = "";
+      _M_data->_M_frac_digits = 0;
+      _M_data->_M_pos_format = money_base::_S_default_pattern;
+      _M_data->_M_neg_format = money_base::_S_default_pattern;
     }
 
   template<> 
     moneypunct<char, true>::~moneypunct()
-    { }
+    { delete _M_data; }
 
   template<> 
     moneypunct<char, false>::~moneypunct()
-    { }
+    { delete _M_data; }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<> 
@@ -90,15 +96,18 @@ namespace std
 							const char*)
     {
       // "C" locale
-      _M_decimal_point = L'.';
-      _M_thousands_sep = L',';
-      _M_grouping = "";
-      _M_curr_symbol = L"";
-      _M_positive_sign = L"";
-      _M_negative_sign = L"";
-      _M_frac_digits = 0;
-      _M_pos_format = money_base::_S_default_pattern;
-      _M_neg_format = money_base::_S_default_pattern;
+      if (!_M_data)
+	_M_data = new __moneypunct_cache<wchar_t>;
+
+      _M_data->_M_decimal_point = L'.';
+      _M_data->_M_thousands_sep = L',';
+      _M_data->_M_grouping = "";
+      _M_data->_M_curr_symbol = L"";
+      _M_data->_M_positive_sign = L"";
+      _M_data->_M_negative_sign = L"";
+      _M_data->_M_frac_digits = 0;
+      _M_data->_M_pos_format = money_base::_S_default_pattern;
+      _M_data->_M_neg_format = money_base::_S_default_pattern;
     }
 
   template<> 
@@ -107,23 +116,26 @@ namespace std
 							 const char*)
     {
       // "C" locale
-      _M_decimal_point = L'.';
-      _M_thousands_sep = L',';
-      _M_grouping = "";
-      _M_curr_symbol = L"";
-      _M_positive_sign = L"";
-      _M_negative_sign = L"";
-      _M_frac_digits = 0;
-      _M_pos_format = money_base::_S_default_pattern;
-      _M_neg_format = money_base::_S_default_pattern;
+      if (!_M_data)
+	_M_data = new __moneypunct_cache<wchar_t>;
+
+      _M_data->_M_decimal_point = L'.';
+      _M_data->_M_thousands_sep = L',';
+      _M_data->_M_grouping = "";
+      _M_data->_M_curr_symbol = L"";
+      _M_data->_M_positive_sign = L"";
+      _M_data->_M_negative_sign = L"";
+      _M_data->_M_frac_digits = 0;
+      _M_data->_M_pos_format = money_base::_S_default_pattern;
+      _M_data->_M_neg_format = money_base::_S_default_pattern;
     }
 
   template<> 
     moneypunct<wchar_t, true>::~moneypunct()
-    { }
+    { delete _M_data; }
 
   template<> 
     moneypunct<wchar_t, false>::~moneypunct()
-    { }
+    { delete _M_data; }
 #endif
 }

@@ -157,8 +157,8 @@ namespace __gnu_cxx
 
   typedef char fake_moneypunct_c[sizeof(moneypunct<char, true>)]
   __attribute__ ((aligned(__alignof__(moneypunct<char, true>))));
-  fake_moneypunct_c moneypunct_tc;
-  fake_moneypunct_c moneypunct_fc;
+  fake_moneypunct_c moneypunct_ct;
+  fake_moneypunct_c moneypunct_cf;
 
   typedef char fake_money_get_c[sizeof(money_get<char>)]
   __attribute__ ((aligned(__alignof__(money_get<char>))));
@@ -211,8 +211,8 @@ namespace __gnu_cxx
 
   typedef char fake_moneypunct_w[sizeof(moneypunct<wchar_t, true>)]
   __attribute__ ((aligned(__alignof__(moneypunct<wchar_t, true>))));
-  fake_moneypunct_w moneypunct_tw;
-  fake_moneypunct_w moneypunct_fw;
+  fake_moneypunct_w moneypunct_wt;
+  fake_moneypunct_w moneypunct_wf;
 
   typedef char fake_money_get_w[sizeof(money_get<wchar_t>)]
   __attribute__ ((aligned(__alignof__(money_get<wchar_t>))));
@@ -239,15 +239,33 @@ namespace __gnu_cxx
   fake_messages_w messages_w;
 #endif
 
-  // Storage for C locale caches
-  typedef char fake_locale_cache_c[sizeof(std::__numpunct_cache<char>)]
+  // Storage for "C" locale caches.
+  typedef char fake_num_cache_c[sizeof(std::__numpunct_cache<char>)]
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<char>))));
-  fake_locale_cache_c numpunct_cache_c;
+  fake_num_cache_c numpunct_cache_c;
+
+  typedef char fake_money_cache_c[sizeof(std::__moneypunct_cache<char>)]
+  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<char>))));
+  fake_money_cache_c moneypunct_cache_ct;
+  fake_money_cache_c moneypunct_cache_cf;
+
+  typedef char fake_time_cache_c[sizeof(std::__timepunct_cache<char>)]
+  __attribute__ ((aligned(__alignof__(std::__timepunct_cache<char>))));
+  fake_time_cache_c timepunct_cache_c;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  typedef char fake_locale_cache_w[sizeof(std::__numpunct_cache<wchar_t>)]
+  typedef char fake_num_cache_w[sizeof(std::__numpunct_cache<wchar_t>)]
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<wchar_t>))));
-  fake_locale_cache_w numpunct_cache_w;
+  fake_num_cache_w numpunct_cache_w;
+
+  typedef char fake_money_cache_w[sizeof(std::__moneypunct_cache<wchar_t>)]
+  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<wchar_t>))));
+  fake_money_cache_w moneypunct_cache_wt;
+  fake_money_cache_w moneypunct_cache_wf;
+
+  typedef char fake_time_cache_w[sizeof(std::__timepunct_cache<wchar_t>)]
+  __attribute__ ((aligned(__alignof__(std::__timepunct_cache<wchar_t>))));
+  fake_time_cache_w timepunct_cache_w;
 #endif
 
   // Globals for once-only runtime initialization of mutex objects.  This

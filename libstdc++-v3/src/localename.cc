@@ -43,10 +43,10 @@ namespace __gnu_cxx
   extern std::collate<char> 			collate_c;
   extern numpunct<char> 			numpunct_c;
   extern num_get<char> 				num_get_c;
-  extern num_put<char> 				num_put_c;
-  extern codecvt<char, char, mbstate_t>		codecvt_c;
-  extern moneypunct<char, false> 		moneypunct_fc;
-  extern moneypunct<char, true> 		moneypunct_tc;
+  extern num_put<char> 				num_put_c;  
+extern codecvt<char, char, mbstate_t>		codecvt_c;
+  extern moneypunct<char, false> 		moneypunct_cf;
+  extern moneypunct<char, true> 		moneypunct_ct;
   extern money_get<char> 			money_get_c;
   extern money_put<char> 			money_put_c;
   extern __timepunct<char> 			timepunct_c;
@@ -60,8 +60,8 @@ namespace __gnu_cxx
   extern num_get<wchar_t> 			num_get_w;
   extern num_put<wchar_t> 			num_put_w;
   extern codecvt<wchar_t, char, mbstate_t>	codecvt_w;
-  extern moneypunct<wchar_t, false> 		moneypunct_fw;
-  extern moneypunct<wchar_t, true> 		moneypunct_tw;
+  extern moneypunct<wchar_t, false> 		moneypunct_wf;
+  extern moneypunct<wchar_t, true> 		moneypunct_wt;
   extern money_get<wchar_t> 			money_get_w;
   extern money_put<wchar_t> 			money_put_w;
   extern __timepunct<wchar_t> 			timepunct_w;
@@ -70,10 +70,17 @@ namespace __gnu_cxx
   extern std::messages<wchar_t> 		messages_w;
 #endif
 
+  // And the caches....
   extern locale::facet* cache_vec[_GLIBCXX_NUM_FACETS];
-  extern std::__numpunct_cache<char>		numpunct_cache_c;
+  extern __numpunct_cache<char>			numpunct_cache_c;
+  extern __moneypunct_cache<char>		moneypunct_cache_cf;
+  extern __moneypunct_cache<char>		moneypunct_cache_ct;
+  extern __timepunct_cache<char>		timepunct_cache_c;
 #ifdef  _GLIBCXX_USE_WCHAR_T
-  extern std::__numpunct_cache<wchar_t>		numpunct_cache_w;
+  extern __numpunct_cache<wchar_t>		numpunct_cache_w;
+  extern __moneypunct_cache<wchar_t>		moneypunct_cache_wf;
+  extern __moneypunct_cache<wchar_t>		moneypunct_cache_wt;
+  extern __timepunct_cache<wchar_t>		timepunct_cache_w;
 #endif
 } // namespace __gnu_cxx
 
@@ -296,7 +303,6 @@ namespace std
     _M_init_facet(new (&ctype_c) std::ctype<char>(0, false, 1));
     _M_init_facet(new (&codecvt_c) codecvt<char, char, mbstate_t>(1));
 
-    // Safe to cache this.
     typedef __numpunct_cache<char> num_cache_c;
     num_cache_c* __npc = new (&numpunct_cache_c) num_cache_c(2);
     _M_init_facet(new (&numpunct_c) numpunct<char>(__npc, 1));
@@ -304,11 +310,20 @@ namespace std
     _M_init_facet(new (&num_get_c) num_get<char>(1));
     _M_init_facet(new (&num_put_c) num_put<char>(1));
     _M_init_facet(new (&collate_c) std::collate<char>(1));
-    _M_init_facet(new (&moneypunct_fc) moneypunct<char, false>(1));
-    _M_init_facet(new (&moneypunct_tc) moneypunct<char, true>(1));
+
+    typedef __moneypunct_cache<char> money_cache_c;
+    money_cache_c* __mpcf = new (&moneypunct_cache_cf) money_cache_c(2);
+    _M_init_facet(new (&moneypunct_cf) moneypunct<char, false>(__mpcf, 1));
+    money_cache_c* __mpct = new (&moneypunct_cache_ct) money_cache_c(2);
+    _M_init_facet(new (&moneypunct_ct) moneypunct<char, true>(__mpct, 1));
+
     _M_init_facet(new (&money_get_c) money_get<char>(1));
     _M_init_facet(new (&money_put_c) money_put<char>(1));
-    _M_init_facet(new (&timepunct_c) __timepunct<char>(1));
+
+    typedef __timepunct_cache<char> time_cache_c;
+    time_cache_c* __tpc = new (&timepunct_cache_c) time_cache_c(2);
+    _M_init_facet(new (&timepunct_c) __timepunct<char>(__tpc, 1));
+
     _M_init_facet(new (&time_get_c) time_get<char>(1));
     _M_init_facet(new (&time_put_c) time_put<char>(1));
     _M_init_facet(new (&messages_c) std::messages<char>(1));	
@@ -324,21 +339,36 @@ namespace std
     _M_init_facet(new (&num_get_w) num_get<wchar_t>(1));
     _M_init_facet(new (&num_put_w) num_put<wchar_t>(1));
     _M_init_facet(new (&collate_w) std::collate<wchar_t>(1));
-    _M_init_facet(new (&moneypunct_fw) moneypunct<wchar_t, false>(1));
-    _M_init_facet(new (&moneypunct_tw) moneypunct<wchar_t, true>(1));
+
+    typedef __moneypunct_cache<wchar_t> money_cache_w;
+    money_cache_w* __mpwf = new (&moneypunct_cache_wf) money_cache_w(2);
+    _M_init_facet(new (&moneypunct_wf) moneypunct<wchar_t, false>(__mpwf, 1));
+    money_cache_w* __mpwt = new (&moneypunct_cache_wt) money_cache_w(2);
+    _M_init_facet(new (&moneypunct_wt) moneypunct<wchar_t, true>(__mpwt, 1));
+
     _M_init_facet(new (&money_get_w) money_get<wchar_t>(1));
     _M_init_facet(new (&money_put_w) money_put<wchar_t>(1));
-    _M_init_facet(new (&timepunct_w) __timepunct<wchar_t>(1));
+
+    typedef __timepunct_cache<wchar_t> time_cache_w;
+    time_cache_w* __tpw = new (&timepunct_cache_w) time_cache_w(2);
+    _M_init_facet(new (&timepunct_w) __timepunct<wchar_t>(__tpw, 1));
+
     _M_init_facet(new (&time_get_w) time_get<wchar_t>(1));
     _M_init_facet(new (&time_put_w) time_put<wchar_t>(1));
     _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
 #endif 
 
     // This locale is safe to pre-cache, after all the facets have
-    // been installed.
+    // been created and installed.
     _M_caches[numpunct<char>::id._M_id()] = __npc;
+    _M_caches[moneypunct<char, false>::id._M_id()] = __mpcf;
+    _M_caches[moneypunct<char, true>::id._M_id()] = __mpct;
+    _M_caches[__timepunct<char>::id._M_id()] = __tpc;
 #ifdef  _GLIBCXX_USE_WCHAR_T
     _M_caches[numpunct<wchar_t>::id._M_id()] = __npw;
+    _M_caches[moneypunct<wchar_t, false>::id._M_id()] = __mpwf;
+    _M_caches[moneypunct<wchar_t, true>::id._M_id()] = __mpwt;
+    _M_caches[__timepunct<wchar_t>::id._M_id()] = __tpw;
 #endif
   }
   
