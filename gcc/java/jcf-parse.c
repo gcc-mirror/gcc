@@ -64,15 +64,14 @@ tree main_class = NULL_TREE;
 /* The FIELD_DECL for the current field. */
 static tree current_field = NULL_TREE;
 
+/* The METHOD_DECL for the current method.  */
 static tree current_method = NULL_TREE;
 
+/* Declarations of some functions used here.  */
 static tree give_name_to_class PROTO ((JCF *jcf, int index));
-
-void parse_zip_file_entries (void);
-void process_zip_dir();
-
-/* Source file compilation declarations */
-static void parse_source_file ();
+void parse_zip_file_entries PROTO (());
+void process_zip_dir PROTO (());
+static void parse_source_file PROTO ((tree));
 
 /* Handle "SourceFile" attribute. */
 
@@ -506,14 +505,17 @@ int
 jcf_parse_source (jcf)
      JCF *jcf;
 {
-  tree filename = get_identifier (input_filename);
-  java_parser_context_save_global ();
+  tree file;
 
+  java_parser_context_save_global ();
+  java_push_parser_context ();
   input_filename = current_jcf->filename;
+  file = get_identifier (input_filename);
   if (!(finput = fopen (input_filename, "r")))
     fatal ("input file `%s' just disappeared - jcf_parse_source",
 	   input_filename);
-  parse_source_file (IS_A_COMMAND_LINE_FILENAME_P (filename));
+  parse_source_file (file);
+  java_pop_parser_context (IS_A_COMMAND_LINE_FILENAME_P (file));
   java_parser_context_restore_global ();
 }
 
@@ -658,22 +660,16 @@ parse_class_file ()
   lineno = save_lineno;
 }
 
-/* Parse a source file, as pointed by the current JCF. If PARSE_ONLY
-   is non zero, we're not parsing a file found on the command line and
-   we skip things related to code generation. */
+/* Parse a source file, as pointed by the current value of INPUT_FILENAME. */
 
 static void
-parse_source_file (parse_only)
-     int parse_only;
+parse_source_file (file)
+     tree file;
 {
-  int remember_for_generation;
-  tree filename = get_identifier (input_filename);
-
   /* Mark the file as parsed */
-  HAS_BEEN_ALREADY_PARSED_P (filename) = 1;
+  HAS_BEEN_ALREADY_PARSED_P (file) = 1;
 
   lang_init_source (1);		    /* Error msgs have no method prototypes */
-  java_push_parser_context ();
   java_init_lex ();		    /* Initialize the parser */
   java_parse_abort_on_error ();
   java_parse ();		    /* Parse and build partial tree nodes. */
@@ -682,17 +678,6 @@ parse_source_file (parse_only)
   java_parse_abort_on_error ();
   java_check_circular_reference (); /* Check on circular references */
   java_parse_abort_on_error ();
-  java_check_methods ();            /* Check the methods */
-  java_parse_abort_on_error ();
-  java_layout_classes ();
-  java_parse_abort_on_error ();
-
-  /* If only parsing, make sure that the currently parsed file isn't
-     also present in the argument list. If it's the case, remember
-     that we should generate it. */
-  remember_for_generation = !parse_only 
-    || IS_A_COMMAND_LINE_FILENAME_P (filename);
-  java_pop_parser_context (remember_for_generation);
 }
 
 int
@@ -775,7 +760,11 @@ yyparse ()
 	  parse_class_file ();
 	  break;
 	case JCF_SOURCE:
-	  parse_source_file (0);	/* Parse and generate */
+	  java_push_parser_context ();
+	  java_parser_context_save_global ();
+	  parse_source_file (name);
+	  java_parser_context_restore_global ();
+	  java_pop_parser_context (1);
 	  break;
 	}
     }

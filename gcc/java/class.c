@@ -1153,7 +1153,12 @@ is_compiled_class (class)
   if (flag_assume_compiled)
     {
       if (!CLASS_LOADED_P (class))
-	load_class (class, 1);
+	{
+	  if (CLASS_FROM_SOURCE_P (class))
+	    safe_layout_class (class);
+	  else
+	    load_class (class, 1);
+	}
       return 1;
     }
 

@@ -52,10 +52,6 @@ set_local_type (slot, type)
     type_map[++slot] = void_type_node;
 }
 
-extern tree convert_to_integer (tree type, tree expr);
-extern tree convert_to_real (tree type, tree expr);
-extern tree convert_to_pointer (tree type, tree expr);
-
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value
    is always TYPE.  This function implements all reasonable
@@ -663,7 +659,7 @@ lookup_argument_method (clas, method_name, method_signature)
 	  tree method_sig = build_java_argument_signature (TREE_TYPE (method));
 	  tree name = DECL_NAME (method);
 	  if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
-	       EXPR_WFL_NODE (DECL_NAME (method)) : name) == method_name 
+	       EXPR_WFL_NODE (name) : name) == method_name 
 	      && method_sig == method_signature)
 	    return method;
 	}

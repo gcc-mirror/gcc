@@ -527,8 +527,7 @@ init_decl_processing ()
 
   methodtable_type = make_node (RECORD_TYPE);
   layout_type (methodtable_type);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("methodtable"),
-			methodtable_type));
+  build_decl (TYPE_DECL, get_identifier ("methodtable"), methodtable_type);
   methodtable_ptr_type = build_pointer_type (methodtable_type);
 
   TYPE_identifier_node = get_identifier ("TYPE");
@@ -554,8 +553,7 @@ init_decl_processing ()
   PUSH_FIELD (constants_type_node, field, "tags", ptr_type_node);
   PUSH_FIELD (constants_type_node, field, "data", ptr_type_node);
   FINISH_RECORD (constants_type_node);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("constants"),
-			constants_type_node));
+  build_decl (TYPE_DECL, get_identifier ("constants"), constants_type_node);
 
   access_flags_type_node = unsigned_short_type_node;
 
@@ -606,7 +604,7 @@ init_decl_processing ()
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
   FINISH_RECORD (class_type_node);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("Class"), class_type_node));
+  build_decl (TYPE_DECL, get_identifier ("Class"), class_type_node);
 
   field_info_union_node = make_node (UNION_TYPE);
   PUSH_FIELD (field_info_union_node, field, "boffset", int_type_node);
@@ -623,7 +621,7 @@ init_decl_processing ()
   PUSH_FIELD (field_type_node, field, "info", field_info_union_node);
   FINISH_RECORD (field_type_node);
   CLASS_LOADED_P (field_type_node) = 1;
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("Field"), field_type_node));
+  build_decl (TYPE_DECL, get_identifier ("Field"), field_type_node);
 
   one_elt_array_domain_type = build_index_type (integer_one_node);
   nativecode_ptr_array_type_node
@@ -632,7 +630,7 @@ init_decl_processing ()
   PUSH_FIELD (dtable_type, field, "class", class_ptr_type);
   PUSH_FIELD (dtable_type, field, "methods", nativecode_ptr_array_type_node);
   FINISH_RECORD (dtable_type);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("dispatchTable"), dtable_type));
+  build_decl (TYPE_DECL, get_identifier ("dispatchTable"), dtable_type);
 
 #define jint_type int_type_node
 #define jint_ptr_type ptr_type_node
@@ -643,7 +641,7 @@ init_decl_processing ()
   PUSH_FIELD (jexception_type, field, "handler_pc", ptr_type_node);
   PUSH_FIELD (jexception_type, field, "catch_type", class_ptr_type);
   FINISH_RECORD (jexception_type);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("jexception"), field_type_node));
+  build_decl (TYPE_DECL, get_identifier ("jexception"), field_type_node);
   jexception_ptr_type = build_pointer_type (jexception_type);
 
   lineNumberEntry_type = make_node (RECORD_TYPE);
@@ -665,7 +663,7 @@ init_decl_processing ()
   PUSH_FIELD (method_type_node, field, "ncode", nativecode_ptr_type_node);
   FINISH_RECORD (method_type_node);
   CLASS_LOADED_P (method_type_node) = 1;
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("Method"), method_type_node));
+  build_decl (TYPE_DECL, get_identifier ("Method"), method_type_node);
 
   t = tree_cons (NULL_TREE, class_ptr_type,
 		 build_tree_list (NULL_TREE, int_type_node));

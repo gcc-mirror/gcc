@@ -1,3 +1,4 @@
+
 /* Definition of conversion functions.
    Copyright (C) 1993 Free Software Foundation, Inc.
 
@@ -22,3 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern tree convert_to_boolean PROTO ((tree, tree));
 extern tree convert_to_char    PROTO ((tree, tree));
+extern tree convert_to_integer PROTO ((tree type, tree expr));
+extern tree convert_to_real PROTO ((tree type, tree expr));
+extern tree convert_to_pointer PROTO ((tree type, tree expr));

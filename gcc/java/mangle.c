@@ -70,7 +70,6 @@ void
 emit_unicode_mangled_name (obstack, name, len)
      struct obstack *obstack;
      char *name;
-     int len;
 {
   unsigned char *ptr;
   unsigned char *limit = (unsigned char *)name + len;

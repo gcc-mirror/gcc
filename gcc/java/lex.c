@@ -368,6 +368,62 @@ java_parse_end_comment ()
     }
 }
 
+/* Parse the documentation section. Keywords must be at the beginning
+   of a documentation comment line (ignoring white space and any `*'
+   character). Parsed keyword(s): @DEPRECATED.  */
+
+static int
+java_parse_doc_section (c)
+     unicode_t c;
+{
+  int valid_tag = 0, seen_star;
+
+  while (JAVA_WHITE_SPACE_P (c) || (c == '*') || c == '\n')
+    {
+      switch (c)
+	{
+	case '*':
+	  seen_star = 1;
+	  break;
+	case '\n': /* ULT */
+	  valid_tag = 1;
+	  break;
+	default:
+	  seen_star = 0;
+	}
+      c = java_get_unicode();
+    }
+  
+  if (c == UEOF)
+    java_lex_error ("Comment not terminated at end of input", 0);
+  
+  if (seen_star && (c == '/'))
+    return 1;			/* Goto step1 in caller */
+
+  /* We're parsing @deprecated */
+  if (valid_tag && (c == '@'))
+    {
+      char tag [10];
+      int  tag_index = 0;
+
+      while (tag_index < 10 && c != UEOF && c != ' ' && c != '\n')
+	{
+	  c = java_get_unicode ();
+	  tag [tag_index++] = c;
+	}
+      
+      if (c == UEOF)
+	java_lex_error ("Comment not terminated at end of input", 0);
+      
+      java_unget_unicode ();
+      tag [tag_index] = '\0';
+
+      if (!strcmp (tag, "deprecated"))
+	ctxp->deprecated = 1;
+    }
+  return 0;
+}
+
 /* This function to be used only by JAVA_ID_CHAR_P (), otherwise it
    will return a wrong result.  */
 static int
@@ -494,62 +550,8 @@ java_lex (java_lval)
 	    {
 	      if ((c = java_get_unicode ()) == '/')
 		goto step1;	/* Empy documentation comment  */
-
-	      else
-		/* Parsing the documentation section. We're looking
-		 for the @depracated pseudo keyword.  the @deprecated
-		 tag must be at the beginning of a doc comment line
-		 (ignoring white space and any * character)  */
-
-		{ 
-		  int valid_tag = 0, seen_star;
-
-		  while (JAVA_WHITE_SPACE_P (c) || (c == '*') || c == '\n')
-		    {
-		      switch (c)
-			{
-			case '*':
-			  seen_star = 1;
-			  break;
-			case '\n': /* ULT */
-			  valid_tag = 1;
-			  break;
-			default:
-			  seen_star = 0;
-			}
-		      c = java_get_unicode();
-		    }
-		  
-		  if (c == UEOF)
-		    java_lex_error 
-		      ("Comment not terminated at end of input", 0);
-
-		  if (seen_star && (c == '/'))
-		    goto step1;	/* End of documentation */
-
-		  if (valid_tag && (c == '@'))
-		    {
-		      char deprecated [10];
-		      int  deprecated_index = 0;
-
-		      for (deprecated_index = 0, c = java_get_unicode (); 
-			   deprecated_index < 10 && c != UEOF;
-			   c = java_get_unicode ())
-			deprecated [deprecated_index++] = c;
-
-		      if (c == UEOF)
-			java_lex_error 
-		          ("Comment not terminated at end of input", 0);
-		      
-		      java_unget_unicode ();
-		      deprecated [deprecated_index] = '\0';
-		      if (!strcmp (deprecated, "deprecated"))
-			{
-			  /* Set global flag to be checked by class. FIXME  */
-			  warning ("deprecated implementation found");
-			}
-		    }
-		}
+	      else if (java_parse_doc_section (c))
+		goto step1;
 	    }
 	  else
 	    java_unget_unicode ();
@@ -1206,6 +1208,7 @@ java_lex (java_lval)
 	    case TRY_TK:
 	    case CATCH_TK:
 	    case THROW_TK:
+	    case INSTANCEOF_TK:
 	      BUILD_OPERATOR (kw->token);
 
 	    default:

@@ -22,11 +22,14 @@ Java and all Java-based marks are trademarks or registered trademarks
 of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
-DEFINE_LANG_NAME ("Java")
-     
 /* This is the contribution to the `lang_options' array in gcc.c for
    java.  */
 
+/* CYGNUS LOCAL - the format of this file has been changed to
+   allow cc1 to implement --help.  nickc/--help */
+
+DEFINE_LANG_NAME ("Java")
+     
   { "-fbounds-check", "" },
   { "-fno-bounds-check", "Disable automatic array bounds checking" },
   { "-fassume-compiled", "Make is_compiled_class return 1"},
