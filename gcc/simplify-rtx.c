@@ -389,6 +389,8 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  break;
 
 	case SQRT:
+	case FLOAT_EXTEND:
+	case FLOAT_TRUNCATE:
 	  return 0;
 
 	default:

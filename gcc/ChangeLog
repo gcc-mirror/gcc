@@ -1,3 +1,8 @@
+Sun Sep 17 10:46:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* simplify-rtx.c (simplify_unary_operation): Add cases
+	FLOAT_EXTEND and FLOAT_TRUNCATE to ones that return 0.
+
 2000-09-17  Bernd Schmidt  <bernds@redhat.co.uk>
 
         * expr.h (emit_library_call, emit_library_call_value): Delete
