@@ -25,7 +25,7 @@ DEFNAME	("AIMIN0",	"aimin0",	"AIMin0",	genNONE,	specAIMIN0)	/* VXT */
 DEFNAME	("AINT",	"aint",		"AInt",		genNONE,	specAINT)
 DEFNAME	("AJMAX0",	"ajmax0",	"AJMax0",	genNONE,	specAJMAX0)	/* VXT */
 DEFNAME	("AJMIN0",	"ajmin0",	"AJMin0",	genNONE,	specAJMIN0)	/* VXT */
-DEFNAME ("ALARM",	"alarm",	"Alarm",	genNONE,	specALARM)	/* UNIX */
+DEFNAME	("ALARM",	"alarm",	"Alarm",	genNONE,	specALARM)	/* UNIX */
 DEFNAME	("ALL",		"all",		"All",		genNONE,	specALL)	/* F90 */
 DEFNAME	("ALLOCATED",	"allocated",	"Allocated",	genNONE,	specALLOCATED)	/* F90 */
 DEFNAME	("ALOG",	"alog",		"ALog",		genNONE,	specALOG)
@@ -76,7 +76,7 @@ DEFNAME	("COS",		"cos",		"Cos",		genNONE,	specCOS)
 DEFNAME	("COSD",	"cosd",		"CosD",		genNONE,	specCOSD)	/* VXT */
 DEFNAME	("COSH",	"cosh",		"CosH",		genNONE,	specCOSH)
 DEFNAME	("COUNT",	"count",	"Count",	genNONE,	specCOUNT)	/* F90 */
-DEFNAME ("CPU_TIME",	"cpu_time",	"Cpu_Time",	genNONE,	specCPU_TIME)	/* F95 */
+DEFNAME	("CPU_TIME",	"cpu_time",	"Cpu_Time",	genNONE,	specCPU_TIME)	/* F95 */
 DEFNAME	("CSHIFT",	"cshift",	"CShift",	genNONE,	specCSHIFT)	/* F90 */
 DEFNAME	("CSIN",	"csin",		"CSin",		genNONE,	specCSIN)
 DEFNAME	("CSQRT",	"csqrt",	"CSqRt",	genNONE,	specCSQRT)

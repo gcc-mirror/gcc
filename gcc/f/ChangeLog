@@ -56,6 +56,8 @@ Mon Dec  1 16:21:08 1997  Craig Burley  <burley@gnu.org>
 
 Sun Nov 30 22:22:22 1997  Craig Burley  <burley@gnu.org>
 
+	* intrin.def: Fix up spacing a bit.
+
 	* intdoc.c: Minor fix-ups.
 
 	* intrin.c (ffeintrin_check_): Fix up indentation a bit.
