@@ -18,6 +18,9 @@ Mon May 31 11:40:20 EDT 1999  John Wehle  (john@feith.com)
 
 Mon May 31 00:46:17 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* jump.c (jump_optimize_1): Only set CAN_REACH_END if 
+	calculate_can_reach_end returns nonzero.
+
 	* configure.in (native gas tests): Search for an assembler in the
 	same manner that the installed compiler will.
 	* configure: Rebuilt.
