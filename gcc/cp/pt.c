@@ -974,8 +974,14 @@ determine_specialization (template_id, decl, targs_out,
     return error_mark_node;
 
   /* Check for baselinks. */
-  if (TREE_CODE (fns) == TREE_LIST)
+  if (BASELINK_P (fns))
     fns = TREE_VALUE (fns);
+
+  if (!is_overloaded_fn (fns))
+    {
+      cp_error ("`%D' is not a function template", fn);
+      return error_mark_node;
+    }
 
   for (; fns; fns = OVL_NEXT (fns))
     {
@@ -1851,13 +1857,34 @@ end_template_parm_list (parms)
   int nparms;
   tree parm;
   tree saved_parmlist = make_tree_vec (list_length (parms));
+  int seen_def_arg_p = 0;
 
   current_template_parms
     = tree_cons (build_int_2 (0, processing_template_decl),
 		 saved_parmlist, current_template_parms);
 
-  for (parm = parms, nparms = 0; parm; parm = TREE_CHAIN (parm), nparms++)
-    TREE_VEC_ELT (saved_parmlist, nparms) = parm;
+  for (parm = parms, nparms = 0; 
+       parm; 
+       parm = TREE_CHAIN (parm), nparms++)
+    {
+      /* [temp.param]
+	 
+	 If a template-parameter has a default template-argument, all
+	 subsequent template-parameters shall have a default
+	 template-argument supplied.  */
+      if (TREE_PURPOSE (parm))
+	seen_def_arg_p = 1;
+      else if (seen_def_arg_p)
+	{
+	  /* Issue the error message.  */
+	  cp_error ("no default argument for `%D'", TREE_VALUE (parm));
+	  /* For better subsequent error-recovery, we indicate that
+	     there should have been a default argument.  */
+	  TREE_PURPOSE (parm) = error_mark_node;
+	}
+
+      TREE_VEC_ELT (saved_parmlist, nparms) = parm;
+    }
 
   --processing_template_parmlist;
 

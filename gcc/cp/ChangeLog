@@ -1,3 +1,8 @@
+1999-07-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (determine_specialization): Tighten error-checking.
+	(end_template_parm_list): Likewise.
+
 1999-07-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (check_default_tmpl_args): Handle friends defined in the
