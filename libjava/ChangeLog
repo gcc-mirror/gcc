@@ -1,3 +1,8 @@
+2003-09-24  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* java/lang/StringBuffer.java (substring): Don't set `shared' on small
+	Strings, even if buffer is already shared.
+
 2003-09-24  Michael Koch  <konqueror@gmx.de>
 
 	* acinclude.m4 (AM_LC_LOCALES): Added check for locale.h.
