@@ -2,7 +2,7 @@ gcc-ss-@DATE@ is now available on
   ftp://gcc.gnu.org/pub/gcc/snapshots/@LONG_DATE@
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
-This snapshot has been generated from the GCC 3.2 branch.
+This snapshot has been generated from the GCC CVS HEAD.
 
 You'll find:
 
