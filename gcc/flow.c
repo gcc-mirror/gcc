@@ -3948,7 +3948,7 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
      used later in the block are dead.  So make a pass over the block
      recording any such that are made and show them dead at the end.  We do
      a very conservative and simple job here.  */
-  if (optimize
+  if (0 && optimize
       && ! (TREE_CODE (TREE_TYPE (current_function_decl)) == FUNCTION_TYPE
 	    && (TYPE_RETURNS_STACK_DEPRESSED
 		(TREE_TYPE (current_function_decl))))
