@@ -201,7 +201,7 @@ static int *splittable_regs_updates;
 static void init_reg_map PARAMS ((struct inline_remap *, int));
 static rtx calculate_giv_inc PARAMS ((rtx, rtx, unsigned int));
 static rtx initial_reg_note_copy PARAMS ((rtx, struct inline_remap *));
-static void final_reg_note_copy PARAMS ((rtx, struct inline_remap *));
+static void final_reg_note_copy PARAMS ((rtx *, struct inline_remap *));
 static void copy_loop_body PARAMS ((struct loop *, rtx, rtx,
 				    struct inline_remap *, rtx, int,
 				    enum unroll_types, rtx, rtx, rtx, rtx));
@@ -1666,7 +1666,7 @@ initial_reg_note_copy (notes, map)
     return 0;
 
   copy = rtx_alloc (GET_CODE (notes));
-  PUT_MODE (copy, GET_MODE (notes));
+  PUT_REG_NOTE_KIND (copy, REG_NOTE_KIND (notes));
 
   if (GET_CODE (notes) == EXPR_LIST)
     XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (notes, 0), map, 0);
@@ -1684,15 +1684,38 @@ initial_reg_note_copy (notes, map)
 /* Fixup insn references in copied REG_NOTES.  */
 
 static void
-final_reg_note_copy (notes, map)
-     rtx notes;
+final_reg_note_copy (notesp, map)
+     rtx *notesp;
      struct inline_remap *map;
 {
-  rtx note;
+  while (*notesp)
+    {
+      rtx note = *notesp;
+      
+      if (GET_CODE (note) == INSN_LIST)
+	{
+	  /* Sometimes, we have a REG_WAS_0 note that points to a
+	     deleted instruction.  In that case, we can just delete the
+	     note.  */
+	  if (REG_NOTE_KIND (note) == REG_WAS_0)
+	    {
+	      *notesp = XEXP (note, 1);
+	      continue;
+	    }
+	  else
+	    {
+	      rtx insn = map->insn_map[INSN_UID (XEXP (note, 0))];
 
-  for (note = notes; note; note = XEXP (note, 1))
-    if (GET_CODE (note) == INSN_LIST)
-      XEXP (note, 0) = map->insn_map[INSN_UID (XEXP (note, 0))];
+	      /* If we failed to remap the note, something is awry.  */
+	      if (!insn)
+		abort ();
+
+	      XEXP (note, 0) = insn;
+	    }
+	}
+
+      notesp = &XEXP (note, 1);
+    }
 }
 
 /* Copy each instruction in the loop, substituting from map as appropriate.
@@ -2219,7 +2242,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
       if ((GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
 	   || GET_CODE (insn) == CALL_INSN)
 	  && map->insn_map[INSN_UID (insn)])
-	final_reg_note_copy (REG_NOTES (map->insn_map[INSN_UID (insn)]), map);
+	final_reg_note_copy (&REG_NOTES (map->insn_map[INSN_UID (insn)]), map);
     }
   while (insn != copy_end);
 

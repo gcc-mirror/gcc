@@ -1,3 +1,10 @@
+2001-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* unroll.c (initial_reg_note_copy): Use PUT_REG_NOTE_KIND and
+	REG_NOTE_KIND, not PUT_MODE and GET_MODE.
+	(final_reg_note_copy): Remove REG_WAS_0 notes that are no longer
+	valid.
+
 2001-06-11  Stan Shebs  <shebs@apple.com>
 
 	* darwin.h (ASM_FILE_END): Remove decl of language_string.
