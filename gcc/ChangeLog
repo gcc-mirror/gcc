@@ -1,3 +1,7 @@
+2001-08-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* fix-header.c (cb_file_change): Update prototype.
+
 2001-08-11  Zack Weinberg  <zackw@panix.com>
 
 	* toplev.c (set_float_handler): Make static.

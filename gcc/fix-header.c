@@ -199,7 +199,7 @@ static int inf_skip_spaces PARAMS ((int));
 static int inf_read_upto PARAMS ((sstring *, int));
 static int inf_scan_ident PARAMS ((sstring *, int));
 static int check_protection PARAMS ((int *, int *));
-static void cb_file_change PARAMS ((cpp_reader *, const cpp_file_change *));
+static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
 
 static void
 add_symbols (flags, names)
@@ -598,12 +598,12 @@ check_macro_names (pfile, names)
 }
 
 static void
-cb_file_change (pfile, fc)
+cb_file_change (pfile, map)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
-     const cpp_file_change *fc;
+     const struct line_map *map;
 {
   /* Just keep track of current file name.  */
-  cur_file = fc->map->to_file;
+  cur_file = map->to_file;
 }
 
 static void
