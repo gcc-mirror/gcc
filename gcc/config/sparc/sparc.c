@@ -1010,8 +1010,17 @@ input_operand (op, mode)
       rtx inside = XEXP (op, 0);
 
       if (GET_CODE (inside) == LO_SUM)
-	return (register_operand (XEXP (inside, 0), Pmode)
-		&& CONSTANT_P (XEXP (inside, 1)));
+	{
+	  /* We can't allow these because all of the splits
+	     (eventually as they trickle down into DFmode
+	     splits) require offsettable memory references.  */
+	  if (! TARGET_V9
+	      && GET_MODE (op) == TFmode)
+	    return 0;
+
+	  return (register_operand (XEXP (inside, 0), Pmode)
+		  && CONSTANT_P (XEXP (inside, 1)));
+	}
       return memory_address_p (mode, inside);
     }
 
