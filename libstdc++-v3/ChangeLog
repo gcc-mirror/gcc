@@ -1,3 +1,8 @@
+2001-12-21  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/ext/stl_rope.h (_Rope_iterator):
+	Add local typedef to fix implicit typename problems.
+
 2001-12-19  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/Intro.3:  New 'Allocators' module.

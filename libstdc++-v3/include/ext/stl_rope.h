@@ -1024,6 +1024,7 @@ template<class _CharT, class _Alloc>
 class _Rope_iterator : public _Rope_iterator_base<_CharT,_Alloc> {
     friend class rope<_CharT,_Alloc>;
   protected:
+    typedef typename _Rope_iterator_base<_CharT,_Alloc>::_RopeRep _RopeRep;
     rope<_CharT,_Alloc>* _M_root_rope;
         // root is treated as a cached version of this,
         // and is used to detect changes to the underlying
@@ -1057,8 +1058,7 @@ class _Rope_iterator : public _Rope_iterator_base<_CharT,_Alloc> {
         _RopeRep::_S_unref(_M_root);
     }
     _Rope_iterator& operator= (const _Rope_iterator& __x) {
-        typename
-	  _Rope_iterator_base<_CharT,_Alloc>::_RopeRep* __old = _M_root;
+        _RopeRep* __old = _M_root;
 
         _RopeRep::_S_ref(__x._M_root);
         if (0 != __x._M_buf_ptr) {
