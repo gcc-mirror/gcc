@@ -1,3 +1,7 @@
+Sat Feb  7 23:46:09 1998  Greg McGary  <gkm@gnu.org>
+
+	* c-decl.c (pushdecl): Set DECL_ORIGINAL_TYPE once only.
+
 Sat Feb  7 15:11:28 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * aclocal.m4 (GCC_FUNC_PRINTF_PTR): New macro to test the printf
