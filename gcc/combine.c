@@ -3866,7 +3866,12 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
       /* simplify_subreg can't use gen_lowpart_for_combine.  */
       if (CONSTANT_P (SUBREG_REG (x))
-	  && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x))
+	  && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x)
+	     /* Don't call gen_lowpart_for_combine if the inner mode
+		is VOIDmode and we cannot simplify it, as SUBREG without
+		inner mode is invalid.  */
+	  && (GET_MODE (SUBREG_REG (x)) != VOIDmode
+	      || gen_lowpart_common (mode, SUBREG_REG (x))))
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
 
       if (GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_CC)
