@@ -1,5 +1,9 @@
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/template/crash31.C: Correct embedded PR number.
+
+2004-12-23  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/16405
 	* g++.dg/opt/temp1.C: Add do-run marker.
 

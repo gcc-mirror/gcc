@@ -1,3 +1,3 @@
-// PR c++/13268
+// PR c++/19063
 
 template<operator< struct A {}; // { dg-error "" }
