@@ -1,5 +1,10 @@
 2001-12-17  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/sparc.md (movdi_zero): Remove.
+	(movdi_insn_sp32_v9): New.
+
+2001-12-17  Richard Henderson  <rth@redhat.com>
+
 	* cfgcleanup.c (outgoing_edges_match): Check for insn match with
 	a single outgoing edge too.
 
