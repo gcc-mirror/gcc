@@ -81,7 +81,7 @@ static void merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
 							  basic_block));
 static void merge_blocks_move_successor_nojumps PARAMS ((basic_block,
 							basic_block));
-static bool merge_blocks		PARAMS ((edge,basic_block,basic_block,
+static basic_block merge_blocks		PARAMS ((edge,basic_block,basic_block,
 						 int));
 static bool try_optimize_cfg		PARAMS ((int));
 static bool try_simplify_condjump	PARAMS ((basic_block));
@@ -788,14 +788,24 @@ merge_blocks_move_successor_nojumps (a, b)
 }
 
 /* Attempt to merge basic blocks that are potentially non-adjacent.
-   Return true iff the attempt succeeded.  */
+   Return NULL iff the attempt failed, otherwise return basic block
+   where cleanup_cfg should continue.  Because the merging commonly
+   moves basic block away or introduces another optimization
+   possiblity, return basic block just before B so cleanup_cfg don't
+   need to iterate.
 
-static bool
+   It may be good idea to return basic block before C in the case
+   C has been moved after B and originally appeared earlier in the
+   insn seqeunce, but we have no infromation available about the
+   relative ordering of these two.  Hopefully it is not too common.  */
+
+static basic_block
 merge_blocks (e, b, c, mode)
      edge e;
      basic_block b, c;
      int mode;
 {
+  basic_block next;
   /* If C has a tail recursion label, do not merge.  There is no
      edge recorded from the call_placeholder back to this label, as
      that would make optimize_sibling_and_tail_recursive_calls more
@@ -803,7 +813,7 @@ merge_blocks (e, b, c, mode)
   if ((mode & CLEANUP_PRE_SIBCALL)
       && GET_CODE (c->head) == CODE_LABEL
       && tail_recursion_label_p (c->head))
-    return false;
+    return NULL;
 
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (e->flags & EDGE_FALLTHRU)
@@ -816,7 +826,7 @@ merge_blocks (e, b, c, mode)
 	fprintf (rtl_dump_file, "Merged %d and %d without moving.\n",
 		 b_index, c_index);
 
-      return true;
+      return b->prev_bb == ENTRY_BLOCK_PTR ? b : b->prev_bb;
     }
 
   /* Otherwise we will need to move code around.  Do that only if expensive
@@ -832,7 +842,7 @@ merge_blocks (e, b, c, mode)
 	 been if B is a forwarder block and C has no fallthru edge, but
 	 that should be cleaned up by bb-reorder instead.  */
       if (FORWARDER_BLOCK_P (b) || FORWARDER_BLOCK_P (c))
-	return false;
+	return NULL;
 
       /* We must make sure to not munge nesting of lexical blocks,
 	 and loop notes.  This is done by squeezing out all the notes
@@ -850,6 +860,7 @@ merge_blocks (e, b, c, mode)
 
       b_has_incoming_fallthru = (tmp_edge != NULL);
       b_fallthru_edge = tmp_edge;
+      next = b->prev_bb;
 
       /* Otherwise, we're going to try to move C after B.  If C does
 	 not have an outgoing fallthru, then it can be moved
@@ -857,7 +868,7 @@ merge_blocks (e, b, c, mode)
       if (! c_has_outgoing_fallthru)
 	{
 	  merge_blocks_move_successor_nojumps (b, c);
-	  return true;
+          return next == ENTRY_BLOCK_PTR ? next->next_bb : next;
 	}
 
       /* If B does not have an incoming fallthru, then it can be moved
@@ -870,14 +881,14 @@ merge_blocks (e, b, c, mode)
 	  basic_block bb;
 
 	  if (b_fallthru_edge->src == ENTRY_BLOCK_PTR)
-	    return false;
+	    return NULL;
 	  bb = force_nonfallthru (b_fallthru_edge);
 	  if (bb)
 	    notice_new_block (bb);
 	}
 
       merge_blocks_move_predecessor_nojumps (b, c);
-      return true;
+      return next == ENTRY_BLOCK_PTR ? next->next_bb : next;
     }
 
   return false;
@@ -1560,7 +1571,7 @@ try_optimize_cfg (mode)
   bool changed_overall = false;
   bool changed;
   int iterations = 0;
-  basic_block bb, b;
+  basic_block bb, b, next;
 
   if (mode & CLEANUP_CROSSJUMP)
     add_noreturn_fake_exit_edges ();
@@ -1656,20 +1667,21 @@ try_optimize_cfg (mode)
 		  b = c;
 		}
 
-	      /* Merge blocks.  Loop because chains of blocks might be
-		 combineable.  */
-	      while ((s = b->succ) != NULL
-		     && s->succ_next == NULL
-		     && !(s->flags & EDGE_COMPLEX)
-		     && (c = s->dest) != EXIT_BLOCK_PTR
-		     && c->pred->pred_next == NULL
-		     && b != c
-		     /* If the jump insn has side effects,
-			we can't kill the edge.  */
-		     && (GET_CODE (b->end) != JUMP_INSN
-			 || simplejump_p (b->end))
-		     && merge_blocks (s, b, c, mode))
-		changed_here = true;
+	      if ((s = b->succ) != NULL
+		  && s->succ_next == NULL
+		  && !(s->flags & EDGE_COMPLEX)
+		  && (c = s->dest) != EXIT_BLOCK_PTR
+		  && c->pred->pred_next == NULL
+		  && b != c
+		  /* If the jump insn has side effects,
+		     we can't kill the edge.  */
+		  && (GET_CODE (b->end) != JUMP_INSN
+		      || simplejump_p (b->end))
+		  && (next = merge_blocks (s, b, c, mode)))
+	        {
+		  b = next;
+		  changed_here = true;
+		}
 
 	      /* Simplify branch over branch.  */
 	      if ((mode & CLEANUP_EXPENSIVE) && try_simplify_condjump (b))
