@@ -3309,6 +3309,15 @@ changequote([,])dnl
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		case $machine in
 changequote(,)dnl
+		*-*-solaris2.[0-6]*) ;;
+changequote([,])dnl
+		*-*-solaris2*)
+			tm_file=sparc/sol2-sld-64.h
+			tmake_file="$tmake_file sparc/t-sol2-64"
+			;;
+		esac
+		case $machine in
+changequote(,)dnl
 		*-*-solaris2.[0-4])
 changequote([,])dnl
 			float_format=i128

@@ -1,3 +1,10 @@
+Tue Nov 23 00:57:10 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	From Casper H.S. Dik on comp.unix.solaris, 23 Oct 1998:
+	* configure.in: Try building a bi-arch 32/64-bit compiler on
+	sparc-*-solaris2.7 and higher.
+	* configure: Rebuild.
+
 Mon Nov 22 23:09:44 1999  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/freebsd.h: New, FreeBSD architecture independent file.
