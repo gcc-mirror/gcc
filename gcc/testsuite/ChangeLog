@@ -1,3 +1,7 @@
+2002-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/vt1.C: Fix regexp.
+
 2002-06-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/pure-1.c: Make functions static again.
