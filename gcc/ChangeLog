@@ -1,5 +1,10 @@
 2000-10-19  Jim Wilson  <wilson@cygnus.com>
 
+	* c-decl.c (start_decl): Check for error_mark_node type before using
+	COMPLETE_TYPE_P.
+	(finish_decl): Likewise.  Don't give an error if decl type is
+	already error_mark_node.
+
 	* haifa-sched.c (compute_trg_info): Add explanatory comments.
 	New local update_blocks.  Use update_blocks to remove duplicates
 	when computing update blocks.  Check for bblst_table overflow.

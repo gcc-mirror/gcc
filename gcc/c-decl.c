@@ -3506,7 +3506,12 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       default:
 	/* Don't allow initializations for incomplete types
 	   except for arrays which might be completed by the initialization.  */
-	if (COMPLETE_TYPE_P (TREE_TYPE (decl)))
+
+	/* This can happen if the array size is an undefined macro.  We already
+	   gave a warning, so we don't need another one.  */
+	if (TREE_TYPE (decl) == error_mark_node)
+	  initialized = 0;
+	else if (COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	  {
 	    /* A complete type is ok if size is fixed.  */
 
@@ -3584,7 +3589,8 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       && DECL_RTL (tem) == 0
       && !DECL_CONTEXT (tem))
     {
-      if (COMPLETE_TYPE_P (TREE_TYPE (tem)))
+      if (TREE_TYPE (tem) != error_mark_node
+	  && COMPLETE_TYPE_P (TREE_TYPE (tem)))
 	expand_decl (tem);
       else if (TREE_CODE (TREE_TYPE (tem)) == ARRAY_TYPE
 	       && DECL_INITIAL (tem) != 0)
@@ -3679,10 +3685,13 @@ finish_decl (decl, init, asmspec_tree)
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
-      if (DECL_SIZE (decl) == 0 && COMPLETE_TYPE_P (TREE_TYPE (decl)))
+      if (DECL_SIZE (decl) == 0 && TREE_TYPE (decl) != error_mark_node
+	  && COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	layout_decl (decl, 0);
 
       if (DECL_SIZE (decl) == 0
+	  /* Don't give an error if we already gave one earlier.  */
+	  && TREE_TYPE (decl) != error_mark_node
 	  && (TREE_STATIC (decl)
 	      ?
 		/* A static variable with an incomplete type
