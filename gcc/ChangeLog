@@ -1,3 +1,7 @@
+2004-05-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* rtl.h (PHI_NODE_P): Remove.
+
 2004-05-02  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	PR middle-end/14988
