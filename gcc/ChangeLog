@@ -1,5 +1,9 @@
 2004-03-22  Danny Smith  <dannysmith@users.sourceforge.net>
 
+	* gcov-io.h: Update copyright year.
+
+2004-03-22  Danny Smith  <dannysmith@users.sourceforge.net>
+
 	PR target/14291
 	* gcov-io.h (gcov_truncate): Define ftruncate as _chsize for
 	__MINGW32__.
