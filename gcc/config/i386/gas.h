@@ -117,4 +117,8 @@ Boston, MA 02111-1307, USA.  */
 /* Print opcodes the way that GAS expects them.  */
 #define GAS_MNEMONICS 1
 
+/* The comment-starter string as GAS expects it. */
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
+
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
