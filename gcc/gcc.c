@@ -2296,7 +2296,7 @@ convert_filename (name, do_exe)
       && name[len - 2] == '.'
       && name[len - 1] == 'o')
     {
-      obstack_grow (&obstack, name[i], len - 2);
+      obstack_grow (&obstack, name, len - 2);
       obstack_grow0 (&obstack, OBJECT_SUFFIX, strlen (OBJECT_SUFFIX));
       name = obstack_finish (&obstack);
     }
