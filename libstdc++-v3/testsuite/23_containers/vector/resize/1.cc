@@ -24,7 +24,7 @@
 // XXX This test will not work for irix6 because of bug(s) in libc malloc
 // XXX for very large allocations.  However -lmalloc seems to work.
 // See http://gcc.gnu.org/ml/libstdc++/2002-12/msg00131.html
-// { dg-options "-lmalloc" { target mips*-*-irix6* } }
+// { dg-options "-D_GLIBCXX_ASSERT -lmalloc" { target mips*-*-irix6* } }
 
 #include <vector>
 #include <stdexcept>

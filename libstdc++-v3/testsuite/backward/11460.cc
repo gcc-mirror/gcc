@@ -1,3 +1,4 @@
+// { dg-options "-Wno-deprecated -D_GLIBCXX_ASSERT" }
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -18,8 +19,6 @@
 
 #include <strstream>
 #include <testsuite_hooks.h>
-
-// { dg-options "-Wno-deprecated" }
 
 class Buf : public std::strstreambuf
 {

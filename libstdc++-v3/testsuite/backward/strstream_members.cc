@@ -1,3 +1,4 @@
+// { dg-options "-Wno-deprecated" }
 // Copyright (C) 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -20,8 +21,6 @@
 
 #include <strstream>
 #include <testsuite_hooks.h>
-
-// { dg-options "-Wno-deprecated" }
 
 void test01()
 {

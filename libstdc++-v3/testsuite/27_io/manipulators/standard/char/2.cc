@@ -1,3 +1,5 @@
+// { dg-options "-D_GLIBCXX_ASSERT -fno-implicit-templates" }
+
 // Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -19,8 +21,6 @@
 // Some members need to be explicitly instantiated, so that users can build
 // their own code with -fno-implicit-templates and not suffer from a zillion
 // link errors.
-
-// { dg-options "-fno-implicit-templates" }
 
 #include <fstream>
 #include <istream>

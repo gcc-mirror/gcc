@@ -1,4 +1,4 @@
-// { dg-options "-mieee" { target alpha*-*-* } }
+// { dg-options "-D_GLIBCXX_ASSERT -mieee" { target alpha*-*-* } }
 
 // 1999-08-23 bkoz
 
