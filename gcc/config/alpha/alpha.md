@@ -1190,7 +1190,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 ;; Lengths of 8 for ldq $t12,__divq($gp); jsr $t9,($t12),__divq as
 ;; expanded by the assembler.
 
-(define_insn "*divmodsi_internal_er"
+(define_insn_and_split "*divmodsi_internal_er"
   [(set (match_operand:DI 0 "register_operand" "=c")
 	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
 			[(match_operand:DI 1 "register_operand" "a")
@@ -1199,8 +1199,50 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
   "ldq $27,__%E3($29)\t\t!literal!%#\;jsr $23,($27),__%E3\t\t!lituse_jsr!%#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (sign_extend:DI (match_dup 3)))
+	      (use (match_dup 0))
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])]
+{
+  const char *str;
+  switch (GET_CODE (operands[3]))
+    {
+    case DIV: 
+      str = "__divl";
+      break; 
+    case UDIV:
+      str = "__divlu";
+      break;
+    case MOD:
+      str = "__reml";
+      break;
+    case UMOD:
+      str = "__remlu";
+      break;
+    default:
+      abort ();
+    }
+  emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
+				  gen_rtx_SYMBOL_REF (DImode, str),
+				  const0_rtx));
+}
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
+
+(define_insn "*divmodsi_internal_er_1"
+  [(set (match_operand:DI 0 "register_operand" "=c")
+	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
+                        [(match_operand:DI 1 "register_operand" "a")
+                         (match_operand:DI 2 "register_operand" "b")])))
+   (use (match_operand:DI 4 "register_operand" "c"))
+   (clobber (reg:DI 23))
+   (clobber (reg:DI 28))]
+  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "jsr $23,($27),__%E3"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "4")])
 
 (define_insn "*divmodsi_internal"
   [(set (match_operand:DI 0 "register_operand" "=c")
@@ -1214,7 +1256,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
-(define_insn "*divmoddi_internal_er"
+(define_insn_and_split "*divmoddi_internal_er"
   [(set (match_operand:DI 0 "register_operand" "=c")
 	(match_operator:DI 3 "divmod_operator"
 			[(match_operand:DI 1 "register_operand" "a")
@@ -1223,8 +1265,49 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
   "ldq $27,__%E3($29)\t\t!literal!%#\;jsr $23,($27),__%E3\t\t!lituse_jsr!%#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0) (match_dup 3))
+	      (use (match_dup 0))
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])]
+{
+  const char *str;
+  switch (GET_CODE (operands[3]))
+    {
+    case DIV: 
+      str = "__divq";
+      break; 
+    case UDIV:
+      str = "__divqu";
+      break;
+    case MOD:
+      str = "__remq";
+      break;
+    case UMOD:
+      str = "__remqu";
+      break;
+    default:
+      abort ();
+    }
+  emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
+				  gen_rtx_SYMBOL_REF (DImode, str),
+				  const0_rtx));
+}
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
+
+(define_insn "*divmoddi_internal_er_1"
+  [(set (match_operand:DI 0 "register_operand" "=c")
+	(match_operator:DI 3 "divmod_operator"
+                        [(match_operand:DI 1 "register_operand" "a")
+                         (match_operand:DI 2 "register_operand" "b")]))
+   (use (match_operand:DI 4 "register_operand" "c"))
+   (clobber (reg:DI 23))
+   (clobber (reg:DI 28))]
+  "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
+  "jsr $23,($27),__%E3"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "4")])
 
 (define_insn "*divmoddi_internal"
   [(set (match_operand:DI 0 "register_operand" "=c")
