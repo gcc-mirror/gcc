@@ -1,3 +1,8 @@
+2000-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (expand_expr) [ADDR_EXPR]: Handle when op0 is RETURN_DECL
+	passed in multiple non-contiguous locations.
+
 2000-11-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README.gnat: Remove file.
