@@ -771,6 +771,7 @@ case "${target}" in
     fi
     ;;
   *-*-linux*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     # linux has rx in libc
     skipdirs="$skipdirs target-librx"
     ;;
