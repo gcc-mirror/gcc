@@ -114,6 +114,7 @@ static void make_goto_expr_edges (basic_block);
 static edge tree_redirect_edge_and_branch (edge, basic_block);
 static edge tree_try_redirect_by_replacing_jump (edge, basic_block);
 static void split_critical_edges (void);
+static bool remove_fallthru_edge (VEC(edge) *);
 
 /* Various helpers.  */
 static inline bool stmt_starts_bb_p (tree, tree);
@@ -2059,7 +2060,7 @@ cleanup_control_flow (void)
   basic_block bb;
   block_stmt_iterator bsi;
   bool retval = false;
-  tree stmt;
+  tree stmt, call;
 
   FOR_EACH_BB (bb)
     {
@@ -2072,6 +2073,17 @@ cleanup_control_flow (void)
       if (TREE_CODE (stmt) == COND_EXPR
 	  || TREE_CODE (stmt) == SWITCH_EXPR)
 	retval |= cleanup_control_expr_graph (bb, bsi);
+
+      /* Check for indirect calls that have been turned into
+	 noreturn calls.  */
+      call = get_call_expr_in (stmt);
+      if (call != 0
+	  && (call_expr_flags (call) & ECF_NORETURN) != 0
+	  && remove_fallthru_edge (bb->succs))
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+	  retval = true;
+	}
     }
   return retval;
 }
@@ -2140,6 +2152,22 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
   return retval;
 }
 
+/* Remove any fallthru edge from EV.  Return true if an edge was removed.  */
+
+static bool
+remove_fallthru_edge (VEC(edge) *ev)
+{
+  edge_iterator ei;
+  edge e;
+
+  FOR_EACH_EDGE (e, ei, ev)
+    if ((e->flags & EDGE_FALLTHRU) != 0)
+      {
+	remove_edge (e);
+	return true;
+      }
+  return false;
+}
 
 /* Given a basic block BB ending with COND_EXPR or SWITCH_EXPR, and a
    predicate VAL, return the edge that will be taken out of the block.

@@ -1,3 +1,10 @@
+2005-01-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR tree-optimization/19484
+	* tree-cfg.c (remove_fallthru_edge): New function.
+	(cleanup_control_flow): Remove fallthru edges from calls that are
+	now known not to return.
+
 2005-01-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/19038
