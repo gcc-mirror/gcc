@@ -1440,10 +1440,9 @@ print_operand (file, x, code)
 	case MEM:
 	  {
 	    rtx addr = XEXP (x, 0);
-	    int eightbit_ok = EIGHTBIT_CONSTANT_ADDRESS_P (addr);
 	    int tiny_ok = ((GET_CODE (addr) == SYMBOL_REF
 			    && TINY_DATA_NAME_P (XSTR (addr, 0)))
-			   || TINY_CONSTANT_ADDRESS_P (addr));
+			   || h8300_tiny_constant_address_p (addr));
 
 	    fprintf (file, "@");
 	    output_address (addr);
@@ -1454,7 +1453,7 @@ print_operand (file, x, code)
 	      {
 	      case 'R':
 		/* Used for mov.b and bit operations.  */
-		if (eightbit_ok)
+		if (h8300_eightbit_constant_address_p (addr))
 		  {
 		    fprintf (file, ":8");
 		    break;
@@ -3729,7 +3728,7 @@ h8300_adjust_insn_length (insn, length)
 
 	  /* @aa:8 is 2 bytes shorter than the longest.  */
 	  if (GET_MODE (SET_SRC (pat)) == QImode
-	      && EIGHTBIT_CONSTANT_ADDRESS_P (addr))
+	      && h8300_eightbit_constant_address_p (addr))
 	    return -2;
 	}
       else
@@ -3752,14 +3751,13 @@ h8300_adjust_insn_length (insn, length)
 
 	  /* @aa:8 is 6 bytes shorter than the longest.  */
 	  if (GET_MODE (SET_SRC (pat)) == QImode
-	      && ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FLAG (addr))
-		  || EIGHTBIT_CONSTANT_ADDRESS_P (addr)))
+	      && h8300_eightbit_constant_address_p (addr))
 	    return -6;
 
 	  /* @aa:16 is 4 bytes shorter than the longest.  */
 	  if ((GET_CODE (addr) == SYMBOL_REF
 	       && TINY_DATA_NAME_P (XSTR (addr, 0)))
-	      || TINY_CONSTANT_ADDRESS_P (addr))
+	      || h8300_tiny_constant_address_p (addr))
 	    return -4;
 
 	  /* @aa:24 is 2 bytes shorter than the longest.  */
@@ -3868,6 +3866,9 @@ h8300_asm_named_section (name, flags)
 }
 #endif /* ! OBJECT_FORMAT_ELF */
 
+/* Nonzero if X is a constant address suitable as an 8-bit absolute,
+   which is a special case of the 'R' operand.  */
+
 int
 h8300_eightbit_constant_address_p (x)
      rtx x;
@@ -3896,6 +3897,9 @@ h8300_eightbit_constant_address_p (x)
 	  || (TARGET_H8300H && IN_RANGE (addr, h1, h2))
 	  || (TARGET_H8300S && IN_RANGE (addr, s1, s2)));
 }
+
+/* Nonzero if X is a constant address suitable as an 16-bit absolute
+   on H8/300H and H8S.  */
 
 int
 h8300_tiny_constant_address_p (x)

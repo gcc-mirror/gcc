@@ -858,18 +858,6 @@ struct cum_arg
    ? !h8300_shift_needs_scratch_p (INTVAL (OP), SImode)	\
    : 0)
 
-/* Nonzero if X is a constant address suitable as an 8-bit absolute,
-   which is a special case of the 'R' operand.  */
-
-#define EIGHTBIT_CONSTANT_ADDRESS_P(X)		\
-  h8300_eightbit_constant_address_p (X)
-
-/* Nonzero if X is a constant address suitable as an 16-bit absolute
-   on H8/300H and H8S.  */
-
-#define TINY_CONSTANT_ADDRESS_P(X)		\
-  h8300_tiny_constant_address_p (X)
-
 /* 'U' if valid for a bset destination;
    i.e. a register, register indirect, or the eightbit memory region
    (a SYMBOL_REF with an SYMBOL_REF_FLAG set).
@@ -888,7 +876,7 @@ struct cum_arg
         && (TARGET_H8300S						\
 	    || SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0))))	\
    || (GET_CODE (OP) == MEM						\
-       && EIGHTBIT_CONSTANT_ADDRESS_P (XEXP (OP, 0)))			\
+       && h8300_eightbit_constant_address_p (XEXP (OP, 0)))		\
    || (GET_CODE (OP) == MEM && TARGET_H8300S				\
        && GET_CODE (XEXP (OP, 0)) == CONST_INT))
 

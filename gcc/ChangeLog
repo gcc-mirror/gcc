@@ -1,3 +1,13 @@
+2002-11-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (print_operand): Use
+	h8300_eightbit_constant_address_p and
+	h8300_tiny_constant_address_p.
+	(h8300_adjust_insn_length): Likewise.
+	* config/h8300/h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): Remove.
+	(TINY_CONSTANT_ADDRESS_P): Likewise.
+	(OK_FOR_U): Use eightbit_constant_address_p.
+
 2002-11-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/libgcc-libc.ver: Add multilib support.
