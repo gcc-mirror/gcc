@@ -2203,6 +2203,8 @@ do {									\
 
    If you change this, execute "rm explow.o recog.o reload.o".  */
 
+#define SYMBOLIC_CONST(X) symbolic_operand (X, VOIDmode)
+
 #define RTX_OK_FOR_BASE_P(X)						\
   ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
   || (GET_CODE (X) == SUBREG						\
@@ -2236,6 +2238,8 @@ do {									\
 		   && GET_CODE (op1) != REG		\
 		   && GET_CODE (op1) != LO_SUM		\
 		   && GET_CODE (op1) != MEM		\
+		   && (! SYMBOLIC_CONST (op1)		\
+		       || MODE == Pmode)		\
 		   && (GET_CODE (op1) != CONST_INT	\
 		       || SMALL_INT (op1)))		\
 	    goto ADDR;					\
@@ -2323,6 +2327,34 @@ do {									\
   else if (GET_CODE (X) == CONST_INT && SMALL_INT (X))	\
     goto ADDR;						\
 }
+
+/* Go to LABEL if ADDR (a legitimate address expression)
+   has an effect that depends on the machine mode it is used for.
+
+   In PIC mode,
+
+      (mem:HI [%l7+a])
+
+   is not equivalent to
+   
+      (mem:QI [%l7+a]) (mem:QI [%l7+a+1])
+
+   because [%l7+a+1] is interpreted as the address of (a+1).  */
+
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)	\
+{							\
+  if (flag_pic == 1)					\
+    {							\
+      if (GET_CODE (ADDR) == PLUS)			\
+	{						\
+	  rtx op0 = XEXP (ADDR, 0);			\
+	  rtx op1 = XEXP (ADDR, 1);			\
+	  if (op0 == pic_offset_table_rtx		\
+	      && SYMBOLIC_CONST (op1))			\
+	    goto LABEL;					\
+	}						\
+    }							\
+}
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
@@ -2400,12 +2432,6 @@ do {                                                                    \
     }									\
   /* ??? 64-bit reloads.  */						\
 } while (0)
-
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-   On the SPARC this is never true.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 
 /* If we are referencing a function make the SYMBOL_REF special.
    In the Embedded Medium/Anywhere code model, %g4 points to the data segment
