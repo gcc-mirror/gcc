@@ -271,6 +271,21 @@ namespace tr1
     struct is_volatile<_Tp volatile>
     : public true_type { };
 
+  template<typename _Tp>
+    struct is_pod
+    : public integral_constant<bool, (is_void<_Tp>::value
+				      || is_scalar<typename
+				      remove_all_extents<_Tp>::type>::value)>
+    { };
+
+  template<typename _Tp>
+    struct has_trivial_constructor
+    : public integral_constant<bool, is_pod<_Tp>::value> { };
+
+  template<typename _Tp>
+    struct has_trivial_destructor
+    : public integral_constant<bool, is_pod<_Tp>::value> { };
+
   template<typename>
     struct has_virtual_destructor
     : public false_type { };
