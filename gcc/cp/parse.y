@@ -80,8 +80,6 @@ void yyerror ();
    error message if the user supplies an empty conditional expression.  */
 static char *cond_stmt_keyword;
 
-static int doing_explicit;
-
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
 int have_extern_spec;
 int used_extern_spec;
@@ -153,7 +151,7 @@ empty_parms ()
 %token <itype> VISSPEC
 %token DELETE NEW OVERLOAD THIS OPERATOR
 %token LEFT_RIGHT TEMPLATE
-%token TYPEID DYNAMIC_CAST
+%token TYPEID DYNAMIC_CAST STATIC_CAST REINTERPRET_CAST CONST_CAST
 %token <itype> SCOPE
 
 /* Define the operator tokens and their precedences.
@@ -197,7 +195,7 @@ empty_parms ()
 %type <code> unop
 
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist
-%type <ttype> optional_identifier paren_expr_or_null nontrivial_exprlist
+%type <ttype> paren_expr_or_null nontrivial_exprlist
 %type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
 %type <ttype> typed_declspecs reserved_declspecs
 %type <ttype> typed_typespecs reserved_typespecquals
@@ -242,7 +240,7 @@ empty_parms ()
 %type <ttype> class_head base_class_list
 %type <itype> base_class_access_list
 %type <ttype> base_class maybe_base_class_list base_class.1
-%type <ttype> maybe_raises raise_identifier raise_identifiers ansi_raise_identifier ansi_raise_identifiers
+%type <ttype> maybe_raises ansi_raise_identifier ansi_raise_identifiers
 %type <ttype> component_declarator0
 %type <ttype> forhead.1 operator_name
 %type <ttype> object aggr
@@ -261,7 +259,7 @@ empty_parms ()
 %type <ttype> qualified_type_name complete_type_name notype_identifier
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
-%type <ttype> new_initializer new_placement specialization
+%type <ttype> new_initializer new_placement specialization type_specifier_seq
 
 /* in order to recognize aggr tags as defining and thus shadowing. */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
@@ -538,7 +536,6 @@ datadef:
         | declmods ';'
 	  { pedwarn ("empty declaration"); }
 	| explicit_instantiation ';'
-		{ doing_explicit = 0; }
 	| typed_declspecs ';'
 	  {
 	    tree t = $<ttype>$;
@@ -775,16 +772,11 @@ identifier_defn:
 	| PTYPENAME_DEFN
 	;
 
-do_explicit: TEMPLATE %prec EMPTY
-	{ doing_explicit = 1; }
-	;
-
 explicit_instantiation:
-	  do_explicit specialization template_instantiation
+	  TEMPLATE specialization template_instantiation
 		{ do_type_instantiation ($3 ? $3 : $2); }
-	| do_explicit typed_declspecs declarator
+	| TEMPLATE typed_declspecs declarator
 		{ do_function_instantiation ($2, $3); }
-	| do_explicit error
 	;
 
 template_type:
@@ -925,7 +917,7 @@ xcond:
 	;
 
 condition:
-	typed_typespecs declarator maybe_raises maybeasm maybe_attribute '='
+	type_specifier_seq declarator maybe_raises maybeasm maybe_attribute '='
 		{ {
 		  tree d;
 		  for (d = getdecls (); d; d = TREE_CHAIN (d))
@@ -952,6 +944,17 @@ condition:
 		}
 	| expr
 	;
+
+already_scoped_stmt:
+	  '{' '}'
+		{ finish_stmt (); }
+	| '{' maybe_label_decls stmts '}'
+		{ finish_stmt (); }
+	| '{' maybe_label_decls error '}'
+		{ finish_stmt (); }
+	| simple_stmt
+	;
+
 
 nontrivial_exprlist:
 	  expr_no_commas ',' expr_no_commas
@@ -1414,10 +1417,18 @@ primary:
 		    }
 		}
 	| functional_cast
-	/* Stroustrup RTTI */
 	| DYNAMIC_CAST '<' type_id '>' '(' expr ')'
 		{ tree type = groktypename ($3);
 		  $$ = build_dynamic_cast (type, $6); }
+	| STATIC_CAST '<' type_id '>' '(' expr ')'
+		{ tree type = groktypename ($3);
+		  $$ = build_static_cast (type, $6); }
+	| REINTERPRET_CAST '<' type_id '>' '(' expr ')'
+		{ tree type = groktypename ($3);
+		  $$ = build_reinterpret_cast (type, $6); }
+	| CONST_CAST '<' type_id '>' '(' expr ')'
+		{ tree type = groktypename ($3);
+		  $$ = build_const_cast (type, $6); }
 	| TYPEID '(' expr ')'
 		{ $$ = build_typeid ($3); }
 	| TYPEID '(' type_id ')'
@@ -2168,8 +2179,8 @@ specialization:
 	  aggr template_type_name ';'
 		{ 
 		  yyungetc (';', 1); current_aggr = $$; $$ = $2; 
-		  if (doing_explicit)
-		    instantiate_class_template ($$, 1);
+		  if ($<ttype>0 == ridpointers[(int) RID_TEMPLATE])
+		    instantiate_class_template ($$, 2);
 		}
 	;
 
@@ -2644,13 +2655,9 @@ enumerator:
 
 /* ANSI new-type-id (5.3.4) */
 new_type_id:
-	  typed_typespecs new_declarator
+	  type_specifier_seq new_declarator
 		{ $$ = build_decl_list ($$, $2); }
-	| nonempty_type_quals new_declarator
-		{ $$ = build_decl_list ($$, $2); }
-	| typed_typespecs %prec EMPTY
-		{ $$ = build_decl_list ($$, NULL_TREE); }
-	| nonempty_type_quals %prec EMPTY
+	| type_specifier_seq %prec EMPTY
 		{ $$ = build_decl_list ($$, NULL_TREE); }
 	/* GNU extension to allow arrays of arbitrary types with
 	   non-constant dimension.  */
@@ -3100,7 +3107,7 @@ simple_stmt:
 		  cond_stmt_keyword = "while"; }
 	  .pushlevel paren_cond_or_null
 		{ expand_exit_loop_if_false (0, truthvalue_conversion ($4)); }
-	  implicitly_scoped_stmt
+	  already_scoped_stmt
 		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();
@@ -3131,13 +3138,13 @@ simple_stmt:
 		/* Don't let the tree nodes for $7 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
 		{ push_momentary (); }
-	  implicitly_scoped_stmt
+	  already_scoped_stmt
 		{ emit_line_note (input_filename, lineno);
-		  expand_loop_continue_here ();
-		  if ($7) cplus_expand_expr_stmt ($7);
-		  pop_momentary ();
 		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
+		  pop_momentary ();
+		  expand_loop_continue_here ();
+		  if ($7) cplus_expand_expr_stmt ($7);
 		  pop_momentary ();
 		  expand_end_loop ();
 		  finish_stmt (); }
@@ -3153,13 +3160,13 @@ simple_stmt:
 		   by clear_momentary during the parsing of the next stmt.  */
 		{ push_momentary ();
 		  $<itype>8 = lineno; }
-	  implicitly_scoped_stmt
+	  already_scoped_stmt
 		{ emit_line_note (input_filename, (int) $<itype>8);
-		  expand_loop_continue_here ();
-		  if ($7) cplus_expand_expr_stmt ($7);
-		  pop_momentary ();
 		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
+		  pop_momentary ();
+		  expand_loop_continue_here ();
+		  if ($7) cplus_expand_expr_stmt ($7);
 		  pop_momentary ();
 		  expand_end_loop ();
 		  finish_stmt ();
@@ -3422,11 +3429,6 @@ ansi_try_stmts:
 		}
 	;
 
-optional_identifier:
-	  /* empty */
-		{ $$ = NULL_TREE; }
-	| identifier ;
-
 handler_seq:
 	  /* empty */
 	| handler_seq CATCH
@@ -3435,10 +3437,21 @@ handler_seq:
 		{ expand_end_catch_block (); }
 	;
 
+type_specifier_seq:
+	  typed_typespecs %prec EMPTY
+	| nonempty_type_quals %prec EMPTY
+	;
+
 handler_args:
 	  '(' ELLIPSIS ')'
 		{ expand_start_catch_block (NULL_TREE, NULL_TREE); }
-	| '(' type_id optional_identifier ')'
+	| '(' type_specifier_seq absdcl ')'
+		{ expand_start_catch_block ($2, $3); }
+	| '(' type_specifier_seq ')'
+		{ expand_start_catch_block ($2, NULL_TREE); }
+	| '(' type_specifier_seq notype_declarator ')'
+		{ expand_start_catch_block ($2, $3); }
+	| '(' typed_typespecs after_type_declarator ')'
 		{ expand_start_catch_block ($2, $3); }
 	;
 
@@ -3704,31 +3717,9 @@ maybe_raises:
 		{ $$ = $3; }
 	;
 
-raise_identifier:
-/*	  ALL
-		{ $$ = void_list_node; } */
-	  IDENTIFIER
-		{ $$ = build_decl_list (NULL_TREE, $$); }
-	| TYPENAME
-		{ $$ = build_decl_list (NULL_TREE, $$); }
-	| global_scope IDENTIFIER
-		{ $$ = build_decl_list (NULL_TREE, $2); }
-	| global_scope TYPENAME
-		{ $$ = build_decl_list (NULL_TREE, $2); }
-	;
-
 ansi_raise_identifier:
 	  type_id
 		{ $$ = build_decl_list (NULL_TREE, $$); }
-	;
-
-raise_identifiers:
-	  raise_identifier
-	| raise_identifiers ',' raise_identifier
-		{
-		  TREE_CHAIN ($3) = $$;
-		  $$ = $3;
-		}
 	;
 
 ansi_raise_identifiers:
@@ -3825,7 +3816,7 @@ operator_name:
 	| operator DELETE '[' ']'
 		{ $$ = ansi_opname[VEC_DELETE_EXPR]; }
 	/* Names here should be looked up in class scope ALSO.  */
-	| operator typed_typespecs conversion_declarator
+	| operator type_specifier_seq conversion_declarator
 		{ $$ = grokoptypename ($2, $3); }
 	| operator error
 		{ $$ = ansi_opname[ERROR_MARK]; }

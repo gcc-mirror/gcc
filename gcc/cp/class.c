@@ -2734,10 +2734,22 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  if (TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
 	    {
 	      tree name = DECL_NAME (x);
-	      tree icv = name ? IDENTIFIER_CLASS_VALUE (name) : NULL_TREE;
+	      tree icv;
 
-	      /* Don't complain about constructors.  */
-	      if (icv && name != constructor_name (current_class_type))
+	      /* Don't get confused by access decls.  */
+	      if (name && TREE_CODE (name) == IDENTIFIER_NODE)
+		icv = IDENTIFIER_CLASS_VALUE (name);
+	      else
+		icv = NULL_TREE;
+
+	      if (icv
+		  /* Don't complain about constructors.  */
+		  && name != constructor_name (current_class_type)
+		  /* Or inherited names.  */
+		  && id_in_current_class (name)
+		  /* Or shadowed tags.  */
+		  && !(TREE_CODE (icv) == TYPE_DECL
+		       && DECL_CONTEXT (icv) == t))
 		{
 		  cp_error_at ("declaration of identifier `%D' as `%+#D'",
 			       name, x);

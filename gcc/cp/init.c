@@ -643,7 +643,7 @@ emit_base_init (t, immediately)
 	  /* member could be, for example, a CONST_DECL for an enumerated
 	     tag; we don't want to try to initialize that, since it already
 	     has a value.  */
-	  if (TREE_CODE (member) != FIELD_DECL)
+	  if (TREE_CODE (member) != FIELD_DECL || !DECL_NAME (member))
 	    continue;
 
 	  name = DECL_NAME (member);
@@ -2087,8 +2087,7 @@ build_offset_ref (cname, name)
 
   if (t == NULL_TREE)
     {
-      cp_error ("`%D' is not a member of type `%T'", name,
-		IDENTIFIER_TYPE_VALUE (cname));
+      cp_error ("`%D' is not a member of type `%T'", name, type);
       return error_mark_node;
     }
 
@@ -2748,7 +2747,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
 
       /* We can call pushdecl here, because the TREE_CHAIN of this
 	 FUNCTION_DECL is not needed for other purposes.  */
-      decl = pushdecl_top_level (decl);
+      decl = pushdecl (decl);
 
       make_decl_rtl (decl, NULL_PTR, 1);
       add_friend (current_class_type, decl);

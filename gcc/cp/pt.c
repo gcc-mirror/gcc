@@ -265,12 +265,16 @@ end_template_decl (d1, d2, is_class, defn)
       && DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl)) != NULL_TREE)
     {
       tree ctx = DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl));
-      tree tmpl;
+      tree tmpl, t;
       my_friendly_assert (TREE_CODE (ctx) == UNINSTANTIATED_P_TYPE, 266);
       tmpl = UPT_TEMPLATE (ctx);
+      for (t = DECL_TEMPLATE_MEMBERS (tmpl); t; t = TREE_CHAIN (t))
+	if (TREE_PURPOSE (t) == DECL_NAME (decl)
+	    && duplicate_decls (decl, TREE_VALUE (t)))
+	  goto already_there;
       DECL_TEMPLATE_MEMBERS (tmpl) =
-	perm_tree_cons (DECL_NAME (decl), decl,
-			DECL_TEMPLATE_MEMBERS (tmpl));
+	perm_tree_cons (DECL_NAME (decl), decl, DECL_TEMPLATE_MEMBERS (tmpl));
+    already_there:
       poplevel (0, 0, 0);
       poplevel (0, 0, 0);
     }
@@ -1459,6 +1463,9 @@ tsubst (t, args, nargs, in_decl)
 	layout_type (r);
 	return r;
       }
+    case OFFSET_TYPE:
+      return build_offset_type
+	(tsubst (TYPE_OFFSET_BASETYPE (t), args, nargs, in_decl), type);
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
@@ -2008,9 +2015,18 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
       if (targs[idx] == arg)
 	return 0;
       else if (targs[idx])
-	return 1;
+	{
+	  if (TYPE_MAIN_VARIANT (targs[idx]) == TYPE_MAIN_VARIANT (arg))
+	    /* allow different parms to have different cv-qualifiers */;
+	  else
+	    return 1;
+	}
       /* Check for mixed types and values.  */
       if (TREE_CODE (TREE_VEC_ELT (tparms, idx)) != IDENTIFIER_NODE)
+	return 1;
+      /* Allow trivial conversions.  */
+      if (TYPE_READONLY (parm) < TYPE_READONLY (arg)
+	  || TYPE_VOLATILE (parm) < TYPE_VOLATILE (arg))
 	return 1;
       targs[idx] = arg;
       return 0;
@@ -2136,8 +2152,12 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	return unify (tparms, targs, ntparms, TYPE_PTRMEMFUNC_FN_TYPE (parm),
 		      arg, nsubsts);
 
-      /* Unification of something that is not a template fails. (mrs) */
-      return 1;
+      /* Allow trivial conversions.  */
+      if (TYPE_MAIN_VARIANT (parm) != TYPE_MAIN_VARIANT (arg)
+	  || TYPE_READONLY (parm) < TYPE_READONLY (arg)
+	  || TYPE_VOLATILE (parm) < TYPE_VOLATILE (arg))
+	return 1;
+      return 0;
 
     case METHOD_TYPE:
       if (TREE_CODE (arg) != METHOD_TYPE)
@@ -2150,7 +2170,16 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
      check_args:
       return type_unification (tparms, targs, TYPE_ARG_TYPES (parm),
 			       TYPE_ARG_TYPES (arg), nsubsts, 1);
-		    
+
+    case OFFSET_TYPE:
+      if (TREE_CODE (arg) != OFFSET_TYPE)
+	return 1;
+      if (unify (tparms, targs, ntparms, TYPE_OFFSET_BASETYPE (parm),
+		 TYPE_OFFSET_BASETYPE (arg), nsubsts))
+	return 1;
+      return unify (tparms, targs, ntparms, TREE_TYPE (parm),
+		    TREE_TYPE (arg), nsubsts);
+
     default:
       sorry ("use of `%s' in template type unification",
 	     tree_code_name [(int) TREE_CODE (parm)]);

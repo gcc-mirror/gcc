@@ -2672,7 +2672,7 @@ build_scoped_method_call (exp, scopes, name, parms)
 	}
 
       /* Call to a method.  */
-      return build_method_call (decl, name, parms, NULL_TREE,
+      return build_method_call (decl, name, parms, binfo,
 				LOOKUP_NORMAL|LOOKUP_NONVIRTUAL);
     }
   return error_mark_node;
@@ -3597,6 +3597,13 @@ build_method_call (instance, name, parms, basetype_path, flags)
   /* From here on down, BASETYPE is the type that INSTANCE_PTR's
      type (if it exists) is a pointer to.  */
 
+  if (DECL_ABSTRACT_VIRTUAL_P (function)
+      && instance == C_C_D
+      && DECL_CONSTRUCTOR_P (current_function_decl)
+      && ! (flags & LOOKUP_NONVIRTUAL)
+      && value_member (function, get_abstract_virtuals (basetype)))
+    cp_error ("abstract virtual `%#D' called from constructor", function);
+
   if (IS_SIGNATURE (basetype) && static_call_context)
     {
       cp_error ("cannot call signature member function `%T::%D' without signature pointer/reference",
@@ -4046,22 +4053,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 				TYPE_ARG_TYPES (TREE_TYPE (function)),
 				parms, &template_cost, 0);
 	  if (i == 0)
-	    {
-	      struct candidate *cp2;
-
-	      function = instantiate_template (function, targs);
-	      /* Now check that the template instantiated for this is not
-		 the same as a function that's in the list due to some
-		 previous instantiation.  */
-	      cp2 = candidates;
-	      while (cp2 != cp)
-		if (cp2->function == function)
-		  break;
-		else
-		  cp2 += 1;
-	      if (cp2->function == function)
-		continue;
-	    }
+	    function = instantiate_template (function, targs);
 	}
 
       if (TREE_CODE (function) == TEMPLATE_DECL)
@@ -4076,6 +4068,19 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 	}
       else
 	{
+	  struct candidate *cp2;
+
+	  /* Check that this decl is not the same as a function that's in
+	     the list due to some template instantiation.  */
+	  cp2 = candidates;
+	  while (cp2 != cp)
+	    if (cp2->function == function)
+	      break;
+	    else
+	      cp2 += 1;
+	  if (cp2->function == function)
+	    continue;
+
 	  function = DECL_MAIN_VARIANT (function);
 
 	  /* Can't use alloca here, since result might be

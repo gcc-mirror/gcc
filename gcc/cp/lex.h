@@ -65,6 +65,7 @@ enum rid
   RID_RAISES,
   RID_AUTO,
   RID_MUTABLE,
+  RID_TEMPLATE,
   RID_SIGNATURE,
   /* Before adding enough to get up to 64, the RIDBIT_* macros
      will have to be changed a little. */
