@@ -1,3 +1,15 @@
+2003-02-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gnu/gcj/runtime/natStackTrace.cc: Include platform.h immediately
+	after config.h.  Use <> for consistency.
+	* java/lang/natObject.cc: Likewise.
+	* java/lang/natRuntime.cc: Likewise.
+	* java/lang/natSystem.cc: Likewise.
+	* java/util/natTimeZone.cc: Likewise.
+	* win32.cc: Likewise.
+	* include/posix.h (fcntl, socket, connect, close, bind, accept,
+	listen, write, read): Undef to avoid interference from OS macros.
+
 2003-02-19  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/ByteBufferImpl.java

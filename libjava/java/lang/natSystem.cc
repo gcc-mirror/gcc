@@ -1,6 +1,6 @@
 // natSystem.cc - Native code implementing System class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001 , 2002 Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,6 +9,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
+#include <platform.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -23,8 +24,6 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
-
-#include "platform.h"
 
 
 
