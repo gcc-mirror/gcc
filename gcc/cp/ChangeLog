@@ -1,5 +1,8 @@
 Sun Dec  7 15:53:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* except.c (expand_start_catch_block): suspend_momentary for the
+	terminate handler.
+
 	* error.c (dump_decl): Handle LOOKUP_EXPR.
 
 Sun Dec  7 15:45:07 1997  Mark Mitchell  <mmitchell@usa.net>
