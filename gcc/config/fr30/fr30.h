@@ -49,24 +49,6 @@ Boston, MA 02111-1307, USA.  */
     }						\
    while (0)
 
-/* Use LDI:20 instead of LDI:32 to load addresses.  */
-#define TARGET_SMALL_MODEL_MASK	(1 << 0)
-#define TARGET_SMALL_MODEL	(target_flags & TARGET_SMALL_MODEL_MASK)
-
-#define TARGET_DEFAULT		0
-
-/* This declaration should be present.  */
-extern int target_flags;
-
-#define TARGET_SWITCHES						\
-{								\
-  { "small-model",      TARGET_SMALL_MODEL_MASK,		\
-    N_("Assume small address space") },				\
-  { "no-small-model", - TARGET_SMALL_MODEL_MASK, "" },		\
-  { "no-lsim",          0, "" },				\
-  { "",                 TARGET_DEFAULT, "" }			\
-}
-
 #define TARGET_VERSION fprintf (stderr, " (fr30)");
 
 #define CAN_DEBUG_WITHOUT_FP
