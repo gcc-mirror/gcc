@@ -1669,7 +1669,10 @@ emit_eh_context ()
 	    
 	    start_sequence ();
 
-	    /* If this is the first use insn, emit the call here. */
+	    /* If this is the first use insn, emit the call here.  This
+	       will always be at the top of our function, because if
+	       expand_inline_function notices a REG_EH_CONTEXT note, it
+	       adds a use insn to this function as well.  */
 	    if (ehc == 0)
 	      ehc = call_get_eh_context ();
 
