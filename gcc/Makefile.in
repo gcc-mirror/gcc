@@ -927,8 +927,8 @@ function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
    recog.h output.h bytecode.h
 stmt.o : stmt.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
-   insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h loop.h recog.h
-   bytecode.h bc-typecd.h bc-opcode.h bc-optab.h bc-emit.h
+   insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h loop.h \
+   recog.h bytecode.h bc-typecd.h bc-opcode.h bc-optab.h bc-emit.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h insn-config.h recog.h output.h typeclass.h \
    bytecode.h bc-opcode.h bc-typecd.h bc-optab.h bc-emit.h modemap.def
