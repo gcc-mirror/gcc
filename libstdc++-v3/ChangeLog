@@ -1,3 +1,8 @@
+2000-09-10  Branko Cibej  <branko.cibej@hermes.si>
+
+	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Replace "grep -q" with
+	  "grep -c".
+
 2000-09-09  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/localefwd.h (locale::_Impl): Scope out types to public.
