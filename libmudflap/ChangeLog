@@ -1,3 +1,25 @@
+2004-07-08  Frank Ch. Eigler  <fche@redhat.com>
+
+	ANSI C conversion, libmudflap specialization, recursion limiting.
+	* splay-tree.h (splay_tree_{de,}allocate_fn): Remove allocation_data
+	argument and indirection function pointers, update callers.
+	(splay_tree_s): Add statistics and recursion control fields
+	num_keys, max_depth, depth, rebalance_p.
+	* splay-tree.c (splay_tree_splay_helper): Track recursion depth.
+	Back out of search if it exceeds limit.
+	(splay_tree_splay): Manage recursion limiting with rebalancing as
+	needed.
+	(splay_tree_new): More initialization.
+	(splay_tree_rebalance): New function.
+	(splay_tree_foreach): Rewrite using nonrecursive logic.
+	(splay_tree_xmalloc_allocate, splay_tree_xmalloc_deallocate):
+	Remove.  Point indirect calls to mf-runtime.c's routines.
+	(splay_tree_compare_ints, splay_tree_compare_pointers): Remove unused
+	functions.
+	(splay_tree_delete, splay_tree_delete_helper): Ditto.
+	* testsuite/heap-scalestress.c: New test based on one from
+	Eyal Lebedinsky <eyal@eyal.emu.id.au>:
+
 2004-07-05  Matthias Klose  <doko@debian.org>
 
 	* libtool-version: New.
