@@ -1,3 +1,8 @@
+2000-03-11  Jason Merrill  <jason@casey.cygnus.com>
+
+	* exception.cc (__check_null_eh_spec): New fn.
+	* except.c (expand_end_eh_spec): Call it if the spec is throw().
+
 2000-03-10  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl.c (push_throw_library_fn): Take the FUNCTION_TYPE.

@@ -690,42 +690,61 @@ expand_end_eh_spec (raises, try_block)
   handler = begin_handler ();
   blocks = finish_handler_parms (NULL_TREE, handler);
 
-  /* Build up an array of type_infos.  */
-  for (; raises && TREE_VALUE (raises); raises = TREE_CHAIN (raises))
+  if (TREE_VALUE (raises) == NULL_TREE)
     {
-      types = tree_cons
-	(NULL_TREE, build_eh_type_type (TREE_VALUE (raises)), types);
-      ++count;
+      fn = get_identifier ("__check_null_eh_spec");
+      if (IDENTIFIER_GLOBAL_VALUE (fn))
+	fn = IDENTIFIER_GLOBAL_VALUE (fn);
+      else
+	{
+	  tmp = build_function_type (void_type_node, void_list_node);
+	  fn = push_throw_library_fn (fn, tmp);
+	  /* Since the spec doesn't allow any exceptions, this call
+	     will never throw.  */
+	  TREE_NOTHROW (fn) = 1;
+	}
+      tmp = NULL_TREE;
     }
-
-  types = build_nt (CONSTRUCTOR, NULL_TREE, types);
-  TREE_HAS_CONSTRUCTOR (types) = 1;
-
-  /* We can't pass the CONSTRUCTOR directly, so stick it in a variable.  */
-  tmp = build_cplus_array_type (const_ptr_type_node, NULL_TREE);
-  decl = build_decl (VAR_DECL, NULL_TREE, tmp);
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_INITIAL (decl) = types;
-  DECL_CONTEXT (decl) = current_function_decl;
-  cp_finish_decl (decl, types, NULL_TREE, 0);
-
-  decl = decay_conversion (decl);
-
-  fn = get_identifier ("__check_eh_spec");
-  if (IDENTIFIER_GLOBAL_VALUE (fn))
-    fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      tmp = tree_cons
-	(NULL_TREE, integer_type_node, tree_cons
-	 (NULL_TREE, TREE_TYPE (decl), void_list_node));
-      tmp = build_function_type (void_type_node, tmp);
+      /* Build up an array of type_infos.  */
+      for (; raises && TREE_VALUE (raises); raises = TREE_CHAIN (raises))
+	{
+	  types = tree_cons
+	    (NULL_TREE, build_eh_type_type (TREE_VALUE (raises)), types);
+	  ++count;
+	}
 
-      fn = push_throw_library_fn (fn, tmp);
+      types = build_nt (CONSTRUCTOR, NULL_TREE, types);
+      TREE_HAS_CONSTRUCTOR (types) = 1;
+
+      /* We can't pass the CONSTRUCTOR directly, so stick it in a variable.  */
+      tmp = build_cplus_array_type (const_ptr_type_node, NULL_TREE);
+      decl = build_decl (VAR_DECL, NULL_TREE, tmp);
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_INITIAL (decl) = types;
+      DECL_CONTEXT (decl) = current_function_decl;
+      cp_finish_decl (decl, types, NULL_TREE, 0);
+
+      decl = decay_conversion (decl);
+
+      fn = get_identifier ("__check_eh_spec");
+      if (IDENTIFIER_GLOBAL_VALUE (fn))
+	fn = IDENTIFIER_GLOBAL_VALUE (fn);
+      else
+	{
+	  tmp = tree_cons
+	    (NULL_TREE, integer_type_node, tree_cons
+	     (NULL_TREE, TREE_TYPE (decl), void_list_node));
+	  tmp = build_function_type (void_type_node, tmp);
+
+	  fn = push_throw_library_fn (fn, tmp);
+	}
+
+      tmp = tree_cons (NULL_TREE, build_int_2 (count, 0), 
+		       tree_cons (NULL_TREE, decl, NULL_TREE));
     }
 
-  tmp = tree_cons (NULL_TREE, build_int_2 (count, 0), 
-		   tree_cons (NULL_TREE, decl, NULL_TREE));
   tmp = build_call (fn, tmp);
   finish_expr_stmt (tmp);
 
