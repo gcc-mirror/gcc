@@ -26,7 +26,13 @@ import java.io.IOException;
 final class ConcreteProcess extends Process
 {
   public native void destroy ();
-  public native int exitValue ();
+
+  public int exitValue ()
+  {
+    if (! hasExited)
+      throw new IllegalThreadStateException("Process has not exited");
+    return status;
+  }
 
   public InputStream getErrorStream ()
   {
