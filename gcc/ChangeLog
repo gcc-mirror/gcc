@@ -1,5 +1,8 @@
 Fri Jan 14 00:28:06 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* cse.c (cse_insn): When changing (set (pc) (reg)) to
+	(set (pc) (label_ref)), verify the change creates a valid insn.
+
 	* fr30.c (call_operand): Tighten and rework to match rules for
 	call RTL expressions.
 	* fr30.h (PREDICATE_CODES, case call_operand): Only allow MEMs.
