@@ -1,5 +1,6 @@
 2002-05-31  Marcus Meissner  <meissner@suse.de>
 
+	PR libstdc++/6886
 	* include/bits/stl_bvector.h:  Use UL suffix for unsigned longs.
 	* testsuite/23_containers/vector_bool.cc (test02):  New test.
 
