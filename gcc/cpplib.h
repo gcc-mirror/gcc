@@ -725,7 +725,7 @@ extern void cpp_undef  PARAMS ((cpp_reader *, const char *));
 extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
 
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
-					    const unsigned char *, long));
+					    const unsigned char *, size_t));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
 extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 

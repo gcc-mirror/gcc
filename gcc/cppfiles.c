@@ -74,8 +74,8 @@ static struct include_file *find_include_file
 				PARAMS ((cpp_reader *, const char *,
 					 struct file_name_list *));
 static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
-static int read_include_file	PARAMS ((cpp_reader *, struct include_file *));
-static int stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
+static void read_include_file	PARAMS ((cpp_reader *, struct include_file *));
+static void stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void purge_cache 	PARAMS ((struct include_file *));
 static void destroy_include_file_node	PARAMS ((splay_tree_value));
 static int report_missing_guard		PARAMS ((splay_tree_node, void *));
@@ -204,10 +204,11 @@ open_file (pfile, filename)
   return 0;
 }
 
-/* Place the file referenced by INC into a new buffer on PFILE's stack.
-   Return 1 if successful, 0 if not.  */
+/* Place the file referenced by INC into a new buffer on PFILE's
+   stack.  If there are errors, or the file should not be re-included,
+   a null buffer is pushed.  */
 
-static int
+static void
 stack_include_file (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
@@ -222,45 +223,37 @@ stack_include_file (pfile, inc)
       lineno = pfile->buffer->lineno;
     }
 
-  if (pfile->context->prev)
-    cpp_ice (pfile, "attempt to push file buffer with contexts stacked");
+  /* Not in cache?  */
+  if (! inc->buffer)
+    read_include_file (pfile, inc);
 
-  if (DO_NOT_REREAD (inc))
-    return 0;
-
-  if (inc->buffer == NULL)
-    if (read_include_file (pfile, inc) == 0)
-      return 0;
-
+  /* Push a null buffer.  */
   fp = cpp_push_buffer (pfile, NULL, 0);
-  if (fp == 0)
-    return 0;
-
-  /* Initialise controlling macro state.  */
-  pfile->mi_state = MI_OUTSIDE;
-  pfile->mi_cmacro = 0;
-
   fp->inc = inc;
   fp->nominal_fname = inc->name;
   fp->buf = inc->buffer;
-  fp->rlimit = fp->buf + inc->st.st_size;
+  fp->rlimit = fp->buf;
+  if (! DO_NOT_REREAD (inc))
+    fp->rlimit += inc->st.st_size;
   fp->cur = fp->buf;
-  fp->lineno = 0;
   fp->line_base = fp->buf;
+  fp->lineno = 0;		/* For _cpp_do_file_change.  */
+  fp->inc->refcnt++;
 
   /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
      see do_include */
   if (!CPP_OPTION (pfile, ignore_srcdir))
     fp->actual_dir = actual_directory (pfile, inc->name);
 
-  fp->inc->refcnt++;
+  /* Initialise controlling macro state.  */
+  pfile->mi_state = MI_OUTSIDE;
+  pfile->mi_cmacro = 0;
   pfile->include_depth++;
   pfile->input_stack_listing_current = 0;
 
   _cpp_do_file_change (pfile, FC_ENTER, filename, lineno);
 
   fp->lineno = 1;
-  return 1;
 }
 
 /* Read the file referenced by INC into the file cache.
@@ -278,7 +271,7 @@ stack_include_file (pfile, inc)
 
    FIXME: Flush file cache and try again if we run out of memory.  */
 
-static int
+static void
 read_include_file (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
@@ -288,6 +281,9 @@ read_include_file (pfile, inc)
 #if MMAP_THRESHOLD
   static int pagesize = -1;
 #endif
+
+  if (DO_NOT_REREAD (inc))
+    return;
 
   if (S_ISREG (inc->st.st_mode))
     {
@@ -373,7 +369,7 @@ read_include_file (pfile, inc)
   close (inc->fd);
   inc->buffer = buf;
   inc->fd = -1;
-  return 1;
+  return;
 
  perror_fail:
   cpp_error_from_errno (pfile, inc->name);
@@ -382,7 +378,7 @@ read_include_file (pfile, inc)
   close (inc->fd);
   inc->fd = -1;
   inc->cmacro = NEVER_REREAD;
-  return 0;
+  return;
 }
 
 static void
@@ -583,6 +579,20 @@ _cpp_execute_include (pfile, header, no_reinclude, search_start)
   struct include_file *inc;
   char *fname;
 
+  /* Help protect #include or similar from recursion.  */
+  if (pfile->buffer_stack_depth >= CPP_STACK_MAX)
+    {
+      cpp_fatal (pfile, "#include nested too deeply");
+      return;
+    }
+
+  /* Check we've tidied up #include before entering the buffer.  */
+  if (pfile->context->prev)
+    {
+      cpp_ice (pfile, "attempt to push file buffer with contexts stacked");
+      return;
+    }
+
   fname = alloca (len + 1);
   memcpy (fname, header->val.str.text, len);
   fname[len] = '\0';
@@ -613,11 +623,13 @@ _cpp_execute_include (pfile, header, no_reinclude, search_start)
       inc->include_count++;
 
       /* Actually process the file.  */
-      if (stack_include_file (pfile, inc))
-	{
-	  if (angle_brackets)
-	    pfile->system_include_depth++;
+      stack_include_file (pfile, inc);
 
+      if (angle_brackets)
+	pfile->system_include_depth++;
+
+      if (! DO_NOT_REREAD (inc))
+	{
 	  if (no_reinclude)
 	    inc->cmacro = NEVER_REREAD;
 
@@ -630,6 +642,7 @@ _cpp_execute_include (pfile, header, no_reinclude, search_start)
 	      fprintf (stderr, " %s\n", inc->name);
 	    }
 	}
+
       return;
     }
       
@@ -730,11 +743,8 @@ _cpp_read_file (pfile, fname)
       return 0;
     }
 
-  /* Return success for zero-length files.  */
-  if (DO_NOT_REREAD (f))
-    return 1;
-
-  return stack_include_file (pfile, f);
+  stack_include_file (pfile, f);
+  return 1;
 }
 
 /* Do appropriate cleanup when a file buffer is popped off the input
