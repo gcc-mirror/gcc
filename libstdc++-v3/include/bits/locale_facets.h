@@ -1605,6 +1605,8 @@ namespace std
       bool				_M_use_grouping;
       const _CharT* 			_M_truename;
       const _CharT*			_M_falsename;
+      size_t                            _M_truename_len;
+      size_t                            _M_falsename_len;     
       _CharT 				_M_decimal_point;
       _CharT 				_M_thousands_sep;
       
@@ -1624,8 +1626,9 @@ namespace std
 
       __numpunct_cache(size_t __refs = 0) : facet(__refs), 
       _M_grouping(NULL), _M_use_grouping(false), _M_truename(NULL), 
-      _M_falsename(NULL), _M_decimal_point(_CharT()), 
-      _M_thousands_sep(_CharT()), _M_allocated(false)
+      _M_falsename(NULL),  _M_truename_len(0), _M_falsename_len(0),
+      _M_decimal_point(_CharT()), _M_thousands_sep(_CharT()),
+      _M_allocated(false)
       { } 
 
       ~__numpunct_cache();
@@ -1649,17 +1652,14 @@ namespace std
       _M_grouping = __grouping;
       _M_use_grouping = __len && __np.grouping()[0] != 0;
 
-      typedef basic_string<_CharT> __string_type;
-      typename __string_type::size_type __lentf = __np.truename().size();
-      _CharT* __truename = new _CharT[__lentf + 1];
-      __np.truename().copy(__truename, __lentf);
-      __truename[__lentf] = _CharT();
+      _M_truename_len = __np.truename().size();
+      _CharT* __truename = new _CharT[_M_truename_len];
+      __np.truename().copy(__truename, _M_truename_len);
       _M_truename = __truename;
-      
-      __lentf = __np.falsename().size();
-      _CharT* __falsename = new _CharT[__lentf + 1];
-      __np.falsename().copy(__falsename, __lentf);
-      __falsename[__lentf] = _CharT();
+
+      _M_falsename_len = __np.falsename().size();
+      _CharT* __falsename = new _CharT[_M_falsename_len];
+      __np.falsename().copy(__falsename, _M_falsename_len);
       _M_falsename = __falsename;
           
       _M_decimal_point = __np.decimal_point();

@@ -58,7 +58,9 @@ namespace std
 	_M_data->_M_atoms_in[__i] = __num_base::_S_atoms_in[__i];
 
       _M_data->_M_truename = "true";
-      _M_data->_M_falsename = "false";      
+      _M_data->_M_truename_len = strlen(_M_data->_M_truename);
+      _M_data->_M_falsename = "false";
+      _M_data->_M_falsename_len = strlen(_M_data->_M_falsename);
     }
 
   template<> 
@@ -95,7 +97,9 @@ namespace std
 	}
       
       _M_data->_M_truename = L"true";
+      _M_data->_M_truename_len = wcslen(_M_data->_M_truename);
       _M_data->_M_falsename = L"false";
+      _M_data->_M_falsename_len = wcslen(_M_data->_M_falsename);
     }
 
   template<> 

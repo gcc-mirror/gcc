@@ -75,8 +75,10 @@ namespace std
       // NB: There is no way to extact this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
       _M_data->_M_truename = "true";
+      _M_data->_M_truename_len = strlen(_M_data->_M_truename);
       // _M_falsename = __nl_langinfo_l(NOSTR, __cloc);
       _M_data->_M_falsename = "false";
+      _M_data->_M_falsename_len = strlen(_M_data->_M_falsename);
     }
  
   template<> 
@@ -138,8 +140,10 @@ namespace std
       // NB: There is no way to extact this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
       _M_data->_M_truename = L"true";
+      _M_data->_M_truename_len = wcslen(_M_data->_M_truename);
       // _M_falsename = __nl_langinfo_l(NOSTR, __cloc);
       _M_data->_M_falsename = L"false";
+      _M_data->_M_falsename_len = wcslen(_M_data->_M_falsename);
     }
 
   template<> 
