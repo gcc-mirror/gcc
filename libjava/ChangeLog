@@ -1,3 +1,7 @@
+2003-12-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/TimeZone.java (getOffset): New method.
+
 2003-12-17  Fernando Nasser  <fnasser@redhat.com>
  
 	* gnu/java/awt/peer/gtk/GtkListPeer.java (handleEvent): Fix generation
