@@ -1,3 +1,15 @@
+2004-09-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/17369
+	* Makefile.tpl (REALLY_SET_LIB_PATH): Add @SET_GCC_LIB_PATH@.
+	(HOST_EXPORTS]): Add @SET_GCC_LIB_PATH@. Set and export
+	SET_GCC_LIB_PATH_CMD.
+	(BASE_TARGET_EXPORTS): Likewise.
+	* Makefile.in: Regenerated.
+
+	* configure.in (SET_GCC_LIB_PATH): Set and substitute.
+	* configure: Regenerated.
+
 2004-09-23  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config.guess: New upstream version

@@ -2297,4 +2297,24 @@ case ${enable_werror} in
 esac
 AC_SUBST(stage2_werror_flag)
 
+# If gcc is built natively with shared library enabled, set
+# $RPATH_ENVVAR to make sure the newly built gcc shared librares are
+# used.
+SET_GCC_LIB_PATH=
+if test -d ${srcdir}/gcc && test x${is_cross_compiler} = xno; then
+  case "${enable_shared}" in
+    no | "") ;;
+    *)
+      eval "d=\$$RPATH_ENVVAR"
+      if test x"$d" != x; then
+	d="$pwd/gcc:$d"
+      else
+	d="$pwd/gcc"
+    fi
+    SET_GCC_LIB_PATH="\$(RPATH_ENVVAR)=$d; export \$(RPATH_ENVVAR);"
+    ;;
+  esac
+fi
+AC_SUBST(SET_GCC_LIB_PATH)
+
 AC_OUTPUT(Makefile)
