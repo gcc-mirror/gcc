@@ -92,10 +92,10 @@
 #
 #  c_target_objs	List of extra target-dependant objects that be
 #			linked into the C compiler only.
-#  
+#
 #  cxx_target_objs	List of extra target-dependant objects that be
 #			linked into the C++ compiler only.
-#  
+#
 #  build_xm_defines	List of macros to define when compiling for the
 #			build machine.
 #
@@ -252,7 +252,7 @@ case $machine in
 *-*-*aout*)
 	use_collect2=yes
 	;;
-esac	
+esac
 
 # Common parts for GNU/Linux, GNU/Hurd, OpenBSD and FreeBSD systems.
 case $machine in
@@ -401,7 +401,7 @@ a29k-*-*)			# Default a29k environment.
 alpha*-*-unicosmk*)
 	use_collect2=yes
 	tm_file="${tm_file} alpha/unicosmk.h"
-	
+
 	# Don't include t-ieee for now because we don't support that yet
 	# tmake_file="alpha/t-ieee"
 	tmake_file="alpha/t-unicosmk"
@@ -471,7 +471,7 @@ alpha*-*-openbsd*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-alpha alpha/t-ieee"
 	;;
-	
+
 alpha*-dec-osf*)
 	xm_defines=POSIX
 	if test x$stabs = xyes
@@ -597,7 +597,7 @@ arm*-*-aout)
 arm*-*-ecos-elf)
 	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/ecos-elf.h"
 	tmake_file=arm/t-arm-elf
-	;; 
+	;;
 arm*-*-elf)
 	tm_file="elfos.h arm/unknown-elf.h arm/elf.h"
 	tmake_file=arm/t-arm-elf
@@ -634,7 +634,7 @@ c34-convex-*)
 	use_collect2=yes
 	;;
 c38-convex-*)
-	target_cpu_default=16		
+	target_cpu_default=16
 	use_collect2=yes
 	;;
 c4x-*-rtems*)
@@ -911,12 +911,12 @@ hppa*-*-lites*)
 	;;
 hppa*-*-mpeix*)
 	tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-mpeix.h"
-	xmake_file=pa/x-pa-mpeix 
-	echo "You must use gas. Assuming it is already installed." 
+	xmake_file=pa/x-pa-mpeix
+	echo "You must use gas. Assuming it is already installed."
 	gas=yes
 	install_headers_dir=install-headers-tar
-	use_collect2=yes 
-	;; 
+	use_collect2=yes
+	;;
 i370-*-opened*)			 # IBM 360/370/390 Architecture
 	xm_defines='POSIX FATAL_EXIT_CODE=12'
 	tm_file=i370/oe.h
@@ -1117,7 +1117,7 @@ i[34567]86-*-linux*aout*)	# Intel 80386's running GNU/Linux
 i[34567]86-*-linux*libc1)	# Intel 80386's running GNU/Linux
 				# with ELF format using the
 				# GNU/Linux C library 5
-	xmake_file=x-linux	
+	xmake_file=x-linux
 	tm_file="i386/i386.h i386/att.h linux.h i386/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -2215,7 +2215,11 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	xmake_file=x-linux
 	tm_file="linux.h mips/linux.h"
 	case $machine in
-	       mips*el-*)  tm_file="mips/little.h $tm_file" ;;
+		mipsisa32el-*)
+			tm_file="mips/little.h $tm_file mips/isa32-linux.h";;
+                mipsisa32-*)
+			tm_file="$tm_file mips/isa32-linux.h";;
+	       	mips*el-*)  tm_file="mips/little.h $tm_file" ;;
 	esac
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -2433,6 +2437,10 @@ mips-*-ecoff*)
 		tm_file="${tm_file} dbx.h"
 	fi
 	tmake_file=mips/t-ecoff
+	;;
+mipsisa32-*-elf*)
+	tm_file="mips/isa3264.h mips/abi64.h"
+	tmake_file=mips/t-isa3264
 	;;
 mipsel-*-elf*)
 	tm_file="mips/elfl.h"
@@ -2789,7 +2797,7 @@ rs6000-*-lynxos*)
 	tmake_file=rs6000/t-rs6000
 	use_collect2=yes
 	;;
-s390-*-linux*)	
+s390-*-linux*)
 	xmake_file=x-linux
 	tm_file=s390/linux.h
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
@@ -2798,7 +2806,7 @@ s390-*-linux*)
 		thread_file='posix'
 	fi
 	;;
-s390x-*-linux*)	
+s390x-*-linux*)
 	xmake_file=x-linux
 	tm_file=s390/linux64.h
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
@@ -3089,7 +3097,7 @@ sparc86x-*-aout*)
 	tm_file="sparc/sp86x-aout.h aoutos.h libgloss.h"
 	tmake_file=sparc/t-sp86x
 	;;
-sparc86x-*-elf*)	
+sparc86x-*-elf*)
 	tm_file="sparc/sol2.h sparc./elf.h sparc/sp86x-elf.h"
 	tmake_file=sparc/t-sp86x
         extra_parts="crtbegin.o crtend.o"
@@ -3272,7 +3280,7 @@ alpha*-*-*)
 			target_cpu_default2="MASK_CPU_EV5"
 			;;
 	esac
-			
+
 	if test x$gas = xyes
 	then
 		if test "$target_cpu_default2" = ""

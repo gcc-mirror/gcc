@@ -30,6 +30,7 @@
 ;; Number	USE
 ;; 0		movsi_ul
 ;; 1		movsi_us, get_fnaddr
+;; 2            reload_in*, reload_out* : sets delay on HILO register
 ;; 3		eh_set_return
 ;; 20		builtin_setjmp_setup
 ;;
@@ -119,7 +120,7 @@
 
 ;; ??? Fix everything that tests this attribute.
 (define_attr "cpu"
-  "default,r3000,r3900,r6000,r4000,r4100,r4300,r4600,r4650,r5000,r8000"
+  "default,r3000,r3900,r6000,r4000,r4100,r4300,r4600,r4650,r5000,r8000,r4kc,r5kc,r20kc"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Does the instruction have a mandatory delay slot?
@@ -1711,7 +1712,7 @@
   ""
   "
 {
-  if (HAVE_mulsi3_mult3)
+  if (GENERATE_MULT3_SI || TARGET_MAD)
     emit_insn (gen_mulsi3_mult3 (operands[0], operands[1], operands[2]));
   else if (!TARGET_MIPS4000 || TARGET_MIPS16)
     emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
@@ -1727,13 +1728,15 @@
    (clobber (match_scratch:SI 3 "=h,h"))
    (clobber (match_scratch:SI 4 "=l,X"))
    (clobber (match_scratch:SI 5 "=a,a"))]
-  "GENERATE_MULT3
+  "GENERATE_MULT3_SI
    || TARGET_MAD"
   "*
 {
   if (which_alternative == 1)
     return \"mult\\t%1,%2\";
-  if (TARGET_MAD)
+  if (TARGET_MAD
+      || mips_isa == 32
+      || mips_isa == 64)
     return \"mul\\t%0,%1,%2\";
   return \"mult\\t%0,%1,%2\";
 }"
@@ -1796,11 +1799,14 @@
    (clobber (match_scratch:SI 6 "=a,a,a"))
    (clobber (match_scratch:SI 7 "=X,X,d"))]
   "TARGET_MIPS3900
+   || ISA_HAS_MADD_MSUB
    && !TARGET_MIPS16"
   "*
 {
   static const char *const madd[] = { \"madd\\t%1,%2\", \"madd\\t%0,%1,%2\" };
   if (which_alternative == 2)
+    return \"#\";
+  if (ISA_HAS_MADD_MSUB && which_alternative != 0)
     return \"#\";
   return madd[which_alternative];
 }"
@@ -1826,6 +1832,90 @@
 	      (clobber (match_dup 6))])
    (set (match_dup 0) (plus:SI (match_dup 7) (match_dup 3)))]
   "")
+
+;; Splitter to copy result of MADD to a general register
+(define_split
+  [(set (match_operand:SI                   0 "register_operand" "")
+        (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "")
+                          (match_operand:SI 2 "register_operand" ""))
+                 (match_operand:SI          3 "register_operand" "")))
+   (clobber (match_scratch:SI               4 ""))
+   (clobber (match_scratch:SI               5 ""))
+   (clobber (match_scratch:SI               6 ""))
+   (clobber (match_scratch:SI               7 ""))]
+  "reload_completed && GP_REG_P (true_regnum (operands[0]))
+   && true_regnum (operands[3]) == LO_REGNUM"
+  [(parallel [(set (match_dup 3)
+                   (plus:SI (mult:SI (match_dup 1) (match_dup 2))
+                            (match_dup 3)))
+              (clobber (match_dup 4))
+              (clobber (match_dup 5))
+              (clobber (match_dup 6))
+              (clobber (match_dup 7))])
+   (set (match_dup 0) (match_dup 3))]
+  "")
+
+(define_insn "*mul_sub_si"
+  [(set (match_operand:SI 0 "register_operand" "=l,*d,*d")
+        (minus:SI (match_operand:SI 1 "register_operand" "0,l,*d")
+                  (mult:SI (match_operand:SI 2 "register_operand" "d,d,d")
+                           (match_operand:SI 3 "register_operand" "d,d,d"))))
+   (clobber (match_scratch:SI 4 "=h,h,h"))
+   (clobber (match_scratch:SI 5 "=X,3,l"))
+   (clobber (match_scratch:SI 6 "=a,a,a"))
+   (clobber (match_scratch:SI 7 "=X,X,d"))]
+  "ISA_HAS_MADD_MSUB"
+  "*
+{
+  if (which_alternative != 0)
+    return \"#\";
+  return \"msub\\t%2,%3\";
+}"
+  [(set_attr "type"     "imul,imul,multi")
+   (set_attr "mode"     "SI")
+   (set_attr "length"   "4,8,8")])
+
+;; Split the above insn if we failed to get LO allocated.
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+        (minus:SI (match_operand:SI 1 "register_operand" "")
+                  (mult:SI (match_operand:SI 2 "register_operand" "")
+                           (match_operand:SI 3 "register_operand" ""))))
+   (clobber (match_scratch:SI 4 ""))
+   (clobber (match_scratch:SI 5 ""))
+   (clobber (match_scratch:SI 6 ""))
+   (clobber (match_scratch:SI 7 ""))]
+  "reload_completed && GP_REG_P (true_regnum (operands[0])) && GP_REG_P (true_regnum (operands[1]))"
+  [(parallel [(set (match_dup 7)
+                   (mult:SI (match_dup 2) (match_dup 3)))
+              (clobber (match_dup 4))
+              (clobber (match_dup 5))
+              (clobber (match_dup 6))])
+   (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 7)))]
+  "")
+
+;; Splitter to copy result of MSUB to a general register
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+        (minus:SI (match_operand:SI 1 "register_operand" "")
+                  (mult:SI (match_operand:SI 2 "register_operand" "")
+                           (match_operand:SI 3 "register_operand" ""))))
+   (clobber (match_scratch:SI 4 ""))
+   (clobber (match_scratch:SI 5 ""))
+   (clobber (match_scratch:SI 6 ""))
+   (clobber (match_scratch:SI 7 ""))]
+  "reload_completed && GP_REG_P (true_regnum (operands[0]))
+   && true_regnum (operands[1]) == LO_REGNUM"
+  [(parallel [(set (match_dup 1)
+                   (minus:SI (match_dup 1)
+                             (mult:SI (match_dup 2) (match_dup 3))))
+              (clobber (match_dup 4))
+              (clobber (match_dup 5))
+              (clobber (match_dup 6))
+              (clobber (match_dup 7))])
+   (set (match_dup 0) (match_dup 1))]
+  "")
+
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -1855,7 +1945,7 @@
 
   "
 {
-  if (GENERATE_MULT3 || TARGET_MIPS4000 || TARGET_MIPS16)
+  if (GENERATE_MULT3_DI || TARGET_MIPS4000 || TARGET_MIPS16)
     emit_insn (gen_muldi3_internal2 (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_muldi3_internal (operands[0], operands[1], operands[2]));
@@ -1885,10 +1975,10 @@
    (clobber (match_scratch:DI 3 "=h"))
    (clobber (match_scratch:DI 4 "=l"))
    (clobber (match_scratch:DI 5 "=a"))]
-  "TARGET_64BIT && (GENERATE_MULT3 || TARGET_MIPS4000 || TARGET_MIPS16)"
+  "TARGET_64BIT && (GENERATE_MULT3_DI || TARGET_MIPS4000 || TARGET_MIPS16)"
   "*
 {
-  if (GENERATE_MULT3)
+  if (GENERATE_MULT3_DI)
     output_asm_insn (\"dmult\\t%0,%1,%2\", operands);
   else
     {
@@ -1905,7 +1995,7 @@
   [(set_attr "type"	"imul")
    (set_attr "mode"	"DI")
    (set (attr "length")
-	(if_then_else (ne (symbol_ref "GENERATE_MULT3") (const_int 0))
+	(if_then_else (ne (symbol_ref "GENERATE_MULT3_DI") (const_int 0))
 		       (const_int 4)
 		       (const_int 12)))]) 	;; mult + mflo + delay
 
@@ -5086,7 +5176,7 @@ move\\t%0,%z4\\n\\
 	  emit_move_insn (gen_rtx_REG (SImode, 64), scratch);
 	  emit_move_insn (scratch, lo_word);
 	  emit_move_insn (gen_rtx (REG, SImode, 65), scratch);
-          emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
+	  emit_insn (gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, operands[0]), 2));
 	}
       else
 	{
@@ -5095,7 +5185,7 @@ move\\t%0,%z4\\n\\
 	  emit_insn (gen_ashldi3 (scratch, operands[1], GEN_INT (32)));
 	  emit_insn (gen_ashrdi3 (scratch, scratch, GEN_INT (32)));
 	  emit_insn (gen_movdi (gen_rtx (REG, DImode, 65), scratch));
-          emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
+          emit_insn (gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, operands[0]), 2));
 	}
       DONE;
     }
@@ -5107,7 +5197,7 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_movdi (operands[0], gen_rtx_REG (DImode, 64)));
       emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
       emit_insn (gen_iordi3 (operands[0], operands[0], scratch));
-      emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
+      emit_insn (gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, operands[1]), 2));
       DONE;
     }
   /* This handles moves between a float register and HI/LO.  */
@@ -5137,7 +5227,7 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_ashldi3 (scratch, operands[1], GEN_INT (32)));
       emit_insn (gen_ashrdi3 (scratch, scratch, GEN_INT (32)));
       emit_insn (gen_movdi (gen_rtx (REG, DImode, 65), scratch));
-      emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
+      emit_insn (gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, operands[0]), 2));
       DONE;
     }
   if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == HILO_REGNUM)
@@ -5166,7 +5256,7 @@ move\\t%0,%z4\\n\\
 	  emit_move_insn (hi_word, scratch);
 	  emit_move_insn (scratch, gen_rtx_REG (SImode, 65));
 	  emit_move_insn (lo_word, scratch);
-	  emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
+	  emit_insn (gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, operands[1]), 2));
 	}
       else if (TARGET_MIPS16 && ! M16_REG_P (REGNO (operands[0])))
 	{
@@ -5181,7 +5271,7 @@ move\\t%0,%z4\\n\\
 	  emit_insn (gen_ashldi3 (scratch2, scratch2, GEN_INT (32)));
 	  emit_insn (gen_iordi3 (scratch, scratch, scratch2));
 	  emit_insn (gen_movdi (operands[0], scratch));
-	  emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
+	  emit_insn (gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, operands[1]), 2));
 	}
       else
 	{
@@ -5191,7 +5281,7 @@ move\\t%0,%z4\\n\\
 	  emit_insn (gen_movdi (operands[0], gen_rtx (REG, DImode, 64)));
 	  emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
 	  emit_insn (gen_iordi3 (operands[0], operands[0], scratch));
-	  emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
+	  emit_insn (gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, operands[1]), 2));
 	}
       DONE;
     }
@@ -5517,7 +5607,7 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_movsi (gen_rtx_REG (SImode, 65), operands[1]));
       emit_insn (gen_ashrsi3 (operands[2], operands[1], GEN_INT (31)));
       emit_insn (gen_movsi (gen_rtx (REG, SImode, 64), operands[2]));
-      emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
+      emit_insn (gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, operands[0]), 2));
       DONE;
     }
   /* Use a mult to reload LO on mips16.  ??? This is hideous.  */
@@ -5641,6 +5731,15 @@ move\\t%0,%z4\\n\\
   emit_move_insn (operands[0], operands[1]);
   DONE;
 }")
+
+;; This insn is for the unspec delay for HILO.
+
+(define_insn "*HILO_delay"
+  [(unspec [(match_operand 0 "register_operand" "=b")] 2 )]
+  ""
+  ""
+  [(set_attr "type" "nop")
+   (set_attr "mode" "none")])
 
 ;; This insn handles moving CCmode values.  It's really just a
 ;; slightly simplified copy of movsi_internal2, with additional cases
@@ -10339,6 +10438,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   "(ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE) && TARGET_64BIT"
   "
 {
+  if (mips_isa == 32)
+    FAIL;
   gen_conditional_move (operands);
   DONE;
 }")

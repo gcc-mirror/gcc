@@ -1,3 +1,58 @@
+2001-09-15  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.md: Add unspec #2.
+	(reload_indi): Use.
+	(reload_outdi): Ditto.
+	(reload_outsi): Ditto.
+	(HILO_delay): New.
+
+2001-09-15  Eric Christopher  <echristo@redhat.com>
+	    Jason Eckhardt  <jle@redhat.com>
+
+	* config.gcc: Add mipsisa32 target and mipsisa32-linux target.
+	* config/mips/isa32-linux.h: New file.
+	* config/mips/isa3264.h: Ditto.
+	* config/mips/mips-protos.h: Add mips_hard_regno_nregs.
+	* config/mips/mips.c (mips_hard_regno_nregs): Move here from mips.h.
+	(output_block_mode): Support MEABI.
+	(function_arg): Ditto. Fix floating point arg passing.
+	(mips_va_start): Ditto.
+	(override_options): Add isas 32 and 64, meabi, mips32 and mips64
+	processors.
+	(mips_asm_file_start): Add new section to pass abi to gdb.
+	(function_arg_pass_by_reference): Support MEABI.
+	(mips_parse_cpu): Support mips32 and mips64 processors.
+	* config/mips/mips.h: Support ABI_MEABI, TARGET_MIPS4KC,
+	TARGET_MIPS5KC.  Support isa32 and isa64.
+	(processor_type): Add r4kc, r5kc, r20kc.
+	(GENERATE_MULT3_SI): New.
+	(GENERATE_MULT3_DI): Ditto.
+	(GENERATE_MULT3): Remove.
+	(ISA_HAS_64BIT_REGS): Add isa == 64.
+	(ISA_HAS_8CC): Add mips_isa = 32 and 64.
+	(ISA_HAS_MADD_MSUB): New.
+	(ISA_HAS_CLZ_CLO): Ditto.
+	(ISA_HAS_DCLZ_DCLO): Ditto.
+	(ABI_GAS_ASM_SPEC): New.
+	(GAS_ASM_SPEC): Use. Add support for mips32, mips64.
+	(ASM_SPEC): Ditto.
+	(LINK_SPEC): Ditto.
+	(SUBTARGET_CC1_SPEC): Ditto.
+	(SUBTARGET_CPP_SIZE_SPEC): Ditto.
+	(PAD_VARARGS_DOWN): Support MEABI.
+	(HARD_REGNO_NREGS): Move to mips.c.
+	(ASM_OUTPUT_IDENT): Add #undef.
+	* config/mips/mips.md: Add r4kc, r5kc, r20kc.
+	(mulsi3): Use GENERATE_MULT3_SI.
+	(mulsi3_mult3): Ditto.  Support mips32, mips64.
+	(mul_acc_si): Use ISA_HAS_MADD_MSUB.
+	(mul_sub_si): New pattern.
+	(unnamed splitters): New.
+	(muldi3): Use GENERATE_MULT3_DI.
+	(muldi3_internal2): Ditto.
+	(movdicc): Support mips32.
+	* config/mips/t-isa3264: New file.
+
 2001-09-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* rtl.h (FIND_REG_INC_NOTE) [HAVE_PRE_INCREMENT
@@ -81,7 +136,7 @@ Fri Sep 14 13:54:50 EDT 2001  John Wehle  (john@feith.com)
 	not already defined.
 	* config/arm/conix-elf.h: (USER_LABEL_PREFIX,
 	LOCAL_LABEL_PREFIX, MAKE_DECL_ONE_ONLY, UNIQUE_SECTION):
-	Remove duplicate definition. 
+	Remove duplicate definition.
 	(READONLY_DATA_SECTION, SUBTARGET_EXTRA_SECTION,
 	(SUBTARGET_EXTRA_SECTION_FUNCTION, RDATA_SECTION_ASM_OP,
 	(RDATA_SECTION_FUNCTION): Remove redundant definition.
@@ -113,6 +168,7 @@ Fri Sep 14 13:54:50 EDT 2001  John Wehle  (john@feith.com)
 	* crti.asm: New file.
 	* crtn.asm: New file.
 
+>>>>>>> 1.11331
 2001-09-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-parse.in (_yylex): Use _cpp_backup_tokens.
@@ -170,7 +226,7 @@ Fri Sep 14 13:54:50 EDT 2001  John Wehle  (john@feith.com)
 	* sdbout.c (plain_type_1, sdbout_end_function,
 	sdbout_end_epilogue): Likewise.
 	* varasm.c (decode_reg_name): Likewise.
-	
+
 	* 1750a.c (mod_regno_adjust): Likewise.
 	* alpha.c (alpha_write_one_linkage,
 	unicosmk_output_default_externs): Likewise.
@@ -225,7 +281,7 @@ Fri Sep 14 13:54:50 EDT 2001  John Wehle  (john@feith.com)
 
 	* fixinc/inclhack.def(hpux11_size_t): Keep HP-UX headers from
 	defining __size_t and leaving size_t undefined.
-	
+
 2001-09-12  Diego Novillo  <dnovillo@redhat.com>
 
 	* basic-block.h (expunge_block): Declare.
@@ -264,7 +320,7 @@ Fri Sep 14 13:54:50 EDT 2001  John Wehle  (john@feith.com)
 	* toplev.c (decode_g_option): Likewise.
 	* tradcpp.c (output_deps): Likewise.
 	* varasm.c (decode_reg_name): Likewise.
-	
+
 	* arm.c (arm_condition_codes, strings_fpa, thumb_condition_code):
 	Const-ification.
 	* arm.md: Likewise.
@@ -514,7 +570,7 @@ Tue Sep 11 11:37:52 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	Unicos/Mk versions.
 	(*divmodsi_internal, *divmoddi_internal): Disable for
 	TARGET_ABI_UNICOSMK.
-	(unaligned_extend?idi, unaligned_load?i, unaligned_store?i): Split in 
+	(unaligned_extend?idi, unaligned_load?i, unaligned_store?i): Split in
 	little-endian and big-endian versions.
 	(ext, ins, msk): Likewise.
 	(extv, extzv, insv): Support big-endian mode.
