@@ -58,6 +58,10 @@ Boston, MA 02111-1307, USA.  */
 #include "bytecode.h"
 #include "bc-emit.h"
 
+#ifndef TRAMPOLINE_ALIGNMENT
+#define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
+#endif
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
@@ -5460,7 +5464,7 @@ expand_function_end (filename, line, end_bindings)
       blktramp = change_address (initial_trampoline, BLKmode, tramp);
       emit_block_move (blktramp, initial_trampoline,
 		       GEN_INT (TRAMPOLINE_SIZE),
-		       FUNCTION_BOUNDARY / BITS_PER_UNIT);
+		       TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT);
 #endif
       INITIALIZE_TRAMPOLINE (tramp, XEXP (DECL_RTL (function), 0), context);
       seq = get_insns ();
