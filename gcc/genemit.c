@@ -1,5 +1,5 @@
 /* Generate code from machine description to emit insns as rtl.
-   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -236,7 +236,7 @@ gen_exp (x)
     {
       if (fmt[i] == '0')
 	break;
-      printf (", ");
+      printf (",\n\t");
       if (fmt[i] == 'e' || fmt[i] == 'u')
 	gen_exp (XEXP (x, i));
       else if (fmt[i] == 'i')
