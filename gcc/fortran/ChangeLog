@@ -1,3 +1,9 @@
+2004-11-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15164
+	* trans-decl.c (gfc_finish_var_decl): Don't declare arguments to
+	module procedures as if they were module variables.
+
 2004-11-03  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17535
