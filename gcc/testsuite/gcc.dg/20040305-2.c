@@ -40,6 +40,8 @@ int main(void)
   driveid.panel_id.lsm_id.acs = 4;
 
   sub(driveid);
+
+  return 0;
 }
 
 
