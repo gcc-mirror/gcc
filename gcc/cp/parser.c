@@ -10424,7 +10424,10 @@ cp_parser_declarator_id (cp_parser* parser)
   /* If the name was qualified, create a SCOPE_REF to represent 
      that.  */
   if (parser->scope)
-    id_expression = build_nt (SCOPE_REF, parser->scope, id_expression);
+    {
+      id_expression = build_nt (SCOPE_REF, parser->scope, id_expression);
+      parser->scope = NULL_TREE;
+    }
 
   return id_expression;
 }
