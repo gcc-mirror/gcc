@@ -6667,6 +6667,9 @@ encode_aggregate (type, curtype, format)
     case ENUMERAL_TYPE:
       obstack_1grow (&util_obstack, 'i');
       break;
+
+    default:
+      break;
     }
 }
 
@@ -7483,6 +7486,9 @@ gen_declarator (decl, buf, name)
 	  /* Will only happen if we are processing a "raw" expr-decl.  */
 	  strcpy (buf, IDENTIFIER_POINTER (decl));
 	  return buf;
+
+	default:
+	  break;
 	}
 
       return str;
@@ -7740,6 +7746,10 @@ gen_declspecs (declspecs, buf, raw)
 		strcat (buf, ">");
 	      }
 	  }
+	  break;
+	  
+	default:
+	  break;
 	}
     }
 }
