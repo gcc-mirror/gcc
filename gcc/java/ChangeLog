@@ -1,3 +1,25 @@
+2004-11-24  Steven Bosscher  <stevenb@suse.de>
+
+	* java-gimplify.c (java_gimplify_labeled_block_expr): New function.
+	(java_gimplify_exit_block_expr): New function.
+	(java_gimplify_expr): Use them to gimplify EXIT_BLOCK_EXPR and
+	LABELED_BLOCK_EXPR.
+	* java-tree.def (LABELED_BLOCK_EXPR): Moved from tree.def.
+	(EXIT_BLOCK_EXPR): Likewise.
+	* java-tree.h (LABELED_BLOCK_LABEL): Moved from tree.h.
+	(LABELED_BLOCK_BODY): Likewise.
+	(EXIT_BLOCK_LABELED_BLOCK): Likewise.
+	* jcf-write.c (generate_bytecode_insns): Don't handle the unused
+	EXIT_BLOCK_RETURN operand.  Use EXIT_BLOCK_LABELED_BLOCK instead of
+	TREE_OPERAND.
+	* lang.c (java_tree_inlining_walk_subtrees): Handle EXIT_BLOCK_EXPR.
+	(java_dump_tree): Use LABELED_BLOCK_LABEL, LABELED_BLOCK_BODY, and
+	EXIT_BLOCK_LABELED_BLOCK instead of TREE_OPERAND.  Don't handle the
+	second operand of EXIT_BLOCK_EXPR.
+	* parse.y (find_expr_with_wfl): Use LABELED_BLOCK_BODY instead of
+	TREE_OPERAND.
+	(build_bc_statement): Use build1 to build EXIT_BLOCK_EXPR nodes.
+
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* xref.h (xref_flag_value): Remove.

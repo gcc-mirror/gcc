@@ -32,6 +32,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree-gimple.h"
 #include "toplev.h"
 
+static tree java_gimplify_labeled_block_expr (tree);
+static tree java_gimplify_exit_block_expr (tree);
 static tree java_gimplify_case_expr (tree);
 static tree java_gimplify_default_expr (tree);
 static tree java_gimplify_block (tree);
@@ -77,6 +79,14 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
 #endif
       *expr_p = EXPR_WFL_NODE (*expr_p);
       SET_EXPR_LOCATION (*expr_p, input_location);
+      break;
+
+    case LABELED_BLOCK_EXPR:
+      *expr_p = java_gimplify_labeled_block_expr (*expr_p);
+      break;
+
+    case EXIT_BLOCK_EXPR:
+      *expr_p = java_gimplify_exit_block_expr (*expr_p);
       break;
 
     case CASE_EXPR:
@@ -162,6 +172,39 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
     }
 
   return GS_OK;
+}
+
+/* Gimplify a LABELED_BLOCK_EXPR into a LABEL_EXPR following
+   a (possibly empty) body.  */
+
+static tree
+java_gimplify_labeled_block_expr (tree expr)
+{
+  tree body = LABELED_BLOCK_BODY (expr);
+  tree label = LABELED_BLOCK_LABEL (expr);
+  tree t;
+
+  DECL_CONTEXT (label) = current_function_decl;
+  t = build (LABEL_EXPR, void_type_node, label);
+  if (body != NULL_TREE)
+    t = build (COMPOUND_EXPR, void_type_node, body, t);
+  return t;
+}
+
+/* Gimplify a EXIT_BLOCK_EXPR into a GOTO_EXPR.  */
+
+static tree
+java_gimplify_exit_block_expr (tree expr)
+{
+  tree labeled_block = EXIT_BLOCK_LABELED_BLOCK (expr);
+  tree label;
+
+  /* First operand must be a LABELED_BLOCK_EXPR, which should
+     already be lowered (or partially lowered) when we get here.  */
+  gcc_assert (TREE_CODE (labeled_block) == LABELED_BLOCK_EXPR);
+
+  label = LABELED_BLOCK_LABEL (labeled_block);
+  return build1 (GOTO_EXPR, void_type_node, label);
 }
 
 /* This is specific to the bytecode compiler.  If a variable has

@@ -499,11 +499,6 @@ DEFTREECODE (VEC_COND_EXPR, "vec_cond_expr", tcc_expression, 3)
    nodes for the function.  */
 DEFTREECODE (BIND_EXPR, "bind_expr", tcc_expression, 3)
 
-/* A labeled block. Operand 0 is the label that will be generated to
-   mark the end of the block.
-   Operand 1 is the labeled block body.  */
-DEFTREECODE (LABELED_BLOCK_EXPR, "labeled_block_expr", tcc_expression, 2)
-
 /* Function call.  Operand 0 is the function.
    Operand 1 is the argument list, a list of expressions
    made out of a chain of TREE_LIST nodes.
@@ -805,11 +800,6 @@ DEFTREECODE (EXIT_EXPR, "exit_expr", tcc_statement, 1)
    It must contain an EXIT_EXPR or is an infinite loop.
    The type should be void and the value should be ignored.  */
 DEFTREECODE (LOOP_EXPR, "loop_expr", tcc_statement, 1)
-
-/* Exit a labeled block, possibly returning a value.  Operand 0 is a
-   LABELED_BLOCK_EXPR to exit.  Operand 1 is the value to return. It
-   may be left null.  */
-DEFTREECODE (EXIT_BLOCK_EXPR, "exit_block_expr", tcc_statement, 2)
 
 /* Switch expression.
 

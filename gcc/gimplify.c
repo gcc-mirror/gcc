@@ -1210,43 +1210,6 @@ gimplify_case_label_expr (tree *expr_p)
   return GS_ALL_DONE;
 }
 
-/* Gimplify a LABELED_BLOCK_EXPR into a LABEL_EXPR following
-   a (possibly empty) body.  */
-
-static enum gimplify_status
-gimplify_labeled_block_expr (tree *expr_p)
-{
-  tree body = LABELED_BLOCK_BODY (*expr_p);
-  tree label = LABELED_BLOCK_LABEL (*expr_p);
-  tree t;
-
-  DECL_CONTEXT (label) = current_function_decl;
-  t = build (LABEL_EXPR, void_type_node, label);
-  if (body != NULL_TREE)
-    t = build (COMPOUND_EXPR, void_type_node, body, t);
-  *expr_p = t;
-
-  return GS_OK;
-}
-
-/* Gimplify a EXIT_BLOCK_EXPR into a GOTO_EXPR.  */
-
-static enum gimplify_status
-gimplify_exit_block_expr (tree *expr_p)
-{
-  tree labeled_block = TREE_OPERAND (*expr_p, 0);
-  tree label;
-
-  /* First operand must be a LABELED_BLOCK_EXPR, which should
-     already be lowered (or partially lowered) when we get here.  */
-  gcc_assert (TREE_CODE (labeled_block) == LABELED_BLOCK_EXPR);
-
-  label = LABELED_BLOCK_LABEL (labeled_block);
-  *expr_p = build1 (GOTO_EXPR, void_type_node, label);
-
-  return GS_OK;
-}
-
 /* Build a GOTO to the LABEL_DECL pointed to by LABEL_P, building it first
    if necessary.  */
 
@@ -3701,14 +3664,6 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	case SWITCH_EXPR:
 	  ret = gimplify_switch_expr (expr_p, pre_p);
-	  break;
-
-	case LABELED_BLOCK_EXPR:
-	  ret = gimplify_labeled_block_expr (expr_p);
-	  break;
-
-	case EXIT_BLOCK_EXPR:
-	  ret = gimplify_exit_block_expr (expr_p);
 	  break;
 
 	case EXIT_EXPR:

@@ -1247,48 +1247,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	pp_string (buffer, " [non-local]");
       break;
 
-    case LABELED_BLOCK_EXPR:
-      op0 = LABELED_BLOCK_LABEL (node);
-      /* If this is for break or continue, don't bother printing it.  */
-      if (DECL_NAME (op0))
-	{
-	  const char *name = IDENTIFIER_POINTER (DECL_NAME (op0));
-	  if (strcmp (name, "break") == 0
-	      || strcmp (name, "continue") == 0)
-	    {
-	      dump_generic_node (buffer, LABELED_BLOCK_BODY (node), spc, flags, false);
-	      break;
-	    }
-	}
-      dump_generic_node (buffer, LABELED_BLOCK_LABEL (node), spc, flags, false);
-      pp_string (buffer, ": {");
-      if (!(flags & TDF_SLIM))
-	newline_and_indent (buffer, spc+2);
-      dump_generic_node (buffer, LABELED_BLOCK_BODY (node), spc+2, flags, true);
-      if (!flags)
-	newline_and_indent (buffer, spc);
-      pp_character (buffer, '}');
-      is_expr = false;
-      break;
-
-    case EXIT_BLOCK_EXPR:
-      op0 = LABELED_BLOCK_LABEL (EXIT_BLOCK_LABELED_BLOCK (node));
-      /* If this is for a break or continue, print it accordingly.  */
-      if (DECL_NAME (op0))
-	{
-	  const char *name = IDENTIFIER_POINTER (DECL_NAME (op0));
-	  if (strcmp (name, "break") == 0
-	      || strcmp (name, "continue") == 0)
-	    {
-	      pp_string (buffer, name);
-	      break;
-	    }
-	}
-      pp_string (buffer, "<<<exit block ");
-      dump_generic_node (buffer, op0, spc, flags, false);
-      pp_string (buffer, ">>>");
-      break;
-
     case EXC_PTR_EXPR:
       pp_string (buffer, "<<<exception object>>>");
       break;

@@ -512,25 +512,6 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
     remap_save_expr (tp, id->decl_map, walk_subtrees);
   else if (TREE_CODE (*tp) == BIND_EXPR)
     copy_bind_expr (tp, walk_subtrees, id);
-  else if (TREE_CODE (*tp) == LABELED_BLOCK_EXPR)
-    {
-      /* We need a new copy of this labeled block; the EXIT_BLOCK_EXPR
-         will refer to it, so save a copy ready for remapping.  We
-         save it in the decl_map, although it isn't a decl.  */
-      tree new_block = copy_node (*tp);
-      insert_decl_map (id, *tp, new_block);
-      *tp = new_block;
-    }
-  else if (TREE_CODE (*tp) == EXIT_BLOCK_EXPR)
-    {
-      splay_tree_node n
-	= splay_tree_lookup (id->decl_map,
-			     (splay_tree_key) TREE_OPERAND (*tp, 0));
-      /* We _must_ have seen the enclosing LABELED_BLOCK_EXPR.  */
-      gcc_assert (n);
-      *tp = copy_node (*tp);
-      TREE_OPERAND (*tp, 0) = (tree) n->value;
-    }
   /* Types may need remapping as well.  */
   else if (TYPE_P (*tp))
     *tp = remap_type (*tp, id);
@@ -1174,14 +1155,12 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case FILTER_EXPR: /* ??? */
     case COMPOUND_EXPR:
     case BIND_EXPR:
-    case LABELED_BLOCK_EXPR:
     case WITH_CLEANUP_EXPR:
     case NOP_EXPR:
     case VIEW_CONVERT_EXPR:
     case SAVE_EXPR:
     case ADDR_EXPR:
     case COMPLEX_EXPR:
-    case EXIT_BLOCK_EXPR:
     case CASE_LABEL_EXPR:
     case SSA_NAME:
     case CATCH_EXPR:
@@ -2080,8 +2059,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 	}
     }
 
-  else if (code != EXIT_BLOCK_EXPR
-	   && code != SAVE_EXPR
+  else if (code != SAVE_EXPR
 	   && code != BIND_EXPR
 	   && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
     {
@@ -2170,9 +2148,6 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 
 	case CONSTRUCTOR:
 	  WALK_SUBTREE_TAIL (CONSTRUCTOR_ELTS (*tp));
-
-	case EXIT_BLOCK_EXPR:
-	  WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, 1));
 
 	case SAVE_EXPR:
 	  WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, 0));

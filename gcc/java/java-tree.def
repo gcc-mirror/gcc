@@ -41,6 +41,14 @@ DEFTREECODE (NEW_CLASS_EXPR, "new_class_expr", tcc_expression, 3)
 /* Defines `this' as an expression.  */
 DEFTREECODE (THIS_EXPR, "this", tcc_unary, 0)
 
+/* A labeled block. Operand 0 is the label that will be generated to
+   mark the end of the block.  Operand 1 is the labeled block body.  */
+DEFTREECODE (LABELED_BLOCK_EXPR, "labeled_block_expr", tcc_expression, 2)
+
+/* Exit a labeled block, possibly returning a value.  Operand 0 is a
+   LABELED_BLOCK_EXPR to exit.  */
+DEFTREECODE (EXIT_BLOCK_EXPR, "exit_block_expr", tcc_statement, 1)
+
 /* Case statement expression.
    Operand 1 is the case value.  */
 DEFTREECODE (CASE_EXPR, "case", tcc_expression, 1)

@@ -1898,8 +1898,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
     case EXIT_BLOCK_EXPR:
       {
 	struct jcf_block *label = state->labeled_blocks;
-	if (TREE_OPERAND (exp, 1) != NULL) goto notimpl;
-	while (label->u.labeled_block != TREE_OPERAND (exp, 0))
+	while (label->u.labeled_block != EXIT_BLOCK_LABELED_BLOCK (exp))
 	  label = label->next;
 	call_cleanups (label, state);
 	emit_goto (label, state);
@@ -2653,7 +2652,6 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	  }
       }
       /* fall through */
-    notimpl:
     default:
       error("internal error in generate_bytecode_insn - tree code not implemented: %s",
 	    tree_code_name [(int) TREE_CODE (exp)]);
