@@ -126,14 +126,16 @@ namespace std {
   template class _Ctype<char>;
   template class _Ctype_nois<char>;
   template class ctype_byname<char>;
-  template class _Codecvt<char, char, mbstate_t>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class _Ctype<wchar_t>;
   template class _Ctype_nois<wchar_t>;
   template class ctype_byname<wchar_t>;
-  template class _Codecvt<wchar_t, char, mbstate_t>;
 #endif
   
+  // codecvt
+  template class __codecvt_abstract_base<char, char, mbstate_t>;
+  template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
+
   // collate
   template class _Collate<char>;
   template class collate_byname<char>;
@@ -173,9 +175,6 @@ namespace std {
   template
     const ctype<wchar_t>&
     use_facet<ctype<wchar_t> >(const locale& __loc);
-  template
-    const codecvt<wchar_t, wchar_t, mbstate_t>& 
-    use_facet<codecvt<wchar_t, wchar_t, mbstate_t> >(locale const &);
   template
     const codecvt<wchar_t, char, mbstate_t>& 
     use_facet<codecvt<wchar_t, char, mbstate_t> >(locale const &);

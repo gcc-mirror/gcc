@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.25 2000/07/26 21:30:45 pme Exp $
+## $Id: Makefile.am,v 1.26 2000/08/15 07:42:36 aoliva Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -106,7 +106,7 @@ CXXLINK = $(LIBTOOL) --mode=link "$(CC)" @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CX
 headers = \
 	bits/cpp_type_traits.h \
 	bits/std_cctype.h bits/ctype_base.h bits/ctype_specializations.h \
-	bits/char_traits.h \
+	bits/char_traits.h bits/codecvt.h \
 	bits/basic_string.h bits/std_string.h  bits/string.tcc \
 	bits/generic_shadow.h bits/std_utility.h \
 	bits/std_complex.h \
@@ -207,7 +207,7 @@ sources = \
 	complex.cc complexf.cc complexl.cc complex_io.cc \
 	stdexcept.cc \
 	c++io.cc ios.cc stdstreams.cc strstream.cc \
-	locale.cc localename.cc  \
+	locale.cc localename.cc codecvt.cc \
 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 
 wstring_sources = \
