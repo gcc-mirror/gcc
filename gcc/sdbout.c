@@ -787,7 +787,10 @@ sdbout_symbol (decl, local)
 	return;
 
       /* Record the name for, starting a symtab entry.  */
-      name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      if (DECL_LANG_SPECIFIC (decl))
+	name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      else
+	name = IDENTIFIER_POINTER (DECL_NAME (decl));
 
       if (GET_CODE (value) == MEM
 	  && GET_CODE (XEXP (value, 0)) == SYMBOL_REF)
