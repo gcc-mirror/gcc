@@ -1,3 +1,9 @@
+2005-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/19551
+	* gcc.c-torture/execute/20050121-1.c: New test.
+	* gcc.dg/20050121-2.c: New test.
+
 2004-01-23  Steven G. Kargl  <kargls@comcast.net>
 	Paul Brook  <paul@codesourcery.com>
 
