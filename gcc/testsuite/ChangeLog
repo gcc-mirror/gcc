@@ -1,3 +1,9 @@
+2001-01-02  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/noreturn-3.c: New test.
+
+	* gcc.dg/noreturn-4.c: New test.
+
 2001-01-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/stdio-opt-1.c: Also test
@@ -30,7 +36,7 @@
 	* gcc.dg/noncompile/20001228-1.c: New test.
 
 	* gcc.dg/20001228-1.c: New test.
-	
+
 	* gcc.c-torture/execute/20001228-1.c: New test.
 
 2000-12-28  Joseph S. Myers  <jsm28@cam.ac.uk>
@@ -169,8 +175,8 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
         * gcc.dg/cpp/lineflags.c: New tests.
         * gcc.dg/cpp/poison.c: Update.
-        * gcc.dg/cpp/redef2.c: Update.   
-        * gcc.dg/cpp/skipping.c: New test. 
+        * gcc.dg/cpp/redef2.c: Update.
+        * gcc.dg/cpp/skipping.c: New test.
 
 2000-12-07  Geoffrey Keating  <geoffk@redhat.com>
 
@@ -844,7 +850,7 @@ Fri Nov  3 13:32:14 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-10-28  Neil Booth  <neilb@earthling.net>
 
 	New tests and test updates for new macro expander.
-	
+
 	* gcc.dg/cpp/19960224-2.c, 20000625-2.c, cxxcom2.c, directiv.c,
 	endif.c, if-4.c, if-5.c, if-mop.c, macsyntx.c, paste2.c, paste6.c,
 	paste8.c, redef2.c, strify2.c, strp1.c, tr-warn1.c, tr-warn3.c,
@@ -895,7 +901,7 @@ Fri Nov  3 13:32:14 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-10-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* g++.old-deja/g++.pt/memtemp77.C (main): Adjust comparaison
-	operands. 
+	operands.
 
 2000-10-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -1076,7 +1082,7 @@ Mon Oct  9 23:32:06 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 2000-09-29  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* g++.old-deja/g++.ext/pretty3.C: Fix comparison with
-	__PRETTY_FUNCTION__.	 
+	__PRETTY_FUNCTION__.
 	* g++.old-deja/g++.ext/pretty2.C: Likewise.
 
 2000-09-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -1170,7 +1176,7 @@ Thu Sep 14 16:48:49 2000  Jeffrey A Law  (law@cygnus.com)
 2000-09-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.other/inline13.C: New test.
- 
+
 2000-09-12  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/widechar-2.c: New test for wchar_t
@@ -1194,7 +1200,7 @@ Tue Sep 12 18:32:07 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 	* gcc.c-torture/execute/20000910-2.c: Likewise.
 
 2000-09-11  Robert Lipe  <robertl@sco.com>
-	
+
 	* gcc.dg/pragma-align.c: New test.
 
 2000-09-11  Nathan Sidwell  <nathan@codesourcery.com>
@@ -4194,7 +4200,7 @@ Sat Nov 21 21:41:05 1998  Jeffrey A Law  (law@cygnus.com)
 1998-11-16  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.eh/throw2.C: New test.  CV-qualifiers are not
- 	properly discarded.
+	properly discarded.
 
 Sun Oct 11 05:04:28 1998  Ken Raeburn  <raeburn@cygnus.com>
 
@@ -4254,7 +4260,7 @@ Mon Oct 19 14:03:07 1998  Jeffrey A Law  (law@cygnus.com)
 Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 
 	* lib/objc-torture.exp (objc-torture-execute): Add -I so we can
- 	find objc headers.
+	find objc headers.
 
 1998-10-14  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
@@ -4268,8 +4274,8 @@ Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 1998-10-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/explicit74.C: New test.  Explicit
- 	instantiation of template produces incorrect code for delete
- 	expression.
+	instantiation of template produces incorrect code for delete
+	expression.
 
 	* g++.old-deja/g++.pt/instantiate5.C: New test.  `global
 	constructors' name is not unique.
@@ -4277,7 +4283,7 @@ Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 	* g++.old-deja/g++.pt/instantiate5-main.cc: Ditto.
 
 	* g++.old-deja/g++.other/init8.C: New test.  Uninitialized
- 	automatic array of const is ill-formed.
+	automatic array of const is ill-formed.
 
 	* g++.old-deja/g++.pt/ttp53.C: New test.  Incorrect substitution
 	of template parameter?
@@ -4294,7 +4300,7 @@ Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 1998-10-11  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.ns/main1.C: New test.  main() should only be
- 	reserved in the global namespace.
+	reserved in the global namespace.
 
 	* g++.old-deja/g++.pt/instantiate4.C: New test: -frepo does not
 	generate needed virtual table.
@@ -4313,11 +4319,11 @@ Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 	* g++.old-deja/g++.brendan/parse6.C: XFAILs, not ERRORs.
 
 	* g++.old-deja/g++.other/using5.C: New test; using decl from base
- 	class should be usable as argument of member function.
+	class should be usable as argument of member function.
 	* g++.old-deja/g++.other/using6.C: New test; using decl from base
- 	class should be usable as return type of member function.
+	class should be usable as return type of member function.
 	* g++.old-deja/g++.other/using7.C: New test; using decl from base
- 	class should be usable as type of data member.
+	class should be usable as type of data member.
 
 	* g++.old-deja/g++.ns/extern1.C: Fix XFAIL mark.
 
@@ -4336,14 +4342,14 @@ Thu Oct  8 19:14:05 1998  Nick Clifton  <nickc@cygnus.com>
 	matching of template brackets.
 
 	* g++.old-deja/g++.other/using4.C: New test.  Test using
- 	declarations of methods from base classes.
+	declarations of methods from base classes.
 
 	* g++.old-deja/g++.ns/extern1.C: New test.  Extern declarations
- 	within functions should introduce names into the innermost
- 	enclosing namespace.
+	within functions should introduce names into the innermost
+	enclosing namespace.
 
 	* g++.old-deja/g++.other/init7.C: New test.  Retry initialization
- 	of static locals if first initialization throws.
+	of static locals if first initialization throws.
 
 Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 
@@ -4358,8 +4364,8 @@ Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 1998-10-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/friend35.C: New test.  A template function
- 	must be declared before its specializations can be named in friend
- 	declarations.
+	must be declared before its specializations can be named in friend
+	declarations.
 
 1998-10-05  Dave Love  <d.love@dl.ac.uk>
 
@@ -4370,8 +4376,8 @@ Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 1998-10-04  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/overload5.C: New test; initialize variable
- 	with pointer to template function, for which no argument deduction
- 	is possible.
+	with pointer to template function, for which no argument deduction
+	is possible.
 
 	* g++.old-deja/g++.pt/overload4.C: New test; passing pointer to
 	specialization of template function as argument to template
@@ -4387,7 +4393,7 @@ Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 	nested class of the same name.
 
 	* g++.old-deja/g++.other/badopt1.C: New test; post-increment
- 	is ignored.
+	is ignored.
 
 	* g++.old-deja/g++.other/decl1.C: New test; incorrect parsing of
 	object with direct initializer as function declaration.
@@ -4396,10 +4402,10 @@ Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 	initializers.
 
 	* g++.old-deja/g++.other/null2.C: New test; conditional operator
- 	involving const pointer and NULL produces incorrect result.
+	involving const pointer and NULL produces incorrect result.
 
 	* g++.old-deja/g++.other/typename1.C: New test; template-dependent
- 	type name without `typename' should be rejected with -pedantic.
+	type name without `typename' should be rejected with -pedantic.
 
 Fri Oct  2 21:55:58 1998  Richard Henderson  <rth@cygnus.com>
 
@@ -4441,8 +4447,8 @@ Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 1998-09-18  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/nested2.C: Different virtual base classes
- 	that happen to have the same base name, but in different scopes,
- 	are incorrectly rejected.
+	that happen to have the same base name, but in different scopes,
+	are incorrectly rejected.
 
 1998-09-16  Richard Henderson  <rth@cygnus.com>
 
@@ -4452,7 +4458,7 @@ Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 1998-09-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/static2.C: Invocation of static data
- 	member of type pointer-to-function denoted as non-static member.
+	member of type pointer-to-function denoted as non-static member.
 
 	* g++.old-deja/g++.other/typedef5.C: Add some more tests involving
 	checks involving function types and aliases.
@@ -4460,19 +4466,19 @@ Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 1998-09-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/typedef5.C: Check whether typedefs can be
- 	redefined to the same non-trivial type.
+	redefined to the same non-trivial type.
 
 	* g++.old-deja/g++.pt/explicit73.C: Test for proper
- 	namespace-qualification of template specializations declared in
- 	other namespaces.
+	namespace-qualification of template specializations declared in
+	other namespaces.
 
 	* g++.old-deja/g++.other/friend4.C: Check whether it is possible
 	to declare a subset of the specializations of a template function
 	as friends of specializations of a template class.
 
 	* g++.old-deja/g++.pt/explicit71.C: Make sure specializations of
- 	member templates that do not fully specialize the enclosing
- 	template class are rejected.
+	member templates that do not fully specialize the enclosing
+	template class are rejected.
 
 1998-09-11  Dave Love  <d.love@dl.ac.uk>
 
@@ -5011,8 +5017,8 @@ Fri Sep 26 10:50:53 1997  Bob Manson  <manson@charmed.cygnus.com>
 Fri Sep 19 17:19:53 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/c-torture.exp (TORTURE_OPTIONS): Removed unnecessary
- 	changes.  Only test one -g option, and move it to the end of the
- 	list of options to test.
+	changes.  Only test one -g option, and move it to the end of the
+	list of options to test.
 
 Fri Sep 19 17:58:00 1997  Michael Meissner  <meissner@cygnus.com>
 
@@ -5061,10 +5067,10 @@ Wed Sep  3 17:29:35 1997  Bob Manson  <manson@charmed.cygnus.com>
 Wed Sep  3 17:15:00 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/c-torture.exp(c-torture-execute): If the previous and the
- 	current executables being tested are identical, we don't need to
- 	run the executable again. Try to make the executable names
- 	unique. Add an optional argument for passing additional compiler
- 	flags.
+	current executables being tested are identical, we don't need to
+	run the executable again. Try to make the executable names
+	unique. Add an optional argument for passing additional compiler
+	flags.
 
 Tue Sep  2 16:34:31 1997  Doug Evans  <dje@canuck.cygnus.com>
 
@@ -5163,7 +5169,7 @@ Thu May  1 14:49:19 1997  Bob Manson  <manson@charmed.cygnus.com>
 Thu Apr 10 14:50:26 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/g++.exp(g++init): Don't try to be smart, always run g++_init
- 	to completion when it's called.
+	to completion when it's called.
 
 Fri Mar 21 16:34:52 1997  Michael Meissner  <meissner@cygnus.com>
 
@@ -5212,7 +5218,7 @@ Wed Mar 12 10:01:33 1997  Jeffrey A Law  (law@cygnus.com)
 Sun Feb 23 18:12:04 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/gcc.exp(gcc_init): Add args parameter (which will contain
- 	the name of the expect testcase file).
+	the name of the expect testcase file).
 
 	* lib/g++.exp(g++_init): Ditto.
 
@@ -5270,7 +5276,7 @@ Sat Feb  8 14:45:55 1997  Bob Manson  <manson@charmed.cygnus.com>
 Fri Feb  7 12:55:45 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/old-dejagnu.exp: Use prune_warnings instead of
- 	prune_system_crud.
+	prune_system_crud.
 	* lib/mike-g++.exp: Ditto.
 	* lib/gcc.exp: Ditto.
 	* lib/g++.exp: Ditto.
@@ -5306,7 +5312,7 @@ Sun Feb  2 14:42:34 1997  Bob Manson  <manson@charmed.cygnus.com>
 	call to glob.
 
 	* gcc.c-torture/special/special.exp: Change call to
- 	gcc_target_compile to include the object file.
+	gcc_target_compile to include the object file.
 
 Sun Feb  2 17:11:50 1997  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -5316,7 +5322,7 @@ Sun Feb  2 17:11:50 1997  Ian Lance Taylor  <ian@cygnus.com>
 Sat Feb  1 12:34:23 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/plumhall.exp(ph_summary): Log the entire output of the
- 	executable. Return -1 if there were any failures, 0 otherwise.
+	executable. Return -1 if there were any failures, 0 otherwise.
 	(ph_execute): Return -1 if there were any failures, 0 otherwise.
 	(ph_make): Clean up objects and executables that were built
 	if the tests succeeded.
@@ -5424,18 +5430,18 @@ Sun Jun 30 14:37:50 1996  Doug Evans  <dje@canuck.cygnus.com>
 Wed Jun 26 14:15:55 1996  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/old-dejagnu.exp (old-dejagnu): Add $tmpdir to specify a
- 	temporary directory for compiler files, and set it to a default
- 	value of /tmp. Set $output as the name of the output file from
- 	compiling the testcase. Add a -o option to $cflags_var so the
- 	compiler writes the final output file as $output. Set $executable
- 	to $output.
+	temporary directory for compiler files, and set it to a default
+	value of /tmp. Set $output as the name of the output file from
+	compiling the testcase. Add a -o option to $cflags_var so the
+	compiler writes the final output file as $output. Set $executable
+	to $output.
 
 	* lib/mike-g++.exp (postbase): Add $tmpdir to specify a temporary
- 	directory for compiler files, and set it to /tmp if it doesn't
- 	already have a value. Set $output_file to the name of the output
- 	file from compiling the testcase. Add a -o option to CXXFLAGS so
- 	the compiler writes the final output file as $output. Use $output
- 	as the executable to be tested.
+	directory for compiler files, and set it to /tmp if it doesn't
+	already have a value. Set $output_file to the name of the output
+	file from compiling the testcase. Add a -o option to CXXFLAGS so
+	the compiler writes the final output file as $output. Use $output
+	as the executable to be tested.
 
 Mon Jun 24 17:12:16 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
