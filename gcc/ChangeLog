@@ -1,3 +1,7 @@
+2003-11-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (LIBCALL_VALUE): Use R0_REG.
+
 2003-11-28  Gunther Nikl  <gni@gecko.de>
 
 	* config/m68k/m68k.c (MOTOROLA): Move from here...
