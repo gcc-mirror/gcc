@@ -1,3 +1,7 @@
+2004-05-14  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* doc/sourcebuild.texi: Mention libbanshee and libmudflap.
+
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-ssa.c (delete_tree_ssa): XFREE

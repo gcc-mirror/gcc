@@ -53,6 +53,9 @@ Headers for the @code{libiberty} library.
 @item libada
 The Ada runtime library.
 
+@item libbanshee
+The @code{libbanshee} library, used for Andersen-style points-to analysis.
+
 @item libf2c
 The Fortran 77 runtime library.
 
@@ -70,6 +73,10 @@ about this library.
 
 @item libjava
 The Java runtime library.
+
+@item libmudflap
+The @code{libmudflap} library, used for instrumenting pointer and array
+dereferencing operations.
 
 @item libobjc
 The Objective-C runtime library.
