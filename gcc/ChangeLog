@@ -1,3 +1,12 @@
+Thu Dec 10 13:39:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.h: New header file for prototypes.
+
+	* Makefile.in (collect2.o, tlink.o): Depend on collect2.h.
+
+	* collect2.c: Include collect2.h.
+	* tlink.c: Likewise.
+
 Wed Dec  9 23:55:11 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c: Update some comments.

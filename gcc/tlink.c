@@ -25,6 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "hash.h"
 #include "demangle.h"
 #include "toplev.h"
+#include "collect2.h"
 
 #define MAX_ITERATIONS 17
 

@@ -1306,12 +1306,12 @@ collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
 	  cplus-dem.o underscore.o version.o choose-temp.o mkstemp.o $(LIBS)
 
 collect2.o : collect2.c $(CONFIG_H) system.h gstab.h \
-	$(srcdir)/../include/obstack.h $(DEMANGLE_H)
+	$(srcdir)/../include/obstack.h $(DEMANGLE_H) collect2.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
 
-tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h toplev.h
+tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h toplev.h collect2.h
 hash.o: hash.c hash.h system.h toplev.h
 
 cplus-dem.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)

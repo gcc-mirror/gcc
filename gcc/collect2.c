@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define COLLECT
 
+#include "collect2.h"
 #include "demangle.h"
 #include "obstack.h"
 #ifdef __CYGWIN__
