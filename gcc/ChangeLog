@@ -1,11 +1,17 @@
+2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* fold-const.c (round_up, round_down): Use build_int_cst.
+	Optimize common case.
+
 2004-08-20  Zack Weinberg  <zack@codesourcery.com>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
         * config/pa/pa-protos.h (readonly_data, one_only_readonly_data_section,
 	one_only_data_section): Rename to som_readonly_data_section,
 	som_one_only_readonly_data_section and som_one_only_data_section.
-        * config/pa/pa.c (ONE_ONLY_TEXT_SECTION_ASM_OP, NEW_TEXT_SECTION_ASM_OP,
-	DEFAULT_TEXT_SECTION_ASM_OP): Delete conditional defines.
+        * config/pa/pa.c (ONE_ONLY_TEXT_SECTION_ASM_OP,
+	NEW_TEXT_SECTION_ASM_OP, DEFAULT_TEXT_SECTION_ASM_OP): Delete
+	conditional defines.
 	(som_text_section_asm_op): Replace ONE_ONLY_TEXT_SECTION_ASM_OP,
 	NEW_TEXT_SECTION_ASM_OP and DEFAULT_TEXT_SECTION_ASM_OP with actual
 	string values.
