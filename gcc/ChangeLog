@@ -1,3 +1,12 @@
+2005-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/19342
+	* c-typeck.c (common_type): New routine.  Old common_type renamed
+	to...
+	(c_common_type): ...this.
+	(build_conditional_expr, build_binary_op): Use c_common_type instead
+	of common_type.
+
 2005-02-10  Steven Bosscher  <stevenb@suse.de>
 
 	* doc/md.texi: Replace @samp{length} with @code{length}.
