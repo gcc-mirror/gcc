@@ -163,11 +163,15 @@ extern int link ();
 extern int unlink ();
 extern int access ();
 extern int execvp ();
+/* In 2.6, try deleting these decls entirely since setjmp.h should
+   take care of them.  */
+#ifndef __NeXT__
 #ifndef setjmp
 extern int setjmp ();
 #endif
 #ifndef longjmp
 extern void longjmp ();
+#endif
 #endif
 
 #if 0 /* size_t from sys/types.h may fail to match GCC.
