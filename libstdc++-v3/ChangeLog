@@ -1,5 +1,16 @@
 2004-12-29  Paolo Carlini  <pcarlini@suse.de>
 
+	Minimal fixes for -fno-exceptions.
+	* src/bitmap_allocator.cc (free_list::_M_get): Use
+	__throw_exception_again, instead of plain throw.
+	* testsuite/testsuite_abi.cc (get_symbol, examine_symbol,
+	create_symbols): Likewise.
+	* testsuite/testsuite_hooks.cc (verify_demangle,
+	run_tests_wrapped_locale, run_tests_wrapped_env): Likewise.
+	(try_named_locale): Wrap the whole catch in __EXCEPTIONS.
+
+2004-12-29  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Add has_nothrow_constructor.
 	* testsuite/tr1/4_metaprogramming/type_properties/
 	has_nothrow_constructor/has_nothrow_constructor.cc: New.

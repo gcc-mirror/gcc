@@ -96,7 +96,7 @@ namespace __gnu_cxx
 	    *__ret = __sz;
 	    return __ret + 1;
 	  }
-	throw std::bad_alloc();
+	__throw_exception_again std::bad_alloc();
       }
     else
       {

@@ -137,7 +137,7 @@ namespace __gnu_test
 
     std::string w(wanted);
     if (w != s)
-      throw std::runtime_error(s);
+      __throw_exception_again std::runtime_error(std::string(s));
   }
 
   
@@ -184,7 +184,8 @@ namespace __gnu_test
 	VERIFY( preLC_ALL == postLC_ALL );
       }
     else
-      throw environment_variable(string("LC_ALL for ") + string(name));
+      __throw_exception_again
+	environment_variable(string("LC_ALL for ") + string(name));
   }
   
   void 
@@ -209,7 +210,8 @@ namespace __gnu_test
 	setenv(env, oldENV ? oldENV : "", 1);
       }
     else
-      throw environment_variable(string(env) + string(" to ") + string(name));
+      __throw_exception_again
+	environment_variable(string(env) + string(" to ") + string(name));
 #endif
   }
 
@@ -220,6 +222,7 @@ namespace __gnu_test
       {
 	return std::locale(name);
       }
+#ifdef __EXCEPTIONS
     catch (std::runtime_error& ex)
       {
 	// Thrown by generic and gnu implemenation if named locale fails.
@@ -228,6 +231,7 @@ namespace __gnu_test
 	else
 	  throw;
       }
+#endif
   }
 
   int
