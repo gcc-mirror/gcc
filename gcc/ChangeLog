@@ -1,3 +1,19 @@
+2002-06-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_initial_elimination_offset): Declare.
+	(mips_set_return_address, mips_restore_gp): Declare.
+	* config/mips/mips.h (struct mips_frame_info): Move to mips.c
+	(current_frame_info): Remove.
+	(INITIAL_ELIMINATION_OFFSET): Use mips_initial_elimination_offset.
+	* config/mips/mips.c: Remove uses of current_frame_info.
+	(struct mips_frame_info): Moved from mips.h.  Remove 'insns_len'.
+	(struct machine_function): Add 'frame' and 'insns_len'.
+	(current_frame_info, zero_frame_info): Remove.
+	(mips_restore_gp, mips_set_return_address): New.
+	(mips_initial_elimination_offset): New.
+	* config/mips/mips.md (exception_receiver): Use mips_restore_gp.
+	(eh_return define_split): Use mips_set_return_address.
+
 2002-06-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplib.c (dtable): Update.
