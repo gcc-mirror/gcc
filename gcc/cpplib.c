@@ -1731,42 +1731,34 @@ handle_assertion (pfile, str, type)
   run_directive (pfile, type, str, count, 0);
 }
 
-/* Allocate a new cpp_buffer for PFILE, and push it on the input
-   buffer stack.  If BUFFER != NULL, then use the LENGTH characters in
-   BUFFER as the new input buffer.  Return the new buffer, or NULL on
-   failure.  */
+/* Push a new buffer on the buffer stack.  Buffer can be NULL, but
+   then LEN should be 0.  Returns the new buffer; it doesn't fail.  */
 
 cpp_buffer *
-cpp_push_buffer (pfile, buffer, length)
+cpp_push_buffer (pfile, buffer, len)
      cpp_reader *pfile;
      const U_CHAR *buffer;
-     long length;
+     size_t len;
 {
-  cpp_buffer *buf = CPP_BUFFER (pfile);
-  cpp_buffer *new;
-  if (++pfile->buffer_stack_depth == CPP_STACK_MAX)
-    {
-      cpp_fatal (pfile, "#include nested too deeply");
-      return NULL;
-    }
+  cpp_buffer *new = xobnew (pfile->buffer_ob, cpp_buffer);
 
-  new = xobnew (pfile->buffer_ob, cpp_buffer);
   /* Clears, amongst other things, if_stack and mi_cmacro.  */
   memset (new, 0, sizeof (cpp_buffer));
-
-  pfile->lexer_pos.output_line = 1;
   new->line_base = new->buf = new->cur = buffer;
-  new->rlimit = buffer + length;
-  new->prev = buf;
+  new->rlimit = buffer + len;
+  new->prev = pfile->buffer;
   new->pfile = pfile;
   /* Preprocessed files don't do trigraph and escaped newline processing.  */
   new->from_stage3 = CPP_OPTION (pfile, preprocessed);
   /* No read ahead or extra char initially.  */
   new->read_ahead = EOF;
   new->extra_char = EOF;
-  pfile->state.next_bol = 1;
 
-  CPP_BUFFER (pfile) = new;
+  pfile->state.next_bol = 1;
+  pfile->buffer_stack_depth++;
+  pfile->lexer_pos.output_line = 1;
+
+  pfile->buffer = new;
   return new;
 }
 

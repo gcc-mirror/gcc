@@ -1,3 +1,16 @@
+2000-12-05  Neil Booth  <neilb@earthling.net>
+
+        * cppfiles.c (stack_include_file): Push zero-length buffers
+        in case of failure.  Return void, as we don't fail any more.
+        (read_include_file): Check for files we shouldn't re-read.
+        Don't return an error code; errors are implied by marking the
+        file NEVER_REREAD.
+        (_cpp_execute_include): Move the recursion and in-macro checks
+        here.  Update for stack_include_file not failing.
+        * cpplib.c (cpp_push_buffer): Always succeed, since
+        _cpp_execute_include performs the recursion check.  Tidy up.
+        * cpplib.h (cpp_push_buffer): Update prototype.
+
 2000-12-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* sched-vis.c (visual_tbl_line_length): New variable.
