@@ -1216,7 +1216,7 @@ c_source_files = \
   java/lang/e_remainder.c java/lang/s_floor.c     java/lang/w_remainder.c \
   java/lang/e_scalb.c     java/lang/s_rint.c      java/lang/w_sqrt.c      \
   java/lang/e_sqrt.c      java/lang/s_scalbn.c    java/lang/sf_rint.c     \
-  java/lang/k_cos.c       java/lang/s_sin.c
+  java/lang/k_cos.c       java/lang/s_sin.c       java/lang/sf_fabs.c
 
 #java/awt/natToolkit.cc
 

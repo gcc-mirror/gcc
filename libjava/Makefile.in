@@ -976,7 +976,7 @@ c_source_files = \
   java/lang/e_remainder.c java/lang/s_floor.c     java/lang/w_remainder.c \
   java/lang/e_scalb.c     java/lang/s_rint.c      java/lang/w_sqrt.c      \
   java/lang/e_sqrt.c      java/lang/s_scalbn.c    java/lang/sf_rint.c     \
-  java/lang/k_cos.c       java/lang/s_sin.c
+  java/lang/k_cos.c       java/lang/s_sin.c       java/lang/sf_fabs.c
 
 
 #java/awt/natToolkit.cc
@@ -1592,18 +1592,19 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/s_fabs.P .deps/java/lang/s_floor.P \
 .deps/java/lang/s_rint.P .deps/java/lang/s_scalbn.P \
 .deps/java/lang/s_sin.P .deps/java/lang/s_tan.P \
-.deps/java/lang/sf_rint.P .deps/java/lang/strtod.P \
-.deps/java/lang/w_acos.P .deps/java/lang/w_asin.P \
-.deps/java/lang/w_atan2.P .deps/java/lang/w_exp.P \
-.deps/java/lang/w_fmod.P .deps/java/lang/w_log.P \
-.deps/java/lang/w_pow.P .deps/java/lang/w_remainder.P \
-.deps/java/lang/w_sqrt.P .deps/java/math/BigDecimal.P \
-.deps/java/math/BigInteger.P .deps/java/net/BindException.P \
-.deps/java/net/ConnectException.P .deps/java/net/ContentHandler.P \
-.deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
-.deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
-.deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
-.deps/java/net/InetAddress.P .deps/java/net/JarURLConnection.P \
+.deps/java/lang/sf_fabs.P .deps/java/lang/sf_rint.P \
+.deps/java/lang/strtod.P .deps/java/lang/w_acos.P \
+.deps/java/lang/w_asin.P .deps/java/lang/w_atan2.P \
+.deps/java/lang/w_exp.P .deps/java/lang/w_fmod.P \
+.deps/java/lang/w_log.P .deps/java/lang/w_pow.P \
+.deps/java/lang/w_remainder.P .deps/java/lang/w_sqrt.P \
+.deps/java/math/BigDecimal.P .deps/java/math/BigInteger.P \
+.deps/java/net/BindException.P .deps/java/net/ConnectException.P \
+.deps/java/net/ContentHandler.P .deps/java/net/ContentHandlerFactory.P \
+.deps/java/net/DatagramPacket.P .deps/java/net/DatagramSocket.P \
+.deps/java/net/DatagramSocketImpl.P .deps/java/net/FileNameMap.P \
+.deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
+.deps/java/net/JarURLConnection.P \
 .deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
 .deps/java/net/NoRouteToHostException.P \
 .deps/java/net/PlainDatagramSocketImpl.P \
