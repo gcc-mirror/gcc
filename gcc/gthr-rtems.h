@@ -1,7 +1,8 @@
 /* RTEMS threads compatibility routines for libgcc2 and libobjc.
    by: Rosimildo da Silva( rdasilva@connecttel.com ) */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2002, 2003, 2005 
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,11 +40,13 @@ extern "C" {
 #define __GTHREAD_ONCE_INIT  0
 #define __GTHREAD_MUTEX_INIT 0
 #define __GTHREAD_MUTEX_INIT_FUNCTION  rtems_gxx_mutex_init
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION  rtems_gxx_recursive_mutex_init
 
 /* Avoid dependency on rtems specific headers.  */
 typedef void *__gthread_key_t;
 typedef int   __gthread_once_t;
 typedef void *__gthread_mutex_t;
+typedef void *__gthread_recursive_mutex_t;
 
 /*
  * External functions provided by RTEMS. They are very similar to their POSIX
@@ -64,6 +67,11 @@ extern int rtems_gxx_mutex_lock (__gthread_mutex_t *mutex);
 extern int rtems_gxx_mutex_trylock (__gthread_mutex_t *mutex);
 extern int rtems_gxx_mutex_unlock (__gthread_mutex_t *mutex);
 
+/* recursive mutex support */
+extern void rtems_gxx_recursive_mutex_init (__gthread_recursive_mutex_t *mutex);
+extern int rtems_gxx_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex);
+extern int rtems_gxx_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex);
+extern int rtems_gxx_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex);
 
 /* RTEMS threading is always active */
 static inline int
@@ -119,6 +127,24 @@ static inline int
 __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
     return rtems_gxx_mutex_unlock( mutex );
+}
+
+static inline int
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+{
+    return rtems_gxx_recursive_mutex_lock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+{
+    return rtems_gxx_recursive_mutex_trylock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+{
+    return rtems_gxx_recursive_mutex_unlock( mutex );
 }
 
 #ifdef __cplusplus
