@@ -2,7 +2,10 @@
 
 	* cselib.c (cselib_record_sets): If insn is predicated, turn
 	sources into IF_THEN_ELSEs.
-		
+
+	* config/ia64/ia64.md (cond_opsi2_internal, cond_opsi2_internal_b):
+	Turn into define_insn_and_split.
+
 2001-08-08  Graham Stott  <grahams@redhat.com>
 
 	* final.c (shorten_branches): Update the INSN_ADDRESSES of insns
