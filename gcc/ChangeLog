@@ -1,3 +1,7 @@
+Wed Jun 14 23:46:26 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* mips.c (machine_dependent_reorg): Fix braces for nested if.
+
 2000-06-14  Geoff Keating  <geoffk@cygnus.com>
 
 	* rs6000.c (toc_hash_eq): Use CODE_LABEL_NUMBER to compare
