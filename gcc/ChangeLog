@@ -1,3 +1,13 @@
+2001-06-27  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def(hpux11_cpp_pow_inline): new, but real similar to
+	hpux10_cpp_pow_inline.  Not similar enough.
+	(solaris_mutex_init): renamed.  PTHREAD_*_INITIALIZER is a problem for
+	all Solaris versions.  This fix patches MUTEX and COND initializers,
+	the RWLOCK one will wait for someone to complain.  For now, anyway.
+	(uw7_byteorder_fix): It was looking for the byteorder.h file in the
+	wrong directory.
+
 2001-06-27  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (handle_impent): Rewrite to be more portable
