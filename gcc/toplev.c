@@ -57,6 +57,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
 #endif
+
+#include "bytecode.h"
+#include "bc-emit.h"
 
 #ifdef VMS
 /* The extra parameters substantially improve the I/O performance.  */
@@ -210,6 +213,9 @@ int optimize = 0;
 int errorcount = 0;
 int warningcount = 0;
 int sorrycount = 0;
+
+/* Flag to output bytecode instead of native assembler */
+int output_bytecode = 0;
 
 /* Pointer to function to compute the name to use to print a declaration.  */
 
@@ -515,6 +521,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
   {"verbose-asm", &flag_verbose_asm, 1},
   {"gnu-linker", &flag_gnu_linker, 1}
+  {"bytecode", &output_bytecode, 1}
 };
 
 /* Table of language-specific options.  */
@@ -885,11 +892,14 @@ void
 fatal_insn_not_found (insn)
      rtx insn;
 {
-  if (INSN_CODE (insn) < 0)
-    error ("internal error--unrecognizable insn:", 0);
-  else
-    error ("internal error--insn does not satisfy its constraints:", 0);
-  debug_rtx (insn);
+  if (!output_bytecode)
+    {
+      if (INSN_CODE (insn) < 0)
+	error ("internal error--unrecognizable insn:", 0);
+      else
+	error ("internal error--insn does not satisfy its constraints:", 0);
+      debug_rtx (insn);
+    }
   if (asm_out_file)
     fflush (asm_out_file);
   if (aux_info_file)
@@ -1585,6 +1595,8 @@ compile_file (name)
   init_obstacks ();
   init_tree_codes ();
   init_lex ();
+  /* Some of these really don't need to be called when generating bytecode,
+     but the options would have to be parsed first to know that. -bson */
   init_rtl ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE);
@@ -1813,34 +1825,51 @@ compile_file (name)
   input_file_stack->next = 0;
   input_file_stack->name = input_filename;
 
-  ASM_FILE_START (asm_out_file);
+  if (!output_bytecode)
+    {
+      ASM_FILE_START (asm_out_file);
+    }
 
-  /* Output something to inform GDB that this compilation was by GCC.  */
+  /* Output something to inform GDB that this compilation was by GCC.  Also
+     serves to tell GDB file consists of bytecodes. */
+  if (output_bytecode)
+    fprintf (asm_out_file, "bc_gcc2_compiled.:\n");
+  else
+    {
 #ifndef ASM_IDENTIFY_GCC
-  fprintf (asm_out_file, "gcc2_compiled.:\n");
+      fprintf (asm_out_file, "gcc2_compiled.:\n");
 #else
-  ASM_IDENTIFY_GCC (asm_out_file);
+      ASM_IDENTIFY_GCC (asm_out_file);
 #endif
+    }
 
   /* Output something to identify which front-end produced this file. */
 #ifdef ASM_IDENTIFY_LANGUAGE
   ASM_IDENTIFY_LANGUAGE (asm_out_file);
 #endif
 
-/* ??? Note: There used to be a conditional here
-   to call assemble_zeros without fail if DBX_DEBUGGING_INFO is defined.
-   This was to guarantee separation between gcc_compiled. and
-   the first function, for the sake of dbx on Suns.
-   However, having the extra zero here confused the Emacs
-   code for unexec, and might confuse other programs too.
-   Therefore, I took out that change.
-   In future versions we should find another way to solve
-   that dbx problem.  -- rms, 23 May 93.  */
-
-  /* Don't let the first function fall at the same address
-     as gcc_compiled., if profiling.  */
-  if (profile_flag || profile_block_flag)
-    assemble_zeros (UNITS_PER_WORD);
+  if (output_bytecode)
+    {
+      if (profile_flag || profile_block_flag)
+	error ("profiling not supported in bytecode compilation");
+    }
+  else
+    {
+      /* ??? Note: There used to be a conditional here
+	 to call assemble_zeros without fail if DBX_DEBUGGING_INFO is defined.
+	 This was to guarantee separation between gcc_compiled. and
+	 the first function, for the sake of dbx on Suns.
+	 However, having the extra zero here confused the Emacs
+	 code for unexec, and might confuse other programs too.
+	 Therefore, I took out that change.
+	 In future versions we should find another way to solve
+	 that dbx problem.  -- rms, 23 May 93.  */
+      
+      /* Don't let the first function fall at the same address
+	 as gcc_compiled., if profiling.  */
+      if (profile_flag || profile_block_flag)
+	assemble_zeros (UNITS_PER_WORD);
+    }
 
   /* If dbx symbol table desired, initialize writing it
      and output the predefined types.  */
@@ -1861,7 +1890,8 @@ compile_file (name)
 
   /* Initialize yet another pass.  */
 
-  init_final (main_input_filename);
+  if (!output_bytecode)
+    init_final (main_input_filename);
 
   start_time = get_run_time ();
 
@@ -2031,11 +2061,14 @@ compile_file (name)
 
   /* Output some stuff at end of file if nec.  */
 
-  end_final (main_input_filename);
+  if (!output_bytecode)
+    {
+      end_final (main_input_filename);
 
 #ifdef ASM_FILE_END
-  ASM_FILE_END (asm_out_file);
+      ASM_FILE_END (asm_out_file);
 #endif
+    }
 
  after_finish_compilation:
 
@@ -2113,24 +2146,28 @@ compile_file (name)
     {
       fprintf (stderr,"\n");
       print_time ("parse", parse_time);
-      print_time ("integration", integration_time);
-      print_time ("jump", jump_time);
-      print_time ("cse", cse_time);
-      print_time ("loop", loop_time);
-      print_time ("cse2", cse2_time);
-      print_time ("flow", flow_time);
-      print_time ("combine", combine_time);
-      print_time ("sched", sched_time);
-      print_time ("local-alloc", local_alloc_time);
-      print_time ("global-alloc", global_alloc_time);
-      print_time ("sched2", sched2_time);
-      print_time ("dbranch", dbr_sched_time);
-      print_time ("shorten-branch", shorten_branch_time);
-      print_time ("stack-reg", stack_reg_time);
-      print_time ("final", final_time);
-      print_time ("varconst", varconst_time);
-      print_time ("symout", symout_time);
-      print_time ("dump", dump_time);
+
+      if (!output_bytecode)
+	{
+	  print_time ("integration", integration_time);
+	  print_time ("jump", jump_time);
+	  print_time ("cse", cse_time);
+	  print_time ("loop", loop_time);
+	  print_time ("cse2", cse2_time);
+	  print_time ("flow", flow_time);
+	  print_time ("combine", combine_time);
+	  print_time ("sched", sched_time);
+	  print_time ("local-alloc", local_alloc_time);
+	  print_time ("global-alloc", global_alloc_time);
+	  print_time ("sched2", sched2_time);
+	  print_time ("dbranch", dbr_sched_time);
+	  print_time ("shorten-branch", shorten_branch_time);
+	  print_time ("stack-reg", stack_reg_time);
+	  print_time ("final", final_time);
+	  print_time ("varconst", varconst_time);
+	  print_time ("symout", symout_time);
+	  print_time ("dump", dump_time);
+	}
     }
 }
 
@@ -2235,6 +2272,9 @@ rest_of_compilation (decl)
   /* Likewise, for DECL_ARGUMENTS.  */
   tree saved_arguments = 0;
   int failure = 0;
+
+  if (output_bytecode)
+    return;
 
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
@@ -3166,7 +3206,12 @@ main (argc, argv, envp)
 		error ("Invalid option `%s'", argv[i]);
 	    }
 	  else if (!strcmp (str, "p"))
-	    profile_flag = 1;
+	    {
+	      if (!output_bytecode)
+		profile_flag = 1;
+	      else
+		error ("profiling not supported in bytecode compilation");
+	    }
 	  else if (!strcmp (str, "a"))
 	    {
 #if !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
@@ -3325,6 +3370,18 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	filename = argv[i];
     }
 
+  /* Initialize for bytecode output.  A good idea to do this as soon as
+     possible after the "-f" options have been parsed. */
+  if (output_bytecode)
+    {
+#ifndef TARGET_SUPPORTS_BYTECODE
+      /* Just die with a fatal error if not supported */
+      fatal ("-fbytecode can not be used for this target");
+#else
+      bc_initialize ();
+#endif
+    }
+
   if (optimize == 0)
     {
       /* Inlining does not work if not optimizing,
@@ -3398,9 +3455,13 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
     }
 
   /* Now that register usage is specified, convert it to HARD_REG_SETs.  */
-  init_reg_sets_1 ();
+  if (!output_bytecode)
+    init_reg_sets_1 ();
 
   compile_file (filename);
+
+  if (output_bytecode)
+    bc_write_file (stdout);
 
 #ifndef OS2
 #ifndef VMS

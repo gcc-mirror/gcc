@@ -20,6 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <stdio.h>
 #include "config.h"
 #include "tree.h"
+#include "function.h"
 
 #ifdef HANDLE_SYSV_PRAGMA
 
@@ -45,20 +46,7 @@ handle_pragma_token (string, token)
      char *string;
      tree token;
 {
-  static enum pragma_state
-    {
-      ps_start,
-      ps_done,
-      ps_bad,
-      ps_weak,
-      ps_name,
-      ps_equals,
-      ps_value,
-      ps_pack,
-      ps_left,
-      ps_align,
-      ps_right
-      } state = ps_start, type;
+  static enum pragma_state state = ps_start, type;
   static char *name;
   static char *value;
   static int align;
@@ -76,24 +64,8 @@ handle_pragma_token (string, token)
 	{
 #ifdef HANDLE_PRAGMA_WEAK
 	  if (HANDLE_PRAGMA_WEAK)
-	    {
-	      if (state == ps_name || state == ps_value)
-		{
-		  fprintf (asm_out_file, "\t%s\t", WEAK_ASM_OP);
-		  ASM_OUTPUT_LABELREF (asm_out_file, name);
-		  fputc ('\n', asm_out_file);
-		  if (state == ps_value)
-		    {
-		      fprintf (asm_out_file, "\t%s\t", SET_ASM_OP);
-		      ASM_OUTPUT_LABELREF (asm_out_file, name);
-		      fputc (',', asm_out_file);
-		      ASM_OUTPUT_LABELREF (asm_out_file, value);
-		      fputc ('\n', asm_out_file);
-		    }
-		}
-	      else if (! (state == ps_done || state == ps_start))
-		warning ("malformed `#pragma weak'");
-	    }
+	    handle_pragma_weak (state, asm_out_file, name, value);
+
 #endif /* HANDLE_PRAMA_WEAK */
 	}
 

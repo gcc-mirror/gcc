@@ -399,6 +399,9 @@ CPLUS_OBJS = cp-parse.o cp-decl.o cp-decl2.o \
    cp-expr.o cp-pt.o cp-edsel.o cp-xref.o \
    $(CPLUS_INPUT) cp-spew.o c-common.o
 
+# Files specific to the C interpreter bytecode compiler(s).
+BC_OBJS = bc-emit.o bc-optab.o
+
 # Language-independent object files.
 OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  function.o stmt.o expr.o calls.o expmed.o explow.o optabs.o varasm.o \
@@ -461,6 +464,7 @@ CONFIG_H =
 RTL_H = rtl.h rtl.def machmode.h machmode.def
 TREE_H = tree.h real.h tree.def machmode.h machmode.def
 CPLUS_TREE_H = $(TREE_H) cp-tree.h cp-tree.def
+BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 
 # Avoid a lot of time thinking about remaking Makefile.in and *.def.
 .SUFFIXES: .in .def
@@ -484,7 +488,7 @@ for-bootstrap: start.encap $(LIBGCC)
 rest.encap: $(LIBGCC) stmp-headers $(STMP_FIXPROTO) $(EXTRA_PARTS)
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
+native: bytecode config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
 C c: cc1
@@ -545,14 +549,14 @@ g++-cross: $(srcdir)/g++.c
 	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++-cross \
 	   -DGCC_NAME=\"$(target)-gcc\" $(srcdir)/g++.c version.o $(LIBS)
 
-cc1:$(P) $(C_OBJS) $(OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1 $(C_OBJS) $(OBJS) $(LIBS)
+cc1:$(P) $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1 $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
 
-cc1plus:$(P) $(CPLUS_OBJS) $(OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1plus $(CPLUS_OBJS) $(OBJS) $(LIBS)
+cc1plus:$(P) $(CPLUS_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1plus $(CPLUS_OBJS) $(BC_OBJS) $(OBJS) $(LIBS)
 
-cc1obj:$(P) $(OBJC_OBJS) $(OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1obj $(OBJC_OBJS) $(OBJS) $(LIBS)
+cc1obj:$(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1obj $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
 
 # Copy float.h from its source.
 gfloat.h: $(FLOAT_H)
@@ -1247,6 +1251,63 @@ $(HOST_PREFIX_1)malloc.o: malloc.c
 $(HOST_PREFIX_1): 
 	touch $(HOST_PREFIX_1)
 
+# Remake bytecode files.
+# BI_ALL=bi-run.o
+BI_ALL=
+BC_ALL=bc-opname.h bc-opcode.h bc-arity.h
+BI_OBJ=bi-parser.o bi-lexer.o bi-reverse.o
+
+
+bc-emit.o : bc-emit.c $(CONFIG_H) $(BYTECODE_H)
+bc-optab.o : bc-optab.c bc-typecd.def $(CONFIG_H) $(BYTECODE_H)
+
+
+bytecode: $(BI_ALL) $(BC_ALL)
+
+bi-arity:	bi-arity.o
+bi-opcode:	bi-opcode.o
+bi-opname:	bi-opname.o
+bi-unparse:	bi-unparse.o
+bi-lexer:	bi-lexer.o
+
+bi-arity bi-opcode bi-opname bi-unparse bi-lexer: $(BI_OBJ)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $^ $(LEXLIB)
+
+bi-run.o:	$(srcdir)/bi-run.c $(srcdir)/bi-run.h $(srcdir)/bc-typecd.h bc-opname.h bc-arity.h bc-opcode.h
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
+
+bi-parser.c: $(srcdir)/bi-parser.y $(srcdir)/bi-parser.h
+
+bi-parser.o:	$(srcdir)/bi-parser.c $(srcdir)/bi-defs.h
+	$(CC) $(CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
+
+bi-lexer.c:	$(srcdir)/bi-lexer.l $(srcdir)/bi-parser.h
+
+bi-lexer.o:	bi-lexer.c bi-parser.h
+	$(CC) $(CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
+
+bc-arity.h:	$(srcdir)/bytecode.def bi-arity
+	-rm -f $@
+	bi-arity <$< >$@
+
+bc-opcode.h:	$(srcdir)/bytecode.def bi-opcode
+	-rm -f $@
+	bi-opcode <$< >$@
+
+bc-opname.h:	 $(srcdir)/bytecode.def bi-opname
+	-rm -f $@
+	bi-opname <$< >$@
+
+bytecode.mostlyclean:
+	-rm -f bc-arity.h bc-opcode.h bc-opname.h
+
+bytecode.distclean bytecode.clean:	bytecode.mostlyclean
+	-rm -f bi-arity bi-opcode bi-opname bi-unparse bi-lexer
+
+bytecode.realclean: bytecode.clean
+	-rm -f bi-parser.c bi-lexer.c bi-parser.h
+
+
 # Remake cpp and protoize.
 
 # Making the preprocessor
@@ -1507,7 +1568,7 @@ $(srcdir)/INSTALL: install1.texi install.texi
 # `realclean' also deletes everything that could be regenerated automatically.
 
 
-mostlyclean:
+mostlyclean: bytecode.mostlyclean
 	-rm -f $(STAGESTUFF)
 # Clean the objc subdir if we created one.
 	if [ -d objc ]; then \
@@ -1545,7 +1606,7 @@ mostlyclean:
 
 # Delete all files made by compilation
 # that don't exist in the distribution.
-clean: mostlyclean
+clean: mostlyclean bytecode.clean
 # It may not be quite desirable to delete unprotoize.c here,
 # but the spec for `make clean' requires it.
 # Using unprotoize.c is not quite right in the first place, 
@@ -1557,7 +1618,7 @@ clean: mostlyclean
 
 # Delete all files that users would normally create
 # while building and installing GCC.
-distclean: clean
+distclean: clean bytecode.distclean
 	-rm -f tm.h aux-output.c config.h md config.status tconfig.h hconfig.h
 	-rm -f Makefile *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
@@ -1581,7 +1642,7 @@ extraclean: distclean
 
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
-realclean: distclean
+realclean: distclean bytecode.realclean
 	-rm -f c-parse.y objc-parse.y
 	-rm -f cp-parse.c cp-parse.h cp-parse.output
 	-rm -f objc-parse.c objc-parse.output

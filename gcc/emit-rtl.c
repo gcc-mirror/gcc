@@ -42,7 +42,28 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "regs.h"
 #include "insn-config.h"
 #include "real.h"
+#include "obstack.h"
+
+#include "bytecode.h"
+#include "machmode.h"
+#include "bc-opcode.h"
+#include "bc-typecd.h"
+#include "bc-optab.h"
+#include "bc-emit.h"
+
 #include <stdio.h>
+
+
+/* Opcode names */
+#ifdef BCDEBUG_PRINT_CODE
+char *opcode_name[] =
+{
+#include "bc-opname.h"
+
+"***END***"
+};
+#endif
+
 
 /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
    After rtl generation, it is 1 plus the largest register number used.  */
@@ -202,6 +223,11 @@ extern int emit_lineno;
 
 rtx change_address ();
 void init_emit ();
+
+extern struct obstack *rtl_obstack;
+
+extern int stack_depth;
+extern int max_stack_depth;
 
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **
@@ -1216,8 +1242,12 @@ change_address (memref, mode, addr)
 rtx
 gen_label_rtx ()
 {
-  register rtx label = gen_rtx (CODE_LABEL, VOIDmode, 0, 0, 0,
-				label_num++, NULL_PTR);
+  register rtx label;
+
+  label = output_bytecode
+    ? bc_gen_rtx (0, 0, bc_get_bytecode_label ())
+      : gen_rtx (CODE_LABEL, VOIDmode, 0, 0, 0, label_num++, NULL_PTR);
+
   LABEL_NUSES (label) = 0;
   return label;
 }
@@ -2559,6 +2589,13 @@ emit_line_note (file, line)
      char *file;
      int line;
 {
+  if (output_bytecode)
+    {
+      /* FIXME: for now we do nothing, but eventually we will have to deal with
+	 debugging information.  */
+      return 0;
+    }
+
   emit_filename = file;
   emit_lineno = line;
 

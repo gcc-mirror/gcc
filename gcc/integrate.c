@@ -32,6 +32,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "integrate.h"
 #include "real.h"
 #include "function.h"
+#include "bytecode.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -2850,9 +2851,16 @@ void
 output_inline_function (fndecl)
      tree fndecl;
 {
-  rtx head = DECL_SAVED_INSNS (fndecl);
+  rtx head;
   rtx last;
 
+  if (output_bytecode)
+    {
+      warning ("`inline' ignored for bytecode output");
+      return;
+    }
+
+  head = DECL_SAVED_INSNS (fndecl);
   current_function_decl = fndecl;
 
   /* This call is only used to initialize global variables.  */
