@@ -1,3 +1,8 @@
+2001-06-24  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (expand_builtin_expect_jump): Disable if the
+	expression can't be re-evaluated.
+
 2001-06-24  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (arm_compute_save_reg_mask): For FIQ interrupt
