@@ -56,14 +56,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #endif
 
-/* Define the number of entries in an 8-bit `shorts' array needed to represent
-   the largest supported constant, which is twice the width of the largest
-   host integer type.  */
-
-#ifndef MAX_SHORTS
-#define MAX_SHORTS (HOST_BITS_PER_WIDE_INT * 2 / 8)
-#endif
-
 /* Provide a default way to print an address in hex via printf.  */
 
 #ifndef HOST_PTR_PRINTF
