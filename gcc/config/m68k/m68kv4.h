@@ -159,7 +159,7 @@ while (0)
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881			\
    ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)				\
-   : (TREE_CODE (VALTYPE) == POINTER_TYPE				\
+   : (POINTER_TYPE_P (VALTYPE)						\
       ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)				\
       : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
 
