@@ -1,3 +1,8 @@
+2001-11-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+	Fixes PR bootstrap/4116.
+
 2001-09-17  Andreas Jaeger  <aj@suse.de>
 
 	* jni.cc (array_from_valist): Use promoted types for va_arg.
