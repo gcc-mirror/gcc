@@ -198,6 +198,7 @@ override_options ()
   if (alpha_cpu_string)
     {
       if (! strcmp (alpha_cpu_string, "ev4")
+	  || ! strcmp (alpha_cpu_string, "ev45")
 	  || ! strcmp (alpha_cpu_string, "21064"))
 	{
 	  alpha_cpu = PROCESSOR_EV4;
