@@ -41,6 +41,9 @@ Boston, MA 02111-1307, USA. */
   -D__cdecl=__attribute__((__cdecl__)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
+#undef CPP_SPEC
+#define CPP_SPEC "-remap %(cpp_cpu) %[cpp_cpu] %{posix:-D_POSIX_SOURCE}"
+
 /* We have to dynamic link to get to the system DLLs.  All of libc, libm and
    the Unix stuff is in cygwin.dll.  The import library is called
    'libcygwin.a'.  For Windows applications, include more libraries, but

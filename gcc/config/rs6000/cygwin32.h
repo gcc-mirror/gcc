@@ -5,7 +5,7 @@
    to build GCC for use with a windows style library and tool
    set, winnt.h uses the Microsoft tools to do that.
 
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA. */
 
 #define	CPP_PREDEFINES "-D_WIN32 -DWINNT -D__CYGWIN32__ -DPOSIX \
   -D_POWER -D_ARCH_PPC -D__PPC__ -Asystem(winnt) -Acpu(powerpc) -Amachine(powerpc)"
+
+#undef CPP_SPEC
+#define CPP_SPEC "-remap %{posix: -D_POSIX_SOURCE} %(cpp_cpu)"
 
 /* We have to dynamic link to get to the system DLLs.  All of libc, libm and
    the Unix stuff is in cygwin.dll.  The import library is called
