@@ -1,3 +1,18 @@
+2002-07-30  Andrew Haley  <aph@redhat.com>
+
+	* tree-inline.c: Add includes for Java inliner.
+	(remap_decl): Don't handle anonymous types for Java.
+	(remap_block): Add handling for Java trees.
+	(copy_scope_stmt): Conditionalize for non-Java use only.
+	(copy_body_r): Handle Java trees.  Add handling for
+	LABELED_BLOCK_EXPR, EXIT_BLOCK_EXPR, Java blocks.
+	(initialize_inlined_parameters):  Handle Java trees.
+	(declare_return_variable): Likewise.
+	(expand_call_inline): Handle Java trees.
+	(walk_tree): Likewise.
+	(copy_tree_r): Don't handle SCOPE_STMTs for Java.
+	(add_stmt_to_compound): New function.
+
 2002-08-15  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (LOOSE_WARN): Remove -fno-common.
