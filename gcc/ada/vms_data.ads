@@ -4940,6 +4940,69 @@ package VMS_Data is
       S_Pretty_Verbose   'Access,
       S_Pretty_Warnings  'Access);
 
+   -----------------------------
+   -- Switches for GNAT SETUP --
+   -----------------------------
+
+   S_Setup_Ext       : aliased constant S := "/EXTERNAL_REFERENCE=" & '"' &
+                                              "-X" & '"';
+   --        /EXTERNAL_REFERENCE="name=val"
+   --
+   --   Specifies an external reference to the project manager. Useful only if
+   --   /PROJECT_FILE is used.
+   --
+   --   Example:
+   --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Setup_Mess      : aliased constant S := "/MESSAGES_PROJECT_FILE="    &
+                                             "DEFAULT "                   &
+                                                "-vP0 "                   &
+                                             "MEDIUM "                    &
+                                                "-vP1 "                   &
+                                             "HIGH "                      &
+                                                "-vP2";
+   --        /MESSAGES_PROJECT_FILE[=messages-option]
+   --
+   --   Specifies the "verbosity" of the parsing of project files.
+   --   messages-option may be one of the following:
+   --
+   --      DEFAULT (D)  No messages are output if there is no error or warning.
+   --
+   --      MEDIUM       A small number of messages are output.
+   --
+   --      HIGH         A great number of messages are output, most of them not
+   --                   being useful for the user.
+
+   S_Setup_Project   : aliased constant S := "/PROJECT_FILE=<"            &
+                                                "-P>";
+   --        /PROJECT_FILE=filename
+   --
+   --   Specifies the main project file to be used. The project files rooted
+   --   at the main project file are parsed and non existing object
+   --   directories, library directories and exec directories are created.
+
+   S_Setup_Quiet     : aliased constant S := "/QUIET "                    &
+                                            "-q";
+   --        /NOQUIET (D)
+   --        /QUIET
+   --
+   --   Work quietly, only output warnings and errors.
+
+   S_Setup_Verbose   : aliased constant S := "/VERBOSE "                  &
+                                              "-v";
+   --        /NOVERBOSE (D)
+   --        /VERBOSE
+   --
+   --   Verbose mode; GNAT PRETTY generates version information and then a
+   --   trace of the actions it takes to produce or obtain the ASIS tree.
+
+   Setup_Switches : aliased constant Switches :=
+     (S_Setup_Ext     'Access,
+      S_Setup_Mess    'Access,
+      S_Setup_Project 'Access,
+      S_Setup_Quiet   'Access,
+      S_Setup_Verbose 'Access);
+
    ------------------------------
    -- Switches for GNAT SHARED --
    ------------------------------

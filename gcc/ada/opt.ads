@@ -837,6 +837,11 @@ package Opt is
    --  Set True if generated code uses the System.Secondary_Stack package.
    --  For the binder, set if any unit uses the secondary stack package.
 
+   Setup_Projects : Boolean := False;
+   --  GNAT DRIVER
+   --  Set to True for GNAT SETUP: the Project Manager creates non existing
+   --  object, library and exec directories.
+
    Shared_Libgnat : Boolean;
    --  GNATBIND
    --  Set to True if a shared libgnat is requested by using the -shared

@@ -1556,7 +1556,13 @@ package body MLib.Prj is
       Data : constant Project_Data := Projects.Table (For_Project);
 
    begin
-      if Data.Library and not Data.Need_To_Build_Lib then
+      --  No need to build the library if there is no object directory,
+      --  hence no object files to build the library.
+
+      if Data.Library
+        and then not Data.Need_To_Build_Lib
+        and then Data.Object_Directory /= No_Name
+      then
          declare
             Current  : constant Dir_Name_Str := Get_Current_Dir;
             Lib_Name : constant Name_Id := Library_File_Name_For (For_Project);

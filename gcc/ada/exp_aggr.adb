@@ -34,6 +34,7 @@ with Exp_Util; use Exp_Util;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
+with Exp_Tss;  use Exp_Tss;
 with Freeze;   use Freeze;
 with Hostparm; use Hostparm;
 with Itypes;   use Itypes;
@@ -823,14 +824,17 @@ package body Exp_Aggr is
 
          if not Present (Expr) then
 
-            Append_List_To (L,
+            if Present (Base_Init_Proc (Etype (Ctype)))
+              or else Has_Task (Base_Type (Ctype))
+            then
+               Append_List_To (L,
                  Build_Initialization_Call (Loc,
                    Id_Ref            => Indexed_Comp,
                    Typ               => Ctype,
                    With_Default_Init => True));
+            end if;
 
          else
-
             --  Now generate the assignment with no associated controlled
             --  actions since the target of the assignment may not have
             --  been initialized, it is not possible to Finalize it as

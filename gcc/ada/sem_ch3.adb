@@ -6251,7 +6251,17 @@ package body Sem_Ch3 is
              Subtype_Mark => New_Reference_To (Par, Loc),
              Constraint   => New_Copy_Tree (Constr)));
 
-      Insert_Before (N, Indic);
+      --  If this is a component subtype for an outer itype, it is not
+      --  a list member, so simply set the parent link for analysis: if
+      --  the enclosing type does not need to be in a declarative list,
+      --  neither do the components.
+
+      if Is_List_Member (N) then
+         Insert_Before (N, Indic);
+      else
+         Set_Parent (Indic, Parent (N));
+      end if;
+
       Analyze (Indic);
       Set_Underlying_Full_View (Typ, Full_View (Subt));
    end Build_Underlying_Full_View;

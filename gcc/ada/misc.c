@@ -101,6 +101,7 @@ static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
 static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
 					 rtx *);
+static void gnat_expand_body		(tree);
 static void internal_error_function	(const char *, va_list *);
 static void gnat_adjust_rli		(record_layout_info);
 static tree gnat_type_max_size		(tree);
@@ -117,54 +118,51 @@ static tree gnat_type_max_size		(tree);
 #define LANG_HOOKS_INIT_OPTIONS		gnat_init_options
 #undef  LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION	gnat_handle_option
-#undef LANG_HOOKS_POST_OPTIONS
+#undef  LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS		gnat_post_options
-#undef LANG_HOOKS_PARSE_FILE
+#undef  LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE		gnat_parse_file
-#undef LANG_HOOKS_HONOR_READONLY
+#undef  LANG_HOOKS_HONOR_READONLY
 #define LANG_HOOKS_HONOR_READONLY	true
-#undef LANG_HOOKS_HASH_TYPES
+#undef  LANG_HOOKS_HASH_TYPES
 #define LANG_HOOKS_HASH_TYPES		false
-#undef LANG_HOOKS_GETDECLS
+#undef  LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
-#undef LANG_HOOKS_PUSHDECL
+#undef  LANG_HOOKS_PUSHDECL
 #define LANG_HOOKS_PUSHDECL		lhd_return_tree
-#undef LANG_HOOKS_FINISH_INCOMPLETE_DECL
+#undef  LANG_HOOKS_FINISH_INCOMPLETE_DECL
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL gnat_finish_incomplete_decl
-#undef LANG_HOOKS_GET_ALIAS_SET
+#undef  LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
-#undef LANG_HOOKS_EXPAND_EXPR
+#undef  LANG_HOOKS_EXPAND_EXPR
 #define LANG_HOOKS_EXPAND_EXPR		gnat_expand_expr
-#undef LANG_HOOKS_MARK_ADDRESSABLE
+#undef  LANG_HOOKS_MARK_ADDRESSABLE
 #define LANG_HOOKS_MARK_ADDRESSABLE	gnat_mark_addressable
-#undef LANG_HOOKS_TRUTHVALUE_CONVERSION
+#undef  LANG_HOOKS_TRUTHVALUE_CONVERSION
 #define LANG_HOOKS_TRUTHVALUE_CONVERSION gnat_truthvalue_conversion
-#undef LANG_HOOKS_PRINT_DECL
+#undef  LANG_HOOKS_PRINT_DECL
 #define LANG_HOOKS_PRINT_DECL		gnat_print_decl
-#undef LANG_HOOKS_PRINT_TYPE
+#undef  LANG_HOOKS_PRINT_TYPE
 #define LANG_HOOKS_PRINT_TYPE		gnat_print_type
-#undef LANG_HOOKS_TYPES_COMPATIBLE_P
+#undef  LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
-#undef LANG_HOOKS_TYPE_MAX_SIZE
+#undef  LANG_HOOKS_TYPE_MAX_SIZE
 #define LANG_HOOKS_TYPE_MAX_SIZE	gnat_type_max_size
-#undef LANG_HOOKS_DECL_PRINTABLE_NAME
+#undef  LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
-#undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
+#undef  LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
 #define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gnat_expand_body
-#undef LANG_HOOKS_RTL_EXPAND_STMT
-#define LANG_HOOKS_RTL_EXPAND_STMT gnat_expand_stmt
-#undef LANG_HOOKS_GIMPLIFY_EXPR
-#define LANG_HOOKS_GIMPLIFY_EXPR gnat_gimplify_expr
-
-#undef LANG_HOOKS_TYPE_FOR_MODE
+#undef  LANG_HOOKS_GIMPLIFY_EXPR
+#define LANG_HOOKS_GIMPLIFY_EXPR	gnat_gimplify_expr
+#undef  LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE	gnat_type_for_mode
-#undef LANG_HOOKS_TYPE_FOR_SIZE
+#undef  LANG_HOOKS_TYPE_FOR_SIZE
 #define LANG_HOOKS_TYPE_FOR_SIZE	gnat_type_for_size
-#undef LANG_HOOKS_SIGNED_TYPE
+#undef  LANG_HOOKS_SIGNED_TYPE
 #define LANG_HOOKS_SIGNED_TYPE		gnat_signed_type
-#undef LANG_HOOKS_UNSIGNED_TYPE
+#undef  LANG_HOOKS_UNSIGNED_TYPE
 #define LANG_HOOKS_UNSIGNED_TYPE	gnat_unsigned_type
-#undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
+#undef  LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE gnat_signed_or_unsigned_type
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -377,7 +375,7 @@ internal_error_function (const char *msgid, va_list *ap)
   vsprintf (buffer, msgid, *ap);
 
   /* Go up to the first newline.  */
-  for (p = buffer; *p != 0; p++)
+  for (p = buffer; *p; p++)
     if (*p == '\n')
       {
 	*p = '\0';
@@ -427,7 +425,7 @@ gnat_init (void)
 static void
 gnat_finish_incomplete_decl (tree dont_care ATTRIBUTE_UNUSED)
 {
-  gigi_abort (202);
+  abort ();
 }
 
 /* Compute the alignment of the largest mode that can be used for copying
@@ -639,10 +637,21 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode,
       /* ... fall through ... */
 
     default:
-      gigi_abort (201);
+      abort ();
     }
 
   return expand_expr_real (new, target, tmode, modifier, alt_rtl);
+}
+
+/* Generate the RTL for the body of GNU_DECL.  */
+
+static void
+gnat_expand_body (tree gnu_decl)
+{
+  if (!DECL_INITIAL (gnu_decl) || DECL_INITIAL (gnu_decl) == error_mark_node)
+    return;
+
+  tree_rest_of_compilation (gnu_decl, false);
 }
 
 /* Adjusts the RLI used to layout a record after all the fields have been
@@ -724,13 +733,13 @@ static tree
 gnat_type_max_size (gnu_type)
      tree gnu_type;
 {
-  return max_size (TYPE_SIZE_UNIT (gnu_type), 1);
+  return max_size (TYPE_SIZE_UNIT (gnu_type), true);
 }
 
 /* GNU_TYPE is a type. Determine if it should be passed by reference by
    default.  */
 
-int
+bool
 default_pass_by_ref (tree gnu_type)
 {
   /* We pass aggregates by reference if they are sufficiently large.  The
@@ -747,7 +756,7 @@ default_pass_by_ref (tree gnu_type)
     return true;
 
   if (AGGREGATE_TYPE_P (gnu_type)
-      && (! host_integerp (TYPE_SIZE (gnu_type), 1)
+      && (!host_integerp (TYPE_SIZE (gnu_type), 1)
 	  || 0 < compare_tree_int (TYPE_SIZE (gnu_type),
 				   8 * TYPE_ALIGN (gnu_type))))
     return true;
@@ -758,7 +767,7 @@ default_pass_by_ref (tree gnu_type)
 /* GNU_TYPE is the type of a subprogram parameter.  Determine from the type if
    it should be passed by reference. */
 
-int
+bool
 must_pass_by_ref (tree gnu_type)
 {
   /* We pass only unconstrained objects, those required by the language
@@ -768,7 +777,7 @@ must_pass_by_ref (tree gnu_type)
      not have such objects.  */
   return (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE
 	  || (AGGREGATE_TYPE_P (gnu_type) && TYPE_BY_REFERENCE_P (gnu_type))
-	  || (TYPE_SIZE (gnu_type) != 0
+	  || (TYPE_SIZE (gnu_type)
 	      && TREE_CODE (TYPE_SIZE (gnu_type)) != INTEGER_CST));
 }
 

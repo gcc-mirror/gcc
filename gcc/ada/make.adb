@@ -4344,18 +4344,31 @@ package body Make is
                     not MLib.Tgt.Library_Exists_For (Proj);
 
                   if Projects.Table (Proj).Need_To_Build_Lib then
-                     if Verbose_Mode then
-                        Write_Str
-                          ("Library file does not exist for project """);
-                        Write_Str
-                          (Get_Name_String (Projects.Table (Proj).Name));
-                        Write_Line ("""");
-                     end if;
+                     --  If there is no object directory, then it will be
+                     --  impossible to build the library. So, we fail
+                     --  immediately.
 
-                     Insert_Project_Sources
-                       (The_Project  => Proj,
-                        All_Projects => False,
-                        Into_Q       => True);
+                     if Projects.Table (Proj).Object_Directory = No_Name then
+                        Make_Failed
+                          ("no object files to build library for project """,
+                           Get_Name_String (Projects.Table (Proj).Name),
+                           """");
+                        Projects.Table (Proj).Need_To_Build_Lib := False;
+
+                     else
+                        if Verbose_Mode then
+                           Write_Str
+                             ("Library file does not exist for project """);
+                           Write_Str
+                             (Get_Name_String (Projects.Table (Proj).Name));
+                           Write_Line ("""");
+                        end if;
+
+                        Insert_Project_Sources
+                          (The_Project  => Proj,
+                           All_Projects => False,
+                           Into_Q       => True);
+                     end if;
                   end if;
                end if;
             end loop;

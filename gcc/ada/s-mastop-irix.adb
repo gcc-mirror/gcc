@@ -125,7 +125,9 @@ package body System.Machine_State_Operations is
    --  Offset from first byte of a __uint64 register save location where
    --  the register value is stored.  For n32/64 we store the entire 64
    --  bit register into the uint64.  For o32, only 32 bits are stored
-   --  at an offset of 4 bytes.
+   --  at an offset of 4 bytes. This is used as part of expressions with
+   --  '+' signs on both sides, so a null offset has to be '0' and not ' '
+   --  to avoid assembler syntax errors on "X + + Y" in the latter case.
 
    procedure Update_GP (Scp : Sigcontext_Ptr);
 

@@ -97,7 +97,8 @@ package VMS_Conv is
 
    type Command_Type is
      (Bind, Chop, Clean, Compile, Elim, Find, Krunch, Library, Link, List,
-      Make, Metric, Name, Preprocess, Pretty, Shared, Stub, Xref, Undefined);
+      Make, Metric, Name, Preprocess, Pretty, Setup, Shared, Stub, Xref,
+      Undefined);
 
    type Alternate_Command is (Comp, Ls, Kr, Pp, Prep);
    --  Alternate command libel for non VMS system

@@ -54,7 +54,6 @@ with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
-with Sinfo.CN; use Sinfo.CN;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Targparm; use Targparm;
@@ -521,7 +520,17 @@ package body Exp_Ch4 is
                --  Normal case, not a secondary stack allocation
 
                else
-                  Flist := Find_Final_List (PtrT);
+                  if Controlled_Type (T)
+                    and then Ekind (PtrT) = E_Anonymous_Access_Type
+                  then
+                     --  Create local finalization list for access parameter.
+
+                     Flist :=
+                       Get_Allocator_Final_List (N, Base_Type (T), PtrT);
+                  else
+                     Flist := Find_Final_List (PtrT);
+                  end if;
+
                   Attach :=  Make_Integer_Literal (Loc, 2);
                end if;
 
@@ -6108,8 +6117,16 @@ package body Exp_Ch4 is
                    Condition => Cond,
                    Reason    => CE_Tag_Check_Failed));
 
-               Change_Conversion_To_Unchecked (N);
-               Analyze_And_Resolve (N, Target_Type);
+               declare
+                  Conv : Node_Id;
+               begin
+                  Conv :=
+                    Make_Unchecked_Type_Conversion (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
+                      Expression => Relocate_Node (Expression (N)));
+                  Rewrite (N, Conv);
+                  Analyze_And_Resolve (N, Target_Type);
+               end;
             end if;
          end;
 

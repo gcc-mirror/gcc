@@ -2110,7 +2110,11 @@ package body Sem_Res is
             if not Is_Predefined_Op (Entity (N)) then
                Rewrite_Operator_As_Call (N, Entity (N));
 
-            elsif Present (Alias (Entity (N))) then
+            elsif Present (Alias (Entity (N)))
+              and then
+                Nkind (Parent (Parent (Entity (N))))
+                  = N_Subprogram_Renaming_Declaration
+            then
                Rewrite_Renamed_Operator (N, Alias (Entity (N)), Typ);
 
                --  If the node is rewritten, it will be fully resolved in

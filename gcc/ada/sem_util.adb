@@ -4043,6 +4043,9 @@ package body Sem_Util is
          then
             return False;
 
+         elsif Nkind (Original_Node (AV)) = N_Type_Conversion then
+            return Is_OK_Variable_For_Out_Formal (Expression (AV));
+
          else
             return True;
          end if;
@@ -5772,9 +5775,10 @@ package body Sem_Util is
          --  scope because the back end otherwise tries to allocate a
          --  variable length temporary for the particular variant.
 
-         if Opt.GCC_Version = 2
-           and then Has_Discriminants (Typ)
-         then
+         --  ??? With tree-ssa, the back-end does not (yet) support these
+         --  types either, so disable this optimization for now.
+
+         if Has_Discriminants (Typ) then
             return True;
 
          --  For GCC 3, or for a non-discriminated record in GCC 2, we are

@@ -1137,6 +1137,148 @@ begin
       Exec_Path : String_Access;
 
    begin
+      --  First deal with built-in command(s)
+
+      if The_Command = Setup then
+         Process_Setup :
+         declare
+            Arg_Num : Positive := 1;
+            Argv    : String_Access;
+
+         begin
+            while Arg_Num <= Last_Switches.Last loop
+               Argv := Last_Switches.Table (Arg_Num);
+
+               if Argv (Argv'First) /= '-' then
+                  Fail ("invalid parameter """, Argv.all, """");
+
+               else
+                  if Argv'Length = 1 then
+                     Fail
+                       ("switch character cannot be followed by a blank");
+                  end if;
+
+                  --  -vPx  Specify verbosity while parsing project files
+
+                  if Argv'Length = 4
+                    and then Argv (Argv'First + 1 .. Argv'First + 2) = "vP"
+                  then
+                     case Argv (Argv'Last) is
+                        when '0' =>
+                           Current_Verbosity := Prj.Default;
+                        when '1' =>
+                           Current_Verbosity := Prj.Medium;
+                        when '2' =>
+                           Current_Verbosity := Prj.High;
+                        when others =>
+                           Fail ("Invalid switch: ", Argv.all);
+                     end case;
+
+                  --  -Pproject_file  Specify project file to be used
+
+                  elsif Argv (Argv'First + 1) = 'P' then
+
+                     --  Only one -P switch can be used
+
+                     if Project_File /= null then
+                        Fail
+                          (Argv.all,
+                           ": second project file forbidden (first is """,
+                           Project_File.all & """)");
+
+                     elsif Argv'Length = 2 then
+
+                        --  There is space between -P and the project file
+                        --  name. -P cannot be the last option.
+
+                        if Arg_Num = Last_Switches.Last then
+                           Fail ("project file name missing after -P");
+
+                        else
+                           Arg_Num := Arg_Num + 1;
+                           Argv := Last_Switches.Table (Arg_Num);
+
+                           --  After -P, there must be a project file name,
+                           --  not another switch.
+
+                           if Argv (Argv'First) = '-' then
+                              Fail ("project file name missing after -P");
+
+                           else
+                              Project_File := new String'(Argv.all);
+                           end if;
+                        end if;
+
+                     else
+                        --  No space between -P and project file name
+
+                        Project_File :=
+                          new String'(Argv (Argv'First + 2 .. Argv'Last));
+                     end if;
+
+                  --  -Xexternal=value Specify an external reference to be
+                  --                   used in project files
+
+                  elsif Argv'Length >= 5
+                    and then Argv (Argv'First + 1) = 'X'
+                  then
+                     declare
+                        Equal_Pos : constant Natural :=
+                          Index ('=', Argv (Argv'First + 2 .. Argv'Last));
+                     begin
+                        if Equal_Pos >= Argv'First + 3 and then
+                          Equal_Pos /= Argv'Last then
+                           Add
+                             (External_Name =>
+                              Argv (Argv'First + 2 .. Equal_Pos - 1),
+                              Value     => Argv (Equal_Pos + 1 .. Argv'Last));
+                        else
+                           Fail
+                             (Argv.all,
+                              " is not a valid external assignment.");
+                        end if;
+                     end;
+
+                  elsif Argv.all = "-v" then
+                     Verbose_Mode := True;
+
+                  elsif Argv.all = "-q" then
+                     Quiet_Output := True;
+
+                  else
+                     Fail ("invalid parameter """, Argv.all, """");
+                  end if;
+               end if;
+
+               Arg_Num := Arg_Num + 1;
+            end loop;
+
+            if Project_File = null then
+               Fail ("no project file specified");
+            end if;
+
+            Setup_Projects := True;
+
+            Prj.Pars.Set_Verbosity (To => Current_Verbosity);
+
+            --  Missing directories are created during processing of the
+            --  project tree.
+
+            Prj.Pars.Parse
+              (Project           => Project,
+               Project_File_Name => Project_File.all,
+               Packages_To_Check => All_Packages);
+
+            if Project = Prj.No_Project then
+               Fail ("""", Project_File.all, """ processing failed");
+            end if;
+
+            --  Processing is done
+
+            return;
+         end Process_Setup;
+      end if;
+
       --  Locate the executable for the command
 
       Exec_Path := Locate_Exec_On_Path (Program);

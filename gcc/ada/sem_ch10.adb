@@ -3248,13 +3248,6 @@ package body Sem_Ch10 is
             then
                Set_Is_Immediately_Visible (Id);
 
-               --  Ada 2005 (AI-262): Make visible the private entities of
-               --  private-withed siblings
-
-               if Private_Present (Item) then
-                  Install_Private_Declarations (Id);
-               end if;
-
                --  Check for the presence of another unit in the context,
                --  that may be inadvertently hidden by the child.
 
