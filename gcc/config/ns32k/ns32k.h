@@ -550,7 +550,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   else								\
     {								\
       if (SIZE)							\
-        fprintf (FILE, "\tadjspd %d\n", SIZE + 4);		\
+        fprintf (FILE, "\tadjspd %$%d\n", SIZE + 4);		\
       if (g_regs_used && g_regs_used > 4)			\
         fprintf (FILE, "\tsave [");				\
       else							\
@@ -683,7 +683,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   if (g_regs_used || frame_pointer_needed)			\
     fprintf (FILE, "]\n");					\
   if (SIZE && !frame_pointer_needed)				\
-    fprintf (FILE, "\tadjspd %d\n", -(SIZE + 4));		\
+    fprintf (FILE, "\tadjspd %$%d\n", -(SIZE + 4));		\
   if (current_function_pops_args)				\
     fprintf (FILE, "\tret %d\n", current_function_pops_args);	\
   else fprintf (FILE, "\tret 0\n"); }
