@@ -43,6 +43,16 @@
        (eq_attr "cpu" "rios2"))
   "iu1_rios2|iu2_rios2")
 
+(define_insn_reservation "rios2-two" 1
+  (and (eq_attr "type" "two")
+       (eq_attr "cpu" "rios2"))
+  "iu1_rios2|iu2_rios2,iu1_rios2|iu2_rios2")
+
+(define_insn_reservation "rios2-three" 1
+  (and (eq_attr "type" "three")
+       (eq_attr "cpu" "rios2"))
+  "iu1_rios2|iu2_rios2,iu1_rios2|iu2_rios2,iu1_rios2|iu2_rios2")
+
 (define_insn_reservation "rios2-imul" 2
   (and (eq_attr "type" "imul,imul2,imul3,imul_compare")
        (eq_attr "cpu" "rios2"))
