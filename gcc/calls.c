@@ -1394,7 +1394,7 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
 	    args[i].value
 	      = convert_modes (args[i].mode, mode,
 			       args[i].value, args[i].unsignedp);
-#ifdef PROMOTE_FOR_CALL_ONLY
+#if defined(PROMOTE_FUNCTION_MODE) && !defined(PROMOTE_MODE)
 	    /* CSE will replace this only if it contains args[i].value
 	       pseudo, so convert it down to the declared mode using
 	       a SUBREG.  */

@@ -841,7 +841,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
 {
   tree type, decl;
   enum machine_mode mode;
-#ifndef PROMOTE_FOR_CALL_ONLY
+#ifdef PROMOTE_MODE
   int unsignedp;
 #endif
 
@@ -851,7 +851,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
     decl = NULL, type = type_or_decl;
 
   mode = TYPE_MODE (type);
-#ifndef PROMOTE_FOR_CALL_ONLY
+#ifdef PROMOTE_MODE
   unsignedp = TYPE_UNSIGNED (type);
 #endif
 
@@ -889,7 +889,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
       return tmp;
     }
 
-#ifndef PROMOTE_FOR_CALL_ONLY
+#ifdef PROMOTE_MODE
   if (! dont_promote)
     mode = promote_mode (type, mode, &unsignedp, 0);
 #endif
