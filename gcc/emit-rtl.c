@@ -900,9 +900,11 @@ gen_lowpart_common (mode, x)
      FP and integer operands.  This simplifies reload because it
      doesn't have to deal with constructs like (subreg:DI
      (const_double:SF ...)) or (subreg:DF (const_int ...)).  */
+  /* Single-precision floats are always 32-bits and double-precision
+     floats are always 64-bits.  */
 
   else if (GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
+	   && GET_MODE_BITSIZE (mode) == 32
 	   && GET_CODE (x) == CONST_INT)
   {
       REAL_VALUE_TYPE r;
@@ -913,7 +915,7 @@ gen_lowpart_common (mode, x)
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
   }
   else if (GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+	   && GET_MODE_BITSIZE (mode) == 64
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
 	   && GET_MODE (x) == VOIDmode)
     {
@@ -952,20 +954,20 @@ gen_lowpart_common (mode, x)
       int endian = WORDS_BIG_ENDIAN ? 1 : 0;
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-      switch (GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD)
+      switch (GET_MODE_BITSIZE (GET_MODE (x)))
 	{
-	case 1:
+	case 32:
 	  REAL_VALUE_TO_TARGET_SINGLE (r, i[endian]);
 	  i[1 - endian] = 0;
 	  break;
-	case 2:
+	case 64:
 	  REAL_VALUE_TO_TARGET_DOUBLE (r, i);
 	  break;
-	case 3:
+	case 96:
 	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i + endian);
 	  i[3-3*endian] = 0;
 	  break;
-	case 4:
+	case 128:
 	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i);
 	  break;
 	default:
@@ -986,15 +988,15 @@ gen_lowpart_common (mode, x)
 	for (c = 0; c < 4; c++)
 	  i[c] &= ~ (0L);
 
-	switch (GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD)
+	switch (GET_MODE_BITSIZE (GET_MODE (x)))
 	  {
-	  case 1:
-	  case 2:
+	  case 32:
+	  case 64:
 	    return immed_double_const (((unsigned long) i[endian]) |
 				       (((HOST_WIDE_INT) i[1-endian]) << 32),
 				       0, mode);
-	  case 3:
-	  case 4:
+	  case 96:
+	  case 128:
 	    return immed_double_const (((unsigned long) i[endian*3]) |
 				       (((HOST_WIDE_INT) i[1+endian]) << 32),
 				       ((unsigned long) i[2-endian]) |

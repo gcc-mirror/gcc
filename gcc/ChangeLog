@@ -1,3 +1,9 @@
+2001-06-19  Eric Christopher <echristo@redhat.com>
+
+	* emit-rtl.c (gen_lowpart_common): Do not assume that SFmode
+	and DFmode are UNITS_PER_WORD and 2*UNITS_PER_WORD.  Use
+	GET_MODE_BITSIZE instead of GET_MODE_SIZE/UNITS_PER_WORD.
+
 Tue Jun 19 01:52:27 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* sh.c (output_branch): Delete bogus code.
@@ -220,11 +226,11 @@ Thu Jun 14 12:44:15 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2001-06-13  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.in: Move _bb and __gcc_bcmp to LIB2FUNCS_ST.
-	* libgcc-std.ver: Take out __bb* and __gcc_bcmp.                        
+	* libgcc-std.ver: Take out __bb* and __gcc_bcmp.
 
 	* config/t-slibgcc-elf-ver, config/t-slibgcc-sld,
 	config/alpha/t-osf4, config/mips/t-iris6: Extract all
-	references to @shlib_map_file@, @shlib_objs@, or     
+	references to @shlib_map_file@, @shlib_objs@, or
 	@shlib_base_name@ to Makefile variables.
 	Bump soname version of libgcc to 1.
 
@@ -256,7 +262,7 @@ Thu Jun 14 12:44:15 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	Revert this patch:
 	* toplev.c (rest_of_compilation): Remove dead code before
 	purge_addressof.
-	
+
 2001-06-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	Reverted:
@@ -366,8 +372,8 @@ Tue Jun 12 12:20:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-06-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11.md ("*lshrdi3_const32"): Mark the clobber 
-	as an early clobber to make sure it is not used by reload in 
+	* config/m68hc11/m68hc11.md ("*lshrdi3_const32"): Mark the clobber
+	as an early clobber to make sure it is not used by reload in
 	one of the operands.
 
 2001-06-11  Mark Mitchell  <mark@codesourcery.com>
@@ -459,13 +465,13 @@ Tue Jun 12 12:20:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* configure.in: Align --help messages.
 	Remove trailing full stops.
 	Consistently use lower case.
-	Fix DWARF 2 spelling.	
+	Fix DWARF 2 spelling.
 	* configure: Rebuilt.
 
 2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/alpha/alpha.h (CPP_SPEC): Don't define __LANGUAGE_C and
-	variants for .cpp/.cp/.c++ files. 
+	variants for .cpp/.cp/.c++ files.
 	Move definition of __LANGUAGE_C_PLUS_PLUS ...
 	(CPLUSPLUS_CPP_SPEC): ... here.
 
@@ -538,7 +544,7 @@ Mon Jun 11 15:47:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* config/alpha/alpha.c (override_options): Set align_loops,
 	align_jumps, and align_functions.
 	* config/alpha/alpha.h (FUNCTION_BOUNDARY): Set to 32 bits.
-	(LOOP_ALIGN, LABEL_ALIGN_AFTER_BARRIER): Remove.  
+	(LOOP_ALIGN, LABEL_ALIGN_AFTER_BARRIER): Remove.
 
 2001-06-11  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
@@ -567,13 +573,13 @@ Mon Jun 11 15:47:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* dwarf2out.c: #include diagnostic.h
 
 	* toplev.h (warningcount, errorcount, sorrycount): Remove
-	declarations. 
+	declarations.
 
 	* toplev.c (warningcount, errorcount, sorrycount): Remove
-	definitions. 
+	definitions.
 
 	* diagnostic.h (struct output_buffer): Reorder fields.
-	(diagnostic_kind_count): New macro.	
+	(diagnostic_kind_count): New macro.
 	(errorcount, warningcount, sorrycount): Define as macros.
 	(diagnostic_report_warnings_p): New macro.
 	(output_state): Add diagnostic_count field.
@@ -593,12 +599,12 @@ Mon Jun 11 15:47:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11-protos.h (m68hc11_initialize_trampoline): 
+	* config/m68hc11/m68hc11-protos.h (m68hc11_initialize_trampoline):
 	Move definition in the RTX_CODE section.
 
 2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11.h (RETURN_ADDR_RTX): Define the return 
+	* config/m68hc11/m68hc11.h (RETURN_ADDR_RTX): Define the return
 	address as relative to the argument pointer.
 
 Sun Jun 10 10:58:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
@@ -632,7 +638,7 @@ Sun Jun 10 10:00:17 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Remove dead code before
 	purge_addressof.
-	
+
 2001-06-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinit.c (print_help): Document -fpreprocessed.
@@ -837,7 +843,7 @@ Thu Jun  7 18:27:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* config/darwin-protos.h: Declare it.
 	* config/rs6000/rs6000.c (machopic_output_stub): Use
 	STRIP_NAME_ENCODING.
-	
+
 2001-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (DECL_SOURCE_FILE): Improve documentation.
@@ -1025,7 +1031,7 @@ Wed Jun  6 14:51:05 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	indent.
 	* toplev.c (main): Disable sibling-call optimization if we are
 	handling exceptions.
-	
+
 2001-06-05  Bernd Schmidt  <bernds@redhat.com>
 
 	* reload1.c (reload): Delete all USEs generated during reload.
