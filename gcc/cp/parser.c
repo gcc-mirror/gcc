@@ -15343,12 +15343,14 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 {
   decl_specs->any_specifiers_p = true;
 
-  /* If the user tries to redeclare a built-in type (with, for example,
-     in "typedef int wchar_t;") we remember that this is what
+  /* If the user tries to redeclare bool or wchar_t (with, for
+     example, in "typedef int wchar_t;") we remember that this is what
      happened.  In system headers, we ignore these declarations so
      that G++ can work with system headers that are not C++-safe.  */
   if (decl_specs->specs[(int) ds_typedef]
       && !user_defined_p
+      && (type_spec == boolean_type_node
+	  || type_spec == wchar_type_node)
       && (decl_specs->type
 	  || decl_specs->specs[(int) ds_long]
 	  || decl_specs->specs[(int) ds_short]

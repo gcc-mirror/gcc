@@ -4,14 +4,17 @@
 typedef int I;
 typedef int I;
 
+// DR56 makes clear that duplicate typedefs in class scopes are
+// invalid.
+
 struct A {
-  typedef int I;
-  typedef int I;
+  typedef int I; // { dg-error "" }
+  typedef int I; // { dg-error "" }
 };
 
 template <class T>
 struct S {
-  typedef int I;
-  typedef int I;
+  typedef int I;  // { dg-error "" }
+  typedef int I;  // { dg-error "" }
 };
 

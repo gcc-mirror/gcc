@@ -531,19 +531,24 @@ supplement_binding (cxx_binding *binding, tree decl)
   else if (TREE_CODE (bval) == TYPE_DECL
 	   && TREE_CODE (decl) == TYPE_DECL
 	   && DECL_NAME (decl) == DECL_NAME (bval)
+	   && binding->scope->kind != sk_class
 	   && (same_type_p (TREE_TYPE (decl), TREE_TYPE (bval))
 	       /* If either type involves template parameters, we must
 		  wait until instantiation.  */
 	       || uses_template_parms (TREE_TYPE (decl))
 	       || uses_template_parms (TREE_TYPE (bval))))
     /* We have two typedef-names, both naming the same type to have
-       the same name.  This is OK because of:
+       the same name.  In general, this is OK because of:
 
          [dcl.typedef]
 
 	 In a given scope, a typedef specifier can be used to redefine
 	 the name of any type declared in that scope to refer to the
-	 type to which it already refers.  */
+	 type to which it already refers.  
+
+       However, in class scopes, this rule does not apply due to the
+       stricter language in [class.mem] prohibiting redeclarations of
+       members.  */
     ok = false;
   /* There can be two block-scope declarations of the same variable,
      so long as they are `extern' declarations.  However, there cannot

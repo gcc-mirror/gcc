@@ -1,3 +1,13 @@
+2004-11-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17473
+	* name-lookup.c (supplement_binding): Do not allow typedefs to be
+	redefined in class scope.
+
+	PR c++/18285
+	* parser.c (cp_parser_set_decl_type_spec): Do not try to allow
+	redefinitions of builtin types other that "bool" or "wchar_t".
+
 2004-11-24  Steven Bosscher  <stevenb@suse.de>
 
 	* decl.c (cxx_init_decl_processing): Don't clear

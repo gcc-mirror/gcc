@@ -1,3 +1,13 @@
+2004-11-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17473
+	* g++.dg/tc1/dr56.C: Remove.
+	* g++.dg/template/typedef1.C: Add dg-error markers.
+	* g++.old-deja/g++.other/typedef7.C: Likewise.
+
+	PR c++/18285
+	* g++.dg/parse/typedef7.C: New test.
+
 2004-11-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20041124-1.c: New test.
