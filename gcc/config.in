@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -224,6 +224,9 @@
 
 /* Define if you have the <langinfo.h> header file.  */
 #undef HAVE_LANGINFO_H
+
+/* Define if you have the <ldfcn.h> header file.  */
+#undef HAVE_LDFCN_H
 
 /* Define if you have the <limits.h> header file.  */
 #undef HAVE_LIMITS_H
@@ -482,6 +485,9 @@
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETRUSAGE
+
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_LDGETNAME
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_TIMES

@@ -1,3 +1,11 @@
+2003-01-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (ldgetname): Check HAVE_DECL_LDGETNAME before
+	prototyping.
+	* configure.in: Check for <ldfcn.h> and ldgetname() prototype.
+	
+	* config.in, configure: Regenerate.
+
 2003-01-20  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.md (sibcall_epilogue): Add an
