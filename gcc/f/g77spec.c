@@ -396,7 +396,7 @@ or type the command `info -f g77 Copying'.\n\
 	  break;
 
 	case OPTION_help:
-	  /* Let gcc.c handle this, as the egcs version has a really
+	  /* Let gcc.c handle this, as it has a really
 	     cool facility for handling --help and --verbose --help.  */
 	  return;
 

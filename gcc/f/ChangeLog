@@ -1,3 +1,7 @@
+Sat Oct 21 18:07:48 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in, g77spec.c: Remove EGCS references in comments.
+
 Thu Oct 12 22:28:51 2000  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (ffecom_do_entry_): Don't mess with obstacks.

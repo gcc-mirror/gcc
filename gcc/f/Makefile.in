@@ -136,7 +136,7 @@ LIBIBERTY = ../../libiberty/libiberty.a
 # We should be compiling with the built compiler, for which
 # BOOT_LDFLAGS is appropriate.  (Formerly we had a separate
 # F771_LDFLAGS, but the ld flags can be taken care of by the target
-# configuration files in egcs.)
+# configuration files in GCC.)
 LDFLAGS=$(BOOT_LDFLAGS)
 
 # How to link with both our special library facilities
