@@ -1,3 +1,64 @@
+2000-02-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (CPP_ASSERTION, CPP_STRINGIZE, CPP_TOKPASTE): New
+	token types.
+	(struct cpp_reader): Add parsing_if_directive and
+	parsing_define_directive flags.		      
+	(struct cpp_options): Remove output_conditionals flag.
+	(check_macro_name): Delete prototype.
+
+	* cpphash.h (struct macrodef): Delete.
+	(struct reflist): Separate from struct definition.
+	(struct definition): Remove unused fields.  Add column number.
+	(create_definition): Returns a DEFINITION *.  Takes a
+	cpp_reader * and an int.
+
+	* cpphash.c (SKIP_WHITE_SPACE): Delete.
+	(PEEKC): Copy defn from cpplib.c.
+	(rest_extension, REST_EXTENSION_LENGTH): Delete.
+	(struct arg): New.
+	(struct arglist): Simplify.
+	(collect_expansion): Rewrite.  Get tokens by calling
+	cpp_get_token.  Add more error checking.
+	(collect_formal_parameters): New function, broken out of
+	create_definition and reworked to use get_directive_token.
+	(create_definition): All real work is now in collect_expansion
+	and collect_formal_parameters.  do_define handles finding the
+	macro name.  Return a DEFINITION, not a MACRODEF.
+	(macroexpand): Replace bcopy with memcpy throughout.  Replace
+	character-at-a-time copy loop with memcpy and pointer increments.
+	(compare-defs): d1->argnames / d2->argnames might be null.
+
+	* cpplib.c (copy_rest_of_line): Delete function.
+	(skip_rest_of_line): Do all the work ourselves.
+	(skip_string): New function.
+	(parse_string): Use skip_string.
+	(get_macro_name): New function.
+	(check_macro_name): Delete.
+	(copy_comment): Use CPP_RESERVE and CPP_PUTC_Q.
+	(cpp_skip_hspace): Use CPP_BUMP_LINE.
+	(handle_directive): ICE if we're called on a macro buffer.
+	(do_define): Determine macro name and type (funlike/objlike)
+	here.  Expunge all uses of MACRODEF.
+	(cpp_push_buffer): Set line_base to NULL.
+	(do_undef, read_line_number): Don't worry about getting a POP token.
+	(eval_if_expression): Set/reset parsing_if_directive around
+	cpp_parse_expr. Don't clear only_seen_white.
+	(skip_if_group): Remove output_conditionals logic.  Use
+	skip_rest_of_line.
+	(cpp_get_token): Return ASSERTION, STRINGIZE, and TOKPASTE
+	tokens under appropriate conditions.
+	(cpp_unassert): Call do_unassert not do_assert.  Oops.
+
+	* cppexp.c (parse_defined): New function, break out of
+	cpp_lex.
+	(cpp_lex): We now get CPP_ASSERTION tokens and can check them
+	ourselves, with cpp_defined.
+	* cppinit.c (cpp_handle_option, print_help): Delete -ifoutput.
+
+	* gcc.dg/20000209-2.c: Turn off -pedantic-errors.
+	* gcc.dg/strpaste-2.c: New.
+
 2000-02-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* fold-const.c (size_binop): Don't asert inputs are the same and

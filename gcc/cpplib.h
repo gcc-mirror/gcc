@@ -47,14 +47,17 @@ enum cpp_token {
   CPP_STRING,
   CPP_WSTRING,
   CPP_DIRECTIVE,
-  CPP_LPAREN,   /* "(" */
-  CPP_RPAREN,   /* ")" */
-  CPP_LBRACE,   /* "{" */
-  CPP_RBRACE,   /* "}" */
-  CPP_COMMA,    /* "," */
-  CPP_SEMICOLON,/* ";" */
-  CPP_3DOTS,    /* "..." */
-  CPP_POP	/* We're about to pop the buffer stack.  */
+  CPP_ASSERTION,	/* #machine(a29k) */
+  CPP_STRINGIZE,	/* stringize macro argument */
+  CPP_TOKPASTE,		/* paste macro arg with next/prev token */
+  CPP_LPAREN,		/* "(" */
+  CPP_RPAREN,		/* ")" */
+  CPP_LBRACE,		/* "{" */
+  CPP_RBRACE,		/* "}" */
+  CPP_COMMA,		/* "," */
+  CPP_SEMICOLON,	/* ";" */
+  CPP_3DOTS,		/* "..." */
+  CPP_POP		/* We're about to pop the buffer stack.  */
 };
 
 typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
@@ -193,7 +196,6 @@ struct cpp_reader
 
   /* If non-zero, directives cause a hard error.  Used when parsing
      macro arguments.  */
-
   char no_directives;
 
   /* Print column number in error messages. */
@@ -204,6 +206,12 @@ struct cpp_reader
 
   /* If true, character between '<' and '>' are a single (string) token. */
   char parsing_include_directive;
+
+  /* If true, # introduces an assertion (see do_assert) */
+  char parsing_if_directive;
+
+  /* If true, # and ## are the STRINGIZE and TOKPASTE operators */
+  char parsing_define_directive;
 
   /* True if escape sequences (as described for has_escapes in
      parse_buffer) should be emitted. */
@@ -217,7 +225,7 @@ struct cpp_reader
   /* Nonzero means this file was included with a -imacros or -include
      command line and should not be recorded as an include file.  */
 
-  int no_record_file;
+  char no_record_file;
 
   long lineno;
 
@@ -426,11 +434,6 @@ struct cpp_options {
   /* Nonzero means don't output line number information.  */
 
   char no_line_commands;
-
-/* Nonzero means output the text in failing conditionals,
-   inside #failed ... #endfailed.  */
-
-  char output_conditionals;
 
   /* Nonzero means -I- has been seen,
      so don't look for #include "foo" the source-file directory.  */
@@ -689,14 +692,12 @@ extern int cpp_defined PARAMS ((cpp_reader *, const U_CHAR *, int));
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern void cpp_options_init PARAMS ((cpp_options *));
 extern int cpp_start_read PARAMS ((cpp_reader *, char *));
-extern int cpp_read_check_assertion PARAMS ((cpp_reader *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 
 extern void quote_string		PARAMS ((cpp_reader *, const char *));
 extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *, const U_CHAR *,
 						 int));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *));
-extern int check_macro_name		PARAMS ((cpp_reader *, const U_CHAR *));
 
 /* Last arg to output_line_command.  */
 enum file_change_code {same_file, rename_file, enter_file, leave_file};

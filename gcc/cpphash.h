@@ -18,15 +18,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_CPPHASH__
 #define __GCC_CPPHASH__
 
-/* Structure returned by create_definition */
-typedef struct macrodef MACRODEF;
-struct macrodef
-{
-  struct definition *defn;
-  const U_CHAR *symnam;
-  int symlen;
-};
-
 /* Structure allocated for every #define.  For a simple replacement
    such as
    	#define foo bar ,
@@ -48,30 +39,35 @@ struct macrodef
      { (0, 1), (1, 1), (1, 1), ..., (1, 1), NULL }
    where (x, y) means (nchars, argno). */
 
+struct reflist
+{
+  struct reflist *next;
+  char stringify;		/* nonzero if this arg was preceded by a
+				   # operator. */
+  char raw_before;		/* Nonzero if a ## operator before arg. */
+  char raw_after;		/* Nonzero if a ## operator after arg. */
+  char rest_args;		/* Nonzero if this arg. absorbs the rest */
+  int nchars;			/* Number of literal chars to copy before
+				   this arg occurrence.  */
+  int argno;			/* Number of arg to substitute (origin-0) */
+};
+
 typedef struct definition DEFINITION;
-struct definition {
+struct definition
+{
   int nargs;
   int length;			/* length of expansion string */
-  unsigned char *expansion;
+  U_CHAR *expansion;
   int line;			/* Line number of definition */
+  int col;
   const char *file;		/* File of definition */
   char rest_args;		/* Nonzero if last arg. absorbs the rest */
-  struct reflist {
-    struct reflist *next;
-    char stringify;		/* nonzero if this arg was preceded by a
-				   # operator. */
-    char raw_before;		/* Nonzero if a ## operator before arg. */
-    char raw_after;		/* Nonzero if a ## operator after arg. */
-    char rest_args;		/* Nonzero if this arg. absorbs the rest */
-    int nchars;			/* Number of literal chars to copy before
-				   this arg occurrence.  */
-    int argno;			/* Number of arg to substitute (origin-0) */
-  } *pattern;
-  /* Names of macro args, concatenated in reverse order
-     with comma-space between them.
-     The only use of this is that we warn on redefinition
-     if this differs between the old and new definitions.  */
-  unsigned char *argnames;
+  struct reflist *pattern;
+
+  /* Names of macro args, concatenated in order with commas between
+     them.  The only use of this is that we warn on redefinition if
+     this differs between the old and new definitions.  */
+  U_CHAR *argnames;
 };
 
 /* different kinds of things that can appear in the value field
@@ -102,8 +98,7 @@ extern HASHNODE *cpp_lookup	  PARAMS ((cpp_reader *, const U_CHAR *, int));
 extern void free_definition	  PARAMS ((DEFINITION *));
 extern void delete_macro	  PARAMS ((HASHNODE *));
 
-extern MACRODEF create_definition PARAMS ((U_CHAR *, U_CHAR *,
-					   cpp_reader *));
+extern DEFINITION *create_definition PARAMS ((cpp_reader *, int));
 extern int compare_defs		  PARAMS ((cpp_reader *, DEFINITION *,
 					   DEFINITION *));
 extern void macroexpand		  PARAMS ((cpp_reader *, HASHNODE *));
