@@ -10476,9 +10476,12 @@ and m68k GNU systems you can do this with a technique similar to that
 for turning on floating-point exceptions
 (@pxref{Floating-point Exception Handling}).
 The control word could be set to double precision by
-replacing the @code{__setfpucw} call with one like this:
+replacing the @code{__setfpucw} call or the @code{_FPU_SETCW} macro with one like this:
 @smallexample
-  __setfpucw ((_FPU_DEFAULT & ~_FPU_EXTENDED) | _FPU_DOUBLE);
+@{
+  fpu_control_t cw = (_FPU_DEFAULT & ~_FPU_EXTENDED) | _FPU_DOUBLE;
+  _FPU_SETCW(cw);
+@}
 @end smallexample
 (It is not clear whether this has any effect on the operation of the GNU
 maths library, but we have no evidence of it causing trouble.)
