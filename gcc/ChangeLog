@@ -1,3 +1,16 @@
+2001-09-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct _cpp_buff, _cpp_get_buff, _cpp_release_buff,
+	_cpp_extend_buff, _cpp_free_buff): New.
+	(struct cpp_reader): New member free_buffs.
+	* cppinit.c (cpp_destroy): Free buffers.
+	* cpplex.c (new_buff, _cpp_release_buff, _cpp_get_buff,
+	_cpp_extend_buff, _cpp_free_buff): New.
+	* cpplib.h (struct cpp_options): Remove unused member.
+	* cppmacro.c (collect_args): New.  Combines the old parse_arg
+	and parse_args.  Use _cpp_buff for memory allocation.
+	(funlike_invocation_p, replace_args): Update.
+
 Wed Sep 26 13:20:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (final_scan_insn): Use delete_insn instead of delete_note.

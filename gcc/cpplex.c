@@ -107,6 +107,7 @@ static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 static cpp_chunk *new_chunk PARAMS ((unsigned int));
 static int chunk_suitable PARAMS ((cpp_pool *, cpp_chunk *, unsigned int));
 static unsigned int hex_digit_value PARAMS ((unsigned int));
+static _cpp_buff *new_buff PARAMS ((unsigned int));
 
 /* Utility routine:
 
@@ -2114,7 +2115,7 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
   return result;
 }
 
-/* Memory pools.  */
+/* Memory buffers.  */
 
 struct dummy
 {
@@ -2127,6 +2128,95 @@ struct dummy
 };
 
 #define DEFAULT_ALIGNMENT (offsetof (struct dummy, u))
+#define CPP_ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
+
+/* Create a new allocation buffer.  */
+static _cpp_buff *
+new_buff (len)
+     unsigned int len;
+{
+  _cpp_buff *result;
+  char *base;
+
+  if (len < 4000)
+    len = 4000;
+  len = CPP_ALIGN (len, DEFAULT_ALIGNMENT);
+
+  base = xmalloc (len + sizeof (_cpp_buff));
+  result = (_cpp_buff *) (base + len);
+  result->base = base;
+  result->cur = base;
+  result->limit = base + len;
+  result->next = NULL;
+  return result;
+}
+
+/* Place a chain of unwanted allocation buffers on the free list.  */
+void
+_cpp_release_buff (pfile, buff)
+     cpp_reader *pfile;
+     _cpp_buff *buff;
+{
+  _cpp_buff *end = buff;
+
+  while (end->next)
+    end = end->next;
+  end->next = pfile->free_buffs;
+  pfile->free_buffs = buff;
+}
+
+/* Return a free buffer of size at least MIN_SIZE.  */
+_cpp_buff *
+_cpp_get_buff (pfile, min_size)
+     cpp_reader *pfile;
+     unsigned int min_size;
+{
+  _cpp_buff *result, **p;
+
+  for (p = &pfile->free_buffs;; p = &(*p)->next)
+    {
+      if (*p == NULL || (*p)->next == NULL)
+	return new_buff (min_size);
+      result = (*p)->next;
+      if ((unsigned int) (result->limit - result->base) > min_size)
+	break;
+    }
+
+  *p = result->next;
+  result->next = NULL;
+  result->cur = result->base;
+  return result;
+}
+
+/* Return a buffer chained on the end of BUFF.  Copy to it the
+   uncommitted remaining bytes of BUFF, with at least MIN_EXTRA more
+   bytes.  */
+_cpp_buff *
+_cpp_extend_buff (pfile, buff, min_extra)
+     cpp_reader *pfile;
+     _cpp_buff *buff;
+     unsigned int min_extra;
+{
+  unsigned int size = min_extra + (buff->limit - buff->cur) * 2;
+
+  buff->next = _cpp_get_buff (pfile, size);
+  memcpy (buff->next->base, buff->cur, buff->limit - buff->cur);
+  return buff->next;
+}
+
+/* Free a chain of buffers starting at BUFF.  */
+void
+_cpp_free_buff (buff)
+     _cpp_buff *buff;
+{
+  _cpp_buff *next;
+
+  for (; buff; buff = next)
+    {
+      next = buff->next;
+      free (buff->base);
+    }
+}
 
 static int
 chunk_suitable (pool, chunk, size)

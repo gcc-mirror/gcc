@@ -236,9 +236,6 @@ struct cpp_options
   /* The language we're preprocessing.  */
   enum c_lang lang;
 
-  /* Nonzero means to return spacing characters for stand-alone CPP.  */
-  unsigned char spacing;
-
   /* Non-0 means -v, so print the full set of include dirs.  */
   unsigned char verbose;
 
