@@ -1,3 +1,8 @@
+Sun Dec 28 00:32:16 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (find_basic_blocks): Don't create a new basic block
+	for calls in a LIBCALL block.
+
 Sun Dec 28 00:30:24 1997  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* config/fp-bit.c (L_df_to_sf): Fix typo in last change.
