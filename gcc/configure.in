@@ -502,10 +502,22 @@ changequote([,])dnl
 	tm_file=${cpu_type}/${cpu_type}.h
 	xm_file=${cpu_type}/xm-${cpu_type}.h
 	
-	# Set the default macros to define for GNU/Linux systems.
+	# Common parts for linux-gnu and openbsd systems
 	case $machine in
 	*-*-linux-gnu*)
 		xm_defines="HAVE_ATEXIT POSIX BSTRING"
+		;;
+	*-*-openbsd*)
+		tm_file=${cpu_type}/openbsd.h
+		# On OpenBSD systems, the headers are okay
+		fixincludes=Makefile.in
+		tmake_file="t-libc-ok t-openbsd"
+		# avoid surprises, always provide an xm-openbsd file 
+		xm_file=${cpu_type}/xm-openbsd.h
+ 		if test x$enable_threads = xyes; then
+ 			thread_file='posix'
+			tmake_file="${tmake_file} t-openbsd-thread"
+		fi
 		;;
 	esac
 
@@ -585,6 +597,12 @@ changequote([,])dnl
 		xmake_file=none
 		fixincludes=fixinc.wrap
 		gas=yes gnu_ld=yes
+		;;
+
+	alpha*-*-openbsd*)
+		# default x-alpha is only appropriate for dec-osf.
+		target_cpu_default="MASK_GAS"
+		xmake_file=none
 		;;
 		
 	alpha*-dec-osf*)
@@ -779,6 +797,10 @@ changequote([,])dnl
 #		;;
 	h8300-*-*)
 		float_format=i32
+		;;
+	hppa*-*-openbsd*)
+		target_cpu_default="MASK_SNAKE"
+     tmake_file=pa/t-openbsd
 		;;
 	hppa1.1-*-pro*)
 		tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h"
@@ -1107,15 +1129,21 @@ changequote([,])dnl
 		fixincludes=fixinc.wrap
 		tmake_file=i386/t-freebsd
 		;;
-	# We are hoping OpenBSD is still close enough to NetBSD that we can
-	# share the configurations.
 changequote(,)dnl
-	i[34567]86-*-netbsd* | i[34567]86-*-openbsd*)
+	i[34567]86-*-netbsd*)
 changequote([,])dnl
 		tm_file=i386/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
+		;;
+changequote(,)dnl
+	i[34567]86-*-openbsd*)
+changequote([,])dnl
+		# Remove when the math emulator is fixed
+		target_cpu_default="MASK_NO_FANCY_MATH_387"
+		# we need collect2 until our bug is fixed...
+		use_collect2=yes
 		;;
 changequote(,)dnl
 	i[34567]86-*-coff*)
@@ -1980,6 +2008,11 @@ changequote([,])dnl
 		tmake_file=t-netbsd
 		float_format=m68k
 		;;
+	m68k*-*-openbsd*)
+		float_format=m68k
+		# we need collect2 until our bug is fixed...
+		use_collect2=yes
+		;;
 	m68k-*-sysv3*)			# Motorola m68k's running system V.3
 		xm_file="xm-alloca.h ${xm_file}"
 		xm_defines=USG
@@ -2102,6 +2135,9 @@ changequote([,])dnl
 		else
 			tmake_file=m88k/t-luna
 		fi
+		;;
+	m88k-*-openbsd*)
+		tmake_file="${tmake_file} m88k/t-luna-gas"
 		;;
 	m88k-*-sysv3*)
 		tm_file=m88k/sysv3.h
@@ -2310,6 +2346,16 @@ changequote([,])dnl
 		gnu_ld=yes
 		gas=yes
 		fixincludes=Makefile.in 
+		;;
+	mips*el-*-openbsd*)	# mips little endian
+		target_cpu_default="MASK_GAS|MASK_ABICALLS"
+		tm_file=mips/openbsd.h
+		xmake_file=none
+		;;
+	mips*-*-openbsd*)		# mips big endian
+		target_cpu_default="MASK_GAS|MASK_ABICALLS"
+		tm_file=mips/openbsd-be.h
+		xmake_file=none
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 		tm_file="mips/news4.h ${tm_file}"
@@ -2661,6 +2707,9 @@ changequote([,])dnl
                 ;;
         pdp11-*-*)
 		;;
+	ns32k-*-openbsd*)
+		# Nothing special
+		;;
 	pyramid-*-*)
 		cpu_type=pyr
 		xmake_file=pyr/x-pyr
@@ -2672,6 +2721,13 @@ changequote([,])dnl
 	romp-*-mach*)
 		xmake_file=romp/x-mach
 		use_collect2=yes
+		;;
+	romp-*-openbsd*)
+		# Nothing special
+		;;
+	powerpc-*-openbsd*)
+		tmake_file="${tmake_file} rs6000/t-rs6000 rs6000/t-openbsd"
+		xmake_file=none
 		;;
 	powerpc-*-beos*)
 		cpu_type=rs6000
@@ -2967,6 +3023,10 @@ changequote([,])dnl
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
+	sparc-*-openbsd*)
+		# we need collect2 until our bug is fixed...
+		use_collect2=yes
+		;;
 	sparc-*-bsd*)
 		tm_file=sparc/bsd.h
 		;;
@@ -3194,6 +3254,9 @@ changequote([,])dnl
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		float_format=vax
+		;;
+	vax-*-openbsd*)
+		tmake_file="${tm_file} vax/t-openbsd"
 		;;
 	vax-*-ultrix*)			# vaxen running ultrix
 		tm_file="${tm_file} vax/ultrix.h"

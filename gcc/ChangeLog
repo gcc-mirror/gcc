@@ -1,3 +1,12 @@
+Thu Feb 18 19:59:37 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* configure.in :Handle OpenBSD platforms.
+	* configure: Rebuilt.
+        * config/openbsd.h: New file.
+        * config/xm-openbsd.h: New file.
+        * config/t-openbsd: New file.
+        * config/t-openbsd-thread: New file.
+
 Thu Feb 18 18:47:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (assign_stack_temp_for_type): Round SIZE before calling
