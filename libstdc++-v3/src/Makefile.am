@@ -133,6 +133,7 @@ sources = \
 	ostream-inst.cc \
 	sstream-inst.cc \
 	streambuf-inst.cc \
+	streambuf.cc \
 	string-inst.cc \
 	valarray-inst.cc \
 	wlocale-inst.cc \

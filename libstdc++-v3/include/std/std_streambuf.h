@@ -775,6 +775,18 @@ namespace std
       __streambuf_type& 
       operator=(const __streambuf_type&) { return *this; };
     };
+
+  // Explicit specialization declarations, defined in src/streambuf.cc.
+  template<>
+    streamsize
+    __copy_streambufs(basic_streambuf<char>* __sbin,
+		      basic_streambuf<char>* __sbout);
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    streamsize
+    __copy_streambufs(basic_streambuf<wchar_t>* __sbin,
+		      basic_streambuf<wchar_t>* __sbout);
+#endif
 } // namespace std
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE

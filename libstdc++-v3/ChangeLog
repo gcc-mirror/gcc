@@ -1,3 +1,14 @@
+2004-11-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/streambuf.tcc (__copy_streambufs): Provide
+	a generic version of the function, not using the protected
+	members of basic_streambuf.
+	* include/std/std_streambuf.h (__copy_streambufs): Declare
+	optimized specializations for char and wchar_t.
+	* src/streambuf.cc: New file, define the latter.
+	* src/Makefile.am: Add.
+	* src/Makefile.in: Regenerate.
+
 2004-11-15  Matthias Klose  <doko@debian.org>
 
 	* docs/doxygen/run_doxygen: Add --build_alias option,
