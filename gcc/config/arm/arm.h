@@ -63,7 +63,7 @@ extern char arm_arch_name[];
 							\
 	/* Add a define for interworking.		\
 	   Needed when building libgcc.a.  */		\
-	if (TARGET_INTERWORK)				\
+	if (arm_cpp_interwork)				\
 	  builtin_define ("__THUMB_INTERWORK__");	\
 							\
 	builtin_assert ("cpu=arm");			\
@@ -527,6 +527,13 @@ extern int arm_tune_xscale;
 
 /* Nonzero if this chip is an ARM6 or an ARM7.  */
 extern int arm_is_6_or_7;
+
+/* Nonzero if we should define __THUMB_INTERWORK__ in the
+   preprocessor.  
+   XXX This is a bit of a hack, it's intended to help work around
+   problems in GLD which doesn't understand that armv5t code is
+   interworking clean.  */
+extern int arm_cpp_interwork;
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (ARM_FLAG_APCS_FRAME)
