@@ -228,7 +228,7 @@ F77_SRCS = \
  $(srcdir)/f/where.c \
  $(srcdir)/f/where.h
 
-f771:$(exeext) $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist f/Makefile
+f771$(exeext): $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist f/Makefile
 	$(MAKE) -f f/Makefile $(FLAGS_TO_PASS) VPATH=$(srcdir) srcdir=$(srcdir) f771$(exeext)
 
 f/Makefile: $(srcdir)/f/Makefile.in $(srcdir)/configure
