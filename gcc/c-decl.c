@@ -1950,7 +1950,8 @@ pushdecl (x)
 		  if (DECL_INLINE (oldglobal))
 		    {
 		      DECL_INLINE (x) = DECL_INLINE (oldglobal);
-		      DECL_INITIAL (x) = DECL_INITIAL (oldglobal);
+		      DECL_INITIAL (x) = (current_function_decl == oldglobal
+					  ? 0 : DECL_INITIAL (oldglobal));
 		      DECL_SAVED_INSNS (x) = DECL_SAVED_INSNS (oldglobal);
 		      DECL_ARGUMENTS (x) = DECL_ARGUMENTS (oldglobal);
 		      DECL_RESULT (x) = DECL_RESULT (oldglobal);
