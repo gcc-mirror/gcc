@@ -1593,10 +1593,16 @@ duplicate_decls (newdecl, olddecl)
 	      && !TREE_PUBLIC (newdecl))
 	    warning_with_decl (newdecl, "static declaration for `%s' follows non-static");
 
+	  /* Warn when const declaration follows a non-const
+	     declaration, but not for functions.  */
+	  if (TREE_CODE (olddecl) != FUNCTION_DECL
+	      && !TREE_READONLY (olddecl)
+	      && TREE_READONLY (newdecl))
+	    warning_with_decl (newdecl, "const declaration for `%s' follows non-const");
 	  /* These bits are logically part of the type, for variables.
 	     But not for functions
 	     (where qualifiers are not valid ANSI anyway).  */
-	  if (pedantic && TREE_CODE (olddecl) != FUNCTION_DECL
+	  else if (pedantic && TREE_CODE (olddecl) != FUNCTION_DECL
 	      && (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
 		  || TREE_THIS_VOLATILE (newdecl) != TREE_THIS_VOLATILE (olddecl)))
 	    pedwarn_with_decl (newdecl, "type qualifiers for `%s' conflict with previous decl");
