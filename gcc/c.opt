@@ -251,7 +251,7 @@ Warn when a declaration does not specify a type
 
 Wimport
 C ObjC C++ ObjC++
-Warn about uses of the \"#import\" directive
+Deprecated.  This switch has no effect.
 
 Winvalid-offsetof
 C++ ObjC++

@@ -484,7 +484,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Wimport:
-      cpp_opts->warn_import = value;
+      /* Silently ignore for now.  */
       break;
 
     case OPT_Winvalid_offsetof:

@@ -24,7 +24,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define GCC_CPPHASH_H
 
 #include "hashtable.h"
-#include "hashtab.h"
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
@@ -37,7 +36,6 @@ struct directive;		/* Deliberately incomplete.  */
 struct pending_option;
 struct op;
 struct strbuf;
-struct _cpp_file;
 
 typedef bool (*convert_f) (iconv_t, const unsigned char *, size_t,
 			   struct strbuf *);
@@ -365,7 +363,7 @@ struct cpp_reader
   struct _cpp_file *once_only_files;
 
   /* File and directory hash table.  */
-  htab_t file_hash;
+  struct htab *file_hash;
   struct file_hash_entry *file_hash_entries;
   unsigned int file_hash_entries_allocated, file_hash_entries_used;
 
