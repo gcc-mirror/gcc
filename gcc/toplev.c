@@ -577,9 +577,17 @@ int flag_unsafe_math_optimizations = 0;
 
 /* Zero means that floating-point math operations cannot generate a
    (user-visible) trap.  This is the case, for example, in nonstop
-   IEEE 754 arithmetic.  */
+   IEEE 754 arithmetic.  Trapping conditions include division by zero,
+   overflow, underflow, invalid and inexact, but does not include 
+   operations on signaling NaNs (see below).  */
 
 int flag_trapping_math = 1;
+
+/* Nonzero means disable transformations observable by signaling NaNs.
+   This option implies that any operation on a IEEE signaling NaN can
+   generate a (user-visible) trap.  */
+
+int flag_signaling_nans = 0;
 
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
@@ -1170,6 +1178,8 @@ static const lang_independent_options f_options[] =
    N_("Floating-point operations can trap") },
   {"unsafe-math-optimizations", &flag_unsafe_math_optimizations, 1,
    N_("Allow math optimizations that may violate IEEE or ANSI standards") },
+  {"signaling-nans", &flag_signaling_nans, 1,
+   N_("Disable optimizations observable by IEEE signaling NaNs") },
   {"bounded-pointers", &flag_bounded_pointers, 1,
    N_("Compile pointers as triples: value, base & end") },
   {"bounds-check", &flag_bounds_check, 1,
@@ -1566,6 +1576,8 @@ set_fast_math_flags (set)
   flag_trapping_math = !set;
   flag_unsafe_math_optimizations = set;
   flag_errno_math = !set;
+  if (set)
+    flag_signaling_nans = 0;
 }
 
 /* Return true iff flags are set as if -ffast-math.  */
@@ -5086,6 +5098,10 @@ process_options ()
   if (flag_function_sections && write_symbols != NO_DEBUG)
     warning ("-ffunction-sections may affect debugging on some targets");
 #endif
+
+    /* The presence of IEEE signaling NaNs, implies all math can trap.  */
+    if (flag_signaling_nans)
+      flag_trapping_math = 1;
 }
 
 /* Language-independent initialization, before language-dependent
