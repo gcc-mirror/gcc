@@ -19,7 +19,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "machmode.h"
 
-/* codes of tree nodes */
+#ifndef RTX_CODE
+struct rtx_def;
+#endif
+
+/* Codes of tree nodes */
 
 #define DEFTREECODE(SYM, STRING, TYPE, NARGS)   SYM,
 
@@ -1007,6 +1011,14 @@ union tree_node
 #endif
 #endif
 
+#ifndef STDIO_PROTO
+#ifdef BUFSIZ
+#define STDIO_PROTO(ARGS) PROTO(ARGS)
+#else
+#define STDIO_PROTO(ARGS) ()
+#endif
+#endif
+
 #define NULL_TREE (tree) NULL
 
 /* Define a generic NULL if one hasn't already been defined.  */
@@ -1428,6 +1440,7 @@ extern char *perm_calloc			PROTO((int, long));
 
 /* In stmt.c */
 
+extern void expand_fixups			PROTO((struct rtx_def *));
 extern tree expand_start_stmt_expr		PROTO((void));
 extern tree expand_end_stmt_expr		PROTO((tree));
 extern void expand_expr_stmt			PROTO((tree));
@@ -1446,7 +1459,8 @@ extern void expand_loop_continue_here		PROTO((void));
 extern void expand_end_loop			PROTO((void));
 extern int expand_continue_loop			PROTO((struct nesting *));
 extern int expand_exit_loop			PROTO((struct nesting *));
-extern int expand_exit_loop_if_false		PROTO((struct nesting *, tree));
+extern int expand_exit_loop_if_false		PROTO((struct nesting *,
+						       tree));
 extern int expand_exit_something		PROTO((void));
 
 extern void expand_null_return			PROTO((void));
@@ -1454,10 +1468,15 @@ extern void expand_return			PROTO((tree));
 extern void expand_start_bindings		PROTO((int));
 extern void expand_end_bindings			PROTO((tree, int, int));
 extern tree last_cleanup_this_contour		PROTO((void));
-extern void expand_start_case			PROTO((int, tree, tree, char *));
+extern void expand_start_case			PROTO((int, tree, tree,
+						       char *));
 extern void expand_end_case			PROTO((tree));
-extern int pushcase				PROTO((tree, tree (*) (tree, tree), tree, tree *));
-extern int pushcase_range			PROTO((tree, tree, tree (*) (tree, tree), tree, tree *));
+extern int pushcase				PROTO((tree,
+						       tree (*) (tree, tree),
+						       tree, tree *));
+extern int pushcase_range			PROTO((tree, tree,
+						       tree (*) (tree, tree),
+						       tree, tree *));
 
 /* In fold-const.c */
 
