@@ -1,5 +1,10 @@
 2001-05-14  Andrew MacLeod  <amacleod@redhat.com>
 
+	* config/ia64/lib1funcs.asm (__divtf3): Fix incorrect bits in
+	extended precision divide.
+
+2001-05-14  Andrew MacLeod  <amacleod@redhat.com>
+
 	* config/ia64/ia64.c (rtx_needs_barrier): Call rtx_needs_barrier
 	for RETURNS as well.
 
