@@ -105,7 +105,7 @@ public final class Channels
   public static Reader newReader(ReadableByteChannel ch, CharsetDecoder dec,
                                  int minBufferCap)
   {
-    throw new Error ("not implemented");
+    throw new Error("not implemented");
   }
 
   /**
@@ -127,7 +127,7 @@ public final class Channels
   public static Writer newWriter(WritableByteChannel ch, CharsetEncoder enc,
                                  int minBufferCap)
   {
-    throw new Error ("not implemented");
+    throw new Error("not implemented");
   }
 
   /**
