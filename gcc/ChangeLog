@@ -1,3 +1,7 @@
+Tue Oct 17 20:11:08 2000  Alan Modra <alan@linuxcare.com.au>
+
+	* pa.c (print_operand): Handle case 'c' for .vtable_inherit
+
 Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 
 	* i370.md: Fix spelling typo.
