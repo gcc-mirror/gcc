@@ -1,3 +1,8 @@
+2003-04-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-decl.c (grokdeclarator): Reject extern redeclarations of
+	static variables.
+
 2003-04-14  Janis Johnson  <janis287@us.ibm.com>
 
 	* config/rs6000/rs6000.md (define_constants): Define constants for
