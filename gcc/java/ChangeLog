@@ -1,3 +1,8 @@
+2000-06-29  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (resolve_field_access): Handle case where `type_found'
+	is NULL.
+
 2000-06-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (lookup_field): The same field can be found through two
