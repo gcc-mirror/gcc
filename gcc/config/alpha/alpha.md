@@ -427,10 +427,17 @@
   ""
   "
 {
-  rtx tmp = gen_reg_rtx (DImode);
-  emit_insn (gen_adddi3 (tmp, gen_lowpart (DImode, operands[1]),
-			 gen_lowpart (DImode, operands[2])));
-  emit_move_insn (operands[0], gen_lowpart (SImode, tmp));
+  rtx op1 = gen_lowpart (DImode, operands[1]);
+  rtx op2 = gen_lowpart (DImode, operands[2]);
+
+  if (! cse_not_expected)
+    {
+      rtx tmp = gen_reg_rtx (DImode);
+      emit_insn (gen_adddi3 (tmp, op1, op2));
+      emit_move_insn (operands[0], gen_lowpart (SImode, tmp));
+    }
+  else
+    emit_insn (gen_adddi3 (gen_lowpart (DImode, operands[0]), op1, op2));
   DONE;
 } ")
 
@@ -714,10 +721,17 @@
   ""
   "
 {
-  rtx tmp = gen_reg_rtx (DImode);
-  emit_insn (gen_subdi3 (tmp, gen_lowpart (DImode, operands[1]),
-			 gen_lowpart (DImode, operands[2])));
-  emit_move_insn (operands[0], gen_lowpart (SImode, tmp));
+  rtx op1 = gen_lowpart (DImode, operands[1]);
+  rtx op2 = gen_lowpart (DImode, operands[2]);
+
+  if (! cse_not_expected)
+    {
+      rtx tmp = gen_reg_rtx (DImode);
+      emit_insn (gen_subdi3 (tmp, op1, op2));
+      emit_move_insn (operands[0], gen_lowpart (SImode, tmp));
+    }
+  else
+    emit_insn (gen_subdi3 (gen_lowpart (DImode, operands[0]), op1, op2));
   DONE;
 } ")
 
