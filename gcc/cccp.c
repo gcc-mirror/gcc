@@ -559,12 +559,12 @@ static struct default_include { char *fname; int cplusplus; } include_defaults_a
     /* This is another place that the target system's headers might be.  */
     { TOOL_INCLUDE_DIR, 0},
 #else /* not CROSS_COMPILE */
-    /* Until we are really clear on what people will use this dir for
-       in a native compiler, it's not clear where in the order it belongs.  */
-    { TOOL_INCLUDE_DIR, 0},
     /* This should be /use/local/include and should come before
        the fixincludes-fixed header files.  */
     { LOCAL_INCLUDE_DIR, 0},
+    /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
+       Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
+    { TOOL_INCLUDE_DIR, 0},
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
     { GCC_INCLUDE_DIR, 0},
