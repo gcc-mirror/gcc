@@ -1,3 +1,8 @@
+2003-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11546
+	* g++.dg/template/lookup1.C: New test.
+
 2003-07-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/noncompile/label-1.c: New comprehensive test case for
