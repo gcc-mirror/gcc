@@ -1,5 +1,7 @@
 Sun Mar  1 05:50:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* varasm.c (compare_constant_1): Fix typo in previous change.
+
 	* Makefile.in (distdir-start): Depend on version.c.
 	If srcdir is cvs working directory, do cvs update.
 
