@@ -9,8 +9,10 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.net;
+
 import java.io.IOException;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.IllegalBlockingModeException;
 
 /**
  * @author Warren Levy <warrenl@cygnus.com>
@@ -25,10 +27,23 @@ import java.nio.channels.DatagramChannel;
 
 public class DatagramSocket
 {
+  /**
+   * This is the user DatagramSocketImplFactory for this class.  If this
+   * variable is null, a default factory is used.
+   */
+  static DatagramSocketImplFactory factory;
+	  
   DatagramSocketImpl impl;
 
   DatagramChannel ch;
 
+  /**
+   * Creates a DatagramSocket
+   *
+   * @exception SocketException If an error occurs
+   * @exception SecurityException If a security manager exists and
+   * its checkListen method doesn't allow the operation
+   */
   public DatagramSocket() throws SocketException
   {
     this(0, null);
@@ -52,6 +67,8 @@ public class DatagramSocket
    * @param bindaddr The socket address to bind to
    *
    * @exception SocketException If an error occurs
+   * @exception SecurityException If a security manager exists and
+   * its checkListen method doesn't allow the operation
    * 
    * @since 1.4
    */
@@ -68,6 +85,8 @@ public class DatagramSocket
    * @param port The port number to bind to
    *
    * @exception SocketException If an error occurs
+   * @exception SecurityException If a security manager exists and
+   * its checkListen method doesn't allow the operation
    */
   public DatagramSocket(int port) throws SocketException
   {
@@ -81,6 +100,8 @@ public class DatagramSocket
    * @param laddr The local address to bind to
    *
    * @exception SocketException If an error occurs
+   * @exception SecurityException If a security manager exists and
+   * its checkListen method doesn't allow the operation
    */
   public DatagramSocket(int port, InetAddress laddr) throws SocketException
   {
@@ -121,13 +142,24 @@ public class DatagramSocket
    * @param address The socket address to bind to
    *
    * @exception SocketException If an error occurs
+   * @exception SecurityException If a security manager exists and
+   * its checkListen method doesn't allow the operation
+   * @exception IllegalArgumentException If address type is not supported
    *
    * @since 1.4
    */
   public void bind (SocketAddress address)
     throws SocketException
   {
+    if (! (address instanceof InetSocketAddress))
+      throw new IllegalArgumentException ();
+
     InetSocketAddress tmp = (InetSocketAddress) address;
+
+    SecurityManager s = System.getSecurityManager ();
+    if (s != null)
+      s.checkListen(tmp.getPort ());
+
     impl.bind (tmp.getPort (), tmp.getAddress ());
   }
   
@@ -137,6 +169,16 @@ public class DatagramSocket
   public void close()
   {
     impl.close();
+  }
+
+  /**
+   * Checks if the datagram socket is closed
+   * 
+   * @since 1.4
+   */
+  public boolean isClosed()
+  {
+    return !impl.getFileDescriptor().valid();
   }
 
   /**
@@ -213,6 +255,9 @@ public class DatagramSocket
    */
   public synchronized int getSoTimeout() throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     Object timeout = impl.getOption(SocketOptions.SO_TIMEOUT);
     if (timeout instanceof Integer) 
       return ((Integer)timeout).intValue();
@@ -226,12 +271,25 @@ public class DatagramSocket
    * @param p The datagram packet to put the incoming data into
    * 
    * @exception IOException If an error occurs
+   * @exception SocketTimeoutException If setSoTimeout was previously called
+   * and the timeout has expired
+   * @exception PortUnreachableException If the socket is connected to a
+   * currently unreachable destination. Note, there is no guarantee that the
+   * exception will be thrown
+   * @exception IllegalBlockingModeException If this socket has an associated
+   * channel, and the channel is in non-blocking mode
    */
   public synchronized void receive(DatagramPacket p) throws IOException
   {
     SecurityManager s = System.getSecurityManager();
     if (s != null)
-      s.checkAccept(p.getAddress().getHostAddress(), p.getPort());
+      s.checkAccept (p.getAddress().getHostName (), p.getPort ());
+		 
+    if (impl == null)
+      throw new IOException ("Cannot initialize Socket implementation");
+
+    if (ch != null && !ch.isBlocking ())
+      throw new IllegalBlockingModeException ();
 
     impl.receive(p);
   }
@@ -242,6 +300,13 @@ public class DatagramSocket
    * @param p The datagram packet to send
    *
    * @exception IOException If an error occurs
+   * @exception SecurityException If a security manager exists and its
+   * checkMulticast or checkConnect method doesn't allow the send
+   * @exception PortUnreachableException If the socket is connected to a
+   * currently unreachable destination. Note, there is no guarantee that the
+   * exception will be thrown
+   * @exception IllegalBlockingModeException If this socket has an associated
+   * channel, and the channel is in non-blocking mode
    */
   public void send(DatagramPacket p) throws IOException
   {
@@ -249,15 +314,19 @@ public class DatagramSocket
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       {
-	InetAddress addr = p.getAddress();
-	if (addr.isMulticastAddress())
-	  s.checkMulticast(addr);
-	else
-	  s.checkConnect(addr.getHostAddress(), p.getPort());
+        InetAddress addr = p.getAddress();
+        if (addr.isMulticastAddress())
+          s.checkMulticast(addr);
+        else
+          s.checkConnect(addr.getHostAddress(), p.getPort());
       }
-
+	    
     // FIXME: if this is a subclass of MulticastSocket,
     // use getTimeToLive for TTL val.
+
+    if (ch != null && !ch.isBlocking ())
+      throw new IllegalBlockingModeException ();
+
     impl.send(p);
   }
 
@@ -285,6 +354,10 @@ public class DatagramSocket
    * @param port The port to connect to
    *
    * @exception SocketException If an error occurs
+   * @exception IllegalArgumentException If address is null
+   * or the port number is illegal
+   * @exception SecurityException If the caller is not allowed to send
+   * datagrams to and receive datagrams from the address and port
    *
    * @since 1.2
    */
@@ -295,13 +368,33 @@ public class DatagramSocket
   }
 
   /**
+   * Connects the datagram socket to a specified socket address.
+   *
+   * @param address The socket address to connect to
+   *
+   * @exception SocketException If an error occurs
+   * @exception IllegalArgumentException If address type is not supported
+   *
+   * @since 1.4
+   */
+  public void connect (SocketAddress address) throws SocketException
+  {
+    if ( !(address instanceof InetSocketAddress) )
+      throw new IllegalArgumentException (
+		      "SocketAddress is not InetSocketAddress");
+
+    InetSocketAddress tmp = (InetSocketAddress) address;
+    connect( tmp.getAddress(), tmp.getPort());
+  }
+  
+  /**
    * Disconnects the datagram socket
    *
    * @since 1.2
    */
   public void disconnect()
   {
-    //impl.disconnect();
+    impl.disconnect();
   }
 
   /**
@@ -346,6 +439,28 @@ public class DatagramSocket
   }
 
   /**
+   * Returns the local SocketAddress this socket is bound to
+   * or null if it is not bound
+   * 
+   * @since 1.4
+   */
+  public SocketAddress getLocalSocketAddress()
+  {
+    InetAddress addr;
+    
+    try
+      {
+        addr = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
+      }
+    catch (SocketException e)
+      {
+        return null;
+      }
+
+    return new InetSocketAddress (addr, impl.localPort);
+  }
+
+  /**
    * This method returns the value of the system level socket option
    * SO_RCVBUF, which is used by the operating system to tune buffer
    * sizes for data transfers.
@@ -358,6 +473,9 @@ public class DatagramSocket
    */
   public int getReceiveBufferSize() throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     Object obj = impl.getOption(SocketOptions.SO_RCVBUF);
   
     if (obj instanceof Integer)
@@ -377,6 +495,9 @@ public class DatagramSocket
    */
   public void setReuseAddress(boolean on) throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     impl.setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
   }
 
@@ -389,6 +510,9 @@ public class DatagramSocket
    */
   public boolean getReuseAddress() throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     Object obj = impl.getOption (SocketOptions.SO_REUSEADDR);
   
     if (obj instanceof Boolean)
@@ -408,6 +532,9 @@ public class DatagramSocket
    */
   public void setBroadcast(boolean on) throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     impl.setOption (SocketOptions.SO_BROADCAST, new Boolean (on));
   }
 
@@ -420,6 +547,9 @@ public class DatagramSocket
    */
   public boolean getBroadcast() throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     Object obj = impl.getOption (SocketOptions.SO_BROADCAST);
   
     if (obj instanceof Boolean)
@@ -434,7 +564,7 @@ public class DatagramSocket
    * @param tc The traffic class
    *
    * @exception SocketException If an error occurs
-   * @exception IllegalArgumentException If tc < 0 or rc > 255
+   * @exception IllegalArgumentException If tc value is illegal
    *
    * @see DatagramSocket:getTrafficClass
    * 
@@ -443,6 +573,9 @@ public class DatagramSocket
   public void setTrafficClass(int tc)
     throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     if (tc < 0 || tc > 255)
       throw new IllegalArgumentException();
 
@@ -460,6 +593,9 @@ public class DatagramSocket
    */
   public int getTrafficClass() throws SocketException
   {
+    if (impl == null)
+      throw new SocketException( "Cannot initialize Socket implementation");
+
     Object obj = impl.getOption(SocketOptions.IP_TOS);
 
     if (obj instanceof Integer)
@@ -481,6 +617,9 @@ public class DatagramSocket
    */
   public int getSendBufferSize() throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     Object obj = impl.getOption(SocketOptions.SO_SNDBUF);
 
     if (obj instanceof Integer)
@@ -497,11 +636,15 @@ public class DatagramSocket
    * @param size The new receive buffer size.
    *
    * @exception SocketException If an error occurs.
+   * @exception IllegalArgumentException If size is 0 or negative
    *  
    * @since 1.2
    */
   public void setReceiveBufferSize(int size) throws SocketException
   {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
     if (size < 0)
       throw new IllegalArgumentException("Buffer size is less than 0");
 
@@ -516,6 +659,7 @@ public class DatagramSocket
    * @param size The new send buffer size.
    *
    * @exception SocketException If an error occurs.
+   * @exception IllegalArgumentException If size is 0 or negative
    *
    * @since 1.2
    */
@@ -525,5 +669,28 @@ public class DatagramSocket
       throw new IllegalArgumentException("Buffer size is less than 0");
   
     impl.setOption(SocketOptions.SO_SNDBUF, new Integer(size));
+  }
+
+  /**
+   * Sets the datagram socket implementation factory for the application
+   *
+   * @param fac The factory to set
+   *
+   * @exception IOException If an error occurs
+   * @exception SocketException If the factory is already defined
+   * @exception SecurityException If a security manager exists and its
+   * checkSetFactory method doesn't allow the operation
+   */
+  public static void setDatagramSocketImplFactory
+    (DatagramSocketImplFactory fac) throws IOException
+  {
+    if (factory != null)
+      throw new SocketException ("DatagramSocketImplFactory already defined");
+
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkSetFactory();
+
+    factory = fac;
   }
 }

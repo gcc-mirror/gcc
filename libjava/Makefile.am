@@ -1924,6 +1924,7 @@ java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
 java/nio/channels/DatagramChannel.java \
+java/nio/channels/IllegalBlockingModeException.java \
 java/nio/channels/ServerSocketChannel.java \
 java/nio/channels/SocketChannel.java \
 java/security/AccessControlContext.java \

@@ -10,6 +10,8 @@ details.  */
 
 package java.net;
 
+import java.io.IOException;
+
 /**
  * @author Warren Levy <warrenl@cygnus.com>
  * @date March 4, 1999.
@@ -24,8 +26,16 @@ package java.net;
 public abstract class URLStreamHandler
 {
   protected abstract URLConnection openConnection(URL u)
-    throws java.io.IOException;
+    throws IOException;
 
+  /**
+   * Pasrses the given URL
+   *
+   * @param u The URL to parse
+   * @param spec The specification to use
+   * @param start FIXME
+   * @param limit FIXME
+   */
   protected void parseURL(URL u, String spec, int start, int limit)
   {
     String host = u.getHost();
@@ -119,7 +129,15 @@ public abstract class URLStreamHandler
     return file; 
   }
 
-  public boolean sameFile(URL url1, URL url2)
+  /**
+   * Compares two URLs, excluding the fragment component
+   *
+   * @param url1 The first url
+   * @param url2 The second url to compare with the first
+   * 
+   * @specnote Now protected
+   */
+  protected boolean sameFile(URL url1, URL url2)
   {
     if (url1 == url2)
       return true;
@@ -143,12 +161,33 @@ public abstract class URLStreamHandler
     return true;
   }
 
+  /**
+   * Sets the fields of the URL argument to the indicated values
+   *
+   * @param u The URL to modify
+   * @param protocol The protocol to set
+   * @param host The host name to et
+   * @param port The port number to set
+   * @param file The filename to set
+   * @param ref The reference
+   *
+   * @exception SecurityException If the protocol handler of the URL is
+   * different from this one
+   *
+   * @deprecated 1.2 Please use
+   * #setURL(URL,String,String,int,String,String,String,String);
+   */
   protected void setURL(URL u, String protocol, String host, int port,
 			String file, String ref)
   {
     u.set(protocol, host, port, file, ref);
   }
 
+  /**
+   * Converts an URL of a specific protocol to a string
+   *
+   * @param u The URL to convert
+   */
   protected String toExternalForm(URL u)
   {
     String resStr, host, file, ref;

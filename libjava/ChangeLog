@@ -1,5 +1,71 @@
 2002-09-25  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(DatagramSocket): Exception documentation added.
+	(bind): Exception documentation added, addded SecurityManager check,
+	added SocketAddress type check.
+	(getSoTimeout): Check impl.
+	(receive): Fix SecurityManager check, check impl, documentation added.
+	(send): Check channel mode, documentation added.
+	(connect): New method.
+	(disconnect): Implemented.
+	(getLocalSocketAddress): New method.
+	(getReceiveBufferSize): Check impl.
+	(setReuseAddress): Check impl.
+	(getReuseAddress): Check impl.
+	(setBroadcast): Check impl.
+	(getBroadcast): Check impl.
+	(setTrafficClass): Check impl, Documentation cleared.
+	(getTrafficClass): Check impl.
+	(getSendBufferSize): Check impl.
+	(setReceiveBufferSize): Check impl, documentation added.
+	(setSendBufferSize): Documentation added.
+	(setDatagramSocketImplFactory): New method.
+	* java/net/HttpURLConnection.java
+	(HTTP_INTERNAL_ERROR): The correct code is 500.
+	(HTTP_NOT_IMPLEMENTED): Added new constant.
+	(setFollowRedirects): Documentation added.
+	(getInstanceFollowRedirects): New method.
+	(setInstanceFollowRedirects): New method.
+	(setRequestMethod): Documentation added.
+	(getResponseCode): Documentation added.
+	(getResponseMessage): Documentation added.
+	* java/net/JarURLConnection.java
+	(JarURLConnection): protected since JDK 1.4.
+	(getJarEntry): java.io.IOException to IOException, documentation added.
+	(getJarFile): Documentation added.
+	* java/net/ServerSocket.java
+	(ServerSocket): Private to public, exception added.
+	(ServerSocket): java.io.IOException to IOException, documentation added.
+	(bind): Check socket address type, documentation added.
+	(bind): java.io.IOException to IOException, documentation added.
+	(accept): Documentation added.
+	(implAccept): Check ch is not non-blocking, documentation added.
+	(setSoTimeout): Documentation fixed.
+	(setReceiveBufferSize): Documentation added.
+	* java/net/Socket.java
+	(Socket): Documentation added.
+	(bind): Documentation added.
+	(connect): Check socket address type, documentation added.
+	(getRemoteSocketAddress): New method.
+	(getLocalSocketAddress): New method.
+	(setSoLinger): Documentation added.
+	(getReuseAddress): New method.
+	(setReuseAddress): New method.
+	(getTrafficClass): New method.
+	(setTrafficClass): New method.
+	* java/net/URLStreamHandler.java
+	(openConnection): java.io.IOException to IOException.
+	(parseURL): Documentation added.
+	(sameFile): public to protected, documentation added.
+	(setURL): Documentation added.
+	* java/nio/IllegalBlockingModeException.java: New file.
+	* Makefile.am (ordinary_java_source_files):
+	added java/nio/IllegalBlockingModeException.java
+	* Makefile.in: Regenerated.
+
+2002-09-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramPacket
 	(DatagramPacket): Exception documentation added.
 	(setData): Likewise.
