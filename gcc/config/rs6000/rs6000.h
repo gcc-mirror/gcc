@@ -1248,7 +1248,12 @@ typedef struct rs6000_args
 /* #define RETURN_ADDR_IN_PREVIOUS_FRAME */
 
 /* Number of bytes into the frame return addresses can be found.  */
-#define RETURN_ADDRESS_OFFSET (v4_call_p ? (TARGET_64BIT ? 8 : 4) : 8)
+#ifndef TARGET_V4_CALLS
+#define RETURN_ADDRESS_OFFSET 8
+#else
+#define RETURN_ADDRESS_OFFSET \
+ ((TARGET_V4_CALLS) ?  (TARGET_64BIT ? 8 : 4) : 8)
+#endif
 
 /* The current return address is in link register (65).  The return address
    of anything farther back is accessed normally at an offset of 8 from the
