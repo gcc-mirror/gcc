@@ -1718,15 +1718,29 @@ static tree
 build_new_1 (tree exp)
 {
   tree placement, init;
-  tree true_type, size, rval;
+  tree size, rval;
+  /* True iff this is a call to "operator new[]" instead of just
+     "operator new".  */   
+  bool array_p = false;
+  /* True iff ARRAY_P is true and the bound of the array type is
+     not necessarily a compile time constant.  For example, VLA_P is
+     true for "new int[f()]".  */
+  bool vla_p = false;
+  /* The type being allocated.  If ARRAY_P is true, this will be an 
+     ARRAY_TYPE.  */
+  tree full_type;
+  /* If ARRAY_P is true, the element type of the array.  This is an
+     never ARRAY_TYPE; for something like "new int[3][4]", the
+     ELT_TYPE is "int".  If ARRAY_P is false, this is the same type as
+     FULL_TYPE.  */
+  tree elt_type;
   /* The type of the new-expression.  (This type is always a pointer
      type.)  */
   tree pointer_type;
-  /* The type pointed to by POINTER_TYPE.  */
+  /* The type pointed to by POINTER_TYPE.  This type may be different
+     from ELT_TYPE for a multi-dimensional array; ELT_TYPE is never an
+     ARRAY_TYPE, but TYPE may be an ARRAY_TYPE.  */
   tree type;
-  /* The type being allocated.  For "new T[...]" this will be an
-     ARRAY_TYPE.  */
-  tree full_type;
   /* A pointer type pointing to to the FULL_TYPE.  */
   tree full_pointer_type;
   tree outer_nelts = NULL_TREE;
@@ -1737,8 +1751,6 @@ build_new_1 (tree exp)
   tree alloc_node;
   tree alloc_fn;
   tree cookie_expr, init_expr;
-  int has_array = 0;
-  enum tree_code code;
   int nothrow, check_new;
   /* Nonzero if the user wrote `::new' rather than just `new'.  */
   int globally_qualified_p;
@@ -1771,76 +1783,80 @@ build_new_1 (tree exp)
     {
       tree index;
 
-      has_array = 1;
       outer_nelts = nelts;
+      array_p = true;
 
       /* ??? The middle-end will error on us for building a VLA outside a 
 	 function context.  Methinks that's not it's purvey.  So we'll do
 	 our own VLA layout later.  */
-
+      vla_p = true;
       full_type = build_cplus_array_type (type, NULL_TREE);
-
       index = convert (sizetype, nelts);
       index = size_binop (MINUS_EXPR, index, size_one_node);
       TYPE_DOMAIN (full_type) = build_index_type (index);
     }
   else
-    full_type = type;
-
-  true_type = type;
-
-  code = has_array ? VEC_NEW_EXPR : NEW_EXPR;
+    {
+      full_type = type;
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  array_p = true;
+	  nelts = array_type_nelts_top (type);
+	  outer_nelts = nelts;
+	  type = TREE_TYPE (type);
+	}
+    }
 
   /* If our base type is an array, then make sure we know how many elements
      it has.  */
-  while (TREE_CODE (true_type) == ARRAY_TYPE)
-    {
-      tree this_nelts = array_type_nelts_top (true_type);
-      nelts = cp_build_binary_op (MULT_EXPR, nelts, this_nelts);
-      true_type = TREE_TYPE (true_type);
-    }
+  for (elt_type = type;
+       TREE_CODE (elt_type) == ARRAY_TYPE;
+       elt_type = TREE_TYPE (elt_type))
+    nelts = cp_build_binary_op (MULT_EXPR, nelts, 
+				array_type_nelts_top (elt_type));
 
-  if (!complete_type_or_else (true_type, exp))
+  if (!complete_type_or_else (elt_type, exp))
     return error_mark_node;
 
-  if (TREE_CODE (true_type) == VOID_TYPE)
+  if (TREE_CODE (elt_type) == VOID_TYPE)
     {
       error ("invalid type %<void%> for new");
       return error_mark_node;
     }
 
-  if (abstract_virtuals_error (NULL_TREE, true_type))
+  if (abstract_virtuals_error (NULL_TREE, elt_type))
     return error_mark_node;
 
-  is_initialized = (TYPE_NEEDS_CONSTRUCTING (type) || init);
-  if (CP_TYPE_CONST_P (true_type) && !is_initialized)
+  is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || init);
+  if (CP_TYPE_CONST_P (elt_type) && !is_initialized)
     {
-      error ("uninitialized const in %<new%> of %q#T", true_type);
+      error ("uninitialized const in %<new%> of %q#T", elt_type);
       return error_mark_node;
     }
 
-  size = size_in_bytes (true_type);
-  if (has_array)
+  size = size_in_bytes (elt_type);
+  if (array_p)
     {
-      tree n, bitsize;
+      size = size_binop (MULT_EXPR, size, convert (sizetype, nelts));
+      if (vla_p)
+	{
+	  tree n, bitsize;
 
-      /* Do our own VLA layout.  Setting TYPE_SIZE/_UNIT is necessary in
-	 order for the <INIT_EXPR <*foo> <CONSTRUCTOR ...>> to be valid.  */
-
-      n = convert (sizetype, nelts);
-      size = size_binop (MULT_EXPR, size, n);
-      TYPE_SIZE_UNIT (full_type) = size;
-
-      n = convert (bitsizetype, nelts);
-      bitsize = size_binop (MULT_EXPR, TYPE_SIZE (true_type), n);
-      TYPE_SIZE (full_type) = bitsize;
+	  /* Do our own VLA layout.  Setting TYPE_SIZE/_UNIT is
+	     necessary in order for the <INIT_EXPR <*foo> <CONSTRUCTOR
+	     ...>> to be valid.  */
+	  TYPE_SIZE_UNIT (full_type) = size;
+	  n = convert (bitsizetype, nelts);
+	  bitsize = size_binop (MULT_EXPR, TYPE_SIZE (elt_type), n);
+	  TYPE_SIZE (full_type) = bitsize;
+	}
     }
 
   /* Allocate the object.  */
-  if (! placement && TYPE_FOR_JAVA (true_type))
+  if (! placement && TYPE_FOR_JAVA (elt_type))
     {
       tree class_addr, alloc_decl;
-      tree class_decl = build_java_class_ref (true_type);
+      tree class_decl = build_java_class_ref (elt_type);
       static const char alloc_name[] = "_Jv_AllocObject";
 
       use_java_new = 1;
@@ -1867,32 +1883,32 @@ build_new_1 (tree exp)
       tree fnname;
       tree fns;
 
-      fnname = ansi_opname (code);
+      fnname = ansi_opname (array_p ? VEC_NEW_EXPR : NEW_EXPR);
 
       if (!globally_qualified_p 
-	  && CLASS_TYPE_P (true_type)
-	  && (has_array
-	      ? TYPE_HAS_ARRAY_NEW_OPERATOR (true_type)
-	      : TYPE_HAS_NEW_OPERATOR (true_type)))
+	  && CLASS_TYPE_P (elt_type)
+	  && (array_p
+	      ? TYPE_HAS_ARRAY_NEW_OPERATOR (elt_type)
+	      : TYPE_HAS_NEW_OPERATOR (elt_type)))
 	{
 	  /* Use a class-specific operator new.  */
 	  /* If a cookie is required, add some extra space.  */
-	  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
+	  if (array_p && TYPE_VEC_NEW_USES_COOKIE (elt_type))
 	    {
-	      cookie_size = targetm.cxx.get_cookie_size (true_type);
+	      cookie_size = targetm.cxx.get_cookie_size (elt_type);
 	      size = size_binop (PLUS_EXPR, size, cookie_size);
 	    }
 	  /* Create the argument list.  */
 	  args = tree_cons (NULL_TREE, size, placement);
 	  /* Do name-lookup to find the appropriate operator.  */
-	  fns = lookup_fnfields (true_type, fnname, /*protect=*/2);
+	  fns = lookup_fnfields (elt_type, fnname, /*protect=*/2);
 	  if (TREE_CODE (fns) == TREE_LIST)
 	    {
 	      error ("request for member %qD is ambiguous", fnname);
 	      print_candidates (fns);
 	      return error_mark_node;
 	    }
-	  alloc_call = build_new_method_call (build_dummy_object (true_type),
+	  alloc_call = build_new_method_call (build_dummy_object (elt_type),
 					      fns, args,
 					      /*conversion_path=*/NULL_TREE,
 					      LOOKUP_NORMAL);
@@ -1901,8 +1917,8 @@ build_new_1 (tree exp)
 	{
 	  /* Use a global operator new.  */
 	  /* See if a cookie might be required.  */
-	  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
-	    cookie_size = targetm.cxx.get_cookie_size (true_type);
+	  if (array_p && TYPE_VEC_NEW_USES_COOKIE (elt_type))
+	    cookie_size = targetm.cxx.get_cookie_size (elt_type);
 	  else
 	    cookie_size = NULL_TREE;
 
@@ -1995,7 +2011,7 @@ build_new_1 (tree exp)
 			       cookie_ptr, size_in_bytes (sizetype));
 	  cookie = build_indirect_ref (cookie_ptr, NULL);
 	  cookie = build2 (MODIFY_EXPR, sizetype, cookie,
-			   size_in_bytes(true_type));
+			   size_in_bytes(elt_type));
 	  cookie_expr = build2 (COMPOUND_EXPR, TREE_TYPE (cookie_expr),
 				cookie, cookie_expr);
 	}
@@ -2020,10 +2036,10 @@ build_new_1 (tree exp)
 
       if (init == void_zero_node)
 	init = build_default_init (full_type, nelts);
-      else if (init && has_array)
+      else if (init && array_p)
 	pedwarn ("ISO C++ forbids initialization in array new");
 
-      if (has_array)
+      if (array_p)
 	{
 	  init_expr
 	    = build_vec_init (init_expr,
@@ -2040,7 +2056,7 @@ build_new_1 (tree exp)
 	{
 	  init_expr = build_special_member_call (init_expr, 
 						 complete_ctor_identifier,
-						 init, true_type,
+						 init, elt_type,
 						 LOOKUP_NORMAL);
 	  stable = stabilize_init (init_expr, &init_preeval_expr);
 	}
@@ -2073,7 +2089,7 @@ build_new_1 (tree exp)
 	 freed.  */
       if (flag_exceptions && ! use_java_new)
 	{
-	  enum tree_code dcode = has_array ? VEC_DELETE_EXPR : DELETE_EXPR;
+	  enum tree_code dcode = array_p ? VEC_DELETE_EXPR : DELETE_EXPR;
 	  tree cleanup;
 
 	  /* The Standard is unclear here, but the right thing to do

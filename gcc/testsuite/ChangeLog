@@ -1,3 +1,8 @@
+2004-11-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18369
+	* g++.dg/init/new12.C: New test.
+
 2004-11-10  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.target/sparc: New directory.
