@@ -1,3 +1,8 @@
+2001-03-23  Jim Wilson  <wilson@redhat.com>
+
+	* varasm.c (make_decl_rtl): Add TREE_PUBLIC check to abort test.
+	(assemble_alias): Call make_decl_rtl.
+	
 2001-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* extend.texi: Document the "java_interface" attribute.

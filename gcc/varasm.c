@@ -588,10 +588,12 @@ make_decl_rtl (decl, asmspec)
   int reg_number;
 
   /* Check that we are not being given an automatic variable.  */
+  /* A weak alias has TREE_PUBLIC set but not the other bits.  */
   if (TREE_CODE (decl) == PARM_DECL
       || TREE_CODE (decl) == RESULT_DECL
       || (TREE_CODE (decl) == VAR_DECL
 	  && !TREE_STATIC (decl)
+	  && !TREE_PUBLIC (decl)
 	  && !DECL_EXTERNAL (decl)
 	  && !DECL_REGISTER (decl)))
     abort ();
@@ -4808,6 +4810,10 @@ assemble_alias (decl, target)
      tree decl, target ATTRIBUTE_UNUSED;
 {
   const char *name;
+
+  /* We must force creation of DECL_RTL for debug info generation, even though
+     we don't use it here.  */
+  make_decl_rtl (decl, NULL_PTR);
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
