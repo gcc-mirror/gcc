@@ -1,3 +1,8 @@
+2003-02-19  Phil Edwards  <pme@gcc.gnu.org>
+
+	PR libstdc++/9582
+	* include/bits/stl_alloc.h:  Remove all traces of assert().
+
 2003-02-18  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9582

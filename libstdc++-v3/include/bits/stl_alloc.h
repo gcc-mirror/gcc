@@ -85,7 +85,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
-#include <cassert>
 #include <bits/functexcept.h>   // For __throw_bad_alloc
 #include <bits/stl_threads.h>
 
@@ -251,10 +250,7 @@ namespace std
   /**
    *  @if maint
    *  An adaptor for an underlying allocator (_Alloc) to check the size
-   *  arguments for debugging.  Errors are reported using assert; these
-   *  checks can be disabled via NDEBUG, but the space penalty is still
-   *  paid, therefore it is far better to just use the underlying allocator
-   *  by itelf when no checking is desired.
+   *  arguments for debugging.
    *
    *  "There is some evidence that this can confuse Purify." - SGI comment
    *
@@ -283,7 +279,8 @@ namespace std
       deallocate(void* __p, size_t __n)
       {
         char* __real_p = (char*)__p - (int) _S_extra;
-        assert(*(size_t*)__real_p == __n);
+        if (*(size_t*)__real_p != __n)
+	  abort();
         _Alloc::deallocate(__real_p, __n + (int) _S_extra);
       }
 
@@ -291,7 +288,8 @@ namespace std
       reallocate(void* __p, size_t __old_sz, size_t __new_sz)
       {
         char* __real_p = (char*)__p - (int) _S_extra;
-        assert(*(size_t*)__real_p == __old_sz);
+        if (*(size_t*)__real_p != __old_sz)
+	  abort();
         char* __result = (char*) _Alloc::reallocate(__real_p, 
 						    __old_sz + (int) _S_extra,
 						    __new_sz + (int) _S_extra);
