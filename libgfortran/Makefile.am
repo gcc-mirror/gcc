@@ -36,6 +36,7 @@ io/io.h
 gfor_helper_src= \
 intrinsics/associated.c \
 intrinsics/abort.c \
+intrinsics/args.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/eoshift0.c \
