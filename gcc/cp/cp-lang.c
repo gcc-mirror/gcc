@@ -210,6 +210,9 @@ ok_to_generate_alias_set_for_type (t)
       if ((TREE_CODE (t) == RECORD_TYPE) || (TREE_CODE (t) == UNION_TYPE))
 	{
 	  tree fields;
+	  /* Backend-created structs are safe.  */
+	  if (! CLASS_TYPE_P (t))
+	    return true;
 	  /* PODs are safe.  */
 	  if (! CLASSTYPE_NON_POD_P(t))
 	    return true;
