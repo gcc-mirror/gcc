@@ -842,12 +842,17 @@ sdbout_symbol (decl, local)
 	  type = build_pointer_type (TREE_TYPE (decl));
 	}
       else if (GET_CODE (value) == MEM
-	       && GET_CODE (XEXP (value, 0)) == PLUS
-	       && GET_CODE (XEXP (XEXP (value, 0), 0)) == REG
-	       && GET_CODE (XEXP (XEXP (value, 0), 1)) == CONST_INT)
+	       && ((GET_CODE (XEXP (value, 0)) == PLUS
+		    && GET_CODE (XEXP (XEXP (value, 0), 0)) == REG
+		    && GET_CODE (XEXP (XEXP (value, 0), 1)) == CONST_INT)
+		   /* This is for variables which are at offset zero from
+		      the frame pointer.  This happens on the Alpha.
+		      Non-frame pointer registers are excluded above.  */
+		   || (GET_CODE (XEXP (value, 0)) == REG)))
 	{
-	  /* DECL_RTL looks like (MEM (PLUS (REG...) (CONST_INT...))).
-	     We want the value of that CONST_INT.  */
+	  /* DECL_RTL looks like (MEM (PLUS (REG...) (CONST_INT...)))
+	     or (MEM (REG...)).  We want the value of that CONST_INT
+	     or zero.  */
 	  PUT_SDB_DEF (name);
 	  PUT_SDB_INT_VAL (DEBUGGER_AUTO_OFFSET (XEXP (value, 0)));
 	  PUT_SDB_SCL (C_AUTO);
