@@ -1,3 +1,7 @@
+Tue Jun 23 06:45:00 1998  Catherine Moore  <clm@cygnus.com>
+
+        * varasm.c (assemble_variable): Remove reference to warn_bss_align.
+
 Mon Jun 22 23:57:31 1998  David S. Miller <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (zero_extendhidi2, extendhisi2,
