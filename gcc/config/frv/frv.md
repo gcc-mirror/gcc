@@ -2788,7 +2788,7 @@
   [(set_attr "length" "8")
    (set_attr "type" "multi")])
 
-;; Patterns for addsi3/subdi3 after spliting
+;; Patterns for addsi3/subdi3 after splitting
 (define_insn "adddi3_lower"
   [(set (match_operand:SI 0 "integer_register_operand" "=d")
 	(plus:SI (match_operand:SI 1 "integer_register_operand" "d")

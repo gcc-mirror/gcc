@@ -672,7 +672,7 @@ i386_pe_section_type_flags (tree decl, const char *name, int reloc)
   unsigned int **slot;
 
   /* The names we put in the hashtable will always be the unique
-     versions gived to us by the stringtable, so we can just use
+     versions given to us by the stringtable, so we can just use
      their addresses as the keys.  */
   if (!htab)
     htab = htab_create (31, htab_hash_pointer, htab_eq_pointer, NULL);

@@ -338,7 +338,7 @@ static tree sh_build_builtin_va_list (void);
    TARGET_SCHED_INIT_GLOBAL: Added a new target hook in the generic
    scheduler; it is called inside the sched_init function just after
    find_insn_reg_weights function call. It is used to calculate the SImode
-   and SFmode weights of insns of basic blocks; much similiar to what
+   and SFmode weights of insns of basic blocks; much similar to what
    find_insn_reg_weights does. 
    TARGET_SCHED_FINISH_GLOBAL: Corresponding cleanup hook.
 

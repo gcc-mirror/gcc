@@ -2076,7 +2076,7 @@ extern enum reg_class mips_char_to_class[256];
    `T' is for constant move_operands that cannot be safely loaded into $25.
    `U' is for constant move_operands that can be safely loaded into $25.
    `W' is for memory references that are based on a member of BASE_REG_CLASS.
-	 This is true for all non-mips16 references (although it can somtimes
+	 This is true for all non-mips16 references (although it can sometimes
 	 be indirect if !TARGET_EXPLICIT_RELOCS).  For mips16, it excludes
 	 stack and constant-pool references.  */
 

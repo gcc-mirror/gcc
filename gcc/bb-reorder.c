@@ -901,7 +901,7 @@ connect_traces (int n_traces, struct trace *traces)
   last_trace = -1;
 
   /* If we are partitioning hot/cold basic blocks, mark the cold
-     traces as already connnected, to remove them from consideration
+     traces as already connected, to remove them from consideration
      for connection to the hot traces.  After the hot traces have all
      been connected (determined by "unconnected_hot_trace_count"), we
      will go back and connect the cold traces.  */

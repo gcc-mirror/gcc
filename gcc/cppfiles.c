@@ -382,7 +382,7 @@ _cpp_find_failed (_cpp_file *file)
 
 /* Given a filename FNAME search for such a file in the include path
    starting from START_DIR.  If FNAME is the empty string it is
-   interpreted as STDIN if START_DIR is PFILE->no_seach_path.
+   interpreted as STDIN if START_DIR is PFILE->no_search_path.
 
    If the file is not found in the file cache fall back to the O/S and
    add the result to our cache.
@@ -1342,7 +1342,7 @@ cpp_get_prev (cpp_buffer *b)
   return b->prev;
 }
 
-/* This datastructure holds the list of header files that were seen
+/* This data structure holds the list of header files that were seen
    while the PCH was being built.  The 'entries' field is kept sorted
    in memcmp() order; yes, this means that on little-endian systems,
    it's sorted initially by the least-significant byte of 'size', but

@@ -22,7 +22,7 @@
 ; expected to help over-much, but a precise description can be important
 ; for software pipelining.
 ;
-; EV6 has two symmetric pairs ("clusters") of two asymetric integer
+; EV6 has two symmetric pairs ("clusters") of two asymmetric integer
 ; units ("upper" and "lower"), yielding pipe names U0, U1, L0, L1.
 ;
 ; ??? The clusters have independent register files that are re-synced

@@ -4671,7 +4671,7 @@ same_cmp_following_p (rtx i1)
 }
 
 /* Return nonzero if OPERANDS are valid for stm (or ldm) that pushes
-   (or pops) N registers.  OPERANDS are asssumed to be an array of
+   (or pops) N registers.  OPERANDS are assumed to be an array of
    registers.  */
 
 int

@@ -2730,7 +2730,7 @@ ip2k_gen_unsigned_comp_branch (rtx insn, enum rtx_code code, rtx label)
 	case GTU:
 	  if (imm_sub)
 	    {
-	      /* > 0xffffffffffffffff never suceeds!  */
+	      /* > 0xffffffffffffffff never succeeds!  */
 	      if (((const_high & 0xffffffff) != 0xffffffff)
 		  || ((const_low & 0xffffffff) != 0xffffffff))
 		{
@@ -2948,7 +2948,7 @@ ip2k_gen_unsigned_comp_branch (rtx insn, enum rtx_code code, rtx label)
 	      if (((const_high & 0xffffffff) == 0xffffffff)
 		  && ((const_low & 0xffffffff) == 0xffffffff))
 	        {
-		  /* <= 0xffffffffffffffff always suceeds.  */
+		  /* <= 0xffffffffffffffff always succeeds.  */
 		  OUT_AS1 (page, %2);
 	          OUT_AS1 (jmp, %2);
 		}

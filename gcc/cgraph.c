@@ -50,9 +50,9 @@ The callgraph:
     Intraprocedural information:
 
       Callgraph is place to store data needed for intraprocedural optimization.
-      All datastructures are divided into three components: local_info that
+      All data structures are divided into three components: local_info that
       is produced while analyzing the function, global_info that is result
-      of global walkking of the callgraph on the end of compilation and
+      of global walking of the callgraph on the end of compilation and
       rtl_info used by RTL backend to propagate data from already compiled
       functions to their callers.
 
@@ -60,11 +60,11 @@ The callgraph:
 
       The function inlining information is decided in advance and maintained
       in the callgraph as so called inline plan.
-      For each inlined call, the calle's node is clonned to represent the
+      For each inlined call, the callee's node is cloned to represent the
       new function copy produced by inlininer.
-      Each inlined call gets unque corresponding clone node of the callee
-      and the datastructure is updated while inlining is performed, so
-      the clones are elliminated and their callee edges redirected to the
+      Each inlined call gets a unique corresponding clone node of the callee
+      and the data structure is updated while inlining is performed, so
+      the clones are eliminated and their callee edges redirected to the
       caller. 
 
       Each edge has "inline_failed" field.  When the field is set to NULL,
@@ -100,7 +100,7 @@ The varpool data structure:
 static GTY((param_is (struct cgraph_node))) htab_t cgraph_hash;
 
 /* We destructively update callgraph during inlining and thus we need to
-   keep information on whether inlining happend separately.  */
+   keep information on whether inlining happened separately.  */
 htab_t cgraph_inline_hash;
 
 /* The linked list of cgraph nodes.  */
@@ -152,7 +152,7 @@ eq_node (const void *p1, const void *p2)
 	  (tree) p2);
 }
 
-/* Allocate new callgraph node and insert it into basic datastructures.  */
+/* Allocate new callgraph node and insert it into basic data structures.  */
 static struct cgraph_node *
 cgraph_create_node (void)
 {

@@ -6627,7 +6627,7 @@ frv_ifcvt_init_extra_fields (ce_if_block_t *ce_info ATTRIBUTE_UNUSED)
 }
 
 
-/* Internal function to add a potenial insn to the list of insns to be inserted
+/* Internal function to add a potential insn to the list of insns to be inserted
    if the conditional execution conversion is successful.  */
 
 static void

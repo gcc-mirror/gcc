@@ -129,7 +129,7 @@ doloop_condition_get (rtx pattern)
     return condition;
 
   /* ??? If a machine uses a funny comparison, we could return a
-     canonicalised form here.  */
+     canonicalized form here.  */
 
   return 0;
 }

@@ -7875,7 +7875,7 @@ print_multi_reg (FILE *stream, const char *instr, int reg, int mask)
 
   /* Add a ^ character for the 26-bit ABI, but only if we were loading
      the PC.  Otherwise we would generate an UNPREDICTABLE instruction.
-     Strictly speaking the instruction would be unpredicatble only if
+     Strictly speaking the instruction would be unpredictable only if
      we were writing back the base register as well, but since we never
      want to generate an LDM type 2 instruction (register bank switching)
      which is what you get if the PC is not being loaded, we do not need

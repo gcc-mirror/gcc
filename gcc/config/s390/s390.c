@@ -5219,7 +5219,7 @@ s390_return_addr_rtx (int count, rtx frame)
   return gen_rtx_MEM (Pmode, addr);
 }
 
-/* Find first call clobbered register unsused in a function.
+/* Find first call clobbered register unused in a function.
    This could be used as base register in a leaf function
    or for holding the return address before epilogue.  */
 

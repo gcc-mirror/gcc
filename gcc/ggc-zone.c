@@ -1293,7 +1293,7 @@ struct ggc_pch_data
   size_t written;
 };
 
-/* Initialize the PCH datastructure.  */
+/* Initialize the PCH data structure.  */
 
 struct ggc_pch_data *
 init_ggc_pch (void)

@@ -154,7 +154,7 @@
 ;  not for 'c'.
 
 ;  The 'f' constraint is only for float register operands---when 
-;  a register satisying the 'f' constraint is used as a dst operand,
+;  a register satisfying the 'f' constraint is used as a dst operand,
 ;  the CC gets clobbered (except for LDFcond).
 
 ;  The ! in front of the 'b' constraint says to GCC to disparage the
@@ -190,7 +190,7 @@
 ;  didn't allow it to move the CC around.
 
 ;  Note that fundamental operations, such as moves, must not clobber the
-;  CC.  Thus movqi choses a move instruction that doesn't clobber the CC.
+;  CC.  Thus movqi chooses a move instruction that doesn't clobber the CC.
 ;  If GCC wants to combine a move with a compare, it is smart enough to
 ;  chose the move instruction that sets the CC.
 

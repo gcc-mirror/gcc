@@ -36,7 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
     - cgraph_varpool_finalize_variable
 
-      This function has same behaviour as the above but is used for static
+      This function has same behavior as the above but is used for static
       variables.
 
     - cgraph_finalize_compilation_unit
@@ -324,7 +324,7 @@ cgraph_finalize_function (tree decl, bool nested)
       if (node->output)
 	abort ();
 
-      /* Reset our datastructures so we can analyze the function again.  */
+      /* Reset our data structures so we can analyze the function again.  */
       memset (&node->local, 0, sizeof (node->local));
       memset (&node->global, 0, sizeof (node->global));
       memset (&node->rtl, 0, sizeof (node->rtl));
@@ -1022,7 +1022,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate)
 {
   struct cgraph_node *n;
 
-  /* We may elliminate the need for out-of-line copy to be output.  In that
+  /* We may eliminate the need for out-of-line copy to be output.  In that
      case just go ahead and re-use it.  */
   if (!e->callee->callers->next_caller
       && (!e->callee->needed || DECL_EXTERNAL (e->callee->decl))
@@ -1348,7 +1348,7 @@ cgraph_decide_inlining_of_small_functions (void)
 }
 
 /* Decide on the inlining.  We do so in the topological order to avoid
-   expenses on updating datastructures.  */
+   expenses on updating data structures.  */
 
 static void
 cgraph_decide_inlining (void)
@@ -1491,7 +1491,7 @@ cgraph_decide_inlining (void)
 }
 
 /* Decide on the inlining.  We do so in the topological order to avoid
-   expenses on updating datastructures.  */
+   expenses on updating data structures.  */
 
 static void
 cgraph_decide_inlining_incrementally (struct cgraph_node *node)
@@ -1561,7 +1561,7 @@ cgraph_expand_all_functions (void)
   if (order_pos != cgraph_n_nodes)
     abort ();
 
-  /* Garbage collector may remove inline clones we elliminate during
+  /* Garbage collector may remove inline clones we eliminate during
      optimization.  So we must be sure to not reference them.  */
   for (i = 0; i < order_pos; i++)
     if (order[i]->output)
