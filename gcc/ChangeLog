@@ -1,3 +1,7 @@
+2004-07-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_movb): Correct typo.
+
 2004-07-29  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* ra.h (single_reg_in_regclass): Declare.

@@ -6951,7 +6951,7 @@ output_movb (rtx *operands, rtx insn, int which_alternative,
       if (get_attr_length (insn) == 8)
 	return "{comb|cmpb},%S2 %%r0,%1,%3\n\tmtsar %r1";
       else
-	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tbl %3\n\tmtsar %r1";
+	return "{comclr|cmpclr},%B2 %%r0,%1,%%r0\n\tb %3\n\tmtsar %r1";
     }
 }
 
