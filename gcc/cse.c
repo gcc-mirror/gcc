@@ -1273,8 +1273,6 @@ insert_regs (x, classp, modified)
   else if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
 	   && ! REGNO_QTY_VALID_P (REGNO (SUBREG_REG (x))))
     {
-      unsigned int regno = REGNO (SUBREG_REG (x));
-
       insert_regs (SUBREG_REG (x), NULL_PTR, 0);
       mention_regs (x);
       return 1;
