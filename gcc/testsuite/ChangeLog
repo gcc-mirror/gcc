@@ -1,3 +1,8 @@
+2001-12-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/eh/ctor1.C: New test.
+	* g++.dg/other/error2.C: New test.
+
 2001-12-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/other/init2.C: New test.
