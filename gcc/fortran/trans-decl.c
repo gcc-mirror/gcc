@@ -148,9 +148,9 @@ gfc_add_decl_to_function (tree decl)
 }
 
 
-/* Build a  backend label declaration.
-   Set TREE_USED for named lables.  For artificial labels it's up to the
-   caller to mark the label as used.  */
+/* Build a  backend label declaration.  Set TREE_USED for named labels.
+   The context of the label is always the current_function_decl.  All
+   labels are marked artificial.  */
 
 tree
 gfc_build_label_decl (tree label_id)
@@ -174,19 +174,13 @@ gfc_build_label_decl (tree label_id)
   DECL_CONTEXT (label_decl) = current_function_decl;
   DECL_MODE (label_decl) = VOIDmode;
 
-  if (label_name)
-    {
-      DECL_ARTIFICIAL (label_decl) = 1;
-    }
-  else
-    {
-      /* We always define the label as used, even if the original source
-         file never references the label.  We don't want all kinds of
-         spurious warnings for old-style Fortran code with too many
-         labels.  */
-      TREE_USED (label_decl) = 1;
-    }
+  /* We always define the label as used, even if the original source
+     file never references the label.  We don't want all kinds of
+     spurious warnings for old-style Fortran code with too many
+     labels.  */
+  TREE_USED (label_decl) = 1;
 
+  DECL_ARTIFICIAL (label_decl) = 1;
   return label_decl;
 }
 
@@ -2122,16 +2116,13 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
   for (; el; el = el->next)
     {
       /* Add the case label.  */
-      label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-      DECL_CONTEXT (label) = current_function_decl;
+      label = gfc_build_label_decl (NULL_TREE);
       val = build_int_cst (gfc_array_index_type, el->id);
       tmp = build3_v (CASE_LABEL_EXPR, val, NULL_TREE, label);
       gfc_add_expr_to_block (&block, tmp);
       
       /* And jump to the actual entry point.  */
       label = gfc_build_label_decl (NULL_TREE);
-      TREE_USED (label) = 1;
-      DECL_CONTEXT (label) = current_function_decl;
       tmp = build1_v (GOTO_EXPR, label);
       gfc_add_expr_to_block (&block, tmp);
 

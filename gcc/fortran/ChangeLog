@@ -1,3 +1,12 @@
+2004-01-27  Steven Bosscher  <stevenb@suse.de>
+
+	* trans-decl.c (gfc_build_label_decl): Set DECL_ARTIFICAL and
+	TREE_USED for all labels.
+	(gfc_trans_entry_master_switch): Use it instead of building a
+	label by hand.
+	* trans-io.c (add_case): Likewise.
+	* trans-stmt.c (gfc_trans_integer_select): Likewise.
+
 2004-01-23  Paul Brook  <paul@codesourcery.com>
 	Steven G. Kargl  <kargls@comcast.net>
 
