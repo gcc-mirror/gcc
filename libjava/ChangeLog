@@ -1,3 +1,17 @@
+2002-06-03  Mark Mitchell  <mark@codesourcery.com>
+	
+	2002-05-23  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+	* Makefile.am (all-recursive): Depend on $all_java_class_files so that
+	they build first.
+	* Makefile.in: Rebuilt.
+
+	2002-05-08  Mark Mitchell  <mark@codesourcery.com>
+	* Makefile.am (all_java_source_files): New variable.
+	(all_java_class_files): Likewise.
+	.java.class: New rule.
+	(CLEANFILES): Remove tmp-list.
+	* Makefile.in: Regenerated.
+	
 2002-05-14  Release Manager
 
 	* GCC 3.1 Released.

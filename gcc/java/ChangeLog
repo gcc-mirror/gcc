@@ -1,3 +1,32 @@
+2002-06-03  Mark Mitchell  <mark@codesourcery.com>
+
+	2002-05-18  Mark Mitchell  <mark@codesourcery.com>
+	* java-tree.h (CLASS_BEING_LAIDOUT): Remove duplicate definition.
+	* jcf-io.c (dirent.h): Include it.
+	(fnmatch.h): Likewise.
+	(compare_path): New function.
+	(java_or_class_file): Likewise.
+	(memoized_dirlist_entry): New type.
+	(memoized_dirlist_lookup_eq): New function.
+	(memoized_dirlists): New variable.
+	(caching_stat): New function.
+	(memoized_class_lookup_eq): New function.
+	(memoized_class_lookups): Likewise.
+	(find_class): Use memoized_class_lookups and caching_stat.
+	* jcf.h (JCF_USE_SCANDIR): Define.
+	* parse.y (java_expand_classes): Write the class files in reverse
+	order.
+
+	2002-05-13  Mark Mitchell  <mark@codesourcery.com>
+	* jcf-write.c (write_classfile): Unlink the temporary file if it
+	cannot be renamed.  Use concat to build up the name of the
+	temporary file.
+
+	2002-05-13  Mark Mitchell  <mark@codesourcery.com>
+	* jcf-write.c (write_classfile): Unlink the temporary file if it
+	cannot be renamed.  Use concat to build up the name of the
+	temporary file.
+
 2002-05-14  Release Manager
 
 	* GCC 3.1 Released.
