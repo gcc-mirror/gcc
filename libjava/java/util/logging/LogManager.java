@@ -52,6 +52,7 @@ import java.util.Properties;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.lang.ref.WeakReference;
 
 /**
@@ -167,6 +168,7 @@ public class LogManager
      * the order in which classes are initialized.
      */
     Logger.getLogger("global").setParent(rootLogger);
+    Logger.getLogger("global").setUseParentHandlers(true);
   }
 
 
@@ -520,7 +522,7 @@ public class LogManager
 
   public synchronized void readConfiguration(InputStream inputStream)
     throws IOException, SecurityException
-  {
+  {	
     Properties   newProperties;
     Enumeration  keys;
 
@@ -532,12 +534,36 @@ public class LogManager
 
     while (keys.hasMoreElements())
     {
-      String key = (String) keys.nextElement();
+      String key = ((String) keys.nextElement()).trim();
       String value = newProperties.getProperty(key);
-
+  
       if (value == null)
 	continue;
-
+	
+	  value = value.trim();
+	
+	  if("handlers".equals(key))
+        {
+          StringTokenizer tokenizer = new StringTokenizer(value);
+          while(tokenizer.hasMoreTokens())
+            {
+              String handlerName = tokenizer.nextToken();	
+              try
+                {
+              	  Class handlerClass = Class.forName(handlerName);
+              	  getLogger("").addHandler((Handler)handlerClass.newInstance()); 
+                }
+              catch (ClassCastException ex)
+                {
+                  System.err.println("[LogManager] class " + handlerName + " is not subclass of java.util.logging.Handler");
+                }
+              catch (Exception ex)
+                {
+                  //System.out.println("[LogManager.readConfiguration]"+ex);
+                }
+            }
+        }
+	  
       if (key.endsWith(".level"))
       {
 	String loggerName = key.substring(0, key.length() - 6);
@@ -550,6 +576,7 @@ public class LogManager
 	  }
 	  catch (Exception _)
 	  {
+        //System.out.println("[LogManager.readConfiguration] "+_);
 	  }
 	  continue;
 	}

@@ -589,9 +589,10 @@ public class Logger
 			       String message,
 			       Object param)
   {
+  	StackTraceElement caller = getCallerStackFrame();
     logp(level,
-	 /* sourceClass*/ null,
-	 /* sourceMethod */ null,
+	 caller.getClassName(),
+	 caller.getMethodName(),
 	 message,
 	 param);
   }
@@ -601,9 +602,10 @@ public class Logger
 			       String message,
 			       Object[] params)
   {
+    StackTraceElement caller = getCallerStackFrame();
     logp(level,
-	 /* sourceClass*/ null,
-	 /* sourceMethod */ null,
+	 caller.getClassName(),
+	 caller.getMethodName(),
 	 message,
 	 params);
   }
@@ -613,9 +615,10 @@ public class Logger
 			       String message,
 			       Throwable thrown)
   {
+	StackTraceElement caller = getCallerStackFrame();    
     logp(level,
-	 /* sourceClass*/ null,
-	 /* sourceMethod */ null,
+	 caller.getClassName(),
+	 caller.getMethodName(),
 	 message,
 	 thrown);
   }
@@ -1164,4 +1167,23 @@ public class Logger
 
     this.parent = parent;
   }
+  
+  /**
+   * Gets the StackTraceElement of the first class that is not this class.
+   * That should be the initial caller of a logging method.
+   * @return caller of the initial looging method
+   */
+  private StackTraceElement getCallerStackFrame()
+  {
+    Throwable t = new Throwable();
+    StackTraceElement[] stackTrace = t.getStackTrace();
+    int index = 0;
+    // skip to stackentries until this class
+    while(!stackTrace[index].getClassName().equals(getClass().getName())){index++;}
+    // skip the stackentries of this class
+    while(stackTrace[index].getClassName().equals(getClass().getName())){index++;}
+
+    return stackTrace[index];
+  }
+  
 }

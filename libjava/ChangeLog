@@ -1,3 +1,9 @@
+2003-08-31  Ingo Proetel  <proetel@aicas.com>
+
+	* java/util/logging/Logger.java: provide class and method information
+	* java/util/logging/LogManager.java: create handlers
+	* java/util/logging/SimpleFormatter.java: print souceClassName and
+	sourceMethodName
 2003-08-28  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* win32.cc: fixed tab, indentation and whitespace
