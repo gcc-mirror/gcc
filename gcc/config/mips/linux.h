@@ -192,3 +192,36 @@ Boston, MA 02111-1307, USA.  */
 	fputc ('-', FILE);						\
 	assemble_name (FILE, LO);					\
   } while (0)
+
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)			\
+  do {									\
+    if (!flag_inhibit_size_directive)					\
+      {									\
+	fputs ("\t.ent\t", STREAM);					\
+	assemble_name (STREAM, NAME);					\
+	putc ('\n', STREAM);						\
+      }									\
+    fprintf (STREAM, "\t%s\t ", TYPE_ASM_OP);				\
+    assemble_name (STREAM, NAME);					\
+    putc (',', STREAM);							\
+    fprintf (STREAM, TYPE_OPERAND_FMT, "function");			\
+    putc ('\n', STREAM);						\
+    assemble_name (STREAM, NAME);					\
+    fputs (":\n", STREAM);						\
+  } while (0)
+
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)			\
+  do {									\
+    if (!flag_inhibit_size_directive)					\
+      {									\
+	fputs ("\t.end\t", STREAM);					\
+	assemble_name (STREAM, NAME);					\
+	putc ('\n', STREAM);						\
+      }									\
+  } while (0)
+
+/* Tell function_prologue in mips.c that we have already output the .ent/.end
+   pseudo-ops.  */
+#define FUNCTION_NAME_ALREADY_DECLARED
