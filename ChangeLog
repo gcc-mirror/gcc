@@ -1,3 +1,8 @@
+2004-09-24  Michael Roth  <mroth@nessie.de>
+
+	* configure.in (--without-headers): Add missing double quotes.
+	* configure: Regenerate.
+
 2004-09-24  Kelley Cook <kcook@gcc.gnu.org>
 
 	* ylwrap: Revert to previous version.

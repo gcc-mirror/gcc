@@ -250,8 +250,8 @@ esac
 
 # If both --with-headers and --with-libs are specified, default to
 # --without-newlib.
-if test x"${with_headers}" != x && test x"${with_headers} != xno \
-   && test x"${with_libs}" != x && test x"${with_libs} != xno ; then
+if test x"${with_headers}" != x && test x"${with_headers}" != xno \
+   && test x"${with_libs}" != x && test x"${with_libs}" != xno ; then
   if test x"${with_newlib}" = x ; then
     with_newlib=no
   fi
