@@ -67,7 +67,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is taken from sol2.h.  */
 #undef LINK_SPEC
 #define LINK_SPEC "\
-%{!nostdlib:%{!r*:%{!e*:-e _start}}}
+%{!nostdlib:%{!r*:%{!e*:-e _start}}} \
 %{h*} %{V} %{v:%{!V:-V}} \
 %{b} %{Wl,*:%*} \
 %{static:-dn -Bstatic} \
@@ -86,7 +86,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE \
   (POINTER_SIZE == 64 ? "long long int"				\
-   : POINTER_SIZE == 32 && LONG_TYPE_SIZE == 32 ? "long"	\
+   : POINTER_SIZE == 32 && LONG_TYPE_SIZE == 32 ? "long int"	\
    : 0 /*abort*/)
 
 #undef SIZE_TYPE
