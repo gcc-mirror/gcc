@@ -1,3 +1,8 @@
+2003-04-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi (-fprofile-arcs): Mention -lgcov, locking and
+	fork behaviour.
+
 2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppexp.c (eval_token): Permit true and false even if pedantic.

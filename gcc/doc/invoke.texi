@@ -3032,11 +3032,16 @@ additional @option{-ftest-coverage} option. You do not need to profile
 every source file in a program.
 
 @item
-Link your object files as normal.
+Link your object files with @option{-lgcov} or @option{-fprofile-arcs}
+(the latter implies the former).
 
 @item
 Run the program on a representative workload to generate the arc profile
-information. This may be repeated any number of times.
+information. This may be repeated any number of times. You can run
+concurrent instances of your program, and provided that the file system
+supports locking, the data files will be correctly updated. Also
+@code{fork} calls are detected and correctly handled (double counting
+will not happen).
 
 @item
 For profile-directed optimizations, compile the source files again with
