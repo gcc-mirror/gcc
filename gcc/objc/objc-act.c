@@ -4739,7 +4739,20 @@ build_ivar_reference (id)
      tree id;
 {
   if (TREE_CODE (method_context) == CLASS_METHOD_DECL)
-    TREE_TYPE (self_decl) = instance_type; /* cast */
+    {
+      /* Historically, a class method that produced objects (factory
+	 method) would assign `self' to the instance that it
+	 allocated.  This would effectively turn the class method into
+	 an instance method.  Following this assignment, the instance
+	 variables could be accessed.  That practice, while safe,
+	 violates the simple rule that a class method should not refer
+	 to an instance variable.  It's better to catch the cases
+	 where this is done unknowingly than to support the above
+	 paradigm.  */
+      warning ("instance variable `%s' accessed in class method",
+	       IDENTIFIER_POINTER (id));
+      TREE_TYPE (self_decl) = instance_type; /* cast */
+    }
 
   return build_component_ref (build_indirect_ref (self_decl, "->"), id);
 }
