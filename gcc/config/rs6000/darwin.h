@@ -208,6 +208,10 @@ do {									\
 #undef	FP_SAVE_INLINE
 #define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) < 64)
 
+/* Darwin uses a function call if everything needs to be saved/restored.  */
+#undef WORLD_SAVE_P
+#define WORLD_SAVE_P(INFO) ((INFO)->world_save_p)
+
 /* The assembler wants the alternate register names, but without
    leading percent sign.  */
 #undef REGISTER_NAMES

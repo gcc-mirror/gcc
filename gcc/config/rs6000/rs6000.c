@@ -12422,23 +12422,25 @@ compute_vrsave_mask (void)
 }
 
 /* For a very restricted set of circumstances, we can cut down the
-   size of prologs/epilogs by calling our own save/restore-the-world
-   routines. */
+   size of prologues/epilogues by calling our own save/restore-the-world
+   routines.  */
 
 static void
-compute_save_world_info(rs6000_stack_t *info_ptr)
+compute_save_world_info (rs6000_stack_t *info_ptr)
 {
-  info_ptr->world_save_p =
-    (DEFAULT_ABI == ABI_DARWIN)
-    && ! (current_function_calls_setjmp && flag_exceptions)
-    && info_ptr->first_fp_reg_save == FIRST_SAVED_FP_REGNO
-    && info_ptr->first_gp_reg_save == FIRST_SAVED_GP_REGNO
-    && info_ptr->first_altivec_reg_save == FIRST_SAVED_ALTIVEC_REGNO
-    && info_ptr->cr_save_p;
+  info_ptr->world_save_p = 1;
+  info_ptr->world_save_p
+    = (WORLD_SAVE_P (info_ptr)
+       && DEFAULT_ABI == ABI_DARWIN
+       && ! (current_function_calls_setjmp && flag_exceptions)
+       && info_ptr->first_fp_reg_save == FIRST_SAVED_FP_REGNO
+       && info_ptr->first_gp_reg_save == FIRST_SAVED_GP_REGNO
+       && info_ptr->first_altivec_reg_save == FIRST_SAVED_ALTIVEC_REGNO
+       && info_ptr->cr_save_p);
 
   /* This will not work in conjunction with sibcalls.  Make sure there
      are none.  (This check is expensive, but seldom executed.) */
-  if ( info_ptr->world_save_p )
+  if (WORLD_SAVE_P (info_ptr))
     {
       rtx insn;
       for ( insn = get_last_insn_anywhere (); insn; insn = PREV_INSN (insn))
@@ -12450,7 +12452,7 @@ compute_save_world_info(rs6000_stack_t *info_ptr)
 	  }
     }
 
-  if (info_ptr->world_save_p)
+  if (WORLD_SAVE_P (info_ptr))
     {
       /* Even if we're not touching VRsave, make sure there's room on the
 	 stack for it, if it looks like we're calling SAVE_WORLD, which
@@ -13862,7 +13864,7 @@ rs6000_emit_prologue (void)
     }
 
   /* Handle world saves specially here.  */
-  if (info->world_save_p)
+  if (WORLD_SAVE_P (info))
     {
       int i, j, sz;
       rtx treg;
@@ -13982,7 +13984,7 @@ rs6000_emit_prologue (void)
     }
 
   /* Save AltiVec registers if needed.  */
-  if (! info->world_save_p && TARGET_ALTIVEC_ABI && info->altivec_size != 0)
+  if (!WORLD_SAVE_P (info) && TARGET_ALTIVEC_ABI && info->altivec_size != 0)
     {
       int i;
 
@@ -14023,7 +14025,7 @@ rs6000_emit_prologue (void)
      epilogue.  */
 
   if (TARGET_ALTIVEC && TARGET_ALTIVEC_VRSAVE
-      && ! info->world_save_p && info->vrsave_mask != 0)
+      && !WORLD_SAVE_P (info) && info->vrsave_mask != 0)
     {
       rtx reg, mem, vrsave;
       int offset;
@@ -14051,7 +14053,7 @@ rs6000_emit_prologue (void)
     }
 
   /* If we use the link register, get it into r0.  */
-  if (! info->world_save_p && info->lr_save_p)
+  if (!WORLD_SAVE_P (info) && info->lr_save_p)
     {
       insn = emit_move_insn (gen_rtx_REG (Pmode, 0),
 			     gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
@@ -14059,7 +14061,7 @@ rs6000_emit_prologue (void)
     }
 
   /* If we need to save CR, put it into r12.  */
-  if (! info->world_save_p && info->cr_save_p && frame_reg_rtx != frame_ptr_rtx)
+  if (!WORLD_SAVE_P (info) && info->cr_save_p && frame_reg_rtx != frame_ptr_rtx)
     {
       rtx set;
 
@@ -14081,7 +14083,7 @@ rs6000_emit_prologue (void)
 
   /* Do any required saving of fpr's.  If only one or two to save, do
      it ourselves.  Otherwise, call function.  */
-  if (! info->world_save_p && saving_FPRs_inline)
+  if (!WORLD_SAVE_P (info) && saving_FPRs_inline)
     {
       int i;
       for (i = 0; i < 64 - info->first_fp_reg_save; i++)
@@ -14092,7 +14094,7 @@ rs6000_emit_prologue (void)
 			   info->fp_save_offset + sp_offset + 8 * i,
 			   info->total_size);
     }
-  else if (! info->world_save_p && info->first_fp_reg_save != 64)
+  else if (!WORLD_SAVE_P (info) && info->first_fp_reg_save != 64)
     {
       int i;
       char rname[30];
@@ -14128,7 +14130,7 @@ rs6000_emit_prologue (void)
 
   /* Save GPRs.  This is done as a PARALLEL if we are using
      the store-multiple instructions.  */
-  if (! info->world_save_p && using_store_multiple)
+  if (!WORLD_SAVE_P (info) && using_store_multiple)
     {
       rtvec p;
       int i;
@@ -14150,7 +14152,7 @@ rs6000_emit_prologue (void)
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
 			    NULL_RTX, NULL_RTX);
     }
-  else if (! info->world_save_p)
+  else if (!WORLD_SAVE_P (info))
     {
       int i;
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
@@ -14209,7 +14211,7 @@ rs6000_emit_prologue (void)
 
   /* ??? There's no need to emit actual instructions here, but it's the
      easiest way to get the frame unwind information emitted.  */
-  if (! info->world_save_p && current_function_calls_eh_return)
+  if (!WORLD_SAVE_P (info) && current_function_calls_eh_return)
     {
       unsigned int i, regno;
 
@@ -14244,7 +14246,7 @@ rs6000_emit_prologue (void)
     }
 
   /* Save lr if we used it.  */
-  if (! info->world_save_p && info->lr_save_p)
+  if (!WORLD_SAVE_P (info) && info->lr_save_p)
     {
       rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->lr_save_offset + sp_offset));
@@ -14259,7 +14261,7 @@ rs6000_emit_prologue (void)
     }
 
   /* Save CR if we use any that must be preserved.  */
-  if (! info->world_save_p && info->cr_save_p)
+  if (!WORLD_SAVE_P (info) && info->cr_save_p)
     {
       rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->cr_save_offset + sp_offset));
@@ -14292,7 +14294,7 @@ rs6000_emit_prologue (void)
 
   /* Update stack and set back pointer unless this is V.4,
      for which it was done previously.  */
-  if (! info->world_save_p && info->push_p
+  if (!WORLD_SAVE_P (info) && info->push_p
       && !(DEFAULT_ABI == ABI_V4 || current_function_calls_eh_return))
     rs6000_emit_allocate_stack (info->total_size, FALSE);
 
@@ -14461,7 +14463,7 @@ rs6000_emit_epilogue (int sibcall)
 			 || rs6000_cpu == PROCESSOR_PPC750
 			 || optimize_size);
 
-  if (info->world_save_p)
+  if (WORLD_SAVE_P (info))
     {
       int i, j;
       char rname[30];
