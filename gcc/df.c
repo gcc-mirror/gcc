@@ -1236,7 +1236,7 @@ df_insn_refs_record (df, bb, insn)
 	       note = XEXP (note, 1))
 	    {
 	      if (GET_CODE (XEXP (note, 0)) == USE)
-		df_uses_record (df, &SET_DEST (XEXP (note, 0)), DF_REF_REG_USE,
+		df_uses_record (df, &XEXP (XEXP (note, 0), 0), DF_REF_REG_USE,
 				bb, insn, 0);
 	    }
 
