@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on intel 80960.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995 Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -2069,7 +2069,12 @@ i960_function_arg_advance (cum, mode, type, named)
   if (size > 4 || cum->ca_nstackparms != 0
       || (size + ROUND_PARM (cum->ca_nregparms, align)) > NPARM_REGS
       || MUST_PASS_IN_STACK (mode, type))
-    cum->ca_nstackparms = ROUND_PARM (cum->ca_nstackparms, align) + size;
+    {
+      /* Indicate that all the registers are in use, even if all are not,
+	 so va_start will compute the right value.  */
+      cum->ca_nregparms = NPARM_REGS;
+      cum->ca_nstackparms = ROUND_PARM (cum->ca_nstackparms, align) + size;
+    }
   else
     cum->ca_nregparms = ROUND_PARM (cum->ca_nregparms, align) + size;
 }
@@ -2200,44 +2205,47 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
      int *pretend_size;
      int no_rtl;
 {
-  if (cum->ca_nregparms < NPARM_REGS)
+  /* Note: for a varargs fn with only a va_alist argument, this is 0.  */
+  int first_reg = cum->ca_nregparms;
+
+  /* Copy only unnamed register arguments to memory.  If there are
+     any stack parms, there are no unnamed arguments in registers, and
+     an argument block was already allocated by the caller.
+     Remember that any arg bigger than 4 words is passed on the stack as
+     are all subsequent args.
+
+     If there are no stack arguments but there are exactly NPARM_REGS
+     registers, either there were no extra arguments or the caller
+     allocated an argument block. */
+
+  if (cum->ca_nstackparms == 0 && first_reg < NPARM_REGS && !no_rtl)
     {
-      int first_reg_offset = cum->ca_nregparms;
+      rtx label = gen_label_rtx ();
+      rtx regblock;
 
-      if (! (no_rtl))
-	{
-	  rtx label = gen_label_rtx ();
-	  rtx regblock;
+      /* If arg_pointer_rtx == 0, no arguments were passed on the stack
+	 and we need to allocate a chunk to save the registers (if any
+	 arguments were passed on the stack the caller would allocate the
+	 48 bytes as well).  We must allocate all 48 bytes (12*4) because
+	 va_start assumes it.  */
+      emit_insn (gen_cmpsi (arg_pointer_rtx, const0_rtx));
+      emit_jump_insn (gen_bne (label));
+      emit_insn (gen_rtx (SET, VOIDmode, arg_pointer_rtx,
+			  stack_pointer_rtx));
+      emit_insn (gen_rtx (SET, VOIDmode, stack_pointer_rtx,
+			  memory_address (SImode,
+					  plus_constant (stack_pointer_rtx,
+							 48))));
+      emit_label (label);
 
-	  /* If arg_pointer_rtx == 0, no arguments were passed on the stack
-	     and we need to allocate a chunk to save the registers (if any
-	     arguments were passed on the stack the caller would allocate the
-	     48 bytes as well).  We must allocate all 48 bytes (12*4) because
-	     arg_pointer_rtx is saved at the front, the anonymous args are
-	     saved at the end.  */
-	  emit_insn (gen_cmpsi (arg_pointer_rtx, const0_rtx));
-	  emit_jump_insn (gen_bne (label));
-	  emit_insn (gen_rtx (SET, VOIDmode, arg_pointer_rtx,
-			      stack_pointer_rtx));
-	  emit_insn (gen_rtx (SET, VOIDmode, stack_pointer_rtx,
-			      memory_address (SImode,
-					      plus_constant (stack_pointer_rtx,
-							     48))));
-	  emit_label (label);
-
-	  /* Any anonymous args passed in regs?  */
-	  if (first_reg_offset + 1 < NPARM_REGS)
-	    {
-	      rtx regblock;
-	      regblock = gen_rtx (MEM, BLKmode,
-				  plus_constant (arg_pointer_rtx,
-						 (first_reg_offset + 1) * 4));
-	      move_block_from_reg (first_reg_offset + 1, regblock,
-				   NPARM_REGS - first_reg_offset - 1,
-				   ((NPARM_REGS - first_reg_offset - 1)
-				    * UNITS_PER_WORD));
-	    }
-	}
+      /* ??? Note that we unnecessarily store one extra register for stdarg
+	 fns.  We could optimize this, but it's kept as for now.  */
+      regblock = gen_rtx (MEM, BLKmode,
+			  plus_constant (arg_pointer_rtx,
+					 first_reg * 4));
+      move_block_from_reg (first_reg, regblock,
+			   NPARM_REGS - first_reg,
+			   (NPARM_REGS - first_reg) * UNITS_PER_WORD);
     }
 }
 
