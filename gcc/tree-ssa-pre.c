@@ -1606,7 +1606,7 @@ compute_avail (basic_block block)
       dom = get_immediate_dominator (CDI_DOMINATORS, block);
       if (dom)
 	set_copy (AVAIL_OUT (block), AVAIL_OUT (dom));
-      for (phi = phi_nodes (block); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (block); phi; phi = PHI_CHAIN (phi))
 	{
 	  /* Ignore virtual PHIs until we can do PRE on expressions
 	     with virtual operands.  */

@@ -432,7 +432,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
       tree phi;
 
       /* Check any PHI nodes in the block.  */
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  NECESSARY (phi) = 0;
 
@@ -664,7 +664,7 @@ remove_dead_phis (basic_block bb)
 
       if (! NECESSARY (phi))
 	{
-	  tree next = TREE_CHAIN (phi);
+	  tree next = PHI_CHAIN (phi);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -680,7 +680,7 @@ remove_dead_phis (basic_block bb)
       else
 	{
 	  prev = phi;
-	  phi = TREE_CHAIN (phi);
+	  phi = PHI_CHAIN (phi);
 	}
     }
 }

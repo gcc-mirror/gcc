@@ -331,7 +331,7 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 
       /* All variables referenced in PHI nodes we bypass must be
 	 renamed.  */
-      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree result = SSA_NAME_VAR (PHI_RESULT (phi));
 
@@ -381,7 +381,7 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 
       /* Finally, any variables in PHI nodes at our final destination
          must also be taken our of SSA form.  */
-      for (phi = phi_nodes (tgt); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (tgt); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree result = SSA_NAME_VAR (PHI_RESULT (phi));
 
@@ -515,7 +515,7 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 	{
 	  tree result = PHI_RESULT (phi);
 
-	  next = TREE_CHAIN (phi);
+	  next = PHI_CHAIN (phi);
 
 	  if (bitmap_bit_p (virtuals_to_rename,
 			    var_ann (SSA_NAME_VAR (result))->uid))
@@ -698,7 +698,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
   tree phi;
 
   /* Each PHI creates a temporary equivalence, record them.  */
-  for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
     {
       tree src = PHI_ARG_DEF (phi, phi_arg_from_edge (phi, e));
       tree dst = PHI_RESULT (phi);
@@ -1334,7 +1334,7 @@ record_equivalences_from_phis (struct dom_walk_data *walk_data, basic_block bb)
     = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
   tree phi;
 
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       tree lhs = PHI_RESULT (phi);
       tree rhs = NULL;

@@ -320,7 +320,7 @@ rename_ssa_copies (void)
   FOR_EACH_BB (bb)
     {
       /* Treat PHI nodes as copies between the result and each argument.  */
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
         {
           int i;
 	  tree res = PHI_RESULT (phi);

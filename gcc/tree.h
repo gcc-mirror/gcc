@@ -1208,6 +1208,11 @@ struct tree_ssa_name GTY(())
 /* In a PHI_NODE node.  */
 #define PHI_RESULT(NODE)	PHI_NODE_CHECK (NODE)->phi.result
 
+/* PHI_NODEs for each basic block are chained together in a single linked
+   list.  The head of the list is linked from the block annotation, and
+   the link to the next PHI is in PHI_CHAIN.  */
+#define PHI_CHAIN(NODE)		TREE_CHAIN (PHI_NODE_CHECK (NODE))
+
 /* Nonzero if the PHI node was rewritten by a previous pass through the
    SSA renamer.  */
 #define PHI_REWRITTEN(NODE)	PHI_NODE_CHECK (NODE)->phi.rewritten

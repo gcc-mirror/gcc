@@ -427,7 +427,7 @@ set_phi_nodes (basic_block bb, tree l)
   tree phi;
 
   bb_ann (bb)->phi_nodes = l;
-  for (phi = l; phi; phi = TREE_CHAIN (phi))
+  for (phi = l; phi; phi = PHI_CHAIN (phi))
     set_bb_for_stmt (phi, bb);
 }
 

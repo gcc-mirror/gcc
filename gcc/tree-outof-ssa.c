@@ -343,7 +343,7 @@ eliminate_build (elim_graph g, basic_block B, int i)
 
   clear_elim_graph (g);
   
-  for (phi = phi_nodes (B); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (B); phi; phi = PHI_CHAIN (phi))
     {
       T0 = var_to_partition_to_var (g->map, PHI_RESULT (phi));
       
@@ -588,7 +588,7 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
   FOR_EACH_BB (bb)
     for (e = bb->succ; e; e = e->succ_next)
       if (e->dest != EXIT_BLOCK_PTR && e->flags & EDGE_ABNORMAL)
-	for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+	for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
 	  {
 	    /* Visit each PHI on the destination side of this abnormal
 	       edge, and attempt to coalesce the argument with the result.  */
@@ -698,7 +698,7 @@ coalesce_ssa_name (var_map map, int flags)
       /* Add all potential copies via PHI arguments to the list.  */
       FOR_EACH_BB (bb)
 	{
-	  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	    {
 	      tree res = PHI_RESULT (phi);
 	      int p = var_to_partition (map, res);
@@ -970,7 +970,7 @@ eliminate_virtual_phis (void)
     {
       for (phi = phi_nodes (bb); phi; phi = next)
         {
-	  next = TREE_CHAIN (phi);
+	  next = PHI_CHAIN (phi);
 	  if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
 	    {
 #ifdef ENABLE_CHECKING
@@ -1031,7 +1031,7 @@ coalesce_vars (var_map map, tree_live_info_p liveinfo)
     {
       tree phi, arg;
       int p;
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  p = var_to_partition (map, PHI_RESULT (phi));
 
@@ -1794,7 +1794,7 @@ rewrite_trees (var_map map, tree *values)
     {
       tree phi;
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree T0 = var_to_partition_to_var (map, PHI_RESULT (phi));
       
@@ -1987,7 +1987,7 @@ remove_ssa_form (FILE *dump, var_map map, int flags)
     {
       for (phi = phi_nodes (bb); phi; phi = next)
 	{
-	  next = TREE_CHAIN (phi);
+	  next = PHI_CHAIN (phi);
 	  if ((flags & SSANORM_REMOVE_ALL_PHIS) 
 	      || var_to_partition (map, PHI_RESULT (phi)) != NO_PARTITION)
 	    remove_phi_node (phi, NULL_TREE, bb);
@@ -2029,7 +2029,7 @@ rewrite_vars_out_of_ssa (bitmap vars)
 	 to manually take variables out of SSA form here.  */
       FOR_EACH_BB (bb)
 	{
-	  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+	  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	    {
 	      tree result = SSA_NAME_VAR (PHI_RESULT (phi));
 

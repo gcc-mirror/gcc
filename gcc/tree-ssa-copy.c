@@ -313,7 +313,7 @@ cprop_into_successor_phis (basic_block bb,
 	 the entries.  */
       phi_num_args = PHI_NUM_ARGS (phi);
       hint = phi_num_args;
-      for ( ; phi; phi = TREE_CHAIN (phi))
+      for ( ; phi; phi = PHI_CHAIN (phi))
 	{
 	  int i;
 	  tree new;

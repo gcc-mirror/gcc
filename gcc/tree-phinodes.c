@@ -183,7 +183,7 @@ make_phi_node (tree var, int len)
     {
       free_phinode_count--;
       phi = free_phinodes[bucket];
-      free_phinodes[bucket] = TREE_CHAIN (free_phinodes[bucket]);
+      free_phinodes[bucket] = PHI_CHAIN (free_phinodes[bucket]);
 #ifdef GATHER_STATISTICS
       phi_nodes_reused++;
 #endif
@@ -220,7 +220,7 @@ release_phi_node (tree phi)
 
   bucket = len > NUM_BUCKETS - 1 ? NUM_BUCKETS - 1 : len;
   bucket -= 2;
-  TREE_CHAIN (phi) = free_phinodes[bucket];
+  PHI_CHAIN (phi) = free_phinodes[bucket];
   free_phinodes[bucket] = phi;
   free_phinode_count++;
 }
@@ -256,7 +256,7 @@ resize_phi_node (tree *phi, int len)
     {
       free_phinode_count--;
       new_phi = free_phinodes[bucket];
-      free_phinodes[bucket] = TREE_CHAIN (free_phinodes[bucket]);
+      free_phinodes[bucket] = PHI_CHAIN (free_phinodes[bucket]);
 #ifdef GATHER_STATISTICS
       phi_nodes_reused++;
 #endif
@@ -300,7 +300,7 @@ create_phi_node (tree var, basic_block bb)
   PHI_REWRITTEN (phi) = 0;
 
   /* Add the new PHI node to the list of PHI nodes for block BB.  */
-  TREE_CHAIN (phi) = phi_nodes (bb);
+  PHI_CHAIN (phi) = phi_nodes (bb);
   bb_ann (bb)->phi_nodes = phi;
 
   /* Associate BB to the PHI node.  */
@@ -345,14 +345,14 @@ add_phi_arg (tree *phi, tree def, edge e)
 	      tree p;
 
 	      for (p = phi_nodes (e->dest);
-		   p && TREE_CHAIN (p) != old_phi;
-		   p = TREE_CHAIN (p))
+		   p && PHI_CHAIN (p) != old_phi;
+		   p = PHI_CHAIN (p))
 		;
 
 	      if (!p)
 		abort ();
 
-	      TREE_CHAIN (p) = *phi;
+	      PHI_CHAIN (p) = *phi;
 	    }
 	}
     }
@@ -434,7 +434,7 @@ remove_phi_node (tree phi, tree prev, basic_block bb)
   if (prev)
     {
       /* Rewire the list if we are given a PREV pointer.  */
-      TREE_CHAIN (prev) = TREE_CHAIN (phi);
+      PHI_CHAIN (prev) = PHI_CHAIN (phi);
 
       /* If we are deleting the PHI node, then we should release the
 	 SSA_NAME node so that it can be reused.  */
@@ -444,7 +444,7 @@ remove_phi_node (tree phi, tree prev, basic_block bb)
   else if (phi == phi_nodes (bb))
     {
       /* Update the list head if removing the first element.  */
-      bb_ann (bb)->phi_nodes = TREE_CHAIN (phi);
+      bb_ann (bb)->phi_nodes = PHI_CHAIN (phi);
 
       /* If we are deleting the PHI node, then we should release the
 	 SSA_NAME node so that it can be reused.  */
@@ -456,7 +456,7 @@ remove_phi_node (tree phi, tree prev, basic_block bb)
       /* Traverse the list looking for the node to remove.  */
       tree prev, t;
       prev = NULL_TREE;
-      for (t = phi_nodes (bb); t && t != phi; t = TREE_CHAIN (t))
+      for (t = phi_nodes (bb); t && t != phi; t = PHI_CHAIN (t))
 	prev = t;
       if (t)
 	remove_phi_node (t, prev, bb);
@@ -481,7 +481,7 @@ remove_all_phi_nodes_for (bitmap vars)
 	{
 	  tree var = SSA_NAME_VAR (PHI_RESULT (phi));
 
-	  next = TREE_CHAIN (phi);
+	  next = PHI_CHAIN (phi);
 	  /* Only add PHI nodes for variables not in VARS.  */
 	  if (!bitmap_bit_p (vars, var_ann (var)->uid))
 	    {
@@ -494,7 +494,7 @@ remove_all_phi_nodes_for (bitmap vars)
 		new_phi_list = last_phi = phi;
 	      else
 		{
-		  TREE_CHAIN (last_phi) = phi;
+		  PHI_CHAIN (last_phi) = phi;
 		  last_phi = phi;
 		}
 	    }
@@ -509,11 +509,11 @@ remove_all_phi_nodes_for (bitmap vars)
 
       /* Make sure the last node in the new list has no successors.  */
       if (last_phi)
-	TREE_CHAIN (last_phi) = NULL_TREE;
+	PHI_CHAIN (last_phi) = NULL_TREE;
       bb_ann (bb)->phi_nodes = new_phi_list;
 
 #if defined ENABLE_CHECKING
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree var = SSA_NAME_VAR (PHI_RESULT (phi));
 	  if (bitmap_bit_p (vars, var_ann (var)->uid))

@@ -58,7 +58,7 @@ ssa_remove_edge (edge e)
   /* Remove the appropriate PHI arguments in E's destination block.  */
   for (phi = phi_nodes (e->dest); phi; phi = next)
     {
-      next = TREE_CHAIN (phi);
+      next = PHI_CHAIN (phi);
       remove_phi_arg (phi, e->src);
     }
 
@@ -80,7 +80,7 @@ ssa_redirect_edge (edge e, basic_block dest)
   /* Remove the appropriate PHI arguments in E's destination block.  */
   for (phi = phi_nodes (e->dest); phi; phi = next)
     {
-      next = TREE_CHAIN (phi);
+      next = PHI_CHAIN (phi);
 
       i = phi_arg_from_edge (phi, e);
       if (i < 0)
@@ -305,7 +305,7 @@ verify_ssa (void)
       tree phi;
       block_stmt_iterator bsi;
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	err |= verify_def (bb, definition_block, PHI_RESULT (phi), phi);
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
@@ -389,7 +389,7 @@ verify_ssa (void)
 	}
 
       /* Verify the arguments for every PHI node in the block.  */
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	err |= verify_phi_args (phi, bb, definition_block);
 
       /* Now verify all the uses and vuses in every statement of the block. 
@@ -881,7 +881,7 @@ kill_redundant_phi_nodes (void)
 
   FOR_EACH_BB (bb)
     {
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  var = PHI_RESULT (phi);
 
@@ -1077,7 +1077,7 @@ execute_late_warn_uninitialized (void)
   execute_early_warn_uninitialized ();
 
   FOR_EACH_BB (bb)
-    for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+    for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
       warn_uninitialized_phi (phi);
 }
 
