@@ -2923,6 +2923,7 @@ all_boot_languages=
 all_compilers=
 all_stagestuff=
 all_diff_excludes=
+all_outputs=Makefile
 # List of language makefile fragments.
 all_lang_makefiles=
 all_headers=
@@ -2937,6 +2938,7 @@ all_lib2funcs=
 
 language_fragments="Make-lang"
 language_hooks="Make-hooks"
+oldstyle_subdirs=
 
 for s in .. $subdirs
 do
@@ -2948,6 +2950,7 @@ do
 		stagestuff=
 		diff_excludes=
 		headers=
+		outputs=
 		lib2funcs=
 		. ${srcdir}/$s/config-lang.in
 		if [[ "x$language" = x ]]
@@ -2965,6 +2968,11 @@ do
 		all_stagestuff="$all_stagestuff $stagestuff"
 		all_diff_excludes="$all_diff_excludes $diff_excludes"
 		all_headers="$all_headers $headers"
+		all_outputs="$all_outputs $outputs"
+		if [[ x$outputs = x ]]
+		then
+			oldstyle_subdirs="$oldstyle_subdirs $s"
+		fi
 		all_lib2funcs="$all_lib2funcs $lib2funcs"
 	fi
 done
@@ -3073,7 +3081,7 @@ fi
 
 # Create the Makefile
 # and configure language subdirectories
-AC_OUTPUT(Makefile,
+AC_OUTPUT($all_outputs,
 [
 . $srcdir/configure.lang
 case x$CONFIG_HEADERS in
