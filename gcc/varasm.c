@@ -91,6 +91,7 @@ static char *compare_constant_1 ();
 static void record_constant_1 ();
 static void output_constant_def_contents ();
 static int contains_pointers_p ();
+static void bc_output_ascii ();
 
 void output_constant_pool ();
 void assemble_name ();
@@ -810,7 +811,7 @@ assemble_string (p, size)
 	thissize = maximum;
 
       if (output_bytecode)
-	BC_OUTPUT_ASCII (asm_out_file, p, thissize);
+	bc_output_ascii (asm_out_file, p, thissize);
       else
 	{
 	  ASM_OUTPUT_ASCII (asm_out_file, p, thissize);
@@ -819,6 +820,15 @@ assemble_string (p, size)
       pos += thissize;
       p += thissize;
     }
+}
+
+static void
+bc_output_ascii (file, p, size)
+     FILE *file;
+     char *p;
+     int size;
+{
+  BC_OUTPUT_ASCII (file, p, size);
 }
 
 /* Assemble everything that is needed for a variable or function declaration.
@@ -1005,7 +1015,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	  else
 #endif
 	    if (output_bytecode)
-	      BC_OUTPUT_COMMON (asm_out_file, name, size, rounded);
+	      {
+		BC_OUTPUT_COMMON (asm_out_file, name, size, rounded);
+	      }
 	    else
 	      {
 #ifdef ASM_OUTPUT_ALIGNED_COMMON
@@ -1024,7 +1036,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	  else
 #endif
 	    if (output_bytecode)
-	      BC_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+	      {
+		BC_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+	      }
 	    else
 	      {
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
@@ -1430,7 +1444,9 @@ assemble_static_space (size)
     x = gen_rtx (SYMBOL_REF, Pmode, namestring);
 
   if (output_bytecode)
-    BC_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+    {
+      BC_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+    }
   else
     {
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
