@@ -42,6 +42,15 @@ changequote([, ])dnl
 gcc_AC_CHECK_DECL($ac_func,
   [AC_DEFINE_UNQUOTED($ac_tr_decl, 1) $2],
   [AC_DEFINE_UNQUOTED($ac_tr_decl, 0) $3],
+dnl It is possible that the include files passed in here are local headers
+dnl which supply a backup declaration for the relevant prototype based on
+dnl the definition of (or lack of) the HAVE_DECL_ macro.  If so, this test
+dnl will always return success.  E.g. see libiberty.h's handling of
+dnl `basename'.  To avoid this, we define the relevant HAVE_DECL_ macro to
+dnl 1 so that any local headers used do not provide their own prototype
+dnl during this test.
+#undef $ac_tr_decl
+#define $ac_tr_decl 1
   $4
 )
 done
