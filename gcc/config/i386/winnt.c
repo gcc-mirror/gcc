@@ -100,3 +100,80 @@ i386_pe_unique_section (decl, reloc)
 
   DECL_SECTION_NAME (decl) = build_string (len, string);
 }
+
+/* The Microsoft linker requires that every function be marked as
+   DT_FCN.  When using gas on cygwin32, we must emit appropriate .type
+   directives.  */
+
+#include "gsyms.h"
+
+/* Mark a function appropriately.  This should only be called for
+   functions for which we are not emitting COFF debugging information.
+   FILE is the assembler output file, NAME is the name of the
+   function, and PUBLIC is non-zero if the function is globally
+   visible.  */
+
+void
+i386_pe_declare_function_type (file, name, public)
+     FILE *file;
+     char *name;
+     int public;
+{
+  fprintf (file, "\t.def\t");
+  assemble_name (file, name);
+  fprintf (file, ";\t.scl\t%d;\t.type\t%d;\t.endef\n",
+	   public ? (int) C_EXT : (int) C_STAT,
+	   (int) DT_FCN << N_BTSHFT);
+}
+
+/* Keep a list of external functions.  */
+
+struct extern_list
+{
+  struct extern_list *next;
+  char *name;
+};
+
+static struct extern_list *extern_head;
+
+/* Assemble an external function reference.  We need to keep a list of
+   these, so that we can output the function types at the end of the
+   assembly.  We can't output the types now, because we might see a
+   definition of the function later on and emit debugging information
+   for it then.  */
+
+void
+i386_pe_record_external_function (name)
+     char *name;
+{
+  struct extern_list *p;
+
+  p = (struct extern_list *) permalloc (sizeof *p);
+  p->next = extern_head;
+  p->name = name;
+  extern_head = p;
+}
+
+/* This is called at the end of assembly.  For each external function
+   which has not been defined, we output a declaration now.  */
+
+void
+i386_pe_asm_file_end (file)
+     FILE *file;
+{
+  struct extern_list *p;
+
+  for (p = extern_head; p != NULL; p = p->next)
+    {
+      tree decl;
+
+      decl = get_identifier (p->name);
+
+      /* Positively ensure only one declaration for any given symbol.  */
+      if (! TREE_ASM_WRITTEN (decl))
+	{
+	  TREE_ASM_WRITTEN (decl) = 1;
+	  i386_pe_declare_function_type (file, p->name, TREE_PUBLIC (decl));
+	}
+    }
+}
