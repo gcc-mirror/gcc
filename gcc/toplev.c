@@ -270,6 +270,7 @@ enum dump_file_index
   DFI_peephole2,
   DFI_sched2,
   DFI_bbro,
+  DFI_rnreg,
   DFI_jump2,
   DFI_mach,
   DFI_dbr,
@@ -302,6 +303,7 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "peephole2", 'z', 1, 0, 0 },
   { "sched2",	'R', 1, 0, 0 },
   { "bbro",	'B', 1, 0, 0 },
+  { "rnreg",	'n', 1, 0, 0 },
   { "jump2",	'J', 1, 0, 0 },
   { "mach",	'M', 1, 0, 0 },
   { "dbr",	'd', 0, 0, 0 },
@@ -422,6 +424,10 @@ int flag_branch_probabilities = 0;
 /* Nonzero if basic blocks should be reordered. */
 
 int flag_reorder_blocks = 0;
+
+/* Nonzero if registers should be renamed */
+
+int flag_rename_registers = 0;
 
 /* Nonzero for -pedantic switch: warn about anything
    that standard spec forbids.  */
@@ -1019,6 +1025,8 @@ lang_independent_options f_options[] =
    "Use profiling information for branch probabilities" },
   {"reorder-blocks", &flag_reorder_blocks, 1,
    "Reorder basic blocks to improve code placement" },
+  {"rename-registers", &flag_rename_registers, 1,
+   "Do the register renaming optimization pass"},
   {"fast-math", &flag_fast_math, 1,
    "Improve FP speed by violating ANSI & IEEE rules" },
   {"common", &flag_no_common, 0,
@@ -1415,6 +1423,7 @@ int peephole2_time;
 int sched2_time;
 int dbr_sched_time;
 int reorder_blocks_time;
+int rename_registers_time;
 int shorten_branch_time;
 int stack_reg_time;
 int final_time;
@@ -2164,6 +2173,7 @@ compile_file (name)
   sched2_time = 0;
   dbr_sched_time = 0;
   reorder_blocks_time = 0;
+  rename_registers_time = 0;
   shorten_branch_time = 0;
   stack_reg_time = 0;
   final_time = 0;
@@ -2572,6 +2582,7 @@ compile_file (name)
       print_time ("dbranch", dbr_sched_time);
 #endif
       print_time ("bbro", reorder_blocks_time);
+      print_time ("rnreg", rename_registers_time);
       print_time ("shorten-branch", shorten_branch_time);
 #ifdef STACK_REGS
       print_time ("stack-reg", stack_reg_time);
@@ -3419,6 +3430,15 @@ rest_of_compilation (decl)
       TIMEVAR (reorder_blocks_time, reorder_basic_blocks ());
 
       close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
+    }    
+
+  if (optimize > 0 && flag_rename_registers)
+    {
+      open_dump_file (DFI_rnreg, decl);
+
+      TIMEVAR (rename_registers_time, regrename_optimize ());
+
+      close_dump_file (DFI_rnreg, print_rtl_with_bb, insns);
     }    
 
   /* One more attempt to remove jumps to .+1 left by dead-store elimination. 

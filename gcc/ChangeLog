@@ -1,3 +1,14 @@
+2000-04-04  Stan Cox  <scox@cygnus.com>	
+
+	* Makefile.in: Add rules for regrename.o
+	* regrename.c: New file.
+	* rtl.h (regrename_optimize): Add prototype.
+	* toplev.c (rename_registers_dump, flag_rename_registers): New variables
+	(compile_file, decode_d_option): Add support for -frename-registers.
+	(rest_of_compilation): Call regrename_optimize.
+	* config/ia64/ia64.h (HARD_REGNO_RENAME_OK, RENAME_EXTENDED_BLOCKS):
+	New macros.	
+	
 2000-04-04  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* Makefile (gccbug): New target.
