@@ -1,3 +1,7 @@
+2001-03-20  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* jcf_parse.c (jcf_parse): Eliminate unused variable.
+
 2001-03-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_class_ref): Use SET_DECL_ASSEMBLER_NAME.
