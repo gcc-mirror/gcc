@@ -1,3 +1,10 @@
+2004-02-09  Stefan Olsson  <stefan@xapa.se>
+
+	* include/ext/mt_allocator.h: thread_id is unused in non threaded
+	applications and now has a ifdef to remove it completely on
+	compilers without thread support. Include stdlib.h due to a
+	compiler warning on getenv().
+
 2004-02-09  Paul Brook  <paul@codesourcery.com>
 
 	* libstdc++-v3/configure.host: Explicitly check for atomicity.h file.
