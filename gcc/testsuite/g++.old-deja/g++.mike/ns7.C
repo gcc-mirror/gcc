@@ -1,9 +1,9 @@
 // Build don't link:
 
-namespace A {	// WARNING - namespaces mostly broken
+namespace A {
   int i = 1;
 }
 
 namespace B {
-  int j = i;	// ERROR - XFAIL *-*-*
+  int j = i;	// ERROR - 
 }
