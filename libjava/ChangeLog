@@ -1,3 +1,7 @@
+2001-09-16  Anthony Green  <green@redhat.com>
+
+	* gnu/gcj/convert/IOConverter.java: Add support for iso8859_1.
+
 2001-09-14  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/TimeZone.java: Updated list of timezones from
