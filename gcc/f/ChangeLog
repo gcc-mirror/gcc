@@ -1,3 +1,7 @@
+Mon May  3 11:28:14 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Doc upgrade to netlib libf2c as of today.
+
 Sun May  2 17:04:28 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* version.c: Bump version.
