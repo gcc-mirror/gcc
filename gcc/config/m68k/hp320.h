@@ -488,7 +488,7 @@ do {					\
       if (GET_CODE (addr) == CONST_INT					\
 	  && INTVAL (addr) < 0x8000					\
 	  && INTVAL (addr) >= -0x8000)					\
-	fprintf (FILE, "%d.w", INTVAL (addr));				\
+	fprintf (FILE, "%d.w", (int) INTVAL (addr));			\
       else								\
         output_addr_const (FILE, addr);					\
     }}

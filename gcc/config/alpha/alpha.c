@@ -6146,7 +6146,7 @@ print_operand_address (file, addr)
 	   && GET_CODE (XEXP (addr, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF)
     {
-      fprintf (file, "%s+%d",
+      fprintf (file, "%s+" HOST_WIDE_INT_PRINT_DEC,
 	       XSTR (XEXP (XEXP (addr, 0), 0), 0),
 	       INTVAL (XEXP (XEXP (addr, 0), 1)));
       return;

@@ -207,14 +207,14 @@ do					\
    fprintf ((STREAM), "\tAREA "),				\
    assemble_name ((STREAM), (NAME)),				\
    fprintf ((STREAM), ", DATA, COMMON\n\t%% %d\t%s size=%d\n",	\
-	    (ROUNDED), ASM_COMMENT_START, (int)SIZE))
+	    (int)(ROUNDED), ASM_COMMENT_START, (int)(SIZE)))
 
 #define ASM_OUTPUT_LOCAL(STREAM,NAME,SIZE,ROUNDED)	\
    (zero_init_section (),				\
     assemble_name ((STREAM), (NAME)),			\
     fprintf ((STREAM), "\n"),				\
     fprintf ((STREAM), "\t%% %d\t%s size=%d\n",		\
-	     (ROUNDED), ASM_COMMENT_START, (int)SIZE))
+	     (int)(ROUNDED), ASM_COMMENT_START, (int)(SIZE)))
 
 /* Output and Generation of Labels */
 

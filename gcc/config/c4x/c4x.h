@@ -1615,7 +1615,7 @@ c4x_file_end (FILE)
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(BUFFER, PREFIX, NUM) \
-    sprintf (BUFFER, "*%s%d", PREFIX, NUM)
+    sprintf (BUFFER, "*%s%lu", PREFIX, (unsigned long)(NUM))
 
 /* A C statement to output to the stdio stream STREAM assembler code which
    defines (equates) the symbol NAME to have the value VALUE.  */

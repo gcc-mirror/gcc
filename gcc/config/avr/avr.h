@@ -1771,7 +1771,7 @@ progmem_section ()							      \
 do {									   \
      fputs ("\t.comm ", (STREAM));					   \
      assemble_name ((STREAM), (NAME));					   \
-     fprintf ((STREAM), ",%d,1\n", (SIZE));				   \
+     fprintf ((STREAM), ",%lu,1\n", (unsigned long)(SIZE));		   \
 } while (0)
 /* A C statement (sans semicolon) to output to the stdio stream
    STREAM the assembler definition of a common-label named NAME whose
@@ -2000,7 +2000,7 @@ do {									 \
    be emitted as one-only.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)	\
-sprintf (STRING, "*.%s%d", PREFIX, NUM)
+sprintf (STRING, "*.%s%lu", PREFIX, (unsigned long)(NUM))
 /* A C statement to store into the string STRING a label whose name
    is made from the string PREFIX and the number NUM.
 
@@ -2193,7 +2193,7 @@ sprintf (STRING, "*.%s%d", PREFIX, NUM)
    of the jump-table.  */
 
 #define ASM_OUTPUT_SKIP(STREAM, N)		\
-fprintf (STREAM, "\t.skip %d,0\n", (int)N)
+fprintf (STREAM, "\t.skip %lu,0\n", (unsigned long)(N))
 /* A C statement to output to the stdio stream STREAM an assembler
    instruction to advance the location counter by NBYTES bytes.
    Those bytes should be zero when loaded.  NBYTES will be a C
