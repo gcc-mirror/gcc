@@ -22,10 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "system.h"
 
-#include "obstack.h"
-#define	obstack_chunk_alloc	xmalloc
-#define	obstack_chunk_free	free
-
 #define NO_GENRTL_H
 #include "rtl.h"
 
@@ -284,7 +280,7 @@ gencode (f)
     gendef (f, *fmt);
 }
 
-#if defined(USE_C_ALLOCA) && !defined(__GNUC__)
+#if defined(USE_C_ALLOCA)
 char *
 xmalloc (nbytes)
      int nbytes;
@@ -293,13 +289,14 @@ xmalloc (nbytes)
 
   if (!tmp)
     {
-      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
+      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n",
+	       nbytes);
       exit (FATAL_EXIT_CODE);
     }
 
   return tmp;
 }
-#endif /* USE_C_ALLOCA && !__GNUC__ */
+#endif /* USE_C_ALLOCA */
 
 int
 main(argc, argv)
