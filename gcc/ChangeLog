@@ -4,6 +4,8 @@
 
 	* cse.c (cse_reg_info_table): Make it static.
 
+	* fold-const.c (fold_unary): Use build1 instead of copy_node.
+
 2005-03-06  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* cse.c (find_best_addr): Use canon_for_address.
