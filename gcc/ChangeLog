@@ -1,3 +1,7 @@
+2002-09-19  Dale Johannesen <dalej@apple.com>
+	* combine.c (make_extraction): Don't create
+	invalid subreg.
+
 2002-09-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (addr_generation_dependency_p): Handle SUBREG 
