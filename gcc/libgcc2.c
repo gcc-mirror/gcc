@@ -1209,6 +1209,9 @@ __builtin_new (sz)
 {
   void *p;
 
+  /* malloc (0) is unpredictable; avoid it.  */
+  if (sz == 0)
+    sz = 1;
   p = (void *) malloc (sz);
   if (p == 0)
     (*__new_handler) ();
