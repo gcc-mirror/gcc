@@ -24,6 +24,7 @@ generically to the complete suite of tools.  The name historically stood
 for ``GNU C Compiler'', and this usage is still common when the emphasis
 is on compiling C programs.  Finally, the name is also used when speaking
 of the @dfn{language-independent} component of GCC: code shared among the
+compilers for all supported languages.
 
 The language-independent component of GCC includes the majority of the
 optimizers, as well as the ``back ends'' that generate machine code for
