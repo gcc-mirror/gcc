@@ -1,3 +1,7 @@
+2004-01-14  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* README: Remove.
+
 2003-12-31  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/12632
