@@ -6071,8 +6071,6 @@ record_builtin_type (enum rid rid_index,
   if (name)
     tname = get_identifier (name);
 
-  TYPE_BUILT_IN (type) = 1;
-
   if (tname)
     {
       tdecl = pushdecl (build_decl (TYPE_DECL, tname, type));

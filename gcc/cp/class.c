@@ -3413,7 +3413,7 @@ check_field_decls (tree t, tree *access_decls,
             cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
-      else if (IS_AGGR_TYPE (type))
+      else if (CLASS_TYPE_P (type))
 	{
 	  C_TYPE_FIELDS_READONLY (t) |= C_TYPE_FIELDS_READONLY (type);
 	  SET_CLASSTYPE_READONLY_FIELDS_NEED_INIT (t,

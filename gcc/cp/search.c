@@ -2417,7 +2417,7 @@ dependent_base_p (binfo)
     {
       if (currently_open_class (TREE_TYPE (binfo)))
 	break;
-      if (uses_template_parms (TREE_TYPE (binfo)))
+      if (dependent_type_p (TREE_TYPE (binfo)))
 	return 1;
     }
   return 0;
