@@ -224,8 +224,8 @@ thunk_adjust (tree ptr, bool this_adjusting,
 {
   if (this_adjusting)
     /* Adjust the pointer by the constant.  */
-    ptr = fold (build (PLUS_EXPR, TREE_TYPE (ptr), ptr,
-		       ssize_int (fixed_offset)));
+    ptr = fold (build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr,
+			ssize_int (fixed_offset)));
 
   /* If there's a virtual offset, look up that value in the vtable and
      adjust the pointer again.  */
@@ -242,17 +242,17 @@ thunk_adjust (tree ptr, bool this_adjusting,
       /* Form the vtable address.  */
       vtable = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (vtable)), vtable);
       /* Find the entry with the vcall offset.  */
-      vtable = build (PLUS_EXPR, TREE_TYPE (vtable), vtable, virtual_offset);
+      vtable = build2 (PLUS_EXPR, TREE_TYPE (vtable), vtable, virtual_offset);
       /* Get the offset itself.  */
       vtable = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (vtable)), vtable);
       /* Adjust the `this' pointer.  */
-      ptr = fold (build (PLUS_EXPR, TREE_TYPE (ptr), ptr, vtable));
+      ptr = fold (build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr, vtable));
     }
   
   if (!this_adjusting)
     /* Adjust the pointer by the constant.  */
-    ptr = fold (build (PLUS_EXPR, TREE_TYPE (ptr), ptr,
-		       ssize_int (fixed_offset)));
+    ptr = fold (build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr,
+			ssize_int (fixed_offset)));
 
   return ptr;
 }
@@ -511,7 +511,7 @@ do_build_copy_constructor (tree fndecl)
        if *this is a base subobject.  */;
   else if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type))
     {
-      t = build (INIT_EXPR, void_type_node, current_class_ref, parm);
+      t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
       finish_expr_stmt (t);
     }
   else
@@ -584,7 +584,7 @@ do_build_copy_constructor (tree fndecl)
 	  expr_type = TREE_TYPE (field);
 	  if (TREE_CODE (expr_type) != REFERENCE_TYPE)
 	    expr_type = cp_build_qualified_type (expr_type, cvquals);
-	  init = build (COMPONENT_REF, expr_type, init, field, NULL_TREE);
+	  init = build3 (COMPONENT_REF, expr_type, init, field, NULL_TREE);
 	  init = build_tree_list (NULL_TREE, init);
 
 	  member_init_list
@@ -609,7 +609,7 @@ do_build_assign_ref (tree fndecl)
        if *this is a base subobject.  */;
   else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type))
     {
-      tree t = build (MODIFY_EXPR, void_type_node, current_class_ref, parm);
+      tree t = build2 (MODIFY_EXPR, void_type_node, current_class_ref, parm);
       finish_expr_stmt (t);
     }
   else
@@ -676,17 +676,17 @@ do_build_assign_ref (tree fndecl)
 	  else
 	    continue;
 
-	  comp = build (COMPONENT_REF, TREE_TYPE (field), comp, field,
-			NULL_TREE);
-	  init = build (COMPONENT_REF,
-	                cp_build_qualified_type (TREE_TYPE (field), cvquals),
-	                init, field, NULL_TREE);
+	  comp = build3 (COMPONENT_REF, TREE_TYPE (field), comp, field,
+			 NULL_TREE);
+	  init = build3 (COMPONENT_REF,
+			 cp_build_qualified_type (TREE_TYPE (field), cvquals),
+			 init, field, NULL_TREE);
 
 	  if (DECL_NAME (field))
 	    finish_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
 	  else
-	    finish_expr_stmt (build (MODIFY_EXPR, TREE_TYPE (comp), comp,
-				     init));
+	    finish_expr_stmt (build2 (MODIFY_EXPR, TREE_TYPE (comp), comp,
+				      init));
 	}
     }
   finish_return_stmt (current_class_ref);

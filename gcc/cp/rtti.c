@@ -157,8 +157,8 @@ build_headof (tree exp)
 
   type = build_qualified_type (ptr_type_node, 
 			       cp_type_quals (TREE_TYPE (exp)));
-  return build (PLUS_EXPR, type, exp, 
-		convert_to_integer (ptrdiff_type_node, offset));
+  return build2 (PLUS_EXPR, type, exp, 
+		 convert_to_integer (ptrdiff_type_node, offset));
 }
 
 /* Get a bad_cast node for the program to throw...
@@ -290,7 +290,7 @@ build_typeid (tree exp)
     {
       tree bad = throw_bad_typeid ();
 
-      exp = build (COND_EXPR, TREE_TYPE (exp), cond, exp, bad);
+      exp = build3 (COND_EXPR, TREE_TYPE (exp), cond, exp, bad);
     }
 
   return exp;
@@ -419,10 +419,10 @@ get_typeid (tree type)
 static tree
 ifnonnull (tree test, tree result)
 {
-  return build (COND_EXPR, TREE_TYPE (result),
-		build (EQ_EXPR, boolean_type_node, test, integer_zero_node),
-		cp_convert (TREE_TYPE (result), integer_zero_node),
-		result);
+  return build3 (COND_EXPR, TREE_TYPE (result),
+		 build2 (EQ_EXPR, boolean_type_node, test, integer_zero_node),
+		 cp_convert (TREE_TYPE (result), integer_zero_node),
+		 result);
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
@@ -655,7 +655,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 	      tree bad = throw_bad_cast ();
 	      
 	      result = save_expr (result);
-	      return build (COND_EXPR, type, result, result, bad);
+	      return build3 (COND_EXPR, type, result, result, bad);
 	    }
 
 	  /* Now back to the type we want from a void*.  */
@@ -827,7 +827,7 @@ tinfo_base_init (tree desc, tree target)
       vtable_ptr = build_unary_op (ADDR_EXPR, vtable_ptr, 0);
 
       /* We need to point into the middle of the vtable.  */
-      vtable_ptr = build
+      vtable_ptr = build2
 	(PLUS_EXPR, TREE_TYPE (vtable_ptr), vtable_ptr,
 	 size_binop (MULT_EXPR,
 		     size_int (2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE),

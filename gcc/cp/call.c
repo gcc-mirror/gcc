@@ -204,8 +204,8 @@ build_vfield_ref (tree datum, tree type)
       && !same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (datum), type))
     datum = convert_to_base (datum, type, /*check_access=*/false);
 
-  return build (COMPONENT_REF, TREE_TYPE (TYPE_VFIELD (type)),
-		datum, TYPE_VFIELD (type), NULL_TREE);
+  return build3 (COMPONENT_REF, TREE_TYPE (TYPE_VFIELD (type)),
+		 datum, TYPE_VFIELD (type), NULL_TREE);
 }
 
 /* Returns nonzero iff the destructor name specified in NAME
@@ -343,12 +343,12 @@ build_call (tree function, tree parms)
       if (is_empty_class (TREE_TYPE (TREE_VALUE (tmp)))
 	  && ! TREE_ADDRESSABLE (TREE_TYPE (TREE_VALUE (tmp))))
 	{
-	  tree t = build (EMPTY_CLASS_EXPR, TREE_TYPE (TREE_VALUE (tmp)));
-	  TREE_VALUE (tmp) = build (COMPOUND_EXPR, TREE_TYPE (t),
-				    TREE_VALUE (tmp), t);
+	  tree t = build0 (EMPTY_CLASS_EXPR, TREE_TYPE (TREE_VALUE (tmp)));
+	  TREE_VALUE (tmp) = build2 (COMPOUND_EXPR, TREE_TYPE (t),
+				     TREE_VALUE (tmp), t);
 	}
 
-  function = build (CALL_EXPR, result_type, function, parms, NULL_TREE);
+  function = build3 (CALL_EXPR, result_type, function, parms, NULL_TREE);
   TREE_HAS_CONSTRUCTOR (function) = is_constructor;
   TREE_NOTHROW (function) = nothrow;
   
@@ -3463,7 +3463,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
     }
 
  valid_operands:
-  result = fold (build (COND_EXPR, result_type, arg1, arg2, arg3));
+  result = fold (build3 (COND_EXPR, result_type, arg1, arg2, arg3));
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */
 
@@ -4401,8 +4401,8 @@ convert_arg_to_ellipsis (tree arg)
 	warning ("cannot pass objects of non-POD type `%#T' through `...'; "
 	         "call will abort at runtime", TREE_TYPE (arg));
       arg = call_builtin_trap ();
-      arg = build (COMPOUND_EXPR, integer_type_node, arg,
-		   integer_zero_node);
+      arg = build2 (COMPOUND_EXPR, integer_type_node, arg,
+		    integer_zero_node);
     }
 
   return arg;
@@ -4428,8 +4428,8 @@ build_x_va_arg (tree expr, tree type)
 call will abort at runtime",
 	       type);
       expr = convert (build_pointer_type (type), null_node);
-      expr = build (COMPOUND_EXPR, TREE_TYPE (expr),
-		    call_builtin_trap (), expr);
+      expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr),
+		     call_builtin_trap (), expr);
       expr = build_indirect_ref (expr, NULL);
       return expr;
     }
@@ -4591,7 +4591,7 @@ build_over_call (struct z_candidate *cand, int flags)
       tree expr;
       tree return_type;
       return_type = TREE_TYPE (TREE_TYPE (fn));
-      expr = build (CALL_EXPR, return_type, fn, args, NULL_TREE);
+      expr = build3 (CALL_EXPR, return_type, fn, args, NULL_TREE);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
       if (!VOID_TYPE_P (return_type))
@@ -4803,7 +4803,7 @@ build_over_call (struct z_candidate *cand, int flags)
 	  tree to = stabilize_reference
 	    (build_indirect_ref (TREE_VALUE (args), 0));
 
-	  val = build (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
+	  val = build2 (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
 	  return val;
 	}
     }
@@ -4820,7 +4820,7 @@ build_over_call (struct z_candidate *cand, int flags)
       if (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (as_base)))
 	{
 	  arg = build_indirect_ref (arg, 0);
-	  val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
+	  val = build2 (MODIFY_EXPR, TREE_TYPE (to), to, arg);
 	}
       else
 	{
@@ -4967,7 +4967,7 @@ build_java_interface_fn_ref (tree fn, tree instance)
   lookup_fn = build1 (ADDR_EXPR, 
 		      build_pointer_type (TREE_TYPE (java_iface_lookup_fn)),
 		      java_iface_lookup_fn);
-  return build (CALL_EXPR, ptr_type_node, lookup_fn, lookup_args, NULL_TREE);
+  return build3 (CALL_EXPR, ptr_type_node, lookup_fn, lookup_args, NULL_TREE);
 }
 
 /* Returns the value to use for the in-charge parameter when making a
@@ -5083,14 +5083,14 @@ build_special_member_call (tree instance, tree name, tree args,
 	 Otherwise, we look it up using the VTT we were given.  */
       vtt = TREE_CHAIN (CLASSTYPE_VTABLES (current_class_type));
       vtt = decay_conversion (vtt);
-      vtt = build (COND_EXPR, TREE_TYPE (vtt),
-		   build (EQ_EXPR, boolean_type_node,
-			  current_in_charge_parm, integer_zero_node),
-		   current_vtt_parm,
-		   vtt);
+      vtt = build3 (COND_EXPR, TREE_TYPE (vtt),
+		    build2 (EQ_EXPR, boolean_type_node,
+			    current_in_charge_parm, integer_zero_node),
+		    current_vtt_parm,
+		    vtt);
       my_friendly_assert (BINFO_SUBVTT_INDEX (binfo), 20010110);
-      sub_vtt = build (PLUS_EXPR, TREE_TYPE (vtt), vtt,
-		       BINFO_SUBVTT_INDEX (binfo));
+      sub_vtt = build2 (PLUS_EXPR, TREE_TYPE (vtt), vtt,
+			BINFO_SUBVTT_INDEX (binfo));
 
       args = tree_cons (NULL_TREE, sub_vtt, args);
     }
@@ -5365,8 +5365,8 @@ build_new_method_call (tree instance, tree fns, tree args,
 	      if (TREE_CODE (TREE_TYPE (cand->fn)) != METHOD_TYPE
 		  && !is_dummy_object (instance_ptr) 
 		  && TREE_SIDE_EFFECTS (instance))
-		call = build (COMPOUND_EXPR, TREE_TYPE (call), 
-			      instance, call);
+		call = build2 (COMPOUND_EXPR, TREE_TYPE (call), 
+			       instance, call);
 	    }
 	}
     }
@@ -6488,7 +6488,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	    expr = get_target_expr (expr);
 	  /* Create the INIT_EXPR that will initialize the temporary
 	     variable.  */
-	  init = build (INIT_EXPR, type, var, expr);
+	  init = build2 (INIT_EXPR, type, var, expr);
 	  if (at_function_scope_p ())
 	    {
 	      add_decl_expr (var);
@@ -6522,7 +6522,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	    }
 	  /* Use its address to initialize the reference variable.  */
 	  expr = build_address (var);
-	  expr = build (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
+	  expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
 	}
       else
 	/* Take the address of EXPR.  */

@@ -1069,7 +1069,7 @@ begin_compound_stmt (unsigned int flags)
      processing templates.  */
   if (processing_template_decl)
     {
-      r = build (BIND_EXPR, NULL, NULL, r, NULL);
+      r = build3 (BIND_EXPR, NULL, NULL, r, NULL);
       BIND_EXPR_TRY_BLOCK (r) = (flags & BCS_TRY_BLOCK) != 0;
       BIND_EXPR_BODY_BLOCK (r) = (flags & BCS_FN_BODY) != 0;
       TREE_SIDE_EFFECTS (r) = 1;
@@ -1799,8 +1799,8 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
 
   if (processing_template_decl)
     {
-      result = build (CALL_EXPR, TREE_TYPE (result), orig_fn,
-		      orig_args, NULL_TREE);
+      result = build3 (CALL_EXPR, TREE_TYPE (result), orig_fn,
+		       orig_args, NULL_TREE);
       KOENIG_LOOKUP_P (result) = koenig_p;
     }
   return result;
@@ -1887,7 +1887,7 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
 	}
     }
 
-  return build (PSEUDO_DTOR_EXPR, void_type_node, object, scope, destructor);
+  return build3 (PSEUDO_DTOR_EXPR, void_type_node, object, scope, destructor);
 }
 
 /* Finish an expression of the form CODE EXPR.  */
@@ -2540,8 +2540,8 @@ finish_id_expression (tree id_expression,
 	      if (TYPE_P (scope) && dependent_type_p (scope))
 		return build_nt (SCOPE_REF, scope, id_expression);
 	      else if (TYPE_P (scope) && DECL_P (decl))
-		return build (SCOPE_REF, TREE_TYPE (decl), scope,
-			      id_expression);
+		return build2 (SCOPE_REF, TREE_TYPE (decl), scope,
+			       id_expression);
 	      else
 		return decl;
 	    }
@@ -2617,7 +2617,7 @@ finish_id_expression (tree id_expression,
 	  else if (!processing_template_decl)
 	    decl = convert_from_reference (decl);
 	  else if (TYPE_P (scope))
-	    decl = build (SCOPE_REF, TREE_TYPE (decl), scope, decl);
+	    decl = build2 (SCOPE_REF, TREE_TYPE (decl), scope, decl);
 	}
       else if (TREE_CODE (decl) == FIELD_DECL)
 	decl = finish_non_static_data_member (decl, current_class_ref,
@@ -2797,9 +2797,9 @@ simplify_aggr_init_expr (tree *tp)
       args = tree_cons (NULL_TREE, addr, args);
     }
 
-  call_expr = build (CALL_EXPR, 
-		     TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))),
-		     fn, args, NULL_TREE);
+  call_expr = build3 (CALL_EXPR, 
+		      TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))),
+		      fn, args, NULL_TREE);
 
   if (style == arg)
     /* Tell the backend that we've added our return slot to the argument
@@ -3017,8 +3017,8 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
       if (DECL_INITIAL (dp->var)
 	  && DECL_INITIAL (dp->var) != error_mark_node)
 	{
-	  init = build (INIT_EXPR, void_type_node, dp->result,
-			DECL_INITIAL (dp->var));
+	  init = build2 (INIT_EXPR, void_type_node, dp->result,
+			 DECL_INITIAL (dp->var));
 	  DECL_INITIAL (dp->var) = error_mark_node;
 	}
       else

@@ -1,3 +1,48 @@
+2004-08-15  Roger Sayle  <roger@eyesopen.com>
+
+	* call.c (build_vfield_ref, build_call, build_conditional_expr,
+	convert_arg_to_ellipsis, build_x_va_arg, build_over_call,
+	build_java_interface_fn_ref, build_special_member_call,
+	build_new_method_call, initialize_reference): Replace calls to
+	build with calls to buildN.
+	* class.c (build_base_path, convert_to_base_statically,
+	build_vfn_ref, instantiate_type, dfs_accumulate_vtbl_inits,
+	build_vtbl_initializer): Likewise.
+	* cp-gimplify.c (genericize_try_block, genericize_catch_block,
+	gimplify_if_stmt, cp_genericize_r): Likewise.
+	* cvt.c (convert_to_void): Likewise.
+	* decl.c (check_initializer, finish_constructor_body,
+	finish_destructor_body): Likewise.
+	* error.c (dump_expr): Likewise.
+	* except.c (build_exc_ptr, expand_start_catch_block, build_throw):
+	Likewise.
+	* init.c (perform_member_init, expand_virtual_init,
+	expand_cleanup_for_base, build_init, expand_default_init,
+	build_offset_ref, decl_constant_value, build_new, build_new_1,
+	build_vec_delete_1, build_vec_init, build_delete,
+	push_base_cleanups, build_vec_delete): Likewise.
+	* mangle.c (write_integer_cst): Likewise.
+	* method.c (thunk_adjust, do_build_copy_constructor,
+	do_build_assign_ref): Likewise.
+	* pt.c (lookup_template_function, tsubst, tsubst_copy_and_build,
+	unify, build_non_dependent_expr): Likewise.
+	* rtti.c (build_headof, build_typeid, ifnonnull,
+	build_dyanmic_cast_1, tinfo_base_init): Likewise.
+	* semantics.c (begin_compound_stmt, finish_call_expr,
+	finish_pseudo_destructor_expr, finish_id_expression,
+	simplify_aggr_init_expr, finalize_nrv_r): Likewise.
+	* tree.c (build_target_expr, build_cplus_new, array_type_nelts_top,
+	array_type_nelts_total, stabilize_call): Likewise.
+	* typeck.c (decay_conversion, build_class_member_access_expr,
+	lookup_destructor, build_ptrmemfunc_access_expr, build_array_ref,
+	get_member_function_from_ptrfunc, build_binary_op, pointer_diff,
+	build_x_unary_op, build_unary_op, unary_complex_lvalue,
+	build_compound_expr, build_modify_expr, expand_ptrmemfunc_cst,
+	check_return_expr): Likewise.
+	* typeck2.c (split_nonconstant_1, split_nonconstant_init_1,
+	split_nonconstant_init, store_init_value, build_m_component_ref):
+	Likewise.
+
 2004-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (convert_class_to_reference,
