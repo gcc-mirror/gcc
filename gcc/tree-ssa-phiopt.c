@@ -492,7 +492,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
     replacement.  Return true if the replacement is done.  Otherwise return
     false.
     bb is the basic block where the replacement is going to be done on.  arg0
-    is argument 0 from the phi.  Likewise for arg1.   */
+    is argument 0 from the phi.  Likewise for arg1.  */
 
 static bool
 abs_replacement (basic_block cond_bb, basic_block middle_bb,

@@ -9434,7 +9434,8 @@ gen_lowpart_for_combine (enum machine_mode omode, rtx x)
       if (WORDS_BIG_ENDIAN)
 	offset = MAX (isize, UNITS_PER_WORD) - MAX (osize, UNITS_PER_WORD);
 
-      /* Adjust the address so that the address-after-the-data is unchanged. */
+      /* Adjust the address so that the address-after-the-data is
+	 unchanged.  */
       if (BYTES_BIG_ENDIAN)
 	offset -= MIN (UNITS_PER_WORD, osize) - MIN (UNITS_PER_WORD, isize);
 

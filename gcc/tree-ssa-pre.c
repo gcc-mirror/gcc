@@ -714,7 +714,7 @@ set_equal (value_set_t a, value_set_t b)
 }
 
 /* Replace an instance of EXPR's VALUE with EXPR in SET if it exists,
-   and add it otherwise. */
+   and add it otherwise.  */
 
 static void
 bitmap_value_replace_in_set (bitmap_set_t set, tree expr)
@@ -1384,7 +1384,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 }
 
 /* Return the folded version of T if T, when folded, is a gimple
-   min_invariant.  Otherwise, return T. */ 
+   min_invariant.  Otherwise, return T.  */ 
 
 static tree
 fully_constant_expression (tree t)

@@ -1699,7 +1699,7 @@ vect_object_analysis (tree memref, tree stmt, bool is_read,
     return NULL_TREE;
 
   /* Part 2: Combine the results of object and address analysis to calculate 
-     INITIAL_OFFSET, STEP and misalignment info. */
+     INITIAL_OFFSET, STEP and misalignment info.  */
   *offset = size_binop (PLUS_EXPR, object_offset, address_offset);
   if (object_misalign && address_misalign)
     *misalign = size_binop (PLUS_EXPR, object_misalign, address_misalign);
