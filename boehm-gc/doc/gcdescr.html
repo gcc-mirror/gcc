@@ -1,7 +1,7 @@
 <HTML>
 <HEAD>
     <TITLE> Conservative GC Algorithmic Overview </TITLE>
-    <AUTHOR> Hans-J. Boehm, Silicon Graphics</author>
+    <AUTHOR> Hans-J. Boehm, HP Labs (Much of this was written at SGI)</author>
 </HEAD>
 <BODY>
 <H1> <I>This is under construction</i> </h1>
@@ -96,19 +96,23 @@ typically on the order of the page size.
 <P>
 Large block sizes are rounded up to
 the next multiple of <TT>HBLKSIZE</tt> and then allocated by
-<TT>GC_allochblk</tt>.  This uses roughly what Paul Wilson has termed
-a "next fit" algorithm, i.e. first-fit with a rotating pointer.
-The implementation does check for a better fitting immediately
-adjacent block, which gives it somewhat better fragmentation characteristics.
-I'm now convinced it should use a best fit algorithm.  The actual
+<TT>GC_allochblk</tt>.  Recent versions of the collector
+use an approximate best fit algorithm by keeping free lists for
+several large block sizes.
+The actual
 implementation of <TT>GC_allochblk</tt>
 is significantly complicated by black-listing issues
 (see below).
 <P>
-Small blocks are allocated in blocks of size <TT>HBLKSIZE</tt>.
-Each block is
+Small blocks are allocated in chunks of size <TT>HBLKSIZE</tt>.
+Each chunk is
 dedicated to only one object size and kind.  The allocator maintains
 separate free lists for each size and kind of object.
+<P>
+Once a large block is split for use in smaller objects, it can only
+be used for objects of that size, unless the collector discovers a completely
+empty chunk.  Completely empty chunks are restored to the appropriate
+large block free list.
 <P>
 In order to avoid allocating blocks for too many distinct object sizes,
 the collector normally does not directly allocate objects of every possible
@@ -139,27 +143,35 @@ expand the heap.  Otherwise, we initiate a garbage collection.  This ensures
 that the amount of garbage collection work per allocated byte remains
 constant.
 <P>
-The above is in fat an oversimplification of the real heap expansion
-heuristic, which adjusts slightly for root size and certain kinds of
-fragmentation.  In particular, programs with a large root set size and
+The above is in fact an oversimplification of the real heap expansion
+and GC triggering heuristic, which adjusts slightly for root size
+and certain kinds of
+fragmentation.  In particular:
+<UL>
+<LI> Programs with a large root set size and
 little live heap memory will expand the heap to amortize the cost of
-scanning the roots.
-<P>
-Versions 5.x of the collector actually collect more frequently in
+scanning the roots.  
+<LI> Versions 5.x of the collector actually collect more frequently in
 nonincremental mode.  The large block allocator usually refuses to split
 large heap blocks once the garbage collection threshold is
 reached.  This often has the effect of collecting well before the
 heap fills up, thus reducing fragmentation and working set size at the
-expense of GC time.  6.x will chose an intermediate strategy depending
+expense of GC time.  Versions 6.x choose an intermediate strategy depending
 on how much large object allocation has taken place in the past.
 (If the collector is configured to unmap unused pages, versions 6.x
-will use the 5.x strategy.)
+use the 5.x strategy.)
+<LI> In calculating the amount of allocation since the last collection we
+give partial credit for objects we expect to be explicitly deallocated.
+Even if all objects are explicitly managed, it is often desirable to collect
+on rare occasion, since that is our only mechanism for coalescing completely
+empty chunks.
+</ul>
 <P>
-(It has been suggested that this should be adjusted so that we favor
+It has been suggested that this should be adjusted so that we favor
 expansion if the resulting heap still fits into physical memory.
 In many cases, that would no doubt help.  But it is tricky to do this
 in a way that remains robust if multiple application are contending
-for a single pool of physical memory.)
+for a single pool of physical memory.
 
 <H2>Mark phase</h2>
 
@@ -204,7 +216,7 @@ changes to
 <LI> <TT>MS_NONE</tt> indicating that reachable objects are marked.
 </ol>
 
-The core mark routine <TT>GC_mark_from_mark_stack</tt>, is called
+The core mark routine <TT>GC_mark_from</tt>, is called
 repeatedly by several of the sub-phases when the mark stack starts to fill
 up.  It is also called repeatedly in <TT>MS_ROOTS_PUSHED</tt> state
 to empty the mark stack.
@@ -212,6 +224,12 @@ The routine is designed to only perform a limited amount of marking at
 each call, so that it can also be used by the incremental collector.
 It is fairly carefully tuned, since it usually consumes a large majority
 of the garbage collection time.
+<P>
+The fact that it perform a only a small amount of work per call also
+allows it to be used as the core routine of the parallel marker.  In that
+case it is normally invoked on thread-private mark stacks instead of the
+global mark stack.  More details can be found in
+<A HREF="scale.html">scale.html</a>
 <P>
 The marker correctly handles mark stack overflows.  Whenever the mark stack
 overflows, the mark state is reset to <TT>MS_INVALID</tt>.
@@ -281,7 +299,8 @@ Unmarked large objects are immediately returned to the large object free list.
 Each small object page is checked to see if all mark bits are clear.
 If so, the entire page is returned to the large object free list.
 Small object pages containing some reachable object are queued for later
-sweeping.
+sweeping, unless we determine that the page contains very little free
+space, in which case it is not examined further.
 <P>
 This initial sweep pass touches only block headers, not
 the blocks themselves.  Thus it does not require significant paging, even
@@ -341,12 +360,16 @@ object itself becomes marked, we have uncovered
 a cycle involving the object.  This usually results in a warning from the
 collector.  Such objects are not finalized, since it may be
 unsafe to do so.  See the more detailed
-<A HREF="finalization.html"> discussion of finalization semantics</a>.
+<A HREF="http://www.hpl.hp.com/personal/Hans_Boehm/gc/finalization.html"> discussion of finalization semantics</a>.
 <P>
 Any objects remaining unmarked at the end of this process are added to
 a queue of objects whose finalizers can be run.  Depending on collector
 configuration, finalizers are dequeued and run either implicitly during
 allocation calls, or explicitly in response to a user request.
+(Note that the former is unfortunately both the default and not generally safe.
+If finalizers perform synchronization, it may result in deadlocks.
+Nontrivial finalizers generally need to perform synchronization, and
+thus require a different collector configuration.)
 <P>
 The collector provides a mechanism for replacing the procedure that is
 used to mark through objects.  This is used both to provide support for
@@ -354,13 +377,14 @@ Java-style unordered finalization, and to ignore certain kinds of cycles,
 <I>e.g.</i> those arising from C++ implementations of virtual inheritance.
 
 <H2>Generational Collection and Dirty Bits</h2>
-We basically use the parallel and generational GC algorithm described in
-<A HREF="papers/pldi91.ps.gz">"Mostly Parallel Garbage Collection"</a>,
+We basically use the concurrent and generational GC algorithm described in
+<A HREF="http://www.hpl.hp.com/personal/Hans_Boehm/gc/papers/pldi91.ps.Z">"Mostly Parallel Garbage Collection"</a>,
 by Boehm, Demers, and Shenker.
 <P>
 The most significant modification is that
-the collector always runs in the allocating thread.
-There is no separate garbage collector thread.
+the collector always starts running in the allocating thread.
+There is no separate garbage collector thread.  (If parallel GC is
+enabled, helper threads may also be woken up.)
 If an allocation attempt either requests a large object, or encounters
 an empty small object free list, and notices that there is a collection
 in progress, it immediately performs a small amount of marking work
@@ -389,50 +413,108 @@ cannot be satisfied from small object free lists. When marking completes,
 the set of modified pages is retrieved, and we mark once again from
 marked objects on those pages, this time with the mutator stopped.
 <P>
-We keep track of modified pages using one of three distinct mechanisms:
+We keep track of modified pages using one of several distinct mechanisms:
 <OL>
 <LI>
 Through explicit mutator cooperation.  Currently this requires
-the use of <TT>GC_malloc_stubborn</tt>.
+the use of <TT>GC_malloc_stubborn</tt>, and is rarely used.
 <LI>
-By write-protecting physical pages and catching write faults.  This is
+(<TT>MPROTECT_VDB</tt>) By write-protecting physical pages and
+catching write faults.  This is
 implemented for many Unix-like systems and for win32.  It is not possible
 in a few environments.
 <LI>
-By retrieving dirty bit information from /proc.  (Currently only Sun's
+(<TT>PROC_VDB</tt>) By retrieving dirty bit information from /proc.
+(Currently only Sun's
 Solaris supports this.  Though this is considerably cleaner, performance
 may actually be better with mprotect and signals.)
+<LI>
+(<TT>PCR_VDB</tt>) By relying on an external dirty bit implementation, in this
+case the one in Xerox PCR.
+<LI>
+(<TT>DEFAULT_VDB</tt>) By treating all pages as dirty.  This is the default if 
+none of the other techniques is known to be usable, and
+<TT>GC_malloc_stubborn</tt> is not used.  Practical only for testing, or if
+the vast majority of objects use <TT>GC_malloc_stubborn</tt>.
 </ol>
+
+<H2>Black-listing</h2>
+
+The collector implements <I>black-listing</i> of pages, as described
+in
+<A HREF="http://www.acm.org/pubs/citations/proceedings/pldi/155090/p197-boehm/">
+Boehm, ``Space Efficient Conservative Collection'', PLDI '93</a>, also available
+<A HREF="papers/pldi93.ps.Z">here</a>.
+<P>
+During the mark phase, the collector tracks ``near misses'', i.e. attempts
+to follow a ``pointer'' to just outside the garbage-collected heap, or
+to a currently unallocated page inside the heap.  Pages that have been
+the targets of such near misses are likely to be the targets of
+misidentified ``pointers'' in the future.  To minimize the future
+damage caused by such misidentifications they will be allocated only to
+small pointerfree objects. 
+<P>
+The collector understands two different kinds of black-listing.  A
+page may be black listed for interior pointer references
+(<TT>GC_add_to_black_list_stack</tt>), if it was the target of a near
+miss from a location that requires interior pointer recognition,
+<I>e.g.</i> the stack, or the heap if <TT>GC_all_interior_pointers</tt>
+is set.  In this case, we also avoid allocating large blocks that include
+this page.
+<P>
+If the near miss came from a source that did not require interior
+pointer recognition, it is black-listed with
+<TT>GC_add_to_black_list_normal</tt>.
+A page black-listed in this way may appear inside a large object,
+so long as it is not the first page of a large object.
+<P>
+The <TT>GC_allochblk</tt> routine respects black-listing when assigning
+a block to a particular object kind and size.  It occasionally
+drops (i.e. allocates and forgets) blocks that are completely black-listed
+in order to avoid excessively long large block free lists containing
+only unusable blocks.  This would otherwise become an issue
+if there is low demand for small pointerfree objects.
 
 <H2>Thread support</h2>
 We support several different threading models.  Unfortunately Pthreads,
 the only reasonably well standardized thread model, supports too narrow
 an interface for conservative garbage collection.  There appears to be
-no portable way to allow the collector to coexist with various Pthreads
+no completely portable way to allow the collector to coexist with various Pthreads
 implementations.  Hence we currently support only a few of the more
 common Pthreads implementations.
 <P>
 In particular, it is very difficult for the collector to stop all other
 threads in the system and examine the register contents.  This is currently
-accomplished with very different mechanisms for different Pthreads
+accomplished with very different mechanisms for some Pthreads
 implementations.  The Solaris implementation temporarily disables much
 of the user-level threads implementation by stopping kernel-level threads
-("lwp"s).  The Irix implementation sends signals to individual Pthreads
-and has them wait in the signal handler.  The Linux implementation
-is similar in spirit to the Irix one.
+("lwp"s).  The Linux/HPUX/OSF1 and Irix implementations sends signals to
+individual Pthreads and has them wait in the signal handler.
 <P>
-The Irix implementation uses
-only documented Pthreads calls, but relies on extensions to their semantics,
-notably the use of mutexes and condition variables from signal
-handlers.  The Linux implementation should be far closer to
-portable, though impirically it is not completely portable.
+The Linux and Irix implementations use
+only documented Pthreads calls, but rely on extensions to their semantics.
+The Linux implementation <TT>linux_threads.c</tt> relies on only very
+mild extensions to the pthreads semantics, and already supports a large number
+of other Unix-like pthreads implementations.  Our goal is to make this the
+only pthread support in the collector.
+<P>
+(The Irix implementation is separate only for historical reasons and should
+clearly be merged.  The current Solaris implementation probably performs
+better in the uniprocessor case, but does not support thread operations in the
+collector.  Hence it cannot support the parallel marker.)
 <P>
 All implementations must
 intercept thread creation and a few other thread-specific calls to allow
 enumeration of threads and location of thread stacks.  This is current
-accomplished with <TT># define</tt>'s in <TT>gc.h</tt>, or optionally
+accomplished with <TT># define</tt>'s in <TT>gc.h</tt>
+(really <TT>gc_pthread_redirects.h</tt>), or optionally
 by using ld's function call wrapping mechanism under Linux.
 <P>
 Comments are appreciated.  Please send mail to
-<A HREF="mailto:boehm@acm.org"><TT>boehm@acm.org</tt></a>
+<A HREF="mailto:boehm@acm.org"><TT>boehm@acm.org</tt></a> or
+<A HREF="mailto:Hans.Boehm@hp.com"><TT>Hans.Boehm@hp.com</tt></a>
+<P>
+This is a modified copy of a page written while the author was at SGI.
+The original was <A HREF="http://reality.sgi.com/boehm/gcdescr.html">here</a>.
 </body>
+</html>
