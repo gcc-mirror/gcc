@@ -1714,6 +1714,11 @@ literal_section ()						\
   else							\
     sprintf (LABEL, "*%s%d", PREFIX, NUM)
 
+/* Check a floating-point value for validity for a particular machine mode.  */
+
+#define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \
+  ((OVERFLOW) = check_float_value (MODE, &D, OVERFLOW))
+
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
@@ -1737,23 +1742,12 @@ literal_section ()						\
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-  {									\
-    if (REAL_VALUE_ISINF (VALUE)					\
-        || REAL_VALUE_ISNAN (VALUE)					\
-	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
-      {									\
-	long t;								\
-	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
-	fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);		\
-      }									\
-    else								\
-      {									\
-	char str[30];							\
-	REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);			\
-	fprintf (FILE, "\t.s_floating %s\n", str);			\
-      }									\
-  }
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)				\
+  do {								\
+    long t;							\
+    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
+    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);		\
+} while (0)
   
 /* This is how to output an assembler line defining an `int' constant.  */
 
