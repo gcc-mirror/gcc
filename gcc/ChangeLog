@@ -1,3 +1,7 @@
+2003-07-21  Dave Fluri  <dave.fluri@onlink.net>
+
+	* doc/extend.texi: Fixes to spelling, grammar, and diction.
+
 2003-07-21  Ben Elliston  <bje@wasabisystems.com>
 
 	* doc/invoke.texi (Optimize Options): Replace "it's" with "its".
