@@ -72,9 +72,7 @@ struct pragma_entry
    means this directive should be handled even if -fpreprocessed is in
    effect (these are the directives with callback hooks).
 
-   EXPAND is set on directives that are always macro-expanded.  If
-   INCL is set, macro expansion is special-cased and EXPAND should not
-   be set.  */
+   EXPAND is set on directives that are always macro-expanded.  */
 #define COND		(1 << 0)
 #define IF_COND		(1 << 1)
 #define INCL		(1 << 2)
@@ -147,7 +145,7 @@ static void handle_assertion	PARAMS ((cpp_reader *, const char *, int));
 
 #define DIRECTIVE_TABLE							\
 D(define,	T_DEFINE = 0,	KANDR,     IN_I)	   /* 270554 */ \
-D(include,	T_INCLUDE,	KANDR,     INCL)	   /*  52262 */ \
+D(include,	T_INCLUDE,	KANDR,     INCL | EXPAND)  /*  52262 */ \
 D(endif,	T_ENDIF,	KANDR,     COND)	   /*  45855 */ \
 D(ifdef,	T_IFDEF,	KANDR,     COND | IF_COND) /*  22000 */ \
 D(if,		T_IF,		KANDR, COND | IF_COND | EXPAND) /*  18162 */ \
@@ -159,9 +157,9 @@ D(elif,		T_ELIF,		STDC89,    COND | EXPAND)  /*    610 */ \
 D(error,	T_ERROR,	STDC89,    0)		   /*    475 */ \
 D(pragma,	T_PRAGMA,	STDC89,    IN_I)	   /*    195 */ \
 D(warning,	T_WARNING,	EXTENSION, 0)		   /*     22 */ \
-D(include_next,	T_INCLUDE_NEXT,	EXTENSION, INCL)	   /*     19 */ \
+D(include_next,	T_INCLUDE_NEXT,	EXTENSION, INCL | EXPAND)  /*     19 */ \
 D(ident,	T_IDENT,	EXTENSION, IN_I)	   /*     11 */ \
-D(import,	T_IMPORT,	EXTENSION, INCL)	   /* 0 ObjC */	\
+D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* 0 ObjC */	\
 D(assert,	T_ASSERT,	EXTENSION, 0)		   /* 0 SVR4 */	\
 D(unassert,	T_UNASSERT,	EXTENSION, 0)		   /* 0 SVR4 */	\
 SCCS_ENTRY						   /* 0 SVR4? */
@@ -256,6 +254,9 @@ end_directive (pfile, skip_line)
 {
   if (CPP_OPTION (pfile, traditional))
     {
+      /* Revert change of prepare_directive_trad.  */
+      pfile->state.prevent_expansion--;
+
       if (pfile->directive != &dtable[T_DEFINE])
 	_cpp_remove_overlay (pfile);
     }
@@ -273,6 +274,7 @@ end_directive (pfile, skip_line)
   /* Restore state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
   pfile->state.in_directive = 0;
+  pfile->state.in_expression = 0;
   pfile->state.angled_headers = 0;
   pfile->directive = 0;
 }
@@ -291,6 +293,8 @@ prepare_directive_trad (pfile)
       bool was_skipping = pfile->state.skipping;
 
       pfile->state.skipping = false;
+      pfile->state.in_expression = (pfile->directive == &dtable[T_IF]
+				    || pfile->directive == &dtable[T_ELIF]);
       if (no_expand)
 	pfile->state.prevent_expansion++;
       _cpp_read_logical_line_trad (pfile);
@@ -300,6 +304,9 @@ prepare_directive_trad (pfile)
       _cpp_overlay_buffer (pfile, pfile->out.base,
 			   pfile->out.cur - pfile->out.base);
     }
+
+  /* Stop ISO C from expanding anything.  */
+  pfile->state.prevent_expansion++;
 }
 
 /* Output diagnostics for a directive DIR.  INDENTED is non-zero if

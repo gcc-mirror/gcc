@@ -63,6 +63,15 @@ struct fun_macro
   unsigned int argc;
 };
 
+/* Lexing state.  It is mostly used to prevent macro expansion.  */
+enum ls {ls_none = 0,		/* Normal state.  */
+	 ls_fun_macro,		/* When looking for '('.  */
+	 ls_defined,		/* After defined.  */
+	 ls_defined_close,	/* Looking for ')' of defined().  */
+	 ls_hash,		/* After # in preprocessor conditional.  */
+	 ls_predicate,		/* After the predicate, maybe paren?  */
+	 ls_answer};		/* In answer to predicate.  */
+
 /* Lexing TODO: Maybe handle space in escaped newlines.  Stop cpplex.c
    from recognizing comments and directives during its lexing pass.  */
 
@@ -322,6 +331,7 @@ _cpp_overlay_buffer (pfile, start, len)
 {
   cpp_buffer *buffer = pfile->buffer;
 
+  pfile->overlaid_buffer = buffer;
   buffer->saved_cur = buffer->cur;
   buffer->saved_rlimit = buffer->rlimit;
 
@@ -336,7 +346,7 @@ void
 _cpp_remove_overlay (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer = pfile->buffer;
+  cpp_buffer *buffer = pfile->overlaid_buffer;
 
   buffer->cur = buffer->saved_cur;
   buffer->rlimit = buffer->saved_rlimit;
@@ -363,6 +373,7 @@ _cpp_read_logical_line_trad (pfile)
 	    {
 	      stop = buffer->return_at_eof;
 	      _cpp_pop_buffer (pfile);
+	      buffer = pfile->buffer;
 	    }
 
 	  if (stop)
@@ -372,6 +383,7 @@ _cpp_read_logical_line_trad (pfile)
       CUR (pfile->context) = buffer->cur;
       RLIMIT (pfile->context) = buffer->rlimit;
       scan_out_logical_line (pfile, NULL);
+      buffer = pfile->buffer;
       buffer->cur = CUR (pfile->context);
     }
   while (pfile->state.skipping);
@@ -426,9 +438,10 @@ scan_out_logical_line (pfile, macro)
 {
   cpp_context *context;
   const uchar *cur;
-  unsigned int c, paren_depth = 0, quote = 0;
   uchar *out;
   struct fun_macro fmacro;
+  unsigned int c, paren_depth = 0, quote = 0;
+  enum ls lex_state = ls_none;
 
   fmacro.buff = NULL;
 
@@ -446,13 +459,19 @@ scan_out_logical_line (pfile, macro)
       c = *cur++;
       *out++ = c;
 
-      /* There are only a few entities we need to catch: comments,
-	 identifiers, newlines, escaped newlines, # and '\0'.  */
+      /* Whitespace should "continue" out of the switch,
+	 non-whitespace should "break" out of it.  */
       switch (c)
 	{
+	case ' ':
+	case '\t':
+	case '\f':
+	case '\v':
+	  continue;
+
 	case '\0':
 	  if (cur - 1 != RLIMIT (context))
-	    break;
+	    continue;
 
 	  /* If this is a macro's expansion, pop it.  */
 	  if (context->prev)
@@ -475,13 +494,25 @@ scan_out_logical_line (pfile, macro)
 
 	case '\r': case '\n':
 	  cur = handle_newline (pfile, cur - 1);
-	  if (pfile->state.parsing_args == 2)
+	  if (pfile->state.parsing_args == 2 && !pfile->state.in_directive)
 	    {
 	      /* Newlines in arguments become a space.  */
 	      out[-1] = ' ';
 	      continue;
 	    }
 	  goto done;
+
+	case '<':
+	  if (pfile->state.angled_headers && !quote)
+	    quote = '>';
+	  break;
+	case '>':
+	  if (pfile->state.angled_headers && c == quote)
+	    {
+	      pfile->state.angled_headers = false;
+	      quote = 0;
+	    }
+	  break;
 
 	case '"':
 	case '\'':
@@ -493,7 +524,11 @@ scan_out_logical_line (pfile, macro)
 
 	case '\\':
 	  if (is_vspace (*cur))
-	    out--, cur = skip_escaped_newlines (pfile, cur - 1);
+	    {
+	      out--;
+	      cur = skip_escaped_newlines (pfile, cur - 1);
+	      continue;
+	    }
 	  else
 	    {
 	      /* Skip escaped quotes here, it's easier than above, but
@@ -515,6 +550,7 @@ scan_out_logical_line (pfile, macro)
 		  pfile->out.cur = out;
 		  cur = copy_comment (pfile, cur, macro != 0);
 		  out = pfile->out.cur;
+		  continue;
 		}
 	    }
 	  break;
@@ -530,26 +566,33 @@ scan_out_logical_line (pfile, macro)
 	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
 	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 	case 'Y': case 'Z':
-	  if (quote == 0 || macro)
+	  if (!pfile->state.skipping && (quote == 0 || macro))
 	    {
 	      cpp_hashnode *node;
+	      uchar *out_start = out - 1;
 
-	      pfile->out.cur = --out;
+	      pfile->out.cur = out_start;
 	      node = lex_identifier (pfile, cur - 1);
+	      out = pfile->out.cur;
+	      cur = CUR (context);
 
 	      if (node->type == NT_MACRO
-		  && !pfile->state.skipping
-		  && pfile->state.parsing_args != 2
+		  /* Should we expand for ls_answer?  */
+		  && lex_state == ls_none
 		  && !pfile->state.prevent_expansion
 		  && !recursive_macro (pfile, node))
 		{
 		  if (node->value.macro->fun_like)
-		    maybe_start_funlike (pfile, node, out, &fmacro);
+		    {
+		      maybe_start_funlike (pfile, node, out_start, &fmacro);
+		      lex_state = ls_fun_macro;
+		      continue;
+		    }
 		  else
 		    {
 		      /* Remove the object-like macro's name from the
 			 output, and push its replacement text.  */
-		      pfile->out.cur = out;
+		      pfile->out.cur = out_start;
 		      push_replacement_text (pfile, node);
 		      goto new_context;
 		    }
@@ -558,12 +601,20 @@ scan_out_logical_line (pfile, macro)
 		{
 		  /* Found a parameter in the replacement text of a
 		     #define.  Remove its name from the output.  */
-		  pfile->out.cur = out;
+		  out = pfile->out.cur = out_start;
 		  save_replacement_text (pfile, macro, node->arg_index);
 		}
-
-	      out = pfile->out.cur;
-	      cur = CUR (context);
+	      else if (lex_state == ls_hash)
+		{
+		  lex_state = ls_predicate;
+		  continue;
+		}
+	      else if (pfile->state.in_expression
+		       && node == pfile->spec_nodes.n_defined)
+		{
+		  lex_state = ls_defined;
+		  continue;
+		}
 	    }
 	  break;
 
@@ -571,27 +622,18 @@ scan_out_logical_line (pfile, macro)
 	  if (quote == 0)
 	    {
 	      paren_depth++;
-	      if (pfile->state.parsing_args == 1)
+	      if (lex_state == ls_fun_macro)
 		{
-		  const uchar *p = pfile->out.base + fmacro.offset;
-
-		  /* Invoke a prior function-like macro if there is only
-		     white space in-between.  */
-		  while (is_numchar (*p))
-		    p++;
-		  while (is_space (*p))
-		    p++;
-
-		  if (p == out - 1)
-		    {
-		      pfile->state.parsing_args = 2;
-		      paren_depth = 1;
-		      out = pfile->out.base + fmacro.offset;
-		      fmacro.args[0] = fmacro.offset;
-		    }
-		  else
-		    pfile->state.parsing_args = 0;
+		  lex_state = ls_none;
+		  pfile->state.parsing_args = 2;
+		  paren_depth = 1;
+		  out = pfile->out.base + fmacro.offset;
+		  fmacro.args[0] = fmacro.offset;
 		}
+	      else if (lex_state == ls_predicate)
+		lex_state = ls_answer;
+	      else if (lex_state == ls_defined)
+		lex_state = ls_defined_close;
 	    }
 	  break;
 
@@ -614,7 +656,7 @@ scan_out_logical_line (pfile, macro)
 		  /* A single zero-length argument is no argument.  */
 		  if (fmacro.argc == 1
 		      && m->paramc == 0
-		      && out == pfile->out.base + 1)
+		      && out == pfile->out.base + fmacro.offset + 1)
 		    fmacro.argc = 0;
 
 		  if (_cpp_arguments_ok (pfile, m, fmacro.node, fmacro.argc))
@@ -628,6 +670,8 @@ scan_out_logical_line (pfile, macro)
 		      goto new_context;
 		    }
 		}
+	      else if (lex_state == ls_answer || lex_state == ls_defined_close)
+		lex_state = ls_none;
 	    }
 	  break;
 
@@ -641,11 +685,34 @@ scan_out_logical_line (pfile, macro)
 	      if (_cpp_handle_directive (pfile, false /* indented */))
 		goto start_logical_line;
 	    }
+	  if (pfile->state.in_expression)
+	    {
+	      lex_state = ls_hash;
+	      continue;
+	    }
 	  break;
 
 	default:
 	  break;
 	}
+
+      if (lex_state == ls_none)
+	continue;
+
+      /* Some of these transitions of state are syntax errors.  The
+	 ISO preprocessor will issue errors later.  */
+      if (lex_state == ls_fun_macro)
+	{
+	  /* Missing '('.  */
+	  lex_state = ls_none;
+	  pfile->state.parsing_args = 0;
+	}
+      else if (lex_state == ls_hash
+	       || lex_state == ls_predicate
+	       || lex_state == ls_defined)
+	lex_state = ls_none;
+
+      /* ls_answer and ls_defined_close keep going until ')'.  */
     }
 
  done:
@@ -654,6 +721,12 @@ scan_out_logical_line (pfile, macro)
   pfile->out.cur = out - 1;
   if (fmacro.buff)
     _cpp_release_buff (pfile, fmacro.buff);
+
+  if (pfile->state.parsing_args == 2)
+    cpp_error (pfile, DL_ERROR,
+	       "unterminated argument list invoking macro \"%s\"",
+	       NODE_NAME (fmacro.node));
+  pfile->state.parsing_args = 0;
 }
 
 /* Push a context holding the replacement text of the macro NODE on

@@ -1,3 +1,22 @@
+2002-06-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplib.c (dtable): Update.
+	(end_directive): Decrement expansion prevention count.
+	Clear state.in_expression.
+	(prepare_directive_trad): Set state.in_expression.
+	Increment expansion prevention count.
+	* cpptrad.c (enum ls): New.
+	(_cpp_overlay_buffer): Set overlaid_buffer.
+	(_cpp_remove_overlay): Use overlaid_buffer.
+	(_cpp_read_logcial_line_trad): Update buffer when it might
+	have changed.
+	(scan_out_logical_line): Handle state transitions for assertions
+	and defined() in #if, and for funlike invocations including the
+	directive case.  Handle '<' and '>' as a quote mechanism in
+	#include.  Warn about unterminated macro invocations.
+	* cpphash.h (struct lexer_state): New member in_expression.
+	(struct cpp_reader): New member overlaid buffer.
+
 2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/arit.c (do_31div, __Udiv, __Umod): Mark prototype
