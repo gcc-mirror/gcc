@@ -1360,38 +1360,6 @@ operand_subword_force (rtx op, unsigned int offset, enum machine_mode mode)
   return result;
 }
 
-/* Given a compare instruction, swap the operands.
-   A test instruction is changed into a compare of 0 against the operand.  */
-
-void
-reverse_comparison (rtx insn)
-{
-  rtx body = PATTERN (insn);
-  rtx comp;
-
-  if (GET_CODE (body) == SET)
-    comp = SET_SRC (body);
-  else
-    comp = SET_SRC (XVECEXP (body, 0, 0));
-
-  if (GET_CODE (comp) == COMPARE)
-    {
-      rtx op0 = XEXP (comp, 0);
-      rtx op1 = XEXP (comp, 1);
-      XEXP (comp, 0) = op1;
-      XEXP (comp, 1) = op0;
-    }
-  else
-    {
-      rtx new = gen_rtx_COMPARE (VOIDmode,
-				 CONST0_RTX (GET_MODE (comp)), comp);
-      if (GET_CODE (body) == SET)
-	SET_SRC (body) = new;
-      else
-	SET_SRC (XVECEXP (body, 0, 0)) = new;
-    }
-}
-
 /* Within a MEM_EXPR, we care about either (1) a component ref of a decl,
    or (2) a component ref of something variable.  Represent the later with
    a NULL expression.  */

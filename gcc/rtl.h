@@ -1942,7 +1942,6 @@ extern void init_emit (void);
 extern void init_emit_once (int);
 extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);
-extern void reverse_comparison (rtx);
 extern void set_new_first_and_last_insn (rtx, rtx);
 extern void unshare_all_rtl (void);
 extern void unshare_all_rtl_again (rtx);
