@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation.
+/* Copyright (C) 2003, 2004  Free Software Foundation.
 
    Verify that built-in math function constant folding of log & exp is
    correctly performed by the compiler.
@@ -118,6 +118,17 @@ void test(double d1, double d2, float f1, float f2,
   LOG_CBRT(log);
   LOG_CBRT(log2);
   LOG_CBRT(log10);
+  
+  /* Test cbrt(expN(x)) -> expN(x/3).  */
+#define CBRT_EXP(EXP) \
+ extern void link_failure_cbrt_##EXP(void); \
+ if (cbrt(EXP(d1)) != EXP(d1/3.0) || cbrtf(EXP##f(f1)) != EXP##f(f1/3.0F) \
+  || cbrtl(EXP##l(ld1)) != EXP##l(ld1/3.0L)) link_failure_cbrt_##EXP()
+    
+  CBRT_EXP(exp);
+  CBRT_EXP(exp2);
+  CBRT_EXP(exp10);
+  CBRT_EXP(pow10);
   
   /* Test logN(pow(x,y)) -> y*logN(x).  */
 #define LOG_POW(LOG, POW) \
