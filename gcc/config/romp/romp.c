@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on ROMP.
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1144,10 +1144,18 @@ output_epilog (file, size)
   int nargs = 0;		/* words of arguments */
   tree argptr;
 
+  /* Compute the number of words of arguments.  Since this is just for
+     the traceback table, we ignore arguments that don't have a size or
+     don't have a fixed size.  */
+
   for (argptr = DECL_ARGUMENTS (current_function_decl);
        argptr; argptr = TREE_CHAIN (argptr))
-    nargs += ((TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (argptr)))
-	       + BITS_PER_WORD - 1) / BITS_PER_WORD);
+    {
+      int this_size = int_size_in_bytes (TREE_TYPE (argptr));
+
+      if (this_size > 0)
+	nargs += (this_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+    }
   
   /* If the last insn was a BARRIER, we don't have to write anything except
      the trace table.  */
