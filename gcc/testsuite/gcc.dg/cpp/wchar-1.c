@@ -15,7 +15,7 @@ int main ()
   if (c > 0)
     abort ();
 #else
-  if (c < 0)
+  if (c < 0)	/* { dg-warning "always false" } */
     abort ();
 #endif
  
