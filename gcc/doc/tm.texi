@@ -7558,12 +7558,13 @@ Otherwise, if your target supports this information (if it defines
 or @samp{OBJECT_FORMAT_ELF}), GCC will provide a default definition of
 1.
 
-If this macro is defined to 1, the DWARF 2 unwinder will be the default
-exception handling mechanism; otherwise, @code{setjmp}/@code{longjmp} will be used by
-default.
+If @code{TARGET_UNWIND_INFO} is defined, the target specific unwinder
+will be used in all cases.  Defining this macro will enable the generation
+of DWARF 2 frame debugging information.
 
-If this macro is defined to anything, the DWARF 2 unwinder will be used
-instead of inline unwinders and @code{__unwind_function} in the non-@code{setjmp} case.
+If @code{TARGET_UNWIND_INFO} is not defined, and this macro is defined to 1,
+the DWARF 2 unwinder will be the default exception handling mechanism;
+otherwise, @code{setjmp}/@code{longjmp} will be used by default.
 @end defmac
 
 @defmac TARGET_UNWIND_INFO
