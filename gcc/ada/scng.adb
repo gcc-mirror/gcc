@@ -40,6 +40,8 @@ with Widechar; use Widechar;
 with System.CRC32;
 with System.WCh_Con; use System.WCh_Con;
 
+with GNAT.UTF_32; use GNAT.UTF_32;
+
 package body Scng is
 
    use ASCII;
@@ -1103,7 +1105,7 @@ package body Scng is
                   Accumulate_Checksum (Code);
 
                   if Ada_Version >= Ada_05
-                    and then Is_UTF_32_Non_Graphic (Code)
+                    and then Is_UTF_32_Non_Graphic (UTF_32 (Code))
                   then
                      Error_Msg
                        ("(Ada 2005) non-graphic character not permitted " &
@@ -1515,7 +1517,7 @@ package body Scng is
 
                         --  If UTF_32 terminator, terminate comment scan
 
-                        elsif Is_UTF_32_Line_Terminator (Code) then
+                        elsif Is_UTF_32_Line_Terminator (UTF_32 (Code)) then
                            Scan_Ptr := Wptr;
                            exit;
                         end if;
@@ -1639,7 +1641,7 @@ package body Scng is
                      Code := Character'Pos (' ');
 
                   elsif Ada_Version >= Ada_05
-                    and then Is_UTF_32_Non_Graphic (Code)
+                    and then Is_UTF_32_Non_Graphic (UTF_32 (Code))
                   then
                      Error_Msg
                        ("(Ada 2005) non-graphic character not permitted " &
@@ -1899,7 +1901,7 @@ package body Scng is
 
          --  Invalid control characters
 
-         when NUL | SOH | STX | ETX | EOT | ENQ | ACK | BEL | BS  | SO  |
+         when NUL | SOH | STX | ETX | EOT | ENQ | ACK | BEL | BS  | ASCII.SO |
               SI  | DLE | DC1 | DC2 | DC3 | DC4 | NAK | SYN | ETB | CAN |
               EM  | FS  | GS  | RS  | US  | DEL
          =>
@@ -1942,6 +1944,7 @@ package body Scng is
 
          declare
             Code : Char_Code;
+            Cat  : Category;
             Err  : Boolean;
 
          begin
@@ -1953,10 +1956,13 @@ package body Scng is
             if Err then
                Error_Illegal_Wide_Character;
                goto Scan_Next_Character;
+            end if;
+
+            Cat := Get_Category (UTF_32 (Code));
 
             --  If OK letter, reset scan ptr and go scan identifier
 
-            elsif Is_UTF_32_Letter (Code) then
+            if Is_UTF_32_Letter (Cat) then
                Scan_Ptr := Wptr;
                Name_Len := 0;
                Underline_Found := False;
@@ -1965,18 +1971,18 @@ package body Scng is
             --  If OK wide space, ignore and keep scanning (we do not include
             --  any ignored spaces in checksum)
 
-            elsif Is_UTF_32_Space (Code) then
+            elsif Is_UTF_32_Space (Cat) then
                goto Scan_Next_Character;
 
             --  If OK wide line terminator, terminate current line
 
-            elsif Is_UTF_32_Line_Terminator (Code) then
+            elsif Is_UTF_32_Line_Terminator (UTF_32 (Code)) then
                Scan_Ptr := Wptr;
                goto Scan_Line_Terminator;
 
             --  Punctuation is an error (at start of identifier)
 
-            elsif Is_UTF_32_Punctuation (Code) then
+            elsif Is_UTF_32_Punctuation (Cat) then
                Error_Msg
                  ("identifier cannot start with punctuation", Wptr);
                Scan_Ptr := Wptr;
@@ -1986,7 +1992,7 @@ package body Scng is
 
             --  Mark character is an error (at start of identifer)
 
-            elsif Is_UTF_32_Mark (Code) then
+            elsif Is_UTF_32_Mark (Cat) then
                Error_Msg
                  ("identifier cannot start with mark character", Wptr);
                Scan_Ptr := Wptr;
@@ -1996,7 +2002,7 @@ package body Scng is
 
             --  Other format character is an error (at start of identifer)
 
-            elsif Is_UTF_32_Other (Code) then
+            elsif Is_UTF_32_Other (Cat) then
                Error_Msg
                  ("identifier cannot start with other format character", Wptr);
                Scan_Ptr := Wptr;
@@ -2008,7 +2014,7 @@ package body Scng is
             --  identifier or bad literal. Not worth doing too much to try to
             --  distinguish these cases, but we will do a little bit.
 
-            elsif Is_UTF_32_Digit (Code) then
+            elsif Is_UTF_32_Digit (Cat) then
                Error_Msg
                  ("identifier cannot start with digit character", Wptr);
                Scan_Ptr := Wptr;
@@ -2155,9 +2161,10 @@ package body Scng is
                --  encoding into the name table entry for the identifier.
 
                declare
-                  Code   : Char_Code;
-                  Err    : Boolean;
-                  Chr    : Character;
+                  Code : Char_Code;
+                  Err  : Boolean;
+                  Chr  : Character;
+                  Cat  : Category;
 
                begin
                   Wptr := Scan_Ptr;
@@ -2198,19 +2205,22 @@ package body Scng is
                        ("wide character not allowed in identifier", Wptr);
                      end if;
 
+                     Cat := Get_Category (UTF_32 (Code));
+
                      --  If OK letter, store it folding to upper case. Note
                      --  that we include the folded letter in the checksum.
 
-                     if Is_UTF_32_Letter (Code) then
-                        Code := UTF_32_To_Upper_Case (Code);
+                     if Is_UTF_32_Letter (Cat) then
+                        Code :=
+                          Char_Code (UTF_32_To_Upper_Case (UTF_32 (Code)));
                         Accumulate_Checksum (Code);
                         Store_Encoded_Character (Code);
                         Underline_Found := False;
 
                      --  If OK extended digit or mark, then store it
 
-                     elsif Is_UTF_32_Digit (Code)
-                       or else Is_UTF_32_Mark (Code)
+                     elsif Is_UTF_32_Digit (Cat)
+                       or else Is_UTF_32_Mark (Cat)
                      then
                         Accumulate_Checksum (Code);
                         Store_Encoded_Character (Code);
@@ -2219,7 +2229,7 @@ package body Scng is
                      --  Wide punctuation is also stored, but counts as an
                      --  underline character for error checking purposes.
 
-                     elsif Is_UTF_32_Punctuation (Code) then
+                     elsif Is_UTF_32_Punctuation (Cat) then
                         Accumulate_Checksum (Code);
 
                         if Underline_Found then
@@ -2241,12 +2251,12 @@ package body Scng is
                      --  stored. It seems reasonable to exclude it from the
                      --  checksum.
 
-                     elsif Is_UTF_32_Other (Code) then
+                     elsif Is_UTF_32_Other (Cat) then
                         null;
 
                      --  Wide character in category Separator,Space terminates
 
-                     elsif Is_UTF_32_Space (Code) then
+                     elsif Is_UTF_32_Space (Cat) then
                         goto Scan_Identifier_Complete;
 
                      --  Any other wide character is not acceptable
