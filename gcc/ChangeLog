@@ -1,3 +1,9 @@
+2002-05-19  Andreas Jaeger  <aj@suse.de>
+
+	* gengenrtl.c: Add prototype for excluded_rtx.
+
+	* real.h: Add prototype for exact_real_truncate.
+
 2002-05-18  Richard Henderson  <rth@redhat.com>
 
 	* system.h (ENCODE_SECTION_INFO): Poison it.
@@ -25,16 +31,16 @@
 	referencing existing function.  Make function static.
 
 	* config/a29k/a29k.c, config/a29k/a29k.h, config/arc/arc.c,
-	config/arc/arc.h, config/arm/arm.c, config/arm/arm.h, 
+	config/arc/arc.h, config/arm/arm.c, config/arm/arm.h,
 	config/h8300/h8300.c, config/h8300/h8300.h, config/i370/i370.c,
 	config/i370/i370.h, config/i386/i386-interix.h, config/i386/i386.c,
 	config/i386/i386.h, config/i386/interix.c, config/m88k/m88k.c,
-	config/m88k/m88k.h, config/mips/mips.c, config/mips/mips.h, 
+	config/m88k/m88k.h, config/mips/mips.c, config/mips/mips.h,
 	config/ns32k/ns32k.c, config/ns32k/ns32k.h, config/pa/pa.c,
 	config/pa/pa.h, config/romp/romp.c, config/romp/romp.h,
 	config/rs6000/linux64.h, config/rs6000/xcoff.h, config/s390/s390.c,
 	config/s390/s390.h, config/sh/sh.c, config/sh/sh.h,
-	config/sparc/sparc.c, config/sparc/sparc.h, config/v850/v850.c, 
+	config/sparc/sparc.c, config/sparc/sparc.h, config/v850/v850.c,
 	config/v850/v850.h, config/vax/vax.c, config/vax/vms.h,
 	config/xtensa/xtensa.c, config/xtensa/xtensa.h:
 	Move ENCODE_SECTION_INFO to out-of-line function and add
@@ -92,10 +98,10 @@
 	* config/elfos.h, config/svr3.h, config/arm/aof.h, config/c4x/c4x.h,
 	config/i386/dgux.h, config/i386/osfrose.h, config/i386/sco5.h,
 	config/i386/svr3gas.h, config/i860/paragon.h, config/ia64/aix.h,
-	config/m32r/m32r.h, config/m68k/dpx2.h, config/m68k/lynx.h, 
+	config/m32r/m32r.h, config/m68k/dpx2.h, config/m68k/lynx.h,
 	config/m68k/m68k.h, config/m68k/tower-as.h, config/m88k/dgux.h,
 	config/mcore/mcore-pe.h, config/mips/mips.h, config/mmix/mmix.h,
-	config/pa/pa-linux.h, config/pa/pa.h, config/romp/romp.h, 
+	config/pa/pa-linux.h, config/pa/pa.h, config/romp/romp.h,
 	config/rs6000/lynx.h, config/rs6000/sysv4.h, config/s390/linux.h,
 	config/sparc/sysv4.h, config/xtensa/elf.h, config/xtensa/linux.h
 	(SELECT_RTX_SECTION): Remove.
@@ -115,7 +121,7 @@
 	* config/mips/iris6.h (READONLY_DATA_SECTION_ASM_OP): Undef before
 	redefining.
 	* config/mips/mips.c (mips_select_rtx_section): Make static.
-	Support ELF SHF_MERGE features. 
+	Support ELF SHF_MERGE features.
 	* config/mips/mips-protos.h: Update.
 	* config/rs6000/xcoff.h (SELECT_RTX_SECTION): Move ...
 	* config/rs6000/rs6000.c (rs6000_xcoff_select_rtx_section): ... here.
@@ -241,7 +247,7 @@ Sun May 19 00:24:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-05-18  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* c-common.c (c_common_post_options): Warn if -Wformat-zero-length
-	is used without -Wformat.  
+	is used without -Wformat.
 	* c-common.h (warn_format_zero_length): Declare extern.
 	* c-decl.c (warn_options): Add "format-zero-length".
 	* c-format.c (warn_format_zero_length): Declare.
