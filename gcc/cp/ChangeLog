@@ -1,3 +1,9 @@
+1004-10-28  Matt Austern  <austern@apple.com>
+
+	PR c++/14124
+	* decl.c (finish_enum): Handle packed attribute.
+	* parser.c (cp_parser_enum_specifier): Process trailing attributes.
+	
 2004-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17132
