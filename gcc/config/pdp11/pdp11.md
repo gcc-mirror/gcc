@@ -365,7 +365,7 @@
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "* return output_jump(\"blo\", \"bhos\", get_attr_length(insn));"
+  "* return output_jump(\"blo\", \"bhis\", get_attr_length(insn));"
   [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
 						      (pc))
 					       (const_int -128))
@@ -538,7 +538,7 @@
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
-  "* return output_jump(\"bhos\", \"blo\", get_attr_length(insn));"
+  "* return output_jump(\"bhis\", \"blo\", get_attr_length(insn));"
   [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
 						      (pc))
 					       (const_int -128))
@@ -572,7 +572,7 @@
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
-  "* return output_jump(\"blo\", \"bhos\", get_attr_length(insn));"
+  "* return output_jump(\"blo\", \"bhis\", get_attr_length(insn));"
   [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
 						      (pc))
 					       (const_int -128))
