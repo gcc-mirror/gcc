@@ -1,5 +1,10 @@
 2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* combine.c (if_then_else_cond): Check for NULL return value of
+	simplify_gen_subreg.
+
+2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* reload1.c (emit_reload_insns): Set reg_has_output_reload to one
 	after setting reg_last_reload_reg for optional output reloads.
 
