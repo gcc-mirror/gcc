@@ -1,3 +1,48 @@
+2000-07-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c: Don't include sys/mman.h.
+	(cpp_push_buffer, cpp_pop_buffer): Moved to cpplib.c.
+
+	* cpplib.c: Include sys/mman.h and obstack.h.
+	(cpp_push_buffer): Moved from cpplex.c; allocate buffers on an
+	obstack.
+	(cpp_pop_buffer): Moved from cpplex.c; free buffers from an obstack.
+	(_cpp_unwind_if_stack): Now static, unwind_if_stack.  Don't
+	bother freeing if stack entries (they will be freed with their buffer).
+	(do_endif): Free if stack entries from the buffer obstack.
+	(push_conditional): Allocate if stack entries from the buffer obstack.
+
+	(find_answer): Rename to _cpp_find_answer.
+	(do_assert, do_unassert): Update.
+
+	* cpphash.h: Update prototypes.
+	(xobnew): New convenience macro.
+	* cpplib.h (struct cpp_reader): Add hash_ob and buffer_ob fields.
+	Update comments.
+	(struct cpp_hashnode): Remove disabled field.
+
+	* cppinit.c: Don't include hashtab.h or splay-tree.h.
+	(report_missing_guard): Moved to cppfiles.c.
+	(cpp_reader_init): Call cpp_init_stacks, cpp_init_macros,
+	cpp_init_includes.
+	(cpp_cleanup): Call cpp_cleanup_stacks, cpp_cleanup_macros,
+	cpp_cleanup_includes.  Don't destroy hashtab or
+	all_include_files here.
+	(cpp_finish): Use _cpp_report_missing_guards.
+
+	* cppfiles.c (report_missing_guard): Moved from cppinit.c.
+	(_cpp_init_include_table): Rename _cpp_init_includes.
+	(_cpp_cleanup_includes, _cpp_report_missing_guards): New.
+
+	* cppexp.c (parse_assertion): Update for new name of
+	find_answer.
+
+	* Makefile.in (cpplib.o, cpphash.o, cppinit.o): Update deps.
+
+2000-07-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (do_ident): s/VSPACE/EOF/
+
 2000-07-05  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c: Fix trigraph replacement within strings.

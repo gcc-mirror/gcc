@@ -476,7 +476,7 @@ struct cpp_reader
   /* Hash table of macros and assertions.  See cpphash.c */
   struct htab *hashtab;
 
-  /* Hash table of other included files.  See cppfiles.c */
+  /* Tree of other included files.  See cppfiles.c */
   struct splay_tree_s *all_include_files;
 
   /* Chain of `actual directory' file_name_list entries,
@@ -526,6 +526,14 @@ struct cpp_reader
 
   /* Buffer of -M output.  */
   struct deps *deps;
+
+  /* Obstack holding all macro hash nodes.  This never shrinks.
+     See cpphash.c */
+  struct obstack *hash_ob;
+
+  /* Obstack holding buffer and conditional structures.  This is a
+     real stack.  See cpplib.c */
+  struct obstack *buffer_ob;
 
   /* User visible options.  */
   struct cpp_options opts;
@@ -625,7 +633,6 @@ struct cpp_hashnode
   unsigned int hash;			/* cached hash value */
   unsigned short length;		/* length of name */
   ENUM_BITFIELD(node_type) type : 8;	/* node type */
-  char disabled;			/* macro turned off for rescan? */
 
   union
   {

@@ -60,7 +60,8 @@ static ssize_t read_with_read	PARAMS ((cpp_buffer *, int, ssize_t));
 static ssize_t read_file	PARAMS ((cpp_buffer *, int, ssize_t));
 
 static void destroy_include_file_node	PARAMS ((splay_tree_value));
-static int close_cached_fd	PARAMS ((splay_tree_node, void *));
+static int close_cached_fd		PARAMS ((splay_tree_node, void *));
+static int report_missing_guard		PARAMS ((splay_tree_node, void *));
 
 #if 0
 static void hack_vms_include_specification PARAMS ((char *));
@@ -103,13 +104,20 @@ close_cached_fd (n, dummy)
 }
 
 void
-_cpp_init_include_table (pfile)
+_cpp_init_includes (pfile)
      cpp_reader *pfile;
 {
   pfile->all_include_files
     = splay_tree_new ((splay_tree_compare_fn) strcmp,
 		      (splay_tree_delete_key_fn) free,
 		      destroy_include_file_node);
+}
+
+void
+_cpp_cleanup_includes (pfile)
+     cpp_reader *pfile;
+{
+  splay_tree_delete (pfile->all_include_files);
 }
 
 /* Given a filename, look it up and possibly open it.  If the file
@@ -356,6 +364,38 @@ cpp_make_system_header (pfile, pbuf, flag)
     cpp_ice (pfile, "cpp_make_system_header called on non-file buffer");
   else
     pbuf->inc->sysp = flag;
+}
+
+/* Report on all files that might benefit from a multiple include guard.
+   Triggered by -H.  */
+void
+_cpp_report_missing_guards (pfile)
+     cpp_reader *pfile;
+{
+  int banner = 0;
+  splay_tree_foreach (pfile->all_include_files, report_missing_guard,
+		      (PTR) &banner);
+}
+
+static int
+report_missing_guard (n, b)
+     splay_tree_node n;
+     void *b;
+{
+  struct include_file *f = (struct include_file *) n->value;
+  int *bannerp = (int *)b;
+
+  if (f && f->cmacro == 0 && f->include_count == 1)
+    {
+      if (*bannerp == 0)
+	{
+	  fputs (_("Multiple include guards may be useful for:\n"), stderr);
+	  *bannerp = 1;
+	}
+      fputs (f->name, stderr);
+      putc ('\n', stderr);
+    }
+  return 0;
 }
 
 #define PRINT_THIS_DEP(p, b) (CPP_PRINT_DEPS(p) > (b||p->system_include_depth))

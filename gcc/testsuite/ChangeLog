@@ -1,3 +1,7 @@
+2000-07-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp/ident.c: New test.
+
 2000-07-05  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/lexident.c, gcc.dg/cpp/lexnum.c,

@@ -404,7 +404,7 @@ parse_assertion (pfile)
       /* If we get here, the syntax is valid.  */
       op.op = INT;
       op.value = (hp->type == T_ASSERTION &&
-		  (answer == 0 || *find_answer (hp, &answer->list) != 0));
+		  (answer == 0 || *_cpp_find_answer (hp, &answer->list) != 0));
 
       if (answer)
 	FREE_ANSWER (answer);
