@@ -1,5 +1,10 @@
 2001-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* simplify-rtx.c (simplifi_binary_operation) [DIV]: If DIV has
+	narrower mode than op0, only return the bits in DIV's mode.
+
+2001-12-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* combine.c (distribute_notes): Avoid adding REG_LABEL notes
 	to JUMP_INSNs with JUMP_LABEL.
 

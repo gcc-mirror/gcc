@@ -1,5 +1,7 @@
 2001-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c-torture/compile/20011219-2.c: New test.
+
 	* gcc.c-torture/execute/20011219-1.c: New test.
 
 2001-12-19  David Billinghurst <David.Billinghurst@riotinto.com>
