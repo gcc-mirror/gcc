@@ -2,6 +2,8 @@
 
 	* cselib.c (reg_values, reg_values_size): Make them static.
 
+	* cse.c (cse_reg_info_table): Make it static.
+
 2005-03-06  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* cse.c (find_best_addr): Use canon_for_address.
