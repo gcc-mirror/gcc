@@ -5994,7 +5994,7 @@ schedule_block (bb, rgn_n_insns)
 		 still intact.  */
 
 	      temp = insn;
-	      while (SCHED_GROUP_P (insn))
+	      while (SCHED_GROUP_P (temp))
 		temp = PREV_INSN (temp);
 
 	      /* Update source block boundaries.   */
