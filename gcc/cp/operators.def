@@ -108,7 +108,7 @@ DEF_SIMPLE_OPERATOR ("+", PLUS_EXPR, "pl", "__pl", 2)
 DEF_SIMPLE_OPERATOR ("-", MINUS_EXPR, "mi", "__mi", 2)
 DEF_SIMPLE_OPERATOR ("*", MULT_EXPR, "ml", "__ml", 2)
 DEF_SIMPLE_OPERATOR ("/", TRUNC_DIV_EXPR, "dv", "__dv", 2)
-DEF_SIMPLE_OPERATOR ("%", TRUNC_MOD_EXPR, "md", "__md", 2)
+DEF_SIMPLE_OPERATOR ("%", TRUNC_MOD_EXPR, "rm", "__md", 2)
 DEF_SIMPLE_OPERATOR ("&", BIT_AND_EXPR, "an", "__ad", 2)
 DEF_SIMPLE_OPERATOR ("|", BIT_IOR_EXPR, "or", "__or", 2)
 DEF_SIMPLE_OPERATOR ("^", BIT_XOR_EXPR, "eo", "__er", 2)
@@ -131,6 +131,8 @@ DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", "__mm", 2)
 /* These are extensions.  */
 DEF_SIMPLE_OPERATOR ("<?", MIN_EXPR, "vx3min", "__mn", 2)
 DEF_SIMPLE_OPERATOR (">?", MAX_EXPR, "vx3max", "__mx", 2)
+/* This one is needed for mangling.  */
+DEF_SIMPLE_OPERATOR ("::", SCOPE_REF, "sr", NULL, 2);
 
 /* Assignment operators.  */
 DEF_ASSN_OPERATOR ("=", NOP_EXPR, "aS", "__as", 2)
@@ -138,7 +140,7 @@ DEF_ASSN_OPERATOR ("+=", PLUS_EXPR, "pL", "__apl", 2)
 DEF_ASSN_OPERATOR ("-=", MINUS_EXPR, "mI", "__ami", 2)
 DEF_ASSN_OPERATOR ("*=", MULT_EXPR, "mL", "__aml", 2)
 DEF_ASSN_OPERATOR ("/=", TRUNC_DIV_EXPR, "dV", "__adv", 2)
-DEF_ASSN_OPERATOR ("%=", TRUNC_MOD_EXPR, "mD", "__amd", 2)
+DEF_ASSN_OPERATOR ("%=", TRUNC_MOD_EXPR, "rM", "__amd", 2)
 DEF_ASSN_OPERATOR ("&=", BIT_AND_EXPR, "aN", "__aad", 2)
 DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR", "__aor", 2)
 DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO", "__aer", 2)
@@ -150,4 +152,3 @@ DEF_SIMPLE_OPERATOR ("?:", COND_EXPR, "qu", "__cn", 3)
 
 /* Miscellaneous.  */
 DEF_SIMPLE_OPERATOR ("()", CALL_EXPR, "cl", "__cl", -1)
-

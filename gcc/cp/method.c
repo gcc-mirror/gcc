@@ -137,6 +137,8 @@ init_method ()
   ggc_add_tree_varray_root (&btypelist, 1);
   ggc_add_tree_varray_root (&ktypelist, 1);
   ggc_add_tree_varray_root (&typevec, 1);
+  if (flag_new_abi)
+    init_mangle ();
 }
 
 /* This must be large enough to hold any printed integer or floating-point
@@ -156,6 +158,9 @@ static int numeric_output_need_bar;
 static inline void
 start_squangling ()
 {
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 200005222);
+
   if (flag_do_squangling)
     {
       nofold = 0;
@@ -1125,6 +1130,10 @@ build_overload_name (parmtypes, begin, end)
      int begin, end;
 {
   char *ret;
+
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 200005221);
+
   start_squangling ();
   ret = build_mangled_name (parmtypes, begin, end);
   end_squangling ();
@@ -1140,6 +1149,9 @@ build_mangled_name (parmtypes, begin, end)
      tree parmtypes;
      int begin, end;
 {
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 200004105);
+
   if (begin) 
     OB_INIT ();
 
@@ -1549,6 +1561,9 @@ tree
 build_static_name (context, name)
      tree context, name;
 {
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 200004106);
+
   OB_INIT ();
   numeric_output_need_bar = 0;
   start_squangling ();
@@ -1583,6 +1598,9 @@ build_decl_overload_real (decl, parms, ret_type, tparms, targs,
 {
   const char *name;
   enum tree_code operator_code;
+
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 20000410);
 
   operator_code = DECL_OVERLOADED_OPERATOR_P (decl);
   if (!DECL_CONV_FN_P (decl) && operator_code)
@@ -1719,6 +1737,12 @@ set_mangled_name_for_decl (decl)
     /* There's no need to mangle the name of a template function.  */
     return;
 
+  if (flag_new_abi)
+    {
+      DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+      return;
+    }
+
   parm_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
   if (DECL_STATIC_FUNCTION_P (decl))
@@ -1748,6 +1772,9 @@ build_typename_overload (type)
 {
   tree id;
 
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 200004108);
+
   OB_INIT ();
   OB_PUTS (OPERATOR_TYPENAME_FORMAT);
   nofold = 1;
@@ -1765,6 +1792,9 @@ tree
 build_overload_with_type (name, type)
      tree name, type;
 {
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 200004109);
+
   OB_INIT ();
   OB_PUTID (name);
   nofold = 1;
@@ -1780,6 +1810,9 @@ get_id_2 (name, name2)
      const char *name;
      tree name2;
 {
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 20000411);
+
   OB_INIT ();
   OB_PUTCP (name);
   OB_PUTID (name2);
@@ -1796,6 +1829,9 @@ get_ctor_vtbl_name (type, binfo)
      tree type;
      tree binfo;
 {
+  /* This function is obsoleted by the new ABI.  */
+  my_friendly_assert (!flag_new_abi, 200005220);
+
   start_squangling ();
   OB_INIT ();
   OB_PUTCP (CTOR_VTBL_NAME_PREFIX);
@@ -2019,6 +2055,11 @@ hack_identifier (value, name)
 }
 
 
+/* Return a thunk to FUNCTION.  For a virtual thunk, DELTA is the
+   offset to this used to locate the vptr, and VCALL_INDEX is used to
+   look up the eventual subobject location.  For a non-virtual thunk,
+   DELTA is the offset to this and VCALL_INDEX is zero.  */
+
 tree
 make_thunk (function, delta, vcall_index)
      tree function;
@@ -2028,6 +2069,7 @@ make_thunk (function, delta, vcall_index)
   tree thunk_id;
   tree thunk;
   tree func_decl;
+  int vcall_offset = vcall_index * int_size_in_bytes (vtable_entry_type);
 
   if (TREE_CODE (function) != ADDR_EXPR)
     abort ();
@@ -2035,24 +2077,29 @@ make_thunk (function, delta, vcall_index)
   if (TREE_CODE (func_decl) != FUNCTION_DECL)
     abort ();
 
-  OB_INIT ();
-  OB_PUTS ("__thunk_");
-  if (delta > 0)
-    {
-      OB_PUTC ('n');
-      icat (delta);
-    }
+  if (flag_new_abi) 
+    thunk_id = mangle_thunk (TREE_OPERAND (function, 0),  delta, vcall_offset);
   else
-    icat (-delta);
-  OB_PUTC ('_');
-  if (vcall_index)
     {
-      icat (vcall_index);
+      OB_INIT ();
+      OB_PUTS ("__thunk_");
+      if (delta > 0)
+	{
+	  OB_PUTC ('n');
+	  icat (delta);
+	}
+      else
+	icat (-delta);
       OB_PUTC ('_');
+      if (vcall_index)
+	{
+	  icat (vcall_index);
+	  OB_PUTC ('_');
+	}
+      OB_PUTID (DECL_ASSEMBLER_NAME (func_decl));
+      OB_FINISH ();
+      thunk_id = get_identifier (obstack_base (&scratch_obstack));
     }
-  OB_PUTID (DECL_ASSEMBLER_NAME (func_decl));
-  OB_FINISH ();
-  thunk_id = get_identifier (obstack_base (&scratch_obstack));
 
   thunk = IDENTIFIER_GLOBAL_VALUE (thunk_id);
   if (thunk && !DECL_THUNK_P (thunk))
@@ -2073,8 +2120,7 @@ make_thunk (function, delta, vcall_index)
       SET_DECL_THUNK_P (thunk);
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
-      THUNK_VCALL_OFFSET (thunk) 
-	= vcall_index * int_size_in_bytes (vtable_entry_type);
+      THUNK_VCALL_OFFSET (thunk) = vcall_offset;
       /* The thunk itself is not a constructor or destructor, even if
        the thing it is thunking to is.  */
       DECL_INTERFACE_KNOWN (thunk) = 1;

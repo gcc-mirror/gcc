@@ -26,9 +26,9 @@ struct T : public S
 // Provide access to the raw function pointers.  This is
 // mangling-dependent.
 
-extern "C" void f__1T ();
-extern "C" void g__1T ();
-extern "C" void h__1T ();
+extern "C" void _ZN1T1fEv ();
+extern "C" void _ZN1T1gEv ();
+extern "C" void _ZN1T1hEv ();
 
 // This structure is a C representation of a pointer-to-member.
 
@@ -72,12 +72,12 @@ main ()
   // There should be no adjustment for the `T' version, and an
   // appropriate adjustment for the `S' version.
   y = &T::f;
-  if (yp->ptr != &f__1T)
+  if (yp->ptr != &_ZN1T1fEv)
     return 5;
   if (yp->adj != 0)
     return 6;
   x = (sp) y;
-  if (xp->ptr != &f__1T)
+  if (xp->ptr != &_ZN1T1fEv)
     return 7;
   if (xp->adj != delta)
     return 8;

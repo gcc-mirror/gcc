@@ -1984,6 +1984,10 @@ build_template_decl (decl, parms)
       DECL_STATIC_FUNCTION_P (tmpl) = DECL_STATIC_FUNCTION_P (decl);
       DECL_CONSTRUCTOR_P (tmpl) = DECL_CONSTRUCTOR_P (decl);
       DECL_NONCONVERTING_P (tmpl) = DECL_NONCONVERTING_P (decl);
+      DECL_ASSIGNMENT_OPERATOR_P (tmpl) = DECL_ASSIGNMENT_OPERATOR_P (decl);
+      if (DECL_OVERLOADED_OPERATOR_P (decl))
+	SET_OVERLOADED_OPERATOR_CODE (tmpl, 
+				      DECL_OVERLOADED_OPERATOR_P (decl));
     }
 
   return tmpl;
@@ -4047,8 +4051,11 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       DECL_ASSEMBLER_NAME (type_decl) = DECL_NAME (type_decl);
       if (!is_partial_instantiation)
 	{
-	  DECL_ASSEMBLER_NAME (type_decl)
-	    = get_identifier (build_overload_name (t, 1, 1));
+	  if (flag_new_abi)
+	    DECL_ASSEMBLER_NAME (type_decl) = mangle_decl (type_decl);
+	  else
+	    DECL_ASSEMBLER_NAME (type_decl)
+	      = get_identifier (build_overload_name (t, 1, 1));
 
 	  /* For backwards compatibility; code that uses
 	     -fexternal-templates expects looking up a template to
@@ -5708,10 +5715,15 @@ tsubst_decl (t, args, type, in_decl)
 			      /*complain=*/1, t,
 			      /*entering_scope=*/1);
 
-	if (member && DECL_CONV_FN_P (r))
-	  /* Type-conversion operator.  Reconstruct the name, in
-	     case it's the name of one of the template's parameters.  */
-	  DECL_NAME (r) = build_typename_overload (TREE_TYPE (type));
+	if (member && DECL_CONV_FN_P (r)) 
+	  {
+	    /* Type-conversion operator.  Reconstruct the name, in
+	       case it's the name of one of the template's parameters.  */
+	    if (flag_new_abi)
+	      DECL_NAME (r) = mangle_conv_op_name_for_type (TREE_TYPE (type));
+	    else
+	      DECL_NAME (r) = build_typename_overload (TREE_TYPE (type));
+	  }
 
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args,
 				     /*complain=*/1, t);
@@ -5745,8 +5757,13 @@ tsubst_decl (t, args, type, in_decl)
 	    register_specialization (r, gen_tmpl, argvec);
 
 	    /* Set the mangled name for R.  */
-	    if (DECL_DESTRUCTOR_P (t))
-	      DECL_ASSEMBLER_NAME (r) = build_destructor_name (ctx);
+	    if (DECL_DESTRUCTOR_P (t)) 
+	      {
+		if (flag_new_abi)
+		  set_mangled_name_for_decl (r);
+		else
+		  DECL_ASSEMBLER_NAME (r) = build_destructor_name (ctx);
+	      }
 	    else 
 	      {
 		/* Instantiations of template functions must be mangled
@@ -7078,8 +7095,13 @@ tsubst_copy (t, args, complain, in_decl)
 
     case IDENTIFIER_NODE:
       if (IDENTIFIER_TYPENAME_P (t))
-	return (build_typename_overload
-		(tsubst (TREE_TYPE (t), args, complain, in_decl)));
+	{
+	  tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	  if (flag_new_abi)
+	    return mangle_conv_op_name_for_type (new_type);
+	  else
+	    return (build_typename_overload (new_type));
+	}
       else
 	return t;
 
@@ -9911,42 +9933,29 @@ tsubst_enum (tag, newtag, args)
   finish_enum (newtag);
 }
 
-/* Set the DECL_ASSEMBLER_NAME for DECL, which is a FUNCTION_DECL that
-   is either an instantiation or specialization of a template
-   function.  */
+/* DECL is a FUNCTION_DECL that is a template specialization.  Return
+   its type -- but without substituting the innermost set of template
+   arguments.  So, innermost set of template parameters will appear in
+   the type.  If CONTEXTP is non-NULL, then the partially substituted
+   DECL_CONTEXT (if any) will also be filled in.  Similarly, TPARMSP
+   will be filled in with the substituted template parameters, if it
+   is non-NULL.  */
 
-static void
-set_mangled_name_for_template_decl (decl)
+tree 
+get_mostly_instantiated_function_type (decl, contextp, tparmsp)
      tree decl;
+     tree *contextp;
+     tree *tparmsp;
 {
   tree context = NULL_TREE;
   tree fn_type;
-  tree ret_type;
-  tree parm_types;
-  tree tparms;
-  tree targs;
   tree tmpl;
+  tree targs;
+  tree tparms;
   int parm_depth;
 
-  my_friendly_assert (TREE_CODE (decl) == FUNCTION_DECL, 0);
-  my_friendly_assert (DECL_TEMPLATE_INFO (decl) != NULL_TREE, 0);
-
-  /* The names of template functions must be mangled so as to indicate
-     what template is being specialized with what template arguments.
-     For example, each of the following three functions must get
-     different mangled names:
-
-       void f(int);                  
-       template <> void f<7>(int);
-       template <> void f<8>(int);  */
-
-  targs = DECL_TI_ARGS (decl);
-  if (uses_template_parms (targs))
-    /* This DECL is for a partial instantiation.  There's no need to
-       mangle the name of such an entity.  */
-    return;
-
   tmpl = most_general_template (DECL_TI_TEMPLATE (decl));
+  targs = DECL_TI_ARGS (decl);
   tparms = DECL_TEMPLATE_PARMS (tmpl);
   parm_depth = TMPL_PARMS_DEPTH (tparms);
 
@@ -9954,24 +9963,6 @@ set_mangled_name_for_template_decl (decl)
      of parameters.  */
   my_friendly_assert (parm_depth == TMPL_ARGS_DEPTH (targs), 0);
 
-  /* We now compute the PARMS and RET_TYPE to give to
-     build_decl_overload_real.  The PARMS and RET_TYPE are the
-     parameter and return types of the template, after all but the
-     innermost template arguments have been substituted, not the
-     parameter and return types of the function DECL.  For example,
-     given:
-
-       template <class T> T f(T);
-
-     both PARMS and RET_TYPE should be `T' even if DECL is `int f(int)'.  
-     A more subtle example is:
-
-       template <class T> struct S { template <class U> void f(T, U); }
-
-     Here, if DECL is `void S<int>::f(int, double)', PARMS should be
-     {int, U}.  Thus, the args that we want to subsitute into the
-     return and parameter type for the function are those in TARGS,
-     with the innermost level omitted.  */
   fn_type = TREE_TYPE (tmpl);
   if (DECL_STATIC_FUNCTION_P (decl))
     context = DECL_CONTEXT (decl);
@@ -9986,7 +9977,7 @@ set_mangled_name_for_template_decl (decl)
 
       /* Replace the innermost level of the TARGS with NULL_TREEs to
 	 let tsubst know not to subsitute for those parameters.  */
-      partial_args = make_tree_vec (TMPL_ARGS_DEPTH (targs));
+      partial_args = make_tree_vec (TREE_VEC_LENGTH (targs));
       for (i = 1; i < TMPL_ARGS_DEPTH (targs); ++i)
 	SET_TMPL_ARGS_LEVEL (partial_args, i,
 			     TMPL_ARGS_LEVEL (targs, i));
@@ -10007,6 +9998,74 @@ set_mangled_name_for_template_decl (decl)
       TREE_VEC_LENGTH (partial_args)--;
       tparms = tsubst_template_parms (tparms, partial_args, /*complain=*/1);
     }
+
+  if (contextp)
+    *contextp = context;
+  if (tparmsp)
+    *tparmsp = tparms;
+
+  return fn_type;
+}
+
+/* Set the DECL_ASSEMBLER_NAME for DECL, which is a FUNCTION_DECL that
+   is either an instantiation or specialization of a template
+   function.  */
+
+static void
+set_mangled_name_for_template_decl (decl)
+     tree decl;
+{
+  tree context = NULL_TREE;
+  tree fn_type;
+  tree ret_type;
+  tree parm_types;
+  tree tparms;
+  tree targs;
+
+  my_friendly_assert (TREE_CODE (decl) == FUNCTION_DECL, 0);
+  my_friendly_assert (DECL_TEMPLATE_INFO (decl) != NULL_TREE, 0);
+
+  /* Under the new ABI, we don't need special machinery.  */
+  if (flag_new_abi)
+    {
+      set_mangled_name_for_decl (decl);
+      return;
+    }
+
+  /* The names of template functions must be mangled so as to indicate
+     what template is being specialized with what template arguments.
+     For example, each of the following three functions must get
+     different mangled names:
+
+       void f(int);                  
+       template <> void f<7>(int);
+       template <> void f<8>(int);  */
+
+  targs = DECL_TI_ARGS (decl);
+  if (uses_template_parms (targs))
+    /* This DECL is for a partial instantiation.  There's no need to
+       mangle the name of such an entity.  */
+    return;
+
+  /* We now compute the PARMS and RET_TYPE to give to
+     build_decl_overload_real.  The PARMS and RET_TYPE are the
+     parameter and return types of the template, after all but the
+     innermost template arguments have been substituted, not the
+     parameter and return types of the function DECL.  For example,
+     given:
+
+       template <class T> T f(T);
+
+     both PARMS and RET_TYPE should be `T' even if DECL is `int f(int)'.  
+     A more subtle example is:
+
+       template <class T> struct S { template <class U> void f(T, U); }
+
+     Here, if DECL is `void S<int>::f(int, double)', PARMS should be
+     {int, U}.  Thus, the args that we want to subsitute into the
+     return and parameter type for the function are those in TARGS,
+     with the innermost level omitted.  */
+  fn_type = get_mostly_instantiated_function_type (decl, &context, &tparms);
 
   /* Now, get the innermost parameters and arguments, and figure out
      the parameter and return types.  */
@@ -10034,10 +10093,10 @@ set_mangled_name_for_template_decl (decl)
   my_friendly_assert (TREE_VEC_LENGTH (tparms) == TREE_VEC_LENGTH (targs),
 		      0);
 
-  /* Actually set the DCL_ASSEMBLER_NAME.  */
+  /* Actually set the DECL_ASSEMBLER_NAME.  */
   DECL_ASSEMBLER_NAME (decl)
     = build_decl_overload_real (decl, parm_types, ret_type,
 				tparms, targs, 
 				DECL_FUNCTION_MEMBER_P (decl) 
-				+ DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl));
+			        + DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl));
 }

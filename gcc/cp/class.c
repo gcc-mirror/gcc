@@ -83,6 +83,10 @@ typedef struct vcall_offset_data_s
 static int current_class_stack_size;
 static class_stack_node_t current_class_stack;
 
+/* An array of all local classes present in this translation unit, in
+   declaration order.  */
+varray_type local_classes;
+
 static tree get_vfield_name PARAMS ((tree));
 static void finish_struct_anon PARAMS ((tree));
 static tree build_vbase_pointer PARAMS ((tree, tree));
@@ -630,8 +634,11 @@ static tree
 get_vtable_name (type)
      tree type;
 {
-  return build_overload_with_type (get_identifier (VTABLE_NAME_PREFIX),
-				   type);
+  if (flag_new_abi)
+    return mangle_vtbl_for_type (type);
+  else
+    return build_overload_with_type (get_identifier (VTABLE_NAME_PREFIX),
+				     type);
 }
 
 /* Return an IDENTIFIER_NODE for the name of the virtual table table
@@ -641,8 +648,11 @@ tree
 get_vtt_name (type)
      tree type;
 {
-  return build_overload_with_type (get_identifier (VTT_NAME_PREFIX),
-				   type);
+  if (flag_new_abi)
+    return mangle_vtt_for_type (type);
+  else
+    return build_overload_with_type (get_identifier (VTT_NAME_PREFIX),
+				     type);
 }
 
 /* Return the offset to the main vtable for a given base BINFO.  */
@@ -5296,6 +5306,8 @@ init_class_processing ()
   current_class_stack 
     = (class_stack_node_t) xmalloc (current_class_stack_size 
 				    * sizeof (struct class_stack_node));
+  VARRAY_TREE_INIT (local_classes, 8, "local_classes");
+  ggc_add_tree_varray_root (&local_classes, 1);
 
   access_default_node = build_int_2 (0, 0);
   access_public_node = build_int_2 (ak_public, 0);
@@ -6698,7 +6710,10 @@ build_ctor_vtbl_group (binfo, t)
   tree id;
 
   /* See if we've already create this construction vtable group.  */
-  id = get_ctor_vtbl_name (t, binfo);
+  if (flag_new_abi)
+    id = mangle_ctor_vtbl_for_type (t, binfo);
+  else
+    id = get_ctor_vtbl_name (t, binfo);
   if (IDENTIFIER_GLOBAL_VALUE (id))
     return;
 

@@ -115,11 +115,11 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/class.c $(srcdir)/cp/cp-tree.def \
  $(srcdir)/cp/errfn.c $(srcdir)/cp/error.c $(srcdir)/cp/except.c \
  $(srcdir)/cp/expr.c $(srcdir)/cp/friend.c $(srcdir)/cp/init.c \
  $(srcdir)/cp/input.c $(srcdir)/cp/lex.c $(srcdir)/cp/lex.h \
- $(srcdir)/cp/method.c $(srcdir)/cp/optimize.c $(srcdir)/cp/parse.y \
- $(srcdir)/cp/pt.c $(srcdir)/cp/ptree.c $(srcdir)/cp/repo.c \
- $(srcdir)/cp/rtti.c $(srcdir)/cp/search.c $(srcdir)/cp/semantics.c \
- $(srcdir)/cp/spew.c $(srcdir)/cp/tree.c $(srcdir)/cp/typeck.c \
- $(srcdir)/cp/typeck2.c $(srcdir)/cp/xref.c
+ $(srcdir)/cp/mangle.c $(srcdir)/cp/method.c $(srcdir)/cp/optimize.c \
+ $(srcdir)/cp/parse.y $(srcdir)/cp/pt.c $(srcdir)/cp/ptree.c \
+ $(srcdir)/cp/repo.c $(srcdir)/cp/rtti.c $(srcdir)/cp/search.c \
+ $(srcdir)/cp/semantics.c $(srcdir)/cp/spew.c $(srcdir)/cp/tree.c \
+ $(srcdir)/cp/typeck.c $(srcdir)/cp/typeck2.c $(srcdir)/cp/xref.c
 
 cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o \
         c-pragma.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \
