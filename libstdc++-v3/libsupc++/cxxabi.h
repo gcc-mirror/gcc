@@ -216,7 +216,7 @@ public:
   enum __offset_flags_masks {
     __virtual_mask = 0x1,
     __public_mask = 0x2,
-    hwm_bit = 2,
+    __hwm_bit = 2,
     __offset_shift = 8          /* bits to shift offset by */
   };
   
@@ -261,7 +261,7 @@ public:
     
     __contained_virtual_mask = __base_class_type_info::__virtual_mask, /* via a virtual path */
     __contained_public_mask = __base_class_type_info::__public_mask,   /* via a public path */
-    __contained_mask = 1 << __base_class_type_info::hwm_bit,         /* contained within us */
+    __contained_mask = 1 << __base_class_type_info::__hwm_bit,         /* contained within us */
     
     __contained_private = __contained_mask,
     __contained_public = __contained_mask | __contained_public_mask
