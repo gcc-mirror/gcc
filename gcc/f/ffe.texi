@@ -480,6 +480,139 @@ It is about the weirder aspects of transforming Fortran,
 however that's defined,
 into a more modern, canonical form.
 
+@subsubsection Multi-character Lexemes
+
+Each lexeme carries with it a pointer to where it appears in the source.
+
+To provide the ability for diagnostics to point to column numbers,
+in addition to line numbers and names,
+lexemes that represent more than one (significant) character
+in the source code need, generally,
+to provide pointers to where each @emph{character} appears in the source.
+
+This provides the ability to properly identify the precise location
+of the problem in code like
+
+@smallexample
+SUBROUTINE X
+END
+BLOCK DATA X
+END
+@end smallexample
+
+which, in fixed-form source, would result in single lexemes
+consisting of the strings @samp{SUBROUTINEX} and @samp{BLOCKDATAX}.
+(The problem is that @samp{X} is defined twice,
+so a pointer to the @samp{X} in the second definition,
+as well as a follow-up pointer to the corresponding pointer in the first,
+would be preferable to pointing to the beginnings of the statements.)
+
+This need also arises when parsing (and diagnosing) @code{FORMAT}
+statements.
+
+Further, it arises when diagnosing
+@code{FMT=} specifiers that contain constants
+(or partial constants, or even propagated constants!)
+in I/O statements, as in:
+
+@smallexample
+PRINT '(I2, 3HAB)', J
+@end smallexample
+
+(A pointer to the beginning of the prematurely-terminated Hollerith
+constant, and/or to the close parenthese, is preferable to a pointer
+to the open-parenthese or the apostrophe that precedes it.)
+
+Multi-character lexemes, which would seem to naturally include
+at least digit strings, alphanumeric strings, @code{CHARACTER}
+constants, and Hollerith constants, therefore need to provide
+location information on each character.
+(Maybe Hollerith constants don't, but it's unnecessary to except them.)
+
+The question then arises, what about @emph{other} multi-character lexemes,
+such as @samp{**} and @samp{//},
+and Fortran 90's @samp{(/}, @samp{/)}, @samp{::}, and so on?
+
+Turns out there's a need to identify the location of the second character
+of these two-character lexemes.
+For example, in @samp{I(/J) = K}, the slash needs to be diagnosed
+as the problem, not the open parenthese.
+Similarly, it is preferable to diagnose the second slash in
+@samp{I = J // K} rather than the first, given the implicit typing
+rules, which would result in the compiler disallowing the attempted
+concatenation of two integers.
+(Though, since that's more of a semantic issue,
+it's not @emph{that} much preferable.)
+
+Even sequences that could be parsed as digit strings could use location info,
+for example, to diagnose the @samp{9} in the octal constant @samp{O'129'}.
+(This probably will be parsed as a character string,
+to be consistent with the parsing of @samp{Z'129A'}.)
+
+To avoid the hassle of recording the location of the second character,
+while also preserving the general rule that each significant character
+is distinctly pointed to by the lexeme that contains it,
+it's best to simply not have any fixed-size lexemes
+larger than one character.
+
+This new design is expected to make checking for two
+@samp{*} lexemes in a row much easier than the old design,
+so this is not much of a sacrifice.
+It probably makes the lexer much easier to implement
+than it makes the parser harder.
+
+@subsubsection Space-padding Lexemes
+
+Certain lexemes need to be padded with virtual spaces when the
+end of the line (or file) is encountered.
+
+This is necessary in fixed form, to handle lines that don't
+extend to column 72, assuming that's the line length in effect.
+
+@subsubsection Bizarre Free-form Hollerith Constants
+
+Last I checked, the Fortran 90 standard actually required the compiler
+to silently accept something like
+
+@smallexample
+FORMAT ( 1 2   Htwelve chars )
+@end smallexample
+
+as a valid @code{FORMAT} statement specifying a twelve-character
+Hollerith constant.
+
+The implication here is that, since the new lexer is a zero-feedback one,
+it won't know that the special case of a @code{FORMAT} statement being parsed
+requires apparently distinct lexemes @samp{1} and @samp{2} to be treated as
+a single lexeme.
+
+(This is a horrible misfeature of the Fortran 90 language.
+It's one of many such misfeatures that almost make me want
+to not support them, and forge ahead with designing a true
+``GNU Fortran'' language that has the features,
+without the misfeatures, of Fortran 90,
+and provide programs to do the conversion automatically.)
+
+So, the lexer must gather distinct chunks of decimal strings into
+a single lexeme in contexts where a single decimal lexeme might
+start a Hollerith constant.
+(Which means it might as well do that all the time.)
+
+Compare the treatment of this to how
+
+@smallexample
+CHARACTER * 4 5 HEY
+@end smallexample
+
+and
+
+@smallexample
+CHARACTER * 12 HEY
+@end smallexample
+
+must be treated---the former must be diagnosed, due to the separation
+between lexemes, the latter must be accepted as a proper declaration.
+
 @node TBD (Transforming)
 @subsection TBD (Transforming)
 
