@@ -9850,6 +9850,55 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
 
   emit_label (end_0_label);
 }
+
+void
+ix86_expand_call (retval, fnaddr, callarg1, callarg2, pop)
+     rtx retval, fnaddr, callarg1, callarg2, pop;
+{
+  rtx use = NULL, call;
+
+  if (pop == const0_rtx)
+    pop = NULL;
+  if (TARGET_64BIT && pop)
+    abort ();
+
+  /* Static functions and indirect calls don't need the pic register.  */
+  if (! TARGET_64BIT && flag_pic
+      && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
+      && ! SYMBOL_REF_FLAG (XEXP (fnaddr, 0)))
+    {
+      current_function_uses_pic_offset_table = 1;
+      use_reg (&use, pic_offset_table_rtx);
+    }
+
+  if (TARGET_64BIT && INTVAL (callarg2) >= 0)
+    {
+      rtx al = gen_rtx_REG (QImode, 0);
+      emit_move_insn (al, callarg2);
+      use_reg (&use, al);
+    }
+
+  if (! call_insn_operand (XEXP (fnaddr, 0), Pmode))
+    {
+      fnaddr = copy_to_mode_reg (Pmode, XEXP (fnaddr, 0));
+      fnaddr = gen_rtx_MEM (QImode, fnaddr);
+    }
+
+  call = gen_rtx_CALL (VOIDmode, fnaddr, callarg1);
+  if (retval)
+    call = gen_rtx_SET (VOIDmode, retval, call);
+  if (pop)
+    {
+      pop = gen_rtx_PLUS (Pmode, stack_pointer_rtx, pop);
+      pop = gen_rtx_SET (VOIDmode, stack_pointer_rtx, pop);
+      call = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, call, pop));
+    }
+
+  call = emit_call_insn (call);
+  if (use)
+    CALL_INSN_FUNCTION_USAGE (call) = use;
+}
+  
 
 /* Clear stack slot assignments remembered from previous functions.
    This is called from INIT_EXPANDERS once before RTL is emitted for each
