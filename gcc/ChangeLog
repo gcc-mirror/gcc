@@ -1,3 +1,8 @@
+2004-01-18  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_expect_jump): Fix thinko of reusing
+	live "next" variable, which could lead to an infinite loop.
+
 2004-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/altivec.h: Wrap C++ functions in extern "C++"
