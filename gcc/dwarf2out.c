@@ -3420,14 +3420,16 @@ limbo_die_node;
 
 /* Fixed size portion of the address range info.  */
 #define DWARF_ARANGES_HEADER_SIZE					\
-  (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, DWARF2_ADDR_SIZE * 2)	\
-   - DWARF_OFFSET_SIZE)
+  (DWARF_ROUND (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE + 4,	\
+                DWARF2_ADDR_SIZE * 2)					\
+   - DWARF_INITIAL_LENGTH_SIZE)
 
 /* Size of padding portion in the address range info.  It must be
    aligned to twice the pointer size.  */
 #define DWARF_ARANGES_PAD_SIZE \
-  (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, DWARF2_ADDR_SIZE * 2) \
-   - (2 * DWARF_OFFSET_SIZE + 4))
+  (DWARF_ROUND (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE + 4, \
+                DWARF2_ADDR_SIZE * 2) \
+   - (DWARF_INITIAL_LENGTH_SIZE + DWARF_OFFSET_SIZE + 4))
 
 /* Use assembler line directives if available.  */
 #ifndef DWARF2_ASM_LINE_DEBUG_INFO
