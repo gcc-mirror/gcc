@@ -1,3 +1,10 @@
+2003-02-15  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
+
+	* java/nio/charset/Charset.java
+	(isRegistered): Fixed method args and implementation.
+	* java/nio/charset/CharsetEncoder.java
+	(unmappableCharacterAction): New method.
+
 2003-02-15  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/CheckboxMenuItem.java
