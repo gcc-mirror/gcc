@@ -1,3 +1,9 @@
+2000-11-14  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj.zip): Fail immediately if compilation fails
+	and -k not given.
+
 2000-11-02  Warren Levy  <warrenl@cygnus.com>
 
 	* java/io/ObjectInputStream.java (readObject): Added code to
