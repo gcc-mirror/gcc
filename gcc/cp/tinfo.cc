@@ -590,12 +590,19 @@ adjust_pointer (const void *base, ptrdiff_t offset)
     (reinterpret_cast <const char *> (base) + offset);
 }
 
-inline ptrdiff_t
-get_vbase_offset (const void *object, ptrdiff_t offset)
+// ADDR is a pointer to an object.  Convert it to a pointer to a base,
+// using OFFSET. IS_VIRTUAL is true, if we are getting a virtual base.
+inline void const *
+convert_to_base (void const *addr, bool is_virtual, ptrdiff_t offset)
 {
-  const char *vtable = *reinterpret_cast <const char *const *> (object);
-  vtable += offset;
-  return *reinterpret_cast <const ptrdiff_t *> (vtable);
+  if (is_virtual)
+    {
+      const void *vtable = *static_cast <const void *const *> (addr);
+      
+      offset = *adjust_pointer<ptrdiff_t> (vtable, offset);
+    }
+
+  return adjust_pointer<void> (addr, offset);
 }
 
 // some predicate functions for __class_type_info::sub_kind
@@ -721,20 +728,20 @@ do_find_public_src (ptrdiff_t src2dst,
       
       const void *base = obj_ptr;
       ptrdiff_t offset = base_list[i].offset ();
+      bool is_virtual = base_list[i].is_virtual_p ();
       
-      if (base_list[i].is_virtual_p ())
+      if (is_virtual)
         {
           if (src2dst == -3)
             continue; // Not a virtual base, so can't be here.
-	  offset = get_vbase_offset (base, offset);
         }
-      base = adjust_pointer <void> (base, offset);
+      base = convert_to_base (base, is_virtual, offset);
       
       sub_kind base_kind = base_list[i].base->do_find_public_src
                               (src2dst, base, src_type, src_ptr);
       if (contained_p (base_kind))
         {
-          if (base_list[i].is_virtual_p ())
+          if (is_virtual)
             base_kind = sub_kind (base_kind | contained_virtual_mask);
           return base_kind;
         }
@@ -843,13 +850,11 @@ do_dyncast (ptrdiff_t src2dst,
       void const *base = obj_ptr;
       sub_kind base_access = access_path;
       ptrdiff_t offset = base_list[i].offset ();
+      bool is_virtual = base_list[i].is_virtual_p ();
       
-      if (base_list[i].is_virtual_p ())
-        {
-          base_access = sub_kind (base_access | contained_virtual_mask);
-	  offset = get_vbase_offset (base, offset);
-	}
-      base = adjust_pointer <void> (base, offset);
+      if (is_virtual)
+        base_access = sub_kind (base_access | contained_virtual_mask);
+      base = convert_to_base (base, is_virtual, offset);
 
       if (!base_list[i].is_public_p ())
         base_access = sub_kind (base_access & ~contained_public_mask);
@@ -1032,6 +1037,7 @@ do_upcast (sub_kind access_path,
       const void *base = obj_ptr;
       sub_kind sub_access = access_path;
       ptrdiff_t offset = base_list[i].offset ();
+      bool is_virtual = base_list[i].is_virtual_p ();
       
       if (!base_list[i].is_public_p ())
         {
@@ -1040,22 +1046,16 @@ do_upcast (sub_kind access_path,
             continue;
           sub_access = sub_kind (sub_access & ~contained_public_mask);
         }
-      if (base_list[i].is_virtual_p ())
-        {
-      	  sub_access = sub_kind (sub_access | contained_virtual_mask);
-          
-          if (base)
-	    offset = get_vbase_offset (base, offset);
-        }
+      if (is_virtual)
+    	  sub_access = sub_kind (sub_access | contained_virtual_mask);
       if (base)
-        base = adjust_pointer <void> (base, offset);
+        base = convert_to_base (base, is_virtual, offset);
       
       if (base_list[i].base->do_upcast (sub_access, dst, base, result2))
         return true; // must fail
       if (result2.base_type)
         {
-          if (result2.base_type == nonvirtual_base_type
-              && base_list[i].is_virtual_p ())
+          if (result2.base_type == nonvirtual_base_type && is_virtual)
             result2.base_type = base_list[i].base;
           if (!result.base_type)
             {
