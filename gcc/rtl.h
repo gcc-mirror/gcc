@@ -1579,7 +1579,6 @@ extern int count_occurrences (rtx, rtx, int);
 extern int reg_referenced_p (rtx, rtx);
 extern int reg_used_between_p (rtx, rtx, rtx);
 extern int reg_set_between_p (rtx, rtx, rtx);
-extern int regs_set_between_p (rtx, rtx, rtx);
 extern int commutative_operand_precedence (rtx);
 extern int swap_commutative_operands_p (rtx, rtx);
 extern int modified_between_p (rtx, rtx, rtx);

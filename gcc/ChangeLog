@@ -3,6 +3,9 @@
 	* explow.c (copy_all_reg, stabilize): Remove.
 	* expr.h: Remove the corresponding prototypes.
 
+	* rtlanal.c (regs_set_between_p): Remove.
+	* rtl.h: Remove the corresponding prototype.
+
 2005-01-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6k_nonimmediate_operand): Rename
