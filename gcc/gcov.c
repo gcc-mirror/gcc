@@ -47,7 +47,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tm.h"
 #include "intl.h"
 #include "version.h"
-#undef abort
 
 #include <getopt.h>
 
