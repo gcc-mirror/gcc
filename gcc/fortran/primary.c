@@ -2011,6 +2011,7 @@ gfc_match_rvalue (gfc_expr ** result)
          resolution phase.  */
 
       if (gfc_peek_char () == '%'
+	  && sym->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (sym, sym->ns)->type == BT_DERIVED)
 	gfc_set_default_type (sym, 0, sym->ns);
 
@@ -2188,29 +2189,18 @@ gfc_match_variable (gfc_expr ** result, int equiv_flag)
     case FL_UNKNOWN:
       if (gfc_add_flavor (&sym->attr, FL_VARIABLE, NULL) == FAILURE)
 	return MATCH_ERROR;
-
-      /* Special case for derived type variables that get their types
-         via an IMPLICIT statement.  This can't wait for the
-         resolution phase.  */
-
-      if (gfc_peek_char () == '%'
-	  && gfc_get_default_type (sym, sym->ns)->type == BT_DERIVED)
-	gfc_set_default_type (sym, 0, sym->ns);
-
       break;
 
     case FL_PROCEDURE:
       /* Check for a nonrecursive function result */
       if (sym->attr.function && (sym->result == sym || sym->attr.entry))
 	{
-
 	  /* If a function result is a derived type, then the derived
 	     type may still have to be resolved.  */
 
 	  if (sym->ts.type == BT_DERIVED
 	      && gfc_use_derived (sym->ts.derived) == NULL)
 	    return MATCH_ERROR;
-
 	  break;
 	}
 
@@ -2219,6 +2209,24 @@ gfc_match_variable (gfc_expr ** result, int equiv_flag)
     default:
       gfc_error ("Expected VARIABLE at %C");
       return MATCH_ERROR;
+    }
+
+  /* Special case for derived type variables that get their types
+     via an IMPLICIT statement.  This can't wait for the
+     resolution phase.  */
+
+    {
+      gfc_namespace * implicit_ns;
+
+      if (gfc_current_ns->proc_name == sym)
+	implicit_ns = gfc_current_ns;
+      else
+	implicit_ns = sym->ns;
+	
+      if (gfc_peek_char () == '%'
+	  && sym->ts.type == BT_UNKNOWN
+	  && gfc_get_default_type (sym, implicit_ns)->type == BT_DERIVED)
+	gfc_set_default_type (sym, 0, implicit_ns);
     }
 
   expr = gfc_get_expr ();

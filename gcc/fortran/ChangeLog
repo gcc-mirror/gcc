@@ -1,3 +1,13 @@
+2005-01-22  Paul Brook  <paul@codesourcery.com>
+
+	* primary.c (gfc_match_rvalue): Only apply implicit type if variable
+	does not have an explicit type.
+	(gfc_match_variable): Resolve implicit derived types in all cases.
+	Resolve contained function types from their own namespace, not the
+	parent.
+	* resolve.c (resolve_contained_fntype): Remove duplicate sym->result
+	checking.  Resolve from the contained namespace, not the parent.
+
 2005-01-22  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19543
