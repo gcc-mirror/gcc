@@ -24,6 +24,8 @@ details.  */
 #include <java/io/OutputStreamWriter.h>
 #include <java/io/ByteArrayInputStream.h>
 #include <java/io/InputStreamReader.h>
+#include <gnu/gcj/convert/UnicodeToBytes.h>
+#include <gnu/gcj/convert/BytesToUnicode.h>
 #include <jvm.h>
 
 static jstring* strhash = NULL;
@@ -381,21 +383,33 @@ java::lang::String::init (jbyteArray bytes, jint offset, jint count,
   if (offset < 0 || count < 0 || offset + count < 0
       || offset + count > data_size)
     JvThrow (new StringIndexOutOfBoundsException);
-
-  java::io::ByteArrayInputStream *b
-    = new java::io::ByteArrayInputStream (bytes, offset, count);
-  java::io::InputStreamReader *ir
-    = new java::io::InputStreamReader (b, encoding);
-  // FIXME: we allocate too much here in some cases.
   jcharArray array = JvNewCharArray (count);
-  data = array;
-  boffset = (char *) elements (array) - (char *) array;
-  // FIXME: this can throw IOException.
-  this->count = ir->read(array, 0, count);
-
-  // In case read() doesn't read anything, change -1 for EOF to a count of 0.
-  if (this->count < 0)
-    this->count = 0;
+  gnu::gcj::convert::BytesToUnicode *converter
+    = gnu::gcj::convert::BytesToUnicode::getDecoder(encoding);
+  jint outpos = 0;
+  int avail = count;
+  converter->setInput(bytes, offset, offset+count);
+  while (converter->inpos < converter->inlength)
+    {
+      int done = converter->read(array, outpos, avail);
+      if (done == 0)
+	{
+	  jint new_size = 2 * (outpos + avail);
+	  jcharArray new_array = JvNewCharArray (new_size);
+	  memcpy (elements (new_array), elements (array),
+		  outpos * sizeof(jchar));
+	  array = new_array;
+	  avail = new_size - outpos;
+	}
+      else
+	{
+	  outpos += done;
+	  avail -= done;
+	}
+    }
+  this->data = array;
+  this->boffset = (char *) elements (array) - (char *) array;
+  this->count = outpos;
 }
 
 jboolean
@@ -448,15 +462,34 @@ java::lang::String::getChars(jint srcBegin, jint srcEnd,
 jbyteArray
 java::lang::String::getBytes (jstring enc)
 {
-  java::io::ByteArrayOutputStream *os
-    = new java::io::ByteArrayOutputStream(length ());
-  java::io::OutputStreamWriter *ow
-    = new java::io::OutputStreamWriter(os, enc);
-
-  ow->write(this, 0, length ());
-  ow->flush();
-
-  return os->toByteArray();
+  jint todo = length();
+  jint buflen = todo;
+  jbyteArray buffer = JvNewByteArray(todo);
+  jint bufpos = 0;
+  jint offset = 0;
+  gnu::gcj::convert::UnicodeToBytes *converter
+    = gnu::gcj::convert::UnicodeToBytes::getEncoder(enc);
+  while (todo > 0)
+    {
+      converter->setOutput(buffer, bufpos);
+      int converted = converter->write(this, offset, todo, NULL);
+      if (converted == 0)
+	{
+	  jbyteArray newbuffer = JvNewByteArray(2 * buflen);
+	  memcpy (elements (newbuffer), elements (buffer), bufpos);
+	  buffer = newbuffer;
+	}
+      else
+	{
+	  offset += converted;
+	  todo -= converted;
+	}
+    }
+  if (bufpos == buflen)
+    return buffer;
+  jbyteArray result = JvNewByteArray(bufpos);
+  memcpy (elements (result), elements (buffer), bufpos);
+  return result;
 }
 
 void
