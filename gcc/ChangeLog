@@ -1,5 +1,7 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* version.c: Bump.
+
 	Based on a patch from Geoff Keating <geoffk@redhat.com>:
 	* loop.c (basic_induction_var): If a REG is set from something
 	that is not a biv, then the REG is not a biv.  Even if it is
