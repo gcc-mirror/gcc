@@ -1,3 +1,35 @@
+2003-08-30  Richard Earnshaw  <rearnsha@arm.com>
+	Nicolas Pitre <nico@cam.org>
+
+	* arm/lib1funcs.asm (RETCOND): Delete.
+	(RETLDM): New assembler macro.  Use it for returning with ldm/ldr.
+	(ARM_LDIV0, THUMB_LDIV0): Collapse multiple definitions.
+	(__ARM_ARCH__): Move here from ieee754-?f.S.
+	(RET, RETc): Clean up definitions.
+	(DIV_FUNC_END): Renamed from FUNC_END.  All uses changed.
+	(FUNC_END): New macro that marks the end of any function.
+	(ARM_FUNC_START): New macro that allows an assembler routine to be
+	implemented in ARM code even if a Thumb-only build.
+	Unconditionally include ieee754-?f.S.
+	* arm/ieee754-df.S: Delete macros moved to lib1funcs.asm.
+	Mark ends of functions.
+	Split into separate conditionally-compiled units.
+	Use RETLDM to return from routines.
+	* arm/ieee754-sf.S: Similarly.
+	* t-arm-elf (LIB1ASMFUNCS): Remove _ieee754_dp and _ieee754_sp. 
+	Add _negdf2 _addsubdf3 _muldivdf3 _cmpdf2 _unorddf2 _fixdfsi
+	_truncdfsf2 _negsf2 _addsubsf3 _muldivsf3 _cmpsf2 _unordsf2
+	_fixsfsi and _fixunssfsi.
+
+	* arm/ieee754-df.S (__muldf3): Fix bug when result of a 
+	multiplication underflows to zero.
+	(__adddf3): Fix bug when using VFP ordering on little-endian 
+	processors.
+	(__fixdfsi): Use rrx to extract the carry into a register instead of
+	MRS instruction.  Optimize later use of result.
+	* arm/ieee754-sf.S (__fixsfsi): Likewise.
+	(__fixunssfsi): Use a better sequence for handling negative-or-zero.
+	
 2003-08-29  Richard Henderson  <rth@redhat.com>
 
 	* tree-optimize.c: New file.
