@@ -1205,9 +1205,12 @@ tls_symbolic_operand_1 (op, mode, size, unspec)
   else
     return 0;
 
-  letter = (unspec == UNSPEC_DTPREL ? 'D' : 'T');
-
-  return str[1] == letter;
+  if (unspec == UNSPEC_DTPREL)
+    return str[1] == 'D';
+  else if (str[1] == 'I')
+    return size == 64;
+  else
+    return str[1] == 'T';
 }
 
 /* Return true if OP is valid for 16-bit DTP relative relocations.  */
@@ -1762,7 +1765,7 @@ tls_symbolic_operand_type (symbol)
 	 attribute visibility next time.  At least we don't crash...  */
       if (str[1] == 'G' || str[1] == 'D')
 	return TLS_MODEL_GLOBAL_DYNAMIC;
-      if (str[1] == 'T')
+      if (str[1] == 'I' || str[1] == 'T')
 	return TLS_MODEL_INITIAL_EXEC;
     }
   else if (str[0] == '@')
@@ -1776,6 +1779,8 @@ tls_symbolic_operand_type (symbol)
 	  else
 	    return TLS_MODEL_GLOBAL_DYNAMIC;
 	}
+      if (str[1] == 'I')
+	return TLS_MODEL_INITIAL_EXEC;
       if (str[1] == 'T')
 	{
 	  /* 64-bit local exec is the same as initial exec except without
@@ -1901,6 +1906,8 @@ alpha_encode_section_info (decl, first)
 	  encoding = 'D';
 	  break;
 	case TLS_MODEL_INITIAL_EXEC:
+	  encoding = 'I';
+	  break;
 	case TLS_MODEL_LOCAL_EXEC:
 	  encoding = 'T';
 	  break;

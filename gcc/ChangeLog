@@ -1,3 +1,10 @@
+2004-01-11  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_encode_section_info): Use 'I'
+	for TLS_MODEL_INITIAL_EXEC.
+	(tls_symbolic_operand_1): Update to match.
+	(tls_symbolic_operand_type): Likewise.
+
 2004-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/13392
