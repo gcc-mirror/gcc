@@ -6492,10 +6492,29 @@ process_imports ()
       /* Don't load twice something already defined. */
       if (IDENTIFIER_CLASS_VALUE (to_be_found))
 	continue;
-      QUALIFIED_P (to_be_found) = 1;
-      load_class (to_be_found, 0);
-      error_found =
-	check_pkg_class_access (to_be_found, TREE_PURPOSE (import));
+      
+      while (1)
+	{
+	  tree left;
+
+	  QUALIFIED_P (to_be_found) = 1;
+	  load_class (to_be_found, 0);
+	  error_found =
+	    check_pkg_class_access (to_be_found, TREE_PURPOSE (import));
+	  
+	  /* We found it, we can bail out */
+	  if (IDENTIFIER_CLASS_VALUE (to_be_found))
+	    break;
+
+	  /* We haven't found it. Maybe we're trying to access an
+	     inner class.  The only way for us to know is to try again
+	     after having dropped a qualifier. If we can't break it further,
+	     we have an error. */
+	  if (breakdown_qualified (&left, NULL, to_be_found))
+	    break;
+
+	  to_be_found = left;
+	}
       if (!IDENTIFIER_CLASS_VALUE (to_be_found))
 	{
 	  parse_error_context (TREE_PURPOSE (import),
