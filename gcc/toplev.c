@@ -3430,6 +3430,15 @@ rest_of_compilation (decl)
 
   if (! register_life_up_to_date)
     recompute_reg_usage (insns, ! optimize_size);
+
+  /* Allocate the reg_renumber array.  */
+  allocate_reg_info (max_regno, FALSE, TRUE);
+
+  /* And the reg_equiv_memory_loc array.  */
+  reg_equiv_memory_loc = (rtx *) xcalloc (max_regno, sizeof (rtx));
+
+  allocate_initial_values (reg_equiv_memory_loc);
+
   regclass (insns, max_reg_num (), rtl_dump_file);
   rebuild_label_notes_after_reload = local_alloc ();
 

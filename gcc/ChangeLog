@@ -1,3 +1,15 @@
+Fri Sep 21 01:13:56 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* integrate.c (allocate_initial_values): New function.
+	* integrate.h (allocate_initial_values): Declare.
+	* local-alloc.c (local_alloc): Move call to allocate_reg_info from
+	here...
+	* reload1.c (reload): And initialization of reg_equiv_memory_loc
+	from here...
+	* toplev.c (rest_of_compilation): To here.
+	Call allocate_initial_values.
+	* tm.texi: add description for ALLOCATE_INITIAL_VALUE.
+
 Thu Sep 20 09:00:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ggc-page.c (ggc_marked_p): Properly convert return to boolean.
