@@ -1,3 +1,8 @@
+Wed Mar  5 15:45:40 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation):  Do duplicate loop headers when
+	optimizing for size.
+
 2003-03-05  Michael Matz  <matz@suse.de>
 
 	* unwind.h: Add the GPL exception.

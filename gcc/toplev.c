@@ -2674,7 +2674,7 @@ rest_of_compilation (decl)
 	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
   /* CFG is no longer maintained up-to-date.  */
-  if (optimize && !optimize_size)
+  if (optimize)
     {
       free_bb_for_insn ();
       copy_loop_headers (insns);
