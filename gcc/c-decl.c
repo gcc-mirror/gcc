@@ -1449,7 +1449,11 @@ duplicate_decls (newdecl, olddecl)
       if (TREE_READONLY (newdecl))
 	TREE_READONLY (olddecl) = 1;
       if (TREE_THIS_VOLATILE (newdecl))
-	TREE_THIS_VOLATILE (olddecl) = 1;
+	{
+	  TREE_THIS_VOLATILE (olddecl) = 1;
+	  if (TREE_CODE (newdecl) == VAR_DECL)
+	    make_var_volatile (newdecl);
+	}
 
       /* Keep source location of definition rather than declaration.  */
       if (DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
@@ -1458,14 +1462,18 @@ duplicate_decls (newdecl, olddecl)
 	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
 	}
 
+      /* Merge the unused-warning information.  */
+      if (DECL_IN_SYSTEM_HEADER (olddecl))
+	DECL_IN_SYSTEM_HEADER (newdecl) = 1;
+      else if (DECL_IN_SYSTEM_HEADER (newdecl))
+	DECL_IN_SYSTEM_HEADER (olddecl) = 1;
+
       /* Merge the initialization information.  */
       if (DECL_INITIAL (newdecl) == 0)
 	DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
+
       /* Keep the old rtl since we can safely use it.  */
       DECL_RTL (newdecl) = DECL_RTL (olddecl);
-      if (TREE_CODE (newdecl) == VAR_DECL
-	  && TREE_THIS_VOLATILE (newdecl))
-	make_var_volatile (newdecl);
     }
   /* If cannot merge, then use the new type and qualifiers,
      and don't preserve the old rtl.  */
