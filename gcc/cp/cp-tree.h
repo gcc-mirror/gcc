@@ -88,6 +88,9 @@ Boston, MA 02111-1307, USA.  */
      For a TYPENAME_TYPE, this is TYPENAME_TYPE_FULLNAME.
      For a TEMPLATE_TEMPLATE_PARM, this is
      TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+
+   DECL_SAVED_INSNS/DECL_FIELD_SIZE
+     For a static VAR_DECL, this is DECL_INIT_PRIORITY.
 */
 
 /* Language-dependent contents of an identifier.  */
@@ -1149,8 +1152,6 @@ struct lang_decl_flags
 
   unsigned operator_attr : 1;
   unsigned constructor_attr : 1;
-  unsigned returns_first_arg : 1;
-  unsigned preserves_first_arg : 1;
   unsigned friend_attr : 1;
   unsigned static_function : 1;
   unsigned const_memfunc : 1;
@@ -1171,7 +1172,7 @@ struct lang_decl_flags
   unsigned needs_final_overrider : 1;
   unsigned bitfield : 1;
   unsigned defined_in_class : 1;
-  unsigned dummy : 1;
+  unsigned dummy : 3;
 
   tree access;
   tree context;
@@ -1221,19 +1222,19 @@ struct lang_decl
    for an object with virtual baseclasses.  */
 #define DECL_CONSTRUCTOR_FOR_VBASE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_for_vbase_attr)
 
+/* Non-zero for a FUNCTION_DECL that declares a type-info function.  */
+#define DECL_TINFO_FN_P(NODE) 					\
+  (TREE_CODE (NODE) == FUNCTION_DECL				\
+   && DECL_ARTIFICIAL (NODE)					\
+   && DECL_LANG_SPECIFIC(NODE)->decl_flags.mutable_flag)
+
+/* Mark NODE as a type-info function.  */
+#define SET_DECL_TINFO_FN_P(NODE) \
+  (DECL_LANG_SPECIFIC((NODE))->decl_flags.mutable_flag = 1)
+
 /* For FUNCTION_DECLs: nonzero means that this function is a default
    implementation of a signature method.  */
 #define IS_DEFAULT_IMPLEMENTATION(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.is_default_implementation)
-
-/* For FUNCTION_DECLs: nonzero means that the constructor
-   is known to return a non-zero `this' unchanged.  */
-#define DECL_RETURNS_FIRST_ARG(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.returns_first_arg)
-
-/* Nonzero for FUNCTION_DECL means that this constructor is known to
-   not make any assignment to `this', and therefore can be trusted
-   to return it unchanged.  Otherwise, we must re-assign `current_class_ptr'
-   after performing base initializations.  */
-#define DECL_PRESERVES_THIS(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.preserves_first_arg)
 
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
@@ -1351,6 +1352,11 @@ struct lang_decl
 #define DECL_NAMESPACE_ALIAS(NODE) DECL_ABSTRACT_ORIGIN (NODE)
 #define ORIGINAL_NAMESPACE(NODE)  \
   (DECL_NAMESPACE_ALIAS (NODE) ? DECL_NAMESPACE_ALIAS (NODE) : (NODE))
+
+/* In a non-local VAR_DECL with static storage duration, this is the
+   initialization priority.  If this value is zero, the NODE will be
+   initialized at the DEFAULT_INIT_PRIORITY.  */
+#define DECL_INIT_PRIORITY(NODE) (DECL_FIELD_SIZE ((NODE)))
 
 /* In a TREE_LIST concatenating using directives, indicate indirekt
    directives  */
@@ -2715,7 +2721,7 @@ extern int currently_open_class			PROTO((tree));
 extern tree get_vfield_offset			PROTO((tree));
 extern void duplicate_tag_error			PROTO((tree));
 extern tree finish_struct			PROTO((tree, tree, int));
-extern tree finish_struct_1			PROTO((tree, int));
+extern void finish_struct_1			PROTO((tree, int));
 extern int resolves_to_fixed_type_p		PROTO((tree, int *));
 extern void init_class_processing		PROTO((void));
 extern int is_empty_class			PROTO((tree));
@@ -2873,7 +2879,6 @@ extern int in_function_p			PROTO((void));
 extern void replace_defarg			PROTO((tree, tree));
 extern void print_other_binding_stack		PROTO((struct binding_level *));
 extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
-extern void cat_namespace_levels                PROTO((void));
 extern void fixup_anonymous_union               PROTO((tree));
 extern int check_static_variable_definition     PROTO((tree, tree));
 extern void push_local_binding                  PROTO((tree, tree, int));
@@ -2882,6 +2887,18 @@ extern tree check_default_argument              PROTO((tree, tree));
 extern tree push_overloaded_decl		PROTO((tree, int));
 extern void clear_identifier_class_values       PROTO((void));
 extern void storetags                           PROTO((tree));
+extern int vtable_decl_p                        PROTO((tree, void *));
+extern int vtype_decl_p                         PROTO((tree, void *));
+extern int sigtable_decl_p                      PROTO((tree, void *));
+typedef int (*walk_globals_pred)                PROTO((tree, void *));
+typedef int (*walk_globals_fn)                  PROTO((tree *, void *));
+extern int walk_globals                         PROTO((walk_globals_pred,
+						       walk_globals_fn,
+						       void *));
+typedef int (*walk_namespaces_fn)               PROTO((tree, void *));
+extern int walk_namespaces                      PROTO((walk_namespaces_fn,
+						       void *));
+extern int wrapup_globals_for_namespace         PROTO((tree, void *));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));
@@ -2919,10 +2936,6 @@ extern tree coerce_delete_type			PROTO((tree));
 extern void comdat_linkage			PROTO((tree));
 extern void import_export_class			PROTO((tree));
 extern void import_export_vtable		PROTO((tree, tree, int));
-extern int walk_vtables				PROTO((void (*)(tree, tree),
-						       int (*)(tree, tree)));
-extern void walk_sigtables			PROTO((void (*)(tree, tree),
-						       void (*)(tree, tree)));
 extern void import_export_decl			PROTO((tree));
 extern tree build_cleanup			PROTO((tree));
 extern void finish_file				PROTO((void));
@@ -3158,6 +3171,7 @@ extern void maybe_process_partial_specialization PROTO((tree));
 extern void maybe_check_template_type           PROTO((tree));
 extern tree most_specialized_instantiation      PROTO((tree, tree));
 extern void print_candidates                    PROTO((tree));
+extern int instantiate_pending_templates        PROTO((void));
 
 extern int processing_specialization;
 extern int processing_explicit_instantiation;

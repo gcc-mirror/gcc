@@ -381,7 +381,7 @@ get_tinfo_fn (type)
   TREE_PUBLIC (d) = 1;
   DECL_ARTIFICIAL (d) = 1;
   DECL_NOT_REALLY_EXTERN (d) = 1;
-  DECL_MUTABLE_P (d) = 1;
+  SET_DECL_TINFO_FN_P (d);
   TREE_TYPE (name) = copy_to_permanent (type);
 
   pushdecl_top_level (d);

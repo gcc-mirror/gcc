@@ -42,35 +42,54 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "dwarf2out.h"
 #include "dwarfout.h"
+#include "splay-tree.h"
+#include "varray.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
 extern cpp_reader  parse_in;
 #endif
 
+/* This structure contains information about the initializations
+   and/or destructions required for a particular priority level.  */
+typedef struct priority_info_s {
+  /* A label indicating where we should generate the next
+     initialization with this priority.  */
+  rtx initialization_sequence;
+  /* A label indicating where we should generate the next destruction
+     with this priority.  */
+  rtx destruction_sequence;
+} *priority_info;
+
 static tree get_sentry PROTO((tree));
 static void mark_vtable_entries PROTO((tree));
 static void grok_function_init PROTO((tree, tree));
-static int finish_vtable_vardecl PROTO((tree, tree));
-static int prune_vtable_vardecl PROTO((tree, tree));
-static void finish_sigtable_vardecl PROTO((tree, tree));
+static int finish_vtable_vardecl PROTO((tree *, void *));
+static int prune_vtable_vardecl PROTO((tree *, void *));
+static int finish_sigtable_vardecl PROTO((tree *, void *));
 static int is_namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
 static tree ambiguous_decl PROTO((tree, tree, tree,int));
 static tree build_anon_union_vars PROTO((tree, tree*, int, int));
 static int acceptable_java_type PROTO((tree));
 static void output_vtable_inherit PROTO((tree));
-static void setup_initp PROTO((void));
 static void start_objects PROTO((int, int));
 static void finish_objects PROTO((int, int));
-static void do_dtors PROTO((tree));
-static void do_ctors PROTO((tree));
 static tree merge_functions PROTO((tree, tree));
 static tree decl_namespace PROTO((tree));
 static tree validate_nonmember_using_decl PROTO((tree, tree *, tree *));
 static void do_nonmember_using_decl PROTO((tree, tree, tree, tree,
 					   tree *, tree *));
-
+static void start_static_storage_duration_function PROTO((void));
+static int generate_inits_for_priority PROTO((splay_tree_node, void *));
+static void finish_static_storage_duration_function PROTO((void));
+static priority_info get_priority_info PROTO((int));
+static void do_static_initialization PROTO((tree, tree, tree, int));
+static void do_static_destruction PROTO((tree, tree, int));
+static void do_static_initialization_and_destruction PROTO((tree, tree));
+static void generate_ctor_or_dtor_function PROTO((int, int));
+static int generate_ctor_and_dtor_functions_for_priority
+                                  PROTO((splay_tree_node, void *));
 extern int current_class_depth;
 
 /* A list of virtual function tables we must make sure to write out.  */
@@ -79,11 +98,13 @@ tree pending_vtables;
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
    an initializer, and then initialized, staticly, outside the class.  */
-tree pending_statics;
+static varray_type pending_statics;
+static size_t pending_statics_used;
 
 /* A list of functions which were declared inline, but which we
    may need to emit outline anyway.  */
-static tree saved_inlines;
+static varray_type saved_inlines;
+static size_t saved_inlines_used;
 
 /* Used to help generate temporary names which are unique within
    a function.  Reset to 0 by start_function.  */
@@ -1487,8 +1508,17 @@ finish_static_data_member_decl (decl, init, asmspec_tree, need_pop, flags)
 	= build_static_name (current_class_type, DECL_NAME (decl));
     }
   if (! processing_template_decl)
-    pending_statics = perm_tree_cons (NULL_TREE, decl, pending_statics);
-      
+    {
+      if (!pending_statics)
+	VARRAY_TREE_INIT (pending_statics, 32, "pending_statics");
+	
+      if (pending_statics_used == pending_statics->num_elements)
+	VARRAY_GROW (pending_statics, 
+		     2 * pending_statics->num_elements);
+      VARRAY_TREE (pending_statics, pending_statics_used) = decl;
+      ++pending_statics_used;
+    }
+
   /* Static consts need not be initialized in the class definition.  */
   if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
     {
@@ -2010,28 +2040,14 @@ mark_inline_for_output (decl)
     return;
   my_friendly_assert (TREE_PERMANENT (decl), 363);
   DECL_SAVED_INLINE (decl) = 1;
-#if 0
-  if (DECL_PENDING_INLINE_INFO (decl) != 0
-      && ! DECL_PENDING_INLINE_INFO (decl)->deja_vu)
-    {
-      struct pending_inline *t = pending_inlines;
-      my_friendly_assert (DECL_SAVED_INSNS (decl) == 0, 198);
-      while (t)
-	{
-	  if (t == DECL_PENDING_INLINE_INFO (decl))
-	    break;
-	  t = t->next;
-	}
-      if (t == 0)
-	{
-	  t = DECL_PENDING_INLINE_INFO (decl);
-	  t->next = pending_inlines;
-	  pending_inlines = t;
-	}
-      DECL_PENDING_INLINE_INFO (decl) = 0;
-    }
-#endif
-  saved_inlines = perm_tree_cons (NULL_TREE, decl, saved_inlines);
+  if (!saved_inlines)
+    VARRAY_TREE_INIT (saved_inlines, 32, "saved_inlines");
+  
+  if (saved_inlines_used == saved_inlines->num_elements)
+    VARRAY_GROW (saved_inlines, 
+		 2 * saved_inlines->num_elements);
+  VARRAY_TREE (saved_inlines, saved_inlines_used) = decl;
+  ++saved_inlines_used;
 }
 
 void
@@ -2625,17 +2641,17 @@ output_vtable_inherit (vars)
 }
 
 static int
-finish_vtable_vardecl (prev, vars)
-     tree prev, vars;
+finish_vtable_vardecl (t, data)
+     tree *t;
+     void *data ATTRIBUTE_UNUSED;
 {
+  tree vars = *t;
   tree ctype = DECL_CONTEXT (vars);
   import_export_class (ctype);
   import_export_vtable (vars, ctype, 1);
 
   if (! DECL_EXTERNAL (vars)
-      && (DECL_INTERFACE_KNOWN (vars)
-	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
-	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
+      && (DECL_INTERFACE_KNOWN (vars) || TREE_USED (vars))
       && ! TREE_ASM_WRITTEN (vars))
     {
       /* Write it out.  */
@@ -2680,98 +2696,35 @@ finish_vtable_vardecl (prev, vars)
 
       return 1;
     }
-  else if (! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars)))
+  else if (! TREE_USED (vars))
     /* We don't know what to do with this one yet.  */
     return 0;
 
-  /* We know that PREV must be non-zero here.  */
-  TREE_CHAIN (prev) = TREE_CHAIN (vars);
+  *t = TREE_CHAIN (vars);
   return 0;
 }
 
 static int
-prune_vtable_vardecl (prev, vars)
-     tree prev, vars;
+prune_vtable_vardecl (t, data)
+     tree *t;
+     void *data ATTRIBUTE_UNUSED;
 {
-  /* We know that PREV must be non-zero here.  */
-  TREE_CHAIN (prev) = TREE_CHAIN (vars);
+  *t = TREE_CHAIN (*t);
   return 1;
 }
 
-int
-walk_vtables (typedecl_fn, vardecl_fn)
-     register void (*typedecl_fn) PROTO ((tree, tree));
-     register int (*vardecl_fn) PROTO ((tree, tree));
-{
-  tree prev, vars;
-  int flag = 0;
-
-  for (prev = 0, vars = getdecls (); vars; vars = TREE_CHAIN (vars))
-    {
-      register tree type = TREE_TYPE (vars);
-
-      if (TREE_CODE (vars) == VAR_DECL && DECL_VIRTUAL_P (vars))
-	{
-	  if (vardecl_fn)
-	    flag |= (*vardecl_fn) (prev, vars);
-
-	  if (prev && TREE_CHAIN (prev) != vars)
-	    continue;
-	}
-      else if (TREE_CODE (vars) == TYPE_DECL
-	       && type != error_mark_node
-	       && TYPE_LANG_SPECIFIC (type)
-	       && CLASSTYPE_VSIZE (type))
-	{
-	  if (typedecl_fn) (*typedecl_fn) (prev, vars);
-	}
-
-      prev = vars;
-    }
-
-  return flag;
-}
-
-static void
-finish_sigtable_vardecl (prev, vars)
-     tree prev, vars;
+static int
+finish_sigtable_vardecl (t, data)
+     tree *t;
+     void *data ATTRIBUTE_UNUSED;
 {
   /* We don't need to mark sigtable entries as addressable here as is done
      for vtables.  Since sigtables, unlike vtables, are always written out,
      that was already done in build_signature_table_constructor.  */
 
-  rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
-
-  /* We know that PREV must be non-zero here.  */
-  TREE_CHAIN (prev) = TREE_CHAIN (vars);
-}
-
-void
-walk_sigtables (typedecl_fn, vardecl_fn)
-     register void (*typedecl_fn) PROTO((tree, tree));
-     register void (*vardecl_fn) PROTO((tree, tree));
-{
-  tree prev, vars;
-
-  for (prev = 0, vars = getdecls (); vars; vars = TREE_CHAIN (vars))
-    {
-      register tree type = TREE_TYPE (vars);
-
-      if (TREE_CODE (vars) == TYPE_DECL
-	  && type != error_mark_node
-	  && IS_SIGNATURE (type))
-	{
-	  if (typedecl_fn) (*typedecl_fn) (prev, vars);
-	}
-      else if (TREE_CODE (vars) == VAR_DECL
-	       && TREE_TYPE (vars) != error_mark_node
-	       && IS_SIGNATURE (TREE_TYPE (vars)))
-	{
-	  if (vardecl_fn) (*vardecl_fn) (prev, vars);
-	}
-      else
-	prev = vars;
-    }
+  rest_of_decl_compilation (*t, NULL_PTR, 1, 1);
+  *t = TREE_CHAIN (*t);
+  return 1;
 }
 
 /* Determines the proper settings of TREE_PUBLIC and DECL_EXTERNAL for an
@@ -2824,8 +2777,7 @@ import_export_decl (decl)
       else
 	comdat_linkage (decl);
     }
-  /* tinfo function */
-  else if (DECL_ARTIFICIAL (decl) && DECL_MUTABLE_P (decl))
+  else if (DECL_TINFO_FN_P (decl))
     {
       tree ctype = TREE_TYPE (DECL_NAME (decl));
 
@@ -2882,8 +2834,6 @@ build_cleanup (decl)
 }
 
 extern int parse_time, varconst_time;
-extern tree pending_templates;
-extern tree maybe_templates;
 
 static tree
 get_sentry (base)
@@ -2909,105 +2859,6 @@ get_sentry (base)
       pop_obstacks ();
     }
   return sentry;
-}
-
-/* A list of objects which have constructors or destructors
-   which reside in the global scope.  The decl is stored in
-   the TREE_VALUE slot and the initializer is stored
-   in the TREE_PURPOSE slot.  */
-extern tree static_aggregates_initp;
-
-/* Set up the static_aggregates* lists for processing.  Subroutine of
-   finish_file.  Note that this function changes the format of
-   static_aggregates_initp, from (priority . decl) to
-   (priority . ((initializer . decl) ...)).  */
-
-static void
-setup_initp ()
-{
-  tree t, *p, next_t;
-  tree default_pri = build_int_2 (DEFAULT_INIT_PRIORITY, 0);
-  int saw_default;
-
-  /* First, remove any entries from static_aggregates that are also in
-     static_aggregates_initp, and update the entries in _initp to include
-     the initializer.  For entries not in static_aggregates_initp, update
-     them in place to look the same way.  */
-  p = &static_aggregates;
-  for (; *p; )
-    {
-      /* We check for symbol equivalence rather than identical decls
-	 because decl_attributes is run before duplicate_decls.
-	 XXX change to use DECL_MACHINE_ATTRIBUTES instead of
-	 static_aggregates_initp.  */
-      for (t = static_aggregates_initp; t; t = TREE_CHAIN (t))
-	if (DECL_ASSEMBLER_NAME (TREE_VALUE (t))
-	    == DECL_ASSEMBLER_NAME (TREE_VALUE (*p)))
-	  break;
-
-      if (t)
-	{
-	  /* We found an entry in s_a_initp; replace that entry with the
-	     format we want and remove the entry in s_a.  */
-	  TREE_VALUE (t) = *p;
-	  *p = TREE_CHAIN (*p);
-	  TREE_CHAIN (TREE_VALUE (t)) = NULL_TREE;
-	}
-      else
-	{
-	  /* We didn't find an entry in s_a_i; replace the entry in s_a
-	     with the format we want.  */
-	  *p = perm_tree_cons (default_pri, *p, TREE_CHAIN (*p));
-	  TREE_CHAIN (TREE_VALUE (*p)) = NULL_TREE;
-	  p = &TREE_CHAIN (*p);
-	}
-    }
-
-  /* And then attach the two lists.  By doing it this way, ctors with an
-     explicit priority equal to the default are run before ctors with no
-     explicit priority (i.e. the ones in s_a).  */
-  static_aggregates_initp = chainon (static_aggregates,
-				     static_aggregates_initp);
-  static_aggregates = NULL_TREE;
-
-  /* Then, group static_aggregates_initp.  After this step, there will only
-     be one entry for each priority, with a chain coming off it.  */
-  t = static_aggregates_initp;
-  static_aggregates_initp = NULL_TREE;
-
-  saw_default = 0;
-  for (; t; t = next_t)
-    {
-      next_t = TREE_CHAIN (t);
-      if (TREE_INT_CST_LOW (TREE_PURPOSE (t)) == DEFAULT_INIT_PRIORITY)
-	saw_default = 1;
-
-      for (p = &static_aggregates_initp; ; p = &TREE_CHAIN (*p))
-	{
-	  if (*p == NULL_TREE
-	      || tree_int_cst_lt (TREE_PURPOSE (*p), TREE_PURPOSE (t)))
-	    {
-	      TREE_CHAIN (t) = *p;
-	      *p = t;
-	      break;
-	    }
-	  else if (tree_int_cst_equal (TREE_PURPOSE (*p), TREE_PURPOSE (t)))
-	    {
-	      TREE_CHAIN (TREE_VALUE (t)) = TREE_VALUE (*p);
-	      TREE_VALUE (*p) = TREE_VALUE (t);
-	      break;
-	    }
-	}
-    }
-
-  if (! saw_default)
-    static_aggregates_initp = perm_tree_cons (default_pri, error_mark_node,
-					      static_aggregates_initp);
-
-  /* Reverse each list to preserve the order (currently reverse declaration
-     order, for destructors).  */
-  for (t = static_aggregates_initp; t; t = TREE_CHAIN (t))
-    TREE_VALUE (t) = nreverse (TREE_VALUE (t));
 }
 
 /* Start the process of running a particular set of global constructors
@@ -3064,23 +2915,7 @@ static void
 finish_objects (method_type, initp)
      int method_type, initp;
 {
-  char *fnname;
-
-  if (initp == DEFAULT_INIT_PRIORITY)
-    {
-      tree list = (method_type == 'I' ? static_ctors : static_dtors);
-
-      if (! current_function_decl && list)
-	start_objects (method_type, initp);
-
-      for (; list; list = TREE_CHAIN (list))
-	expand_expr_stmt (build_function_call (TREE_VALUE (list), NULL_TREE));
-    }
-
-  if (! current_function_decl)
-    return;
-
-  fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+  char *fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
 
   /* Finish up. */
   expand_end_bindings (getdecls (), 1, 0);
@@ -3115,185 +2950,499 @@ finish_objects (method_type, initp)
 #endif
 }
 
-/* Generate a function to run a set of global destructors.  START is either
-   NULL_TREE or a node indicating a set of destructors with the same
-   init priority.  Subroutine of finish_file.  */
+/* The names of the parameters to the function created to handle
+   initializations and destructions for objects with static storage
+   duration.  */
+#define INITIALIZE_P_IDENTIFIER "__initialize_p"
+#define PRIORITY_IDENTIFIER "__priority"
+
+/* The name of the function we create to handle initializations and
+   destructions for objects with static storage duration.  */
+#define SSDF_IDENTIFIER "__static_initialization_and_destruction"
+
+/* The declaration for the __INITIALIZE_P argument.  */
+static tree initialize_p_decl;
+
+/* The declaration for the __PRIORITY argument.  */
+static tree priority_decl;
+
+/* The declaration for the static storage duration function.  */
+static tree ssdf_decl;
+
+/* A map from priority levels to information about that priority
+   level.  There may be many such levels, so efficient lookup is
+   important.  */
+static splay_tree priority_info_map;
+
+/* Begins the generation of the function that will handle all
+   initialization and destruction of objects with static storage
+   duration.  The function generated takes two parameters of type
+   `int': __INITIALIZE_P and __PRIORITY.  If __INITIALIZE_P is
+   non-zero, it performs initializations.  Otherwise, it performs
+   destructions.  It only performs those initializations or
+   destructions with the indicated __PRIORITY.  The generated function
+   returns no value.  
+
+   It is assumed that this function will only be called once per
+   translation unit.  */
 
 static void
-do_dtors (start)
-     tree start;
+start_static_storage_duration_function ()
 {
-  tree vars;
-  int initp;
+  tree parm_types;
+  tree type;
 
-  initp = TREE_INT_CST_LOW (TREE_PURPOSE (start));
-  vars = TREE_VALUE (start);
+  /* Create the parameters.  */
+  parm_types = void_list_node;
+  parm_types = perm_tree_cons (NULL_TREE, integer_type_node, parm_types);
+  parm_types = perm_tree_cons (NULL_TREE, integer_type_node, parm_types);
+  type = build_function_type (void_type_node, parm_types);
 
-  for (; vars && vars != error_mark_node; vars = TREE_CHAIN (vars))
-    {
-      tree decl = TREE_VALUE (vars);
-      tree type = TREE_TYPE (decl);
-      tree temp;
+  /* Create the FUNCTION_DECL itself.  */
+  ssdf_decl = build_lang_decl (FUNCTION_DECL, 
+			       get_identifier (SSDF_IDENTIFIER),
+			       type);
+  TREE_PUBLIC (ssdf_decl) = 0;
+  DECL_ARTIFICIAL (ssdf_decl) = 1;
+  DECL_INLINE (ssdf_decl) = 1;
 
-      if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars)
-	  && ! DECL_EXTERNAL (decl))
-	{
-	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
-						|| DECL_ONE_ONLY (decl)
-						|| DECL_WEAK (decl)));
+  /* Create the argument list.  */
+  initialize_p_decl = build_decl (PARM_DECL,
+				  get_identifier (INITIALIZE_P_IDENTIFIER),
+				  integer_type_node);
+  DECL_CONTEXT (initialize_p_decl) = ssdf_decl;
+  DECL_ARG_TYPE (initialize_p_decl) = integer_type_node;
+  TREE_USED (initialize_p_decl) = 1;
+  priority_decl = build_decl (PARM_DECL, get_identifier (PRIORITY_IDENTIFIER),
+			      integer_type_node);
+  DECL_CONTEXT (priority_decl) = ssdf_decl;
+  DECL_ARG_TYPE (priority_decl) = integer_type_node;
+  TREE_USED (priority_decl) = 1;
 
-	  if (! current_function_decl)
-	    start_objects ('D', initp);
+  TREE_CHAIN (initialize_p_decl) = priority_decl;
+  DECL_ARGUMENTS (ssdf_decl) = initialize_p_decl;
 
-	  /* Set these global variables so that GDB at least puts
-	     us near the declaration which required the initialization.  */
-	  input_filename = DECL_SOURCE_FILE (decl);
-	  lineno = DECL_SOURCE_LINE (decl);
-	  emit_note (input_filename, lineno);
-	  
-	  /* Because of:
+  /* Start the function itself.  This is equivalent to declarating the
+     function as:
 
-	       [class.access.spec]
+       static inline void __ssdf (int __initialize_p, init __priority_p);
+       
+     It is static because we only need to call this function from the
+     various constructor and destructor functions for this module.  */
+  start_function (/*specs=*/NULL_TREE, 
+		  ssdf_decl,
+		  /*attrs=*/NULL_TREE,
+		  /*pre_parsed_p=*/1);
 
-	       Access control for implicit calls to the constructors,
-	       the conversion functions, or the destructor called to
-	       create and destroy a static data member is performed as
-	       if these calls appeared in the scope of the member's
-	       class.  
+  /* Set up the scope of the outermost block in the function.  */
+  store_parm_decls ();
+  pushlevel (0);
+  clear_last_expr ();
+  push_momentary ();
+  expand_start_bindings (0);
 
-	     we must convince enforce_access to let us access the
-	     DECL.  */
-	  if (member_p (decl))
-	    {
-	      DECL_CLASS_CONTEXT (current_function_decl)
-		= DECL_CONTEXT (decl);
-	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
-	    }
-
-	  temp = build_cleanup (decl);
-
-	  if (protect)
-	    {
-	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
-	      sentry = build_unary_op (PREDECREMENT_EXPR, sentry, 0);
-	      sentry = build_binary_op (EQ_EXPR, sentry, integer_zero_node);
-	      expand_start_cond (sentry, 0);
-	    }
-
-	  expand_expr_stmt (temp);
-
-	  if (protect)
-	    expand_end_cond ();
-	  
-	  /* Now that we're done with DECL we don't need to pretend to
-	     be a member of its class any longer.  */
-	  DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
-	  DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
-	}
-    }
-
-  finish_objects ('D', initp);
+  /* Initialize the map from priority numbers to information about
+     that priority level. */
+  priority_info_map = splay_tree_new (splay_tree_compare_ints,
+				      /*delete_key_fn=*/0,
+				      /*delete_value_fn=*/
+				      (splay_tree_delete_value_fn) &free);
 }
 
-/* Generate a function to run a set of global constructors.  START is
-   either NULL_TREE or a node indicating a set of constructors with the
-   same init priority.  Subroutine of finish_file.  */
+/* Generate the initialization code for the priority indicated in N.  */
 
-static void
-do_ctors (start)
-     tree start;
+static int
+generate_inits_for_priority (n, data)
+     splay_tree_node n;
+     void *data ATTRIBUTE_UNUSED;
 {
-  tree vars;
-  int initp;
+  int priority = (int) n->key;
+  priority_info pi = (priority_info) n->value;
 
-  initp = TREE_INT_CST_LOW (TREE_PURPOSE (start));
-  vars = TREE_VALUE (start);
+  /* For each priority N which has been used generate code which looks
+     like:
 
-  /* Reverse the list so it's in the right order for ctors.  */
-  vars = nreverse (vars);
+       if (__priority == N) {
+         if (__initialize_p)
+	   ...
+	 else
+	   ...
+       }
 
-  for (; vars && vars != error_mark_node; vars = TREE_CHAIN (vars))
+     We use the sequences we've accumulated to fill in the `...'s.  */
+  expand_start_cond (build_binary_op (EQ_EXPR,
+				      priority_decl,
+				      build_int_2 (priority, 0)),
+		     /*exit_flag=*/0);
+
+  /* Do the initializations.  */
+  expand_start_cond (build_binary_op (NE_EXPR,
+				      initialize_p_decl,
+				      integer_zero_node),
+		     /*exit_flag=*/0);
+  if (pi->initialization_sequence) 
     {
-      tree decl = TREE_VALUE (vars);
-      tree init = TREE_PURPOSE (vars);
+      rtx insns;
 
-      /* If this was a static attribute within some function's scope,
-	 then don't initialize it here.  Also, don't bother
-	 with initializers that contain errors.  */
-      if (TREE_STATIC (vars)
-	  || DECL_EXTERNAL (decl)
-	  || (init && TREE_CODE (init) == TREE_LIST
-	      && value_member (error_mark_node, init)))
-	continue;
+      push_to_sequence (pi->initialization_sequence);
+      insns = gen_sequence ();
+      end_sequence ();
 
-      if (TREE_CODE (decl) == VAR_DECL)
-	{
-	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
-						|| DECL_ONE_ONLY (decl)
-						|| DECL_WEAK (decl)));
-
-	  if (! current_function_decl)
-	    start_objects ('I', initp);
-
-	  /* Set these global variables so that GDB at least puts
-	     us near the declaration which required the initialization.  */
-	  input_filename = DECL_SOURCE_FILE (decl);
-	  lineno = DECL_SOURCE_LINE (decl);
-	  emit_note (input_filename, lineno);
-
-	  /* 9.5p5: The initializer of a static member of a class has
-	     the same access rights as a member function.  */
-	  if (member_p (decl))
-	    {
-	      DECL_CLASS_CONTEXT (current_function_decl)
-		= DECL_CONTEXT (decl);
-	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
-	    }
-
-	  if (protect)
-	    {
-	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
-	      sentry = build_unary_op (PREINCREMENT_EXPR, sentry, 0);
-	      sentry = build_binary_op
-		(EQ_EXPR, sentry, integer_one_node);
-	      expand_start_cond (sentry, 0);
-	    }
-
-	  expand_start_target_temps ();
-
-	  if (IS_AGGR_TYPE (TREE_TYPE (decl))
-	      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	    expand_aggr_init (decl, init, 0);
-	  else if (TREE_CODE (init) == TREE_VEC)
-	    {
-	      expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
-					    TREE_VEC_ELT (init, 1),
-					    TREE_VEC_ELT (init, 2), 0),
-			   const0_rtx, VOIDmode, EXPAND_NORMAL);
-	    }
-	  else
-	    expand_assignment (decl, init, 0, 0);
-	      
-	  /* The expression might have involved increments and
-	     decrements.  */
-	  emit_queue ();
-
-	  /* Cleanup any temporaries needed for the initial value.  */
-	  expand_end_target_temps ();
-
-	  if (protect)
-	    expand_end_cond ();
-
-	  DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
-	  DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
-	}
-      else if (decl == error_mark_node)
-	/* OK */;
-      else
-	my_friendly_abort (22);
+      emit_insn (insns);
     }
 
-  finish_objects ('I', initp);
+  /* Do the destructions.  */
+  expand_start_else ();
+  if (pi->destruction_sequence)
+    {
+      rtx insns;
+
+      push_to_sequence (pi->destruction_sequence);
+      insns = gen_sequence ();
+      end_sequence ();
+
+      emit_insn (insns);
+    }
+  
+  /* Close out the conditionals.  */
+  expand_end_cond ();
+  expand_end_cond ();
+
+  /* Don't stop iterating.  */
+  return 0;
+}
+
+/* Finish the generation of the function which performs initialization
+   and destruction of objects with static storage duration.  After
+   this point, no more such objects can be created.  */
+
+static void
+finish_static_storage_duration_function ()
+{
+  splay_tree_foreach (priority_info_map, 
+		      generate_inits_for_priority,
+		      /*data=*/0);
+
+  /* Close out the function.  */
+  expand_end_bindings (getdecls (), 1, 0);
+  poplevel (1, 0, 0);
+  pop_momentary ();
+  finish_function (lineno, 0, 0);
+}
+
+/* Return the information about the indicated PRIORITY level.  If no
+   code to handle this level has yet been generated, generate the
+   appropriate prologue.  */
+
+static priority_info
+get_priority_info (priority)
+     int priority;
+{
+  priority_info pi;
+  splay_tree_node n;
+
+  n = splay_tree_lookup (priority_info_map, 
+			 (splay_tree_key) priority);
+  if (!n)
+    {
+      /* Create a new priority information structure, and insert it
+	 into the map.  */
+      pi = (priority_info) xmalloc (sizeof (struct priority_info_s));
+      pi->initialization_sequence = NULL_RTX;
+      pi->destruction_sequence = NULL_RTX;
+      splay_tree_insert (priority_info_map,
+			 (splay_tree_key) priority,
+			 (splay_tree_value) pi);
+    }
+  else
+    pi = (priority_info) n->value;
+
+  return pi;
+}
+
+/* Generate code to do the static initialization of DECL.  The
+   initialization is INIT.  If DECL may be initialized more than once
+   in different object files, SENTRY is the guard variable to 
+   check.  PRIORITY is the priority for the initialization.  */
+
+static void
+do_static_initialization (decl, init, sentry, priority)
+     tree decl;
+     tree init;
+     tree sentry;
+     int priority;
+{
+  priority_info pi;
+
+  /* Get the priority information for this PRIORITY,  */
+  pi = get_priority_info (priority);
+  if (!pi->initialization_sequence)
+    start_sequence ();
+  else
+    push_to_sequence (pi->initialization_sequence);
+
+  /* Tell the debugger that we are at the location of the static
+     variable in question.  */
+  emit_note (input_filename, lineno);
+
+  /* If there's a SENTRY, we only do the initialization if it is
+     zero, i.e., if we are the first to initialize it.  */
+  if (sentry) 
+    expand_start_cond (build_binary_op (EQ_EXPR, 
+					build_unary_op (PREINCREMENT_EXPR,
+							sentry,
+							/*noconvert=*/0),
+					integer_one_node),
+		       /*exit_flag=*/0);
+  
+  /* Prepare a binding level for temporaries created during the
+     initialization.  */
+  expand_start_target_temps ();
+
+  if (IS_AGGR_TYPE (TREE_TYPE (decl))
+      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    expand_aggr_init (decl, init, 0);
+  else if (TREE_CODE (init) == TREE_VEC)
+    expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
+				  TREE_VEC_ELT (init, 1),
+				  TREE_VEC_ELT (init, 2), 0),
+		 const0_rtx, VOIDmode, EXPAND_NORMAL);
+  else
+    expand_assignment (decl, init, 0, 0);
+  
+  /* The expression might have involved increments and decrements.  */
+  emit_queue ();
+
+  /* Cleanup any temporaries needed for the initial value.  */
+  expand_end_target_temps ();
+
+  /* Close the conditional opened above.  */
+  if (sentry)
+    expand_end_cond ();
+
+  /* Save the sequence for later use.  */
+  pi->initialization_sequence = get_insns ();
+  end_sequence ();
+}
+
+/* Generate code to do the static destruction of DECL.  If DECL may be
+   initialized more than once in different object files, SENTRY is the
+   guard variable to check.  PRIORITY is the priority for the
+   destruction.  */
+
+static void
+do_static_destruction (decl, sentry, priority)
+     tree decl;
+     tree sentry;
+     int priority;
+{
+  rtx new_insns;
+  priority_info pi;
+
+  /* FIXME: We need destructions to be run in reverse order!  */
+
+  /* If we don't need a destructor, there's nothing to do.  */
+  if (!TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
+    return;
+    
+  /* Get the priority information for this PRIORITY,  */
+  pi = get_priority_info (priority);
+  if (!pi->destruction_sequence)
+    start_sequence ();
+  else
+    push_to_sequence (pi->destruction_sequence);
+
+  /* Start a new sequence to handle just this destruction.  */
+  start_sequence ();
+
+  /* Tell the debugger that we are at the location of the static
+     variable in question.  */
+  emit_note (input_filename, lineno);
+  
+  /* If there's a SENTRY, we only do the initialization if it is
+     one, i.e., if we are the last to initialize it.  */
+  if (sentry)
+    expand_start_cond (build_binary_op (EQ_EXPR,
+					build_unary_op (PREDECREMENT_EXPR,
+							sentry,
+							/*nonconvert=*/1),
+					integer_one_node),
+		       /*exit_flag=*/0);
+  
+  /* Actually to the destruction.  */
+  expand_expr_stmt (build_cleanup (decl));
+
+  /* Close the conditional opened above.  */
+  if (sentry)
+    expand_end_cond ();
+
+  /* Insert the NEW_INSNS before the current insns.  (Destructions are
+     run in reverse order of initializations.)  */
+  new_insns = gen_sequence ();
+  end_sequence ();
+  if (pi->destruction_sequence)
+    emit_insn_before (new_insns, pi->destruction_sequence);
+  else
+    emit_insn (new_insns);
+
+  /* Save the sequence for later use.  */
+  pi->destruction_sequence = get_insns ();
+  end_sequence ();
+}
+
+/* Add code to the static storage duration function that will handle
+   DECL (a static variable that needs initializing and/or destruction)
+   with the indicated PRIORITY.  If DECL needs initializing, INIT is
+   the initializer.  */
+
+static void
+do_static_initialization_and_destruction (decl, init)
+     tree decl;
+     tree init;
+{
+  tree sentry = NULL_TREE;
+  int priority;
+
+  /* Deal gracefully with error.  */
+  if (decl == error_mark_node)
+    return;
+
+  /* The only things that can be initialized are variables.  */
+  my_friendly_assert (TREE_CODE (decl) == VAR_DECL, 19990420);
+
+  /* If this object is not defined, we don't need to do anything 
+     here.  */ 
+  if (DECL_EXTERNAL (decl))
+    return;
+
+  /* Also, if the initializer already contains errors, we can bail out
+     now.  */
+  if (init && TREE_CODE (init) == TREE_LIST 
+      && value_member (error_mark_node, init))
+    return;
+
+  /* Trick the compiler into thinking we are at the file and line
+     where DECL was declared so that error-messages make sense, and so
+     that the debugger will show somewhat sensible file and line
+     information.  */
+  input_filename = DECL_SOURCE_FILE (decl);
+  lineno = DECL_SOURCE_LINE (decl);
+
+  /* Because of:
+
+       [class.access.spec]
+
+       Access control for implicit calls to the constructors,
+       the conversion functions, or the destructor called to
+       create and destroy a static data member is performed as
+       if these calls appeared in the scope of the member's
+       class.  
+
+     we pretend we are in a static member function of the class of
+     which the DECL is a member.  */
+  if (member_p (decl))
+    {
+      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
+      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
+    }
+  
+  /* We need a sentry if this is an object with external linkage that
+     might be initialized in more than one place.  */
+  if (TREE_PUBLIC (decl) && (DECL_COMMON (decl) 
+			     || DECL_ONE_ONLY (decl)
+			     || DECL_WEAK (decl)))
+    sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
+
+  /* Generate the code to actually do the intialization and
+     destruction.  */
+  priority = DECL_INIT_PRIORITY (decl);
+  if (!priority)
+    priority = DEFAULT_INIT_PRIORITY;
+  do_static_initialization (decl, init, sentry, priority);
+  do_static_destruction (decl, sentry, priority);
+
+  /* Now that we're done with DECL we don't need to pretend to be a
+     member of its class any longer.  */
+  DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
+  DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
+}
+
+/* Generate a static constructor (if CONSTRUCTOR_P) or destructor
+   (otherwise) that will initialize all gobal objects with static
+   storage duration having the indicated PRIORITY.  */
+
+static void
+generate_ctor_or_dtor_function (constructor_p, priority)
+     int constructor_p;
+     int priority;
+{
+  char function_key;
+  tree arguments;
+
+  /* We use `I' to indicate initialization and `D' to indicate
+     destruction.  */
+  if (constructor_p)
+    function_key = 'I';
+  else
+    function_key = 'D';
+
+  /* Begin the function.  */
+  start_objects (function_key, priority);
+
+  /* Call the static storage duration function with appropriate
+     arguments.  */
+  arguments = tree_cons (NULL_TREE, build_int_2 (priority, 0), 
+			 NULL_TREE);
+  arguments = tree_cons (NULL_TREE, build_int_2 (constructor_p, 0),
+			 arguments);
+  expand_expr_stmt (build_function_call (ssdf_decl, arguments));
+
+  /* If we're generating code for the DEFAULT_INIT_PRIORITY, throw in
+     calls to any functions marked with attributes indicating that
+     they should be called at initialization- or destruction-time.  */
+  if (priority == DEFAULT_INIT_PRIORITY)
+    {
+      tree fns;
+      
+      for (fns = constructor_p ? static_ctors : static_dtors; 
+	   fns;
+	   fns = TREE_CHAIN (fns))
+	expand_expr_stmt (build_function_call (TREE_VALUE (fns), NULL_TREE));
+    }
+
+  /* Close out the function.  */
+  finish_objects (function_key, priority);
+}
+
+/* Generate constructor and destructor functions for the priority
+   indicated by N.  DATA is really an `int*', and it set to `1' if we
+   process the DEFAULT_INIT_PRIORITY.  */
+
+static int
+generate_ctor_and_dtor_functions_for_priority (n, data)
+     splay_tree_node n;
+     void *data;
+{
+  int priority = (int) n->key;
+  priority_info pi = (priority_info) n->value;
+  int *did_default_priority_p = (int*) data;
+
+  if (priority == DEFAULT_INIT_PRIORITY)
+    *did_default_priority_p = 1;
+
+  /* Generate the functions themselves, but only if they are really
+     needed.  */
+  if (pi->initialization_sequence
+      || (priority == DEFAULT_INIT_PRIORITY && static_ctors))
+    generate_ctor_or_dtor_function (/*constructor_p=*/1,
+				    priority);
+  if (pi->destruction_sequence
+      || (priority == DEFAULT_INIT_PRIORITY && static_dtors))
+    generate_ctor_or_dtor_function (/*constructor_p=*/0,
+				    priority);
+
+  /* Keep iterating.  */
+  return 0;
 }
 
 /* This routine is called from the last rule in yyparse ().
@@ -3306,10 +3455,10 @@ finish_file ()
 {
   extern int lineno;
   int start_time, this_time;
-
-  tree fnname;
+  int did_default_priority_p = 0;
   tree vars;
-  int needs_cleaning = 0, needs_messing_up = 0;
+  int reconsider;
+  size_t i;
 
   at_eof = 1;
 
@@ -3326,245 +3475,194 @@ finish_file ()
   interface_unknown = 1;
   interface_only = 0;
 
-  for (fnname = pending_templates; fnname; fnname = TREE_CHAIN (fnname))
-    {
-      tree srcloc = TREE_PURPOSE (fnname);
-      tree decl = TREE_VALUE (fnname);
+  /* We now have to write out all the stuff we put off writing out.
+     These include:
 
-      input_filename = SRCLOC_FILE (srcloc);
-      lineno = SRCLOC_LINE (srcloc);
+       o Template specializations that we have not yet instantiated,
+         but which are needed.
+       o Initialization and destruction for non-local objects with
+         static storage duration.  (Local objects with static storage
+	 duration are initialized when their scope is first entered,
+	 and are cleaned up via atexit.)
+       o Virtual function tables.  
 
-      if (TREE_CODE_CLASS (TREE_CODE (decl)) == 't')
-	{
-	  instantiate_class_template (decl);
-	  if (CLASSTYPE_TEMPLATE_INSTANTIATION (decl))
-	    for (vars = TYPE_METHODS (decl); vars; vars = TREE_CHAIN (vars))
-	      if (! DECL_ARTIFICIAL (vars))
-		instantiate_decl (vars);
-	}
-      else
-	instantiate_decl (decl);
-    }
-
-  for (fnname = maybe_templates; fnname; fnname = TREE_CHAIN (fnname))
-    {
-      tree args, fn, decl = TREE_VALUE (fnname);
-
-      if (DECL_INITIAL (decl))
-	continue;
-
-      fn = TREE_PURPOSE (fnname);
-      args = get_bindings (fn, decl, NULL_TREE);
-      fn = instantiate_template (fn, args);
-      instantiate_decl (fn);
-    }
-
-  cat_namespace_levels();
-
-  /* Push into C language context, because that's all
-     we'll need here.  */
-  push_lang_context (lang_name_c);
-
-#if 1
-  /* The reason for pushing garbage onto the global_binding_level is to
-     ensure that we can slice out _DECLs which pertain to virtual function
-     tables.  If the last thing pushed onto the global_binding_level was a
-     virtual function table, then slicing it out would slice away all the
-     decls (i.e., we lose the head of the chain).
-
-     There are several ways of getting the same effect, from changing the
-     way that iterators over the chain treat the elements that pertain to
-     virtual function tables, moving the implementation of this code to
-     decl.c (where we can manipulate global_binding_level directly),
-     popping the garbage after pushing it and slicing away the vtable
-     stuff, or just leaving it alone.  */
-
-  /* Make last thing in global scope not be a virtual function table.  */
-#if 0 /* not yet, should get fixed properly later */
-  vars = make_type_decl (get_identifier (" @%$#@!"), integer_type_node);
-#else
-  vars = build_decl (TYPE_DECL, get_identifier (" @%$#@!"), integer_type_node);
-#endif
-  DECL_IGNORED_P (vars) = 1;
-  SET_DECL_ARTIFICIAL (vars);
-  pushdecl (vars);
-#endif
-
-  for (vars = static_aggregates; vars; vars = TREE_CHAIN (vars))
-    if (! TREE_ASM_WRITTEN (TREE_VALUE (vars)))
-      rest_of_decl_compilation (TREE_VALUE (vars), 0, 1, 1);
-  vars = static_aggregates;
-
-  if (static_ctors || vars)
-    needs_messing_up = 1;
-  if (static_dtors || vars)
-    needs_cleaning = 1;
-
-  setup_initp ();
-
-  /* After setup_initp, the aggregates are listed in reverse declaration
-     order, for cleaning.  */
-  if (needs_cleaning)
-    for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
-      do_dtors (vars);
-
-  /* do_ctors will reverse the lists for messing up.  */
-  if (needs_messing_up)
-    for (vars = static_aggregates_initp; vars; vars = TREE_CHAIN (vars))
-      do_ctors (vars);
-
-  permanent_allocation (1);
-
-  /* Done with C language context needs.  */
-  pop_lang_context ();
-
-  /* Let expand_static_init know it's too late for more ctors.  */
-  at_eof = 2;
-
-  /* Now write out any static class variables (which may have since
-     learned how to be initialized).  */
-  for (; pending_statics; pending_statics = TREE_CHAIN (pending_statics))
-    {
-      tree decl = TREE_VALUE (pending_statics);
-
-      if (TREE_ASM_WRITTEN (decl))
-	continue;
-
-      /* Output DWARF debug information.  */
-#ifdef DWARF_DEBUGGING_INFO
-      if (write_symbols == DWARF_DEBUG)
-	dwarfout_file_scope_decl (decl, 1);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-      if (write_symbols == DWARF2_DEBUG)
-	dwarf2out_decl (decl);
-#endif
-
-      /* We currently handle template statics here.  We ought to handle
-	 them the same way we do template functions, i.e. only emit them if
-	 the symbol is needed.  */
-      import_export_decl (decl);
-      if (DECL_NOT_REALLY_EXTERN (decl) && ! DECL_IN_AGGR_P (decl))
-	DECL_EXTERNAL (decl) = 0;
-
-      rest_of_decl_compilation
-	(decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), 1, 1);
-    }
+     All of these may cause others to be needed.  For example,
+     instantiating one function may cause another to be needed, and
+     generating the intiailzer for an object may cause templates to be
+     instantiated, etc., etc.  */
 
   this_time = get_run_time ();
   parse_time -= this_time - start_time;
   varconst_time += this_time - start_time;
-
   start_time = get_run_time ();
+  permanent_allocation (1);
 
-  if (flag_handle_signatures)
-    walk_sigtables ((void (*) PROTO ((tree, tree))) 0,
-		    finish_sigtable_vardecl);
+  /* Create the function that will contain all initializations and
+     destructions for objects with static storage duration.  We cannot
+     conclude that because a symbol is not TREE_SYMBOL_REFERENCED the
+     corresponding entity is not used until we call finish_function
+     for the static storage duration function.  We give C linkage to
+     static constructors and destructors.  */
+  push_lang_context (lang_name_c);
+  start_static_storage_duration_function ();
+  push_to_top_level ();
 
-  for (fnname = saved_inlines; fnname; fnname = TREE_CHAIN (fnname))
+  do 
     {
-      tree decl = TREE_VALUE (fnname);
-      import_export_decl (decl);
+      reconsider = 0;
+
+    /* If there are templates that we've put off instantiating, do
+       them now.  */
+      instantiate_pending_templates ();
+
+      /* Write out signature-tables and virtual tables as required.
+       Note that writing out the virtual table for a template class
+       may cause the instantiation of members of that class.  */
+      if (flag_handle_signatures
+	  && walk_globals (sigtable_decl_p,
+			   finish_sigtable_vardecl,
+			   /*data=*/0))
+	reconsider = 1;
+      if (walk_globals (vtable_decl_p,
+			finish_vtable_vardecl,
+			/*data=*/0))
+	reconsider = 1;
+      
+      /* Come back to the static storage duration function; we're
+	 about to emit instructions there for static initializations
+	 and such.  */
+      pop_from_top_level ();
+      /* The list of objects with static storage duration is built up
+	 in reverse order, so we reverse it here.  We also clear
+	 STATIC_AGGREGATES so that any new aggregates added during the
+	 initialization of these will be initialized in the correct
+	 order when we next come around the loop.  */
+      vars = nreverse (static_aggregates);
+      static_aggregates = NULL_TREE;
+      while (vars)
+	{
+	  if (! TREE_ASM_WRITTEN (TREE_VALUE (vars)))
+	    rest_of_decl_compilation (TREE_VALUE (vars), 0, 1, 1);
+	  do_static_initialization_and_destruction (TREE_VALUE (vars), 
+						    TREE_PURPOSE (vars));
+	  reconsider = 1;
+	  vars = TREE_CHAIN (vars);
+	}
+      push_to_top_level ();
+      
+      /* Go through the various inline functions, and see if any need
+	 synthesizing.  */
+      for (i = 0; i < saved_inlines_used; ++i)
+	{
+	  tree decl = VARRAY_TREE (saved_inlines, i);
+	  import_export_decl (decl);
+	  if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
+	      && TREE_USED (decl)
+	      && (! DECL_REALLY_EXTERN (decl) || DECL_INLINE (decl)))
+	    {
+	      /* Even though we're already at the top-level, we push
+		 there again.  That way, when we pop back a few lines
+		 hence, all of our state is restored.  Otherwise,
+		 finish_function doesn't clean things up, and we end
+		 up with CURRENT_FUNCTION_DECL set.  */
+	      push_to_top_level ();
+	      if (DECL_TINFO_FN_P (decl))
+		synthesize_tinfo_fn (decl);
+	      else
+		synthesize_method (decl);
+	      pop_from_top_level ();
+	      reconsider = 1;
+	    }
+	}
+    } 
+  while (reconsider);
+
+  /* Finish up the static storage duration function, now that we now
+     there can be no more things in need of initialization or
+     destruction.  */
+  pop_from_top_level ();
+  finish_static_storage_duration_function ();
+
+  /* Generate initialization and destruction functions for all
+     priorities for which they are required.  */
+  if (priority_info_map)
+    splay_tree_foreach (priority_info_map, 
+			generate_ctor_and_dtor_functions_for_priority,
+			&did_default_priority_p);
+
+  if (!did_default_priority_p) 
+    {
+      /* Even if there were no explicit initializations or
+	 destructions required, we may still have to handle the
+	 default priority if there functions declared as constructors
+	 or destructors via attributes.  */
+      if (static_ctors)
+	generate_ctor_or_dtor_function (/*constructor_p=*/1, 
+					DEFAULT_INIT_PRIORITY);
+      if (static_dtors)
+	generate_ctor_or_dtor_function (/*constructor_p=*/0, 
+					DEFAULT_INIT_PRIORITY);
     }
 
+  /* We're done with the splay-tree now.  */
+  if (priority_info_map)
+    splay_tree_delete (priority_info_map);
+
+  /* We're done with static constructors, so we can go back to "C++"
+     linkage now.  */
+  pop_lang_context ();
+
+  /* Mark all functions that might deal with exception-handling as
+     referenced.  */
   mark_all_runtime_matches ();
-
-  /* Now write out inline functions which had their addresses taken and
-     which were not declared virtual and which were not declared `extern
-     inline'.  */
-  {
-    int reconsider = 1;		/* More may be referenced; check again */
-
-    while (reconsider)
-      {
-	tree *p = &saved_inlines;
-	reconsider = 0;
-
-	/* We need to do this each time so that newly completed template
-           types don't wind up at the front of the list.  Sigh.  */
-	vars = build_decl (TYPE_DECL, make_anon_name (), integer_type_node);
-	DECL_IGNORED_P (vars) = 1;
-	SET_DECL_ARTIFICIAL (vars);
-	pushdecl (vars);
-
-	reconsider |= walk_vtables ((void (*) PROTO((tree, tree))) 0, 
-				    finish_vtable_vardecl);
-
-	while (*p)
-	  {
-	    tree decl = TREE_VALUE (*p);
-
-	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
-		&& TREE_USED (decl)
-		&& (! DECL_REALLY_EXTERN (decl) || DECL_INLINE (decl)))
-	      {
-		if (DECL_MUTABLE_P (decl))
-		  synthesize_tinfo_fn (decl);
-		else
-		  synthesize_method (decl);
-		reconsider = 1;
-	      }
-
-	    /* Catch new template instantiations.  */
-	    if (decl != TREE_VALUE (*p))
-	      continue;
-
-	    if (TREE_ASM_WRITTEN (decl)
-		|| (DECL_SAVED_INSNS (decl) == 0
-		    && ! DECL_ARTIFICIAL (decl)))
-	      *p = TREE_CHAIN (*p);
-	    else if (DECL_INITIAL (decl) == 0)
-	      p = &TREE_CHAIN (*p);
-	    else if ((TREE_PUBLIC (decl) && ! DECL_COMDAT (decl))
-		     || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-		     || flag_keep_inline_functions)
-	      {
-		if (DECL_NOT_REALLY_EXTERN (decl))
-		  {
-		    DECL_EXTERNAL (decl) = 0;
-		    reconsider = 1;
-		    /* We can't inline this function after it's been
-                       emitted.  We want a variant of
-                       output_inline_function that doesn't prevent
-                       subsequent integration...  */
-		    DECL_INLINE (decl) = 0;
-		    output_inline_function (decl);
-		    permanent_allocation (1);
-		  }
-
-		*p = TREE_CHAIN (*p);
-	      }
-	    else
-	      p = &TREE_CHAIN (*p);
-	  }
-      }
-
-    /* It's possible that some of the remaining inlines will still be
-       needed.  For example, a static inline whose address is used in
-       the initializer for a file-scope static variable will be
-       needed.  Code in compile_file will handle this, but we mustn't
-       pretend that there are no definitions for the inlines, or it
-       won't be able to.
-
-       FIXME: This won't catch member functions.  We should really
-       unify this stuff with the compile_file stuff.  */
-    for (vars = saved_inlines; vars != NULL_TREE; vars = TREE_CHAIN (vars))
-      {
-	tree decl = TREE_VALUE (vars);
-
-	if (DECL_NOT_REALLY_EXTERN (decl)
-	    && !DECL_COMDAT (decl)
-	    && DECL_INITIAL (decl) != NULL_TREE)
-	  DECL_EXTERNAL (decl) = 0;
-      }
-  }
 
   /* Now delete from the chain of variables all virtual function tables.
      We output them all ourselves, because each will be treated
      specially.  */
+  walk_globals (vtable_decl_p, prune_vtable_vardecl, /*data=*/0);
 
-  walk_vtables ((void (*) PROTO((tree, tree))) 0,
-		prune_vtable_vardecl);
+  /* We'll let wrapup_global_declarations handle the inline functions,
+     but it will be fooled by DECL_NOT_REALL_EXTERN funtions, so we
+     fix them up here.  */
+  for (i = 0; i < saved_inlines_used; ++i)
+    {
+      tree decl = VARRAY_TREE (saved_inlines, i);
+      
+      if (DECL_NOT_REALLY_EXTERN (decl))
+	DECL_EXTERNAL (decl) = 0;
+    }
+
+  /* We haven't handled non-local objects that don't need dynamic
+     initialization.  Do that now.  */
+  do
+    {
+      if (saved_inlines)
+	reconsider 
+	  |= wrapup_global_declarations (&VARRAY_TREE (saved_inlines, 0),
+					 saved_inlines_used);
+      reconsider 
+	= walk_namespaces (wrapup_globals_for_namespace, /*data=*/0);
+
+      /* Static data members are just like namespace-scope globals.  */
+      for (i = 0; i < pending_statics_used; ++i) 
+	{
+	  tree decl = VARRAY_TREE (pending_statics, i);
+	  if (TREE_ASM_WRITTEN (decl))
+	    continue;
+	  import_export_decl (decl);
+	  if (DECL_NOT_REALLY_EXTERN (decl) && ! DECL_IN_AGGR_P (decl))
+	    DECL_EXTERNAL (decl) = 0;
+	}
+      if (pending_statics)
+	reconsider 
+	  |= wrapup_global_declarations (&VARRAY_TREE (pending_statics, 0),
+					 pending_statics_used);
+    }
+  while (reconsider);
+
+  /* Now, issue warnings about static, but not defined, functions,
+     etc.  */
+  walk_namespaces (wrapup_globals_for_namespace, /*data=*/&reconsider);
 
   finish_repo ();
 

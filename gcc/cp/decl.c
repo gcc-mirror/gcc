@@ -192,6 +192,8 @@ static void find_class_binding_level PROTO((void));
 static struct binding_level *innermost_nonclass_level PROTO((void));
 static tree poplevel_class PROTO((void));
 static void warn_about_implicit_typename_lookup PROTO((tree, tree));
+static int walk_namespaces_r PROTO((tree, walk_namespaces_fn, void *));
+static int walk_globals_r PROTO((tree, void *));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -1833,6 +1835,179 @@ clear_identifier_class_values ()
     IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
 }
 
+/* Returns non-zero if T is a virtual function table.  */
+
+int
+vtable_decl_p (t, data)
+     tree t;
+     void *data ATTRIBUTE_UNUSED;
+{
+  return (TREE_CODE (t) == VAR_DECL && DECL_VIRTUAL_P (t));
+}
+
+/* Returns non-zero if T is a TYPE_DECL for a type with virtual
+   functions.  */
+
+int
+vtype_decl_p (t, data)
+     tree t;
+     void *data ATTRIBUTE_UNUSED;
+{
+  return (TREE_CODE (t) == TYPE_DECL
+	  && TREE_TYPE (t) != error_mark_node
+	  && TYPE_LANG_SPECIFIC (TREE_TYPE (t))
+	  && CLASSTYPE_VSIZE (TREE_TYPE (t)));
+}
+
+/* Returns non-zero if T is a signature table.  */
+
+int 
+sigtable_decl_p (t, data)
+     tree t;
+     void *data ATTRIBUTE_UNUSED;
+{
+  return (TREE_CODE (t) == VAR_DECL
+	  && TREE_TYPE (t) != error_mark_node
+	  && IS_SIGNATURE (TREE_TYPE (t)));
+}
+
+/* Walk all the namespaces contained NAMESPACE, including NAMESPACE
+   itself, calling F for each.  The DATA is passed to F as well.  */
+
+static int
+walk_namespaces_r (namespace, f, data)
+     tree namespace;
+     walk_namespaces_fn f;
+     void *data;
+{
+  tree current;
+  int result = 0;
+
+  result |= (*f) (namespace, data);
+
+  for (current = NAMESPACE_LEVEL (namespace)->names;
+       current;
+       current = TREE_CHAIN (current))
+    {
+      if (TREE_CODE (current) != NAMESPACE_DECL
+	  || DECL_NAMESPACE_ALIAS (current))
+	continue;
+      if (!DECL_LANG_SPECIFIC (current))
+	{
+	  /* Hmm. std. */
+	  my_friendly_assert (current == std_node, 393);
+	  continue;
+	}
+
+      /* We found a namespace.  */
+      result |= walk_namespaces_r (current, f, data);
+    }
+
+  return result;
+}
+
+/* Walk all the namespaces, calling F for each.  The DATA is passed to
+   F as well.  */
+
+int
+walk_namespaces (f, data)
+     walk_namespaces_fn f;
+     void *data;
+{
+  return walk_namespaces_r (global_namespace, f, data);
+}
+
+struct walk_globals_data {
+  walk_globals_pred p;
+  walk_globals_fn f;
+  void *data;
+};
+
+/* Walk the global declarations in NAMESPACE.  Whenever one is found
+   for which P returns non-zero, call F with its address.  If any call
+   to F returns a non-zero value, return a non-zero value.  */
+
+static int 
+walk_globals_r (namespace, data)
+     tree namespace;
+     void *data;
+{
+  struct walk_globals_data* wgd = (struct walk_globals_data *) data;
+  walk_globals_pred p = wgd->p;
+  walk_globals_fn f = wgd->f;
+  void *d = wgd->data;
+  tree *t;
+  int result = 0;
+
+  t = &NAMESPACE_LEVEL (namespace)->names;
+
+  while (*t)
+    {
+      tree glbl = *t;
+
+      if ((*p) (glbl, d))
+	result |= (*f) (t, d);
+
+      /* If F changed *T, then *T still points at the next item to
+	 examine.  */
+      if (*t == glbl)
+	t = &TREE_CHAIN (*t);
+    }
+
+  return result;
+}
+
+/* Walk the global declarations.  Whenever one is found for which P
+   returns non-zero, call F with its address.  If any call to F
+   returns a non-zero value, return a non-zero value.  */
+
+int
+walk_globals (p, f, data)
+     walk_globals_pred p;
+     walk_globals_fn f;
+     void *data;
+{
+  struct walk_globals_data wgd;
+  wgd.p = p;
+  wgd.f = f;
+  wgd.data = data;
+
+  return walk_namespaces (walk_globals_r, &wgd);
+}
+
+/* Call wrapup_globals_declarations for the globals in NAMESPACE.  If
+   DATA is non-NULL, this is the last time we will call
+   wrapup_global_declarations for this NAMESPACE.  */
+
+int
+wrapup_globals_for_namespace (namespace, data)
+     tree namespace;
+     void *data;
+{
+  tree globals = NAMESPACE_LEVEL (namespace)->names;
+  int len = list_length (globals);
+  tree *vec = (tree *) alloca (sizeof (tree) * len);
+  int i;
+  tree decl;
+  int last_time = (data != 0);
+
+  if (last_time && namespace == global_namespace)
+    /* Let compile_file handle the global namespace.  */
+    return 0;
+
+  /* Process the decls in reverse order--earliest first.
+     Put them into VEC from back to front, then take out from front.  */
+  
+  for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
+    vec[len - i - 1] = decl;
+  
+  if (!last_time)
+    return wrapup_global_declarations (vec, len);
+
+  check_global_declarations (vec, len);
+  return 0;
+}
+
 
 /* For debugging.  */
 static int no_print_functions = 0;
@@ -2196,38 +2371,6 @@ pop_namespace ()
   suspend_binding_level ();
 }
 
-/* Concatenate the binding levels of all namespaces. */
-
-void
-cat_namespace_levels()
-{
-  tree current;
-  tree last;
-  struct binding_level *b;
-
-  last = NAMESPACE_LEVEL (global_namespace) -> names;
-  /* The nested namespaces appear in the names list of their ancestors. */
-  for (current = last; current; current = TREE_CHAIN (current))
-    {
-      /* Catch simple infinite loops.  */
-      if (TREE_CHAIN (current) == current)
-	my_friendly_abort (990126);
-
-      if (TREE_CODE (current) != NAMESPACE_DECL
-          || DECL_NAMESPACE_ALIAS (current))
-	continue;
-      if (!DECL_LANG_SPECIFIC (current))
-	{
-	  /* Hmm. std. */
-	  my_friendly_assert (current == std_node, 393);
-	  continue;
-	}
-      b = NAMESPACE_LEVEL (current);
-      while (TREE_CHAIN (last))
-	last = TREE_CHAIN (last);
-      TREE_CHAIN (last) = NAMESPACE_LEVEL (current) -> names;
-    }
-}
 
 /* Subroutines for reverting temporarily to top-level for instantiation
    of templates and such.  We actually need to clear out the class- and
@@ -8259,15 +8402,12 @@ expand_static_init (decl, init)
 {
   tree oldstatic = value_member (decl, static_aggregates);
 
-  /* If at_eof is 2, we're too late.  */
-  my_friendly_assert (at_eof <= 1, 990323);
-
   if (oldstatic)
     {
       if (TREE_PURPOSE (oldstatic) && init != NULL_TREE)
 	cp_error ("multiple initializations given for `%D'", decl);
     }
-  else if (! toplevel_bindings_p () && ! pseudo_global_level_p ())
+  else if (! toplevel_bindings_p ())
     {
       /* Emit code to perform this initialization but once.  */
       tree temp;
@@ -8369,22 +8509,16 @@ expand_static_init (decl, init)
 	}
 
       expand_end_cond ();
-      if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
-	{
-	  static_aggregates = perm_tree_cons (temp, decl, static_aggregates);
-	  TREE_STATIC (static_aggregates) = 1;
-	}
-
       /* Resume old (possibly temporary) allocation.  */
       pop_obstacks ();
     }
   else
     {
-      /* This code takes into account memory allocation
-	 policy of `start_decl'.  Namely, if TYPE_NEEDS_CONSTRUCTING
-	 does not hold for this object, then we must make permanent
-	 the storage currently in the temporary obstack.  */
-      if (! TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+      /* This code takes into account memory allocation policy of
+	 `start_decl'.  Namely, if TYPE_NEEDS_CONSTRUCTING does not
+	 hold for this object, then we must make permanent the storage
+	 currently in the temporary obstack.  */
+      if (!TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
 	preserve_initializer ();
       static_aggregates = perm_tree_cons (init, decl, static_aggregates);
     }
@@ -13758,7 +13892,7 @@ finish_function (lineno, flags, nested)
   if (fndecl == NULL_TREE)
     return;
 
-  if (! nested && function_depth > 1)
+  if (function_depth > 1)
     nested = 1;
 
   fntype = TREE_TYPE (fndecl);
@@ -14028,8 +14162,6 @@ finish_function (lineno, flags, nested)
 	     using `build_new'.  */
 	  tree abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type);
 	  CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) = NULL_TREE;
-
-	  DECL_RETURNS_FIRST_ARG (fndecl) = 1;
 
 	  if (flag_this_is_variable > 0)
 	    {

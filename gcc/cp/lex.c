@@ -65,9 +65,9 @@ static int interface_strcmp PROTO((const char *));
 static int readescape PROTO((int *));
 static char *extend_token_buffer PROTO((const char *));
 static void consume_string PROTO((struct obstack *, int));
-static void set_typedecl_interface_info PROTO((tree, tree));
+static int set_typedecl_interface_info PROTO((tree *, void *));
 static void feed_defarg PROTO((tree, tree));
-static int set_vardecl_interface_info PROTO((tree, tree));
+static int set_vardecl_interface_info PROTO((tree *, void *));
 static void store_pending_inline PROTO((tree, struct pending_inline *));
 static void reinit_parse_for_expr PROTO((struct obstack *));
 static int *init_cpp_parse PROTO((void));
@@ -1134,32 +1134,35 @@ interface_strcmp (s)
   return 1;
 }
 
-static void
-set_typedecl_interface_info (prev, vars)
-     tree prev ATTRIBUTE_UNUSED, vars;
+static int
+set_typedecl_interface_info (t, data)
+     tree *t;
+     void *data ATTRIBUTE_UNUSED;
 {
-  tree id = get_time_identifier (DECL_SOURCE_FILE (vars));
+  tree id = get_time_identifier (DECL_SOURCE_FILE (*t));
   tree fileinfo = TIME_IDENTIFIER_FILEINFO (id);
-  tree type = TREE_TYPE (vars);
+  tree type = TREE_TYPE (*t);
 
   CLASSTYPE_INTERFACE_ONLY (type) = TREE_INT_CST_LOW (fileinfo)
-    = interface_strcmp (file_name_nondirectory (DECL_SOURCE_FILE (vars)));
+    = interface_strcmp (file_name_nondirectory (DECL_SOURCE_FILE (*t)));
+  return 0;
 }
 
 static int
-set_vardecl_interface_info (prev, vars)
-     tree prev, vars;
+set_vardecl_interface_info (t, data)
+     tree *t;
+     void *data ATTRIBUTE_UNUSED;
 {
-  tree type = DECL_CONTEXT (vars);
+  tree type = DECL_CONTEXT (*t);
 
   if (CLASSTYPE_INTERFACE_KNOWN (type))
     {
       if (CLASSTYPE_INTERFACE_ONLY (type))
-	set_typedecl_interface_info (prev, TYPE_MAIN_DECL (type));
+	set_typedecl_interface_info (&TYPE_MAIN_DECL (type), data);
       else
 	CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 1;
-      DECL_EXTERNAL (vars) = CLASSTYPE_INTERFACE_ONLY (type);
-      TREE_PUBLIC (vars) = 1;
+      DECL_EXTERNAL (*t) = CLASSTYPE_INTERFACE_ONLY (type);
+      TREE_PUBLIC (*t) = 1;
       return 1;
     }
   return 0;
@@ -2461,7 +2464,14 @@ linenum:
 
 	  main_input_filename = input_filename;
 	  if (write_virtuals == 3)
-	    walk_vtables (set_typedecl_interface_info, set_vardecl_interface_info);
+	    {
+	      walk_globals (vtable_decl_p,
+			    set_vardecl_interface_info,
+			    /*data=*/0);
+	      walk_globals (vtype_decl_p,
+			    set_typedecl_interface_info,
+			    /*data=*/0);
+	    }
 	}
 
       extract_interface_info ();

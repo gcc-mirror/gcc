@@ -1,5 +1,105 @@
 1999-04-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (lang_decl_flags): Remove returns_first_arg and
+	preserves_first_arg.  Enlarge dummy accordingly.
+	(DECL_TINFO_FN_P): New macro.
+	(SET_DECL_TINO_FN_P): Likeiwse.
+	(DECL_RETURNS_FIRST_ARG): Remove.
+	(DECL_PRESERVES_THIS): Likewise.
+	(DECL_INIT_PRIORITY): New macro.
+	(finish_struct_1): Change prototype.
+	(cat_namespace_levels): Remove prototype.
+	(vtable_decl_p): New prototype.
+	(vtype_decl_p): Likewise.
+	(sigtable_decl_p): Likewise.
+	(walk_globals_pred): New typedef.
+	(walk_globals_fn): Likewise.
+	(walk_globals): New prototype.
+	(walk_namespaces_fn): New typedef.
+	(walk_namespaces): New prototype.
+	(wrapup_globals_for_namespace): Likewise.
+	(walk_vtables): Remove prototype.
+	(walk_sigtables): Likewise.
+	(instantiate_pending_templates): New prototype.
+	* class.c (finish_struct_1): Don't return a value.
+	* decl.h (pending_statics): Remove declaration.
+	* decl.c (walk_namespaces_r): New function.
+	(walk_globals_r): Likewise.
+	(vtable_decl_p): Likewise.
+	(vtype_decl_p): Likewise.
+	(sigtable_decl_p): Likewise.
+	(walk_namespaces): Likewise.
+	(walk_globals_data): New type.
+	(walk_globals): New function.
+	(wrapup_globals_for_namespace): Likewise.
+	(expand_static_init): Remove assertion.  Remove redundancy in
+	conditional.  Don't put static data members in static_aggregates
+	Tidy.
+	(finish_function): Remove redundancy in conditional.  Don't set
+	DECL_RETURNS_FIRST_ARG.
+	(cat_namespace_levels): Remove.
+	* decl2.c: Include splay-tree.h and varray.h.
+	(priority_info_s): New structure.
+	(finish_vtable_vardecl): Change prototype.  Adjust for new calling
+	conventions.
+	(prune_vtable_vardecl): Likewise.
+	(finish_sigtable_vardecl): Likewise.
+	(setup_initp): Remove.
+	(do_dtors): Remove.
+	(do_ctors): Remove.
+	(start_static_storage_duration_function): New function.
+	(generate_inits_for_priority): Likewise.
+	(finish_static_storage_duration_function): Likewise.
+	(get_priority_info): Likewise.
+	(do_static_initialization): Likewise.
+	(do_static_destruction): Likewise.
+	(do_static_initialization_and_destruction): Likewise.
+	(generate_ctor_or_dtor_function): Likewise.
+	(generate_ctor_and_dtor_functions_for_priority): Likewise.
+	(pending_statics): Make it a varray.
+	(pending_statics_used): New variable.
+	(saved_inlines): Make it a varray.
+	(saved_inlines_used): New variable.
+	(finish_static_data_member): Change method of updating
+	pending_statics. 
+	(mark_inline_for_output): Remove #if 0'd code.  Change method of
+	updating saved_inlines.
+	(walk_vtables): Remove.
+	(walk_sigtables): Likewise.
+	(import_export_decl): Use DECL_TINFO_FN_P.
+	(pending_templates): Remove declaration.
+	(maybe_templates): Likewise.
+	(static_aggregates_initp): Likewise.
+	(setup_initp): Likewise.
+	(finish_objects): Simplify.
+	(INITIALIZE_P_IDENTIFIER): New macro.
+	(PRIORITY_IDENTIFIER): New macro.
+	(SSDF_IDENTIFIER): New macro.
+	(initialize_p_decl): New variable.
+	(priority_decl): Likewise.
+	(ssdf_decl): Likewise.
+	(priority_info_map): Likewise.
+	(finish_file): Recode output of static intializers and other
+	file-scope finalization tasks.
+	* error.c (OB_END_TEMPLATE_ID): New macro.
+	(dump_type_real): Use it.
+	(dump_decl): Likewise.
+	(dump_function_name): Likewise.
+	* lex.c (set_typedecl_interface_info): Adjust for new walk_globals
+	interface.
+	(check_newline): Use walk_globals, not walk_vtables.
+	* pt.c (pending_tempalte_expansions): Remove.
+	(set_vardecl_interface_info): Likewise.
+	(pending_templates): Make static.
+	(maybe_templates): Likewise.
+	(instantiate_class_template): Adjust call to finish_struct_1.
+	(instantiate_pending_templates): New function.
+	* rtti.c (get_tinfo_fn): Use SET_DECL_TINFO_FN_P.
+	* tree.c (static_aggregates_initp): Remove.
+	(cp_valid_lang_attribute): Don't use it; use DECL_INIT_PRIORITY
+	instead.
+	* Makefile.in (decl2.o): Depend on varray.h and splay-tree.h.
+
 	* gxx.gperf (RETURN): Rename to RETURN_KEYWORD to avoid clashes
 	with the RTL code RETURN.
 	* hash.h: Regenerated.

@@ -3099,7 +3099,7 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
 
    ATTRIBUTES is the set of decl attributes to be applied, if any.  */
 
-tree
+void
 finish_struct_1 (t, warn_anon)
      tree t;
      int warn_anon;
@@ -3144,7 +3144,7 @@ finish_struct_1 (t, warn_anon)
       else
 	my_friendly_abort (172);
       popclass ();
-      return t;
+      return;
     }
 
   GNU_xref_decl (current_function_decl, t);
@@ -4116,7 +4116,7 @@ finish_struct_1 (t, warn_anon)
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel_bindings_p ());
 
-  return t;
+  return;
 }
 
 /* When T was built up, the member declarations were added in reverse
@@ -4210,7 +4210,7 @@ finish_struct (t, attributes, warn_anon)
       TYPE_SIZE (t) = integer_zero_node;
     }      
   else
-    t = finish_struct_1 (t, warn_anon);
+    finish_struct_1 (t, warn_anon);
 
   TYPE_BEING_DEFINED (t) = 0;
 
