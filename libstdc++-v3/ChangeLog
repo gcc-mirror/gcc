@@ -1,3 +1,10 @@
+2003-12-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/monetary_members.cc
+	(money_base::_S_construct_pattern): For case 3: and 4:
+	exchanging 'if (__precedes)' and 'if (__space)' allows
+	to factor out a few more assignments.
+
 2003-12-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/basic_ios.h (basic_ios::setstate): Revert.
