@@ -1,5 +1,8 @@
 Fri Oct 17 12:29:48 1997  Christian Iseli  <Christian.Iseli@lslsun.epfl.ch>
 
+	* regclass.c (record_address_regs): Look at REG_OK_FOR_{BASE,INDEX}_P
+	for hard regs to determine base and index registers.
+
 	* reload.c (debug_reload_to_stream): New function.  Specify stream
  	into which to write debug info.
 	(debug_reload): Modify to call debug_reload_to_stream with stderr.
