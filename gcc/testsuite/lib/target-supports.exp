@@ -239,13 +239,13 @@ proc check_iconv_available { test_what } {
 
     set lines [${tool}_target_compile $src $exe executable "libs=$libiconv" ]
     file delete $src
-    remote_file build delete $exe
 
     if [string match "" $lines] then {
 	# No error messages, everything is OK.
 
-	set result [${tool}_load "./tmp.x" "" ""]
+	set result [${tool}_load "./$exe" "" ""]
 	set status [lindex $result 0];
+	remote_file build delete $exe
 
 	verbose "check_iconv_available status is <$status>" 2
 
