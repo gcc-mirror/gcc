@@ -138,11 +138,218 @@ namespace tr1
   _DEFINE_SPEC(2, is_member_object_pointer, _Tp _Cp::*,
 	       !is_function<_Tp>::value)
 
+  // Due to c++/19076, for the time being we cannot use the correct, neat
+  // implementation :-(
+  //
+  // template<typename>
+  //   struct is_member_function_pointer
+  //   : public false_type { };
+  //   _DEFINE_SPEC(2, is_member_function_pointer, _Tp _Cp::*,
+  //	            is_function<_Tp>::value)
+
+  // Ugly, temporary workaround for member functions with up to 15 arguments.
   template<typename>
+    struct __is_mfp_helper
+    { static const bool __value = false; };
+
+  template<typename _Rt, typename _Cp>
+    struct __is_mfp_helper<_Rt (_Cp::*) ()>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp>
+    struct __is_mfp_helper<_Rt (_Cp::*) (...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, ...)>
+    { static const bool __value = true; };
+  
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10)>
+    { static const bool __value = true; };
+  
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10, typename _A11>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, _A11)>
+    { static const bool __value = true; };
+  
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10, typename _A11>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, _A11, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10, typename _A11,
+	   typename _A12>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, _A11, _A12)>
+    { static const bool __value = true; };
+  
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10, typename _A11,
+	   typename _A12>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, _A11, _A12, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10, typename _A11,
+	   typename _A12, typename _A13>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, _A11, _A12,
+					 _A13)>
+    { static const bool __value = true; };
+  
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10, typename _A11,
+	   typename _A12, typename _A13>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, _A11, _A12,
+					 _A13, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10, typename _A11,
+	   typename _A12, typename _A13, typename _A14>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, _A11, _A12,
+					 _A13, _A14)>
+    { static const bool __value = true; };
+  
+  template<typename _Rt, typename _Cp, typename _A0, typename _A1, typename _A2,
+	   typename _A3, typename _A4, typename _A5, typename _A6, typename _A7,
+	   typename _A8, typename _A9, typename _A10, typename _A11,
+	   typename _A12, typename _A13, typename _A14>
+    struct __is_mfp_helper<_Rt (_Cp::*) (_A0, _A1, _A2, _A3, _A4, _A5, _A6,
+					 _A7, _A8, _A9, _A10, _A11, _A12,
+					 _A13, _A14, ...)>
+    { static const bool __value = true; };
+
+  template<typename _Tp>
     struct is_member_function_pointer
-    : public false_type { };
-  _DEFINE_SPEC(2, is_member_function_pointer, _Tp _Cp::*,
-	       is_function<_Tp>::value)
+    : public integral_constant<bool, (__is_mfp_helper<typename
+				      remove_cv<_Tp>::type>::__value)>
+    { };
 
   template<typename _Tp, bool = (is_fundamental<_Tp>::value
 				 || is_array<_Tp>::value

@@ -1,3 +1,37 @@
+2004-12-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits (is_member_function_pointer): Provide a
+	workaround for c++/19076, correct for functions with up to 15
+	arguments.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_member_pointer/is_member_pointer.cc: Uncomment "XFAILed" tests;
+	add a test for variadic functions.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_scalar/is_scalar.cc: Uncomment "XFAILed" tests.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_enum/is_enum.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_member_function_pointer/is_member_function_pointer.cc: Likewise;
+	add a test for variadic functions.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_member_object_pointer/is_member_object_pointer.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_assign/has_nothrow_assign.cc: Uncomment "XFAILed" tests.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_constructor/has_nothrow_constructor.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_copy/has_nothrow_copy.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_assign/has_trivial_assign.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_constructor/has_trivial_constructor.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_copy/has_trivial_copy.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_destructor/has_trivial_destructor.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_pod/is_pod.cc: Likewise.
+
 2004-12-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Add has_trivial_copy, has_trivial_assign,

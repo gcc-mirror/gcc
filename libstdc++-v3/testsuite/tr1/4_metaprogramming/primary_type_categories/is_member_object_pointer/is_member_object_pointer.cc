@@ -44,6 +44,8 @@ void test01()
   VERIFY( (test_category<is_member_object_pointer,
 	   int (ClassType::*) (int) const>(false)) );
   VERIFY( (test_category<is_member_object_pointer,
+	   int (ClassType::*) (float, ...)>(false)) );
+  VERIFY( (test_category<is_member_object_pointer,
 	   ClassType (ClassType::*) (ClassType)>(false)) );
   VERIFY( (test_category<is_member_object_pointer,
 	   float (ClassType::*) (int, float, int[], int&)>(false)) );

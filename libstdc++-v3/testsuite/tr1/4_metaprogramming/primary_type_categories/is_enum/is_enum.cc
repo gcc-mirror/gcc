@@ -43,8 +43,7 @@ void test01()
   VERIFY( (test_category<is_enum, float&>(false)) );
   VERIFY( (test_category<is_enum, float(&)(float)>(false)) );
   VERIFY( (test_category<is_enum, int (ClassType::*)>(false)) );
-  // Temporarily disabled because of c++/19076 :-(
-  // VERIFY( (test_category<is_enum, int (ClassType::*) (int)>(false)) );
+  VERIFY( (test_category<is_enum, int (ClassType::*) (int)>(false)) );
   VERIFY( (test_category<is_enum, int (int)>(false)) );
 
   VERIFY( (test_category<is_enum, ConvType>(false)) );

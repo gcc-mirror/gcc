@@ -37,9 +37,8 @@ void test01()
   VERIFY( (test_copy_property<has_trivial_copy, int*>(true)) );
   VERIFY( (test_copy_property<has_trivial_copy, int(*)(int)>(true)) );
   VERIFY( (test_copy_property<has_trivial_copy, int (ClassType::*)>(true)) );
-  // Temporarily disabled because of c++/19076 :-(
-  // VERIFY( (test_copy_property<has_trivial_copy,
-  //   int (ClassType::*) (int)>(true)) );
+  VERIFY( (test_copy_property<has_trivial_copy,
+	   int (ClassType::*) (int)>(true)) );
   VERIFY( (test_copy_property<has_trivial_copy, int[2]>(true)) );
   VERIFY( (test_copy_property<has_trivial_copy, float[][3]>(true)) );
   VERIFY( (test_copy_property<has_trivial_copy, EnumType[2][3][4]>(true)) );
@@ -47,9 +46,8 @@ void test01()
   VERIFY( (test_copy_property<has_trivial_copy, int(*[][2])(int)>(true)) );
   VERIFY( (test_copy_property<has_trivial_copy,
 	   int (ClassType::*[2][3])>(true)) );
-  // Temporarily disabled because of c++/19076 :-(
-  // VERIFY( (test_copy_property<has_trivial_copy,
-  //   int (ClassType::*[][2][3]) (int)>(true)) );
+  VERIFY( (test_copy_property<has_trivial_copy,
+	   int (ClassType::*[][2][3]) (int)>(true)) );
 }
 
 int main()

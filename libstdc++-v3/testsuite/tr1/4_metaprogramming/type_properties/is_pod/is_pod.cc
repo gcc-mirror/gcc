@@ -37,16 +37,14 @@ void test01()
   VERIFY( (test_category<is_pod, int*>(true)) );
   VERIFY( (test_category<is_pod, int(*)(int)>(true)) );
   VERIFY( (test_category<is_pod, int (ClassType::*)>(true)) );
-  // Temporarily disabled because of c++/19076 :-(
-  // VERIFY( (test_category<is_pod, int (ClassType::*) (int)>(true)) );
+  VERIFY( (test_category<is_pod, int (ClassType::*) (int)>(true)) );
   VERIFY( (test_category<is_pod, int[2]>(true)) );
   VERIFY( (test_category<is_pod, float[][3]>(true)) );
   VERIFY( (test_category<is_pod, EnumType[2][3][4]>(true)) );
   VERIFY( (test_category<is_pod, int*[3]>(true)) );
   VERIFY( (test_category<is_pod, int(*[][2])(int)>(true)) );
   VERIFY( (test_category<is_pod, int (ClassType::*[2][3])>(true)) );
-  // Temporarily disabled because of c++/19076 :-(
-  // VERIFY( (test_category<is_pod, int (ClassType::*[][2][3]) (int)>(true)) );
+  VERIFY( (test_category<is_pod, int (ClassType::*[][2][3]) (int)>(true)) );
 
   // Sanity check.
   VERIFY( (test_category<is_pod, ClassType>(false)) );
