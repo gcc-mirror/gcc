@@ -6898,6 +6898,10 @@ expand_function_end (filename, line, end_bindings)
 
 	      convert_move (real_decl_rtl, decl_rtl, unsignedp);
 	    }
+	  else if (GET_CODE (real_decl_rtl) == PARALLEL)
+	    emit_group_load (real_decl_rtl, decl_rtl,
+			     int_size_in_bytes (TREE_TYPE (decl_result)),
+			     TYPE_ALIGN (TREE_TYPE (decl_result)));
 	  else
 	    emit_move_insn (real_decl_rtl, decl_rtl);
 
