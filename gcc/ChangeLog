@@ -1,5 +1,18 @@
 2000-12-22  Nick Clifton  <nickc@redhat.com>
 
+	* config/arm/arm.h (struct machine_function): Add new field
+	'lr_save_eliminated'.
+	* config/arm/arm.c (arm_compute_save_reg_mask): Do not include the
+	link register if its save has been eliminated.
+	(output_arm_prologue): Mention if the save of the link register
+	has been eliminated.
+	(output_arm_epilogue): Rename 'live_regs_mask' to
+	'saved_regs_mask'.
+	Test 'saved_regs_mask' for the link register, not regs_ever_live.
+	(arm_expand_prologue): If the link register has not been saved set
+	lr_save_eliminated and emit a USE to prevent later passes from
+	scavenging it.
+	
 	* dwarf2out_frame_debug_expr: Allow the (scratch) frame
 	pointer to be initialised from the stack pointer plus a
 	constant.
