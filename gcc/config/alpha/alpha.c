@@ -1418,7 +1418,7 @@ direct_return ()
 /* Write a version stamp.  Don't write anything if we are running as a
    cross-compiler.  Otherwise, use the versions in /usr/include/stamp.h.  */
 
-#if !defined(CROSS_COMPILE) && !defined(_WIN32)
+#if !defined(CROSS_COMPILE) && !defined(_WIN32) && !deinfed(__linux__)
 #include <stamp.h>
 #endif
 
