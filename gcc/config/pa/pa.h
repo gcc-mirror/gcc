@@ -62,12 +62,15 @@ extern int target_flags;
 
 #define TARGET_DISABLE_INDEXING (target_flags & 32)
 
+/* Emit code which follows the new portable runtime calling conventions
+   HP wants everyone to use for ELF objects.  If at all possible you want
+   to avoid this since it's a performance loss for non-prototyped code.  */
+
+#define TARGET_PORTABLE_RUNTIME (target_flags & 64)
+
 /* Emit directives only understood by GAS.  This allows parameter
    relocations to work for static functions.  There is no way
-   to make them work the HP assembler at this time.
-
-   Also forces a colon to be tacked onto the end of local and
-   global labes.  */
+   to make them work the HP assembler at this time.  */
 
 #define TARGET_GAS (target_flags & 128)
 
@@ -90,6 +93,8 @@ extern int target_flags;
    {"no-long-calls", -16},	\
    {"disable-indexing", 32},	\
    {"no-disable-indexing", -32},\
+   {"portable-runtime", 64},	\
+   {"no-portable-runtime", -64},\
    {"gas", 128},		\
    {"no-gas", -128},		\
    { "", TARGET_DEFAULT}}
@@ -781,14 +786,30 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    if any, which holds the structure-value-address).
    Thus 4 or more means all following args should go on the stack.  */
 
-#define CUMULATIVE_ARGS int
+struct hppa_args {int words, nargs_prototype; };
+
+#define CUMULATIVE_ARGS struct hppa_args
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.
-*/
+   For a library call, FNTYPE is 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) ((CUM) = 0)
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) \
+  (CUM).words = 0, 							\
+  (CUM).nargs_prototype = (FNTYPE && TYPE_ARG_TYPES (FNTYPE)		\
+			   ? (list_length (TYPE_ARG_TYPES (FNTYPE)) - 1	\
+			      + (TYPE_MODE (TREE_TYPE (FNTYPE)) == BLKmode \
+				 || RETURN_IN_MEMORY (TREE_TYPE (FNTYPE)))) \
+			   : 0)
+
+
+
+/* Similar, but when scanning the definition of a procedure.  We always
+   set NARGS_PROTOTYPE large so we never return an EXPR_LIST.  */
+
+#define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,IGNORE) \
+  (CUM).words = 0,				\
+  (CUM).nargs_prototype = 1000
 
 /* Figure out the size in words of the function argument. */
 
@@ -800,8 +821,12 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-    (((((CUM) & 01) && (TYPE) != 0 && FUNCTION_ARG_SIZE(MODE, TYPE) > 1)\
-      && (CUM)++), (CUM) += FUNCTION_ARG_SIZE(MODE, TYPE))
+{ (CUM).nargs_prototype--;						\
+  ((((CUM).words & 01) && (TYPE) != 0					\
+    && FUNCTION_ARG_SIZE(MODE, TYPE) > 1)				\
+   && (CUM).words++),							\
+     (CUM).words += FUNCTION_ARG_SIZE(MODE, TYPE);			\
+}
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -814,9 +839,9 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
    NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
+    (otherwise it is an extra parameter matching an ellipsis).
 
-/* On the HP-PA the first four words of args are normally in registers
+   On the HP-PA the first four words of args are normally in registers
    and the rest are pushed.  But any arg that won't entirely fit in regs
    is pushed.
 
@@ -825,24 +850,72 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    The caller must make a distinction between calls to explicitly named
    functions and calls through pointers to functions -- the conventions
    are different!  Calls through pointers to functions only use general
-   registers for the first four argument words.  */
+   registers for the first four argument words.
 
+   Of course all this is different for the portable runtime model
+   HP wants everyone to use for ELF.  Ugh.  Here's a quick description
+   of how it's supposed to work.
+
+   1) callee side remains unchanged.  It expects integer args to be
+   in the integer registers, float args in the float registers and
+   unnamed args in integer registers.
+
+   2) caller side now depends on if the function being called has
+   a prototype in scope (rather than if it's being called indirectly).
+
+      2a) If there is a prototype in scope, then arguments are passed
+      according to their type (ints in integer registers, floats in float
+      registers, unnamed args in integer registers.
+
+      2b) If there is no prototype in scope, then floating point arguments
+      are passed in both integer and float registers.  egad.
+
+  FYI: The portable parameter passing conventions are almost exactly like
+  the standard parameter passing conventions on the RS6000.  That's why
+  you'll see lots of similar code in rs6000.h.  */
+  
 #define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding ((MODE), (TYPE))
 
+/* Do not expect to understand this without reading it several times.  I'm
+   tempted to try and simply it, but I worry about breaking something.  */
+
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)		      		\
-  (4 >= ((CUM) + FUNCTION_ARG_SIZE ((MODE), (TYPE)))			\
-   ? gen_rtx (REG, (MODE),						\
-	      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1			\
-	       ? ((! current_call_is_indirect				\
-		   && (MODE) == DFmode)					\
-		  ? ((CUM) ? (TARGET_SNAKE ? 50 : 35)			\
-		     : (TARGET_SNAKE ? 46 : 33))			\
-		  : ((CUM) ? 23 : 25))					\
-	       : ((! current_call_is_indirect				\
-		   && (MODE) == SFmode)					\
-		  ? (TARGET_SNAKE ? 44 + 2 * (CUM) : 32  + (CUM))	\
-		  : (27 - (CUM) - FUNCTION_ARG_SIZE ((MODE), (TYPE))))))\
-   : 0)
+  (4 >= ((CUM).words + FUNCTION_ARG_SIZE ((MODE), (TYPE)))		\
+   ? (!TARGET_PORTABLE_RUNTIME || (TYPE) == 0				\
+      || !FLOAT_MODE_P (MODE) || (CUM).nargs_prototype > 0)		\
+      ? gen_rtx (REG, (MODE),						\
+		 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
+		  ? (((!current_call_is_indirect || TARGET_PORTABLE_RUNTIME) \
+		      && (MODE) == DFmode)				\
+		     ? ((CUM).words					\
+			? (TARGET_SNAKE ? 50 : 35) 			\
+			: (TARGET_SNAKE ? 46 : 33))			\
+		     : ((CUM).words ? 23 : 25))				\
+		  : (((!current_call_is_indirect || TARGET_PORTABLE_RUNTIME) \
+		      && (MODE) == SFmode)				\
+		     ? (TARGET_SNAKE					\
+			? 44 + 2 * (CUM).words				\
+			: 32  + (CUM).words)				\
+		     : (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),	\
+							      (TYPE))))))\
+   /* We are calling a non-prototyped function with floating point	\
+      arguments using the portable conventions.  */			\
+   : gen_rtx (EXPR_LIST, VOIDmode,					\
+	      gen_rtx (REG, (MODE),					\
+		       (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
+			? ((CUM).words					\
+			   ? (TARGET_SNAKE ? 50 : 35)			\
+			   : (TARGET_SNAKE ? 46 : 33))			\
+			: (TARGET_SNAKE					\
+			   ? 44 + 2 * (CUM).words			\
+			   : 32 + (CUM).words))),			\
+	      gen_rtx (REG, (MODE),					\
+		       (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
+			? ((CUM).words ? 23 : 25)			\
+			: (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),\
+								 (TYPE)))))) \
+  /* Pass this parameter in the stack.  */				\
+  : 0)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
@@ -897,6 +970,12 @@ extern enum cmp_type hppa_branch_type;
 	       {							\
 		 fputs ("\t.PARAM ", FILE);				\
 		 assemble_name (FILE, NAME);				\
+	       }							\
+	     if (TARGET_PORTABLE_RUNTIME)				\
+	       {							\
+		 fputs ("ARGW0=NO,ARGW1=NO,ARGW2=NO,ARGW3=NO,", FILE);	\
+		 fputs ("RTNVAL=NO\n", FILE);				\
+		 break;							\
 	       }							\
 	     for (parm = DECL_ARGUMENTS (DECL), i = 0; parm && i < 4;	\
 		  parm = TREE_CHAIN (parm))				\
@@ -1688,8 +1767,6 @@ readonly_data ()							\
 
 #define ASM_OUTPUT_LABEL(FILE, NAME)	\
   do { assemble_name (FILE, NAME); 	\
-       if (TARGET_GAS)			\
-	 fputc (':', FILE);		\
        fputc ('\n', FILE); } while (0)
 
 /* This is how to output a command to make the user-level label named NAME
@@ -1749,11 +1826,7 @@ readonly_data ()							\
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  {fprintf (FILE, "%c$%s%04d", (PREFIX)[0], (PREFIX) + 1, NUM);\
-   if (TARGET_GAS)					\
-     fputs (":\n", FILE);				\
-   else							\
-     fputs ("\n", FILE);}
+  {fprintf (FILE, "%c$%s%04d\n", (PREFIX)[0], (PREFIX) + 1, NUM);}
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
@@ -1784,7 +1857,8 @@ readonly_data ()							\
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
 { fprintf (FILE, "\t.word ");			\
-  if (function_label_operand (VALUE, VOIDmode))	\
+  if (function_label_operand (VALUE, VOIDmode)	\
+      && !TARGET_PORTABLE_RUNTIME)		\
     fprintf (FILE, "P%%");			\
   output_addr_const (FILE, (VALUE));		\
   fprintf (FILE, "\n");}
@@ -1850,8 +1924,6 @@ readonly_data ()							\
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 { bss_section ();					\
   assemble_name ((FILE), (NAME));			\
-  if (TARGET_GAS) 					\
-    fputc (':', (FILE));				\
   fputs ("\t.comm ", (FILE));				\
   fprintf ((FILE), "%d\n", (ROUNDED));}
 
@@ -1862,8 +1934,6 @@ readonly_data ()							\
 { bss_section ();						\
   fprintf ((FILE), "\t.align %d\n", (SIZE) <= 4 ? 4 : 8);	\
   assemble_name ((FILE), (NAME));				\
-  if (TARGET_GAS) 					\
-    fputc (':', (FILE));				\
   fprintf ((FILE), "\n\t.block %d\n", (ROUNDED));}
 
 /* Store in OUTPUT a string (made with alloca) containing

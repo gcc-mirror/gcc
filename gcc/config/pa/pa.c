@@ -3176,6 +3176,15 @@ output_arg_descriptor (insn)
   for (i = 0; i < 4; i++)
     arg_regs[i] = 0;
 
+  /* Specify explicitly that no argument relocations should take place
+     if using the portable runtime calling conventions.  */
+  if (TARGET_PORTABLE_RUNTIME)
+    {
+      fprintf (asm_out_file,
+	       "\t.CALL ARGW0=NO,ARGW1=NO,ARGW2=NO,ARGW3=NO,RETVAL=NO\n");
+      return;
+    }
+
   for (prev_insn = PREV_INSN (insn); GET_CODE (prev_insn) == INSN;
        prev_insn = PREV_INSN (prev_insn))
     {

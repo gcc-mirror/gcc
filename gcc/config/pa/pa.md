@@ -1174,8 +1174,18 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand:SI 1 "function_label_operand" "")))]
-  ""
+  "!TARGET_PORTABLE_RUNTIME"
   "ldil LP'%G1,%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "4")])
+
+;; This version is used only for the portable runtime conventions model
+;; (it does not use/support plabels)
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(high:SI (match_operand:SI 1 "function_label_operand" "")))]
+  "TARGET_PORTABLE_RUNTIME"
+  "ldil L'%G1,%0"
   [(set_attr "type" "move")
    (set_attr "length" "4")])
 
@@ -1197,8 +1207,18 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "function_label_operand" "")))]
-  ""
+  "!TARGET_PORTABLE_RUNTIME"
   "ldo RP'%G2(%1),%0"
+  [(set_attr "length" "4")])
+
+;; This version is used only for the portable runtime conventions model
+;; (it does not use/support plabels)
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
+		   (match_operand:SI 2 "function_label_operand" "")))]
+  "TARGET_PORTABLE_RUNTIME"
+  "ldo R'%G2(%1),%0"
   [(set_attr "length" "4")])
 
 (define_insn ""
