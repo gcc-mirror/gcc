@@ -1,7 +1,7 @@
 /* .init/.fini section handling + C++ global constructor/destructor handling.
    This file is based on crtstuff.c, sol2-crti.asm, sol2-crtn.asm.
 
-Copyright (C) 1995 Free Software Foundation, Inc.
+Copyright (C) 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,7 +17,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, if you link this file with files
    compiled with GCC to produce an executable, this does not cause
