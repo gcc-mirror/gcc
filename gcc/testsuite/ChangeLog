@@ -1,3 +1,7 @@
+2001-07-31  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/macro8.c: New test.
+
 2001-07-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/abi/vbase8-21.C: New test.
