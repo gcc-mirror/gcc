@@ -1,5 +1,17 @@
 2003-07-03  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/compat/fnptr-by-value-1_main.c: New file.
+	* gcc.dg/compat/fnptr-by-value-1_x.c: New file.
+	* gcc.dg/compat/fnptr-by-value-1_y.c: New file.
+	* gcc.dg/compat/struct-align-1.h: New file.
+	* gcc.dg/compat/struct-align-1_main.c: New file.
+	* gcc.dg/compat/struct-align-1_x.c: New file.
+	* gcc.dg/compat/struct-align-1_y.c: New file.
+	* gcc.dg/compat/struct-align-2.h: New file.
+	* gcc.dg/compat/struct-align-2_main.c: New file.
+	* gcc.dg/compat/struct-align-2_x.c: New file.
+	* gcc.dg/compat/struct-align-2_y.c: New file.
+
 	* gcc.dg/compat/compat-common.h (DEBUG_FINI): New.
 	* gcc.dg/compat/scalar-by-value-1_x.c: Use it.
 	* gcc.dg/compat/scalar-by-value-2_x.c: Ditto.
