@@ -40,6 +40,9 @@
 	* sparc-protos.h (output_sibcall, eligible_for_sibcall_delay): New
 	prototypes.
 
+	* config/sparc/sparc.h (REVERSIBLE_CC_MODE): Revert Jan, 25 change
+	until infrastructure is finished.
+
 Fri Mar 24 13:49:45 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* integrate.c (save_for_inline_nocopy): Clear in_nonparm_insns here.
