@@ -1763,7 +1763,10 @@ args_as_string (p, v)
   OB_INIT ();
   for (; p; p = TREE_CHAIN (p))
     {
-      dump_type (error_type (TREE_VALUE (p)), v);
+      if (TREE_VALUE (p) == null_node)
+	OB_PUTS ("NULL");
+      else
+	dump_type (error_type (TREE_VALUE (p)), v);
       if (TREE_CHAIN (p))
 	OB_PUTS (", ");
     }
