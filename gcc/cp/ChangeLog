@@ -1,3 +1,8 @@
+2004-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18793
+	* cp-objcp-common.c (cp_expr_size): Loosen assertion.
+
 2004-12-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18949

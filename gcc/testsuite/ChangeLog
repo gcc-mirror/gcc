@@ -1,3 +1,8 @@
+2004-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18793
+	* g++.dg/init/aggr3.C: New test.
+
 2004-12-14  Janis Johnson  <janis187@us.ibm.com
 
 	* gcc.dg/altivec-types-1.c: New test.
