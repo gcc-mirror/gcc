@@ -7,7 +7,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
-
+#include <platform.h>
 
 #ifndef DISABLE_JAVA_NET
 #ifdef WIN32
