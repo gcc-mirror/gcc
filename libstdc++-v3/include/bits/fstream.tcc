@@ -227,11 +227,15 @@ namespace std
 	  // Check for unbuffered stream.
 	  if (_M_buf_size == 1)
 	    {
-	      __ret = _M_file.sys_getc();
-	      *_M_in_cur = traits_type::to_char_type(__ret);
-	      _M_set_determinate(1);
-	      if (__testout)
-		_M_out_cur = _M_in_cur;
+	      int_type __c = _M_file.sys_getc();
+	      if (__c != __ret)
+		{
+		  __ret = __c;
+		  *_M_in_cur = traits_type::to_char_type(__c);
+		  _M_set_determinate(1);
+		  if (__testout)
+		    _M_out_cur = _M_in_cur;
+		}
 	      return __ret;
 	    }
 

@@ -1,3 +1,13 @@
+2002-04-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/5280
+	* include/bits/fstream.tcc (basic_filebuf::_M_underflow_common):
+	Check for eof.
+	* include/bits/streambuf_iterator.h: Match stream_iterator.h.
+	(istreambuf_iterator::operator++): Invalidate on eof.
+	(istreambuf_iterator::operator++(int)): Same.
+	(istreambuf_iterator::operator*): Same.
+	
 2002-04-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Set all
