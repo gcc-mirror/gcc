@@ -9017,7 +9017,7 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
 	 relevant.  */
       if (rtx_equal_p (SET_DEST (set), op0))
 	{
-	  enum machine_mode inner_mode = GET_MODE (SET_SRC (set));
+	  enum machine_mode inner_mode = GET_MODE (SET_DEST (set));
 
 	  /* ??? We may not combine comparisons done in a CCmode with
 	     comparisons not done in a CCmode.  This is to aid targets
