@@ -4560,6 +4560,46 @@ compute_dominators (dominators, post_dominators, s_preds, s_succs)
   free (temp_bitmap);
 }
 
+/* Given DOMINATORS, compute the immediate dominators into IDOM.  */
+
+void
+compute_immediate_dominators (idom, dominators)
+     int *idom;
+     sbitmap *dominators;
+{
+  sbitmap *tmp;
+  int b;
+
+  tmp = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+
+  /* Begin with tmp(n) = dom(n) - { n }.  */
+  for (b = n_basic_blocks; --b >= 0; )
+    {
+      sbitmap_copy (tmp[b], dominators[b]);
+      RESET_BIT (tmp[b], b);
+    }
+
+  /* Subtract out all of our dominator's dominators.  */
+  for (b = n_basic_blocks; --b >= 0; )
+    {
+      sbitmap tmp_b = tmp[b];
+      int s;
+
+      for (s = n_basic_blocks; --s >= 0; )
+	if (TEST_BIT (tmp_b, s))
+	  sbitmap_difference (tmp_b, tmp_b, tmp[s]);
+    }
+
+  /* Find the one bit set in the bitmap and put it in the output array.  */
+  for (b = n_basic_blocks; --b >= 0; )
+    {
+      int t;
+      EXECUTE_IF_SET_IN_SBITMAP (tmp[b], 0, t, { idom[b] = t; });
+    }
+
+  sbitmap_vector_free (tmp);
+}
+
 /* Count for a single SET rtx, X.  */
 
 static void
