@@ -1,5 +1,8 @@
 2000-05-14  Geoffrey Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/rs6000.h (RETURN_ADDRESS_OFFSET): Correct for
+	64-bit ABI.
+
 	* config/rs6000/rs6000.c (logical_operand): Rewrite to take MODE 
 	into account.
 	(logical_u_operand): Delete.
