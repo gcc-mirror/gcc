@@ -1,3 +1,8 @@
+2000-05-10  Eric Schweitz  <schweitz@nortelnetworks.com>
+
+	* dwarfout.c (dwarfout_finish): Call retry_incomplete_types
+	after we enter .debug.
+
 2000-05-10  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (gen_subprogram_die): Fixup die_parent for the
