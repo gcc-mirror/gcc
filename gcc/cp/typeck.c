@@ -1557,44 +1557,46 @@ c_sizeof (type)
     {
       if (pedantic || warn_pointer_arith)
 	pedwarn ("ISO C++ forbids applying `sizeof' to a function type");
-      return size_one_node;
+      size = size_one_node;
     }
-  if (code == METHOD_TYPE)
+  else if (code == METHOD_TYPE)
     {
       if (pedantic || warn_pointer_arith)
 	pedwarn ("ISO C++ forbids applying `sizeof' to a member function");
-      return size_one_node;
+      size = size_one_node;
     }
-  if (code == VOID_TYPE)
+  else if (code == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
 	pedwarn ("ISO C++ forbids applying `sizeof' to type `void' which is an incomplete type");
-      return size_one_node;
+      size = size_one_node;
     }
-  if (code == ERROR_MARK)
-    return size_one_node;
-
-  /* ARM $5.3.2: ``When applied to a reference, the result is the size of the
-     referenced object.'' */
-  if (code == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
-
-  if (code == OFFSET_TYPE)
+  else if (code == ERROR_MARK)
+    size = size_one_node;
+  else
     {
-      cp_error ("`sizeof' applied to non-static member");
-      return size_zero_node;
+      /* ARM $5.3.2: ``When applied to a reference, the result is the
+	 size of the referenced object.'' */
+      if (code == REFERENCE_TYPE)
+	type = TREE_TYPE (type);
+
+      if (code == OFFSET_TYPE)
+	{
+	  cp_error ("`sizeof' applied to non-static member");
+	  size = size_zero_node;
+	}
+      else if (!COMPLETE_TYPE_P (complete_type (type)))
+	{
+	  cp_error ("`sizeof' applied to incomplete type `%T'", type);
+	  size = size_zero_node;
+	}
+      else
+	/* Convert in case a char is more than one unit.  */
+	size = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+			   size_int (TYPE_PRECISION (char_type_node)
+				     / BITS_PER_UNIT));
     }
 
-  if (!COMPLETE_TYPE_P (complete_type (type)))
-    {
-      cp_error ("`sizeof' applied to incomplete type `%T'", type);
-      return size_zero_node;
-    }
-
-  /* Convert in case a char is more than one unit.  */
-  size = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
-		     size_int (TYPE_PRECISION (char_type_node)
-			       / BITS_PER_UNIT));
   /* SIZE will have an integer type with TYPE_IS_SIZETYPE set.
      TYPE_IS_SIZETYPE means that certain things (like overflow) will
      never happen.  However, this node should really have type
@@ -1619,12 +1621,12 @@ expr_sizeof (e)
   if (is_overloaded_fn (e))
     {
       pedwarn ("ISO C++ forbids applying `sizeof' to an expression of function type");
-      return size_one_node;
+      e = char_type_node;
     }
   else if (type_unknown_p (e))
     {
       incomplete_type_error (e, TREE_TYPE (e));
-      return size_one_node;
+      e = char_type_node;
     }
   /* It's illegal to say `sizeof (X::i)' for `i' a non-static data
      member unless you're in a non-static member of X.  So hand off to
@@ -1643,23 +1645,35 @@ c_sizeof_nowarn (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
+  tree size;
 
   if (code == FUNCTION_TYPE
       || code == METHOD_TYPE
       || code == VOID_TYPE
       || code == ERROR_MARK)
-    return size_one_node;
+    size = size_one_node;
+  else
+    {
+      if (code == REFERENCE_TYPE)
+	type = TREE_TYPE (type);
 
-  if (code == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+      if (!COMPLETE_TYPE_P (type))
+	size = size_zero_node;
+      else
+	/* Convert in case a char is more than one unit.  */
+	size = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+			   size_int (TYPE_PRECISION (char_type_node)
+				     / BITS_PER_UNIT));
+    }
 
-  if (!COMPLETE_TYPE_P (type))
-    return size_zero_node;
-
-  /* Convert in case a char is more than one unit.  */
-  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
-		     size_int (TYPE_PRECISION (char_type_node)
-			       / BITS_PER_UNIT));
+  /* SIZE will have an integer type with TYPE_IS_SIZETYPE set.
+     TYPE_IS_SIZETYPE means that certain things (like overflow) will
+     never happen.  However, this node should really have type
+     `size_t', which is just a typedef for an ordinary integer type.  */
+  size = fold (build1 (NOP_EXPR, c_size_type_node, size));
+  my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (size)), 
+		      20001021);
+  return size;
 }
 
 /* Implement the __alignof keyword: Return the minimum required
@@ -1676,18 +1690,19 @@ c_alignof (type)
     return build_min (ALIGNOF_EXPR, sizetype, type);
 
   if (code == FUNCTION_TYPE || code == METHOD_TYPE)
-    return size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+    t = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+  else if (code == VOID_TYPE || code == ERROR_MARK)
+    t = size_one_node;
+  else
+    { 
+      /* Similar to sizeof, __alignof applies to the referant.  */
+      if (code == REFERENCE_TYPE)
+	type = TREE_TYPE (type);
 
-  if (code == VOID_TYPE || code == ERROR_MARK)
-    return size_one_node;
+      t = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
+    }
 
-  /* C++: this is really correct!  */
-  if (code == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
-
-  t = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
-  force_fit_type (t, 0);
-  return t;
+  return fold (build1 (NOP_EXPR, c_size_type_node, t));
 }
 
 /* Perform the array-to-pointer and function-to-pointer conversions

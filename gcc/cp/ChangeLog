@@ -1,3 +1,9 @@
+2000-11-14  Richard Henderson  <rth@redhat.com>
+
+	* typeck.c (c_sizeof): Be strict about casting result value
+	back to c_size_type_node.
+	(expr_sizeof, c_sizeof_nowarn, c_alignof): Likewise.
+
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* typeck.c (build_unary_op): Use boolean_increment from
