@@ -1,4 +1,4 @@
-2001-02-03  Danny Smith <dannysmith@users.sourceforge.net>
+2002-02-03  Danny Smith <dannysmith@users.sourceforge.net>
 
 	* gthr-win32.h: Protect against conflicting typedef for BOOL in windows
 	headers and libobjc headers.
