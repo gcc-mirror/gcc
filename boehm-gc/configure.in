@@ -24,7 +24,6 @@ AC_INIT(gcj_mlc.c)
 # exported.
 ORIGINAL_LD_FOR_MULTILIBS=$LD
 
-dnl Can't be done in GC_CONFIGURE because that confuses automake.
 AC_CONFIG_AUX_DIR(.)
 
 dnl Default to --enable-multilib
@@ -123,8 +122,6 @@ AC_ARG_WITH(target-subdir,
                           configuring with a cross compiler])
 AC_ARG_WITH(cross-host,
 [  --with-cross-host=HOST  configuring with a cross compiler])
-
-AM_MAINTAINER_MODE
 
 AC_MSG_CHECKING([for thread model used by GCC])
 THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
