@@ -1,3 +1,7 @@
+Wed Mar 25 00:57:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* pa.c (emit_move_sequence): If in reload, call find_replacement.
+
 Tue Mar 24 10:44:11 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* Makefile.in (gcov$(exeext)): Support .exe extension to gcov.
