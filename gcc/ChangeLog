@@ -1,3 +1,8 @@
+2004-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (addqi_1_slp): Test for incdec_operand
+	operand 1 instead of 2
+
 2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* loop-unroll.c: Fix comment typos.
