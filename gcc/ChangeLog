@@ -1,3 +1,10 @@
+2004-02-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (install-man): Use $(CPP_INSTALL_NAME) and
+	$(GCOV_INSTALL_NAME) to install manpages.  Remove generic rule
+	for installing .1 manpages.  Add rules for installing cpp
+	and gcov manpages under their installed names.
+
 2004-02-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac (gcc_cv_ld): Don't set to LD if target is not
