@@ -1094,7 +1094,7 @@ namespace std {
       return __in;
     }
 
-  // 21.3.7.8 basic_string::getline and operators
+  // 21.3.7.9 basic_string::getline and operators
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_istream<_CharT, _Traits>&
     operator>>(basic_istream<_CharT, _Traits>& __in,

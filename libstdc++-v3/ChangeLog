@@ -1,3 +1,16 @@
+2000-12-20  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (SECTION_FLAGS, OPT_LDFLAGS):  Fix minor thinko.
+	* aclocal.m4:  Regenerate.
+	* configure:  Ditto.
+	* Makefile.in:  Ditto.
+	* libio/Makefile.in:  Ditto.
+	* libmath/Makefile.in:  Ditto.
+	* libsupc++/Makefile.in:  Ditto.
+	* src/Makefile.in:  Ditto.
+
+	* include/bits/istream.tcc:  Fix clause reference in comment.
+
 2000-12-20  Benjamin Kosnik  <bkoz@fillmore.constant.com>
 
 	* testsuite/17_intro/headers_c.cc (main): New file.
