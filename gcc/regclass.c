@@ -1668,7 +1668,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
   int i;
   int size_info;
   int size_renumber;
-  int min = (new_p) ? 0 : regno_max+1;
+  int min = (new_p) ? 0 : regno_max;
 
   /* If this message come up, and you want to fix it, then all of the tables
      like reg_renumber, etc. that use short will have to be found and lengthed
