@@ -2054,6 +2054,10 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    insn_noperands = noperands;
 	    this_is_asm_operands = insn;
 
+#ifdef FINAL_PRESCAN_INSN
+	    FINAL_PRESCAN_INSN (insn, ops, insn_noperands);
+#endif
+
 	    /* Output the insn using them.  */
 	    if (string[0])
 	      {
