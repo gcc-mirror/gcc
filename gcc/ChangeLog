@@ -1,3 +1,8 @@
+2003-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c (fix_unsafe_tree): Prototype.
+	* loop.c (loop_invariant_p): Avoid signed/unsigned warning.
+
 2003-01-24  Richard Henderson  <rth@redhat.com>
 
         PR optimization/4382

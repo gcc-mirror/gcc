@@ -1781,7 +1781,7 @@ generate_bytecode_insns (exp, target, state)
 	       something like Integer.MIN_VALUE.  That is why delta is
 	       unsigned.  */
 	    delta = sw_state.max_case - sw_state.min_case;
-	    if (2 * sw_state.num_cases >= delta)
+	    if (2 * (unsigned) sw_state.num_cases >= delta)
 	      { /* Use tableswitch. */
 		int index = 0;
 		RESERVE (13 + 4 * (sw_state.max_case - sw_state.min_case + 1));

@@ -1,3 +1,9 @@
+2003-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-io.c (caching_stat): Cast the 3rd arg of scandir to void*.
+	* jcf-write.c (generate_bytecode_insns): Avoid signed/unsigned
+	warning.
+
 2003-01-21  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (method_header): Native method can't be strictfp.

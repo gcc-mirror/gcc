@@ -227,6 +227,7 @@ static int check_sibcall_argument_overlap	PARAMS ((rtx, struct arg_data *));
 
 static int combine_pending_stack_adjustment_and_call
                                                 PARAMS ((int, struct args_size *, int));
+static tree fix_unsafe_tree		PARAMS ((tree));
 
 #ifdef REG_PARM_STACK_SPACE
 static rtx save_fixed_argument_area	PARAMS ((int, rtx, int *, int *));

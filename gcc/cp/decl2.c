@@ -700,7 +700,7 @@ check_classfn (ctype, function)
   if (ix >= 0)
     {
       tree methods = CLASSTYPE_METHOD_VEC (ctype);
-      tree fndecls, fndecl;
+      tree fndecls, fndecl = 0;
       bool is_conv_op;
       const char *format = NULL;
       

@@ -3277,7 +3277,7 @@ loop_invariant_p (loop, x)
 	 These have always been created by the unroller and are set in
 	 the loop, hence are never invariant. */
 
-      if (REGNO (x) >= regs->num)
+      if (REGNO (x) >= (unsigned) regs->num)
 	return 0;
 
       if (regs->array[REGNO (x)].set_in_loop < 0)
