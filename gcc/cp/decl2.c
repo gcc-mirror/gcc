@@ -417,7 +417,11 @@ int flag_weak = 1;
 
 /* Nonzero to enable experimental ABI changes.  */
 
+#if ENABLE_NEW_GXX_ABI
+int flag_new_abi = 1;
+#else
 int flag_new_abi;
+#endif
 
 /* Nonzero to use __cxa_atexit, rather than atexit, to register
    destructors for local statics and global objects.  */
@@ -4846,9 +4850,9 @@ arg_assoc_class (k, type)
 	   friends = TREE_CHAIN (friends))
 	/* Only interested in global functions with potentially hidden
            (i.e. unqualified) declarations. */
-	if (TREE_PURPOSE (list) == error_mark_node && TREE_VALUE (list)
-	    && decl_namespace (TREE_VALUE (list)) == context)
-	  if (add_function (k, TREE_VALUE (list)))
+	if (TREE_PURPOSE (friends) == error_mark_node && TREE_VALUE (friends)
+	    && decl_namespace (TREE_VALUE (friends)) == context)
+	  if (add_function (k, TREE_VALUE (friends)))
 	    return 1;
 
   /* Process template arguments.  */
