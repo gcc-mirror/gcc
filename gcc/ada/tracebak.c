@@ -286,15 +286,7 @@ struct layout
   void *return_address;
 };
 
-#ifdef _WIN32
-/* _image_base__ is the image starting address, no stack addresses should be
-   under this value */
-extern unsigned int _image_base__;
-#define LOWEST_ADDR ((unsigned int) (&_image_base__))
-#else
 #define LOWEST_ADDR 0
-#endif
-
 #define FRAME_LEVEL 0
 #define FRAME_OFFSET 0
 #define PC_ADJUST -2

@@ -1,3 +1,8 @@
+2004-10-04  Pascal Obry  <obry@gnat.com>
+
+	* tracebak.c: Always set LOWEST_ADDR to 0 on Win32 (as done on all
+	other x86 platforms).
+
 2004-10-04  Olivier Hainque  <hainque@act-europe.fr>
 
 	* s-tassta.adb (Task_Wrapper): Make it Convention C, which makes sense
