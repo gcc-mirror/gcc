@@ -1441,7 +1441,6 @@ namespace std
 	// Determine if negative or positive formats are to be used, and
 	// discard leading negative_sign if it is present.
 	const char_type* __beg = __digits.data();
-	const char_type* __end = __beg + __digits.size();
 
 	money_base::pattern __p;
 	const char_type* __sign;
@@ -1452,7 +1451,7 @@ namespace std
 	    __sign = __lc->_M_positive_sign;
 	    __sign_size = __lc->_M_positive_sign_size;
 	  }
-	else
+	else if (__digits.size())
 	  {
 	    __p = __lc->_M_neg_format;
 	    __sign = __lc->_M_negative_sign;
@@ -1461,21 +1460,23 @@ namespace std
 	  }
        
 	// Look for valid numbers in the ctype facet within input digits.
-	__end = __ctype.scan_not(ctype_base::digit, __beg, __end);
-	if (__beg != __end)
+	size_type __len = __ctype.scan_not(ctype_base::digit, __beg,
+					   __beg + __digits.size()) - __beg;
+	if (__len)
 	  {
 	    // Assume valid input, and attempt to format.
 	    // Break down input numbers into base components, as follows:
 	    //   final_value = grouped units + (decimal point) + (digits)
 	    string_type __value;
-	    size_type __len = __end - __beg;
 	    __value.reserve(2 * __len);
 
 	    // Add thousands separators to non-decimal digits, per
 	    // grouping rules.
-	    const int __paddec = __lc->_M_frac_digits - __len;	    
-	    if (__paddec < 0)
+	    int __paddec = __len - __lc->_M_frac_digits;
+	    if (__paddec > 0)
   	      {
+		if (__lc->_M_frac_digits < 0)
+		  __paddec = __len;
   		if (__lc->_M_grouping_size)
   		  {
 		    _CharT* __ws =
@@ -1485,24 +1486,23 @@ namespace std
 		      std::__add_grouping(__ws, __lc->_M_thousands_sep,
 					  __lc->_M_grouping,
 					  __lc->_M_grouping_size,
-					  __beg, __end - __lc->_M_frac_digits);
+					  __beg, __beg + __paddec);
 		    __value.assign(__ws, __ws_end - __ws);
   		  }
   		else
-		  __value.assign(__beg, -__paddec);
+		  __value.assign(__beg, __paddec);
 	      }
 
 	    // Deal with decimal point, decimal digits.
 	    if (__lc->_M_frac_digits > 0)
 	      {
 		__value += __lc->_M_decimal_point;
-		if (__paddec <= 0)
-		  __value.append(__end - __lc->_M_frac_digits,
-				 __lc->_M_frac_digits);
+		if (__paddec >= 0)
+		  __value.append(__beg + __paddec, __lc->_M_frac_digits);
 		else
 		  {
 		    // Have to pad zeros in the decimal position.
-		    __value.append(__paddec, __lit[_S_zero]);
+		    __value.append(-__paddec, __lit[_S_zero]);
 		    __value.append(__beg, __len);
 		  }
   	      }
