@@ -2,7 +2,7 @@
    (most of which are designed to be appropriate for GAS or for
    some BSD assembler).
 
-   Written by Ron Guilmette (rfg@ncd.com)
+   Written by Ron Guilmette (rfg@netcom.com)
 
 Copyright (C) 1992 Free Software Foundation, Inc.
 
