@@ -1,3 +1,44 @@
+2001-01-10  Ira Ruben	<ira@apple.com>
+
+	Add __attribute__ ((deprecated)).
+	* extend.texi: Document __attribute__ ((deprecated)).
+	* invoke.texi: Document -Wno-deprecated-declarations.
+	* testsuite/g++.dg/other/deprecated.C: New C++ test.
+	* testsuite/gcc.dg/deprecated.c: New C test.
+	* attribs.c (enum attrs): Declare handle_deprecated_attribute().
+	(c_common_attribute_table): Add "deprecated" entry.
+	(handle_deprecated_attribute): New function.
+	* c-decl.c (deprecated_states): New enum.
+	deprecated_state: State of "deprecated" handling.
+	(start_decl): Set deprecated_state based on attributes.
+	(grokdeclarator): Test for deprecated uses, propagate attribute.
+	* c-typeck.c (build_component_ref): Test for deprecated fields.
+	(build_external_ref): Test for deprecated primaries.
+	* diagnostic.c (warn_deprecated_use) New function to issue
+	warnings about __attribute__ ((depricated)) references.
+	* flags.h (warn_deprecated_decl): Extern declared for
+	-W[no-]deprecated-declarations option.
+	* print-tree.c (print_node): Show deprecated flag status.
+	* toplev.c (warn_deprecated_decl): Defined.
+	(W_options): Added "deprecated-declaration".
+	* toplev.h (warn_deprecated_use): Extern declared.
+	* tree.h (struct tree_common): Define deprecated_flag.
+	(TREE_DEPRECATED): New macro to access flag.
+	* cp/call.c (build_call): Test for deprecated calls.
+	* cp/class.c (add_implicitly_declared_members): Set global
+	flag to tell grokdeclarator to not issue deprecated warnings.
+	* cp/cp-tree.h: Add extern for adding_implicit_members.
+	* cp/decl.c (deprecated_states): New enum.
+	(start_decl): Set deprecated_state based on attributes.
+	(grokdeclarator): Test for deprecated uses, propagate attribute.
+	* cp/lex.c (do_identifier): Test for deprecated primaries.
+	* cp/typeck.c (build_component_ref): Test for deprecated fields.
+
+2001-01-10  Ira Ruben	<ira@apple.com>
+
+	Fix to assign attributes to inline member functions.
+	* cp/decl.c (start_method): Handle attrlist.
+
 2002-01-10  Kazu Hirata  <kazu@hxi.com>
 
 	* combine.c (expand_field_assignment): Use subreg_lsb().
