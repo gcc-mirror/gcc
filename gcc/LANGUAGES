@@ -29,4 +29,16 @@ Feb 1, 1998:
     scheme.  Other languages will need to be updated accordingly.
     Contact amylaar@cygnus.com for additional information.
 
+?? 1997:
 
+  In an effort to decrease cache thrashing and useless loads we've changed the
+  third argument to the DEFTREECODE macro to be a single char.  This will
+  effect languages that defined their own tree codes (usually in a .def file).
+
+  Old way:
+
+    DEFTREECODE (CLASS_METHOD_DECL, "class_method_decl", "d", 0)
+
+  New way:
+
+    DEFTREECODE (CLASS_METHOD_DECL, "class_method_decl", 'd', 0)
