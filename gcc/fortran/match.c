@@ -2907,12 +2907,15 @@ match_data_constant (gfc_expr ** result)
   if (gfc_find_symbol (name, NULL, 1, &sym))
     return MATCH_ERROR;
 
-  if (sym == NULL || sym->attr.flavor != FL_PARAMETER)
+  if (sym == NULL
+      || (sym->attr.flavor != FL_PARAMETER && sym->attr.flavor != FL_DERIVED))
     {
       gfc_error ("Symbol '%s' must be a PARAMETER in DATA statement at %C",
 		 name);
       return MATCH_ERROR;
     }
+  else if (sym->attr.flavor == FL_DERIVED)
+    return gfc_match_structure_constructor (sym, result);
 
   *result = gfc_copy_expr (sym->value);
   return MATCH_YES;
