@@ -1,3 +1,16 @@
+2003-10-17  Segher Boessenkool  <boessen@de.ibm.com>
+	    Hartmut Penner  <hpenner@de.ibm.com>
+
+	* config/rs6000/altivec.md ("altivec_dst", "altivec_dstt",
+	"altivec_dstst", "altivec_dststt", "altivec_lvsl", "altivec_lvsr",
+	"altivec_lvebx", "altivec_lvehx", "altivec_lvewx", "altivec_lvxl",
+	"altivec_lvx", "altivec_stvx", "altivec_stvxl", "altivec_stvebx",
+	"altivec_stvehx", "altivec_stvewx"): Use a memory_operand.
+	* config/rs6000/rs6000.c (altivec_expand_lv_builtin): New function.
+	(altivec_expand_stv_builtin): Adjust for the memory_operand.
+	(altivec_expand_builtin): Call altivec_expand_lv_builtin.
+	(altivec_init_builtins): Use `long int' for memory offsets.
+
 2003-10-17  Jan Hubicka  <jh@suse.cz>
 
 	* opts.c  (common_handle_option): Handle OPT_fweb
