@@ -8444,9 +8444,9 @@ extended precision arithmetics is still done using 387.  Later version, present
 only in Pentium4 and the future AMD x86-64 chips supports double precision
 arithmetics too.
 
-For i387 you need to use @option{-march=@var{cpu-type}}, @option{-msse} or
-@option{-msse2} switches to enable SSE extensions and make this option
-effective.  For x86-64 compiler, these extensions are enabled by default.
+For the i386 compiler, you need to use @option{-march=@var{cpu-type}}, @option{-msse}
+or @option{-msse2} switches to enable SSE extensions and make this option
+effective.  For the x86-64 compiler, these extensions are enabled by default.
 
 The resulting code should be considerably faster in the majority of cases and avoid
 the numerical instability problems of 387 code, but may break some existing

@@ -1,3 +1,8 @@
+2004-01-05  Uros Bizjak  <uros@kss-loka.si>
+
+	* doc/invoke.texi (Intel 386 and AMD x86-64 Options):
+        Replace i387 with 'i386 compiler' in -mfpmath=sse option.
+
 2005-01-04  Roger Sayle  <roger@eyesopen.com>
 
 	* ifcvt.c (find_if_case_1): Avoid creating an empty forwarder block,
