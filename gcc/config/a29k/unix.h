@@ -36,8 +36,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%{!m29000:-Dam29050 -D__am29050__}"
 
+/* Use a default linker configuration file.  */
 #undef LINK_SPEC
-#define LINK_SPEC "-c default.ld%s"
+#define LINK_SPEC "-T default.gld%s"
 
 /* For some systems, it is best if double-word objects are aligned on a 
    doubleword boundary.  We want to maintain compatibility with MetaWare in
