@@ -353,7 +353,7 @@ free_after_compilation (struct function *f)
    This size counts from zero.  It is not rounded to PREFERRED_STACK_BOUNDARY;
    the caller may have to do that.  */
 
-HOST_WIDE_INT
+static HOST_WIDE_INT
 get_func_frame_size (struct function *f)
 {
 #ifdef FRAME_GROWS_DOWNWARD
