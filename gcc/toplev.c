@@ -192,7 +192,7 @@ static void print_switch_values PARAMS ((FILE *, int, int, const char *,
 
 const char *progname;
 
-/* Copy of arguments to main.  */
+/* Copy of arguments to toplev_main.  */
 int save_argc;
 char **save_argv;
 
@@ -4582,14 +4582,15 @@ independent_decode_option (argc, argv)
   return 1;
 }
 
-/* Entry point of cc1/c++.  Decode command args, then call compile_file.
-   Exit code is 35 if can't open files, 34 if fatal error,
-   33 if had nonfatal errors, else success.  */
-
-extern int main PARAMS ((int, char **));
+/* Entry point of cc1, cc1plus, jc1, f771, etc.
+   Decode command args, then call compile_file.
+   Exit code is FATAL_EXIT_CODE if can't open files or if there were
+   any errors, or SUCCESS_EXIT_CODE if compilation succeeded.
+   
+   It is not safe to call this function more than once.  */
 
 int
-main (argc, argv)
+toplev_main (argc, argv)
      int argc;
      char **argv;
 {

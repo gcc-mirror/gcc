@@ -746,11 +746,11 @@ OBJS =									\
  recog.o reg-stack.o regclass.o regmove.o regrename.o reload.o		\
  reload1.o reorg.o resource.o rtl.o rtlanal.o sbitmap.o sched-deps.o	\
  sched-ebb.o sched-rgn.o sched-vis.o sdbout.o sibcall.o simplify-rtx.o	\
- splay-tree.o ssa.o stmt.o stor-layout.o stringpool.o timevar.o tree.o	\
- unroll.o varasm.o varray.o version.o xcoffout.o			\
+ splay-tree.o ssa.o stmt.o stor-layout.o stringpool.o timevar.o		\
+ toplev.o tree.o unroll.o varasm.o varray.o version.o xcoffout.o	\
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
 
-BACKEND = toplev.o libbackend.a
+BACKEND = main.o libbackend.a
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -1348,6 +1348,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c $(srcdir)/toplev.c
+main.o : main.c toplev.h
 
 rtl.o : rtl.c $(GCONFIG_H) system.h $(RTL_H) bitmap.h $(GGC_H) toplev.h
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)

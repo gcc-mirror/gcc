@@ -1,3 +1,14 @@
+2001-03-05  Fergus Henderson  <fjh@cs.mu.oz.au>
+
+	Put main() in a separate file, so that the language
+	front-end can use a different main().
+
+	* main.c: New.
+	* toplev.c: (main): Rename as toplev_main.
+	* toplev.h: Declare toplev_main.
+	* Makefile.in (OBJS): add toplev.o.
+	  (BACKEND): remove toplev.o, add main.o.
+
 2001-03-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (search_from): Special case the empty string.
