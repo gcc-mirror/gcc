@@ -233,7 +233,7 @@ proc libstdc++-v3-list-sourcefiles { } {
 	set f [open $files_file "w"]
 	set where_we_were [pwd]
 	cd $srcdir
-	foreach s [lsort [glob -nocomplain "{,*/}*/*.cc"]] {
+	foreach s [lsort [glob -nocomplain "*/*.cc" "*/*/*.cc" "{,*/}*/*/*/*.cc" ]] {
 	    lappend sfiles ${srcdir}/${s}
 	    puts $f $s
 	}

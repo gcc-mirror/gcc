@@ -1,6 +1,7 @@
+// -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,71 +38,66 @@
 #include <cstddef>
 #include <limits>
 
-class gnu_allocator_tracker
+namespace __gnu_cxx_test
 {
- public:
-  typedef std::size_t    size_type; 
-  
-  static void*
-  allocate(size_type blocksize)
+  class allocation_tracker
   {
-    allocationTotal_ += blocksize;
-    return ::operator new(blocksize);
-  }
-
-  static void
-  construct()
-  { constructCount_++; }
-
-  static void
-  destroy()
-  { destructCount_++; }
-
-  static void
-  deallocate(void* p, size_type blocksize)
-  {
-    ::operator delete(p);
-    deallocationTotal_ += blocksize;
-  }
-
-  static size_type
-  allocationTotal() 
-  { return allocationTotal_; }
-
-  static size_type
-  deallocationTotal()
-  { return deallocationTotal_; }
-
-  static int
-  constructCount() 
-  { return constructCount_; }
-
-  static int
-  destructCount() 
-  { return destructCount_; }
+  public:
+    typedef std::size_t    size_type; 
     
-  static void
-  resetCounts()
-  {
-    allocationTotal_ = 0;
-    deallocationTotal_ = 0;
-    constructCount_ = 0;
+    static void*
+    allocate(size_type blocksize)
+    {
+      allocationTotal_ += blocksize;
+      return ::operator new(blocksize);
+    }
+    
+    static void
+    construct() { constructCount_++; }
+
+    static void
+    destroy() { destructCount_++; }
+
+    static void
+    deallocate(void* p, size_type blocksize)
+    {
+      ::operator delete(p);
+      deallocationTotal_ += blocksize;
+    }
+    
+    static size_type
+    allocationTotal() { return allocationTotal_; }
+    
+    static size_type
+    deallocationTotal() { return deallocationTotal_; }
+    
+    static int
+    constructCount() { return constructCount_; }
+
+    static int
+    destructCount() { return destructCount_; }
+    
+    static void
+    resetCounts()
+    {
+      allocationTotal_ = 0;
+      deallocationTotal_ = 0;
+      constructCount_ = 0;
     destructCount_ = 0;
-  }
+    }
 
  private:
-  static size_type  allocationTotal_;
-  static size_type  deallocationTotal_;
-  static int        constructCount_;
-  static int        destructCount_;
-};
+    static size_type  allocationTotal_;
+    static size_type  deallocationTotal_;
+    static int        constructCount_;
+    static int        destructCount_;
+  };
 
-// A simple basic allocator that just forwards to the
-// gnu_allocator_tracker to fulfill memory requests.  This class is
-// templated on the target object type, but gnu_allocator_tracker
-// isn't.
-template<class T>
-  class gnu_new_allocator
+  // A simple basic allocator that just forwards to the
+  // allocation_tracker to fulfill memory requests.  This class is
+  // templated on the target object type, but tracker isn't.
+  template<class T>
+  class tracker_alloc
   {
   public:
     typedef T              value_type;
@@ -112,7 +108,7 @@ template<class T>
     typedef std::size_t    size_type; 
     typedef std::ptrdiff_t difference_type; 
     
-    template<class U> struct rebind { typedef gnu_new_allocator<U> other; };
+    template<class U> struct rebind { typedef tracker_alloc<U> other; };
     
     pointer
     address(reference value) const
@@ -122,17 +118,17 @@ template<class T>
     address(const_reference value) const
     { return &value; }
     
-    gnu_new_allocator() throw()
+    tracker_alloc() throw()
     { }
 
-    gnu_new_allocator(const gnu_new_allocator&) throw()
+    tracker_alloc(const tracker_alloc&) throw()
     { }
 
     template<class U>
-      gnu_new_allocator(const gnu_new_allocator<U>&) throw()
+      tracker_alloc(const tracker_alloc<U>&) throw()
       { }
 
-    ~gnu_new_allocator() throw()
+    ~tracker_alloc() throw()
     { }
 
     size_type
@@ -140,42 +136,40 @@ template<class T>
     { return std::numeric_limits<std::size_t>::max() / sizeof(T); }
 
     pointer
-    allocate(size_type num, const void* = 0)
+    allocate(size_type n, const void* = 0)
     { 
-      return static_cast<pointer>(gnu_allocator_tracker::allocate(num * 
-								  sizeof(T))); 
+      return static_cast<pointer>(allocation_tracker::allocate(n * sizeof(T)));
     }
 
     void
     construct(pointer p, const T& value)
     {
       new (p) T(value);
-      gnu_allocator_tracker::construct();
+      allocation_tracker::construct();
     }
 
     void
     destroy(pointer p)
     {
       p->~T();
-      gnu_allocator_tracker::destroy();
+      allocation_tracker::destroy();
     }
 
     void
     deallocate(pointer p, size_type num)
-    { gnu_allocator_tracker::deallocate(p, num * sizeof(T)); }
+    { allocation_tracker::deallocate(p, num * sizeof(T)); }
   };
 
-template<class T1, class T2>
-  bool
-  operator==(const gnu_new_allocator<T1>&, 
-	     const gnu_new_allocator<T2>&) throw()
-  { return true; }
+  template<class T1, class T2>
+    bool
+    operator==(const tracker_alloc<T1>&, const tracker_alloc<T2>&) throw()
+    { return true; }
 
-template<class T1, class T2>
-  bool
-  operator!=(const gnu_new_allocator<T1>&, 
-	     const gnu_new_allocator<T2>&) throw()
-  { return false; }
+  template<class T1, class T2>
+    bool
+    operator!=(const tracker_alloc<T1>&, const tracker_alloc<T2>&) throw()
+    { return false; }
+}; // namespace __gnu_cxx_test
 
 #endif // _GLIBCPP_TESTSUITE_ALLOCATOR_H
 

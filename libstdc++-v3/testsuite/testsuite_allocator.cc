@@ -1,5 +1,7 @@
+// -*- C++ -*-
+// Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +30,11 @@
 
 #include <testsuite_allocator.h>
 
-gnu_allocator_tracker::size_type gnu_allocator_tracker::allocationTotal_   = 0;
-gnu_allocator_tracker::size_type gnu_allocator_tracker::deallocationTotal_ = 0;
-int                              gnu_allocator_tracker::constructCount_    = 0;
-int                              gnu_allocator_tracker::destructCount_     = 0;
+namespace __gnu_cxx_test
+{
+  allocation_tracker::size_type allocation_tracker::allocationTotal_   = 0;
+  allocation_tracker::size_type allocation_tracker::deallocationTotal_ = 0;
+  int allocation_tracker::constructCount_    = 0;
+  int allocation_tracker::destructCount_     = 0;
+}; // namespace __cxx_test
 

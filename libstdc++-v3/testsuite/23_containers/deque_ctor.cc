@@ -1,6 +1,6 @@
 // 2001-12-27 pme
 //
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,15 @@
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
 
-typedef std::deque<gnu_counting_struct>   gdeque;
+using __gnu_cxx_test::copy_tracker;
+using __gnu_cxx_test::allocation_tracker;
+using __gnu_cxx_test::tracker_alloc;
+using __gnu_cxx_test::copy_constructor;
+using __gnu_cxx_test::assignment_operator;
+using __gnu_cxx_test::counter;
+using __gnu_cxx_test::destructor;
+
+typedef std::deque<counter>   gdeque;
 
 bool test = true;
 
@@ -133,10 +141,10 @@ void
 defaultConstructorCheck()
 {
   // setup
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>     X;
 
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   // run test
   const X u;
@@ -171,7 +179,7 @@ void
 copyConstructorCheck()
 {
   // setup
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>     X;
 
   const int copyBaseSize = 17;  // arbitrary
@@ -179,7 +187,7 @@ copyConstructorCheck()
   X a;
   for (int i = 0; i < copyBaseSize; ++i)
     a.push_back(i);
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   // assert preconditions
   VERIFY(!a.empty());
@@ -192,7 +200,7 @@ copyConstructorCheck()
 
   // assert postconditions
   VERIFY(u == a);
-  VERIFY(copyBaseSize == gnu_copy_constructor::count());
+  VERIFY(copyBaseSize == copy_constructor::count());
 
   // teardown
 }
@@ -212,20 +220,20 @@ void
 fillConstructorCheck()
 {
   // setup
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>   X;
 
   const X::size_type  n(23);  
   const X::value_type t(111);
 
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   // run test
   X a(n, t);
 
   // assert postconditions
   VERIFY(n == a.size());
-  VERIFY(n == gnu_copy_constructor::count());
+  VERIFY(n == copy_constructor::count());
 
   // teardown
 }
@@ -239,18 +247,18 @@ fillConstructorCheck()
 void
 fillConstructorCheck2()
 {
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>   X;
 
   const int f = 23;  
   const int l = 111;
 
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   X a(f, l);
 
   VERIFY(f == a.size());
-  VERIFY(f == gnu_copy_constructor::count());
+  VERIFY(f == copy_constructor::count());
 }
 
 
@@ -265,7 +273,7 @@ void
 rangeConstructorCheckForwardIterator()
 {
   // setup
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>   X;
 
   const X::size_type  n(726); 
@@ -275,14 +283,14 @@ rangeConstructorCheckForwardIterator()
   X::iterator j = source.end();
   X::size_type rangeSize = std::distance(i, j);
 
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   // test
   X a(i, j);
 
   // assert postconditions
   VERIFY(rangeSize == a.size());
-  VERIFY(gnu_copy_constructor::count() <= rangeSize);
+  VERIFY(copy_constructor::count() <= rangeSize);
 }
 
 
@@ -295,7 +303,7 @@ rangeConstructorCheckForwardIterator()
 void
 rangeConstructorCheckInputIterator()
 {
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>     X;
 
   std::istringstream ibuf("1234567890123456789");
@@ -303,12 +311,12 @@ rangeConstructorCheckInputIterator()
   std::istream_iterator<char>  i(ibuf);
   std::istream_iterator<char>  j;
 
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   X a(i, j);
 
   VERIFY(rangeSize == a.size());
-  VERIFY(gnu_copy_constructor::count() <= (2 * rangeSize));
+  VERIFY(copy_constructor::count() <= (2 * rangeSize));
 }
 
 
@@ -316,7 +324,7 @@ rangeConstructorCheckInputIterator()
 void
 copyAssignmentCheck()
 {
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>     X;
 
   const X::size_type  n(18);  
@@ -324,12 +332,12 @@ copyAssignmentCheck()
   X a(n, t);
   X r;
 
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   r = a;
 
   VERIFY(r == a);
-  VERIFY(n == gnu_copy_constructor::count());
+  VERIFY(n == copy_constructor::count());
 }
 
 
@@ -343,7 +351,7 @@ copyAssignmentCheck()
 void
 fillAssignmentCheck()
 {
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>   X;
 
   const X::size_type  starting_size(10);  
@@ -352,7 +360,7 @@ fillAssignmentCheck()
   const X::value_type t(111);
 
   X a(starting_size, starting_value);
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   // preconditions
   VERIFY(starting_size == a.size());
@@ -362,8 +370,8 @@ fillAssignmentCheck()
 
   // postconditions
   VERIFY(n == a.size());
-  VERIFY(n == (gnu_copy_constructor::count() + gnu_assignment_operator::count()));
-  VERIFY(starting_size == (gnu_destructor::count() + gnu_assignment_operator::count()));
+  VERIFY(n == (copy_constructor::count() + assignment_operator::count()));
+  VERIFY(starting_size == (destructor::count() + assignment_operator::count()));
 }
 
 
@@ -391,7 +399,7 @@ fillAssignmentCheck()
 void
 rangeAssignmentCheck()
 {
-  typedef gnu_copy_tracker  T;
+  typedef copy_tracker  T;
   typedef std::deque<T>   X;
 
   const X::size_type  source_size(726); 
@@ -407,13 +415,13 @@ rangeAssignmentCheck()
   X a(starting_size, starting_value);
   VERIFY(starting_size == a.size());
 
-  gnu_copy_tracker::reset();
+  copy_tracker::reset();
 
   a.assign(i, j);
 
   VERIFY(source == a);
-  VERIFY(rangeSize == (gnu_copy_constructor::count() + gnu_assignment_operator::count()));
-  VERIFY(starting_size == (gnu_destructor::count() + gnu_assignment_operator::count()));
+  VERIFY(rangeSize == (copy_constructor::count() + assignment_operator::count()));
+  VERIFY(starting_size == (destructor::count() + assignment_operator::count()));
 }
 
 
@@ -423,7 +431,7 @@ void
 rangeAssignmentCheckWithException()
 {
   // setup
-  typedef gnu_copy_tracker T;
+  typedef copy_tracker T;
   typedef std::deque<T>    X;
 
   // test
@@ -436,7 +444,7 @@ void
 fillAssignmentCheck2()
 {
   // setup
-  typedef gnu_copy_tracker T;
+  typedef copy_tracker T;
   typedef std::deque<T>    X;
 
   // test
@@ -449,12 +457,12 @@ void
 test_default_ctor_exception_safety()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::deque<T, gnu_new_allocator<T> > X;
+  typedef copy_tracker T;
+  typedef std::deque<T, tracker_alloc<T> > X;
 
   T::reset();
-  gnu_copy_constructor::throw_on(3);
-  gnu_allocator_tracker::resetCounts();
+  copy_constructor::throw_on(3);
+  allocation_tracker::resetCounts();
 
   // test
   try
@@ -467,7 +475,7 @@ test_default_ctor_exception_safety()
   }
 
   // assert postconditions
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
 }
@@ -477,14 +485,14 @@ void
 test_copy_ctor_exception_safety()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::deque<T, gnu_new_allocator<T> > X;
+  typedef copy_tracker T;
+  typedef std::deque<T, tracker_alloc<T> > X;
 
-  gnu_allocator_tracker::resetCounts();
+  allocation_tracker::resetCounts();
   {
     X a(7);
     T::reset();
-    gnu_copy_constructor::throw_on(3);
+    copy_constructor::throw_on(3);
 
 
     // test
@@ -499,7 +507,7 @@ test_copy_ctor_exception_safety()
   }
 
   // assert postconditions
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
 }

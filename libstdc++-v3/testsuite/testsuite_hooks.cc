@@ -1,6 +1,7 @@
-// Utility subroutines for the C++ library testsuite.
+// -*- C++ -*-
+// Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,14 +34,22 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
+#include <list>
+#include <string>
+#include <stdexcept>
+#include <clocale>
+#include <locale>
 
-void
-__set_testsuite_memlimit(float __size)
+namespace __gnu_cxx_test
 {
+#ifdef _GLIBCPP_MEM_LIMITS
+  void 
+  set_memory_limits(float size)
+  {
     struct rlimit r;
     // Cater to the absence of rlim_t.
-    __typeof__ (r.rlim_cur) limit
-      = (__typeof__ (r.rlim_cur))(__size * 1048576);
+    __typeof__ (r.rlim_cur) limit = (__typeof__ (r.rlim_cur))(size * 1048576);
 
     // Heap size, seems to be common.
 #if _GLIBCPP_HAVE_MEMLIMIT_DATA
@@ -69,19 +78,90 @@ __set_testsuite_memlimit(float __size)
     r.rlim_cur = limit;
     setrlimit(RLIMIT_AS, &r);
 #endif
-}
+  }
+
 #else
-void
-__set_testsuite_memlimit(float) { }
-#endif /* _GLIBCPP_MEM_LIMITS */
+  void
+  set_memory_limits(float) { }
+#endif 
 
+  // Useful exceptions.
+  class locale_data : public std::runtime_error 
+  {
+  public:
+    explicit 
+    locale_data(const std::string&  __arg) : runtime_error(__arg) { }
+  };
 
-gnu_counting_struct::size_type  gnu_counting_struct::count = 0;
+  class environment_variable: public std::runtime_error 
+  {
+  public:
+    explicit 
+    environment_variable(const std::string&  __arg) : runtime_error(__arg) { }
+  };
 
-unsigned int gnu_copy_constructor::count_ = 0;
-unsigned int gnu_copy_constructor::throw_on_ = 0;
-unsigned int gnu_assignment_operator::count_ = 0;
-unsigned int gnu_assignment_operator::throw_on_ = 0;
-unsigned int gnu_destructor::count_ = 0;
-int gnu_copy_tracker::next_id_ = 0;
+  class not_found : public std::runtime_error 
+  {
+  public:
+    explicit 
+    not_found(const std::string&  __arg) : runtime_error(__arg) { }
+  };
 
+  void 
+  run_tests_wrapped_locale(const char* name, const func_callback& l)
+  {
+    using namespace std;
+    bool test = true;
+    
+    // Set the global locale. 
+    locale loc_name(name);
+    locale orig = locale::global(loc_name);
+    
+    const char* res = setlocale(LC_ALL, name);
+    if (res != NULL)
+      {
+	string preLC_ALL = res;
+	for (func_callback::const_iterator i = l.begin(); i != l.end(); ++i)
+	  (*i)();
+	string postLC_ALL= setlocale(LC_ALL, NULL);
+	VERIFY( preLC_ALL == postLC_ALL );
+      }
+    else
+      throw environment_variable(string("LC_ALL for") + string(name));
+  }
+  
+  void 
+  run_tests_wrapped_env(const char* name, const char* env,
+			const func_callback& l)
+  {
+    using namespace std;
+    bool test = true;
+    
+#ifdef _GLIBCPP_HAVE_SETENV 
+    // Set the global locale. 
+    locale loc_name(name);
+    locale orig = locale::global(loc_name);
+
+    // Set environment variable env to value in name. 
+    const char* oldENV = getenv(env);
+    if (!setenv(env, name, 1))
+      {
+	for (func_callback::const_iterator i = l.begin(); i != l.end(); ++i)
+	  (*i)();
+	setenv(env, oldENV ? oldENV : "", 1);
+      }
+    else
+      throw environment_variable(string(env) + string(" to ") + string(name));
+#else
+    throw not_found("setenv");
+#endif
+  }
+
+  counter::size_type  counter::count = 0;
+  unsigned int copy_constructor::count_ = 0;
+  unsigned int copy_constructor::throw_on_ = 0;
+  unsigned int assignment_operator::count_ = 0;
+  unsigned int assignment_operator::throw_on_ = 0;
+  unsigned int destructor::_M_count = 0;
+  int copy_tracker::next_id_ = 0;
+}; // namespace __cxx_test
