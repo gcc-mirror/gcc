@@ -1,7 +1,7 @@
 Wed Nov 10 04:58:09 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* Makefile.in (recog.o): Use BASIC_BLOCK_H macro.
-	(print-rtl.o, $(HOST_PREIFX_1)print-rtl.o: Likewise.  Remove
+	(print-rtl.o, $(HOST_PREFIX_1)print-rtl.o): Likewise.  Remove
 	redundant bitmap.h.
 
 Wed Nov 10 00:02:53 1999  Jeffrey A Law  (law@cygnus.com)
