@@ -2310,7 +2310,7 @@ expand_start_null_loop ()
   thisloop->data.loop.start_label = emit_note (NULL, NOTE_INSN_DELETED);
   thisloop->data.loop.end_label = gen_label_rtx ();
   thisloop->data.loop.alt_end_label = NULL_RTX;
-  thisloop->data.loop.continue_label = NULL_RTX;
+  thisloop->data.loop.continue_label = thisloop->data.loop.end_label;
   thisloop->exit_label = thisloop->data.loop.end_label;
   loop_stack = thisloop;
   nesting_stack = thisloop;
