@@ -1,3 +1,8 @@
+2004-02-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* reload.c (refers_to_regno_for_reload_p): Test regno, not inner_regno,
+	against FIRST_PSEUDO_REGISTER.
+
 2004-02-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Move target, host overrides after per-language
