@@ -514,15 +514,6 @@ enum reg_class {
 
 #define STARTING_FRAME_OFFSET 0
 
-/* We do not know if the caller has a frame pointer, so we cannot go
-   beyond level 0.  */
-
-#define RETURN_ADDR_RTX(COUNT, FRAME)					   \
-  ((COUNT) == 0								   \
-   ? gen_rtx_MEM (Pmode,						   \
-		  plus_constant (arg_pointer_rtx, -GET_MODE_SIZE (Pmode))) \
-   : 0)
-
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
 

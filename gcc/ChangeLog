@@ -1,3 +1,7 @@
+Wed Oct 24 13:26:12 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* h8300.h (RETURN_ADDR_RTX): Remove old, incorrect definition.
+
 2001-10-24  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* ssa-ccp.c (ssa_ccp_substitute_constants): Don't do anything if
