@@ -191,6 +191,7 @@ static rtx loop_iteration_var;
 static rtx loop_initial_value;
 static rtx loop_increment;
 static rtx loop_final_value;
+static enum rtx_code loop_comparison_code;
 
 /* Forward declarations.  */
 
@@ -878,18 +879,23 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  for (i = 0; i < unroll_number; i++)
 	    labels[i] = gen_label_rtx ();
 
-	  /* Check for the case where the initial value is greater than or equal
-	     to the final value.  In that case, we want to execute exactly
-	     one loop iteration.  The code below will fail for this case.  */
+	  /* Check for the case where the initial value is greater than or
+	     equal to the final value.  In that case, we want to execute
+	     exactly one loop iteration.  The code below will fail for this
+	     case.  This check does not apply if the loop has a NE
+	     comparison at the end.  */
 
-	  emit_cmp_insn (initial_value, final_value, neg_inc ? LE : GE,
-			 NULL_RTX, mode, 0, 0);
-	  if (neg_inc)
-	    emit_jump_insn (gen_ble (labels[1]));
-	  else
-	    emit_jump_insn (gen_bge (labels[1]));
-	  JUMP_LABEL (get_last_insn ()) = labels[1];
-	  LABEL_NUSES (labels[1])++;
+	  if (loop_comparison_code != NE)
+	    {
+	      emit_cmp_insn (initial_value, final_value, neg_inc ? LE : GE,
+			     NULL_RTX, mode, 0, 0);
+	      if (neg_inc)
+		emit_jump_insn (gen_ble (labels[1]));
+	      else
+		emit_jump_insn (gen_bge (labels[1]));
+	      JUMP_LABEL (get_last_insn ()) = labels[1];
+	      LABEL_NUSES (labels[1])++;
+	    }
 
 	  /* Assuming the unroll_number is 4, and the increment is 2, then
 	     for a negative increment:	for a positive increment:
@@ -3355,6 +3361,7 @@ loop_iterations (loop_start, loop_end)
   loop_initial_value = initial_value;
   loop_increment = increment;
   loop_final_value = final_value;
+  loop_comparison_code = comparison_code;
 
   if (increment == 0)
     {
