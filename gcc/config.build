@@ -115,14 +115,6 @@ case $build in
     # HP 9000 series 300
     build_install_headers_dir=install-headers-cpio
     ;;
-  mips-sgi-irix5*) 
-    # SGI System V r4, IRIX 5
-    build_xm_file=mips/xm-iris5.h
-    ;;
-  mips-sgi-irix6*o32) 
-    # SGI System V r4, IRIX 6, O32 ABI
-    build_xm_file=mips/xm-iris5.h
-    ;;
   *-*-sysv*)
     # All other System V variants.
     build_install_headers_dir=install-headers-cpio

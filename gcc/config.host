@@ -145,12 +145,6 @@ case ${host} in
   i860-*-sysv4*)
     host_xmake_file=i860/x-sysv4
     ;;
-  mips-sgi-irix6*o32) # SGI System V.4., IRIX 6, O32 ABI
-    host_xm_file=mips/xm-iris5.h
-    ;;
-  mips-sgi-irix5*) # SGI System V.4., IRIX 5
-    host_xm_file=mips/xm-iris5.h
-    ;;
   powerpc-*-darwin*)
     # powerpc-darwin host support.
     out_host_hook_obj=host-darwin.o

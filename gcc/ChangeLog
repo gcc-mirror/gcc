@@ -1,3 +1,14 @@
+2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/xm-iris5.h: Remove, unnecessary.
+	* config.build (mips-sgi-irix5*): Remove.
+	(mips-sgi-irix6*o32): Likewise.
+	* config.gcc (mips-sgi-irix6*o32): Remove xm_file.
+	(mips-sgi-irix5cross64): Likewise.
+	(mips-sgi-irix5*): Likewise.
+	* config.host (mips-sgi-irix5*): Remove.
+	(mips-sgi-irix6*o32): Likewise.
+
 2003-10-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* dbxout.c (dbxout_fptype_value): Delete.
