@@ -74,7 +74,10 @@ namespace __gnu_test
 #endif
 
     // Virtual memory.
-#if _GLIBCXX_HAVE_MEMLIMIT_AS
+    // On HP-UX 11.23, a trivial C++ program that sets RLIMIT_AS to
+    // anything less than 128MB cannot "malloc" even 1K of memory.
+    // Therefore, we skip RLIMIT_AS on HP-UX.
+#if _GLIBCXX_HAVE_MEMLIMIT_AS && !defined(__hpux__)
     getrlimit(RLIMIT_AS, &r);
     r.rlim_cur = limit;
     setrlimit(RLIMIT_AS, &r);
