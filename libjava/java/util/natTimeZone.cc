@@ -19,6 +19,8 @@ details.  */
 #include <java/lang/Character.h>
 #include <java/lang/Integer.h>
 
+#include <stdio.h>
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
