@@ -165,10 +165,23 @@ namespace __gnu_debug
     { }
 
     explicit
-    _Safe_sequence_base(const _Safe_sequence_base&);
+    _Safe_sequence_base(const _Safe_sequence_base& __seq)
+    : _M_iterators(__seq._M_iterators),
+      _M_const_iterators(__seq._M_const_iterators),
+      _M_version(__seq._M_version)
+    { }
 
     _Safe_sequence_base&
-    operator=(const _Safe_sequence_base&);
+    operator=(const _Safe_sequence_base& __seq)
+    {
+      if (&__seq != this)
+	{
+	  _M_iterators = __seq._M_iterators;
+	  _M_const_iterators = __seq._M_const_iterators;
+	  _M_version = __seq._M_version;
+	}
+      return *this;
+    }
 
     /** Notify all iterators that reference this sequence that the
 	sequence is being destroyed. */

@@ -1,3 +1,11 @@
+2004-06-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16020
+	* include/debug/safe_base.h
+	(_Safe_sequence_base::_Safe_sequence_base(const _Safe_sequence_base&),
+	_Safe_sequence_base::operator=): Provide definitions.
+	* testsuite/23_containers/bitset/cons/16020.cc: New.
+
 2004-06-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pool_allocator.h: Qualify __throw_bad_alloc.
