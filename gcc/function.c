@@ -3592,6 +3592,12 @@ instantiate_virtual_regs (fndecl, insns)
 	if (GET_CODE (insn) == CALL_INSN)
 	  instantiate_virtual_regs_1 (&CALL_INSN_FUNCTION_USAGE (insn),
 				      NULL_RTX, 0);
+
+	/* Past this point all ASM statements should match.  Verify that
+	   to avoid failures later in the compilation process.  */
+        if (asm_noperands (PATTERN (insn)) >= 0
+	    && ! check_asm_operands (PATTERN (insn)))
+          instantiate_virtual_regs_lossage (insn);
       }
 
   /* Instantiate the stack slots for the parm registers, for later use in
