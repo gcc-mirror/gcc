@@ -9,6 +9,10 @@
 
 /* Defines to be able to build libgcc.a with GCC.  */
 
+/* It might seem that these are not important, since gcc 2 will never
+   call libgcc for these functions.  But programs might be linked with
+   code compiled by gcc 1, and then these will be used.  */
+
 #define perform_udivsi3(a,b)						\
 {									\
   register int dx asm("dx");						\
