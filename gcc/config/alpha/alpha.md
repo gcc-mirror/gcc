@@ -5095,6 +5095,16 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   ""
   "call_pal 0x86"
   [(set_attr "type" "ibr")])
+
+;; BUGCHK is documented common to OSF/1 and VMS PALcode.
+;; NT does not document anything at 0x81 -- presumably it would generate
+;; the equivalent of SIGILL, but this isn't that important.
+;; ??? Presuming unicosmk uses either OSF/1 or VMS PALcode.
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  "!TARGET_ABI_WINDOWS_NT"
+  "call_pal 0x81"
+  [(set_attr "type" "ibr")])
 
 ;; Finally, we have the basic data motion insns.  The byte and word insns
 ;; are done via define_expand.  Start with the floating-point insns, since
