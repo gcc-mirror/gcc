@@ -685,8 +685,11 @@ check_format_info (info, params)
 		     It will work on most machines, because size_t and int
 		     have the same mode.  But might as well warn anyway,
 		     since it will fail on other machines.  */
-		  if (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
-		      != integer_type_node)
+		  if ((TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+		       != integer_type_node)
+		      &&
+		      (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+		       != unsigned_type_node))
 		    {
 		      sprintf (message,
 			       "field width is not type int (arg %d)",
@@ -934,6 +937,14 @@ check_format_info (info, params)
 	      else
 		that = "different type";
 	    }
+
+	  /* Make the warning better in case of mismatch of int vs long.  */
+	  if (TREE_CODE (cur_type) == INTEGER_TYPE
+	      && TREE_CODE (wanted_type) == INTEGER_TYPE
+	      && TYPE_PRECISION (cur_type) == TYPE_PRECISION (wanted_type)
+	      && TYPE_NAME (cur_type) != 0
+	      && TREE_CODE (TYPE_NAME (cur_type)) == TYPE_DECL)
+	    that = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (cur_type)));
 
 	  if (strcmp (this, that) != 0)
 	    {
