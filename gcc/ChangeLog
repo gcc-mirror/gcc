@@ -1,3 +1,15 @@
+2003-02-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* emit-rtl.c (init_emit): Use ggc_alloc for regno_reg_rtx.
+	* function.h (struct emit_status): Length of regno_pointer_align
+	and x_regno_reg_rtx as seen by gengtype is only x_reg_rtx_no,
+	not regno_pointer_align_length (i.e. length actually used, not
+	length as allocated)
+
+	* config/i386/i386.c (struct stack_local_entry): New.
+	(struct machine_function): Replace huge array with alist.
+	(assign_386_stack_local): Change to match.
+
 2003-02-13  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
 	* inclhack.def (hpux_long_double): Tighten select and add bypass
@@ -47,7 +59,7 @@
 	* config/h8300/h8300.md (a peephole2): New.
 
 2003-02-13  Robert Lipe <robertlipe@usa.net>
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): Update three SCO-related URLs.
 
@@ -80,12 +92,12 @@
 
 2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.h: Add casts to the arguments of the following
-        macros: evfsabs, evfsnabs, evfsneg, evfsadd, evfssub, evfsmul,
-        evfsdiv, evfscfui, evfscfsi evfscfuf evfscfsf, evfsctui, evfsctsi,
-        evfsctuf, evfsctsf, evfsctuiz, evfsctsiz, __ev_get_upper*,
-        __ev_get_lower*, __ev_get_u32, __ev_get_s32, __ev_get_fs,
-        __ev_get_u16, __ev_get_s16.
+	* config/rs6000/spe.h: Add casts to the arguments of the following
+	macros: evfsabs, evfsnabs, evfsneg, evfsadd, evfssub, evfsmul,
+	evfsdiv, evfscfui, evfscfsi evfscfuf evfscfsf, evfsctui, evfsctsi,
+	evfsctuf, evfsctsf, evfsctuiz, evfsctsiz, __ev_get_upper*,
+	__ev_get_lower*, __ev_get_u32, __ev_get_s32, __ev_get_fs,
+	__ev_get_u16, __ev_get_s16.
 
 2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -125,11 +137,11 @@ Wed Feb 12 22:47:18 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.h: Fix misc formatting.
-        (__ev_create_ufix32_fs): Cast ev argument.
-        (__ev_create_sfix32_fs): Same.
-        (__ev_get_sfix32_fs_internal): Cast arguments to builtins.
-        (__ev_get_ufix32_fs_internal): Same.
+	* config/rs6000/spe.h: Fix misc formatting.
+	(__ev_create_ufix32_fs): Cast ev argument.
+	(__ev_create_sfix32_fs): Same.
+	(__ev_get_sfix32_fs_internal): Cast arguments to builtins.
+	(__ev_get_ufix32_fs_internal): Same.
 
 2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
 
