@@ -1,3 +1,8 @@
+Wed May  6 17:07:47 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* final.c (output_operand_lossage): Call fatal with the operand
+	lossage message instead of calling abort.
+
 Wed May  6 15:37:27 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c: Convert to using ctype macros defined in system.h.
