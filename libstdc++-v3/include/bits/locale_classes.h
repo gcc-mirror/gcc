@@ -289,13 +289,8 @@ namespace std
     // counted on to be zero-initialized.
     id() { }
 
-    inline size_t
-    _M_id() const
-    {
-      if (!_M_index)
-	_M_index = 1 + __exchange_and_add(&_S_highwater, 1);
-      return _M_index - 1;
-    }
+    size_t
+    _M_id() const;
   };
 
 
