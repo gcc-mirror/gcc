@@ -2253,3 +2253,7 @@ do {							\
 #define HAS_INIT_SECTION
 #define LD_INIT_SWITCH "-init"
 #define LD_FINI_SWITCH "-fini"
+
+/* Define gethostid in unistd.h as returning an int, not a long.  */
+#define SYS_PROTO_OVERRIDES \
+  "extern int gethostid (void);",
