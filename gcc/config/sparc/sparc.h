@@ -1381,7 +1381,8 @@ extern char leaf_reg_remap[];
    `K' is used for constants which can be loaded with a single sethi insn.
    `L' is used for the range of constants supported by the movcc insns.
    `M' is used for the range of constants supported by the movrcc insns.
-   `N' is like K, but for constants wider than 32 bits.  */
+   `N' is like K, but for constants wider than 32 bits.
+   `O' is used for the range which is just 4096.  */
 
 #define SPARC_SIMM10_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x200 < 0x400)
 #define SPARC_SIMM11_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x400 < 0x800)
@@ -1405,6 +1406,7 @@ extern char leaf_reg_remap[];
    : (C) == 'L' ? SPARC_SIMM11_P (VALUE)		\
    : (C) == 'M' ? SPARC_SIMM10_P (VALUE)		\
    : (C) == 'N' ? SPARC_SETHI_P (VALUE)			\
+   : (C) == 'O' ? (VALUE) == 4096			\
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -1413,6 +1415,7 @@ extern char leaf_reg_remap[];
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
   ((C) == 'G' ? fp_zero_operand (VALUE, GET_MODE (VALUE))	\
    : (C) == 'H' ? arith_double_operand (VALUE, DImode)		\
+   : (C) == 'O' ? arith_double_4096_operand (VALUE, DImode)	\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
