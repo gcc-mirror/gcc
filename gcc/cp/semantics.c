@@ -2524,6 +2524,11 @@ finish_id_expression (tree id_expression,
 	  if (integral_constant_expression_p)
 	    *non_integral_constant_expression_p = true;
 	  *idk = CP_ID_KIND_UNQUALIFIED_DEPENDENT;
+	  /* If we found a variable, then name lookup during the
+	     instantiation will always resolve to the same VAR_DECL
+	     (or an instantiation thereof).  */
+	  if (TREE_CODE (decl) == VAR_DECL)
+	    return decl;
 	  return id_expression;
 	}
 
