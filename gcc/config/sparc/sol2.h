@@ -85,16 +85,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CTORS_SECTION_ASM_OP	"\t.section\t\".ctors\",#alloc,#execinstr\n"
 #define DTORS_SECTION_ASM_OP	"\t.section\t\".dtors\",#alloc,#execinstr\n"
 
-/* Must use data section for relocatable constants when pic.  */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX)		\
-{						\
-  if (flag_pic && symbolic_operand (RTX))	\
-    data_section ();				\
-  else						\
-    const_section ();				\
-}
-
 /* The Solaris 2 assembler uses .skip, not .zero, so put this back. */
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
