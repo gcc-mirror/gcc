@@ -74,8 +74,8 @@ extern int current_function_outgoing_args_size;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES							\
-{ { "char-instructions", 1},						\
-  { "no-char-instructions", -1},					\
+{ { "char-instructions", 1, "Generate char instructions"},		\
+  { "no-char-instructions", -1, "Do not generate char instructions"},	\
   { "", TARGET_DEFAULT} }
 
 /* To use IBM supplied macro function prologue and epilogue, define the
