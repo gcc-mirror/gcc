@@ -16,12 +16,13 @@ frags=
 
 case "${target}" in
   *-hpux*)       frags=hpux.mt ;;
-  *-linux*)      
+  *-linux-gnulibc1)
 	echo "WARNING:  The I/O implementation in FSF libg++ 2.8.x is not"
 	echo "  compatible with Linux libc through 5.2.x."
 	echo "  See libg++/README for more information."
 	echo "  YOU ARE ON YOUR OWN!"
-		 frags=linux.mt ;;
+		 frags=linuxlibc1.mt ;;
+  *-linux-gnu)   frags=linux.mt ;;
   *-sco3.2v[45]*)   frags=sco4.mt ;;
   *-isc*)        frags=isc.mt ;;
   *-netware*)    frags=netware.mt ;;
@@ -42,6 +43,28 @@ if [ "${shared}" = "yes" ]; then
     *)	         frags="${frags} ../../config/mh-${target_cpu}pic" ;;
   esac
 fi
+
+# Make a link for the correct stdio-lock.h file.
+case "${target}" in
+  *-linux-gnu)
+    # We have a correct file in glibc but the libioP.h file is written
+    # with glibc 2.1 in mind which has the internals headers in special
+    # directory while glibc 2.0 has them in /usr/include.  Create a wrapper
+    # if necessary.
+    (echo "#include <bits/libc-lock.h>" | ${CC-cc} -E -) >/dev/null 2>&1 ||
+      {
+	rm -fr bits
+        mkdir bits
+        echo "#include <libc-lock.h>" > bits/libc-lock.h
+        echo "#include <stdio-lock.h>" > bits/stdio-lock.h
+      }
+    ;;
+  *)
+    rm -fr bits
+    mkdir bits
+    ln -s ${srcdir}/include/empty.h bits/stdio-lock.h
+    ;;
+esac
 
 for frag in ${frags}; do
   frag=${srcdir}/config/$frag

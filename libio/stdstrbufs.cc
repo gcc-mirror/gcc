@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (C) 1994 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
@@ -54,8 +54,15 @@ extern char filebuf_vtable[];
 #define STD_VTABLE (const struct _IO_jump_t *)filebuf_vtable
 #endif
 
+#ifdef _IO_MTSAFE_IO
+#define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
+  static _IO_lock_t _IO_stdfile_##FD##_lock = _IO_lock_initializer; \
+  struct _IO_FILE_plus NAME \
+    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD), &_IO_file_jumps}
+#else
 #define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
   struct _IO_FILE_plus NAME = {FILEBUF_LITERAL(CHAIN, FLAGS, FD), STD_VTABLE}
+#endif
 
 DEF_STDFILE(_IO_stdin_, 0, 0, _IO_NO_WRITES);
 DEF_STDFILE(_IO_stdout_, 1, &_IO_stdin_.file, _IO_NO_READS);
@@ -95,17 +102,21 @@ extern struct _IO_jump_t stdiobuf_vtable;
 #endif /* !__GNUC__ */
 #endif /* !stdiobuf_vtable */
 
-#if  _IO_UNIFIED_JUMPTABLES
-#define JUMP_PTR /* Nothing */
+#ifdef _IO_MTSAFE_IO
+#define DEF_STDIOFILE(NAME, FD, FILE, FLAGS, CHAIN) \
+  static _IO_lock_t _IO_stdfile_##FD##_lock = _IO_lock_initializer; \
+  struct _IO_fake_stdiobuf NAME = \
+      {{{ _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+_IO_UNBUFFERED+FLAGS, \
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, CHAIN, FD, \
+	 0, 0, 0, 0, { 0 }, _IO_stdfile_##FD##_lock},\
+         &stdiobuf_vtable}, FILE}
 #else
-#define JUMP_PTR &_IO_streambuf_jumps,
-#endif
-
 #define DEF_STDIOFILE(NAME, FD, FILE, FLAGS, CHAIN) \
   struct _IO_fake_stdiobuf NAME = \
       {{{ _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+_IO_UNBUFFERED+FLAGS, \
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, CHAIN, JUMP_PTR FD},\
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, CHAIN, FD}, \
          &stdiobuf_vtable}, FILE}
+#endif
 
 DEF_STDIOFILE(_IO_stdin_buf, 0, stdin, _IO_NO_WRITES, &_IO_stderr_.file);
 DEF_STDIOFILE(_IO_stdout_buf, 1, stdout, _IO_NO_READS, &_IO_stdin_buf.s.file);

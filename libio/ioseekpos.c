@@ -31,12 +31,18 @@ _IO_seekpos (fp, pos, mode)
      _IO_pos_t pos;
      int mode;
 {
+  _IO_pos_t retval;
+
   /* If we have a backup buffer, get rid of it, since the __seekoff
      callback may not know to do the right thing about it.
      This may be over-kill, but it'll do for now. TODO */
+  _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile, fp);
+  _IO_flockfile (fp);
 
   if (_IO_have_backup (fp))
     _IO_free_backup_area (fp);
+  retval = _IO_SEEKPOS (fp, pos, mode);
 
-  return _IO_SEEKPOS (fp, pos, mode);
+  _IO_cleanup_region_end (1);
+  return retval;
 }

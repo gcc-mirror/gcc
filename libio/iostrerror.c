@@ -5,8 +5,8 @@
 extern char *strerror __P ((int));
 
 char *
-DEFUN(_IO_strerror, (errnum),
-      int errnum)
+_IO_strerror (errnum)
+     int errnum;
 {
   return strerror(errnum);
 }

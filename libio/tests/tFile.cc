@@ -43,6 +43,8 @@ the executable file might be covered by the GNU General Public License. */
 #include <string.h>
 #include <assert.h>
 
+const char *tempfile;
+
 class record
 {
 public:
@@ -160,9 +162,9 @@ void t4()
 
   cout << "\nMaking File tf ... "; 
 #ifdef _OLD_STREAMS
-  File tf("tempfile", io_readwrite, a_create);
+  File tf(tempfile, io_readwrite, a_create);
 #else
-  fstream tf("tempfile", ios::in|ios::out|ios::trunc);
+  fstream tf(tempfile, ios::in|ios::out|ios::trunc);
 #endif
   assert(tf.good());
   assert(tf.is_open());
@@ -190,7 +192,7 @@ void t4()
   tf.open(tf.name(), io_appendonly, a_use);
 #else
   tf.close();
-  tf.open("tempfile", ios::app);
+  tf.open(tempfile, ios::app);
 #endif
   assert(tf.good());
   assert(tf.is_open());
@@ -204,7 +206,7 @@ void t4()
   tf << s;
   assert(tf.good());
   tf.close();
-  tf.open("tempfile", ios::in);
+  tf.open(tempfile, ios::in);
 #endif
   tf.raw();
   assert(tf.good());
@@ -512,6 +514,8 @@ t12 ()
 
 main(int argc, char **argv)
 {
+ char temp [1024] = "tempfile";
+
  if (argc > 1 && strncmp(argv[1], "-b", 2) == 0) {
      streambuf *sb = cout.rdbuf();
      streambuf *ret;
@@ -522,7 +526,11 @@ main(int argc, char **argv)
 	 ret = sb->setbuf(new char[buffer_size], buffer_size);
      if (ret != sb)
 	 cerr << "Warning: cout.rdbuf()->setbuf failed!\n";
+
+     strncpy (&temp [8], &argv[1][2], 1000);
+     temp [1008] = '\0';
   }
+  tempfile = temp;
   t1();
   t2();
   t3();

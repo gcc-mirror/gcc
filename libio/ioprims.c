@@ -37,36 +37,43 @@ the executable file might be covered by the GNU General Public License. */
 #endif
 
 _IO_ssize_t
-DEFUN(_IO_read, (fildes, buf, nbyte),
-      int fildes AND void *buf AND _IO_size_t nbyte)
+_IO_read (fildes, buf, nbyte)
+     int fildes;
+     void *buf;
+     _IO_size_t nbyte;
 {
   return read (fildes, buf, nbyte);
 }
 
 _IO_ssize_t
-DEFUN(_IO_write, (fildes, buf, nbyte),
-      int fildes AND const void *buf AND _IO_size_t nbyte)
+_IO_write (fildes, buf, nbyte)
+     int fildes;
+     const void *buf;
+     _IO_size_t nbyte;
 {
   return write (fildes, buf, nbyte);
 }
 
 _IO_off_t
-DEFUN(_IO_lseek, (fildes, offset, whence),
-      int fildes AND _IO_off_t offset AND int whence)
+_IO_lseek (fildes, offset, whence)
+     int fildes;
+     _IO_off_t offset;
+     int whence;
 {
   return lseek (fildes, offset, whence);
 }
 
 int
-DEFUN(_IO_close, (fildes),
-      int fildes)
+_IO_close (fildes)
+     int fildes;
 {
   return close (fildes);
 }
 
 int
-DEFUN(_IO_fstat, (fildes, buf),
-      int fildes AND struct stat *buf)
+_IO_fstat (fildes, buf)
+     int fildes;
+     struct stat *buf;
 {
   return fstat (fildes, buf);
 }

@@ -29,26 +29,38 @@ the executable file might be covered by the GNU General Public License. */
 ostream& ostream::form(const char *format ...)
 {
     if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	va_list ap;
 	va_start(ap, format);
 	_IO_vfprintf(rdbuf(), format, ap);
 	va_end(ap);
+	osfx();
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
 
 ostream& ostream::vform(const char *format, _IO_va_list args)
 {
-    if (opfx())
+    if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	_IO_vfprintf(rdbuf(), format, args);
+	osfx();
+	_IO_cleanup_region_end (0);
+    }
     return *this;
 }
 
 ostream& ostream::operator<<(const void *p)
 {
     if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	form("%p", p);
 	osfx();
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }

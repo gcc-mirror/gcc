@@ -49,8 +49,10 @@ class ostream : virtual public ios
     ostream() { }
     ostream(streambuf* sb, ostream* tied=NULL);
     int opfx() {
-	if (!good()) return 0; else { if (_tie) _tie->flush(); return 1;} }
-    void osfx() { if (flags() & (ios::unitbuf|ios::stdio))
+	if (!good()) return 0;
+	else { if (_tie) _tie->flush(); _IO_flockfile(_strbuf); return 1;} }
+    void osfx() { _IO_funlockfile(_strbuf);
+		  if (flags() & (ios::unitbuf|ios::stdio))
 		      do_osfx(); }
     ostream& flush();
     ostream& put(char c) { _strbuf->sputc(c); return *this; }
@@ -144,6 +146,7 @@ protected:
     int ipfx(int need = 0) {
 	if (!good()) { set(ios::failbit); return 0; }
 	else {
+	  _IO_flockfile(_strbuf);
 	  if (_tie && (need == 0 || rdbuf()->in_avail() < need)) _tie->flush();
 	  if (!need && (flags() & ios::skipws)) return _skip_ws();
 	  else return 1;
@@ -152,6 +155,7 @@ protected:
     int ipfx0() { // Optimized version of ipfx(0).
 	if (!good()) { set(ios::failbit); return 0; }
 	else {
+	  _IO_flockfile(_strbuf);
 	  if (_tie) _tie->flush();
 	  if (flags() & ios::skipws) return _skip_ws();
 	  else return 1;
@@ -160,11 +164,12 @@ protected:
     int ipfx1() { // Optimized version of ipfx(1).
 	if (!good()) { set(ios::failbit); return 0; }
 	else {
+	  _IO_flockfile(_strbuf);
 	  if (_tie && rdbuf()->in_avail() == 0) _tie->flush();
 	  return 1;
 	}
     }
-    void isfx() { }
+    void isfx() { _IO_funlockfile(_strbuf); }
     int get() { if (!ipfx1()) return EOF;
 		else { int ch = _strbuf->sbumpc();
 		       if (ch == EOF) set(ios::eofbit);
@@ -248,6 +253,11 @@ extern _IO_ostream_withassign clog
 __asm__ ("__IO_clog")
 #endif
 ;
+
+extern istream& lock(istream& ins);
+extern istream& unlock(istream& ins);
+extern ostream& lock(ostream& outs);
+extern ostream& unlock(ostream& outs);
 
 struct Iostream_init { } ;  // Compatibility hack for AT&T library.
 

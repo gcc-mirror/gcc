@@ -212,6 +212,7 @@ case "${target}" in
   v810*)		target_makefile_frag=config/mt-v810 ;;
   i[3456]86-*-netware*) target_makefile_frag=config/mt-netware ;;
   powerpc-*-netware*)   target_makefile_frag=config/mt-netware ;;
+  *-*-linux-gnu)        target_makefile_frag=config/mt-linux ;;
 esac
 
 skipdirs=

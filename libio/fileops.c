@@ -40,7 +40,12 @@ extern int errno;
 
 
 #ifdef _LIBC
-# define open(Name, Flags, Prot) __open ((Name), (Flags), (Prot))
+# define open(Name, Flags, Prot) __open (Name, Flags, Prot)
+# define close(FD) __close (FD)
+# define fstat(FD, Statbuf) __fstat (FD, Statbuf)
+# define lseek(FD, Offset, Whence) __lseek (FD, Offset, Whence)
+# define read(FD, Buf, NBytes) __read (FD, Buf, NBytes)
+# define write(FD, Buf, NBytes) __write (FD, Buf, NBytes)
 #endif
 
 /* An fstream can be in at most one of put mode, get mode, or putback mode.
@@ -384,6 +389,10 @@ _IO_file_sync (fp)
      _IO_FILE *fp;
 {
   _IO_size_t delta;
+  int retval = 0;
+
+  _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile, fp);
+  _IO_flockfile (fp);
   /*    char* ptr = cur_ptr(); */
   if (fp->_IO_write_ptr > fp->_IO_write_base)
     if (_IO_do_flush(fp)) return EOF;
@@ -402,12 +411,14 @@ _IO_file_sync (fp)
 	; /* Ignore error from unseekable devices. */
 #endif
       else
-	return EOF;
+	retval = EOF;
     }
-  fp->_offset = _IO_pos_BAD;
+  if (retval != EOF)
+    fp->_offset = _IO_pos_BAD;
   /* FIXME: Cleanup - can this be shared? */
   /*    setg(base(), ptr, ptr); */
-  return 0;
+  _IO_cleanup_region_end (1);
+  return retval;
 }
 
 _IO_pos_t
@@ -575,19 +586,7 @@ _IO_file_read (fp, buf, size)
      void *buf;
      _IO_ssize_t size;
 {
-  for (;;)
-    {
-      _IO_ssize_t count = _IO_read (fp->_fileno, buf, size);
-#if 0 && defined EINTR
-      /* We must not do this optimization since POSIX.1 explicitly
-	 requests that the stream operations must return with the
-	 error EINTR if this happens.  There must be the possibility
-	 that stream operations time out.  --drepper  */
-      if (count == -1 && errno == EINTR)
-	continue;
-#endif
-      return count;
-    }
+  return read (fp->_fileno, buf, size);
 }
 
 _IO_pos_t
@@ -596,7 +595,7 @@ _IO_file_seek (fp, offset, dir)
      _IO_off_t offset;
      int dir;
 {
-  return _IO_lseek (fp->_fileno, offset, dir);
+  return lseek (fp->_fileno, offset, dir);
 }
 
 int
@@ -604,14 +603,14 @@ _IO_file_stat (fp, st)
      _IO_FILE *fp;
      void *st;
 {
-  return _IO_fstat (fp->_fileno, (struct stat *) st);
+  return fstat (fp->_fileno, (struct stat *) st);
 }
 
 int
 _IO_file_close (fp)
      _IO_FILE *fp;
 {
-  return _IO_close (fp->_fileno);
+  return close (fp->_fileno);
 }
 
 _IO_ssize_t
@@ -623,22 +622,11 @@ _IO_file_write (f, data, n)
   _IO_ssize_t to_do = n;
   while (to_do > 0)
     {
-      _IO_ssize_t count = _IO_write (f->_fileno, data, to_do);
+      _IO_ssize_t count = write (f->_fileno, data, to_do);
       if (count == EOF)
 	{
-#if 0 && defined EINTR
-	  /* We must not do this optimization since POSIX.1 explicitly
-	     requests that the stream operations must return with the
-	     error EINTR if this happens.  There must be the
-	     possibility that stream operations time out.  --drepper  */
-	  if (errno == EINTR)
-	    continue;
-	  else
-#endif
-	    {
-	      f->_flags |= _IO_ERR_SEEN;
-	      break;
-            }
+	  f->_flags |= _IO_ERR_SEEN;
+	  break;
         }
       to_do -= count;
       data = (void *) ((char *) data + count);

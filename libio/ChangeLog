@@ -1,3 +1,65 @@
+1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
+
+	* config/linux.mt: Rewrite for use with glibc 2.
+	* config/linuxlibc1.mt: Old content of linux.mt, fir libc4 and
+	libc5.
+
+	* config.shared (COMPILE.c): Allow new flags in MT_CFLAGS be
+	passed.
+	(COMPILE.cc): Likewise.
+
+	* configure.in (*-linux*): Remove goal.  We now have...
+	(*-linux-gnulibc1): For libc4 and libc5.  Emit warning.
+	(*-linux-gnu)): For glibc 2.
+	Create links to find headers for multi-threading if necessary.
+
+	* fileops.c: Make thread-safe by using _IO_cleanup_region_start
+	etc to handle cancelation.  Acquire locks in functions which are
+	called directly.
+	(_IO_file_read, _IO_file_write): Remove dead code.
+
+	* include/empty.h: Define stub macros for locking.
+
+	* iolibio.h: Add prototypes for obstack printing functions.
+
+	* ioseekoff.c (_IO_seekoff): Lock stream before working.
+	* ioseekpos.c (_IO_seekpos): Likewise.
+
+	* iostream.cc: Add support for long double I/O.
+	Use __printf_fp from glibc is available.
+	Use _IO_cleanup_region_start to handle cancelation correctly.
+	* iostream.h (class ostream): Change opfx and osfx to lock/unlock
+	stream
+	(class istream): Likewise for ipfx, ipfx0, ipfx1, and isfx.
+	Declare new function lock and unlock for ostream and istream.
+	* osform.cc: Use _IO_cleanup_region_start to handle cancelation
+	correctly.
+
+	* libio.h: Update from glibc version.  Pretty printing.
+	* libioP.h: Likewise.
+
+	* outfloat.c: Only compile if _IO_USE_DTOA is defined.
+
+	* stdio/feof.c: Make thread safe.
+	* stdio/ferror.c: Likewise.
+	* stdio/getc.c : Likewise.
+	* stdio/putc.c : Likewise.
+	* stdio/stdio.h: Declare function of thread-safe API.
+
+	* stdio/obprintf.c: New file.
+	* stdio/vasprintf.c: New file.
+
+	* stdio-lock.h: Removed.
+
+	* stdstrbufs.c: Add definitions for thread-safe streams.
+
+	* streambuf.cc: Initialize lock.
+
+	* strops.c (_IO_str_count): Undo last change.
+
+	* tests/tFile.cc: Support parallel builds by avoiding fixed
+	name for test file.
+
 Thu Sep 11 18:43:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (iostream.list): Remove STDIO_WRAP_OBJECTS.

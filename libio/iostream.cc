@@ -1,26 +1,27 @@
 /* This is part of libio/iostream, providing -*- C++ -*- input/output.
-Copyright (C) 1993 Free Software Foundation
+   Copyright (C) 1993, 1997 Free Software Foundation, Inc.
 
-This file is part of the GNU IO Library.  This library is free
-software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option)
-any later version.
+   This file is part of the GNU IO Library.  This library is free
+   software; you can redistribute it and/or modify it under the
+   terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this library; see the file COPYING.  If not, write to the Free
-Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+   You should have received a copy of the GNU General Public License
+   along with this library; see the file COPYING.  If not, write to the Free
+   Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307,
+   USA.
 
-As a special exception, if you link this library with files
-compiled with a GNU compiler to produce an executable, this does not cause
-the resulting executable to be covered by the GNU General Public License.
-This exception does not however invalidate any other reasons why
-the executable file might be covered by the GNU General Public License. */
+   As a special exception, if you link this library with files
+   compiled with a GNU compiler to produce an executable, this does not cause
+   the resulting executable to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License. */
 
 /* Written by Per Bothner (bothner@cygnus.com). */
 
@@ -34,7 +35,14 @@ the executable file might be covered by the GNU General Public License. */
 #include <ctype.h>
 #include <string.h>
 #include <limits.h>
+
+#if _G_HAVE_PRINTF_FP
+#include <printf.h>
+extern "C" int __printf_fp (_IO_FILE *, const struct printf_info *,
+			    const void *const *);
+#else
 #include "floatio.h"
+#endif
 
 #define	BUF		(MAXEXP+MAXFRACT+1)	/* + decimal point */
 
@@ -133,7 +141,7 @@ istream::sync ()
   if (sb == NULL)
     return EOF;
   if (sb->sync ()) // Later: pubsync
-    { 
+    {
       setstate (ios::badbit);
       return EOF;
     }
@@ -321,7 +329,11 @@ READ_INT(bool)
 istream& istream::operator>>(long double& x)
 {
     if (ipfx0())
+#if _G_HAVE_LONG_DOUBLE_IO
+	scan("%Lg", &x);
+#else
 	scan("%lg", &x);
+#endif
     return *this;
 }
 
@@ -362,10 +374,14 @@ istream& istream::operator>>(register streambuf* sbuf)
 ostream& ostream::operator<<(char c)
 {
     if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 #if 1
 	// This is what the cfront implementation does.
-	if (_strbuf->sputc(c) == EOF)
-	  goto failed;
+	if (_strbuf->sputc(c) == EOF) {
+	    set(ios::badbit);
+	    goto failed;
+	}
 #else
 	// This is what cfront documentation and current ANSI drafts say.
 	int w = width(0);
@@ -373,20 +389,22 @@ ostream& ostream::operator<<(char c)
 	register int padding = w > 0 ? w - 1 : 0;
 	register streambuf *sb = _strbuf;
 	if (!(flags() & ios::left) && padding) // Default adjustment.
-	    if (_IO_padn(sb, fill_char, padding) < padding)
+	    if (_IO_padn(sb, fill_char, padding) < padding) {
+	      set(ios::badbit);
 	      goto failed;
-	if (sb->sputc(c) == EOF)
+	    }
+	if (sb->sputc(c) == EOF) {
+	  set(ios::badbit);
 	  goto failed;
+        }
 	if (flags() & ios::left && padding) // Left adjustment.
 	    if (_IO_padn(sb, fill_char, padding) < padding)
-	      goto failed;
+	      set(ios::badbit);
 #endif
+       failed:
 	osfx();
+	_IO_cleanup_region_end (0);
     }
-    return *this;
-  failed:
-    set(ios::badbit);
-    osfx();
     return *this;
 }
 
@@ -493,19 +511,26 @@ static void write_int(ostream& stream, unsigned LONGEST val, int sign)
 ostream& ostream::operator<<(int n)
 {
     if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	int sign = 1;
 	unsigned int abs_n = (unsigned)n;
 	if (n < 0 && (flags() & (ios::oct|ios::hex)) == 0)
 	    abs_n = -((unsigned)n), sign = -1;
 	write_int(*this, abs_n, sign);
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
 
 ostream& ostream::operator<<(unsigned int n)
 {
-    if (opfx())
+    if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	write_int(*this, n, 0);
+	_IO_cleanup_region_end (0);
+    }
     return *this;
 }
 
@@ -513,19 +538,26 @@ ostream& ostream::operator<<(unsigned int n)
 ostream& ostream::operator<<(long n)
 {
     if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	int sign = 1;
 	unsigned long abs_n = (unsigned long)n;
 	if (n < 0 && (flags() & (ios::oct|ios::hex)) == 0)
 	    abs_n = -((unsigned long)n), sign = -1;
 	write_int(*this, abs_n, sign);
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
 
 ostream& ostream::operator<<(unsigned long n)
 {
-    if (opfx())
+    if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	write_int(*this, n, 0);
+	_IO_cleanup_region_end (0);
+    }
     return *this;
 }
 
@@ -533,11 +565,14 @@ ostream& ostream::operator<<(unsigned long n)
 ostream& ostream::operator<<(long long n)
 {
     if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	int sign = 1;
 	unsigned long long abs_n = (unsigned long long)n;
 	if (n < 0 && (flags() & (ios::oct|ios::hex)) == 0)
 	    abs_n = -((unsigned long long)n), sign = -1;
 	write_int(*this, abs_n, sign);
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
@@ -545,8 +580,12 @@ ostream& ostream::operator<<(long long n)
 
 ostream& ostream::operator<<(unsigned long long n)
 {
-    if (opfx())
+    if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	write_int(*this, n, 0);
+	_IO_cleanup_region_end (0);
+    }
     return *this;
 }
 #endif /*__GNUC__*/
@@ -554,6 +593,8 @@ ostream& ostream::operator<<(unsigned long long n)
 ostream& ostream::operator<<(double n)
 {
     if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	// Uses __cvt_double (renamed from static cvt), in Chris Torek's
 	// stdio implementation.  The setup code uses the same logic
 	// as in __vsbprintf.C (also based on Torek's code).
@@ -570,7 +611,26 @@ ostream& ostream::operator<<(double n)
 	  prec = 6; /* default */
 
 	// Do actual conversion.
-#ifdef _IO_USE_DTOA
+#ifdef _G_HAVE_PRINTF_FP
+	{
+	  struct printf_info info = { prec: prec,
+				      width: width(0),
+				      spec: format_char,
+				      is_long_double: 0,
+				      is_short: 0,
+				      is_long: 0,
+				      alt: flags() & ios::showpoint,
+				      space: 0,
+				      left: ios::left,
+				      showsign: flags() & ios::showpos,
+				      group: 0,
+				      pad: fill(),
+				      extra: 0};
+	  const void *ptr = &n;
+	  if (__printf_fp (rdbuf(), &info, &ptr) < 0)
+	    set(ios::badbit|ios::failbit);
+	}
+#elif defined  _IO_USE_DTOA
 	if (_IO_outfloat(n, rdbuf(), format_char, width(0),
 			 prec, flags(),
 			 flags() & ios::showpos ? '+' : 0,
@@ -618,7 +678,7 @@ ostream& ostream::operator<<(double n)
 	    sbuf->sputc(sign);
 	if (pad_kind == (ios::fmtflags)ios::internal)
 	    for (i = padding; --i >= 0; ) sbuf->sputc(fill_char);
-	
+
 	// Emit the actual concented field, followed by extra zeros.
 	_IO_sputn (sbuf, cp, size);
 	for (i = fpprec; --i >= 0; ) sbuf->sputc('0');
@@ -627,14 +687,66 @@ ostream& ostream::operator<<(double n)
 	    for (i = padding; --i >= 0; ) sbuf->sputc(fill_char);
 #endif
 	osfx();
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
+
+#if _G_HAVE_LONG_DOUBLE_IO
+ostream& ostream::operator<<(long double n)
+{
+  if (opfx())
+    {
+      _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				_strbuf);
+      int format_char;
+      if ((flags() & ios::floatfield) == ios::fixed)
+	format_char = 'f';
+      else if ((flags() & ios::floatfield) == ios::scientific)
+	format_char = flags() & ios::uppercase ? 'E' : 'e';
+      else
+	format_char = flags() & ios::uppercase ? 'G' : 'g';
+
+      int prec = precision();
+      if (prec <= 0 && !(flags() & ios::fixed))
+	prec = 6; /* default */
+
+#ifdef _G_HAVE_PRINTF_FP
+      // Do actual conversion.
+      struct printf_info info = { prec: prec,
+				  width: width(0),
+				  spec: format_char,
+				  is_long_double: 1,
+				  is_short: 0,
+				  is_long: 0,
+				  alt: flags() & ios::showpoint,
+				  space: 0,
+				  left: ios::left,
+				  showsign: flags() & ios::showpos,
+				  group: 0,
+				  pad: fill(),
+				  extra: 0};
+
+      const void *ptr = &n;
+
+      if (__printf_fp (rdbuf(), &info, &ptr) < 0)
+	set (ios::badbit|ios::failbit);
+#else
+# error "long double I/O using dtoa or cvt_double is not implemented"
+#endif
+      osfx();
+      _IO_cleanup_region_end (0);
+    }
+  return *this;
+}
+#endif
 
 ostream& ostream::operator<<(const char *s)
 {
   if (opfx())
     {
+      _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				_strbuf);
       if (s == NULL)
 	s = "(null)";
       int len = strlen(s);
@@ -645,18 +757,22 @@ ostream& ostream::operator<<(const char *s)
       register int padding = w > len ? w - len : 0;
       if (!(flags() & ios::left) && padding > 0) // Default adjustment.
 	if (_IO_padn(sbuf, fill_char, padding) != padding)
-	  goto failed;
+	  {
+	    set(ios::badbit);
+	    goto failed;
+	  }
       if (_IO_sputn (sbuf, s, len) != len)
-	goto failed;
+	{
+	  set(ios::badbit);
+	  goto failed;
+	}
       if (flags() & ios::left && padding > 0) // Left adjustment.
 	if (_IO_padn(sbuf, fill_char, padding) != padding)
-	  goto failed;
+	  set(ios::badbit);
       osfx();
+     failed:
+      _IO_cleanup_region_end (0);
     }
-  return *this;
- failed:
-  set(ios::badbit);
-  osfx();
   return *this;
 }
 
@@ -669,6 +785,8 @@ ostream& ostream::operator<<(register streambuf* sbuf)
 {
   if (opfx())
     {
+      _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				_strbuf);
       char buffer[_IO_BUFSIZ];
       register streambuf* outbuf = _strbuf;
       for (;;)
@@ -683,6 +801,7 @@ ostream& ostream::operator<<(register streambuf* sbuf)
 	    }
 	}
       osfx();
+      _IO_cleanup_region_end (0);
     }
   return *this;
 }
@@ -735,11 +854,15 @@ ostream& flush(ostream& outs)
 istream& ws(istream& ins)
 {
     if (ins.ipfx1()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  ins._strbuf);
 	int ch = skip_ws(ins._strbuf);
 	if (ch == EOF)
 	    ins.set(ios::eofbit);
 	else
 	    ins._strbuf->sputbackc(ch);
+	ins.isfx();
+	_IO_cleanup_region_end (0);
     }
     return ins;
 }
@@ -772,11 +895,37 @@ ostream& endl(ostream& outs)
     return flush(outs.put('\n'));
 }
 
+istream& lock(istream& ins)
+{
+  _IO_flockfile (ins._strbuf);
+  return ins;
+}
+istream& unlock(istream& ins)
+{
+  _IO_funlockfile (ins._strbuf);
+  return ins;
+}
+ostream& lock(ostream& outs)
+{
+  _IO_flockfile (outs._strbuf);
+  return outs;
+}
+ostream& unlock(ostream& outs)
+{
+  _IO_funlockfile (outs._strbuf);
+  return outs;
+}
+
+
 ostream& ostream::write(const char *s, streamsize n)
 {
     if (opfx()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	if (_IO_sputn(_strbuf, s, n) != n)
 	    set(ios::failbit);
+	osfx();
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }

@@ -81,7 +81,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.244 $"
+version="$Revision: 1.1.1.1 $"
 x11=default
 
 ### we might need to use some other shell than /bin/sh for running subshells
@@ -1045,78 +1045,77 @@ EOF
 
         if [ -f ${srcdir}/${subdir}/${Makefile_in} ] ; then
 
-            # Conditionalize for this site from "Makefile.in" (or whatever it's called) into Makefile.tem
-            rm -f ${subdir}/Makefile.tem
-              case "${site}" in
-              "") cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem ;;
-              *)
-                      site_makefile_frag=${srcdir}/config/ms-${site}
-
-                      if [ -f ${site_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${site_makefile_frag}" ${srcdir}/${subdir}/${Makefile_in} \
-                                      > ${subdir}/Makefile.tem
-                      else
-                              cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem
-                              site_makefile_frag=
-                      fi
-                      ;;
-            esac
-            # working copy now in ${subdir}/Makefile.tem
-
-            # Conditionalize the makefile for this host.
-            rm -f ${Makefile}
-            case "${host_makefile_frag}" in
-              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
-              *)
-                      if [ ! -f ${host_makefile_frag} ] ; then
-                              host_makefile_frag=${srcdir}/${host_makefile_frag}
-                      fi
-                      if [ -f ${host_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${host_makefile_frag}" ${subdir}/Makefile.tem > ${Makefile}
-                      else
-                              echo '***' Expected host makefile fragment \"${host_makefile_frag}\" 1>&2
-                              echo '***' is missing in ${PWD=`pwd`}. 1>&2
-                              mv ${subdir}/Makefile.tem ${Makefile}
-                      fi
-            esac
-            # working copy now in ${Makefile}
-
-            # Conditionalize the makefile for this target.
-            rm -f ${subdir}/Makefile.tem
-            case "${target_makefile_frag}" in
-              "") mv ${Makefile} ${subdir}/Makefile.tem ;;
-              *)
-                      if [ ! -f ${target_makefile_frag} ] ; then
-                              target_makefile_frag=${srcdir}/${target_makefile_frag}
-                      fi
-                      if [ -f ${target_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${target_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
-                      else
-                              mv ${Makefile} ${subdir}/Makefile.tem
-                              target_makefile_frag=
-                      fi
-                      ;;
-            esac
-            # real copy now in ${subdir}/Makefile.tem
-
-            # Conditionalize the makefile for this package.
-            rm -f ${Makefile}
+            # Conditionalize the makefile for this package from "Makefile.in" (or whatever it's called) into Makefile.tem.
+            rm -f ${subdir}/${Makefile}.tem
             case "${package_makefile_frag}" in
-              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
+              "") cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem ;;
               *)
                       if [ ! -f ${package_makefile_frag} ] ; then
                               package_makefile_frag=${srcdir}/${package_makefile_frag}
                       fi
                       if [ -f ${package_makefile_frag} ] ; then
-                              sed -e "/^####/  r ${package_makefile_frag}" ${subdir}/Makefile.tem > ${Makefile}
-			      rm -f ${subdir}/Makefile.tem
+                              sed -e "/^####/  r ${package_makefile_frag}" ${srcdir}/${subdir}/${Makefile_in} > ${Makefile}.tem
                       else
                               echo '***' Expected package makefile fragment \"${package_makefile_frag}\" 1>&2
                               echo '***' is missing in ${PWD=`pwd`}. 1>&2
-                              mv ${subdir}/Makefile.tem ${Makefile}
+                              cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem
                       fi
             esac
+            # working copy now in ${Makefile}.tem
+
+            # Conditionalize for this site.
+            rm -f ${Makefile}
+              case "${site}" in
+              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
+              *)
+                      site_makefile_frag=${srcdir}/config/ms-${site}
+
+                      if [ -f ${site_makefile_frag} ] ; then
+                              sed -e "/^####/  r ${site_makefile_frag}" ${subdir}/Makefile.tem \
+                                      > ${Makefile}
+                      else
+                              mv ${subdir}/Makefile.tem ${Makefile}
+                              site_makefile_frag=
+                      fi
+                      ;;
+            esac
             # working copy now in ${Makefile}
+
+            # Conditionalize the makefile for this host.
+            rm -f ${subdir}/Makefile.tem
+            case "${host_makefile_frag}" in
+              "") mv ${Makefile} ${subdir}/Makefile.tem ;;
+              *)
+                      if [ ! -f ${host_makefile_frag} ] ; then
+                              host_makefile_frag=${srcdir}/${host_makefile_frag}
+                      fi
+                      if [ -f ${host_makefile_frag} ] ; then
+                              sed -e "/^####/  r ${host_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
+                      else
+                              echo '***' Expected host makefile fragment \"${host_makefile_frag}\" 1>&2
+                              echo '***' is missing in ${PWD=`pwd`}. 1>&2
+                              mv ${Makefile} ${subdir}/Makefile.tem
+                      fi
+            esac
+            # working copy now in ${subdir)/Makefile.tem
+
+            # Conditionalize the makefile for this target.
+            rm -f ${Makefile}
+            case "${target_makefile_frag}" in
+              "") mv ${subdir}/Makefile.tem ${Makefile} ;;
+              *)
+                      if [ ! -f ${target_makefile_frag} ] ; then
+                              target_makefile_frag=${srcdir}/${target_makefile_frag}
+                      fi
+                      if [ -f ${target_makefile_frag} ] ; then
+                              sed -e "/^####/  r ${target_makefile_frag}" ${subdir}/Makefile.tem > ${Makefile}
+                      else
+                              mv ${subdir}/Makefile.tem ${Makefile}
+                              target_makefile_frag=
+                      fi
+                      ;;
+            esac
+            # real copy now in ${Makefile}
 
             mv ${Makefile} ${subdir}/Makefile.tem
 

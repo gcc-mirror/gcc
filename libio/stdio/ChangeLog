@@ -65,7 +65,7 @@ Wed May 10 03:05:53 1995  Jason Merrill  <jason@python.cygnus.com>
 Tue Oct 18 17:15:09 1994  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* getline.c, snprintf.c, vsnprintf.c:  New files, providing
-	functionality of the GNU C C library.
+	functionality of the GNU C library.
 	* Makefile.in (STDIO_OBJECTS), configure.in:  Add new files.
 	* stdio.h:  Add new functions.
 
@@ -131,4 +131,3 @@ Fri Aug 20 00:28:28 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 	* configure.in (stdio_renamed):  Removed feof.
 	Added sprintf sscanf vsscanf.
 	* ChangeLog.old:  Copy of old libg++/iostream/stdio/ChangeLog.
-

@@ -27,7 +27,7 @@ putchar (c)
 {
   int result;
   _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
-			    _IO_stdout);
+			       _IO_stdout);
   _IO_flockfile (_IO_stdout);
   result = _IO_putc_unlocked (c, _IO_stdout);
   _IO_cleanup_region_end (1);
