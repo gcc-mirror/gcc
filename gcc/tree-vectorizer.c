@@ -636,6 +636,8 @@ make_loop_iterate_ntimes (struct loop *loop, tree niters,
 
   if (vect_debug_stats (loop) || vect_debug_details (loop))
     print_generic_expr (dump_file, cond_stmt, TDF_SLIM);
+
+  loop->nb_iterations = niters;
 }
 
 
@@ -2883,6 +2885,8 @@ vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
 
   if (vect_debug_details (NULL))
     print_generic_expr (dump_file, cond_stmt, TDF_SLIM);
+
+  loop->nb_iterations = new_loop_bound;
 }
 
 
