@@ -321,7 +321,7 @@ public abstract class HttpURLConnection extends URLConnection
 
   /**
    * Whether we alreadt got a valid response code for this connection.
-   * Used by <code>getResponceCode()</code> and
+   * Used by <code>getResponseCode()</code> and
    * <code>getResponseMessage()</code>.
    */
   private boolean gotResponseVals = false;
