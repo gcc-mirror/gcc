@@ -1,3 +1,10 @@
+2005-02-10  Steven Bosscher  <stevenb@suse.de>
+
+	PR documentation/19309
+	* doc/cpp.texi: The __GNUC__ and related predefined macros
+	are also defined for the "standalone" cpp.
+	Some non-GCC compilers may also define __GNUC__.
+
 2005-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/19342
