@@ -1,3 +1,8 @@
+Wed Apr 24 23:45:37 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* calls.c (expand_call): Take current_function_pretend_args_size
+	into account when setting argblock for sibcalls.
+
 Wed Oct 16 19:43:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR target/7396
