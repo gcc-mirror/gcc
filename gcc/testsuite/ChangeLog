@@ -1,3 +1,7 @@
+2001-10-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/20011008-3.c: New.
+
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.abi/ptrmem.C: Update for ia64 c++ abi.
