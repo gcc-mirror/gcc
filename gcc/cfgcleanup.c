@@ -49,6 +49,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "target.h"
 #include "regs.h"
+#include "expr.h"
 
 /* cleanup_cfg maintains following flags for each basic block.  */
 
@@ -87,6 +88,7 @@ static bool mark_effect (rtx, bitmap);
 static void notice_new_block (basic_block);
 static void update_forwarder_flag (basic_block);
 static int mentions_nonequal_regs (rtx *, void *);
+static void merge_memattrs (rtx, rtx);
 
 /* Set flags for newly created block.  */
 
@@ -862,6 +864,88 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 }
 
 
+/* Removes the memory attributes of MEM expression
+   if they are not equal.  */
+
+void
+merge_memattrs (rtx x, rtx y)
+{
+  int i;
+  int j;
+  enum rtx_code code;
+  const char *fmt;
+
+  if (x == y)
+    return;
+  if (x == 0 || y == 0)
+    return;
+
+  code = GET_CODE (x);
+
+  if (code != GET_CODE (y))
+    return;
+
+  if (GET_MODE (x) != GET_MODE (y))
+    return;
+
+  if (code == MEM && MEM_ATTRS (x) != MEM_ATTRS (y))
+    {
+      if (! MEM_ATTRS (x))
+	MEM_ATTRS (y) = 0;
+      else if (! MEM_ATTRS (y))
+	MEM_ATTRS (x) = 0;
+      else 
+	{
+	  if (MEM_ALIAS_SET (x) != MEM_ALIAS_SET (y))
+	    {
+	      set_mem_alias_set (x, 0);
+	      set_mem_alias_set (y, 0);
+	    }
+	  
+	  if (! mem_expr_equal_p (MEM_EXPR (x), MEM_EXPR (y)))
+	    {
+	      set_mem_expr (x, 0);
+	      set_mem_expr (y, 0);
+	      set_mem_offset (x, 0);
+	      set_mem_offset (y, 0);
+	    }
+	  else if (MEM_OFFSET (x) != MEM_OFFSET (y))
+	    {
+	      set_mem_offset (x, 0);
+	      set_mem_offset (y, 0);
+	    }
+	  
+	  set_mem_size (x, MAX (MEM_SIZE (x), MEM_SIZE (y)));
+	  set_mem_size (y, MEM_SIZE (x));
+
+	  set_mem_align (x, MIN (MEM_ALIGN (x), MEM_ALIGN (y)));
+	  set_mem_align (y, MEM_ALIGN (x));
+	}
+    }
+  
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      switch (fmt[i])
+	{
+	case 'E':
+	  /* Two vectors must have the same length.  */
+	  if (XVECLEN (x, i) != XVECLEN (y, i))
+	    return;
+
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    merge_memattrs (XVECEXP (x, i, j), XVECEXP (y, i, j));
+
+	  break;
+
+	case 'e':
+	  merge_memattrs (XEXP (x, i), XEXP (y, i));
+	}
+    }
+  return;
+}
+
+
 /* Return true if I1 and I2 are equivalent and thus can be crossjumped.  */
 
 static bool
@@ -1021,6 +1105,8 @@ flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
 
       if (!insns_match_p (mode, i1, i2))
 	break;
+
+      merge_memattrs (i1, i2);
 
       /* Don't begin a cross-jump with a NOTE insn.  */
       if (INSN_P (i1))
