@@ -1,3 +1,16 @@
+2004-09-30  Per Bothner  <per@bothner.com>
+
+	More cleanup for --enable-mapped-location.
+	* class.c (push_class):  If USE_MAPPED_LOCATION don't set
+	input_location here.  Instead do it in give_name_to_class.
+	(build_class_ref):  Set DECL_ARTIFICIAL, for the sake of dwarf2out.
+	* expr.c (expand_byte_code): Call linemap_line_start.
+	* expr.c (build_expr_wfl):  If USE_MAPPED_LOCATION, change final
+	parameters to a source_location.  Don't need EXPR_WFL_FILENAME_NODE.
+	(expr_add_location):  New function, if USE_MAPPED_LOCATION.
+	* class.c (maybe_layout_super_class):  Adjust build_expr_wfl call
+	to USE_MAPPED_LOCATION case.
+
 2004-09-29  Per Bothner  <per@bothner.com>
 
 	* java-tree.h:  Redefine some macros and add soem declaration
