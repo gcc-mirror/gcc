@@ -1,3 +1,29 @@
+2004-03-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md: Use move_operand in splitters for 64-bit moves.
+	(movdi, movsi, movhi, movqi, movsf, movdf): Remove predicates.
+	(*movdi_32bit_mips16, *movsi_mips16, *movhi_mips16, *movqi_mips16)
+	(*movsf_mips16, *movdf_mips16):  Name unnamed patterns.  Use
+	move_operand as source predicate in all cases.
+	(*movdi_32bit): Renamed from movdi_internal.  Remove 'F' constraint.
+	Test reg_or_0_operand.  Use move_operand as source predicate.
+	(*movdi_64bit): Renamed from movdi_internal2.  Test reg_or_0_operand.
+	(*movdi_64bit_mips16): Renamed from movdi_internal2_mips16.
+	(*movsi_internal): Renamed from movsi_internal.  Test reg_or_0_operand.
+	(movhi, movqi, movsf, movdf): Use mips_legitimize_move.
+	(*movhi_internal): Renamed from movhi_internal.  Test reg_or_0_operand.
+	Use move_operand as source predicate.  Remove 'K' constraint.
+	(*movqi_internal): Likewise movqi_internal.
+	(*movsf_hardfloat): Renamed from movsf_internal1.  Test
+	reg_or_0_operand.  Use move_operand as source predicate.
+	(*movsf_softfloat): Likewise movsf_internal2.
+	(*movdf_hardfloat_64bit): Likewise movsf_internal1a.
+	(*movdf_hardfloat_32bit): Likewise movsf_internal1b.
+	(*movdf_softfloat): Likewise movdf_internal2.
+	* config/mips/mips.c (move_operand): Match arbitrary CONST_INTs
+	for DImode if !TARGET_64BIT.
+	(mips_legitimize_move): Simplify accordingly.
+
 2004-03-11  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR/14362
