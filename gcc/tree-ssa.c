@@ -655,7 +655,7 @@ verify_ssa (void)
 		  goto err;
 		}
 
-	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_USES)
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
 	    {
 	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
 			      op, stmt, false, !is_gimple_reg (op),

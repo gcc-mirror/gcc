@@ -1,3 +1,8 @@
+2004-11-22 Daniel Berlin  <dberlin@dberlin.org>
+
+        * tree-ssa.c (verify_ssa): SSA_OP_ALL_USES should be
+	SSA_OP_ALL_USES | SSA_OP_ALL_KILLS for verification purposes.
+
 2004-11-22  David Edelsohn  <edelsohn@gnu.org>
 	    Fariborz Jahanian  <fjahanian@apple.com>
 
