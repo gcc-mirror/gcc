@@ -1,3 +1,39 @@
+Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* builtins.c (get_pointer_alignment): Use host_integerp & tree_low_cst.
+	(expand_builtin_apply): Pass alignment to emit_block_move in bits.
+	(expand_builtin_memcpy, expand_builtin_va_copy): Likewise.
+	(expand_builtin_memset): Likewise, but to clear_storage.
+	* calls.c (save_fixed_argument_area): Likewise, to move_by_pieces.
+	(restore_fixed_argument_area): Likewise.
+	(store_unaligned_arguments_into_pseudos): Likewise, to store_bit_field.
+	(load_register_parameters): Likewise, to emit_group_load.
+	(expand_call): Likewise, to emit_group_store and emit_block_move.
+	(emit_library_call_value_1): Likewise, to emit_block_move.
+	(store_one_arg): Likewise, and to emit_push_insn.
+	* expmed.c (extract_bit_field): Alignment is in bits, not bytes.
+	(extract_fixed_bit_field, extract_split_bit_field): Likewise.
+	* expr.c (move_by_pieces, move_by_pieces_ninsns): Likewise.
+	(emit_block_move, emit_group_load, emit_group_store): Likewise.
+	(clear_by_pieces, clear_storage, emit_push_insn): Likewise.
+	(expand_assigment, store_expr, store_constructor_field): Likewise.
+	(expand_expr_unaligned, do_jump, do_compare_and_jump): Likewise.
+	(store_constructor, store_field, get_inner_reference): Likewise.
+	Use host_integerp and tree_low_cst; sizes and positions HOST_WIDE_INT.
+	(expand_expr, case COMPONENT_REF): Likewise.
+	(copy_blkmode_from_regs): Use UNSIGNED_HOST_WIDE_INT for sizes
+	and positions; reindent code.
+	* expr.h (emit_cmp_insn, emit_cmp_and_jump_insns): Alignment unsigned.
+	* function.c (purge_addressof_1): Pass bit align to store_bit_field.
+	(assign_parms): Likewise to emit_group_store.
+	* optbas.c (prepare_cmp_insn): Alignment is in bits.
+	(emit_cmp_and_jump_insns, emit_cmp_insn): Likewise, and also unsigned.
+	* stmt.c (expand_value_return): Pass align in bits to emit_group_load.
+	(expand_return): Likewise to {extract,store}_bit_field.
+	* stor-layout.c (get_mode_alignment): Minor cleanup.
+	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Align is in bits.
+	* config/sh/sh.h (MOVE_BY_PIECES_P): Likewise.
+	
 2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppinit.c (cpp_start_read): Call initialize_dependency_output

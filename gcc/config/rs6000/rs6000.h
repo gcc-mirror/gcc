@@ -618,7 +618,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)			\
    ((STRICT_ALIGNMENT						\
      || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode) \
-         && (ALIGN) < 4)) ? 1 : 0)
+         && (ALIGN) < 32)) ? 1 : 0)
 
 /* Standard register usage.  */
 

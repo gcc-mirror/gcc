@@ -135,6 +135,7 @@ get_pointer_alignment (exp, max_align)
 	  exp = TREE_OPERAND (exp, 0);
 	  if (TREE_CODE (TREE_TYPE (exp)) != POINTER_TYPE)
 	    return align;
+
 	  inner = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
 	  align = MIN (inner, max_align);
 	  break;
@@ -143,10 +144,10 @@ get_pointer_alignment (exp, max_align)
 	  /* If sum of pointer + int, restrict our maximum alignment to that
 	     imposed by the integer.  If not, we can't do any better than
 	     ALIGN.  */
-	  if (TREE_CODE (TREE_OPERAND (exp, 1)) != INTEGER_CST)
+	  if (! host_integerp (TREE_OPERAND (exp, 1), 1))
 	    return align;
 
-	  while (((TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)) * BITS_PER_UNIT)
+	  while (((tree_low_cst (TREE_OPERAND (exp, 1), 1) * BITS_PER_UNIT)
 		  & (max_align - 1))
 		 != 0)
 	    max_align >>= 1;
@@ -903,8 +904,7 @@ expand_builtin_apply (function, arguments, argsize)
   dest = allocate_dynamic_stack_space (argsize, 0, 0);
   emit_block_move (gen_rtx_MEM (BLKmode, dest),
 		   gen_rtx_MEM (BLKmode, incoming_args),
-		   argsize,
-		   PARM_BOUNDARY / BITS_PER_UNIT);
+		   argsize, PARM_BOUNDARY);
 
   /* Refer to the argument block.  */
   apply_args_size ();
@@ -1435,10 +1435,8 @@ expand_builtin_memcpy (arglist)
       tree src = TREE_VALUE (TREE_CHAIN (arglist));
       tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
 
-      int src_align
-	= get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-      int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+      int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+      int dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       rtx dest_mem, src_mem, dest_addr, len_rtx;
 
       /* If either SRC or DEST is not a pointer type, don't do
@@ -1531,8 +1529,7 @@ expand_builtin_memset (exp)
       tree val = TREE_VALUE (TREE_CHAIN (arglist));
       tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
 
-      int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+      int dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       rtx dest_mem, dest_addr, len_rtx;
 
       /* If DEST is not a pointer type, don't do this 
@@ -1918,6 +1915,7 @@ stabilize_va_list (valist, needs_lvalue)
 	{
  	  tree p1 = build_pointer_type (TREE_TYPE (va_list_type_node));
  	  tree p2 = build_pointer_type (va_list_type_node);
+
  	  valist = build1 (ADDR_EXPR, p2, valist);
 	  valist = fold (build1 (NOP_EXPR, p1, valist));
 	}
@@ -2190,8 +2188,7 @@ expand_builtin_va_copy (arglist)
       MEM_ALIAS_SET (srcb) = get_alias_set (TREE_TYPE (TREE_TYPE (src)));
 
       /* Copy.  */
-      emit_block_move (dstb, srcb, size, 
-		       TYPE_ALIGN (va_list_type_node) / BITS_PER_UNIT);
+      emit_block_move (dstb, srcb, size, TYPE_ALIGN (va_list_type_node));
     }
 
   return const0_rtx;

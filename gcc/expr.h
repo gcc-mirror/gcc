@@ -793,12 +793,13 @@ extern void emit_0_to_1_insn PARAMS ((rtx));
 
 /* Emit one rtl insn to compare two rtx's.  */
 extern void emit_cmp_insn PARAMS ((rtx, rtx, enum rtx_code, rtx,
-				   enum machine_mode, int, int));
+				   enum machine_mode, int, unsigned int));
 
 /* Emit a pair of rtl insns to compare two rtx's and to jump 
    to a label if the comparison is true.  */
 extern void emit_cmp_and_jump_insns PARAMS ((rtx, rtx, enum rtx_code, rtx,
-					     enum machine_mode, int, int, rtx));
+					     enum machine_mode, int,
+					     unsigned int, rtx));
 
 /* The various uses that a comparison can have; used by can_compare_p:
    jumps, conditional moves, store flag operations.  */
