@@ -228,7 +228,7 @@ lang_decode_option (argc, argv)
       return 1;
     }
 
-  if (strcmp (p, "-Wredudant-modifiers") == 0)
+  if (strcmp (p, "-Wredundant-modifiers") == 0)
     {
       flag_redundant = 1;
       return 1;
