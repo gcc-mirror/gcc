@@ -1,3 +1,9 @@
+2000-08-27  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/ZipFile.java: Implement OPEN_DELETE mode, new constructor,
+	close can delete the file, finalize calls close.
+	* java/util/jar/JarFile.java: Constructor that takes mode now calls super.
+
 2000-08-27  Anthony Green  <green@redhat.com>
 
 	* java/util/ArrayList.java, java/util/Timer.java,

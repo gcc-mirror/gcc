@@ -18,15 +18,35 @@ import java.io.*;
 
 public class ZipFile implements ZipConstants
 {
+  public static final int OPEN_READ = 1;
+  public static final int OPEN_DELETE = 4;
+
   public ZipFile (String fname) throws IOException
   {
-    file = new RandomAccessFile(fname, "r");
-    name = fname;
-    readDirectory ();
+    this(new File(fname));
   }
 
   public ZipFile (File f) throws IOException
   {
+    this(f, OPEN_READ);
+  }
+
+  public ZipFile (File f, int mode) throws IOException
+  {
+    if (mode != OPEN_READ && mode != (OPEN_READ | OPEN_DELETE))
+        throw new IllegalArgumentException
+            ("mode can only be OPEN_READ or OPEN_READ | OPEN_DELETE");
+
+    if ((mode & OPEN_DELETE) != 0)
+      {
+	delete_on_close = f;
+	// f.deleteOnExit(); XXX - Not yet implemented in libgcj
+      }
+    else
+      {
+	delete_on_close = null;
+      }
+
     file = new RandomAccessFile(f, "r");
     name = f.getName();
     readDirectory ();
@@ -107,6 +127,8 @@ public class ZipFile implements ZipConstants
     file.close();
     entries = null;
     numEntries = 0;
+    if (delete_on_close != null)
+	delete_on_close.delete();
   }
 
   public ZipEntry getEntry(String name)
@@ -148,6 +170,10 @@ public class ZipFile implements ZipConstants
       return numEntries;
   }
 
+  protected void finalize () throws IOException {
+    close();
+  }
+
   private int readu2 () throws IOException
   {
     int byte0 = file.read();
@@ -173,6 +199,9 @@ public class ZipFile implements ZipConstants
   int numEntries;
   RandomAccessFile file;
   String name;
+  /** File to delete on close or null. */
+  File delete_on_close;
+    
 }
 
 final class ZipEnumeration implements java.util.Enumeration
