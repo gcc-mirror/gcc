@@ -3261,7 +3261,12 @@ mostly_zeros_p (exp)
 /* Helper function for store_constructor.
    TARGET, BITSIZE, BITPOS, MODE, EXP are as for store_field.
    TYPE is the type of the CONSTRUCTOR, not the element type.
-   CLEARED is as for store_constructor.  */
+   CLEARED is as for store_constructor.
+
+   This provides a recursive shortcut back to store_constructor when it isn't
+   necessary to go through store_field.  This is so that we can pass through
+   the cleared field to let store_constructor know that we may not have to
+   clear a substructure if the outer structure has already been cleared.  */
 
 static void
 store_constructor_field (target, bitsize, bitpos,
@@ -3273,7 +3278,11 @@ store_constructor_field (target, bitsize, bitpos,
      int cleared;
 {
   if (TREE_CODE (exp) == CONSTRUCTOR
-      && (bitpos % BITS_PER_UNIT) == 0)
+      && bitpos % BITS_PER_UNIT == 0
+      /* If we have a non-zero bitpos for a register target, then we just
+	 let store_field do the bitfield handling.  This is unlikely to
+	 generate unnecessary clear instructions anyways.  */
+      && (bitpos == 0 || GET_CODE (target) == MEM))
     {
       if (bitpos != 0)
 	target = change_address (target, VOIDmode,
