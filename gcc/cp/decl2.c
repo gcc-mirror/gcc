@@ -2985,6 +2985,9 @@ start_static_storage_duration_function ()
   TREE_CHAIN (initialize_p_decl) = priority_decl;
   DECL_ARGUMENTS (ssdf_decl) = initialize_p_decl;
 
+  /* Put the function in the global scope.  */
+  pushdecl (ssdf_decl);
+
   /* Start the function itself.  This is equivalent to declarating the
      function as:
 
