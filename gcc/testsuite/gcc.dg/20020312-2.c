@@ -96,6 +96,8 @@
 /* No pic register.  */
 #elif defined(__sh__)
 # define PIC_REG  "r12"
+#elif defined(__x86_64__)
+/* No pic register.  */
 #else
 # error "Modify the test for your target."
 #endif
