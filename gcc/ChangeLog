@@ -1,5 +1,7 @@
 2001-03-19  Bernd Schmidt  <bernds@redhat.com>
 
+	* version.c: Bump.
+
 	2000-01-18  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 	* c-parse.in (SAVE_WARN_FLAGS): Create an INTEGER_CST.
 	(RESTORE_WARN_FLAGS): Unpack it.
