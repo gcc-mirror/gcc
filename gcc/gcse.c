@@ -509,6 +509,7 @@ static sbitmap *rd_kill, *rd_gen, *reaching_defs, *rd_out;
 
 /* for available exprs */
 static sbitmap *ae_kill, *ae_gen, *ae_in, *ae_out;
+
 
 static void compute_can_copy	  PROTO ((void));
 
@@ -517,8 +518,6 @@ static char *grealloc		 PROTO ((char *, unsigned int));
 static char *gcse_alloc	       PROTO ((unsigned long));
 static void alloc_gcse_mem	    PROTO ((rtx));
 static void free_gcse_mem	     PROTO ((void));
-extern void dump_cuid_table	   PROTO ((FILE *));
-
 static void alloc_reg_set_mem	 PROTO ((int));
 static void free_reg_set_mem	  PROTO ((void));
 static void record_one_set	    PROTO ((int, rtx));
@@ -529,78 +528,55 @@ static void hash_scan_insn	    PROTO ((rtx, int, int));
 static void hash_scan_set	     PROTO ((rtx, rtx, int));
 static void hash_scan_clobber	 PROTO ((rtx, rtx));
 static void hash_scan_call	    PROTO ((rtx, rtx));
-static void maybe_set_rd_gen	  PROTO ((int, rtx));
 static int want_to_gcse_p	     PROTO ((rtx));
 static int oprs_unchanged_p	   PROTO ((rtx, rtx, int));
 static int oprs_anticipatable_p       PROTO ((rtx, rtx));
 static int oprs_available_p	   PROTO ((rtx, rtx));
-static void insert_expr_in_table      PROTO ((rtx, enum machine_mode, rtx, int, int));
+static void insert_expr_in_table      PROTO ((rtx, enum machine_mode,
+					      rtx, int, int));
 static void insert_set_in_table       PROTO ((rtx, rtx));
-static unsigned int hash_expr	 PROTO ((rtx, enum machine_mode, int *, int));
+static unsigned int hash_expr	 PROTO ((rtx, enum machine_mode,
+					 int *, int));
 static unsigned int hash_expr_1       PROTO ((rtx, enum machine_mode, int *));
 static unsigned int hash_set	  PROTO ((int, int));
 static int expr_equiv_p	       PROTO ((rtx, rtx));
 static void record_last_reg_set_info  PROTO ((rtx, int));
 static void record_last_mem_set_info  PROTO ((rtx));
 static void record_last_set_info      PROTO ((rtx, rtx));
-static void compute_hash_table	PROTO ((rtx, int));
+static void compute_hash_table	PROTO ((int));
 static void alloc_set_hash_table      PROTO ((int));
 static void free_set_hash_table       PROTO ((void));
-static void compute_set_hash_table    PROTO ((rtx));
+static void compute_set_hash_table    PROTO ((void));
 static void alloc_expr_hash_table     PROTO ((int));
 static void free_expr_hash_table      PROTO ((void));
-static void compute_expr_hash_table   PROTO ((rtx));
+static void compute_expr_hash_table   PROTO ((void));
 static void dump_hash_table	   PROTO ((FILE *, const char *, struct expr **, int, int));
 static struct expr *lookup_expr       PROTO ((rtx));
 static struct expr *lookup_set	PROTO ((int, rtx));
 static struct expr *next_set	  PROTO ((int, struct expr *));
 static void reset_opr_set_tables      PROTO ((void));
 static int oprs_not_set_p	     PROTO ((rtx, rtx));
-static void mark_call		 PROTO ((rtx, rtx));
+static void mark_call		 PROTO ((rtx));
 static void mark_set		  PROTO ((rtx, rtx));
 static void mark_clobber	      PROTO ((rtx, rtx));
 static void mark_oprs_set	     PROTO ((rtx));
 
-static void alloc_rd_mem	      PROTO ((int, int));
-static void free_rd_mem	       PROTO ((void));
-static void compute_kill_rd	   PROTO ((void));
-static void handle_rd_kill_set	PROTO ((rtx, int, int));
-static void compute_rd		PROTO ((void));
-extern void dump_rd_table	     PROTO ((FILE *, char *, sbitmap *));
-
-static void alloc_avail_expr_mem      PROTO ((int, int));
-static void free_avail_expr_mem       PROTO ((void));
-static void compute_ae_gen	    PROTO ((void));
-static void compute_ae_kill	   PROTO ((void));
-static int expr_killed_p	      PROTO ((rtx, int));
-static void compute_available	 PROTO ((void));
-
-static int expr_reaches_here_p	PROTO ((struct occr *, struct expr *,
-					      int, int, char *));
-static rtx computing_insn	     PROTO ((struct expr *, rtx));
-static int def_reaches_here_p	 PROTO ((rtx, rtx));
-static int can_disregard_other_sets   PROTO ((struct reg_set **, rtx, int));
-static int handle_avail_expr	  PROTO ((rtx, struct expr *));
-static int classic_gcse	       PROTO ((void));
-static int one_classic_gcse_pass      PROTO ((rtx, int));
-
 static void alloc_cprop_mem	   PROTO ((int, int));
 static void free_cprop_mem	    PROTO ((void));
-extern void dump_cprop_data	   PROTO ((FILE *));
 static void compute_transp	    PROTO ((rtx, int, sbitmap *, int));
-static void compute_cprop_local_properties PROTO ((void));
+static void compute_local_properties  PROTO ((sbitmap *, sbitmap *,
+					      sbitmap *, int));
 static void compute_cprop_avinout     PROTO ((void));
 static void compute_cprop_data	PROTO ((void));
 static void find_used_regs	    PROTO ((rtx));
 static int try_replace_reg	    PROTO ((rtx, rtx, rtx));
 static struct expr *find_avail_set    PROTO ((int, rtx));
-static int cprop_insn		 PROTO ((rtx));
-static int cprop		      PROTO ((void));
-static int one_cprop_pass	     PROTO ((rtx, int));
+static int cprop_insn		 PROTO ((rtx, int));
+static int cprop		      PROTO ((int));
+static int one_cprop_pass	     PROTO ((int, int));
 
 static void alloc_pre_mem	     PROTO ((int, int));
 static void free_pre_mem	      PROTO ((void));
-extern void dump_pre_data	     PROTO ((FILE *));
 static void compute_pre_local_properties PROTO ((void));
 static void compute_pre_avinout       PROTO ((void));
 static void compute_pre_antinout      PROTO ((void));
@@ -615,9 +591,30 @@ static void pre_insert_copy_insn      PROTO ((struct expr *, rtx));
 static void pre_insert_copies	 PROTO ((void));
 static int pre_delete		 PROTO ((void));
 static int pre_gcse		   PROTO ((void));
-static int one_pre_gcse_pass	  PROTO ((rtx, int));
+static int one_pre_gcse_pass	  PROTO ((int));
 
 static void add_label_notes	      PROTO ((rtx, rtx));
+
+static void alloc_rd_mem	      PROTO ((int, int));
+static void free_rd_mem	       PROTO ((void));
+static void handle_rd_kill_set	PROTO ((rtx, int, int));
+static void compute_kill_rd	   PROTO ((void));
+static void compute_rd		PROTO ((void));
+static void alloc_avail_expr_mem      PROTO ((int, int));
+static void free_avail_expr_mem       PROTO ((void));
+static void compute_ae_gen	    PROTO ((void));
+static int expr_killed_p	      PROTO ((rtx, int));
+static void compute_ae_kill	   PROTO ((void));
+static void compute_available	 PROTO ((void));
+static int expr_reaches_here_p	PROTO ((struct occr *, struct expr *,
+					      int, int, char *));
+static rtx computing_insn	     PROTO ((struct expr *, rtx));
+static int def_reaches_here_p	 PROTO ((rtx, rtx));
+static int can_disregard_other_sets   PROTO ((struct reg_set **, rtx, int));
+static int handle_avail_expr	  PROTO ((rtx, struct expr *));
+static int classic_gcse	       PROTO ((void));
+static int one_classic_gcse_pass      PROTO ((int));
+
 
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */
@@ -635,16 +632,20 @@ gcse_main (f, file)
   /* Point to release obstack data from for each pass.  */
   char *gcse_obstack_bottom;
 
-  run_jump_opt_after_gcse = 0;
-
-  /* It's impossible to construct a correct control flow graph in the
-     presense of setjmp, so just punt to be safe.  */
+  /* We do not construct an accurate cfg in functions which call
+     setjmp, so just punt to be safe.  */
   if (current_function_calls_setjmp)
     return 0;
    
+  /* Assume that we do not need to run jump optimizations after gcse.  */
+  run_jump_opt_after_gcse = 0;
+
   /* For calling dump_foo fns from gdb.  */
   debug_stderr = stderr;
+  gcse_file = file;
 
+  /* Identify the basic block information for this function, including
+     successors and predecessors.  */
   max_gcse_regno = max_reg_num ();
   find_basic_blocks (f, max_gcse_regno, file);
 
@@ -665,8 +666,6 @@ gcse_main (f, file)
 
   gcc_obstack_init (&gcse_obstack);
 
-  gcse_file = file;
-
   /* Allocate and compute predecessors/successors.  */
 
   s_preds = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
@@ -681,9 +680,13 @@ gcse_main (f, file)
 
   /* Record where pseudo-registers are set.
      This data is kept accurate during each pass.
-     ??? We could also record hard-reg and memory information here
+     ??? We could also record hard-reg information here
      [since it's unchanging], however it is currently done during
-     hash table computation.  */
+     hash table computation.
+
+     It may be tempting to compute MEM set information here too, but MEM
+     sets will be subject to code motion one day and thus we need to compute
+     information about memory sets when we build the hash tables.  */
 
   alloc_reg_set_mem (max_gcse_regno);
   compute_sets (f);
@@ -708,12 +711,14 @@ gcse_main (f, file)
 
       alloc_gcse_mem (f);
 
-      changed = one_cprop_pass (f, pass + 1);
+      /* Don't allow constant propagation to modify jumps
+	 during this pass.  */
+      changed = one_cprop_pass (pass + 1, 0);
 
       if (optimize_size)
-	changed |= one_classic_gcse_pass (f, pass + 1);
+	changed |= one_classic_gcse_pass (pass + 1);
       else
-	changed |= one_pre_gcse_pass (f, pass + 1);
+	changed |= one_pre_gcse_pass (pass + 1);
 
       if (max_pass_bytes < bytes_used)
 	max_pass_bytes = bytes_used;
@@ -729,14 +734,14 @@ gcse_main (f, file)
       pass++;
     }
 
-  /* If we're doing PRE, do one last pass of copy propagation.  */
-  if (! optimize_size)
-    {
-      max_gcse_regno = max_reg_num ();
-      alloc_gcse_mem (f);
-      one_cprop_pass (f, pass + 1);
-      free_gcse_mem ();
-    }
+  /* Do one last pass of copy propagation, including cprop into
+     conditional jumps.  */
+
+  max_gcse_regno = max_reg_num ();
+  alloc_gcse_mem (f);
+  /* This time, go ahead and allow cprop to alter jumps.  */
+  one_cprop_pass (pass + 1, 1);
+  free_gcse_mem ();
 
   if (file)
     {
@@ -899,23 +904,113 @@ free_gcse_mem ()
   free (mem_set_in_block);
 }
 
-void
-dump_cuid_table (file)
-     FILE *file;
-{
-  int i;
+
+/* Compute the local properties of each recorded expression.
+   Local properties are those that are defined by the block, irrespective
+   of other blocks.
 
-  fprintf (file, "CUID table\n");
-  for (i = 0; i < max_cuid; i++)
+   An expression is transparent in a block if its operands are not modified
+   in the block.
+
+   An expression is computed (locally available) in a block if it is computed
+   at least once and expression would contain the same value if the
+   computation was moved to the end of the block.
+
+   An expression is locally anticipatable in a block if it is computed at
+   least once and expression would contain the same value if the computation
+   was moved to the beginning of the block.
+
+   We call this routine for cprop, pre and code hoisting.  They all
+   compute basically the same information and thus can easily share
+   this code.
+
+   TRANSP, COMP, and ANTLOC are destination sbitmaps for recording
+   local properties.  If NULL, then it is not necessary to compute
+   or record that particular property.
+
+   SETP controls which hash table to look at.  If zero, this routine
+   looks at the expr hash table; if nonzero this routine looks at
+   the set hash table.  */
+ 
+static void
+compute_local_properties (transp, comp, antloc, setp)
+     sbitmap *transp;
+     sbitmap *comp;
+     sbitmap *antloc;
+     int setp;
+{
+  int i, hash_table_size;
+  struct expr **hash_table;
+  
+  /* Initialize any bitmaps that were passed in.  */
+  if (transp)
+    sbitmap_vector_ones (transp, n_basic_blocks);
+  if (comp)
+    sbitmap_vector_zero (comp, n_basic_blocks);
+  if (antloc)
+    sbitmap_vector_zero (antloc, n_basic_blocks);
+
+  /* We use the same code for cprop, pre and hoisting.  For cprop
+     we care about the set hash table, for pre and hoisting we
+     care about the expr hash table.  */
+  hash_table_size = setp ? set_hash_table_size : expr_hash_table_size;
+  hash_table = setp ? set_hash_table : expr_hash_table;
+
+  for (i = 0; i < hash_table_size; i++)
     {
-      rtx insn = CUID_INSN (i);
-      if (i != 0 && i % 10 == 0)
-	fprintf (file, "\n");
-      if (insn != NULL)
-	fprintf (file, " %d", INSN_UID (insn));
+      struct expr *expr;
+
+      for (expr = hash_table[i]; expr != NULL; expr = expr->next_same_hash)
+	{
+	  struct occr *occr;
+	  int indx = expr->bitmap_index;
+
+	  /* The expression is transparent in this block if it is not killed.
+	     We start by assuming all are transparent [none are killed], and
+	     then reset the bits for those that are.  */
+
+	  if (transp)
+	    compute_transp (expr->expr, indx, transp, setp);
+
+	  /* The occurrences recorded in antic_occr are exactly those that
+	     we want to set to non-zero in ANTLOC.  */
+
+	  if (antloc)
+	    {
+	      for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
+		{
+		  int bb = BLOCK_NUM (occr->insn);
+		  SET_BIT (antloc[bb], indx);
+
+		  /* While we're scanning the table, this is a good place to
+		     initialize this.  */
+		  occr->deleted_p = 0;
+		}
+	    }
+
+	  /* The occurrences recorded in avail_occr are exactly those that
+	     we want to set to non-zero in COMP.  */
+	  if (comp)
+	    {
+	
+	      for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
+		{
+		  int bb = BLOCK_NUM (occr->insn);
+		  SET_BIT (comp[bb], indx);
+
+		  /* While we're scanning the table, this is a good place to
+		     initialize this.  */
+		  occr->copied_p = 0;
+		}
+	    }
+
+	  /* While we're scanning the table, this is a good place to
+	     initialize this.  */
+	  expr->reaching_reg = 0;
+	}
     }
-  fprintf (file, "\n\n");
 }
+
 
 /* Register set information.
 
@@ -1046,18 +1141,6 @@ static int *reg_last_set;
    to optimize things (later).  */
 static int mem_first_set;
 static int mem_last_set;
-
-/* Set the appropriate bit in `rd_gen' [the gen for reaching defs] if the
-   register set in this insn is not set after this insn in this block.  */
-
-static void
-maybe_set_rd_gen (regno, insn)
-     int regno;
-     rtx insn;
-{
-  if (reg_last_set[regno] <= INSN_CUID (insn))
-    SET_BIT (rd_gen[BLOCK_NUM (insn)], INSN_CUID (insn));
-}
 
 /* Perform a quick check whether X, the source of a set, is something
    we want to consider for GCSE.  */
@@ -1787,22 +1870,6 @@ hash_scan_set (pat, insn, set_p)
 		       && oprs_available_p (pat, tmp))))
 	insert_set_in_table (pat, insn);
     }
-
-  /* Check if first/last set in this block for classic gcse,
-     but not for copy/constant propagation.  */
-  if (optimize_size && !set_p)
-      
-    {
-      rtx dest = SET_DEST (pat);
-
-      while (GET_CODE (dest) == SUBREG
-	     || GET_CODE (dest) == ZERO_EXTRACT
-	     || GET_CODE (dest) == SIGN_EXTRACT
-	     || GET_CODE (dest) == STRICT_LOW_PART)
-	dest = XEXP (dest, 0);
-      if (GET_CODE (dest) == REG)
-	maybe_set_rd_gen (REGNO (dest), insn);
-    }
 }
 
 static void
@@ -1857,21 +1924,6 @@ hash_scan_insn (insn, set_p, in_libcall_block)
 	    {
 	      if (GET_CODE (SET_SRC (x)) == CALL)
 		hash_scan_call (SET_SRC (x), insn);
-
-	      /* Check if first/last set in this block for classic
-		 gcse, but not for constant/copy propagation.  */
-	      if (optimize_size && !set_p)
-		{
-		  rtx dest = SET_DEST (x);
-
-		  while (GET_CODE (dest) == SUBREG
-			 || GET_CODE (dest) == ZERO_EXTRACT
-			 || GET_CODE (dest) == SIGN_EXTRACT
-			 || GET_CODE (dest) == STRICT_LOW_PART)
-		    dest = XEXP (dest, 0);
-		  if (GET_CODE (dest) == REG)
-		    maybe_set_rd_gen (REGNO (dest), insn);
-		}
 	    }
 	  else if (GET_CODE (x) == CLOBBER)
 	    hash_scan_clobber (x, insn);
@@ -1994,8 +2046,7 @@ record_last_set_info (dest, setter)
    SET_P is non-zero for computing the assignment hash table.  */
 
 static void
-compute_hash_table (f, set_p)
-     rtx f ATTRIBUTE_UNUSED;
+compute_hash_table (set_p)
      int set_p;
 {
   int bb;
@@ -2130,14 +2181,13 @@ free_set_hash_table ()
 /* Compute the hash table for doing copy/const propagation.  */
 
 static void
-compute_set_hash_table (f)
-     rtx f;
+compute_set_hash_table ()
 {
   /* Initialize count of number of entries in hash table.  */
   n_sets = 0;
   bzero ((char *) set_hash_table, set_hash_table_size * sizeof (struct expr *));
 
-  compute_hash_table (f, 1);
+  compute_hash_table (1);
 }
 
 /* Allocate space for the expression hash table.
@@ -2173,14 +2223,13 @@ free_expr_hash_table ()
 /* Compute the hash table for doing GCSE.  */
 
 static void
-compute_expr_hash_table (f)
-     rtx f;
+compute_expr_hash_table ()
 {
   /* Initialize count of number of entries in hash table.  */
   n_exprs = 0;
   bzero ((char *) expr_hash_table, expr_hash_table_size * sizeof (struct expr *));
 
-  compute_hash_table (f, 0);
+  compute_hash_table (0);
 }
 
 /* Expression tracking support.  */
@@ -2345,8 +2394,8 @@ repeat:
 /* Mark things set by a CALL.  */
 
 static void
-mark_call (pat, insn)
-     rtx pat ATTRIBUTE_UNUSED, insn;
+mark_call (insn)
+     rtx insn;
 {
   mem_last_set = INSN_CUID (insn);
 }
@@ -2371,7 +2420,7 @@ mark_set (pat, insn)
     mem_last_set = INSN_CUID (insn);
 
   if (GET_CODE (SET_SRC (pat)) == CALL)
-    mark_call (SET_SRC (pat), insn);
+    mark_call (insn);
 }
 
 /* Record things set by a CLOBBER.  */
@@ -2415,14 +2464,15 @@ mark_oprs_set (insn)
 	  else if (GET_CODE (x) == CLOBBER)
 	    mark_clobber (x, insn);
 	  else if (GET_CODE (x) == CALL)
-	    mark_call (x, insn);
+	    mark_call (insn);
 	}
     }
   else if (GET_CODE (pat) == CLOBBER)
     mark_clobber (pat, insn);
   else if (GET_CODE (pat) == CALL)
-    mark_call (pat, insn);
+    mark_call (insn);
 }
+
 
 /* Classic GCSE reaching definition support.  */
 
@@ -2472,38 +2522,6 @@ handle_rd_kill_set (insn, regno, bb)
 	SET_BIT (rd_kill[bb], INSN_CUID (this_reg->insn));
       this_reg = this_reg->next;
     }
-}
-
-void
-dump_rd_table (file, title, bmap)
-     FILE *file;
-     char *title;
-     sbitmap *bmap;
-{
-  int bb,cuid,i,j,n;
-
-  fprintf (file, "%s\n", title);
-  for (bb = 0; bb < n_basic_blocks; bb++)
-    {
-      fprintf (file, "BB %d\n", bb);
-      dump_sbitmap (file, bmap[bb]);
-      for (i = n = cuid = 0; i < bmap[bb]->size; i++)
-	{
-	  for (j = 0; j < SBITMAP_ELT_BITS; j++, cuid++)
-	    {
-	      if ((bmap[bb]->elms[i] & (1 << j)) != 0)
-		{
-		  if (n % 10 == 0)
-		    fprintf (file, " ");
-		  fprintf (file, " %d", INSN_UID (CUID_INSN (cuid)));
-		  n++;
-		}
-	    }
-	}
-      if (n != 0)
-	fprintf (file, "\n");
-    }
-  fprintf (file, "\n");
 }
 
 /* Compute the set of kill's for reaching definitions.  */
@@ -2807,8 +2825,7 @@ compute_available ()
       changed = 0;
       for (bb = 1; bb < n_basic_blocks; bb++)
 	{
-	  sbitmap_intersect_of_predecessors (ae_in[bb], ae_out,
-					     bb, s_preds);
+	  sbitmap_intersect_of_predecessors (ae_in[bb], ae_out, bb, s_preds);
 	  changed |= sbitmap_union_of_diff (ae_out[bb], ae_gen[bb],
 					    ae_in[bb], ae_kill[bb]);
 	}
@@ -3263,8 +3280,7 @@ classic_gcse ()
    Return non-zero if a change was made.  */
 
 static int
-one_classic_gcse_pass (f, pass)
-     rtx f;
+one_classic_gcse_pass (pass)
      int pass;
 {
   int changed = 0;
@@ -3274,7 +3290,7 @@ one_classic_gcse_pass (f, pass)
 
   alloc_expr_hash_table (max_cuid);
   alloc_rd_mem (n_basic_blocks, max_cuid);
-  compute_expr_hash_table (f);
+  compute_expr_hash_table ();
   if (gcse_file)
     dump_hash_table (gcse_file, "Expression", expr_hash_table,
 		     expr_hash_table_size, n_exprs);
@@ -3339,23 +3355,6 @@ free_cprop_mem ()
   free (cprop_absaltered);
   free (cprop_avin);
   free (cprop_avout);
-}
-
-/* Dump copy/const propagation data.  */
-
-void
-dump_cprop_data (file)
-     FILE *file;
-{
-  dump_sbitmap_vector (file, "CPROP partially locally available sets", "BB",
-		       cprop_pavloc, n_basic_blocks);
-  dump_sbitmap_vector (file, "CPROP absolutely altered sets", "BB",
-		       cprop_absaltered, n_basic_blocks);
-
-  dump_sbitmap_vector (file, "CPROP available incoming sets", "BB",
-		       cprop_avin, n_basic_blocks);
-  dump_sbitmap_vector (file, "CPROP available outgoing sets", "BB",
-		       cprop_avout, n_basic_blocks);
 }
 
 /* For each block, compute whether X is transparent.
@@ -3484,42 +3483,11 @@ compute_transp (x, indx, bmap, set_p)
     }
 }
 
-static void
-compute_cprop_local_properties ()
-{
-  int i;
-
-  sbitmap_vector_zero (cprop_absaltered, n_basic_blocks);
-  sbitmap_vector_zero (cprop_pavloc, n_basic_blocks);
-
-  for (i = 0; i < set_hash_table_size; i++)
-    {
-      struct expr *expr;
-
-      for (expr = set_hash_table[i]; expr != NULL; expr = expr->next_same_hash)
-	{
-	  struct occr *occr;
-	  int indx = expr->bitmap_index;
-
-	  /* The assignment is absolutely altered if any operand is modified
-	     by this block [excluding the assignment itself].
-	     We start by assuming all are transparent [none are killed], and
-	     then setting the bits for those that are.  */
-
-	  compute_transp (expr->expr, indx, cprop_absaltered, 1);
-
-	  /* The occurrences recorded in avail_occr are exactly those that
-	     we want to set to non-zero in PAVLOC.  */
-
-	  for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
-	    {
-	      int bb = BLOCK_NUM (occr->insn);
-	      SET_BIT (cprop_pavloc[bb], indx);
-	    }
-	}
-    }
-}
-
+/* Compute the available expressions at the start and end of each
+   basic block for cprop.  This particular dataflow equation is
+   used often enough that we might want to generalize it and make
+   as a subroutine for other global optimizations that need available
+   in/out information.  */
 static void
 compute_cprop_avinout ()
 {
@@ -3536,8 +3504,8 @@ compute_cprop_avinout ()
       for (bb = 0; bb < n_basic_blocks; bb++)
 	{
 	  if (bb != 0)
-	    sbitmap_intersect_of_predecessors (cprop_avin[bb], cprop_avout,
-					       bb, s_preds);
+	    sbitmap_intersect_of_predecessors (cprop_avin[bb],
+					       cprop_avout, bb, s_preds);
 	  changed |= sbitmap_union_of_diff (cprop_avout[bb],
 					    cprop_pavloc[bb],
 					    cprop_avin[bb],
@@ -3556,7 +3524,7 @@ compute_cprop_avinout ()
 static void
 compute_cprop_data ()
 {
-  compute_cprop_local_properties ();
+  compute_local_properties (cprop_absaltered, cprop_pavloc, NULL, 1);
   compute_cprop_avinout ();
 }
 
@@ -3700,8 +3668,9 @@ find_avail_set (regno, insn)
    The result is non-zero if a change was made.  */
 
 static int
-cprop_insn (insn)
+cprop_insn (insn, alter_jumps)
      rtx insn;
+     int alter_jumps;
 {
   struct reg_use *reg_used;
   int changed = 0;
@@ -3775,7 +3744,8 @@ cprop_insn (insn)
 	     (set (pc) (if_then_else ...))
 
 	     Note this does not currently handle machines which use cc0.  */
-	  else if (GET_CODE (insn) == JUMP_INSN && condjump_p (insn))
+	  else if (alter_jumps
+		   && GET_CODE (insn) == JUMP_INSN && condjump_p (insn))
 	    {
 	      /* We want a copy of the JUMP_INSN so we can modify it
 		 in-place as needed without effecting the original.  */
@@ -3880,7 +3850,8 @@ cprop_insn (insn)
    Return non-zero if a change was made.  */
 
 static int
-cprop ()
+cprop (alter_jumps)
+     int alter_jumps;
 {
   int bb, changed;
   rtx insn;
@@ -3900,7 +3871,7 @@ cprop ()
 	{
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    {
-	      changed |= cprop_insn (insn);
+	      changed |= cprop_insn (insn, alter_jumps);
 
 	      /* Keep track of everything modified by this insn.  */
 	      /* ??? Need to be careful w.r.t. mods done to INSN.  */
@@ -3920,9 +3891,9 @@ cprop ()
    PASS is the pass count.  */
 
 static int
-one_cprop_pass (f, pass)
-     rtx f;
+one_cprop_pass (pass, alter_jumps)
      int pass;
+     int alter_jumps;
 {
   int changed = 0;
 
@@ -3930,7 +3901,7 @@ one_cprop_pass (f, pass)
   copy_prop_count = 0;
 
   alloc_set_hash_table (max_cuid);
-  compute_set_hash_table (f);
+  compute_set_hash_table ();
   if (gcse_file)
     dump_hash_table (gcse_file, "SET", set_hash_table, set_hash_table_size,
 		     n_sets);
@@ -3938,7 +3909,7 @@ one_cprop_pass (f, pass)
     {
       alloc_cprop_mem (n_basic_blocks, n_sets);
       compute_cprop_data ();
-      changed = cprop ();
+      changed = cprop (alter_jumps);
       free_cprop_mem ();
     }
   free_set_hash_table ();
@@ -4027,41 +3998,6 @@ free_pre_mem ()
   free (pre_ppin);
   free (pre_ppout);
   free (pre_transpout);
-}
-
-/* Dump PRE data.  */
-
-void
-dump_pre_data (file)
-     FILE *file;
-{
-  dump_sbitmap_vector (file, "PRE locally transparent expressions", "BB",
-		       pre_transp, n_basic_blocks);
-  dump_sbitmap_vector (file, "PRE locally available expressions", "BB",
-		       pre_comp, n_basic_blocks);
-  dump_sbitmap_vector (file, "PRE locally anticipatable expressions", "BB",
-		       pre_antloc, n_basic_blocks);
-
-  dump_sbitmap_vector (file, "PRE available incoming expressions", "BB",
-		       pre_avin, n_basic_blocks);
-  dump_sbitmap_vector (file, "PRE available outgoing expressions", "BB",
-		       pre_avout, n_basic_blocks);
-  dump_sbitmap_vector (file, "PRE anticipatable incoming expressions", "BB",
-		       pre_antin, n_basic_blocks);
-  dump_sbitmap_vector (file, "PRE anticipatable outgoing expressions", "BB",
-		       pre_antout, n_basic_blocks);
-
-  dump_sbitmap_vector (file, "PRE partially available incoming expressions", "BB",
-		       pre_pavin, n_basic_blocks);
-  dump_sbitmap_vector (file, "PRE partially available outgoing expressions", "BB",
-		       pre_pavout, n_basic_blocks);
-  dump_sbitmap_vector (file, "PRE placement possible on incoming", "BB",
-		       pre_ppin, n_basic_blocks);
-  dump_sbitmap_vector (file, "PRE placement possible on outgoing", "BB",
-		       pre_ppout, n_basic_blocks);
-
-  dump_sbitmap_vector (file, "PRE transparent on outgoing", "BB",
-		       pre_transpout, n_basic_blocks);
 }
 
 /* Compute the local properties of each recorded expression.
@@ -4886,8 +4822,7 @@ pre_gcse ()
    Return non-zero if a change was made.  */
 
 static int
-one_pre_gcse_pass (f, pass)
-     rtx f;
+one_pre_gcse_pass (pass)
      int pass;
 {
   int changed = 0;
@@ -4896,7 +4831,7 @@ one_pre_gcse_pass (f, pass)
   gcse_create_count = 0;
 
   alloc_expr_hash_table (max_cuid);
-  compute_expr_hash_table (f);
+  compute_expr_hash_table ();
   if (gcse_file)
     dump_hash_table (gcse_file, "Expression", expr_hash_table,
 		     expr_hash_table_size, n_exprs);
