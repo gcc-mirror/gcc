@@ -1,6 +1,7 @@
 /* Handle CLASSPATH, -classpath, and path searching.
 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software 
+   Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -148,22 +149,23 @@ add_entry (entp, filename, is_system)
   n->next = NULL;
 
   len = strlen (filename);
-  if (len > 4 && (strcmp (filename + len - 4, ".zip") == 0
-		  || strcmp (filename + len - 4, ".jar") == 0))
+
+  if (len > 4 && (COMPARE_FILENAMES (filename + len - 4, ".zip") == 0
+		  || COMPARE_FILENAMES (filename + len - 4, ".jar") == 0))
     {
       n->flags |= FLAG_ZIP;
       /* If the user uses -classpath then he'll have to include
 	 libgcj.jar in the value.  We check for this in a simplistic
 	 way.  Symlinks will fool this test.  This is only used for
 	 -MM and -MMD, so it probably isn't terribly important.  */
-      if (! strcmp (filename, LIBGCJ_ZIP_FILE))
+      if (! COMPARE_FILENAMES (filename, LIBGCJ_ZIP_FILE))
 	n->flags |= FLAG_SYSTEM;
     }
 
   /* Note that we add a trailing separator to `.zip' names as well.
      This is a little hack that lets the searching code in jcf-io.c
      work more easily.  Eww.  */
-  if (filename[len - 1] != '/' && filename[len - 1] != DIR_SEPARATOR)
+  if (! IS_DIR_SEPARATOR (filename[len - 1]))
     {
       char *f2 = alloca (len + 2);
       strcpy (f2, filename);
@@ -378,7 +380,7 @@ jcf_path_extdirs_arg (cp)
 			char *name = alloca (dirname_length
 					     + strlen (direntp->d_name) + 2);
 			strcpy (name, buf);
-			if (name[dirname_length-1] != DIR_SEPARATOR)
+			if (! IS_DIR_SEPARATOR (name[dirname_length-1]))
 			  {
 			    name[dirname_length] = DIR_SEPARATOR;
 			    name[dirname_length+1] = 0;
