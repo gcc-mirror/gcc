@@ -687,7 +687,8 @@ process_start_catch_block (declspecs, declarator)
       decl = pushdecl (decl);
 
       start_decl_1 (decl);
-      cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+      cp_finish_decl (decl, init, NULL_TREE, 0,
+		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
     }
   else
     {
@@ -1027,13 +1028,11 @@ expand_throw (exp)
 	     ourselves into expand_call.  */
 	  if (TREE_SIDE_EFFECTS (exp))
 	    {
-	      tree temp = build (VAR_DECL, TREE_TYPE (exp));
+	      tree temp = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
 	      DECL_ARTIFICIAL (temp) = 1;
-	      layout_decl (temp, 0);
 	      DECL_RTL (temp) = assign_temp (TREE_TYPE (exp), 2, 0, 1);
-	      expand_expr (build (INIT_EXPR, TREE_TYPE (exp), temp, exp),
-			   NULL_RTX, VOIDmode, 0);
-	      expand_decl_cleanup (NULL_TREE, maybe_build_cleanup (temp));
+	      DECL_INITIAL (temp) = exp;
+	      cp_finish_decl (temp, exp, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
 	      exp = temp;
 	    }
 #endif
@@ -1072,7 +1071,7 @@ expand_throw (exp)
 
       /* Cast EXP to `void *' so that it will match the prototype for
 	 __cp_push_exception.  */
-      exp = build_reinterpret_cast (ptr_type_node, exp);
+      exp = convert (ptr_type_node, exp);
 
       if (cleanup == NULL_TREE)
 	{

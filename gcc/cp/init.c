@@ -1138,14 +1138,13 @@ expand_default_init (binfo, true_exp, exp, init, flags)
       if (true_exp != exp)
 	abort ();
 
-      /* We special-case TARGET_EXPRs here to avoid an error about
-	 private copy constructors for temporaries bound to reference vars.
-	 If the TARGET_EXPR represents a call to a function that has
-	 permission to create such objects, a reference can bind directly
-	 to the return value.  An object variable must be initialized
-	 via the copy constructor, even if the call is elided.  */
-      if (! (TREE_CODE (exp) == VAR_DECL && DECL_ARTIFICIAL (exp)
-	     && TREE_CODE (init) == TARGET_EXPR && TREE_TYPE (init) == type))
+      if (flags & DIRECT_BIND)
+	/* Do nothing.  We hit this in two cases:  Reference initialization,
+	   where we aren't initializing a real variable, so we don't want
+	   to run a new constructor; and catching an exception, where we
+	   have already built up the constructor call so we could wrap it
+	   in an exception region.  */;
+      else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
       if (TREE_CODE (init) == TRY_CATCH_EXPR)

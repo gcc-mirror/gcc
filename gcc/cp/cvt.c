@@ -354,11 +354,13 @@ build_up_reference (type, arg, flags)
 	  DECL_ARTIFICIAL (arg) = 1;
 	}
       DECL_INITIAL (arg) = targ;
-      cp_finish_decl (arg, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+      cp_finish_decl (arg, targ, NULL_TREE, 0,
+		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
     }
   else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))
     {
       tree slot = build_decl (VAR_DECL, NULL_TREE, argtype);
+      DECL_ARTIFICIAL (slot) = 1;
       arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
       TREE_SIDE_EFFECTS (arg) = 1;
     }
