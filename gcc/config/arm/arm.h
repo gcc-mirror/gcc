@@ -433,14 +433,11 @@ extern GTY(()) rtx aof_pic_label;
    destination is non-Thumb aware.  */
 #define THUMB_FLAG_CALLER_SUPER_INTERWORKING	(1 << 20)
 
-/* Nonzero means target uses VFP FP.  */
-#define ARM_FLAG_VFP		(1 << 21)
-
 /* Nonzero means to use ARM/Thumb Procedure Call Standard conventions.  */
-#define ARM_FLAG_ATPCS		(1 << 22)
+#define ARM_FLAG_ATPCS		(1 << 21)
 
 /* Fix invalid Cirrus instruction combinations by inserting NOPs.  */
-#define CIRRUS_FIX_INVALID_INSNS (1 << 23)
+#define CIRRUS_FIX_INVALID_INSNS (1 << 22)
 
 #define TARGET_APCS_FRAME		(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)

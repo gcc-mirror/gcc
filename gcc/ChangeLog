@@ -1,5 +1,11 @@
 2004-03-05  Paul Brook  <paul@codesourcery.com>
 
+	* arm.h (ARM_FLAG_VFP): Remove.
+	(ARM_FLAG_ATPCS, CIRRUS_FIX_INVALID_INSNS): Renumber.
+	* netbsd-elf.h (ARM_FLAG_VFP): Remove.
+
+2004-03-05  Paul Brook  <paul@codesourcery.com>
+
 	* function.c (assign_parms): Include pretend alignment offset.
 
 2004-03-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
