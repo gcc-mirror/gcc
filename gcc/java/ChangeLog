@@ -1,5 +1,7 @@
 1999-09-22  Tom Tromey  <tromey@cygnus.com>
 
+	* lang-specs.h: Added `%(jc1)' to the jc1 spec.
+
 	* javaop.h (WORD_TO_FLOAT): Use `inline' unconditionally.
 	(WORDS_TO_LONG): Likewise.
 	(WORDS_TO_DOUBLE): Likewise.
