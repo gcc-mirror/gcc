@@ -1,0 +1,14 @@
+# It is defined in config/xm-linux.h.
+# X_CFLAGS = -DPOSIX
+
+# The following is needed when compiling stages 2 and 3 because gcc's
+# limits.h must be picked up before /usr/include/limits.h.  This is because
+# each does an #include_next of the other if the other hasn't been included.
+# /usr/include/limits.h loses if it gets found first because /usr/include is
+# at the end of the search order.  When a new version of gcc is released,
+# gcc's limits.h hasn't been installed yet and hence isn't found.
+
+BOOT_CFLAGS = -O $(CFLAGS) -Iinclude
+
+# Don't run fixproto
+STMP_FIXPROTO =
