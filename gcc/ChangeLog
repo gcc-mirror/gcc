@@ -1,3 +1,14 @@
+2002-11-18  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/hpux_longdouble.h (FIXUNS_TRUNCTFSI2_LIBCALL): New.
+	(FIXUNS_TRUNCTFDI2_LIBCALL): New.
+	(fixunstfsi_libfunc): Change.
+	(fixunstfdi_libfunc): Change.
+	(sdiv_optab): Don't zero out SImode handler.
+	(udiv_optab): Don't zero out SImode handler.
+	(smod_optab): Don't zero out SImode handler.
+	(umod_optab): Don't zero out SImode handler.
+
 2002-11-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/8524

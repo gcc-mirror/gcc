@@ -41,6 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #define FLOATDITF2_LIBCALL "_U_Qfcnvxf_dbl_to_quad"
 #define FIX_TRUNCTFSI2_LIBCALL "_U_Qfcnvfxt_quad_to_sgl"
 #define FIX_TRUNCTFDI2_LIBCALL "_U_Qfcnvfxt_quad_to_dbl"
+#define FIXUNS_TRUNCTFSI2_LIBCALL "_U_Qfcnvfxut_quad_to_sgl"
+#define FIXUNS_TRUNCTFDI2_LIBCALL "_U_Qfcnvfxut_quad_to_dbl"
 #define EQTF2_LIBCALL "_U_Qfeq"
 #define NETF2_LIBCALL "_U_Qfne"
 #define GTTF2_LIBCALL "_U_Qfgt"
@@ -76,19 +78,14 @@ Boston, MA 02111-1307, USA.  */
     floatditf_libfunc = gen_rtx_SYMBOL_REF (Pmode, FLOATDITF2_LIBCALL);  \
     fixtfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFSI2_LIBCALL);\
     fixtfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFDI2_LIBCALL);\
-    fixunstfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFSI2_LIBCALL);  \
-    fixunstfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFDI2_LIBCALL);  \
+    fixunstfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);  \
+    fixunstfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIXUNS_TRUNCTFDI2_LIBCALL);  \
     eqtf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EQTF2_LIBCALL);		\
     netf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, NETF2_LIBCALL);		\
     gttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, GTTF2_LIBCALL);		\
     getf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, GETF2_LIBCALL);		\
     lttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, LTTF2_LIBCALL);		\
     letf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, LETF2_LIBCALL);		\
-									\
-  sdiv_optab->handlers[(int) SImode].libfunc = 0;                       \
-  udiv_optab->handlers[(int) SImode].libfunc = 0;                       \
-  smod_optab->handlers[(int) SImode].libfunc = 0;                       \
-  umod_optab->handlers[(int) SImode].libfunc = 0;                       \
 									\
     INIT_SUBTARGET_OPTABS;						\
   } while (0)
