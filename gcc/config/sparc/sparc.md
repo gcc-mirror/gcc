@@ -609,7 +609,7 @@
 ;; turn something that does not require a jump into something that does.
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operator:SI 1 "normal_comp_operator" [(reg 0) (const_int 0)]))]
+	(match_operator:SI 1 "noov_compare_op" [(reg 0) (const_int 0)]))]
   ""
   "* return output_scc_insn (operands, insn); "
   [(set_attr "type" "multi")
