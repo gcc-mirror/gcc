@@ -1,5 +1,16 @@
 2002-04-01  Mark Wielaard  <mark@klomp.org>
 
+        * java/util/BitSet.java (BitSet(int)): if nbits < 0 throw
+        NegativeArraySizeException
+        (clear(int)): Use sign extended shift.
+        (flip(int)): Likewise.
+        (get(int)): Likewise.
+        (nextClearBit(int)): Likewise.
+        (nextSetBit(int)): Likewise.
+        (set(int)): Likewise.
+
+2002-04-01  Mark Wielaard  <mark@klomp.org>
+
 	* mauve-libgcj: Add JDK1.3, JDK1.4, JLS1.2 tests, remove ignored tests
 	that can be compiled now and add testsuite crashers to ignore list.
 
