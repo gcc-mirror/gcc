@@ -581,7 +581,7 @@ gen_decl (decl, is_func_definition, style)
 
   ret_val = affix_data_type (ret_val);
 
-  if (DECL_REGISTER (decl))
+  if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
     ret_val = concat ("register ", ret_val);
   if (TREE_PUBLIC (decl))
     ret_val = concat ("extern ", ret_val);
