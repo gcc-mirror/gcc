@@ -2768,7 +2768,7 @@
 	(match_operand:SI 1 "register_operand" ""))
    (set (subreg:SI (match_dup 2) 0)
 	(const_int 0))
-   (set (match_operand:SF 0 "general_operand" "")
+   (set (match_operand:SF 0 "register_operand" "")
 	(float:SF (match_dup 2)))]
   "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "operands[2] = gen_reg_rtx (DImode);")
@@ -2778,7 +2778,7 @@
 	(match_operand:SI 1 "register_operand" ""))
    (set (subreg:SI (match_dup 2) 0)
 	(const_int 0))
-   (set (match_operand:DF 0 "general_operand" "")
+   (set (match_operand:DF 0 "register_operand" "")
 	(float:DF (match_dup 2)))]
   "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "operands[2] = gen_reg_rtx (DImode);")
