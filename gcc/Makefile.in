@@ -438,7 +438,9 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
-all.cross: native gcc-cross specs libgcc.a stmp-headers cross-test $(EXTRA_PARTS)
+# Note that we can compile enquire using the cross-compiler just build,
+# although we can't run it on this machine.
+all.cross: native gcc-cross specs libgcc.a stmp-headers cross-test enquire $(EXTRA_PARTS)
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
