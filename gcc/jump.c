@@ -1913,7 +1913,8 @@ never_reached_warning (avoided_insn, finish)
      us the head of a block, a NOTE_INSN_BASIC_BLOCK, which often follows
      the line note.  */
   for (insn = PREV_INSN (avoided_insn); ; insn = PREV_INSN (insn))
-    if (GET_CODE (insn) != NOTE)
+    if (GET_CODE (insn) != NOTE
+	|| NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
       {
 	insn = NEXT_INSN (insn);
 	break;
