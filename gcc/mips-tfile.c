@@ -3294,14 +3294,22 @@ parse_def (name_start)
     }
 
 
-  t.extra_sizes = (tag_start != (char *) 0);
+  if (storage_class == sc_Bits)
+    {
+      t.bitfield = 1;
+      t.extra_sizes = 1;
+    }
+  else
+    t.extra_sizes = 0;
+
   if (t.num_dims > 0)
     {
-      int diff = t.num_dims - t.num_sizes;
+      int num_real_sizes = t.num_sizes - t.extra_sizes;
+      int diff = t.num_dims - num_real_sizes;
       int i = t.num_dims - 1;
       int j;
 
-      if (t.num_sizes != 1 || diff < 0)
+      if (num_real_sizes != 1 || diff < 0)
 	{
 	  error_line = __LINE__;
 	  saber_stop ();
@@ -3312,7 +3320,6 @@ parse_def (name_start)
 	 and sizes were passed, creating extra sizes for multiply
 	 dimensioned arrays if not passed.  */
 
-      t.extra_sizes = 0;
       if (diff)
 	{
 	  for (j = (sizeof (t.sizes) / sizeof (t.sizes[0])) - 1; j >= 0; j--)
@@ -3328,14 +3335,6 @@ parse_def (name_start)
 	    }
 	}
     }
-
-  else if (symbol_type == st_Member && t.num_sizes - t.extra_sizes == 1)
-    { /* Is this a bitfield?  This is indicated by a structure member
-	 having a size field that isn't an array.  */
-
-      t.bitfield = 1;
-    }
-
 
   /* Except for enumeration members & begin/ending of scopes, put the
      type word in the aux. symbol table.  */
