@@ -229,21 +229,6 @@ extern void assemble_alias		PROTO((tree, tree));
    for an `asm' keyword used between functions.  */
 extern void assemble_asm		PROTO((tree));
 
-/* Record an element in the table of global destructors.
-   How this is done depends on what sort of assembler and linker
-   are in use.
-
-   NAME should be the name of a global function to be called
-   at exit time.  This name is output using assemble_name.  */
-extern void assemble_destructor		PROTO((char *));
-
-/* Likewise for global constructors.  */
-extern void assemble_constructor	PROTO((char *));
-
-/* Likewise for entries we want to record for garbage collection.
-   Garbage collection is still under development.  */
-extern void assemble_gc_entry		PROTO((char *));
-
 /* Output assembler code for the constant pool of a function and associated
    with defining the name of the function.  DECL describes the function.
    NAME is the function's name.  For the constant pool, we use the current
@@ -254,14 +239,6 @@ extern void assemble_start_function	PROTO((tree, char *));
    function.  DECL describes the function.  NAME is the function's name.  */
 extern void assemble_end_function	PROTO((tree, char *));
 
-/* Assemble code to leave SIZE bytes of zeros.  */
-extern void assemble_zeros		PROTO((int));
-
-/* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
-extern void assemble_align		PROTO((int));
-
-/* Assemble a string constant with the specified C string as contents.  */
-extern void assemble_string		PROTO((const char *, int));
 /* Assemble everything that is needed for a variable or function declaration.
    Not used for automatic variables, and not used for function definitions.
    Should not be called for variables of incomplete structure type.
@@ -278,6 +255,30 @@ extern void assemble_variable		PROTO((tree, int, int, int));
    Do nothing if DECL is not external.  */
 extern void assemble_external		PROTO((tree));
 #endif /* TREE_CODE */
+
+/* Record an element in the table of global destructors.
+   How this is done depends on what sort of assembler and linker
+   are in use.
+
+   NAME should be the name of a global function to be called
+   at exit time.  This name is output using assemble_name.  */
+extern void assemble_destructor		PROTO((char *));
+
+/* Likewise for global constructors.  */
+extern void assemble_constructor	PROTO((char *));
+
+/* Likewise for entries we want to record for garbage collection.
+   Garbage collection is still under development.  */
+extern void assemble_gc_entry		PROTO((char *));
+
+/* Assemble code to leave SIZE bytes of zeros.  */
+extern void assemble_zeros		PROTO((int));
+
+/* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
+extern void assemble_align		PROTO((int));
+
+/* Assemble a string constant with the specified C string as contents.  */
+extern void assemble_string		PROTO((const char *, int));
 
 #ifdef RTX_CODE
 /* Similar, for calling a library function FUN.  */

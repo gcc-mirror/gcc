@@ -1,3 +1,7 @@
+Tue Oct 26 18:35:25 1999  Richard Earnshaw  <rearnsha@arm.com>
+
+	* output.h: Don't unnecessarily conditionalize prototypes on TREE_CODE.
+
 Tue Oct 26 15:42:56 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload.c (find_reloads): Compute mode and nregs fields of all
