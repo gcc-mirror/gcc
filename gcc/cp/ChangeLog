@@ -1,3 +1,8 @@
+1999-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst): Back out 1999-08-06 patch.  Use fold and
+	decl_constant_value to simplify array bounds.
+
 1999-08-19  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h: Declare flag_use_repository.

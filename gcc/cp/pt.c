@@ -6130,6 +6130,11 @@ tsubst (t, args, complain, in_decl)
 	if (max == error_mark_node)
 	  return error_mark_node;
 
+	/* See if we can reduce this expression to something simpler.  */
+	max = maybe_fold_nontype_arg (max);
+	if (!processing_template_decl && TREE_READONLY_DECL_P (max))
+	  max = decl_constant_value (max);
+
 	if (processing_template_decl 
 	    /* When providing explicit arguments to a template
 	       function, but leaving some arguments for subsequent
@@ -6137,8 +6142,11 @@ tsubst (t, args, complain, in_decl)
 	       not PROCESSING_TEMPLATE_DECL.  */
 	    || TREE_CODE (max) != INTEGER_CST)
 	  {
-	    return build_index_type (build_min
-	      (MINUS_EXPR, sizetype, max, integer_one_node));
+	    tree itype = make_node (INTEGER_TYPE);
+	    TYPE_MIN_VALUE (itype) = size_zero_node;
+	    TYPE_MAX_VALUE (itype) = build_min (MINUS_EXPR, sizetype, max,
+						integer_one_node);
+	    return itype;
 	  }
 
 	if (integer_zerop (omax))
