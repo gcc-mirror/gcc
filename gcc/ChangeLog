@@ -1,3 +1,9 @@
+2002-03-09  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.md (ne0+4): Add extra CLOBBER.
+	(ne0+5): Use new clobber to generate proper shift pattern.
+	Patch by Michael Matz <matz@kde.org>.
+
 2002-03-09  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.c (validate_all_switches): Also handle `%W{...}'.
