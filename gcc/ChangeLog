@@ -1,3 +1,15 @@
+2004-09-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/sh/sh.h (INIT_CUMULATIVE_ARGS): Replace with an
+	invocation of the function sh_init_cumulative_args.
+	(INIT_CUMULATIVE_LIBCALL_ARGS): Likewise.
+	(INIT_CUMULATIVE_INCOMING_ARGS): Delete.
+	* config/sh/sh-protos.h: Prototype sh_init_cumulative_args.
+	* config/sh/sh.c (sh_init_cumulative_args): New function based
+	on the contents of the old INIT_CUMULATIVE_ARGS macro but with a
+	heuristic added to determine the setting of force_mem when a
+	library function is being called.
+
 2004-09-28  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-loop-im.c (single_reachable_address) <PHI_NODE>:

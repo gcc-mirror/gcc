@@ -2091,48 +2091,10 @@ struct sh_args {
    For TARGET_HITACHI, the structure value pointer is passed in memory.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
-  do {								\
-    (CUM).arg_count[(int) SH_ARG_INT] = 0;			\
-    (CUM).arg_count[(int) SH_ARG_FLOAT] = 0;			\
-    (CUM).renesas_abi = sh_attr_renesas_p (FNTYPE) ? 1 : 0;	\
-    (CUM).force_mem						\
-      = ((TARGET_HITACHI || (CUM).renesas_abi) && (FNTYPE)	\
-	 && aggregate_value_p (TREE_TYPE (FNTYPE), (FNDECL)));	\
-    (CUM).prototype_p = (FNTYPE) && TYPE_ARG_TYPES (FNTYPE);	\
-    (CUM).arg_count[(int) SH_ARG_INT]				\
-      = (TARGET_SH5 && (FNTYPE)					\
-	 && aggregate_value_p (TREE_TYPE (FNTYPE), (FNDECL)));	\
-    (CUM).free_single_fp_reg = 0;				\
-    (CUM).outgoing = 1;						\
-    (CUM).stack_regs = 0;					\
-    (CUM).byref_regs = 0;					\
-    (CUM).byref = 0;						\
-    (CUM).call_cookie						\
-      = (CALL_COOKIE_RET_TRAMP					\
-	 (TARGET_SHCOMPACT && (FNTYPE)				\
-	  && (CUM).arg_count[(int) SH_ARG_INT] == 0		\
-	  && (TYPE_MODE (TREE_TYPE (FNTYPE)) == BLKmode		\
-	      ? int_size_in_bytes (TREE_TYPE (FNTYPE))		\
-	      : GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (FNTYPE)))) > 4 \
-	  && (BASE_RETURN_VALUE_REG (TYPE_MODE (TREE_TYPE	\
- 						(FNTYPE)))	\
-	      == FIRST_RET_REG)));				\
-  } while (0)
+  sh_init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (FNDECL), (N_NAMED_ARGS), VOIDmode)
 
 #define INIT_CUMULATIVE_LIBCALL_ARGS(CUM, MODE, LIBNAME) \
-  do {								\
-    INIT_CUMULATIVE_ARGS ((CUM), NULL_TREE, (LIBNAME), 0, 0);	\
-    (CUM).call_cookie						\
-      = (CALL_COOKIE_RET_TRAMP					\
-	 (TARGET_SHCOMPACT && GET_MODE_SIZE (MODE) > 4		\
-	  && BASE_RETURN_VALUE_REG (MODE) == FIRST_RET_REG));	\
-  } while (0)
-
-#define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME) \
-  do {								\
-    INIT_CUMULATIVE_ARGS ((CUM), (FNTYPE), (LIBNAME), 0, 0);	\
-    (CUM).outgoing = 0;						\
-  } while (0)
+  sh_init_cumulative_args (& (CUM), NULL_TREE, (LIBNAME), NULL_TREE, 0, (MODE))
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
 	sh_function_arg_advance (&(CUM), (MODE), (TYPE), (NAMED))
