@@ -646,7 +646,7 @@ xfree (p)
 static char *
 savestring (input, size)
      const char *input;
-     unsigned size;
+     unsigned int size;
 {
   char *output = (char *) xmalloc (size + 1);
   strcpy (output, input);
@@ -658,9 +658,9 @@ savestring (input, size)
 static char *
 savestring2 (input1, size1, input2, size2)
      const char *input1;
-     unsigned size1;
+     unsigned int size1;
      const char *input2;
-     unsigned size2;
+     unsigned int size2;
 {
   char *output = (char *) xmalloc (size1 + size2 + 1);
   strcpy (output, input1);
@@ -1911,7 +1911,7 @@ munge_compile_params (params_list)
   /* Build up the contents in a temporary vector
      that is so big that to has to be big enough.  */
   const char **temp_params
-    = (const char **) alloca ((strlen (params_list) + 6) * sizeof (char *));
+    = (const char **) alloca ((strlen (params_list) + 8) * sizeof (char *));
   int param_count = 0;
   const char *param;
 
