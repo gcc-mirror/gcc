@@ -2399,7 +2399,11 @@ mark_target_live_regs (target, res)
 	 marked live, plus live pseudo regs that have been renumbered to
 	 hard regs.  */
 
-      COPY_HARD_REG_SET (current_live_regs, *regs_live);
+#ifdef HARD_REG_SET
+      current_live_regs = *regs_live;
+#else
+      COPY_HARD_REG_SET (current_live_regs, regs_live);
+#endif
 
       for (offset = 0, i = 0; offset < regset_size; offset++)
 	{

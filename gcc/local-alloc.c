@@ -1131,7 +1131,11 @@ block_alloc (b)
 
   /* Initialize table of hardware registers currently live.  */
 
-  COPY_HARD_REG_SET (regs_live, *basic_block_live_at_start[b]);
+#ifdef HARD_REG_SET
+  regs_live = *basic_block_live_at_start[b];
+#else
+  COPY_HARD_REG_SET (regs_live, basic_block_live_at_start[b]);
+#endif
 
   /* This loop scans the instructions of the basic block
      and assigns quantities to registers.
