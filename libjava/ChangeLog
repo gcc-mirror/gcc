@@ -1,3 +1,9 @@
+2004-11-07  Robert Schuster  <theBohemian@gmx.net>
+
+	Fixes bug #10908
+	* gnu/java/beans/IntrospectionIncubator.java:
+	(addMethod): static methods are discarded now, too.
+
 2004-11-07  Andrew John Hughes <gnu_andrew@member.fsf.org>
 
 	* java/util/GregorianCalendar.java
