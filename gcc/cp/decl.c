@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
-   Hacked by Michael Tiemann (tiemann@cygnus.com)
+   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
+   Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
 
@@ -10284,6 +10284,9 @@ copy_args_p (d)
      tree d;
 {
   tree t = FUNCTION_ARG_CHAIN (d);
+  if (DECL_CONSTRUCTOR_P (d)
+      && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (d)))
+    t = TREE_CHAIN (t);
   if (t && TREE_CODE (TREE_VALUE (t)) == REFERENCE_TYPE
       && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (t)))
 	  == DECL_CLASS_CONTEXT (d))
