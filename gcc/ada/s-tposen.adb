@@ -350,25 +350,18 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Ceiling_Violation : Boolean;
 
    begin
-      --  If pragma Detect_Blocking is active then Program_Error must
-      --  be raised if this potentially blocking operation is called from
-      --  a protected action, and the protected object nesting level
-      --  must be increased.
+      --  If pragma Detect_Blocking is active then the protected object
+      --  nesting level must be increased.
 
       if Detect_Blocking then
          declare
             Self_Id : constant Task_Id := STPO.Self;
          begin
-            if Self_Id.Common.Protected_Action_Nesting > 0  then
-               Ada.Exceptions.Raise_Exception
-                 (Program_Error'Identity, "potentially blocking operation");
-            else
-               --  We are entering in a protected action, so that we
-               --  increase the protected object nesting level.
+            --  We are entering in a protected action, so that we
+            --  increase the protected object nesting level.
 
-               Self_Id.Common.Protected_Action_Nesting :=
-                 Self_Id.Common.Protected_Action_Nesting + 1;
-            end if;
+            Self_Id.Common.Protected_Action_Nesting :=
+              Self_Id.Common.Protected_Action_Nesting + 1;
          end;
       end if;
 
@@ -390,25 +383,18 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Ceiling_Violation : Boolean;
 
    begin
-      --  If pragma Detect_Blocking is active then Program_Error must be
-      --  raised if this potentially blocking operation is called from a
-      --  protected action, and the protected object nesting level must
-      --  be increased.
+      --  If pragma Detect_Blocking is active then the protected object
+      --  nesting level must be increased.
 
       if Detect_Blocking then
          declare
             Self_Id : constant Task_Id := STPO.Self;
          begin
-            if Self_Id.Common.Protected_Action_Nesting > 0  then
-               Ada.Exceptions.Raise_Exception
-                 (Program_Error'Identity, "potentially blocking operation");
-            else
-               --  We are entering in a protected action, so that we
-               --  increase the protected object nesting level.
+            --  We are entering in a protected action, so that we
+            --  increase the protected object nesting level.
 
-               Self_Id.Common.Protected_Action_Nesting :=
-                 Self_Id.Common.Protected_Action_Nesting + 1;
-            end if;
+            Self_Id.Common.Protected_Action_Nesting :=
+              Self_Id.Common.Protected_Action_Nesting + 1;
          end;
       end if;
 
