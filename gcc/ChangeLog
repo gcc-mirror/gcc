@@ -1,3 +1,8 @@
+2000-04-19  Jim Blandy  <jimb@redhat.com>
+
+	* dwarf2out.c (DWARF2_ADDR_SIZE): New macro.  Use it instead
+	of PTR_SIZE, when appropriate.
+
 2000-04-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* system.h (ONLY_INT_FIELDS): Make sure it is defined.
