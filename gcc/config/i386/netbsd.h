@@ -5,6 +5,7 @@
 
 /* Get generic NetBSD definitions.  */
 #include <netbsd.h>
+#include <netbsd-aout.h>
 
 /* This goes away when the math-emulator is fixed */
 #undef TARGET_SUBTARGET_DEFAULT
