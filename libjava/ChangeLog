@@ -1,3 +1,8 @@
+2005-02-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/InputStreamReader.java:
+	Fixed @author tag.
+
 2005-02-20  Rutger Ovidius  <ovidr@users.sourceforge.net>
 
 	PR libgcj/19728:
