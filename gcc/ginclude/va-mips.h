@@ -74,7 +74,7 @@ typedef char * __gnuc_va_list;
 #ifndef va_end
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif
-#define va_end(__AP)
+#define va_end(__AP)	((void)0)
 
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
