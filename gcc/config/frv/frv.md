@@ -2426,7 +2426,7 @@
 ;; to make it conditional on reload.
 
 (define_expand "movcc_fp"
-  [(set (match_operand:CC_FP 0 "move_destination_operand" "")
+  [(set (match_operand:CC_FP 0 "movcc_fp_destination_operand" "")
 	(match_operand:CC_FP 1 "move_source_operand" ""))]
   "TARGET_HAS_FPRS"
   "
@@ -2436,7 +2436,7 @@
 }")
 
 (define_insn "*movcc_fp_internal"
-  [(set (match_operand:CC_FP 0 "move_destination_operand" "=d,d,d,m")
+  [(set (match_operand:CC_FP 0 "movcc_fp_destination_operand" "=d,d,d,m")
 	(match_operand:CC_FP 1 "move_source_operand" "u,d,m,d"))]
   "TARGET_HAS_FPRS && (reload_in_progress || reload_completed)"
   "@
@@ -2450,7 +2450,7 @@
 
 (define_expand "reload_incc_fp"
   [(match_operand:CC_FP 0 "fcc_operand" "=u")
-   (match_operand:CC_FP 1 "memory_operand" "m")
+   (match_operand:CC_FP 1 "gpr_or_memory_operand_with_scratch" "m")
    (match_operand:TI 2 "integer_register_operand" "=&d")]
   "TARGET_HAS_FPRS"
   "
@@ -2461,6 +2461,27 @@
   rtx temp2 = simplify_gen_subreg (SImode, operands[2], TImode, 8);
   int shift = CC_SHIFT_RIGHT (REGNO (operands[0]));
   HOST_WIDE_INT mask;
+
+  if (!gpr_or_memory_operand (operands[1], CC_FPmode))
+    {
+      rtx addr;
+      rtx temp3 = simplify_gen_subreg (SImode, operands[2], TImode, 12);
+
+      if (GET_CODE (operands[1]) != MEM)
+        abort ();
+
+      addr = XEXP (operands[1], 0);
+
+      if (GET_CODE (addr) != PLUS)
+        abort ();
+
+      emit_move_insn (temp3, XEXP (addr, 1));
+
+      operands[1] = replace_equiv_address (operands[1],
+					   gen_rtx_PLUS (GET_MODE (addr),
+							 XEXP (addr, 0),
+							 temp3));
+    }
 
   emit_insn (gen_movcc_fp (cc_op2, operands[1]));
   if (shift)
