@@ -1,3 +1,8 @@
+2004-06-21  Steven G. Kargl  <kargls@comcast.net>
+
+	* etime.c (etime_sub): Remove array rank check;
+	Add check for sufficient space.
+
 2004-06-19  Bud Davis  <bdavis9659@comcast.net>
 
 	PR gfortran/16080

@@ -57,9 +57,8 @@ prefix(etime_sub) (gfc_array_r4 *t, GFC_REAL_4 *result)
   tt = -1.;
 #endif
 
-  dim = GFC_DESCRIPTOR_RANK (t);
-  if (dim != 1)
-    runtime_error ("Array rank of TARRAY is not 1.");
+  if (((t->dim[0].ubound + 1 - t->dim[0].lbound)) < 2)
+    runtime_error ("Insufficient number of elements in TARRAY.");
 
   if (t->dim[0].stride == 0)
     t->dim[0].stride = 1;
