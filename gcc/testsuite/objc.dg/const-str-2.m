@@ -5,6 +5,3 @@
 { dg-error "no class name specified as argument to -fconstant-string-class" "" { target *-*-* } 0 }
 
 void foo () {}
-
-/* Seem bogus, should investigate some day.  */
-/* { dg-error "parse error" "" { target *-*-* } 5 } */
