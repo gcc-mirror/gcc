@@ -4574,6 +4574,13 @@ is_c_family ()
 }
 
 static inline int
+is_cxx ()
+{
+  return (get_AT_unsigned (comp_unit_die, DW_AT_language)
+	  == DW_LANG_C_plus_plus);
+}  
+
+static inline int
 is_fortran ()
 {
   register unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
@@ -7897,7 +7904,7 @@ add_data_member_location_attribute (die, decl)
     {
       /* We're working on the TAG_inheritance for a base class.  */
 
-      if (TREE_VIA_VIRTUAL (decl))
+      if (TREE_VIA_VIRTUAL (decl) && is_cxx ())
 	{
 	  /* For C++ virtual bases we can't just use BINFO_OFFSET, as they
 	     aren't at a fixed offset from all (sub)objects of the same

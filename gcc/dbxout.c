@@ -1442,7 +1442,7 @@ dbxout_type (type, full, show_arg_types)
 		have_used_extensions = 1;
 		putc (TREE_VIA_VIRTUAL (child) ? '1' : '0', asmfile);
 		putc (TREE_VIA_PUBLIC (child) ? '2' : '0', asmfile);
-		if (TREE_VIA_VIRTUAL (child))
+		if (TREE_VIA_VIRTUAL (child) && strcmp (language_string, "GNU C++") == 0)
 		  /* For a virtual base, print the (negative) offset within
 		     the vtable where we must look to find the necessary
 		     adjustment.  */
