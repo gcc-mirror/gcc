@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS VERSION toplevel_srcdir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical glibcpp_builddir glibcpp_srcdir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA gcc_version gcc_version_trigger glibcpp_toolexecdir glibcpp_toolexeclibdir glibcpp_prefixdir LN_S STRIP ac_ct_STRIP LIBTOOL SET_MAKE CPP EGREP GTHREAD_FLAGS OBJC_BOEHM_GC LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS VERSION OBJC_BOEHM_GC toplevel_srcdir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical glibcpp_builddir glibcpp_srcdir gcc_version gcc_version_trigger glibcpp_toolexecdir glibcpp_toolexeclibdir glibcpp_prefixdir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN_S STRIP ac_ct_STRIP LIBTOOL SET_MAKE CPP EGREP GTHREAD_FLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -847,12 +847,12 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-multilib       build hella library versions (default)
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
+  --enable-objc-gc       enable the use of Boehm's garbage collector with
+                          the GNU Objective-C runtime.
   --enable-shared=PKGS  build shared libraries default=no
   --enable-static=PKGS  build static libraries default=yes
   --enable-fast-install=PKGS  optimize for fast installation default=yes
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-objc-gc       enable the use of Boehm's garbage collector with
-                          the GNU Objective-C runtime.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1310,10 +1310,13 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
           ac_config_headers="$ac_config_headers config.h"
 
 
+# We need the following definitions because AC_PROG_LIBTOOL relies on them
 PACKAGE=libobjc
+# Version is pulled out to make it a bit easier to change using sed.
 VERSION=1:0:0
 
 
@@ -1323,6 +1326,11 @@ VERSION=1:0:0
 # exported.
 ORIGINAL_LD_FOR_MULTILIBS=$LD
 
+# -------
+# Options
+# -------
+
+# Default to --enable-multilib
 # Check whether --enable-multilib or --disable-multilib was given.
 if test "${enable_multilib+set}" = set; then
   enableval="$enable_multilib"
@@ -1336,6 +1344,55 @@ echo "$as_me: error: bad value ${enableval} for multilib option" >&2;}
 else
   multilib=yes
 fi;
+
+# We use these options to decide which functions to include.
+
+# Check whether --with-target-subdir or --without-target-subdir was given.
+if test "${with_target_subdir+set}" = set; then
+  withval="$with_target_subdir"
+
+fi;
+
+# Check whether --with-cross-host or --without-cross-host was given.
+if test "${with_cross_host+set}" = set; then
+  withval="$with_cross_host"
+
+fi;
+
+echo "$as_me:$LINENO: checking for --enable-version-specific-runtime-libs" >&5
+echo $ECHO_N "checking for --enable-version-specific-runtime-libs... $ECHO_C" >&6
+# Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
+if test "${enable_version_specific_runtime_libs+set}" = set; then
+  enableval="$enable_version_specific_runtime_libs"
+  case "$enableval" in
+ yes) version_specific_libs=yes ;;
+ no)  version_specific_libs=no ;;
+ *)   { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable version-specific libs" >&5
+echo "$as_me: error: Unknown argument to enable/disable version-specific libs" >&2;}
+   { (exit 1); exit 1; }; };;
+ esac
+else
+  version_specific_libs=no
+fi;
+echo "$as_me:$LINENO: result: $version_specific_libs" >&5
+echo "${ECHO_T}$version_specific_libs" >&6
+
+# Check whether --enable-objc-gc or --disable-objc-gc was given.
+if test "${enable_objc_gc+set}" = set; then
+  enableval="$enable_objc_gc"
+  case $enable_objc_gc in
+  no) OBJC_BOEHM_GC='' ;;
+  *) OBJC_BOEHM_GC=libobjc_gc.la ;;
+esac
+else
+  OBJC_BOEHM_GC=''
+fi;
+
+
+# -----------
+# Directories
+# -----------
+
 # When building with srcdir == objdir, links to the source files will
 # be created in directories within the target_subdir.  We have to
 # adjust toplevel_srcdir accordingly, so that configure finds
@@ -1487,25 +1544,54 @@ esac
 # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
 glibcpp_builddir=`${PWDCMD-pwd}`
 case $srcdir in
-\\/$* | ?:\\/*) glibcpp_srcdir=${srcdir} ;;
-*) glibcpp_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
+  \\/$* | ?:\\/*) glibcpp_srcdir=${srcdir} ;;
+  *) glibcpp_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
 esac
 
 
 
-# We use these options to decide which functions to include.
+# Process the option "--enable-version-specific-runtime-libs"
+gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\(^ *\) .*/\1/'`
 
-# Check whether --with-target-subdir or --without-target-subdir was given.
-if test "${with_target_subdir+set}" = set; then
-  withval="$with_target_subdir"
 
-fi;
 
-# Check whether --with-cross-host or --without-cross-host was given.
-if test "${with_cross_host+set}" = set; then
-  withval="$with_cross_host"
+# Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
+case ${version_specific_libs} in
+  yes)
+    # Need the gcc compiler version to know where to install libraries
+    # and header files if --enable-version-specific-runtime-libs option
+    # is selected.
+    glibcpp_toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
+    glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
+    ;;
+  no)
+    if test -n "$with_cross_host" &&
+       test x"$with_cross_host" != x"no"; then
+      glibcpp_toolexecdir='$(exec_prefix)/$(target_noncanonical)'
+      glibcpp_toolexeclibdir='$(toolexecdir)/lib'
+    else
+      # Install a library built with a cross compiler in tooldir, not libdir.
+      glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
+      glibcpp_toolexeclibdir='$(libdir)'
+    fi
+    multi_os_directory=`$CC -print-multi-os-directory`
+    case $multi_os_directory in
+      .) ;; # Avoid trailing /.
+      *) glibcpp_toolexeclibdir=$glibcpp_toolexeclibdir/$multi_os_directory ;;
+    esac
+    ;;
+esac
 
-fi;
+
+
+glibcpp_prefixdir=${prefix}
+
+
+# --------
+# Programs
+# --------
 
 
 ac_ext=c
@@ -2785,65 +2871,6 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 
-# Process the option "--enable-version-specific-runtime-libs"
-echo "$as_me:$LINENO: checking for --enable-version-specific-runtime-libs" >&5
-echo $ECHO_N "checking for --enable-version-specific-runtime-libs... $ECHO_C" >&6
-# Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
-if test "${enable_version_specific_runtime_libs+set}" = set; then
-  enableval="$enable_version_specific_runtime_libs"
-  case "$enableval" in
- yes) version_specific_libs=yes ;;
- no)  version_specific_libs=no ;;
- *)   { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable version-specific libs" >&5
-echo "$as_me: error: Unknown argument to enable/disable version-specific libs" >&2;}
-   { (exit 1); exit 1; }; };;
- esac
-else
-  version_specific_libs=no
-fi;
-# Option set, now we can test it.
-echo "$as_me:$LINENO: result: $version_specific_libs" >&5
-echo "${ECHO_T}$version_specific_libs" >&6
-
-gcc_version_trigger=${srcdir}/../gcc/version.c
-gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
-gcc_version=`echo ${gcc_version_full} | sed -e 's/\(^ *\) .*/\1/'`
-
-
-
-# Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
-case ${version_specific_libs} in
-  yes)
-    # Need the gcc compiler version to know where to install libraries
-    # and header files if --enable-version-specific-runtime-libs option
-    # is selected.
-    glibcpp_toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
-    glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
-    ;;
-  no)
-    if test -n "$with_cross_host" &&
-       test x"$with_cross_host" != x"no"; then
-      glibcpp_toolexecdir='$(exec_prefix)/$(target_noncanonical)'
-      glibcpp_toolexeclibdir='$(toolexecdir)/lib'
-    else
-      # Install a library built with a cross compiler in tooldir, not libdir.
-      glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
-      glibcpp_toolexeclibdir='$(libdir)'
-    fi
-    multi_os_directory=`$CC -print-multi-os-directory`
-    case $multi_os_directory in
-      .) ;; # Avoid trailing /.
-      *) glibcpp_toolexeclibdir=$glibcpp_toolexeclibdir/$multi_os_directory ;;
-    esac
-    ;;
-esac
-
-
-
-glibcpp_prefixdir=${prefix}
-
-
-
 # Disable shared libs by default
 # Check whether --enable-shared or --disable-shared was given.
 if test "${enable_shared+set}" = set; then
@@ -3590,7 +3617,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 3593 "configure"' > conftest.$ac_ext
+  echo '#line 3620 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -3910,6 +3937,10 @@ echo "${ECHO_T}no" >&6
   SET_MAKE="MAKE=${MAKE-make}"
 fi
 
+
+# -------
+# Headers
+# -------
 
 # Sanity check for the cross-compilation case:
 ac_ext=c
@@ -4868,6 +4899,10 @@ fi
 done
 
 
+# -----------
+# Miscellanea
+# -----------
+
 # Determine CFLAGS for gthread.
 # FIXME: the current implementation is dependent on the 'r' variable
 # passed down from the top level
@@ -4890,21 +4925,16 @@ echo "${ECHO_T}$objc_cv_gthread_flags" >&6
 GTHREAD_FLAGS=$objc_cv_gthread_flags
 
 
-# Check whether --enable-objc-gc or --disable-objc-gc was given.
-if test "${enable_objc_gc+set}" = set; then
-  enableval="$enable_objc_gc"
-  case $enable_objc_gc in
-  no) OBJC_BOEHM_GC='' ;;
-  *) OBJC_BOEHM_GC=libobjc_gc.la ;;
-esac
-else
-  OBJC_BOEHM_GC=''
-fi;
+# ------
+# Output
+# ------
 
-
-# We need multilib support, but only if configuring for the target.
           ac_config_files="$ac_config_files Makefile"
+
+
           ac_config_commands="$ac_config_commands default"
+
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -5538,6 +5568,7 @@ s,@ECHO_N@,$ECHO_N,;t t
 s,@ECHO_T@,$ECHO_T,;t t
 s,@LIBS@,$LIBS,;t t
 s,@VERSION@,$VERSION,;t t
+s,@OBJC_BOEHM_GC@,$OBJC_BOEHM_GC,;t t
 s,@toplevel_srcdir@,$toplevel_srcdir,;t t
 s,@build@,$build,;t t
 s,@build_cpu@,$build_cpu,;t t
@@ -5554,6 +5585,11 @@ s,@target_os@,$target_os,;t t
 s,@target_noncanonical@,$target_noncanonical,;t t
 s,@glibcpp_builddir@,$glibcpp_builddir,;t t
 s,@glibcpp_srcdir@,$glibcpp_srcdir,;t t
+s,@gcc_version@,$gcc_version,;t t
+s,@gcc_version_trigger@,$gcc_version_trigger,;t t
+s,@glibcpp_toolexecdir@,$glibcpp_toolexecdir,;t t
+s,@glibcpp_toolexeclibdir@,$glibcpp_toolexeclibdir,;t t
+s,@glibcpp_prefixdir@,$glibcpp_prefixdir,;t t
 s,@CC@,$CC,;t t
 s,@CFLAGS@,$CFLAGS,;t t
 s,@LDFLAGS@,$LDFLAGS,;t t
@@ -5570,11 +5606,6 @@ s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@INSTALL_PROGRAM@,$INSTALL_PROGRAM,;t t
 s,@INSTALL_SCRIPT@,$INSTALL_SCRIPT,;t t
 s,@INSTALL_DATA@,$INSTALL_DATA,;t t
-s,@gcc_version@,$gcc_version,;t t
-s,@gcc_version_trigger@,$gcc_version_trigger,;t t
-s,@glibcpp_toolexecdir@,$glibcpp_toolexecdir,;t t
-s,@glibcpp_toolexeclibdir@,$glibcpp_toolexeclibdir,;t t
-s,@glibcpp_prefixdir@,$glibcpp_prefixdir,;t t
 s,@LN_S@,$LN_S,;t t
 s,@STRIP@,$STRIP,;t t
 s,@ac_ct_STRIP@,$ac_ct_STRIP,;t t
@@ -5583,7 +5614,6 @@ s,@SET_MAKE@,$SET_MAKE,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@GTHREAD_FLAGS@,$GTHREAD_FLAGS,;t t
-s,@OBJC_BOEHM_GC@,$OBJC_BOEHM_GC,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

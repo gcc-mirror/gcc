@@ -1,5 +1,10 @@
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Switch to modern style for AC_INIT, AC_OUTPUT.
+	Sort file into sections.  Remove dnl where appropriate.  Fix
+	other style issues.
+	* configure: Regenerate.
+
 	* configure.in: Replace old AC_PROG_CC hack with new one.
 	Define toplevel_srcdir in terms of srcdir, not top_srcdir (there
 	are no subdirectory output files, so this is fine).  Change prereq
