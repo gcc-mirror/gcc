@@ -113,9 +113,9 @@ install:
 	  fi ; \
 	  cd $(srcdir); \
 	  for FILE in $(USER_INCLUDES); do if [ $$FILE != _G_config.h ]; then \
-	    rm -f $(gxx_includedir)/$$FILE ; \
-	    $(INSTALL_DATA) $$FILE $(gxx_includedir)/$$FILE ; \
-	    chmod a-x $(gxx_includedir)/$$FILE ; \
+	    rm -f $(gxx_include_dir)/$$FILE ; \
+	    $(INSTALL_DATA) $$FILE $(gxx_include_dir)/$$FILE ; \
+	    chmod a-x $(gxx_include_dir)/$$FILE ; \
 	  else true; fi; done ; \
 	else true; \
 	fi
