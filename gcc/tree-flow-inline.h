@@ -97,24 +97,6 @@ may_aliases (tree var)
   return ann ? ann->may_aliases : NULL;
 }
 
-/* Return true if VAR has a hidden use, false if it does not.  */
-static inline bool
-has_hidden_use (tree var)
-{
-  var_ann_t ann = var_ann (var);
-  return ann ? ann->has_hidden_use : false;
-}
-
-/* Set the hidden use flag on VAR.  */ 
-static inline void
-set_has_hidden_use (tree var)
-{
-  var_ann_t ann = var_ann (var);
-  if (ann == NULL)
-    ann = create_var_ann (var);
-  ann->has_hidden_use = 1;
-}
-
 /* Return the line number for EXPR, or return -1 if we have no line
    number information for it.  */
 static inline int
