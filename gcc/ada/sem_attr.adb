@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -6278,18 +6278,29 @@ package body Sem_Attr is
                      if not Covers (Designated_Type (Typ), Nom_Subt)
                        and then not Covers (Nom_Subt, Designated_Type (Typ))
                      then
-                        if Is_Anonymous_Tagged_Base
-                             (Nom_Subt, Etype (Designated_Type (Typ)))
-                        then
-                           null;
 
-                        else
-                           Error_Msg_NE
-                             ("type of prefix: & not compatible", P, Nom_Subt);
-                           Error_Msg_NE
-                             ("\with &, the expected designated type",
-                               P, Designated_Type (Typ));
-                        end if;
+                        declare
+                           Desig : Entity_Id;
+
+                        begin
+                           Desig := Designated_Type (Typ);
+
+                           if Is_Class_Wide_Type (Desig) then
+                              Desig := Etype (Desig);
+                           end if;
+
+                           if Is_Anonymous_Tagged_Base (Nom_Subt, Desig) then
+                              null;
+
+                           else
+                              Error_Msg_NE
+                                ("type of prefix: & not compatible",
+                                  P, Nom_Subt);
+                              Error_Msg_NE
+                                ("\with &, the expected designated type",
+                                  P, Designated_Type (Typ));
+                           end if;
+                        end;
                      end if;
 
                   elsif not Covers (Designated_Type (Typ), Nom_Subt)

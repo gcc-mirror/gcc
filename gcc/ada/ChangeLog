@@ -1,5 +1,11 @@
 2001-12-04  Ed Schonberg <schonber@gnat.com>
 
+	* sem_attr.adb (Resolve_Attribute): Handle properly an non-classwide 
+	access discriminant within a type extension that constrains its 
+	parent discriminants.
+
+2001-12-04  Ed Schonberg <schonber@gnat.com>
+
 	* sem_ch3.adb (Find_Type_Of_Subtype_Indic): If subtype indication 
 	is malformed, use instance of Any_Id to allow analysis to proceed.
 	
