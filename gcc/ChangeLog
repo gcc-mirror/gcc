@@ -1,3 +1,9 @@
+2004-02-13  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR other/10584
+	* c-opts.c (c_common_post_options): Disable function inlining when
+	using -finstrument-functions.
+
 2004-02-12  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md (casesi_internal, casesi_internal_di):

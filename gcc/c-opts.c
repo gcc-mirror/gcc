@@ -1084,7 +1084,12 @@ c_common_post_options (const char **pfilename)
 
   /* Use tree inlining if possible.  Function instrumentation is only
      done in the RTL level, so we disable tree inlining.  */
-  if (! flag_instrument_function_entry_exit)
+  if (flag_instrument_function_entry_exit)
+    {
+      flag_no_inline = 1;
+      flag_really_no_inline = 1;
+    }
+  else
     {
       if (!flag_no_inline)
 	flag_no_inline = 1;
