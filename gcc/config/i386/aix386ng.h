@@ -32,11 +32,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
-#define STARTFILE_SPEC  \
-  "%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} crtbegin.o%s"
+#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}"
+#define ENDFILE_SPEC   "crtn.o%s"
 
-#define LIB_SPEC "%{p:-L/usr/lib/libp}%{pg:-L/usr/lib/libp} -lc \
-  crtend.o%s crtn.o%s"
+#define LIB_SPEC "%{shlib:-lc_s} -lc"
 
 /* Special flags for the linker.  I don't know what they do.  */
 
@@ -44,12 +43,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-D_I386 -Di386 -DAIX -D_AIX"
+#define CPP_PREDEFINES "-Dps2 -Dunix -Di386"
+
+#define CPP_SPEC \
+  "%{posix:-D_POSIX_SOURCE}%{!posix:-DAIX} -D_I386 -D_AIX -D_MBCS"
 
 /* special flags for the aix assembler to generate the short form for all
    qualifying forward reference */
-
+/* The buggy /bin/as of aix ps/2 1.2.x cannot always handle it.	*/
+#if 0
 #define ASM_SPEC "-s2"
+#endif /* 0 */
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) 					\
