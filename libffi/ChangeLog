@@ -1,3 +1,10 @@
+2004-04-26  Joe Buck <jbuck@welsh-buck.org>
+
+	Bug 15093
+	* configure.in: Test for existence of mmap and sys/mman.h before
+	checking blacklist.  Fix suggested by Jim Wilson.
+	* configure: Regenerate.
+	
 2004-04-18  Release Manager
 
 	* GCC 3.4.0 released.
