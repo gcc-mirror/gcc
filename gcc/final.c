@@ -1597,6 +1597,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (NEXT_INSN (insn))
 	ASM_OUTPUT_ALIGN_CODE (file);
 #endif
+#if defined (DWARF2_UNWIND_INFO) && !defined (ACCUMULATE_OUTGOING_ARGS)
+	/* If we push arguments, we need to check all insns for stack
+	   adjustments.  */
+	if (dwarf2out_do_frame ())
+	  dwarf2out_frame_debug (insn);
+#endif
       break;
 
     case CODE_LABEL:
