@@ -1,4 +1,0 @@
-#!/bin/sh
-# Use the top-level config.guess so that we don't have two of them.
-guesssys=`echo $0 | sed 's|config.guess|../config.guess|'`
-exec ${guesssys} "$@"

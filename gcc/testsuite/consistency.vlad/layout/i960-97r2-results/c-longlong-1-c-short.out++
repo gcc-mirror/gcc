@@ -1,4 +1,0 @@
-++Class with short inhereting class with longlong:
-size=16,align=8
-offset-longlong=0,offset-short=8,
-align-longlong=8,align-short=2

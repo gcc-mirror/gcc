@@ -1,6 +1,0 @@
-  This directory contains layout test results for 97r2 i960-vxworks
-compiler used with options
-
--O2 -fvtable-thunks -mno-strict-align -fno-rtti -fcheck-new-mca
--mold-align -mno-leaf-procedures
-

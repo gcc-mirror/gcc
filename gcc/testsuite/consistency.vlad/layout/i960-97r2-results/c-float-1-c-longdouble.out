@@ -1,4 +1,0 @@
-++Class with longdouble inhereting class with float:
-size=32,align=16
-offset-float=0,offset-longdouble=16,
-align-float=4,align-longdouble=16

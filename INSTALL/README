@@ -1,8 +1,0 @@
-This directory has been obsoleted for GCC snapshots and CVS access.
-
-Instead check out the toplevel "wwwdocs" module as a sibling of
-your "gcc" tree or read these files via the GCC web site
-<http://www.gnu.org/software/gcc/>.
-
-Copies of the relevant files will be copied into this directory
-for releases.

@@ -1,5 +1,0 @@
-++++Array of short in struct starting with int:
-size=24,align=4
-offset-int=0,offset-arrayof-short=4,
-align-int=4,align-arrayof-short=2
-offset-short-a[5]=14,align-short-a[5]=2

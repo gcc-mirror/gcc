@@ -1,4 +1,0 @@
-+++char zerofield inside struct starting with short:
-size=8,align=4
-offset-short=0,offset-last=4,
-align-short=2,align-last=4

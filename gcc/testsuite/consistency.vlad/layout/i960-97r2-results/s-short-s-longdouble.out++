@@ -1,4 +1,0 @@
-+++Struct longdouble inside struct starting with short:
-size=36,align=12
-offset-short=0,offset-sss-longdouble=12,
-align-short=2,align-sss-longdouble=12

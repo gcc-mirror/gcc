@@ -1,4 +1,0 @@
-++Class with longlong inhereting class with int:
-size=16,align=8
-offset-int=0,offset-longlong=8,
-align-int=4,align-longlong=8

@@ -1,5 +1,0 @@
-# The spiffy cpp-precomp chokes on some legitimate constructs in GCC
-# sources; use -traditional-cpp to get to GNU cpp. (This is another
-# peculiarity of Apple's GCC that we hope to get rid of.)
-
-CC = cc -traditional-cpp

@@ -1,5 +1,0 @@
-# configuration for BeOS
-INSTALL=install -c
-
-# Don't run fixproto
-STMP_FIXPROTO =

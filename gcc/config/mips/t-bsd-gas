@@ -1,8 +1,0 @@
-# Exactly the same as t-mips-gas, except we must define SYSTEM_HEADER_DIR
-# to point to the bsd43 include files.
-SYSTEM_HEADER_DIR = /bsd43/usr/include
-
-# Suppress building libgcc1.a, since the MIPS compiler port is complete
-# and does not need anything from libgcc1.a.
-LIBGCC1 =
-CROSS_LIBGCC1 =

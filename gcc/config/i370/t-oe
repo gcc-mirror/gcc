@@ -1,4 +1,0 @@
-# There is no libgcc for OpenEdition
-LIBGCC =
-INSTALL_LIBGCC =
-LIBGCC1_TEST =

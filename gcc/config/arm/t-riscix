@@ -1,4 +1,0 @@
-# Just for these, we omit the frame pointer since it makes such a big
-# difference.  It is then pointless adding debugging.
-TARGET_LIBGCC2_CFLAGS = -fomit-frame-pointer
-LIBGCC2_DEBUG_CFLAGS = -g0

@@ -1,5 +1,0 @@
-++++Array of int in struct starting with longdouble:
-size=64,align=16
-offset-longdouble=0,offset-arrayof-int=16,
-align-longdouble=16,align-arrayof-int=4
-offset-int-a[5]=36,align-int-a[5]=4

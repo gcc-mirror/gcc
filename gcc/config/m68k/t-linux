@@ -1,2 +1,0 @@
-# On GNU/Linux we can print long double
-ENQUIRE_CFLAGS = -DNO_MEM -O0

@@ -1,8 +1,0 @@
-# Define new names for the getopt library, so that we don't have to statically
-# link [un]protoize.  We have dirent.h not sys/dir.h, so define POSIX.
-X_CFLAGS= -DPOSIX -Dopterr=gcc_opterr -Doptind=gcc_optind \
-	 -Dgetopt=gcc_getopt -Doptarg=gcc_optarg
-# Compile in BSD mode.
-OLDCC=/usr/ucb/cc
-CC=$(OLDCC)
-FIXPROTO_DEFINES= -D_POSIX_SOURCE -D_XOPEN_C -D_BSD_C -D_XOPEN_SOURCE

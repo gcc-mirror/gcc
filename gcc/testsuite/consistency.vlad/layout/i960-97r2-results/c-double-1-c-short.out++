@@ -1,4 +1,0 @@
-++Class with short inhereting class with double:
-size=16,align=8
-offset-double=0,offset-short=8,
-align-double=8,align-short=2

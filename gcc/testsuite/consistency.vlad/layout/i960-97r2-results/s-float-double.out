@@ -1,3 +1,0 @@
-+++Struct float-double:
-size=16,align=8,offset-float=0,offset-double=8,
-align-float=4,align-double=8
