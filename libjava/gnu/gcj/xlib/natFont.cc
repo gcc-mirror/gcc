@@ -60,7 +60,7 @@ jint gnu::gcj::xlib::Font::getAscent()
   if (fontStruct->min_byte1==0 && fontStruct->min_char_or_byte2<=(unsigned)'O')
     returnValue = fontStruct
         ->per_char[(unsigned)'O'-fontStruct->min_char_or_byte2]
-        ->ascent;
+        .ascent;
   return returnValue+1;  // +1 to include the baseline
 }
 
@@ -71,7 +71,7 @@ jint gnu::gcj::xlib::Font::getDescent()
   if (fontStruct->min_byte1==0 && fontStruct->min_char_or_byte2<=(unsigned)'y')
     returnValue = fontStruct
         ->per_char[(unsigned)'y'-fontStruct->min_char_or_byte2]
-        ->descent;
+        .descent;
   return returnValue-1;  // -1 to exclude the baseline
 }
 

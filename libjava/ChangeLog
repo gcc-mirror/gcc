@@ -1,3 +1,9 @@
+2003-06-09  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/xlib/natFont.cc (getAscent): Correctly access "ascent"
+	field.
+	(getDescent): Likewise, for "descent".
+
 2003-06-09  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/gcj/xlib/natFont.cc (getMaxAscent): adjusted return value.
