@@ -1,3 +1,10 @@
+Wed Mar 24 22:41:28 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* configure.in (AC_PREREQ): Update to 2.13.
+	(AC_EXEEXT): Call to find possible file extension.
+	(compiler_name): Use.
+	* configure: Regenerate.
+
 1999-03-17  Craig Burley  <craig@jcb-sc.com>
 
 	Update to Netlib version of 1999-03-17:
