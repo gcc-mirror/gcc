@@ -1,3 +1,8 @@
+2000-07-27  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-decl.c (store_parm_decls): In C99 mode, pedwarn for function
+	parameters defaulting to int in an old-style function definition.
+
 2000-07-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-parse.in (string): For -Wtraditional, warn about string
