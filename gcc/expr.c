@@ -1785,8 +1785,12 @@ emit_group_load (x, y)
 	{
 	  if (GET_MODE (target_reg) == GET_MODE (y))
 	    source = y;
+	  /* Allow for the target_reg to be smaller than the input register
+	     to allow for AIX with 4 DF arguments after a single SI arg.  The
+	     last DF argument will only load 1 word into the integer registers,
+	     but load a DF value into the float registers.  */
 	  else if (GET_MODE_SIZE (GET_MODE (target_reg))
-		   == GET_MODE_SIZE (GET_MODE (y)))
+		   <= GET_MODE_SIZE (GET_MODE (y)))
 	    source = gen_rtx (SUBREG, GET_MODE (target_reg), y, 0);
 	  else
 	    abort ();	    
