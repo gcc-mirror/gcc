@@ -5316,7 +5316,6 @@ s390_emit_prologue (void)
      See below for why TPF must use the register 1.  */
 
   if (!current_function_is_leaf
-      && get_pool_size () < S390_POOL_CHUNK_MAX / 2
       && !TARGET_TPF)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   else
