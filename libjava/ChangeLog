@@ -1,5 +1,7 @@
 2001-10-13  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/SecurityManager.java (SecurityManager): Now public.
+
 	* java/security/AccessController.java (checkPermission): Now
 	throws AccessControlException.
 	* java/security/AllPermission.java: Class now final.

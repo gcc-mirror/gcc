@@ -751,7 +751,7 @@ public class SecurityManager {
 		return Thread.currentThread().getThreadGroup();
 	}
 
-	protected SecurityManager () {
+	public SecurityManager () {
 		if (System.getSecurityManager () != null)
 			throw new SecurityException ();
 	}
