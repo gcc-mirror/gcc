@@ -1,6 +1,7 @@
 // The template and inlines for the -*- C++ -*- valarray class.
 
-// Copyright (C) 1997-1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,9 +30,9 @@
 
 // Written by Gabriel Dos Reis <Gabriel.Dos-Reis@DPTMaths.ENS-Cachan.Fr>
 
-/** @file std_valarray.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+/** @file valarray
+ *  This is a Standard C++ Library header.  You should @c #include this header
+ *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
 #ifndef _CPP_VALARRAY

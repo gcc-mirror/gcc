@@ -53,6 +53,12 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
+/** @file ext/numeric
+ *  This file is a GNU extension to the Standard C++ Library (possibly
+ *  containing extensions from the HP/SGI STL subset).  You should only
+ *  include this header if you are using GCC 3 or later.
+ */
+
 #ifndef _EXT_NUMERIC
 #define _EXT_NUMERIC
 

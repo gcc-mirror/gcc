@@ -26,6 +26,7 @@
    <li><a href="#3">Containers and multithreading</a>
    <li><a href="#4">&quot;Hinting&quot; during insertion</a>
    <li><a href="#5">Bitmasks and string arguments</a>
+   <li><a href="#6"><code>std::list::size()</code> is O(n)!</a>
 </ul>
 
 <hr>
@@ -392,7 +393,45 @@
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
- 
+
+<hr>
+<h2><a name="6"><code>std::list::size()</code> is O(n)!</a></h2>
+   <p>Yes it is, and that's okay.  This is a decision that we preserved when
+      we imported SGI's STL implementation.  The following is quoted from
+      <a href="http://www.sgi.com/tech/stl/FAQ.html">their FAQ</a>:
+      <blockquote>
+      <p>The size() member function, for list and slist, takes time
+      proportional to the number of elements in the list.  This was a
+      deliberate tradeoff.  The only way to get a constant-time size() for
+      linked lists would be to maintain an extra member variable containing
+      the list's size.  This would require taking extra time to update that
+      variable (it would make splice() a linear time operation, for example),
+      and it would also make the list larger.  Many list algorithms don't
+      require that extra word (algorithms that do require it might do better
+      with vectors than with lists), and, when it is necessary to maintain
+      an explicit size count, it's something that users can do themselves.
+      </p>
+      <p>This choice is permitted by the C++ standard. The standard says that
+      size() &quot;should&quot; be constant time, and &quot;should&quot;
+      does not mean the same thing as &quot;shall&quot;.  This is the
+      officially recommended ISO wording for saying that an implementation
+      is supposed to do something unless there is a good reason not to.
+      </p>
+      <p>One implication of linear time size(): you should never write
+         <pre>
+         if (L.size() == 0)
+             ...</pre>
+         Instead, you should write
+         <pre>
+         if (L.empty())
+             ...</pre>
+      </p>
+      </blockquote>
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
+
 
 <!-- ####################################################### -->
 

@@ -31,6 +31,15 @@
 // ISO C++ 14882: <ccytpe>
 //
 
+/** @file cctype
+ *  This is a Standard C++ Library file.  You should @c #include this file
+ *  in your programs, rather than any of the "*.h" implementation files.
+ *
+ *  This is the C++ version of the Standard C Library header @c ctype.h,
+ *  and its contents are (mostly) the same as that header, but are all
+ *  contained in the namespace @c std.
+ */
+
 #ifndef _CPP_CCTYPE
 #define _CPP_CCTYPE 1
 

@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,9 +40,9 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */ 
 
-/** @file std_bitset.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+/** @file bitset
+ *  This is a Standard C++ Library header.  You should @c #include this header
+ *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
 #ifndef __GLIBCPP_BITSET

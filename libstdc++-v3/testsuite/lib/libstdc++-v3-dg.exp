@@ -1,4 +1,4 @@
-#   Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ proc libstdc++-v3-init { args } {
         }
       set cxx [transform "g++"]
       set cxxflags "-ggdb3 -DDEBUG_ASSERT"
-        set includes "-I./"
+      set includes "-I./"
     } else {
         # If we find a testsuite_flags file, we're testing in the build dir.
         set flags_file "${blddir}/testsuite_flags"

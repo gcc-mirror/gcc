@@ -1,3 +1,59 @@
+2002-01-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.am (doxygen, doxygen-maint, doxygen-man):  Tweak targets.
+	* Makefile.in:  Regenerate.
+
+	* docs/doxygen/run_doxygen:  Update, mostly for man pages.
+	* docs/doxygen/Intro.3:  Update.
+	* docs/doxygen/TODO:  Update.
+	* docs/doxygen/doxygroups.cc:  Add namespace hook for __gnu_cxx.
+	* docs/doxygen/mainpage.doxy:  Update.
+	* docs/doxygen/user.cfg.in:  Update for header rename.  Also
+	regenerate comments and variables with 1.2.12.
+	* docs/doxygen/maint.cfg.in:  Remove file.
+
+	* include/bits/stl_relops.h:  Doxygenate.
+	* include/bits/stl_tempbuf.h (std::_Temporary_buffer):  Likewise.
+
+	* include/c_std/std_cassert.h, include/c_std/std_cctype.h,
+	include/c_std/std_cerrno.h, include/c_std/std_cfloat.h,
+	include/c_std/std_ciso646.h, include/c_std/std_climits.h,
+	include/c_std/std_clocale.h, include/c_std/std_cmath.h,
+	include/c_std/std_csetjmp.h, include/c_std/std_csignal.h,
+	include/c_std/std_cstdarg.h, include/c_std/std_cstddef.h,
+	include/c_std/std_cstdio.h, include/c_std/std_cstdlib.h,
+	include/c_std/std_cstring.h, include/c_std/std_ctime.h,
+	include/c_std/std_cwchar.h, include/c_std/std_cwctype.h,
+	include/ext/algorithm, include/ext/functional, include/ext/hash_map,
+	include/ext/hash_set, include/ext/iterator, include/ext/memory,
+	include/ext/numeric, include/ext/rb_tree, include/ext/rope,
+	include/ext/ropeimpl.h, include/ext/slist, include/ext/stl_hash_fun.h,
+	include/ext/stl_hashtable.h, include/ext/stl_rope.h,
+	include/std/std_algorithm.h, include/std/std_bitset.h,
+	include/std/std_complex.h, include/std/std_deque.h,
+	include/std/std_fstream.h, include/std/std_functional.h,
+	include/std/std_iomanip.h, include/std/std_ios.h,
+	include/std/std_iosfwd.h, include/std/std_iostream.h,
+	include/std/std_istream.h, include/std/std_iterator.h,
+	include/std/std_limits.h, include/std/std_list.h,
+	include/std/std_locale.h, include/std/std_map.h,
+	include/std/std_memory.h, include/std/std_numeric.h,
+	include/std/std_ostream.h, include/std/std_queue.h,
+	include/std/std_set.h, include/std/std_sstream.h,
+	include/std/std_stack.h, include/std/std_stdexcept.h,
+	include/std/std_streambuf.h, include/std/std_string.h,
+	include/std/std_utility.h, include/std/std_valarray.h,
+	include/std/std_vector.h:  Add/correct @file doxygen hook.
+
+	* include/ext/memory:  Doxygenate most of rest of file.
+	* libsupc++/exception:  Doxygen output formatting.
+	* libsupc++/new:  Say which header it is.
+
+	* testsuite/lib/libstdc++-v3-dg.exp:  Fix spacing.
+	* docs/html/19_diagnostics/howto.html:  Describe concept-checks switch.
+	* docs/html/23_containers/howto.html:  Describe O(n) list::size().
+	* docs/html/27_io/howto.html:  Also link to Langer and Kreft text.
+
 2002-01-28  Paolo Carlini  <pcarlini@unitus.it>
             Charles Leggett <CGLeggett@lbl.gov>
 
@@ -717,7 +773,7 @@
 	* include/std/cassert: Remove.
 
 	* include/bits/fpos.h: Adjust includes, removing <bits/std_xxx.h>
-	files and subsituting <.xxx>
+	files and subsituting <xxx>.
 	* include/bits/valarray_array.h: Same.
 	* include/bits/stl_uninitialized.h: Same.
 	* include/bits/stl_alloc.h: Same.

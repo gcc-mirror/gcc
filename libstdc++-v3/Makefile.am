@@ -1,6 +1,7 @@
 ## Makefile for the toplevel directory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -43,20 +44,26 @@ check-script-install: $(top_builddir)/mkcheck
 	  cd testsuite; \
 	  @glibcpp_builddir@/mkcheck 1)
 
-# These two rules might seem messy, but are hella worth it.
+# These rules are messy, but are hella worth it.
 doxygen:
 	-(srcdir=`cd ${top_srcdir}; pwd`; \
-	  outdir=`pwd`; \
+	  builddir=`pwd`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
-	            --mode=user $${srcdir} $${outdir})
+	            --mode=user $${srcdir} $${builddir})
 
 doxygen-maint:
 	-(srcdir=`cd ${top_srcdir}; pwd`; \
-	  outdir=`pwd`; \
+	  builddir=`pwd`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
-	            --mode=maint $${srcdir} $${outdir})
+	            --mode=maint $${srcdir} $${builddir})
 
-.PHONY: doxygen doxygen-maint
+doxygen-man:
+	-(srcdir=`cd ${top_srcdir}; pwd`; \
+	  builddir=`pwd`; \
+	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
+	            --mode=man $${srcdir} $${builddir})
+
+.PHONY: doxygen doxygen-maint doxygen-man
 
 # Multilib support.
 MAKEOVERRIDES=

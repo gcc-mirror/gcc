@@ -41,9 +41,9 @@
  *
  */
 
-/** @file std_memory.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+/** @file memory
+ *  This is a Standard C++ Library header.  You should @c #include this header
+ *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
 #ifndef _CPP_MEMORY

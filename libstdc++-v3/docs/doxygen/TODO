@@ -1,7 +1,7 @@
 
 The approach I've been using for a given header is to recursively do each
 of the "bits" headers which make up the standard header.  So, e.g., while
-there are five headers making up <algorithm>, three of them were already
+there are four headers making up <algorithm>, three of them were already
 documented in the course of doing other headers.
 
 "Untouched" means I've deliberately skipped it for various reasons, or
@@ -14,23 +14,21 @@ haven't gotten to it yet.  It /will/ be done (by somebody, eventually.)
 c17             FINISHED (Nothing in Clause 17 "exists" in terms of code.)
 c18             <limits>, Note A
 c19             Note A
-c20             rel_ops (should they be doc'd?), Note A
+c20             Note A
 c21             Untouched, Note B
 c22             Untouched
 c23             See doxygroups.cc and Note B.
-                stl_alloc.h, stl_uninitialized.h remain from the common files.
 c24             Untouched
-c25             stl_tempbuf.h (small), stl_algo.h (big)
+c25             stl_algo.h (lots of stuff)
 c26             <complex>, <valarray>, stl_numeric.h[26.4], Note A
 c27             Untouched
 
 backward/       Not scanned by doxygen.  Should it be?
 
-ext/            Untouched
+ext/            Some of the SGI algorithm/functional extensions.
+                All of rope/hashing/slist need docs.
 
-__gnu_cxx       Extensions such as verbose_terminate_handler are documented
-                but do not appear in output, since the __gnu_cxx namespace is
-                itself undocumented.  Should it be?  Eeeeeeehhh...
+__gnu_cxx       Tricky.
 
 [1.3.5]         "implementation-defined behavior:  behavior ... that depends
                 on the implementation *and that each implementation shall
@@ -43,10 +41,21 @@ __gnu_cxx       Extensions such as verbose_terminate_handler are documented
 NOTES:
 
 A)  So far I have not tried to document any of the <c*> headers.  So entities
-such as atexit() are undocumented throughout the library.
+such as atexit() are undocumented throughout the library.  Since we usually
+do not have the C code (to which the doxygen comments would be attached),
+this would need to be done in entirely separate files, a la doxygroups.cc.
 
 B)  Huge chunks of containers and strings are described in common "Tables"
 in the standard.  How to reproduce this information?
+
+
+
+STYLE:
+stl_deque.h, stl_pair.h, and stl_algobase.h have good examples of what I've
+been using for class, namespace-scope, and function documentation, respectively.
+These should serve as starting points.  /Please/ maintain the inter-word and
+inter-sentence spacing, as this might be generated and/or scanned in the
+future.
 
 
 vim:ts=4:et:
