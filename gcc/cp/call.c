@@ -3363,7 +3363,8 @@ build_over_call (cand, args, flags)
 	  /* Don't copy the padding byte; it might not have been allocated
 	     if to is a base subobject.  */
 	  if (is_empty_class (DECL_CLASS_CONTEXT (fn)))
-	    return to;
+	    return build (COMPOUND_EXPR, TREE_TYPE (to),
+			  cp_convert (void_type_node, arg), to);
 
 	  val = build (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
 	  TREE_SIDE_EFFECTS (val) = 1;
@@ -3377,12 +3378,14 @@ build_over_call (cand, args, flags)
       tree to = stabilize_reference
 	(build_indirect_ref (TREE_VALUE (converted_args), 0));
 
+      arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
+
       /* Don't copy the padding byte; it might not have been allocated
 	 if to is a base subobject.  */
       if (is_empty_class (DECL_CLASS_CONTEXT (fn)))
-	return to;
+	return build (COMPOUND_EXPR, TREE_TYPE (to),
+		      cp_convert (void_type_node, arg), to);
 
-      arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
       val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
       TREE_SIDE_EFFECTS (val) = 1;
       return val;

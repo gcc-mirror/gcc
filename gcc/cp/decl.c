@@ -11620,8 +11620,9 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   else if (pre_parsed_p == 0)
     {
       /* A specialization is not used to guide overload resolution.  */
-      if (flag_guiding_decls 
-	  || !DECL_TEMPLATE_SPECIALIZATION (decl1))
+      if ((flag_guiding_decls 
+	   || !DECL_TEMPLATE_SPECIALIZATION (decl1))
+	  && ! DECL_FUNCTION_MEMBER_P (decl1))
 	decl1 = pushdecl (decl1);
       DECL_MAIN_VARIANT (decl1) = decl1;
       fntype = TREE_TYPE (decl1);
