@@ -1798,8 +1798,9 @@ gfc_create_module_variable (gfc_symbol * sym)
       && (sym->attr.flavor != FL_PARAMETER || sym->attr.dimension == 0))
     return;
 
-  /* Don't generate variables from other modules.  */
-  if (sym->attr.use_assoc)
+  /* Don't generate variables from other modules. Variables from
+     COMMONs will already have been generated.  */
+  if (sym->attr.use_assoc || sym->attr.in_common)
     return;
 
   if (sym->backend_decl)
@@ -1866,6 +1867,9 @@ gfc_generate_module_vars (gfc_namespace * ns)
 
   /* Check if the frontend left the namespace in a reasonable state.  */
   assert (ns->proc_name && !ns->proc_name->tlink);
+
+  /* Generate COMMON blocks.  */
+  gfc_trans_common (ns);
 
   /* Create decls for all the module variables.  */
   gfc_traverse_ns (ns, gfc_create_module_variable);

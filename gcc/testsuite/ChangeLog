@@ -1,4 +1,9 @@
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	
+	* gfortran.fortran-torture/execute/common_2.f90: Add check for
+	access to common var from module.
+
+2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16336
 	* gfortran.fortran-torture/execute/common_2.f90: New test.
