@@ -1,5 +1,5 @@
 /* Basic error reporting routines.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -105,6 +105,57 @@ fatal VPARAMS ((const char *format, ...))
   exit (FATAL_EXIT_CODE);
 }
 
+/* Similar, but say we got an internal error.  */
+
+void
+internal_error VPARAMS ((const char *format, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  const char *format;
+#endif
+  va_list ap;
+
+  VA_START (ap, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (ap, const char *);
+#endif
+
+  fprintf (stderr, "%s: Internal error", progname);
+  vfprintf (stderr, format, ap);
+  va_end (ap);
+  fputc ('\n', stderr);
+  exit (FATAL_EXIT_CODE);
+}
+
+/* Given a partial pathname as input, return another pathname that
+   shares no directory elements with the pathname of __FILE__.  This
+   is used by fancy_abort() to print `Internal compiler error in expr.c'
+   instead of `Internal compiler error in ../../GCC/gcc/expr.c'.  This
+   version if for the gen* programs and so neededn't handle subdirectories.  */
+
+const char *
+trim_filename (name)
+     const char *name;
+{
+  static const char this_file[] = __FILE__;
+  const char *p = name, *q = this_file;
+
+  /* Skip any parts the two filenames have in common.  */
+  while (*p == *q && *p != 0 && *q != 0)
+    p++, q++;
+
+  /* Now go backwards until the previous directory separator.  */
+  while (p > name && p[-1] != DIR_SEPARATOR
+#ifdef DIR_SEPARATOR_2
+	 && p[-1] != DIR_SEPARATOR_2
+#endif
+	 )
+    p--;
+
+  return p;
+}
+
 /* "Fancy" abort.  Reports where in the compiler someone gave up.
    This file is used only by build programs, so we're not as polite as
    the version in diagnostic.c.  */
@@ -114,5 +165,5 @@ fancy_abort (file, line, func)
      int line;
      const char *func;
 {
-  fatal ("ICE in %s, at %s:%d", func, file, line);
+  internal_error ("abort in %s, at %s:%d", func, file, line);
 }
