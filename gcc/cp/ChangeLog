@@ -1,3 +1,65 @@
+2003-05-18  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h (struct lang_type_class): Replace data member tags
+	with hash-table nested_udts.
+	(CLASSTYPE_NESTED_UTDS): Rename from CLASSTYPE_TAGS.
+	* class.c (unreverse_member_declarations): Don't touch
+	CLASSTYPE_TAGS. 
+	(pushclass): Use cxx_remember_type_decls.
+	* decl.c (struct cp_binding_level): Replace data member tags with
+	hash-table type_decls.
+	(pop_binding_level): Handle level->type_decls.
+	(kept_level_p): Adjust.
+	(poplevel): Remove unused local variable.
+	(bt_print_entry): New function.
+	(print_binding_level): Use it.
+	(push_namespace): Build current_binding_level->type_decls.
+	(maybe_process_template_type_declaration): Adjust.
+	(pushtag): Likewise.
+	(clear_anon_tags): Use binding_table_remove_anonymous_types.
+	(gettags): Remove.
+	(cxx_remember_type_decls):  Rename from storetags.  Adjust.
+	(lookup_tag): Use binding_table_find_anon_type.  Tidy.
+	(lookup_tag_reverse): Use binding_table_reverse_maybe_remap.
+	(cxx_init_decl_processing): Build global_binding_level->type_decls.
+	(store_parm_decls): Remove pointless code.
+	* name-lookup.c (free_binding_entry): New variable.
+	(ENTRY_INDEX): New macro.
+	(struct binding_table_s): New datatype.
+	(binding_entry_make): New function.
+	(binding_entry_free): Likewise.
+	(binding_table_construct): Likewise.
+	(binding_table_free): Likewise.
+	(binding_table_new): Likewise.
+	(binding_table_expand): Likewise.
+	(binding_table_insert): Likewise.
+	(binding_table_find): Likewise.
+	(binding_table_find_anon_type): Likewise.
+	(binding_table_reverse_maybe_remap): Likewise.
+	(binding_table_remove_anonymous_types): Likewise.
+	(binding_table_foreach): Likewise.
+	* name-lookup.h (binding_table): New type.
+	(binding_entry): Likewise.
+	(bt_foreach_proc): Likewise.
+	(struct binding_entry_s): New datatype.
+	(SCOPE_DEFAULT_HT_SIZE): New macro.
+	(CLASS_SCOPE_HT_SIZE): Likewise.
+	(NAMESPACE_ORDINARY_HT_SIZE): Likewise.
+	(NAMESPACE_STD_HT_SIZE): Likewise.
+	(GLOBAL_SCOPE_HT_SIZE): Likewise.
+	(binding_table_new): Declare.
+	(binding_table_free): Likewise.
+	(binding_table_insert): Likewise.
+	(binding_table_find_anon_type): Likewise.
+	(binding_table_reverse_maybe_remap): Likewise.
+	(binding_table_remove_anonymous_types): Likewise.
+	(binding_table_foreach): Likewise.
+	(binding_table_find): Likewise.
+	(cxx_remember_type_decls): Likewise.
+	* pt.c (bt_instantiate_type_proc): New function.
+	(do_type_instantiation): Use it.
+	* search.c (lookup_field_r): Use binding_table_find.
+
 2003-05-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* semantics.c (perform_deferred_access_checks): Don't discard

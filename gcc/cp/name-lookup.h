@@ -24,6 +24,39 @@ Boston, MA 02111-1307, USA.  */
 
 #include "c-common.h"
 
+/* The type of dictionary used to map names to types declared at
+   a given scope.  */
+typedef struct binding_table_s *binding_table;
+typedef struct binding_entry_s *binding_entry;
+
+/* The type of a routine repeatedly called by binding_table_foreach.  */
+typedef void (*bt_foreach_proc) (binding_entry, void *);
+
+struct binding_entry_s GTY(())
+{
+  binding_entry chain;
+  tree name;
+  tree type;
+};
+
+/* These macros indicate the initial chains count for binding_table.  */
+#define SCOPE_DEFAULT_HT_SIZE                        (1 << 3)
+#define CLASS_SCOPE_HT_SIZE                          (1 << 3)
+#define NAMESPACE_ORDINARY_HT_SIZE                   (1 << 5)
+#define NAMESPACE_STD_HT_SIZE                        (1 << 8)
+#define GLOBAL_SCOPE_HT_SIZE                         (1 << 8)
+
+extern binding_table binding_table_new (size_t);
+extern void binding_table_free (binding_table);
+extern void binding_table_insert (binding_table, tree, tree);
+extern tree binding_table_find_anon_type (binding_table, tree);
+extern binding_entry binding_table_reverse_maybe_remap (binding_table,
+                                                        tree, tree);
+extern void binding_table_remove_anonymous_types (binding_table);
+extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
+extern binding_entry binding_table_find (binding_table, tree);
+extern void cxx_remember_type_decls (binding_table);
+
 /* Datatype used to temporarily save C++ bindings (for implicit
    instantiations purposes and like).  Implemented in decl.c.  */
 typedef struct cxx_saved_binding cxx_saved_binding;

@@ -1,3 +1,10 @@
+2003-05-18  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* hashtable.h (struct ht_identifier): Add data member "hash_value".
+	* hashtable.c (ht_lookup): Use it when searching, remember. 
+	(ht_expand): Do not recompute.
+	* tree.h (IDENTIFIER_HASH_VALUE): New macro.
+
 2003-05-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.c (gcov_read_bytes): Fix fread thinko.

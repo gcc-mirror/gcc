@@ -813,6 +813,8 @@ struct tree_vector GTY(())
   (IDENTIFIER_NODE_CHECK (NODE)->identifier.id.len)
 #define IDENTIFIER_POINTER(NODE) \
   ((const char *) IDENTIFIER_NODE_CHECK (NODE)->identifier.id.str)
+#define IDENTIFIER_HASH_VALUE(NODE) \
+  (IDENTIFIER_NODE_CHECK (NODE)->identifier.id.hash_value)
 
 /* Translate a hash table identifier pointer to a tree_identifier
    pointer, and vice versa.  */
