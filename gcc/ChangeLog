@@ -1,3 +1,7 @@
+Tue May 12 20:05:57 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* collect2.c (main): Ignore do_collecting when COLLECT_EXPORT_LIST.
+
 Wed May 13 03:23:45 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (gen_reload): Create REG_EQUIV notes.

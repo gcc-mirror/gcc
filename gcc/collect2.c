@@ -1428,7 +1428,11 @@ main (argc, argv)
 
   /* If -r or they will be run via some other method, do not build the
      constructor or destructor list, just return now.  */
-  if (rflag || ! do_collecting)
+  if (rflag
+#ifndef COLLECT_EXPORT_LIST
+      || ! do_collecting
+#endif
+      )
     {
 #ifdef COLLECT_EXPORT_LIST
       /* But make sure we delete the export file we may have created.  */
