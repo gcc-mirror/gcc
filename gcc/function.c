@@ -2939,7 +2939,20 @@ purge_addressof_1 (loc, insn, force, store)
 			      < GET_MODE_SIZE (GET_MODE (y)))
 			    abort ();
 
-			  z = gen_lowpart (GET_MODE (x), z);
+			  if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
+			      && (GET_MODE_SIZE (GET_MODE (x))
+				  > GET_MODE_SIZE (GET_MODE (z))))
+			    {
+			      /* This can occur as a result in invalid
+				 pointer casts, e.g. float f; ... 
+				 *(long long int *)&f.
+				 ??? We could emit a warning here, but
+				 without a line number that wouldn't be
+				 very helpful.  */
+			      z = gen_rtx_SUBREG (GET_MODE (x), z, 0);
+			    }
+			  else
+			    z = gen_lowpart (GET_MODE (x), z);
 			}
 
 		      *loc = z;
