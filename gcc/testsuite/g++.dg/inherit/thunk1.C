@@ -1,4 +1,4 @@
-// { dg-do run { target i?86-*-* } }
+// { dg-do run { target i?86-*-* s390*-*-* alpha*-*-* } }
 
 #include <stdarg.h>
 
