@@ -1,3 +1,11 @@
+1998-08-31  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (finish_enum): Handle member enums of classes declared in
+	template functions.
+	
+	* decl2.c (grok_x_components): Strip attributres before calling
+	groktypename. 
+	
 1998-08-31  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h, decl2.c: Remove support for -fall-virtual,

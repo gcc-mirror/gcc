@@ -11931,7 +11931,8 @@ finish_enum (enumtype)
 
   if (processing_template_decl)
     {
-      if (current_function_decl)
+      tree scope = current_scope ();
+      if (scope && TREE_CODE (scope) == FUNCTION_DECL)
 	{
 	  add_tree (build_min (TAG_DEFN, enumtype));
 	  resume_temporary_allocation ();
