@@ -1,3 +1,8 @@
+2005-03-25  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR tree-optimization/20470
+	* gcc.dg/tree-ssa/pr20470.c: New test.
+
 2005-03-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/ppc-stfiwx.c: New.
