@@ -2022,7 +2022,7 @@ output_prolog (file, size)
   /* Offset during register save.  */
   int reg_offset;
   /* Label for the procedure entry.  */
-  char entry_label[70];
+  char *entry_label = (char *) alloca (strlen (alpha_function_name) + 5);
   int i;
 
   sa_size = alpha_sa_size ();
@@ -2035,7 +2035,7 @@ output_prolog (file, size)
   fprintf (file, "\t.ent ");
   assemble_name (file, alpha_function_name);
   fprintf (file, "\n");
-  sprintf (entry_label, "%.64s..en", alpha_function_name);
+  sprintf (entry_label, "%s..en", alpha_function_name);
   ASM_OUTPUT_LABEL (file, entry_label);
   inside_function = TRUE;
 
