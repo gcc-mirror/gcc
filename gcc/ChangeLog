@@ -1,3 +1,8 @@
+2002-09-09  Per Bothner  <per@bothner.com>
+
+	* print-tree.c (print_node):  In a STRING_CST, escape non-ascii
+	characters, and only print TREE_STRING_LENGTH chars.
+
 2002-09-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (TARGET_HPUX_LD): New, define true.

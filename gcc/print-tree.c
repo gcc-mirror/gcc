@@ -711,7 +711,20 @@ print_node (file, prefix, node, indent)
 	  break;
 
 	case STRING_CST:
-	  fprintf (file, " \"%s\"", TREE_STRING_POINTER (node));
+	  {
+	    const char *p = TREE_STRING_POINTER (node);
+	    int i = TREE_STRING_LENGTH (node);
+	    fputs (" \"", file);
+	    while (--i >= 0)
+	      {
+		char ch = *p++;
+		if (ch >= ' ' && ch < 127)
+		  putc (ch, file);
+		else
+		  fprintf(file, "\\%03o", ch & 0xFF);
+	      }
+	    fputc ('\"', file);
+	  }
 	  /* Print the chain at second level.  */
 	  if (indent == 4)
 	    print_node (file, "chain", TREE_CHAIN (node), indent + 4);
