@@ -1037,10 +1037,12 @@ compiler and may only work properly if you are building the compiler
 with GCC@.  This is on by default when building from CVS or snapshots,
 but off for releases.  More control over the checks may be had by
 specifying @var{list}; the categories of checks available are
-@samp{misc}, @samp{tree}, @samp{gc}, @samp{rtl}, @samp{rtlflag} and
-@samp{gcac}.  The
-default when @var{list} is not specified is @samp{misc,tree,gc,rtlflag}; the
-checks @samp{rtl} and @samp{gcac} are very expensive.
+@samp{misc}, @samp{tree}, @samp{gc}, @samp{rtl}, @samp{rtlflag},
+@samp{gcac} and @samp{valgrind}.  The check @samp{valgrind} requires the
+external @command{valgrind} simulator, available from
+@uref{http://developer.kde.org/~sewardj/}.  The default when @var{list} is
+not specified is @samp{misc,tree,gc,rtlflag}; the checks @samp{rtl},
+@samp{gcac} and @samp{valgrind} are very expensive.
 
 @item --enable-coverage
 @item --enable-coverage=@var{level}
