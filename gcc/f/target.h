@@ -1,5 +1,5 @@
 /* target.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2002 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -234,7 +234,15 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define FFETARGET_f2cTYLOGICAL2 13
 #define FFETARGET_f2cTYQUAD 14
 
-#if !defined(__alpha__) && (!defined (_ARCH_PPC) || !defined (__64BIT__)) && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__))) && (!defined(__ia64__) || !defined(__LP64__)) && (!defined(__hppa__) || !defined(__LP64__)) && !defined(__s390x__) && !defined(__x86_64__)
+#if (!defined(__alpha__) \
+     && (!defined(__hppa__) || !defined(__LP64__)) \
+     && (!defined(__ia64__) || !defined(__LP64__)) \
+     && !defined(__MMIX__) \
+     && (!defined (_ARCH_PPC) || !defined (__64BIT__)) \
+     && !defined(__powerpc64__) \
+     && !defined(__s390x__) \
+     && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__)))\
+     && !defined(__x86_64__))
 #define FFETARGET_32bit_longs
 #endif
 
