@@ -1,3 +1,41 @@
+2003-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/13054
+	* pa-protos.h (indexed_memory_operand, borx_reg_operand,
+	move_dest_operand, move_src_operand): New protypes.
+	(basereg_operand, move_operand, reg_or_nonsymb_mem_operand): Deleted.
+	* pa.c (copy_reg_pointer, indexed_memory_operand, move_dest_operand,
+	move_src_operand): New functions.
+	(basereg_operand, reg_or_nonsymb_mem_operand, move_operand): Delete.
+	(reg_or_0_or_nonsymb_mem_operand): Return false for unscaled indexed
+	address until cse is not expected on targets with non-equivalent
+	space registers.
+	(hppa_legitimize_address): Canonicalize unscaled indexed addresses
+	on targets non-equivalent space registers.
+	(emit_move_sequence): Break out indexed addresses from destination
+	operand.  Similarly, break out unscaled indexed addresses from
+	source operand on targets with non-equivalent space registers.  Fix
+	REG_POINTER flag when possible.  Mark register pointer when creating
+	new pointers.
+	(print_operand): Handle unscaled index addresses.
+	* pa.h (IS_INDEX_ADDR_P, IS_LO_SUM_DLT_ADDR_P): New macro subroutines
+	for EXTRA_CONSTRAINT.
+	(EXTRA_CONSTRAINT): Rework to make more readable.
+	(MODE_OK_FOR_SCALED_INDEXING_P, MODE_OK_FOR_UNSCALED_INDEXING_P): New
+	subroutines for GO_IF_LEGITIMATE_ADDRESS.
+	(GO_IF_LEGITIMATE_ADDRESS): Rework using new subroutines.  Allow scaled
+	and unscaled addresses.  Canonicalize unscaled indexed addresses on
+	targets with non-equivalent space registers.  Document issues in
+	handling indexed address modes on PA-RISC.
+	(PREDICATE_CODES): Update for new and deleted predicates.
+	* pa.md (move_dest_operand, move_src_operand, indexed_memory_operand):
+	Use new predicates in move patterns.
+	Add peephole2 patterns to optimize floating point stores.  Fix
+	constrain preferencing in move patterns.  Delete patterns for handling
+	unscaled indexed memory loads.  Add missing load and store with
+	base-register modification patterns.  Correct SFmode floating point
+	store pattern.  Add missing zero extension loads.
+
 2003-12-13  Steven Bosscher  <stevenb@suse.de>
 
 	* ggc-zone.c (struct alloc_zone): Don't pre-declare, it already

@@ -641,9 +641,9 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
    in some cases it is preferable to use a more restrictive class.  */
 #define PREFERRED_RELOAD_CLASS(X,CLASS) (CLASS)
 
-/* Return the register class of a scratch register needed to copy IN into
-   or out of a register in CLASS in MODE.  If it can be done directly
-   NO_REGS is returned. 
+/* Return the register class of a scratch register needed to copy
+   IN into a register in CLASS in MODE, or a register in CLASS in MODE
+   to IN.  If it can be done directly NO_REGS is returned. 
 
   Avoid doing any work for the common case calls.  */
 
@@ -1199,83 +1199,87 @@ extern int may_call_alloca;
 	     || cint_ok_for_move (INTVAL (X))))			\
    && !function_label_operand (X, VOIDmode))
 
-/* Subroutine for EXTRA_CONSTRAINT.
+/* Subroutines for EXTRA_CONSTRAINT.
 
    Return 1 iff OP is a pseudo which did not get a hard register and
    we are running the reload pass.  */
-
 #define IS_RELOADING_PSEUDO_P(OP) \
   ((reload_in_progress					\
     && GET_CODE (OP) == REG				\
     && REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
     && reg_renumber [REGNO (OP)] < 0))
 
+/* Return 1 iff OP is a scaled or unscaled index address.  */
+#define IS_INDEX_ADDR_P(OP) \
+  (GET_CODE (OP) == PLUS				\
+   && GET_MODE (OP) == Pmode				\
+   && (GET_CODE (XEXP (OP, 0)) == MULT			\
+       || GET_CODE (XEXP (OP, 1)) == MULT		\
+       || (REG_P (XEXP (OP, 0))				\
+	   && REG_P (XEXP (OP, 1)))))
+
+/* Return 1 iff OP is a LO_SUM DLT address.  */
+#define IS_LO_SUM_DLT_ADDR_P(OP) \
+  (GET_CODE (OP) == LO_SUM				\
+   && GET_MODE (OP) == Pmode				\
+   && REG_P (XEXP (OP, 0))				\
+   && REG_OK_FOR_BASE_P (XEXP (OP, 0))			\
+   && GET_CODE (XEXP (OP, 1)) == UNSPEC)
+
 /* Optional extra constraints for this machine. Borrowed from sparc.h.
 
-   For the HPPA, `Q' means that this is a memory operand but not a
-   symbolic memory operand.  Note that an unassigned pseudo register
-   is such a memory operand.  Needed because reload will generate
-   these things in insns and then not re-recognize the insns, causing
-   constrain_operands to fail.
+   `A' is a LO_SUM DLT memory operand.
 
-   `R' is used for scaled indexed addresses.
+   `Q' is any memory operand that isn't a symbolic, indexed or lo_sum
+       memory operand.  Note that an unassigned pseudo register is such a
+       memory operand.  Needed because reload will generate these things
+       and then not re-recognize the insn, causing constrain_operands to
+       fail.
+
+   `R' is a scaled/unscaled indexed memory operand.
 
    `S' is the constant 31.
 
-   `T' is for fp loads and stores.  */
-#define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ?						\
-   (IS_RELOADING_PSEUDO_P (OP)				\
-    || (GET_CODE (OP) == MEM				\
-	&& (memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
-	    || reload_in_progress)			\
-	&& ! symbolic_memory_operand (OP, VOIDmode)	\
-        && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
-	     && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
-		 || GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT))))\
-   : ((C) == 'R' ?					\
-     (GET_CODE (OP) == MEM				\
-      && GET_CODE (XEXP (OP, 0)) == PLUS		\
-      && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT	\
-	  || GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)	\
-      && (move_operand (OP, GET_MODE (OP))		\
-	  || memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
-	  || reload_in_progress))			\
-   : ((C) == 'T' ? 					\
-      (GET_CODE (OP) == MEM				\
-       /* Using DFmode forces only short displacements	\
-	  to be recognized as valid in reg+d addresses. \
-	  However, this is not necessary for PA2.0 since\
-	  it has long FP loads/stores.			\
-							\
-	  FIXME: the ELF32 linker clobbers the LSB of	\
-	  the FP register number in {fldw,fstw} insns.	\
-	  Thus, we only allow long FP loads/stores on	\
-	  TARGET_64BIT.  */				\
-       && memory_address_p ((TARGET_PA_20		\
-			     && !TARGET_ELF32		\
-			     ? GET_MODE (OP)		\
-			     : DFmode),			\
-			    XEXP (OP, 0))		\
-       && !(GET_CODE (XEXP (OP, 0)) == LO_SUM		\
-	    && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG \
-	    && REG_OK_FOR_BASE_P (XEXP (XEXP (OP, 0), 0))\
-	    && GET_CODE (XEXP (XEXP (OP, 0), 1)) == UNSPEC\
-	    && GET_MODE (XEXP (OP, 0)) == Pmode)	\
-       && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
-	    && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
-		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)))\
-   : ((C) == 'U' ?					\
-      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 63)	\
-   : ((C) == 'A' ?					\
-      (GET_CODE (OP) == MEM				\
-       && GET_CODE (XEXP (OP, 0)) == LO_SUM		\
-       && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG	\
-       && REG_OK_FOR_BASE_P (XEXP (XEXP (OP, 0), 0))	\
-       && GET_CODE (XEXP (XEXP (OP, 0), 1)) == UNSPEC		\
-       && GET_MODE (XEXP (OP, 0)) == Pmode)			\
-   : ((C) == 'S' ?					\
-      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31) : 0))))))
+   `T' is for fp loads and stores.
+
+   `U' is the constant 63.  */
+
+#define EXTRA_CONSTRAINT(OP, C) \
+  ((C) == 'Q' ?								\
+   (IS_RELOADING_PSEUDO_P (OP)						\
+    || (GET_CODE (OP) == MEM						\
+	&& (reload_in_progress						\
+	    || memory_address_p (GET_MODE (OP), XEXP (OP, 0)))		\
+	&& !symbolic_memory_operand (OP, VOIDmode)			\
+	&& !IS_LO_SUM_DLT_ADDR_P (XEXP (OP, 0))				\
+	&& !IS_INDEX_ADDR_P (XEXP (OP, 0))))				\
+   : ((C) == 'A' ?							\
+      (GET_CODE (OP) == MEM						\
+       && IS_LO_SUM_DLT_ADDR_P (XEXP (OP, 0)))				\
+   : ((C) == 'R' ?							\
+      (GET_CODE (OP) == MEM						\
+       && IS_INDEX_ADDR_P (XEXP (OP, 0)))				\
+   : ((C) == 'T' ? 							\
+      (GET_CODE (OP) == MEM						\
+       && !IS_LO_SUM_DLT_ADDR_P (XEXP (OP, 0))				\
+       && !IS_INDEX_ADDR_P (XEXP (OP, 0))				\
+       /* Using DFmode forces only short displacements			\
+	  to be recognized as valid in reg+d addresses. 		\
+	  However, this is not necessary for PA2.0 since		\
+	  it has long FP loads/stores.					\
+									\
+	  FIXME: the ELF32 linker clobbers the LSB of			\
+	  the FP register number in {fldw,fstw} insns.			\
+	  Thus, we only allow long FP loads/stores on			\
+	  TARGET_64BIT.  */						\
+       && memory_address_p ((TARGET_PA_20 && !TARGET_ELF32		\
+			     ? GET_MODE (OP)				\
+			     : DFmode),					\
+			    XEXP (OP, 0)))				\
+   : ((C) == 'S' ?							\
+      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31)			\
+   : ((C) == 'U' ?							\
+      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 63) : 0))))))
 	
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
@@ -1311,16 +1315,53 @@ extern int may_call_alloca;
 
 #endif
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
+/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression that is a
+   valid memory address for an instruction.  The MODE argument is the
+   machine mode for the MEM expression that wants to use this address.
 
-   On the HP-PA, the actual legitimate addresses must be
-   REG+REG, REG+(REG*SCALE) or REG+SMALLINT.
-   But we can treat a SYMBOL_REF as legitimate if it is part of this
-   function's constant-pool, because such addresses can actually
-   be output as REG+SMALLINT. 
+   On HP PA-RISC, the legitimate address forms are REG+SMALLINT,
+   REG+REG, and REG+(REG*SCALE).  The indexed address forms are only
+   available with floating point loads and stores, and integer loads.
+   We get better code by allowing indexed addresses in the initial
+   RTL generation.
+
+   The acceptance of indexed addresses as legitimate implies that we
+   must provide patterns for doing indexed integer stores, or the move
+   expanders must force the address of an indexed store to a register.
+   We have adopted the latter approach.
+   
+   Another function of GO_IF_LEGITIMATE_ADDRESS is to ensure that
+   the base register is a valid pointer for indexed instructions.
+   On targets that have non-equivalent space registers, we have to
+   know at the time of assembler output which register in a REG+REG
+   pair is the base register.  The REG_POINTER flag is sometimes lost
+   in reload and the following passes, so it can't be relied on during
+   code generation.  Thus, we either have to canonicalize the order
+   of the registers in REG+REG indexed addresses, or treat REG+REG
+   addresses separately and provide patterns for both permutations.
+
+   The latter approach requires several hundred additional lines of
+   code in pa.md.  The downside to canonicalizing is that a PLUS
+   in the wrong order can't combine to form to make a scaled indexed
+   memory operand.  As we won't need to canonicalize the operands if
+   the REG_POINTER lossage can be fixed, it seems better canonicalize.
+
+   We initially break out scaled indexed addresses in canonical order
+   in emit_move_sequence.  LEGITIMIZE_ADDRESS also canonicalizes
+   scaled indexed addresses during RTL generation.  However, fold_rtx
+   has its own opinion on how the operands of a PLUS should be ordered.
+   If one of the operands is equivalent to a constant, it will make
+   that operand the second operand.  As the base register is likely to
+   be equivalent to a SYMBOL_REF, we have made it the second operand.
+
+   GO_IF_LEGITIMATE_ADDRESS accepts REG+REG as legitimate when the
+   operands are in the order INDEX+BASE on targets with non-equivalent
+   space registers, and in any order on targets with equivalent space
+   registers.  It accepts both MULT+BASE and BASE+MULT for scaled indexing.
+
+   We treat a SYMBOL_REF as legitimate if it is part of the current
+   function's constant-pool, because such addresses can actually be
+   output as REG+SMALLINT. 
 
    Note we only allow 5 bit immediates for access to a constant address;
    doing so avoids losing for loading/storing a FP register at an address
@@ -1338,87 +1379,114 @@ extern int may_call_alloca;
 #define VAL_14_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) + 0x2000 < 0x4000)
 #define INT_14_BITS(X) VAL_14_BITS_P (INTVAL (X))
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
-{							\
-  if ((REG_P (X) && REG_OK_FOR_BASE_P (X))		\
+/* These are the modes that we allow for scaled indexing.  */
+#define MODE_OK_FOR_SCALED_INDEXING_P(MODE) \
+  ((TARGET_64BIT && (MODE) == DImode)					\
+   || (MODE) == SImode							\
+   || (MODE) == HImode							\
+   || (!TARGET_SOFT_FLOAT && ((MODE) == DFmode || (MODE) == SFmode)))
+
+/* These are the modes that we allow for unscaled indexing.  */
+#define MODE_OK_FOR_UNSCALED_INDEXING_P(MODE) \
+  ((TARGET_64BIT && (MODE) == DImode)					\
+   || (MODE) == SImode							\
+   || (MODE) == HImode							\
+   || (MODE) == QImode							\
+   || (!TARGET_SOFT_FLOAT && ((MODE) == DFmode || (MODE) == SFmode)))
+
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
+{									\
+  if ((REG_P (X) && REG_OK_FOR_BASE_P (X))				\
       || ((GET_CODE (X) == PRE_DEC || GET_CODE (X) == POST_DEC		\
 	   || GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_INC)	\
-	  && REG_P (XEXP (X, 0))			\
-	  && REG_OK_FOR_BASE_P (XEXP (X, 0))))		\
-    goto ADDR;						\
-  else if (GET_CODE (X) == PLUS)			\
-    {							\
-      rtx base = 0, index = 0;				\
-      if (REG_P (XEXP (X, 0))				\
-	  && REG_OK_FOR_BASE_P (XEXP (X, 0)))		\
-	base = XEXP (X, 0), index = XEXP (X, 1);	\
-      else if (REG_P (XEXP (X, 1))			\
-	       && REG_OK_FOR_BASE_P (XEXP (X, 1)))	\
-	base = XEXP (X, 1), index = XEXP (X, 0);	\
-      if (base != 0)					\
-	if (GET_CODE (index) == CONST_INT		\
-	    && ((INT_14_BITS (index)			\
-		 && (TARGET_SOFT_FLOAT			\
-		     || (TARGET_PA_20			\
-			 && ((MODE == SFmode		\
-			      && (INTVAL (index) % 4) == 0)\
-			     || (MODE == DFmode		\
-				 && (INTVAL (index) % 8) == 0)))\
-		     || ((MODE) != SFmode && (MODE) != DFmode))) \
-		|| INT_5_BITS (index)))			\
-	  goto ADDR;					\
-      if (! TARGET_SOFT_FLOAT				\
-	  && ! TARGET_DISABLE_INDEXING			\
-	  && base					\
-	  && ((MODE) == SFmode || (MODE) == DFmode)	\
-	  && GET_CODE (index) == MULT			\
-	  && GET_CODE (XEXP (index, 0)) == REG		\
-	  && REG_OK_FOR_BASE_P (XEXP (index, 0))	\
-	  && GET_CODE (XEXP (index, 1)) == CONST_INT	\
-	  && INTVAL (XEXP (index, 1)) == ((MODE) == SFmode ? 4 : 8))\
-	goto ADDR;					\
-    }							\
-  else if (GET_CODE (X) == LO_SUM			\
-	   && GET_CODE (XEXP (X, 0)) == REG		\
-	   && REG_OK_FOR_BASE_P (XEXP (X, 0))		\
-	   && CONSTANT_P (XEXP (X, 1))			\
-	   && (TARGET_SOFT_FLOAT			\
-	       /* We can allow symbolic LO_SUM addresses\
-		  for PA2.0.  */			\
-	       || (TARGET_PA_20				\
-		   && !TARGET_ELF32			\
-	           && GET_CODE (XEXP (X, 1)) != CONST_INT)\
-	       || ((MODE) != SFmode			\
-		   && (MODE) != DFmode)))		\
-    goto ADDR;						\
-  else if (GET_CODE (X) == LO_SUM			\
-	   && GET_CODE (XEXP (X, 0)) == SUBREG		\
-	   && GET_CODE (SUBREG_REG (XEXP (X, 0))) == REG\
-	   && REG_OK_FOR_BASE_P (SUBREG_REG (XEXP (X, 0)))\
-	   && CONSTANT_P (XEXP (X, 1))			\
-	   && (TARGET_SOFT_FLOAT			\
-	       /* We can allow symbolic LO_SUM addresses\
-		  for PA2.0.  */			\
-	       || (TARGET_PA_20				\
-		   && !TARGET_ELF32			\
-	           && GET_CODE (XEXP (X, 1)) != CONST_INT)\
-	       || ((MODE) != SFmode			\
-		   && (MODE) != DFmode)))		\
-    goto ADDR;						\
-  else if (GET_CODE (X) == LABEL_REF			\
-	   || (GET_CODE (X) == CONST_INT		\
-	       && INT_5_BITS (X)))			\
-    goto ADDR;						\
-  /* Needed for -fPIC */				\
-  else if (GET_CODE (X) == LO_SUM			\
-	   && GET_CODE (XEXP (X, 0)) == REG             \
-	   && REG_OK_FOR_BASE_P (XEXP (X, 0))		\
-	   && GET_CODE (XEXP (X, 1)) == UNSPEC		\
-	   && (TARGET_SOFT_FLOAT			\
-	       || (TARGET_PA_20	&& !TARGET_ELF32)	\
-	       || ((MODE) != SFmode			\
-		   && (MODE) != DFmode)))		\
-    goto ADDR;						\
+	  && REG_P (XEXP (X, 0))					\
+	  && REG_OK_FOR_BASE_P (XEXP (X, 0))))				\
+    goto ADDR;								\
+  else if (GET_CODE (X) == PLUS)					\
+    {									\
+      rtx base = 0, index = 0;						\
+      if (REG_P (XEXP (X, 1))						\
+	  && REG_OK_FOR_BASE_P (XEXP (X, 1)))				\
+	base = XEXP (X, 1), index = XEXP (X, 0);			\
+      else if (REG_P (XEXP (X, 0))					\
+	       && REG_OK_FOR_BASE_P (XEXP (X, 0)))			\
+	base = XEXP (X, 0), index = XEXP (X, 1);			\
+      if (base								\
+	  && GET_CODE (index) == CONST_INT				\
+	  && ((INT_14_BITS (index)					\
+	       && (TARGET_SOFT_FLOAT					\
+		   || (TARGET_PA_20					\
+		       && ((MODE == SFmode				\
+			    && (INTVAL (index) % 4) == 0)		\
+			   || (MODE == DFmode				\
+			       && (INTVAL (index) % 8) == 0)))		\
+		   || ((MODE) != SFmode && (MODE) != DFmode)))		\
+	       || INT_5_BITS (index)))					\
+	goto ADDR;							\
+      if (!TARGET_DISABLE_INDEXING					\
+	  /* Only accept the "canonical" INDEX+BASE operand order	\
+	     on targets with non-equivalent space registers.  */	\
+	  && (TARGET_NO_SPACE_REGS					\
+	      ? (base && REG_P (index))					\
+	      : (base == XEXP (X, 1) && REG_P (index)			\
+		 && REG_POINTER (base) && !REG_POINTER (index)))	\
+	  && MODE_OK_FOR_UNSCALED_INDEXING_P (MODE)			\
+	  && REG_OK_FOR_INDEX_P (index)					\
+	  && borx_reg_operand (base, Pmode)				\
+	  && borx_reg_operand (index, Pmode))				\
+	goto ADDR;							\
+      if (!TARGET_DISABLE_INDEXING					\
+	  && base							\
+	  && GET_CODE (index) == MULT					\
+	  && MODE_OK_FOR_SCALED_INDEXING_P (MODE)			\
+	  && REG_P (XEXP (index, 0))					\
+	  && GET_MODE (XEXP (index, 0)) == Pmode			\
+	  && REG_OK_FOR_INDEX_P (XEXP (index, 0))			\
+	  && GET_CODE (XEXP (index, 1)) == CONST_INT			\
+	  && INTVAL (XEXP (index, 1))					\
+	     == (HOST_WIDE_INT) GET_MODE_SIZE (MODE)			\
+	  && borx_reg_operand (base, Pmode))				\
+	goto ADDR;							\
+    }									\
+  else if (GET_CODE (X) == LO_SUM					\
+	   && GET_CODE (XEXP (X, 0)) == REG				\
+	   && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
+	   && CONSTANT_P (XEXP (X, 1))					\
+	   && (TARGET_SOFT_FLOAT					\
+	       /* We can allow symbolic LO_SUM addresses for PA2.0.  */	\
+	       || (TARGET_PA_20						\
+		   && !TARGET_ELF32					\
+	           && GET_CODE (XEXP (X, 1)) != CONST_INT)		\
+	       || ((MODE) != SFmode					\
+		   && (MODE) != DFmode)))				\
+    goto ADDR;								\
+  else if (GET_CODE (X) == LO_SUM					\
+	   && GET_CODE (XEXP (X, 0)) == SUBREG				\
+	   && GET_CODE (SUBREG_REG (XEXP (X, 0))) == REG		\
+	   && REG_OK_FOR_BASE_P (SUBREG_REG (XEXP (X, 0)))		\
+	   && CONSTANT_P (XEXP (X, 1))					\
+	   && (TARGET_SOFT_FLOAT					\
+	       /* We can allow symbolic LO_SUM addresses for PA2.0.  */	\
+	       || (TARGET_PA_20						\
+		   && !TARGET_ELF32					\
+	           && GET_CODE (XEXP (X, 1)) != CONST_INT)		\
+	       || ((MODE) != SFmode					\
+		   && (MODE) != DFmode)))				\
+    goto ADDR;								\
+  else if (GET_CODE (X) == LABEL_REF					\
+	   || (GET_CODE (X) == CONST_INT				\
+	       && INT_5_BITS (X)))					\
+    goto ADDR;								\
+  /* Needed for -fPIC */						\
+  else if (GET_CODE (X) == LO_SUM					\
+	   && GET_CODE (XEXP (X, 0)) == REG             		\
+	   && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
+	   && GET_CODE (XEXP (X, 1)) == UNSPEC				\
+	   && (TARGET_SOFT_FLOAT					\
+	       || (TARGET_PA_20	&& !TARGET_ELF32)			\
+	       || ((MODE) != SFmode					\
+		   && (MODE) != DFmode)))				\
+    goto ADDR;								\
 }
 
 /* Look for machine dependent ways to make the invalid address AD a
@@ -1872,16 +1940,17 @@ do { 									\
 #define JMP_BUF_SIZE 50
 
 #define PREDICATE_CODES							\
-  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
   {"call_operand_address", {LABEL_REF, SYMBOL_REF, CONST_INT,		\
 			    CONST_DOUBLE, CONST, HIGH, CONSTANT_P_RTX}}, \
+  {"indexed_memory_operand", {SUBREG, MEM}},				\
   {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
   {"symbolic_memory_operand", {SUBREG, MEM}},				\
   {"reg_before_reload_operand", {REG, MEM}},				\
-  {"reg_or_nonsymb_mem_operand", {SUBREG, REG, MEM}},			\
   {"reg_or_0_or_nonsymb_mem_operand", {SUBREG, REG, MEM, CONST_INT,	\
 				       CONST_DOUBLE}},			\
-  {"move_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, MEM}},	\
+  {"move_dest_operand", {SUBREG, REG, MEM}},				\
+  {"move_src_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, MEM}},	\
   {"reg_or_cint_move_operand", {SUBREG, REG, CONST_INT}},		\
   {"pic_label_operand", {LABEL_REF, CONST}},				\
   {"fp_reg_operand", {REG}},						\
@@ -1905,7 +1974,6 @@ do { 									\
   {"pc_or_label_operand", {PC, LABEL_REF}},				\
   {"plus_xor_ior_operator", {PLUS, XOR, IOR}},				\
   {"shadd_operand", {CONST_INT}},					\
-  {"basereg_operand", {REG}},						\
   {"div_operand", {REG, CONST_INT}},					\
   {"ireg_operand", {REG}},						\
   {"cmpib_comparison_operator", {EQ, NE, LT, LE, LEU,			\
