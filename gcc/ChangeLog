@@ -1,3 +1,11 @@
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/sparc/netbsd-elf.h (LINK_ARCH32_SPEC): Only specify
+	linker emulation.
+	(LINK_ARCH64_SPEC): Likewise.
+	(LINK_SPEC, NETBSD_ENTRY_POINT): Define.
+	(SUBTARGET_EXTRA_SPECS): Add netbsd_link_spec and netbsd_entry_point.
+
 2002-06-08  Marc Espie  <espie@openbsd.org>                                   
 	* lists.c (free_list):  Fix typo in comment.                            
 

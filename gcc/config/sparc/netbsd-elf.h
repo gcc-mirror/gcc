@@ -197,35 +197,22 @@ Boston, MA 02111-1307, USA.  */
 /* Make sure we use the right output format.  Pick a default and then
    make sure -m32/-m64 switch to the right one.  */
 
-#define LINK_ARCH32_SPEC \
- "%-m elf32_sparc \
-  %{assert*} %{R*} %{V} %{v:%{!V:-V}} \
-  %{shared:-shared} \
-  %{!shared: \
-    -dp \
-    %{!nostdlib:%{!r*:%{!e*:-e __start}}} \
-    %{!static: \
-      -dy %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}} \
-    %{static:-static}}"
+#define LINK_ARCH32_SPEC "-m elf32_sparc"
 
-#define LINK_ARCH64_SPEC \
- "%-m elf64_sparc \
-  %{assert*} %{R*} %{V} %{v:%{!V:-V}} \
-  %{shared:-shared} \
-  %{!shared: \
-    -dp \
-    %{!nostdlib:%{!r*:%{!e*:-e __start}}} \
-    %{!static: \
-      -dy %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}} \
-    %{static:-static}}"
+#define LINK_ARCH64_SPEC "-m elf64_sparc"
 
-#define LINK_ARCH_SPEC "\
-%{m32:%(link_arch32)} \
-%{m64:%(link_arch64)} \
-%{!m32:%{!m64:%(link_arch_default)}} \
-"
+#define LINK_ARCH_SPEC \
+ "%{m32:%(link_arch32)} \
+  %{m64:%(link_arch64)} \
+  %{!m32:%{!m64:%(link_arch_default)}}"
+
+#undef LINK_SPEC
+#define LINK_SPEC \
+ "%(link_arch) \
+  %{!mno-relax:%{!r:-relax}} \
+  %(netbsd_link_spec)"
+
+#define NETBSD_ENTRY_POINT "__start"
 
 #if DEFAULT_ARCH32_P
 #define LINK_ARCH_DEFAULT_SPEC LINK_ARCH32_SPEC
@@ -240,7 +227,9 @@ Boston, MA 02111-1307, USA.  */
   { "link_arch64",		LINK_ARCH64_SPEC }, \
   { "link_arch_default",	LINK_ARCH_DEFAULT_SPEC }, \
   { "link_arch",		LINK_ARCH_SPEC }, \
-  { "netbsd_cpp_spec",		NETBSD_CPP_SPEC },
+  { "netbsd_cpp_spec",		NETBSD_CPP_SPEC }, \
+  { "netbsd_link_spec",		NETBSD_LINK_SPEC_ELF }, \
+  { "netbsd_entry_point",	NETBSD_ENTRY_POINT },
 
 
 /* What extra switches do we need?  */
