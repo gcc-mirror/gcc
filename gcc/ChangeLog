@@ -1,3 +1,9 @@
+Fri Oct 15 00:05:00 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (djgpp): Revert previous patch.
+	* configure: Rebuit.
+	* config/i386/djgpp.h: Revert previous patch.
+
 Fri Oct 15 00:00:24 1999  Loren J. Rittle <ljrittle@acm.org>
 
 	* fixinc/inclhack.def: Restore patch lost during last merge of
