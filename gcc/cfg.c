@@ -888,3 +888,64 @@ brief_dump_cfg (FILE *file)
       dump_cfg_bb_info (file, bb);
     }
 }
+
+/* An edge originally destinating BB of FREQUENCY and COUNT has been proved to
+   leave the block by TAKEN_EDGE.  Update profile of BB such that edge E can be
+   redirected to destiantion of TAKEN_EDGE. 
+
+   This function may leave the profile inconsistent in the case TAKEN_EDGE
+   frequency or count is believed to be lower than FREQUENCY or COUNT
+   respectivly.  */
+void
+update_bb_profile_for_threading (basic_block bb, int edge_frequency,
+				 gcov_type count, edge taken_edge)
+{
+  edge c;
+  int prob;
+
+  bb->count -= count;
+  if (bb->count < 0)
+    bb->count = 0;
+
+  /* Compute the probability of TAKEN_EDGE being reached via threaded edge.
+     Watch for overflows.  */
+  if (bb->frequency)
+    prob = edge_frequency * REG_BR_PROB_BASE / bb->frequency;
+  else
+    prob = 0;
+  if (prob > taken_edge->probability)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Jump threading proved probability of edge "
+		 "%i->%i too small (it is %i, should be %i).\n",
+		 taken_edge->src->index, taken_edge->dest->index,
+		 taken_edge->probability, prob);
+      prob = taken_edge->probability;
+    }
+
+  /* Now rescale the probabilities.  */
+  taken_edge->probability -= prob;
+  prob = REG_BR_PROB_BASE - prob;
+  bb->frequency -= edge_frequency;
+  if (bb->frequency < 0)
+    bb->frequency = 0;
+  if (prob <= 0)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Edge frequencies of bb %i has been reset, "
+		 "frequency of block should end up being 0, it is %i\n",
+		 bb->index, bb->frequency);
+      bb->succ->probability = REG_BR_PROB_BASE;
+      for (c = bb->succ->succ_next; c; c = c->succ_next)
+	c->probability = 0;
+    }
+  else
+    for (c = bb->succ; c; c = c->succ_next)
+      c->probability = ((c->probability * REG_BR_PROB_BASE) / (double) prob);
+
+  if (bb != taken_edge->src)
+    abort ();
+  taken_edge->count -= count;
+  if (taken_edge->count < 0)
+    taken_edge->count = 0;
+}

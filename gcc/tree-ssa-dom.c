@@ -697,6 +697,8 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	     bypass the conditional at our original destination.   */
 	  if (dest)
 	    {
+	      update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
+					       e->count, taken_edge);
 	      e->aux = taken_edge;
 	      bb_ann (e->dest)->incoming_edge_threaded = true;
 	    }
