@@ -1,3 +1,14 @@
+Thu Mar 12 15:13:16 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+                          Richard Earnshaw <rearnsha@arm.com>
+                          Nick Clifton  <nickc@cygnus.com>
+	
+        * tm.texi (DEFAULT_RTX_COSTS): Document new macro.
+	
+        * arm.h (DEFAULT_RTX_COSTS): Define instead of RTX_COSTS.
+	
+        * cse.c (rtx_cost): Provide a default case in an enumeration
+        switch, and call DEFAULT_RTX_COSTS if it's defined.
+	
 Thu Mar 12 10:02:38 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* basic-block.h (compute_preds_succs): Change return type in

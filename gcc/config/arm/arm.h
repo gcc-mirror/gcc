@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Acorn RISC Machine.
-   Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -1620,8 +1620,7 @@ extern struct rtx_def *legitimize_pic_address ();
   ((X) == frame_pointer_rtx || (X) == stack_pointer_rtx	\
    || (X) == arg_pointer_rtx)
 
-#define RTX_COSTS(X,CODE,OUTER_CODE)		\
-  default:					\
+#define DEFAULT_RTX_COSTS(X,CODE,OUTER_CODE)		\
    return arm_rtx_costs (X, CODE, OUTER_CODE);
 
 /* Moves to and from memory are quite expensive */
