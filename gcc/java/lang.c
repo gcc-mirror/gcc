@@ -497,24 +497,14 @@ put_decl_node (tree node)
    which is also called directly by java_print_error_function. */
 
 const char *
-lang_printable_name (tree decl, int v  __attribute__ ((__unused__)))
+lang_printable_name (tree decl, int v)
 {
   decl_bufpos = 0;
-  put_decl_node (decl);
+  if (v == 0 && TREE_CODE (decl) == FUNCTION_DECL)
+    put_decl_node (DECL_NAME (decl));
+  else
+    put_decl_node (decl);
   put_decl_string ("", 1);
-  return decl_buf;
-}
-
-/* Does the same thing that lang_printable_name, but add a leading
-   space to the DECL name string -- With Leading Space.  */
-
-const char *
-lang_printable_name_wls (tree decl, int v  __attribute__ ((__unused__)))
-{
-  decl_bufpos = 1;
-  put_decl_node (decl);
-  put_decl_string ("", 1);
-  decl_buf [0] = ' ';
   return decl_buf;
 }
 
