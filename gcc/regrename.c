@@ -201,7 +201,7 @@ regrename_optimize ()
 {
   int tick[FIRST_PSEUDO_REGISTER];
   int this_tick = 0;
-  basic_block bb;
+  int b;
   char *first_obj;
 
   memset (tick, 0, sizeof tick);
@@ -209,8 +209,9 @@ regrename_optimize ()
   gcc_obstack_init (&rename_obstack);
   first_obj = (char *) obstack_alloc (&rename_obstack, 0);
 
-  FOR_ALL_BB (bb)
+  for (b = 0; b < n_basic_blocks; b++)
     {
+      basic_block bb = BASIC_BLOCK (b);
       struct du_chain *all_chains = 0;
       HARD_REG_SET unavailable;
       HARD_REG_SET regs_seen;
@@ -218,7 +219,7 @@ regrename_optimize ()
       CLEAR_HARD_REG_SET (unavailable);
 
       if (rtl_dump_file)
-	fprintf (rtl_dump_file, "\nBasic block %d:\n", bb->sindex);
+	fprintf (rtl_dump_file, "\nBasic block %d:\n", b);
 
       all_chains = build_def_use (bb);
 
@@ -1725,30 +1726,30 @@ copyprop_hardreg_forward ()
 {
   struct value_data *all_vd;
   bool need_refresh;
-  basic_block bb, bbp;
+  int b;
 
   need_refresh = false;
 
-  all_vd = xmalloc (sizeof (struct value_data) * last_basic_block);
+  all_vd = xmalloc (sizeof (struct value_data) * n_basic_blocks);
 
-  FOR_ALL_BB (bb)
+  for (b = 0; b < n_basic_blocks; b++)
     {
+      basic_block bb = BASIC_BLOCK (b);
+
       /* If a block has a single predecessor, that we've already
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queueing of blocks.  */
-      if (bb->pred)
-	for (bbp = bb; bbp && bbp != bb->pred->src; bbp = bbp->prev_bb);
       if (bb->pred
 	  && ! bb->pred->pred_next
 	  && ! (bb->pred->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
-	  && bb->pred->src != ENTRY_BLOCK_PTR
-	  && bbp)
-	all_vd[bb->sindex] = all_vd[bb->pred->src->sindex];
+	  && bb->pred->src->index != ENTRY_BLOCK
+	  && bb->pred->src->index < b)
+	all_vd[b] = all_vd[bb->pred->src->index];
       else
-	init_value_data (all_vd + bb->sindex);
+	init_value_data (all_vd + b);
 
-      if (copyprop_hardreg_forward_1 (bb, all_vd + bb->sindex))
+      if (copyprop_hardreg_forward_1 (bb, all_vd + b))
 	need_refresh = true;
     }
 

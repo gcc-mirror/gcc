@@ -2727,14 +2727,15 @@ split_all_insns (upd_life)
 {
   sbitmap blocks;
   int changed;
-  basic_block bb;
+  int i;
 
-  blocks = sbitmap_alloc (last_basic_block);
+  blocks = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (blocks);
   changed = 0;
 
-  FOR_ALL_BB_REVERSE (bb)
+  for (i = n_basic_blocks - 1; i >= 0; --i)
     {
+      basic_block bb = BASIC_BLOCK (i);
       rtx insn, next;
       bool finish = false;
 
@@ -2755,7 +2756,7 @@ split_all_insns (upd_life)
 
 	      while (GET_CODE (last) == BARRIER)
 		last = PREV_INSN (last);
-	      SET_BIT (blocks, bb->sindex);
+	      SET_BIT (blocks, i);
 	      changed = 1;
 	      insn = last;
 	    }
@@ -2998,8 +2999,7 @@ peephole2_optimize (dump_file)
   regset_head rs_heads[MAX_INSNS_PER_PEEP2 + 2];
   rtx insn, prev;
   regset live;
-  int i;
-  basic_block bb;
+  int i, b;
 #ifdef HAVE_conditional_execution
   sbitmap blocks;
   bool changed;
@@ -3013,15 +3013,16 @@ peephole2_optimize (dump_file)
   live = INITIALIZE_REG_SET (rs_heads[i]);
 
 #ifdef HAVE_conditional_execution
-  blocks = sbitmap_alloc (last_basic_block);
+  blocks = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (blocks);
   changed = false;
 #else
   count_or_remove_death_notes (NULL, 1);
 #endif
 
-  FOR_ALL_BB_REVERSE (bb)
+  for (b = n_basic_blocks - 1; b >= 0; --b)
     {
+      basic_block bb = BASIC_BLOCK (b);
       struct propagate_block_info *pbi;
 
       /* Indicate that all slots except the last holds invalid data.  */

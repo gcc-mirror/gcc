@@ -7817,7 +7817,7 @@ epilogue_done:
 	}
 
       /* Find the last line number note in the first block.  */
-      for (insn = ENTRY_BLOCK_PTR->next_bb->end;
+      for (insn = BASIC_BLOCK (0)->end;
 	   insn != prologue_end && insn;
 	   insn = PREV_INSN (insn))
 	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)

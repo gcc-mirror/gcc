@@ -203,11 +203,8 @@ typedef struct basic_block_def {
   /* Auxiliary info specific to a pass.  */
   void *aux;
 
-  /* The index of a block.  */
-  int sindex;
-
-  /* Previous and next blocks in the chain.  */
-  struct basic_block_def *prev_bb, *next_bb;
+  /* The index of this block.  */
+  int index;
 
   /* The loop depth of this block.  */
   int loop_depth;
@@ -231,11 +228,7 @@ typedef struct basic_block_def {
 
 /* Number of basic blocks in the current function.  */
 
-extern int num_basic_blocks;
-
-/* First free basic block number.  */
-
-extern int last_basic_block;
+extern int n_basic_blocks;
 
 /* Number of edges in the current function.  */
 
@@ -246,16 +239,6 @@ extern int n_edges;
 extern varray_type basic_block_info;
 
 #define BASIC_BLOCK(N)  (VARRAY_BB (basic_block_info, (N)))
-
-/* For iterating over basic blocks.  */
-#define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \
-  for (BB = FROM; BB != TO; BB = BB->DIR)
-
-#define FOR_ALL_BB(BB) \
-  FOR_BB_BETWEEN (BB, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR, next_bb)
-
-#define FOR_ALL_BB_REVERSE(BB) \
-  FOR_BB_BETWEEN (BB, EXIT_BLOCK_PTR->prev_bb, ENTRY_BLOCK_PTR, prev_bb)
 
 /* What registers are live at the setjmp call.  */
 
@@ -301,7 +284,7 @@ extern struct basic_block_def entry_exit_blocks[2];
 
 extern varray_type basic_block_for_insn;
 #define BLOCK_FOR_INSN(INSN)  VARRAY_BB (basic_block_for_insn, INSN_UID (INSN))
-#define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->sindex + 0)
+#define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 
 extern void compute_bb_for_insn		PARAMS ((int));
 extern void free_bb_for_insn		PARAMS ((void));
@@ -331,8 +314,8 @@ extern void remove_edge			PARAMS ((edge));
 extern void redirect_edge_succ		PARAMS ((edge, basic_block));
 extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
 extern void redirect_edge_pred		PARAMS ((edge, basic_block));
-extern basic_block create_basic_block_structure PARAMS ((int, rtx, rtx, rtx, basic_block));
-extern basic_block create_basic_block	PARAMS ((rtx, rtx, basic_block));
+extern basic_block create_basic_block_structure PARAMS ((int, rtx, rtx, rtx));
+extern basic_block create_basic_block	PARAMS ((int, rtx, rtx));
 extern int flow_delete_block		PARAMS ((basic_block));
 extern int flow_delete_block_noexpunge	PARAMS ((basic_block));
 extern void clear_bb_flags		PARAMS ((void));
@@ -656,15 +639,12 @@ extern void reorder_basic_blocks	PARAMS ((void));
 extern void dump_bb			PARAMS ((basic_block, FILE *));
 extern void debug_bb			PARAMS ((basic_block));
 extern void debug_bb_n			PARAMS ((int));
-extern basic_block debug_num2bb		PARAMS ((int));
 extern void dump_regset			PARAMS ((regset, FILE *));
 extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
 extern void expunge_block		PARAMS ((basic_block));
-extern void link_block			PARAMS ((basic_block, basic_block));
-extern void unlink_block		PARAMS ((basic_block));
-extern void compact_blocks              PARAMS ((void));
+extern void expunge_block_nocompact	PARAMS ((basic_block));
 extern basic_block alloc_block		PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
 extern int delete_noop_moves		PARAMS ((rtx));

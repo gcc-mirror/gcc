@@ -153,7 +153,7 @@ static void delete_insn_bb
 
 /* Create a control_dependent_block_to_edge_map, given the number
    NUM_BASIC_BLOCKS of non-entry, non-exit basic blocks, e.g.,
-   num_basic_blocks.  This memory must be released using
+   n_basic_blocks.  This memory must be released using
    control_dependent_block_to_edge_map_free ().  */
 
 static control_dependent_block_to_edge_map
@@ -181,10 +181,10 @@ set_control_dependent_block_to_edge_map_bit (c, bb, edge_index)
      basic_block bb;
      int edge_index;
 {
-  if (bb->sindex - (INVALID_BLOCK+1) >= c->length)
+  if (bb->index - (INVALID_BLOCK+1) >= c->length)
     abort ();
 
-  bitmap_set_bit (c->data[bb->sindex - (INVALID_BLOCK+1)],
+  bitmap_set_bit (c->data[bb->index - (INVALID_BLOCK+1)],
 		  edge_index);
 }
 
@@ -247,7 +247,7 @@ find_control_dependence (el, edge_index, pdom, cdbte)
     abort ();
   ending_block =
     (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR)
-    ? ENTRY_BLOCK_PTR->next_bb
+    ? BASIC_BLOCK (0)
     : find_pdom (pdom, INDEX_EDGE_PRED_BB (el, edge_index));
 
   for (current_block = INDEX_EDGE_SUCC_BB (el, edge_index);
@@ -271,15 +271,15 @@ find_pdom (pdom, block)
 {
   if (!block)
     abort ();
-  if (block->sindex == INVALID_BLOCK)
+  if (block->index == INVALID_BLOCK)
     abort ();
 
   if (block == ENTRY_BLOCK_PTR)
-    return ENTRY_BLOCK_PTR->next_bb;
-  else if (block == EXIT_BLOCK_PTR || pdom[block->sindex] == EXIT_BLOCK)
+    return BASIC_BLOCK (0);
+  else if (block == EXIT_BLOCK_PTR || pdom[block->index] == EXIT_BLOCK)
     return EXIT_BLOCK_PTR;
   else
-    return BASIC_BLOCK (pdom[block->sindex]);
+    return BASIC_BLOCK (pdom[block->index]);
 }
 
 /* Determine if the given CURRENT_RTX uses a hard register not
@@ -490,7 +490,6 @@ ssa_eliminate_dead_code ()
 {
   int i;
   rtx insn;
-  basic_block bb;
   /* Necessary instructions with operands to explore.  */
   varray_type unprocessed_instructions;
   /* Map element (b,e) is nonzero if the block is control dependent on
@@ -506,7 +505,7 @@ ssa_eliminate_dead_code ()
   mark_all_insn_unnecessary ();
   VARRAY_RTX_INIT (unprocessed_instructions, 64,
 		   "unprocessed instructions");
-  cdbte = control_dependent_block_to_edge_map_create (last_basic_block);
+  cdbte = control_dependent_block_to_edge_map_create (n_basic_blocks);
 
   /* Prepare for use of BLOCK_NUM ().  */
   connect_infinite_loops_to_exit ();
@@ -514,12 +513,12 @@ ssa_eliminate_dead_code ()
   compute_bb_for_insn (max_insn_uid);
 
   /* Compute control dependence.  */
-  pdom = (int *) xmalloc (last_basic_block * sizeof (int));
-  for (i = 0; i < last_basic_block; ++i)
+  pdom = (int *) xmalloc (n_basic_blocks * sizeof (int));
+  for (i = 0; i < n_basic_blocks; ++i)
     pdom[i] = INVALID_BLOCK;
   calculate_dominance_info (pdom, NULL, CDI_POST_DOMINATORS);
   /* Assume there is a path from each node to the exit block.  */
-  for (i = 0; i < last_basic_block; ++i)
+  for (i = 0; i < n_basic_blocks; ++i)
     if (pdom[i] == INVALID_BLOCK)
       pdom[i] = EXIT_BLOCK;
   el = create_edge_list ();
@@ -719,8 +718,10 @@ ssa_eliminate_dead_code ()
   /* Find any blocks with no successors and ensure they are followed
      by a BARRIER.  delete_insn has the nasty habit of deleting barriers
      when deleting insns.  */
-  FOR_ALL_BB (bb)
+  for (i = 0; i < n_basic_blocks; i++)
     {
+      basic_block bb = BASIC_BLOCK (i);
+
       if (bb->succ == NULL)
 	{
 	  rtx next = NEXT_INSN (bb->end);

@@ -158,7 +158,7 @@ struct df_map
 };
 
 
-#define DF_BB_INFO(REFS, BB) (&REFS->bbs[(BB)->sindex])
+#define DF_BB_INFO(REFS, BB) (&REFS->bbs[(BB)->index])
 
 
 /* Macros to access the elements within the ref structure.  */
@@ -175,7 +175,7 @@ struct df_map
 #define DF_REF_LOC(REF) ((REF)->loc)
 #endif
 #define DF_REF_BB(REF) (BLOCK_FOR_INSN ((REF)->insn))
-#define DF_REF_BBNO(REF) (BLOCK_FOR_INSN ((REF)->insn)->sindex)
+#define DF_REF_BBNO(REF) (BLOCK_FOR_INSN ((REF)->insn)->index)
 #define DF_REF_INSN(REF) ((REF)->insn)
 #define DF_REF_INSN_UID(REF) (INSN_UID ((REF)->insn))
 #define DF_REF_TYPE(REF) ((REF)->type)

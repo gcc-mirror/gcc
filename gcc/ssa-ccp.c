@@ -648,13 +648,13 @@ examine_flow_edges ()
 
       /* If this is the first time we've simulated this block, then we
 	 must simulate each of its insns.  */
-      if (!TEST_BIT (executable_blocks, succ_block->sindex))
+      if (!TEST_BIT (executable_blocks, succ_block->index))
 	{
 	  rtx currinsn;
 	  edge succ_edge = succ_block->succ;
 
 	  /* Note that we have simulated this block.  */
-	  SET_BIT (executable_blocks, succ_block->sindex);
+	  SET_BIT (executable_blocks, succ_block->index);
 
 	  /* Simulate each insn within the block.  */
 	  currinsn = succ_block->head;
@@ -740,7 +740,6 @@ optimize_unexecutable_edges (edges, executable_edges)
      sbitmap executable_edges;
 {
   int i;
-  basic_block bb;
 
   for (i = 0; i < NUM_EDGES (edges); i++)
     {
@@ -762,15 +761,15 @@ optimize_unexecutable_edges (edges, executable_edges)
 		  remove_phi_alternative (PATTERN (insn), edge->src);
 		  if (rtl_dump_file)
 		    fprintf (rtl_dump_file,
-			     "Removing alternative for bb %d of phi %d\n", 
-			     edge->src->sindex, SSA_NAME (PATTERN (insn)));
+			     "Removing alternative for bb %d of phi %d\n",
+			     edge->src->index, SSA_NAME (PATTERN (insn)));
 		  insn = NEXT_INSN (insn);
 		}
 	    }
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file,
 		     "Removing unexecutable edge from %d to %d\n",
-		     edge->src->sindex, edge->dest->sindex);
+		     edge->src->index, edge->dest->index);
 	  /* Since the edge was not executable, remove it from the CFG.  */
 	  remove_edge (edge);
 	}
@@ -798,8 +797,9 @@ optimize_unexecutable_edges (edges, executable_edges)
      In cases B & C we are removing uses of registers, so make sure
      to note those changes for the DF analyzer.  */
 
-  FOR_ALL_BB (bb)
+  for (i = 0; i < n_basic_blocks; i++)
     {
+      basic_block bb = BASIC_BLOCK (i);
       rtx insn = bb->end;
       edge edge = bb->succ;
 
@@ -929,7 +929,7 @@ ssa_ccp_substitute_constants ()
 static void
 ssa_ccp_df_delete_unreachable_insns ()
 {
-  basic_block b;
+  int i;
 
   /* Use the CFG to find all the reachable blocks.  */
   find_unreachable_blocks ();
@@ -937,8 +937,10 @@ ssa_ccp_df_delete_unreachable_insns ()
   /* Now we know what blocks are not reachable.  Mark all the insns
      in those blocks as deleted for the DF analyzer.   We'll let the
      normal flow code actually remove the unreachable blocks.  */
-  FOR_ALL_BB_REVERSE (b)
+  for (i = n_basic_blocks - 1; i >= 0; --i)
     {
+      basic_block b = BASIC_BLOCK (i);
+
       if (!(b->flags & BB_REACHABLE))
 	{
 	  rtx start = b->head;
@@ -1016,7 +1018,7 @@ ssa_const_prop ()
   ssa_edges = sbitmap_alloc (VARRAY_SIZE (ssa_definition));
   sbitmap_zero (ssa_edges);
 
-  executable_blocks = sbitmap_alloc (last_basic_block);
+  executable_blocks = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (executable_blocks);
 
   executable_edges = sbitmap_alloc (NUM_EDGES (edges));

@@ -111,6 +111,14 @@ static int dead_or_predicable		PARAMS ((basic_block, basic_block,
 						 basic_block, basic_block, int));
 static void noce_emit_move_insn		PARAMS ((rtx, rtx));
 
+/* Abuse the basic_block AUX field to store the original block index,
+   as well as a flag indicating that the block should be rescaned for
+   life analysis.  */
+
+#define SET_ORIG_INDEX(BB,I)	((BB)->aux = (void *)((size_t)(I)))
+#define ORIG_INDEX(BB)		((size_t)(BB)->aux)
+
+
 /* Count the number of non-jump active insns in BB.  */
 
 static int
@@ -1965,7 +1973,7 @@ find_if_block (test_bb, then_edge, else_edge)
   basic_block join_bb = NULL_BLOCK;
   edge then_succ = then_bb->succ;
   edge else_succ = else_bb->succ;
-  basic_block next;
+  int next_index;
 
   /* The THEN block of an IF-THEN combo must have exactly one predecessor.  */
   if (then_bb->pred->pred_next != NULL_EDGE)
@@ -2035,12 +2043,12 @@ find_if_block (test_bb, then_edge, else_edge)
       if (else_bb)
 	fprintf (rtl_dump_file,
 		 "\nIF-THEN-ELSE block found, start %d, then %d, else %d, join %d\n",
-		 test_bb->sindex, then_bb->sindex, else_bb->sindex,
-		 join_bb->sindex);
+		 test_bb->index, then_bb->index, else_bb->index,
+		 join_bb->index);
       else
 	fprintf (rtl_dump_file,
 		 "\nIF-THEN block found, start %d, then %d, join %d\n",
-		 test_bb->sindex, then_bb->sindex, join_bb->sindex);
+		 test_bb->index, then_bb->index, join_bb->index);
     }
 
   /* Make sure IF, THEN, and ELSE, blocks are adjacent.  Actually, we
@@ -2049,10 +2057,10 @@ find_if_block (test_bb, then_edge, else_edge)
   /* ??? As an enhancement, move the ELSE block.  Have to deal with
      BLOCK notes, if by no other means than aborting the merge if they
      exist.  Sticky enough I don't want to think about it now.  */
-  next = then_bb;
-  if (else_bb && (next = next->next_bb) != else_bb)
+  next_index = then_bb->index;
+  if (else_bb && ++next_index != else_bb->index)
     return FALSE;
-  if ((next = next->next_bb) != join_bb && join_bb != EXIT_BLOCK_PTR)
+  if (++next_index != join_bb->index && join_bb->index != EXIT_BLOCK)
     {
       if (else_bb)
 	join_bb = NULL;
@@ -2092,7 +2100,7 @@ find_cond_trap (test_bb, then_edge, else_edge)
   if (rtl_dump_file)
     {
       fprintf (rtl_dump_file, "\nTRAP-IF block found, start %d, trap %d\n",
-	       test_bb->sindex, trap_bb->sindex);
+	       test_bb->index, trap_bb->index);
     }
 
   /* If this is not a standard conditional jump, we can't parse it.  */
@@ -2138,7 +2146,7 @@ find_cond_trap (test_bb, then_edge, else_edge)
 
   /* If the non-trap block and the test are now adjacent, merge them.
      Otherwise we must insert a direct branch.  */
-  if (test_bb->next_bb == other_bb)
+  if (test_bb->index + 1 == other_bb->index)
     {
       delete_insn (jump);
       merge_if_block (test_bb, NULL, NULL, other_bb);
@@ -2292,7 +2300,7 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   if (rtl_dump_file)
     fprintf (rtl_dump_file,
 	     "\nIF-CASE-1 found, start %d, then %d\n",
-	     test_bb->sindex, then_bb->sindex);
+	     test_bb->index, then_bb->index);
 
   /* THEN is small.  */
   if (count_bb_insns (then_bb) > BRANCH_COST)
@@ -2313,6 +2321,8 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb), else_bb);
   /* Make rest of code believe that the newly created block is the THEN_BB
      block we are going to remove.  */
+  if (new_bb)
+    new_bb->aux = then_bb->aux;
   flow_delete_block (then_bb);
   /* We've possibly created jump to next insn, cleanup_cfg will solve that
      later.  */
@@ -2348,16 +2358,16 @@ find_if_case_2 (test_bb, then_edge, else_edge)
     return FALSE;
 
   /* THEN is not EXIT.  */
-  if (then_bb == EXIT_BLOCK_PTR)
+  if (then_bb->index < 0)
     return FALSE;
 
   /* ELSE is predicted or SUCC(ELSE) postdominates THEN.  */
   note = find_reg_note (test_bb->end, REG_BR_PROB, NULL_RTX);
   if (note && INTVAL (XEXP (note, 0)) >= REG_BR_PROB_BASE / 2)
     ;
-  else if (else_succ->dest == EXIT_BLOCK_PTR
-	   || TEST_BIT (post_dominators[then_bb->sindex], 
-			else_succ->dest->sindex))
+  else if (else_succ->dest->index < 0
+	   || TEST_BIT (post_dominators[ORIG_INDEX (then_bb)], 
+			ORIG_INDEX (else_succ->dest)))
     ;
   else
     return FALSE;
@@ -2366,7 +2376,7 @@ find_if_case_2 (test_bb, then_edge, else_edge)
   if (rtl_dump_file)
     fprintf (rtl_dump_file,
 	     "\nIF-CASE-2 found, start %d, else %d\n",
-	     test_bb->sindex, else_bb->sindex);
+	     test_bb->index, else_bb->index);
 
   /* ELSE is small.  */
   if (count_bb_insns (then_bb) > BRANCH_COST)
@@ -2675,7 +2685,7 @@ void
 if_convert (x_life_data_ok)
      int x_life_data_ok;
 {
-  basic_block bb;
+  int block_num;
 
   num_possible_if_blocks = 0;
   num_updated_if_blocks = 0;
@@ -2690,17 +2700,25 @@ if_convert (x_life_data_ok)
   post_dominators = NULL;
   if (HAVE_conditional_execution || life_data_ok)
     {
-      post_dominators = sbitmap_vector_alloc (last_basic_block, last_basic_block);
+      post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
       calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
     }
   if (life_data_ok)
     clear_bb_flags ();
 
+  /* Record initial block numbers.  */
+  for (block_num = 0; block_num < n_basic_blocks; block_num++)
+    SET_ORIG_INDEX (BASIC_BLOCK (block_num), block_num);
+
   /* Go through each of the basic blocks looking for things to convert.  */
-  FOR_ALL_BB (bb)
-    while (find_if_header (bb))
-      {
-      }
+  for (block_num = 0; block_num < n_basic_blocks; )
+    {
+      basic_block bb = BASIC_BLOCK (block_num);
+      if (find_if_header (bb))
+	block_num = bb->index;
+      else 
+	block_num++;
+    }
 
   if (post_dominators)
     sbitmap_vector_free (post_dominators);
