@@ -138,7 +138,7 @@ extern char regs_ever_live[FIRST_PSEUDO_REGISTER];
 
 /* Vector indexed by hardware reg giving its name.  */
 
-extern char *reg_names[FIRST_PSEUDO_REGISTER];
+extern const char *reg_names[FIRST_PSEUDO_REGISTER];
 
 /* For each hard register, the widest mode object that it can contain.
    This will be a MODE_INT mode if the register can hold integers.  Otherwise

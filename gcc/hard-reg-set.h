@@ -467,4 +467,4 @@ extern int n_non_fixed_regs;
 
 /* Vector indexed by hardware reg giving its name.  */
 
-extern char *reg_names[FIRST_PSEUDO_REGISTER];
+extern const char *reg_names[FIRST_PSEUDO_REGISTER];

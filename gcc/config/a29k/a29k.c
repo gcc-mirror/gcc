@@ -83,9 +83,6 @@ int a29k_debug_reg_map[FIRST_PSEUDO_REGISTER];
 
 rtx a29k_compare_op0, a29k_compare_op1;
 int a29k_compare_fp_p;
-
-/* Gives names for registers.  */
-extern char *reg_names[];
 
 /* Returns 1 if OP is a 8-bit constant. */
 

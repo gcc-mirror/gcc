@@ -1061,10 +1061,10 @@ arc_compute_frame_size (size)
 void
 arc_save_restore (file, base_reg, offset, gmask, op)
      FILE *file;
-     char *base_reg;
+     const char *base_reg;
      unsigned int offset;
      unsigned int gmask;
-     char *op;
+     const char *op;
 {
   int regno;
 
@@ -1089,8 +1089,8 @@ arc_output_function_prologue (file, size)
      FILE *file;
      int size;
 {
-  char *sp_str = reg_names[STACK_POINTER_REGNUM];
-  char *fp_str = reg_names[FRAME_POINTER_REGNUM];
+  const char *sp_str = reg_names[STACK_POINTER_REGNUM];
+  const char *fp_str = reg_names[FRAME_POINTER_REGNUM];
   unsigned int gmask = current_frame_info.gmask;
   enum arc_function_type fn_type = arc_compute_function_type (current_function_decl);
 
@@ -1197,8 +1197,8 @@ arc_output_function_epilogue (file, size)
       unsigned int frame_size = size - pretend_size;
       int restored, fp_restored_p;
       int can_trust_sp_p = !current_function_calls_alloca;
-      char *sp_str = reg_names[STACK_POINTER_REGNUM];
-      char *fp_str = reg_names[FRAME_POINTER_REGNUM];
+      const char *sp_str = reg_names[STACK_POINTER_REGNUM];
+      const char *fp_str = reg_names[FRAME_POINTER_REGNUM];
 
       /* ??? There are lots of optimizations that can be done here.
 	 EG: Use fp to restore regs if it's closer.

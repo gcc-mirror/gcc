@@ -5938,7 +5938,7 @@ sparc_flat_output_function_prologue (file, size)
      FILE *file;
      int size;
 {
-  char *sp_str = reg_names[STACK_POINTER_REGNUM];
+  const char *sp_str = reg_names[STACK_POINTER_REGNUM];
   unsigned long gmask = current_frame_info.gmask;
 
   sparc_output_scratch_registers (file);
@@ -5977,7 +5977,7 @@ sparc_flat_output_function_prologue (file, size)
   if (size > 0)
     {
       unsigned int reg_offset = current_frame_info.reg_offset;
-      char *fp_str = reg_names[FRAME_POINTER_REGNUM];
+      const char *fp_str = reg_names[FRAME_POINTER_REGNUM];
       const char *t1_str = "%g1";
 
       /* Things get a little tricky if local variables take up more than ~4096
@@ -6155,8 +6155,8 @@ sparc_flat_output_function_epilogue (file, size)
     {
       unsigned int reg_offset = current_frame_info.reg_offset;
       unsigned int size1;
-      char *sp_str = reg_names[STACK_POINTER_REGNUM];
-      char *fp_str = reg_names[FRAME_POINTER_REGNUM];
+      const char *sp_str = reg_names[STACK_POINTER_REGNUM];
+      const char *fp_str = reg_names[FRAME_POINTER_REGNUM];
       const char *t1_str = "%g1";
 
       /* In the reload sequence, we don't need to fill the load delay

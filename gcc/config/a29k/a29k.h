@@ -591,7 +591,7 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
 
 #define CONDITIONAL_REGISTER_USAGE		\
   {						\
-    char *p;					\
+    const char *p;				\
     int i;					\
 						\
     if (TARGET_KERNEL_REGISTERS)		\

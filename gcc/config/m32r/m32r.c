@@ -1774,8 +1774,8 @@ m32r_output_function_epilogue (file, size)
       unsigned int args_size = current_frame_info.args_size;
       unsigned int gmask = current_frame_info.gmask;
       int can_trust_sp_p = !current_function_calls_alloca;
-      char * sp_str = reg_names[STACK_POINTER_REGNUM];
-      char * fp_str = reg_names[FRAME_POINTER_REGNUM];
+      const char * sp_str = reg_names[STACK_POINTER_REGNUM];
+      const char * fp_str = reg_names[FRAME_POINTER_REGNUM];
 
       /* The first thing to do is point the sp at the bottom of the register
 	 save area.  */
@@ -2311,7 +2311,7 @@ emit_cond_move (operands, insn)
      rtx   insn ATTRIBUTE_UNUSED;
 {
   static char buffer [100];
-  char * dest = reg_names [REGNO (operands [0])];
+  const char * dest = reg_names [REGNO (operands [0])];
   
   buffer [0] = 0;
   
