@@ -1970,7 +1970,7 @@ finish_method (tree fndecl)
 void
 java_expand_body (tree fndecl)
 {
-  tree_rest_of_compilation (fndecl, 0);
+  tree_rest_of_compilation (fndecl);
 }
 
 /* We pessimistically marked all methods and fields external until we

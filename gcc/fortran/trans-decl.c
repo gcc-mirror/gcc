@@ -2353,7 +2353,7 @@ gfc_generate_constructors (void)
   free_after_parsing (cfun);
   free_after_compilation (cfun);
 
-  tree_rest_of_compilation (fndecl, 0);
+  tree_rest_of_compilation (fndecl);
 
   current_function_decl = NULL_TREE;
 #endif

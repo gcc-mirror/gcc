@@ -2923,7 +2923,7 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 
   /* ??? We will get called LATE in the compilation process.  */
   if (cgraph_global_info_ready)
-    tree_rest_of_compilation (decl, false);
+    tree_rest_of_compilation (decl);
   else
     cgraph_finalize_function (decl, 0);
   

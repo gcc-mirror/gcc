@@ -1,3 +1,7 @@
+2004-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* misc.c (gnat_expand_body): Update call of tree_rest_of_compilation.
+
 2004-09-23  Robert Dewar  <dewar@gnat.com>
 
 	PR ada/17540

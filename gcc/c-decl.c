@@ -6324,7 +6324,7 @@ c_expand_body (tree fndecl)
       || DECL_INITIAL (fndecl) == error_mark_node)
     return;
 
-  tree_rest_of_compilation (fndecl, false);
+  tree_rest_of_compilation (fndecl);
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl)
       && targetm.have_ctors_dtors)

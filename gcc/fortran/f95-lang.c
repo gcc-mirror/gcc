@@ -196,7 +196,7 @@ tree *ridpointers = NULL;
 static void
 gfc_expand_function (tree fndecl)
 {
-  tree_rest_of_compilation (fndecl, 0);
+  tree_rest_of_compilation (fndecl);
 }
 
 

@@ -1,3 +1,7 @@
+2004-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* java.c (java_expand_body): Update call of tree_rest_of_compilation.
+
 2004-10-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* lex.c: Fix a comment typo.

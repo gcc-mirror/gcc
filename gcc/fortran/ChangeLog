@@ -1,3 +1,9 @@
+2004-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* f95-lang.c (gfc_expand_function): Update call of
+	tree_rest_of_compilation.
+	* trans-decl.c (gfc_generate_constructors): Likewise.
+
 2004-09-26  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-intrinsic.c: Comment fixes.

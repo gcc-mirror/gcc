@@ -1,3 +1,10 @@
+2004-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* c-decl.c (c_expand_body): Update call tree_rest_of_compilation.
+	* cgraphunit.c (cgraph_build_static_cdtor): Likewise.
+	* toplev.h (tree_rest_of_compilation): Update prototype.
+	* tree-optimize.c (tree_rest_of_compilation):  Kill nested_p argument.
+
 2004-10-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (cleanup_tree_cfg): Pull a call to
