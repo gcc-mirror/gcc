@@ -1,3 +1,7 @@
+2003-03-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*insv_si_1_n_lshiftrt_16): New.
+
 2003-03-21  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.h (REG_ALLOC_ORDER):  Increase
