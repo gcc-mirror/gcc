@@ -767,7 +767,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
  enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
- specs collect2$(exeext) $(USE_COLLECT2) underscore.c tradcpp0$(exeext) \
+ specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
  gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a libbackend.a libgcc.mk \
  $(LANG_STAGESTUFF)
 
@@ -934,7 +934,7 @@ native: config.status auto-host.h intl.all build-@POSUB@ $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
-C c: cc1$(exeext) tradcpp0$(exeext)
+C c: cc1$(exeext)
 PROTO: proto
 
 # Tell GNU make these are phony targets.
@@ -2063,7 +2063,7 @@ intl.all intl.install: config.h insn-flags.h insn-constants.h
 
 # Make-lang.in should add dependencies of po-generated on any generated
 # files which need to be scanned by gettext (usually Yacc-generated parsers).
-po-generated: c-parse.c tradcif.c
+po-generated: c-parse.c
 
 #
 # Remake cpp and protoize.
@@ -2110,20 +2110,6 @@ cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) cppdefault.h Makefile
 	  -c $(srcdir)/cppdefault.c $(OUTPUT_OPTION)
 
 mkdeps.o: mkdeps.c $(CONFIG_H) $(SYSTEM_H) mkdeps.h
-
-# The traditional mode preprocessor, a separate program for ease of
-# maintenance.  Some code is shared with the ISO-C cpp.
-tradcpp0$(exeext): tradcpp.o tradcif.o cppdefault.o version.o intl.o \
-        mkdeps.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o tradcpp0$(exeext) \
-	tradcpp.o tradcif.o mkdeps.o cppdefault.o version.o intl.o $(LIBS)
-
-tradcpp.o: tradcpp.c $(CONFIG_H) $(SYSTEM_H) version.h cppdefault.h tradcpp.h
-tradcif.o: $(srcdir)/tradcif.c $(CONFIG_H) $(SYSTEM_H) tradcpp.h
-
-$(srcdir)/tradcif.c: $(srcdir)/tradcif.y
-	(cd $(srcdir) && $(BISON) $(BISONFLAGS) -o tr$$$$.c tradcif.y && \
-	mv -f tr$$$$.c tradcif.c)
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
@@ -2735,8 +2721,6 @@ install-common: native $(EXTRA_PARTS) lang.install-common
 	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
 	fi
-	-rm -f $(libsubdir)/tradcpp0$(exeext)
-	$(INSTALL_PROGRAM) tradcpp0$(exeext) $(libsubdir)/tradcpp0$(exeext)
 # Install gcov if it was compiled.
 	-if [ -f gcov$(exeext) ]; \
 	then \
