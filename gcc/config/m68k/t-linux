@@ -3,7 +3,7 @@ STMP_FIXPROTO =
 # Don't make libgcc1.a
 LIBGCC1 =
 CROSS_LIBGCC1 =
-# On Linux we can print long double
+# On GNU/Linux we can print long double
 ENQUIRE_CFLAGS = -DNO_MEM -O0
 # Don't install assert.h
 INSTALL_ASSERT_H =

@@ -1,4 +1,4 @@
-/* Configuration for GCC for SPARC running Linux.
+/* Configuration for GCC for SPARC running Linux-based GNU systems.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 

@@ -404,7 +404,7 @@ SYM (__div0):
 #endif /* L_divmodsi_tools */
 
 #ifdef L_dvmd_lnx
-@ Linux division-by zero handler.  Used in place of L_dvmd_tls
+@ GNU/Linux division-by zero handler.  Used in place of L_dvmd_tls
 
 #include <asm/unistd.h>
 #define SIGFPE	8			@ cant use <asm/signal.h> as it

@@ -325,7 +325,7 @@ init_dummy ()
 #endif
   asm (TEXT_SECTION_ASM_OP);
 
-/* This is a kludge. The i386 Linux dynamic linker needs ___brk_addr,
+/* This is a kludge. The i386 GNU/Linux dynamic linker needs ___brk_addr,
    __environ and atexit (). We have to make sure they are in the .dynsym
    section. We accomplish it by making a dummy call here. This
    code is never reached.  */

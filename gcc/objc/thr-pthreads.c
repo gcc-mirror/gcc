@@ -1,4 +1,4 @@
-/* GNU Objective C Runtime Thread Implementation for PCThreads under Linux.
+/* GNU Objective C Runtime Thread Implementation for PCThreads under GNU/Linux.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Scott Christley <scottc@net-community.com>
    Condition functions added by: Mircea Oancea <mircea@first.elcom.pub.ro>

@@ -7797,7 +7797,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		name = IDENTIFIER_POINTER (dname);
 	      }
 	    if (! IDENTIFIER_OPNAME_P (dname)
-		/* Linux headers use '__op'.  Arrgh.  */
+		/* GNU/Linux headers use '__op'.  Arrgh.  */
 		|| IDENTIFIER_TYPENAME_P (dname) && ! TREE_TYPE (dname))
 	      name = IDENTIFIER_POINTER (dname);
 	    else

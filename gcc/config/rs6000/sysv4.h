@@ -1269,7 +1269,7 @@ do {									\
 #define CPP_OS_SIM_SPEC ""
 #endif
 
-/* Linux support.  */
+/* GNU/Linux support.  */
 #ifndef	LIB_LINUX_SPEC
 #define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } %{!mnewlib: -lc }"
 #endif
