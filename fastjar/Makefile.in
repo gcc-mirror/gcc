@@ -114,7 +114,8 @@ AM_MAKEFLAGS = \
 
 INCLUDES = -I. -I$(top_srcdir) $(ZINCS)
 
-bin_PROGRAMS = fastjar grepjar
+bin_PROGRAMS = fastjar
+EXTRA_PROGRAMS = grepjar
 fastjar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
 fastjar_LDADD = $(ZLIBS)
 fastjar_DEPENDENCIES = $(ZDEPS)
@@ -134,10 +135,10 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I.
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-fastjar_OBJECTS =  jartool.o dostime.o compress.o pushback.o
-fastjar_LDFLAGS = 
 grepjar_OBJECTS =  jargrep.o dostime.o compress.o pushback.o
 grepjar_LDFLAGS = 
+fastjar_OBJECTS =  jartool.o dostime.o compress.o pushback.o
+fastjar_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -151,14 +152,14 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-SOURCES = $(fastjar_SOURCES) $(grepjar_SOURCES)
-OBJECTS = $(fastjar_OBJECTS) $(grepjar_OBJECTS)
+SOURCES = $(grepjar_SOURCES) $(fastjar_SOURCES)
+OBJECTS = $(grepjar_OBJECTS) $(fastjar_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -246,13 +247,13 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-fastjar: $(fastjar_OBJECTS) $(fastjar_DEPENDENCIES)
-	@rm -f fastjar
-	$(LINK) $(fastjar_LDFLAGS) $(fastjar_OBJECTS) $(fastjar_LDADD) $(LIBS)
-
 grepjar: $(grepjar_OBJECTS) $(grepjar_DEPENDENCIES)
 	@rm -f grepjar
 	$(LINK) $(grepjar_LDFLAGS) $(grepjar_OBJECTS) $(grepjar_LDADD) $(LIBS)
+
+fastjar: $(fastjar_OBJECTS) $(fastjar_DEPENDENCIES)
+	@rm -f fastjar
+	$(LINK) $(fastjar_LDFLAGS) $(fastjar_OBJECTS) $(fastjar_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -324,7 +325,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

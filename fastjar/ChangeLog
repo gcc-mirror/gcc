@@ -1,3 +1,8 @@
+2001-01-21  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (bin_PROGRAMS): Remove grepjar.
+	(EXTRA_PROGRAMS): New macro.
 
 2000-12-28  Robert Lipe <robertl@sco.com>
 
