@@ -330,8 +330,8 @@ struct undo
 {
   struct undo *next;
   int is_int;
-  union {rtx r; int i;} old_contents;
-  union {rtx *r; int *i;} where;
+  union {rtx r; unsigned int i;} old_contents;
+  union {rtx *r; unsigned int *i;} where;
 };
 
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
@@ -361,7 +361,8 @@ static struct undobuf undobuf;
 static int n_occurrences;
 
 static void do_SUBST			PARAMS ((rtx *, rtx));
-static void do_SUBST_INT		PARAMS ((int *, int));
+static void do_SUBST_INT		PARAMS ((unsigned int *,
+						 unsigned int));
 static void init_reg_last_arrays	PARAMS ((void));
 static void setup_incoming_promotions   PARAMS ((void));
 static void set_nonzero_bits_and_sign_copies  PARAMS ((rtx, rtx, void *));
@@ -468,10 +469,10 @@ do_SUBST (into, newval)
 
 static void
 do_SUBST_INT (into, newval)
-     int *into, newval;
+     unsigned int *into, newval;
 {
   struct undo *buf;
-  int oldval = *into;
+  unsigned int oldval = *into;
 
   if (oldval == newval)
     return;
@@ -6014,7 +6015,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       else
 	new = force_to_mode (inner, tmode,
 			     len >= HOST_BITS_PER_WIDE_INT
-			     ? ~(HOST_WIDE_INT) 0
+			     ? ~(unsigned HOST_WIDE_INT) 0
 			     : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
 			     NULL_RTX, 0);
 
@@ -6235,7 +6236,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       inner = force_to_mode (inner, wanted_inner_mode,
 			     pos_rtx
 			     || len + orig_pos >= HOST_BITS_PER_WIDE_INT
-			     ? ~(HOST_WIDE_INT) 0
+			     ? ~(unsigned HOST_WIDE_INT) 0
 			     : ((((unsigned HOST_WIDE_INT) 1 << len) - 1)
 				<< orig_pos),
 			     NULL_RTX, 0);
@@ -6902,7 +6903,9 @@ force_to_mode (x, mode, mask, reg, just_select)
       /* If X is (minus C Y) where C's least set bit is larger than any bit
 	 in the mask, then we may replace with (neg Y).  */
       if (GET_CODE (XEXP (x, 0)) == CONST_INT
-	  && (INTVAL (XEXP (x, 0)) & -INTVAL (XEXP (x, 0))) > mask)
+	  && (((unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 0))
+					& -INTVAL (XEXP (x, 0))))
+	      > mask))
 	{
 	  x = gen_unary (NEG, GET_MODE (x), GET_MODE (x), XEXP (x, 1));
 	  return force_to_mode (x, mode, mask, reg, next_select);
@@ -6911,7 +6914,8 @@ force_to_mode (x, mode, mask, reg, just_select)
       /* Similarly, if C contains every bit in the mask, then we may
 	 replace with (not Y).  */
       if (GET_CODE (XEXP (x, 0)) == CONST_INT
-	  && (INTVAL (XEXP (x, 0)) | mask) == INTVAL (XEXP (x, 0)))
+	  && ((INTVAL (XEXP (x, 0)) | (HOST_WIDE_INT) mask)
+	      == INTVAL (XEXP (x, 0))))
 	{
 	  x = gen_unary (NOT, GET_MODE (x), GET_MODE (x), XEXP (x, 1));
 	  return force_to_mode (x, mode, mask, reg, next_select);
@@ -7693,7 +7697,7 @@ make_field_assignment (x)
 					     GET_MODE (src), other, pos),
 		       mode,
 		       GET_MODE_BITSIZE (mode) >= HOST_BITS_PER_WIDE_INT
-		       ? ~(HOST_WIDE_INT) 0
+		       ? ~(unsigned HOST_WIDE_INT) 0
 		       : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
 		       dest, 0);
 

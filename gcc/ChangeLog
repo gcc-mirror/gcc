@@ -1,3 +1,10 @@
+Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (struct undo): Change int to unsigned int.
+	(do_SUBST_INT): Args are unsigned int.
+	(make_extraction, force_to_mode): Use proper type when forming mask.
+	(make_field_assignment): Likewise.
+
 2000-10-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (check_format_info_recurse): Extract string constant
