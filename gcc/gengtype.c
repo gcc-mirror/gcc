@@ -314,7 +314,7 @@ create_option (const char *name, void *info)
 {
   options_p o = XNEW (struct options);
   o->name = name;
-  o->info = info;
+  o->info = (const char*) info;
   return o;
 }
 
@@ -730,7 +730,7 @@ adjust_field_type (type_p t, options_p opt)
       }
     else if (strcmp (opt->name, "special") == 0)
       {
-	const char *special_name = (const char *)opt->info;
+	const char *special_name = opt->info;
 	if (strcmp (special_name, "tree_exp") == 0)
 	  t = adjust_field_tree_exp (t, opt);
 	else if (strcmp (special_name, "rtx_def") == 0)
@@ -1476,7 +1476,7 @@ walk_type (type_p t, struct walk_type_data *d)
   d->needs_cast_p = false;
   for (oo = d->opt; oo; oo = oo->next)
     if (strcmp (oo->name, "length") == 0)
-      length = (const char *)oo->info;
+      length = oo->info;
     else if (strcmp (oo->name, "maybe_undef") == 0)
       maybe_undef_p = 1;
     else if (strncmp (oo->name, "use_param", 9) == 0
@@ -1485,7 +1485,7 @@ walk_type (type_p t, struct walk_type_data *d)
     else if (strcmp (oo->name, "use_params") == 0)
       use_params_p = 1;
     else if (strcmp (oo->name, "desc") == 0)
-      desc = (const char *)oo->info;
+      desc = oo->info;
     else if (strcmp (oo->name, "nested_ptr") == 0)
       nested_ptr_d = (const struct nested_ptr_data *) oo->info;
     else if (strcmp (oo->name, "dot") == 0)
@@ -1728,7 +1728,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	/* Some things may also be defined in the structure's options.  */
 	for (o = t->u.s.opt; o; o = o->next)
 	  if (! desc && strcmp (o->name, "desc") == 0)
-	    desc = (const char *)o->info;
+	    desc = o->info;
 
 	d->prev_val[2] = oldval;
 	d->prev_val[1] = oldprevval2;
@@ -1759,15 +1759,15 @@ walk_type (type_p t, struct walk_type_data *d)
 	    d->reorder_fn = NULL;
 	    for (oo = f->opt; oo; oo = oo->next)
 	      if (strcmp (oo->name, "dot") == 0)
-		dot = (const char *)oo->info;
+		dot = oo->info;
 	      else if (strcmp (oo->name, "tag") == 0)
-		tagid = (const char *)oo->info;
+		tagid = oo->info;
 	      else if (strcmp (oo->name, "skip") == 0)
 		skip_p = 1;
 	      else if (strcmp (oo->name, "default") == 0)
 		default_p = 1;
 	      else if (strcmp (oo->name, "reorder") == 0)
-		d->reorder_fn = (const char *)oo->info;
+		d->reorder_fn = oo->info;
 	      else if (strncmp (oo->name, "use_param", 9) == 0
 		       && (oo->name[9] == '\0' || ISDIGIT (oo->name[9])))
 		use_param_p = 1;
@@ -1956,9 +1956,9 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 
   for (opt = s->u.s.opt; opt; opt = opt->next)
     if (strcmp (opt->name, "chain_next") == 0)
-      chain_next = (const char *) opt->info;
+      chain_next = opt->info;
     else if (strcmp (opt->name, "chain_prev") == 0)
-      chain_prev = (const char *) opt->info;
+      chain_prev = opt->info;
 
   if (chain_prev != NULL && chain_next == NULL)
     error_at_line (&s->u.s.line, "chain_prev without chain_next");
@@ -2489,7 +2489,7 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 	      if (strcmp (o->name, "skip") == 0)
 		skip_p = 1;
 	      else if (strcmp (o->name, "desc") == 0)
-		desc = (const char *)o->info;
+		desc = o->info;
 	      else
 		error_at_line (line,
 		       "field `%s' of global `%s' has unknown option `%s'",
@@ -2509,7 +2509,7 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 
 		    for (oo = ufld->opt; oo; oo = oo->next)
 		      if (strcmp (oo->name, "tag") == 0)
-			tag = (const char *)oo->info;
+			tag = oo->info;
 		    if (tag == NULL || strcmp (tag, desc) != 0)
 		      continue;
 		    if (validf != NULL)
@@ -2695,7 +2695,7 @@ write_roots (pair_p variables)
 
       for (o = v->opt; o; o = o->next)
 	if (strcmp (o->name, "length") == 0)
-	  length = (const char *)o->info;
+	  length = o->info;
 	else if (strcmp (o->name, "deletable") == 0)
 	  deletable_p = 1;
 	else if (strcmp (o->name, "param_is") == 0)
@@ -2820,7 +2820,7 @@ write_roots (pair_p variables)
 	if (strcmp (o->name, "length") == 0)
 	  length_p = 1;
 	else if (strcmp (o->name, "if_marked") == 0)
-	  if_marked = (const char *) o->info;
+	  if_marked = o->info;
 
       if (if_marked == NULL)
 	continue;

@@ -52,7 +52,7 @@ struct nested_ptr_data {
 typedef struct options {
   struct options *next;
   const char *name;
-  const void *info;
+  const char *info;
 } *options_p;
 
 /* A name and a type.  */
@@ -67,16 +67,19 @@ struct pair {
 #define NUM_PARAM 10
 
 /* A description of a type.  */
-struct type {
-  enum typekind kind;
-  type_p next;
-  type_p pointer_to;
-  enum gc_used_enum {
+enum gc_used_enum
+  {
     GC_UNUSED = 0,
     GC_USED,
     GC_MAYBE_POINTED_TO,
     GC_POINTED_TO
-  } gc_used;
+  };
+
+struct type {
+  enum typekind kind;
+  type_p next;
+  type_p pointer_to;
+  enum gc_used_enum gc_used;
   union {
     type_p p;
     struct {
