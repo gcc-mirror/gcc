@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package java.nio;
 
-import java.io.IOException;
 import gnu.gcj.RawData;
+
+import java.io.IOException;
 
 final class MappedByteBufferImpl extends MappedByteBuffer
 {

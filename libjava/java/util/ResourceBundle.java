@@ -38,10 +38,10 @@ exception statement from your version. */
 
 package java.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.io.InputStream;
-import java.io.IOException;
 
 /**
  * A resource bundle contains locale-specific data. If you need localized
