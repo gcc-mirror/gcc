@@ -272,6 +272,10 @@ static GTY (()) tree mf_unregister_fndecl;
 /* extern void __mf_init (); */
 static GTY (()) tree mf_init_fndecl;
 
+/* extern int __mf_set_options (const char*); */
+static GTY (()) tree mf_set_options_fndecl;
+
+
 /* Helper for mudflap_init: construct a decl with the given category,
    name, and type, mark it an external reference, and pushdecl it.  */
 static inline tree
@@ -309,6 +313,8 @@ mf_make_mf_cache_struct_type (tree field_type)
 
 #define build_function_type_0(rtype)            \
   build_function_type (rtype, void_list_node)
+#define build_function_type_1(rtype, arg1)                 \
+  build_function_type (rtype, tree_cons (0, arg1, void_list_node))
 #define build_function_type_3(rtype, arg1, arg2, arg3)                  \
   build_function_type (rtype, tree_cons (0, arg1, tree_cons (0, arg2,   \
                                                              tree_cons (0, arg3, void_list_node))))
@@ -328,6 +334,7 @@ mudflap_init (void)
   tree mf_check_register_fntype;
   tree mf_unregister_fntype;
   tree mf_init_fntype;
+  tree mf_set_options_fntype;
 
   if (done)
     return;
@@ -350,6 +357,8 @@ mudflap_init (void)
                            integer_type_node);
   mf_init_fntype =
     build_function_type_0 (void_type_node);
+  mf_set_options_fntype =
+    build_function_type_1 (integer_type_node, mf_const_string_type);
 
   mf_cache_array_decl = mf_make_builtin (VAR_DECL, "__mf_lookup_cache",
                                          mf_cache_array_type);
@@ -365,9 +374,12 @@ mudflap_init (void)
                                           mf_unregister_fntype);
   mf_init_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_init",
                                     mf_init_fntype);
+  mf_set_options_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_set_options",
+                                           mf_set_options_fntype);
 }
 #undef build_function_type_4
 #undef build_function_type_3
+#undef build_function_type_1
 #undef build_function_type_0
 
 
@@ -1142,13 +1154,6 @@ mudflap_register_call (tree obj, tree object_size, tree varname)
 
   call_stmt = build_function_call_expr (mf_register_fndecl, args);
 
-  /* Add an initial __mf_init() call to the list of registration calls.  */ 
-  if (enqueued_call_stmt_chain == NULL_TREE)
-    {
-      tree call2_stmt = build_function_call_expr (mf_init_fndecl, NULL_TREE);
-      append_to_statement_list (call2_stmt, &enqueued_call_stmt_chain);      
-    }
-
   append_to_statement_list (call_stmt, &enqueued_call_stmt_chain);
 }
 
@@ -1245,6 +1250,8 @@ mudflap_enqueue_constant (tree obj)
 void
 mudflap_finish_file (void)
 {
+  tree ctor_statements = NULL_TREE;
+
   /* Try to give the deferred objects one final try.  */
   if (deferred_static_decls)
     {
@@ -1263,12 +1270,30 @@ mudflap_finish_file (void)
       VARRAY_CLEAR (deferred_static_decls);
     }
 
+  /* Insert a call to __mf_init.  */
+  {
+    tree call2_stmt = build_function_call_expr (mf_init_fndecl, NULL_TREE);
+    append_to_statement_list (call2_stmt, &ctor_statements);
+  }
+  
+  /* If appropriate, call __mf_set_options to pass along read-ignore mode.  */
+  if (flag_mudflap_ignore_reads)
+    {
+      tree arg = tree_cons (NULL_TREE, 
+                            mf_build_string ("-ignore-reads"), NULL_TREE);
+      tree call_stmt = build_function_call_expr (mf_set_options_fndecl, arg);
+      append_to_statement_list (call_stmt, &ctor_statements);
+    }
+
+  /* Append all the enqueued registration calls.  */
   if (enqueued_call_stmt_chain)
     {
-      cgraph_build_static_cdtor ('I', enqueued_call_stmt_chain, 
-                                 MAX_RESERVED_INIT_PRIORITY-1);
-      enqueued_call_stmt_chain = 0;
+      append_to_statement_list (enqueued_call_stmt_chain, &ctor_statements);
+      enqueued_call_stmt_chain = NULL_TREE;
     }
+
+  cgraph_build_static_cdtor ('I', ctor_statements, 
+                             MAX_RESERVED_INIT_PRIORITY-1);
 }
 
 
