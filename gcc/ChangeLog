@@ -1,3 +1,8 @@
+2000-05-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (LOOSE_CFLAGS): Add /g modifiers to both sed
+	substitutions.
+
 Sun  7 May 08:43:53 2000  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c: Move new lexer definitions and prototypes
