@@ -1086,10 +1086,12 @@ emit_move_sequence (operands, mode, scratch_reg)
   register rtx operand1 = operands[1];
   register rtx tem;
 
-  if (reload_in_progress && GET_CODE (operand0) == REG
+  if (scratch_reg
+      && reload_in_progress && GET_CODE (operand0) == REG
       && REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
     operand0 = reg_equiv_mem[REGNO (operand0)];
-  else if (reload_in_progress && GET_CODE (operand0) == SUBREG
+  else if (scratch_reg
+	   && reload_in_progress && GET_CODE (operand0) == SUBREG
 	   && GET_CODE (SUBREG_REG (operand0)) == REG
 	   && REGNO (SUBREG_REG (operand0)) >= FIRST_PSEUDO_REGISTER)
     {
@@ -1097,10 +1099,12 @@ emit_move_sequence (operands, mode, scratch_reg)
       operand0 = alter_subreg (operand0);
     }
 
-  if (reload_in_progress && GET_CODE (operand1) == REG
+  if (scratch_reg
+      && reload_in_progress && GET_CODE (operand1) == REG
       && REGNO (operand1) >= FIRST_PSEUDO_REGISTER)
     operand1 = reg_equiv_mem[REGNO (operand1)];
-  else if (reload_in_progress && GET_CODE (operand1) == SUBREG
+  else if (scratch_reg
+	   && reload_in_progress && GET_CODE (operand1) == SUBREG
 	   && GET_CODE (SUBREG_REG (operand1)) == REG
 	   && REGNO (SUBREG_REG (operand1)) >= FIRST_PSEUDO_REGISTER)
     {
@@ -1108,11 +1112,11 @@ emit_move_sequence (operands, mode, scratch_reg)
       operand1 = alter_subreg (operand1);
     }
 
-  if (reload_in_progress && GET_CODE (operand0) == MEM
+  if (scratch_reg && reload_in_progress && GET_CODE (operand0) == MEM
       && ((tem = find_replacement (&XEXP (operand0, 0)))
 	  != XEXP (operand0, 0)))
     operand0 = gen_rtx_MEM (GET_MODE (operand0), tem);
-  if (reload_in_progress && GET_CODE (operand1) == MEM
+  if (scratch_reg && reload_in_progress && GET_CODE (operand1) == MEM
       && ((tem = find_replacement (&XEXP (operand1, 0)))
 	  != XEXP (operand1, 0)))
     operand1 = gen_rtx_MEM (GET_MODE (operand1), tem);
