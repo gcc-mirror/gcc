@@ -1,4 +1,4 @@
-#include "libio.h"
+#include <libio.h>
 
 /* These emulate stdio functionality, but with a different name
    (_IO_ungetc instead of ungetc), and using _IO_FILE instead of FILE. */
@@ -38,7 +38,11 @@ extern int _IO_obstack_vprintf __P ((struct obstack *, const char *,
                                     _IO_va_list));
 extern int _IO_obstack_printf __P ((struct obstack *, const char *, ...));
 #ifndef _IO_pos_BAD
-#define _IO_pos_BAD ((_IO_fpos_t)(-1))
+# if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+#  define _IO_pos_BAD ((_IO_off64_t) -1)
+# else
+#  define _IO_pos_BAD ((_IO_off_t) -1)
+# endif
 #endif
 #define _IO_clearerr(FP) ((FP)->_flags &= ~(_IO_ERR_SEEN|_IO_EOF_SEEN))
 #define _IO_fseek(__fp, __offset, __whence) \

@@ -136,6 +136,7 @@
 #define _IO_IS_APPENDING 0x1000
 #define _IO_IS_FILEBUF 0x2000
 #define _IO_BAD_SEEN 0x4000
+#define _IO_USER_LOCK 0x8000
 
 /* These are "formatting flags" matching the iostream fmtflags enum values. */
 #define _IO_SKIPWS 01
@@ -277,7 +278,7 @@ typedef struct
 {
   _IO_ssize_t (*read) __PMT ((struct _IO_FILE *, void *, _IO_ssize_t));
   _IO_ssize_t (*write) __PMT ((struct _IO_FILE *, const void *, _IO_ssize_t));
-  _IO_fpos_t (*seek) __PMT ((struct _IO_FILE *, _IO_off_t, int));
+  _IO_off_t (*seek) __PMT ((struct _IO_FILE *, _IO_off_t, int));
   int (*close) __PMT ((struct _IO_FILE *));
 } _IO_cookie_io_functions_t;
 
@@ -348,11 +349,11 @@ extern _IO_ssize_t _IO_padn __P ((_IO_FILE *, int, _IO_ssize_t));
 extern _IO_size_t _IO_sgetn __P ((_IO_FILE *, void *, _IO_size_t));
 
 #if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
-extern _IO_fpos64_t _IO_seekoff __P ((_IO_FILE *, _IO_off64_t, int, int));
-extern _IO_fpos64_t _IO_seekpos __P ((_IO_FILE *, _IO_fpos64_t, int));
+extern _IO_off64_t _IO_seekoff __P ((_IO_FILE *, _IO_off64_t, int, int));
+extern _IO_off64_t _IO_seekpos __P ((_IO_FILE *, _IO_off64_t, int));
 #else
-extern _IO_fpos_t _IO_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
-extern _IO_fpos_t _IO_seekpos __P ((_IO_FILE *, _IO_fpos_t, int));
+extern _IO_off_t _IO_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
+extern _IO_off_t _IO_seekpos __P ((_IO_FILE *, _IO_off_t, int));
 #endif
 
 extern void _IO_free_backup_area __P ((_IO_FILE *));

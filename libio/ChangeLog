@@ -1,3 +1,31 @@
+Wed Dec  6 22:52:34 2000  Jeffrey A Law  (law@cygnus.com)
+
+	2000-10-11  Jakub Jelinek  <jakub@redhat.com>
+        * iostream.cc (ostream::operator<<(double n)) [__GLIBC_MINOR__ >= 2]:
+        Initialize new fields wide and i18n of struct printf_info.
+        (ostream::operator<<(long double n)) [__GLIBC_MINOR__ >= 2]:
+        Likewise.
+
+	2000-09-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+        * stdstreams.cc: Include <libio.h>, not "libio.h".
+        * iolibio.h: Likewise.
+        (_IO_pos_BAD): Use _IO_off_t instead of _IO_fpos_t.
+        * libio.h (_IO_USER_LOCK): Define.
+
+	1999-12-13  Jakub Jelinek  <jakub@redhat.com>
+        * libio.h (_IO_cookie_io_functions_t): Use _IO_off_t instead of
+        _IO_fpos_t.
+        (_IO_seekoff, _IO_seekpos): Likewise. Use _IO_off64_t instead of
+        _IO_fpos64_t.
+        * libioP.h (_IO_seekoff_t, _IO_seekpos_t, _IO_seek_t): Likewise.
+        (_IO_seekoff, _IO_seekpos): Likewise.
+        (_IO_default_seekoff, _IO_default_seekpos): Likewise.
+        (_IO_default_seek): Likewise.
+        (_IO_file_seekoff, _IO_file_seek, _IO_str_seekoff): Likewise.
+        * streambuf.h (streampos): Typedef to _IO_off_t resp. _IO_off64_t.
+        * parsestream.h (class parsebuf::pos_at_line_start): Change type
+        to _IO_off_t.
+
 Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2 Released.
