@@ -1103,6 +1103,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     data_section ();
 #endif
 
+  /* dbxout.c needs to know this.  */
+  if (in_text_section ())
+    DECL_IN_TEXT_SECTION (decl) = 1;
+
   /* Record current section so we can restore it if dbxout.c clobbers it.  */
   saved_in_section = in_section;
 
@@ -1129,6 +1133,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      while we are doing our final traversal of the chain of file-scope
      declarations.  */
 
+  /* If the debugging output changed sections, reselect the section
+     that's supposed to be selected.  */
   if (in_section != saved_in_section)
     {
       /* Switch to the proper section for this data.  */
@@ -1143,10 +1149,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	data_section ();
 #endif
     }
-
-  /* dbxout.c needs to know this.  */
-  if (in_text_section ())
-    DECL_IN_TEXT_SECTION (decl) = 1;
 
   /* Compute and output the alignment of this data.  */
 
