@@ -1,3 +1,8 @@
+2003-07-27  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c:
+	Create vbox and layout for GtkPlug.
+
 2003-07-27  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/Window.java
