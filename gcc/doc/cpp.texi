@@ -2007,20 +2007,21 @@ these macros directly; instead, include the appropriate headers and use
 the typedefs.
 
 @item __CHAR_BIT__
-@itemx __WCHAR_BIT__
-@itemx __SHRT_BIT__
-@itemx __INT_BIT__
-@itemx __LONG_BIT__
-@itemx __LONG_LONG_BIT__
-@itemx __FLOAT_BIT__
-@itemx __DOUBLE_BIT__
-@itemx __LONG_DOUBLE_BIT__
-These macros are defined to the number of bits used in the
-representation of the data types @code{char}, @code{wchar_t},
-@code{short}, @code{int}, @code{long}, @code{long long}, @code{float},
-@code{double} and @code{long double}.  They exist to make the standard
-header given numerical limits work correctly.  You should not use
-these macros directly; instead, include the appropriate headers.
+Defined to the number of bits used in the representation of the
+@code{char} data type.  It exists to make the standard header given
+numerical limits work correctly.  You should not use
+this macro directly; instead, include the appropriate headers.
+
+@item __SCHAR_MAX__
+@itemx __SHRT_MAX__
+@itemx __INT_MAX__
+@itemx __LONG_MAX__
+@itemx __LONG_LONG_MAX__
+Defined to the maximum value of the @code{signed char}, @code{signed short},
+@code{signed int}, @code{signed long}, and @code{signed long long} types
+respectively.  They exist to make the standard header given numerical limits
+work correctly.  You should not use these macros directly; instead, include
+the appropriate headers.
 
 @item __USING_SJLJ_EXCEPTIONS__
 This macro is defined, with value 1, if the compiler uses the old
@@ -2032,12 +2033,6 @@ This macro is defined, with value 1, if (and only if) the NeXT runtime
 (as in @option{-fnext-runtime}) is in use for Objective-C.  If the GNU
 runtime is used, this macro is not defined, so that you can use this
 macro to determine which runtime (NeXT or GNU) is being used.
-
-@item __TARGET_FLOAT_FORMAT__
-This macro is defined to describe the floating-point format used by the
-target.  It has value in the set comprised of:
-@code{__UNKNOWN_FORMAT__}, @code{__IEEE_FORMAT__},
-@code{__IBM_FORMAT__}, @code{__C4X_FORMAT__} and @code{__VAX_FORMAT__}.
 @end table
 
 @node System-specific Predefined Macros

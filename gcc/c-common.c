@@ -783,7 +783,6 @@ static void builtin_define_with_hex_fp_value PARAMS ((const char *, tree,
 						      int, const char *,
 						      const char *));
 static void builtin_define_type_max PARAMS ((const char *, tree, int));
-static void cpp_define_data_format PARAMS ((cpp_reader *));
 static void builtin_define_type_precision PARAMS ((const char *, tree));
 static void builtin_define_float_constants PARAMS ((const char *,
 						    const char *, tree));
@@ -4701,44 +4700,6 @@ boolean_increment (code, arg)
   return val;
 }
 
-/* Define macros necessary to describe fundamental data type formats.  */
-static void
-cpp_define_data_format (pfile)
-    cpp_reader *pfile;
-{
-  const char *format;
-
-  /* Define supported floating-point format enumeration values.  */
-  cpp_define (pfile, "__UNKNOWN_FORMAT__=0");
-  cpp_define (pfile, "__IEEE_FORMAT__=1");
-  cpp_define (pfile, "__IBM_FORMAT__=2");
-  cpp_define (pfile, "__C4X_FORMAT__=3");
-  cpp_define (pfile, "__VAX_FORMAT__=4");
-  
-  switch (TARGET_FLOAT_FORMAT)
-    {
-    case UNKNOWN_FLOAT_FORMAT:
-      format = "__UNKNOWN_FORMAT__";
-      break;
-    case IEEE_FLOAT_FORMAT:
-      format = "__IEEE_FORMAT__";
-      break;
-    case VAX_FLOAT_FORMAT:
-      format = "__VAX_FORMAT__";
-      break;
-    case IBM_FLOAT_FORMAT:
-      format = "__IBM_FORMAT__";
-      break;
-    case C4X_FLOAT_FORMAT:
-      format = "__C4X_FORMAT__";
-      break;
-    default:
-      abort();
-    }
-
-  builtin_define_with_value ("__GCC_FLOAT_FORMAT__", format, 0);
-}
-
 /* Define NAME with value TYPE precision.  */
 static void
 builtin_define_type_precision (name, type)
@@ -4955,15 +4916,6 @@ cb_register_builtins (pfile)
   builtin_define_type_max ("__LONG_LONG_MAX__", long_long_integer_type_node, 2);
 
   builtin_define_type_precision ("__CHAR_BIT__", char_type_node);
-  builtin_define_type_precision ("__WCHAR_BIT__", wchar_type_node);
-  builtin_define_type_precision ("__SHRT_BIT__", short_integer_type_node);
-  builtin_define_type_precision ("__INT_BIT__", integer_type_node);
-  builtin_define_type_precision ("__LONG_BIT__", long_integer_type_node);
-  builtin_define_type_precision ("__LONG_LONG_BIT__",
-                                 long_long_integer_type_node);
-  builtin_define_type_precision ("__FLOAT_BIT__", float_type_node);
-  builtin_define_type_precision ("__DOUBLE_BIT__", double_type_node);
-  builtin_define_type_precision ("__LONG_DOUBLE_BIT__", long_double_type_node);
 
   /* float.h needs to know these.  */
 
@@ -5013,8 +4965,6 @@ cb_register_builtins (pfile)
   if (c_language == clk_cplusplus && TREE_UNSIGNED (wchar_type_node))
     cpp_define (pfile, "__WCHAR_UNSIGNED__");
 
-  cpp_define_data_format (pfile);
-  
   /* Make the choice of ObjC runtime visible to source code.  */
   if (flag_objc && flag_next_runtime)
     cpp_define (pfile, "__NEXT_RUNTIME__");

@@ -1,5 +1,16 @@
 2002-09-23  Richard Henderson  <rth@redhat.com>
 
+	* c-common.c (cpp_define_data_format): Remove.
+	(cb_register_builtins): Don't define __WCHAR_BIT__, __SHRT_BIT__,
+	__INT_BIT__, __LONG_BIT__, __LONG_LONG_BIT__, __FLOAT_BIT__,
+	__DOUBLE_BIT__, __LONG_DOUBLE_BIT__.
+	* doc/cpp.texi: Don't document them either.
+	(__SCHAR_MAX__, __SHRT_MAX__, __INT_MAX__, __LONG_MAX__,
+	__LONG_LONG_MAX__): Document.
+	(__TARGET_FLOAT_FORMAT__): Remove.
+
+2002-09-23  Richard Henderson  <rth@redhat.com>
+
 	* real.c (do_multiply): Normalize U before addition.
 
 2002-09-23  Mark Mitchell  <mark@codesourcery.com>
