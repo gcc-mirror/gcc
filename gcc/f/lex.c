@@ -1742,7 +1742,7 @@ ffelex_token_new_ ()
 static const char *
 ffelex_type_string_ (ffelexType type)
 {
-  static const char *types[] = {
+  static const char *const types[] = {
     "FFELEX_typeNONE",
     "FFELEX_typeCOMMENT",
     "FFELEX_typeEOS",

@@ -70,7 +70,7 @@ struct _malloc_root_ malloc_root_
 
 static void *malloc_reserve_ = NULL;	/* For crashes. */
 #if MALLOC_DEBUG
-static const char *malloc_types_[] =
+static const char *const malloc_types_[] =
 {"KS", "KSR", "NF", "NFR", "US", "USR"};
 #endif
 

@@ -62,7 +62,7 @@ static FILE *out;
 static char prefix[32];
 static char postfix[32];
 static char storage[32];
-static const char *xspaces[]
+static const char *const xspaces[]
 =
 {
   "",				/* 0 */
