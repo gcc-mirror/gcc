@@ -1,3 +1,8 @@
+2001-06-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-tree.texi: Fix documentation of TREE_STRING_LENGTH for wide
+	strings.
+
 2001-06-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* c-decl.c (get_parm_info): Use INTEGRAL_TYPE_P.
