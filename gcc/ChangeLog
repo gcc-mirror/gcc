@@ -1,3 +1,25 @@
+2001-11-07  Daniel Berlin  <dan@cgsoftware.com>
+
+        * Makefile.in (df.o): Add fibheap.h to dependencies.
+       
+        * df.h: Add prototypes for transfer functions, iterative_dataflow
+        functions.
+        (enum df_flow_dir): New enum.
+        (enum df_confluence_op): New enum.
+        (struct df): Add inverse_rts_map.
+
+        * df.c: Add sbitmap.h to the list of includes.
+        (df_rd_global_compute): Removed.
+        (df_ru_global_compute): Removed.
+        (df_lr_global_compute): Removed.
+        (df_rd_transfer_function): New function.
+        (df_ru_transfer_function): New function.
+        (df_lr_transfer_function): New function.
+        (df_analyse_1): allocate/compute/free df->inverse_rts_map.
+        Use iterative_dataflow_bitmap instead of df_*_global_compute.
+        (iterative_dataflow_sbitmap): New function.
+        (iterative_dataflow_bitmap): New function.
+
 2001-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Move terminology and spelling conventions to
