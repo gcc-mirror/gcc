@@ -795,7 +795,7 @@ delete_dead_jumptables ()
     {
       next = NEXT_INSN (insn);
       if (GET_CODE (insn) == CODE_LABEL
-	  && LABEL_NUSES (insn) == 0
+	  && LABEL_NUSES (insn) == LABEL_PRESERVE_P (insn)
 	  && GET_CODE (next) == JUMP_INSN
 	  && (GET_CODE (PATTERN (next)) == ADDR_VEC
 	      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))

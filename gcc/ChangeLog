@@ -1,3 +1,8 @@
+2001-09-24  Ulrich Weigand  <uweigand@de.ibm.com>:
+
+	* flow.c (delete_dead_jumptables): Delete jumptable if the only
+	reference is from the literal pool.
+
 2001-09-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Final install): Request additional information
