@@ -1,3 +1,10 @@
+2002-07-15  Florian Weimer  <fw@deneb.enyo.de>
+
+	* make.adb (Add_Switch): Make Generic_Position a procedure.  The
+	function approach did not work well because of a side effect (the
+	function call could reallocate the table which was being indexed
+	using its result). Fixes ada/4851. [RESURRECTED]
+
 2002-07-01  Roger Sayle  <roger@eyesopen.com>
 
 	* ada/utils.c (builtin_function): Accept an additional parameter.
