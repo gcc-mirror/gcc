@@ -2836,14 +2836,14 @@ fold_truthop (code, truth_type, lhs, rhs)
       l_const = convert (unsigned_type (TREE_TYPE (l_const)), l_const);
       l_const = const_binop (LSHIFT_EXPR, convert (type, l_const),
 			     size_int (xll_bitpos), 0);
-      l_const = const_binop (BIT_AND_EXPR, l_const, ll_mask);
+      l_const = const_binop (BIT_AND_EXPR, l_const, ll_mask, 0);
     }
   if (r_const)
     {
       r_const = convert (unsigned_type (TREE_TYPE (r_const)), r_const);
       r_const = const_binop (LSHIFT_EXPR, convert (type, r_const),
 			     size_int (xrl_bitpos), 0);
-      r_const = const_binop (BIT_AND_EXPR, r_const, rl_mask);
+      r_const = const_binop (BIT_AND_EXPR, r_const, rl_mask, 0);
     }
 
   /* If the right sides are not constant, do the same for it.  Also,
