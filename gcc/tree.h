@@ -2906,6 +2906,9 @@ extern rtx emit_line_note		PARAMS ((const char *, int));
 
 extern int setjmp_call_p		PARAMS ((tree));
 
+/* In attribs.c.  */
+extern tree decl_attributes		PARAMS ((tree *, tree, int));
+
 /* In front end.  */
 
 extern int mark_addressable		PARAMS ((tree));

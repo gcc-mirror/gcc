@@ -95,7 +95,7 @@ chill-cross: $(srcdir)/ch/chill.in
 
 cc1chill$(exeext): $(P) $(CHILL_SRCS) $(LIBDEPS) $(BACKEND) \
 	insn-config.h insn-flags.h insn-attr.h insn-codes.h \
-	c-typeck.o c-aux-info.o c-common.o \
+	attribs.o c-typeck.o c-aux-info.o c-common.o \
         ggc-callbacks.o
 	cd ch; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CHILL_FLAGS_TO_PASS) ../cc1chill$(exeext)
 

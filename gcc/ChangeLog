@@ -1,3 +1,19 @@
+Sat Sep 22 09:09:32 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* attribs.c: New file, from c-common.c.
+	(attribute_tables): Now four elements.
+	(format_attribute_table, lang_attribute_common): New variables.
+	(init_attributes): Reflect above changes.
+	(handle_mode_attribute): Delete check for wider than uintmax.
+	* c-common.c: Delete parts moved to attribs.c.
+	(enum attrs): Deleted; unused.
+	(c_format_attribute_table): New variable.
+	(c_common_lang_init): Initialize format_attribute_table with it.
+	* c-common.h (decl_attributes): Remove decl.
+	* tree.h (decl_attribute): Move it to here.
+	* Makefile.in (C_AND_OBJS_OBJS): Add attribs.o.
+	(attribs.o): New rule.
+
 2001-09-22  Andreas Jaeger  <aj@suse.de>
 
 	* builtins.c (c_getstr): Remove unused variable.
