@@ -1,3 +1,9 @@
+2002-05-29  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (output_pic_addr_const): Lowercase rip.
+	(print_operand_address): Only add rip for symbolic addresses
+	for which we do not have another relocation type.
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/m68k/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Define.
