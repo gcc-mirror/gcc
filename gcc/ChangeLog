@@ -1,3 +1,9 @@
+2005-03-25  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/20249
+	* cse.c (insert_regs): Do not record equivalence of registers in
+	different modes.
+
 2005-03-24  James E Wilson  <wilson@specifixinc.com>
 
 	* doc/install.texi (--enable-altivec): Delete docs.
