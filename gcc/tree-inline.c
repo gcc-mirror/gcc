@@ -819,7 +819,7 @@ initialize_inlined_parameters (inline_data *id, tree args, tree static_chain,
     }
 
   if (gimplify_init_stmts_p)
-    gimplify_body (&init_stmts, current_function_decl);
+    gimplify_body (&init_stmts, current_function_decl, false);
 
   declare_inline_vars (bind_expr, vars);
   return init_stmts;

@@ -113,7 +113,7 @@ extern void gimplify_type_sizes (tree, tree *);
 extern void gimplify_one_sizepos (tree *, tree *);
 extern void gimplify_stmt (tree *);
 extern void gimplify_to_stmt_list (tree *);
-extern void gimplify_body (tree *, tree);
+extern void gimplify_body (tree *, tree, bool);
 extern void push_gimplify_context (void);
 extern void pop_gimplify_context (tree);
 extern void gimplify_and_add (tree, tree *);

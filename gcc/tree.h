@@ -3602,6 +3602,7 @@ extern void push_function_context (void);
 extern void pop_function_context (void);
 extern void push_function_context_to (tree);
 extern void pop_function_context_from (tree);
+extern tree gimplify_parameters (void);
 
 /* In print-rtl.c */
 #ifdef BUFSIZ

@@ -1,5 +1,27 @@
 2004-12-18  Richard Henderson  <rth@redhat.com>
 
+	PR middle-end/16417
+	* c-decl.c (store_parm_decls): Clarify get_pending_sizes insertion
+	comment.
+	* c-objc-common.c (c_cannot_inline_tree_fn): Remove pending sizes
+	checks.
+	* c-tree.h (struct lang_decl): Remove pending_sizes.
+	* function.c: Include tree-gimple.h
+	(assign_parm_setup_reg): Remove callee-copies code.
+	(gimplify_parm_type, gimplify_parameters): New functions.
+	(expand_pending_sizes): Remove.
+	(expand_function_start): Don't call it.
+	* gimplify.c (gimplify_expr): Examine DECL_VALUE_EXPR for PARM_DECL.
+	(gimplify_body): Add do_parms argument.  Use gimplify_parameters.
+	(gimplify_function_tree): Setup cfun.  Update gimplify_body call.
+	* tree-gimple.h (gimplify_body): Update decl.
+	* tree-inline.c (initialize_inlined_parameters): Update gimplify_body
+	call.
+	* tree.h (gimplify_parameters): Declare.
+	* Makefile.in (function.o): Depend on TREE_GIMPLE_H.
+
+2004-12-18  Richard Henderson  <rth@redhat.com>
+
 	* c-decl.c (finish_struct): Add DECL_EXPR for variable sized
 	structures seen inside functions.
 
