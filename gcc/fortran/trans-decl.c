@@ -220,7 +220,6 @@ gfc_get_return_label (void)
 tree
 gfc_get_label_decl (gfc_st_label * lp)
 {
-
   if (lp->backend_decl)
     return lp->backend_decl;
   else
@@ -258,7 +257,6 @@ gfc_get_label_decl (gfc_st_label * lp)
 static tree
 gfc_sym_identifier (gfc_symbol * sym)
 {
-
   return (get_identifier (sym->name));
 }
 
@@ -428,7 +426,6 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 void
 gfc_allocate_lang_decl (tree decl)
 {
-
   DECL_LANG_SPECIFIC (decl) = (struct lang_decl *)
     ggc_alloc_cleared (sizeof (struct lang_decl));
 }
