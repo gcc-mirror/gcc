@@ -1,5 +1,5 @@
 /* Basic data types for Objective C.
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -150,7 +150,7 @@ typedef struct objc_protocol {
 
 typedef void* retval_t;		/* return value */
 typedef void(*apply_t)(void);	/* function pointer */
-typedef union {
+typedef union arglist {
   char *arg_ptr;
   char arg_regs[sizeof (char*)];
 } *arglist_t;			/* argument frame */

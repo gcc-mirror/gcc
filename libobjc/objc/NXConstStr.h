@@ -1,5 +1,5 @@
 /* Interface for the NXConstantString class for Objective-C.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2004 Free Software Foundation, Inc.
    Contributed by Pieter J. Schoenmakers <tiggr@es.ele.tue.nl>
 
 This file is part of GCC.
@@ -28,7 +28,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __nxconstantstring_INCLUDE_GNU
 #define __nxconstantstring_INCLUDE_GNU
 
-#include "objc/Object.h"
+#include <objc/Object.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 @interface NXConstantString: Object
 {
@@ -40,5 +44,9 @@ Boston, MA 02111-1307, USA.  */
 -(unsigned int) length;
 
 @end
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,5 +1,5 @@
 /* Declare the class Protocol for Objective C programs.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __Protocol_INCLUDE_GNU
 #define __Protocol_INCLUDE_GNU
 
-#include "objc/Object.h"
+#include <objc/Object.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 @interface Protocol : Object
 {
@@ -52,7 +56,8 @@ Boston, MA 02111-1307, USA.  */
 
 @end
 
-
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* not __Protocol_INCLUDE_GNU */
