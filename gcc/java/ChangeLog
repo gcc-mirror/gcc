@@ -1,3 +1,8 @@
+2004-06-22  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* parse.y (create_class): Correct diagnostic message about
+	java.lang.Object extending anything else.
+
 2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (build_class_ref): Add new operand for COMPONENT_REF.
