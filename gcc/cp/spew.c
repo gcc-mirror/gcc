@@ -46,9 +46,11 @@ struct token  {
 
 static int do_aggr ();
 static struct token frob_identifier ();
+static tree hack_more_ids ();
+#if 0
 static struct token hack_scope ();
 static tree hack_ptype ();
-static tree hack_more_ids ();
+#endif
 
 /* From lex.c: */
 /* the declaration found for the last IDENTIFIER token read in.
@@ -70,8 +72,10 @@ static unsigned int yylex_ctr = 0;
 static int debug_yychar ();
 #endif
 
+#if 0				/* Used by arbitrate_lookup */
 static char follows_typename[END_OF_SAVED_INPUT+1];
 static char follows_identifier[END_OF_SAVED_INPUT+1];
+#endif
 
 /* This is a hack!!! TEMPLATE_TYPE_SEEN_BEFORE_SCOPE consists of the name
  * of the last template_type parsed in parse.y if it is followed by a
@@ -84,6 +88,7 @@ tree template_type_seen_before_scope;
 void
 init_spew ()
 {
+#if 0				/* Used by arbitrate_lookup */
   static char *chars_following_identifier = ".+-|/%^!?:";
   short *ps;
   static short toks_follow_ids[] =
@@ -102,8 +107,6 @@ init_spew ()
       TYPENAME_COLON, PAREN_STAR_PAREN, TYPENAME_ELLIPSIS, PTYPENAME,
       PRE_PARSED_FUNCTION_DECL, PRE_PARSED_CLASS_DECL, -1 };
 
-  gcc_obstack_init(&token_obstack);
-
   /* Initialize the arrays saying what tokens are definitely
      (or possibly) valid following typenames and identifiers.  */
   while (*chars_following_identifier)
@@ -112,6 +115,9 @@ init_spew ()
     follows_identifier[*ps] = 1;
   for (ps = toks_follow_types; *ps != -1; ps++)
     follows_typename[*ps] = 1;
+#endif
+
+  gcc_obstack_init(&token_obstack);
 }
 
 #ifdef SPEW_DEBUG

@@ -259,10 +259,10 @@ extern int flag_signed_bitfields;
 
 extern int write_virtuals;
 
-/* True if we want output of vtables to be controlled by whether
-   we seen the class's first non-inline virtual function.
+/* True for more efficient but incompatible (not not fully tested)
+   vtable implementation (using thunks).
    0 is old behavior; 1 is new behavior. */
-extern flag_vtable_hack;
+extern int flag_vtable_thunks;
 
 /* INTERFACE_ONLY nonzero means that we are in an "interface"
    section of the compiler.  INTERFACE_UNKNOWN nonzero means
@@ -339,10 +339,12 @@ enum languages { lang_c, lang_cplusplus };
 /* Virtual function addresses can be gotten from a virtual function
    table entry using this macro.  */
 #define FNADDR_FROM_VTABLE_ENTRY(ENTRY) \
-  TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (ENTRY))))
+  (!flag_vtable_thunks ? \
+     TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (ENTRY)))) \
+   : TREE_CODE (TREE_OPERAND ((ENTRY), 0)) != THUNK_DECL ? (ENTRY) \
+   : DECL_INITIAL (TREE_OPERAND ((ENTRY), 0)))
 #define SET_FNADDR_FROM_VTABLE_ENTRY(ENTRY,VALUE) \
   (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (ENTRY)))) = (VALUE))
-
 #define FUNCTION_ARG_CHAIN(NODE) (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (NODE))))
 #define PROMOTES_TO_AGGR_TYPE(NODE,CODE)	\
   (((CODE) == TREE_CODE (NODE)			\
@@ -924,7 +926,8 @@ struct lang_decl_flags
   unsigned mutable_flag : 1;
   unsigned is_default_implementation : 1;
   unsigned synthesized : 1;
-  unsigned dummy : 10;
+  unsigned saved_inline : 1;
+  unsigned dummy : 9;
 
   tree access;
   tree context;
@@ -986,6 +989,11 @@ struct lang_decl
    member function.  */
 #define DECL_STATIC_FUNCTION_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.static_function)
 
+/* Nonzero for FUNCTION_DECL means that this decl is a member function
+   (static or non-static).  */
+#define DECL_FUNCTION_MEMBER_P(NODE) \
+ (TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE || DECL_STATIC_FUNCTION_P (NODE))
+
 /* Nonzero for FUNCTION_DECL means that this member function
    has `this' as const X *const.  */
 #define DECL_CONST_MEMFUNC_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.const_memfunc)
@@ -1005,8 +1013,9 @@ struct lang_decl
 /* Nonzero if allocated on permanent_obstack.  */
 #define LANG_DECL_PERMANENT(LANGDECL) ((LANGDECL)->decl_flags.permanent_attr)
 
-/* The _TYPE context in which this _DECL appears.  This field is used
-   only to compute access information.  */
+/* The _TYPE context in which this _DECL appears.  This field holds the
+   class where a virtual function instance is actually defined, and the
+   lexical scope of a friend function defined in a class body.  */
 #define DECL_CLASS_CONTEXT(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.context)
 
 /* For a FUNCTION_DECL: the chain through which the next method
@@ -1028,6 +1037,10 @@ struct lang_decl
    a class declaration, this is where the text for the function is
    squirreled away.  */
 #define DECL_PENDING_INLINE_INFO(NODE) (DECL_LANG_SPECIFIC(NODE)->pending_inline_info)
+
+/* True if on the saved_inlines (see decl2.c) list. */
+#define DECL_SAVED_INLINE(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->decl_flags.saved_inline)
 
 /* For a FUNCTION_DECL: if this function was declared inside a signature
    declaration, this is the corresponding member function pointer that was
@@ -1057,7 +1070,9 @@ struct lang_decl
 /* Nonzero in IDENTIFIER_NODE means that this name is overloaded, and
    should be looked up in a non-standard way.  */
 #define TREE_OVERLOADED(NODE) (TREE_LANG_FLAG_0 (NODE))
+#if 0				/* UNUSED */
 #define DECL_OVERLOADED(NODE) (DECL_LANG_FLAG_4 (NODE))
+#endif
 
 /* Nonzero if this (non-TYPE)_DECL has its virtual attribute set.
    For a FUNCTION_DECL, this is when the function is a virtual function.
@@ -1165,8 +1180,8 @@ struct lang_decl
 #define DELTA2_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, 0, 0), delta2_identifier, 0, 0))
 #define PFN_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, 0, 0), pfn_identifier, 0, 0))
 
-/* Nonzero for VAR_DECL node means that `external' was specified in
-   its declaration.  */
+/* Nonzero for VAR_DECL and FUNCTION_DECL node means that `external' was
+   specified in its declaration.  */
 #define DECL_THIS_EXTERN(NODE) (DECL_LANG_FLAG_2(NODE))
 
 /* Nonzero for SAVE_EXPR if used to initialize a PARM_DECL.  */
@@ -1232,6 +1247,8 @@ struct lang_decl
 #define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT(NODE)
 #define DECL_TEMPLATE_INSTANTIATIONS(NODE) DECL_VINDEX(NODE)
 
+#define THUNK_DELTA(DECL) ((DECL)->decl.frame_size)
+
 /* ...and for unexpanded-parameterized-type nodes.  */
 #define UPT_TEMPLATE(NODE)      TREE_PURPOSE(TYPE_VALUES(NODE))
 #define UPT_PARMS(NODE)         TREE_VALUE(TYPE_VALUES(NODE))
@@ -1293,6 +1310,7 @@ extern tree void_list_node;
 extern tree void_zero_node;
 extern tree default_function_type;
 extern tree vtable_entry_type;
+extern tree memptr_type;
 extern tree sigtable_entry_type;
 extern tree __t_desc_type_node, __i_desc_type_node, __m_desc_type_node;
 extern tree Type_info_type_node;
@@ -1790,6 +1808,7 @@ extern void print_binding_stack			PROTO((void));
 extern void push_to_top_level			PROTO((void));
 extern void pop_from_top_level			PROTO((void));
 extern void set_identifier_type_value		PROTO((tree, tree));
+extern void pop_everything			PROTO((void));
 extern tree make_type_decl			PROTO((tree, tree));
 extern void pushtag				PROTO((tree, tree, int));
 extern tree make_anon_name			PROTO((void));
@@ -1823,6 +1842,7 @@ extern void expand_static_init			PROTO((tree, tree));
 extern int complete_array_type			PROTO((tree, tree, int));
 extern tree build_ptrmemfunc_type		PROTO((tree));
 extern tree grokdeclarator			(); /* PROTO((tree, tree, enum decl_context, int, tree)); */
+extern int parmlist_is_exprlist			PROTO((tree));
 extern tree xref_defn_tag			PROTO((tree, tree, tree));
 extern tree xref_tag				PROTO((tree, tree, tree, int));
 extern tree start_enum				PROTO((tree));
@@ -1928,7 +1948,6 @@ extern tree build_dynamic_cast			PROTO((tree, tree));
 /* in init.c */
 extern void emit_base_init			PROTO((tree, int));
 extern void check_base_init			PROTO((tree));
-extern tree build_virtual_init			PROTO((tree, tree, tree));
 extern void init_vtbl_ptrs			PROTO((tree, int, int));
 extern void do_member_init			PROTO((tree, tree, tree));
 extern void expand_member_init			PROTO((tree, tree, tree));
@@ -2000,6 +2019,16 @@ extern void dump_time_statistics		PROTO((void));
 extern void compiler_error_with_decl		PROTO((tree, char *));
 extern void yyerror				PROTO((char *));
 
+/* in errfn.c */
+extern void cp_error				();
+extern void cp_error_at				();
+extern void cp_warning				();
+extern void cp_warning_at			();
+extern void cp_pedwarn				();
+extern void cp_pedwarn_at			();
+extern void cp_compiler_error			();
+extern void cp_sprintf				();
+
 /* in error.c */
 extern void init_error				PROTO((void));
 extern char *fndecl_as_string			PROTO((tree, tree, int));
@@ -2059,7 +2088,7 @@ extern void push_memoized_context		PROTO((tree, int));
 extern void pop_memoized_context		PROTO((int));
 extern tree get_binfo				PROTO((tree, tree, int));
 extern int get_base_distance			PROTO((tree, tree, int, tree *));
-extern enum access_type check_access	PROTO((tree, tree));
+extern enum access_type compute_access		PROTO((tree, tree));
 extern tree lookup_field			PROTO((tree, tree, int, int));
 extern tree lookup_nested_field			PROTO((tree, int));
 extern tree lookup_fnfields			PROTO((tree, tree, int));
@@ -2071,7 +2100,7 @@ extern tree get_abstract_virtuals		PROTO((tree));
 extern tree get_baselinks			PROTO((tree, tree, tree));
 extern tree next_baselink			PROTO((tree));
 extern tree init_vbase_pointers			PROTO((tree, tree));
-extern tree build_vbase_vtables_init		PROTO((tree, tree, tree, tree, int));
+extern void expand_vbase_vtables_init		PROTO((tree, tree, tree, tree, int));
 extern void clear_search_slots			PROTO((tree));
 extern tree get_vbase_types			PROTO((tree));
 extern void build_mi_matrix			PROTO((tree));
@@ -2132,6 +2161,7 @@ extern tree virtual_member			PROTO((tree, tree));
 extern tree virtual_offset			PROTO((tree, tree, tree));
 extern void debug_binfo				PROTO((tree));
 extern int decl_list_length			PROTO((tree));
+extern int count_functions			PROTO((tree));
 extern tree decl_value_member			PROTO((tree, tree));
 extern int is_overloaded_fn			PROTO((tree));
 extern tree get_first_fn			PROTO((tree));

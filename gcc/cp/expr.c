@@ -211,6 +211,9 @@ cplus_expand_expr (exp, target, tmode, modifier)
 #endif
       }
 
+    case THUNK_DECL:
+      return DECL_RTL (exp);
+
     default:
       break;
     }

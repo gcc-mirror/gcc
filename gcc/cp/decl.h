@@ -48,11 +48,6 @@ extern tree pending_statics;
    in the TREE_PURPOSE slot.  */
 extern tree static_aggregates;
 
-/* A list of functions which were declared inline, but later had their
-   address taken.  Used only for non-virtual member functions, since we can
-   find other functions easily enough.  */
-extern tree pending_addressable_inlines;
-
 #ifdef DEBUG_CP_BINDING_LEVELS
 /* Purely for debugging purposes.  */
 extern int debug_bindings_indentation;

@@ -224,7 +224,7 @@ tree sizet_ftype_string;
 tree int_ftype_cptr_cptr_sizet;
 
 /* C++ extensions */
-tree vtable_entry_type;
+tree memptr_type, vtable_entry_type;
 tree delta_type_node;
 tree __t_desc_type_node, __i_desc_type_node, __m_desc_type_node;
 tree __t_desc_array_type, __i_desc_array_type, __m_desc_array_type;
@@ -309,11 +309,6 @@ static tree named_label_uses;
    the TREE_VALUE slot and the initializer is stored
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;
-
-/* A list of functions which were declared inline, but later had their
-   address taken.  Used only for non-virtual member functions, since we can
-   find other functions easily enough.  */
-tree pending_addressable_inlines;
 
 /* A list of overloaded functions which we should forget ever
    existed, such as functions declared in a function's scope,
@@ -1682,6 +1677,26 @@ set_nested_typename (decl, classname, name, type)
     DECL_NESTED_TYPENAME (decl) = name;
 }
 
+/* Pop off extraneous binding levels left over due to syntax errors.  */
+void
+pop_everything ()
+{
+#ifdef DEBUG_CP_BINDING_LEVELS
+  fprintf (stderr, "XXX entering pop_everything ()\n");
+#endif
+  while (current_binding_level != global_binding_level
+	 && ! current_binding_level->pseudo_global)
+    {
+      if (class_binding_level)
+	pop_nested_class (1);
+      else
+	poplevel (0, 0, 0);
+    }
+#ifdef DEBUG_CP_BINDING_LEVELS
+  fprintf (stderr, "XXX leaving pop_everything ()\n");
+#endif
+}
+
 #if 0 /* not yet, should get fixed properly later */
 /* Create a TYPE_DECL node with the correct DECL_ASSEMBLER_NAME.
    Other routines shouldn't use build_decl directly; they'll produce
@@ -1981,7 +1996,14 @@ decls_match (newdecl, olddecl)
 
       if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (f1)),
 		     TYPE_MAIN_VARIANT (TREE_TYPE (f2)), 2))
-	types_match = compparms (p1, p2, 2);
+	{
+	  if (DECL_LANGUAGE (olddecl) == lang_c
+	      && ! strict_prototypes_lang_c
+	      && p2 == NULL_TREE)
+	    types_match = self_promoting_args_p (p1);
+	  else
+	    types_match = compparms (p1, p2, 1);
+	}
       else
 	types_match = 0;
     }
@@ -2096,42 +2118,7 @@ duplicate_decls (newdecl, olddecl)
   int new_defines_function;
   tree previous_c_decl = NULL_TREE;
 
-  if (TREE_CODE (newdecl) == FUNCTION_DECL && is_overloaded_fn (olddecl))
-    {
-      olddecl = get_first_fn (olddecl);
-
-      while (olddecl)
-	{
-	  if (DECL_LANGUAGE (olddecl) == lang_c)
-	    previous_c_decl = olddecl;
-
-	  /* Redeclaration.  */
-	  if (decls_match (newdecl, olddecl))
-	    {
-	      types_match = 1;
-	      break;
-	    }
-	  /* Ambiguous overload.  */
-	  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
-			      TYPE_ARG_TYPES (TREE_TYPE (olddecl)), 2))
-	    break;
-
-	  /* Attempt to define multiple C-binding fns.  */
-	  if (previous_c_decl)
-	    break;
-	  
-	  olddecl = DECL_CHAIN (olddecl);
-	}
-      if (!olddecl)
-	{
-	  /* If we found no match, make this join the other
-	     overloaded decls.  */
-	  DECL_OVERLOADED (newdecl) = 1;
-	  return 1;
-	}
-    }
-  else
-    types_match = decls_match (newdecl, olddecl);
+  types_match = decls_match (newdecl, olddecl);
 
   if (TREE_CODE (olddecl) != TREE_LIST)
     olddecl_friend = DECL_LANG_SPECIFIC (olddecl) && DECL_FRIEND_P (olddecl);
@@ -2149,6 +2136,14 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
     {
+      if ((TREE_CODE (newdecl) == FUNCTION_DECL
+	   && TREE_CODE (olddecl) == TEMPLATE_DECL
+	   && ! DECL_TEMPLATE_IS_CLASS (olddecl))
+	  || (TREE_CODE (olddecl) == FUNCTION_DECL
+	      && TREE_CODE (newdecl) == TEMPLATE_DECL
+	      && ! DECL_TEMPLATE_IS_CLASS (newdecl)))
+	return 0;
+      
       cp_error ("`%#D' redeclared as different kind of symbol", newdecl);
       if (TREE_CODE (olddecl) == TREE_LIST)
 	olddecl = TREE_VALUE (olddecl);
@@ -2167,7 +2162,8 @@ duplicate_decls (newdecl, olddecl)
     ;
   else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	   && (DECL_BUILT_IN (olddecl)
-	       || DECL_BUILT_IN_NONANSI (olddecl)))
+	       || DECL_BUILT_IN_NONANSI (olddecl))
+	   && DECL_ASSEMBLER_NAME (newdecl) == DECL_ASSEMBLER_NAME (olddecl))
     {
       /* If you declare a built-in or predefined function name as static,
 	 the old definition is overridden,
@@ -2195,101 +2191,34 @@ duplicate_decls (newdecl, olddecl)
 	  return 0;
 	}
     }
-  else if (!types_match && previous_c_decl
-	   && DECL_LANGUAGE (newdecl) == lang_c)
-    {
-      cp_error ("declaration of C function `%#D' conflicts with", newdecl);
-      cp_error_at ("previous declaration `%#D' here", previous_c_decl);
-    }
-  else if (!types_match && TREE_CODE (newdecl) == TEMPLATE_DECL)
-    return 0;
   else if (!types_match)
     {
-      tree oldtype = TREE_TYPE (olddecl);
-      tree newtype = TREE_TYPE (newdecl);
-      int give_error = 0;
+      if (TREE_CODE (newdecl) == TEMPLATE_DECL)
+	return 0;
+      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	{
+	  if (DECL_LANGUAGE (newdecl) == lang_c
+	      && DECL_LANGUAGE (olddecl) == lang_c)
+	    {
+	      cp_error ("declaration of C function `%#D' conflicts with",
+			newdecl);
+	      cp_error_at ("previous declaration `%#D' here", olddecl);
+	    }
+	  
+	  return 0;
+	}
 
       /* Already complained about this, so don't do so again.  */
       if (current_class_type == NULL_TREE
 	  || IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) != current_class_type)
 	{
-	  give_error = 1;
-
 	  /* Since we're doing this before finish_struct can set the
 	     line number on NEWDECL, we just do a regular error here.  */
 	  if (DECL_SOURCE_LINE (newdecl) == 0)
 	    cp_error ("conflicting types for `%#D'", newdecl);
 	  else
 	    cp_error_at ("conflicting types for `%#D'", newdecl);
-	}
-
-      /* Check for function type mismatch
-	 involving an empty arglist vs a nonempty one.  */
-      if (TREE_CODE (olddecl) == FUNCTION_DECL
-	  && comptypes (TREE_TYPE (oldtype),
-			TREE_TYPE (newtype), 1)
-	  && ((TYPE_ARG_TYPES (oldtype) == NULL_TREE
-	       && DECL_INITIAL (olddecl) == NULL_TREE)
-	      || (TYPE_ARG_TYPES (newtype) == NULL_TREE
-		  && DECL_INITIAL (newdecl) == NULL_TREE)))
-	{
-	  /* Classify the problem further.  */
-	  register tree t = TYPE_ARG_TYPES (oldtype);
-
-	  if (t == NULL_TREE)
-	    t = TYPE_ARG_TYPES (newtype);
-	  for (; t; t = TREE_CHAIN (t))
-	    {
-	      register tree type = TREE_VALUE (t);
-
-	      if (TREE_CHAIN (t) == NULL_TREE && type != void_type_node)
-		{
-		  give_error = 1;
-		  error ("A parameter list with an ellipsis can't match");
-		  error ("an empty parameter name list declaration.");
-		  break;
-		}
-
-	      if (TYPE_MAIN_VARIANT (type) == float_type_node
-		  || C_PROMOTING_INTEGER_TYPE_P (type))
-		{
-		  give_error = 1;
-		  error ("An argument type that has a default promotion");
-		  error ("can't match an empty parameter name list declaration.");
-		  break;
-		}
-	    }
-	}
-      if (give_error)
-	cp_error_at ("previous declaration as `%#D'", olddecl);
-
-      /* There is one thing GNU C++ cannot tolerate: a constructor
-	 which takes the type of object being constructed.
-	 Farm that case out here.  */
-      if (TREE_CODE (newdecl) == FUNCTION_DECL
-	  && DECL_CONSTRUCTOR_P (newdecl))
-	{
-	  tree tmp = TREE_CHAIN (TYPE_ARG_TYPES (newtype));
-
-	  if (tmp != NULL_TREE
-	      && (TYPE_MAIN_VARIANT (TREE_VALUE (tmp))
-		  == TYPE_METHOD_BASETYPE (newtype)))
-	    {
-	      tree parm = TREE_CHAIN (DECL_ARGUMENTS (newdecl));
-	      tree argtypes
-		= hash_tree_chain (build_reference_type (TREE_VALUE (tmp)),
-				   TREE_CHAIN (tmp));
-
-	      DECL_ARG_TYPE (parm)
-		= TREE_TYPE (parm)
-		  = TYPE_REFERENCE_TO (TREE_VALUE (tmp));
-
-	      TREE_TYPE (newdecl) = newtype
-		= build_cplus_method_type (TYPE_METHOD_BASETYPE (newtype),
-					   TREE_TYPE (newtype), argtypes);
-	      error ("constructor cannot take as argument the type being constructed");
-	      SET_IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl), current_class_type);
-	    }
+	  cp_error_at ("previous declaration as `%#D'", olddecl);
 	}
     }
   else
@@ -2315,18 +2244,25 @@ duplicate_decls (newdecl, olddecl)
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl))
-	/* extern "C" int foo ();
-	   int foo () { bar (); }
-	   is OK.  */
-	if (current_lang_stack == current_lang_base)
-	  DECL_LANGUAGE (newdecl) = DECL_LANGUAGE (olddecl);
-	else
-	  {
-	    cp_error_at ("previous declaration of `%#D' with %L linkage",
-			 olddecl, DECL_LANGUAGE (olddecl));
-	    cp_error ("conflicts with new declaration with %L linkage",
-		      DECL_LANGUAGE (newdecl));
-	  }
+	{
+	  /* extern "C" int foo ();
+	     int foo () { bar (); }
+	     is OK.  */
+	  if (current_lang_stack == current_lang_base)
+	    {
+	      DECL_LANGUAGE (newdecl) = DECL_LANGUAGE (olddecl);
+	      if (TYPE_ARG_TYPES (TREE_TYPE (olddecl)) == NULL_TREE
+		  && TYPE_ARG_TYPES (TREE_TYPE (newdecl)) == void_list_node)
+		TREE_TYPE (newdecl) = TREE_TYPE (olddecl);
+	    }
+	  else
+	    {
+	      cp_error_at ("previous declaration of `%#D' with %L linkage",
+			   olddecl, DECL_LANGUAGE (olddecl));
+	      cp_error ("conflicts with new declaration with %L linkage",
+			DECL_LANGUAGE (newdecl));
+	    }
+	}
 
       /* These bits are logically part of the type.  */
       if (pedantic
@@ -2386,10 +2322,6 @@ duplicate_decls (newdecl, olddecl)
 #endif
     }
 
-  if (TREE_CODE (olddecl) == TEMPLATE_DECL
-      && DECL_TEMPLATE_INFO (olddecl)->length)
-    DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
-  
   /* Special handling ensues if new decl is a function definition.  */
   new_defines_function = (TREE_CODE (newdecl) == FUNCTION_DECL
 			  && DECL_INITIAL (newdecl) != NULL_TREE);
@@ -2463,8 +2395,13 @@ duplicate_decls (newdecl, olddecl)
 	TREE_THIS_VOLATILE (olddecl) = 1;
 
       /* Merge the initialization information.  */
-      if (DECL_INITIAL (newdecl) == NULL_TREE)
-	DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
+      if (DECL_INITIAL (newdecl) == NULL_TREE
+	  && DECL_INITIAL (olddecl) != NULL_TREE)
+	{
+	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
+	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
+	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
+	}
       /* Keep the old rtl since we can safely use it, unless it's the
 	 call to abort() used for abstract virtuals.  */
       if ((DECL_LANG_SPECIFIC (olddecl)
@@ -2547,7 +2484,7 @@ duplicate_decls (newdecl, olddecl)
 	    DECL_FRAME_SIZE (newdecl) = DECL_FRAME_SIZE (olddecl);
 
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
-	  if (DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl))
+	  if ((DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl)))
 	    /* Previously saved insns go together with
 	       the function's previous definition.  */
 	    DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
@@ -2557,6 +2494,15 @@ duplicate_decls (newdecl, olddecl)
 	}
     }
 
+  if (TREE_CODE (newdecl) == TEMPLATE_DECL)
+    {
+      if (DECL_TEMPLATE_INFO (olddecl)->length)
+	DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+      DECL_TEMPLATE_MEMBERS (newdecl) = DECL_TEMPLATE_MEMBERS (olddecl);
+      DECL_TEMPLATE_INSTANTIATIONS (newdecl)
+	= DECL_TEMPLATE_INSTANTIATIONS (olddecl);
+    }
+  
   /* Now preserve various other info from the definition.  */
   TREE_ADDRESSABLE (newdecl) = TREE_ADDRESSABLE (olddecl);
   TREE_ASM_WRITTEN (newdecl) = TREE_ASM_WRITTEN (olddecl);
@@ -2706,7 +2652,10 @@ pushdecl (x)
 	  file = DECL_SOURCE_FILE (t);
 	  line = DECL_SOURCE_LINE (t);
 
-	  if (TREE_CODE (t) != TREE_CODE (x))
+	  if (TREE_CODE (x) == FUNCTION_DECL && DECL_LANGUAGE (x) == lang_c
+	      && is_overloaded_fn (t))
+	    /* don't do anything just yet */;
+	  else if (TREE_CODE (t) != TREE_CODE (x))
 	    {
 	      if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (x) == TYPE_DECL)
 		{
@@ -2723,39 +2672,47 @@ pushdecl (x)
 	  else if (duplicate_decls (x, t))
 	    {
 #if 0
-	  /* This is turned off until I have time to do it right (bpk).  */
+	      /* This is turned off until I have time to do it right (bpk).  */
 
-	  /* Also warn if they did a prototype with `static' on it, but
-	     then later left the `static' off.  */
-	  else if (! TREE_PUBLIC (name) && TREE_PUBLIC (x))
-	    {
-	      if (DECL_LANG_SPECIFIC (t) && DECL_FRIEND_P (t))
-		return t;
-
-	      if (extra_warnings)
+	      /* Also warn if they did a prototype with `static' on it, but
+		 then later left the `static' off.  */
+	      if (! TREE_PUBLIC (name) && TREE_PUBLIC (x))
 		{
-		  cp_warning ("`static' missing from declaration of `%D'", t);
-		  warning_with_file_and_line (file, line,
-					      "previous declaration of `%s'",
-					      decl_as_string (t, 0));
+		  if (DECL_LANG_SPECIFIC (t) && DECL_FRIEND_P (t))
+		    return t;
+
+		  if (extra_warnings)
+		    {
+		      cp_warning ("`static' missing from declaration of `%D'", t);
+		      warning_with_file_and_line (file, line,
+						  "previous declaration of `%s'",
+						  decl_as_string (t, 0));
+		    }
+
+		  /* Now fix things so it'll do what they expect.  */
+		  if (current_function_decl)
+		    TREE_PUBLIC (current_function_decl) = 0;
 		}
-
-	      /* Now fix things so it'll do what they expect.  */
-	      if (current_function_decl)
-		TREE_PUBLIC (current_function_decl) = 0;
-	    }
-#endif
-
 	      /* Due to interference in memory reclamation (X may be
 		 obstack-deallocated at this point), we must guard against
-		 one really special case.  */
+		 one really special case.  [jason: This should be handled
+		 by start_function]  */
 	      if (current_function_decl == x)
 		current_function_decl = t;
+#endif
 	      
 	      return t;
 	    }
 	}
-      
+
+      if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_FUNCTION_MEMBER_P (x))
+	{
+	  t = push_overloaded_decl (x, 1);
+	  if (t != x || DECL_LANGUAGE (x) == lang_c)
+	    return t;
+	}
+      else if (TREE_CODE (x) == TEMPLATE_DECL && ! DECL_TEMPLATE_IS_CLASS (x))
+	return push_overloaded_decl (x, 0);
 
       /* If declaring a type as a typedef, and the type has no known
 	 typedef name, install this TYPE_DECL as its typedef name.  */
@@ -2819,7 +2776,7 @@ pushdecl (x)
 	      && !DECL_BUILT_IN (decl))
 	    {
 	      cp_pedwarn ("type mismatch with previous external decl", x);
-	      cp_pedwarn_at ("previous external decl of `%D'", decl);
+	      cp_pedwarn_at ("previous external decl of `%#D'", decl);
 	    }
 	}
 
@@ -3176,8 +3133,6 @@ push_overloaded_decl (decl, forgettable)
   tree orig_name = DECL_NAME (decl);
   tree glob = IDENTIFIER_GLOBAL_VALUE (orig_name);
 
-  DECL_OVERLOADED (decl) = 1;
-
   if (forgettable
       && ! flag_traditional
       && (glob == NULL_TREE || TREE_PERMANENT (glob) == 1)
@@ -3187,18 +3142,6 @@ push_overloaded_decl (decl, forgettable)
 
   if (glob)
     {
-      if (DECL_LANGUAGE (decl) == lang_c)
-	{
-	  tree decls = get_first_fn (glob);
-	  while (decls && DECL_LANGUAGE (decls) == lang_cplusplus)
-	    decls = DECL_CHAIN (decls);
-	  if (decls)
-	    {
-	      cp_error_at ("C-language function `%#D'", decls);
-	      cp_error ("overloaded as `%#D'", decl);
-	    }
-	}
-
       /* We cache the value of builtin functions as ADDR_EXPRs
 	 in the name space.  Convert it to some kind of _DECL after
 	 remembering what to forget.  */
@@ -3210,7 +3153,7 @@ push_overloaded_decl (decl, forgettable)
 	  tree tmp;
 
 	  for (tmp = get_first_fn (glob); tmp; tmp = DECL_CHAIN (tmp))
-	    if (decl == tmp)
+	    if (decl == tmp || duplicate_decls (decl, tmp))
 	      return decl;
 	}
       else if (TREE_CODE (glob) == VAR_DECL)
@@ -3219,40 +3162,26 @@ push_overloaded_decl (decl, forgettable)
 	  cp_error ("conflicts with function declaration `%#D'", decl);
 	  return error_mark_node;
 	}
+      else if (TREE_CODE (glob) == TYPE_DECL)
+	{
+	  tree t = TREE_TYPE (glob);
+	  if (IS_AGGR_TYPE (t) && warn_shadow)
+	    cp_warning ("`%#D' hides constructor for `%#T'", decl, t);
+	}
       else if (is_overloaded_fn (glob))
         {
-          tree name = DECL_ASSEMBLER_NAME (decl);
           tree tmp;
 	  
 	  for (tmp = get_first_fn (glob); tmp; tmp = DECL_CHAIN (tmp))
 	    {
-	      if (TREE_CODE (tmp) == FUNCTION_DECL
-		  && comptypes (TREE_TYPE (tmp), TREE_TYPE (decl), 2))
+	      if (decl == tmp || duplicate_decls (decl, tmp))
+		return tmp;
+	      if (compparms (TYPE_ARG_TYPES (TREE_TYPE (decl)),
+			     TYPE_ARG_TYPES (TREE_TYPE (tmp)), 2))
 		{
-		  if (DECL_LANGUAGE (tmp) != DECL_LANGUAGE (decl))
-		    {
-		      if (current_lang_stack == current_lang_base)
-			{
-			  DECL_LANGUAGE (decl) = DECL_LANGUAGE (tmp);
-			  return tmp;
-			}
-		      cp_error_at ("previous declaration of `%#D' with %L linkage",
-				   tmp, DECL_LANGUAGE (tmp));
-		      cp_error ("conflicts with new %L-language declaration",
-				   DECL_LANGUAGE (decl));
-		    }
-		  else if (TREE_CODE (tmp) != TEMPLATE_DECL
-			   && DECL_ASSEMBLER_NAME (tmp) != name)
-		    {
-		      cp_error ("new declaration `%#D'", decl);
-		      cp_error_at ("ambiguates old declaration `%#D'", tmp);
-		    }
+		  cp_error ("new declaration `%#D'", decl);
+		  cp_error_at ("ambiguates old declaration `%#D'", tmp);
 		}
-	      /* If we really have seen this before, then if it ambiguates
-		 something, we've already given an error before.  */
-	      if (TREE_CODE (tmp) != TEMPLATE_DECL
-		  && DECL_ASSEMBLER_NAME (tmp) == name)
-		return decl;
 	    }
 	}
     }
@@ -3335,7 +3264,7 @@ redeclaration_error_message (newdecl, olddecl)
       /* Because C++ can put things into name space for free,
 	 constructs like "typedef struct foo { ... } foo"
 	 would look like an erroneous redeclaration.  */
-      if (comptypes (newdecl, olddecl, 0))
+      if (comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl), 0))
 	return 0;
       else
 	return "redefinition of `%#D'";
@@ -3378,15 +3307,12 @@ redeclaration_error_message (newdecl, olddecl)
       /* If at least one is a reference, it's ok.  */
       if (DECL_EXTERNAL (newdecl) || DECL_EXTERNAL (olddecl))
 	return 0;
-      /* Reject two definitions.  */
-      if (DECL_INITIAL (olddecl) != NULL_TREE
-	  && DECL_INITIAL (newdecl) != NULL_TREE)
-	return "redefinition of `%#D'";
       /* Now we have two tentative defs, or one tentative and one real def.  */
       /* Insist that the linkage match.  */
       if (TREE_PUBLIC (olddecl) != TREE_PUBLIC (newdecl))
 	return "conflicting declarations of `%#D'";
-      return 0;
+      /* Reject two definitions.  */
+      return "redefinition of `%#D'";
     }
   else
     {
@@ -4114,6 +4040,9 @@ init_decl_processing ()
   lang_name_cplusplus = get_identifier ("C++");
   lang_name_c = get_identifier ("C");
 
+  if (flag_ansi || pedantic)
+    strict_prototypes_lang_c = strict_prototypes_lang_cplusplus;
+
   /* Initially, C.  */
   current_lang_name = lang_name_c;
 
@@ -4418,6 +4347,21 @@ init_decl_processing ()
   builtin_function ("__builtin_constant_p", int_ftype_int,
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
+  builtin_function ("__builtin_return_address",
+		    build_function_type (ptr_type_node, 
+					 tree_cons (NULL_TREE,
+						    unsigned_type_node,
+						    endlink)),
+		    BUILT_IN_RETURN_ADDRESS, NULL_PTR);
+
+  builtin_function ("__builtin_frame_address",
+		    build_function_type (ptr_type_node, 
+					 tree_cons (NULL_TREE,
+						    unsigned_type_node,
+						    endlink)),
+		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
+
+
   builtin_function ("__builtin_alloca",
 		    build_function_type (ptr_type_node,
 					 tree_cons (NULL_TREE,
@@ -4596,14 +4540,14 @@ init_decl_processing ()
       pushdecl (lookup_name (get_identifier ("__gc_main"), 0));
     }
 
-  /* Simplify life by making a "vtable_entry_type".  Give its
+  /* Simplify life by making a "memptr_type".  Give its
      fields names so that the debugger can use them.  */
 
-  vtable_entry_type = make_lang_type (RECORD_TYPE);
+  memptr_type = make_lang_type (RECORD_TYPE);
   fields[0] = build_lang_field_decl (FIELD_DECL, delta_identifier, delta_type_node);
   fields[1] = build_lang_field_decl (FIELD_DECL, index_identifier, delta_type_node);
   fields[2] = build_lang_field_decl (FIELD_DECL, pfn_identifier, ptr_type_node);
-  finish_builtin_type (vtable_entry_type, VTBL_PTR_TYPE, fields, 2,
+  finish_builtin_type (memptr_type, VTBL_PTR_TYPE, fields, 2,
 		       double_type_node);
 
   /* Make this part of an invisible union.  */
@@ -4614,8 +4558,13 @@ init_decl_processing ()
   DECL_SIZE (fields[3]) = TYPE_SIZE (delta_type_node);
   TREE_UNSIGNED (fields[3]) = 0;
   TREE_CHAIN (fields[2]) = fields[3];
-  vtable_entry_type = build_type_variant (vtable_entry_type, 1, 0);
-  record_builtin_type (RID_MAX, VTBL_PTR_TYPE, vtable_entry_type);
+  memptr_type = build_type_variant (memptr_type, 1, 0);
+  record_builtin_type (RID_MAX, VTBL_PTR_TYPE, memptr_type);
+
+  if (flag_vtable_thunks)
+    vtable_entry_type = ptr_type_node;
+  else
+    vtable_entry_type = memptr_type;
 
 #ifdef VTABLE_USES_MASK
   /* This is primarily for virtual function definition.  We
@@ -5115,7 +5064,6 @@ start_decl (declarator, declspecs, initialized, raises)
       DECL_EXTERNAL (d) = (DECL_EXTERNAL (decl)
 			   && !(context && !DECL_THIS_EXTERN (decl)));
       DECL_TEMPLATE_RESULT (d) = decl;
-      DECL_OVERLOADED (d) = 1;
       decl = d;
     }
 
@@ -5227,25 +5175,7 @@ start_decl (declarator, declspecs, initialized, raises)
       || TREE_CODE (type) == LANG_TYPE)
     tem = decl;
   else
-    {
-      tem = pushdecl (decl);
-      if (is_overloaded_fn (tem))
-	{
-	  tree tem2;
-	  tem = get_first_fn (tem);
-	  tem2 = decl_value_member (decl, tem);
-	  
-	  if (tem2 != NULL_TREE)
-	    tem = tem2;
-	  else
-	    {
-	      while (tem && ! decls_match (decl, tem))
-		tem = DECL_CHAIN (tem);
-	      if (tem == NULL_TREE)
-		tem = decl;
-	    }
-	}
-    }
+    tem = pushdecl (decl);
 	     
   /* Tell the back-end to use or not use .common as appropriate.  */
   DECL_COMMON (tem) = flag_conserve_space;
@@ -5267,10 +5197,7 @@ start_decl (declarator, declspecs, initialized, raises)
     }
 #endif
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_OVERLOADED (decl))
-    /* @@ Also done in start_function.  */
-    tem = push_overloaded_decl (tem, 1);
-  else if (TREE_CODE (decl) == TEMPLATE_DECL)
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
       tree result = DECL_TEMPLATE_RESULT (decl);
       if (DECL_CONTEXT (result) != NULL_TREE)
@@ -5339,6 +5266,7 @@ start_decl (declarator, declspecs, initialized, raises)
   return tem;
 }
 
+#if 0				/* unused */
 static void
 make_temporary_for_reference (decl, ctor_call, init, cleanupp)
      tree decl, ctor_call, init;
@@ -5397,6 +5325,7 @@ make_temporary_for_reference (decl, ctor_call, init, cleanupp)
   if (TREE_STATIC (tmp))
     preserve_initializer ();
 }
+#endif
 
 /* Handle initialization of references.
    These three arguments from from `finish_decl', and have the
@@ -5559,7 +5488,6 @@ grok_reference_init (decl, type, init, cleanupp)
   else
     my_friendly_abort (1);
 
- done:
   /* ?? Can this be optimized in some cases to
      hand back the DECL_INITIAL slot??  */
   if (TYPE_SIZE (TREE_TYPE (type)))
@@ -6140,6 +6068,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
+#if 0
 	  /* C++: Handle overloaded functions with default parameters.  */
 	  if (DECL_OVERLOADED (decl))
 	    {
@@ -6184,6 +6113,7 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 		}
 	      DECL_LANG_SPECIFIC (decl) = tmp_lang_decl;
 	    }
+#endif
 	}
       else if (DECL_EXTERNAL (decl))
 	;
@@ -6926,7 +6856,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
   {
-    tree type, last = NULL_TREE;
+    tree last = NULL_TREE;
     register tree decl = declarator;
     name = NULL;
 
@@ -8722,10 +8652,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 			   && ! funcdef_flag
 			   && RIDBIT_NOTSETP (RID_STATIC, specbits)
 			   && RIDBIT_NOTSETP (RID_INLINE, specbits)));
-	    if (TREE_CODE (type) == METHOD_TYPE)
-	      publicp 
-		|= (ctype && CLASSTYPE_INTERFACE_KNOWN (ctype))
-		  || (!funcdef_flag && RIDBIT_NOTSETP (RID_INLINE, specbits));
 	    decl = grokfndecl (ctype, type, declarator,
 			       virtualp, flags, quals,
 			       raises, friendp ? -1 : 0, publicp);
@@ -8852,25 +8778,32 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
       {
-	int was_overloaded = 0;
 	tree original_name = declarator;
 	int publicp = 0;
 
 	if (! declarator)
 	  return NULL_TREE;
 
-	if (RIDBIT_SETP (RID_AUTO, specbits)
-	    || RIDBIT_SETP (RID_REGISTER, specbits))
-	  error ("invalid storage class for function `%s'", name);
+	if (RIDBIT_SETP (RID_AUTO, specbits))
+	  error ("storage class `auto' invalid for function `%s'", name);
+	else if (RIDBIT_SETP (RID_REGISTER, specbits))
+	  error ("storage class `register' invalid for function `%s'", name);
 
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
 	   and `extern' makes no difference.  */
 	if (current_binding_level != global_binding_level
-	    && (RIDBIT_SETP (RID_STATIC, specbits) || RIDBIT_SETP (RID_INLINE, specbits))
+	    && ! processing_template_decl
+	    && (RIDBIT_SETP (RID_STATIC, specbits)
+		|| RIDBIT_SETP (RID_INLINE, specbits))
 	    && pedantic)
-	  pedwarn ("invalid storage class for function `%s'", name);
-
+	  {
+	    if (RIDBIT_SETP (RID_STATIC, specbits))
+	      pedwarn ("storage class `static' invalid for function `%s' declared out of global scope", name);
+	    else
+	      pedwarn ("storage class `inline' invalid for function `%s' declared out of global scope", name);
+	  }
+	
 	if (ctype == NULL_TREE)
 	  {
 	    if (virtualp)
@@ -8887,11 +8820,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		      && IDENTIFIER_POINTER (original_name)[0] == '_'
 		      && IDENTIFIER_POINTER (original_name)[1] == '_'
 		      && strncmp (IDENTIFIER_POINTER (original_name)+2, "builtin_", 8) == 0))
-	      {
-		/* Plain overloading: will not be grok'd by grokclassfn.  */
-		declarator = build_decl_overload (dname, TYPE_ARG_TYPES (type), 0);
-		was_overloaded = 1;
-	      }
+	      /* Plain overloading: will not be grok'd by grokclassfn.  */
+	      declarator = build_decl_overload (dname, TYPE_ARG_TYPES (type), 0);
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE && staticp < 2)
 	  type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep),
@@ -8926,8 +8856,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		cp_error_at ("cannot declare member function `%D' to have static linkage", decl);
 		illegal_static = 1;
 	      }
-	    else if (! was_overloaded
-		     && ! ctype
+	    else if (! ctype
 		     && IDENTIFIER_LENGTH (original_name) == 4
 		     && IDENTIFIER_POINTER (original_name)[0] == 'm'
 		     && ! strcmp (IDENTIFIER_POINTER (original_name), "main"))
@@ -8954,8 +8883,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  {
 	    tree last = tree_last (TYPE_ARG_TYPES (type));
 
-	    if (! was_overloaded
-		&& ! ctype
+	    if (! ctype
 		&& ! strcmp (IDENTIFIER_POINTER (original_name), "main"))
 	      error ("cannot inline function `main'");
 	    else if (last && last != void_list_node)
@@ -8971,8 +8899,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		  pedwarn ("ANSI C++ does not permit `extern inline'");
 	      }
 	  }
-	if (was_overloaded)
-	  DECL_OVERLOADED (decl) = 1;
       }
     else
       {
@@ -9011,6 +8937,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
     if (RIDBIT_SETP (RID_REGISTER, specbits))
       DECL_REGISTER (decl) = 1;
+
+    if (RIDBIT_SETP (RID_EXTERN, specbits))
+      DECL_THIS_EXTERN (decl) = 1;
 
     /* Record constancy and volatility.  */
 
@@ -9753,7 +9682,7 @@ xref_tag (code_type_node, name, binfo, globalize)
 
   /* If a cross reference is requested, look up the type
      already defined for this tag and return it.  */
-  if (t = IDENTIFIER_TYPE_VALUE(name))
+  if ((t = IDENTIFIER_TYPE_VALUE(name)))
     {
        if (TREE_CODE(t) != code) t = NULL_TREE;
     }
@@ -10000,7 +9929,7 @@ xref_tag (code_type_node, name, binfo, globalize)
   
 	      base_binfo = make_binfo (integer_zero_node, basetype,
 				  TYPE_BINFO_VTABLE (basetype),
- 				  TYPE_BINFO_VIRTUALS (basetype), 0);
+ 				  TYPE_BINFO_VIRTUALS (basetype), NULL_TREE);
  
 	      TREE_VEC_ELT (binfos, i) = base_binfo;
 	      TREE_VIA_PUBLIC (base_binfo) = via_public;
@@ -10468,7 +10397,7 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
       if ( !(DECL_VINDEX (decl1)
 	     && write_virtuals >= 2
 	     && CLASSTYPE_VTABLE_NEEDS_WRITING (ctype)))
-	current_extern_inline = TREE_PUBLIC (decl1) && DECL_INLINE (decl1);
+	current_extern_inline = DECL_THIS_EXTERN (decl1) && DECL_INLINE (decl1);
 
       raises = TYPE_RAISES_EXCEPTIONS (fntype);
 
@@ -10585,72 +10514,18 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
        defining how to inline.  So set DECL_EXTERNAL in that case.  */
     DECL_EXTERNAL (decl1) = current_extern_inline;
 
-  /* Now see if this is the implementation of a declared function.  */
-  if (ctype == NULL_TREE && current_lang_name == lang_name_cplusplus
-      && !DECL_CONTEXT (decl1))
-    {
-      olddecl = lookup_name_current_level (DECL_NAME (decl1));
-      if (olddecl && TREE_CODE (olddecl) != FUNCTION_DECL)
-	olddecl = NULL_TREE;
-      if (olddecl && DECL_NAME (decl1) != DECL_NAME (olddecl))
-	{
-	  /* Collision between user and internal naming scheme.  */
-	  olddecl = lookup_name_current_level (DECL_ASSEMBLER_NAME (decl1));
-	  if (olddecl == NULL_TREE)
-	    olddecl = decl1;
-	}
-      if (olddecl && olddecl != decl1
-	  && DECL_NAME (decl1) == DECL_NAME (olddecl))
-	{
-	  if (TREE_CODE (olddecl) == FUNCTION_DECL
-	      && decls_match (decl1, olddecl))
-	    {
-	      olddecl = DECL_MAIN_VARIANT (olddecl);
-	      /* The following copy is needed to handle forcing a function's
-		 linkage to obey the linkage of the original decl.  */
-	      DECL_ASSEMBLER_NAME (decl1) = DECL_ASSEMBLER_NAME (olddecl);
-	      DECL_OVERLOADED (decl1) = DECL_OVERLOADED (olddecl);
-	      if (! DECL_BUILT_IN (olddecl) && DECL_INITIAL (olddecl))
-		redeclaration_error_message (decl1, olddecl);
-	      if (duplicate_decls (decl1, olddecl))
-		decl1 = olddecl;
-	      else
-		olddecl = NULL_TREE;
-	    }
-	  else
-	    olddecl = NULL_TREE;
-	}
-    }
-
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,
      use the old decl.  */
 
-  if (olddecl)
-    current_function_decl = olddecl;
-  else if (pre_parsed_p == 0)
+  if (pre_parsed_p == 0)
     {
-      current_function_decl = pushdecl (decl1);
-      if (TREE_CODE (current_function_decl) == TREE_LIST
-	  || (DECL_ASSEMBLER_NAME (current_function_decl)
-	      != DECL_ASSEMBLER_NAME (decl1)))
-	{
-	  /* @@ revert to modified original declaration.  */
-	  decl1 = DECL_MAIN_VARIANT (decl1);
-	  current_function_decl = decl1;
-	}
-      else
-	{
-	  decl1 = current_function_decl;
-	  DECL_MAIN_VARIANT (decl1) = decl1;
-	}
+      current_function_decl = decl1 = pushdecl (decl1);
+      DECL_MAIN_VARIANT (decl1) = decl1;
       fntype = TREE_TYPE (decl1);
     }
   else
     current_function_decl = decl1;
-
-  if (DECL_OVERLOADED (decl1))
-    decl1 = push_overloaded_decl (decl1, 1);
 
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))
     {
@@ -10956,7 +10831,7 @@ store_return_init (return_id, init)
     /* Give this error as many times as there are occurrences,
        so that users can use Emacs compilation buffers to find
        and fix all such places.  */
-    error ("ANSI C++ does not permit named return values");
+    pedwarn ("ANSI C++ does not permit named return values");
 
   if (return_id != NULL_TREE)
     {
@@ -11266,8 +11141,7 @@ finish_function (lineno, call_poplevel)
 	 tables.  */
       init_vtbl_ptrs (binfo, 1, 0);
       if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	expand_expr_stmt (build_vbase_vtables_init (binfo, binfo,
-						    C_C_D, current_class_decl, 0));
+	expand_vbase_vtables_init (binfo, binfo, C_C_D, current_class_decl, 0);
       if (! ok_to_optimize_dtor)
 	{
 	  cond = build_binary_op (NE_EXPR,
@@ -11604,6 +11478,12 @@ finish_function (lineno, call_poplevel)
       rest_of_compilation (fndecl);
     }
 
+  if (DECL_INLINE (fndecl)
+      && !TREE_ASM_WRITTEN (fndecl) && DECL_FUNCTION_MEMBER_P (fndecl))
+    {
+      mark_inline_for_output (fndecl);
+    }
+
   if (ctype && TREE_ASM_WRITTEN (fndecl))
     note_debug_info_needed (ctype);
 
@@ -11715,10 +11595,7 @@ start_method (declspecs, declarator, raises)
       return void_type_node;
     }
 
-  /* If we're expanding a template, a function must be explicitly declared
-     inline if we're to compile it now.  If it isn't, we have to wait to see
-     whether it's needed, and whether an override exists.  */
-  if (flag_default_inline && !processing_template_defn)
+  if (flag_default_inline)
     DECL_INLINE (fndecl) = 1;
 
   /* We read in the parameters on the maybepermanent_obstack,
@@ -11777,7 +11654,6 @@ finish_method (decl)
 {
   register tree fndecl = decl;
   tree old_initial;
-  tree context = DECL_CONTEXT (fndecl);
 
   register tree link;
 

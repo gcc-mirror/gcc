@@ -2658,7 +2658,7 @@ build_scoped_method_call (exp, scopes, name, parms)
       return error_mark_node;
     }
 
-  if (binfo = binfo_or_else (basetype, type))
+  if ((binfo = binfo_or_else (basetype, type)))
     {
       if (binfo == error_mark_node)
 	return error_mark_node;
@@ -2965,13 +2965,14 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
       if (TREE_CODE (basetype) == REFERENCE_TYPE)
 	{
-	  basetype = TYPE_MAIN_VARIANT (TREE_TYPE (basetype));
+	  basetype = TREE_TYPE (basetype);
 	  if (! IS_AGGR_TYPE (basetype))
 	    goto non_aggr_error;
 	  /* Call to convert not needed because we are remaining
 	     within the same type.  */
-	  instance_ptr = build1 (NOP_EXPR, TYPE_POINTER_TO (basetype), instance);
-	  inst_ptr_basetype = basetype;
+	  instance_ptr = build1 (NOP_EXPR, build_pointer_type (basetype),
+				 instance);
+	  inst_ptr_basetype = TYPE_MAIN_VARIANT (basetype);
 	}
       else
 	{
@@ -3077,7 +3078,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
       return error_mark_node;
     }
 
-  save_basetype = basetype;
+  save_basetype = TYPE_MAIN_VARIANT (basetype);
 
 #if 0
   if (all_virtual == 1
@@ -3118,8 +3119,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   if (instance)
     {
-      constp = TREE_READONLY (instance);
-      volatilep = TREE_THIS_VOLATILE (instance);
+      /* TREE_READONLY (instance) fails for references.  */
+      constp = TYPE_READONLY (TREE_TYPE (TREE_TYPE (instance_ptr)));
+      volatilep = TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (instance_ptr)));
       parms = tree_cons (NULL_TREE, instance_ptr, parms);
     }
   else
@@ -3161,9 +3163,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    parms = tree_cons (NULL_TREE, instance_ptr, parms);
 	}
     }
-  parmtypes = tree_cons (NULL_TREE,
-			 build_pointer_type (build_type_variant (basetype, constp, volatilep)),
-			 parmtypes);
+
+  parmtypes = tree_cons (NULL_TREE, TREE_TYPE (instance_ptr), parmtypes);
+
   if (last == NULL_TREE)
     last = parmtypes;
 
@@ -3253,19 +3255,22 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  if (flags & LOOKUP_GLOBAL)
 	    {
 	      tree friend_parms;
-	      tree parm = TREE_VALUE (parms);
+	      tree parm = instance_ptr;
 
 	      if (TREE_CODE (TREE_TYPE (parm)) == REFERENCE_TYPE)
-		friend_parms = parms;
+		{
+		  /* TREE_VALUE (parms) may have been modified by now;
+                     restore it to its original value. */
+		  TREE_VALUE (parms) = parm;
+		  friend_parms = parms;
+		}
 	      else if (TREE_CODE (TREE_TYPE (parm)) == POINTER_TYPE)
 		{
 		  tree new_type;
 		  parm = build_indirect_ref (parm, "friendifying parms (compiler error)");
 		  new_type = build_reference_type (TREE_TYPE (parm));
 		  /* It is possible that this should go down a layer. */
-		  new_type = build_type_variant (new_type,
-						 TREE_READONLY (parm),
-						 TREE_THIS_VOLATILE (parm));
+		  new_type = build_type_variant (new_type, constp, volatilep);
 		  parm = convert (new_type, parm);
 		  friend_parms = tree_cons (NULL_TREE, parm, TREE_CHAIN (parms));
 		}
@@ -3330,9 +3335,20 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    basetype_path = TREE_VALUE (basetype_path);
 	  basetype = BINFO_TYPE (basetype_path);
 
-	  /* Cast the instance variable to the appropriate type.  */
-	  TREE_VALUE (parms) = convert_force (TYPE_POINTER_TO (basetype),
-					      instance_ptr);
+	  /* Cast the instance variable if necessary.  */
+	  if (basetype != TYPE_MAIN_VARIANT
+	      (TREE_TYPE (TREE_TYPE (TREE_VALUE (parms)))))
+	    {
+	      if (basetype == save_basetype)
+		TREE_VALUE (parms) = instance_ptr;
+	      else
+		{
+		  tree type = build_pointer_type
+		    (build_type_variant (basetype, constp, volatilep));
+		  TREE_VALUE (parms) = convert_force (type, instance_ptr);
+		}
+	    }
+
 	  /* FIXME: this is the wrong place to get an error.  Hopefully
 	     the access-control rewrite will make this change more cleanly.  */
 	  if (TREE_VALUE (parms) == error_mark_node)
@@ -3468,12 +3484,18 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	     then all we ever saw were private members.  */
 	  if (cp - candidates > 1)
 	    {
+	      int n_candidates = cp - candidates;
+	      TREE_VALUE (parms) = instance_ptr;
 	      cp = ideal_candidate (save_basetype, candidates,
-				    cp - candidates, parms, len);
+				    n_candidates, parms, len);
 	      if (cp == (struct candidate *)0)
 		{
-		  cp_error ("ambiguous type conversion requested for %s `%D'",
-			    name_kind, name);
+		  if (flags & LOOKUP_COMPLAIN)
+		    {
+		      cp_error ("call of overloaded %s `%D' is ambiguous",
+				name_kind, name);
+		      print_n_candidates (candidates, n_candidates);
+		    }
 		  return error_mark_node;
 		}
 	      if ((flag_ansi_overloading && (cp->h.code & EVIL_CODE))
@@ -3483,8 +3505,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  else if ((flag_ansi_overloading && (cp[-1].h.code & EVIL_CODE))
 		   || (!flag_ansi_overloading && cp[-1].evil == 2))
 	    {
-	      cp_error ("ambiguous type conversion requested for %s `%D'",
-			name_kind, name);
+	      if (flags & LOOKUP_COMPLAIN)
+		cp_error ("ambiguous type conversion requested for %s `%D'",
+			  name_kind, name);
 	      return error_mark_node;
 	    }
 	  else
@@ -3549,10 +3572,12 @@ build_method_call (instance, name, parms, basetype_path, flags)
       continue;
 
     found_and_maybe_warn:
-      if ((flag_ansi_overloading
-	   && (cp->v.ansi_harshness[0].code & CONST_CODE))
-	  || (!flag_ansi_overloading
-	      && CONST_HARSHNESS (cp->v.old_harshness[0])))
+      if (((flag_ansi_overloading
+	    && (cp->v.ansi_harshness[0].code & CONST_CODE))
+	   || (!flag_ansi_overloading
+	       && CONST_HARSHNESS (cp->v.old_harshness[0])))
+	  /* 12.1p2: Constructors can be called for const objects.  */
+	  && ! DECL_CONSTRUCTOR_P (cp->function))
 	{
 	  if (flags & LOOKUP_COMPLAIN)
 	    {

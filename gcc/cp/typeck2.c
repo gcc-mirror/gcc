@@ -60,7 +60,7 @@ binfo_or_else (parent_or_type, type)
   tree binfo;
   if (TYPE_MAIN_VARIANT (parent_or_type) == TYPE_MAIN_VARIANT (type))
     return parent_or_type;
-  if (binfo = get_binfo (parent_or_type, TYPE_MAIN_VARIANT (type), 0))
+  if ((binfo = get_binfo (parent_or_type, TYPE_MAIN_VARIANT (type), 0)))
     {
       if (binfo == error_mark_node)
 	return NULL_TREE;
@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 355.  */
+/* First used: 0 (reserved), Last used: 355.  Free: 180.  */
 
 static int abortcount = 0;
 
@@ -434,9 +434,10 @@ initializer_constant_valid_p (value)
 	  return 2;
 	return 0;
       }
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Perform appropriate conversions on the initial value of a variable,
@@ -583,6 +584,9 @@ store_init_value (decl, init)
   else if (TREE_STATIC (decl)
 	   && (! TREE_CONSTANT (value)
 	       || ! initializer_constant_valid_p (value)
+#if 0
+	       /* A STATIC PUBLIC int variable doesn't have to be
+		  run time inited when doing pic.  (mrs) */
 	       /* Since ctors and dtors are the only things that can
 		  reference vtables, and they are always written down
 		  the the vtable definition, we can leave the
@@ -590,7 +594,10 @@ store_init_value (decl, init)
 		  However, other initialized data cannot be initialized
 		  this way.  Instead a global file-level initializer
 		  must do the job.  */
-	       || (flag_pic && !DECL_VIRTUAL_P (decl) && TREE_PUBLIC (decl))))
+	       || (flag_pic && !DECL_VIRTUAL_P (decl) && TREE_PUBLIC (decl))
+#endif
+	       ))
+
     return value;
   else
     {
@@ -1283,7 +1290,7 @@ build_x_arrow (datum)
 
   if (IS_AGGR_TYPE (type) && TYPE_OVERLOADS_ARROW (type))
     {
-      while (rval = build_opfncall (COMPONENT_REF, LOOKUP_NORMAL, rval, NULL_TREE, NULL_TREE))
+      while ((rval = build_opfncall (COMPONENT_REF, LOOKUP_NORMAL, rval, NULL_TREE, NULL_TREE)))
 	{
 	  if (rval == error_mark_node)
 	    return error_mark_node;

@@ -285,22 +285,21 @@ build_up_reference (type, arg, flags, checkconst)
 {
   tree rval, targ;
   int literal_flag = 0;
-  tree argtype = TREE_TYPE (arg), basetype = argtype;
+  tree argtype = TREE_TYPE (arg);
   tree target_type = TREE_TYPE (type);
   tree binfo = NULL_TREE;
 
   my_friendly_assert (TREE_CODE (type) == REFERENCE_TYPE, 187);
-  if (flags != 0
+  if ((flags & LOOKUP_PROTECT)
       && TYPE_MAIN_VARIANT (argtype) != TYPE_MAIN_VARIANT (target_type)
       && IS_AGGR_TYPE (argtype)
       && IS_AGGR_TYPE (target_type))
     {
       binfo = get_binfo (target_type, argtype, 1);
-      if ((flags & LOOKUP_PROTECT) && binfo == error_mark_node)
+      if (binfo == error_mark_node)
 	return error_mark_node;
       if (binfo == NULL_TREE)
 	return error_not_base_type (target_type, argtype);
-      basetype = BINFO_TYPE (binfo);
     }
 
   /* Pass along const and volatile down into the type. */
@@ -619,8 +618,8 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
   register enum tree_code form = TREE_CODE (intype);
   tree rval = NULL_TREE;
 
-  if (TREE_CODE(type) == ARRAY_TYPE)
-    type = build_pointer_type (TREE_TYPE(type));
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    type = build_pointer_type (TREE_TYPE (type));
   if (form == REFERENCE_TYPE)
     intype = TREE_TYPE (intype);
   intype = TYPE_MAIN_VARIANT (intype);
@@ -639,10 +638,11 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
       /* Section 13.  */
       if (flags & LOOKUP_COMPLAIN)
 	{
-	  /* Since convert_for_initialization didn't call convert_for_assignment,
-	     we have to do this checking here.  FIXME: We should have a common
-	     routine between here and convert_for_assignment.  */
-	  if (TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
+	  /* Since convert_for_initialization didn't call
+	     convert_for_assignment, we have to do this checking here.
+	     FIXME: We should have a common routine between here and
+	     convert_for_assignment.  */
+	  if (form == REFERENCE_TYPE)
 	    {
 	      register tree ttl = TREE_TYPE (reftype);
 	      register tree ttr = TREE_TYPE (TREE_TYPE (expr));
@@ -683,37 +683,52 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
 	 then we don't need to convert it to reference type if
 	 it is only being used to initialize DECL which is also
 	 of the same aggregate type.  */
-      if (form == REFERENCE_TYPE
-	  || (decl != NULL_TREE && decl != error_mark_node
-	      && IS_AGGR_TYPE (type)
-	      && TREE_CODE (expr) == CALL_EXPR
-	      && TYPE_MAIN_VARIANT (type) == intype))
+      if (decl != NULL_TREE && decl != error_mark_node
+	  && IS_AGGR_TYPE (type)
+	  && TREE_CODE (expr) == CALL_EXPR
+	  && TYPE_MAIN_VARIANT (type) == intype)
 	{
-	  if (decl && decl != error_mark_node)
-	    {
-	      tree e1 = build (INIT_EXPR, void_type_node, decl, expr);
-	      tree e2;
+	  tree e1 = build (INIT_EXPR, void_type_node, decl, expr);
+	  tree e2;
 
-	      TREE_SIDE_EFFECTS (e1) = 1;
-	      if (form == REFERENCE_TYPE)
-		e2 = build1 (NOP_EXPR, reftype, decl);
-	      else
-		{
-		  e2 = build_unary_op (ADDR_EXPR, decl, 0);
-		  TREE_TYPE (e2) = reftype;
-		  TREE_REFERENCE_EXPR (e2) = 1;
-		}
-	      return build_compound_expr (tree_cons (NULL_TREE, e1,
-						     build_tree_list (NULL_TREE, e2)));
+	  TREE_SIDE_EFFECTS (e1) = 1;
+	  if (form == REFERENCE_TYPE)
+	    e2 = build1 (NOP_EXPR, reftype, decl);
+	  else
+	    {
+	      e2 = build_unary_op (ADDR_EXPR, decl, 0);
+	      TREE_TYPE (e2) = reftype;
+	      TREE_REFERENCE_EXPR (e2) = 1;
 	    }
-	  expr = copy_node (expr);
-	  TREE_TYPE (expr) = reftype;
-	  return expr;
+	  return build_compound_expr
+	    (tree_cons (NULL_TREE, e1, build_tree_list (NULL_TREE, e2)));
 	}
+
+      else if (form == REFERENCE_TYPE)
+	{
+	  rval = copy_node (expr);
+	  TREE_TYPE (rval) = build_pointer_type (TREE_TYPE (TREE_TYPE (expr)));
+	  rval = convert (build_pointer_type (TREE_TYPE (reftype)), rval);
+	  TREE_TYPE (rval) = reftype;
+	  return rval;
+	}
+
       return build_up_reference (reftype, expr, flags, decl!=NULL_TREE);
     }
 
-  if (decl == error_mark_node)
+  if (decl == NULL_TREE && lvalue_p (expr))
+    {
+      /* When casting an lvalue to a reference type, just convert into
+	 a pointer to the new type and deference it.  This is allowed
+	 by San Diego WP section 5.2.8 paragraph 9, though perhaps it
+	 should be done directly (jason).  (int &)ri ---> *(int*)&ri */
+      rval = build_unary_op (ADDR_EXPR, expr, 0);
+      if (rval != error_mark_node)
+	rval = convert_force (build_pointer_type (TREE_TYPE (reftype)), rval);
+      if (rval != error_mark_node)
+	TREE_TYPE (rval) = reftype;
+    }
+  else if (decl == error_mark_node || decl == NULL_TREE)
     {
       tree rval_as_conversion = NULL_TREE;
       tree rval_as_ctor = NULL_TREE;
@@ -798,11 +813,11 @@ convert_to_reference (decl, reftype, expr, fndecl, parmnum,
 
   my_friendly_assert (form != OFFSET_TYPE, 189);
 
-  if ((flags & (LOOKUP_COMPLAIN|LOOKUP_SPECULATIVELY)) == LOOKUP_COMPLAIN)
-    cp_error ("cannot convert type `%T' to type `%T'", intype, reftype);
-
   if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
+
+  else if (flags & LOOKUP_COMPLAIN)
+    cp_error ("cannot convert type `%T' to type `%T'", intype, reftype);
 
   return error_mark_node;
 }
@@ -1025,14 +1040,13 @@ convert_to_aggr (type, expr, msgp, protect)
 	    *msgp = "only private conversions apply";
 	else if (saw_protected)
 	  *msgp = "only protected conversions apply";
+	else
+	  *msgp = "no appropriate conversion to type `%s'";
       }
     return error_mark_node;
   }
   /* NOTREACHED */
 
- not_found:
-  if (msgp) *msgp = "no appropriate conversion to type `%s'";
-  return error_mark_node;
  found:
   if (access == access_private)
     if (! can_be_private)
@@ -1436,7 +1450,7 @@ convert_force (type, expr)
 
   if (code == REFERENCE_TYPE)
     return fold (convert_to_reference (0, type, e, NULL_TREE, -1,
-				       NULL, -1, 0));
+				       NULL, -1, LOOKUP_COMPLAIN));
   else if (TREE_CODE (TREE_TYPE (e)) == REFERENCE_TYPE)
     e = convert_from_reference (e);
 

@@ -21,10 +21,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* This file is the lexical analyzer for GNU C++.  */
 
-#if defined(GATHER_STATISTICS) || defined(SPEW_DEBUG)
-#undef YYDEBUG
+/* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
-#endif
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -898,7 +896,6 @@ yyhook (yyn)
 {
   reduce_count[yyn] += 1;
 }
-#endif
 
 static int
 reduce_cmp (p, q)
@@ -913,6 +910,7 @@ token_cmp (p, q)
 {
   return token_count[*q] - token_count[*p];
 }
+#endif
 
 void
 print_parse_statistics ()
@@ -1829,7 +1827,7 @@ cons_up_default_function (type, name, fields, kind)
 		 IDENTIFIER_POINTER (t), func_buf);
       }
   }
-#endif /* DEBUG_DEFAULT_FUNCTIONS
+#endif /* DEBUG_DEFAULT_FUNCTIONS */
 
   DECL_CLASS_CONTEXT (fn) = type;
 
@@ -1858,6 +1856,7 @@ largest_union_member (type)
 
   /* We should always find one.  */
   my_friendly_abort (323);
+  return NULL_TREE;
 }
 
 /* Construct the body of a default assignment operator.
@@ -1946,7 +1945,7 @@ default_assign_ref_body (bufp, lenp, type, fields)
 	{
 	  tree binfo = TREE_VEC_ELT (bases, i);
 	  tree btype, name;
-	  char *s, *p;
+	  char *s;
 
 	  btype = BINFO_TYPE (binfo);
 	  name = TYPE_NESTED_NAME (btype);
@@ -1976,7 +1975,7 @@ default_assign_ref_body (bufp, lenp, type, fields)
 	{
 	  if (TREE_CODE (f) == FIELD_DECL && ! DECL_VIRTUAL_P (f))
 	    {
-	      char *s, *p;
+	      char *s;
 	      tree x;
 	      tree t = TREE_TYPE (f);
 
@@ -2098,7 +2097,7 @@ default_copy_constructor_body (bufp, lenp, type, fields)
       for (;;)
 	{
 	  tree binfo, btype, name;
-	  char *s, *p;
+	  char *s;
 
 	  if (v)
 	    {
@@ -2143,7 +2142,7 @@ default_copy_constructor_body (bufp, lenp, type, fields)
 	{
 	  if (TREE_CODE (f) == FIELD_DECL && ! DECL_VIRTUAL_P (f))
 	    {
-	      char *s, *p;
+	      char *s;
 	      tree x;
 	      tree t = TREE_TYPE (f);
 
@@ -2469,9 +2468,6 @@ check_newline ()
 
 		      if (impl_file_chain == 0)
 			{
-			  char *filename;
-			  tree fi;
-
 			  /* If this is zero at this point, then we are
 			     auto-implementing.  */
 			  if (main_input_filename == 0)
@@ -2577,10 +2573,16 @@ check_newline ()
 		      else
 			error ("`#pragma implementation' can only appear at top-level");
 		      interface_only = 0;
+#if 0
 		      /* We make this non-zero so that we infer decl linkage
 			 in the impl file only for variables first declared
 			 in the interface file.  */
 		      interface_unknown = 1;
+#else
+		      /* We make this zero so that templates in the impl
+                         file will be emitted properly. */
+		      interface_unknown = 0;
+#endif
 		      TREE_INT_CST_LOW (fileinfo) = interface_only;
 		      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
 		    }
@@ -4679,7 +4681,8 @@ make_lang_type (code)
   SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
   CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
   CLASSTYPE_VBASE_SIZE (t) = integer_zero_node;
-  TYPE_BINFO (t) = make_binfo (integer_zero_node, t, 0, 0, 0);
+  TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE,
+			       NULL_TREE);
   CLASSTYPE_BINFO_AS_LIST (t) = build_tree_list (NULL_TREE, TYPE_BINFO (t));
 
   /* Make sure this is laid out, for ease of use later.

@@ -41,9 +41,6 @@ extern void warning ();
 int mark_addressable ();
 static tree convert_for_assignment ();
 /* static */ tree convert_for_initialization ();
-int compparms ();
-static int self_promoting_args_p ();
-int comp_target_types ();
 extern tree shorten_compare ();
 extern void binary_op_error ();
 static tree pointer_int_sum ();
@@ -386,7 +383,7 @@ common_type (t1, t2)
 	if (p1 == NULL_TREE || TREE_VALUE (p1) == void_type_node)
 	  {
 	    rval = build_function_type (valtype, p2);
-	    if (raises = TYPE_RAISES_EXCEPTIONS (t2))
+	    if ((raises = TYPE_RAISES_EXCEPTIONS (t2)))
 	      rval = build_exception_variant (NULL_TREE, rval, raises);
 	    return rval;
 	  }
@@ -606,7 +603,7 @@ comptypes (type1, type2, strict)
 			 TYPE_POINTER_TO (TYPE_METHOD_BASETYPE (t1)), strict)
 	      && comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict)
 	      && compparms (TREE_CHAIN (TYPE_ARG_TYPES (t1)),
-			    TREE_CHAIN (TYPE_ARG_TYPES(t2)), strict));
+			    TREE_CHAIN (TYPE_ARG_TYPES (t2)), strict));
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       t1 = TREE_TYPE (t1);
@@ -678,7 +675,7 @@ comp_target_types (ttl, ttr, nptrs)
     return comp_array_types (comp_target_types, ttl, ttr, 0);
   else if (TREE_CODE (ttr) == FUNCTION_TYPE || TREE_CODE (ttr) == METHOD_TYPE)
     if (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), nptrs))
-      switch (comp_target_parms (TYPE_ARG_TYPES (ttl), TYPE_ARG_TYPES (ttr), 0))
+      switch (comp_target_parms (TYPE_ARG_TYPES (ttl), TYPE_ARG_TYPES (ttr), 1))
 	{
 	case 0:
 	  return 0;
@@ -797,10 +794,10 @@ compparms (parms1, parms2, strict)
   /* An unspecified parmlist matches any specified parmlist
      whose argument types don't need default promotions.  */
 
-  if (t1 == 0)
-    return self_promoting_args_p (t2);
-  if (t2 == 0)
-    return self_promoting_args_p (t1);
+  if (strict <= 0 && t1 == 0)
+	return self_promoting_args_p (t2);
+  if (strict < 0 && t2 == 0)
+	return self_promoting_args_p (t1);
 
   while (1)
     {
@@ -956,7 +953,7 @@ comp_target_parms (parms1, parms2, strict)
 /* Return 1 if PARMS specifies a fixed number of parameters
    and none of their types is affected by default promotions.  */
 
-static int
+int
 self_promoting_args_p (parms)
      tree parms;
 {
@@ -2111,7 +2108,6 @@ get_member_function_from_ptrfunc (instance_ptrptr, instance, function)
       tree e2;
       tree e3;
       tree aref, vtbl;
-      tree aux_delta;
 
       /* convert down to the right base, before using the instance. */
       instance = convert_pointer_to_real (TYPE_METHOD_BASETYPE (TREE_TYPE (fntype)),
@@ -2121,7 +2117,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, instance, function)
 
       vtbl = convert_pointer_to (ptr_type_node, instance);
       vtbl = build (PLUS_EXPR,
-		    build_pointer_type (build_pointer_type (vtable_entry_type)),
+		    build_pointer_type (build_pointer_type (memptr_type)),
 		    vtbl, convert (sizetype, delta2));
       vtbl = build_indirect_ref (vtbl, NULL_PTR);
       aref = build_array_ref (vtbl, size_binop (MINUS_EXPR,
@@ -3602,7 +3598,7 @@ build_component_addr (arg, argtype, msg)
 	 baseclasses.  */
       rval = build1 (NOP_EXPR, argtype,
 		     convert_pointer_to (basetype, rval));
-      TREE_CONSTANT (rval) == TREE_CONSTANT (TREE_OPERAND (rval, 0));
+      TREE_CONSTANT (rval) = TREE_CONSTANT (TREE_OPERAND (rval, 0));
     }
   else
     /* This conversion is harmless.  */
@@ -4935,6 +4931,7 @@ build_c_cast (type, expr)
   return value;
 }
 
+#if 0
 /* Build an assignment expression of lvalue LHS from value RHS.
 
    In C++, if the left hand side of the assignment is a REFERENCE_TYPE,
@@ -4969,7 +4966,6 @@ get_base_ref (type, base_index, expr)
   return ref;
 }
 
-#if 0
 /* Build an assignment expression of lvalue LHS from value RHS.
    MODIFYCODE is the code for a binary operator that we use
    to combine the old value of LHS with RHS to get the new value.
@@ -5833,6 +5829,7 @@ language_lvalue_valid (exp)
 static tree
 get_delta_difference (from, to, force)
      tree from, to;
+     int force;
 {
   tree delta = integer_zero_node;
   tree binfo;
@@ -5840,6 +5837,11 @@ get_delta_difference (from, to, force)
   if (to == from)
     return delta;
 
+  /* Should get_base_distance here, so we can check if any thing along the
+     path is virtual, and we need to make sure we stay
+     inside the real binfos when going through virtual bases.
+     Maybe we should replace virtual bases with
+     binfo_member (...CLASSTYPE_VBASECLASSES...)...  (mrs) */
   binfo = get_binfo (from, to, 1);
   if (binfo == error_mark_node)
     {
@@ -5867,7 +5869,7 @@ get_delta_difference (from, to, force)
 	}
       if (TREE_VIA_VIRTUAL (binfo))
 	{
-	  warning ("pointer to member conversion from virtual base class will only work if your very careful");
+	  warning ("pointer to member conversion to virtual base class will only work if your very careful");
 	}
       return fold (size_binop (MINUS_EXPR,
 			       integer_zero_node,
@@ -6815,10 +6817,8 @@ c_expand_return (retval)
     {
       tree whats_returned = TREE_OPERAND (retval, 0);
 
-      if (TREE_CODE (whats_returned) == TREE_LIST)
-	whats_returned = TREE_VALUE (whats_returned);
-
-      if (DECL_NAME (whats_returned)
+      if (TREE_CODE (whats_returned) == VAR_DECL
+	  && DECL_NAME (whats_returned)
 	  && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
 	  && !TREE_STATIC (whats_returned))
 	cp_warning_at ("address of local variable `%D' returned", whats_returned);

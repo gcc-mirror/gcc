@@ -90,3 +90,13 @@ DEFTREECODE (TEMPLATE_CONST_PARM, "template_const_parm", "c", 2)
                 TREE_CHAIN      null
    Other useful fields to be defined later.  */
 DEFTREECODE (UNINSTANTIATED_P_TYPE, "uninstantiated_p_type", "t", 0)
+
+/* A thunk is a stub function.
+
+   Thunks are used to implement multiple inheritance:
+   At run-time, such a thunk subtracts THUNK_DELTA (an int, not a tree)
+   from the this pointer, and then jumps to DECL_INITIAL
+   (which is an ADDR_EXPR whose operand is a FUNCTION_DECL).
+
+   Other kinds of thunks may be defined later. */
+DEFTREECODE (THUNK_DECL, "thunk_decl", "d", 0)

@@ -112,7 +112,7 @@ cp_thing (errfn, atarg1, format, arglist)
       if (*f == 'l')
 	++f;
 
-      function = cp_printers[*f];
+      function = cp_printers[(int)*f];
 
       if (function)
 	{

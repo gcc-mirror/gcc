@@ -87,7 +87,6 @@ process_template_parm (list, next)
   if (!is_type)
     {
       tree tinfo = 0;
-      int  idx = 0;
       parm = TREE_PURPOSE (parm);
       my_friendly_assert (TREE_CODE (parm) == TREE_LIST, 260);
       parm = TREE_VALUE (parm);
@@ -281,19 +280,7 @@ end_template_decl (d1, d2, is_class, defn)
     {
       poplevel (0, 0, 0);
       poplevel (0, 0, 0);
-      if (TREE_TYPE (decl))
-	{
-	  /* Function template */
-	  tree t = IDENTIFIER_GLOBAL_VALUE (DECL_NAME (decl));
-	  if (t && is_overloaded_fn (t))
-	    for (t = get_first_fn (t); t; t = DECL_CHAIN (t))
-	      if (TREE_CODE (t) == TEMPLATE_DECL
-		  && duplicate_decls (decl, t))
-		decl = t;
-	  push_overloaded_decl (decl, 0);
-	}
-      else
-	pushdecl (decl);
+      pushdecl (decl);
     }
  lose:
 #if 0 /* It happens sometimes, with syntactic or semantic errors.
@@ -470,7 +457,6 @@ mangle_class_name_for_template (name, parms, arglist)
   static struct obstack scratch_obstack;
   static char *scratch_firstobj;
   int i, nparms;
-  char ibuf[100];
 
   if (!scratch_firstobj)
     {
@@ -492,8 +478,6 @@ mangle_class_name_for_template (name, parms, arglist)
 #define advance
 #define cat(s)	obstack_grow (&scratch_obstack, (s), strlen (s))
 #endif
-#define icat(n)	sprintf(ibuf,"%d",(n)); cat(ibuf)
-#define xcat(n)	sprintf(ibuf,"%ux",n); cat(ibuf)
 
   cat (name);
   ccat ('<');
@@ -540,7 +524,9 @@ mangle_class_name_for_template (name, parms, arglist)
   ccat ('\0');
   return (char *) obstack_base (&scratch_obstack);
 
+#if 0
  too_long:
+#endif
   fatal ("out of (preallocated) string space creating template instantiation name");
   /* NOTREACHED */
   return NULL;
@@ -619,7 +605,11 @@ push_template_decls (parmlist, arglist, class_level)
 
   /* Don't want to push values into global context.  */
   if (!class_level)
-    pushlevel (0);
+    {
+      pushlevel (1);
+      declare_pseudo_global_level ();
+    }
+
   nparms = TREE_VEC_LENGTH (parmlist);
 
   for (i = 0; i < nparms; i++)
@@ -669,8 +659,6 @@ push_template_decls (parmlist, arglist, class_level)
 	    pushdecl (decl);
 	}
     }
-  if (!class_level)
-    set_current_level_tags_transparency (1);
 }
 
 void
@@ -1235,7 +1223,7 @@ tsubst (t, args, nargs, in_decl)
 		  {
 		    my_friendly_assert (TREE_CODE (method) == FUNCTION_DECL,
 					282);
-		    if (TREE_TYPE (method) != type)
+		    if (! comptypes (type, TREE_TYPE (method), 1))
 		      {
 			tree mtype = TREE_TYPE (method);
 			tree t1, t2;
@@ -1348,7 +1336,6 @@ tsubst (t, args, nargs, in_decl)
 		    {
 		      got_it = 1;
 		      r = val;
-		      break;
 		    }
 		}
 
@@ -2186,7 +2173,7 @@ do_pending_expansions ()
       tree t = i->fndecl;
 
       int decision = 0;
-#define DECIDE(N) if(1){decision=(N); goto decided;}else
+#define DECIDE(N) do {decision=(N); goto decided;} while(0)
 
       my_friendly_assert (TREE_CODE (t) == FUNCTION_DECL
 			  || TREE_CODE (t) == VAR_DECL, 294);
