@@ -343,17 +343,13 @@ int flag_no_asm;
 
 int flag_traditional;
 
-/* Nonzero means enable C89 Amendment 1 features, other than digraphs.  */
+/* Nonzero means enable C89 Amendment 1 features.  */
 
 int flag_isoc94 = 0;
 
 /* Nonzero means use the ISO C99 dialect of C.  */
 
 int flag_isoc99 = 0;
-
-/* Nonzero means accept digraphs.  */
-
-int flag_digraphs = 1;
 
 /* Nonzero means that we have builtin functions, and main is an int */
 
@@ -517,7 +513,6 @@ c_decode_option (argc, argv)
     {
       flag_traditional = 1;
       flag_writable_strings = 1;
-      flag_digraphs = 0;
     }
   else if (!strcmp (p, "-fallow-single-precision"))
     flag_allow_single_precision = 1;
@@ -538,7 +533,6 @@ c_decode_option (argc, argv)
     {
       flag_traditional = 0;
       flag_writable_strings = 0;
-      flag_digraphs = 1;
     }
   else if (!strncmp (p, "-std=", 5))
     {
@@ -558,9 +552,8 @@ c_decode_option (argc, argv)
 	  || !strcmp (argstart, "c89"))
 	{
 	iso_1990:
-	  flag_digraphs = 0;
 	  flag_isoc94 = 0;
-	iso_1990_digraphs:
+	iso_1994:
 	  flag_traditional = 0;
 	  flag_writable_strings = 0;
 	  flag_no_asm = 1;
@@ -570,9 +563,8 @@ c_decode_option (argc, argv)
 	}
       else if (!strcmp (argstart, "iso9899:199409"))
 	{
-	  flag_digraphs = 1;
 	  flag_isoc94 = 1;
-	  goto iso_1990_digraphs;
+	  goto iso_1994;
 	}
       else if (!strcmp (argstart, "iso9899:199x")
 	       || !strcmp (argstart, "iso9899:1999")
@@ -585,7 +577,6 @@ c_decode_option (argc, argv)
 	  flag_no_nonansi_builtin = 1;
 	  flag_noniso_default_format_attributes = 0;
 	  flag_isoc99 = 1;
-	  flag_digraphs = 1;
 	  flag_isoc94 = 1;
 	}
       else if (!strcmp (argstart, "gnu89"))
@@ -596,7 +587,6 @@ c_decode_option (argc, argv)
 	  flag_no_nonansi_builtin = 0;
 	  flag_noniso_default_format_attributes = 1;
 	  flag_isoc99 = 0;
-	  flag_digraphs = 1;
 	  flag_isoc94 = 0;
 	}
       else if (!strcmp (argstart, "gnu9x") || !strcmp (argstart, "gnu99"))
@@ -607,7 +597,6 @@ c_decode_option (argc, argv)
 	  flag_no_nonansi_builtin = 0;
 	  flag_noniso_default_format_attributes = 1;
 	  flag_isoc99 = 1;
-	  flag_digraphs = 1;
 	  flag_isoc94 = 1;
 	}
       else
