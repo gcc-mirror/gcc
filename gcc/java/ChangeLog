@@ -1,3 +1,9 @@
+2004-05-26  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* lex.c (java_new_lexer): Set 'encoding'.
+	(java_read_char): Improve error message for unrecognized characters.
+	* lex.h (struct java_lexer): New field 'encoding'.
+
 2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Make-lang.in: Link in $(LIBCPP) instead of mkdeps.o.

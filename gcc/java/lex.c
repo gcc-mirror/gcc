@@ -228,6 +228,7 @@ java_new_lexer (FILE *finput, const char *encoding)
   lex->bs_count = 0;
   lex->unget_value = 0;
   lex->hit_eof = 0;
+  lex->encoding = encoding;
 
 #ifdef HAVE_ICONV
   lex->handle = iconv_open ("UCS-2", encoding);
@@ -295,7 +296,10 @@ java_new_lexer (FILE *finput, const char *encoding)
 	enc_error = 1;
 #ifdef HAVE_ICONV
       else
-	lex->use_fallback = 1;
+        {
+	  lex->use_fallback = 1;
+	  lex->encoding = "UTF-8";
+	}
 #endif /* HAVE_ICONV */
     }
 
@@ -430,8 +434,11 @@ java_read_char (java_lexer *lex)
 		  else
 		    {
 		      /* A more serious error.  */
-		      java_lex_error ("unrecognized character in input stream",
-				      0);
+		      char buffer[128];
+		      sprintf (buffer,
+			       "Unrecognized character for encoding '%s'", 
+		               lex->encoding);
+		      java_lex_error (buffer, 0);
 		      return UEOF;
 		    }
 		}

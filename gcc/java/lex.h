@@ -116,6 +116,9 @@ struct java_lexer
 
   /* If nonzero, we've hit EOF.  Used only by java_get_unicode().  */
   int hit_eof : 1;
+  
+  /* Name of the character encoding we're using.  */
+  const char *encoding;
 
 #ifdef HAVE_ICONV
   /* Nonzero if we've read any bytes.  We only recognize the
