@@ -789,7 +789,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	for file in .. $(LIB1FUNCS_EXTRA); \
 	do \
 	  if [ x$${file} != x.. ]; then \
-	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
+	    name=`echo $${file} | sed -e 's/[.][cS]$$//' -e 's/[.]asm$$//'`; \
 	    echo $${name}; \
 	    if [ $${name}.asm = $${file} ]; then \
 	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
@@ -887,7 +887,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 	for file in .. $(LIB2FUNCS_EXTRA); \
 	do \
 	  if [ x$${file} != x.. ]; then \
-	    name=`echo $${file} | sed -e 's/[.]c$$//' -e 's/[.]asm$$//'`; \
+	    name=`echo $${file} | sed -e 's/[.][cS]$$//' -e 's/[.]asm$$//'`; \
 	    oname=` echo $${name} | sed -e 's,.*/,,'`; \
 	    echo $${name}; \
 	    if [ $${name}.asm = $${file} ]; then \
