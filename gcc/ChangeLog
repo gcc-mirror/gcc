@@ -1,3 +1,7 @@
+2002-07-20  Michae Matz  <matz@suse.de>
+
+	* ra-build.c: (remember_web_was_spilled): Use GENERAL_REGS.
+
 2002-07-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppexp.c (struct op): Add token pointer.
