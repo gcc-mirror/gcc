@@ -1,3 +1,8 @@
+2001-06-26  Bruce Korb  <bkorb@gnu.org>
+
+	* gcc/fixinc/fixincl.c(initialize): In very strict ANSI, you cannot
+	use preprocessing directives inside a string literal.  Fixed.
+
 2001-06-26  Jim Wilson  <wilson@redhat.com>
 
 	* doc/tm.texi (MAX_LONG_DOUBLE_TYPE_SIZE, INTEL_EXTENDED_IEEE_FORMAT):
