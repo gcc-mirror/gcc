@@ -43,11 +43,18 @@ proc gcj_jni_build_header {file} {
 }
 
 # Invoke the program and see what happens.  Return 0 on failure.
-proc gcj_invoke {program expectFile} {
+proc gcj_invoke {program expectFile ld_library_additions} {
   global env
   set lib_path $env(LD_LIBRARY_PATH)
-  setenv LD_LIBRARY_PATH .:$lib_path
-  setenv SHLIB_PATH .:$lib_path
+
+  set newval .
+  if {[llength $ld_library_additions] > 0} {
+    append newval :[join $ld_library_additions :]
+  }
+  append newval :$lib_path
+
+  setenv LD_LIBRARY_PATH $newval
+  setenv SHLIB_PATH $newval
 
   verbose "LD_LIBRARY_PATH=$env(LD_LIBRARY_PATH)"
 
@@ -106,10 +113,27 @@ proc gcj_jni_test_one {file} {
 
   set cfile [file rootname $file].c
   set cxxflags ""
+  set cxxldlibflags {}
   # If there is no `.c' file, assume there is a `.cc' file.
   if {! [file exists $cfile]} {
     set cfile [file rootname $file].cc
-    set cxxflags "-lstdc++"
+
+    set cxxflaglist {}
+    foreach arg [split [libjava_find_lib libstdc++-v3/src stdc++] " "] {
+      switch -glob -- $arg {
+	"-L*" {
+	  set arg [string range $arg 2 end]
+	  lappend cxxldlibflags $arg
+	  # Strip the `.libs' directory; we link with libtool which
+	  # doesn't need it.
+	  set arg "-L[file dirname $arg]"
+	}
+      }
+      lappend cxxflaglist $arg
+    }
+
+    lappend cxxflaglist "-lstdc++"
+    set cxxflags [join $cxxflaglist]
   }
 
   if {! [gcj_jni_compile_c_to_so $cfile]} {
@@ -125,7 +149,7 @@ proc gcj_jni_test_one {file} {
     return 0
   }
 
-  if {! [gcj_invoke $main [file rootname $file].out]} {
+  if {! [gcj_invoke $main [file rootname $file].out $cxxldlibflags]} {
     # FIXME
     return 0
   }
