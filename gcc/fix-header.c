@@ -135,124 +135,158 @@ enum special_file
 
 typedef const char* namelist;
 
-struct std_include_entry {
-  const char *name;
-  namelist required;
-  namelist extra;
-  int special;
+/* The following macros provide the bits for symbol_flags. */
+typedef int symbol_flags;
+
+/* Used to mark names defined in the ANSI/ISO C standard. */
+#define ANSI_SYMBOL 1
+
+  /* Used to mark names defined in the Posix.1 or Posix.2 standard. */
+#define POSIX1_SYMBOL 2
+#define POSIX2_SYMBOL 4
+
+/* Used to indicate names that are not functions */
+#define MACRO_SYMBOL 8
+
+struct symbol_list {
+  symbol_flags flags;
+  namelist names;
 };
 
-/* End of namelist NAMES. */
+#define SYMBOL_TABLE_SIZE 10
+struct symbol_list symbol_table[SYMBOL_TABLE_SIZE];
+int cur_symbol_table_size;
 
-namelist
-namelist_end (names)
+void
+add_symbols (flags, names)
+     symbol_flags flags;
      namelist names;
 {
-  register namelist ptr;
-  for (ptr = names; ; ptr++)
-    {
-      if (*ptr == '\0')
-	{
-	  ptr++;
-	  if (*ptr == '\0')
-	    return ptr;
-	}
-    }
+  symbol_table[cur_symbol_table_size].flags = flags;
+  symbol_table[cur_symbol_table_size].names = names;
+  cur_symbol_table_size++;
+  if (cur_symbol_table_size >= SYMBOL_TABLE_SIZE)
+    fatal ("too many calls to add_symbols");
+  symbol_table[cur_symbol_table_size].names = NULL; /* Termination. */
 }
 
-const char NONE[] = "";
+struct std_include_entry {
+  const char *name;
+  symbol_flags flags;
+  namelist names;
+};
+
+const char NONE[] = "";  /* The empty namelist. */
+
+/* Special name to indicate a continuation line in std_include_table. */
+const char CONTINUED[] = "";
 
 struct std_include_entry *include_entry;
 
 struct std_include_entry std_include_table [] = {
-  { "ctype.h",
+  { "ctype.h", ANSI_SYMBOL,
       "isalnum\0isalpha\0iscntrl\0isdigit\0isgraph\0islower\0\
-isprint\0ispunct\0isspace\0isupper\0isxdigit\0tolower\0toupper\0", NONE },
+isprint\0ispunct\0isspace\0isupper\0isxdigit\0tolower\0toupper\0" },
 
-  { "dirent.h", "closedir\0opendir\0readdir\0rewinddir\0", NONE},
+  { "dirent.h", POSIX1_SYMBOL, "closedir\0opendir\0readdir\0rewinddir\0"},
 
-  { "errno.h", NONE, "errno\0" },
+  { "errno.h", ANSI_SYMBOL|MACRO_SYMBOL, "errno\0" },
 
-  { "curses.h", "box\0delwin\0endwin\0getcurx\0getcury\0initscr\0\
+  /* ANSI_SYMBOL is wrong, but ... */
+  { "curses.h", ANSI_SYMBOL, "box\0delwin\0endwin\0getcurx\0getcury\0initscr\0\
 mvcur\0mvwprintw\0mvwscanw\0newwin\0overlay\0overwrite\0\
 scroll\0subwin\0touchwin\0waddstr\0wclear\0wclrtobot\0wclrtoeol\0\
 waddch\0wdelch\0wdeleteln\0werase\0wgetch\0wgetstr\0winsch\0winsertln\0\
-wmove\0wprintw\0wrefresh\0wscanw\0wstandend\0wstandout\0", NONE },
+wmove\0wprintw\0wrefresh\0wscanw\0wstandend\0wstandout\0" },
 
-  { "fcntl.h", "creat\0fcntl\0open\0", NONE },
+  { "fcntl.h", POSIX1_SYMBOL, "creat\0fcntl\0open\0" },
 
   /* Maybe also "getgrent fgetgrent setgrent endgrent" */
-  { "grp.h", "getgrgid\0getgrnam\0", NONE },
+  { "grp.h", POSIX1_SYMBOL, "getgrgid\0getgrnam\0" },
 
 /*{ "limit.h", ... provided by gcc }, */
 
-  { "locale.h", "localeconv\0setlocale\0", NONE },
+  { "locale.h", ANSI_SYMBOL, "localeconv\0setlocale\0" },
 
-  { "math.h", "acos\0asin\0atan\0atan2\0ceil\0cos\0cosh\0exp\0\
+  { "math.h", ANSI_SYMBOL,
+      "acos\0asin\0atan\0atan2\0ceil\0cos\0cosh\0exp\0\
 fabs\0floor\0fmod\0frexp\0ldexp\0log10\0log\0modf\0pow\0sin\0sinh\0sqrt\0\
-tan\0tanh\0", "HUGE_VAL\0" },
+tan\0tanh\0" },
 
-  { "pwd.h", "getpwnam\0getpwuid\0", NONE },
+  { CONTINUED, ANSI_SYMBOL|MACRO_SYMBOL, "HUGE_VAL\0" },
+
+  { "pwd.h", POSIX1_SYMBOL, "getpwnam\0getpwuid\0" },
 
   /* Left out siglongjmp sigsetjmp - these depend on sigjmp_buf. */
-  { "setjmp.h", "longjmp\0setjmp\0", NONE },
+  { "setjmp.h", ANSI_SYMBOL, "longjmp\0setjmp\0" },
 
   /* Left out signal() - its prototype is too complex for us!
      Also left out "sigaction sigaddset sigdelset sigemptyset
      sigfillset sigismember sigpending sigprocmask sigsuspend"
      because these need sigset_t or struct sigaction.
      Most systems that provide them will also declare them. */
-  { "signal.h", "kill\0raise\0", NONE },
+  { "signal.h", ANSI_SYMBOL, "kill\0raise\0" },
 
-  { "stdio.h", "clearerr\0fclose\0feof\0ferror\0fflush\0fgetc\0fgetpos\0\
+  { "stdio.h", ANSI_SYMBOL,
+      "clearerr\0fclose\0feof\0ferror\0fflush\0fgetc\0fgetpos\0\
 fgets\0fopen\0fprintf\0fputc\0fputs\0fread\0freopen\0fscanf\0fseek\0\
-fsetpos\0ftell\0fwrite\0getc\0getchar\0gets\0pclose\0perror\0popen\0\
+fsetpos\0ftell\0fwrite\0getc\0getchar\0gets\00perror\0popen\0\
 printf\0putc\0putchar\0puts\0remove\0rename\0rewind\0scanf\0setbuf\0\
 setvbuf\0sprintf\0sscanf\0vprintf\0vsprintf\0vfprintf\0tmpfile\0\
-tmpnam\0ungetc\0", NONE },
+tmpnam\0ungetc\0" },
+  { CONTINUED, POSIX1_SYMBOL, "fdopen\0fileno\0" },
+  { CONTINUED, POSIX2_SYMBOL, "pclose\0popen\0" },  /* I think ... */
 /* Should perhaps also handle NULL, EOF, ... ? */
 
   /* "div ldiv", - ignored because these depend on div_t, ldiv_t
      ignore these: "mblen mbstowcs mbstowc wcstombs wctomb"
      Left out getgroups, because SunOS4 has incompatible BSD and SVR4 versions.
      Should perhaps also add NULL */
-  { "stdlib.h", "abort\0abs\0atexit\0atof\0atoi\0atol\0bsearch\0calloc\0\
+  { "stdlib.h", ANSI_SYMBOL,
+      "abort\0abs\0atexit\0atof\0atoi\0atol\0bsearch\0calloc\0\
 exit\0free\0getenv\0labs\0malloc\0putenv\0qsort\0rand\0realloc\0\
-srand\0strtod\0strtol\0strtoul\0system\0", NONE },
+srand\0strtod\0strtol\0strtoul\0system\0" },
 
-  { "string.h", "memchr\0memcmp\0memcpy\0memmove\0memset\0\
+  { "string.h", ANSI_SYMBOL, "memchr\0memcmp\0memcpy\0memmove\0memset\0\
 strcat\0strchr\0strcmp\0strcoll\0strcpy\0strcspn\0strerror\0\
 strlen\0strncat\0strncmp\0strncpy\0strpbrk\0strrchr\0strspn\0strstr\0\
-strtok\0strxfrm\0", NONE },
+strtok\0strxfrm\0" },
 /* Should perhaps also add NULL and size_t */
 
-  { "sys/stat.h", "chmod\0fstat\0mkdir\0mkfifo\0stat\0lstat\0umask\0",
+  { "sys/stat.h", POSIX1_SYMBOL,
+      "chmod\0fstat\0mkdir\0mkfifo\0stat\0lstat\0umask\0" },
+  { CONTINUED, POSIX1_SYMBOL|MACRO_SYMBOL,
       "S_ISDIR\0S_ISBLK\0S_ISCHR\0S_ISFIFO\0S_ISREG\0S_ISLNK\0S_IFDIR\0\
 S_IFBLK\0S_IFCHR\0S_IFIFO\0S_IFREG\0S_IFLNK\0" },
 
-  { "sys/times.h", "times\0", NONE },
+  { "sys/times.h", POSIX1_SYMBOL, "times\0" },
   /* "sys/types.h" add types (not in old g++-include) */
 
-  { "sys/utsname.h", "uname\0", NONE },
+  { "sys/utsname.h", POSIX1_SYMBOL, "uname\0" },
 
-  { "sys/wait.h", "wait\0waitpid\0",
+  { "sys/wait.h", POSIX1_SYMBOL, "wait\0waitpid\0" },
+  { CONTINUED, POSIX1_SYMBOL|MACRO_SYMBOL,
       "WEXITSTATUS\0WIFEXITED\0WIFSIGNALED\0WIFSTOPPED\0WSTOPSIG\0\
 WTERMSIG\0WNOHANG\0WNOTRACED\0" },
 
-  { "tar.h", NONE, NONE },
+  { "tar.h", POSIX1_SYMBOL, NONE },
 
-  { "termios.h", "cfgetispeed\0cfgetospeed\0cfsetispeed\0cfsetospeed\0tcdrain\0tcflow\0tcflush\0tcgetattr\0tcsendbreak\0tcsetattr\0", NONE },
+  { "termios.h", POSIX1_SYMBOL,
+      "cfgetispeed\0cfgetospeed\0cfsetispeed\0cfsetospeed\0tcdrain\0tcflow\0tcflush\0tcgetattr\0tcsendbreak\0tcsetattr\0" },
 
-  { "time.h", "asctime\0clock\0ctime\0difftime\0gmtime\0localtime\0mktime\0strftime\0time\0tzset\0", NONE },
+  { "time.h", ANSI_SYMBOL,
+      "asctime\0clock\0ctime\0difftime\0gmtime\0localtime\0mktime\0strftime\0time\0tzset\0" },
 
-  { "unistd.h", "_exit\0access\0alarm\0chdir\0chown\0close\0ctermid\0cuserid\0\
+  { "unistd.h", POSIX1_SYMBOL,
+      "_exit\0access\0alarm\0chdir\0chown\0close\0ctermid\0cuserid\0\
 dup\0dup2\0execl\0execle\0execlp\0execv\0execve\0execvp\0fork\0fpathconf\0\
-getcwd\0getegid\0geteuid\0getgid\0getlogin\0getopt\0getpgrp\0getpid\0\
+getcwd\0getegid\0geteuid\0getgid\0getlogin\0getpgrp\0getpid\0\
 getppid\0getuid\0isatty\0link\0lseek\0pathconf\0pause\0pipe\0read\0rmdir\0\
 setgid\0setpgid\0setsid\0setuid\0sleep\0sysconf\0tcgetpgrp\0tcsetpgrp\0\
-ttyname\0unlink\0write\0", NONE },
+ttyname\0unlink\0write\0" },
+  { CONTINUED, POSIX2_SYMBOL, "getopt\0" },
 
-  { 0, NONE, NONE }
+  { NULL, 0, NONE }
 };
 
 enum special_file special_file_handling = no_special;
@@ -320,7 +354,6 @@ sstring line;
 
 int lbrac_line, rbrac_line;
 
-namelist required_functions_list;
 int required_unseen_count = 0;
 
 void 
@@ -519,6 +552,7 @@ read_scan_file (in_fname, argc, argv)
   cpp_options scan_options;
   struct fn_decl *fn;
   int i;
+  register struct symbol_list *cur_symbols;
 
   obstack_init (&scan_file_obstack); 
 
@@ -532,8 +566,8 @@ read_scan_file (in_fname, argc, argv)
   CPP_OPTIONS (&scan_in)->no_line_commands = 1;
 
   scan_decls (&scan_in, argc, argv);
-  check_macro_names (&scan_in, include_entry->required);
-  check_macro_names (&scan_in, include_entry->extra);
+  for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
+    check_macro_names (&scan_in, cur_symbols->names);
 
   if (verbose && (scan_in.errors + warnings) > 0)
     fprintf (stderr, "(%s: %d errors and %d warnings from cpp)\n",
@@ -576,28 +610,21 @@ read_scan_file (in_fname, argc, argv)
 	  int need_flsbuf
 	    = flsbuf_fn && !SEEN (flsbuf_fn) && !REQUIRED (flsbuf_fn);
 
-	  /* Append "_filbuf" and/or "_flsbuf" to end of
-	     required_functions_list. */
+	  /* Append "_filbuf" and/or "_flsbuf" to the required functions. */
 	  if (need_filbuf + need_flsbuf)
 	    {
-	      int old_len = namelist_end (required_functions_list)
-		- required_functions_list;
-	      char *new_list = (char*) xmalloc (old_len + 20);
-	      bcopy (required_functions_list, new_list, old_len);
+	      char *new_list;
 	      if (need_filbuf)
-		{
-		  strcpy (new_list + old_len, "_filbuf");
-		  old_len += 8;
-		  SET_REQUIRED (fn);
-		}
+		SET_REQUIRED (fn);
 	      if (need_flsbuf)
-		{
-		  strcpy (new_list + old_len, "_flsbuf");
-		  old_len += 8;
-		  SET_REQUIRED (flsbuf_fn);
-		}
-	      new_list[old_len] = '\0';
-	      required_functions_list = (namelist)new_list;
+		SET_REQUIRED (flsbuf_fn);
+	      if (need_flsbuf + need_filbuf == 2)
+		new_list = "_filbuf\0_flsbuf\0";
+	      else if (need_flsbuf)
+		new_list = "_flsbuf\0";
+	      else /* if (need_flsbuf) */
+		new_list = "_filbuf\0";
+	      add_symbols (ANSI_SYMBOL, new_list);
 	      required_unseen_count += need_filbuf + need_flsbuf;
 	    }
 	}
@@ -637,50 +664,71 @@ write_rbrac ()
 {
   struct fn_decl *fn;
   const char *cptr;
+  register struct symbol_list *cur_symbols;
 
   if (required_unseen_count)
     {
-      fprintf (outf,
-	"#if defined(__cplusplus) || defined(__USE_FIXED_PROTOTYPES__)\n");
 #ifdef NO_IMPLICIT_EXTERN_C
       fprintf (outf, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
 #endif
     }
 
   /* Now we print out prototypes for those functions that we haven't seen. */
-  for (cptr = required_functions_list; *cptr!= '\0'; )
+  for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
     {
-      int macro_protect = 0;
-      int name_len = strlen (cptr);
+      int if_was_emitted = 0;
+      int name_len;
+      cptr = cur_symbols->names;
+      for ( ; (name_len = strlen (cptr)) != 0; cptr+= name_len + 1)
+	{
+	  int macro_protect = 0;
 
-      fn = lookup_std_proto (cptr, name_len);
-      cptr+= name_len + 1;
-      if (fn == NULL || !REQUIRED (fn))
-	continue;
+	  if (cur_symbols->flags & MACRO_SYMBOL)
+	    continue;
 
-      /* In the case of memmove, protect in case the application
-	 defines it as a macro before including the header.  */
-      if (!strcmp (fn->fname, "memmove")
-	  || !strcmp (fn->fname, "vprintf")
-	  || !strcmp (fn->fname, "vfprintf")
-	  || !strcmp (fn->fname, "vsprintf")
-	  || !strcmp (fn->fname, "rewinddir"))
-	macro_protect = 1;
+	  fn = lookup_std_proto (cptr, name_len);
+	  if (fn == NULL || !REQUIRED (fn))
+	    continue;
 
-      if (macro_protect)
-	fprintf (outf, "#ifndef %s\n", fn->fname);
-      fprintf (outf, "extern %s %s (%s);\n",
-	       fn->rtype, fn->fname, fn->params);
-      if (macro_protect)
-	fprintf (outf, "#endif\n");
+	  if (!if_was_emitted)
+	    {
+/*	      what about curses. ??? or _flsbuf/_filbuf ??? */
+	      if (cur_symbols->flags & ANSI_SYMBOL)
+		fprintf (outf,
+	 "#if defined(__USE_FIXED_PROTOTYPES__) || defined(__cplusplus) || defined (__STRICT_ANSI__)\n");
+	      else
+		fprintf (outf,
+       "#if defined(__USE_FIXED_PROTOTYPES__) || (defined(__cplusplus) \\\n\
+    ? (!defined(__STRICT_ANSI__) || defined(__POSIX_SOURCE__)) \\\n\
+    : (defined(__STRICT_ANSI__) && defined(__POSIX_SOURCE__)))\n");
+	      if_was_emitted = 1;
+	    }
+
+	  /* In the case of memmove, protect in case the application
+	     defines it as a macro before including the header.  */
+	  if (!strcmp (fn->fname, "memmove")
+	      || !strcmp (fn->fname, "vprintf")
+	      || !strcmp (fn->fname, "vfprintf")
+	      || !strcmp (fn->fname, "vsprintf")
+	      || !strcmp (fn->fname, "rewinddir"))
+	    macro_protect = 1;
+
+	  if (macro_protect)
+	    fprintf (outf, "#ifndef %s\n", fn->fname);
+	  fprintf (outf, "extern %s %s (%s);\n",
+		   fn->rtype, fn->fname, fn->params);
+	  if (macro_protect)
+	    fprintf (outf, "#endif\n");
+	}
+      if (if_was_emitted)
+	fprintf (outf,
+		 "#endif /* defined(__USE_FIXED_PROTOTYPES__) || ... */\n");
     }
   if (required_unseen_count)
     {
 #ifdef NO_IMPLICIT_EXTERN_C
       fprintf (outf, "#ifdef __cplusplus\n}\n#endif\n");
 #endif
-      fprintf (outf,
-	"#endif /* defined(__cplusplus) || defined(__USE_FIXED_PROTOTYPES__*/\n");
     }
 
   switch (special_file_handling)
@@ -939,6 +987,7 @@ main (argc, argv)
   int endif_line;
   long to_read;
   long int inf_size;
+  register struct symbol_list *cur_symbols;
 
   if (argv[0] && argv[0][0])
     {
@@ -988,22 +1037,41 @@ main (argc, argv)
     special_file_handling = stdio_h;
   include_entry = std_include_table;
   while (include_entry->name != NULL
-	 && strcmp (inc_filename, include_entry->name) != 0)
+	 && (include_entry->name == CONTINUED
+	     || strcmp (inc_filename, include_entry->name) != 0))
     include_entry++;
 
-  required_functions_list = include_entry->required;
+  if (include_entry->name != NULL)
+    {
+      struct std_include_entry *entry;
+      cur_symbol_table_size = 0;
+      for (entry = include_entry; ;)
+	{
+	  add_symbols (entry->flags, entry->names);
+	  entry++;
+	  if (entry->name != CONTINUED)
+	    break;
+	}
+    }
+  else
+    symbol_table[0].names = NULL;
 
   /* Count and mark the prototypes required for this include file. */ 
-  for (cptr = required_functions_list; *cptr!= '\0'; )
+  for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
     {
-      int name_len = strlen (cptr);
-      struct fn_decl *fn = lookup_std_proto (cptr, name_len);
-      required_unseen_count++;
-      if (fn == NULL)
-	fprintf (stderr, "Internal error:  No prototype for %s\n", cptr);
-      else
-	SET_REQUIRED (fn);
-      cptr += name_len + 1;
+      int name_len;
+      if (cur_symbols->flags & MACRO_SYMBOL)
+	continue;
+      cptr = cur_symbols->names;
+      for ( ; (name_len = strlen (cptr)) != 0; cptr+= name_len + 1)
+	{
+	  struct fn_decl *fn = lookup_std_proto (cptr, name_len);
+	  required_unseen_count++;
+	  if (fn == NULL)
+	    fprintf (stderr, "Internal error:  No prototype for %s\n", cptr);
+	  else
+	    SET_REQUIRED (fn);
+	}
     }
 
   read_scan_file (argv[2], argc - 4, argv + 4);
