@@ -1618,7 +1618,13 @@ output_func_start_profiler ()
   TREE_PUBLIC (fndecl) = 1;
   DECL_ASSEMBLER_NAME (fndecl) = fnname;
   DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+
+  fndecl = pushdecl (fndecl);
+  rest_of_decl_compilation (fndecl, 0, 1, 0);
+  announce_function (fndecl);
   current_function_decl = fndecl;
+  DECL_INITIAL (fndecl) = error_mark_node;
+  temporary_allocation (fndecl);
   pushlevel (0);
   make_function_rtl (fndecl);
   init_function_start (fndecl, input_filename, lineno);
