@@ -3685,6 +3685,15 @@ init_emit_once (line_numbers)
      init_function_start.  */
   INIT_EXPANDERS;
 #endif
+
+  ggc_add_rtx_root (&const_tiny_rtx[0][0], sizeof(const_tiny_rtx)/sizeof(rtx));
+
+  ggc_add_rtx_root (&pic_offset_table_rtx, 1);
+  ggc_add_rtx_root (&struct_value_rtx, 1);
+  ggc_add_rtx_root (&struct_value_incoming_rtx, 1);
+  ggc_add_rtx_root (&static_chain_rtx, 1);
+  ggc_add_rtx_root (&static_chain_incoming_rtx, 1);
+  ggc_add_rtx_root (&return_address_pointer_rtx, 1);
 }
 
 /* Query and clear/ restore no_line_numbers.  This is used by the

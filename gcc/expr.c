@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "typeclass.h"
 #include "defaults.h"
 #include "toplev.h"
+#include "ggc.h"
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -1677,6 +1678,7 @@ emit_block_move (x, y, size, align)
 	  fntype = build_pointer_type (void_type_node);
 	  fntype = build_function_type (fntype, NULL_TREE);
 	  fn = build_decl (FUNCTION_DECL, fn, fntype);
+ 	  ggc_add_tree_root (&fn, 1);
 	  DECL_EXTERNAL (fn) = 1;
 	  TREE_PUBLIC (fn) = 1;
 	  DECL_ARTIFICIAL (fn) = 1;
@@ -2451,6 +2453,7 @@ clear_storage (object, size, align)
 	      fntype = build_pointer_type (void_type_node);
 	      fntype = build_function_type (fntype, NULL_TREE);
 	      fn = build_decl (FUNCTION_DECL, fn, fntype);
+	      ggc_add_tree_root (&fn, 1);
 	      DECL_EXTERNAL (fn) = 1;
 	      TREE_PUBLIC (fn) = 1;
 	      DECL_ARTIFICIAL (fn) = 1;

@@ -2936,6 +2936,7 @@ compile_file (name)
   init_reload ();
   init_alias_once ();
   init_function_once ();
+  init_stor_layout_once ();
 
   /* The following initialization functions need to generate rtl, so
      provide a dummy function context for them.  */

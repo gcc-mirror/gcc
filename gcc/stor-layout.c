@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "toplev.h"
+#include "ggc.h"
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -1256,6 +1257,8 @@ set_sizetype (type)
       usizetype = make_unsigned_type (oprecision);
       ubitsizetype = make_unsigned_type (precision);
     }
+
+  ggc_add_tree_root ((tree*) &sizetype_tab, sizeof(sizetype_tab)/sizeof(tree));
 }
 
 /* Set the extreme values of TYPE based on its precision in bits,
@@ -1386,4 +1389,12 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
     }
 
   return mode;
+}
+
+/* This function is run once to initialize stor-layout.c.  */
+
+void
+init_stor_layout_once ()
+{
+  ggc_add_tree_root (&pending_sizes, 1);
 }
