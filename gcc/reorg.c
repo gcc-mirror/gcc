@@ -392,9 +392,12 @@ mark_referenced_resources (x, res, include_called_routine)
       }
 }
 
-/* Given an insn, INSN, and a pointer to a `struct resource', RES, indicate
-   which resources are modified by the insn. If INCLUDE_CALLED_ROUTINE
-   is TRUE, also mark resources potentially set by the called routine.
+/* Given X, a part of an insn, and a pointer to a `struct resource', RES,
+   indicate which resources are modified by the insn. If INCLUDE_CALLED_ROUTINE
+   is nonzero, also mark resources potentially set by the called routine.
+
+   If IN_DEST is nonzero, it means we are inside a SET.  Otherwise,
+   objects are being referenced instead of set.
 
    We never mark the insn as modifying the condition code unless it explicitly
    SETs CC0 even though this is not totally correct.  The reason for this is
@@ -403,18 +406,31 @@ mark_referenced_resources (x, res, include_called_routine)
    our computation and thus may be placed in a delay slot.   */
 
 static void
-mark_set_resources (insn, res, include_called_routine)
-     register rtx insn;
+mark_set_resources (x, res, in_dest, include_called_routine)
+     register rtx x;
      register struct resources *res;
+     int in_dest;
      int include_called_routine;
 {
-  register int i;
+  register enum rtx_code code = GET_CODE (x);
+  register int i, j;
+  register char *format_ptr;
 
-  switch (GET_CODE (insn))
+ restart:
+
+  switch (code)
     {
     case NOTE:
     case BARRIER:
     case CODE_LABEL:
+    case USE:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST:
+    case PC:
+    case CC0:
       /* These don't set any resources.  */
       return;
 
@@ -425,7 +441,7 @@ mark_set_resources (insn, res, include_called_routine)
 
       if (include_called_routine)
 	{
-	  rtx next = NEXT_INSN (insn);
+	  rtx next = NEXT_INSN (x);
 
 	  res->cc = res->memory = 1;
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -439,66 +455,91 @@ mark_set_resources (insn, res, include_called_routine)
 	  for (; (next && GET_CODE (next) == INSN
 		  && GET_CODE (PATTERN (next)) == CLOBBER);
 	       next = NEXT_INSN (next))
-	    mark_referenced_resources (XEXP (PATTERN (next), 0), res, 0);
+	    mark_set_resources (XEXP (PATTERN (next), 0), res, 1, 0);
 	}
 
       /* ... and also what it's RTL says it modifies, if anything.  */
 
     case JUMP_INSN:
     case INSN:
-      {
-	register rtx body = PATTERN (insn);
-	register rtx note;
 
-	/* An insn consisting of just a CLOBBER (or USE) is
-	   just for flow and doesn't actually do anything, so we don't check
-	   for it.
+	/* An insn consisting of just a CLOBBER (or USE) is just for flow
+	   and doesn't actually do anything, so we ignore it.  */
 
-	   If the source of a SET is a CALL, this is actually done by
-	   the called routine.  So only include it if we are to include the
-	   effects of the calling routine.  */
+      x = PATTERN (x);
+      if (GET_CODE (x) != USE && GET_CODE (x) != CLOBBER)
+	goto restart;
+      return;
 
-	if (GET_CODE (body) == SET
-	    && (include_called_routine || GET_CODE (SET_SRC (body)) != CALL))
-	  mark_referenced_resources (SET_DEST (body), res, 0);
-	else if (GET_CODE (body) == PARALLEL)
-	  {
-	    for (i = 0; i < XVECLEN (body, 0); i++)
-	      if ((GET_CODE (XVECEXP (body, 0, i)) == SET
-		   && (include_called_routine
-		       || GET_CODE (SET_SRC (XVECEXP (body, 0, i))) != CALL))
-		  || GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
-		mark_referenced_resources (SET_DEST (XVECEXP (body, 0, i)),
-					   res, 0);
-	  }
-	else if (GET_CODE (body) == SEQUENCE)
-	  for (i = 0; i < XVECLEN (body, 0); i++)
-	    if (! (INSN_ANNULLED_BRANCH_P (XVECEXP (body, 0, 0))
-		   && INSN_FROM_TARGET_P (XVECEXP (body, 0, i))))
-	      mark_set_resources (XVECEXP (body, 0, i), res,
-				  include_called_routine);
+    case SET:
+      /* If the source of a SET is a CALL, this is actually done by
+	 the called routine.  So only include it if we are to include the
+	 effects of the calling routine.  */
 
-#ifdef AUTO_INC_DEC
-	/* If any register are incremented or decremented in an address,
-	   they are set here.  */
-	for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	  if (REG_NOTE_KIND (note) == REG_INC)
-	    mark_referenced_resources (XEXP (note, 0), res, 0);
-#endif
+      mark_set_resources (SET_DEST (x), res,
+			  (include_called_routine
+			   || GET_CODE (SET_SRC (x)) != CALL),
+			  0);
 
-#ifdef PUSH_ROUNDING
-	/* An insn that has a PRE_DEC on SP will not have a REG_INC note.
-	   Until we fix this correctly, consider all insns as modifying
-	   SP on such machines.  So far, we don't have delay slot scheduling
-	   on any machines with PUSH_ROUNDING.  */
-	SET_HARD_REG_BIT (res->regs, STACK_POINTER_REGNUM);
-#endif
-	return;
-      }
+      mark_set_resources (SET_SRC (x), res, 0, 0);
+      return;
 
-    default:
-      abort ();
+    case CLOBBER:
+      mark_set_resources (XEXP (x, 0), res, 1, 0);
+      return;
+      
+    case SEQUENCE:
+      for (i = 0; i < XVECLEN (x, 0); i++)
+	if (! (INSN_ANNULLED_BRANCH_P (XVECEXP (x, 0, 0))
+	       && INSN_FROM_TARGET_P (XVECEXP (x, 0, i))))
+	  mark_set_resources (XVECEXP (x, 0, i), res, 0,
+			      include_called_routine);
+      return;
+
+    case POST_INC:
+    case PRE_INC:
+    case POST_DEC:
+    case PRE_DEC:
+      mark_set_resources (XEXP (x, 0), res, 1, 0);
+      return;
+
+    case ZERO_EXTRACT:
+      mark_set_resources (XEXP (x, 0), res, in_dest, 0);
+      mark_set_resources (XEXP (x, 1), res, 0, 0);
+      mark_set_resources (XEXP (x, 2), res, 0, 0);
+      return;
+
+    case MEM:
+      if (in_dest)
+	{
+	  res->memory = 1;
+	  res->volatil = MEM_VOLATILE_P (x);
+	}
+
+      mark_set_resources (XEXP (x, 0), res, 0, 0);
+      goto restart;
+
+    case REG:
+      for (i = 0; i < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); i++)
+	SET_HARD_REG_BIT (res->regs, REGNO (x) + i);
+      return;
     }
+
+  /* Process each sub-expression and flag what it needs.  */
+  format_ptr = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+    switch (*format_ptr++)
+      {
+      case 'e':
+	mark_set_resources (XEXP (x, i), res, in_dest, include_called_routine);
+	break;
+
+      case 'E':
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  mark_set_resources (XVECEXP (x, i, j), res, in_dest,
+			      include_called_routine);
+	break;
+      }
 }
 
 /* Return TRUE if this insn should stop the search for insn to fill delay
@@ -599,7 +640,7 @@ insn_sets_resource_p (insn, res, include_called_routine)
   struct resources insn_sets;
 
   CLEAR_RESOURCE (&insn_sets);
-  mark_set_resources (insn, &insn_sets, include_called_routine);
+  mark_set_resources (insn, &insn_sets, 0, include_called_routine);
   return resource_conflicts_p (&insn_sets, res);
 }
 
@@ -1402,7 +1443,7 @@ try_merge_delay_insns (insn, thread)
 	    mark_referenced_resources (next_to_match, &needed, 1);
 	}
 
-      mark_set_resources (trial, &set, 1);
+      mark_set_resources (trial, &set, 0, 1);
       mark_referenced_resources (trial, &needed, 1);
     }
 
@@ -1549,7 +1590,7 @@ redundant_insn_p (insn, target, delay_list)
 
   CLEAR_RESOURCE (&needed);
   CLEAR_RESOURCE (&set);
-  mark_set_resources (insn, &set, 1);
+  mark_set_resources (insn, &set, 0, 1);
   mark_referenced_resources (insn, &needed, 1);
 
   /* If TARGET is a SEQUENCE, get the main insn.  */
@@ -2143,7 +2184,7 @@ mark_target_live_regs (target, res)
 	}
 
       mark_referenced_resources (insn, &needed, 1);
-      mark_set_resources (insn, &set, 1);
+      mark_set_resources (insn, &set, 0, 1);
 
       COPY_HARD_REG_SET (scratch, set.regs);
       AND_COMPL_HARD_REG_SET (scratch, needed.regs);
@@ -2179,7 +2220,7 @@ mark_target_live_regs (target, res)
 	  AND_COMPL_HARD_REG_SET (scratch, set.regs);
 	  IOR_HARD_REG_SET (new_resources.regs, scratch);
 
-	  mark_set_resources (insn, &set, 1);
+	  mark_set_resources (insn, &set, 0, 1);
 	}
 
       AND_HARD_REG_SET (res->regs, new_resources.regs);
@@ -2249,7 +2290,7 @@ fill_simple_delay_slots (first, non_jumps_p)
       delay_list = 0;
       CLEAR_RESOURCE (&needed);
       CLEAR_RESOURCE (&set);
-      mark_set_resources (insn, &set, 0);
+      mark_set_resources (insn, &set, 0, 0);
       mark_referenced_resources (insn, &needed, 0);
 
       for (trial = prev_nonnote_insn (insn); ! stop_search_p (trial, 1);
@@ -2295,7 +2336,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 		}
 	    }
 
-	  mark_set_resources (trial, &set, 1);
+	  mark_set_resources (trial, &set, 0, 1);
 	  mark_referenced_resources (trial, &needed, 1);
 	}
 
@@ -2354,7 +2395,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 
 	  if (GET_CODE (insn) == CALL_INSN)
 	    {
-	      mark_set_resources (insn, &set, 1);
+	      mark_set_resources (insn, &set, 0, 1);
 	      mark_referenced_resources (insn, &needed, 1);
 	      maybe_never = 1;
 	    }
@@ -2454,7 +2495,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 		  continue;
 		}
 
-	      mark_set_resources (trial, &set, 1);
+	      mark_set_resources (trial, &set, 0, 1);
 	      mark_referenced_resources (trial, &needed, 1);
 
 	      /* Ensure we don't put insns between the setting of cc and the
@@ -2573,7 +2614,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 	    }
 	}
 
-      mark_set_resources (trial, &set, 1);
+      mark_set_resources (trial, &set, 0, 1);
       mark_referenced_resources (trial, &needed, 1);
     }
 
@@ -2783,7 +2824,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
       /* This insn can't go into a delay slot.  */
       lose = 1;
-      mark_set_resources (trial, &set, 1);
+      mark_set_resources (trial, &set, 0, 1);
       mark_referenced_resources (trial, &needed, 1);
 
       /* Ensure we don't put insns between the setting of cc and the comparison
