@@ -1,3 +1,8 @@
+2003-10-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/12370
+	* g++.dg/other/friend2.C: New test.
+
 2003-10-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcc.dg/20031012-1.c: New test.
