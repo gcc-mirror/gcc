@@ -445,7 +445,7 @@ template<typename _Alloc>
       this->_M_impl._M_end_of_storage = __q 
 	                               + (__n + _S_word_bit - 1) / _S_word_bit;
       this->_M_impl._M_start = iterator(__q, 0);
-      this->_M_impl._M_finish = this->_M_start + difference_type(__n);
+      this->_M_impl._M_finish = this->_M_impl._M_start + difference_type(__n);
     }
 
     void _M_insert_aux(iterator __position, bool __x)
