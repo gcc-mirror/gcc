@@ -1,3 +1,12 @@
+2002-03-25  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/collate_byname.cc
+	(test01): compare the result of collate::compare with
+	that of collate::transform + string::compare, not with
+	that of collate::transform + collate::compare; values
+	returned by collate::compare are normalized, therefore
+	test against +-1.
+
 2002-03-25  Benjamin Kosnik  <bkoz@redhat.com>
             Jakub Jelinek  <jakub@redhat.com>
 	
