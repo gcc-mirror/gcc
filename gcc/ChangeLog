@@ -1,3 +1,25 @@
+2002-06-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/{aix43.h,aix5.1} (ASM_CPU_SPEC): Add power3
+	synonym for 630.  Add power4.  Remove embedded processors.  Use -m604
+	assembler option.
+	(CPP_CPU_SPEC): Add power3 and power4.
+	(PROCESSOR_DEFAULT): Change to 604e.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Similar additions.
+	(CPP_CPU_SPEC): Similar additions.
+	(enum process_type): Add POWER4.
+	(RTX_COSTS): Add POWER4.
+	(CPP_CPU_SPEC): Similar additions.
+	* config/rs6000/linux64.h (PROCESSOR_DEFAULT): Define.
+	* config/rs6000/rs6000.c (rs6000_override_options): Add power4.
+	(rs6000_adjust_cost): Add 603, 604, 604e, 620, 630, Power4 to
+	branch adjustment.
+	(rs6000_issue_rate): Add Power4.
+	* config/rs6000/rs6000.md (cpu attr): Add power4.
+	(iu compare): Remove 604, 604e, 620, 630.
+	Add basic Power4 scheduling information.
+	(mfcr/mtcrf): Change type attribute to cr_logical.
+
 2002-06-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gengtype.h (error_at_line): Use PARAMS, not VPARAMS.  Add
