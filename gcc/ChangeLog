@@ -1,3 +1,9 @@
+Tue Aug 25 19:48:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reorg.c (fill_simple_delay_slots): Do not abort if we encounter
+	an insn on the unfilled_slots_list that has no delay slots.
+	(fill_eager_delay_slots): Similarly.
+
 Tue Aug 25 13:35:20 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/v850.c (movsi_source_operand): Treat CONSTANT_P_RTX
