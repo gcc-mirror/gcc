@@ -1,0 +1,4 @@
+#
+# Make local_includedir relative to EXEC_PREFIX 
+#
+local_includedir=$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include
