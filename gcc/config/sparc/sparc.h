@@ -3238,9 +3238,9 @@ do {									\
     reg = 1;								\
   if ((DELTA) >= 4096 || (DELTA) < -4096)				\
     fprintf (FILE, "\tset\t%d, %%g1\n\tadd\t%%o%d, %%g1, %%o%d\n",	\
-	     (DELTA), reg, reg);					\
+	     (int)(DELTA), reg, reg);					\
   else									\
-    fprintf (FILE, "\tadd\t%%o%d, %d, %%o%d\n", reg, (DELTA), reg);	\
+    fprintf (FILE, "\tadd\t%%o%d, %d, %%o%d\n", reg, (int)(DELTA), reg);\
   fprintf (FILE, "\tor\t%%o7, %%g0, %%g1\n");				\
   fprintf (FILE, "\tcall\t");						\
   assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\

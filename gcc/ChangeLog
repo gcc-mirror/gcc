@@ -1,5 +1,10 @@
 2000-11-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.h (ASM_OUTPUT_MI_THUNK): Cast DELTA to int
+	before passing to fprintf.
+
+2000-11-08  Jakub Jelinek  <jakub@redhat.com>
+
 	* function.c (expand_function_start): Cast GET_MODE_SIZE to
 	HOST_WIDE_INT before negating it.
 
