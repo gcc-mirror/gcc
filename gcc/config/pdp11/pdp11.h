@@ -26,6 +26,7 @@ int const_immediate_operand ();
 int expand_shift_operand ();
 int legitimate_address_p ();
 void notice_update_cc_on_set ();
+void output_addr_const_pdp11 ();
 void output_ascii ();
 void output_function_epilogue ();
 void output_function_prologue ();
@@ -106,7 +107,7 @@ extern int target_flags;
     { "no-split", -1024, "Target does not have split I&D" },	\
 /* UNIX assembler syntax?  */					\
     { "unix-asm", 2048, "Use UNIX assembler syntax" },		\
-    { "dec-asm", 2048, "Use DEC assembler syntax" },		\
+    { "dec-asm", -2048, "Use DEC assembler syntax" },		\
 /* default */			\
     { "", TARGET_DEFAULT, NULL}	\
 }
@@ -141,6 +142,8 @@ extern int target_flags;
 
 #define TARGET_UNIX_ASM		(target_flags & 2048)
 #define TARGET_UNIX_ASM_DEFAULT	0
+
+#define ASSEMBLER_DIALECT	(TARGET_UNIX_ASM ? 1 : 0)
 
 
 
@@ -272,7 +275,8 @@ extern int target_flags;
 /* Make sure everything's fine if we *don't* have an FPU.
    This assumes that putting a register in fixed_regs will keep the
    compiler's mitts completely off it.  We don't bother to zero it out
-   of register classes.  
+   of register classes.  Also fix incompatible register naming with
+   the UNIX assembler.
 */
 #define CONDITIONAL_REGISTER_USAGE \
 { 						\
@@ -288,6 +292,16 @@ extern int target_flags;
 						\
   if (TARGET_AC0)				\
       call_used_regs[8] = 1;			\
+  if (TARGET_UNIX_ASM)				\
+    {						\
+      /* Change names of FPU registers for the UNIX assembler.  */ \
+      reg_names[8] = "fr0";			\
+      reg_names[9] = "fr1";			\
+      reg_names[10] = "fr2";			\
+      reg_names[11] = "fr3";			\
+      reg_names[12] = "fr4";			\
+      reg_names[13] = "fr5";			\
+    }						\
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -1124,44 +1138,32 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
   fprintf (FILE, "\tfloat %.12e\n", (VALUE))
 
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
 /* Likewise for `short' and `char' constants.  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
+( fprintf (FILE, TARGET_UNIX_ASM ? "\t" : "\t.word "),	\
+  output_addr_const_pdp11 (FILE, (VALUE)),		\
   fprintf (FILE, " /*short*/\n"))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)  \
 ( fprintf (FILE, "\t.byte "),			\
-  output_addr_const (FILE, (VALUE)),		\
+  output_addr_const_pdp11 (FILE, (VALUE)),		\
   fprintf (FILE, " /* char */\n"))
 
-/* This is how to output an assembler line for a numeric constant byte.-
-
-   do we really NEED it ? let's output it with a comment and grep the 
-   assembly source ;-)
+/* This is how to output an assembler line for a numeric constant byte.
+   This won't actually be used since we define ASM_OUTPUT_CHAR.
 */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
+  fprintf (FILE, "\t.byte %o\n", (VALUE))
 
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, P, SIZE)
 
-#define ASM_OUTPUT_ADDR_VEC_PROLOGUE(FILE, MODE, LEN)	\
-  fprintf (FILE, "\t/* HELP! */\n");
-
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "\t.word L_%d\n", VALUE)
+  fprintf (FILE, "\t%sL_%d\n", TARGET_UNIX_ASM ? "" : ".word ", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
    Don't define this if it is not supported. */
@@ -1188,7 +1190,7 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
     }
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.=.+ %d\n", (SIZE))
+  fprintf (FILE, "\t.=.+ %o\n", (SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -1198,7 +1200,7 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), "\n"),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ": .=.+ %d\n", (ROUNDED))		\
+  fprintf ((FILE), ": .=.+ %o\n", (ROUNDED))		\
 )
 
 /* This says how to output an assembler line
@@ -1206,7 +1208,7 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( assemble_name ((FILE), (NAME)),				\
-  fprintf ((FILE), ":\t.=.+ %d\n", (ROUNDED)))
+  fprintf ((FILE), ":\t.=.+ %o\n", (ROUNDED)))
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
@@ -1219,8 +1221,8 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
 
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
+#define ASM_OPEN_PAREN "["
+#define ASM_CLOSE_PAREN "]"
 
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007
@@ -1248,7 +1250,7 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
     { union { double d; int i[2]; } u;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
       fprintf (FILE, "#%.20e", u.d); }					\
-  else { putc ('$', FILE); output_addr_const (FILE, X); }}
+  else { putc ('$', FILE); output_addr_const_pdp11 (FILE, X); }}
 
 /* Print a memory address as an operand to reference that memory location.  */
 
@@ -1284,10 +1286,10 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
   if (TARGET_SPLIT)			\
     abort();				\
 					\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x9400+STATIC_CHAIN_REGNUM)); \
-  ASM_OUTPUT_INT (FILE, const0_rtx);				\
-  ASM_OUTPUT_INT (FILE, GEN_INT(0x0058));			\
-  ASM_OUTPUT_INT (FILE, const0_rtx);				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x9400+STATIC_CHAIN_REGNUM)); \
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT(0x0058));			\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);				\
 }
 
 #define TRAMPOLINE_SIZE 8

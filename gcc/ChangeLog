@@ -1,3 +1,20 @@
+Sun May  2 15:16:42 1999  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* pdp11.h (TARGET_SWITCHES): Fix error in previous change.
+	(ASSEMBLER_DIALECT): Define.
+	(CONDITIONAL_REGISTER_USAGE): Rename floating point registers if
+	required for the UNIX assembler.
+	(ASM_OUTPUT_INT): Remove.  The compiler will synthesise it.
+	(ASM_OUTPUT_ADDR_VEC_PROLOGUE): Remove.
+	(ASM_OPEN_PAREN, ASM_CLOSE_PAREN): Change to "[" and "]".
+	(TRAMPOLINE_TEMPLATE): Use ASM_OUTPUT_SHORT.
+	* pdp11.c (output_addr_const_pdp11): Copy of output_addr_const
+	adapted to output constants in octal.
+	* pdp11.c, pdp11.h, pdp11.md: Use output_addr_const_pdp11 instead
+	of output_addr_const.  Output constants in octal.  Use assembler
+	dialect alternatives where DEC and UNIX assemblers use different
+	instruction names.
+
 Sun May 2 01:15:06 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

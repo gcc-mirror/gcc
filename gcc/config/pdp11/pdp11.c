@@ -126,7 +126,7 @@ output_function_prologue(stream, size)
 
     /* make frame */
     if (fsize)							
-	fprintf (stream, "\tsub $%d, sp\n", fsize);			
+	fprintf (stream, "\tsub $%o, sp\n", fsize);			
 
     /* save CPU registers  */
     for (regno = 0; regno < 8; regno++)				
@@ -213,7 +213,7 @@ output_function_epilogue(stream, size)
 	
 	for (i =7 ; i >= 0 ; i--)					
 	    if (regs_ever_live[i] && ! call_used_regs[i])		
-		fprintf(stream, "\tmov %d(fp), %s\n",-fsize-2*j--, reg_names[i]);
+		fprintf(stream, "\tmov %o(fp), %s\n",-fsize-2*j--, reg_names[i]);
 
 	/* get ACs */						
 	via_ac = FIRST_PSEUDO_REGISTER -1;
@@ -231,7 +231,7 @@ output_function_epilogue(stream, size)
 		&& regs_ever_live[i]
 		&& ! call_used_regs[i])
 	    {
-		fprintf(stream, "\tfldd %d(fp), %s\n", -fsize-k, reg_names[i]);
+		fprintf(stream, "\tfldd %o(fp), %s\n", -fsize-k, reg_names[i]);
 		k -= 8;
 	    }
 	    
@@ -242,7 +242,7 @@ output_function_epilogue(stream, size)
 		if (! LOAD_FPU_REG_P(via_ac))
 		    abort();
 		    
-		fprintf(stream, "\tfldd %d(fp), %s\n", -fsize-k, reg_names[via_ac]);
+		fprintf(stream, "\tfldd %o(fp), %s\n", -fsize-k, reg_names[via_ac]);
 		fprintf(stream, "\tfstd %s, %s\n", reg_names[via_ac], reg_names[i]);
 		k -= 8;
 	    }
@@ -284,7 +284,7 @@ output_function_epilogue(stream, size)
 		fprintf(stream, "\tmov (sp)+, %s\n", reg_names[i]);	
 								
 	if (fsize)						
-	    fprintf((stream), "\tadd $%d, sp\n", fsize);      		
+	    fprintf((stream), "\tadd $%o, sp\n", fsize);      		
     }			
 					
     fprintf (stream, "\trts pc\n");					
@@ -557,14 +557,14 @@ output_move_quad (operands)
 	      u.i[1] = CONST_DOUBLE_HIGH (operands[1]); 
 	      
 	      if (u.d == 0.0)
-		  return "clrd %0";
+		  return "{clrd|clrf} %0";
 	  }
 	      
-	  return "ldd %1, %0";
+	  return "{ldd|movf} %1, %0";
       }
       
       if (FPU_REG_P(REGNO(operands[1])))
-	  return "std %1, %0";
+	  return "{std|movf} %1, %0";
   }
       
   /* If one operand is decrementing and one is incrementing
@@ -883,7 +883,7 @@ print_operand_address (file, addr)
       break;
 
     default:
-      output_addr_const (file, addr);
+      output_addr_const_pdp11 (file, addr);
     }
 }
 
@@ -1409,4 +1409,115 @@ legitimate_address_p (mode, address)
     return 1;
 
 /* #undef REG_OK_STRICT */
+}
+
+/* A copy of output_addr_const modified for pdp11 expression syntax.
+   output_addr_const also gets called for %cDIGIT and %nDIGIT, which we don't
+   use, and for debugging output, which we don't support with this port either.
+   So this copy should get called whenever needed.
+*/
+void
+output_addr_const_pdp11 (file, x)
+     FILE *file;
+     rtx x;
+{
+  char buf[256];
+
+ restart:
+  switch (GET_CODE (x))
+    {
+    case PC:
+      if (flag_pic)
+	putc ('.', file);
+      else
+	abort ();
+      break;
+
+    case SYMBOL_REF:
+      assemble_name (file, XSTR (x, 0));
+      break;
+
+    case LABEL_REF:
+      ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
+      assemble_name (file, buf);
+      break;
+
+    case CODE_LABEL:
+      ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
+      assemble_name (file, buf);
+      break;
+
+    case CONST_INT:
+      /* Should we check for constants which are too big?  Maybe cutting
+	 them off to 16 bits is OK?  */
+      fprintf (file, "%ho", (unsigned short) INTVAL (x));
+      break;
+
+    case CONST:
+      /* This used to output parentheses around the expression,
+	 but that does not work on the 386 (either ATT or BSD assembler).  */
+      output_addr_const_pdp11 (file, XEXP (x, 0));
+      break;
+
+    case CONST_DOUBLE:
+      if (GET_MODE (x) == VOIDmode)
+	{
+	  /* We can use %o if the number is one word and positive.  */
+	  if (CONST_DOUBLE_HIGH (x))
+	    abort (); /* Should we just silently drop the high part?  */
+	  else
+	    fprintf (file, "%ho", (unsigned short) CONST_DOUBLE_LOW (x));
+	}
+      else
+	/* We can't handle floating point constants;
+	   PRINT_OPERAND must handle them.  */
+	output_operand_lossage ("floating constant misused");
+      break;
+
+    case PLUS:
+      /* Some assemblers need integer constants to appear last (eg masm).  */
+      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
+	{
+	  output_addr_const_pdp11 (file, XEXP (x, 1));
+	  if (INTVAL (XEXP (x, 0)) >= 0)
+	    fprintf (file, "+");
+	  output_addr_const_pdp11 (file, XEXP (x, 0));
+	}
+      else
+	{
+	  output_addr_const_pdp11 (file, XEXP (x, 0));
+	  if (INTVAL (XEXP (x, 1)) >= 0)
+	    fprintf (file, "+");
+	  output_addr_const_pdp11 (file, XEXP (x, 1));
+	}
+      break;
+
+    case MINUS:
+      /* Avoid outputting things like x-x or x+5-x,
+	 since some assemblers can't handle that.  */
+      x = simplify_subtraction (x);
+      if (GET_CODE (x) != MINUS)
+	goto restart;
+
+      output_addr_const_pdp11 (file, XEXP (x, 0));
+      fprintf (file, "-");
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) < 0)
+	{
+	  fprintf (file, ASM_OPEN_PAREN);
+	  output_addr_const_pdp11 (file, XEXP (x, 1));
+	  fprintf (file, ASM_CLOSE_PAREN);
+	}
+      else
+	output_addr_const_pdp11 (file, XEXP (x, 1));
+      break;
+
+    case ZERO_EXTEND:
+    case SIGN_EXTEND:
+      output_addr_const_pdp11 (file, XEXP (x, 0));
+      break;
+
+    default:
+      output_operand_lossage ("invalid expression as operand");
+    }
 }
