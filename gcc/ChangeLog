@@ -1,3 +1,8 @@
+2004-09-14  Andrew Pinski  <apinski@apple.com>
+
+	* tree-ssa-copy.c (may_propagate_copy): Don't check the aliasing
+	sets of the pointers but the aliasing sets of what they point to.
+
 2004-09-14  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/9771
