@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -177,7 +177,7 @@ void test01()
   Buf fb;
   fb.pubimbue(loc);
   fb.open("tmp_11603", ios_base::in);
-  assert(fb.pub_showmanyc() == 1);
+  VERIFY( fb.pub_showmanyc() == 1 );
   
   try
     {

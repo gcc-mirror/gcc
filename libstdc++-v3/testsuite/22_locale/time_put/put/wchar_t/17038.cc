@@ -38,7 +38,7 @@ void test01()
   // basic construction
   locale loc_c = locale::classic();
   locale loc_in = __gnu_test::try_named_locale("ta_IN");
-  assert( loc_in != loc_c );
+  VERIFY( loc_in != loc_c );
 
   // create an ostream-derived object, cache the time_put facet
   wostringstream oss;

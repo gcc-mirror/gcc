@@ -83,7 +83,7 @@ L"aaaaaaaaaaaaaa\n";
 	  // delimiter was read.
 	  //
 	  // -> wcslen(__s) < n - 1 
-	  // -> delimiter was seen -> gcount() > strlen(__s)
+	  // -> delimiter was seen -> gcount() > wcslen(__s)
           VERIFY( ifs.gcount() == static_cast<std::streamsize>(std::wcslen(tmp)
 							       + 1) );
           continue;

@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@ int main()
     {
       stream.setstate(ios_base::failbit);
       stream.exceptions(ios_base::failbit);
-      assert(false);
+      VERIFY( false );
     } 
   catch (...) 
     {
@@ -50,7 +50,7 @@ int main()
     {
       // Calls clear(rdstate()), which throws in this case.
       stream.setstate(ios_base::goodbit);
-      assert(false);
+      VERIFY( false );
     }
   catch (...) 
     { }

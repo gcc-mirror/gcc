@@ -1,3 +1,13 @@
+2004-11-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/getline/wchar_t/2.cc: Fix typo.
+	* testsuite/27_io/basic_istream/getline/wchar_t/4.cc: Likewise.
+
+	* testsuite/22_locale/time_put/put/char/17038.cc: Use VERIFY.
+	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11603.cc: Likewise.
+	* testsuite/27_io/basic_ios/exceptions/char/2.cc: Likewise.
+
 2004-11-26  Paolo Carlini  <pcarlini@suse.de>
 
 	DR 243. get and getline when sentry reports failure [WP]
