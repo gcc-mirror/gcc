@@ -139,6 +139,7 @@ static void expand_builtin_return PROTO((rtx));
 static rtx expand_increment	PROTO((tree, int));
 static void preexpand_calls	PROTO((tree));
 static void do_jump_by_parts_greater PROTO((tree, int, rtx, rtx));
+static void do_jump_by_parts_greater_rtx PROTO((enum machine_mode, int, rtx, rtx, rtx, rtx));
 static void do_jump_by_parts_equality PROTO((tree, rtx, rtx));
 static void do_jump_by_parts_equality_rtx PROTO((rtx, rtx, rtx));
 static void do_jump_for_compare	PROTO((rtx, rtx, rtx));
@@ -4577,23 +4578,37 @@ expand_expr (exp, target, tmode, modifier)
       if (target != op0)
 	emit_move_insn (target, op0);
       op0 = gen_label_rtx ();
-      if (code == MAX_EXPR)
-	temp = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)))
-		? compare_from_rtx (target, op1, GEU, 1, mode, NULL_RTX, 0)
-		: compare_from_rtx (target, op1, GE, 0, mode, NULL_RTX, 0));
-      else
-	temp = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)))
-		? compare_from_rtx (target, op1, LEU, 1, mode, NULL_RTX, 0)
-		: compare_from_rtx (target, op1, LE, 0, mode, NULL_RTX, 0));
-      if (temp == const0_rtx)
-	emit_move_insn (target, op1);
-      else if (temp != const_true_rtx)
+      /* If this mode is an integer too wide to compare properly,
+	 compare word by word.  Rely on cse to optimize constant cases.  */
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && !can_compare_p (mode))
 	{
-	  if (bcc_gen_fctn[(int) GET_CODE (temp)] != 0)
-	    emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (temp)]) (op0));
+	  if (code == MAX_EXPR)
+	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type), target, op1, NULL, op0);
 	  else
-	    abort ();
+	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type), op1, target, NULL, op0);
 	  emit_move_insn (target, op1);
+	}
+      else
+	{
+	  if (code == MAX_EXPR)
+	    temp = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)))
+		    ? compare_from_rtx (target, op1, GEU, 1, mode, NULL_RTX, 0)
+		    : compare_from_rtx (target, op1, GE, 0, mode, NULL_RTX, 0));
+	  else
+	    temp = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1)))
+		    ? compare_from_rtx (target, op1, LEU, 1, mode, NULL_RTX, 0)
+		    : compare_from_rtx (target, op1, LE, 0, mode, NULL_RTX, 0));
+	  if (temp == const0_rtx)
+	    emit_move_insn (target, op1);
+	  else if (temp != const_true_rtx)
+	    {
+	      if (bcc_gen_fctn[(int) GET_CODE (temp)] != 0)
+		emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (temp)]) (op0));
+	      else
+		abort ();
+	      emit_move_insn (target, op1);
+	    }
 	}
       emit_label (op0);
       return target;
@@ -7281,6 +7296,69 @@ do_jump_by_parts_greater (exp, swap, if_false_label, if_true_label)
   int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
   rtx drop_through_label = 0;
   int unsignedp = TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)));
+  int i;
+
+  if (! if_true_label || ! if_false_label)
+    drop_through_label = gen_label_rtx ();
+  if (! if_true_label)
+    if_true_label = drop_through_label;
+  if (! if_false_label)
+    if_false_label = drop_through_label;
+
+  /* Compare a word at a time, high order first.  */
+  for (i = 0; i < nwords; i++)
+    {
+      rtx comp;
+      rtx op0_word, op1_word;
+
+      if (WORDS_BIG_ENDIAN)
+	{
+	  op0_word = operand_subword_force (op0, i, mode);
+	  op1_word = operand_subword_force (op1, i, mode);
+	}
+      else
+	{
+	  op0_word = operand_subword_force (op0, nwords - 1 - i, mode);
+	  op1_word = operand_subword_force (op1, nwords - 1 - i, mode);
+	}
+
+      /* All but high-order word must be compared as unsigned.  */
+      comp = compare_from_rtx (op0_word, op1_word,
+			       (unsignedp || i > 0) ? GTU : GT,
+			       unsignedp, word_mode, NULL_RTX, 0);
+      if (comp == const_true_rtx)
+	emit_jump (if_true_label);
+      else if (comp != const0_rtx)
+	do_jump_for_compare (comp, NULL_RTX, if_true_label);
+
+      /* Consider lower words only if these are equal.  */
+      comp = compare_from_rtx (op0_word, op1_word, NE, unsignedp, word_mode,
+			       NULL_RTX, 0);
+      if (comp == const_true_rtx)
+	emit_jump (if_false_label);
+      else if (comp != const0_rtx)
+	do_jump_for_compare (comp, NULL_RTX, if_false_label);
+    }
+
+  if (if_false_label)
+    emit_jump (if_false_label);
+  if (drop_through_label)
+    emit_label (drop_through_label);
+}
+
+/* Compare OP0 with OP1, word at a time, in mode MODE.
+   UNSIGNEDP says to do unsigned comparison.
+   Jump to IF_TRUE_LABEL if OP0 is greater, IF_FALSE_LABEL otherwise.  */
+
+static void
+do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label, if_true_label)
+     enum machine_mode mode;
+     int unsignedp;
+     rtx op0, op1;
+     rtx if_false_label, if_true_label;
+{
+  int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
+  rtx drop_through_label = 0;
   int i;
 
   if (! if_true_label || ! if_false_label)
