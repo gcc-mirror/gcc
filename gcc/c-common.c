@@ -216,7 +216,7 @@ decl_attributes (decl, attributes)
 		{
 		  TREE_TYPE (decl) = type;
 		  DECL_SIZE (decl) = 0;
-		  layout_decl (decl);
+		  layout_decl (decl, 0);
 		}
 	      else
 		error ("no data type for mode `%s'", specified_name);
