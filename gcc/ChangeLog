@@ -1,3 +1,23 @@
+2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/ia64/ia64-protos.h: Remove the prototype for
+	ia64_setup_incoming_varargs and ia64_return_in_memory.
+	* config/ia64/ia64.c (TARGET_STRUCT_VALUE_RTX): New.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(TARGET_STRICT_ARGUMENT_NAMING): Likewise.
+	(ia64_setup_incoming_varargs): Adjust the arguments to meet
+	the requirement of TARGET_SETUP_INCOMING_VARARGS.
+	(ia64_return_in_memory): Make it static.  Change the return
+	type to bool from int.  Add an argument.
+	(ia64_struct_value_rtx): New.
+	* config/ia64/ia64.h: Remove commented-out definitions of
+	PROMOTE_FUNCTION_ARGS, PROMOTE_FUNCTION_RETURN, and
+	PROMOTE_PROTOTYPES.
+	(RETURN_IN_MEMORY): Remove.
+	(STRUCT_VALUE_REGNUM): Likewise.
+	(STRICT_ARGUMENT_NAMING): Likewise.
+
 2004-01-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/13666
