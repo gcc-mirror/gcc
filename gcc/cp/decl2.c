@@ -283,10 +283,6 @@ int warn_overloaded_virtual;
 
 int warn_nonvdtor;
 
-/* Non-zero means warn when a function is declared extern and later inline.  */
-
-int warn_extern_inline;
-
 /* Non-zero means warn when the compiler will reorder code.  */
 
 int warn_reorder;
@@ -336,10 +332,6 @@ int warn_deprecated = 1;
 #define DOLLARS_IN_IDENTIFIERS 1
 #endif
 int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
-
-/* Nonzero means that labels can be used as first-class objects */
-
-int flag_labels_ok;
 
 /* Nonzero means allow Microsoft extensions without a pedwarn.  */
 
@@ -488,7 +480,6 @@ lang_f_options[] =
   {"implement-inlines", &flag_implement_inlines, 1},
   {"implicit-inline-templates", &flag_implicit_inline_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
-  {"labels-ok", &flag_labels_ok, 1},
   {"ms-extensions", &flag_ms_extensions, 1},
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
   {"operator-names", &flag_operator_names, 1},
@@ -498,10 +489,8 @@ lang_f_options[] =
   {"rtti", &flag_rtti, 1},
   {"stats", &flag_detailed_statistics, 1},
   {"use-cxa-atexit", &flag_use_cxa_atexit, 1},
-  {"vtable-gc", &flag_vtable_gc, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
-  {"weak", &flag_weak, 1},
-  {"xref", &flag_gnu_xref, 1}
+  {"weak", &flag_weak, 1}
 };
 
 /* The list of `-f' options that we no longer support.  The `-f'
@@ -512,10 +501,13 @@ static const char * const unsupported_options[] = {
   "cond-mismatch",
   "enum-int-equiv",
   "guiding-decls",
+  "labels-ok",
   "nonnull-objects",
   "squangle",
   "strict-prototype",
   "this-is-variable",
+  "vtable-gc",
+  "xref"
 };
 
 /* Compare two option strings, pointed two by P1 and P2, for use with
@@ -716,8 +708,6 @@ cxx_decode_option (argc, argv)
 	warn_parentheses = setting;
       else if (!strcmp (p, "non-virtual-dtor"))
 	warn_nonvdtor = setting;
-      else if (!strcmp (p, "extern-inline"))
-	warn_extern_inline = setting;
       else if (!strcmp (p, "reorder"))
 	warn_reorder = setting;
       else if (!strcmp (p, "synth"))

@@ -1,3 +1,7 @@
+2001-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* invoke.texi: Document more C++ command-line options.
+
 2001-04-26  H.J. Lu  (hjl@gnu.org)
 
 	* config.gcc (mips*-*-linux*): Add elfos.h to tm_file.

@@ -182,10 +182,6 @@ hack_identifier (value, name)
 #endif
 	    }
 	}
-      if (flag_labels_ok && IDENTIFIER_LABEL_VALUE (name))
-	{
-	  return IDENTIFIER_LABEL_VALUE (name);
-	}
       return error_mark_node;
     }
 

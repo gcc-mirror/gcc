@@ -1,3 +1,8 @@
+2001-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/vtgc1.C: XFAIL.
+	* g++.old-deja/g++.other/crash18.C: Likewise.
+	
 Thu Apr 26 11:13:27 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.ext/instantiate2.C: XFAIL for HPUX too since

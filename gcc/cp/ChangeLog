@@ -1,3 +1,16 @@
+2001-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove support for -Wextern-inline, -flabels-ok, -fvtable-gc, -fxref
+	* cp-tree.h (warn_extern_inline): Remove.
+	(flag_labels_ok): Likewise.
+	* decl2.c (warn_extern_inline): Remove.
+	(flag_labels_ok): Likewise.
+	(lang_f_options): Remove labels-ok, vtable-gc, xref.
+	(unsupported_options): Add them.
+	(cxx_decode_option): Don't accept -Wextern-inline.
+	* method.c (hack_identifier): Remove -flabels-ok support.
+	* spew.c (see_typename): Likewise.
+
 2001-04-26  Nathan Sidwell <nathan@codesourcery.com>
 
 	* mangle.c (write_chars): New macro.

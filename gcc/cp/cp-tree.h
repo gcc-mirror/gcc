@@ -1074,10 +1074,6 @@ extern int warn_ecpp;
 
 extern int warn_sign_promo;
 
-/* Non-zero means warn when a function is declared extern and later inline.  */
-
-extern int warn_extern_inline;
-
 /* Non-zero means warn when an old-style cast is used.  */
 
 extern int warn_old_style_cast;
@@ -3203,10 +3199,6 @@ typedef enum instantiate_type_flags {
   itf_no_attributes = 1 << 1, /* ignore attributes on comparisons */
   itf_ptrmem_ok = 1 << 2,     /* pointers to member ok (internal use) */
 } instantiate_type_flags;
-
-/* Non-zero means that if a label exists, and no other identifier
-   applies, use the value of the label.  */
-extern int flag_labels_ok;
 
 /* Nonzero means allow Microsoft extensions without a pedwarn.  */
 extern int flag_ms_extensions;
