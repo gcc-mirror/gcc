@@ -1,3 +1,9 @@
+2000-07-02  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libF77/Version.c: Bumped version number to 0.5.26.
+	* libI77/Version.c: Ditto.
+	* libU77/Version.c: Ditto.
+
 2000-06-21  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* libU77/dtime_.c, libU77/etime_.c: Include stdlib.h if
