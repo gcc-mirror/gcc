@@ -1,3 +1,15 @@
+1999-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/h8300/h8300.h (TARGET_H8300H, TARGET_H8300S): Make sure
+	UNITS_PER_WORD and BITS_PER_WORD are compile time constants when
+	compiling libgcc2.
+	* config/mips/mips.h (TARGET_64BIT): Likewise.
+	* config/rs6000/rs6000.h (TARGET_POWERPC64): Likewise.
+	* libgcc2.c: Use {,U}{HW,W,DW}type and DWunion everywhere instead
+	of {SI,DI}type and DIunion.  Define these types to QI/HI modes on
+	dsps.  Give routines proper names if SI/DI modes are not used.
+	* longlong.h: Use DWunion instead of DIunion.
+
 1999-12-26  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* acconfig.h: New ENABLE flags: TREE_CHECKING, RTL_CHECKING,

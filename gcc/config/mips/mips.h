@@ -481,6 +481,16 @@ extern void		sbss_section PARAMS ((void));
 #define MIPS_ISA_DEFAULT 1
 #endif
 
+#ifdef IN_LIBGCC2
+#undef TARGET_64BIT
+/* Make this compile time constant for libgcc2 */
+#ifdef __mips64
+#define TARGET_64BIT		1
+#else
+#define TARGET_64BIT		0
+#endif
+#else /* IN_LIBGCC2 */
+
 #ifndef MULTILIB_ENDIAN_DEFAULT
 #if TARGET_ENDIAN_DEFAULT == 0
 #define MULTILIB_ENDIAN_DEFAULT "EL"

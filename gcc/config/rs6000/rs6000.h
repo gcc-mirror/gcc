@@ -303,6 +303,16 @@ extern int target_flags;
 #define TARGET_UPDATE		(! TARGET_NO_UPDATE)
 #define TARGET_FUSED_MADD	(! TARGET_NO_FUSED_MADD)
 
+#ifdef IN_LIBGCC2
+/* For libgcc2 we make sure this is a compile time constant */
+#undef TARGET_POWERPC64
+#ifdef __64BIT__
+#define TARGET_POWERPC64	1
+#else
+#define TARGET_POWERPC64	0
+#endif
+#endif
+
 /* Pseudo target to indicate whether the object format is ELF
    (to get around not having conditional compilation in the md file)  */
 #ifndef	TARGET_ELF

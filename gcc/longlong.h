@@ -195,7 +195,7 @@ extern UDItype __udiv_qrnnd __P ((UDItype *, UDItype, UDItype, UDItype));
 /* Call libgcc1 routine.  */
 #define umul_ppmm(w1, w0, u, v) \
 do {									\
-  DIunion __w;								\
+  DWunion __w;								\
   __w.ll = __umulsidi3 (u, v);						\
   w1 = __w.s.high;							\
   w0 = __w.s.low;							\
@@ -1383,7 +1383,7 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if !defined (__umulsidi3)
 #define __umulsidi3(u, v) \
-  ({DIunion __w;							\
+  ({DWunion __w;							\
     umul_ppmm (__w.s.high, __w.s.low, u, v);				\
     __w.ll; })
 #endif
