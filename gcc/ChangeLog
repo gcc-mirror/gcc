@@ -1,5 +1,8 @@
 Wed Jan 12 22:34:00 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* combine.c (if_then_else_cond): Be careful about what kinds
+	of RTL expressions are passed to operand_subword.
+
 	* flow.c (split_edge): If we have to insert a new jump, make
 	sure to associate it with a basic block.
 

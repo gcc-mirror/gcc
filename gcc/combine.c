@@ -7216,7 +7216,10 @@ if_then_else_cond (x, ptrue, pfalse)
 	   && 0 != (cond0 = if_then_else_cond (SUBREG_REG (x),
 					       &true0, &false0)))
     {
-      if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
+      if ((GET_CODE (SUBREG_REG (x)) == REG
+	   || GET_CODE (SUBREG_REG (x)) == MEM
+	   || CONSTANT_P (SUBREG_REG (x)))
+	  && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
 	  && (WORDS_BIG_ENDIAN || SUBREG_WORD (x) != 0))
 	{
 	  true0 = operand_subword (true0, SUBREG_WORD (x), 0, mode);
