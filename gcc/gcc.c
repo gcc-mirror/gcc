@@ -93,9 +93,6 @@ extern int getrusage PARAMS ((int, struct rusage *));
 /* FIXME: when autoconf is fixed, remove the host check - dj */
 #if defined(TARGET_EXECUTABLE_SUFFIX) && defined(HOST_EXECUTABLE_SUFFIX)
 #define HAVE_TARGET_EXECUTABLE_SUFFIX
-#else
-#undef TARGET_EXECUTABLE_SUFFIX
-#define TARGET_EXECUTABLE_SUFFIX ""
 #endif
 
 /* By default there is no special suffix for host executables.  */

@@ -1,3 +1,8 @@
+2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.c (TARGET_EXECUTABLE_SUFFIX): Only used if
+	HAVE_TARGET_EXECUTABLE_SUFFIX.
+
 Thu Jul 25 18:57:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* rtl.h (mem_attrs): Spell out more clearly the roles of ALIGN,
