@@ -1,4 +1,4 @@
-/* Configuration for GNU C-compiler for hosting on Windows32.
+/* Configuration for GCC for hosting on Windows32.
    using GNU tools and the Windows32 API Library.
    Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003 Free Software
    Foundation, Inc.
