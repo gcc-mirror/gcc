@@ -536,16 +536,18 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
    space from the stack such as alloca.  */
 
 void
-special_function_p (fndecl, returns_twice, is_longjmp,
+special_function_p (fndecl, returns_twice, is_longjmp, fork_or_exec,
 		    is_malloc, may_be_alloca)
      tree fndecl;
      int *returns_twice;
      int *is_longjmp;
+     int *fork_or_exec;
      int *is_malloc;
      int *may_be_alloca;
 {
   *returns_twice = 0;
   *is_longjmp = 0;
+  *fork_or_exec = 0;
   *may_be_alloca = 0;
 
   /* The function decl may have the `malloc' attribute.  */
@@ -607,6 +609,21 @@ special_function_p (fndecl, returns_twice, is_longjmp,
       else if (tname[0] == 'l' && tname[1] == 'o'
 	       && ! strcmp (tname, "longjmp"))
 	*is_longjmp = 1;
+
+      else if ((tname[0] == 'f' && tname[1] == 'o'
+		&& ! strcmp (tname, "fork"))
+	       /* Linux specific: __clone.  check NAME to insist on the
+		  leading underscores, to avoid polluting the ISO / POSIX
+		  namespace.  */
+	       || (name[0] == '_' && name[1] == '_'
+		   && ! strcmp (tname, "clone"))
+	       || (tname[0] == 'e' && tname[1] == 'x' && tname[2] == 'e'
+		   && tname[3] == 'c' && (tname[4] == 'l' || tname[4] == 'v')
+		   && (tname[5] == '\0'
+		       || ((tname[5] == 'p' || tname[5] == 'e')
+			   && tname[6] == '\0'))))
+	*fork_or_exec = 1;
+
       /* Do not add any more malloc-like functions to this list,
          instead mark them as malloc functions using the malloc attribute.
          Note, realloc is not suitable for attribute malloc since
@@ -1646,6 +1663,9 @@ expand_call (exp, target, ignore)
   int returns_twice;
   /* Nonzero if this is a call to `longjmp'.  */
   int is_longjmp;
+  /* Nonzero if this is a syscall that makes a new process in the image of
+     the current one.  */
+  int fork_or_exec;
   /* Nonzero if this is a call to an inline function.  */
   int is_integrable = 0;
   /* Nonzero if this is a call to a `const' function.
@@ -1903,7 +1923,7 @@ expand_call (exp, target, ignore)
 
   /* See if this is a call to a function that can return more than once
      or a call to longjmp or malloc.  */
-  special_function_p (fndecl, &returns_twice, &is_longjmp,
+  special_function_p (fndecl, &returns_twice, &is_longjmp, &fork_or_exec,
 		      &is_malloc, &may_be_alloca);
 
   if (may_be_alloca)
@@ -1927,6 +1947,18 @@ expand_call (exp, target, ignore)
   if (pending_stack_adjust >= 32
       || (pending_stack_adjust > 0 && may_be_alloca))
     do_pending_stack_adjust ();
+
+  if (profile_arc_flag && fork_or_exec)
+    {
+	/* A fork duplicates the profile information, and an exec discards
+	   it.  We can't rely on fork/exec to be paired.  So write out the
+	   profile information we have gathered so far, and clear it.  */
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_fork_func"), 0,
+			 VOIDmode, 0);
+
+      /* ??? When __clone is called with CLONE_VM set, profiling is
+         subject to race conditions, just as with multithreaded programs.  */
+    }
 
   /* Push the temporary stack slot level so that we can free any temporaries
      we make.  */
