@@ -536,6 +536,13 @@ gnu/java/beans/BeanInfoEmbryo.java \
 gnu/java/beans/EmptyBeanInfo.java \
 gnu/java/beans/ExplicitBeanInfo.java \
 gnu/java/beans/IntrospectionIncubator.java \
+gnu/javax/rmi/CORBA/DelegateFactory.java \
+gnu/javax/rmi/CORBA/GetDelegateInstanceException.java \
+gnu/javax/rmi/CORBA/PortableRemoteObjectDelegateImpl.java \
+gnu/javax/rmi/CORBA/StubDelegateImpl.java \
+gnu/javax/rmi/CORBA/UtilDelegateImpl.java \
+gnu/javax/rmi/CORBA/ValueHandlerImpl.java \
+gnu/javax/rmi/PortableServer.java \
 java/applet/Applet.java \
 java/applet/AppletStub.java \
 java/applet/AppletContext.java \
@@ -892,6 +899,19 @@ java/beans/VetoableChangeListenerProxy.java \
 java/beans/VetoableChangeSupport.java \
 java/beans/Visibility.java \
 java/beans/AppletInitializer.java \
+javax/rmi/BAD_OPERATION.java \
+javax/rmi/ORB.java \
+javax/rmi/PortableRemoteObject.java \
+javax/rmi/CORBA/ClassDesc.java \
+javax/rmi/CORBA/ObjectImpl.java	\
+javax/rmi/CORBA/PortableRemoteObjectDelegate.java \
+javax/rmi/CORBA/StubDelegate.java \
+javax/rmi/CORBA/Stub.java \
+javax/rmi/CORBA/SystemException.java \
+javax/rmi/CORBA/Tie.java \
+javax/rmi/CORBA/UtilDelegate.java \
+javax/rmi/CORBA/Util.java \
+javax/rmi/CORBA/ValueHandler.java \
 javax/swing/border/AbstractBorder.java \
 javax/swing/border/Border.java \
 javax/swing/border/CompoundBorder.java \
@@ -2984,7 +3004,14 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/util/prefs/MemoryBasedFactory.P \
 .deps/gnu/java/util/prefs/MemoryBasedPreferences.P \
 .deps/gnu/java/util/prefs/NodeReader.P \
-.deps/gnu/java/util/prefs/NodeWriter.P .deps/interpret.P \
+.deps/gnu/java/util/prefs/NodeWriter.P \
+.deps/gnu/javax/rmi/CORBA/DelegateFactory.P \
+.deps/gnu/javax/rmi/CORBA/GetDelegateInstanceException.P \
+.deps/gnu/javax/rmi/CORBA/PortableRemoteObjectDelegateImpl.P \
+.deps/gnu/javax/rmi/CORBA/StubDelegateImpl.P \
+.deps/gnu/javax/rmi/CORBA/UtilDelegateImpl.P \
+.deps/gnu/javax/rmi/CORBA/ValueHandlerImpl.P \
+.deps/gnu/javax/rmi/PortableServer.P .deps/interpret.P \
 .deps/java/applet/Applet.P .deps/java/applet/AppletContext.P \
 .deps/java/applet/AppletStub.P .deps/java/applet/AudioClip.P \
 .deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
@@ -3824,6 +3851,14 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/print/attribute/Attribute.P \
 .deps/javax/print/attribute/AttributeSet.P \
 .deps/javax/print/attribute/PrintRequestAttributeSet.P \
+.deps/javax/rmi/BAD_OPERATION.P .deps/javax/rmi/CORBA/ClassDesc.P \
+.deps/javax/rmi/CORBA/ObjectImpl.P \
+.deps/javax/rmi/CORBA/PortableRemoteObjectDelegate.P \
+.deps/javax/rmi/CORBA/Stub.P .deps/javax/rmi/CORBA/StubDelegate.P \
+.deps/javax/rmi/CORBA/SystemException.P .deps/javax/rmi/CORBA/Tie.P \
+.deps/javax/rmi/CORBA/Util.P .deps/javax/rmi/CORBA/UtilDelegate.P \
+.deps/javax/rmi/CORBA/ValueHandler.P .deps/javax/rmi/ORB.P \
+.deps/javax/rmi/PortableRemoteObject.P \
 .deps/javax/sql/ConnectionEvent.P \
 .deps/javax/sql/ConnectionEventListener.P \
 .deps/javax/sql/ConnectionPoolDataSource.P .deps/javax/sql/DataSource.P \
