@@ -1,3 +1,7 @@
+2002-12-16  Loren J. Rittle  <ljrittle@acm.org>
+
+	* Makefile.in (gcov-iov.h): Improve portability.
+
 Mon Dec 16 23:39:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* mips.h (ASM_OUTPUT_ADDR_DIFF_ELT): Do not use qpword on API_N32/not
