@@ -52,11 +52,12 @@ c_si(icilist *a)
 	f__init |= 2;
 	f__elist = (cilist *)a;
 	f__fmtbuf=a->icifmt;
+	f__curunit = 0;
+	f__sequential=f__formatted=1;
+	f__external=0;
 	if(pars_f(f__fmtbuf)<0)
 		err(a->icierr,100,"startint");
 	fmt_bg();
-	f__sequential=f__formatted=1;
-	f__external=0;
 	f__cblank=f__cplus=f__scale=0;
 	f__svic=a;
 	f__icnum=f__recpos=0;
@@ -64,7 +65,6 @@ c_si(icilist *a)
 	f__hiwater = 0;
 	f__icptr = a->iciunit;
 	f__icend = f__icptr + a->icirlen*a->icirnum;
-	f__curunit = 0;
 	f__cf = 0;
 	return(0);
 }

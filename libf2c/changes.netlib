@@ -2392,7 +2392,7 @@ Tue Aug  1 09:25:56 EDT 1995
   Permit real (or double precision) parameters in dimension expressions.
 
 Mon Aug  7 08:04:00 EDT 1995
-  Append "_eqv" rather than just "_" to names that appear in
+  Append "_eqv" rather than just "_" to names that that appear in
 EQUIVALENCE statements as well as structs in f2c.h (to avoid a
 conflict when these names also name common blocks).
 
@@ -2902,3 +2902,28 @@ character variables in data statements.
 Sun Apr  5 19:26:50 EDT 1998
   libi77: wsfe.c: make $ format item work: this was lost in the changes
 of 17 March 1998.
+
+Sat May 16 19:08:51 EDT 1998
+  Adjust output of ftnlen constants: rather than appending L,
+prepend (ftnlen).  This should make the resulting C more portable,
+e.g., to systems (such as DEC Alpha Unix systems) on which long
+may be longer than ftnlen.
+  Adjust -r so it also casts REAL expressions passed to intrinsic
+functions to REAL.
+
+Wed May 27 16:02:35 EDT 1998
+  libf2c.zip: tweak description of compiling libf2c for INTEGER*8
+to accord with makefile.u rather than libF77/makefile.
+
+Thu May 28 22:45:59 EDT 1998
+  libi77: backspace.c dfe.c due.c iio.c lread.c rsfe.c sue.c wsfe.c:
+set f__curunit sooner so various error messages will correctly
+identify the I/O unit involved.
+  libf2c.zip: above, plus tweaks to PC makefiles: for some purposes,
+it's still best to compile with -DMSDOS (even for use with NT).
+
+Thu Jun 18 01:22:52 EDT 1998
+  libi77: lread.c: modified so floating-point numbers (containing
+either a decimal point or an exponent field) are treated as errors
+when they appear as list input for integer data.  Compile lread.c with
+-DALLOW_FLOAT_IN_INTEGER_LIST_INPUT to restore the old behavior.

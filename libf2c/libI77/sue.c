@@ -9,11 +9,11 @@ c_sue(a) cilist *a;
 c_sue(cilist *a)
 #endif
 {
-	if(a->ciunit >= MXUNIT || a->ciunit < 0)
-		err(a->cierr,101,"startio");
 	f__external=f__sequential=1;
 	f__formatted=0;
 	f__curunit = &f__units[a->ciunit];
+	if(a->ciunit >= MXUNIT || a->ciunit < 0)
+		err(a->cierr,101,"startio");
 	f__elist=a;
 	if(f__curunit->ufd==NULL && fk_open(SEQ,UNF,a->ciunit))
 		err(a->cierr,114,"sue");

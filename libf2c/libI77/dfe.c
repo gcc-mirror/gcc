@@ -70,9 +70,9 @@ c_dfe(cilist *a)
 	f__formatted=f__external=1;
 	f__elist=a;
 	f__cursor=f__scale=f__recpos=0;
+	f__curunit = &f__units[a->ciunit];
 	if(a->ciunit>MXUNIT || a->ciunit<0)
 		err(a->cierr,101,"startchk");
-	f__curunit = &f__units[a->ciunit];
 	if(f__curunit->ufd==NULL && fk_open(DIR,FMT,a->ciunit))
 		err(a->cierr,104,"dfe");
 	f__cf=f__curunit->ufd;
