@@ -19,7 +19,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* This file exports one function: choose_temp_base.  */
 
-#ifndef _WIN32
+#if ! defined (_WIN32) && ! defined (NO_SYS_FILE_H)
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
 
@@ -90,7 +90,8 @@ choose_temp_base ()
   char *base = 0;
   char *temp_filename;
   int len;
-  char usrtmp[sizeof ("/usr/tmp")],tmp[sizeof ("/tmp")];
+  static char tmp[] = { DIR_SEPARATOR, 't', 'm', 'p', 0 };
+  static char usrtmp[] = { DIR_SEPARATOR, 'u', 's', 'r', DIR_SEPARATOR, 't', 'm', 'p', 0 };
 
 #ifndef MPW
   base = try (getenv ("TMPDIR"), base);
@@ -102,9 +103,7 @@ choose_temp_base ()
 #endif
 
   /* Try /usr/tmp, then /tmp.  */
-  sprintf (usrtmp, "%cusr%ctmp", DIR_SEPARATOR, DIR_SEPARATOR);
   base = try (usrtmp, base);
-  sprintf (tmp, "%ctmp", DIR_SEPARATOR);
   base = try (tmp, base);
  
   /* If all else fails, use the current directory!  */
