@@ -1,5 +1,5 @@
 /* Sparse Arrays for Objective C dispatch tables
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -218,14 +218,14 @@ void
 sarray_realloc(struct sarray* array, int newsize)
 {
 #ifdef OBJC_SPARSE3
-  int old_max_index = (array->capacity-1)/INDEX_CAPACITY;
-  int new_max_index = ((newsize-1)/INDEX_CAPACITY);
-  int rounded_size = (new_max_index+1)*INDEX_CAPACITY;
+  size_t old_max_index = (array->capacity-1)/INDEX_CAPACITY;
+  size_t new_max_index = ((newsize-1)/INDEX_CAPACITY);
+  size_t rounded_size = (new_max_index+1)*INDEX_CAPACITY;
 
 #else /* OBJC_SPARSE2 */
-  int old_max_index = (array->capacity-1)/BUCKET_SIZE;
-  int new_max_index = ((newsize-1)/BUCKET_SIZE);
-  int rounded_size = (new_max_index+1)*BUCKET_SIZE;
+  size_t old_max_index = (array->capacity-1)/BUCKET_SIZE;
+  size_t new_max_index = ((newsize-1)/BUCKET_SIZE);
+  size_t rounded_size = (new_max_index+1)*BUCKET_SIZE;
 
 #endif
 
