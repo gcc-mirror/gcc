@@ -679,8 +679,8 @@ cplus_demangle_opname (opname, result, options)
 	}
     }
   else if (opname[0] == '_' && opname[1] == '_'
-	   && islower(opname[2])
-	   && islower(opname[3]))
+	   && islower((unsigned char)opname[2])
+	   && islower((unsigned char)opname[3]))
     {
       if (opname[4] == '\0')
 	{
@@ -4266,8 +4266,8 @@ demangle_function_name (work, mangled, declp, scan)
 	}
     }
   else if (declp->b[0] == '_' && declp->b[1] == '_'
-	   && islower(declp->b[2])
-	   && islower(declp->b[3]))
+	   && islower((unsigned char)declp->b[2])
+	   && islower((unsigned char)declp->b[3]))
     {
       if (declp->b[4] == '\0')
 	{
@@ -4480,6 +4480,7 @@ static int flags = DMGL_PARAMS | DMGL_ANSI;
 static void demangle_it PARAMS ((char *));
 static void usage PARAMS ((FILE *, int)) ATTRIBUTE_NORETURN;
 static void fatal PARAMS ((const char *)) ATTRIBUTE_NORETURN;
+static void print_demangler_list PARAMS ((FILE *));
 
 static void
 demangle_it (mangled_name)

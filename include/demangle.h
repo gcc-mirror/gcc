@@ -83,9 +83,9 @@ extern enum demangling_styles
 
 extern struct demangler_engine
 {
-  char *demangling_style_name;
+  const char *demangling_style_name;
   enum demangling_styles demangling_style;
-  char *demangling_style_doc;
+  const char *demangling_style_doc;
 } libiberty_demanglers[];
 
 extern char *

@@ -1,3 +1,9 @@
+2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cplus-dem.c (cplus_demangle_opname, demangle_function_name):
+	Cast the arguments to `islower' to `unsigned char'.
+	(print_demangler_list): Prototype.
+
 Thu May  4 17:14:41 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* sort.c (UCHAR_MAX): Provide fallback definition.
