@@ -10092,8 +10092,9 @@ generates IEEE floating-point instructions.  This is the default.
 @opindex mno-backchain
 Generate (or do not generate) code which maintains an explicit
 backchain within the stack frame that points to the caller's frame.
-This is currently needed to allow debugging.  The default is to
-generate the backchain.
+This may be needed to allow debugging using tools that do not understand
+DWARF-2 call frame information.  The default is not to generate the
+backchain.
 
 @item -msmall-exec
 @itemx -mno-small-exec

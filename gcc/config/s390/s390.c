@@ -5259,6 +5259,11 @@ s390_return_addr_rtx (int count, rtx frame)
 {
   rtx addr;
 
+  /* Without backchain, we fail for all but the current frame.  */
+
+  if (!TARGET_BACKCHAIN && count > 0)
+    return NULL_RTX;
+
   /* For the current frame, we need to make sure the initial
      value of RETURN_REGNUM is actually saved.  */
 
