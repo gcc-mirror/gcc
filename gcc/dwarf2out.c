@@ -9242,13 +9242,17 @@ rtl_for_decl_location (decl)
   rtl = DECL_RTL_IF_SET (decl);
 
   /* When generating abstract instances, ignore everything except
-     constants and symbols living in memory.  */
+     constants, symbols living in memory, and symbols living in
+     fixed registers.  */
   if (! reload_completed)
     {
       if (rtl
 	  && (CONSTANT_P (rtl)
 	      || (GET_CODE (rtl) == MEM
-	          && CONSTANT_P (XEXP (rtl, 0)))))
+	          && CONSTANT_P (XEXP (rtl, 0)))
+	      || (GET_CODE (rtl) == REG
+	          && TREE_CODE (decl) == VAR_DECL
+		  && TREE_STATIC (decl))))
 	{
 #ifdef ASM_SIMPLIFY_DWARF_ADDR
 	  rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
