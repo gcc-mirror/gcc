@@ -1,5 +1,5 @@
 /* Output routines for GCC for Hitachi / SuperH SH.
-   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com). 
@@ -794,7 +794,7 @@ prepare_scc_operands (code)
        && (sh_compare_op1 != const0_rtx
 	   || code == GTU  || code == GEU || code == LTU || code == LEU))
       || (mode == DImode && sh_compare_op1 != const0_rtx)
-      || (TARGET_SH3E && GET_MODE_CLASS (mode) == MODE_FLOAT))
+      || (TARGET_SH2E && GET_MODE_CLASS (mode) == MODE_FLOAT))
     sh_compare_op1 = force_reg (mode, sh_compare_op1);
 
   if (TARGET_SH4 && GET_MODE_CLASS (mode) == MODE_FLOAT)
@@ -825,16 +825,16 @@ from_compare (operands, code)
     mode = GET_MODE (sh_compare_op1);
   if (code != EQ
       || mode == DImode
-      || (TARGET_SH3E && GET_MODE_CLASS (mode) == MODE_FLOAT))
+      || (TARGET_SH2E && GET_MODE_CLASS (mode) == MODE_FLOAT))
     {
       /* Force args into regs, since we can't use constants here.  */
       sh_compare_op0 = force_reg (mode, sh_compare_op0);
       if (sh_compare_op1 != const0_rtx
 	  || code == GTU  || code == GEU
-	  || (TARGET_SH3E && GET_MODE_CLASS (mode) == MODE_FLOAT))
+	  || (TARGET_SH2E && GET_MODE_CLASS (mode) == MODE_FLOAT))
 	sh_compare_op1 = force_reg (mode, sh_compare_op1);
     }
-  if (TARGET_SH3E && GET_MODE_CLASS (mode) == MODE_FLOAT && code == GE)
+  if (TARGET_SH2E && GET_MODE_CLASS (mode) == MODE_FLOAT && code == GE)
     {
       from_compare (operands, GT);
       insn = gen_ieee_ccmpeqsf_t (sh_compare_op0, sh_compare_op1);
@@ -1091,6 +1091,39 @@ output_branch (logic, insn, operands)
 	 will fix it up if it still doesn't fit after relaxation.  */
     case 2:
       return logic ? "bt%.\t%l0" : "bf%.\t%l0";
+
+      /* These are for SH2e, in which we have to account for the
+	 extra nop because of the hardware bug in annulled branches.  */
+    case 8:
+      if (! TARGET_RELAX)
+	{
+	  int label = lf++;
+
+	  if (final_sequence
+	      && INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+	    abort ();
+	  asm_fprintf (asm_out_file, "b%s%ss\t%LLF%d\n",
+		       logic ? "f" : "t",
+		       ASSEMBLER_DIALECT ? "/" : ".", label);
+	  fprintf (asm_out_file, "\tnop\n");
+	  output_asm_insn ("bra\t%l0", operands);
+	  fprintf (asm_out_file, "\tnop\n");
+	  (*targetm.asm_out.internal_label) (asm_out_file, "LF", label);
+
+	  return "";
+	}
+      /* When relaxing, fall through.  */
+    case 4:
+      {
+	char buffer[10];
+	
+	sprintf (buffer, "b%s%ss\t%%l0",
+		 logic ? "t" : "f",
+		 ASSEMBLER_DIALECT ? "/" : ".");
+	output_asm_insn (buffer, &operands[0]);
+	return "nop";
+      }
+
     default:
       /* There should be no longer branches now - that would
 	 indicate that something has destroyed the branches set
@@ -1945,7 +1978,7 @@ shl_sext_kind (left_rtx, size_rtx, costp)
      int *costp;
 {
   int left, size, insize, ext;
-  int cost, best_cost;
+  int cost = 0, best_cost;
   int kind;
 
   left = INTVAL (left_rtx);
@@ -2559,7 +2592,7 @@ broken_move (insn)
 	      || (GET_CODE (SET_SRC (pat)) == UNSPEC
 		  && XINT (SET_SRC (pat), 1) == UNSPEC_MOVA
 		  && GET_CODE (XVECEXP (SET_SRC (pat), 0, 0)) == CONST))
-	  && ! (TARGET_SH3E
+	  && ! (TARGET_SH2E
 		&& GET_CODE (SET_SRC (pat)) == CONST_DOUBLE
 		&& (fp_zero_operand (SET_SRC (pat))
 		    || fp_one_operand (SET_SRC (pat)))
@@ -2612,7 +2645,7 @@ find_barrier (num_mova, mova, from)
   int hi_align = 2;
   int si_align = 2;
   int leading_mova = num_mova;
-  rtx barrier_before_mova, found_barrier = 0, good_barrier = 0;
+  rtx barrier_before_mova = 0, found_barrier = 0, good_barrier = 0;
   int si_limit;
   int hi_limit;
 
@@ -3291,7 +3324,7 @@ barrier_align (barrier_or_label)
      rtx barrier_or_label;
 {
   rtx next = next_real_insn (barrier_or_label), pat, prev;
-  int slot, credit, jump_to_next;
+  int slot, credit, jump_to_next = 0;
  
   if (! next)
     return 0;
@@ -3437,7 +3470,7 @@ void
 machine_dependent_reorg (first)
      rtx first;
 {
-  rtx insn, mova;
+  rtx insn, mova = NULL_RTX;
   int num_mova;
   rtx r0_rtx = gen_rtx_REG (Pmode, 0);
   rtx r0_inc_rtx = gen_rtx_POST_INC (Pmode, r0_rtx);
@@ -3732,7 +3765,7 @@ machine_dependent_reorg (first)
 	  /* Scan ahead looking for a barrier to stick the constant table
 	     behind.  */
 	  rtx barrier = find_barrier (num_mova, mova, insn);
-	  rtx last_float_move, last_float = 0, *last_float_addr;
+	  rtx last_float_move = NULL_RTX, last_float = 0, *last_float_addr = NULL;
 
 	  if (num_mova && ! mova_p (mova))
 	    {
@@ -4321,7 +4354,7 @@ push (rn)
 	return NULL_RTX;
       x = gen_push_4 (gen_rtx_REG (DFmode, rn));
     }
-  else if (TARGET_SH3E && FP_REGISTER_P (rn))
+  else if (TARGET_SH2E && FP_REGISTER_P (rn))
     x = gen_push_e (gen_rtx_REG (SFmode, rn));
   else
     x = gen_push (gen_rtx_REG (SImode, rn));
@@ -4351,7 +4384,7 @@ pop (rn)
 	return;
       x = gen_pop_4 (gen_rtx_REG (DFmode, rn));
     }
-  else if (TARGET_SH3E && FP_REGISTER_P (rn))
+  else if (TARGET_SH2E && FP_REGISTER_P (rn))
     x = gen_pop_e (gen_rtx_REG (SFmode, rn));
   else
     x = gen_pop (gen_rtx_REG (SImode, rn));
@@ -4590,8 +4623,8 @@ sh_expand_prologue ()
   /* Emit the code for SETUP_VARARGS.  */
   if (current_function_stdarg)
     {
-      /* This is not used by the SH3E calling convention  */
-      if (TARGET_SH1 && ! TARGET_SH3E && ! TARGET_SH5 && ! TARGET_HITACHI)
+      /* This is not used by the SH2E calling convention  */
+      if (TARGET_SH1 && ! TARGET_SH2E && ! TARGET_SH5 && ! TARGET_HITACHI)
 	{
 	  /* Push arg regs as if they'd been provided by caller in stack.  */
 	  for (i = 0; i < NPARM_REGS(SImode); i++)
@@ -5246,7 +5279,7 @@ sh_builtin_saveregs ()
 	return const0_rtx;
     }
   
-  if (! TARGET_SH3E && ! TARGET_SH4 && ! TARGET_SH5)
+  if (! TARGET_SH2E && ! TARGET_SH4 && ! TARGET_SH5)
     {
       error ("__builtin_saveregs not supported by this subtarget");
       return const0_rtx;
@@ -5349,7 +5382,7 @@ sh_build_va_list ()
   tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
   tree record;
 
-  if (TARGET_SH5 || (! TARGET_SH3E && ! TARGET_SH4) || TARGET_HITACHI)
+  if (TARGET_SH5 || (! TARGET_SH2E && ! TARGET_SH4) || TARGET_HITACHI)
     return ptr_type_node;
 
   record = make_node (RECORD_TYPE);
@@ -5403,7 +5436,7 @@ sh_va_start (valist, nextarg)
       return;
     }
 
-  if ((! TARGET_SH3E && ! TARGET_SH4) || TARGET_HITACHI)
+  if ((! TARGET_SH2E && ! TARGET_SH4) || TARGET_HITACHI)
     {
       std_expand_builtin_va_start (valist, nextarg);
       return;
@@ -5481,7 +5514,7 @@ sh_va_arg (valist, type)
   if (pass_by_ref)
     type = build_pointer_type (type);
 
-  if (! TARGET_SH5 && (TARGET_SH3E || TARGET_SH4) && ! TARGET_HITACHI)
+  if (! TARGET_SH5 && (TARGET_SH2E || TARGET_SH4) && ! TARGET_HITACHI)
     {
       tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
       tree next_o, next_o_limit, next_fp, next_fp_limit, next_stack;
@@ -6875,6 +6908,16 @@ sh_insn_length_adjustment (insn)
 	   && GET_CODE (PATTERN (insn)) != ADDR_VEC))
       && GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (insn)))) != SEQUENCE
       && get_attr_needs_delay_slot (insn) == NEEDS_DELAY_SLOT_YES)
+    return 2;
+
+  /* SH2e has a bug that prevents the use of annulled branches, so if
+     the delay slot is not filled, we'll have to put a NOP in it.  */
+  if (sh_cpu == CPU_SH2E
+      && GET_CODE (insn) == JUMP_INSN
+      && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
+      && GET_CODE (PATTERN (insn)) != ADDR_VEC
+      && get_attr_type (insn) == TYPE_CBRANCH
+      && GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (insn)))) != SEQUENCE)
     return 2;
 
   /* sh-dsp parallel processing insn take four bytes instead of two.  */

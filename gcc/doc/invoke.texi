@@ -557,7 +557,7 @@ in the following sections.
 
 @emph{SH Options}
 @gccoptlist{
--m1  -m2  -m3  -m3e @gol
+-m1  -m2  -m2e  -m3  -m3e @gol
 -m4-nofpu  -m4-single-only  -m4-single  -m4 @gol
 -m5-64media -m5-64media-nofpu @gol
 -m5-32media -m5-32media-nofpu @gol
@@ -8792,6 +8792,9 @@ Generate code for the SH1.
 @item -m2
 @opindex m2
 Generate code for the SH2.
+
+@item -m2e
+Generate code for the SH2e.
 
 @item -m3
 @opindex m3

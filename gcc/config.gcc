@@ -2207,6 +2207,7 @@ sh-*-elf* | sh[2346l]*-*-elf*)
 	sh4*)  target_cpu_default="SELECT_SH4" ;;
 	sh3e*) target_cpu_default="SELECT_SH3E" ;;
 	sh3*)  target_cpu_default="SELECT_SH3" ;;
+	sh2e*) target_cpu_default="SELECT_SH2E" ;;
 	sh2*)  target_cpu_default="SELECT_SH2" ;;
 	esac
 	case $machine in
@@ -2251,6 +2252,9 @@ sh-*-linux* | sh[2346lbe]*-*-linux*)
 	sh3e[lb]*) target_cpu_default="SELECT_SH3" ;;
 	sh3e*) target_cpu_default="SELECT_SH3E" ;;
 	sh3*) target_cpu_default="SELECT_SH3" ;;
+	sh2e[lb]e*) target_cpu_default="SELECT_SH2E" ;;
+	sh2e[lb]*) target_cpu_default="SELECT_SH2" ;;
+	sh2e*) target_cpu_default="SELECT_SH2E" ;;
 	sh2*) target_cpu_default="SELECT_SH2" ;;
 	esac
 	case $machine in
@@ -2273,7 +2277,7 @@ sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
 	case $machine in
 	sh5*-*)
 		# SHmedia, 32-bit ABI
-		target_cpu_default="SH5_BIT|SH4_BIT|SH3E_BIT"
+		target_cpu_default="SH5_BIT|SH4_BIT|SH3_BIT|SH_E_BIT"
 		tmake_file="${tmake_file} sh/t-sh64 sh/t-netbsd-sh5"
 		;;
 	sh64*-*)

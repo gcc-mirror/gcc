@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for SuperH SH 5.
-   Copyright 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GNU CC.
@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_DEFAULT_CPU_EMUL "32"
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT  (SH5_BIT|SH4_BIT|SH3E_BIT|TARGET_ENDIAN_DEFAULT)
+#define TARGET_DEFAULT  (SH5_BIT|SH4_BIT|SH_E_BIT|TARGET_ENDIAN_DEFAULT)
 
 #undef SH_ELF_WCHAR_TYPE
 #define SH_ELF_WCHAR_TYPE "int"

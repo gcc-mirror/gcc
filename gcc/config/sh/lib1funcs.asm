@@ -1,4 +1,4 @@
-/* Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002
+/* Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
@@ -1044,7 +1044,7 @@ GLOBAL(sdivsi3_i4):
 
 #ifdef L_sdivsi3
 /* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
-   sh3e code.  */
+   sh2e/sh3e code.  */
 #if (! defined(__SH4__) && ! defined (__SH4_SINGLE__)) || defined (__linux__)
 !!
 !! Steve Chamberlain
@@ -1433,7 +1433,7 @@ L1:
 
 #ifdef L_udivsi3
 /* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
-   sh3e code.  */
+   sh2e/sh3e code.  */
 #if (! defined(__SH4__) && ! defined (__SH4_SINGLE__)) || defined (__linux__)
 
 !! args in r4 and r5, result in r0, clobbers r4, pr, and t bit
@@ -1928,7 +1928,7 @@ GLOBAL(moddi3):
 #endif /* L_moddi3 */
 
 #ifdef L_set_fpscr
-#if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || __SH5__ == 32
+#if defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || __SH5__ == 32
 #ifdef __SH5__
 	.mode	SHcompact
 #endif
@@ -1945,7 +1945,7 @@ GLOBAL(set_fpscr):
 #if defined(__SH4__)
 	swap.w r0,r3
 	mov.l r3,@(4,r1)
-#else /* defined(__SH3E__) || defined(__SH4_SINGLE*__) */
+#else /* defined (__SH2E__) || defined(__SH3E__) || defined(__SH4_SINGLE*__) */
 	swap.w r0,r2
 	mov.l r2,@r1
 #endif
@@ -1958,7 +1958,7 @@ GLOBAL(set_fpscr):
 	swap.w r0,r2
 	rts
 	mov.l r2,@r1
-#else /* defined(__SH3E__) || defined(__SH4_SINGLE*__) */
+#else /* defined(__SH2E__) || defined(__SH3E__) || defined(__SH4_SINGLE*__) */
 	swap.w r0,r3
 	rts
 	mov.l r3,@(4,r1)
@@ -1975,7 +1975,7 @@ LOCAL(set_fpscr_L1):
         .comm   GLOBAL(fpscr_values),8
 #endif /* ELF */
 #endif /* NO_FPSCR_VALUES */
-#endif /* SH3E / SH4 */
+#endif /* SH2E / SH3E / SH4 */
 #endif /* L_set_fpscr */
 #ifdef L_ic_invalidate
 #if __SH5__ == 32
