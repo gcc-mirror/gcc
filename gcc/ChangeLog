@@ -1,3 +1,8 @@
+2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi (-Wformat): Document what format features are
+	checked.
+
 2000-12-06  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h: Fix formatting.
