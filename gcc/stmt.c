@@ -4391,8 +4391,8 @@ any_pending_cleanups ()
 
   if (block_stack->data.block.cleanups != NULL)
     return 1;
-  if (block_stack->data.block.cleanups == 0
-      && block_stack->data.block.outer_cleanups == 0)
+
+  if (block_stack->data.block.outer_cleanups == 0)
     return 0;
 
   for (block = block_stack->next; block; block = block->next)
