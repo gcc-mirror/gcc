@@ -2204,12 +2204,12 @@ emit_library_call (va_alist)
 #ifdef REG_PARM_STACK_SPACE
   args_size.constant = MAX (args_size.constant,
 			    REG_PARM_STACK_SPACE (NULL_TREE));
-#endif
-
-#ifdef ACCUMULATE_OUTGOING_ARGS
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
   args_size.constant -= REG_PARM_STACK_SPACE (NULL_TREE);
 #endif
+#endif
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
   if (args_size.constant > current_function_outgoing_args_size)
     current_function_outgoing_args_size = args_size.constant;
   args_size.constant = 0;
