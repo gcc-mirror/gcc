@@ -1,3 +1,8 @@
+Sat Feb 26 19:46:09 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* g++.old-deja/g++.ext/attrib5.C: XFAIL on Alpha since no link alias.
+	* g++.old-deja/g++.pt/static3.C: Generalize system name for Alpha.
+
 Fri Feb 25 21:44:49 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000225-1.c: New test.
