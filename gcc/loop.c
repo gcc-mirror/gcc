@@ -2504,16 +2504,17 @@ prescan_loop (loop)
 
 	      if (set)
 		{
+		  rtx src = SET_SRC (set);
 		  rtx label1, label2;
 
-		  if (GET_CODE (SET_SRC (set)) == IF_THEN_ELSE)
+		  if (GET_CODE (src) == IF_THEN_ELSE)
 		    {
-		      label1 = XEXP (SET_SRC (set), 1);
-		      label2 = XEXP (SET_SRC (set), 2);
+		      label1 = XEXP (src, 1);
+		      label2 = XEXP (src, 2);
 		    }
 		  else
 		    {
-		      label1 = SET_SRC (PATTERN (insn));
+		      label1 = src;
 		      label2 = NULL_RTX;
 		    }
 
