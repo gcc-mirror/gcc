@@ -1575,10 +1575,6 @@ output_file_start (file, f_options, f_len, W_options, W_len)
   data_section ();
   ASM_COFFSEM (file);
 
-  pos = fprintf (file, "\n; cc1 (%s) arguments:", VERSION_STRING);
-  output_options (file, f_options, f_len, W_options, W_len,
-		  pos, 75, " ", "\n; ", "\n\n");
-
   if (TARGET_IDENTIFY_REVISION)
     {
       char indent[256];
@@ -1587,8 +1583,17 @@ output_file_start (file, f_options, f_len, W_options, W_len)
       sprintf (indent, "]\"\n\t%s\t \"@(#)%s [", IDENT_ASM_OP, main_input_filename);
       fprintf (file, indent+3);
       pos = fprintf (file, "gcc %s, %.24s,", VERSION_STRING, ctime (&now));
+#if 1
+      /* ??? It would be nice to call print_switch_values here (and thereby
+	 let us delete output_options) but this is kept in until it is known
+	 whether the change in content format matters.  */
       output_options (file, f_options, f_len, W_options, W_len,
 		      pos, 150 - strlen (indent), " ", indent, "]\"\n\n");
+#else
+      fprintf (file, "]\"\n");
+      print_switch_values (file, 0, 150 - strlen (indent),
+			   indent + 3, " ", "]\"\n");
+#endif
     }
 }
 
