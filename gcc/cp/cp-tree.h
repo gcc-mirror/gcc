@@ -65,6 +65,7 @@ Boston, MA 02111-1307, USA.  */
 
    Usage of DECL_LANG_FLAG_?:
    0: DECL_ERROR_REPORTED (in VAR_DECL).
+      DECL_TEMPLATE_PARM_P (in CONST_DECL, TYPE_DECL, or TEMPLATE_DECL)
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
@@ -1832,11 +1833,12 @@ extern int flag_new_for_scope;
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE(NODE)
 #define DECL_TEMPLATE_INJECT(NODE)	DECL_INITIAL(NODE)
 
-/* Nonzero for TEMPLATE_DECL nodes that represents template template
-   parameters */
+/* Nonzero for a DECL which is actually a template parameter.  */
+#define DECL_TEMPLATE_PARM_P(NODE) \
+  DECL_LANG_FLAG_0 (NODE)
+
 #define DECL_TEMPLATE_TEMPLATE_PARM_P(NODE) \
-  (TREE_CODE (NODE) == TEMPLATE_DECL && TREE_TYPE (NODE) \
-   && TREE_CODE (TREE_TYPE (NODE)) == TEMPLATE_TEMPLATE_PARM)
+  (TREE_CODE (NODE) == TEMPLATE_DECL && DECL_TEMPLATE_PARM_P (NODE))
 
 #define DECL_FUNCTION_TEMPLATE_P(NODE)  \
   (TREE_CODE (NODE) == TEMPLATE_DECL \
@@ -3070,7 +3072,6 @@ extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
 extern int template_parms_equal                 PROTO((tree, tree));
 extern int comp_template_parms                  PROTO((tree, tree));
-extern int decl_template_parm_p			PROTO((tree));
 extern int template_class_depth                 PROTO((tree));
 extern int is_specialization_of                 PROTO((tree, tree));
 extern int comp_template_args                   PROTO((tree, tree));

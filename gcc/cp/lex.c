@@ -3051,16 +3051,7 @@ do_identifier (token, parsing, args)
 	    cp_error ("enum `%D' is private", id);
 	  /* protected is OK, since it's an enum of `this'.  */
 	}
-      if (!processing_template_decl
-	  /* Really, if we're processing a template, we just want to
-	     resolve template parameters, and not enumeration
-	     constants.  But, they're hard to tell apart.  (Note that
-	     a non-type template parameter may have enumeration type.)
-	     Fortunately, there's no harm in resolving *global*
-	     enumeration constants, since they can't depend on
-	     template parameters.  */
-	  || (TREE_CODE (CP_DECL_CONTEXT (id)) == NAMESPACE_DECL
-	      && TREE_CODE (DECL_INITIAL (id)) == TEMPLATE_PARM_INDEX))
+      if (!processing_template_decl || DECL_TEMPLATE_PARM_P (id))
 	id = DECL_INITIAL (id);
     }
   else

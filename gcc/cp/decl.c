@@ -3514,15 +3514,23 @@ pushdecl (x)
   register tree name = DECL_ASSEMBLER_NAME (x);
   int need_new_binding = 1;
 
-  if (current_function_decl && x != current_function_decl
-      /* A local declaration for a function doesn't constitute nesting.  */
-      && (TREE_CODE (x) != FUNCTION_DECL || DECL_INITIAL (x))
-      /* Don't change DECL_CONTEXT of virtual methods.  */
-      && (TREE_CODE (x) != FUNCTION_DECL || !DECL_VIRTUAL_P (x))
-      && !DECL_CONTEXT (x))
-    DECL_CONTEXT (x) = current_function_decl;
-  if (!DECL_CONTEXT (x))
-    DECL_CONTEXT (x) = FROB_CONTEXT (current_namespace);
+  if (DECL_TEMPLATE_PARM_P (x))
+    /* Template parameters have no context; they are not X::T even
+       when declared within a class or namespace.  */
+    ;
+  else
+    {
+      if (current_function_decl && x != current_function_decl
+	  /* A local declaration for a function doesn't constitute
+             nesting.  */
+	  && (TREE_CODE (x) != FUNCTION_DECL || DECL_INITIAL (x))
+	  /* Don't change DECL_CONTEXT of virtual methods.  */
+	  && (TREE_CODE (x) != FUNCTION_DECL || !DECL_VIRTUAL_P (x))
+	  && !DECL_CONTEXT (x))
+	DECL_CONTEXT (x) = current_function_decl;
+      if (!DECL_CONTEXT (x))
+	DECL_CONTEXT (x) = FROB_CONTEXT (current_namespace);
+    }
 
   /* Type are looked up using the DECL_NAME, as that is what the rest of the
      compiler wants to use.  */
