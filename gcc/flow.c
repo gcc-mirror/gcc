@@ -3106,8 +3106,11 @@ try_forward_edges (b)
       next = e->succ_next;
 
       /* Skip complex edges because we don't know how to update them.
-	 Skip fallthru edges because there's no jump to update.  */
-      if (e->flags & (EDGE_COMPLEX | EDGE_FALLTHRU))
+        
+         Still handle fallthru edges, as we can suceed to forward fallthru
+         edge to the same place as the branch edge of conditional branch
+         and turn conditional branch to an unconditonal branch.  */
+      if (e->flags & EDGE_COMPLEX)
 	continue;
 
       target = first = e->dest;
@@ -3517,14 +3520,14 @@ try_crossjump_to_edge (mode, e1, e2)
       && forwarder_block_p (e2->dest->succ->dest))
     return false;
 
-  /* Likewise with dead code.  */
-  /* ??? Won't we have eliminated these by now?  */
+  /* Likewise with dead code (possibly newly created by the other optimizations
+     of cfg_cleanup).  */
   if (!src1->pred || !src2->pred)
     return false;
 
-  /* Likewise with non-jump edges.  */
-  /* ??? Non-jump?  You mean GET_CODE (e1->src-end) != JUMP_INSN?
-     This fails for computed-goto as well, which may in fact be joinable.  */
+  /* Likewise with complex edges.
+     ??? We should be able to handle most complex edges later with some
+     care.  */
   if (e1->flags & EDGE_COMPLEX)
     return false;
 
@@ -3724,7 +3727,6 @@ try_crossjump_bb (mode, bb)
 	     checks of crossjump(A,B).  In order to prevent redundant
 	     checks of crossjump(B,A), require that A be the block 
 	     with the lowest index.  */
-	  /* ??? Perhaps better is lowest execution frequency.  */
 	  if (e->src->index > e2->src->index)
 	    continue;
 
