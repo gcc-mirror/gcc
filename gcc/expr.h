@@ -315,7 +315,7 @@ typedef struct optab
 #define GEN_FCN(CODE) (*insn_gen_function[(int) (CODE)])
 #endif
 
-extern rtx (*const insn_gen_function[]) ();
+extern rtx (*const insn_gen_function[]) PROTO ((rtx, ...));
 
 extern optab add_optab;
 extern optab sub_optab;
