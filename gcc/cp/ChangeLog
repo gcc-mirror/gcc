@@ -1,5 +1,9 @@
 2004-08-25  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/17155
+	* lex.c (build_lang_decl): Set DECL_NO_STATIC_CHAIN for all C++
+	functions.
+
 	* mangle.c (get_identifier_nocopy): Add cast.
 
 	* cp-tree.h (mangle_type): Remove.
