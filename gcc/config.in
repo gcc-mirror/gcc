@@ -340,6 +340,9 @@
 #undef HAVE_DECL_ERRNO
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_SNPRINTF
+
+/* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_VASPRINTF
 
 /* Define to 1 if we found this declaration otherwise define to 0. */

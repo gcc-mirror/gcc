@@ -361,6 +361,10 @@ extern int setrlimit (int, const struct rlimit *);
 extern void abort (void);
 #endif
 
+#if defined (HAVE_DECL_SNPRINTF) && !HAVE_DECL_SNPRINTF
+extern int snprintf (char *, size_t, const char *, ...);
+#endif
+
 /* 1 if we have C99 designated initializers.  */
 #if !defined(HAVE_DESIGNATED_INITIALIZERS)
 #define HAVE_DESIGNATED_INITIALIZERS \
