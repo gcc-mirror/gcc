@@ -178,7 +178,7 @@ namespace std
     { __valarray_copy (__e, _M_sz, _M_array, _M_stride); }
 
 #undef _DEFINE_VALARRAY_OPERATOR
-#define _DEFINE_VALARRAY_OPERATOR(_Op,_Nname)				\
+#define _DEFINE_VALARRAY_OPERATOR(_Op,_Name)				\
 template<typename _Tp>							\
 inline void								\
 slice_array<_Tp>::operator _Op##= (const valarray<_Tp>& __v) const	\
