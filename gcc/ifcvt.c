@@ -2962,8 +2962,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   if (HAVE_conditional_execution)
     {
       /* In the conditional execution case, we have things easy.  We know
-	 the condition is reversible.  We don't have to check life info,
-	 becase we're going to conditionally execute the code anyway.
+	 the condition is reversible.  We don't have to check life info
+	 because we're going to conditionally execute the code anyway.
 	 All that's left is making sure the insns involved can actually
 	 be predicated.  */
 

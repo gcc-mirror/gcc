@@ -174,7 +174,7 @@ try_simplify_condjump (basic_block cbranch_block)
 
   end = BB_END (jump_block);
   /* Deleting a block may produce unreachable code warning even when we are
-     not deleting anything live.  Supress it by moving all the line number
+     not deleting anything live.  Suppress it by moving all the line number
      notes out of the block.  */
   for (insn = BB_HEAD (jump_block); insn != NEXT_INSN (BB_END (jump_block));
        insn = next)

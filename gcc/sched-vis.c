@@ -80,7 +80,7 @@ insn_print_units (rtx insn)
 }
 
 /* MAX_VISUAL_LINES is the maximum number of lines in visualization table
-   of a basic block.  If more lines are needed, table is splitted to two.
+   of a basic block.  If more lines are needed, table is split to two.
    n_visual_lines is the number of lines printed so far for a block.
    visual_tbl contains the block visualization info.
    vis_no_unit holds insns in a cycle that are not mapped to any unit.  */

@@ -89,7 +89,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    If we track inter-zone pointers, we can mark single zones at a
    time.
    If we have a zone where we guarantee no inter-zone pointers, we
-   could mark that zone seperately.
+   could mark that zone separately.
    The garbage zone should not be marked, and we should return 1 in
    ggc_set_mark for any object in the garbage zone, which cuts off
    marking quickly.  */

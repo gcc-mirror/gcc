@@ -618,7 +618,7 @@ ok (struct web *target, struct web *source)
 	{
 	  /* The main webs do _not_ conflict, only some parts of both.  This
 	     means, that 4 is possibly true, so we need to check this too.
-	     For this we go thru all sub conflicts between T and C, and see if
+	     For this we go through all sub conflicts between T and C, and see if
 	     the target part of C already conflicts with S.  When this is not
 	     the case we disallow coalescing.  */
 	  struct sub_conflict *sl;
@@ -1214,7 +1214,7 @@ calculate_dont_begin (struct web *web, HARD_REG_SET *result)
 		}
 	    }
 	  /* The next if() only gets true, if there was no wl->sub at all, in
-	     which case we are only making one go thru this loop with W being
+	     which case we are only making one go through this loop with W being
 	     a whole web.  */
 	  if (!sl)
 	    break;
@@ -1433,7 +1433,7 @@ colorize_one_web (struct web *web, int hard)
 	 even if we spill this one here, the situation won't become better
 	 in the next iteration.  It probably will have the same conflicts,
 	 those will have the same colors, and we would come here again, for
-	 all parts, in which this one gets splitted by the spill.  This
+	 all parts, in which this one gets split by the spill.  This
 	 can result in endless iteration spilling the same register again and
 	 again.  That's why we try to find a neighbor, which spans more
 	 instructions that ourself, and got a color, and try to spill _that_.
@@ -1826,7 +1826,7 @@ try_recolor_web (struct web *web)
 		  else if (web2->type == SELECT)
 		    /* This means, that WEB2 once was a part of a coalesced
 		       web, which got spilled in the above colorize_one_web()
-		       call, and whose parts then got splitted and put back
+		       call, and whose parts then got split and put back
 		       onto the SELECT stack.  As the cause for that splitting
 		       (the coloring of WEB) was worthless, we should again
 		       coalesce the parts, as they were before.  For now we

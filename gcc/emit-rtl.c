@@ -2596,7 +2596,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
   return;
 }
 
-/* Go through all the RTL insn bodies and chec that there is no inexpected
+/* Go through all the RTL insn bodies and check that there is no unexpected
    sharing in between the subexpressions.  */
 
 void

@@ -108,7 +108,7 @@ struct qty
 
   /* Number of words needed to hold the data in given quantity.
      This depends on its machine mode.  It is used for these purposes:
-     1. It is used in computing the relative importances of qtys,
+     1. It is used in computing the relative importance of qtys,
 	which determines the order in which we look for regs for them.
      2. It is used in rules that prevent tying several registers of
 	different sizes in a way that is geometrically impossible

@@ -9793,7 +9793,7 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
   if (mode != Pmode)
     index = convert_to_mode (Pmode, index, 1);
 
-  /* Don't let a MEM slip thru, because then INDEX that comes
+  /* Don't let a MEM slip through, because then INDEX that comes
      out of PIC_CASE_VECTOR_ADDRESS won't be a valid address,
      and break_out_memory_refs will go to work on it and mess it up.  */
 #ifdef PIC_CASE_VECTOR_ADDRESS
