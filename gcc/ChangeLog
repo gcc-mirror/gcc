@@ -1,3 +1,9 @@
+2003-09-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/12301
+	* reorg.c (stop_search_p): Return 1 for insns that can
+	throw internally.
+
 2003-09-20  Richard Henderson  <rth@redhat.com>
 
 	* c-format.c (gcc_diag_char_table): Add %J.
