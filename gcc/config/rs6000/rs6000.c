@@ -1488,11 +1488,14 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	     "setup_vararg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, no_rtl= %d\n",
 	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), no_rtl);
 
-  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) && !no_rtl)
+  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     {
       rs6000_sysv_varargs_p = 1;
-      save_area = plus_constant (frame_pointer_rtx, RS6000_VARARGS_OFFSET);
+      if (! no_rtl)
+	save_area = plus_constant (frame_pointer_rtx, RS6000_VARARGS_OFFSET);
     }
+  else
+    rs6000_sysv_varargs_p = 0;
 
   if (cum->words < 8)
     {

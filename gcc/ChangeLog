@@ -1,3 +1,7 @@
+Tue Feb 10 00:26:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rs6000.c (setup_incoming_varargs): Always set rs6000_sysv_varargs_p.
+
 Mon Feb  9 23:15:14 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/linux.h (CPP_PREDEFINES): Add -D__ELF__.
