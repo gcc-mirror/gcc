@@ -926,6 +926,10 @@ make_node (code)
       /* Identifier nodes are always permanent since they are
 	 unique in a compiler run.  */
       if (code == IDENTIFIER_NODE) obstack = &permanent_obstack;
+      break;
+
+    default:
+      abort ();
     }
 
   t = (tree) obstack_alloc (obstack, length);
@@ -2375,6 +2379,9 @@ stabilize_reference_1 (e)
       /* Recursively stabilize each operand.  */
       result = build_nt (code, stabilize_reference_1 (TREE_OPERAND (e, 0)));
       break;
+
+    default:
+      abort ();
     }
   
   TREE_TYPE (result) = TREE_TYPE (e);
