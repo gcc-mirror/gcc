@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Hitachi H8/300 version generating coff
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -62,8 +62,11 @@ extern int small_call_insn_operand PARAMS ((rtx, enum machine_mode));
 extern int jump_address_operand PARAMS ((rtx, enum machine_mode));
 extern int bit_operand PARAMS ((rtx, enum machine_mode));
 extern int bit_memory_operand PARAMS ((rtx, enum machine_mode));
+extern int stack_pointer_operand PARAMS ((rtx, enum machine_mode));
 extern int const_int_le_2_operand PARAMS ((rtx, enum machine_mode));
 extern int const_int_le_6_operand PARAMS ((rtx, enum machine_mode));
+extern int const_int_gt_2_operand PARAMS ((rtx, enum machine_mode));
+extern int const_int_ge_8_operand PARAMS ((rtx, enum machine_mode));
 extern int const_int_qi_operand PARAMS ((rtx, enum machine_mode));
 extern int const_int_hi_operand PARAMS ((rtx, enum machine_mode));
 extern int incdec_operand PARAMS ((rtx, enum machine_mode));
