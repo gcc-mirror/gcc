@@ -51,4 +51,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define NM_FLAGS "-Bp"
 
+/* Generate calls to memcpy, etc., not bcopy, etc.  */
+#define TARGET_MEM_FUNCTIONS
+
+/* Mips System V.4 doesn't have a getpagesize() function needed by the
+   trampoline code, so use the POSIX sysconf function to get it.
+   This is only done when compiling the trampoline code.  */
+
+#ifdef  L_trampoline
+#include <unistd.h>
+
+#define getpagesize()	sysconf(_SC_PAGE_SIZE)
+#endif /*  L_trampoline */
+
 #include "mips.h"
