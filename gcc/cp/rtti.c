@@ -295,7 +295,7 @@ build_x_typeid (exp)
       tree bad = throw_bad_typeid ();
 
       bad = build_compound_expr
-	(tree_cons (NULL_TREE, bad, build_expr_list
+	(tree_cons (NULL_TREE, bad, build_tree_list
 		    (NULL_TREE, cp_convert (type, integer_zero_node))));
       exp = build (COND_EXPR, type, cond, exp, bad);
     }
@@ -680,7 +680,7 @@ build_dynamic_cast_1 (type, expr)
 	      expr1 = throw_bad_cast ();
 	      expr1 = build_compound_expr
 		(tree_cons (NULL_TREE, expr1,
-			    build_expr_list (NULL_TREE, cp_convert (type, integer_zero_node))));
+			    build_tree_list (NULL_TREE, cp_convert (type, integer_zero_node))));
 	      TREE_TYPE (expr1) = type;
 	      result = save_expr (result);
 	      return build (COND_EXPR, type, result, result, expr1);

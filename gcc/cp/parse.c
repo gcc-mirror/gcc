@@ -5252,24 +5252,24 @@ case 208:
 case 210:
 #line 1061 "parse.y"
 { yyval.ttype = tree_cons (NULL_TREE, yyval.ttype, 
-		                  build_expr_list (NULL_TREE, yyvsp[0].ttype)); ;
+		                  build_tree_list (NULL_TREE, yyvsp[0].ttype)); ;
     break;}
 case 211:
 #line 1064 "parse.y"
 { yyval.ttype = tree_cons (NULL_TREE, yyval.ttype, 
-		                  build_expr_list (NULL_TREE, error_mark_node)); ;
+		                  build_tree_list (NULL_TREE, error_mark_node)); ;
     break;}
 case 212:
 #line 1067 "parse.y"
-{ chainon (yyval.ttype, build_expr_list (NULL_TREE, yyvsp[0].ttype)); ;
+{ chainon (yyval.ttype, build_tree_list (NULL_TREE, yyvsp[0].ttype)); ;
     break;}
 case 213:
 #line 1069 "parse.y"
-{ chainon (yyval.ttype, build_expr_list (NULL_TREE, error_mark_node)); ;
+{ chainon (yyval.ttype, build_tree_list (NULL_TREE, error_mark_node)); ;
     break;}
 case 214:
 #line 1074 "parse.y"
-{ yyval.ttype = build_expr_list (NULL_TREE, yyval.ttype); ;
+{ yyval.ttype = build_tree_list (NULL_TREE, yyval.ttype); ;
     break;}
 case 216:
 #line 1080 "parse.y"
@@ -5421,7 +5421,7 @@ case 246:
 		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
 		  if (TREE_CODE (yyvsp[0].ttype) != TREE_LIST
 		      && TREE_CODE (yyvsp[0].ttype) != CONSTRUCTOR)
-		    yyval.ttype = build_expr_list (NULL_TREE, yyvsp[0].ttype);
+		    yyval.ttype = build_tree_list (NULL_TREE, yyvsp[0].ttype);
 		  else
 		    yyval.ttype = yyvsp[0].ttype;
 		;
@@ -6297,11 +6297,11 @@ case 454:
     break;}
 case 455:
 #line 2007 "parse.y"
-{ yyval.ttype = build_expr_list (yyvsp[-2].ttype, yyvsp[0].ttype); ;
+{ yyval.ttype = build_tree_list (yyvsp[-2].ttype, yyvsp[0].ttype); ;
     break;}
 case 456:
 #line 2009 "parse.y"
-{ yyval.ttype = build_expr_list (yyval.ttype, yyvsp[0].ttype); ;
+{ yyval.ttype = build_tree_list (yyval.ttype, yyvsp[0].ttype); ;
     break;}
 case 457:
 #line 2011 "parse.y"

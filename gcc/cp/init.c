@@ -162,7 +162,7 @@ perform_member_init (member, name, init, explicit)
       /* Since `init' is already a TREE_LIST on the current_member_init_list,
 	 only build it into one if we aren't already a list.  */
       if (init != NULL_TREE && TREE_CODE (init) != TREE_LIST)
-	init = build_expr_list (NULL_TREE, init);
+	init = build_tree_list (NULL_TREE, init);
 
       if (explicit
 	  && TREE_CODE (type) == ARRAY_TYPE
@@ -695,7 +695,7 @@ expand_cleanup_for_base (binfo, flag)
   /* Call the destructor.  */
   expr = (build_scoped_method_call
 	  (current_class_ref, binfo, dtor_identifier,
-	   build_expr_list (NULL_TREE, integer_zero_node)));
+	   build_tree_list (NULL_TREE, integer_zero_node)));
   if (flag)
     expr = fold (build (COND_EXPR, void_type_node,
 			truthvalue_conversion (flag),
@@ -1186,7 +1186,7 @@ expand_default_init (binfo, true_exp, exp, init, flags)
 	init = TREE_VALUE (parms);
     }
   else
-    parms = build_expr_list (NULL_TREE, init);
+    parms = build_tree_list (NULL_TREE, init);
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
@@ -1361,7 +1361,7 @@ get_type_value (name)
   else
     return NULL_TREE;
 }
-  
+
 
 /* This code could just as well go in `class.c', but is placed here for
    modularity.  */
@@ -1619,7 +1619,7 @@ build_offset_ref (type, name)
 	    /* The code in instantiate_type which will process this
 	       expects to encounter OVERLOADs, not raw functions.  */
 	    t = ovl_cons (t, NULL_TREE);
-	  
+
 	  return build (OFFSET_REF, 
 			unknown_type_node,
 			decl,
@@ -1772,7 +1772,7 @@ resolve_offset_ref (exp)
 	basetype = DECL_CONTEXT (member);
 
       base = current_class_ptr;
-      
+
       if (get_base_distance (basetype, TREE_TYPE (TREE_TYPE (base)), 0, &basetype_path) < 0)
 	{
 	  error_not_base_type (basetype, TREE_TYPE (TREE_TYPE (base)));
@@ -1812,7 +1812,7 @@ resolve_offset_ref (exp)
       basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (TREE_TYPE (member)));
       addr = convert_pointer_to (basetype, addr);
       member = cp_convert (ptrdiff_type_node, member);
-      
+
       /* Pointer to data members are offset by one, so that a null
 	 pointer with a real value of 0 is distinguishable from an
 	 offset of the first member of a structure.  */
@@ -1861,7 +1861,7 @@ build_builtin_delete_call (addr)
 {
   mark_used (global_delete_fndecl);
   return build_call (global_delete_fndecl, 
-		     void_type_node, build_expr_list (NULL_TREE, addr));
+		     void_type_node, build_tree_list (NULL_TREE, addr));
 }
 
 /* Generate a C++ "new" expression. DECL is either a TREE_LIST
@@ -2258,7 +2258,7 @@ build_new_1 (exp)
       rval = cp_convert (build_pointer_type (true_type), rval);
       rval = build_compound_expr
 	(tree_cons (NULL_TREE, exp1,
-			 build_expr_list (NULL_TREE, rval)));
+		    build_tree_list (NULL_TREE, rval)));
     }
 
   if (rval == error_mark_node)
@@ -3059,7 +3059,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	passed_auto_delete = auto_delete;
 
       expr = build_method_call
-	(ref, dtor_identifier, build_expr_list (NULL_TREE, passed_auto_delete),
+	(ref, dtor_identifier, build_tree_list (NULL_TREE, passed_auto_delete),
 	 NULL_TREE, flags);
 
       if (do_delete)
@@ -3108,7 +3108,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	cond = NULL_TREE;
 
       if (cond)
-	exprstmt = build_expr_list (NULL_TREE, cond);
+	exprstmt = build_tree_list (NULL_TREE, cond);
 
       if (base_binfo
 	  && ! TREE_VIA_VIRTUAL (base_binfo)
@@ -3123,7 +3123,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
 	  expr = build_scoped_method_call
 	    (ref, base_binfo, dtor_identifier,
-	     build_expr_list (NULL_TREE, this_auto_delete));
+	     build_tree_list (NULL_TREE, this_auto_delete));
 	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	}
 
@@ -3137,7 +3137,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
 	  expr = build_scoped_method_call
 	    (ref, base_binfo, dtor_identifier,
-	     build_expr_list (NULL_TREE, integer_zero_node));
+	     build_tree_list (NULL_TREE, integer_zero_node));
 
 	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	}

@@ -1,3 +1,52 @@
+2000-01-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (scratchalloc): Remove.
+	(build_scratch_list): Likewise.
+	* call.c (convert_class_to_reference): Replace build_scratch_list
+	and build_expr_list with build_tree_list.
+	(add_candidate): Replace scratchalloc with expralloc.  Note memory
+	leak.
+	(build_user_type_conversion_1):  Replace build_scratch_list
+	and build_expr_list with build_tree_list.
+	(build_new_op): Likewise.
+	(build_op_delete_call): Likewise.
+	(convert_like): Likewise.
+	* cvt.c (ocp_convert): Likewise.
+	* decl.c (start_decl): Likewise.
+	(start_function): Likewise.
+	(finish_destructor_body): Likewise.
+	(maybe_build_cleanup_1): Likewise.
+	* decl2.c (reparse_decl_as_expr): Likewise.
+	* init.c (perform_member_init): Likewise.
+	(expand_cleanup_for_base): Likewise.
+	(build_builtin_delete_call): Likewise.
+	(build_new_1): Likewise.
+	(build_delete): Likewise.
+	* method.c (do_build_assign_ref): Likewise.
+	* parse.y (already_scoped_stmt): Likewise.
+	(nontrivial_exprlist): Likewise.
+	(net_initializer): Likewise.
+	(initlist): Likewise.
+	* parse.c: Regenerated.
+	* rtti.c (build_x_typeid): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	* typeck.c (build_x_compound_expr): Likewise.
+	(build_static_cast): Likewise.
+	(build_modify_expr): Likewise.
+	
+	* cp-tree.h (DECL_VINDEX): Add documentation.
+	* class.c (build_vtable_entry): Likewise.
+	(start_vtable): Add comment.
+	(add_virtual_function): Replace pending_hard_virtuals with
+	overridden_virtuals and pending_virtuals with new_virtuals.
+	Replace redundant assignments with assertions.
+	(check_for_override): Add comment.
+	(check_bases_and_members): Replace pending_hard_virtuals with
+	overridden_virtuals and pending_virtuals with new_virtuals.
+	(create_vtbl_ptr): Likewise.
+	(layout_class_type): Likewise.
+	(finish_struct_1): Likewise.  Add comments.
+	
 2000-01-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (finish_struct_1): Replace redundant code with

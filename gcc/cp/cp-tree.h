@@ -126,7 +126,18 @@ Boston, MA 02111-1307, USA.  */
      entry does not have a TREE_VALUE; it is just an offset.
 
    DECL_ARGUMENTS
-     For a VAR_DECL this is DECL_ANON_UNION_ELEMS.  */
+     For a VAR_DECL this is DECL_ANON_UNION_ELEMS.  
+
+   DECL_VINDEX
+     This field is NULL for a non-virtual function.  For a virtual
+     function, it is eventually set to an INTEGER_CST indicating the
+     index in the vtable at which this function can be found.  When
+     a virtual function is declared, but before it is known what
+     function is overriden, this field is the error_mark_node.
+
+     Temporarily, it may be set to a TREE_LIST whose TREE_VALUE is 
+     the virtual function this one overrides, and whose TREE_CHAIN is
+     the old DECL_VINDEX.  */
 
 /* Language-specific tree checkers. */
 
@@ -213,6 +224,14 @@ extern int flag_rtti;
    vptr for `T'.  If this flag is nonzero we choose the latter
    alternative; otherwise, we choose the former.  */
 #define vptrs_present_everywhere_p() (flag_new_abi)
+
+/* Nonzero if the vtable for a derived class should contain the
+   virtual functions from the primary base and all virtual functions
+   present in the class itself.  Zero if, instead, it should contain
+   only those virtual functions from the primary base together with
+   the functions declared in the derived class (but not in any base
+   class).  */
+#define all_overridden_vfuns_in_vtables_p() (flag_new_abi)
 
 
 /* Language-dependent contents of an identifier.  */
@@ -4180,9 +4199,6 @@ extern tree cp_build_qualified_type_real        PROTO((tree, int, int));
 extern void remap_save_expr                     PROTO((tree *, splay_tree, tree, int *));
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
-
-#define scratchalloc expralloc
-#define build_scratch_list build_expr_list
 
 /* in typeck.c */
 extern int string_conv_p			PROTO((tree, tree, int));

@@ -4026,7 +4026,7 @@ reparse_decl_as_expr (type, decl)
 {
   decl = build_expr_from_tree (decl);
   if (type)
-    return build_functional_cast (type, build_expr_list (NULL_TREE, decl));
+    return build_functional_cast (type, build_tree_list (NULL_TREE, decl));
   else
     return decl;
 }

@@ -5092,7 +5092,7 @@ build_x_compound_expr (list)
 
   return build_compound_expr
     (tree_cons (NULL_TREE, TREE_VALUE (list),
-		     build_expr_list (NULL_TREE,
+		     build_tree_list (NULL_TREE,
 				      build_x_compound_expr (rest))));
 }
 
@@ -5177,7 +5177,7 @@ build_static_cast (type, expr)
   if (IS_AGGR_TYPE (type))
     return build_cplus_new
       (type, (build_method_call
-	      (NULL_TREE, ctor_identifier, build_expr_list (NULL_TREE, expr),
+	      (NULL_TREE, ctor_identifier, build_tree_list (NULL_TREE, expr),
 	       TYPE_BINFO (type), LOOKUP_NORMAL)));
 
   expr = decay_conversion (expr);
@@ -5702,7 +5702,7 @@ build_modify_expr (lhs, modifycode, rhs)
       else
 	{
 	  result = build_method_call (lhs, ctor_identifier,
-				      build_expr_list (NULL_TREE, rhs),
+				      build_tree_list (NULL_TREE, rhs),
 				      TYPE_BINFO (lhstype), LOOKUP_NORMAL);
 	  if (result == NULL_TREE)
 	    return error_mark_node;
@@ -5932,7 +5932,7 @@ build_modify_expr (lhs, modifycode, rhs)
       if (TREE_SIDE_EFFECTS (lhs))
 	cond = build_compound_expr (tree_cons
 				    (NULL_TREE, lhs,
-				     build_expr_list (NULL_TREE, cond)));
+				     build_tree_list (NULL_TREE, cond)));
 
       /* Cannot have two identical lhs on this one tree (result) as preexpand
 	 calls will rip them out and fill in RTL for them, but when the

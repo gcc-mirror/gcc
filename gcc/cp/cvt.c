@@ -807,7 +807,7 @@ ocp_convert (type, expr, convtype, flags)
 	ctor = build_user_type_conversion (type, ctor, flags);
       if (ctor)
 	ctor = build_method_call (NULL_TREE, ctor_identifier,
-				  build_expr_list (NULL_TREE, ctor),
+				  build_tree_list (NULL_TREE, ctor),
 				  TYPE_BINFO (type), flags);
       if (ctor)
 	return build_cplus_new (type, ctor);

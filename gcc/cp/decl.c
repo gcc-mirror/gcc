@@ -6668,7 +6668,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
     }
 
   if (attributes || prefix_attributes)
-    attrlist = build_scratch_list (attributes, prefix_attributes);
+    attrlist = build_tree_list (attributes, prefix_attributes);
   else
     attrlist = NULL_TREE;
 
@@ -12968,7 +12968,7 @@ start_function (declspecs, declarator, attrs, flags)
       if (CLASS_TYPE_P (restype) && !CLASSTYPE_GOT_SEMICOLON (restype))
 	{
 	  cp_error ("semicolon missing after declaration of `%#T'", restype);
-	  shadow_tag (build_expr_list (NULL_TREE, restype));
+	  shadow_tag (build_tree_list (NULL_TREE, restype));
 	  CLASSTYPE_GOT_SEMICOLON (restype) = 1;
 	  if (TREE_CODE (fntype) == FUNCTION_TYPE)
 	    fntype = build_function_type (integer_type_node,
@@ -13600,7 +13600,7 @@ finish_destructor_body ()
 		  finish_expr_stmt
 		    (build_scoped_method_call
 		     (current_class_ref, vb, dtor_identifier,
-		      build_expr_list (NULL_TREE, integer_zero_node)));
+		      build_tree_list (NULL_TREE, integer_zero_node)));
 		}
 	      vbases = TREE_CHAIN (vbases);
 	    }
@@ -14276,7 +14276,7 @@ maybe_build_cleanup_1 (decl, auto_delete)
       if (TYPE_USES_VIRTUAL_BASECLASSES (type)
 	  && ! TYPE_HAS_DESTRUCTOR (type))
 	rval = build_compound_expr (tree_cons (NULL_TREE, rval,
-					       build_expr_list (NULL_TREE, build_vbase_delete (type, decl))));
+					       build_tree_list (NULL_TREE, build_vbase_delete (type, decl))));
 
       return rval;
     }
