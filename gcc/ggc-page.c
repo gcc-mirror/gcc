@@ -797,6 +797,26 @@ init_ggc ()
 
   G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
+#ifdef HAVE_MMAP
+  /* StunOS has an amazing off-by-one error for the first mmap allocation
+     after fiddling with RLIMIT_STACK.  The result, as hard as it is to
+     believe, is an unaligned page allocation, which would cause us to
+     hork badly if we tried to use it.  */
+  {
+    char *p = alloc_anon (NULL, G.pagesize);
+    if ((size_t)p & (G.pagesize - 1))
+      {
+	/* How losing.  Discard this one and try another.  If we still
+	   can't get something useful, give up.  */
+
+	p = alloc_anon (NULL, G.pagesize);
+	if ((size_t)p & (G.pagesize - 1))
+	  abort ();
+      }
+    munmap (p, G.pagesize);
+  }
+#endif
+
   empty_string = ggc_alloc_string ("", 0);
   ggc_add_string_root (&empty_string, 1);
 }
