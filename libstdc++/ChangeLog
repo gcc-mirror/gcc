@@ -1,3 +1,9 @@
+2000-05-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* Makefile.in: Change "pic" to depend on $(PICFLAG), not
+	on $(enable_shared).
+	* aix.ml: Build AIX-style shared library.
+
 2000-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in: Use mh-sparcpic for sparc*-*-*.
