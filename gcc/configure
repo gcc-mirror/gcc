@@ -1362,7 +1362,7 @@ echo "$ac_t"$ac_cv_prog_cc_no_long_long 1>&6
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
 # quick `make'.
-stage1_warn_cflags=" -W -Wall -Wtraditional -Wwrite-strings"
+stage1_warn_cflags=" -W -Wall -Wtraditional -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes"
 stage2_warn_cflags="$stage1_warn_cflags -pedantic -Wno-long-long"
 if test "x$GCC" = "xyes"; then 
   if test $ac_cv_prog_cc_no_long_long = yes; then

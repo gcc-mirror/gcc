@@ -435,12 +435,13 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
      int ecf_flags;
 {
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
-#if defined (HAVE_call) && defined (HAVE_call_value)
-  rtx struct_value_size_rtx = GEN_INT (struct_value_size);
-#endif
   rtx call_insn;
   int already_popped = 0;
   HOST_WIDE_INT n_popped = RETURN_POPS_ARGS (fndecl, funtype, stack_size);
+#if defined (HAVE_call) && defined (HAVE_call_value)
+  rtx struct_value_size_rtx;
+  struct_value_size_rtx = GEN_INT (struct_value_size);
+#endif
 
   /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
      and we don't want to load it into a register as an optimization,
@@ -461,12 +462,12 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 	 if possible, for the sake of frame pointer elimination.  */
 
       if (valreg)
-	pat = gen_sibcall_value_pop (valreg,
+	pat = GEN_SIBCALL_VALUE_POP (valreg,
 				     gen_rtx_MEM (FUNCTION_MODE, funexp),
 				     rounded_stack_size_rtx, next_arg_reg,
 				     n_pop);
       else
-	pat = gen_sibcall_pop (gen_rtx_MEM (FUNCTION_MODE, funexp),
+	pat = GEN_SIBCALL_POP (gen_rtx_MEM (FUNCTION_MODE, funexp),
 			       rounded_stack_size_rtx, next_arg_reg, n_pop);
 
       emit_call_insn (pat);
@@ -494,11 +495,11 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 	 if possible, for the sake of frame pointer elimination.  */
 
       if (valreg)
-	pat = gen_call_value_pop (valreg,
+	pat = GEN_CALL_VALUE_POP (valreg,
 				  gen_rtx_MEM (FUNCTION_MODE, funexp),
 				  rounded_stack_size_rtx, next_arg_reg, n_pop);
       else
-	pat = gen_call_pop (gen_rtx_MEM (FUNCTION_MODE, funexp),
+	pat = GEN_CALL_POP (gen_rtx_MEM (FUNCTION_MODE, funexp),
 			    rounded_stack_size_rtx, next_arg_reg, n_pop);
 
       emit_call_insn (pat);
@@ -512,12 +513,12 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
       && HAVE_sibcall && HAVE_sibcall_value)
     {
       if (valreg)
-	emit_call_insn (gen_sibcall_value (valreg,
+	emit_call_insn (GEN_SIBCALL_VALUE (valreg,
 					   gen_rtx_MEM (FUNCTION_MODE, funexp),
 					   rounded_stack_size_rtx,
 					   next_arg_reg, NULL_RTX));
       else
-	emit_call_insn (gen_sibcall (gen_rtx_MEM (FUNCTION_MODE, funexp),
+	emit_call_insn (GEN_SIBCALL (gen_rtx_MEM (FUNCTION_MODE, funexp),
 				     rounded_stack_size_rtx, next_arg_reg,
 				     struct_value_size_rtx));
     }
@@ -528,12 +529,12 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
   if (HAVE_call && HAVE_call_value)
     {
       if (valreg)
-	emit_call_insn (gen_call_value (valreg,
+	emit_call_insn (GEN_CALL_VALUE (valreg,
 					gen_rtx_MEM (FUNCTION_MODE, funexp),
 					rounded_stack_size_rtx, next_arg_reg,
 					NULL_RTX));
       else
-	emit_call_insn (gen_call (gen_rtx_MEM (FUNCTION_MODE, funexp),
+	emit_call_insn (GEN_CALL (gen_rtx_MEM (FUNCTION_MODE, funexp),
 				  rounded_stack_size_rtx, next_arg_reg,
 				  struct_value_size_rtx));
     }

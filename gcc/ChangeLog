@@ -1,5 +1,21 @@
 2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* configure.in (stage1_warn_cflags): Add -Wstrict-prototypes
+	-Wmissing-prototypes.
+	* configure: Regenerate.
+	* gcc.texi: Remove explanation of MD_CALL_PROTOTYPES.
+
+	* builtins.c, calls.c: Change all instances of gen_call_* or
+	gen_sibcall_* to GEN_CALL_* and GEN_SIBCALL_*.
+	* calls.c (struct_value_size_rtx): Separate definition from
+	initialization to avoid unused variable warning.
+
+	* genflags.c (gen_macro): New function.
+	(gen_proto): Call it for gen_call_* and gen_sibcall_*.
+	(gen_nonproto): Delete.
+	(gen_insn): Put all insns on the same obstack.
+	(main): Generate prototypes for everything unconditionally.
+
 	* configure.in: Add AC_CHECK_TYPE(ssize_t).  Remove commented 
 	out check for wchar_t.
 	* acconfig.h: Add template for ssize_t.  Remove @TOP@.
