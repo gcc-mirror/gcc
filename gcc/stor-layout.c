@@ -747,10 +747,28 @@ layout_type (type)
 	if (index && TYPE_MAX_VALUE (index) && TYPE_MIN_VALUE (index)
 	    && TYPE_SIZE (element))
 	  {
-	    tree length
-	      = size_binop (PLUS_EXPR, size_one_node,
-			    size_binop (MINUS_EXPR, TYPE_MAX_VALUE (index),
-					TYPE_MIN_VALUE (index)));
+	    tree ub = TYPE_MAX_VALUE (index);
+	    tree lb = TYPE_MIN_VALUE (index);
+	    tree length;
+
+	    /* If UB is max (lb - 1, x), remove the MAX_EXPR since the
+	       test for negative below covers it.  */
+	    if (TREE_CODE (ub) == MAX_EXPR
+		&& TREE_CODE (TREE_OPERAND (ub, 0)) == MINUS_EXPR
+		&& integer_onep (TREE_OPERAND (TREE_OPERAND (ub, 0), 1))
+		&& operand_equal_p (TREE_OPERAND (TREE_OPERAND (ub, 0), 0),
+				    lb, 0))
+	      ub = TREE_OPERAND (ub, 1);
+	    else if (TREE_CODE (ub) == MAX_EXPR
+		     && TREE_CODE (TREE_OPERAND (ub, 1)) == MINUS_EXPR
+		     && integer_onep (TREE_OPERAND (TREE_OPERAND (ub, 1), 1))
+		     && operand_equal_p (TREE_OPERAND (TREE_OPERAND (ub, 1),
+						       0),
+					 lb, 0))
+	      ub = TREE_OPERAND (ub, 0);
+
+	    length = size_binop (PLUS_EXPR, size_one_node,
+				 size_binop (MINUS_EXPR, ub, lb));
 
 	    /* If neither bound is a constant and sizetype is signed, make
 	       sure the size is never negative.  We should really do this
