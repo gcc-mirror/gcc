@@ -850,4 +850,6 @@ enum machopic_addr_class {
 #undef ASM_APP_OFF
 #define ASM_APP_OFF ""
 
+#define TARGET_HAS_F_SETLKW
+
 #endif /* CONFIG_DARWIN_H */

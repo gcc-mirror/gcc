@@ -1,3 +1,7 @@
+2004-02-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (TARGET_HAS_F_SETLKW): Define.
+
 2004-02-24  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (check_qualified_type): New fn.
