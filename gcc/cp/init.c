@@ -730,8 +730,7 @@ expand_virtual_init (binfo, decl)
   vtype = DECL_CONTEXT (CLASSTYPE_VFIELD (type));
   vtype_binfo = get_binfo (vtype, TREE_TYPE (TREE_TYPE (decl)), 0);
   vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (CLASSTYPE_VFIELD (type)), binfo));
-  if (!flag_vtable_thunks)
-    assemble_external (vtbl);
+  assemble_external (vtbl);
   TREE_USED (vtbl) = 1;
   vtbl = build1 (ADDR_EXPR, TYPE_POINTER_TO (TREE_TYPE (vtbl)), vtbl);
   decl = convert_pointer_to_real (vtype_binfo, decl);
@@ -3093,6 +3092,7 @@ build_new (placement, decl, init, use_global_new)
 	  rval = build (COMPOUND_EXPR, TREE_TYPE (rval),
 			build_modify_expr (deref, NOP_EXPR, init),
 			rval);
+	  TREE_NO_UNUSED_WARNING (rval) = 1;
 	  TREE_SIDE_EFFECTS (rval) = 1;
 	  TREE_CALLS_NEW (rval) = 1;
 	}

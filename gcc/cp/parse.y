@@ -205,7 +205,7 @@ empty_parms ()
 %type <ttype> declmods typespec typespecqual_reserved
 %type <ttype> SCSPEC TYPESPEC TYPE_QUAL nonempty_type_quals maybe_type_qual
 %type <itype> initdecls notype_initdecls initdcl	/* C++ modification */
-%type <ttype> init initlist maybeasm
+%type <ttype> init initlist maybeasm maybe_init
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word
@@ -244,7 +244,7 @@ empty_parms ()
 %type <ttype> class_head base_class_list
 %type <itype> base_class_access_list
 %type <ttype> base_class maybe_base_class_list base_class.1
-%type <ttype> maybe_raises ansi_raise_identifier ansi_raise_identifiers
+%type <ttype> exception_specification_opt ansi_raise_identifier ansi_raise_identifiers
 %type <ttype> component_declarator0
 %type <ttype> forhead.1 operator_name
 %type <ttype> object aggr
@@ -495,7 +495,7 @@ template_def:
 		  /* declare $2 as template name with $1 parm list */
 		}
 	| template_header /* notype_initdcl0 ';' */
-	  notype_declarator maybe_raises maybeasm maybe_attribute
+	  notype_declarator exception_specification_opt maybeasm maybe_attribute
 	  fn_tmpl_end
 		{
 		  tree d;
@@ -512,7 +512,7 @@ template_def:
 		  resume_momentary (momentary);
 		}
 	| template_header typed_declspecs /*initdcl0*/
-	  declarator maybe_raises maybeasm maybe_attribute
+	  declarator exception_specification_opt maybeasm maybe_attribute
 	  fn_tmpl_end
 		{
 		  tree d;
@@ -649,17 +649,17 @@ fndef:
 	;
 
 fn.def1:
-	  typed_declspecs declarator maybe_raises
+	  typed_declspecs declarator exception_specification_opt
 		{ if (! start_function ($$, $2, $3, 0))
 		    YYERROR1;
 		  reinit_parse_for_function ();
 		  $$ = NULL_TREE; }
-	| declmods notype_declarator maybe_raises
+	| declmods notype_declarator exception_specification_opt
 		{ if (! start_function ($$, $2, $3, 0))
 		    YYERROR1;
 		  reinit_parse_for_function ();
 		  $$ = NULL_TREE; }
-	| notype_declarator maybe_raises
+	| notype_declarator exception_specification_opt
 		{ if (! start_function (NULL_TREE, $$, $2, 0))
 		    YYERROR1;
 		  reinit_parse_for_function ();
@@ -672,7 +672,7 @@ fn.def1:
 /* more C++ complexity.  See component_decl for a comment on the
    reduce/reduce conflict introduced by these rules.  */
 fn.def2:
-	  typed_declspecs '(' parmlist ')' type_quals maybe_raises
+	  typed_declspecs '(' parmlist ')' type_quals exception_specification_opt
 		{
 		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE ($1), $3, $5);
 		  $$ = start_method (TREE_CHAIN ($1), $$, $6);
@@ -682,18 +682,18 @@ fn.def2:
 		  if (yychar == YYEMPTY)
 		    yychar = YYLEX;
 		  reinit_parse_for_method (yychar, $$); }
-	| typed_declspecs LEFT_RIGHT type_quals maybe_raises
+	| typed_declspecs LEFT_RIGHT type_quals exception_specification_opt
 		{
 		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE ($1),
 					 empty_parms (), $3);
 		  $$ = start_method (TREE_CHAIN ($1), $$, $4);
 		  goto rest_of_mdef;
 		}
-	| typed_declspecs declarator maybe_raises
+	| typed_declspecs declarator exception_specification_opt
 		{ $$ = start_method ($$, $2, $3); goto rest_of_mdef; }
-	| declmods notype_declarator maybe_raises
+	| declmods notype_declarator exception_specification_opt
 		{ $$ = start_method ($$, $2, $3); goto rest_of_mdef; }
-	| notype_declarator maybe_raises
+	| notype_declarator exception_specification_opt
 		{ $$ = start_method (NULL_TREE, $$, $2); goto rest_of_mdef; }
 	;
 
@@ -705,10 +705,8 @@ return_id: RETURN IDENTIFIER
 		}
 	;
 
-return_init: return_id
-		{ store_return_init ($<ttype>$, NULL_TREE); }
-	| return_id '=' init
-		{ store_return_init ($<ttype>$, $3); }
+return_init: return_id maybe_init
+		{ store_return_init ($<ttype>$, $2); }
 	| return_id '(' nonnull_exprlist ')'
 		{ store_return_init ($<ttype>$, $3); }
 	| return_id LEFT_RIGHT
@@ -962,7 +960,7 @@ xcond:
 	;
 
 condition:
-	type_specifier_seq declarator maybe_raises maybeasm maybe_attribute '='
+	type_specifier_seq declarator exception_specification_opt maybeasm maybe_attribute '='
 		{ {
 		  tree d;
 		  for (d = getdecls (); d; d = TREE_CHAIN (d))
@@ -1334,12 +1332,21 @@ primary:
 	| string
 		{ $$ = combine_strings ($$); }
 	| '(' expr ')'
-		{ char class = TREE_CODE_CLASS (TREE_CODE ($2));
+		{ char class;
+		  $$ = $2;
+		  class = TREE_CODE_CLASS (TREE_CODE ($$));
 		  if (class == 'e' || class == '1'
 		      || class == '2' || class == '<')
                     /* This inhibits warnings in truthvalue_conversion. */
-		    C_SET_EXP_ORIGINAL_CODE ($2, ERROR_MARK);
-		  $$ = $2; }
+		    C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK); }
+	| '(' expr_or_declarator ')'
+		{ char class;
+		  $$ = reparse_decl_as_expr (NULL_TREE, $2);
+		  class = TREE_CODE_CLASS (TREE_CODE ($$));
+		  if (class == 'e' || class == '1'
+		      || class == '2' || class == '<')
+                    /* This inhibits warnings in truthvalue_conversion. */
+		    C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK); }
 	| '(' error ')'
 		{ $$ = error_mark_node; }
 	| '('
@@ -1948,7 +1955,7 @@ maybeasm:
 	;
 
 initdcl0:
-	  declarator maybe_raises maybeasm maybe_attribute '='
+	  declarator exception_specification_opt maybeasm maybe_attribute '='
 		{ current_declspecs = $<ttype>0;
 		  if (TREE_CODE (current_declspecs) != TREE_LIST)
 		    current_declspecs = get_decl_list (current_declspecs);
@@ -1966,7 +1973,7 @@ initdcl0:
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
-	| declarator maybe_raises maybeasm maybe_attribute
+	| declarator exception_specification_opt maybeasm maybe_attribute
 		{ tree d;
 		  current_declspecs = $<ttype>0;
 		  if (TREE_CODE (current_declspecs) != TREE_LIST)
@@ -1985,20 +1992,20 @@ initdcl0:
 	;
 
 initdcl:
-	  declarator maybe_raises maybeasm maybe_attribute '='
+	  declarator exception_specification_opt maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1, $2);
 		  cplus_decl_attributes ($<ttype>$, $4); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING); }
-	| declarator maybe_raises maybeasm maybe_attribute
+	| declarator exception_specification_opt maybeasm maybe_attribute
 		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes ($<ttype>$, $4);
 		  finish_decl ($<ttype>$, NULL_TREE, $3, 0, 0); }
 	;
 
 notype_initdcl0:
-	  notype_declarator maybe_raises maybeasm maybe_attribute '='
+	  notype_declarator exception_specification_opt maybeasm maybe_attribute '='
 		{ current_declspecs = $<ttype>0;
 		  $<itype>5 = suspend_momentary ();
 		  $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1, $2);
@@ -2007,7 +2014,7 @@ notype_initdcl0:
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
-	| notype_declarator maybe_raises maybeasm maybe_attribute
+	| notype_declarator exception_specification_opt maybeasm maybe_attribute
 		{ tree d;
 		  current_declspecs = $<ttype>0;
 		  $$ = suspend_momentary ();
@@ -2017,7 +2024,7 @@ notype_initdcl0:
 	;
 
 nomods_initdcl0:
-	  notype_declarator maybe_raises maybeasm maybe_attribute '='
+	  notype_declarator exception_specification_opt maybeasm maybe_attribute '='
 		{ current_declspecs = NULL_TREE;
 		  $<itype>5 = suspend_momentary ();
 		  $<ttype>$ = start_decl ($1, current_declspecs, 1, $2);
@@ -2026,7 +2033,7 @@ nomods_initdcl0:
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
 		  $$ = $<itype>5; }
-	| notype_declarator maybe_raises maybeasm maybe_attribute
+	| notype_declarator exception_specification_opt maybeasm maybe_attribute
 		{ tree d;
 		  current_declspecs = NULL_TREE;
 		  $$ = suspend_momentary ();
@@ -2093,6 +2100,12 @@ identifiers_or_typenames:
 	| identifiers_or_typenames ',' identifier
 		{ $$ = chainon ($1, build_tree_list (NULL_TREE, $3)); }
 	;
+
+maybe_init:
+	%prec EMPTY /* empty */
+		{ $$ = NULL_TREE; }
+	| '=' init
+		{ $$ = $2; }
 
 init:
 	  expr_no_commas %prec '='
@@ -2593,8 +2606,8 @@ component_decl_1:
 		{ 
 		  $$ = grok_x_components ($$, $2);
 		}
-	| notype_declarator maybe_raises maybeasm maybe_attribute
-		{ $$ = grokfield ($$, NULL_TREE, $2, NULL_TREE, $3);
+	| notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
+		{ $$ = grokfield ($$, NULL_TREE, $2, $5, $3);
 		  cplus_decl_attributes ($$, $4); }
 	| ':' expr_no_commas
 		{ $$ = grokbitfield (NULL_TREE, NULL_TREE, $2); }
@@ -2609,16 +2622,16 @@ component_decl_1:
 	   should "A::foo" be declared as a function or "A::bar" as a data
 	   member? In other words, is "bar" an after_type_declarator or a
 	   parmlist? */
-	| typed_declspecs '(' parmlist ')' type_quals
+	| typed_declspecs '(' parmlist ')' type_quals exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ $$ = build_parse_node (CALL_EXPR, TREE_VALUE ($1),
 					 $3, $5);
-		  $$ = grokfield ($$, TREE_CHAIN ($1), NULL_TREE, NULL_TREE,
-				  NULL_TREE); }
-	| typed_declspecs LEFT_RIGHT type_quals
+		  $$ = grokfield ($$, TREE_CHAIN ($1), $6, $9, $7);
+		  cplus_decl_attributes ($$, $8); }
+	| typed_declspecs LEFT_RIGHT type_quals exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ $$ = build_parse_node (CALL_EXPR, TREE_VALUE ($1),
 					 empty_parms (), $3);
-		  $$ = grokfield ($$, TREE_CHAIN ($1), NULL_TREE, NULL_TREE,
-				  NULL_TREE); }
+		  $$ = grokfield ($$, TREE_CHAIN ($1), $4, $7, $5);
+		  cplus_decl_attributes ($$, $6); }
 	| using_decl
 	;
 
@@ -2664,13 +2677,9 @@ component_declarator:
 	;
 
 after_type_component_declarator0:
-	  after_type_declarator maybe_raises maybeasm maybe_attribute
+	  after_type_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ current_declspecs = $<ttype>0;
-		  $$ = grokfield ($$, current_declspecs, $2, NULL_TREE, $3);
-		  cplus_decl_attributes ($$, $4); }
-	| after_type_declarator maybe_raises maybeasm maybe_attribute '=' init
-		{ current_declspecs = $<ttype>0;
-		  $$ = grokfield ($$, current_declspecs, $2, $6, $3);
+		  $$ = grokfield ($$, current_declspecs, $2, $5, $3);
 		  cplus_decl_attributes ($$, $4); }
 	| TYPENAME ':' expr_no_commas maybe_attribute
 		{ current_declspecs = $<ttype>0;
@@ -2679,13 +2688,9 @@ after_type_component_declarator0:
 	;
 
 notype_component_declarator0:
-	  notype_declarator maybe_raises maybeasm maybe_attribute
+	  notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ current_declspecs = $<ttype>0;
-		  $$ = grokfield ($$, current_declspecs, $2, NULL_TREE, $3);
-		  cplus_decl_attributes ($$, $4); }
-	| notype_declarator maybe_raises maybeasm maybe_attribute '=' init
-		{ current_declspecs = $<ttype>0;
-		  $$ = grokfield ($$, current_declspecs, $2, $6, $3);
+		  $$ = grokfield ($$, current_declspecs, $2, $5, $3);
 		  cplus_decl_attributes ($$, $4); }
 	| IDENTIFIER ':' expr_no_commas maybe_attribute
 		{ current_declspecs = $<ttype>0;
@@ -2698,11 +2703,8 @@ notype_component_declarator0:
 	;
 
 after_type_component_declarator:
-	  after_type_declarator maybe_raises maybeasm maybe_attribute
-		{ $$ = grokfield ($$, current_declspecs, $2, NULL_TREE, $3);
-		  cplus_decl_attributes ($$, $4); }
-	| after_type_declarator maybe_raises maybeasm maybe_attribute '=' init
-		{ $$ = grokfield ($$, current_declspecs, $2, $6, $3);
+	  after_type_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
+		{ $$ = grokfield ($$, current_declspecs, $2, $5, $3);
 		  cplus_decl_attributes ($$, $4); }
 	| TYPENAME ':' expr_no_commas maybe_attribute
 		{ $$ = grokbitfield ($$, current_declspecs, $3);
@@ -2710,11 +2712,8 @@ after_type_component_declarator:
 	;
 
 notype_component_declarator:
-	  notype_declarator maybe_raises maybeasm maybe_attribute
-		{ $$ = grokfield ($$, current_declspecs, $2, NULL_TREE, $3);
-		  cplus_decl_attributes ($$, $4); }
-	| notype_declarator maybe_raises maybeasm maybe_attribute '=' init
-		{ $$ = grokfield ($$, current_declspecs, $2, $6, $3);
+	  notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
+		{ $$ = grokfield ($$, current_declspecs, $2, $5, $3);
 		  cplus_decl_attributes ($$, $4); }
 	| IDENTIFIER ':' expr_no_commas maybe_attribute
 		{ $$ = grokbitfield ($$, current_declspecs, $3);
@@ -3702,10 +3701,8 @@ named_parm:
 	;
 
 full_parm:
-	  parm
-		{ $$ = build_tree_list (NULL_TREE, $$); }
-	| parm '=' init
-		{ $$ = build_tree_list ($3, $$); }
+	  parm maybe_init
+		{ $$ = build_tree_list ($2, $$); }
 	;
 
 parm:
@@ -3748,7 +3745,7 @@ bad_parm:
 		}
 	;
 
-maybe_raises:
+exception_specification_opt:
 	  %prec EMPTY /* empty */
 		{ $$ = NULL_TREE; }
 	| THROW '(' ansi_raise_identifiers  ')' %prec EMPTY

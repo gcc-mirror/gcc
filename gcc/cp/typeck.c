@@ -2723,8 +2723,9 @@ build_binary_op (code, arg1, arg2, convert_p)
 
   if (convert_p)
     {
-      args[0] = default_conversion (args[0]);
-      args[1] = default_conversion (args[1]);
+      tree args_save [2];
+      args[0] = args_save [0] = default_conversion (args[0]);
+      args[1] = args_save [1] = default_conversion (args[1]);
 
       if (type_unknown_p (args[0]))
 	{
@@ -2780,6 +2781,11 @@ build_binary_op (code, arg1, arg2, convert_p)
 	    error ("ambiguous pointer conversion");
 	  args[convert_index] = try;
 	}
+
+      if (args[0] == args_save[0])
+	args[0] = arg1;
+      if (args[1] == args_save[1])
+	args[1] = arg2;
     }
   return build_binary_op_nodefault (code, args[0], args[1], code);
 }
@@ -3457,19 +3463,34 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 
       if (short_compare && extra_warnings)
 	{
+	  int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
+	  int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
+
+	  tree comp_type = TREE_TYPE (op0);
+
 	  int unsignedp0, unsignedp1;
 	  tree primop0 = get_narrower (op0, &unsignedp0);
 	  tree primop1 = get_narrower (op1, &unsignedp1);
 
-	  /* Warn if signed and unsigned are being compared in a size larger
-	     than their original size, as this will always fail.  */
-
-	  if (unsignedp0 != unsignedp1
-	      && (TYPE_PRECISION (TREE_TYPE (primop0))
-		  < TYPE_PRECISION (result_type))
-	      && (TYPE_PRECISION (TREE_TYPE (primop1))
-		  < TYPE_PRECISION (result_type)))
-	    warning ("comparison between promoted unsigned and signed");
+	  /* Give warnings for comparisons between signed and unsigned
+	     quantities that may fail.  Do not warn if the signed quantity
+	     is an unsuffixed integer literal (or some static constant
+	     expression involving such literals) and it is positive.
+	     Do not warn if the comparison is being done in a signed type,
+	     since the signed type will only be chosen if it can represent
+	     all the values of the unsigned type.  */
+	  /* Do the checking based on the original operand trees, so that
+	     casts will be considered, but default promotions won't be.  */
+	  if (TREE_UNSIGNED (comp_type)
+	      && ((op0_signed
+		   && (TREE_CODE (op0) != INTEGER_CST
+		       || (TREE_CODE (op0) == INTEGER_CST
+			   && INT_CST_LT (op0, integer_zero_node))))
+		  || (op1_signed
+		      && (TREE_CODE (op1) != INTEGER_CST
+			  || (TREE_CODE (op1) == INTEGER_CST
+			      && INT_CST_LT (op1, integer_zero_node))))))
+	    warning ("comparison between signed and unsigned");
 
 	  /* Warn if two unsigned values are being compared in a size
 	     larger than their original size, and one (and only one) is the
@@ -3509,7 +3530,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 		    }
 
 		  bits = TYPE_PRECISION (TREE_TYPE (primop));
-		  if (bits < TYPE_PRECISION (result_type)
+		  if (bits < TYPE_PRECISION (comp_type)
 		      && bits < HOST_BITS_PER_LONG && unsignedp)
 		    {
 		      mask = (~ (HOST_WIDE_INT) 0) << bits;
@@ -3519,9 +3540,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 		}
 	      else if (unsignedp0 && unsignedp1
 		       && (TYPE_PRECISION (TREE_TYPE (primop0))
-			   < TYPE_PRECISION (result_type))
+			   < TYPE_PRECISION (comp_type))
 		       && (TYPE_PRECISION (TREE_TYPE (primop1))
-			   < TYPE_PRECISION (result_type)))
+			   < TYPE_PRECISION (comp_type)))
 		warning ("comparison of promoted ~unsigned with unsigned");
 	    }
 	}
@@ -4119,15 +4140,6 @@ build_unary_op (code, xarg, noconvert)
 	  return build_binary_op (PLUS_EXPR, TREE_OPERAND (arg, 0),
 				  TREE_OPERAND (arg, 1), 1);
 	}
-
-      /* For &(++foo), we are really taking the address of the variable
-	 being acted upon by the increment/decrement operator.  ARM $5.3.1
-	 However, according to ARM $5.2.5, we don't allow postfix ++ and
-	 --, since the prefix operators return lvalues, but the postfix
-	 operators do not.  */
-      if (TREE_CODE (arg) == PREINCREMENT_EXPR
-	  || TREE_CODE (arg) == PREDECREMENT_EXPR)
-	arg = TREE_OPERAND (arg, 0);
 
       /* Uninstantiated types are all functions.  Taking the
 	 address of a function is a no-op, so just return the

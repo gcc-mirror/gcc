@@ -954,10 +954,9 @@ struct lang_decl_flags
   unsigned saved_inline : 1;
   unsigned use_template : 2;
 
-  unsigned interface_known : 1;
   unsigned declared_static : 1;
   unsigned nonconverting : 1;
-  unsigned dummy : 5;
+  unsigned dummy : 6;
 
   tree access;
   tree context;
@@ -1131,7 +1130,7 @@ struct lang_decl
 
 #if 0
 /* Same, but tells if this field is private in current context.  */
-#define DECL_PRIVATE(NODE) (DECL_LANG_FLAG_5 (NODE))
+#define DECL_PRIVATE(NODE) (FOO)
 
 /* Same, but tells if this field is private in current context.  */
 #define DECL_PROTECTED(NODE) (DECL_LANG_FLAG_6 (NODE))
@@ -1337,8 +1336,7 @@ struct lang_decl
   (CLASSTYPE_USE_TEMPLATE(NODE) = 3)
 
 /* We know what we're doing with this decl now.  */
-#define DECL_INTERFACE_KNOWN(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.interface_known)
+#define DECL_INTERFACE_KNOWN(NODE) DECL_LANG_FLAG_5 (NODE)
 
 /* This decl was declared to have internal linkage.  */
 #define DECL_DECLARED_STATIC(NODE) \

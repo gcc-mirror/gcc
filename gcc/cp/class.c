@@ -478,8 +478,7 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
 	vtbl = build_indirect_ref (build_vfield_ref (instance, basetype),
 				   NULL_PTR);
     }
-  if (!flag_vtable_thunks)
-    assemble_external (vtbl);
+  assemble_external (vtbl);
   aref = build_array_ref (vtbl, idx);
 
   /* Save the intermediate result in a SAVE_EXPR so we don't have to
@@ -552,8 +551,7 @@ build_vtable (binfo, type)
 #endif
 
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
-  if (! flag_vtable_thunks)
-    import_export_vtable (decl, type);
+  import_export_vtable (decl, type, 0);
 
   IDENTIFIER_GLOBAL_VALUE (name) = decl = pushdecl_top_level (decl);
   /* Initialize the association list for this type, based
@@ -699,8 +697,7 @@ prepare_fresh_vtable (binfo, for_type)
 #endif
 
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
-  if (! flag_vtable_thunks)
-    import_export_vtable (new_decl, for_type);
+  import_export_vtable (new_decl, for_type, 0);
 
   if (TREE_VIA_VIRTUAL (binfo))
     my_friendly_assert (binfo == binfo_member (BINFO_TYPE (binfo),
@@ -802,9 +799,6 @@ add_virtual_function (pending_virtuals, has_virtual, fndecl, t)
     cp_warning ("internal problem, current_class_type differs when adding `%D', please report",
 		fndecl);
 #endif
-
-  if (!flag_vtable_thunks)
-    TREE_ADDRESSABLE (fndecl) = CLASSTYPE_VTABLE_NEEDS_WRITING (t);
 
   /* If the virtual function is a redefinition of a prior one,
      figure out in which base class the new definition goes,

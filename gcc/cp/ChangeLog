@@ -10,6 +10,59 @@ Wed Jan 25 15:02:09 1995  David S. Miller  (davem@nadzieja.rutgers.edu)
 	* class.c (instantiate_type): Change error message text.
 	* typeck2.c (store_init_value): Likewise.
 
+Fri Feb 17 15:31:31 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (reparse_decl_as_expr): Support being called without a
+	type argument.
+
+	* parse.y (primary): Add '(' expr_or_declarator ')'.  Adds 4 r/r
+	conflicts.  Sigh.
+
+Fri Feb 17 12:02:06 1995  Mike Stump  <mrs@cygnus.com>
+
+	* parse.y (template_def, fndef, fn.def1, return_init, condition,
+	initdcl0, initdcl, notype_initdcl0, nomods_initdcl0,
+	component_decl_1, after_type_component_declarator0,
+	notype_component_declarator0, after_type_component_declarator,
+	notype_component_declarator, after_type_component_declarator,
+	full_parm, maybe_raises, exception_specification_opt): Fix up,
+	include exception_specification_opt maybeasm maybe_attribute and
+	maybe_init if missing.  Rename maybe_raises to
+	exception_specification_opt to match draft wording.  Use maybe_init
+	to simplify rules.
+
+Fri Feb 17 01:54:46 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* init.c (build_new): Set TREE_NO_UNUSED_WARNING on COMPOUND_EXPRs
+	built for news of scalar types.
+
+Thu Feb 16 17:48:28 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (build_binary_op_nodefault): Update code for warning
+	about signed/unsigned comparisons from C frontend.  Realize that the
+	code in the C frontend is, if anything, even more bogus.  Fix it.
+	(build_binary_op): Undo default_conversion if it wasn't useful.
+
+	* typeck.c (build_unary_op, ADDR_EXPR): Lose bogus special case for
+	PRE*CREMENT_EXPR.
+
+	* decl2.c (import_export_vtable): Don't try the vtable hack
+	if the class doesn't have any real non-inline virtual functions.
+	(finish_vtable_vardecl): Don't bother trying to find a non-inline
+	virtual function in a non-polymorphic class.
+	(finish_prevtable_vardecl): Ditto.
+
+	* decl2.c (import_export_vtable): Use and set DECL_INTERFACE_KNOWN.
+
+	* cp-tree.h (DECL_INTERFACE_KNOWN): Use DECL_LANG_FLAG_5.
+
+	* init.c (expand_virtual_init): Always call assemble_external.
+
+	* class.c (build_vfn_ref): Always call assemble_external.
+	(build_vtable): Always call import_export_vtable.
+	(prepare_fresh_vtable): Ditto.
+	(add_virtual_function): Don't bother setting TREE_ADDRESSABLE.
+
 Thu Feb 16 03:28:49 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* class.c (finish_struct): Use TYPE_{MIN,MAX}_VALUE to determine
