@@ -2876,6 +2876,9 @@ process_command (argc, argv)
 	i++;
       else if (strncmp (argv[i], "-specs=", 7) == 0)
 	;
+      /* -save-temps overrides -pipe, so that temp files are produced */
+      else if (save_temps_flag && strcmp (argv[i], "-pipe") == 0)
+	error ("Warning: -pipe ignored since -save-temps specified");
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *p = &argv[i][1];
