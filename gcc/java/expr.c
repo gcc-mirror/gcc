@@ -1750,6 +1750,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	  while (TREE_CODE (body) == COMPOUND_EXPR)
 	    {
 	      expand_expr (TREE_OPERAND (body, 0), const0_rtx, VOIDmode, 0);
+	      emit_queue ();
 	      body = TREE_OPERAND (body, 1);
 	    }
 	  to_return = expand_expr (body, target, tmode, modifier);

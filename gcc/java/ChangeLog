@@ -1,3 +1,19 @@
+Tue Nov 24 12:57:13 1998  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (java_lang_expand_expr):  Add missing emit_queue.
+
+	* javaop.h (int8):  Removed - not used.
+	(jbyte):  Redefine portably with correct signedness.
+
+	* jcf-write.c (generate_bytecode_insns):  Don't free sw_state.cases.
+
+	* jcf-write.c (generate_bytecode_insns):  Fix typo
+	OPCODE_getstatic to OPCODE_getfield.
+
+	* java-tree.def (CASE_EXPR, DEFAULT_EXPR):  Kind is 'x', not '1'.
+	* parse.y (java_complete_tree):  For CASE_EXPR and DEFAULT_EXPR,
+	set TREE_SIDE_EFFECTS (otherwise expand_expr may skip them).
+
 Thu Nov 19 11:16:55 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (jcf_parse_source): Function returned type is
