@@ -1,5 +1,6 @@
 Sun Aug 29 14:35:41 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/execute/990829-1.c: New test.
 	* gcc.c-torture/compile/990829-1.c: New test.
 
 1999-08-27  Paul Burchard  <burchard@pobox.com>
