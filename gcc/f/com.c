@@ -89,6 +89,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"  /* Must follow tree.h so TREE_CODE is defined! */
 #include "convert.h"
 #include "ggc.h"
+#include "diagnostic.h"
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 #define FFECOM_GCC_INCLUDE 1	/* Enable -I. */
@@ -13989,7 +13990,7 @@ lang_printable_name (tree decl, int v)
 
 #if BUILT_FOR_270
 static void
-lang_print_error_function (const char *file)
+lang_print_error_function (diagnostic_context *context, const char *file)
 {
   static ffeglobal last_g = NULL;
   static ffesymbol last_s = NULL;

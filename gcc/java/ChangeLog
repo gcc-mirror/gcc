@@ -1,3 +1,10 @@
+2001-06-28  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* lang.c: #include diagnostic.h
+	(lang_print_error): Add a `diagnostic_context *' parameter.
+	(java_dummy_print): Likewise.
+	* Make-lang.in (JAVA_LEX_C): Depend on diagnostic.h
+
 2001-06-27  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* class.c (set_super_info): Call `set_class_decl_access_flags.'

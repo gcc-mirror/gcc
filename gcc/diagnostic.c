@@ -121,8 +121,8 @@ static int last_error_tick;
 /* Called by report_error_function to print out function name.
    Default may be overridden by language front-ends.  */
 
-void (*print_error_function) PARAMS ((const char *)) =
-  default_print_error_function;
+void (*print_error_function) PARAMS ((diagnostic_context *, const char *))
+     = default_print_error_function;
 
 /* Prevent recursion into the error handler.  */
 static int diagnostic_lock;
@@ -1204,35 +1204,36 @@ announce_function (decl)
    an error.  */
 
 void
-default_print_error_function (file)
-  const char *file;
+default_print_error_function (context, file)
+     diagnostic_context *context;
+     const char *file;
 {
   if (error_function_changed ())
     {
       char *prefix = file ? build_message_string ("%s: ", file) : NULL;
       output_state os;
 
-      os = output_buffer_state (diagnostic_buffer);
-      output_set_prefix (diagnostic_buffer, prefix);
+      os = output_buffer_state (context);
+      output_set_prefix ((output_buffer *)context, prefix);
       
       if (current_function_decl == NULL)
-          output_add_string (diagnostic_buffer, _("At top level:"));
+          output_add_string ((output_buffer *)context, _("At top level:"));
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
             output_printf
-              (diagnostic_buffer, "In method `%s':",
+              ((output_buffer *)context, "In member function `%s':",
                (*decl_printable_name) (current_function_decl, 2));
 	  else
             output_printf
-              (diagnostic_buffer, "In function `%s':",
+              ((output_buffer *)context, "In function `%s':",
                (*decl_printable_name) (current_function_decl, 2));
 	}
-      output_add_newline (diagnostic_buffer);
+      output_add_newline ((output_buffer *)context);
 
       record_last_error_function ();
-      output_buffer_to_stream (diagnostic_buffer);
-      output_buffer_state (diagnostic_buffer) = os;
+      output_buffer_to_stream ((output_buffer *)context);
+      output_buffer_state (context) = os;
       free ((char*) prefix);
     }
 }
@@ -1245,8 +1246,8 @@ void
 report_error_function (file)
   const char *file ATTRIBUTE_UNUSED;
 {
-  report_problematic_module (diagnostic_buffer);
-  (*print_error_function) (input_filename);
+  report_problematic_module ((output_buffer *)global_dc);
+  (*print_error_function) (global_dc, input_filename);
 }
 
 void

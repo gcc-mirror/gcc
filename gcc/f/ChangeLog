@@ -1,3 +1,9 @@
+2001-06-28  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* Make-lang.in (f/com.o): Depend on diagnostic.h
+	* com.c: #include diagnostic.h
+	(lang_print_error_function): Take a 'diagnostic_context *'.
+
 Wed Jun 13 11:22:39 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* BUGS: Remove.

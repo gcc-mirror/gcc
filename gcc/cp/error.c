@@ -116,7 +116,8 @@ static void dump_scope PARAMS ((tree, int));
 static void dump_template_parms PARAMS ((tree, int, int));
 
 static const char *function_category PARAMS ((tree));
-static void lang_print_error_function PARAMS ((const char *));
+static void lang_print_error_function PARAMS ((diagnostic_context *,
+                                               const char *));
 static void maybe_print_instantiation_context PARAMS ((output_buffer *));
 static void print_instantiation_full_context PARAMS ((output_buffer *));
 static void print_instantiation_partial_context PARAMS ((output_buffer *, tree,
@@ -2470,16 +2471,17 @@ cv_to_string (p, v)
 }
 
 static void
-lang_print_error_function (file)
+lang_print_error_function (context, file)
+     diagnostic_context *context;
      const char *file;
 {
   output_state os;
 
-  default_print_error_function (file);
-  os = output_buffer_state (diagnostic_buffer);
-  output_set_prefix (diagnostic_buffer, file);
-  maybe_print_instantiation_context (diagnostic_buffer);
-  output_buffer_state (diagnostic_buffer) = os;
+  default_print_error_function (context, file);
+  os = output_buffer_state (context);
+  output_set_prefix ((output_buffer *)context, file);
+  maybe_print_instantiation_context ((output_buffer *)context);
+  output_buffer_state (context) = os;
 }
 
 static void

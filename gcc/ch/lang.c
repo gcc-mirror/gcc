@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "rtl.h"
 #include "expr.h"
+#include "diagnostic.h"
 
 /* Type node for boolean types.  */
 
@@ -54,7 +55,8 @@ const char* chill_real_input_filename;
 extern FILE* finput;
 
 static int deep_const_expr			PARAMS ((tree));
-static void chill_print_error_function		PARAMS ((const char *));
+static void chill_print_error_function          PARAMS ((diagnostic_context *,
+                                                         const char *));
 
 /* Return 1 if the expression tree given has all
    constant nodes as its leaves,otherwise. */
@@ -229,7 +231,8 @@ lang_decode_option (argc, argv)
 }
 
 static void
-chill_print_error_function (file)
+chill_print_error_function (context, file)
+     diagnostic_context *buffer __attribute__((__unused__));
      const char *file;
 {
   static tree last_error_function = NULL_TREE;

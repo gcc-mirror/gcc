@@ -1,3 +1,9 @@
+2001-06-28  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* lang.c: #include diagnostic.h
+	(chill_print_error_function): Add a dummy `diagnostic_context *'.
+	* Makefile.in (lang.o): Depend on diagnostic.h
+
 2001-06-10  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* decl.c: #include diagnostic.h
