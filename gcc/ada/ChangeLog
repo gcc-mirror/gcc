@@ -1,3 +1,12 @@
+2004-10-04  Bernard Banner  <banner@gnat.com>
+
+	PR ada/13897
+
+	* Makefile.in: Add section for powerpc linux
+	Add variant i-vxwork-x86.ads
+
+	* i-vxwork-x86.ads, system-linux-ppc.ads: New files.
+
 2004-10-04  Olivier Hainque  <hainque@act-europe.fr>
 
 	* init.c (__gnat_initialize): Call an Ada subprogram to perform the
