@@ -1,3 +1,8 @@
+2001-01-12  Richard Earnshaw <rearnsha@arm.com>
+
+	* lib/f-torture.exp (f_torture_compile): Prune the warnings before
+	testing that no relevant ones were found.
+
 2001-01-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/cast2.C: New test.

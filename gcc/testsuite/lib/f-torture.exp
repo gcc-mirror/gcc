@@ -89,6 +89,9 @@ proc f-torture-compile { src option } {
 	return
     }
 
+    # Prune warnings we know are unwanted.
+    set comp_output [prune_warnings $comp_output]
+
     # We shouldn't get these because of -w, but just in case.
     if [string match "*77*:*warning:*" $comp_output] then {
 	warning "$testcase: (with warnings) $option"
@@ -97,8 +100,6 @@ proc f-torture-compile { src option } {
 	remote_file build delete $output
 	return
     }
-
-    set comp_output [prune_warnings $comp_output]
 
     set unsupported_message [g77_check_unsupported_p $comp_output]
     if { $unsupported_message != "" } {
