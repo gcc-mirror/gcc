@@ -1,3 +1,10 @@
+Sat Jan  9 10:44:28 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.c (system.h): Include.
+	(stdarg.h, varargs.h, stdlib.h): No longer include.
+	(free): Remove conditional declaration.
+	(build_min{,_vt}): Test ANSI_PROTOTYPES, not __STDC__.
+
 Sun Apr 12 22:31:19 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cvt.c (cp_convert_to_pointer): Use TYPE_PRECISION.
