@@ -3710,3 +3710,22 @@ mark_used (decl)
   if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
     instantiate_decl (decl);
 }
+
+/* Helper function for named_class_head_sans_basetype nonterminal.  */
+
+tree
+handle_class_head (aggr, scope, id)
+     tree aggr, scope, id;
+{
+  if (TREE_CODE (id) == TYPE_DECL)
+    return id;
+
+  if (scope)
+    cp_error ("`%T' does not have a nested type named `%D'", scope, id);
+  else
+    cp_error ("no file-scope type named `%D'", id);
+
+  id = xref_tag
+    (aggr, make_anon_name (), NULL_TREE, 1);
+  return TYPE_MAIN_DECL (id);
+}

@@ -420,7 +420,7 @@ finish_repo ()
     if (strcmp (old_main, main_input_filename) != 0
 	|| strcmp (old_dir, dir) != 0
 	|| (args == NULL) != (old_args == NULL)
-	|| strcmp (old_args, args) != 0)
+	|| (args && strcmp (old_args, args) != 0))
       repo_changed = 1;
 
   if (! repo_changed || errorcount || sorrycount)

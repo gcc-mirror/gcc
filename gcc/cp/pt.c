@@ -2945,6 +2945,11 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
       return unify (tparms, targs, ntparms, TREE_TYPE (parm),
 		    TREE_TYPE (arg), nsubsts, strict);
 
+    case CONST_DECL:
+      if (arg != decl_constant_value (parm))
+	return 1;
+      return 0;
+
     default:
       sorry ("use of `%s' in template type unification",
 	     tree_code_name [(int) TREE_CODE (parm)]);
