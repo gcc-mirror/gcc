@@ -1,3 +1,7 @@
+2002-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20020604-1.c: New test.
+
 2002-06-04  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/alpha-base-1.c: Add ext/ins/msk/umulh cases.
