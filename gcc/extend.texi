@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,96,99 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3015,8 +3015,11 @@ Predefined Macros,cpp.info,The C Preprocessor}).
                          declarations and definitions.
 * Template Instantiation:: Methods for ensuring that exactly one copy of
                          each needed template instantiation is emitted.
+* Bound member functions:: You can extract a function pointer to the
+                        method denoted by a @samp{->*} or @samp{.*} expression.
 * C++ Signatures::	You can specify abstract types to get subtype
 			 polymorphism independent from inheritance.
+                        
 @end menu
 
 @node Naming Results
@@ -3475,6 +3478,40 @@ be the same in all translation units, or things are likely to break.
 @xref{C++ Interface,,Declarations and Definitions in One Header}, for
 more discussion of these pragmas.
 @end enumerate
+
+@node Bound member functions
+@section Extracting the function pointer from a bound pointer to member function
+
+@cindex pmf
+@cindex pointer to member function
+@cindex bound pointer to member function
+
+In C++, pointer to member functions (PMFs) are implemented using a wide
+pointer of sorts to handle all the possible call mechanisms; the PMF
+needs to store information about how to adjust the @samp{this} pointer,
+and if the function pointed to is virtual, where to find the vtable, and
+where in the vtable to look for the member function.  If you are using
+PMFs in an inner loop, you should really reconsider that decision.  If
+that is not an option, you can extract the pointer to the function that
+would be called for a given object/PMF pair and call it directly inside
+the inner loop, to save a bit of time.
+
+Note that you will still be paying the penalty for the call through a
+function pointer; on most modern architectures, such a call defeats the
+branch prediction features of the CPU.  This is also true of normal
+virtual function calls.
+
+The syntax for this extension is
+
+@example
+extern A a;
+extern int (A::*fp)();
+typedef int (*fptr)(A *);
+
+fptr p = (fptr)(a.*fp);
+@end example
+
+You must specify @samp{-Wno-pmf-conversions} to use this extension.
 
 @node C++ Signatures
 @section Type Abstraction using Signatures

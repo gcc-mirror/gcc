@@ -1,3 +1,7 @@
+Mon Jan  4 11:55:51 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* extend.texi (Bound member functions): Document.
+
 Mon Jan  4 11:01:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips-tdump.c (st_to_string, sc_to_string, glevel_to_string,
