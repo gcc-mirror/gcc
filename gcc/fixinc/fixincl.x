@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 150 fixup descriptions.
+ * This file contains 151 fixup descriptions.
  *
  * See README for more information.
  *
@@ -4005,35 +4005,70 @@ static const char* apzSco_UtimePatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Solaris_Mutex_Init fix
+ *  Description of Solaris_Mutex_Init_1 fix
  */
-tSCC zSolaris_Mutex_InitName[] =
-     "solaris_mutex_init";
+tSCC zSolaris_Mutex_Init_1Name[] =
+     "solaris_mutex_init_1";
 
 /*
  *  File name selection pattern
  */
-tSCC zSolaris_Mutex_InitList[] =
+tSCC zSolaris_Mutex_Init_1List[] =
   "|pthread.h|";
 /*
  *  Machine/OS name selection pattern
  */
-#define apzSolaris_Mutex_InitMachs (const char**)NULL
+#define apzSolaris_Mutex_Init_1Machs (const char**)NULL
 
 /*
  *  content selection pattern - do fix if pattern found
  */
-tSCC zSolaris_Mutex_InitSelect0[] =
-       "@\\(#\\)pthread.h[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+tSCC zSolaris_Mutex_Init_1Select0[] =
+       "@\\(#\\)pthread.h[ \t]+1.1[0-9][ \t]+9[567]/[0-9/]+ SMI";
 
-#define    SOLARIS_MUTEX_INIT_TEST_CT  1
-static tTestDesc aSolaris_Mutex_InitTests[] = {
-  { TT_EGREP,    zSolaris_Mutex_InitSelect0, (regex_t*)NULL }, };
+#define    SOLARIS_MUTEX_INIT_1_TEST_CT  1
+static tTestDesc aSolaris_Mutex_Init_1Tests[] = {
+  { TT_EGREP,    zSolaris_Mutex_Init_1Select0, (regex_t*)NULL }, };
 
 /*
- *  Fix Command Arguments for Solaris_Mutex_Init
+ *  Fix Command Arguments for Solaris_Mutex_Init_1
  */
-static const char* apzSolaris_Mutex_InitPatch[] = {
+static const char* apzSolaris_Mutex_Init_1Patch[] = { "sed",
+    "-e", "/define[ \t]*PTHREAD_MUTEX_INI/s/{0, 0,/{{{0}, 0}, {{{0}}},/\n\
+/define[ \t]*PTHREAD_COND_INI/s/{0,/{{{0},0},/",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Solaris_Mutex_Init_2 fix
+ */
+tSCC zSolaris_Mutex_Init_2Name[] =
+     "solaris_mutex_init_2";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSolaris_Mutex_Init_2List[] =
+  "|pthread.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzSolaris_Mutex_Init_2Machs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zSolaris_Mutex_Init_2Select0[] =
+       "@\\(#\\)pthread.h[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+
+#define    SOLARIS_MUTEX_INIT_2_TEST_CT  1
+static tTestDesc aSolaris_Mutex_Init_2Tests[] = {
+  { TT_EGREP,    zSolaris_Mutex_Init_2Select0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Solaris_Mutex_Init_2
+ */
+static const char* apzSolaris_Mutex_Init_2Patch[] = {
     "format",
     "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n\
 %0\n\
@@ -5932,9 +5967,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          162
+#define REGEX_COUNT          163
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            150
+#define FIX_COUNT            151
 
 /*
  *  Enumerate the fixes
@@ -6040,7 +6075,8 @@ typedef enum {
     RS6000_PARAM_FIXIDX,
     SCO_STATIC_FUNC_FIXIDX,
     SCO_UTIME_FIXIDX,
-    SOLARIS_MUTEX_INIT_FIXIDX,
+    SOLARIS_MUTEX_INIT_1_FIXIDX,
+    SOLARIS_MUTEX_INIT_2_FIXIDX,
     SOLARIS_STDIO_TAG_FIXIDX,
     SOLARIS_WIDEC_FIXIDX,
     STATSSWTCH_FIXIDX,
@@ -6593,10 +6629,15 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      SCO_UTIME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aSco_UtimeTests,   apzSco_UtimePatch, 0 },
 
-  {  zSolaris_Mutex_InitName,    zSolaris_Mutex_InitList,
-     apzSolaris_Mutex_InitMachs,
-     SOLARIS_MUTEX_INIT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aSolaris_Mutex_InitTests,   apzSolaris_Mutex_InitPatch, 0 },
+  {  zSolaris_Mutex_Init_1Name,    zSolaris_Mutex_Init_1List,
+     apzSolaris_Mutex_Init_1Machs,
+     SOLARIS_MUTEX_INIT_1_TEST_CT, FD_MACH_ONLY,
+     aSolaris_Mutex_Init_1Tests,   apzSolaris_Mutex_Init_1Patch, 0 },
+
+  {  zSolaris_Mutex_Init_2Name,    zSolaris_Mutex_Init_2List,
+     apzSolaris_Mutex_Init_2Machs,
+     SOLARIS_MUTEX_INIT_2_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aSolaris_Mutex_Init_2Tests,   apzSolaris_Mutex_Init_2Patch, 0 },
 
   {  zSolaris_Stdio_TagName,    zSolaris_Stdio_TagList,
      apzSolaris_Stdio_TagMachs,

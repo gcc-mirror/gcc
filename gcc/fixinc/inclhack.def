@@ -2225,6 +2225,26 @@ fix = {
 
 
 /*
+ *  Sun Solaris 2.5.1, 2.6 defines PTHREAD_{MUTEX|COND}_INITIALIZER
+ *  incorrectly, so we replace them with versions that correspond to
+ *  the definition.  We also explicitly name this fix "1" and the next
+ *  fix "2" because this one does not deal with the last field.  This
+ *  fix needs to run before the next.
+ */
+fix = {
+    hackname = solaris_mutex_init_1;
+    select = '@\(#\)pthread.h' "[ \t]+1.1[0-9][ \t]+9[567]/[0-9/]+ SMI";
+    files = pthread.h;
+    sed   = "/define[ \t]*PTHREAD_MUTEX_INI/s/{0, 0,/{{{0}, 0}, {{{0}}},/\n"
+            "/define[ \t]*PTHREAD_COND_INI/s/{0,/{{{0},0},/";
+    test_text =
+    '#ident "@(#)pthread.h  1.16    97/05/05 SMI"'"\n"
+    "#define PTHREAD_MUTEX_INITIALIZER\t{0, 0, 0}\n"
+    "#define PTHREAD_COND_INITIALIZER\t{0, 0} /* */\n";
+};
+
+
+/*
  * Sun Solaris defines PTHREAD_MUTEX_INITIALIZER with a trailing
  * "0" for the last field of the pthread_mutex_t structure, which is
  * of type upad64_t, which itself is typedef'd to int64_t, but with
@@ -2232,7 +2252,7 @@ fix = {
  * initializer to "{0}" instead
  */
 fix = {
-    hackname = solaris_mutex_init;
+    hackname = solaris_mutex_init_2;
     select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
     files = pthread.h;
     c_fix = format;

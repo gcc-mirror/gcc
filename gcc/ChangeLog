@@ -1,3 +1,13 @@
+2003-03-29  Albert Chin-A-Young  <china@thewrittenword.com>
+	DJ Delorie  <dj at redhat dot com>,
+	Bruce Korb  <bkorb at gnu dot org>
+
+	* fixinc/inclhack.def (solaris_mutex_init_1): New; Fix
+	buggy Solaris mutex/cond initializers.
+	(solaris_mutex_init): Rename to solaris_mutex_init_2.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/pthread.h: Update.
+
 2003-03-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/fixinc.interix: Remove completely dead code
