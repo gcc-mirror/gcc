@@ -1,6 +1,6 @@
 #!/bin/sh
 # Construct makefile for libgcc.
-#   Copyright (C) 2000 Free Software Foundation, Inc.
+#   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 
@@ -9,7 +9,8 @@
 #
 # objext
 # LIB1ASMFUNCS
-# LIB2FUNCS
+# LIB2FUNCS_1
+# LIB2FUNCS_2
 # LIB2FUNCS_ST
 # LIB2ADD
 # LIB2ADD_ST 
@@ -81,9 +82,12 @@ for name in $LIB1ASMFUNCS; do
 
     # Remove any objects from LIB2FUNCS and LIB2_DIVMOD_FUNCS that are
     # defined as optimized assembly code in LIB1ASMFUNCS.
-    LIB2FUNCS=`echo $LIB2FUNCS | sed -e 's/^'$name' //' \
-				     -e 's/ '$name' / /' \
-				     -e 's/ '$name'$//'`
+    LIB2FUNCS_1=`echo $LIB2FUNCS_1 | sed -e 's/^'$name' //' \
+				         -e 's/ '$name' / /' \
+				         -e 's/ '$name'$//'`
+    LIB2FUNCS_2=`echo $LIB2FUNCS_2 | sed -e 's/^'$name' //' \
+				         -e 's/ '$name' / /' \
+				         -e 's/ '$name'$//'`
     LIB2_DIVMOD_FUNCS=`echo $LIB2_DIVMOD_FUNCS | sed -e 's/^'$name' //' \
 				                     -e 's/ '$name' / /' \
 				                     -e 's/ '$name'$//'`
@@ -99,7 +103,7 @@ libgcc2_objs=""
 libgcc2_st_objs=""
 libgcc2_eh_objs=""
 
-for name in $LIB2FUNCS; do
+for name in $LIB2FUNCS_1 $LIB2FUNCS_2; do
   for ml in $MULTILIBS; do
     dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
