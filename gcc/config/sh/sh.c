@@ -8898,6 +8898,15 @@ sh_register_operand (rtx op, enum machine_mode mode)
   return register_operand (op, mode);
 }
 
+int
+cmpsi_operand (rtx op, enum machine_mode mode)
+{
+  if (GET_CODE (op) == REG && REGNO (op) == T_REG
+      && GET_MODE (op) == SImode)
+    return 1;
+  return arith_operand (op, mode);
+}
+
 static rtx emit_load_ptr (rtx, rtx);
 
 static rtx
@@ -9127,6 +9136,35 @@ sh_get_pr_initial_val (void)
   if (TARGET_SH1)
     return gen_rtx_UNSPEC (SImode, gen_rtvec (1, val), UNSPEC_RA);
   return val;
+}
+
+int
+sh_expand_t_scc (enum rtx_code code, rtx target)
+{
+  rtx result = target;
+  HOST_WIDE_INT val;
+
+  if (GET_CODE (sh_compare_op0) != REG || REGNO (sh_compare_op0) != T_REG
+      || GET_CODE (sh_compare_op1) != CONST_INT)
+    return 0;
+  if (GET_CODE (result) != REG)
+    result = gen_reg_rtx (SImode);
+  val = INTVAL (sh_compare_op1);
+  if ((code == EQ && val == 1) || (code == NE && val == 0))
+    emit_insn (gen_movt (result));
+  else if ((code == EQ && val == 0) || (code == NE && val == 1))
+    {
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, result));
+      emit_insn (gen_subc (result, result, result));
+      emit_insn (gen_addsi3 (result, result, GEN_INT (1)));
+    }
+  else if (code == EQ || code == NE)
+    emit_insn (gen_move_insn (result, GEN_INT (code == NE)));
+  else
+    return 0;
+  if (result != target)
+    emit_move_insn (target, result);
+  return 1;
 }
 
 #include "gt-sh.h"

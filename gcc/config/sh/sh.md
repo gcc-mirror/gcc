@@ -705,11 +705,14 @@
 
 (define_expand "cmpsi"
   [(set (reg:SI T_REG)
-	(compare (match_operand:SI 0 "arith_operand" "")
+	(compare (match_operand:SI 0 "cmpsi_operand" "")
 		 (match_operand:SI 1 "arith_operand" "")))]
   "TARGET_SH1"
   "
 {
+  if (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == T_REG
+      && GET_CODE (operands[1]) != CONST_INT)
+    operands[0] = copy_to_mode_reg (SImode, operands[0]);
   sh_compare_op0 = operands[0];
   sh_compare_op1 = operands[1];
   DONE;
@@ -1167,7 +1170,9 @@
 			    (match_operand:SI 2 "arith_reg_operand" "r"))
 		  (reg:SI T_REG)))
    (set (reg:SI T_REG)
-	(gtu:SI (minus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
+	(gtu:SI (minus:SI (minus:SI (match_dup 1) (match_dup 2))
+			  (reg:SI T_REG))
+		(match_dup 1)))]
   "TARGET_SH1"
   "subc	%2,%0"
   [(set_attr "type" "arith")])
@@ -7446,6 +7451,10 @@ mov.l\\t1f,r0\\n\\
 	}
       DONE;
     }
+  if (sh_expand_t_scc (EQ, operands[0]))
+    DONE;
+  if (! rtx_equal_function_value_matters)
+    FAIL;
   operands[1] = prepare_scc_operands (EQ);
 }")
 
@@ -7492,6 +7501,8 @@ mov.l\\t1f,r0\\n\\
 	}
       DONE;
     }
+  if (! rtx_equal_function_value_matters)
+    FAIL;
   operands[1] = prepare_scc_operands (LT);
 }")
 
@@ -7594,6 +7605,8 @@ mov.l\\t1f,r0\\n\\
 	}
       DONE;
     }
+  if (! rtx_equal_function_value_matters)
+    FAIL;
   operands[1] = prepare_scc_operands (GT);
 }")
 
@@ -7646,6 +7659,8 @@ mov.l\\t1f,r0\\n\\
       DONE;
     }
 
+  if (! rtx_equal_function_value_matters)
+    FAIL;
   if (GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
     {
       if (TARGET_IEEE)
@@ -7685,6 +7700,8 @@ mov.l\\t1f,r0\\n\\
 				     sh_compare_op0, sh_compare_op1));
       DONE;
     }
+  if (! rtx_equal_function_value_matters)
+    FAIL;
   operands[1] = prepare_scc_operands (GTU);
 }")
 
@@ -7709,6 +7726,8 @@ mov.l\\t1f,r0\\n\\
 				     sh_compare_op1, sh_compare_op0));
       DONE;
     }
+  if (! rtx_equal_function_value_matters)
+    FAIL;
   operands[1] = prepare_scc_operands (LTU);
 }")
 
@@ -7738,6 +7757,8 @@ mov.l\\t1f,r0\\n\\
 
       DONE;
     }
+  if (! rtx_equal_function_value_matters)
+    FAIL;
   operands[1] = prepare_scc_operands (LEU);
 }")
 
@@ -7768,6 +7789,8 @@ mov.l\\t1f,r0\\n\\
       DONE;
     }
 
+  if (! rtx_equal_function_value_matters)
+    FAIL;
   operands[1] = prepare_scc_operands (GEU);
 }")
 
@@ -7815,8 +7838,12 @@ mov.l\\t1f,r0\\n\\
       DONE;
     }
 
-   operands[1] = prepare_scc_operands (EQ);
-   operands[2] = gen_reg_rtx (SImode);
+  if (sh_expand_t_scc (NE, operands[0]))
+    DONE;
+  if (! rtx_equal_function_value_matters)
+    FAIL;
+  operands[1] = prepare_scc_operands (EQ);
+  operands[2] = gen_reg_rtx (SImode);
 }")
 
 (define_expand "sunordered"
