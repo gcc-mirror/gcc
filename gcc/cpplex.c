@@ -1096,7 +1096,10 @@ _cpp_parse_name (pfile, c)
 	  break;
       }
 
-      if (c == '$' && CPP_PEDANTIC (pfile))
+      /* $ is not a legal identifier character in the standard, but is
+	 commonly accepted as an extension.  Don't warn about it in
+	 skipped conditional blocks. */
+      if (c == '$' && CPP_PEDANTIC (pfile) && ! pfile->skipping)
 	cpp_pedwarn (pfile, "`$' in identifier");
 
       CPP_RESERVE(pfile, 2); /* One more for final NUL.  */
