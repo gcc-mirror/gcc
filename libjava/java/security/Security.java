@@ -475,7 +475,7 @@ public final class Security extends Object
    *    provider that supplied a CertificateFactory implementation for X.509
    *    certificates.</p></li>
    *
-   *    <li><p>&lt;crypto_service>.&lt;algorithm_or_type>&nbsp;&lt;attribute_name>:&lt;attribute_value></p>
+   *    <li><p>&lt;crypto_service>.&lt;algorithm_or_type> &lt;attribute_name>:&lt;attribute_value></p>
    *    <p>The cryptographic service name must not contain any dots. There must
    *    be one or more space charaters between the the &lt;algorithm_or_type>
    *    and the &lt;attribute_name>.</p>

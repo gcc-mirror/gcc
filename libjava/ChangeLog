@@ -1,3 +1,7 @@
+2003-12-02  Mark Wielaard  <mark@klomp.org>
+
+	* java/security/Security.java: Don't use &nbsp; in the api doc.
+
 2003-12-02  Dalibor Topic <robilad@kaffe.org>
 
 	Reported by: Jim Pick <jim@kaffe.org>
