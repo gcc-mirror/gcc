@@ -55,8 +55,17 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     #  [name]:[line2]: Error: Some error at (1) and (2)
     # We proceed in two steps: first we deal with the form with two
     # different locus lines, then with the form with only one locus line.
-    regsub -all " In file (\[^\n\]*)\n\n\[^\n\]*\n\[^\n\]*\n In file (\[^\n\]*)\n\n\[^\n\]*\n\[^\n\]*\n(\[^\n\]*)\n" $comp_output "\\1: \\3\n\\2: \\3\n"  comp_output
-    regsub -all " In file (\[^\n\]*)\n\n\[^\n\]*\n\[^\n\]*\n(\[^\n\]*)\n" $comp_output "\\1: \\2\n" comp_output
+    #
+    # Note that these regexps only make sense in the combinations used below.
+    # Note also that is imperative that we first deal with the form with
+    # two loci.
+    set locus_regexp " In file (\[^\n\]*)\n\n\[^\n\]*\n\[^\n\]*\n"
+    set diag_regexp "(\[^\n\]*)\n"
+
+    set two_loci "$locus_regexp$locus_regexp$diag_regexp"
+    set single_locus "$locus_regexp$diag_regexp"
+    regsub -all $two_loci $comp_output "\\1: \\3\n\\2: \\3\n" comp_output
+    regsub -all $single_locus $comp_output "\\1: \\2\n" comp_output
 
     return [list $comp_output $output_file]
 }

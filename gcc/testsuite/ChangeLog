@@ -1,4 +1,8 @@
-2005-01-31  Jeff Law  <law@redhat.com>
+2005-02-21  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* lib/gfortran-dg.exp (gfortran-dg-test): Split long regexps.
+
+2005-02-21  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/20041122-1.c: New test for missing optimization.
 
