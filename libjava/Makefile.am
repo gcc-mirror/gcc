@@ -120,7 +120,11 @@ libgcj.zip: $(java_source_files)
 	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
-CLEANFILES = libgcj.zip $(class_files)
+CLEANFILES = libgcj.zip
+
+clean-local:
+## We just remove every .class file that was created.
+	find . -name '*.class' -print | xargs rm -f
 
 SUFFIXES = .class .java .h
 

@@ -163,7 +163,7 @@ libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) -release $(VERSION)
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
-CLEANFILES = libgcj.zip $(class_files)
+CLEANFILES = libgcj.zip
 
 SUFFIXES = .class .java .h
 
@@ -1196,7 +1196,8 @@ mostlyclean: mostlyclean-recursive
 
 clean-am:  clean-hdr clean-toolexeclibLTLIBRARIES clean-compile \
 		clean-libtool clean-binPROGRAMS clean-noinstPROGRAMS \
-		clean-tags clean-depend clean-generic mostlyclean-am
+		clean-tags clean-depend clean-generic mostlyclean-am \
+		clean-local
 
 clean: clean-recursive
 
@@ -1257,6 +1258,9 @@ libgcj.zip: $(java_source_files)
 	    $(subst $(srcdir)/,,$?)
 	-@rm -f libgcj.zip
 	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
+
+clean-local:
+	find . -name '*.class' -print | xargs rm -f
 
 .class.lo:
 	$(GCJCOMPILE) -o $@ $<
