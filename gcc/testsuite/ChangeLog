@@ -1,3 +1,7 @@
+2004-08-16  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/funcdef-attr-1.c: New test.
+
 2004-08-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/altivec-17.c: New test.
