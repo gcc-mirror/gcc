@@ -1060,7 +1060,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
 /* Post-switch processing.  */
 bool
-c_common_post_options (const char **pfilename)
+c_common_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
   /* Canonicalize the input and output filenames.  */
   if (in_fnames == NULL)
@@ -1152,9 +1152,6 @@ c_common_post_options (const char **pfilename)
   cpp_get_callbacks (parse_in)->file_change = cb_file_change;
   cpp_post_options (parse_in);
 
-  /* NOTE: we use in_fname here, not the one supplied.  */
-  *pfilename = cpp_read_main_file (parse_in, in_fnames[0]);
-
   saved_lineno = input_line;
   input_line = 0;
 
@@ -1221,7 +1218,6 @@ c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
 	  /* Reset cpplib's macros and start a new file.  */
 	  cpp_undef_all (parse_in);
-	  cpp_read_main_file (parse_in, in_fnames[file_index]);
 	}
 
       finish_options(in_fnames[file_index]);
@@ -1399,7 +1395,7 @@ finish_options (const char *tif)
     {
       size_t i;
 
-      cpp_change_file (parse_in, LC_RENAME, _("<built-in>"));
+      cpp_change_file (parse_in, LC_ENTER, _("<built-in>"));
       cpp_init_builtins (parse_in, flag_hosted);
       c_cpp_builtins (parse_in);
 
@@ -1445,6 +1441,7 @@ finish_options (const char *tif)
 
   include_cursor = 0;
   this_input_filename = tif;
+  cpp_find_main_file (parse_in, this_input_filename);
   push_command_line_include ();
 }
 
@@ -1452,24 +1449,24 @@ finish_options (const char *tif)
 static void
 push_command_line_include (void)
 {
-  if (cpp_opts->preprocessed)
-    return;
-
   while (include_cursor < deferred_count)
     {
       struct deferred_opt *opt = &deferred_opts[include_cursor++];
 
-      if (opt->code == OPT_include && cpp_push_include (parse_in, opt->arg))
+      if (! cpp_opts->preprocessed && opt->code == OPT_include
+	  && cpp_push_include (parse_in, opt->arg))
 	return;
     }
 
   if (include_cursor == deferred_count)
     {
+      include_cursor++;
       /* Restore the line map from <command line>.  */
-      cpp_change_file (parse_in, LC_RENAME, this_input_filename);
+      if (! cpp_opts->preprocessed)
+	cpp_change_file (parse_in, LC_LEAVE, NULL);
       /* -Wunused-macros should only warn about macros defined hereafter.  */
       cpp_opts->warn_unused_macros = warn_unused_macros;
-      include_cursor++;
+      cpp_push_main_file (parse_in);
     }
 }
 
@@ -1483,7 +1480,7 @@ cb_file_change (cpp_reader *pfile ATTRIBUTE_UNUSED,
   else
     fe_file_change (new_map);
 
-  if (new_map->reason == LC_LEAVE && MAIN_FILE_P (new_map))
+  if (new_map == 0 || (new_map->reason == LC_LEAVE && MAIN_FILE_P (new_map)))
     push_command_line_include ();
 }
 
