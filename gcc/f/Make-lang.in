@@ -96,7 +96,7 @@ G77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g77 | sed $$t`
 # Note that it would be nice to move the dependency on g77
 # into the F77 rule, but that needs a little bit of work
 # to do the right thing within all.cross.
-F77 f77: f771 f77-runtime
+F77 f77: f771
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: F77 f77 f77-runtime f77-runtime-unsafe f77.all.build f77.all.cross \
@@ -309,10 +309,13 @@ f/runtime/libU77/Makefile: \
 # I'm not sure there's a way of getting f2c into here conditionally on
 # the --enable-f2c flag detected by config-lang.in so kluge it with the
 # maybe-f2c target by looking at STAGESTUFF.
-f77.all.build: g77 maybe-f2c
-f77.all.cross: g77-cross maybe-f2c
+# We need to build the runtime after libgcc.a, so as to avoid a circular
+# dependence on cplib2.ready.  So instead of putting it in LANGUAGES (via
+# the f77 rule), it goes at the end of each all.* build rule.
+f77.all.build: g77 maybe-f2c f77-runtime
+f77.all.cross: g77-cross maybe-f2c f77-runtime
 f77.start.encap: g77 maybe-f2c
-f77.rest.encap:
+f77.rest.encap: f77-runtime
 
 f77.info: $(srcdir)/f/g77.info
 f77.dvi: $(srcdir)/f/g77.dvi
