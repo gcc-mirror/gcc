@@ -1284,7 +1284,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (align > MAX_OFILE_ALIGNMENT)
     {
       warning_with_decl (decl,
-	  "alignment of `%s' is greater than maximum object file alignment");
+	"alignment of `%s' is greater than maximum object file alignment. Using %d.",
+                    MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
     }
 
