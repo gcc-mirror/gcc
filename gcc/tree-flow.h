@@ -66,6 +66,9 @@ struct ptr_info_def GTY(())
   /* Nonzero if this pointer points to a global variable.  */
   unsigned int pt_global_mem : 1;
 
+  /* Nonzero if this pointer points to NULL.  */
+  unsigned int pt_null : 1;
+
   /* Set of variables that this pointer may point to.  */
   bitmap pt_vars;
 

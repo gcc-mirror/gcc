@@ -1,5 +1,23 @@
 2005-02-01  Diego Novillo  <dnovillo@redhat.com>
 
+	PR tree-optimization/19633
+	* tree-flow.h (struct ptr_info_def): Add field 'pt_null'.
+	* tree-ssa-alias.c (init_alias_info): Initialize.
+	(merge_pointed_to_info): Set.
+	(add_pointed_to_expr): Set pt_null if EXPR is a NULL pointer.
+	(dump_points_to_info_for): Show value of pt_null.
+	(struct count_ptr_d): Declare.
+	(find_ptr_dereference): Remove.
+	(ptr_is_dereferenced_by): Remove.
+	(count_ptr_derefs): New local function.
+	(count_uses_and_derefs): New local function.
+	(compute_points_to_and_addr_escape): Call it.  If the number
+	of dereferences is greater than zero, mark the pointer as
+	dereferenced.  If there are fewer dereferences than uses of
+	the pointer, the pointer's value escapes.
+
+2005-02-01  Diego Novillo  <dnovillo@redhat.com>
+
 	PR tree-optimization/19670
 	* tree-ssa.c (verify_ssa_name): Don't set TREE_VISITED
 	here...

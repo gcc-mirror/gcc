@@ -1,3 +1,10 @@
+2005-02-01  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/19633
+	* testsuite/gcc.dg/pr19633-1.c: New test.
+	* testsuite/gcc.dg/pr19633.c: Tweak to make pointer point
+	to NULL or a symbol.
+
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/gcc-dg.exp (selector_opd, selector_list, selector_expression):
