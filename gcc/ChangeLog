@@ -1,3 +1,11 @@
+2000-10-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-decl.c (grokdeclarator): Move warning for qualified void
+	return types with -pedantic to when the function type is
+	constructed.  At -W, warn in general for qualified function return
+	types, except for volatile void.
+	* invoke.texi: Document this new warning at -W.
+
 2000-10-25  Neil Booth  <neilb@earthling.net>
 
         * cpp.texi: Update with implementation-defined behavior and

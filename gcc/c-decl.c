@@ -4577,7 +4577,26 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  /* Type qualifiers before the return type of the function
 	     qualify the return type, not the function type.  */
 	  if (type_quals)
-	    type = c_build_qualified_type (type, type_quals);
+	    {
+	      /* Type qualifiers on a function return type are normally
+		 permitted by the standard but have no effect, so give a
+		 warning at -W.  Qualifiers on a void return type have
+		 meaning as a GNU extension, and are banned on function
+		 definitions in ISO C.  FIXME: strictly we shouldn't
+		 pedwarn for qualified void return types except on function
+		 definitions, but not doing so could lead to the undesirable
+		 state of a "volatile void" function return type not being
+		 warned about, and a use of the function being compiled
+		 with GNU semantics, with no diagnostics under -pedantic.  */
+	      if (VOID_TYPE_P (type) && pedantic && !in_system_header)
+		pedwarn ("ISO C forbids qualified void function return type");
+	      else if (extra_warnings
+		       && !(VOID_TYPE_P (type)
+			    && type_quals == TYPE_QUAL_VOLATILE))
+		warning ("type qualifiers ignored on function return type");
+
+	      type = c_build_qualified_type (type, type_quals);
+	    }
 	  type_quals = TYPE_UNQUALIFIED;
 
 	  type = build_function_type (type, arg_types);
@@ -4853,12 +4872,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	if (pedantic && type_quals && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ISO C forbids qualified function types");
-
-	if (pedantic
-	    && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
-	    && TYPE_QUALS (TREE_TYPE (TREE_TYPE (decl)))
-	    && ! DECL_IN_SYSTEM_HEADER (decl))
-	  pedwarn ("ISO C forbids qualified void function return type");
 
 	/* GNU C interprets a `volatile void' return type to indicate
 	   that the function does not return.  */

@@ -1817,6 +1817,13 @@ Storage-class specifiers like @code{static} are not the first things in
 a declaration.  According to the C Standard, this usage is obsolescent.
 
 @item
+The return type of a function has a type qualifier such as @code{const}.
+Such a type qualifier has no effect, since the value returned by a
+function is not an lvalue.  (But don't warn about the GNU extension of
+@code{volatile void} return types.  That extension will be warned about
+if @samp{-pedantic} is specified.)
+
+@item
 If @samp{-Wall} or @samp{-Wunused} is also specified, warn about unused
 arguments.
 
