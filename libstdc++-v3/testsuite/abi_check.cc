@@ -90,6 +90,7 @@ check_version(const symbol_info& test, bool added = false)
       known_versions.push_back("GLIBCPP_3.2.4"); // gcc-3.3.4
       known_versions.push_back("CXXABI_1.2");
       known_versions.push_back("CXXABI_1.2.1");
+      known_versions.push_back("CXXABI_1.2.2");
     }
   compat_list::iterator begin = known_versions.begin();
   compat_list::iterator end = known_versions.end();
