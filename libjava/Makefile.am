@@ -1767,6 +1767,16 @@ javax/print/attribute/SupportedValuesAttribute.java \
 javax/print/attribute/TextSyntax.java \
 javax/print/attribute/UnmodifiableSetException.java \
 javax/print/attribute/URISyntax.java \
+javax/print/attribute/standard/Copies.java \
+javax/print/attribute/standard/JobImpressions.java \
+javax/print/attribute/standard/JobMediaSheets.java \
+javax/print/attribute/standard/JobPriority.java \
+javax/print/attribute/standard/NumberOfDocuments.java \
+javax/print/attribute/standard/NumberOfInterveningJobs.java \
+javax/print/attribute/standard/NumberUp.java \
+javax/print/attribute/standard/PagesPerMinute.java \
+javax/print/attribute/standard/PagesPerMinuteColor.java \
+javax/print/attribute/standard/QueuedJobCount.java \
 javax/security/auth/x500/X500Principal.java \
 javax/sql/ConnectionEvent.java \
 javax/sql/ConnectionEventListener.java \
