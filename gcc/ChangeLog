@@ -1,3 +1,7 @@
+2002-08-06  Dale Johannesen  <dalej@apple.com>
+	* c-common.c (fname_decl): Use line number 0 for
+        __func__, to avoid confusing debuggers.
+
 2002-08-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov.c: Tidy.
