@@ -8865,9 +8865,13 @@ sh_get_pr_initial_val (void)
      then, we end in trouble if we didn't use the register in the same
      basic block before.  So call get_hard_reg_initial_val now and wrap it
      in an unspec if we might need to replace it.  */
+  /* ??? We also must do this for TARGET_SH1 in general, because otherwise
+     combine can put the pseudo returned by get_hard_reg_initial_val into
+     instructions that need a general purpose registers, which will fail to
+     be recognized when the pseudo becomes allocated to PR.  */
   val
     = get_hard_reg_initial_val (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG);
-  if (TARGET_SHCOMPACT && rtx_equal_function_value_matters)
+  if (TARGET_SH1)
     return gen_rtx_UNSPEC (SImode, gen_rtvec (1, val), UNSPEC_RA);
   return val;
 }
