@@ -1,3 +1,8 @@
+2004-09-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/17618
+	* g++.dg/lookup/crash5.C: New test.
+
 2004-09-23  Dorit Naishlos <dorit@il.ibm.com>
 
         * gcc.dg/vect/vect-27.c: Now vectorized on altivec.
