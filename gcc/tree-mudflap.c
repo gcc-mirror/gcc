@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
 
@@ -161,7 +161,7 @@ mf_varname_tree (tree decl)
 
   /* Add <variable-declaration>, possibly demangled.  */
   {
-    const char *declname = "<unnamed variable>";
+    const char *declname = NULL;
 
     if (DECL_NAME (decl) != NULL)
       {
@@ -175,6 +175,8 @@ mf_varname_tree (tree decl)
 	if (declname == NULL)
 	  declname = lang_hooks.decl_printable_name (decl, 3);
       }
+    if (declname == NULL)
+      declname = "<unnamed variable>";
 
     pp_string (buf, declname);
   }
