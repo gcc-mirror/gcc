@@ -6598,12 +6598,15 @@ identifier_global_value	(tree t)
 void
 record_builtin_type (enum rid rid_index, const char *name, tree type)
 {
-  tree id;
+  tree id, decl;
   if (name == 0)
     id = ridpointers[(int) rid_index];
   else
     id = get_identifier (name);
-  pushdecl (build_decl (TYPE_DECL, id, type));
+  decl = build_decl (TYPE_DECL, id, type);
+  pushdecl (decl);
+  if (debug_hooks->type_decl)
+    debug_hooks->type_decl (decl, false);
 }
 
 /* Build the void_list_node (void_type_node having been created).  */

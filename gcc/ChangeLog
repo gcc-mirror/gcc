@@ -1,5 +1,9 @@
 2004-08-03  Zack Weinberg  <zack@codesourcery.com>
 
+	PR 14680
+	* c-decl.c (record_builtin_type): Call debug_hooks->type_decl
+	on the new decl.
+
 	PR 13596
 	* dbxout.c (dbx_output_lbrac, dbx_output_rbrac): New
 	functions, broken out of dbxout_block.
