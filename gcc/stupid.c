@@ -199,6 +199,13 @@ stupid_life_analysis (f, nregs, file)
 	if (regs_live[i])
 	  SET_HARD_REG_BIT (*p, i);
 
+      /* Update which hard regs are currently live
+	 and also the birth and death suids of pseudo regs
+	 based on the pattern of this insn.  */
+
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	stupid_mark_refs (PATTERN (insn), insn);
+
       /* Mark all call-clobbered regs as live after each call insn
 	 so that a pseudo whose life span includes this insn
 	 will not go in one of them.
@@ -215,15 +222,11 @@ stupid_life_analysis (f, nregs, file)
 	    if (call_used_regs[i])
 	      regs_live[i] = 0;
 
+	  /* It is important that this be done after processing the insn's
+	     pattern because we want the function result register to still
+	     be live if it's also used to pass arguments.  */
 	  stupid_mark_refs (CALL_INSN_FUNCTION_USAGE (insn), insn);
 	}
-
-      /* Update which hard regs are currently live
-	 and also the birth and death suids of pseudo regs
-	 based on the pattern of this insn.  */
-
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	stupid_mark_refs (PATTERN (insn), insn);
     }
 
   /* Now decide the order in which to allocate the pseudo registers.  */
