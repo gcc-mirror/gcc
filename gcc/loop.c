@@ -2679,7 +2679,7 @@ find_and_verify_loops (f, loops)
 		rtx tmp;
 
 		/* Search for possible garbage past the conditional jumps
-		   and look for latest barrier.  */
+		   and look for the last barrier.  */
 		for (tmp = last_insn_to_move;
 		     tmp && GET_CODE (tmp) != CODE_LABEL; tmp = NEXT_INSN (tmp))
 		  if (GET_CODE (tmp) == BARRIER)
