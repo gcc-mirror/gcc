@@ -1,3 +1,75 @@
+Sat Oct  9 12:18:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (flow.o): Depend on TREE_H.
+	* basic-block.h (REG_SET_EQUAL_P): New.
+	(XOR_REG_SET): New.
+	(n_edges): Declare.
+	(free_regset_vector): Remove declaration.
+	(flow_delete_insn_chain): Declare.
+	(enum update_life_extent): New.
+	(update_life_info, count_or_remove_death_notes): Declare.
+	* combine.c (distribute_notes) [REG_DEAD]: Stop search at bb->head.
+	Verify register live at bb->global_live_at_start before adding USE.
+	* flow.c (HAVE_epilogue, HAVE_prologue): Provide default.
+	(CLEAN_ALLOCA): New.
+	(n_edges): New.	
+	(PROP_*): New flags.
+	(find_basic_blocks_1): Use alloc_EXPR_LIST.
+	(clear_edges): Zero n_edges.
+	(make_edge): Increment n_edges.
+	(split_edge): Don't allocate bb->local_set.  Increment n_edges.
+	(flow_delete_insn_chain): Export.
+	(delete_block): Decrement n_edges.
+	(merge_blocks_nomove): Likewise.
+	(life_analysis): Give life_analysis_1 PROP flags.
+	(verify_wide_reg_1, verify_wide_reg): New.
+	(verify_local_live_at_start): New.
+	(update_life_info): Rewrite to call into propogate_block.
+	(mark_reg): New.
+	(mark_regs_live_at_end): After reload, if epilogue as rtl, 
+	always mark stack pointer.  Conditionally mark PIC register.
+	After reload, mark call-saved registers, return regsiters.
+	(life_analysis_1): Accept PROP flags not remove_dead_code.
+	Call mark_regs_live_at_end before zeroing regs_ever_live.
+	Use calculate_global_regs_live.  Copy global_live_at_end before
+	calling final propagate_block.  Zero reg_next_use on exit.
+	(calculate_global_regs_live): New.
+	(allocate_bb_life_data): Don't allocate bb->local_set.
+	(init_regset_vector, free_regset_vector): Remove.
+	(propagate_block): Accept FLAGS not FINAL or REMOVE_DEAD_CODE.
+	Test flags before every operation.  Warn if prologue/epilogue insn
+	would have been deleted.
+	(mark_set_regs, mark_set_1): Accept and use FLAGS. 
+	Use alloc_EXPR_LIST.
+	(mark_used_regs): Accept and use FLAGS, not FINAL.
+	Remove special handling for RETURN.
+	(try_pre_increment): Use alloc_EXPR_LIST.
+	(dump_flow_info): Dump n_edges.
+	(unlink_insn_chain, split_hard_reg_notes): Remove.
+	(maybe_add_dead_note, maybe_add_dead_note_use): Remove.
+	(find_insn_with_note, new_insn_dead_notes): Remove.
+	(update_n_sets, sets_reg_or_subreg_1, sets_reg_or_subreg): Remove.
+	(maybe_remove_dead_notes, prepend_reg_notes): Remove.
+	(replace_insns): Remove.
+	(count_or_remove_death_notes): New.
+	(verify_flow_info): Abort on error after all checks.
+	(remove_edge): Decrement n_edges.
+	(remove_fake_edges): Tweek format.
+	* haifa-sched.c (schedule_insns): Use split_all_insns.
+	* output.h (update_life_info): Remove declaration.
+	* recog.c (split_all_insns): From the corpse of split_block_insns,
+	do the whole function block by block.  Use update_life_info.
+	(recog_last_allowed_insn): New.
+	(recog_next_insn): Mind it.
+	(peephole2_optimize): Set it.  Walk backwards through blocks.
+	Use update_life_info.
+	* rtl.h (update_flow_info, replace_insns): Remove declarations.
+	(split_all_insns): Declare.
+	* toplev.c (rest_of_compilation): Thread prologue before flow2.
+	Use split_all_insns.
+
+	* i386.md (or -1 peep2s): Disable.
+
 Fri Oct  8 17:49:08 1999  Richard Henderson  <rth@cygnus.com>
 
 	* config/mips/mips.md (movstrsi+[123]) : Combine these into

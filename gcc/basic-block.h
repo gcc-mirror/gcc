@@ -31,6 +31,9 @@ typedef bitmap regset;		/* Head of register set linked list.  */
 /* Copy a register set to another register set.  */
 #define COPY_REG_SET(TO, FROM) bitmap_copy (TO, FROM)
 
+/* Compare two register sets.  */
+#define REG_SET_EQUAL_P(A, B) bitmap_equal_p (A, B)
+
 /* `and' a register set with a second register set.  */
 #define AND_REG_SET(TO, FROM) bitmap_operation (TO, TO, FROM, BITMAP_AND)
 
@@ -40,6 +43,9 @@ typedef bitmap regset;		/* Head of register set linked list.  */
 
 /* Inclusive or a register set with a second register set.  */
 #define IOR_REG_SET(TO, FROM) bitmap_operation (TO, TO, FROM, BITMAP_IOR)
+
+/* Exclusive or a register set with a second register set.  */
+#define XOR_REG_SET(TO, FROM) bitmap_operation (TO, TO, FROM, BITMAP_XOR)
 
 /* Or into TO the register set FROM1 `and'ed with the complement of FROM2.  */
 #define IOR_AND_COMPL_REG_SET(TO, FROM1, FROM2) \
@@ -153,6 +159,10 @@ typedef struct basic_block_def {
 
 extern int n_basic_blocks;
 
+/* Number of edges in the current function.  */
+
+extern int n_edges;
+
 /* Index by basic block number, get basic block struct info.  */
 
 extern varray_type basic_block_info;
@@ -229,9 +239,6 @@ extern struct basic_block_def entry_exit_blocks[2];
 #define ENTRY_BLOCK_PTR	(&entry_exit_blocks[0])
 #define EXIT_BLOCK_PTR	(&entry_exit_blocks[1])
 
-/* from flow.c */
-extern void free_regset_vector		PROTO ((regset *, int nelts));
-
 extern varray_type basic_block_for_insn;
 #define BLOCK_FOR_INSN(INSN)  VARRAY_BB (basic_block_for_insn, INSN_UID (INSN))
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
@@ -249,6 +256,7 @@ extern void insert_insn_on_edge		PROTO ((rtx, edge));
 extern void commit_edge_insertions	PROTO ((void));
 extern void remove_fake_edges		PROTO ((void));
 extern void add_noreturn_fake_exit_edges	PROTO ((void));
+extern void flow_delete_insn_chain	PROTO((rtx, rtx));
 
 /* This structure maintains an edge list vector.  */
 struct edge_list 
@@ -290,6 +298,15 @@ extern void compute_dominators		PROTO ((sbitmap *, sbitmap *,
 						int_list_ptr *));
 extern void compute_flow_dominators	PROTO ((sbitmap *, sbitmap *));
 extern void compute_immediate_dominators	PROTO ((int *, sbitmap *));
+
+enum update_life_extent
+{
+  UPDATE_LIFE_GLOBAL = 0,
+  UPDATE_LIFE_LOCAL = 1
+};
+
+extern void update_life_info	PROTO ((sbitmap, enum update_life_extent));
+extern int count_or_remove_death_notes	PROTO ((sbitmap, int));
 
 /* In lcm.c */
 extern void pre_lcm 			PROTO ((int, int, int_list_ptr *,

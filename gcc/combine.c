@@ -11721,11 +11721,17 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 
 	  if (place == 0)
 	    {
-	      for (tem = prev_nonnote_insn (i3);
-		   place == 0 && tem
-		   && (GET_CODE (tem) == INSN || GET_CODE (tem) == CALL_INSN);
-		   tem = prev_nonnote_insn (tem))
+	      basic_block bb = BASIC_BLOCK (this_basic_block);
+
+	      for (tem = PREV_INSN (i3); place == 0; tem = PREV_INSN (tem))
 		{
+		  if (GET_RTX_CLASS (GET_CODE (tem)) != 'i')
+		    {
+		      if (tem == bb->head)
+			break;
+		      continue;
+		    }
+
 		  /* If the register is being set at TEM, see if that is all
 		     TEM is doing.  If so, delete TEM.  Otherwise, make this
 		     into a REG_UNUSED note instead.  */
@@ -11740,8 +11746,8 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		      if (set != 0)
 			for (inner_dest = SET_DEST (set);
 			     GET_CODE (inner_dest) == STRICT_LOW_PART
-			     || GET_CODE (inner_dest) == SUBREG
-			     || GET_CODE (inner_dest) == ZERO_EXTRACT;
+			       || GET_CODE (inner_dest) == SUBREG
+			       || GET_CODE (inner_dest) == ZERO_EXTRACT;
 			     inner_dest = XEXP (inner_dest, 0))
 			  ;
 
@@ -11789,7 +11795,8 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			      distribute_links (LOG_LINKS (cc0_setter));
 
 			      PUT_CODE (cc0_setter, NOTE);
-			      NOTE_LINE_NUMBER (cc0_setter) = NOTE_INSN_DELETED;
+			      NOTE_LINE_NUMBER (cc0_setter)
+				= NOTE_INSN_DELETED;
 			      NOTE_SOURCE_FILE (cc0_setter) = 0;
 			    }
 #endif
@@ -11818,48 +11825,64 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 						 REGNO (XEXP (note, 0))))
 			    place = tem;
 			  break;
-		      }
-		  }
-		else if (reg_referenced_p (XEXP (note, 0), PATTERN (tem))
-			 || (GET_CODE (tem) == CALL_INSN
-			     && find_reg_fusage (tem, USE, XEXP (note, 0))))
-		  {
-		    place = tem;
+			}
+		    }
+		  else if (reg_referenced_p (XEXP (note, 0), PATTERN (tem))
+			   || (GET_CODE (tem) == CALL_INSN
+			       && find_reg_fusage (tem, USE, XEXP (note, 0))))
+		    {
+		      place = tem;
 
-		    /* If we are doing a 3->2 combination, and we have a
-		       register which formerly died in i3 and was not used
-		       by i2, which now no longer dies in i3 and is used in
-		       i2 but does not die in i2, and place is between i2
-		       and i3, then we may need to move a link from place to
-		       i2.  */
-		    if (i2 && INSN_UID (place) <= max_uid_cuid
-			&& INSN_CUID (place) > INSN_CUID (i2)
-			&& from_insn && INSN_CUID (from_insn) > INSN_CUID (i2)
-			&& reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
-		      {
-			rtx links = LOG_LINKS (place);
-			LOG_LINKS (place) = 0;
-			distribute_links (links);
-		      }
+		      /* If we are doing a 3->2 combination, and we have a
+			 register which formerly died in i3 and was not used
+			 by i2, which now no longer dies in i3 and is used in
+			 i2 but does not die in i2, and place is between i2
+			 and i3, then we may need to move a link from place to
+			 i2.  */
+		      if (i2 && INSN_UID (place) <= max_uid_cuid
+			  && INSN_CUID (place) > INSN_CUID (i2)
+			  && from_insn && INSN_CUID (from_insn) > INSN_CUID (i2)
+			  && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
+			{
+			  rtx links = LOG_LINKS (place);
+			  LOG_LINKS (place) = 0;
+			  distribute_links (links);
+			}
+		      break;
+		    }
+
+		  if (tem == bb->head)
 		    break;
-		  }
 		}
 	      
-	      /* If we haven't found an insn for the death note and it
-		 is still a REG_DEAD note, but we have hit a CODE_LABEL,
-		 insert a USE insn for the register at that label and
-		 put the death node there.  This prevents problems with
-		 call-state tracking in caller-save.c.  */
-	      if (REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0)
-		{
-		  place
-		    = emit_insn_after (gen_rtx_USE (VOIDmode, XEXP (note, 0)),
-				       tem);
+	      /* We haven't found an insn for the death note and it
+		 is still a REG_DEAD note, but we have hit the beginning
+		 of the block.  If the existing life info says the reg
+		 was dead, there's nothing left to do.
 
-		  /* If this insn was emitted between blocks, then update
-		     BLOCK_HEAD of the current block to include it.  */
-		  if (BLOCK_END (this_basic_block - 1) == tem)
-		    BLOCK_HEAD (this_basic_block) = place;
+		 ??? If the register was live, we ought to mark for later
+		 global life update.  Cop out like the previous code and
+		 just add a hook for the death note to live on.  */
+	      if (REG_NOTE_KIND (note) == REG_DEAD && place == 0)
+		{
+		  int regno = REGNO (XEXP (note, 0));
+
+		  if (REGNO_REG_SET_P (bb->global_live_at_start, regno))
+		    {
+		      rtx die = gen_rtx_USE (VOIDmode, XEXP (note, 0));
+
+		      place = bb->head;
+		      if (GET_CODE (place) != CODE_LABEL
+			  && GET_CODE (place) != NOTE)
+			{
+			  place = emit_insn_before (die, place);
+			  bb->head = place;
+			}
+		      else
+			{
+			  place = emit_insn_after (die, place);
+			}
+		    }
 		}
 	    }
 
@@ -11868,7 +11891,6 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	     We can here if it is set at all, not if is it totally replace,
 	     which is what `dead_or_set_p' checks, so also check for it being
 	     set partially.  */
-
 
 	  if (place && REG_NOTE_KIND (note) == REG_DEAD)
 	    {

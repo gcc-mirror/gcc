@@ -1549,7 +1549,7 @@ loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \
    function.h toplev.h varray.h
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
    integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) loop.h toplev.h varray.h
-flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-config.h \
+flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h recog.h \
    insn-flags.h function.h
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h function.h \

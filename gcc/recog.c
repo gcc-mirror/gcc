@@ -2562,88 +2562,104 @@ reg_fits_class_p (operand, class, offset, mode)
   return 0;
 }
 
-/* Do the splitting of insns in the block B. Only try to actually split if
-   DO_SPLIT is true; otherwise, just remove nops. */ 
+/* Split all insns in the function.  If UPD_LIFE, update life info after.  */
 
 void
-split_block_insns (b, do_split)
-     int b;
-     int do_split;
+split_all_insns (upd_life)
+     int upd_life;
 {
-  rtx insn, next;
+  sbitmap blocks;
+  int changed;
+  int i;
 
-  for (insn = BLOCK_HEAD (b);; insn = next)
+  blocks = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (blocks);
+  changed = 0;
+
+  for (i = n_basic_blocks - 1; i >= 0; --i)
     {
-      rtx set;
+      basic_block bb = BASIC_BLOCK (i);
+      rtx insn, next;
 
-      /* Can't use `next_real_insn' because that
-         might go across CODE_LABELS and short-out basic blocks.  */
-      next = NEXT_INSN (insn);
-      if (GET_CODE (insn) != INSN)
+      for (insn = bb->head; insn ; insn = next)
 	{
-	  if (insn == BLOCK_END (b))
-	    break;
+	  rtx set;
 
-	  continue;
-	}
+	  /* Can't use `next_real_insn' because that might go across
+	     CODE_LABELS and short-out basic blocks.  */
+	  next = NEXT_INSN (insn);
+	  if (GET_CODE (insn) != INSN)
+	    ;
 
-      /* Don't split no-op move insns.  These should silently disappear
-         later in final.  Splitting such insns would break the code
-         that handles REG_NO_CONFLICT blocks.  */
-      set = single_set (insn);
-      if (set && rtx_equal_p (SET_SRC (set), SET_DEST (set)))
-	{
-	  if (insn == BLOCK_END (b))
-	    break;
+	  /* Don't split no-op move insns.  These should silently
+	     disappear later in final.  Splitting such insns would
+	     break the code that handles REG_NO_CONFLICT blocks.  */
 
-	  /* Nops get in the way while scheduling, so delete them now if
-	     register allocation has already been done.  It is too risky
-	     to try to do this before register allocation, and there are
-	     unlikely to be very many nops then anyways.  */
-	  if (reload_completed)
+	  else if ((set = single_set (insn)) != NULL
+		   && rtx_equal_p (SET_SRC (set), SET_DEST (set)))
 	    {
-
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
-	    }
-
-	  continue;
-	}
-
-      if (do_split)
-	{
-	  /* Split insns here to get max fine-grain parallelism.  */
-	  rtx first = PREV_INSN (insn);
-	  rtx notes = REG_NOTES (insn);
-	  rtx last = try_split (PATTERN (insn), insn, 1);
-
-	  if (last != insn)
-	    {
-	      /* try_split returns the NOTE that INSN became.  */
-	      first = NEXT_INSN (first);
-#ifdef INSN_SCHEDULING
-	      update_life_info (notes, first, last, insn, insn);
-#endif
-	      PUT_CODE (insn, NOTE);
-	      NOTE_SOURCE_FILE (insn) = 0;
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      if (insn == BLOCK_HEAD (b))
-		BLOCK_HEAD (b) = first;
-	      if (insn == BLOCK_END (b))
+	      /* Nops get in the way while scheduling, so delete them
+		 now if register allocation has already been done.  It
+		 is too risky to try to do this before register
+		 allocation, and there are unlikely to be very many
+		 nops then anyways.  */
+	      if (reload_completed)
 		{
-		  BLOCK_END (b) = last;
-		  break;
+		  PUT_CODE (insn, NOTE);
+		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		  NOTE_SOURCE_FILE (insn) = 0;
 		}
 	    }
+	  else
+	    {
+	      /* Split insns here to get max fine-grain parallelism.  */
+	      rtx first = PREV_INSN (insn);
+	      rtx last = try_split (PATTERN (insn), insn, 1);
+
+	      if (last != insn)
+		{
+		  SET_BIT (blocks, i);
+		  changed = 1;
+
+		  /* try_split returns the NOTE that INSN became.  */
+		  first = NEXT_INSN (first);
+		  PUT_CODE (insn, NOTE);
+		  NOTE_SOURCE_FILE (insn) = 0;
+		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+
+		  if (insn == bb->end)
+		    {
+		      bb->end = last;
+		      break;
+		    }
+		}
+	    }
+
+	  if (insn == bb->end)
+	    break;
 	}
 
-      if (insn == BLOCK_END (b))
-	break;
+      /* ??? When we're called from just after reload, the CFG is in bad
+	 shape, and we may have fallen off the end.  This could be fixed
+	 by having reload not try to delete unreachable code.  Otherwise
+	 assert we found the end insn.  */
+      if (insn == NULL && upd_life)
+	abort ();
     }
+
+  if (changed && upd_life)
+    {
+      count_or_remove_death_notes (blocks, 1);
+      update_life_info (blocks, UPDATE_LIFE_LOCAL);
+    }
+
+  sbitmap_free (blocks);
 }
 
 #ifdef HAVE_peephole2
+/* This is the last insn we'll allow recog_next_insn to consider.  */
+static rtx recog_last_allowed_insn;
+
 /* Return the Nth non-note insn after INSN, or return NULL_RTX if it does
    not exist.  Used by the recognizer to find the next insn to match in a
    multi-insn pattern.  */
@@ -2652,17 +2668,20 @@ recog_next_insn (insn, n)
      rtx insn;
      int n;
 {
-  while (insn != NULL_RTX && n > 0)
+  if (insn != NULL_RTX)
     {
-      insn = next_nonnote_insn (insn);
+      while (n > 0)
+	{
+	  if (insn == recog_last_allowed_insn)
+	    return NULL_RTX;
 
-      if (insn == NULL_RTX)
-	return insn;
+	  insn = NEXT_INSN (insn);
+	  if (insn == NULL_RTX)
+	    break;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	return NULL_RTX;
-
-      n--;
+	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	    n -= 1;
+	}
     }
 
   return insn;
@@ -2673,38 +2692,64 @@ void
 peephole2_optimize (dump_file)
      FILE *dump_file ATTRIBUTE_UNUSED;
 {
-  rtx insn;
-  rtx epilogue_insn = 0;
+  rtx insn, prev;
+  int i, changed;
+  sbitmap blocks;
 
-  for (insn = get_last_insn (); insn != NULL_RTX; insn = PREV_INSN (insn))
+  /* ??? TODO: Arrange with resource.c to start at bb->global_live_at_end
+     and backtrack insn by insn as we proceed through the block.  In this
+     way we'll not need to keep searching forward from the beginning of 
+     basic blocks to find register life info.  */
+
+  init_resource_info (NULL);
+
+  blocks = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (blocks);
+  changed = 0;
+
+  for (i = n_basic_blocks - 1; i >= 0; --i)
     {
-      if (GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
+      basic_block bb = BASIC_BLOCK (i);
+
+      /* Since we don't update life info until the very end, we can't
+	 allow matching instructions that we've replaced before.  Walk
+	 backward through the basic block so that we don't have to 
+	 care about subsequent life info; recog_last_allowed_insn to
+	 restrict how far forward we will allow the match to proceed.  */
+
+      recog_last_allowed_insn = bb->end;
+      for (insn = bb->end; ; insn = prev)
 	{
-	  epilogue_insn = insn;
-	  break;
-	}
-    }
-
-  init_resource_info (epilogue_insn);
-
-  for (insn = get_insns (); insn != NULL;
-       insn = next_nonnote_insn (insn))
-    {
-      if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
-	{
-	  rtx last_insn;
-	  rtx before = PREV_INSN (insn);
-
-	  rtx try = peephole2_insns (PATTERN (insn), insn, &last_insn);
-	  if (try != NULL)
+	  prev = PREV_INSN (insn);
+	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    {
-	      replace_insns (insn, last_insn, try, NULL_RTX);
-	      insn = NEXT_INSN (before);
+	      rtx try, last_insn;
+
+	      try = peephole2_insns (PATTERN (insn), insn, &last_insn);
+	      if (try != NULL)
+		{
+		  flow_delete_insn_chain (insn, last_insn);
+		  try = emit_insn_after (try, prev);
+
+		  if (last_insn == bb->end)
+		    bb->end = try;
+		  if (insn == bb->head)
+		    bb->head = NEXT_INSN (prev);
+
+		  recog_last_allowed_insn = prev;
+		  SET_BIT (blocks, i);
+		  changed = 1;
+		}
 	    }
+
+	  if (insn == bb->head)
+	    break;
 	}
     }
 
   free_resource_info ();
+
+  count_or_remove_death_notes (blocks, 1);
+  update_life_info (blocks, UPDATE_LIFE_LOCAL);
 }
 #endif

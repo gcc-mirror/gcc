@@ -1168,8 +1168,7 @@ extern enum reg_class reg_alternate_class PROTO((int));
 
 extern rtx get_first_nonparm_insn	PROTO((void));
 
-extern void split_block_insns		PROTO((int, int));
-extern void update_flow_info		PROTO((rtx, rtx, rtx, rtx));
+extern void split_all_insns		PROTO((int));
 
 #define MAX_SAVED_CONST_INT 64
 extern rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
@@ -1542,7 +1541,6 @@ extern void print_rtl_with_bb		PROTO ((FILE *, rtx));
 extern void dump_flow_info		PROTO ((FILE *));
 #endif
 extern void free_bb_mem			PROTO ((void));
-extern void replace_insns               PROTO ((rtx, rtx, rtx, rtx));
 
 /* In expmed.c */
 extern void init_expmed			PROTO ((void));
