@@ -1,3 +1,9 @@
+2002-04-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Fix for PR java/6294:
+	* parse.h (INNER_INTERFACE_MODIFIERS): Allow ACC_PRIVATE for inner
+	interfaces.
+
 2002-04-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Fix for PR java/6085:
