@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2575,13 +2575,15 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    ;
 	  else if (TYPE_MAIN_VARIANT (tt0) == void_type_node)
 	    {
-	      if (pedantic && !integer_zerop (op0)
+	      /* op0 != orig_op0 detects the case of something
+		 whose value is 0 but which isn't a valid null ptr const.  */
+	      if (pedantic && (!integer_zerop (op0) || op0 != orig_op0)
 		  && TREE_CODE (tt1) == FUNCTION_TYPE)
 		pedwarn ("ANSI C forbids comparison of `void *' with function pointer");
 	    }
 	  else if (TYPE_MAIN_VARIANT (tt1) == void_type_node)
 	    {
-	      if (pedantic && !integer_zerop (op1)
+	      if (pedantic && (!integer_zerop (op1) || op1 != orig_op1)
 		  && TREE_CODE (tt0) == FUNCTION_TYPE)
 		pedwarn ("ANSI C forbids comparison of `void *' with function pointer");
 	    }
@@ -3619,6 +3621,7 @@ build_conditional_expr (ifexp, op1, op2)
   register enum tree_code code1;
   register enum tree_code code2;
   register tree result_type = NULL;
+  tree orig_op1 = op1, orig_op2 = op2;
 
   /* If second operand is omitted, it is the same as the first one;
      make sure it is calculated only once.  */
@@ -3689,9 +3692,11 @@ build_conditional_expr (ifexp, op1, op2)
     {
       if (comp_target_types (type1, type2))
 	result_type = common_type (type1, type2);
-      else if (integer_zerop (op1) && TREE_TYPE (type1) == void_type_node)
+      else if (integer_zerop (op1) && TREE_TYPE (type1) == void_type_node
+	       && TREE_CODE (orig_op1) != NOP_EXPR)
 	result_type = qualify_type (type2, type1);
-      else if (integer_zerop (op2) && TREE_TYPE (type2) == void_type_node)
+      else if (integer_zerop (op2) && TREE_TYPE (type2) == void_type_node
+	       && TREE_CODE (orig_op2) != NOP_EXPR)
 	result_type = qualify_type (type1, type2);
       else if (TYPE_MAIN_VARIANT (TREE_TYPE (type1)) == void_type_node)
 	{
@@ -3999,11 +4004,16 @@ build_c_cast (type, expr)
 	}
     }
 
+  /* Pedantically, don't ley (void *) (FOO *) 0 be a null pointer constant.  */
+  if (pedantic && TREE_CODE (value) == INTEGER_CST
+      && TREE_CODE (expr) == INTEGER_CST
+      && TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE)
+    value = non_lvalue (value);
+
+  /* If pedantic, don't let a cast be an lvalue.  */
   if (value == expr && pedantic)
-    {
-      /* If pedantic, don't let a cast be an lvalue.  */
-      return non_lvalue (value);
-    }
+    value = non_lvalue (value);
+
   return value;
 }
 
@@ -4309,7 +4319,9 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		   && TREE_CODE (ttr) == FUNCTION_TYPE)
 		  ||
 		  (TYPE_MAIN_VARIANT (ttr) == void_type_node
-		   && !integer_zerop (rhs)
+		   /* Check TREE_CODE to catch cases like (void *) (char *) 0
+		      which are not ANSI null ptr constants.  */
+		   && (!integer_zerop (rhs) || TREE_CODE (rhs) == NOP_EXPR)
 		   && TREE_CODE (ttl) == FUNCTION_TYPE)))
 	    warn_for_assignment ("ANSI forbids %s between function pointer and `void *'",
 				 get_spelling (errtype), funname, parmnum);
@@ -4854,7 +4866,6 @@ digest_init (type, init, require_constant, constructor_constant)
      int require_constant, constructor_constant;
 {
   enum tree_code code = TREE_CODE (type);
-  tree element = 0;
   tree inside_init = init;
 
   if (init == error_mark_node)
@@ -4877,15 +4888,12 @@ digest_init (type, init, require_constant, constructor_constant)
 	   || typ1 == unsigned_char_type_node
 	   || typ1 == unsigned_wchar_type_node
 	   || typ1 == signed_wchar_type_node)
-	  && ((inside_init && TREE_CODE (inside_init) == STRING_CST)
-	      || (element && TREE_CODE (element) == STRING_CST)))
+	  && ((inside_init && TREE_CODE (inside_init) == STRING_CST)))
 	{
-	  tree string = element ? element : inside_init;
+	  if (TREE_TYPE (inside_init) == type)
+	    return inside_init;
 
-	  if (TREE_TYPE (string) == type)
-	    return string;
-
-	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string)))
+	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)))
 	       != char_type_node)
 	      && TYPE_PRECISION (typ1) == TYPE_PRECISION (char_type_node))
 	    {
@@ -4893,7 +4901,7 @@ digest_init (type, init, require_constant, constructor_constant)
 			  " `%s'", NULL);
 	      return error_mark_node;
 	    }
-	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string)))
+	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)))
 	       == char_type_node)
 	      && TYPE_PRECISION (typ1) != TYPE_PRECISION (char_type_node))
 	    {
@@ -4902,7 +4910,7 @@ digest_init (type, init, require_constant, constructor_constant)
 	      return error_mark_node;
 	    }
 
-	  TREE_TYPE (string) = type;
+	  TREE_TYPE (inside_init) = type;
 	  if (TYPE_DOMAIN (type) != 0
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	    {
@@ -4911,7 +4919,7 @@ digest_init (type, init, require_constant, constructor_constant)
 	      /* Subtract 1 (or sizeof (wchar_t))
 		 because it's ok to ignore the terminating null char
 		 that is counted in the length of the constant.  */
-	      if (size < TREE_STRING_LENGTH (string)
+	      if (size < TREE_STRING_LENGTH (inside_init)
 		  - (TYPE_PRECISION (typ1) != TYPE_PRECISION (char_type_node)
 		     ? TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT
 		     : 1))
@@ -4919,7 +4927,7 @@ digest_init (type, init, require_constant, constructor_constant)
 		  "initializer-string for array of chars%s is too long",
 		  " `%s'", NULL);
 	    }
-	  return string;
+	  return inside_init;
 	}
     }
 
@@ -4968,38 +4976,6 @@ digest_init (type, init, require_constant, constructor_constant)
 	}
 
       return inside_init;
-    }
-
-  if (element && (TREE_TYPE (element) == type
-		  || (code == ARRAY_TYPE && TREE_TYPE (element)
-		      && comptypes (TREE_TYPE (element), type))))
-    {
-      if (code == ARRAY_TYPE)
-	{
-	  error_init ("array%s initialized from non-constant array expression",
-		      " `%s'", NULL);
-	  return error_mark_node;
-	}
-      if (pedantic && (code == RECORD_TYPE || code == UNION_TYPE))
-	pedwarn ("single-expression nonscalar initializer has braces");
-      if (optimize && TREE_READONLY (element) && TREE_CODE (element) == VAR_DECL)
-	element = decl_constant_value (element);
-
-      if (require_constant && ! TREE_CONSTANT (element))
-	{
-	  error_init ("initializer element%s is not constant",
-		      " for `%s'", NULL);
-	  element = error_mark_node;
-	}
-      else if (require_constant
-	       && initializer_constant_valid_p (element, TREE_TYPE (element)) == 0)
-	{
-	  error_init ("initializer element%s is not computable at load time",
-		      " for `%s'", NULL);
-	  element = error_mark_node;
-	}
-
-      return element;
     }
 
   /* Handle scalar types, including conversions.  */
@@ -5747,6 +5723,9 @@ output_init_element (value, type, field, pending)
 
   if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
       || (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
+	  && !(TREE_CODE (value) == STRING_CST
+	       && TREE_CODE (type) == ARRAY_TYPE
+	       && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
 	  && !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (value)),
 			 TYPE_MAIN_VARIANT (type))))
     value = default_conversion (value);
