@@ -1,3 +1,8 @@
+2001-01-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* jump.c (reversed_comparison_code_parts): Fix typo introduced by
+	the previous change.
+
 Sun Jan  7 19:37:48 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (reversed_comparison_code_parts, reversed_comparison_code):
