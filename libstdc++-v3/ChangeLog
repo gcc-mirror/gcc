@@ -1,3 +1,17 @@
+2003-05-29  Sylvain Pion  <Sylvain.Pion@mpi-sb.mpg.de>
+
+	PR libstdc++/10783
+	* include/bits/stl_iterator.h (class __normal_iterator):
+	Don't inherit from iterator, add missing typedefs.
+
+2003-05-29  Paolo Carlini <pcarlini@unitus.it>
+
+	* testsuite/24_iterators/reverse_iterator.cc: Split up, as follows.
+	* testsuite/24_iterators/reverse_iterator/1.cc: New.
+	* testsuite/24_iterators/reverse_iterator/2.cc: New.
+	* testsuite/24_iterators/reverse_iterator/3.cc: New, from
+	PR libstdc++/10783.
+
 2003-05-27  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/os/hpux/os_defines.h: Define _LIBUNWIND_STD_ABI if we are

@@ -1,6 +1,6 @@
 // 2001-06-21  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,38 +46,11 @@ void test01()
   typedef test_iterator::iterator_category iteratory_category;
 }
 
-
 // Make sure iterator can be instantiated.
 template class std::reverse_iterator<int*>;
-
-void test02()
-{
-  typedef std::reverse_iterator<int*> iterator_type;
-  iterator_type it01;
-  iterator_type it02;
-
-  // Sanity check non-member operators and functions can be instantiated. 
-  it01 == it02;
-  it01 != it02;
-  it01 < it02;
-  it01 <= it02;
-  it01 > it02;
-  it01 >= it02;
-  it01 - it02;
-  5 + it02;
-}
-
-// Check data member 'current' accessible.
-class test_dm : public std::reverse_iterator<int*>
-{
-  int* p;
-public:
-  test_dm(): p(current) { }
-};
 
 int main() 
 { 
   test01();
-  test02();
   return 0;
 }
