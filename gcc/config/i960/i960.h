@@ -28,24 +28,21 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Name to predefine in the preprocessor for processor variations.  */
 #define	CPP_SPEC "%{mic*:-D__i960\
-			%{mka:-D__i960KA}%{mkb:-D__i960KB}%{mkc:-D__i960KC}\
-			%{msa:-D__i960SA}%{msb:-D__i960SB}%{msc:-D__i960SC}\
+			%{mka:-D__i960KA}%{mkb:-D__i960KB}\
+			%{msa:-D__i960SA}%{msb:-D__i960SB}\
 			%{mmc:-D__i960MC}\
-			%{mca:-D__i960CA}%{mcb:-D__i960CB}%{mcc:-D__i960CC}\
+			%{mca:-D__i960CA}%{mcc:-D__i960CC}\
 			%{mcf:-D__i960CF}}\
 	%{mka:-D__i960KA__ -D__i960_KA__}\
 	%{mkb:-D__i960KB__ -D__i960_KB__}\
-	%{mkc:-D__i960KC__ -D__i960_KC__}\
 	%{msa:-D__i960SA__ -D__i960_SA__}\
 	%{msb:-D__i960SB__ -D__i960_SB__}\
-	%{msc:-D__i960SC__ -D__i960_SC__}\
 	%{mmc:-D__i960MC__ -D__i960_MC__}\
 	%{mca:-D__i960CA__ -D__i960_CA__}\
-	%{mcb:-D__i960CB__ -D__i960_CB__}\
 	%{mcc:-D__i960CC__ -D__i960_CC__}\
 	%{mcf:-D__i960CF__ -D__i960_CF__}\
-	%{!mka:%{!mkb:%{!mkc:%{!msa:%{!msb:%{!msc:%{!mmc:%{!mca:%{!mcb:\
-		%{!mcc:%{!mcf:-D__i960_KB -D__i960KB__ %{mic*:-D__i960KB}}}}}}}}}}}}"
+	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:\
+		%{!mcc:%{!mcf:-D__i960_KB -D__i960KB__ %{mic*:-D__i960KB}}}}}}}}}"
 
 /* -mic* options make characters signed by default.  */
 #define SIGNED_CHAR_SPEC  \
@@ -54,8 +51,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Specs for the compiler, to handle processor variations.  */
 #define CC1_SPEC \
-	"%{!mka:%{!mkb:%{!mkc:%{!msa:%{!msb:%{!msc:%{!mmc:%{!mca:%{!mcb:\
-		%{!mcc:%{!mcf:-mkb}}}}}}}}}}}\
+	"%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-mkb}}}}}}}}\
 	%{mbout:%{g*:-gstabs}}\
 	%{mcoff:%{g*:-gcoff}}\
 	%{!mbout:%{!mcoff:%{g*:-gstabs}}}"
@@ -64,20 +60,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    For compatibility with Intel's gnu960 tool chain, pass -A options to
    the assembler.  */
 #define ASM_SPEC \
-	"%{mka:-AKA}%{mkb:-AKB}%{mkc:-AKC}%{msa:-ASA}%{msb:-ASB}\
-	%{msc:-ASC}%{mmc:-AMC}%{mca:-ACA}%{mcb:-ACB}%{mcc:-ACC}%{mcf:-ACF}\
-	%{!mka:%{!mkb:%{!mkc:%{!msa:%{!msb:%{!msc:%{!mmc:%{!mca:%{!mcb:\
-		%{!mcc:%{!mcf:-AKB}}}}}}}}}}}"
+	"%{mka:-AKA}%{mkb:-AKB}%{msa:-ASA}%{msb:-ASB}\
+	%{mmc:-AMC}%{mca:-ACA}%{mcc:-ACC}%{mcf:-ACF}\
+	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-AKB}}}}}}}}\
+	%{mlink-relax:-link-relax}"
 
 /* Specs for the linker, to handle processor variations.
    For compatibility with Intel's gnu960 tool chain, pass -F and -A options
    to the linker.  */
 #define LINK_SPEC \
-	"%{mka:-AKA}%{mkb:-AKB}%{mkc:-AKC}%{msa:-ASA}%{msb:-ASB}\
-	%{msc:-ASC}%{mmc:-AMC}%{mca:-ACA}%{mcb:-ACB}%{mcc:-ACC}%{mcf:-ACF}\
-	%{!mka:%{!mkb:%{!mkc:%{!msa:%{!msb:%{!msc:%{!mmc:%{!mca:%{!mcb:\
-		%{!mcc:%{!mcf:-AKB}}}}}}}}}}}\
-	%{mbout:-Fbout}%{mcoff:-Fcoff}"
+	"%{mka:-AKA}%{mkb:-AKB}%{msa:-ASA}%{msb:-ASB}\
+	%{mmc:-AMC}%{mca:-ACA}%{mcc:-ACC}%{mcf:-ACF}\
+	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-AKB}}}}}}}}\
+	%{mbout:-Fbout}%{mcoff:-Fcoff}\
+	%{mlink-relax:-relax}"
 
 /* Specs for the libraries to link with, to handle processor variations.
    Compatible with Intel's gnu960 tool chain.  */
@@ -208,22 +204,22 @@ extern int target_flags;
   { {"sa", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
     {"sb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES| \
 			TARGET_FLAG_COMPLEX_ADDR)},\
-    {"sc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
-			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},\
+/*  {"sc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
+			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},*/ \
     {"ka", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
     {"kb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES| \
 			TARGET_FLAG_COMPLEX_ADDR)},\
-    {"kc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
-			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},\
+/*  {"kc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
+			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},*/ \
     {"mc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
 			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},\
     {"ca", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|\
 			TARGET_FLAG_CODE_ALIGN|TARGET_FLAG_COMPLEX_ADDR)},\
-    {"cb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_C_SERIES|\
+/*  {"cb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_C_SERIES|\
 			TARGET_FLAG_BRANCH_PREDICT|TARGET_FLAG_CODE_ALIGN)},\
     {"cc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
 			TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|\
-			TARGET_FLAG_CODE_ALIGN)},	\
+			TARGET_FLAG_CODE_ALIGN)}, */	\
     {"cf", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|\
 			TARGET_FLAG_CODE_ALIGN|TARGET_FLAG_COMPLEX_ADDR)},\
     {"numerics", (TARGET_FLAG_NUMERICS)},		\
@@ -247,6 +243,8 @@ extern int target_flags;
     {"no-strict-align", -(TARGET_FLAG_STRICT_ALIGN)},	\
     {"old-align", TARGET_FLAG_OLD_ALIGN},		\
     {"no-old-align", -(TARGET_FLAG_OLD_ALIGN)},		\
+    {"link-relax", 0},					\
+    {"no-link-relax", 0},				\
     { "", TARGET_DEFAULT}}
 
 /* Override conflicting target switch options.
@@ -307,7 +305,7 @@ extern int target_flags;
    numbered.  */
 #define WORDS_BIG_ENDIAN 0
 
-/* Number of bits in an addressible storage unit.  */
+/* Number of bits in an addressable storage unit.  */
 #define BITS_PER_UNIT 8
 
 /* Bitfields cannot cross word boundaries.  */
@@ -1092,7 +1090,7 @@ extern struct rtx_def *gen_compare_reg ();
    should be used.  CC_NOOVmode should be used when the first operand is a
    PLUS, MINUS, or NEG.  CCmode should be used when no special processing is
    needed.  */
-#define SELECT_CC_MODE(OP,X,Y) select_cc_mode (OP, X,Y)
+#define SELECT_CC_MODE(OP,X,Y) select_cc_mode (OP, X)
 
 /* A function address in a call instruction is a byte address
    (for indexing purposes) so give the MEM rtx a byte's mode.  */
