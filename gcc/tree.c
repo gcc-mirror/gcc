@@ -1887,6 +1887,11 @@ contains_placeholder_p (exp)
   register enum tree_code code = TREE_CODE (exp);
   tree inner;
 
+  /* If we have a WITH_RECORD_EXPR, it "cancels" any PLACEHOLDER_EXPR
+     in it since it is supplying a value for it.  */
+  if (code == WITH_RECORD_EXPR)
+    return 0;
+
   switch (TREE_CODE_CLASS (code))
     {
     case 'r':
