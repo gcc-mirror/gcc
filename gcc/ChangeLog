@@ -1,3 +1,8 @@
+2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/11475
+	* config/sparc/sparc.md (movhi_lo_sum): Tighten predicates.
+
 2004-01-29  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def(math_exception): bypass only for glibc.
