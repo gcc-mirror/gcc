@@ -30,6 +30,7 @@ details.  */
 #include <java/lang/InterruptedException.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/Thread.h>
+#include <java/io/File.h>
 #include <java/io/FileDescriptor.h>
 #include <java/io/FileInputStream.h>
 #include <java/io/FileOutputStream.h>
@@ -116,7 +117,8 @@ myclose (int &fd)
 
 void
 java::lang::ConcreteProcess::startProcess (jstringArray progarray,
-					   jstringArray envp)
+					   jstringArray envp,
+					   java::io::File *dir)
 {
   using namespace java::io;
 
@@ -188,7 +190,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
 
       if (pid == 0)
 	{
-	  // Child process, so remap descriptors and exec.
+	  // Child process, so remap descriptors, chdir and exec.
 
 	  if (envp)
 	    {
@@ -229,6 +231,19 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
 	  close (outp[0]);
 	  close (outp[1]);
 	  close (msgp[0]);
+          
+	  // Change directory.
+	  if (dir != NULL)
+	    {
+	      // We don't care about leaking memory here; this process
+	      // is about to terminate one way or another.
+	      if (chdir (new_string (dir->getPath ())) != 0)
+		{
+		  char c = errno;
+		  write (msgp[1], &c, 1);
+		  _exit (127);
+		}
+	    }
 
 	  execvp (args[0], args);
 

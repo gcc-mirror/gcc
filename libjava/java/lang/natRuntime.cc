@@ -21,6 +21,7 @@ details.  */
 #include <java/lang/UnsatisfiedLinkError.h>
 #include <gnu/gcj/runtime/FileDeleter.h>
 #include <gnu/gcj/runtime/FinalizerThread.h>
+#include <java/io/File.h>
 #include <java/util/Properties.h>
 #include <java/util/TimeZone.h>
 #include <java/lang/StringBuffer.h>
@@ -538,9 +539,10 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
 
 java::lang::Process *
 java::lang::Runtime::execInternal (jstringArray cmd,
-				   jstringArray env)
+				   jstringArray env,
+				   java::io::File *dir)
 {
-  return new java::lang::ConcreteProcess (cmd, env);
+  return new java::lang::ConcreteProcess (cmd, env, dir);
 }
 
 jint
