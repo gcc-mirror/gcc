@@ -1,3 +1,8 @@
+2003-09-09  Eric Christopher  <echristo@redhat.com>
+
+	* configure.in: Change usage of 'head' to 'sed 1q'.
+	* configure: Regenerate.
+
 2003-09-09  Richard Henderson  <rth@redhat.com>
 
 	* except.c: Include cgraph.h.
@@ -253,13 +258,13 @@ Sun Sep  7 14:50:03 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in: Define $REMAKE to be $MAKE with LANGUAGES & BOOT_CFLAGS
 	and use it throughout.
-	
+
 2003-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_simplify_condjump): Fix my previous patch.
 
 	* toplev.c  (rest_of_decl_compilation):  Do not finalize external
-	virables. 
+	virables.
 
 	* cgraph.c (cgraph_mark_reachable_node): Only enqueue finalized
 	functions.
