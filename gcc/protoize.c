@@ -780,6 +780,7 @@ safe_write (desc, ptr, len, out_fname)
 #endif
 	fprintf (stderr, "%s: error writing file `%s': %s\n",
 		 pname, shortpath (NULL, out_fname), sys_errlist[errno]);
+	return;
       }
     ptr += written;
     len -= written;
