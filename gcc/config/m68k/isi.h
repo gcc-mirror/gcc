@@ -44,9 +44,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* If the 68881 is used, link must load libmc.a instead of libc.a */
 
-#define LIB_SPEC "%{!m68881:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} \
-%{m68881:%{!p:%{!pg:-lmc}}%{p:-lmc_p}%{pg:-lmc_p}} \
-%{g:-lg}"
+#define LIB_SPEC "%{m68881:%{!p:%{!pg:-lmc}}%{p:-lmc_p}%{pg:-lmc_p}} \
+%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}"
 #endif
 
 /* Names to predefine in the preprocessor for this target machine.  */
