@@ -1298,6 +1298,16 @@ bootstrap bootstrap2 bootstrap3: all-texinfo all-bison all-byacc all-binutils al
 	@echo "Building runtime libraries"; \
 	$(MAKE) all
 
+.PHONY: cross
+cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
+	@r=`pwd`; export r; \
+	s=`cd $(srcdir); pwd`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Building the C and C++ compiler"; \
+	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
+	@echo "Building runtime libraries"; \
+	$(MAKE) all LANGUAGES="c c++"
+
 .PHONY: check-gcc
 check-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
