@@ -1,3 +1,7 @@
+2004-10-18  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* cfg.c (dump_flow_info): Remove redundant dump of reg life info.
+
 2004-10-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/15014

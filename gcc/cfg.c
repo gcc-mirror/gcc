@@ -620,14 +620,6 @@ dump_flow_info (FILE *file)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	dump_edge_info (file, e, 1);
 
-      fprintf (file, "\nRegisters live at start:");
-      dump_regset (bb->global_live_at_start, file);
-
-      fprintf (file, "\nRegisters live at end:");
-      dump_regset (bb->global_live_at_end, file);
-  
-      putc ('\n', file);
-
       if (bb->global_live_at_start)
 	{
 	  fprintf (file, "\nRegisters live at start:");
