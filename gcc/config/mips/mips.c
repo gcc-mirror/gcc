@@ -2577,9 +2577,9 @@ function_arg (cum, mode, type, named)
 
     case DFmode:
       cum->arg_words += (cum->arg_words & 1);
-      regbase = (cum->gp_reg_found || TARGET_SOFT_FLOAT)
-			? GP_ARG_FIRST
-			: FP_ARG_FIRST;
+      regbase = (cum->gp_reg_found || TARGET_SOFT_FLOAT || cum->arg_number >= 2
+		 ? GP_ARG_FIRST
+		 : FP_ARG_FIRST);
       break;
 
     case BLKmode:
