@@ -1501,7 +1501,7 @@ no_linkage_helper (tp, walk_subtrees, data)
   if (TYPE_P (t)
       && (CLASS_TYPE_P (t) || TREE_CODE (t) == ENUMERAL_TYPE)
       && (decl_function_context (TYPE_MAIN_DECL (t))
-	  || ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))))
+	  || TYPE_ANONYMOUS_P (t)))
     return t;
   return NULL_TREE;
 }

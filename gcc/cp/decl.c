@@ -2860,6 +2860,7 @@ pushtag (name, type, globalize)
 	  else
 	    d = pushdecl_with_scope (d, b);
 
+	  /* FIXME what if it gets a name from typedef?  */
 	  if (ANON_AGGRNAME_P (name))
 	    DECL_IGNORED_P (d) = 1;
 
@@ -6958,12 +6959,9 @@ check_tag_decl (declspecs)
   if (t == NULL_TREE && ! saw_friend)
     pedwarn ("declaration does not declare anything");
 
-  /* Check for an anonymous union.  We're careful
-     accessing TYPE_IDENTIFIER because some built-in types, like
-     pointer-to-member types, do not have TYPE_NAME.  */
+  /* Check for an anonymous union.  */
   else if (t && IS_AGGR_TYPE_CODE (TREE_CODE (t))
-	   && TYPE_NAME (t)
-	   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+	   && TYPE_ANONYMOUS_P (t))
     {
       /* 7/3 In a simple-declaration, the optional init-declarator-list
          can be omitted only when declaring a class (clause 9) or
@@ -8721,16 +8719,10 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
      int check, friendp, publicp, inlinep, funcdef_flag, template_count;
      tree in_namespace;
 {
-  tree cname, decl;
+  tree decl;
   int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
   int has_default_arg = 0;
   tree t;
-
-  if (ctype)
-    cname = TREE_CODE (TYPE_NAME (ctype)) == TYPE_DECL
-      ? TYPE_IDENTIFIER (ctype) : TYPE_NAME (ctype);
-  else
-    cname = NULL_TREE;
 
   if (raises)
     {
@@ -8787,7 +8779,8 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
   /* Members of anonymous types and local classes have no linkage; make
      them internal.  */
-  if (ctype && (ANON_AGGRNAME_P (TYPE_IDENTIFIER (ctype))
+  /* FIXME what if it gets a name from typedef?  */
+  if (ctype && (TYPE_ANONYMOUS_P (ctype)
 		|| decl_function_context (TYPE_MAIN_DECL (ctype))))
     publicp = 0;
 
@@ -8801,13 +8794,19 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       t = no_linkage_check (TREE_TYPE (decl));
       if (t)
 	{
-	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+	  if (TYPE_ANONYMOUS_P (t))
 	    {
 	      if (DECL_EXTERN_C_P (decl))
 		/* Allow this; it's pretty common in C.  */;
 	      else
-		cp_pedwarn ("non-local function `%#D' uses anonymous type",
-			    decl);
+		{
+		  cp_pedwarn ("non-local function `%#D' uses anonymous type",
+			      decl);
+		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
+		    cp_pedwarn_at ("\
+`%#D' does not refer to the unqualified type, so it is not used for linkage",
+				TYPE_NAME (t));
+		}
 	    }
 	  else
 	    cp_pedwarn ("non-local function `%#D' uses local type `%T'",
@@ -8919,7 +8918,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (check < 0)
     return decl;
 
-  if (flags == NO_SPECIAL && ctype && constructor_name (cname) == declarator)
+  if (flags == NO_SPECIAL && ctype && constructor_name (ctype) == declarator)
     DECL_CONSTRUCTOR_P (decl) = 1;
 
   /* Function gets the ugly name, field gets the nice one.  This call
@@ -9083,7 +9082,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       tree t = no_linkage_check (TREE_TYPE (decl));
       if (t)
 	{
-	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+	  if (TYPE_ANONYMOUS_P (t))
 	    /* Ignore for now; `enum { foo } e' is pretty common.  */;
 	  else
 	    cp_pedwarn ("non-local variable `%#D' uses local type `%T'",
@@ -11025,7 +11024,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  && declarator
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type))
+	  && TYPE_ANONYMOUS_P (type)
 	  && CP_TYPE_QUALS (type) == TYPE_UNQUALIFIED)
 	{
 	  tree oldname = TYPE_NAME (type);

@@ -1802,22 +1802,18 @@ begin_class_definition (t)
   /* Reset the interface data, at the earliest possible
      moment, as it might have been set via a class foo;
      before.  */
-  {
-    tree name = TYPE_IDENTIFIER (t);
-    
-    if (! ANON_AGGRNAME_P (name))
-      {
-	CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-	SET_CLASSTYPE_INTERFACE_UNKNOWN_X
-	  (t, interface_unknown);
-      }
-    
-    /* Only leave this bit clear if we know this
-       class is part of an interface-only specification.  */
-    if (! CLASSTYPE_INTERFACE_KNOWN (t)
-	|| ! CLASSTYPE_INTERFACE_ONLY (t))
-      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
-  }
+  if (! TYPE_ANONYMOUS_P (t))
+    {
+      CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
+      SET_CLASSTYPE_INTERFACE_UNKNOWN_X
+	(t, interface_unknown);
+    }
+
+  /* Only leave this bit clear if we know this
+     class is part of an interface-only specification.  */
+  if (! CLASSTYPE_INTERFACE_KNOWN (t)
+      || ! CLASSTYPE_INTERFACE_ONLY (t))
+    CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
   reset_specialization();
   
   /* Make a declaration for this class in its own scope.  */

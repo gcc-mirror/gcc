@@ -1011,7 +1011,7 @@ check_for_missing_semicolon (type)
        && yychar != SELFNAME)
       || yychar == 0  /* EOF */)
     {
-      if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
+      if (TYPE_ANONYMOUS_P (type))
 	error ("semicolon missing after %s declaration",
 	       TREE_CODE (type) == ENUMERAL_TYPE ? "enum" : "struct");
       else

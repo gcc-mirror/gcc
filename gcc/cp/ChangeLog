@@ -1,3 +1,15 @@
+2001-04-11  Jason Merrill  <jason_merrill@redhat.com>
+
+	* cp-tree.h (TYPE_LINKAGE_IDENTIFIER): New macro.
+	(TYPE_ANONYMOUS_P): New macro.
+	(TAGGED_TYPE_P): New macro.
+	* decl.c (check_tag_decl): Use TYPE_ANONYMOUS_P.
+	(grokfndecl, grokvardecl, grokdeclarator): Likewise.
+	* tree.c (no_linkage_helper): Likewise.
+	* semantics.c (begin_class_definition): Likewise.
+	* pt.c (convert_template_argument): Likewise.
+	* lex.c (check_for_missing_semicolon): Likewise.
+
 2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (dfs_unshared_virtual_bases): New function.

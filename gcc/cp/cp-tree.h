@@ -1165,11 +1165,17 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Macros to make error reporting functions' lives easier.  */
 #define TYPE_IDENTIFIER(NODE) (DECL_NAME (TYPE_NAME (NODE)))
+#define TYPE_LINKAGE_IDENTIFIER(NODE) \
+  (TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (NODE)))
 #define TYPE_NAME_STRING(NODE) (IDENTIFIER_POINTER (TYPE_IDENTIFIER (NODE)))
 #define TYPE_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (TYPE_IDENTIFIER (NODE)))
 
 #define TYPE_ASSEMBLER_NAME_STRING(NODE) (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME  (NODE))))
 #define TYPE_ASSEMBLER_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (TYPE_NAME (NODE))))
+
+/* Nonzero if NODE has no name for linkage purposes.  */
+#define TYPE_ANONYMOUS_P(NODE) \
+  (TAGGED_TYPE_P (NODE) && ANON_AGGRNAME_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
 
 /* The _DECL for this _TYPE.  */
 #define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
@@ -1200,8 +1206,9 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define IS_AGGR_TYPE_2(TYPE1,TYPE2) \
   (TREE_CODE (TYPE1) == TREE_CODE (TYPE2)	\
    && IS_AGGR_TYPE (TYPE1) && IS_AGGR_TYPE (TYPE2))
-#define IS_OVERLOAD_TYPE(t) \
-  (IS_AGGR_TYPE (t) || TREE_CODE (t) == ENUMERAL_TYPE)
+#define TAGGED_TYPE_P(t) \
+  (CLASS_TYPE_P (t) || TREE_CODE (t) == ENUMERAL_TYPE)
+#define IS_OVERLOAD_TYPE(T) TAGGED_TYPE_P (T)
 
 /* In a *_TYPE, nonzero means a built-in type.  */
 #define TYPE_BUILT_IN(NODE) TYPE_LANG_FLAG_6(NODE)
