@@ -1,3 +1,7 @@
+2005-03-10  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (MEMBER_TYPE_FORCES_BLK): Define.
+
 2005-03-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* bitmap.c (bitmap_copy): Remove manual loop unrolling.
