@@ -252,16 +252,10 @@ extern int target_flags;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
-/* Make arrays of chars word-aligned for the same reasons.  */
-#define DATA_ALIGNMENT(TYPE, ALIGN)		\
-  (TREE_CODE (TYPE) == ARRAY_TYPE		\
-   && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
+/* Align all constants and variables to at least a word boundary so
+   we can pick up pieces of them faster.  */
+#define CONSTANT_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
+#define DATA_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
 
 /* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.
@@ -1888,6 +1882,7 @@ literal_section ()						\
 		    SYMBOL_REF, CONST, LABEL_REF}},	\
   {"aligned_memory_operand", {MEM}},			\
   {"unaligned_memory_operand", {MEM}},			\
+  {"reg_or_unaligned_mem_operand", {SUBREG, REG, MEM}},	\
   {"any_memory_operand", {MEM}},
 
 /* Tell collect that the object format is ECOFF.  */
