@@ -386,13 +386,17 @@ exec_prefix = @exec_prefix@
 bindir = @bindir@
 # Directory in which to put the directories used by the compiler.
 libdir = @libdir@
+# Directory in which GCC puts its executables.
+libexecdir = @libexecdir@
 
 # --------
 # UNSORTED
 # --------
 
-# Directory in which the compiler finds executables, libraries, etc.
-libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
+# Directory in which the compiler finds libraries etc.
+libsubdir = $(libdir)/gcc/$(target_alias)/$(version)
+# Directory in which the compiler finds executables
+libexecsubdir = $(libexecdir)/gcc/$(target_alias)/$(version)
 # Used to produce a relative $(gcc_tooldir) in gcc.o
 unlibsubdir = ../../..
 # Directory in which to find other cross-compilation tools and headers.
@@ -769,6 +773,7 @@ ORDINARY_FLAGS_TO_PASS = \
 	"gcc_tooldir=$(gcc_tooldir)" \
 	"bindir=$(bindir)" \
 	"libsubdir=$(libsubdir)" \
+	"libexecsubdir=$(libsubdir)" \
 	"datadir=$(datadir)" \
 	"localedir=$(localedir)"
 FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) "CC=@cc_set_by_configure@" \
@@ -1358,7 +1363,8 @@ c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
 
 DRIVER_DEFINES = \
   -DSTANDARD_STARTFILE_PREFIX=\"$(unlibsubdir)/\" \
-  -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
+  -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
+  -DSTANDARD_LIBEXEC_PREFIX=\"$(libexecdir)/gcc/\" \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
@@ -2936,9 +2942,10 @@ install-cpp: cpp$(exeext)
 	fi
 
 # Create the installation directories.
-# $(libdir)/gcc-lib/include isn't currently searched by cpp.
+# $(libdir)/gcc/include isn't currently searched by cpp.
 installdirs:
 	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(libsubdir)
+	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(libexecsubdir)
 	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(bindir)
 	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(includedir)
 	$(SHELL) ${srcdir}/mkinstalldirs $(DESTDIR)$(infodir)
@@ -2950,15 +2957,15 @@ installdirs:
 install-common: native $(EXTRA_PARTS) lang.install-common installdirs
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
-	    rm -f $(DESTDIR)$(libsubdir)/$$file; \
-	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libsubdir)/$$file; \
+	    rm -f $(DESTDIR)$(libexecsubdir)/$$file; \
+	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libexecsubdir)/$$file; \
 	  else true; \
 	  fi; \
 	done
 	for file in $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2) ..; do \
 	  if [ x"$$file" != x.. ]; then \
-	    rm -f $(DESTDIR)$(libsubdir)/$$file; \
-	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libsubdir)/$$file; \
+	    rm -f $(DESTDIR)$(libexecsubdir)/$$file; \
+	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libexecsubdir)/$$file; \
 	  else true; fi; \
 	done
 	for file in $(EXTRA_PARTS) ..; do \
@@ -3165,25 +3172,28 @@ install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 	cp -p -r include $(DESTDIR)$(libsubdir)
 
-itoolsdir = $(libsubdir)/install-tools
+itoolsdir = $(libexecsubdir)/install-tools
+itoolsdatadir = $(libsubdir)/install-tools
 # Don't install the headers.  Instead, install appropriate scripts
 # and supporting files for fixincludes to be run later.
 install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
     mkheaders xlimits.h
-	-rm -rf $(DESTDIR)$(itoolsdir)
-	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(itoolsdir)/include
+	-rm -rf $(DESTDIR)$(itoolsdir) $(DESTDIR)$(itoolsdatadir)
+	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(itoolsdatadir)/include
+	$(SHELL) $(srcdir)/mkinstalldirs $(DESTDIR)$(itoolsdir)
 	for file in $(USER_H); do \
 	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	  $(INSTALL_DATA) $$file \
-	    $(DESTDIR)$(itoolsdir)/include/$$realfile ; \
+	    $(DESTDIR)$(itoolsdatadir)/include/$$realfile ; \
 	done
-	$(INSTALL_DATA) xlimits.h $(DESTDIR)$(itoolsdir)/include/limits.h
+	$(INSTALL_DATA) xlimits.h $(DESTDIR)$(itoolsdatadir)/include/limits.h
 	if [ x$(STMP_FIXINC) != x ] ; then \
 	  $(INSTALL_DATA) $(srcdir)/README-fixinc \
-	    $(DESTDIR)$(itoolsdir)/include/README ; \
+	    $(DESTDIR)$(itoolsdatadir)/include/README ; \
 	  $(INSTALL_SCRIPT) fixinc.sh $(DESTDIR)$(itoolsdir)/fixinc.sh ; \
 	  $(INSTALL_PROGRAM) fixinc/fixincl $(DESTDIR)$(itoolsdir)/fixincl ; \
-	  $(INSTALL_DATA) $(srcdir)/gsyslimits.h $(DESTDIR)$(itoolsdir)/gsyslimits.h ; \
+	  $(INSTALL_DATA) $(srcdir)/gsyslimits.h \
+	    $(DESTDIR)$(itoolsdatadir)/gsyslimits.h ; \
 	else :; fi
 	if [ x$(STMP_FIXPROTO) != x ] ; then \
 	  $(INSTALL_SCRIPT) $(srcdir)/mkinstalldirs \
@@ -3194,23 +3204,26 @@ install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
 	else :; fi
 	$(INSTALL_SCRIPT) mkheaders $(DESTDIR)$(itoolsdir)/mkheaders
 	echo 'SYSTEM_HEADER_DIR="'"$(SYSTEM_HEADER_DIR)"'"' \
-		> $(DESTDIR)$(itoolsdir)/mkheaders.conf
+		> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
 	echo 'OTHER_FIXINCLUDES_DIRS="$(OTHER_FIXINCLUDES_DIRS)"' \
-		>> $(DESTDIR)$(itoolsdir)/mkheaders.conf
+		>> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
 	echo 'FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"' \
-		>> $(DESTDIR)$(itoolsdir)/mkheaders.conf
-	echo 'STMP_FIXPROTO="$(STMP_FIXPROTO)"' >> $(DESTDIR)$(itoolsdir)/mkheaders.conf
-	echo 'STMP_FIXINC="$(STMP_FIXINC)"' >> $(DESTDIR)$(itoolsdir)/mkheaders.conf
+		>> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
+	echo 'STMP_FIXPROTO="$(STMP_FIXPROTO)"' \
+		>> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
+	echo 'STMP_FIXINC="$(STMP_FIXINC)"' \
+		>> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
 
 # Use this target to install the program `collect2' under the name `collect2'.
 install-collect2: collect2 installdirs
-	$(INSTALL_PROGRAM) collect2$(exeext) $(DESTDIR)$(libsubdir)/collect2$(exeext)
+	$(INSTALL_PROGRAM) collect2$(exeext) $(DESTDIR)$(libexecsubdir)/collect2$(exeext)
 # Install the driver program as $(libsubdir)/gcc for collect2.
-	$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(libsubdir)/gcc$(exeext)
+	$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(libexecsubdir)/gcc$(exeext)
 
 # Cancel installation by deleting the installed files.
 uninstall: lang.uninstall
 	-rm -rf $(DESTDIR)$(libsubdir)
+	-rm -rf $(DESTDIR)$(libexecsubdir)
 	-rm -rf $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-rm -rf $(DESTDIR)$(bindir)/$(GCC_CROSS_NAME)$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)

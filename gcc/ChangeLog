@@ -1,3 +1,31 @@
+2003-07-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (libexecdir): New.
+	(libsubdir): Use gcc instead of gcc-lib.
+	(libexecsubdir): New.
+	(ORDINARY_FLAGS_TO_PASS): Add libexecsubdir.
+	(DRIVER_DEFINES): Add STANDARD_LIBEXEC_PREFIX, use gcc instead of
+	gcc-lib.
+	(installdirs): Make libexecsubdir.
+	(install-common): Put executables in libexecsubdir.
+	(itoolsdir): Use libexecsubdir.
+	(itoolsdatadir): New.
+	(install-mkheaders): Separate data files and executables.
+	(install-collect2): Put executables in libexecsubdir.
+	(uninstall): Remove libexecsubdir.
+	* mkheaders.in: Update for new arrangement of files.
+	(libexecdir): New.
+	(libexecsubdir): New.
+	(itoolsdir): Use libexecsubdir.
+	(itoolsdatadir): New.
+	* gcc.c (gcc_libexec_prefix): New.
+	(STANDARD_LIBEXEC_PREFIX): Use gcc instead of gcc-lib.
+	(standard_exec_prefix_1): Use libexec.
+	(standard_exec_prefix_2): New.
+	(standard_libexec_prefix): New.
+	(process_command): Update for new arrangement of files.  Compute
+	gcc_libexec_prefix.  Update for change from gcc-lib to gcc.
+
 2003-07-31  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* inclhack.def (stdio_va_list): Avoid bogus replacement which
