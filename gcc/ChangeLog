@@ -1,3 +1,7 @@
+2003-04-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (TARGET_OPTIONS): Add value field.
+
 2003-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/extend.texi: Remove duplicate 2003 copyright date.

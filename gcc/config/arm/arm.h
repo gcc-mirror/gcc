@@ -512,17 +512,17 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define TARGET_OPTIONS						\
 {								\
   {"cpu=",  & arm_select[0].string,				\
-   N_("Specify the name of the target CPU") },			\
+   N_("Specify the name of the target CPU"), 0},		\
   {"arch=", & arm_select[1].string,				\
-   N_("Specify the name of the target architecture") }, 	\
-  {"tune=", & arm_select[2].string, "" }, 			\
-  {"fpe=",  & target_fp_name, "" }, 				\
+   N_("Specify the name of the target architecture"), 0}, 	\
+  {"tune=", & arm_select[2].string, "", 0}, 			\
+  {"fpe=",  & target_fp_name, "" , 0}, 				\
   {"fp=",   & target_fp_name,					\
-   N_("Specify the version of the floating point emulator") },	\
+   N_("Specify the version of the floating point emulator"), 0},\
   {"structure-size-boundary=", & structure_size_string, 	\
-   N_("Specify the minimum bit alignment of structures") }, 	\
+   N_("Specify the minimum bit alignment of structures"), 0}, 	\
   {"pic-register=", & arm_pic_register_string,			\
-   N_("Specify the register to be used for PIC addressing") }	\
+   N_("Specify the register to be used for PIC addressing"), 0}	\
 }
 
 struct arm_cpu_select
