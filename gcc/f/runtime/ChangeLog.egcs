@@ -1,4 +1,14 @@
 Sat Jan 17 22:40:31 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* libU77/configure.in (sys/param.h,sys/times.h): Check.
+	(times,alarm): Likewise.
+	* libU77/config.h.in (HAVE_SYS_PARAM_H, HAVE_SYS_TIMES_H,
+	HAVE_ALARM, HAVE_TIMES): New defs.
+	* libU77/alarm_.c: Conditionalize for target platform. Set errno
+	to ENOSYS if target libc doesn't have the function.
+	* libU77/dtime_.c: Likewise.
+	* libU77/etime_.c: Likewise.
+	* libU77/sys_clock_.c: Likewise.
        
 	* configure.in (NON_UNIX_STDIO): Define if MINGW32.
 	(NON_ANSI_RW_MODE): Do not define for CYGWIN32 or MINGW32.
