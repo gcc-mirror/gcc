@@ -563,12 +563,14 @@ fini_section ()								\
    allow floating point constants in the TOC if -mrelocatable.  */
 
 #undef	ASM_OUTPUT_SPECIAL_POOL_ENTRY_P
-#define	ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X)				\
+#define	ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)			\
   (TARGET_TOC								\
    && (GET_CODE (X) == SYMBOL_REF					\
        || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
 	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
        || GET_CODE (X) == LABEL_REF					\
+       || (GET_CODE (X) == CONST_INT 					\
+	   && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))	\
        || (!TARGET_NO_FP_IN_TOC						\
 	   && !TARGET_RELOCATABLE					\
 	   && GET_CODE (X) == CONST_DOUBLE				\

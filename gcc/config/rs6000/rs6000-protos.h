@@ -86,7 +86,7 @@ extern int ccr_bit PARAMS ((rtx, int));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern char * output_cbranch PARAMS ((rtx, const char *, int, rtx));
-extern void output_toc PARAMS ((FILE *, rtx, int));
+extern void output_toc PARAMS ((FILE *, rtx, int, enum machine_mode));
 extern int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 extern int rs6000_adjust_priority PARAMS ((rtx, int));
 extern void rs6000_initialize_trampoline PARAMS ((rtx, rtx, rtx));

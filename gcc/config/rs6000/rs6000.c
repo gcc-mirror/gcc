@@ -119,6 +119,7 @@ static int rs6000_sr_alias_set;
 static void rs6000_add_gc_roots PARAMS ((void));
 static int num_insns_constant_wide PARAMS ((HOST_WIDE_INT));
 static rtx expand_block_move_mem PARAMS ((enum machine_mode, rtx, rtx));
+static void rs6000_maybe_dead PARAMS ((rtx));
 static void rs6000_emit_stack_tie PARAMS ((void));
 static void rs6000_frame_related PARAMS ((rtx, rtx, HOST_WIDE_INT, rtx, rtx));
 static void rs6000_emit_allocate_stack PARAMS ((HOST_WIDE_INT, int));
@@ -890,6 +891,8 @@ easy_fp_constant (op, mode)
 	     && GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_LOW (op) == 0)
 	    || (num_insns_constant (op, DImode) <= 2));
 
+  else if (mode == SImode)
+    return 1;
   else
     abort ();
 }
@@ -1339,7 +1342,7 @@ constant_pool_expr_1 (op, have_sym, have_toc)
     case SYMBOL_REF:
 	if (CONSTANT_POOL_ADDRESS_P (op))
 	  {
-	   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (op)))
+	   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (op), Pmode))
 	     {
 	       *have_sym = 1;
 	       return 1;
@@ -1451,7 +1454,7 @@ rs6000_legitimize_address (x, oldx, mode)
     }
   else if (TARGET_TOC 
 	   && CONSTANT_POOL_EXPR_P (x)
-	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x)))
+	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), Pmode))
     {
       return create_TOC_reference (x);
     }
@@ -1491,7 +1494,7 @@ rs6000_emit_move (dest, source, mode)
   
   if (! no_new_pseudos && GET_CODE (operands[0]) != REG)
     operands[1] = force_reg (mode, operands[1]);
-  
+
   if (mode == SFmode && ! TARGET_POWERPC && TARGET_HARD_FLOAT
       && GET_CODE (operands[0]) == MEM)
     {
@@ -1516,13 +1519,16 @@ rs6000_emit_move (dest, source, mode)
 	}
     }
 
-  /* Only a tiny bit of handling for CONSTANT_P_RTX is necessary.  */
-  if (GET_CODE (operands[1]) == CONSTANT_P_RTX)
+  /* Handle the case where reload calls us with an invalid address;
+     and the case of CONSTANT_P_RTX.  */
+  if (! general_operand (operands[1], mode)
+      || ! nonimmediate_operand (operands[0], mode)
+      || GET_CODE (operands[1]) == CONSTANT_P_RTX)
     {
       emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
       return;
     }
-
+  
   /* FIXME:  In the long term, this switch statement should go away
      and be replaced by a sequence of tests based on things like
      mode == Pmode.  */
@@ -1532,53 +1538,45 @@ rs6000_emit_move (dest, source, mode)
     case QImode:
       if (CONSTANT_P (operands[1])
 	  && GET_CODE (operands[1]) != CONST_INT)
-	{
-	  operands[1] = force_const_mem (mode, operands[1]);
-	  if (! memory_address_p (mode, XEXP (operands[1], 0))
-	      && ! reload_in_progress)
-	    operands[1] = change_address (operands[1], mode,
-					  XEXP (operands[1], 0));
-	}
+	operands[1] = force_const_mem (mode, operands[1]);
       break;
 
     case DFmode:
     case SFmode:
       if (CONSTANT_P (operands[1]) 
 	  && ! easy_fp_constant (operands[1], mode))
-	{
-	  operands[1] = force_const_mem (mode, operands[1]);
-	  if (! memory_address_p (mode, XEXP (operands[1], 0))
-	      && ! reload_in_progress)
-	    operands[1] = change_address (operands[1], mode,
-					  XEXP (operands[1], 0));
-	}
+	operands[1] = force_const_mem (mode, operands[1]);
       break;
       
     case SImode:
+    case DImode:
       /* Use default pattern for address of ELF small data */
       if (TARGET_ELF
+	  && mode == Pmode
 	  && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-	  && (GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == CONST)
-	  && small_data_operand (operands[1], SImode))
+	  && (GET_CODE (operands[1]) == SYMBOL_REF 
+	      || GET_CODE (operands[1]) == CONST)
+	  && small_data_operand (operands[1], mode))
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
 	  return;
 	}
 
       if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-	  && flag_pic == 1 && got_operand (operands[1], SImode))
+	  && mode == Pmode && mode == SImode
+	  && flag_pic == 1 && got_operand (operands[1], mode))
 	{
 	  emit_insn (gen_movsi_got (operands[0], operands[1]));
 	  return;
 	}
 
-      if (TARGET_ELF && TARGET_NO_TOC && ! TARGET_64BIT
-	  && ! flag_pic
+      if (TARGET_ELF && TARGET_NO_TOC && ! flag_pic
+	  && mode == Pmode
 	  && CONSTANT_P (operands[1])
 	  && GET_CODE (operands[1]) != HIGH
 	  && GET_CODE (operands[1]) != CONST_INT)
 	{
-	  rtx target = (no_new_pseudos ? operands[0] : gen_reg_rtx (SImode));
+	  rtx target = (no_new_pseudos ? operands[0] : gen_reg_rtx (mode));
 
 	  /* If this is a function address on -mcall-aixdesc,
 	     convert it to the address of the descriptor.  */
@@ -1603,70 +1601,30 @@ rs6000_emit_move (dest, source, mode)
 	  return;
 	}
 
-      if (CONSTANT_P (operands[1])
-	  && GET_CODE (operands[1]) != CONST_INT
-	  && GET_CODE (operands[1]) != HIGH
-	  && ! LEGITIMATE_CONSTANT_POOL_ADDRESS_P (operands[1])
-	  && ! TOC_RELATIVE_EXPR_P (operands[1]))
+      /* If this is a SYMBOL_REF that refers to a constant pool entry,
+	 and we have put it in the TOC, we just need to make a TOC-relative
+	 reference to it.  */
+      if (TARGET_TOC
+	  && GET_CODE (operands[1]) == SYMBOL_REF
+	  && CONSTANT_POOL_EXPR_P (operands[1])
+	  && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (operands[1]),
+					      get_pool_mode (operands[1])))
 	{
-	  /* Emit a USE operation so that the constant isn't deleted if
-	     expensive optimizations are turned on because nobody
-	     references it.  This should only be done for operands that
-	     contain SYMBOL_REFs with CONSTANT_POOL_ADDRESS_P set.
-	     This should not be done for operands that contain LABEL_REFs.
-	     For now, we just handle the obvious case.  */
-	  if (GET_CODE (operands[1]) != LABEL_REF)
-	    emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
-
-      /* If we are to limit the number of things we put in the TOC and
-	 this is a symbol plus a constant we can add in one insn,
-	 just put the symbol in the TOC and add the constant.  Don't do
-	 this if reload is in progress.  */
-	  if (GET_CODE (operands[1]) == CONST
-	      && TARGET_NO_SUM_IN_TOC && ! reload_in_progress
-	      && GET_CODE (XEXP (operands[1], 0)) == PLUS
-	      && add_operand (XEXP (XEXP (operands[1], 0), 1), SImode)
-	      && (GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == LABEL_REF
-		  || GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == SYMBOL_REF)
-	      && ! side_effects_p (operands[0]))
-	    {
-	      rtx sym = force_const_mem (SImode, XEXP (XEXP (operands[1], 0), 0));
-	      rtx other = XEXP (XEXP (operands[1], 0), 1);
-
-	      emit_insn (gen_addsi3 (operands[0], force_reg (SImode, sym), other));
-	      return;
-	    }
-
-	  operands[1] = force_const_mem (SImode, operands[1]);
-
-	  if (TARGET_TOC 
-	      && CONSTANT_POOL_EXPR_P (XEXP (operands[1], 0))
-	      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (
-								     XEXP (operands[1], 0))))
-	    {
-	      operands[1] = gen_rtx_MEM (SImode,
-					 create_TOC_reference (XEXP (operands[1], 0)));
-	      MEM_ALIAS_SET (operands[1]) = get_TOC_alias_set ();	
-	      RTX_UNCHANGING_P (operands[1]) = 1;
-	    }
-
-	  if (! memory_address_p (SImode, XEXP (operands[1], 0))
-	      && ! reload_in_progress)
-	    operands[1] = change_address (operands[1], SImode,
-					  XEXP (operands[1], 0));
+	  operands[1] = create_TOC_reference (operands[1]);
 	}
-      break;
-
-    case DImode:
-      if (TARGET_64BIT
-	  && CONSTANT_P (operands[1])
-#if HOST_BITS_PER_WIDE_INT == 32
-	  && GET_CODE (operands[1]) != CONST_INT
-#endif
-	  && ! easy_fp_constant (operands[1], DImode)
-	  && ! LEGITIMATE_CONSTANT_POOL_ADDRESS_P (operands[1])
-	  && ! TOC_RELATIVE_EXPR_P (operands[1]))
+      else if (mode == Pmode
+	       && CONSTANT_P (operands[1])
+ 	       && (((HOST_BITS_PER_WIDE_INT != 32 
+ 		     || GET_CODE (operands[1]) != CONST_INT)
+ 		    && ! easy_fp_constant (operands[1], mode))
+ 		   || (GET_CODE (operands[0]) == REG
+ 		       && FP_REGNO_P (REGNO (operands[0]))))
+	       && GET_CODE (operands[1]) != HIGH
+	       && ! LEGITIMATE_CONSTANT_POOL_ADDRESS_P (operands[1])
+	       && ! TOC_RELATIVE_EXPR_P (operands[1]))
 	{
+	  int special_constant_p = 0;
+
 	  /* Emit a USE operation so that the constant isn't deleted if
 	     expensive optimizations are turned on because nobody
 	     references it.  This should only be done for operands that
@@ -1683,39 +1641,46 @@ rs6000_emit_move (dest, source, mode)
 	  if (GET_CODE (operands[1]) == CONST
 	      && TARGET_NO_SUM_IN_TOC && ! reload_in_progress
 	      && GET_CODE (XEXP (operands[1], 0)) == PLUS
-	      && add_operand (XEXP (XEXP (operands[1], 0), 1), DImode)
+	      && add_operand (XEXP (XEXP (operands[1], 0), 1), mode)
 	      && (GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == LABEL_REF
 		  || GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == SYMBOL_REF)
 	      && ! side_effects_p (operands[0]))
 	    {
-	      rtx sym = force_const_mem (DImode, XEXP (XEXP (operands[1], 0), 0));
+	      rtx sym = force_const_mem (mode, XEXP (XEXP (operands[1], 0), 0));
 	      rtx other = XEXP (XEXP (operands[1], 0), 1);
 
-	      emit_insn (gen_adddi3 (operands[0], force_reg (DImode, sym), other));
+	      sym = force_reg (mode, sym);
+	      if (mode == SImode)
+		emit_insn (gen_addsi3 (operands[0], sym, other));
+	      else
+		emit_insn (gen_adddi3 (operands[0], sym, other));
 	      return;
 	    }
 
-	  operands[1] = force_const_mem (DImode, operands[1]);
+	  operands[1] = force_const_mem (mode, operands[1]);
 
 	  if (TARGET_TOC 
-	      && CONSTANT_POOL_EXPR_P (XEXP (operands[1], 0))
-	      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (
-								     XEXP (operands[1], 0))))
+	      && CONSTANT_POOL_EXPR_P (XEXP (operands[1], 0)))
 	    {
-	      operands[1] = gen_rtx_MEM (DImode,
-					 create_TOC_reference (XEXP (operands[1], 0)));
+	      rtx constant;
+	      enum machine_mode cmode;
 
+	      constant = get_pool_constant (XEXP (operands[1], 0));
+	      cmode = get_pool_mode (XEXP (operands[1], 0));
+	      special_constant_p = 
+		ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (constant, cmode);
+	    }
+
+	  if (special_constant_p)
+	    {
+	      operands[1] = gen_rtx_MEM (mode,
+					 create_TOC_reference (XEXP (operands[1], 0)));
 	      MEM_ALIAS_SET (operands[1]) = get_TOC_alias_set ();	
 	      RTX_UNCHANGING_P (operands[1]) = 1;
-	    }	
-
-	  if (! memory_address_p (DImode, XEXP (operands[1], 0))
-	      && ! reload_in_progress)
-	    operands[1] = change_address (operands[1], DImode,
-					  XEXP (operands[1], 0));
+	    }
 	}
       break;
-  
+
     case TImode:
       if (GET_CODE (operands[0]) == MEM
 	  && GET_CODE (XEXP (operands[0], 0)) != REG
@@ -1733,6 +1698,15 @@ rs6000_emit_move (dest, source, mode)
     default:
       abort ();
     }
+
+  /* Above, we may have called force_const_mem which may have returned
+     an invalid address.  If we can, fix this up; otherwise, reload will
+     have to deal with it.  */
+  if (GET_CODE (operands[1]) == MEM
+      && ! memory_address_p (mode, XEXP (operands[1], 0))
+      && ! reload_in_progress)
+    operands[1] = change_address (operands[1], mode,
+				  XEXP (operands[1], 0));
 
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
 }
@@ -6309,6 +6283,7 @@ struct toc_hash_struct
   /* `key' will satisfy CONSTANT_P; in fact, it will satisfy
      ASM_OUTPUT_SPECIAL_POOL_ENTRY_P.  */
   rtx key;
+  enum machine_mode key_mode;
   int labelno;
 };
 
@@ -6320,7 +6295,7 @@ static unsigned
 rs6000_hash_constant (k)
      rtx k;
 {
-  unsigned result = GET_CODE (k);
+  unsigned result = (GET_CODE (k) << 3) ^ GET_MODE (k);
   const char *format = GET_RTX_FORMAT (GET_CODE (k));
   int flen = strlen (format);
   int fidx;
@@ -6377,8 +6352,9 @@ static unsigned
 toc_hash_function (hash_entry)
      const void * hash_entry;
 {
-  return rs6000_hash_constant (((const struct toc_hash_struct *) 
-				hash_entry)->key);
+  const struct toc_hash_struct *thc = 
+    (const struct toc_hash_struct *) hash_entry;
+  return rs6000_hash_constant (thc->key) ^ thc->key_mode;
 }
 
 /* Compare H1 and H2 for equivalence.  */
@@ -6390,6 +6366,10 @@ toc_hash_eq (h1, h2)
 {
   rtx r1 = ((const struct toc_hash_struct *) h1)->key;
   rtx r2 = ((const struct toc_hash_struct *) h2)->key;
+
+  if (((const struct toc_hash_struct *) h1)->key_mode
+      != ((const struct toc_hash_struct *) h2)->key_mode)
+    return 0;
 
   /* Gotcha:  One of these const_doubles will be in memory.
      The other may be on the constant-pool chain.
@@ -6453,10 +6433,11 @@ toc_hash_mark_table (vht)
    being written.  */
 
 void
-output_toc (file, x, labelno)
+output_toc (file, x, labelno, mode)
      FILE *file;
      rtx x;
      int labelno;
+     enum machine_mode mode;
 {
   char buf[256];
   const char *name = buf;
@@ -6479,6 +6460,7 @@ output_toc (file, x, labelno)
       
       h = ggc_alloc (sizeof (*h));
       h->key = x;
+      h->key_mode = mode;
       h->labelno = labelno;
       
       found = htab_find_slot (toc_hash_table, h, 1);
@@ -6501,7 +6483,7 @@ output_toc (file, x, labelno)
      aligned properly when strict alignment is on.  */
   if (GET_CODE (x) == CONST_DOUBLE
       && STRICT_ALIGNMENT
-      && GET_MODE (x) == DFmode
+      && GET_MODE_BITSIZE (mode) >= 64
       && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)) {
     ASM_OUTPUT_ALIGN (file, 3);
   }
@@ -6511,8 +6493,7 @@ output_toc (file, x, labelno)
   /* Handle FP constants specially.  Note that if we have a minimal
      TOC, things we put here aren't actually in the TOC, so we can allow
      FP constants.  */
-  if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode
-      && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
+  if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode)
     {
       REAL_VALUE_TYPE rv;
       long k[2];
@@ -6539,8 +6520,7 @@ output_toc (file, x, labelno)
 	  return;
 	}
     }
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode
-	   && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
+  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode)
     {
       REAL_VALUE_TYPE rv;
       long l;
@@ -6566,8 +6546,7 @@ output_toc (file, x, labelno)
 	}
     }
   else if (GET_MODE (x) == VOIDmode
-	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
-	   && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
+	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE))
     {
       HOST_WIDE_INT low;
       HOST_WIDE_INT high;
@@ -6589,6 +6568,18 @@ output_toc (file, x, labelno)
           high = (HOST_WIDE_INT) INTVAL (x) >> 32;
 	}
 #endif
+
+      /* TOC entries are always Pmode-sized, but since this
+	 is a bigendian machine then if we're putting smaller
+	 integer constants in the TOC we have to pad them.
+	 (This is still a win over putting the constants in
+	 a separate constant pool, because then we'd have
+	 to have both a TOC entry _and_ the actual constant.)  */
+      if (POINTER_SIZE < GET_MODE_BITSIZE (mode))
+	abort ();/* It would be easy to make this work, but it doesn't now.  */
+      if (mode != Pmode)
+	lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
+		       POINTER_SIZE, &low, &high, 0);
 
       if (TARGET_64BIT)
 	{
@@ -7191,10 +7182,10 @@ rs6000_longcall_ref (call_ref)
 
 void
 rs6000_select_rtx_section (mode, x)
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
      rtx x;
 {
-  if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x))
+  if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x, mode))
     toc_section ();
   else
     const_section ();
@@ -7219,7 +7210,7 @@ rs6000_select_section (decl, reloc)
       else
 	data_section ();
     }
-  else if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == CONSTRUCTOR)
+  else if (TREE_CODE (decl) == VAR_DECL)
     {
       if ((flag_pic && reloc)
 	  || ! TREE_READONLY (decl)

@@ -100,14 +100,14 @@ Boston, MA 02111-1307, USA.  */
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.
 
- The -bhalt:4 option supposedly changes the level at which ld will abort,
+   The -bhalt:4 option supposedly changes the level at which ld will abort,
    but it also suppresses warnings about multiply defined symbols and is
    used by the AIX cc command.  So we use it here.
 
    -bnodelcsect undoes a poor choice of default relating to multiply-defined
    csects.  See AIX documentation for more information about this.
 
- -bM:SRE tells the linker that the output file is Shared REusable.  Note
+   -bM:SRE tells the linker that the output file is Shared REusable.  Note
    that to actually build a shared library you will also need to specify an
    export list with the -Wl,-bE option.  */
 
@@ -233,11 +233,11 @@ toc_section ()						\
    However, if this is being placed in the TOC it must be output as a
    toc entry.  */
 
-#define SELECT_RTX_SECTION(MODE, X)		\
-{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X))	\
-    toc_section ();				\
-  else						\
-    read_only_private_data_section ();		\
+#define SELECT_RTX_SECTION(MODE, X)			\
+{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X, MODE))	\
+    toc_section ();					\
+  else							\
+    read_only_private_data_section ();			\
 }
 
 /* Indicate that jump tables go in the text section.  */

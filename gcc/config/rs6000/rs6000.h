@@ -1934,55 +1934,55 @@ typedef struct rs6000_args
    register by splitting the addend across an addiu/addis and the mem insn.
    This cuts number of extra insns needed from 3 to 1.  */
    
-#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)     \
-do {                                                                    \
-  /* We must recognize output that we have already generated ourselves.  */ \
-  if (GET_CODE (X) == PLUS						\
-      && GET_CODE (XEXP (X, 0)) == PLUS					\
-      && GET_CODE (XEXP (XEXP (X, 0), 0)) == REG			\
-      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT)				\
-    {									\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,       \
-                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,        \
-                   OPNUM, TYPE);                                        \
-      goto WIN;                                                         \
-    }									\
-  if (GET_CODE (X) == PLUS                                              \
-      && GET_CODE (XEXP (X, 0)) == REG                                  \
-      && REGNO (XEXP (X, 0)) < FIRST_PSEUDO_REGISTER                    \
-      && REG_MODE_OK_FOR_BASE_P (XEXP (X, 0), MODE)                     \
-      && GET_CODE (XEXP (X, 1)) == CONST_INT)                           \
-    {                                                                   \
-      HOST_WIDE_INT val = INTVAL (XEXP (X, 1));                         \
-      HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;           \
-      unsigned HOST_WIDE_INT high                                       \
-        = (((val - low) & 0xffffffffu) ^ 0x80000000u) - 0x80000000u;    \
-                                                                        \
-      /* Check for 32-bit overflow.  */                                 \
-      if (high + low != val)                                            \
-        break;                                                          \
-                                                                        \
-      /* Reload the high part into a base reg; leave the low part       \
-         in the mem directly.  */                                       \
-                                                                        \
-      X = gen_rtx_PLUS (GET_MODE (X),                                   \
-                        gen_rtx_PLUS (GET_MODE (X), XEXP (X, 0),        \
-                                      GEN_INT (high)),                  \
-                        GEN_INT (low));                                 \
-                                                                        \
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,       \
-                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,        \
-                   OPNUM, TYPE);                                        \
-      goto WIN;                                                         \
-    }                                                                   \
-  else if (TARGET_TOC 							\
-	   && CONSTANT_POOL_EXPR_P (X)					\
-	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (X)))	\
-    {									\
-      (X) = create_TOC_reference (X);					\
-      goto WIN;								\
-    }									\
+#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	     \
+do {									     \
+  /* We must recognize output that we have already generated ourselves.  */  \
+  if (GET_CODE (X) == PLUS						     \
+      && GET_CODE (XEXP (X, 0)) == PLUS					     \
+      && GET_CODE (XEXP (XEXP (X, 0), 0)) == REG			     \
+      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			     \
+      && GET_CODE (XEXP (X, 1)) == CONST_INT)				     \
+    {									     \
+      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,	     \
+                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	     \
+                   OPNUM, TYPE);					     \
+      goto WIN;								     \
+    }									     \
+  if (GET_CODE (X) == PLUS						     \
+      && GET_CODE (XEXP (X, 0)) == REG					     \
+      && REGNO (XEXP (X, 0)) < FIRST_PSEUDO_REGISTER			     \
+      && REG_MODE_OK_FOR_BASE_P (XEXP (X, 0), MODE)			     \
+      && GET_CODE (XEXP (X, 1)) == CONST_INT)				     \
+    {									     \
+      HOST_WIDE_INT val = INTVAL (XEXP (X, 1));				     \
+      HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;		     \
+      HOST_WIDE_INT high						     \
+        = (((val - low) & 0xffffffffu) ^ 0x80000000u) - 0x80000000u;	     \
+									     \
+      /* Check for 32-bit overflow.  */					     \
+      if (high + low != val)						     \
+        break;								     \
+									     \
+      /* Reload the high part into a base reg; leave the low part	     \
+         in the mem directly.  */					     \
+									     \
+      X = gen_rtx_PLUS (GET_MODE (X),					     \
+                        gen_rtx_PLUS (GET_MODE (X), XEXP (X, 0),	     \
+                                      GEN_INT (high)),			     \
+                        GEN_INT (low));					     \
+									     \
+      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,	     \
+                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	     \
+                   OPNUM, TYPE);					     \
+      goto WIN;								     \
+    }									     \
+  else if (TARGET_TOC							     \
+	   && CONSTANT_POOL_EXPR_P (X)					     \
+	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (X), MODE)) \
+    {									     \
+      (X) = create_TOC_reference (X);					     \
+      goto WIN;								     \
+    }									     \
 } while (0)
 
 /* Go to LABEL if ADDR (a legitimate address expression)
@@ -2359,39 +2359,41 @@ extern int rs6000_trunc_used;
 /* Flag to say the TOC is initialized */
 extern int toc_initialized;
 
-/* Return non-zero if this entry is to be written into the constant pool
-   in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF or a CONST
-   containing one of them.  If -mfp-in-toc (the default), we also do
-   this for floating-point constants.  We actually can only do this
-   if the FP formats of the target and host machines are the same, but
-   we can't check that since not every file that uses
-   GO_IF_LEGITIMATE_ADDRESS_P includes real.h.  */
+/* Return non-zero if this entry is to be written into the constant
+   pool in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF
+   or a CONST containing one of them.  If -mfp-in-toc (the default),
+   we also do this for floating-point constants.  We actually can only
+   do this if the FP formats of the target and host machines are the
+   same, but we can't check that since not every file that uses
+   GO_IF_LEGITIMATE_ADDRESS_P includes real.h.  We also do this when
+   we can write the entry into the TOC and the entry is not larger
+   than a TOC entry.  */
 
-#define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X)				\
+#define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X, MODE)			\
   (TARGET_TOC								\
    && (GET_CODE (X) == SYMBOL_REF					\
        || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
 	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
        || GET_CODE (X) == LABEL_REF					\
-       || (! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)		\
-	   && GET_CODE (X) == CONST_DOUBLE				\
-	   && (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
-	       || TARGET_POWERPC64))))
-#if 0
-	   && BITS_PER_WORD == HOST_BITS_PER_INT)))
-#endif
+       || (GET_CODE (X) == CONST_INT 					\
+	   && GET_MODE_BITSIZE (MODE) <= GET_MODE_BITSIZE (Pmode))	\
+       || (GET_CODE (X) == CONST_DOUBLE					\
+	   && (TARGET_POWERPC64						\
+	       || TARGET_MINIMAL_TOC					\
+	       || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
+		   && ! TARGET_NO_FP_IN_TOC)))))
 
 /* Macro to output a special constant pool entry.  Go to WIN if we output
    it.  Otherwise, it is written the usual way.
 
    On the RS/6000, toc entries are handled this way.  */
 
-#define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE, X, MODE, ALIGN, LABELNO, WIN)  \
-{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X))	\
-    {						\
-      output_toc (FILE, X, LABELNO);		\
-      goto WIN;					\
-    }						\
+#define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE, X, MODE, ALIGN, LABELNO, WIN) \
+{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X, MODE))			  \
+    {									  \
+      output_toc (FILE, X, LABELNO, MODE);				  \
+      goto WIN;								  \
+    }									  \
 }
 
 /* This is how we tell the assembler that two symbols have the same value.  */

@@ -1,5 +1,40 @@
 2000-07-20  Geoff Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/rs6000.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): All
+	constants of size no larger than a pointer should go in the TOC.
+	Add 'MODE' parameter.
+	(LEGITIMIZE_RELOAD_ADDRESS): Add MODE parameter to
+	ASM_OUTPUT_SPECIAL_POOL_ENTRY_P.
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY): Likewise.
+	* config/rs6000/aix.h (SELECT_RTX_SECTION): Likewise.
+	* config/rs6000/netware.h (SELECT_RTX_SECTION): Likewise.
+	* config/rs6000/rs6000.c (constant_pool_expr_1): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_emit_move): Likewise.
+	(rs6000_select_rtx_section): Likewise.
+	(output_toc): Deal properly with outputting small constants like
+	HImode, and SFmode in 32-bit mode, and DFmode in 64-bit mode.
+	* config/rs6000/sysv4.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Add
+	MODE parameter.  Put small constants in the TOC.
+	
+	* config/rs6000/rs6000.c (easy_fp_constant_p): All constants are
+	easy in SImode.
+	(rs6000_emit_move): When reload calls us with an illegitimate
+	address, exit early.  Move the change_address calls to one place
+	at the end of the routine.  Merge the SImode and DImode expanders.
+	When called by reload to put an integer into a FP register, force
+	it to memory.
+
+	* config/rs6000/rs6000.c (struct toc_hash_struct): Add 'key_mode'
+	field.
+	(rs6000_hash_constant): Hash mode too.
+	(toc_hash_function): Allow for key_mode.
+	(toc_hash_eq): Structures are different if key_mode differs.
+	(output_toc): Add 'mode' parameter.  Save key_mode.
+	* config/rs6000/rs6000.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY):
+	Pass 'mode' parameter.
+	* config/rs6000/rs6000-protos.h (output_toc): Add 'mode' param.
+
 	* config/rs6000/rs6000.c (output_toc): Use RS6000_OUTPUT_BASENAME
 	for vtable references.
 
