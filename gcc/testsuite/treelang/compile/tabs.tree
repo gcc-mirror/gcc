@@ -1,0 +1,11 @@
+// { dg-do compile }
+external_definition int main(int argc);
+
+main {
+	automatic int v1;
+	automatic int v2;
+	v1 = argc;
+	v2 = 3;
+
+        return v2;
+}

@@ -3,7 +3,8 @@
     TREELANG Compiler definitions for interfacing to treetree.c
     (compiler back end interface).
 
-    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004
+    Free Software Foundation, Inc.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
@@ -55,7 +56,6 @@ tree tree_code_create_variable (unsigned int storage_class,
 				location_t loc);
 void tree_code_output_expression_statement (tree code,
 					    location_t loc);
-tree get_type_for_numeric_type (unsigned int numeric_type);
 void tree_code_if_start (tree exp, location_t loc);
 void tree_code_if_else (location_t loc);
 void tree_code_if_end (location_t loc);

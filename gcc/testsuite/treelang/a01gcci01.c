@@ -27,6 +27,7 @@
 int add(int, int);
 int subtract(int, int);
 int first_nonzero(int, int);
+extern int printf(char *template, ...);
 
 int 
 main (int argc, char *argv[])

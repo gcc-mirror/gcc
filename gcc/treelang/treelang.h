@@ -2,7 +2,8 @@
 
     TREELANG Compiler common definitions (treelang.h)
 
-    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004
+    Free Software Foundation, Inc.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
@@ -48,7 +49,7 @@ extern FILE* yyin;
 struct token_part;
 struct production_part;
 struct prod_token_parm_item;
-typedef struct GTY(()) prod_token_parm_item item;
+typedef struct prod_token_parm_item item;
 
 /* A token from the input file.  */
 

@@ -3,7 +3,8 @@
     TREELANG Compiler almost main (tree1)
     Called by GCC's toplev.c
 
-    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004
+    Free Software Foundation, Inc.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
@@ -37,9 +38,11 @@
 #include "tm.h"
 #include "flags.h"
 #include "toplev.h"
+#include "version.h"
 
 #include "ggc.h"
 #include "tree.h"
+#include "cgraph.h"
 #include "diagnostic.h"
 
 #include "treelang.h"
@@ -141,7 +144,7 @@ bool
 treelang_init (void)
 {
   input_filename = main_input_filename;
-  input_line = 0;
+  input_line = 1;
 
   /* Init decls etc.  */
 
@@ -185,6 +188,8 @@ treelang_parse_file (int debug_flag ATTRIBUTE_UNUSED)
 {
   treelang_debug ();
   yyparse ();
+  cgraph_finalize_compilation_unit ();
+  cgraph_optimize ();
 }
 
 /* Allocate SIZE bytes and clear them.  Not to be used for strings

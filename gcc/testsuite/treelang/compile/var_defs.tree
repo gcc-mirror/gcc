@@ -1,0 +1,39 @@
+// { dg-do compile }
+external_definition void boring (int arg0);
+external_definition char condition (char arg1, char arg2);
+external_definition int first_nonzero (int arg5, int arg6);
+
+boring
+{
+  arg0 = +5  + +3;  // Force 3 and 5 to be signed numbers.
+  arg0 = arg0 + +3;
+}
+
+condition
+{
+  if (arg1)
+    {
+      automatic int i;
+      return arg1;
+    }
+  else
+    {
+      return 0;
+    }
+}
+
+first_nonzero
+{
+  if (arg5)
+    {
+      return arg5;
+    }
+  else
+    {
+      automatic int j;
+      j = arg6;
+      return j;
+    }
+  return arg6;
+}
+

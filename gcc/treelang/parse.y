@@ -5,7 +5,8 @@
 
      ---------------------------------------------------------------------
 
-     Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+     Free Software Foundation, Inc.
 
      This program is free software; you can redistribute it and/or modify it
      under the terms of the GNU General Public License as published by the
@@ -254,7 +255,7 @@ typename NAME {
 ;
 
 function_prototype:
-storage typename NAME LEFT_PARENTHESIS parameters RIGHT_PARENTHESIS SEMICOLON {
+storage typename NAME LEFT_PARENTHESIS parameters_opt RIGHT_PARENTHESIS SEMICOLON {
   struct prod_token_parm_item* tok;
   struct prod_token_parm_item *prod;
   struct prod_token_parm_item *type;
@@ -450,6 +451,14 @@ INT {
 }
 ;
 
+parameters_opt:
+/* Nothing to do.  */ {
+ $$ = 0;
+}
+| parameters {
+ $$ = $1;
+}
+
 parameters:
 parameter {
   /* Nothing to do.  */
@@ -496,7 +505,7 @@ IF LEFT_PARENTHESIS expression RIGHT_PARENTHESIS {
   ensure_not_void (NUMERIC_TYPE (exp), exp->tp.pro.main_token);
   tree_code_if_start (exp->tp.pro.code, tok->tp.tok.location);
 }
-LEFT_BRACE statements_opt RIGHT_BRACE {
+LEFT_BRACE variable_defs_opt statements_opt RIGHT_BRACE {
   /* Just let the statements flow.  */
 }
 ELSE {
@@ -504,7 +513,7 @@ ELSE {
   tok = $1;
   tree_code_if_else (tok->tp.tok.location);
 }
-LEFT_BRACE statements_opt RIGHT_BRACE {
+LEFT_BRACE variable_defs_opt statements_opt RIGHT_BRACE {
   struct prod_token_parm_item* tok;
   tok = $12;
   tree_code_if_end (tok->tp.tok.location);
@@ -518,25 +527,23 @@ tl_RETURN expression_opt {
   struct prod_token_parm_item* ret_tok;
   ret_tok = $1;
   type_prod = EXPRESSION_TYPE (current_function);
-  if (NUMERIC_TYPE (type_prod) == VOID)
+  if (NUMERIC_TYPE (type_prod) == VOID_TYPE)
     if ($2 == NULL)
       tree_code_generate_return (type_prod->tp.pro.code, NULL);
     else
       {
         fprintf (stderr, "%s:%i:%i: Redundant expression in return\n",
-		 ret_tok->tp.tok.location.file,
-		 ret_tok->tp.tok.location.line, ret_tok->tp.tok.charno);
-        print_token (stderr, 0, ret_tok);
+                ret_tok->tp.tok.location.file,
+                ret_tok->tp.tok.location.line, ret_tok->tp.tok.charno);
         errorcount++;
         tree_code_generate_return (type_prod->tp.pro.code, NULL);
-      }
+       }
   else
     if ($2 == NULL)
       {
         fprintf (stderr, "%s:%i:%i: Expression missing in return\n",
-		 ret_tok->tp.tok.location.file,
-		 ret_tok->tp.tok.location.line, ret_tok->tp.tok.charno); 
-        print_token (stderr, 0, ret_tok);
+                ret_tok->tp.tok.location.file,
+                ret_tok->tp.tok.location.line, ret_tok->tp.tok.charno);
         errorcount++;
       }
     else
@@ -687,7 +694,7 @@ NAME LEFT_PARENTHESIS expressions_with_commas RIGHT_PARENTHESIS {
       abort ();
     parms = tree_code_add_parameter (parms, var->tp.pro.code, exp->tp.pro.code);
   }
-  type = get_type_for_numeric_type (NUMERIC_TYPE (prod));
+  type = tree_code_get_type (NUMERIC_TYPE (prod));
   prod->tp.pro.code = tree_code_get_expression
     (EXP_FUNCTION_INVOCATION, type, proto->tp.pro.code, parms, NULL);
   $$ = prod;
@@ -734,7 +741,7 @@ NAME {
 
   prod = make_production (PROD_VARIABLE_REFERENCE_EXPRESSION, tok);
   NUMERIC_TYPE (prod) = NUMERIC_TYPE (symbol_table_entry);
-  type = get_type_for_numeric_type (NUMERIC_TYPE (prod));
+  type = tree_code_get_type (NUMERIC_TYPE (prod));
   if (!NUMERIC_TYPE (prod))
     YYERROR;
   OP1 (prod) = $1;
@@ -832,7 +839,7 @@ reverse_prod_list (struct prod_token_parm_item *old_first)
 static void
 ensure_not_void (unsigned int type, struct prod_token_parm_item* name)
 {
-  if (type == VOID)
+  if (type == VOID_TYPE)
     {
       fprintf (stderr, "%s:%i:%i: Type must not be void in this context\n",
 	       name->tp.tok.location.file,
@@ -877,7 +884,7 @@ check_type_match (int type_num, struct prod_token_parm_item *exp)
         case UNSIGNED_CHAR:
           return 1;
           
-        case VOID:
+        case VOID_TYPE:
           abort ();
       
         default: 
@@ -885,7 +892,7 @@ check_type_match (int type_num, struct prod_token_parm_item *exp)
         }
       break;
       
-    case VOID:
+    case VOID_TYPE:
       abort ();
       
     default:
@@ -903,7 +910,8 @@ make_integer_constant (struct prod_token_parm_item* value)
   struct prod_token_parm_item *prod;
   tok = value;
   prod = make_production (PROD_INTEGER_CONSTANT, tok);
-  if ((tok->tp.tok.chars[0] == (unsigned char)'-')|| (tok->tp.tok.chars[0] == (unsigned char)'+'))
+  if ((tok->tp.tok.chars[0] == (unsigned char)'-')
+      || (tok->tp.tok.chars[0] == (unsigned char)'+'))
     NUMERIC_TYPE (prod) = SIGNED_INT;
   else
     NUMERIC_TYPE (prod) = UNSIGNED_INT;
@@ -930,7 +938,7 @@ make_plus_expression (struct prod_token_parm_item* tok,
   prod = make_production (PROD_PLUS_EXPRESSION, tok);
 
   NUMERIC_TYPE (prod) = type_code;
-  type = get_type_for_numeric_type (NUMERIC_TYPE (prod));
+  type = tree_code_get_type (type_code);
   if (!type)
     abort ();
   OP1 (prod) = op1;
