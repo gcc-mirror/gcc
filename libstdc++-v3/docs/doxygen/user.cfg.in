@@ -118,12 +118,12 @@ INTERNAL_DOCS          = NO
 # generate a class diagram (in Html and LaTeX) for classes with base or 
 # super classes. Setting the tag to NO turns the diagrams off. 
 
-CLASS_DIAGRAMS         = NO
+CLASS_DIAGRAMS         = YES
 
 # If the SOURCE_BROWSER tag is set to YES then a list of source files will 
 # be generated. Documented entities will be cross-referenced with these sources. 
 
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 
 # Setting the INLINE_SOURCES tag to YES will include the body 
 # of functions and classes directly in the documentation. 
