@@ -1047,7 +1047,7 @@ mips_valid_base_register_p (rtx x, enum machine_mode mode, int strict)
   if (!strict && GET_CODE (x) == SUBREG)
     x = SUBREG_REG (x);
 
-  return (GET_CODE (x) == REG
+  return (REG_P (x)
 	  && mips_regno_mode_ok_for_base_p (REGNO (x), mode, strict));
 }
 
@@ -1372,7 +1372,7 @@ mips_const_insns (rtx x)
 int
 mips_fetch_insns (rtx x)
 {
-  gcc_assert (GET_CODE (x) == MEM);
+  gcc_assert (MEM_P (x));
   return mips_address_insns (XEXP (x, 0), GET_MODE (x));
 }
 
@@ -1392,7 +1392,7 @@ mips_idiv_insns (void)
       else
         count += 2;
     }
-  
+
   if (TARGET_FIX_R4000 || TARGET_FIX_R4400)
     count++;
   return count;
@@ -2209,7 +2209,7 @@ mips_subword (rtx op, int high_p)
   else
     byte = 0;
 
-  if (GET_CODE (op) == REG)
+  if (REG_P (op))
     {
       if (FP_REG_P (REGNO (op)))
 	return gen_rtx_REG (word_mode, high_p ? REGNO (op) + 1 : REGNO (op));
@@ -2217,7 +2217,7 @@ mips_subword (rtx op, int high_p)
 	return gen_rtx_REG (word_mode, high_p ? HI_REGNUM : LO_REGNUM);
     }
 
-  if (GET_CODE (op) == MEM)
+  if (MEM_P (op))
     return mips_rewrite_small_data (adjust_address (op, word_mode, byte));
 
   return simplify_gen_subreg (word_mode, op, mode, byte);
@@ -2240,9 +2240,9 @@ mips_split_64bit_move_p (rtx dest, rtx src)
      ldc1 and sdc1 on MIPS II and above.  */
   if (mips_isa > 1)
     {
-      if (FP_REG_RTX_P (dest) && GET_CODE (src) == MEM)
+      if (FP_REG_RTX_P (dest) && MEM_P (src))
 	return false;
-      if (FP_REG_RTX_P (src) && GET_CODE (dest) == MEM)
+      if (FP_REG_RTX_P (src) && MEM_P (dest))
 	return false;
     }
   return true;
@@ -2287,7 +2287,7 @@ mips_split_64bit_move (rtx dest, rtx src)
       rtx low_dest;
 
       low_dest = mips_subword (dest, 0);
-      if (GET_CODE (low_dest) == REG
+      if (REG_P (low_dest)
 	  && reg_overlap_mentioned_p (low_dest, src))
 	{
 	  emit_move_insn (mips_subword (dest, 1), mips_subword (src, 1));
@@ -2829,9 +2829,9 @@ mips_emit_fcc_reload (rtx dest, rtx src, rtx scratch)
   rtx fp1, fp2;
 
   /* Change the source to SFmode.  */
-  if (GET_CODE (src) == MEM)
+  if (MEM_P (src))
     src = adjust_address (src, SFmode, 0);
-  else if (GET_CODE (src) == REG || GET_CODE (src) == SUBREG)
+  else if (REG_P (src) || GET_CODE (src) == SUBREG)
     src = gen_rtx_REG (SFmode, true_regnum (src));
 
   fp1 = gen_rtx_REG (SFmode, REGNO (scratch));
@@ -3837,7 +3837,7 @@ mips_get_unaligned_mem (rtx *op, unsigned int width, int bitpos,
 
   /* Check that the operand really is a MEM.  Not all the extv and
      extzv predicates are checked.  */
-  if (GET_CODE (*op) != MEM)
+  if (!MEM_P (*op))
     return false;
 
   /* Check that the size is valid.  */
@@ -6930,7 +6930,7 @@ mips_secondary_reload_class (enum reg_class class,
   int regno = -1;
   int gp_reg_p;
 
-  if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
+  if (REG_P (x)|| GET_CODE (x) == SUBREG)
     regno = true_regnum (x);
 
   gp_reg_p = TARGET_MIPS16 ? M16_REG_P (regno) : GP_REG_P (regno);
@@ -6982,7 +6982,7 @@ mips_secondary_reload_class (enum reg_class class,
 
   if (class == FP_REGS)
     {
-      if (GET_CODE (x) == MEM)
+      if (MEM_P (x))
 	{
 	  /* In this case we can use lwc1, swc1, ldc1 or sdc1.  */
 	  return NO_REGS;
@@ -7099,7 +7099,7 @@ mips16_gp_pseudo_reg (void)
       /* We need to emit the initialization after the FUNCTION_BEG
          note, so that it will be integrated.  */
       for (scan = get_insns (); scan != NULL_RTX; scan = NEXT_INSN (scan))
-	if (GET_CODE (scan) == NOTE
+	if (NOTE_P (scan)
 	    && NOTE_LINE_NUMBER (scan) == NOTE_INSN_FUNCTION_BEG)
 	  break;
       if (scan == NULL_RTX)
@@ -7721,7 +7721,7 @@ dump_constants (struct mips16_constant *constants, rtx insn)
 static int
 mips16_insn_length (rtx insn)
 {
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (JUMP_P (insn))
     {
       rtx body = PATTERN (insn);
       if (GET_CODE (body) == ADDR_VEC)
@@ -8035,8 +8035,8 @@ vr4130_avoid_branch_rt_conflict (rtx insn)
 
   first = SEQ_BEGIN (insn);
   second = SEQ_END (insn);
-  if (GET_CODE (first) == JUMP_INSN
-      && GET_CODE (second) == INSN
+  if (JUMP_P (first)
+      && NONJUMP_INSN_P (second)
       && GET_CODE (PATTERN (first)) == SET
       && GET_CODE (SET_DEST (PATTERN (first))) == PC
       && GET_CODE (SET_SRC (PATTERN (first))) == IF_THEN_ELSE)
@@ -8111,7 +8111,7 @@ vr4130_align_insns (void)
 	       way, if the nop makes Y aligned, it will also align any labels
 	       between X and Y.  */
 	    if (state.insns_left != state.issue_rate
-		&& GET_CODE (subinsn) != CALL_INSN)
+		&& !CALL_P (subinsn))
 	      {
 		if (subinsn == SEQ_BEGIN (insn) && aligned_p)
 		  {
@@ -8150,7 +8150,7 @@ vr4130_align_insns (void)
 	     mips.md patern, the length is only an estimate.  Insert an
 	     8 byte alignment after it so that the following instructions
 	     can be handled correctly.  */
-	  if (GET_CODE (SEQ_BEGIN (insn)) == INSN
+	  if (NONJUMP_INSN_P (SEQ_BEGIN (insn))
 	      && (recog_memoized (insn) < 0 || length >= 8))
 	    {
 	      next = emit_insn_after (gen_align (GEN_INT (3)), insn);
@@ -9320,7 +9320,7 @@ struct builtin_description
   enum mips_fp_condition cond;
 
   /* The name of the builtin function.  */
-  const char *name;              
+  const char *name;
 
   /* Specifies how the function should be expanded.  */
   enum mips_builtin_type builtin_type;

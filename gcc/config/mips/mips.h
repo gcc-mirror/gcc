@@ -1575,7 +1575,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define ALL_COP_REG_P(REGNO) \
   ((unsigned int) ((int) (REGNO) - COP0_REG_FIRST) < ALL_COP_REG_NUM)
 
-#define FP_REG_RTX_P(X) (GET_CODE (X) == REG && FP_REG_P (REGNO (X)))
+#define FP_REG_RTX_P(X) (REG_P (X) && FP_REG_P (REGNO (X)))
 
 /* True if X is (const (unspec [(const_int 0)] UNSPEC_GP)).  This is used
    to initialize the mips16 gp pseudo register.  */
@@ -1997,7 +1997,7 @@ extern enum reg_class mips_char_to_class[256];
 
 #define EXTRA_CONSTRAINT_STR(OP,CODE,STR)				\
   (((CODE) == 'Q')	  ? const_arith_operand (OP, VOIDmode)		\
-   : ((CODE) == 'R')	  ? (GET_CODE (OP) == MEM			\
+   : ((CODE) == 'R')	  ? (MEM_P (OP)					\
 			     && mips_fetch_insns (OP) == 1)		\
    : ((CODE) == 'S')	  ? (CONSTANT_P (OP)				\
 			     && call_insn_operand (OP, VOIDmode))	\
@@ -2007,7 +2007,7 @@ extern enum reg_class mips_char_to_class[256];
    : ((CODE) == 'U')	  ? (CONSTANT_P (OP)				\
 			     && move_operand (OP, VOIDmode)		\
 			     && !mips_dangerous_for_la25_p (OP))	\
-   : ((CODE) == 'W')	  ? (GET_CODE (OP) == MEM			\
+   : ((CODE) == 'W')	  ? (MEM_P (OP)					\
 			     && memory_operand (OP, VOIDmode)		\
 			     && (!TARGET_MIPS16				\
 				 || (!stack_operand (OP, VOIDmode)	\
