@@ -80,12 +80,14 @@ public class SelectorImpl extends AbstractSelector
     return Collections.unmodifiableSet (keys);
   }
     
-  public int selectNow ()
+  public final int selectNow()
+    throws IOException
   {
     return select (1);
   }
 
-  public int select ()
+  public final int select()
+    throws IOException
   {
     return select (-1);
   }
@@ -94,7 +96,7 @@ public class SelectorImpl extends AbstractSelector
   private static native int java_do_select (int[] read, int[] write,
                                             int[] except, long timeout);
 
-  private int[] getFDsAsArray (int ops)
+  private final int[] getFDsAsArray (int ops)
   {
     int[] result;
     int counter = 0;
@@ -206,7 +208,7 @@ public class SelectorImpl extends AbstractSelector
         // If key is not yet selected add it.
         if (!selected.contains (key))
           {
-            add_selected (key);
+            selected.add (key);
           }
 
         // Set new ready ops
@@ -217,27 +219,17 @@ public class SelectorImpl extends AbstractSelector
     return ret;
   }
     
-  public Set selectedKeys ()
+  public final Set selectedKeys()
   {
     return selected;
   }
 
-  public Selector wakeup ()
+  public final Selector wakeup()
   {
     return null;
   }
 
-  public void add (SelectionKeyImpl k)
-  {
-    keys.add (k);
-  }
-
-  void add_selected (SelectionKeyImpl k)
-  {
-    selected.add (k);
-  }
-
-  private void deregisterCancelledKeys ()
+  private final void deregisterCancelledKeys()
   {
     Iterator it = cancelledKeys().iterator();
 
@@ -253,8 +245,8 @@ public class SelectorImpl extends AbstractSelector
     return register ((AbstractSelectableChannel) ch, ops, att);
   }
 
-  protected SelectionKey register (AbstractSelectableChannel ch, int ops,
-                                   Object att)
+  protected final SelectionKey register (AbstractSelectableChannel ch, int ops,
+                                         Object att)
   {
     SelectionKeyImpl result;
     
@@ -278,7 +270,7 @@ public class SelectorImpl extends AbstractSelector
         throw new InternalError ("No known channel type");
       }
 
-    add (result);
+    keys.add (result);
     result.interestOps (ops);
     result.attach (att);
     return result;

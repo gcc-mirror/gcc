@@ -1,3 +1,20 @@
+2003-09-25  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/SelectorImpl.java
+	(selectNow): Made final, throws IOException.
+	(select): Likewise.
+	(getFDsAsArray): Made final.
+	(selectedKeys): Likewise.
+	(wakeup): Likewise.
+	(deregisterCancelledKeys): Likewise.
+	(register): Likewise.
+	(ass): Removed.
+	(add_selected): Removed.
+	* gnu/java/nio/natSelectorImpl.cc:
+	No need to include bstring.h or gcj/cni.h.
+	(helper_put_filedescriptors): Rewritten.
+	(helper_get_filedescriptors): Rewritten.
+
 2003-09-25  Sascha Brawer  <brawer@dandelis.ch>
 
 	* java/awt/font/FontRenderContext.java (getTransform): Return
