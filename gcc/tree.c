@@ -1,6 +1,6 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -168,7 +168,8 @@ tree_size (tree node)
 	case REAL_CST:		return sizeof (struct tree_real_cst);
 	case COMPLEX_CST:	return sizeof (struct tree_complex);
 	case VECTOR_CST:	return sizeof (struct tree_vector);
-	case STRING_CST:	return sizeof (struct tree_string);
+	case STRING_CST:
+	  return sizeof (struct tree_string) + TREE_STRING_LENGTH (node);
 	default:
 	  return (*lang_hooks.tree_size) (code);
 	}
@@ -212,8 +213,8 @@ make_node (enum tree_code code)
   struct tree_common ttmp;
 
   /* We can't allocate a TREE_VEC without knowing how many elements
-     it will have.  */
-  if (code == TREE_VEC)
+     it will have; likewise a STRING_CST without knowing the length.  */
+  if (code == TREE_VEC || code == STRING_CST)
     abort ();
 
   TREE_SET_CODE ((tree)&ttmp, code);
@@ -525,10 +526,23 @@ build_real_from_int_cst (tree type, tree i)
 tree
 build_string (int len, const char *str)
 {
-  tree s = make_node (STRING_CST);
+  tree s;
+  size_t length;
+  
+  length = len + sizeof (struct tree_string);
 
+#ifdef GATHER_STATISTICS
+  tree_node_counts[(int) c_kind]++;
+  tree_node_sizes[(int) c_kind] += length;
+#endif  
+
+  s = ggc_alloc_tree (length);
+
+  memset (s, 0, sizeof (struct tree_common));
+  TREE_SET_CODE (s, STRING_CST);
   TREE_STRING_LENGTH (s) = len;
-  TREE_STRING_POINTER (s) = ggc_alloc_string (str, len);
+  memcpy ((char *) TREE_STRING_POINTER (s), str, len);
+  ((char *) TREE_STRING_POINTER (s))[len] = '\0';
 
   return s;
 }
