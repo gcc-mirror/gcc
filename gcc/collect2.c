@@ -3231,7 +3231,7 @@ end_file (ptr)
 
 	  len = write (ptr->fd, ptr->start, ptr->size);
 	  if (len < 0)
-	    fatal_perror ("read %s", ptr->name);
+	    fatal_perror ("write %s", ptr->name);
 
 	  if (len != ptr->size)
 	    fatal ("wrote %ld bytes, expected %ld, to %s", len, ptr->size, ptr->name);
