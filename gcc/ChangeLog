@@ -1,3 +1,11 @@
+1999-07-30  Vladimir Makarov  <vmakarov@loony.cygnus.com>
+
+	* config/sparc/sparc.h (ASM_CPU32_DEFAULT_SPEC): Change -Av8 onto
+ 	-Asparclite for sparc86x.
+	(CPP_CPU32_DEFAULT_SPEC, CPP_CPU_SPEC): Remove -D__sparc_v8__ for
+ 	sparc86x.
+	(ASM_CPU_SPEC): Use -Asparclite for sparc86x.
+
 Fri Jul 30 14:53:56 1999  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* config/sparc/linux64.h (CC1_SPEC): Preserve CPU specified by
