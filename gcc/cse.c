@@ -7590,7 +7590,8 @@ cse_around_loop (loop_start)
     for (p = last_jump_equiv_class->first_same_value; p;
 	 p = p->next_same_value)
       if (GET_CODE (p->exp) == MEM || GET_CODE (p->exp) == REG
-	  || GET_CODE (p->exp) == SUBREG)
+	  || (GET_CODE (p->exp) == SUBREG
+	      && GET_CODE (SUBREG_REG (p->exp)) == REG))
 	invalidate (p->exp);
       else if (GET_CODE (p->exp) == STRICT_LOW_PART
 	       || GET_CODE (p->exp) == ZERO_EXTRACT)
