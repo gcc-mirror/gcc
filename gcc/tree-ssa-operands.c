@@ -1071,7 +1071,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       return;
 
     case COND_EXPR:
-      get_expr_operands (stmt, &COND_EXPR_COND (expr), opf_none);
+    case VEC_COND_EXPR:
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_none);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
       return;
