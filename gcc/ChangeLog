@@ -1,3 +1,10 @@
+Fri Feb 19 23:02:02 1999  Richard Henderson  <rth@cygnus.com>
+
+	* regmove.c (discover_flags_reg): New function.
+	(flags_set_1, mark_flags_life_zones): New functions.
+	(regmove_optimize): Call them.
+	(fixup_match_1): Use insn modes rather than sets_cc0_p.
+
 Fri Feb 19 22:47:01 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* rtlanal.c (insn_first_p): Fix return value for insn == reference.
