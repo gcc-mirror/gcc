@@ -1,5 +1,17 @@
 2001-05-21  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* gcc.c-torture/unsorted/msp.c (A_SIZE): Define according to
+	STACK_SIZE;
+	* gcc.c-torture/compile/991214-2.c (HISTO_SIZE): Define according
+	to STACK_SIZE; Use it to define size of add_histo array.
+	* gcc.c-torture/compile/920723-1.c (GITT_SIZE): Define according 
+	to STACK_SIZE.
+	(f): Use GITT_SIZE to define size of gitt local table.
+	* gcc.c-torture/compile/930621-1.c (BYTEMEM_SIZE): Define according 
+	to STACK_SIZE; Use it to define size of bytemem array.
+
+2001-05-21  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* gcc.c-torture/compile/20000804-1.x: New file, this test fails
 	on 68HC11/HC12 due to the asm instruction.
 	* gcc.c-torture/compile/20001205-1.x: New file, ditto.

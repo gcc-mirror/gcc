@@ -1,6 +1,14 @@
+#if defined(STACK_SIZE) && (STACK_SIZE < 65536)
+# define BYTEMEM_SIZE 10000L
+#endif
+
+#ifndef BYTEMEM_SIZE
+# define BYTEMEM_SIZE 45000L
+#endif
+
 int bytestart[5000 + 1];
 unsigned char modtext[400 + 1];
-unsigned char bytemem[2][45000L + 1];
+unsigned char bytemem[2][BYTEMEM_SIZE + 1];
 
 long
 modlookup (int l)
