@@ -129,6 +129,7 @@ public abstract class CharsetDecoder
     if (cr.isError ())
       cr.throwException ();
 
+    reset();
     out.flip ();
     return out;
   }
