@@ -4817,6 +4817,9 @@ expand_end_case (orig_index)
 	       || count < CASE_VALUES_THRESHOLD
 	       || ((unsigned HOST_WIDE_INT) (TREE_INT_CST_LOW (range))
 		   > 10 * count)
+#ifndef ASM_OUTPUT_ADDR_DIFF_ELT
+	       || flag_pic
+#endif
 	       || TREE_CODE (index_expr) == INTEGER_CST
 	       /* These will reduce to a constant.  */
 	       || (TREE_CODE (index_expr) == CALL_EXPR
