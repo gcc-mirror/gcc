@@ -288,7 +288,7 @@ dump_function (enum tree_dump_index phase, tree fn)
 	       decl_as_string (fn, TFF_DECL_SPECIFIERS));
       fprintf (stream, " (%s)\n",
 	       decl_as_string (DECL_ASSEMBLER_NAME (fn), 0));
-      fprintf (stream, ";; enabled by -%s\n", dump_flag_name (phase));
+      fprintf (stream, ";; enabled by -fdump-%s\n", dump_flag_name (phase));
       fprintf (stream, "\n");
       
       dump_node (fn, TDF_SLIM | flags, stream);

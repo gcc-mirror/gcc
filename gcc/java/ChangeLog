@@ -1,3 +1,7 @@
+2003-06-17  Robert Abeles  <rabeles@archaelogic.com>
+
+	* lang.c (java_handle_option): Likewise.
+
 2003-06-16  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.c (java_handle_option): Special-casing of optional

@@ -1,3 +1,11 @@
+2003-06-17  Robert Abeles  <rabeles@archaelogic.com>
+
+	PR debug/4252
+	* c-opts.c (c_common_handle_option): Pass -fdump argument suffix
+	to dump_switch_p().
+	* tree-dump.c (dump_switch_p): Remove redundant 'dump-' prefix
+	from static strings in dump_files.
+
 2003-06-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (ANSI_PROTOTYPES, PTR_CONST, LONG_DOUBLE, VPARAMS,
