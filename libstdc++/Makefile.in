@@ -360,8 +360,7 @@ install:
 .PHONY: force
 force:
 
-# Remove these for public releases.
-MYCXXFLAGS = -g -O2 -Wpointer-arith -Wnested-externs -Woverloaded-virtual -Wbad-function-cast -Winline -Wwrite-strings
+MYCXXFLAGS = -g -O2 -Wpointer-arith -Wnested-externs -Woverloaded-virtual -Wbad-function-cast -Winline -Wwrite-strings -pedantic -Wno-long-long
 MYCFLAGS = -g -O2 -Wpointer-arith -Wnested-externs
 
 .PHONY: stuff
@@ -375,7 +374,8 @@ stuff1:
 	touch ../../gcc/libgcc2.ready
 
 stuff2:
-	-$(MAKE) -C ../../gcc/ libgcc.a
-	-$(MAKE) check CXXFLAGS="$(MYCXXFLAGS)" CFLAGS="$(MYCFLAGS)"
+	$(MAKE) -C ../../gcc/ libgcc.a
+	$(MAKE) CXXFLAGS="$(MYCXXFLAGS)" CFLAGS="$(MYCFLAGS)"
+	-$(MAKE) check
 	-$(MAKE) -C ../libio check
 	-$(MAKE) -C ../../gcc check-g++
