@@ -1,5 +1,7 @@
 Fri Oct 31 07:10:09 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* version.c: Bump for snapshot.
+
 	* dwarf2out.c (output_call_frame_info): Use ASM_OUTPUT_ASCII to
 	output ASCII by default.  Only use ASM_OUTPUT_DWARF_STRING if
 	flag_debug_asm is on.
