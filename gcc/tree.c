@@ -2760,12 +2760,13 @@ expanded_location
 expand_location (source_location loc)
 {
   expanded_location xloc;
-  if (loc == 0) { xloc.file = NULL; xloc.line = 0; }
+  if (loc == 0) { xloc.file = NULL; xloc.line = 0;  xloc.column = 0; }
   else
     {
       const struct line_map *map = linemap_lookup (&line_table, loc);
       xloc.file = map->to_file;
       xloc.line = SOURCE_LINE (map, loc);
+      xloc.column = SOURCE_COLUMN (map, loc);
     };
   return xloc;
 }

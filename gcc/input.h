@@ -28,7 +28,9 @@ extern struct line_maps line_table;
 /* The location for declarations in "<built-in>" */
 #define BUILTINS_LOCATION ((source_location) 2)
 
-typedef struct location_s GTY(())
+#ifdef USE_MAPPED_LOCATION
+
+typedef struct
 {
   /* The name of the source file involved.  */
   const char *file;
@@ -36,10 +38,8 @@ typedef struct location_s GTY(())
   /* The line-location in the source file.  */
   int line;
 
-  /* FUTURE (but confuses gentype): int column. */
+  int column;
 } expanded_location;
-
-#ifdef USE_MAPPED_LOCATION
 
 extern expanded_location expand_location (source_location);
 
@@ -49,6 +49,16 @@ typedef source_location source_locus; /* to be removed */
 
 #else /* ! USE_MAPPED_LOCATION */
 
+struct location_s GTY(())
+{
+  /* The name of the source file involved.  */
+  const char *file;
+
+  /* The line-location in the source file.  */
+  int line;
+};
+
+typedef struct location_s expanded_location;
 typedef struct location_s location_t;
 typedef location_t *source_locus;
 
