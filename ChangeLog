@@ -1,3 +1,9 @@
+2004-03-01  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.in (mips64*-*-linux*): Override mips*-*-linux* case
+	and disable libgcj.
+	* configure: Regenerated.
+
 2004-02-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/11932
