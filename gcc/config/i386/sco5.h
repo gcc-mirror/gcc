@@ -313,7 +313,7 @@ asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
       register unsigned char *_limited_str = (unsigned char *) (STR);	\
       register unsigned ch;						\
       fprintf ((FILE), "%s\t\"", STRING_ASM_OP);			\
-      for (; ch = *_limited_str; _limited_str++)			\
+      for (; (ch = *_limited_str); _limited_str++)			\
         {								\
 	  register int escape;						\
 	  switch (escape = ESCAPES[ch])					\

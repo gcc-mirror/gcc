@@ -585,11 +585,11 @@ expand_call (exp, target, ignore)
 #ifdef ACCUMULATE_OUTGOING_ARGS
   int initial_highest_arg_in_use = highest_outgoing_arg_in_use;
   char *initial_stack_usage_map = stack_usage_map;
+  int old_stack_arg_under_construction;
 #endif
 
   rtx old_stack_level = 0;
   int old_pending_adj = 0;
-  int old_stack_arg_under_construction;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   rtx call_fusage = 0;
   register tree p;
@@ -723,7 +723,9 @@ expand_call (exp, target, ignore)
   if (is_integrable)
     {
       rtx temp;
+#ifdef ACCUMULATE_OUTGOING_ARGS
       rtx before_call = get_last_insn ();
+#endif
 
       temp = expand_inline_function (fndecl, actparms, target,
 				     ignore, TREE_TYPE (exp),
@@ -2319,8 +2321,6 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   rtx call_fusage = 0;
-  /* Size of the stack reserved for parameter registers.  */
-  int reg_parm_stack_space = 0;
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
@@ -2335,6 +2335,8 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 #endif
 
 #ifdef REG_PARM_STACK_SPACE
+  /* Size of the stack reserved for parameter registers.  */
+  int reg_parm_stack_space = 0;
 #ifdef MAYBE_REG_PARM_STACK_SPACE
   reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
 #else
@@ -2613,7 +2615,9 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
       register rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
+#ifdef ACCUMULATE_OUTGOING_ARGS
       int lower_bound, upper_bound, i;
+#endif
 
       if (! (reg != 0 && partial == 0))
 	{
@@ -2817,13 +2821,13 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   rtx call_fusage = 0;
-  /* Size of the stack reserved for parameter registers.  */
-  int reg_parm_stack_space = 0;
   rtx mem_value = 0;
   int pcc_struct_value = 0;
   int struct_value_size = 0;
   int is_const;
+#ifdef ACCUMULATE_OUTGOING_ARGS
   int needed;
+#endif
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
   /* Define the boundary of the register parm stack space that needs to be
@@ -2833,6 +2837,8 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 #endif
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
+  /* Size of the stack reserved for parameter registers.  */
+  int reg_parm_stack_space = 0;
   int initial_highest_arg_in_use = highest_outgoing_arg_in_use;
   char *initial_stack_usage_map = stack_usage_map;
 #endif
@@ -3184,7 +3190,9 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
       register rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
+#ifdef ACCUMULATE_OUTGOING_ARGS
       int lower_bound, upper_bound, i;
+#endif
 
       if (! (reg != 0 && partial == 0))
 	{
@@ -3448,7 +3456,9 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
   rtx reg = 0;
   int partial = 0;
   int used = 0;
+#ifdef ACCUMULATE_OUTGOING_ARGS
   int i, lower_bound, upper_bound;
+#endif
 
   if (TREE_CODE (pval) == ERROR_MARK)
     return;

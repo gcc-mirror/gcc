@@ -443,8 +443,6 @@ branch_prob (f, dump_file)
      FILE *dump_file;
 {
   int i, num_blocks;
-  int dest;
-  rtx insn;
   struct adj_list *arcptr;
   int num_arcs, changes, passes;
   int total, prob;

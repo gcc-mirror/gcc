@@ -1967,7 +1967,6 @@ computed_jump_p (insn)
   if (GET_CODE (insn) == JUMP_INSN)
     {
       rtx pat = PATTERN (insn);
-      int computed_jump = 0;
 
       if (GET_CODE (pat) == PARALLEL)
 	{

@@ -4012,7 +4012,7 @@ add_case_node (low, high, label, duplicate)
   q = &case_stack->data.case_stmt.case_list;
   p = *q;
 
-  while (r = *q)
+  while ((r = *q))
     {
       p = r;
 
@@ -4241,7 +4241,7 @@ all_cases_count (type, spareness)
      tree type;
      int *spareness;
 {
-  HOST_WIDE_INT count, count_high = 0;
+  HOST_WIDE_INT count;
   *spareness = 0;
 
   switch (TREE_CODE (type))
@@ -4330,8 +4330,6 @@ mark_seen_cases (type, cases_seen, count, sparseness)
      long count;
      int sparseness;
 {
-  long i;
-
   tree next_node_to_try = NULL_TREE;
   long next_node_offset = 0;
 
@@ -4459,9 +4457,11 @@ check_for_full_enumeration_handling (type)
      tree type;
 {
   register struct case_node *n;
-  register struct case_node **l;
   register tree chain;
+#if 0  /* variable used by 'if 0'ed  code below. */
+  register struct case_node **l;
   int all_values = 1;
+#endif
 
   /* True iff the selector type is a numbered set mode.  */
   int sparseness = 0;
@@ -4475,7 +4475,6 @@ check_for_full_enumeration_handling (type)
 
   /* The allocated size of cases_seen, in chars.  */
   long bytes_needed;
-  tree t;
 
   if (! warn_switch)
     return;

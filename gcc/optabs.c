@@ -247,7 +247,6 @@ static optab init_optab	PROTO((enum rtx_code));
 static void init_libfuncs PROTO((optab, int, int, char *, int));
 static void init_integral_libfuncs PROTO((optab, char *, int));
 static void init_floating_libfuncs PROTO((optab, char *, int));
-static void init_complex_libfuncs PROTO((optab, char *, int));
 
 /* Add a REG_EQUAL note to the last insn in SEQ.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
@@ -1385,7 +1384,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 		 X/(a+ib) */
 	      rtx divisor;
 	      rtx real_t, imag_t;
-	      rtx lhs, rhs;
 	      rtx temp1, temp2;
 	      
 	      /* Don't fetch these from memory more than once.  */
@@ -1518,7 +1516,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       && (methods == OPTAB_LIB || methods == OPTAB_LIB_WIDEN))
     {
       rtx insns;
-      rtx funexp = binoptab->handlers[(int) mode].libfunc;
       rtx op1x = op1;
       enum machine_mode op1_mode = mode;
       rtx value;
@@ -2014,7 +2011,6 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
   if (unoptab->handlers[(int) mode].libfunc)
     {
       rtx insns;
-      rtx funexp = unoptab->handlers[(int) mode].libfunc;
       rtx value;
 
       start_sequence ();
@@ -2324,7 +2320,6 @@ expand_complex_abs (mode, op0, target, unsignedp)
   if (abs_optab->handlers[(int) mode].libfunc)
     {
       rtx insns;
-      rtx funexp = abs_optab->handlers[(int) mode].libfunc;
       rtx value;
 
       start_sequence ();
@@ -4062,19 +4057,6 @@ init_floating_libfuncs (optable, opname, suffix)
   init_libfuncs (optable, SFmode, TFmode, opname, suffix);
 }
 
-/* Initialize the libfunc fields of an entire group of entries in some
-   optab which correspond to all complex floating modes.  The parameters
-   have the same meaning as similarly named ones for the `init_libfuncs'
-   routine.  (See above).  */
-
-static void
-init_complex_libfuncs (optable, opname, suffix)
-    register optab optable;
-    register char *opname;
-    register int suffix;
-{
-  init_libfuncs (optable, SCmode, TCmode, opname, suffix);
-}
 
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
@@ -4082,7 +4064,11 @@ init_complex_libfuncs (optable, opname, suffix)
 void
 init_optabs ()
 {
-  int i, j;
+  int i;
+#ifdef FIXUNS_TRUNC_LIKE_FIX_TRUNC
+  int j;
+#endif
+
   enum insn_code *p;
 
   /* Start by initializing all tables to contain CODE_FOR_nothing.  */

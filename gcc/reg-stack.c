@@ -246,7 +246,7 @@ static void record_asm_reg_life		PROTO((rtx,stack, rtx *, char **,
 					       int, int));
 static void record_reg_life_pat		PROTO((rtx, HARD_REG_SET *,
 					       HARD_REG_SET *, int));
-static void get_asm_operand_length	PROTO((rtx, int, int *, int *));
+static void get_asm_operand_lengths	PROTO((rtx, int, int *, int *));
 static void record_reg_life		PROTO((rtx, int, stack));
 static void find_blocks			PROTO((rtx));
 static int uses_reg_or_mem		PROTO((rtx));
@@ -370,7 +370,7 @@ reg_to_stack (first, file)
   CLEAR_HARD_REG_SET (stackentry);
 
    {
-     static initialised;
+     static int initialised;
      if (!initialised)
       {
 #if 0
@@ -395,7 +395,7 @@ reg_to_stack (first, file)
   {
     register RTX_CODE prev_code = BARRIER;
     register RTX_CODE code;
-    register before_function_beg = 1;
+    register int before_function_beg = 1;
 
     max_uid = 0;
     blocks = 0;
@@ -1771,7 +1771,6 @@ emit_swap_insn (insn, regstack, reg)
 
   if (i1set)
     {
-      rtx i2;			/* the stack-reg insn prior to I1 */
       rtx i1src = *get_true_reg (&SET_SRC (i1set));
       rtx i1dest = *get_true_reg (&SET_DEST (i1set));
 
@@ -2006,7 +2005,7 @@ compare_for_stack_reg (insn, regstack, pat)
       && SET_DEST (PATTERN (cc0_user)) != pc_rtx
       && GET_CODE (SET_SRC (PATTERN (cc0_user))) == IF_THEN_ELSE)
     {
-      rtx *dest, src_note;
+      rtx *dest;
       
       dest = get_true_reg (&SET_DEST (PATTERN (cc0_user)));
 
