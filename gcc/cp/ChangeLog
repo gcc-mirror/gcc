@@ -1,3 +1,8 @@
+1999-07-06  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* typeck.c (unsigned_type,signed_type,signed_or_unsigned_type) :
+	Merged into c-common.
+
 1999-07-05  Dave Brolley  <brolley@cygnus.com>
 
 	* lex.c (errorcount): Declare it.

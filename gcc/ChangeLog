@@ -1,3 +1,10 @@
+Tue Jul  6 15:25:32 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* c-common.c (unsigned_type,signed_type,signed_or_unsigned_type) :
+	Merged from c-typeck.c and cp/typeck.c.
+	* c-typeck.c (unsigned_type,signed_type,signed_or_unsigned_type) :
+	Merged into c-common.
+
 Tue Jul  6 13:06:01 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* c-lex.c (errorcount): Declare it.
