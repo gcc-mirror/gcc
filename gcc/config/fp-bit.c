@@ -1,8 +1,7 @@
 /* This is a software floating point library which can be used instead of
    the floating point routines in libgcc1.c for targets without hardware
-   floating point.  */
-
-/* Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   floating point. 
+ Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -1274,7 +1273,7 @@ float_to_si (FLO_type arg_a)
     return 0;
   /* get reasonable MAX_SI_INT... */
   if (isinf (&a))
-    return a.sign ? MAX_SI_INT : (-MAX_SI_INT)-1;
+    return a.sign ? (-MAX_SI_INT)-1 : MAX_SI_INT;
   /* it is a number, but a small one */
   if (a.normal_exp < 0)
     return 0;
