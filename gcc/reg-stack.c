@@ -1199,7 +1199,7 @@ stack_reg_life_analysis (first, stackentry)
 
         for (block = blocks - 1; --block >= 0;)
 	   if (GET_CODE (block_end[block]) == JUMP_INSN
-	     && GET_CODE (PATTERN (block_end[block])) == RETURN)
+	       && returnjump_p (block_end[block]))
 	      mark_regs_pat (retvalue, block_out_reg_set+block);
 
         /* Mark off the end of last block if we "fall off" the end of the

@@ -1,3 +1,8 @@
+Tue Mar  9 11:35:20 1999  Richard Henderson  <rth@cygnus.com>
+
+	* reg-stack.c (stack_reg_life_analysis): Use returnjump_p
+	instead of an explicit test for RETURN.
+
 Tue Mar  9 09:33:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (toplev.o): Depend on $(BASIC_BLOCK_H).
