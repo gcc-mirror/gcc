@@ -1,3 +1,8 @@
+2003-05-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8772
+	* pt.c (convert_template_argument): Correct diagnostic.
+
 2003-04-30  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9432, c++/9528
