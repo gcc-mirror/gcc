@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero - Fri Dec 14 08:36:00 GMT 2001 */
 /* { dg-do run } */
 #include <objc/objc.h>
+#include <objc/objc-api.h>
 #include <objc/Object.h>
 
 /* Test loading unclaimed categories - categories of a class defined
