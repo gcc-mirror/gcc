@@ -2138,6 +2138,7 @@ typedef struct dw_loc_list_struct *dw_loc_list_ref;
 typedef enum
 {
   dw_val_class_addr,
+  dw_val_class_offset,
   dw_val_class_loc,
   dw_val_class_loc_list,
   dw_val_class_const,
@@ -2181,6 +2182,7 @@ typedef struct dw_val_struct
   union
     {
       rtx val_addr;
+      long unsigned val_offset;
       dw_loc_list_ref  val_loc_list;
       dw_loc_descr_ref val_loc;
       long int val_int;
@@ -3075,7 +3077,7 @@ typedef struct dw_attr_struct *dw_attr_ref;
 typedef struct dw_line_info_struct *dw_line_info_ref;
 typedef struct dw_separate_line_info_struct *dw_separate_line_info_ref;
 typedef struct pubname_struct *pubname_ref;
-typedef dw_die_ref *arange_ref;
+typedef struct dw_ranges_struct *dw_ranges_ref;
 
 /* Each entry in the line_info_table maintains the file and
    line number associated with the label generated for that
@@ -3135,6 +3137,11 @@ typedef struct pubname_struct
   char *name;
 }
 pubname_entry;
+
+struct dw_ranges_struct
+{
+  int block_num;
+};
 
 /* The limbo die list structure.  */
 typedef struct limbo_die_struct
@@ -3346,9 +3353,8 @@ static unsigned pubname_table_in_use;
    pubname_table.  */
 #define PUBNAME_TABLE_INCREMENT 64
 
-/* A pointer to the base of a table that contains a list of publicly
-   accessible names.  */
-static arange_ref arange_table;
+/* Array of dies for which we should generate .debug_arange info.  */
+static dw_die_ref *arange_table;
 
 /* Number of elements currently allocated for arange_table.  */
 static unsigned arange_table_allocated;
@@ -3359,6 +3365,19 @@ static unsigned arange_table_in_use;
 /* Size (in elements) of increments by which we may expand the
    arange_table.  */
 #define ARANGE_TABLE_INCREMENT 64
+
+/* Array of dies for which we should generate .debug_ranges info.  */
+static dw_ranges_ref ranges_table;
+
+/* Number of elements currently allocated for ranges_table.  */
+static unsigned ranges_table_allocated;
+
+/* Number of elements in ranges_table currently in use.  */
+static unsigned ranges_table_in_use;
+
+/* Size (in elements) of increments by which we may expand the
+   ranges_table.  */
+#define RANGES_TABLE_INCREMENT 64
 
 /* Whether we have location lists that need outputting */
 static unsigned have_location_lists;
@@ -3445,6 +3464,9 @@ static void add_AT_lbl_id		PARAMS ((dw_die_ref,
 static void add_AT_lbl_offset		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
 						 const char *));
+static void add_AT_offset		PARAMS ((dw_die_ref,
+						 enum dwarf_attribute,
+						 unsigned long));
 static dw_attr_ref get_AT		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
 static const char *get_AT_low_pc	PARAMS ((dw_die_ref));
@@ -3508,6 +3530,8 @@ static void add_pubname			PARAMS ((tree, dw_die_ref));
 static void output_pubnames		PARAMS ((void));
 static void add_arange			PARAMS ((tree, dw_die_ref));
 static void output_aranges		PARAMS ((void));
+static unsigned int add_ranges		PARAMS ((tree));
+static void output_ranges		PARAMS ((void));
 static void output_line_info		PARAMS ((void));
 static void output_file_names           PARAMS ((void));
 static dw_die_ref base_type_die		PARAMS ((tree));
@@ -3633,6 +3657,9 @@ static char *gen_internal_sym 		PARAMS ((const char *));
 #ifndef DEBUG_STR_SECTION
 #define DEBUG_STR_SECTION	".debug_str"
 #endif
+#ifndef DEBUG_RANGES_SECTION
+#define DEBUG_RANGES_SECTION	".debug_ranges"
+#endif
 
 /* Standard ELF section names for compiled code and data.  */
 #ifndef TEXT_SECTION
@@ -3666,6 +3693,7 @@ static char *gen_internal_sym 		PARAMS ((const char *));
 #ifndef DEBUG_MACINFO_SECTION_LABEL
 #define DEBUG_MACINFO_SECTION_LABEL     "Ldebug_macinfo"
 #endif
+
 /* Definitions of defaults for formats and names of various special
    (artificial) labels which may be generated within this file (when the -g
    options is used and DWARF_DEBUGGING_INFO is in effect.
@@ -4029,6 +4057,31 @@ dwarf_attr_name (attr)
       return "DW_AT_virtuality";
     case DW_AT_vtable_elem_location:
       return "DW_AT_vtable_elem_location";
+
+    case DW_AT_allocated:
+      return "DW_AT_allocated";
+    case DW_AT_associated:
+      return "DW_AT_associated";
+    case DW_AT_data_location:
+      return "DW_AT_data_location";
+    case DW_AT_stride:
+      return "DW_AT_stride";
+    case DW_AT_entry_pc:
+      return "DW_AT_entry_pc";
+    case DW_AT_use_UTF8:
+      return "DW_AT_use_UTF8";
+    case DW_AT_extension:
+      return "DW_AT_extension";
+    case DW_AT_ranges:
+      return "DW_AT_ranges";
+    case DW_AT_trampoline:
+      return "DW_AT_trampoline";
+    case DW_AT_call_column:
+      return "DW_AT_call_column";
+    case DW_AT_call_file:
+      return "DW_AT_call_file";
+    case DW_AT_call_line:
+      return "DW_AT_call_line";
 
     case DW_AT_MIPS_fde:
       return "DW_AT_MIPS_fde";
@@ -4602,6 +4655,23 @@ add_AT_lbl_offset (die, attr_kind, label)
   add_dwarf_attr (die, attr);
 }
 
+/* Add an offset attribute value to a DIE.  */
+
+static void
+add_AT_offset (die, attr_kind, offset)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+     register unsigned long offset;
+{
+  register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
+
+  attr->dw_attr_next = NULL;
+  attr->dw_attr = attr_kind;
+  attr->dw_attr_val.val_class = dw_val_class_offset;
+  attr->dw_attr_val.v.val_offset = offset;
+  add_dwarf_attr (die, attr);
+}
+
 static inline const char *AT_lbl PARAMS ((dw_attr_ref));
 static inline const char *
 AT_lbl (a)
@@ -5014,11 +5084,15 @@ print_die (die, outfile)
 	case dw_val_class_addr:
 	  fprintf (outfile, "address");
 	  break;
+	case dw_val_class_offset:
+	  fprintf (outfile, "offset");
+	  break;
 	case dw_val_class_loc:
 	  fprintf (outfile, "location descriptor");
 	  break;
 	case dw_val_class_loc_list:
-	  fprintf (outfile, "location list -> label:%s", AT_loc_list (a)->ll_symbol);
+	  fprintf (outfile, "location list -> label:%s",
+		   AT_loc_list (a)->ll_symbol);
 	  break;
 	case dw_val_class_const:
 	  fprintf (outfile, "%ld", AT_int (a));
@@ -5249,6 +5323,7 @@ attr_checksum (at, ctx)
     case dw_val_class_str:
       PROCESS_STRING (AT_string (at));
       break;
+
     case dw_val_class_addr:
       r = AT_addr (at);
       switch (GET_CODE (r))
@@ -5260,6 +5335,10 @@ attr_checksum (at, ctx)
 	default:
 	  abort ();
 	}
+      break;
+
+    case dw_val_class_offset:
+      PROCESS (at->dw_attr_val.v.val_offset);
       break;
 
     case dw_val_class_loc:
@@ -5275,6 +5354,7 @@ attr_checksum (at, ctx)
     case dw_val_class_fde_ref:
     case dw_val_class_lbl_id:
     case dw_val_class_lbl_offset:
+      break;
 
     default:
       break;
@@ -5680,6 +5760,9 @@ size_of_die (die)
 	case dw_val_class_addr:
 	  size += DWARF2_ADDR_SIZE;
 	  break;
+	case dw_val_class_offset:
+	  size += DWARF_OFFSET_SIZE;
+	  break;
 	case dw_val_class_loc:
 	  {
 	    register unsigned long lsize = size_of_locs (AT_loc (a));
@@ -5827,6 +5910,12 @@ value_format (a)
     {
     case dw_val_class_addr:
       return DW_FORM_addr;
+    case dw_val_class_offset:
+      if (DWARF_OFFSET_SIZE == 4)
+	return DW_FORM_data4;
+      if (DWARF_OFFSET_SIZE == 8)
+	return DW_FORM_data8;
+      abort ();
     case dw_val_class_loc_list:
       /* FIXME: Could be DW_FORM_data8, with a > 32 bit size
 	 .debug_loc section */
@@ -5876,6 +5965,7 @@ value_format (a)
       return DW_FORM_data;
     case dw_val_class_str:
       return DW_FORM_string;
+
     default:
       abort ();
     }
@@ -5990,8 +6080,6 @@ add_loc_descr_to_loc_list (list_head, descr, begin, end, section)
   *d = new_loc_list (descr, begin, end, section, 0);
 }
 
-
-
 /* Output the location list given to us */
 static void
 output_loc_list (list_head)
@@ -5999,6 +6087,10 @@ output_loc_list (list_head)
 {
   register dw_loc_list_ref curr=list_head;
   ASM_OUTPUT_LABEL (asm_out_file, list_head->ll_symbol);
+
+  /* ??? This shouldn't be needed now that we've forced the
+     compilation unit base address to zero when there is code
+     in more than one section.  */
   if (strcmp (curr->section, ".text") == 0)
     {
       /* dw2_asm_output_data will mask off any extra bits in the ~0.  */
@@ -6058,6 +6150,11 @@ output_die (die)
 	{
 	case dw_val_class_addr:
 	  dw2_asm_output_addr_rtx (DWARF2_ADDR_SIZE, AT_addr (a), "%s", name);
+	  break;
+
+	case dw_val_class_offset:
+	  dw2_asm_output_data (DWARF_OFFSET_SIZE, a->dw_attr_val.v.val_offset,
+			       "%s", name);
 	  break;
 
 	case dw_val_class_loc:
@@ -6121,14 +6218,17 @@ output_die (die)
 	case dw_val_class_flag:
 	  dw2_asm_output_data (1, AT_flag (a), "%s", name);
 	  break;
+
         case dw_val_class_loc_list:
 	  {
 	    char *sym = AT_loc_list (a)->ll_symbol;
 	    if (sym == 0)
 	      abort();
-	    dw2_asm_output_delta (DWARF_OFFSET_SIZE, sym, loc_section_label, name);
+	    dw2_asm_output_delta (DWARF_OFFSET_SIZE, sym,
+				  loc_section_label, "%s", name);
 	  }
 	  break;
+
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
 	    {
@@ -6330,9 +6430,8 @@ add_arange (decl, die)
   if (arange_table_in_use == arange_table_allocated)
     {
       arange_table_allocated += ARANGE_TABLE_INCREMENT;
-      arange_table
-	= (arange_ref) xrealloc (arange_table,
-				 arange_table_allocated * sizeof (dw_die_ref));
+      arange_table = (dw_die_ref *)
+	xrealloc (arange_table, arange_table_allocated * sizeof (dw_die_ref));
     }
 
   arange_table[arange_table_in_use++] = die;
@@ -6418,6 +6517,80 @@ output_aranges ()
   dw2_asm_output_data (DWARF2_ADDR_SIZE, 0, NULL);
 }
 
+/* Add a new entry to .debug_ranges.  Return the offset at which it
+   was placed.  */
+
+static unsigned int
+add_ranges (block)
+     tree block;
+{
+  unsigned int in_use = ranges_table_in_use;
+
+  if (in_use == ranges_table_allocated)
+    {
+      ranges_table_allocated += RANGES_TABLE_INCREMENT;
+      ranges_table = (dw_ranges_ref)
+	xrealloc (ranges_table, (ranges_table_allocated
+				 * sizeof (struct dw_ranges_struct)));
+    }
+
+  ranges_table[in_use].block_num = (block ? BLOCK_NUMBER (block) : 0);
+  ranges_table_in_use = in_use + 1;
+
+  return in_use * 2 * DWARF2_ADDR_SIZE;
+}
+
+static void
+output_ranges ()
+{
+  register unsigned i;
+  const char *start_fmt = "Offset 0x%x";
+  const char *fmt = start_fmt;
+
+  for (i = 0; i < ranges_table_in_use; ++i)
+    {
+      int block_num = ranges_table[i].block_num;
+
+      if (block_num)
+	{
+	  char blabel[MAX_ARTIFICIAL_LABEL_BYTES];
+	  char elabel[MAX_ARTIFICIAL_LABEL_BYTES];
+
+	  ASM_GENERATE_INTERNAL_LABEL (blabel, BLOCK_BEGIN_LABEL, block_num);
+	  ASM_GENERATE_INTERNAL_LABEL (elabel, BLOCK_END_LABEL, block_num);
+
+	  /* If all code is in the text section, then the compilation
+	     unit base address defaults to DW_AT_low_pc, which is the
+	     base of the text section.  */
+	  if (separate_line_info_table_in_use == 0)
+	    {
+	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, blabel,
+				    text_section_label,
+				    fmt, i * 2 * DWARF2_ADDR_SIZE);
+	      dw2_asm_output_delta (DWARF2_ADDR_SIZE, elabel,
+				    text_section_label, NULL);
+	    }
+	  /* Otherwise, we add a DW_AT_entry_pc attribute to force the
+	     compilation unit base address to zero, which allows us to
+	     use absolute addresses, and not worry about whether the
+	     target supports cross-section arithmetic.  */
+	  else
+	    {
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, blabel,
+				   fmt, i * 2 * DWARF2_ADDR_SIZE);
+	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, elabel, NULL);
+	    }
+
+	  fmt = NULL;
+	}
+      else
+	{
+	  dw2_asm_output_data (DWARF2_ADDR_SIZE, 0, NULL);
+	  dw2_asm_output_data (DWARF2_ADDR_SIZE, 0, NULL);
+	  fmt = start_fmt;
+	}
+    }
+}
 
 /* Data structure containing information about input files.  */
 struct file_info
@@ -9973,6 +10146,7 @@ gen_variable_die (decl, context_die)
   /* ??? Loop unrolling/reorder_blocks should perhaps be rewritten to
      copy decls and set the DECL_ABSTRACT flag on them instead of
      sharing them.  */
+  /* ??? Duplicated blocks have been rewritten to use .debug_ranges.  */
   else if (old_die && TREE_STATIC (decl)
  	   && get_AT_flag (old_die, DW_AT_declaration) == 1)
     {
@@ -10084,12 +10258,30 @@ gen_lexical_block_die (stmt, context_die, depth)
 
   if (! BLOCK_ABSTRACT (stmt))
     {
-      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
-				   BLOCK_NUMBER (stmt));
-      add_AT_lbl_id (stmt_die, DW_AT_low_pc, label);
-      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL,
-				   BLOCK_NUMBER (stmt));
-      add_AT_lbl_id (stmt_die, DW_AT_high_pc, label);
+      if (BLOCK_FRAGMENT_CHAIN (stmt))
+	{
+	  tree chain;
+
+	  add_AT_offset (stmt_die, DW_AT_ranges, add_ranges (stmt));
+
+	  chain = BLOCK_FRAGMENT_CHAIN (stmt);
+	  do
+	    {
+	      add_ranges (chain);
+	      chain = BLOCK_FRAGMENT_CHAIN (chain);
+	    }
+	  while (chain);
+	  add_ranges (NULL);
+	}
+      else
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
+				       BLOCK_NUMBER (stmt));
+	  add_AT_lbl_id (stmt_die, DW_AT_low_pc, label);
+	  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL,
+				       BLOCK_NUMBER (stmt));
+	  add_AT_lbl_id (stmt_die, DW_AT_high_pc, label);
+	}
     }
 
   decls_for_scope (stmt, stmt_die, depth);
@@ -10721,10 +10913,21 @@ gen_block_die (stmt, context_die, depth)
   register enum tree_code origin_code;
 
   /* Ignore blocks never really used to make RTL.  */
-
   if (stmt == NULL_TREE || !TREE_USED (stmt)
       || (!TREE_ASM_WRITTEN (stmt) && !BLOCK_ABSTRACT (stmt)))
     return;
+
+  /* If the block is one fragment of a non-contiguous block, do not
+     process the variables, since they will have been done by the
+     origin block.  Do process subblocks.  */
+  if (BLOCK_FRAGMENT_ORIGIN (stmt))
+    {
+      tree sub;
+
+      for (sub= BLOCK_SUBBLOCKS (stmt); sub; sub = BLOCK_CHAIN (sub))
+	gen_block_die (sub, context_die, depth + 1);
+      return;
+    }
 
   /* Determine the "ultimate origin" of this block.  This block may be an
      inlined instance of an inlined instance of inline function, so we have
@@ -11607,6 +11810,11 @@ dwarf2out_finish (input_filename)
       add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, text_section_label);
       add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
     }
+  /* And if it wasn't, we need to give .debug_loc and .debug_ranges
+     an appropriate "base address".  Use zero so that these addresses
+     become absolute.  */
+  else if (have_location_lists || ranges_table_in_use)
+    add_AT_addr (comp_unit_die, DW_AT_entry_pc, const0_rtx);
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     add_AT_lbl_offset (comp_unit_die, DW_AT_stmt_list,
@@ -11640,7 +11848,8 @@ dwarf2out_finish (input_filename)
       ASM_OUTPUT_SECTION (asm_out_file, DEBUG_ARANGES_SECTION);
       output_aranges ();
     }
-  /* Output location list section if necessary */
+
+  /* Output location list section if necessary.  */
   if (have_location_lists)
     {
       /* Output the location lists info. */
@@ -11649,12 +11858,18 @@ dwarf2out_finish (input_filename)
       have_location_lists = 0;
     }
 
+  /* Output ranges section if necessary.  */
+  if (ranges_table_in_use)
+    {
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_RANGES_SECTION);
+      output_ranges ();
+    }
+
   /* Have to end the primary source file. */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     { 
       ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
-  
 }
 #endif /* DWARF2_DEBUGGING_INFO */

@@ -1597,8 +1597,9 @@ final_start_function (first, file, optimize)
      function.  */
   if (write_symbols)
     {
-      number_blocks (current_function_decl);
       remove_unnecessary_notes ();
+      reorder_blocks ();
+      number_blocks (current_function_decl);
       /* We never actually put out begin/end notes for the top-level
 	 block in the function.  But, conceptually, that block is
 	 always needed.  */

@@ -278,8 +278,9 @@ static void pad_below		PARAMS ((struct args_size *, enum machine_mode,
 static rtx round_trampoline_addr PARAMS ((rtx));
 static rtx adjust_trampoline_addr PARAMS ((rtx));
 static tree *identify_blocks_1	PARAMS ((rtx, tree *, tree *, tree *));
-static void reorder_blocks_0	PARAMS ((rtx));
+static void reorder_blocks_0	PARAMS ((tree));
 static void reorder_blocks_1	PARAMS ((rtx, tree, varray_type *));
+static void reorder_fix_fragments PARAMS ((tree));
 static tree blocks_nreverse	PARAMS ((tree));
 static int all_blocks		PARAMS ((tree, tree *));
 static tree *get_block_vector   PARAMS ((tree, int *));
@@ -5819,8 +5820,11 @@ identify_blocks_1 (insns, block_vector, end_block_vector, orig_block_stack)
   return block_vector;
 }
 
-/* Identify BLOCKs referenced by more than one
-   NOTE_INSN_BLOCK_{BEG,END}, and create duplicate blocks.  */
+/* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
+   and create duplicate blocks.  */
+/* ??? Need an option to either create block fragments or to create
+   abstract origin duplicates of a source block.  It really depends
+   on what optimization has been performed.  */
 
 void
 reorder_blocks ()
@@ -5833,47 +5837,34 @@ reorder_blocks ()
 
   VARRAY_TREE_INIT (block_stack, 10, "block_stack");
 
+  /* Reset the TREE_ASM_WRITTEN bit for all blocks.  */
+  reorder_blocks_0 (block);
+
   /* Prune the old trees away, so that they don't get in the way.  */
   BLOCK_SUBBLOCKS (block) = NULL_TREE;
   BLOCK_CHAIN (block) = NULL_TREE;
 
-  reorder_blocks_0 (get_insns ());
+  /* Recreate the block tree from the note nesting.  */
   reorder_blocks_1 (get_insns (), block, &block_stack);
-
   BLOCK_SUBBLOCKS (block) = blocks_nreverse (BLOCK_SUBBLOCKS (block));
+
+  /* Remove deleted blocks from the block fragment chains.  */
+  reorder_fix_fragments (block);
 
   VARRAY_FREE (block_stack);
 }
 
-/* Helper function for reorder_blocks.  Process the insn chain beginning
-   at INSNS.  Recurse for CALL_PLACEHOLDER insns.  */
+/* Helper function for reorder_blocks.  Reset TREE_ASM_WRITTEN.  */
 
 static void
-reorder_blocks_0 (insns)
-     rtx insns;
+reorder_blocks_0 (block)
+     tree block;
 {
-  rtx insn;
-
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
+  while (block)
     {
-      if (GET_CODE (insn) == NOTE)
-	{
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
-	    {
-	      tree block = NOTE_BLOCK (insn);
-	      TREE_ASM_WRITTEN (block) = 0;
-	    }
-	}
-      else if (GET_CODE (insn) == CALL_INSN
-	       && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
-	{
-	  rtx cp = PATTERN (insn);
-	  reorder_blocks_0 (XEXP (cp, 0));
-	  if (XEXP (cp, 1))
-	    reorder_blocks_0 (XEXP (cp, 1));
-	  if (XEXP (cp, 2))
-	    reorder_blocks_0 (XEXP (cp, 2));
-	}
+      TREE_ASM_WRITTEN (block) = 0;
+      reorder_blocks_0 (BLOCK_SUBBLOCKS (block));
+      block = BLOCK_CHAIN (block);
     }
 }
 
@@ -5892,12 +5883,26 @@ reorder_blocks_1 (insns, current_block, p_block_stack)
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
 	    {
 	      tree block = NOTE_BLOCK (insn);
-	      /* If we have seen this block before, copy it.  */
+
+	      /* If we have seen this block before, that means it now
+		 spans multiple address regions.  Create a new fragment.  */
 	      if (TREE_ASM_WRITTEN (block))
 		{
-		  block = copy_node (block);
-		  NOTE_BLOCK (insn) = block;
+		  tree new_block = copy_node (block);
+		  tree origin;
+
+		  origin = (BLOCK_FRAGMENT_ORIGIN (block)
+			    ? BLOCK_FRAGMENT_ORIGIN (block)
+			    : block);
+		  BLOCK_FRAGMENT_ORIGIN (new_block) = origin;
+		  BLOCK_FRAGMENT_CHAIN (new_block)
+		    = BLOCK_FRAGMENT_CHAIN (origin);
+		  BLOCK_FRAGMENT_CHAIN (origin) = new_block;
+
+		  NOTE_BLOCK (insn) = new_block;
+		  block = new_block;
 		}
+
 	      BLOCK_SUBBLOCKS (block) = 0;
 	      TREE_ASM_WRITTEN (block) = 1;
 	      BLOCK_SUPERCONTEXT (block) = current_block;
@@ -5925,6 +5930,62 @@ reorder_blocks_1 (insns, current_block, p_block_stack)
 	  if (XEXP (cp, 2))
 	    reorder_blocks_1 (XEXP (cp, 2), current_block, p_block_stack);
 	}
+    }
+}
+
+/* Rationalize BLOCK_FRAGMENT_ORIGIN.  If an origin block no longer
+   appears in the block tree, select one of the fragments to become
+   the new origin block.  */
+
+static void
+reorder_fix_fragments (block)
+    tree block;
+{
+  while (block)
+    {
+      tree dup_origin = BLOCK_FRAGMENT_ORIGIN (block);
+      tree new_origin = NULL_TREE;
+
+      if (dup_origin)
+	{
+	  if (! TREE_ASM_WRITTEN (dup_origin))
+	    {
+	      new_origin = BLOCK_FRAGMENT_CHAIN (dup_origin);
+	      
+	      /* Find the first of the remaining fragments.  There must
+		 be at least one -- the current block.  */
+	      while (! TREE_ASM_WRITTEN (new_origin))
+		new_origin = BLOCK_FRAGMENT_CHAIN (new_origin);
+	      BLOCK_FRAGMENT_ORIGIN (new_origin) = NULL_TREE;
+	    }
+	}
+      else if (! dup_origin)
+	new_origin = block;
+
+      /* Re-root the rest of the fragments to the new origin.  In the
+	 case that DUP_ORIGIN was null, that means BLOCK was the origin
+	 of a chain of fragments and we want to remove those fragments
+	 that didn't make it to the output.  */
+      if (new_origin)
+	{
+	  tree *pp = &BLOCK_FRAGMENT_CHAIN (new_origin);
+	  tree chain = *pp;
+
+	  while (chain)
+	    {
+	      if (TREE_ASM_WRITTEN (chain))
+		{
+		  BLOCK_FRAGMENT_ORIGIN (chain) = new_origin;
+		  *pp = chain;
+		  pp = &BLOCK_FRAGMENT_CHAIN (chain);
+		}
+	      chain = BLOCK_FRAGMENT_CHAIN (chain);
+	    }
+	  *pp = NULL_TREE;
+	}
+
+      reorder_fix_fragments (BLOCK_SUBBLOCKS (block));
+      block = BLOCK_CHAIN (block);
     }
 }
 
