@@ -430,6 +430,14 @@ The same hard register may be used also for collecting the values of
 functions called by this one, but @code{REG_FUNCTION_VALUE_P} is zero
 in this kind of use.
 
+@cindex @samp{/f} in RTL dump
+@findex REG_POINTER
+@cindex @code{reg} and @samp{/f}
+@cindex @code{frame_related}, in @code{reg}
+@item REG_POINTER (@var{x})
+Nonzero in a @code{reg} if the register holds a pointer.  Stored in the
+@code{frame_related} field and printed as @samp{/f}.
+
 @findex SUBREG_PROMOTED_VAR_P
 @cindex @code{subreg} and @samp{/s}
 @cindex @code{in_struct}, in @code{subreg}
@@ -747,13 +755,28 @@ this is the right mode to use for certain pointers.
 @item OImode
 ``Octa Integer'' (?) mode represents a thirty-two-byte integer.
 
+@findex QFmode
+@item QFmode
+``Quarter-Floating'' mode represents a quarter-precision (single byte)
+floating point number.
+
+@findex HFmode
+@item HFmode
+``Half-Floating'' mode represents a half-precision (two byte) floating
+point number.
+
+@findex TQFmode
+@item TQFmode
+``Three-Quarter-Floating'' (?) mode represents a three-quarter-precision
+(three byte) floating point number.
+
 @findex SFmode
 @item SFmode
 ``Single Floating'' mode represents a four byte floating point number.
 In the common case, of a processor with IEEE arithmetic and 8-bit bytes,
 this is a single-precision IEEE floating point number; it can also be
 used for double-precision (on processors with 16-bit bytes) and
-single-precision Vax types.
+single-precision VAX and IBM types.
 
 @findex DFmode
 @item DFmode
@@ -796,14 +819,17 @@ For example, RTL expressions of code @code{const_int} have mode
 requires.  In debugging dumps of RTL, @code{VOIDmode} is expressed by
 the absence of any mode.
 
+@findex QCmode
+@findex HCmode
 @findex SCmode
 @findex DCmode
 @findex XCmode
 @findex TCmode
-@item SCmode, DCmode, XCmode, TCmode
+@item QCmode, HCmode, SCmode, DCmode, XCmode, TCmode
 These modes stand for a complex number represented as a pair of floating
-point values.  The floating point values are in @code{SFmode},
-@code{DFmode}, @code{XFmode}, and @code{TFmode}, respectively.
+point values.  The floating point values are in @code{QFmode},
+@code{HFmode}, @code{SFmode}, @code{DFmode}, @code{XFmode}, and
+@code{TFmode}, respectively.
 
 @findex CQImode
 @findex CHImode
@@ -841,16 +867,19 @@ mode classes are:
 @table @code
 @findex MODE_INT
 @item MODE_INT
-Integer modes.  By default these are @code{QImode}, @code{HImode},
-@code{SImode}, @code{DImode}, and @code{TImode}.
+Integer modes.  By default these are @code{BImode}, @code{QImode},
+@code{HImode}, @code{SImode}, @code{DImode}, @code{TImode}, and
+@code{OImode}.
 
 @findex MODE_PARTIAL_INT
 @item MODE_PARTIAL_INT
-The ``partial integer'' modes, @code{PSImode} and @code{PDImode}.
+The ``partial integer'' modes, @code{PQImode}, @code{PHImode},
+@code{PSImode} and @code{PDImode}.
 
 @findex MODE_FLOAT
 @item MODE_FLOAT
-floating point modes.  By default these are @code{SFmode}, @code{DFmode},
+Floating point modes.  By default these are @code{QFmode},
+@code{HFmode}, @code{TQFmode}, @code{SFmode}, @code{DFmode},
 @code{XFmode} and @code{TFmode}.
 
 @findex MODE_COMPLEX_INT
@@ -859,8 +888,9 @@ Complex integer modes.  (These are not currently implemented).
 
 @findex MODE_COMPLEX_FLOAT
 @item MODE_COMPLEX_FLOAT
-Complex floating point modes.  By default these are @code{SCmode},
-@code{DCmode}, @code{XCmode}, and @code{TCmode}.
+Complex floating point modes.  By default these are @code{QCmode},
+@code{HCmode}, @code{SCmode}, @code{DCmode}, @code{XCmode}, and
+@code{TCmode}.
 
 @findex MODE_FUNCTION
 @item MODE_FUNCTION
