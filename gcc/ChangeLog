@@ -1,3 +1,10 @@
+Thu Feb 12 11:34:55 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* mips/mips.c (movdi_operand): Direct referances to symbols
+	that arn't mips16 consts in mips16 mode arn't valid operands.
+
+	* mips/mips.c (mips_move_2words): Add gprel handling.
+
 Thu Feb 12 11:18:37 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* mips.md (extendsidi2): Allow extension to/from a non-mips16 

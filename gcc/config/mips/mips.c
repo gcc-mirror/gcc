@@ -985,7 +985,10 @@ movdi_operand (op, mode)
 	  || immediate_operand (XEXP (op, 0), SImode)))
     return 1;
 
-  return general_operand (op, mode);
+  return (general_operand (op, mode)
+	  && ! (TARGET_MIPS16
+		&& GET_CODE (op) == SYMBOL_REF
+		&& ! mips16_constant (op, mode, 1, 0)));
 }
 
 /* Like register_operand, but when in 64 bit mode also accept a sign
@@ -2316,9 +2319,7 @@ mips_move_2words (operands, insn)
 	    }
 	}
 
-      else if (code1 == LABEL_REF
-	       || code1 == SYMBOL_REF
-	       || code1 == CONST)
+      else if (code1 == LABEL_REF)
 	{
 	  if (TARGET_STATS)
 	    mips_count_memory_refs (op1, 2);
@@ -2331,6 +2332,45 @@ mips_move_2words (operands, insn)
 	    ret = "la\t%0,%1";
 	  else
 	    ret = "dla\t%0,%a1";
+	}
+      else if (code1 == SYMBOL_REF
+	       || code1 == CONST)
+	{
+	  if (TARGET_MIPS16
+	      && code1 == CONST
+	      && GET_CODE (XEXP (op1, 0)) == REG
+	      && REGNO (XEXP (op1, 0)) == GP_REG_FIRST + 28)
+	    {
+	      /* This case arises on the mips16; see
+                 mips16_gp_pseudo_reg.  */
+	      ret = "move\t%0,%+";
+	    }
+	  else if (TARGET_MIPS16
+		   && code1 == SYMBOL_REF
+		   && SYMBOL_REF_FLAG (op1)
+		   && (XSTR (op1, 0)[0] != '*'
+		       || strncmp (XSTR (op1, 0) + 1,
+				   LOCAL_LABEL_PREFIX,
+				   sizeof LOCAL_LABEL_PREFIX - 1) != 0))
+	    {
+	      /* This can occur when reloading the address of a GP
+                 relative symbol on the mips16.  */
+	      ret = "move\t%0,%+\n\taddu\t%0,%%gprel(%a1)";
+	    }
+	  else
+	    {
+	      if (TARGET_STATS)
+		mips_count_memory_refs (op1, 2);
+
+	      if (GET_CODE (operands[1]) == SIGN_EXTEND)
+		/* We deliberately remove the 'a' from '%1', so that we don't
+		   have to add SIGN_EXTEND support to print_operand_address.
+		   print_operand will just call print_operand_address in this
+		   case, so there is no problem.  */
+		ret = "la\t%0,%1";
+	      else
+		ret = "dla\t%0,%a1";
+	    }
 	}
     }
 
