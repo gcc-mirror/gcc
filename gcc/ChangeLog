@@ -1,5 +1,11 @@
 2000-08-13  Geoff Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/rs6000.c (rs6000_select_section): Rewrite to
+	not put stuff in .sdata unnecessarily.
+	(rs6000_unique_section): New function.
+	* config/rs6000/rs6000-protos.h: Add rs6000_unique_section.
+	* config/rs6000/sysv4.h (UNIQUE_SECTION): Define.
+
 	* c-typeck.c (build_array_ref): Don't complain about non-lvalue
 	arrays in C99.  Don't try to look at DECL_REGISTER of a
 	COMPONENT_REF.  Don't complain twice about the same error.

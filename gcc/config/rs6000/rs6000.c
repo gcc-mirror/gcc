@@ -7355,45 +7355,104 @@ rs6000_select_section (decl, reloc)
      int reloc;
 {
   int size = int_size_in_bytes (TREE_TYPE (decl));
+  int needs_sdata;
+  int readonly;
+  static void (* const sec_funcs[4]) PARAMS ((void)) = {
+    &const_section,
+    &sdata2_section,
+    &data_section,
+    &sdata_section
+  };
+  
+  needs_sdata = (size > 0 
+		 && size <= g_switch_value
+		 && rs6000_sdata != SDATA_NONE
+		 && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)));
 
   if (TREE_CODE (decl) == STRING_CST)
-    {
-      if (! flag_writable_strings)
-	const_section ();
-      else
-	data_section ();
-    }
+    readonly = ! flag_writable_strings;
   else if (TREE_CODE (decl) == VAR_DECL)
-    {
-      if ((flag_pic && reloc)
-	  || ! TREE_READONLY (decl)
-	  || TREE_SIDE_EFFECTS (decl)
-	  || ! DECL_INITIAL (decl)
-	  || (DECL_INITIAL (decl) != error_mark_node
-	      && ! TREE_CONSTANT (DECL_INITIAL (decl))))
-	{
-	  if (rs6000_sdata != SDATA_NONE && (size > 0)
-	      && (size <= g_switch_value))
-	    sdata_section ();
-	  else
-	    data_section ();
-	}
-      else
-	{
-	  if (rs6000_sdata != SDATA_NONE && (size > 0)
-	      && (size <= g_switch_value))
-	    {
-	      if (rs6000_sdata == SDATA_EABI)
-		sdata2_section ();
-	      else
-		sdata_section ();  /* System V doesn't have .sdata2/.sbss2 */
-	    }
-	  else
-	    const_section ();
-	}
-    }
+    readonly = (! (flag_pic && reloc)
+		&& TREE_READONLY (decl)
+		&& ! TREE_SIDE_EFFECTS (decl)
+		&& DECL_INITIAL (decl)
+		&& DECL_INITIAL (decl) != error_mark_node
+		&& TREE_CONSTANT (DECL_INITIAL (decl)));
   else
-    const_section ();
+    readonly = 1;
+  if (needs_sdata && rs6000_sdata != SDATA_EABI)
+    readonly = 0;
+  
+  (*sec_funcs[(readonly ? 0 : 2) + (needs_sdata ? 1 : 0)])();
+}
+
+/* A C statement to build up a unique section name, expressed as a
+   STRING_CST node, and assign it to DECL_SECTION_NAME (decl).
+   RELOC indicates whether the initial value of EXP requires
+   link-time relocations.  If you do not define this macro, GCC will use
+   the symbol name prefixed by `.' as the section name.  Note - this
+   macro can now be called for unitialised data items as well as
+   initialised data and functions.  */
+
+void
+rs6000_unique_section (decl, reloc)
+     tree decl;
+     int reloc;
+{
+  int size = int_size_in_bytes (TREE_TYPE (decl));
+  int needs_sdata;
+  int readonly;
+  int len;
+  int sec;
+  const char *name;
+  char *string;
+  const char *prefix;
+
+  static const char *const prefixes[7][2] =
+  {
+    { ".text.",   ".gnu.linkonce.t." },
+    { ".rodata.", ".gnu.linkonce.r." },
+    { ".sdata2.", ".gnu.linkonce.s2." },
+    { ".data.",   ".gnu.linkonce.d." },
+    { ".sdata.",  ".gnu.linkonce.s." },
+    { ".bss.",    ".gnu.linkonce.b." },
+    { ".sbss.",   ".gnu.linkonce.sb." }
+  };
+  
+  needs_sdata = (TREE_CODE (decl) != FUNCTION_DECL
+		 && size > 0 
+		 && size <= g_switch_value
+		 && rs6000_sdata != SDATA_NONE
+		 && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)));
+
+  if (TREE_CODE (decl) == STRING_CST)
+    readonly = ! flag_writable_strings;
+  else if (TREE_CODE (decl) == VAR_DECL)
+    readonly = (! (flag_pic && reloc)
+		&& TREE_READONLY (decl)
+		&& ! TREE_SIDE_EFFECTS (decl)
+		&& DECL_INITIAL (decl)
+		&& DECL_INITIAL (decl) != error_mark_node
+		&& TREE_CONSTANT (DECL_INITIAL (decl)));
+  else
+    readonly = 1;
+  if (needs_sdata && rs6000_sdata != SDATA_EABI)
+    readonly = 0;
+
+  sec = ((TREE_CODE (decl) == FUNCTION_DECL ? 0 : 1)
+	 + (readonly ? 0 : 2) 
+	 + (needs_sdata ? 1 : 0)
+	 + (DECL_INITIAL (decl) == 0
+	    || DECL_INITIAL (decl) == error_mark_node) ? 4 : 0);
+
+  name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
+  len    = strlen (name) + strlen (prefix);
+  string = alloca (len + 1);
+  
+  sprintf (string, "%s%s", prefix, name);
+  
+  DECL_SECTION_NAME (decl) = build_string (len, string);
 }
 
 
