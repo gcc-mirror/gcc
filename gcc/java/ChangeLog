@@ -1,3 +1,11 @@
+2002-04-23  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/6314:
+	* jvspec.c (lang_specific_driver): Use --resource, not -R.  Also
+	recognize `-fcompile-resource='.
+	* gcj.texi (Invoking gcj): Use --resource, not -R.  Expanded text
+	a bit.
+
 2002-04-22  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* jcf-parse.c: (yyparse): Don't prepend "./" to relative
