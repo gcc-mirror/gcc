@@ -1,3 +1,8 @@
+Mon Feb 16 12:23:53 1998  Manfred Hollstein  <Manfred.Hollstein@ks.sel.alcatel.de>
+
+	* Makefile.in (BASE_FLAGS_TO_PASS, EXTRA_TARGET_FLAGS): Really add
+	this change to sync Makefile.in with its ChangeLog entries.
+
 Fri Feb  6 01:33:52 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Don't pass PICFLAG and
