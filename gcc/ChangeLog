@@ -1,3 +1,9 @@
+Wed Dec  5 06:26:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (component_ref_for_mem_expr): Try harder to find decl
+	underneath COMPONENT_REFs.
+	(set_mem_attributes): Also strip VIEW_CONVERT_EXPR.
+
 2001-12-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* toplev.c (display_target_options): Don't print twice.
