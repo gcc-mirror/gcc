@@ -1,3 +1,7 @@
+2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in, aclocal.m4: Regenerate with automake 1.9.3.
+
 2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* zconf.h: Define NO_vsnprintf on Solaris 2.5.1.
