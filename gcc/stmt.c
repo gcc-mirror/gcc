@@ -2909,7 +2909,8 @@ tail_recursion_args (actuals, formals)
 
   for (a = actuals, f = formals, i = 0; a && f; a = TREE_CHAIN (a), f = TREE_CHAIN (f), i++)
     {
-      if (TREE_TYPE (TREE_VALUE (a)) != TREE_TYPE (f))
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (a)))
+	  != TYPE_MAIN_VARIANT (TREE_TYPE (f)))
 	return 0;
       if (GET_CODE (DECL_RTL (f)) != REG || DECL_MODE (f) == BLKmode)
 	return 0;
