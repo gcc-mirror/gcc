@@ -2036,7 +2036,7 @@ and of @var{min} and @var{max} to @var{base}.  See rtl.def for details.@refill
 @cindex RTL predecrement
 @cindex RTL postdecrement
 
-Four special side-effect expression codes appear as memory addresses.
+Six special side-effect expression codes appear as memory addresses.
 
 @table @code
 @findex pre_dec
@@ -2071,6 +2071,38 @@ being decremented.
 @findex post_inc
 @item (post_inc:@var{m} @var{x})
 Similar, but specifies incrementing @var{x} instead of decrementing it.
+
+@findex post_modify
+@item (post_modify:@var{m} @var{x} @var{y})
+
+Represents the side effect of setting @var{x} to @var{y} and
+represents @var{x} before @var{x} is modified.  @var{x} must be a
+@code{reg} or @code{mem}, but most machines allow only a @code{reg}.
+@var{m} must be the machine mode for pointers on the machine in use.
+The amount @var{x} is decremented by is the length in bytes of the
+machine mode of the containing memory reference of which this expression
+serves as the address.  Note that this is not currently implemented.
+
+The expression @var{y} must be one of three forms:
+@table @code
+@code{(plus:@var{m} @var{x} @var{z})},
+@code{(minus:@var{m} @var{x} @var{z})}, or
+@code{(plus:@var{m} @var{x} @var{i})},
+@end table
+where @var{z} is an index register and @var{i} is a constant.
+
+Here is an example of its use:@refill
+
+@example
+(mem:SF (post_modify:SI (reg:SI 42) (plus (reg:SI 42) (reg:SI 48))))
+@end example
+
+This says to modify pseudo register 42 by adding the contents of pseudo
+register 48 to it, after the use of what ever 42 points to.
+
+@findex post_modify
+@item (pre_modify:@var{m} @var{x} @var{expr})
+Similar except side effects happen before the use.
 @end table
 
 These embedded side effect expressions must be used with care.  Instruction

@@ -723,6 +723,14 @@ DEF_RTL_EXPR(PRE_INC, "pre_inc", "e", 'x')
 DEF_RTL_EXPR(POST_DEC, "post_dec", "e", 'x')
 DEF_RTL_EXPR(POST_INC, "post_inc", "e", 'x')
 
+/* These binary operations are used to represent generic address
+   side-effects in memory addresses, except for simple incrementation
+   or decrementation which use the above operations.  They are
+   created automatically by the life_analysis pass in flow.c. 
+   (Note that these operators are currently placeholders.)  */
+DEF_RTL_EXPR(PRE_MODIFY, "pre_modify", "ee", 'x')
+DEF_RTL_EXPR(POST_MODIFY, "post_modify", "ee", 'x')
+
 /* Comparison operations.  The ordered comparisons exist in two
    flavors, signed and unsigned.  */
 DEF_RTL_EXPR(NE, "ne", "ee", '<')

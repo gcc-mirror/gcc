@@ -1,3 +1,9 @@
+Fri Oct 23 11:11:56 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* rtl.def (POST_MODIFY, PRE_MODIFY): New generalized operators for
+  	addressing modes with side effects.  These are currently
+  	placeholders for the C4x target.
+
 Thu Oct 22 16:46:35 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* loop.c (express_from): Make sure that when generating a PLUS of
