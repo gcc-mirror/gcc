@@ -1,3 +1,20 @@
+2001-11-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (Class): Made _Jv_BytecodeVerifier a friend.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj_la_SOURCES): Added verify.cc.
+	* verify.cc: New file.
+	* include/java-interp.h (_Jv_count_arguments): Declare.
+	(_Jv_VerifyMethod): Likewise.
+	(class _Jv_InterpMethod): Made _Jv_BytecodeVerifier a friend.
+	(class _Jv_InterpException): Likewise.
+	* resolve.cc (_Jv_count_arguments): Renamed from count_arguments.
+	No longer static.  Updated callers.
+	* defineclass.cc (int_bits_to_float): Removed.
+	(long_bits_to_double): Likewise.
+	(prepare_pool_entry): Updated.
+	(handleCodeAttribute): Verify method (commented out for now).
+
 2001-11-05  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/util/ResourceBundle.java (class Security): Now static.

@@ -43,6 +43,9 @@ void _Jv_DefineClass (jclass, jbyteArray, jint, jint);
 
 void _Jv_InitField (jobject, jclass, int);
 void * _Jv_AllocMethodInvocation (jsize size);
+int  _Jv_count_arguments (_Jv_Utf8Const *signature,
+			  jboolean staticp = true);
+void _Jv_VerifyMethod (_Jv_InterpMethod *method);
 
 /* FIXME: this should really be defined in some more generic place */
 #define ROUND(V, A) (((((unsigned) (V))-1) | ((A)-1))+1)
@@ -54,7 +57,8 @@ class _Jv_InterpClass;
 class _Jv_InterpMethod;
 class _Jv_InterpMethodInvocation;
 
-class _Jv_InterpException {
+class _Jv_InterpException
+{
   int  start_pc;
   int  end_pc;
   int  handler_pc;
@@ -62,6 +66,7 @@ class _Jv_InterpException {
 
   friend class _Jv_ClassReader;
   friend class _Jv_InterpMethod;
+  friend class _Jv_BytecodeVerifier;
 };
 
 // Base class for method representations.  Subclasses are interpreted
@@ -133,6 +138,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 
   friend class _Jv_ClassReader;
   friend class _Jv_InterpMethodInvocation;
+  friend class _Jv_BytecodeVerifier;
 
   friend void _Jv_PrepareClass(jclass);
 };

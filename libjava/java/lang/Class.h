@@ -337,6 +337,8 @@ private:
   friend JV_MARKOBJ_DECL;
 #endif
 
+  friend class _Jv_BytecodeVerifier;
+
   // Chain for class pool.
   jclass next;
   // Name of class.
