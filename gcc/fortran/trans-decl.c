@@ -317,6 +317,32 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
 }
 
 
+/* Returns true if a variable of specified size should go on the stack.  */
+
+int
+gfc_can_put_var_on_stack (tree size)
+{
+  unsigned HOST_WIDE_INT low;
+
+  if (!INTEGER_CST_P (size))
+    return 0;
+
+  if (gfc_option.flag_max_stack_var_size < 0)
+    return 1;
+
+  if (TREE_INT_CST_HIGH (size) != 0)
+    return 0;
+
+  low = TREE_INT_CST_LOW (size);
+  if (low > (unsigned HOST_WIDE_INT) gfc_option.flag_max_stack_var_size)
+    return 0;
+
+/* TODO: Set a per-function stack size limit.  */
+
+  return 1;
+}
+
+
 /* Finish processing of a declaration and install its initial value.  */
 
 static void
@@ -533,7 +559,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 
 
 /* For some dummy arguments we don't use the actual argument directly.
-   Instead we create a local decl and use that.  This allows us to preform
+   Instead we create a local decl and use that.  This allows us to perform
    initialization, and construct full type information.  */
 
 static tree

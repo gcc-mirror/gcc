@@ -95,11 +95,6 @@ tree gfc_conv_array_stride (tree, int);
 tree gfc_conv_array_lbound (tree, int);
 tree gfc_conv_array_ubound (tree, int);
 
-/* The remaining space available for stack variables.  */
-extern unsigned HOST_WIDE_INT gfc_stack_space_left;
-/* Returns true if a variable of specified size should go on the stack.  */
-int gfc_can_put_var_on_stack (tree);
-
 /* Build expressions for accessing components of an array descriptor.  */
 tree gfc_conv_descriptor_data (tree);
 tree gfc_conv_descriptor_offset (tree);

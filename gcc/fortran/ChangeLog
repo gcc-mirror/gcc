@@ -1,3 +1,17 @@
+2005-03-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/20361
+	* trans-array.c (gfc_stack_space_left): Remove unused variable.
+	(gfc_can_put_var_on_stack): Move to trans-decl.c, remove #if 0'ed
+	code.
+	* trans-array.h (gfc_stack_space_left, gfc_can_put_var_on_stack):
+	Remove declaration / prototype.
+	* trans-common.c (build_equiv_decl): Give union a name.  Check if
+	it can be put on the stack.
+	* trans-decl.c (gfc_stack_space_left): Move function here.
+	(gfc_build_qualified_array): Fix comment typo.
+	* trans.h (gfc_put_var_on_stack): Add prototype.
+
 2005-03-05  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/19936
