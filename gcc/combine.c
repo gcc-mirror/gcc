@@ -7600,12 +7600,12 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	     logical expression, make a new logical expression, and apply
 	     the inverse distributive law.  */
 	  {
-	    rtx lhs = simplify_shift_const (NULL_RTX, code, result_mode,
+	    rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
 					    XEXP (varop, 0), count);
-	    rtx rhs = simplify_shift_const (NULL_RTX, code, result_mode,
+	    rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
 					    XEXP (varop, 1), count);
 
-	    varop = gen_binary (GET_CODE (varop), result_mode, lhs, rhs);
+	    varop = gen_binary (GET_CODE (varop), GET_MODE (varop), lhs, rhs);
 	    varop = apply_distributive_law (varop);
 
 	    count = 0;
