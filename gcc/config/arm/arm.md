@@ -686,7 +686,7 @@
 ;; storehi is not allowed.
 
 (define_expand "restorehi"
-  [(set (mem:QI (match_operand 1 "" ""))
+  [(set (mem:QI (match_operand:SI 1 "" ""))
 	(match_dup 2))
    (set (reg:SI 10)
 	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
@@ -705,12 +705,12 @@
 
 (define_expand "storehi"
   [;; store the low byte
-   (set (mem:QI (match_operand 1 "" "")) (match_dup 3))
+   (set (mem:QI (match_operand:SI 1 "" "")) (match_dup 3))
    ;; extract the high byte
    (set (match_dup 2)
 	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
    ;; store the high byte
-   (set (mem:QI (plus (match_dup 1) (const_int 1)))
+   (set (mem:QI (plus:SI (match_dup 1) (const_int 1)))
 	(subreg:QI (match_dup 2) 0))]	;explicit subreg safe
   ""
   "
@@ -724,9 +724,9 @@
 
 (define_expand "storeinthi"
   [;; store the low byte
-   (set (mem:QI (match_operand 1 "" "")) (match_operand 0 "" ""))
+   (set (mem:QI (match_operand:SI 1 "" "")) (match_operand 0 "" ""))
    ;; store the high byte
-   (set (mem:QI (plus (match_dup 1) (const_int 1)))
+   (set (mem:QI (plus:SI (match_dup 1) (const_int 1)))
 	(match_dup 2))]
   ""
   "
@@ -1247,8 +1247,8 @@
 ;  "*
 ;  return (output_arithmetic_with_shift (operands, TRUE, FALSE));
 ;")
-
-;; Patterns to allow combination of arithmetic and multiplication
+
+;; Patterns to allow combination of arithmetic and left shift
 
 ;(define_insn ""
 ;  [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1262,18 +1262,37 @@
 ;  return (output_arithmetic_with_immediate_multiply (operands, FALSE));
 ;")
 
-; Uncomment this to show combiner problem (see ../COMBINER-PROBLEM).
-;(define_insn ""
-;  [(set (match_operand:SI 0 "register_operand" "=r")
-;        (match_operator:SI 1 "shiftable_operator"
-;	  [(mult:SI
-;	    (match_operand:SI 3 "register_operand" "r")
-;	    (match_operand:SI 4 "power_of_two_operand" "n"))
-;	   (match_operand:SI 2 "register_operand" "r")]))]
-;  ""
-;  "*
-;  return (output_arithmetic_with_immediate_multiply (operands, TRUE));
-;")
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (match_operator:SI 1 "shiftable_operator"
+	  [(mult:SI
+	    (match_operand:SI 3 "register_operand" "r")
+	    (match_operand:SI 4 "power_of_two_operand" "n"))
+	   (match_operand:SI 2 "register_operand" "r")]))]
+  ""
+  "*
+  return (output_arithmetic_with_immediate_multiply (operands, TRUE));
+")
+
+;; This variant of the above insn can occur if the first operand is the
+;; frame pointer and we eliminate that.  This is a kludge, but there doesn't
+;; seem to be a way around it.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(plus:SI (plus:SI (mult:SI (match_operand:SI 3 "register_operand" "r")
+				   (match_operand:SI 4 "power_of_two_operand" "n"))
+			  (match_operand:SI 2 "register_operand" "r"))
+		 (match_operand:SI 1 "const_int_operand" "n")))]
+  "reload_in_progress"
+  "*
+{
+  int shift = int_log2 (INTVAL (operands[4]));
+  operands[4] = GEN_INT (shift);
+  arm_output_asm_insn (\"add\\t%0, %2, %3, asl#%4\", operands);
+  operands[2] = operands[0];
+  return output_add_immediate (operands);
+}")
 
 ;; Peephole optimizations.
 
