@@ -1,3 +1,18 @@
+2004-06-01  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (requestFocus):
+	Implement by calling gtkRequestFocus.
+	(gtkRequestFocus): New native method.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_requestFocus__):
+	Renamed to ...
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkRequestFocus):
+	New function name.
+	(filter_expose_event_handler):
+	Mark static.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c
+	(menu_pos): Mark static.
+
 2004-06-01  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/CollationElementIterator.java,
