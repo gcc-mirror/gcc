@@ -979,10 +979,13 @@ dbxout_type (type, full, show_arg_types)
 #ifdef DBX_NO_XREFS
   /* For systems where dbx output does not allow the `=xsNAME:' syntax,
      leave the type-number completely undefined rather than output
-     a cross-reference.  */
-  if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
-      || TREE_CODE (type) == QUAL_UNION_TYPE
-      || TREE_CODE (type) == ENUMERAL_TYPE)
+     a cross-reference.  If we have already used GNU debug info extensions,
+     then it is OK to output a cross reference.  This is necessary to get
+     proper C++ debug output.  */
+  if ((TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
+       || TREE_CODE (type) == QUAL_UNION_TYPE
+       || TREE_CODE (type) == ENUMERAL_TYPE)
+      && ! use_gnu_debug_info_extensions)
     /* We must use the same test here as we use twice below when deciding
        whether to emit a cross-reference.  */
     if ((TYPE_NAME (type) != 0
