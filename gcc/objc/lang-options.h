@@ -16,11 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  
-
-Java and all Java-based marks are trademarks or registered trademarks
-of Sun Microsystems, Inc. in the United States and other countries.
-The Free Software Foundation is independent of Sun Microsystems, Inc.  */
+Boston, MA 02111-1307, USA.  */
 
 /* This is the contribution to the `documented_lang_options' array in
    toplev.c for Objective-C.  */
