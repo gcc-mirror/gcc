@@ -1249,7 +1249,10 @@ lwa_operand (op, mode)
   return gpc_reg_operand (inner, mode)
     || (memory_operand (inner, mode)
 	&& GET_CODE (XEXP (inner, 0)) != PRE_INC
-	&& GET_CODE (XEXP (inner, 0)) != PRE_DEC);
+	&& GET_CODE (XEXP (inner, 0)) != PRE_DEC
+	&& (GET_CODE (XEXP (inner, 0)) != PLUS
+	    || (GET_CODE (XEXP (XEXP (inner, 0), 1)) == CONST_INT
+		&& INTVAL (XEXP (XEXP (inner, 0), 1)) % 4 == 0)));
 }
 
 /* Return 1 if the operand, used inside a MEM, is a valid first argument

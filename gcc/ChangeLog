@@ -1,3 +1,7 @@
+2001-09-24  David Edelsohn <edelsohn@gnu.org>
+
+	* rs6000.c (lwa_operand): Address must be word aligned.
+
 2001-09-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Final install): Request additional information
