@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2372,9 +2372,11 @@ rest_of_compilation (decl)
       /* If function is inline, and we don't yet know whether to
 	 compile it by itself, defer decision till end of compilation.
 	 finish_compilation will call rest_of_compilation again
-	 for those functions that need to be output.  */
+	 for those functions that need to be output.  Also defer those
+	 functions that were marked inline but weren't inlined; they
+	 may never be used.  */
 
-      if (DECL_INLINE (decl)
+      if ((specd || DECL_INLINE (decl))
 	  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 	       && ! flag_keep_inline_functions)
 	      || DECL_EXTERNAL (decl)))
