@@ -1,3 +1,9 @@
+2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3902
+	* parser.c (cp_parser_decl_specifier_seq): Cannot have constructor
+	inside a declarator.
+
 2003-01-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (update_vtable_entry_for_fn): Add index parameter.
