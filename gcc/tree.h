@@ -708,6 +708,9 @@ struct tree_type
    writing debugging information about vfield and vbase decls for C++.  */
 #define DECL_FCONTEXT(NODE) ((NODE)->decl.vindex)
 
+/* Every ..._DECL node gets a unique number.  */
+#define DECL_UID(NODE) ((NODE)->decl.uid)
+
 /* Nonzero in a VAR_DECL or PARM_DECL means this decl was made by inlining;
    suppress any warnings about shadowing some other variable.  */
 #define DECL_FROM_INLINE(NODE) ((NODE)->decl.from_inline_flag)
@@ -777,6 +780,7 @@ struct tree_decl
   char *filename;
   int linenum;
   union tree_node *size;
+  unsigned int uid;
 #ifdef ONLY_INT_FIELDS
   int mode : 8;
 #else
@@ -856,6 +860,7 @@ extern char *oballoc ();
 extern char *permalloc ();
 extern char *savealloc ();
 extern char *xmalloc ();
+extern char *xrealloc ();
 extern void free ();
 
 /* Lowest level primitive for allocating a node.
@@ -971,6 +976,7 @@ extern tree non_lvalue ();
 
 extern tree convert ();
 extern tree size_in_bytes ();
+extern int int_size_in_bytes ();
 extern tree size_binop ();
 extern tree size_int ();
 extern tree round_up ();

@@ -214,6 +214,9 @@ static tree hash_table[MAX_HASH_TABLE];	/* id hash buckets */
 /* 0 while creating built-in identifiers.  */
 static int do_identifier_warnings;
 
+/* Unique id for next decl created.  */
+static int next_decl_uid;
+
 extern char *mode_name[];
 
 void gcc_obstack_init ();
@@ -856,6 +859,7 @@ make_node (code)
 	DECL_ALIGN (t) = 1;
       DECL_SOURCE_LINE (t) = lineno;
       DECL_SOURCE_FILE (t) = (input_filename) ? input_filename : "<built-in>";
+      DECL_UID (t) = next_decl_uid++;
       break;
 
     case 't':
