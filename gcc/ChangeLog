@@ -1,3 +1,7 @@
+Mon Jun  8 07:49:41 1998  Andris Pavenis   <pavenis@lanet.lv>
+
+	* gcc.c (link_command_spec): Support LINK_COMMAND_SPEC.
+
 Sun Jun  7 18:00:28 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* fold-const.c (fold, case EQ_EXPR): When folding VAR++ == CONST
