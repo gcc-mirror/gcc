@@ -2277,7 +2277,7 @@ do_build_assign_ref (fndecl)
 	     CONV_IMPLICIT|CONV_CONST, LOOKUP_COMPLAIN, NULL_TREE);
 	  p = convert_from_reference (p);
 	  p = build_member_call (basetype, ansi_opname [MODIFY_EXPR],
-				 build_expr_list (NULL_TREE, p));
+				 build_tree_list (NULL_TREE, p));
 	  finish_expr_stmt (p);
 	}
       for (; fields; fields = TREE_CHAIN (fields))

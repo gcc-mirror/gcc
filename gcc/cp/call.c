@@ -869,7 +869,7 @@ convert_class_to_reference (t, s, expr)
      cast to the appropriate type.  */
   arglist = build_int_2 (0, 0);
   TREE_TYPE (arglist) = build_pointer_type (s);
-  arglist = build_scratch_list (NULL_TREE, arglist);
+  arglist = build_tree_list (NULL_TREE, arglist);
   
   for (conversions = lookup_conversions (s);
        conversions;
@@ -1214,8 +1214,10 @@ add_candidate (candidates, fn, convs, viable)
      tree fn, convs;
      int viable;
 {
+  /* FIXME: This is a memory leak.  Presumably, we should use
+     ggc_alloc instead.  */
   struct z_candidate *cand
-    = (struct z_candidate *) scratchalloc (sizeof (struct z_candidate));
+    = (struct z_candidate *) expralloc (sizeof (struct z_candidate));
 
   cand->fn = fn;
   cand->convs = convs;
@@ -2269,7 +2271,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     {
       tree t = build_int_2 (0, 0);
       TREE_TYPE (t) = build_pointer_type (totype);
-      args = build_scratch_list (NULL_TREE, expr);
+      args = build_tree_list (NULL_TREE, expr);
       if (TYPE_USES_VIRTUAL_BASECLASSES (totype))
 	args = tree_cons (NULL_TREE, integer_one_node, args);
       args = tree_cons (NULL_TREE, t, args);
@@ -2302,7 +2304,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     }
 
   if (convs)
-    args = build_scratch_list (NULL_TREE, build_this (expr));
+    args = build_tree_list (NULL_TREE, build_this (expr));
 
   for (; convs; convs = TREE_CHAIN (convs))
     {
@@ -3164,11 +3166,11 @@ build_new_op (code, flags, arg1, arg2, arg3)
 
   if (arg2 && arg3)
     arglist = tree_cons (NULL_TREE, arg1, tree_cons
-		      (NULL_TREE, arg2, build_scratch_list (NULL_TREE, arg3)));
+		      (NULL_TREE, arg2, build_tree_list (NULL_TREE, arg3)));
   else if (arg2)
-    arglist = tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
+    arglist = tree_cons (NULL_TREE, arg1, build_tree_list (NULL_TREE, arg2));
   else
-    arglist = build_scratch_list (NULL_TREE, arg1);
+    arglist = build_tree_list (NULL_TREE, arg1);
 
   fns = lookup_function_nonclass (fnname, arglist);
 
@@ -3567,7 +3569,7 @@ build_op_delete_call (code, addr, size, flags, placement)
 	enforce_access (TREE_PURPOSE (fns), fn);
       return build_function_call
 	(fn, tree_cons (NULL_TREE, addr,
-			build_expr_list (NULL_TREE, size)));
+			build_tree_list (NULL_TREE, size)));
     }
 
   /* finish_function passes LOOKUP_SPECULATIVELY if we're in a
@@ -3650,7 +3652,7 @@ convert_like (convs, expr)
 	    tree t = build_int_2 (0, 0);
 	    TREE_TYPE (t) = build_pointer_type (DECL_CONTEXT (fn));
 
-	    args = build_scratch_list (NULL_TREE, expr);
+	    args = build_tree_list (NULL_TREE, expr);
 	    if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
 	      args = tree_cons (NULL_TREE, integer_one_node, args);
 	    args = tree_cons (NULL_TREE, t, args);
@@ -3911,7 +3913,7 @@ build_over_call (cand, args, flags)
     enforce_access (cand->basetype_path, fn);
 
   if (args && TREE_CODE (args) != TREE_LIST)
-    args = build_scratch_list (NULL_TREE, args);
+    args = build_tree_list (NULL_TREE, args);
   arg = args;
 
   /* The implicit parameters to a constructor are not considered by overload

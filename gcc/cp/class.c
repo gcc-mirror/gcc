@@ -573,7 +573,7 @@ build_vtable_entry (delta, pfn)
       extern int flag_huge_objects;
       tree elems = tree_cons (NULL_TREE, delta,
 			      tree_cons (NULL_TREE, integer_zero_node,
-					 build_expr_list (NULL_TREE, pfn)));
+					 build_tree_list (NULL_TREE, pfn)));
       tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
 
       /* DELTA used to be constructed by `size_int' and/or size_binop,
@@ -1139,6 +1139,9 @@ start_vtable (t, has_virtual_p)
 {
   if (*has_virtual_p == 0 && ! CLASSTYPE_COM_INTERFACE (t))
     {
+      /* If we are using thunks, use two slots at the front, one
+	 for the offset pointer, one for the tdesc pointer.
+         For ARM-style vtables, use the same slot for both.  */
       if (flag_vtable_thunks)
 	*has_virtual_p = 2;
       else
@@ -1151,40 +1154,35 @@ start_vtable (t, has_virtual_p)
    allocate a new slot in our table.  If it is error_mark_node, we
    know that no other function from another vtable is overridden by X.
    HAS_VIRTUAL keeps track of how many virtuals there are in our main
-   vtable for the type, and we build upon the PENDING_VIRTUALS list
+   vtable for the type, and we build upon the NEW_VIRTUALS list
    and return it.  */
 
 static void
-add_virtual_function (pv, phv, has_virtual, fndecl, t)
-     tree *pv, *phv;
+add_virtual_function (new_virtuals_p, overridden_virtuals_p,
+		      has_virtual, fndecl, t)
+     tree *new_virtuals_p;
+     tree *overridden_virtuals_p;
      int *has_virtual;
      tree fndecl;
      tree t; /* Structure type.  */
 {
-  tree pending_virtuals = *pv;
-  tree pending_hard_virtuals = *phv;
+  my_friendly_assert (DECL_CONTEXT (fndecl) == t, 20000116);
 
-#ifndef DUMB_USER
-  if (current_class_type == 0)
-    cp_warning ("internal problem, current_class_type is zero when adding `%D', please report",
-		fndecl);
-  if (current_class_type && t != current_class_type)
-    cp_warning ("internal problem, current_class_type differs when adding `%D', please report",
-		fndecl);
-#endif
-
-  /* If the virtual function is a redefinition of a prior one,
-     figure out in which base class the new definition goes,
-     and if necessary, make a fresh virtual function table
-     to hold that entry.  */
-  if (DECL_VINDEX (fndecl) == error_mark_node)
+  /* If this function doesn't override anything from a base class, we
+     can just assign it a new DECL_VINDEX now.  Otherwise, if it does
+     override something, we keep it around and assign its DECL_VINDEX
+     later, in modify_all_vtables.  */
+  if (TREE_CODE (DECL_VINDEX (fndecl)) == INTEGER_CST)
+    /* We've already dealt with this function.  */
+    ;
+  else if (DECL_VINDEX (fndecl) == error_mark_node)
     {
+      /* FNDECL is a new virtual function; it doesn't override any
+	 virtual function in a base class.  */
+
       /* We remember that this was the base sub-object for rtti.  */
       CLASSTYPE_RTTI (t) = t;
 
-      /* If we are using thunks, use two slots at the front, one
-	 for the offset pointer, one for the tdesc pointer.
-         For ARM-style vtables, use the same slot for both.  */
       start_vtable (t, has_virtual);
 
       /* Build a new INT_CST for this DECL_VINDEX.  */
@@ -1205,25 +1203,17 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
 
 	/* Now assign virtual dispatch information.  */
 	DECL_VINDEX (fndecl) = idx;
-	DECL_CONTEXT (fndecl) = t;
       }
-      /* Save the state we've computed on the PENDING_VIRTUALS list.  */
-      pending_virtuals = tree_cons (integer_zero_node,
-				    fndecl,
-				    pending_virtuals);
+      /* Save the state we've computed on the NEW_VIRTUALS list.  */
+      *new_virtuals_p = tree_cons (integer_zero_node,
+				   fndecl,
+				   *new_virtuals_p);
     }
-  /* Might already be INTEGER_CST if declared twice in class.  We will
-     give error later or we've already given it.  */
   else if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
-    {
-      /* Need an entry in some other virtual function table.
-         Deal with this after we have laid out our virtual base classes.  */
-      pending_hard_virtuals = tree_cons (NULL_TREE, 
-					 fndecl, 
-					 pending_hard_virtuals);
-    }
-  *pv = pending_virtuals;
-  *phv = pending_hard_virtuals;
+    /* FNDECL overrides a function from a base class.  */
+    *overridden_virtuals_p = tree_cons (NULL_TREE, 
+					fndecl, 
+					*overridden_virtuals_p);
 }
 
 extern struct obstack *current_obstack;
@@ -3126,8 +3116,12 @@ check_for_override (decl, ctype)
 		}
 	      virtualp = 1;
 
-	      DECL_VINDEX (decl)
-		= tree_cons (NULL_TREE, tmp, DECL_VINDEX (decl));
+	      /* Set DECL_VINDEX to a value that is neither an
+		 INTEGER_CST nor the error_mark_node so that
+		 add_virtual_function will realize this is an
+		 overridden function.  */
+	      DECL_VINDEX (decl) 
+		= tree_cons (tmp, NULL_TREE, DECL_VINDEX (decl));
 	      
 	      /* We now know that DECL overrides something,
 		 which is all that is important.  But, we must
@@ -4202,12 +4196,12 @@ check_bases_and_members (t, empty_p)
 
 static void
 create_vtable_ptr (t, empty_p, has_virtual_p, 
-		   pending_virtuals_p, pending_hard_virtuals_p)
+		   new_virtuals_p, overridden_virtuals_p)
      tree t;
      int *empty_p;
      int *has_virtual_p;
-     tree *pending_virtuals_p;
-     tree *pending_hard_virtuals_p;
+     tree *new_virtuals_p;
+     tree *overridden_virtuals_p;
 {
   tree fn;
 
@@ -4215,7 +4209,7 @@ create_vtable_ptr (t, empty_p, has_virtual_p,
      vtables.  */
   for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
     if (DECL_VINDEX (fn))
-      add_virtual_function (pending_virtuals_p, pending_hard_virtuals_p,
+      add_virtual_function (new_virtuals_p, overridden_virtuals_p,
 			    has_virtual_p, fn, t);
 
   /* Even if there weren't any new virtual functions, we might need a
@@ -4609,12 +4603,12 @@ layout_basetypes (rec)
 
 static void
 layout_class_type (t, empty_p, has_virtual_p, 
-		   pending_virtuals_p, pending_hard_virtuals_p)
+		   new_virtuals_p, overridden_virtuals_p)
      tree t;
      int *empty_p;
      int *has_virtual_p;
-     tree *pending_virtuals_p;
-     tree *pending_hard_virtuals_p;
+     tree *new_virtuals_p;
+     tree *overridden_virtuals_p;
 {
   /* If possible, we reuse the virtual function table pointer from one
      of our base classes.  */
@@ -4629,7 +4623,7 @@ layout_class_type (t, empty_p, has_virtual_p,
 
   /* Create a pointer to our virtual function table.  */
   create_vtable_ptr (t, empty_p, has_virtual_p,
-		     pending_virtuals_p, pending_hard_virtuals_p);
+		     new_virtuals_p, overridden_virtuals_p);
 
   /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
      we have to save this before we start modifying
@@ -4725,8 +4719,15 @@ finish_struct_1 (t)
 {
   tree x;
   int has_virtual;
-  tree pending_virtuals = NULL_TREE;
-  tree pending_hard_virtuals = NULL_TREE;
+  /* The NEW_VIRTUALS is a TREE_LIST.  The TREE_VALUE of each node is
+     a FUNCTION_DECL.  Each of these functions is a virtual function
+     declared in T that does not override any virtual function from a
+     base class.  */
+  tree new_virtuals = NULL_TREE;
+  /* The OVERRIDDEN_VIRTUALS list is like the NEW_VIRTUALS list,
+     except that each declaration here overrides the declaration from
+     a base class.  */
+  tree overridden_virtuals = NULL_TREE;
   int n_fields = 0;
   tree vfield;
   int empty = 1;
@@ -4745,7 +4746,6 @@ finish_struct_1 (t)
 
   /* If this type was previously laid out as a forward reference,
      make sure we lay it out again.  */
-
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
   CLASSTYPE_VFIELD_PARENT (t) = -1;
@@ -4758,7 +4758,7 @@ finish_struct_1 (t)
 
   /* Layout the class itself.  */
   layout_class_type (t, &empty, &has_virtual,
-		     &pending_virtuals, &pending_hard_virtuals);
+		     &new_virtuals, &overridden_virtuals);
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {
@@ -4818,13 +4818,13 @@ finish_struct_1 (t)
       TYPE_VFIELD (t) = vfield;
     }
 
-  if (flag_rtti && TYPE_CONTAINS_VPTR_P (t) && !pending_hard_virtuals)
+  if (flag_rtti && TYPE_CONTAINS_VPTR_P (t) && !overridden_virtuals)
     modify_all_vtables (t, NULL_TREE);
 
-  for (pending_hard_virtuals = nreverse (pending_hard_virtuals);
-       pending_hard_virtuals;
-       pending_hard_virtuals = TREE_CHAIN (pending_hard_virtuals))
-    modify_all_vtables (t, TREE_VALUE (pending_hard_virtuals));
+  for (overridden_virtuals = nreverse (overridden_virtuals);
+       overridden_virtuals;
+       overridden_virtuals = TREE_CHAIN (overridden_virtuals))
+    modify_all_vtables (t, TREE_VALUE (overridden_virtuals));
   
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {
@@ -4850,10 +4850,10 @@ finish_struct_1 (t)
     }
 
   /* If necessary, create the vtable for this class.  */
-  if (pending_virtuals
+  if (new_virtuals
       || (TYPE_CONTAINS_VPTR_P (t) && vptrs_present_everywhere_p ()))
     {
-      pending_virtuals = nreverse (pending_virtuals);
+      new_virtuals = nreverse (new_virtuals);
       /* We must enter these virtuals into the table.  */
       if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
 	{
@@ -4861,12 +4861,12 @@ finish_struct_1 (t)
 	    {
 	      /* The second slot is for the tdesc pointer when thunks are used.  */
 	      if (flag_vtable_thunks)
-		pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
+		new_virtuals = tree_cons (NULL_TREE, NULL_TREE, new_virtuals);
 
 	      /* The first slot is for the rtti offset.  */
-	      pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
+	      new_virtuals = tree_cons (NULL_TREE, NULL_TREE, new_virtuals);
 
-	      set_rtti_entry (pending_virtuals,
+	      set_rtti_entry (new_virtuals,
 			      convert (ssizetype, integer_zero_node), t);
 	    }
 	  build_vtable (NULL_TREE, t);
@@ -4917,7 +4917,7 @@ finish_struct_1 (t)
       /* Entries for virtual functions defined in the primary base are
 	 followed by entries for new functions unique to this class.  */
       TYPE_BINFO_VIRTUALS (t) 
-	= chainon (TYPE_BINFO_VIRTUALS (t), pending_virtuals);
+	= chainon (TYPE_BINFO_VIRTUALS (t), new_virtuals);
     }
 
   /* Now lay out the virtual function table.  */

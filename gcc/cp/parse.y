@@ -1059,19 +1059,19 @@ already_scoped_stmt:
 nontrivial_exprlist:
 	  expr_no_commas ',' expr_no_commas
 		{ $$ = tree_cons (NULL_TREE, $$, 
-		                  build_expr_list (NULL_TREE, $3)); }
+		                  build_tree_list (NULL_TREE, $3)); }
 	| expr_no_commas ',' error
 		{ $$ = tree_cons (NULL_TREE, $$, 
-		                  build_expr_list (NULL_TREE, error_mark_node)); }
+		                  build_tree_list (NULL_TREE, error_mark_node)); }
 	| nontrivial_exprlist ',' expr_no_commas
-		{ chainon ($$, build_expr_list (NULL_TREE, $3)); }
+		{ chainon ($$, build_tree_list (NULL_TREE, $3)); }
 	| nontrivial_exprlist ',' error
-		{ chainon ($$, build_expr_list (NULL_TREE, error_mark_node)); }
+		{ chainon ($$, build_tree_list (NULL_TREE, error_mark_node)); }
 	;
 
 nonnull_exprlist:
 	  expr_no_commas
-		{ $$ = build_expr_list (NULL_TREE, $$); }
+		{ $$ = build_tree_list (NULL_TREE, $$); }
 	| nontrivial_exprlist
 	;
 
@@ -1181,7 +1181,7 @@ new_initializer:
 		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
 		  if (TREE_CODE ($2) != TREE_LIST
 		      && TREE_CODE ($2) != CONSTRUCTOR)
-		    $$ = build_expr_list (NULL_TREE, $2);
+		    $$ = build_tree_list (NULL_TREE, $2);
 		  else
 		    $$ = $2;
 		}
@@ -2004,9 +2004,9 @@ initlist:
 		{ $$ = tree_cons (NULL_TREE, $3, $$); }
 	/* These are for labeled elements.  */
 	| '[' expr_no_commas ']' init
-		{ $$ = build_expr_list ($2, $4); }
+		{ $$ = build_tree_list ($2, $4); }
 	| identifier ':' init
-		{ $$ = build_expr_list ($$, $3); }
+		{ $$ = build_tree_list ($$, $3); }
 	| initlist ',' identifier ':' init
 		{ $$ = tree_cons ($3, $5, $$); }
 	;
