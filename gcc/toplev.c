@@ -2697,16 +2697,19 @@ rest_of_compilation (decl)
   reg_scan (insns, max_reg_num (), 0);
   rebuild_jump_labels (insns);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+  delete_trivially_dead_insns (insns, max_reg_num ());
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP
 	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
-  /* CFG is no longer maintained up-to-date.  */
-  free_bb_for_insn ();
-  copy_loop_headers (insns);
+  if (optimize)
+    {
+      free_bb_for_insn ();
+      copy_loop_headers (insns);
+      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+    }
   purge_line_number_notes (insns);
-  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
   timevar_pop (TV_JUMP);
   close_dump_file (DFI_jump, print_rtl, insns);
@@ -3052,7 +3055,7 @@ rest_of_compilation (decl)
       close_dump_file (DFI_bp, print_rtl_with_bb, insns);
       timevar_pop (TV_BRANCH_PROB);
     }
-  if (optimize >= 0)
+  if (optimize > 0)
     {
       open_dump_file (DFI_ce1, decl);
       if (flag_if_conversion)
