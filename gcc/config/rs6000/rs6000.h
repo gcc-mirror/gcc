@@ -604,6 +604,9 @@ extern int rs6000_altivec_abi;
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 #endif
 
+/* Work around rs6000_long_double_type_size dependency in ada/targtyps.c.  */
+#define WIDEST_HARDWARE_FP_SIZE 64
+
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
 #define POINTER_SIZE (TARGET_32BIT ? 32 : 64)
@@ -1594,8 +1597,7 @@ typedef struct rs6000_args
 #define RS6000_ARG_SIZE(MODE, TYPE)					\
 ((MODE) != BLKmode							\
  ? (GET_MODE_SIZE (MODE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD	\
- : ((unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) 			\
-    + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+ : (int_size_in_bytes (TYPE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
