@@ -1,3 +1,15 @@
+1999-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gxx.gperf (hash, is_reserved_word): Add prototypes.
+
+	* init.c (build_vec_init): Initialize variable `try_block'.
+
+	* lex.c (init_parse): Call memcpy, not bcopy, to avoid casts.
+	Likewise for bzero/memset.
+	(token_getch, token_put_back): Add static prototypes.  Remove
+	`inline' from the definitions.
+	(retrofit_lang_decl): Call memset, not bzero, to avoid casts.
+
 1999-09-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_type): Move align into type_flags.

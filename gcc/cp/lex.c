@@ -91,6 +91,8 @@ static int pragma_getc PROTO((void));
 static void pragma_ungetc PROTO((int));
 #endif
 static int read_line_number PROTO((int *));
+static int token_getch PROTO ((void));
+static void token_put_back PROTO ((int));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
@@ -533,20 +535,20 @@ init_parse (filename)
   init_cplus_unsave ();
   init_cplus_expand ();
 
-  bcopy (cplus_tree_code_type,
-	 tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
-	 (int)LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
-  bcopy ((char *)cplus_tree_code_length,
-	 (char *)(tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
-	 (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
-  bcopy ((char *)cplus_tree_code_name,
-	 (char *)(tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
-	 (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
+	  cplus_tree_code_type,
+	  (int)LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
+  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
+	  cplus_tree_code_length,
+	  (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
+  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
+	  cplus_tree_code_name,
+	  (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
 
   opname_tab = (const char **)oballoc ((int)LAST_CPLUS_TREE_CODE * sizeof (char *));
-  bzero ((char *)opname_tab, (int)LAST_CPLUS_TREE_CODE * sizeof (char *));
+  memset (opname_tab, 0, (int)LAST_CPLUS_TREE_CODE * sizeof (char *));
   assignop_tab = (const char **)oballoc ((int)LAST_CPLUS_TREE_CODE * sizeof (char *));
-  bzero ((char *)assignop_tab, (int)LAST_CPLUS_TREE_CODE * sizeof (char *));
+  memset (assignop_tab, 0, (int)LAST_CPLUS_TREE_CODE * sizeof (char *));
 
   ansi_opname[0] = get_identifier ("<invalid operator>");
   for (i = 0; i < (int) LAST_CPLUS_TREE_CODE; i++)
@@ -3459,7 +3461,7 @@ parse_float (data)
    next token, which screws up feed_input.  So just return a null
    character.  */
 
-inline int
+static int
 token_getch ()
 {
 #if USE_CPPLIB
@@ -3469,7 +3471,7 @@ token_getch ()
   return getch ();
 }
 
-inline void
+static void
 token_put_back (ch)
      int ch;
 {
@@ -4781,7 +4783,7 @@ retrofit_lang_decl (t)
   else
     ld = (struct lang_decl *) obstack_alloc (obstack, size);
 
-  bzero (ld, size);
+  memset (ld, 0, size);
 
   DECL_LANG_SPECIFIC (t) = ld;
   LANG_DECL_PERMANENT (ld) = obstack == &permanent_obstack;
