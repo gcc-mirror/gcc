@@ -1,3 +1,9 @@
+2001-08-02  Mark Kettenis  <kettenis@gnu.org>
+
+	* xregex.h (_REGEX_RE_COMP): Define.
+	(re_comp): Define to xre_comp.
+	(re_exec): Define to xre_exec.
+
 2001-07-18  Andreas Jaeger  <aj@suse.de>
 
 	* xregex2.h: Place under LGPL version 2.1.
