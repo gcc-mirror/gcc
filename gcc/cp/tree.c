@@ -1866,8 +1866,6 @@ tree
 get_type_decl (t)
      tree t;
 {
-  if (TREE_CODE (t) == IDENTIFIER_NODE)
-    return identifier_typedecl_value (t);
   if (TREE_CODE (t) == TYPE_DECL)
     return t;
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')

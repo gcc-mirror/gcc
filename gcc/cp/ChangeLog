@@ -1,3 +1,18 @@
+Wed Nov 19 18:24:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (make_implicit_typename): Handle case where t is not
+ 	actually from context.
+	* tree.c (get_type_decl): Lose identifier case.
+	* spew.c (yylex): Lose useless call to identifer_typedecl_value.
+	* parse.y (nonnested_type): Just use lookup_name.
+	(complex_type_name): Just use IDENTIFIER_GLOBAL_VALUE.
+
+Wed Nov 19 11:45:07 1997  Michael Tiemann  <tiemann@axon.cygnus.com>
+
+	* error.c (dump_function_name): Test DECL_LANG_SPECIFIC in case
+	T was built in C language context (for example, by
+	output_func_start_profiler).
+
 Wed Nov 19 10:39:27 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (make_implicit_typename): New fn.
