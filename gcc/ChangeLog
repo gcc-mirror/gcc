@@ -1,3 +1,7 @@
+2001-12-29  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c: Apply various cosmetic and formatting changes.
+
 2001-12-29  Kazu Hirata  <kazu@hxi.com>
 
 	* config/rs6000/darwin-tramp.asm: Fix comment formatting.
