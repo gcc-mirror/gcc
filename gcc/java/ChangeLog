@@ -1,3 +1,10 @@
+2001-11-08  Andreas Franck  <afranck@gmx.de>
+
+	* Make-lang.in (JAVA_INSTALL_NAME, JAVA_CROSS_NAME): Handle 
+	program_transform_name the way suggested by autoconf.
+	(java.install-common): Also transform auxiliary program names with
+	program_transform_name.
+
 2001-11-08  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (trap_overflow_corner_case): New rule.

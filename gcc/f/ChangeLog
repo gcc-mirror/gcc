@@ -1,3 +1,8 @@
+2001-11-08  Andreas Franck  <afranck@gmx.de>
+
+	* Make-lang.in (G77_INSTALL_NAME, G77_CROSS_NAME): Handle 
+	program_transform_name the way suggested by autoconf.
+
 2001-11-08  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* Make-lang.in: Add rules for building g77.1.

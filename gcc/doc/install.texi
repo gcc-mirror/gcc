@@ -363,6 +363,51 @@ the installation directory for G++ header files.  The default is
 
 @end table
 
+@item --program-prefix=@var{prefix}
+GCC supports some transformations of the names of its programs when
+installing them. This option prepends @var{prefix} to the names of
+programs to install in @var{bindir} (see above). For example, specifying
+@option{--program-prefix=foo-} would result in @samp{gcc}
+being installed as @file{/usr/local/bin/foo-gcc}.
+
+@item --program-suffix=@var{suffix}
+Appends @var{suffix} to the names of programs to install in @var{bindir}
+(see above). For example, specifying @option{--program-suffix=-3.1}
+would result in @samp{gcc} being installed as
+@file{/usr/local/bin/gcc-3.1}.
+
+@item --program-transform-name=@var{pattern}
+Applies the @samp{sed} script @var{pattern} to be applied to the names
+of programs to install in @var{bindir} (see above). @var{pattern} has to
+consist of one or more basic @samp{sed} editing commands, separated by
+semicolons. For example, if you want the @samp{gcc} program name to be
+transformed to the installed program @file{/usr/local/bin/myowngcc} and
+the @samp{g++} program name to be transformed to
+@file{/usr/local/bin/gspecial++} without changing other program names,
+you could use the pattern
+@option{--program-transform-name='s/^gcc$/myowngcc/; s/^g++$/gspecial++/'}
+to achieve this effect.
+
+All three options can be combined and used together, resulting in more
+complex conversion patterns. As a basic rule, @var{prefix} (and
+@var{suffix}) are prepended (appended) before further transformations
+can happen with a special transformation script @var{pattern}.
+
+As currently implemented, this options only take effect for native
+builds; cross compiler binaries' names are not transformed even when a
+transformation is explicitly asked for by one of this options.
+
+For native builds, some of the installed programs are also installed
+with the target alias in front of their name, as in
+@samp{i686-pc-linux-gnu-gcc}. All of the above transformations happen
+before the target alias is prepended to the name - so, specifying
+@option{--program-prefix=foo-} and @option{program-suffix=-3.1}, the
+resulting binary would be installed as
+@file{/usr/local/bin/i686-pc-linux-gnu-foo-gcc-3.1}.
+
+As a last shortcoming, none of the installed CHILL and Ada programs are
+transformed yet, which will be fixed in some time.
+
 @item --with-local-prefix=@var{dirname}
 Specify the
 installation directory for local include files.  The default is

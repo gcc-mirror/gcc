@@ -482,18 +482,19 @@ HOST_DOPRINT=$(DOPRINT)
 HOST_STRSTR=$(STRSTR)
 
 # Actual name to use when installing a native compiler.
-GCC_INSTALL_NAME = `t='$(program_transform_name)'; echo gcc | sed -e $$t`
-CPP_INSTALL_NAME = `t='$(program_transform_name)'; echo cpp | sed -e $$t`
-PROTOIZE_INSTALL_NAME = `t='$(program_transform_name)'; echo protoize | sed -e $$t`
-UNPROTOIZE_INSTALL_NAME = `t='$(program_transform_name)'; echo unprotoize | sed -e $$t`
-GCOV_INSTALL_NAME = `t='$(program_transform_name)'; echo gcov | sed -e $$t`
-GCCBUG_INSTALL_NAME = `t='$(program_transform_name)'; echo gccbug | sed -e $$t`
+GCC_INSTALL_NAME = `echo gcc|sed '$(program_transform_name)'`
+GCC_TARGET_INSTALL_NAME = $(target_alias)-`echo gcc|sed '$(program_transform_name)'`
+CPP_INSTALL_NAME = `echo cpp|sed '$(program_transform_name)'`
+PROTOIZE_INSTALL_NAME = `echo protoize|sed '$(program_transform_name)'`
+UNPROTOIZE_INSTALL_NAME = `echo unprotoize|sed '$(program_transform_name)'`
+GCOV_INSTALL_NAME = `echo gcov|sed '$(program_transform_name)'`
+GCCBUG_INSTALL_NAME = `echo gccbug|sed '$(program_transform_name)'`
 
 # Actual name to use when installing a cross-compiler.
-GCC_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcc | sed -e $$t`
-CPP_CROSS_NAME = `t='$(program_transform_cross_name)'; echo cpp | sed -e $$t`
-PROTOIZE_CROSS_NAME = `t='$(program_transform_cross_name)'; echo protoize | sed -e $$t`
-UNPROTOIZE_CROSS_NAME = `t='$(program_transform_cross_name)'; echo unprotoize | sed -e $$t`
+GCC_CROSS_NAME = `echo gcc|sed '$(program_transform_cross_name)'`
+CPP_CROSS_NAME = `echo cpp|sed '$(program_transform_cross_name)'`
+PROTOIZE_CROSS_NAME = `echo protoize|sed '$(program_transform_cross_name)'`
+UNPROTOIZE_CROSS_NAME = `echo unprotoize|sed '$(program_transform_cross_name)'`
 
 # Choose the real default target.
 ALL=all.internal
@@ -2650,7 +2651,7 @@ install-driver: installdirs xgcc$(exeext)
 	  $(INSTALL_PROGRAM) xgcc$(exeext) $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
 	  rm -f $(bindir)/$(target_alias)-gcc-1$(exeext); \
 	  $(LN) $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-1$(exeext); \
-	  mv $(bindir)/$(target_alias)-gcc-1$(exeext) $(bindir)/$(target_alias)-gcc$(exeext); \
+	  mv $(bindir)/$(target_alias)-gcc-1$(exeext) $(bindir)/$(GCC_TARGET_INSTALL_NAME)$(exeext); \
 	fi
 
 # Install the info files.
