@@ -2847,8 +2847,8 @@ rest_of_compilation (decl)
   open_dump_file (DFI_addressof, decl);
 
   purge_addressof (insns);
-  if (optimize)
-    purge_all_dead_edges (0);
+  if (optimize && purge_all_dead_edges (0))
+    delete_unreachable_blocks ();
   reg_scan (insns, max_reg_num (), 1);
 
   close_dump_file (DFI_addressof, print_rtl, insns);
