@@ -1128,8 +1128,8 @@ throwable_p (clname)
 
   if (! init_done)
     {
-      PTR *slot;
-      const unsigned char *str;
+      void **slot;
+      unsigned char *str;
 
       /* Self-initializing.  The cost of this really doesn't matter.
 	 We also don't care about freeing these, either.  */
@@ -1141,11 +1141,11 @@ throwable_p (clname)
       /* Make sure the root classes show up in the tables.  */
       str = xstrdup ("java.lang.Throwable");
       slot = htab_find_slot (throw_hash, str, INSERT);
-      *slot = (PTR) str;
+      *slot = str;
 
       str = xstrdup ("java.lang.Object");
       slot = htab_find_slot (non_throw_hash, str, INSERT);
-      *slot = (PTR) str;
+      *slot = str;
 
       init_done = 1;
     }
@@ -1167,7 +1167,7 @@ throwable_p (clname)
   else
     {
       JCF jcf;
-      PTR *slot;
+      void **slot;
       unsigned char *super, *tmp;
       int super_length = -1;
       const char *classfile_name = find_class (current, strlen (current),

@@ -2314,7 +2314,7 @@ java_treetreehash_new (ht, t)
      htab_t ht;
      tree t;
 {
-  PTR *e;
+  void **e;
   struct treetreehash_entry *tthe;
   hashval_t hv = JAVA_TREEHASHHASH_H (t);
 
@@ -2323,7 +2323,7 @@ java_treetreehash_new (ht, t)
     {
       tthe = (*ht->alloc_f) (1, sizeof (*tthe));
       tthe->key = t;
-      *e = (PTR) tthe;
+      *e = tthe;
     }
   else
     tthe = (struct treetreehash_entry *) *e;

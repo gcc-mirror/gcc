@@ -1,3 +1,7 @@
+2003-01-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c, gjavah.c, parse.y, verify.c: Don't use PTR.
+
 2003-01-09  Geoffrey Keating  <geoffk@apple.com>
 
 	Merge from pch-branch:
