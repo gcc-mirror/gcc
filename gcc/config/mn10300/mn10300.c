@@ -347,8 +347,11 @@ print_operand_address (file, addr)
 int
 can_use_return_insn ()
 {
-  /* SIZE includes the fixed stack space needed for function calls.  */
-  int size = get_frame_size () + (!leaf_function_p () ? 12 : 0);
+  /* size includes the fixed stack space needed for function calls.  */
+  int size = get_frame_size () + current_function_outgoing_args_size;
+
+  /* And space for the return pointer.  */
+  size += current_function_outgoing_args_size ? 4 : 0;
 
   return (reload_completed
 	  && size == 0
@@ -416,11 +419,6 @@ expand_prologue ()
 {
   unsigned int size;
 
-  /* We have to end the current sequence so leaf_function_p and
-     count_tst_insns will work.  We then start a new sequence to
-     hold the prologue/epilogue.  */
-  end_sequence ();
-
   /* Determine if it is profitable to put the value zero into a register
      for the entire function.  If so, set ZERO_DREG and ZERO_AREG.  */
   if (regs_ever_live[2] || regs_ever_live[3]
@@ -478,10 +476,8 @@ expand_prologue ()
     }
 
   /* SIZE includes the fixed stack space needed for function calls.  */
-  size = get_frame_size () + (!leaf_function_p () ? 12 : 0);
-
-  /* Start a new sequence for the prologue/epilogue.  */
-  start_sequence ();
+  size = get_frame_size () + current_function_outgoing_args_size;
+  size += (current_function_outgoing_args_size ? 4 : 0);
 
   /* If this is an old-style varargs function, then its arguments
      need to be flushed back to the stack.  */
@@ -527,15 +523,9 @@ expand_epilogue ()
 {
   unsigned int size;
 
-  /* We have to end the current sequence so leaf_function_p will
-     work.  We then start a new sequence to hold the prologue/epilogue.  */
-  end_sequence ();
-
   /* SIZE includes the fixed stack space needed for function calls.  */
-  size = get_frame_size () + (!leaf_function_p () ? 12 : 0);
-
-  /* Start a new sequence for the prologue/epilogue.  */
-  start_sequence ();
+  size = get_frame_size () + current_function_outgoing_args_size;
+  size += (current_function_outgoing_args_size ? 4 : 0);
 
   /* Cut back the stack.  */
   if (frame_pointer_needed)
@@ -705,16 +695,22 @@ initial_offset (from, to)
       if (regs_ever_live[2] || regs_ever_live[3]
 	  || regs_ever_live[6] || regs_ever_live[7]
 	  || frame_pointer_needed)
-	return (get_frame_size () + 16 + (!leaf_function_p () ? 12 : 0));
+	return (get_frame_size () + 16 
+		+ (current_function_outgoing_args_size
+		   ? current_function_outgoing_args_size + 4 : 0)); 
       else
-	return (get_frame_size () + (!leaf_function_p () ? 12 : 0));
+	return (get_frame_size ()
+		+ (current_function_outgoing_args_size
+		   ? current_function_outgoing_args_size + 4 : 0)); 
     }
 
   /* The difference between the frame pointer and stack pointer is the sum
      of the size of this function's frame and the fixed stack space needed
      for function calls (if any).  */
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return get_frame_size () + (!leaf_function_p () ? 12 : 0);
+    return (get_frame_size ()
+	    + (current_function_outgoing_args_size
+	       ? current_function_outgoing_args_size + 4 : 0)); 
 
   abort ();
 }
@@ -933,4 +929,29 @@ output_tst (operand, insn)
       temp = PREV_INSN (temp);
     }
   return "cmp 0,%0";
+}
+
+int
+impossible_plus_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  extern rtx *reg_equiv_mem;
+  rtx reg1, reg2;
+  
+  if (GET_CODE (op) != PLUS)
+    return 0;
+
+  if ((XEXP (op, 0) == stack_pointer_rtx)
+      && ((REG_P (XEXP (op, 1)) && reg_equiv_mem [REGNO (XEXP (op, 1))])
+	  || (GET_CODE (XEXP (op, 1)) == SUBREG
+	      && GET_CODE (SUBREG_REG (XEXP (op, 1))) == MEM)))
+    return 1;
+
+  if ((XEXP (op, 1) == stack_pointer_rtx)
+      && ((REG_P (XEXP (op, 0)) && reg_equiv_mem [REGNO (XEXP (op, 0))])
+	  || (GET_CODE (XEXP (op, 0)) == SUBREG
+	      && GET_CODE (SUBREG_REG (XEXP (op, 0))) == MEM)))
+    return 1;
+  return 0;
 }
