@@ -5258,7 +5258,7 @@ fold (expr)
 	    return build1 (NOP_EXPR, type, TREE_OPERAND (arg0, 0));
 	}
 
-      /* Convert (or (not arg0) (not arg1)) to (not (and (arg0) (arg1))).
+      /* Convert (and (not arg0) (not arg1)) to (not (or (arg0) (arg1))).
 
 	 This results in more efficient code for machines without a NOR 
 	 instruction.  Combine will canonicalize to the first form
