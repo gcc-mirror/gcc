@@ -143,7 +143,7 @@ Eric Christopher for his Java porting help and clean-ups.
 Branko Cibej for more warning contributions.
 
 @item
-The @uref{http://www.classpath.org,,GNU Classpath project}
+The @uref{http://www.gnu.org/software/classpath/,,GNU Classpath project}
 for all of their merged runtime code.
 
 @item
