@@ -2797,8 +2797,9 @@ find_splittable_givs (const struct loop *loop, struct iv_class *bl,
 		{
 		  rtx tem = gen_reg_rtx (v->mode);
 		  record_base_value (REGNO (tem), v->add_val, 0);
-		  loop_iv_add_mult_hoist (loop, bl->initial_value, v->mult_val,
-					  v->add_val, tem);
+		  loop_iv_add_mult_hoist (loop, 
+				extend_value_for_giv (v, bl->initial_value), 
+				v->mult_val, v->add_val, tem);
 		  value = tem;
 		}
 
