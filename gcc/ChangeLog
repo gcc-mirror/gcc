@@ -1,5 +1,9 @@
 2000-11-07  Richard Henderson  <rth@redhat.com>
 
+	* gcc.c (default_compilers) [@cpp-output]: Add -fpreprocessed.
+
+2000-11-07  Richard Henderson  <rth@redhat.com>
+
 	* c-lang.c (start_cdtor, finish_cdtor): New functions.
 	(finish_file): Use them in building constructor/destructor functions.
 
