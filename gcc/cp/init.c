@@ -2823,17 +2823,7 @@ build_new (placement, decl, init, use_global_new)
     }
 
   if (flag_check_new && rval)
-    {
-      /* For array new, we need to make sure that the call to new is
-	 not expanded as part of the RTL_EXPR for the initialization,
-	 so we can't just use save_expr here.  */
-
-      alloc_temp = build (VAR_DECL, TREE_TYPE (rval));
-      layout_decl (alloc_temp, 0);
-      alloc_expr = build (TARGET_EXPR, TREE_TYPE (rval), alloc_temp, rval, 0);
-      TREE_SIDE_EFFECTS (alloc_expr) = 1;
-      rval = alloc_temp;
-    }
+    alloc_expr = rval = save_expr (rval);
   else
     alloc_expr = NULL_TREE;
 
@@ -2930,6 +2920,10 @@ build_new (placement, decl, init, use_global_new)
 	  else
 	    rval = error_mark_node;
 	}
+      else
+	rval = build (VEC_INIT_EXPR, TREE_TYPE (rval),
+		      save_expr (rval), init, nelts);
+#if 0	
       else if (current_function_decl == NULL_TREE)
 	{
 	  extern tree static_aggregates;
@@ -3010,23 +3004,19 @@ build_new (placement, decl, init, use_global_new)
 	    }
 	  rval = xval;
 	}
+#endif
     }
   else if (TYPE_READONLY (true_type))
     cp_error ("uninitialized const in `new' of `%#T'", true_type);
 
  done:
 
-  if (alloc_expr)
+  if (alloc_expr && rval != alloc_expr)
     {
       /* Did we modify the storage?  */
-      if (rval != alloc_temp)
-	{
-	  tree ifexp = build_binary_op (NE_EXPR, alloc_expr,
-					integer_zero_node, 1);
-	  rval = build_conditional_expr (ifexp, rval, alloc_temp);
-	}
-      else
-	rval = alloc_expr;
+      tree ifexp = build_binary_op (NE_EXPR, alloc_expr,
+				    integer_zero_node, 1);
+      rval = build_conditional_expr (ifexp, rval, alloc_expr);
     }
 
   if (rval && TREE_TYPE (rval) != build_pointer_type (type))

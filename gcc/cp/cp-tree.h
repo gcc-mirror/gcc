@@ -1123,10 +1123,12 @@ struct lang_decl
    or virtual baseclasses.  */
 #define TYPE_USES_COMPLEX_INHERITANCE(NODE) (TREE_LANG_FLAG_1 (NODE))
 
+#if 0				/* UNUSED */
 /* Nonzero in IDENTIFIER_NODE means that this name is not the name the user
    gave; it's a DECL_NESTED_TYPENAME.  Someone may want to set this on
    mangled function names, too, but it isn't currently.  */
 #define TREE_MANGLED(NODE) (TREE_LANG_FLAG_0 (NODE))
+#endif
 
 #if 0				/* UNUSED */
 /* Nonzero in IDENTIFIER_NODE means that this name is overloaded, and
@@ -1309,12 +1311,6 @@ extern int flag_new_for_scope;
    transitive closure.  */
 #define DECL_VPARENT(NODE) ((NODE)->decl.arguments)
 #endif
-
-/* Make a slot so we can implement nested types.  This slot holds
-   the IDENTIFIER_NODE that uniquely names the nested type.  This
-   is for TYPE_DECLs only.  */
-#define DECL_NESTED_TYPENAME(NODE) ((NODE)->decl.arguments)
-#define TYPE_NESTED_NAME(NODE) (DECL_NESTED_TYPENAME (TYPE_NAME (NODE)))
 
 #define TYPE_WAS_ANONYMOUS(NODE) (TYPE_LANG_SPECIFIC (NODE)->type_flags.was_anonymous)
 

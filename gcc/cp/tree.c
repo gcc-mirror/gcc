@@ -1073,17 +1073,9 @@ get_identifier_list (value)
 	list = tree_cons (NULL_TREE, value, NULL_TREE);
       else
 	{
-	  register tree id;
-	  /* This will return the correct thing for regular types,
-	     nested types, and templates.  Yay! */
-	  if (TYPE_NESTED_NAME (type))
-	    id = TYPE_NESTED_NAME (type);
-	  else
-	    id = TYPE_IDENTIFIER (type);
-
-	  if (CLASSTYPE_ID_AS_LIST (type) == NULL_TREE)
+	  if (! CLASSTYPE_ID_AS_LIST (type))
 	    CLASSTYPE_ID_AS_LIST (type)
-	      = perm_tree_cons (NULL_TREE, id, NULL_TREE);
+	      = perm_tree_cons (NULL_TREE, TYPE_IDENTIFIER (type), NULL_TREE);
 	  list = CLASSTYPE_ID_AS_LIST (type);
 	}
     }

@@ -1743,7 +1743,8 @@ check_for_missing_semicolon (type)
   if ((yychar > 255
        && yychar != SCSPEC
        && yychar != IDENTIFIER
-       && yychar != TYPENAME)
+       && yychar != TYPENAME
+       && yychar != SELFNAME)
       || end_of_file)
     {
       if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
@@ -1911,12 +1912,6 @@ check_newline ()
 	      && getch () == 'm'
 	      && getch () == 'a')
 	    {
-	      c = getch ();
-	      while (c == ' ' || c == '\t')
-		c = getch ();
-	      put_back (c);
-	      if (c == '\n' || c == EOF)
-		goto skipline;
 	      token = real_yylex ();
 	      if (token == IDENTIFIER
 		  && TREE_CODE (yylval.ttype) == IDENTIFIER_NODE)
@@ -1999,15 +1994,9 @@ check_newline ()
 	      /* Here we have just seen `#ident '.
 		 A string constant should follow.  */
 
-	      while (c == ' ' || c == '\t')
-		c = getch ();
-
-	      /* If no argument, ignore the line.  */
-	      if (c == EOF)
-		goto skipline;
-
-	      put_back (c);
 	      token = real_yylex ();
+	      if (token == END_OF_LINE)
+		goto skipline;
 	      if (token != STRING
 		  || TREE_CODE (yylval.ttype) != STRING_CST)
 		{
@@ -2281,6 +2270,7 @@ linenum:
  skipline:
   linemode = 0;
   end_of_file = 0;
+  nextchar = -1;
   while ((c = getch ()) != EOF && c != '\n');
   return c;
 }
@@ -2471,6 +2461,10 @@ identifier_type (decl)
     return NSNAME;
   if (TREE_CODE (decl) != TYPE_DECL)
     return IDENTIFIER;
+  if (((got_scope && TREE_TYPE (decl) == got_scope)
+       || TREE_TYPE (decl) == current_class_type)
+      && DECL_ARTIFICIAL (decl))
+    return SELFNAME;
   return TYPENAME;
 }
 
@@ -4389,7 +4383,6 @@ handle_cp_pragma (pname)
      char *pname;
 {
   register int token;
-  register int c;
 
   if (! strcmp (pname, "vtable"))
     {
@@ -4412,10 +4405,8 @@ handle_cp_pragma (pname)
 	= perm_tree_cons (NULL_TREE,
 			  get_identifier (TREE_STRING_POINTER (yylval.ttype)),
 			  pending_vtables);
-      if (nextchar < 0)
-	nextchar = getch ();
-      c = nextchar;
-      if (c != EOF)
+      token = real_yylex ();
+      if (token != END_OF_LINE)
 	warning ("trailing characters ignored");
       return 1;
     }
@@ -4428,10 +4419,8 @@ handle_cp_pragma (pname)
 	  error ("invalid #pragma unit");
 	  return -1;
 	}
-      if (nextchar < 0)
-	nextchar = getch ();
-      c = nextchar;
-      if (c != EOF)
+      token = real_yylex ();
+      if (token != END_OF_LINE)
 	warning ("trailing characters ignored");
       return 1;
     }
@@ -4443,15 +4432,10 @@ handle_cp_pragma (pname)
 
       main_filename = FILE_NAME_NONDIRECTORY (main_filename);
 
-      do
+      token = real_yylex ();
+      
+      if (token != END_OF_LINE)
 	{
-	  c = getch ();
-	} while (c == ' ' || c == '\t');
-
-      if (c != EOF)
-	{
-	  put_back (c);
-	  token = real_yylex ();
 	  if (token != STRING
 	      || TREE_CODE (yylval.ttype) != STRING_CST)
 	    {
@@ -4459,44 +4443,38 @@ handle_cp_pragma (pname)
 	      return -1;
 	    }
 	  main_filename = TREE_STRING_POINTER (yylval.ttype);
-	  c = getch();
-	  put_back (c);
-
-	  while (c == ' ' || c == '\t')
-	    c = getch ();
-
-	  while (c != EOF)
+	}
+      
+      while (token != END_OF_LINE)
+	{
+	  if (!warned_already && extra_warnings)
 	    {
-	      if (!warned_already && extra_warnings
-		  && c != ' ' && c != '\t')
-		{
-		  warning ("garbage after `#pragma interface' ignored");
-		  warned_already = 1;
-		}
-	      c = getch ();
+	      warning ("garbage after `#pragma interface' ignored");
+	      warned_already = 1;
 	    }
+	  token = real_yylex ();
+	}
 
-	  write_virtuals = 3;
+      write_virtuals = 3;
 
-	  if (impl_file_chain == 0)
-	    {
-	      /* If this is zero at this point, then we are
-		 auto-implementing.  */
-	      if (main_input_filename == 0)
-		main_input_filename = input_filename;
+      if (impl_file_chain == 0)
+	{
+	  /* If this is zero at this point, then we are
+	     auto-implementing.  */
+	  if (main_input_filename == 0)
+	    main_input_filename = input_filename;
 
 #ifdef AUTO_IMPLEMENT
-	      filename = FILE_NAME_NONDIRECTORY (main_input_filename);
-	      fi = get_time_identifier (filename);
-	      fi = IDENTIFIER_CLASS_VALUE (fi);
-	      TREE_INT_CST_LOW (fi) = 0;
-	      TREE_INT_CST_HIGH (fi) = 1;
-	      /* Get default.  */
-	      impl_file_chain = (struct impl_files *)permalloc (sizeof (struct impl_files));
-	      impl_file_chain->filename = filename;
-	      impl_file_chain->next = 0;
+	  filename = FILE_NAME_NONDIRECTORY (main_input_filename);
+	  fi = get_time_identifier (filename);
+	  fi = IDENTIFIER_CLASS_VALUE (fi);
+	  TREE_INT_CST_LOW (fi) = 0;
+	  TREE_INT_CST_HIGH (fi) = 1;
+	  /* Get default.  */
+	  impl_file_chain = (struct impl_files *)permalloc (sizeof (struct impl_files));
+	  impl_file_chain->filename = filename;
+	  impl_file_chain->next = 0;
 #endif
-	    }
 	}
 
       interface_only = interface_strcmp (main_filename);
@@ -4514,28 +4492,25 @@ handle_cp_pragma (pname)
 
       main_filename = FILE_NAME_NONDIRECTORY (main_filename);
       token = real_yylex ();
-      if (token != STRING
-	  || TREE_CODE (yylval.ttype) != STRING_CST)
+      if (token != END_OF_LINE)
 	{
-	  error ("invalid `#pragma implementation'");
-	  return -1;
+	  if (token != STRING
+	      || TREE_CODE (yylval.ttype) != STRING_CST)
+	    {
+	      error ("invalid `#pragma implementation'");
+	      return -1;
+	    }
+	  main_filename = TREE_STRING_POINTER (yylval.ttype);
 	}
-      main_filename = TREE_STRING_POINTER (yylval.ttype);
-      c = getch();
-      put_back (c);
 
-      while (c == ' ' || c == '\t')
-	c = getch ();
-
-      while (c != EOF)
+      while (token != END_OF_LINE)
 	{
-	  if (!warned_already && extra_warnings
-	      && c != ' ' && c != '\t')
+	  if (!warned_already && extra_warnings)
 	    {
 	      warning ("garbage after `#pragma implementation' ignored");
 	      warned_already = 1;
 	    }
-	  c = getch ();
+	  token = real_yylex ();
 	}
 
       if (write_virtuals == 3)
@@ -4610,38 +4585,29 @@ handle_sysv_pragma (finput, token)
 	case STRING:
 	case CONSTANT:
 	  handle_pragma_token ("ignored", yylval.ttype);
-	  token = yylex ();
 	  break;
 	case '(':
 	  handle_pragma_token ("(", NULL_TREE);
-	  token = yylex ();
 	  break;
 	case ')':
 	  handle_pragma_token (")", NULL_TREE);
-	  token = yylex ();
 	  break;
 	case ',':
 	  handle_pragma_token (",", NULL_TREE);
-	  token = yylex ();
 	  break;
 	case '=':
 	  handle_pragma_token ("=", NULL_TREE);
-	  token = yylex ();
 	  break;
 	case LEFT_RIGHT:
 	  handle_pragma_token ("(", NULL_TREE);
 	  handle_pragma_token (")", NULL_TREE);
-	  token = yylex ();
 	  break;
 	case END_OF_LINE:
-	  handle_pragma_token (NULL_PTR, NULL_TREE);
-	  return 1;
 	default:
 	  handle_pragma_token (NULL_PTR, NULL_TREE);
-	  while (yylex () != END_OF_LINE)
-	    /* continue */;
 	  return 1;
 	}
+      token = real_yylex ();
     }
 }
 #endif /* HANDLE_SYSV_PRAGMA */

@@ -5088,14 +5088,18 @@ build_reinterpret_cast (type, expr)
 {
   tree intype = TREE_TYPE (expr);
 
-  if (TYPE_PTRMEMFUNC_P (type))
-    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-
   if (current_template_parms)
     {
       tree t = build_min (REINTERPRET_CAST_EXPR, type, expr);
       return t;
     }
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    if (TYPE_PTRMEMFUNC_P (intype))
+      return build1 (NOP_EXPR, type, expr);
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
 
   if (TYPE_PTRMEMFUNC_P (intype))
     intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
