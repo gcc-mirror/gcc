@@ -13,4 +13,4 @@ typedef X* pX;
 typedef __SIZE_TYPE__ size_t;
 
 size_t yoff = size_t(&(pX(0)->y)); /* { dg-warning "invalid access" "" } */
-/* { dg-warning "macro was used incorrectly" "" { target *-*-* } 15 } */
+/* { dg-warning "macro was used incorrectly" "macro" { target *-*-* } 15 } */

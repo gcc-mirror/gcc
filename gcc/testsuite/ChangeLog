@@ -1,3 +1,11 @@
+2005-03-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* g++.dg/other/cv_func.C, g++.dg/other/offsetof3.C,
+	g++.dg/parse/error11.C, g++.dg/tc1/dr108.C,
+	g++.dg/template/local4.C, g++.dg/template/nontype6.C,
+	g++.dg/warn/deprecated.C: Ensure uniqueness of test assertion
+	names.
+
 2005-03-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/20280
