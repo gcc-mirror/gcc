@@ -1,3 +1,9 @@
+2003-11-14  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_move_block_from_reg):
+	  New routine to save vararg registers on stack. Support for
+	  -mpowerpc64 in mixed mode.
+
 2003-11-14  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.c: Use C statements instead of #ifdef's when testing
