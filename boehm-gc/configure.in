@@ -9,6 +9,8 @@ AC_CANONICAL_SYSTEM
 
 BOEHM_CONFIGURE(.)
 
+AM_PROG_LIBTOOL
+
 dnl We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
 [  --with-target-subdir=SUBDIR      Configuring with a cross compiler])
@@ -95,7 +97,7 @@ changequote([,])
   GC=boehm)
 target_all=
 if test "$GC" = "boehm"; then
-   target_all=libgcjgc.a
+   target_all=libgcjgc.la
 fi
 AC_SUBST(target_all)
 
@@ -117,7 +119,7 @@ case "$TARGET_ECOS" in
    *)
       AC_DEFINE(ECOS)
       CXXINCLUDES="-I${TARGET_ECOS}/include"
-      addobjs="$addobjs ecos.o"
+      addobjs="$addobjs ecos.lo"
       ;;
 esac
 AC_SUBST(CXX)
@@ -128,10 +130,10 @@ AC_SUBST(CXXINCLUDES)
 machdep=
 case "$host" in
  alpha-*-*)
-    machdep="alpha_mach_dep.o"
+    machdep="alpha_mach_dep.lo"
     ;;
  mipstx39-*-elf*)
-    machdep="mips_ultrix_mach_dep.o"
+    machdep="mips_ultrix_mach_dep.lo"
     AC_DEFINE(STACKBASE, __stackbase)
     AC_DEFINE(DATASTART_IS_ETEXT)
     ;;
@@ -140,7 +142,7 @@ case "$host" in
     ;;
 esac
 if test x"$machdep" = x; then
-   machdep="mach_dep.o"
+   machdep="mach_dep.lo"
 fi
 addobjs="$addobjs $machdep"
 AC_SUBST(addobjs)
