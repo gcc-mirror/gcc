@@ -4245,7 +4245,10 @@ function_arg_record_value_1 (type, startbitpos, parms)
 
 	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
 	    function_arg_record_value_1 (TREE_TYPE (field), bitpos, parms);
-	  else if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+	  else if ((TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		    || (TREE_CODE (TREE_TYPE (field)) == COMPLEX_TYPE
+			&& (TREE_CODE (TREE_TYPE (TREE_TYPE (field)))
+			    == REAL_TYPE)))
 	           && TARGET_FPU
 	           && ! packed_p
 	           && parms->named)
@@ -4268,6 +4271,8 @@ function_arg_record_value_1 (type, startbitpos, parms)
 	      /* There's no need to check this_slotno < SPARC_FP_ARG MAX.
 		 If it wasn't true we wouldn't be here.  */
 	      parms->nregs += 1;
+	      if (TREE_CODE (TREE_TYPE (field)) == COMPLEX_TYPE)
+		parms->nregs += 1;
 	    }
 	  else
 	    {
@@ -4371,24 +4376,45 @@ function_arg_record_value_2 (type, startbitpos, parms)
 
 	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
 	    function_arg_record_value_2 (TREE_TYPE (field), bitpos, parms);
-	  else if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+	  else if ((TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		    || (TREE_CODE (TREE_TYPE (field)) == COMPLEX_TYPE
+			&& (TREE_CODE (TREE_TYPE (TREE_TYPE (field)))
+			    == REAL_TYPE)))
 	           && TARGET_FPU
 	           && ! packed_p
 	           && parms->named)
 	    {
 	      int this_slotno = parms->slotno + bitpos / BITS_PER_WORD;
+	      int regno;
+	      enum machine_mode mode = DECL_MODE (field);
 	      rtx reg;
 
 	      function_arg_record_value_3 (bitpos, parms);
-
-	      reg = gen_rtx_REG (DECL_MODE (field),
-			         (SPARC_FP_ARG_FIRST + this_slotno * 2
-			          + (DECL_MODE (field) == SFmode
-				     && (bitpos & 32) != 0)));
+	      regno = SPARC_FP_ARG_FIRST + this_slotno * 2
+		      + ((mode == SFmode || mode == SCmode)
+			 && (bitpos & 32) != 0);
+	      switch (mode)
+		{
+		case SCmode: mode = SFmode; break;
+		case DCmode: mode = DFmode; break;
+		case TCmode: mode = TFmode; break;
+		default: break;
+		}
+	      reg = gen_rtx_REG (mode, regno);
 	      XVECEXP (parms->ret, 0, parms->nregs)
 		= gen_rtx_EXPR_LIST (VOIDmode, reg,
 			   GEN_INT (bitpos / BITS_PER_UNIT));
 	      parms->nregs += 1;
+	      if (TREE_CODE (TREE_TYPE (field)) == COMPLEX_TYPE)
+		{
+		  regno += GET_MODE_SIZE (mode) / 4;
+	  	  reg = gen_rtx_REG (mode, regno);
+		  XVECEXP (parms->ret, 0, parms->nregs)
+		    = gen_rtx_EXPR_LIST (VOIDmode, reg,
+			GEN_INT ((bitpos + GET_MODE_BITSIZE (mode))
+				 / BITS_PER_UNIT));
+		  parms->nregs += 1;
+		}
 	    }
 	  else
 	    {
