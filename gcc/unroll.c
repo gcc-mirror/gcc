@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -3561,6 +3561,10 @@ remap_split_bivs (x)
       if (REGNO (x) < max_reg_before_loop
 	  && reg_iv_type[REGNO (x)] == BASIC_INDUCT)
 	return reg_biv_class[REGNO (x)]->biv->src_reg;
+      break;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
