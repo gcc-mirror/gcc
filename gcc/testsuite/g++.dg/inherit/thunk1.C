@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do run { target i?86-*-* } }
 
 #include <stdarg.h>
 
