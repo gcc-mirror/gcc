@@ -1743,7 +1743,16 @@ javax/naming/ldap/UnsolicitedNotificationListener.java \
 javax/naming/OperationNotSupportedException.java \
 javax/print/attribute/Attribute.java \
 javax/print/attribute/AttributeSet.java \
+javax/print/attribute/DateTimeSyntax.java \
+javax/print/attribute/DocAttribute.java \
+javax/print/attribute/DocAttributeSet.java \
+javax/print/attribute/IntegerSyntax.java \
 javax/print/attribute/PrintRequestAttributeSet.java \
+javax/print/attribute/ResolutionSyntax.java \
+javax/print/attribute/Size2DSyntax.java \
+javax/print/attribute/TextSyntax.java \
+javax/print/attribute/UnmodifiableSetException.java \
+javax/print/attribute/URISyntax.java \
 javax/security/auth/x500/X500Principal.java \
 javax/sql/ConnectionEvent.java \
 javax/sql/ConnectionEventListener.java \
