@@ -195,7 +195,7 @@ extern const char *xcoff_lastfile;
 
 #define DEBUG_SYMS_TEXT
 
-/* Prototype functions in xcoffout.c. */
+/* Prototype functions in xcoffout.c.  */
 
 extern int stab_to_sclass			PARAMS ((int));
 #ifdef BUFSIZ

@@ -751,7 +751,7 @@ attr_printf VPARAMS ((register unsigned int len, const char *fmt, ...))
   VA_FIXEDARG (p, unsigned int, len);
   VA_FIXEDARG (p, const char *, fmt);
   
-  if (len > sizeof str - 1) /* leave room for \0. */
+  if (len > sizeof str - 1) /* Leave room for \0.  */
     abort ();
 
   vsprintf (str, fmt, p);

@@ -68,7 +68,7 @@ extern unsigned int hashstr _PARAMS((const char *, unsigned int));
 struct cpp_reader;
 extern int scan_decls _PARAMS((struct cpp_reader *, int, char **));
 
-/* get_token is a simple C lexer. */
+/* get_token is a simple C lexer.  */
 #define IDENTIFIER_TOKEN 300
 #define CHAR_TOKEN 301
 #define STRING_TOKEN 302

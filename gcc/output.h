@@ -163,7 +163,7 @@ extern void force_data_section		PARAMS ((void));
    the text section.  */
 extern void readonly_data_section	PARAMS ((void));
 
-/* Determine if we're in the text section. */
+/* Determine if we're in the text section.  */
 extern int in_text_section		PARAMS ((void));
 
 #ifdef CTORS_SECTION_ASM_OP
@@ -394,7 +394,7 @@ extern const char *weak_global_object_name;
 /* Nonzero if function being compiled doesn't contain any calls
    (ignoring the prologue and epilogue).  This is set prior to
    local register allocation and is valid for the remaining
-   compiler passes. */
+   compiler passes.  */
 
 extern int current_function_is_leaf;
 
@@ -405,7 +405,7 @@ extern int current_function_nothrow;
 
 /* Nonzero if function being compiled doesn't modify the stack pointer
    (ignoring the prologue and epilogue).  This is only valid after
-   life_analysis has run. */
+   life_analysis has run.  */
 
 extern int current_function_sp_is_unchanging;
 

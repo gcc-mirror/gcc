@@ -278,7 +278,7 @@ extern int remove_address_replacements PARAMS ((rtx in_rtx));
    autoincrement and autodecrement.  */
 extern int operands_match_p PARAMS ((rtx, rtx));
 
-/* Return 1 if altering OP will not modify the value of CLOBBER. */
+/* Return 1 if altering OP will not modify the value of CLOBBER.  */
 extern int safe_from_earlyclobber PARAMS ((rtx, rtx));
 
 /* Search the body of INSN for values that need reloading and record them

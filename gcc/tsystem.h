@@ -33,7 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HAVE_DECL_GETOPT 1
 #endif
 
-/* GCC supplies this header. */
+/* GCC supplies this header.  */
 #include <stddef.h>
 
 #ifdef inhibit_libc
@@ -56,16 +56,16 @@ extern int atexit (void (*)(void));
 /* ??? This is not a good solution, since prototypes may be required in
    some cases for correct code.  */
 
-/* GCC supplies this header. */
+/* GCC supplies this header.  */
 #include <stdarg.h>
 
-/* All systems have this header. */
+/* All systems have this header.  */
 #include <stdio.h>
 
-/* All systems have this header. */
+/* All systems have this header.  */
 #include <sys/types.h>
 
-/* All systems have this header. */
+/* All systems have this header.  */
 #include <errno.h>
 
 #ifndef errno
@@ -76,11 +76,11 @@ extern int errno;
 #include <string.h>
 #endif
 
-/* GCC (fixproto) guarantees these system headers exist. */
+/* GCC (fixproto) guarantees these system headers exist.  */
 #include <stdlib.h>
 #include <unistd.h>
 
-/* GCC supplies this header. */
+/* GCC supplies this header.  */
 #include <limits.h>
 
 #ifdef POSIX

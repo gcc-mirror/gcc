@@ -790,7 +790,7 @@ reload (first, global)
 		    {
 		      /* Always unshare the equivalence, so we can
 			 substitute into this insn without touching the
-			 equivalence. */
+			 equivalence.  */
 		      reg_equiv_memory_loc[i] = copy_rtx (x);
 		    }
 		  else if (function_invariant_p (x))
