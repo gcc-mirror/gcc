@@ -3963,7 +3963,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 						signed_type (result_type)))))
 	    /* OK */;
 	  else
-	    warning ("comparison between a signed and an unsigned integer expressions");
+	    warning ("comparison between signed and unsigned integer expressions");
 
 	  /* Warn if two unsigned values are being compared in a size
 	     larger than their original size, and one (and only one) is the
@@ -4969,21 +4969,12 @@ mark_addressable (exp)
 	  cp_warning ("address requested for `%D', which is declared `register'",
 		      x);
 	TREE_ADDRESSABLE (x) = 1;
-	TREE_USED (x) = 1;
 	if (cfun && expanding_p)
 	  put_var_into_stack (x);
 	return 1;
 
       case FUNCTION_DECL:
-	/* We have to test both conditions here.  The first may be
-	   non-zero in the case of processing a default function.  The
-	   second may be non-zero in the case of a template function.  */
-	if (DECL_LANG_SPECIFIC (x)
-	    && DECL_TEMPLATE_INFO (x) 
-	    && !DECL_TEMPLATE_SPECIALIZATION (x))
-	  mark_used (x);
 	TREE_ADDRESSABLE (x) = 1;
-	TREE_USED (x) = 1;
 	TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (x)) = 1;
 	return 1;
 

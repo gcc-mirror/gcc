@@ -397,8 +397,11 @@ build_call (function, parms)
 
   if (decl && ! TREE_USED (decl))
     {
-      /* We invoke build_call directly for several library functions.  */
-      if (DECL_ARTIFICIAL (decl))
+      /* We invoke build_call directly for several library functions.
+	 These may have been declared normally if we're building libgcc,
+	 so we can't just check DECL_ARTIFICIAL.  */
+      if (DECL_ARTIFICIAL (decl)
+	  || !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)), "__", 2))
 	mark_used (decl);
       else
 	my_friendly_abort (990125);

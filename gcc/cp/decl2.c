@@ -4310,6 +4310,8 @@ finish_decl_parsing (decl)
       /* For attribute handling.  */
       TREE_VALUE (decl) = finish_decl_parsing (TREE_VALUE (decl));
       return decl;
+    case TEMPLATE_ID_EXPR:
+      return decl;
     default:
       my_friendly_abort (5);
       return NULL_TREE;
