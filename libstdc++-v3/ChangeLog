@@ -1,3 +1,8 @@
+2001-08-28  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/23_containers/map_insert.cc: (For 3.0 branch only:)
+	Include debug_assert.h not testsuite_hooks.h.
+
 2001-08-27  Phil Edwards  <pme@sources.redhat.com>
 
 	PR libstdc++/4143
