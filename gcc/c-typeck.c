@@ -2619,6 +2619,14 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	}
 
       argtype = build_pointer_type (argtype);
+
+      /* ??? Cope with user tricks that amount to offsetof.  Delete this
+	 when we have proper support for integer constant expressions.  */
+      val = get_base_address (arg);
+      if (val && TREE_CODE (val) == INDIRECT_REF
+	  && integer_zerop (TREE_OPERAND (val, 0)))
+	return fold_convert (argtype, fold_offsetof (arg));
+
       val = build1 (ADDR_EXPR, argtype, arg);
 
       if (TREE_CODE (arg) == COMPOUND_LITERAL_EXPR)
