@@ -1,3 +1,8 @@
+1998-09-22  Benjamin Kosnik  <bkoz@loony.cygnus.com>
+
+        * decl.c (make_typename_type): Move error to point where name
+        variable can be used by dump_type.
+
 1998-09-22  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (grokfndecl): Improve error-recovery.
