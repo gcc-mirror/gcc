@@ -31,8 +31,8 @@
 // ISO C++ 14882: <ccytpe>
 //
 
-#ifndef _CCTYPE
-#define _CCTYPE 1
+#ifndef _CPP_CCTYPE
+#define _CPP_CCTYPE 1
 
 #pragma GCC system_header
 

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 26.5  C library
 //
 
-#ifndef _CMATH
-#define _CMATH 1
+#ifndef _CPP_CMATH
+#define _CPP_CMATH 1
  
 #pragma GCC system_header
 

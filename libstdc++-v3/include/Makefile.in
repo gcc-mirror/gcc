@@ -569,7 +569,7 @@ stamp-bits: ${bits_headers}
 	(cd ${bits_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-bits
 
-stamp-c_base: ${c_base_headers} ${c_base_headers_extra}
+stamp-c_base: ${c_base_headers} ${c_base_headers_extra} 
 	@if [ ! -d "${c_base_builddir}" ]; then \
 	  mkdir -p ${c_base_builddir} ;\
 	fi ;\
@@ -577,7 +577,9 @@ stamp-c_base: ${c_base_headers} ${c_base_headers_extra}
 	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
 	  @LN_S@ $$h ./$${official_name} || true ;\
 	done) ;\
-	(cd ${bits_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
+	if [ ! -z "${c_base_headers_extra}" ]; then \
+	  (cd ${bits_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
+	fi ;\
 	echo `date` > stamp-c_base
 
 stamp-backward: ${backward_headers}
@@ -665,8 +667,9 @@ install-data-local:
 	for file in ${c_base_headers_rename}; do \
 	  $(INSTALL_DATA) ${c_base_builddir}/$${file} \
 	    ${gxx_include_dir}/${c_base_builddir}; done
-	for file in ${c_base_headers_extra}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${bits_builddir}; done
+	c_base_headers_extra_install=${c_base_headers_extra};\
+	for file in $$c_base_headers_extra_install; do \
+	  $(INSTALL_DATA) $$file ${gxx_include_dir}/${bits_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
 	for file in ${std_headers_rename}; do \
 	  $(INSTALL_DATA) ${std_builddir}/$${file} \

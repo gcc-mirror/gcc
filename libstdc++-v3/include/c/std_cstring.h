@@ -31,8 +31,8 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-#ifndef _CSTRING
-#define _CSTRING 1
+#ifndef _CPP_CSTRING
+#define _CPP_CSTRING 1
 
 #pragma GCC system_header
 

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-#ifndef _CSTDARG
-#define _CSTDARG 1
+#ifndef _CPP_CSTDARG
+#define _CPP_CSTDARG 1
 
 #pragma GCC system_header
 

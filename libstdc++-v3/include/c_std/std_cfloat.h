@@ -40,8 +40,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CFLOAT
-#define _CFLOAT 1
+#ifndef _CPP_CFLOAT
+#define _CPP_CFLOAT 1
 
 #pragma GCC system_header
 
