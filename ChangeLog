@@ -1,3 +1,7 @@
+2001-10-03  Eric Christopher  <echristo@redhat.com>
+
+	* MAINTAINERS: Replace Gavin with myself as MIPS maintainer.
+
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* configure: Handle temporary files securely using mkdir.
