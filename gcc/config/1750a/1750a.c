@@ -39,7 +39,7 @@ int jmplbl_ndx = -1;
 int label_pending = 0, program_counter = 0;
 enum section current_section = Normal;
 char *sectname[4] =
-{"Normal", "Init", "Konst", "Static"};
+{"Init", "Normal", "Konst", "Static"};
 
 int
 notice_update_cc (exp)
@@ -498,12 +498,18 @@ print_operand_address (file, addr)
 		fprintf (file, "%s,r%d  ; P_O_A reg + sym",
 			 XSTR (y, 0), REGNO (x));
 		break;
+	      case LABEL_REF:
+		output_address (XEXP (y, 0));
+		fprintf (file, ",r%d  ; P_O_A reg + label", REGNO (x));
+		break;
 	      default:
 		fprintf (file, "[P_O_A reg%d+UFO code=%d]",
 			 REGNO (x), GET_CODE (y));
 	      }
 	    break;
 	  case LABEL_REF:
+	    output_address (XEXP (x, 0));
+	    break;
 	  case SYMBOL_REF:
 	    switch (GET_CODE (y))
 	      {
@@ -560,6 +566,9 @@ print_operand_address (file, addr)
       output_address (XEXP (addr, 0));
       fprintf (file, " ;P_O_A const");
       break;
+    case CODE_LABEL:
+      fprintf (file, "L%d", XINT (addr, 3));
+      break;
     default:
       fprintf (file, " p_o_a UFO, code=%d val=0x%x",
 	       (int) GET_CODE (addr), INTVAL (addr));
@@ -567,34 +576,3 @@ print_operand_address (file, addr)
     }
 }
 
-
-/*
-ASM_FILE_END(file)
-  FILE *file;
-{
-      if (datalbl_ndx >= 0) {
-         int i, cum_size=0;
-         fprintf(file,"\n\tstatic\ninit_srel\n");
-         for (i = 0; i <= datalbl_ndx; i++) {
-	   if (datalbl[i].name == NULL)	
-	   {
-	     fprintf (stderr, "asm_file_end intern err (datalbl)\n");
-	     exit (0);
-	   }
-           fprintf(file,"%s\t block %d\n",
-                 datalbl[i].name,datalbl[i].size);
-           cum_size += datalbl[i].size;
-	 }
-         fprintf(file,"\n\tinit\n");
-         fprintf(file,"\tLIM  R0,init_srel ;dst\n");
-         fprintf(file,"\tLIM  R1,%d ;cnt\n",cum_size);
-         fprintf(file,"\tLIM  R2,K%s ;src\n",datalbl[0].name);
-         fprintf(file,"\tMOV  R0,R2\n");
-         fprintf(file,"\n\tnormal\n");
-         datalbl_ndx = -1;
-         for (i = 0; i < DATALBL_ARRSIZ; i++)
-            datalbl[i].size = 0;
-      }	
-      fprintf(file,"\n\tend\n");
-}
- */
