@@ -1271,7 +1271,7 @@ arith64_operand (op, mode)
 {
   return (register_operand (op, mode)
 	  || GET_CODE (op) == CONST_INT
-	  || (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == DImode));
+	  || (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == VOIDmode));
 }
 
 int
