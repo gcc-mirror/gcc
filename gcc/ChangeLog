@@ -1,3 +1,16 @@
+Mon Nov 30 08:25:35 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* dyn-string.h: New file.
+	* dyn-string.c: Likewise.
+	* Makefile.in (OBJS): Add dyn-string.o.
+	(dwarf2out.o): Add dyn-string.h dependency.
+	(dyn-string.o): New rule.
+	* dwarf2out.c (dyn-string.h): Include.
+	(ASM_NAME_TO_STRING): Use dyn_string_append, rather than strcpy.
+	(addr_const_to_string): Take a dyn_string_t, not a char * as a
+	prototype.  Use dyn_string_append rather than strcat, throughout.
+	(addr_to_string): Use dyn_string_t.
+
 Mon Nov 30 06:57:49 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* sched.c (swap_sort): Fix typo in last change.
