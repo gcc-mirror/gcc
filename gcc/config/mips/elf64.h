@@ -193,7 +193,7 @@ do {									 \
 do {									   \
   int len, size, sec;							   \
   char *name, *string, *prefix;						   \
-  static char *prefixes[4][2] = {					   \
+  static char *prefixes[5][2] = {					   \
     { ".text.", ".gnu.linkonce.t." },					   \
     { ".rodata.", ".gnu.linkonce.r." },					   \
     { ".data.", ".gnu.linkonce.d." },					   \
