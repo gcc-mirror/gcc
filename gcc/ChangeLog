@@ -1,3 +1,9 @@
+2001-03-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (movsf_ie): Fix output patterns for fpul load
+	and store.
+	(movsi_ie): Introduce fpul store.
+
 2001-03-20  Alan Modra  <alan@linuxcare.com.au>
 
 	* Makefile.in (OBJS): Remove hashtab.o.
