@@ -1,3 +1,7 @@
+2003-04-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/invoke.texi (inline-limit): Fix pasto.
+
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
 	* config/h8300/h8300.c (SYMBOL_FLAG_FUNCVEC_FUNCTION): New.
