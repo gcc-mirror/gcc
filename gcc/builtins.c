@@ -5949,16 +5949,21 @@ fold_builtin_logarithm (tree exp, const REAL_VALUE_TYPE *value)
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
       tree arg = TREE_VALUE (arglist);
       const enum built_in_function fcode = builtin_mathfn_code (arg);
-      const REAL_VALUE_TYPE value_mode =
-	real_value_truncate (TYPE_MODE (type), *value);
 	
       /* Optimize log*(1.0) = 0.0.  */
       if (real_onep (arg))
 	return build_real (type, dconst0);
 
-      /* Optimize logN(N) = 1.0.  */
-      if (real_dconstp (arg, &value_mode))
-	return build_real (type, dconst1);
+      /* Optimize logN(N) = 1.0.  If N can't be truncated to MODE
+         exactly, then only do this if flag_unsafe_math_optimizations.  */
+      if (exact_real_truncate (TYPE_MODE (type), value)
+	  || flag_unsafe_math_optimizations)
+        {
+	  const REAL_VALUE_TYPE value_truncate =
+	    real_value_truncate (TYPE_MODE (type), *value);
+	  if (real_dconstp (arg, &value_truncate))
+	    return build_real (type, dconst1);
+	}
       
       /* Special case, optimize logN(expN(x)) = x.  */
       if (flag_unsafe_math_optimizations
