@@ -1,3 +1,9 @@
+2005-02-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR tree-optimization/19786
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Add one
+	tag to another's may-alias bitmap when adding to the other's list.
+
 2005-02-21  DJ Delorie  <dj@redhat.com>
 
 	* tree-ssa-loop-ivopts.c (computation_cost): Start register

@@ -1116,6 +1116,7 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	      /* Since TAG2 does not have any aliases of its own, add
 		 TAG2 itself to the alias set of TAG1.  */
 	      add_may_alias (tag1, tag2);
+	      SET_BIT (may_aliases1, var_ann (tag2)->uid);
 	    }
 	}
     }
