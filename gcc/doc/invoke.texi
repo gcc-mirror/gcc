@@ -1710,7 +1710,7 @@ reporter to emit @emph{once} source location information; that is, in
 case the message is too long to fit on a single physical line and has to
 be wrapped, the source location won't be emitted (as prefix) again,
 over and over, in subsequent continuation lines.  This is the default
-behaviour.
+behavior.
 
 @item -fdiagnostics-show-location=every-line
 Only meaningful in line-wrapping mode.  Instructs the diagnostic
@@ -2319,7 +2319,7 @@ if the @samp{#} appeared in column 1 on the line.  Therefore
 understands but would ignore because the @samp{#} does not appear as the
 first character on the line.  It also suggests you hide directives like
 @samp{#pragma} not understood by traditional C by indenting them.  Some
-traditional implementations would not recognise @samp{#elif}, so it
+traditional implementations would not recognize @samp{#elif}, so it
 suggests avoiding it altogether.
 
 @item
@@ -2558,7 +2558,7 @@ This option is not made part of @option{-Wall} because in a debugging
 version of a program there is often substantial code which checks
 correct functioning of the program and is, hopefully, unreachable
 because the program does work.  Another common use of unreachable
-code is to provide behaviour which is selectable at compile-time.
+code is to provide behavior which is selectable at compile-time.
 
 @item -Winline
 @opindex Winline
@@ -3316,7 +3316,7 @@ Attempt to merge identical constants (string constants and floating point
 constants) accross compilation units.
 
 This option is default for optimized compilation if assembler and linker
-support it.  Use @option{-fno-merge-constants} to inhibit this behaviour.
+support it.  Use @option{-fno-merge-constants} to inhibit this behavior.
 
 @item -fmerge-all-constants
 Attempt to merge identical constants and identical variables.
@@ -3326,7 +3326,7 @@ This option implies @option{-fmerge-constants}.  In addition to
 arrays or initialized constant variables with integral or floating point
 types.  Languages like C or C++ require each non-automatic variable to
 have distinct location, so using this option will result in non-conforming
-behaviour.
+behavior.
 
 @item -fno-function-cse
 @opindex fno-function-cse
@@ -4479,10 +4479,10 @@ are processed in order, from left to right.
 sequence of other programs to do the work of compiling, assembling and
 linking.  GCC interprets its command-line parameters and uses these to
 deduce which programs it should invoke, and which command-line options
-it ought to place on their command lines.  This behaviour is controlled
+it ought to place on their command lines.  This behavior is controlled
 by @dfn{spec strings}.  In most cases there is one spec string for each
 program that GCC can invoke, but a few programs have multiple spec
-strings to control their behaviour.  The spec strings built into GCC can
+strings to control their behavior.  The spec strings built into GCC can
 be overridden by using the @option{-specs=} command-line switch to specify
 a spec file.
 
@@ -5462,7 +5462,7 @@ They have been replaced with @option{-mcpu=xxx}.
 @itemx -msupersparc
 @opindex mcypress
 @opindex msupersparc
-These two options select the processor for which the code is optimised.
+These two options select the processor for which the code is optimized.
 
 With @option{-mcypress} (the default), the compiler optimizes code for the
 Cypress CY7C602 chip, as used in the SparcStation/SparcServer 3xx series.
@@ -6048,7 +6048,7 @@ the scope of a @samp{#pragma long_calls} directive, will always be
 turned into long calls.
 
 This feature is not enabled by default.  Specifying
-@option{-mno-long-calls} will restore the default behaviour, as will
+@option{-mno-long-calls} will restore the default behavior, as will
 placing the function calls within the scope of a @samp{#pragma
 long_calls_off} directive.  Note these switches have no effect on how
 the compiler generates code to handle function calls via function
@@ -6062,7 +6062,7 @@ Disable support for the @code{dllimport} attribute.
 @opindex msingle-pic-base
 Treat the register used for PIC addressing as read-only, rather than
 loading it in the prologue for each function.  The run-time system is
-responsible for initialising this register with an appropriate value
+responsible for initializing this register with an appropriate value
 before execution begins.
 
 @item -mpic-register=@var{reg}

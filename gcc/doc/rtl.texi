@@ -2181,7 +2181,7 @@ store a value in @var{x}.  @var{x} must be a @code{reg} expression.
 
 In some situations, it may be tempting to add a @code{use} of a
 register in a @code{parallel} to describe a situation where the value
-of a special register will modify the behaviour of the instruction.
+of a special register will modify the behavior of the instruction.
 An hypothetical example might be a pattern for an addition that can
 either wrap around or use saturating addition depending on the value
 of a special control register:
