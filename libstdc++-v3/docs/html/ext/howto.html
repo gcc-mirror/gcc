@@ -474,8 +474,15 @@
     <dt><a href="lwg-defects.html#60">60</a>:
         <em>What is a formatted input function?</em>
     </dt>
-    <dd>This DR made many widespread changes to <code>basic_istream</code>,
-        not all of which have been implemented.
+    <dd>This DR made many widespread changes to <code>basic_istream</code>
+        and <code>basic_ostream</code> all of which have been implemented.
+    </dd>
+
+    <dt><a href="lwg-defects.html#63">63</a>:
+        <em>Exception-handling policy for unformatted output</em>
+    </dt>
+    <dd>Make the policy consistent with that of formatted input, unformatted
+        input, and formatted output.
     </dd>
 
     <dt><a href="lwg-defects.html#68">68</a>:
@@ -489,6 +496,13 @@
         <em>Garbled text for codecvt::do_max_length</em>
     </dt>
     <dd>The text of the standard was gibberish.  Typos gone rampant.
+    </dd>
+
+    <dt><a href="lwg-defects.html#75">75</a>:
+        <em>Contradiction in codecvt::length's argument types</em>
+    </dt>
+    <dd>Change the first parameter to <code>stateT&amp;</code> and implement
+        the new effects paragraph.
     </dd>
 
     <dt><a href="lwg-defects.html#83">83</a>:
@@ -652,8 +666,15 @@
     <dd>If <code>(this == &amp;x)</code> do nothing.
     </dd>
 
+    <dt><a href="lwg-defects.html#305">305</a>:
+        <em>Default behavior of codecvt&lt;wchar_t, char, mbstate_t&gt;::length()</em>
+    </dt>
+    <dd>Do not specify what <code>codecvt&lt;wchar_t, char, mbstate_t&gt;::do_length</code>
+        must return.
+    </dd>
+
     <dt><a href="lwg-defects.html#328">328</a>:
-        <em>Bad sprintf format modifier in money_put<>::do_put()</em>
+        <em>Bad sprintf format modifier in money_put&lt;&gt;::do_put()</em>
     </dt>
     <dd>Change the format string to &quot;%.0Lf&quot;.
     </dd>
