@@ -462,7 +462,8 @@ update_bb_for_insn (bb)
 
   for (insn = bb->head; ; insn = NEXT_INSN (insn))
     {
-      set_block_for_insn (insn, bb);
+      if (GET_CODE (insn) != BARRIER)
+	set_block_for_insn (insn, bb);
       if (insn == bb->end)
 	break;
     }
