@@ -1,3 +1,11 @@
+2003-03-15  Aldy Hernandez <aldyh@redhat.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (TEXI_GCCINT_FILES): Add libgcc.texi.
+	* doc/libgcc.texi: New file.
+	* doc/interface.texi: Delete paragraph about libgcc interface.
+	* doc/gccint.texi: Add libgcc menu entry and @include libgcc.texi.
+
 2003-03-15  Jason Merrill  <jason@redhat.com>
 
 	PR debug/9039
@@ -231,15 +239,15 @@ Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-13  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_dwarf_register_span):
-        Differentiate endianness.
-        (s6000_override_options): Use cpu type instead of TARGET_SPE.
+	* config/rs6000/rs6000.c (rs6000_dwarf_register_span):
+	Differentiate endianness.
+	(s6000_override_options): Use cpu type instead of TARGET_SPE.
 
 2003-03-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (print_multi_reg): Do not generate a type 2
-        LDM instructions with writeback enabled.
-        (output_return_instruction): Likewise.
+	LDM instructions with writeback enabled.
+	(output_return_instruction): Likewise.
 
 	* config/arm/pe.h (FIXED_REGISTERS): Remove definition.
 	(CALL_USED_REGISTERS): Remove definition.
@@ -372,9 +380,9 @@ Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-12  Bob Wilson  <bob.wilson@acm.org>
 
-        * config/xtensa/xtensa.md (adddi3): Don't clobber source operand used
+	* config/xtensa/xtensa.md (adddi3): Don't clobber source operand used
 	to detect carry.
-        (subdi3): Reorder emitted instructions.
+	(subdi3): Reorder emitted instructions.
 
 2003-03-12  Andreas Jaeger  <aj@suse.de>
 
@@ -390,22 +398,22 @@ Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-12  Andreas Jaeger  <aj@suse.de>
 
-        * c-cppbuiltin.c (cb_register_builtins): Define LP64 builtins for
-        LP64 targets.
+	* c-cppbuiltin.c (cb_register_builtins): Define LP64 builtins for
+	LP64 targets.
 
-        * doc/cpp.texi (Common Predefined Macros): Document __LP64__ and
-        _LP64.
+	* doc/cpp.texi (Common Predefined Macros): Document __LP64__ and
+	_LP64.
 
-        * config/ia64/ia64.h (TARGET_CPU_CPP_BUILTINS): Do not define
-        _LP64 macros here.
-        * config/pa/pa.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+	* config/ia64/ia64.h (TARGET_CPU_CPP_BUILTINS): Do not define
+	_LP64 macros here.
+	* config/pa/pa.h (TARGET_CPU_CPP_BUILTINS): Likewise.
 
-        * config/alpha/netbsd.h (TARGET_OS_CPP_BUILTINS): Remove call to
-        NETBSD_OS_CPP_BUILTINS_LP64.
-        * config/sh/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Likewise.
-        * config/sparc/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Likewise.
+	* config/alpha/netbsd.h (TARGET_OS_CPP_BUILTINS): Remove call to
+	NETBSD_OS_CPP_BUILTINS_LP64.
+	* config/sh/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Likewise.
+	* config/sparc/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Likewise.
 
-        * config/netbsd.h (NETBSD_OS_CPP_BUILTINS_LP64): Remove.
+	* config/netbsd.h (NETBSD_OS_CPP_BUILTINS_LP64): Remove.
 
 Wed Mar 12 19:04:39 CET 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -466,7 +474,7 @@ Wed Mar 12 16:30:25 2003  J"orn Rennecke <joern.rennecke@superh.com>
 	DLL_IMPORT_EXPORT_PREFIX and "i."
 	(i386_pe_dllexport_name_p): Here.
 	(i386_pe_dllimport_name_p): Here.
-        (i386_pe_mark_dllexport): Here. Remove DLL_IMPORT_PREFIX,
+	(i386_pe_mark_dllexport): Here. Remove DLL_IMPORT_PREFIX,
 	not 9 chars when getting identifier name.
 	(i386_pe_mark_dllimport): Here.
 	(i386_pe_encode_section_info): Here. Remove DLL_IMPORT_PREFIX,
@@ -510,10 +518,10 @@ Wed Mar 12 16:30:25 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 2003-03-11  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_stack_info): Remove
-        insn_chain_scanned.  Use insn_chain_scanned_p in machine_function.
+	* config/rs6000/rs6000.c (rs6000_stack_info): Remove
+	insn_chain_scanned.  Use insn_chain_scanned_p in machine_function.
 
-        * config/rs6000/rs6000.h (machine_function): Add insn_chain_scanned_p.
+	* config/rs6000/rs6000.h (machine_function): Add insn_chain_scanned_p.
 
 Tue Mar 11 21:19:03 2003  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -545,8 +553,8 @@ Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-11  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_override_options): Disable string
-        instructions for e500.
+	* config/rs6000/rs6000.c (rs6000_override_options): Disable string
+	instructions for e500.
 
 2003-03-11  Neil Booth  <neil@daikokuya.co.uk>
 
@@ -555,23 +563,23 @@ Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-11  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/tm.texi (Frame Registers): Document DWARF_REG_TO_UNWIND_COLUMN.
+	* doc/tm.texi (Frame Registers): Document DWARF_REG_TO_UNWIND_COLUMN.
 
-        * unwind-dw2.c (DWARF_REG_TO_UNWIND_COLUMN): Define.
-        (_Unwind_GetGR): Use DWARF_REG_TO_UNWIND_COLUMN.
-        (_Unwind_SetGR): Same.
-        (_Unwind_GetGRPtr): New.
-        (_Unwind_SetGRPtr): New.
-        (uw_update_context_1): Use accesor functions instead of accessing
-        context->reg[] directly.
-        (uw_install_context_1): Same.
-        (execute_cfa_program): Same.
-        (__frame_state_for): Same.
+	* unwind-dw2.c (DWARF_REG_TO_UNWIND_COLUMN): Define.
+	(_Unwind_GetGR): Use DWARF_REG_TO_UNWIND_COLUMN.
+	(_Unwind_SetGR): Same.
+	(_Unwind_GetGRPtr): New.
+	(_Unwind_SetGRPtr): New.
+	(uw_update_context_1): Use accesor functions instead of accessing
+	context->reg[] directly.
+	(uw_install_context_1): Same.
+	(execute_cfa_program): Same.
+	(__frame_state_for): Same.
 
-        * config/rs6000/rs6000.c (spe_synthesize_frame_save): Use 1200 as
-        the synthetic register offset.
+	* config/rs6000/rs6000.c (spe_synthesize_frame_save): Use 1200 as
+	the synthetic register offset.
 
-        * config/rs6000/rs6000.h (DWARF_REG_TO_UNWIND_COLUMN): New.
+	* config/rs6000/rs6000.h (DWARF_REG_TO_UNWIND_COLUMN): New.
 
 2003-03-11  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -623,7 +631,7 @@ Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * dwarf2out.c (multiple_reg_loc_descriptor): Fix thinko.
+	* dwarf2out.c (multiple_reg_loc_descriptor): Fix thinko.
 
 2003-03-10  Andrew Pinski  <apinski@apple.com>
 
