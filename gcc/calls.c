@@ -2152,6 +2152,7 @@ expand_call (tree exp, rtx target, int ignore)
 #endif
 
   int initial_highest_arg_in_use = highest_outgoing_arg_in_use;
+  rtx temp_target = 0;
   char *initial_stack_usage_map = stack_usage_map;
 
   int old_stack_allocated;
@@ -3266,7 +3267,11 @@ expand_call (tree exp, rtx target, int ignore)
 	 The Irix 6 ABI has examples of this.  */
       else if (GET_CODE (valreg) == PARALLEL)
 	{
-	  if (target == 0)
+	  /* Second condition is added because "target" is freed at the
+	     the end of "pass0" for -O2 when call is made to
+	     expand_end_target_temps ().  Its "in_use" flag has been set
+	     to false, so allocate a new temp.  */
+	  if (target == 0 || (pass == 1 && target == temp_target))
 	    {
 	      /* This will only be assigned once, so it can be readonly.  */
 	      tree nt = build_qualified_type (TREE_TYPE (exp),
@@ -3274,6 +3279,7 @@ expand_call (tree exp, rtx target, int ignore)
 					       | TYPE_QUAL_CONST));
 
 	      target = assign_temp (nt, 0, 1, 1);
+	      temp_target = target;
 	      preserve_temp_slots (target);
 	    }
 
@@ -4615,9 +4621,18 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	{
 	  /* PUSH_ROUNDING has no effect on us, because
 	     emit_push_insn for BLKmode is careful to avoid it.  */
-	  excess = (arg->locate.size.constant
-		    - int_size_in_bytes (TREE_TYPE (pval))
-		    + partial * UNITS_PER_WORD);
+	  if (reg && GET_CODE (reg) == PARALLEL)
+	  {
+	    /* Use the size of the elt to compute excess.  */
+	    rtx elt = XEXP (XVECEXP (reg, 0, 0), 0);
+	    excess = (arg->locate.size.constant
+		      - int_size_in_bytes (TREE_TYPE (pval))
+		      + partial * GET_MODE_SIZE (GET_MODE (elt)));
+	  } 
+	  else
+	    excess = (arg->locate.size.constant
+		      - int_size_in_bytes (TREE_TYPE (pval))
+		      + partial * UNITS_PER_WORD);
 	  size_rtx = expand_expr (size_in_bytes (TREE_TYPE (pval)),
 				  NULL_RTX, TYPE_MODE (sizetype), 0);
 	}

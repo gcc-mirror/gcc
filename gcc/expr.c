@@ -3474,8 +3474,18 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 
       rtx temp;
       int used = partial * UNITS_PER_WORD;
-      int offset = used % (PARM_BOUNDARY / BITS_PER_UNIT);
+      int offset;
       int skip;
+
+      if (reg && GET_CODE (reg) == PARALLEL)
+	{
+	  /* Use the size of the elt to compute offset.  */
+	  rtx elt = XEXP (XVECEXP (reg, 0, 0), 0);
+	  used = partial * GET_MODE_SIZE (GET_MODE (elt));
+	  offset = used % (PARM_BOUNDARY / BITS_PER_UNIT);
+	}
+      else
+	offset = used % (PARM_BOUNDARY / BITS_PER_UNIT);
 
       if (size == 0)
 	abort ();

@@ -1,3 +1,13 @@
+2003-11-20  Fariborz Jahanian  <fjahanian@apple.com>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* calls.c (expand_call): Allocate new temp in pass1.
+	(store_one_arg): If PARALLEL, calculate excess using mode size of
+	rtvec elt. 
+	* expr.c (emit_push_insn): If PARALLEL, calculate offset using
+	mode size of rtvec elt.
+	* function.c (assign_parms): Use parm in register, if available.
+
 2003-11-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (MOVP): Remove.
