@@ -1,3 +1,7 @@
+2003-07-20  Lisa M. Goldstein  <opus@gnu.org>
+
+        * doc/invoke.texi: Fixes to style, grammar and diction.
+
 2003-07-20  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.def (BUILT_IN_ALLOCA): Remove "#if SMALL_STACK" form.

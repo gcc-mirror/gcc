@@ -1593,14 +1593,14 @@ Instantiations of these templates may be mangled incorrectly.
 
 @item -Wctor-dtor-privacy @r{(C++ only)}
 @opindex Wctor-dtor-privacy
-Warn when a class seems unusable, because all the constructors or
-destructors in a class are private and the class has no friends or
+Warn when a class seems unusable because all the constructors or
+destructors in that class are private, and it has neither friends nor
 public static member functions.
 
 @item -Wnon-virtual-dtor @r{(C++ only)}
 @opindex Wnon-virtual-dtor
-Warn when a class declares a non-virtual destructor that should probably
-be virtual, because it looks like the class will be used polymorphically.
+Warn when a class appears to be polymorphic, thereby requiring a virtual
+destructor, yet it declares a non-virtual one.
 This warning is enabled by @option{-Wall}.
 
 @item -Wreorder @r{(C++ only)}
@@ -1618,9 +1618,9 @@ struct A @{
 @};
 @end smallexample
 
-Here the compiler will warn that the member initializers for @samp{i}
-and @samp{j} will be rearranged to match the declaration order of the
-members.  This warning is enabled by @option{-Wall}.
+The compiler will rearrange the member initializers for @samp{i}
+and @samp{j} to match the declaration order of the members, emitting
+a warning to that effect.  This warning is enabled by @option{-Wall}.
 @end table
 
 The following @option{-W@dots{}} options are not affected by @option{-Wall}.
@@ -1650,8 +1650,8 @@ Item 23:  Don't try to return a reference when you must return an object.
 
 @end itemize
 
-and about violations of the following style guidelines from Scott Meyers'
-@cite{More Effective C++} book:
+Also warn about violations of the following style guidelines from 
+Scott Meyers' @cite{More Effective C++} book:
 
 @itemize @bullet
 @item
@@ -1663,8 +1663,8 @@ Item 7:  Never overload @code{&&}, @code{||}, or @code{,}.
 
 @end itemize
 
-If you use this option, you should be aware that the standard library
-headers do not obey all of these guidelines; you can use @samp{grep -v}
+When selecting this option, be aware that the standard library
+headers do not obey all of these guidelines; use @samp{grep -v}
 to filter out those warnings.
 
 @item -Wno-deprecated @r{(C++ only)}
@@ -1674,7 +1674,7 @@ Do not warn about usage of deprecated features.  @xref{Deprecated Features}.
 @item -Wno-non-template-friend @r{(C++ only)}
 @opindex Wno-non-template-friend
 Disable warnings when non-templatized friend functions are declared
-within a template.  With the advent of explicit template specification
+within a template.  Since the advent of explicit template specification
 support in G++, if the name of the friend is an unqualified-id (i.e.,
 @samp{friend foo(int)}), the C++ language specification demands that the
 friend declare or define an ordinary, nontemplate function.  (Section
@@ -1682,7 +1682,7 @@ friend declare or define an ordinary, nontemplate function.  (Section
 could be interpreted as a particular specialization of a templatized
 function.  Because this non-conforming behavior is no longer the default
 behavior for G++, @option{-Wnon-template-friend} allows the compiler to
-check existing code for potential trouble spots, and is on by default.
+check existing code for potential trouble spots and is on by default.
 This new compiler behavior can be turned off with
 @option{-Wno-non-template-friend} which keeps the conformant compiler code
 but disables the helpful warning.
@@ -1692,7 +1692,7 @@ but disables the helpful warning.
 Warn if an old-style (C-style) cast to a non-void type is used within
 a C++ program.  The new-style casts (@samp{static_cast},
 @samp{reinterpret_cast}, and @samp{const_cast}) are less vulnerable to
-unintended effects, and much easier to grep for.
+unintended effects and much easier to search for.
 
 @item -Woverloaded-virtual @r{(C++ only)}
 @opindex Woverloaded-virtual
@@ -1712,7 +1712,7 @@ struct B: public A @{
 @end smallexample
 
 the @code{A} class version of @code{f} is hidden in @code{B}, and code
-like this:
+like:
 
 @smallexample
 B* b;
@@ -1729,7 +1729,7 @@ to a plain pointer.
 @item -Wsign-promo @r{(C++ only)}
 @opindex Wsign-promo
 Warn when overload resolution chooses a promotion from unsigned or
-enumeral type to a signed type over a conversion to an unsigned type of
+enumeral type to a signed type, over a conversion to an unsigned type of
 the same size.  Previous versions of G++ would try to preserve
 unsignedness, but the standard mandates the current behavior.
 
@@ -1764,7 +1764,7 @@ In this example, G++ will synthesize a default @samp{A& operator =
 @cindex Objective-C options, command line
 @cindex options, Objective-C
 This section describes the command-line options that are only meaningful
-for Objective-C programs; but you can also use most of the GNU compiler
+for Objective-C programs, but you can also use most of the GNU compiler
 options regardless of what language your program is in.  For example,
 you might compile a file @code{some_class.m} like this:
 
@@ -1773,7 +1773,7 @@ gcc -g -fgnu-runtime -O -c some_class.m
 @end example
 
 @noindent
-In this example, only @option{-fgnu-runtime} is an option meant only for
+In this example, @option{-fgnu-runtime} is an option meant only for
 Objective-C programs; you can use the other options with any language
 supported by GCC@.
 
@@ -1819,8 +1819,8 @@ and no warning is issued for them.
 Warn if multiple methods of different types for the same selector are
 found during compilation.  The check is performed on the list of methods
 in the final stage of compilation.  Additionally, a check is performed
-that for each selector appearing in a @code{@@selector(@dots{})}
-expression, a corresponding method with that selector has been found
+for each selector appearing in a @code{@@selector(@dots{})}
+expression, and a corresponding method for that selector has been found
 during compilation.  Because these checks scan the method table only at
 the end of compilation, these warnings are not produced if the final
 stage of compilation is not reached, for example because an error is
@@ -1831,13 +1831,13 @@ being used.
 @opindex Wundeclared-selector
 Warn if a @code{@@selector(@dots{})} expression referring to an
 undeclared selector is found.  A selector is considered undeclared if no
-method with that name has been declared (explicitly, in an
-@code{@@interface} or @code{@@protocol} declaration, or implicitly, in
-an @code{@@implementation} section) before the
-@code{@@selector(@dots{})} expression.  This option always performs its
-checks as soon as a @code{@@selector(@dots{})} expression is found
-(while @code{-Wselector} only performs its checks in the final stage of
-compilation), and so additionally enforces the coding style convention
+method with that name has been declared before the 
+@code{@@selector(@dots{})} expression, either explicitly in an
+@code{@@interface} or @code{@@protocol} declaration, or implicitly in
+an @code{@@implementation} section.  This option always performs its
+checks as soon as a @code{@@selector(@dots{})} expression is found,
+while @code{-Wselector} only performs its checks in the final stage of
+compilation.  This also enforces the coding style convention
 that methods and selectors must be declared before being used.
 
 @c not documented because only avail via -Wp
