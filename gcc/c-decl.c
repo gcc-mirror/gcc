@@ -5625,7 +5625,8 @@ start_function (declspecs, declarator, nested)
   /* Optionally warn of any global def with no previous prototype.  */
   else if (warn_missing_prototypes
 	   && TREE_PUBLIC (decl1)
-	   && !(old_decl != 0 && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0))
+	   && !(old_decl != 0 && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0)
+	   && strcmp ("main", IDENTIFIER_POINTER (DECL_NAME (decl1))))
     warning_with_decl (decl1, "no previous prototype for `%s'");
   /* Optionally warn of any def with no previous prototype
      if the function has already been used.  */
