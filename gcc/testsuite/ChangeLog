@@ -1,3 +1,8 @@
+2004-08-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/missing-field-init-[12].c: New tests.
+	* g++.dg/warn/missing-field-init-[12].C: New tests.
+
 2004-08-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/enum2.c: New test.

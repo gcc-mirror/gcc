@@ -1022,7 +1022,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 	      next1 = digest_init (TREE_TYPE (field), next1, 0);
 
 	      /* Warn when some struct elements are implicitly initialized.  */
-	      if (extra_warnings
+	      if (warn_missing_field_initializers
 	          && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
 		warning ("missing initializer for member `%D'", field);
 	    }
@@ -1038,7 +1038,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 
 	      /* Warn when some struct elements are implicitly initialized
 		 to zero.  */
-	      if (extra_warnings
+	      if (warn_missing_field_initializers
 	          && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
 		warning ("missing initializer for member `%D'", field);
 

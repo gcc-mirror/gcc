@@ -222,7 +222,7 @@ in the following sections.
 -Wimport  -Wno-import  -Winit-self  -Winline @gol
 -Wno-invalid-offsetof  -Winvalid-pch @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
--Wmain  -Wmissing-braces @gol
+-Wmain  -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
 -Wmissing-noreturn @gol
 -Wno-multichar  -Wnonnull  -Wpacked  -Wpadded @gol
@@ -2612,13 +2612,8 @@ incorrect result when the signed value is converted to unsigned.
 
 @item
 An aggregate has an initializer which does not initialize all members.
-For example, the following code would cause such a warning, because
-@code{x.h} would be implicitly initialized to zero:
-
-@smallexample
-struct s @{ int f, g, h; @};
-struct s x = @{ 3, 4 @};
-@end smallexample
+This warning can be independently controlled by
+@option{-Wmissing-field-initializers}.
 
 @item
 A function parameter is declared without a type specifier in K&R-style
@@ -2901,6 +2896,30 @@ Warn if a global function is defined without a previous declaration.
 Do so even if the definition itself provides a prototype.
 Use this option to detect global functions that are not declared in
 header files.
+
+@item -Wmissing-field-initializers
+@opindex Wmissing-field-initializers
+@opindex W
+@opindex Wextra
+Warn if a structure's initializer has some fields missing.  For
+example, the following code would cause such a warning, because
+@code{x.h} is implicitly zero:
+
+@smallexample
+struct s @{ int f, g, h; @};
+struct s x = @{ 3, 4 @};
+@end smallexample
+
+This option does not warn about designated initializers, so the following
+modification would not trigger a warning:
+
+@smallexample
+struct s @{ int f, g, h; @};
+struct s x = @{ .f = 3, .g = 4 @};
+@end smallexample
+
+This warning is included in @option{-Wextra}.  To get other @option{-Wextra}
+warnings without this one, use @samp{-Wextra -Wno-missing-field-initializers}.
 
 @item -Wmissing-noreturn
 @opindex Wmissing-noreturn

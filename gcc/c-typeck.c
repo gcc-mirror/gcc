@@ -4763,7 +4763,7 @@ pop_init_level (int implicit)
     }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */
-  if (extra_warnings
+  if (warn_missing_field_initializers
       && constructor_type
       && TREE_CODE (constructor_type) == RECORD_TYPE
       && constructor_unfilled_fields)
