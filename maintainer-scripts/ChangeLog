@@ -1,3 +1,8 @@
+2004-03-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release (announce_snapshot): Use changedir instead of
+	plain cd.
+	
 2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* gcc_release: Add libada as part of ADA_DIRS.
