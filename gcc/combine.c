@@ -6569,9 +6569,15 @@ rtx_equal_for_field_assignment_p (x, y)
   last_x = get_last_value (x);
   last_y = get_last_value (y);
 
-  return ((last_x != 0 && rtx_equal_for_field_assignment_p (last_x, y))
-	  || (last_y != 0 && rtx_equal_for_field_assignment_p (x, last_y))
+  return ((last_x != 0
+	   && GET_CODE (last_x) != CLOBBER
+	   && rtx_equal_for_field_assignment_p (last_x, y))
+	  || (last_y != 0
+	      && GET_CODE (last_y) != CLOBBER
+	      && rtx_equal_for_field_assignment_p (x, last_y))
 	  || (last_x != 0 && last_y != 0
+	      && GET_CODE (last_x) != CLOBBER
+	      && GET_CODE (last_y) != CLOBBER
 	      && rtx_equal_for_field_assignment_p (last_x, last_y)));
 }
 
