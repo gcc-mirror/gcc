@@ -1,3 +1,8 @@
+2004-07-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-dfa.c (make_rename_temp): *Really* work just
+	like create_tmp_var if called while outside SSA form.
+
 2004-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("udivsi3"): Ensure trap is generated
