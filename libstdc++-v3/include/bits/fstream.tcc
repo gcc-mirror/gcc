@@ -362,26 +362,31 @@ namespace std
 				   this->_M_out_lim - this->_M_out_beg, 
 				   __elen, __plen);
 
-	  // Convert pending sequence to external representation, output.
-	  // If eof, then just attempt sync.
-	  if (!traits_type::eq_int_type(__c, traits_type::eof()))
+	  // Checks for codecvt.out failures and _M_file.xsputn failures,
+	  // respectively, inside _M_convert_to_external.
+	  if (__testunbuffered || (__elen && __elen == __plen))
 	    {
-	      char_type __pending = traits_type::to_char_type(__c);
-	      _M_convert_to_external(&__pending, 1, __elen, __plen);
+	      // Convert pending sequence to external representation, output.
+	      // If eof, then just attempt sync.
+	      if (!traits_type::eq_int_type(__c, traits_type::eof()))
+		{
+		  char_type __pending = traits_type::to_char_type(__c);
+		  _M_convert_to_external(&__pending, 1, __elen, __plen);
 
-	      // User code must flush when switching modes (thus don't sync).
-	      if (__elen == __plen)
+		  // User code must flush when switching modes (thus don't sync).
+		  if (__elen == __plen && __elen)
+		    {
+		      _M_set_indeterminate();
+		      __ret = traits_type::not_eof(__c);
+		    }
+		}
+	      else if (!_M_file.sync())
 		{
 		  _M_set_indeterminate();
 		  __ret = traits_type::not_eof(__c);
 		}
 	    }
-	  else if (!_M_file.sync())
-	    {
-	      _M_set_indeterminate();
-	      __ret = traits_type::not_eof(__c);
-	    }
-	}	      
+	}
       _M_last_overflowed = true;	
       return __ret;
     }

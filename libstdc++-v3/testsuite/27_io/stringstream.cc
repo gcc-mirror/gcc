@@ -56,8 +56,26 @@ namespace test
   template class basic_stringstream<pod_char, char_traits<pod_char> >;
 } // test
 
+// libstdc++/9826
+void test02()
+{
+  using namespace std;
+  using __gnu_cxx_test::pod_char;
+
+  basic_stringstream<pod_char, char_traits<pod_char> > sstr;
+  // 1
+  basic_string<pod_char, char_traits<pod_char> > str;
+  sstr >> str;
+  // 2
+  pod_char*  chr;
+  sstr >> chr;
+  // 3
+  sstr >> ws;
+}
+
 int main() 
 {
   test01();
+  test02();
   return 0;
 }

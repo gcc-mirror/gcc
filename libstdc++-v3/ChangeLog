@@ -1,3 +1,22 @@
+2003-03-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9182
+	* include/bits/fstream.tcc (_M_really_overflow): Check
+	for _M_convert_to_external possible failures.
+	* include/std/std_fstream.h (sync): Check _M_really_overflow
+	return value and return -1 in case of failure.
+	* testsuite/27_io/filebuf_virtuals.cc (test13, test14): Add.
+
+2003-03-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9826
+	* include/bits/istream.tcc (operator>>(_CharT*),
+	operator>>(basic_string&), ws): Pass a char_type to __ctype.is.
+	* testsuite/27_io/stringstream.cc (test02): Add.
+
+	* include/bits/istream.tcc (operator>>(_CharT*)):
+	Assign a char_type to *__s.
+
 2003-03-07  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9817
