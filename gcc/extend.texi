@@ -3214,8 +3214,9 @@ compiled separately.
 @end table
 
 When used with GNU ld version 2.8 or later on an ELF system such as
-GNU/Linux or Solaris 2, g++ supports the Borland model.  On other systems,
-g++ implements neither automatic model.
+Linux/GNU or Solaris 2, or on Microsoft Windows, g++ supports the
+Borland model.  On other systems, g++ implements neither automatic
+model.
 
 A future version of g++ will support a hybrid model whereby the compiler
 will emit any instantiations for which the template definition is
