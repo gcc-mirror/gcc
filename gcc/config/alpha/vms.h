@@ -65,11 +65,10 @@ Boston, MA 02111-1307, USA.  */
 /* By default, allow $ to be part of an identifier.  */
 #define DOLLARS_IN_IDENTIFIERS 2
 
-/* no-soft-float, fp-regs, gas, open_vms, float-ieee  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 263
+#define TARGET_DEFAULT (MASK_FP|MASK_FP_REGS|MASK_GAS|MASK_OPEN_VMS)
 #undef TARGET_NAME   
-#define TARGET_NAME "openVMS/Alpha"
+#define TARGET_NAME "OpenVMS/Alpha"
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (%s)", TARGET_NAME);           
 
