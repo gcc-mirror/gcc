@@ -1632,7 +1632,7 @@ find_fixup_replacement (replacements, x)
   struct fixup_replacement *p;
 
   /* See if we have already replaced this.  */
-  for (p = *replacements; p && p->old != x; p = p->next)
+  for (p = *replacements; p != 0 && ! rtx_equal_p (p->old, x); p = p->next)
     ;
 
   if (p == 0)
