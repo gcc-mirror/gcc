@@ -244,11 +244,12 @@ main (argc, argv)
   return 0;
 }
 
-static void fnotice	PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+static void fnotice PVPROTO ((FILE *, const char *, ...)) ATTRIBUTE_PRINTF_2;
 static void
-fnotice VPROTO ((const char *msgid, ...))
+fnotice VPROTO ((FILE *file, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
+  FILE *file;
   const char *msgid;
 #endif
   va_list ap;
@@ -256,10 +257,11 @@ fnotice VPROTO ((const char *msgid, ...))
   VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
+  file = va_arg (ap, FILE *);
   msgid = va_arg (ap, const char *);
 #endif
 
-  vfprintf (stderr, _(msgid), ap);
+  vfprintf (file, _(msgid), ap);
   va_end (ap);
 }
 
@@ -922,7 +924,7 @@ static void
 function_summary ()
 {
   if (function_source_lines)
-    fnotice (stdout, "%6.2lf%% of %d source lines executed in function %s\n",
+    fnotice (stdout, "%6.2f%% of %d source lines executed in function %s\n",
 	     (((double) function_source_lines_executed / function_source_lines)
 	      * 100), function_source_lines, function_name);
   else
@@ -933,18 +935,18 @@ function_summary ()
     {
       if (function_branches)
 	{
-	  fnotice (stdout, "%6.2lf%% of %d branches executed in function %s\n",
+	  fnotice (stdout, "%6.2f%% of %d branches executed in function %s\n",
 		   (((double) function_branches_executed / function_branches)
 		    * 100), function_branches, function_name);
 	  fnotice (stdout,
-		"%6.2lf%% of %d branches taken at least once in function %s\n",
+		"%6.2f%% of %d branches taken at least once in function %s\n",
 		   (((double) function_branches_taken / function_branches)
 		    * 100), function_branches, function_name);
 	}
       else
 	fnotice (stdout, "No branches in function %s\n", function_name);
       if (function_calls)
-	fnotice (stdout, "%6.2lf%% of %d calls executed in function %s\n",
+	fnotice (stdout, "%6.2f%% of %d calls executed in function %s\n",
 		 (((double) function_calls_executed / function_calls)
 		  * 100), function_calls, function_name);
       else
@@ -1082,7 +1084,7 @@ output_data ()
 			fnotice (stderr,
 				 "didn't use all bb entries of graph, function %s\n",
 				 function_name);
-			fnotice (stderr, "block_num = %d, num_blocks = %d\n",
+			fnotice (stderr, "block_num = %ld, num_blocks = %d\n",
 				 block_num, current_graph->num_blocks);
 		      }
 
@@ -1197,7 +1199,7 @@ output_data ()
 
       if (total_source_lines)
 	fnotice (stdout,
-		 "%6.2lf%% of %d source lines executed in file %s\n",
+		 "%6.2f%% of %d source lines executed in file %s\n",
 		 (((double) total_source_lines_executed / total_source_lines)
 		  * 100), total_source_lines, source_file_name);
       else
@@ -1208,18 +1210,18 @@ output_data ()
 	{
 	  if (total_branches)
 	    {
-	      fnotice (stdout, "%6.2lf%% of %d branches executed in file %s\n",
+	      fnotice (stdout, "%6.2f%% of %d branches executed in file %s\n",
 		       (((double) total_branches_executed / total_branches)
 			* 100), total_branches, source_file_name);
 	      fnotice (stdout,
-		    "%6.2lf%% of %d branches taken at least once in file %s\n",
+		    "%6.2f%% of %d branches taken at least once in file %s\n",
 		       (((double) total_branches_taken / total_branches)
 			* 100), total_branches, source_file_name);
 	    }
 	  else
 	    fnotice (stdout, "No branches in file %s\n", source_file_name);
 	  if (total_calls)
-	    fnotice (stdout, "%6.2lf%% of %d calls executed in file %s\n",
+	    fnotice (stdout, "%6.2f%% of %d calls executed in file %s\n",
 		     (((double) total_calls_executed / total_calls)
 		      * 100), total_calls, source_file_name);
 	  else

@@ -1,3 +1,13 @@
+Sat Jan 30 23:14:13 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcov.c (fnotice): Add missing FILE* parameter.
+	(function_summary): Fix format specifiers in calls to `fnotice'.
+	(output_data): Likewise.
+
+	* toplev.c (fnotice): Constify char* parameter.
+
+	* toplev.h (fnotice): Add prototype.
+
 Sun Jan 31 15:33:09 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (RTX_COSTS): Explicitly define c4x costs.

@@ -1557,11 +1557,11 @@ notice VPROTO((const char *msgid, ...))
 }
 
 void
-fnotice VPROTO((FILE *file, char *msgid, ...))
+fnotice VPROTO((FILE *file, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   FILE *file;
-  char *msgid;
+  const char *msgid;
 #endif
   va_list ap;
 
@@ -1569,7 +1569,7 @@ fnotice VPROTO((FILE *file, char *msgid, ...))
 
 #ifndef ANSI_PROTOTYPES
   file = va_arg (ap, FILE *);
-  msgid = va_arg (ap, char *);
+  msgid = va_arg (ap, const char *);
 #endif
 
   vnotice (file, msgid, ap);
