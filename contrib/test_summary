@@ -63,7 +63,7 @@ while true; do
     esac
 done
 : ${mailto="\" address \""}; export mailto
-files=`find . -name \*.sum$filesuffix -print`
+files=`find . -name \*.sum$filesuffix -print | sort`
 anyfile=false anychange=$forcemail &&
 for file in $files; do
     [ -f $file ] &&
