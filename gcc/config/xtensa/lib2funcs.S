@@ -150,7 +150,7 @@ __xtensa_nonlocal_goto:
    be touched by the trampoline.  An ISYNC instruction is also needed to
    make sure that the modified instructions are loaded into the instruction
    fetch buffer. */
-	
+
 #define TRAMPOLINE_SIZE 59
 
 	.text
