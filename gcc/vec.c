@@ -34,44 +34,45 @@ struct vec_prefix
   void *vec[1];
 };
 
-/* Ensure there are at least RESERVE free slots in VEC, if RESERVE !=
-   ~0u. If RESERVE == ~0u increase the current allocation
-   exponentially.  VEC can be NULL, to create a new vector.  */
+/* Ensure there are at least RESERVE free slots in VEC, if RESERVE >=
+   0.  If RESERVE < 0 increase the current allocation exponentially.
+   VEC can be NULL, to create a new vector.  */
 
 void *
-vec_p_reserve (void *vec, size_t reserve MEM_STAT_DECL)
+vec_p_reserve (void *vec, int reserve MEM_STAT_DECL)
 {
   return vec_o_reserve (vec, reserve,
 			offsetof (struct vec_prefix, vec), sizeof (void *)
 			PASS_MEM_STAT);
 }
 
-/* Ensure there are at least RESERVE free slots in VEC, if RESERVE !=
-   ~0u.  If RESERVE == ~0u, increase the current allocation
-   exponentially.  VEC can be NULL, in which case a new vector is
-   created.  The vector's trailing array is at VEC_OFFSET offset and
-   consistes of ELT_SIZE sized elements.  */
+/* Ensure there are at least RESERVE free slots in VEC, if RESERVE >=
+   0.  If RESERVE < 0, increase the current allocation exponentially.
+   VEC can be NULL, in which case a new vector is created.  The
+   vector's trailing array is at VEC_OFFSET offset and consistes of
+   ELT_SIZE sized elements.  */
 
 void *
-vec_o_reserve (void *vec, size_t reserve, size_t vec_offset, size_t elt_size
+vec_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
 	       MEM_STAT_DECL)
 {
   struct vec_prefix *pfx = vec;
-  size_t alloc;
+  size_t alloc = pfx ? pfx->num : 0;
 
-  if (reserve + 1)
-    alloc = (pfx ? pfx->num : 0) + reserve;
+  if (reserve >= 0)
+    alloc += reserve;
+  else if (alloc)
+    alloc *= 2;
   else
-    alloc = pfx ? pfx->alloc * 2 : 4;
+    alloc = 4;
+
+  if (pfx && pfx->alloc >= alloc)
+    abort ();
   
-  if (!pfx || pfx->alloc < alloc)
-    {
-      vec = ggc_realloc_stat (vec, vec_offset + alloc * elt_size
-			      PASS_MEM_STAT);
-      ((struct vec_prefix *)vec)->alloc = alloc;
-      if (!pfx)
-	((struct vec_prefix *)vec)->num = 0;
-    }
+  vec = ggc_realloc_stat (vec, vec_offset + alloc * elt_size PASS_MEM_STAT);
+  ((struct vec_prefix *)vec)->alloc = alloc;
+  if (!pfx)
+    ((struct vec_prefix *)vec)->num = 0;
   
   return vec;
 }
