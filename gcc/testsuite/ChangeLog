@@ -1,3 +1,8 @@
+2005-02-01  James A. Morrison  <phython@gcc.gnu.org>
+
+	* lib/treelang.exp: Fix comment typos.
+	(treelang_target_compile): Don't append libs=-ltreelang to options.
+
 2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/parse/typename7.C: Adjust error messages.
