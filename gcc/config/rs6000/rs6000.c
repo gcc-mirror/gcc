@@ -4444,9 +4444,9 @@ rs6000_reverse_condition (mode, code)
   /* Reversal of FP compares takes care -- an ordered compare
      becomes an unordered compare and vice versa.  */
   if (mode == CCFPmode)
-    code = reverse_condition_maybe_unordered (code);
+    return reverse_condition_maybe_unordered (code);
   else
-    code = reverse_condition (code);
+    return reverse_condition (code);
 }
 
 
