@@ -1,3 +1,24 @@
+2002-12-20  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (decl_has_samegp): New.
+	(samegp_function_operand): Use it.  Rename from
+	current_file_function_operand.
+	(direct_call_operand): Handle -msmall-text via symbol->jump.
+	(tls_symbolic_operand_1): Use T for tprel64, t for smaller tprel.
+	(tls_symbolic_operand_type): Likewise.
+	(alpha_encode_section_info): Likewise.  Handle -msmall-text.
+	(alpha_function_ok_for_sibcall): Use decl_has_samegp.
+	(alpha_end_function): Set symbol->jump for functions defined in
+	the text section.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.h (MASK_SMALL_TEXT, TARGET_SMALL_TEXT): New.
+	(TARGET_SWITCHES): Add -msmall-text and -mlarge-text.
+	(PREDICATE_CODES): Update.
+	* config/alpha/alpha.md (call patterns): Update for 
+	samegp_function_operand rename; use !samegp reloc if
+	TARGET_EXPLICIT_RELOCS.
+	* doc/invoke.text: Document -msmall-text and -mlarge-text.
+
 2002-12-20  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
 
         * config/ns32k/ns32k.md (movdi): Use "l" instead of "f" to match
