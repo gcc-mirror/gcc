@@ -1,3 +1,8 @@
+1999-05-10  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/execute/erfc.f: Use small single-precision
+	values, to avoid problems on Alphas when not -mieee.
+
 1999-05-08  Craig Burley  <craig@jcb-sc.com>
 
 	* gcc.dg/990506-0.c: New test.

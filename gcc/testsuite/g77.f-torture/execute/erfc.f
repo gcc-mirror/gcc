@@ -9,9 +9,10 @@ c============================================== test.f
 		y = erfc(x)
 		if (abs(y - .1197949) .ge. 1.e-6) call abort
 
-		x=10
+* modified from x=10, y .gt. 1.5e-44 to avoid lack of -mieee on Alphas.
+		x=8
 		y = erfc(x)
-		if (y .gt. 1.5e-44) call abort
+		if (y .gt. 1.2e-28) call abort
 
 		x1=0.
 		y1 = erfc(x1)
