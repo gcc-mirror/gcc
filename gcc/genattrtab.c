@@ -310,6 +310,7 @@ static int length_used;
 static int num_delays;
 static int have_annul_true, have_annul_false;
 static int num_units;
+static int num_insn_ents;
 
 /* Used as operand to `operate_exp':  */
 
@@ -2545,6 +2546,8 @@ remove_insn_ent (av, ie)
   av->num_insns--;
   if (ie->insn_code == -1)
     av->has_asm_insn = 0;
+
+  num_insn_ents--;
 }
 
 /* Insert an insn entry in an attribute value list.  */
@@ -2559,6 +2562,8 @@ insert_insn_ent (av, ie)
   av->num_insns++;
   if (ie->insn_code == -1)
     av->has_asm_insn = 1;
+
+  num_insn_ents++;
 }
 
 /* This is a utility routine to take an expression that is a tree of either
@@ -3293,6 +3298,7 @@ optimize_attrs ()
 			   struct attr_desc * attr;
 			   struct attr_value_list *next; };
   struct attr_value_list **insn_code_values;
+  struct attr_value_list *ivbuf;
   struct attr_value_list *iv;
 
   /* For each insn code, make a list of all the insn_ent's for it,
@@ -3308,19 +3314,28 @@ optimize_attrs ()
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
 
+  /* Allocate the attr_value_list structures using xmalloc rather than
+     alloca, because using alloca can overflow the maximum permitted
+     stack limit on SPARC Lynx.  */
+  iv = ivbuf = ((struct attr_value_list *)
+		xmalloc (num_insn_ents * sizeof (struct attr_value_list)));
+
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
     for (attr = attrs[i]; attr; attr = attr->next)
       for (av = attr->first_value; av; av = av->next)
 	for (ie = av->first_insn; ie; ie = ie->next)
 	  {
-	    iv = ((struct attr_value_list *)
-		  alloca (sizeof (struct attr_value_list)));
 	    iv->attr = attr;
 	    iv->av = av;
 	    iv->ie = ie;
 	    iv->next = insn_code_values[ie->insn_code];
 	    insn_code_values[ie->insn_code] = iv;
+	    iv++;
 	  }
+
+  /* Sanity check on num_insn_ents.  */
+  if (iv != ivbuf + num_insn_ents)
+    abort ();
 
   /* Process one insn code at a time.  */
   for (i = -2; i < insn_code_number; i++)
@@ -3371,6 +3386,8 @@ optimize_attrs ()
 	    }
 	}
     }
+
+  free (ivbuf);
 }
 
 #if 0
