@@ -1,3 +1,8 @@
+2001-05-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.in (libstdcxx_flags): Do not try to execute
+	libstdc++-v3/testsuite_flags until it exists.
+
 2001-05-28  Simon Patarin <simon.patarin@inria.fr>
 
 	* ltcf-cxx.sh (osf3/osf4/osf5): Support creation of C++  shared
