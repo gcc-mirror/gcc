@@ -1,3 +1,9 @@
+2000-09-06  Richard Henderson  <rth@cygnus.com>
+
+	* config/i386/i386.md (call_pop): Fix test for setting
+	current_function_uses_pic_offset_table.
+	(call, call_value_pop, call_value): Likewise.
+
 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* timevar.c (timevar_add): Delete.
