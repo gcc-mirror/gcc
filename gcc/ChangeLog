@@ -1,3 +1,8 @@
+2004-07-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (single_incoming_edge_ignoring_loop_edges): New.
+	(get_eq_expr_value): Use it.  Simplify slightly.
+ 
 2004-07-19  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* config/mips/mips.md (mulsidi3_32bit_r4000): Fix the clobber list.

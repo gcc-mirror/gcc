@@ -268,6 +268,7 @@ static void restore_currdefs_to_original_value (varray_type locals,
 						unsigned limit);
 static void register_definitions_for_stmt (stmt_ann_t, varray_type *);
 static void redirect_edges_and_update_ssa_graph (varray_type);
+static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 
 /* Local version of fold that doesn't introduce cruft.  */
 
@@ -1407,6 +1408,34 @@ record_equivalences_from_phis (struct dom_walk_data *walk_data, basic_block bb)
     }
 }
 
+/* Ignoring loop backedges, if BB has precisely one incoming edge then
+   return that edge.  Otherwise return NULL.  */
+static edge
+single_incoming_edge_ignoring_loop_edges (basic_block bb)
+{
+  edge retval = NULL;
+  edge e;
+
+  for (e = bb->pred; e; e = e->pred_next)
+    {
+      /* A loop back edge can be identified by the destination of
+	 the edge dominating the source of the edge.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	continue;
+
+      /* If we have already seen a non-loop edge, then we must have
+	 multiple incoming non-loop edges and thus we return NULL.  */
+      if (retval)
+	return NULL;
+
+      /* This is the first non-loop incoming edge we have found.  Record
+	 it.  */
+      retval = e;
+    }
+
+  return retval;
+}
+
 /* Record any equivalences created by the incoming edge to BB.  If BB
    has more than one incoming edge, then no equivalence is created.  */
 
@@ -1435,21 +1464,20 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
   eq_expr_value.src = NULL;
   eq_expr_value.dst = NULL;
 
-  /* If we have a single predecessor, then extract EDGE_FLAGS from
-     our single incoming edge.  Otherwise clear EDGE_FLAGS and
-     PARENT_BLOCK_LAST_STMT since they're not needed.  */
+  /* If we have a single predecessor (ignoring loop backedges), then extract
+     EDGE_FLAGS from the single incoming edge.  Otherwise just return as
+     there is nothing to do.  */
   if (bb->pred
-      && ! bb->pred->pred_next
-      && parent_block_last_stmt
-      && bb_for_stmt (parent_block_last_stmt) == bb->pred->src)
+      && parent_block_last_stmt)
     {
-      edge_flags = bb->pred->flags;
+      edge e = single_incoming_edge_ignoring_loop_edges (bb);
+      if (e && bb_for_stmt (parent_block_last_stmt) == e->src)
+	edge_flags = e->flags;
+      else
+	return;
     }
   else
-    {
-      edge_flags = 0;
-      parent_block_last_stmt = NULL;
-    }
+    return;
 
   /* If our parent block ended in a COND_EXPR, add any equivalences
      created by the COND_EXPR to the hash table and initialize
@@ -1462,9 +1490,7 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
      conditional. This assignment is inserted in CONST_AND_COPIES so that
      the copy and constant propagator can find more propagation
      opportunities.  */
-  if (parent_block_last_stmt
-      && bb->pred->pred_next == NULL
-      && TREE_CODE (parent_block_last_stmt) == COND_EXPR
+  if (TREE_CODE (parent_block_last_stmt) == COND_EXPR
       && (edge_flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
     eq_expr_value = get_eq_expr_value (parent_block_last_stmt,
 				       (edge_flags & EDGE_TRUE_VALUE) != 0,
@@ -1474,9 +1500,7 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
   /* Similarly when the parent block ended in a SWITCH_EXPR.
      We can only know the value of the switch's condition if the dominator
      parent is also the only predecessor of this block.  */
-  else if (parent_block_last_stmt
-	   && bb->pred->pred_next == NULL
-	   && bb->pred->src == parent
+  else if (bb->pred->src == parent
 	   && TREE_CODE (parent_block_last_stmt) == SWITCH_EXPR)
     {
       tree switch_cond = SWITCH_COND (parent_block_last_stmt);
