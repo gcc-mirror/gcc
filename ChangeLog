@@ -1,3 +1,10 @@
+2003-05-03  Chris Demetriou  <cgd@broadcom.com>
+
+	Merge from mainline:
+	2003-05-02  Chris Demetriou  <cgd@broadcom.com>
+	* Makefile.tpl: Require "makeinfo" from texinfo 4.2 or later.
+	* Makefile.in: Regenerate.
+
 2003-04-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* Makefile.tpl (MAKEINFOFLAGS): Use --no-split instead of
