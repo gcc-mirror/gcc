@@ -1,11 +1,12 @@
 @c Copyright (C) 1996, 1997, 1999, 2000, 2001,
-@c 2002 Free Software Foundation, Inc.
+@c 2002, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996, 1997, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright @copyright{} 1996, 1997, 1999, 2000, 2001, 2002, 2003
+Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -31,7 +32,7 @@ included in the gfdl(7) man page.
 @end ignore
 
 @node Gcov
-@chapter @command{gcov}: a Test Coverage Program
+@chapter @command{gcov}---a Test Coverage Program
 
 @command{gcov} is a tool you can use in conjunction with GCC to
 test code coverage in your programs.
