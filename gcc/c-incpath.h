@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 extern void split_quote_chain (void);
-extern void add_path (char *, int, int);
+extern void add_path (char *, int, int, bool);
 extern void register_include_chains (cpp_reader *, const char *,
 				     const char *, int, int, int);
 extern void add_cpp_dir_path (struct cpp_dir *, int);

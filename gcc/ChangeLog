@@ -1,3 +1,20 @@
+2004-05-22  Ben Elliston  <bje@au.ibm.com>
+
+	* c.opt (Wmissing-include-dirs): New.
+	* c-opts.c (c_common_handle_option): Pass true for user_supplied_p
+	to add_path () for -I, but false for OPT_idirafter, OPT_iquote and
+	OPT_isystem. Handle case OPT_Wmissing_include_dirs.
+	* c-incpath.h (add_path): Add fourth (bool) argument.
+	* c-incpath.c (add_env_var_paths): Pass false to add_path ().
+	(add_standard_paths): Likewise.
+	(remove_duplicates) [REASON_NOENT]: Warn if -Wmissing-include-dirs
+	is used and the directory was user-supplied via -I.
+	(add_path): Set p->user_supplied_p.  Remove duplicated code by
+	using add_cpp_dir_path ().
+	* cpplib.h (struct cpp_options): Add warn_missing_include_dirs.
+	(struct cpp_dir): Add user_supplied_p.
+	* doc/invoke.texi (Warning Options): Document new option.
+
 2004-05-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* fold-const.c (fold_read_from_constant_string): Convert result to
