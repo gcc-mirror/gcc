@@ -36,10 +36,10 @@ Boston, MA 02111-1307, USA.  */
     "%{E|M|MM:cc1plus -E %{!no-gcc:-D__GNUG__=%v1}\
        %(cpp_options) %2 %(cpp_debug_options)}\
      %{!E:%{!M:%{!MM:\
-       %{save-temps:cc1plus -E %{!no-gcc:-D__GNUG__=%v1}\
-		%(cpp_options) %2 %b.ii \n}\
-      cc1plus %{save-temps:-fpreprocessed %b.ii}\
-	      %{!save-temps:%(cpp_unique_options) %{!no-gcc:-D__GNUG__=%v1}}\
+       %{save-temps|no-integrated-cpp:cc1plus -E %{!no-gcc:-D__GNUG__=%v1}\
+		%(cpp_options) %2 %{save-temps:%b.ii} %{!save-temps:%g.ii} \n}\
+      cc1plus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.ii} %{!save-temps:%g.ii}}\
+	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options) %{!no-gcc:-D__GNUG__=%v1}}}\
 	%(cc1_options) %2 %{+e1*}\
        %{!fsyntax-only:%(invoke_as)}}}}",
      CPLUSPLUS_CPP_SPEC},
