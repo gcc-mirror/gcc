@@ -6793,7 +6793,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 (define_insn "unop"
   [(const_int 2)]
   ""
-  "ldq_u $31,0($31)")
+  "ldq_u $31,0($30)")
 
 ;; On Unicos/Mk we use a macro for aligning code.
 
