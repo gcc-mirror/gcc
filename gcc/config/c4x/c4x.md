@@ -1,4 +1,4 @@
-;; Machine description for the TMS320C[34]x for GNU C compiler
+];; Machine description for the TMS320C[34]x for GNU C compiler
 ;; Copyright (C) 1994-98, 1999 Free Software Foundation, Inc.
 
 ;; Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
@@ -2167,6 +2167,27 @@
  ""
  "legitimize_operands (AND, operands, QImode);")
 
+
+(define_insn "*andqi3_255_clobber"
+  [(set (match_operand:QI 0 "reg_operand" "=d,?c")
+        (and:QI (match_operand:QI 1 "src_operand" "mr,mr")
+                (const_int 255)))
+   (clobber (reg:CC 21))]
+ "! TARGET_C3X"
+ "lbu0\\t%1,%0"
+  [(set_attr "type" "unarycc")])
+
+
+(define_insn "*andqi3_65535_clobber"
+  [(set (match_operand:QI 0 "reg_operand" "=d,?c")
+        (and:QI (match_operand:QI 1 "src_operand" "mr,mr")
+                (const_int 65535)))
+   (clobber (reg:CC 21))]
+ "! TARGET_C3X"
+ "lhu0\\t%1,%0"
+  [(set_attr "type" "unarycc")])
+
+
 (define_insn "*andqi3_clobber"
   [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,d,c,?c,c,c")
         (and:QI (match_operand:QI 1 "src_operand" "%rR,rS<>,0,0,rR,rS<>,0,0")
@@ -2512,6 +2533,47 @@
               (clobber (reg:CC 21))])]
   ""
   "legitimize_operands (LSHIFTRT, operands, QImode);")
+
+
+(define_insn "*lshrqi3_24_clobber"
+  [(set (match_operand:QI 0 "reg_operand" "=d,c")
+        (lshiftrt:QI (match_operand:QI 1 "src_operand" "mr,mr")
+                     (const_int 24)))
+   (clobber (reg:CC 21))]
+  "! TARGET_C3X"
+  "lbu3\\t%1,%0"
+  [(set_attr "type" "unarycc")])
+
+
+(define_insn "*ashrqi3_24_clobber"
+  [(set (match_operand:QI 0 "reg_operand" "=d,c")
+        (ashiftrt:QI (match_operand:QI 1 "src_operand" "mr,mr")
+                     (const_int 24)))
+   (clobber (reg:CC 21))]
+  "! TARGET_C3X"
+  "lb3\\t%1,%0"
+  [(set_attr "type" "unarycc")])
+
+
+(define_insn "lshrqi3_16_clobber"
+  [(set (match_operand:QI 0 "reg_operand" "=d,c")
+        (lshiftrt:QI (match_operand:QI 1 "src_operand" "mr,mr")
+                     (const_int 16)))
+   (clobber (reg:CC 21))]
+  "! TARGET_C3X"
+  "lhu1\\t%1,%0"
+  [(set_attr "type" "unarycc")])
+
+
+(define_insn "*ashrqi3_16_clobber"
+  [(set (match_operand:QI 0 "reg_operand" "=d,c")
+        (ashiftrt:QI (match_operand:QI 1 "src_operand" "mr,mr")
+                     (const_int 16)))
+   (clobber (reg:CC 21))]
+  "! TARGET_C3X"
+  "lh1\\t%1,%0"
+  [(set_attr "type" "unarycc")])
+
 
 ; When the shift count is greater than the size of the word
 ; the result can be implementation specific
@@ -2874,9 +2936,11 @@
   "*
    if (INTVAL (operands[2]) == 8)
      {
+	/* 8 bit extract.  */
        operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
        return \"lbu%3\\t%1,%0\";
      }
+   /* 16 bit extract.  */
    operands[3] = GEN_INT (INTVAL (operands[3]) / 16);
    return \"lhu%3\\t%1,%0\";
   "
@@ -2912,14 +2976,17 @@
   "*
    if (INTVAL (operands[1]) == 8)
      {
+       /* 8 bit insert.  */
        operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
        return \"mb%2\\t%3,%0\";
      }
    else if (INTVAL (operands[1]) == 16)
      {
+       /* 16 bit insert.  */
        operands[2] = GEN_INT (INTVAL (operands[2]) / 16);
        return \"mh%2\\t%3,%0\";
      }
+   /* 24 bit insert.  */
    return \"lwl1\\t%3,%0\";
   "
   [(set_attr "type" "binarycc,binary")
@@ -2948,7 +3015,7 @@
   [(set_attr "type" "binarycc")
    (set_attr "data" "uint16")])
 
-;
+
 ; TWO OPERAND FLOAT INSTRUCTIONS
 ;
 
@@ -7033,5 +7100,4 @@
        (match_operand:QI 4 "ext_low_reg_operand" ""))]
  "(REGNO (operands[0]) != REGNO (operands[4]))"
  "xor3\\t%2,%1,%0\\n||\\tsti\\t%4,%3")
-
 
