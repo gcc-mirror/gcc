@@ -177,9 +177,8 @@ cp_pedwarn (format, arglist)
      char *format;
      arglist_dcl
 {
-  extern errorfn pedwarn;
   if (! cp_silent)
-    cp_thing (pedwarn, 0, format, arglist);
+    cp_thing ((errorfn *) pedwarn, 0, format, arglist);
 }
 
 void
@@ -205,9 +204,8 @@ cp_error_at (format, arglist)
      char *format;
      arglist_dcl
 {
-  extern errorfn error_with_file_and_line;
   if (! cp_silent)
-    cp_thing (error_with_file_and_line, 1, format, arglist);
+    cp_thing ((errorfn *) error_with_file_and_line, 1, format, arglist);
 }
 
 void
@@ -215,9 +213,8 @@ cp_warning_at (format, arglist)
      char *format;
      arglist_dcl
 {
-  extern errorfn warning_with_file_and_line;
   if (! cp_silent)
-    cp_thing (warning_with_file_and_line, 1, format, arglist);
+    cp_thing ((errorfn *) warning_with_file_and_line, 1, format, arglist);
 }
 
 void
@@ -225,7 +222,6 @@ cp_pedwarn_at (format, arglist)
      char *format;
      arglist_dcl
 {
-  extern errorfn pedwarn_with_file_and_line;
   if (! cp_silent)
-    cp_thing (pedwarn_with_file_and_line, 1, format, arglist);
+    cp_thing ((errorfn *) pedwarn_with_file_and_line, 1, format, arglist);
 }

@@ -1,3 +1,13 @@
+Fri Dec 12 16:09:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* errfn.c (cp_pedwarn, cp_pedwarn_at, cp_error_at, cp_warning_at): 
+	Replace extern decls with casts.
+
+	* decl.c (expand_start_early_try_stmts): Don't mess with a sequence.
+	Update last_parm_cleanup_insn.
+	(store_after_parms): Remove.
+	* cp-tree.h: Adjust.
+
 Thu Dec 11 22:18:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (comdat_linkage): Also set DECL_COMDAT.
