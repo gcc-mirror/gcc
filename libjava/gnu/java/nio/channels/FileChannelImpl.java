@@ -115,6 +115,11 @@ public final class FileChannelImpl extends FileChannel
     this.mode = mode;
   }
 
+  protected void finalize() throws Throwable
+  {
+    close();
+  }
+
   public static FileChannelImpl in;
   public static FileChannelImpl out;
   public static FileChannelImpl err;
