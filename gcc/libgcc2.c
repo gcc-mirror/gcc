@@ -1427,20 +1427,20 @@ __bb_exit_func (void)
 	  for (i = 0; i < ncounts; i++)
 	    {
 	      fprintf (file,
-		       "    Block #%*d: executed %*ld time(s) address=0x%.*lx",
+		       "    Block #%*d: executed %*ld time(s) address= 0x%.*lx",
 		       blk_len, i+1,
 		       cnt_len, ptr->counts[i],
 		       addr_len, ptr->addresses[i]);
 
 	      if (func_p)
-		fprintf (file, " function=%-*s", func_len,
+		fprintf (file, " function= %-*s", func_len,
 			 (ptr->functions[i]) ? ptr->functions[i] : "<none>");
 
 	      if (line_p)
-		fprintf (file, " line=%*d", line_len, ptr->line_nums[i]);
+		fprintf (file, " line= %*d", line_len, ptr->line_nums[i]);
 
 	      if (file_p)
-		fprintf (file, " file=%s",
+		fprintf (file, " file= %s",
 			 (ptr->filenames[i]) ? ptr->filenames[i] : "<none>");
 
 	      fprintf (file, "\n");
