@@ -1,5 +1,9 @@
 2004-07-04  Ranjit Mathew  <rmathew@hotmail.com>
 
+	* verify.c: Correct array element access formatting thinko.
+
+2004-07-04  Ranjit Mathew  <rmathew@hotmail.com>
+
 	* verify.c: Insert a short blurb at the start referring to the JVMS.
 	(merge_type_state): Remove redundant nested if statement.
 	(verify_jvm_instructions): Ensure current_subr is initialised to
