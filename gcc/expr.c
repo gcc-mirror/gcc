@@ -7080,17 +7080,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  /* Arg could be non-integer if user redeclared this fcn wrong.  */
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE)
 	break;
-      current_function_calls_alloca = 1;
+
       /* Compute the argument.  */
       op0 = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
 
       /* Allocate the desired space.  */
-      target = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
-
-      /* Record the new stack level for nonlocal gotos.  */
-      if (nonlocal_goto_handler_slot != 0)
-	emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
-      return target;
+      return allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
 
     case BUILT_IN_FFS:
       /* If not optimizing, call the library function.  */
