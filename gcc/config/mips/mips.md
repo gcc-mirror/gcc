@@ -5869,10 +5869,20 @@ move\\t%0,%z4\\n\\
       if (GET_MODE (operands[0]) != Pmode)
 	abort ();
 
-      if (!TARGET_LONG64)
-	emit_jump_insn (gen_tablejump_internal1 (operands[0], operands[1]));
+      if (! flag_pic)
+	{
+	  if (!TARGET_LONG64)
+	    emit_jump_insn (gen_tablejump_internal1 (operands[0], operands[1]));
+	  else
+	    emit_jump_insn (gen_tablejump_internal2 (operands[0], operands[1]));
+	}
       else
-	emit_jump_insn (gen_tablejump_internal2 (operands[0], operands[1]));
+	{
+	  if (!TARGET_LONG64)
+	    emit_jump_insn (gen_tablejump_internal3 (operands[0], operands[1]));
+	  else
+	    emit_jump_insn (gen_tablejump_internal4 (operands[0], operands[1]));
+	}
 
       DONE;
     }
@@ -5883,39 +5893,73 @@ move\\t%0,%z4\\n\\
 	(match_operand:SI 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
   "!TARGET_LONG64"
-  "*
-{
-  /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
-  if (TARGET_ABICALLS && mips_abi == ABI_32)
-    output_asm_insn (\".cpadd\\t%0\", operands);
-  return \"%*j\\t%0\";
-}"
+  "%*j\\t%0"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
-   (set (attr "length")
-	(if_then_else (eq_attr "abicalls" "yes")
-		      (const_int 2)
-		      (const_int 1)))])
+   (set_attr "length"	"1")])
 
 (define_insn "tablejump_internal2"
   [(set (pc)
 	(match_operand:DI 0 "register_operand" "d"))
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_LONG64"
+  "%*j\\t%0"
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"1")])
+
+(define_expand "tablejump_internal3"
+  [(set (pc)
+	(plus:SI (match_operand:SI 0 "register_operand" "d")
+		 (label_ref:SI (match_operand:SI 1 "" ""))))]
+  ""
+  "")
+
+;;; Make sure that this only matches the insn before ADDR_DIFF_VEC.  Otherwise
+;;; it is not valid.
+
+;;; ??? The length depends on the ABI.  It is two for o32, and one for n32.
+;;; We just use the conservative number here.
+
+(define_insn ""
+  [(set (pc)
+	(plus:SI (match_operand:SI 0 "register_operand" "d")
+		 (label_ref:SI (match_operand:SI 1 "" ""))))]
+  "!TARGET_LONG64 && next_active_insn (insn) != 0
+   && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
+   && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "*
 {
-  /* .cpdadd expands to dadd REG,REG,$gp when pic, and nothing when not pic. */
-  /*  ??? SGI as does not have a .cpdadd.  */
-  if (TARGET_ABICALLS && mips_abi == ABI_32)
+  /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
+  if (mips_abi == ABI_32)
     output_asm_insn (\".cpadd\\t%0\", operands);
   return \"%*j\\t%0\";
 }"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
-   (set (attr "length")
-	(if_then_else (eq_attr "abicalls" "yes")
-		      (const_int 2)
-		      (const_int 1)))])
+   (set_attr "length"	"2")])
+
+(define_expand "tablejump_internal4"
+  [(set (pc)
+	(plus:DI (match_operand:DI 0 "register_operand" "d")
+		 (label_ref:DI (match_operand:SI 1 "" ""))))]
+  ""
+  "")
+
+;;; Make sure that this only matches the insn before ADDR_DIFF_VEC.  Otherwise
+;;; it is not valid.
+
+(define_insn ""
+  [(set (pc)
+	(plus:DI (match_operand:DI 0 "register_operand" "d")
+		 (label_ref:DI (match_operand:SI 1 "" ""))))]
+  "!TARGET_LONG64 && next_active_insn (insn) != 0
+   && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
+   && PREV_INSN (next_active_insn (insn)) == operands[1]"
+  "%*j\\t%0"
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"1")])
 
 ;; Function return, only allow after optimization, so that we can
 ;; eliminate jumps to jumps if no stack space is used.
