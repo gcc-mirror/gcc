@@ -3938,7 +3938,8 @@ pushdecl (x)
 	  else if (t == wchar_decl_node)
 	    {
 	      if (pedantic && ! DECL_IN_SYSTEM_HEADER (x))
-		cp_pedwarn ("redeclaration of wchar_t as `%T'", TREE_TYPE (x));
+		cp_pedwarn ("redeclaration of `wchar_t' as `%T'",
+			    TREE_TYPE (x));
 
 	      /* Throw away the redeclaration.  */
 	      return t;
@@ -12535,16 +12536,26 @@ xref_tag (code_type_node, name, globalize)
   if (t && globalize && TREE_CODE (t) == TYPENAME_TYPE)
     {
       static int explained;
+      tree shadowed;
 
-      cp_warning ("`%s %T' declares a new type at namespace scope;\n\
-to refer to the inherited type, say `%s %T::%T'%s",
-		  tag_name (tag_code), name, tag_name (tag_code),
-		  constructor_name (current_class_type), TYPE_IDENTIFIER (t),
-		  (!explained ? "\n\
-(names from dependent base classes are not visible to unqualified name lookup)"
-		   : ""));
+      cp_warning ("`%s %T' declares a new type at namespace scope",
+		  tag_name (tag_code), name);
+      if (!explained++)
+	cp_warning ("  names from dependent base classes are not visible to unqualified name lookup - to refer to the inherited type, say `%s %T::%T'%s",
+		    tag_name (tag_code),
+		    constructor_name (current_class_type),
+		    TYPE_IDENTIFIER (t));
 
-      explained = 1;
+      /* We need to remove the class scope binding for the
+         TYPENAME_TYPE as otherwise poplevel_class gets confused. */
+      for (shadowed = b->class_shadowed;
+	   shadowed;
+	   shadowed = TREE_CHAIN (shadowed))
+	if (TREE_TYPE (shadowed) == TYPE_NAME (t))
+	  {
+	    TREE_PURPOSE (shadowed) = NULL_TREE;
+	    break;
+	  }
     }
 
   if (t && TREE_CODE (t) != code && TREE_CODE (t) != TEMPLATE_TYPE_PARM
