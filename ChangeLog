@@ -1,3 +1,7 @@
+2004-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* MAINTAINERS: Add myself to write-after-approval.
+
 2004-07-15  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libf2c: Removed.
