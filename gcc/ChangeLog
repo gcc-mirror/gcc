@@ -1,3 +1,17 @@
+2002-09-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* config.gcc (ia64*-*-hpux*): Add ia64-c.o to c_target and
+	cxx_target.
+	* config/ia64/hpux.h (REGISTER_TARGET_PRAGMAS): Register pragma
+	handling routine for builtin pragma.
+	* config/ia64/ia64-protos.h (ia64_hpux_handle_builtin_pragma):
+	Registered pragma handling routine.
+	* ia64-c.c (ia64_hpux_handle_builtin_pragma): Ditto.
+	(ia64_hpux_add_pragma_builtin) New subroutine used by above.
+	If builtin pragma seen for math routine and C89 conformance is
+	requested use different math function in order to set errno.
+	* t-ia64 (ia64-c.o): Add new rule for new file.
+
 2002-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("movti"): Add Q->Q alternative.

@@ -1429,6 +1429,8 @@ ia64*-*-hpux*)
 	fi
 	use_collect2=no
 	float_format=i128
+	c_target_objs="ia64-c.o"
+	cxx_target_objs="ia64-c.o"
 	;;
 ip2k-*-elf)
 	;;
