@@ -1314,7 +1314,7 @@ case $CXX_FOR_TARGET in
 *' $(FLAGS_FOR_TARGET)') ;;
 *) CXX_FOR_TARGET=$CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
 esac
-qCXX_FOR_TARGET=`expr "x$CXX_FOR_TARGET" : 'x\(.*\)' | sed 's,&,\\\&,g'`
+qCXX_FOR_TARGET=`echo "$CXX_FOR_TARGET" | sed 's,&,\\\&,g'`
 
 targargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${targargs}"
 sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:" \
