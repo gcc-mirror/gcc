@@ -13030,6 +13030,8 @@ ffecom_ptr_to_expr (ffebld expr)
 	     i >= 0;
 	     --i, array = TYPE_MAIN_VARIANT (TREE_TYPE (array)))
 	  {
+	    /* The initial subtraction should happen in the original type so
+	       that (possible) negative values are handled appropriately.  */
 	    item
 	      = ffecom_2 (PLUS_EXPR,
 			  build_pointer_type (TREE_TYPE (array)),
