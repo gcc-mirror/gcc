@@ -707,7 +707,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
  gcov$(exeext) *.bp \
  *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop \
- *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.gcse \
+ *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.gcse *.flow2 \
  *.[si] libcpp.a \
  $(LANG_STAGESTUFF)
 
@@ -2293,10 +2293,10 @@ mostlyclean: intl.mostlyclean lang.mostlyclean
 # Delete debugging dump files.
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
 	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.addressof
-	-rm -f *.regmove *.mach *.bp *.gcse
+	-rm -f *.regmove *.mach *.bp *.gcse *.flow2
 	-rm -f */*.greg */*.lreg */*.combine */*.flow */*.cse */*.jump */*.rtl
 	-rm -f */*.tree */*.loop */*.dbr */*.jump2 */*.sched */*.cse2
-	-rm -f */*.sched2 */*.stack */*.regmove */*.gcse
+	-rm -f */*.sched2 */*.stack */*.regmove */*.gcse */*.flow2
 # Delete some files made during installation.
 	-rm -f specs float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump alloca.s
