@@ -1,3 +1,9 @@
+2002-12-14   Geert Bosch <bosch@gnat.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): Recognize additional 
+        case of a body created for a Renaming_As_Body, on which 
+        conformance checks are not performed. Fixes PR ada/5690.
+
 2002-11-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 	* adaint.c (__gnat_tmp_name): Better, but good enough for now,
 	solution to buffer overflow bug on GNU/Linux.	

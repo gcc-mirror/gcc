@@ -1056,9 +1056,15 @@ package body Sem_Ch6 is
             --  and the test can lead to spurious errors on nested defaults.
 
             if Present (Spec_Decl)
-              and then Nkind (Original_Node (Spec_Decl)) =
-                N_Subprogram_Renaming_Declaration
               and then not Comes_From_Source (N)
+
+              and then
+                (Nkind (Original_Node (Spec_Decl)) =
+                 N_Subprogram_Renaming_Declaration
+
+                or else (Present (Corresponding_Body (Spec_Decl))
+                  and then Nkind
+                   (Unit_Declaration_Node (Corresponding_Body (Spec_Decl))) = +                      N_Subprogram_Renaming_Declaration))
             then
                Conformant := True;
             else
