@@ -320,7 +320,12 @@ $srcdir/mkc++config $blddir $srcdir
 # Generate bits/std_limits.h and src/limitsMEMBERS.cc
 if test ! -f stamp-limits; then
   $srcdir/mknumeric_limits $blddir $srcdir $xcompiling
-  touch stamp-limits
+  if test ! -f include/bits/std_limits.h; then
+    echo "mknumeric_limits failed to execute properly: exiting"
+    exit 1
+  else
+    touch stamp-limits 
+  fi
 fi
 
 
