@@ -296,7 +296,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign
-tool_include__HEADERS = jni.h jvmpi.h
+tool_include__HEADERS = jni.h jawt.h jawt_md.h jvmpi.h
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

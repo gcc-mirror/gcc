@@ -17,7 +17,7 @@
 
 
 
-SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(libgcj_la_SOURCES) $(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
+SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(libgcj_la_SOURCES) $(libgij_la_SOURCES) $(libjawt_la_SOURCES) $(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -59,7 +59,16 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	ChangeLog NEWS THANKS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
+	$(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/gcc-version.m4 \
+	$(top_srcdir)/../config/gxx-include-dir.m4 \
+	$(top_srcdir)/../config/iconv.m4 \
+	$(top_srcdir)/../config/lcmessage.m4 \
+	$(top_srcdir)/../config/lib-ld.m4 \
+	$(top_srcdir)/../config/lib-link.m4 \
+	$(top_srcdir)/../config/lib-prefix.m4 $(top_srcdir)/pkg.m4 \
+	$(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -213,12 +222,12 @@ am__lib_gnu_java_awt_peer_gtk_la_SOURCES_DIST =  \
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c \
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c \
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c \
-	jni/gtk-peer/gthread-jni.c jni/classpath/jcl.c \
-	jni/classpath/jnilink.c jni/classpath/native_state.c \
-	jni/classpath/primlib.c jni/gtk-peer/gthread-jni.h \
-	jni/gtk-peer/gtkpeer.h jni/classpath/jcl.h \
-	jni/classpath/jnilink.h jni/classpath/native_state.h \
-	jni/classpath/primlib.h
+	jni/gtk-peer/gthread-jni.c jni/gtk-peer/gtk_jawt.c \
+	jni/classpath/jcl.c jni/classpath/jnilink.c \
+	jni/classpath/native_state.c jni/classpath/primlib.c \
+	jni/gtk-peer/gthread-jni.h jni/gtk-peer/gtkpeer.h \
+	jni/classpath/jcl.h jni/classpath/jnilink.h \
+	jni/classpath/native_state.h jni/classpath/primlib.h
 am__objects_3 = gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo \
 	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo \
 	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo \
@@ -303,6 +312,7 @@ am__objects_5 = $(am__objects_4) \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GtkWindowPeer.lo \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.lo \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gthread-jni.lo \
+	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo \
 	jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo \
 	jni/classpath/lib_gnu_java_awt_peer_gtk_la-jnilink.lo \
 	jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo \
@@ -4586,6 +4596,10 @@ am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo link.lo \
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 am_libgij_la_OBJECTS = gij.lo
 libgij_la_OBJECTS = $(am_libgij_la_OBJECTS)
+libjawt_la_DEPENDENCIES = lib-gnu-java-awt-peer-gtk.la
+am_libjawt_la_OBJECTS = libjawt_la-jawt.lo
+libjawt_la_OBJECTS = $(am_libjawt_la_OBJECTS)
+@GTK_AWT_TRUE@am_libjawt_la_rpath = -rpath $(toolexeclibdir)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am_gcj_dbtool_OBJECTS = gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT)
@@ -4631,15 +4645,15 @@ LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(AM_GCJFLAGS) \
 GCJLD = $(GCJ)
 SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
 	$(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(libgcj_la_SOURCES) \
-	$(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) \
-	$(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) \
-	$(grmiregistry_SOURCES) $(jv_convert_SOURCES)
+	$(libgij_la_SOURCES) $(libjawt_la_SOURCES) \
+	$(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) \
+	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
 	$(am__lib_gnu_java_awt_peer_gtk_la_SOURCES_DIST) \
 	$(am__libgcj_la_SOURCES_DIST) $(libgij_la_SOURCES) \
-	$(gcj_dbtool_SOURCES) $(am__gen_from_JIS_SOURCES_DIST) \
-	$(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) \
-	$(jv_convert_SOURCES)
+	$(libjawt_la_SOURCES) $(gcj_dbtool_SOURCES) \
+	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
+	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -4740,11 +4754,13 @@ LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
 LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
 LIBGCJ_LD_SYMBOLIC = @LIBGCJ_LD_SYMBOLIC@
+LIBICONV = @LIBICONV@
 LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
@@ -4767,6 +4783,7 @@ PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
+PKG_CONFIG = @PKG_CONFIG@
 PLATFORM_INNER_NAT_HDRS = @PLATFORM_INNER_NAT_HDRS@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
@@ -4844,6 +4861,10 @@ build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
+gcc_version = @gcc_version@
+gcc_version_full = @gcc_version_full@
+gcc_version_trigger = @gcc_version_trigger@
+gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@
 host_alias = @host_alias@
@@ -4856,6 +4877,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 libgcj_basedir = @libgcj_basedir@
+libstdcxx_incdir = @libstdcxx_incdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
@@ -4916,8 +4938,10 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach o
 @XLIB_AWT_TRUE@cond_xlib_ltlibrary = lib-gnu-awt-xlib.la
 @GTK_AWT_FALSE@cond_gtk_ltlibrary = 
 @GTK_AWT_TRUE@cond_gtk_ltlibrary = lib-gnu-java-awt-peer-gtk.la
+@GTK_AWT_FALSE@cond_gtk_jawt_ltlibrary = 
+@GTK_AWT_TRUE@cond_gtk_jawt_ltlibrary = libjawt.la
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la \
-    $(cond_gtk_ltlibrary) $(cond_xlib_ltlibrary)
+    $(cond_gtk_ltlibrary) $(cond_gtk_jawt_ltlibrary) $(cond_xlib_ltlibrary)
 
 toolexecmainlib_DATA = libgcj.spec
 pkgconfigdir = $(libdir)/pkgconfig
@@ -5046,6 +5070,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c	\
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c \
 jni/gtk-peer/gthread-jni.c \
+jni/gtk-peer/gtk_jawt.c \
 jni/classpath/jcl.c \
 jni/classpath/jnilink.c	\
 jni/classpath/native_state.c \
@@ -5119,6 +5144,14 @@ lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
+libjawt_la_SOURCES = jawt.c
+libjawt_la_CFLAGS = -I$(srcdir)/jni/classpath $(PEDANTIC_CFLAGS) $(X_CFLAGS)
+libjawt_la_LIBADD = lib-gnu-java-awt-peer-gtk.la
+libjawt_la_LDFLAGS = \
+	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+	$(LIBGCJ_LD_SYMBOLIC)
+
+libjawt_la_LINK = $(LIBLINK)
 lib_gnu_awt_xlib_la_SOURCES = \
 	$(xlib_java_source_files) \
 	$(xlib_nat_source_files)
@@ -8416,6 +8449,9 @@ jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GThreadNativeMet
 	jni/gtk-peer/$(am__dirstamp) \
 	jni/gtk-peer/$(DEPDIR)/$(am__dirstamp)
 jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gthread-jni.lo:  \
+	jni/gtk-peer/$(am__dirstamp) \
+	jni/gtk-peer/$(DEPDIR)/$(am__dirstamp)
+jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo:  \
 	jni/gtk-peer/$(am__dirstamp) \
 	jni/gtk-peer/$(DEPDIR)/$(am__dirstamp)
 jni/classpath/$(am__dirstamp):
@@ -15614,6 +15650,8 @@ sysdep/dwarf2-backtrace.lo: sysdep/$(am__dirstamp) \
 	sysdep/$(DEPDIR)/$(am__dirstamp)
 libgij.la: $(libgij_la_OBJECTS) $(libgij_la_DEPENDENCIES) 
 	$(CXXLINK) -rpath $(toolexeclibdir) $(libgij_la_LDFLAGS) $(libgij_la_OBJECTS) $(libgij_la_LIBADD) $(LIBS)
+libjawt.la: $(libjawt_la_OBJECTS) $(libjawt_la_DEPENDENCIES) 
+	$(libjawt_la_LINK) $(am_libjawt_la_rpath) $(libjawt_la_LDFLAGS) $(libjawt_la_OBJECTS) $(libjawt_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
@@ -21200,6 +21238,8 @@ mostlyclean-compile:
 	-rm -f jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GtkWindowPeer.lo
 	-rm -f jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gthread-jni.$(OBJEXT)
 	-rm -f jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gthread-jni.lo
+	-rm -f jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.$(OBJEXT)
+	-rm -f jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo
 	-rm -f org/ietf/jgss/ChannelBinding.$(OBJEXT)
 	-rm -f org/ietf/jgss/ChannelBinding.lo
 	-rm -f org/ietf/jgss/GSSContext.$(OBJEXT)
@@ -21229,6 +21269,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gij.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interpret.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jni.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjawt_la-jawt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/no-threads.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nogc.Plo@am__quote@
@@ -23988,6 +24029,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GtkToolkit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GtkWindowPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gthread-jni.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@org/ietf/jgss/$(DEPDIR)/ChannelBinding.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@org/ietf/jgss/$(DEPDIR)/GSSContext.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@org/ietf/jgss/$(DEPDIR)/GSSCredential.Plo@am__quote@
@@ -24302,6 +24344,13 @@ jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gthread-jni.lo: jni/gtk-peer/gthread-j
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -c -o jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gthread-jni.lo `test -f 'jni/gtk-peer/gthread-jni.c' || echo '$(srcdir)/'`jni/gtk-peer/gthread-jni.c
 
+jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo: jni/gtk-peer/gtk_jawt.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -MT jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo -MD -MP -MF "jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.Tpo" -c -o jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo `test -f 'jni/gtk-peer/gtk_jawt.c' || echo '$(srcdir)/'`jni/gtk-peer/gtk_jawt.c; \
+@am__fastdepCC_TRUE@	then mv -f "jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.Tpo" "jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.Plo"; else rm -f "jni/gtk-peer/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='jni/gtk-peer/gtk_jawt.c' object='jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -c -o jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo `test -f 'jni/gtk-peer/gtk_jawt.c' || echo '$(srcdir)/'`jni/gtk-peer/gtk_jawt.c
+
 jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo: jni/classpath/jcl.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -MT jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo -MD -MP -MF "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Tpo" -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-jcl.lo `test -f 'jni/classpath/jcl.c' || echo '$(srcdir)/'`jni/classpath/jcl.c; \
 @am__fastdepCC_TRUE@	then mv -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Tpo" "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Plo"; else rm -f "jni/classpath/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-jcl.Tpo"; exit 1; fi
@@ -24329,6 +24378,13 @@ jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo: jni/classpath/primlib.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='jni/classpath/primlib.c' object='jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_gnu_java_awt_peer_gtk_la_CFLAGS) $(CFLAGS) -c -o jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo `test -f 'jni/classpath/primlib.c' || echo '$(srcdir)/'`jni/classpath/primlib.c
+
+libjawt_la-jawt.lo: jawt.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjawt_la_CFLAGS) $(CFLAGS) -MT libjawt_la-jawt.lo -MD -MP -MF "$(DEPDIR)/libjawt_la-jawt.Tpo" -c -o libjawt_la-jawt.lo `test -f 'jawt.c' || echo '$(srcdir)/'`jawt.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libjawt_la-jawt.Tpo" "$(DEPDIR)/libjawt_la-jawt.Plo"; else rm -f "$(DEPDIR)/libjawt_la-jawt.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='jawt.c' object='libjawt_la-jawt.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjawt_la_CFLAGS) $(CFLAGS) -c -o libjawt_la-jawt.lo `test -f 'jawt.c' || echo '$(srcdir)/'`jawt.c
 
 .cc.o:
 @am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
