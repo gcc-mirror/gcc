@@ -3321,6 +3321,7 @@ simplify_binary_operation (code, mode, op0, op1)
 
   /* We can fold some multi-word operations.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
+      && width == HOST_BITS_PER_WIDE_INT * 2
       && (GET_CODE (op0) == CONST_DOUBLE || GET_CODE (op0) == CONST_INT)
       && (GET_CODE (op1) == CONST_DOUBLE || GET_CODE (op1) == CONST_INT))
     {
