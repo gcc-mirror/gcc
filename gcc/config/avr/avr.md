@@ -1637,8 +1637,8 @@
   [(set (cc0)
         (compare (sign_extend:HI
 		  (match_operand:QI 0 "register_operand"  "d"))
-		 (match_operand:HI 1 "immediate_operand" "M")))]
-  ""
+		 (match_operand:HI 1 "const_int_operand" "n")))]
+  "INTVAL (operands[1]) >= -128 && INTVAL (operands[1]) <= 127"
   "cpi %0,lo8(%1)"
   [(set_attr "cc" "compare")
    (set_attr "length" "1")])

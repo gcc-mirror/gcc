@@ -1,3 +1,8 @@
+2003-04-20  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.md (*cmpqi_sign_extend): Handle negative values
+	of operand 1 correctly.
+
 2003-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cpplex.c (_cpp_lex_direct): Set BOL for CPP_EOF tokens.
