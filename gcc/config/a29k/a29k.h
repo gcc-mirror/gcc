@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU.
-   Copyright (C) 1988, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -525,7 +525,7 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
 #define REG_CLASS_CONTENTS	\
   { {0, 0, 0, 0, 0, 0, 0, 0}, 				   \
     {0, 1, 0, 0, 0, 0, 0, 0},				   \
-    {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, ~ 0xfff, 0xfffff},  \
+    {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, ~ 0xfff, 0xfff},	   \
     {0, 0, 0, 0, 0, 0x20000, 0, 0}, 			   \
     {0, 0, 0, 0, 0, 0x40000, 0, 0}, 			   \
     {0, 0, 0, 0, 0, 0x80000, 0, 0}, 			   \
@@ -533,8 +533,8 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
     {0, 0, 0, 0, 0, 0xfffe0000, 0xff, 0},		   \
     {0, 0, 0, 0, 0, 0, 0x100, 0},			   \
     {0, 0, 0, 0, 0, 0, 0xf00, 0},			   \
-    {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, ~ 0xff, ~0}, 	   \
-    {~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0} }
+    {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, ~ 0xff, 0xfff}, 	   \
+    {~0, ~0, ~0, ~0, ~0, ~0, ~0, 0xfff} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -660,6 +660,15 @@ extern struct rtx_def *a29k_get_reloaded_address ();
 
 #define REGISTER_MOVE_COST(CLASS1, CLASS2)	\
   ((CLASS1) == GENERAL_REGS || (CLASS2) == GENERAL_REGS ? 2 : 4)
+
+/* A C expressions returning the cost of moving data of MODE from a register to
+   or from memory.
+
+   It takes extra insns on the 29k to form addresses, so we want to make
+   this higher.  In addition, we need to keep it more expensive than the
+   most expensive register-register copy.  */
+
+#define MEMORY_MOVE_COST(MODE) 6
 
 /* A C statement (sans semicolon) to update the integer variable COST
    based on the relationship between INSN that is dependent on
