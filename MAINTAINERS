@@ -37,7 +37,6 @@ m68k port (?)		Jeff Law		law@redhat.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 rs6000 port		Geoff Keating		geoffk@redhat.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
-mips port		Gavin Romig-Koch	gavin@redhat.com
 ia64 port		Jim Wilson		wilson@redhat.com
 i860 port		Jason Eckhardt		jle@redhat.com
 i960 port		Jim Wilson		wilson@redhat.com
@@ -90,7 +89,6 @@ gcse.c 			Jeff Law		law@redhat.com
 global opt framework	Jeff Law		law@redhat.com
 jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
-C front end/ISO C99	Gavin Romig-Koch	gavin@redhat.com
 C front end/ISO C99	Joseph Myers		jsm28@cam.ac.uk
 C front end/ISO C99	Richard Henderson	rth@redhat.com
 config.sub/config.guess	Ben Elliston		bje@redhat.com
@@ -161,6 +159,7 @@ Ken Raeburn					raeburn@redhat.com
 Rolf Rasmussen					rolfwr@gcc.gnu.org
 Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
 Loren J. Rittle					ljrittle@acm.org
+Gavin Romig-Koch				gavin@redhat.com
 Alex Samuel					samuel@codesourcery.com
 Bernd Schmidt					bernds@redhat.com
 Andreas Schwab					schwab@suse.de

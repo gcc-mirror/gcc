@@ -1,3 +1,8 @@
+2001-04-25  Gavin Romig-Koch  <gavin@redhat.com>
+
+	* MAINTAINERS: Remove self as MIPS maintainer and
+	C front end maintainer.  
+
 Mon Apr 23 09:15:03 2001  Anthony Green  <green@redhat.com>
 
 	* configure.in: Move *-chorusos target case to the proper switch.
