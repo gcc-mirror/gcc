@@ -1,3 +1,16 @@
+2004-01-14  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/10776
+	* sched-deps.c (trye_dependency_cache, anti_dependency_cache,
+	outptu_dependency_cache, forward_dependency_cahe): Trun to vectors of
+	bitmaps
+	(cache_size): New variable
+	(add_dependence): Update use; canonize early memory locations
+	(sched_analyze_1): Likewise.
+	(sched_analyze_2): Likewise.
+	(init_dependency_caches): Initialize bitmaps.
+	(free_dependency_caches): Free bitmaps
+
 2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* calls.c: Replace STRICT_ARGUMENT_NAMING in comments with
