@@ -28,9 +28,11 @@ extern void c4x_optimization_options PARAMS ((int, int));
 
 extern void c4x_output_ascii PARAMS ((FILE *, const char *, int));
 
-extern void c4x_function_prologue PARAMS ((FILE *, int));
+extern int c4x_interrupt_function_p PARAMS ((void));
 
-extern void c4x_function_epilogue PARAMS ((FILE *, int));
+extern void c4x_expand_prologue PARAMS ((void));
+
+extern void c4x_expand_epilogue PARAMS ((void));
 
 extern int c4x_null_epilogue_p PARAMS ((void));
 
@@ -55,6 +57,8 @@ extern struct rtx_def *c4x_function_arg PARAMS ((CUMULATIVE_ARGS *,
 						 int));
 
 extern void c4x_encode_section_info PARAMS ((tree));
+
+extern int c4x_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 #endif /* TREE_CODE */
 
 
@@ -72,7 +76,7 @@ extern struct rtx_def *c4x_gen_compare_reg PARAMS ((enum rtx_code, rtx, rtx));
 
 extern int c4x_check_legit_addr PARAMS ((enum machine_mode, rtx, int));
 
-extern int c4x_hard_regno_mode_ok PARAMS ((int, enum machine_mode));
+extern int c4x_hard_regno_mode_ok PARAMS ((unsigned int, enum machine_mode));
 
 extern struct rtx_def *c4x_legitimize_address PARAMS ((rtx,
 						       enum machine_mode));
@@ -91,7 +95,7 @@ extern enum reg_class c4x_preferred_reload_class PARAMS ((rtx,
 extern struct rtx_def *c4x_operand_subword PARAMS ((rtx, int, int,
 						   enum machine_mode));
 
-extern char *c4x_output_cbranch PARAMS ((char *, rtx));
+extern char *c4x_output_cbranch PARAMS ((const char *, rtx));
 
 extern int c4x_label_conflict PARAMS ((rtx, rtx, rtx));
 
@@ -101,11 +105,15 @@ extern int c4x_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 extern void c4x_process_after_reload PARAMS ((rtx));
 
+extern void c4x_rptb_insert PARAMS ((rtx insn));
+
 extern int c4x_rptb_nop_p PARAMS ((rtx));
 
 extern int c4x_rptb_rpts_p PARAMS ((rtx, rtx));
 
 extern int c4x_autoinc_operand PARAMS ((rtx, enum machine_mode));
+
+extern int any_operand PARAMS ((rtx, enum machine_mode));
 
 extern int fp_zero_operand PARAMS ((rtx, enum machine_mode));
 

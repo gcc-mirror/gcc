@@ -1153,12 +1153,6 @@ CUMULATIVE_ARGS;
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   c4x_va_arg (valist, type)
 
-/* Function Entry and Exit.  */
-
-#define FUNCTION_PROLOGUE(FILE, SIZE)	c4x_function_prologue(FILE, SIZE)
-#define FUNCTION_EPILOGUE(FILE, SIZE)	c4x_function_epilogue(FILE, SIZE)
-
-
 /* Generating Code for Profiling.  */
 
 /* Note that the generated assembly uses the ^ operator to load the 16
@@ -1378,13 +1372,16 @@ CUMULATIVE_ARGS;
       }								\
     }
 
-#define FUNCTION_BLOCK_PROFILER_EXIT(FILE)			\
+#define FUNCTION_BLOCK_PROFILER_EXIT				\
     {								\
-	fprintf (FILE, "\tpush\tst\n");				\
-	fprintf (FILE, "\tpush\tar2\n");			\
-	fprintf (FILE, "\tcall\t___bb_trace_ret\n");		\
-	fprintf (FILE, "\tpop\tar2\n");				\
-	fprintf (FILE, "\tpop\tst\n");				\
+      emit_insn (gen_push_st ()); 				\
+      emit_insn (gen_pushqi (					\
+		gen_rtx_REG (QImode, AR2_REGNO)));		\
+      emit_call_insn (gen_nodb_call (				\
+		gen_rtx_SYMBOL_REF (QImode, "__bb_trace_ret")));\
+      emit_insn (gen_popqi_unspec (				\
+		gen_rtx_REG (QImode, AR2_REGNO)));		\
+      emit_insn (gen_pop_st ());				\
     }
 
 #define	MACHINE_STATE_SAVE(ID)		\

@@ -1346,24 +1346,6 @@ c4x_emit_move_sequence (operands, mode)
       return 1;
     }
 
-  if (mode == QImode
-      && reg_operand (op0, mode)
-      && const_int_operand (op1, mode)
-      && ! IS_INT16_CONST (INTVAL (op1))
-      && ! IS_HIGH_CONST (INTVAL (op1)))
-    {
-      emit_insn (gen_loadqi_big_constant (op0, op1));
-      return 1;
-    }
-
-  if (mode == HImode
-      && reg_operand (op0, mode)
-      && const_int_operand (op1, mode))
-    {
-      emit_insn (gen_loadhi_big_constant (op0, op1));
-      return 1;
-    }
-
   /* Adjust operands in case we have modified them.  */
   operands[0] = op0;
   operands[1] = op1;
