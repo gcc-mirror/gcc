@@ -3332,7 +3332,19 @@ mark_addressable (exp)
       case CONST_DECL:
       case PARM_DECL:
       case RESULT_DECL:
-	if (TREE_REGDECL (x) && !TREE_ADDRESSABLE (x))
+	if (TREE_REGDECL (x) && !TREE_ADDRESSABLE (x)
+	    && TREE_NONLOCAL (x))
+	  {
+	    if (TREE_PUBLIC (x))
+	      {
+		error ("global register variable `%s' used in nested function",
+		       IDENTIFIER_POINTER (DECL_NAME (x)));
+		return 0;
+	      }
+	    pedwarn ("register variable `%s' used in nested function",
+		     IDENTIFIER_POINTER (DECL_NAME (x)));
+	  }
+	else if (TREE_REGDECL (x) && !TREE_ADDRESSABLE (x))
 	  {
 	    if (TREE_PUBLIC (x))
 	      {
