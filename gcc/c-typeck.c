@@ -847,7 +847,7 @@ decl_constant_value (decl)
       current_function_decl != 0
       && ! pedantic
       && ! TREE_THIS_VOLATILE (decl)
-      && TREE_READONLY (decl) && ! ITERATOR_P (decl)
+      && TREE_READONLY (decl)
       && DECL_INITIAL (decl) != 0
       && TREE_CODE (DECL_INITIAL (decl)) != ERROR_MARK
       /* This is invalid if initial value is not constant.
@@ -3280,11 +3280,6 @@ readonly_warning (arg, msgid)
      tree arg;
      const char *msgid;
 {
-  /* Forbid assignments to iterators.  */
-  if (TREE_CODE (arg) == VAR_DECL && ITERATOR_P (arg))
-    pedwarn ("%s of iterator `%s'",  _(msgid), 
-	     IDENTIFIER_POINTER (DECL_NAME (arg)));
-
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))

@@ -1,3 +1,7 @@
+2000-08-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/noncompile/930622-2.c: Adjust error message.
+
 2000-08-24  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/ia64-sync-1.c: New test.

@@ -1,3 +1,35 @@
+2000-08-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (C_AND_OBJC_OBJS): Remove c-iterate.o.
+	(c-iterate.o): Remove target.
+	* gcc/c-common.h (enum rid): Remove RID_ITERATOR.
+	* gcc/c-decl.c (init_decl_processing): Remove call to init_iterators.
+	(finish_decl): Don't handle iterators.
+	(grokdeclarator): Likewise.
+	* gcc/c-parse.gperf: Remove __iterator and __iterator__ keywords.
+	* gcc/c-gperf.h: Regenerated.
+	* gcc/c-iterate.c: Removed.
+	* gcc/c-lex.c (init_lex): Don't handle iterators.
+	* gcc/c-parse.in (primary): Remove pop_iterator_stack call.
+	(compstmt_primary_start): Remove push_iterator_stack call.
+	(stmt): Don't allow iterator statements.  Replace iterator_expand
+	with expand_expr_stmt.
+	(all_iter_stmt): Remove.
+	(all_iter_stmt_simple): Likewise.
+	(all_iter_stmt_with_decl): Likewise.
+	* gcc/c-tree.h (ITERATOR_P): Remove.
+	(ITERATOR_BOUND_P): Likewise.
+	(init_iterators): Remove declaration.
+	(iterator_expand): Likewise.
+	(iterator_for_loop_start): Likewise.
+	(iterator_for_loop_end): Likewise.
+	(iterator_for_loop_record): Likewise.
+	(push_iterator_stack): Likewise.
+	(pop_iterator_stack): Likewise.
+	* gcc/c-typeck.c (decl_constant_value): Don't check ITERATOR_P.
+	(readonly_warning): Likewise.
+	* gcc/tree.h (ITERATOR_BOUND_P): Don't mention it.
+		
 2000-08-24  Jim Wilson  <wilson@cygnus.com>
 
 	* c-common.c (decl_attributes, case A_ALIGN): Revert last change.

@@ -300,7 +300,6 @@ init_lex ()
   ridpointers[(int) RID_EXTERN] = get_identifier ("extern");
   ridpointers[(int) RID_TYPEDEF] = get_identifier ("typedef");
   ridpointers[(int) RID_REGISTER] = get_identifier ("register");
-  ridpointers[(int) RID_ITERATOR] = get_identifier ("iterator");
   ridpointers[(int) RID_COMPLEX] = get_identifier ("complex");
   ridpointers[(int) RID_ID] = get_identifier ("id");
   ridpointers[(int) RID_IN] = get_identifier ("in");
@@ -328,7 +327,6 @@ init_lex ()
       UNSET_RESERVED_WORD ("typeof");
       UNSET_RESERVED_WORD ("signed");
       UNSET_RESERVED_WORD ("inline");
-      UNSET_RESERVED_WORD ("iterator");
       UNSET_RESERVED_WORD ("complex");
     }
   else if (!flag_isoc99)
@@ -340,7 +338,6 @@ init_lex ()
       UNSET_RESERVED_WORD ("typeof");
       if (! flag_isoc99)
 	UNSET_RESERVED_WORD ("inline");
-      UNSET_RESERVED_WORD ("iterator");
       UNSET_RESERVED_WORD ("complex");
     }
 }
