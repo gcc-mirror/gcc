@@ -1,3 +1,22 @@
+2003-05-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/README: Move to...
+	* docs/html/test.html: ...here. Add documentation.
+	* docs/html/install.html: Move testing bits out..
+	* docs/html/documentation.html: Add separate testing link.
+        * testsuite/performance: Add.
+        * testsuite/performance/allocator.cc: New.
+        * testsuite/performance/complex_norm.cc: New.
+        * testsuite/performance/cout_insert_int.cc: New.
+        * testsuite/performance/fstream_seek_write.cc: New.
+        * testsuite/performance/ifstream_getline.cc: New.
+        * testsuite/performance/map_create_fill.cc: New.
+        * testsuite/performance/ofstream_insert_float.cc: New.
+        * testsuite/performance/ofstream_insert_int.cc: New.
+        * testsuite/performance/string_append.cc: New.
+	* testsuite/lib/libstdc++-v3-dg.exp (v3-compute-tests): Filter
+	performance tests.
+ 
 2003-05-20  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	PR libstdc++/10689

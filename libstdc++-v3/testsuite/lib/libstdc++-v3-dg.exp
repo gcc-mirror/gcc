@@ -233,6 +233,7 @@ proc v3-compute-tests { } {
 
     set tests_file "${outdir}/testsuite_files"
     set tests_file_inter "${outdir}/testsuite_files_interactive"
+    set tests_file_perf "${outdir}/testsuite_files_performance"
     set sfiles ""
 
     # If there is a testsuite_file, use it. 
@@ -281,6 +282,21 @@ proc v3-compute-tests { } {
     }
     set sfiles ${restwo}
 
+    # Filter performance analysis tests.
+    # Use special rules to run these tests.
+    set resthree {}
+    set sfiles_perf {}
+    foreach i $sfiles {
+	if [regexp "performance" $i] {
+	    verbose "element performance list is $i"
+	    lappend sfiles_perf $i
+	} else {
+	    verbose "element non-performancet list is $i"
+	    lappend resthree $i
+	}
+    }
+    set sfiles ${resthree}
+
     # Write out testsuite_files.
     set f [open $tests_file "w"]
     foreach t $sfiles {
@@ -291,6 +307,13 @@ proc v3-compute-tests { } {
     # Write out testsuite_files_interactive.
     set f [open $tests_file_inter "w"]
     foreach t $sfiles_inter {
+	puts $f $t
+    }
+    close $f
+
+    # Write out testsuite_files_performance.
+    set f [open $tests_file_perf "w"]
+    foreach t $sfiles_perf {
 	puts $f $t
     }
     close $f
