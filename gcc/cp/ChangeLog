@@ -1,5 +1,7 @@
 1999-03-10  Mark Mitchell  <mark@markmitchell.com>
 
+	* search.c (assert_canonical_unmarked): Fix typo in prototype.
+
 	* search.c (dfs_canonical_queue): New function.
 	(dfs_assert_unmarked_p): Likewise.
 	(assert_canonical_unmarked): Likewise.
