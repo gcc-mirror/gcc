@@ -8739,7 +8739,10 @@ rs6000_emit_prologue ()
       /* Get VRSAVE onto a GPR.  */
       reg = gen_rtx_REG (SImode, 12);
       vrsave = gen_rtx_REG (SImode, VRSAVE_REGNO);
-      emit_insn (gen_rtx_SET (VOIDmode, reg, vrsave));
+      if (TARGET_MACHO)
+	emit_insn (gen_get_vrsave_internal (reg));
+      else
+	emit_insn (gen_rtx_SET (VOIDmode, reg, vrsave));
 
       /* Save VRSAVE.  */
       offset = info->vrsave_save_offset + sp_offset;
