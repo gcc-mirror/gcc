@@ -1,3 +1,21 @@
+2002-02-02  H.J. Lu  (hjl@gnu.org)
+
+	* cp-demangle.c (cp_demangle_type): Do not protect with
+	IN_LIBGCC2.
+	(cplus_demangle_v3_all): New.
+	(cplus_demangle_v3): Call cplus_demangle_v3_all.
+	(cplus_demangle_v3_type): Call cplus_demangle_v3_all.
+
+	* cplus-dem.c (cplus_demangle_v3_p): New function pointer.
+	Initialized to cplus_demangle_v3.
+	(cplus_demangle_with_style): Call cplus_demangle_v3_p instead
+	of cplus_demangle_v3.
+	(main): Set cplus_demangle_v3_p to cplus_demangle_v3_type for
+	command line symbol.
+
+	* testsuite/regress-demangle: Pass the mangled name at the
+	command line.
+
 2002-02-01  H.J. Lu  <hjl@gnu.org>
 
 	* cp-demangle.c (cp_demangle_type): Call demangling_new with

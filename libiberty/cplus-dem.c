@@ -478,6 +478,9 @@ do_hpacc_template_literal PARAMS ((struct work_stuff *, const char **, string *)
 static int
 snarf_numeric_literal PARAMS ((const char **, string *));
 
+static char* (*cplus_demangle_v3_p) PARAMS ((const char* mangled))
+  = cplus_demangle_v3;
+
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
    type.  */
@@ -911,7 +914,7 @@ cplus_demangle (mangled, options)
   /* The V3 ABI demangling is implemented elsewhere.  */
   if (GNU_V3_DEMANGLING || AUTO_DEMANGLING)
     {
-      ret = cplus_demangle_v3 (mangled);
+      ret = cplus_demangle_v3_p (mangled);
       if (ret || GNU_V3_DEMANGLING)
 	return ret;
     }
@@ -5086,6 +5089,7 @@ main (argc, argv)
 
   if (optind < argc)
     {
+      cplus_demangle_v3_p = cplus_demangle_v3_type;
       for ( ; optind < argc; optind++)
 	{
 	  demangle_it (argv[optind]);
