@@ -1,5 +1,8 @@
 Wed Mar 18 05:54:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr, case COND_EXPR): If have conditional move,
+	don't use ORIGINAL_TARGET unless REG.
+
 	* function.c (fixup_var_refs_insns): Also delete insn storing pseudo
 	back into arg list.
 
