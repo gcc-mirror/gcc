@@ -1719,17 +1719,21 @@ compare_and_free_webs (link)
       struct web *web1 = wl->web;
       struct web *web2 = ID2WEB (web1->id);
       if (web1->regno != web2->regno
-	  || web1->crosses_call != web2->crosses_call
-	  || web1->live_over_abnormal != web2->live_over_abnormal
 	  || web1->mode_changed != web2->mode_changed
 	  || !rtx_equal_p (web1->orig_x, web2->orig_x)
 	  || web1->type != web2->type
 	  /* Only compare num_defs/num_uses with non-hardreg webs.
 	     E.g. the number of uses of the framepointer changes due to
 	     inserting spill code.  */
-	  || (web1->type != PRECOLORED &&
-	      (web1->num_uses != web2->num_uses
-	       || web1->num_defs != web2->num_defs)))
+	  || (web1->type != PRECOLORED
+	      && (web1->num_uses != web2->num_uses
+	          || web1->num_defs != web2->num_defs))
+	  /* Similarly, if the framepointer was unreferenced originally
+	     but we added spills, these fields may not match. */
+	  || (web1->type != PRECOLORED
+               && web1->crosses_call != web2->crosses_call)
+	  || (web1->type != PRECOLORED
+	       && web1->live_over_abnormal != web2->live_over_abnormal))
 	abort ();
       if (web1->type != PRECOLORED)
 	{

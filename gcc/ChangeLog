@@ -1,3 +1,8 @@
+2003-02-11  Dale Johannesen  <dalej@apple.com>
+	* ra-build.c (compare_and_free_webs):  Relax checking.
+	* config/rs6000/darwin.h (HOT_TEXT_SECTION_NAME):  Define.
+	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME):  Define.
+
 2003-02-11  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
 	PR optimization/9651

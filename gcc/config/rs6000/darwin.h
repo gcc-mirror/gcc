@@ -87,6 +87,11 @@ Boston, MA 02111-1307, USA.  */
   (RS6000_ALIGN (current_function_outgoing_args_size, 16)		\
    + (STACK_POINTER_OFFSET))
 
+/* These are used by -fbranch-probabilities */
+#define HOT_TEXT_SECTION_NAME "__TEXT,__text,regular,pure_instructions"
+#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME \
+                              "__TEXT,__text2,regular,pure_instructions"
+
 /* Define cutoff for using external functions to save floating point.
    Currently on Darwin, always use inline stores.  */
 
