@@ -1,3 +1,7 @@
+2004-08-26  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-parse.in (OBJC_TYPE_QUAL): New %token for ObjC use.
+
 2004-08-26  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-alias-common.c (gate_pta): New function.
