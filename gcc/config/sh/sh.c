@@ -1823,11 +1823,16 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
 
 	if (first < 0)
 	  {
+	    enum machine_mode mode
+	      = ((mask << right) <= 0xff) ? QImode : HImode;
+	    rtx lowpart = gen_lowpart (mode, source);
+
+	    if (no_new_pseudos && ! TARGET_SHMEDIA
+		&& ! arith_reg_operand (lowpart, mode))
+	      return -1;
 	    emit_insn ((mask << right) <= 0xff
-		       ? gen_zero_extendqisi2(dest,
-					      gen_lowpart (QImode, source))
-		       : gen_zero_extendhisi2(dest,
-					      gen_lowpart (HImode, source)));
+		       ? gen_zero_extendqisi2(dest, lowpart)
+		       : gen_zero_extendhisi2(dest, lowpart));
 	    source = dest;
 	  }
 	if (source != dest)
@@ -1846,9 +1851,18 @@ gen_shl_and (dest, left_rtx, mask_rtx, source)
 	    mask <<= first;
 	  }
 	if (first >= 0)
-	  emit_insn (mask <= 0xff
-		     ? gen_zero_extendqisi2(dest, gen_lowpart (QImode, dest))
-		     : gen_zero_extendhisi2(dest, gen_lowpart (HImode, dest)));
+	  {
+	    enum machine_mode mode = (mask <= 0xff) ? QImode : HImode;
+	    rtx lowpart = gen_lowpart (mode, dest);
+
+	    if (no_new_pseudos && ! TARGET_SHMEDIA
+		&& ! arith_reg_operand (lowpart, mode))
+	      return -1;
+	    emit_insn (mask <= 0xff
+		       ? gen_zero_extendqisi2(dest, lowpart)
+		       : gen_zero_extendhisi2(dest, lowpart));
+	  }
+	
 	if (total_shift > 0)
 	  {
 	    operands[2] = GEN_INT (total_shift);
