@@ -1795,6 +1795,9 @@ mark_set_1 (needed, dead, x, insn, significant)
       /* Mark it as as dead before this insn.  */
       dead[offset] |= bit;
 
+      /* The next use is no longer "next", since a store intervenes.  */
+      reg_next_use[regno] = 0;
+
       /* A hard reg in a wide mode may really be multiple registers.
 	 If so, mark all of them just like the first.  */
       if (regno < FIRST_PSEUDO_REGISTER)
@@ -1863,9 +1866,6 @@ mark_set_1 (needed, dead, x, insn, significant)
 	      reg_live_length[regno]++;
 	    }
 
-	  /* The next use is no longer "next", since a store intervenes.  */
-	  reg_next_use[regno] = 0;
-
 	  if (all_needed)
 	    {
 	      /* Make a logical link from the next following insn
@@ -1915,6 +1915,8 @@ mark_set_1 (needed, dead, x, insn, significant)
 	    }
 	}
     }
+  else if (GET_CODE (reg) == REG)
+    reg_next_use[regno] = 0;
 
   /* If this is the last pass and this is a SCRATCH, show it will be dying
      here and count it.  */
