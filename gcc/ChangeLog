@@ -1,3 +1,8 @@
+2001-05-03  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc(rs6000-ibm-aix|powerpc-ibm-aix):  Do not include
+	rs6000/rs6000.h twice.
+
 2001-05-03  Mark Elbrecht  <snowball3@bigfoot.com>
 
 	* config/i386/djgpp.h (CPP_PREDEFINES): Define __GO32__.
