@@ -1,0 +1,81 @@
+# Run the Jacks test suite.
+# See http://www-124.ibm.com/developerworks/oss/cvs/jikes/~checkout~/jacks/jacks.html
+
+proc gcj_jacks_write {filename} {
+  global GCJ_UNDER_TEST
+
+  set gcjl [split $GCJ_UNDER_TEST]
+  set gcj_cmd [lindex $gcjl 0]
+  set rest [join [lreplace $gcjl 0 0]]
+  append rest " -C"
+
+  set fd [open $filename w]
+  puts $fd "set JAVAC $gcj_cmd"
+  puts $fd "set JAVA_CLASSPATH \"\""
+  puts $fd "set JAVAC_FLAGS [list $rest]"
+  puts $fd "set JAVA [list [libjava_find_gij]]"
+  puts $fd "set JAVA_FLAGS \"\""
+  puts $fd "set JAVAC_ENCODING_FLAG --encoding="
+  puts $fd "set tcltest::testConstraints(encoding) 1"
+  puts $fd "set tcltest::testConstraints(gcj) 1"
+  # "Time-consuming JVM limitation tests".
+  # puts $fd "set tcltest::testConstraints(jvm) 1"
+  close $fd
+}
+
+proc gcj_jacks_parse {file} {
+  if {[catch {open $file} fd]} {
+    verbose "couldn't parse Jacks output: $fd"
+    return
+  }
+
+  while {! [eof $fd]} {
+    set line [gets $fd]
+    if {[string match RESULT* $line]} {
+      set linelist [split $line]
+      if {[lindex $linelist 2] == "PASSED"} {
+	pass [lindex $linelist 1]
+      } else {
+	fail [lindex $linelist 1]
+      }
+    }
+  }
+
+  close $fd
+}
+
+proc gcj_jacks_run {} {
+  global srcdir
+
+  if {! [file isdirectory $srcdir/libjava.jacks/jacks]} {
+    # No tests.
+    verbose "Jacks tests not found"
+    return
+  }
+
+  # Jacks forces us to do this.  You can't run it from a separate
+  # tree.
+  verbose "Copying Jacks..."
+  catch {system "rm -rf jacks"}
+  catch {system "cp -r $srcdir/libjava.jacks/jacks jacks"}
+
+  set here [pwd]
+  cd jacks
+
+  verbose "Writing Jacks setup file"
+  gcj_jacks_write gcj_setup
+
+  verbose "Running Jacks..."
+  if {[catch {exec ./jacks gcj} msg]} {
+    verbose "jacks invocation failure: $msg"
+    fail "running jacks"
+  } else {
+    pass "running jacks"
+
+    gcj_jacks_parse logging/gcj.log
+  }
+
+  cd $here
+}
+
+gcj_jacks_run
