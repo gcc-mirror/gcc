@@ -1,3 +1,8 @@
+2003-06-18  Richard Henderson  <rth@redhat.com>
+
+        * config/ia64/unwind-ia64.c (_Unwind_GetCFA): New.
+        (_Unwind_FindEnclosingFunction): Implement.
+
 2003-06-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* toplev.c (rest_of_handle_sched): Hide the entire function if

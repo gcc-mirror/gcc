@@ -1647,7 +1647,24 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context)
 void *
 _Unwind_FindEnclosingFunction (void *pc)
 {
-  return NULL;
+  struct unw_table_entry *ent;
+  unsigned long segment_base, gp;
+
+  ent = _Unwind_FindTableEntry (pc, &segment_base, &gp);
+  if (ent == NULL)
+    return NULL;
+  else
+    return (void *)(segment_base + ent->start_offset);
+}
+
+/* Get the value of the CFA as saved in CONTEXT.  In GCC/Dwarf2 parlance,
+   the CFA is the value of the stack pointer on entry; In IA-64 unwind
+   parlance, this is the PSP.  */
+
+_Unwind_Word
+_Unwind_GetCFA (struct _Unwind_Context *context)
+{
+  return (_Unwind_Ptr) context->psp;
 }
 
 
