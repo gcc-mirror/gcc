@@ -1,3 +1,16 @@
+2003-06-06  H.J. Lu <hongjiu.lu@intel.com>
+
+	* config.gcc (extra_headers): Add emmintrin.h for i[34567]86-*-*
+	and x86_64-*-*.
+
+	* config/i386/mmintrin.h: Update version and add alternate
+	intrinsic names.
+	* config/i386/xmmintrin.h: Likewise.
+
+	* config/i386/xmmintrin.h: Include <emmintrin.h>. Move SSE2
+	intrinsics to ...
+	* config/i386/emmintrin.h: Here. New file.
+
 2003-06-06  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold <ABS_EXPR>):  Re-fold the result of folding
