@@ -3710,7 +3710,7 @@ finish_struct_1 (t, warn_anon)
 	    {
 	      cp_error ("cannot adjust access to `%#D' in `%#T'", fdecl, t);
 	      cp_error_at ("  because of local method `%#D' with same name",
-			   TREE_VEC_ELT (method_vec, i));
+			   OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
 	      fdecl = NULL_TREE;
 	      break;
 	    }
@@ -3827,7 +3827,7 @@ finish_struct_1 (t, warn_anon)
 	      {
 		cp_error_at ("data member `%#D' conflicts with", x);
 		cp_error_at ("function member `%#D'",
-			     TREE_VEC_ELT (method_vec, i));
+			     OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
 		break;
 	      }
 	}
