@@ -26,7 +26,7 @@ gnu::java::nio::PipeImpl::nativeInit (::java::nio::channels::spi::SelectorProvid
 {
   int filedes [2];
 
-  if (::pipe (filedes) < 0)
+  if (_Jv_pipe (filedes) < 0)
     throw new ::java::io::IOException (JvNewStringUTF (strerror (errno)));
 
   /* FIXME

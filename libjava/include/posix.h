@@ -178,4 +178,11 @@ _Jv_read(int s, void *buf, int len)
 
 #endif /* DISABLE_JAVA_NET */
 
+// Wraps ::pipe
+static inline int
+_Jv_pipe (int filedes[2])
+{
+  return ::pipe (filedes);
+}
+
 #endif /* __JV_POSIX_H__ */

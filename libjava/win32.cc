@@ -12,6 +12,7 @@ details.  */
 #include <platform.h>
 #include <sys/timeb.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 #include <java/lang/ArithmeticException.h>
 #include <java/lang/UnsupportedOperationException.h>
@@ -341,4 +342,10 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
       throw new java::io::IOException (_Jv_WinStrError (dwErrorCode));
     }
   return r;      
+}
+
+int
+_Jv_pipe (int filedes[2])
+{
+  return _pipe (filedes, 4096, _O_BINARY);
 }
