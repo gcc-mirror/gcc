@@ -1,3 +1,12 @@
+2002-04-27  David S. Miller  <davem@redhat.com>
+
+	PR target/6494
+	* config/sparc/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Be mindful
+	of the stack bias.
+
+	* config/sparc/linux.h, config/sparc/linux64.h: Don't bother
+	including signal.h and sys/ucontext.h, not needed.
+
 2002-04-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* varasm.c (output_constant_def): Correct test for not calling
