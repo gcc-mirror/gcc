@@ -468,6 +468,17 @@ call_multiple_values_operation (op, mode)
   return 1;
 }
 
+/* Return 1 if this operator is valid for predication.  */
+
+int
+predicate_operator (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (op);
+  return ((GET_MODE (op) == mode || mode == VOIDmode)
+	  && (code == EQ || code == NE));
+}
 
 /* Structure to be filled in by ia64_compute_frame_size with register
    save masks and offsets for the current function.  */
@@ -1683,6 +1694,7 @@ ia64_print_operand_address (stream, address)
    F	A floating point constant 0.0 emitted as f0, or 1.0 emitted as f1, or
         a floating point register emitted normally.
    I	Invert a predicate register by adding 1.
+   J    Select the proper predicate register for a condition.
    O	Append .acq for volatile load.
    P	Postincrement of a MEM.
    Q	Append .rel for volatile store.
@@ -1740,6 +1752,10 @@ ia64_print_operand (file, x, code)
 
     case 'I':
       fputs (reg_names [REGNO (x) + 1], file);
+      return;
+
+    case 'J':
+      fputs (reg_names [REGNO (XEXP (x, 0)) + (GET_CODE (x) == EQ)], file);
       return;
 
     case 'O':
@@ -2381,6 +2397,27 @@ rtx_needs_barrier (x, flags, pred)
 	  need_barrier |= rws_access_reg (REG_AR_CFM, new_flags, pred);
 	}
       break;
+
+    case COND_EXEC:
+      /* X is a predicated instruction.  */
+
+      cond = COND_EXEC_TEST (x);
+      if (pred)
+	abort ();
+      need_barrier = rtx_needs_barrier (cond, flags, 0);
+
+      if (GET_CODE (cond) == EQ)
+	is_complemented = 1;
+      cond = XEXP (cond, 0);
+      if (GET_CODE (cond) != REG
+	  && REGNO_REG_CLASS (REGNO (cond)) != PR_REGS)
+	abort ();
+      pred = REGNO (cond);
+      if (is_complemented)
+	++pred;
+
+      need_barrier |= rtx_needs_barrier (COND_EXEC_CODE (x), flags, pred);
+      return need_barrier;
 
     case CLOBBER:
 #if 0
