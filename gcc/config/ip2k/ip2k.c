@@ -52,6 +52,7 @@
 #define CHAIN_FRAMES (frame_pointer_needed || FRAME_POINTER_REQUIRED)
 
 static int ip2k_naked_function_p PARAMS ((tree));
+#ifdef IP2K_MD_REORG_PASS
 static void mdr_resequence_xy_yx PARAMS ((rtx));
 static void mdr_pres_replace_and_recurse PARAMS ((rtx, rtx, rtx));
 static void mdr_propagate_reg_equivs_sequence PARAMS ((rtx, rtx, rtx));
@@ -59,10 +60,7 @@ static void mdr_propagate_reg_equivs PARAMS ((rtx));
 static int track_dp_reload PARAMS ((rtx , rtx *, int , int));
 static void mdr_try_dp_reload_elim PARAMS ((rtx));
 static void mdr_try_move_dp_reload PARAMS ((rtx));
-static int ip2k_check_can_adjust_stack_ref PARAMS ((rtx, int));
-static void ip2k_adjust_stack_ref PARAMS ((rtx *, int));
 static void mdr_try_move_pushes PARAMS ((rtx));
-static int ip2k_xexp_not_uses_reg_for_mem PARAMS ((rtx, unsigned int));
 static void mdr_try_propagate_clr_sequence PARAMS ((rtx, unsigned int));
 static void mdr_try_propagate_clr PARAMS ((rtx));
 static void mdr_try_propagate_move_sequence PARAMS ((rtx, rtx, rtx));
@@ -70,6 +68,10 @@ static void mdr_try_propagate_move PARAMS ((rtx));
 static void mdr_try_remove_redundant_insns PARAMS ((rtx));
 static int track_w_reload PARAMS ((rtx, rtx *, int , int));
 static void mdr_try_wreg_elim PARAMS ((rtx));
+#endif /* IP2K_MD_REORG_PASS */
+static int ip2k_check_can_adjust_stack_ref PARAMS ((rtx, int));
+static void ip2k_adjust_stack_ref PARAMS ((rtx *, int));
+static int ip2k_xexp_not_uses_reg_for_mem PARAMS ((rtx, unsigned int));
 
 
 /* Initialize the GCC target structure.  */
@@ -175,7 +177,7 @@ ip2k_naked_function_p (func)
 void
 function_prologue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int leaf_func_p;
   int main_p;
@@ -297,7 +299,7 @@ function_prologue (file, size)
 void
 function_epilogue (file, size)
      FILE *file;
-     int size;
+     HOST_WIDE_INT size;
 {
   int leaf_func_p;
   int reg,savelimit;
@@ -3178,8 +3180,9 @@ valid_machine_decl_attribute (decl, attributes, attr, args)
 /* Encode section information about tree DECL.  */
   
 void
-encode_section_info (decl)
+encode_section_info (decl, first)
      tree decl;
+     int first ATTRIBUTE_UNUSED;
 {
   if (! DECL_P (decl))
     return;
@@ -3366,6 +3369,7 @@ ip2k_address_cost (x)
    much cheaper and the move from this to the original source operand will be
    no more expensive than the original move.  */
 
+#ifdef IP2K_MD_REORG_PASS
 static void
 mdr_resequence_xy_yx (first_insn)
      rtx first_insn;
@@ -4111,6 +4115,7 @@ mdr_try_move_dp_reload (first_insn)
 	}
     }
 }
+#endif /* IP2K_MD_REORG_PASS */
 
 /* Look to see if the expression, x, can have any stack references offset by
    a fixed constant, offset.  If it definitely can then returns non-zero.  */
@@ -4204,6 +4209,7 @@ ip2k_adjust_stack_ref (x, offset)
     }
 }
 
+#ifdef IP2K_MD_REORG_PASS
 /* As part of the machine-dependent reorg we look to move push instructions
    to earlier points within the file.  Moving these out of the way allows more
    peepholes to match.  */
@@ -4647,6 +4653,7 @@ mdr_try_propagate_clr (first_insn)
 	}
     }
 }
+#endif /* IP2K_MD_REORG_PASS */
 
 /* Look to see if the expression, x, does not make any memory references
    via the specified register.  This is very conservative and only returns
@@ -4704,6 +4711,7 @@ ip2k_xexp_not_uses_reg_for_mem (x, regno)
     }
 }
 
+#ifdef IP2K_MD_REORG_PASS
 /* Assist the following function, mdr_try_propagate_move().  */
 
 static void
@@ -5260,6 +5268,7 @@ mdr_try_wreg_elim (first_insn)
 
   free (ip2k_we_jump_targets);
 }
+#endif /* IP2K_MD_REORG_PASS */
 
 /* We perform a lot of untangling of the RTL within the reorg pass since
    the IP2k requires some really bizarre (and really undesireable) things
@@ -5269,9 +5278,11 @@ mdr_try_wreg_elim (first_insn)
 
 void
 machine_dependent_reorg (first_insn)
-     rtx first_insn;
+     rtx first_insn ATTRIBUTE_UNUSED;
 {
+#ifdef IP2K_MD_REORG_PASS
   rtx insn, set;
+#endif
 
   CC_STATUS_INIT;
 

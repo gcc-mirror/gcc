@@ -387,6 +387,8 @@
         if (!find_regno_note (insn, REG_DEAD, REG_IP))
 	  OUT_AS1 (dec, ipl);
 	return \"\";
+      default:
+        abort ();
       }
   }")
 
@@ -414,6 +416,8 @@
         if (!find_regno_note (insn, REG_DEAD, REG_IP))
 	  OUT_AS1 (dec, ipl);
 	return \"\";
+      default:
+        abort ();
       }
   }")
 
@@ -457,6 +461,8 @@
               OUT_AS2 (sub, ipl, w);
 	  }
         return \"\";
+      default:
+        abort ();
       }
   }")
 
@@ -620,6 +626,8 @@
 	       AS2 (mov, %L0, w) CR_TAB
 	       AS1 (pop, %H2%>) CR_TAB
 	       AS2 (mov, %L2, w);
+      default:
+        abort ();
       }
   }")
 
@@ -726,7 +734,9 @@
 	       AS1 (pop, %B2%>) CR_TAB
 	       AS1 (pop, %C2%>) CR_TAB
 	       AS2 (mov, %D2, w);
-      }
+      default:
+        abort ();
+     }
   }")
 
 ;; We have to be *very* careful with this one to use predicates that do not 
@@ -981,6 +991,8 @@
 	  p += sprintf (p, \"\;and\\tw,#$%2.2x\;or\\t%%0,w\", mask);
 	  return buff;
         }
+      default:
+        abort ();
       }
   }"
   [(set_attr "skip" "yes,yes,no,no,no,no,no")
@@ -1145,6 +1157,8 @@
 	       AS2 (mov, w, %H1) CR_TAB
 	       AS2 (addc, 1(SP), w);
       }
+    default:
+      abort ();
     }
   }"
   [(set_attr "clobberw" "no,yes,yes,yes,yes,yes,yes,yes")])
@@ -2050,6 +2064,8 @@
 	     AS2 (mov, %A0, w) CR_TAB
 	     AS2 (mov, w, %A2) CR_TAB
 	     AS2 (subc, %A0, w);
+    default:
+      abort ();
     }
   }")
 
@@ -2214,6 +2230,8 @@
 	     AS2 (mov, %S0, w) CR_TAB
 	     AS2 (mov, w, %S2) CR_TAB
 	     AS2 (subc, %S0, w);
+    default:
+      abort ();
     }
   }")
 
@@ -3338,6 +3356,8 @@
 	       AS1 (page, 1b) CR_TAB
 	       AS1 (jmp, 1b);
       }
+    default:
+      abort ();
     }
   }")
 
@@ -3782,6 +3802,8 @@
 	       AS1 (page, 1b) CR_TAB
 	       AS1 (jmp, 1b);
       }
+    default:
+      abort ();
     }
   }")
 
@@ -3848,6 +3870,8 @@
        	       AS2 (mulu, w, %e2) CR_TAB
 	       AS2 (mov, w, mulh) CR_TAB
 	       AS2 (mov, %0, w);
+      default:
+        abort ();
       }
   }")
 
@@ -4202,6 +4226,8 @@
 	       AS1 (page, 1b) CR_TAB
 	       AS1 (jmp, 1b);
       }
+    default:
+      abort ();
     }
   }")
 
@@ -4425,6 +4451,8 @@
 	       AS2 (mov, %L0, w) CR_TAB
 	       AS2 (mov, w, %H1) CR_TAB
 	       AS2 (mov, %H0, w);
+      default:
+        abort ();
       }
   }")
 
@@ -5287,6 +5315,8 @@
         OUT_AS2 (mov, w, %1);
 	OUT_AS2 (add, w, %5);
 	break;
+      default:
+        abort ();
       }
 
     OUT_AS2 (cmp, w, %2);
@@ -5315,6 +5345,8 @@
 	OUT_AS1 (page, __indcall);
 	OUT_AS1 (jmp, __indcall%>%>);
 	return \"\";
+      default:
+        abort ();
       }
   }")
 
@@ -5595,6 +5627,8 @@
           OUT_AS1 (sz, );
         return AS1 (page, %2) CR_TAB
                AS1 (jmp, %2);
+      default:
+        abort ();
       }
   }")
 
@@ -5641,6 +5675,8 @@
           OUT_AS1 (sz, );
         return AS1 (page, %2) CR_TAB
                AS1 (jmp, %2);
+      default:
+        abort ();
       }
   }")
 
