@@ -52,6 +52,7 @@ do { long value[4];                                                     \
    we can massage its return value for PA64.  */
 #define FIX_TRUNCTFSI2_LIBCALL \
   (TARGET_64BIT ? "__U_Qfcnvfxt_quad_to_sgl" : "_U_Qfcnvfxt_quad_to_sgl")
+#define FIXUNS_TRUNCTFSI2_LIBCALL "_U_Qfcnvfxt_quad_to_usgl"
 #define FIX_TRUNCTFDI2_LIBCALL "_U_Qfcnvfxt_quad_to_dbl"
 #define EQTF2_LIBCALL "_U_Qfeq"
 #define NETF2_LIBCALL "_U_Qfne"
@@ -89,7 +90,7 @@ do { long value[4];                                                     \
     floatditf_libfunc = gen_rtx_SYMBOL_REF (Pmode, FLOATDITF2_LIBCALL);  \
     fixtfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFSI2_LIBCALL);\
     fixtfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFDI2_LIBCALL);\
-    fixunstfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFSI2_LIBCALL);  \
+    fixunstfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);\
     fixunstfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFDI2_LIBCALL);  \
     eqtf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EQTF2_LIBCALL);		\
     netf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, NETF2_LIBCALL);		\

@@ -92,3 +92,12 @@ __U_Qfcnvfxt_quad_to_sgl (long double a)
   return _U_Qfcnvfxt_quad_to_sgl (a) >> 32;
 }
 #endif
+
+/* HP only has signed conversion in library, so need to synthesize an
+   unsigned version */
+unsigned int
+_U_Qfcnvfxt_quad_to_usgl(long double a)
+{
+  extern long long _U_Qfcnvfxt_quad_to_dbl (long double a);
+  return (unsigned int) _U_Qfcnvfxt_quad_to_dbl (a);
+}
