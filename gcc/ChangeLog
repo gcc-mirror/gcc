@@ -1,3 +1,11 @@
+2005-02-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Patch from Richard Sandiford <rsandifo@redhat.com>
+	* reload1.c (choose_reload_regs): Prevent the find_equiv_reg() code
+	from inheriting a subreg equivalence with a non-spill register.
+
+	* tree.h (DECL_FUNCTION_CODE): Document that it is overloaded.
+
 2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/frv/frv.c (movcc_fp_destination_operand): New.
