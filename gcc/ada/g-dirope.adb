@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.15 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -122,7 +122,10 @@ package body GNAT.Directory_Operations is
          end if;
 
          Check_For_Standard_Dirs : declare
-            BN : constant String := Base_Name.Path (Cut_Start .. Cut_End);
+            Offset : constant Integer := Path'First - Base_Name.Path'First;
+            BN     : constant String  :=
+                       Base_Name.Path (Cut_Start - Offset .. Cut_End - Offset);
+            --  Here we use Base_Name.Path to keep the original casing
 
          begin
             if BN = "." or else BN = ".." then
