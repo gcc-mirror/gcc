@@ -14,7 +14,7 @@ extern int errno;
    BSD systems) now provides getcwd as called for by POSIX.  Allow for
    the few exceptions to the general rule here.  */
 
-#if !(defined (POSIX) || defined (USG) || defined (VMS))
+#if !(defined (POSIX) || defined (USG) || defined (VMS)) || defined (HAVE_GETWD)
 #include <sys/param.h>
 extern char *getwd ();
 #define getcwd(buf,len) getwd(buf)
