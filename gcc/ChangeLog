@@ -1,3 +1,7 @@
+2000-11-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README.gnat: Remove file.
+
 2000-11-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* mklibgcc.in (EXTRA_MULTILIB_PARTS): Generate multilib parts
