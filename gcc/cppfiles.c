@@ -30,6 +30,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpphash.h"
 #include "hashtab.h"
 #include "intl.h"
+#include "mkdeps.h"
 
 static IHASH *redundant_include_p PARAMS ((cpp_reader *, IHASH *,
 					   struct file_name_list *));
@@ -40,11 +41,14 @@ static char *remap_filename 	PARAMS ((cpp_reader *, char *,
 					 struct file_name_list *));
 static struct file_name_list *actual_directory
 				PARAMS ((cpp_reader *, const char *));
-
 static unsigned int hash_IHASH	PARAMS ((const void *));
 static int eq_IHASH		PARAMS ((const void *, const void *));
-
 static int file_cleanup		PARAMS ((cpp_buffer *, cpp_reader *));
+static int find_include_file	PARAMS ((cpp_reader *, const char *,
+					struct file_name_list *,
+					IHASH **, int *));
+static int read_include_file	PARAMS ((cpp_reader *, int, IHASH *));
+
 
 #if 0
 static void hack_vms_include_specification PARAMS ((char *));
@@ -58,7 +62,7 @@ static void hack_vms_include_specification PARAMS ((char *));
 #endif
 
 /* Open files in nonblocking mode, so we don't get stuck if someone
-   clever has asked cpp to process /dev/rmt0.  _cpp_read_include_file
+   clever has asked cpp to process /dev/rmt0.  read_include_file
    will check that we have a real file to work with.  Also take care
    not to acquire a controlling terminal by mistake (this can't happen
    on sane systems, but paranoia is a virtue).  */
@@ -185,8 +189,8 @@ file_cleanup (pbuf, pfile)
    *IHASH is set to point to the include hash entry for this file, and
    *BEFORE is set to 1 if the file was included before (but needs to be read
    again). */
-int
-_cpp_find_include_file (pfile, fname, search_start, ihash, before)
+static int
+find_include_file (pfile, fname, search_start, ihash, before)
      cpp_reader *pfile;
      const char *fname;
      struct file_name_list *search_start;
@@ -465,6 +469,120 @@ remap_filename (pfile, name, loc)
   return name;
 }
 
+
+void
+_cpp_execute_include (pfile, fname, len, no_reinclude, search_start)
+     cpp_reader *pfile;
+     char *fname;
+     unsigned int len;
+     int no_reinclude;
+     struct file_name_list *search_start;
+{
+  IHASH *ihash;
+  int fd;
+  int angle_brackets = fname[0] == '<';
+  int before;
+
+  if (!search_start)
+    {
+      if (angle_brackets)
+	search_start = CPP_OPTIONS (pfile)->bracket_include;
+      else if (CPP_OPTIONS (pfile)->ignore_srcdir)
+	search_start = CPP_OPTIONS (pfile)->quote_include;
+      else
+	search_start = CPP_BUFFER (pfile)->actual_dir;
+    }
+
+  if (!search_start)
+    {
+      cpp_error (pfile, "No include path in which to find %s", fname);
+      return;
+    }
+
+  /* Remove quote marks.  */
+  fname++;
+  len -= 2;
+  fname[len] = '\0';
+
+  fd = find_include_file (pfile, fname, search_start, &ihash, &before);
+
+  if (fd == -2)
+    return;
+  
+  if (fd == -1)
+    {
+      if (CPP_OPTIONS (pfile)->print_deps_missing_files
+	  && CPP_PRINT_DEPS (pfile) > (angle_brackets ||
+				       (pfile->system_include_depth > 0)))
+        {
+	  if (!angle_brackets)
+	    deps_add_dep (pfile->deps, fname);
+	  else
+	    {
+	      char *p;
+	      struct file_name_list *ptr;
+	      /* If requested as a system header, assume it belongs in
+		 the first system header directory. */
+	      if (CPP_OPTIONS (pfile)->bracket_include)
+	        ptr = CPP_OPTIONS (pfile)->bracket_include;
+	      else
+	        ptr = CPP_OPTIONS (pfile)->quote_include;
+
+	      p = (char *) alloca (strlen (ptr->name)
+				   + strlen (fname) + 2);
+	      if (*ptr->name != '\0')
+	        {
+		  strcpy (p, ptr->name);
+		  strcat (p, "/");
+	        }
+	      strcat (p, fname);
+	      deps_add_dep (pfile->deps, p);
+	    }
+	}
+      /* If -M was specified, and this header file won't be added to
+	 the dependency list, then don't count this as an error,
+	 because we can still produce correct output.  Otherwise, we
+	 can't produce correct output, because there may be
+	 dependencies we need inside the missing file, and we don't
+	 know what directory this missing file exists in. */
+      else if (CPP_PRINT_DEPS (pfile)
+	       && (CPP_PRINT_DEPS (pfile)
+		   <= (angle_brackets || (pfile->system_include_depth > 0))))
+	cpp_warning (pfile, "No include path in which to find %s", fname);
+      else
+	cpp_error_from_errno (pfile, fname);
+
+      return;
+    }
+
+  /* For -M, add the file to the dependencies on its first inclusion. */
+  if (!before && (CPP_PRINT_DEPS (pfile)
+		  > (angle_brackets || (pfile->system_include_depth > 0))))
+    deps_add_dep (pfile->deps, ihash->name);
+
+  /* Handle -H option.  */
+  if (CPP_OPTIONS(pfile)->print_include_names)
+    {
+      cpp_buffer *fp = CPP_BUFFER (pfile);
+      while ((fp = CPP_PREV_BUFFER (fp)) != NULL)
+	putc ('.', stderr);
+      fprintf (stderr, " %s\n", ihash->name);
+    }
+
+  /* Actually process the file */
+
+  if (no_reinclude)
+    ihash->control_macro = (const U_CHAR *) "";
+  
+  if (read_include_file (pfile, fd, ihash))
+    {
+      _cpp_output_line_command (pfile, enter_file);
+      if (angle_brackets)
+	pfile->system_include_depth++;   /* Decremented in file_cleanup. */
+    }
+}
+
+
 /* Push an input buffer and load it up with the contents of FNAME.
    If FNAME is "" or NULL, read standard input.  */
 int
@@ -506,7 +624,7 @@ cpp_read_file (pfile, fname)
   else
     f = open (fname, OMODES);
 
-  return _cpp_read_include_file (pfile, f, ih);
+  return read_include_file (pfile, f, ih);
 }
 
 /* Read the contents of FD into the buffer on the top of PFILE's stack.
@@ -515,8 +633,8 @@ cpp_read_file (pfile, fname)
 
    The caller is responsible for the cpp_push_buffer.  */
 
-int
-_cpp_read_include_file (pfile, fd, ihash)
+static int
+read_include_file (pfile, fd, ihash)
      cpp_reader *pfile;
      int fd;
      IHASH *ihash;
