@@ -1,5 +1,9 @@
 2001-08-22  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
+	* gcc.c (struct prefix_list): Change prefix to const char *.
+
+2001-08-22  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
 	* final.c (final_scan_insn): Call ADDR_VEC_ALIGN on next insn.
 
 2001-08-22  Jason Merrill  <jason_merrill@redhat.com>
