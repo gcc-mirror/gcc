@@ -1,3 +1,9 @@
+Fri Apr 24 08:02:30 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (libgcc2.ready): Add explicit dependancy from
+	$(STMP_FIXPROTO) to ensure all necessary include files have
+	been created and to guarantee proper parallel builds.
+
 Fri Apr 24 04:42:35 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (sh_expand_prologue, in !SH3E code): Don't push an extra
