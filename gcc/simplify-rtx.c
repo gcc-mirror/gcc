@@ -945,6 +945,13 @@ simplify_binary_operation (code, mode, op0, op1)
 	  else if (GET_CODE (op1) == NEG)
 	    return simplify_gen_binary (MINUS, mode, op0, XEXP (op1, 0));
 
+	  /* (~a) + 1 -> -a */
+	  if (INTEGRAL_MODE_P (mode)
+	      && GET_CODE (op0) == NOT
+	      && GET_CODE (op1) == CONST_INT
+	      && INTVAL (op1) == 1)
+	    return gen_rtx_NEG (mode, XEXP (op0, 0));
+
 	  /* Handle both-operands-constant cases.  We can only add
 	     CONST_INTs to constants since the sum of relocatable symbols
 	     can't be handled by most assemblers.  Don't add CONST_INT

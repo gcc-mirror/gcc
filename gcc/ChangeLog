@@ -1,6 +1,12 @@
+2001-05-04  Lars Brinkhoff  <lars@nocrew.org>
+
+	* simplify-rtx.c (simplify_binary_operation): Simplify ~a + 1
+	into -a.
+
 2000-05-04  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
-	* config/rs6000/rs6000.md (ashldi3 splits): Guard with TARGET_POWERPC64.
+	* config/rs6000/rs6000.md (ashldi3 splits): Guard with
+	TARGET_POWERPC64.
 
 2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
