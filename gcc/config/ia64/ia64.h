@@ -1813,61 +1813,6 @@ do {									\
 #define ASM_APP_OFF "#NO_APP\n"
 
 
-/* Output of Data.  */
-
-/* This is how to output an assembler line defining a `char' constant
-   to an xdata segment.  */
-
-#define ASM_OUTPUT_XDATA_CHAR(FILE, SECTION, VALUE)			\
-do {									\
-  fprintf (FILE, "\t.xdata1\t\"%s\", ", SECTION);			\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* This is how to output an assembler line defining a `short' constant
-   to an xdata segment.  */
-
-#define ASM_OUTPUT_XDATA_SHORT(FILE, SECTION, VALUE)			\
-do {									\
-  fprintf (FILE, "\t.xdata2\t\"%s\", ", SECTION);			\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* This is how to output an assembler line defining an `int' constant
-   to an xdata segment.  We also handle symbol output here.  */
-
-/* ??? For ILP32, also need to handle function addresses here.  */
-
-#define ASM_OUTPUT_XDATA_INT(FILE, SECTION, VALUE)			\
-do {									\
-  fprintf (FILE, "\t.xdata4\t\"%s\", ", SECTION);			\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* This is how to output an assembler line defining a `long' constant
-   to an xdata segment.  We also handle symbol output here.  */
-
-#define ASM_OUTPUT_XDATA_DOUBLE_INT(FILE, SECTION, VALUE)		\
-do {									\
-  int need_closing_paren = 0;						\
-  fprintf (FILE, "\t.xdata8\t\"%s\", ", SECTION);			\
-  if (!(TARGET_NO_PIC || TARGET_AUTO_PIC)				\
-      && GET_CODE (VALUE) == SYMBOL_REF)				\
-    {									\
-      fprintf (FILE, SYMBOL_REF_FLAG (VALUE) ? "@fptr(" : "@segrel(");	\
-      need_closing_paren = 1;						\
-    }									\
-  output_addr_const (FILE, VALUE);					\
-  if (need_closing_paren)						\
-    fprintf (FILE, ")");						\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-
-
 /* Output of Uninitialized Variables.  */
 
 /* This is all handled by svr4.h.  */
@@ -2137,8 +2082,13 @@ do {									\
 
 /* ??? Depends on the pointer size.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL) \
-  fprintf (STREAM, "\tdata8 @pcrel(.L%d)\n", VALUE)
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)	\
+  do {								\
+  if (TARGET_ILP32)						\
+    fprintf (STREAM, "\tdata4 @pcrel(.L%d)\n", VALUE);		\
+  else								\
+    fprintf (STREAM, "\tdata8 @pcrel(.L%d)\n", VALUE);		\
+  } while (0)
 
 /* This is how to output an element of a case-vector that is absolute.
    (Ia64 does not use such vectors, but we must define this macro anyway.)  */
@@ -2157,7 +2107,8 @@ do {									\
    true if the symbol may be affected by dynamic relocations.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)	\
   (((CODE) == 1 ? DW_EH_PE_textrel : DW_EH_PE_datarel)	\
-   | ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_udata8)
+   | ((GLOBAL) ? DW_EH_PE_indirect : 0)			\
+   | (TARGET_ILP32 ? DW_EH_PE_udata4 : DW_EH_PE_udata8))
 
 /* Handle special EH pointer encodings.  Absolute, pc-relative, and
    indirect are handled automatically.  */
@@ -2327,7 +2278,7 @@ do {									\
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */
 
-#define CASE_VECTOR_MODE Pmode
+#define CASE_VECTOR_MODE ptr_mode
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
