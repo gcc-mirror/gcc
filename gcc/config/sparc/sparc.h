@@ -438,7 +438,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
   40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49, 50, 51, 52, 53, 54, 55,	\
   56, 57, 58, 59, 60, 61, 62, 63,	\
-  1, 4, 5, 6, 7, 0, 14, 30};
+  1, 4, 5, 6, 7, 0, 14, 30}
 
 /* This is the order in which to allocate registers for
    leaf functions.  If all registers can fit in the "i" registers,
@@ -451,7 +451,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
   40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49, 50, 51, 52, 53, 54, 55,	\
   56, 57, 58, 59, 60, 61, 62, 63,	\
-  1, 4, 5, 6, 7, 0, 14, 30, 31};
+  1, 4, 5, 6, 7, 0, 14, 30, 31}
 
 #define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
 
@@ -463,7 +463,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1};
+  1, 1, 1, 1, 1, 1, 1, 1}
 
 extern char leaf_reg_remap[];
 #define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
@@ -765,20 +765,23 @@ extern struct rtx_def *sparc_compare_op0, *sparc_compare_op1;
 
 extern struct rtx_def *gen_compare_reg ();
 
+/* Generate the special assembly code needed to tell the assembler whatever
+   it might need to know about the return value of a function.
+
+   For Sparc assemblers, we need to output a .proc pseudo-op which conveys
+   information to the assembler relating to peephole optimization (done in
+   the assembler).  */
+
+#define ASM_DECLARE_RESULT(FILE, RESULT) \
+  fprintf ((FILE), "\t.proc\t0%o\n", sparc_type_code (TREE_TYPE (RESULT)))
+
 /* Output the label for a function definition.  */
 
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
-{							\
-  extern tree double_type_node, float_type_node;	\
-  if (TREE_TYPE (DECL) == float_type_node)		\
-    fprintf (FILE, "\t.proc 6\n");			\
-  else if (TREE_TYPE (DECL) == double_type_node)	\
-    fprintf (FILE, "\t.proc 7\n");			\
-  else if (TREE_TYPE (DECL) == void_type_node)		\
-    fprintf (FILE, "\t.proc 0\n");			\
-  else fprintf (FILE, "\t.proc 1\n");			\
-  ASM_OUTPUT_LABEL (FILE, NAME);			\
-}
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
+do {									\
+  ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
+  ASM_OUTPUT_LABEL (FILE, NAME);					\
+} while (0)
 
 /* Two views of the size of the current frame.  */
 extern int actual_fsize;
@@ -1500,13 +1503,25 @@ extern struct rtx_def *legitimize_pic_address ();
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "\t.word L%d\n", VALUE)
+do {									\
+  char label[30];							\
+  ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\
+  fprintf (FILE, "\t.word\t");						\
+  assemble_name (FILE, label);						\
+  fprintf (FILE, "\n");							\
+} while (0)
 
 /* This is how to output an element of a case-vector that is relative.
    (SPARC uses such vectors only when generating PIC.)  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
-  fprintf (FILE, "\t.word L%d-1b\n", VALUE)
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)			\
+do {									\
+  char label[30];							\
+  ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\
+  fprintf (FILE, "\t.word\t");						\
+  assemble_name (FILE, label);						\
+  fprintf (FILE, "-1b\n");						\
+} while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter

@@ -281,20 +281,13 @@ do {				 				\
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
 
-   If the NUM argument is negative, we don't use it when generating the
-   label.
-
    For most svr4 systems, the convention is that any symbol which begins
-   with a period is not put into the linker symbol table by the assembler.
-*/
+   with a period is not put into the linker symbol table by the assembler.  */
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM)			\
 do {									\
-  if ((int) (NUM) >= 0)							\ ???
-    fprintf (FILE, ".%s%d:\n", PREFIX, NUM);				\
-  else									\
-    fprintf (FILE, ".%s:\n", PREFIX);					\
+  fprintf (FILE, ".%s%d:\n", PREFIX, NUM);				\
 } while (0)
 
 /* This is how to store into the string LABEL
@@ -302,20 +295,13 @@ do {									\
    PREFIX is the class of label and NUM is the number within the class.
    This is suitable for output with `assemble_name'.
 
-   If the NUM argument is negative, we don't use it when generating the
-   label.
-
    For most svr4 systems, the convention is that any symbol which begins
-   with a period is not put into the linker symbol table by the assembler.
-*/
+   with a period is not put into the linker symbol table by the assembler.  */
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)			\
 do {									\
-  if ((int) (NUM) >= 0)							\
-    sprintf (LABEL, "*.%s%d", PREFIX, NUM);				\
-  else									\
-    sprintf (LABEL, "*.%s", PREFIX);					\
+  sprintf (LABEL, "*.%s%d", PREFIX, NUM);				\
 } while (0)
 
 /* The standard SVR4 assembler seems to require that certain builtin
@@ -345,13 +331,15 @@ do {									\
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#define BSS_ASM_OP	".bss"
+#define LOCAL_ASM_OP	".local"
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  fprintf ((FILE), "\t%s\t%s,%u,%u\n",					\
-	   BSS_ASM_OP, (NAME), (SIZE), (ALIGN) / BITS_PER_UNIT);	\
+  fprintf ((FILE), "\t%s\t", LOCAL_ASM_OP);				\
+  assemble_name ((FILE), (NAME));					\
+  fprintf ((FILE), "\n");						\
+  ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 
 /* This is the pseudo-op used to generate a 32-bit word of data with a
