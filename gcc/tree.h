@@ -722,20 +722,19 @@ struct tree_int_cst
 
 #define TREE_CST_RTL(NODE) (CST_OR_CONSTRUCTOR_CHECK (NODE)->real_cst.rtl)
 
-/* In a REAL_CST node.
+/* In a REAL_CST node.  struct realvaluetype is an opaque entity, with
+   manipulators defined in real.h.  We don't want tree.h depending on
+   real.h and transitively on tm.h.  */
+struct realvaluetype;
 
-   We can represent a real value as either a `double' or an array of
-   longs.  */
-
-#define TREE_REAL_CST(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst)
-
-#include "real.h"
+#define TREE_REAL_CST_PTR(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst_ptr)
+#define TREE_REAL_CST(NODE) (*TREE_REAL_CST_PTR (NODE))
 
 struct tree_real_cst
 {
   struct tree_common common;
   rtx rtl;	/* acts as link to register transfer language (rtl) info */
-  REAL_VALUE_TYPE real_cst;
+  struct realvaluetype *real_cst_ptr;
 };
 
 /* In a STRING_CST */
@@ -2123,7 +2122,6 @@ extern tree build_nt			PARAMS ((enum tree_code, ...));
 
 extern tree build_int_2_wide		PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT));
 extern tree build_vector                PARAMS ((tree, tree));
-extern tree build_real			PARAMS ((tree, REAL_VALUE_TYPE));
 extern tree build_real_from_int_cst 	PARAMS ((tree, tree));
 extern tree build_complex		PARAMS ((tree, tree, tree));
 extern tree build_string		PARAMS ((int, const char *));

@@ -273,7 +273,7 @@ cp/method.o: cp/method.c $(CXX_TREE_H) toplev.h $(GGC_H) $(RTL_H) $(EXPR_H) \
 cp/cvt.o: cp/cvt.c $(CXX_TREE_H) cp/decl.h flags.h toplev.h convert.h
 cp/search.o: cp/search.c $(CXX_TREE_H) stack.h flags.h toplev.h $(RTL_H)
 cp/tree.o: cp/tree.c $(CXX_TREE_H) flags.h toplev.h $(GGC_H) $(RTL_H) \
-  insn-config.h integrate.h tree-inline.h
+  insn-config.h integrate.h tree-inline.h real.h
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(SYSTEM_H)
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) flags.h toplev.h
 cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
@@ -291,7 +291,7 @@ cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
 cp/dump.o: cp/dump.c $(CXX_TREE_H) tree-dump.h
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) rtl.h integrate.h insn-config.h \
   input.h $(PARAMS_H) debug.h tree-inline.h
-cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h
+cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h real.h
 
 cp/parse.o: cp/parse.c $(CXX_TREE_H) flags.h cp/lex.h except.h output.h \
 	$(SYSTEM_H) toplev.h $(GGC_H)

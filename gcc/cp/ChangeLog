@@ -1,3 +1,8 @@
+2002-05-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* mangle.c, tree.c: Include real.h.
+	* Make-lang.in: Update dependency lists.
+
 2002-05-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* lex.c: Don't include c-lex.h.

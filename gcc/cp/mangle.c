@@ -51,6 +51,7 @@
 #include "system.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "real.h"
 #include "obstack.h"
 #include "toplev.h"
 #include "varray.h"

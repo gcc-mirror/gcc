@@ -30,6 +30,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "tree.h"
 #include "rtl.h"
+#include "real.h"
 #include "toplev.h"
 #include "flags.h"
 #include "java-tree.h"

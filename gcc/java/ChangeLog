@@ -1,3 +1,8 @@
+2002-05-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c, jcf-parse.c, parse.y, typeck.c: Include real.h.
+	* Make-lang.in: Update dependency lists.
+
 2002-05-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* gjavah.c (throwable_p): Do not free the name of the class after
