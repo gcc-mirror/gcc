@@ -151,7 +151,8 @@ java.info: $(srcdir)/java/gcj.info
 java.dvi: java/gcj.dvi
 java.generated-manpages: $(srcdir)/java/gcj.1 $(srcdir)/java/gcjh.1 \
 	$(srcdir)/java/jv-scan.1 $(srcdir)/java/jcf-dump.1 \
-	$(srcdir)/java/gij.1 $(srcdir)/java/jv-convert.1
+	$(srcdir)/java/gij.1 $(srcdir)/java/jv-convert.1 \
+	$(srcdir)/java/rmic.1 $(srcdir)/java/rmiregistry.1
 
 # Install hooks:
 # jc1, gcj, jvgenmain, and gcjh are installed elsewhere as part
@@ -230,6 +231,8 @@ java.maintainer-clean:
 	-rm -f $(srcdir)/java/jv-scan.1 $(srcdir)/java/jcf-dump.1
 	-rm -f $(srcdir)/java/gij.1
 	-rm -f $(srcdir)/java/jv-convert.1
+	-rm -f $(srcdir)/java/rmic.1
+	-rm -f $(srcdir)/java/rmiregistry.1
 #
 # Stage hooks:
 # The main makefile has already created stage?/java.
@@ -367,6 +370,20 @@ $(srcdir)/java/jv-convert.1: $(srcdir)/java/gcj.texi
 		(rm -f java/jv-convert.1.T$$$$ && exit 1)
 	rm -f java/jv-convert.pod
 
+$(srcdir)/java/rmic.1: $(srcdir)/java/gcj.texi
+	-$(TEXI2POD) -D rmic < $(srcdir)/java/gcj.texi > java/rmic.pod
+	($(POD2MAN) --section=1 java/rmic.pod > java/rmic.1.T$$$$ && \
+		mv -f java/rmic.1.T$$$$ $(srcdir)/java/rmic.1) || \
+		(rm -f java/rmic.1.T$$$$ && exit 1)
+	rm -f java/rmic.pod
+
+$(srcdir)/java/rmiregistry.1: $(srcdir)/java/gcj.texi
+	-$(TEXI2POD) -D rmiregistry < $(srcdir)/java/gcj.texi > java/rmiregistry.pod
+	($(POD2MAN) --section=1 java/rmiregistry.pod > java/rmiregistry.1.T$$$$ && \
+		mv -f java/rmiregistry.1.T$$$$ $(srcdir)/java/rmiregistry.1) || \
+		(rm -f java/rmiregistry.1.T$$$$ && exit 1)
+	rm -f java/rmiregistry.pod
+
 # Install the man pages.
 java.install-man: installdirs $(GENERATED_JAVA_MANPAGES)
 	-if [ -f $(GCJ)$(exeext) ]; then \
@@ -395,3 +412,9 @@ java.install-man: installdirs $(GENERATED_JAVA_MANPAGES)
 	-rm -f $(man1dir)/jv-convert$(man1ext)
 	-$(INSTALL_DATA) $(srcdir)/java/jv-convert.1 $(man1dir)/jv-convert$(man1ext)
 	-chmod a-x $(man1dir)/jv-convert$(man1ext)
+	-rm -f $(man1dir)/rmic$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/rmic.1 $(man1dir)/rmic$(man1ext)
+	-chmod a-x $(man1dir)/rmic$(man1ext)
+	-rm -f $(man1dir)/rmiregistry$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/rmiregistry.1 $(man1dir)/rmiregistry$(man1ext)
+	-chmod a-x $(man1dir)/rmiregistry$(man1ext)
