@@ -24,6 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "obstack.h"
 #include "flags.h"
+#include "regs.h"
 #include "function.h"
 #include "insn-flags.h"
 #include "insn-codes.h"
@@ -1671,7 +1672,7 @@ use_regs (regno, nregs)
   int i;
 
   for (i = 0; i < nregs; i++)
-    emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, word_mode, regno + i)));
+    emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, reg_raw_mode[regno + i], regno + i)));
 }
 
 /* Write zeros through the storage of OBJECT.
