@@ -1586,11 +1586,15 @@ add_call_clobber_ops (tree stmt, tree callee)
 	 each static if the call being processed does not read or
 	 write that variable.  */
 
-      bitmap not_read_b = callee 
+      /* hack to turn off the optimization until I can get the bug fixed. */
+      /*      bitmap not_read_b = callee 
 	? get_global_statics_not_read (callee) : NULL; 
       bitmap not_written_b = callee 
 	? get_global_statics_not_written (callee) : NULL; 
+      */
 
+      bitmap not_read_b = NULL; 
+      bitmap not_written_b = NULL; 
 
       EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
 	{
