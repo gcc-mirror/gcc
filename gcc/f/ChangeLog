@@ -1,3 +1,7 @@
+Thu Dec 21 20:00:48 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* BUGS, NEWS: Regenerate.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* com.c [VMS]: Remove definition of BSTRING.
