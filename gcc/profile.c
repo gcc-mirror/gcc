@@ -139,8 +139,6 @@ instrument_edges (struct edge_list *el)
   int num_edges = NUM_EDGES (el);
   basic_block bb;
 
-  remove_fake_edges ();
-
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
       edge e;
@@ -971,6 +969,8 @@ branch_prob (void)
 	compute_value_histograms (n_values, values);
     }
 
+  remove_fake_edges ();
+
   /* For each edge not on the spanning tree, add counting code.  */
   if (profile_arc_flag
       && coverage_counter_alloc (GCOV_COUNTER_ARCS, num_instrumented))
@@ -993,7 +993,6 @@ branch_prob (void)
 	}
     }
 
-  remove_fake_edges ();
   free_aux_for_edges ();
 
   if (!ir_type ())

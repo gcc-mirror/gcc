@@ -779,7 +779,7 @@ estimate_probability (struct loops *loops_info)
 	&& bb->succ->succ_next != NULL)
       combine_predictions_for_insn (BB_END (bb), bb);
 
-  remove_fake_edges ();
+  remove_fake_exit_edges ();
   /* Fill in the probability values in flowgraph based on the REG_BR_PROB
      notes.  */
   FOR_EACH_BB (bb)
@@ -986,7 +986,7 @@ tree_estimate_probability (void)
 
   estimate_bb_frequencies (&loops_info);
   free_dominance_info (CDI_POST_DOMINATORS);
-  remove_fake_edges ();
+  remove_fake_exit_edges ();
   flow_loops_free (&loops_info);
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_tree_cfg (dump_file, dump_flags);
@@ -1220,7 +1220,7 @@ note_prediction_to_br_prob (void)
   free_dominance_info (CDI_DOMINATORS);
   free (heads);
 
-  remove_fake_edges ();
+  remove_fake_exit_edges ();
 }
 
 /* This is used to carry information about basic blocks.  It is

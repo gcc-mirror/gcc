@@ -1943,13 +1943,14 @@ fini_pre (void)
   free_alloc_pool (reference_node_pool);
   free_alloc_pool (unary_node_pool);
   htab_delete (phi_translate_table);
-  remove_fake_edges ();
+  remove_fake_exit_edges ();
 
   FOR_ALL_BB (bb)
     {
       free (bb->aux);
       bb->aux = NULL;
     }
+
   free_dominance_info (CDI_POST_DOMINATORS);
   vn_delete ();
 }
