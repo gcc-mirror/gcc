@@ -1,4 +1,10 @@
 2004-06-18  Steven Bosscher  <stevenb@suse.de>
+
+	* config/xtensa/xtensa.c
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define.
+	* xtensa.md: Replace the old pipeline description with a DFA model.
+
+2004-06-18  Steven Bosscher  <stevenb@suse.de>
 	    Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
 
 	* config/s390/s390.md: Remove the generic pipeline description.
