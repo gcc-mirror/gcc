@@ -1,3 +1,7 @@
+2001-03-10  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.oliva/delete3.C (main): Catch the exception.
+
 2001-03-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* g++.old-deja/g++.other/crash31.C: XFAIL.
