@@ -692,7 +692,7 @@ namespace std
 	int_type __ret = traits_type::eof();
 	const bool __testeof = traits_type::eq_int_type(this->underflow(), 
 							__ret);
-	if (!__testeof && this->gptr() < this->egptr())
+	if (!__testeof)
 	  {
 	    __ret = traits_type::to_int_type(*this->gptr());
 	    this->gbump(1);

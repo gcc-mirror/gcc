@@ -1,3 +1,8 @@
+2003-06-29  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_streambuf.h (uflow): According to
+	27.5.2.4.3,p16, don't check gptr() < egptr().
+
 2003-06-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9875
