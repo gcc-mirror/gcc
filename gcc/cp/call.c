@@ -2714,7 +2714,7 @@ op_error (code, code2, arg1, arg2, arg3, problem)
      tree arg1, arg2, arg3;
      const char *problem;
 {
-  const char * opname;
+  const char *opname;
 
   if (code == MODIFY_EXPR)
     opname = assignment_operator_name_info[code2].name;
@@ -2724,23 +2724,23 @@ op_error (code, code2, arg1, arg2, arg3, problem)
   switch (code)
     {
     case COND_EXPR:
-      cp_error ("%s for `%T ? %T : %T'", problem,
+      cp_error ("%s for `%T ? %T : %T' operator", problem,
 		error_type (arg1), error_type (arg2), error_type (arg3));
       break;
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
-      cp_error ("%s for `%T%s'", problem, error_type (arg1), opname);
+      cp_error ("%s for `%T %s' operator", problem, error_type (arg1), opname);
       break;
     case ARRAY_REF:
-      cp_error ("%s for `%T[%T]'", problem,
+      cp_error ("%s for `%T [%T]' operator", problem,
 		error_type (arg1), error_type (arg2));
       break;
     default:
       if (arg2)
-	cp_error ("%s for `%T %s %T'", problem,
+	cp_error ("%s for `%T %s %T' operator", problem,
 		  error_type (arg1), opname, error_type (arg2));
       else
-	cp_error ("%s for `%s%T'", problem, opname, error_type (arg1));
+	cp_error ("%s for `%s %T' operator", problem, opname, error_type (arg1));
     }
 }
 
