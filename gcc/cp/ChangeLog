@@ -1,3 +1,9 @@
+1999-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lex.c (init_cpp_parse): Call xcalloc, not malloc/bzero.
+
+	* xref.c (SALLOC): Call xstrdup, not xmalloc/strcpy.
+
 1999-09-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_file): Also call check_global_declarations for

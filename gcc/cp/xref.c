@@ -60,9 +60,7 @@ int flag_gnu_xref;
 
 
 /* Return a malloc'd copy of STR.  */
-#define SALLOC(str) \
- ((char *) ((str) == NULL ? NULL	\
-	    : (char *) strcpy ((char *) xmalloc (strlen ((str)) + 1), (str))))
+#define SALLOC(str) ((char *) ((str) == NULL ? NULL : xstrdup (str)))
 #define SFREE(str) (str != NULL && (free(str),0))
 
 #define STREQL(s1,s2) (strcmp((s1),(s2)) == 0)
