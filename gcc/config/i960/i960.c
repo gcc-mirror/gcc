@@ -1,5 +1,6 @@
 /* Subroutines used for code generation on intel 80960.
-   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999
+   Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -2623,14 +2624,106 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       emit_label (label);
 
       /* ??? Note that we unnecessarily store one extra register for stdarg
-	 fns.  We could optimize this, but it's kept as for now.  */
+	 fns.  We could optimize this, but it's kept as-is for now.  */
       regblock = gen_rtx (MEM, BLKmode,
 			  plus_constant (arg_pointer_rtx,
 					 first_reg * 4));
+      MEM_ALIAS_SET (regblock) = get_varargs_alias_set ();
       move_block_from_reg (first_reg, regblock,
 			   NPARM_REGS - first_reg,
 			   (NPARM_REGS - first_reg) * UNITS_PER_WORD);
     }
+}
+
+/* Define the `__builtin_va_list' type for the ABI.  */
+
+tree
+i960_build_va_list ()
+{
+  return build_array_type (unsigned_type_node,
+			   build_index_type (size_one_node));
+}
+
+/* Implement `va_start' for varargs and stdarg.  */
+
+void
+i960_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p ATTRIBUTE_UNUSED;
+     tree valist;
+     rtx nextarg ATTRIBUTE_UNUSED;
+{
+  tree d, s, t;
+
+  s = make_tree (unsigned_type_node, arg_pointer_rtx);
+  d = build (ARRAY_REF, unsigned_type_node, valist, size_zero_node);
+  t = build (MODIFY_EXPR, unsigned_type_node, d, s);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  s = build_int_2 ((current_function_args_info.ca_nregparms
+		    + current_function_args_info.ca_nstackparms) * 4, 0);
+  d = build (ARRAY_REF, unsigned_type_node, valist, size_one_node);
+  t = build (MODIFY_EXPR, unsigned_type_node, d, s);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+}
+
+/* Implement `va_arg'.  */
+
+rtx
+i960_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT siz, ali;
+  tree base, num, pad, next, this, t1, t2, int48;
+  rtx addr_rtx;
+
+  base = build (ARRAY_REF, unsigned_type_node, valist, size_zero_node);
+  num = build (ARRAY_REF, unsigned_type_node, valist, size_one_node);
+
+  /* Round up sizeof(type) to a word.  */
+  siz = (int_size_in_bytes (type) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+
+  /* Round up alignment to a word.  */
+  ali = TYPE_ALIGN (type);
+  if (ali < BITS_PER_WORD)
+    ali = BITS_PER_WORD;
+  ali /= BITS_PER_UNIT;
+
+  /* Align NUM appropriate for the argument.  */
+  pad = fold (build (PLUS_EXPR, unsigned_type_node, num, 
+		      build_int_2 (ali - 1, 0)));
+  pad = fold (build (BIT_AND_EXPR, unsigned_type_node, pad,
+		      build_int_2 (-ali, -1)));
+  pad = save_expr (pad);
+
+  /* Increment VPAD past this argument.  */
+  next = fold (build (PLUS_EXPR, unsigned_type_node, pad,
+		      build_int_2 (siz, 0)));
+  next = save_expr (next);
+
+  /* Find the offset for the current argument.  Mind peculiar overflow
+     from registers to stack.  */
+  int48 = build_int_2 (48, 0);
+  if (siz > 16)
+    t2 = integer_one_node;
+  else
+    t2 = fold (build (GT_EXPR, integer_type_node, next, int48));
+  t1 = fold (build (LE_EXPR, integer_type_node, num, int48));
+  t1 = fold (build (TRUTH_AND_EXPR, integer_type_node, t1, t2));
+  this = fold (build (COND_EXPR, unsigned_type_node, t1, int48, pad));
+
+  /* Find the address for the current argument.  */
+  t1 = fold (build (PLUS_EXPR, unsigned_type_node, base, this));
+  t1 = build1 (NOP_EXPR, ptr_type_node, t1);
+  addr_rtx = expand_expr (t1, NULL_RTX, Pmode, EXPAND_NORMAL);
+
+  /* Increment NUM.  */
+  t1 = build (MODIFY_EXPR, unsigned_type_node, num, next);
+  TREE_SIDE_EFFECTS (t1) = 1;
+  expand_expr (t1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  
+  return addr_rtx;
 }
 
 /* Calculate the final size of the reg parm stack space for the current

@@ -1,3 +1,15 @@
+Mon Jul 26 22:52:47 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i960.c (i960_setup_incoming_varargs): Use get_varargs_alias_set
+	for the register spill block.
+	(i960_build_va_list): New.
+	(i960_va_start): New.
+	(i960_va_arg): New.
+	* i960.h (BUILD_VA_LIST_TYPE): New.
+	(EXPAND_BUILTIN_VA_START): New.
+	(EXPAND_BUILTIN_VA_ARG): New.
+	* i960.md (store_multiple): Use change_address on individul mems.
+
 Mon Jul 26 22:43:12 1999  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (stabilize_va_list): Don't INDIRECT_REF through
