@@ -7389,6 +7389,10 @@ ia64_in_small_data_p (exp)
   if (TARGET_NO_SDATA)
     return false;
 
+  /* We want to merge strings, so we never consider them small data.  */
+  if (TREE_CODE (exp) == STRING_CST)
+    return false;
+
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
     {
       const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));

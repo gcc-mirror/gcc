@@ -1,3 +1,7 @@
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_in_small_data_p): Disallow strings.
+
 2003-04-17  Simon Law  <sfllaw@engmail.uwaterloo.ca>
 
         * doc/include/gpl.texi: Fix double-spacing after "MA" to match
