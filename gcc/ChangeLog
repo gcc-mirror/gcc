@@ -1,3 +1,9 @@
+2004-09-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/linux64.h (PROCESSOR_DEFAULT64): Default to POWER4.
+
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): dep_insn is used.
+
 2004-09-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-decl.c (implicityl_declare): Call maybe_apply_renaming_pragma.
