@@ -35,7 +35,13 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_TOC 0
 #define TARGET_NO_TOC 1
 
-#define CPP_PREDEFINES "-D__ppc__ -D__NATURAL_ALIGNMENT__ -D__MACH__ -D__BIG_ENDIAN__ -D__APPLE__"
+/* The Darwin ABI always includes AltiVec, can't be (validly) turned
+   off.  */
+
+#define SUBTARGET_OVERRIDE_OPTIONS  \
+  rs6000_altivec_abi = 1;
+
+#define CPP_PREDEFINES "-D__ppc__ -D__POWERPC__ -D__NATURAL_ALIGNMENT__ -D__MACH__ -D__BIG_ENDIAN__ -D__APPLE__"
 
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
@@ -53,9 +59,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  PIC_OFFSET_TABLE_REGNUM
 #define PIC_OFFSET_TABLE_REGNUM 31
-
-#undef STACK_BOUNDARY
-#define STACK_BOUNDARY 128
 
 /* Pad the outgoing args area to 16 bytes instead of the usual 8.  */
 
