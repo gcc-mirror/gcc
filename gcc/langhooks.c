@@ -71,8 +71,8 @@ lhd_print_tree_nothing (file, node, indent)
 
 int
 lhd_safe_from_p (x, exp)
-     rtx x;
-     tree exp;
+     rtx x ATTRIBUTE_UNUSED;
+     tree exp ATTRIBUTE_UNUSED;
 {
   return 1;
 }
