@@ -62,12 +62,6 @@ Boston, MA 02111-1307, USA.
   && strcmp (STR, "Tdata") && strcmp (STR, "Ttext")	\
   && strcmp (STR, "Tbss"))
 
-/* You should redefine CPP_PREDEFINES in any file which includes this one.
-   The definition should be appropriate for the type of target system
-   involved, and it should include any -A (assertion) options which are
-   appropriate for the given target system.  */
-#undef CPP_PREDEFINES
-
 /* Provide an ASM_SPEC appropriate for svr4.  Here we try to support as
    many of the specialized svr4 assembler options as seems reasonable,
    given that there are certain options which we can't (or shouldn't)

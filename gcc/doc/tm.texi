@@ -650,39 +650,10 @@ variable @code{flag_iso} can be used.  The function-like macro
 @code{preprocessing_trad_p()} can be used to check for traditional
 preprocessing.
 
-With @code{TARGET_OS_CPP_BUILTINS} this macro obsoletes the
-@code{CPP_PREDEFINES} target macro.
-
 @findex TARGET_OS_CPP_BUILTINS
 @item TARGET_OS_CPP_BUILTINS()
 Similarly to @code{TARGET_CPU_CPP_BUILTINS} but this macro is optional
 and is used for the target operating system instead.
-
-With @code{TARGET_CPU_CPP_BUILTINS} this macro obsoletes the
-@code{CPP_PREDEFINES} target macro.
-
-@findex CPP_PREDEFINES
-@item CPP_PREDEFINES
-Define this to be a string constant containing @option{-D} options to
-define the predefined macros that identify this machine and system.
-These macros will be predefined unless the @option{-ansi} option (or a
-@option{-std} option for strict ISO C conformance) is specified.
-
-In addition, a parallel set of macros are predefined, whose names are
-made by appending @samp{__} at the beginning and at the end.  These
-@samp{__} macros are permitted by the ISO standard, so they are
-predefined regardless of whether @option{-ansi} or a @option{-std} option
-is specified.
-
-For example, on the Sun, one can use the following value:
-
-@smallexample
-"-Dmc68000 -Dsun -Dunix"
-@end smallexample
-
-The result is to define the macros @code{__mc68000__}, @code{__sun__}
-and @code{__unix__} unconditionally, and the macros @code{mc68000},
-@code{sun} and @code{unix} provided @option{-ansi} is not specified.
 
 @findex extern int target_flags
 @item extern int target_flags;

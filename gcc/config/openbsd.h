@@ -130,9 +130,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Runtime target specification.  */
 
-/* You must redefine CPP_PREDEFINES in any arch specific file.  */
-#undef CPP_PREDEFINES
-
 /* Implicit calls to library routines.  */
 
 /* Use memcpy and memset instead of bcopy and bzero.  */

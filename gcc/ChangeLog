@@ -1,5 +1,15 @@
 2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
 
+	* defaults.h (TARGET_CPU_CPP_BUILTINS, CPP_PREDEFINES): Remove.
+	* gcc.c (cpp_predefines): Remove.
+	(cpp_unique_options, do_spec_1): Remove handling of CPP_PREDEFINES.
+	(static_specs): Remove predefines.
+	* system.h: Poison CPP_PREDEFINES.
+	* config/freebsd.h, config/openbsd.h, config/ptx4.h, config/svr3.h,
+	config/svr4.h, doc/tm.texi: Remove references to CPP_PREDEFINES.
+
+2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
+
 	* config/m68k/hp320.h, config/m68k/linux.h, config/m68k/m68k-none.h,
 	config/m68k/m68k.h, config/m68k/m68kemb.h, config/m68k/m68kv4.h,
 	config/m68k/openbsd.h, config/m68k/rtemself.h: Remove CPP_PREDEFINES,
