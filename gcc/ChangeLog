@@ -1,3 +1,9 @@
+2002-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR opt/7409
+	* loop.c (loop_regs_scan): Mark registers used for function
+	argument passing as MAY_NOT_OPTIMIZE.
+
 2002-10-14  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/7862

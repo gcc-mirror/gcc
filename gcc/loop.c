@@ -9560,6 +9560,25 @@ loop_regs_scan (loop, extra_size)
 
       if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN)
 	memset (last_set, 0, regs->num * sizeof (rtx));
+
+      /* Invalidate all registers used for function argument passing.
+	 We check rtx_varies_p for the same reason as below, to allow
+	 optimizing PIC calculations.  */
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  rtx link;
+	  for (link = CALL_INSN_FUNCTION_USAGE (insn); 
+	       link; 
+	       link = XEXP (link, 1))
+	    {
+	      rtx op, reg;
+
+	      if (GET_CODE (op = XEXP (link, 0)) == USE
+		  && GET_CODE (reg = XEXP (op, 0)) == REG
+		  && rtx_varies_p (reg, 1))
+		regs->array[REGNO (reg)].may_not_optimize = 1;
+	    }
+	}
     }
 
   /* Invalidate all hard registers clobbered by calls.  With one exception:
