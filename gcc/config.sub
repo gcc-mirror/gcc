@@ -67,11 +67,11 @@ case $os in
 		basic_machine=$1
 		;;
 	-sco*)
-		os=-scosysv322
+		os=-sco3.2v2
 		basic_machine=i386-unknown
 		;;
 	-isc*)
-		os=-iscsysv
+		os=-isc
 		basic_machine=i386-unknown
 		;;
 esac
@@ -107,11 +107,11 @@ case $basic_machine in
 		;;
 	i386-sco* | i386sco | sco)
 		basic_machine=i386-unknown
-		os=-scosysv322
+		os=-sco3.2v2
 		;;
 	i386-isc* | isc)
 		basic_machine=i386-unknown
-		os=-iscsysv
+		os=-isc
 		;;
 	i386v4*)
 		basic_machine=i386-unknown
@@ -537,7 +537,7 @@ case $basic_machine in
 		os=-genix
 		;;
 	i386-*)
-		os=-scosysv322
+		os=-sco3.2v2
 		;;
 	*)
 		os=-none
