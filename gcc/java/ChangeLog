@@ -1,3 +1,25 @@
+2005-03-06  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Remove xref code.
+	* xref.c, xref.h: Remove file.
+	* Make-lang.in (java/xref.o): Remove.
+	* java-tree.h (flag_emit_xref, do_not_fold): Remove declaration.
+	* lang.c (flag_emit_xref): Remove definition.
+	* parse.h (DECL_END_SOURCE_LINE, DECL_INHERITED_SOURCE_LINE): Remove.
+	* typeck.c (convert): Remove use of do_not_fold.
+	* parse.y (do_not_fold): Remove definition.
+	(parser grammar): Remove xref code.
+	(maybe_create_class_interface_decl, create_class): Likewise.
+	(register_fields, method_header, finish_method_declaration): Likewise.
+	(declare_local_variables, source_end_java_method): Likewise.
+	(java_complete_expand_classes): Do not set do_not_fold.
+	(java_complete_expand_method): Remove xref code.
+	(java_expand_classes, resolve_field_access, patch_invoke): Likewise.
+	(java_complete_tree, java_complete_lhs, patch_assignment): Likewise.
+	(patch_binop, build_string_concatenation, patch_array_ref): Likewise.
+	(patch_synchronized_statement, patch_throw_statement): Likewise.
+	(maybe_build_class_init_for_field): Likewise.
+
 2005-03-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c (build_expr_wfl, expr_add_location): Use TYPE_P

@@ -39,7 +39,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "flags.h"
-#include "xref.h"
 #include "ggc.h"
 #include "diagnostic.h"
 #include "tree-inline.h"
@@ -116,11 +115,6 @@ static bool inhibit_error_function_printing;
 int compiling_from_source;
 
 const char *resource_name;
-
-/* When nonzero, we emit xref strings. Values of the flag for xref
-   backends are defined in xref_flag_table, xref.c.  */
-
-int flag_emit_xref = 0;
 
 /* When nonzero, -Wall was turned on.  */
 int flag_wall = 0;
