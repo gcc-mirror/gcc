@@ -1,3 +1,31 @@
+2004-11-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/18269
+	* config/darwin.c (machopic_indirect_data_reference):
+	Call gen_macho_high and gen_macho_low instead of
+	checking the mode and calling gen_macho_high_di directly.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Likewise.
+	* config/rs6000/rs6000.md: Move most of TARGET_MACHO expand/insns
+	to darwin.md.
+	(movdf_low, movsf_low, movsf_low_st, movsi_low, macho_correct_pic,
+	load_macho_picbase, macho_low, macho_high): Removed.
+	(builtin_setjmp_receiver): Call gen_macho_high and
+	gen_macho_low instead of checking the mode and calling
+	gen_macho_high_di directly.
+	* config/rs6000/darwin.md (load_macho_picbase_di): Use the MD constant.
+	(movdf_low_si, movsf_low_si, movsf_low_st_si, movsi_low_st):
+	Moved from rs6000.md.
+	(macho_high): New expander.
+	(macho_high_si): Renamed version of macho_high from rs6000.md.
+	(macho_low): New expander.
+	(macho_low_si): Renamed version of macho_low from rs6000.md.
+	(load_macho_picbase): New expander.
+	(load_macho_picbase_si): Renamed version of load_macho_picbase
+	from rs6000.md.
+	(macho_correct_pic): New expander.
+	(macho_correct_pic_si): Renamed version of macho_correct_pic
+	from rs6000.md.
+
 2004-11-07  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (finish_struct): Use complete sentences for diagnostic
