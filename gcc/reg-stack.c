@@ -1637,9 +1637,9 @@ subst_stack_regs_pat (insn, regstack, pat)
 		&& REG_P (*src1) && REG_P (*src2)
 		&& REGNO (*src1) != REGNO (*dest))
 	     {
-		rtx tmp = *src1;
-		*src1 = *src2;
-		*src2 = tmp;
+		int tmp = REGNO (*src1);
+		replace_reg (src1, REGNO (*src2));
+		replace_reg (src2, tmp);
 	     }
 	    break;
 
