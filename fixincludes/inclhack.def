@@ -1507,6 +1507,34 @@ fix = {
 
 
 /*
+ *  Fix hpux broken #ifndef _XOPEN_SOURCE_EXTENDED conditional on htonl etc.
+ */
+fix = {
+    hackname = hpux_htonl;
+    files    = netinet/in.h;
+    select   = "#ifndef _XOPEN_SOURCE_EXTENDED\n"
+               "(/\\*\n"
+               " \\* Macros for number representation conversion\\.\n"
+               " \\*/\n"
+               "#ifndef ntohl)";
+    c_fix     = format;
+    c_fix_arg = "#if 1\n%1";
+
+    test_text = "#ifndef _XOPEN_SOURCE_EXTENDED\n"
+                "/*\n"
+                " * Macros for number representation conversion.\n"
+                " */\n"
+                "#ifndef ntohl\n"
+                "#define ntohl(x)        (x)\n"
+                "#define ntohs(x)        (x)\n"
+                "#define htonl(x)        (x)\n"
+                "#define htons(x)        (x)\n"
+                "#endif\n"
+                "#endif  /* ! _XOPEN_SOURCE_EXTENDED */";
+};
+
+
+/*
  * HP-UX long_double
  */
 fix = {

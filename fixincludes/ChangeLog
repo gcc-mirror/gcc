@@ -1,3 +1,9 @@
+2005-03-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (hpux_htonl): New fix.
+	* tests/base/netinet/in.h: New test.
+	* fixincl.x: Regenerate.
+
 2005-02-23  James E Wilson  <wilson@specifixinc.com>
 
 	* Makefile.in (full-stamp, test-stamp, $(AF)): Add $(CFLAGS) to link.
