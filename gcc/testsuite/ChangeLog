@@ -1,3 +1,8 @@
+2002-10-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/noncompile/920923-1.c: Prevent spurious regressions with
+	bison 1.50 or later.
+
 2002-10-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/7676
