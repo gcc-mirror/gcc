@@ -1,3 +1,9 @@
+Wed Nov 03 02:16:00 PST 1999  Pekka Nikander  <pekka.nikander@hut.fi>
+
+	* decl.c (INT_TYPE_SIZE): Define if necessary.
+	(expand_java_return): Handle the case of a native integer smaller
+ 	than a JVM integer.
+
 2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* gjavah.c (help): Use GCCBUGURL.
