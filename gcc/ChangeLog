@@ -1,3 +1,9 @@
+2000-12-21  DJ Delorie  <dj@redhat.com>
+
+	* dwarf2out.c (simple_decl_align_in_bits): new
+	(field_byte_offset): Try both the type align and the
+	decl align, use whichever works, preferring the type align.
+
 2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gccbug.in: Fix typo.
