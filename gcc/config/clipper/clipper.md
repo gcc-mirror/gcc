@@ -306,8 +306,11 @@
     operands[1] = force_reg (DImode, operands[1]);
 }")
 
+;; If an operand is a MEM but not offsetable, we can't load it into
+;; a register, so we must force the third alternative to be the one
+;; reloaded.  Hence we show the first as more expensive.
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r")
+  [(set (match_operand:DI 0 "register_operand" "=?r,r,r")
 	(match_operand:DI 1 "general_operand"   "r,n,o"))]
   ""
   "*
