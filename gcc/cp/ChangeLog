@@ -1,3 +1,10 @@
+2005-04-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19159
+	* decl2.c (import_export_decl): Use non-COMDAT external linkage
+	for virtual tables, typeinfo, etc. that will be emitted in only
+	one translation unit on systems without weak symbols.
+
 2005-04-05  Steven Bosscher  <stevenb@suse.de>
 
 	* typeck.c (comptypes): First determine if the types are compatible

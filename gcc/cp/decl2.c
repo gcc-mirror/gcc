@@ -1780,29 +1780,43 @@ import_export_decl (tree decl)
       else if (CLASSTYPE_INTERFACE_KNOWN (type)
 	       && CLASSTYPE_INTERFACE_ONLY (type))
 	import_p = true;
-      else if (TARGET_WEAK_NOT_IN_ARCHIVE_TOC
+      else if ((!flag_weak || TARGET_WEAK_NOT_IN_ARCHIVE_TOC)
 	       && !CLASSTYPE_USE_TEMPLATE (type)
 	       && CLASSTYPE_KEY_METHOD (type)
 	       && !DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type)))
 	/* The ABI requires that all virtual tables be emitted with
 	   COMDAT linkage.  However, on systems where COMDAT symbols
 	   don't show up in the table of contents for a static
-	   archive, the linker will report errors about undefined
-	   symbols because it will not see the virtual table
-	   definition.  Therefore, in the case that we know that the
-	   virtual table will be emitted in only one translation
-	   unit, we make the virtual table an ordinary definition
-	   with external linkage.  */
+	   archive, or on systems without weak symbols (where we
+	   approximate COMDAT linkage by using internal linkage), the
+	   linker will report errors about undefined symbols because
+	   it will not see the virtual table definition.  Therefore,
+	   in the case that we know that the virtual table will be
+	   emitted in only one translation unit, we make the virtual
+	   table an ordinary definition with external linkage.  */
 	DECL_EXTERNAL (decl) = 0;
       else if (CLASSTYPE_INTERFACE_KNOWN (type))
 	{
 	  /* TYPE is being exported from this translation unit, so DECL
-	     should be defined here.  The ABI requires COMDAT
-	     linkage.  Normally, we only emit COMDAT things when they
-	     are needed; make sure that we realize that this entity is
-	     indeed needed.  */
-	  comdat_p = true;
-	  mark_needed (decl);
+	     should be defined here.  */ 
+	  if (!flag_weak && CLASSTYPE_EXPLICIT_INSTANTIATION (type))
+	    /* If a class is declared in a header with the "extern
+	       template" extension, then it will not be instantiated,
+	       even in translation units that would normally require
+	       it.  Often such classes are explicitly instantiated in
+	       one translation unit.  Therefore, the explicit
+	       instantiation must be made visible to other translation
+	       units.  */
+	    DECL_EXTERNAL (decl) = 0;
+	  else
+	    {
+	      /* The ABI requires COMDAT linkage.  Normally, we only
+		 emit COMDAT things when they are needed; make sure
+		 that we realize that this entity is indeed
+		 needed.  */
+	      comdat_p = true;
+	      mark_needed (decl);
+	    }
 	}
       else if (!flag_implicit_templates
 	       && CLASSTYPE_IMPLICIT_INSTANTIATION (type))
@@ -1830,7 +1844,14 @@ import_export_decl (tree decl)
 	      comdat_p = true;
 	      if (CLASSTYPE_INTERFACE_KNOWN (type)
 		  && !CLASSTYPE_INTERFACE_ONLY (type))
-		mark_needed (decl);
+		{
+		  mark_needed (decl);
+		  if (!flag_weak)
+		    {
+		      comdat_p = false;
+		      DECL_EXTERNAL (decl) = 0;
+		    }
+		}
 	    }
 	}
       else
