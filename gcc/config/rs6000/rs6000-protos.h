@@ -122,6 +122,7 @@ extern void rs6000_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern struct rtx_def *rs6000_longcall_ref PARAMS ((rtx));
 extern void rs6000_fatal_bad_address PARAMS ((rtx));
 extern int stmw_operation PARAMS ((rtx, enum machine_mode));
+extern int mfcr_operation PARAMS ((rtx, enum machine_mode));
 extern int mtcrf_operation PARAMS ((rtx, enum machine_mode));
 extern int lmw_operation PARAMS ((rtx, enum machine_mode));
 extern struct rtx_def *create_TOC_reference PARAMS ((rtx));

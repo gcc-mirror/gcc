@@ -202,7 +202,7 @@
   |(du2_power4+du3_power4,iu2_power4,iu2_power4)\
   |(du3_power4+du4_power4,nothing,iu2_power4,iu1_power4)")
 
-(define_bypass 4 "power4-compare" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
+(define_bypass 4 "power4-compare" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr,power4-mfcrf")
 
 (define_insn_reservation "power4-lmul-cmp" 7
   (and (eq_attr "type" "lmul_compare")
@@ -212,7 +212,7 @@
   |(du3_power4+du4_power4,iu2_power4*6,iu1_power4)")
 ;  |(du3_power4+du4_power4,nothing,iu2_power4*6,iu1_power4)")
 
-(define_bypass 10 "power4-lmul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
+(define_bypass 10 "power4-lmul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr,power4-mfcrf")
 
 (define_insn_reservation "power4-imul-cmp" 5
   (and (eq_attr "type" "imul_compare")
@@ -222,7 +222,7 @@
   |(du3_power4+du4_power4,iu2_power4*4,iu1_power4)")
 ;  |(du3_power4+du4_power4,nothing,iu2_power4*4,iu1_power4)")
 
-(define_bypass 8 "power4-imul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
+(define_bypass 8 "power4-imul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr,power4-mfcrf")
 
 (define_insn_reservation "power4-lmul" 7
   (and (eq_attr "type" "lmul")
@@ -305,6 +305,12 @@
    du1_power4+du2_power4+du3_power4+du4_power4+cru_power4,\
    cru_power4,cru_power4,cru_power4")
 
+; mfcrf (1 field)
+(define_insn_reservation "power4-mfcrf" 3
+  (and (eq_attr "type" "mfcrf")
+       (eq_attr "cpu" "power4"))
+  "du1_power4,cru_power4")
+
 ; mtcrf (1 field)
 (define_insn_reservation "power4-mtcr" 4
   (and (eq_attr "type" "mtcr")
@@ -379,7 +385,7 @@
 (define_bypass 9 "power4-vecfloat" "power4-vecperm")
 
 (define_bypass 5 "power4-vecsimple,power4-veccomplex"
-		 "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
+		 "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr,power4-mfcrf")
 
 (define_bypass 4 "power4-vecsimple,power4-vecperm" "power4-vecstore")
 (define_bypass 7 "power4-veccomplex" "power4-vecstore")

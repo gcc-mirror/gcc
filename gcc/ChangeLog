@@ -1,3 +1,20 @@
+2003-07-07  David Edelsohn  <edelsohn@gnu.org>
+	    Fariborz Jahanian  <fjahanian@apple.com>
+
+	* configure.in: Test for PowerPC mfcr field support in assembler.
+	* config.in, configure: Regenderated.
+
+	* config/rs6000/power4.md: Add mfcrf reservation.
+	* config/rs6000/rs6000-protos.h (mfcr_operation): Declare.
+	* config/rs6000/rs6000.c (mfcr_operation): Define.
+	(print_operand): Add 'Q' case for mfcrf.
+	* config/rs6000/rs6000.h (TARGET_MFCRF): New.
+	* config/rs6000/rs6000.md (attribute "type"): Add mfcrf.
+	(movcc_internal1): Emit optional field operand for mfcr and set
+	"type" attribute appropriately.
+	(mfcr SCC): Likewise.
+	(movesi_from_cr_one): New.
+
 2003-07-07  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.md: Correct check-in of incorrect version.
