@@ -14,7 +14,7 @@
 ## For more information on these two systems, check out the documentation
 ## for 'Autoconf' (autoconf.texi) and 'Configure' (configure.texi).  
 
-#   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1992-99, 2000 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -234,9 +234,6 @@ case "${host}" in
   *-*-lynxos*)
     host_makefile_frag="${host_makefile_frag} config/mh-lynxos"
     ;;
-  *-*-aix4.[3456789]* | *-*-aix[56789].*)
-    host_makefile_frag="${host_makefile_frag} config/mh-aix43"
-    ;;
   *-*-sysv4*)
     host_makefile_frag="${host_makefile_frag} config/mh-sysv4"
     ;;
@@ -342,6 +339,9 @@ case "${target}" in
     ;;
   *-*-linux-gnu)
     target_makefile_frag="${target_makefile_frag} config/mt-linux"
+    ;;
+  *-*-aix4.[3456789]* | *-*-aix[56789].*)
+    target_makefile_frag="${target_makefile_frag} config/mt-aix43"
     ;;
 esac
 
