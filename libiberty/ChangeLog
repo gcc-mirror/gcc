@@ -1,3 +1,9 @@
+2005-01-11  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* hex.c (hex_value): Group 'unsigned int' together to get correct
+	markup.
+	* functions.texi: Regenerated.
+	
 2004-12-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in: Undo to 2004-12-17.
