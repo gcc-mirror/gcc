@@ -190,6 +190,8 @@ in the following sections.
 \-Wformat
 .RI \-Wid\-clash\- len
 \-Wimplicit
+\-Wimplicit\-int
+\-Wimplicit\-function\-declaration
 \-Winline
 \-Wmain
 \-Wmissing\-prototypes
@@ -1717,8 +1719,14 @@ An unsigned value is compared against zero with `\|\c
 \&\|'.
 .PP
 .TP
+.B \-Wimplicit-int
+Warn whenever a declaration does not specify a type.
+.TP
+.B \-Wimplicit-function-declaration
+Warn whenever a function is used before being declared.
+.TP
 .B \-Wimplicit
-Warn whenever a function or parameter is implicitly declared.
+Same as -Wimplicit-int and -Wimplicit-function-declaration.
 .TP
 .B \-Wmain
 Warn if the
@@ -3990,7 +3998,7 @@ three-way choice.
 .BI "\-fcall\-used\-" "reg"
 Treat the register named \c
 .I reg\c
-\& as an allocatable register that is
+\& as an allocable register that is
 clobbered by function calls.  It may be allocated for temporaries or
 variables that do not live across a call.  Functions compiled this way
 will not save and restore the register \c
@@ -4007,7 +4015,7 @@ three-way choice.
 .BI "\-fcall\-saved\-" "reg"
 Treat the register named \c
 .I reg\c
-\& as an allocatable register saved by
+\& as an allocable register saved by
 functions.  It may be allocated even for temporaries or variables that
 live across a call.  Functions compiled this way will save and restore
 the register \c
