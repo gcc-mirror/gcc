@@ -122,17 +122,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
 
 /* Provide a LIB_SPEC appropriate for svr4.  Here we tack on the default
-   standard C library (unless we are building a shared library) followed by
-   our own magical crtend.o file (see crtstuff.c) which provides part of
-   the support for getting C++ file-scope static object constructed before
+   standard C library (unless we are building a shared library).  */
+
+#undef	LIB_SPEC
+#define LIB_SPEC "%{!shared:%{!symbolic:-lc}}"
+
+/* Provide a LIBGCC_SPEC appropriate for svr4.  We also want to exclude
+   libgcc when -symbolic.  */
+
+#undef  LIBGCC_SPEC
+#define LIBGCC_SPEC "%{!shared:%{!symbolic:-lgcc}}"
+
+/* Provide an ENDFILE_SPEC appropriate for svr4.  Here we tack on our own
+   magical crtend.o file (see crtstuff.c) which provides part of the
+   support for getting C++ file-scope static object constructed before
    entering `main', followed by the normal svr3/svr4 "finalizer" file,
    which is either `gcrtn.o' or `crtn.o'.  */
 
-#undef	LIB_SPEC
-#define LIB_SPEC \
-  "%{!shared:%{!symbolic:-lc}} \
-  crtend.o%s \
-  %{!shared:%{!symbolic:%{pg:gcrtn.o}%{!pg:crtn.o%s}}}"
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC "crtend.o%s %{pg:gcrtn.o}%{!pg:crtn.o%s}"
 
 /* Provide a LINK_SPEC appropriate for svr4.  Here we provide support
    for the special GCC options -static, -shared, and -symbolic which
@@ -161,8 +169,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
 		   %{b} %{Wl,*:%*} \
 		   %{static:-dn -Bstatic} \
-		   %{shared:-G -dy} \
-		   %{symbolic:-Bsymbolic -G -dy} \
+		   %{shared:-G -dy -z text} \
+		   %{symbolic:-Bsymbolic -G -dy -z text} \
 		   %{G:-G} \
 		   %{YP,*} \
 		   %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
@@ -184,12 +192,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
-			  %{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} \
-			  %{pg:gcrti.o%s}%{!pg:crti.o%s} \
-			  %{ansi:values-Xc.o%s} \
-			  %{!ansi: \
-			   %{traditional:values-Xt.o%s} \
-			   %{!traditional:values-Xa.o%s}}}} crtbegin.o%s"
+			  %{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}}\
+			%{pg:gcrti.o%s}%{!pg:crti.o%s} \
+			%{ansi:values-Xc.o%s} \
+			%{!ansi: \
+			 %{traditional:values-Xt.o%s} \
+			 %{!traditional:values-Xa.o%s}} \
+ 			crtbegin.o%s"
 
 /* Attach a special .ident directive to the end of the file to identify
    the version of GCC which compiled this code.  The format of the
@@ -468,16 +477,33 @@ do {									\
 #define USE_CONST_SECTION	1
 
 #define CONST_SECTION_ASM_OP	".section\t.rodata"
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"a\",@progbits"
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"a\",@progbits"
 
-/* On svr4, we *do* have support for the .init section, and we can put
-   stuff in there to be executed before `main'.  We let crtstuff.c and
-   other files know this by defining the following symbol.  The definition
-   says how to change sections to the .init section.  This is the same
-   for all know svr4 assemblers.  */
+/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
+
+   Note that we want to give these sections the SHF_WRITE attribute
+   because these sections will actually contain data (i.e. tables of
+   addresses of functions in the current root executable or shared library
+   file) and, in the case of a shared library, the relocatable addresses
+   will have to be properly resolved/relocated (and then written into) by
+   the dynamic linker when it actually attaches the given shared library
+   to the executing process.  (Note that on SVR4, you may wish to use the
+   `-z text' option to the ELF linker, when building a shared library, as
+   an additional check that you are doing everything right.  But if you do
+   use the `-z text' option when building a shared library, you will get
+   errors unless the .ctors and .dtors sections are marked as writable
+   via the SHF_WRITE attribute.)  */
+
+#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
+#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
+
+/* On svr4, we *do* have support for the .init and .fini sections, and we
+   can put stuff in there to be executed before and after `main'.  We let
+   crtstuff.c and other files know this by defining the following symbols.
+   The definitions say how to change sections to the .init and .fini
+   sections.  This is the same for all known svr4 assemblers.  */
 
 #define INIT_SECTION_ASM_OP	".section\t.init"
+#define FINI_SECTION_ASM_OP	".section\t.fini"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -844,3 +870,6 @@ do {									 \
         fprintf ((FILE), "\"\n");					\
     }									\
   while (0)
+
+/* All SVR4 targets use the ELF object file format.  */
+#define OBJECT_FORMAT_ELF

@@ -196,7 +196,7 @@ extern int target_flags;
 
 #define CC1_SPEC "%{pg:} %{p:}"
 
-#define LINK_SPEC "-u main"
+#define LINK_SPEC "%{!shared:-u main} %{shared:-b}"
 
 /* Allow $ in identifiers.  */
 #define DOLLARS_IN_IDENTIFIERS 2
@@ -214,6 +214,22 @@ extern int target_flags;
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Asystem(unix) -Asystem(bsd) -Acpu(hppa) -Amachine(hppa)"
+
+/* HPUX has a program 'chatr' to list the dependencies of dynamically
+   linked executables and shared libraries.  */
+#define LDD_SUFFIX "chatr"
+/* look for lines like "dynamic   /usr/lib/X11R5/libX11.sl".  */
+#define PARSE_LDD_OUTPUT(PTR)					\
+do {								\
+  while (*PTR == ' ') PTR++;					\
+  if (strncmp (PTR, "dynamic", sizeof ("dynamic") - 1) == 0)	\
+    {								\
+      PTR += sizeof ("dynamic") - 1;				\
+      while (*p == ' ') PTR++;					\
+    }								\
+  else								\
+    PTR = 0;							\
+} while (0)
 
 /* target machine storage layout */
 

@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.14 $"
+#define VERSION_INFO2   "$Revision: 1.15 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -119,8 +119,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	LINK_SPEC
 #define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
 		   %{static:-dn -Bstatic} \
-		   %{shared:-G -dy} \
-		   %{symbolic:-Bsymbolic -G -dy} \
+		   %{shared:-G -dy -z text} \
+		   %{symbolic:-Bsymbolic -G -dy -z text} \
 		   %{pg:-L/usr/lib/libp}%{p:-L/usr/lib/libp}"
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{!symbolic:%{pg:gcrt0.o%s} \
@@ -176,7 +176,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Override svr4.h and m88k.h except when compiling crtstuff.c.  These must
    be constant strings when compiling crtstuff.c.  Otherwise, respect the
    -mversion-STRING option used.  */
-#undef INIT_SECTION_PREAMBLE
 #undef INIT_SECTION_ASM_OP
 #undef FINI_SECTION_ASM_OP
 #undef CTORS_SECTION_ASM_OP
@@ -196,12 +195,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 			      ? "section\t .dtors,\"aw\""	\
 			      : "section\t .dtors,\"d\"")
 #else
-/* These must be constant strings for crtstuff.c.  
-   An elf and bcs crtbegin.o are needed since bcs does not  
-   increment the stack pointer in the init section as elf does */
-#ifndef BCS
-#define INIT_SECTION_PREAMBLE asm ("\taddu\tr31,r31,0x20")  
-#endif
+/* These must be constant strings for crtstuff.c.  */
 #define INIT_SECTION_ASM_OP	"section\t .init,\"x\""
 #define FINI_SECTION_ASM_OP	"section\t .fini,\"x\""
 #define CTORS_SECTION_ASM_OP	"section\t .ctors,\"d\""

@@ -2,3 +2,11 @@
 # end labels to the .ctors and .dtors section when we link using gcc.
 
 EXTRA_PARTS=crtbegin.o crtend.o
+
+# We need to use -fpic when we are using gcc to compile the routines in
+# crtstuff.c.  This is only really needed when we are going to use gcc/g++
+# to produce a shared library, but since we don't know ahead of time when
+# we will be doing that, we just always use -fpic when compiling the
+# routines in crtstuff.c.
+
+CRTSTUFF_T_CFLAGS = -fpic

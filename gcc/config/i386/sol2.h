@@ -31,6 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    it knows what it is doing. */
 
 #define FORCE_INIT_SECTION_ALIGN do { asm (ALIGN_ASM_OP ## " 16"); } while (0)
+#define FORCE_FINI_SECTION_ALIGN FORCE_INIT_SECTION_ALIGN
 
 /* Add "sun" to the list of symbols defined for SVR4.  */
 #undef CPP_PREDEFINES
@@ -44,10 +45,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC \
-  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
-   %{!shared:%{!symbolic:-lc}} \
-   crtend.o%s \
-   %{!shared:%{!symbolic:%{pg:crtn.o%s}%{!pg:crtn.o%s}}}"
+  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} %{!shared:%{!symbolic:-lc}}"
+
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC "crtend.o%s %{pg:crtn.o%s}%{!pg:crtn.o%s}"
 
 /* This should be the same as in svr4.h, except with -R added.  */
 #undef LINK_SPEC
@@ -55,8 +56,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   "%{h*} %{V} %{v:%{!V:-V}} \
    %{b} %{Wl,*:%*} \
    %{static:-dn -Bstatic} \
-   %{shared:-G -dy} \
-   %{symbolic:-Bsymbolic -G -dy} \
+   %{shared:-G -dy -z text} \
+   %{symbolic:-Bsymbolic -G -dy -z text} \
    %{G:-G} \
    %{YP,*} \
    %{R*} \

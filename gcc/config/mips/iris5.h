@@ -34,6 +34,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    options, but using this would require modifying how crtstuff works, and
    I will leave that for another time (or someone else).  */
 #define OBJECT_FORMAT_ELF
+#define HAS_INIT_SECTION
+#define LD_INIT_SWITCH "-init"
+#define LD_FINI_SWITCH "-fini"
 
 /* Specify wchar_t types.  */
 #undef	WCHAR_TYPE
@@ -82,12 +85,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
 %{bestGnum} %{shared} %{non_shared} \
 %{call_shared} %{no_archive} %{exact_version} \
-%{!shared: %{!non_shared: \
+%{!shared: -u __main -init __main %{!non_shared: \
 	   %{!call_shared: -call_shared -no_unresolved}}} \
 -_SYSTYPE_SVR4"
 
+/* We now support shared libraries.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "%{!shared:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}}"
+
 #undef LIB_SPEC
-#define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc crtn.o%s"
+#define LIB_SPEC "%{!shared:%{p:-lprof1} %{pg:-lprof1} -lc}"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "%{!shared:crtn.o%s}"
 
 /* We do not want to run mips-tfile!  */
 #undef ASM_FINAL_SPEC

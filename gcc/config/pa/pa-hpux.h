@@ -36,13 +36,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DEFAULT_GDB_EXTENSIONS 0
 
 /* Like the default, except no -lg.  */
-#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}"
+#define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}}"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -D_HPUX_SOURCE -Asystem(unix) -Asystem(hpux) -Acpu(hppa) -Amachine(hppa)"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-u main %{static: -a archive}%{g*: -a archive}"
+#define LINK_SPEC \
+  "%{!shared:-u main} %{static:-a archive} %{g*:-a archive} %{shared:-b}"
 
 /* hpux8 and later have C++ compatable include files, so do not
    pretend they are `extern "C"'.  */

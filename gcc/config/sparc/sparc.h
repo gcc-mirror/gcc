@@ -60,12 +60,13 @@ extern enum arch_type sparc_arch_type;
    -Asystem(unix) -Asystem(bsd) -Acpu(sparc) -Amachine(sparc)"
 #endif
 
-#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}"
+#define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}}"
 
 /* Provide required defaults for linker -e and -d switches.  */
 
 #define LINK_SPEC \
- "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} %{assert*}"
+ "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp} %{static:-Bstatic} \
+  %{assert*} %{shared:-assert pure-text}"
 
 /* Special flags to the Sun-4 assembler when using pipe for input.  */
 
@@ -445,6 +446,15 @@ extern int target_flags;
    Put them in the data section.  This macro is only used in this file.  */
 #define MAX_TEXT_ALIGN 32
 
+/* This forces all variables and constants to the data section when PIC.
+   This is because the SunOS 4 shared library scheme thinks everything in
+   text is a function, and patches the address to point to a loader stub.  */
+/* This is defined to zero for every system which doesn't use the a.out object
+   file format.  */
+#ifndef SUNOS4_SHARED_LIBRARIES
+#define SUNOS4_SHARED_LIBRARIES 0
+#endif
+
 /* This is defined differently for v9 in a cover file.  */
 #define SELECT_SECTION(T,RELOC)						\
 {									\
@@ -455,20 +465,21 @@ extern int target_flags;
 	  && (DECL_INITIAL (T) == error_mark_node			\
 	      || TREE_CONSTANT (DECL_INITIAL (T)))			\
 	  && DECL_ALIGN (T) <= MAX_TEXT_ALIGN				\
-	  && ! (flag_pic && (RELOC)))					\
+	  && ! (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES)))	\
 	text_section ();						\
       else								\
 	data_section ();						\
     }									\
   else if (TREE_CODE (T) == CONSTRUCTOR)				\
     {									\
-      if (flag_pic != 0 && (RELOC) != 0)				\
+      if (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES))		\
 	data_section ();						\
     }									\
   else if (*tree_code_type[(int) TREE_CODE (T)] == 'c')			\
     {									\
       if ((TREE_CODE (T) == STRING_CST && flag_writable_strings)	\
-	  || TYPE_ALIGN (TREE_TYPE (T)) > MAX_TEXT_ALIGN)		\
+	  || TYPE_ALIGN (TREE_TYPE (T)) > MAX_TEXT_ALIGN		\
+	  || (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES)))	\
 	data_section ();						\
       else								\
 	text_section ();						\
@@ -481,7 +492,7 @@ extern int target_flags;
 #define SELECT_RTX_SECTION(MODE, X)		\
 {						\
   if (GET_MODE_BITSIZE (MODE) <= MAX_TEXT_ALIGN \
-      && ! (flag_pic && symbolic_operand (X)))  \
+      && ! (flag_pic && (symbolic_operand (X) || SUNOS4_SHARED_LIBRARIES)))  \
     text_section ();				\
   else						\
     data_section ();				\
