@@ -1,3 +1,8 @@
+Tue Sep 15 19:23:01 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+        * i386.h (PREFERRED_RELOAD_CLASS): For standard 387 constants,
+        return FLOAT_REGS.
+
 Tue Sep 15 19:09:06 1998  Richard Henderson  <rth@cygnus.com>
 
 	* tree.h (BUILT_IN_CALLER_RETURN_ADDRESS): Unused.  Kill.
