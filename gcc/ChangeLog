@@ -1,3 +1,11 @@
+2003-12-04  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (truncdiqi2): Use andi opcode for immediate.
+	(reload_outdf+1,reload_outdf+2): Remove constraints.
+	(movv16sf_i): Fxi multiplier for SUBREG_BYTE.
+	(movv8qi_i+2): Zero-extend low byte before adding it to high byte.
+	(fipr, ftrv): Add .s suffix to opcode.
+
 2003-12-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/13186

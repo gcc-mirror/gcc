@@ -3163,7 +3163,7 @@
 
 (define_expand "extendhisi2"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
-       (sign_extend:SI (match_operand:HI 1 "general_extend_operand" "r,m")))]
+	(sign_extend:SI (match_operand:HI 1 "general_extend_operand" "r,m")))]
   ""
   "")
 
@@ -3173,7 +3173,7 @@
   "TARGET_SH1"
   "@
 	exts.w	%1,%0
-   	mov.w	%1,%0"
+	mov.w	%1,%0"
   [(set_attr "type" "arith,load")])
 
 (define_insn "*extendhisi2_media"
@@ -3277,7 +3277,7 @@
 	(truncate:QI (match_operand:DI 1 "register_operand" "r,r")))]
   "TARGET_SHMEDIA"
   "@
-	and	%1, 255, %0
+	andi	%1, 255, %0
 	st%M0.b	%m0, %1"
   [(set_attr "type"   "arith_media,store")])
 
@@ -4395,7 +4395,7 @@
   [(set (match_operand:SF 0 "register_operand" "")
 	(match_operand:SF 1 "register_operand" ""))
    (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 "X"))]
+   (clobber (match_scratch:SI 3 ""))]
   "TARGET_SH2E && reload_completed
    && true_regnum (operands[0]) == true_regnum (operands[1])"
   [(set (match_dup 0) (match_dup 0))]
@@ -4406,7 +4406,7 @@
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "register_operand" ""))
    (use (match_operand:PSI 2 "fpscr_operand" ""))
-   (clobber (match_scratch:SI 3 "X"))]
+   (clobber (match_scratch:SI 3 ""))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
    && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
@@ -4801,7 +4801,7 @@
 					i * GET_MODE_SIZE (V2SFmode)));
       else
 	{
-	  x = gen_rtx_SUBREG (V2SFmode, operands[0], i * 2);
+	  x = gen_rtx_SUBREG (V2SFmode, operands[0], i * 8);
 	  alter_subreg (&x);
 	}
 
@@ -4811,7 +4811,7 @@
 					i * GET_MODE_SIZE (V2SFmode)));
       else
 	{
-	  y = gen_rtx_SUBREG (V2SFmode, operands[1], i * 2);
+	  y = gen_rtx_SUBREG (V2SFmode, operands[1], i * 8);
 	  alter_subreg (&y);
 	}
 
@@ -9450,9 +9450,10 @@ mov.l\\t1f,r0\\n\\
   if (unit_size < 2)
     {
       if (GET_CODE (operands[1]) == CONST_INT && GET_CODE (elt1) == CONST_INT)
-	operands[1] = GEN_INT (TARGET_LITTLE_ENDIAN
-			       ? INTVAL (operands[1]) + (INTVAL (elt1) << 8)
-			       : (INTVAL (operands[1]) << 8) + INTVAL (elt1));
+	operands[1]
+	  = GEN_INT (TARGET_LITTLE_ENDIAN
+		     ? (INTVAL (operands[1]) & 0xff) + (INTVAL (elt1) << 8)
+		     : (INTVAL (operands[1]) << 8) + (INTVAL (elt1) & 0xff));
       else
 	{
 	  operands[0] = gen_rtx_REG (V2QImode, true_regnum (operands[0]));
@@ -10560,7 +10561,7 @@ mov.l\\t1f,r0\\n\\
 			  (vec_select:SF (mult:V4SF (match_dup 1) (match_dup 2))
 					 (parallel [(const_int 3)])))))]
   "TARGET_SHMEDIA"
-  "fipr	%1, %2, %0"
+  "fipr.s	%1, %2, %0"
   [(set_attr "type" "fparith_media")])
 
 (define_insn "fsrra_s"
@@ -10586,7 +10587,7 @@ mov.l\\t1f,r0\\n\\
 				       (const_int 14) (const_int 3)]))
 	   (vec_select:V4SF (match_dup 2)
 			    (parallel [(const_int 1) (const_int 2)
-				      (const_int 3) (const_int 0)]))))
+				       (const_int 3) (const_int 0)]))))
 	 (plus:V4SF
 	  (mult:V4SF
 	   (vec_select:V4SF (match_dup 1)
@@ -10603,7 +10604,7 @@ mov.l\\t1f,r0\\n\\
 			    (parallel [(const_int 3) (const_int 0)
 				       (const_int 1) (const_int 2)]))))))]
   "TARGET_SHMEDIA"
-  "ftrv %1, %2, %0"
+  "ftrv.s %1, %2, %0"
   [(set_attr "type" "fparith_media")])
 
 (define_insn "nsb"
