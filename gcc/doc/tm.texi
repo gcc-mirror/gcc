@@ -5785,13 +5785,6 @@ uninitialized global data will be output in the data section if
 used.
 @end defmac
 
-@defmac SHARED_BSS_SECTION_ASM_OP
-If defined, a C expression whose value is a string, including spacing,
-containing the assembler operation to identify the following data as
-uninitialized global shared data.  If not defined, and
-@code{BSS_SECTION_ASM_OP} is, the latter will be used.
-@end defmac
-
 @defmac INIT_SECTION_ASM_OP
 If defined, a C expression whose value is a string, including spacing,
 containing the assembler operation to identify the following data as
