@@ -1,3 +1,8 @@
+2003-09-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* trans.c (gigi): Use REAL_ARITHMETIC, not REAL_VALUE_ATOF, to
+	initialize dconstp5 and dconstmp5.
+
 2003-09-28  Richard Henderson  <rth@redhat.com>
 
 	* trans.c (tree_transform): Update call to expand_asm_operands.
