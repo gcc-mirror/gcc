@@ -498,7 +498,7 @@ template <typename _Alloc>
     template <class _InputIterator>
     void _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
                                 __false_type) {
-      _M_initialize_range(__first, __last, __ITERATOR_CATEGORY(__first));
+      _M_initialize_range(__first, __last, __iterator_category(__first));
     }
   
     template <class _InputIterator>
@@ -553,7 +553,7 @@ template <typename _Alloc>
   
     template <class _InputIter>
     void _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
-      { _M_assign_aux(__first, __last, __ITERATOR_CATEGORY(__first)); }
+      { _M_assign_aux(__first, __last, __iterator_category(__first)); }
   
     template <class _InputIterator>
     void _M_assign_aux(_InputIterator __first, _InputIterator __last,
@@ -628,7 +628,7 @@ template <typename _Alloc>
     void _M_insert_dispatch(iterator __pos,
                             _InputIterator __first, _InputIterator __last,
                             __false_type) {
-      _M_insert_range(__pos, __first, __last, __ITERATOR_CATEGORY(__first));
+      _M_insert_range(__pos, __first, __last, __iterator_category(__first));
     }
   
     template <class _InputIterator>
