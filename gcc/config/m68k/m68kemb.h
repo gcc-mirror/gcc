@@ -42,35 +42,12 @@
 #define CPP_PREDEFINES "-Dmc68000 -D__embedded__ -Asystem(embedded) \
   -Amachine(mc68000)"
 
-#undef LINK_SPEC
-#define LINK_SPEC "\
-  %{midp: %{!Ttext*: -Ttext 0x00010000}} \
-  %{mbcc: %{!Ttext*: -Ttext 0x00003000}} \
-  %{mmvme135: %{!Ttext*: -Ttext 0x00005000}} \
-  %{mmvme162: %{!Ttext*: -Ttext 0x00010000}}"
+/* Override the default LIB_SPEC from gcc.c.  We don't currently support
+   profiling, or libg.a
 
-/* Use the target specific crt0 and libgloss/newlib libraries if desired */
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "\
-  %{midp: idp-crt0.o} \
-  %{mbcc: bcc-crt0.o} \
-  %{mmvme135: mvme135-crt0.o} \
-  %{mmvme162: mvme162-crt0.o}"
+#define LIB_SPEC "-lc"
 
- /* We must always include -lc at least once.  If we use a board specific
-    library, we must include -lc before and after the board specific
-    library.  */
-#undef  LIB_SPEC
-#define LIB_SPEC "\
-  -lc \
-  %{mmvme135:-lmvme135 -lc} \
-  %{mmvme162:-lmvme162 -lc} \
-  %{midp:-lidp -lc} \
-  %{mbcc:-lbcc -lc}"
+/* Make this be null, since we want the crt0.o to come from the linker
+   script */
 
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-  { "mvme135", 0 }, \
-  { "mvme162", 0 }, \
-  { "bcc", 0}, \
-  { "idp", 0 },
+#define STARTFILE_SPEC ""
