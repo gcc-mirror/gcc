@@ -2214,12 +2214,15 @@ label:	  CASE expr_no_commas ':'
 		      error_with_decl (duplicate, "this is the first default label");
 		    }
 		  position_after_white_space (); }
-	| identifier ':'
+	| identifier ':' maybe_attribute
 		{ tree label = define_label (input_filename, lineno, $1);
 		  stmt_count++;
 		  emit_nop ();
 		  if (label)
-		    expand_label (label);
+		    {
+		      expand_label (label);
+		      decl_attributes (label, $3, NULL_TREE);
+		    }
 		  position_after_white_space (); }
 	;
 

@@ -521,7 +521,8 @@ decl_attributes (node, attributes, prefix_attributes)
 	    TREE_USED (type) = 1;
 	  else if (TREE_CODE (decl) == PARM_DECL
 		   || TREE_CODE (decl) == VAR_DECL
-		   || TREE_CODE (decl) == FUNCTION_DECL)
+		   || TREE_CODE (decl) == FUNCTION_DECL
+		   || TREE_CODE (decl) == LABEL_DECL)
 	    TREE_USED (decl) = 1;
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));

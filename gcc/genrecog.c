@@ -51,6 +51,9 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "obstack.h"
 
+#define OUTPUT_LABEL(INDENT_STRING, LABEL_NUMBER) \
+  printf("%sL%d: ATTRIBUTE_UNUSED_LABEL\n", (INDENT_STRING), (LABEL_NUMBER))
+
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
@@ -1103,7 +1106,7 @@ write_tree_1 (tree, prevpos, afterward, type)
   printf ("\n");
   if (tree && tree->subroutine_number == 0)
     {
-      printf ("  L%d:\n", tree->number);
+      OUTPUT_LABEL ("  ", tree->number);
       tree->label_needed = 0;
     }
 
@@ -1239,7 +1242,7 @@ write_tree_1 (tree, prevpos, afterward, type)
 
       if (p->label_needed && (p->retest_mode || p->retest_code))
 	{
-	  printf ("%sL%d:\n", indents[indent - 2], p->number);
+	  OUTPUT_LABEL (indents[indent - 2], p->number);
 	  p->label_needed = 0;
 	}
 
@@ -1330,7 +1333,7 @@ write_tree_1 (tree, prevpos, afterward, type)
       /* Now that most mode and code tests have been done, we can write out
 	 a label for an inner node, if we haven't already.  */
       if (p->label_needed)
-	printf ("%sL%d:\n", indents[indent - 2], p->number);
+	OUTPUT_LABEL (indents[indent - 2], p->number);
 
       inner_indent = indent;
 
@@ -1563,7 +1566,7 @@ write_tree (tree, prevpos, afterward, initial, type)
 
   if (! initial && tree->subroutine_number > 0)
     {
-      printf (" L%d:\n", tree->number);
+      OUTPUT_LABEL (" ", tree->number);
 
       if (afterward)
 	{

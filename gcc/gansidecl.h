@@ -38,6 +38,14 @@ Boston, MA 02111-1307, USA.  */
 # define __attribute__(x)
 #endif
 
+#ifndef ATTRIBUTE_UNUSED_LABEL
+# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 92)
+#  define ATTRIBUTE_UNUSED_LABEL
+# else
+#  define ATTRIBUTE_UNUSED_LABEL ATTRIBUTE_UNUSED
+# endif /* GNUC < 2.92 */
+#endif /* ATTRIBUTE_UNUSED_LABEL */
+
 #ifndef ATTRIBUTE_UNUSED
 #define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 #endif /* ATTRIBUTE_UNUSED */
