@@ -1,5 +1,8 @@
 Sun Feb 27 07:44:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* cse.c (cse_insn): Delete dead code involving tablejump.
+	Pass CODE_LABEL, not LABEL_REF to gen_jump and reset INSN_CODE.
+
 	* Makefile.in (libcpp.a): Start by deleting it.
 
 2000-02-27  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
