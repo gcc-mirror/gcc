@@ -1,7 +1,7 @@
 2001-12-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (is_ctor_dtor): Const-ify.
-	* m88k-protos.c (output_file_start): Likewise.
+	* m88k-protos.h (output_file_start): Likewise.
 	* m88k.c (m88k_lang_independent_options, output_options,
 	output_file_start): Likewise.
 	* fix-header.c (files_to_ignore, std_include_entry, include_entry,
