@@ -1,3 +1,7 @@
+2004-06-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/eh/elide1.C: Remove XFAIL.
+
 2004-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15337
