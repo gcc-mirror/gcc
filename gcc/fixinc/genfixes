@@ -9,7 +9,7 @@ fi
 
 SHELL=/bin/sh
 export SHELL
-AG=""
+AG="autogen"
 if [ $# -eq 0 ] ; then
   not_done=false
 else
