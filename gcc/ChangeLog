@@ -1,9 +1,16 @@
+Tue Jun 23 13:38:18 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* libgcc2.c (__get_eh_table_version, __get_eh_table_language): New
+	functions to return exception descriptor information.
+	(find_exception_handler): Pass match_info field to runtime matcher,
+	not a descriptor table entry.
+
 Tue Jun 23 09:30:58 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* cpp.texi, gcc.texi: Add @dircategory, @direntry meant to
 	accompany previous Makefile.in (install-info) change.
 
-Tue Jun 23 10:06:07 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
+Tue Jun 23 10:06:07 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* eh-common.h (struct __eh_info): Remove coerced value field.
 	* libgcc2.c (find_exception_handler): Don't set coerced_value field.
