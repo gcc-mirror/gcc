@@ -1,3 +1,8 @@
+2001-06-15  Zack Weinberg  <zackw@stanford.edu>
+
+	* doc/cpp.texi: Revised and brought up to date.
+	* doc/cpp.1: Regenerate.
+
 2001-06-14  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def(hpux10_cpp_pow_inline): add a phoney file for
