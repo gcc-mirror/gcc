@@ -54,6 +54,7 @@ sh port			Alexandre Oliva		aoliva@redhat.com
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Jakub Jelinek		jakub@redhat.com
+x86-64 port		Jan Hubicka		jh@suse.cz
 xstormy16 port		Geoffrey Keating	geoffk@redhat.com
 v850 port		Nick Clifton		nickc@redhat.com
 v850 port		Michael Meissner	meissner@redhat.com
@@ -148,7 +149,6 @@ Andrew Haley					aph@redhat.com
 Aldy Hernandez					aldyh@redhat.com
 Matthew Hiller					hiller@redhat.com
 Manfred Hollstein				mhollstein@redhat.com
-Jan Hubicka					hubicka@freesoft.cz
 Andreas Jaeger					aj@suse.de
 Jakub Jelinek					jakub@redhat.com
 Dale Johannesen 				dalej@apple.com
