@@ -2148,7 +2148,7 @@ _mm_mul_pu16 (__m64 __A, __m64 __B)
 }
 
 static __inline __m128i
-_mm_mul_epu16 (__m128i __A, __m128i __B)
+_mm_mul_epu32 (__m128i __A, __m128i __B)
 {
   return (__m128i)__builtin_ia32_pmuludq128 ((__v4si)__A, (__v4si)__B);
 }
@@ -2433,6 +2433,20 @@ static __inline void
 _mm_mfence (void)
 {
   __builtin_ia32_mfence ();
+}
+
+static __inline __m128i
+_mm_cvtsi32_si128 (int __A)
+{
+  return (__m128i) __builtin_ia32_loadd (&__A);
+}
+
+static __inline int
+_mm_cvtsi128_si32 (__m128i __A)
+{
+  int __tmp;
+  __builtin_ia32_stored (&__tmp, (__v4si)__A);
+  return __tmp;
 }
 
 #endif /* __SSE2__  */
