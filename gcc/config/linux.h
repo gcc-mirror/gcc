@@ -1,5 +1,5 @@
 /* Definitions for Linux with ELF format
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
 
@@ -67,10 +67,21 @@ Boston, MA 02111-1307, USA.  */
    object constructed before entering `main'. */
    
 #undef	STARTFILE_SPEC
+#if 0
 #define STARTFILE_SPEC \
   "%{!shared: \
-     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
+		       %{!p:%{profile:gcrt1.o%s} \
+			 %{!profile:crt1.o%s%}}}} \
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+#else
+#define STARTFILE_SPEC \
+  "%{!shared: \
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
+		       %{!p:%{profile:gcrt1.o%s} \
+			 %{!profile:crt1.o%s}}}} \
+   crti.o%s crtbegin.o%s"
+#endif
 
 /* Provide a ENDFILE_SPEC appropriate for Linux.  Here we tack on
    the Linux magical crtend.o file (see crtstuff.c) which
@@ -79,5 +90,10 @@ Boston, MA 02111-1307, USA.  */
    Linux "finalizer" file, `crtn.o'.  */
 
 #undef	ENDFILE_SPEC
+#if 0
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+#else
+#define ENDFILE_SPEC \
+  "crtend.o%s crtn.o%s"
+#endif
