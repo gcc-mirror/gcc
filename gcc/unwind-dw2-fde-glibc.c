@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of GCC.
@@ -169,9 +169,6 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 # else
 #  error What is DW_EH_PE_datarel base on this platform?
 # endif
-#endif
-#ifdef CRT_GET_RFIB_TEXT
-# error What is DW_EH_PE_textrel base on this platform?
 #endif
 
   p = read_encoded_value_with_base (hdr->eh_frame_ptr_enc,
