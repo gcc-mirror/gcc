@@ -17,7 +17,7 @@ enum rw { read, write };
 int arr[10];
 
 void
-good_const (int *p)
+good_const (const int *p)
 {
   __builtin_prefetch (p, 0, 0);
   __builtin_prefetch (p, 0, 1);
@@ -30,7 +30,7 @@ good_const (int *p)
 }
 
 void
-good_enum (int *p)
+good_enum (const int *p)
 {
     __builtin_prefetch (p, read, none);
     __builtin_prefetch (p, read, low);
@@ -43,14 +43,14 @@ good_enum (int *p)
 }
 
 void
-good_expr (int *p)
+good_expr (const int *p)
 {
   __builtin_prefetch (p, 1 - 1, 6 - (2 * 3));
   __builtin_prefetch (p, 1 + 0, 1 + 2);
 }
 
 void
-good_vararg (int *p)
+good_vararg (const int *p)
 {
   __builtin_prefetch (p, 0, 3);
   __builtin_prefetch (p, 0);

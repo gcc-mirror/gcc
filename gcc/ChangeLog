@@ -1,3 +1,11 @@
+2002-01-28  Paul Koning  <pkoning@equallogic.com>
+
+	* builtin-types.def (BT_FN_VOID_CONST_PTR_VAR): Replace
+	BT_FN_VOID_PTR_VAR.
+	* builtins.def (BUILT_IN_PREFETCH): Change first argument to be const.
+	* doc/extend.texi (__builtin_prefetch): Update documentation:
+	first argument is now const void ptr.
+
 2002-01-28  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Remove an unused prototype.
@@ -276,10 +284,10 @@ Fri Jan 25 20:43:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-24  Aldy Hernandez  <aldyh@redhat.com>
 
-        * loop.c (emit_prefetch_instructions): Use the prefetch insn's
-        mode, not Pmode.
+	* loop.c (emit_prefetch_instructions): Use the prefetch insn's
+	mode, not Pmode.
 
-        * builtins.c (expand_builtin_prefetch): Same.
+	* builtins.c (expand_builtin_prefetch): Same.
 
 2002-01-24  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -300,7 +308,7 @@ Fri Jan 25 20:43:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-24  Andris Pavenis  <pavenis@latnet.lv>
 
-        * config/i386/t-djgpp: Use NATIVE_SYSTEM_HEADER_DIR.
+	* config/i386/t-djgpp: Use NATIVE_SYSTEM_HEADER_DIR.
 
 2002-01-24  Nick Clifton  <nickc@cambridge.redhat.com>
 
@@ -346,9 +354,9 @@ Fri Jan 25 20:43:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-23  Aldy Hernandez  <aldyh@redhat.com>
 
-        * c-parse.in (parmlist_or_identifiers): Add maybe_attribute.
-        (parmlist_or_identifiers_1): Verify that only a parmlist follows
-        an attribute.
+	* c-parse.in (parmlist_or_identifiers): Add maybe_attribute.
+	(parmlist_or_identifiers_1): Verify that only a parmlist follows
+	an attribute.
 
 2002-01-23  Richard Henderson  <rth@redhat.com>
 

@@ -4592,7 +4592,7 @@ if (__builtin_expect (ptr != NULL, 1))
 when testing pointer or floating-point values.
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin_prefetch (void *@var{addr}, ...)
+@deftypefn {Built-in Function} void __builtin_prefetch (const void *@var{addr}, ...)
 This function is used to minimize cache-miss latency by moving data into
 a cache before it is accessed.
 You can insert calls to @code{__builtin_prefetch} into code for which
