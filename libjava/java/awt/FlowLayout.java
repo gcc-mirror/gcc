@@ -205,9 +205,9 @@ public class FlowLayout implements LayoutManager, Serializable
 	    if (myalign == LEFT)
 	      x = ins.left + hgap;
 	    else if (myalign == CENTER)
-	      x = (d.width - new_w) / 2;
+	      x = ins.left + (d.width - new_w) / 2 + hgap;
 	    else
-	      x = d.width - new_w;
+	      x = ins.left + (d.width - new_w) + hgap;
 
 	    for (int k = i; k < j; ++k)
 	      {

@@ -53,7 +53,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetFont
-  (JNIEnv *env, jobject obj, jstring jname, jint size)
+  (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
 {
   const char *font_name;
   void *ptr;
@@ -69,12 +69,18 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetFont
   if (!label)
       return;
 
-  font_name = (*env)->GetStringUTFChars (env, jname, NULL);
+  font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
   gdk_threads_enter();
 
   font_desc = pango_font_description_from_string (font_name);
   pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
+  if (style & AWT_STYLE_BOLD)
+    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
+
+  if (style & AWT_STYLE_ITALIC)
+    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
 
   gtk_widget_modify_font (GTK_WIDGET(label), font_desc);
 
@@ -82,5 +88,33 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetFont
 
   gdk_threads_leave();
 
-  (*env)->ReleaseStringUTFChars (env, jname, font_name);
+  (*env)->ReleaseStringUTFChars (env, name, font_name);
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetSetForeground
+  (JNIEnv *env, jobject obj, jint red, jint green, jint blue)
+{
+  GdkColor color;
+  GtkWidget *label;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  color.red = (red / 255.0) * 65535;
+  color.green = (green / 255.0) * 65535;
+  color.blue = (blue / 255.0) * 65535;
+
+  gdk_threads_enter ();
+
+  label = gtk_bin_get_child (GTK_BIN(ptr));
+
+  if (!label)
+      return;
+
+  gtk_widget_modify_fg (label, GTK_STATE_NORMAL, &color);
+  gtk_widget_modify_fg (label, GTK_STATE_ACTIVE, &color);
+  gtk_widget_modify_fg (label, GTK_STATE_PRELIGHT, &color);
+
+  gdk_threads_leave ();
 }

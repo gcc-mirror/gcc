@@ -193,9 +193,11 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_drawString
   struct graphics *g;
   const char *cstr;
   const char *font_name;
+  int baseline_y;
   PangoFontDescription *font_desc;
   PangoContext *context;
   PangoLayout *layout;
+  PangoLayoutIter *iter;
 
   g = (struct graphics *) NSA_GET_PTR (env, obj);
 
@@ -213,11 +215,15 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_drawString
   layout = pango_layout_new (context);
 
   pango_layout_set_text (layout, cstr, -1);
+  iter = pango_layout_get_iter (layout);
+
+  baseline_y = pango_layout_iter_get_baseline (iter);
 
   gdk_draw_layout (g->drawable, g->gc, 
-  		   x + g->x_offset, y + g->y_offset, layout);
+  		   x + g->x_offset, y + g->y_offset - (baseline_y / PANGO_SCALE), layout);
 
   pango_font_description_free (font_desc);
+  pango_layout_iter_free (iter);
 
   gdk_threads_leave ();
 

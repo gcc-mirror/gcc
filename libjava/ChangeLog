@@ -1,3 +1,25 @@
+2003-10-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkButtonPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c
+	(gtkSetFont): Handle BOLD and ITALIC style specifiers.
+	(gtkWidgetSetForeground): New method.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(gtkWidgetSetBackground, gtkWidgetSetForeground): New methods.
+	(setBackground, setForeground): Implement.
+	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c
+	(gtkSetFont): Handle BOLD and ITALIC style specifiers.
+	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c: Likewise.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c (drawString):
+	Position PangoLayout relative to text's baseline.
+	* jni/gtk-peer/gtkpeer.h: Define AWT font style constants.
+
+	* java/awt/FlowLayout.java (layoutContainer): Fix offset problem
+	for CENTER and RIGHT alignments.
+
 2003-10-08  Michael Koch  <konqueror@gmx.de>
 
 	* java/security/Security.java: Reformated.

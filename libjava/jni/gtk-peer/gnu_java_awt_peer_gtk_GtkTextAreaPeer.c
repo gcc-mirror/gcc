@@ -158,7 +158,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_replaceRange
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkSetFont
-  (JNIEnv *env, jobject obj, jstring jname, jint size)
+  (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
 {
   const char *font_name;
   void *ptr;
@@ -169,12 +169,18 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkSetFont
 
   text = GTK_WIDGET (TEXT_FROM_SW (ptr));
 
-  font_name = (*env)->GetStringUTFChars (env, jname, NULL);
+  font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
   gdk_threads_enter();
 
   font_desc = pango_font_description_from_string (font_name);
   pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
+  if (style & AWT_STYLE_BOLD)
+    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
+
+  if (style & AWT_STYLE_ITALIC)
+    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
 
   gtk_widget_modify_font (GTK_WIDGET(text), font_desc);
 
@@ -182,5 +188,5 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkSetFont
 
   gdk_threads_leave();
 
-  (*env)->ReleaseStringUTFChars (env, jname, font_name);
+  (*env)->ReleaseStringUTFChars (env, name, font_name);
 }

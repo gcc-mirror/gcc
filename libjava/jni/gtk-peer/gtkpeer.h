@@ -347,6 +347,10 @@ struct graphics
 #define AWT_FOCUS_LOST 1004
 #define AWT_FOCUS_GAINED 1005
 
+#define AWT_STYLE_PLAIN  0
+#define AWT_STYLE_BOLD   1
+#define AWT_STYLE_ITALIC 2
+
 extern jmethodID setBoundsCallbackID;
 
 extern jmethodID postActionEventID;
