@@ -1,5 +1,14 @@
 2004-06-20  Richard Henderson  <rth@redhat.com>
 
+	* cp-tree.h (add_decl_stmt): Declare.
+	* pt.c (tsubst_copy): Abort for CLEANUP_POINT_EXPR.
+	* semantics.c (maybe_cleanup_point_expr): New.
+	(add_decl_stmt, finish_expr_stmt, finish_return_stmt,
+	finish_for_expr, finish_switch_cond): Use it.
+	(finalize_nrv_r): Don't build an EXPR_STMT.  Don't frob TREE_CHAIN.
+
+2004-06-20  Richard Henderson  <rth@redhat.com>
+
 	* cp-tree.def (CLEANUP_STMT, IF_STMT): Move from c-common.def.
 	* cp-gimplify.c (gimplify_if_stmt): Move from c-gimplify.c.
 	(cp_gimplify_expr): Call it.

@@ -145,19 +145,6 @@ add_stmt (tree t)
   return t;
 }
 
-/* Create a declaration statement for the declaration given by the
-   DECL.  */
-
-void
-add_decl_stmt (tree decl)
-{
-  tree decl_stmt;
-
-  /* We need the type to last until instantiation time.  */
-  decl_stmt = build_stmt (DECL_STMT, decl);
-  add_stmt (decl_stmt);
-}
-
 /* Build a generic statement based on the given type of node and
    arguments. Similar to `build_nt', except that we set
    EXPR_LOCUS to be the current source location.  */

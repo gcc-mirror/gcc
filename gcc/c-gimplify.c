@@ -249,8 +249,6 @@ gimplify_expr_stmt (tree *stmt_p)
 
   if (stmt == NULL_TREE)
     stmt = build_empty_stmt ();
-  else if (stmts_are_full_exprs_p ())
-    stmt = build1 (CLEANUP_POINT_EXPR, void_type_node, stmt);
 
   *stmt_p = stmt;
 
@@ -383,8 +381,6 @@ gimplify_c_loop (tree cond, tree body, tree incr, bool cond_is_first)
   cont_block = begin_bc_block (bc_continue);
 
   gimplify_stmt (&body);
-  if (incr && stmts_are_full_exprs_p ())
-    incr = fold (build1 (CLEANUP_POINT_EXPR, void_type_node, incr));
   gimplify_stmt (&incr);
 
   body = finish_bc_block (cont_block, body);
@@ -483,8 +479,6 @@ gimplify_return_stmt (tree *stmt_p)
 {
   tree expr = RETURN_STMT_EXPR (*stmt_p);
   expr = build1 (RETURN_EXPR, void_type_node, expr);
-  if (stmts_are_full_exprs_p ())
-    expr = build1 (CLEANUP_POINT_EXPR, void_type_node, expr);
   *stmt_p = expr;
   return GS_OK;
 }
@@ -553,8 +547,6 @@ gimplify_decl_stmt (tree *stmt_p)
               
 	      DECL_INITIAL (decl) = NULL_TREE;
 	      init = build (MODIFY_EXPR, void_type_node, decl, init);
-	      if (stmts_are_full_exprs_p ())
-		init = build1 (CLEANUP_POINT_EXPR, void_type_node, init);
 	      append_to_compound_expr (init, &pre);
 	    }
 	  else
