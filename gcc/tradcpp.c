@@ -633,8 +633,9 @@ main (argc, argv)
 	  flag_signed_char = 0;
 	break;
 
-	/* Ignore target-specific flags.  */
+	/* Ignore target-specific and optimization flags.  */
       case 'm':
+      case 'O':
 	break;
 
       case 'M':
