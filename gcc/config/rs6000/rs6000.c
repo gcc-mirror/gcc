@@ -119,6 +119,9 @@ static int rs6000_sr_alias_set;
 static void rs6000_add_gc_roots PARAMS ((void));
 static int num_insns_constant_wide PARAMS ((HOST_WIDE_INT));
 static rtx expand_block_move_mem PARAMS ((enum machine_mode, rtx, rtx));
+static void validate_condition_mode 
+  PARAMS ((enum rtx_code, enum machine_mode));
+static rtx rs6000_generate_compare PARAMS ((enum rtx_code));
 static void rs6000_maybe_dead PARAMS ((rtx));
 static void rs6000_emit_stack_tie PARAMS ((void));
 static void rs6000_frame_related PARAMS ((rtx, rtx, HOST_WIDE_INT, rtx, rtx));
@@ -3212,6 +3215,48 @@ stmw_operation (op, mode)
   return 1;
 }
 
+
+/* A validation routine:  say whether CODE, a condition code,
+   and MODE match.  The other alternatives either don't make
+   sense or should never be generated.  */
+static void
+validate_condition_mode (code, mode)
+     enum rtx_code code;
+     enum machine_mode mode;
+{
+  if (GET_RTX_CLASS (code) != '<' 
+      || GET_MODE_CLASS (mode) != MODE_CC)
+    abort ();
+
+  /* These don't make sense.  */
+  if ((code == GT || code == LT || code == GE || code == LE)
+      && mode == CCUNSmode)
+    abort ();
+
+  if ((code == GTU || code == LTU || code == GEU || code == LEU)
+      && mode != CCUNSmode)
+    abort ();
+
+  if (mode != CCFPmode
+      && (code == ORDERED || code == UNORDERED
+	  || code == UNEQ || code == LTGT
+	  || code == UNGT || code == UNLT
+	  || code == UNGE || code == UNLE))
+    abort();
+  
+  /* These should never be generated.  */
+  if (mode == CCFPmode
+      && (code == LE || code == GE
+	  || code == UNEQ || code == LTGT
+	  || code == UNGT || code == UNLT))
+    abort ();
+
+  /* These are invalid; the information is not there.  */
+  if (mode == CCEQmode 
+      && code != EQ && code != NE)
+    abort ();
+}
+
 /* Return 1 if OP is a comparison operation that is valid for a branch insn.
    We only check the opcode against the mode of the CC value here.  */
 
@@ -3230,16 +3275,31 @@ branch_comparison_operator (op, mode)
   if (GET_MODE_CLASS (cc_mode) != MODE_CC)
     return 0;
 
-  if ((code == GT || code == LT || code == GE || code == LE)
-      && cc_mode == CCUNSmode)
-    return 0;
-
-  if ((code == GTU || code == LTU || code == GEU || code == LEU)
-      && (cc_mode != CCUNSmode))
-    return 0;
+  validate_condition_mode (code, cc_mode);
 
   return 1;
 }
+
+/* Return 1 if OP is a comparison operation that is valid for a branch
+   insn and which is true if the corresponding bit in the CC register
+   is set.  */
+
+int
+branch_positive_comparison_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  enum rtx_code code;
+
+  if (! branch_comparison_operator (op, mode))
+    return 0;
+
+  code = GET_CODE (op);
+  return (code == EQ || code == LT || code == GT
+	  || code == LTU || code == GTU
+	  || code == UNORDERED);
+}
+
 
 /* Return 1 if OP is a comparison operation that is valid for an scc insn.
    We check the opcode against the mode of the CC value and disallow EQ or
@@ -3263,18 +3323,9 @@ scc_comparison_operator (op, mode)
   if (GET_MODE_CLASS (cc_mode) != MODE_CC)
     return 0;
 
+  validate_condition_mode (code, cc_mode);
+
   if (code == NE && cc_mode != CCFPmode)
-    return 0;
-
-  if ((code == GT || code == LT || code == GE || code == LE)
-      && cc_mode == CCUNSmode)
-    return 0;
-
-  if ((code == GTU || code == LTU || code == GEU || code == LEU)
-      && (cc_mode != CCUNSmode))
-    return 0;
-
-  if (cc_mode == CCEQmode && code != EQ && code != NE)
     return 0;
 
   return 1;
@@ -3287,8 +3338,7 @@ trap_comparison_operator (op, mode)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
-  return (GET_RTX_CLASS (GET_CODE (op)) == '<'
-          || GET_CODE (op) == EQ || GET_CODE (op) == NE);
+  return GET_RTX_CLASS (GET_CODE (op)) == '<';
 }
 
 int
@@ -3538,11 +3588,7 @@ ccr_bit (op, scc_p)
   cc_regnum = REGNO (reg);
   base_bit = 4 * (cc_regnum - CR0_REGNO);
 
-  /* In CCEQmode cases we have made sure that the result is always in the
-     third bit of the CR field.  */
-
-  if (cc_mode == CCEQmode)
-    return base_bit + 3;
+  validate_condition_mode (code, cc_mode);
 
   switch (code)
     {
@@ -3558,16 +3604,13 @@ ccr_bit (op, scc_p)
       return base_bit + 3;
 
     case GE:  case GEU:
-      /* If floating-point, we will have done a cror to put the bit in the
+      /* If scc, we will have done a cror to put the bit in the
 	 unordered position.  So test that bit.  For integer, this is ! LT
 	 unless this is an scc insn.  */
-      return cc_mode == CCFPmode || scc_p ? base_bit + 3 : base_bit;
+      return scc_p ? base_bit + 3 : base_bit;
 
     case LE:  case LEU:
-      return cc_mode == CCFPmode || scc_p ? base_bit + 3 : base_bit + 1;
-
-    case UNEQ: case UNGT: case UNLT: case LTGT:
-      return base_bit + 3;
+      return scc_p ? base_bit + 3 : base_bit + 1;
 
     default:
       abort ();
@@ -3710,40 +3753,11 @@ print_operand (file, x, code)
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
 	 output_operand.  */
 
-    case 'C':
-      {
-	enum rtx_code code = GET_CODE (x);
-	
-	/* This is an optional cror needed for certain floating-point
-	   comparisons.  Otherwise write nothing.  */
-	if ((code == LE || code == GE
-	     || code == UNEQ || code == LTGT
-	     || code == UNGT || code == UNLT)
-	    && GET_MODE (XEXP (x, 0)) == CCFPmode)
-	  {
-	    int base_bit = 4 * (REGNO (XEXP (x, 0)) - CR0_REGNO);
-	    int bit0, bit1;
-	    
-	    if (code == UNEQ)
-	      bit0 = 2;
-	    else if (code == UNGT || code == GE)
-	      bit0 = 1;
-	    else
-	      bit0 = 0;
-	    if (code == LTGT)
-	      bit1 = 1;
-	    else if (code == LE || code == GE)
-	      bit1 = 2;
-	    else
-	      bit1 = 3;
-	    
-	    fprintf (file, "cror %d,%d,%d\n\t", base_bit + 3,
-		     base_bit + bit1, base_bit + bit0);
-	  }
-      }
-      return;
-
     case 'D':
+      /* There used to be a comment for 'C' reading "This is an
+	   optional cror needed for certain floating-point
+	   comparisons.  Otherwise write nothing."  */
+
       /* Similar, except that this is for an scc, so we must be able to
 	 encode the test in a single bit that is one.  We do the above
 	 for any LE, GE, GEU, or LEU and invert the bit for NE.  */
@@ -3767,11 +3781,11 @@ print_operand (file, x, code)
       return;
 
     case 'E':
-      /* X is a CR register.  Print the number of the third bit of the CR */
+      /* X is a CR register.  Print the number of the EQ bit of the CR */
       if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%E value");
       else
-	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 3);
+	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 2);
       return;
 
     case 'f':
@@ -4013,7 +4027,9 @@ print_operand (file, x, code)
     case 'q':
       /* This outputs the logical code corresponding to a boolean
 	 expression.  The expression may have one or both operands
-	 negated (if one, only the first one).  */
+	 negated (if one, only the first one).  For condition register
+         logical operations, it will also treat the negated
+         CR codes as NOTs, but not handle NOTs of them.  */
       {
 	const char *const *t = 0;
 	const char *s;
@@ -4420,6 +4436,129 @@ print_operand_address (file, x)
     abort ();
 }
 
+enum rtx_code
+rs6000_reverse_condition (mode, code)
+     enum machine_mode mode;
+     enum rtx_code code;
+{
+  /* Reversal of FP compares takes care -- an ordered compare
+     becomes an unordered compare and vice versa.  */
+  if (mode == CCFPmode)
+    code = reverse_condition_maybe_unordered (code);
+  else
+    code = reverse_condition (code);
+}
+
+
+/* Generate a compare for CODE.  Return a brand-new rtx that
+   represents the result of the compare.  */
+static rtx
+rs6000_generate_compare (code)
+     enum rtx_code code;
+{
+  enum machine_mode comp_mode;
+  rtx compare_result;
+
+  if (rs6000_compare_fp_p)
+    comp_mode = CCFPmode;
+  else if (code == GTU || code == LTU
+	  || code == GEU || code == LEU)
+    comp_mode = CCUNSmode;
+  else
+    comp_mode = CCmode;
+
+  /* First, the compare.  */
+  compare_result = gen_reg_rtx (comp_mode);
+  emit_insn (gen_rtx_SET (VOIDmode, compare_result,
+			  gen_rtx_COMPARE (comp_mode,
+					   rs6000_compare_op0, 
+					   rs6000_compare_op1)));
+  
+  /* Some kinds of FP comparisons need an OR operation.  */
+  if (rs6000_compare_fp_p
+      && (code == LE || code == GE
+	  || code == UNEQ || code == LTGT
+	  || code == UNGT || code == UNLT))
+    {
+      enum rtx_code or1, or2;
+      rtx or1_rtx, or2_rtx, compare2_rtx;
+      rtx or_result = gen_reg_rtx (CCEQmode);
+      
+      switch (code)
+	{
+	case LE: or1 = LT;  or2 = EQ;  break;
+	case GE: or1 = GT;  or2 = EQ;  break;
+	case UNEQ: or1 = UNORDERED;  or2 = EQ;  break;
+	case LTGT: or1 = LT;  or2 = GT;  break;
+	case UNGT: or1 = UNORDERED;  or2 = GT;  break;
+	case UNLT: or1 = UNORDERED;  or2 = LT;  break;
+	default:  abort ();
+	}
+      validate_condition_mode (or1, comp_mode);
+      validate_condition_mode (or2, comp_mode);
+      or1_rtx = gen_rtx (or1, SImode, compare_result, const0_rtx);
+      or2_rtx = gen_rtx (or2, SImode, compare_result, const0_rtx);
+      compare2_rtx = gen_rtx_COMPARE (CCEQmode,
+				      gen_rtx_IOR (SImode, or1_rtx, or2_rtx),
+				      const_true_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, or_result, compare2_rtx));
+
+      compare_result = or_result;
+      code = EQ;
+    }
+
+  validate_condition_mode (code, GET_MODE (compare_result));
+  
+  return gen_rtx (code, VOIDmode, compare_result, const0_rtx);
+}
+
+
+/* Emit the RTL for an sCOND pattern.  */
+
+void
+rs6000_emit_sCOND (code, result)
+     enum rtx_code code;
+     rtx result;
+{
+  rtx condition_rtx;
+  enum machine_mode op_mode;
+
+  condition_rtx = rs6000_generate_compare (code);
+
+  op_mode = GET_MODE (rs6000_compare_op0);
+  if (op_mode == VOIDmode)
+    op_mode = GET_MODE (rs6000_compare_op1);
+
+  if (TARGET_POWERPC64 && (op_mode == DImode || rs6000_compare_fp_p))
+    {
+      PUT_MODE (condition_rtx, DImode);
+      convert_move (result, condition_rtx, 0);
+    }
+  else
+    {
+      PUT_MODE (condition_rtx, SImode);
+      emit_insn (gen_rtx_SET (VOIDmode, result, condition_rtx));
+    }
+}
+
+
+/* Emit a branch of kind CODE to location LOC.  */
+
+void
+rs6000_emit_cbranch (code, loc)
+     enum rtx_code code;
+     rtx loc;
+{
+  rtx condition_rtx, loc_ref;
+
+  condition_rtx = rs6000_generate_compare (code);
+  loc_ref = gen_rtx_LABEL_REF (VOIDmode, loc);
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+			       gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
+						     loc_ref, pc_rtx)));
+}
+
+
 /* Return the string to output a conditional branch to LABEL, which is
    the operand number of the label, or -1 if the branch is really a
    conditional return.  
@@ -4444,52 +4583,22 @@ output_cbranch (op, label, reversed, insn)
   rtx cc_reg = XEXP (op, 0);
   enum machine_mode mode = GET_MODE (cc_reg);
   int cc_regno = REGNO (cc_reg) - CR0_REGNO;
-  int need_longbranch = label != NULL && get_attr_length (insn) == 12;
+  int need_longbranch = label != NULL && get_attr_length (insn) == 8;
   int really_reversed = reversed ^ need_longbranch;
   char *s = string;
   const char *ccode;
   const char *pred;
   rtx note;
 
-  /* Work out which way this really branches.  */
-  if (really_reversed)
-    {
-      /* Reversal of FP compares takes care -- an ordered compare
-	 becomes an unordered compare and vice versa.  */
-      if (mode == CCFPmode)
-	code = reverse_condition_maybe_unordered (code);
-      else
-	code = reverse_condition (code);
-    }
+  validate_condition_mode (code, mode);
 
-  /* If needed, print the CROR required for various floating-point
-     comparisons; and decide on the condition code to test.  */
-  if ((code == LE || code == GE
-       || code == UNEQ || code == LTGT
-       || code == UNGT || code == UNLT)
-      && mode == CCFPmode)
-    {
-      int base_bit = 4 * cc_regno;
-      int bit0, bit1;
-      
-      if (code == UNEQ)
-	bit0 = 2;
-      else if (code == UNGT || code == GE)
-	bit0 = 1;
-      else
-	bit0 = 0;
-      if (code == LTGT)
-	bit1 = 1;
-      else if (code == LE || code == GE)
-	bit1 = 2;
-      else
-	bit1 = 3;
-      
-      s += sprintf (s, "cror %d,%d,%d\n\t", base_bit + 3,
-		    base_bit + bit1, base_bit + bit0);
-      ccode = "so";
-    }
-  else switch (code)
+  /* Work out which way this really branches.  We could use
+     reverse_condition_maybe_unordered here always but this
+     makes the resulting assembler clearer.  */
+  if (really_reversed)
+    code = rs6000_reverse_condition (mode, code);
+
+  switch (code)
     {
       /* Not all of these are actually distinct opcodes, but
 	 we distinguish them for clarity of the resulting assembler.  */
