@@ -1,3 +1,9 @@
+2003-02-11  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* java/io/natFileDescriptorWin32.cc 
+	(java::io::FileDescriptor::read): Return -1 (EOF) if ReadFile( )
+	returns with Win32 error code ERROR_BROKEN_PIPE.
+
 2003-02-10  Tom Tromey  <tromey@redhat.com>
 
 	* javax/sql/ConnectionEvent.java (serialVersionUID): New field.
