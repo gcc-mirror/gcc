@@ -1908,7 +1908,15 @@ find_barrier (num_mova, mova, from)
       int new_align = 1;
 
       if (GET_CODE (from) == CODE_LABEL)
-	new_align = optimize ? 1 << label_to_alignment (from) : 1;
+	{
+	  if (optimize)
+	    new_align = 1 << label_to_alignment (from);
+	  else if (GET_CODE (prev_nonnote_insn (from)) == BARRIER)
+	    new_align = 1 << barrier_align (from);
+	  else
+	    new_align = 1;
+	  inc = 0;
+	}
 
       if (GET_CODE (from) == BARRIER)
 	{

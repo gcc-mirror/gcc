@@ -1,3 +1,9 @@
+Wed Mar 11 18:26:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (LOOP_ALIGN): Only align when optimizing.
+	* sh.c (find_barrier): Clear inc for CODE_LABELs.
+	When not optimizing, calculate alignment for BARRIERs directly.
+
 Wed Mar 11 15:07:18 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Remove conditionalizing on

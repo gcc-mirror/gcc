@@ -270,7 +270,8 @@ do {								\
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL_AFTER_BARRIER) \
   barrier_align (LABEL_AFTER_BARRIER)
 
-#define LOOP_ALIGN(A_LABEL) (TARGET_SMALLCODE ? 0 : 2)
+#define LOOP_ALIGN(A_LABEL) \
+  ((! optimize || TARGET_SMALLCODE) ? 0 : 2)
 
 #define LABEL_ALIGN(A_LABEL) \
 (									\
