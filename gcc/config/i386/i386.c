@@ -6156,119 +6156,59 @@ memory_address_length (addr)
   return len;
 }
 
+/* Compute default value for "length_immediate" attribute.  When SHORTFORM is set
+   expect that insn have 8bit immediate alternative.  */
 int
-ix86_attr_length_default (insn)
+ix86_attr_length_immediate_default (insn, shortform)
+     rtx insn;
+     int shortform;
+{
+  int len = 0;
+  int i;
+  extract_insn (insn);
+  for (i = recog_data.n_operands - 1; i >= 0; --i)
+    if (CONSTANT_P (recog_data.operand[i]))
+      {
+	if (len)
+	  abort ();
+	if (shortform
+	    && GET_CODE (recog_data.operand[i]) == CONST_INT
+	    && CONST_OK_FOR_LETTER_P (INTVAL (recog_data.operand[i]), 'K'))
+	  len = 1;
+	else
+	  {
+	    switch (get_attr_mode (insn))
+	      {
+		case MODE_QI:
+		  len+=1;
+		  break;
+		case MODE_HI:
+		  len+=2;
+		  break;
+		case MODE_SI:
+		  len+=4;
+		  break;
+		default:
+		  fatal_insn ("Unknown insn mode", insn);
+	      }
+	  }
+      }
+  return len;
+}
+/* Compute default value for "length_address" attribute.  */
+int
+ix86_attr_length_address_default (insn)
      rtx insn;
 {
-  enum attr_type type;
-  int len = 0, i;
-
-  type = get_attr_type (insn);
+  int i;
   extract_insn (insn);
-  switch (type)
-    {
-    case TYPE_INCDEC:
-    case TYPE_SETCC:
-    case TYPE_ICMOV:
-    case TYPE_FMOV:
-    case TYPE_FOP:
-    case TYPE_FCMP:
-    case TYPE_FOP1:
-    case TYPE_FMUL:
-    case TYPE_FDIV:
-    case TYPE_FSGN:
-    case TYPE_FPSPC:
-    case TYPE_FCMOV:
-    case TYPE_IBR:
-      break;
-    case TYPE_STR:
-    case TYPE_CLD:
-      len = 0;
-
-    case TYPE_ALU1:
-    case TYPE_NEGNOT:
-    case TYPE_ALU:
-    case TYPE_ICMP:
-    case TYPE_IMOVX:
-    case TYPE_ISHIFT:
-    case TYPE_IMUL:
-    case TYPE_IDIV:
-    case TYPE_PUSH:
-    case TYPE_POP:
-      for (i = recog_data.n_operands - 1; i >= 0; --i)
-        if (CONSTANT_P (recog_data.operand[i]))
-	  {
-	    if (GET_CODE (recog_data.operand[i]) == CONST_INT
-		&& CONST_OK_FOR_LETTER_P (INTVAL (recog_data.operand[i]), 'K'))
-	      len += 1;
-	    else
-	      len += GET_MODE_SIZE (GET_MODE (recog_data.operand[0]));
-	  }
-      break;
-
-    case TYPE_IMOV:
-      if (CONSTANT_P (recog_data.operand[1]))
-        len += GET_MODE_SIZE (GET_MODE (recog_data.operand[0]));
-      break;
-
-    case TYPE_CALL:
-      if (constant_call_address_operand (recog_data.operand[0],
-					 GET_MODE (recog_data.operand[0])))
-	return 5;
-      break;
-
-    case TYPE_CALLV:
-      if (constant_call_address_operand (recog_data.operand[1],
-					 GET_MODE (recog_data.operand[1])))
-	return 5;
-      break;
-
-    case TYPE_LEA:
-      {
-        /* Irritatingly, single_set doesn't work with REG_UNUSED present,
-	   as we'll get from running life_analysis during reg-stack when
-	   not optimizing.  Not that it matters anyway, now that
-	   pro_epilogue_adjust_stack uses lea, and is by design not
-	   single_set. */
-        rtx set = PATTERN (insn);
-        if (GET_CODE (set) == SET)
-	  ;
-	else if (GET_CODE (set) == PARALLEL
-		 && GET_CODE (XVECEXP (set, 0, 0)) == SET)
-	  set = XVECEXP (set, 0, 0);
-	else
-	  abort ();
-
-	len += memory_address_length (SET_SRC (set));
-	goto just_opcode;
-      }
-
-    case TYPE_OTHER: 
-    case TYPE_MULTI:
-      return 15;
-
-    case TYPE_FXCH:
-      if (STACK_TOP_P (recog_data.operand[0]))
-	return 2 + (REGNO (recog_data.operand[1]) != FIRST_STACK_REG + 1);
-      else
-	return 2 + (REGNO (recog_data.operand[0]) != FIRST_STACK_REG + 1);
-
-    default:
-      abort ();
-    }
-
   for (i = recog_data.n_operands - 1; i >= 0; --i)
     if (GET_CODE (recog_data.operand[i]) == MEM)
       {
-	len += memory_address_length (XEXP (recog_data.operand[i], 0));
+	return memory_address_length (XEXP (recog_data.operand[i], 0));
 	break;
       }
-
-just_opcode:
-  len += get_attr_length_opcode (insn);
-  len += get_attr_length_prefix (insn);
-
-  return len;
+  return 0;
 }
 
 /* Return the maximum number of instructions a cpu can issue.  */

@@ -1,3 +1,29 @@
+Tue Jun 27 12:14:12 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* genattrtab.c (write_attr_value): Do not abort for CONST_INT operands.
+	* i386.c (ix86_attr_length_default): Kill.
+	(ix86_attr_length_immediate_default, ix86_attr_length_address_default):
+	New.
+	* i386-protos.h (ix86_attr_length_default): Kill
+	(ix86_attr_length_immediate_default, ix86_attr_length_address_default):
+	Add prototype
+	* i386.md (attribute type): Add "test".
+	(attribute length_prefix): Kill.
+	(attribute length_opcode): Kill.
+	(attribute i387, mode, length_immediate, length_address, prefix_data16,
+	prefix_rep, prefix_0f, modrm): New.
+	(attribute length): Compute using the new attributes.
+	(attribute pent_prefix): New.
+	(attribute pent_pair): Compute using pent_prefix.
+	(all insn patterns): Set mode,modrm and immediate_length attributes where
+	needed.
+	(cmpsi patterns): Compute sizes propertly for test instruction.
+	(movsi, movhi patterns): Compute sizes propertly for eax shortcuts.
+	(movstricthi_xor, movstrictqi_xor): New patterns.
+	(andsi/andhi): Use splitters to generate xor instructions.
+	(xorqi_ext_1): New pattern.
+	(movstricthi->movstricthi_xor peep2): New.
+
 Tue Jun 27 12:03:03 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (addqi_low_1): Remove.

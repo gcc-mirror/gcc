@@ -5310,6 +5310,10 @@ write_attr_value (attr, value)
       write_attr_valueq (attr, XSTR (value, 0));
       break;
 
+    case CONST_INT:
+      printf (HOST_WIDE_INT_PRINT_DEC, INTVAL (value));
+      break;
+
     case SYMBOL_REF:
       fputs (XSTR (value, 0), stdout);
       break;
