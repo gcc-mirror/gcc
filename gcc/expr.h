@@ -1015,6 +1015,12 @@ extern rtx (*lang_expand_expr) PROTO ((union tree_node *, rtx,
 				       enum machine_mode,
 				       enum expand_modifier modifier));
 
+/* Hook called by output_constant for language-specific tree codes.
+   It is up to the language front-end to install a hook if it has any
+   such codes that output_constant needs to know about.  Returns a
+   language-independent constant equivalent to its input.  */
+extern union tree_node * (*lang_expand_constant) PROTO((tree));
+
 extern void init_all_optabs			PROTO ((void));
 extern void init_mov_optab			PROTO ((void));
 extern void do_jump_by_parts_equality_rtx	PROTO((rtx, rtx, rtx));
