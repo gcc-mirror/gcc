@@ -34,16 +34,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "optabs.h"
 #include "langhooks.h"
 
-static void do_jump_by_parts_greater PARAMS ((tree, int, rtx, rtx));
-static void do_jump_by_parts_equality PARAMS ((tree, rtx, rtx));
-static void do_compare_and_jump	PARAMS ((tree, enum rtx_code, enum rtx_code,
-					 rtx, rtx));
+static void do_jump_by_parts_greater (tree, int, rtx, rtx);
+static void do_jump_by_parts_equality (tree, rtx, rtx);
+static void do_compare_and_jump	(tree, enum rtx_code, enum rtx_code, rtx,
+				 rtx);
 
 /* At the start of a function, record that we have no previously-pushed
    arguments waiting to be popped.  */
 
 void
-init_pending_stack_adjust ()
+init_pending_stack_adjust (void)
 {
   pending_stack_adjust = 0;
 }
@@ -55,7 +55,7 @@ init_pending_stack_adjust ()
    frame pointer regardless of the value of flag_omit_frame_pointer.  */
 
 void
-clear_pending_stack_adjust ()
+clear_pending_stack_adjust (void)
 {
 #ifdef EXIT_IGNORE_STACK
   if (optimize > 0
@@ -73,7 +73,7 @@ clear_pending_stack_adjust ()
 /* Pop any previously-pushed arguments that have not been popped yet.  */
 
 void
-do_pending_stack_adjust ()
+do_pending_stack_adjust (void)
 {
   if (inhibit_defer_pop == 0)
     {
@@ -90,9 +90,7 @@ do_pending_stack_adjust ()
    functions here.  */
 
 void
-jumpifnot (exp, label)
-     tree exp;
-     rtx label;
+jumpifnot (tree exp, rtx label)
 {
   do_jump (exp, label, NULL_RTX);
 }
@@ -100,9 +98,7 @@ jumpifnot (exp, label)
 /* Generate code to evaluate EXP and jump to LABEL if the value is nonzero.  */
 
 void
-jumpif (exp, label)
-     tree exp;
-     rtx label;
+jumpif (tree exp, rtx label)
 {
   do_jump (exp, NULL_RTX, label);
 }
@@ -120,9 +116,7 @@ jumpif (exp, label)
    &&, || and comparison operators in EXP.  */
 
 void
-do_jump (exp, if_false_label, if_true_label)
-     tree exp;
-     rtx if_false_label, if_true_label;
+do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 {
   enum tree_code code = TREE_CODE (exp);
   /* Some cases need to create a label to jump to
@@ -617,10 +611,8 @@ do_jump (exp, if_false_label, if_true_label)
    and LT if SWAP is 1.  */
 
 static void
-do_jump_by_parts_greater (exp, swap, if_false_label, if_true_label)
-     tree exp;
-     int swap;
-     rtx if_false_label, if_true_label;
+do_jump_by_parts_greater (tree exp, int swap, rtx if_false_label,
+			  rtx if_true_label)
 {
   rtx op0 = expand_expr (TREE_OPERAND (exp, swap), NULL_RTX, VOIDmode, 0);
   rtx op1 = expand_expr (TREE_OPERAND (exp, !swap), NULL_RTX, VOIDmode, 0);
@@ -635,11 +627,8 @@ do_jump_by_parts_greater (exp, swap, if_false_label, if_true_label)
    Jump to IF_TRUE_LABEL if OP0 is greater, IF_FALSE_LABEL otherwise.  */
 
 void
-do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label, if_true_label)
-     enum machine_mode mode;
-     int unsignedp;
-     rtx op0, op1;
-     rtx if_false_label, if_true_label;
+do_jump_by_parts_greater_rtx (enum machine_mode mode, int unsignedp, rtx op0,
+			      rtx op1, rtx if_false_label, rtx if_true_label)
 {
   int nwords = (GET_MODE_SIZE (mode) / UNITS_PER_WORD);
   rtx drop_through_label = 0;
@@ -688,9 +677,7 @@ do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label, if_true
    with one insn, test the comparison and jump to the appropriate label.  */
 
 static void
-do_jump_by_parts_equality (exp, if_false_label, if_true_label)
-     tree exp;
-     rtx if_false_label, if_true_label;
+do_jump_by_parts_equality (tree exp, rtx if_false_label, rtx if_true_label)
 {
   rtx op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
   rtx op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
@@ -719,9 +706,7 @@ do_jump_by_parts_equality (exp, if_false_label, if_true_label)
    for the available compare insns.  */
 
 void
-do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
-     rtx op0;
-     rtx if_false_label, if_true_label;
+do_jump_by_parts_equality_rtx (rtx op0, rtx if_false_label, rtx if_true_label)
 {
   int nwords = GET_MODE_SIZE (GET_MODE (op0)) / UNITS_PER_WORD;
   rtx part;
@@ -776,12 +761,8 @@ do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
    compared.  */
 
 rtx
-compare_from_rtx (op0, op1, code, unsignedp, mode, size)
-     rtx op0, op1;
-     enum rtx_code code;
-     int unsignedp;
-     enum machine_mode mode;
-     rtx size;
+compare_from_rtx (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
+		  enum machine_mode mode, rtx size)
 {
   enum rtx_code ucode;
   rtx tem;
@@ -847,14 +828,9 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size)
    compared.  */
 
 void
-do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, size,
-                         if_false_label, if_true_label)
-     rtx op0, op1;
-     enum rtx_code code;
-     int unsignedp;
-     enum machine_mode mode;
-     rtx size;
-     rtx if_false_label, if_true_label;
+do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
+			 enum machine_mode mode, rtx size, rtx if_false_label,
+			 rtx if_true_label)
 {
   enum rtx_code ucode;
   rtx tem;
@@ -952,11 +928,9 @@ do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, size,
    things pushed on the stack that aren't yet used.  */
 
 static void
-do_compare_and_jump (exp, signed_code, unsigned_code, if_false_label,
-                     if_true_label)
-     tree exp;
-     enum rtx_code signed_code, unsigned_code;
-     rtx if_false_label, if_true_label;
+do_compare_and_jump (tree exp, enum rtx_code signed_code,
+		     enum rtx_code unsigned_code, rtx if_false_label,
+		     rtx if_true_label)
 {
   rtx op0, op1;
   tree type;

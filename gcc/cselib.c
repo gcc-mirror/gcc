@@ -40,34 +40,28 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hashtab.h"
 #include "cselib.h"
 
-static int entry_and_rtx_equal_p	PARAMS ((const void *, const void *));
-static hashval_t get_value_hash		PARAMS ((const void *));
-static struct elt_list *new_elt_list	PARAMS ((struct elt_list *,
-						 cselib_val *));
-static struct elt_loc_list *new_elt_loc_list PARAMS ((struct elt_loc_list *,
-						      rtx));
-static void unchain_one_value		PARAMS ((cselib_val *));
-static void unchain_one_elt_list	PARAMS ((struct elt_list **));
-static void unchain_one_elt_loc_list	PARAMS ((struct elt_loc_list **));
-static void clear_table			PARAMS ((void));
-static int discard_useless_locs		PARAMS ((void **, void *));
-static int discard_useless_values	PARAMS ((void **, void *));
-static void remove_useless_values	PARAMS ((void));
-static rtx wrap_constant		PARAMS ((enum machine_mode, rtx));
-static unsigned int hash_rtx		PARAMS ((rtx, enum machine_mode, int));
-static cselib_val *new_cselib_val	PARAMS ((unsigned int,
-						 enum machine_mode));
-static void add_mem_for_addr		PARAMS ((cselib_val *, cselib_val *,
-						 rtx));
-static cselib_val *cselib_lookup_mem	PARAMS ((rtx, int));
-static void cselib_invalidate_regno	PARAMS ((unsigned int,
-						 enum machine_mode));
-static int cselib_mem_conflict_p	PARAMS ((rtx, rtx));
-static void cselib_invalidate_mem	PARAMS ((rtx));
-static void cselib_invalidate_rtx	PARAMS ((rtx, rtx, void *));
-static void cselib_record_set		PARAMS ((rtx, cselib_val *,
-						 cselib_val *));
-static void cselib_record_sets		PARAMS ((rtx));
+static int entry_and_rtx_equal_p (const void *, const void *);
+static hashval_t get_value_hash (const void *);
+static struct elt_list *new_elt_list (struct elt_list *, cselib_val *);
+static struct elt_loc_list *new_elt_loc_list (struct elt_loc_list *, rtx);
+static void unchain_one_value (cselib_val *);
+static void unchain_one_elt_list (struct elt_list **);
+static void unchain_one_elt_loc_list (struct elt_loc_list **);
+static void clear_table (void);
+static int discard_useless_locs (void **, void *);
+static int discard_useless_values (void **, void *);
+static void remove_useless_values (void);
+static rtx wrap_constant (enum machine_mode, rtx);
+static unsigned int hash_rtx (rtx, enum machine_mode, int);
+static cselib_val *new_cselib_val (unsigned int, enum machine_mode);
+static void add_mem_for_addr (cselib_val *, cselib_val *, rtx);
+static cselib_val *cselib_lookup_mem (rtx, int);
+static void cselib_invalidate_regno (unsigned int, enum machine_mode);
+static int cselib_mem_conflict_p (rtx, rtx);
+static void cselib_invalidate_mem (rtx);
+static void cselib_invalidate_rtx (rtx, rtx, void *);
+static void cselib_record_set (rtx, cselib_val *, cselib_val *);
+static void cselib_record_sets (rtx);
 
 /* There are three ways in which cselib can look up an rtx:
    - for a REG, the reg_values table (which is indexed by regno) is used
@@ -136,7 +130,7 @@ static int values_became_useless;
    presence in the list by checking the next pointer.  */
 static cselib_val dummy_val;
 
-/* Used to list all values that contain memory reference. 
+/* Used to list all values that contain memory reference.
    May or may not contain the useless values - the list is compacted
    each time memory is invalidated.  */
 static cselib_val *first_containing_mem = &dummy_val;
@@ -146,9 +140,7 @@ static cselib_val *first_containing_mem = &dummy_val;
    arguments.  */
 
 static struct elt_list *
-new_elt_list (next, elt)
-     struct elt_list *next;
-     cselib_val *elt;
+new_elt_list (struct elt_list *next, cselib_val *elt)
 {
   struct elt_list *el = empty_elt_lists;
 
@@ -165,9 +157,7 @@ new_elt_list (next, elt)
    arguments.  */
 
 static struct elt_loc_list *
-new_elt_loc_list (next, loc)
-     struct elt_loc_list *next;
-     rtx loc;
+new_elt_loc_list (struct elt_loc_list *next, rtx loc)
 {
   struct elt_loc_list *el = empty_elt_loc_lists;
 
@@ -186,8 +176,7 @@ new_elt_loc_list (next, loc)
    storage.  */
 
 static void
-unchain_one_elt_list (pl)
-     struct elt_list **pl;
+unchain_one_elt_list (struct elt_list **pl)
 {
   struct elt_list *l = *pl;
 
@@ -199,8 +188,7 @@ unchain_one_elt_list (pl)
 /* Likewise for elt_loc_lists.  */
 
 static void
-unchain_one_elt_loc_list (pl)
-     struct elt_loc_list **pl;
+unchain_one_elt_loc_list (struct elt_loc_list **pl)
 {
   struct elt_loc_list *l = *pl;
 
@@ -213,8 +201,7 @@ unchain_one_elt_loc_list (pl)
    V.  */
 
 static void
-unchain_one_value (v)
-     cselib_val *v;
+unchain_one_value (cselib_val *v)
 {
   while (v->addr_list)
     unchain_one_elt_list (&v->addr_list);
@@ -228,7 +215,7 @@ unchain_one_value (v)
    which are known to have been used.  */
 
 static void
-clear_table ()
+clear_table (void)
 {
   unsigned int i;
 
@@ -254,8 +241,7 @@ clear_table ()
    CONST of an appropriate mode.  */
 
 static int
-entry_and_rtx_equal_p (entry, x_arg)
-     const void *entry, *x_arg;
+entry_and_rtx_equal_p (const void *entry, const void *x_arg)
 {
   struct elt_loc_list *l;
   const cselib_val *v = (const cselib_val *) entry;
@@ -273,7 +259,7 @@ entry_and_rtx_equal_p (entry, x_arg)
       && (GET_CODE (XEXP (x, 0)) == CONST_INT
 	  || GET_CODE (XEXP (x, 0)) == CONST_DOUBLE))
     x = XEXP (x, 0);
-  
+
   /* We don't guarantee that distinct rtx's have different hash values,
      so we need to do a comparison.  */
   for (l = v->locs; l; l = l->next)
@@ -288,8 +274,7 @@ entry_and_rtx_equal_p (entry, x_arg)
    value from a cselib_val structure.  */
 
 static hashval_t
-get_value_hash (entry)
-     const void *entry;
+get_value_hash (const void *entry)
 {
   const cselib_val *v = (const cselib_val *) entry;
   return v->value;
@@ -301,9 +286,7 @@ get_value_hash (entry)
    removed.  */
 
 int
-references_value_p (x, only_useless)
-     rtx x;
-     int only_useless;
+references_value_p (rtx x, int only_useless)
 {
   enum rtx_code code = GET_CODE (x);
   const char *fmt = GET_RTX_FORMAT (code);
@@ -331,9 +314,7 @@ references_value_p (x, only_useless)
    htab_traverse.  */
 
 static int
-discard_useless_locs (x, info)
-     void **x;
-     void *info ATTRIBUTE_UNUSED;
+discard_useless_locs (void **x, void *info ATTRIBUTE_UNUSED)
 {
   cselib_val *v = (cselib_val *)*x;
   struct elt_loc_list **p = &v->locs;
@@ -358,9 +339,7 @@ discard_useless_locs (x, info)
 /* If X is a value with no locations, remove it from the hashtable.  */
 
 static int
-discard_useless_values (x, info)
-     void **x;
-     void *info ATTRIBUTE_UNUSED;
+discard_useless_values (void **x, void *info ATTRIBUTE_UNUSED)
 {
   cselib_val *v = (cselib_val *)*x;
 
@@ -378,7 +357,7 @@ discard_useless_values (x, info)
    associated with them) from the hash table.  */
 
 static void
-remove_useless_values ()
+remove_useless_values (void)
 {
   cselib_val **p, *v;
   /* First pass: eliminate locations that reference the value.  That in
@@ -412,8 +391,7 @@ remove_useless_values ()
    VOIDmode.  */
 
 enum machine_mode
-cselib_reg_set_mode (x)
-     rtx x;
+cselib_reg_set_mode (rtx x)
 {
   if (GET_CODE (x) != REG)
     return GET_MODE (x);
@@ -429,13 +407,12 @@ cselib_reg_set_mode (x)
    our gathered information into account.  */
 
 int
-rtx_equal_for_cselib_p (x, y)
-     rtx x, y;
+rtx_equal_for_cselib_p (rtx x, rtx y)
 {
   enum rtx_code code;
   const char *fmt;
   int i;
-  
+
   if (GET_CODE (x) == REG || GET_CODE (x) == MEM)
     {
       cselib_val *e = cselib_lookup (x, GET_MODE (x), 0);
@@ -473,7 +450,7 @@ rtx_equal_for_cselib_p (x, y)
 	  else if (rtx_equal_for_cselib_p (t, y))
 	    return 1;
 	}
-      
+
       return 0;
     }
 
@@ -491,7 +468,7 @@ rtx_equal_for_cselib_p (x, y)
 	  else if (rtx_equal_for_cselib_p (x, t))
 	    return 1;
 	}
-      
+
       return 0;
     }
 
@@ -501,7 +478,7 @@ rtx_equal_for_cselib_p (x, y)
   /* This won't be handled correctly by the code below.  */
   if (GET_CODE (x) == LABEL_REF)
     return XEXP (x, 0) == XEXP (y, 0);
-  
+
   code = GET_CODE (x);
   fmt = GET_RTX_FORMAT (code);
 
@@ -568,9 +545,7 @@ rtx_equal_for_cselib_p (x, y)
    functions.  For that purpose, wrap them in a CONST of the appropriate
    mode.  */
 static rtx
-wrap_constant (mode, x)
-     enum machine_mode mode;
-     rtx x;
+wrap_constant (enum machine_mode mode, rtx x)
 {
   if (GET_CODE (x) != CONST_INT
       && (GET_CODE (x) != CONST_DOUBLE || GET_MODE (x) != VOIDmode))
@@ -590,10 +565,7 @@ wrap_constant (mode, x)
    otherwise the mode of X is used.  */
 
 static unsigned int
-hash_rtx (x, mode, create)
-     rtx x;
-     enum machine_mode mode;
-     int create;
+hash_rtx (rtx x, enum machine_mode mode, int create)
 {
   cselib_val *e;
   int i, j;
@@ -673,7 +645,7 @@ hash_rtx (x, mode, create)
 	return 0;
 
       break;
-      
+
     default:
       break;
     }
@@ -725,9 +697,7 @@ hash_rtx (x, mode, create)
    value is MODE.  */
 
 static cselib_val *
-new_cselib_val (value, mode)
-     unsigned int value;
-     enum machine_mode mode;
+new_cselib_val (unsigned int value, enum machine_mode mode)
 {
   cselib_val *e = empty_vals;
 
@@ -753,9 +723,7 @@ new_cselib_val (value, mode)
    value.  Update the two value structures to represent this situation.  */
 
 static void
-add_mem_for_addr (addr_elt, mem_elt, x)
-     cselib_val *addr_elt, *mem_elt;
-     rtx x;
+add_mem_for_addr (cselib_val *addr_elt, cselib_val *mem_elt, rtx x)
 {
   struct elt_loc_list *l;
 
@@ -780,9 +748,7 @@ add_mem_for_addr (addr_elt, mem_elt, x)
    If CREATE, make a new one if we haven't seen it before.  */
 
 static cselib_val *
-cselib_lookup_mem (x, create)
-     rtx x;
-     int create;
+cselib_lookup_mem (rtx x, int create)
 {
   enum machine_mode mode = GET_MODE (x);
   void **slot;
@@ -822,8 +788,7 @@ cselib_lookup_mem (x, create)
    allocated.  However, the return value can share rtl with X.  */
 
 rtx
-cselib_subst_to_values (x)
-     rtx x;
+cselib_subst_to_values (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   const char *fmt = GET_RTX_FORMAT (code);
@@ -867,7 +832,7 @@ cselib_subst_to_values (x)
     case PRE_MODIFY:
       e = new_cselib_val (++next_unknown_value, GET_MODE (x));
       return e->u.val_rtx;
-      
+
     default:
       break;
     }
@@ -915,10 +880,7 @@ cselib_subst_to_values (x)
    (i.e. because it's a constant).  */
 
 cselib_val *
-cselib_lookup (x, mode, create)
-     rtx x;
-     enum machine_mode mode;
-     int create;
+cselib_lookup (rtx x, enum machine_mode mode, int create)
 {
   void **slot;
   cselib_val *e;
@@ -1003,9 +965,7 @@ cselib_lookup (x, mode, create)
    invalidating call clobbered registers across a call.  */
 
 static void
-cselib_invalidate_regno (regno, mode)
-     unsigned int regno;
-     enum machine_mode mode;
+cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 {
   unsigned int endregno;
   unsigned int i;
@@ -1023,7 +983,7 @@ cselib_invalidate_regno (regno, mode)
     {
       if (mode == VOIDmode)
 	abort ();
-      
+
       if (regno < max_value_regs)
 	i = 0;
       else
@@ -1094,9 +1054,7 @@ cselib_invalidate_regno (regno, mode)
    Return whether this change will invalidate VAL.  */
 
 static int
-cselib_mem_conflict_p (mem_base, val)
-     rtx mem_base;
-     rtx val;
+cselib_mem_conflict_p (rtx mem_base, rtx val)
 {
   enum rtx_code code;
   const char *fmt;
@@ -1153,8 +1111,7 @@ cselib_mem_conflict_p (mem_base, val)
    instruction, MEM_RTX is (mem:BLK const0_rtx).  */
 
 static void
-cselib_invalidate_mem (mem_rtx)
-     rtx mem_rtx;
+cselib_invalidate_mem (rtx mem_rtx)
 {
   cselib_val **vp, *v, *next;
 
@@ -1224,10 +1181,8 @@ cselib_invalidate_mem (mem_rtx)
    note_stores; they are ignored.  */
 
 static void
-cselib_invalidate_rtx (dest, ignore, data)
-     rtx dest;
-     rtx ignore ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+cselib_invalidate_rtx (rtx dest, rtx ignore ATTRIBUTE_UNUSED,
+		       void *data ATTRIBUTE_UNUSED)
 {
   while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SIGN_EXTRACT
 	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SUBREG)
@@ -1251,9 +1206,7 @@ cselib_invalidate_rtx (dest, ignore, data)
    describes its address.  */
 
 static void
-cselib_record_set (dest, src_elt, dest_addr_elt)
-     rtx dest;
-     cselib_val *src_elt, *dest_addr_elt;
+cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 {
   int dreg = GET_CODE (dest) == REG ? (int) REGNO (dest) : -1;
 
@@ -1311,8 +1264,7 @@ struct set
 
 /* Record the effects of any sets in INSN.  */
 static void
-cselib_record_sets (insn)
-     rtx insn;
+cselib_record_sets (rtx insn)
 {
   int n_sets = 0;
   int i;
@@ -1393,8 +1345,7 @@ cselib_record_sets (insn)
 /* Record the effects of INSN.  */
 
 void
-cselib_process_insn (insn)
-     rtx insn;
+cselib_process_insn (rtx insn)
 {
   int i;
   rtx x;
@@ -1464,7 +1415,7 @@ cselib_process_insn (insn)
    it must be called by the user if it allocated new registers.  */
 
 void
-cselib_update_varray_sizes ()
+cselib_update_varray_sizes (void)
 {
   unsigned int nregs = max_reg_num ();
 
@@ -1480,7 +1431,7 @@ cselib_update_varray_sizes ()
    init_alias_analysis.  */
 
 void
-cselib_init ()
+cselib_init (void)
 {
   /* This is only created once.  */
   if (! callmem)
@@ -1497,7 +1448,7 @@ cselib_init ()
       VARRAY_ELT_LIST_INIT (reg_values, cselib_nregs, "reg_values");
       VARRAY_UINT_INIT (used_regs, cselib_nregs, "used_regs");
     }
-  hash_table = htab_create_ggc (31, get_value_hash, entry_and_rtx_equal_p, 
+  hash_table = htab_create_ggc (31, get_value_hash, entry_and_rtx_equal_p,
 				NULL);
   cselib_current_insn_in_libcall = false;
 }
@@ -1505,7 +1456,7 @@ cselib_init ()
 /* Called when the current user is done with cselib.  */
 
 void
-cselib_finish ()
+cselib_finish (void)
 {
   clear_table ();
   reg_values_old = reg_values;

@@ -1,3 +1,20 @@
+2003-06-29  Andreas Jaeger  <aj@suse.de>
+
+	* cse.c: Convert prototypes to ISO C90.
+	* cselib.c: Likewise.
+	* cselib.h: Likewise.
+	* dbxout.c: Likewise.
+	* debug.c: Likewise.
+	* df.c: Likewise.
+	* df.h: Likewise.
+	* dojump.c: Likewise.
+	* doloop.c: Likewise.
+	* dominance.c: Likewise.
+	* dwarf2asm.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarf2out.h: Likewise.
+	* dwarfout.c: Likewise.
+
 2003-06-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* alloc-pool.c: Fix comment formatting.

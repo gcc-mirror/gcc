@@ -1,5 +1,5 @@
 /* Dwarf2 assembler output helper routines.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,9 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    to print a newline, since the caller may want to add a comment.  */
 
 void
-dw2_assemble_integer (size, x)
-     int size;
-     rtx x;
+dw2_assemble_integer (int size, rtx x)
 {
   const char *op = integer_asm_op (size, FALSE);
 
@@ -71,7 +69,7 @@ dw2_asm_output_data (int size, unsigned HOST_WIDE_INT value,
 		     const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
   if (size * 8 < HOST_BITS_PER_WIDE_INT)
@@ -100,7 +98,7 @@ dw2_asm_output_delta (int size, const char *lab1, const char *lab2,
 		      const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
 #ifdef ASM_OUTPUT_DWARF_DELTA
@@ -132,7 +130,7 @@ dw2_asm_output_offset (int size, const char *label,
 		       const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
 #ifdef ASM_OUTPUT_DWARF_OFFSET
@@ -160,7 +158,7 @@ dw2_asm_output_pcrel (int size ATTRIBUTE_UNUSED,
 		      const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
 #ifdef ASM_OUTPUT_DWARF_PCREL
@@ -189,7 +187,7 @@ dw2_asm_output_addr (int size, const char *label,
 		     const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
   dw2_assemble_integer (size, gen_rtx_SYMBOL_REF (Pmode, label));
@@ -211,7 +209,7 @@ dw2_asm_output_addr_rtx (int size, rtx addr,
 			 const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
   dw2_assemble_integer (size, addr);
@@ -275,8 +273,7 @@ dw2_asm_output_nstring (const char *str, size_t orig_len,
 /* Return the size of an unsigned LEB128 quantity.  */
 
 int
-size_of_uleb128 (value)
-     unsigned HOST_WIDE_INT value;
+size_of_uleb128 (unsigned HOST_WIDE_INT value)
 {
   int size = 0;
 
@@ -293,8 +290,7 @@ size_of_uleb128 (value)
 /* Return the size of a signed LEB128 quantity.  */
 
 int
-size_of_sleb128 (value)
-     HOST_WIDE_INT value;
+size_of_sleb128 (HOST_WIDE_INT value)
 {
   int size = 0, byte;
 
@@ -315,8 +311,7 @@ size_of_sleb128 (value)
    include leb128.  */
 
 int
-size_of_encoded_value (encoding)
-     int encoding;
+size_of_encoded_value (int encoding)
 {
   if (encoding == DW_EH_PE_omit)
     return 0;
@@ -338,8 +333,7 @@ size_of_encoded_value (encoding)
 /* Yield a name for a given pointer encoding.  */
 
 const char *
-eh_data_format_name (format)
-     int format;
+eh_data_format_name (int format)
 {
 #if HAVE_DESIGNATED_INITIALIZERS
 #define S(p, v)		[p] = v,
@@ -501,7 +495,7 @@ dw2_asm_output_data_uleb128 (unsigned HOST_WIDE_INT value,
 			     const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
 #ifdef HAVE_AS_LEB128
@@ -562,7 +556,7 @@ dw2_asm_output_data_sleb128 (HOST_WIDE_INT value,
 			     const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
 #ifdef HAVE_AS_LEB128
@@ -653,7 +647,7 @@ dw2_asm_output_delta_sleb128 (const char *lab1 ATTRIBUTE_UNUSED,
 			      const char *comment, ...)
 {
   va_list ap;
-  
+
   va_start (ap, comment);
 
 #ifdef HAVE_AS_LEB128
@@ -675,8 +669,8 @@ dw2_asm_output_delta_sleb128 (const char *lab1 ATTRIBUTE_UNUSED,
   va_end (ap);
 }
 
-static rtx dw2_force_const_mem PARAMS ((rtx));
-static int dw2_output_indirect_constant_1 PARAMS ((splay_tree_node, void *));
+static rtx dw2_force_const_mem (rtx);
+static int dw2_output_indirect_constant_1 (splay_tree_node, void *);
 
 static GTY((param1_is (char *), param2_is (tree))) splay_tree indirect_pool;
 
@@ -694,8 +688,7 @@ static GTY(()) int dw2_const_labelno;
    "near" the function in any interesting sense.  */
 
 static rtx
-dw2_force_const_mem (x)
-     rtx x;
+dw2_force_const_mem (rtx x)
 {
   splay_tree_node node;
   const char *str;
@@ -755,9 +748,8 @@ dw2_force_const_mem (x)
    splay_tree_foreach.  Emit one queued constant to memory.  */
 
 static int
-dw2_output_indirect_constant_1 (node, data)
-     splay_tree_node node;
-     void* data ATTRIBUTE_UNUSED;
+dw2_output_indirect_constant_1 (splay_tree_node node,
+				void *data ATTRIBUTE_UNUSED)
 {
   const char *sym;
   rtx sym_ref;
@@ -775,7 +767,7 @@ dw2_output_indirect_constant_1 (node, data)
 /* Emit the constants queued through dw2_force_const_mem.  */
 
 void
-dw2_output_indirect_constants ()
+dw2_output_indirect_constants (void)
 {
   if (indirect_pool)
     splay_tree_foreach (indirect_pool, dw2_output_indirect_constant_1, NULL);
@@ -789,7 +781,7 @@ dw2_asm_output_encoded_addr_rtx (int encoding, rtx addr,
 {
   int size;
   va_list ap;
-  
+
   va_start (ap, comment);
 
   size = size_of_encoded_value (encoding);

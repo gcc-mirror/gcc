@@ -1,5 +1,6 @@
 /* Perform doloop optimizations
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
    Contributed by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -59,23 +60,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef HAVE_doloop_end
 
-static rtx doloop_condition_get
-  PARAMS ((rtx));
-static unsigned HOST_WIDE_INT doloop_iterations_max
-  PARAMS ((const struct loop_info *, enum machine_mode, int));
-static int doloop_valid_p
-  PARAMS ((const struct loop *, rtx));
-static int doloop_modify
-  PARAMS ((const struct loop *, rtx, rtx, rtx, rtx, rtx));
-static int doloop_modify_runtime
-  PARAMS ((const struct loop *, rtx, rtx, rtx, enum machine_mode, rtx));
+static rtx doloop_condition_get (rtx);
+static unsigned HOST_WIDE_INT doloop_iterations_max (const struct loop_info *,
+						     enum machine_mode, int);
+static int doloop_valid_p (const struct loop *, rtx);
+static int doloop_modify (const struct loop *, rtx, rtx, rtx, rtx, rtx);
+static int doloop_modify_runtime (const struct loop *, rtx, rtx, rtx,
+				  enum machine_mode, rtx);
 
 
 /* Return the loop termination condition for PATTERN or zero
    if it is not a decrement and branch jump insn.  */
 static rtx
-doloop_condition_get (pattern)
-     rtx pattern;
+doloop_condition_get (rtx pattern)
 {
   rtx cmp;
   rtx inc;
@@ -146,10 +143,8 @@ doloop_condition_get (pattern)
    MODE is the mode of the iteration count and NONNEG is nonzero if
    the iteration count has been proved to be non-negative.  */
 static unsigned HOST_WIDE_INT
-doloop_iterations_max (loop_info, mode, nonneg)
-     const struct loop_info *loop_info;
-     enum machine_mode mode;
-     int nonneg;
+doloop_iterations_max (const struct loop_info *loop_info,
+		       enum machine_mode mode, int nonneg)
 {
   unsigned HOST_WIDE_INT n_iterations_max;
   enum rtx_code code;
@@ -255,9 +250,7 @@ doloop_iterations_max (loop_info, mode, nonneg)
 /* Return nonzero if the loop specified by LOOP is suitable for
    the use of special low-overhead looping instructions.  */
 static int
-doloop_valid_p (loop, jump_insn)
-     const struct loop *loop;
-     rtx jump_insn;
+doloop_valid_p (const struct loop *loop, rtx jump_insn)
 {
   const struct loop_info *loop_info = LOOP_INFO (loop);
 
@@ -405,14 +398,8 @@ doloop_valid_p (loop, jump_insn)
    low-overhead looping insn to emit at the end of the loop.  This
    returns nonzero if it was successful.  */
 static int
-doloop_modify (loop, iterations, iterations_max,
-	       doloop_seq, start_label, condition)
-     const struct loop *loop;
-     rtx iterations;
-     rtx iterations_max;
-     rtx doloop_seq;
-     rtx start_label;
-     rtx condition;
+doloop_modify (const struct loop *loop, rtx iterations, rtx iterations_max,
+	       rtx doloop_seq, rtx start_label, rtx condition)
 {
   rtx counter_reg;
   rtx count;
@@ -545,14 +532,9 @@ doloop_modify (loop, iterations, iterations_max,
    number of loop iterations.  DOLOOP_INSN is the low-overhead looping
    insn to insert.  Returns nonzero if loop successfully modified.  */
 static int
-doloop_modify_runtime (loop, iterations_max,
-		       doloop_seq, start_label, mode, condition)
-     const struct loop *loop;
-     rtx iterations_max;
-     rtx doloop_seq;
-     rtx start_label;
-     enum machine_mode mode;
-     rtx condition;
+doloop_modify_runtime (const struct loop *loop, rtx iterations_max,
+		       rtx doloop_seq, rtx start_label,
+		       enum machine_mode mode, rtx condition)
 {
   const struct loop_info *loop_info = LOOP_INFO (loop);
   HOST_WIDE_INT abs_inc;
@@ -759,8 +741,7 @@ doloop_modify_runtime (loop, iterations_max,
    is a candidate for this optimization.  Returns nonzero if loop
    successfully modified.  */
 int
-doloop_optimize (loop)
-     const struct loop *loop;
+doloop_optimize (const struct loop *loop)
 {
   struct loop_info *loop_info = LOOP_INFO (loop);
   rtx initial_value;

@@ -307,46 +307,46 @@ static int current_sym_nchars;
 #define CONTIN do { } while (0)
 #endif
 
-static void dbxout_init			PARAMS ((const char *));
-static void dbxout_finish		PARAMS ((const char *));
-static void dbxout_start_source_file	PARAMS ((unsigned, const char *));
-static void dbxout_end_source_file	PARAMS ((unsigned));
-static void dbxout_typedefs		PARAMS ((tree));
-static void dbxout_fptype_value		PARAMS ((tree));
-static void dbxout_type_index		PARAMS ((tree));
+static void dbxout_init (const char *);
+static void dbxout_finish (const char *);
+static void dbxout_start_source_file (unsigned, const char *);
+static void dbxout_end_source_file (unsigned);
+static void dbxout_typedefs (tree);
+static void dbxout_fptype_value (tree);
+static void dbxout_type_index (tree);
 #if DBX_CONTIN_LENGTH > 0
-static void dbxout_continue		PARAMS ((void));
+static void dbxout_continue (void);
 #endif
-static void dbxout_args			PARAMS ((tree));
-static void dbxout_type_fields		PARAMS ((tree));
-static void dbxout_type_method_1	PARAMS ((tree, const char *));
-static void dbxout_type_methods		PARAMS ((tree));
-static void dbxout_range_type		PARAMS ((tree));
-static void dbxout_type			PARAMS ((tree, int));
-static bool print_int_cst_bounds_in_octal_p	PARAMS ((tree));
-static void print_int_cst_octal		PARAMS ((tree));
-static void print_octal			PARAMS ((unsigned HOST_WIDE_INT, int));
-static void print_wide_int		PARAMS ((HOST_WIDE_INT));
-static void dbxout_type_name		PARAMS ((tree));
-static void dbxout_class_name_qualifiers PARAMS ((tree));
-static int dbxout_symbol_location	PARAMS ((tree, tree, const char *, rtx));
-static void dbxout_symbol_name		PARAMS ((tree, const char *, int));
-static void dbxout_prepare_symbol	PARAMS ((tree));
-static void dbxout_finish_symbol	PARAMS ((tree));
-static void dbxout_block		PARAMS ((tree, int, tree));
-static void dbxout_global_decl		PARAMS ((tree));
-static void dbxout_handle_pch		PARAMS ((unsigned));
+static void dbxout_args (tree);
+static void dbxout_type_fields (tree);
+static void dbxout_type_method_1 (tree, const char *);
+static void dbxout_type_methods (tree);
+static void dbxout_range_type (tree);
+static void dbxout_type (tree, int);
+static bool print_int_cst_bounds_in_octal_p (tree);
+static void print_int_cst_octal (tree);
+static void print_octal (unsigned HOST_WIDE_INT, int);
+static void print_wide_int (HOST_WIDE_INT);
+static void dbxout_type_name (tree);
+static void dbxout_class_name_qualifiers (tree);
+static int dbxout_symbol_location (tree, tree, const char *, rtx);
+static void dbxout_symbol_name (tree, const char *, int);
+static void dbxout_prepare_symbol (tree);
+static void dbxout_finish_symbol (tree);
+static void dbxout_block (tree, int, tree);
+static void dbxout_global_decl (tree);
+static void dbxout_handle_pch (unsigned);
 
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
 
-static void dbxout_source_line		PARAMS ((unsigned int, const char *));
-static void dbxout_source_file		PARAMS ((FILE *, const char *));
-static void dbxout_function_end		PARAMS ((void));
-static void dbxout_begin_function	PARAMS ((tree));
-static void dbxout_begin_block		PARAMS ((unsigned, unsigned));
-static void dbxout_end_block		PARAMS ((unsigned, unsigned));
-static void dbxout_function_decl	PARAMS ((tree));
+static void dbxout_source_line (unsigned int, const char *);
+static void dbxout_source_file (FILE *, const char *);
+static void dbxout_function_end (void);
+static void dbxout_begin_function (tree);
+static void dbxout_begin_block (unsigned, unsigned);
+static void dbxout_end_block (unsigned, unsigned);
+static void dbxout_function_decl (tree);
 
 const struct gcc_debug_hooks dbx_debug_hooks =
 {
@@ -407,7 +407,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
 
 #if defined (DBX_DEBUGGING_INFO)
 static void
-dbxout_function_end ()
+dbxout_function_end (void)
 {
   char lscope_label_name[100];
   /* Convert Ltext into the appropriate format for local labels in case
@@ -435,8 +435,7 @@ dbxout_function_end ()
    Initialize `typevec' and output the standard data types of C.  */
 
 static void
-dbxout_init (input_file_name)
-     const char *input_file_name;
+dbxout_init (const char *input_file_name)
 {
   char ltext_label_name[100];
   tree syms = (*lang_hooks.decls.getdecls) ();
@@ -526,8 +525,7 @@ dbxout_init (input_file_name)
    in the reverse order from that which is found in SYMS.  */
 
 static void
-dbxout_typedefs (syms)
-     tree syms;
+dbxout_typedefs (tree syms)
 {
   if (syms)
     {
@@ -547,9 +545,8 @@ dbxout_typedefs (syms)
 /* Change to reading from a new source file.  Generate a N_BINCL stab.  */
 
 static void
-dbxout_start_source_file (line, filename)
-     unsigned int line ATTRIBUTE_UNUSED;
-     const char *filename ATTRIBUTE_UNUSED;
+dbxout_start_source_file (unsigned int line ATTRIBUTE_UNUSED,
+			  const char *filename ATTRIBUTE_UNUSED)
 {
 #ifdef DBX_USE_BINCL
   struct dbx_file *n = (struct dbx_file *) ggc_alloc (sizeof *n);
@@ -567,8 +564,7 @@ dbxout_start_source_file (line, filename)
 /* Revert to reading a previous source file.  Generate a N_EINCL stab.  */
 
 static void
-dbxout_end_source_file (line)
-     unsigned int line ATTRIBUTE_UNUSED;
+dbxout_end_source_file (unsigned int line ATTRIBUTE_UNUSED)
 {
 #ifdef DBX_USE_BINCL
   fprintf (asmfile, "%s%d,0,0,0\n", ASM_STABN_OP, N_EINCL);
@@ -605,9 +601,7 @@ dbxout_handle_pch (unsigned at_end)
 /* Output debugging info to FILE to switch to sourcefile FILENAME.  */
 
 static void
-dbxout_source_file (file, filename)
-     FILE *file;
-     const char *filename;
+dbxout_source_file (FILE *file, const char *filename)
 {
   if (lastfile == 0 && lastfile_is_base)
     {
@@ -641,9 +635,7 @@ dbxout_source_file (file, filename)
    number LINENO.  */
 
 static void
-dbxout_source_line (lineno, filename)
-     unsigned int lineno;
-     const char *filename;
+dbxout_source_line (unsigned int lineno, const char *filename)
 {
   dbxout_source_file (asmfile, filename);
 
@@ -658,9 +650,7 @@ dbxout_source_line (lineno, filename)
 /* Describe the beginning of an internal block within a function.  */
 
 static void
-dbxout_begin_block (line, n)
-     unsigned int line ATTRIBUTE_UNUSED;
-     unsigned int n;
+dbxout_begin_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int n)
 {
   (*targetm.asm_out.internal_label) (asmfile, "LBB", n);
 }
@@ -668,9 +658,7 @@ dbxout_begin_block (line, n)
 /* Describe the end line-number of an internal block within a function.  */
 
 static void
-dbxout_end_block (line, n)
-     unsigned int line ATTRIBUTE_UNUSED;
-     unsigned int n;
+dbxout_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int n)
 {
   (*targetm.asm_out.internal_label) (asmfile, "LBE", n);
 }
@@ -682,8 +670,7 @@ dbxout_end_block (line, n)
    (including all the auto variables of the function).  */
 
 static void
-dbxout_function_decl (decl)
-     tree decl;
+dbxout_function_decl (tree decl)
 {
 #ifndef DBX_FUNCTION_FIRST
   dbxout_begin_function (decl);
@@ -705,8 +692,7 @@ dbxout_function_decl (decl)
 /* Debug information for a global DECL.  Called from toplev.c after
    compilation proper has finished.  */
 static void
-dbxout_global_decl (decl)
-     tree decl;
+dbxout_global_decl (tree decl)
 {
   if (TREE_CODE (decl) == VAR_DECL
       && ! DECL_EXTERNAL (decl)
@@ -724,8 +710,7 @@ dbxout_global_decl (decl)
    to do nothing.  */
 
 static void
-dbxout_finish (filename)
-     const char *filename ATTRIBUTE_UNUSED;
+dbxout_finish (const char *filename ATTRIBUTE_UNUSED)
 {
 #ifdef DBX_OUTPUT_MAIN_SOURCE_FILE_END
   DBX_OUTPUT_MAIN_SOURCE_FILE_END (asmfile, filename);
@@ -752,8 +737,7 @@ dbxout_finish (filename)
    them.  */
 
 static void
-dbxout_fptype_value (type)
-     tree type;
+dbxout_fptype_value (tree type)
 {
   char value = '0';
   enum machine_mode mode = TYPE_MODE (type);
@@ -792,8 +776,7 @@ dbxout_fptype_value (type)
 /* Output the index of a type.  */
 
 static void
-dbxout_type_index (type)
-     tree type;
+dbxout_type_index (tree type)
 {
 #ifndef DBX_USE_BINCL
   fprintf (asmfile, "%d", TYPE_SYMTAB_ADDRESS (type));
@@ -813,7 +796,7 @@ dbxout_type_index (type)
    .stabs "...rest",code,0,value   */
 
 static void
-dbxout_continue ()
+dbxout_continue (void)
 {
 #ifdef DBX_CONTIN_CHAR
   fprintf (asmfile, "%c", DBX_CONTIN_CHAR);
@@ -831,8 +814,7 @@ dbxout_continue ()
    recursive calls.  */
 
 static void
-dbxout_type_fields (type)
-     tree type;
+dbxout_type_fields (tree type)
 {
   tree tem;
 
@@ -922,9 +904,7 @@ dbxout_type_fields (type)
    now.  */
 
 static void
-dbxout_type_method_1 (decl, debug_name)
-     tree decl;
-     const char *debug_name;
+dbxout_type_method_1 (tree decl, const char *debug_name)
 {
   char c1 = 'A', c2;
 
@@ -969,8 +949,7 @@ dbxout_type_method_1 (decl, debug_name)
    in TYPE.  */
 
 static void
-dbxout_type_methods (type)
-     tree type;
+dbxout_type_methods (tree type)
 {
   /* C++: put out the method names and their parameter lists */
   tree methods = TYPE_METHODS (type);
@@ -1075,8 +1054,7 @@ dbxout_type_methods (type)
    TYPE is an INTEGER_TYPE.  */
 
 static void
-dbxout_range_type (type)
-     tree type;
+dbxout_range_type (tree type)
 {
   fprintf (asmfile, "r");
   if (TREE_TYPE (type))
@@ -1150,9 +1128,7 @@ dbxout_range_type (type)
    using the number previously allocated.  */
 
 static void
-dbxout_type (type, full)
-     tree type;
-     int full;
+dbxout_type (tree type, int full)
 {
   tree tem;
   tree main_variant;
@@ -1199,7 +1175,7 @@ dbxout_type (type, full)
 	{
 	  typevec
 	    = (struct typeinfo *) ggc_realloc (typevec,
-					       (typevec_len * 2 
+					       (typevec_len * 2
 						* sizeof typevec[0]));
 	  memset ((char *) (typevec + typevec_len), 0,
 		 typevec_len * sizeof typevec[0]);
@@ -1228,7 +1204,7 @@ dbxout_type (type, full)
 	       && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
 	debug_queue_symbol (TYPE_NAME (type));
     }
-  
+
   /* Output the number of this type, to refer to it.  */
   dbxout_type_index (type);
 
@@ -1316,7 +1292,7 @@ dbxout_type (type, full)
         {
           tree orig_type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
 
-          if ((TREE_CODE (orig_type) == RECORD_TYPE  
+          if ((TREE_CODE (orig_type) == RECORD_TYPE
                || TREE_CODE (orig_type) == UNION_TYPE
                || TREE_CODE (orig_type) == QUAL_UNION_TYPE
                || TREE_CODE (orig_type) == ENUMERAL_TYPE)
@@ -1389,7 +1365,7 @@ dbxout_type (type, full)
 	      CHARS (5);
 	    }
 
- 	  if (print_int_cst_bounds_in_octal_p (type))
+	  if (print_int_cst_bounds_in_octal_p (type))
 	    {
 	      fprintf (asmfile, "r");
 	      CHARS (1);
@@ -1654,7 +1630,7 @@ dbxout_type (type, full)
 	    tree child = BINFO_BASETYPE (binfo, i);
 	    tree access = (BINFO_BASEACCESSES (binfo)
 			   ? BINFO_BASEACCESS (binfo, i) : access_public_node);
-	    
+
 	    if (use_gnu_debug_info_extensions)
 	      {
 		have_used_extensions = 1;
@@ -1854,8 +1830,7 @@ dbxout_type (type, full)
    should be printed in octal format.  */
 
 static bool
-print_int_cst_bounds_in_octal_p (type)
-     tree type;
+print_int_cst_bounds_in_octal_p (tree type)
 {
   /* If we can use GDB extensions and the size is wider than a long
      (the size used by GDB to read them) or we may have trouble writing
@@ -1863,7 +1838,7 @@ print_int_cst_bounds_in_octal_p (type)
      the *target's* size of "long", not that of the host.  The host test
      is just to make sure we can write it out in case the host wide int
      is narrower than the target "long".
-  
+
      For unsigned types, we use octal if they are the same size or larger.
      This is because we print the bounds as signed decimal, and hence they
      can't span same size unsigned types.  */
@@ -1888,8 +1863,7 @@ print_int_cst_bounds_in_octal_p (type)
    handling double precision.  */
 
 static void
-print_int_cst_octal (c)
-     tree c;
+print_int_cst_octal (tree c)
 {
   unsigned HOST_WIDE_INT high = TREE_INT_CST_HIGH (c);
   unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (c);
@@ -1934,9 +1908,7 @@ print_int_cst_octal (c)
 }
 
 static void
-print_octal (value, digits)
-     unsigned HOST_WIDE_INT value;
-     int digits;
+print_octal (unsigned HOST_WIDE_INT value, int digits)
 {
   int i;
 
@@ -1949,8 +1921,7 @@ print_octal (value, digits)
 /* Output C in decimal while adjusting the number of digits written.  */
 
 static void
-print_wide_int (c)
-     HOST_WIDE_INT c;
+print_wide_int (HOST_WIDE_INT c)
 {
   int digs = 0;
 
@@ -1970,8 +1941,7 @@ print_wide_int (c)
    or by struct, enum and union tags.  */
 
 static void
-dbxout_type_name (type)
-     tree type;
+dbxout_type_name (tree type)
 {
   tree t;
   if (TYPE_NAME (type) == 0)
@@ -1995,14 +1965,13 @@ dbxout_type_name (type)
    type whose scope is limited to a struct or class.  */
 
 static void
-dbxout_class_name_qualifiers (decl)
-     tree decl;
+dbxout_class_name_qualifiers (tree decl)
 {
   tree context = decl_type_context (decl);
 
-  if (context != NULL_TREE 
+  if (context != NULL_TREE
       && TREE_CODE(context) == RECORD_TYPE
-      && TYPE_NAME (context) != 0 
+      && TYPE_NAME (context) != 0
       && (TREE_CODE (TYPE_NAME (context)) == IDENTIFIER_NODE
           || (DECL_NAME (TYPE_NAME (context)) != 0)))
     {
@@ -2025,9 +1994,7 @@ dbxout_class_name_qualifiers (decl)
    Return 1 if a stabs might have been emitted.  */
 
 int
-dbxout_symbol (decl, local)
-     tree decl;
-     int local ATTRIBUTE_UNUSED;
+dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 {
   tree type = TREE_TYPE (decl);
   tree context = NULL_TREE;
@@ -2050,7 +2017,7 @@ dbxout_symbol (decl, local)
   /* If we are to generate only the symbols actualy used then such
      symbol nodees are flagged with TREE_USED.  Ignore any that
      aren't flaged as TREE_USED.  */
-    
+
   if (flag_debug_only_used_symbols)
     {
       tree t;
@@ -2069,7 +2036,7 @@ dbxout_symbol (decl, local)
          pointer to a named type we need to look for the first name
          we see following the TREE_TYPE chain.  */
 
-      t = type;    
+      t = type;
       while (POINTER_TYPE_P (t))
         t = TREE_TYPE (t);
 
@@ -2369,10 +2336,7 @@ dbxout_symbol (decl, local)
    Returns 1 if the stab was really emitted.  */
 
 static int
-dbxout_symbol_location (decl, type, suffix, home)
-     tree decl, type;
-     const char *suffix;
-     rtx home;
+dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 {
   int letter = 0;
   int regno = -1;
@@ -2605,10 +2569,7 @@ dbxout_symbol_location (decl, type, suffix, home)
    Then output LETTER to indicate the kind of location the symbol has.  */
 
 static void
-dbxout_symbol_name (decl, suffix, letter)
-     tree decl;
-     const char *suffix;
-     int letter;
+dbxout_symbol_name (tree decl, const char *suffix, int letter)
 {
   const char *name;
 
@@ -2633,8 +2594,7 @@ dbxout_symbol_name (decl, suffix, letter)
 }
 
 static void
-dbxout_prepare_symbol (decl)
-     tree decl ATTRIBUTE_UNUSED;
+dbxout_prepare_symbol (tree decl ATTRIBUTE_UNUSED)
 {
 #ifdef WINNING_GDB
   const char *filename = DECL_SOURCE_FILE (decl);
@@ -2644,8 +2604,7 @@ dbxout_prepare_symbol (decl)
 }
 
 static void
-dbxout_finish_symbol (sym)
-     tree sym;
+dbxout_finish_symbol (tree sym)
 {
 #ifdef DBX_FINISH_SYMBOL
   DBX_FINISH_SYMBOL (sym);
@@ -2667,8 +2626,7 @@ dbxout_finish_symbol (sym)
    anything was output */
 
 int
-dbxout_syms (syms)
-     tree syms;
+dbxout_syms (tree syms)
 {
   int result = 0;
   while (syms)
@@ -2692,8 +2650,7 @@ dbxout_syms (syms)
    of all the parms in PARMS, which is a chain of PARM_DECL nodes.  */
 
 void
-dbxout_parms (parms)
-     tree parms;
+dbxout_parms (tree parms)
 {
   ++debug_nesting;
 
@@ -2969,8 +2926,7 @@ dbxout_parms (parms)
    PARMS is a chain of PARM_DECL nodes.  */
 
 void
-dbxout_reg_parms (parms)
-     tree parms;
+dbxout_reg_parms (tree parms)
 {
   ++debug_nesting;
 
@@ -3001,8 +2957,7 @@ dbxout_reg_parms (parms)
    output definitions of those names, in raw form */
 
 static void
-dbxout_args (args)
-     tree args;
+dbxout_args (tree args)
 {
   while (args)
     {
@@ -3031,10 +2986,7 @@ dbxout_args (args)
    We handle them all in sequence.  */
 
 static void
-dbxout_block (block, depth, args)
-     tree block;
-     int depth;
-     tree args;
+dbxout_block (tree block, int depth, tree args)
 {
   int blocknum = -1;
 
@@ -3129,14 +3081,13 @@ dbxout_block (block, depth, args)
 
 #if defined (DBX_DEBUGGING_INFO)
 static void
-dbxout_begin_function (decl)
-     tree decl;
+dbxout_begin_function (tree decl)
 {
   int saved_tree_used1 = TREE_USED (decl);
   TREE_USED (decl) = 1;
   if (DECL_NAME (DECL_RESULT (decl)) != 0)
     {
-      int saved_tree_used2 = TREE_USED (DECL_RESULT (decl));       
+      int saved_tree_used2 = TREE_USED (DECL_RESULT (decl));
       TREE_USED (DECL_RESULT (decl)) = 1;
       dbxout_symbol (decl, 0);
       TREE_USED (DECL_RESULT (decl)) = saved_tree_used2;

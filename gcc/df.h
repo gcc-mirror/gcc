@@ -1,5 +1,5 @@
 /* Form lists of pseudo register references for autoinc optimization
-   for GNU compiler.  This is part of flow optimization.  
+   for GNU compiler.  This is part of flow optimization.
    Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
@@ -51,7 +51,7 @@ enum df_ref_flags
        these are marked with this flag to show that they are not
        independent.  */
     DF_REF_READ_WRITE = 1,
-    
+
     /* This flag is set on register references inside a subreg on
        machines which have CANNOT_CHANGE_MODE_CLASS.
        Note, that this flag can also be set on df_refs representing
@@ -157,7 +157,7 @@ struct df
   bitmap insns_modified;	/* Insns that (may) have changed.  */
   bitmap bbs_modified;		/* Blocks that (may) have changed.  */
   bitmap all_blocks;		/* All blocks in CFG.  */
-  /* The sbitmap vector of dominators or NULL if not computed. 
+  /* The sbitmap vector of dominators or NULL if not computed.
      Ideally, this should be a pointer to a CFG object.  */
   sbitmap *dom;
   int *dfs_order;		/* DFS order -> block number.  */
@@ -231,96 +231,87 @@ struct df_map
 
 /* Functions to build and analyse dataflow information.  */
 
-extern struct df *df_init PARAMS ((void));
+extern struct df *df_init (void);
 
-extern int df_analyse PARAMS ((struct df *, bitmap, int));
+extern int df_analyse (struct df *, bitmap, int);
 
-extern void df_finish PARAMS ((struct df *));
+extern void df_finish (struct df *);
 
-extern void df_dump PARAMS ((struct df *, int, FILE *));
+extern void df_dump (struct df *, int, FILE *);
 
 
 /* Functions to modify insns.  */
 
-extern void df_insn_modify PARAMS ((struct df *, basic_block, rtx));
+extern void df_insn_modify (struct df *, basic_block, rtx);
 
-extern rtx df_insn_delete PARAMS ((struct df *, basic_block, rtx));
+extern rtx df_insn_delete (struct df *, basic_block, rtx);
 
-extern rtx df_pattern_emit_before PARAMS ((struct df *, rtx, 
-					   basic_block, rtx));
+extern rtx df_pattern_emit_before (struct df *, rtx, basic_block, rtx);
 
-extern rtx df_jump_pattern_emit_after PARAMS ((struct df *, rtx, 
-					       basic_block, rtx));
+extern rtx df_jump_pattern_emit_after (struct df *, rtx, basic_block, rtx);
 
-extern rtx df_pattern_emit_after PARAMS ((struct df *, rtx, 
-					  basic_block, rtx));
+extern rtx df_pattern_emit_after (struct df *, rtx, basic_block, rtx);
 
-extern rtx df_insn_move_before PARAMS ((struct df *, basic_block, rtx,
-					basic_block, rtx));
+extern rtx df_insn_move_before (struct df *, basic_block, rtx, basic_block,
+				rtx);
 
-extern int df_reg_replace PARAMS ((struct df *, bitmap, rtx, rtx));
+extern int df_reg_replace (struct df *, bitmap, rtx, rtx);
 
-extern int df_ref_reg_replace PARAMS ((struct df *, struct ref *, rtx, rtx));
+extern int df_ref_reg_replace (struct df *, struct ref *, rtx, rtx);
 
-extern int df_ref_remove PARAMS ((struct df *, struct ref *));
+extern int df_ref_remove (struct df *, struct ref *);
 
-extern int df_insn_reg_replace PARAMS ((struct df *, basic_block,
-					rtx, rtx, rtx));
+extern int df_insn_reg_replace (struct df *, basic_block, rtx, rtx, rtx);
 
-extern int df_insn_mem_replace PARAMS ((struct df *, basic_block,
-					rtx, rtx, rtx));
+extern int df_insn_mem_replace (struct df *, basic_block, rtx, rtx, rtx);
 
-extern struct ref *df_bb_def_use_swap PARAMS ((struct df *, basic_block, 
-					       rtx, rtx, unsigned int));
+extern struct ref *df_bb_def_use_swap (struct df *, basic_block, rtx, rtx,
+				       unsigned int);
 
 
 /* Functions to query dataflow information.  */
 
-extern basic_block df_regno_bb PARAMS((struct df *, unsigned int));
+extern basic_block df_regno_bb (struct df *, unsigned int);
 
-extern int df_reg_lifetime PARAMS ((struct df *, rtx));
+extern int df_reg_lifetime (struct df *, rtx);
 
-extern int df_reg_global_p PARAMS ((struct df *, rtx));
+extern int df_reg_global_p (struct df *, rtx);
 
-extern int df_insn_regno_def_p PARAMS ((struct df *, 
-					basic_block, rtx, unsigned int));
+extern int df_insn_regno_def_p (struct df *, basic_block, rtx, unsigned int);
 
-extern int df_insn_dominates_all_uses_p PARAMS ((struct df *, 
-						 basic_block, rtx));
+extern int df_insn_dominates_all_uses_p (struct df *, basic_block, rtx);
 
-extern int df_insn_dominates_uses_p PARAMS ((struct df *, basic_block,
-					     rtx, bitmap));
+extern int df_insn_dominates_uses_p (struct df *, basic_block, rtx, bitmap);
 
-extern int df_bb_reg_live_start_p PARAMS ((struct df *, basic_block, rtx));
+extern int df_bb_reg_live_start_p (struct df *, basic_block, rtx);
 
-extern int df_bb_reg_live_end_p PARAMS ((struct df *, basic_block, rtx));
+extern int df_bb_reg_live_end_p (struct df *, basic_block, rtx);
 
-extern int df_bb_regs_lives_compare PARAMS ((struct df *, basic_block,
-					     rtx, rtx));
+extern int df_bb_regs_lives_compare (struct df *, basic_block, rtx, rtx);
 
-extern rtx df_bb_single_def_use_insn_find PARAMS((struct df *, basic_block,
-						  rtx, rtx));
+extern rtx df_bb_single_def_use_insn_find (struct df *, basic_block, rtx,
+					   rtx);
 
 
 /* Functions for debugging from GDB.  */
 
-extern void debug_df_insn PARAMS ((rtx));
+extern void debug_df_insn (rtx);
 
-extern void debug_df_regno PARAMS ((unsigned int));
+extern void debug_df_regno (unsigned int);
 
-extern void debug_df_reg PARAMS ((rtx));
+extern void debug_df_reg (rtx);
 
-extern void debug_df_defno PARAMS ((unsigned int));
+extern void debug_df_defno (unsigned int);
 
-extern void debug_df_useno PARAMS ((unsigned int));
+extern void debug_df_useno (unsigned int);
 
-extern void debug_df_ref PARAMS ((struct ref *));
+extern void debug_df_ref (struct ref *);
 
-extern void debug_df_chain PARAMS ((struct df_link *));
+extern void debug_df_chain (struct df_link *);
 
-extern void df_insn_debug PARAMS ((struct df *, rtx, FILE *));
+extern void df_insn_debug (struct df *, rtx, FILE *);
 
-extern void df_insn_debug_regno PARAMS ((struct df *, rtx, FILE *));
+extern void df_insn_debug_regno (struct df *, rtx, FILE *);
 
 
 /* Meet over any path (UNION) or meet over all paths (INTERSECTION).  */
@@ -339,23 +330,22 @@ enum df_flow_dir
   };
 
 
-typedef void (*transfer_function_sbitmap) PARAMS ((int, int *, sbitmap, sbitmap, 
-						   sbitmap, sbitmap, void *));
+typedef void (*transfer_function_sbitmap) (int, int *, sbitmap, sbitmap,
+					   sbitmap, sbitmap, void *);
 
-typedef void (*transfer_function_bitmap) PARAMS ((int, int *, bitmap, bitmap,
-						  bitmap, bitmap, void *));
+typedef void (*transfer_function_bitmap) (int, int *, bitmap, bitmap,
+					  bitmap, bitmap, void *);
 
-extern void iterative_dataflow_sbitmap PARAMS ((sbitmap *, sbitmap *, 
-						sbitmap *, sbitmap *, 
-						bitmap, enum df_flow_dir, 
-						enum df_confluence_op, 
-						transfer_function_sbitmap, 
-						int *, void *));
+extern void iterative_dataflow_sbitmap (sbitmap *, sbitmap *, sbitmap *,
+					sbitmap *, bitmap, enum df_flow_dir,
+					enum df_confluence_op,
+					transfer_function_sbitmap,
+					int *, void *);
 
-extern void iterative_dataflow_bitmap PARAMS ((bitmap *, bitmap *, bitmap *, 
-					       bitmap *, bitmap, 
-					       enum df_flow_dir, 
-					       enum df_confluence_op, 
-					       transfer_function_bitmap, 
-					       int *, void *));
-extern bool read_modify_subreg_p PARAMS ((rtx));
+extern void iterative_dataflow_bitmap (bitmap *, bitmap *, bitmap *,
+				       bitmap *, bitmap,
+				       enum df_flow_dir,
+				       enum df_confluence_op,
+				       transfer_function_bitmap,
+				       int *, void *);
+extern bool read_modify_subreg_p (rtx);
