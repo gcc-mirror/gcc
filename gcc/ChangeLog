@@ -1,3 +1,9 @@
+2005-02-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("umulhisi3", "umulqihi3", "mulsi3")
+	("mulqihi3", "mulhisi3", "mulsidi3", "umulsidi3"): Mark input
+	operands as commutative in constraints.
+
 2005-02-24  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-into-ssa.c: Re-organize internal functions.
