@@ -1,3 +1,8 @@
+2002-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (force_to_mode): Use gen_int_mode.
+	Don't clear CONST_INT bits outside of mode.
+
 2002-05-22  Richard Henderson  <rth@redhat.com>
 
 	* fixinc/inclhack.def (thread_keyword): Match __thread as last arg.

@@ -1,3 +1,7 @@
+2002-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020517-1.c: New test.
+
 2002-05-21  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tls/tls.exp, gcc.dg/tls/trivial.c, gcc.dg/tls/diag-1.c,
