@@ -1,3 +1,12 @@
+2004-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc: Open
+	FIFO for writing with ios_base::in|ios_base::out.
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc: Likewise.
+	* testsuite/27_io/objects/char/7.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Open FIFO for writing
+	with "r+".
+
 2004-02-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* 22_locale/collate/compare/wchar_t/2.cc: Change input-charset

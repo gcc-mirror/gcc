@@ -53,7 +53,7 @@ void test_01()
   else if (fval == 0)
     {
       filebuf ofbuf;
-      ofbuf.open(name, ios_base::out);
+      ofbuf.open(name, ios_base::in|ios_base::out);
       VERIFY( ofbuf.is_open() );
       sleep(1);
 
