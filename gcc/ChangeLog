@@ -1,3 +1,8 @@
+2000-03-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (PUT_SDB_TYPE): Define so that the type info is
+	output as hexadecimal rather than the default octal.
+
 2000-03-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (special_symbol): Fix thinko in previous commit.
