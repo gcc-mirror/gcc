@@ -116,7 +116,7 @@ caller-save.c		Jeff Law		law@redhat.com
 debugging code		Jim Wilson		wilson@redhat.com
 dwarf debugging code	Jason Merrill		jason@redhat.com
 c++ runtime libs	Paolo Carlini		pcarlini@unitus.it
-c++ runtime libs        Gabriel Dos Reis        dosreis@cmla.ens-cachan.fr
+c++ runtime libs        Gabriel Dos Reis        gdr@integrable-solutions.net
 c++ runtime libs	Ulrich Drepper		drepper@redhat.com
 c++ runtime libs	Phil Edwards		pme@gcc.gnu.org
 c++ runtime libs	Benjamin Kosnik		bkoz@redhat.com
@@ -130,7 +130,7 @@ web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@redhat.com
 i18n			Philipp Thomas		pthomas@suse.de
-diagnostic messages	Gabriel Dos Reis	gdr@codesourcery.com
+diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
 windows, cygwin, mingw	DJ Delorie		dj@redhat.com
 DJGPP			DJ Delorie		dj@delorie.com
@@ -213,7 +213,6 @@ Alexandre Petit-Bianco				apbianco@redhat.com
 Clinton Popetz					cpopetz@cpopetz.com
 Ken Raeburn					raeburn@redhat.com
 Rolf Rasmussen					rolfwr@gcc.gnu.org
-Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
 Loren J. Rittle					ljrittle@acm.org
 Tom Rix						trix@redhat.com
 Craig Rodrigues					rodrigc@gcc.gnu.org
