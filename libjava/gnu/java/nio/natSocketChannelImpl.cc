@@ -20,7 +20,7 @@ details.  */
 #include <java/net/SocketException.h>
 
 
-#ifndef DISABLE_JAVA_NET
+#ifdef DISABLE_JAVA_NET
 
 jint
 gnu::java::nio::SocketChannelImpl::SocketCreate ()
@@ -73,7 +73,7 @@ gnu::java::nio::SocketChannelImpl::SocketWrite (jint, jbyteArray, jint, jint)
   throw new ::java::net::SocketException (JvNewStringLatin1 ("SocketWrite: not implemented"));
 }
 
-#else
+#else // DISABLE_JAVA_NET
 
 jint
 gnu::java::nio::SocketChannelImpl::SocketCreate ()
@@ -169,4 +169,4 @@ gnu::java::nio::SocketChannelImpl::SocketWrite (jint fd, jbyteArray data,
   return result;
 }
 
-#endif
+#endif // DISABLE_JAVA_NET
