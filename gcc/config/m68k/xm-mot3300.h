@@ -36,3 +36,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
+
+/* Override part of the obstack macros.  */
+
+#define __PTR_TO_INT(P) ((int)(P))
+#define __INT_TO_PTR(P) ((char *)(P))
