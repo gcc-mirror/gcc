@@ -299,7 +299,10 @@ cpp_printf VPARAMS ((cpp_reader *pfile, cpp_printer *print,
 
   /* End the previous line of text.  */
   if (pfile->need_newline)
-    putc ('\n', print->outf);
+    {
+      putc ('\n', print->outf);
+      print->lineno++;
+    }
   pfile->need_newline = 0;
 
   vfprintf (print->outf, fmt, ap);
@@ -363,14 +366,14 @@ cpp_scan_buffer (pfile, print)
 
       if (token->flags & BOL)
 	{
+	  output_line_command (pfile, print, pfile->token_list.line);
+	  prev = 0;
+
 	  if (token->type == CPP_HASH && pfile->token_list.directive)
 	    {
 	      process_directive (pfile, token);
 	      continue;
 	    }
-
-	  output_line_command (pfile, print, pfile->token_list.line);
-	  prev = 0;
 	}
 
       if (token->type != CPP_PLACEMARKER)

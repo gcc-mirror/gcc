@@ -398,21 +398,28 @@ merge_include_chains (pfile)
   CPP_OPTION (pfile, bracket_include) = brack;
 }
 
+/* cpp_init initializes library global state.  It might not need to do
+   anything depending on the platform and compiler, so we have a static
+   flag to make sure it gets called before cpp_reader_init.  */
+
+static int cpp_init_completed = 0;
+
 void
 cpp_init (void)
 {
 #ifdef HOST_EBCDIC
-  /* For non-ASCII hosts, the array needs to be sorted at runtime.  */
+  /* For non-ASCII hosts, the cl_options array needs to be sorted at
+     runtime.  */
   qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
 #endif
 
-  /* Set up the trigraph map for trigraph_ok, trigraph_replace and
-     lex_line.  */
+  /* Set up the trigraph map and the IStable.  These don't need to do
+     anything if we were compiled with a compiler that supports C99
+     designated initializers.  */
   init_trigraph_map ();
-
-  /* Set up the IStable.  This doesn't do anything if we were compiled
-     with a compiler that supports C99 designated initializers.  */
   init_IStable ();
+
+  cpp_init_completed = 1;
 }
 
 /* Initialize a cpp_reader structure. */
@@ -433,6 +440,15 @@ cpp_reader_init (pfile)
 
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
+
+  /* If cpp_init hasn't been called, generate a fatal error (by hand)
+     and call it here.  */
+  if (!cpp_init_completed)
+    {
+      fputs ("cpp_reader_init: internal error: cpp_init not called.\n", stderr);
+      pfile->errors = CPP_FATAL_LIMIT;
+      cpp_init ();
+    }
 
   _cpp_init_macros (pfile);
   _cpp_init_stacks (pfile);

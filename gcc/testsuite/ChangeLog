@@ -1,3 +1,8 @@
+Sun Aug 20 01:41:35 MSD 2000 Dennis Chernoivanov <cdi@sparc.spb.su>
+
+	* gcc.dg/cpp/pragma-1.c: New test.
+	* gcc.dg/cpp/pragma-2.c: New test.
+
 2000-08-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp/lexstrng.c: Don't include string.h.
