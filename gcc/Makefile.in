@@ -954,21 +954,23 @@ alloca.o:	alloca.c
 
 # Each of the insn-*.[ch] rules has a semicolon at the end,
 # for otherwise the system Make on SunOS 4.1 never tries
-# to recompile insn-*.o.
+# to recompile insn-*.o.  To avoid problems and extra noise from
+# versions of make which don't like empty commands (nothing after the
+# trailing `;'), we call true for each.
 
-insn-config.h: stamp-config ;
+insn-config.h: stamp-config ; true
 stamp-config : md genconfig $(srcdir)/move-if-change
 	./genconfig md > tmp-config.h
 	$(srcdir)/move-if-change tmp-config.h insn-config.h
 	touch stamp-config
 
-insn-flags.h: stamp-flags ;
+insn-flags.h: stamp-flags ; true
 stamp-flags : md genflags $(srcdir)/move-if-change
 	./genflags md > tmp-flags.h
 	$(srcdir)/move-if-change tmp-flags.h insn-flags.h
 	touch stamp-flags
 
-insn-codes.h: stamp-codes ;
+insn-codes.h: stamp-codes ; true
 stamp-codes : md gencodes $(srcdir)/move-if-change
 	./gencodes md > tmp-codes.h
 	$(srcdir)/move-if-change tmp-codes.h insn-codes.h
@@ -978,7 +980,7 @@ insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) expr.h real.h output.h \
   insn-config.h insn-flags.h insn-codes.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-emit.c
 
-insn-emit.c: stamp-emit ;
+insn-emit.c: stamp-emit ; true
 stamp-emit : md genemit $(srcdir)/move-if-change
 	./genemit md > tmp-emit.c
 	$(srcdir)/move-if-change tmp-emit.c insn-emit.c
@@ -988,7 +990,7 @@ insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h recog.h \
   real.h output.h flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c
 
-insn-recog.c: stamp-recog ;
+insn-recog.c: stamp-recog ; true
 stamp-recog : md genrecog $(srcdir)/move-if-change
 	./genrecog md > tmp-recog.c
 	$(srcdir)/move-if-change tmp-recog.c insn-recog.c
@@ -997,7 +999,7 @@ stamp-recog : md genrecog $(srcdir)/move-if-change
 insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-extract.c
 
-insn-extract.c: stamp-extract ;
+insn-extract.c: stamp-extract ; true
 stamp-extract : md genextract $(srcdir)/move-if-change
 	./genextract md > tmp-extract.c
 	$(srcdir)/move-if-change tmp-extract.c insn-extract.c
@@ -1006,7 +1008,7 @@ stamp-extract : md genextract $(srcdir)/move-if-change
 insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) regs.h output.h real.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-peep.c
 
-insn-peep.c: stamp-peep ;
+insn-peep.c: stamp-peep ; true
 stamp-peep : md genpeep $(srcdir)/move-if-change
 	./genpeep md > tmp-peep.c
 	$(srcdir)/move-if-change tmp-peep.c insn-peep.c
@@ -1016,13 +1018,13 @@ insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) regs.h real.h output.h \
      insn-attr.h insn-config.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-attrtab.c
 
-insn-attr.h: stamp-attr ;
+insn-attr.h: stamp-attr ; true
 stamp-attr : md genattr $(srcdir)/move-if-change
 	./genattr md > tmp-attr.h
 	$(srcdir)/move-if-change tmp-attr.h insn-attr.h
 	touch stamp-attr
 
-insn-attrtab.c: stamp-attrtab ;
+insn-attrtab.c: stamp-attrtab ; true
 stamp-attrtab : md genattrtab $(srcdir)/move-if-change
 	if cmp -s $(PREMADE_ATTRTAB_MD) md;	\
 	then					\
@@ -1039,7 +1041,7 @@ insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) regs.h real.h conditions.h \
     insn-codes.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c
 
-insn-output.c: stamp-output ;
+insn-output.c: stamp-output ; true
 stamp-output : md genoutput $(srcdir)/move-if-change
 	./genoutput md > tmp-output.c
 	$(srcdir)/move-if-change tmp-output.c insn-output.c
@@ -1188,17 +1190,20 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c
 	  -DTOOLDIR=\"$(tooldir)/\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
+# Note for the stamp targets, we run the program `true' instead of
+# having an empty command (nothing following the semicolon).
+
 proto: config.status protoize unprotoize SYSCALLS.c.X
 
 protoize: protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
 	  protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS) -o $@
-protoize.o: stamp-proto ;
+protoize.o: stamp-proto ; true
 
 unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
 	  unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS) -o $@
-unprotoize.o:	stamp-proto ;
+unprotoize.o:	stamp-proto ; true
 
 stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -1427,8 +1432,9 @@ realclean: distclean
 # Also use `install-collect2' to install collect2 when the config files don't.
 
 # The semicolon is to prevent the install.sh -> install default rule
-# from doing anything.
-install: $(INSTALL_TARGET) ;
+# from doing anything.  Having it run true helps avoid problems and
+# noise from versions of make which don't like to have null commands.
+install: $(INSTALL_TARGET) ; true
 
 # Copy the compiler files into directories where they will be run.
 install-normal: install-common install-libgcc $(INSTALL_HEADERS) install-man
