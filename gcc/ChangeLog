@@ -34,6 +34,9 @@
 	* reg-stack.c (convert_regs_1): Kill the entire target stack
 	across non-call exception edges.
 
+	* flow.c (cleanup_cfg): Take no argument.
+	* output.h, sibcall.c, toplev.c: Update all calls.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Don't check for bcopy.

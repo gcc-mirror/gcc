@@ -514,7 +514,7 @@ optimize_sibling_and_tail_recursive_calls ()
   /* We need cfg information to determine which blocks are succeeded
      only by the epilogue.  */
   find_basic_blocks (insns, max_reg_num (), 0);
-  cleanup_cfg (insns);
+  cleanup_cfg ();
 
   /* If there are no basic blocks, then there is nothing to do.  */
   if (n_basic_blocks == 0)
