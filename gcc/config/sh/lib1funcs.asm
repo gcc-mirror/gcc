@@ -772,7 +772,7 @@ GLOBAL(movstr):
 #endif
 
 #ifdef L_movstr_i4
-#if defined(__SH4__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
+#if defined(__SH4__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__) || defined(__SH4_NOFPU__)
 	.text
 	.global	GLOBAL(movstr_i4_even)
 	.global	GLOBAL(movstr_i4_odd)
