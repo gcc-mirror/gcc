@@ -398,8 +398,8 @@ extern void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORE
 		       trim_filename (__FILE__), __LINE__)
 #else
 #define abort() fatal ("Internal compiler error in `%s', at %s:%d\n"	\
-  "Please submit a full bug report to `egcs-bugs@egcs.cygnus.com'.\n"	\
-  "See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.", \
+  "Please submit a full bug report.\n"	\
+  "See <URL:http://egcs.cygnus.com/faq.html#bugreport> for instructions.", \
   __PRETTY_FUNCTION__, trim_filename (__FILE__), __LINE__)
 #endif /* recent gcc */
 

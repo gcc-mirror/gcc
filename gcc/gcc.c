@@ -4962,8 +4962,8 @@ main (argc, argv)
 
       if (! verbose_flag)
 	{
-	  printf ("\nReport bugs to egcs-bugs@egcs.cygnus.com.\n");
-	  printf ("Please see the file BUGS (included with the sources) first.\n");
+	  printf ("\nFor bug reporting instructions, please see:\n");
+	  printf ("<URL:http://gcc.gnu.org/faq.html#bugreport>.\n");
 	  
 	  exit (0);
 	}
@@ -5155,8 +5155,8 @@ main (argc, argv)
 
   if (print_help_list)
     {
-      printf ("\nReport bugs to egcs-bugs@egcs.cygnus.com.\n");
-      printf ("Please see the file BUGS (included with the sources) first.\n");
+      printf ("\nFor bug reporting instructions, please see:\n");
+      printf ("<URL:http://gcc.gnu.org/faq.html#bugreport>\n");
     }
   
   exit (error_count > 0 ? (signal_count ? 2 : 1) : 0);
