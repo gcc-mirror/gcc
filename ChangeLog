@@ -1,3 +1,9 @@
+2002-01-24  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* MAINTAINERS (Write After Approval): Move my contact info
+	from here...
+	(OS Port Maintainers): ...to here (netbsd).
+
 2002-01-22  Bob Wilson  <bob.wilson@acm.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
