@@ -26,11 +26,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* By default, don't use IEEE compatible arithmetic comparisons
    because the assembler can't handle the fucom insn.
-   Return float values in the 387.
-   (TARGET_80387 | TARGET_FLOAT_RETURNS_IN_80387) */
+   Return float values in the 387.  */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 0201
+#define TARGET_DEFAULT (MASK_80387 | MASK_FLOAT_RETURNS)
 
 /* Specify predefined symbols in preprocessor.  */
 
