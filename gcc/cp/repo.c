@@ -33,8 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 
-extern char *getpwd PROTO((void));
-
 static tree repo_get_id PROTO((tree));
 static char *extract_string PROTO((char **));
 static char *get_base_filename PROTO((const char *));

@@ -1,5 +1,10 @@
 1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* repo.c (getpwd): Don't prototype.
+	* xref.c (getpwd): Likewise
+
+1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (LIBS, LIBDEPS): Link with & depend on libiberty.a.
 	Remove hacks for stuff which now comes from libiberty.
 

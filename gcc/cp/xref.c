@@ -27,8 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "toplev.h"
 
-extern char *getpwd PROTO((void));
-
 /* The character(s) used to join a directory specification (obtained with
    getwd or equivalent) with a non-absolute file name.  */
 
