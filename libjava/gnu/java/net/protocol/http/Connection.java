@@ -117,6 +117,9 @@ public final class Connection extends HttpURLConnection
   protected Connection(URL url)
   {
     super(url);
+
+    /* Set up some variables */
+    doOutput = false;
   }
 
   public void setRequestProperty(String key, String value)
@@ -160,17 +163,15 @@ public final class Connection extends HttpURLConnection
 	socket = new Socket(url.getHost(), port);
       }
 
-    PrintWriter out = new PrintWriter(socket.getOutputStream());
+    // Originally tried using a BufferedReader here to take advantage of
+    // the readLine method and avoid the following, but the buffer read
+    // past the end of the headers so the first part of the content was lost.
+    // It is probably more robust than it needs to be, e.g. the byte[]
+    // is unlikely to overflow and a '\r' should always be followed by a '\n',
+    // but it is better to be safe just in case.
+    inputStream = new BufferedInputStream(socket.getInputStream());
 
-    // Send request including any request properties that were set.
-    out.print(getRequestMethod() + " " + url.getFile() + " HTTP/1.0\r\n");
-    out.print("Host: " + url.getHost() + ":" + port + "\r\n");
-    Enumeration reqKeys = requestProperties.keys();
-    Enumeration reqVals = requestProperties.elements();
-    while (reqKeys.hasMoreElements())
-      out.print(reqKeys.nextElement() + ": " + reqVals.nextElement() + "\r\n");
-    out.print("\r\n");
-    out.flush();    
+    sendRequest();
     getHttpHeaders();
     connected = true;
   }
@@ -192,6 +193,34 @@ public final class Connection extends HttpURLConnection
 	  }
 	socket = null;
       }
+  }
+
+  /**
+   * Write HTTP request header and content to outputWriter.
+   */
+  void sendRequest() throws IOException
+  {
+    // Create PrintWriter for easier sending of headers.
+    PrintWriter outputWriter = new PrintWriter(socket.getOutputStream());
+    
+    // Send request including any request properties that were set.
+    outputWriter.print (getRequestMethod() + " " + url.getFile()
+                        + " HTTP/1.0\r\n");
+
+    // Set additional HTTP headers.
+    if (getRequestProperty ("Host") == null)
+      setRequestProperty ("Host", url.getHost());
+    
+    // Write all req_props name-value pairs to the output writer.
+    Enumeration reqKeys = requestProperties.keys();
+    Enumeration reqVals = requestProperties.elements();
+    
+    while (reqKeys.hasMoreElements())
+      outputWriter.print (reqKeys.nextElement() + ": " + reqVals.nextElement() + "\r\n");
+    
+    // One more CR-LF indicates end of header.
+    outputWriter.print ("\r\n");
+    outputWriter.flush();
   }
 
   /**
@@ -318,14 +347,6 @@ public final class Connection extends HttpURLConnection
    */
   private void getHttpHeaders() throws IOException
   {
-    // Originally tried using a BufferedReader here to take advantage of
-    // the readLine method and avoid the following, but the buffer read
-    // past the end of the headers so the first part of the content was lost.
-    // It is probably more robust than it needs to be, e.g. the byte[]
-    // is unlikely to overflow and a '\r' should always be followed by a '\n',
-    // but it is better to be safe just in case.
-    inputStream = new BufferedInputStream(socket.getInputStream());
-
     int buflen = 100;
     byte[] buf = new byte[buflen];
     String line = "";

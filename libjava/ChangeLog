@@ -1,5 +1,14 @@
 2003-12-02  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/http/Connection.java
+	(Connection): Initialize doOutput to false;
+	(connect): Initialize inputStream, moved "send request" code to new
+	method.
+	(sendRequest): New method.
+	(getHttpHeaders): Don't reinitialize inputStream.
+
+2003-12-02  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol//http/Connection.java
 	(defRequestProperties): Removed. This dont gets used since JDK 1.3.
 	(requestProperties): Initialize, documentation added.
