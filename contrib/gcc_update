@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Update a local CVS tree from the egcs repository, with an emphasis
+# Update a local CVS tree from the GCC repository, with an emphasis
 # on treating generated files correctly, so that autoconf, bison et
 # al are not required for the ``end'' user.
 #
@@ -21,15 +21,15 @@
 #
 # Examples:
 #
-# contrib/egcs_update -r egcs_latest_snapshot
-# contrib/egcs_update -A
-# contrib/egcs_update --nostdflags -P -r egcs_1_1_branch gcc/testsuite
-# contrib/egcs_update --patch some-patch
-# contrib/egcs_update --touch
-# contrib/egcs_update --list
+# contrib/gcc_update -r gcc_latest_snapshot
+# contrib/gcc_update -A
+# contrib/gcc_update --nostdflags -P -r gcc-2_95-branch gcc/testsuite
+# contrib/gcc_update --patch some-patch
+# contrib/gcc_update --touch
+# contrib/gcc_update --list
 #
 #
-# (C) 1998-1999 Free Software Foundation
+# (C) 1998-2000 Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -134,7 +134,7 @@ apply_patch () {
 
 # Check whether this indeed looks like a local tree.
 if [ ! -f gcc/version.c ]; then
-    echo "This does not seem to be an egcs tree!"
+    echo "This does not seem to be a GCC tree!"
     exit
 fi
 
@@ -181,7 +181,7 @@ esac
 
 # Check whether this indeed looks like a local CVS tree.
 if [ ! -d CVS ]; then
-    echo "This does not seem to be an egcs CVS tree!"
+    echo "This does not seem to be a GCC CVS tree!"
     exit
 fi
 
