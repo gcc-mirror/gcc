@@ -1,5 +1,10 @@
 2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR c/14465
+	* gcc.dg/decl-6.c: New test.
+
+2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/i386-sse-8.c: New test.
 
 2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>

@@ -1684,7 +1684,7 @@ pushdecl (tree x)
 
   if (name)
     {
-      tree old, ext;
+      tree old;
 
       if (warn_nested_externs
 	  && scope != global_scope
@@ -1719,7 +1719,7 @@ pushdecl (tree x)
 	     decl for this identifier.  (C99 6.2.7p2: All declarations
 	     that refer to the same object or function shall have
 	     compatible type; otherwise, the behavior is undefined.)  */
- 	  ext = any_external_decl (name);
+ 	  tree ext = any_external_decl (name);
 	  if (ext)
 	    {
 	      if (duplicate_decls (x, ext))
@@ -1728,8 +1728,6 @@ pushdecl (tree x)
 	  else
 	    record_external_decl (x);
 	}
-      else
-	ext = 0;
 
       if (TREE_CODE (x) == TYPE_DECL)
 	clone_underlying_type (x);
@@ -1737,13 +1735,11 @@ pushdecl (tree x)
       /* If storing a local value, there may already be one
 	 (inherited).  If so, record it for restoration when this
 	 scope ends.  Take care not to do this if we are replacing an
-	 older decl in the same scope (i.e. the first duplicate_decls
-	 returned false, above) or have found a previous, not-in-scope,
-	 external decl.  */
+	 older decl in the same scope (i.e.  duplicate_decls returned
+	 false, above).  */
       if (scope != global_scope
 	  && IDENTIFIER_SYMBOL_VALUE (name)
-	  && IDENTIFIER_SYMBOL_VALUE (name) != old
-	  && IDENTIFIER_SYMBOL_VALUE (name) != ext)
+	  && IDENTIFIER_SYMBOL_VALUE (name) != old)
 	{
 	  warn_if_shadowing (x, IDENTIFIER_SYMBOL_VALUE (name));
 	  scope->shadowed = tree_cons (name, IDENTIFIER_SYMBOL_VALUE (name),
