@@ -145,6 +145,15 @@ extern int fdmatch PARAMS ((int fd1, int fd2));
 
 extern char * getpwd PARAMS ((void));
 
+/* Get the current time.  */
+/* Prototypes vary from system to system, so we only provide a
+   prototype on systems where we know that we need it.  */
+#ifdef __MINGW32__
+/* Forward declaration to avoid #include <sys/time.h>.   */
+struct timeval;
+extern int gettimeofday PARAMS ((struct timeval *, void *)); 
+#endif
+
 /* Get the amount of time the process has run, in microseconds.  */
 
 extern long get_run_time PARAMS ((void));

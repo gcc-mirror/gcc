@@ -1,3 +1,12 @@
+2005-03-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac (funcs): Add gettimeofday.
+	* configure: Regenerated.
+	* gettimeofday.c: New file.
+	* Makefile.in (CFILES): Add gettimeofday.
+	(CONFIGURED_OFILES): Add gettimeofday.o.
+	(./gettimeofday.o): New rule.
+
 2005-03-09  Ian Lance Taylor  <ian@airs.com>
 
 	* pex-os2.c: Remove.
