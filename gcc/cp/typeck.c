@@ -1122,7 +1122,7 @@ comptypes (t1, t2, strict)
 
     case METHOD_TYPE:
       if (! comp_except_specs (TYPE_RAISES_EXCEPTIONS (t1),
-                             TYPE_RAISES_EXCEPTIONS (t2), 1))
+			       TYPE_RAISES_EXCEPTIONS (t2), 1))
 	return 0;
 
       /* This case is anti-symmetrical!
@@ -1150,7 +1150,7 @@ comptypes (t1, t2, strict)
 
     case FUNCTION_TYPE:
       if (! comp_except_specs (TYPE_RAISES_EXCEPTIONS (t1),
-                             TYPE_RAISES_EXCEPTIONS (t2), 1))
+			       TYPE_RAISES_EXCEPTIONS (t2), 1))
 	return 0;
 
       val = ((TREE_TYPE (t1) == TREE_TYPE (t2)
