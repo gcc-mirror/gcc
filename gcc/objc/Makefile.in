@@ -1,5 +1,5 @@
 #  GNU Objective C Runtime Makefile
-#  Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+#  Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
 #
 #  This file is part of GNU CC.
 #
@@ -56,16 +56,16 @@ all:
 	cd ..; $(MAKE) sublibobjc.a
 
 OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o encoding.o \
-         selector.o objects.o misc.o NXConstStr.o Object.o Protocol.o
+         selector.o objects.o misc.o NXConstStr.o Object.o Protocol.o thread.o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
 	$(AR) rc libobjc.a $?
 # ranlib is run in the parent directory's makefile.
 
-OBJC_H = hash.h list.h sarray.h objc.h \
+OBJC_H = hash.h objc-list.h sarray.h objc.h \
          objc-api.h \
-	 NXConstStr.h Object.h Protocol.h encoding.h typedstream.h
+	 NXConstStr.h Object.h Protocol.h encoding.h typedstream.h thread.h
 
 # copy objc headers to installation include directory
 copy-headers: 
@@ -98,3 +98,5 @@ misc.o: misc.c
 NXConstStr.o: NXConstStr.m
 Object.o: Object.m
 Protocol.o: Protocol.m
+thread.o: thread.c thread-solaris.c thread-irix.c thread-win32.c thread-single.c
+

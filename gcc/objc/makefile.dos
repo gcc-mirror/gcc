@@ -1,5 +1,5 @@
 #  GNU Objective C Runtime Makefile for compiling with djgpp
-#  Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+#  Copyright (C) 1993, 1994, 1996 Free Software Foundation, Inc.
 #
 #  This file is part of GNU CC.
 #
@@ -37,17 +37,17 @@ SUBDIR_INCLUDES = -I. -I.. -I../config
 		-c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
 
 OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o \
-         selector.o objects.o misc.o object.o protocol.o encoding.o
+         selector.o objects.o misc.o object.o protocol.o encoding.o thread.o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
 	ar rc libobjc.a $(OBJC_O)
 	ranlib libobjc.a
 
-OBJC_H = hash.h list.h sarray.h objc.h \
+OBJC_H = hash.h objc-list.h sarray.h objc.h \
          objc-api.h \
 	 object.h protocol.h mutex.h \
-	 typedstream.h
+	 typedstream.h thread.h
 
 mostlyclean:
 	-rm -f *.o libobjc.a xforward fflags
