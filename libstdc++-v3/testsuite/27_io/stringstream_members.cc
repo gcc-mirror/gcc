@@ -1,6 +1,6 @@
-// 2000-01-10 bkoz
+// 2001-05-24 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.7.2.2 member functions (istringstream_members)
+// 27.7.6 member functions (stringstream_members)
 
 #include <sstream>
 #include <debug_assert.h>
@@ -26,7 +26,7 @@
 void test01()
 {
   bool test = true;
-  std::istringstream is01;
+  std::stringstream is01;
   const std::string str00; 
   const std::string str01 = "123";
   std::string str02;
@@ -94,7 +94,7 @@ void test02()
   std::stringbuf sbuf(str01);
   std::streambuf* pbasebuf0 = &sbuf;
 
-  std::istringstream sstrm1;
+  std::stringstream sstrm1;
   VERIFY( sstrm1.str() == str00 );
   // derived rdbuf() always returns original streambuf, even though
   // it's no longer associated with the stream.

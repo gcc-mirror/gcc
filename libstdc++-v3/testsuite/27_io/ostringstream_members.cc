@@ -1,6 +1,6 @@
-// 2000-01-10 bkoz
+// 2001-05-23 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.7.2.2 member functions (istringstream_members)
+// 27.7.3.2 member functions (ostringstream_members)
 
 #include <sstream>
 #include <debug_assert.h>
@@ -26,7 +26,7 @@
 void test01()
 {
   bool test = true;
-  std::istringstream is01;
+  std::ostringstream os01;
   const std::string str00; 
   const std::string str01 = "123";
   std::string str02;
@@ -38,36 +38,13 @@ void test01()
   stateeof = std::ios_base::eofbit;
 
   // string str() const
-  str02 = is01.str();
+  str02 = os01.str();
   VERIFY( str00 == str02 );
 
   // void str(const basic_string&)
-  is01.str(str01);
-  str02 = is01.str();
+  os01.str(str01);
+  str02 = os01.str();
   VERIFY( str01 == str02 );
-  state1 = is01.rdstate();
-  is01 >> a;
-  state2 = is01.rdstate();
-  VERIFY( a = i01 );
-  // 22.2.2.1.2 num_get virtual functions
-  // p 13
-  // in any case, if stage 2 processing was terminated by the test for
-  // in == end then err != ios_base::eofbit is performed.
-  VERIFY( state1 != state2 );
-  VERIFY( state2 == stateeof ); 
-
-  is01.str(str01);
-  is01 >> b;
-  VERIFY( b != a ); 
-  // as is01.good() is false, istream::sentry blocks extraction.
-
-  is01.clear();
-  state1 = is01.rdstate();
-  is01 >> b;
-  state2 = is01.rdstate();
-  VERIFY( b == a ); 
-  VERIFY( state1 != state2 );
-  VERIFY( state2 == stateeof ); 
 
  #ifdef DEBUG_ASSERT
   assert(test);
@@ -94,7 +71,7 @@ void test02()
   std::stringbuf sbuf(str01);
   std::streambuf* pbasebuf0 = &sbuf;
 
-  std::istringstream sstrm1;
+  std::ostringstream sstrm1;
   VERIFY( sstrm1.str() == str00 );
   // derived rdbuf() always returns original streambuf, even though
   // it's no longer associated with the stream.
@@ -126,6 +103,3 @@ int main()
   test02();
   return 0;
 }
-
-
-
