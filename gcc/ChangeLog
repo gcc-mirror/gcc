@@ -1,3 +1,8 @@
+Sun Oct 10 12:03:21 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (add_to_sequence): Thinko last change: delete
+	shadowing allow_const_int variable.
+
 Sun Oct 10 08:40:00 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppinit.c: Use HAVE_GCC_VERSION instead of explicitly testing
