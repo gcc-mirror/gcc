@@ -1,3 +1,9 @@
+2002-08-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lib/gcov.exp: Tweak expected line formats.
+	* gcc.misc-tests/gcov8.c: New test.
+	* gcc.misc-tests/gcov8.x: New flags.
+
 2002-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* consistency.vlad/layout/endian.c: Include string.h.

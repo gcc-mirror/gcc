@@ -38,36 +38,21 @@ proc clean-gcov { testcase } {
 #
 proc verify-lines { testcase file } {
     #send_user "verify-lines\n"
-    global subdir
     set failed 0
-    set lmessage ""
-    set output [grep $file ".*count\\(\[0-9\]+\\)" line]
-    #send_user "output:$output\n"
-    foreach line $output {
-	verbose "Processing count line: $line" 3
-	#send_user "line:$line\n"
-	if [regexp "(\[0-9\]+) *(\[0-9\]+).*count\\((\[0-9\]+)\\)" \
-		"$line" all n is shouldbe] {
-	    #send_user "n $n:is $is:shouldbe $shouldbe\n"
+    set fd [open $file r]
+    while { [gets $fd line] >= 0 } {
+	if [regexp "^ *(\[^:]*): *(\[0-9\]+):.*count\\((\[0-9\]+)\\)" \
+		"$line" all is n shouldbe] {
 	    if { $is == "" } {
-		if { $failed == 0 } {
-		    set lmessage "$n:no data available for this line"
-		}
+		fail "$n:no data available for this line"
 		incr failed
 	    } elseif { $is != $shouldbe } {
-		if { $failed == 0 } {
-		    set lmessage "$n:is $is:should be $shouldbe"
-		}
+		fail "$n:is $is:should be $shouldbe"
 		incr failed
 	    }
-	} else {
-	    if { $failed == 0 } {
-	        set lmessage "can't parse $line (in wrong place?)"
-	    }
-	    incr failed
 	}
     }
-    return [list $failed $lmessage]
+    return $failed
 }
 
 #
@@ -90,25 +75,18 @@ proc verify-lines { testcase file } {
 #
 proc verify-branches { testcase file } {
     #send_user "verify-branches\n"
-    global bmessage
-    global subdir
     set failed 0
-    set bmessage ""
     set shouldbe ""
     set fd [open $file r]
     set n 0
     while { [gets $fd line] >= 0 } {
-	incr n
+	regexp "^\[^:\]+: *(\[0-9\]+):" "$line" all n
 	if [regexp "branch" $line] {
 	    verbose "Processing branch line $n: $line" 3
 	    if [regexp "branch\\((\[0-9 \]+)\\)" "$line" all new_shouldbe] {
 		# All percentages in the current list should have been seen.
 		if {[llength $shouldbe] != 0} {
-		    if { $failed == 0 } {
-		        set bmessage \
-			  "$n: expected branch percentages not found: $shouldbe"
-		    }
-		    #send_user "$n: expected branch percentages not found: $shouldbe\n"
+		    fail "$n: expected branch percentages not found: $shouldbe"
 		    incr failed
 		    set shouldbe ""
 		}
@@ -123,21 +101,17 @@ proc verify-branches { testcase file } {
 			set shouldbe [lreplace $shouldbe $i $i [expr 100 - $num]]
 		    }
 		}
-	    } elseif [regexp "branch \[0-9\]+ taken = (-\[0-9\]+)%" "$line" \
+	    } elseif [regexp "branch +\[0-9\]+ taken (-\[0-9\]+)%" "$line" \
 			all taken] {
 		# Percentages should never be negative.
-		if { $failed == 0 } {
-		    set bmessage "$n: negative percentage: $taken"
-		}
+		fail "$n: negative percentage: $taken"
 		incr failed
-	    } elseif [regexp "branch \[0-9\]+ taken = (\[0-9\]+)%" "$line" \
+	    } elseif [regexp "branch +\[0-9\]+ taken (\[0-9\]+)%" "$line" \
 			all taken] {
 		#send_user "$n: taken = $taken\n"
 		# Percentages should never be greater than 100.
 		if {$taken > 100} {
-		    if { $failed == 0 } {
-			set bmessage "$n: percentage greater than 100: $taken"
-		    }
+		    fail "$n: percentage greater than 100: $taken"
 		    incr failed
 		}
 		if {$taken > 50} {
@@ -152,11 +126,7 @@ proc verify-branches { testcase file } {
 	    } elseif [regexp "branch\\(end\\)" "$line"] {
 		# All percentages in the list should have been seen by now.
 		if {[llength $shouldbe] != 0} {
-		    if { $failed == 0 } {
-			set bmessage \
-			  "$n: expected branch percentages not found: $shouldbe"
-		    }
-		    #send_user "$n: expected branch percentages not found: $shouldbe\n"
+		    fail "$n: expected branch percentages not found: $shouldbe"
 		    incr failed
 		}
 		set shouldbe ""
@@ -165,14 +135,11 @@ proc verify-branches { testcase file } {
     }
     # All percentages in the list should have been seen.
     if {[llength $shouldbe] != 0} {
-	if { $failed == 0 } {
-	    set bmessage "$n: expected branch percentages not found: $shouldbe"
-	}
-	#send_user "$n: expected branch percentages not found: $shouldbe\n"
+	fail "$n: expected branch percentages not found: $shouldbe"
 	incr failed
     }
     close $fd
-    return [list $failed $bmessage]
+    return $failed
 }
 
 #
@@ -195,37 +162,29 @@ proc verify-branches { testcase file } {
 #
 proc verify-calls { testcase file } {
     #send_user "verify-calls\n"
-    global cmessage
-    global subdir
     set failed 0
-    set cmessage ""
     set shouldbe ""
     set fd [open $file r]
     set n 0
     while { [gets $fd line] >= 0 } {
-	incr n
+	regexp "^\[^:\]+: *(\[0-9\]+):" "$line" all n
 	if [regexp "returns" $line] {
 	    verbose "Processing returns line $n: $line" 3
 	    if [regexp "returns\\((\[0-9 \]+)\\)" "$line" all new_shouldbe] {
 		# All percentages in the current list should have been seen.
 		if {[llength $shouldbe] != 0} {
-		    if { $failed == 0 } {
-		        set cmessage \
-			  "$n: expected return percentages not found: $shouldbe"
-		    }
+		    fail "$n: expected return percentages not found: $shouldbe"
 		    incr failed
 		    set shouldbe ""
 		}
 	        # Record the percentages to check for.
 		set shouldbe $new_shouldbe
-	    } elseif [regexp "call \[0-9\]+ returns = (-\[0-9\]+)%" "$line" \
+	    } elseif [regexp "call +\[0-9\]+ returns (-\[0-9\]+)%" "$line" \
 			all returns] {
 		# Percentages should never be negative.
-		if { $failed == 0 } {
-		    set cmessage "$n: negative percentage: $returns"
-		}
+		fail "$n: negative percentage: $returns"
 		incr failed
-	    } elseif [regexp "call \[0-9\]+ returns = (\[0-9\]+)%" "$line" \
+	    } elseif [regexp "call +\[0-9\]+ returns (\[0-9\]+)%" "$line" \
 			all returns] {
 		# For branches we check that percentages are not greater than
 		# 100 but call return percentages can be, as for setjmp(), so
@@ -240,10 +199,7 @@ proc verify-calls { testcase file } {
 	    } elseif [regexp "returns\\(end\\)" "$line"] {
 		# All percentages in the list should have been seen by now.
 		if {[llength $shouldbe] != 0} {
-		    if { $failed == 0 } {
-			set cmessage \
-			  "$n: expected return percentages not found: $shouldbe"
-		    }
+		    fail "$n: expected return percentages not found: $shouldbe"
 		    incr failed
 		}
 		set shouldbe ""
@@ -252,13 +208,11 @@ proc verify-calls { testcase file } {
     }
     # All percentages in the list should have been seen.
     if {[llength $shouldbe] != 0} {
-	if { $failed == 0 } {
-	    set cmessage "$n: expected return percentages not found: $shouldbe"
-	}
+	fail "$n: expected return percentages not found: $shouldbe"
 	incr failed
     }
     close $fd
-    return [list $failed $cmessage]
+    return $failed
 }
 
 # Called by dg-final to run gcov and analyze the results.
@@ -314,45 +268,26 @@ proc run-gcov { args } {
     }
 
     # Check that line execution counts are as expected.
-    set loutput [verify-lines $testcase $testcase.gcov]
-    set lfailed [lindex $loutput 0]
-    set lmessage [lindex $loutput 1]
+    set lfailed [verify-lines $testcase $testcase.gcov]
 
     # If requested via the .x file, check that branch and call information
     # is correct.
     if [info exists gcov_verify_branches] {
-	set boutput [verify-branches $testcase $testcase.gcov]
-	set bfailed [lindex $boutput 0]
-	set bmessage [lindex $boutput 1]
+	set bfailed [verify-branches $testcase $testcase.gcov]
     } else {
 	set bfailed 0
-	set bmessage ""
     }
     if [info exists gcov_verify_calls] {
-	set coutput [verify-calls $testcase $testcase.gcov]
-	set cfailed [lindex $coutput 0]
-	set cmessage [lindex $coutput 1]
+	set cfailed [verify-calls $testcase $testcase.gcov]
     } else {
 	set cfailed 0
-	set cmessage ""
     }
 
     # Report whether the gcov test passed or failed.  If there were
     # multiple failures then the message is a summary.
     set tfailed [expr $lfailed + $bfailed + $cfailed]
     if { $tfailed > 0 } {
-	if { $tfailed == 1 } {
-	    set vmessage "$lmessage$bmessage$cmessage"
-	} elseif { $bfailed == 0 && $cfailed == 0 } {
-	    set vmessage "$lfailed failures in line counts"
-	} elseif { $lfailed == 0 && $cfailed == 0 } {
-	    set vmessage "$bfailed failures in branch percentages"
-	} elseif { $lfailed == 0 && $bfailed == 0 } {
-	    set vmessage "$cfailed failures in return percentages"
-	} else {
-	    set vmessage "$lfailed failures in line counts, $bfailed in branch percentages, $cfailed in return percentages"
-	}
-	fail "$subdir/$testcase gcov: $vmessage"
+	fail "$subdir/$testcase gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cfailed in return percentages"
     } else {
 	pass "$subdir/$testcase gcov"
 	clean-gcov $testcase
