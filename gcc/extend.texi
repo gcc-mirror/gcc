@@ -4355,6 +4355,14 @@ changed to be COM-compliant.  Also, all classes and structs derived from one
 marked with this attribute are implicitly marked with the same attribute;
 thus, only the base class in a COM hierarchy needs @code{com_interface}.
 
+@item java_interface
+@cindex java_interface attribute
+
+This type attribute informs C++ that the class is a Java interface.  It may 
+only be applied to classes declared within an @code{extern "Java"} block.
+Calls to methods declared in this interface will be dispatched using GCJ's 
+interface table mechanism, instead of regular virtual table dispatch.  
+
 @end table
 
 @node Deprecated Features

@@ -1857,7 +1857,12 @@ DEFUN(process_file, (jcf, out),
 	  generate_access (out, ACC_PUBLIC);
 	  fprintf (out, "\n  static ::java::lang::Class class$;\n");
 
-	  fputs ("};\n", out);
+	  fputs ("}", out);
+	  
+	  if (jcf->access_flags & ACC_INTERFACE)
+	    fputs (" __attribute__ ((java_interface))", out);
+
+	  fputs (";\n", out);
 
 	  if (append_count > 0)
 	    fputc ('\n', out);

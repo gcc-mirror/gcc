@@ -1,3 +1,16 @@
+2001-03-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Add support for Java interface method calls.
+	* cp-tree.h (struct lang_type): Add java_interface flag.
+	(TYPE_JAVA_INTERFACE): New macro.
+	* tree.c (cp_valid_lang_attribute): Handle "java_interface" attribute
+	by setting TYPE_JAVA_INTERFACE.
+	* call.c (java_iface_lookup_fn): New static.
+	(build_over_call): If calling a method declared in a 
+	TYPE_JAVA_INTERFACE, call build_java_interface_fn_ref to generate the
+	expression which resolves the function address.
+	(build_java_interface_fn_ref): New function.
+
 2001-03-22  Richard Henderson  <rth@redhat.com>
 
 	* Make-lang.in (cp/except.o): Don't depend on insn-flags.h.
