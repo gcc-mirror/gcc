@@ -487,8 +487,8 @@ java::lang::String::getBytes (jstring enc)
     }
   if (bufpos == buflen)
     return buffer;
-  jbyteArray result = JvNewByteArray(bufpos);
-  memcpy (elements (result), elements (buffer), bufpos);
+  jbyteArray result = JvNewByteArray(buflen);
+  memcpy (elements (result), elements (buffer), buflen);
   return result;
 }
 
