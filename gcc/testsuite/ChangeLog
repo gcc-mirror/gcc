@@ -1,3 +1,7 @@
+2000-12-06  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gcc.c-torture/execute/ieee/hugeval.x: New.
+
 2000-12-06  Neil Booth  <neilb@earthling.net>
 
 	* gcc.dg/cpp/backslash2.c: New tests.
