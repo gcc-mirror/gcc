@@ -136,7 +136,7 @@ UOBJ =  libU77/VersionU.o libU77/gerror_.o libU77/perror_.o libU77/ierrno_.o \
 	libU77/lnblnk_.o libU77/hostnm_.o libU77/rename_.o libU77/fgetc_.o \
 	libU77/fputc_.o libU77/umask_.o libU77/sys_clock_.o libU77/date_.o \
 	libU77/second_.o libU77/flush1_.o libU77/alarm_.o libU77/mclock_.o \
-	libU77/symlnk_.o
+	libU77/symlnk_.o libU77/datetime_.o
 
 F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	signal system flush ftell fseek access besj0 besj1 besjn besy0 besy1 \
@@ -144,7 +144,7 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	dtime etime fdate fgetc fget flush1 fnum fputc fput fstat gerror \
 	getcwd getgid getlog getpid getuid gmtime hostnm idate ierrno irand \
 	isatty itime kill link lnblnk lstat ltime mclock perror rand rename \
-	secnds second sleep srand stat symlnk sclock time ttynam umask unlink \
+	secnds second sleep srand stat symlnk time ttynam umask unlink \
 	vxtidt vxttim alarm
 
 all: g2c.h $(LIBG2C)
