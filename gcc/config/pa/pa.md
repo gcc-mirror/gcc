@@ -3942,21 +3942,18 @@
                      (const_int 0)))
             (const_int 4)
 
-;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
+;; Out of reach PIC
+            (ne (symbol_ref "flag_pic")
                 (const_int 0))
-            (const_int 8)
+            (const_int 24)
 
-;; Out of reach, but not PIC or PORTABLE_RUNTIME
-;; same as NO_SPACE_REGS code
-            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0))
-                 (eq (symbol_ref "flag_pic")
-                     (const_int 0)))
-            (const_int 8)]
+;; Out of reach PORTABLE_RUNTIME
+            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                (const_int 0))
+            (const_int 20)]
 
-;; Out of range and either PIC or PORTABLE_RUNTIME
-	  (const_int 24)))])
+;; Out of reach, can use ble
+          (const_int 12)))])
 
 (define_expand "muldi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -4049,21 +4046,18 @@
                      (const_int 0)))
             (const_int 4)
 
-;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
+;; Out of reach PIC
+            (ne (symbol_ref "flag_pic")
                 (const_int 0))
-            (const_int 8)
+            (const_int 24)
 
-;; Out of reach, but not PIC or PORTABLE_RUNTIME
-;; same as NO_SPACE_REGS code
-            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0))
-                 (eq (symbol_ref "flag_pic")
-                     (const_int 0)))
-            (const_int 8)]
+;; Out of reach PORTABLE_RUNTIME
+            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                (const_int 0))
+            (const_int 20)]
 
-;; Out of range and either PIC or PORTABLE_RUNTIME
-	  (const_int 24)))])
+;; Out of reach, can use ble
+          (const_int 12)))])
 
 (define_expand "udivsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -4107,21 +4101,18 @@
                      (const_int 0)))
             (const_int 4)
 
-;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
+;; Out of reach PIC
+            (ne (symbol_ref "flag_pic")
                 (const_int 0))
-            (const_int 8)
+            (const_int 24)
 
-;; Out of reach, but not PIC or PORTABLE_RUNTIME
-;; same as NO_SPACE_REGS code
-            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0))
-                 (eq (symbol_ref "flag_pic")
-                     (const_int 0)))
-            (const_int 8)]
+;; Out of reach PORTABLE_RUNTIME
+            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                (const_int 0))
+            (const_int 20)]
 
-;; Out of range and either PIC or PORTABLE_RUNTIME
-	  (const_int 24)))])
+;; Out of reach, can use ble
+          (const_int 12)))])
 
 (define_expand "modsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -4162,21 +4153,18 @@
                      (const_int 0)))
             (const_int 4)
 
-;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
+;; Out of reach PIC
+            (ne (symbol_ref "flag_pic")
                 (const_int 0))
-            (const_int 8)
+            (const_int 24)
 
-;; Out of reach, but not PIC or PORTABLE_RUNTIME
-;; same as NO_SPACE_REGS code
-            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0))
-                 (eq (symbol_ref "flag_pic")
-                     (const_int 0)))
-            (const_int 8)]
+;; Out of reach PORTABLE_RUNTIME
+            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                (const_int 0))
+            (const_int 20)]
 
-;; Out of range and either PIC or PORTABLE_RUNTIME
-	  (const_int 24)))])
+;; Out of reach, can use ble
+          (const_int 12)))])
 
 (define_expand "umodsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -4217,21 +4205,18 @@
                      (const_int 0)))
             (const_int 4)
 
-;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
+;; Out of reach PIC
+            (ne (symbol_ref "flag_pic")
                 (const_int 0))
-            (const_int 8)
+            (const_int 24)
 
-;; Out of reach, but not PIC or PORTABLE_RUNTIME
-;; same as NO_SPACE_REGS code
-            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0))
-                 (eq (symbol_ref "flag_pic")
-                     (const_int 0)))
-            (const_int 8)]
+;; Out of reach PORTABLE_RUNTIME
+            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                (const_int 0))
+            (const_int 20)]
 
-;; Out of range and either PIC or PORTABLE_RUNTIME
-	  (const_int 24)))])
+;; Out of reach, can use ble
+          (const_int 12)))])
 
 ;;- and instructions
 ;; We define DImode `and` so with DImode `not` we can get
@@ -5803,7 +5788,7 @@
   rtx xoperands[2];
 
   /* First the special case for kernels, level 0 systems, etc.  */
-  if (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS)
+  if (TARGET_FAST_INDIRECT_CALLS)
     return \"ble 0(%%sr4,%%r22)\;copy %%r31,%%r2\";
 
   /* Now the normal case -- we can reach $$dyncall directly or
@@ -5838,8 +5823,8 @@
   [(set_attr "type" "dyncall")
    (set (attr "length")
      (cond [
-;; First NO_SPACE_REGS
-	    (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
+;; First FAST_INDIRECT_CALLS
+	    (ne (symbol_ref "TARGET_FAST_INDIRECT_CALLS")
 		(const_int 0))
 	    (const_int 8)
 
@@ -5850,19 +5835,18 @@
 		     (const_int 0)))
 	    (const_int 8)
 
-;; Out of reach, but not PIC or PORTABLE_RUNTIME
-	    (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-		     (const_int 0))
-		 (eq (symbol_ref "flag_pic")
-		     (const_int 0)))
-	    (const_int 12)
+;; Out of reach PIC
+	    (ne (symbol_ref "flag_pic")
+		(const_int 0))
+	    (const_int 24)
 
+;; Out of reach PORTABLE_RUNTIME
 	    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
 		(const_int 0))
 	    (const_int 20)]
 
-;; Out of range PIC case
-	  (const_int 24)))])
+;; Out of reach, can use ble
+	  (const_int 12)))])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -5982,7 +5966,7 @@
   rtx xoperands[2];
 
   /* First the special case for kernels, level 0 systems, etc.  */
-  if (TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS)
+  if (TARGET_FAST_INDIRECT_CALLS)
     return \"ble 0(%%sr4,%%r22)\;copy %%r31,%%r2\";
 
   /* Now the normal case -- we can reach $$dyncall directly or
@@ -6017,8 +6001,8 @@
   [(set_attr "type" "dyncall")
    (set (attr "length")
      (cond [
-;; First NO_SPACE_REGS
-	    (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
+;; First FAST_INDIRECT_CALLS
+	    (ne (symbol_ref "TARGET_FAST_INDIRECT_CALLS")
 		(const_int 0))
 	    (const_int 8)
 
@@ -6029,19 +6013,18 @@
 		     (const_int 0)))
 	    (const_int 8)
 
-;; Out of reach, but not PIC or PORTABLE_RUNTIME
-	    (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-		     (const_int 0))
-		 (eq (symbol_ref "flag_pic")
-		     (const_int 0)))
-	    (const_int 12)
+;; Out of reach PIC
+	    (ne (symbol_ref "flag_pic")
+		(const_int 0))
+	    (const_int 24)
 
+;; Out of reach PORTABLE_RUNTIME
 	    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
 		(const_int 0))
 	    (const_int 20)]
 
-;; Out of range PIC case
-	  (const_int 24)))])
+;; Out of reach, can use ble
+	  (const_int 12)))])
 
 ;; Call subroutine returning any type.
 
@@ -7109,26 +7092,18 @@
                      (const_int 0)))
             (const_int 28)
 
-;; NO_SPACE_REGS
-            (ne (symbol_ref "TARGET_NO_SPACE_REGS || TARGET_FAST_INDIRECT_CALLS")
-                (const_int 0))
-            (const_int 32)
+;; Out of reach PIC
+	    (ne (symbol_ref "flag_pic")
+		(const_int 0))
+	    (const_int 44)
 
-;; Out of reach, but not PIC or PORTABLE_RUNTIME
-;; same as NO_SPACE_REGS code
-            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0))
-                 (eq (symbol_ref "flag_pic")
-                     (const_int 0)))
-            (const_int 32)
-
-;; PORTABLE_RUNTIME
+;; Out of reach PORTABLE_RUNTIME
 	    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
 		(const_int 0))
 	    (const_int 40)]
 
-;; Out of range and PIC 
-	  (const_int 44)))])
+;; Out of reach, can use ble
+          (const_int 32)))])
 
 ;; On the PA, the PIC register is call clobbered, so it must
 ;; be saved & restored around calls by the caller.  If the call
