@@ -1,3 +1,8 @@
+2000-05-18  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* jcf-write.c (generate_classfile): Scan the source_file for
+	slashes with the right pointer variable.
+
 Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* lang.c (lang_decode_option): Update -Wunused flags by calling

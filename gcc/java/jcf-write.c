@@ -3066,7 +3066,7 @@ generate_classfile (clas, state)
   source_file = DECL_SOURCE_FILE (TYPE_NAME (clas));
   for (s = source_file; ; s++)
     {
-      char ch = *ptr;
+      char ch = *s;
       if (ch == '\0')
 	break;
       if (ch == '/' || ch == '\\')
