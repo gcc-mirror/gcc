@@ -1,3 +1,8 @@
+Thu May 31 19:09:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (set_block_for_new_insns): Remove bogus shortcut.
+	* i386.c (ix86_expand_int_movcc): Force one of operands to be register.
+
 2001-05-31  Rodney Brown  <rbrown64@csc.com.au>
 
 	* install.texi (Configuration): Add html links for --with-gnu-as &
