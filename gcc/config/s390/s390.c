@@ -81,6 +81,7 @@ static bool s390_function_ok_for_sibcall (tree, tree);
 static bool s390_call_saved_register_used (tree);
 static bool s390_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 				    tree, bool);
+static bool s390_fixed_condition_code_regs (unsigned int *, unsigned int *);
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -155,6 +156,9 @@ static bool s390_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL s390_function_ok_for_sibcall
+
+#undef TARGET_FIXED_CONDITION_CODE_REGS
+#define TARGET_FIXED_CONDITION_CODE_REGS s390_fixed_condition_code_regs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8329,6 +8333,17 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
       && s390_call_saved_register_used (TREE_OPERAND (exp, 1)))
       return false;
 
+  return true;
+}
+
+/* Return the fixed registers used for condition codes.  */
+
+static bool
+s390_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
+{
+  *p1 = CC_REGNUM;
+  *p2 = INVALID_REGNUM;
+ 
   return true;
 }
 
