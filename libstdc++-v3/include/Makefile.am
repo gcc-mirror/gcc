@@ -231,6 +231,8 @@ tr1_headers = \
 	${tr1_srcdir}/functional \
 	${tr1_srcdir}/functional_iterate.h \
 	${tr1_srcdir}/memory \
+	${tr1_srcdir}/ref_wrap_iterate.h \
+	${tr1_srcdir}/repeat.h \
 	${tr1_srcdir}/tuple \
 	${tr1_srcdir}/utility \
 	${tr1_srcdir}/type_traits \
