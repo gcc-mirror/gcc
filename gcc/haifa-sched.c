@@ -7906,6 +7906,7 @@ update_flow_info (notes, first, last, orig_insn)
 		  /* ??? This won't handle multiple word registers correctly,
 		     but should be good enough for now.  */
 		  if (REG_NOTE_KIND (note) == REG_UNUSED
+		      && GET_CODE (XEXP (note, 0)) != SCRATCH
 		      && !dead_or_set_p (insn, XEXP (note, 0)))
 		    PUT_REG_NOTE_KIND (note, REG_DEAD);
 
