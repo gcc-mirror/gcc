@@ -51,6 +51,7 @@
 #include "target.h"
 #include "target-def.h"
 #include "debug.h"
+#include "langhooks.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -11591,7 +11592,8 @@ arm_debugger_arg_offset (int value, rtx addr)
   do									\
     {									\
       if ((MASK) & insn_flags)						\
-        builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, NULL_TREE);	\
+        lang_hooks.builtin_function ((NAME), (TYPE), (CODE),		\
+				     BUILT_IN_MD, NULL, NULL_TREE);	\
     }									\
   while (0)
 

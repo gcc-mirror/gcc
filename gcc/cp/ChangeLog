@@ -1,3 +1,7 @@
+2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* cp-tree.h (builtin_function): Declare.
+
 2004-07-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (finish_struct_methods): Remove unncessary code.

@@ -3106,7 +3106,8 @@ c_common_nodes_and_builtins (void)
 	abort ();							\
 									\
       if (!BOTH_P)							\
-	decl = builtin_function (NAME, builtin_types[TYPE], ENUM,	\
+	decl = lang_hooks.builtin_function (NAME, builtin_types[TYPE],	\
+				 ENUM,					\
 				 CLASS,					\
 				 (FALLBACK_P				\
 				  ? (NAME + strlen ("__builtin_"))	\
@@ -3214,12 +3215,14 @@ builtin_function_2 (const char *builtin_name, const char *name,
   tree decl = NULL_TREE;
 
   if (builtin_name != 0)
-    bdecl = builtin_function (builtin_name, builtin_type, function_code,
-			      class, library_name_p ? name : NULL, attrs);
+    bdecl = lang_hooks.builtin_function (builtin_name, builtin_type,
+					 function_code, class,
+					 library_name_p ? name : NULL, attrs);
 
   if (name != 0 && !flag_no_builtin && !builtin_function_disabled_p (name)
       && !(nonansi_p && flag_no_nonansi_builtin))
-    decl = builtin_function (name, type, function_code, class, NULL, attrs);
+    decl = lang_hooks.builtin_function (name, type, function_code, class,
+					NULL, attrs);
 
   return (bdecl != 0 ? bdecl : decl);
 }

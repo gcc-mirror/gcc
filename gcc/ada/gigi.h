@@ -693,6 +693,10 @@ extern tree fill_vms_descriptor (tree, Entity_Id);
    should not be allocated in a register.  Return true if successful.  */
 extern bool gnat_mark_addressable (tree);
 
+/* Implementation of the builtin_function langhook.  */
+extern tree builtin_function (const char *, tree, int, enum built_in_class,
+			      const char *, tree);
+
 /* This function is called by the front end to enumerate all the supported
    modes for the machine.  We pass a function which is called back with
    the following integer parameters:

@@ -1,3 +1,7 @@
+2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* trans.h (builtin_function): Declare.
+
 2004-07-16  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16404

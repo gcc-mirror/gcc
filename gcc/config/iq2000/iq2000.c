@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 #include "target.h"
 #include "target-def.h"
+#include "langhooks.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -2690,8 +2691,9 @@ iq2000_output_conditional_branch (rtx insn, rtx * operands, int two_operands_p,
   return 0;
 }
 
-#define def_builtin(NAME, TYPE, CODE) \
-  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, NULL_TREE)
+#define def_builtin(NAME, TYPE, CODE)					\
+  lang_hooks.builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
+			       NULL, NULL_TREE)
 
 static void
 iq2000_init_builtins (void)

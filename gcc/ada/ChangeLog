@@ -1,3 +1,7 @@
+2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gigi.h (builtin_function): Declare.
+
 2004-07-15  Robert Dewar  <dewar@gnat.com>
 
 	* makegpr.adb, s-secsta.ads, sem_ch3.adb, sem_case.adb: Minor

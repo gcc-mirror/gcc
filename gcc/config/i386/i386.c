@@ -12665,12 +12665,12 @@ x86_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 #endif
 }
 
-#define def_builtin(MASK, NAME, TYPE, CODE)			\
-do {								\
-  if ((MASK) & target_flags					\
-      && (!((MASK) & MASK_64BIT) || TARGET_64BIT))		\
-    builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
-		      NULL, NULL_TREE);				\
+#define def_builtin(MASK, NAME, TYPE, CODE)				\
+do {									\
+  if ((MASK) & target_flags						\
+      && (!((MASK) & MASK_64BIT) || TARGET_64BIT))			\
+    lang_hooks.builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
+				 NULL, NULL_TREE);			\
 } while (0)
 
 struct builtin_description
