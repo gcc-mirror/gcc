@@ -106,6 +106,13 @@ proc gcj_jni_test_one {file} {
   }
 
   set cfile [file rootname $file].c
+  set cxxflags ""
+  # If there is no `.c' file, assume there is a `.cc' file.
+  if {! [file exists $cfile]} {
+    set cfile [file rootname $file].cc
+    set cxxflags "-lstdc++"
+  }
+
   if {! [gcj_jni_compile_c_to_so $cfile]} {
     # FIXME
     return 0
@@ -113,7 +120,7 @@ proc gcj_jni_test_one {file} {
 
   # We use -l$main because the .so is named the same as the main
   # program.
-  set args [list "additional_flags=-fjni -L. -l$main"]
+  set args [list "additional_flags=-fjni -L. -l$main $cxxflags"]
   if {! [gcj_link $main $main $file $args]} {
     # FIXME
     return 0
