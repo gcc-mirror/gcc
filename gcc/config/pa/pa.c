@@ -611,9 +611,12 @@ hppa_legitimize_address (x, oldx, mode)
   if (GET_CODE (x) == CONST)
     x = XEXP (x, 0);
 
+  /* Note we must reject symbols which represent function addresses
+     since the assembler/linker can't handle arithmetic on plabels.  */
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+      && ((GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	   && !FUNCTION_NAME_P (XSTR (XEXP (x, 0), 0)))
 	  || GET_CODE (XEXP (x, 0)) == REG))
     {
       rtx int_part, ptr_reg;
@@ -892,12 +895,31 @@ emit_move_sequence (operands, mode, scratch_reg)
 	     cse and loop optimizations.  */
 	  else
 	    {
-	      rtx temp, set;
+	      rtx temp, set, const_part = NULL;
 
 	      if (reload_in_progress || reload_completed)
 		temp = scratch_reg ? scratch_reg : operand0;
 	      else
 		temp = gen_reg_rtx (mode);
+
+	      /* Argh.  The assembler and linker can't handle arithmetic
+		 involving plabels.  We'll have to split up operand1 here
+		 if it's a function label involved in an arithmetic
+		 expression.  Luckily, this only happens with addition
+		 of constants to plabels, which simplifies the test.  */
+	     if (GET_CODE (operand1) == CONST
+		 && GET_CODE (XEXP (operand1, 0)) == PLUS
+		 && function_label_operand (XEXP (XEXP (operand1, 0), 0),
+					    Pmode))
+		{
+		  /* Save away the constant part of the expression.  */
+		  const_part = XEXP (XEXP (operand1, 0), 1);
+		  if (GET_CODE (const_part) != CONST_INT)
+		    abort ();
+
+		  /* Set operand1 to just the SYMBOL_REF.  */
+		  operand1 = XEXP (XEXP (operand1, 0), 0);
+		}
 
 	      if (ishighonly)
 		set = gen_rtx (SET, mode, operand0, temp);
@@ -910,6 +932,12 @@ emit_move_sequence (operands, mode, scratch_reg)
 				  temp,
 				  gen_rtx (HIGH, mode, operand1)));
 	      emit_insn (set);
+
+	      /* Add back in the constant part if needed.  */
+	      if (const_part != NULL)
+		emit_insn (gen_rtx (SET, mode, operand0,
+				    plus_constant (operand0,
+						   XEXP (const_part, 0))));
 	      return 1;
 	    }
 	  return 1;
@@ -3794,11 +3822,27 @@ hppa_encode_label (sym)
 }
 
 int
-function_label_operand  (op, mode)
+function_label_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return GET_CODE (op) == SYMBOL_REF && FUNCTION_NAME_P (XSTR (op, 0));
+}
+
+/* Returns 1 if OP is a function label involved in a simple addition
+   with a constant.  Used to keep certain patterns from matching
+   during instruction combination.  */
+int
+is_function_label_plus_const (op)
+     rtx op;
+{
+  /* Strip off any CONST.  */
+  if (GET_CODE (op) == CONST)
+    op = XEXP (op, 0);
+
+  return (GET_CODE (op) == PLUS
+	  && function_label_operand (XEXP (op, 0), Pmode)
+	  && GET_CODE (XEXP (op, 1)) == CONST_INT);
 }
 
 /* Returns 1 if the 6 operands specified in OPERANDS are suitable for
