@@ -6,6 +6,9 @@ Thu Apr 15 23:17:33 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 
 Thu Apr 15 20:46:57 1999  Donn Terry (donn@interix.com)
 
+	* expr.c (expand_assignment): Force pointers to proper mode if
+	POINTERS_EXTEND_UNSIGNED is defined.
+
 	* xm-alpha.h (alloca.h): Add Interix to list of special machines 
 	that don't like alloca.h, pending using autoconf results.
 

@@ -3393,7 +3393,14 @@ expand_assignment (to, from, want_value, suggest_reg)
 	emit_block_move (to_rtx, value, expr_size (from),
 			 TYPE_ALIGN (TREE_TYPE (from)) / BITS_PER_UNIT);
       else
-	emit_move_insn (to_rtx, value);
+	{
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (TREE_CODE (to) == REFERENCE_TYPE
+	     || TREE_CODE (to) == POINTER_TYPE)
+	    value = convert_memory_address (GET_MODE (to_rtx), value);
+#endif
+	  emit_move_insn (to_rtx, value);
+	}
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
       pop_temp_slots ();
