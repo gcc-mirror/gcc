@@ -1,5 +1,12 @@
 2003-06-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/DateFormat.java,
+	java/text/SimpleDateFormat.java,
+	java/util/Locale.java:
+	New versions from classpath.
+
+2003-06-21  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/SpinnerModel.java:
 	New file from classpath.
 	* javax/swing/border/LineBorder.java,

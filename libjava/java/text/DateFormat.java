@@ -101,7 +101,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * <ul>
    * <li>Is not <code>null</code>.
    * <li>Is an instance of <code>DateFormat</code>.
-   * <li>Has the same calendar and numberFormat field values as this object.
+   * <li>Has the same numberFormat field value as this object.
    * </ul>
    *
    * @param obj The object to test for equality against.
@@ -111,10 +111,12 @@ public abstract class DateFormat extends Format implements Cloneable
    */
   public boolean equals (Object obj)
   {
-    if (! (obj instanceof DateFormat))
+    if (!(obj instanceof DateFormat))
       return false;
+
     DateFormat d = (DateFormat) obj;
-    return calendar.equals(d.calendar) && numberFormat.equals(d.numberFormat);
+
+    return numberFormat.equals(d.numberFormat);
   }
 
   /**
@@ -467,10 +469,10 @@ public abstract class DateFormat extends Format implements Cloneable
    */
   public int hashCode ()
   {
-    int hash = calendar.hashCode();
     if (numberFormat != null)
-      hash ^= numberFormat.hashCode();
-    return hash;
+      return numberFormat.hashCode();
+    else
+      return 0;
   }
 
   /**
