@@ -6,6 +6,6 @@
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
 
 
-#include <hash_set>
+#include <ext/hash_set>
 std::hash_set<int> foo;
 
