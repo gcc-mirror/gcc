@@ -1,3 +1,12 @@
+2001-08-27  Richard Henderson  <rth@redhat.com>
+
+	* config/m68k/m68k.md (sordered, sordered_1, sunordered, sunordered_1,
+	suneq, suneq_1, sunge, sunge_1, sungt, sungt_1, sunle, sunle_1,
+	sunlt, sunlt_1, sltgt, sltgt_1, fsogt_1, fsoge_1, fsolt_1, fsole_1,
+	bordered, bunordered, buneq, bunge, bungt, bunle, bunlt, bltgt,
+	bordered_rev, bunordered_rev, buneq_rev, bunge_rev, bungt_rev,
+	bunle_rev, bunlt_rev, bltgt_rev): New patterns.
+	
 2001-08-27  Roman Zippel  <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.md (subreghi1ashrdi_const32, bsetmemqi,
