@@ -1425,35 +1425,6 @@ begin_stmt_expr (void)
   return last_tree; 
 }
 
-/* Used when beginning a statement-expression outside function scope.
-   For example, when handling a file-scope initializer, we use this
-   function.  */
-
-tree
-begin_global_stmt_expr (void)
-{
-  if (! cfun && !last_tree)
-    begin_stmt_tree (&scope_chain->x_saved_tree);
-
-  keep_next_level (1);
-  
-  return last_tree ? last_tree : expand_start_stmt_expr(/*has_scope=*/1); 
-}
-
-/* Finish the STMT_EXPR last begun with begin_global_stmt_expr.  */
-
-tree 
-finish_global_stmt_expr (tree stmt_expr)
-{
-  stmt_expr = expand_end_stmt_expr (stmt_expr);
-  
-  if (! cfun
-      && TREE_CHAIN (scope_chain->x_saved_tree) == NULL_TREE)
-    finish_stmt_tree (&scope_chain->x_saved_tree);
-
-  return stmt_expr;
-}
-
 /* Finish a statement-expression.  RTL_EXPR should be the value
    returned by the previous begin_stmt_expr; EXPR is the
    statement-expression.  Returns an expression representing the

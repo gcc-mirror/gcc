@@ -3891,8 +3891,6 @@ extern void push_base_cleanups			(void);
 extern tree build_vbase_delete			(tree, tree);
 extern tree build_vec_delete			(tree, tree, special_function_kind, int);
 extern tree create_temporary_var                (tree);
-extern void begin_init_stmts                    (tree *, tree *);
-extern tree finish_init_stmts                   (tree, tree);
 extern void initialize_vtbl_ptrs                (tree);
 extern tree build_java_class_ref                (tree);
 
@@ -4178,8 +4176,6 @@ extern tree do_poplevel                         (void);
 extern void finish_mem_initializers             (tree);
 extern void setup_vtbl_ptr			(tree, tree);
 extern void clear_out_block                     (void);
-extern tree begin_global_stmt_expr              (void);
-extern tree finish_global_stmt_expr             (tree);
 extern tree check_template_template_default_arg (tree);
 extern void expand_or_defer_fn			(tree);
 extern void check_accessibility_of_qualified_id (tree, tree, tree);
