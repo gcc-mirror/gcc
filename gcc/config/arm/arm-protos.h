@@ -94,6 +94,11 @@ extern int    logical_binary_operator	PARAMS ((rtx, enum machine_mode));
 extern int    multi_register_push	PARAMS ((rtx, enum machine_mode));
 extern int    load_multiple_operation	PARAMS ((rtx, enum machine_mode));
 extern int    store_multiple_operation	PARAMS ((rtx, enum machine_mode));
+extern int    cirrus_fp_register	PARAMS ((rtx, enum machine_mode));
+extern int    cirrus_general_operand	PARAMS ((rtx, enum machine_mode));
+extern int    cirrus_register_operand	PARAMS ((rtx, enum machine_mode));
+extern int    cirrus_shift_const	PARAMS ((rtx, enum machine_mode));
+extern int    cirrus_memory_offset	PARAMS ((rtx));
 
 extern int    symbol_mentioned_p	PARAMS ((rtx));
 extern int    label_mentioned_p		PARAMS ((rtx));
@@ -149,7 +154,6 @@ extern rtx    arm_va_arg                PARAMS ((tree, tree));
 extern int    arm_function_arg_pass_by_reference PARAMS ((CUMULATIVE_ARGS *,
 							 enum machine_mode,
 						         tree, int));
-
 #endif
 
 #if defined AOF_ASSEMBLER 

@@ -62,6 +62,12 @@ typedef struct minipool_fixup   Mfix;
 #define Ulong    unsigned long
 #define Ccstar   const char *
 
+const char extra_reg_names1[][16] =
+{ "mv0", "mv1", "mv2",  "mv3",  "mv4",  "mv5",  "mv6",  "mv7",
+  "mv8", "mv9", "mv10", "mv11", "mv12", "mv13", "mv14", "mv15"
+};
+#define extra_reg_names1 bogus1_regnames
+
 const struct attribute_spec arm_attribute_table[];
 
 /* Forward function declarations.  */
@@ -144,6 +150,9 @@ static int arm_rtx_costs_1			PARAMS ((rtx, enum rtx_code,
 							 enum rtx_code));
 static bool arm_rtx_costs			PARAMS ((rtx, int, int, int*));
 static int arm_address_cost			PARAMS ((rtx));
+static int 	 is_load_address                PARAMS ((rtx));
+static int       is_cirrus_insn                 PARAMS ((rtx));
+static void      cirrus_reorg                   PARAMS ((rtx));
 
 #undef Hint
 #undef Mmode
@@ -263,6 +272,7 @@ int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 #define FL_STRONG     (1 << 8)	      /* StrongARM */
 #define FL_ARCH5E     (1 << 9)        /* DSP extensions to v5 */
 #define FL_XSCALE     (1 << 10)	      /* XScale */
+#define FL_CIRRUS     (1 << 11)	      /* Cirrus/DSP.  */
 
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
@@ -300,6 +310,9 @@ int arm_is_xscale = 0;
 
 /* Nonzero if this chip is an ARM6 or an ARM7.  */
 int arm_is_6_or_7 = 0;
+
+/* Nonzero if this chip is a Cirrus/DSP.  */
+int arm_is_cirrus = 0;
 
 /* Nonzero if generating Thumb instructions.  */
 int thumb_code = 0;
@@ -391,6 +404,7 @@ static const struct processors all_cores[] =
   {"arm940t",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED },
   {"arm9tdmi",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED },
   {"arm9e",	       	      		 FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED },
+  {"ep9312",	   			 FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED |             FL_CIRRUS },
   {"strongarm",	             FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm110",           FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm1100",          FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
@@ -417,6 +431,7 @@ static const struct processors all_architectures[] =
   { "armv5",     FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 },
   { "armv5t",    FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 },
   { "armv5te",   FL_CO_PROC |             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_ARCH5 | FL_ARCH5E },
+  { "ep9312",				  FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_LDSCHED | FL_CIRRUS },
   { NULL, 0 }
 };
 
@@ -514,6 +529,7 @@ arm_override_options ()
 	{ TARGET_CPU_arm9,      "arm9" },
 	{ TARGET_CPU_strongarm, "strongarm" },
 	{ TARGET_CPU_xscale,    "xscale" },
+	{ TARGET_CPU_ep9312,    "ep9312" },
 	{ TARGET_CPU_generic,   "arm" },
 	{ 0, 0 }
       };
@@ -712,13 +728,23 @@ arm_override_options ()
   thumb_code	    = (TARGET_ARM == 0);
   arm_is_6_or_7     = (((tune_flags & (FL_MODE26 | FL_MODE32))
 		       && !(tune_flags & FL_ARCH4))) != 0;
+  arm_is_cirrus	    = (tune_flags & FL_CIRRUS) != 0;
 
-  /* Default value for floating point code... if no co-processor
-     bus, then schedule for emulated floating point.  Otherwise,
-     assume the user has an FPA.
-     Note: this does not prevent use of floating point instructions,
-     -msoft-float does that.  */
-  arm_fpu = (tune_flags & FL_CO_PROC) ? FP_HARD : FP_SOFT3;
+  if (arm_is_cirrus)
+    {
+      arm_fpu = FP_CIRRUS;
+
+      /* Ignore -mhard-float if -mcpu=ep9312.  */
+      if (TARGET_HARD_FLOAT)
+	target_flags ^= ARM_FLAG_SOFT_FLOAT;
+    }
+  else
+    /* Default value for floating point code... if no co-processor
+       bus, then schedule for emulated floating point.  Otherwise,
+       assume the user has an FPA.
+       Note: this does not prevent use of floating point instructions,
+       -msoft-float does that.  */
+    arm_fpu = (tune_flags & FL_CO_PROC) ? FP_HARD : FP_SOFT3;
   
   if (target_fp_name)
     {
@@ -733,8 +759,15 @@ arm_override_options ()
   else
     arm_fpu_arch = FP_DEFAULT;
   
-  if (TARGET_FPE && arm_fpu != FP_HARD)
+  if (TARGET_FPE)
+    {
+      if (arm_fpu == FP_SOFT3)
+	arm_fpu = FP_SOFT2;
+      else if (arm_fpu == FP_CIRRUS)
+	warning ("-mpfpe switch not supported by ep9312 target cpu - ignored.");
+      else if (arm_fpu != FP_HARD)
     arm_fpu = FP_SOFT2;
+    }
   
   /* For arm2/3 there is no need to do any scheduling if there is only
      a floating point emulator, or we are doing software floating-point.  */
@@ -1902,6 +1935,8 @@ arm_return_in_memory (type)
 int
 arm_float_words_big_endian ()
 {
+  if (TARGET_CIRRUS)
+    return 0;
 
   /* For FPA, float words are always big-endian.  For VFP, floats words
      follow the memory system mode.  */
@@ -2687,6 +2722,12 @@ arm_legitimate_index_p (mode, index, strict_p)
     return (code == CONST_INT && INTVAL (index) < 1024
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
+
+  if (TARGET_CIRRUS
+      && (GET_MODE_CLASS (mode) == MODE_FLOAT || mode == DImode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 255
+	    && INTVAL (index) > -255);
 
   if (arm_address_register_rtx_p (index, strict_p)
       && GET_MODE_SIZE (mode) <= 4)
@@ -3854,6 +3895,262 @@ fpu_add_operand (op, mode)
 	    || neg_const_double_rtx_ok_for_fpu (op));
 
   return FALSE;
+}
+
+/* Return nonzero if OP is a valid Cirrus memory address pattern.  */
+
+int
+cirrus_memory_offset (op)
+     rtx op;
+{
+  /* Reject eliminable registers.  */
+  if (! (reload_in_progress || reload_completed)
+      && (   reg_mentioned_p (frame_pointer_rtx, op)
+	  || reg_mentioned_p (arg_pointer_rtx, op)
+	  || reg_mentioned_p (virtual_incoming_args_rtx, op)
+	  || reg_mentioned_p (virtual_outgoing_args_rtx, op)
+	  || reg_mentioned_p (virtual_stack_dynamic_rtx, op)
+	  || reg_mentioned_p (virtual_stack_vars_rtx, op)))
+    return 0;
+
+  if (GET_CODE (op) == MEM)
+    {
+      rtx ind;
+
+      ind = XEXP (op, 0);
+
+      /* Match: (mem (reg)).  */
+      if (GET_CODE (ind) == REG)
+	return 1;
+
+      /* Match:
+	 (mem (plus (reg)
+	            (const))).  */
+      if (GET_CODE (ind) == PLUS
+	  && GET_CODE (XEXP (ind, 0)) == REG
+	  && REG_MODE_OK_FOR_BASE_P (XEXP (ind, 0), VOIDmode)
+	  && GET_CODE (XEXP (ind, 1)) == CONST_INT)
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Return nonzero if OP is a Cirrus or general register.  */
+
+int
+cirrus_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return FALSE;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  return (GET_CODE (op) == REG
+	  && (REGNO_REG_CLASS (REGNO (op)) == CIRRUS_REGS
+	      || REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS));
+}
+
+/* Return nonzero if OP is a cirrus FP register.  */
+
+int
+cirrus_fp_register (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return FALSE;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  return (GET_CODE (op) == REG
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || REGNO_REG_CLASS (REGNO (op)) == CIRRUS_REGS));
+}
+
+/* Return nonzero if OP is a 6bit constant (0..63).  */
+
+int
+cirrus_shift_const (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && INTVAL (op) >= 0
+	  && INTVAL (op) < 64);
+}
+
+/* Return nonzero if INSN is an LDR R0,ADDR instruction.  */
+
+static int
+is_load_address (insn)
+     rtx insn;
+{
+  rtx body, lhs, rhs;;
+
+  if (!insn)
+    return 0;
+
+  if (GET_CODE (insn) != INSN)
+    return 0;
+
+  body = PATTERN (insn);
+
+  if (GET_CODE (body) != SET)
+    return 0;
+
+  lhs = XEXP (body, 0);
+  rhs = XEXP (body, 1);
+
+  return (GET_CODE (lhs) == REG
+	  && REGNO_REG_CLASS (REGNO (lhs)) == GENERAL_REGS
+	  && (GET_CODE (rhs) == MEM
+	      || GET_CODE (rhs) == SYMBOL_REF));
+}
+
+/* Return nonzero if INSN is a Cirrus instruction.  */
+
+static int
+is_cirrus_insn (insn)
+     rtx insn;
+{
+  enum attr_cirrus attr;
+
+  /* get_attr aborts on USE and CLOBBER.  */
+  if (!insn
+      || GET_CODE (insn) != INSN
+      || GET_CODE (PATTERN (insn)) == USE
+      || GET_CODE (PATTERN (insn)) == CLOBBER)
+    return 0;
+
+  attr = get_attr_cirrus (insn);
+
+  return attr != CIRRUS_NO;
+}
+
+/* Cirrus reorg for invalid instruction combinations.  */
+
+static void
+cirrus_reorg (first)
+     rtx first;
+{
+  enum attr_cirrus attr;
+  rtx body = PATTERN (first);
+  rtx t;
+  int nops;
+
+  /* Any branch must be followed by 2 non Cirrus instructions.  */
+  if (GET_CODE (first) == JUMP_INSN && GET_CODE (body) != RETURN)
+    {
+      nops = 0;
+      t = next_nonnote_insn (first);
+
+      if (is_cirrus_insn (t))
+	++ nops;
+
+      if (is_cirrus_insn (next_nonnote_insn (t)))
+	++ nops;
+
+      while (nops --)
+	emit_insn_after (gen_nop (), first);
+
+      return;
+    }
+
+  /* (float (blah)) is in parallel with a clobber.  */
+  if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0) > 0)
+    body = XVECEXP (body, 0, 0);
+
+  if (GET_CODE (body) == SET)
+    {
+      rtx lhs = XEXP (body, 0), rhs = XEXP (body, 1);
+
+      /* cfldrd, cfldr64, cfstrd, cfstr64 must
+	 be followed by a non Cirrus insn.  */
+      if (get_attr_cirrus (first) == CIRRUS_DOUBLE)
+	{
+	  if (is_cirrus_insn (next_nonnote_insn (first)))
+	    emit_insn_after (gen_nop (), first);
+
+	  return;
+	}
+      else if (is_load_address (first))
+	{
+	  unsigned int arm_regno;
+
+	  /* Any ldr/cfmvdlr, ldr/cfmvdhr, ldr/cfmvsr, ldr/cfmv64lr,
+	     ldr/cfmv64hr combination where the Rd field is the same
+	     in both instructions must be split with a non Cirrus
+	     insn.  Example:
+
+	     ldr r0, blah
+	     nop
+	     cfmvsr mvf0, r0.  */
+
+	  /* Get Arm register number for ldr insn.  */
+	  if (GET_CODE (lhs) == REG)
+	    arm_regno = REGNO (lhs);
+	  else if (GET_CODE (rhs) == REG)
+	    arm_regno = REGNO (rhs);
+	  else
+	    abort ();
+
+	  /* Next insn.  */
+	  first = next_nonnote_insn (first);
+
+	  if (!is_cirrus_insn (first))
+	    return;
+
+	  body = PATTERN (first);
+
+          /* (float (blah)) is in parallel with a clobber.  */
+          if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0))
+	    body = XVECEXP (body, 0, 0);
+
+	  if (GET_CODE (body) == FLOAT)
+	    body = XEXP (body, 0);
+
+	  if (get_attr_cirrus (first) == CIRRUS_MOVE
+	      && GET_CODE (XEXP (body, 1)) == REG
+	      && arm_regno == REGNO (XEXP (body, 1)))
+	    emit_insn_after (gen_nop (), first);
+
+	  return;
+	}
+    }
+
+  /* get_attr aborts on USE and CLOBBER.  */
+  if (!first
+      || GET_CODE (first) != INSN
+      || GET_CODE (PATTERN (first)) == USE
+      || GET_CODE (PATTERN (first)) == CLOBBER)
+    return;
+
+  attr = get_attr_cirrus (first);
+
+  /* Any coprocessor compare instruction (cfcmps, cfcmpd, ...)
+     must be followed by a non-coprocessor instruction.  */
+  if (attr == CIRRUS_COMPARE)
+    {
+      nops = 0;
+
+      t = next_nonnote_insn (first);
+
+      if (is_cirrus_insn (t))
+	++ nops;
+
+      if (is_cirrus_insn (next_nonnote_insn (t)))
+	++ nops;
+
+      while (nops --)
+	emit_insn_after (gen_nop (), first);
+
+      return;
+    }
 }
 
 /* Return nonzero if OP is a constant power of two.  */
@@ -5355,6 +5652,8 @@ arm_select_cc_mode (op, x, y)
 	case LE:
 	case GT:
 	case GE:
+	  if (TARGET_CIRRUS)
+	    return CCFPmode;
 	  return CCFPEmode;
 
 	default:
@@ -6678,6 +6977,12 @@ arm_reorg (first)
   /* Scan all the insns and record the operands that will need fixing.  */
   for (insn = next_nonnote_insn (first); insn; insn = next_nonnote_insn (insn))
     {
+      if (TARGET_CIRRUS_FIX_INVALID_INSNS
+          && (is_cirrus_insn (insn)
+	      || GET_CODE (insn) == JUMP_INSN
+	      || is_load_address (insn)))
+	cirrus_reorg (insn);
+
       if (GET_CODE (insn) == BARRIER)
 	push_minipool_barrier (insn, address);
       else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN
@@ -9168,6 +9473,16 @@ arm_print_operand (stream, x, code)
       fprintf (stream, "%s", arithmetic_instr (x, 1));
       return;
 
+    /* Truncate Cirrus shift counts.  */
+    case 's':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  fprintf (stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0x3f);
+	  return;
+	}
+      arm_print_operand (stream, x, 0);
+      return;
+
     case 'I':
       fprintf (stream, "%s", arithmetic_instr (x, 0));
       return;
@@ -9273,6 +9588,43 @@ arm_print_operand (stream, x, code)
       else
 	fputs (thumb_condition_code (x, 1), stream);
       return;
+
+
+    /* Cirrus registers can be accessed in a variety of ways:
+         single floating point (f)
+	 double floating point (d)
+	 32bit integer         (fx)
+	 64bit integer         (dx).  */
+    case 'W':			/* Cirrus register in F mode.  */
+    case 'X':			/* Cirrus register in D mode.  */
+    case 'Y':			/* Cirrus register in FX mode.  */
+    case 'Z':			/* Cirrus register in DX mode.  */
+      if (GET_CODE (x) != REG || REGNO_REG_CLASS (REGNO (x)) != CIRRUS_REGS)
+	abort ();
+
+      fprintf (stream, "mv%s%s",
+	       code == 'W' ? "f"
+	       : code == 'X' ? "d"
+	       : code == 'Y' ? "fx" : "dx", reg_names[REGNO (x)] + 2);
+
+      return;
+
+    /* Print cirrus register in the mode specified by the register's mode.  */
+    case 'V':
+      {
+	int mode = GET_MODE (x);
+
+	if (GET_CODE (x) != REG || REGNO_REG_CLASS (REGNO (x)) != CIRRUS_REGS)
+	  abort ();
+
+	fprintf (stream, "mv%s%s",
+		 mode == DFmode ? "d"
+		 : mode == SImode ? "fx"
+		 : mode == DImode ? "dx"
+		 : "f", reg_names[REGNO (x)] + 2);
+
+	return;
+      }
 
     default:
       if (x == 0)
@@ -9765,6 +10117,18 @@ arm_final_prescan_insn (insn)
 		    || GET_CODE (scanbody) == PARALLEL)
 		  || get_attr_conds (this_insn) != CONDS_NOCOND)
 		fail = TRUE;
+
+	      /* A conditional cirrus instruction must be followed by
+		 a non Cirrus instruction.  However, since we
+		 conditionalize instructions in this function and by
+		 the time we get here we can't add instructions
+		 (nops), because shorten_branches() has already been
+		 called, we will disable conditionalizing Cirrus
+		 instructions to be safe.  */
+	      if (GET_CODE (scanbody) != USE
+		  && GET_CODE (scanbody) != CLOBBER
+		  && get_attr_cirrus (this_insn) != CIRRUS_NO)
+		fail = TRUE;
 	      break;
 
 	    default:
@@ -9848,6 +10212,14 @@ arm_hard_regno_mode_ok (regno, mode)
        start of an even numbered register pair.  */
     return (ARM_NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
 
+  if (IS_CIRRUS_REGNUM (regno))
+    /* We have outlawed SI values in Cirrus registers because they
+       reside in the lower 32 bits, but SF values reside in the
+       upper 32 bits.  This causes gcc all sorts of grief.  We can't
+       even split the registers into pairs because Cirrus SI values
+       get sign extended to 64bits-- aldyh.  */
+    return (GET_MODE_CLASS (mode) == MODE_FLOAT) || (mode == DImode);
+
   if (regno <= LAST_ARM_REGNUM)
     /* We allow any value to be stored in the general regisetrs.  */
     return 1;
@@ -9886,6 +10258,9 @@ arm_regno_class (regno)
   
   if (regno == CC_REGNUM)
     return NO_REGS;
+
+  if (IS_CIRRUS_REGNUM (regno))
+    return CIRRUS_REGS;
 
   return FPU_REGS;
 }

@@ -386,6 +386,7 @@ in the following sections.
 -msingle-pic-base  -mno-single-pic-base @gol
 -mpic-register=@var{reg} @gol
 -mnop-fun-dllimport @gol
+-mcirrus-fix-invalid-insns -mno-cirrus-fix-invalid-insns @gol
 -mpoke-function-name @gol
 -mthumb  -marm @gol
 -mtpcs-frame  -mtpcs-leaf-frame @gol
@@ -6132,7 +6133,7 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{strongarm}, @samp{strongarm110}, @samp{strongarm1100},
 @samp{arm8}, @samp{arm810}, @samp{arm9}, @samp{arm9e}, @samp{arm920},
 @samp{arm920t}, @samp{arm940t}, @samp{arm9tdmi}, @samp{arm10tdmi},
-@samp{arm1020t}, @samp{xscale}.
+@samp{arm1020t}, @samp{xscale}, @samp{ep9312}.
 
 @itemx -mtune=@var{name}
 @opindex mtune
@@ -6152,7 +6153,7 @@ name to determine what kind of instructions it can emit when generating
 assembly code.  This option can be used in conjunction with or instead
 of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv2a}, @samp{armv3}, @samp{armv3m}, @samp{armv4}, @samp{armv4t},
-@samp{armv5}, @samp{armv5t}, @samp{armv5te}.
+@samp{armv5}, @samp{armv5t}, @samp{armv5te}, @samp{ep9312}.
 
 @item -mfpe=@var{number}
 @itemx -mfp=@var{number}
@@ -6223,6 +6224,18 @@ before execution begins.
 @opindex mpic-register
 Specify the register to be used for PIC addressing.  The default is R10
 unless stack-checking is enabled, when R9 is used.
+
+@item -mcirrus-fix-invalid-insns
+@opindex -mcirrus-fix-invalid-insns
+@opindex -mno-cirrus-fix-invalid-insns
+Insert NOPs into the instruction stream to in order to work around
+problems with invalid Maverick instruction combinations.  This option
+is only valid if the @option{-mcpu=ep9312} option has been used to
+enable generation of instructions for the Cirrus Maverick floating
+point co-processor.  This option is not enabled by default, since the
+problem is only present in older Maverick implemenations.  The default
+can be re-enabled by use of the @option{-mno-cirrus-fix-invalid-insns}
+switch.
 
 @item -mpoke-function-name
 @opindex mpoke-function-name

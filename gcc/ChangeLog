@@ -1,3 +1,18 @@
+2003-02-10  Nick Clifton  <nickc@redhat.com>
+
+	* Contributed support for the Cirrus EP9312 "Maverick"
+	floating point co-processor.  Written by Aldy Hernandez
+	<aldyh@redhat.com>. 
+	(config/arm/arm.c): Add Cirrus support.
+	(config/arm/arm.h): Likewise.
+	(config/arm/aout.h): Likewise.
+	(config/arm/arm.md): Likewise.
+	(config/arm/arm-protos.h): Likewise.
+	(config.gcc): Likewise.
+	(doc/invoke.texi): Describe new -mcpu value and new
+	-mcirrus-fix-invalid-insns switch,
+	(cirrus.md): New file.
+
 Mon Feb 10 11:40:18 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (combine_simplify_rtx): Simplify using
