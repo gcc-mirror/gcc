@@ -1,5 +1,14 @@
 2000-01-25  Richard Henderson  <rth@cygnus.com>
 
+	* dwarf2out.c (dwarf2out_init): Use ggc_add_rtx_varray_root.
+	* ggc-common.c (ggc_add_rtx_varray_root): New.
+	(ggc_mark_rtx_varray): New.
+	(ggc_mark_rtx_varray_ptr): New.  Shift all ggc_mark_foo_ptr
+	functions down below ggc_mark_foo.
+	* ggc.h (ggc_add_rtx_varray_root, ggc_mark_rtx_varray): Declare.
+
+2000-01-25  Richard Henderson  <rth@cygnus.com>
+
 	* alpha.c (secondary_reload_class): Don't allocate a secondary
 	for integral mode memories into FLOAT_REGS.  Rearrange the more
 	complicated memory expression inward.
