@@ -1276,6 +1276,20 @@ dbxout_type (type, full, show_arg_types)
       break;
 
     case ARRAY_TYPE:
+      /* Make arrays of packed bits look like bitstrings for chill.  */
+      if (TYPE_PACKED (type) && use_gnu_debug_info_extensions)
+	{
+	  have_used_extensions = 1;
+	  fputs ("@s", asmfile);
+	  fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
+		   BITS_PER_UNIT * int_size_in_bytes (type));
+	  fputc (';', asmfile);
+	  fprintf (asmfile, "@S;");
+	  putc ('S', asmfile);
+	  CHARS (1);
+	  dbxout_type (TYPE_DOMAIN (type), 0, 0);
+	  break;
+	}
       /* Output "a" followed by a range type definition
 	 for the index type of the array
 	 followed by a reference to the target-type.
