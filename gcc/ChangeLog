@@ -1,3 +1,8 @@
+1999-12-22  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (add_abstract_origin_attribute): Call
+	gen_abstract_function on our function context.
+
 Thu Dec 23 03:57:10 1999  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* Makefile.in (INTEGRATE_H): Fix typo: INTEGRATE_H, not INTREGRATE_H.

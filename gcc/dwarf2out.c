@@ -7505,6 +7505,13 @@ add_abstract_origin_attribute (die, origin)
 {
   dw_die_ref origin_die = NULL;
 
+  /* We may have gotten separated from the block for the inlined
+     function, if we're in an exception handler or some such; make
+     sure that the abstract function has been written out.  */
+  tree fn = decl_function_context (origin);
+  if (fn)
+    gen_abstract_function (fn);
+
   if (TREE_CODE_CLASS (TREE_CODE (origin)) == 'd')
     origin_die = lookup_decl_die (origin);
   else if (TREE_CODE_CLASS (TREE_CODE (origin)) == 't')
