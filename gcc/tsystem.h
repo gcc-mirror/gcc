@@ -58,6 +58,10 @@ extern void free (void *);
 extern int atexit (void (*)(void));
 #endif
 
+#ifndef abort
+extern void abort (void) __attribute__ ((__noreturn__));
+#endif
+
 #else /* ! inhibit_libc */
 /* We disable this when inhibit_libc, so that gcc can still be built without
    needing header files first.  */
