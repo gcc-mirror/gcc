@@ -11,6 +11,7 @@ $!
 $ CC	:=	gcc
 $ BISON	:=	bison
 $ RENAME :=	rename
+$ LINK	:=	link
 $!
 $!	Compiler options
 $!
