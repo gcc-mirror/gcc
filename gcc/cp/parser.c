@@ -12784,15 +12784,21 @@ static tree
 cp_parser_throw_expression (cp_parser* parser)
 {
   tree expression;
+  cp_token* token;
 
   cp_parser_require_keyword (parser, RID_THROW, "`throw'");
-  /* We can't be sure if there is an assignment-expression or not.  */
-  cp_parser_parse_tentatively (parser);
-  /* Try it.  */
-  expression = cp_parser_assignment_expression (parser);
-  /* If it didn't work, this is just a rethrow.  */
-  if (!cp_parser_parse_definitely (parser))
+  token = cp_lexer_peek_token (parser->lexer);
+  /* Figure out whether or not there is an assignment-expression
+     following the "throw" keyword.  */
+  if (token->type == CPP_COMMA
+      || token->type == CPP_SEMICOLON
+      || token->type == CPP_CLOSE_PAREN
+      || token->type == CPP_CLOSE_SQUARE
+      || token->type == CPP_CLOSE_BRACE
+      || token->type == CPP_COLON)
     expression = NULL_TREE;
+  else
+    expression = cp_parser_assignment_expression (parser);
 
   return build_throw (expression);
 }

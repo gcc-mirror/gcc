@@ -1,5 +1,12 @@
 2003-12-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10926
+	* decl2.c (grokfield): Robustify.
+
+	PR c++/11116
+	* parser.c (cp_parser_throw_expression): Determine whether or not
+	an assignment-expression is present by doing one-token lookahead.
+
 	PR c++/13269
 	* parser.c (cp_parser_function_definition_after_declarator): Stop
 	scanning tokens when reaching EOF.
