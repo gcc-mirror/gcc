@@ -1,3 +1,7 @@
+Tue Jun 16 18:30:35 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarf2out.c (stripattributes): Prepend '*' to the section name.
+
 Tue Jun 16 16:49:26 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_expand_prologue, alpha_expand_epilogue): New fns.
