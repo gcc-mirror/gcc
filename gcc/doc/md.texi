@@ -1376,60 +1376,6 @@ An item in the constant pool
 A symbol in the text segment of the current file
 @end table
 
-@item AMD 29000 family---@file{a29k.h}
-@table @code
-@item l
-Local register 0
-
-@item b
-Byte Pointer (@samp{BP}) register
-
-@item q
-@samp{Q} register
-
-@item h
-Special purpose register
-
-@item A
-First accumulator register
-
-@item a
-Other accumulator register
-
-@item f
-Floating point register
-
-@item I
-Constant greater than 0, less than 0x100
-
-@item J
-Constant greater than 0, less than 0x10000
-
-@item K
-Constant whose high 24 bits are on (1)
-
-@item L
-16-bit constant whose high 8 bits are on (1)
-
-@item M
-32-bit constant whose high 16 bits are on (1)
-
-@item N
-32-bit negative constant that fits in 8 bits
-
-@item O
-The constant 0x80000000 or, on the 29050, any 32-bit constant
-whose low 16 bits are 0.
-
-@item P
-16-bit negative constant that fits in 8 bits
-
-@item G
-@itemx H
-A floating point constant (in @code{asm} statements, use the machine
-independent @samp{E} or @samp{F} instead)
-@end table
-
 @item AVR family---@file{avr.h}
 @table @code
 @item l
@@ -2494,8 +2440,7 @@ Write the generated insn as a @code{parallel} with elements being a
 @code{set} of one register from the appropriate memory location (you may
 also need @code{use} or @code{clobber} elements).  Use a
 @code{match_parallel} (@pxref{RTL Template}) to recognize the insn.  See
-@file{a29k.md} and @file{rs6000.md} for examples of the use of this insn
-pattern.
+@file{rs6000.md} for examples of the use of this insn pattern.
 
 @cindex @samp{store_multiple} instruction pattern
 @item @samp{store_multiple}
