@@ -2854,7 +2854,7 @@ extern struct rtx_def *legitimize_pic_address ();
     char str[30];						\
     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
-    fprintf (FILE, "\t%s\t0x%lx %s %s\n", ASM_LONG, t,		\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t,		\
 	     ASM_COMMENT_START, str);				\
   }								\
 
@@ -2869,7 +2869,7 @@ extern struct rtx_def *legitimize_pic_address ();
     char str[30];						\
     REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
-    fprintf (FILE, "\t%s\t0x%lx %s %s\n", ASM_LONG, t[0],	\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t[0],	\
 	     ASM_COMMENT_START, str);				\
     fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[1]);		\
   }
@@ -2883,7 +2883,7 @@ extern struct rtx_def *legitimize_pic_address ();
     char str[30];						\
     REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);		\
     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
-    fprintf (FILE, "\t%s\t0x%lx %s %s\n", ASM_LONG, t[0],	\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t[0],	\
 	     ASM_COMMENT_START, str);				\
     fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[1]);		\
     fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[2]);		\
