@@ -1,5 +1,16 @@
 2003-12-21  Michael Koch  <konqueror@gmx.de>
 
+	* javax/print/attribute/PrintJobAttribute.java,
+	javax/print/attribute/PrintJobAttributeSet.java,
+	javax/print/attribute/PrintRequestAttribute.java,
+	javax/print/attribute/PrintServiceAttribute.java,
+	javax/print/attribute/PrintServiceAttributeSet.java,
+	javax/print/attribute/SupportedValuesAttribute.java: New files.
+	* Makefile.am (ordinary_java_source_files): Added new files.
+	* Makefile.in: Regenerated.
+
+2003-12-21  Michael Koch  <konqueror@gmx.de>
+
 	* javax/print/attribute/DateTimeSyntax.java,
 	javax/print/attribute/DocAttribute.java,
 	javax/print/attribute/DocAttributeSet.java,
