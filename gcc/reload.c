@@ -4324,7 +4324,10 @@ form_sum (x, y)
 
   /* Note that if the operands of Y are specified in the opposite
      order in the recursive calls below, infinite recursion will occur.  */
-  if (GET_CODE (y) == PLUS && CONSTANT_P (XEXP (y, 1)))
+  if (GET_CODE (y) == PLUS && CONSTANT_P (XEXP (y, 1))
+      /* Moving the constant in with the MEM yields rtl that reload may not
+	 be able to handle when this is an address calculation.  */
+      && GET_CODE (x) != MEM)
     return form_sum (form_sum (x, XEXP (y, 0)), XEXP (y, 1));
 
   /* If both constant, encapsulate sum.  Otherwise, just form sum.  A
