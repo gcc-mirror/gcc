@@ -750,6 +750,9 @@ reload (first, global, dumpfile)
 	bzero (basic_block_needs[i], n_basic_blocks);
       }
 
+  /* From now on, we need to emit any moves without making new pseudos.  */
+  reload_in_progress = 1;
+
   /* This loop scans the entire function each go-round
      and repeats until one repetition spills no additional hard regs.  */
 
@@ -1718,9 +1721,6 @@ reload (first, global, dumpfile)
     for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
       if (ep->can_eliminate)
 	mark_elimination (ep->from, ep->to);
-
-  /* From now on, we need to emit any moves without making new pseudos.  */
-  reload_in_progress = 1;
 
   /* Insert code to save and restore call-clobbered hard regs
      around calls.  Tell if what mode to use so that we will process
