@@ -105,7 +105,17 @@ extern void output_addr_const PARAMS ((FILE *, rtx));
 
 /* Output a string of assembler code, substituting numbers, strings
    and fixed syntactic prefixes.  */
-extern void asm_fprintf		PARAMS ((FILE *file, const char *p, ...));
+#if GCC_VERSION >= 3004
+#define ATTRIBUTE_ASM_FPRINTF(m, n) __attribute__ ((__format__ (__asm_fprintf__, m, n))) ATTRIBUTE_NONNULL(m)
+/* This is a magic identifier which allows GCC to figure out the type
+   of HOST_WIDE_INT for %wd specifier checks.  You must issue this
+   typedef before using the __asm_fprintf__ format attribute.  */
+typedef HOST_WIDE_INT __gcc_host_wide_int__;
+#else
+#define ATTRIBUTE_ASM_FPRINTF(m, n) ATTRIBUTE_NONNULL(m)
+#endif
+
+extern void asm_fprintf		PARAMS ((FILE *file, const char *p, ...)) ATTRIBUTE_ASM_FPRINTF(2, 3);
 
 /* Split up a CONST_DOUBLE or integer constant rtx into two rtx's for single
    words.  */
