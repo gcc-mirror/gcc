@@ -1,3 +1,8 @@
+2000-02-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/g++.exp (g++_init): Add -fmessage-length=0 to
+	ALWAYS_CXXFLAGS.
+
 Fri Feb 11 12:35:40 2000  Robert Lipe <robertl@sco.com>
 
 	* gcc.c-torture/compile/20000211-3.c: New test.
