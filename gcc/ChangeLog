@@ -2,16 +2,6 @@
 
 	* loop.c (try_swap_copy_prop): Go back to checking insn.
 
-2001-03-25  Jason Merrill  <jason_merrill@redhat.com>
-
-	* dbxout.c (MINIMAL_DEBUG, flag_minimal_debug): Lose.
-	(dbxout_type_fields): Lose minimal_debug support.
-	(dbxout_type_methods, dbxout_type): Likewise.
-
-	* config/elfos.h (NO_DOLLAR_IN_LABEL): Remove definition.
-	* config/i386/sco5.h, config/i386/scodbx.h, config/m68k/m68kelf.h,
-	config/m68k/m68kv4.h, config/mips/news5.h, svr3.h: Likewise.
-
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* emit-rtl.c (subreg_hard_regno): Only do HARD_REGNO_MODE_OK check
