@@ -1,3 +1,8 @@
+2002-08-02  Krister Walfridsson  <cato@df.lth.se>
+
+	* Makefile.in (gengtype-lex.o, gengtype-yacc.o): Add path to
+	gengtype-* dependencies.
+
 2002-08-02  Eric Christopher  <echristo@redhat.com>
 
 	* config.gcc (mips*-*-linux*): Fix ordering of tm_file.
