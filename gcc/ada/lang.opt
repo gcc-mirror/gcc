@@ -65,6 +65,10 @@ gant
 Ada Joined Undocumented
 ; Catches typos
 
+gnatO
+Ada Separate
+; Sets name of output ALI file (internal switch)
+
 gnat
 Ada Joined
 -gnat<options>	Specify options to GNAT

@@ -498,6 +498,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	bool inner_const_flag = const_flag;
 	bool static_p = Is_Statically_Allocated (gnat_entity);
 	tree gnu_ext_name = NULL_TREE;
+	tree renamed_obj = NULL_TREE;
 
 	if (Present (Renamed_Object (gnat_entity)) && !definition)
 	  {
@@ -777,30 +778,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* Otherwise, make this into a constant pointer to the object we
 	       are to rename.
 
-	       Stabilize it if we are not at the global level since in this
-	       case the renaming evaluation may directly dereference the
-	       initial value we make here instead of the pointer we will
-	       assign it to.  We don't want variables in the expression to be
-	       evaluated every time the renaming is used, since the value of
-	       these variables may change in between.
-
-	       If we are at the global level and the value is not constant,
-	       create_var_decl generates a mere elaboration assignment and
-	       does not attach the initial expression to the declaration.
-	       There is no possible direct initial-value dereference then.  */
+	       Stabilize it since in this case the renaming evaluation may
+	       directly dereference the initial value we make here instead
+	       of the pointer we will assign it to.  We don't want variables
+	       in the expression to be evaluated every time the renaming is
+	       used, since their value may change in between.  */
 	    else
 	      {
+		bool has_side_effects = TREE_SIDE_EFFECTS (gnu_expr);
 		inner_const_flag = TREE_READONLY (gnu_expr);
 		const_flag = true;
 		gnu_type = build_reference_type (gnu_type);
-		gnu_expr = build_unary_op (ADDR_EXPR, gnu_type, gnu_expr);
+		renamed_obj = gnat_stabilize_reference (gnu_expr, true);
+		gnu_expr = build_unary_op (ADDR_EXPR, gnu_type, renamed_obj);
 
 		if (!global_bindings_p ())
 		  {
-		    bool has_side_effects = TREE_SIDE_EFFECTS (gnu_expr);
-
-		    gnu_expr = gnat_stabilize_reference (gnu_expr, true);
-
 		    /* If the original expression had side effects, put a
 		       SAVE_EXPR around this whole thing.  */
 		    if (has_side_effects)
@@ -1063,6 +1056,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				    static_p, attr_list, gnat_entity);
 	DECL_BY_REF_P (gnu_decl) = used_by_ref;
 	DECL_POINTS_TO_READONLY_P (gnu_decl) = used_by_ref && inner_const_flag;
+	if (TREE_CODE (gnu_decl) == VAR_DECL && renamed_obj)
+	  {
+	    SET_DECL_RENAMED_OBJECT (gnu_decl, renamed_obj);
+	    DECL_RENAMING_GLOBAL_P (gnu_decl) = global_bindings_p ();
+	  }
 
 	/* If we have an address clause and we've made this indirect, it's
 	   not enough to merely mark the type as volatile since volatile
@@ -5139,17 +5137,6 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (Known_Static_Esize (gnat_field))
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
 			      gnat_field, FIELD_DECL, false, true);
-
-  /* If the field's type is justified modular and the size of the packed
-     array it wraps is the same as that of the field, we can make the field
-     the type of the inner object.  Note that we may need to do so if the
-     record is packed or the field has a component clause, but these cases
-     are handled later.  */
-  if (TREE_CODE (gnu_field_type) == RECORD_TYPE
-      && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type)
-      && tree_int_cst_equal (TYPE_SIZE (gnu_field_type),
-			     TYPE_ADA_SIZE (gnu_field_type)))
-    gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
   /* If we are packing this record, have a specified size that's smaller than
      that of the field type, or a position is specified, and the field type

@@ -259,7 +259,6 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
   const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
   char *q;
-  unsigned int i;
 
   if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {
@@ -314,17 +313,13 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       gnat_argv[gnat_argc][0] = '-';
       strcpy (gnat_argv[gnat_argc] + 1, arg);
       gnat_argc++;
+      break;
 
-      if (arg[0] == 'O')
-	for (i = 1; i < save_argc - 1; i++)
-	  if (!strncmp (save_argv[i], "-gnatO", 6))
-	    if (save_argv[++i][0] != '-')
-	      {
-		/* Preserve output filename as GCC doesn't save it for GNAT. */
-		gnat_argv[gnat_argc] = xstrdup (save_argv[i]);
-		gnat_argc++;
-		break;
-	      }
+    case OPT_gnatO:
+      gnat_argv[gnat_argc] = xstrdup ("-O");
+      gnat_argc++;
+      gnat_argv[gnat_argc] = xstrdup (arg);
+      gnat_argc++;
       break;
     }
 
@@ -506,7 +501,12 @@ gnat_print_decl (FILE *file, tree node, int indent)
       break;
 
     case FIELD_DECL:
-      print_node (file, "original field", DECL_ORIGINAL_FIELD (node),
+      print_node (file, "original_field", DECL_ORIGINAL_FIELD (node),
+		  indent + 4);
+      break;
+
+    case VAR_DECL:
+      print_node (file, "renamed_object", DECL_RENAMED_OBJECT (node),
 		  indent + 4);
       break;
 
