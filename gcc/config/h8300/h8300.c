@@ -2836,7 +2836,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    }
 	}
       else if ((8 <= count && count <= 13)
-	       || (TARGET_H8300S & count == 14))
+	       || (TARGET_H8300S && count == 14))
 	{
 	  info->remainder = count - 8;
 
