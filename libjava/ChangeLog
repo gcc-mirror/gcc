@@ -1,3 +1,8 @@
+2003-10-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c (getSize): Return
+	scrolled window's size request.
+
 2003-10-29  Sascha Brawer  <brawer@dandelis.ch>
 
         * java/awt/geom/CubicCurve2D.java (contains): Docfix for URL of embedded drawing.
