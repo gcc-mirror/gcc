@@ -4526,7 +4526,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
   /* Set the DECL_ASSEMBLER_NAME for the variable.  */
   if (asmspec)
     {
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
+      change_decl_assembler_name (decl, get_identifier (asmspec));
       /* The `register' keyword, when used together with an
 	 asm-specification, indicates that the variable should be
 	 placed in a particular register.  */

@@ -1,3 +1,16 @@
+2003-11-13  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/12275
+	* c-decl.c (finish_decl): Use change_decl_assembler_name.
+	* c-pragma.c (handle_pragma_redefine_extname): Likewise.
+	* varasm.c (make_decl_rtl): Likewise.
+	* cgraph.c (change_decl_assembler_name): New function.
+	* tree.h (set_decl_assembler_name): Kill dead declaration.
+	(change_decl_assembler_name): Declare.
+
+	* decl.c (make_rtl_for_nonlocal_decl): Use change_decl_assembler_name.
+	* decl2.c (make_rtl_for_nonlocal_decl): Use change_decl_assembler_name.
+
 2003-11-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (___mulsi3): Don't save/restore
