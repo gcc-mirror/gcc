@@ -1,3 +1,7 @@
+2002-09-26  Janis Johnson  <janis187@us.ibm.com>
+
+	* Makefile.in (qmtest-g++): Fix file path.
+
 2002-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* expr.c (expand_expr) [MINUS_EXPR]: Convert A - const to 

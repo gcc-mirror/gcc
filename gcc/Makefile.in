@@ -3244,7 +3244,7 @@ ${QMTEST_DIR}/context: stamp-qmtest
 # Run the G++ testsuite using QMTest.
 qmtest-g++: ${QMTEST_DIR}/context ${QMTEST_DIR}/gpp-expected.qmr
 	cd ${QMTEST_DIR} && ${QMTEST} run ${QMTESTRUNFLAGS} -C context \
-	   -o gpp.qmr -O ${QMTEST_DIR}/gpp-expected.qmr \
+	   -o gpp.qmr -O gpp-expected.qmr \
 	   ${QMTEST_GPP_TESTS}
 
 # Use the QMTest GUI.
