@@ -1447,8 +1447,9 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 29)
 
-/* Offset from the stack pointer to the first available location.  */
-#define STACK_POINTER_OFFSET 0
+/* Offset from the stack pointer to the first available location.  Use
+   the default value zero.  */
+/* #define STACK_POINTER_OFFSET 0 */
 
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM (GP_REG_FIRST + 30)
