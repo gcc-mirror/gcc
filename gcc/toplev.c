@@ -2505,7 +2505,7 @@ rest_of_compilation (decl)
 
       if (flag_thread_jumps)
 	/* Hacks by tiemann & kenner.  */
-	TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 0));
+	TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 1));
 
       TIMEVAR (cse_time, tem = cse_main (insns, max_reg_num (),
 					 0, cse_dump_file));
