@@ -1,3 +1,7 @@
+2000-07-11  David Billinghurst  <David.Billinghurst@riotinto.com.au>
+
+	* g77.f-torture/execute/20000503-1.x: Delete.  Test now passes.
+
 2000-07-11  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/cmdlne-C.c: Fix typo.
