@@ -1,3 +1,10 @@
+Thu Sep 11 10:00:03 1997  Alexandre Oliva  (oliva@dcc.unicamp.br)
+
+	* g++.old-deja/g++.brendan/crash20.C: Rework to avoid libg++.
+	* g++.old-deja/g++.brendan/crash30.C: Likewise.
+	* g++.old-deja/g++.brendan/crash39.C: Likewise.
+	* g++.old-deja/g++.law/operators4.C: Likewise.
+
 Thu Sep 11 09:53:40 1997  Joe Buck  (jbuck@synopsys.com)
 
 	* g++.old-deja/g++.mike/p658.C: eliminate <bool.h> use.
