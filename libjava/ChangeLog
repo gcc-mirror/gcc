@@ -1,3 +1,7 @@
+1999-05-19  Tom Tromey  <tromey@cygnus.com>
+
+	* mauve-libgcj: Enable java.util.zip.
+
 1999-05-18  Warren Levy  <warrenl@cygnus.com>
 
 	* Makefile.am (ordinary_java_source_files): Added DatagramPacket.java,
