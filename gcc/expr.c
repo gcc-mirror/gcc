@@ -5836,23 +5836,30 @@ expand_expr (exp, target, tmode, modifier)
 	    || (TREE_CODE (exp1) == SAVE_EXPR
 		&& TREE_CODE (TREE_OPERAND (exp1, 0)) == PLUS_EXPR)
 	    || AGGREGATE_TYPE_P (TREE_TYPE (exp))
-	    /* If the pointer is actually a REFERENCE_TYPE, this could
-	       be pointing into some aggregate too.  */
-	    || TREE_CODE (TREE_TYPE (exp1)) == REFERENCE_TYPE
 	    || (TREE_CODE (exp1) == ADDR_EXPR
 		&& (exp2 = TREE_OPERAND (exp1, 0))
-		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2)))
-	    /* This may have been an array reference to the first element
-	       that was optimized away from being an addition.  */
-	    || (TREE_CODE (exp1) == NOP_EXPR
-		&& ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp1, 0)))
-		     == REFERENCE_TYPE)
-		    || ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp1, 0)))
-			 == POINTER_TYPE)
-			&& (AGGREGATE_TYPE_P
-			    (TREE_TYPE (TREE_TYPE
-					(TREE_OPERAND (exp1, 0)))))))))
+		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))
 	  MEM_IN_STRUCT_P (temp) = 1;
+
+	/* If the pointer is actually a REFERENCE_TYPE, this could be pointing
+	   into some aggregate too.  In theory we could fold this into the
+	   previous check and use rtx_addr_varies_p there too.
+
+	   However, this seems safer.  */
+	if (!MEM_IN_STRUCT_P (temp)
+	    && (TREE_CODE (TREE_TYPE (exp1)) == REFERENCE_TYPE
+	        /* This may have been an array reference to the first element
+		   that was optimized away from being an addition.  */
+	        || (TREE_CODE (exp1) == NOP_EXPR
+		    && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp1, 0)))
+			 == REFERENCE_TYPE)
+		        || ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp1, 0)))
+			     == POINTER_TYPE)
+			    && (AGGREGATE_TYPE_P
+			        (TREE_TYPE (TREE_TYPE
+					    (TREE_OPERAND (exp1, 0))))))))))
+	  MEM_IN_STRUCT_P (temp) = ! rtx_addr_varies_p (temp);
+
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) | flag_volatile;
 	MEM_ALIAS_SET (temp) = get_alias_set (exp);
 

@@ -1,3 +1,9 @@
+Mon Jul 13 10:19:00 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* expr.c (expand_expr): Only set MEM_IN_STRUCT_P if the memory address
+	is not varying for REFERENCE_TYPE or when we think we might have found
+	an optimized access to the first element in an array.
+
 Mon Jul 13 02:24:08 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* regclass.c (reg_scan_mark_refs): New arg min_regno.  Only update
