@@ -1,6 +1,6 @@
 // natString.cc - Implementation of java.lang.String native methods.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -153,15 +153,18 @@ java::lang::String::intern()
   SET_STRING_IS_INTERNED(this);
   strhash_count++;
   *ptr = this;
+  // When string is GC'd, clear the slot in the hash table.
+  _Jv_RegisterFinalizer ((void *) this, unintern);
   return this;
 }
 
 /* Called by String fake finalizer. */
 void
-java::lang::String::unintern()
+java::lang::String::unintern (jobject obj)
 {
   JvSynchronize sync (&StringClass);
-  jstring* ptr = _Jv_StringGetSlot(this);
+  jstring str = reinterpret_cast<jstring> (obj);
+  jstring* ptr = _Jv_StringGetSlot(str);
   if (*ptr == NULL || *ptr == DELETED_STRING)
     return;
   *ptr = DELETED_STRING;

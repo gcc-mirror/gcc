@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -302,6 +302,6 @@ public final class String
   private native void init (byte[] chars, int hibyte, int offset, int count);
   private native void init (byte[] chars, int offset, int count, String enc)
     throws UnsupportedEncodingException;
-  private native void unintern ();
+  private static native void unintern (Object obj);
   private static native void rehash ();
 }
