@@ -508,6 +508,9 @@ else
        ia64-*-linux*)
 	 # Has broken backtrace()
 	 ;;
+       s390*-*-linux*)
+	 # Has broken backtrace()
+	 ;;
        *)
          AC_DEFINE(HAVE_BACKTRACE)
 	 ;;
@@ -895,6 +898,9 @@ case "${host}" in
     ;;
  alpha*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
+    ;;
+ s390*-*-linux*)
+    SIGNAL_HANDLER=include/s390-signal.h
     ;;
  sparc*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h

@@ -1,3 +1,11 @@
+2002-05-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.host [s390*-linux*]: Set can_unwind_signal=yes.
+	* configure.in [s390*-*-linux*]: Do not define HAVE_BACKTRACE.
+	Set SIGNAL_HANDLER=include/s390-linux.h.
+	* configure: Regenerate.
+	* include/s390-linux.h: New file.
+
 2002-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/natThrowable.cc (fillInStackTrace): Use "stackTraceBytes",
