@@ -56,7 +56,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "sreal.h"
 
-void dump_sreal			PARAMS ((FILE *, sreal *));
 static inline void copy		PARAMS ((sreal *, sreal *));
 static inline void shift_right	PARAMS ((sreal *, int));
 static void normalize		PARAMS ((sreal *));

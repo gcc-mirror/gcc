@@ -118,7 +118,6 @@ static void crash_signal (int) ATTRIBUTE_NORETURN;
 static void setup_core_dumping (void);
 static void compile_file (void);
 
-void decode_d_option (const char *);
 static int decode_f_option (const char *);
 static int decode_W_option (const char *);
 static int decode_g_option (const char *);

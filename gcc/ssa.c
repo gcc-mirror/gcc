@@ -1,5 +1,6 @@
 /* Static Single Assignment conversion routines for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -212,8 +213,6 @@ static int record_canonical_element_1
   PARAMS ((void **srfp, void *data));
 static int check_hard_regs_in_partition
   PARAMS ((partition reg_partition));
-static int rename_equivalent_regs_in_insn
-  PARAMS ((rtx *ptr, void *data));
 
 /* These are used in the register coalescing algorithm.  */
 static int coalesce_if_unconflicting

@@ -453,10 +453,7 @@ static void move2add_note_store		PARAMS ((rtx, rtx, void *));
 static void add_auto_inc_notes		PARAMS ((rtx, rtx));
 #endif
 static void copy_eh_notes		PARAMS ((rtx, rtx));
-static void failed_reload		PARAMS ((rtx, int));
-static int set_reload_reg		PARAMS ((int, int));
 static void reload_cse_simplify		PARAMS ((rtx, rtx));
-void fixup_abnormal_edges		PARAMS ((void));
 extern void dump_needs			PARAMS ((struct insn_chain *));
 
 /* Initialize the reload pass once per compilation.  */

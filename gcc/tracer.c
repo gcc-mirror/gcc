@@ -56,7 +56,6 @@ static edge find_best_predecessor PARAMS ((basic_block));
 static int find_trace		PARAMS ((basic_block, basic_block *));
 static void tail_duplicate	PARAMS ((void));
 static void layout_superblocks	PARAMS ((void));
-static bool ignore_bb_p		PARAMS ((basic_block));
 
 /* Minimal outgoing edge probability considered for superblock formation.  */
 static int probability_cutoff;
