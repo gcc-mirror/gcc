@@ -1,3 +1,7 @@
+Fri Aug 14 01:45:06 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin32 (DEFAULT_PCC_STRUCT_RETURN): Define.
+
 Fri Aug 14 01:40:21 1998  Geoffrey Keating  <geoffk@ozemail.com.au>
 
 	* rs6000/linux.h (LINK_SPEC): Pass -G args to the linker.
