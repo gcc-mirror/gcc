@@ -41,10 +41,10 @@
 # $(srcdir) must be set to the gcc/ source directory (*not* gcc/fortran/).
 
 # Actual name to use when installing a native compiler.
-GFORTRAN_INSTALL_NAME = `echo gfortran|sed '$(program_transform_name)'`
+GFORTRAN_INSTALL_NAME := $(shell echo gfortran|sed '$(program_transform_name)')
 
 # Actual name to use when installing a cross-compiler.
-GFORTRAN_CROSS_NAME = `echo gfortran|sed '$(program_transform_cross_name)'`
+GFORTRAN_CROSS_NAME := $(shell echo gfortran|sed '$(program_transform_cross_name)')
 
 #^L
 
@@ -142,8 +142,13 @@ f95.tags: force
 f95.info: doc/gfortran.info
 dvi:: doc/gfortran.dvi
 
-f95.man:
-f95.srcman:
+F95_MANFILES = doc/gfortran.1
+
+f95.man: $(F95_MANFILES)
+
+f95.srcman: $(F95_MANFILES)
+	-cp -p $^ $(srcdir)/doc
+
 f95.srcextra:
 
 check-f95 : check-gfortran
@@ -167,6 +172,11 @@ doc/gfortran.info: $(GFORTRAN_TEXI)
 
 doc/gfortran.dvi: $(GFORTRAN_TEXI)
 	$(TEXI2DVI) -I $(srcdir)/fortran -I $(abs_docdir)/include -o $@ $<
+
+.INTERMEDIATE: gfortran.pod
+
+gfortran.pod: $(GFORTRAN_TEXI)
+	-$(TEXI2POD) < $(srcdir)/fortran/invoke.texi > $@
 
 #
 # Install hooks:
@@ -198,8 +208,13 @@ f95.install-common: installdirs
 
 install-info:: $(DESTDIR)$(infodir)/gfortran.info
 
-f95.install-man: installdirs
-#TODO: write the gfortran man pages
+f95.install-man: installdirs \
+	$(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext)
+
+$(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext): doc/gfortran.1
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
 
 f95.uninstall:
 	if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
@@ -207,6 +222,7 @@ f95.uninstall:
 	  install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info || : ; \
 	else : ; fi; \
 	rm -rf $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+	rm -rf $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext); \
 	rm -rf $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
 	rm -rf $(DESTDIR)$(infodir)/gfortran.info*
 
@@ -226,6 +242,7 @@ f95.distclean:
 f95.extraclean:
 f95.maintainer-clean:
 	-rm -f doc/gfortran.info* fortran/gfortran.*aux
+	-rm -f $(docobjdir)/gfortran.1
 
 #
 # Stage hooks:
