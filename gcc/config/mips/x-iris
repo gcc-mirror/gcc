@@ -23,3 +23,6 @@ CLIB		= -lmld -lmalloc
 
 # Show we need to use the C version of ALLOCA
 ALLOCA		= alloca.o
+
+# Find all of the declarations from the header files
+FIXPROTO_DEFINES= -D__EXTENSIONS__
