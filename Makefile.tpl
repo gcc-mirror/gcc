@@ -608,8 +608,8 @@ all-target: [+
 # because it is so large that it can easily overflow the command line
 # length limit on some systems.
 [+ FOR recursive_targets +]
-.PHONY: do-[+target+]
-do-[+target+]:
+.PHONY: do-[+make_target+]
+do-[+make_target+]:
 	@r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	$(SET_LIB_PATH) \
@@ -632,7 +632,7 @@ do-[+target+]:
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	                "RANLIB=$${RANLIB}" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-			[+target+]) \
+			[+make_target+]) \
 	    || exit 1; \
 	  else true; fi; \
 	done
@@ -650,7 +650,7 @@ do-[+target+]:
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	                "RANLIB=$${RANLIB}" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-			[+target+]) \
+			[+make_target+]) \
 	    || exit 1; \
 	  else true; fi; \
 	done

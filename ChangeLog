@@ -1,3 +1,8 @@
+2003-06-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Rename [+target+] to [+make_target+].
+	* Makefile.def: Rename 'target' to 'make_target'.
+
 2003-05-31  Neil Booth  <neil@daikokuya.co.uk>
 
 	* MAINTAINERS: Add self as options handling maintainer.
