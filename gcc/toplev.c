@@ -2598,7 +2598,7 @@ rest_of_compilation (decl)
   /* Then remove any notes we don't need.  That will make iterating
      over the instruction sequence faster, and allow the garbage
      collector to reclaim the memory used by the notes.  */
-  remove_unncessary_notes ();
+  remove_unnecessary_notes ();
 
   /* In function-at-a-time mode, we do not attempt to keep the BLOCK
      tree in sensible shape.  So, we just recalculate it here.  */
@@ -4924,16 +4924,26 @@ debug_undef (lineno, buffer)
 #endif /* DWARF2_DEBUGGING_INFO */
 }
 
-/* Tell the debugging backend that we've decided not to emit any
-   debugging information for BLOCK, so it can clean up after any local
-   classes or nested functions.  */
+/* Returns nonzero if it is appropriate not to emit any debugging
+   information for BLOCK, because it doesn't contain any instructions.
+   This may not be the case for blocks containing nested functions, since
+   we may actually call such a function even though the BLOCK information
+   is messed up.  */
 
-void
+int
 debug_ignore_block (block)
      tree block ATTRIBUTE_UNUSED;
 {
+  /* Never delete the BLOCK for the outermost scope
+     of the function; we can refer to names from
+     that scope even if the block notes are messed up.  */
+  if (is_body_block (block))
+    return 0;
+
 #ifdef DWARF2_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_ignore_block (block);
+    return dwarf2out_ignore_block (block);
 #endif
+
+  return 1;
 }

@@ -9598,31 +9598,23 @@ dwarf2out_end_block (blocknum)
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
 }
 
-/* We've decided not to emit any debugging information for BLOCK; make
-   sure that we don't end up with orphans as a result.  */
+/* Returns nonzero if it is appropriate not to emit any debugging
+   information for BLOCK, because it doesn't contain any instructions.
 
-void
+   Don't allow this for blocks with nested functions or local classes
+   as we would end up with orphans, and in the presence of scheduling
+   we may end up calling them anyway.  */
+
+int
 dwarf2out_ignore_block (block)
      tree block;
 {
   tree decl;
   for (decl = BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
-    {
-      dw_die_ref die;
-
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	die = lookup_decl_die (decl);
-      else if (TREE_CODE (decl) == TYPE_DECL && TYPE_DECL_IS_STUB (decl))
-	die = lookup_type_die (TREE_TYPE (decl));
-      else
-	die = NULL;
-
-      /* Just give them a dummy value for parent so dwarf2out_finish
-	 doesn't blow up; we would use add_child_die if we really
-	 wanted to add them to comp_unit_die's children.  */
-      if (die && die->die_parent == 0)
-	die->die_parent = comp_unit_die;
-    }
+    if (TREE_CODE (decl) == FUNCTION_DECL
+	|| (TREE_CODE (decl) == TYPE_DECL && TYPE_DECL_IS_STUB (decl)))
+      return 0;
+  return 1;
 }
 
 /* Output a marker (i.e. a label) at a point in the assembly code which
