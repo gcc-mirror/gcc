@@ -1,8 +1,3 @@
-1998-07-06  Mike Stump  <mrs@wrs.com>
-
-	* Makefile.in (clean): Don't remove Makefiles, that is done in
-	distclean.
-
 1998-07-06  Dave Love  <d.love@dl.ac.uk>
 
 	* libU77/Makefile.in (lib): Change variable lib to LIBS.

@@ -1,3 +1,8 @@
+1998-07-06  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (clean): Don't remove Makefiles, that is done in
+	distclean.
+
 Sat Jun 27 23:04:49 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (FLAGS_TO_PASS, case G2C_H_DIR): Use $(TARGET_SUBDIR)
