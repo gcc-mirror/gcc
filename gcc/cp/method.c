@@ -54,10 +54,6 @@ enum mangling_flags
 
 typedef enum mangling_flags mangling_flags;
 
-/* TREE_LIST of the current inline functions that need to be
-   processed.  */
-struct pending_inline *pending_inlines;
-
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
