@@ -1,5 +1,10 @@
 2003-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Don't call
+	rs6000_maybe_dead if !fromprolog.
+
+2003-03-19  Jakub Jelinek  <jakub@redhat.com>
+
 	* ifcvt.c (dead_or_predicable): Fail if there are any references
 	to tablejump in merge_bb other than the final JUMP_INSN.
 
