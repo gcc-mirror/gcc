@@ -1,3 +1,8 @@
+2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-inline.c (copy_body_r): Use CONSTANT_CLASS_P where
+	possible.
+
 2005-04-01  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (adjacent_mem_locations): Reject volatile memory refs.
