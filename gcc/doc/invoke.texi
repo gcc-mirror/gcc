@@ -5445,6 +5445,11 @@ In each case, the @var{value} is an integer.  The allowable choices for
 @var{name} are given in the following table:
 
 @table @gcctabopt
+@item salias-max-implicit-fields
+The maximum number of fields in a variable without direct
+structure accesses for which structure aliasing will consider trying 
+to track each field.  The default is 5
+
 @item sra-max-structure-size
 The maximum structure size, in bytes, at which the scalar replacement
 of aggregates (SRA) optimization will perform block copies.  The

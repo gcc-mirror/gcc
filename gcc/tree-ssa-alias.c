@@ -2780,6 +2780,13 @@ typedef struct used_part
 {
   HOST_WIDE_INT minused;
   HOST_WIDE_INT maxused;
+  /* True if we have an explicit use/def of some portion of this variable,
+     even if it is all of it. i.e. a.b = 5 or temp = a.b.  */
+  bool explicit_uses;
+  /* True if we have an implicit use/def of some portion of this
+     variable.  Implicit uses occur when we can't tell what part we
+     are referencing, and have to make conservative assumptions.  */
+  bool implicit_uses;
 } *used_part_t;
 
 /* An array of used_part structures, indexed by variable uid.  */
@@ -2798,14 +2805,32 @@ get_or_create_used_part_for (size_t uid)
       up = xcalloc (1, sizeof (struct used_part));
       up->minused = INT_MAX;
       up->maxused = 0;
+      up->explicit_uses = false;
+      up->implicit_uses = false;
     }
   else
     up = used_portions[uid];
   return up;
 }
 
-	    
-  
+/* qsort comparison function for two fieldoff_t's PA and PB */
+
+static int 
+fieldoff_compare (const void *pa, const void *pb)
+{
+  const fieldoff_t foa = *(fieldoff_t *)pa;
+  const fieldoff_t fob = *(fieldoff_t *)pb;
+  HOST_WIDE_INT foasize, fobsize;
+  if (foa->offset != fob->offset)
+    return foa->offset - fob->offset;
+
+  foasize = TREE_INT_CST_LOW (DECL_SIZE (foa->field));
+  fobsize = TREE_INT_CST_LOW (DECL_SIZE (fob->field));
+  if (foasize != fobsize)
+    return foasize - fobsize;
+  return 0;
+}
+
 /* Given an aggregate VAR, create the subvariables that represent its
    fields.  */
 
@@ -2819,13 +2844,18 @@ create_overlap_variables_for (tree var)
   if (used_portions[uid] == NULL)
     return;
 
+  up = used_portions[uid];
   push_fields_onto_fieldstack (TREE_TYPE (var), &fieldstack, 0);
   if (VEC_length (fieldoff_t, fieldstack) != 0)
     {
       subvar_t *subvars;
       fieldoff_t fo;
       bool notokay = false;
+      int fieldcount = 0;
       int i;
+      HOST_WIDE_INT lastfooffset = -1;
+      HOST_WIDE_INT lastfosize = -1;
+      tree lastfotype = NULL_TREE;
 
       /* Not all fields have DECL_SIZE set, and those that don't, we don't
 	 know their size, and thus, can't handle.
@@ -2846,7 +2876,34 @@ create_overlap_variables_for (tree var)
 	      notokay = true;
 	      break;
 	    }
+          fieldcount++;
 	}
+
+      /* The current heuristic we use is as follows:
+	 If the variable has no used portions in this function, no
+	 structure vars are created for it.
+	 Otherwise,
+         If the variable has less than SALIAS_MAX_IMPLICIT_FIELDS,
+	 we always create structure vars for them.
+	 If the variable has more than SALIAS_MAX_IMPLICIT_FIELDS, and
+	 some explicit uses, we create structure vars for them.
+	 If the variable has more than SALIAS_MAX_IMPLICIT_FIELDS, and
+	 no explicit uses, we do not create structure vars for them.
+      */
+      
+      if (fieldcount >= SALIAS_MAX_IMPLICIT_FIELDS
+	  && !up->explicit_uses)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Variable ");
+	      print_generic_expr (dump_file, var, 0);
+	      fprintf (dump_file, " has no explicit uses in this function, and is > SALIAS_MAX_IMPLICIT_FIELDS, so skipping\n");
+	    }
+	  notokay = true;
+	}
+      
+    
       /* Cleanup after ourselves if we can't create overlap variables.  */
       if (notokay)
 	{
@@ -2860,25 +2917,38 @@ create_overlap_variables_for (tree var)
 	}
       /* Otherwise, create the variables.  */
       subvars = lookup_subvars_for_var (var);
-      up = used_portions[uid];
       
+      qsort (VEC_address (fieldoff_t, fieldstack), 
+	     VEC_length (fieldoff_t, fieldstack), 
+	     sizeof (fieldoff_t),
+	     fieldoff_compare);
+
       while (VEC_length (fieldoff_t, fieldstack) != 0)
 	{
-	  subvar_t sv = ggc_alloc (sizeof (struct subvar));
+	  subvar_t sv;
 	  HOST_WIDE_INT fosize;
 	  var_ann_t ann;
+	  tree currfotype;
 
 	  fo = VEC_pop (fieldoff_t, fieldstack);	  
 	  fosize = TREE_INT_CST_LOW (DECL_SIZE (fo->field));
+	  currfotype = TREE_TYPE (fo->field);
 
-	  if ((fo->offset <= up->minused
-	       && fo->offset + fosize <= up->minused)
-	      || fo->offset >= up->maxused)
+	  /* If this field isn't in the used portion,
+	     or it has the exact same offset and size as the last
+	     field, skip it.  */
+
+	  if (((fo->offset <= up->minused
+		&& fo->offset + fosize <= up->minused)
+	       || fo->offset >= up->maxused)
+	      || (fo->offset == lastfooffset
+		  && fosize == lastfosize
+		  && currfotype == lastfotype))
 	    {
 	      free (fo);
 	      continue;
 	    }
-
+	  sv = ggc_alloc (sizeof (struct subvar));
 	  sv->offset = fo->offset;
 	  sv->size = fosize;
 	  sv->next = *subvars;
@@ -2913,7 +2983,10 @@ create_overlap_variables_for (tree var)
 	  ann->mem_tag_kind = STRUCT_FIELD; 
 	  ann->type_mem_tag = NULL;  	
 	  add_referenced_tmp_var (sv->var);
-	    
+	  
+	  lastfotype = currfotype;
+	  lastfooffset = fo->offset;
+	  lastfosize = fosize;
 	  *subvars = sv;
 	  free (fo);
 	}
@@ -2968,6 +3041,7 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	    if ((bitpos + bitsize >= up->maxused))
 	      up->maxused = bitpos + bitsize;	    
 
+	    up->explicit_uses = true;
 	    used_portions[uid] = up;
 
 	    *walk_subtrees = 0;
@@ -2986,6 +3060,8 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
 		up->minused = 0;
 		up->maxused = TREE_INT_CST_LOW (DECL_SIZE (ref));
+
+		up->implicit_uses = true;
 
 		used_portions[uid] = up;
 
@@ -3010,6 +3086,7 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
  
 	    up->minused = 0;
 	    up->maxused = TREE_INT_CST_LOW (DECL_SIZE (var));
+	    up->implicit_uses = true;
 
 	    used_portions[uid] = up;
 	    *walk_subtrees = 0;
