@@ -11,7 +11,7 @@
 #include <ctype.h>
 
 /* Jim Meyering writes:
- 
+
    "... Some ctype macros are valid only for character codes that
    isascii says are ASCII (SGI's IRIX-4.0.5 is one such system --when
    using /bin/cc or gcc but without giving an ansi option).  So, all
@@ -20,21 +20,21 @@
    macros don't need to be guarded with references to isascii. ...
    Defining isascii to 1 should let any compiler worth its salt
    eliminate the && through constant folding."
- 
+
    Bruno Haible adds:
- 
+
    "... Furthermore, isupper(c) etc. have an undefined result if c is
    outside the range -1 <= c <= 255. One is tempted to write isupper(c)
    with c being of type `char', but this is wrong if c is an 8-bit
    character >= 128 which gets sign-extended to a negative value.
    The macro ISUPPER protects against this as well."  */
- 
+
 #if defined (STDC_HEADERS) || (!defined (isascii) && !defined (HAVE_ISASCII))
 # define IN_CTYPE_DOMAIN(c) 1
 #else
 # define IN_CTYPE_DOMAIN(c) isascii(c)
 #endif
- 
+
 #ifdef isblank
 # define ISBLANK(c) (IN_CTYPE_DOMAIN (c) && isblank (c))
 #else
@@ -45,7 +45,7 @@
 #else
 # define ISGRAPH(c) (IN_CTYPE_DOMAIN (c) && isprint (c) && !isspace (c))
 #endif
- 
+
 #define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint (c))
 #define ISALNUM(c) (IN_CTYPE_DOMAIN (c) && isalnum (c))
 #define ISALPHA(c) (IN_CTYPE_DOMAIN (c) && isalpha (c))
@@ -56,7 +56,7 @@
 #define ISUPPER(c) (IN_CTYPE_DOMAIN (c) && isupper (c))
 #define ISXDIGIT(c) (IN_CTYPE_DOMAIN (c) && isxdigit (c))
 #define ISDIGIT_LOCALE(c) (IN_CTYPE_DOMAIN (c) && isdigit (c))
- 
+
 /* ISDIGIT differs from ISDIGIT_LOCALE, as follows:
    - Its arg may be any int or unsigned int; it need not be an unsigned char.
    - It's guaranteed to evaluate its argument exactly once.
@@ -266,5 +266,10 @@ void abort ();
 #  define STRINGIFY(STRING) "STRING"
 # endif
 #endif /* ! STRINGIFY */
+
+
+/* These macros are here in preparation for the use of gettext in egcs.  */
+#define _(String) String
+#define N_(String) String
 
 #endif /* __GCC_SYSTEM_H__ */
