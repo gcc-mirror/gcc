@@ -294,15 +294,10 @@ AC_SUBST(LIBSUPCXX_PICFLAGS)
 dnl In autoconf 2.5x, AC_OUTPUT is replaced by four AC_CONFIG_* macros,
 dnl which can all be called multiple times as needed, plus one (different)
 dnl AC_OUPUT macro.  This one lists the files to be created:
-AC_CONFIG_FILES([ \
+AC_CONFIG_FILES( \
   Makefile \
-  include/Makefile \
-  libmath/Makefile \
-  libsupc++/Makefile \
-  po/Makefile \
-  src/Makefile \
-  testsuite/Makefile \
-  ])
+  AC_FOREACH([DIR], glibcxx_SUBDIRS, [DIR/Makefile ])
+  )
 AC_CONFIG_FILES([scripts/check_survey],[chmod +x scripts/check_survey])
 AC_CONFIG_FILES([scripts/testsuite_flags],[chmod +x scripts/testsuite_flags])
 
@@ -320,7 +315,7 @@ AC_CONFIG_COMMANDS([default],
    cat > vpsed << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
-   for i in libmath libsupc++ src testsuite; do
+   for i in $SUBDIRS; do
     case $CONFIG_FILES in
      *${i}/Makefile*)
        #echo "Adding MULTISUBDIR to $i/Makefile"
@@ -335,7 +330,9 @@ _EOF
  (cd include && ${MAKE-make})
 ],
 [
-# No init-vars needed so far which aren't already passed by autoconf.
+# Variables needed in config.status (file generation) which aren't already
+# passed by autoconf.
+SUBDIRS="$SUBDIRS"
 ])
 
 dnl And this actually makes things happen:

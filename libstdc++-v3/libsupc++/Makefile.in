@@ -200,6 +200,7 @@ MAINT_CHARSET = latin1
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 PWD_COMMAND = $${PWDCMD-pwd}
+STAMP = echo timestamp >
 
 toolexecdir = $(glibcxx_toolexecdir)
 toolexeclibdir = $(glibcxx_toolexeclibdir)
@@ -222,8 +223,6 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 toolexeclib_LTLIBRARIES = libsupc++.la
 # 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
 noinst_LTLIBRARIES = libsupc++convenience.la
-
-LIBSUPCXX_CXXFLAGS = @LIBSUPCXX_PICFLAGS@
 
 headers = \
 	exception new typeinfo cxxabi.h exception_defines.h 
@@ -271,7 +270,7 @@ glibcxxinstall_HEADERS = $(headers)
 # as the occasion call for it. 
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
-	$(LIBSUPCXX_CXXFLAGS) \
+	$(LIBSUPCXX_PICFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
 	$(CONFIG_CXXFLAGS) 

@@ -24,6 +24,7 @@
 
 include $(top_srcdir)/fragment.am
 
+## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
 SUBDIRS = include libmath libsupc++ src po testsuite 
 
 # These rules are messy, but are hella worth it.

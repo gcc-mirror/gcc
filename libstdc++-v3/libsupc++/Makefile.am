@@ -31,9 +31,6 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 noinst_LTLIBRARIES = libsupc++convenience.la
 
 
-
-LIBSUPCXX_CXXFLAGS = @LIBSUPCXX_PICFLAGS@
-
 headers = \
 	exception new typeinfo cxxabi.h exception_defines.h 
 
@@ -78,7 +75,7 @@ glibcxxinstall_HEADERS = $(headers)
 # as the occasion call for it. 
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
-	$(LIBSUPCXX_CXXFLAGS) \
+	$(LIBSUPCXX_PICFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
 	$(CONFIG_CXXFLAGS) 
