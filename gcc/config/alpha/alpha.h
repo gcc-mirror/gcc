@@ -2079,8 +2079,8 @@ literal_section ()						\
    '	Generates trap-mode suffix for instructions that accept the
         su suffix only (cmpt et al).
 
-   (    Generates trap-mode suffix for instructions that accept the
-	c, svc, and svic suffix.  The only instruction that needs this
+   (	Generates trap-mode suffix for instructions that accept the
+	v, sv, and svi suffix.  The only instruction that needs this
 	is cvttq.
 
    )    Generates trap-mode suffix for instructions that accept the
