@@ -2,6 +2,8 @@
 
 	* expmed.c, ra-colorize.c: Fix comment typos.
 
+	* doc/tm.texi: Fix typos.
+
 2004-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
             Mark Mitchell  <mark@codesourcery.com>
 
