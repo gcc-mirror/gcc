@@ -1680,8 +1680,14 @@ reload (first, global, dumpfile)
 		  if (i == FIRST_PSEUDO_REGISTER)
 		    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		      {
+			int k;
 			j = potential_reload_regs[i];
+			/* Verify that J+1 is a potential reload reg.  */
+			for (k = 0; k < FIRST_PSEUDO_REGISTER; k++)
+			  if (potential_reload_regs[k] == j + 1)
+			    break;
 			if (j >= 0 && j + 1 < FIRST_PSEUDO_REGISTER
+			    && k < FIRST_PSEUDO_REGISTER
 			    && spill_reg_order[j] < 0 && spill_reg_order[j + 1] < 0
 			    && TEST_HARD_REG_BIT (reg_class_contents[class], j)
 			    && TEST_HARD_REG_BIT (reg_class_contents[class], j + 1)
