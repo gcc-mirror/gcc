@@ -1202,7 +1202,7 @@
 	       (eq (symbol_ref "shl_and_scr_length (insn)") (const_int 3))
 	       (const_string "6")
 	       (eq (symbol_ref "shl_and_scr_length (insn)") (const_int 4))
-	       (const_string "6")
+	       (const_string "8")
 	       (eq (symbol_ref "shl_and_scr_length (insn)") (const_int 5))
 	       (const_string "10")]
 	      (const_string "12")))
