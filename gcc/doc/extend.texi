@@ -5250,11 +5250,11 @@ type is @code{long double}.
 @deftypefn {Built-in Function} double __builtin_inf (void)
 Similar to @code{__builtin_huge_val}, except a warning is generated
 if the target floating-point format does not support infinities.
-This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
 @end deftypefn
 
 @deftypefn {Built-in Function} float __builtin_inff (void)
 Similar to @code{__builtin_inf}, except the return type is @code{float}.
+This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {long double} __builtin_infl (void)

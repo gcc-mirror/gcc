@@ -1,5 +1,10 @@
 2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* doc/extend.texi (__builtin_inf): Move statement about INFINITY
+	to __builtin_inff.
+
+2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* c.opt (ansi, std=iso9899:1990, std=iso9899:1999,
 	std=iso9899:199x): Correct descriptions.
 
