@@ -1788,6 +1788,12 @@ gfc_create_module_variable (gfc_symbol * sym)
       && (sym->attr.flavor != FL_PARAMETER || sym->attr.dimension == 0))
     return;
 
+  if (sym->attr.flavor == FL_VARIABLE && sym->ts.type == BT_UNKNOWN)
+    /* TODO: This is a workaround for the issue outlined in PR 15481,
+       and it fixes the bug in PR13372. This should never happen in an
+       ideal frontend.  */
+    return;
+
   /* Don't generate variables from other modules.  */
   if (sym->attr.use_assoc)
     return;
