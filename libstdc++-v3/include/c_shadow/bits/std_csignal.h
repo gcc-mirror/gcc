@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,15 +28,40 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
+// ISO C++ 14882: 20.4.6  C library
 //
 
-// Note: This is not a conforming implementation.
+#ifndef _CPP_CSIGNAL
+#define _CPP_CSIGNAL 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+namespace _C_legacy {
+  extern "C" {
+#     define _IN_C_LEGACY_
+    // XXX
+#     undef __need_sig_atomic_t
+#     undef __need_sigset_t
 
-#pragma GCC system_header
-#include <limits.h>
+#     pragma GCC system_header
+#     include_next <signal.h>
+  }
+} // namespace _C_legacy
+
+#  undef sig_atomic_t
+#  undef raise
+#  undef signal
+
+namespace std {
+  // Adopt C names into std::
+  using _C_legacy::sig_atomic_t;
+  using _C_legacy::raise;
+  using _C_legacy::signal;
+} // namespace std
+  
+# undef _IN_C_LEGACY_
 
 #endif
+
+
+
+
+

@@ -1,4 +1,4 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 //
@@ -28,15 +28,65 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
+// ISO C++ 14882: 26.5  C library extensions
 //
 
-// Note: This is not a conforming implementation.
+#ifndef _CPP_FCNTL
+#define _CPP_FCNTL 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+# include <bits/c++config.h>
 
-#pragma GCC system_header
-#include <limits.h>
+namespace _C_legacy {
+  extern "C" {
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+    // XXX
+# undef SEEK_SET
+# undef SEEK_CUR
+# undef SEEK_END
+
+#     include_next <fcntl.h>
+  }
+} // namespace _C_legacy
+
+# undef SEEK_SET
+# undef SEEK_CUR
+# undef SEEK_END
+
+// NB: Don't bring elements from this non-standard header into namespace std.
+
+# undef _IN_C_LEGACY_
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

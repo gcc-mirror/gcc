@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,16 +27,48 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
 
-// Note: This is not a conforming implementation.
+#ifndef  _INCLUDED_CPP_CWCTYPE_H_
+# define _INCLUDED_CPP_CWCTYPE_H_ 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _CWCHAR_NEED_C_LEGACY_
+# endif
 
-#pragma GCC system_header
-#include <limits.h>
+# include <cwctype>
 
-#endif
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::wint_t;
+  using std::wctype_t;
+  using std::wctrans_t;
+  using std::iswalpha;
+  using std::iswupper;
+  using std::iswlower;
+  using std::iswdigit;
+  using std::iswxdigit;
+  using std::iswalnum;
+  using std::iswspace;
+  using std::iswpunct;
+  using std::iswprint;
+  using std::iswgraph;
+  using std::iswcntrl;
+  using std::iswctype;
+  using std::towctrans;
+  using std::towlower;
+  using std::towupper;
+  using std::wctrans;
+  using std::wctype;
+
+# ifdef _CWCHAR_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _CWCHAR_NEED_C_LEGACY_
+# endif /* _CWCHAR_NEED_C_LEGACY_ */
+#endif /* _INCLUDED_CPP_CWCTYPE_H_ */

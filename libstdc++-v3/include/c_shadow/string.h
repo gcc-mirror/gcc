@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,16 +27,50 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
 
-// Note: This is not a conforming implementation.
+#ifndef  _INCLUDED_CPP_STRING_H_
+# define _INCLUDED_CPP_STRING_H_ 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _STRING_NEED_C_LEGACY_
+# endif
 
-#pragma GCC system_header
-#include <limits.h>
+# include <cstring>
 
-#endif
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::memcpy;
+  using std::memmove;
+  using std::strcpy;
+  using std::strncpy;
+  using std::strcat;
+  using std::strncat;
+  using std::memcmp;
+  using std::strcmp;
+  using std::strcoll;
+  using std::strncmp;
+  using std::strxfrm;
+  using std::memchr;
+  using std::strchr;
+  using std::strcspn;
+  using std::strpbrk;
+  using std::strrchr;
+  using std::strspn;
+  using std::strstr;
+  using std::strtok;
+  using std::memset;
+  using std::strerror;
+  using std::strlen;
+
+# ifdef _STRING_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _STRING_NEED_C_LEGACY_
+# endif /* _STRING_NEED_C_LEGACY_ */
+#endif /* _INCLUDED_CPP_STRING_H_ */

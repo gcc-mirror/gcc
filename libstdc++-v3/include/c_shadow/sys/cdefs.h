@@ -1,4 +1,4 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 //
@@ -27,16 +27,23 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
 
-// Note: This is not a conforming implementation.
+#ifndef _CPP_SYS_CDEFS_H
+# define _CPP_SYS_CDEFS_H 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+# pragma GCC system_header
+# include_next <sys/cdefs.h>
 
-#pragma GCC system_header
-#include <limits.h>
+// glibc-2 hackery.  Other systems likely require other hacks.
+#undef	__BEGIN_DECLS
+#define	__BEGIN_DECLS
+#undef	__END_DECLS
+#define	__END_DECLS
 
-#endif
+#endif /* _CPP_SYS_CDEFS_H_ */
+
+
+
+
+
+

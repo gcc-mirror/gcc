@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,56 +39,4 @@
 #pragma GCC system_header
 #include <wctype.h>
 
-// Get rid of those macros defined in <wctype.h> in lieu of real functions.
-#undef iswalnum
-#undef iswalpha
-#undef iswblank
-#undef iswcntrl
-#undef iswdigit
-#undef iswgraph
-#undef iswlower
-#undef iswprint
-#undef iswprint
-#undef iswpunct
-#undef iswspace
-#undef iswupper
-#undef iswxdigit
-#undef iswctype  
-#undef towlower
-#undef towupper
-#undef towctrans
-#undef wctrans
-
-namespace std
-{
-  using ::wctype_t;
-  using ::wctrans_t;
-
-  extern "C" int iswalnum(wint_t); 
-  extern "C" int iswalpha(wint_t); 
-  extern "C" int iswblank(wint_t); 
-  extern "C" int iswcntrl(wint_t); 
-  extern "C" int iswdigit(wint_t); 
-  extern "C" int iswgraph(wint_t); 
-  extern "C" int iswlower(wint_t); 
-  extern "C" int iswprint(wint_t); 
-  extern "C" int iswpunct(wint_t); 
-  extern "C" int iswspace(wint_t); 
-  extern "C" int iswupper(wint_t); 
-  extern "C" int iswxdigit(wint_t);
-  extern "C" int iswctype(wint_t, wctype_t); 
-  extern "C" wctype_t wctype(const char *); 
-  extern "C" wint_t towlower(wint_t); 
-  extern "C" wint_t towupper(wint_t); 
-  extern "C" wint_t towctrans(wint_t, wctrans_t); 
-  extern "C" wctrans_t wctrans(const char*);
-}
-
 #endif 
-
-
-
-
-
-
-

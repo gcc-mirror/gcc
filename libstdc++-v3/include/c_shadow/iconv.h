@@ -1,4 +1,4 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- header wrapper.
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 //
@@ -27,16 +27,40 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
 
-// Note: This is not a conforming implementation.
+#ifndef  _INCLUDED_CPP_ICONV_H_
+# define _INCLUDED_CPP_ICONV_H_ 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _ICONV_NEED_C_LEGACY_
+# endif
 
-#pragma GCC system_header
-#include <limits.h>
+# include <bits/wrap_iconv.h>
 
-#endif
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+
+  // NB: Cannot use typedefs here to inject the names as the "C" headers
+  // often include typedefs that include the keyword 'struct'
+  using _C_legacy::iconv_t;
+
+  using _C_legacy::iconv_open;
+  using _C_legacy::iconv;
+  using _C_legacy::iconv_close;
+
+# ifdef _ICONV_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _ICONV_NEED_C_LEGACY_
+# endif /* _ICONV_NEED_C_LEGACY_ */
+#endif /* _INCLUDED_CPP_ICONV_H_ */
+
+
+
+
