@@ -1,3 +1,8 @@
+2004-09-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfg.c, tree-ssa-threadupdate.c, tree-vectorizer.c: Fix
+	comment typos.
+
 2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/17565

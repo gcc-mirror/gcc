@@ -2346,7 +2346,7 @@ vect_get_first_index (tree ref, tree *array_first_index)
 
    Input:
    ARRAY - an array_ref (possibly multidimensional) of type ARRAY_TYPE.
-   VECTYPE - we are interested in the misalignment modulu the size of vectype.
+   VECTYPE - we are interested in the misalignment modulo the size of vectype.
 	     if NULL: don't compute misalignment, just return the base of ARRAY.
    PREV_DIMENSIONS - initialized to one.
    MISALIGNMENT - the computed misalignment in bits.
@@ -3123,7 +3123,7 @@ vect_get_symbl_and_dr (tree memref, tree stmt, bool is_read,
 
 	  STRIP_NOPS(oprnd1);
 	  /* Only {address_base + offset} expressions are supported,  
-	     where address_base can be POINTER_TYPE or ARRRAY_TYPE and 
+	     where address_base can be POINTER_TYPE or ARRAY_TYPE and 
 	     offset can be anything but POINTER_TYPE or ARRAY_TYPE.  
 	     TODO: swap operands if {offset + address_base}.  */
 	  if ((TREE_CODE (TREE_TYPE (oprnd1)) == POINTER_TYPE 

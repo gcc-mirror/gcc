@@ -891,11 +891,11 @@ brief_dump_cfg (FILE *file)
 
 /* An edge originally destinating BB of FREQUENCY and COUNT has been proved to
    leave the block by TAKEN_EDGE.  Update profile of BB such that edge E can be
-   redirected to destiantion of TAKEN_EDGE. 
+   redirected to destination of TAKEN_EDGE. 
 
    This function may leave the profile inconsistent in the case TAKEN_EDGE
    frequency or count is believed to be lower than FREQUENCY or COUNT
-   respectivly.  */
+   respectively.  */
 void
 update_bb_profile_for_threading (basic_block bb, int edge_frequency,
 				 gcov_type count, edge taken_edge)

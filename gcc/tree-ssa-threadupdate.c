@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 	with the edge B'->C.
 
      4. For each PHI in B, find or create a PHI in B' with an identical
-	PHI_RESULT.  Add an argument to the PHI in B' which as the same
+	PHI_RESULT.  Add an argument to the PHI in B' which has the same
 	value as the PHI in B associated with the edge A->B.  Associate
 	the new argument in the PHI in B' with the edge A->B.
 
@@ -226,7 +226,7 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
    to update the SSA graph for those names.
 
    We are also going to experiment with a true incremental update
-   scheme for the duplicated resources.  Of of the interesting
+   scheme for the duplicated resources.  One of the interesting
    properties we can exploit here is that all the resources set
    in BB will have the same IDFS, so we have one IDFS computation
    per block with incoming threaded edges, which can lower the
