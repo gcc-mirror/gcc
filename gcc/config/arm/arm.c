@@ -1641,7 +1641,7 @@ arm_comp_type_attributes (type1, type2)
      tree type1;
      tree type2;
 {
-  int l1, l2, s1, s2;
+  tree l1, l2, s1, s2;
   
   /* Check for mismatch of non-default calling convention.  */
   if (TREE_CODE (type1) != FUNCTION_TYPE)
