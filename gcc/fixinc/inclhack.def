@@ -2093,6 +2093,23 @@ fix = {
 };
 
 /*
+ * <widec.h> until Solaris 2.5.1 defines macros for a couple of <wchar.h>
+ * functions, breaking their prototypes if that file is included afterwards.
+ * Include <wchar.h> early to avoid this issue, as is done on Solaris 2.6
+ * and up.
+ */
+fix = {
+    hackname  = solaris_widec;
+    files     = widec.h;
+    mach      = '*-*-solaris2.[0-5]*';
+    bypass    = "include.*wchar\\.h";
+    select    = "#include <euc.h>";
+    c_fix     = format;
+    c_fix_arg = "%0\n#include <wchar.h>";
+    test_text = "#include <euc.h>";
+};
+
+/*
  *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
  */
 #ifdef SONY

@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 141 fixup descriptions.
+ * This file contains 142 fixup descriptions.
  *
  * See README for more information.
  *
@@ -3728,6 +3728,51 @@ static const char* apzSolaris_Stdio_TagPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Solaris_Widec fix
+ */
+tSCC zSolaris_WidecName[] =
+     "solaris_widec";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSolaris_WidecList[] =
+  "|widec.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzSolaris_WidecMachs[] = {
+        "*-*-solaris2.[0-5]*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zSolaris_WidecSelect0[] =
+       "#include <euc.h>";
+
+/*
+ *  content bypass pattern - skip fix if pattern found
+ */
+tSCC zSolaris_WidecBypass0[] =
+       "include.*wchar\\.h";
+
+#define    SOLARIS_WIDEC_TEST_CT  2
+static tTestDesc aSolaris_WidecTests[] = {
+  { TT_NEGREP,   zSolaris_WidecBypass0, (regex_t*)NULL },
+  { TT_EGREP,    zSolaris_WidecSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Solaris_Widec
+ */
+static const char* apzSolaris_WidecPatch[] = {
+    "format",
+    "%0\n\
+#include <wchar.h>",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Statsswtch fix
  */
 tSCC zStatsswtchName[] =
@@ -5536,9 +5581,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          149
+#define REGEX_COUNT          151
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            141
+#define FIX_COUNT            142
 
 /*
  *  Enumerate the fixes
@@ -5638,6 +5683,7 @@ typedef enum {
     SCO_UTIME_FIXIDX,
     SOLARIS_MUTEX_INIT_FIXIDX,
     SOLARIS_STDIO_TAG_FIXIDX,
+    SOLARIS_WIDEC_FIXIDX,
     STATSSWTCH_FIXIDX,
     STDIO_STDARG_H_FIXIDX,
     STDIO_VA_LIST_FIXIDX,
@@ -6157,6 +6203,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzSolaris_Stdio_TagMachs,
      SOLARIS_STDIO_TAG_TEST_CT, FD_MACH_ONLY,
      aSolaris_Stdio_TagTests,   apzSolaris_Stdio_TagPatch, 0 },
+
+  {  zSolaris_WidecName,    zSolaris_WidecList,
+     apzSolaris_WidecMachs,
+     SOLARIS_WIDEC_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aSolaris_WidecTests,   apzSolaris_WidecPatch, 0 },
 
   {  zStatsswtchName,    zStatsswtchList,
      apzStatsswtchMachs,

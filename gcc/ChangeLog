@@ -1,3 +1,10 @@
+2002-04-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (solaris_widec): Include <wchar.h> in
+	Solaris 2 <widec.h> if missing.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/widec.h: New file.
+
 2002-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/6476
