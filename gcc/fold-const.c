@@ -3934,25 +3934,24 @@ fold_truthop (code, truth_type, lhs, rhs)
 			     size_int (xrr_bitpos), 0);
 
       /* Make a mask that corresponds to both fields being compared.
-	 Do this for both items being compared.  If the masks agree,
-	 and the bits being compared are in the same position, and the
-	 types agree, then we can do this by masking both and comparing
-	 the masked results.  */
+	 Do this for both items being compared.  If the operands are the
+	 same size and the bits being compared are in the same position
+	 then we can do this by masking both and comparing the masked
+	 results.  */
       ll_mask = const_binop (BIT_IOR_EXPR, ll_mask, rl_mask, 0);
       lr_mask = const_binop (BIT_IOR_EXPR, lr_mask, rr_mask, 0);
-      if (operand_equal_p (ll_mask, lr_mask, 0)
-	  && lnbitsize == rnbitsize && xll_bitpos == xlr_bitpos
-	  && lntype == rntype)
+      if (lnbitsize == rnbitsize && xll_bitpos == xlr_bitpos)
 	{
 	  lhs = make_bit_field_ref (ll_inner, lntype, lnbitsize, lnbitpos,
 				    ll_unsignedp || rl_unsignedp);
+	  if (! all_ones_mask_p (ll_mask, lnbitsize))
+	    lhs = build (BIT_AND_EXPR, lntype, lhs, ll_mask);
+
 	  rhs = make_bit_field_ref (lr_inner, rntype, rnbitsize, rnbitpos,
 				    lr_unsignedp || rr_unsignedp);
-	  if (! all_ones_mask_p (ll_mask, lnbitsize))
-	    {
-	      lhs = build (BIT_AND_EXPR, lntype, lhs, ll_mask);
-	      rhs = build (BIT_AND_EXPR, rntype, rhs, ll_mask);
-	    }
+	  if (! all_ones_mask_p (lr_mask, rnbitsize))
+	    rhs = build (BIT_AND_EXPR, rntype, rhs, lr_mask);
+
 	  return build (wanted_code, truth_type, lhs, rhs);
 	}
 

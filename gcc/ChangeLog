@@ -65,6 +65,9 @@ Fri Mar 26 10:43:47 1999  Nick Clifton  <nickc@cygnus.com>
 
 Fri Mar 26 01:59:15 1999  "Charles M. Hannum" <root@ihack.net>
 
+	* fold-const.c (fold_truthop): Optimize bitfield references with
+	different masks as long as their size and bit position are the same.
+
 	* fold-const.c (fold_truthop): Build a type for both the lhs and
 	rhs and use it appropriately.
 
