@@ -73,8 +73,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC \
-"%{mieee-fp:-lieee} %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} \
- %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}" 
+"%{mieee-fp:-lieee} %{p*:-lgmon} %{!static:-lc} \
+ %{static:%{p*:-lc_p} %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC  "%{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}} %{static:-static}"
