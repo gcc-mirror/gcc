@@ -5,7 +5,7 @@ John Carr					jfc@mit.edu
 Richard Henderson                               rth@cygnus.com
 Jeff Law					law@cygnus.com
 Michael Meissner				meissner@cygnus.com
-David S. Miller					davem@dm.cobaltmicro.com
+David S. Miller					davem@redhat.com
 Jim Wilson					wilson@cygnus.com
 
 
@@ -31,7 +31,7 @@ i960 port		Jim Wilson		wilson@cygnus.com
 a29k port		Jim Wilson		wilson@cygnus.com
 alpha port		Richard Henderson	rth@cygnus.com
 sparc port		Richard Henderson	rth@cygnus.com
-sparc port		David S. Miller		davem@dm.cobaltmicro.com
+sparc port		David S. Miller		davem@redhat.com
 x86 ports		Stan Cox		scox@cygnus.com
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 fortran			Craig Burley		craig@jcb-sc.com
@@ -55,14 +55,14 @@ caller-save.c		Jeff Law		law@cygnus.com
 debugging code		Jim Wilson		wilson@cygnus.com
 dwarf debugging code	Jason Merrill		jason@cygnus.com
 c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
-*synthetic multiply	Torbjorn Granlund	tege@swox.com
-*c-torture		Torbjorn Granlund	tege@swox.com
+*synthetic multiply	Torbjorn Granlund	tege@matematik.su.se
+*c-torture		Torbjorn Granlund	tege@matematik.su.se
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
 sco5, unixware, sco udk	Robert Lipe		robertl@dgii.com
 new fixincludes		Bruce Korb		korbb@datadesign.com
 gcse.c 			Jeff Law		law@cygnus.com
 global opt framework	Jeff Law		law@cygnus.com
-jump.c			David S. Miller		davem@dm.cobaltmicro.com
+jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 C front end/isoc9x	Gavin Koch		gavin@cygnus.com
 
