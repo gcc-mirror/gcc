@@ -1,3 +1,8 @@
+2005-03-16  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/lang/MainThread.java (run): Load main class using
+	system class loader.
+
 2005-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcj/20251

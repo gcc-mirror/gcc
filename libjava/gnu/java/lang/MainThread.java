@@ -1,5 +1,5 @@
 /* gnu.java.lang.MainThread
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -91,7 +91,8 @@ final class MainThread extends Thread
       {
         try
 	  {
-	    klass = Class.forName(klass_name);
+	    klass = Class.forName(klass_name, true,
+				  ClassLoader.getSystemClassLoader());
 	  }
 	catch (ClassNotFoundException x)
 	  {
