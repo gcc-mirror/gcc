@@ -3071,7 +3071,6 @@ do_identifier (token, parsing, args)
 {
   register tree id;
   int lexing = (parsing == 1);
-  int in_call = (parsing == 2);
 
   if (! lexing || IDENTIFIER_OPNAME_P (token))
     id = lookup_name (token, 0);

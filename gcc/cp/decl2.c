@@ -2866,7 +2866,7 @@ get_guard (decl)
   if (!flag_new_abi && !DECL_NAMESPACE_SCOPE_P (decl))
     {
       guard = get_temp_name (integer_type_node);
-      rest_of_decl_compilation (guard, NULL_PTR, 0, 0);
+      cp_finish_decl (guard, NULL_TREE, NULL_TREE, 0);
       return guard;
     }
 

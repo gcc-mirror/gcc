@@ -8362,6 +8362,11 @@ start_cleanup_fn ()
      compiler.  */
   TREE_PUBLIC (fndecl) = 0;
   DECL_ARTIFICIAL (fndecl) = 1;
+  /* Make the function `inline' so that it is only emitted if it is
+     actually needed.  It is unlikely that it will be inlined, since
+     it is only called via a function pointer, but we avoid unncessary
+     emissions this way.  */
+  DECL_INLINE (fndecl) = 1;
   /* Build the parameter.  */
   if (flag_use_cxa_atexit)
     {

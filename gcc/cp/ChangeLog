@@ -1,3 +1,10 @@
+2000-07-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (start_cleanup_fn): Mark the function as `inline'.
+	* decl2.c (get_guard): Call cp_finish_decl, not
+	rest_of_decl_compilation, for local guards.
+	* lex.c (do_identifier): Remove unused variable.
+
 Wed Jul 26 15:05:51 CEST 2000	Marc Espie <espie@cvs.openbsd.org>
 
 	* parse.y:  Add missing ';'.
