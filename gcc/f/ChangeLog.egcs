@@ -1,3 +1,8 @@
+Tue Sep 23 00:39:57 1997  Alexandre Oliva <oliva@dcc.unicamp.br>
+
+	* Make-lang.in: install.texi was renamed to g77install.texi
+	* install0.texi: Likewise.
+
 Thu Sep 18 17:31:38 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* proj.h (FFEPROJ_BSEARCH): Delete all references.
