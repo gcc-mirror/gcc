@@ -2782,7 +2782,12 @@ consec_sets_invariant_p (reg, n_sets, insn)
 	    value |= this;
 	  else if (temp = find_reg_note (p, REG_EQUAL, NULL_RTX))
 	    {
-	      this = invariant_p (XEXP (temp, 0));
+	      /* If this is a libcall, then any invariant REG_EQUAL note is OK.
+		 If this is an ordinary insn, then only CONSTANT_P REG_EQUAL
+		 notes are OK.  */
+	      this = (CONSTANT_P (XEXP (temp, 0))
+		      || (find_reg_note (p, REG_RETVAL, NULL_RTX)
+			  && invariant_p (XEXP (temp, 0))));
 	      if (this != 0)
 		value |= this;
 	    }
