@@ -1,5 +1,25 @@
 2004-01-07  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/DatagramChannelImpl.java
+	(blocking): Removed.
+	(DatagramChannelImpl): Call configureBlocking().
+	(implConfigureBlocking): Dont initialize blocking.
+	* gnu/java/nio/ServerSocketChannelImpl.java
+	(blocking): Removed.
+	(ServerSocketChannelImpl): Call configureBlocking().
+	(implConfigureBlocking): Dont initialize blocking.
+	* gnu/java/nio/SocketChannelImpl.java
+	(blocking): Removed.
+	(SocketChannelImpl): Call configureBlocking().
+	(implConfigureBlocking): Dont initialize blocking.
+	(connect): Use isBlocking().
+	* java/nio/channels/spi/AbstractSelectableChannel.java
+	(configureBlocking): Use blockingLock() instead of LOCK.
+	Set blocking after successfully called implConfigureBlocking().
+	(register): Use blockingLock() instead of LOCK.
+
+2004-01-07  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/ServerSocket.java (isBound): Fixed documentation.
 
 2004-01-07  Sascha Brawer  <brawer@dandelis.ch>
