@@ -52,6 +52,7 @@ static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
    other special value. */
 
 rtx *reg_base_value;
+rtx *new_reg_base_value;
 unsigned int reg_base_value_size;	/* size of reg_base_value array */
 #define REG_BASE_VALUE(X) \
 	(REGNO (X) < reg_base_value_size ? reg_base_value[REGNO (X)] : 0)
@@ -94,12 +95,16 @@ find_base_value (src)
       return src;
 
     case REG:
+      /* If this REG is related to a known base value, return it.  */
+      if (reg_base_value[REGNO (src)])
+	return reg_base_value[REGNO (src)];
+
       /* At the start of a function argument registers have known base
 	 values which may be lost later.  Returning an ADDRESS
 	 expression here allows optimization based on argument values
 	 even when the argument registers are used for other purposes.  */
       if (REGNO (src) < FIRST_PSEUDO_REGISTER && copying_arguments)
-	return reg_base_value[REGNO (src)];
+	return new_reg_base_value[REGNO (src)];
       return src;
 
     case MEM:
@@ -122,14 +127,28 @@ find_base_value (src)
     case PLUS:
     case MINUS:
       {
-	rtx src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
+	rtx temp, src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
+
+	/* If either operand is a REG, then see if we already have
+	   a known value for it.  */
+	if (GET_CODE (src_0) == REG)
+	  {
+	    temp = find_base_value (src_0);
+	    if (temp)
+	      src_0 = temp;
+	  }
+
+	if (GET_CODE (src_1) == REG)
+	  {
+	    temp = find_base_value (src_1);
+	    if (temp)
+	      src_1 = temp;
+	  }
 
 	/* Guess which operand is the base address.
 
-	   If the first operand is a symbol or the second operand is
-	   an integer, the first operand is the base address.  Else if
-	   either operand is a register marked as a pointer, it is the
-	   base address.  */
+	   If either operand is a symbol, then it is the base.  If
+	   either operand is a CONST_INT, then the other is the base.  */
 
 	if (GET_CODE (src_1) == CONST_INT
 	    || GET_CODE (src_0) == SYMBOL_REF
@@ -137,6 +156,16 @@ find_base_value (src)
 	    || GET_CODE (src_0) == CONST)
 	  return find_base_value (src_0);
 
+	if (GET_CODE (src_0) == CONST_INT
+	    || GET_CODE (src_1) == SYMBOL_REF
+	    || GET_CODE (src_1) == LABEL_REF
+	    || GET_CODE (src_1) == CONST)
+	  return find_base_value (src_1);
+
+	/* This might not be necessary anymore. 
+
+	   If either operand is a REG that is a known pointer, then it
+	   is the base.  */
 	if (GET_CODE (src_0) == REG && REGNO_POINTER_FLAG (REGNO (src_0)))
 	  return find_base_value (src_0);
 
@@ -171,6 +200,9 @@ find_base_value (src)
    register N has been set in this function.  */
 static char *reg_seen;
 
+/* */
+static int unique_id;
+
 static void
 record_set (dest, set)
      rtx dest, set;
@@ -190,21 +222,20 @@ record_set (dest, set)
 	 set).  */
       if (GET_CODE (set) == CLOBBER)
 	{
-	  reg_base_value[regno] = 0;
+	  new_reg_base_value[regno] = 0;
 	  return;
 	}
       src = SET_SRC (set);
     }
   else
     {
-      static int unique_id;
       if (reg_seen[regno])
 	{
-	  reg_base_value[regno] = 0;
+	  new_reg_base_value[regno] = 0;
 	  return;
 	}
       reg_seen[regno] = 1;
-      reg_base_value[regno] = gen_rtx (ADDRESS, Pmode,
+      new_reg_base_value[regno] = gen_rtx (ADDRESS, Pmode,
 				       GEN_INT (unique_id++));
       return;
     }
@@ -215,27 +246,27 @@ record_set (dest, set)
      extern int x, y;  int *p = &x; p += (&y-&x);
      ANSI C does not allow computing the difference of addresses
      of distinct top level objects.  */
-  if (reg_base_value[regno])
+  if (new_reg_base_value[regno])
     switch (GET_CODE (src))
       {
       case LO_SUM:
       case PLUS:
       case MINUS:
 	if (XEXP (src, 0) != dest && XEXP (src, 1) != dest)
-	  reg_base_value[regno] = 0;
+	  new_reg_base_value[regno] = 0;
 	break;
       case AND:
 	if (XEXP (src, 0) != dest || GET_CODE (XEXP (src, 1)) != CONST_INT)
-	  reg_base_value[regno] = 0;
+	  new_reg_base_value[regno] = 0;
 	break;
       default:
-	reg_base_value[regno] = 0;
+	new_reg_base_value[regno] = 0;
 	break;
       }
   /* If this is the first set of a register, record the value.  */
   else if ((regno >= FIRST_PSEUDO_REGISTER || ! fixed_regs[regno])
-	   && ! reg_seen[regno] && reg_base_value[regno] == 0)
-    reg_base_value[regno] = find_base_value (src);
+	   && ! reg_seen[regno] && new_reg_base_value[regno] == 0)
+    new_reg_base_value[regno] = find_base_value (src);
 
   reg_seen[regno] = 1;
 }
@@ -949,9 +980,41 @@ init_alias_analysis ()
 	 registers.  */
       reg_base_value_size = maxreg * 2;
       reg_base_value = (rtx *)oballoc (reg_base_value_size * sizeof (rtx));
+      new_reg_base_value = (rtx *)alloca (reg_base_value_size * sizeof (rtx));
       reg_seen = (char *)alloca (reg_base_value_size);
       bzero ((char *) reg_base_value, reg_base_value_size * sizeof (rtx));
-      bzero (reg_seen, reg_base_value_size);
+    }
+
+  /* The basic idea is that each pass through this loop will use the
+     "constant" information from the previous pass to propagate alias
+     information through another level of assignments.
+
+     This could get expensive if the assignment chains are long.  Maybe
+     we should throttle the number of iterations, possibly based on
+     the optimization level.
+
+     We could propagate more information in the first pass by making use
+     of REG_N_SETS to determine immediately that the alias information
+     for a pseudo is "constant".  */
+  changed = 1;
+  while (changed)
+    {
+      /* Assume nothing will change this iteration of the loop.  */
+      changed = 0;
+
+      /* Wipe the potential alias information clean for this pass.  */
+      bzero ((char *) new_reg_base_value, reg_base_value_size * sizeof (rtx));
+
+      /* Wipe the reg_seen array clean.  */
+      bzero ((char *) reg_seen, reg_base_value_size);
+
+      /* We want to assign the same IDs each iteration of this loop, so
+	 start counting from zero each iteration of the loop.  */
+      unique_id = 0;
+
+      /* We're at the start of the funtion each iteration through the
+	 loop, so we're copying arguments.  */
+      copying_arguments = 1;
 
       /* Mark all hard registers which may contain an address.
 	 The stack, frame and argument pointers may contain an address.
@@ -968,52 +1031,73 @@ init_alias_analysis ()
 	   argument.  FUNCTION_ARG_REGNO_P tests outgoing register
 	   numbers, so translate if necessary due to register windows. */
 	if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i)) && HARD_REGNO_MODE_OK (i, Pmode))
-	  reg_base_value[i] = gen_rtx (ADDRESS, VOIDmode,
-				       gen_rtx (REG, Pmode, i));
+	  new_reg_base_value[i] = gen_rtx (ADDRESS, VOIDmode,
+					   gen_rtx (REG, Pmode, i));
 
-      reg_base_value[STACK_POINTER_REGNUM]
+      new_reg_base_value[STACK_POINTER_REGNUM]
 	= gen_rtx (ADDRESS, Pmode, stack_pointer_rtx);
-      reg_base_value[ARG_POINTER_REGNUM]
+      new_reg_base_value[ARG_POINTER_REGNUM]
 	= gen_rtx (ADDRESS, Pmode, arg_pointer_rtx);
-      reg_base_value[FRAME_POINTER_REGNUM]
+      new_reg_base_value[FRAME_POINTER_REGNUM]
 	= gen_rtx (ADDRESS, Pmode, frame_pointer_rtx);
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-      reg_base_value[HARD_FRAME_POINTER_REGNUM]
+      new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
 	= gen_rtx (ADDRESS, Pmode, hard_frame_pointer_rtx);
 #endif
-    }
+      if (struct_value_incoming_rtx
+	  && GET_CODE (struct_value_incoming_rtx) == REG)
+      new_reg_base_value[REGNO (struct_value_incoming_rtx)]
+	= gen_rtx (ADDRESS, Pmode, struct_value_incoming_rtx);
 
-  copying_arguments = 1;
-  /* Fill in the entries with known constant values.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (flag_alias_check && GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      if (static_chain_rtx
+	  && GET_CODE (static_chain_rtx) == REG)
+      new_reg_base_value[REGNO (static_chain_rtx)]
+	= gen_rtx (ADDRESS, Pmode, static_chain_rtx);
+
+      /* Walk the insns adding values to the new_reg_base_value array.  */
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
-	  /* If this insn has a noalias note, process it,  Otherwise,
-	     scan for sets.  A simple set will have no side effects
-	     which could change the base value of any other register. */
-	  rtx noalias_note;
-	  if (GET_CODE (PATTERN (insn)) == SET
-	      && (noalias_note = find_reg_note (insn, REG_NOALIAS, NULL_RTX)))
-	    record_set (SET_DEST (PATTERN (insn)), 0);
-	  else
-	    note_stores (PATTERN (insn), record_set);
+	  if (flag_alias_check && GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	    {
+	      /* If this insn has a noalias note, process it,  Otherwise,
+	         scan for sets.  A simple set will have no side effects
+	         which could change the base value of any other register. */
+	      rtx noalias_note;
+	      if (GET_CODE (PATTERN (insn)) == SET
+		  && (noalias_note = find_reg_note (insn,
+						    REG_NOALIAS, NULL_RTX)))
+		record_set (SET_DEST (PATTERN (insn)), 0);
+	      else
+		note_stores (PATTERN (insn), record_set);
+	    }
+	  else if (GET_CODE (insn) == NOTE
+		   && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
+	    copying_arguments = 0;
+
+	  if ((set = single_set (insn)) != 0
+	      && GET_CODE (SET_DEST (set)) == REG
+	      && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
+	      && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
+		   && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
+		  || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
+	      && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
+	    {
+	      int regno = REGNO (SET_DEST (set));
+	      reg_known_value[regno] = XEXP (note, 0);
+	      reg_known_equiv_p[regno] = REG_NOTE_KIND (note) == REG_EQUIV;
+	    }
 	}
-      else if (GET_CODE (insn) == NOTE
-	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
-	copying_arguments = 0;
 
-      if ((set = single_set (insn)) != 0
-	  && GET_CODE (SET_DEST (set)) == REG
-	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
-	  && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
-	       && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
-	      || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
-	  && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
+      /* Now propagate values from new_reg_base_value to reg_base_value.  */
+      for (i = 0; i < reg_base_value_size; i++)
 	{
-	  int regno = REGNO (SET_DEST (set));
-	  reg_known_value[regno] = XEXP (note, 0);
-	  reg_known_equiv_p[regno] = REG_NOTE_KIND (note) == REG_EQUIV;
+	  if (new_reg_base_value[i]
+	      && new_reg_base_value[i] != reg_base_value[i]
+	      && !rtx_equal_p (new_reg_base_value[i], reg_base_value[i]))
+	    {
+	      reg_base_value[i] = new_reg_base_value[i];
+	      changed = 1;
+	    }
 	}
     }
 
@@ -1051,6 +1135,7 @@ init_alias_analysis ()
     }
   while (changed);
 
+  new_reg_base_value = 0;
   reg_seen = 0;
 }
 
