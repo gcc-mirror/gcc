@@ -2725,6 +2725,7 @@ override_one_vtable (binfo, old, t)
 	    fndecl = copy_node (fndecl);
 	    copy_lang_decl (fndecl);
 	    DECL_ABSTRACT_VIRTUAL_P (fndecl) = 1;
+	    DECL_NEEDS_FINAL_OVERRIDER_P (fndecl) = 1;
 	    /* Make sure we search for it later.  */
 	    if (! CLASSTYPE_ABSTRACT_VIRTUALS (t))
 	      CLASSTYPE_ABSTRACT_VIRTUALS (t) = error_mark_node;
