@@ -4832,7 +4832,7 @@ assign_parms (tree fndecl)
 	      /* TREE_USED gets set erroneously during expand_assignment.  */
 	      save_tree_used = TREE_USED (parm);
 	      expand_assignment (parm,
-				 make_tree (nominal_type, tempreg), 0, 0);
+				 make_tree (nominal_type, tempreg), 0);
 	      TREE_USED (parm) = save_tree_used;
 	      conversion_insns = get_insns ();
 	      did_conversion = 1;

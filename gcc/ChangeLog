@@ -1,3 +1,11 @@
+2003-07-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (expand_assignment): Remove an unused argument
+	SUGGEST_REG.
+	* expr.h: Update the prototype.
+	* function.c: Update the callers.
+	* stmt.c: Likewise.
+
 2003-07-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR debug/11098
