@@ -77,6 +77,22 @@ enum decl_context
 #ifndef WINT_TYPE
 #define WINT_TYPE "unsigned int"
 #endif
+
+#ifndef INTMAX_TYPE
+#define INTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+		     ? "int"					\
+		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+			? "long int"				\
+			: "long long int"))
+#endif
+
+#ifndef UINTMAX_TYPE
+#define UINTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+		     ? "unsigned int"				\
+		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+			? "long unsigned int"			\
+			: "long long unsigned int"))
+#endif
 
 /* Do GC.  */
 int ggc_p = 1;
@@ -3077,6 +3093,11 @@ init_decl_processing ()
 
   wint_type_node =
     TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WINT_TYPE)));
+
+  intmax_type_node =
+    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (INTMAX_TYPE)));
+  uintmax_type_node =
+    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (UINTMAX_TYPE)));
 
   boolean_type_node = integer_type_node;
   boolean_true_node = integer_one_node;

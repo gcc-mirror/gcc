@@ -2287,11 +2287,19 @@ lex_number (str, len)
 	    warning ("width of integer constant may change on other systems with -traditional");
 	}
 
-      if (pedantic && !flag_traditional && !spec_long_long && !warn
-	  && (TYPE_PRECISION (long_integer_type_node) < TYPE_PRECISION (type)))
+      if (pedantic && !flag_traditional && (flag_isoc99 || !spec_long_long)
+	  && !warn
+	  && ((flag_isoc99
+	       ? TYPE_PRECISION (long_long_integer_type_node)
+	       : TYPE_PRECISION (long_integer_type_node)) < TYPE_PRECISION (type)))
 	{
 	  warn = 1;
-	  pedwarn ("integer constant larger than the maximum value of an unsigned long int");
+	  pedwarn ("integer constant larger than the maximum value of %s",
+		   (flag_isoc99
+		    ? (TREE_UNSIGNED (type)
+		       ? "an unsigned long long int"
+		       : "a long long int")
+		    : "an unsigned long int"));
 	}
 
       if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))

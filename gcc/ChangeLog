@@ -1,5 +1,22 @@
 2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* tm.texi (INTMAX_TYPE, UINTMAX_TYPE): Define.
+	* c-common.h (enum c_tree_index): Add CTI_INTMAX_TYPE and
+	CTI_UINTMAX_TYPE.
+	(intmax_type_node, uintmax_type_node): Define.
+	* c-common.c (decl_attributes): If pedantic, warn if `mode'
+	attributes create a type wider than intmax_t.
+	(T_IM, T_UIM): Define properly.
+	* c-decl.c (INTMAX_TYPE, UINTMAX_TYPE): Define if not already
+	defined.
+	(init_decl_processing): Initialize intmax_type_node and
+	uintmax_type_node.
+	* c-lex.c (lex_number): When pedantic and warning for integer
+	constants that are too large, in C99 mode warn for those that have
+	a type wider than long long.
+
+2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (FMT_FLAG_ARG_CONVERT, FMT_FLAG_SCANF_A_KLUDGE,
 	FMT_FLAG_FANCY_PERCENT_OK): Define.
 	(format_char_info): Add flag "4" to comment.

@@ -1331,6 +1331,29 @@ information.
 
 If you don't define this macro, the default is @code{"unsigned int"}.
 
+@findex INTMAX_TYPE
+@item INTMAX_TYPE
+A C expression for a string describing the name of the data type that
+can represent any value of any standard or extended signed integer type.
+The typedef name @code{intmax_t} is defined using the contents of the
+string.  See @code{SIZE_TYPE} above for more information.
+
+If you don't define this macro, the default is the first of
+@code{"int"}, @code{"long int"}, or @code{"long long int"} that has as
+much precision as @code{long long int}.
+
+@findex UINTMAX_TYPE
+@item UINTMAX_TYPE
+A C expression for a string describing the name of the data type that
+can represent any value of any standard or extended unsigned integer
+type.  The typedef name @code{uintmax_t} is defined using the contents
+of the string.  See @code{SIZE_TYPE} above for more information.
+
+If you don't define this macro, the default is the first of
+@code{"unsigned int"}, @code{"long unsigned int"}, or @code{"long long
+unsigned int"} that has as much precision as @code{long long unsigned
+int}.
+
 @findex OBJC_INT_SELECTORS
 @item OBJC_INT_SELECTORS
 Define this macro if the type of Objective C selectors should be
