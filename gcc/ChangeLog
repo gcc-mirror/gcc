@@ -1,3 +1,16 @@
+2004-02-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* invoke.texi (ARM Options): Mark -mapcs-26 and -mno-alignment-traps
+	as deprecated.  Remove already deprecated synonyms.
+	* arm.c (arm_override_options): Generate an inform message if the
+	user tries to invoke the compiler in apcs-26 mode.
+	* arm.h (TARGET_SWITCHES): Remove help comments from deprecated
+	switches. Delete deprecated synonyms for -malignment-traps.
+	(TARGET_DEFAULT): Default to alignment traps.
+	* arm/coff.h (TARGET_DEFAULT): Default to alignment traps.
+	* arm/elf.h arm/netbsd.h arm/pe.h arm/semi.h arm/semiaof.h: Likewise.
+	* arm/unknown-elf.h arm/wince-pe.h: Likewise.
+
 2004-02-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.h: Deprecate -mpni/-mno-pni.

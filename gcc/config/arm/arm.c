@@ -690,6 +690,9 @@ arm_override_options (void)
       target_flags &= ~ARM_FLAG_THUMB;
     }
 
+  if (!TARGET_APCS_32)
+    inform ("future releases of GCC will not support -mapcs-26");
+
   if (TARGET_APCS_FRAME && TARGET_THUMB)
     {
       /* warning ("ignoring -mapcs-frame because -mthumb was used"); */

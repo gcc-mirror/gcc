@@ -72,7 +72,7 @@
    Possibly when chips that support APCS-26 are no longer made.  */
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | TARGET_FLAG_NOP_FUN)
+#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | TARGET_FLAG_NOP_FUN | ARM_FLAG_MMU_TRAPS)
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \

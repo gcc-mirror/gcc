@@ -36,7 +36,7 @@
 
 /* Default is to use APCS-32 mode.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_FRAME)
+#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_FRAME | ARM_FLAG_MMU_TRAPS)
 
 /* Some defines for CPP.
    arm32 is the NetBSD port name, so we always define arm32 and __arm32__.  */

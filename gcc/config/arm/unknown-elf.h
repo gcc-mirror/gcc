@@ -30,7 +30,7 @@
 
 /* Default to using APCS-32 and software floating point.  */
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME)
+#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME | ARM_FLAG_MMU_TRAPS)
 #endif
 
 /* Now we define the strings used to build the spec file.  */

@@ -33,7 +33,7 @@
 
 #define TARGET_VERSION fputs (" (ARM/semi-hosted)", stderr);
 
-#define TARGET_DEFAULT ARM_FLAG_APCS_32
+#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_MMU_TRAPS)
 
 /* The Norcroft C library defines size_t as "unsigned int".  */
 #define SIZE_TYPE "unsigned int"

@@ -175,7 +175,8 @@ extern GTY(()) rtx aof_pic_label;
 /* Set TARGET_DEFAULT to the default, but without soft-float.  */
 #ifdef  TARGET_DEFAULT
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT	(ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME)
+#define TARGET_DEFAULT	\
+  (ARM_FLAG_APCS_32 | ARM_FLAG_MMU_TRAPS | ARM_FLAG_APCS_FRAME)
 #endif
 #else
 #if TARGET_CPU_DEFAULT == TARGET_CPU_iwmmxt
@@ -455,8 +456,7 @@ extern GTY(()) rtx aof_pic_label;
   {"fpe",			ARM_FLAG_FPE,  "" },			\
   {"apcs-32",			ARM_FLAG_APCS_32,			\
    N_("Use the 32-bit version of the APCS") },				\
-  {"apcs-26",		       -ARM_FLAG_APCS_32,			\
-   N_("Use the 26-bit version of the APCS") },				\
+  {"apcs-26",		       -ARM_FLAG_APCS_32, ""},			\
   {"apcs-stack-check",		ARM_FLAG_APCS_STACK, "" },		\
   {"no-apcs-stack-check",      -ARM_FLAG_APCS_STACK, "" },		\
   {"apcs-float",		ARM_FLAG_APCS_FLOAT,			\
@@ -468,10 +468,6 @@ extern GTY(()) rtx aof_pic_label;
   {"alignment-traps",           ARM_FLAG_MMU_TRAPS,			\
    N_("The MMU will trap on unaligned accesses") },			\
   {"no-alignment-traps",       -ARM_FLAG_MMU_TRAPS, "" },		\
-  {"short-load-bytes",		ARM_FLAG_MMU_TRAPS, "" },		\
-  {"no-short-load-bytes",      -ARM_FLAG_MMU_TRAPS, "" },		\
-  {"short-load-words",	       -ARM_FLAG_MMU_TRAPS, "" },		\
-  {"no-short-load-words",	ARM_FLAG_MMU_TRAPS, "" },		\
   {"soft-float",		ARM_FLAG_SOFT_FLOAT,			\
    N_("Use library calls to perform FP operations") },			\
   {"hard-float",	       -ARM_FLAG_SOFT_FLOAT,			\
@@ -650,7 +646,7 @@ extern int arm_tune_xscale;
 extern int arm_is_6_or_7;
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT  (ARM_FLAG_APCS_FRAME)
+#define TARGET_DEFAULT  (ARM_FLAG_APCS_FRAME | ARM_FLAG_MMU_TRAPS)
 #endif
 
 /* The frame pointer register used in gcc has nothing to do with debugging;

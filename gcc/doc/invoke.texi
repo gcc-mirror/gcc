@@ -6453,15 +6453,19 @@ This is a synonym for @option{-mapcs-frame}.
 @opindex mapcs-26
 Generate code for a processor running with a 26-bit program counter,
 and conforming to the function calling standards for the APCS 26-bit
-option.  This option replaces the @option{-m2} and @option{-m3} options
-of previous releases of the compiler.
+option.
+
+This option is deprecated.  Future releases of the GCC will only support
+generating code that runs in apcs-32 mode.
 
 @item -mapcs-32
 @opindex mapcs-32
 Generate code for a processor running with a 32-bit program counter,
 and conforming to the function calling standards for the APCS 32-bit
-option.  This option replaces the @option{-m6} option of previous releases
-of the compiler.
+option.
+
+This flag is deprecated.  Future releases of GCC will make this flag
+unconditional.
 
 @ignore
 @c not currently implemented
@@ -6562,7 +6566,7 @@ synthesize the access as a series of byte accesses.  The compiler can
 still use word accesses to load half-word data if it knows that the
 address is aligned to a word boundary.
 
-This option is ignored when compiling for ARM architecture 4 or later,
+This option has no effect when compiling for ARM architecture 4 or later,
 since these processors have instructions to directly access half-word
 objects in memory.
 
@@ -6577,21 +6581,11 @@ Note that you cannot use this option to access unaligned word objects,
 since the processor will only fetch one 32-bit aligned object from
 memory.
 
-The default setting for most targets is @option{-mno-alignment-traps}, since
-this produces better code when there are no half-word memory
-instructions available.
+The default setting is @option{-malignment-traps}, since this produces
+code that will also run on processors implementing ARM architecture
+version 6 or later.
 
-@item -mshort-load-bytes
-@itemx -mno-short-load-words
-@opindex mshort-load-bytes
-@opindex mno-short-load-words
-These are deprecated aliases for @option{-malignment-traps}.
-
-@item -mno-short-load-bytes
-@itemx -mshort-load-words
-@opindex mno-short-load-bytes
-@opindex mshort-load-words
-This are deprecated aliases for @option{-mno-alignment-traps}.
+This option is deprecated and will be removed in the next release of GCC.
 
 @item -mcpu=@var{name}
 @opindex mcpu
