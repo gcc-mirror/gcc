@@ -311,8 +311,8 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
       ctype_default=no
     fi
 
-    dnl Test for <ctype> functionality -- BSD
-    AC_MSG_CHECKING([<ctype> for bsd ])
+    dnl Test for <ctype> functionality -- FreeBSD 4.0
+    AC_MSG_CHECKING([<ctype> for freebsd 4.0 ])
     AC_TRY_COMPILE([#include <ctype.h>],
     [int
     foo (int a)
@@ -321,6 +321,20 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     ctype_bsd=yes, ctype_bsd=no)
     AC_MSG_RESULT($ctype_bsd)
     if test $ctype_bsd = "yes"; then
+      ctype_include_dir="config/bsd"
+      ctype_default=no
+    fi
+
+    dnl Test for <ctype> functionality -- FreeBSD 3.4
+    AC_MSG_CHECKING([<ctype> for freebsd 3.4 ])
+    AC_TRY_COMPILE([#include <ctype.h>],
+    [int
+    foo (int a)
+    { return _S + _R + _C + _U + _L + _A \
+      + _D + _P + _X + _G + __istype (a, 0);}], \
+    ctype_freebsd34=yes, ctype_freebsd34=no)
+    AC_MSG_RESULT($ctype_freebsd34)
+    if test $ctype_freebsd34 = "yes"; then
       ctype_include_dir="config/bsd"
       ctype_default=no
     fi

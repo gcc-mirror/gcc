@@ -98,12 +98,6 @@ namespace std
       C const*, S::allocator_type const&);
 #endif
 
-#ifdef CTORDUPAL
-  template 
-    S::basic_string(
-      S::size_type, C, S::allocator_type const&);
-#endif
-
 #ifdef CTORPP
   template 
     S::basic_string
@@ -222,7 +216,9 @@ namespace std
 #endif
 
 #ifdef REP4I
-  template 
+  // Only one template keyword allowed here. 
+  // See core issue #46 (NAD)
+  // http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_closed.html#46
   template 
     S& 
     S::_M_replace<S::const_iterator>

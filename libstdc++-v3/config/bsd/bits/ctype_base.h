@@ -31,7 +31,10 @@
 // ISO C++ 14882: 22.1  Locales
 //
   
-// Information as gleaned from /usr/include/ctype.h on FreeBSD 4.0
+// Information as gleaned from /usr/include/ctype.h on FreeBSD 3.4,
+// 4.0 and all versions of the CVS managed file at:
+// :pserver:anoncvs@anoncvs.freebsd.org:/home/ncvs/src/include/ctype.h
+// which should cover most classic BSD configurations
   
   struct ctype_base
   {
@@ -41,6 +44,8 @@
 
     enum
     {
+#ifdef _CTYPE_S
+      // FreeBSD 4.0 uses this style of define.
       space = _CTYPE_S,
       print = _CTYPE_R,
       cntrl = _CTYPE_C,
@@ -52,6 +57,20 @@
       xdigit = _CTYPE_X,
       alnum = _CTYPE_A | _CTYPE_D,
       graph = _CTYPE_G
+#else
+      // Other BSD's, including Free BSD 3.4, uses this style of define.
+      space = _S,
+      print = _R,
+      cntrl = _C,
+      upper = _U,
+      lower = _L,
+      alpha = _A,
+      digit = _D,
+      punct = _P,
+      xdigit = _X,
+      alnum = _A | _D,
+      graph = _G
+#endif
     };
   };
 

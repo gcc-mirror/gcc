@@ -171,7 +171,7 @@ cpu_headers = \
 string_sources = \
 	stringMAIN.cc stringCTORNC.cc stringCTORAL.cc \
 	stringCTORCPR.cc stringCTORCPRAL.cc stringCTORPRAL.cc \
-	stringCTORPAL.cc stringCTORDUPAL.cc stringCTORPP.cc stringCTORII.cc \
+	stringCTORPAL.cc stringCTORPP.cc stringCTORII.cc \
 	stringMUTATE.cc stringRESERVE.cc \
 	stringSWAP.cc stringSLOP.cc \
 	stringRESIZE.cc stringAPPCOPY.cc stringAPPCPR.cc stringAPPPR.cc \
@@ -190,7 +190,7 @@ string_sources = \
 wstring_sources = \
 	wstringMAIN.cc wstringCTORNC.cc wstringCTORAL.cc \
 	wstringCTORCPR.cc wstringCTORCPRAL.cc wstringCTORPRAL.cc \
-	wstringCTORPAL.cc wstringCTORDUPAL.cc wstringCTORPP.cc \
+	wstringCTORPAL.cc wstringCTORPP.cc \
 	wstringCTORII.cc \
 	wstringMUTATE.cc wstringRESERVE.cc \
 	wstringSWAP.cc wstringSLOP.cc \
@@ -293,7 +293,6 @@ stringCTORCPR.lo \
 stringCTORCPRAL.lo \
 stringCTORPRAL.lo \
 stringCTORPAL.lo \
-stringCTORDUPAL.lo \
 stringCTORPP.lo \
 stringCTORII.lo \
 stringMUTATE.lo \
@@ -343,7 +342,7 @@ stringGETLINE.lo \
 stringSCOPY.lo \
 stringEQ.lo : string-inst.cc
 	$(LTCXXCOMPILE) -fimplicit-templates \
-	-c -D`echo $@ | tr -dc 'A-Z'` $< -o $@
+	-c -D`echo $@ | tr -dc '0-9A-Z'` $< -o $@
 
 wstringMAIN.lo \
 wstringCTORNC.lo \
@@ -352,7 +351,6 @@ wstringCTORCPR.lo \
 wstringCTORCPRAL.lo \
 wstringCTORPRAL.lo \
 wstringCTORPAL.lo \
-wstringCTORDUPAL.lo \
 wstringCTORPP.lo \
 wstringCTORII.lo \
 wstringMUTATE.lo \
@@ -402,7 +400,7 @@ wstringGETLINE.lo \
 wstringSCOPY.lo \
 wstringEQ.lo : string-inst.cc
 	$(LTCXXCOMPILE) -fimplicit-templates \
-	-c -D`echo $@ | tr -dc 'A-Z'` -DC=wchar_t $< -o $@
+	-c -D`echo $@ | tr -dc '0-9A-Z'` -DC=wchar_t $< -o $@
 
 stringMAIN.o \
 stringCTORNC.o \
@@ -411,7 +409,6 @@ stringCTORCPR.o \
 stringCTORCPRAL.o \
 stringCTORPRAL.o \
 stringCTORPAL.o \
-stringCTORDUPAL.o \
 stringCTORPP.o \
 stringCTORII.o \
 stringMUTATE.o \
@@ -461,7 +458,7 @@ stringGETLINE.o \
 stringSCOPY.o \
 stringEQ.o : string-inst.cc
 	$(CXXCOMPILE) -fimplicit-templates \
-	-c -D`echo $@ | tr -dc 'A-Z'` $< -o $@
+	-c -D`echo $@ | tr -dc '0-9A-Z'` $< -o $@
 
 wstringMAIN.o \
 wstringCTORNC.o \
@@ -470,7 +467,6 @@ wstringCTORCPR.o \
 wstringCTORCPRAL.o \
 wstringCTORPRAL.o \
 wstringCTORPAL.o \
-wstringCTORDUPAL.o \
 wstringCTORPP.o \
 wstringCTORII.o \
 wstringMUTATE.o \
@@ -520,4 +516,4 @@ wstringGETLINE.o \
 wstringSCOPY.o \
 wstringEQ.o : string-inst.cc
 	$(CXXCOMPILE) -fimplicit-templates \
-	-c -D`echo $@ | tr -dc 'A-Z'` -DC=wchar_t $< -o $@
+	-c -D`echo $@ | tr -dc '0-9A-Z'` -DC=wchar_t $< -o $@
