@@ -1,0 +1,1030 @@
+\input texinfo  @c -*-texinfo-*-
+@c %**start of header 
+@setfilename g++int.info
+@settitle G++ internals
+@setchapternewpage odd
+@c %**end of header
+     
+@node Top, Limitations of g++, (dir), (dir)
+@chapter Internal Architecture of the Compiler
+
+This is meant to describe the C++ frontend for gcc in detail.
+Questions and comments to mrs@@cygnus.com.
+
+@menu
+* Limitations of g++::          
+* Routines::                    
+* Implementation Specifics::    
+* Glossary::                    
+* Macros::                      
+* Typical Behavior::            
+* Coding Conventions::          
+* Templates::                   
+* Access Control::              
+* Error Reporting::             
+* Concept Index::               
+@end menu
+
+@node Limitations of g++, Routines, Top, Top
+@section Limitations of g++
+
+@itemize @bullet
+@item
+Limitations on input source code: 240 nesting levels with the parser
+stacksize (YYSTACKSIZE) set to 500 (the default), and requires around
+16.4k swap space per nesting level.  The parser needs about 2.09 *
+number of nesting levels worth of stackspace.
+
+@cindex pushdecl_class_level
+@item
+I suspect there are other uses of pushdecl_class_level that do not call
+set_identifier_type_value in tandem with the call to
+pushdecl_class_level.  It would seem to be an omission.
+
+@cindex delete, two argument
+@item
+For two argument delete, the second argument is always calculated by
+``virtual_size ='' in the source.  It currently has a problem, in that
+object size is not calculated by the virtual destructor and passed back
+for the second parameter to delete.  Destructors need to return a value
+just like constructors.  ANSI C++ Jun 5 92 wp 12.5.6
+
+The second argument is magically deleted in build_method_call, if it is
+not used.  It needs to be deleted for global operator delete also.
+
+@cindex access checking
+@item
+Access checking in general is unimplemented, there are a few cases
+where it is implemented.  grok_enum_decls should be used in more places
+to do access checking, but this is only the tip of a bigger problem.
+
+@cindex @code{volatile}
+@item
+@code{volatile} is not implemented in general.
+
+@cindex pointers to members
+@item
+Pointers to members are only minimally supported, and there are places
+where the grammar doesn't even properly accept them yet.
+
+@cindex multiple inheritance
+@item
+@code{this} will be wrong in virtual members functions defined in a
+virtual base class, when they are overridden in a derived class, when
+called via a non-left most object.
+
+An example would be:
+
+@example
+extern "C" int printf(const char*, ...);
+struct A { virtual void f() { } };
+struct B : virtual A { int b; B() : b(0) {} void f() { b++; } };
+struct C : B {};
+struct D : B {};
+struct E : C, D {};
+int main()
+{
+  E e;
+  C& c = e; D& d = e;
+  c.f(); d.f();
+  printf ("C::b = %d, D::b = %d\n", e.C::b, e.D::b);
+  return 0;
+}
+@end example
+
+This will print out 2, 0, instead of 1,1.
+
+@end itemize
+
+@node Routines, Implementation Specifics, Limitations of g++, Top
+@section Routines
+
+This section describes some of the routines used in the C++ front-end.
+
+@code{build_vtable} and @code{prepare_fresh_vtable} is used only within
+the @file{cp-class.c} file, and only in @code{finish_struct} and
+@code{modify_vtable_entries}.
+
+@code{build_vtable}, @code{prepare_fresh_vtable}, and
+@code{finish_struct} are the only routines that set @code{DECL_VPARENT}.
+
+@code{finish_struct} can steal the virtual function table from parents,
+this prohibits related_vslot from working.  When finish_struct steals,
+we know that
+
+@example
+get_binfo (DECL_FIELD_CONTEXT (CLASSTYPE_VFIELD (t)), t, 0)
+@end example
+
+@noindent
+will get the related binfo.
+
+@code{layout_basetypes} does something with the VIRTUALS.
+
+Supposedly (according to Tiemann) most of the breadth first searching
+done, like in @code{get_base_distance} and in @code{get_binfo} was not
+because of any design decision.  I have since found out the at least one
+part of the compiler needs the notion of depth first binfo searching, I
+am going to try and convert the whole thing, it should just work.  The
+term left-most refers to the depth first left-most node.  It uses
+@code{MAIN_VARIANT == type} as the condition to get left-most, because
+the things that have @code{BINFO_OFFSET}s of zero are shared and will
+have themselves as their own @code{MAIN_VARIANT}s.  The non-shared right
+ones, are copies of the left-most one, hence if it is its own
+@code{MAIN_VARIENT}, we know it IS a left-most one, if it is not, it is
+a non-left-most one.
+
+@code{get_base_distance}'s path and distance matters in its use in:
+
+@itemize @bullet
+@item
+@code{prepare_fresh_vtable} (the code is probably wrong)
+@item
+@code{init_vfields} Depends upon distance probably in a safe way,
+build_offset_ref might use partial paths to do further lookups,
+hack_identifier is probably not properly checking access.
+
+@item
+@code{get_first_matching_virtual} probably should check for
+@code{get_base_distance} returning -2.
+
+@item
+@code{resolve_offset_ref} should be called in a more deterministic
+manner.  Right now, it is called in some random contexts, like for
+arguments at @code{build_method_call} time, @code{default_conversion}
+time, @code{convert_arguments} time, @code{build_unary_op} time,
+@code{build_c_cast} time, @code{build_modify_expr} time,
+@code{convert_for_assignment} time, and
+@code{convert_for_initialization} time.
+
+But, there are still more contexts it needs to be called in, one was the
+ever simple:
+
+@example
+if (obj.*pmi != 7)
+   @dots{}
+@end example
+
+Seems that the problems were due to the fact that @code{TREE_TYPE} of
+the @code{OFFSET_REF} was not a @code{OFFSET_TYPE}, but rather the type
+of the referent (like @code{INTEGER_TYPE}).  This problem was fixed by
+changing @code{default_conversion} to check @code{TREE_CODE (x)},
+instead of only checking @code{TREE_CODE (TREE_TYPE (x))} to see if it
+was @code{OFFSET_TYPE}.
+
+@end itemize
+
+@node Implementation Specifics, Glossary, Routines, Top
+@section Implementation Specifics
+
+@itemize @bullet
+@item Explicit Initialization
+
+The global list @code{current_member_init_list} contains the list of
+mem-initializers specified in a constructor declaration.  For example:
+
+@example
+foo::foo() : a(1), b(2) @{@}
+@end example
+
+@noindent
+will initialize @samp{a} with 1 and @samp{b} with 2.
+@code{expand_member_init} places each initialization (a with 1) on the
+global list.  Then, when the fndecl is being processed,
+@code{emit_base_init} runs down the list, initializing them.  It used to
+be the case that g++ first ran down @code{current_member_init_list},
+then ran down the list of members initializing the ones that weren't
+explicitly initialized.  Things were rewritten to perform the
+initializations in order of declaration in the class.  So, for the above
+example, @samp{a} and @samp{b} will be initialized in the order that
+they were declared:
+
+@example
+class foo @{ public: int b; int a; foo (); @};
+@end example
+
+@noindent
+Thus, @samp{b} will be initialized with 2 first, then @samp{a} will be
+initialized with 1, regardless of how they're listed in the mem-initializer.
+
+@item Argument Matching
+
+In early 1993, the argument matching scheme in @sc{gnu} C++ changed
+significantly.  The original code was completely replaced with a new
+method that will, hopefully, be easier to understand and make fixing
+specific cases much easier.
+
+The @samp{-fansi-overloading} option is used to enable the new code; at
+some point in the future, it will become the default behavior of the
+compiler.
+
+The file @file{cp-call.c} contains all of the new work, in the functions
+@code{rank_for_overload}, @code{compute_harshness},
+@code{compute_conversion_costs}, and @code{ideal_candidate}.
+
+Instead of using obscure numerical values, the quality of an argument
+match is now represented by clear, individual codes.  The new data
+structure @code{struct harshness} (it used to be an @code{unsigned}
+number) contains:
+
+@enumerate a
+@item the @samp{code} field, to signify what was involved in matching two
+arguments;
+@item the @samp{distance} field, used in situations where inheritance
+decides which function should be called (one is ``closer'' than
+another);
+@item and the @samp{int_penalty} field, used by some codes as a tie-breaker.
+@end enumerate
+
+The @samp{code} field is a number with a given bit set for each type of
+code, OR'd together.  The new codes are:
+
+@itemize @bullet
+@item @code{EVIL_CODE}
+The argument was not a permissible match.
+
+@item @code{CONST_CODE}
+Currently, this is only used by @code{compute_conversion_costs}, to
+distinguish when a non-@code{const} member function is called from a
+@code{const} member function.
+
+@item @code{ELLIPSIS_CODE}
+A match against an ellipsis @samp{...} is considered worse than all others.
+
+@item @code{USER_CODE}
+Used for a match involving a user-defined conversion.
+
+@item @code{STD_CODE}
+A match involving a standard conversion.
+
+@item @code{PROMO_CODE}
+A match involving an integral promotion.  For these, the
+@code{int_penalty} field is used to handle the ARM's rule (XXX cite)
+that a smaller @code{unsigned} type should promote to a @code{int}, not
+to an @code{unsigned int}.
+
+@item @code{QUAL_CODE}
+Used to mark use of qualifiers like @code{const} and @code{volatile}.
+
+@item @code{TRIVIAL_CODE}
+Used for trivial conversions.  The @samp{int_penalty} field is used by
+@code{convert_harshness} to communicate further penalty information back
+to @code{build_overload_call_real} when deciding which function should
+be call.
+@end itemize
+
+The functions @code{convert_to_aggr} and @code{build_method_call} use
+@code{compute_conversion_costs} to rate each argument's suitability for
+a given candidate function (that's how we get the list of candidates for
+@code{ideal_candidate}).
+
+@end itemize
+
+@node Glossary, Macros, Implementation Specifics, Top
+@section Glossary
+
+@table @r
+@item binfo
+The main data structure in the compiler used to represent the
+inheritance relationships between classes.  The data in the binfo can be
+accessed by the BINFO_ accessor macros.
+
+@item vtable
+@itemx virtual function table
+
+The virtual function table holds information used in virtual function
+dispatching.  In the compiler, they are usually referred to as vtables,
+or vtbls.  The first index is not used in the normal way, I believe it
+is probably used for the virtual destructor.
+
+@item vfield
+
+vfields can be thought of as the base information needed to build
+vtables.  For every vtable that exists for a class, there is a vfield.
+See also vtable and virtual function table pointer.  When a type is used
+as a base class to another type, the virtual function table for the
+derived class can be based upon the vtable for the base class, just
+extended to include the additional virtual methods declared in the
+derived class.  The virtual function table from a virtual base class is
+never reused in a derived class.  @code{is_normal} depends upon this.
+
+@item virtual function table pointer
+
+These are @code{FIELD_DECL}s that are pointer types that point to
+vtables.  See also vtable and vfield.
+@end table
+
+@node Macros, Typical Behavior, Glossary, Top
+@section Macros
+
+This section describes some of the macros used on trees.  The list
+should be alphabetical.  Eventually all macros should be documented
+here.  There are some postscript drawings that can be used to better
+understnad from of the more complex data structures, contact Mike Stump
+(@code{mrs@@cygnus.com}) for information about them.
+
+@table @code
+@item BINFO_BASETYPES
+A vector of additional binfos for the types inherited by this basetype.
+The binfos are fully unshared (except for virtual bases, in which
+case the binfo structure is shared).
+
+   If this basetype describes type D as inherited in C,
+   and if the basetypes of D are E anf F,
+   then this vector contains binfos for inheritance of E and F by C.
+
+Has values of:
+
+	TREE_VECs
+
+
+@item BINFO_INHERITANCE_CHAIN
+Temporarily used to represent specific inheritances.  It usually points
+to the binfo associated with the lesser derived type, but it can be
+reversed by reverse_path.  For example:
+
+@example
+	Z ZbY	least derived
+	|
+	Y YbX
+	|
+	X Xb	most derived
+
+TYPE_BINFO (X) == Xb
+BINFO_INHERITANCE_CHAIN (Xb) == YbX
+BINFO_INHERITANCE_CHAIN (Yb) == ZbY
+BINFO_INHERITANCE_CHAIN (Zb) == 0
+@end example
+
+Not sure is the above is really true, get_base_distance has is point
+towards the most derived type, opposite from above.
+
+Set by build_vbase_path, recursive_bounded_basetype_p,
+get_base_distance, lookup_field, lookup_fnfields, and reverse_path.
+
+What things can this be used on:
+
+	TREE_VECs that are binfos
+
+
+@item BINFO_OFFSET
+The offset where this basetype appears in its containing type.
+BINFO_OFFSET slot holds the offset (in bytes) from the base of the
+complete object to the base of the part of the object that is allocated
+on behalf of this `type'.  This is always 0 except when there is
+multiple inheritance.
+
+Used on TREE_VEC_ELTs of the binfos BINFO_BASETYPES (...) for example.
+
+
+@item BINFO_VIRTUALS
+A unique list of functions for the virtual function table.  See also
+TYPE_BINFO_VIRTUALS.
+
+What things can this be used on:
+
+	TREE_VECs that are binfos
+
+
+@item BINFO_VTABLE
+Used to find the VAR_DECL that is the virtual function table associated
+with this binfo.  See also TYPE_BINFO_VTABLE.  To get the virtual
+function table pointer, see CLASSTYPE_VFIELD.
+
+What things can this be used on:
+
+	TREE_VECs that are binfos
+
+Has values of:
+
+	VAR_DECLs that are virtual function tables
+
+
+@item BLOCK_SUPERCONTEXT
+In the outermost scope of each function, it points to the FUNCTION_DECL
+node.  It aids in better DWARF support of inline functions.
+
+
+@item CLASSTYPE_TAGS
+CLASSTYPE_TAGS is a linked (via TREE_CHAIN) list of member classes of a
+class. TREE_PURPOSE is the name, TREE_VALUE is the type (pushclass scans
+these and calls pushtag on them.)
+
+finish_struct scans these to produce TYPE_DECLs to add to the
+TYPE_FIELDS of the type.
+
+It is expected that name found in the TREE_PURPOSE slot is unique,
+resolve_scope_to_name is one such place that depends upon this
+uniqueness.
+
+
+@item CLASSTYPE_METHOD_VEC
+The following is true after finish_struct has been called (on the
+class?) but not before.  Before finish_struct is called, things are
+different to some extent.  Contains a TREE_VEC of methods of the class.
+The TREE_VEC_LENGTH is the number of differently named methods plus one
+for the 0th entry.  The 0th entry is always allocated, and reserved for
+ctors and dtors.  If there are none, TREE_VEC_ELT(N,0) == NULL_TREE.
+Each entry of the TREE_VEC is a FUNCTION_DECL.  For each FUNCTION_DECL,
+there is a DECL_CHAIN slot.  If the FUNCTION_DECL is the last one with a
+given name, the DECL_CHAIN slot is NULL_TREE.  Otherwise it is the next
+method that has the same name (but a different signature).  It would
+seem that it is not true that because the DECL_CHAIN slot is used in
+this way, we cannot call pushdecl to put the method in the global scope
+(cause that would overwrite the TREE_CHAIN slot), because they use
+different _CHAINs.  finish_struct_methods setups up one version of the
+TREE_CHAIN slots on the FUNCTION_DECLs.
+
+friends are kept in TREE_LISTs, so that there's no need to use their
+TREE_CHAIN slot for anything.
+
+Has values of:
+
+	TREE_VECs
+	
+
+@item CLASSTYPE_VFIELD
+Seems to be in the process of being renamed TYPE_VFIELD.  Use on types
+to get the main virtual function table pointer.  To get the virtual
+function table use BINFO_VTABLE (TYPE_BINFO ()).
+
+Has values of:
+
+	FIELD_DECLs that are virtual function table pointers
+
+What things can this be used on:
+
+	RECORD_TYPEs
+
+
+@item DECL_CLASS_CONTEXT
+Identifies the context that the _DECL was found in.  For virtual function
+tables, it points to the type associated with the virtual function
+table.  See also DECL_CONTEXT, DECL_FIELD_CONTEXT and DECL_FCONTEXT.
+
+The difference between this and DECL_CONTEXT, is that for virtuals
+functions like:
+
+@example
+struct A
+@{
+  virtual int f ();
+@};
+
+struct B : A
+@{
+  int f ();
+@};
+
+DECL_CONTEXT (A::f) == A
+DECL_CLASS_CONTEXT (A::f) == A
+
+DECL_CONTEXT (B::f) == A
+DECL_CLASS_CONTEXT (B::f) == B
+@end example
+
+Has values of:
+
+	RECORD_TYPEs, or UNION_TYPEs
+
+What things can this be used on:
+
+	TYPE_DECLs, _DECLs
+
+
+@item DECL_CONTEXT
+Identifies the context that the _DECL was found in.  Can be used on
+virtual function tables to find the type associated with the virtual
+function table, but since they are FIELD_DECLs, DECL_FIELD_CONTEXT is a
+better access method.  Internally the same as DECL_FIELD_CONTEXT, so
+don't us both.  See also DECL_FIELD_CONTEXT, DECL_FCONTEXT and
+DECL_CLASS_CONTEXT.
+
+Has values of:
+
+	RECORD_TYPEs
+
+
+What things can this be used on:
+
+@display
+VAR_DECLs that are virtual function tables
+_DECLs
+@end display
+
+
+@item DECL_FIELD_CONTEXT
+Identifies the context that the FIELD_DECL was found in.  Internally the
+same as DECL_CONTEXT, so don't us both.  See also DECL_CONTEXT,
+DECL_FCONTEXT and DECL_CLASS_CONTEXT.
+
+Has values of:
+
+	RECORD_TYPEs
+
+What things can this be used on:
+
+@display
+FIELD_DECLs that are virtual function pointers
+FIELD_DECLs
+@end display
+
+
+@item DECL_NESTED_TYPENAME
+Holds the fully qualified type name.  Example, Base::Derived.
+
+Has values of:
+
+	IDENTIFIER_NODEs
+
+What things can this be used on:
+
+	TYPE_DECLs
+
+
+@item DECL_NAME
+
+Has values of:
+
+@display
+0 for things that don't have names
+IDENTIFIER_NODEs for TYPE_DECLs
+@end display
+
+@item DECL_IGNORED_P
+A bit that can be set to inform the debug information output routines in
+the backend that a certain _DECL node should be totally ignored.
+
+Used in cases where it is known that the debugging information will be
+output in another file, or where a sub-type is known not to be needed
+because the enclosing type is not needed.
+
+A compiler constructed virtual destructor in derived classes that do not
+define an exlicit destructor that was defined exlicit in a base class
+has this bit set as well.  Also used on __FUNCTION__ and
+__PRETTY_FUNCTION__ to mark they are ``compiler generated.''  c-decl and
+c-lex.c both want DECL_IGNORED_P set for ``internally generated vars,''
+and ``user-invisible variable.''
+
+Functions built by the C++ front-end such as default destructors,
+virtual desctructors and default constructors want to be marked that
+they are compiler generated, but unsure why.
+
+Currently, it is used in an absolute way in the C++ front-end, as an
+optimization, to tell the debug information output routines to not
+generate debugging information that will be output by another separately
+compiled file.
+
+
+@item DECL_VIRTUAL_P
+A flag used on FIELD_DECLs and VAR_DECLs.  (Documentation in tree.h is
+wrong.)  Used in VAR_DECLs to indicate that the variable is a vtable.
+It is also used in FIELD_DECLs for vtable pointers.
+
+What things can this be used on:
+
+	FIELD_DECLs and VAR_DECLs
+
+
+@item DECL_VPARENT
+Used to point to the parent type of the vtable if there is one, else it
+is just the type associated with the vtable.  Because of the sharing of
+virtual function tables that goes on, this slot is not very useful, and
+is in fact, not used in the compiler at all.  It can be removed.
+
+What things can this be used on:
+
+	VAR_DECLs that are virtual function tables
+
+Has values of:
+
+	RECORD_TYPEs maybe UNION_TYPEs
+
+
+@item DECL_FCONTEXT
+Used to find the first baseclass in which this FIELD_DECL is defined.
+See also DECL_CONTEXT, DECL_FIELD_CONTEXT and DECL_CLASS_CONTEXT.
+
+How it is used:
+
+	Used when writing out debugging information about vfield and
+	vbase decls.
+
+What things can this be used on:
+
+	FIELD_DECLs that are virtual function pointers
+	FIELD_DECLs
+
+
+@item DECL_REFERENCE_SLOT
+Used to hold the initialize for the reference.
+
+What things can this be used on:
+
+	PARM_DECLs and VAR_DECLs that have a reference type
+
+
+@item DECL_VINDEX
+Used for FUNCTION_DECLs in two different ways.  Before the structure
+containing the FUNCTION_DECL is laid out, DECL_VINDEX may point to a
+FUNCTION_DECL in a base class which is the FUNCTION_DECL which this
+FUNCTION_DECL will replace as a virtual function.  When the class is
+laid out, this pointer is changed to an INTEGER_CST node which is
+suitable to find an index into the virtual function table.  See
+get_vtable_entry as to how one can find the right index into the virtual
+function table.  The first index 0, of a virtual function table it not
+used in the normal way, so the first real index is 1.
+
+DECL_VINDEX may be a TREE_LIST, that would seem to be a list of
+overridden FUNCTION_DECLs.  add_virtual_function has code to deal with
+this when it uses the variable base_fndecl_list, but it would seem that
+somehow, it is possible for the TREE_LIST to pursist until method_call,
+and it should not.
+
+
+What things can this be used on:
+
+	FUNCTION_DECLs
+
+
+@item DECL_SOURCE_FILE
+Identifies what source file a particular declaration was found in.
+
+Has values of:
+
+	"<built-in>" on TYPE_DECLs to mean the typedef is built in
+
+
+@item DECL_SOURCE_LINE
+Identifies what source line number in the source file the declaration
+was found at.
+
+Has values of:
+
+@display
+0 for an undefined label
+
+0 for TYPE_DECLs that are internally generated
+
+0 for FUNCTION_DECLs for functions generated by the compiler
+	(not yet, but should be)
+
+0 for ``magic'' arguments to functions, that the user has no
+	control over
+@end display
+
+
+@item TREE_USED
+
+Has values of:
+
+	0 for unused labels
+
+
+@item TREE_ADDRESSABLE
+A flag that is set for any type that has a constructor.
+
+
+@item TREE_COMPLEXITY
+They seem a kludge way to track recursion, poping, and pushing.  They only
+appear in cp-decl.c and cp-decl2.c, so the are a good candidate for
+proper fixing, and removal.
+
+
+@item TREE_PRIVATE
+Set for FIELD_DECLs by finish_struct.  But not uniformly set.
+
+The following routines do something with PRIVATE access:
+build_method_call, alter_access, finish_struct_methods,
+finish_struct, convert_to_aggr, CWriteLanguageDecl, CWriteLanguageType,
+CWriteUseObject, compute_access, lookup_field, dfs_pushdecl,
+GNU_xref_member, dbxout_type_fields, dbxout_type_method_1
+
+
+@item TREE_PROTECTED
+The following routines do something with PROTECTED access:
+build_method_call, alter_access, finish_struct, convert_to_aggr,
+CWriteLanguageDecl, CWriteLanguageType, CWriteUseObject,
+compute_access, lookup_field, GNU_xref_member, dbxout_type_fields,
+dbxout_type_method_1
+
+
+@item TYPE_BINFO
+Used to get the binfo for the type.
+
+Has values of:
+
+	TREE_VECs that are binfos
+
+What things can this be used on:
+
+	RECORD_TYPEs
+
+
+@item TYPE_BINFO_BASETYPES
+See also BINFO_BASETYPES.
+
+@item TYPE_BINFO_VIRTUALS
+A unique list of functions for the virtual function table.  See also
+BINFO_VIRTUALS.
+
+What things can this be used on:
+
+	RECORD_TYPEs
+
+
+@item TYPE_BINFO_VTABLE
+Points to the virtual function table associated with the given type.
+See also BINFO_VTABLE.
+
+What things can this be used on:
+
+	RECORD_TYPEs
+
+Has values of:
+
+	VAR_DECLs that are virtual function tables
+
+
+@item TYPE_NAME
+Names the type.
+
+Has values of:
+
+@display
+0 for things that don't have names.
+should be IDENTIFIER_NODE for RECORD_TYPEs UNION_TYPEs and 
+        ENUM_TYPEs.
+TYPE_DECL for RECORD_TYPEs, UNION_TYPEs and ENUM_TYPEs, but 
+        shouldn't be.
+TYPE_DECL for typedefs, unsure why.
+@end display
+
+What things can one use this on:
+
+@display
+TYPE_DECLs
+RECORD_TYPEs
+UNION_TYPEs
+ENUM_TYPEs
+@end display
+
+History:
+
+	It currently points to the TYPE_DECL for RECORD_TYPEs,
+	UNION_TYPEs and ENUM_TYPEs, but it should be history soon.
+
+
+@item TYPE_METHODS
+Synonym for @code{CLASSTYPE_METHOD_VEC}.  Chained together with
+@code{TREE_CHAIN}.  @file{dbxout.c} uses this to get at the methods of a
+class.
+
+
+@item TYPE_DECL
+Used to represent typedefs, and used to represent bindings layers.
+
+Components:
+
+	DECL_NAME is the name of the typedef.  For example, foo would
+	be found in the DECL_NAME slot when @code{typedef int foo;} is
+	seen.
+
+	DECL_SOURCE_LINE identifies what source line number in the
+	source file the declaration was found at.  A value of 0
+	indicates that this TYPE_DECL is just an internal binding layer
+	marker, and does not correspond to a user suppiled typedef.
+
+	DECL_SOURCE_FILE
+
+@item TYPE_FIELDS
+A linked list (via @code{TREE_CHAIN}) of member types of a class.  The
+list can contain @code{TYPE_DECL}s, but there can also be other things
+in the list apparently.  See also @code{CLASSTYPE_TAGS}.
+
+
+@item TYPE_VIRTUAL_P
+A flag used on a @code{FIELD_DECL} or a @code{VAR_DECL}, indicates it is
+a virtual function table or a pointer to one.  When used on a
+@code{FUNCTION_DECL}, indicates that it is a virtual function.  When
+used on an @code{IDENTIFIER_NODE}, indicates that a function with this
+same name exists and has been declared virtual.
+
+When used on types, it indicates that the type has virtual functions, or
+is derived from one that does.
+
+Not sure if the above about virtual function tables is still true.  See
+also info on @code{DECL_VIRTUAL_P}.
+
+What things can this be used on:
+
+	FIELD_DECLs, VAR_DECLs, FUNCTION_DECLs, IDENTIFIER_NODEs
+
+
+@item VF_BASETYPE_VALUE
+Get the associated type from the binfo that caused the given vfield to
+exist.  This is the least derived class (the most parent class) that
+needed a virtual function table.  It is probably the case that all uses
+of this field are misguided, but they need to be examined on a
+case-by-case basis.  See history for more information on why the
+previous statement was made.
+
+Set at @code{finish_base_struct} time.
+
+What things can this be used on:
+
+	TREE_LISTs that are vfields
+
+History:
+
+	This field was used to determine if a virtual function table's
+	slot should be filled in with a certain virtual function, by
+	checking to see if the type returned by VF_BASETYPE_VALUE was a
+	parent of the context in which the old virtual function existed.
+	This incorrectly assumes that a given type _could_ not appear as
+	a parent twice in a given inheritance lattice.  For single
+	inheritance, this would in fact work, because a type could not
+	possibly appear more than once in an inheritance lattice, but
+	with multiple inheritance, a type can appear more than once.
+
+
+@item VF_BINFO_VALUE
+Identifies the binfo that caused this vfield to exist.  If this vfield
+is from the first direct base class that has a virtual function table,
+then VF_BINFO_VALUE is NULL_TREE, otherwise it will be the binfo of the
+direct base where the vfield came from.  Can use @code{TREE_VIA_VIRTUAL}
+on result to find out if it is a virtual base class.  Related to the
+binfo found by
+
+@example
+get_binfo (VF_BASETYPE_VALUE (vfield), t, 0)
+@end example
+
+@noindent
+where @samp{t} is the type that has the given vfield.
+
+@example
+get_binfo (VF_BASETYPE_VALUE (vfield), t, 0)
+@end example
+
+@noindent
+will return the binfo for the the given vfield.
+
+May or may not be set at @code{modify_vtable_entries} time.  Set at
+@code{finish_base_struct} time.
+
+What things can this be used on:
+
+	TREE_LISTs that are vfields
+
+
+@item VF_DERIVED_VALUE
+Identifies the type of the most derived class of the vfield, excluding
+the the class this vfield is for.
+
+Set at @code{finish_base_struct} time.
+
+What things can this be used on:
+
+	TREE_LISTs that are vfields
+
+
+@item VF_NORMAL_VALUE
+Identifies the type of the most derived class of the vfield, including
+the class this vfield is for.
+
+Set at @code{finish_base_struct} time.
+
+What things can this be used on:
+
+	TREE_LISTs that are vfields
+
+
+@item WRITABLE_VTABLES
+This is a option that can be defined when building the compiler, that
+will cause the compiler to output vtables into the data segment so that
+the vtables maybe written.  This is undefined by default, because
+normally the vtables should be unwritable.  People that implement object
+I/O facilities may, or people that want to change the dynamic type of
+objects may want to have the vtables writable.  Another way of achieving
+this would be to make a copy of the vtable into writable memory, but the
+drawback there is that that method only changes the type for one object.
+
+@end table
+
+@node Typical Behavior, Coding Conventions, Macros, Top
+@section Typical Behavior
+
+@cindex parse errors
+
+Whenever seemingly normal code fails with errors like
+@code{syntax error at `\@{'}, it's highly likely that grokdeclarator is
+returning a NULL_TREE for whatever reason.
+
+@node Coding Conventions, Templates, Typical Behavior, Top
+@section Coding Conventions
+
+It should never be that case that trees are modified in-place by the
+back-end, @emph{unless} it is guaranteed that the semantics are the same
+no matter how shared the tree structure is.  @file{fold-const.c} still
+has some cases where this is not true, but rms hypothesizes that this
+will never be a problem.
+
+@node Templates, Access Control, Coding Conventions, Top
+@section Templates
+
+g++ uses the simple approach to instantiating templates: it blindly
+generates the code for each instantiation as needed.  For class
+templates, g++ pushes the template parameters into the namespace for the
+duration of the instantiation; for function templates, it's a simple
+search and replace.
+
+This approach does not support any of the template definition-time error
+checking that is being bandied about by X3J16.  It makes no attempt to deal
+with name binding in a consistent way.
+
+Instantiation of a class template is triggered by the use of a template
+class anywhere but in a straight declaration like @code{class A<int>}.
+This is wrong; in fact, it should not be triggered by typedefs or
+declarations of pointers.  Now that explicit instantiation is supported,
+this misfeature is not necessary.
+
+Important functions:
+
+@table @code
+@item instantiate_class_template
+This function 
+@end table
+
+@node Access Control, Error Reporting, Templates, Top
+@section Access Control
+The function compute_access returns one of three values:
+
+@table @code
+@item access_public
+means that the field can be accessed by the current lexical scope.
+
+@item access_protected
+means that the field cannot be accessed by the current lexical scope
+because it is protected.
+
+@item access_private
+means that the field cannot be accessed by the current lexical scope
+because it is private.
+@end table
+
+DECL_ACCESS is used for access declarations; alter_access creates a list
+of types and accesses for a given decl.
+
+Formerly, DECL_@{PUBLIC,PROTECTED,PRIVATE@} corresponded to the return
+codes of compute_access and were used as a cache for compute_access.
+Now they are not used at all.
+
+TREE_PROTECTED and TREE_PRIVATE are used to record the access levels
+granted by the containing class.  BEWARE: TREE_PUBLIC means something
+completely unrelated to access control!
+
+@node Error Reporting, Concept Index, Access Control, Top
+@section Error Reporting
+
+The C++ frontend uses a call-back mechanism to allow functions to print
+out reasonable strings for types and functions without putting extra
+logic in the functions where errors are found.  The interface is through
+the @code{cp_error} function (or @code{cp_warning}, etc.).  The
+syntax is exactly like that of @code{error}, except that a few more
+conversions are supported:
+
+@itemize @bullet
+@item
+%C indicates a value of `enum tree_code'.
+@item
+%D indicates a *_DECL node.
+@item
+%E indicates a *_EXPR node.
+@item
+%L indicates a value of `enum languages'.
+@item
+%P indicates the name of a parameter (i.e. "this", "1", "2", ...)
+@item
+%T indicates a *_TYPE node.
+@item
+%O indicates the name of an operator (MODIFY_EXPR -> "operator =").
+
+@end itemize
+
+There is some overlap between these; for instance, any of the node
+options can be used for printing an identifier (though only @code{%D}
+tries to decipher function names).
+
+For a more verbose message (@code{class foo} as opposed to just @code{foo},
+including the return type for functions), use @code{%#c}.
+To have the line number on the error message indicate the line of the
+DECL, use @code{cp_error_at} and its ilk; to indicate which argument you want,
+use @code{%+D}, or it will default to the first.
+
+@node Concept Index,  , Error Reporting, Top
+@section Concept Index
+
+@printindex cp
+
+@bye
