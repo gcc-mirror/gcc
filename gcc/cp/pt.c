@@ -9880,6 +9880,10 @@ more_specialized (tree pat1, tree pat2, int deduce, int len)
   tree targs;
   int winner = 0;
 
+  /* If template argument deduction succeeds, we substitute the
+     resulting arguments into non-deduced contexts.  While doing that,
+     we must be aware that we may encounter dependent types.  */
+  ++processing_template_decl;
   targs = get_bindings_real (pat1, DECL_TEMPLATE_RESULT (pat2),
                              NULL_TREE, 0, deduce, len);
   if (targs)
@@ -9889,6 +9893,7 @@ more_specialized (tree pat1, tree pat2, int deduce, int len)
                              NULL_TREE, 0, deduce, len);
   if (targs)
     ++winner;
+  --processing_template_decl;
 
   return winner;
 }
