@@ -1,3 +1,8 @@
+2003-11-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-demangle.c (demangle_type): Correct thinko in substitution
+	processing.
+
 2003-11-18  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (demangle_operator_name): Remove space before

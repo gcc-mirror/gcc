@@ -2557,10 +2557,12 @@ demangle_type (dm)
       case 'S':
 	/* First check if this is a special substitution.  If it is,
 	   this is a <class-enum-type>.  Special substitutions have a
-	   letter following the `S'; other substitutions have a digit
-	   or underscore.  */
+	   lower-case letter following the `S'; other substitutions
+	   have a digit, upper-case letter, or underscore.  */
 	peek_next = peek_char_next (dm);
-	if (IS_DIGIT (peek_next) || peek_next == '_')
+	if (IS_DIGIT (peek_next) 
+	    || (peek_next >= 'A' && peek_next <= 'Z')
+	    || peek_next == '_')
 	  {
 	    RETURN_IF_ERROR (demangle_substitution (dm, &encode_return_type));
 	    
