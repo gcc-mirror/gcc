@@ -1,3 +1,10 @@
+1999-12-5  Anthony Green  <green@cygnus.com>
+
+	* decl.c (init_decl_processing): Mark throw_node as a noreturn
+	function with side effects.
+	(init_decl_processing): Mark all memory allocating DECLs with
+	DECL_IS_MALLOC.
+
 Wed Dec  1 04:25:06 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
         * except.c (expand_end_java_handler): Call
