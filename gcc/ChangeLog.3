@@ -2161,7 +2161,7 @@ Sun May 28 23:26:59 2000  Philippe De Muyter <phdm@macqel.be>
 
 	* reload.c (get_secondary_mem): Don't widen floating-point modes.
 
-	* combine.c (subst): Honour CLASS_CANNOT_CHANGE_SIZE when
+	* combine.c (subst): Honor CLASS_CANNOT_CHANGE_SIZE when
 	substituting the REG in a (subreg:X (reg:Y ...)).
 
 2000-05-28  Neil Booth  <NeilB@earthling.net>
@@ -2340,7 +2340,7 @@ Sat May 27 11:01:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	boolean_operator for the boolean patterns without NOTs.
 
 	* config/rs6000/rs6000.c (reg_or_logical_cint_operand): Rename
-	from reg_or_u_cint_operand.  Change comment and behaviour.
+	from reg_or_u_cint_operand.  Change comment and behavior.
 	(logical_operand): Clean up, add assertion.
 	(non_logical_cint_operand): Also check for
 	reg_or_logical_cint_operand.
@@ -15281,7 +15281,7 @@ Wed Jan 19 19:12:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(expand_end_bindings): Likewise.
 	(expand_decl): Likewise.  Consult optimize not obey_regdecls.
 	* toplev.c (obey_regdecls): Remove.
-	(rest_of_compilation): Don't set it.  Kill stupid in favour of
+	(rest_of_compilation): Don't set it.  Kill stupid in favor of
 	flow1, local-alloc, and reload.
 	(main): Don't set obey_regdecls.
 
@@ -16611,7 +16611,7 @@ Tue Jan  4 22:30:16 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-01-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
-	* config/c4x/c4x.h (IS_XXX_REG, IS_XXX_REGNO): Swap behaviour of
+	* config/c4x/c4x.h (IS_XXX_REG, IS_XXX_REGNO): Swap behavior of
 	macros so that they're consistent with their names.
 	* config/c4x/c4x.c (IS_XXX_REG, IS_XXX_REGNO): Likewise.
 	* config/c4x/c4x.md (IS_XXX_REG, IS_XXX_REGNO): Likewise.

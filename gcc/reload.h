@@ -205,7 +205,7 @@ struct needs
    must be examined for register elimination.  */
 struct insn_chain 
 {
-  /* Links to the neighbour instructions.  */
+  /* Links to the neighbor instructions.  */
   struct insn_chain *next, *prev;
 
   /* Link through a chains set up by calculate_needs_all_insns, containing

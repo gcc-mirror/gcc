@@ -11676,7 +11676,7 @@ Thu Jul 11 17:29:33 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 Thu Jul 11 10:12:50 1996  Jeffrey A Law  (law@cygnus.com)
 
-	* h8300.h (OK_FOR_U): If generating H8/S code, accept
+	* h8300.h (OK_FOR_U): If generating H8S code, accept
 	SYMBOL_REF and SYMBOL_REF + CONST_INT.
 
 	* h8300.c ({shift,rotate}_one): Emit tabs between opcode and
@@ -11684,7 +11684,7 @@ Thu Jul 11 10:12:50 1996  Jeffrey A Law  (law@cygnus.com)
 	(shift_two, rotate_two): Define.
 	(get_shift_alg): Accept new argument "assembler2_p" for
 	rotate/shift by two insns.  All callers changed.  Rework
-	to generate more efficient code on the H8/300, H8/300H, and H8/S.
+	to generate more efficient code on the H8/300, H8/300H, and H8S.
 	Try to simplify somewhat.
 	(emit_a_shift): Use shift-by-two insns when they're available.
 	Emit tabs between opcode and operands to be consistent with
@@ -11755,31 +11755,31 @@ Mon Jul  8 18:00:33 1996  Jim Wilson  <wilson@cygnus.com>
 
 Mon Jul  8 16:27:33 1996  Jeffrey A. Law  <law@cygnus.com>
 
-	* First cut at support for the H8/S.
-	* h8300.c (h8300_init_once): Handle the H8/S (treat it
+	* First cut at support for the H8S.
+	* h8300.c (h8300_init_once): Handle the H8S (treat it
 	like the H8/300H).
 	(dosize, adds_subs_operand, one_insn_adds_subs_operand): Likewise.
 	(output_adds_subs, const_costs, print_operand): Likewise.
 	(output_simode_bld, h8300_adjust_insn_length): Likewise.
 	(push_order, pop_order): Reverse.
 	(function_prologue): Try to use ldm.l and stm.l insns
-	on the H8/S.  Minor cleanups.
+	on the H8S.  Minor cleanups.
 	(function_epilogue): Likewise.
-	(asm_file_start): Emit ".h8300s" when compiling for the H8/S.
-	* h8300/h8300.h (CPP_SPEC): Handle the H8/S.
+	(asm_file_start): Emit ".h8300s" when compiling for the H8S.
+	* h8300/h8300.h (CPP_SPEC): Handle the H8S.
 	(TARGET_H8300S): New target.
 	(TARGET_SWITCHES): Add "-ms" and "-mno-s".
-	(BITS_PER_WORD): Handle the H8/S (treat it like the H8/300H).
+	(BITS_PER_WORD): Handle the H8S (treat it like the H8/300H).
 	(UNITS_PER_WORD, POINTER_SIZE, PARM_BOUNDARY): Likewise.
 	(BIGGEST_ALIGNMENT, BIGGEST_FIELD_ALIGNMENT): Likewise.
 	(INITIALIZE_TRAMPOLINE, MOVE_MAX, Pmode): Likewise.
-	* h8300.md: Handle H8/S just like H8/300H
+	* h8300.md: Handle H8S just like H8/300H
 	throughout the entire file.
 	* t-h8300 (MULTILIB_OPTIONS): Build "-ms" libraries too.
-	(MULTILIB_DIRNAMES): Put H8/S libraries in "h8300s" directory.
+	(MULTILIB_DIRNAMES): Put H8S libraries in "h8300s" directory.
 	* h8300/lib1funcs.asm: Emit ".h8300s" pseudo-op when generating
-	h8300s object files.  Otherwise treat the H8/S just like the H8/300H.
-	* ginclude/stdarg.h: Handle the H8/S.
+	h8300s object files.  Otherwise treat the H8S just like the H8/300H.
+	* ginclude/stdarg.h: Handle the H8S.
 	* ginclude/varargs.h: Likewise.
 
 Mon Jul  8 14:50:58 1996  Doug Evans  <dje@cygnus.com>

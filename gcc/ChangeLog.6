@@ -5339,9 +5339,9 @@ Wed Nov 14 06:37:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-11-13  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (shift_alg_si): Use special code for
-	25-bit shifts on H8/S.
+	25-bit shifts on H8S.
 	(get_shift_alg): Generate special code for 25-bit shifts on
-	H8/S.
+	H8S.
 
 2001-11-13  Jakub Jelinek  <jakub@redhat.com>
 
@@ -5449,10 +5449,10 @@ Tue Nov 13 05:45:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-11-12  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (shift_alg_qi): Use rotations when
-	doing 6-bit logical shifts on H8/S.
-	(shift_alg_qi): Use special code for 21-bit shifts on H8/S.
+	doing 6-bit logical shifts on H8S.
+	(shift_alg_qi): Use special code for 21-bit shifts on H8S.
 	(get_shift_alg): Generate special code for 21-bit shifts on
-	H8/S.
+	H8S.
 
 2001-11-12  Kazu Hirata  <kazu@hxi.com>
 
@@ -9881,7 +9881,7 @@ Fri Sep 28 14:59:34 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2001-09-27  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dwarf2out_frame_finish): Never elide .debug_frame
-	in favour of .eh_frame.
+	in favor of .eh_frame.
 
 2001-09-27  Aldy Hernandez  <aldyh@redhat.com>
 

@@ -583,7 +583,7 @@ cpp_create_reader (lang)
 }
 
 /* Free resources used by PFILE.  Accessing PFILE after this function
-   returns leads to undefined behaviour.  Returns the error count.  */
+   returns leads to undefined behavior.  Returns the error count.  */
 void
 cpp_destroy (pfile)
      cpp_reader *pfile;

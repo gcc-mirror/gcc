@@ -112,7 +112,7 @@ handle_newline (pfile)
   cpp_buffer *buffer = pfile->buffer;
 
   /* Handle CR-LF and LF-CR.  Most other implementations (e.g. java)
-     only accept CR-LF; maybe we should fall back to that behaviour?  */
+     only accept CR-LF; maybe we should fall back to that behavior?  */
   if (buffer->cur[-1] + buffer->cur[0] == '\r' + '\n')
     buffer->cur++;
 
@@ -126,7 +126,7 @@ handle_newline (pfile)
    the second '?'.
 
    Warn if necessary, and returns true if the sequence forms a
-   trigraph and the trigraph should be honoured.  */
+   trigraph and the trigraph should be honored.  */
 static bool
 trigraph_p (pfile)
      cpp_reader *pfile;

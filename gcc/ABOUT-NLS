@@ -60,7 +60,7 @@ library will be used.  This library is wholly contained within this
 package, usually in the `intl/' subdirectory, so prior installation of
 the GNU `gettext' package is _not_ required.  Installers may use
 special options at configuration time for changing the default
-behaviour.  The commands:
+behavior.  The commands:
 
      ./configure --with-included-gettext
      ./configure --disable-nls

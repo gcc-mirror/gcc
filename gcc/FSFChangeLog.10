@@ -8538,7 +8538,7 @@ Tue Apr 25 18:52:43 1995  Stephen R. van den Berg  (berg@pool.informatik.rwth-aa
 	(mark_regs_pat, straighten_stack): New functions.
 	(reg_to_stack): Amend initialisation of FP_mode_reg.
 	Mark FP registers mentioned in USE insns before NOTE_INSN_FUNCTION_BEG.
-	(get_true_reg): Eliminate FP subreg accesses in favour of the
+	(get_true_reg): Eliminate FP subreg accesses in favor of the
 	actual FP register in use.
 	(record_reg_life_pat): Make it work on SUBREGs as well.  Make use of
 	the new mark_regs_pat function.  Handle USE insns if called unnested.

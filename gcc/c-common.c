@@ -1826,7 +1826,7 @@ verify_tree (x, pbefore_sp, pno_sp, writer)
     }
 }
 
-/* Try to warn for undefined behaviour in EXPR due to missing sequence
+/* Try to warn for undefined behavior in EXPR due to missing sequence
    points.  */
 
 static void

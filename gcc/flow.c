@@ -1085,7 +1085,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   int i;
 
   /* Some passes used to forget clear aux field of basic block causing
-     sick behaviour here.  */
+     sick behavior here.  */
 #ifdef ENABLE_CHECKING
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     if (bb->aux)

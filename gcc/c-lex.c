@@ -835,7 +835,7 @@ interpret_integer (token, flags)
 	{
 	  /* In C99, decimal constants are always signed.
 	     In C89, decimal constants that don't fit in long have
-	     undefined behaviour; we try to make them unsigned long.
+	     undefined behavior; we try to make them unsigned long.
 	     In GCC's extended C89, that last is true of decimal
 	     constants that don't fit in long long, too.  */
 
