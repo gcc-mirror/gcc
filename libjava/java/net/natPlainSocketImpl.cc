@@ -72,15 +72,6 @@ _Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
 #undef accept
 #endif
 
-// A wrapper for recv so we don't have to do configure tests.
-template <typename T_ret, typename T_fd, typename T_buf,
-          typename T_len, typename T_flags>
-static inline ssize_t
-_Jv_recv (T_ret (*recv_func) (T_fd s, T_buf buf, T_len len, T_flags flags),
-	  int s, void *buf, size_t len, int flags)
-{
-  return recv_func ((T_fd) s, (T_buf) buf, (T_len) len, (T_flags) flags);
-}
 #endif /* DISABLE_JAVA_NET */
 
 #include <gcj/cni.h>
@@ -551,7 +542,7 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
       }
   }
   // Read the socket.
-  int r = _Jv_recv (::recv, fnum, (void *) bytes, count, 0);
+  int r = ::recv (fnum, (char *) bytes, count, 0);
   if (r == 0)
     return -1;
   if (java::lang::Thread::interrupted())
