@@ -7987,7 +7987,21 @@ update_flow_info (notes, first, last, orig_insn)
 	         register that was not needed by this instantiation of the
 	         pattern, so we can safely ignore it.  */
 	      if (insn == first)
-		{			
+		{
+		  /* We have accurate death notes after reload now, but this
+		     code is still necessary.  Consider splitting a store into
+		     (subreg:DF (reg:DC) 0).  The death notes will claim the
+		     entire DCmode value is dead.  But after splitting we know
+		     that only part of it is dead.  Ie, the splitting action
+		     actually eliminated the death of one or more hard
+		     registers.  */
+		  if (reload_completed && REG_NOTE_KIND (note) == REG_DEAD)
+		    {
+		      XEXP (note, 1) = REG_NOTES (insn);
+		      REG_NOTES (insn) = note;
+		      break;
+		    }
+			
 		  if (REG_NOTE_KIND (note) != REG_UNUSED)
 		    abort ();
 
