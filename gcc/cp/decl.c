@@ -3829,7 +3829,7 @@ start_decl_1 (tree decl)
      so we need to be conservative and unset TREE_READONLY for types
      with constructors.  Otherwise aliasing code will ignore stores in
      an inline constructor.  */
-   if (TYPE_NEEDS_CONSTRUCTING (type))
+   if (type != error_mark_node && TYPE_NEEDS_CONSTRUCTING (type))
      TREE_READONLY (decl) = 0;
 }
 
