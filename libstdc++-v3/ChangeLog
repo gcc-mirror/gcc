@@ -1,12 +1,20 @@
+2002-03-10  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (time_put::do_put):
+	Consider sizeof(char_type) in allocating the buffer.
+
+	* include/bits/locale_facets.tcc (collate::do_tranform):
+	Remove redundant variable.
+
 2002-03-10  Ulrich Drepper  <drepper@redhat.com>
             Paolo Carlini  <pcarlini@unitus.it>
 
-        * config/locale/generic/collate_members.cc
-        (collate<char,wchar_t>::_M_compare_helper): normalize
-        values returned by strcoll and wcscoll.
-        * config/locale/gnu/collate_members.cc
-        (collate<char,wchar_t>::_M_compare_helper): ditto
-        for __strcoll_l and __wcscoll_l.
+	* config/locale/generic/collate_members.cc
+	(collate<char,wchar_t>::_M_compare_helper): normalize
+	values returned by strcoll and wcscoll.
+	* config/locale/gnu/collate_members.cc
+	(collate<char,wchar_t>::_M_compare_helper): ditto
+	for __strcoll_l and __wcscoll_l.
 
 2002-03-10  Anthony Green  <green@redhat.com>
 
