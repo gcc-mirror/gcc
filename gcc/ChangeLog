@@ -1,3 +1,12 @@
+2002-12-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Convert to
+	tartet_flags_explicit.
+	* config/rs6000/rs6000.h (MASK_MULTIPLE_SET, MASK_STRING_SET): Delete.
+	Compact target_flags bits.
+	(TARGET_MULTIPLE_SET, TARGET_STRING_SET): Delete.
+	(TARGET_SWITCHES): Delete references to *_SET flags.
+
 Wed Dec 25 20:30:53 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (memory attribute): Fix setcc attribute.
