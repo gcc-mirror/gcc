@@ -1,3 +1,9 @@
+2003-04-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ggc-page.c (TREE_EXP_SIZE): Define.
+	(extra_order_size_table): New entry for expr trees with
+	two operands.
+
 2003-04-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* c-common.c (if_elt): Use location_t in lieu of "file, line" pair.

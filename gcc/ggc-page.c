@@ -173,6 +173,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define RTL_SIZE(NSLOTS) \
   (sizeof (struct rtx_def) + ((NSLOTS) - 1) * sizeof (rtunion))
 
+#define TREE_EXP_SIZE(OPS) \
+  (sizeof (struct tree_exp) + ((OPS) - 1) * sizeof (tree))
+
 /* The Ith entry is the maximum size of an object to be stored in the
    Ith extra order.  Adding a new entry to this array is the *only*
    thing you need to do to add a new special allocation size.  */
@@ -180,6 +183,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static const size_t extra_order_size_table[] = {
   sizeof (struct tree_decl),
   sizeof (struct tree_list),
+  TREE_EXP_SIZE (2),
   RTL_SIZE (2),			/* REG, MEM, PLUS, etc.  */
   RTL_SIZE (10),		/* INSN, CALL_INSN, JUMP_INSN */
 };
