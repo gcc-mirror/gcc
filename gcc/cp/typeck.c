@@ -2645,12 +2645,6 @@ build_function_call_real (function, params, require_complete, flags)
 	  pedwarn ("ANSI C++ forbids calling `main' from within program");
 	}
 
-      if (pedantic && DECL_THIS_INLINE (function) && ! DECL_INITIAL (function)
-	  && ! DECL_ARTIFICIAL (function)
-	  && ! DECL_PENDING_INLINE_INFO (function))
-	cp_pedwarn ("inline function `%#D' called before definition",
-		    function);
-
       /* Differs from default_conversion by not setting TREE_ADDRESSABLE
 	 (because calling an inline function does not mean the function
 	 needs to be separately compiled).  */

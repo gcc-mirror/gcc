@@ -1075,9 +1075,8 @@ coerce_template_parms (parms, arglist, in_decl)
 	{
 	  tree t = tsubst (TREE_TYPE (parm), vec,
 			   TREE_VEC_LENGTH (vec), in_decl);
-	  if (processing_template_decl && 
-	      (uses_template_parms (arg) || uses_template_parms (t)))
-	    val = arg;
+	  if (processing_template_decl)
+	    val = maybe_fold_nontype_arg (arg);
 	  else
 	    val = digest_init (t, arg, (tree *) 0);
 
