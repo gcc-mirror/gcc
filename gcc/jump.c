@@ -371,19 +371,23 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 	      int diff_vec_p = GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC;
 	      int len = XVECLEN (pat, diff_vec_p);
 	      rtx dispatch = prev_real_insn (insn);
+	      rtx set;
 
 	      for (i = 0; i < len; i++)
 		if (XEXP (XVECEXP (pat, diff_vec_p, i), 0)
 		    != XEXP (XVECEXP (pat, diff_vec_p, 0), 0))
 		  break;
+
 	      if (i == len
 		  && dispatch != 0
 		  && GET_CODE (dispatch) == JUMP_INSN
 		  && JUMP_LABEL (dispatch) != 0
-		  /* Don't mess with a casesi insn.  */
-		  && !(GET_CODE (PATTERN (dispatch)) == SET
-		       && (GET_CODE (SET_SRC (PATTERN (dispatch)))
-			   == IF_THEN_ELSE))
+		  /* Don't mess with a casesi insn. 
+		     XXX according to the comment before computed_jump_p(),
+		     all casesi insns should be a parallel of the jump
+		     and a USE of a LABEL_REF.  */
+		  && ! ((set = single_set (dispatch)) != NULL
+			&& (GET_CODE (SET_SRC (set)) == IF_THEN_ELSE))
 		  && next_real_insn (JUMP_LABEL (dispatch)) == insn)
 		{
 		  redirect_tablejump (dispatch,

@@ -1,3 +1,7 @@
+Wed Oct 20 10:46:41 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* jump.c (jump_optimize_1): More accurately detect casesi insns.
+
 Wed Oct 20 22:57:58 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* sparc.md (movsf_const_intreg): If splitting, length must be > 1.
