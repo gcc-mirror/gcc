@@ -74,7 +74,10 @@
 --                          Unchecked_Conversion. Added check for raising
 --                          of Dereference_Error for Update (From Technical
 --                          Corrigendum 1).
---
+--      07 Jan 05   RLB     Modified to reflect change to Update by AI-242
+--                          (which is expected to be part of Amendment 1).
+--                          [This version allows either semantics.]
+
 --!
 
 with Report;
@@ -116,6 +119,15 @@ begin
       TC_Result_String_4 : constant String := "XACVC";
       TC_Result_String_5 : constant String := "1a2b3";
       TC_Result_String_6 : constant String := "XXX---...";
+
+      TC_Amd_Result_String_4 :
+                           constant String := "XACVCXXXXX";
+      TC_Amd_Result_String_5 :
+                           constant String := "1a2b3XXXXX";
+      TC_Amd_Result_String_6 :
+                           constant String := "XXX---...X";
+      TC_Amd_Result_String_9 :
+                           constant String := "JustATestX";
 
       TC_char_array        : IC.char_array(0..10) := IC.To_C("XXXXXXXXXX");
       TC_Result_char_array : IC.char_array(0..10) := IC.To_C("XXXXXXXXXX");
@@ -210,16 +222,21 @@ begin
       -- but with the character values in the String overwriting the char
       -- values in Item.
       --
-      -- Note: In each of the cases below, the String parameter Str is
-      --       treated as if it were nul terminated, which means that the
-      --       char_array pointed to by TC_chars_ptr will be "shortened"
+      -- Note: In Ada 95, In each of the cases below, the String parameter
+      --       Str is treated as if it were nul terminated, which means that
+      --       the char_array pointed to by TC_chars_ptr will be "shortened"
       --       so that it ends after the last character of the Str
-      --       parameter.
+      --       parameter. For Ada 2005, this rule is dropped, so the
+      --       number of characters remains the same.
 
       TC_chars_ptr := ICS.New_Char_Array(TC_char_array);
       ICS.Update(TC_chars_ptr, 1, TC_String_4, False);
 
-      if ICS.Value(TC_chars_ptr) /= TC_Result_String_4 then
+      if ICS.Value(TC_chars_ptr) = TC_Result_String_4 then
+         Report.Comment("Ada 95 result from Procedure Update - 5");
+      elsif ICS.Value(TC_chars_ptr) = TC_Amd_Result_String_4 then
+         Report.Comment("Amendment 1 result from Procedure Update - 5");
+      else
          Report.Failed("Incorrect result from Procedure Update - 5");
       end if;
       ICS.Free(TC_chars_ptr);
@@ -230,7 +247,11 @@ begin
                  Offset => 0,
                  Str    => TC_String_5);
 
-      if ICS.Value(TC_chars_ptr) /= TC_Result_String_5 then
+      if ICS.Value(TC_chars_ptr) = TC_Result_String_5 then
+         Report.Comment("Ada 95 result from Procedure Update - 6");
+      elsif ICS.Value(TC_chars_ptr) = TC_Amd_Result_String_5 then
+         Report.Comment("Amendment 1 result from Procedure Update - 6");
+      else
          Report.Failed("Incorrect result from Procedure Update - 6");
       end if;
       ICS.Free(TC_chars_ptr);
@@ -242,7 +263,11 @@ begin
                  Str    => TC_String_6,
                  Check  => True);
 
-      if ICS.Value(TC_chars_ptr) /= TC_Result_String_6 then
+      if ICS.Value(TC_chars_ptr) = TC_Result_String_6 then
+         Report.Comment("Ada 95 result from Procedure Update - 7");
+      elsif ICS.Value(TC_chars_ptr) = TC_Amd_Result_String_6 then
+         Report.Comment("Amendment 1 result from Procedure Update - 7");
+      else
          Report.Failed("Incorrect result from Procedure Update - 7");
       end if;
       ICS.Free(TC_chars_ptr);
@@ -251,11 +276,36 @@ begin
       TC_chars_ptr := ICS.New_Char_Array(TC_char_array);
       ICS.Update(TC_chars_ptr, 0, TC_String_9, True);
 
-      if ICS.Value(TC_chars_ptr) /= TC_String_9 then
+      if ICS.Value(TC_chars_ptr) = TC_String_9 then
+         Report.Comment("Ada 95 result from Procedure Update - 8");
+      elsif ICS.Value(TC_chars_ptr) = TC_Amd_Result_String_9 then
+         Report.Comment("Amendment 1 result from Procedure Update - 8");
+      else
          Report.Failed("Incorrect result from Procedure Update - 8");
       end if;
       ICS.Free(TC_chars_ptr);
 
+      -- Check what happens if the string and array are the same size (this
+      -- is the case that caused the change made by the Amendment).
+      begin
+         TC_chars_ptr := ICS.New_Char_Array(TC_char_array);
+         ICS.Update(Item   => TC_chars_ptr,
+                    Offset => 0,
+                    Str    => TC_String_10,
+                    Check  => True);
+          if ICS.Value(TC_chars_ptr) = TC_String_10 then
+             Report.Comment("Amendment 1 result from Procedure Update - 9");
+          else
+             Report.Failed("Incorrect result from Procedure Update - 9");
+          end if;
+      exception
+         when ICS.Update_Error =>
+             Report.Comment("Ada 95 exception expected from Procedure Update - 9");
+         when others           =>
+           Report.Failed("Incorrect exception raised by Procedure Update " &
+                         "with Str parameter - 9");
+      end;
+      ICS.Free(TC_chars_ptr);
 
 
       -- Check that both of the above versions of Procedure Update will
