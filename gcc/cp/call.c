@@ -44,6 +44,7 @@ static tree build_new_method_call PROTO((tree, tree, tree, tree, int));
 
 static tree build_field_call PROTO((tree, tree, tree, tree));
 static struct z_candidate * tourney PROTO((struct z_candidate *));
+static int equal_functions PROTO((tree, tree));
 static int joust PROTO((struct z_candidate *, struct z_candidate *, int));
 static int compare_ics PROTO((tree, tree));
 static tree build_over_call PROTO((struct z_candidate *, tree, int));
@@ -4768,6 +4769,20 @@ add_warning (winner, loser)
 				     winner->warnings);
 }
 
+/* Returns true iff functions are equivalent. Equivalent functions are
+   not identical only if one is a function-local extern function.
+   This assumes that function-locals don't have TREE_PERMANENT.  */
+
+static inline int
+equal_functions (fn1, fn2)
+     tree fn1;
+     tree fn2;
+{
+  if (!TREE_PERMANENT (fn1) || !TREE_PERMANENT (fn2))
+    return decls_match (fn1, fn2);
+  return fn1 == fn2;
+}
+
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
 
@@ -4962,6 +4977,12 @@ joust (cand1, cand2, warn)
 	    }
 	}
     }
+
+  /* If the two functions are the same (this can happen with declarations
+     in multiple scopes and arg-dependent lookup), arbitrarily choose one.  */
+  if (DECL_P (cand1->fn) && DECL_P (cand2->fn)
+      && equal_functions (cand1->fn, cand2->fn))
+    return 1;
 
 tweak:
 

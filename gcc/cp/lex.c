@@ -3078,10 +3078,13 @@ do_identifier (token, parsing, args)
     id = lastiddecl;
 
   /* Do Koenig lookup if appropriate (inside templates we build lookup
-     expressions instead).  */
+     expressions instead).
+
+     [basic.lookup.koenig]: If the ordinary unqualified lookup of the name
+     finds the declaration of a class member function, the associated
+     namespaces and classes are not considered.  */
+
   if (args && !current_template_parms && (!id || is_global (id)))
-    /* If we have arguments and we only found global names, do Koenig
-       lookup. */
     id = lookup_arg_dependent (token, id, args);
 
   /* Remember that this name has been used in the class definition, as per

@@ -179,7 +179,6 @@ static void pop_binding PROTO((tree, tree));
 static tree local_variable_p PROTO((tree));
 static tree find_binding PROTO((tree, tree));
 static tree select_decl PROTO((tree, int));
-static tree unqualified_namespace_lookup PROTO((tree, int));
 static int lookup_flags PROTO((int, int));
 static tree qualify_lookup PROTO((tree, int));
 static tree record_builtin_java_type PROTO((const char *, int));
@@ -5557,13 +5556,15 @@ select_decl (binding, flags)
   return val;
 }
 
-/* Unscoped lookup of a global, iterate over namespaces, considering
-   using namespace statements. */
+/* Unscoped lookup of a global: iterate over current namespaces,
+   considering using-directives.  If SPACESP is non-NULL, store a list
+   of the namespaces we've considered in it.  */
 
-static tree
-unqualified_namespace_lookup (name, flags)
+tree
+unqualified_namespace_lookup (name, flags, spacesp)
      tree name;
      int flags;
+     tree *spacesp;
 {
   struct tree_binding _binding;
   tree b = binding_init (&_binding);
@@ -5573,8 +5574,13 @@ unqualified_namespace_lookup (name, flags)
   struct binding_level *level;
   tree val = NULL_TREE;
 
-  while (!val)
+  if (spacesp)
+    *spacesp = NULL_TREE;
+
+  for (; !val; scope = CP_DECL_CONTEXT (scope))
     {
+      if (spacesp)
+	*spacesp = scratch_tree_cons (scope, NULL_TREE, *spacesp);
       val = binding_for_name (name, scope);
 
       /* Initialize binding for this context. */
@@ -5586,7 +5592,7 @@ unqualified_namespace_lookup (name, flags)
 	   !level->namespace_p;
 	   level = level->level_chain)
 	if (!lookup_using_namespace (name, b, level->using_directives,
-                                     scope, flags))
+                                     scope, flags, spacesp))
 	  /* Give up because of error. */
 	  return error_mark_node;
 
@@ -5596,7 +5602,7 @@ unqualified_namespace_lookup (name, flags)
       while (1)
 	{
 	  if (!lookup_using_namespace (name, b, DECL_NAMESPACE_USING (siter), 
-				       scope, flags))
+				       scope, flags, spacesp))
 	    /* Give up because of error. */
 	    return error_mark_node;
 	  if (siter == scope) break;
@@ -5606,7 +5612,6 @@ unqualified_namespace_lookup (name, flags)
       val = select_decl (b, flags);
       if (scope == global_namespace)
 	break;
-      scope = CP_DECL_CONTEXT (scope);
     }
   return val;
 }
@@ -5811,7 +5816,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
   /* Now lookup in namespace scopes.  */
   if (!val || val_is_implicit_typename)
     {
-      t = unqualified_namespace_lookup (name, flags);
+      t = unqualified_namespace_lookup (name, flags, 0);
       if (t)
 	{
 	  if (val_is_implicit_typename && !yylex)
