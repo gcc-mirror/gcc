@@ -2046,9 +2046,12 @@ typedef struct rs6000_args
    acceptable.  */
 
 #define LEGITIMATE_CONSTANT_P(X)				\
-  ((GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode	\
+  (((GET_CODE (X) != CONST_DOUBLE				\
+     && GET_CODE (X) != CONST_VECTOR)				\
+    || GET_MODE (X) == VOIDmode					\
     || (TARGET_POWERPC64 && GET_MODE (X) == DImode)		\
-    || easy_fp_constant (X, GET_MODE (X)))			\
+    || easy_fp_constant (X, GET_MODE (X))			\
+    || easy_vector_constant (X, GET_MODE (X)))			\
    && !rs6000_tls_referenced_p (X))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
