@@ -1,3 +1,8 @@
+Sun Oct  4 07:11:34 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reorg.c (fill_{simple,eager}_delay_slots): If insn no longer needs
+	delay slots, just skip instead of aborting.
+
 Sat Oct  3 08:04:28 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* tree.h (DECL_NO_CHECK_MEMORY_USAGE): New macro.
