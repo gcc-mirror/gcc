@@ -261,7 +261,7 @@ in the following sections.
 -mapcs-reentrant -mno-apcs-reentrant
 -msched-prolog -mno-sched-prolog
 -mlittle-endian -mbig-endian -mwords-little-endian
--malignment-traps
+-malignment-traps -mno-alignment-traps
 -msoft-float -mhard-float -mfpe
 -mthumb-interwork -mno-thumb-interwork
 -mcpu= -march= -mfpe= 
