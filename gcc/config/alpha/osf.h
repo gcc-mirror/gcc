@@ -68,6 +68,9 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC  \
   "%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}"
 
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+
 #define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
 
 #define ASM_FILE_START(FILE)					\

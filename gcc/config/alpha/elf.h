@@ -677,7 +677,8 @@ void FN ()					\
 
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{shared:crtendS.o%s}%{!shared:crtend.o%s} crtn.o%s"
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   %{shared:crtendS.o%s}%{!shared:crtend.o%s} crtn.o%s"
 
 /* We support #pragma.  */
 #define HANDLE_SYSV_PRAGMA
