@@ -11806,6 +11806,11 @@ build_non_dependent_expr (tree expr)
      types.  */
   if (TREE_CODE (expr) == OVERLOAD)
     return expr;
+  /* Preserve string constants; conversions from string constants to
+     "char *" are allowed, even though normally a "const char *"
+     cannot be used to initialize a "char *".  */
+  if (TREE_CODE (expr) == STRING_CST)
+    return expr;
 
   if (TREE_CODE (expr) == COND_EXPR)
     return build (COND_EXPR,
