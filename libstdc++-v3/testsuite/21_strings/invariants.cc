@@ -22,7 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // Do a quick sanity check on known problems with element access and
 // ref-counted strings. These should all pass, regardless of the

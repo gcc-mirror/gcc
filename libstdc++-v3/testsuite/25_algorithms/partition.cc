@@ -20,7 +20,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 bool test = true;
 

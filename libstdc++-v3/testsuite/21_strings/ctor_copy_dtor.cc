@@ -23,7 +23,7 @@
 #include <new>
 #include <string>
 #include <stdexcept>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 int test01(void)
 {
@@ -196,6 +196,7 @@ void test03()
 
 int main()
 { 
+  __set_testsuite_memlimit();
   test01();
   test02();
   test03();

@@ -19,7 +19,7 @@
 // 25.2.12 [lib.alg.partitions] Partitions.
 
 #include <algorithm>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 bool test = true;
 

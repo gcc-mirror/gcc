@@ -22,7 +22,7 @@
 
 #include <memory>
 #include <cstdlib>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 struct gnu { };
 

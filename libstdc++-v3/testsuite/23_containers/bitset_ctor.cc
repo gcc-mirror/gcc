@@ -22,7 +22,7 @@
 
 #include <string>
 #include <bitset>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 bool test01(void)
 {

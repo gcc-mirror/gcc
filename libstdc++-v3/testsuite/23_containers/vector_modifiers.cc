@@ -21,7 +21,7 @@
 // 23.2.4.3 vector modifiers
 
 #include <vector>
-#include "debug_assert.h"
+#include "testsuite_hooks.h"
 
 bool test = true;
 

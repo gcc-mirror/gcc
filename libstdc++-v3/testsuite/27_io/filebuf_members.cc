@@ -27,7 +27,7 @@
 #include <cassert>
 #include <unistd.h>
 #include <fcntl.h>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // verify that std::filebuf doesn't close files that it didn't open
 // when using the following std::filebuf ctor:

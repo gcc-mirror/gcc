@@ -19,7 +19,7 @@
 // 25.?? algorithms, rotate()
 
 #include <algorithm>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 #include <list>
 
 bool test = true;

@@ -23,7 +23,7 @@
 #include <cwchar> // for mbstate_t
 #include <locale>
 #include <stdexcept>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 
 void test00()

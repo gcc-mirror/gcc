@@ -22,7 +22,7 @@
 #include <set>
 #include <bitset>
 
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 static char original_bits[1024];
 static char left_shifted[1024];

@@ -22,7 +22,7 @@
 
 #include <sstream>
 #include <iterator>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

@@ -21,7 +21,7 @@
 // 20.2.2 Pairs
 
 #include <utility>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 class gnu_obj
 {

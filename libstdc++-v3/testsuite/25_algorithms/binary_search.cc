@@ -19,7 +19,7 @@
 // 25.3.3 [lib.alg.binary.search] Binary search algorithms.
 
 #include <algorithm>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 bool test = true;
 

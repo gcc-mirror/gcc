@@ -22,7 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // libstdc++/1972
 void test01()

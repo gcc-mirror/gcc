@@ -26,7 +26,7 @@
 #include <ostream>
 #include <sstream>
 #include <fstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 const int size = 1000;
 const char name_01[] = "ostream_inserter_other-1.tst";

@@ -22,7 +22,7 @@
 
 #include <string>
 #include <sstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 const std::string str01("the nubians of plutonia");
 std::string str02;

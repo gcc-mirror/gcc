@@ -22,7 +22,7 @@
 
 #include <cwchar> // for mbstate_t
 #include <locale>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 typedef std::codecvt<char, char, std::mbstate_t> ccodecvt;
 class gnu_codecvt: public ccodecvt { }; 

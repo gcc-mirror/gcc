@@ -20,7 +20,7 @@
 // USA.
 
 #include <cmath>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // test compilation.
 int

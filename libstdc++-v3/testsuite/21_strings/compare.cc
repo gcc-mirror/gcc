@@ -31,7 +31,7 @@
 // things would be sorted in a dictionary.
 
 #include <string>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 enum want_value {lt=0, z=1, gt=2};
 

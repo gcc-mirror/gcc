@@ -19,7 +19,7 @@
 // 20.4.5 Template class auto_ptr [lib.auto.ptr]
 
 #include <memory>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 struct A
 {

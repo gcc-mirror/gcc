@@ -21,7 +21,7 @@
 // 22.2.3.1.1 nunpunct members
 
 #include <locale>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // XXX This test is not working for non-glibc locale models.
 // { dg-do run { xfail *-*-* } }

@@ -22,7 +22,7 @@
 
 #include <istream>
 #include <sstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 bool test01() {
 
