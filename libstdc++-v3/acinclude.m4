@@ -1195,21 +1195,6 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
   # Default to "new".
   if test $enable_libstdcxx_allocator_flag = auto; then
     case ${target_os} in
-      freebsd*)
-        enable_libstdcxx_allocator_flag=mt
-        ;;
-      hpux11*)
-        enable_libstdcxx_allocator_flag=mt
-        ;;
-      irix6*)
-        enable_libstdcxx_allocator_flag=mt
-        ;;
-      linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
-        enable_libstdcxx_allocator_flag=mt
-        ;;
-      solaris*)
-        enable_libstdcxx_allocator_flag=mt
-        ;;
       *)
         enable_libstdcxx_allocator_flag=new
         ;;
