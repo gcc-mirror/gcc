@@ -178,6 +178,7 @@ static rtx make_call_insn_raw		PARAMS ((rtx));
 static rtx find_line_note		PARAMS ((rtx));
 static void mark_sequence_stack         PARAMS ((struct sequence_stack *));
 static void unshare_all_rtl_1		PARAMS ((rtx));
+static void unshare_all_decls		PARAMS ((tree));
 static hashval_t const_int_htab_hash    PARAMS ((const void *));
 static int const_int_htab_eq            PARAMS ((const void *,
 						 const void *));
@@ -1697,6 +1698,9 @@ unshare_all_rtl (fndecl, insn)
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     DECL_RTL (decl) = copy_rtx_if_shared (DECL_RTL (decl));
 
+  /* Make sure that virtual stack slots are not shared.  */
+  unshare_all_decls (DECL_INITIAL (fndecl));
+
   /* Unshare just about everything else.  */
   unshare_all_rtl_1 (insn);
   
@@ -1752,6 +1756,23 @@ unshare_all_rtl_1 (insn)
 	REG_NOTES (insn) = copy_rtx_if_shared (REG_NOTES (insn));
 	LOG_LINKS (insn) = copy_rtx_if_shared (LOG_LINKS (insn));
       }
+}
+
+/* Go through all virtual stack slots of a function and copy any
+   shared structure.  */
+static void
+unshare_all_decls (blk)
+     tree blk;
+{
+  tree t;
+
+  /* Copy shared decls.  */
+  for (t = BLOCK_VARS (blk); t; t = TREE_CHAIN (t))
+    DECL_RTL (t)  = copy_rtx_if_shared (DECL_RTL (t));
+
+  /* Now process sub-blocks.  */
+  for (t = BLOCK_SUBBLOCKS (blk); t; t = TREE_CHAIN (t))
+    unshare_all_decls (t);
 }
 
 /* Mark ORIG as in use, and return a copy of it if it was already in use.
