@@ -1,5 +1,8 @@
 1999-09-21  Tom Tromey  <tromey@cygnus.com>
 
+	* gnu/gcj/convert/Output_UTF8.java (write): Don't exit loop unless
+        both `inlength' and `bytes_todo' are 0.  Simplified 2-byte case.
+
 	* include/posix-threads.h (_Jv_MutexDestroy): Use
 	_Jv_PthreadGetMutex.
 	(_Jv_MutexLock): Likewise.
