@@ -727,9 +727,26 @@ expand_builtin_prefetch (arglist)
   tree arg0, arg1, arg2;
   rtx op0, op1, op2;
 
+  if (!validate_arglist (arglist, POINTER_TYPE, 0))
+    return;
+
   arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  /* Arguments 1 and 2 are optional; argument 1 (read/write) defaults to
+     zero (read) and argument 2 (locality) defaults to 3 (high degree of
+     locality).  */
+  if (TREE_CHAIN (arglist))
+    {
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      if (TREE_CHAIN (TREE_CHAIN (arglist)))
+        arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      else
+	arg2 = build_int_2 (3, 0);
+    }
+  else
+    {
+      arg1 = integer_zero_node;
+      arg2 = build_int_2 (3, 0);
+    }
 
   /* Argument 0 is an address.  */
   op0 = expand_expr (arg0, NULL_RTX, Pmode, EXPAND_NORMAL);

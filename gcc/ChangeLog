@@ -1,3 +1,12 @@
+2001-12-06  Janis Johnson  <janis187@us.ibm.com>
+
+	* builtin-types.def (BT_FN_VOID_PTR_VAR): New.
+	* builtins.def (BUILT_IN_PREFETCH): Change arguments.
+	* builtins.c (expand_builtin_prefetch): Two arguments are now optional,
+	with defaults for read prefetch with high degree of locality.
+	* doc/extend.texi (__builtin_prefetch): Update documentation.
+	* doc/md.texi (prefetch): Add documentation.
+
 2001-12-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (stdio_va_list): Handle __VA_LIST__ in Tru64

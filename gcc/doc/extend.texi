@@ -4442,7 +4442,7 @@ if (__builtin_expect (ptr != NULL, 1))
 when testing pointer or floating-point values.
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin_prefetch (void *@var{addr}, int @var{rw}, int @var{locality})
+@deftypefn {Built-in Function} void __builtin_prefetch (void *@var{addr}, ...)
 This function is used to minimize cache-miss latency by moving data into
 a cache before it is accessed.
 You can insert calls to @code{__builtin_prefetch} into code for which
@@ -4452,14 +4452,17 @@ If the prefetch is done early enough before the access then the data will
 be in the cache by the time it is accessed.
 
 The value of @var{addr} is the address of the memory to prefetch.
+There are two optional arguments, @var{rw} and @var{locality}.
 The value of @var{rw} is a compile-time constant one or zero; one
-means that the prefetch is preparing for a write to the memory address.
+means that the prefetch is preparing for a write to the memory address
+and zero, the default, means that the prefetch is preparing for a read.
 The value @var{locality} must be a compile-time constant integer between
 zero and three.  A value of zero means that the data has no temporal
 locality, so it need not be left in the cache after the access.  A value
 of three means that the data has a high degree of temporal locality and
 should be left in all levels of cache possible.  Values of one and two
-mean, respectively, a low or moderate degree of temporal locality.
+mean, respectively, a low or moderate degree of temporal locality.  The
+default is three.
 
 @smallexample
 for (i = 0; i < n; i++)

@@ -3015,6 +3015,22 @@ A typical @code{conditional_trap} pattern looks like
   "@dots{}")
 @end smallexample
 
+@cindex @code{prefetch} instruction pattern
+@item @samp{prefetch}
+
+This pattern, if defined, emits code for a non-faulting data prefetch
+instruction.  Operand 0 is the address of the memory to prefetch.  Operand 1
+is a constant 1 if the prefetch is preparing for a write to the memory
+address, or a constant 0 otherwise.  Operand 2 is the expected degree of
+temporal locality of the data and is a value between 0 and 3, inclusive; 0
+means that the data has no temporal locality, so it need not be left in the
+cache after the access; 3 means that the data has a high degree of temporal
+locality and should be left in all levels of cache possible;  1 and 2 mean,
+respectively, a low or moderate degree of temporal locality.
+
+Targets that do not support write prefetches or locality hints can ignore
+the values of operands 1 and 2.
+
 @cindex @code{cycle_display} instruction pattern
 @item @samp{cycle_display}
 
