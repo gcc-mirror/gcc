@@ -1,3 +1,22 @@
+2003-12-21  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* rtl.h (dump_rtx_statistics): Declare it.
+	* rtl.c (rtx_alloc_counts, rtx_alloc_sizes, rtvec_alloc_counts,
+	rtx_alloc_sizes): New static vars.
+	(rtx_alloc, rtvec_alloc): Update them.
+	(dump_rtx_statistics): New function.
+	* toplev.c (finalize): Call it.
+	* ggc-page.c (struct globals): Fix comments. Add new member
+	total_allocated_per_order.
+	(ggc_alloc): Keep track of the total allocated memory.
+	(ggc_print_statistics): Clarify message. Print total allocated
+	memory stats.
+	* configure.in (gather-detailed-mem-stats): New flag.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* doc/install.texi (Configuration): Document 
+	--enable-gather-detailed-mem-stats.
+
 2003-12-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* system.h (CONVERT_HARD_REGISTER_TO_SSA_P): Poison.

@@ -250,6 +250,9 @@
 /* Define if valgrind's memcheck.h header is installed. */
 #undef HAVE_MEMCHECK_H
 
+/* Define to enable detailed memory allocation stats gathering. */
+#undef GATHER_STATISTICS
+
 /* Always define this when using the GNU C Library */
 #undef _GNU_SOURCE
 

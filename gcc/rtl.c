@@ -138,6 +138,14 @@ const char * const reg_note_name[] =
   "REG_VTABLE_REF"
 };
 
+
+#ifdef GATHER_STATISTICS
+static int rtx_alloc_counts[(int) LAST_AND_UNUSED_RTX_CODE];
+static int rtx_alloc_sizes[(int) LAST_AND_UNUSED_RTX_CODE];
+static int rtvec_alloc_counts;
+static int rtvec_alloc_sizes;
+#endif
+
 
 /* Allocate an rtx vector of N elements.
    Store the length, and initialize all elements to zero.  */
@@ -152,6 +160,12 @@ rtvec_alloc (int n)
   memset (&rt->elem[0], 0, n * sizeof (rtx));
 
   PUT_NUM_ELEM (rt, n);
+
+#ifdef GATHER_STATISTICS
+  rtvec_alloc_counts++;
+  rtvec_alloc_sizes += n * sizeof (rtx);
+#endif
+
   return rt;
 }
 
@@ -171,6 +185,12 @@ rtx_alloc (RTX_CODE code)
 
   memset (rt, 0, RTX_HDR_SIZE);
   PUT_CODE (rt, code);
+
+#ifdef GATHER_STATISTICS
+  rtx_alloc_counts[code]++;
+  rtx_alloc_sizes[code] += RTX_SIZE (code);
+#endif
+
   return rt;
 }
 
@@ -416,6 +436,36 @@ rtx_equal_p (rtx x, rtx y)
 	}
     }
   return 1;
+}
+
+void dump_rtx_statistics (void)
+{
+#ifdef GATHER_STATISTICS
+  int i;
+  int total_counts = 0;
+  int total_sizes = 0;
+  fprintf (stderr, "\nRTX Kind               Count      Bytes\n");
+  fprintf (stderr, "---------------------------------------\n");
+  for (i = 0; i < LAST_AND_UNUSED_RTX_CODE; i++)
+    if (rtx_alloc_counts[i])
+      {
+        fprintf (stderr, "%-20s %7d %10d\n", GET_RTX_NAME (i),
+                 rtx_alloc_counts[i], rtx_alloc_sizes[i]);
+        total_counts += rtx_alloc_counts[i];
+        total_sizes += rtx_alloc_sizes[i];
+      }
+  if (rtvec_alloc_counts)
+    {
+      fprintf (stderr, "%-20s %7d %10d\n", "rtvec",
+               rtvec_alloc_counts, rtvec_alloc_sizes);
+      total_counts += rtvec_alloc_counts;
+      total_sizes += rtvec_alloc_sizes;
+    }
+  fprintf (stderr, "---------------------------------------\n");
+  fprintf (stderr, "%-20s %7d %10d\n",
+           "Total", total_counts, total_sizes);
+  fprintf (stderr, "---------------------------------------\n");
+#endif  
 }
 
 #if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007)
