@@ -3205,7 +3205,7 @@ try_split (pat, trial, last)
 	      if (GET_CODE (XVECEXP (seq, 0, i)) == INSN)
 		mark_label_nuses (PATTERN (XVECEXP (seq, 0, i)));
 
-	  tem = emit_insn_after (seq, trial);
+	  tem = emit_insn_after_scope (seq, trial, INSN_SCOPE (trial));
 
 	  delete_insn (trial);
 	  if (has_barrier)
@@ -4067,6 +4067,82 @@ emit_line_note_after (file, line, after)
   BLOCK_FOR_INSN (note) = NULL;
   add_insn_after (note, after);
   return note;
+}
+
+/* Like emit_insn_after, but set INSN_SCOPE according to SCOPE.  */
+rtx
+emit_insn_after_scope (pattern, after, scope)
+     rtx pattern, after;
+     tree scope;
+{
+  rtx last = emit_insn_after (pattern, after);
+  for (after = NEXT_INSN (after); after != last; after = NEXT_INSN (after))
+    INSN_SCOPE (after) = scope;
+  return last;
+}
+
+/* Like emit_insns_after, but set INSN_SCOPE according to SCOPE.  */
+rtx
+emit_insns_after_scope (pattern, after, scope)
+     rtx pattern, after;
+     tree scope;
+{
+  rtx last = emit_insns_after (pattern, after);
+  for (after = NEXT_INSN (after); after != last; after = NEXT_INSN (after))
+    INSN_SCOPE (after) = scope;
+  return last;
+}
+
+/* Like emit_jump_insn_after, but set INSN_SCOPE according to SCOPE.  */
+rtx
+emit_jump_insn_after_scope (pattern, after, scope)
+     rtx pattern, after;
+     tree scope;
+{
+  rtx last = emit_jump_insn_after (pattern, after);
+  for (after = NEXT_INSN (after); after != last; after = NEXT_INSN (after))
+    INSN_SCOPE (after) = scope;
+  return last;
+}
+
+/* Like emit_call_insn_after, but set INSN_SCOPE according to SCOPE.  */
+rtx
+emit_call_insn_after_scope (pattern, after, scope)
+     rtx pattern, after;
+     tree scope;
+{
+  rtx last = emit_call_insn_after (pattern, after);
+  for (after = NEXT_INSN (after); after != last; after = NEXT_INSN (after))
+    INSN_SCOPE (after) = scope;
+  return last;
+}
+
+/* Like emit_insn_before, but set INSN_SCOPE according to SCOPE.  */
+rtx
+emit_insn_before_scope (pattern, before, scope)
+     rtx pattern, before;
+     tree scope;
+{
+  rtx first = PREV_INSN (before);
+  rtx last = emit_insn_before (pattern, before);
+
+  for (first = NEXT_INSN (first); first != last; first = NEXT_INSN (first))
+    INSN_SCOPE (first) = scope;
+  return last;
+}
+
+/* Like emit_insns_before, but set INSN_SCOPE according to SCOPE.  */
+rtx
+emit_insns_before_scope (pattern, before, scope)
+     rtx pattern, before;
+     tree scope;
+{
+  rtx first = PREV_INSN (before);
+  rtx last = emit_insns_before (pattern, before);
+
+  for (first = NEXT_INSN (first); first != last; first = NEXT_INSN (first))
+    INSN_SCOPE (first) = scope;
+  return last;
 }
 
 /* Make an insn of code INSN with pattern PATTERN

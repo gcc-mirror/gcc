@@ -3133,7 +3133,8 @@ peephole2_optimize (dump_file)
 					REG_EH_REGION, NULL_RTX);
 
 		  /* Replace the old sequence with the new.  */
-		  try = emit_insn_after (try, peep2_insn_data[i].insn);
+		  try = emit_insn_after_scope (try, peep2_insn_data[i].insn,
+					       INSN_SCOPE (peep2_insn_data[i].insn));
 		  before_try = PREV_INSN (insn);
 		  delete_insn_chain (insn, peep2_insn_data[i].insn);
 
