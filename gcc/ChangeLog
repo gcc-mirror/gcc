@@ -1,3 +1,8 @@
+Tue Nov 30 15:18:35 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* combine.c (try_combine): Only pass SET or CLOBBER to SET_DEST
+	* rs6000.md: Only access a CONST_INT with INTVAL
+
 Tue Nov 30 14:21:00 1999  Richard Henderson  <rth@cygnus.com>
 
 	* lcm.c (compute_laterin): Cast bb->aux to size_t not int.
