@@ -2639,7 +2639,7 @@ add_word_args (format, va_alist)
 #ifdef VA_SPRINTF
   VA_SPRINTF (buffer, format, ap);
 #else
-  sprintf (temp_string, format, a1, a2, a3, a4, a5, a6, a7, a8);
+  sprintf (buffer, format, a1, a2, a3, a4, a5, a6, a7, a8);
 #endif /* not VA_SPRINTF */
   va_end (ap);
   add_word (buffer);
