@@ -22,7 +22,7 @@
 #Makefile.in files.  Some of this stuff may be unnecessary and
 #worthless.
 
-SHELL = /bin/sh
+SHELL = @SHELL@
 MAKEOVERRIDES=
 
 #### Start of system configuration section. ####
@@ -67,8 +67,9 @@ RANLIB = @RANLIB@
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+WARN_CFLAGS = -W -Wall -Wwrite-strings -Wstrict-prototypes
 GTHREAD_FLAGS=@GTHREAD_FLAGS@
-ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) \
+ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) $(WARN_CFLAGS) \
 	$(GTHREAD_FLAGS) -DIN_GCC -DIN_TARGET_LIBS
 
 # Libtool

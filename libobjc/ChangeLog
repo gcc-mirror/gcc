@@ -1,3 +1,9 @@
+2002-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (SHELL): Set to @SHELL@.
+	(WARN_CFLAGS): New.
+	(ALL_CFLAGS): Add $(WARN_CFLAGS).
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* aclocal.m4: Allow for PWDCMD to override hardcoded pwd.
