@@ -993,7 +993,7 @@ extern int may_call_alloca;
 
 #define TRAMPOLINE_TEMPLATE(FILE) 					\
   {									\
-    if (! TARGET_64BIT)							\
+    if (!TARGET_64BIT)							\
       {									\
 	fputs ("\tldw	36(%r22),%r21\n", FILE);			\
 	fputs ("\tbb,>=,n	%r21,30,.+16\n", FILE);			\
@@ -1052,7 +1052,7 @@ extern int may_call_alloca;
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) 			\
 {									\
-  if (! TARGET_64BIT)							\
+  if (!TARGET_64BIT)							\
     {									\
       rtx start_addr, end_addr;						\
 									\
@@ -1070,9 +1070,9 @@ extern int may_call_alloca;
       start_addr = force_reg (Pmode, (TRAMP));				\
       end_addr = force_reg (Pmode, plus_constant ((TRAMP), 32));	\
       emit_insn (gen_dcacheflush (start_addr, end_addr));		\
-      end_addr = force_reg (Pmode, plus_constant (start_addr, 32));	\
       emit_insn (gen_icacheflush (start_addr, end_addr, start_addr,	\
-				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));\
+				  gen_reg_rtx (Pmode),			\
+				  gen_reg_rtx (Pmode)));		\
     }									\
   else									\
     {									\
@@ -1090,13 +1090,14 @@ extern int may_call_alloca;
       start_addr = memory_address (Pmode, plus_constant ((TRAMP), 24));	\
       emit_move_insn (gen_rtx_MEM (Pmode, start_addr), end_addr);	\
       /* fdc and fic only use registers for the address to flush,	\
-	 they do not accept integer displacements.  */ 			\
+	 they do not accept integer displacements.   PA 2.0 cache	\
+	 lines are 64 bytes.  */		 			\
       start_addr = force_reg (Pmode, (TRAMP));				\
-      end_addr = force_reg (Pmode, plus_constant ((TRAMP), 32));	\
+      end_addr = force_reg (Pmode, plus_constant ((TRAMP), 64));	\
       emit_insn (gen_dcacheflush (start_addr, end_addr));		\
-      end_addr = force_reg (Pmode, plus_constant (start_addr, 32));	\
       emit_insn (gen_icacheflush (start_addr, end_addr, start_addr,	\
-				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));\
+				  gen_reg_rtx (Pmode),			\
+				  gen_reg_rtx (Pmode)));		\
     }									\
 }
 

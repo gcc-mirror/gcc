@@ -1,3 +1,8 @@
+2003-11-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.h (TRAMPOLINE_TEMPLATE): Fix flushing of cache lines when
+	generating 64-bit code.
+
 2003-11-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Remove
