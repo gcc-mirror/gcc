@@ -7703,6 +7703,8 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  else
 	    emit_insn (gen_rtx_CLOBBER (VOIDmode, op0));
 
+	  if (mode != V4SFmode)
+	    op0 = gen_lowpart (V4SFmode, op0);
 	  m = adjust_address (op1, V2SFmode, 0);
 	  emit_insn (gen_sse_loadlps (op0, op0, m));
 	  m = adjust_address (op1, V2SFmode, 8);
