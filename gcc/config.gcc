@@ -364,6 +364,11 @@ case $machine in
 	xm_defines=POSIX
 	gas=yes
 	gnu_ld=yes
+	case x${enable_threads} in
+	xyes | xposix)
+		thread_file='posix'
+		;;
+	esac
 	;;
 *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
 	# This is the place-holder for the generic a.out configuration
