@@ -6802,7 +6802,7 @@ expand_function_end (filename, line, end_bindings)
   emit_line_note_force (filename, line);
 
   /* Before the return label (if any), clobber the return
-     registers so that they are not propogated live to the rest of
+     registers so that they are not propagated live to the rest of
      the function.  This can only happen with functions that drop
      through; if there had been a return statement, there would
      have either been a return rtx, or a jump to the return label.

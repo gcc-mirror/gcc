@@ -728,7 +728,7 @@ approx_reg_cost_1 (xp, data)
 
 /* Return an estimate of the cost of the registers used in an rtx.
    This is mostly the number of different REG expressions in the rtx;
-   however for some excecptions like fixed registers we use a cost of
+   however for some exceptions like fixed registers we use a cost of
    0.  If any other hard register reference occurs, return MAX_COST.  */
 
 static int
@@ -905,7 +905,7 @@ rtx_cost (x, outer_code)
 }
 
 /* Return cost of address expression X.
-   Expect that X is propertly formed address reference.  */
+   Expect that X is properly formed address reference.  */
 
 int
 address_cost (x, mode)
@@ -4132,7 +4132,7 @@ fold_rtx (x, insn)
 	     CONST_INT, see if we can find a register equivalent to the
 	     positive constant.  Make a MINUS if so.  Don't do this for
 	     a non-negative constant since we might then alternate between
-	     chosing positive and negative constants.  Having the positive
+	     choosing positive and negative constants.  Having the positive
 	     constant previously-used is the more common case.  Be sure
 	     the resulting constant is non-negative; if const_arg1 were
 	     the smallest negative number this would overflow: depending

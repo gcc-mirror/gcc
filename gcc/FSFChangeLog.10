@@ -4184,7 +4184,7 @@ Thu Nov 30 12:27:22 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 	(ASM_SPEC): Pass appropriate -mxxx switches to the assembler based
 	on the -mcpu=xxx options.
 	(ASM_OUTPUT_INT): Move here from eabi.h.
-	(ENCODE_SECTION_INFO): If -mcall-{nt,aixdesc} add approriate magic
+	(ENCODE_SECTION_INFO): If -mcall-{nt,aixdesc} add appropriate magic
 	so function name has two or one leading periods.
 	(ASM_OUTPUT_SOURCE_LINE): Delete, use version in svr4.h.
 	(trampoline macros): Call trampoline functions in rs6000.c.

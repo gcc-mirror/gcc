@@ -175,7 +175,7 @@ diagnostic_initialize (context)
   diagnostic_finalizer (context) = default_diagnostic_finalizer;
 }
 
-/* Returns true if BUFFER is in line-wrappind mode.  */
+/* Returns true if BUFFER is in line-wrapping mode.  */
 
 int
 output_is_line_wrapping (buffer)
@@ -202,7 +202,7 @@ set_real_maximum_length (buffer)
 {
   /* If we're told not to wrap lines then do the obvious thing.  In case
    we'll emit prefix only once per diagnostic message, it is appropriate
-  not to increase unncessarily the line-length cut-off.  */
+  not to increase unnecessarily the line-length cut-off.  */
   if (! output_is_line_wrapping (buffer)
       || diagnostic_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_ONCE
       || diagnostic_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_NEVER)
@@ -547,7 +547,7 @@ wrap_text (buffer, start, end)
   
   while (start != end)
     {
-      /* Dump anything bodered by whitespaces.  */ 
+      /* Dump anything bordered by whitespaces.  */ 
       {
         const char *p = start;
         while (p != end && *p != ' ' && *p != '\n')
@@ -752,7 +752,7 @@ vbuild_message_string (msg, ap)
 }
 
 /*  Return a malloc'd string containing MSG formatted a la
-    printf.  The caller is reponsible for freeing the memory.  */
+    printf.  The caller is responsible for freeing the memory.  */
 
 static char *
 build_message_string VPARAMS ((const char *msg, ...))
@@ -1296,7 +1296,7 @@ diagnostic_finish (buffer)
   fflush (output_buffer_attached_stream (buffer));
 }
 
-/* Helper subroutine of output_verbatim and verbatim. Do the approriate
+/* Helper subroutine of output_verbatim and verbatim. Do the appropriate
    settings needed by BUFFER for a verbatim formatting.  */
 
 static void

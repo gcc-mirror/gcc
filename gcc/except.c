@@ -679,7 +679,7 @@ expand_eh_region_end ()
   struct eh_region *cur_region = cfun->eh->cur_region;
   rtx note;
 
-  /* Create a nute marking the end of this region.  */
+  /* Create a note marking the end of this region.  */
   note = emit_note (NULL, NOTE_INSN_EH_REGION_END);
   NOTE_EH_HANDLER (note) = cur_region->region_number;
 
@@ -715,7 +715,7 @@ expand_eh_region_end_cleanup (handler)
   emit_label (region->label);
 
   /* Give the language a chance to specify an action to be taken if an
-     exception is thrown that would propogate out of the HANDLER.  */
+     exception is thrown that would propagate out of the HANDLER.  */
   protect_cleanup_actions 
     = (lang_protect_cleanup_actions 
        ? (*lang_protect_cleanup_actions) () 
@@ -1559,7 +1559,7 @@ lookup_type_for_runtime (type)
   slot = (tree *) htab_find_slot_with_hash (type_to_runtime_map, type,
 					    TYPE_HASH (type), NO_INSERT);
 
-  /* We should have always inserrted the data earlier.  */
+  /* We should have always inserted the data earlier.  */
   return TREE_VALUE (*slot);
 }
 
@@ -1784,7 +1784,7 @@ build_post_landing_pads ()
 	       all the way up the chain until blocked by a cleanup.  */
 	  /* ??? Outer try regions can share landing pads with inner
 	     try regions if the types are completely non-overlapping,
-	     and there are no interveaning cleanups.  */
+	     and there are no intervening cleanups.  */
 
 	  region->post_landing_pad = gen_label_rtx ();
 
@@ -3243,7 +3243,7 @@ collect_one_action_chain (ar_hash, region)
       /* Process the associated catch regions in reverse order.
 	 If there's a catch-all handler, then we don't need to
 	 search outer regions.  Use a magic -3 value to record
-	 that we havn't done the outer search.  */
+	 that we haven't done the outer search.  */
       next = -3;
       for (c = region->u.try.last_catch; c ; c = c->u.catch.prev_catch)
 	{

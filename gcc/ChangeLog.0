@@ -1185,7 +1185,7 @@ Thu Jun 25 15:08:16 1998  Mark Mitchell  <mark@markmitchell.com>
 	* c-common.c (c_get_alias_set): New function.
 	* c-decl.c (init_decl_processing): Set lang_get_alias_set.
 
-	* expr.c (protect_from_queue): Propogage alias sets.
+	* expr.c (protect_from_queue): Propagate alias sets.
 	(expand_assignment): Calculate alias set for new MEMs.
 	(expand_expr): Likewise.
 	* function.c (put_var_into_stack): Likewise.

@@ -648,7 +648,7 @@ handle_missing_header (pfile, fname, angle_brackets)
      we can still produce correct output.  Otherwise, we can't produce
      correct output, because there may be dependencies we need inside
      the missing file, and we don't know what directory this missing
-     file exists in.  FIXME: Use a future cpp_diagnotic_with_errno ()
+     file exists in.  FIXME: Use a future cpp_diagnostic_with_errno ()
      for both of these cases.  */
   else if (CPP_PRINT_DEPS (pfile) && ! print_dep)
     cpp_warning (pfile, "%s: %s", fname, xstrerror (errno));

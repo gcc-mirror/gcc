@@ -821,7 +821,7 @@ Tue Dec 14 12:07:29 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 	* regclass.c  (record_reg_classes): Do not do the copying preferrencing
 	when source does not die.
 
-	* regclass.c (record_reg_classes): Handle INOUT operands propertly.
+	* regclass.c (record_reg_classes): Handle INOUT operands properly.
 
 1999-12-14  Jakub Jelinek  <jakub@redhat.com>
 
@@ -3199,9 +3199,9 @@ Wed Nov  3 14:51:59 1999  Mark P. Mitchell  <mark@codesourcery.com>
 	* rtl.h (renumber_insns): New function.
 	(remove_unnecessary_notes): Likewise.
 	* emit-rtl.c (renumber_insns): Define.
-	(remove_unncessary_notes): Likewise.
+	(remove_unnecessary_notes): Likewise.
 	* toplev.c (rest_of_compilation): Remove dead code.
-	Use renumber_insns and remove_unncessary_notes.
+	Use renumber_insns and remove_unnecessary_notes.
 
 	* gcse.c (struct null_pointer_info): New type.
 	(get_bitmap_width): New function.
@@ -5729,7 +5729,7 @@ Sat Oct  9 12:18:16 1999  Richard Henderson  <rth@cygnus.com>
 	(life_analysis): Give life_analysis_1 PROP flags.
 	(verify_wide_reg_1, verify_wide_reg): New.
 	(verify_local_live_at_start): New.
-	(update_life_info): Rewrite to call into propogate_block.
+	(update_life_info): Rewrite to call into propagate_block.
 	(mark_reg): New.
 	(mark_regs_live_at_end): After reload, if epilogue as rtl,
 	always mark stack pointer.  Conditionally mark PIC register.
@@ -10985,7 +10985,7 @@ Tue Aug 10 17:19:02 1999  Jim Wilson  <wilson@cygnus.com>
 
 Tue Aug 10 10:47:42 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
-	* except.h (eh_nesting_info): Add new structure defintion.
+	* except.h (eh_nesting_info): Add new structure definition.
 	(init_eh_nesting_info, free_eh_nesting_info): Add function prototypes.
 	(reachable_handlers, update_rethrow_references): Add function
 	prototypes.
@@ -14401,7 +14401,7 @@ Thu May 20 10:00:42 1999  Stephen L Moshier  <moshier@world.std.com>
 
 Thu May 20 09:58:57 1999  Jan Hubicka <hubicka@freesoft.cz>
 
-	* function.c (assign_stack_local): Align stack slot propertly.
+	* function.c (assign_stack_local): Align stack slot properly.
 	(assign_outer_stack_local): Likewise.
 
 Thu May 20 10:38:43 1999  Mark Mitchell  <mark@codesourcery.com>

@@ -100,7 +100,7 @@ internal_error VPARAMS ((const char *format, ...))
    shares no directory elements with the pathname of __FILE__.  This
    is used by fancy_abort() to print `Internal compiler error in expr.c'
    instead of `Internal compiler error in ../../GCC/gcc/expr.c'.  This
-   version if for the gen* programs and so neededn't handle subdirectories.  */
+   version if for the gen* programs and so needn't handle subdirectories.  */
 
 const char *
 trim_filename (name)

@@ -556,7 +556,7 @@ expected_value_to_br_prob ()
 	  continue;
 
 	case JUMP_INSN:
-	  /* Look for simple conditional branches.  If we havn't got an
+	  /* Look for simple conditional branches.  If we haven't got an
 	     expected value yet, no point going further.  */
 	  if (GET_CODE (insn) != JUMP_INSN || ev == NULL_RTX)
 	    continue;

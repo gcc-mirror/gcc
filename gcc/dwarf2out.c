@@ -3004,7 +3004,7 @@ get_cfa_from_loc_descr (cfa, loc)
 	  cfa->offset = ptr->dw_loc_oprnd1.v.val_unsigned;
 	  break;
 	default:
-	  internal_error ("DW_LOC_OP %s not implememnted\n",
+	  internal_error ("DW_LOC_OP %s not implemented\n",
 			  dwarf_stack_op_name (ptr->dw_loc_opc));
 	}
     }
@@ -3224,7 +3224,7 @@ extern int flag_traditional;
    This value was chosen to give a reasonable range of values.  */
 #define DWARF_LINE_BASE  -10
 
-/* First special line opcde - leave room for the standard opcodes.  */
+/* First special line opcode - leave room for the standard opcodes.  */
 #define DWARF_LINE_OPCODE_BASE  10
 
 /* Range of line offsets in a special line info. opcode.  */
@@ -4752,7 +4752,7 @@ get_AT (die, attr_kind)
 
 /* Return the "low pc" attribute value, typically associated with
    a subprogram DIE.  Return null if the "low pc" attribute is
-   either not prsent, or if it cannot be represented as an
+   either not present, or if it cannot be represented as an
    assembler label identifier.  */
 
 static inline const char *
@@ -4765,7 +4765,7 @@ get_AT_low_pc (die)
 
 /* Return the "high pc" attribute value, typically associated with
    a subprogram DIE.  Return null if the "high pc" attribute is
-   either not prsent, or if it cannot be represented as an
+   either not present, or if it cannot be represented as an
    assembler label identifier.  */
 
 static inline const char *

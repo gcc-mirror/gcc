@@ -1,5 +1,12 @@
 2001-11-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* ChangeLog.0, ChangeLog.2, ChangeLog.3, ChangeLog.4, ChangeLog,
+	FSFChangeLog.10, c-decl.c, cppfiles.c, cppinit.c, cpplex.c,
+	cpplib.c, cppmain.c, cse.c, df.c, diagnostic.c, dominance.c,
+	dwarf2out.c, dwarfout.c, emit-rtl.c, errors.c, except.c, except.h,
+	explow.c, function.c, gcse.c, genrecog.c, predict.c, regmove.c,
+	sched-rgn.c, ssa-ccp.c, stmt.c, toplev.c: Fix spelling errors.
+
 	* predict.c, reg-stack.c: Fix spelling errors.
 
 2001-10-09  Andrew Haley  <aph@redhat.com>
@@ -1108,7 +1115,7 @@ Wed Nov 14 14:17:05 CET 2001  Jan Hubicka  <jh@suse.cz>
 	* output.h (alter_subreg): Update prototype.
 	* sdbout.c (sdbout_symbol): Update call of alter_subreg.
 	* simplify-rtx.c (simplify_subreg): Copy ORIGINAL_REGNO.
-	* Makefile.in (final.o): Add depdendancy on expr.h
+	* Makefile.in (final.o): Add dependency on expr.h
 
 Wed Nov 14 06:37:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -1591,7 +1598,7 @@ Sat Nov 10 08:50:50 2001  Jeffrey A Law  (law@cygnus.com)
 	* config/ia64/hpux.h (TARGET_VERSION): Likewise.
 	* config/ia64/linux.h (TARGET_VERSION): Likewise.
 	(FUNCTION_PROFILER): Remove.
-	* config/ia64/ia64.h (FUNCTION_PROFILER): Update defintion using the
+	* config/ia64/ia64.h (FUNCTION_PROFILER): Update definition using the
 	version in config/ia64/linux.h.
 	* config/ia64/freebsd.h: New file.
 	* config/freebsd.h: Tidy up.
@@ -2347,7 +2354,7 @@ Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Mon Nov  5 16:15:25 CET 2001  Jan Hubicka  <jh@suse.cz>
 
-	* Makefile.in (bb-reoder.o): Add dependency on cfglayout.h;
+	* Makefile.in (bb-reorder.o): Add dependency on cfglayout.h;
 	remove unneeded dependencies;
 	(cfglayout.o): New.
 	* cfglayout.c, cfglayout.h: New files; break out from ...
@@ -7398,7 +7405,7 @@ Tue Sep 11 11:37:52 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* cppinit.c (cpp_create_reader): Set up the token runs.
 	* cpplex.c (lex_directive, lex_token, next_tokenrun): New.
 	(lex_token): New internalised version of _cpp_lex_token.  Don't
-	handle directives or the multiple include opimisation here any
+	handle directives or the multiple include optimization here any
 	more.  Simply lex a token.
 	* cpplib.c (run_directive): Clear bol.
 	(_cpp_pop_buffer): Set bol.
@@ -7528,7 +7535,7 @@ Mon Sep 10 14:21:26 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(make_reorder_chain_1): Do not use BB indexes.
 	(label_for_bb): Likewise; set BB for new insn.
 	(emit_jump_to_block_after): Likewise.
-	(fixup_reoder_chain): Sanity check that all basic blocks
+	(fixup_reorder_chain): Sanity check that all basic blocks
 	are chained; verify newly created insn chain; remove
 	undocnitional jump simplifying; Do not use BB indexes;
 	properly initialize count and frequency information;
@@ -9396,7 +9403,7 @@ Mon Aug 20 01:44:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	Update all callers.
 
 	* final.c (end_final): Abort profile block generation if we
-	havn't layed it out properly.
+	haven't layed it out properly.
 	* output.h (assemble_eh_integer): Remove stale decl.
 	* varasm.c (assemble_zeros): Tidy; use assemble_integer.
 	(min_align): New.
@@ -9658,7 +9665,7 @@ Wed Aug 15 14:24:22 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(propagate_freq): Use EDGE_DFS_BACK to detect irreducible regions.
 	(estimate_bb_frequencies): Call mark_dfs_back_edges.
 
-	* i386.c (ix86_agi_depdendant): Lea causes AGI only on the Pentium
+	* i386.c (ix86_agi_dependant): Lea causes AGI only on the Pentium
 	(ix86_adjust_cost): Teach scheduler that latency to load operand can
 	be masked.
 

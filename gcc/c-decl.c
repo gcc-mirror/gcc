@@ -6808,7 +6808,7 @@ c_expand_body (fndecl, nested_p, can_defer_p)
              function could not be deferred.  */
 	  && defer_fn (fndecl))
 	{
-	  /* Let the back-end know that this funtion exists.  */
+	  /* Let the back-end know that this function exists.  */
 	  (*debug_hooks->deferred_inline_function) (fndecl);
           timevar_pop (TV_INTEGRATION);
 	  return;
