@@ -818,12 +818,6 @@ extern enum cmp_type hppa_branch_type;
        fprintf (FILE, ",ARGW%d=FR", (ARG1));} while (0)
 #endif
 
-#ifdef BUGGY_GAS
-#define EXPORT_PARMS(FILE) fputs (",PRIV_LEV=3", FILE)
-#else
-#define EXPORT_PARMS(FILE) fputs (",ENTRY,PRIV_LEV=3", FILE)
-#endif
-
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
     do { tree fntype = DECL_RESULT (DECL);	 			\
 	 tree tree_type = TREE_TYPE (DECL);				\
@@ -832,7 +826,7 @@ extern enum cmp_type hppa_branch_type;
 	 if (TREE_PUBLIC (DECL))					\
 	   { extern int current_function_varargs;			\
 	     fputs ("\t.EXPORT ", FILE); assemble_name (FILE, NAME);	\
-	     EXPORT_PARMS (FILE);					\
+	     fputs (",ENTRY,PRIV_LEV=3", FILE);				\
 	     for (parm = DECL_ARGUMENTS (DECL), i = 0; parm && i < 4;	\
 		  parm = TREE_CHAIN (parm))				\
 	       {							\
@@ -1270,33 +1264,42 @@ extern union tree_node *current_function_decl;
    information).
 
    On the HP-PA we use this to indicate if a symbol is in text or
-   data space.  */
+   data space.  Also, function labels need special treatment. */
+
+#define TEXT_SPACE_P(DECL)\
+  (TREE_CODE (DECL) == FUNCTION_DECL					\
+   || (TREE_CODE (DECL) == VAR_DECL					\
+       && TREE_READONLY (DECL) && ! TREE_SIDE_EFFECTS (DECL)		\
+       && !flag_pic)							\
+   || (*tree_code_type[(int) TREE_CODE (DECL)] == 'c'			\
+       && !(TREE_CODE (DECL) == STRING_CST && flag_writable_strings)))
+
+#define FUNCTION_NAME_P(NAME) \
+(*(NAME) == '@' || (*(NAME) == '*' && *((NAME) + 1) == '@'))
 
 #define ENCODE_SECTION_INFO(DECL)\
-do									\
-  {									\
-    if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-      {									\
-	hppa_encode_label (XEXP (DECL_RTL (DECL), 0));			\
-	SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-      }									\
-    else								\
-      {									\
-	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
-		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
-	if (RTX_UNCHANGING_P (rtl) && !MEM_VOLATILE_P (rtl)		\
-	    && !flag_pic)						\
-	  SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;				\
-      }									\
-  }									\
+do							\
+  { if (TEXT_SPACE_P (DECL))				\
+      {	rtx _rtl;					\
+	if (TREE_CODE (DECL) == FUNCTION_DECL		\
+	    || TREE_CODE (DECL) == VAR_DECL)		\
+	  _rtl = DECL_RTL (DECL);			\
+	else						\
+	  _rtl = TREE_CST_RTL (DECL);			\
+	SYMBOL_REF_FLAG (XEXP (_rtl, 0)) = 1;		\
+	if (TREE_CODE (DECL) == FUNCTION_DECL)		\
+	  hppa_encode_label (XEXP (DECL_RTL (DECL), 0));\
+      }							\
+  }							\
 while (0)
   
 /* Store the user-specified part of SYMBOL_NAME in VAR.
    This is sort of inverse to ENCODE_SECTION_INFO.  */
 
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
-  (VAR) = ((SYMBOL_NAME)			\
-	   + ((SYMBOL_NAME)[0] == '*' || (SYMBOL_NAME)[0] == '@'))
+  (VAR) = ((SYMBOL_NAME)  + ((SYMBOL_NAME)[0] == '*' ?	\
+			     1 + (SYMBOL_NAME)[1] == '@'\
+			     : (SYMBOL_NAME)[0] == '@'))
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
@@ -1520,10 +1523,10 @@ bss_section ()								\
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
   do { fputs ("\t.IMPORT ", FILE);				\
 	 assemble_name (FILE, NAME);				\
-       if (TREE_CODE (DECL) == VAR_DECL && ! TREE_READONLY (DECL))     	\
-	 fputs (",DATA\n", FILE);				\
-       else							\
+       if (FUNCTION_NAME_P (NAME))     				\
 	 fputs (",CODE\n", FILE);				\
+       else							\
+	 fputs (",DATA\n", FILE);				\
      } while (0)
 
 /* hpux ld doesn't output the object file name, or anything useful at
@@ -1557,7 +1560,7 @@ bss_section ()								\
    `assemble_name' uses this.  */
 
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf ((FILE), "%s", (NAME) + ((NAME)[0] == '@' ? 1 : 0))
+  fprintf ((FILE), "%s", (NAME) + (FUNCTION_NAME_P (NAME) ? 1 : 0))
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
