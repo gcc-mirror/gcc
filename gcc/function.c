@@ -1028,8 +1028,16 @@ preserve_temp_slots (x)
 {
   struct temp_slot *p = 0;
 
+  /* If there is no result, we still might have some objects whose address
+     were taken, so we need to make sure they stay around.  */
   if (x == 0)
-    return;
+    {
+      for (p = temp_slots; p; p = p->next)
+	if (p->in_use && p->level == temp_slot_level && p->addr_taken)
+	  p->level--;
+
+      return;
+    }
 
   /* If X is a register that is being used as a pointer, see if we have
      a temporary slot we know it points to.  To be consistent with
@@ -1051,7 +1059,7 @@ preserve_temp_slots (x)
     }
 
   /* First see if we can find a match.  */
-  if ( p== 0)
+  if (p == 0)
     p = find_temp_slot_from_address (XEXP (x, 0));
 
   if (p != 0)
