@@ -3443,6 +3443,11 @@ There are patches for Solaris 2.6 (105633-56 or newer for SPARC,
 @end html
 @heading @anchor{sparc-sun-solaris2*}sparc-sun-solaris2*
 
+When GCC is configured to use binutils 2.11.2 or later the binaries
+produced are smaller than the ones produced using Sun's native tools;
+this difference is quite significant for binaries containing debugging
+information.
+
 Sun @command{as} 4.x is broken in that it cannot cope with long symbol names.
 A typical error message might look similar to the following:
 
