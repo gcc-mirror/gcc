@@ -1,3 +1,16 @@
+2001-03-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natString.cc (rehash): Don't bother with memset;
+	_Jv_AllocBytes returns zero'd memory.  Use _Jv_AllocBytesChecked.
+	Use UNMASK_PTR.
+	(UNMASK_PTR): New macro.
+	(intern): Unmask pointer before returning it.  Register finalizer
+	for the string.
+	(unintern): Handle case where 
+	(MASK_PTR): New macro.
+	(PTR_MAKSED): Likewise.
+	(_Jv_NewStringUtf8Const): Use UNMASK_PTR.
+
 2001-03-01  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/natThrowable.cc (printRawStackTrace): Copy the
