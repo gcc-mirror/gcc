@@ -1,3 +1,7 @@
+2001-06-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* NEWS: Update release number.
+
 2001-06-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3130, c++/3131, c++/3132
