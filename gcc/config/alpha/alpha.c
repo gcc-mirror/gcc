@@ -6162,8 +6162,7 @@ alpha_build_va_list ()
 }
 
 void
-alpha_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+alpha_va_start (valist, nextarg)
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {
@@ -6174,7 +6173,7 @@ alpha_va_start (stdarg_p, valist, nextarg)
     return;
 
   if (TARGET_ABI_UNICOSMK)
-    std_expand_builtin_va_start (1, valist, nextarg);
+    std_expand_builtin_va_start (valist, nextarg);
 
   /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base
      up by 48, storing fp arg registers in the first 48 bytes, and the

@@ -648,8 +648,8 @@ struct cum_arg {int nbytes; };
 #define EXPAND_BUILTIN_SAVEREGS() mn10300_builtin_saveregs ()
 
 /* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
-  mn10300_va_start (stdarg, valist, nextarg)
+#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
+  mn10300_va_start (valist, nextarg)
 
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \

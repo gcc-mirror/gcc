@@ -1039,8 +1039,8 @@ extern int may_call_alloca;
 
 /* Implement `va_start' for varargs and stdarg.  */
 
-#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
-  hppa_va_start (stdarg, valist, nextarg)
+#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
+  hppa_va_start (valist, nextarg)
 
 /* Implement `va_arg'.  */
 

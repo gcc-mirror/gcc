@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef RTX_CODE
 #ifdef TREE_CODE
-extern void arc_va_start PARAMS ((int, tree, rtx));
+extern void arc_va_start PARAMS ((tree, rtx));
 extern rtx arc_va_arg PARAMS ((tree, tree));
 #endif /* TREE_CODE */
 

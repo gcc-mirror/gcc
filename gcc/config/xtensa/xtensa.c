@@ -2393,8 +2393,7 @@ xtensa_builtin_saveregs ()
    current function to fill in an initial va_list. */
 
 void
-xtensa_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+xtensa_va_start (valist, nextarg)
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {

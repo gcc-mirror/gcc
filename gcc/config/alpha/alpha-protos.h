@@ -135,7 +135,7 @@ extern void alpha_initialize_trampoline PARAMS ((rtx, rtx, rtx, int, int, int));
 extern void alpha_reorg PARAMS ((rtx));
 
 extern tree alpha_build_va_list PARAMS ((void));
-extern void alpha_va_start PARAMS ((int, tree, rtx));
+extern void alpha_va_start PARAMS ((tree, rtx));
 extern rtx alpha_va_arg PARAMS ((tree, tree));
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,
 				 tree, int));

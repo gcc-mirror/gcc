@@ -2225,8 +2225,7 @@ d30v_build_va_list ()
 /* Expand __builtin_va_start to do the va_start macro.  */
 
 void 
-d30v_expand_builtin_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+d30v_expand_builtin_va_start (valist, nextarg)
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {

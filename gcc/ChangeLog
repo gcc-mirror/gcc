@@ -1,3 +1,23 @@
+2002-07-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* builtins.c (std_expand_builtin_va_start): Remove unused
+	first argument.
+	(expand_builtin_va_start): Call EXPAND_BUILTIN_VA_START and
+	std_expand_builtin_va_start with just two arguments.
+	* expr.h: Update prototypes.
+
+	* alpha-protos.h, alpha.h, alpha.c, arc-protos.h, arc.h,
+	arc.c, d30v-protos.h, d30v.h, d30v.c, i386-protos.h, i386.h,
+	i386.c, i960-protos.h, i960.h, i960.c, m88k-protos.h, m88k.h,
+	m88k.c, mips-protos.h, mips.h, mips.c, mn10300-protos.h,
+	mn10300.h, mn10300.c, pa-protos.h, pa.h, pa.c,
+	rs6000-protos.h, rs6000.h, rs6000.c, s390-protos.h, s390.h,
+	s390.c, sh-protos.h, sh.h, sh.c, sparc-protos.h, sparc.h,
+	sparc.c, stormy16-protos.h, stormy16.h, stormy16.c,
+	xtensa-protos.h, xtensa.h, xtensa.c:  Remove unused first
+	argument from all implementations of EXPAND_BUILTIN_VA_START
+	and all uses of std_expand_builtin_va_start.
+
 Tue Jul 16 19:32:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* regrename.c (copy_value): Don't record high part copies.
@@ -17,7 +37,7 @@ Tue Jul 16 19:32:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/ns32k/ns32k.md (*madddf, *maddsf, *msubdf, *msubsf):
 	"earlyclobber" constraint modifier for some alternative.
-	
+
 	* config/ns32k/ns32k.md (tstdf, tstsf, cmpdf, cmpsf, blt, ble)
 	(*ble, *blt): Flag to indicate bCOND and sCOND should check for
 	unordered.
@@ -59,7 +79,7 @@ Tue Jul 16 19:32:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-07-16  Jeroen Dobbelaere <jeroen.dobbelaere@acunia.com>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.h (LEGITIMATE_PIC_OPERAND_P): Only test 
+	* arm.h (LEGITIMATE_PIC_OPERAND_P): Only test
 	CONSTANT_POOL_ADDRESS_P if a SYMBOL_REF.  Simplify logic.
 
 2002-07-16  Richard Earnshaw  <rearnsha@arm.com>
@@ -73,7 +93,7 @@ Tue Jul 16 19:32:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* ra-rewrite.c: #include reload.h, insn-config.h
 	* ra-build.c: #include reload.h
 	* Makefile.in: Update ra-rewrite.o, ra-build.o dependencies to
-	depend on reload.h, insn-config.h. 
+	depend on reload.h, insn-config.h.
 
 Tue Jul 16 11:57:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
 

@@ -31,7 +31,7 @@ extern int function_label_operand PARAMS ((rtx, enum machine_mode));
 extern int lhs_lshift_cint_operand PARAMS ((rtx, enum machine_mode));
 
 #ifdef TREE_CODE
-extern void hppa_va_start PARAMS ((int, tree, rtx));
+extern void hppa_va_start PARAMS ((tree, rtx));
 extern rtx hppa_va_arg PARAMS ((tree, tree));
 #endif /* TREE_CODE */
 extern rtx hppa_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));

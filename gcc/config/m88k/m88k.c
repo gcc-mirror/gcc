@@ -2618,8 +2618,7 @@ m88k_build_va_list ()
 /* Implement `va_start' for varargs and stdarg.  */
 
 void
-m88k_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+m88k_va_start (valist, nextarg)
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {

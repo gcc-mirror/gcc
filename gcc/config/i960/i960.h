@@ -872,8 +872,8 @@ enum reg_class { NO_REGS, GLOBAL_REGS, LOCAL_REGS, LOCAL_OR_GLOBAL_REGS,
   (VALIST) = i960_build_va_list ()
 
 /* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
-  i960_va_start (stdarg, valist, nextarg)
+#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
+  i960_va_start (valist, nextarg)
 
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \

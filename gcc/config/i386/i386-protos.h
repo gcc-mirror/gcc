@@ -153,7 +153,7 @@ extern bool ix86_function_value_regno_p PARAMS ((int));
 extern bool ix86_function_arg_regno_p PARAMS ((int));
 extern int ix86_function_arg_boundary PARAMS ((enum machine_mode, tree));
 extern int ix86_return_in_memory PARAMS ((tree));
-extern void ix86_va_start PARAMS ((int, tree, rtx));
+extern void ix86_va_start PARAMS ((tree, rtx));
 extern rtx ix86_va_arg PARAMS ((tree, tree));
 extern void ix86_setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
 						 enum machine_mode,

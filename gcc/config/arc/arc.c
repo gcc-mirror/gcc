@@ -2261,8 +2261,7 @@ arc_ccfsm_record_branch_deleted ()
 }
 
 void
-arc_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+arc_va_start (valist, nextarg)
      tree valist;
      rtx nextarg;
 {
@@ -2271,7 +2270,7 @@ arc_va_start (stdarg_p, valist, nextarg)
       && (current_function_args_info & 1))
     nextarg = plus_constant (nextarg, UNITS_PER_WORD);
 
-  std_expand_builtin_va_start (1, valist, nextarg);
+  std_expand_builtin_va_start (valist, nextarg);
 }
 
 rtx

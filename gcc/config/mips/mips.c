@@ -4609,8 +4609,7 @@ mips_build_va_list ()
 /* Implement va_start.   stdarg_p is always 1.  */
 
 void
-mips_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+mips_va_start (valist, nextarg)
      tree valist;
      rtx nextarg;
 {
@@ -4689,11 +4688,11 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  /* Everything is in the GPR save area, or in the overflow
 	     area which is contiguous with it.  */
 	  nextarg = plus_constant (nextarg, -gpr_save_area_size);
-	  std_expand_builtin_va_start (1, valist, nextarg);
+	  std_expand_builtin_va_start (valist, nextarg);
 	}
     }
   else
-    std_expand_builtin_va_start (1, valist, nextarg);
+    std_expand_builtin_va_start (valist, nextarg);
 }
 
 /* Implement va_arg.  */

@@ -5260,8 +5260,7 @@ sh_build_va_list ()
 /* Implement `va_start' for varargs and stdarg.  */
 
 void
-sh_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
+sh_va_start (valist, nextarg)
      tree valist;
      rtx nextarg;
 {
@@ -5273,13 +5272,13 @@ sh_va_start (stdarg_p, valist, nextarg)
   if (TARGET_SH5)
     {
       expand_builtin_saveregs ();
-      std_expand_builtin_va_start (1, valist, nextarg);
+      std_expand_builtin_va_start (valist, nextarg);
       return;
     }
 
   if ((! TARGET_SH3E && ! TARGET_SH4) || TARGET_HITACHI)
     {
-      std_expand_builtin_va_start (1, valist, nextarg);
+      std_expand_builtin_va_start (valist, nextarg);
       return;
     }
 
