@@ -1,6 +1,73 @@
 2002-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	Merge JDK 1.4 java.security changes from classpath.
+
+	* java/security/AccessControlException.java: Merge from Classpath.
+	* java/security/AccessController.java: Likewise.
+	* java/security/AllPermission.java: Likewise.
+	* java/security/BasicPermission.java: Likewise.
+	* java/security/Certificate.java: Likewise.
+	* java/security/CodeSource.java: Likewise.
+	* java/security/DigestException.java: Likewise.
+	* java/security/DigestOutputStream.java: Likewise.
+	* java/security/DomainCombiner.java: Likewise.
+	* java/security/GeneralSecurityException.java: Likewise.
+	* java/security/Guard.java: Likewise.
+	* java/security/GuardedObject.java: Likewise.
+	* java/security/InvalidAlgorithmParameterException.java: Likewise.
+	* java/security/InvalidKeyException.java: Likewise.
+	* java/security/InvalidParameterException.java: Likewise.
+	* java/security/Key.java: Likewise.
+	* java/security/KeyException.java: Likewise.
+	* java/security/KeyManagementException.java: Likewise.
+	* java/security/KeyStoreException.java: Likewise.
+	* java/security/MessageDigest.java: Likewise.
+	* java/security/NoSuchAlgorithmException.java: Likewise.
+	* java/security/NoSuchProviderException.java: Likewise.
+	* java/security/Permission.java: Likewise.
+	* java/security/PermissionCollection.java: Likewise.
+	* java/security/Permissions.java: Likewise.
+	* java/security/Policy.java: Likewise.
+	* java/security/Principal.java: Likewise.
+	* java/security/PrivateKey.java: Likewise.
+	* java/security/PrivilegedAction.java: Likewise.
+	* java/security/PrivilegedActionException.java: Likewise.
+	* java/security/PrivilegedExceptionAction.java: Likewise.
+	* java/security/ProtectionDomain.java: Likewise.
+	* java/security/ProviderException.java: Likewise.
+	* java/security/PublicKey.java: Likewise.
+	* java/security/SecureClassLoader.java: Likewise.
+	* java/security/SecurityPermission.java: Likewise.
+	* java/security/SignatureException.java: Likewise.
+	* java/security/UnrecoverableKeyException.java: Likewise.
+	* java/security/UnresolvedPermission.java: Likewise.
+	* java/security/acl/AclNotFoundException.java: Likewise.
+	* java/security/acl/LastOwnerException.java: Likewise.
+	* java/security/acl/NotOwnerException.java: Likewise.
+	* java/security/cert/CRLException.java: Likewise.
+	* java/security/cert/CertificateEncodingException.java: Likewise.
+	* java/security/cert/CertificateException.java: Likewise.
+	* java/security/cert/CertificateExpiredException.java: Likewise.
+	* java/security/cert/CertificateFactory.java: Likewise.
+	* java/security/cert/CertificateNotYetValidException.java: Likewise.
+	* java/security/cert/CertificateParsingException.java: Likewise.
+	* java/security/spec/InvalidKeySpecException.java: Likewise.
+	* java/security/spec/InvalidParameterSpecException.java: Likewise.
+
+	* java/security/cert/CertPath.java: New file.
+	* java/security/cert/CertPathBuilderException.java: New file.
+	* java/security/cert/CertPathValidatorException.java: New file.
+	* java/security/cert/CertStoreException.java: New file.
+
+	* Makefile.am: Add new CertPath classes.
+	* Makefile.in: Rebuilt.
+
+        * gnu/java/util/EmptyEnumeration.java: New file from classpath.
+
+2002-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	Merge JDK 1.4 exception chaining support from classpath.
+
 	* java/lang/Throwable.java: Merge 1.4 support from classpath.
 	(stackTraceBytes): Rename from stackTrace.
 	* java/lang/Exception.java: Merge from classpath.

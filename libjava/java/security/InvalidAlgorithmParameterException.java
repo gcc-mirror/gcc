@@ -1,5 +1,6 @@
-/* InvalidAlgorithmParameterException.java
-   Copyright (C) 2000  Free Software Foundation, Inc.
+/* InvalidAlgorithmParameterException.java -- an invalid parameter to a
+   security algorithm
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,23 +39,33 @@ exception statement from your version. */
 package java.security;
 
 /**
+ * Thrown for an invalid security algorithm parameter.
+ *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date February 2, 2000.
+ * @since 1.2
+ * @status updated to 1.4
  */
-
-/**
- * Written using on-line Java Platform 1.2 API Specification.
- * Status:  Believed complete and correct.
- */
-
-// JDK1.2
-public class InvalidAlgorithmParameterException extends GeneralSecurityException
+public class InvalidAlgorithmParameterException
+  extends GeneralSecurityException
 {
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 2864672297499471472L;
+
+  /**
+   * Construct an exception with no message.
+   */
   public InvalidAlgorithmParameterException()
   {
     super();
   }
 
+  /**
+   * Construct an exception with a message.
+   *
+   * @param msg the message
+   */
   public InvalidAlgorithmParameterException(String msg)
   {
     super(msg);

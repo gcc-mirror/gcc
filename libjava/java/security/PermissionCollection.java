@@ -1,5 +1,5 @@
 /* PermissionCollection.java -- A collection of permission objects
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,74 +40,87 @@ package java.security;
 import java.io.Serializable;
 import java.util.Enumeration;
 
-  /**
-   * This class models a group of Java permissions.  It has convenient
-   * methods for determining whether or not a given permission is implied
-   * by any of the permissions in this collection.
-   * <p>
-   * Some care must be taken in storing permissions.  First, a collection of
-   * the appropriate type must be created.  This is done by calling the
-   * <code>newPermissionCollection</code> method on an object of the 
-   * permission class you wish to add to the collection.  If this method
-   * returns <code>null</code>, any type of <code>PermissionCollection</code>
-   * can be used to store permissions of that type.  However, if a
-   * <code>PermissionCollection</code> collection object is returned, that
-   * type must be used.  
-   * <p>
-   * The <code>PermissionCollection</code>'s returned
-   * by the <code>newPermissionCollection</code> instance in a subclass of
-   * <code>Permission</code> is a homogeneous collection.  It only will 
-   * hold permissions of one specified type - instances of the class that
-   * created it.  Not all <code>PermissionCollection</code> subclasses
-   * have to hold permissions of only one type however.  For example,
-   * the <code>Permissions</code> class holds permissions of many types.
-   * <p>
-   * Since the <code>newPermissionCollection</code> in <code>Permission</code>
-   * itself returns <code>null</code>, by default a permission can be stored
-   * in any type of collection unless it overrides that method to create its
-   * own collection type.
-   *
-   * @version 0.0
-   *
-   * @author Aaron M. Renn (arenn@urbanophile.com)
-   */
-public abstract class PermissionCollection
-  extends Object
-  implements Serializable
+/**
+ * This class models a group of Java permissions.  It has convenient
+ * methods for determining whether or not a given permission is implied
+ * by any of the permissions in this collection.
+ *
+ * <p>Some care must be taken in storing permissions.  First, a collection of
+ * the appropriate type must be created.  This is done by calling the
+ * <code>newPermissionCollection</code> method on an object of the
+ * permission class you wish to add to the collection.  If this method
+ * returns <code>null</code>, any type of <code>PermissionCollection</code>
+ * can be used to store permissions of that type.  However, if a
+ * <code>PermissionCollection</code> collection object is returned, that
+ * type must be used.
+ *
+ * <p>A <code>PermissionCollection</code> returned by the
+ * <code>newPermissionCollection</code> method in a subclass of
+ * <code>Permission</code> is a homogeneous collection.  It only will
+ * hold permissions of one specified type - instances of the class that
+ * created it.  Not all <code>PermissionCollection</code> subclasses
+ * have to hold permissions of only one type however.  For example,
+ * the <code>Permissions</code> class holds permissions of many types.
+ *
+ * <p>Since the <code>newPermissionCollection</code> in <code>Permission</code>
+ * itself returns <code>null</code>, by default a permission can be stored
+ * in any type of collection unless it overrides that method to create its
+ * own collection type.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Permission
+ * @see Permissions
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public abstract class PermissionCollection implements Serializable
 {
-  private static final String linesep = null;
-
-  static
-  {
-    String linesep = System.getProperty("line.separator");
-    if (linesep == null);
-      linesep = "\n";
-  }
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -6727011328946861783L;
 
   /**
    * Indicates whether or not this collection is read only.
+   *
+   * @serial if the collection is read-only
    */
   private boolean readOnly;
 
   /**
-   * This method initializes a new instance of <code>PermissionCollection</code>.
-   * This is provided only as a default constructor and does nothing in this
-   * class.
+   * Create a new collection.
    */
   public PermissionCollection()
   {
   }
 
   /**
-   * This method tests whether or not this <code>PermissionCollection</code>
-   * object is read only.
+   * This method adds a new <code>Permission</code> object to the collection.
    *
-   * @return <code>true</code> if this collection is read only, <code>false</code> otherwise
+   * @param perm the <code>Permission</code> to add
+   *
+   * @throws SecurityException if the collection is marked read only
+   * @throws IllegalArgumentException if perm is of the wrong type
    */
-  public boolean isReadOnly()
-  {
-    return (readOnly);
-  }
+  public abstract void add(Permission perm);
+
+  /**
+   * This method tests whether the specified <code>Permission</code> object is
+   * implied by this collection of <code>Permission</code> objects.
+   *
+   * @param perm the <code>Permission</code> object to test
+   * @return true if the collection implies perm
+   */
+  public abstract boolean implies(Permission perm);
+
+  /**
+   * This method returns an <code>Enumeration</code> of all the objects in
+   * this collection.
+   *
+   * @return an <code>Enumeration</code> of this collection's objects
+   */
+  public abstract Enumeration elements();
 
   /**
    * This method sets this <code>PermissionCollection</code> object to be
@@ -119,57 +132,36 @@ public abstract class PermissionCollection
     readOnly = true;
   }
 
- /**
-   * This method adds a new <code>Permission</code> object to the collection.
-   *
-   * @param perm The <code>Permission</code> to add.
-   *
-   * @exception SecurityException If the collection is marked read only.
-   * @exception IllegalArgumentException If a permission of the specified type cannot be added
-   */
-  public abstract void
-    add(Permission perm) throws SecurityException, IllegalArgumentException;
-
   /**
-   * This method returns an <code>Enumeration</code> of all the objects in
-   * this collection.
+   * This method tests whether or not this <code>PermissionCollection</code>
+   * object is read only.
    *
-   * @return An <code>Enumeration</code> of this collection's objects.
+   * @return true if this collection is read only
    */
-  public abstract Enumeration elements();
-
-  /**
-   * This method tests whether the specified <code>Permission</code> object is
-   * implied by this collection of <code>Permission</code> objects.
-   *
-   * @param perm The <code>Permission</code> object to test.
-   *
-   * @return <code>true</code> if the specified <code>Permission</code> is implied by this collection, <code>false</code> otherwise.
-   */
-  public abstract boolean implies(Permission perm);
+  public boolean isReadOnly()
+  {
+    return readOnly;
+  }
 
   /**
    * This method returns a <code>String</code> representation of this
-   * collection.  It will print the class name and has code in the same
-   * manner as <code>Object.toString()</code> then print a listing of all
-   * the <code>Permission</code> objects contained.
+   * collection.  It is formed by:
+   * <pre>
+   * super.toString()" (\n"
+   *   // enumerate all permissions, one per line
+   * ")\n"
+   * </pre>
    *
-   * @return A <code>String</code> representing this object.
+   * @return a <code>String</code> representing this object
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer("");
+    StringBuffer sb = new StringBuffer(super.toString());
 
-    sb.append(super.toString() + " (" + linesep);
+    sb.append(" (\n");
     Enumeration e = elements();
     while (e.hasMoreElements())
-      {
-	Object obj = e.nextElement();
-	if (obj instanceof Permission)
-	  sb.append(((Permission) obj).toString() + linesep);
-      }
-
-    sb.append(")" + linesep);
-    return (sb.toString());
+      sb.append(' ').append(e.nextElement()).append('\n');
+    return sb.append(")\n").toString();
   }
-}
+} // class PermissionCollection

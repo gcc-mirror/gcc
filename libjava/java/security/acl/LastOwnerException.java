@@ -1,5 +1,5 @@
 /* LastOwnerException.java -- User attempted to delete last ACL owner
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,18 +41,22 @@ package java.security.acl;
  * This exception is thrown when an attempt is made to delete the last owner
  * of an access control list (ACL)
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see Owner#deleteOwner(java.security.Principal, java.security.Principal)
+ * @status updated to 1.4
  */
-public class LastOwnerException extends java.lang.Exception
+public class LastOwnerException extends Exception
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -5141997548211140359L;
+
   /**
    * Initialize a new instance of <code>LastOwnerException</code> that does
    * not have a log message.
    */
   public LastOwnerException()
   {
-    super();
   }
 }

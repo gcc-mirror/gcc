@@ -1,5 +1,5 @@
 /* Guard.java -- Check access to a guarded object
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,21 +41,20 @@ package java.security;
  * This interface specifies a mechanism for querying whether or not
  * access is allowed to a guarded object.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see GuardedObject
+ * @since 1.1
+ * @status updated to 1.4
  */
 public interface Guard
 {
   /**
    * This method tests whether or not access is allowed to the specified
-   * guarded object.  Access is allowed if this method returns silently.  If
+   * guarded object. Access is allowed if this method returns silently. If
    * access is denied, an exception is generated.
    *
-   * @param obj The <code>Object</code> to test
-   *
-   * @exception SecurityException If access to the object is denied.
+   * @param obj the <code>Object</code> to test
+   * @throws SecurityException if access to the object is denied
    */
-  public abstract void checkGuard(Object obj) throws SecurityException;
-
-}
+  void checkGuard(Object obj);
+} // interface Guard

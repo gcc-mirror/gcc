@@ -1,5 +1,5 @@
 /* DigestException.java -- A generic message digest exception
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,29 +38,30 @@ exception statement from your version. */
 package java.security;
 
 /**
- * This exception indicates that a generic message digest exception has 
+ * This exception indicates that a generic message digest exception has
  * occurred.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
  */
 public class DigestException extends GeneralSecurityException
 {
   /**
-   * This method initializes a new <code>DigestException</code> with no
-   * descriptive message.
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 5821450303093652515L;
+
+  /**
+   * Create a new instance with no descriptive message.
    */
   public DigestException()
   {
-    super();
   }
 
   /**
-   * This method initializes a new instance of <code>DigestException</code>
-   * with a descriptive error message.
+   * Create a new instance with a descriptive error message.
    *
-   * @param msg The descriptive message
+   * @param msg the descriptive message
    */
   public DigestException(String msg)
   {

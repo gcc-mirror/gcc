@@ -1,5 +1,5 @@
 /* ProviderException.java -- Generic security provider runtime exception
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,26 +41,27 @@ package java.security;
  * This exception indicates that a runtime problem was encounterd with
  * a security provider. 
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
  */
 public class ProviderException extends RuntimeException
 {
   /**
-   * This method initializes a new instance of <code>ProviderException</code>
-   * with no descriptive error message.
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 5256023526693665674L;
+
+  /**
+   * Create an instance with no descriptive error message.
    */
   public ProviderException()
   {
-    super();
   }
 
   /**
-   * This method initializes a new instance of <code>ProviderException</code>
-   * with a descriptive error message.
+   * Create an instance with a descriptive error message.
    *
-   * @param msg The descriptive error message.
+   * @param msg the descriptive error message
    */
   public ProviderException(String msg)
   {

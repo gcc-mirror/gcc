@@ -1,5 +1,5 @@
-/* InvalidKeySpecException.java --- Invalid KeySpec Exception
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* InvalidKeySpecException.java -- invalid KeySpec Exception
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,34 +37,38 @@ exception statement from your version. */
 
 
 package java.security.spec;
+
 import java.security.GeneralSecurityException;
 
 /**
-	Exception for an invalid key specification.
-
-	@since JDK 1.2
-
-	@author Mark Benvenuto
-*/
-public class InvalidKeySpecException extends GeneralSecurityException 
+ * Exception for an invalid key specification.
+ *
+ * @author Mark Benvenuto
+ * @see KeySpec
+ * @since 1.2
+ * @status updated to 1.4
+ */
+public class InvalidKeySpecException extends GeneralSecurityException
 {
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 3546139293998810778L;
 
   /**
-     Constructs an InvalidKeySpecException without a message string.
-  */
-  public InvalidKeySpecException() 
+   * Constructs an InvalidKeySpecException without a message string.
+   */
+  public InvalidKeySpecException()
   {
-    super();
   }
 
   /**
-     Constructs an InvalidKeySpecException with a message string.
-
-     @param msg A message to display with exception
-  */
+   * Constructs an InvalidKeySpecException with a message string.
+   *
+   * @param msg a message to display with exception
+   */
   public InvalidKeySpecException(String msg)
   {
-    super( msg );
+    super(msg);
   }
-
 }

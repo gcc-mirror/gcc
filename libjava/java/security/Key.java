@@ -1,5 +1,5 @@
 /* Key.java -- A abstract representation of a digital key
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,28 +43,36 @@ import java.io.Serializable;
  * This interfaces models the base characteristics that all keys must
  * have.  These are:  a key algorithm, an encoded form, and a format used
  * to encode the key.  Specific key types inherit from this interface.
- * <p>
  * Note that since this interface extends <code>Serializable</code>, all
- * keys may be serialized.
+ * keys may be serialized. Keys are generally obtained through key generators,
+ * including {@link KeyFactory}.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see PublicKey
+ * @see PrivateKey
+ * @see KeyPair
+ * @see KeyPairGenerator
+ * @see KeyFactory
+ * @see KeySpec
+ * @see Identity
+ * @see Signer
+ * @since 1.1
+ * @status updated to 1.4
  */
 public interface Key extends Serializable
 {
- /**
+  /**
    * The verion identifier used for serialization.
    */
-  public static final long serialVersionUID = 6603384152749567654L;
+  long serialVersionUID = 6603384152749567654L;
 
   /**
    * This method returns the name of the algorithm for this key.  This is a
    * <code>String</code> such as "RSA".
    *
-   * @return The name of the algorithm in use
+   * @return the name of the algorithm in use
    */
-  public abstract String getAlgorithm();
+  String getAlgorithm();
 
   /**
    * This method returns the name of the encoding format for this key.  This
@@ -72,15 +80,15 @@ public interface Key extends Serializable
    * "X.509" or "PKCS#8".  This method returns <code>null</code> if this key
    * does not have an encoding format.
    *
-   * @return The name of the encoding format for this key, or <code>null</code> if there is no such format.
+   * @return the name of the encoding format for this key, or null
    */
-  public abstract String getFormat();
+  String getFormat();
 
   /**
    * This method returns the encoded form of the key.  If this key does not
-   * support encoding, this method returns <code>null</code>
+   * support encoding, this method returns <code>null</code>.
    *
-   * @return The encoded form of the key, or <code>null</code> if no encoded form is available.
+   * @return the encoded form of the key, or null
    */
-  public abstract byte[] getEncoded();
-}
+  byte[] getEncoded();
+} // interface Key

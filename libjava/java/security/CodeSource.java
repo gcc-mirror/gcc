@@ -1,5 +1,5 @@
 /* CodeSource.java -- Code location and certifcates
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,56 +35,102 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.net.SocketPermission;
+// Note that this overrides Certificate in this package.
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * This class represents a location from which code is loaded (as
- * represented by a URL) and the list of certificates that are used to
+ * represented by a URL), and the list of certificates that are used to
  * check the signatures of signed code loaded from this source.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.1
+ * @status updated to 1.4
  */
 public class CodeSource implements Serializable
 {
-  private static final String linesep = System.getProperty("line.separator");
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 4977541819976013951L;
 
   /**
    * This is the URL that represents the code base from which code will
    * be loaded.
-   */
-  private URL location;
-
-  /**
-   * This is the list of certificates for this code base
-   */
-  // What is the serialized form of this?
-  private java.security.cert.Certificate[] certs;
-
-  /**
-   * This method initializes a new instance of <code>CodeSource</code> that
-   * loads code from the specified URL location and which uses the 
-   * specified certificates for verifying signatures.
    *
-   * @param location The location from which code will be loaded
-   * @param certs The list of certificates used for verifying signatures on code from this source
+   * @serial the code location
    */
-  public CodeSource(URL location, java.security.cert.Certificate[] certs)
+  private final URL location;
+
+  /** The set of certificates for this code base. */
+  private transient HashSet certs;
+
+  /**
+   * This creates a new instance of <code>CodeSource</code> that loads code
+   * from the specified URL location and which uses the specified certificates
+   * for verifying signatures.
+   *
+   * @param location the location from which code will be loaded
+   * @param certs the list of certificates
+   */
+  public CodeSource(URL location, Certificate[] certs)
   {
     this.location = location;
-    this.certs = certs;
+    if (certs != null)
+      this.certs = new HashSet(Arrays.asList(certs));
+  }
+
+  /**
+   * This method returns a hash value for this object.
+   *
+   * @return a hash value for this object
+   */
+  public int hashCode()
+  {
+    return (location == null ? 0 : location.hashCode())
+      ^ (certs == null ? 0 : certs.hashCode());
+  }
+
+  /**
+   * This method tests the specified <code>Object</code> for equality with
+   * this object.  This will be true if and only if the locations are equal
+   * and the certificate sets are identical (ignoring order).
+   *
+   * @param obj the <code>Object</code> to test against
+   * @return true if the specified object is equal to this one
+   */
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof CodeSource))
+      return false;
+    CodeSource cs = (CodeSource) obj;
+    return (certs == null ? cs.certs == null : certs.equals(cs.certs))
+      && (location == null ? cs.location == null
+          : location.equals(cs.location));
   }
 
   /**
    * This method returns the URL specifying the location from which code
    * will be loaded under this <code>CodeSource</code>.
    *
-   * @return The code location for this <code>CodeSource</code>.
+   * @return the code location for this <code>CodeSource</code>
    */
   public final URL getLocation()
   {
@@ -93,235 +139,209 @@ public class CodeSource implements Serializable
 
   /**
    * This method returns the list of digital certificates that can be used
-   * to verify the signatures of code loaded under this <code>CodeSource</code>.
+   * to verify the signatures of code loaded under this
+   * <code>CodeSource</code>.
    *
-   * @return The certifcate list for this <code>CodeSource</code>.
+   * @return the certifcate list for this <code>CodeSource</code>
    */
-  public final java.security.cert.Certificate[] getCertificates()
+  public final Certificate[] getCertificates()
   {
-    return certs;
+    if (certs == null)
+      return null;
+    Certificate[] c = new Certificate[certs.size()];
+    certs.toArray(c);
+    return c;
   }
 
   /**
-   * This method tests to see if a specified <code>CodeSource</code> is 
+   * This method tests to see if a specified <code>CodeSource</code> is
    * implied by this object.  Effectively, to meet this test, the specified
-   * object must have all the certifcates this object has (but may have 
-   * more) and must have a location that is a subset of this object's.  In order
+   * object must have all the certifcates this object has (but may have more),
+   * and must have a location that is a subset of this object's.  In order
    * for this object to imply the specified object, the following must be
-   * true:
-   * <p>
-   * <ol>
-   * <li>The specified <code>CodeSource</code> must not be <code>null</code>.
-   * <li>If the specified <code>CodeSource</code> has a certificate list, 
-   * all of that object's certificates must be present in the certificate
-   * list of this object.
+   * true:<ol>
+   * <li><em>codesource</em> must not be <code>null</code>.</li>
+   * <li>If <em>codesource</em> has a certificate list, all of it's
+   *     certificates must be present in the certificate list of this
+   *     code source.</li>
    * <li>If this object does not have a <code>null</code> location, then
-   * the following addtional tests must be passed.
-   * <ol>
-   * <li>The specified <code>CodeSource</code> must not have a <code>null</code> location.
-   * <li>The specified <code>CodeSource</code>'s location must be equal to
-   * this object's location, or<br>
-   * <ul>
-   * <li>The specifiec <code>CodeSource</code>'s location protocol, port, 
-   * and ref (aka, anchor) must equal this objects, and
-   * <li>The specified <code>CodeSource</code>'s location host must imply this
-   * object's location host, as determined by contructing 
-   * <code>SocketPermission</code> objects from each with no action list and
-   * using that classes's <code>implies</code> method. And,
-   * <li>If this object's location file ends with a '/', then the specified
-   * object's location file must start with this object's location file.
-   * Otherwise, the specified object's location file must start with this
-   * object's location file with the '/' character appended to it.
-   * </ul>
-   * </ol>
+   *     the following addtional tests must be passed.<ol>
+   *     <li><em>codesource</em> must not have a <code>null</code>
+   *         location.</li>
+   *     <li><em>codesource</em>'s location must be equal to this object's
+   *         location, or<br><ul>
+   *         <li><em>codesource</em>'s location protocol, port, and ref (aka,
+   *             anchor) must equal this objects</li>
+   *         <li><em>codesource</em>'s location host must imply this object's
+   *             location host, as determined by contructing
+   *             <code>SocketPermission</code> objects from each with no
+   *             action list and using that classes's <code>implies</code>
+   *             method</li>
+   *         <li>If this object's location file ends with a '/', then the
+   *             specified object's location file must start with this
+   *             object's location file. Otherwise, the specified object's
+   *             location file must start with this object's location file
+   *             with the '/' character appended to it.</li>
+   *         </ul></li>
+   *     </ol>
    * </ol>
    *
-   * @param cs The <code>CodeSource</code> to test against this object
+   * <p>For example, each of these locations imply the location
+   * "http://java.sun.com/classes/foo.jar":<ul>
+   * <pre>
+   * http:
+   * http://*.sun.com/classes/*
+   * http://java.sun.com/classes/-
+   * http://java.sun.com/classes/foo.jar
+   * </pre>
+   * Note that the code source with null location and null certificates implies
+   * all other code sources.
    *
-   * @return <code>true</code> if this specified <code>CodeSource</code> is specified by this object, <code>false</code> otherwise.
+   * @param cs the <code>CodeSource</code> to test against this object
+   * @return true if this specified <code>CodeSource</code> is implied
    */
   public boolean implies(CodeSource cs)
   {
     if (cs == null)
       return false;
-
-    // First check the certificate list
-    java.security.cert.Certificate[] their_certs = cs.getCertificates();
-    java.security.cert.Certificate[] our_certs = getCertificates();
-
-    if (our_certs != null)
-      {
-	if (their_certs == null)
-	  return false;
-
-	for (int i = 0; i < our_certs.length; i++)
-	  {
-	    int j;
-	    for (j = 0; j < their_certs.length; j++)
-	      if (our_certs[i].equals(their_certs[j]))
-		break;
-
-	    if (j == their_certs.length)
-	      return false;
-	  }
-      }
-
-    // Next check the location
-    URL their_loc = getLocation();
-    URL our_loc = getLocation();
-
-    if (our_loc == null)
+    // First check the certificate list.
+    if (certs != null && (cs.certs == null || ! certs.containsAll(cs.certs)))
+      return false;
+    // Next check the location.
+    if (location == null)
       return true;
-    else if (their_loc == null)
+    if (cs.location == null
+        || ! location.getProtocol().equals(cs.location.getProtocol())
+        || (location.getPort() != -1
+            && location.getPort() != cs.location.getPort())
+        || (location.getRef() != null
+            && ! location.getRef().equals(cs.location.getRef())))
       return false;
-
-    if (!our_loc.getProtocol().equals(their_loc.getProtocol()))
-      return false;
-
-    if (our_loc.getPort() != -1)
-      if (our_loc.getPort() != their_loc.getPort())
-	return false;
-
-    if (our_loc.getRef() != null)
-      if (!our_loc.getRef().equals(their_loc.getRef()))
-	return false;
-
-    // See javadoc comments for what we are doing here.
-    if (our_loc.getHost() != null)
+    if (location.getHost() != null)
       {
-	String their_host = their_loc.getHost();
-	if (their_host == null)
-	  return false;
-
-	SocketPermission our_sockperm =
-	  new SocketPermission(our_loc.getHost(), "accept");
-	SocketPermission their_sockperm =
-	  new SocketPermission(their_host, "accept");
-
-	if (!our_sockperm.implies(their_sockperm))
-	  return false;
+        String their_host = cs.location.getHost();
+        if (their_host == null)
+          return false;
+        SocketPermission our_sockperm =
+          new SocketPermission(location.getHost(), "accept");
+        SocketPermission their_sockperm =
+          new SocketPermission(their_host, "accept");
+        if (! our_sockperm.implies(their_sockperm))
+          return false;
       }
-
-    String our_file = our_loc.getFile();
+    String our_file = location.getFile();
     if (our_file != null)
       {
-	if (!our_file.endsWith("/"))
-	  our_file = our_file + "/";
-
-	String their_file = their_loc.getFile();
-	if (their_file == null)
-	  return false;
-
-	if (!their_file.startsWith(our_file))
-	  return false;
+        if (! our_file.endsWith("/"))
+          our_file += "/";
+        String their_file = cs.location.getFile();
+        if (their_file == null
+            || ! their_file.startsWith(our_file))
+          return false;
       }
-
     return true;
-  }
-
-  /**
-   * This method tests the specified <code>Object</code> for equality with
-   * this object.  This will be true if and only if:
-   * <p>
-   * <ul>
-   * <li>The specified object is not <code>null</code>.
-   * <li>The specified object is an instance of <code>CodeSource</code>.
-   * <li>The specified object's location is the same as this object's.
-   * <li>The specified object's certificate list contains the exact same
-   * entries as the object's.  Note that the order of the certificate lists
-   * is not significant.
-   * </ul>
-   *
-   * @param obj The <code>Object</code> to test against.
-   *
-   * @return <code>true</code> if the specified object is equal to this one, <code>false</code> otherwise.
-   */
-  public boolean equals(Object obj)
-  {
-    if (obj == null)
-      return false;
-
-    if (!(obj instanceof CodeSource))
-      return false;
-
-    CodeSource cs = (CodeSource) obj;
-
-    // First check the certificate list
-    java.security.cert.Certificate[] their_certs = cs.getCertificates();
-    java.security.cert.Certificate[] our_certs = getCertificates();
-
-    if ((our_certs == null) && (their_certs != null))
-      return false;
-    else if ((our_certs != null) && (their_certs == null))
-      return false;
-
-    if (our_certs != null)
-      {
-	if (our_certs.length != their_certs.length)
-	  return false;
-
-	for (int i = 0; i < our_certs.length; i++)
-	  {
-	    int j;
-	    for (j = 0; j < their_certs.length; j++)
-	      if (our_certs[i].equals(their_certs[j]))
-		break;
-
-	    if (j == their_certs.length)
-	      return false;
-	  }
-      }
-
-    // Now the location
-    URL their_loc = cs.getLocation();
-    URL our_loc = getLocation();
-
-    if ((our_loc == null) && (their_loc != null))
-      return false;
-
-    if (!our_loc.equals(their_loc))
-      return false;
-
-    return true;
-  }
-
-  /**
-   * This method returns a hash value for this object.
-   *
-   * @return A hash value for this object.
-   */
-  public int hashCode()
-  {
-    URL location = getLocation();
-    if (location == null)
-      return System.identityHashCode(this);
-
-    return location.hashCode();
   }
 
   /**
    * This method returns a <code>String</code> that represents this object.
-   * This <code>String</code> will contain the object's hash code, location,
-   * and certificate list.
+   * The result is in the format <code>"(" + getLocation()</code> followed
+   * by a space separated list of certificates (or "<no certificates>"),
+   * followed by <code>")"</code>.
    *
-   * @return A <code>String</code> for this object
+   * @return a <code>String</code> for this object
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer("");
-
-    sb.append(super.toString() + " (" + linesep);
-    sb.append("Location: " + getLocation() + linesep);
-
-    java.security.cert.Certificate[] certs = getCertificates();
-    if (certs == null)
-      sb.append("<none>" + linesep);
+    StringBuffer sb = new StringBuffer("(").append(location);
+    if (certs == null || certs.isEmpty())
+      sb.append(" <no certificates>");
     else
-      for (int i = 0; i < certs.length; i++)
-	sb.append(certs[i] + linesep);
-
-    sb.append(")" + linesep);
-
-    return sb.toString();
+      {
+        Iterator iter = certs.iterator();
+        for (int i = certs.size(); --i >= 0; )
+          sb.append(' ').append(iter.next());
+      }
+    return sb.append(")").toString();
   }
-}
+
+  /**
+   * Reads this object from a serialization stream.
+   *
+   * @param s the input stream
+   * @throws IOException if reading fails
+   * @throws ClassNotFoundException if deserialization fails
+   * @serialData this reads the location, then expects an int indicating the
+   *             number of certificates. Each certificate is a String type
+   *             followed by an int encoding length, then a byte[] encoding
+   */
+  private void readObject(ObjectInputStream s)
+    throws IOException, ClassNotFoundException
+  {
+    s.defaultReadObject();
+    int count = s.readInt();
+    certs = new HashSet();
+    while (--count >= 0)
+      {
+        String type = (String) s.readObject();
+        int bytes = s.readInt();
+        byte[] encoded = new byte[bytes];
+        for (int i = 0; i < bytes; i++)
+          encoded[i] = s.readByte();
+        ByteArrayInputStream stream = new ByteArrayInputStream(encoded);
+        try
+          {
+            CertificateFactory factory = CertificateFactory.getInstance(type);
+            certs.add(factory.generateCertificate(stream));
+          }
+        catch (CertificateException e)
+          {
+            // XXX Should we ignore this certificate?
+          }
+      }
+  }
+
+  /**
+   * Writes this object to a serialization stream.
+   *
+   * @param s the output stream
+   * @throws IOException if writing fails
+   * @serialData this writes the location, then writes an int indicating the
+   *             number of certificates. Each certificate is a String type
+   *             followed by an int encoding length, then a byte[] encoding
+   */
+  private void writeObject(ObjectOutputStream s) throws IOException
+  {
+    s.defaultWriteObject();
+    if (certs == null)
+      s.writeInt(0);
+    else
+      {
+        int count = certs.size();
+        s.writeInt(count);
+        Iterator iter = certs.iterator();
+        while (--count >= 0)
+          {
+            Certificate c = (Certificate) iter.next();
+            s.writeObject(c.getType());
+            byte[] encoded;
+            try
+              {
+                encoded = c.getEncoded();
+              }
+            catch (CertificateEncodingException e)
+              {
+                // XXX Should we ignore this certificate?
+                encoded = null;
+              }
+            if (encoded == null)
+              s.writeInt(0);
+            else
+              {
+                s.writeInt(encoded.length);
+                for (int i = 0; i < encoded.length; i++)
+                  s.writeByte(encoded[i]);
+              }
+          }
+      }
+  }
+} // class CodeSource

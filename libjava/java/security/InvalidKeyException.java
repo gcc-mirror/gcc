@@ -1,4 +1,5 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* InvalidKeyException -- thrown for an invalid key
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,22 +38,30 @@ exception statement from your version. */
 package java.security;
 
 /**
+ * Thrown for an invalid key.
+ *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date February 1, 2000.
+ * @status updated to 1.4
  */
-
-/**
- * Written using on-line Java Platform 1.2 API Specification.
- * Status:  Believed complete and correct.
- */
-
 public class InvalidKeyException extends KeyException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 5698479920593359816L;
+
+  /**
+   * Construct an exception with no message.
+   */
   public InvalidKeyException()
   {
-    super();
   }
 
+  /**
+   * Construct an exception with a message.
+   *
+   * @param msg the message
+   */
   public InvalidKeyException(String msg)
   {
     super(msg);

@@ -1,5 +1,5 @@
-/* NoSuchAlgorithmException.java -- What it says
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* NoSuchAlgorithmException.java -- an algorithm was not available
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,26 +41,27 @@ package java.security;
  * This exception is thrown when the requested security algorithm is
  * not available
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
  */
 public class NoSuchAlgorithmException extends GeneralSecurityException
 {
   /**
-   * This method initializes a new instance of <code>NoSuchAlgorithmException</code>
-   * with no descriptive error message.
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -7443947487218346562L;
+
+  /**
+   * Create a new instance with no descriptive error message.
    */
   public NoSuchAlgorithmException()
   {
-    super();
   }
 
   /**
-   * This method initializes a new instance of <code>NoSuchAlgorithmException</code>
-   * with a descriptive error message.
+   * Create a new instance with a descriptive error message.
    *
-   * @param msg The descriptive error message
+   * @param msg the descriptive error message
    */
   public NoSuchAlgorithmException(String msg)
   {

@@ -1,5 +1,5 @@
-/* CertificateEncodingException.java --- Certificate Encoding Exception
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* CertificateEncodingException.java -- Certificate Encoding Exception
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,31 +39,33 @@ exception statement from your version. */
 package java.security.cert;
 
 /**
-	Exception for a Certificate Encoding.
-
-	@since JDK 1.2
-
-	@author Mark Benvenuto
-*/
+ * Exception for a Certificate Encoding.
+ *
+ * @author Mark Benvenuto
+ * @since 1.2
+ * @status updated to 1.4
+ */
 public class CertificateEncodingException extends CertificateException
 {
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 6219492851589449162L;
 
   /**
-     Constructs an CertificateEncodingException without a message string.
-  */
+   * Constructs an exception without a message string.
+   */
   public CertificateEncodingException()
   {
-    super();
   }
 
   /**
-     Constructs an CertificateEncodingException with a message string.
-
-     @param msg A message to display with exception
-  */
+   * Constructs an exception with a message string.
+   *
+   * @param msg A message to display with exception
+   */
   public CertificateEncodingException(String msg)
   {
-    super( msg );
+    super(msg);
   }
-
 }

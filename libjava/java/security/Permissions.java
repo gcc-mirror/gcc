@@ -1,5 +1,5 @@
-/* Permissions.java -- A collection of permission collections
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+/* Permissions.java -- a collection of permission collections
+   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,32 +43,40 @@ import java.util.Enumeration;
 import java.util.NoSuchElementException;
 
 /**
- * This class is a heterogeneous collection of permissions.  It is 
+ * This class is a heterogeneous collection of permissions.  It is
  * organized as a collection of <code>PermissionCollection</code>'s stored
  * in a hashtable.  Each individual <code>PermissionCollection</code>
- * contains permissions of a single type.  If a specific type of 
+ * contains permissions of a single type.  If a specific type of
  * <code>Permission</code> does not provide a collection type to use
  * via its <code>newPermissionCollection</code> method, then a default
  * collection type which stores its permissions in a hash table will be
  * used.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.1
  */
-public final class Permissions
-  extends PermissionCollection
+public final class Permissions extends PermissionCollection
   implements Serializable
 {
   /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 4858622370623524688L;
+
+  /**
    * Holds instances of <code>AllPermission</code>.
+   *
+   * @serial the permission collection for AllPermission
    */
   private PermissionCollection allPermission;
 
   /**
    * This is the <code>Hashtable</code> that contains our collections.
+   *
+   * @serial maps Class to PermissionCollection
    */
-  Hashtable perms = new Hashtable();
+  private final Hashtable perms = new Hashtable();
 
   /**
    * This method initializes a new instance of <code>Permissions</code>.
@@ -82,51 +90,38 @@ public final class Permissions
    * will be stored in a <code>PermissionCollection</code> of the appropriate
    * type, as determined by calling <code>newPermissionCollection</code> on
    * the specified permission (if an appropriate collection does not already
-   * exist).  If this object does not specify a particular type of collection,
-   * a default collection which stores in permissions in a hash table will
+   * exist). If this object does not specify a particular type of collection,
+   * a default collection, which stores in permissions in a hash table, will
    * be used.
    *
-   * @param perm The <code>Permission</code> object to be added to this collection.
-   *
-   * @exception SecurityException If this collection is marked as read only.
-   * @exception IllegalArgumentException If the specified <code>Permission</code> cannot be added to this collection
+   * @param perm the <code>Permission</code> to add
+   * @throws SecurityException if this collection is marked as read only
    */
   public void add(Permission perm)
-    throws SecurityException, IllegalArgumentException
   {
     if (isReadOnly())
       throw new SecurityException("PermissionCollection is read only");
-
     if (perm instanceof AllPermission)
       {
-	if (allPermission == null)
-	  {
-	    allPermission = new
-	      DefaultPermissionCollection("java.security.AllPermission");
-
-	    perms.put("java.security.AllPermission", allPermission);
-	  }
+        if (allPermission == null)
+          {
+            allPermission = perm.newPermissionCollection();
+            allPermission.add(perm);
+            perms.put(perm.getClass(), allPermission);
+          }
       }
     else
       {
-	Object obj = perms.get(perm.getClass().getName());
-	if (obj != null)
-	  {
-	    if (!(obj instanceof PermissionCollection))
-	      throw new RuntimeException("Internal error in Permissions");
-
-	    ((PermissionCollection) obj).add(perm);
-	  }
-	else
-	  {
-	    PermissionCollection pc = perm.newPermissionCollection();
-	    if (pc == null)
-	      pc = new DefaultPermissionCollection(perm.getClass().getName());
-
-	    pc.add(perm);
-
-	    perms.put(perm.getClass().getName(), pc);
-	  }
+        PermissionCollection pc
+          = (PermissionCollection) perms.get(perm.getClass());
+        if (pc == null)
+          {
+            pc = perm.newPermissionCollection();
+            if (pc == null)
+              pc = new PermissionsHash();
+            perms.put(perm.getClass(), pc);
+          }
+        pc.add(perm);
       }
   }
 
@@ -134,23 +129,16 @@ public final class Permissions
    * This method tests whether or not the specified <code>Permission</code>
    * is implied by this <code>PermissionCollection</code>.
    *
-   * @param perm The <code>Permission</code> to test.
-   *
-   * @return <code>true</code> if the specified permission is implied by this <code>PermissionCollection</code>, or <code>false</code> otherwise.
+   * @param perm the <code>Permission</code> to test
+   * @return true if the specified permission is implied by this
    */
   public boolean implies(Permission perm)
   {
     if (allPermission != null)
-      return (true);
-
-    Object obj = perms.get(perm.getClass().getName());
-    if (obj == null)
-      return (false);
-
-    if (!(obj instanceof PermissionCollection))
-      return (false);
-
-    return (((PermissionCollection) obj).implies(perm));
+      return true;
+    PermissionCollection pc
+      = (PermissionCollection) perms.get(perm.getClass());
+    return pc == null ? false : pc.implies(perm);
   }
 
   /**
@@ -158,7 +146,7 @@ public final class Permissions
    * list of all <code>Permission</code> objects contained in this
    * collection.
    *
-   * @return An <code>Enumeration</code> of this collection's elements.
+   * @return an <code>Enumeration</code> of this collection's elements
    */
   public Enumeration elements()
   {
@@ -169,102 +157,87 @@ public final class Permissions
 
       public boolean hasMoreElements()
       {
-	if (sub_enum == null)
-	  if (main_enum == null)
-	    return (false);
-	  else
-	    {
-	      if (!main_enum.hasMoreElements())
-		return (false);
-	      else
-		{
-		  try
-		    {
-		      PermissionCollection pc =
-			(PermissionCollection) main_enum.nextElement();
-		      sub_enum = pc.elements();
-		    }
-		  catch (NoSuchElementException e)
-		    {
-		      return (false);
-		    }
-		}
-	    }
-	else if (!sub_enum.hasMoreElements())
-	  {
-	    sub_enum = null;
-	    return (hasMoreElements());
-	  }
-
-	return (true);
+        if (sub_enum == null)
+          {
+            if (main_enum == null)
+              return false;
+            if (! main_enum.hasMoreElements())
+              {
+                main_enum = null;
+                return false;
+              }
+            PermissionCollection pc =
+              (PermissionCollection) main_enum.nextElement();
+            sub_enum = pc.elements();
+          }
+        if (! sub_enum.hasMoreElements())
+          {
+            sub_enum = null;
+            return hasMoreElements();
+          }
+        return true;
       }
 
-      public Object nextElement() throws NoSuchElementException
+      public Object nextElement()
       {
-	if (!hasMoreElements())
-	  throw new NoSuchElementException();
-
-	return (sub_enum.nextElement());
+        if (! hasMoreElements())
+          throw new NoSuchElementException();
+        return sub_enum.nextElement();
       }
     };
   }
-  
-  static class DefaultPermissionCollection extends PermissionCollection
-    implements Serializable
+} // class Permissions
+
+/**
+ * Implements the permission collection for all permissions without one of
+ * their own, and obeys serialization of JDK.
+ *
+ * @author Eric Blake <ebb9@email.byu.edu>
+ */
+class PermissionsHash extends PermissionCollection
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -8491988220802933440L;
+
+  /**
+   * Hashtable where we store permissions.
+   *
+   * @serial the stored permissions, both as key and value
+   */
+  private final Hashtable perms = new Hashtable();
+
+  /**
+   * Add a permission. We don't need to check for read-only, as this
+   * collection is never exposed outside of Permissions, which has already
+   * done that check.
+   *
+   * @param perm the permission to add
+   */
+  public void add(Permission perm)
   {
-
-    // Type of Permission we can store
-    private Class permcls;
-
-    // Hashtable where we store permissions.
-    private Hashtable perms = new Hashtable();
-
-    DefaultPermissionCollection(String permtype) throws IllegalArgumentException
-    {
-      try
-	{
-	  permcls = Class.forName(permtype);
-	}
-      catch(ClassNotFoundException e)
-	{
-	  throw new IllegalArgumentException(e.getMessage());
-	}
-    }
-
-    public void add(Permission perm) 
-      throws SecurityException, IllegalArgumentException
-    {
-      if (isReadOnly())
-	throw new SecurityException("PermissionCollection is read only");
-
-      if (!permcls.isInstance(perm))
-	throw new IllegalArgumentException("Wrong permission type: " + 
-                                	   perm.getClass().getName());
-
-      if (perms.get(perm.getName()) != null)
-	throw new IllegalArgumentException("Duplicate permission: " +
-                                	   perm.getName());
-
-      perms.put(perm.getName(), perm);
-    }
-
-    public boolean implies(Permission perm)
-    {
-      Object obj = perms.get(perm.getName());
-      if (obj == null)
-	return(false);
-
-      if (!(obj instanceof Permission))
-	return(false);
-
-      Permission p = (Permission)obj;
-
-      return(p.implies(perm));
-    }
-
-    public Enumeration elements()
-    {
-      return(perms.elements());
-    }
+    perms.put(perm, perm);
   }
-}
+
+  /**
+   * Returns true if perm is in the collection.
+   *
+   * @param perm the permission to check
+   * @return true if it is implied
+   */
+  public boolean implies(Permission perm)
+  {
+    return perms.get(perm) != null;
+  }
+
+  /**
+   * Return the elements.
+   *
+   * @return the elements
+   */
+  public Enumeration elements()
+  {
+    return perms.elements();
+  }
+} // class Permissions

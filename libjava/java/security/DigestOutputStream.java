@@ -112,7 +112,7 @@ public class DigestOutputStream extends FilterOutputStream
     if (state)
       digest.update((byte) b);
 
-    super.write(b);
+    out.write(b);
   }
 
   /**
@@ -131,7 +131,7 @@ public class DigestOutputStream extends FilterOutputStream
     if (state)
       digest.update(b, off, len);
 
-    super.write(b, off, len);
+    out.write(b, off, len);
   }
 
   /**

@@ -1,5 +1,5 @@
 /* KeyException.java -- Thrown when there is a problem with a key
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,26 +40,30 @@ package java.security;
 /**
  * This exception is thrown when there is a problem with a key.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see Key
+ * @status updated to 1.4
  */
 public class KeyException extends GeneralSecurityException
 {
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -7483676942812432108L;
+
   /**
    * This method initializes a new instance of <code>KeyException</code>
    * with no descriptive message.
    */
   public KeyException()
   {
-    super();
   }
 
   /**
    * This method initializes a new instance of <code>KeyException</code>
    * with a descriptive message.
    *
-   * @param msg The descriptive message.
+   * @param msg the descriptive message
    */
   public KeyException(String msg)
   {

@@ -51,12 +51,16 @@ public class SecureClassLoader extends ClassLoader
   protected SecureClassLoader(ClassLoader parent)
   {
     super(parent);
-    // FIXME: What else?
+    SecurityManager sm = System.getSecurityManager();
+    if(sm != null)
+      sm.checkCreateClassLoader();
   }
 
   protected SecureClassLoader()
   {
-    // FIXME: What do we need to do here?
+    SecurityManager sm = System.getSecurityManager();
+    if(sm != null)
+      sm.checkCreateClassLoader();
   }
 
   /** 

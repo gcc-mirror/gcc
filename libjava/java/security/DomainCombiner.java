@@ -1,5 +1,5 @@
-/* DomainCombiner.java - Combines ProtectionDomains
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* DomainCombiner.java -- Combines ProtectionDomains
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,27 +38,30 @@ exception statement from your version. */
 package java.security;
 
 /**
-   A public interface used to combine two ProtectionDomains in a new
-   ProtectionDomain and update the current Protection Domains
-   associated with the current AccessControllerContext.
-
-   It can add, subtract, or update ProtectionDomains or possibly
-   remove duplicates or any possible complex action but just not add
-   ones that do not already exist in either array.
-
-   @since JDK 1.3
-   @author Mark Benvenuto 
+ * A public interface used to combine two ProtectionDomains in a new
+ * ProtectionDomain and update the current Protection Domains
+ * associated with the current AccessControlContext.
+ *
+ * It can add, subtract, or update ProtectionDomains or possibly
+ * remove duplicates or any possible complex action but just not add
+ * ones that do not already exist in either array.
+ *
+ * @author Mark Benvenuto
+ * @see AccessControlContext
+ * @see AccessController
+ * @since 1.3
+ * @status updated to 1.4
  */
 public interface DomainCombiner
 {
   /**
-     Combines the current ProtectionDomains of the Thread with new
-     ProtectionDomains.
-
-     @param currentDomains - the ProtectionDomains for the current thread.
-     @param assignedDomains - ProtectionsDomains to add
-     @returns a new array of all the ProtectionDomains 
+   * Combines the current ProtectionDomains of the Thread with new
+   * ProtectionDomains.
+   *
+   * @param currentDomains - the ProtectionDomains for the current thread.
+   * @param assignedDomains - ProtectionsDomains to add
+   * @return a new array of all the ProtectionDomains
    */
-  public ProtectionDomain[] combine(ProtectionDomain[]currentDomains,
-				    ProtectionDomain[]assignedDomains);
-}
+  ProtectionDomain[] combine(ProtectionDomain[] currentDomains,
+                             ProtectionDomain[] assignedDomains);
+} // interface DomainCombiner

@@ -1,5 +1,5 @@
 /* Permission.java -- The superclass for all permission objects
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ import java.io.Serializable;
 
 /**
  * This class is the abstract superclass of all classes that implement
- * the concept of a permission.  A permission consists of a permission name 
+ * the concept of a permission.  A permission consists of a permission name
  * and optionally a list of actions that relate to the permission.  The
  * actual meaning of the name of the permission is defined only in the
  * context of a subclass.  It may name a resource to which access permissions
@@ -51,30 +51,40 @@ import java.io.Serializable;
  * actions associated with them.  That is, you either have the permission
  * or you don't.
  *
- * The most important method in this class is <code>implies</code>.  This
+ * <p>The most important method in this class is <code>implies</code>.  This
  * checks whether if one has this permission, then the specified
  * permission is also implied.  As a conceptual example, consider the
  * permissions "Read All Files" and "Read File foo".  The permission
  * "Read All Files" implies that the caller has permission to read the
  * file foo.
  *
- * <code>Permission</code>'s are not dynamic objects.  Once created, a 
- * <code>Permission</code>'s name and action list cannot be changed.
+ * <p><code>Permission</code>'s must be immutable - do not change their
+ * state after creation.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see Permissions
+ * @see PermissionCollection
+ * @since 1.1
+ * @status updated to 1.4
  */
 public abstract class Permission implements Guard, Serializable
 {
   /**
-   * This is the name assigned to this permission object.
+   * Compatible with JDK 1.1+.
    */
-  private String name;		// Taken from the serializable form information
+  private static final long serialVersionUID = -5636570222231596674L;
 
   /**
-   * This method initializes a new instance of <code>Permission</code> to
-   * have the specified name.
+   * This is the name assigned to this permission object.
+   *
+   * @serial the name of the permission
+   */
+  private String name;
+
+  /**
+   * Create an instance with the specified name.
+   *
+   * @param name the permission name
    */
   public Permission(String name)
   {
@@ -82,35 +92,18 @@ public abstract class Permission implements Guard, Serializable
   }
 
   /**
-   * This method returns the name of this <code>Permission</code>
-   *
-   * @return The name of this <code>Permission</code>
-   */
-  public final String getName()
-  {
-    return (name);
-  }
-
-  /**
-   * This method returns the list of actions for this <code>Permission</code>
-   * as a <code>String</code>.
-   *
-   * @return The action list for this <code>Permission</code>.
-   */
-  public abstract String getActions();
-
-  /**
    * This method implements the <code>Guard</code> interface for this class.
-   * It calls the <code>checkPermission</code> method in 
+   * It calls the <code>checkPermission</code> method in
    * <code>SecurityManager</code> with this <code>Permission</code> as its
    * argument.  This method returns silently if the security check succeeds
    * or throws an exception if it fails.
    *
-   * @param obj The <code>Object</code> being guarded - ignored by this class
-   *
-   * @exception SecurityException If the security check fails
+   * @param obj the <code>Object</code> being guarded - ignored by this class
+   * @throws SecurityException if the security check fails
+   * @see GuardedObject
+   * @see SecurityManager#checkPermission(Permission)
    */
-  public void checkGuard(Object obj) throws SecurityException
+  public void checkGuard(Object obj)
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
@@ -118,48 +111,77 @@ public abstract class Permission implements Guard, Serializable
   }
 
   /**
-   * Check to see if this object equals OBJ.
-   */
-  public abstract boolean equals (Object obj);
-
-  /**
    * This method tests whether this <code>Permission</code> implies that the
    * specified <code>Permission</code> is also granted.
    *
-   * @param perm The <code>Permission</code> to test against
-   *
-   * @return <code>true</code> if the specified <code>Permission</code> is implied by this one, <code>false</code> otherwise.
+   * @param perm the <code>Permission</code> to test against
+   * @return true if perm is implied by this
    */
   public abstract boolean implies(Permission perm);
 
   /**
-   * This method returns a hash code for this <code>Permission</code>.
+   * Check to see if this object equals obj. Use <code>implies</code>, rather
+   * than <code>equals</code>, when making access control decisions.
    *
-   * @return A hash value.
+   * @param obj the object to compare to
+   */
+  public abstract boolean equals(Object obj);
+
+  /**
+   * This method returns a hash code for this <code>Permission</code>. It
+   * must satisfy the contract of <code>Object.hashCode</code>: it must be
+   * the same for all objects that equals considers to be the same.
+   *
+   * @return a hash value
    */
   public abstract int hashCode();
 
   /**
-   * This method returns a <code>String</code> representation of this
-   * <code>Permission</code> object.
+   * Get the name of this <code>Permission</code>.
    *
-   * @return This object as a <code>String</code>.
+   * @return the name
    */
-  public String toString()
+  public final String getName()
   {
-    return ("'\"" + getClass().getName() + "\" \"" + getName() +
-	    "\"" + " \"" + getActions() + "\")'");
+    return name;
   }
+
+  /**
+   * This method returns the list of actions for this <code>Permission</code>
+   * as a <code>String</code>. The string should be in canonical order, for
+   * example, both <code>new FilePermission(f, "write,read")</code> and
+   * <code>new FilePermission(f, "read,write")</code> have the action list
+   * "read,write".
+   *
+   * @return the action list for this <code>Permission</code>
+   */
+  public abstract String getActions();
 
   /**
    * This method returns an empty <code>PermissionCollection</code> object
    * that can store permissions of this type, or <code>null</code> if no
-   * such collection is defined.
+   * such collection is defined. Subclasses must override this to provide
+   * an appropriate collection when one is needed to accurately calculate
+   * <code>implies</code>.
    *
-   * @return A new <code>PermissionCollection</code>
+   * @return a new <code>PermissionCollection</code>
    */
   public PermissionCollection newPermissionCollection()
   {
     return null;
   }
-}
+
+  /**
+   * This method returns a <code>String</code> representation of this
+   * <code>Permission</code> object. This is in the format:
+   * <code>'(' + getClass().getName() + ' ' + getName() + ' ' + getActions
+   * + ')'</code>.
+   *
+   * @return this object as a <code>String</code>
+   */
+  public String toString()
+  {
+    return '(' + getClass().getName() + ' ' + getName() + ' '
+      + getActions() + ')';
+  }
+} // class Permission

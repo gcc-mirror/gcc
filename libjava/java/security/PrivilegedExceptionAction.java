@@ -1,5 +1,5 @@
 /* PrivilegedExceptionAction.java -- Perform a privileged operation
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,15 +38,15 @@ exception statement from your version. */
 package java.security;
 
 /**
- * This interface defines a method that is called by 
+ * This interface defines a method that is called by
  * <code>AccessController.doPrivileged()</code> in order to perform a
  * privileged operation with higher privileges enabled.  This interface
  * differs from <code>PrivilegedAction</code> in that the <code>run</code>
  * method in this interface may throw a checked exception.
  *
- * @version 0.0
- *
  * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.1
+ * @status updated to 1.4
  */
 public interface PrivilegedExceptionAction
 {
@@ -55,9 +55,11 @@ public interface PrivilegedExceptionAction
    * successfully complete.  It is called when a section of code invokes
    * <code>AccessController.doPrivileged()</code>.
    *
-   * @return obj An implementation defined return value.
-   *
-   * @exception Exception An implementation specific exception.
+   * @return obj An implementation defined return value
+   * @throws Exception An implementation specific exception
+   * @see AccessController#doPrivileged(PrivilegedExceptionAction)
+   * @see AccessController#doPrivileged(PrivilegedExceptionAction,
+   *                                    AccessControlContext)
    */
-  public abstract Object run() throws Exception;
-}
+  Object run() throws Exception;
+} // interface PrivilegedExceptionAction

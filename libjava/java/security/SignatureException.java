@@ -1,5 +1,5 @@
 /* SignatureException.java -- Generic error in signature
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,24 +41,27 @@ package java.security;
  * This exception is thrown when a problem is encountered with a
  * digital signature.
  *
- * @version 0.0
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
  */
 public class SignatureException extends GeneralSecurityException
 {
   /**
-   * This method initializes a new instance of <code>SignatureException</code>
-   * with no descriptive error message.
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 7509989324975124438L;
+
+  /**
+   * Create an instance with no descriptive error message.
    */
   public SignatureException()
   {
-    super();
   }
 
   /**
-   * This method initializes a new instance of <code>SignatureException</code>
-   * with a descriptive error message.
+   * Create an instance with a descriptive error message.
+   *
+   * @param msg the message
    */
   public SignatureException(String msg)
   {
