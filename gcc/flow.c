@@ -1018,12 +1018,16 @@ delete_block (i)
       NEXT_INSN (PREV_INSN (basic_block_head[i])) = insn;
       if (insn != 0)
 	PREV_INSN (insn) = PREV_INSN (basic_block_head[i]);
+      else
+	set_last_insn (PREV_INSN (basic_block_head[i]));
     }
   else
     {
       NEXT_INSN (PREV_INSN (basic_block_head[i])) = kept_head;
       if (insn != 0)
 	PREV_INSN (insn) = kept_tail;
+      else
+	set_last_insn (kept_tail);
 
       PREV_INSN (kept_head) = PREV_INSN (basic_block_head[i]);
       NEXT_INSN (kept_tail) = insn;
