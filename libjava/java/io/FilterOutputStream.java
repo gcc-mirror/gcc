@@ -1,62 +1,171 @@
-// FilterOutputStream.java - A filtered stream
+/* FilterOutputStream.java -- Parent class for output streams that filter
+   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+This file is part of GNU Classpath.
 
-   This file is part of libgcj.
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.io;
-
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date September 24, 1998 
- */
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * Status:  Complete to version 1.1.
  */
 
+/**
+  * This class is the common superclass of output stream classes that 
+  * filter the output they write.  These classes typically transform the
+  * data in some way prior to writing it out to another underlying
+  * <code>OutputStream</code>.  This class simply overrides all the 
+  * methods in <code>OutputStream</code> to redirect them to the
+  * underlying stream.  Subclasses provide actual filtering.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Tom Tromey <tromey@cygnus.com>
+  */
 public class FilterOutputStream extends OutputStream
 {
-  public void close () throws IOException
-  {
-    flush ();
-    out.close();
-  }
 
-  public FilterOutputStream (OutputStream ox)
-  {
-    out = ox;
-  }
+/*************************************************************************/
 
-  public void flush () throws IOException
-  {
-    out.flush();
-  }
+/*
+ * Instance Variables
+ */
 
-  public void write (int b) throws IOException
-  {
-    out.write(b);
-  }
+/**
+  * This is the subordinate <code>OutputStream</code> that this class
+  * redirects its method calls to.
+  */
+protected OutputStream out;
 
-  public void write (byte[] b) throws IOException, NullPointerException
-  {
-    // Don't do checking here, per Java Lang Spec.
-    write (b, 0, b.length);
-  }
+/*************************************************************************/
 
-  public void write (byte[] b, int off, int len)
-    throws IOException, NullPointerException, IndexOutOfBoundsException
-  {
-    // Don't do checking here, per Java Lang Spec.
-    for (int i=0; i < len; i++) 
-      write (b[off + i]);
-  }
+/*
+ * Constructors
+ */
 
-  // The output stream.
-  protected OutputStream out;
+/**
+  * This method initializes an instance of <code>FilterOutputStream</code>
+  * to write to the specified subordinate <code>OutputStream</code>.
+  *
+  * @param out The <code>OutputStream</code> to write to
+  */
+public
+FilterOutputStream(OutputStream out)
+{
+  this.out = out;
 }
+
+/*************************************************************************/
+
+/*
+ * Instance Methods
+ */
+
+/**
+  * This method closes the underlying <code>OutputStream</code>.  Any
+  * further attempts to write to this stream may throw an exception.
+  *
+  * @exception IOException If an error occurs
+  */
+public void
+close() throws IOException
+{
+  flush();
+  out.close();
+}
+
+/*************************************************************************/
+
+/**
+  * This method attempt to flush all buffered output to be written to the
+  * underlying output sink.
+  *
+  * @exception IOException If an error occurs
+  */
+public void
+flush() throws IOException
+{
+  out.flush();
+}
+
+/*************************************************************************/
+
+/**
+  * This method writes a single byte of output to the underlying
+  * <code>OutputStream</code>.
+  *
+  * @param b The byte to write, passed as an int.
+  *
+  * @exception IOException If an error occurs
+  */
+public void
+write(int b) throws IOException
+{
+  out.write(b);
+}
+
+/*************************************************************************/
+
+/**
+  * This method writes all the bytes in the specified array to the underlying
+  * <code>OutputStream</code>.  It does this by calling the three parameter
+  * version of this method - <code>write(byte[], int, int)</code> in this
+  * class instead of writing to the underlying <code>OutputStream</code>
+  * directly.  This allows most subclasses to avoid overriding this method.
+  *
+  * @param buf The byte array to write bytes from
+  *
+  * @exception IOException If an error occurs
+  */
+public void
+write(byte[] buf) throws IOException
+{
+  // Don't do checking here, per Java Lang Spec.
+  write(buf, 0, buf.length);
+}
+
+/*************************************************************************/
+
+/**
+  * This method calls the <code>write(int)</code> method <code>len</code>
+  * times for all bytes from the array <code>buf</code> starting at index
+  * <code>offset</code>. Subclasses should overwrite this method to get a
+  * more efficient implementation.
+  *
+  * @param buf The byte array to write bytes from
+  * @param offset The index into the array to start writing bytes from
+  * @param len The number of bytes to write
+  *
+  * @exception IOException If an error occurs
+  */
+public void
+write(byte[] buf, int offset, int len) throws IOException
+{
+  // Don't do checking here, per Java Lang Spec.
+  for (int i=0; i < len; i++) 
+    write(buf[offset + i]);
+
+}
+
+} // class FilterOutputStream
