@@ -181,7 +181,7 @@ declare_hidden_char_array (name, value)
      or if we want to give warnings for large objects, make a bigger one.  */
   vlen = strlen (value) + 1;
   type = char_array_type_node;
-  if (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TREE_TYPE (type))) < vlen
+  if (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < vlen
       || warn_larger_than)
     type = build_array_type (char_type_node,
 			     build_index_type (build_int_2 (vlen, 0)));

@@ -1,3 +1,8 @@
+1998-04-15  Mark Mitchell  <mmitchell@usa.net>
+
+	* c-common.c (declare_hidden_char_array): Use TYPE_DOMAIN to get
+	the length of an array, not TREE_TYPE.
+
 Wed Apr 15 15:31:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (sbitmap_union_of_successors):  New function.
