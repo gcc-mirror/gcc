@@ -149,7 +149,7 @@ gcse.c 			Jeff Law		law@redhat.com
 global opt framework	Jeff Law		law@redhat.com
 jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		gerald@pfeifer.com
-web pages		Janis Johnson		janis187@us.ibm.com
+build status lists	Janis Johnson		janis187@us.ibm.com
 config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pthomas@suse.de
