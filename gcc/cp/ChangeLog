@@ -1,3 +1,14 @@
+2003-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* parser.c (cp_parser_binary_expression,
+	cp_parser_multiplicative_expression,
+	cp_parser_additive_expression, cp_parser_shift_expression,
+	cp_parser_relational_expression, cp_parser_equality_expression,
+	cp_parser_and_expression, cp_parser_exclusive_or_expression,
+	cp_parser_inclusive_or_expression,
+	cp_parser_logical_and_expression, cp_parser_logical_or_expression,
+	cp_parser_binary_expression): Const-ify.
+
 2003-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* method.c (use_thunk): Disable access control while building the
