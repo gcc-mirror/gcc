@@ -1,3 +1,9 @@
+2004-07-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/8211
+	PR c++/16165
+	* g++.dg/warn/effc3.C: New test.
+
 2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	* gfortran.dg/g77/f77-edit-i-in.f: Copy from g77.dg and
