@@ -38,61 +38,6 @@ Boston, MA 02111-1307, USA.  */
 
 static const char program_id[] = "fixincl version 1.1";
 
-/*  Test Descriptor
-
-    Each fix may have associated tests that determine
-    whether the fix needs to be applied or not.
-    Each test has a type (from the te_test_type enumeration);
-    associated test text; and, if the test is TT_EGREP or
-    the negated form TT_NEGREP, a pointer to the compiled
-    version of the text string.
-
-    */
-typedef enum
-{
-  TT_TEST, TT_EGREP, TT_NEGREP, TT_FUNCTION
-} te_test_type;
-
-typedef struct test_desc tTestDesc;
-
-struct test_desc
-{
-  te_test_type type;
-  const char *pz_test_text;
-  regex_t *p_test_regex;
-};
-
-typedef struct patch_desc tPatchDesc;
-
-/*  Fix Descriptor
-
-    Everything you ever wanted to know about how to apply
-    a particular fix (which files, how to qualify them,
-    how to actually make the fix, etc...)
-
-    NB:  the FD_ defines are BIT FLAGS
-
-    */
-#define FD_MACH_ONLY      0x0000
-#define FD_MACH_IFNOT     0x0001
-#define FD_SHELL_SCRIPT   0x0002
-#define FD_SUBROUTINE     0x0004
-#define FD_REPLACEMENT    0x0008
-#define FD_SKIP_TEST      0x8000
-
-typedef struct fix_desc tFixDesc;
-struct fix_desc
-{
-  const char*   fix_name;       /* Name of the fix */
-  const char*   file_list;      /* List of files it applies to */
-  const char**  papz_machs;     /* List of machine/os-es it applies to */
-  regex_t*      unused;
-  int           test_ct;
-  int           fd_flags;
-  tTestDesc*    p_test_desc;
-  const char**  patch_args;
-};
-
 /*  Working environment strings.  Essentially, invocation 'options'.  */
 char *pz_dest_dir = NULL;
 char *pz_src_dir = NULL;
@@ -145,14 +90,12 @@ void do_version ();
 char *load_file  _P_((const char *));
 void process  _P_((char *, const char *));
 void run_compiles ();
-void initialize ();
+void initialize _P_((int argc,char** argv));
 void process ();
 
 /*  External Source Code */
 
 #include "fixincl.x"
-#include "fixtests.c"
-#include "fixfixes.c"
 
 /* * * * * * * * * * * * * * * * * * *
  *
@@ -165,28 +108,7 @@ main (argc, argv)
 {
   char *file_name_buf;
 
-  switch (argc)
-    {
-    case 1:
-      break;
-
-    case 2:
-      if (strcmp (argv[1], "-v") == 0)
-        do_version ();
-      if (freopen (argv[1], "r", stdin) == (FILE*)NULL)
-        {
-          fprintf (stderr, "Error %d (%s) reopening %s as stdin\n",
-                   errno, xstrerror (errno), argv[1] );
-          exit (EXIT_FAILURE);
-        }
-      break;
-
-    default:
-      fputs ("fixincl ERROR:  too many command line arguments\n", stderr);
-      exit (EXIT_FAILURE);
-    }
-
-  initialize ();
+  initialize ( argc, argv );
 
   have_tty = isatty (fileno (stderr));
 
@@ -264,8 +186,8 @@ do_version ()
 
   /* The 'version' option is really used to test that:
      1.  The program loads correctly (no missing libraries)
-     2.  we can correctly run our server shell process
-     3.  that we can compile all the regular expressions.
+     2.  that we can compile all the regular expressions.
+     3.  we can correctly run our server shell process
   */
   run_compiles ();
   sprintf (zBuf, zFmt, program_id);
@@ -276,11 +198,34 @@ do_version ()
 /* * * * * * * * * * * * */
 
 void
-initialize ()
+initialize ( argc, argv )
+  int argc;
+  char** argv;
 {
   static const char var_not_found[] =
     "fixincl ERROR:  %s environment variable not defined\n\
 \tTARGET_MACHINE, DESTDIR, SRCDIR and FIND_BASE are required\n";
+
+  switch (argc)
+    {
+    case 1:
+      break;
+
+    case 2:
+      if (strcmp (argv[1], "-v") == 0)
+        do_version ();
+      if (freopen (argv[1], "r", stdin) == (FILE*)NULL)
+        {
+          fprintf (stderr, "Error %d (%s) reopening %s as stdin\n",
+                   errno, xstrerror (errno), argv[1] );
+          exit (EXIT_FAILURE);
+        }
+      break;
+
+    default:
+      fputs ("fixincl ERROR:  too many command line arguments\n", stderr);
+      exit (EXIT_FAILURE);
+    }
 
   {
     static const char var[] = "TARGET_MACHINE";
@@ -368,7 +313,9 @@ initialize ()
   run_compiles ();
 
   signal (SIGQUIT, SIG_IGN);
+#ifdef SIGIOT
   signal (SIGIOT,  SIG_IGN);
+#endif
   signal (SIGPIPE, SIG_IGN);
   signal (SIGALRM, SIG_IGN);
   signal (SIGTERM, SIG_IGN);
@@ -438,7 +385,6 @@ run_compiles ()
   int fix_ct = FIX_COUNT;
   tTestDesc *p_test;
   int test_ct;
-  int re_ct = REGEX_COUNT;
   const char *pz_err;
   regex_t *p_re = (regex_t *) malloc (REGEX_COUNT * sizeof (regex_t));
 
@@ -455,7 +401,12 @@ run_compiles ()
   memset ( (void*)&incl_quote_re, '\0', sizeof (regex_t) );
 
   compile_re (incl_quote_pat, &incl_quote_re, 1,
-	      "quoted include", "run_compiles");
+              "quoted include", "run_compiles");
+
+  /*  Allow machine name tests to be ignored (testing, mainly) */
+
+  if ((*pz_machine == '\0') || (*pz_machine == '*'))
+    pz_machine = (char*)NULL;
 
   /* FOR every fixup, ...  */
   do
@@ -544,20 +495,21 @@ run_compiles ()
             {
             case TT_EGREP:
             case TT_NEGREP:
-              /*  You might consider putting the following under #ifdef.
-                  The number of re's used is computed by autogen.
-                  So, it is static and known at compile time.  */
+#ifdef DEBUG
+              {
+                static int re_ct = REGEX_COUNT;
 
-              if (--re_ct < 0)
-                {
-                  fputs ("out of RE's\n", stderr);
-                  exit (EXIT_FAILURE);
-                }
-
+                if (--re_ct < 0)
+                  {
+                    fputs ("out of RE's\n", stderr);
+                    exit (EXIT_FAILURE);
+                  }
+              }
+#endif
               p_test->p_test_regex = p_re++;
-	      compile_re (p_test->pz_test_text, p_test->p_test_regex, 0,
-			  "select test", p_fixd->fix_name);
-	    }
+              compile_re (p_test->pz_test_text, p_test->p_test_regex, 0,
+                          "select test", p_fixd->fix_name);
+            }
           p_test++;
         }
     }
@@ -890,10 +842,8 @@ internal_fix (read_fd, p_fixd)
    */
   fcntl (fd[1], F_DUPFD, STDOUT_FILENO);
   fcntl (read_fd, F_DUPFD, STDIN_FILENO);
-  fdopen (STDIN_FILENO, "r");
-  fdopen (STDOUT_FILENO, "w");
 
-  apply_fix (p_fixd->patch_args[0], pz_curr_file);
+  apply_fix (p_fixd, pz_curr_file);
   exit (0);
 }
 

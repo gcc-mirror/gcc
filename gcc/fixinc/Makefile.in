@@ -35,13 +35,15 @@ subdir = fixinc
 
 # End of variables for you to override.
 
-default : gen
+default : all
 
 # Now figure out from those variables how to compile and link.
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order.
-INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)/../../include
+#
+INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. \
+-I$(srcdir)/../config -I$(srcdir)/../../include
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
@@ -60,86 +62,64 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 LIBERTY = ../../libiberty/libiberty.a
-LIBOBJ  = gnu-regex.o fixlib.o $(LIBERTY)
-FIOBJ   = fixincl.o server.o procopen.o $(LIBOBJ)
+OBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
+      gnu-regex.o fixlib.o
 
 HDR = server.h gnu-regex.h fixlib.h machname.h
 
-BIN_TARGET = fixincl fixfixes fixtests
-
-TARGETS    = $(BIN_TARGET)
+TARGETS = fixincl
 
 all : $(TARGETS)
 gen : fixincl.x
 
-$(FIOBJ): $(HDR)
+fixincl: $(OBJ) $(LIBERTY)
+	$(CC) $(FIXINC_DEFS) -o $@ $(OBJ) $(LIBERTY)
 
-fixincl: $(FIOBJ)
-	@echo $(CC) $(FIXINC_DEFS) -o $@ $(FIOBJ) ; \
-	if $(CC) $(FIXINC_DEFS) -o $@ $(FIOBJ) ; then : ; else \
-	rm -f $@ ; (echo "#! /bin/sh" ; echo exit 1 ) > $@ ; \
-	chmod 777 $@ ; fi
+$(OBJ)      : $(HDR)
+fixincl.o   : fixincl.x fixincl.c
+fixtests.o  : fixtests.c
+fixfixes.o  : fixfixes.c
+server.o    : server.c
+procopen.o  : procopen.c
+gnu-regex.o : gnu-regex.c
+fixlib.o    : fixlib.c
 
-fixfixes: fixfixes.c $(LIBOBJ)
-	$(CC) -o $@ $(FIXINC_DEFS) -DMAIN \
-		$(srcdir)/fixfixes.c $(LIBOBJ) $(LIB)
-
-fixtests: fixtests.c $(LIBOBJ)
-	$(CC) -o $@ $(FIXINC_DEFS) -DMAIN \
-		$(srcdir)/fixtests.c $(LIBOBJ) $(LIB)
-
-fixincl.o : fixincl.x fixincl.c fixfixes.c fixtests.c
-server.o : server.c server.h
-procopen.o : procopen.c server.h
-fixlib.o: machname.h
-
-fixincl.x: fixincl.tpl inclhack.def
-	cd $(srcdir) ; $(SHELL) ./genfixes $@
-
-## inclhack.sh: inclhack.def inclhack.tpl hackshell.tpl
-## 	cd $(srcdir) ; $(SHELL) ./genfixes $@
-## 
-## # fixinc.sh, unlike the other two, has _no_ dependency on the .def file.
-## fixincl.sh: inclhack.tpl
-## 	cd $(srcdir) ; $(SHELL) ./genfixes $@
-
-#  This invocation of genfixes is done from the build dir,
-#  not the source dir (as above)
+#  'machname.h' is built in the build directory.
+#  'fixincl.x' in the source dir.
 #
 machname.h: ../specs
 	$(SHELL) $(srcdir)/genfixes $@
 
+fixincl.x: fixincl.tpl inclhack.def
+	cd $(srcdir) ; $(SHELL) ./genfixes $@
+
 clean:
-	rm -f *.o $(TARGETS) fixincl.x machname.h
+	rm -f *.o $(TARGETS) fixincl.x machname.h *~
 
-#  Ensure all the targets are built.  If the program "fixincl"
-#  failed to compile, link or load, then we install the
-#  "inclhack.sh" script.  Otherwise, we install that program
-#  plus the wrapper script, "fixincl.sh".
+#  Build the executable and copy up into gcc dir.
+#  We still copy the script because we still have alternative scripts.
 #
-install-bin: fixincl fixincl.sh
-	@if [ -f ../fixincl ] ; then rm -f ../fixincl || \
-	    mv -f ../fixincl ../fixincl.$$ || exit 1 ; fi
-	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
-	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
+install-bin : fixincl
 	./fixincl -v
-	cp fixincl ..
-	cp $(srcdir)/fixincl.sh ../fixinc.sh
-	chmod 755 ../fixinc.sh ../fixincl
-
-install-sh: fixfixes fixtests inclhack.sh
 	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
-	echo Could not install binary fixincludes.  ; \
-	echo Installing shell script instead.
-	@if [ -f ./inclhack.sh ] ; \
-	then echo cp ./inclhack.sh ../fixinc.sh ; \
-		cp ./inclhack.sh ../fixinc.sh ; \
-	else echo cp $(srcdir)/inclhack.sh ../fixinc.sh ; \
-		cp $(srcdir)/inclhack.sh ../fixinc.sh ; fi
+	@if [ -f ./fixincl.sh ] ; \
+	then echo cp ./fixincl.sh ../fixinc.sh ; \
+		cp ./fixincl.sh ../fixinc.sh ; \
+	else echo cp $(srcdir)/fixincl.sh ../fixinc.sh ; \
+		cp $(srcdir)/fixincl.sh ../fixinc.sh ; fi
 	chmod 755 ../fixinc.sh
 
 Makefile: Makefile.in ../config.status
 	cd .. \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= \
 	  $(SHELL) ./config.status
+
+check : fixincl
+	autogen4 -T $(srcdir)/check.tpl $(srcdir)/inclhack.def
+	$(SHELL) ./check.sh
+	@echo ; echo "diff of diffs:"
+	@if diff testdir/NEWDIFF $(srcdir)/check.diff ; \
+	then rm -rf ./testdir ./check.sh ; \
+	else echo ; echo "Results do not match expectations" ; echo ; \
+	exit 1 ; fi

@@ -95,7 +95,7 @@ esac
 
 # Original directory.
 ORIGDIR=`${PWDCMD}`
-FIXINCL=${ORIGDIR}/fixincl
+FIXINCL=${ORIGDIR}/fixinc/fixincl
 export FIXINCL
 
 # Make LIB absolute only if needed to avoid problems with the amd.

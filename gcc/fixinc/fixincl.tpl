@@ -158,7 +158,13 @@ const char* apz[=hackname _cap=]Patch[] = {[=
     _ELIF shell       _exist =] "sh", "-c",
     [=shell _krstr=],[=
 
-    _ELIF c_fix _exist =]"[=c_fix=]",[=
+    _ELIF c_fix _exist =]
+    [=
+      c_fix _krstr=],[=
+
+      _FOR c_fix_arg =]
+    [=c_fix_arg _krstr=],[=
+      /c_fix_arg =][=
 
     _ELIF replace _len =]
 [=replace _krstr=],[=
@@ -184,7 +190,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {[=
 
 _FOR fix ",\n" =]
   {  z[=hackname _cap=]Name,    z[=hackname _cap=]List,
-     apz[=hackname _cap=]Machs, (regex_t*)NULL,
+     apz[=hackname _cap=]Machs,
      [=hackname  _up=]_TEST_CT, [=
        _IF not_machine _exist =]FD_MACH_IFNOT[=
        _ELSE                  =]FD_MACH_ONLY[=
