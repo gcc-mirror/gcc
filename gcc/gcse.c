@@ -572,6 +572,7 @@ static void hash_scan_set	PARAMS ((rtx, rtx, struct hash_table *));
 static void hash_scan_clobber	PARAMS ((rtx, rtx, struct hash_table *));
 static void hash_scan_call	PARAMS ((rtx, rtx, struct hash_table *));
 static int want_to_gcse_p	PARAMS ((rtx));
+static bool gcse_constant_p	PARAMS ((rtx));
 static int oprs_unchanged_p	PARAMS ((rtx, rtx, int));
 static int oprs_anticipatable_p PARAMS ((rtx, rtx));
 static int oprs_available_p	PARAMS ((rtx, rtx));
@@ -2155,6 +2156,25 @@ insert_set_in_table (x, insn, table)
     }
 }
 
+/* Determine whether the rtx X should be treated as a constant for
+   the purposes of GCSE's constant propagation.  */
+
+static bool
+gcse_constant_p (x)
+     rtx x;
+{
+  /* Consider a COMPARE of two integers constant.  */
+  if (GET_CODE (x) == COMPARE
+      && GET_CODE (XEXP (x, 0)) == CONST_INT
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    return true;
+
+  if (GET_CODE (x) == CONSTANT_P_RTX)
+    return false;
+
+  return CONSTANT_P (x);
+}
+
 /* Scan pattern PAT of INSN and add an entry to the hash TABLE (set or
    expression one).  */
 
@@ -2178,7 +2198,7 @@ hash_scan_set (pat, insn, table)
       /* If this is a single set and we are doing constant propagation,
 	 see if a REG_NOTE shows this equivalent to a constant.  */
       if (table->set_p && (note = find_reg_equal_equiv_note (insn)) != 0
-	  && CONSTANT_P (XEXP (note, 0)))
+	  && gcse_constant_p (XEXP (note, 0)))
 	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
 
       /* Only record sets of pseudo-regs in the hash table.  */
@@ -2223,8 +2243,7 @@ hash_scan_set (pat, insn, table)
 		    && REGNO (src) >= FIRST_PSEUDO_REGISTER
 		    && can_copy_p [GET_MODE (dest)]
 		    && REGNO (src) != regno)
-		   || (CONSTANT_P (src)
-		       && GET_CODE (src) != CONSTANT_P_RTX))
+		   || gcse_constant_p (src))
 	       /* A copy is not available if its src or dest is subsequently
 		  modified.  Here we want to search from INSN+1 on, but
 		  oprs_available_p searches from INSN on.  */
@@ -4015,7 +4034,7 @@ find_avail_set (regno, insn)
          If the source operand changed, we may still use it for the next
          iteration of this loop, but we may not use it for substitutions.  */
 
-      if (CONSTANT_P (src) || oprs_not_set_p (src, insn))
+      if (gcse_constant_p (src) || oprs_not_set_p (src, insn))
 	set1 = set;
 
       /* If the source of the set is anything except a register, then
@@ -4207,7 +4226,7 @@ cprop_insn (insn, alter_jumps)
       src = SET_SRC (pat);
 
       /* Constant propagation.  */
-      if (CONSTANT_P (src))
+      if (gcse_constant_p (src))
 	{
           if (constprop_register (insn, reg_used->reg_rtx, src, alter_jumps))
 	    {
@@ -4328,8 +4347,7 @@ do_local_cprop (x, insn, alter_jumps, libcall_sp)
 	  if (l->in_libcall)
 	    continue;
 
-	  if (CONSTANT_P (this_rtx)
-	      && GET_CODE (this_rtx) != CONSTANT_P_RTX)
+	  if (gcse_constant_p (this_rtx))
 	    newcnst = this_rtx;
 	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER
 	      /* Don't copy propagate if it has attached REG_EQUIV note.
@@ -4611,7 +4629,7 @@ find_implicit_sets ()
 	    && (GET_CODE (cond) == EQ || GET_CODE (cond) == NE)
 	    && GET_CODE (XEXP (cond, 0)) == REG
 	    && REGNO (XEXP (cond, 0)) >= FIRST_PSEUDO_REGISTER
-	    && CONSTANT_P (XEXP (cond, 1)))
+	    && gcse_constant_p (XEXP (cond, 1)))
 	  {
 	    dest = GET_CODE (cond) == EQ ? BRANCH_EDGE (bb)->dest
 					 : FALLTHRU_EDGE (bb)->dest;
@@ -4733,7 +4751,7 @@ find_bypass_set (regno, bb)
 	abort ();
 
       src = SET_SRC (set->expr);
-      if (CONSTANT_P (src))
+      if (gcse_constant_p (src))
 	result = set;
 
       if (GET_CODE (src) != REG)

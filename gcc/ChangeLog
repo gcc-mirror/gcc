@@ -1,3 +1,15 @@
+2003-03-30  Roger Sayle  <roger@eyesopen.com>
+
+	* gcse.c (gcse_constant_p): New function to identify constants
+	suitable for constant propagation, including COMPARE with two
+	integer constant arguments.
+	(hash_scan_set): Use gcse_constant_p.
+	(find_avail_set): Likewise.
+	(cprop_insn): Likewise.
+	(do_local_cprop): Likewise.
+	(find_implicit_sets): Likewise.
+	(find_bypass_set): Likewise.
+
 2003-03-30  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* except.h: Remove definition of varray_type.
