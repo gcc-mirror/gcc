@@ -143,7 +143,7 @@ lint:
 	lint $(ALL_CFLAGS) $(SRCS)
 
 check:
-	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f $(LIBS) && ./a.out
+	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f -lg2c $(LIBS) -lm && ./a.out
 	rm -f a.out
 
 .PHONY: lint check all
