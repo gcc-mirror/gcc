@@ -524,6 +524,12 @@ bool test04()
   return test;
 }
 
+// test05
+// libstdc++/1886
+// should be able to instantiate basic_filebuf for non-standard types.
+template class std::basic_filebuf<short, std::char_traits<short> >;
+
+
 int main() 
 {
   test00();
