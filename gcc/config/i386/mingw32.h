@@ -50,22 +50,18 @@ Boston, MA 02111-1307, USA. */
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
 #undef LIB_SPEC
-#define LIB_SPEC \
-"%{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32 -ladvapi32 -lshell32"
+#define LIB_SPEC "%{mwindows:-lgdi32 -lcomdlg32} \
+                  -luser32 -lkernel32 -ladvapi32 -lshell32"
 
 /* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lmsvcrt"
 
-/* Specify a different entry point when linking a DLL */
-#undef LINK_SPEC
-#define LINK_SPEC \
-"%{mwindows:--subsystem windows} %{mdll:--dll -e _DllMainCRTStartup@12}"
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{mdll:dllcrt2%O%s} %{!mdll:crt2%O%s}"
 
-#define MATH_LIBRARY "-lmsvcrt"
+/* MS runtime does not need a separate math library. */
+#define MATH_LIBRARY ""
 
 /* Output STRING, a string representing a filename, to FILE.  We canonicalize
    it to be in MS-DOS format.  */
