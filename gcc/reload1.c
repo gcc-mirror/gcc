@@ -3119,8 +3119,6 @@ eliminate_regs_in_insn (insn, replace)
 {
   rtx old_body = PATTERN (insn);
   rtx new_body;
-  rtx old_set;
-  rtx new_set;
   int val = 0;
   struct elim_table *ep;
 
@@ -3191,12 +3189,6 @@ eliminate_regs_in_insn (insn, replace)
   new_body = eliminate_regs (old_body, 0, replace ? insn : NULL_RTX);
   if (new_body != old_body)
     {
-      old_set = (GET_CODE (old_body) == PARALLEL) ? single_set (insn) :
-	old_body;
-
-      new_set = (GET_CODE (new_body) == PARALLEL) ? XVECEXP(new_body,0,0) :
-	new_body;
-
       /* If we aren't replacing things permanently and we changed something,
 	 make another copy to ensure that all the RTL is new.  Otherwise
 	 things can go wrong if find_reload swaps commutative operands
@@ -3208,25 +3200,22 @@ eliminate_regs_in_insn (insn, replace)
 	new_body = copy_rtx (new_body);
 
       /* If we had a move insn but now we don't, rerecognize it.  */
-      if ((GET_CODE (old_set) == SET && GET_CODE (SET_SRC (old_set)) == REG
-	   && (GET_CODE (new_set) != SET
-	       || GET_CODE (SET_SRC (new_set)) != REG))
+      if ((GET_CODE (old_body) == SET && GET_CODE (SET_SRC (old_body)) == REG
+	   && (GET_CODE (new_body) != SET
+	       || GET_CODE (SET_SRC (new_body)) != REG))
 	  /* If this was a load from or store to memory, compare
 	     the MEM in recog_operand to the one in the insn.  If they
 	     are not equal, then rerecognize the insn.  */
-	  || (GET_CODE (old_set) == SET
-	      && ((GET_CODE (SET_SRC (old_set)) == MEM
-		   && SET_SRC (old_set) != recog_operand[1])
-		  || (GET_CODE (SET_DEST (old_set)) == MEM
-		      && SET_DEST (old_set) != recog_operand[0])))
+	  || (GET_CODE (old_body) == SET
+	      && ((GET_CODE (SET_SRC (old_body)) == MEM
+		   && SET_SRC (old_body) != recog_operand[1])
+		  || (GET_CODE (SET_DEST (old_body)) == MEM
+		      && SET_DEST (old_body) != recog_operand[0])))
 	  /* If this was an add insn before, rerecognize.  */
 	  ||
-	  (GET_CODE (old_set) == SET
-	   && GET_CODE (SET_SRC (old_set)) == PLUS))
+	  (GET_CODE (old_body) == SET
+	   && GET_CODE (SET_SRC (old_body)) == PLUS))
 	{
-	  if (!replace)
-	    PATTERN (insn) = copy_rtx (PATTERN (insn));
-
 	  if (! validate_change (insn, &PATTERN (insn), new_body, 0))
 	    /* If recognition fails, store the new body anyway.
 	       It's normal to have recognition failures here
