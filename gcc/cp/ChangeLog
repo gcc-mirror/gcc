@@ -1,3 +1,8 @@
+2000-09-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* operators.def (ALIGNOF_EXPR, MAX_EXPR, MIN_EXPR): Change
+	new ABI mangling.	
+
 2000-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parse.y (named_class_head): Check for TYPENAME_TYPE. Simplify
