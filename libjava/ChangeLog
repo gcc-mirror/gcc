@@ -1,3 +1,19 @@
+2000-12-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/MenuItem.java (paramString): Now protected.
+
+	* java/awt/MenuShortcut.java: Implements Serializable.
+
+	* java/awt/MenuBar.java: Rewrote from scratch.
+
+	* java/awt/MenuComponent.java (removeNotify): Wrote.
+	Implements Serializable.
+
+	* java/awt/GridBagConstraints.java (GridBagConstraints): New
+	constructor.
+
+	* java/awt/CheckboxMenuItem.java: Wrote.
+
 2000-12-25  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/MenuContainer.java: Fixed typo.

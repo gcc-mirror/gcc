@@ -10,7 +10,7 @@ package java.awt;
 
 /* Status: partially complete, untested. */
 
-public abstract class MenuComponent
+public abstract class MenuComponent implements java.io.Serializable
 {
   // Fields from the serialization spec. Decalare others "transient".
   Font font;
@@ -71,7 +71,9 @@ public abstract class MenuComponent
 
   public void removeNotify()
   {
-    // FIXME
+    if (peer != null)
+      peer.dispose ();
+    peer = null;
   }
 
   /** @deprecated Replaced by dispatchEvent(AWTEvent) */

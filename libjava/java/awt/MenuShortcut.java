@@ -12,7 +12,7 @@ import java.awt.event.KeyEvent;
 
 /* Status: Complete, except for hashCode(). Untested. */
 
-public class MenuShortcut
+public class MenuShortcut implements java.io.Serializable
 {
   // Fields from the serialization spec. Decalare others "transient".
   int key;

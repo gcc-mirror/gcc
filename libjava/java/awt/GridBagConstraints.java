@@ -86,4 +86,25 @@ public class GridBagConstraints implements Cloneable, Serializable
     this.weightx = 0;
     this.weighty = 0;
   }
+
+  /** Create a new GridBagConstraints object with the indicated
+   * parameters.  */
+  public GridBagConstraints (int gridx, int gridy,
+			     int gridwidth, int gridheight,
+			     double weightx, double weighty,
+			     int anchor, int fill,
+			     Insets insets, int ipadx, int ipady)
+  {
+    this.anchor = anchor;
+    this.fill = fill;
+    this.gridx = gridx;
+    this.gridy = gridy;
+    this.gridwidth = gridwidth;
+    this.gridheight = gridheight;
+    this.ipadx = ipadx;
+    this.ipady = ipady;
+    this.insets = insets;
+    this.weightx = weightx;
+    this.weighty = weighty;
+  }
 }
