@@ -294,7 +294,16 @@ handle_option (const char **argv, unsigned int lang_mask)
     }
 
   if (opt_index == cl_options_count)
-    goto done;
+    {
+#if defined (TARGET_OPTIONS) || defined (TARGET_SWITCHES)
+      if (opt[1] == 'm')
+	{
+	  set_target_switch (argv[0] + 2);
+	  result = 1;
+	}
+#endif
+      goto done;
+    }
 
   option = &cl_options[opt_index];
 
@@ -1014,10 +1023,6 @@ common_handle_option (size_t scode, const char *arg, int value)
     case OPT_gxcoff:
     case OPT_gxcoff_:
       set_debug_level (XCOFF_DEBUG, code == OPT_gxcoff_, arg);
-      break;
-
-    case OPT_m:
-      set_target_switch (arg);
       break;
 
     case OPT_o:
