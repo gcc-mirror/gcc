@@ -228,8 +228,8 @@ main (argc, argv)
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
 #endif
-  bindtextdomain (PACKAGE, localedir);
-  textdomain (PACKAGE);
+  (void) bindtextdomain (PACKAGE, localedir);
+  (void) textdomain (PACKAGE);
 
   process_args (argc, argv);
 

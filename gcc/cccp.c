@@ -385,42 +385,42 @@ static struct default_include {
 #else
   = {
     /* Pick up GNU C++ specific include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1, 0 },
 #ifdef CROSS_COMPILE
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0, 0 },
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
-    { CROSS_INCLUDE_DIR, "GCC", 0, 0 },
+    { CROSS_INCLUDE_DIR, "GCC", 0, 0, 0 },
 #ifdef TOOL_INCLUDE_DIR
     /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0, 0 },
 #endif
 #else /* not CROSS_COMPILE */
 #ifdef LOCAL_INCLUDE_DIR
     /* This should be /usr/local/include and should come before
        the fixincludes-fixed header files.  */
-    { LOCAL_INCLUDE_DIR, 0, 0, 1 },
+    { LOCAL_INCLUDE_DIR, 0, 0, 1, 0 },
 #endif
 #ifdef TOOL_INCLUDE_DIR
     /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
        Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
-    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0, 0 },
 #endif
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0, 0 },
     /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
-    { SYSTEM_INCLUDE_DIR, 0, 0, 0 },
+    { SYSTEM_INCLUDE_DIR, 0, 0, 0, 0 },
 #endif
 #ifndef STANDARD_INCLUDE_COMPONENT
 #define STANDARD_INCLUDE_COMPONENT 0
 #endif
-    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0 },
+    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0, 0 },
 #endif /* not CROSS_COMPILE */
-    { 0, 0, 0, 0 }
+    { 0, 0, 0, 0, 0 }
     };
 #endif /* no INCLUDE_DEFAULTS */
 
@@ -1250,8 +1250,8 @@ main (argc, argv)
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
 #endif
-  bindtextdomain (PACKAGE, localedir);
-  textdomain (PACKAGE);
+  (void) bindtextdomain (PACKAGE, localedir);
+  (void) textdomain (PACKAGE);
 
   progname = base_name (argv[0]);
 
@@ -5738,7 +5738,7 @@ pass_thru_directive (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword;
 {
-  register unsigned keyword_length = keyword->length;
+  register int keyword_length = keyword->length;
 
   check_expand (op, 1 + keyword_length + (limit - buf));
   *op->bufp++ = '#';

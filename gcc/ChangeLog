@@ -1,3 +1,21 @@
+Thu Mar 18 10:14:18 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cccp.c (default_include): Initialize structure memebers.
+  	(pass_thru_directive): Change the type of 'keyword_length' to int.
+  	(main): Cast `bindtextdomain' and `textdomain' to (void).
+
+	* collect2.c (main): Likewise.
+
+	* cppmain.c (main): Likewise.
+
+	* gcc.c (main): Likewise.
+
+	* gcov.c (main): Likewise.
+
+	* protoize.c (main): Likewise.
+
+	* toplev.c (main): Likewise.
+
 1999-03-18  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.c (mips_explicit_type_size_string): Correct

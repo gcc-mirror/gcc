@@ -1002,8 +1002,8 @@ main (argc, argv)
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
 #endif
-  bindtextdomain (PACKAGE, localedir);
-  textdomain (PACKAGE);
+  (void) bindtextdomain (PACKAGE, localedir);
+  (void) textdomain (PACKAGE);
 
   /* Do not invoke xcalloc before this point, since locale needs to be
      set first, in case a diagnostic is issued.  */
