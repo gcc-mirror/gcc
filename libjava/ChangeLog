@@ -1,3 +1,14 @@
+2004-05-04  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/ByteBuffer.java,
+	java/nio/CharBuffer.java,
+	java/nio/DoubleBuffer.java,
+	java/nio/FloatBuffer.java,
+	java/nio/IntBuffer.java,
+	java/nio/LongBuffer.java,
+	java/nio/ShortBuffer.java:
+	(compareTo): Fixed bogus implementation in all buffer classes.
+
 2004-05-04  Ingo Proetel  <proetel@aicas.com>
 
 	* java/awt/image/ColorModel.java (getRGBdefault): Default ColorModel has
