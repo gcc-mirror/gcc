@@ -1204,7 +1204,9 @@ split_specs_attrs (specs_attrs, declspecs, prefix_attributes)
 	      s = t;
 	    }
 	}
-      else
+      /* The TREE_PURPOSE may also be empty in the case of
+	 __attribute__(()).  */
+      else if (TREE_PURPOSE (t) != NULL_TREE)
 	{
 	  if (attrs == NULL_TREE)
 	    attrs = a = TREE_PURPOSE (t);
