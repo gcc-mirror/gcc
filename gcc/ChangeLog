@@ -1,3 +1,10 @@
+Tue Oct 13 22:12:11 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+        * flow.c (find_basic_blocks): Emit NOPs after normal calls in this
+        function.
+        Compute max_uid_for_flow by calling get_max_uid after the scan.
+        (find_basic_blocks_1): Don't emit NOPs here.
+
 Tue Oct 13 22:05:49 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alias.c (base_alias_check): Accept new args for the modes of the
