@@ -6977,6 +6977,7 @@ eval_if_expression (buf, length)
   pcp_inside_if = 0;
   delete_macro (save_defined);	/* clean up special symbol */
 
+  temp_obuf.buf[temp_obuf.length] = '\n';
   value = parse_c_expression ((char *) temp_obuf.buf);
 
   free (temp_obuf.buf);
