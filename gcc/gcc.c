@@ -5478,6 +5478,9 @@ main (argc, argv)
   if (signal (SIGPIPE, SIG_IGN) != SIG_IGN)
     signal (SIGPIPE, fatal_error);
 #endif
+  /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
+     receive the signal.  A different setting is inheritable */
+  signal (SIGCHLD, SIG_DFL);
 
   argbuf_length = 10;
   argbuf = (const char **) xmalloc (argbuf_length * sizeof (const char *));
