@@ -1,3 +1,8 @@
+2005-02-22  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/beans/PropertyDescriptor.java
+	(PropertyDescriptor,setReadMethod): Set propertyType.
+
 2005-02-22  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/DirectByteBufferImpl.java

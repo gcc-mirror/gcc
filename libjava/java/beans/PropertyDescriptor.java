@@ -126,7 +126,7 @@ public class PropertyDescriptor extends FeatureDescriptor
         }
 
         // finally check the methods compatibility        
-        checkMethods(getMethod, setMethod);
+        propertyType = checkMethods(getMethod, setMethod);
     }
 
     /** Create a new PropertyDescriptor by introspection.
@@ -178,7 +178,7 @@ public class PropertyDescriptor extends FeatureDescriptor
                 "Cannot find a setter method called " + setMethodName);
         }
 
-        checkMethods(getMethod, setMethod);
+        propertyType = checkMethods(getMethod, setMethod);
     }
 
     /** Create a new PropertyDescriptor using explicit Methods.
@@ -205,17 +205,7 @@ public class PropertyDescriptor extends FeatureDescriptor
         setName(name);
         getMethod = readMethod;
         setMethod = writeMethod;
-
-        if (getMethod != null)
-        {
-            this.propertyType = getMethod.getReturnType();
-        }
-        else if (setMethod != null)
-        {
-            this.propertyType = setMethod.getParameterTypes()[0];
-        }
-
-        checkMethods(getMethod, setMethod);
+        propertyType = checkMethods(getMethod, setMethod);
     }
 
     /** Get the property type.
@@ -250,7 +240,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      */
     public void setReadMethod(Method readMethod) throws IntrospectionException
     {
-        checkMethods(readMethod, setMethod);
+        propertyType = checkMethods(readMethod, setMethod);
 
         getMethod = readMethod;
     }
