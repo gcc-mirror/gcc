@@ -1,3 +1,9 @@
+2000-03-06  Tom Tromey  <tromey@cygnus.com>
+
+	Test for PR gcj/164:
+	* libjava.compile/PR164.xfail: New file.
+	* libjava.compile/PR164.java: New file.
+
 2000-03-06  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.compile/PR127.java: New file.
