@@ -1,5 +1,10 @@
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* c-pch.c, dummy-conditions.c, genautomata.c, genconditions.c,
+	langhooks.c, tree-inline.c, unwind-dw2-fde-darwin.c,
+	unwind-dw2-fde-glibc.c, unwind-libunwind.c, vmsdbgout.c: Replace
+	"GNU CC" with "GCC".
+
 	* config/v850/lib1funcs.asm, config/v850/rtems.h,
 	config/v850/v850-c.c, config/v850/v850-protos.h,
 	config/v850/v850.c, config/v850/v850.h, config/v850/v850.md:

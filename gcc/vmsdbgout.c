@@ -1,9 +1,9 @@
-/* Output VMS debug format symbol table information from the GNU C compiler.
+/* Output VMS debug format symbol table information from GCC.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
 
-This file is part of GNU CC.
+This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
