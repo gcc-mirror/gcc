@@ -1,4 +1,13 @@
 2003-01-22  Benjamin Kosnik  <bkoz@redhat.com>
+	    Sysoltsev Slawa  <Vyatcheslav.Sysoltsev@intel.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+	
+	PR libstdc++/9269
+	* include/std/std_fstream.h (basic_filebuf::uflow): Declare.
+	(basic_filebuf::underflow): Declare.
+	Move definitions.
+
+2003-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h: Move non-facet classes requiring
 	<string> to...  
