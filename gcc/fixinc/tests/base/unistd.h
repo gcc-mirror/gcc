@@ -12,3 +12,12 @@
 #if defined( ALPHA_SBRK_CHECK )
 extern void *sbrk(ptrdiff_t increment);
 #endif  /* ALPHA_SBRK_CHECK */
+
+
+#if defined( SOLARIS_UNISTD_CHECK )
+#ident "@(#)unistd.h   1.33    95/08/28 SMI"
+extern int getpagesize();
+extern pid_t getpgid(pid_t);
+extern int getpagesize();
+extern int getpgid();
+#endif  /* SOLARIS_UNISTD_CHECK */

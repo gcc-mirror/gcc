@@ -1,3 +1,16 @@
+2003-05-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Bruce Korb  <bkorb@gnu.org>
+            Arno Klaassen  <arno@heho.snv.jussieu.fr>
+
+	* fixinc/inclhack.def: Add missing declaration of getpagesize()
+	to unistd.h on Solaris 2.5.1.
+	Fix prototype of recv() and send() in sys/socket.h on
+	Solaris 2.5.1 and 2.6.
+	* fixinc/tests/base/unistd.h: Add solaris_unistd fix test.
+	* fixinc/tests/base/sys/socket.h: Add solaris_socket test.
+	* fixinc/check.tpl: Use 'diff -c', not 'diff -u'.
+	* fixinc/fixincl.x: Regenerate.
+
 2003-05-27  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (expr_first, expr_length): New fns.
@@ -6,7 +19,7 @@
 	* tree.c (iterative_hash_expr): Hash commutative expressions
 	consistently.
 
-2003-05027  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2003-05-27  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (contains_placeholder_p): Now returns bool.
 	(CONTAINS_PLACEHOLDER_P): New macro.
