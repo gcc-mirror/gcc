@@ -2727,7 +2727,7 @@ fix = {
 
     c_fix     = format;
     c_fix_arg = "struct utsname;\n%0";
-    c_fix_arg = "^[ \t]*extern[ \t]*int[ \t]*uname\\(\\);"
+    c_fix_arg = "^[ \t]*extern[ \t]*int[ \t]*uname\\(\\);";
 
     test_text =
     "/* ULTRIX's uname */\nextern\tint\tuname();";
