@@ -52,6 +52,7 @@ struct _JAWT_X11DrawingSurfaceInfo
 {
   Display* display;
   Drawable drawable;
+  VisualID visualID;
 };
 
 typedef struct _JAWT_X11DrawingSurfaceInfo JAWT_X11DrawingSurfaceInfo;

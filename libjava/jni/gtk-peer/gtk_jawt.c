@@ -85,6 +85,40 @@ classpath_jawt_get_default_display (JNIEnv* env, jobject canvas)
   return xdisplay;
 }
 
+VisualID
+classpath_jawt_get_visualID (JNIEnv* env, jobject canvas)
+{
+  GtkWidget *widget;
+  Visual *visual;
+  void *ptr;
+  jobject peer;
+  jclass class_id;
+  jmethodID method_id;
+
+  class_id = (*env)->GetObjectClass (env, canvas);
+
+  method_id = (*env)->GetMethodID (env, class_id,
+				   "getPeer",
+				   "()Ljava/awt/peer/ComponentPeer;");
+
+  peer = (*env)->CallObjectMethod (env, canvas, method_id);
+
+  ptr = NSA_GET_PTR (env, peer);
+
+  gdk_threads_enter ();
+
+  widget = GTK_WIDGET (ptr);
+
+  g_assert (GTK_WIDGET_REALIZED (widget));
+
+  visual = gdk_x11_visual_get_xvisual (gtk_widget_get_visual (widget));
+  g_assert (visual != NULL);
+
+  gdk_threads_leave ();
+
+  return visual->visualid;
+}
+
 Drawable
 classpath_jawt_get_drawable (JNIEnv* env, jobject canvas)
 {

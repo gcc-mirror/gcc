@@ -1,3 +1,17 @@
+2005-02-13  Anthony Green  <green@redhat.com>
+
+	* jni/gtk-peer/gtk_jawt.c (classpath_jawt_get_drawable,
+	classpath_jawt_lock, classpath_jawt_unlock): New functions.
+	* jawt.c (_Jv_AWTLock, _Jv_AWTUnlock): New functions.
+	(_Jv_GetDrawingSurface): Set visualID.
+	(_Jv_FreeDrawingSurfaceInfo): Clear visualID.
+	(JAWT_GetAWT): Set Lock and Unlock.
+	* include/jawt_md.h (struct _JAWT_X11DrawingSurfaceInfo): Add visualID.
+	* include/jawt.h (JAWT_VERSION_1_4, JAWT_LOCK_ERROR,
+	JAWT_LOCK_CLIP_CHANGED, JAWT_LOCK_BOUNDS_CHANGED,
+	JAWT_LOCK_SURFACE_CHANGED): New macros.
+	(struct _JAWT): Add Lock and Unlock.
+
 2005-03-07  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/VMCompiler.java (md5Digest): New field.
