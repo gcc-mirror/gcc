@@ -8561,6 +8561,7 @@ cse_basic_block (from, to, next_branch, around_loop)
   register rtx insn;
   int to_usage = 0;
   int in_libcall_block = 0;
+  int num_insns = 0;
 
   /* Each of these arrays is undefined before max_reg, so only allocate
      the space actually needed and adjust the start below.  */
@@ -8593,6 +8594,29 @@ cse_basic_block (from, to, next_branch, around_loop)
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
       register enum rtx_code code;
+      int i;
+      struct table_elt *p, *next;
+
+      /* If we have processed 1,000 insns, flush the hash table to avoid
+	 extreme quadratic behavior.
+
+	 ??? This is a real kludge and needs to be done some other way.
+	 Perhaps for 2.9.  */
+      if (num_insns++ > 1000)
+	{
+	  for (i = 0; i < NBUCKETS; i++)
+	    for (p = table[i]; p; p = next)
+	      {
+		next = p->next_same_hash;
+
+		if (GET_CODE (p->exp) == REG)
+		  invalidate (p->exp, p->mode);
+		else
+		  remove_from_table (p, i);
+	      }
+
+	  num_insns = 0;
+	}
 
       /* See if this is a branch that is part of the path.  If so, and it is
 	 to be taken, do so.  */
