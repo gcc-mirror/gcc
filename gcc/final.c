@@ -955,7 +955,7 @@ void
 profile_function (file)
      FILE *file;
 {
-  int align = MIN (BIGGEST_ALIGNMENT, INT_TYPE_SIZE);
+  int align = MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD);
   int sval = current_function_returns_struct;
   int cxt = current_function_needs_context;
 
