@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM/RISCiX.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -46,12 +46,11 @@ Boston, MA 02111-1307, USA.  */
 /* Some function declarations.  */
 extern FILE *asm_out_file;
 extern char *output_multi_immediate ();
-extern void arm_increase_location ();
 
 HOST_WIDE_INT int_log2 PROTO ((HOST_WIDE_INT));
-static int get_prologue_size PROTO ((void));
 static int arm_gen_constant PROTO ((enum rtx_code, enum machine_mode,
 				    HOST_WIDE_INT, rtx, rtx, int, int));
+static int arm_naked_function_p PROTO ((tree func));
 
 /*  Define the information needed to generate branch insns.  This is
    stored from the compare operation. */
@@ -74,7 +73,7 @@ char *target_fpe_name = NULL;
 /* Nonzero if this is an "M" variant of the processor.  */
 int arm_fast_multiply = 0;
 
-/* Nonzero if this chip support the ARM Architecture 4 extensions */
+/* Nonzero if this chip supports the ARM Architecture 4 extensions */
 int arm_arch4 = 0;
 
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference, we
@@ -85,25 +84,15 @@ enum machine_mode output_memory_reference_mode;
 /* Nonzero if the prologue must setup `fp'.  */
 int current_function_anonymous_args;
 
+/* The register number to be used for the PIC offset register.  */
+int arm_pic_register = 9;
+
 /* Location counter of .text segment.  */
 int arm_text_location = 0;
 
 /* Set to one if we think that lr is only saved because of subroutine calls,
    but all of these can be `put after' return insns */
 int lr_save_eliminated;
-
-/* A hash table is used to store text segment labels and their associated
-   offset from the start of the text segment.  */
-struct label_offset
-{
-  char *name;
-  int offset;
-  struct label_offset *cdr;
-};
-
-#define LABEL_HASH_SIZE  257
-
-static struct label_offset *offset_table[LABEL_HASH_SIZE];
 
 /* Set to 1 when a return insn is output, this means that the epilogue
    is not needed. */
@@ -144,6 +133,7 @@ struct arm_cpu_select arm_select[3] =
 #define FL_MODE32     0x08            /* 32-bit mode support */
 #define FL_ARCH4      0x10            /* Architecture rel 4 */
 #define FL_THUMB      0x20            /* Thumb aware */
+
 struct processors
 {
   char *name;
@@ -159,26 +149,33 @@ static struct processors all_procs[] =
   {"arm250",	PROCESSOR_ARM2, FL_CO_PROC | FL_MODE26},
   {"arm3",	PROCESSOR_ARM2, FL_CO_PROC | FL_MODE26},
   {"arm6",	PROCESSOR_ARM6, FL_CO_PROC | FL_MODE32 | FL_MODE26},
-  {"arm60",	PROCESSOR_ARM6, FL_CO_PROC | FL_MODE32 | FL_MODE26},
   {"arm600",	PROCESSOR_ARM6, FL_CO_PROC | FL_MODE32 | FL_MODE26},
   {"arm610",	PROCESSOR_ARM6, FL_MODE32 | FL_MODE26},
-  {"arm620",	PROCESSOR_ARM6, FL_CO_PROC | FL_MODE32 | FL_MODE26},
   {"arm7",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
-  {"arm70",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
-  {"arm7d",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
-  {"arm7di",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
+  /* arm7m doesn't exist on its own, only in conjuction with D, (and I), but
+     those don't alter the code, so it is sometimes known as the arm7m */
+  {"arm7m",	PROCESSOR_ARM7, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
+				 | FL_MODE26)},
   {"arm7dm",	PROCESSOR_ARM7, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
 				 | FL_MODE26)},
   {"arm7dmi",	PROCESSOR_ARM7, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
 				 | FL_MODE26)},
   {"arm700",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
-  {"arm700i",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
   {"arm710",	PROCESSOR_ARM7, FL_MODE32 | FL_MODE26},
-  {"arm710c",	PROCESSOR_ARM7, FL_MODE32 | FL_MODE26},
   {"arm7100",	PROCESSOR_ARM7, FL_MODE32 | FL_MODE26},
   {"arm7500",	PROCESSOR_ARM7, FL_MODE32 | FL_MODE26},
+  /* Doesn't really have an external co-proc, but does have embedded fpu */
+  {"arm7500fe",	PROCESSOR_ARM7, FL_CO_PROC | FL_MODE32 | FL_MODE26},
   {"arm7tdmi",	PROCESSOR_ARM7, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
 				 | FL_ARCH4 | FL_THUMB)},
+  {"arm8",	PROCESSOR_ARM8, (FL_FAST_MULT | FL_MODE32 | FL_MODE26
+				 | FL_ARCH4)},
+  {"arm810",	PROCESSOR_ARM8, (FL_FAST_MULT | FL_MODE32 | FL_MODE26
+				 | FL_ARCH4)},
+  {"strongarm",	PROCESSOR_STARM, (FL_FAST_MULT | FL_MODE32 | FL_MODE26
+				  | FL_ARCH4)},
+  {"strongarm110", PROCESSOR_STARM, (FL_FAST_MULT | FL_MODE32 | FL_MODE26
+				     | FL_ARCH4)},
   {NULL, 0, 0}
 };
 
@@ -191,9 +188,31 @@ arm_override_options ()
   int flags = 0;
   int i;
   struct arm_cpu_select *ptr;
+  static struct cpu_default {
+    int cpu;
+    char *name;
+  } cpu_defaults[] = {
+    { TARGET_CPU_arm2, "arm2" },
+    { TARGET_CPU_arm6, "arm6" },
+    { TARGET_CPU_arm610, "arm610" },
+    { TARGET_CPU_arm7dm, "arm7dm" },
+    { TARGET_CPU_arm7500fe, "arm7500fe" },
+    { TARGET_CPU_arm7tdmi, "arm7tdmi" },
+    { TARGET_CPU_arm8, "arm8" },
+    { TARGET_CPU_arm810, "arm810" },
+    { TARGET_CPU_strongarm, "strongarm" },
+    { 0, 0 }
+  };
+  struct cpu_default *def;
 
-  arm_cpu = PROCESSOR_DEFAULT;
-  arm_select[0].string = TARGET_CPU_DEFAULT;
+  /* Set the default.  */
+  for (def = &cpu_defaults[0]; def->name; ++def)
+    if (def->cpu == TARGET_CPU_DEFAULT)
+      break;
+  if (! def->name)
+    abort ();
+
+  arm_select[0].string = def->name;
 
   for (i = 0; i < sizeof (arm_select) / sizeof (arm_select[0]); i++)
     {
@@ -225,25 +244,26 @@ arm_override_options ()
     target_flags |= ARM_FLAG_APCS_FRAME;
 
   if (TARGET_6)
-    {
-      warning ("Option '-m6' deprecated.  Use: '-mapcs-32' or -mcpu=<proc>");
-      target_flags |= ARM_FLAG_APCS_32;
-      arm_cpu = PROCESSOR_ARM6;
-    }
+    warning ("Option '-m6' deprecated.  Use: '-mapcs-32' or -mcpu=<proc>");
 
   if (TARGET_3)
-    {
-      warning ("Option '-m3' deprecated.  Use: '-mapcs-26' or -mcpu=<proc>");
-      target_flags &= ~ARM_FLAG_APCS_32;
-      arm_cpu = PROCESSOR_ARM2;
-    }
+    warning ("Option '-m3' deprecated.  Use: '-mapcs-26' or -mcpu=<proc>");
 
   if (TARGET_APCS_REENT && flag_pic)
     fatal ("-fpic and -mapcs-reent are incompatible");
 
   if (TARGET_APCS_REENT)
-    warning ("APCS reentrant code not supported.  Ignored");
+    warning ("APCS reentrant code not supported.");
 
+  /* If stack checking is disabled, we can use r10 as the PIC register,
+     which keeps r9 available.  */
+  if (flag_pic && ! TARGET_APCS_STACK)
+    arm_pic_register = 10;
+
+  /* Well, I'm about to have a go, but pic is NOT going to be compatible
+     with APCS reentrancy, since that requires too much support in the
+     assembler and linker, and the ARMASM assembler seems to lack some
+     required directives.  */
   if (flag_pic)
     warning ("Position independent code not supported.  Ignored");
 
@@ -297,6 +317,7 @@ arm_override_options ()
   arm_prog_mode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
 }
 
+
 /* Return 1 if it is possible to return using a single instruction */
 
 int
@@ -1071,6 +1092,178 @@ arm_return_in_memory (type)
   return 1;
 }
 
+int
+legitimate_pic_operand_p (x)
+     rtx x;
+{
+  if (CONSTANT_P (x) && flag_pic
+      && (GET_CODE (x) == SYMBOL_REF
+	  || (GET_CODE (x) == CONST
+	      && GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)))
+    return 0;
+
+  return 1;
+}
+
+rtx
+legitimize_pic_address (orig, mode, reg)
+     rtx orig;
+     enum machine_mode mode;
+     rtx reg;
+{
+  if (GET_CODE (orig) == SYMBOL_REF)
+    {
+      rtx pic_ref, address;
+      rtx insn;
+      int subregs = 0;
+
+      if (reg == 0)
+	{
+	  if (reload_in_progress || reload_completed)
+	    abort ();
+	  else
+	    reg = gen_reg_rtx (Pmode);
+
+	  subregs = 1;
+	}
+
+#ifdef AOF_ASSEMBLER
+      /* The AOF assembler can generate relocations for these directly, and
+	 understands that the PIC register has to be added into the offset.
+	 */
+      insn = emit_insn (gen_pic_load_addr_based (reg, orig));
+#else
+      if (subregs)
+	address = gen_reg_rtx (Pmode);
+      else
+	address = reg;
+
+      emit_insn (gen_pic_load_addr (address, orig));
+
+      pic_ref = gen_rtx (MEM, Pmode,
+			 gen_rtx (PLUS, Pmode, pic_offset_table_rtx, address));
+      RTX_UNCHANGING_P (pic_ref) = 1;
+      insn = emit_move_insn (reg, pic_ref);
+#endif
+      current_function_uses_pic_offset_table = 1;
+      /* Put a REG_EQUAL note on this insn, so that it can be optimized
+	 by loop.  */
+      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL, orig,
+				  REG_NOTES (insn));
+      return reg;
+    }
+  else if (GET_CODE (orig) == CONST)
+    {
+      rtx base, offset;
+
+      if (GET_CODE (XEXP (orig, 0)) == PLUS
+	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
+	return orig;
+
+      if (reg == 0)
+	{
+	  if (reload_in_progress || reload_completed)
+	    abort ();
+	  else
+	    reg = gen_reg_rtx (Pmode);
+	}
+
+      if (GET_CODE (XEXP (orig, 0)) == PLUS)
+	{
+	  base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
+	  offset = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
+					   base == reg ? 0 : reg);
+	}
+      else
+	abort ();
+
+      if (GET_CODE (offset) == CONST_INT)
+	{
+	  /* The base register doesn't really matter, we only want to
+	     test the index for the appropriate mode.  */
+	  GO_IF_LEGITIMATE_INDEX (mode, 0, offset, win);
+
+	  if (! reload_in_progress && ! reload_completed)
+	    offset = force_reg (Pmode, offset);
+	  else
+	    abort ();
+
+	win:
+	  if (GET_CODE (offset) == CONST_INT)
+	    return plus_constant_for_output (base, INTVAL (offset));
+	}
+
+      if (GET_MODE_SIZE (mode) > 4
+	  && (GET_MODE_CLASS (mode) == MODE_INT
+	      || TARGET_SOFT_FLOAT))
+	{
+	  emit_insn (gen_addsi3 (reg, base, offset));
+	  return reg;
+	}
+
+      return gen_rtx (PLUS, Pmode, base, offset);
+    }
+  else if (GET_CODE (orig) == LABEL_REF)
+    current_function_uses_pic_offset_table = 1;
+
+  return orig;
+}
+
+static rtx pic_rtx;
+
+int
+is_pic(x)
+     rtx x;
+{
+  if (x == pic_rtx)
+    return 1;
+  return 0;
+}
+
+void
+arm_finalize_pic ()
+{
+#ifndef AOF_ASSEMBLER
+  rtx l1, pic_tmp, pic_tmp2, seq;
+  rtx global_offset_table;
+
+  if (current_function_uses_pic_offset_table == 0)
+    return;
+
+  if (! flag_pic)
+    abort ();
+
+  start_sequence ();
+  l1 = gen_label_rtx ();
+
+  global_offset_table = gen_rtx (SYMBOL_REF, Pmode, "_GLOBAL_OFFSET_TABLE_");
+  pic_tmp = gen_rtx (CONST, VOIDmode, 
+		     gen_rtx (PLUS, Pmode, 
+			      gen_rtx (LABEL_REF, VOIDmode, l1),
+			      GEN_INT (8)));
+  pic_tmp2 = gen_rtx (CONST, VOIDmode,
+		      gen_rtx (PLUS, Pmode,
+			       global_offset_table,
+			       pc_rtx));
+
+  pic_rtx = gen_rtx (CONST, Pmode,
+		     gen_rtx (MINUS, Pmode, pic_tmp2, pic_tmp));
+
+  emit_insn (gen_pic_load_addr (pic_offset_table_rtx, pic_rtx));
+  emit_jump_insn (gen_pic_add_dot_plus_eight(l1, pic_offset_table_rtx));
+  emit_label (l1);
+
+  seq = gen_sequence ();
+  end_sequence ();
+  emit_insn_after (seq, get_insns ());
+
+  /* Need to emit this whether or not we obey regdecls,
+     since setjmp/longjmp can cause life info to screw up.  */
+  emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+#endif /* AOF_ASSEMBLER */
+}
+
 #define REG_OR_SUBREG_REG(X)						\
   (GET_CODE (X) == REG							\
    || (GET_CODE (X) == SUBREG && GET_CODE (SUBREG_REG (X)) == REG))
@@ -1295,7 +1488,45 @@ arm_rtx_costs (x, code, outer_code)
       return 99;
     }
 }
-     
+
+int
+arm_adjust_cost (insn, link, dep, cost)
+     rtx insn;
+     rtx link;
+     rtx dep;
+     int cost;
+{
+  rtx i_pat, d_pat;
+
+  if ((i_pat = single_set (insn)) != NULL
+      && GET_CODE (SET_SRC (i_pat)) == MEM
+      && (d_pat = single_set (dep)) != NULL
+      && GET_CODE (SET_DEST (d_pat)) == MEM)
+    {
+      /* This is a load after a store, there is no conflict if the load reads
+	 from a cached area.  Assume that loads from the stack, and from the
+	 constant pool are cached, and that others will miss.  This is a 
+	 hack. */
+      
+/*       debug_rtx (insn);
+      debug_rtx (dep);
+      debug_rtx (link);
+      fprintf (stderr, "costs %d\n", cost); */
+
+      if (CONSTANT_POOL_ADDRESS_P (XEXP (SET_SRC (i_pat), 0))
+	  || reg_mentioned_p (stack_pointer_rtx, XEXP (SET_SRC (i_pat), 0))
+	  || reg_mentioned_p (frame_pointer_rtx, XEXP (SET_SRC (i_pat), 0))
+	  || reg_mentioned_p (hard_frame_pointer_rtx, 
+			      XEXP (SET_SRC (i_pat), 0)))
+	{
+/* 	  fprintf (stderr, "***** Now 1\n"); */
+	  return 1;
+	}
+    }
+
+  return cost;
+}
+
 /* This code has been fixed for cross compilation. */
 
 static int fpa_consts_inited = 0;
@@ -2409,13 +2640,6 @@ multi_register_push (op, mode)
 
 /* Routines for use with attributes */
 
-int
-const_pool_offset (symbol)
-     rtx symbol;
-{
-  return get_pool_offset (symbol) - get_pool_size () - get_prologue_size ();
-}
-
 /* Return nonzero if ATTR is a valid attribute for DECL.
    ATTRIBUTES are any existing attributes and ARGS are the arguments
    supplied with ATTR.
@@ -2948,37 +3172,6 @@ arm_reload_out_hi (operands)
     }
 }
 
-/* Check to see if a branch is forwards or backwards.  Return TRUE if it
-   is backwards.  */
-
-int
-arm_backwards_branch (from, to)
-     int from, to;
-{
-  return insn_addresses[to] <= insn_addresses[from];
-}
-
-/* Check to see if a branch is within the distance that can be done using
-   an arithmetic expression. */
-int
-short_branch (from, to)
-     int from, to;
-{
-  int delta = insn_addresses[from] + 8 - insn_addresses[to];
-
-  return abs (delta) < 980;	/* A small margin for safety */
-}
-
-/* Check to see that the insn isn't the target of the conditionalizing
-   code */
-int
-arm_insn_not_targeted (insn)
-     rtx insn;
-{
-  return insn != arm_target_insn;
-}
-
-
 /* Routines for manipulation of the constant pool.  */
 /* This is unashamedly hacked from the version in sh.c, since the problem is
    extremely similar.  */
@@ -3070,6 +3263,13 @@ add_constant (x, mode)
   else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == 3)
     x = XVECEXP (x, 0, 0);
 #endif
+
+#ifdef AOF_ASSEMBLER
+  /* PIC Symbol references need to be converted into offsets into the 
+     based area.  */
+  if (flag_pic && GET_CODE (x) == SYMBOL_REF)
+    x = aof_pic_entry (x);
+#endif /* AOF_ASSEMBLER */
 
   /* First see if we've already got it */
   for (i = 0; i < pool_size; i++)
@@ -4106,7 +4306,6 @@ output_ascii_pseudo_op (stream, p, len)
 	    fputs ("\"\n", stream);
 	  fputs ("\t.ascii\t\"", stream);
 	  len_so_far = 0;
-	  arm_increase_location (chars_so_far);
 	  chars_so_far = 0;
 	}
 
@@ -4131,7 +4330,6 @@ output_ascii_pseudo_op (stream, p, len)
     }
 
   fputs ("\"\n", stream);
-  arm_increase_location (chars_so_far);
 }
 
 
@@ -4254,6 +4452,10 @@ function_really_clobbers_lr (first)
 	     must reject this.  (Can this be fixed by adding our own insn?) */
 	  if ((next = next_nonnote_insn (insn)) == NULL)
 	    return 1;
+
+	  /* No need to worry about lr if the call never returns */
+	  if (GET_CODE (next) == BARRIER)
+	    break;
 
 	  if (GET_CODE (next) == INSN && GET_CODE (PATTERN (next)) == USE
 	      && (GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET)
@@ -4380,15 +4582,6 @@ arm_volatile_func ()
   return (optimize > 0 && TREE_THIS_VOLATILE (current_function_decl));
 }
 
-/* Return the size of the prologue.  It's not too bad if we slightly 
-   over-estimate.  */
-
-static int
-get_prologue_size ()
-{
-  return profile_flag ? 12 : 0;
-}
-
 /* The amount of stack adjustment that happens here, in output_return and in
    output_epilogue must be exactly the same as was calculated during reload,
    or things will point to the wrong place.  The only time we can safely
@@ -4464,6 +4657,12 @@ output_func_prologue (f, frame_size)
   if (lr_save_eliminated)
     fprintf (f,"\t%s I don't think this function clobbers lr\n",
 	     ASM_COMMENT_START);
+
+#ifdef AOF_ASSEMBLER
+  if (flag_pic)
+    fprintf (f, "\tmov\t%sip, %s%s\n", REGISTER_PREFIX, REGISTER_PREFIX,
+	     reg_names[PIC_OFFSET_TABLE_REGNUM]);
+#endif
 }
 
 
@@ -4544,25 +4743,38 @@ output_func_epilogue (f, frame_size)
 	  }
       if (current_function_pretend_args_size == 0 && regs_ever_live[14])
 	{
-	  print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask | 0x8000,
-			   TARGET_APCS_32 ? FALSE : TRUE);
+	  if (lr_save_eliminated)
+	    fprintf (f, (TARGET_APCS_32 ? "\tmov\t%spc, %slr\n"
+			 : "\tmovs\t%spc, %slr\n"),
+		     REGISTER_PREFIX, REGISTER_PREFIX, f);
+	  else
+	    print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask | 0x8000,
+			     TARGET_APCS_32 ? FALSE : TRUE);
 	  code_size += 4;
 	}
       else
 	{
 	  if (live_regs_mask || regs_ever_live[14])
 	    {
-	      live_regs_mask |= 0x4000;
-	      print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask, FALSE);
-	      code_size += 4;
+	      /* Restore the integer regs, and the return address into lr */
+	      if (! lr_save_eliminated)
+		live_regs_mask |= 0x4000;
+
+	      if (live_regs_mask != 0)
+	      {
+		print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask, FALSE);
+		code_size += 4;
+	      }
 	    }
 	  if (current_function_pretend_args_size)
 	    {
+	      /* Unwind the pre-pushed regs */
 	      operands[0] = operands[1] = stack_pointer_rtx;
 	      operands[2] = gen_rtx (CONST_INT, VOIDmode,
 				     current_function_pretend_args_size);
 	      output_add_immediate (operands);
 	    }
+	  /* And finally, go home */
 	  fprintf (f, (TARGET_APCS_32 ? "\tmov\t%spc, %slr\n"
 		       : "\tmovs\t%spc, %slr\n"),
 		   REGISTER_PREFIX, REGISTER_PREFIX, f);
@@ -4570,15 +4782,7 @@ output_func_epilogue (f, frame_size)
 	}
     }
 
- epilogue_done:
-
-  /* insn_addresses isn't allocated when not optimizing */
-  /* ??? The previous comment is incorrect.  Clarify.  */
-
-  if (optimize > 0)
-    arm_increase_location (code_size
-			   + insn_addresses[INSN_UID (get_last_insn ())]
-			   + get_prologue_size ());
+epilogue_done:
 
   current_function_anonymous_args = 0;
 }
@@ -4868,57 +5072,14 @@ arm_print_operand (stream, x, code)
     }
 }
 
-/* Increase the `arm_text_location' by AMOUNT if we're in the text
-   segment.  */
-
-void
-arm_increase_location (amount)
-     int amount;
-{
-  if (in_text_section ())
-    arm_text_location += amount;
-}
-
-
-/* Output a label definition.  If this label is within the .text segment, it
-   is stored in OFFSET_TABLE, to be used when building `llc' instructions.
-   Maybe GCC remembers names not starting with a `*' for a long time, but this
-   is a minority anyway, so we just make a copy.  Do not store the leading `*'
-   if the name starts with one.  */
+/* Output a label definition.  */
 
 void
 arm_asm_output_label (stream, name)
      FILE *stream;
      char *name;
 {
-  char *real_name, *s;
-  struct label_offset *cur;
-  int hash = 0;
-
   ARM_OUTPUT_LABEL (stream, name);
-  if (! in_text_section ())
-    return;
-
-  if (name[0] == '*')
-    {
-      real_name = xmalloc (1 + strlen (&name[1]));
-      strcpy (real_name, &name[1]);
-    }
-  else
-    {
-      real_name = xmalloc (2 + strlen (name));
-      strcpy (real_name, USER_LABEL_PREFIX);
-      strcat (real_name, name);
-    }
-  for (s = real_name; *s; s++)
-    hash += *s;
-
-  hash = hash % LABEL_HASH_SIZE;
-  cur = (struct label_offset *) xmalloc (sizeof (struct label_offset));
-  cur->name = real_name;
-  cur->offset = arm_text_location;
-  cur->cdr = offset_table[hash];
-  offset_table[hash] = cur;
 }
 
 /* Output code resembling an .lcomm directive.  /bin/as doesn't have this
@@ -5416,6 +5577,63 @@ final_prescan_insn (insn, opvec, noperands)
 
 #ifdef AOF_ASSEMBLER
 /* Special functions only needed when producing AOF syntax assembler. */
+
+rtx aof_pic_label = NULL_RTX;
+struct pic_chain
+{
+  struct pic_chain *next;
+  char *symname;
+};
+
+static struct pic_chain *aof_pic_chain = NULL;
+
+rtx
+aof_pic_entry (x)
+     rtx x;
+{
+  struct pic_chain **chainp;
+  int offset;
+
+  if (aof_pic_label == NULL_RTX)
+    {
+      /* This needs to persist throughout the compilation.  */
+      end_temporary_allocation ();
+      aof_pic_label = gen_rtx (SYMBOL_REF, Pmode, "x$adcons");
+      resume_temporary_allocation ();
+    }
+
+  for (offset = 0, chainp = &aof_pic_chain; *chainp;
+       offset += 4, chainp = &(*chainp)->next)
+    if ((*chainp)->symname == XSTR (x, 0))
+      return plus_constant (aof_pic_label, offset);
+
+  *chainp = (struct pic_chain *) xmalloc (sizeof (struct pic_chain));
+  (*chainp)->next = NULL;
+  (*chainp)->symname = XSTR (x, 0);
+  return plus_constant (aof_pic_label, offset);
+}
+
+void
+aof_dump_pic_table (f)
+     FILE *f;
+{
+  struct pic_chain *chain;
+
+  if (aof_pic_chain == NULL)
+    return;
+
+  fprintf (f, "\tAREA |%s$$adcons|, BASED %s%s\n",
+	   reg_names[PIC_OFFSET_TABLE_REGNUM], REGISTER_PREFIX,
+	   reg_names[PIC_OFFSET_TABLE_REGNUM]);
+  fputs ("|x$adcons|\n", f);
+  
+  for (chain = aof_pic_chain; chain; chain = chain->next)
+    {
+      fputs ("\tDCD\t", f);
+      assemble_name (f, chain->symname);
+      fputs ("\n", f);
+    }
+}
 
 int arm_text_section_count = 1;
 
