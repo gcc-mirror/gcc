@@ -1496,64 +1496,185 @@ mask_operand (op, mode)
   return c == -lsb;
 }
 
+/* Return 1 for the PowerPC64 rlwinm corner case.  */
+
+int
+mask_operand_wrap (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  HOST_WIDE_INT c, lsb;
+
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+
+  c = INTVAL (op);
+
+  if ((c & 0x80000001) != 0x80000001)
+    return 0;
+
+  c = ~c;
+  if (c == 0)
+    return 0;
+
+  lsb = c & -c;
+  c = ~c;
+  c &= -lsb;
+  lsb = c & -c;
+  return c == -lsb;
+}
+
 /* Return 1 if the operand is a constant that is a PowerPC64 mask.
    It is if there are no more than one 1->0 or 0->1 transitions.
-   Reject all ones and all zeros, since these should have been optimized
-   away and confuse the making of MB and ME.  */
+   Reject all zeros, since zero should have been optimized away and
+   confuses the making of MB and ME.  */
 
 int
 mask64_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == CONST_INT)
     {
       HOST_WIDE_INT c, lsb;
 
-      /* We don't change the number of transitions by inverting,
-	 so make sure we start with the LS bit zero.  */
       c = INTVAL (op);
-      if (c & 1)
-	c = ~c;
 
-      /* Reject all zeros or all ones.  */
+      /* Reject all zeros.  */
       if (c == 0)
 	return 0;
+
+      /* We don't change the number of transitions by inverting,
+	 so make sure we start with the LS bit zero.  */
+      if (c & 1)
+	c = ~c;
 
       /* Find the transition, and check that all bits above are 1's.  */
       lsb = c & -c;
       return c == -lsb;
     }
-  else if (GET_CODE (op) == CONST_DOUBLE
-	   && (mode == VOIDmode || mode == DImode))
+  return 0;
+}
+
+/* Like mask64_operand, but allow up to three transitions.  This
+   predicate is used by insn patterns that generate two rldicl or
+   rldicr machine insns.  */
+
+int
+mask64_2_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  if (GET_CODE (op) == CONST_INT)
     {
-      HOST_WIDE_INT low, high, lsb;
+      HOST_WIDE_INT c, lsb;
 
-      if (HOST_BITS_PER_WIDE_INT < 64)
-	high = CONST_DOUBLE_HIGH (op);
+      c = INTVAL (op);
 
-      low = CONST_DOUBLE_LOW (op);
-      if (low & 1)
-	{
-	  if (HOST_BITS_PER_WIDE_INT < 64)
-	    high = ~high;
-	  low = ~low;
-	}
+      /* Disallow all zeros.  */
+      if (c == 0)
+	return 0;
 
-      if (low == 0)
-	{
-	  if (HOST_BITS_PER_WIDE_INT >= 64 || high == 0)
-	    return 0;
+      /* We don't change the number of transitions by inverting,
+	 so make sure we start with the LS bit zero.  */
+      if (c & 1)
+	c = ~c;
 
-	  lsb = high & -high;
-	  return high == -lsb;
-	}
+      /* Find the first transition.  */
+      lsb = c & -c;
 
-      lsb = low & -low;
-      return low == -lsb && (HOST_BITS_PER_WIDE_INT >= 64 || high == ~0);
+      /* Invert to look for a second transition.  */
+      c = ~c;
+
+      /* Erase first transition.  */
+      c &= -lsb;
+
+      /* Find the second transition.  */
+      lsb = c & -c;
+
+      /* Invert to look for a third transition.  */
+      c = ~c;
+
+      /* Erase second transition.  */
+      c &= -lsb;
+
+      /* Find the third transition (if any).  */
+      lsb = c & -c;
+
+      /* Match if all the bits above are 1's (or c is zero).  */
+      return c == -lsb;
+    }
+  return 0;
+}
+
+/* Generates shifts and masks for a pair of rldicl or rldicr insns to
+   implement ANDing by the mask IN.  */
+void
+build_mask64_2_operands (in, out)
+     rtx in;
+     rtx *out;
+{
+#if HOST_BITS_PER_WIDE_INT >= 64
+  unsigned HOST_WIDE_INT c, lsb, m1, m2;
+  int shift;
+
+  if (GET_CODE (in) != CONST_INT)
+    abort ();
+
+  c = INTVAL (in);
+  if (c & 1)
+    {
+      /* Assume c initially something like 0x00fff000000fffff.  The idea
+	 is to rotate the word so that the middle ^^^^^^ group of zeros
+	 is at the MS end and can be cleared with an rldicl mask.  We then
+	 rotate back and clear off the MS    ^^ group of zeros with a
+	 second rldicl.  */
+      c = ~c;			/*   c == 0xff000ffffff00000 */
+      lsb = c & -c;		/* lsb == 0x0000000000100000 */
+      m1 = -lsb;		/*  m1 == 0xfffffffffff00000 */
+      c = ~c;			/*   c == 0x00fff000000fffff */
+      c &= -lsb;		/*   c == 0x00fff00000000000 */
+      lsb = c & -c;		/* lsb == 0x0000100000000000 */
+      c = ~c;			/*   c == 0xff000fffffffffff */
+      c &= -lsb;		/*   c == 0xff00000000000000 */
+      shift = 0;
+      while ((lsb >>= 1) != 0)
+	shift++;		/* shift == 44 on exit from loop */
+      m1 <<= 64 - shift;	/*  m1 == 0xffffff0000000000 */
+      m1 = ~m1;			/*  m1 == 0x000000ffffffffff */
+      m2 = ~c;			/*  m2 == 0x00ffffffffffffff */
     }
   else
-    return 0;
+    {
+      /* Assume c initially something like 0xff000f0000000000.  The idea
+	 is to rotate the word so that the     ^^^  middle group of zeros
+	 is at the LS end and can be cleared with an rldicr mask.  We then
+	 rotate back and clear off the LS group of ^^^^^^^^^^ zeros with
+	 a second rldicr.  */
+      lsb = c & -c;		/* lsb == 0x0000010000000000 */
+      m2 = -lsb;		/*  m2 == 0xffffff0000000000 */
+      c = ~c;			/*   c == 0x00fff0ffffffffff */
+      c &= -lsb;		/*   c == 0x00fff00000000000 */
+      lsb = c & -c;		/* lsb == 0x0000100000000000 */
+      c = ~c;			/*   c == 0xff000fffffffffff */
+      c &= -lsb;		/*   c == 0xff00000000000000 */
+      shift = 0;
+      while ((lsb >>= 1) != 0)
+	shift++;		/* shift == 44 on exit from loop */
+      m1 = ~c;			/*  m1 == 0x00ffffffffffffff */
+      m1 >>= shift;		/*  m1 == 0x0000000000000fff */
+      m1 = ~m1;			/*  m1 == 0xfffffffffffff000 */
+    }
+
+  /* Note that when we only have two 0->1 and 1->0 transitions, one of the
+     masks will be all 1's.  We are guaranteed more than one transition.  */
+  out[0] = GEN_INT (64 - shift);
+  out[1] = GEN_INT (m1);
+  out[2] = GEN_INT (shift);
+  out[3] = GEN_INT (m2);
+#else
+  abort ();
+#endif
 }
 
 /* Return 1 if the operand is either a non-special register or a constant
@@ -1568,6 +1689,20 @@ and64_operand (op, mode)
     return (gpc_reg_operand (op, mode) || mask64_operand (op, mode));
 
   return (logical_operand (op, mode) || mask64_operand (op, mode));
+}
+
+/* Like the above, but also match constants that can be implemented
+   with two rldicl or rldicr insns.  */
+
+int
+and64_2_operand (op, mode)
+    rtx op;
+    enum machine_mode mode;
+{
+  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis. */
+    return gpc_reg_operand (op, mode) || mask64_2_operand (op, mode);
+
+  return logical_operand (op, mode) || mask64_2_operand (op, mode);
 }
 
 /* Return 1 if the operand is either a non-special register or a
@@ -6056,6 +6191,83 @@ rs6000_init_machine_status ()
   return ggc_alloc_cleared (sizeof (machine_function));
 }
 
+/* These macros test for integers and extract the low-order bits.  */
+#define INT_P(X)  \
+((GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST_DOUBLE)	\
+ && GET_MODE (X) == VOIDmode)
+
+#define INT_LOWPART(X) \
+  (GET_CODE (X) == CONST_INT ? INTVAL (X) : CONST_DOUBLE_LOW (X))
+
+int
+extract_MB (op)
+     rtx op;
+{
+  int i;
+  unsigned long val = INT_LOWPART (op);
+
+  /* If the high bit is zero, the value is the first 1 bit we find
+     from the left.  */
+  if ((val & 0x80000000) == 0)
+    {
+      if ((val & 0xffffffff) == 0)
+	abort ();
+
+      i = 1;
+      while (((val <<= 1) & 0x80000000) == 0)
+	++i;
+      return i;
+    }
+
+  /* If the high bit is set and the low bit is not, or the mask is all
+     1's, the value is zero.  */
+  if ((val & 1) == 0 || (val & 0xffffffff) == 0xffffffff)
+    return 0;
+
+  /* Otherwise we have a wrap-around mask.  Look for the first 0 bit
+     from the right.  */
+  i = 31;
+  while (((val >>= 1) & 1) != 0)
+    --i;
+
+  return i;
+}
+
+int
+extract_ME (op)
+     rtx op;
+{
+  int i;
+  unsigned long val = INT_LOWPART (op);
+
+  /* If the low bit is zero, the value is the first 1 bit we find from
+     the right.  */
+  if ((val & 1) == 0)
+    {
+      if ((val & 0xffffffff) == 0)
+	abort ();
+
+      i = 30;
+      while (((val >>= 1) & 1) == 0)
+	--i;
+
+      return i;
+    }
+
+  /* If the low bit is set and the high bit is not, or the mask is all
+     1's, the value is 31.  */
+  if ((val & 0x80000000) == 0 || (val & 0xffffffff) == 0xffffffff)
+    return 31;
+
+  /* Otherwise we have a wrap-around mask.  Look for the first 0 bit
+     from the left.  */
+  i = 0;
+  while (((val <<= 1) & 0x80000000) != 0)
+    ++i;
+
+  return i;
+}
+
 /* Print an operand.  Recognize special options, documented below.  */
 
 #if TARGET_ELF
@@ -6074,14 +6286,7 @@ print_operand (file, x, code)
 {
   int i;
   HOST_WIDE_INT val;
-
-  /* These macros test for integers and extract the low-order bits.  */
-#define INT_P(X)  \
-((GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST_DOUBLE)	\
- && GET_MODE (X) == VOIDmode)
-
-#define INT_LOWPART(X) \
-  (GET_CODE (X) == CONST_INT ? INTVAL (X) : CONST_DOUBLE_LOW (X))
+  unsigned HOST_WIDE_INT uval;
 
   switch (code)
     {
@@ -6297,34 +6502,7 @@ print_operand (file, x, code)
       if (! mask_operand (x, SImode))
 	output_operand_lossage ("invalid %%m value");
 
-      val = INT_LOWPART (x);
-
-      /* If the high bit is set and the low bit is not, the value is zero.
-	 If the high bit is zero, the value is the first 1 bit we find from
-	 the left.  */
-      if ((val & 0x80000000) && ((val & 1) == 0))
-	{
-	  putc ('0', file);
-	  return;
-	}
-      else if ((val & 0x80000000) == 0)
-	{
-	  for (i = 1; i < 32; i++)
-	    if ((val <<= 1) & 0x80000000)
-	      break;
-	  fprintf (file, "%d", i);
-	  return;
-	}
-	  
-      /* Otherwise, look for the first 0 bit from the right.  The result is its
-	 number plus 1. We know the low-order bit is one.  */
-      for (i = 0; i < 32; i++)
-	if (((val >>= 1) & 1) == 0)
-	  break;
-
-      /* If we ended in ...01, i would be 0.  The correct value is 31, so
-	 we want 31 - i.  */
-      fprintf (file, "%d", 31 - i);
+      fprintf (file, "%d", extract_MB (x));
       return;
 
     case 'M':
@@ -6332,35 +6510,7 @@ print_operand (file, x, code)
       if (! mask_operand (x, SImode))
 	output_operand_lossage ("invalid %%M value");
 
-      val = INT_LOWPART (x);
-
-      /* If the low bit is set and the high bit is not, the value is 31.
-	 If the low bit is zero, the value is the first 1 bit we find from
-	 the right.  */
-      if ((val & 1) && ((val & 0x80000000) == 0))
-	{
-	  fputs ("31", file);
-	  return;
-	}
-      else if ((val & 1) == 0)
-	{
-	  for (i = 0; i < 32; i++)
-	    if ((val >>= 1) & 1)
-	      break;
-
-	  /* If we had ....10, i would be 0.  The result should be
-	     30, so we need 30 - i.  */
-	  fprintf (file, "%d", 30 - i);
-	  return;
-	}
-	  
-      /* Otherwise, look for the first 0 bit from the left.  The result is its
-	 number minus 1. We know the high-order bit is one.  */
-      for (i = 0; i < 32; i++)
-	if (((val <<= 1) & 0x80000000) == 0)
-	  break;
-
-      fprintf (file, "%d", i);
+      fprintf (file, "%d", extract_ME (x));
       return;
 
       /* %n outputs the negative of its operand.  */
@@ -6456,68 +6606,31 @@ print_operand (file, x, code)
       return;
 
     case 'S':
-      /* PowerPC64 mask position.  All 0's and all 1's are excluded.
+      /* PowerPC64 mask position.  All 0's is excluded.
 	 CONST_INT 32-bit mask is considered sign-extended so any
 	 transition must occur within the CONST_INT, not on the boundary.  */
       if (! mask64_operand (x, DImode))
 	output_operand_lossage ("invalid %%S value");
 
-      val = INT_LOWPART (x);
+      uval = INT_LOWPART (x);
 
-      if (val & 1)      /* Clear Left */
+      if (uval & 1)	/* Clear Left */
 	{
-	  for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
-	    if (!((val >>= 1) & 1))
-	      break;
-
-#if HOST_BITS_PER_WIDE_INT == 32
-	  if (GET_CODE (x) == CONST_DOUBLE && i == 32)
-	    {
-	      val = CONST_DOUBLE_HIGH (x);
-
-	      if (val == 0)
-		--i;
-	      else
-		for (i = 32; i < 64; i++)
-		  if (!((val >>= 1) & 1))
-		    break;
-	    }
-#endif
-	/* i = index of last set bit from right
-	   mask begins at 63 - i from left */
-	  if (i > 63)
-	    output_operand_lossage ("%%S computed all 1's mask");
-
-	  fprintf (file, "%d", 63 - i);
-	  return;
+	  uval &= ((unsigned HOST_WIDE_INT) 1 << 63 << 1) - 1;
+	  i = 64;
 	}
-      else	/* Clear Right */
+      else		/* Clear Right */
 	{
-	  for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
-	    if ((val >>= 1) & 1)
-	      break;
-
-#if HOST_BITS_PER_WIDE_INT == 32
-	if (GET_CODE (x) == CONST_DOUBLE && i == 32)
-	  {
-	    val = CONST_DOUBLE_HIGH (x);
-
-	    if (val == (HOST_WIDE_INT) -1)
-	      --i;
-	    else
-	      for (i = 32; i < 64; i++)
-		if ((val >>= 1) & 1)
-		  break;
-	  }
-#endif
-	/* i = index of last clear bit from right
-	   mask ends at 62 - i from left */
-	  if (i > 62)
-	    output_operand_lossage ("%%S computed all 0's mask");
-
-	  fprintf (file, "%d", 62 - i);
-	  return;
+	  uval = ~uval;
+	  uval &= ((unsigned HOST_WIDE_INT) 1 << 63 << 1) - 1;
+	  i = 63;
 	}
+      while (uval != 0)
+	--i, uval >>= 1;
+      if (i < 0)
+	abort ();
+      fprintf (file, "%d", i);
+      return;
 
     case 'T':
       /* Print the symbolic name of a branch target register.  */

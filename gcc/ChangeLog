@@ -1,5 +1,41 @@
 2002-07-24  Alan Modra  <amodra@bigpond.net.au>
 
+	* config/rs6000/rs6000-protos.h (mask_operand_wrap): Declare.
+	(mask64_2_operand): Declare.
+	(build_mask64_2_operands): Declare.
+	(and64_2_operand): Declare.
+	(extract_MB): Declare.
+	(extract_ME): Declare.
+	* config/rs6000/rs6000.c (mask64_operand): Allow all ones.  Remove
+	CONST_DOUBLE code.
+	(mask_operand_wrap): New insn predicate.
+	(mask64_2_operand): Likewise.
+	(and64_2_operand): Likewise.
+	(build_mask64_2_operands): New function.
+	(extract_MB): New function.
+	(extract_ME): New function.
+	(print_operand <case m,M>): Use extract_MB and extract_ME.
+	(print_operand <case S>): Allow all ones.  Remove CONST_DOUBLE support.
+	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT): Add 't'.
+	(PREDICATE_CODES): Add and64_2_operand, mask_operand_wrap and
+	mask64_2_operand.  Remove CONST_DOUBLE from mask64_operand.
+	* config/rs6000/rs6000.md (andsi3_internal3): New
+	(andsi3_internal3+1): Enable split for powerpc64.
+	(andsi3_internal3+2): New split.
+	(andsi3_internal4): Renamed old andsi3_internal3.
+	(andsi3_internal5): New.
+	(andsi3_internal5+1): Enable split for powerpc64.
+	(andsi3_internal5+2): New split.
+	(andsi3_internal6, andsi3_internal7, andsi3_internal8): New.
+	(anddi3): Handle 't' constraint.
+	(anddi3+1): New split.
+	(anddi3_internal2): Handle 't' constraint.
+	(anddi3_internal2+1): New split.
+	(anddi3_internal3): Handle 't' constraint.
+	(anddi3_internal3+1): New split.
+
+2002-07-24  Alan Modra  <amodra@bigpond.net.au>
+
 	* config/rs6000/rs6000.md: Remove scratch reg on insns using
 	addze and similar (plus (comparison r1 r2) r3) insns.  Add
 	missing scratch reg in one case.  Formatting fixes.
