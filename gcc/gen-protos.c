@@ -1,5 +1,5 @@
 /* gen-protos.c - massages a list of prototypes, for use by fixproto.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -175,8 +175,5 @@ fatal (s)
      char *s;
 {
   fprintf (stderr, "%s: %s\n", "gen-protos", s);
-#ifndef FAILURE_EXIT_CODE
-#define FAILURE_EXIT_CODE 33	/* gnu cc command understands this */
-#endif
-  exit (FAILURE_EXIT_CODE);
+  exit (FATAL_EXIT_CODE);
 }
