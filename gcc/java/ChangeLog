@@ -47,6 +47,83 @@ Tue Oct 13 23:34:12 1998  Jeffrey A Law  (law@cygnus.com)
 	(disassemble_method): Undefine RET to avoid clash with
 	config/i386/i386.h.
 
+Tue Oct 13 03:50:28 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (runtime_exception_type_node, error_exception_type_node):
+ 	New global variables.
+	(init_decl_processing): Initialized.
+	* expr.c (java_lang_expand_expr): Set caught exception type to
+ 	null if catch handler argument doesn't exit.
+	* java-tree.def (SYNCHRONIZED_EXPR, THROW_EXPR): New Java specific
+ 	tree codes.
+	* java-tree.h (runtime_exception_type_node,
+ 	error_exception_type_node): Global variables declared.
+	(DECL_FUNCTION_THROWS): New macro.
+	(DECL_FUNCTION_BODY): Modified comment.
+	(DECL_SPECIFIC_COUNT): Likewise.
+	(struct lang_decl): New field throws_list.
+	(IS_UNCHECKED_EXPRESSION_P): New macro.
+	* lex.c (java_lex): Generate location information for THROW_TK.
+	* parse.h (PUSH_EXCEPTIONS, POP_EXCEPTIONS, IN_TRY_BLOCK_P,
+ 	EXCEPTIONS_P): New macros.
+	(enum jdep_code): New value JDEP_EXCEPTION.
+	(BUILD_MONITOR_ENTER, BUILD_MONITOR_EXIT,
+ 	BUILD_ASSIGN_EXCEPTION_INFO, BUILD_THROW, SET_WFL_OPERATOR,
+ 	PATCH_METHOD_RETURN_ERROR): New macros.
+	(patch_method_invocation_stmt): Added new argument to prototype.
+	(patch_synchronized_statement, patch_throw_statement,
+ 	check_thrown_exceptions, check_thrown_exceptions_do,
+ 	purge_unchecked_exceptions, check_throws_clauses): New function
+ 	prototypes.
+	* parse.y Fixed typo in keyword section.
+	(throw:): Rule tagged <node>.
+	(THROW_TK): Keyword tagged <operator>.
+	(method_header:): Last argument to call to method_header passed
+ 	from throws: rule.
+	(throws:, class_type_list:, throw_statement:,
+ 	synchronized_statement:, synchronized:): Defined actions.
+	(method_header): New local variable current. Register exceptions
+ 	from throws clause.
+	(java_complete_tree): Complete and verify exceptions from throws
+ 	clause.
+	(complete_class_report_errors): Error message on exceptions not
+ 	found
+	(java_check_regular_methods): Fixed typo. Shortcut on private
+ 	overriding methods. Changed error message on method
+ 	redefinition. Check for throws clause compatibility.
+	(check_throws_clauses): New function.
+	(java_check_abstract_methods): Use DECL_NAME for wfl or current
+ 	method. Changed error message on method redefinition.
+	(currently_caught_type_list): New static variable.
+	(java_complete_expand_methods): Purge unchecked exceptions from
+ 	throws clause list. Call PUSH_EXCEPTIONS before walk and
+ 	POP_EXCEPTIONS after.
+	(resolve_qualified_expression_name): Pass new argument as NULL to
+ 	patch_method_invocation_stmt.
+	(patch_method_invocation_stmt): New argument ref_decl. Invoke
+ 	PATCH_METHOD_RETURN_ERROR when returning with error. Reverse
+ 	argument list when appropriate. Use new argument if non null to
+ 	store selected method decl.
+	(patch_invoke): Convert if necessary args of builtin types before
+ 	forming CALL_EXPR. Argument list no longer reversed here.
+	(invocation_mode): Treat final methods as static methods.
+	(java_complete_tree): New cases for THROW_EXPR: and
+ 	SYNCHRONIZED_EXPR:. Check thrown exceptions when completing
+ 	function call.
+	(complete_function_arguments): No more RECORD_TYPE
+ 	conversion. Function parameter nodes no longer saved.
+	(valid_ref_assignconv_cast_p): Avoid handling null type.
+	(patch_binop): Fixed null constant reference handling.
+	(build_try_statement): Use BUILD_ASSIGN_EXCEPTION_INFO and
+ 	BUILD_THROW macros.
+	(patch_try_statement): Fixed comments. Record caught types in
+ 	list, push the list, expand try block and pop the list.
+	(patch_synchronized_statement, patch_throw_statement,
+ 	check_thrown_exceptions, check_thrown_exceptions_do,
+ 	purge_unchecked_exceptions): New functions.
+	* typeck.c (lookup_argument_method): Allow WFL in place of method
+ 	DECL_NAME during method definition check
+	
 1998-10-09  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (decode_signature_piece): New function.

@@ -195,7 +195,7 @@ static tree wfl_to_string = NULL_TREE;
 %type	 <node>		class_body_declarations
 %type    <node>		class_or_interface_type class_type class_type_list
 			constructor_declarator explicit_constructor_invocation
-%type    <node>         dim_expr dim_exprs this_or_super
+%type    <node>         dim_expr dim_exprs this_or_super throws
 
 %type	 <node>		variable_declarator_id variable_declarator
 			variable_declarators variable_initializer
@@ -245,8 +245,9 @@ static tree wfl_to_string = NULL_TREE;
 %token   <operator>     BOOL_AND_TK AND_TK BOOL_OR_TK OR_TK INCR_TK PLUS_TK
 %token   <operator>     DECR_TK MINUS_TK MULT_TK DIV_TK XOR_TK REM_TK NEQ_TK
 %token   <operator>     NEG_TK REL_QM_TK REL_CL_TK NOT_TK LT_TK
-%token   <operator>     OP_TK OSB_TK DOT_TK
-%type    <operator>	THIS_TK SUPER_TK RETURN_TK BREAK_TK CONTINUE_TK CASE_TK%type	<operator>     DEFAULT_TK TRY_TK CATCH_TK
+%token   <operator>     OP_TK OSB_TK DOT_TK THROW_TK
+%type    <operator>	THIS_TK SUPER_TK RETURN_TK BREAK_TK CONTINUE_TK 
+%type	 <operator>     CASE_TK DEFAULT_TK TRY_TK CATCH_TK SYNCHRONIZED_TK
 
 %type	 <node>		method_body 
 	
@@ -661,13 +662,13 @@ method_declaration:
 
 method_header:	
 	type method_declarator throws
-		{ $$ = method_header (0, $1, $2, NULL); }
+		{ $$ = method_header (0, $1, $2, $3); }
 |	VOID_TK method_declarator throws
-		{ $$ = method_header (0, void_type_node, $2, NULL); }
+		{ $$ = method_header (0, void_type_node, $2, $3); }
 |	modifiers type method_declarator throws
-		{ $$ = method_header ($1, $2, $3, NULL); }
+		{ $$ = method_header ($1, $2, $3, $4); }
 |	modifiers VOID_TK method_declarator throws
-		{ $$ = method_header ($1, void_type_node, $3, NULL); }
+		{ $$ = method_header ($1, void_type_node, $3, $4); }
 |	type error
 		{RECOVER;}
 |	modifiers type error
@@ -730,14 +731,18 @@ formal_parameter:
 ;
 
 throws:
+		{ $$ = NULL_TREE; }
 |	THROWS_TK class_type_list
+		{ $$ = $2; }
 |	THROWS_TK error
 		{yyerror ("Missing class type term"); RECOVER;}
 ;
 
 class_type_list:
 	class_type
+		{ $$ = build_tree_list (NULL_TREE, $1); }
 |	class_type_list C_TK class_type
+		{ $$ = tree_cons (NULL_TREE, $3, $1); }
 |	class_type_list C_TK error
 		{yyerror ("Missing class type term"); RECOVER;}
 ;
@@ -1395,7 +1400,10 @@ return_statement:
 
 throw_statement:
 	THROW_TK expression SC_TK
-		{ $$ = NULL_TREE;		/* FIXME */ }
+		{ 
+		  $$ = build1 (THROW_EXPR, NULL_TREE, $2);
+		  EXPR_WFL_LINECOL ($$) = $1.location;
+		}
 |	THROW_TK error
 		{yyerror ("Missing term"); RECOVER;}
 |	THROW_TK expression error
@@ -1404,7 +1412,11 @@ throw_statement:
 
 synchronized_statement:
 	synchronized OP_TK expression CP_TK block
-		{ $$ = NULL_TREE;		/* FIXME */ }
+		{ 
+		  $$ = build (SYNCHRONIZED_EXPR, NULL_TREE, $3, $5);
+		  EXPR_WFL_LINECOL ($$) = 
+		    EXPR_WFL_LINECOL (MODIFIER_WFL (SYNCHRONIZED_TK));
+		}
 |	synchronized OP_TK expression CP_TK error
 		{yyerror ("'{' expected"); RECOVER;}
 |	synchronized error
@@ -1415,10 +1427,11 @@ synchronized_statement:
 		{yyerror ("Missing term"); RECOVER;}
 ;
 
-synchronized:			/* Test lval.sub_token here */
+synchronized:
 	MODIFIER_TK
 		{
-		  SOURCE_FRONTEND_DEBUG (("Modifiers: %d", $1));
+		  if ((1 << $1) != ACC_SYNCHRONIZED)
+		    fatal ("synchronized was '%d' - yyparse", (1 << $1));
 		}
 ;
 
@@ -2852,7 +2865,7 @@ method_header (flags, type, mdecl, throws)
   tree id = TREE_PURPOSE (mdecl);
   tree this_class = TREE_TYPE (ctxp->current_parsed_class);
   tree handle_class = CLASS_TO_HANDLE_TYPE (this_class);
-  tree meth_name, returned_type;
+  tree meth_name, returned_type, current;
   int saved_lineno;
   
   check_modifiers_consistency (flags);
@@ -2957,6 +2970,24 @@ method_header (flags, type, mdecl, throws)
     }
   DECL_MAX_LOCALS (meth) = ctxp->formal_parameter_number+1;
   lineno = saved_lineno;
+
+  /* Register exception specified by the `throws' keyword for
+     resolution and set the method decl appropriate field to the list.
+     Note: the grammar ensures that what we get here are class
+     types. */
+  if (throws)
+    {
+      throws = nreverse (throws);
+      for (current = throws; current; current = TREE_CHAIN (current))
+	{
+	  register_incomplete_type (JDEP_EXCEPTION, TREE_VALUE (current),
+				    NULL_TREE, NULL_TREE);
+	  JDEP_GET_PATCH (CLASSD_LAST (ctxp->classd_list)) = 
+	    &TREE_VALUE (current);
+	}
+      DECL_FUNCTION_THROWS (meth) = throws;
+    }
+
   /* We set the DECL_NAME to ID so we can track the location where
      the function was declared. This allow us to report
      redefinition error accurately. When method are verified,
@@ -3456,6 +3487,24 @@ java_complete_class ()
 		  tree_code_name [TREE_CODE (JDEP_DECL (dep))]));
 	      break;
 
+	    case JDEP_EXCEPTION:
+	      /* Check for righteous inheritance here */
+	      if (!inherits_from_p (TREE_TYPE (decl), throwable_type_node))
+		 {
+		   parse_error_context 
+		     (JDEP_WFL (dep), "Class `%s' in `throws' clause must be "
+		      "a subclass of class `java.lang.Throwable'",
+		      IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_WFL (dep))));
+		 }
+	      else 
+		{
+		  JDEP_APPLY_PATCH (dep, TREE_TYPE (decl));
+		  SOURCE_FRONTEND_DEBUG 
+		    (("Completing `%s' `throws' argument node",
+		      IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_WFL (dep)))));
+		}
+	      break;
+
 	    default:
 	      fatal ("incomplete switch - java_complete_class");
 	    }
@@ -3664,6 +3713,11 @@ complete_class_report_errors (dep)
 			   (EXPR_WFL_NODE (JDEP_WFL (dep)))),
 	 IDENTIFIER_POINTER (DECL_NAME (JDEP_DECL (dep))));
       break;
+    case JDEP_EXCEPTION:	/* As specified by `throws' */
+      parse_error_context 
+	  (JDEP_WFL (dep), "Class `%s' not found in `throws'",
+	 IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_WFL (dep))));
+      break;
     }
 }
 
@@ -3731,7 +3785,7 @@ java_check_regular_methods (class_decl)
       tree method_wfl = DECL_NAME (method);
       int aflags;
 
-      if (DECL_CONSTRUCTOR_P (method))
+     if (DECL_CONSTRUCTOR_P (method))
 	seen_constructor = 1;
 
       /* Check for redefinitions */
@@ -3741,16 +3795,24 @@ java_check_regular_methods (class_decl)
       sig = build_java_argument_signature (TREE_TYPE (method));
 
       found = lookup_argument_method (super_class, DECL_NAME (method), sig);
-      if (! found)
+
+      /* Nothing overrides or it's a private method */
+      if (!found || (found && METHOD_PRIVATE (found)))
         continue;
       /* Can't override a method with the same name and different return
 	 types. */
       if (TREE_TYPE (TREE_TYPE (found)) != TREE_TYPE (TREE_TYPE (method)))
-	parse_warning_context 
-	  (method_wfl,
-	   "Method `%s' redefined with different return type in class `%s'",
-	   lang_printable_name (found),
-	   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
+	{
+	  char *t = strdup ((char *)lang_printable_name (TREE_TYPE 
+							 (TREE_TYPE (found))));
+	  parse_error_context 
+	    (method_wfl, 
+	     "Method `%s' was defined with return type `%s' in class `%s'", 
+	     lang_printable_name (found), t,
+	     IDENTIFIER_POINTER 
+	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
+	  free (t);
+	}
 
       /* Can't override final. Can't override static. */
       if (METHOD_FINAL (found) || METHOD_STATIC (found))
@@ -3796,9 +3858,13 @@ java_check_regular_methods (class_decl)
 	  continue;
 	}
 
+      /* Overriding methods must have compatible `throws' clauses on checked
+	 exceptions, if any */
+      check_throws_clauses (method, method_wfl, found);
+
       /* If the method has default access in an other package, then
-      issue a warning that the current method doesn't override the one
-      that was found elsewhere */
+	 issue a warning that the current method doesn't override the
+	 one that was found elsewhere */
       aflags = get_access_flags_from_decl (found);
       if ((!aflags || (aflags > ACC_PROTECTED))
 	  && !class_in_current_package (DECL_CONTEXT (found)))
@@ -3832,6 +3898,40 @@ java_check_regular_methods (class_decl)
     }
 }
 
+/* Return a non zero value if the `throws' clause of METHOD (if any)
+   is incompatible with the `throws' clause of FOUND (if any).  */
+
+static void
+check_throws_clauses (method, method_wfl, found)
+     tree method, method_wfl, found;
+{
+  tree mthrows, fthrows;
+
+  for (mthrows = DECL_FUNCTION_THROWS (method);
+       mthrows; mthrows = TREE_CHAIN (mthrows))
+    {
+      /* We don't verify unchecked expressions */
+      if (IS_UNCHECKED_EXPRESSION_P (TREE_VALUE (mthrows)))
+	continue;
+      /* Checked expression must be compatible */
+      for (fthrows = DECL_FUNCTION_THROWS (found); 
+	   fthrows; fthrows = TREE_CHAIN (fthrows))
+	if (inherits_from_p (TREE_VALUE (mthrows), TREE_VALUE (fthrows)))
+	  break;
+      if (!fthrows)
+	{
+	  parse_error_context 
+	    (method_wfl, "Invalid checked exception class `%s' in "
+	     "`throws' clause. The exception must be a subclass of an "
+	     "exception thrown by `%s' from class `%s'",
+	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (TREE_VALUE (mthrows)))),
+	     lang_printable_name (found),
+	     IDENTIFIER_POINTER 
+	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
+	}
+    }
+}
+
 /* Check abstract method of interface INTERFACE */
 
 static void
@@ -3844,24 +3944,26 @@ java_check_abstract_methods (interface)
   for (method = TYPE_METHODS (interface); method; method = TREE_CHAIN (method))
     {
       char *csig;
-      tree name = DECL_NAME (method);
+      tree method_wfl = DECL_NAME (method);
 
       /* 2- Check for double definition inside the defining interface */
       if (check_method_redefinition (interface, method))
 	continue;
 
       /* 3- Overriding is OK as far as we preserve the return type and
-	 the thrown exceptions */
+	 the thrown exceptions (FIXME) */
       found = lookup_java_interface_method2 (interface, method);
       if (found)
 	{
+	  char *t = strdup ((char *)lang_printable_name (TREE_TYPE 
+							 (TREE_TYPE (found))));
 	  parse_error_context 
-	    (lookup_cl (method),
-	     "Method `%s' previously defined in interface `%s' is "
-	     "redefined with different return type in interface `%s'",
-	     lang_printable_name (found),
-	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))),
-	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (interface))));
+	    (method_wfl,
+	     "Method `%s' was defined with return type `%s' in class `%s ",
+	     lang_printable_name (found), t,
+	     IDENTIFIER_POINTER 
+	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
+	  free (t);
 	  continue;
 	}
     }
@@ -4659,6 +4761,10 @@ java_complete_expand_methods ()
     }
 }
 
+/* Hold a list of catch clauses list. The first element of this list is
+   the list of the catch clauses of the currently analysed try block. */
+static tree currently_caught_type_list;
+
 /* Complete and expand a method.  */
 
 static void
@@ -4720,12 +4826,23 @@ java_complete_expand_method (mdecl)
 	= (!METHOD_STATIC (mdecl) ? 
 	   BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (mdecl)) : NULL_TREE);
 
+      /* Purge the `throws' list of unchecked exceptions */
+      purge_unchecked_exceptions (mdecl);
+
+      /* Install exceptions thrown with `throws' */
+      PUSH_EXCEPTIONS (DECL_FUNCTION_THROWS (mdecl));
+
       if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) && no_ac_found)
 	java_complete_tree (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)));
       /* Don't go any further if we've found error(s) during the
          expansion */
       if (!java_error_count)
 	source_end_java_method ();
+
+      /* Pop the exceptions and sanity check */
+      POP_EXCEPTIONS();
+      if (currently_caught_type_list)
+	fatal ("Exception list non empty - java_complete_expand_method");
     }
 }
 
@@ -5007,7 +5124,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  if (complete_function_arguments (qual_wfl))
 	    return 1;
 	  *where_found = 
-	    patch_method_invocation_stmt (qual_wfl, decl, type, &is_static);
+	    patch_method_invocation_stmt (qual_wfl, decl, type,
+					  &is_static, NULL);
 	  if (*where_found == error_mark_node)
 	    return 1;
 	  *type_found = type = QUAL_DECL_TYPE (*where_found);
@@ -5352,9 +5470,10 @@ maybe_access_field (decl, where, type)
    used. IS_STATIC is set to 1 if the invoked function is static. */
 
 static tree
-patch_method_invocation_stmt (patch, primary, where, is_static)
+patch_method_invocation_stmt (patch, primary, where, is_static, ret_decl)
      tree patch, primary, where;
      int *is_static;
+     tree *ret_decl;
 {
   tree wfl = TREE_OPERAND (patch, 0);
   tree args = TREE_OPERAND (patch, 1);
@@ -5396,7 +5515,7 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 	  parse_error_context (wfl, "Can't search method `%s' in package "
 			       "`%s'",IDENTIFIER_POINTER (identifier),
 			       IDENTIFIER_POINTER (remainder));
-	  return error_mark_node;
+	  PATCH_METHOD_RETURN_ERROR ();
 	}
       /* We're resolving a call from a type */
       else if (RESOLVE_TYPE_NAME_P (wfl))
@@ -5412,7 +5531,7 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 		(identifier_wfl, "Can't make static reference to method "
 		 "`%s' in interface `%s'", IDENTIFIER_POINTER (identifier), 
 		 IDENTIFIER_POINTER (name));
-	      return error_mark_node;
+	      PATCH_METHOD_RETURN_ERROR ();
 	    }
 	  /* Look the method up in the type selector. The method ought
              to be static. */
@@ -5427,7 +5546,7 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 		 lang_printable_name (TREE_TYPE (TREE_TYPE (list))), fct_name, 
 		 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
 	      free (fct_name);
-	      return error_mark_node;
+	      PATCH_METHOD_RETURN_ERROR ();
 	    }
 	}
       /* We're resolving an expression name */
@@ -5438,7 +5557,7 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 	  /* 1- Find the field to which the call applies */
 	  field = resolve_field_access (wfl, NULL, &type);
 	  if (field == error_mark_node)
-	    return error_mark_node;
+	    PATCH_METHOD_RETURN_ERROR ();
 	  
 	  /* 2- Do the layout of the class where the last field
 	     was found, so we can search it. */
@@ -5451,7 +5570,7 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 				       identifier, args);
 
 	  /* 4- Add the field as an argument */
-	  args = tree_cons (NULL_TREE, field, args);
+	  args = tree_cons (NULL_TREE, field, nreverse (args));
 	}
 
       /* CLASS_TYPE is used during the call to not_accessible_p and
@@ -5475,7 +5594,7 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 	      parse_error_context 
 		(wfl, "Class `%s' not found in type declaration",
 		 IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
-	      return error_mark_node;
+	      PATCH_METHOD_RETURN_ERROR ();
 	    }
 	  
 	  /* Can't instantiate an abstract class */
@@ -5484,7 +5603,7 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 	      parse_error_context 
 		(wfl, "Class `%s' is an abstract class. It can't be "
 		 "instantiated", IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
-	      return error_mark_node;
+	      PATCH_METHOD_RETURN_ERROR ();
 	    }
 	  class_to_search = TREE_TYPE (class_to_search);
 	  lc = 1;
@@ -5504,16 +5623,18 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 
       /* Don't continue if no method were found, as the next statement
          can't be executed then. */
-      if (!list) return error_mark_node;
+      if (!list)
+	PATCH_METHOD_RETURN_ERROR ();
 
       /* Check for static reference if non static methods */
       if (check_for_static_method_reference (wfl, patch, list, 
 					     class_to_search, primary))
-	return error_mark_node;
+	PATCH_METHOD_RETURN_ERROR ();
 
       /* Non static/constructor methods are called with the current
 	 object extra argument. If method is resolved as a primary,
 	 use the primary otherwise use the current THIS. */
+      args = nreverse (args);
       if (!CALL_CONSTRUCTOR_P (patch) && !METHOD_STATIC (list))
 	args = tree_cons (NULL_TREE, primary ? primary : current_this, args);
 
@@ -5522,7 +5643,8 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 
   /* Merge point of all resolution schemes. If we have nothing, this
      is an error, already signaled */
-  if (!list) return error_mark_node;
+  if (!list) 
+    PATCH_METHOD_RETURN_ERROR ();
 
   /* Check accessibility, position the is_static flag, build and
      return the call */
@@ -5536,12 +5658,16 @@ patch_method_invocation_stmt (patch, primary, where, is_static)
 	 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class_type))), fct_name,
 	 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))));
       free (fct_name);
-      return error_mark_node;
+      PATCH_METHOD_RETURN_ERROR ();
     }
   
   if (is_static) 
     *is_static = METHOD_STATIC (list);
   java_parser_context_restore_global ();
+  /* Sometimes, we want the decl of the selected method. Such as for
+     EH checking */
+  if (ret_decl)
+    *ret_decl = list;
   return patch_invoke (patch, list, args, wfl);
 }
 
@@ -5574,28 +5700,34 @@ patch_invoke (patch, method, args, cl)
      tree patch, method, args;
      tree cl;
 {
+  int im;
   tree dtable, func;
   tree signature = build_java_signature (TREE_TYPE (method));
-  tree original_call;
+  tree original_call, node, t, ta;
 
-  switch (invocation_mode (method, 0))
+  /* Last step for args: convert build-in types */
+  for (t = TYPE_ARG_TYPES (TREE_TYPE (method)),
+       ta = args; t && ta; t = TREE_CHAIN (t), ta = TREE_CHAIN (ta))
+    if (JPRIMITIVE_TYPE_P (TREE_TYPE (TREE_VALUE (ta))) &&
+	TREE_TYPE (TREE_VALUE (ta)) != TREE_VALUE (t))
+      TREE_VALUE (ta) = convert (TREE_VALUE (t), TREE_VALUE (ta));
+       
+  switch ((im = invocation_mode (method, 0)))
     {
     case INVOKE_VIRTUAL:
       dtable = invoke_build_dtable (0, args);
       func = build_invokevirtual (dtable, method);
       break;
+
     case INVOKE_STATIC:
       func = build_known_method_ref (method, TREE_TYPE (method),
-				     DECL_CONTEXT (method),
-				     signature, args);
-      args = nreverse (args);
+				     DECL_CONTEXT (method), signature, args);
       break;
 
     default:
       fatal ("Unknown invocation mode - build_invoke");
       return NULL_TREE;
     }
-
 
   /* Ensure self_type is initialized, (invokestatic). FIXME */
   func = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (method)), func);
@@ -5638,7 +5770,7 @@ invocation_mode (method, super)
 {
   int access = get_access_flags_from_decl (method);
 
-  if (access & ACC_STATIC)
+  if (access & ACC_STATIC || access & ACC_FINAL)
     return INVOKE_STATIC;
 
   if (CLASS_FINAL (TYPE_NAME (DECL_CONTEXT (method))))
@@ -6113,6 +6245,17 @@ java_complete_tree (node)
 
       /* 2- They are expressions but ultimately deal with statements */
 
+    case THROW_EXPR:
+      wfl_op1 = TREE_OPERAND (node, 0);
+      COMPLETE_CHECK_OP_0 (node);
+      return patch_throw_statement (node, wfl_op1);
+
+    case SYNCHRONIZED_EXPR:
+      wfl_op1 = TREE_OPERAND (node, 0);
+      COMPLETE_CHECK_OP_0 (node);
+      COMPLETE_CHECK_OP_1 (node);
+      return patch_synchronized_statement (node, wfl_op1);
+
     case TRY_EXPR:
       return patch_try_statement (node);
 
@@ -6219,7 +6362,7 @@ java_complete_tree (node)
 	    }
 	  else
 	    {
-	      TREE_VALUE (cn) = save_expr (dim);
+	      TREE_VALUE (cn) = dim;
 	      /* Setup the location of the current dimension, for
 		 later error report. */
 	      TREE_PURPOSE (cn) = 
@@ -6237,7 +6380,14 @@ java_complete_tree (node)
       if (complete_function_arguments (node))
 	return error_mark_node;
       else
-	return patch_method_invocation_stmt (node, NULL_TREE, NULL_TREE, NULL);
+	{
+	  tree decl;
+	  node = patch_method_invocation_stmt (node, NULL_TREE, 
+					       NULL_TREE, 0, &decl);
+	  if (node != error_mark_node)
+	    check_thrown_exceptions (EXPR_WFL_LINECOL (node), decl);
+	  return node;
+	}
 
     case MODIFY_EXPR:
       /* Save potential wfls */
@@ -6407,12 +6557,9 @@ complete_function_arguments (node)
 	 crafted string buffer, as a result of use of the the String
 	 `+' operator. Build `parm.toString()' and expand it. */
       if ((temp = patch_string (parm)))
-	parm = TREE_VALUE (cn) = temp;
-      
-      if (TREE_CODE (TREE_TYPE (parm)) == RECORD_TYPE)
-	TREE_VALUE (cn) = convert (promote_type (TREE_TYPE (parm)), parm);
-      else
-	TREE_VALUE (cn) = save_expr (parm);
+	parm = temp;
+      TREE_VALUE (cn) = parm;
+
       if (not_initialized_as_it_should_p (parm))
 	{
 	  ERROR_VARIABLE_NOT_INITIALIZED (wfl, EXPR_WFL_NODE (wfl));
@@ -6943,6 +7090,9 @@ valid_ref_assignconv_cast_p (source, dest, cast)
 	  tree source_element_type = TYPE_ARRAY_ELEMENT (source);
 	  tree dest_element_type = TYPE_ARRAY_ELEMENT (dest);
 	  
+	  /* In case of severe errors, they turn out null */
+	  if (!dest_element_type || !source_element_type)
+	    return 0;
 	  if (source_element_type == dest_element_type)
 	    return 1;
 	  return valid_ref_assignconv_cast_p (source_element_type,
@@ -7289,12 +7439,9 @@ patch_binop (node, wfl_op1, wfl_op2)
       
       /* 15.20.3 Reference Equality Operators == and != */
       /* Types have to be either references or the null type */
-      else if ((op1 == null_pointer_node || op2 == null_pointer_node 
-		|| JREFERENCE_TYPE_P (op1_type) 
-		|| JREFERENCE_TYPE_P (op2_type))
-	       && ((op1_type == op2_type)
-		   /* There should use a valid_cast_to_p() */
-		   ))
+      else if (op1 == null_pointer_node || op2 == null_pointer_node 
+	       || (JREFERENCE_TYPE_P (op1_type) && JREFERENCE_TYPE_P (op2_type)
+		   && ((op1_type == op2_type))))
 	;			/* Nothing to do here */
 	  
       /* Else we have an error figure what can't be converted into
@@ -8768,18 +8915,13 @@ build_try_statement (location, try_block, catches, finally)
 		   exception_parameter */
 	  catch_decl = build_decl_no_layout (VAR_DECL, generate_name (),
 					     ptr_type_node);
-	  stmt = build (MODIFY_EXPR, void_type_node, catch_decl,
-			soft_exceptioninfo_call_node);
-	  TREE_SIDE_EFFECTS (stmt) = 1;
+	  BUILD_ASSIGN_EXCEPTION_INFO (stmt, catch_decl);
 	  catch_block = build_expr_block (stmt, NULL_TREE);
 	  catch_block = build_jump_to_finally (catch_block, rff, 
 					       FINALLY_EXPR_LABEL (finally), 
 					       void_type_node);
-	  stmt = build (CALL_EXPR, void_type_node,
-			build_address_of (throw_node),
-			build_tree_list (NULL_TREE, catch_decl), NULL_TREE);
+	  BUILD_THROW (stmt, catch_decl);
 	  catch_block = build_expr_block (catch_block, catch_decl);
-	  TREE_SIDE_EFFECTS (stmt) = 1;
 	  add_stmt_to_block (catch_block, void_type_node, stmt);
 
 	  /* Link the new handler to the existing list as the first
@@ -8822,14 +8964,12 @@ patch_try_statement (node)
   tree catch = nreverse (TREE_OPERAND (node, 1));
   tree finally = TREE_OPERAND (node, 2);
   int finally_p = (finally ? 1 : 0);
-  tree current;
-
-  /* Walk the try block */
-  if ((try = java_complete_tree (try)) == error_mark_node)
-    error_found = 1;
+  tree current, caught_type_list = NULL_TREE;
 
   /* Check catch clauses, if any. Every time we find an error, we try
-     to process the next catch clause. */
+     to process the next catch clause. We process the catch clause before
+     the try block so that when processing the try block we can check thrown
+     exceptions againts the caught type list. */
   for (current = catch; current; current = TREE_CHAIN (current))
     {
       tree carg_decl, carg_type;
@@ -8908,6 +9048,11 @@ patch_try_statement (node)
       if (unreachable)
 	continue;
 
+      /* Things to do here: the exception must be thrown */
+
+      /* Link this type to the caught type list */
+      caught_type_list = tree_cons (NULL_TREE, carg_type, caught_type_list);
+
       /* Complete the catch clause block */
       catch_block = java_complete_tree (TREE_OPERAND (current, 0));
       if (catch_block == error_mark_node)
@@ -8917,6 +9062,11 @@ patch_try_statement (node)
 	}
       TREE_OPERAND (current, 0) = catch_block;
     }
+
+  PUSH_EXCEPTIONS (caught_type_list);
+  if ((try = java_complete_tree (try)) == error_mark_node)
+    error_found = 1;
+  POP_EXCEPTIONS ();
 
   /* Process finally */
   if (finally)
@@ -8936,4 +9086,209 @@ patch_try_statement (node)
   TREE_OPERAND (node, 2) = finally;
   TREE_TYPE (node) = void_type_node;
   return node;
+}
+
+/* 14.17 The synchronized Statement */
+
+static tree
+patch_synchronized_statement (node, wfl_op1)
+    tree node, wfl_op1;
+{
+  tree expr = TREE_OPERAND (node, 0);
+  tree block = TREE_OPERAND (node, 1);
+  tree try_block, catch_all, stmt, compound, decl;
+
+  /* The TYPE of expr must be a reference type */
+  if (!JREFERENCE_TYPE_P (TREE_TYPE (TREE_OPERAND (node, 0))))
+    {
+      SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
+      parse_error_context (wfl_operator, "Incompatible type for `synchronized'"
+			   ". Can't convert `%s' to `java.lang.Object'",
+			   lang_printable_name (TREE_TYPE (expr)));
+      return error_mark_node;
+    }
+
+  /* Generate a try-finally for the synchronized statement, except
+     that the handler that catches all throw exception calls
+     _Jv_MonitorExit and then rethrow the exception.
+     The synchronized statement is then implemented as:
+     TRY 
+       {
+         _Jv_MonitorEnter (expression)
+	 synchronized_block
+         _Jv_MonitorExit (expression)
+       }
+     CATCH_ALL
+       {
+         e = _Jv_exception_info ();
+	 _Jv_MonitorExit (expression)
+	 Throw (e);
+       } */
+
+  /* TRY block */
+  BUILD_MONITOR_ENTER (stmt, expr);
+  compound = add_stmt_to_compound (NULL_TREE, int_type_node, stmt);
+  compound = add_stmt_to_compound (compound, void_type_node, block);
+  BUILD_MONITOR_EXIT (stmt, expr);
+  compound = add_stmt_to_compound (compound, int_type_node, stmt);
+  try_block = build_expr_block (compound, NULL_TREE);
+
+  /* CATCH_ALL block */
+  decl = build_decl_no_layout (VAR_DECL, generate_name (), ptr_type_node);
+  BUILD_ASSIGN_EXCEPTION_INFO (stmt, decl);
+  compound = add_stmt_to_compound (NULL_TREE, void_type_node, stmt);
+  BUILD_MONITOR_EXIT (stmt, expr);
+  compound = add_stmt_to_compound (compound, int_type_node, stmt);
+  BUILD_THROW (stmt, decl);
+  compound = add_stmt_to_compound (compound, void_type_node, stmt);
+  catch_all = build_expr_block (compound, decl);
+  catch_all = build_expr_block (catch_all, NULL_TREE);
+  catch_all = build1 (CATCH_EXPR, void_type_node, catch_all);
+
+  /* TRY-CATCH statement */
+  return build (TRY_EXPR, void_type_node, try_block, catch_all, NULL_TREE);
+}
+
+/* 14.16 The throw Statement */
+
+static tree
+patch_throw_statement (node, wfl_op1)
+    tree node, wfl_op1;
+{
+  tree expr = TREE_OPERAND (node, 0);
+  tree type = TREE_TYPE (expr);
+  int unchecked_ok = 0, tryblock_throws_ok = 0;
+
+  /* Thrown expression must be assignable to java.lang.Throwable */
+  if (!try_reference_assignconv (throwable_type_node, expr))
+    {
+      SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
+      parse_error_context (wfl_operator, "Can't throw `%s'; it must be a "
+			   "subclass of class `java.lang.Throwable'",
+			   lang_printable_name (type));
+      /* If the thrown expression was a reference, we further the
+         compile-time check. */
+      if (!JREFERENCE_TYPE_P (type))
+	return error_mark_node;
+    }
+
+  /* At least one of the following must be true */
+
+  /* The type of the throw expression is a not checked exception,
+     i.e. is a unchecked expression. */
+  unchecked_ok = IS_UNCHECKED_EXPRESSION_P (TREE_TYPE (type));
+
+  /* Throw is contained in a try statement and at least one catch
+     clause can receive the thrown expression or the current method is
+     declared to throw such an exception. Or, the throw statement is
+     contained in a method or constructor declaration and the type of
+     the Expression is assignable to at least one type listed in the
+     throws clause the declaration. */
+  SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
+  if (!unchecked_ok)
+    tryblock_throws_ok = 
+      check_thrown_exceptions_do (EXPR_WFL_LINECOL (wfl_operator), 
+				  TREE_TYPE (expr));
+  if (!(unchecked_ok || tryblock_throws_ok))
+    {
+      /* If there is a surrounding try block that has no matching
+	 clatch clause, report it first. A surrounding try block exits
+	 only if there is something after the list of checked
+	 exception thrown by the current function (if any). */
+      if (IN_TRY_BLOCK_P ())
+	parse_error_context (wfl_operator, "Checked exception `%s' can't be "
+			     "caught by any of the catch clause(s) "
+			     "of the surrounding `try' block",
+			     lang_printable_name (type));
+      /* If we have no surrounding try statement and the method doesn't have
+	 any throws, report it now. FIXME */
+      else if (!EXCEPTIONS_P (currently_caught_type_list) 
+	       && !tryblock_throws_ok)
+	parse_error_context (wfl_operator, "Checked exception `%s' isn't "
+			     "thrown from a `try' block", 
+			     lang_printable_name (type));
+      /* Otherwise, the current method doesn't have the appropriate
+         throws declaration */
+      else
+	parse_error_context (wfl_operator, "Checked exception `%s' doesn't "
+			     "match any of current method's `throws' "
+			     "declaration(s)", 
+			     lang_printable_name (type));
+      return error_mark_node;
+    }
+
+  /* If a throw statement is contained in a static initializer, then a
+     compile-time check ensures that either its value is always an
+     unchecked exception or its value is always caught by some try
+     statement that contains it. FIXME, static initializer. */
+  
+  BUILD_THROW (node, expr);
+  return node;
+}
+
+/* Check that exception said to be thrown by method DECL can be
+   effectively caught from where DECL is invoked.  */
+
+static void
+check_thrown_exceptions (location, decl)
+     int location;
+     tree decl;
+{
+  tree throws;
+  /* For all the unchecked exceptions thrown by DECL */
+  for (throws = DECL_FUNCTION_THROWS (decl); throws; 
+       throws = TREE_CHAIN (throws)) 
+    if (!check_thrown_exceptions_do (location, TREE_VALUE (throws)))
+      {
+	EXPR_WFL_LINECOL (wfl_operator) = location;
+	parse_error_context 
+	  (wfl_operator, "Exception `%s' must be caught, or it must be "
+	   "declared in the `throws' clause of `%s'", 
+	   lang_printable_name (TREE_VALUE (throws)),
+	   IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+      }
+}
+
+/* Return 1 if EXCEPTION is caught at the current nesting level of
+   try-catch blocks, OR is listed in the `throws' clause of the
+   current method.  */
+
+static int
+check_thrown_exceptions_do (location, exception)
+     int location;
+     tree exception;
+{
+  tree list = currently_caught_type_list;
+  /* First, all the nested try-catch-finally at that stage. The
+     last element contains `throws' clause exceptions, if any. */
+  while (list)
+    {
+      tree caught;
+      for (caught = TREE_VALUE (list); caught; caught = TREE_CHAIN (caught))
+	if (valid_ref_assignconv_cast_p (exception, TREE_VALUE (caught), 0))
+	  return 1;
+      list = TREE_CHAIN (list);
+    }
+  return 0;
+}
+
+static void
+purge_unchecked_exceptions (mdecl)
+     tree mdecl;
+{
+  tree throws = DECL_FUNCTION_THROWS (mdecl);
+  tree new = NULL_TREE;
+
+  while (throws)
+    {
+      tree next = TREE_CHAIN (throws);
+      if (!IS_UNCHECKED_EXPRESSION_P (TREE_VALUE (throws)))
+	{
+	  TREE_CHAIN (throws) = new;
+	  new = throws;
+	}
+      throws = next;
+    }
+  /* List is inverted here, but it doesn't matter */
+  DECL_FUNCTION_THROWS (mdecl) = new;
 }

@@ -175,6 +175,8 @@ extern tree object_type_node;
 extern tree object_ptr_type_node;
 extern tree string_type_node;
 extern tree throwable_type_node;
+extern tree runtime_exception_type_node;
+extern tree error_exception_type_node;
 
 extern tree byte_array_type_node;
 extern tree short_array_type_node;
@@ -317,8 +319,14 @@ struct lang_identifier
 #define DECL_MAX_STACK(DECL) (DECL_LANG_SPECIFIC(DECL)->max_stack)
 /* Number of local variable slots needed for the arguments of this function. */
 #define DECL_ARG_SLOT_COUNT(DECL) (DECL_LANG_SPECIFIC(DECL)->arg_slot_count)
-/* Pointer to the function's COMPOUND_EXPR tree */
+/* List of checked thrown exceptions, as specified with the `throws'
+   keyword */
+#define DECL_FUNCTION_THROWS(DECL) (DECL_LANG_SPECIFIC(DECL)->throws_list)
+/* Pointer to the function's current's COMPOUND_EXPR tree (while
+   completing its body) or the function's block */
 #define DECL_FUNCTION_BODY(DECL) (DECL_LANG_SPECIFIC(DECL)->function_decl_body)
+/* How specific the function is (for method selection - Java source
+   code front-end */
 #define DECL_SPECIFIC_COUNT(DECL) DECL_ARG_SLOT_COUNT(DECL)
 
 /* In a LABEL_DECL, a TREE_VEC that saves the type_map at that point. */
@@ -391,6 +399,7 @@ struct lang_decl
   long localvariables_offset;
   int arg_slots;
   int max_locals, max_stack, arg_slot_count;
+  tree throws_list;		/* Exception specified by `throws' */
   tree function_decl_body;	/* Hold all function's statements */
 };
 
@@ -726,3 +735,8 @@ extern tree *type_map;
 
 /* Using a CATCH_EXPR node */
 #define CATCH_EXPR_GET_EXPR(NODE, V) (V ? LABELED_BLOCK_BODY (NODE) : (NODE))
+
+/* Non zero if TYPE is an unchecked expression */
+#define IS_UNCHECKED_EXPRESSION_P(TYPE)				\
+  (inherits_from_p ((TYPE), runtime_exception_type_node)	\
+   || inherits_from_p ((TYPE), error_exception_type_node))

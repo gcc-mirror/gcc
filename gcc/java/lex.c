@@ -1209,6 +1209,7 @@ java_lex (java_lval)
 	    case CONTINUE_TK:
 	    case TRY_TK:
 	    case CATCH_TK:
+	    case THROW_TK:
 	      BUILD_OPERATOR (kw->token);
 
 	    default:

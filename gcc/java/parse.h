@@ -262,6 +262,24 @@ extern tree stabilize_reference PROTO ((tree));
   }
 #define POP_LOOP() ctxp->current_loop = TREE_CHAIN (ctxp->current_loop)
 
+#define PUSH_EXCEPTIONS(E)					\
+  currently_caught_type_list =					\
+    tree_cons (NULL_TREE, (E), currently_caught_type_list);
+
+#define POP_EXCEPTIONS()						\
+  currently_caught_type_list = TREE_CHAIN (currently_caught_type_list)
+
+/* Check that we're inside a try block */
+#define IN_TRY_BLOCK_P()				\
+  (currently_caught_type_list 				\
+   && ((TREE_VALUE (currently_caught_type_list) !=	\
+	DECL_FUNCTION_THROWS (current_function_decl))	\
+       || TREE_CHAIN (currently_caught_type_list)))
+
+/* Check that we have exceptions in E */
+#define EXCEPTIONS_P(E) ((E) ? TREE_VALUE (E) : NULL_TREE)
+
+
 /* Invocation modes, as returned by invocation_mode (). */
 enum {
   INVOKE_STATIC,
@@ -317,6 +335,7 @@ enum jdep_code {
   JDEP_TYPE,			/* Patch a random tree node type,
                                    without the need for any specific
                                    actions */
+  JDEP_EXCEPTION,		/* Patch exceptions specified by `throws' */
 };
 
 typedef struct _jdep {
@@ -431,6 +450,51 @@ static jdeplist *reverse_jdep_list ();
   build_new_invocation (wfl_string_buffer, 				      \
 			(ARG ? build_tree_list (NULL, (ARG)) : NULL_TREE))
 
+/* For exception handling, build diverse function calls */
+#define BUILD_MONITOR_ENTER(WHERE, ARG)				\
+  {								\
+    (WHERE) = build (CALL_EXPR, int_type_node,			\
+		     build_address_of (soft_monitorenter_node),	\
+		     build_tree_list (NULL_TREE, (ARG)));	\
+    TREE_SIDE_EFFECTS (WHERE) = 1;				\
+  }
+
+#define BUILD_MONITOR_EXIT(WHERE, ARG)				\
+  {								\
+    (WHERE) = build (CALL_EXPR, int_type_node,			\
+		     build_address_of (soft_monitorexit_node),	\
+		     build_tree_list (NULL_TREE, (ARG)));	\
+    TREE_SIDE_EFFECTS (WHERE) = 1;				\
+  }
+
+#define BUILD_ASSIGN_EXCEPTION_INFO(WHERE, TO)		\
+  {							\
+    (WHERE) = build (MODIFY_EXPR, void_type_node, (TO),	\
+		     soft_exceptioninfo_call_node);	\
+    TREE_SIDE_EFFECTS (WHERE) = 1;			\
+  }
+
+#define BUILD_THROW(WHERE, WHAT)					\
+  {									\
+    (WHERE) = build (CALL_EXPR, void_type_node,				\
+		  build_address_of (throw_node),			\
+		  build_tree_list (NULL_TREE, (WHAT)), NULL_TREE);	\
+    TREE_SIDE_EFFECTS ((WHERE)) = 1;					\
+  }
+
+/* Set wfl_operator for the most accurate error location */
+#define SET_WFL_OPERATOR(WHICH, NODE, WFL)		\
+  EXPR_WFL_LINECOL (WHICH) =				\
+    (TREE_CODE (WFL) == EXPR_WITH_FILE_LOCATION ?	\
+     EXPR_WFL_LINECOL (WFL) : EXPR_WFL_LINECOL (NODE))
+
+#define PATCH_METHOD_RETURN_ERROR()		\
+  {						\
+    if (ret_decl)				\
+      *ret_decl = NULL_TREE;			\
+    return error_mark_node;			\
+  }
+     
 /* Parser context data structure. */
 struct parser_ctxt {
 
@@ -527,7 +591,7 @@ static tree lookup_java_interface_method2 PROTO ((tree, tree));
 static tree resolve_expression_name PROTO ((tree));
 static tree maybe_create_class_interface_decl PROTO ((tree, tree, tree));
 static int check_class_interface_creation PROTO ((int, int, tree, tree, tree, tree));
-static tree patch_method_invocation_stmt PROTO ((tree, tree, tree, int *));
+static tree patch_method_invocation_stmt PROTO ((tree, tree, tree, int *, tree *));
 static int breakdown_qualified PROTO ((tree *, tree *, tree));
 static tree resolve_and_layout PROTO ((tree, tree));
 static tree resolve_no_layout PROTO ((tree, tree));
@@ -613,6 +677,12 @@ static tree patch_string PROTO ((tree));
 static tree build_jump_to_finally PROTO ((tree, tree, tree, tree));
 static tree build_try_statement PROTO ((int, tree, tree, tree));
 static tree patch_try_statement PROTO ((tree));
+static tree patch_synchronized_statement PROTO ((tree, tree));
+static tree patch_throw_statement PROTO ((tree, tree));
+static void check_thrown_exceptions PROTO ((int, tree));
+static int check_thrown_exceptions_do PROTO ((int, tree));
+static void purge_unchecked_exceptions PROTO ((tree));
+static void check_throws_clauses PROTO ((tree, tree, tree));
 
 void safe_layout_class PROTO ((tree));
 void java_complete_class PROTO ((void));

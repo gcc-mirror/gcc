@@ -662,7 +662,10 @@ lookup_argument_method (clas, method_name, method_signature)
 	   method != NULL_TREE;  method = TREE_CHAIN (method))
 	{
 	  tree method_sig = build_java_argument_signature (TREE_TYPE (method));
-	  if (DECL_NAME (method) == method_name && method_sig == method_signature)
+	  tree name = DECL_NAME (method);
+	  if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
+	       EXPR_WFL_NODE (DECL_NAME (method)) : name) == method_name 
+	      && method_sig == method_signature)
 	    return method;
 	}
       clas = CLASSTYPE_SUPER (clas);
@@ -686,7 +689,8 @@ lookup_java_method (clas, method_name, method_signature)
 	   method != NULL_TREE;  method = TREE_CHAIN (method))
 	{
 	  tree method_sig = build_java_signature (TREE_TYPE (method));
-	  if (DECL_NAME (method) == method_name && method_sig == method_signature)
+	  if (DECL_NAME (method) == method_name 
+	      && method_sig == method_signature)
 	    return method;
 	}
       clas = CLASSTYPE_SUPER (clas);
