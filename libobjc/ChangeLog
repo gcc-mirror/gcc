@@ -1,3 +1,8 @@
+2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* aclocal.m4: Replace copy of ../libtool.m4 with
+	sinclude(../libtool.m4).
+
 Fri Jul 28 08:58:02 2000  Nicola Pero  <nicola@brainstorm.co.uk>
 
 	* configure.in: Added libtool support; build shared libraries 
