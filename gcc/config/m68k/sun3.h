@@ -163,6 +163,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Generate calls to memcpy, memcmp and memset.  */
 #define TARGET_MEM_FUNCTIONS
 
+/* This is not a good idea.  It prevents interoperation between
+   files compiled with -m68881 and those compiled with -msoft-float.  */
+#if 0
 #define FUNCTION_VALUEX(MODE)						    \
   gen_rtx (REG, (MODE),							    \
 	   ((TARGET_68881						    \
@@ -171,6 +174,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE,FUNC) FUNCTION_VALUEX (TYPE_MODE (VALTYPE))
+#endif /* 0 */
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
