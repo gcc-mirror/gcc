@@ -1,3 +1,9 @@
+2003-12-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.c (ia64_va_arg): Pass pointer for
+	variable-sized type through convert_memory_address.
+	(ia64_in_small_data_p): Always return false for FUNCTION_DECLs.
+
 2003-12-23  Jan Hubicka  <jh@suse.cz>
 
 	* common.opt (fprofile-generate,fprofile-use): Add.
@@ -47,7 +53,7 @@
 	-falt-external-templates and -ftemplates.
 	* doc/invoke.texi: Remove mention of -fexternal-templates and
 	-falt-external-templates.
-	
+
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/13466
@@ -62,24 +68,24 @@
 
 2003-12-22  Fariborz Jahanian <fjahanian@apple.com>
 
-        * config/rs6000/rs6000.c (legitimate_offset_address_p): Correct
-        check for the legitimate offset when memory of 
-	DImode/DFmode/TFmode/TImode mode is being referenced and target 
+	* config/rs6000/rs6000.c (legitimate_offset_address_p): Correct
+	check for the legitimate offset when memory of
+	DImode/DFmode/TFmode/TImode mode is being referenced and target
 	is TARGET_POWERPC64.
 
 2003-12-22  Dale Johannesen  <dalej@apple.com>
 
-        * reload1.c:  Add reg_reloaded_call_part_clobbered.
-        (reload_as_needed):  Use it.
-        (forget_old_reloads_1):  Ditto.
-        (emit_reload_insns):  Ditto.
+	* reload1.c:  Add reg_reloaded_call_part_clobbered.
+	(reload_as_needed):  Use it.
+	(forget_old_reloads_1):  Ditto.
+	(emit_reload_insns):  Ditto.
 
 2003-12-22  Dale Johannesen  <dalej@apple.com>
 
-        PR optimization/12828
-        * loop.c:  Add find_regs_nested to look inside CLOBBER(MEM).
-        (scan_loop):  Call it.
-        * regclass.c (reg_scan_mark_regs):  Look inside CLOBBER(MEM).
+	PR optimization/12828
+	* loop.c:  Add find_regs_nested to look inside CLOBBER(MEM).
+	(scan_loop):  Call it.
+	* regclass.c (reg_scan_mark_regs):  Look inside CLOBBER(MEM).
 
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -107,7 +113,7 @@
 	* configure.in (gather-detailed-mem-stats): New flag.
 	* configure: Regenerate.
 	* config.in: Regenerate.
-	* doc/install.texi (Configuration): Document 
+	* doc/install.texi (Configuration): Document
 	--enable-gather-detailed-mem-stats.
 
 2003-12-22  Kazu Hirata  <kazu@cs.umass.edu>
@@ -180,7 +186,7 @@
 	* config/mn10300/mn10300.c: Likewise.
 
 2003-12-20  Andrew Pinski  <pinskia@gcc.gnu.org>
-            Matt Thomas  <matt@3am-software.com>
+	    Matt Thomas  <matt@3am-software.com>
 
 	PR target/12749
 	* config/i386/i386.c (print_operand): Print only the first
@@ -280,11 +286,11 @@
 
 	* gcc/config/i386/i386.c (ix86_expand_call, x86_output_mi_thunk):
 	Trivial fixes for i386.c on Darwin/x86.
-	
+
 2003-12-19  Fariborz Jahanian <fjahanian@apple.com>
 
-        * config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Add code to
-        recognize macho-style lo_sum adrress patterns.
+	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Add code to
+	recognize macho-style lo_sum adrress patterns.
 
 2003-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -394,7 +400,7 @@
 
 2003-12-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* loop.c (move_movables): Handle combination of m->consec, 
+	* loop.c (move_movables): Handle combination of m->consec,
 	m->move_insn_first, and m->insert_temp all nonzero correctly.
 
 2003-12-18  Kazu Hirata  <kazu@cs.umass.edu>
@@ -423,7 +429,7 @@
 
 2003-12-17  James E Wilson  <wilson@specifixinc.com>
 	    Roger Sayle  <roger@eyesopen.com>
-	
+
 	* Makefile.in (gcse.o): Add $(TREE_H) to dependencies.
 	* gcse.c: Include tree.h.
 	(implicit_set_cond_p): New.
@@ -512,7 +518,7 @@
 	* config/m32r/m32r.md (cmp_ne_small_const_insn): Remove.
 
 2003-12-17  Neil Booth  <neil@daikokuya.co.uk>
-            Joseph S. Myers  <jsm@polyomino.org.uk>
+	    Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/3347
 	* c-decl.c (enum_decl_context): Remove BITFIELD.
@@ -542,7 +548,7 @@
 	* ginclude/stddef.h (offsetof): Reimplement for C++, using
 	__offsetof__.
 	* doc/extend.texi: Document __offsetof__.
-	
+
 2003-12-16  Stan Cox  <scox@redhat.com>
 
 	* config/iq2000/iq2000.h: Formatting.
@@ -581,7 +587,7 @@
 
 	* altivec.h (vec_cmple, vec_all_numeric): Fix typo.
 	* testsuite/gcc.dg/altivec-10.c: Test for above.
-	
+
 2003-12-15  David O'Brien  <obrien@FreeBSD.org>
 
 	* Makefile.in (CPPFLAGS): Initialize from configure.

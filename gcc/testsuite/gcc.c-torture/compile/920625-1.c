@@ -11,7 +11,11 @@
 	 (p7) mov r14 = r0
 
    that appears to be a WAW violation. */
-/* { dg-xfail-if "missing .pred.rel.mutex directive" "ia64-*-*" { "-O1" "-O2" "-O3" "-Os" } { "" } } */
+
+/* { dg-prune-output "Assembler messages" } */
+/* { dg-prune-output "violate\[^\n\]*dependency" } */
+/* { dg-prune-output "first path encountering" } */
+/* { dg-prune-output "location of the conflicting" } */
 
 typedef unsigned long int unsigned_word;
 typedef signed long int signed_word;
