@@ -71,6 +71,7 @@ static const char * const tree_node_kind_names[] = {
   "perm_tree_lists",
   "temp_tree_lists",
   "vecs",
+  "binfos",
   "phi_nodes",
   "ssa names",
   "random kinds",
@@ -92,6 +93,9 @@ struct type_hash GTY(())
   unsigned long hash;
   tree type;
 };
+
+/* Additional language-dependent binfo slots.  */
+unsigned binfo_lang_slots;
 
 /* Initial size of the hash table (rounded to next prime).  */
 #define TYPE_HASH_INITIAL_SIZE 1000
@@ -267,6 +271,8 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	kind = id_kind;
       else if (code == TREE_VEC)
 	kind = vec_kind;
+      else if (code == TREE_BINFO)
+	kind = binfo_kind;
       else if (code == PHI_NODE)
 	kind = phi_kind;
       else if (code == SSA_NAME)
@@ -572,6 +578,39 @@ build_complex (tree type, tree real, tree imag)
     = TREE_CONSTANT_OVERFLOW (real) | TREE_CONSTANT_OVERFLOW (imag);
   return t;
 }
+
+/* Build a BINFO with LEN language slots.  */
+
+tree
+make_tree_binfo_stat (unsigned lang_slots MEM_STAT_DECL)
+{
+  tree t;
+  static unsigned length;
+  
+  if (!length)
+    {
+      length = (offsetof (struct tree_binfo, lang_slots)
+		+ (sizeof (((struct tree_binfo *)0)->lang_slots[0])
+		   * lang_slots));
+      binfo_lang_slots = lang_slots;
+    }
+  else if (binfo_lang_slots != lang_slots)
+    abort ();
+  
+#ifdef GATHER_STATISTICS
+  tree_node_counts[(int) binfo_kind]++;
+  tree_node_sizes[(int) binfo_kind] += length;
+#endif
+
+  t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
+
+  memset (t, 0, length);
+
+  TREE_SET_CODE (t, TREE_BINFO);
+
+  return t;
+}
+
 
 /* Build a newly constructed TREE_VEC node of length LEN.  */
 
@@ -1493,6 +1532,7 @@ tree_node_structure (tree t)
     case PLACEHOLDER_EXPR:	return TS_COMMON;
     case STATEMENT_LIST:	return TS_STATEMENT_LIST;
     case BLOCK:			return TS_BLOCK;
+    case TREE_BINFO:		return TS_BINFO;
     case VALUE_HANDLE:		return TS_VALUE_HANDLE;
 
     default:

@@ -903,6 +903,10 @@ DEFTREECODE (STATEMENT_LIST, "statement_list", 'x', 0)
    the same value, they will be assigned the same value handle.  */
 DEFTREECODE (VALUE_HANDLE, "value_handle", 'x', 0)
 
+/* Base class information. Holds information about a class as a
+   baseclass of itself or another class.  */
+DEFTREECODE (TREE_BINFO, "tree_binfo", 'x', 0)
+
 /*
 Local variables:
 mode:c

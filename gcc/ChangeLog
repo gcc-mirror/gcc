@@ -1,3 +1,44 @@
+2004-07-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-tree.h (TYPE_ACTUAL_ARG_TYPES): Use TYPE_LANG_SLOT_1.
+	* dwarf2out.c (add_data_member_location_attribute): Check for
+	TREE_BINFO.
+	* tree.c (tree_node_kinds): Add "binfos".
+	(binfo_lang_slots): New.
+	(make_node_stat): Add TREE_BINFO.
+	(make_tree_binfo_stat): New.
+	(tree_node_structure): Add TREE_BINFO.
+	* tree.def (TREE_BINFO): New.
+	* tree.h (REC_OR_UNION_CHECK): Rename to ...
+	(RECORD_OR_UNION_CHECK): ... here.
+	(NOT_RECORD_OR_UNION_CHECK): New.
+	(TRE_VIA_VIRTUAL): Allow TREE_LIST or TREE_BINFO.
+	(TYPE_FIELDS, TYPE_METHODS, TYPE_VFIELD): Adjust for
+	RECORD_OR_UNION_CHECK.
+	(TYPE_BINFO): Use RECORD_OR_UNION_CHECK.
+	(TYPE_LANG_SLOT_1): New.
+	(BINFO_TYPE, BINFO_OFFSET, BINFO_VTABLE, BINFO_VIRTUALS,
+	BINFO_BASETYPES, TYPE_BINFO_BASETYPES, BINFO_VPTR_FIELD,
+	BINFO_BASEACCESSES, BINFO_INHERITANCE_CHAIN): Adjust.
+	(BINFO_ELTS): Remove.
+	(BINFO_LANG_SLOT): New.
+	(struct tree_binfo): New.
+	(binfo_lang_slots): Declare.
+	(enum tree_node_structure_enum): Add TS_BINFO.
+	(union tree_node): Add binfo.
+	(make_tree_binfo_stat): Declare.
+	(make_tree_binfo): New.
+	(enum tree_node_kind): Add binfo_kind.
+	
+	* objc/objc-act.c (start_class, objc_declare_protocols,
+	start_protocols): Use TYPE_LANG_SLOT_1.
+	* objc/objc-act.h (CLASS_BINFO_ELTS, PROTOCOL_BINFO_ELTS): Rename
+	to ...
+	(CLASS_LANG_SLOT_ELTS, PROTOCOL_LANG_SLOT_ELTS): ... here.
+	(CLASS_IVARS, CLASS_RAW_IVARS, CLASS_STATIC_TEMPLATE,
+	CLASS_CATEGORY_LIST, CLASS_PROTOCOL_LIST, CLASS_OWN_IVARS,
+	PROTOCOL_LIST, PROTOCOL_FORWARD_DECL): Use TYPE_LANG_SLOT_1.
+
 2004-07-05  Steven Bosscher  <stevenb@suse.de>
 
 	* rtl.h (struct rtx_def): Remove the integrated flag.

@@ -1,3 +1,9 @@
+2004-07-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (make_class): Use make_tree_binfo.
+	(set_super_info, add_interface_do): Likewise.
+	* java-tree.h (CLASS_HAS_SUPER_FLAG): Expect a BINFO.
+
 2004-07-04  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* verify.c: Correct array element access formatting thinko.
@@ -8161,7 +8167,7 @@
 	properly initialize `finished_label'. Don't emit gotos for empty
 	try statements.
 
-2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-03-19  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* except.c (emit_handlers): Clear catch_clauses_last.
 

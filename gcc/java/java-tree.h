@@ -48,7 +48,7 @@ struct JCF;
       SUPPRESS_UNREACHABLE_ERROR (for other _EXPR nodes)
       ANONYMOUS_CLASS_P (in RECORD_TYPE)
       ARG_FINAL_P (in TREE_LIST)
-   1: CLASS_HAS_SUPER_FLAG (in TREE_VEC).
+   1: CLASS_HAS_SUPER_FLAG (in TREE_BINFO).
       IS_A_CLASSFILE_NAME (in IDENTIFIER_NODE)
       COMPOUND_ASSIGN_P (in EXPR (binop_*))
       LOCAL_CLASS_P (in RECORD_TYPE)
@@ -122,7 +122,7 @@ struct JCF;
 
 /* True if the class whose TYPE_BINFO this is has a superclass.
    (True of all classes except Object.) */
-#define CLASS_HAS_SUPER_FLAG(BINFO) TREE_LANG_FLAG_1 (TREE_VEC_CHECK (BINFO))
+#define CLASS_HAS_SUPER_FLAG(BINFO) TREE_LANG_FLAG_1 (TREE_BINFO_CHECK (BINFO))
 #define CLASS_HAS_SUPER(TYPE) CLASS_HAS_SUPER_FLAG (TYPE_BINFO (TYPE))
 
 /* Return the supertype of class TYPE, or NULL_TREE is it has none. */

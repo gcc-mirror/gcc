@@ -318,7 +318,7 @@ make_class (void)
 {
   tree type;
   type = make_node (RECORD_TYPE);
-  TYPE_BINFO (type) = make_tree_vec (BINFO_ELTS);
+  TYPE_BINFO (type) = make_tree_binfo (0);
   MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
 
   return type;
@@ -480,7 +480,7 @@ set_super_info (int access_flags, tree this_class,
   TYPE_BINFO_BASETYPES (this_class) = make_tree_vec (total_supers);
   if (super_class)
     {
-      tree super_binfo = make_tree_vec (BINFO_ELTS);
+      tree super_binfo = make_tree_binfo (0);
       BINFO_TYPE (super_binfo) = super_class;
       BINFO_OFFSET (super_binfo) = integer_zero_node;
       TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (this_class)), 0)
@@ -612,7 +612,7 @@ common_enclosing_context_p (tree type1, tree type2)
 static void
 add_interface_do (tree basetype_vec, tree interface_class, int i)
 {
-  tree interface_binfo = make_tree_vec (BINFO_ELTS);
+  tree interface_binfo = make_tree_binfo (0);
   BINFO_TYPE (interface_binfo) = interface_class;
   BINFO_OFFSET (interface_binfo) = integer_zero_node;
   BINFO_VPTR_FIELD (interface_binfo) = integer_zero_node;

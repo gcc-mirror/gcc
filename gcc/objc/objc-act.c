@@ -6761,7 +6761,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
     }
 
   class = make_node (code);
-  TYPE_BINFO (class) = make_tree_vec (CLASS_BINFO_ELTS);
+  TYPE_LANG_SLOT_1 (class) = make_tree_vec (CLASS_LANG_SLOT_ELTS);
 
   CLASS_NAME (class) = class_name;
   CLASS_SUPER_NAME (class) = super_name;
@@ -7050,7 +7050,8 @@ objc_declare_protocols (tree names)
 	{
 	  tree protocol = make_node (PROTOCOL_INTERFACE_TYPE);
 
-	  TYPE_BINFO (protocol) = make_tree_vec (2);
+	  TYPE_LANG_SLOT_1 (protocol)
+	    = make_tree_vec (PROTOCOL_LANG_SLOT_ELTS);
 	  PROTOCOL_NAME (protocol) = name;
 	  PROTOCOL_LIST (protocol) = NULL_TREE;
 	  add_protocol (protocol);
@@ -7081,7 +7082,7 @@ start_protocol (enum tree_code code, tree name, tree list)
   if (!protocol)
     {
       protocol = make_node (code);
-      TYPE_BINFO (protocol) = make_tree_vec (2);
+      TYPE_LANG_SLOT_1 (protocol) = make_tree_vec (PROTOCOL_LANG_SLOT_ELTS);
 
       PROTOCOL_NAME (protocol) = name;
       PROTOCOL_LIST (protocol) = lookup_and_install_protocols (list);

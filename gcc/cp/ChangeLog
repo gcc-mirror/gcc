@@ -1,3 +1,21 @@
+2004-07-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (enforce_access): Expect TREE_BINFO.
+	* class.c (binfo_ctor_vtable): Check TREE_BINFO.
+	* cp-tree.h (RECORD_OR_UNION_TYPE_CHECK): Remove.
+	(BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX, BINFO_PRIMARY_BASE_OF):
+	Adjust.
+	(BINFO_LANG_ELTS): Remove.
+	(BINFO_LANG_SLOTS): New.
+	(TYPE_RAISES_EXCEPTIONS, ENUM_TEMPLATE_INFO): Use TYPE_LANG_SLOT_1.
+	(CLASSTYPE_TEMPLATE_INFO): Adjust.
+	* pt.c (tsubst): Split TREE_BINFO case from TREE_VEC case.
+	* search.c (lookup_member): Check TREE_BINFO.
+	* semantics.c (perform_or_defer_access_check): Likewise.
+	(check_accessibility_of_qualified_id): Check
+	deferred_access_no_check.
+	* tree.c (make_binfo): Use make_tree_binfo.
+
 2004-07-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* method.c (implicitly_declare_fn): Set linkage of generated

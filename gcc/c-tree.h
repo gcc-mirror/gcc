@@ -114,7 +114,7 @@ struct lang_type GTY(())
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
    without prototypes.  */
-#define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_BINFO (NODE)
+#define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_LANG_SLOT_1 (NODE)
 
 /* Save and restore the variables in this file and elsewhere
    that keep track of the progress of compilation of the current function.

@@ -203,7 +203,7 @@ struct tree_common GTY(())
        TREE_STATIC in
            VAR_DECL, FUNCTION_DECL, CONSTRUCTOR, ADDR_EXPR
        TREE_VIA_VIRTUAL in
-           TREE_LIST or TREE_VEC
+           TREE_LIST or TREE_BINFO
        TREE_CONSTANT_OVERFLOW in
            INTEGER_CST, REAL_CST, COMPLEX_CST, VECTOR_CST
        TREE_SYMBOL_REFERENCED in
@@ -558,9 +558,11 @@ extern void tree_operand_check_failed (int, enum tree_code,
 #define SET_OR_ARRAY_CHECK(T) \
   TREE_CHECK2 (T, ARRAY_TYPE, SET_TYPE)
 
-#define REC_OR_UNION_CHECK(T)	\
+#define RECORD_OR_UNION_CHECK(T)	\
   TREE_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
-
+#define NOT_RECORD_OR_UNION_CHECK(T) \
+  TREE_NOT_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
+    
 #define NUMERICAL_TYPE_CHECK(T)					\
   TREE_CHECK5 (T, INTEGER_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE,	\
 	       CHAR_TYPE, REAL_TYPE)
@@ -736,10 +738,10 @@ extern void tree_operand_check_failed (int, enum tree_code,
    implicitly and should not lead to any sort of warning.  */
 #define TREE_NO_WARNING(NODE) ((NODE)->common.nowarning_flag)
 
-/* Nonzero for a TREE_LIST or TREE_VEC node means that the derivation
+/* Nonzero for a TREE_LIST or TREE_BINFO node means that the derivation
    chain is via a `virtual' declaration.  */
 #define TREE_VIA_VIRTUAL(NODE) \
-  (TREE_CHECK2 (NODE, TREE_LIST, TREE_VEC)->common.static_flag)
+  (TREE_CHECK2 (NODE, TREE_LIST, TREE_BINFO)->common.static_flag)
 
 /* In an INTEGER_CST, REAL_CST, COMPLEX_CST, or VECTOR_CST this means
    there was an overflow in folding.  This is distinct from
@@ -1366,9 +1368,9 @@ struct tree_block GTY(())
 #define TYPE_ORIG_SIZE_TYPE(NODE) (INTEGER_TYPE_CHECK (NODE)->type.values)
 #define TYPE_VALUES(NODE) (ENUMERAL_TYPE_CHECK (NODE)->type.values)
 #define TYPE_DOMAIN(NODE) (SET_OR_ARRAY_CHECK (NODE)->type.values)
-#define TYPE_FIELDS(NODE) (REC_OR_UNION_CHECK (NODE)->type.values)
-#define TYPE_METHODS(NODE) (REC_OR_UNION_CHECK (NODE)->type.maxval)
-#define TYPE_VFIELD(NODE) (REC_OR_UNION_CHECK (NODE)->type.minval)
+#define TYPE_FIELDS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.values)
+#define TYPE_METHODS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.maxval)
+#define TYPE_VFIELD(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.minval)
 #define TYPE_ARG_TYPES(NODE) (FUNC_OR_METHOD_CHECK (NODE)->type.values)
 #define TYPE_METHOD_BASETYPE(NODE) (FUNC_OR_METHOD_CHECK (NODE)->type.maxval)
 #define TYPE_OFFSET_BASETYPE(NODE) (OFFSET_TYPE_CHECK (NODE)->type.maxval)
@@ -1393,10 +1395,12 @@ struct tree_block GTY(())
    structure containing an array.  */
 #define TYPE_DEBUG_REPRESENTATION_TYPE(NODE) (VECTOR_TYPE_CHECK (NODE)->type.values)
 
-/* For aggregate types, information about this type, as a base type
-   for itself.  Used in a language-dependent way for types that are
-   neither a RECORD_TYPE, QUAL_UNION_TYPE, nor a UNION_TYPE.  */
-#define TYPE_BINFO(NODE) (TYPE_CHECK (NODE)->type.binfo)
+/* For record and union types, information about this type, as a base type
+   for itself. */
+#define TYPE_BINFO(NODE) (RECORD_OR_UNION_CHECK(NODE)->type.binfo)
+
+/* For non record and union types, used in a language-dependent way.  */
+#define TYPE_LANG_SLOT_1(NODE) (NOT_RECORD_OR_UNION_CHECK(NODE)->type.binfo)
 
 /* The (language-specific) typed-based alias set for this type.
    Objects whose TYPE_ALIAS_SETs are different cannot alias each
@@ -1594,7 +1598,7 @@ struct tree_type GTY(())
    of D acting as a basetype for C by looking at C's binfo's basetypes.  */
 
 /* The actual data type node being inherited in this basetype.  */
-#define BINFO_TYPE(NODE) TREE_TYPE (NODE)
+#define BINFO_TYPE(NODE) TREE_TYPE (TREE_BINFO_CHECK(NODE))
 
 /* The offset where this basetype appears in its containing type.
    BINFO_OFFSET slot holds the offset (in bytes)
@@ -1602,7 +1606,7 @@ struct tree_type GTY(())
    object that is allocated on behalf of this `type'.
    This is always 0 except when there is multiple inheritance.  */
 
-#define BINFO_OFFSET(NODE) TREE_VEC_ELT ((NODE), 1)
+#define BINFO_OFFSET(NODE) (TREE_BINFO_CHECK(NODE)->binfo.offset)
 #define TYPE_BINFO_OFFSET(NODE) BINFO_OFFSET (TYPE_BINFO (NODE))
 #define BINFO_OFFSET_ZEROP(NODE) (integer_zerop (BINFO_OFFSET (NODE)))
 
@@ -1610,13 +1614,13 @@ struct tree_type GTY(())
    function tables provide a mechanism for run-time method dispatching.
    The entries of a virtual function table are language-dependent.  */
 
-#define BINFO_VTABLE(NODE) TREE_VEC_ELT ((NODE), 2)
+#define BINFO_VTABLE(NODE) (TREE_BINFO_CHECK(NODE)->binfo.vtable)
 #define TYPE_BINFO_VTABLE(NODE) BINFO_VTABLE (TYPE_BINFO (NODE))
 
 /* The virtual functions in the virtual function table.  This is
    a TREE_LIST that is used as an initial approximation for building
    a virtual function table for this basetype.  */
-#define BINFO_VIRTUALS(NODE) TREE_VEC_ELT ((NODE), 3)
+#define BINFO_VIRTUALS(NODE) (TREE_BINFO_CHECK(NODE)->binfo.virtuals)
 #define TYPE_BINFO_VIRTUALS(NODE) BINFO_VIRTUALS (TYPE_BINFO (NODE))
 
 /* A vector of binfos for the direct basetypes inherited by this
@@ -1630,8 +1634,8 @@ struct tree_type GTY(())
    base types at the end of this TREE_VEC (instead of using
    another TREE_VEC).  This would simplify the calculation
    of how many basetypes a given type had.  */
-#define BINFO_BASETYPES(NODE) TREE_VEC_ELT ((NODE), 4)
-#define TYPE_BINFO_BASETYPES(NODE) TREE_VEC_ELT (TYPE_BINFO (NODE), 4)
+#define BINFO_BASETYPES(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_types)
+#define TYPE_BINFO_BASETYPES(NODE) BINFO_BASETYPES (TYPE_BINFO (NODE))
 
 /* The number of basetypes for NODE.  */
 #define BINFO_N_BASETYPES(NODE) \
@@ -1647,18 +1651,18 @@ struct tree_type GTY(())
    base.  The actual contents are language-dependent.  In the C++
    front-end this field is an INTEGER_CST giving an offset into the
    vtable where the offset to the virtual base can be found.  */
-#define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT (NODE, 5)
+#define BINFO_VPTR_FIELD(NODE) (TREE_BINFO_CHECK(NODE)->binfo.vptr_field)
 
 /* Indicates the accesses this binfo has to its bases. The values are
    access_public_node, access_protected_node or access_private_node.
    If this array is not present, public access is implied.  */
-#define BINFO_BASEACCESSES(NODE) TREE_VEC_ELT ((NODE), 6)
+#define BINFO_BASEACCESSES(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_accesses)
 #define BINFO_BASEACCESS(NODE,N) TREE_VEC_ELT (BINFO_BASEACCESSES(NODE), (N))
 
 /* Number of language independent elements in a binfo.  Languages may
    add additional trailing elements.  */
 
-#define BINFO_ELTS 7
+#define BINFO_LANG_SLOT(NODE,N) (TREE_BINFO_CHECK(NODE)->binfo.lang_slots[N])
 
 /* Slot used to build a chain that represents a use of inheritance.
    For example, if X is derived from Y, and Y is derived from Z,
@@ -1671,7 +1675,25 @@ struct tree_type GTY(())
    consing new space pointing to binfo nodes).
    It is up to the language-dependent front-ends to maintain
    this information as necessary.  */
-#define BINFO_INHERITANCE_CHAIN(NODE) TREE_VEC_ELT ((NODE), 0)
+#define BINFO_INHERITANCE_CHAIN(NODE) \
+	(TREE_BINFO_CHECK(NODE)->binfo.inheritance)
+
+struct tree_binfo GTY (())
+{
+  struct tree_common common;
+
+  tree offset;
+  tree vtable;
+  tree virtuals;
+  tree base_types;
+  tree vptr_field;
+  tree base_accesses;
+  tree inheritance;
+
+  tree GTY ((length ("binfo_lang_slots"))) lang_slots[1];
+};
+extern GTY (()) unsigned binfo_lang_slots;
+
 
 /* Define fields and accessors for nodes representing declared names.  */
 
@@ -2313,6 +2335,7 @@ enum tree_node_structure_enum {
   TS_SSA_NAME,
   TS_PHI_NODE,
   TS_BLOCK,
+  TS_BINFO,
   TS_STATEMENT_LIST,
   TS_VALUE_HANDLE,
   LAST_TS_ENUM
@@ -2340,6 +2363,7 @@ union tree_node GTY ((ptr_alias (union lang_tree_node),
   struct tree_ssa_name GTY ((tag ("TS_SSA_NAME"))) ssa_name;
   struct tree_phi_node GTY ((tag ("TS_PHI_NODE"))) phi;
   struct tree_block GTY ((tag ("TS_BLOCK"))) block;
+  struct tree_binfo GTY ((tag ("TS_BINFO"))) binfo;
   struct tree_statement_list GTY ((tag ("TS_STATEMENT_LIST"))) stmt_list;
   struct tree_value_handle GTY ((tag ("TS_VALUE_HANDLE"))) value_handle;
 };
@@ -2586,6 +2610,10 @@ extern tree copy_node_stat (tree MEM_STAT_DECL);
 /* Make a copy of a chain of TREE_LIST nodes.  */
 
 extern tree copy_list (tree);
+
+/* Make a BINFO.  */
+extern tree make_tree_binfo_stat (unsigned MEM_STAT_DECL);
+#define make_tree_binfo(t) make_tree_binfo_stat (t MEM_STAT_INFO)
 
 /* Make a TREE_VEC.  */
 
@@ -3727,6 +3755,7 @@ typedef enum
   perm_list_kind,
   temp_list_kind,
   vec_kind,
+  binfo_kind,
   phi_kind,
   ssa_name_kind,
   x_kind,
