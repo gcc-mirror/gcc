@@ -526,10 +526,10 @@ proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
 
     #look to see if this is all thats left, if so, all messages have been handled
     #send_user "comp_output: $comp_output\n"
-    regsub -all "(^|\n)\[^\n\]*: In ((member )?function|method) \[^\n\]*" $comp_output "" comp_output
+    regsub -all "(^|\n)\[^\n\]*: In (.*function|method|.*structor) \[^\n\]*" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*: In instantiation of \[^\n\]*" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*:   instantiated from \[^\n\]*" $comp_output "" comp_output
-    regsub -all "(^|\n)\[^\n\]*: At top level:\[^\n\]*" $comp_output "" comp_output
+    regsub -all "(^|\n)\[^\n\]*: At (top level|global scope):\[^\n\]*" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $comp_output "" comp_output
     regsub -all "(^|\n)collect: re(compiling|linking)\[^\n\]*" $comp_output "" comp_output
