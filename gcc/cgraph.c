@@ -19,6 +19,66 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+/*  This file contains basic routines manipulating call graph and variable pool
+  
+The callgraph:
+
+    The call-graph is data structure designed for intra-procedural optimization
+    but it is also used in non-unit-at-a-time compilation to allow easier code
+    sharing.
+
+    The call-graph consist of nodes and edges represented via linked lists.
+    Each function (external or not) corresponds to the unique node (in
+    contrast to tree DECL nodes where we can have multiple nodes for each
+    function).
+
+    The mapping from declarations to call-graph nodes is done using hash table
+    based on DECL_ASSEMBLER_NAME, so it is essential for assembler name to
+    not change once the declaration is inserted into the call-graph.
+    The call-graph nodes are created lazily using cgraph_node function when
+    called for unknown declaration.
+    
+    When built, there is one edge for each direct call.  It is possible that
+    the reference will be later optimized out.  The call-graph is built
+    conservatively in order to make conservative data flow analysis possible.
+
+    The callgraph at the moment does not represent indirect calls or calls
+    from other compilation unit.  Flag NEEDED is set for each node that may
+    be accessed in such a invisible way and it shall be considered an
+    entry point to the callgraph.
+
+    Intraprocedural information:
+
+      Callgraph is place to store data needed for intraprocedural optimization.
+      All datastructures are divided into three components: local_info that
+      is produced while analyzing the function, global_info that is result
+      of global walkking of the callgraph on the end of compilation and
+      rtl_info used by RTL backend to propagate data from already compiled
+      functions to their callers.
+
+    Inlining plans:
+
+      The function inlining information is decided in advance and maintained
+      in the callgraph as so called inline plan.
+      For each inlined call, the calle's node is clonned to represent the
+      new function copy produced by inlininer.
+      Each inlined call gets unque corresponding clone node of the callee
+      and the datastructure is updated while inlining is performed, so
+      the clones are elliminated and their callee edges redirected to the
+      caller. 
+
+      Each edge has "inline_failed" field.  When the field is set to NULL,
+      the call will be inlined.  When it is non-NULL it contains an reason
+      why inlining wasn't performaned.
+
+
+The varpool data structure:
+
+    Varpool is used to maintain variables in similar manner as call-graph
+    is used for functions.  Most of the API is symmetric replacing cgraph
+    function prefix by cgraph_varpool  */
+
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -36,9 +96,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "intl.h"
 
-
 /* Hash table used to convert declarations into nodes.  */
 static GTY((param_is (struct cgraph_node))) htab_t cgraph_hash;
+
+/* We destructivly update callgraph during inlining and thus we need to
+   keep information on whether inlining happent separately.  */
+htab_t cgraph_inline_hash;
 
 /* The linked list of cgraph nodes.  */
 struct cgraph_node *cgraph_nodes;
@@ -67,8 +130,6 @@ int cgraph_varpool_n_nodes;
 /* The linked list of cgraph varpool nodes.  */
 static GTY(())  struct cgraph_varpool_node *cgraph_varpool_nodes;
 
-static struct cgraph_edge *create_edge (struct cgraph_node *,
-					struct cgraph_node *);
 static hashval_t hash_node (const void *);
 static int eq_node (const void *, const void *);
 
@@ -91,6 +152,23 @@ eq_node (const void *p1, const void *p2)
 	  (tree) p2);
 }
 
+/* Allocate new callgraph node and insert it into basic datastructures.  */
+static struct cgraph_node *
+cgraph_create_node (void)
+{
+  struct cgraph_node *node;
+
+  node = ggc_alloc_cleared (sizeof (*node));
+  node->next = cgraph_nodes;
+  node->uid = cgraph_max_uid++;
+  if (cgraph_nodes)
+    cgraph_nodes->previous = node;
+  node->previous = NULL;
+  cgraph_nodes = node;
+  cgraph_n_nodes++;
+  return node;
+}
+
 /* Return cgraph node assigned to DECL.  Create new one when needed.  */
 struct cgraph_node *
 cgraph_node (tree decl)
@@ -110,15 +188,9 @@ cgraph_node (tree decl)
 			        (DECL_ASSEMBLER_NAME (decl)), INSERT);
   if (*slot)
     return *slot;
-  node = ggc_alloc_cleared (sizeof (*node));
+
+  node = cgraph_create_node ();
   node->decl = decl;
-  node->next = cgraph_nodes;
-  node->uid = cgraph_max_uid++;
-  if (cgraph_nodes)
-    cgraph_nodes->previous = node;
-  node->previous = NULL;
-  cgraph_nodes = node;
-  cgraph_n_nodes++;
   *slot = node;
   if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
     {
@@ -127,6 +199,23 @@ cgraph_node (tree decl)
       node->origin->nested = node;
     }
   return node;
+}
+
+/* Return callgraph edge representing CALL_EXPR.  */
+struct cgraph_edge *
+cgraph_edge (struct cgraph_node *node, tree call_expr)
+{
+  struct cgraph_edge *e;
+
+  /* This loop may turn out to be performance problem.  In such case adding
+     hashtables into call nodes with very many edges is probably best
+     sollution.  It is not good idea to add pointer into CALL_EXPR itself
+     because we want to make possible having multiple cgraph nodes representing
+     different clones of the same body before the body is actually cloned.  */
+  for (e = node->callees; e; e= e->next_callee)
+    if (e->call_expr == call_expr)
+      break;
+  return e;
 }
 
 /* Try to find existing function for identifier ID.  */
@@ -151,11 +240,21 @@ cgraph_node_for_identifier (tree id)
 
 /* Create edge from CALLER to CALLEE in the cgraph.  */
 
-static struct cgraph_edge *
-create_edge (struct cgraph_node *caller, struct cgraph_node *callee)
+struct cgraph_edge *
+cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
+		    tree call_expr)
 {
   struct cgraph_edge *edge = ggc_alloc (sizeof (struct cgraph_edge));
-  struct cgraph_edge *edge2;
+#ifdef ENABLE_CHECKING
+  struct cgraph_edge *e;
+
+  for (e = caller->callees; e; e = e->next_callee)
+    if (e->call_expr == call_expr)
+      abort ();
+#endif
+
+  if (TREE_CODE (call_expr) != CALL_EXPR)
+    abort ();
 
   if (!DECL_SAVED_TREE (callee->decl))
     edge->inline_failed = N_("function body not available");
@@ -167,19 +266,11 @@ create_edge (struct cgraph_node *caller, struct cgraph_node *callee)
   else
     edge->inline_failed = N_("function not inlinable");
 
-  /* At the moment we don't associate calls with specific CALL_EXPRs
-     as we probably ought to, so we must preserve inline_call flags to
-     be the same in all copies of the same edge.  */
-  if (cgraph_global_info_ready)
-    for (edge2 = caller->callees; edge2; edge2 = edge2->next_callee)
-      if (edge2->callee == callee)
-	{
-	  edge->inline_failed = edge2->inline_failed;
-	  break;
-	}
+  edge->aux = NULL;
 
   edge->caller = caller;
   edge->callee = callee;
+  edge->call_expr = call_expr;
   edge->next_caller = callee->callers;
   edge->next_callee = caller->callees;
   caller->callees = edge;
@@ -187,25 +278,44 @@ create_edge (struct cgraph_node *caller, struct cgraph_node *callee)
   return edge;
 }
 
-/* Remove the edge from CALLER to CALLEE in the cgraph.  */
+/* Remove the edge E the cgraph.  */
 
 void
-cgraph_remove_edge (struct cgraph_node *caller, struct cgraph_node *callee)
+cgraph_remove_edge (struct cgraph_edge *e)
 {
   struct cgraph_edge **edge, **edge2;
 
-  for (edge = &callee->callers; *edge && (*edge)->caller != caller;
+  for (edge = &e->callee->callers; *edge && *edge != e;
        edge = &((*edge)->next_caller))
     continue;
   if (!*edge)
     abort ();
   *edge = (*edge)->next_caller;
-  for (edge2 = &caller->callees; *edge2 && (*edge2)->callee != callee;
+  for (edge2 = &e->caller->callees; *edge2 && *edge2 != e;
        edge2 = &(*edge2)->next_callee)
     continue;
   if (!*edge2)
     abort ();
   *edge2 = (*edge2)->next_callee;
+}
+
+/* Redirect callee of E to N.  The function does not update underlying
+   call expression.  */
+
+void
+cgraph_redirect_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
+{
+  struct cgraph_edge **edge;
+
+  for (edge = &e->callee->callers; *edge && *edge != e;
+       edge = &((*edge)->next_caller))
+    continue;
+  if (!*edge)
+    abort ();
+  *edge = (*edge)->next_caller;
+  e->callee = n;
+  e->next_caller = n->callers;
+  n->callers = e;
 }
 
 /* Remove the node from cgraph.  */
@@ -214,10 +324,12 @@ void
 cgraph_remove_node (struct cgraph_node *node)
 {
   void **slot;
+  bool check_dead = 1;
+
   while (node->callers)
-    cgraph_remove_edge (node->callers->caller, node);
+    cgraph_remove_edge (node->callers);
   while (node->callees)
-    cgraph_remove_edge (node, node->callees->callee);
+    cgraph_remove_edge (node->callees);
   while (node->nested)
     cgraph_remove_node (node->nested);
   if (node->origin)
@@ -234,15 +346,52 @@ cgraph_remove_node (struct cgraph_node *node)
     cgraph_nodes = node->next;
   if (node->next)
     node->next->previous = node->previous;
-  DECL_SAVED_TREE (node->decl) = NULL;
-  DECL_STRUCT_FUNCTION (node->decl) = NULL;
-  DECL_ARGUMENTS (node->decl) = NULL;
-  DECL_INITIAL (node->decl) = error_mark_node;
   slot = 
     htab_find_slot_with_hash (cgraph_hash, DECL_ASSEMBLER_NAME (node->decl),
 			      IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
 						     (node->decl)), NO_INSERT);
-  htab_clear_slot (cgraph_hash, slot);
+  if (*slot == node)
+    {
+      if (node->next_clone)
+	*slot = node->next_clone;
+      else
+	{
+          htab_clear_slot (cgraph_hash, slot);
+	  if (!dump_enabled_p (TDI_all))
+	    {
+              DECL_SAVED_TREE (node->decl) = NULL;
+	      DECL_STRUCT_FUNCTION (node->decl) = NULL;
+	    }
+	  check_dead = false;
+	}
+    }
+  else
+    {
+      struct cgraph_node *n;
+
+      for (n = *slot; n->next_clone != node; n = n->next_clone)
+	continue;
+      n->next_clone = node->next_clone;
+    }
+
+  /* Work out whether we still need a function body (either there is inline
+     clone or there is out of line function whose body is not written).  */
+  if (check_dead && flag_unit_at_a_time)
+    {
+      struct cgraph_node *n;
+
+      for (n = *slot; n; n = n->next_clone)
+	if (n->global.inlined_to
+	    || (!n->global.inlined_to
+		&& !TREE_ASM_WRITTEN (n->decl) && !DECL_EXTERNAL (n->decl)))
+	  break;
+      if (!n && !dump_enabled_p (TDI_all))
+	{
+	  DECL_SAVED_TREE (node->decl) = NULL;
+	  DECL_STRUCT_FUNCTION (node->decl) = NULL;
+	}
+    }
+  cgraph_n_nodes--;
   /* Do not free the structure itself so the walk over chain can continue.  */
 }
 
@@ -279,20 +428,6 @@ cgraph_mark_needed_node (struct cgraph_node *node)
 {
   node->needed = 1;
   cgraph_mark_reachable_node (node);
-}
-
-/* Record call from CALLER to CALLEE.  */
-
-struct cgraph_edge *
-cgraph_record_call (tree caller, tree callee)
-{
-  return create_edge (cgraph_node (caller), cgraph_node (callee));
-}
-
-void
-cgraph_remove_call (tree caller, tree callee)
-{
-  cgraph_remove_edge (cgraph_node (caller), cgraph_node (callee));
 }
 
 /* Return true when CALLER_DECL calls CALLEE_DECL.  */
@@ -356,6 +491,60 @@ cgraph_node_name (struct cgraph_node *node)
   return lang_hooks.decl_printable_name (node->decl, 2);
 }
 
+/* Dump given cgraph node.  */
+void
+dump_cgraph_node (FILE *f, struct cgraph_node *node)
+{
+  struct cgraph_edge *edge;
+  fprintf (f, "%s/%i:", cgraph_node_name (node), node->uid);
+  if (node->global.inlined_to)
+    fprintf (f, " (inline copy in %s/%i)",
+	     cgraph_node_name (node->global.inlined_to),
+	     node->global.inlined_to->uid);
+  if (node->local.self_insns)
+    fprintf (f, " %i insns", node->local.self_insns);
+  if (node->global.insns && node->global.insns != node->local.self_insns)
+    fprintf (f, " (%i after inlining)", node->global.insns);
+  if (node->origin)
+    fprintf (f, " nested in: %s", cgraph_node_name (node->origin));
+  if (node->needed)
+    fprintf (f, " needed");
+  else if (node->reachable)
+    fprintf (f, " reachable");
+  if (DECL_SAVED_TREE (node->decl))
+    fprintf (f, " tree");
+  if (node->output)
+    fprintf (f, " output");
+
+  if (node->local.local)
+    fprintf (f, " local");
+  if (node->local.disregard_inline_limits)
+    fprintf (f, " always_inline");
+  else if (node->local.inlinable)
+    fprintf (f, " inlinable");
+  if (TREE_ASM_WRITTEN (node->decl))
+    fprintf (f, " asm_written");
+
+  fprintf (f, "\n  called by: ");
+  for (edge = node->callers; edge; edge = edge->next_caller)
+    {
+      fprintf (f, "%s/%i ", cgraph_node_name (edge->caller),
+	       edge->caller->uid);
+      if (!edge->inline_failed)
+	fprintf(f, "(inlined) ");
+    }
+
+  fprintf (f, "\n  calls: ");
+  for (edge = node->callees; edge; edge = edge->next_callee)
+    {
+      fprintf (f, "%s/%i ", cgraph_node_name (edge->callee),
+	       edge->callee->uid);
+      if (!edge->inline_failed)
+	fprintf(f, "(inlined) ");
+    }
+  fprintf (f, "\n");
+}
+
 /* Dump the callgraph.  */
 
 void
@@ -365,48 +554,7 @@ dump_cgraph (FILE *f)
 
   fprintf (f, "callgraph:\n\n");
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      struct cgraph_edge *edge;
-      fprintf (f, "%s:", cgraph_node_name (node));
-      if (node->local.self_insns)
-        fprintf (f, " %i insns", node->local.self_insns);
-      if (node->global.insns && node->global.insns != node->local.self_insns)
-	fprintf (f, " (%i after inlining)", node->global.insns);
-      if (node->origin)
-	fprintf (f, " nested in: %s", cgraph_node_name (node->origin));
-      if (node->needed)
-	fprintf (f, " needed");
-      else if (node->reachable)
-	fprintf (f, " reachable");
-      if (DECL_SAVED_TREE (node->decl))
-	fprintf (f, " tree");
-
-      if (node->local.local)
-	fprintf (f, " local");
-      if (node->local.disregard_inline_limits)
-	fprintf (f, " always_inline");
-      else if (node->local.inlinable)
-	fprintf (f, " inlinable");
-      if (node->global.cloned_times > 1)
-	fprintf (f, " cloned %ix", node->global.cloned_times);
-
-      fprintf (f, "\n  called by: ");
-      for (edge = node->callers; edge; edge = edge->next_caller)
-	{
-	  fprintf (f, "%s ", cgraph_node_name (edge->caller));
-	  if (!edge->inline_failed)
-	    fprintf(f, "(inlined) ");
-	}
-
-      fprintf (f, "\n  calls: ");
-      for (edge = node->callees; edge; edge = edge->next_callee)
-	{
-	  fprintf (f, "%s ", cgraph_node_name (edge->callee));
-	  if (!edge->inline_failed)
-	    fprintf(f, "(inlined) ");
-	}
-      fprintf (f, "\n");
-    }
+    dump_cgraph_node (f, node);
 }
 
 /* Returns a hash code for P.  */
@@ -626,10 +774,48 @@ bool
 cgraph_function_possibly_inlined_p (tree decl)
 {
   if (!cgraph_global_info_ready)
-    return (DECL_INLINE (decl)
-	    && (!flag_really_no_inline
-		|| lang_hooks.tree_inlining.disregard_inline_limits (decl)));
-  return cgraph_node (decl)->global.inlined;
+    return (DECL_INLINE (decl) && !flag_really_no_inline);
+  if (!cgraph_inline_hash)
+    return false;
+  return (htab_find_slot (cgraph_inline_hash, DECL_ASSEMBLER_NAME (decl),
+			  NO_INSERT) != NULL);
 }
 
+/* Create clone of E in the node N represented by CALL_EXPR the callgraph.  */
+struct cgraph_edge *
+cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n, tree call_expr)
+{
+  struct cgraph_edge *new = cgraph_create_edge (n, e->callee, call_expr);
+
+  new->inline_failed = e->inline_failed;
+  return new;
+}
+
+/* Create node representing clone of N.  */
+struct cgraph_node *
+cgraph_clone_node (struct cgraph_node *n)
+{
+  struct cgraph_node *new = cgraph_create_node ();
+  struct cgraph_edge *e;
+
+  new->decl = n->decl;
+  new->origin = n->origin;
+  if (new->origin)
+    {
+      new->next_nested = new->origin->nested;
+      new->origin->nested = new;
+    }
+  new->analyzed = n->analyzed;
+  new->local = n->local;
+  new->global = n->global;
+  new->rtl = n->rtl;
+
+  for (e = n->callees;e; e=e->next_callee)
+    cgraph_clone_edge (e, new, e->call_expr);
+
+  new->next_clone = n->next_clone;
+  n->next_clone = new;
+
+  return new;
+}
 #include "gt-cgraph.h"

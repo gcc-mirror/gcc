@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cgraph.h"
 #include "intl.h"
 #include "diagnostic.h"
+#include "function.h"
 
 /* This should be eventually be generalized to other languages, but
    this would require a shared function-as-trees infrastructure.  */
@@ -100,12 +101,15 @@ typedef struct inline_data
      distinguish between those two situations.  This flag is true if
      we are cloning, rather than inlining.  */
   bool cloning_p;
+  /* Similarly for saving function body.  */
+  bool saving_p;
   /* Hash table used to prevent walk_tree from visiting the same node
      umpteen million times.  */
   htab_t tree_pruner;
-  /* Decl of function we are inlining into.  */
-  tree decl;
-  tree current_decl;
+  /* Callgraph node of function we are inlining into.  */
+  struct cgraph_node *node;
+  /* Callgraph node of currently inlined function.  */
+  struct cgraph_node *current_node;
 } inline_data;
 
 /* Prototypes.  */
@@ -537,9 +541,9 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
   /* If this is a RETURN_STMT, change it into an EXPR_STMT and a
      GOTO_STMT with the RET_LABEL as its target.  */
 #ifndef INLINER_FOR_JAVA
-  if (TREE_CODE (*tp) == RETURN_STMT && id->ret_label)
+  if (TREE_CODE (*tp) == RETURN_STMT && id->ret_label && !id->saving_p)
 #else /* INLINER_FOR_JAVA */
-  if (TREE_CODE (*tp) == RETURN_EXPR && id->ret_label)
+  if (TREE_CODE (*tp) == RETURN_EXPR && id->ret_label && !id->saving_p)
 #endif /* INLINER_FOR_JAVA */
     {
       tree return_stmt = *tp;
@@ -646,6 +650,8 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
      knows not to copy VAR_DECLs, etc., so this is safe.  */
   else
     {
+      tree old_node = *tp;
+
       if (TREE_CODE (*tp) == MODIFY_EXPR
 	  && TREE_OPERAND (*tp, 0) == TREE_OPERAND (*tp, 1)
 	  && (lang_hooks.tree_inlining.auto_var_in_fn_p
@@ -693,6 +699,32 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 
       copy_tree_r (tp, walk_subtrees, NULL);
 
+      if (TREE_CODE (*tp) == CALL_EXPR && id->node && get_callee_fndecl (*tp))
+	{
+	  if (id->saving_p)
+	    {
+	      struct cgraph_node *node;
+              struct cgraph_edge *edge;
+
+	      for (node = id->node->next_clone; node; node = node->next_clone)
+		{
+		  edge = cgraph_edge (node, old_node);
+		  if (edge)
+		    edge->call_expr = *tp;
+		  else
+		    abort ();
+		}
+	    }
+	  else if (!id->cloning_p)
+	    {
+              struct cgraph_edge *edge;
+
+	      edge = cgraph_edge (id->current_node, old_node);
+	      if (edge)
+	        cgraph_clone_edge (edge, id->node, *tp);
+	    }
+	}
+
       TREE_TYPE (*tp) = remap_type (TREE_TYPE (*tp), id);
 
       /* The copied TARGET_EXPR has never been expanded, even if the
@@ -715,8 +747,13 @@ static tree
 copy_body (inline_data *id)
 {
   tree body;
+  tree fndecl = VARRAY_TOP_TREE (id->fns);
 
-  body = DECL_SAVED_TREE (VARRAY_TOP_TREE (id->fns));
+  if (fndecl == current_function_decl
+      && cfun->saved_tree)
+    body = cfun->saved_tree;
+  else
+    body = DECL_SAVED_TREE (fndecl);
   walk_tree (&body, copy_body_r, id, NULL);
 
   return body;
@@ -742,8 +779,9 @@ initialize_inlined_parameters (inline_data *id, tree args, tree fn, tree block)
   int argnum = 0;
 
   /* Figure out what the parameters are.  */
-  parms = 
-DECL_ARGUMENTS (fn);
+  parms = DECL_ARGUMENTS (fn);
+  if (fn == current_function_decl && cfun->saved_args)
+    parms = cfun->saved_args;
 
   /* Start with no initializations whatsoever.  */
   init_stmts = NULL_TREE;
@@ -1254,6 +1292,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   splay_tree st;
   tree args;
   tree return_slot_addr;
+  struct cgraph_edge *edge;
   const char *reason;
 
   /* See what we've got.  */
@@ -1333,9 +1372,30 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
       && DECL_SAVED_TREE (DECL_ABSTRACT_ORIGIN (fn)))
     fn = DECL_ABSTRACT_ORIGIN (fn);
 
+  /* Objective C and fortran still calls tree_rest_of_compilation directly.
+     Kill this check once this is fixed.  */
+  if (!id->current_node->analyzed)
+    return NULL_TREE;
+
+  edge = cgraph_edge (id->current_node, t);
+
+  /* Constant propagation on argument done during previous inlining
+     may create new direct call.  Produce an edge for it.  */
+  if (!edge)
+    {
+      struct cgraph_node *dest = cgraph_node (fn);
+
+      /* FN must have address taken so it can be passed as argument.  */
+      if (!dest->needed)
+	abort ();
+      cgraph_create_edge (id->node, dest, t)->inline_failed
+	= N_("originally indirect function call not considered for inlining");
+      return NULL_TREE;
+    }
+
   /* Don't try to inline functions that are not well-suited to
      inlining.  */
-  if (!cgraph_inline_p (id->current_decl, fn, &reason))
+  if (!cgraph_inline_p (edge, &reason))
     {
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
 	{
@@ -1351,6 +1411,11 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 	}
       return NULL_TREE;
     }
+
+#ifdef ENABLE_CHECKING
+  if (edge->callee->decl != id->node->decl)
+    verify_cgraph_node (edge->callee);
+#endif
 
   if (! lang_hooks.tree_inlining.start_inlining (fn))
     return NULL_TREE;
@@ -1487,23 +1552,29 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 
   /* After we've initialized the parameters, we insert the body of the
      function itself.  */
-#ifndef INLINER_FOR_JAVA
-  inlined_body = &COMPOUND_BODY (stmt);
-  while (*inlined_body)
-    inlined_body = &TREE_CHAIN (*inlined_body);
-  *inlined_body = copy_body (id);
-#else /* INLINER_FOR_JAVA */
   {
-    tree new_body;
-    java_inlining_map_static_initializers (fn, id->decl_map);
-    new_body = copy_body (id);
-    TREE_TYPE (new_body) = TREE_TYPE (TREE_TYPE (fn));
-    BLOCK_EXPR_BODY (expr)
-      = add_stmt_to_compound (BLOCK_EXPR_BODY (expr),
-			      TREE_TYPE (new_body), new_body);
-    inlined_body = &BLOCK_EXPR_BODY (expr);
-  }
+    struct cgraph_node *old_node = id->current_node;
+
+    id->current_node = edge->callee;
+#ifndef INLINER_FOR_JAVA
+    inlined_body = &COMPOUND_BODY (stmt);
+    while (*inlined_body)
+      inlined_body = &TREE_CHAIN (*inlined_body);
+    *inlined_body = copy_body (id);
+#else /* INLINER_FOR_JAVA */
+    {
+      tree new_body;
+      java_inlining_map_static_initializers (fn, id->decl_map);
+      new_body = copy_body (id);
+      TREE_TYPE (new_body) = TREE_TYPE (TREE_TYPE (fn));
+      BLOCK_EXPR_BODY (expr)
+	= add_stmt_to_compound (BLOCK_EXPR_BODY (expr),
+				TREE_TYPE (new_body), new_body);
+      inlined_body = &BLOCK_EXPR_BODY (expr);
+    }
 #endif /* INLINER_FOR_JAVA */
+    id->current_node = old_node;
+  }
 
   /* After the body of the function comes the RET_LABEL.  This must come
      before we evaluate the returned value below, because that evaluation
@@ -1574,19 +1645,10 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   TREE_USED (*tp) = 1;
 
   /* Update callgraph if needed.  */
-  if (id->decl)
-    {
-      cgraph_remove_call (id->decl, fn);
-      cgraph_create_edges (id->decl, *inlined_body);
-    }
+  cgraph_remove_node (edge->callee);
 
   /* Recurse into the body of the just inlined function.  */
-  {
-    tree old_decl = id->current_decl;
-    id->current_decl = fn;
-    expand_calls_inline (inlined_body, id);
-    id->current_decl = old_decl;
-  }
+  expand_calls_inline (inlined_body, id);
   VARRAY_POP (id->fns);
 
   /* Don't walk into subtrees.  We've already handled them above.  */
@@ -1629,8 +1691,7 @@ optimize_inline_calls (tree fn)
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));
 
-  id.decl = fn;
-  id.current_decl = fn;
+  id.current_node = id.node = cgraph_node (fn);
   /* Don't allow recursion into FN.  */
   VARRAY_TREE_INIT (id.fns, 32, "fns");
   VARRAY_PUSH_TREE (id.fns, fn);
@@ -1669,6 +1730,18 @@ optimize_inline_calls (tree fn)
 		VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
       DECL_INLINED_FNS (fn) = ifn;
     }
+#ifdef ENABLE_CHECKING
+    {
+      struct cgraph_edge *e;
+
+      verify_cgraph_node (id.node);
+
+      /* Double check that we inlined everything we are supposed to inline.  */
+      for (e = id.node->callees; e; e = e->next_callee)
+	if (!e->inline_failed)
+	  abort ();
+    }
+#endif
 }
 
 /* FN is a function that has a complete body, and CLONE is a function
@@ -1696,6 +1769,42 @@ clone_body (tree clone, tree fn, void *arg_map)
 
   /* Actually copy the body.  */
   TREE_CHAIN (DECL_SAVED_TREE (clone)) = copy_body (&id);
+}
+
+/* Save duplicate of body in FN.  MAP is used to pass around splay tree
+   used to update arguments in restore_body.  */
+tree
+save_body (tree fn, tree *arg_copy)
+{
+  inline_data id;
+  tree body, *parg;
+
+  memset (&id, 0, sizeof (id));
+  VARRAY_TREE_INIT (id.fns, 1, "fns");
+  VARRAY_PUSH_TREE (id.fns, fn);
+  id.node = cgraph_node (fn);
+  id.saving_p = true;
+  id.decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+  *arg_copy = DECL_ARGUMENTS (fn);
+  for (parg = arg_copy; *parg; parg = &TREE_CHAIN (*parg))
+    {
+      tree new = copy_node (*parg);
+      (*lang_hooks.dup_lang_specific_decl) (new);
+      DECL_ABSTRACT_ORIGIN (new) = DECL_ORIGIN (*parg);
+      insert_decl_map (&id, *parg, new);
+      TREE_CHAIN (new) = TREE_CHAIN (*parg);
+      *parg = new;
+    }
+  insert_decl_map (&id, DECL_RESULT (fn), DECL_RESULT (fn));
+
+  /* Actually copy the body.  */
+  body = copy_body (&id);
+  if (lang_hooks.update_decl_after_saving)
+    lang_hooks.update_decl_after_saving (fn, id.decl_map);
+
+  /* Clean up.  */
+  splay_tree_delete (id.decl_map);
+  return body;
 }
 
 /* Apply FUNC to all the sub-trees of TP in a pre-order traversal.

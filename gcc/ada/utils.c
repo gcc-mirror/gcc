@@ -37,6 +37,7 @@
 #include "debug.h"
 #include "convert.h"
 #include "target.h"
+#include "function.h"
 
 #include "ada.h"
 #include "types.h"
@@ -1920,7 +1921,15 @@ end_subprog_body (void)
   /* If we're only annotating types, don't actually compile this
      function.  */
   if (!type_annotate_only)
-    rest_of_compilation (current_function_decl);
+    {
+      rest_of_compilation (current_function_decl);
+      if (! DECL_DEFER_OUTPUT (current_function_decl))
+	{
+	  free_after_compilation (cfun);
+	  DECL_STRUCT_FUNCTION (current_function_decl) = 0;
+	}
+      cfun = 0;
+    }
 
   if (function_nesting_depth > 1)
     ggc_pop_context ();

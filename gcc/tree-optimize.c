@@ -96,6 +96,7 @@ void
 tree_rest_of_compilation (tree fndecl, bool nested_p)
 {
   location_t saved_loc;
+  struct cgraph_node *node, *saved_node = NULL;
 
   timevar_push (TV_EXPAND);
 
@@ -117,6 +118,39 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
      not safe to try to expand expressions involving them.  */
   immediate_size_expand = 0;
   cfun->x_dont_save_pending_sizes_p = 1;
+
+  node = cgraph_node (fndecl);
+
+  /* We might need the body of this function so that we can expand
+     it inline somewhere else.  This means not lowering some constructs
+     such as exception handling.  */
+  if (cgraph_preserve_function_body_p (fndecl))
+    {
+      if (!flag_unit_at_a_time)
+	{
+	  struct cgraph_edge *e;
+
+	  saved_node = cgraph_clone_node (node);
+	  for (e = saved_node->callees; e; e = e->next_callee)
+	    if (!e->inline_failed)
+	      cgraph_clone_inlined_nodes (e, true);
+	}
+      cfun->saved_tree = save_body (fndecl, &cfun->saved_args);
+    }
+
+  if (flag_inline_trees)
+    {
+      struct cgraph_edge *e;
+      for (e = node->callees; e; e = e->next_callee)
+	if (!e->inline_failed || warn_inline)
+	  break;
+      if (e)
+	{
+	  timevar_push (TV_INTEGRATION);
+	  optimize_inline_calls (fndecl);
+	  timevar_pop (TV_INTEGRATION);
+	}
+    }
 
   /* If the function has a variably modified type, there may be
      SAVE_EXPRs in the parameter types.  Their context must be set to
@@ -167,6 +201,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   /* Run the optimizers and output the assembler code for this function.  */
   rest_of_compilation (fndecl);
 
+
   /* Undo the GC context switch.  */
   if (nested_p)
     ggc_pop_context ();
@@ -205,11 +240,31 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
 				clear_decl_rtl,
 				fndecl);
-  if (!cgraph_function_possibly_inlined_p (fndecl))
+  /* Restore original body if still needed.  */
+  if (cfun->saved_tree)
+    {
+      DECL_SAVED_TREE (fndecl) = cfun->saved_tree;
+      DECL_ARGUMENTS (fndecl) = cfun->saved_args;
+
+      /* When not in unit-at-a-time mode, we must preserve out of line copy
+	 representing node before inlining.  Restore original outgoing edges
+	 using clone we created earlier.  */
+      if (!flag_unit_at_a_time)
+	{
+	  struct cgraph_edge *e;
+	  while (node->callees)
+	    cgraph_remove_edge (node->callees);
+	  node->callees = saved_node->callees;
+	  saved_node->callees = NULL;
+	  for (e = saved_node->callees; e; e = e->next_callee)
+	    e->caller = node;
+	  cgraph_remove_node (saved_node);
+	}
+    }
+  else
     {
       DECL_SAVED_TREE (fndecl) = NULL;
-      if (DECL_STRUCT_FUNCTION (fndecl) == 0
-	  && !cgraph_node (fndecl)->origin)
+      if (cgraph_node (fndecl)->origin)
 	{
 	  /* Stop pointing to the local nodes about to be freed.
 	     But DECL_INITIAL must remain nonzero so we know this
@@ -220,6 +275,9 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	    DECL_INITIAL (fndecl) = error_mark_node;
 	}
     }
+  free_after_compilation (cfun);
+  cfun = 0;
+  DECL_STRUCT_FUNCTION (fndecl) = 0;
 
   input_location = saved_loc;
 

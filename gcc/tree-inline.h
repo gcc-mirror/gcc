@@ -30,6 +30,7 @@ tree walk_tree (tree*, walk_tree_fn, void*, void*);
 tree walk_tree_without_duplicates (tree*, walk_tree_fn, void*);
 tree copy_tree_r (tree*, int*, void*);
 void clone_body (tree, tree, void*);
+tree save_body (tree, tree *);
 void remap_save_expr (tree*, void*, tree, int*);
 
 /* 0 if we should not perform inlining.

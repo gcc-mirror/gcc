@@ -1,3 +1,9 @@
+2004-04-02  Jan Hubicka  <jh@suse.cz>
+
+	* cp-lang. (LANG_HOOKS_UPDATE_DECL_AFTER_SAVING): Define.
+	* cp-tree.h (cp_update_decl_after_saving): Declare.
+	* tree.c (cp_update_decl_after_saving): Define.
+
 2004-04-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14803
