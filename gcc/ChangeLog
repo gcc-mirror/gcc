@@ -1,3 +1,14 @@
+2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
+
+	* defaults.h (obstack_chunk_alloc, obstack_chunk_free):
+	Default definition.
+	* gcse.c: Don't define obstack_chunk_free.
+	* collect2.c, conflict.c, df.c, diagnostic.c, fix-header.c,
+	flow.c, gcc.c, genattrtab.c, genautomata.c, genflags.c, gensupport.c,
+	integrate.c, loop.c, ra.c, read-rtl.c, regrename.c, reload1.c,
+	reorg.c, tlink.c, tree.c, config/arm/arm.c, objc/objc-act.c:
+	Don't define obstack macros.
+
 2002-07-22  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR target/6744

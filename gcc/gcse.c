@@ -165,8 +165,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cselib.h"
 
 #include "obstack.h"
+
+/* We don't want to use xmalloc.  */
+#undef obstack_chunk_alloc
 #define obstack_chunk_alloc gmalloc
-#define obstack_chunk_free free
 
 /* Propagate flow information through back edges and thus enable PRE's
    moving loop invariant calculations out of loops.

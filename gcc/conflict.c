@@ -33,10 +33,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hard-reg-set.h"
 #include "basic-block.h"
 
-/* Use malloc to allocate obstack chunks.  */
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 /* A register conflict graph is an undirected graph containing nodes
    for some or all of the regs used in a function.  Arcs represent
    conflicts, i.e. two nodes are connected by an arc if there is a

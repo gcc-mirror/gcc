@@ -1,3 +1,7 @@
+2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
+
+	* class.c, method.c, pt.c, search.c: Don't define obstack macros.
+
 2002-07-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/7347, c++/7348

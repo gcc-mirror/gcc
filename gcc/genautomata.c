@@ -116,9 +116,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "genattrtab.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 /* Positions in machine description file.  Now they are not used.  But
    they could be used in the future for better diagnostic messages.  */
 typedef int pos_t;

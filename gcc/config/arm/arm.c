@@ -187,9 +187,6 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 static struct obstack minipool_obstack;
 static char *         minipool_startobj;
 
-#define obstack_chunk_alloc   xmalloc
-#define obstack_chunk_free    free
-
 /* The maximum number of insns skipped which
    will be conditionalised if possible.  */
 static int max_insns_skipped = 5;

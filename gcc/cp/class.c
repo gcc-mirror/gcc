@@ -36,8 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 
 #include "obstack.h"
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */

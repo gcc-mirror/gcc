@@ -37,9 +37,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free  free
-
 #define output_formatted_integer(BUFFER, FORMAT, INTEGER)	\
   do								\
     {								\

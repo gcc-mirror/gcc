@@ -54,9 +54,6 @@ enum mangling_flags
 
 typedef enum mangling_flags mangling_flags;
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
 static void do_build_assign_ref PARAMS ((tree));
 static void do_build_copy_constructor PARAMS ((tree));
 static tree synthesize_exception_spec PARAMS ((tree, tree (*) (tree, void *), void *));
