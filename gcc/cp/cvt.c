@@ -552,11 +552,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 tree
 convert_from_reference (tree val)
 {
-  tree type = TREE_TYPE (val);
-
-  if (TREE_CODE (type) == OFFSET_TYPE)
-    type = TREE_TYPE (type);
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
     return build_indirect_ref (val, NULL);
   return val;
 }

@@ -3091,12 +3091,6 @@ check_field_decls (tree t, tree *access_decls,
 	  type = build_pointer_type (type);
 	  TREE_TYPE (x) = type;
 	}
-      else if (TREE_CODE (type) == OFFSET_TYPE)
-	{
-	  cp_error_at ("field `%D' invalidly declared offset type", x);
-	  type = build_pointer_type (type);
-	  TREE_TYPE (x) = type;
-	}
 
       if (type == error_mark_node)
 	continue;

@@ -1441,7 +1441,9 @@ write_type (tree type)
       /* See through any typedefs.  */
       type = TYPE_MAIN_VARIANT (type);
 
-      switch (TREE_CODE (type))
+      if (TYPE_PTRMEM_P (type))
+	write_pointer_to_member_type (type);
+      else switch (TREE_CODE (type))
 	{
 	case VOID_TYPE:
 	case BOOLEAN_TYPE:
@@ -1483,15 +1485,8 @@ write_type (tree type)
 	  break;
 
 	case POINTER_TYPE:
-	  /* A pointer-to-member variable is represented by a POINTER_TYPE
-	     to an OFFSET_TYPE, so check for this first.  */
-	  if (TYPE_PTRMEM_P (type))
-	    write_pointer_to_member_type (type);
-	  else
-	    {
-	      write_char ('P');
-	      write_type (TREE_TYPE (type));
-	    }
+	  write_char ('P');
+	  write_type (TREE_TYPE (type));
 	  break;
 
 	case REFERENCE_TYPE:
@@ -1512,10 +1507,6 @@ write_type (tree type)
 	  write_template_template_param (type);
 	  write_template_args 
 	    (TI_ARGS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type)));
-	  break;
-
-	case OFFSET_TYPE:
-	  write_pointer_to_member_type (build_pointer_type (type));
 	  break;
 
 	case VECTOR_TYPE:

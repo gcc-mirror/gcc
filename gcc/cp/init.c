@@ -1501,7 +1501,7 @@ build_member_call (tree type, tree name, tree parmlist)
 tree
 build_offset_ref (tree type, tree name)
 {
-  tree decl, t = error_mark_node;
+  tree decl;
   tree member;
   tree basebinfo = NULL_TREE;
   tree orig_name = name;
@@ -1546,7 +1546,7 @@ build_offset_ref (tree type, tree name)
   /* Handle namespace names fully here.  */
   if (TREE_CODE (type) == NAMESPACE_DECL)
     {
-      t = lookup_namespace_name (type, name);
+      tree t = lookup_namespace_name (type, name);
       if (t == error_mark_node)
         return t;
       if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
@@ -1597,7 +1597,7 @@ build_offset_ref (tree type, tree name)
     {
       /* Go from the TREE_BASELINK to the member function info.  */
       tree fnfields = member;
-      t = BASELINK_FUNCTIONS (fnfields);
+      tree t = BASELINK_FUNCTIONS (fnfields);
 
       if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
 	{
@@ -1644,44 +1644,43 @@ build_offset_ref (tree type, tree name)
       return t;
     }
 
-  t = member;
-
-  if (t == NULL_TREE)
+  if (member == NULL_TREE)
     {
       error ("`%D' is not a member of type `%T'", name, type);
       return error_mark_node;
     }
 
-  if (TREE_CODE (t) == TYPE_DECL)
+  if (TREE_CODE (member) == TYPE_DECL)
     {
-      TREE_USED (t) = 1;
-      return t;
+      TREE_USED (member) = 1;
+      return member;
     }
   /* static class members and class-specific enum
      values can be returned without further ado.  */
-  if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == CONST_DECL)
+  if (TREE_CODE (member) == VAR_DECL || TREE_CODE (member) == CONST_DECL)
     {
-      mark_used (t);
-      return convert_from_reference (t);
+      mark_used (member);
+      return convert_from_reference (member);
     }
 
-  if (TREE_CODE (t) == FIELD_DECL && DECL_C_BIT_FIELD (t))
+  if (TREE_CODE (member) == FIELD_DECL && DECL_C_BIT_FIELD (member))
     {
-      error ("invalid pointer to bit-field `%D'", t);
+      error ("invalid pointer to bit-field `%D'", member);
       return error_mark_node;
     }
 
   /* static class functions too.  */
-  if (TREE_CODE (t) == FUNCTION_DECL
-      && TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
+  if (TREE_CODE (member) == FUNCTION_DECL
+      && TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE)
     abort ();
 
   /* In member functions, the form `type::name' is no longer
      equivalent to `this->type::name', at least not until
      resolve_offset_ref.  */
-  t = build (OFFSET_REF, build_offset_type (type, TREE_TYPE (t)), decl, t);
-  PTRMEM_OK_P (t) = 1;
-  return t;
+  member = build (OFFSET_REF, build_offset_type (type, TREE_TYPE (member)), 
+		  decl, member);
+  PTRMEM_OK_P (member) = 1;
+  return member;
 }
 
 /* If a OFFSET_REF made it through to here, then it did
@@ -2625,7 +2624,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
     /* Pre-evaluate the SAVE_EXPR outside of the BIND_EXPR.  */
     body = build (COMPOUND_EXPR, void_type_node, base, body);
 
-  return cp_convert (void_type_node, body);
+  return convert_to_void (body, /*implicit=*/NULL);
 }
 
 /* Create an unnamed variable of the indicated TYPE.  */ 

@@ -407,16 +407,9 @@ grok_array_decl (tree array_expr, tree index_exp)
     return build_min (ARRAY_REF, type ? TREE_TYPE (type) : NULL_TREE,
 		      array_expr, index_exp);
 
-  if (type == NULL_TREE)
-    {
-      /* Something has gone very wrong.  Assume we are mistakenly reducing
-	 an expression instead of a declaration.  */
-      error ("parser may be lost: is there a '{' missing somewhere?");
-      return NULL_TREE;
-    }
+  my_friendly_assert (type, 20030626);
 
-  if (TREE_CODE (type) == OFFSET_TYPE
-      || TREE_CODE (type) == REFERENCE_TYPE)
+  if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
   /* If they have an `operator[]', use that.  */
@@ -4069,8 +4062,15 @@ arg_assoc_type (struct arg_lookup *k, tree type)
      right, we can end up with such things without a type.  */
   if (!type)
     return false;
-  
-  switch (TREE_CODE (type))
+
+  if (TYPE_PTRMEM_P (type))
+    {
+      /* Pointer to member: associate class type and value type.  */
+      if (arg_assoc_type (k, TYPE_PTRMEM_CLASS_TYPE (type)))
+	return true;
+      return arg_assoc_type (k, TYPE_PTRMEM_POINTED_TO_TYPE (type));
+    }
+  else switch (TREE_CODE (type))
     {
     case ERROR_MARK:
       return false;
@@ -4093,11 +4093,6 @@ arg_assoc_type (struct arg_lookup *k, tree type)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       return arg_assoc_namespace (k, decl_namespace (TYPE_MAIN_DECL (type)));
-    case OFFSET_TYPE:
-      /* Pointer to member: associate class type and value type.  */
-      if (arg_assoc_type (k, TYPE_OFFSET_BASETYPE (type)))
-	return true;
-      return arg_assoc_type (k, TREE_TYPE (type));
     case METHOD_TYPE:
       /* The basetype is referenced in the first arg type, so just
 	 fall through.  */
