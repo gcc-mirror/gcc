@@ -100,17 +100,11 @@ $(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
 	  $(AR) $(AR_FLAGS) $(LIBG2C) $$objs
 	$(RANLIB) $(LIBG2C)
 
-s-libi77: i77
-
 i77:
 	cd libI77; $(MAKE) $(FLAGS_TO_PASS) all
 
-s-libf77: f77
-
 f77:
 	cd libF77; $(MAKE) $(FLAGS_TO_PASS) all
-
-s-libu77: u77
 
 u77:
 	cd libU77; $(MAKE) $(FLAGS_TO_PASS) all
