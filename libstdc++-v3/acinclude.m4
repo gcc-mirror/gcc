@@ -1809,10 +1809,6 @@ glibcpp_toolexecdir=no
 glibcpp_toolexeclibdir=no
 glibcpp_prefixdir=${prefix}
 
-AC_MSG_CHECKING([for interface version number])
-libstdcxx_interface=$INTERFACE
-AC_MSG_RESULT($libstdcxx_interface)
-
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 AC_MSG_CHECKING([for --with-gxx-include-dir])
 AC_ARG_WITH(gxx-include-dir,
@@ -1844,26 +1840,30 @@ version_specific_libs=no)dnl
 # Option set, now we can test it.
 AC_MSG_RESULT($version_specific_libs)
 
+# Get the gcc version number. This is lifted from gcc/configure.in
+AC_MSG_CHECKING([for gcc version number])
+changequote(,)dnl
+gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+changequote([,])dnl
+AC_MSG_RESULT($gcc_version)
+
+# Default case for install directory for include files.
+if test $version_specific_libs = no && test $gxx_include_dir = no; then
+  gxx_include_dir='$(prefix)'/include/c++/${gcc_version}
+fi
+
+# Version-specific runtime libs processing.
 if test $version_specific_libs = yes; then
   # Need the gcc compiler version to know where to install libraries
   # and header files if --enable-version-specific-runtime-libs option
   # is selected.
-  changequote(,)dnl
-  gcc_version_trigger=${srcdir}/../gcc/version.c
-  gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
-  gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
   if test x"$gxx_include_dir" = x"no"; then
-    gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include/g++
+    gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include/c++
   fi
   glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
   glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
-  changequote([,])dnl
-fi
-
-# Default case for install directory for include files.
-if test $version_specific_libs = no &&
-   test $gxx_include_dir = no; then
-  gxx_include_dir='$(prefix)'/include/g++-${libstdcxx_interface}
 fi
 
 # Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
