@@ -3410,7 +3410,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		 "Biv %d initialized at insn %d: initial value ",
 		 bl->regno, INSN_UID (bl->init_insn));
 
-      if (GET_MODE (src) == GET_MODE (regno_reg_rtx[bl->regno])
+      if ((GET_MODE (src) == GET_MODE (regno_reg_rtx[bl->regno])
+	   || GET_MODE (src) == VOIDmode)
 	  && valid_initial_value_p (src, bl->init_insn, call_seen, loop_start))
 	{
 	  bl->initial_value = src;
