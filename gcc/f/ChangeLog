@@ -1,4 +1,12 @@
-Fri May 15 10:52:49 1998  Craig Burley  <burley@gnu.org>
+1998-05-18  Craig Burley  <burley@gnu.org>
+
+	* Make-lang.in (G77STAGESTUFF): Add g77.o, g77spec.o,
+	and g77version.o.
+	(f77.clean): Add removal of g77.c, g77.o, g77spec.o,
+	and g77version.o.
+	(f77.distclean): Delete removal of g77.c.
+
+1998-05-18  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_convert_narrow_, ffecom_convert_widen_):
 	Be even more persnickety in checking for internal bugs.
