@@ -1,21 +1,10 @@
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
-
-#define T(TYPE)							\
+#define TEST(TYPE,MTYPE)					\
 TYPE g1s##TYPE, g2s##TYPE, g3s##TYPE, g4s##TYPE;		\
 TYPE g5s##TYPE, g6s##TYPE, g7s##TYPE, g8s##TYPE;		\
 TYPE g9s##TYPE, g10s##TYPE, g11s##TYPE, g12s##TYPE;		\
 TYPE g13s##TYPE, g14s##TYPE, g15s##TYPE, g16s##TYPE;		\
 								\
-extern void init##TYPE (TYPE *p, int i);			\
+extern void init##TYPE (TYPE *p, MTYPE x);			\
 extern void checkg##TYPE (void);				\
 extern void							\
 test##TYPE (TYPE s1, TYPE s2, TYPE s3, TYPE s4,			\
@@ -38,22 +27,22 @@ void								\
 testit##TYPE (void)						\
 {								\
   DEBUG_FPUTS (#TYPE);						\
-  init##TYPE  ( &g1s##TYPE,  1);				\
-  init##TYPE  ( &g2s##TYPE,  2);				\
-  init##TYPE  ( &g3s##TYPE,  3);				\
-  init##TYPE  ( &g4s##TYPE,  4);				\
-  init##TYPE  ( &g5s##TYPE,  5);				\
-  init##TYPE  ( &g6s##TYPE,  6);				\
-  init##TYPE  ( &g7s##TYPE,  7);				\
-  init##TYPE  ( &g8s##TYPE,  8);				\
-  init##TYPE  ( &g9s##TYPE,  9);				\
-  init##TYPE  (&g10s##TYPE, 10);				\
-  init##TYPE  (&g11s##TYPE, 11);				\
-  init##TYPE  (&g12s##TYPE, 12);				\
-  init##TYPE  (&g13s##TYPE, 13);				\
-  init##TYPE  (&g14s##TYPE, 14);				\
-  init##TYPE  (&g15s##TYPE, 15);				\
-  init##TYPE  (&g16s##TYPE, 16);				\
+  init##TYPE  ( &g1s##TYPE,  (MTYPE)1);				\
+  init##TYPE  ( &g2s##TYPE,  (MTYPE)2);				\
+  init##TYPE  ( &g3s##TYPE,  (MTYPE)3);				\
+  init##TYPE  ( &g4s##TYPE,  (MTYPE)4);				\
+  init##TYPE  ( &g5s##TYPE,  (MTYPE)5);				\
+  init##TYPE  ( &g6s##TYPE,  (MTYPE)6);				\
+  init##TYPE  ( &g7s##TYPE,  (MTYPE)7);				\
+  init##TYPE  ( &g8s##TYPE,  (MTYPE)8);				\
+  init##TYPE  ( &g9s##TYPE,  (MTYPE)9);				\
+  init##TYPE  (&g10s##TYPE, (MTYPE)10);				\
+  init##TYPE  (&g11s##TYPE, (MTYPE)11);				\
+  init##TYPE  (&g12s##TYPE, (MTYPE)12);				\
+  init##TYPE  (&g13s##TYPE, (MTYPE)13);				\
+  init##TYPE  (&g14s##TYPE, (MTYPE)14);				\
+  init##TYPE  (&g15s##TYPE, (MTYPE)15);				\
+  init##TYPE  (&g16s##TYPE, (MTYPE)16);				\
   checkg##TYPE ();						\
   DEBUG_FPUTS (" test");					\
   test##TYPE (g1s##TYPE, g2s##TYPE, g3s##TYPE, g4s##TYPE,	\
@@ -121,51 +110,4 @@ testit##TYPE (void)						\
   test2_##TYPE (g1s##TYPE, g3s##TYPE, g5s##TYPE, g7s##TYPE,	\
 		g9s##TYPE, g11s##TYPE, g13s##TYPE, g15s##TYPE);	\
   DEBUG_NL;							\
-}
-
-extern void abort (void);
-
-#include "small-struct-defs.h"
-#include "small-struct-check.h"
-
-T(Sc)
-T(Ss)
-T(Si)
-T(Scs)
-T(Ssc)
-T(Sic)
-T(Sci)
-T(Ssi)
-T(Sis)
-T(Scsi)
-T(Scis)
-T(Ssci)
-T(Ssic)
-T(Sisc)
-T(Sics)
-
-#undef T
-
-void
-struct_by_value_3_x ()
-{
-#define T(TYPE) testit##TYPE ();
-
-T(Sc)
-T(Ss)
-T(Si)
-T(Scs)
-T(Ssc)
-T(Sic)
-T(Sci)
-T(Ssi)
-T(Sis)
-T(Scsi)
-T(Scis)
-T(Ssci)
-T(Ssic)
-T(Sisc)
-T(Sics)
-
-#undef T
 }

@@ -1,3 +1,35 @@
+2003-05-20  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/compat/struct-by-value-3_x.c: Move common pieces to headers.
+	* gcc.dg/compat/struct-by-value-3_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-5_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-5_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-6_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-6_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-7_x.c Ditto.
+	* gcc.dg/compat/struct-by-value-7_y.c Ditto.
+	* gcc.dg/compat/small-struct-defs.h: New file.
+	* gcc.dg/compat/small-struct-init.h: New file.
+	* gcc.dg/compat/small-struct-check.h: New file.
+	* gcc.dg/compat/fp-struct-defs.h: New file.
+	* gcc.dg/compat/fp-struct-check.h: New file.
+	* gcc.dg/compat/fp-struct-init.h: New file.
+	* gcc.dg/compat/fp-struct-test-by-value-y.h: New file.
+	* gcc.dg/compat/fp-struct-test-by-value-x.h: New file.
+
+	* gcc.dg/compat/scalar-return-1_main.c: New file.
+	* gcc.dg/compat/scalar-return-1_x.c: New file.
+	* gcc.dg/compat/scalar-return-1_y.c: New file.
+	* gcc.dg/compat/scalar-return-2_main.c: New file.
+	* gcc.dg/compat/scalar-return-2_x.c: New file.
+	* gcc.dg/compat/scalar-return-2_y.c: New file.
+	* gcc.dg/compat/struct-return-3_main.c: New file.
+	* gcc.dg/compat/struct-return-3_y.c: New file.
+	* gcc.dg/compat/struct-return-3_x.c: New file.
+	* gcc.dg/compat/struct-return-2_main.c: New file.
+	* gcc.dg/compat/struct-return-2_x.c: New file.
+	* gcc.dg/compat/struct-return-2_y.c: New file.
+
 2003-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20030225-2.c: New test.
