@@ -1,3 +1,9 @@
+Fri Mar 26 01:59:15 1999  "Charles M. Hannum" <root@ihack.net>
+
+	* fold-const.c (fold_truthop): Verify that the lhs and rhs are
+	in the same bit position when optimizing bitfield references
+	which have the same mask.
+
 Thu Mar 25 22:53:27 1999  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* gcc.texi (Copy Assignment): New node.
