@@ -3399,9 +3399,10 @@ output_asm_insn (template, operands)
 	     DIALECT_NUMBER of strings ending with '|'.  */
 	  for (i = 0; i < dialect_number; i++)
 	    {
-	      while (*p && *p++ != '|')
+	      while (*p && *p != '}' && *p++ != '|')
 		;
-
+	      if (*p == '}')
+		break;
 	      if (*p == '|')
 		p++;
 	    }
