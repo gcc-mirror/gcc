@@ -22,17 +22,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Middle-to-low level generation of rtx code and insns.
 
-   This file contains the functions `gen_reg_rtx' and `gen_label_rtx'
-   that are the usual ways of creating rtl expressions for most
-   purposes.
-
-   It also has the functions for creating insns and linking
-   them in the doubly-linked chain.
+   This file contains support functions for creating rtl expressions
+   and manipulating them in the doubly-linked chain of insns.
 
    The patterns of the insns are created by machine-dependent
    routines in insn-emit.c, which is generated automatically from
-   the machine description.  These routines use `gen_rtx_fmt_ee' and
-   others to make the individual rtx's of the pattern; what is machine
+   the machine description.  These routines make the individual rtx's
+   of the pattern with `gen_rtx_fmt_ee' and others in genrtl.[ch],
+   which are automatically generated from rtl.def; what is machine
    dependent is the kind of rtx's they make and what arguments they
    use.  */
 

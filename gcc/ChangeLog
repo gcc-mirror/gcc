@@ -1,3 +1,7 @@
+2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* emit-rtl.c: Update the comment about the file.
+
 2004-02-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* sourcebuild.texi (Test Idioms): Update testcase naming
