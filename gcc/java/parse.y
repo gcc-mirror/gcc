@@ -10863,11 +10863,9 @@ patch_invoke (tree patch, tree method, tree args)
 	(class_has_finalize_method (class) ? alloc_object_node
 		  			   : alloc_no_finalizer_node);
       new = build (CALL_EXPR, promote_type (class),
-		   build_address_of (alloc_node),
-		   tree_cons (NULL_TREE, build_class_ref (class),
-			      build_tree_list (NULL_TREE,
-					       size_in_bytes (class))),
-		   NULL_TREE);
+		     build_address_of (alloc_node),
+		     build_tree_list (NULL_TREE, build_class_ref (class)),
+		     NULL_TREE);
       saved_new = save_expr (new);
       c1 = build_tree_list (NULL_TREE, saved_new);
       TREE_CHAIN (c1) = TREE_OPERAND (original_call, 1);

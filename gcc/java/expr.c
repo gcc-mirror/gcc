@@ -1150,9 +1150,7 @@ expand_java_NEW (tree type)
   safe_layout_class (type);
   push_value (build (CALL_EXPR, promote_type (type),
 		     build_address_of (alloc_node),
-		     tree_cons (NULL_TREE, build_class_ref (type),
-				build_tree_list (NULL_TREE,
-						 size_in_bytes (type))),
+		     build_tree_list (NULL_TREE, build_class_ref (type)),
 		     NULL_TREE));
 }
 

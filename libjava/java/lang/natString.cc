@@ -402,30 +402,6 @@ java::lang::String::valueOf (jint num)
 }
 
 jstring
-_Jv_AllocString(jsize len)
-{
-  jsize sz = sizeof(java::lang::String) + len * sizeof(jchar);
-
-  // We assert that for strings allocated this way, the data field
-  // will always point to the object itself.  Thus there is no reason
-  // for the garbage collector to scan any of it.
-  // Furthermore, we're about to overwrite the string data, so
-  // initialization of the object is not an issue.
-#ifdef ENABLE_JVMPI
-  jstring obj = (jstring) _Jv_AllocPtrFreeObject(&StringClass, sz);
-#else
-  // Class needs no initialization, and there is no finalizer, so
-  // we can go directly to the collector's allocator interface.
-  jstring obj = (jstring) _Jv_AllocPtrFreeObj(sz, &StringClass);
-#endif
-  obj->data = obj;
-  obj->boffset = sizeof(java::lang::String);
-  obj->count = len;
-  obj->cachedHashCode = 0;
-  return obj;
-}
-
-jstring
 _Jv_NewString(const jchar *chars, jsize len)
 {
   jstring str = _Jv_AllocString(len);

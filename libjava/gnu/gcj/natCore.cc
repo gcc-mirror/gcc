@@ -96,8 +96,7 @@ _Jv_create_core (_Jv_core_chain *node, jstring name)
   gnu::gcj::Core *core = NULL;
   if (node)
     {
-      core = (gnu::gcj::Core *) _Jv_AllocObject(&gnu::gcj::Core::class$,
-						sizeof (gnu::gcj::Core));
+      core = new gnu::gcj::Core ();
       core->ptr = (gnu::gcj::RawData *) node->data;
       core->length = node->data_length;
     }
