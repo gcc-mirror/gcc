@@ -1,5 +1,5 @@
 /* Emit RTL for the GNU C-Compiler expander.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1330,13 +1330,14 @@ gen_label_rtx ()
 rtx
 gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
 		       last_labelno, max_parm_regnum, max_regnum, args_size,
-		       pops_args, stack_slots, function_flags,
+		       pops_args, stack_slots, forced_labels, function_flags,
 		       outgoing_args_size, original_arg_vector,
 		       original_decl_initial)
      rtx first_insn, first_parm_insn;
      int first_labelno, last_labelno, max_parm_regnum, max_regnum, args_size;
      int pops_args;
      rtx stack_slots;
+     rtx forced_labels;
      int function_flags;
      int outgoing_args_size;
      rtvec original_arg_vector;
@@ -1347,7 +1348,8 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
 			first_insn, first_parm_insn,
 			first_labelno, last_labelno,
 			max_parm_regnum, max_regnum, args_size, pops_args,
-			stack_slots, function_flags, outgoing_args_size,
+			stack_slots, forced_labels, function_flags,
+			outgoing_args_size,
 			original_arg_vector, original_decl_initial);
   return header;
 }
