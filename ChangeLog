@@ -1,5 +1,8 @@
 1999-05-22  Ben Elliston  <bje@cygnus.com>
 
+	* config.guess: Handle NEC UX/4800. Contributed by Jiro Takabatake
+	<jiro@din.or.jp>.
+
 	* config.guess: Merge with FSF version. Future changes will be
 	more accurately recorded in this ChangeLog.
 	* config.sub: Likewise.
