@@ -553,7 +553,7 @@ regclass (f, nregs)
 	    REGNO (r) = j;
 
 	    for (m = VOIDmode; (int) m < (int) MAX_MACHINE_MODE;
-		 m = (enum machine_mode) ((int) m) + 1)
+		 m = (enum machine_mode) ((int) m + 1))
 	      if (HARD_REGNO_MODE_OK (j, m))
 		{
 		  PUT_MODE (r, m);
