@@ -1,3 +1,13 @@
+Mon Oct  4 21:01:39 1999  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (dbr_sched_time): Unconditional.
+	(peephole2_time): New.
+	(compile_file): Add pass numbers to all of the dump file suffixes.
+	Dump peephole2_time.  Don't dump times for non-applicable passes.
+	(rest_of_compilation): Add pass numbers to dump file suffixes.
+	Conditionalize calls to the scheduler.
+	* invoke.texi: Update.
+
 Mon Oct  4 20:25:13 1999  Anthony Green  <green@cygnus.com>
 
 	* flow.c (make_edges): Fix insn iteration.
