@@ -2775,6 +2775,7 @@ start_sequence ()
   tem->next = sequence_stack;
   tem->first = first_insn;
   tem->last = last_insn;
+  tem->sequence_rtl_expr = sequence_rtl_expr;
 
   sequence_stack = tem;
 
@@ -2842,6 +2843,7 @@ pop_topmost_sequence ()
 
   top->first = first_insn;
   top->last = last_insn;
+  /* ??? Why don't we save sequence_rtl_expr here?  */
 
   end_sequence ();
 }
