@@ -247,15 +247,15 @@ CHILL_FOR_TARGET = ` \
   fi`
 
 CXX_FOR_TARGET = ` \
-  if [ -f $$r/gcc/xgcc ] ; then \
+  if [ -f $$r/gcc/g++ ] ; then \
     if [ -f $$r/$(TARGET_SUBDIR)/newlib/Makefile ] ; then \
       if [ -f $$r/$(TARGET_SUBDIR)/winsup/Makefile ] ; then \
-        echo $$r/gcc/xgcc -B$$r/gcc/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$(build_tooldir)/bin/ -L$$r/winsup -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
+        echo $$r/gcc/g++ -B$$r/gcc/ -B$$r/$(TARGET_SUBDIR)/newlib/ -B$(build_tooldir)/bin/ -L$$r/winsup -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
       else \
-        echo $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
+        echo $$r/gcc/g++ -B$$r/gcc/ -B$(build_tooldir)/bin/ -idirafter $$r/$(TARGET_SUBDIR)/newlib/targ-include -idirafter $$s/newlib/libc/include -nostdinc; \
       fi; \
     else \
-      echo $$r/gcc/xgcc -B$$r/gcc/ -B$(build_tooldir)/bin/; \
+      echo $$r/gcc/g++ -B$$r/gcc/ -B$(build_tooldir)/bin/; \
     fi; \
   else \
     if [ "$(host_canonical)" = "$(target_canonical)" ] ; then \
