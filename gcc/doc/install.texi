@@ -1130,7 +1130,7 @@ AIX:
 Shareware Archive for AIX};
 
 @item
-@uref{http://aixpdlib.seas.ucla.edu,,UCLA Software Library for AIX};
+@uref{http://aixpdslib.seas.ucla.edu,,UCLA Software Library for AIX};
 @end itemize
 
 @item

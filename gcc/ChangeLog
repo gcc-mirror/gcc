@@ -1,3 +1,7 @@
+2001-07-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi (Install GCC: Binaries): Fix typo.
+
 2001-07-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("*ashlsi3"): Operand 1 can be a memory 
