@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -307,7 +307,7 @@ build_vbase_path (code, type, expr, path, alias_this)
 	 function, then it could be 0 on entry to any function.
 	 Preserve such zeroness here.  Otherwise, only in the
 	 case of constructors need we worry, and in those cases,
-	 it will be zero, or initialized to some legal value to
+	 it will be zero, or initialized to some valid value to
 	 which we may add.  */
       if (nonnull == 0 && (alias_this == 0 || flag_this_is_variable > 0))
 	{
@@ -4982,7 +4982,7 @@ instantiate_type (lhstype, rhs, complain)
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
       if (complain)
-	error ("illegal operation on uninstantiated type");
+	error ("invalid operation on uninstantiated type");
       return error_mark_node;
 
     case TRUTH_AND_EXPR:
