@@ -603,15 +603,17 @@ void genrtl_try_block (t)
     }
   else
     {
-      if (FN_TRY_BLOCK_P (t)) {
-	if (! current_function_parms_stored)
-	  store_parm_decls ();
-	expand_start_early_try_stmts ();
-      }
-      else {
-	emit_line_note (input_filename, lineno);
-	expand_start_try_stmts ();
-      }
+      if (FN_TRY_BLOCK_P (t)) 
+	{
+	  if (! current_function_parms_stored)
+	    store_parm_decls ();
+	  expand_start_early_try_stmts ();
+	} 
+      else 
+	{
+	  emit_line_note (input_filename, lineno);
+	  expand_start_try_stmts ();
+	}
 
       expand_stmt (TRY_STMTS (t));
 

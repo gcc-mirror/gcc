@@ -1,5 +1,8 @@
 2000-09-06  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (initialize_local_var): Remove RTL-generating code.
+	* semantics.c (genrtl_try_block): Fix formatting.
+
 	Move statement-tree facilities from C++ to C front-end.
 	* cp-tree.h (cp_tree_index): Remove CPTI_VOID_ZERO.
 	(void_zero_node): Remove.
