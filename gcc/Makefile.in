@@ -2119,6 +2119,7 @@ distdir-start: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y \
 # which has the name that we want to have in the tar file.
 	mkdir tmp
 	mkdir tmp/config
+	mkdir tmp/ginclude
 	mkdir tmp/objc
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file tmp > /dev/null 2>&1 || cp $$file tmp; \
@@ -2138,6 +2139,10 @@ distdir-start: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y \
 	    || cp $$file ../tmp/config; \
 	  fi; \
 	done
+	cd ginclude; \
+	for file in *[0-9a-zA-Z+]; do \
+	  ln $$file ../tmp/ginclude >/dev/null 2>&1 || cp $$file ../tmp/ginclude; \
+	done
 	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/objc >/dev/null 2>&1 || cp $$file ../tmp/objc; \
@@ -2147,8 +2152,10 @@ distdir-start: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y \
 # Finish making `distdir', after the languages have done their thing.
 distdir-finish:
 	mv tmp gcc-$(version)
-# Get rid of everything we don't want in the distribution.
-	cd gcc-$(version); make -f Makefile.in extraclean
+# Get rid of everything we don't want in the distribution.  We'd want
+# this to use Makefile.in, but it doesn't have the `lang.foo' targets
+# expanded.
+	cd gcc-$(version); make extraclean
 
 distdir: distdir-start lang.distdir distdir-finish
 
