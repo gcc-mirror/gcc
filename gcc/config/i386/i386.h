@@ -609,7 +609,7 @@ extern int ix86_arch;
 %{mcpu=athlon-4|mcpu=athlon-xp|mcpu=athlon-mp:\
 -D__tune_athlon_sse__ }\
 %{mcpu=pentium4:-D__tune_pentium4__ }\
-%{march=athlon-tbird|march=athlon-xp|march=athlon-mp|march=pentium3|march=pentium4:\
+%{march=athlon-xp|march=athlon-mp|march=pentium3|march=pentium4:\
 -D__SSE__ }\
 %{march=pentium-mmx|march=k6|march=k6-2|march=k6-3\
 |march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
@@ -781,13 +781,9 @@ extern int ix86_arch;
 /* The published ABIs say that doubles should be aligned on word
    boundaries, so lower the aligment for structure fields unless
    -malign-double is set.  */
-/* BIGGEST_FIELD_ALIGNMENT is also used in libobjc, where it must be
-   constant.  Use the smaller value in that context.  */
-#ifndef IN_TARGET_LIBS
-#define BIGGEST_FIELD_ALIGNMENT (TARGET_64BIT ? 128 : (TARGET_ALIGN_DOUBLE ? 64 : 32))
-#else
-#define BIGGEST_FIELD_ALIGNMENT 32
-#endif
+
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
+   x86_field_alignment (FIELD, COMPUTED)
 
 /* If defined, a C expression to compute the alignment given to a
    constant that is being placed in memory.  EXP is the constant

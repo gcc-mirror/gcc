@@ -12624,3 +12624,21 @@ x86_output_mi_thunk (file, delta, function)
 	}
     }
 }
+
+int
+x86_field_alignment (field, computed)
+     tree field;
+     int computed;
+{
+  enum machine_mode mode;
+  if (TARGET_64BIT || DECL_USER_ALIGN (field) || TARGET_ALIGN_DOUBLE)
+    return computed;
+  mode = TYPE_MODE (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+		    ? get_inner_array_type (field) : TREE_TYPE (field));
+  if ((mode == DFmode || mode == DCmode
+      || mode == DImode || mode == CDImode)
+      && !TARGET_ALIGN_DOUBLE)
+    return MIN (32, computed);
+  return computed;
+}
+

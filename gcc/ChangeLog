@@ -1,3 +1,10 @@
+Mon Jun 17 00:31:46 CEST 2002  Jan Hubicka  <jH@suse.cz>
+
+	* i386-protos.h (x86_field_alignment): Declare.
+	* i386.c (x86_field_alignment): Define.
+	* i386.h (ADJUST_FIELD_ALIGNMENT): New.
+	(BIGGEST_FIELD_ALIGNMENT): Kill.
+
 2002-06-16  Richard Henderson  <rth@redhat.com>
 
 	PR opt/6722
