@@ -1,3 +1,12 @@
+2002-04-08  Hans Boehm  <Hans_Boehm@hp.com>
+
+	* src/java_raw_api.c (ffi_java_raw_size): Handle FFI_TYPE_DOUBLE
+	correctly.
+	* src/ia64/unix.S: Add unwind information. Fix comments.
+	Save sp in a way that's compatible with unwind info.
+	(ffi_call_unix): Correctly restore sp in all cases.
+	* src/ia64/ffi.c: Add, fix comments.
+
 2002-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/sparc/v8.S: Make .eh_frame dependent on target word size.
