@@ -141,6 +141,11 @@ public final class URL implements Serializable
   private String host;
 
   /**
+   * The user information necessary to establish the connection.
+   */
+  private String userInfo;
+
+  /**
    * The port number of this protocol or -1 if the port number used is
    * the default for this protocol.
    */
@@ -159,7 +164,7 @@ public final class URL implements Serializable
   /**
    * This is the hashCode for this URL
    */
-  private int hashCode = 0;
+  private int hashCode;
 
   /**
    * The protocol handler in use for this URL
@@ -276,7 +281,9 @@ public final class URL implements Serializable
 
     this.host = host;
     this.port = port;
-    this.authority = null;
+    this.authority = (host != null) ? host : "";
+    if (port >= 0)
+	this.authority += ":" + port;
 
     int hashAt = file.indexOf('#');
     if (hashAt < 0)
@@ -480,7 +487,7 @@ public final class URL implements Serializable
    *
    * @since 1.3
    */
-  public final Object getContent() throws IOException
+  public Object getContent() throws IOException
   {
     return openConnection().getContent();
   }
@@ -494,7 +501,7 @@ public final class URL implements Serializable
    *
    * @exception IOException If an error occurs
    */
-  public final Object getContent (Class[] classes) throws IOException
+  public Object getContent(Class[] classes) throws IOException
   {
     // FIXME: implement this
     return getContent();
@@ -653,7 +660,7 @@ public final class URL implements Serializable
    *
    * @exception IOException If an error occurs
    */
-  public final InputStream openStream() throws IOException
+  public InputStream openStream() throws IOException
   {
     return openConnection().getInputStream();
   }
@@ -694,11 +701,17 @@ public final class URL implements Serializable
     // be aware of this.
     this.ph = getURLStreamHandler(protocol);
     this.protocol = protocol.toLowerCase();
-    this.authority = null;
+    this.authority = "";
     this.port = port;
     this.host = host;
     this.file = file;
     this.ref = ref;
+
+    if (host != null)
+      this.authority += host;
+    if (port >= 0)
+      this.authority += ":" + port;
+
     hashCode = hashCode(); // Used for serialization.
   }
 
@@ -727,15 +740,15 @@ public final class URL implements Serializable
     // be aware of this.
     this.ph = getURLStreamHandler(protocol);
     this.protocol = protocol.toLowerCase();
-    if (userInfo == null)
-      this.host = host;
-    else
-      this.host = userInfo + "@" + host;
+    this.host = host;
+    this.userInfo = userInfo;
     this.port = port;
+    this.file = path;
+    this.authority = authority;
     if (query == null)
-      this.file = path;
+      this.file = file;
     else
-      this.file = path + "?" + query;
+      this.file = file + "?" + query;
     this.ref = ref;
     hashCode = hashCode(); // Used for serialization.
   }
@@ -811,13 +824,13 @@ public final class URL implements Serializable
     // If a non-default factory has been set, use it to find the protocol.
     if (factory != null)
       {
-	ph = factory.createURLStreamHandler (protocol);
+	ph = factory.createURLStreamHandler(protocol);
       }
-    else if (protocol.equals ("core"))
+    else if (protocol.equals("core"))
       {
  	ph = new gnu.java.net.protocol.core.Handler();
       }
-    else if (protocol.equals ("file"))
+    else if (protocol.equals("file"))
       {
 	// This is an interesting case.  It's tempting to think that we
 	// could call Class.forName ("gnu.java.net.protocol.file.Handler") to

@@ -432,10 +432,10 @@ public abstract class URLConnection
     String type = getContentType();
     ContentHandler ch = setContentHandler(type);
 
-    if (ch != null)
-      return ch.getContent(this);
+    if (ch == null)
+      return getInputStream();
 
-    return getInputStream();
+    return ch.getContent(this);
   }
 
   /**
@@ -993,7 +993,6 @@ public abstract class URLConnection
 
 	// Replace the '/' character in the content type with '.' and
 	// all other non-alphabetic, non-numeric characters with '_'.
-	StringTokenizer pkgPrefix = new StringTokenizer(propVal, "|");
 	char[] cArray = contentType.toCharArray();
 	for (int i = 0; i < cArray.length; i++)
 	  {
@@ -1007,6 +1006,7 @@ public abstract class URLConnection
 	String contentClass = new String(cArray);
 
 	// See if a class of this content type exists in any of the packages.
+	StringTokenizer pkgPrefix = new StringTokenizer(propVal, "|");
 	do
 	  {
 	    String facName = pkgPrefix.nextToken() + "." + contentClass;
