@@ -20,9 +20,11 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
+#undef  TARGET_VERSION
 #define TARGET_VERSION fputs (" (ARM/NetBSD)", stderr);
 
 /* This is used in ASM_FILE_START.  */
+#undef ARM_OS_NAME
 #define ARM_OS_NAME "NetBSD"
 
 /* Unsigned chars produces much better code than signed.  */
@@ -37,14 +39,8 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm6
 
 /* Default is to use APCS-32 mode.  */
+#undef TARGET_DEFAULT
 #define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_FRAME)
-
-#include "arm/aout.h"
-
-/* This gets redefined in config/netbsd.h.  */
-#undef TARGET_MEM_FUNCTIONS
-
-#include <netbsd.h>
 
 /* Some defines for CPP.
    arm32 is the NetBSD port name, so we always define arm32 and __arm32__.  */

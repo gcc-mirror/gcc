@@ -22,9 +22,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Limit the length of a stabs entry (for the broken Acorn assembler) */
+#undef  DBX_CONTIN_LENGTH
 #define DBX_CONTIN_LENGTH 80
-
-#include "arm/riscix.h"
 
 /* The native RISCiX assembler does not support stabs of any kind; because
    the native assembler is not used by the compiler, Acorn didn't feel it was

@@ -91,10 +91,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "arm/aout.h"
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
-%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %{!ansi: -D_BSD_C} \
-"
+#define SUBTARGET_CPP_SPEC "%{!ansi: -D_BSD_C}"
 
 
 /* The native RISCiX assembler does not support stabs of any kind; because

@@ -593,31 +593,31 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	esac
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
-	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/linux-elf.h arm/uclinux-elf.h"
+	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/linux-gas.h arm/linux-elf.h arm/uclinux-elf.h"
 	tmake_file=arm/t-arm-elf
 	;;
 arm*-*-aout)
-	tm_file=arm/aout.h
+	tm_file="arm/aout.h arm/arm.h"
 	tmake_file=arm/t-arm-aout
 	;;
 arm*-*-ecos-elf)
-	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/ecos-elf.h"
+	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
 	tmake_file=arm/t-arm-elf
 	;;
 arm*-*-elf)
-	tm_file="elfos.h arm/unknown-elf.h arm/elf.h"
+	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
 	tmake_file=arm/t-arm-elf
 	;;
 arm*-*-conix*)
-	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/conix-elf.h"
+	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/conix-elf.h arm/aout.h arm/arm.h"
 	tmake_file=arm/t-arm-elf
 	;;
 arm*-*-oabi)
-	tm_file="arm/unknown-elf-oabi.h elfos.h arm/unknown-elf.h arm/elf.h"
+	tm_file="arm/unknown-elf-oabi.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
 	tmake_file=arm/t-arm-elf
 	;;
 arm-*-pe*)
-	tm_file=arm/pe.h
+	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h arm/pe.h"
 	tmake_file=arm/t-pe
 	extra_objs="pe.o"
 	;;
@@ -3133,19 +3133,19 @@ sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	float_format=sparc
 	;;
 strongarm-*-elf*)
-	tm_file="arm/strongarm-elf.h elfos.h arm/unknown-elf.h arm/elf.h"
+	tm_file="arm/strongarm-elf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
 	tmake_file=arm/t-strongarm-elf
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	;;
 strongarm-*-coff*)
-	tm_file=arm/strongarm-coff.h
+	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/strongarm-coff.h arm/arm.h"
 	tmake_file=arm/t-strongarm-coff
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	;;
 strongarm-*-pe)
-	tm_file=arm/strongarm-pe.h
+	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/strongarm-coff.h arm/arm.h arm/pe.h arm/strongarm-pe.h"
 	tmake_file=arm/t-strongarm-pe
 	out_file=arm/arm.c
 	md_file=arm/arm.md
@@ -3217,13 +3217,13 @@ we32k-att-sysv*)
 	use_collect2=yes
 	;;
 xscale-*-elf)
-	tm_file="arm/xscale-elf.h elfos.h arm/unknown-elf.h arm/elf.h"
+	tm_file="arm/xscale-elf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
 	tmake_file=arm/t-xscale-elf
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	;;
 xscale-*-coff)
-	tm_file=arm/xscale-coff.h
+	tm_file="coff.h arm/xscale-coff.h"
 	tmake_file=arm/t-xscale-coff
 	out_file=arm/arm.c
 	md_file=arm/arm.md

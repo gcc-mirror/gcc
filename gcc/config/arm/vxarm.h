@@ -23,8 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm710
 
-#include "arm/coff.h"
-
 #undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC		\
 "%{march=arm710:-DCPU=ARM710A}		\

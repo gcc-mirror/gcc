@@ -127,11 +127,9 @@ Boston, MA 02111-1307, USA.  */
 /* The RISCiX assembler does not understand .set */
 #undef SET_ASM_OP
 
-/* Override CPP_SPEC, there's no point handling endianness (and probably
-   not much point handling apcs_pc), and we want to add the right #defines
-   when using the include files.  */
-#undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) \
+/* Add to CPP_SPEC, we want to add the right #defines when using the include
+   files.  */
+#define SUBTARGET_CPP_SPEC "\
 	%{mbsd:%{pedantic:%e-mbsd and -pedantic incompatible} -D_BSD_C} \
 	%{mxopen:%{mbsd:%e-mbsd and -mxopen incompatible} 		\
 	  %{pedantic:%e-mxopen and -pedantic incompatible} -D_XOPEN_C}  \

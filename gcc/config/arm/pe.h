@@ -29,8 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_NAME_ENCODING_LENGTHS  \
   case ARM_PE_FLAG_CHAR: return 3;
 
-#include "arm/coff.h"
-
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 

@@ -1,3 +1,34 @@
+2001-11-16  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc (arm*-*-rtems*, arm-*-coff*, armel-*-coff*,
+	arm-*-vxworks*, arm-*-riscix1.[01]*, arm-*-riscix*,
+	arm-semi-aout, armel-semi-aout, arm-semi-aof, armel-semi-aof,
+	arm*-*-netbsd*, arm*-*-linux*, arm*-*-uclinux*, arm*-*-aout,
+	arm*-*-ecos-elf, arm*-*-elf, arm*-*-conix*, arm*-*-oabi,
+	arm-*-pe*, strongarm-*-elf*, strongarm-*-coff*, strongarm-*-pe,
+	xscale-*-elf, xscale-*-coff: Include various CPU headers via tm_file.
+	* config/arm/aof.h: Don't include arm.h.
+	* config/arm/aout.h: Likewise.
+	* config/arm/coff.h: Don't include semi.h and aout.h.
+	* config/arm/elf.h: Don't include aout.h.
+	* config/arm/netbsd.h: Don't include netbsd.h and aout.h.
+	(TARGET_VERSION): Undef before defining.
+	(ARM_OS_NAME): Likewise
+	(TARGET_DEFAULT): Likewise
+	(TARGET_MEM_FUNCTIONS): Do not need to undefine now.
+	* config/arm/pe.h: Don't include arm/coff.h.
+	* config/arm/riscix.h (CPP_SPEC, SUBTARGET_CPP_SPEC): Use
+	SUBTARGET_CPP_SPEC rather than overiding the arm.h CPP_SPEC definition.
+	* config/arm/riscix1-1.h: Likewise.
+	* config/arm/rix-gas.h: Don't include riscix.h.
+	(DBX_CONTIN_LENGTH): Undef before defining.
+	* config/arm/semi.h: Don't include aout.h.
+	* config/arm/semiaof.h: Don't include aof.h.
+	* config/arm/strongarm-coff.h: Don't include coff.h.
+	* config/arm/strongarm-pe.h: Don't include strongarm-coff.h and pe.h.
+	* config/arm/vxarm.h: Don't include arm/coff.h.
+	* config/arm/xscale-coff.h: Don't include coff.h.
+
 Fri Nov 16 15:22:35 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/pa/pa.c: Reflect changes in calling sequences of alter_reg and

@@ -35,9 +35,5 @@ Boston, MA 02111-1307, USA.  */
 /* The Norcroft C library defines size_t as "unsigned int" */
 #define SIZE_TYPE "unsigned int"
 
-#include "arm/aof.h"
-
 #undef CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
-
-

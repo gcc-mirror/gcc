@@ -24,8 +24,5 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_strongarm
 #endif
 
-#include "coff.h"
-
 #undef  TARGET_VERSION
 #define TARGET_VERSION	fputs (" (StrongARM/COFF)", stderr);
-

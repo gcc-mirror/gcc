@@ -333,5 +333,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* This works for GAS and some other assemblers.  */
 #define SET_ASM_OP		"\t.set\t"
-
-#include "arm.h"

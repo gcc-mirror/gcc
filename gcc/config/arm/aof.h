@@ -389,6 +389,4 @@ do {							\
     fprintf ((STREAM), "\tALIGN %d\n", amount);		\
 } while (0)
 
-#include "arm/arm.h"
-
 #undef DBX_DEBUGGING_INFO
