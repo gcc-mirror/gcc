@@ -444,11 +444,11 @@ adds_subs_operand (op, mode)
 	return 1;
       if (TARGET_H8300H
 	  && INTVAL (op) != 7
-	  && (INTVAL (op) <= 8 || INTVAL (op) >= 0))
+	  && (INTVAL (op) <= 8 && INTVAL (op) >= 0))
 	return 1;
       if (TARGET_H8300H
 	  && INTVAL (op) != -7
-	  && (INTVAL (op) >= -8 || INTVAL (op) <= 0))
+	  && (INTVAL (op) >= -8 && INTVAL (op) <= 0))
 	return 1;
     }
   return 0;
