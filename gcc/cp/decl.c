@@ -3610,15 +3610,23 @@ duplicate_decls (newdecl, olddecl)
       if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
 	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
 
-      /* Keep the old rtl since we can safely use it.  */
-      COPY_DECL_RTL (olddecl, newdecl);
-
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
 	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (newdecl)
 	    |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl);
 	  DECL_NO_LIMIT_STACK (newdecl)
 	    |= DECL_NO_LIMIT_STACK (olddecl);
+	  /* Keep the old RTL.  */
+	  COPY_DECL_RTL (olddecl, newdecl);
+	}
+      else if (TREE_CODE (newdecl) == VAR_DECL 
+	       && (DECL_SIZE (olddecl) || !DECL_SIZE (newdecl)))
+	{
+	  /* Keep the old RTL.  We cannot keep the old RTL if the old
+	     declaration was for an incomplete object and the new
+	     declaration is not since many attributes of the RTL will
+	     change.  */
+	  COPY_DECL_RTL (olddecl, newdecl);
 	}
     }
   /* If cannot merge, then use the new type and qualifiers,
@@ -14539,11 +14547,9 @@ complete_vars (type)
       if (same_type_p (type, TREE_PURPOSE (*list)))
 	{
 	  tree var = TREE_VALUE (*list);
-	  /* Make sure that the type of the VAR has been laid out.  It
-	     might not have been if the type of VAR is an array.  */
-	  layout_type (TREE_TYPE (var));
-	  /* Lay out the variable itself.  */
-	  layout_decl (var, 0);
+	  /* Complete the type of the variable.  The VAR_DECL itself
+	     will be laid out in expand_expr.  */
+	  complete_type (TREE_TYPE (var));
 	  /* Remove this entry from the list.  */
 	  *list = TREE_CHAIN (*list);
 	}

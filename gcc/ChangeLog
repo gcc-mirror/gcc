@@ -1,3 +1,16 @@
+2002-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert these changes:
+
+	2002-04-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/5571
+	* stor-layout.c (layout_decl): Reset the RTL for the decl.
+
+	2002-03-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.c (expand_expr): Tidy.
+
 2002-04-12  Richard Henderson  <rth@redhat.com>
 
 	* config.gcc (sparcv9-*-solaris2): Default to 32-bit code.
