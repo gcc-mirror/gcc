@@ -15,6 +15,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
+import java.awt.image.ImageConsumer;
 import java.util.Hashtable;
 import gnu.awt.j2d.DirectRasterGraphics;
 import gnu.awt.j2d.Graphics2DImpl;
@@ -23,6 +24,7 @@ import gnu.gcj.xlib.Drawable;
 import gnu.gcj.xlib.Pixmap;
 import gnu.gcj.xlib.Screen;
 import gnu.gcj.xlib.Visual;
+import gnu.gcj.xlib.GC;
 
 /** Image class for xlib off-screen buffers.
  * The image is stored in a server-side pixmap for best performance.
@@ -34,12 +36,17 @@ import gnu.gcj.xlib.Visual;
  * @author  scott gilbertson <scottg@mantatest.com> <sgilbertson@cogeco.ca>
  */
 public class XOffScreenImage extends Image 
-                             implements IntegerGraphicsState.ScreenCoupledImage
+                             implements IntegerGraphicsState.ScreenCoupledImage,
+                             ImageConsumer
 {
   private Pixmap pixmap;
   private XGraphicsConfiguration config;
   private int width;
   private int height;
+  private Drawable drawable;
+  private ImageProducer prod;
+  private GC gc;
+  private ColorModel pixmapColorModel;
   
   /** Create a new XOffScreenImage
    * @param config Graphics configuration, to compare against on-screen 
@@ -47,13 +54,35 @@ public class XOffScreenImage extends Image
    * @param drawable The drawable with which the image is compatible
    * @param width The width of the image
    * @param height The height of the image
+   * @param cm The ColorModel associated with drawable
    */
-  XOffScreenImage (XGraphicsConfiguration config, Drawable drawable, int width, int height)
+  XOffScreenImage (XGraphicsConfiguration config, Drawable drawable, int width, int height, ColorModel cm)
   {
     this.config = config;
     this.width = width;
     this.height = height;
+    this.drawable = drawable;
+    pixmapColorModel = cm;
     pixmap = new Pixmap (drawable, width, height, drawable.getDepth ());
+    gc = GC.create (pixmap);
+  }
+  
+  /** Create a new XOffScreenImage and obtain image data from an ImageProducer
+   * @param config Graphics configuration, to compare against on-screen 
+   *               components and to create the appropriate Graphics
+   * @param drawable The drawable with which the image is compatible
+   * @param prod The source of image data for this image
+   * @param cm The ColorModel associated with drawable
+   */
+  XOffScreenImage (XGraphicsConfiguration config, Drawable drawable, ImageProducer prod, ColorModel cm)
+  {
+    this.config = config;
+    this.width = 0;  // size will be overridden in a moment
+    this.height = 0;
+    this.drawable = drawable;
+    this.prod = prod;
+    pixmapColorModel = cm;
+    prod.startProduction (this);
   }
   
   /** Get the pixmap which contains this image
@@ -120,7 +149,10 @@ public class XOffScreenImage extends Image
    */
   public ImageProducer getSource ()
   {
-    throw new UnsupportedOperationException ("getSource not supported");
+    if (prod == null)
+      throw new UnsupportedOperationException ("getSource not supported");
+    else
+      return prod;
   }
   
   /** Returns the width of the image, or -1 if it is unknown.  If the
@@ -172,4 +204,77 @@ public class XOffScreenImage extends Image
   {
     return config;
   }
+  
+  public void imageComplete (int status)
+  {
+  }
+  
+  public void setColorModel (ColorModel model)
+  {
+  }
+  
+  public void setDimensions (int width, int height)
+  {
+    this.width = width;
+    this.height = height;
+    pixmap = new Pixmap (drawable, width, height, drawable.getDepth ());
+    gc = GC.create (pixmap);
+  }
+  
+  public void setHints (int flags)
+  {
+  }
+  
+  public void setPixels (int x, int y, int w, int h, ColorModel model, int[] pixels, int offset, int scansize)
+  {
+    int idx = 0;
+    float[] normalizedComponents = new float [4];
+    int[] unnormalizedComponents = { 0, 0, 0, 0xff };
+    normalizedComponents[3] = 1;
+    for (int yp=y; yp < (y + h); yp++)
+    {
+      for (int xp=x; xp < (x + w); xp++)
+      {
+        int p = (yp - y) * scansize + (xp - x) + offset;
+        // FIXME: there HAS to be a more efficient mechanism for color mapping
+        normalizedComponents[0] = (float)model.getRed (pixels[p]) / 255F;
+        normalizedComponents[1] = (float)model.getGreen (pixels[p]) / 255F;
+        normalizedComponents[2] = (float)model.getBlue (pixels[p]) / 255F;
+        pixmapColorModel.getUnnormalizedComponents (normalizedComponents, 0,
+          unnormalizedComponents, 0);
+        int pixelColor = pixmapColorModel.getDataElement (unnormalizedComponents, 0);
+        gc.setForeground (pixelColor);
+        gc.drawPoint (xp, yp);
+      }
+    }
+  }
+  
+  public void setPixels (int x, int y, int w, int h, ColorModel model, byte[] pixels, int offset, int scansize)
+  {
+    int idx = 0;
+    float[] normalizedComponents = new float [4];
+    int[] unnormalizedComponents = { 0, 0, 0, 0xff };
+    normalizedComponents[3] = 1;
+    for (int yp=y; yp < (y + h); yp++)
+    {
+      for (int xp=x; xp < (x + w); xp++)
+      {
+        // FIXME: there HAS to be a more efficient mechanism for color mapping
+        int p = (yp - y) * scansize + (xp - x) + offset;
+        normalizedComponents[0] = (float)model.getRed (pixels[p]) / 255F;
+        normalizedComponents[1] = (float)model.getGreen (pixels[p]) / 255F;
+        normalizedComponents[2] = (float)model.getBlue (pixels[p]) / 255F;
+        pixmapColorModel.getUnnormalizedComponents (normalizedComponents, 0,
+          unnormalizedComponents, 0);
+        int pixelColor = pixmapColorModel.getDataElement (unnormalizedComponents, 0);
+        gc.setForeground (pixelColor);
+        gc.drawPoint (xp, yp);
+      }
+    }
+  }
+  
+  public void setProperties (Hashtable props)
+  {
+  }
+  
 }
