@@ -1,3 +1,8 @@
+Wed Aug 25 11:13:29 1999  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (express_from): Try harder to unify (* c N) and (* c M)
+	where N and M are constant and N is an integer multiple of M.
+
 Wed Aug 25 13:55:47 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* sbitmap.h (sbitmap_intersection_of_succs): Add prototype.
