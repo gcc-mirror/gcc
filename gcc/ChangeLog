@@ -1,3 +1,7 @@
+Tue Apr 13 14:14:06 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* i386.md: Do not output mov %0,reg on AMD K6.
+
 Tue Apr 13 12:14:07 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* cppinit.c (cpp_start_read): Fix buffer overwrite.
