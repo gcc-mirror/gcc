@@ -1,3 +1,11 @@
+Thu Oct 14 03:59:57 1999  Stephane Carrez  <stcarrez@worldnet.fr>
+
+	* stor-layout.c (layout_union): Use HOST_WIDE_INT for const_size;
+	check for member bit-size overflow and use var_size if it occurs.
+	(layout_record): Use bitsize_int() to define the type size in bits.
+	Likewise for computation and assignment to DECL_FIELD_BITPOS.
+	(layout_decl): Likewise when assigning to DECL_SIZE.
+
 Thu Oct 14 02:57:05 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (validate_pattern): Typo last change.  Verify
