@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel X86.
-   Copyright (C) 1988, 1992, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+Boston, MA 02111-1307, USA. */
 
 #include <stdio.h>
 #include <setjmp.h>
@@ -43,6 +43,46 @@ Boston, MA 02111-1307, USA.  */
 /* The previous line used to be #error, but some compilers barf
    even if the conditional was untrue.  */
 #endif
+
+enum reg_mem			/* Type of an operand for ix86_{binary,unary}_operator_ok */
+{
+  reg_p,
+  mem_p,
+  imm_p
+};
+
+/* Processor costs (relative to an add) */
+struct processor_costs i386_cost = {	/* 386 specific costs */
+  1,					/* cost of an add instruction (2 cycles) */
+  1,					/* cost of a lea instruction */
+  3,					/* variable shift costs */
+  2,					/* constant shift costs */
+  6,					/* cost of starting a multiply */
+  1,					/* cost of multiply per each bit set */
+  23					/* cost of a divide/mod */
+};
+
+struct processor_costs i486_cost = {	/* 486 specific costs */
+  1,					/* cost of an add instruction */
+  1,					/* cost of a lea instruction */
+  3,					/* variable shift costs */
+  2,					/* constant shift costs */
+  12,					/* cost of starting a multiply */
+  1,					/* cost of multiply per each bit set */
+  40					/* cost of a divide/mod */
+};
+
+struct processor_costs pentium_cost = {	/* 486 specific costs */
+  1,					/* cost of an add instruction */
+  1,					/* cost of a lea instruction */
+  3,					/* variable shift costs */
+  2,					/* constant shift costs */
+  12,					/* cost of starting a multiply */
+  1,					/* cost of multiply per each bit set */
+  40					/* cost of a divide/mod */
+};
+
+struct processor_costs *ix86_cost = &pentium_cost;
 
 #define AT_BP(mode) (gen_rtx (MEM, (mode), frame_pointer_rtx))
 
@@ -128,16 +168,17 @@ override_options ()
     {
       char *name;		/* Canonical processor name.  */
       enum processor_type processor; /* Processor type enum value.  */
+      struct processor_costs *cost; /* Processor costs */
       int target_enable;	/* Target flags to enable.  */
       int target_disable;	/* Target flags to disable.  */
     } processor_target_table[]
-      = {{PROCESSOR_COMMON_STRING, PROCESSOR_COMMON, 0, 0},
-	   {PROCESSOR_I386_STRING, PROCESSOR_I386, 0, 0},
-	   {PROCESSOR_I486_STRING, PROCESSOR_I486, 0, 0},
-	   {PROCESSOR_I586_STRING, PROCESSOR_PENTIUM, 0, 0},
-	   {PROCESSOR_PENTIUM_STRING, PROCESSOR_PENTIUM, 0, 0},
-	   {PROCESSOR_I686_STRING, PROCESSOR_PENTIUMPRO, 0, 0},
-	   {PROCESSOR_PENTIUMPRO_STRING, PROCESSOR_PENTIUMPRO, 0, 0}};
+      = {{PROCESSOR_COMMON_STRING, PROCESSOR_COMMON, &i486_cost, 0, 0},
+	   {PROCESSOR_I386_STRING, PROCESSOR_I386, &i386_cost, 0, 0},
+	   {PROCESSOR_I486_STRING, PROCESSOR_I486, &i486_cost, 0, 0},
+	   {PROCESSOR_I586_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
+	   {PROCESSOR_PENTIUM_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
+	   {PROCESSOR_I686_STRING, PROCESSOR_PENTIUMPRO, &pentium_cost, 0, 0},
+	   {PROCESSOR_PENTIUMPRO_STRING, PROCESSOR_PENTIUMPRO, &pentium_cost, 0, 0}};
 
   int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
@@ -298,54 +339,26 @@ order_regs_for_local_alloc ()
 	}
     }
 
-  /* If users did not specify a register allocation order, favor eax
-     normally except if DImode variables are used, in which case
-     favor edx before eax, which seems to cause less spill register
-     not found messages.  */
+  /* If users did not specify a register allocation order, use natural order */
   else
     {
-      rtx insn;
-
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	reg_alloc_order[i] = i;
-
-      if (optimize)
-	{
-	  int use_dca = FALSE;
-
-	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	    {
-	      if (GET_CODE (insn) == INSN)
-		{
-		  rtx set = NULL_RTX;
-		  rtx pattern = PATTERN (insn);
-
-		  if (GET_CODE (pattern) == SET)
-		    set = pattern;
-
-		  else if ((GET_CODE (pattern) == PARALLEL
-			    || GET_CODE (pattern) == SEQUENCE)
-			   && GET_CODE (XVECEXP (pattern, 0, 0)) == SET)
-		    set = XVECEXP (pattern, 0, 0);
-
-		  if (set && GET_MODE (SET_SRC (set)) == DImode)
-		    {
-		      use_dca = TRUE;
-		      break;
-		    }
-		}
-	    }
-
-	  if (use_dca)
-	    {
-	      reg_alloc_order[0] = 1;	/* edx */
-	      reg_alloc_order[1] = 2;	/* ecx */
-	      reg_alloc_order[2] = 0;	/* eax */
-	    }
-	}
     }
 }
 
+
+void
+optimization_options (level)
+     int level;
+{
+  /* For -O2, and beyond, turn off -fschedule-insns by default.  It tends to
+     make the problem with not enough registers even worse */
+#ifdef INSN_SCHEDULING
+  if (level > 1)
+    flag_schedule_insns = 0;
+#endif
+}
 
 /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
    attribute for DECL.  The attributes in ATTRIBUTES have previously been
@@ -1514,6 +1527,137 @@ symbolic_reference_mentioned_p (op)
   return 0;
 }
 
+/* Attempt to expand a binary operator.  Make the expansion closer to the
+   actual machine, then just general_operand, which will allow 3 separate
+   memory references (one output, two input) in a single insn.  Return
+   whether the insn fails, or succeeds.  */
+
+int
+ix86_expand_binary_operator (code, mode, operands)
+     enum rtx_code code;
+     enum machine_mode mode;
+     rtx operands[];
+{
+  rtx insn;
+  int i;
+  int modified;
+
+  /* Recognize <var1> = <value> <op> <var1> for commutative operators */
+  if (GET_RTX_CLASS (code) == 'c'
+      && (rtx_equal_p (operands[0], operands[2])
+	  || immediate_operand (operands[1], mode)))
+    {
+      rtx temp = operands[1];
+      operands[1] = operands[2];
+      operands[2] = temp;
+    }
+
+  /* If optimizing, copy to regs to improve CSE */
+  if (TARGET_PSEUDO && optimize && ((reload_in_progress | reload_completed) == 0))
+    {
+      if (GET_CODE (operands[1]) == MEM && !rtx_equal_p (operands[0], operands[1]))
+	operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
+
+      if (GET_CODE (operands[2]) == MEM)
+	operands[2] = force_reg (GET_MODE (operands[2]), operands[2]);
+    }
+
+  if (!ix86_binary_operator_ok (code, mode, operands))
+    {
+      /* If not optimizing, try to make a valid insn (optimize code previously did
+	 this above to improve chances of CSE) */
+
+      if ((!TARGET_PSEUDO || !optimize)
+	  && ((reload_in_progress | reload_completed) == 0)
+	  && (GET_CODE (operands[1]) == MEM || GET_CODE (operands[2]) == MEM))
+	{
+	  modified = FALSE;
+	  if (GET_CODE (operands[1]) == MEM && !rtx_equal_p (operands[0], operands[1]))
+	    {
+	      operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
+	      modified = TRUE;
+	    }
+
+	  if (GET_CODE (operands[2]) == MEM)
+	    {
+	      operands[2] = force_reg (GET_MODE (operands[2]), operands[2]);
+	      modified = TRUE;
+	    }
+
+	  if (modified && !ix86_binary_operator_ok (code, mode, operands))
+	    return FALSE;
+	}
+      else
+	return FALSE;
+    }
+
+  return TRUE;
+}
+
+/* Return TRUE or FALSE depending on whether the binary operator meets the
+   appropriate constraints.  */
+
+int
+ix86_binary_operator_ok (code, mode, operands)
+     enum rtx_code code;
+     enum machine_mode mode;
+     rtx operands[3];
+{
+  return TRUE;
+}
+
+/* Attempt to expand a unary operator.  Make the expansion closer to the
+   actual machine, then just general_operand, which will allow 2 separate
+   memory references (one output, one input) in a single insn.  Return
+   whether the insn fails, or succeeds.  */
+
+int
+ix86_expand_unary_operator (code, mode, operands)
+     enum rtx_code code;
+     enum machine_mode mode;
+     rtx operands[];
+{
+  rtx insn;
+
+  /* If optimizing, copy to regs to improve CSE */
+  if (TARGET_PSEUDO
+      && optimize
+      && ((reload_in_progress | reload_completed) == 0)
+      && GET_CODE (operands[1]) == MEM)
+    {
+      operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
+    }
+
+  if (!ix86_unary_operator_ok (code, mode, operands))
+    {
+      if ((!TARGET_PSEUDO || !optimize)
+	  && ((reload_in_progress | reload_completed) == 0)
+	  && GET_CODE (operands[1]) == MEM)
+	{
+	  operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
+	  if (!ix86_unary_operator_ok (code, mode, operands))
+	    return FALSE;
+	}
+      else
+	return FALSE;
+    }
+
+  return TRUE;
+}
+
+/* Return TRUE or FALSE depending on whether the unary operator meets the
+   appropriate constraints.  */
+
+int
+ix86_unary_operator_ok (code, mode, operands)
+     enum rtx_code code;
+     enum machine_mode mode;
+     rtx operands[2];
+{
+  return TRUE;
+}
+
+
 /* This function generates the assembly code for function entry.
    FILE is an stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate. */
@@ -1921,30 +2065,41 @@ legitimate_address_p (mode, addr, strict)
 	}
     }
 
-  /* Validate displacement */
+  /* Validate displacement
+     Constant pool addresses must be handled special.  They are
+     considered legitimate addresses, but only if not used with regs.
+     When printed, the output routines know to print the reference with the
+     PIC reg, even though the PIC reg doesn't appear in the RTL. */
   if (disp)
     {
-      if (!CONSTANT_ADDRESS_P (disp))
+      if (GET_CODE (disp) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (disp)
+	  && !base
+	  && !indx)
+	;
+
+      else if (!CONSTANT_ADDRESS_P (disp))
 	{
 	  ADDR_INVALID ("Displacement is not valid.\n", disp);
 	  return FALSE;
 	}
 
-      if (GET_CODE (disp) == CONST_DOUBLE)
+      else if (GET_CODE (disp) == CONST_DOUBLE)
 	{
 	  ADDR_INVALID ("Displacement is a const_double.\n", disp);
 	  return FALSE;
 	}
 
-      if (flag_pic && SYMBOLIC_CONST (disp) && base != pic_offset_table_rtx
-	  && (indx != pic_offset_table_rtx || scale != NULL_RTX))
+      else if (flag_pic && SYMBOLIC_CONST (disp)
+	       && base != pic_offset_table_rtx
+	       && (indx != pic_offset_table_rtx || scale != NULL_RTX))
 	{
 	  ADDR_INVALID ("Displacement is an invalid pic reference.\n", disp);
 	  return FALSE;
 	}
 
-      if (HALF_PIC_P () && HALF_PIC_ADDRESS_P (disp)
-	  && (base != NULL_RTX || indx != NULL_RTX))
+      else if (HALF_PIC_P () && HALF_PIC_ADDRESS_P (disp)
+	       && (base != NULL_RTX || indx != NULL_RTX))
 	{
 	  ADDR_INVALID ("Displacement is an invalid half-pic reference.\n", disp);
 	  return FALSE;
@@ -2719,6 +2874,16 @@ notice_update_cc (exp)
       /* Jumps do not alter the cc's.  */
       if (SET_DEST (exp) == pc_rtx)
 	return;
+#ifdef IS_STACK_MODE
+      /* Moving into a memory of stack_mode may have been moved
+         in between the use and set of cc0 by loop_spl(). So
+         old value of cc.status must be retained */
+      if(GET_CODE(SET_DEST(exp))==MEM 
+         && IS_STACK_MODE(GET_MODE(SET_DEST(exp))))
+        {
+          return;
+        }
+#endif
       /* Moving register or memory into a register:
 	 it doesn't alter the cc's, but it might invalidate
 	 the RTX's which we remember the cc's came from.
@@ -3099,6 +3264,15 @@ output_float_compare (insn, operands)
   rtx body = XVECEXP (PATTERN (insn), 0, 0);
   int unordered_compare = GET_MODE (SET_SRC (body)) == CCFPEQmode;
 
+  rtx tmp;
+  if (! STACK_TOP_P (operands[0]))
+    {
+      tmp = operands[0];
+      operands[0] = operands[1];
+      operands[1] = tmp;
+      cc_status.flags |= CC_REVERSED;
+    }
+    
   if (! STACK_TOP_P (operands[0]))
     abort ();
 
@@ -3166,7 +3340,35 @@ output_fp_cc0_set (insn)
   output_asm_insn (AS1 (fnsts%W0,%0), xops);
 
   if (! TARGET_IEEE_FP)
-    return "sahf";
+    {
+      if (!(cc_status.flags & CC_REVERSED))
+        {
+          next = next_cc0_user (insn);
+        
+          if (GET_CODE (next) == JUMP_INSN
+              && GET_CODE (PATTERN (next)) == SET
+              && SET_DEST (PATTERN (next)) == pc_rtx
+              && GET_CODE (SET_SRC (PATTERN (next))) == IF_THEN_ELSE)
+            {
+              code = GET_CODE (XEXP (SET_SRC (PATTERN (next)), 0));
+            }
+          else if (GET_CODE (PATTERN (next)) == SET)
+            {
+              code = GET_CODE (SET_SRC (PATTERN (next)));
+            }
+          else
+            {
+              return "sahf";
+            }
+          if (code == GT || code == LT || code == EQ || code == NE
+              || code == LE || code == GE)
+            { /* We will test eax directly */
+              cc_status.flags |= CC_TEST_AX;
+              RET;
+            }
+        }
+      return "sahf";
+    }
 
   next = next_cc0_user (insn);
   if (next == NULL_RTX)
@@ -3316,6 +3518,737 @@ assign_386_stack_local (mode, n)
       = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
 
   return i386_stack_locals[(int) mode][n];
+}
+
+
+int is_mul(op,mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  return (GET_CODE (op) == MULT);
+}
+
+int is_div(op,mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  return (GET_CODE (op) == DIV);
+}
+
+
+#ifdef NOTYET
+/* Create a new copy of an rtx.
+   Recursively copies the operands of the rtx,
+   except for those few rtx codes that are sharable.
+   Doesn't share CONST  */
+
+rtx
+copy_all_rtx (orig)
+     register rtx orig;
+{
+  register rtx copy;
+  register int i, j;
+  register RTX_CODE code;
+  register char *format_ptr;
+
+  code = GET_CODE (orig);
+
+  switch (code)
+    {
+    case REG:
+    case QUEUED:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case SCRATCH:
+      /* SCRATCH must be shared because they represent distinct values. */
+      return orig;
+
+#if 0
+    case CONST:
+      /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
+	 a LABEL_REF, it isn't sharable.  */
+      if (GET_CODE (XEXP (orig, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (orig, 0), 0)) == SYMBOL_REF
+	  && GET_CODE (XEXP (XEXP (orig, 0), 1)) == CONST_INT)
+	return orig;
+      break;
+#endif
+      /* A MEM with a constant address is not sharable.  The problem is that
+	 the constant address may need to be reloaded.  If the mem is shared,
+	 then reloading one copy of this mem will cause all copies to appear
+	 to have been reloaded.  */
+    }
+
+  copy = rtx_alloc (code);
+  PUT_MODE (copy, GET_MODE (orig));
+  copy->in_struct = orig->in_struct;
+  copy->volatil = orig->volatil;
+  copy->unchanging = orig->unchanging;
+  copy->integrated = orig->integrated;
+  /* intel1 */
+  copy->is_spill_rtx = orig->is_spill_rtx;
+  
+  format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
+
+  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
+    {
+      switch (*format_ptr++)
+	{
+	case 'e':
+	  XEXP (copy, i) = XEXP (orig, i);
+	  if (XEXP (orig, i) != NULL)
+	    XEXP (copy, i) = copy_rtx (XEXP (orig, i));
+	  break;
+
+	case '0':
+	case 'u':
+	  XEXP (copy, i) = XEXP (orig, i);
+	  break;
+
+	case 'E':
+	case 'V':
+	  XVEC (copy, i) = XVEC (orig, i);
+	  if (XVEC (orig, i) != NULL)
+	    {
+	      XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
+	      for (j = 0; j < XVECLEN (copy, i); j++)
+		XVECEXP (copy, i, j) = copy_rtx (XVECEXP (orig, i, j));
+	    }
+	  break;
+
+	case 'w':
+	  XWINT (copy, i) = XWINT (orig, i);
+	  break;
+
+	case 'i':
+	  XINT (copy, i) = XINT (orig, i);
+	  break;
+
+	case 's':
+	case 'S':
+	  XSTR (copy, i) = XSTR (orig, i);
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+  return copy;
+}
+
+
+/* try to rewrite a memory address to make it valid */
+void 
+rewrite_address (mem_rtx)
+     rtx mem_rtx;
+{
+  rtx index_rtx, base_rtx, offset_rtx, scale_rtx, ret_rtx;
+  int scale = 1;
+  int offset_adjust = 0;
+  int was_only_offset = 0;
+  rtx mem_addr = XEXP (mem_rtx, 0);
+  char *storage = (char *) oballoc (0);
+  int in_struct = 0;
+  int is_spill_rtx = 0;
+
+  in_struct = MEM_IN_STRUCT_P (mem_rtx);
+  is_spill_rtx = RTX_IS_SPILL_P (mem_rtx);
+
+  if (GET_CODE (mem_addr) == PLUS &&
+      GET_CODE (XEXP (mem_addr, 1)) == PLUS &&
+      GET_CODE (XEXP (XEXP (mem_addr, 1), 0)) == REG)
+    {				/* this part is utilized by the combiner */
+      ret_rtx =
+	gen_rtx (PLUS, GET_MODE (mem_addr),
+		 gen_rtx (PLUS, GET_MODE (XEXP (mem_addr, 1)),
+			  XEXP (mem_addr, 0),
+			  XEXP (XEXP (mem_addr, 1), 0)),
+		 XEXP (XEXP (mem_addr, 1), 1));
+      if (memory_address_p (GET_MODE (mem_rtx), ret_rtx))
+	{
+	  XEXP (mem_rtx, 0) = ret_rtx;
+	  RTX_IS_SPILL_P (ret_rtx) = is_spill_rtx;
+	  return;
+	}
+      obfree (storage);
+    }
+
+  /* this part is utilized by loop.c */
+  /* If the address contains PLUS (reg,const) and this pattern is invalid
+     in this case - try to rewrite the address to make it valid  intel1
+  */
+  storage = (char *) oballoc (0);
+  index_rtx = base_rtx = offset_rtx = NULL;
+  /* find the base index and offset elements of the memory address */
+  if (GET_CODE (mem_addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (mem_addr, 0)) == REG)
+	{
+	  if (GET_CODE (XEXP (mem_addr, 1)) == REG)
+	    {
+	      base_rtx = XEXP (mem_addr, 1);
+	      index_rtx = XEXP (mem_addr, 0);
+	    }
+	  else
+	    {
+	      base_rtx = XEXP (mem_addr, 0);
+	      offset_rtx = XEXP (mem_addr, 1);
+	    }
+	}
+      else if (GET_CODE (XEXP (mem_addr, 0)) == MULT)
+	{
+	  index_rtx = XEXP (mem_addr, 0);
+	  if (GET_CODE (XEXP (mem_addr, 1)) == REG)
+	    {
+	      base_rtx = XEXP (mem_addr, 1);
+	    }
+	  else
+	    {
+	      offset_rtx = XEXP (mem_addr, 1);
+	    }
+	}
+      else if (GET_CODE (XEXP (mem_addr, 0)) == PLUS)
+	{
+	  /* intel1 */
+	  if (GET_CODE (XEXP (XEXP (mem_addr, 0), 0)) == PLUS &&
+	      GET_CODE (XEXP (XEXP (XEXP (mem_addr, 0), 0), 0)) == MULT &&
+	      GET_CODE (XEXP (XEXP (XEXP (XEXP (mem_addr, 0), 0), 0), 0)) == REG &&
+	      GET_CODE (XEXP (XEXP (XEXP (XEXP (mem_addr, 0), 0), 0), 1)) == CONST_INT &&
+	      GET_CODE (XEXP (XEXP (XEXP (mem_addr, 0), 0), 1)) == CONST_INT &&
+	      GET_CODE (XEXP (XEXP (mem_addr, 0), 1)) == REG &&
+	      GET_CODE (XEXP (mem_addr, 1)) == SYMBOL_REF)
+	    {
+	      index_rtx = XEXP (XEXP (XEXP (mem_addr, 0), 0), 0);
+	      offset_rtx = XEXP (mem_addr, 1);
+	      base_rtx = XEXP (XEXP (mem_addr, 0), 1);
+	      offset_adjust = INTVAL (XEXP (XEXP (XEXP (mem_addr, 0), 0), 1));
+	    }
+	  else
+	    {
+	      offset_rtx = XEXP (mem_addr, 1);
+	      index_rtx = XEXP (XEXP (mem_addr, 0), 0);
+	      base_rtx = XEXP (XEXP (mem_addr, 0), 1);
+	    }
+	}
+      else if (GET_CODE (XEXP (mem_addr, 0)) == CONST_INT)
+	{
+	  was_only_offset = 1;
+	  index_rtx = NULL;
+	  base_rtx = NULL;
+	  offset_rtx = XEXP (mem_addr, 1);
+	  offset_adjust = INTVAL (XEXP (mem_addr, 0));
+	  if (offset_adjust == 0)
+	    {
+	      XEXP (mem_rtx, 0) = offset_rtx;
+	      RTX_IS_SPILL_P (XEXP (mem_rtx, 0)) = is_spill_rtx;
+	      return;
+	    }
+	}
+      else
+	{
+	  obfree (storage);
+	  return;
+	}
+    }
+  else if (GET_CODE (mem_addr) == MULT)
+    {
+      index_rtx = mem_addr;
+    }
+  else
+    {
+      obfree (storage);
+      return;
+    }
+  if (index_rtx && GET_CODE (index_rtx) == MULT)
+    {
+      if (GET_CODE (XEXP (index_rtx, 1)) != CONST_INT)
+	{
+	  obfree (storage);
+	  return;
+	}
+      scale_rtx = XEXP (index_rtx, 1);
+      scale = INTVAL (scale_rtx);
+      index_rtx = copy_all_rtx (XEXP (index_rtx, 0));
+    }
+  /* now find which of the elements are invalid and try to fix them */
+  if (index_rtx && GET_CODE (index_rtx) == CONST_INT && base_rtx == NULL)
+    {
+      offset_adjust = INTVAL (index_rtx) * scale;
+      if (offset_rtx && GET_CODE (offset_rtx) == CONST &&
+	  GET_CODE (XEXP (offset_rtx, 0)) == PLUS)
+	{
+	  if (GET_CODE (XEXP (XEXP (offset_rtx, 0), 0)) == SYMBOL_REF &&
+	      GET_CODE (XEXP (XEXP (offset_rtx, 0), 1)) == CONST_INT)
+	    {
+	      offset_rtx = copy_all_rtx (offset_rtx);
+	      XEXP (XEXP (offset_rtx, 0), 1) =
+		gen_rtx (CONST_INT, 0, INTVAL (XEXP (XEXP (offset_rtx, 0), 1)) + offset_adjust);
+	      if (!CONSTANT_P (offset_rtx))
+		{
+		  obfree (storage);
+		  return;
+		}
+	    }
+	}
+      else if (offset_rtx && GET_CODE (offset_rtx) == SYMBOL_REF)
+	{
+	  offset_rtx =
+	    gen_rtx (CONST, GET_MODE (offset_rtx),
+		     gen_rtx (PLUS, GET_MODE (offset_rtx),
+			      offset_rtx,
+			      gen_rtx (CONST_INT, 0, offset_adjust)));
+	  if (!CONSTANT_P (offset_rtx))
+	    {
+	      obfree (storage);
+	      return;
+	    }
+	}
+      else if (offset_rtx && GET_CODE (offset_rtx) == CONST_INT)
+	{
+	  offset_rtx = gen_rtx (CONST_INT, 0, INTVAL (offset_rtx) + offset_adjust);
+	}
+      else if (!offset_rtx)
+	{
+	  offset_rtx = gen_rtx (CONST_INT, 0, 0);
+	}
+      RTX_IS_SPILL_P (XEXP (mem_rtx, 0)) = is_spill_rtx;
+      XEXP (mem_rtx, 0) = offset_rtx;
+      return;
+    }
+  if (base_rtx && GET_CODE (base_rtx) == PLUS &&
+      GET_CODE (XEXP (base_rtx, 0)) == REG &&
+      GET_CODE (XEXP (base_rtx, 1)) == CONST_INT)
+    {
+      offset_adjust += INTVAL (XEXP (base_rtx, 1));
+      base_rtx = copy_all_rtx (XEXP (base_rtx, 0));
+    }
+  else if (base_rtx && GET_CODE (base_rtx) == CONST_INT)
+    {
+      offset_adjust += INTVAL (base_rtx);
+      base_rtx = NULL;
+    }
+  if (index_rtx && GET_CODE (index_rtx) == PLUS &&
+      GET_CODE (XEXP (index_rtx, 0)) == REG &&
+      GET_CODE (XEXP (index_rtx, 1)) == CONST_INT)
+    {
+      offset_adjust += INTVAL (XEXP (index_rtx, 1)) * scale;
+      index_rtx = copy_all_rtx (XEXP (index_rtx, 0));
+    }
+  if (index_rtx)
+    {
+      if (!LEGITIMATE_INDEX_P (index_rtx)
+      && !(index_rtx == stack_pointer_rtx && scale == 1 && base_rtx == NULL))
+	{
+	  obfree (storage);
+	  return;
+	}
+    }
+  if (base_rtx)
+    {
+      if (!LEGITIMATE_INDEX_P (base_rtx) && GET_CODE (base_rtx) != REG)
+	{
+	  obfree (storage);
+	  return;
+	}
+    }
+  if (offset_adjust != 0)
+    {
+      if (offset_rtx)
+	{
+	  if (GET_CODE (offset_rtx) == CONST &&
+	      GET_CODE (XEXP (offset_rtx, 0)) == PLUS)
+	    {
+	      if (GET_CODE (XEXP (XEXP (offset_rtx, 0), 0)) == SYMBOL_REF &&
+		  GET_CODE (XEXP (XEXP (offset_rtx, 0), 1)) == CONST_INT)
+		{
+		  offset_rtx = copy_all_rtx (offset_rtx);
+		  XEXP (XEXP (offset_rtx, 0), 1) =
+		    gen_rtx (CONST_INT, 0, INTVAL (XEXP (XEXP (offset_rtx, 0), 1)) + offset_adjust);
+		  if (!CONSTANT_P (offset_rtx))
+		    {
+		      obfree (storage);
+		      return;
+		    }
+		}
+	    }
+	  else if (GET_CODE (offset_rtx) == SYMBOL_REF)
+	    {
+	      offset_rtx =
+		gen_rtx (CONST, GET_MODE (offset_rtx),
+			 gen_rtx (PLUS, GET_MODE (offset_rtx),
+				  offset_rtx,
+				  gen_rtx (CONST_INT, 0, offset_adjust)));
+	      if (!CONSTANT_P (offset_rtx))
+		{
+		  obfree (storage);
+		  return;
+		}
+	    }
+	  else if (GET_CODE (offset_rtx) == CONST_INT)
+	    {
+	      offset_rtx = gen_rtx (CONST_INT, 0, INTVAL (offset_rtx) + offset_adjust);
+	    }
+	  else
+	    {
+	      obfree (storage);
+	      return;
+	    }
+	}
+      else
+	{
+	  offset_rtx = gen_rtx (CONST_INT, 0, offset_adjust);
+	}
+      if (index_rtx)
+	{
+	  if (base_rtx)
+	    {
+	      if (scale != 1)
+		{
+		  if (GET_CODE (offset_rtx) == CONST_INT &&
+		      INTVAL (offset_rtx) == 0)
+		    {
+		      ret_rtx = gen_rtx (PLUS, GET_MODE (base_rtx),
+			     gen_rtx (MULT, GET_MODE (index_rtx), index_rtx,
+				      scale_rtx),
+					 base_rtx);
+		    }
+		  else
+		    {
+		      ret_rtx = gen_rtx (PLUS, GET_MODE (offset_rtx),
+					 gen_rtx (PLUS, GET_MODE (base_rtx),
+			     gen_rtx (MULT, GET_MODE (index_rtx), index_rtx,
+				      scale_rtx),
+						  base_rtx),
+					 offset_rtx);
+		    }
+		}
+	      else
+		{
+		  if (GET_CODE (offset_rtx) == CONST_INT &&
+		      INTVAL (offset_rtx) == 0)
+		    {
+		      ret_rtx = gen_rtx (PLUS, GET_MODE (index_rtx), index_rtx, base_rtx);
+		    }
+		  else
+		    {
+		      ret_rtx = gen_rtx (PLUS, GET_MODE (offset_rtx),
+			     gen_rtx (PLUS, GET_MODE (index_rtx), index_rtx,
+				      base_rtx),
+					 offset_rtx);
+		    }
+		}
+	    }
+	  else
+	    {
+	      if (scale != 1)
+		{
+		  if (GET_CODE (offset_rtx) == CONST_INT &&
+		      INTVAL (offset_rtx) == 0)
+		    {
+		      ret_rtx = gen_rtx (MULT, GET_MODE (index_rtx), index_rtx, scale_rtx);
+		    }
+		  else
+		    {
+		      ret_rtx =
+			gen_rtx (PLUS, GET_MODE (offset_rtx),
+			     gen_rtx (MULT, GET_MODE (index_rtx), index_rtx,
+				      scale_rtx),
+				 offset_rtx);
+		    }
+		}
+	      else
+		{
+		  if (GET_CODE (offset_rtx) == CONST_INT &&
+		      INTVAL (offset_rtx) == 0)
+		    {
+		      ret_rtx = index_rtx;
+		    }
+		  else
+		    {
+		      ret_rtx = gen_rtx (PLUS, GET_MODE (index_rtx), index_rtx, offset_rtx);
+		    }
+		}
+	    }
+	}
+      else
+	{
+	  if (base_rtx)
+	    {
+	      if (GET_CODE (offset_rtx) == CONST_INT &&
+		  INTVAL (offset_rtx) == 0)
+		{
+		  ret_rtx = base_rtx;
+		}
+	      else
+		{
+		  ret_rtx = gen_rtx (PLUS, GET_MODE (base_rtx), base_rtx, offset_rtx);
+		}
+	    }
+	  else if (was_only_offset)
+	    {
+	      ret_rtx = offset_rtx;
+	    }
+	  else
+	    {
+	      obfree (storage);
+	      return;
+	    }
+	}
+      XEXP (mem_rtx, 0) = ret_rtx;
+      RTX_IS_SPILL_P (XEXP (mem_rtx, 0)) = is_spill_rtx;
+      return;
+    }
+  else
+    {
+      obfree (storage);
+      return;
+    }
+}
+#endif /* NOTYET */
+
+
+/* return 1 if the first insn to set cc before insn also sets the register
+   reg_rtx - otherwise return 0 */
+int
+last_to_set_cc (reg_rtx, insn)
+     rtx reg_rtx, insn;
+{
+  rtx prev_insn = PREV_INSN (insn);
+
+  while (prev_insn)
+    {
+      if (GET_CODE (prev_insn) == NOTE)
+	;
+
+      else if (GET_CODE (prev_insn) == INSN)
+	{
+	  if (GET_CODE (PATTERN (prev_insn)) != SET)
+	    return (0);
+
+	  if (rtx_equal_p (SET_DEST (PATTERN (prev_insn)), reg_rtx))
+	    {
+	      if (sets_condition_code (SET_SRC (PATTERN (prev_insn))))
+		return (1);
+
+	      return (0);
+	    }
+
+	  else if (!doesnt_set_condition_code (SET_SRC (PATTERN (prev_insn))))
+	    return (0);
+	}
+
+      else
+	return (0);
+
+      prev_insn = PREV_INSN (prev_insn);
+    }
+
+  return (0);
+}
+
+
+int
+doesnt_set_condition_code (pat)
+     rtx pat;
+{
+  switch (GET_CODE (pat))
+    {
+    case MEM:
+    case REG:
+      return (1);
+
+    default:
+      return (0);
+
+    }
+}
+
+
+int
+sets_condition_code (pat)
+     rtx pat;
+{
+  switch (GET_CODE (pat))
+    {
+    case PLUS:
+    case MINUS:
+    case AND:
+    case IOR:
+    case XOR:
+    case NOT:
+    case NEG:
+    case MULT:
+    case DIV:
+    case MOD:
+    case UDIV:
+    case UMOD:
+      return (1);
+
+    default:
+      return (0);
+
+    }
+}
+
+
+int
+str_immediate_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == CONST_INT && INTVAL (op) <= 32 && INTVAL (op) >= 0)
+    {
+      return (1);
+    }
+  return (0);
+}
+
+
+int
+is_fp_insn (insn)
+     rtx insn;
+{
+  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SET
+      && (GET_MODE (SET_DEST (PATTERN (insn))) == DFmode
+	  || GET_MODE (SET_DEST (PATTERN (insn))) == SFmode
+	  || GET_MODE (SET_DEST (PATTERN (insn))) == XFmode))
+    {
+      return (1);
+    }
+
+  return (0);
+}
+
+/*
+  Return 1 if the mode of the SET_DEST of insn is floating point
+  and it is not an fld or a move from memory to memory.
+  Otherwise return 0 */
+int
+is_fp_dest (insn)
+     rtx insn;
+{
+  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SET
+      && (GET_MODE (SET_DEST (PATTERN (insn))) == DFmode
+	  || GET_MODE (SET_DEST (PATTERN (insn))) == SFmode
+	  || GET_MODE (SET_DEST (PATTERN (insn))) == XFmode)
+      && GET_CODE (SET_DEST (PATTERN (insn))) == REG
+      && REGNO (SET_DEST (PATTERN (insn))) >= FIRST_FLOAT_REG
+      && GET_CODE (SET_SRC (insn)) != MEM)
+    {
+      return (1);
+    }
+
+  return (0);
+}
+
+/*
+  Return 1 if the mode of the SET_DEST floating point and is memory
+  and the source is a register.  
+*/
+int
+is_fp_store (insn)
+     rtx insn;
+{
+  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SET
+      && (GET_MODE (SET_DEST (PATTERN (insn))) == DFmode
+	  || GET_MODE (SET_DEST (PATTERN (insn))) == SFmode
+	  || GET_MODE (SET_DEST (PATTERN (insn))) == XFmode)
+      && GET_CODE (SET_DEST (PATTERN (insn))) == MEM
+      && GET_CODE (SET_SRC (PATTERN (insn))) == REG)
+    {
+      return (1);
+    }
+
+  return (0);
+}
+
+
+/*
+  Return 1 if dep_insn sets a register which insn uses as a base
+  or index to reference memory.
+  otherwise return 0 */
+
+int
+agi_dependent (insn, dep_insn)
+     rtx insn, dep_insn;
+{
+  if (GET_CODE (dep_insn) == INSN
+      && GET_CODE (PATTERN (dep_insn)) == SET
+      && GET_CODE (SET_DEST (PATTERN (dep_insn))) == REG)
+    {
+      return (reg_mentioned_in_mem (SET_DEST (PATTERN (dep_insn)), insn));
+    }
+
+  if (GET_CODE (dep_insn) == INSN && GET_CODE (PATTERN (dep_insn)) == SET
+      && GET_CODE (SET_DEST (PATTERN (dep_insn))) == MEM
+      && push_operand (SET_DEST (PATTERN (dep_insn)),
+                       GET_MODE (SET_DEST (PATTERN (dep_insn)))))
+    {
+      return (reg_mentioned_in_mem (stack_pointer_rtx, insn));
+    }
+  
+  return (0);
+}
+
+
+/*
+  Return 1 if reg is used in rtl as a base or index for a memory ref
+  otherwise return 0. */
+
+int
+reg_mentioned_in_mem (reg, rtl)
+     rtx reg, rtl;
+{
+  register char *fmt;
+  register int i;
+  register enum rtx_code code;
+
+  if (rtl == NULL)
+    return (0);
+
+  code = GET_CODE (rtl);
+
+  switch (code)
+    {
+    case HIGH:
+    case CONST_INT:
+    case CONST:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case LABEL_REF:
+    case PC:
+    case CC0:
+    case SUBREG:
+      return (0);
+
+
+    }
+
+  if (code == MEM && reg_mentioned_p (reg, rtl))
+    return (1);
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+	  for (j = XVECLEN (rtl, i) - 1; j >= 0; j--)
+	    {
+	      if (reg_mentioned_in_mem (reg, XVECEXP (rtl, i, j)))
+		return 1;
+	    }
+	}
+
+      else if (fmt[i] == 'e' && reg_mentioned_in_mem (reg, XEXP (rtl, i)))
+	return 1;
+    }
+
+  return (0);
 }
 
 /* Output the approprate insns for doing strlen if not just doing repnz; scasb
