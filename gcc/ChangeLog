@@ -1,3 +1,7 @@
+Mon Feb  8 11:34:44 1999  Graham <grahams@rcp.co.uk>
+
+	* collect2.c (xrealloc): fix typo in last change.
+
 Mon Feb 8 09:13:38 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
