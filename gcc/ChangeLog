@@ -1,3 +1,8 @@
+2003-04-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-typeck.c (function_types_compatible_p): Ignore incompatible
+	'volatile' qualifiers on a function's return type in GNU mode.
+
 2003-04-29  Aldy Hernandez  <aldyh@redhat.com>
 
         * expr.c (emit_group_load): Dump parallels of simd types to
