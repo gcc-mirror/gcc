@@ -1004,7 +1004,7 @@ mostly_true_jump (jump_insn, condition)
   return (target_label == 0 || INSN_UID (jump_insn) > max_uid
 	  || INSN_UID (target_label) > max_uid
 	  || (uid_to_ruid[INSN_UID (jump_insn)]
-	      > uid_to_ruid[INSN_UID (target_label)]));;
+	      > uid_to_ruid[INSN_UID (target_label)]));
 }
 
 /* Return the condition under which INSN will branch to TARGET.  If TARGET

@@ -2467,7 +2467,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  break;
 
 		default:
-		  abort ();;
+		  abort ();
 		}
 
 	      /* Write a REG_EQUAL note on the last insn so that we can cse
