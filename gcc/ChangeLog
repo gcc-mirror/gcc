@@ -1,3 +1,9 @@
+Thu Aug 21 17:28:00 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* alpha.h (ARCH_ASM_FILE_START): Define.
+	(ASM_FILE_START): Use ARCH_ASM_FILE_START.
+	* osf12.h, osf2or3.h (ARCH_ASM_FILE_START): Redefine to null string.
+
 Thu Aug 21 10:22:19 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for new snapshot.
