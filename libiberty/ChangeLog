@@ -1,3 +1,9 @@
+Mon Nov 23 09:49:49 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	*cplus-dem.c (demangle_prefix): Use the last "__"
+	in the mangled name when looking for the signature. This allows
+	template names to begin with "__".
+
 Mon Nov 23 09:44:26 1998  Richard Henderson <rth@cygnus.com>
 
 	* config.table: Append mh-ppcpic and mh-elfalphapic 
