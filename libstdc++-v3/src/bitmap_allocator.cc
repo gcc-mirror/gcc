@@ -121,7 +121,7 @@ namespace __gnu_cxx
     iterator __iter = _S_free_list.begin();
     while (__iter != _S_free_list.end())
       {
-	operator delete((void*)*__iter);
+	::operator delete((void*)*__iter);
 	++__iter;
       }
     _S_free_list.clear();

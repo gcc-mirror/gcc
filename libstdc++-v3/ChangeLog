@@ -1,3 +1,15 @@
+2004-10-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/bitmap_allocator.h: Qualify ::operator delete.
+	* src/bitmap_allocator.cc: Likewise.
+	* src/mt_allocator.cc: Use ::operator delete, not delete,
+	consistently with ::operator new.
+
+	* include/ext/bitmap_allocator.h (deallocate): Check for null
+	pointer.
+	* testsuite/ext/bitmap_allocator/check_deallocate_null.cc: New.
+	* testsuite/testsuite_allocator.h (check_deallocate_null): Add test.
+
 2004-10-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/mt_allocator.h (__mt_alloc::deallocate): Check for

@@ -61,10 +61,10 @@ namespace __gnu_cxx
 		delete __bin._M_address;
 		__bin._M_address = __tmp;
 	      }
-	    delete __bin._M_first;
+	    ::operator delete(__bin._M_first);
 	  }
-	delete _M_bin;
-	delete _M_binmap;
+	::operator delete(_M_bin);
+	::operator delete(_M_binmap);
       }
   }
 
@@ -190,10 +190,10 @@ namespace __gnu_cxx
 		    delete __bin._M_address;
 		    __bin._M_address = __tmp;
 		  }
-		delete __bin._M_first;
-		delete __bin._M_free;
-		delete __bin._M_used;
-		delete __bin._M_mutex;
+		::operator delete(__bin._M_first);
+		::operator delete(__bin._M_free);
+		::operator delete(__bin._M_used);
+		::operator delete(__bin._M_mutex);
 	      }
 	    ::operator delete(_M_thread_freelist_initial);
 	  }
@@ -209,11 +209,11 @@ namespace __gnu_cxx
 		    delete __bin._M_address;
 		    __bin._M_address = __tmp;
 		  }
-		delete __bin._M_first;
+		::operator delete(__bin._M_first);
 	      }
 	  }
-	delete _M_bin;
-	delete _M_binmap;
+	::operator delete(_M_bin);
+	::operator delete(_M_binmap);
       }
   }
 
