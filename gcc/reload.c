@@ -1460,12 +1460,21 @@ push_reload (in, out, inloc, outloc, class,
 	    && GET_MODE_SIZE (inmode) <= GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
 	    && HARD_REGNO_MODE_OK (regno, inmode)
 	    && GET_MODE_SIZE (outmode) <= GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
-	    && HARD_REGNO_MODE_OK (regno, outmode)
-	    && TEST_HARD_REG_BIT (reg_class_contents[(int) class], regno)
-	    && !fixed_regs[regno])
+	    && HARD_REGNO_MODE_OK (regno, outmode))
 	  {
-	    rld[i].reg_rtx = gen_rtx_REG (inmode, regno);
-	    break;
+	    int offs;
+	    int nregs = HARD_REGNO_NREGS (regno, inmode);
+	    for (offs = 0; offs < nregs; offs++)
+	      if (fixed_regs[regno + offs]
+		  || ! TEST_HARD_REG_BIT (reg_class_contents[(int) class],
+					  regno + offs))
+		break;
+
+	    if (offs == nregs)
+	      {
+		rld[i].reg_rtx = gen_rtx_REG (inmode, regno);
+		break;
+	      }
 	  }
     }
 

@@ -1,5 +1,9 @@
 1999-11-29  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* reload.c (push_reload): When looking for a register to put into
+	reg_rtx, make sure all hard regs in a multi-reg register are in the
+	right class and nonfixed.
+
 	* haifa-sched.c (reg_last_uses, reg_last_sets, reg_last_clobbers,
 	pending_read_insns, pending_write_insns, pending_read_mems,
 	pending_write_mems, pending_list_length, last_pending_memory_flush,
