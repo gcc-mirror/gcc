@@ -4,10 +4,10 @@
    Thus, va_arg (..., short) is not valid.  */
 
 #ifndef _STDARG_H
-#ifndef _ANSI_STDARG_H
+#ifndef _ANSI_STDARG_H_
 #ifndef __need___va_list
 #define _STDARG_H
-#define _ANSI_STDARG_H
+#define _ANSI_STDARG_H_
 #endif /* not __need___va_list */
 #undef __need___va_list
 
@@ -106,19 +106,24 @@ typedef __gnuc_va_list va_list;
 #else /* not __SVR4_2__ */
 
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
-#ifndef _VA_LIST_
+/* However, 4.3bsd-net2 uses it in a completely different way.
+   So if we are in 4.3bsd-net2, pay no attention to _VA_LIST_.  */
+#if ! defined (_VA_LIST_) || defined (_ANSI_H_) || defined (__BSD_NET2__) || defined (____386BSD____)
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
+#if !(defined (_ANSI_H_) || defined (__BSD_NET2__) || defined (____386BSD____))
+   /* Don't mess with _VA_LIST_ at all, on 4.3bsd-net2.  */
 #define _VA_LIST_
+#endif /* not net2 */
 #define _VA_LIST
 typedef __gnuc_va_list va_list;
-#endif /* _VA_LIST */
-#endif /* _VA_LIST_ */
+#endif /* not _VA_LIST */
+#endif /* not _VA_LIST_ (or _ANSI_H_) */
 
 #endif /* not __SVR4_2__ */
 
 #endif /* _STDARG_H */
 
 #endif /* __GNUC__ */
-#endif /* not _ANSI_STDARG_H */
+#endif /* not _ANSI_STDARG_H_ */
 #endif /* not _STDARG_H */
