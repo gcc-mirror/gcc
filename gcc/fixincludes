@@ -305,16 +305,18 @@ while [ $# != 0 ]; do
 		s/ ns32000 / __ns32000__ /g
 		s/ pdp11 / __pdp11__ /g
 		s/ pyr / __pyr__ /g
+		s/ sel / __sel__ /g
 		s/ sony_news / __sony_news__ /g
 		s/ sparc / __sparc__ /g
 		s/ sun\([a-z0-9]*\) / __sun\1__ /g
+		s/ tahoe / __tahoe__ /g
 		s/ tower\([_0-9]*\) / __tower\1__ /g
 		s/ u370 / __u370__ /g
 		s/ u3b\([0-9]*\) / __u3b\1__ /g
 		s/ unix / __unix__ /g
 		s/ vax / __vax__ /g
 		s/ _*MIPSE\([LB]\) / __MIPSE\1__ /g
-		s/ _*R\([34]\)000 / __R\1000__ /g
+		s/ _*\([Rr][34]\)000 / __\1000__ /g
 		s/ _*SYSTYPE_\([A-Z0-9]*\) / __SYSTYPE_\1__ /g
 
 		s/ \([a-zA-Z0-9_][a-zA-Z0-9_]*\) /\1/g
