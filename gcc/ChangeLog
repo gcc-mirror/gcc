@@ -1,3 +1,8 @@
+Mon Mar  1 16:36:18 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.md (div_trap_normal, div_trap_mips16): Require the dependent
+	insn to be an INSN before looking at its pattern.
+
 Mon Mar  1 15:03:51 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* config/m68k/lb1sf68.asm (udivsi3): Change jmi to jcs.  Fix comments.

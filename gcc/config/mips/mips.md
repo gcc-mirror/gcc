@@ -2441,6 +2441,7 @@
   for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
 
     if ((int) REG_DEP_ANTI == (int) REG_NOTE_KIND (link)
+        && GET_CODE (XEXP (link, 0)) == INSN
         && GET_CODE (PATTERN (XEXP (link, 0))) == TRAP_IF
 	&& REGNO (operands[1]) == 0)
       have_dep_anti = 1;
@@ -2485,6 +2486,7 @@
   for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
 
     if ((int) REG_DEP_ANTI == (int) REG_NOTE_KIND (link)
+        && GET_CODE (XEXP (link, 0)) == INSN
         && GET_CODE (PATTERN (XEXP (link, 0))) == TRAP_IF
 	&& REGNO (operands[1]) == 0)
       have_dep_anti = 1;
