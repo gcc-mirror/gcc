@@ -1,5 +1,17 @@
 2001-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.c (use_return_insn): Don't try to determine the function type
+	until after reload has completed.
+	(arm_output_epilogue): Don't adjust the sp value recovered from the
+	stack.
+	(emit_multi_reg_push): Don't record dwarf information for the pc.
+	* arm.md (eh_epilogue): The function type may have changed, so it
+	needs to be recalculated.
+	* arm/netbsd.h (DWARF2_UNWIND_INFO): Delete.  Can now use dwarf2 
+	unwind tables on arm/netbsd.
+
+2001-01-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.md (cbranchsi4): Correct calculation of branch ranges.
 	(negated_cbranchsi4): Likewise.
 
