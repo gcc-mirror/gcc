@@ -3576,7 +3576,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	return "copy %1,%0";
       else if (which_alternative == 1)
 	{
-	  output_asm_insn ("fstws %1,-16(0,%%r30)",operands);
+	  output_asm_insn ("stw %1,-16(0,%%r30)",operands);
 	  return "fldws -16(0,%%r30),%0";
 	}
       else
@@ -3631,7 +3631,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
       /* Move loop counter from FP register to MEM then into a GR,
 	 increment the GR, store the GR into MEM, and finally reload
 	 the FP register from MEM from within the branch's delay slot.  */ 
-      output_asm_insn ("fstws %1,-16(0,%%r30)",operands);
+      output_asm_insn ("stw %1,-16(0,%%r30)",operands);
       if (get_attr_length (insn) == 12)
 	return "comb,%S2 0,%1,%3\n\tfldws -16(0,%%r30),%0";
       else
