@@ -1,3 +1,9 @@
+2003-07-09  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR Fortran/11301
+	* com.c (ffecom_sym_transform_): finish_decl should have
+	the same last argument as start_decl.
+
 Tue Jul  8 15:18:14 2003  Andreas Schwab  <schwab@suse.de>
 
 	* Make-lang.in (f/g77.dvi): Replace PWD with PWD_COMMAND.
