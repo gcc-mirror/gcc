@@ -1,3 +1,7 @@
+2000-12-30  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* MAINTAINERS: Add myself as avr port co-maintainer.
+
 2000-12-28  Ben Elliston  <bje@redhat.com>
 
 	* MAINTAINERS: Add myself under ``Write After Approval''.
