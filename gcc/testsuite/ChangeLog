@@ -1,3 +1,9 @@
+Mon Aug  2 13:35:12 1999  Richard Henderson  <rth@cygnus.com>
+
+	Adapted from tests from Franz Sirl:
+	* gcc.c-torture/execute/va-arg-7.c: New test.
+	* gcc.c-torture/execute/va-arg-8.c: New test.
+
 Sun Aug  1 22:29:34 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/990801-2.c: New test.
