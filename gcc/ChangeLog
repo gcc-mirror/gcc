@@ -1,5 +1,23 @@
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* emit-rtl.c (remove_unncessary_notes): Check that all
+	NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes have an
+	associated NOTE_BLOCK.
+	* function.h (identify_blocks): Update comments.
+	(reorder_blocks): Declare.
+	* function.c (identify_blocks): Don't take paramters.
+	(reorder_blocks): Don't take parameters.
+	* loop.h (find_loop_tree_blocks): Remove.
+	(unroll_block_trees): Likewise.
+	* loop.c (loop_optimize): Don't call find_loop_tree_blocks.  Use
+	reorder_blocks instead of unroll_block_trees.h
+	* sibcall.c (optimize_sibling_and_tail_recursive_calls): Likewise.
+	* stmt.c (find_loop_tree_blocks): Remove.
+	(unroll_block_trees): Likewise.
+	* toplev.c (rest_of_compilation): Don't call find_loop_tree_blocks
+	in whole-function mode.
+	* tree.h (reorder_blocks): Remove declaration.
+
 	* expr.c: Include intl.h.
 	* Makefile.in (expr.o): Depend on intl.h.
 	

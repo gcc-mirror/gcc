@@ -518,14 +518,6 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
     if (uid_luid[i] == 0)
       uid_luid[i] = uid_luid[i - 1];
 
-  /* If debugging and unrolling loops, we must replicate the tree
-     nodes corresponding to the BLOCKs inside the loop, so that the
-     original one to one mapping will remain.  We sometimes unroll
-     loops even when unroll_p is false, so we must always do this when
-     debugging.  */
-  if (write_symbols != NO_DEBUG)
-    find_loop_tree_blocks ();
-
   /* Determine if the function has indirect jump.  On some systems
      this prevents low overhead loop instructions from being used.  */
   indirect_jump_in_function = indirect_jump_in_function_p (f);
@@ -540,9 +532,12 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
 	scan_loop (loop, unroll_p, bct_p);
     }
 
-  /* Replicate the BLOCKs.  */
+  /* If there were lexical blocks inside the loop, they have been
+     replicated.  We will now have more than one NOTE_INSN_BLOCK_BEG
+     and NOTE_INSN_BLOCK_END for each such block.  We must duplicate
+     the BLOCKs as well.  */
   if (write_symbols != NO_DEBUG)
-    unroll_block_trees ();
+    reorder_blocks ();
 
   end_alias_analysis ();
 

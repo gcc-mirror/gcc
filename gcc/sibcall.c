@@ -571,7 +571,7 @@ success:
      CALL_PLACEHOLDER alternatives that we didn't emit.  Rebuild the
      lexical block tree to correspond to the notes that still exist.  */
   if (replaced_call_placeholder)
-    unroll_block_trees ();
+    reorder_blocks ();
 
   /* This information will be invalid after inline expansion.  Kill it now.  */
   free_basic_block_vars (0);

@@ -2667,9 +2667,8 @@ remove_unncessary_notes ()
   rtx insn;
   rtx next;
 
-  /* Remove NOTE_INSN_DELETED notes.  We must not remove the first
-     instruction in the function because the compiler depends on the
-     first instruction being a note.  */
+  /* We must not remove the first instruction in the function because
+     the compiler depends on the first instruction being a note.  */
   for (insn = NEXT_INSN (get_insns ()); insn; insn = next)
     {
       /* Remember what's next.  */
@@ -2679,6 +2678,14 @@ remove_unncessary_notes ()
       if (GET_CODE (insn) != NOTE)
 	continue;
 
+      /* By now, all notes indicating lexical blocks should have
+	 NOTE_BLOCK filled in.  */
+      if ((NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
+	   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	  && NOTE_BLOCK (insn) == NULL_TREE)
+	abort ();
+
+      /* Remove NOTE_INSN_DELETED notes.  */
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
 	remove_insn (insn);
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)

@@ -303,7 +303,7 @@ struct function
 
   /* Nonzero if this function is being processed in function-at-a-time
      mode.  In other words, if all tree structure for this function,
-     including the BLOCK tree is created, before RTL generation
+     including the BLOCK tree, is created before RTL generation
      commences.  */
   int x_whole_function_mode_p;
 
@@ -548,10 +548,12 @@ struct function *find_function_data PARAMS ((tree));
 /* Pointer to chain of `struct function' for containing functions.  */
 extern struct function *outer_function_chain;
 
-/* Put all this function's BLOCK nodes into a vector and return it.
-   Also store in each NOTE for the beginning or end of a block
-   the index of that block in the vector.  */
-extern void identify_blocks PARAMS ((tree, rtx));
+/* Set NOTE_BLOCK for each block note in the current function.  */
+extern void identify_blocks PARAMS ((void));
+
+/* Identify BLOCKs referenced by more than one NOTE_INSN_BLOCK_{BEG,END},
+   and create duplicate blocks.  */
+extern void reorder_blocks PARAMS ((void));
 
 /* Set BLOCK_NUMBER for all the blocks in FN.  */
 extern void number_blocks PARAMS ((tree));

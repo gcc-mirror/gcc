@@ -248,6 +248,3 @@ int back_branch_in_range_p PARAMS ((const struct loop *, rtx));
 
 int loop_insn_first_p PARAMS ((rtx, rtx));
 
-/* Forward declarations for non-static functions declared in stmt.c.  */
-void find_loop_tree_blocks PARAMS ((void));
-void unroll_block_trees PARAMS ((void));
