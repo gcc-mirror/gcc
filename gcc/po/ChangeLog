@@ -1,3 +1,7 @@
+2003-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* be.po, de.po: New files.
@@ -15,7 +19,7 @@
 
 	* tr.po, es.po, fr.po: Update to version for 20020415
 	snapshot.
-	
+
 2002-04-23  Philipp Thomas  <pthomas@suse.de>
 
 	* gcc.pot: Regenerate.

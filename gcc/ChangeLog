@@ -1,3 +1,12 @@
+2003-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.c: Include intl.h.
+	(shadow_warning): Rewrite to allow better diagnostic translations.
+	* c-common.h: Update prototype of shadow_warning.  Declare sw_kind enum.
+	* c-decl.c (warn_if_shadowing): Update calls to shadow_warning;
+	use it throughout.
+	* Makefile.in (c-common.o): Add intl.h.
+
 2003-03-21  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Remove 'float_format'.

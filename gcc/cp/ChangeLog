@@ -1,3 +1,7 @@
+2003-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c: Update calls to shadow_warning.
+
 2003-03-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9898
@@ -22,8 +26,8 @@
 	(init_rtti_processing): initialize unemitted_tinfo_decls varray.
 	(get_tinfo_decls): push new tinfo decl on unemitted_tinfo_decls.
 	(emit_tinfo_decl): remove unused second parameter, add assertion
-	that decl hasn't already been emitted.	
-	
+	that decl hasn't already been emitted.
+
 2003-03-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* dump.c (cp_dump_tree), cp-tree.h (cp_dump_tree): Change return
@@ -47,7 +51,7 @@
 2003-03-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10091
-	* typeck.c (build_class_member_access_expr): Compare 
+	* typeck.c (build_class_member_access_expr): Compare
 	TYPE_MAIN_VARIANTs.
 
 2003-03-17  Mark Mitchell  <mark@codesourcery.com>
@@ -493,14 +497,14 @@
 
 2003-03-04  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
-        * cp-tree.h (cxx_saved_binding): Declare.
-        (struct saved_scope): Adjust type of field 'old_binding'.
-        * decl.c (cxx_saved_binding_make): New macro.
-        (struct cxx_saved_binding): Define.
-        (store_bindings): Adjust prototype.  Use cxx_saved_binding to save
-        C++ bindings.
-        (maybe_push_to_top_level): Adjust local variable type.
-        (pop_from_top_level): Likewise.
+	* cp-tree.h (cxx_saved_binding): Declare.
+	(struct saved_scope): Adjust type of field 'old_binding'.
+	* decl.c (cxx_saved_binding_make): New macro.
+	(struct cxx_saved_binding): Define.
+	(store_bindings): Adjust prototype.  Use cxx_saved_binding to save
+	C++ bindings.
+	(maybe_push_to_top_level): Adjust local variable type.
+	(pop_from_top_level): Likewise.
 
 2003-03-04  Tom Tromey  <tromey@redhat.com>
 
@@ -599,9 +603,9 @@
 
 2003-02-28  Aldy Hernandez  <aldyh@redhat.com>
 
-        * parser.c (cp_parser_init_declarator): Revert opaque
-        vector_opaque_p change.
-        Do not include target.h.
+	* parser.c (cp_parser_init_declarator): Revert opaque
+	vector_opaque_p change.
+	Do not include target.h.
 
 2003-02-28  Mark Mitchell  <mark@codesourcery.com>
 
@@ -905,7 +909,7 @@
 
 2003-02-14   Andrew Pinski <pinskia@physics.uc.edu>
 
-        * decl.c: (define_label): Fix warning for return 0 instead of NULL.
+	* decl.c: (define_label): Fix warning for return 0 instead of NULL.
 
 2003-02-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
@@ -1109,7 +1113,7 @@
 
 2003-01-29  Fariborz Jahanian  <fjahanian@apple.com>
 
-        * pt.c (last_pending_template) Declare GTY().
+	* pt.c (last_pending_template) Declare GTY().
 
 2003-01-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
@@ -1234,7 +1238,7 @@
 	PR c++/9285
 	PR c++/9294
 	* parser.c (cp_parser_simple_declaration): Return quickly when
-        encountering errors.
+	encountering errors.
 
 2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1508,10 +1512,10 @@
 
 2003-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-        * cfns.gperf: ANSIfy function declarations.
-        * cfns.h: Regenerate.
-        * cp-tree.h: ANSIfy function declarations.
-        * parser.c: ANSIfy function declarations & definitions.
+	* cfns.gperf: ANSIfy function declarations.
+	* cfns.h: Regenerate.
+	* cp-tree.h: ANSIfy function declarations.
+	* parser.c: ANSIfy function declarations & definitions.
 
 	* decl.c (bad_specifiers): Fix parameter order error I introduced.
 

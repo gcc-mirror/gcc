@@ -23,6 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "intl.h"
 #include "tree.h"
 #include "flags.h"
 #include "toplev.h"
@@ -4807,14 +4808,23 @@ c_common_insert_default_attributes (decl)
 #undef DEF_FN_ATTR
 }
 
-/* Output a -Wshadow warning MSGID about NAME, an IDENTIFIER_NODE, and
-   additionally give the location of the previous declaration DECL.  */
+/* Output a -Wshadow warning MSGCODE about NAME, and give the location
+   of the previous declaration DECL.  MANDATORY says whether this is a
+   mandatory warning (i.e. use pedwarn).  */
 void
-shadow_warning (msgid, name, decl)
-     const char *msgid;
-     tree name, decl;
+shadow_warning (msgcode, mandatory, name, decl)
+     enum sw_kind msgcode;
+     int mandatory;  /* really bool */
+     const char *name;
+     tree decl;
 {
-  warning ("declaration of `%s' shadows %s", IDENTIFIER_POINTER (name), msgid);
+  static const char *const msgs[] = {
+    /* SW_PARAM  */ N_("declaration of \"%s\" shadows a parameter"),
+    /* SW_LOCAL  */ N_("declaration of \"%s\" shadows a previous local"),
+    /* SW_GLOBAL */ N_("declaration of \"%s\" shadows a global declaration")
+  };
+
+  (mandatory ? pedwarn : warning) (msgs[msgcode], name);
   warning_with_file_and_line (DECL_SOURCE_FILE (decl),
 			      DECL_SOURCE_LINE (decl),
 			      "shadowed declaration is here");
