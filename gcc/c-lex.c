@@ -1330,10 +1330,16 @@ yylex ()
 	      {
 		if (base == 16)
 		  error ("floating constant may not be in radix 16");
-		if (floatflag == AFTER_POINT)
+		if (floatflag == TOO_MANY_POINTS)
+		  /* We have already emitted an error.  Don't need another.  */
+		  ;
+		else if (floatflag == AFTER_POINT)
 		  {
 		    error ("malformed floating constant");
 		    floatflag = TOO_MANY_POINTS;
+		    /* Avoid another error from atof by forcing all characters
+		       from here on to be ignored.  */
+		    p[-1] = '\0';
 		  }
 		else
 		  floatflag = AFTER_POINT;
