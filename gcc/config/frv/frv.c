@@ -2564,7 +2564,8 @@ frv_print_operand_memory_reference (stream, x, addr_offset)
 	    {
 	      fputs ("#gprel12(", stream);
 	      assemble_name (stream, XSTR (XEXP (XEXP (x1, 0), 0), 0));
-	      fprintf (stream, "+%d)", INTVAL (XEXP (XEXP (x1, 0), 1)));
+	      fprintf (stream, "+"HOST_WIDE_INT_PRINT_DEC")",
+		       INTVAL (XEXP (XEXP (x1, 0), 1)));
 	    }
 	  else
 	    fatal_insn ("Bad insn to frv_print_operand_memory_reference:", x);
@@ -9737,7 +9738,7 @@ frv_in_small_data_p (decl)
 static bool
 frv_rtx_costs (x, code, outer_code, total)
      rtx x;
-     int code, outer_code;
+     int code, outer_code ATTRIBUTE_UNUSED;
      int *total;
 {
   switch (code)
