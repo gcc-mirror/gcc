@@ -182,7 +182,6 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __lshrdi3	__NDW(lshr,3)
 #define __ashldi3	__NDW(ashl,3)
 #define __ashrdi3	__NDW(ashr,3)
-#define __ffsdi2	__NDW(ffs,2)
 #define __cmpdi2	__NDW(cmp,2)
 #define __ucmpdi2	__NDW(ucmp,2)
 #define __udivmoddi4	__NDW(udivmod,4)
@@ -202,6 +201,9 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __fixunstfSI	__NW(fixunstf,)
 #define __fixunsdfSI	__NW(fixunsdf,)
 #define __fixunssfSI	__NW(fixunssf,)
+
+#define __ffsSI2	__NW(ffs,2)
+#define __ffsDI2	__NDW(ffs,2)
 
 extern DWtype __muldi3 (DWtype, DWtype);
 extern DWtype __divdi3 (DWtype, DWtype);

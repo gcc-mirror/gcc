@@ -1,5 +1,11 @@
 2003-02-04  Richard Henderson  <rth@redhat.com>
 
+	* libgcc2.h, libgcc2.c (__ffsSI2): New.
+	(__ffsDI2): Rename from __ffsdi2.
+	* mklibgcc.in (lib2funcs): Add _ffssi2.
+
+2003-02-04  Richard Henderson  <rth@redhat.com>
+
 	* libgcc2.c (__paritysi2, __paritydi2): Replace last two reduction
 	rounds with a "bit table" lookup.
 
