@@ -190,7 +190,7 @@ extern const int x86_double_with_add;
   { "pentiumpro",		 0, "Optimize for Pentium Pro, Pentium II" },\
   { "rtd",			 MASK_RTD, "Alternate calling convention" },\
   { "no-rtd",			-MASK_RTD, "Use normal calling convention" },\
-  { "align-double",		 MASK_ALIGN_DOUBLE, "Align doubles on dword boundary" },\
+  { "align-double",		 MASK_ALIGN_DOUBLE, "Align some doubles on dword boundary" },\
   { "no-align-double",		-MASK_ALIGN_DOUBLE, "Align doubles on word boundary" },		\
   { "svr3-shlib",		 MASK_SVR3_SHLIB, "Uninitialized locals in .bss"  },			\
   { "no-svr3-shlib",		-MASK_SVR3_SHLIB, "Uninitialized locals in .data" },			\
@@ -198,7 +198,7 @@ extern const int x86_double_with_add;
   { "no-ieee-fp",		-MASK_IEEE_FP, "Do not use IEEE math for fp comparisons" },			\
   { "fp-ret-in-387",		 MASK_FLOAT_RETURNS, "Return values of functions in FPU registers" },			\
   { "no-fp-ret-in-387",		-MASK_FLOAT_RETURNS , "Do not return values of functions in FPU registers"},			\
-  { "no-fancy-math-387",	 MASK_NO_FANCY_MATH_387, "Do not generate sin, sos, sqrt for 387" },		\
+  { "no-fancy-math-387",	 MASK_NO_FANCY_MATH_387, "Do not generate sin, cos, sqrt for 387" },		\
   { "fancy-math-387",		-MASK_NO_FANCY_MATH_387, "Generate sin, cos, sqrt for FPU"},		\
   { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER }, 	\
   { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER },       \
