@@ -101,6 +101,10 @@ extern int target_flags;
 #define DBX_DEBUGGING_INFO
 #define DEFAULT_GDB_EXTENSIONS 1
 
+/* Only lables should ever begin in colunm zero.  */
+#define ASM_STABS_OP "\t.stabs"
+#define ASM_STABN_OP "\t.stabn"
+
 #if (TARGET_DEFAULT & 1) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
@@ -1692,7 +1696,7 @@ readonly_data ()							\
 #define ASM_FILE_END(FILE) \
   do { if (write_symbols == DBX_DEBUG)\
 	 { fputs (TEXT_SECTION_ASM_OP, FILE);\
-	   fputs (".stabs \"end_file.\",4,0,0,Ltext_end\nLtext_end:\n",\
+	   fputs ("\t.stabs \"end_file.\",4,0,0,Ltext_end\nLtext_end:\n",\
 		  (FILE));\
 	 }\
      } while (0)
