@@ -1,3 +1,9 @@
+2003-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14008
+	* g++.dg/parse/error15.C: New test.
+	* g++.dg/parse/crash11.C: Update dg-error mark.
+
 2004-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13932
