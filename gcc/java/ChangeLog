@@ -1,3 +1,8 @@
+Wed Dec 16 14:42:19 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-parse.c (get_constant):  Set TREE_TYPE for string constants.
+	(HANDLE_CONSTANTVALUE):  If flag_emit_class_files, call get_constant.
+
 1998-12-16  Tom Tromey  <tromey@cygnus.com>
 
 	* parse-scan.y (qualified_name): Use correct sprintf format.
