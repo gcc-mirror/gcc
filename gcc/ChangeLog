@@ -1,3 +1,19 @@
+2002-06-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpptrad.c (struct block, BLOCK_HEADER_LEN, BLOCK_LEN,
+	scan_parameters, save_replacement_text, replacement_length): New.
+	(scan_out_logical_line): Take a macro and save parameters if
+	non-NULL.
+	(_cpp_logical_line_trad): Update.
+	(_cpp_create_trad_definition): Update to handle function-like
+	macros.
+	* cpplex.c (new_buff): Update.
+	(struct dummy, DEFAULT_ALIGNMENT, CPP_ALIGN): Move...
+	* cpphash.h: ...here.
+	(CPP_ALIGN2, _cpp_save_parameter): New.
+	* cppmacro.c (save_parameter): Rename, export.
+	(parse_params): Update.
+
 2002-06-07  Andreas Jaeger  <aj@suse.de>
 
 	* config/mmix/mmix.c: Remove extra broken prototype for

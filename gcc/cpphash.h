@@ -50,6 +50,21 @@ typedef unsigned char uchar;
    efficiency, and partly to limit runaway recursion.  */
 #define CPP_STACK_MAX 200
 
+/* Host alignment handling.  */
+struct dummy
+{
+  char c;
+  union
+  {
+    double d;
+    int *p;
+  } u;
+};
+
+#define DEFAULT_ALIGNMENT offsetof (struct dummy, u)
+#define CPP_ALIGN2(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
+#define CPP_ALIGN(size) CPP_ALIGN2 (size, DEFAULT_ALIGNMENT)
+
 /* Each macro definition is recorded in a cpp_macro structure.
    Variadic macros cannot occur with traditional cpp.  */
 struct cpp_macro
@@ -428,7 +443,8 @@ extern bool _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
 extern void _cpp_pop_context		PARAMS ((cpp_reader *));
 extern void _cpp_push_text_context	PARAMS ((cpp_reader *, cpp_hashnode *,
 						 const uchar *, const uchar*));
-extern bool _cpp_create_trad_definition PARAMS ((cpp_reader *, cpp_macro *));
+extern bool _cpp_save_parameter		PARAMS ((cpp_reader *, cpp_macro *,
+						 cpp_hashnode *));
 
 /* In cpphash.c */
 extern void _cpp_init_hashtable		PARAMS ((cpp_reader *, hash_table *));
@@ -483,6 +499,7 @@ extern void _cpp_overlay_buffer PARAMS ((cpp_reader *pfile, const uchar *,
 					 size_t));
 extern cpp_hashnode *_cpp_lex_identifier_trad PARAMS ((cpp_reader *));
 extern void _cpp_set_trad_context PARAMS ((cpp_reader *));
+extern bool _cpp_create_trad_definition PARAMS ((cpp_reader *, cpp_macro *));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1
