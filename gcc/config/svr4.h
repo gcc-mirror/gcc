@@ -330,8 +330,13 @@ while (0)
    embedded stabs.  */
 
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-  fprintf (FILE,							\
-	   "\t.text\n\t.stabs \"\",%d,0,0,.Letext\n.Letext:\n", N_SO)
+do									\
+  {									\
+    text_section ();							\
+    fprintf (FILE,							\
+	   "\t.stabs \"\",%d,0,0,.Letext\n.Letext:\n", N_SO);		\
+  }									\
+while (0)
 
 /* Define the actual types of some ANSI-mandated types.  (These
    definitions should work for most SVR4 systems).  */
