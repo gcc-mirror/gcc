@@ -1152,6 +1152,8 @@ try_combine (i3, i2, i1)
   int i1_feeds_i3 = 0;
   /* Notes that must be added to REG_NOTES in I3 and I2.  */
   rtx new_i3_notes, new_i2_notes;
+  /* Notes that we substituted I3 into I2 instead of the normal case.  */
+  int i3_subst_into_i2 = 0;
 
   int maxreg;
   rtx temp;
@@ -1254,6 +1256,7 @@ try_combine (i3, i2, i1)
 		     SET_DEST (PATTERN (i3)));
 
 	      newpat = p2;
+	      i3_subst_into_i2 = 1;
 	      goto validate_replacement;
 	    }
     }
@@ -2040,22 +2043,39 @@ try_combine (i3, i2, i1)
     /* We had one special case above where I2 had more than one set and
        we replaced a destination of one of those sets with the destination
        of I3.  In that case, we have to update LOG_LINKS of insns later
-       in this basic block.  Note that this (expensive) case is rare.  */
+       in this basic block.  Note that this (expensive) case is rare.
 
-    if (GET_CODE (PATTERN (i2)) == PARALLEL)
-      for (i = 0; i < XVECLEN (PATTERN (i2), 0); i++)
-	if (GET_CODE (SET_DEST (XVECEXP (PATTERN (i2), 0, i))) == REG
-	    && SET_DEST (XVECEXP (PATTERN (i2), 0, i)) != i2dest
-	    && ! find_reg_note (i2, REG_UNUSED,
-				SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
-	  for (temp = NEXT_INSN (i2);
-	       temp && (this_basic_block == n_basic_blocks - 1
-			|| basic_block_head[this_basic_block] != temp);
-	       temp = NEXT_INSN (temp))
-	    if (temp != i3 && GET_RTX_CLASS (GET_CODE (temp)) == 'i')
-	      for (link = LOG_LINKS (temp); link; link = XEXP (link, 1))
-		if (XEXP (link, 0) == i2)
-		  XEXP (link, 0) = i3;
+       Also, in this case, we must pretend that all REG_NOTEs for I2
+       actually came from I3, so that REG_UNUSED notes from I2 will be
+       properly handled.  */
+
+    if (i3_subst_into_i2)
+      {
+	for (i = 0; i < XVECLEN (PATTERN (i2), 0); i++)
+	  if (GET_CODE (SET_DEST (XVECEXP (PATTERN (i2), 0, i))) == REG
+	      && SET_DEST (XVECEXP (PATTERN (i2), 0, i)) != i2dest
+	      && ! find_reg_note (i2, REG_UNUSED,
+				  SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
+	    for (temp = NEXT_INSN (i2);
+		 temp && (this_basic_block == n_basic_blocks - 1
+			  || basic_block_head[this_basic_block] != temp);
+		 temp = NEXT_INSN (temp))
+	      if (temp != i3 && GET_RTX_CLASS (GET_CODE (temp)) == 'i')
+		for (link = LOG_LINKS (temp); link; link = XEXP (link, 1))
+		  if (XEXP (link, 0) == i2)
+		    XEXP (link, 0) = i3;
+
+	if (i3notes)
+	  {
+	    rtx link = i3notes;
+	    while (XEXP (link, 1))
+	      link = XEXP (link, 1);
+	    XEXP (link, 1) = i2notes;
+	  }
+	else
+	  i3notes = i2notes;
+	i2notes = 0;
+      }
 
     LOG_LINKS (i3) = 0;
     REG_NOTES (i3) = 0;
@@ -9857,9 +9877,26 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
       switch (REG_NOTE_KIND (note))
 	{
 	case REG_UNUSED:
+	  /* If this note is from any insn other than i3, then we have no
+	     use for it, and must ignore it.
+
+	     Any clobbers for i3 may still exist, and so we must process
+	     REG_UNUSED notes from that insn.
+
+	     Any clobbers from i2 or i1 can only exist if they were added by
+	     recog_for_combine.  In that case, recog_for_combine created the
+	     necessary REG_UNUSED notes.  Trying to keep any original
+	     REG_UNUSED notes from these insns can cause incorrect output
+	     if it is for the same register as the original i3 dest.
+	     In that case, we will notice that the register is set in i3,
+	     and then add a REG_UNUSED note for the destination of i3, which
+	     is wrong.  */
+	  if (from_insn != i3)
+	    break;
+
 	  /* If this register is set or clobbered in I3, put the note there
 	     unless there is one already.  */
-	  if (reg_set_p (XEXP (note, 0), PATTERN (i3)))
+	  else if (reg_set_p (XEXP (note, 0), PATTERN (i3)))
 	    {
 	      if (! (GET_CODE (XEXP (note, 0)) == REG
 		     ? find_regno_note (i3, REG_UNUSED, REGNO (XEXP (note, 0)))
