@@ -301,7 +301,7 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK alpha_output_mi_thunk_osf
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
 #endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -7866,7 +7866,7 @@ alpha_output_mi_thunk_osf (file, thunk_fndecl, delta, vcall_offset, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
-     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT vcall_offset;
      tree function;
 {
   HOST_WIDE_INT hi, lo;
@@ -7898,6 +7898,37 @@ alpha_output_mi_thunk_osf (file, thunk_fndecl, delta, vcall_offset, function)
     {
       rtx tmp = alpha_emit_set_long_const (gen_rtx_REG (Pmode, 0),
 					   delta, -(delta < 0));
+      emit_insn (gen_adddi3 (this, this, tmp));
+    }
+
+  /* Add a delta stored in the vtable at VCALL_OFFSET.  */
+  if (vcall_offset)
+    {
+      rtx tmp, tmp2;
+
+      tmp = gen_rtx_REG (Pmode, 0);
+      emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
+
+      lo = ((vcall_offset & 0xffff) ^ 0x8000) - 0x8000;
+      hi = (((vcall_offset - lo) & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      if (hi + lo == vcall_offset)
+	{
+	  if (hi)
+	    emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (hi)));
+	}
+      else
+	{
+	  tmp2 = alpha_emit_set_long_const (gen_rtx_REG (Pmode, 1),
+					    vcall_offset, -(vcall_offset < 0));
+          emit_insn (gen_adddi3 (tmp, tmp, tmp2));
+	  lo = 0;
+	}
+      if (lo)
+	tmp2 = gen_rtx_PLUS (Pmode, tmp, GEN_INT (lo));
+      else
+	tmp2 = tmp;
+      emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp2));
+
       emit_insn (gen_adddi3 (this, this, tmp));
     }
 
