@@ -1,3 +1,10 @@
+2003-09-28  Robert Millan  <robertmh@gnu.org>
+
+	* config/i386/kfreebsdgnu.h: New. i386-*-kfreebsd-gnu definitions.
+	* config/kfreebsdgnu.h: New. *-*-kfreebsd-gnu definitions.
+	* config/t-kfreebsd-gnu: New. *-*-kfreebsd-gnu tmake_file.
+	* config.gcc: Add *-*-kfreebsd*-gnu and i[34567]86-*-kfreebsd*-gnu.
+
 2003-10-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* web.c: Fix various comments.
