@@ -5515,7 +5515,7 @@ output_int_conditional_move (which_alternative, operands)
      int which_alternative;
      rtx operands[];
 {
-  int code = GET_CODE (operands[1]);
+  enum rtx_code code = GET_CODE (operands[1]);
 
   /* This is very tricky. We have to do it right. For a code segement
      like:
