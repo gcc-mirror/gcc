@@ -2315,9 +2315,7 @@ build1 (code, type, node)
     }
 
   if (TREE_CODE_CLASS (code) == 's')
-    {
-      TREE_SIDE_EFFECTS (t) = 1;
-    }
+    TREE_SIDE_EFFECTS (t) = 1;
   else switch (code)
     {
     case INIT_EXPR:
