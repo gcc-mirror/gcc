@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA. */
    like Cygwin does.  */
 #define HAVE_DOS_BASED_FILE_SYSTEM
 
-#define EXECUTABLE_SUFFIX ".exe"
+#define HOST_EXECUTABLE_SUFFIX ".exe"
 
 #undef PATH_SEPARATOR
 #define PATH_SEPARATOR ';'

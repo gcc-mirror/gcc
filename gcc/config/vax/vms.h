@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,6 +19,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #define VMS_TARGET
+
+#define TARGET_EXECUTABLE_SUFFIX ".exe"
+#define TARGET_OBJECT_SUFFIX ".obj"
 
 /* This enables certain macros in vax.h, which will make an indirect
    reference to an external symbol an invalid address.  This needs to be

@@ -1,3 +1,38 @@
+2001-04-19 DJ Delorie  <dj@redhat.com>
+
+	* config/alpha/vms.h: Change OBJECT_SUFFIX and EXECUTABLE_SUFFIX
+	to TARGET_OBJECT_SUFFIX and TARGET_EXECUTABLE_SUFFIX.
+	* config/i386/cygwin.h: Likewise.
+	* config/i386/mingw32.h: Likewise.
+	* config/vax/vms.h: Likewise.
+	* config/i386/djgpp.h: Remove NO_AUTO_EXE_SUFFIX.
+
+	* config/alpha/xm-vms.h: Change OBJECT_SUFFIX and EXECUTABLE_SUFFIX
+	to HOST_OBJECT_SUFFIX and HOST_EXECUTABLE_SUFFIX.
+	* config/i386/xm-cygwin.h: Likewise.
+	* config/i386/xm-djgpp.h: Likewise.
+	* config/i386/xm-mingw32.h: Likewise.
+	* config/vax/xm-vms.h: Likewise.
+
+	* mkdeps.c (deps_add_default_target): Use TARGET_OBJECT_SUFFIX
+	instead of OBJECT_SUFFIX.
+	* collect2.c (find_a_file): Look for files matching the extension
+	HOST_EXECUTABLE_SUFFIX instead of EXECUTABLE_SUFFIX.
+	* gcc.c (DEFAULT_SWITCH_CURTAILS_COMPILATION): Depend on 
+	TARGET_EXECUTABLE_SUFFIX.
+	(find_a_file): Use HOST_EXECUTABLE_SUFFIX.
+	(make_relative_prefix): Likewise.
+	(convert_filename): Use TARGET_ suffixes throughout.  Remove
+	NO_AUTO_EXE_SUFFIX.
+	(process_command): Likewise.
+	(do_spec_1): Likewise.
+	* java/lang.c (init_parse): Likewise.
+
+	* gcc.texi : Document four new options matching the pattern
+	(HOST|TARGET)_(OBJECT|EXECUTABLE)_SUFFIX.  Remove documentation
+	for deleted macros OBJECT_SUFFIX and EXECUTABLE_SUFFIX.  Remove
+	documentation for NO_AUTO_EXE_SUFFIX.
+
 2001-04-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* toplev.h (struct lang_hooks): Allow decode_option to indicate

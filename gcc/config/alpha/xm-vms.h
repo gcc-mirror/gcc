@@ -76,5 +76,5 @@ Boston, MA 02111-1307, USA.  */
 #define STDC_HEADERS 1
 #define HAVE_STRINGIZE 1
 
-#define OBJECT_SUFFIX ".obj"
-#define EXECUTABLE_SUFFIX ".exe"
+#define HOST_EXECUTABLE_SUFFIX ".exe"
+#define HOST_OBJECT_SUFFIX ".obj"

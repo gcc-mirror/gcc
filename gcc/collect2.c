@@ -652,8 +652,8 @@ find_a_file (pprefix, name)
   if (debug)
     fprintf (stderr, "Looking for '%s'\n", name);
   
-#ifdef EXECUTABLE_SUFFIX
-  len += strlen (EXECUTABLE_SUFFIX);
+#ifdef HOST_EXECUTABLE_SUFFIX
+  len += strlen (HOST_EXECUTABLE_SUFFIX);
 #endif
 
   temp = xmalloc (len);
@@ -676,11 +676,11 @@ find_a_file (pprefix, name)
 	  return temp;
 	}
 
-#ifdef EXECUTABLE_SUFFIX
+#ifdef HOST_EXECUTABLE_SUFFIX
 	/* Some systems have a suffix for executable files.
 	   So try appending that.  */
       strcpy (temp, name);
-	strcat (temp, EXECUTABLE_SUFFIX);
+	strcat (temp, HOST_EXECUTABLE_SUFFIX);
 	
 	if (access (temp, X_OK) == 0)
 	  return temp;
@@ -702,10 +702,10 @@ find_a_file (pprefix, name)
 	    && access (temp, X_OK) == 0)
 	  return temp;
 
-#ifdef EXECUTABLE_SUFFIX
+#ifdef HOST_EXECUTABLE_SUFFIX
 	/* Some systems have a suffix for executable files.
 	   So try appending that.  */
-	strcat (temp, EXECUTABLE_SUFFIX);
+	strcat (temp, HOST_EXECUTABLE_SUFFIX);
 	
 	if (stat (temp, &st) >= 0
 	    && ! S_ISDIR (st.st_mode)

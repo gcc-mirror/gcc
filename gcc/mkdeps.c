@@ -188,11 +188,11 @@ deps_add_default_target (d, tgt)
     deps_add_target (d, "-", 1);
   else
     {
-#ifndef OBJECT_SUFFIX
-# define OBJECT_SUFFIX ".o"
+#ifndef TARGET_OBJECT_SUFFIX
+# define TARGET_OBJECT_SUFFIX ".o"
 #endif
       char *start = lbasename (tgt);
-      char *o = (char *) alloca (strlen (start) + strlen (OBJECT_SUFFIX) + 1);
+      char *o = (char *) alloca (strlen (start) + strlen (TARGET_OBJECT_SUFFIX) + 1);
       char *suffix;
 
       strcpy (o, start);
@@ -200,7 +200,7 @@ deps_add_default_target (d, tgt)
       suffix = strrchr (o, '.');
       if (!suffix)
         suffix = o + strlen (o);
-      strcpy (suffix, OBJECT_SUFFIX);
+      strcpy (suffix, TARGET_OBJECT_SUFFIX);
       
       deps_add_target (d, o, 1);
     }

@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA. */
 #define SDB_DEBUGGING_INFO 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
+#define TARGET_EXECUTABLE_SUFFIX ".exe"
+
 #include <stdio.h>
 #include "i386/gas.h"
 #include "dbxcoff.h"
