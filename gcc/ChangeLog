@@ -1,3 +1,11 @@
+2003-07-16  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix-protos.h: Convert prototypes to ISO C90.
+	* config/mmix/mmix.c: Convert functions to ISO C90.
+  	(mmix_eh_return_handler_rtx, mmix_output_shifted_value): Tweak
+	formatting.
+	(mmix_get_hard_reg_initial_val): Tweak section head comment.
+
 2003-07-16  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-pragma.h (HANDLE_PRAGMA_WEAK): Always define to SUPPORTS_WEAK.
