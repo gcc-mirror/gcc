@@ -1,0 +1,15 @@
+# This file is a shell script fragment that supplies the information
+# necessary to tailor a template configure script into the configure
+# script appropriate for this directory.  For more information, check
+# any existing configure script.
+
+srctrigger=special.exp
+srcname="DejaGnu"
+
+# per-host:
+
+# per-target:
+
+target_makefile_frag=../config/mt-${target_alias}
+
+# post-target:

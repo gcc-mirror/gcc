@@ -1,0 +1,28 @@
+// GROUPS passed pure-virt
+extern "C" { void printf(const char *, ...); }
+class Base {
+public:
+  virtual ~Base() =0;
+};
+
+class Deranged : public Base {
+public:
+  int value;
+  virtual ~Deranged();
+};
+
+
+Deranged::~Deranged(){}
+
+void foo() {
+  Deranged d;
+}
+
+main()
+{
+  foo();
+  printf("PASS\n");
+  return 0;
+}
+
+Base::~Base () { }

@@ -1,0 +1,3 @@
+main() {
+  int i = ~ false;
+}

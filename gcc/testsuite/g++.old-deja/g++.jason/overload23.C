@@ -1,0 +1,27 @@
+// From: panisset@cae.ca (Jean-Francois Panisset)
+// Date: Mon, 6 Jun 94 13:39:25 EDT
+// Subject: Problem with operator overloading
+
+// Build don't link:
+
+class ostream {
+public:
+  ostream& operator<<(double n);
+  ostream& operator<<(float n);
+};
+
+class X
+{
+public:
+  operator long() const;
+  operator double() const;
+};
+ostream& operator<< (ostream& os, const X& x);
+
+
+main()
+{
+  X x;
+  ostream os;
+  os << x; // gets bogus error - converting to float
+}
