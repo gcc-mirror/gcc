@@ -1022,7 +1022,7 @@ LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 	libgcc.mk $(srcdir)/libgcc2.c $(TCONFIG_H) \
 	$(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs \
 	tsystem.h $(FPBIT) $(DPBIT) $(LIB2ADD) $(LIB2ADD_ST) $(LIB2ADDEH) \
-	$(LIB2ADDEHDEP) $(EXTRA_PARTS) $(LIB1ASMSRC)
+	$(LIB2ADDEHDEP) $(EXTRA_PARTS) $(srcdir)/config/$(LIB1ASMSRC)
 
 libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
