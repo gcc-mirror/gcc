@@ -163,4 +163,46 @@ sse2floatfloat:
 	movq	%xmm0, (%rsi)
 	ret
 	
+        .section        .eh_frame,"a",@progbits
+.Lframe0:
+        .long   .LECIE1-.LSCIE1
+.LSCIE1:
+        .long   0x0
+        .byte   0x1
+        .string "zR"
+        .uleb128 0x1
+        .sleb128 -8
+        .byte   0x10
+        .uleb128 0x1
+        .byte   0x1b
+        .byte   0xc
+        .uleb128 0x7
+        .uleb128 0x8
+        .byte   0x90
+        .uleb128 0x1
+        .align 8
+.LECIE1:
+.LSFDE1:
+	.long	.LEFDE1-.LASFDE1
+.LASFDE1:
+        .long   .LASFDE1-.Lframe0
+
+        .long   .LFB1-.
+        .long   .LFE1-.LFB1
+        .uleb128 0x0
+        .byte   0x4		# DW_CFA_advance_loc4
+        .long   .LCFI0-.LFB1
+        .byte   0xe		# DW_CFA_def_cfa_offset
+        .uleb128 0x10
+        .byte   0x86		# DW_CFA_offset: r6 at cfa-16
+        .uleb128 0x2
+        .byte   0x4		# DW_CFA_advance_loc4
+        .long   .LCFI1-.LCFI0
+        .byte   0x86		# DW_CFA_offset: r6 at cfa-16
+        .uleb128 0x2
+        .byte   0xd		# DW_CFA_def_cfa_reg: r6
+        .uleb128 0x6
+	.align 8
+.LEFDE1:
+
 #endif /* __x86_64__  */
