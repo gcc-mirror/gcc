@@ -1,3 +1,10 @@
+2004-11-28  Andreas Fischer <a_fisch@gmx.de>
+	    Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/16343
+	* config/rs6000/rs6000.c (rs6000_elf_in_small_data_p): Disallow
+	functions, strings and thread-local vars.
+
 2004-11-27  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/12769
