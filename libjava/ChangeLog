@@ -1,5 +1,17 @@
 2003-10-22  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/12416:
+	* java/lang/Class.h: Updated.
+	* java/lang/natClass.cc (_getFields): Removed.
+	(getFields): Likewise.
+	(getDeclaredFields): Added `public_only' parameter.
+	* java/lang/Class.java (getFields): Now implemented in java; from
+	Classpath.
+	(getDeclaredFields): Likewise.
+	(getDeclaredFields(boolean)): Declare.
+	(_getFields): Removed.
+	(internalGetFields): New method, from Classpath.
+
 	PR libgcj/12656:
 	* gnu/gcj/runtime/natFirstThread.cc (call_main): Use
 	_Jv_LookupDeclaredMethod, not _Jv_GetMethodLocal.
