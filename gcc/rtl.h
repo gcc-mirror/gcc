@@ -1,6 +1,5 @@
-
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -315,9 +314,13 @@ extern char *reg_note_name[];
 #define LINE_NUMBER NOTE
 
 /* In a NOTE that is a line number, this is a string for the file name
-   that the line is in.  */
+   that the line is in.  We use the same field to record block numbers
+   temporarily in NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes.
+   (We avoid lots of casts between ints and pointers if we use a
+   different macro for the bock number.)  */
 
 #define NOTE_SOURCE_FILE(INSN)  ((INSN)->fld[3].rtstr)
+#define NOTE_BLOCK_NUMBER(INSN) ((INSN)->fld[3].rtint)
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
@@ -357,11 +360,6 @@ extern char *reg_note_name[];
 #define NOTE_INSN_DELETED_LABEL -12
 /* Don't forget to change note_insn_name in rtl.c.  */
 
-/* These macros are for recording block numbers temporarily
-   in NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes.  */
-#define NOTE_BLOCK_NUMBER(INSN) ((int) NOTE_SOURCE_FILE (INSN))
-#define SET_NOTE_BLOCK_NUMBER(INSN, NUMBER) \
-  (NOTE_SOURCE_FILE (INSN) = (char *) (NUMBER))
 
 #if 0 /* These are not used, and I don't know what they were for. --rms.  */
 #define NOTE_DECL_NAME(INSN) ((INSN)->fld[3].rtstr)
@@ -577,6 +575,9 @@ extern rtx plus_constant_wide (), plus_constant_for_output_wide ();
 extern rtx gen_rtx ();
 
 extern char *xmalloc ();
+extern char *xrealloc ();
+extern char *oballoc ();
+extern char *permalloc ();
 extern void free ();
 extern rtx rtx_alloc ();
 extern rtvec rtvec_alloc ();
