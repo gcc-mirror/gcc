@@ -26,6 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Build tables of static constructors and destructors and run ld. */
 
+#include "config.h"
 #include <sys/types.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -36,6 +37,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifdef NO_WAIT_H
 #include <sys/wait.h>
 #endif
+
+#define COLLECT
+
+#include "demangle.h"
+#include "obstack.h"
 
 #ifndef errno
 extern int errno;
@@ -51,13 +57,6 @@ extern int sys_nerr;
 #else
 char *strerror();
 #endif
-
-#define COLLECT
-
-#include "config.h"
-#include "demangle.h"
-
-#include "obstack.h"
 
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
