@@ -1788,9 +1788,6 @@ check_exception_handler_labels ()
 void
 init_eh ()
 {
-  /* Generate rtl to reference the variable in which the PC of the
-     current context is saved.  */
-  (void) build_pointer_type (make_node (VOID_TYPE));
 }
 
 /* Initialize the per-function EH information.  */
@@ -1827,7 +1824,7 @@ save_eh_status (p)
   p->protect_list = protect_list;
   p->ehc = current_function_ehc;
 
-  init_eh ();
+  init_eh_for_function ();
 }
 
 /* Restore the per-function EH info saved into the area denoted by P.  

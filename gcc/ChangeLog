@@ -1,3 +1,9 @@
+Thu Mar 19 00:58:07 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (init_eh): Do nothing.
+	(save_eh_status): Call init_eh_for_function, not init_eh.
+	* function.c (push_function_context_to): Don't call init_emit.
+
 Thu Mar 19 13:39:52 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000/sysv4.h (RELATIVE_PREFIX_NOT_LINKDIR): Undef for System V
