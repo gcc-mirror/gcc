@@ -10643,7 +10643,7 @@ rs6000_stack_info (void)
   rs6000_stack_t *info_ptr = &info;
   int reg_size = TARGET_32BIT ? 4 : 8;
   int ehrd_size;
-  HOST_WIDE_INT total_raw_size;
+  HOST_WIDE_INT non_fixed_size;
 
   /* Zero all fields portably.  */
   info = zero_info;
@@ -10874,14 +10874,13 @@ rs6000_stack_info (void)
 					 (TARGET_ALTIVEC_ABI || ABI_DARWIN)
 					 ? 16 : 8);
 
-  total_raw_size	 = (info_ptr->vars_size
+  non_fixed_size	 = (info_ptr->vars_size
 			    + info_ptr->parm_size
 			    + info_ptr->save_size
-			    + info_ptr->varargs_size
-			    + info_ptr->fixed_size);
+			    + info_ptr->varargs_size);
 
-  info_ptr->total_size =
-    RS6000_ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
+  info_ptr->total_size = RS6000_ALIGN (non_fixed_size + info_ptr->fixed_size,
+				       ABI_STACK_BOUNDARY / BITS_PER_UNIT);
 
   /* Determine if we need to allocate any stack frame:
 
@@ -10899,7 +10898,7 @@ rs6000_stack_info (void)
     info_ptr->push_p = 1;
 
   else if (DEFAULT_ABI == ABI_V4)
-    info_ptr->push_p = total_raw_size > info_ptr->fixed_size;
+    info_ptr->push_p = non_fixed_size != 0;
 
   else if (frame_pointer_needed)
     info_ptr->push_p = 1;
@@ -10908,8 +10907,7 @@ rs6000_stack_info (void)
     info_ptr->push_p = 1;
 
   else
-    info_ptr->push_p
-      = total_raw_size - info_ptr->fixed_size > (TARGET_32BIT ? 220 : 288);
+    info_ptr->push_p = non_fixed_size > (TARGET_32BIT ? 220 : 288);
 
   /* Zero offsets if we're not saving those registers.  */
   if (info_ptr->fp_size == 0)
@@ -11745,7 +11743,7 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
      need an unspec use/set of the register.  */
 
   for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
-    if (info->vrsave_mask != 0 && ALTIVEC_REG_BIT (i) != 0)
+    if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
       {
 	if (!epiloguep || call_used_regs [i])
 	  clobs[nclobs++] = gen_rtx_CLOBBER (VOIDmode,
@@ -12390,7 +12388,7 @@ rs6000_emit_epilogue (int sibcall)
     }
 
   /* Restore VRSAVE if needed.  */
-  if (TARGET_ALTIVEC_ABI && TARGET_ALTIVEC_VRSAVE 
+  if (TARGET_ALTIVEC && TARGET_ALTIVEC_VRSAVE
       && info->vrsave_mask != 0)
     {
       rtx addr, mem, reg;
@@ -15997,7 +15995,8 @@ rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 	   && TARGET_HARD_FLOAT
 	   && targetm.calls.split_complex_arg)
     return rs6000_complex_function_value (mode);
-  else if (TREE_CODE (valtype) == VECTOR_TYPE && TARGET_ALTIVEC)
+  else if (TREE_CODE (valtype) == VECTOR_TYPE
+	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI)
     regno = ALTIVEC_ARG_RETURN;
   else
     regno = GP_ARG_RETURN;
@@ -16015,7 +16014,8 @@ rs6000_libcall_value (enum machine_mode mode)
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	   && TARGET_HARD_FLOAT && TARGET_FPRS)
     regno = FP_ARG_RETURN;
-  else if (ALTIVEC_VECTOR_MODE (mode))
+  else if (ALTIVEC_VECTOR_MODE (mode)
+	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI)
     regno = ALTIVEC_ARG_RETURN;
   else if (COMPLEX_MODE_P (mode) && targetm.calls.split_complex_arg)
     return rs6000_complex_function_value (mode);

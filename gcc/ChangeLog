@@ -1,5 +1,18 @@
 2004-06-10  Alan Modra  <amodra@bigpond.net.au>
 
+	PR target/14960
+	2004-04-24  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.c (rs6000_stack_info): Rename total_raw_size
+	to non_fixed_size, and leave out fixed_size from the sum.
+	(generate_set_vrsave): Correct clobbers.
+	(rs6000_emit_epilogue): Test TARGET_ALTIVEC with TARGET_ALTIVEC_SAVE.
+	(rs6000_function_value): Test TARGET_ALTIVEC and TARGET_ALTIVEC_ABI.
+	(rs6000_libcall_value): Likewise.
+	* config/rs6000/rs6000.h (FUNCTION_VALUE_REGNO_P): Likewise.
+	(FUNCTION_ARG_REGNO_P): Likewise.
+
+2004-06-10  Alan Modra  <amodra@bigpond.net.au>
+
 	PR target/14567
 	2004-03-13  Alan Modra  <amodra@bigpond.net.au>
 	* config/rs6000/rs6000.h (UNITS_PER_ARG, RS6000_ARG_SIZE): Delete.
