@@ -1,9 +1,4 @@
-/* { dg-do run { target powerpc*-*-* } } */
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
-/* { dg-do run { target mipsisa64*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -maltivec" { target powerpc*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -msse2" { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -mpaired-single" { target mipsisa64*-*-* } } */
+/* { dg-require-effective-target vect_float } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -55,4 +50,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  } } */
+/* This fails to vectorize for 64-bit powerpc but there's no way to
+   specify that in an xfail list.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */

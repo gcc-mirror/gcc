@@ -1,9 +1,5 @@
-/* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-do compile { target sparc*-*-* } } */
-/* { dg-options "-S -O2 -ftree-vectorize -fdump-tree-vect-stats -maltivec" { target powerpc*-*-* } } */
-/* { dg-options "-S -O2 -ftree-vectorize -fdump-tree-vect-stats -msse2" { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -mcpu=ultrasparc -mvis" { target sparc*-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

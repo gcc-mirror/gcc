@@ -1,7 +1,5 @@
-/* { dg-do compile { target powerpc*-*-* i?86-*-* x86_64-*-* sparc*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -maltivec" { target powerpc*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -msse2" { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -mcpu=ultrasparc -mvis" { target sparc*-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
 
 #define N 16
 
