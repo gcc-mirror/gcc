@@ -659,14 +659,16 @@ gen_reg_rtx (mode)
       return gen_rtx_CONCAT (mode, realpart, imagpart);
     }
 
-  /* Make sure regno_pointer_align and regno_reg_rtx are large enough
-     to have an element for this pseudo reg number.  */
+  /* Make sure regno_pointer_align, regno_decl, and regno_reg_rtx are large
+     enough to have an element for this pseudo reg number.  */
 
   if (reg_rtx_no == f->emit->regno_pointer_align_length)
     {
       int old_size = f->emit->regno_pointer_align_length;
-      rtx *new1;
       char *new;
+      rtx *new1;
+      tree *new2;
+
       new = xrealloc (f->emit->regno_pointer_align, old_size * 2);
       memset (new + old_size, 0, old_size);
       f->emit->regno_pointer_align = (unsigned char *) new;
@@ -675,6 +677,11 @@ gen_reg_rtx (mode)
 			       old_size * 2 * sizeof (rtx));
       memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
+
+      new2 = (tree *) xrealloc (f->emit->regno_decl,
+				old_size * 2 * sizeof (tree));
+      memset (new2 + old_size, 0, old_size * sizeof (tree));
+      f->emit->regno_decl = new2;
 
       f->emit->regno_pointer_align_length = old_size * 2;
     }
@@ -1878,6 +1885,32 @@ adjust_address_1 (memref, mode, offset, validate)
    by putting something into a register.  */
 
 rtx
+offset_address (memref, offset, pow2)
+     rtx memref;
+     rtx offset;
+     HOST_WIDE_INT pow2;
+{
+  rtx new = change_address_1 (memref, VOIDmode,
+			      gen_rtx_PLUS (Pmode, XEXP (memref, 0),
+					    force_reg (Pmode, offset)), 1);
+  unsigned int memalign = MEM_ALIGN (memref);
+
+  /* Update the alignment to reflect the offset.  Reset the offset, which
+     we don't know.  */
+  while (pow2 % memalign != 0)
+    memalign >>= 1;
+
+  MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref),
+				   0, 0, memalign);
+  return new;
+}
+  
+/* Return a memory reference like MEMREF, but with its address changed to
+   ADDR.  The caller is asserting that the actual piece of memory pointed
+   to is the same, just the form of the address is being changed, such as
+   by putting something into a register.  */
+
+rtx
 replace_equiv_address (memref, addr)
      rtx memref;
      rtx addr;
@@ -1978,6 +2011,7 @@ free_emit_status (f)
 {
   free (f->emit->x_regno_reg_rtx);
   free (f->emit->regno_pointer_align);
+  free (f->emit->regno_decl);
   free (f->emit);
   f->emit = NULL;
 }
@@ -4402,8 +4436,10 @@ init_emit ()
 				 sizeof (unsigned char));
 
   regno_reg_rtx
-    = (rtx *) xcalloc (f->emit->regno_pointer_align_length * sizeof (rtx),
-		       sizeof (rtx));
+    = (rtx *) xcalloc (f->emit->regno_pointer_align_length, sizeof (rtx));
+
+  f->emit->regno_decl
+    = (tree *) xcalloc (f->emit->regno_pointer_align_length, sizeof (tree));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
   init_virtual_regs (f->emit);
@@ -4460,14 +4496,19 @@ mark_emit_status (es)
      struct emit_status *es;
 {
   rtx *r;
+  tree *t;
   int i;
 
   if (es == 0)
     return;
 
-  for (i = es->regno_pointer_align_length, r = es->x_regno_reg_rtx;
-       i > 0; --i, ++r)
-    ggc_mark_rtx (*r);
+  for (i = es->regno_pointer_align_length, r = es->x_regno_reg_rtx,
+       t = es->regno_decl;
+       i > 0; --i, ++r, ++t)
+    {
+      ggc_mark_rtx (*r);
+      ggc_mark_tree (*t);
+    }
 
   mark_sequence_stack (es->sequence_stack);
   ggc_mark_tree (es->sequence_rtl_expr);

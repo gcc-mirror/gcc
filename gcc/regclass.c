@@ -2496,6 +2496,24 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 		      || GET_CODE (XEXP (note, 0)) == LABEL_REF))))
 	REG_POINTER (SET_DEST (x)) = 1;
 
+      /* If this is setting a register from a register or from a simple
+	 conversion of a register, propagate REG_DECL.  */
+      if (GET_CODE (dest) == REG)
+	{
+	  rtx src = SET_SRC (x);
+
+	  while (GET_CODE (src) == SIGN_EXTEND
+		 || GET_CODE (src) == ZERO_EXTEND
+		 || GET_CODE (src) == TRUNCATE
+		 || (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)))
+	    src = XEXP (src, 0);
+
+	  if (GET_CODE (src) == REG && REGNO_DECL (REGNO (src)) == 0)
+	    REGNO_DECL (REGNO (src)) = REGNO_DECL (REGNO (dest));
+	  else if (GET_CODE (src) == REG && REGNO_DECL (REGNO (dest)) == 0)
+	    REGNO_DECL (REGNO (dest)) = REGNO_DECL (REGNO (src));
+	}
+
       /* ... fall through ...  */
 
     default:

@@ -164,6 +164,7 @@ static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
 static enum memory_use_mode
   get_memory_usage_from_modifier PARAMS ((enum expand_modifier));
 static rtx var_rtx		PARAMS ((tree));
+static HOST_WIDE_INT highest_pow2_factor PARAMS ((tree));
 static rtx expand_expr_unaligned PARAMS ((tree, unsigned int *));
 static rtx expand_increment	PARAMS ((tree, int, int));
 static void do_jump_by_parts_greater PARAMS ((tree, int, rtx, rtx));
@@ -3760,10 +3761,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 	      bitpos = 0;
 	    }
 
-	  to_rtx = change_address (to_rtx, VOIDmode,
-				   gen_rtx_PLUS (ptr_mode, XEXP (to_rtx, 0),
-						 force_reg (ptr_mode,
-							    offset_rtx)));
+	  to_rtx = offset_address (to_rtx, offset_rtx,
+				   highest_pow2_factor (offset));
 	}
 
       if (volatilep)
@@ -3900,8 +3899,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       else
 	{
 #ifdef POINTERS_EXTEND_UNSIGNED
-	  if (TREE_CODE (TREE_TYPE (to)) == REFERENCE_TYPE
-	     || TREE_CODE (TREE_TYPE (to)) == POINTER_TYPE)
+	  if (POINTER_TYPE_P (TREE_TYPE (to))
+	      && GET_MODE (to_rtx) != GET_MODE (value))
 	    value = convert_memory_address (GET_MODE (to_rtx), value);
 #endif
 	  emit_move_insn (to_rtx, value);
@@ -4648,19 +4647,15 @@ store_constructor (exp, target, align, cleared, size)
 		abort ();
 
 	      if (GET_MODE (offset_rtx) != ptr_mode)
-		{
-#ifdef POINTERS_EXTEND_UNSIGNED
-                  offset_rtx = convert_memory_address (ptr_mode, offset_rtx);
-#else
-                  offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
-#endif
-                }
+		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 
-	      to_rtx
-		= change_address (to_rtx, VOIDmode,
-				  gen_rtx_PLUS (ptr_mode, XEXP (to_rtx, 0),
-						force_reg (ptr_mode,
-							   offset_rtx)));
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      offset_rtx = convert_memory_address (Pmode, offset_rtx);
+#endif
+
+	      to_rtx = offset_address (to_rtx, offset_rtx,
+				       highest_pow2_factor (offset));
+
 	      align = DECL_OFFSET_ALIGN (field);
 	    }
 
@@ -4820,7 +4815,7 @@ store_constructor (exp, target, align, cleared, size)
 	    {
 	      tree lo_index = TREE_OPERAND (index, 0);
 	      tree hi_index = TREE_OPERAND (index, 1);
-	      rtx index_r, pos_rtx, addr, hi_r, loop_top, loop_end;
+	      rtx index_r, pos_rtx, hi_r, loop_top, loop_end;
 	      struct nesting *loop;
 	      HOST_WIDE_INT lo, hi, count;
 	      tree position;
@@ -4884,8 +4879,9 @@ store_constructor (exp, target, align, cleared, size)
 						  TYPE_SIZE_UNIT (elttype)));
 
 		  pos_rtx = expand_expr (position, 0, VOIDmode, 0);
-		  addr = gen_rtx_PLUS (Pmode, XEXP (target, 0), pos_rtx);
-		  xtarget = change_address (target, mode, addr);
+		  xtarget = offset_address (target, pos_rtx,
+					    highest_pow2_factor (position));
+		  xtarget = adjust_address (xtarget, mode, 0);
 		  if (TREE_CODE (value) == CONSTRUCTOR)
 		    store_constructor (value, xtarget, align, cleared,
 				       bitsize / BITS_PER_UNIT);
@@ -4906,7 +4902,6 @@ store_constructor (exp, target, align, cleared, size)
 	  else if ((index != 0 && ! host_integerp (index, 0))
 		   || ! host_integerp (TYPE_SIZE (elttype), 1))
 	    {
-	      rtx pos_rtx, addr;
 	      tree position;
 
 	      if (index == 0)
@@ -4920,9 +4915,10 @@ store_constructor (exp, target, align, cleared, size)
 	      position = size_binop (MULT_EXPR, index,
 				     convert (ssizetype,
 					      TYPE_SIZE_UNIT (elttype)));
-	      pos_rtx = expand_expr (position, 0, VOIDmode, 0);
-	      addr = gen_rtx_PLUS (Pmode, XEXP (target, 0), pos_rtx);
-	      xtarget = change_address (target, mode, addr);
+	      xtarget = offset_address (target,
+					expand_expr (position, 0, VOIDmode, 0),
+					highest_pow2_factor (position));
+	      xtarget = adjust_address (xtarget, mode, 0);
 	      store_expr (value, xtarget, 0);
 	    }
 	  else
@@ -5964,6 +5960,62 @@ check_max_integer_computation_mode (exp)
     }
 }
 #endif
+
+/* Return the highest power of two that EXP is known to be a multiple of.
+   This is used in updating alignment of MEMs in array references.  */
+
+static HOST_WIDE_INT
+highest_pow2_factor (exp)
+     tree exp;
+{
+  HOST_WIDE_INT c0, c1;
+
+  switch (TREE_CODE (exp))
+    {
+    case INTEGER_CST:
+      /* If the integer is expressable in a HOST_WIDE_INT, we can find
+	 the lowest bit that's a one.  If the result is zero or negative,
+	 pessimize by returning 1.  This is overly-conservative, but such
+	 things should not happen in the offset expressions that we are
+	 called with.  */
+      if (host_integerp (exp, 0))
+	{
+	  c0 = tree_low_cst (exp, 0);
+	  return c0 >= 0 ? c0 & -c0 : 1;
+	}
+      break;
+
+    case PLUS_EXPR:  case MINUS_EXPR:
+      c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
+      c1 = highest_pow2_factor (TREE_OPERAND (exp, 1));
+      return MIN (c0, c1);
+
+    case MULT_EXPR:
+      c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
+      c1 = highest_pow2_factor (TREE_OPERAND (exp, 1));
+      return c0 * c1;
+
+    case ROUND_DIV_EXPR:  case TRUNC_DIV_EXPR:  case FLOOR_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+      c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
+      c1 = highest_pow2_factor (TREE_OPERAND (exp, 1));
+      return c0 / c1;
+
+    case NON_LVALUE_EXPR:  case NOP_EXPR:  case CONVERT_EXPR:
+    case COMPOUND_EXPR:  case SAVE_EXPR:
+      return highest_pow2_factor (TREE_OPERAND (exp, 0));
+
+    case COND_EXPR:
+      c0 = highest_pow2_factor (TREE_OPERAND (exp, 1));
+      c1 = highest_pow2_factor (TREE_OPERAND (exp, 2));
+      return MIN (c0, c1);
+
+    default:
+      break;
+    }
+
+  return 1;
+}
 
 /* Return an object on the placeholder list that matches EXP, a
    PLACEHOLDER_EXPR.  An object "matches" if it is of the type of the
@@ -7018,13 +7070,11 @@ expand_expr (exp, target, tmode, modifier)
 	      abort ();
 
 	    if (GET_MODE (offset_rtx) != ptr_mode)
-	      {
+	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
+
 #ifdef POINTERS_EXTEND_UNSIGNED
-		offset_rtx = convert_memory_address (ptr_mode, offset_rtx);
-#else
-		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
+	    offset_rtx = convert_memory_address (ptr_mode, offset_rtx);
 #endif
-	      }
 
 	    /* A constant address in OP0 can have VOIDmode, we must not try
 	       to call force_reg for that case.  Avoid that case.  */
@@ -7048,10 +7098,8 @@ expand_expr (exp, target, tmode, modifier)
 		bitpos = 0;
 	      }
 
-	    op0 = change_address (op0, VOIDmode,
-				  gen_rtx_PLUS (ptr_mode, XEXP (op0, 0),
-						force_reg (ptr_mode,
-							   offset_rtx)));
+	    op0 = offset_address (op0, offset_rtx,
+				  highest_pow2_factor (offset));
 	  }
 
 	/* Don't forget about volatility even if this is a bitfield.  */
@@ -9036,18 +9084,14 @@ expand_expr_unaligned (exp, palign)
 	      abort ();
 
 	    if (GET_MODE (offset_rtx) != ptr_mode)
-	      {
-#ifdef POINTERS_EXTEND_UNSIGNED
-		offset_rtx = convert_memory_address (ptr_mode, offset_rtx);
-#else
-		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
-#endif
-	      }
+	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 
-	    op0 = change_address (op0, VOIDmode,
-				  gen_rtx_PLUS (ptr_mode, XEXP (op0, 0),
-						force_reg (ptr_mode,
-							   offset_rtx)));
+#ifdef POINTERS_EXTEND_UNSIGNED
+	    offset_rtx = convert_memory_address (ptr_mode, offset_rtx);
+#endif
+
+	    op0 = offset_address (op0, offset_rtx,
+				  highest_pow2_factor (offset));
 	  }
 
 	/* Don't forget about volatility even if this is a bitfield.  */

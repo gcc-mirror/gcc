@@ -3264,6 +3264,30 @@ output_operand_lossage (msgid)
 
 /* Output of assembler code from a template, and its subroutines.  */
 
+/* Annotate the assembly with a comment describing the pattern and
+   alternative used.  */
+
+static void
+output_asm_name ()
+{
+  if (debug_insn)
+    {
+      int num = INSN_CODE (debug_insn);
+      fprintf (asm_out_file, "\t%s %d\t%s",
+	       ASM_COMMENT_START, INSN_UID (debug_insn),
+	       insn_data[num].name);
+      if (insn_data[num].n_alternatives > 1)
+	fprintf (asm_out_file, "/%d", which_alternative + 1);
+#ifdef HAVE_ATTR_length
+      fprintf (asm_out_file, "\t[length = %d]",
+	       get_attr_length (debug_insn));
+#endif
+      /* Clear this so only the first assembler insn
+	 of any rtl insn will get the special comment for -dp.  */
+      debug_insn = 0;
+    }
+}
+
 /* Output text from TEMPLATE to the assembler output file,
    obeying %-directions to substitute operands taken from
    the vector OPERANDS.
@@ -3280,32 +3304,6 @@ output_operand_lossage (msgid)
       and print a constant expression for minus the value
       of the operand, with no other punctuation.  */
 
-static void
-output_asm_name ()
-{
-  if (flag_print_asm_name)
-    {
-      /* Annotate the assembly with a comment describing the pattern and
-	 alternative used.  */
-      if (debug_insn)
-	{
-	  int num = INSN_CODE (debug_insn);
-	  fprintf (asm_out_file, "\t%s %d\t%s",
-		   ASM_COMMENT_START, INSN_UID (debug_insn),
-		   insn_data[num].name);
-	  if (insn_data[num].n_alternatives > 1)
-	    fprintf (asm_out_file, "/%d", which_alternative + 1);
-#ifdef HAVE_ATTR_length
-	  fprintf (asm_out_file, "\t[length = %d]",
-		   get_attr_length (debug_insn));
-#endif
-	  /* Clear this so only the first assembler insn
-	     of any rtl insn will get the special comment for -dp.  */
-	  debug_insn = 0;
-	}
-    }
-}
-
 void
 output_asm_insn (template, operands)
      const char *template;
@@ -3316,6 +3314,8 @@ output_asm_insn (template, operands)
 #ifdef ASSEMBLER_DIALECT
   int dialect = 0;
 #endif
+  int oporder[MAX_RECOG_OPERANDS];
+  int ops = 0;
 
   /* An insn may return a null string template
      in a case where no assembler code is needed.  */
@@ -3333,7 +3333,9 @@ output_asm_insn (template, operands)
     switch (c)
       {
       case '\n':
-	output_asm_name ();
+	if (flag_print_asm_name)
+	  output_asm_name ();
+
 	putc (c, asm_out_file);
 #ifdef ASM_OUTPUT_OPCODE
 	while ((c = *p) == '\t')
@@ -3425,7 +3427,8 @@ output_asm_insn (template, operands)
 
 	    if (! (*p >= '0' && *p <= '9'))
 	      output_operand_lossage ("operand number missing after %-letter");
-	    else if (this_is_asm_operands && (c < 0 || (unsigned int) c >= insn_noperands))
+	    else if (this_is_asm_operands
+		     && (c < 0 || (unsigned int) c >= insn_noperands))
 	      output_operand_lossage ("operand number out of range");
 	    else if (letter == 'l')
 	      output_asm_label (operands[c]);
@@ -3452,6 +3455,8 @@ output_asm_insn (template, operands)
 	    else
 	      output_operand (operands[c], letter);
 
+	    oporder[ops++] = c;
+
 	    while ((c = *p) >= '0' && c <= '9')
 	      p++;
 	  }
@@ -3464,6 +3469,8 @@ output_asm_insn (template, operands)
 	      output_operand_lossage ("operand number out of range");
 	    else
 	      output_operand (operands[c], 0);
+
+	    oporder[ops++] = c;
 	    while ((c = *p) >= '0' && c <= '9')
 	      p++;
 	  }
@@ -3482,7 +3489,30 @@ output_asm_insn (template, operands)
 	putc (c, asm_out_file);
       }
 
-  output_asm_name ();
+  /* Write out the variable names for operands, if we know them.  */
+  if (flag_verbose_asm)
+    {
+      int wrote = 0;
+      int i;
+
+      for (i = 0; i < ops; i++)
+	{
+	  rtx op = operands[oporder[i]];
+	  tree decl = (GET_CODE (op) == REG ? REGNO_DECL (ORIGINAL_REGNO (op))
+		       : GET_CODE (op) == MEM ? MEM_DECL (op)
+		       : 0);
+
+	  if (decl && DECL_NAME (decl))
+	    {
+	      fprintf (asm_out_file, "%s %s", wrote ? "," : ASM_COMMENT_START,
+		       IDENTIFIER_POINTER (DECL_NAME (decl)));
+	      wrote = 1;
+	    }
+	}
+    }
+
+  if (flag_print_asm_name)
+    output_asm_name ();
 
   putc ('\n', asm_out_file);
 }
