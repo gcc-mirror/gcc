@@ -3026,7 +3026,6 @@ extern void expand_decl (tree);
 extern int expand_decl_cleanup (tree, tree);
 extern int expand_decl_cleanup_eh (tree, tree, int);
 extern void expand_anon_union_decl (tree, tree, tree);
-extern void expand_start_case_dummy (void);
 extern HOST_WIDE_INT all_cases_count (tree, int *);
 extern void check_for_full_enumeration_handling (tree);
 extern void declare_nonlocal_label (tree);

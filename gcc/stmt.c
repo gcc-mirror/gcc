@@ -220,8 +220,7 @@ struct nesting GTY(())
 	     conditional branch points.  */
 	  rtx last_unconditional_cleanup;
 	} GTY ((tag ("BLOCK_NESTING"))) block;
-      /* For switch (C) or case (Pascal) statements,
-	 and also for dummies (see `expand_start_case_dummy').  */
+      /* For switch (C) or case (Pascal) statements.  */
       struct nesting_case
 	{
 	  /* The insn after which the case dispatch should finally
@@ -4441,32 +4440,6 @@ expand_start_case (int exit_flag, tree expr, tree type,
 
   thiscase->data.case_stmt.start = get_last_insn ();
 
-  start_cleanup_deferral ();
-}
-
-/* Start a "dummy case statement" within which case labels are invalid
-   and are not connected to any larger real case statement.
-   This can be used if you don't want to let a case statement jump
-   into the middle of certain kinds of constructs.  */
-
-void
-expand_start_case_dummy (void)
-{
-  struct nesting *thiscase = ALLOC_NESTING ();
-
-  /* Make an entry on case_stack for the dummy.  */
-
-  thiscase->desc = CASE_NESTING;
-  thiscase->next = case_stack;
-  thiscase->all = nesting_stack;
-  thiscase->depth = ++nesting_depth;
-  thiscase->exit_label = 0;
-  thiscase->data.case_stmt.case_list = 0;
-  thiscase->data.case_stmt.start = 0;
-  thiscase->data.case_stmt.nominal_type = 0;
-  thiscase->data.case_stmt.default_label = 0;
-  case_stack = thiscase;
-  nesting_stack = thiscase;
   start_cleanup_deferral ();
 }
 
