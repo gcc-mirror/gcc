@@ -8,3 +8,5 @@
 
 #define rindex strrchr
 #define index strchr
+
+#define NO_SYS_SIGLIST
