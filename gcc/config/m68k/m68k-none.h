@@ -48,32 +48,26 @@ Boston, MA 02111-1307, USA.  */
    this file.  However, it's not used anywhere here because it doesn't
    seem to be necessary.  */
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68k || TARGET_CPU_DEFAULT == M68K_CPU_m68020
-#define CPP_CPU_DEFAULT_SPEC "%{!ansi:-Dmc68020 } -D__mc68020 -D__mc68020__"
 #define ASM_CPU_DEFAULT_SPEC "-mc68020"
 #define CC1_CPU_DEFAULT_SPEC "-m68020"
 #else
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68000
-#define CPP_CPU_DEFAULT_SPEC "%{!ansi:-Dmc68000 } -D__mc68000 -D__mc68000__"
 #define ASM_CPU_DEFAULT_SPEC "-mc68000"
 #define CC1_CPU_DEFAULT_SPEC "-m68000"
 #else
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68030
-#define CPP_CPU_DEFAULT_SPEC "%{!ansi:-Dmc68030 } -D__mc68030 -D__mc68030__"
 #define ASM_CPU_DEFAULT_SPEC "-mc68030"
 #define CC1_CPU_DEFAULT_SPEC "-m68030"
 #else
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68040
-#define CPP_CPU_DEFAULT_SPEC "%{!ansi:-Dmc68040 } -D__mc68040 -D__mc68040__"
 #define ASM_CPU_DEFAULT_SPEC "-mc68040"
 #define CC1_CPU_DEFAULT_SPEC "-m68040"
 #else
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68302
-#define CPP_CPU_DEFAULT_SPEC "%{!ansi:-Dmc68302 } -D__mc68302 -D__mc68302__"
 #define ASM_CPU_DEFAULT_SPEC "-mc68302"
 #define CC1_CPU_DEFAULT_SPEC "-m68302"
 #else
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68332
-#define CPP_CPU_DEFAULT_SPEC "%{!ansi:-Dmc68332 -Dmcpu32 } -D__mc68332 -D__mc68332__ -D__mcpu32 -D__mcpu32__"
 #define ASM_CPU_DEFAULT_SPEC "-mc68332"
 #define CC1_CPU_DEFAULT_SPEC "-m68332"
 #else
@@ -84,55 +78,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #endif
 #endif
 #endif
-
-/* Define __HAVE_68881__ or nothing (soft float), appropriately.  */
-#undef CPP_FPU_SPEC
-#if TARGET_DEFAULT & MASK_68881
-#define CPP_FPU_SPEC "\
-%{!mc68000:%{!m68000:%{!m68302:%{!mcpu32:%{!m68332:%{!m5200:%{!m5206e:%{!m528x:%{!m5307:%{!m5407:%{!msoft-float:%{!mno-68881:-D__HAVE_68881__ }}}}}}}}}}}} \
-%{m68881:-D__HAVE_68881__ }"
-#else
-#define CPP_FPU_SPEC "\
-%{m68881:-D__HAVE_68881__ }"
-#endif
-
-/* Names to predefine in the preprocessor for this target machine.
-   Other definitions depend on what the default cpu is and switches
-   given to the compiler:
-
-   -m68000, -mc68000: define nothing else
-   -m68010: define mc68010
-   -m68020, -mc68020: define mc68020
-   -m68030: define mc68030
-   -m68040: define mc68040
-   -m68060: define mc68060
-   -m68020-40: define mc68020 mc68030 mc68040
-   -m68020-60: define mc68020 mc68030 mc68040 mc68060
-   -m68302: define mc68302 
-   -m68332: define mc68332 mcpu32
-   -mcpu32: define mcpu32
-   -m5200: define mcoldfire mcf5200
-   -m5206e: define mcoldfire mcf5200 mcf5206e
-   -m528x: define mcoldfire mc5200 mc528x
-   -m5307: define mcoldfire mc5300 mc5307
-   -m5407: define mcoldfire mc5400 mc5407
-
-   default: define as above appropriately
-
-   GCC won't automatically add __'d versions, we have to mention them
-   explicitly.  */
-
-#undef CPP_SPEC
-#define CPP_SPEC "\
-%(cpp_fpu)%{!ansi:%{m68302:-Dmc68302 }%{m68010:-Dmc68010 }%{m68020:-Dmc68020 }%{mc68020:-Dmc68020 }%{m68030:-Dmc68030 }%{m68040:-Dmc68040 }%{m68020-40:-Dmc68020 -Dmc68030 -Dmc68040 }%{m68020-60:-Dmc68020 -Dmc68030 -Dmc68040 -Dmc68060 }%{m68060:-Dmc68060 }%{mcpu32:-Dmcpu32 } %{m68332:-Dmc68332 -Dmcpu32 }%{m5200:-Dmcoldfire -Dmcf5200 }%{m5206e:-Dmcoldfire -Dmcf5200 -Dmcf5206e }%{m528x:-Dmcoldfire -Dmcf5200 -Dmcf528x }%{m5307:-Dmcoldfire -Dmcf5300 -Dmcf5307 }%{m5407: -Dmcoldfire -Dmcf5400 -Dmcf5407 }} \
-%{m68302:-D__mc68302__ -D__mc68302 }%{m68010:-D__mc68010__ -D__mc68010 }%{m68020:-D__mc68020__ -D__mc68020 }%{mc68020:-D__mc68020__ -D__mc68020 }%{m68030:-D__mc68030__ -D__mc68030 }%{m68040:-D__mc68040__ -D__mc68040 }%{m68020-40:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 }%{m68020-60:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 -D__mc68060__ -D__mc68060 }%{m68060:-D__mc68060__ -D__mc68060 }%{mcpu32:-D__mcpu32__ -D__mcpu32 }%{m68332:-D__mc68332__ -D__mc68332 -D__mcpu32__ -D__mcpu32 }%{m5200:-D__mcf5200__ -D__mcf5200 -D__mcoldfire__ } \
-%{m5206e:-D__mcoldfire__ -D__mcf5200__ -D__mcf5200 -D__mcf5206e__ -D__mcf5206e } \
-%{m528x:-D__mcoldfire__ -D__mcf5200__ -D__mcf5200 -D__mcf528x__ -D__mcf528x } \
-%{m5307:-D__mcoldfire__ -D__mcf5300__ -D__mcf5300 -D__mcf5307__ -D__mcf5307 } \
-%{m5407:-D__mcoldfire__ -D__mcf5400__ -D__mcf5400 -D__mcf5407__ -D__mcf5407 } \
-%{!mc68000:%{!m68000:%{!m68302:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68020-60:%{!m68060:%{!mcpu32: %{!m68332:%{!m5200:%{!m5206e:%{!m528x:%{!m5307:%{!m5407:%(cpp_cpu_default)}}}}}}}}}}}}}}}}}} \
-%(cpp_subtarget) \
-"
 
 /* Pass flags to gas indicating which type of processor we have.  */
 
@@ -159,11 +104,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    Do not define this macro if it does not need to do anything.  */
 
 #define EXTRA_SPECS					\
-  { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },		\
-  { "cpp_fpu",		CPP_FPU_SPEC },			\
-  { "cpp_subtarget",	CPP_SUBTARGET_SPEC },		\
   { "asm_cpu_default",	ASM_CPU_DEFAULT_SPEC },		\
-/*{ "cc1_cpu_default",	CC1_CPU_DEFAULT__SPEC },*/	\
+  { "cc1_cpu_default",	CC1_CPU_DEFAULT_SPEC },		\
   SUBTARGET_EXTRA_SPECS
 
 #define CPP_SUBTARGET_SPEC ""
