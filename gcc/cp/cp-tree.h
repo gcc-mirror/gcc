@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 /* Usage of TREE_LANG_FLAG_?:
    0: BINFO_MARKED (BINFO nodes).
       COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
+      EXPR_STMT_ASSIGNS_THIS (in EXPR_STMT).
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
       LOOKUP_EXPR_GLOBAL (in LOOKUP_EXPR).
@@ -49,12 +50,14 @@ Boston, MA 02111-1307, USA.  */
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
       BASELINK_P (in TREE_LIST)
       ICS_ELLIPSIS_FLAG (in _CONV)
+      STMT_IS_FULL_EXPR_P (in _STMT)
    2: IDENTIFIER_OPNAME_P.
       BINFO_VBASE_MARKED.
       BINFO_FIELDS_MARKED.
       TYPE_VIRTUAL_P.
       ICS_THIS_FLAG (in _CONV)
-      BINDING_HAS_LEVEL_P (In CPLUS_BINDING)
+      STMT_LINENO_FOR_FN_P (in _STMT)
+      BINDING_HAS_LEVEL_P (in CPLUS_BINDING)
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
       BINFO_PUSHDECLS_MARKED.
@@ -1816,6 +1819,15 @@ struct lang_decl
    constructor call, rather than an ordinary function call.  */
 #define AGGR_INIT_VIA_CTOR_P(NODE) TREE_LANG_FLAG_0 (NODE)
 
+/* Nonzero if this statement contained the first assigned to `this' in
+   the current function.  (Of course, one cannot assign to `this' in
+   ANSI/ISO C++, but we still support assignments to this with
+   -fthis-is-variable.)  */
+#define EXPR_STMT_ASSIGNS_THIS(NODE) TREE_LANG_FLAG_0 ((NODE))
+
+/* Nonzero if this statement should be considered a full-expression.  */
+#define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
+
 /* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
    TEMPLATE_DECL.  This macro determines whether or not a given class
    type is really a template type, as opposed to an instantiation or
@@ -2430,9 +2442,16 @@ extern int flag_new_for_scope;
 #define ASM_VOLATILE_P(NODE)			\
   (ASM_CV_QUAL ((NODE)) != NULL_TREE)
 
-/* The line-number at which a statement began.  */
+/* The line-number at which a statement began.  But if
+   STMT_LINENO_FOR_FN_P does holds, then this macro gives the
+   line number for the end of the current function instead.  */
 #define STMT_LINENO(NODE)			\
   (TREE_COMPLEXITY ((NODE)))
+
+/* If non-zero, the STMT_LINENO for NODE is the line at which the
+   function ended.  */
+#define STMT_LINENO_FOR_FN_P(NODE) 		\
+  (TREE_LANG_FLAG_2 ((NODE)))
 
 /* The parameters for a call-declarator.  */
 #define CALL_DECLARATOR_PARMS(NODE) \
@@ -3635,10 +3654,11 @@ extern tree expand_stmt                         PROTO((tree));
 extern void expand_body                         PROTO((tree));
 extern void begin_stmt_tree                     PROTO((tree));
 extern void finish_stmt_tree                    PROTO((tree));
+extern void prep_stmt                           PROTO((tree));
 /* Non-zero if we are presently building a statement tree, rather
    than expanding each statement as we encounter it.  */
-#define building_stmt_tree() \
-  (processing_template_decl || !expanding_p)
+#define building_stmt_tree()					  \
+  (current_function && (processing_template_decl || !expanding_p))
 
 /* in spew.c */
 extern void init_spew				PROTO((void));

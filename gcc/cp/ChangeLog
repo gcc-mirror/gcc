@@ -1,5 +1,22 @@
 1999-09-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (EXPR_STMT_ASSIGNS_THIS): New macro.
+	(STMT_IS_FULL_EXPR_P): Likewise.
+	(STMT_LINENO_FOR_FN_P): Likewise.
+	(prep_stmt): New function.
+	(building_stmt_tree): Tweak for safety.
+	* pt.c (tsubst_expr): Use prep_stmt throughout.
+	(add_tree): Move it to semantics.c
+	* semantics.c (add_tree): Move it here.
+	(finish_expr_stmt_real): New function.
+	(finish_expr_stmt): Use it.
+	(finish_if_stmt_cond): Use FINISH_COND.
+	(finish_while_stmt_cond): Likewise.
+	(finish_for_cond): Likewise.
+	(finish_stmt_tree): Tweak line-number handling.
+	(prep_stmt): New function.
+	(expand_stmt): Use it.
+	
 	* cp-tree.h (begin_switch_stmt): Adjust prototype.
 	(finish_switch_cond): Likewise.
 	* parse.y (simple_stmt): Adjust accordingly.
