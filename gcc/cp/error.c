@@ -613,6 +613,8 @@ dump_type_suffix (tree t, int flags)
 	if (TREE_CODE (t) == METHOD_TYPE)
           pp_cxx_cv_qualifier_seq
             (cxx_pp, TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))));
+        else
+          pp_cxx_cv_qualifier_seq(cxx_pp, t);
 	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (TREE_TYPE (t), flags);
 	break;
