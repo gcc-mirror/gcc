@@ -1,5 +1,8 @@
 Tue Jun  9 07:24:01 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* cccp.c (handle_directive): If -dM, also include #undef.
+	* cpplib.c (handle_directive): Likewise.
+
 	* calls.c (expand_call): Allow function pointer to be a REFERENCE_TYPE.
 
 	* function.c (assign_parms): Use proper mode for location of arg
