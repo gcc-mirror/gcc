@@ -52,7 +52,7 @@ T_CPPFLAGS =
 
 CC = cc
 BISON = bison
-BISONFLAGS =
+BISONFLAGS = -v
 AR = ar
 OLDAR_FLAGS = qc
 AR_FLAGS = rc
@@ -1268,7 +1268,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 # stamp-* so that mostlyclean does not force the include directory to
 # be rebuilt.
 
-stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h gfloat.h
+stmp-headers: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h gfloat.h
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -1310,7 +1310,7 @@ stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimi
 	touch stmp-headers
 
 # Build fixed copies of system files.
-stmp-fixincludes: $(srcdir)/$(FIXINCLUDES)
+stmp-fixinc: $(srcdir)/$(FIXINCLUDES)
 	rm -rf include
 	mkdir include
 	if [ x$(FIXINCLUDES) != xMakefile.in ]; \
@@ -1323,7 +1323,7 @@ stmp-fixincludes: $(srcdir)/$(FIXINCLUDES)
 	  done; \
 	else true; \
 	fi
-	touch stmp-fixincludes
+	touch stmp-fixinc
 
 # Remake the info files.
 
