@@ -1,3 +1,7 @@
+2000-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (offsetof): Define at the very end, to ensure we prefer
+	the platform's definition if available.
 
 2000-05-16  Bruce Korb  <bkorb@gnu.org>
 
