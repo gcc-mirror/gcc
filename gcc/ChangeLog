@@ -1,3 +1,9 @@
+2002-10-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR doc/7484
+	* doc/invoke.texi (Option Summary): List
+	-Wmissing-declarations as a C only option.
+	
 2002-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/t-linux64 (MULTILIB_OPTIONS): Remove
