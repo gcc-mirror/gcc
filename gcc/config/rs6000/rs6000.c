@@ -14916,7 +14916,7 @@ rs6000_handle_altivec_attribute (tree *node, tree name, tree args,
   switch (altivec_type)
     {
     case 'v':
-      unsigned_p = TREE_UNSIGNED (type);
+      unsigned_p = TYPE_UNSIGNED (type);
       switch (mode)
 	{
 	  case SImode:

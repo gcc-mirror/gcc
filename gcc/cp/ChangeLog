@@ -1,3 +1,14 @@
+2004-03-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* call.c (joust): Use TYPE_UNSIGNED, not TREE_UNSIGNED.
+	* class.c (check_bitfield_decl): Likewise.
+	* cvt.c (type_promotes_to): Likewise.
+	* decl.c (finish_enum): Likewise.
+	* mangle.c (write_builtin_type): Likewise.
+	* semantics.c (finish_switch_cond, finish_unary_op_expr): Likewise.
+	* typeck.c (type_after_usual_arithmetic_conversions): Likewise.
+	(build_binary_op): Likewise.
+
 2004-03-31  Jan Hubicka  <jh@suse.cz>
 
 	* tree.h (optimize_function): Kill prototype.

@@ -7323,7 +7323,7 @@ sparc_type_code (register tree type)
 
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.  We do this by
-	     testing TYPE_PRECISION and TREE_UNSIGNED.  The old code used to
+	     testing TYPE_PRECISION and TYPE_UNSIGNED.  The old code used to
 	     look at both the names and the above fields, but that's redundant.
 	     Any type whose size is between two C types will be considered
 	     to be the wider of the two types.  Also, we do not have a
@@ -7333,16 +7333,16 @@ sparc_type_code (register tree type)
 	     size, but that's fine, since neither can the assembler.  */
 
 	  if (TYPE_PRECISION (type) <= CHAR_TYPE_SIZE)
-	    return (qualifiers | (TREE_UNSIGNED (type) ? 12 : 2));
+	    return (qualifiers | (TYPE_UNSIGNED (type) ? 12 : 2));
   
 	  else if (TYPE_PRECISION (type) <= SHORT_TYPE_SIZE)
-	    return (qualifiers | (TREE_UNSIGNED (type) ? 13 : 3));
+	    return (qualifiers | (TYPE_UNSIGNED (type) ? 13 : 3));
   
 	  else if (TYPE_PRECISION (type) <= INT_TYPE_SIZE)
-	    return (qualifiers | (TREE_UNSIGNED (type) ? 14 : 4));
+	    return (qualifiers | (TYPE_UNSIGNED (type) ? 14 : 4));
   
 	  else
-	    return (qualifiers | (TREE_UNSIGNED (type) ? 15 : 5));
+	    return (qualifiers | (TYPE_UNSIGNED (type) ? 15 : 5));
   
 	case REAL_TYPE:
 	  /* If this is a range type, consider it to be the underlying

@@ -2710,11 +2710,11 @@ check_bitfield_decl (tree field)
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       && (0 > compare_tree_int (w,
 					 min_precision (TYPE_MIN_VALUE (type),
-							TREE_UNSIGNED (type)))
+							TYPE_UNSIGNED (type)))
 		   ||  0 > compare_tree_int (w,
 					     min_precision
 					     (TYPE_MAX_VALUE (type),
-					      TREE_UNSIGNED (type)))))
+					      TYPE_UNSIGNED (type)))))
 	cp_warning_at ("`%D' is too small to hold all values of `%#T'",
 		       field, type);
     }
@@ -6906,15 +6906,13 @@ build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
   return inits;
 }
 
-/* Called from build_vtt_inits via dfs_walk.  BINFO is the binfo
-   for the base in most derived. DATA is a TREE_LIST who's
-   TREE_CHAIN is the type of the base being
-   constructed whilst this secondary vptr is live.  The TREE_UNSIGNED
-   flag of DATA indicates that this is a constructor vtable.  The
+/* Called from build_vtt_inits via dfs_walk.  BINFO is the binfo for the base
+   in most derived. DATA is a TREE_LIST who's TREE_CHAIN is the type of the
+   base being constructed whilst this secondary vptr is live.  The
    TREE_TOP_LEVEL flag indicates that this is the primary VTT.  */
 
 static tree
-dfs_build_secondary_vptr_vtt_inits (tree binfo, void* data)
+dfs_build_secondary_vptr_vtt_inits (tree binfo, void *data)
 {
   tree l; 
   tree t;

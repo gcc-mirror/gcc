@@ -3295,8 +3295,9 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
     w = tree_low_cst (*width, 1);
 
   if (TREE_CODE (*type) == ENUMERAL_TYPE
-      && (w < min_precision (TYPE_MIN_VALUE (*type), TREE_UNSIGNED (*type))
-	  || w < min_precision (TYPE_MAX_VALUE (*type), TREE_UNSIGNED (*type))))
+      && (w < min_precision (TYPE_MIN_VALUE (*type), TYPE_UNSIGNED (*type))
+	  || w < min_precision (TYPE_MAX_VALUE (*type),
+				TYPE_UNSIGNED (*type))))
     warning ("`%s' is narrower than values of its type", name);
 }
 
@@ -4910,7 +4911,7 @@ xref_tag (enum tree_code code, tree name)
       TYPE_MODE (ref) = TYPE_MODE (unsigned_type_node);
       TYPE_ALIGN (ref) = TYPE_ALIGN (unsigned_type_node);
       TYPE_USER_ALIGN (ref) = 0;
-      TREE_UNSIGNED (ref) = 1;
+      TYPE_UNSIGNED (ref) = 1;
       TYPE_PRECISION (ref) = TYPE_PRECISION (unsigned_type_node);
       TYPE_MIN_VALUE (ref) = TYPE_MIN_VALUE (unsigned_type_node);
       TYPE_MAX_VALUE (ref) = TYPE_MAX_VALUE (unsigned_type_node);
@@ -5427,7 +5428,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
   TYPE_MIN_VALUE (enumtype) = minnode;
   TYPE_MAX_VALUE (enumtype) = maxnode;
   TYPE_PRECISION (enumtype) = precision;
-  TREE_UNSIGNED (enumtype) = unsign;
+  TYPE_UNSIGNED (enumtype) = unsign;
   TYPE_SIZE (enumtype) = 0;
   layout_type (enumtype);
 
@@ -5479,7 +5480,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
       TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
       TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
       TYPE_USER_ALIGN (tem) = TYPE_USER_ALIGN (enumtype);
-      TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
+      TYPE_UNSIGNED (tem) = TYPE_UNSIGNED (enumtype);
     }
 
   /* Finish debugging output for this type.  */
@@ -5551,7 +5552,7 @@ build_enumerator (tree name, tree value)
 				      TYPE_PRECISION (integer_type_node)),
 				 (TYPE_PRECISION (type)
 				  >= TYPE_PRECISION (integer_type_node)
-				  && TREE_UNSIGNED (type)));
+				  && TYPE_UNSIGNED (type)));
 
   decl = build_decl (CONST_DECL, name, type);
   DECL_INITIAL (decl) = convert (type, value);
@@ -5770,7 +5771,7 @@ start_function (tree declspecs, tree declarator, tree attributes)
   if (c_promoting_integer_type_p (restype))
     {
       /* It retains unsignedness if not really getting wider.  */
-      if (TREE_UNSIGNED (restype)
+      if (TYPE_UNSIGNED (restype)
 	  && (TYPE_PRECISION (restype)
 		  == TYPE_PRECISION (integer_type_node)))
 	restype = unsigned_type_node;

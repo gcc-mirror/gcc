@@ -291,7 +291,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
       if (TYPE_NAME (t))
         t = TYPE_NAME (t);
       else
-        t = c_common_type_for_mode (TYPE_MODE (t), TREE_UNSIGNED (t));
+        t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
       pp_c_type_specifier (pp, t);
       break;
 
@@ -767,7 +767,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
                TREE_INT_CST_HIGH (i), TREE_INT_CST_LOW (i));
       pp_string (pp, pp_buffer (pp)->digit_buffer);
     }
-  if (TREE_UNSIGNED (type))
+  if (TYPE_UNSIGNED (type))
     pp_character (pp, 'u');
   if (type == long_integer_type_node || type == long_unsigned_type_node)
     pp_character (pp, 'l');
@@ -785,8 +785,8 @@ pp_c_character_constant (c_pretty_printer *pp, tree c)
   if (type == wchar_type_node)
     pp_character (pp, 'L'); 
   pp_quote (pp);
-  if (host_integerp (c, TREE_UNSIGNED (type)))
-    pp_c_char (pp, tree_low_cst (c, TREE_UNSIGNED (type)));
+  if (host_integerp (c, TYPE_UNSIGNED (type)))
+    pp_c_char (pp, tree_low_cst (c, TYPE_UNSIGNED (type)));
   else
     pp_scalar (pp, "\\x%x", (unsigned) TREE_INT_CST_LOW (c));
   pp_quote (pp);

@@ -1027,7 +1027,7 @@ tree_lang_signed_type (tree type_node)
 static tree
 tree_lang_signed_or_unsigned_type (int unsignedp, tree type)
 {
-  if (! INTEGRAL_TYPE_P (type) || TREE_UNSIGNED (type) == unsignedp)
+  if (! INTEGRAL_TYPE_P (type) || TYPE_UNSIGNED (type) == unsignedp)
     return type;
   else
     return tree_lang_type_for_size (TYPE_PRECISION (type), unsignedp);

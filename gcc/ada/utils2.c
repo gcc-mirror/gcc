@@ -512,7 +512,7 @@ nonbinary_modular_operation (enum tree_code op_code,
   /* If our type is the wrong signedness or isn't wide enough, make a new
      type and convert both our operands to it.  */
   if (TYPE_PRECISION (op_type) < precision
-      || TREE_UNSIGNED (op_type) != unsignedp)
+      || TYPE_UNSIGNED (op_type) != unsignedp)
     {
       /* Copy the node so we ensure it can be modified to make it modular.  */
       op_type = copy_node (gnat_type_for_size (precision, unsignedp));

@@ -180,7 +180,7 @@ c_type_promotes_to (tree type)
   if (c_promoting_integer_type_p (type))
     {
       /* Preserve unsignedness if not really getting any wider.  */
-      if (TREE_UNSIGNED (type)
+      if (TYPE_UNSIGNED (type)
           && (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
         return unsigned_type_node;
       return integer_type_node;
@@ -286,7 +286,7 @@ common_type (tree t1, tree t2)
 	{
 	  /* But preserve unsignedness from the other type,
 	     since long cannot hold all the values of an unsigned int.  */
-	  if (TREE_UNSIGNED (t1) || TREE_UNSIGNED (t2))
+	  if (TYPE_UNSIGNED (t1) || TYPE_UNSIGNED (t2))
 	     t1 = long_unsigned_type_node;
 	  else
 	     t1 = long_integer_type_node;
@@ -301,7 +301,7 @@ common_type (tree t1, tree t2)
 
       /* Otherwise prefer the unsigned one.  */
 
-      if (TREE_UNSIGNED (t1))
+      if (TYPE_UNSIGNED (t1))
 	return build_type_attribute_variant (t1, attributes);
       else
 	return build_type_attribute_variant (t2, attributes);
@@ -477,9 +477,9 @@ comptypes (tree type1, tree type2, int flags)
      are compatible with each other only if they are the same type.  */
 
   if (TREE_CODE (t1) == ENUMERAL_TYPE && TREE_CODE (t2) != ENUMERAL_TYPE)
-    t1 = c_common_type_for_size (TYPE_PRECISION (t1), TREE_UNSIGNED (t1));
+    t1 = c_common_type_for_size (TYPE_PRECISION (t1), TYPE_UNSIGNED (t1));
   else if (TREE_CODE (t2) == ENUMERAL_TYPE && TREE_CODE (t1) != ENUMERAL_TYPE)
-    t2 = c_common_type_for_size (TYPE_PRECISION (t2), TREE_UNSIGNED (t2));
+    t2 = c_common_type_for_size (TYPE_PRECISION (t2), TYPE_UNSIGNED (t2));
 
   if (t1 == t2)
     return 1;
@@ -1189,7 +1189,7 @@ default_conversion (tree exp)
 					  TYPE_PRECISION (integer_type_node)),
 				     ((TYPE_PRECISION (type)
 				       >= TYPE_PRECISION (integer_type_node))
-				      && TREE_UNSIGNED (type)));
+				      && TYPE_UNSIGNED (type)));
 
       return convert (type, exp);
     }
@@ -1205,7 +1205,7 @@ default_conversion (tree exp)
   if (c_promoting_integer_type_p (type))
     {
       /* Preserve unsignedness if not really getting any wider.  */
-      if (TREE_UNSIGNED (type)
+      if (TYPE_UNSIGNED (type)
 	  && TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
 	return convert (unsigned_type_node, exp);
 
@@ -1908,7 +1908,7 @@ convert_arguments (tree typelist, tree values, tree name, tree fundecl)
 			;
 		      else if (formal_prec != TYPE_PRECISION (type1))
 			warn_for_assignment ("%s with different width due to prototype", (char *) 0, name, parmnum + 1);
-		      else if (TREE_UNSIGNED (type) == TREE_UNSIGNED (type1))
+		      else if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (type1))
 			;
 		      /* Don't complain if the formal parameter type
 			 is an enum, because we can't tell now whether
@@ -1930,9 +1930,9 @@ convert_arguments (tree typelist, tree values, tree name, tree fundecl)
 			 pass it as signed or unsigned; the value
 			 certainly is the same either way.  */
 		      else if (TYPE_PRECISION (TREE_TYPE (val)) < TYPE_PRECISION (type)
-			       && TREE_UNSIGNED (TREE_TYPE (val)))
+			       && TYPE_UNSIGNED (TREE_TYPE (val)))
 			;
-		      else if (TREE_UNSIGNED (type))
+		      else if (TYPE_UNSIGNED (type))
 			warn_for_assignment ("%s as unsigned due to prototype", (char *) 0, name, parmnum + 1);
 		      else
 			warn_for_assignment ("%s as signed due to prototype", (char *) 0, name, parmnum + 1);
@@ -2701,15 +2701,15 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
 	 will be considered, but default promotions won't.  */
       if (warn_sign_compare && !skip_evaluation)
 	{
-	  int unsigned_op1 = TREE_UNSIGNED (TREE_TYPE (orig_op1));
-	  int unsigned_op2 = TREE_UNSIGNED (TREE_TYPE (orig_op2));
+	  int unsigned_op1 = TYPE_UNSIGNED (TREE_TYPE (orig_op1));
+	  int unsigned_op2 = TYPE_UNSIGNED (TREE_TYPE (orig_op2));
 
 	  if (unsigned_op1 ^ unsigned_op2)
 	    {
 	      /* Do not warn if the result type is signed, since the
 		 signed type will only be chosen if it can represent
 		 all the values of the unsigned type.  */
-	      if (! TREE_UNSIGNED (result_type))
+	      if (! TYPE_UNSIGNED (result_type))
 		/* OK */;
 	      /* Do not warn if the signed quantity is an unsuffixed
 		 integer literal (or some static constant expression
@@ -5281,7 +5281,7 @@ set_nonincremental_init_from_string (tree str)
 	    }
 	}
 
-      if (!TREE_UNSIGNED (type))
+      if (!TYPE_UNSIGNED (type))
 	{
 	  bitpos = ((wchar_bytes - 1) * charwidth) + HOST_BITS_PER_CHAR;
 	  if (bitpos < HOST_BITS_PER_WIDE_INT)
@@ -6512,7 +6512,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	       undefined if the quotient can't be represented in the
 	       computation mode.  We shorten only if unsigned or if
 	       dividing by something we know != -1.  */
-	    shorten = (TREE_UNSIGNED (TREE_TYPE (orig_op0))
+	    shorten = (TYPE_UNSIGNED (TREE_TYPE (orig_op0))
 		       || (TREE_CODE (op1) == INTEGER_CST
 			   && ! integer_all_onesp (op1)));
 	  common = 1;
@@ -6539,7 +6539,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	     on some targets, since the modulo instruction is undefined if the
 	     quotient can't be represented in the computation mode.  We shorten
 	     only if unsigned or if dividing by something we know != -1.  */
-	  shorten = (TREE_UNSIGNED (TREE_TYPE (orig_op0))
+	  shorten = (TYPE_UNSIGNED (TREE_TYPE (orig_op0))
 		     || (TREE_CODE (op1) == INTEGER_CST
 			 && ! integer_all_onesp (op1)));
 	  common = 1;
@@ -6828,7 +6828,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  tree arg0 = get_narrower (op0, &unsigned0);
 	  tree arg1 = get_narrower (op1, &unsigned1);
 	  /* UNS is 1 if the operation to be done is an unsigned one.  */
-	  int uns = TREE_UNSIGNED (result_type);
+	  int uns = TYPE_UNSIGNED (result_type);
 	  tree type;
 
 	  final_type = result_type;
@@ -6839,11 +6839,11 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  if ((TYPE_PRECISION (TREE_TYPE (op0))
 	       == TYPE_PRECISION (TREE_TYPE (arg0)))
 	      && TREE_TYPE (op0) != final_type)
-	    unsigned0 = TREE_UNSIGNED (TREE_TYPE (op0));
+	    unsigned0 = TYPE_UNSIGNED (TREE_TYPE (op0));
 	  if ((TYPE_PRECISION (TREE_TYPE (op1))
 	       == TYPE_PRECISION (TREE_TYPE (arg1)))
 	      && TREE_TYPE (op1) != final_type)
-	    unsigned1 = TREE_UNSIGNED (TREE_TYPE (op1));
+	    unsigned1 = TYPE_UNSIGNED (TREE_TYPE (op1));
 
 	  /* Now UNSIGNED0 is 1 if ARG0 zero-extends to FINAL_TYPE.  */
 
@@ -6898,14 +6898,14 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  final_type = result_type;
 
 	  if (arg0 == op0 && final_type == TREE_TYPE (op0))
-	    unsigned_arg = TREE_UNSIGNED (TREE_TYPE (op0));
+	    unsigned_arg = TYPE_UNSIGNED (TREE_TYPE (op0));
 
 	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
 	      /* We can shorten only if the shift count is less than the
 		 number of bits in the smaller type size.  */
 	      && compare_tree_int (op1, TYPE_PRECISION (TREE_TYPE (arg0))) < 0
 	      /* We cannot drop an unsigned shift after sign-extension.  */
-	      && (!TREE_UNSIGNED (final_type) || unsigned_arg))
+	      && (!TYPE_UNSIGNED (final_type) || unsigned_arg))
 	    {
 	      /* Do an unsigned shift if the operand was zero-extended.  */
 	      result_type
@@ -6941,8 +6941,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
 	  if (warn_sign_compare && skip_evaluation == 0)
 	    {
-	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
-	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
+	      int op0_signed = ! TYPE_UNSIGNED (TREE_TYPE (orig_op0));
+	      int op1_signed = ! TYPE_UNSIGNED (TREE_TYPE (orig_op1));
 	      int unsignedp0, unsignedp1;
 	      tree primop0 = get_narrower (op0, &unsignedp0);
 	      tree primop1 = get_narrower (op1, &unsignedp1);
@@ -6961,7 +6961,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		 Do not warn if the comparison is being done in a signed type,
 		 since the signed type will only be chosen if it can represent
 		 all the values of the unsigned type.  */
-	      if (! TREE_UNSIGNED (result_type))
+	      if (! TYPE_UNSIGNED (result_type))
 		/* OK */;
               /* Do not warn if both operands are the same signedness.  */
               else if (op0_signed == op1_signed)

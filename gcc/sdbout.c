@@ -538,15 +538,15 @@ plain_type_1 (tree type, int level)
 	  }
 
 	if (size == INT_TYPE_SIZE)
-	  return (TREE_UNSIGNED (type) ? T_UINT : T_INT);
+	  return (TYPE_UNSIGNED (type) ? T_UINT : T_INT);
 	if (size == CHAR_TYPE_SIZE)
-	  return (TREE_UNSIGNED (type) ? T_UCHAR : T_CHAR);
+	  return (TYPE_UNSIGNED (type) ? T_UCHAR : T_CHAR);
 	if (size == SHORT_TYPE_SIZE)
-	  return (TREE_UNSIGNED (type) ? T_USHORT : T_SHORT);
+	  return (TYPE_UNSIGNED (type) ? T_USHORT : T_SHORT);
 	if (size == LONG_TYPE_SIZE)
-	  return (TREE_UNSIGNED (type) ? T_ULONG : T_LONG);
+	  return (TYPE_UNSIGNED (type) ? T_ULONG : T_LONG);
 	if (size == LONG_LONG_TYPE_SIZE)	/* better than nothing */
-	  return (TREE_UNSIGNED (type) ? T_ULONG : T_LONG);
+	  return (TYPE_UNSIGNED (type) ? T_ULONG : T_LONG);
 	return 0;
       }
 

@@ -1,5 +1,26 @@
 2004-03-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* builtins.c, c-aux-info.c, c-common.c, c-cppbuiltin.c, c-decl.c:
+	Change most occurrences of TREE_UNSIGNED to TYPE_UNSIGNED.
+	* c-format.c, c-opts.c, c-pretty-print.c, c-typeck.c: Likewise.
+	* calls.c, convert.c, dbxout.c, dojump.c, dwarf2out.c: Likewise.
+	* expmed.c, expr.c, fold-const.c, function.c, integrate.c: Likewise.
+	* optabs.c, sdbout.c, stmt.c, stor-layout.c, tree-dump.c: Likewise.
+	* tree.c, config/iq2000/iq2000.c, config/m32r/m32r.c: Likewise.
+	* config/mips/mips.c, config/rs6000/rs6000.c: Likewise.
+	* config/s390/s390.c, config/sparc/sparc.c, objc/objc-act.c: Likewise.
+	* stor-layout.c (layout_type, case COMPLEX_TYPE): Test for
+	REAL_TYPE, not INTEGER_TYPE.
+	(layout_type, case VECTOR_TYPE): Simplify code.
+	* tree.c (build_vector_type_for_mode): Remove dup unsigned setting.
+	* tree.h: Update comments.
+	(STRIP_NOPS): Use TYPE_UNSIGNED.
+	(TYPE_UNSIGNED): New macro.
+	(TYPE_TRAP_SIGNED): Remove now redundant check.
+	(SAVE_EXPR_NOPLACEHOLDER): Don't use TREE_UNSIGNED.
+
+2004-03-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
 	* function.c (put_var_into_stack): Properly set orig_reg for indirect.
 
 2004-03-31  Andrew Pinski  <pinskia@physics.uc.edu>

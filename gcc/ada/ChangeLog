@@ -1,3 +1,12 @@
+2004-03-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (gnat_to_gnu_entity, make_type_from_size):
+	Use TYPE_UNSIGNED, not TREE_UNSIGNED.
+	* trans.c (tree_transform, convert_with_check): Likewise.
+	* utils.c (gnat_signed_or_unsigned_type): Likewise.
+	(build_vms_descriptor, unchecked_convert): Likewise.
+	* utils2.c (nonbinary_modular_operation): Likewise.
+
 2004-03-29  Javier Miranda  <miranda@gnat.com>
 
 	* checks.adb (Null_Exclusion_Static_Checks): New subprogram

@@ -430,7 +430,7 @@ gen_type (const char *ret_val, tree t, formals_style style)
           data_type = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (t)));
           /* Normally, `unsigned' is part of the deal.  Not so if it comes
 	     with a type qualifier.  */
-          if (TREE_UNSIGNED (t) && TYPE_QUALS (t))
+          if (TYPE_UNSIGNED (t) && TYPE_QUALS (t))
 	    data_type = concat ("unsigned ", data_type, NULL);
 	  break;
 

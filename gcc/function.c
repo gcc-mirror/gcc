@@ -852,7 +852,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
 
   mode = TYPE_MODE (type);
 #ifndef PROMOTE_FOR_CALL_ONLY
-  unsignedp = TREE_UNSIGNED (type);
+  unsignedp = TYPE_UNSIGNED (type);
 #endif
 
   if (mode == BLKmode || memory_required)
@@ -1488,7 +1488,7 @@ static void
 schedule_fixup_var_refs (struct function *function, rtx reg, tree type,
 			 enum machine_mode promoted_mode, htab_t ht)
 {
-  int unsigned_p = type ? TREE_UNSIGNED (type) : 0;
+  int unsigned_p = type ? TYPE_UNSIGNED (type) : 0;
 
   if (function != 0)
     {
@@ -2882,7 +2882,7 @@ gen_mem_addressof (rtx reg, tree decl, int rescan)
 
       if (rescan
 	  && (TREE_USED (decl) || (DECL_P (decl) && DECL_INITIAL (decl) != 0)))
-	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), reg, 0);
+	fixup_var_refs (reg, GET_MODE (reg), TYPE_UNSIGNED (type), reg, 0);
     }
   else if (rescan)
     {
@@ -4476,8 +4476,9 @@ assign_parms (tree fndecl)
       if (targetm.calls.promote_function_args (TREE_TYPE (fndecl)))
 	{
 	  /* Compute the mode in which the arg is actually extended to.  */
-	  unsignedp = TREE_UNSIGNED (passed_type);
-	  promoted_mode = promote_mode (passed_type, promoted_mode, &unsignedp, 1);
+	  unsignedp = TYPE_UNSIGNED (passed_type);
+	  promoted_mode = promote_mode (passed_type, promoted_mode,
+					&unsignedp, 1);
 	}
 
       /* Let machine desc say which reg (if any) the parm arrives in.
@@ -4901,7 +4902,7 @@ assign_parms (tree fndecl)
 	  rtx parmreg;
 	  unsigned int regno, regnoi = 0, regnor = 0;
 
-	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
+	  unsignedp = TYPE_UNSIGNED (TREE_TYPE (parm));
 
 	  promoted_nominal_mode
 	    = promote_mode (TREE_TYPE (parm), nominal_mode, &unsignedp, 0);
@@ -5001,7 +5002,7 @@ assign_parms (tree fndecl)
 	      if (GET_MODE (parmreg) != GET_MODE (DECL_RTL (parm)))
 		{
 		  rtx tempreg = gen_reg_rtx (GET_MODE (DECL_RTL (parm)));
-		  int unsigned_p = TREE_UNSIGNED (TREE_TYPE (parm));
+		  int unsigned_p = TYPE_UNSIGNED (TREE_TYPE (parm));
 		  push_to_sequence (conversion_insns);
 		  emit_move_insn (tempreg, DECL_RTL (parm));
 		  SET_DECL_RTL (parm,
@@ -5194,7 +5195,7 @@ assign_parms (tree fndecl)
 
 	      push_to_sequence (conversion_insns);
 	      entry_parm = convert_to_mode (nominal_mode, tempreg,
-					    TREE_UNSIGNED (TREE_TYPE (parm)));
+					    TYPE_UNSIGNED (TREE_TYPE (parm)));
 	      if (stack_parm)
 		/* ??? This may need a big-endian conversion on sparc64.  */
 		stack_parm = adjust_address (stack_parm, nominal_mode, 0);
@@ -5442,7 +5443,7 @@ promoted_input_arg (unsigned int regno, enum machine_mode *pmode, int *punsigned
 	&& TYPE_MODE (DECL_ARG_TYPE (arg)) == TYPE_MODE (TREE_TYPE (arg)))
       {
 	enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg));
-	int unsignedp = TREE_UNSIGNED (TREE_TYPE (arg));
+	int unsignedp = TYPE_UNSIGNED (TREE_TYPE (arg));
 
 	mode = promote_mode (TREE_TYPE (arg), mode, &unsignedp, 1);
 	if (mode == GET_MODE (DECL_INCOMING_RTL (arg))
@@ -7135,7 +7136,7 @@ expand_function_end (void)
 	     extension.  */
 	  if (GET_MODE (real_decl_rtl) != GET_MODE (decl_rtl))
 	    {
-	      int unsignedp = TREE_UNSIGNED (TREE_TYPE (decl_result));
+	      int unsignedp = TYPE_UNSIGNED (TREE_TYPE (decl_result));
 
 	      if (targetm.calls.promote_function_return (TREE_TYPE (current_function_decl)))
 		promote_mode (TREE_TYPE (decl_result), GET_MODE (decl_rtl),

@@ -1384,7 +1384,7 @@ dbxout_type (tree type, int full)
       break;
 
     case INTEGER_TYPE:
-      if (type == char_type_node && ! TREE_UNSIGNED (type))
+      if (type == char_type_node && ! TYPE_UNSIGNED (type))
 	{
 	  /* Output the type `char' as a subrange of itself!
 	     I don't understand this definition, just copied it
@@ -1492,7 +1492,7 @@ dbxout_type (tree type, int full)
 	  fprintf (asmfile, "r");
 	  CHARS (1);
 	  dbxout_type_index (char_type_node);
-	  fprintf (asmfile, ";0;%d;", TREE_UNSIGNED (type) ? 255 : 127);
+	  fprintf (asmfile, ";0;%d;", TYPE_UNSIGNED (type) ? 255 : 127);
 	  CHARS (7);
 	}
       break;
@@ -1914,10 +1914,10 @@ print_int_cst_bounds_in_octal_p (tree type)
       && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
       && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
 	  || ((TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
-	      && TREE_UNSIGNED (type))
+	      && TYPE_UNSIGNED (type))
 	  || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT
 	  || (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT
-	      && TREE_UNSIGNED (type))))
+	      && TYPE_UNSIGNED (type))))
     return TRUE;
   else
     return FALSE;

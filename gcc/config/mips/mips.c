@@ -7509,7 +7509,7 @@ mips_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
       int unsignedp;
 
       mode = TYPE_MODE (valtype);
-      unsignedp = TREE_UNSIGNED (valtype);
+      unsignedp = TYPE_UNSIGNED (valtype);
 
       /* Since we define TARGET_PROMOTE_FUNCTION_RETURN that returns
 	 true, we must promote the mode just as PROMOTE_MODE does.  */

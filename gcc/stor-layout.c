@@ -364,7 +364,7 @@ layout_decl (tree decl, unsigned int known_align)
      size in bytes from the size in bits.  If we have already set the mode,
      don't set it again since we can be called twice for FIELD_DECLs.  */
 
-  TREE_UNSIGNED (decl) = TREE_UNSIGNED (type);
+  TREE_UNSIGNED (decl) = TYPE_UNSIGNED (type);
   if (DECL_MODE (decl) == VOIDmode)
     DECL_MODE (decl) = TYPE_MODE (type);
 
@@ -1529,7 +1529,7 @@ layout_type (tree type)
     case CHAR_TYPE:
       if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
 	  && tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0)
-	TREE_UNSIGNED (type) = 1;
+	TYPE_UNSIGNED (type) = 1;
 
       TYPE_MODE (type) = smallest_mode_for_size (TYPE_PRECISION (type),
 						 MODE_INT);
@@ -1544,25 +1544,20 @@ layout_type (tree type)
       break;
 
     case COMPLEX_TYPE:
-      TREE_UNSIGNED (type) = TREE_UNSIGNED (TREE_TYPE (type));
+      TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
       TYPE_MODE (type)
 	= mode_for_size (2 * TYPE_PRECISION (TREE_TYPE (type)),
-			 (TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
-			  ? MODE_COMPLEX_INT : MODE_COMPLEX_FLOAT),
+			 (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE
+			  ? MODE_COMPLEX_FLOAT : MODE_COMPLEX_INT),
 			 0);
       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
     case VECTOR_TYPE:
-      {
-	tree subtype;
-
-	subtype = TREE_TYPE (type);
-	TREE_UNSIGNED (type) = TREE_UNSIGNED (subtype);
-	TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-	TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
-      }
+      TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
+      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
     case VOID_TYPE:
@@ -1602,7 +1597,7 @@ layout_type (tree type)
 
 	TYPE_SIZE (type) = bitsize_int (nbits);
 	TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (mode));
-	TREE_UNSIGNED (type) = 1;
+	TYPE_UNSIGNED (type) = 1;
 	TYPE_PRECISION (type) = nbits;
       }
       break;
@@ -1652,7 +1647,7 @@ layout_type (tree type)
 	       sure the size is never negative.  We should really do this
 	       if *either* bound is non-constant, but this is the best
 	       compromise between C and Ada.  */
-	    if (! TREE_UNSIGNED (sizetype)
+	    if (!TYPE_UNSIGNED (sizetype)
 		&& TREE_CODE (TYPE_MIN_VALUE (index)) != INTEGER_CST
 		&& TREE_CODE (TYPE_MAX_VALUE (index)) != INTEGER_CST)
 	      length = size_binop (MAX_EXPR, length, size_zero_node);
@@ -1851,7 +1846,7 @@ initialize_sizetypes (void)
   TYPE_USER_ALIGN (t) = 0;
   TYPE_SIZE (t) = build_int_2 (GET_MODE_BITSIZE (SImode), 0);
   TYPE_SIZE_UNIT (t) = build_int_2 (GET_MODE_SIZE (SImode), 0);
-  TREE_UNSIGNED (t) = 1;
+  TYPE_UNSIGNED (t) = 1;
   TYPE_PRECISION (t) = GET_MODE_BITSIZE (SImode);
   TYPE_MIN_VALUE (t) = build_int_2 (0, 0);
   TYPE_IS_SIZETYPE (t) = 1;
@@ -1895,14 +1890,14 @@ set_sizetype (tree type)
   TYPE_PRECISION (bitsizetype) = precision;
   TYPE_IS_SIZETYPE (bitsizetype) = 1;
 
-  if (TREE_UNSIGNED (type))
+  if (TYPE_UNSIGNED (type))
     fixup_unsigned_type (bitsizetype);
   else
     fixup_signed_type (bitsizetype);
 
   layout_type (bitsizetype);
 
-  if (TREE_UNSIGNED (type))
+  if (TYPE_UNSIGNED (type))
     {
       usizetype = sizetype;
       ubitsizetype = bitsizetype;

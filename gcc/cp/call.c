@@ -5922,7 +5922,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 	      && TREE_CODE (t2->type) == INTEGER_TYPE
 	      && (TYPE_PRECISION (t1->type)
 		  == TYPE_PRECISION (t2->type))
-	      && (TREE_UNSIGNED (t1->u.next->type)
+	      && (TYPE_UNSIGNED (t1->u.next->type)
 		  || (TREE_CODE (t1->u.next->type)
 		      == ENUMERAL_TYPE)))
 	    {

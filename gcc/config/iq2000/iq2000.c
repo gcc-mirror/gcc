@@ -2657,7 +2657,7 @@ iq2000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 {
   int reg = GP_RETURN;
   enum machine_mode mode = TYPE_MODE (valtype);
-  int unsignedp = TREE_UNSIGNED (valtype);
+  int unsignedp = TYPE_UNSIGNED (valtype);
 
   /* Since we define TARGET_PROMOTE_FUNCTION_RETURN that returns true,
      we must promote the mode just as PROMOTE_MODE does.  */

@@ -262,8 +262,10 @@ struct tree_common GTY(())
 
    unsigned_flag:
 
+       TYPE_UNSIGNED in
+           all types
        TREE_UNSIGNED in
-           INTEGER_TYPE, ENUMERAL_TYPE, FIELD_DECL
+           FIELD_DECL
        SAVE_EXPR_NOPLACEHOLDER in
 	   SAVE_EXPR
 
@@ -516,8 +518,8 @@ extern void tree_operand_check_failed (int, enum tree_code,
 	 && TREE_OPERAND (EXP, 0) != error_mark_node		\
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0))))	\
-	 && (TREE_UNSIGNED (TREE_TYPE (EXP))			\
-	     == TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
+	 && (TYPE_UNSIGNED (TREE_TYPE (EXP))			\
+	     == TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
     (EXP) = TREE_OPERAND (EXP, 0)
 
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE main variant either.  */
@@ -712,8 +714,11 @@ extern void tree_operand_check_failed (int, enum tree_code,
    In FIELD_DECL nodes, means an unsigned bit field.  */
 #define TREE_UNSIGNED(NODE) ((NODE)->common.unsigned_flag)
 
+/* In integral and pointer types, means an unsigned type.  */
+#define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->common.unsigned_flag)
+
 #define TYPE_TRAP_SIGNED(NODE) \
-  (flag_trapv && ! TREE_UNSIGNED (TYPE_CHECK (NODE)))
+  (flag_trapv && ! TYPE_UNSIGNED (NODE))
 
 /* Nonzero in a VAR_DECL means assembler code has been written.
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
@@ -903,7 +908,9 @@ struct tree_vec GTY(())
 #define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND_CHECK_CODE (NODE, SAVE_EXPR, 1)
 #define SAVE_EXPR_RTL(NODE) TREE_RTL_OPERAND_CHECK (NODE, SAVE_EXPR, 2)
 
-#define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (SAVE_EXPR_CHECK (NODE))
+#define SAVE_EXPR_NOPLACEHOLDER(NODE) \
+  (SAVE_EXPR_CHECK (NODE)->common.unsigned_flag)
+
 /* Nonzero if the SAVE_EXPRs value should be kept, even if it occurs
    both in normal code and in a handler.  (Normally, in a handler, all
    SAVE_EXPRs are unsaved, meaning that their values are
