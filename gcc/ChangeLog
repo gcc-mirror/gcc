@@ -1,3 +1,28 @@
+2003-01-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* alias.c: Fix comment typos.
+	* basic-block.h: Likewise.
+	* c-common.c: Likewise.
+	* c-common.h: Likewise.
+	* c-decl.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pretty-print.h: Likewise.
+	* cfg.c: Likewise.
+	* cfganal.c: Likewise.
+	* cfgbuild.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* cfglayout.c: Likewise.
+	* cfgrtl.c: Likewise.
+	* convert.c: Likewise.
+	* cpphash.h: Likewise.
+	* cpplex.c: Likewise.
+	* cpplib.h: Likewise.
+	* df.h: Likewise.
+	* diagnostic.c: Likewise.
+	* diagnostic.h: Likewise.
+	* dwarf2.h: Likewise.
+
 2003-01-17  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin-protos.h: Forward-declare struct cpp_reader.

@@ -717,7 +717,7 @@ cfg_layout_can_duplicate_bb_p (bb)
        return false;
 
   /* Do not attempt to duplicate tablejumps, as we need to unshare
-     the dispatch table.  This is dificult to do, as the instructions
+     the dispatch table.  This is difficult to do, as the instructions
      computing jump destination may be hoisted outside the basic block.  */
   if (GET_CODE (bb->end) == JUMP_INSN && JUMP_LABEL (bb->end)
       && (next = next_nonnote_insn (JUMP_LABEL (bb->end)))

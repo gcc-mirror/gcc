@@ -155,7 +155,7 @@ convert_to_real (type, expr)
       if (TYPE_PRECISION (TREE_TYPE (arg0)) > TYPE_PRECISION (type))
 	newtype = TREE_TYPE (arg0);
 
-      /* Be curefull about integer to fp conversions.
+      /* Be careful about integer to fp conversions.
 	 These may overflow still.  */
       if (FLOAT_TYPE_P (TREE_TYPE (arg0))
 	  && TYPE_PRECISION (newtype) <= TYPE_PRECISION (itype)

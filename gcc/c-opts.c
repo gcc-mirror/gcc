@@ -314,7 +314,7 @@ static const struct cl_option cl_options[] =
 #undef COMMAND_LINE_OPTIONS
 
 /* Holds switches parsed by c_common_decode_option (), but whose
-   handling is deffered to c_common_post_options ().  */
+   handling is deferred to c_common_post_options ().  */
 static void defer_opt PARAMS ((enum opt_code, const char *));
 static struct deferred_opt
 {

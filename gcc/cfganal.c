@@ -234,7 +234,7 @@ set_edge_can_fallthru_flag ()
 	    e->flags |= EDGE_CAN_FALLTHRU;
 	}
 
-      /* If the BB ends with an invertable condjump all (2) edges are
+      /* If the BB ends with an invertible condjump all (2) edges are
 	 CAN_FALLTHRU edges.  */
       if (!bb->succ || !bb->succ->succ_next || bb->succ->succ_next->succ_next)
 	continue;

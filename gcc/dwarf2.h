@@ -4,7 +4,7 @@
    Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
-   Office (AJPO), Florida State Unviversity and Silicon Graphics Inc.
+   Office (AJPO), Florida State University and Silicon Graphics Inc.
    provided support for this effort -- June 21, 1995.
 
    Derived from the DWARF 1 implementation written by Ron Guilmette

@@ -148,7 +148,7 @@ count_basic_blocks (f)
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
-      /* Code labels and barriers causes curent basic block to be
+      /* Code labels and barriers causes current basic block to be
          terminated at previous real insn.  */
       if ((GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == BARRIER)
 	  && saw_insn)
