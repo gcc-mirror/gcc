@@ -93,7 +93,7 @@ extern int _CRT_MT;
 #endif
 
 static inline int
-__gthread_active_p ()
+__gthread_active_p (void)
 {
 #ifdef MINGW32_SUPPORTS_MT_EH
   return _CRT_MT;
@@ -103,7 +103,7 @@ __gthread_active_p ()
 }
 
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) ())
+__gthread_once (__gthread_once_t *once, void (*func) (void))
 {
   if (! __gthread_active_p ())
     return -1;

@@ -1,3 +1,18 @@
+2000-02-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* crtstuff.c (__do_global_ctors_aux, __reg_frame_ctor,
+	__dereg_frame_dtor): Add prototype argument.
+
+	* gthr-dce.h (__gthread_active_p, __gthread_once): Likewise.
+
+	* gthr-posix.h (__gthread_active_p, __gthread_once): Likewise.
+
+	* gthr-solaris.h (__gthread_active_p, __gthread_once): Likewise.
+
+	* gthr-vxworks.h (__gthread_once): Likewise.
+
+	* gthr-win32.h (__gthread_active_p, __gthread_once): Likewise.
+
 Sat Feb 12 01:44:26 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_emit_restore_regs_using_mov): Break out from ...

@@ -61,7 +61,7 @@ typedef pthread_mutex_t __gthread_mutex_t;
 static void *__gthread_active_ptr = &pthread_create;
 
 static inline int
-__gthread_active_p ()
+__gthread_active_p (void)
 {
   return __gthread_active_ptr != 0;
 }
@@ -69,7 +69,7 @@ __gthread_active_p ()
 #else /* not SUPPORTS_WEAK */
 
 static inline int
-__gthread_active_p ()
+__gthread_active_p (void)
 {
   return 1;
 }
@@ -77,7 +77,7 @@ __gthread_active_p ()
 #endif /* SUPPORTS_WEAK */
 
 static inline int
-__gthread_once (__gthread_once_t *once, void (*func) ())
+__gthread_once (__gthread_once_t *once, void (*func) (void))
 {
   if (__gthread_active_p ())
     return pthread_once (once, func);
