@@ -4033,6 +4033,26 @@ scan_for_missed_items (file_p)
     }
 }
 
+/* Write LEN bytes at PTR to descriptor DESC,
+   retrying if necessary, and treating any real error as fatal.  */
+
+static void
+safe_write (desc, ptr, len, out_fname)
+     int desc;
+     char *ptr;
+     int len;
+     char *out_fname;
+{
+  while (len > 0) {
+    int written = write (fileno (stdout), ptr, len);
+    if (written < 0)
+      fprintf (stderr, "%s: error writing file `%s': %s\n",
+	       pname, shortpath (NULL, out_fname), sys_errlist[errno]);
+    ptr += written;
+    len -= written;
+  }
+}
+
 /* Do all editing operations for a single source file (either a "base" file
    or an "include" file).  To do this we read the file into memory, keep a
    virgin copy there, make another cleaned in-core copy of the original file
@@ -4190,9 +4210,7 @@ edit_file (hp)
   
     /* Write the clean file.  */
   
-    if (write (clean_file, new_clean_text_base, clean_size) != clean_size)
-      fprintf (stderr, "%s: error writing file `%s': %s\n",
-	       pname, shortpath (NULL, clean_filename), sys_errlist[errno]);
+    safe_write (clean_file, new_clean_text_base, clean_size, clean_filename);
   
     close (clean_file);
   }
@@ -4326,10 +4344,7 @@ edit_file (hp)
     {
       unsigned int out_size = (repl_write_ptr + 1) - repl_text_base;
   
-      if (write (output_file, repl_text_base, out_size) != out_size)
-        fprintf (stderr, "%s: error writing file `%s': %s\n",
-		 pname, shortpath (NULL, convert_filename),
-		 sys_errlist[errno]);
+      safe_write (output_file, repl_text_base, out_size, convert_filename);
     }
   
     close (output_file);
