@@ -1,3 +1,10 @@
+2003-02-03  Chris Lingard <chris@stockwith.co.uk>
+	    Dan Osterrath <do3@mail.inf.tu-dresden.de>
+
+	* configure.in: Handle binutils versions with 4 dot separated
+	numbers.
+	* configure: Rebuilt.
+
 2003-02-03  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	Backport following patch:

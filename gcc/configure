@@ -7216,7 +7216,7 @@ elif test x$gcc_cv_as != x; then
 	# the date string after the version number.
 	ld_ver=`$gcc_cv_ld --version 2>/dev/null | head -1`
 	if echo "$ld_ver" | grep GNU > /dev/null; then
-		ld_vers=`echo $ld_ver | sed -n 's,^.*[ 	]\([0-9][0-9]*\.[0-9][0-9]*\(\|\.[0-9][0-9]*\)\)\([ 	].*\|\)$,\1,p'`
+		ld_vers=`echo $ld_ver | sed -n 's,^.*[ 	]\([0-9][0-9]*\.[0-9][0-9]*\(\|\.[0-9][0-9]*\(\|\.[0-9][0-9]*\)\)\)\([ 	].*\|\)$,\1,p'`
 		ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
 		if test 0"$ld_date" -lt 20020404; then
 			if test -n "$ld_date"; then
