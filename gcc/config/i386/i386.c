@@ -401,6 +401,7 @@ static HOST_WIDE_INT ix86_compute_frame_size PARAMS((HOST_WIDE_INT,
 						     int *, int *, int *));
 static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
+static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int));
 static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
 static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
 static void ix86_sched_reorder_ppro PARAMS((rtx *, rtx *));
@@ -1963,6 +1964,31 @@ ix86_emit_epilogue_esp_adjustment (tsize)
     }
 }
 
+/* Emit code to restore saved registers using MOV insns.  First register
+   is restored from POINTER + OFFSET.  */
+static void
+ix86_emit_restore_regs_using_mov (pointer, offset)
+	rtx pointer;
+	int offset;
+{
+  int regno;
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
+  int limit = (frame_pointer_needed
+	       ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+
+  for (regno = 0; regno < limit; regno++)
+    if ((regs_ever_live[regno] && !call_used_regs[regno])
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
+      {
+	emit_move_insn (gen_rtx_REG (SImode, regno),
+			adj_offsettable_operand (gen_rtx_MEM (SImode,
+							      pointer),
+						 offset));
+	offset += 4;
+      }
+}
+
 /* Restore function stack, frame, and registers. */
 
 void
@@ -1991,23 +2017,34 @@ ix86_expand_epilogue ()
 
   /* If we're only restoring one register and sp is not valid then
      using a move instruction to restore the register since it's
-     less work than reloading sp and popping the register.  */
-  if (!sp_valid && nregs <= 1)
+     less work than reloading sp and popping the register.  
+
+     The default code result in stack adjustment using add/lea instruction,
+     while this code results in LEAVE instruction (or discrete equivalent),
+     so it is profitable in some other cases as well.  Especially when there
+     are no registers to restore.  We also use this code when TARGET_USE_LEAVE
+     and there is exactly one register to pop. This heruistic may need some
+     tuning in future.  */
+  if ((!sp_valid && nregs <= 1)
+      || (frame_pointer_needed && !nregs && tsize)
+      || (frame_pointer_needed && TARGET_USE_LEAVE && !optimize_size
+	  && nregs == 1))
     {
+      /* Restore registers.  We can use ebp or esp to address the memory
+	 locations.  If both are available, default to ebp, since offsets
+	 are known to be small.  Only exception is esp pointing directly to the
+	 end of block of saved registers, where we may simplify addressing
+	 mode.  */
+
+      if (!frame_pointer_needed || (sp_valid && !tsize))
+	ix86_emit_restore_regs_using_mov (stack_pointer_rtx, tsize);
+      else
+	ix86_emit_restore_regs_using_mov (hard_frame_pointer_rtx, offset);
+
       if (!frame_pointer_needed)
-	abort();
-
-      for (regno = 0; regno < HARD_FRAME_POINTER_REGNUM; regno++)
-	if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
-	  {
-	    emit_move_insn (gen_rtx_REG (SImode, regno),
-			    adj_offsettable_operand (AT_BP (Pmode), offset));
-	    offset += 4;
-	  }
-
+	ix86_emit_epilogue_esp_adjustment (tsize + nregs * UNITS_PER_WORD);
       /* If not an i386, mov & pop is faster than "leave". */
-      if (TARGET_USE_LEAVE || optimize_size)
+      else if (TARGET_USE_LEAVE || optimize_size)
 	emit_insn (gen_leave ());
       else
 	{
