@@ -242,7 +242,7 @@ decl_is_java_type (decl, err)
 	  && TYPE_FOR_JAVA (TREE_TYPE (decl)))
 	{
 	  /* Can't throw a reference.  */
-	  cp_error ("type `%T' is disallowed in Java `throw' or `catch'",
+	  error ("type `%T' is disallowed in Java `throw' or `catch'",
 		    decl);
 	}
 
@@ -260,7 +260,7 @@ decl_is_java_type (decl, err)
 	  if (! DERIVED_FROM_P (jthrow_node, TREE_TYPE (decl)))
 	    {
 	      /* Thrown object must be a Throwable.  */
-	      cp_error ("type `%T' is not derived from `java::lang::Throwable'",
+	      error ("type `%T' is not derived from `java::lang::Throwable'",
 			TREE_TYPE (decl));
 	    }
 	}
@@ -555,7 +555,7 @@ build_throw (exp)
     return build_min (THROW_EXPR, void_type_node, exp);
 
   if (exp == null_node)
-    cp_warning ("throwing NULL, which has integral, not pointer type");
+    warning ("throwing NULL, which has integral, not pointer type");
   
   if (exp != NULL_TREE)
     {
@@ -772,7 +772,7 @@ is_admissible_throw_operand (expr)
             conversion.  */
   else if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
     {
-      cp_error ("expression '%E' of abstract class type '%T' cannot be used in throw-expression", expr, type);
+      error ("expression '%E' of abstract class type '%T' cannot be used in throw-expression", expr, type);
       return false;
     }
 
@@ -860,10 +860,10 @@ check_handlers_1 (master, handlers)
 	&& can_convert_eh (type, TREE_TYPE (handler)))
       {
 	lineno = STMT_LINENO (handler);
-	cp_warning ("exception of type `%T' will be caught",
+	warning ("exception of type `%T' will be caught",
 		    TREE_TYPE (handler));
 	lineno = STMT_LINENO (master);
-	cp_warning ("   by earlier handler for `%T'", type);
+	warning ("   by earlier handler for `%T'", type);
 	break;
       }
 }
@@ -883,7 +883,7 @@ check_handlers (handlers)
       else if (TREE_TYPE (handler) == NULL_TREE)
 	{
 	  lineno = STMT_LINENO (handler);
-	  cp_pedwarn
+	  pedwarn
 	    ("`...' handler must be the last handler for its try block");
 	}
       else

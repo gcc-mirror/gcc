@@ -281,13 +281,13 @@ perform_member_init (member, init, explicit)
 	    {
 	      init = build_default_init (type);
 	      if (TREE_CODE (type) == REFERENCE_TYPE)
-		cp_warning
+		warning
 		  ("default-initialization of `%#D', which has reference type",
 		   member);
 	    }
 	  /* member traversal: note it leaves init NULL */
 	  else if (TREE_CODE (type) == REFERENCE_TYPE)
-	    cp_pedwarn ("uninitialized reference member `%D'", member);
+	    pedwarn ("uninitialized reference member `%D'", member);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
 	{
@@ -425,7 +425,7 @@ sort_member_init (t, member_init_list)
       /* If there was already an explicit initializer for this field,
 	 issue an error.  */
       if (TREE_TYPE (f))
-	cp_error ("multiple initializations given for member `%D'",
+	error ("multiple initializations given for member `%D'",
 		  initialized_field);
       else
 	{
@@ -497,7 +497,7 @@ sort_member_init (t, member_init_list)
 		  if (same_type_p (last_field_type, field_type))
 		    {
 		      if (TREE_CODE (field_type) == UNION_TYPE)
-			cp_error ("initializations for multiple members of `%T'",
+			error ("initializations for multiple members of `%T'",
 				  last_field_type);
 		      done = 1;
 		      break;
@@ -628,7 +628,7 @@ sort_base_init (t, base_init_list, rbase_ptr, vbase_ptr)
 	    }
 	  else if (binfo == base_binfo)
 	    {
-	      cp_error ("base class `%T' already initialized", 
+	      error ("base class `%T' already initialized", 
 			BINFO_TYPE (binfo));
 	      break;
 	    }
@@ -699,7 +699,7 @@ emit_base_init (mem_init_list, base_init_list)
 	  init = NULL_TREE;
 	  if (extra_warnings 
 	      && DECL_COPY_CONSTRUCTOR_P (current_function_decl))
-	    cp_warning ("base class `%#T' should be explicitly initialized in the copy constructor",
+	    warning ("base class `%#T' should be explicitly initialized in the copy constructor",
 			BINFO_TYPE (base_binfo));
 	}
 
@@ -742,7 +742,7 @@ emit_base_init (mem_init_list, base_init_list)
 	  if (warn_ecpp && init == NULL_TREE
 	      && !DECL_ARTIFICIAL (member)
 	      && TREE_CODE (TREE_TYPE (member)) != ARRAY_TYPE)
-	    cp_warning ("`%D' should be initialized in the member initialization list", member);	    
+	    warning ("`%D' should be initialized in the member initialization list", member);	    
 	}
 
       perform_member_init (member, init, from_init_list);
@@ -984,13 +984,13 @@ member_init_ok_or_else (field, type, member_name)
     return 0;
   if (field == NULL_TREE || initializing_context (field) != type)
     {
-      cp_error ("class `%T' does not have any field named `%D'", type,
+      error ("class `%T' does not have any field named `%D'", type,
 		member_name);
       return 0;
     }
   if (TREE_STATIC (field))
     {
-      cp_error ("field `%#D' is static; the only point of initialization is its definition",
+      error ("field `%#D' is static; the only point of initialization is its definition",
 		field);
       return 0;
     }
@@ -1029,14 +1029,14 @@ expand_member_init (exp, name, init)
       switch (CLASSTYPE_N_BASECLASSES (type))
 	{
 	case 0:
-	  cp_error ("unnamed initializer for `%T', which has no base classes",
+	  error ("unnamed initializer for `%T', which has no base classes",
 		    type);
 	  return NULL_TREE;
 	case 1:
 	  basetype = TYPE_BINFO_BASETYPE (type, 0);
 	  break;
 	default:
-	  cp_error ("unnamed initializer for `%T', which uses multiple inheritance",
+	  error ("unnamed initializer for `%T', which uses multiple inheritance",
 		    type);
 	  return NULL_TREE;
       }
@@ -1065,10 +1065,10 @@ expand_member_init (exp, name, init)
       else
 	{
 	  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-	    cp_error ("type `%D' is not a direct or virtual base of `%T'",
+	    error ("type `%D' is not a direct or virtual base of `%T'",
 		      name, type);
 	  else
-	    cp_error ("type `%D' is not a direct base of `%T'",
+	    error ("type `%D' is not a direct base of `%T'",
 		      name, type);
 	  return NULL_TREE;
 	}
@@ -1162,7 +1162,7 @@ build_aggr_init (exp, init, flags)
 	       COMPLEX zees(1.0, 0.0)[10];
 	     }
 	  */
-	  cp_error ("bad array initializer");
+	  error ("bad array initializer");
 	  return error_mark_node;
 	}
       if (cp_type_quals (type) != TYPE_UNQUALIFIED)
@@ -1354,7 +1354,7 @@ is_aggr_type (type, or_else)
       && TREE_CODE (type) != BOUND_TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
-	cp_error ("`%T' is not an aggregate type", type);
+	error ("`%T' is not an aggregate type", type);
       return 0;
     }
   return 1;
@@ -1377,7 +1377,7 @@ get_aggr_from_typedef (name, or_else)
   else
     {
       if (or_else)
-	cp_error ("`%T' fails to be an aggregate typedef", name);
+	error ("`%T' fails to be an aggregate typedef", name);
       return NULL_TREE;
     }
 
@@ -1386,7 +1386,7 @@ get_aggr_from_typedef (name, or_else)
       && TREE_CODE (type) != BOUND_TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
-	cp_error ("type `%T' is of non-aggregate type", type);
+	error ("type `%T' is of non-aggregate type", type);
       return NULL_TREE;
     }
   return type;
@@ -1488,7 +1488,7 @@ build_member_call (type, name, parmlist)
 
   if (dtor)
     {
-      cp_error ("cannot call destructor `%T::~%T' without object", type,
+      error ("cannot call destructor `%T::~%T' without object", type,
 		method_name);
       return error_mark_node;
     }
@@ -1530,7 +1530,7 @@ build_member_call (type, name, parmlist)
 	{
 	  if (is_dummy_object (decl))
 	    {
-	      cp_error ("invalid use of non-static field `%D'", t);
+	      error ("invalid use of non-static field `%D'", t);
 	      return error_mark_node;
 	    }
 	  decl = build (COMPONENT_REF, TREE_TYPE (t), decl, t);
@@ -1539,7 +1539,7 @@ build_member_call (type, name, parmlist)
 	decl = t;
       else
 	{
-	  cp_error ("invalid use of member `%D'", t);
+	  error ("invalid use of member `%D'", t);
 	  return error_mark_node;
 	}
       if (TYPE_LANG_SPECIFIC (TREE_TYPE (decl)))
@@ -1549,7 +1549,7 @@ build_member_call (type, name, parmlist)
     }
   else
     {
-      cp_error ("no method `%T::%D'", type, name);
+      error ("no method `%T::%D'", type, name);
       return error_mark_node;
     }
 }
@@ -1634,7 +1634,7 @@ build_offset_ref (type, name)
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
       if (! check_dtor_name (type, name))
-	cp_error ("qualified type `%T' does not match destructor name `~%T'",
+	error ("qualified type `%T' does not match destructor name `~%T'",
 		  type, TREE_OPERAND (name, 0));
       name = dtor_identifier;
     }
@@ -1642,7 +1642,7 @@ build_offset_ref (type, name)
   if (!COMPLETE_TYPE_P (complete_type (type))
       && !TYPE_BEING_DEFINED (type))
     {
-      cp_error ("incomplete type `%T' does not have member `%D'", type,
+      error ("incomplete type `%T' does not have member `%D'", type,
 		name);
       return error_mark_node;
     }
@@ -1711,7 +1711,7 @@ build_offset_ref (type, name)
 
   if (t == NULL_TREE)
     {
-      cp_error ("`%D' is not a member of type `%T'", name, type);
+      error ("`%D' is not a member of type `%T'", name, type);
       return error_mark_node;
     }
 
@@ -1730,7 +1730,7 @@ build_offset_ref (type, name)
 
   if (TREE_CODE (t) == FIELD_DECL && DECL_C_BIT_FIELD (t))
     {
-      cp_error ("illegal pointer to bit field `%D'", t);
+      error ("illegal pointer to bit field `%D'", t);
       return error_mark_node;
     }
 
@@ -1859,7 +1859,7 @@ resolve_offset_ref (exp)
     {
       if (addr == error_mark_node)
 	{
-	  cp_error ("object missing in `%E'", exp);
+	  error ("object missing in `%E'", exp);
 	  return error_mark_node;
 	}
 
@@ -2416,7 +2416,7 @@ build_new_1 (exp)
       if (init == void_zero_node)
 	init = build_default_init (full_type);
       else if (init && pedantic && has_array)
-	cp_pedwarn ("ISO C++ forbids initialization in array new");
+	pedwarn ("ISO C++ forbids initialization in array new");
 
       if (has_array)
 	init_expr = build_vec_init (init_expr, init, 0);
@@ -2515,7 +2515,7 @@ build_new_1 (exp)
 	}
     }
   else if (CP_TYPE_CONST_P (true_type))
-    cp_error ("uninitialized const in `new' of `%#T'", true_type);
+    error ("uninitialized const in `new' of `%#T'", true_type);
 
   /* Now build up the return value in reverse order.  */
 
