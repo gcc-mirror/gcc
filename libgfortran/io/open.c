@@ -140,7 +140,7 @@ static st_option access_opt[] = {
  * state from AFTER_ENDFILE to AT_ENDFILE. */
 
 void
-test_endfile (unit_t * u)
+test_endfile (gfc_unit * u)
 {
 
   if (u->endfile == NO_ENDFILE && file_length (u->s) == file_position (u->s))
@@ -152,7 +152,7 @@ test_endfile (unit_t * u)
  * to be changed. */
 
 static void
-edit_modes (unit_t * u, unit_flags * flags)
+edit_modes (gfc_unit * u, unit_flags * flags)
 {
 
   /* Complain about attempts to change the unchangeable */
@@ -250,7 +250,7 @@ edit_modes (unit_t * u, unit_flags * flags)
 void
 new_unit (unit_flags * flags)
 {
-  unit_t *u;
+  gfc_unit *u;
   stream *s;
   char tmpname[5 /* fort. */ + 10 /* digits of unit number */ + 1 /* 0 */];
 
@@ -384,7 +384,7 @@ new_unit (unit_flags * flags)
 
   /* Create the unit structure */
 
-  u = get_mem (sizeof (unit_t) + ioparm.file_len);
+  u = get_mem (sizeof (gfc_unit) + ioparm.file_len);
 
   u->unit_number = ioparm.unit;
   u->s = s;
@@ -430,7 +430,7 @@ cleanup:
  * file. */
 
 static void
-already_open (unit_t * u, unit_flags * flags)
+already_open (gfc_unit * u, unit_flags * flags)
 {
 
   if (ioparm.file == NULL)
@@ -465,7 +465,7 @@ void
 st_open (void)
 {
   unit_flags flags;
-  unit_t *u = NULL;
+  gfc_unit *u = NULL;
  
   library_start ();
 

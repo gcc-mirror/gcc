@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #define CACHE_SIZE 3
-static unit_t internal_unit, *unit_cache[CACHE_SIZE];
+static gfc_unit internal_unit, *unit_cache[CACHE_SIZE];
 
 
 /* This implementation is based on Stefan Nilsson's article in the
@@ -51,10 +51,10 @@ pseudo_random (void)
 
 /* rotate_left()-- Rotate the treap left */
 
-static unit_t *
-rotate_left (unit_t * t)
+static gfc_unit *
+rotate_left (gfc_unit * t)
 {
-  unit_t *temp;
+  gfc_unit *temp;
 
   temp = t->right;
   t->right = t->right->left;
@@ -66,10 +66,10 @@ rotate_left (unit_t * t)
 
 /* rotate_right()-- Rotate the treap right */
 
-static unit_t *
-rotate_right (unit_t * t)
+static gfc_unit *
+rotate_right (gfc_unit * t)
 {
-  unit_t *temp;
+  gfc_unit *temp;
 
   temp = t->left;
   t->left = t->left->right;
@@ -95,8 +95,8 @@ compare (int a, int b)
 
 /* insert()-- Recursive insertion function.  Returns the updated treap. */
 
-static unit_t *
-insert (unit_t * new, unit_t * t)
+static gfc_unit *
+insert (gfc_unit * new, gfc_unit * t)
 {
   int c;
 
@@ -130,7 +130,7 @@ insert (unit_t * new, unit_t * t)
  * an error to insert a key that already exists. */
 
 void
-insert_unit (unit_t * new)
+insert_unit (gfc_unit * new)
 {
 
   new->priority = pseudo_random ();
@@ -138,10 +138,10 @@ insert_unit (unit_t * new)
 }
 
 
-static unit_t *
-delete_root (unit_t * t)
+static gfc_unit *
+delete_root (gfc_unit * t)
 {
-  unit_t *temp;
+  gfc_unit *temp;
 
   if (t->left == NULL)
     return t->right;
@@ -168,8 +168,8 @@ delete_root (unit_t * t)
  * must just point to a treap structure with the key to be deleted.
  * Returns the new root node of the tree. */
 
-static unit_t *
-delete_treap (unit_t * old, unit_t * t)
+static gfc_unit *
+delete_treap (gfc_unit * old, gfc_unit * t)
 {
   int c;
 
@@ -192,7 +192,7 @@ delete_treap (unit_t * old, unit_t * t)
 /* delete_unit()-- Delete a unit from a tree */
 
 static void
-delete_unit (unit_t * old)
+delete_unit (gfc_unit * old)
 {
 
   g.unit_root = delete_treap (old, g.unit_root);
@@ -202,10 +202,10 @@ delete_unit (unit_t * old)
 /* find_unit()-- Given an integer, return a pointer to the unit
  * structure.  Returns NULL if the unit does not exist. */
 
-unit_t *
+gfc_unit *
 find_unit (int n)
 {
-  unit_t *p;
+  gfc_unit *p;
   int c;
 
   for (c = 0; c < CACHE_SIZE; c++)
@@ -241,10 +241,10 @@ find_unit (int n)
 /* get_unit()-- Returns the unit structure associated with the integer
  * unit or the internal file. */
 
-unit_t *
+gfc_unit *
 get_unit (int read_flag)
 {
-  unit_t *u;
+  gfc_unit *u;
 
   if (ioparm.internal_unit != NULL)
     {
@@ -290,12 +290,12 @@ void
 init_units (void)
 {
   offset_t m, n;
-  unit_t *u;
+  gfc_unit *u;
   int i;
 
   if (options.stdin_unit >= 0)
     {				/* STDIN */
-      u = get_mem (sizeof (unit_t));
+      u = get_mem (sizeof (gfc_unit));
 
       u->unit_number = options.stdin_unit;
       u->s = input_stream ();
@@ -316,7 +316,7 @@ init_units (void)
 
   if (options.stdout_unit >= 0)
     {				/* STDOUT */
-      u = get_mem (sizeof (unit_t));
+      u = get_mem (sizeof (gfc_unit));
 
       u->unit_number = options.stdout_unit;
       u->s = output_stream ();
@@ -351,7 +351,7 @@ init_units (void)
  * associated with the stream is freed.  Returns nonzero on I/O error. */
 
 int
-close_unit (unit_t * u)
+close_unit (gfc_unit * u)
 {
   int i, rc;
 

@@ -37,7 +37,7 @@ void
 st_close (void)
 {
   close_status status;
-  unit_t *u;
+  gfc_unit *u;
 
   library_start ();
 

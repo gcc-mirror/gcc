@@ -117,7 +117,7 @@ io_error:
 void
 st_backspace (void)
 {
-  unit_t *u;
+  gfc_unit *u;
 
   library_start ();
 

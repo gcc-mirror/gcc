@@ -1,3 +1,22 @@
+2004-05-15  Tobias Schlueter <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15234
+	* io/io.h (unit_t): Rename to ...
+	(gfc_unit) ... this.
+	(unit_root, current_unit, find_file, find_unit, get_unit): Now
+	of type gfc_unit.
+	(delete_file, insert_unit, close_unit): Argument now of type
+	gfc_unit.
+	* backspace.c (st_backspace), close.c (st_close), endfile.c
+	(st_endfile), inquire.c (inquire_via_unit, st_inquire), open.c
+	(test_endfile, edit_modes, new_unit, already_open, st_open),
+	rewind.c (st_rewind), transfer.c (current_unit), unit.c
+	(internal_unit, unit_cache, rotate_left, rotate_right, insert,
+	insert_unit, delete_root, delete_treap, delete_unit, find_unit,
+	get_unit, init_units, close_unit), unix.c (find_file0,
+	find_file, delete_file): Replace all occurences of unit_t by
+	gfc_unit.
+
 2004-05-15  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/15311
