@@ -1,5 +1,9 @@
 2000-06-01  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* gcc.dg/compare2.c (case 12): XFAIL.
+	* gcc.dg/noreturn-1.c (foo7, foo8): XFAIL.
+	* gcc.dg/noreturn-2.c (noreturn): XFAIL.
+
 	* gcc.dg/cpp-tradwarn2.c: Update egrep pattern.
 
 2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>

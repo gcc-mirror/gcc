@@ -30,7 +30,7 @@ void f(int x, unsigned int y)
 
   /* Statement expression with recursive ?: .  */
   x > ({tf; tf?64:(tf?128:256);}); /* { dg-bogus "signed and unsigned" "case 11" } */
-  y > ({tf; tf?64:(tf?128:256);}); /* { dg-bogus "signed and unsigned" "case 12" } */
+  y > ({tf; tf?64:(tf?128:256);}); /* { dg-bogus "signed and unsigned" "case 12" { xfail *-*-* } } */
 
   /* Statement expression with signed ?:.  */
   x > ({tf; tf?64:-1;}); /* { dg-bogus "signed and unsigned" "case 13" } */
