@@ -251,6 +251,18 @@ void test03()
     }
 #endif
 }
+
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
+void test04()
+{
+  bool test = true;
+
+  std::string loc1 = setlocale(LC_ALL, "ja_JP.eucjp");
+  test01();
+  test02();
+  std::string loc2 = setlocale(LC_ALL, NULL);
+  VERIFY( loc1 == loc2 );
+}
 #endif
 
 int main()
@@ -259,6 +271,7 @@ int main()
   test01();
   test02();
   test03();
+  test04();
 #endif
   return 0;
 }

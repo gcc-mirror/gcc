@@ -310,6 +310,7 @@ void test03()
 #endif
 }
 
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
 void test04()
 {
   bool test = true;

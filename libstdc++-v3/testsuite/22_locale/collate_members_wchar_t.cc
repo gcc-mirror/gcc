@@ -160,6 +160,18 @@ void test03()
   long l2 = col.hash(str2.c_str(), str2.c_str() + str2.size());
   VERIFY( l1 != l2 );
 }
+
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
+void test04()
+{
+  bool test = true;
+
+  std::string loc1 = setlocale(LC_ALL, "ja_JP.eucjp");
+  test01();
+  test03();
+  std::string loc2 = setlocale(LC_ALL, NULL);
+  VERIFY( loc1 == loc2 );
+}
 #endif
 
 int main()
@@ -168,6 +180,7 @@ int main()
   test01();
   test02();
   test03();
+  test04();
 #endif
   return 0;
 }

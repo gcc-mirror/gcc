@@ -1,3 +1,31 @@
+2002-05-06  Paolo Carlini  <pcarlini@unitus.it>
+
+	Test all the facets for the temporary "C" locale switch issue.
+	* testsuite/22_locale/codecvt_members_char_char.cc: Add test03.
+	* testsuite/22_locale/codecvt_members_wchar_t_char.cc: Likewise.
+	* testsuite/22_locale/collate_members_char.cc: Add test04.
+	* testsuite/22_locale/collate_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/ctype_members_char.cc: Add test05.
+	* testsuite/22_locale/ctype_members_wchar_t.cc: Add test04.
+	* testsuite/22_locale/messages_members_char.cc: Add test03.
+	* testsuite/22_locale/money_get_members_char.cc: Add test08.
+	* testsuite/22_locale/money_get_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/money_put_members_char.cc: Add test07. 
+	* testsuite/22_locale/money_put_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/moneypunct_members_char.cc: Add test03.
+	* testsuite/22_locale/moneypunct_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/num_get_members_char.cc: Add test06.
+	* testsuite/22_locale/num_get_members_wchar_t.cc: Likewise. 
+	* testsuite/22_locale/numpunct_members_char.cc: Add test03.
+	* testsuite/22_locale/numpunct_members_wchar_t.cc: Likewise. 
+	* testsuite/22_locale/time_get_members_char.cc: Add test08.
+	* testsuite/22_locale/time_get_members_wchar_t.cc: Likewise. 
+	* testsuite/22_locale/time_put_members_char.cc: Add test04.
+	* testsuite/22_locale/time_put_members_wchar_t.cc: Likewise.
+
+	* testsuite/22_locale/num_put_members_char.cc (test04): Add comment.
+	* testsuite/22_locale/num_put_members_wchar_t.cc (test04): Likewise.
+
 2002-05-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/os/irix/irix5.2/bits/os_defines.h (_SGI_SOURCE,

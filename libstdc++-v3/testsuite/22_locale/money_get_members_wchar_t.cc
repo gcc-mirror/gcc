@@ -546,6 +546,22 @@ void test07()
   mg_b.get(ibeg_b_ns,iend_b_ns,intl,fmt_b_ns,err,val_b_ns);
   VERIFY( val_b_ns == L"123456" );
 }
+
+// http://gcc.gnu.org/ml/libstdc++/2002-05/msg00038.html
+void test08()
+{
+  bool test = true;
+
+  std::string loc1 = setlocale(LC_ALL, "ja_JP.eucjp");
+  test01();
+  test02();
+  test03();
+  test05();
+  test06();
+  test07();
+  std::string loc2 = setlocale(LC_ALL, NULL);
+  VERIFY( loc1 == loc2 );
+}
 #endif
 
 int main()
@@ -558,6 +574,7 @@ int main()
   test05();
   test06();
   test07();
+  test08();
 #endif
   return 0;
 }
