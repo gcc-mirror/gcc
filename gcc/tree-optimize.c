@@ -273,6 +273,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_tree_profile);
   NEXT_PASS (pass_init_datastructures);
   NEXT_PASS (pass_all_optimizations);
+  NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_free_datastructures);
   NEXT_PASS (pass_expand);
@@ -319,7 +320,6 @@ init_tree_optimization_passes (void)
   NEXT_PASS (DUP_PASS (pass_phiopt));
   NEXT_PASS (pass_tail_calls);
   NEXT_PASS (pass_late_warn_uninitialized);
-  NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_del_pta);
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);

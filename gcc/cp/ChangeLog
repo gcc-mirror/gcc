@@ -1,3 +1,8 @@
+2004-07-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/14107
+	* decl.c (finish_function): Remove temporary band-aid.
+
 2004-07-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_operator_new_call): Avoid using push_to_top_level.
