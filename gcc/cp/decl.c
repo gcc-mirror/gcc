@@ -11828,7 +11828,10 @@ require_complete_types_for_parms (tree parms)
         /* grokparms will have already issued an error */
         TREE_TYPE (parms) = error_mark_node;
       else if (complete_type_or_else (TREE_TYPE (parms), parms))
-	layout_decl (parms, 0);
+	{
+	  layout_decl (parms, 0);
+	  DECL_ARG_TYPE (parms) = type_passed_as (TREE_TYPE (parms));
+	}
       else
         TREE_TYPE (parms) = error_mark_node;
     }
