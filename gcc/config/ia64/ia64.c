@@ -6339,7 +6339,9 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
     }
   else if (reload_completed)
     setup_clocks_p = TRUE;
-  if (setup_clocks_p && ia64_tune == PROCESSOR_ITANIUM)
+  if (setup_clocks_p && ia64_tune == PROCESSOR_ITANIUM
+      && GET_CODE (PATTERN (insn)) != ASM_INPUT
+      && asm_noperands (PATTERN (insn)) == 0)
     {
       enum attr_itanium_class c = ia64_safe_itanium_class (insn);
 
