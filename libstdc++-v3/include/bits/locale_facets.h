@@ -4012,7 +4012,7 @@ namespace std
    *  the money_get facet.
   */
   template<typename _CharT, typename _InIter>
-    class money_get : public locale::facet
+  class money_get : public locale::facet, public money_base
     {
     public:
       // Types:
@@ -4125,9 +4125,10 @@ namespace std
       do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	     ios_base::iostate& __err, string_type& __digits) const;
 
-      iter_type
-      _M_extract(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
-		 ios_base::iostate& __err, string_type& __digits) const;     
+      template<bool _Intl>
+        iter_type
+        _M_extract(iter_type __s, iter_type __end, ios_base& __io,
+		   ios_base::iostate& __err, string_type& __digits) const;     
     };
 
   template<typename _CharT, typename _InIter>

@@ -1159,212 +1159,209 @@ namespace std
     };
 
   template<typename _CharT, typename _InIter>
-    _InIter
-    money_get<_CharT, _InIter>::
-    _M_extract(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
-	       ios_base::iostate& __err, string_type& __units) const
-    {
-      // These contortions are quite unfortunate.
-      typedef moneypunct<_CharT, true>		__money_true;
-      typedef moneypunct<_CharT, false>		__money_false;
-      typedef money_base::part			part;
-      typedef typename string_type::size_type	size_type;
+    template<bool _Intl>
+      _InIter
+      money_get<_CharT, _InIter>::
+      _M_extract(iter_type __beg, iter_type __end, ios_base& __io,
+		 ios_base::iostate& __err, string_type& __units) const
+      {
+	typedef typename string_type::size_type	          size_type;	
+	typedef money_base::part			  part;
+	typedef moneypunct<_CharT, _Intl>		  __moneypunct_type;
+	typedef typename __moneypunct_type::__cache_type  __cache_type;
+	
+	const locale& __loc = __io._M_getloc();
+	const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
-      const locale __loc = __io.getloc();
-      const __money_true& __mpt = use_facet<__money_true>(__loc);
-      const __money_false& __mpf = use_facet<__money_false>(__loc);
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+	__use_cache<__cache_type> __uc;
+	const __cache_type* __lc = __uc(__loc);
+	const char_type* __lit = __lc->_M_atoms;
 
-      const money_base::pattern __p = __intl ? __mpt.neg_format()
-					     : __mpf.neg_format();
+	const money_base::pattern __p = __lc->_M_neg_format;
 
-      const string_type __pos_sign = __intl ? __mpt.positive_sign()
-					    : __mpf.positive_sign();
-      const string_type __neg_sign = __intl ? __mpt.negative_sign()
-					    : __mpf.negative_sign();
-      const char_type __d = __intl ? __mpt.decimal_point()
-				   : __mpf.decimal_point();
-      const char_type __sep = __intl ? __mpt.thousands_sep()
-				     : __mpf.thousands_sep();
+	// Deduced sign.
+	bool __negative = false;
+	// True for more than one character long sign.
+	bool __long_sign = false;
+	// String of grouping info from thousands_sep plucked from __units.
+	string __grouping_tmp;
+	// Marker for thousands_sep position.
+	int __sep_pos = 0;
+	// If input iterator is in a valid state.
+	bool __testvalid = true;
+	// Flag marking when a decimal point is found.
+	bool __testdecfound = false;
 
-      const string __grouping = __intl ? __mpt.grouping() : __mpf.grouping();
+	// The tentative returned string is stored here.
+	string_type __res;
+	__res.reserve(20);
 
-      // Set to deduced positive or negative sign, depending.
-      string_type __sign;
-      // String of grouping info from thousands_sep plucked from __units.
-      string __grouping_tmp;
-      // Marker for thousands_sep position.
-      int __sep_pos = 0;
-      // If input iterator is in a valid state.
-      bool __testvalid = true;
-      // Flag marking when a decimal point is found.
-      bool __testdecfound = false;
-
-      // The tentative returned string is stored here.
-      string_type __tmp_units;
-
-      for (int __i = 0; __beg != __end && __i < 4 && __testvalid; ++__i)
-	{
-	  char_type __c;
-	  const part __which = static_cast<part>(__p.field[__i]);
-	  switch (__which)
-	    {
-	    case money_base::symbol:
-	      if (__io.flags() & ios_base::showbase
-		  || __i < 2 || __sign.size() > 1
-		  || ((static_cast<part>(__p.field[3]) != money_base::none)
-		      && __i == 2))
-		{
-		  // According to 22.2.6.1.2, p2, symbol is required
-		  // if (__io.flags() & ios_base::showbase),
-		  // otherwise is optional and consumed only if
-		  // other characters are needed to complete the
-		  // format.
-		  const string_type __symbol = __intl ? __mpt.curr_symbol()
-		                                      : __mpf.curr_symbol();
-		  const size_type __len = __symbol.size();
-		  size_type __j = 0;
-		  for (; __beg != __end && __j < __len
-			 && *__beg == __symbol[__j]; ++__beg, ++__j);
-		  // When (__io.flags() & ios_base::showbase)
-		  // symbol is required.
-		  if (__j != __len && (__io.flags() & ios_base::showbase))
+	for (int __i = 0; __beg != __end && __i < 4 && __testvalid; ++__i)
+	  {
+	    char_type __c;
+	    const part __which = static_cast<part>(__p.field[__i]);
+	    switch (__which)
+	      {
+	      case money_base::symbol:
+		if (__io.flags() & ios_base::showbase
+		    || __i < 2 || __long_sign
+		    || ((static_cast<part>(__p.field[3]) != money_base::none)
+			&& __i == 2))
+		  {
+		    // According to 22.2.6.1.2, p2, symbol is required
+		    // if (__io.flags() & ios_base::showbase),
+		    // otherwise is optional and consumed only if
+		    // other characters are needed to complete the
+		    // format.
+		    const size_type __len = __lc->_M_curr_symbol_size;
+		    size_type __j = 0;
+		    for (; __beg != __end && __j < __len
+			   && *__beg == __lc->_M_curr_symbol[__j];
+			 ++__beg, ++__j);
+		    // When (__io.flags() & ios_base::showbase)
+		    // symbol is required.
+		    if (__j != __len && (__io.flags() & ios_base::showbase))
+		      __testvalid = false;
+		  }
+		break;
+	      case money_base::sign:
+		// Sign might not exist, or be more than one character long.
+		if (__lc->_M_positive_sign_size
+		    && *__beg == __lc->_M_positive_sign[0])
+		  {
+		    if (__lc->_M_positive_sign_size > 1)
+		      __long_sign = true;
+		    ++__beg;
+		  }
+		else if (__lc->_M_negative_sign_size
+			 && *__beg == __lc->_M_negative_sign[0])
+		  {
+		    __negative = true;
+		    if (__lc->_M_negative_sign_size > 1)
+		      __long_sign = true;		    
+		    ++__beg;
+		  }
+		else if (__lc->_M_positive_sign_size
+			 && !__lc->_M_negative_sign_size)
+		  // "... if no sign is detected, the result is given the sign
+		  // that corresponds to the source of the empty string"
+		  __negative = true;
+		else if (__lc->_M_positive_sign_size
+			 && __lc->_M_negative_sign_size)
+		  {
+		    // Sign is mandatory.
 		    __testvalid = false;
-		}
-	      break;
-	    case money_base::sign:
-	      // Sign might not exist, or be more than one character long.
-	      if (__pos_sign.size() && *__beg == __pos_sign[0])
-		{
-		  __sign = __pos_sign;
-		  ++__beg;
-		}
-	      else if (__neg_sign.size() && *__beg == __neg_sign[0])
-		{
-		  __sign = __neg_sign;
-		  ++__beg;
-		}
-	      else if (__pos_sign.size() && __neg_sign.size())
-		{
-		  // Sign is mandatory.
-		  __testvalid = false;
-		}
-	      break;
-	    case money_base::value:
-	      // Extract digits, remove and stash away the
-	      // grouping of found thousands separators.
-	      for (; __beg != __end; ++__beg)
-		if (__ctype.is(ctype_base::digit, __c = *__beg))
-		  {
-		    __tmp_units += __c;
-		    ++__sep_pos;
 		  }
-		else if (__c == __d && !__testdecfound)
-		  {
-		    // If no grouping chars are seen, no grouping check
-		    // is applied. Therefore __grouping_tmp is adjusted
-		    // only if decimal_point comes after some thousands_sep.
-		    if (__grouping_tmp.size())
-		      __grouping_tmp += static_cast<char>(__sep_pos);
-		    __sep_pos = 0;
-		    __testdecfound = true;
-		  }
-		else if (__c == __sep && !__testdecfound)
-		  {
-		    if (__grouping.size())
-		      {
-			// Mark position for later analysis.
+		break;
+	      case money_base::value:
+		// Extract digits, remove and stash away the
+		// grouping of found thousands separators.
+		for (; __beg != __end; ++__beg)
+		  if (__ctype.is(ctype_base::digit, __c = *__beg))
+		    {
+		      __res += __c;
+		      ++__sep_pos;
+		    }
+		  else if (__c == __lc->_M_decimal_point && !__testdecfound)
+		    {
+		      // If no grouping chars are seen, no grouping check
+		      // is applied. Therefore __grouping_tmp is adjusted
+		      // only if decimal_point comes after some thousands_sep.
+		      if (__grouping_tmp.size())
 			__grouping_tmp += static_cast<char>(__sep_pos);
-			__sep_pos = 0;
-		      }
-		    else
-		      {
-			__testvalid = false;
-			break;
-		      }
-		  }
-		else
-		  break;
-	      break;
-	    case money_base::space:
-	    case money_base::none:
-	      // Only if not at the end of the pattern.
-	      if (__i != 3)
-		for (; __beg != __end
-		       && __ctype.is(ctype_base::space, *__beg); ++__beg);
-	      break;
-	    }
-	}
+		      __sep_pos = 0;
+		      __testdecfound = true;
+		    }
+		  else if (__c == __lc->_M_thousands_sep && !__testdecfound)
+		    {
+		      if (__lc->_M_grouping_size)
+			{
+			  // Mark position for later analysis.
+			  __grouping_tmp += static_cast<char>(__sep_pos);
+			  __sep_pos = 0;
+			}
+		      else
+			{
+			  __testvalid = false;
+			  break;
+			}
+		    }
+		  else
+		    break;
+		break;
+	      case money_base::space:
+	      case money_base::none:
+		// Only if not at the end of the pattern.
+		if (__i != 3)
+		  for (; __beg != __end
+			 && __ctype.is(ctype_base::space, *__beg); ++__beg);
+		break;
+	      }
+	  }
 
-      // Need to get the rest of the sign characters, if they exist.
-      if (__sign.size() > 1)
-	{
-	  const size_type __len = __sign.size();
-	  size_type __i = 1;
-	  for (; __beg != __end && __i < __len
-		 && *__beg == __sign[__i]; ++__beg, ++__i);
+	// Need to get the rest of the sign characters, if they exist.
+	if (__long_sign)
+	  {
+	    const char_type* __sign = __negative ? __lc->_M_negative_sign
+	                                         : __lc->_M_positive_sign;
+	    const size_type __len = __negative ? __lc->_M_negative_sign_size
+                                               : __lc->_M_positive_sign_size;
+	    size_type __i = 1;
+	    for (; __beg != __end && __i < __len
+		   && *__beg == __sign[__i]; ++__beg, ++__i);
+	    
+	    if (__i != __len)
+	      __testvalid = false;
+	  }
 
-	  if (__i != __len)
-	    __testvalid = false;
-	}
+	if (__testvalid && __res.size())
+	  {
+	    // Strip leading zeros.
+	    if (__res.size() > 1)
+	      {
+		size_type __first = __res.find_first_not_of(__lit[_S_zero]);
+		const bool __only_zeros = __first == string_type::npos;
+		if (__first)
+		  __res.erase(0, __only_zeros ? __res.size() - 1 : __first);
+	      }
 
-      if (__testvalid && __tmp_units.size())
-	{
-	  const char_type __zero = __ctype.widen('0');
-
-	  // Strip leading zeros.
-	  if (__tmp_units.size() > 1)
-	    {
-	      const size_type __first = __tmp_units.find_first_not_of(__zero);
-	      const bool __only_zeros = __first == string_type::npos;
-	      if (__first)
-		__tmp_units.erase(0, __only_zeros ? __tmp_units.size() - 1
-				                  : __first);
-	    }
-
-	  // 22.2.6.1.2, p4
-	  if (__sign.size() && __sign == __neg_sign
-	      && __tmp_units[0] != __zero)
-	    __tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));
-
-	  // Test for grouping fidelity.
-	  if (__grouping_tmp.size())
-	    {
-	      // Add the ending grouping if a decimal wasn't found.
-	      if (!__testdecfound)
-		__grouping_tmp += static_cast<char>(__sep_pos);
-
-	      if (!std::__verify_grouping(__grouping.data(),
-					  __grouping.size(),
-					  __grouping_tmp))
-		__testvalid = false;
-	    }
-
-	  // Iff not enough digits were supplied after the decimal-point.
-	  if (__testdecfound)
-	    {
-	      const int __frac = __intl ? __mpt.frac_digits()
-		                        : __mpf.frac_digits();
-	      if (__frac > 0 && __sep_pos != __frac)
-		__testvalid = false;
-	    }
-	}
-      else
-	__testvalid = false;
-
-      // Iff no more characters are available.
-      if (__beg == __end)
-	__err |= ios_base::eofbit;
-
-      // Iff valid sequence is not recognized.
-      if (!__testvalid)
-	__err |= ios_base::failbit;
-      else
-	// Use the "swap trick" to copy __tmp_units into __units.
-	__tmp_units.swap(__units);
-
-      return __beg;
-    }
+	    // 22.2.6.1.2, p4
+	    if (__negative && __res[0] != __lit[_S_zero])
+	      __res.insert(__res.begin(), __lit[_S_minus]);
+	    
+	    // Test for grouping fidelity.
+	    if (__grouping_tmp.size())
+	      {
+		// Add the ending grouping if a decimal wasn't found.
+		if (!__testdecfound)
+		  __grouping_tmp += static_cast<char>(__sep_pos);
+		
+		if (!std::__verify_grouping(__lc->_M_grouping,
+					    __lc->_M_grouping_size,
+					    __grouping_tmp))
+		  __testvalid = false;
+	      }
+	    
+	    // Iff not enough digits were supplied after the decimal-point.
+	    if (__testdecfound && __lc->_M_frac_digits > 0
+		&& __sep_pos != __lc->_M_frac_digits)
+	      __testvalid = false;
+	  }
+	else
+	  __testvalid = false;
+	
+	// Iff no more characters are available.
+	if (__beg == __end)
+	  __err |= ios_base::eofbit;
+	
+	// Iff valid sequence is not recognized.
+	if (!__testvalid)
+	  __err |= ios_base::failbit;
+	else
+	  __units.assign(__res.data(), __res.size());
+	
+	return __beg;
+      }
 
   template<typename _CharT, typename _InIter>
     _InIter
@@ -1373,7 +1370,10 @@ namespace std
 	   ios_base::iostate& __err, long double& __units) const
     {
       string_type __str;
-      __beg = _M_extract(__beg, __end, __intl, __io, __err, __str);
+      if (__intl)
+	__beg = _M_extract<true>(__beg, __end, __io, __err, __str);
+      else
+	__beg = _M_extract<false>(__beg, __end, __io, __err, __str);
 
       const int __cs_size = __str.size() + 1;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
@@ -1390,7 +1390,8 @@ namespace std
     money_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
 	   ios_base::iostate& __err, string_type& __units) const
-    { return _M_extract(__beg, __end, __intl, __io, __err, __units); }
+    { return __intl ? _M_extract<true>(__beg, __end, __io, __err, __units)
+	            : _M_extract<false>(__beg, __end, __io, __err, __units); }
 
   template<typename _CharT, typename _OutIter>
     template<bool _Intl>
@@ -1440,56 +1441,54 @@ namespace std
 	    // Assume valid input, and attempt to format.
 	    // Break down input numbers into base components, as follows:
 	    //   final_value = grouped units + (decimal point) + (digits)
-	    string_type __res;
 	    string_type __value;
-	   
+	    size_type __len = __end - __beg;
+	    __value.reserve(2 * __len);
+
+	    // Add thousands separators to non-decimal digits, per
+	    // grouping rules.
+	    const int __paddec = __lc->_M_frac_digits - __len;	    
+	    if (__paddec < 0)
+  	      {
+  		if (__lc->_M_grouping_size)
+  		  {
+		    _CharT* __ws =
+  		      static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+  							    * 2 * __len));
+  		    _CharT* __ws_end =
+		      std::__add_grouping(__ws, __lc->_M_thousands_sep,
+					  __lc->_M_grouping,
+					  __lc->_M_grouping_size,
+					  __beg, __end - __lc->_M_frac_digits);
+		    __value.assign(__ws, __ws_end - __ws);
+  		  }
+  		else
+		  __value.assign(__beg, -__paddec);
+	      }
+
 	    // Deal with decimal point, decimal digits.
 	    if (__lc->_M_frac_digits > 0)
 	      {
-		if (__end - __beg >= __lc->_M_frac_digits)
-		  {
-		    __value = string_type(__end - __lc->_M_frac_digits, __end);
-		    __value.insert(__value.begin(), __lc->_M_decimal_point);
-		    __end -= __lc->_M_frac_digits;
-		  }
+		__value += __lc->_M_decimal_point;
+		if (__paddec <= 0)
+		  __value.append(__end - __lc->_M_frac_digits,
+				 __lc->_M_frac_digits);
 		else
 		  {
 		    // Have to pad zeros in the decimal position.
-		    __value = string_type(__beg, __end);
-		    const int __paddec = __lc->_M_frac_digits - (__end - __beg);
-		    __value.insert(__value.begin(), __paddec, __lit[_S_zero]);
-		    __value.insert(__value.begin(), __lc->_M_decimal_point);
-		    __beg = __end;
+		    __value.append(__paddec, __lit[_S_zero]);
+		    __value.append(__beg, __len);
 		  }
-	      }
-	    
-	    // Add thousands separators to non-decimal digits, per
-	    // grouping rules.
-	    if (__beg != __end)
-	      {
-		if (__lc->_M_grouping_size)
-		  {
-		    const int __n = (__end - __beg) * 2;
-		    _CharT* __ws2 =
-		      static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							    * __n));
-		    _CharT* __ws_end =
-		      std::__add_grouping(__ws2, __lc->_M_thousands_sep,
-					  __lc->_M_grouping,
-					  __lc->_M_grouping_size,
-					  __beg, __end);
-		    __value.insert(0, __ws2, __ws_end - __ws2);
-		  }
-		else
-		  __value.insert(0, string_type(__beg, __end));
-	      }
-	    
+  	      }
+  
 	    // Calculate length of resulting string.
 	    const ios_base::fmtflags __f = __io.flags() & ios_base::adjustfield;
-	    size_type __len = __value.size() + __sign_size;
+	    __len = __value.size() + __sign_size;
 	    __len += ((__io.flags() & ios_base::showbase)
 		      ? __lc->_M_curr_symbol_size : 0);
-	    __res.reserve(__len);
+
+	    string_type __res;
+	    __res.reserve(2 * __len);
 	    
 	    const size_type __width = static_cast<size_type>(__io.width());	  
 	    const bool __testipad = (__f == ios_base::internal
