@@ -5595,7 +5595,7 @@ create_definition (buf, limit, op)
 	if (is_hor_space[*bp]) {
 	  bp++;
 	  SKIP_WHITE_SPACE (bp);
-	} else {
+	} else if (sym_length) {
 	  switch (*bp) {
 	    case '!':  case '"':  case '#':  case '%':  case '&':  case '\'':
 	    case ')':  case '*':  case '+':  case ',':  case '-':  case '.':
