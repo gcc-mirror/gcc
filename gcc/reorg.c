@@ -230,9 +230,9 @@ static int stop_search_p	PROTO((rtx, int));
 static int resource_conflicts_p	PROTO((struct resources *,
 				       struct resources *));
 static int insn_references_resource_p PROTO((rtx, struct resources *, int));
-static int insn_sets_resources_p PROTO((rtx, struct resources *, int));
+static int insn_sets_resource_p PROTO((rtx, struct resources *, int));
 static rtx find_end_label	PROTO((void));
-static rtx emit_delay_sequence	PROTO((rtx, rtx, int, int));
+static rtx emit_delay_sequence	PROTO((rtx, rtx, int));
 static rtx add_to_delay_list	PROTO((rtx, rtx));
 static void delete_from_delay_slot PROTO((rtx));
 static void delete_scheduled_jump PROTO((rtx));
@@ -265,10 +265,10 @@ static void update_reg_unused_notes PROTO((rtx, rtx));
 static void update_live_status	PROTO((rtx, rtx));
 static rtx next_insn_no_annul	PROTO((rtx));
 static void mark_target_live_regs PROTO((rtx, struct resources *));
-static void fill_simple_delay_slots PROTO((rtx, int));
+static void fill_simple_delay_slots PROTO((int));
 static rtx fill_slots_from_thread PROTO((rtx, rtx, rtx, rtx, int, int,
-					 int, int, int, int *));
-static void fill_eager_delay_slots PROTO((rtx));
+					 int, int, int *));
+static void fill_eager_delay_slots PROTO((void));
 static void relax_delay_slots	PROTO((rtx));
 static void make_return_insns	PROTO((rtx));
 static int redirect_with_delay_slots_safe_p PROTO ((rtx, rtx, rtx));
@@ -469,6 +469,9 @@ mark_referenced_resources (x, res, include_delayed_effects)
       /* No special processing, just speed up.  */
       mark_referenced_resources (PATTERN (x), res, include_delayed_effects);
       return;
+
+    default:
+      break;
     }
 
   /* Process each sub-expression and flag what it needs.  */
@@ -658,6 +661,9 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
         for (i = 0; i < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); i++)
 	  SET_HARD_REG_BIT (res->regs, REGNO (x) + i);
       return;
+
+    default:
+      break;
     }
 
   /* Process each sub-expression and flag what it needs.  */
@@ -861,11 +867,10 @@ find_end_label ()
    Returns the SEQUENCE that replaces INSN.  */
 
 static rtx
-emit_delay_sequence (insn, list, length, avail)
+emit_delay_sequence (insn, list, length)
      rtx insn;
      rtx list;
      int length;
-     int avail;
 {
   register int i = 1;
   register rtx li;
@@ -1040,7 +1045,7 @@ delete_from_delay_slot (insn)
   /* If there are any delay insns, remit them.  Otherwise clear the
      annul flag.  */
   if (delay_list)
-    trial = emit_delay_sequence (trial, delay_list, XVECLEN (seq, 0) - 2, 0);
+    trial = emit_delay_sequence (trial, delay_list, XVECLEN (seq, 0) - 2);
   else
     INSN_ANNULLED_BRANCH_P (trial) = 0;
 
@@ -1332,6 +1337,9 @@ rare_destination (insn)
 	    next = JUMP_LABEL (insn);
 	  else
 	    return 0;
+
+	default:
+	  break;
 	}
     }
 
@@ -1454,6 +1462,9 @@ mostly_true_jump (jump_insn, condition)
       if (XEXP (condition, 1) == const0_rtx)
 	return 1;
       break;
+
+    default:
+      break;
     }
 
   /* Predict backward branches usually take, forward branches usually not.  If
@@ -1545,7 +1556,7 @@ static int
 redirect_with_delay_slots_safe_p (jump, newlabel, seq)
      rtx jump, newlabel, seq;
 {
-  int flags, slots, i;
+  int flags, i;
   rtx pat = PATTERN (seq);
 
   /* Make sure all the delay slots of this jump would still
@@ -2392,7 +2403,7 @@ static void
 update_reg_unused_notes (insn, redundant_insn)
      rtx insn, redundant_insn;
 {
-  rtx p, link, next;
+  rtx link, next;
 
   for (link = REG_NOTES (insn); link; link = next)
     {
@@ -2547,6 +2558,9 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 		    break;
 		}
 	    }
+
+	default:
+	  break;
 	}
 
       if (GET_CODE (this_jump_insn) == JUMP_INSN)
@@ -2704,12 +2718,11 @@ mark_target_live_regs (target, res)
   int b = -1;
   int i;
   struct target_info *tinfo;
-  rtx insn, next;
+  rtx insn;
   rtx jump_insn = 0;
   rtx jump_target;
   HARD_REG_SET scratch;
   struct resources set, needed;
-  int jump_count = 0;
 
   /* Handle end of function.  */
   if (target == 0)
@@ -2972,12 +2985,11 @@ mark_target_live_regs (target, res)
    through FINAL_SEQUENCE.  */
 
 static void
-fill_simple_delay_slots (first, non_jumps_p)
-     rtx first;
+fill_simple_delay_slots (non_jumps_p)
      int non_jumps_p;
 {
   register rtx insn, pat, trial, next_trial;
-  register int i, j;
+  register int i;
   int num_unfilled_slots = unfilled_slots_next - unfilled_slots_base;
   struct resources needed, set;
   int slots_to_fill, slots_filled;
@@ -3323,12 +3335,11 @@ fill_simple_delay_slots (first, non_jumps_p)
 				    NULL, 1, 1,
 				    own_thread_p (JUMP_LABEL (insn),
 						  JUMP_LABEL (insn), 0),
-				    0, slots_to_fill, &slots_filled);
+				    slots_to_fill, &slots_filled);
 
       if (delay_list)
 	unfilled_slots_base[i]
-	  = emit_delay_sequence (insn, delay_list,
-				 slots_filled, slots_to_fill);
+	  = emit_delay_sequence (insn, delay_list, slots_filled);
 
       if (slots_to_fill == slots_filled)
 	unfilled_slots_base[i] = 0;
@@ -3452,14 +3463,14 @@ fill_simple_delay_slots (first, non_jumps_p)
 
 static rtx
 fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
-			thread_if_true, own_thread, own_opposite_thread,
+			thread_if_true, own_thread,
 			slots_to_fill, pslots_filled)
      rtx insn;
      rtx condition;
      rtx thread, opposite_thread;
      int likely;
      int thread_if_true;
-     int own_thread, own_opposite_thread;
+     int own_thread;
      int slots_to_fill, *pslots_filled;
 {
   rtx new_thread;
@@ -3542,7 +3553,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	  /* If TRIAL is redundant with some insn before INSN, we don't
 	     actually need to add it to the delay list; we can merely pretend
 	     we did.  */
-	  if (prior_insn = redundant_insn (trial, insn, delay_list))
+	  if ((prior_insn = redundant_insn (trial, insn, delay_list)))
 	    {
 	      fix_reg_dead_note (prior_insn, insn);
 	      if (own_thread)
@@ -3842,8 +3853,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
    if safe.  */
 
 static void
-fill_eager_delay_slots (first)
-     rtx first;
+fill_eager_delay_slots ()
 {
   register rtx insn;
   register int i;
@@ -3905,7 +3915,7 @@ fill_eager_delay_slots (first)
 	  delay_list
 	    = fill_slots_from_thread (insn, condition, insn_at_target,
 				      fallthrough_insn, prediction == 2, 1,
-				      own_target, own_fallthrough,
+				      own_target,
 				      slots_to_fill, &slots_filled);
 
 	  if (delay_list == 0 && own_fallthrough)
@@ -3920,7 +3930,7 @@ fill_eager_delay_slots (first)
 	      delay_list
 		= fill_slots_from_thread (insn, condition, fallthrough_insn,
 					  insn_at_target, 0, 0,
-					  own_fallthrough, own_target,
+					  own_fallthrough,
 					  slots_to_fill, &slots_filled);
 	    }
 	}
@@ -3930,21 +3940,20 @@ fill_eager_delay_slots (first)
 	    delay_list
 	      = fill_slots_from_thread (insn, condition, fallthrough_insn,
 					insn_at_target, 0, 0,
-					own_fallthrough, own_target,
+					own_fallthrough,
 					slots_to_fill, &slots_filled);
 
 	  if (delay_list == 0)
 	    delay_list
 	      = fill_slots_from_thread (insn, condition, insn_at_target,
 					next_active_insn (insn), 0, 1,
-					own_target, own_fallthrough,
+					own_target,
 					slots_to_fill, &slots_filled);
 	}
 
       if (delay_list)
 	unfilled_slots_base[i]
-	  = emit_delay_sequence (insn, delay_list,
-				 slots_filled, slots_to_fill);
+	  = emit_delay_sequence (insn, delay_list, slots_filled);
 
       if (slots_to_fill == slots_filled)
 	unfilled_slots_base[i] = 0;
@@ -4389,8 +4398,8 @@ make_return_insns (first)
   if (--LABEL_NUSES (real_return_label) == 0)
     delete_insn (real_return_label);
 
-  fill_simple_delay_slots (first, 1);
-  fill_simple_delay_slots (first, 0);
+  fill_simple_delay_slots (1);
+  fill_simple_delay_slots (0);
 }
 #endif
 
@@ -4524,7 +4533,7 @@ dbr_schedule (first, file)
 
   start_of_epilogue_needs = end_of_function_needs;
 
-  while (epilogue_insn = next_nonnote_insn (epilogue_insn))
+  while ((epilogue_insn = next_nonnote_insn (epilogue_insn)))
     mark_set_resources (epilogue_insn, &end_of_function_needs, 0, 1);
 
   /* Show we haven't computed an end-of-function label yet.  */
@@ -4551,9 +4560,9 @@ dbr_schedule (first, file)
        reorg_pass_number < MAX_REORG_PASSES;
        reorg_pass_number++)
     {
-      fill_simple_delay_slots (first, 1);
-      fill_simple_delay_slots (first, 0);
-      fill_eager_delay_slots (first);
+      fill_simple_delay_slots (1);
+      fill_simple_delay_slots (0);
+      fill_eager_delay_slots ();
       relax_delay_slots (first);
     }
 

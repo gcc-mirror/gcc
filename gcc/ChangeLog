@@ -1,5 +1,28 @@
 Sun Jan 25 12:30:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* sparc.c (output_cbranch): Add default case in
+	enumeration switch.
+ 
+	* reorg.c (insn_sets_resource_p): Correct typo in prototype.
+	(emit_delay_sequence): Eliminate unused parameter, all callers
+	changed.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(fill_eager_delay_slots):  Likewise.
+	(mark_referenced_resources): Add default case in enumeration switch.
+	(mark_set_resources): Likewise.
+	(rare_destination): Likewise.
+	(mostly_true_jump): Likewise.
+	(find_dead_or_set_registers): Likewise.
+	(redirect_with_delay_slots_safe_p): Remove unused variable `slots'.
+	(update_reg_unused_notes): Remove unused variable `p'.
+	(mark_target_live_regs): Remove unused variables `next' and
+	`jump_count'.
+	(fill_simple_delay_slots): Remove unused variable `j'.
+	(fill_slots_from_thread): Add parentheses around assignment used
+	as truth value.
+	(dbr_schedule): Likewise.
+
 	* objc/Make-lang.in (objc.stage1): Depend on stage1-start.
 	(objc.stage2, objc.stage3, objc.stage4): Likewise.
 
