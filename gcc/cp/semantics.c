@@ -599,17 +599,19 @@ void
 finish_goto_stmt (destination)
      tree destination;
 {
+  if (TREE_CODE (destination) == IDENTIFIER_NODE)
+    destination = lookup_label (destination);
+
   if (building_stmt_tree ())
     add_tree (build_min_nt (GOTO_STMT, destination));
   else
     {
       emit_line_note (input_filename, lineno);
 
-      if (TREE_CODE (destination) == IDENTIFIER_NODE)
+      if (TREE_CODE (destination) == LABEL_DECL)
 	{
-	  tree decl = lookup_label (destination);
-	  TREE_USED (decl) = 1;
-	  expand_goto (decl); 
+	  TREE_USED (destination) = 1;
+	  expand_goto (destination); 
 	}
       else
 	expand_computed_goto (destination);
@@ -914,23 +916,12 @@ void
 finish_label_stmt (name)
      tree name;
 {
-  tree decl;
+  tree decl = define_label (input_filename, lineno, name);
 
   if (building_stmt_tree ())
-    {
-      push_permanent_obstack ();
-      decl = build_decl (LABEL_DECL, name, void_type_node);
-      pop_obstacks ();
-      DECL_SOURCE_LINE (decl) = lineno;
-      DECL_SOURCE_FILE (decl) = input_filename;
-      add_tree (decl);
-    }
-  else
-    {
-      decl = define_label (input_filename, lineno, name);
-      if (decl)
-	expand_label (decl);
-    }
+    add_tree (decl);
+  else if (decl)
+    expand_label (decl);
 }
 
 /* Create a declaration statement for the declaration given by the
@@ -2129,10 +2120,9 @@ expand_stmt (t)
       break;
 
     case LABEL_DECL:
-      t = define_label (DECL_SOURCE_FILE (t), DECL_SOURCE_LINE (t),
-			DECL_NAME (t));
-      if (t)
-	expand_label (t);
+      input_filename = DECL_SOURCE_FILE (t);
+      lineno = DECL_SOURCE_LINE (t);
+      finish_label_stmt (DECL_NAME (t));
       break;
 
     case GOTO_STMT:
