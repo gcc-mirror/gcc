@@ -1,3 +1,9 @@
+2004-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/17697
+	* tree-ssa-ccp.c (execute_fold_all_builtins): Update eh and cleanup
+	cfg if needed.
+
 2004-09-28  Per Bothner  <per@bothner.com>
 
 	* profile.c (branch_prob): Pass correct value to output_location,

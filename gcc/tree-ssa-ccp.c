@@ -2143,6 +2143,7 @@ convert_to_gimple_builtin (block_stmt_iterator *si_p, tree expr)
 static void
 execute_fold_all_builtins (void)
 {
+  bool cfg_changed = false;
   basic_block bb;
   FOR_EACH_BB (bb)
     {
@@ -2187,6 +2188,9 @@ execute_fold_all_builtins (void)
 		abort ();
 	    }
 	  modify_stmt (*stmtp);
+	  if (maybe_clean_eh_stmt (*stmtp)
+	      && tree_purge_dead_eh_edges (bb))
+	    cfg_changed = true;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -2196,6 +2200,10 @@ execute_fold_all_builtins (void)
 	    }
 	}
     }
+
+  /* Delete unreachable blocks.  */
+  if (cfg_changed)
+    cleanup_tree_cfg ();
 }
 
 
