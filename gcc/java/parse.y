@@ -12317,11 +12317,13 @@ build_super_invocation (tree mdecl)
   else
     {
       tree super_wfl = build_wfl_node (super_identifier_node);
+      tree a = NULL_TREE, t;
+
       /* This is called after parsing is done, so the parser context
          won't be accurate. Set location info from current_class decl. */
       tree class_wfl = lookup_cl (TYPE_NAME (current_class));
       EXPR_WFL_LINECOL (super_wfl) = EXPR_WFL_LINECOL (class_wfl);
-      tree a = NULL_TREE, t;
+
       /* If we're dealing with an anonymous class, pass the arguments
          of the crafted constructor along. */
       if (ANONYMOUS_CLASS_P (DECL_CONTEXT (mdecl)))
