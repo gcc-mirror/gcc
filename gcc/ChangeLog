@@ -1,3 +1,8 @@
+Wed Mar  5 18:55:02 2003  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (fixup_gotos): Change meaning of DONT_JUMP_IN.
+	(expand_end_bindings): Likewise.
+
 2003-03-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md (return_external_pic): Add !TARGET_PA_20 to constraint.
