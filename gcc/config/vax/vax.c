@@ -276,3 +276,303 @@ rev_cond_name (op)
       abort ();
     }
 }
+
+int
+vax_float_literal(c)
+    register rtx c;
+{
+  register enum machine_mode mode;
+  int i;
+  union {double d; int i[2];} val;
+
+  if (GET_CODE (c) != CONST_DOUBLE)
+    return 0;
+
+  mode = GET_MODE (c);
+
+  if (c == const_tiny_rtx[(int) mode][0]
+      || c == const_tiny_rtx[(int) mode][1]
+      || c == const_tiny_rtx[(int) mode][2])
+    return 1;
+
+#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT
+
+  val.i[0] = CONST_DOUBLE_LOW (c);
+  val.i[1] = CONST_DOUBLE_HIGH (c);
+
+  for (i = 0; i < 7; i ++)
+    if (val.d == 1 << i || val.d == 1 / (1 << i))
+      return 1;
+#endif
+  return 0;
+}
+
+
+/* Return the cost in cycles of a memory address, relative to register
+   indirect.
+
+   Each of the following adds the indicated number of cycles:
+
+   1 - symbolic address
+   1 - pre-decrement
+   1 - indexing and/or offset(register)
+   2 - indirect */
+
+
+int vax_address_cost(addr)
+    register rtx addr;
+{
+  int reg = 0, indexed = 0, indir = 0, offset = 0, predec = 0;
+  rtx plus_op0 = 0, plus_op1 = 0;
+ restart:
+  switch (GET_CODE (addr))
+    {
+    case PRE_DEC:
+      predec = 1;
+    case REG:
+    case SUBREG:
+    case POST_INC:
+      reg = 1;
+      break;
+    case MULT:
+      indexed = 1;	/* 2 on VAX 2 */
+      break;
+    case CONST_INT:
+      /* byte offsets cost nothing (on a VAX 2, they cost 1 cycle) */
+      if (offset == 0)
+	offset = (unsigned)(INTVAL(addr)+128) > 256;
+      break;
+    case CONST:
+    case SYMBOL_REF:
+      offset = 1;	/* 2 on VAX 2 */
+      break;
+    case LABEL_REF:	/* this is probably a byte offset from the pc */
+      if (offset == 0)
+	offset = 1;
+      break;
+    case PLUS:
+      if (plus_op0)
+	plus_op1 = XEXP (addr, 0);
+      else
+	plus_op0 = XEXP (addr, 0);
+      addr = XEXP (addr, 1);
+      goto restart;
+    case MEM:
+      indir = 2;	/* 3 on VAX 2 */
+      addr = XEXP (addr, 0);
+      goto restart;
+    }
+
+  /* Up to 3 things can be added in an address.  They are stored in
+     plus_op0, plus_op1, and addr.  */
+
+  if (plus_op0)
+    {
+      addr = plus_op0;
+      plus_op0 = 0;
+      goto restart;
+    }
+  if (plus_op1)
+    {
+      addr = plus_op1;
+      plus_op1 = 0;
+      goto restart;
+    }
+  /* Indexing and register+offset can both be used (except on a VAX 2)
+     without increasing execution time over either one alone. */
+  if (reg && indexed && offset)
+    return reg + indir + offset + predec;
+  return reg + indexed + indir + offset + predec;
+}
+
+
+/* Cost of an expression on a VAX.  This version has costs tuned for the
+   CVAX chip (found in the VAX 3 series) with comments for variations on
+   other models.  */
+
+int
+vax_rtx_cost (x)
+    register rtx x;
+{
+  register enum rtx_code code = GET_CODE (x);
+  enum machine_mode mode = GET_MODE (x);
+  register int c;
+  int i = 0;				/* may be modified in switch */
+  char *fmt = GET_RTX_FORMAT (code);	/* may be modified in switch */
+
+  switch (code)
+    {
+    case POST_INC:
+      return 2;
+    case PRE_DEC:
+      return 3;
+    case MULT:
+      switch (mode)
+	{
+	case DFmode:
+	  c = 16;		/* 4 on VAX 9000 */
+	  break;
+	case SFmode:
+	  c = 9;		/* 4 on VAX 9000, 12 on VAX 2 */
+	  break;
+	case DImode:
+	  c = 16;		/* 6 on VAX 9000, 28 on VAX 2 */
+	  break;
+	case SImode:
+	case HImode:
+	case QImode:
+	  c = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
+	  break;
+	}
+      break;
+    case UDIV:
+      c = 17;
+      break;
+    case DIV:
+      if (mode == DImode)
+	c = 30;	/* highly variable */
+      else if (mode == DFmode)
+	/* divide takes 28 cycles if the result is not zero, 13 otherwise */
+	c = 24;
+      else
+	c = 11;			/* 25 on VAX 2 */
+      break;
+    case MOD:
+      c = 23;
+      break;
+    case UMOD:
+      c = 29;
+      break;
+    case FLOAT:
+      c = 6 + (mode == DFmode) + (GET_MODE (XEXP (x, 0)) != SImode);
+      /* 4 on VAX 9000 */
+      break;
+    case FIX:
+      c = 7;			/* 17 on VAX 2 */
+      break;
+    case LSHIFT:
+    case ASHIFT:
+    case LSHIFTRT:
+    case ASHIFTRT:
+      if (mode == DImode)
+	c = 12;
+      else
+	c = 10;			/* 6 on VAX 9000 */
+      break;
+    case ROTATE:
+    case ROTATERT:
+      c = 6;			/* 5 on VAX 2, 4 on VAX 9000 */
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	fmt = "e";	/* all constant rotate counts are short */
+      break;
+    case PLUS:
+      /* Check for small negative integer operand: subl2 can be used with
+	 a short positive constant instead.  */
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	if ((unsigned)(INTVAL (XEXP (x, 1)) + 63) < 127)
+	  fmt = "e";
+    case MINUS:
+      c = (mode == DFmode) ? 13 : 8;	/* 6/8 on VAX 9000, 16/15 on VAX 2 */
+    case IOR:
+    case XOR:
+      c = 3;
+      break;
+    case AND:
+      /* AND is special because the first operand is complemented. */
+      c = 3;
+      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
+	{
+	  if ((unsigned)~INTVAL (XEXP (x, 0)) > 63)
+	    c = 4;
+	  fmt = "e";
+	  i = 1;
+	}
+      break;
+    case NEG:
+      if (mode == DFmode)
+	return 9;
+      else if (mode == SFmode)
+	return 6;
+      else if (mode == DImode)
+	return 4;
+    case NOT:
+      return 2;
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+      c = 15;
+      break;
+    case MEM:
+      if (mode == DImode || mode == DFmode)
+	c = 5;				/* 7 on VAX 2 */
+      else
+	c = 3;				/* 4 on VAX 2 */
+      x = XEXP (x, 0);
+      if (GET_CODE (x) == REG || GET_CODE (x) == POST_INC)
+	return c;
+      return c + vax_address_cost (x);
+    default:
+      c = 3;
+      break;
+    }
+
+
+  /* Now look inside the expression.  Operands which are not registers or
+     short constants add to the cost.
+
+     FMT and I may have been adjusted in the switch above for instructions
+     which require special handling */
+
+  while (*fmt++ == 'e')
+    {
+      register rtx op = XEXP (x, i++);
+      code = GET_CODE (op);
+
+      /* A NOT is likely to be found as the first operand of an AND
+	 (in which case the relevant cost is of the operand inside
+	 the not) and not likely to be found anywhere else.  */
+      if (code == NOT)
+	op = XEXP (op, 0), code = GET_CODE (op);
+
+      switch (code)
+	{
+	case CONST_INT:
+	  if ((unsigned)INTVAL (op) > 63 && GET_MODE (x) != QImode)
+	    c += 1;		/* 2 on VAX 2 */
+	  break;
+	case CONST:
+	case LABEL_REF:
+	case SYMBOL_REF:
+	  c += 1;		/* 2 on VAX 2 */
+	  break;
+	case CONST_DOUBLE:
+	  if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT)
+	    {
+	      /* Registers are faster than floating point constants -- even
+		 those constants which can be encoded in a single byte.  */
+	      if (vax_float_literal (op))
+		c++;
+	      else
+		c += (GET_MODE (x) == DFmode) ? 3 : 2;
+	    }
+	  else
+	    {
+	      if (CONST_DOUBLE_HIGH (op) != 0
+		  || (unsigned)CONST_DOUBLE_LOW (op) > 63)
+		c += 2;
+	    }
+	  break;
+	case MEM:
+	  c += 1;		/* 2 on VAX 2 */
+	  if (GET_CODE (XEXP (op, 0)) != REG)
+	    c += vax_address_cost (XEXP (op, 0));
+	  break;
+	case REG:
+	case SUBREG:
+	  break;
+	default:
+	  c += 1;
+	  break;
+	}
+    }
+  return c;
+}
