@@ -2310,25 +2310,15 @@ newline_fix (bp)
      U_CHAR *bp;
 {
   register U_CHAR *p = bp;
-  register int count = 0;
 
   /* First count the backslash-newline pairs here.  */
 
-  while (1) {
-    if (p[0] == '\\') {
-      if (p[1] == '\n')
-	p += 2, count++;
-      else if (p[1] == '\r' && p[2] == '\n')
-	p += 3, count++;
-      else
-	break;
-    } else
-      break;
-  }
+  while (p[0] == '\\' && p[1] == '\n')
+    p += 2;
 
   /* What follows the backslash-newlines is not embarrassing.  */
 
-  if (count == 0 || (*p != '/' && *p != '*'))
+  if (*p != '/' && *p != '*')
     return;
 
   /* Copy all potentially embarrassing characters
@@ -2339,7 +2329,7 @@ newline_fix (bp)
     *bp++ = *p++;
 
   /* Now write the same number of pairs after the embarrassing chars.  */
-  while (count-- > 0) {
+  while (bp < p) {
     *bp++ = '\\';
     *bp++ = '\n';
   }
@@ -2353,24 +2343,14 @@ name_newline_fix (bp)
      U_CHAR *bp;
 {
   register U_CHAR *p = bp;
-  register int count = 0;
 
   /* First count the backslash-newline pairs here.  */
-  while (1) {
-    if (p[0] == '\\') {
-      if (p[1] == '\n')
-	p += 2, count++;
-      else if (p[1] == '\r' && p[2] == '\n')
-	p += 3, count++;
-      else
-	break;
-    } else
-      break;
-  }
+  while (p[0] == '\\' && p[1] == '\n')
+    p += 2;
 
   /* What follows the backslash-newlines is not embarrassing.  */
 
-  if (count == 0 || !is_idchar[*p])
+  if (!is_idchar[*p])
     return;
 
   /* Copy all potentially embarrassing characters
@@ -2381,7 +2361,7 @@ name_newline_fix (bp)
     *bp++ = *p++;
 
   /* Now write the same number of pairs after the embarrassing chars.  */
-  while (count-- > 0) {
+  while (bp < p) {
     *bp++ = '\\';
     *bp++ = '\n';
   }
