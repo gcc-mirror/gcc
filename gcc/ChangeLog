@@ -10,6 +10,8 @@
 
 2003-11-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* collect2.c (scan_libraries): Fix typos.
+
 	PR preprocessor/12847
 	* cppfiles.c, cppexp.c, cpperror.c, cpplib.h, cpplib.c, cpplex.c,
 	cppinit.c, cpptrad.c, cppmacro.c, fix-header.c, cpppch.c, c-pch.c,
