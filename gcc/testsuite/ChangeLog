@@ -1,5 +1,10 @@
 2001-04-26  Toon Moene  <toon@moene.indiv.nluug.nl>
 
+	* g77.f-torture/compile/20010426.f: New test.
+	* g77.f-torture/execute/20010426.f: New test.
+
+2001-04-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
 	* g77.f-torture/compile/20000629-1.x: Remove - error
 	has been fixed.
 
