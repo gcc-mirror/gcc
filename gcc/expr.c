@@ -3901,11 +3901,13 @@ safe_from_p (x, exp)
 	  break;
 
 	case RTL_EXPR:
-	  exp_rtl = RTL_EXPR_RTL (exp);
-	  if (exp_rtl == 0)
-	    /* We don't know what this can modify.  */
+	  /* If a sequence exists, we would have to scan every instruction
+	     in the sequence to see if it was safe.  This is probably not
+	     worthwhile.  */
+	  if (RTL_EXPR_SEQUENCE (exp))
 	    return 0;
 
+	  exp_rtl = RTL_EXPR_RTL (exp);
 	  break;
 
 	case WITH_CLEANUP_EXPR:
