@@ -22,6 +22,9 @@ Boston, MA 02111-1307, USA.  */
 /* Run-time Target Specification.  */
 #define TARGET_VERSION  fputs (" (ARM GNU/Linux with ELF)", stderr);
 
+/* Do not assume anything about header files.  */
+#define NO_IMPLICIT_EXTERN_C
+
 /* We have libgcc2.  */
 #define HAVE_ATEXIT
 
