@@ -1,3 +1,9 @@
+2000-05-24  Nick Clifton  <nickc@cygnus.com>
+
+	* fold-const.c (extract_muldiv): When constructing a
+	multiplier/divisor, do not expect const_binop to correctly
+	determine if overflow has occured, so check explicitly.
+
 2000-05-24  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* c-decl.c (build_enumerator): Don't modify the value's type,
