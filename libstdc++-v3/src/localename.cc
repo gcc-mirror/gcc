@@ -141,36 +141,31 @@ namespace std
       }
 
     // Name all the categories.
+    size_t __len = strlen(__s);
     if (!strchr(__s, ';'))
       {
-	size_t __len = strlen(__s) + 1;
 	for (size_t __i = 0; 
 	     __i < _S_categories_size + _S_extra_categories_size; ++__i)
 	  {
-	    _M_names[__i] = new char[__len];
+	    _M_names[__i] = new char[__len + 1];
 	    strcpy(_M_names[__i], __s);
 	  }
       }
     else
       {
-	char* __tmp = strdup(__s);
-	__tmp[strlen(__tmp)] = ';';
-	strtok(__tmp, "=;");
+	const char* __beg = __s;
 	for (size_t __i = 0; 
-	     __i < _S_categories_size + _S_extra_categories_size - 1; ++__i)
+	     __i < _S_categories_size + _S_extra_categories_size; ++__i)
 	  {
-	    char* __src = strtok(NULL, "=;");
-	    char* __new = new char[strlen(__src) + 1];
-	    strcpy(__new, __src);
+	    __beg = strchr(__beg, '=') + 1;
+	    const char* __end = strchr(__beg, ';');
+	    if (!__end)
+	      __end = __s + __len;
+	    char* __new = new char[__end - __beg + 1];
+	    memcpy(__new, __beg, __end - __beg);
+	    __new[__end - __beg] = '\0';
 	    _M_names[__i] = __new;
-	    strtok(NULL, "=;");
 	  }
-	char* __src = strtok(NULL, "=;");
-	char* __new = new char[strlen(__src) + 1];
-	strcpy(__new, __src);
-	_M_names[_S_categories_size + _S_extra_categories_size - 1] = __new;
-
-	free(__tmp);
       }
       
     // Construct all standard facets and add them to _M_facets.  

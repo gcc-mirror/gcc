@@ -1,3 +1,11 @@
+2002-12-05  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/8790
+	* src/localename.cc
+	(locale::_Impl::_Impl(const char*, size_t)):
+	Avoid strtok for thread safety.
+
 2002-12-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	PR libstdc++/7445
