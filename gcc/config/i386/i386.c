@@ -1457,21 +1457,6 @@ convert_387_op (op, mode)
     }
 }
 
-/* Return 1 if this is a valid "float from int" operation on a 387.
-   OP is the expression matched, and MODE is its mode. */
-
-int
-float_op (op, mode)
-    register rtx op;
-    enum machine_mode mode;
-{
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return 0;
-
-  return GET_CODE (op) == FLOAT
-    && GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT;
-}
-
 /* Return 1 if this is a valid shift or rotate operation on a 386.
    OP is the expression matched, and MODE is its mode. */
 
