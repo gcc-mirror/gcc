@@ -1631,7 +1631,6 @@ dnl  glibcxx_thread_h
 dnl
 dnl Defines:
 dnl  HAVE_GTHR_DEFAULT
-dnl  _GLIBCXX_SUPPORTS_WEAK
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_THREADS], [
   AC_MSG_CHECKING([for thread model used by GCC])
@@ -1640,7 +1639,6 @@ AC_DEFUN([GLIBCXX_ENABLE_THREADS], [
 
   if test $target_thread_file != single; then
     AC_DEFINE(HAVE_GTHR_DEFAULT)
-    AC_DEFINE(_GLIBCXX_SUPPORTS_WEAK, __GXX_WEAK__)
   fi
 
   glibcxx_thread_h=gthr-$target_thread_file.h
