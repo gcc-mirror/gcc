@@ -1,3 +1,9 @@
+Thu Aug 20 13:56:53 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* config/i386/winnt.c: Include system.h, not stdio.h to get
+	sys/param.h pulled in before rtl.h in case the system defines MIN
+	and MAX.
+
 Wed Aug 19 21:33:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (rs6000_output_load_toc_table): Use ld for 64-bit.
