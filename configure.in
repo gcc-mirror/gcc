@@ -445,6 +445,18 @@ if [ ! -d ${target_subdir} ] ; then
   fi
 fi
 
+build_subdir=${build_alias}
+
+if [ x"${build_alias}" != x"${host}" ] ; then
+  if [ ! -d ${build_subdir} ] ; then
+    if mkdir ${build_subdir} ; then true
+    else
+      echo "'*** could not make ${PWD=`pwd`}/${build_subdir}" 1>&2
+      exit 1
+    fi
+  fi
+fi
+
 copy_dirs=
 
 # Handle --with-headers=XXX.  The contents of the named directory are
@@ -1349,7 +1361,8 @@ if [ "${shared}" = "yes" ]; then
   esac
 fi
 
-# Record target_configdirs and the configure arguments in Makefile.
+# Record target_configdirs and the configure arguments for target and
+# build configuration in Makefile.
 target_configdirs=`echo "${target_configdirs}" | sed -e 's/target-//g'`
 targargs=`echo "${arguments}" | \
 	sed -e 's/--no[^ 	]*//' \
@@ -1357,6 +1370,11 @@ targargs=`echo "${arguments}" | \
 	    -e 's/--ho[a-z-]*=[^ 	]*//' \
 	    -e 's/--bu[a-z-]*=[^ 	]*//' \
 	    -e 's/--ta[a-z-]*=[^ 	]*//'`
+
+# For the build-side libraries, we just need to pretend we're native,
+# and not use the same cache file.  Multilibs are neither needed nor
+# desired.
+buildargs="--cache-file=../config.cache --build=${build_alias} --host=${build_alias} ${targargs}"
 
 # Passing a --with-cross-host argument lets the target libraries know
 # whether they are being built with a cross-compiler or being built
@@ -1377,6 +1395,9 @@ fi
 if [ x${with_newlib} != xno ] && echo " ${target_configdirs} " | grep " newlib " > /dev/null 2>&1 && [ -d ${srcdir}/newlib ] ; then
   targargs="--with-newlib ${targargs}"
 fi
+
+# Pass the appropriate --host, --build, and --cache-file arguments.
+targargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${targargs}"
 
 # provide a proper gxx_include_dir.
 # Note, if you change the default, make sure to fix both here and in
@@ -1533,9 +1554,8 @@ qCXX_FOR_TARGET=`echo "$CXX_FOR_TARGET" | sed 's,[&%],\\\&,g'`
 # macros.
 qqCXX_FOR_TARGET=`echo "$qCXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
 
-targargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${targargs}"
 sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:" \
-    -e "s%^CONFIG_ARGUMENTS[ 	]*=.*$%CONFIG_ARGUMENTS = ${targargs}%" \
+    -e "s%^TARGET_CONFIGARGS[ 	]*=.*$%TARGET_CONFIGARGS = ${targargs}%" \
     -e "s%^FLAGS_FOR_TARGET[ 	]*=.*$%FLAGS_FOR_TARGET = ${FLAGS_FOR_TARGET}%" \
     -e "s%^CC_FOR_TARGET[ 	]*=.*$%CC_FOR_TARGET = ${CC_FOR_TARGET}%" \
     -e "s%^CHILL_FOR_TARGET[ 	]*=.*$%CHILL_FOR_TARGET = ${CHILL_FOR_TARGET}%" \
@@ -1543,6 +1563,8 @@ sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:"
     -e "s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = ${qCXX_FOR_TARGET}%" \
     -e "s%^CXX_FOR_TARGET_FOR_RECURSIVE_MAKE[ 	]*=.*$%CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = ${qqCXX_FOR_TARGET}%" \
     -e "s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%" \
+    -e "s%^BUILD_SUBDIR[ 	]*=.*$%BUILD_SUBDIR = ${build_subdir}%" \
+    -e "s%^BUILD_CONFIGARGS[ 	]*=.*$%BUILD_CONFIGARGS = ${buildargs}%" \
     -e "s%^gxx_include_dir[ 	]*=.*$%gxx_include_dir=${gxx_include_dir}%" \
        Makefile > Makefile.tem
 rm -f Makefile

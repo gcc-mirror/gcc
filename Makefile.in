@@ -178,8 +178,16 @@ TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib librx winsup opcod
 # Changed by configure to $(target_alias) if cross.
 TARGET_SUBDIR = .
 
-# This is set by the configure script to the arguments passed to configure.
-CONFIG_ARGUMENTS = 
+BUILD_CONFIGDIRS = libiberty
+BUILD_SUBDIR = .
+
+# This is set by the configure script to the arguments to use when configuring
+# directories built for the target.
+TARGET_CONFIGARGS = 
+
+# This is set by the configure script to the arguments to use when configuring
+# directories built for the build system.
+BUILD_CONFIGARGS =
 
 # This is set by configure to REALLY_SET_LIB_PATH if --enable-shared
 # was used.
@@ -491,6 +499,18 @@ EXTRA_GCC_FLAGS = \
 	"`echo 'BOOT_CFLAGS=$(BOOT_CFLAGS)' | sed -e s/.*=$$/XFOO=/`"
 
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS)
+
+# This is a list of the targets for all of the modules which are compiled
+# using the build machine's native compiler.  Configure edits the second
+# macro for build!=host builds.
+ALL_BUILD_MODULES_LIST = \
+	all-build-libiberty
+ALL_BUILD_MODULES = 
+
+# This is a list of the configure targets for all of the modules which
+# are compiled using the native tools.
+CONFIGURE_BUILD_MODULES = \
+	configure-build-libiberty
 
 # This is a list of the targets for all of the modules which are compiled
 # using $(FLAGS_TO_PASS).
@@ -947,6 +967,7 @@ CLEAN_X11_MODULES = \
 # The target built for a native build.
 .PHONY: all.normal
 all.normal: \
+	$(ALL_BUILD_MODULES) \
 	$(ALL_MODULES) \
 	$(ALL_X11_MODULES) \
 	$(ALL_TARGET_MODULES) \
@@ -1193,6 +1214,106 @@ gcc-no-fixedincludes:
 	  mv gcc/tmp-include gcc/include 2>/dev/null; \
 	else true; fi
 
+# This rule is used to build the modules which are built with the
+# build machine's native compiler.
+.PHONY: $(ALL_BUILD_MODULES)
+$(ALL_BUILD_MODULES):
+	dir=`echo $@ | sed -e 's/all-build-//'`; \
+	if [ -f ./$${dir}/Makefile ] ; then \
+	  r=`pwd`; export r; \
+	  s=`cd $(srcdir); pwd`; export s; \
+	  (cd $(BUILD_SUBDIR)/$${dir} && $(MAKE) all); \
+	else \
+	  true; \
+	fi
+
+# This rule is used to configure the modules which are built with the
+# native tools.
+.PHONY: $(CONFIGURE_BUILD_MODULES)
+$(CONFIGURE_BUILD_MODULES):
+	@dir=`echo $@ | sed -e 's/configure-build-//'`; \
+	if [ ! -d $(BUILD_SUBDIR) ]; then \
+	  true; \
+	elif [ -f $(BUILD_SUBDIR)/$${dir}/Makefile ] ; then \
+	  true; \
+	elif echo " $(BUILD_CONFIGDIRS) " | grep " $${dir} " >/dev/null 2>&1; then \
+	  if [ -d $(srcdir)/$${dir} ]; then \
+	    [ -d $(BUILD_SUBDIR)/$${dir} ] || mkdir $(BUILD_SUBDIR)/$${dir};\
+	    r=`pwd`; export r; \
+	    s=`cd $(srcdir); pwd`; export s; \
+	    AR="$(AR_FOR_BUILD)"; export AR; \
+	    AS="$(AS_FOR_BUILD)"; export AS; \
+	    CC="$(CC_FOR_BUILD)"; export CC; \
+	    CFLAGS="$(CFLAGS_FOR_BUILD)"; export CFLAGS; \
+	    CXX="$(CXX_FOR_BUILD)"; export CXX; \
+	    CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
+	    GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
+	    DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
+	    LD="$(LD_FOR_BUILD)"; export LD; \
+            LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
+	    NM="$(NM_FOR_BUILD)"; export NM; \
+	    RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
+	    WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES; \
+	    echo Configuring in $(BUILD_SUBDIR)/$${dir}; \
+	    cd "$(BUILD_SUBDIR)/$${dir}" || exit 1; \
+	    case $(srcdir) in \
+	    /* | [A-Za-z]:[\\/]*) \
+	      topdir=$(srcdir) ;; \
+	    *) \
+	      case "$(BUILD_SUBDIR)" in \
+	      .) topdir="../$(srcdir)" ;; \
+	      *) topdir="../../$(srcdir)" ;; \
+	      esac ;; \
+	    esac; \
+	    if [ "$(srcdir)" = "." ] ; then \
+	      if [ "$(BUILD_SUBDIR)" != "." ] ; then \
+		if $(SHELL) $$s/symlink-tree $${topdir}/$${dir} "no-such-file" ; then \
+		  if [ -f Makefile ]; then \
+		    if $(MAKE) distclean; then \
+		      true; \
+		    else \
+		      exit 1; \
+		    fi; \
+		  else \
+		    true; \
+		  fi; \
+		else \
+		  exit 1; \
+		fi; \
+	      else \
+		true; \
+	      fi; \
+	      srcdiroption="--srcdir=."; \
+	      libsrcdir="."; \
+	    else \
+	      srcdiroption="--srcdir=$${topdir}/$${dir}"; \
+	      libsrcdir="$$s/$${dir}"; \
+	    fi; \
+	    if [ -f $${libsrcdir}/configure ] ; then \
+	      rm -f no-such-file skip-this-dir; \
+	      CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+		$(BUILD_CONFIGARGS) $${srcdiroption} \
+		--with-build-subdir="$(BUILD_SUBDIR)"; \
+	    else \
+	      rm -f no-such-file skip-this-dir; \
+	      CONFIG_SITE=no-such-file $(SHELL) $$s/configure \
+		$(BUILD_CONFIGARGS) $${srcdiroption} \
+		--with-build-subdir="$(BUILD_SUBDIR)"; \
+	    fi || exit 1; \
+	    if [ -f skip-this-dir ] ; then \
+	      sh skip-this-dir; \
+	      rm -f skip-this-dir; \
+	      cd ..; rmdir $${dir} || true; \
+	    else \
+	      true; \
+	    fi; \
+	  else \
+	    true; \
+	  fi; \
+	else \
+	  true; \
+	fi
+
 # This rule is used to build the modules which use FLAGS_TO_PASS.  To
 # build a target all-X means to cd to X and make all.
 #
@@ -1338,12 +1459,12 @@ $(CONFIGURE_TARGET_MODULES):
 	    if [ -f $${libsrcdir}/configure ] ; then \
 	      rm -f no-such-file skip-this-dir; \
 	      CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-		$(CONFIG_ARGUMENTS) $${srcdiroption} \
+		$(TARGET_CONFIGARGS) $${srcdiroption} \
 		--with-target-subdir="$(TARGET_SUBDIR)"; \
 	    else \
 	      rm -f no-such-file skip-this-dir; \
 	      CONFIG_SITE=no-such-file $(SHELL) $$s/configure \
-		$(CONFIG_ARGUMENTS) $${srcdiroption} \
+		$(TARGET_CONFIGARGS) $${srcdiroption} \
 		--with-target-subdir="$(TARGET_SUBDIR)"; \
 	    fi || exit 1; \
 	    if [ -f skip-this-dir ] ; then \
@@ -1641,6 +1762,9 @@ configure-target-libgloss: $(ALL_GCC)
 all-target-libgloss: configure-target-libgloss configure-target-newlib
 all-libgui: all-tcl all-tk all-tcl8.1 all-tk8.1 all-itcl
 all-libiberty:
+
+all-build-libiberty: configure-build-libiberty
+
 configure-target-libffi: $(ALL_GCC_C) 
 all-target-libffi: configure-target-libffi
 configure-target-libjava: $(ALL_GCC_CXX) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-libffi

@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define to empty if the keyword does not work.  */
 #undef const
@@ -30,8 +30,8 @@
 /* Define vfork as fork if vfork does not work.  */
 #undef vfork
 
-/* Define if the system defines a uintptr_t type.  */
-#undef HAVE_UINTPTR_T
+/* Define if you have the _doprnt function.  */
+#undef HAVE__DOPRNT
 
 /* Define if you have the asprintf function.  */
 #undef HAVE_ASPRINTF
@@ -59,6 +59,9 @@
 
 /* Define if you have the clock function.  */
 #undef HAVE_CLOCK
+
+/* Define if you have the ffs function.  */
+#undef HAVE_FFS
 
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD
@@ -180,11 +183,11 @@
 /* Define if you have the waitpid function.  */
 #undef HAVE_WAITPID
 
-/* Define if you have the <fcntl.h> header file.  */
-#undef HAVE_FCNTL_H
-
 /* Define if you have the <alloca.h> header file.  */
 #undef HAVE_ALLOCA_H
+
+/* Define if you have the <fcntl.h> header file.  */
+#undef HAVE_FCNTL_H
 
 /* Define if you have the <limits.h> header file.  */
 #undef HAVE_LIMITS_H
@@ -224,6 +227,9 @@
 
 /* Define if errno must be declared even when <errno.h> is included. */
 #undef NEED_DECLARATION_ERRNO
+
+/* Define if you have the `uintptr_t' type. */
+#undef HAVE_UINTPTR_T
 
 /* Define if you have the sys_errlist variable. */
 #undef HAVE_SYS_ERRLIST

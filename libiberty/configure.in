@@ -132,7 +132,7 @@ AC_EGREP_HEADER(uintptr_t, sys/types.h,
 
 if test $libiberty_cv_uintptr_t = yes
 then
-  AC_DEFINE(HAVE_UINTPTR_T)
+  AC_DEFINE(HAVE_UINTPTR_T, 1, [Define if you have the \`uintptr_t' type.])
   AC_MSG_RESULT(yes)
 else
   AC_MSG_RESULT(no)
@@ -254,9 +254,9 @@ fi
 AC_SUBST(CHECK)
 
 case "${host}" in
-  *-*-cygwin*) 
-    AC_DEFINE(HAVE_SYS_ERRLIST)
-    AC_DEFINE(HAVE_SYS_NERR)
+  *-*-cygwin*)
+    AC_DEFINE_NOAUTOHEADER(HAVE_SYS_ERRLIST)
+    AC_DEFINE_NOAUTOHEADER(HAVE_SYS_NERR)
     ;;
 esac
 
@@ -351,6 +351,13 @@ if test -z "${setobjs}"; then
   if test $ac_cv_func_vfork_works = no; then
     LIBOBJS="$LIBOBJS vfork.o"
   fi
+  # We only need _doprnt if we might use it to implement v*printf.
+  if test $ac_cv_func_vprintf != yes \
+     || test $ac_cv_func_vfprintf != yes \
+     || test $ac_cv_func_vsprintf != yes; then
+    AC_REPLACE_FUNCS(_doprnt)
+  fi
+
   for v in $vars; do
     AC_MSG_CHECKING([for $v])
     AC_CACHE_VAL(libiberty_cv_var_$v,
