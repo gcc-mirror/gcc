@@ -1,3 +1,8 @@
+2001-12-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl.c: Include c-common.h.
+	(shadow_warning): Move to c-common.c.
+
 Wed Dec  5 17:00:49 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (duplicate_decls): Don't copy DECL_NO_CHECK_MEMORY_USAGE.
