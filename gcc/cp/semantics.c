@@ -66,19 +66,23 @@ void
 finish_expr_stmt (expr)
      tree expr;
 {
-  if (!processing_template_decl)
+  if (expr != NULL_TREE)
     {
-      emit_line_note (input_filename, lineno);
-      /* Do default conversion if safe and possibly important,
-	 in case within ({...}).  */
-      if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
-	   && lvalue_p (expr))
-	  || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
-	expr = default_conversion (expr);
+      if (!processing_template_decl)
+	{
+	  emit_line_note (input_filename, lineno);
+	  /* Do default conversion if safe and possibly important,
+	     in case within ({...}).  */
+	  if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
+	       && lvalue_p (expr))
+	      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
+	    expr = default_conversion (expr);
+	}
+      
+      cplus_expand_expr_stmt (expr);
+      clear_momentary ();
     }
-  
-  cplus_expand_expr_stmt (expr);
-  clear_momentary ();
+
   finish_stmt ();
 }
 
@@ -993,6 +997,58 @@ finish_label_address_expr (label)
   return result;
 }
 
+/* Finish an expression of the form CODE EXPR.  */
+
+tree
+finish_unary_op_expr (code, expr)
+     enum tree_code code;
+     tree expr;
+{
+  tree result = build_x_unary_op (code, expr);
+  if (code == NEGATE_EXPR && TREE_CODE (expr) == INTEGER_CST)
+    TREE_NEGATED_INT (result) = 1;
+  overflow_warning (result);
+  return result;
+}
+
+/* Finish an id-expression.  */
+
+tree
+finish_id_expr (expr)
+     tree expr;
+{
+  if (TREE_CODE (expr) == IDENTIFIER_NODE)
+    expr = do_identifier (expr, 1);
+
+  return expr;
+}
+
+/* Begin a new-placement.  */
+
+int
+begin_new_placement ()
+{
+  /* The arguments to a placement new might be passed to a
+     deallocation function, in the event that the allocation throws an
+     exception.  Since we don't expand exception handlers until the
+     end of a function, we must make sure the arguments stay around
+     that long.  */
+  return suspend_momentary ();
+}
+
+/* Finish a new-placement.  The ARGS are the placement arguments.  The
+   COOKIE is the value returned by the previous call to
+   begin_new_placement.  */
+
+tree
+finish_new_placement (args, cookie)
+     tree args;
+     int cookie;
+{
+  resume_momentary (cookie);
+  return args;
+}
+
 /* Begin a function defniition declared with DECL_SPECS and
    DECLARATOR.  Returns non-zero if the function-declaration is
    legal.  */
@@ -1031,6 +1087,35 @@ begin_constructor_declarator (scope, name)
   return result;
 }
 
+/* Finish an init-declarator.  Returns a DECL.  */
+
+tree
+finish_declarator (declarator, declspecs, attributes,
+		   prefix_attributes, initialized)
+     tree declarator;
+     tree declspecs;
+     tree attributes;
+     tree prefix_attributes;
+     int initialized;
+{
+  return start_decl (declarator, declspecs, initialized, attributes,
+		     prefix_attributes); 
+}
+
+/* Finish a transltation unit.  */
+
+void 
+finish_translation_unit ()
+{
+  /* In case there were missing closebraces,
+     get us back to the global binding level.  */
+  while (! toplevel_bindings_p ())
+    poplevel (0, 0, 0);
+  while (current_namespace != global_namespace)
+    pop_namespace ();
+  finish_file ();
+}
+
 /* Finish a template type parameter, specified as AGGR IDENTIFIER.
    Returns the parameter.  */
 
@@ -1066,4 +1151,183 @@ finish_template_template_parm (aggr, identifier)
   end_template_decl ();
 
   return finish_template_type_parm (aggr, tmpl);
+}
+
+/* Finish a parameter list, indicated by PARMS.  If ELLIPSIS is
+   non-zero, the parameter list was terminated by a `...'.  */
+
+tree
+finish_parmlist (parms, ellipsis)
+     tree parms;
+     int ellipsis;
+{
+  if (!ellipsis)
+    chainon (parms, void_list_node);
+  /* We mark the PARMS as a parmlist so that declarator processing can
+     disambiguate certain constructs.  */
+  if (parms != NULL_TREE)
+    TREE_PARMLIST (parms) = 1;
+
+  return parms;
+}
+
+/* Begin a class definition, as indicated by T.  */
+
+tree
+begin_class_definition (t)
+     tree t;
+{
+  tree new_type = t;
+
+  push_obstacks_nochange ();
+  end_temporary_allocation ();
+  
+  if (t == error_mark_node
+      || ! IS_AGGR_TYPE (t))
+    {
+      t = new_type = make_lang_type (RECORD_TYPE);
+      pushtag (make_anon_name (), t, 0);
+    }
+  if (TYPE_SIZE (t))
+    duplicate_tag_error (t);
+  if (TYPE_SIZE (t) || TYPE_BEING_DEFINED (t))
+    {
+      t = make_lang_type (TREE_CODE (t));
+      pushtag (TYPE_IDENTIFIER (t), t, 0);
+      new_type = t;
+    }
+  if (processing_template_decl && TYPE_CONTEXT (t)
+      && TREE_CODE (TYPE_CONTEXT (t)) != NAMESPACE_DECL
+      && ! current_class_type)
+    push_template_decl (TYPE_STUB_DECL (t));
+  pushclass (t, 0);
+  TYPE_BEING_DEFINED (t) = 1;
+  if (IS_AGGR_TYPE (t) && CLASSTYPE_USE_TEMPLATE (t))
+    {
+      if (CLASSTYPE_IMPLICIT_INSTANTIATION (t)
+	  && TYPE_SIZE (t) == NULL_TREE)
+	{
+	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
+	  if (processing_template_decl)
+	    push_template_decl (TYPE_MAIN_DECL (t));
+	}
+      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
+	cp_error ("specialization after instantiation of `%T'", t);
+    }
+  /* Reset the interface data, at the earliest possible
+     moment, as it might have been set via a class foo;
+     before.  */
+  /* Don't change signatures.  */
+  if (! IS_SIGNATURE (t))
+    {
+      extern tree pending_vtables;
+      int needs_writing;
+      tree name = TYPE_IDENTIFIER (t);
+      
+      if (! ANON_AGGRNAME_P (name))
+	{
+	  CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
+	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X
+	    (t, interface_unknown);
+	}
+      
+      /* Record how to set the access of this class's
+	 virtual functions.  If write_virtuals == 2 or 3, then
+	 inline virtuals are ``extern inline''.  */
+      switch (write_virtuals)
+	{
+	case 0:
+	case 1:
+	  needs_writing = 1;
+	  break;
+	case 2:
+	  needs_writing = !! value_member (name, pending_vtables);
+	  break;
+	case 3:
+	  needs_writing = ! CLASSTYPE_INTERFACE_ONLY (t)
+	    && CLASSTYPE_INTERFACE_KNOWN (t);
+	  break;
+	default:
+	  needs_writing = 0;
+	}
+      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = needs_writing;
+    }
+#if 0
+  t = TYPE_IDENTIFIER ($<ttype>0);
+  if (t && IDENTIFIER_TEMPLATE (t))
+    overload_template_name (t, 1);
+#endif
+  reset_specialization();
+  
+  /* In case this is a local class within a template
+     function, we save the current tree structure so
+     that we can get it back later.  */
+  begin_tree ();
+
+  return new_type;
+}
+
+/* Finish a class definition T, with the indicated COMPONENTS, and
+   with the indicate ATTRIBUTES.  If SEMI, the definition is
+   immediately followed by a semicolon.  Returns the type.  */
+
+tree
+finish_class_definition (t, components, attributes, semi)
+     tree t;
+     tree components;
+     tree attributes;
+     int semi;
+{
+#if 0
+  /* Need to rework class nesting in the presence of nested classes,
+     etc.  */
+  shadow_tag (CLASSTYPE_AS_LIST (t)); */
+#endif
+
+  /* finish_struct nukes this anyway; if finish_exception does too,
+     then it can go.  */
+  if (semi)
+    note_got_semicolon (t);
+
+  if (TREE_CODE (t) == ENUMERAL_TYPE)
+    ;
+  else
+    {
+      t = finish_struct (t, components, attributes, semi);
+      if (semi) 
+	note_got_semicolon (t);
+    }
+
+  pop_obstacks ();
+
+  if (! semi)
+    check_for_missing_semicolon (t); 
+  if (current_scope () == current_function_decl)
+    do_pending_defargs ();
+
+  return t;
+}
+
+/* Finish processing the default argument expressions cached during
+   the processing of a class definition.  */
+
+void
+finish_default_args ()
+{
+  if (pending_inlines 
+      && current_scope () == current_function_decl)
+    do_pending_inlines ();
+}
+
+/* Finish processing the inline function definitions cached during the
+   processing of a class definition.  */
+
+void
+begin_inline_definitions ()
+{
+  if (current_class_type == NULL_TREE)
+    clear_inline_text_obstack (); 
+  
+  /* Undo the begin_tree in begin_class_definition.  */
+  end_tree ();
 }
