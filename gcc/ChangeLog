@@ -1,3 +1,8 @@
+2003-03-01  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (*-*-netbsd[2-9]*, *-*-netbsdelf[2-9]*): Enable
+	POSIX thread support by default.  
+
 2003-03-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR bootstrap/7389.
