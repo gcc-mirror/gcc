@@ -170,7 +170,7 @@ LIBFFIINCS=
 if test "$with_libffi" != no; then
    AC_DEFINE(USE_LIBFFI)
    LIBFFI=../libffi/libfficonvenience.la
-   LIBFFIINCS="-I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/include"
+   LIBFFIINCS='-I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/include'
 fi
 AC_SUBST(LIBFFI)
 AC_SUBST(LIBFFIINCS)
