@@ -1,3 +1,10 @@
+2002-01-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config.gcc (ia64-*-*): Set extra_headers.
+	(alpha*-dec-osf*): Likewise.  Don't use alpha/t-osf.
+	* config/alpha/t-osf: Remove.
+	* config/ia64/t-ia64 (EXTRA_HEADERS): Remove.
+
 2002-01-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/t-aix43: Revert previous change.

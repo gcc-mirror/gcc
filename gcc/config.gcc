@@ -1,5 +1,5 @@
 # GCC build-, host- and target-specific configuration file.
-# Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -80,7 +80,7 @@
 #			depending on target.
 #
 #  extra_headers	List of used header files from the directory
-#			ginclude.
+#			config/${cpu_type}.
 #
 #  host_xmake_file	List of host-specific makefile-fragments.
 #
@@ -234,6 +234,9 @@ i[34567]86-*-*)
 	;;
 x86_64-*-*)
 	cpu_type=i386
+	;;
+ia64-*-*)
+	extra_headers=ia64intrin.h
 	;;
 hppa*-*-* | parisc*-*-*)
 	cpu_type=pa
@@ -488,7 +491,8 @@ alpha*-dec-osf*)
 		extra_passes="mips-tfile mips-tdump"
 	fi
 	use_collect2=yes
-	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-osf alpha/t-crtfm"
+	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-crtfm"
+	extra_headers=va_list.h
 	case $machine in
 	  *-*-osf1*)
 	    tm_file="${tm_file} alpha/osf.h alpha/osf12.h alpha/osf2or3.h"
