@@ -117,7 +117,7 @@ char __gnat_shared_libgnat_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 1;
 const char *__gnat_object_library_extension = ".a";
 
-#elif defined (hpux)
+#elif defined (__hpux__)
 const char *__gnat_object_file_option = "-Wl,-c,";
 const char *__gnat_run_path_option = "-Wl,+b,";
 int __gnat_link_max = 5000;

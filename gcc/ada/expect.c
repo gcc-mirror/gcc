@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2003 Ada Core Technologies, Inc.            *
+ *           Copyright (C) 2001-2004 Ada Core Technologies, Inc.            *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -49,8 +49,8 @@
    Dummy stubs are also provided for other systems. */
 
 #ifdef _AIX
-/* Work around the fact that gcc/cpp does not define "unix" under AiX.  */
-#define unix
+/* Work around the fact that gcc/cpp does not define "__unix__" under AiX.  */
+#define __unix__
 #endif
 
 #ifdef _WIN32
@@ -265,9 +265,9 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
   return ready;
 }
 
-#elif defined (unix)
+#elif defined (__unix__)
 
-#ifdef hpux
+#ifdef __hpux__
 #include <sys/ptyio.h>
 #endif
 
@@ -359,7 +359,7 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 	      is_set[i] = 0;
 	  }
 
-#ifdef hpux
+#ifdef __hpux__
         for (i = 0; i < num_fd; i++)
 	  {
 	    if (FD_ISSET (fd[i], &eset))
