@@ -2951,6 +2951,7 @@ build_encode_expr (type)
     fatal ("Objective-C text in C source file");
 
   encode_type (type, OBJC_ENCODE_INLINE_DEFS);
+  obstack_1grow (&util_obstack, 0);    /* null terminate string */
   string = obstack_finish (&util_obstack);
 
   /* synthesize a string that represents the encoded struct/union */
@@ -3749,62 +3750,85 @@ encode_aggregate (type, format)
     {
     case RECORD_TYPE:
       {
-	if (*obstack_next_free (&util_obstack) == '^'
-	    || format !=  OBJC_ENCODE_INLINE_DEFS)
+	int have_pointer = 0;
+
+	if (obstack_object_size (&util_obstack) > 0     
+	    && *(obstack_next_free (&util_obstack)-1) == '^')
+	  have_pointer = 1;
+
+	obstack_1grow (&util_obstack, '{');
+        if (TYPE_NAME (type))
 	  {
-	    /* we have a reference - this is a NeXT extension--
-	       or we don't want the details.  */
-            if (TYPE_NAME (type)
-		&& (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE))
+	    if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
 	      {
-		obstack_1grow (&util_obstack, '{');
-		obstack_grow (&util_obstack,
+	        obstack_grow (&util_obstack,
 			      IDENTIFIER_POINTER (TYPE_NAME (type)),
 			      strlen (IDENTIFIER_POINTER (TYPE_NAME (type))));
-		obstack_1grow (&util_obstack, '}');
 	      }
 	    else /* we have an untagged structure or a typedef */
-	      obstack_grow (&util_obstack, "{?}", 3);
+	      {
+	        obstack_1grow (&util_obstack, '?');
+	      }
+	  }
+	
+	if (have_pointer
+	    || format == OBJC_ENCODE_DONT_INLINE_DEFS)
+	  {
+	    /* we have a pointer
+	       or we don't want the details.  */
+	    obstack_1grow (&util_obstack, '}');
 	  }
 	else
 	  {
 	    tree fields = TYPE_FIELDS (type);
-	    obstack_1grow (&util_obstack, '{');
+	    obstack_1grow (&util_obstack, '=');
 	    for ( ; fields; fields = TREE_CHAIN (fields))
 	      encode_field_decl (fields, format);
 	    obstack_1grow (&util_obstack, '}');
 	  }
 	break;
       }
+
     case UNION_TYPE:
       {
-	if (*obstack_next_free (&util_obstack) == '^'
-	    || format !=  OBJC_ENCODE_INLINE_DEFS)
+	int have_pointer = 0;
+
+	if (obstack_object_size (&util_obstack) > 0     
+	    && *(obstack_next_free (&util_obstack)-1) == '^')
+	  have_pointer = 1;
+
+	obstack_1grow (&util_obstack, '(');
+        if (have_pointer && TYPE_NAME (type))
 	  {
-	    /* we have a reference - this is a NeXT extension--
-	       or we don't want the details.  */
-            if (TYPE_NAME (type)
-		&& (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE))
+	    if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
 	      {
-		obstack_1grow (&util_obstack, '<');
-		obstack_grow (&util_obstack,
+	        obstack_grow (&util_obstack,
 			      IDENTIFIER_POINTER (TYPE_NAME (type)),
 			      strlen (IDENTIFIER_POINTER (TYPE_NAME (type))));
-		obstack_1grow (&util_obstack, '>');
 	      }
 	    else /* we have an untagged structure or a typedef */
-	      obstack_grow (&util_obstack, "<?>", 3);
+	      {
+	        obstack_1grow (&util_obstack, '?');
+	      }
+	  }
+	
+	if (have_pointer
+	    || format == OBJC_ENCODE_DONT_INLINE_DEFS)
+	  {
+	    /* we have a pointer
+	       or we don't want the details.  */
+	    obstack_1grow (&util_obstack, ')');
 	  }
 	else
 	  {
 	    tree fields = TYPE_FIELDS (type);
-	    obstack_1grow (&util_obstack, '<');
 	    for ( ; fields; fields = TREE_CHAIN (fields))
 	      encode_field_decl (fields, format);
-	    obstack_1grow (&util_obstack, '>');
+	    obstack_1grow (&util_obstack, ')');
 	  }
 	break;
       }
+
 
     case ENUMERAL_TYPE:
       obstack_1grow (&util_obstack, 'i');
