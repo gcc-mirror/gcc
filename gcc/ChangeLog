@@ -1,3 +1,9 @@
+Fri Feb 20 16:22:13 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* sched.c (schedule_block): Remove code to get arguments from hard
+	regs into pseudos early.  Same as Aug 25, 1997 change to
+	haifa-sched.c.
+
 1998-02-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* collect2.c (main): Still handle !do_collecting for non-AIX targets.
