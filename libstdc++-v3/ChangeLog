@@ -20,7 +20,7 @@
 	const complex&)): Fully qualify with std:: a few calls.
 	* testsuite/26_numerics/complex/13450.cc: Minor tweak.
 
-2004-03-11  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+2004-03-11  Steven Bosscher  <stevenb@suse.de>
 
 	PR libstdc++/11706
 	* include/c_std/cmath.tcc (__cmath_power): Define inline.
