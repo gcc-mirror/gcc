@@ -1,3 +1,7 @@
+2004-01-04  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config-ml.in: Don't mess with the cache file.
+
 2004-01-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* MAINTAINERS: Move myself from 'Write After Approval' to
