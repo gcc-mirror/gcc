@@ -1916,9 +1916,17 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			    temp = delete_insn (temp);
 			}
 
+		      temp = p;
 		      p = delete_insn (p);
+
+		      /* simplify_giv_expr expects that it can walk the insns
+			 at m->insn forwards and see this old sequence we are
+			 tossing here.  delete_insn does preserve the next
+			 pointers, but when we skip over a NOTE we must fix
+			 it up.  Otherwise that code walks into the non-deleted
+			 insn stream.  */
 		      while (p && GET_CODE (p) == NOTE)
-			p = NEXT_INSN (p);
+			p = NEXT_INSN (temp) = NEXT_INSN (p);
 		    }
 
 		  start_sequence ();
@@ -2125,9 +2133,18 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			  XEXP (temp, 0) = i1;
 			}
 
+		      temp = p;
 		      delete_insn (p);
-		      do p = NEXT_INSN (p);
-		      while (p && GET_CODE (p) == NOTE);
+		      p = NEXT_INSN (p);
+
+		      /* simplify_giv_expr expects that it can walk the insns
+			 at m->insn forwards and see this old sequence we are
+			 tossing here.  delete_insn does preserve the next
+			 pointers, but when we skip over a NOTE we must fix
+			 it up.  Otherwise that code walks into the non-deleted
+			 insn stream.  */
+		      while (p && GET_CODE (p) == NOTE)
+			p = NEXT_INSN (temp) = NEXT_INSN (p);
 		    }
 
 		  /* The more regs we move, the less we like moving them.  */
