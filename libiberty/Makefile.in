@@ -159,14 +159,15 @@ install_to_tooldir: all
 # can't use anything encumbering.
 NEEDED = atexit calloc memchr memcmp memcpy memmove memset rename strchr \
 	 strerror strrchr strstr strtol strtoul tmpnam vfprintf vprintf \
-	 vfork waitpid
+	 vfork waitpid mkstemps
 needed-list: Makefile
 	rm -f needed-list; touch needed-list; \
-	files="$(LIBOBJS) $(EXTRA_OFILES)"; \
 	for f in $(NEEDED); do \
-	  case "$$files" in \
-	    *$$f*) echo $$f >> needed-list ;; \
-	  esac; \
+	  for g in $(LIBOBJS) $(EXTRA_OFILES); do \
+	    case "$$g" in \
+	      *$$f*) echo $$g >> needed-list ;; \
+	    esac; \
+	  done; \
 	done
 
 # required-list was used when building a shared bfd/opcodes/libiberty
