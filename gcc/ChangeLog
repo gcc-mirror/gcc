@@ -1,3 +1,9 @@
+2003-07-08  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR bootstrap/11455
+	* config/i386/winnt.c: Replace use of error(), warning() with
+	error_with_decl(), warning_with_decl(),  throughout.
+
 2003-07-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* opts.c (wrap_help): Use unsigned int, not size_t.
