@@ -3017,8 +3017,8 @@ purge_addressof (insns)
 	purge_addressof_1 (&PATTERN (insn), insn,
 			   asm_noperands (PATTERN (insn)) > 0, 0);
 	purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0, 0);
-	purge_addressof_replacements = 0;
       }
+  purge_addressof_replacements = 0;
 }
 
 /* Pass through the INSNS of function FNDECL and convert virtual register
