@@ -1,3 +1,8 @@
+Wed Mar 15 13:07:05 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (ix86_compute_frame_size): stack_alignment_needed is
+	STACK_BOUNDARY for empty frames now.
+
 2000-03-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* stor-layout.c (layout_union): Remove.
