@@ -1,4 +1,8 @@
 2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md: Remove redundant @s from output patterns.
+
+2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
             Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* config/c4x/c4x.h (REGISTER_TARGET_PRAGMAS): Call c4x_init_pragma.

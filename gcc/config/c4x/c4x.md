@@ -1331,8 +1331,7 @@
    (set (reg:CC 21)
         (compare:CC (match_dup 0) (const_int 0)))]
   ""
-  "@
-  ldi\\t%1,%0"
+  "ldi\\t%1,%0"
   [(set_attr "type" "unarycc")
    (set_attr "data" "int16")])
 
@@ -1343,8 +1342,7 @@
    (set (match_operand:QI 0 "ext_reg_operand" "=d")
         (match_dup 1))]
   ""
-  "@
-  ldi\\t%1,%0"
+  "ldi\\t%1,%0"
   [(set_attr "type" "unarycc")
    (set_attr "data" "int16")])
 
@@ -2493,8 +2491,7 @@
    (use (reg:CC 21))
    (clobber (reg:CC 21))]
   ""
-  "@
-   andn\\t%N0,st"
+  "andn\\t%N0,st"
   [(set_attr "type" "misc")
    (set_attr "data" "not_uint16")])
 
@@ -4286,8 +4283,7 @@
 	(unspec:QI [(match_operand:QI 1 "src_operand" "rIm")] 13))
    (use (reg:CC 21))]
   ""
-  "@
-   ldiv\\t%1,%0"
+  "ldiv\\t%1,%0"
   [(set_attr "type" "unary")])
 
 ; Move operand 2 to operand 0 if condition (operand 1) is true
@@ -5930,8 +5926,7 @@
  [(set (match_operand:HF 0 "reg_operand" "=h")
        (float_extend:HF (match_operand:QF 1 "src_operand" "fHm")))]
  ""
- "@
-  ldfu\\t%1,%0"
+ "ldfu\\t%1,%0"
   [(set_attr "type" "unary")])
 
 (define_insn "*loadhf_int"
@@ -5939,8 +5934,7 @@
        (unspec:HF [(subreg:QI (match_dup 0) 0)
                    (match_operand:QI 1 "src_operand" "rIm")] 8))]
  ""
- "@
-  ldiu\\t%1,%0"
+ "ldiu\\t%1,%0"
   [(set_attr "type" "unary")])
 
 (define_insn "*storehf_float"
@@ -5954,8 +5948,7 @@
  [(set (match_operand:QI 0 "memory_operand" "=m")
        (unspec:QI [(match_operand:HF 1 "reg_operand" "h")] 9))]
  ""
- "@
-  sti\\t%1,%0"
+ "sti\\t%1,%0"
   [(set_attr "type" "store")])
 
 (define_insn "extendqfhf2"
@@ -6036,8 +6029,7 @@
                    (mem:QI (post_dec:QI (reg:QI 20)))] 8))
   (clobber (reg:CC 21))]
  ""
- "@
-  pop\\t%0"
+ "pop\\t%0"
   [(set_attr "type" "pop")])
 
 (define_insn "*pophf_float"
@@ -6045,8 +6037,7 @@
        (float_extend:HF (mem:QF (post_dec:QI (reg:QI 20)))))
   (clobber (reg:CC 21))]
  ""
- "@
-  popf\\t%0"
+ "popf\\t%0"
   [(set_attr "type" "pop")])
 
 ;
