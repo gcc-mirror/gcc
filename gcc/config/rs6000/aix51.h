@@ -209,10 +209,13 @@ do {									\
 
 /* __WCHAR_TYPE__ is dynamic, so do not define it statically.  */
 #define NO_BUILTIN_WCHAR_TYPE
-#undef WCHAR_TYPE
-#undef WCHAR_TYPE_SIZE
+
+/* Type used for wchar_t, as a string used in a declaration.  */
+#undef  WCHAR_TYPE
+#define WCHAR_TYPE (!TARGET_64BIT ? "short unsigned int" : "unsigned int")
 
 /* Width of wchar_t in bits.  */
+#undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE (!TARGET_64BIT ? 16 : 32)
 #define MAX_WCHAR_TYPE_SIZE 32
 

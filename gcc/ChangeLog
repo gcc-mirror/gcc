@@ -1,4 +1,9 @@
+2002-03-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix51.h (WCHAR_TYPE): Define.
+
 2002-03-26  Hans Boehm <Hans_Boehm@hp.com>
+
 	* config/ia64/linux.h (MD_FALLBACK_FRAME_STATE_FOR):
 	Restore more of the signal context.  Set no_reg_stack_frame.
 	* config/ia64/unwind-ia64.c (unw_state_record):
