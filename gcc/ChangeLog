@@ -1,3 +1,7 @@
+Wed Feb 13 23:41:15 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* regmove.c (kill_value): Handle subregs.
+
 Wed Feb 13 23:34:30 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (mul patterns): Allow memory operand to be first;
