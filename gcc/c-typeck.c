@@ -5378,8 +5378,24 @@ void
 push_init_level (implicit)
      int implicit;
 {
-  struct constructor_stack *p
-    = (struct constructor_stack *) xmalloc (sizeof (struct constructor_stack));
+  struct constructor_stack *p;
+
+  /* If we've exhausted any levels that didn't have braces,
+     pop them now.  */
+  while (constructor_stack->implicit)
+    {
+      if ((TREE_CODE (constructor_type) == RECORD_TYPE
+	   || TREE_CODE (constructor_type) == UNION_TYPE)
+	  && constructor_fields == 0)
+	process_init_element (pop_init_level (1));
+      else if (TREE_CODE (constructor_type) == ARRAY_TYPE
+	       && tree_int_cst_lt (constructor_max_index, constructor_index))
+	process_init_element (pop_init_level (1));
+      else
+	break;
+    }
+
+  p = (struct constructor_stack *) xmalloc (sizeof (struct constructor_stack));
   p->type = constructor_type;
   p->fields = constructor_fields;
   p->index = constructor_index;
@@ -5407,8 +5423,12 @@ push_init_level (implicit)
   constructor_elements = 0;
   constructor_pending_elts = 0;
 
-  if (TREE_CODE (constructor_type) == RECORD_TYPE
-      || TREE_CODE (constructor_type) == UNION_TYPE)
+  /* Don't die if an entire brace-pair level is superfluous
+     in the containing level.  */
+  if (constructor_type == 0)
+    ;
+  else if (TREE_CODE (constructor_type) == RECORD_TYPE
+	   || TREE_CODE (constructor_type) == UNION_TYPE)
     {
       /* Don't die if there are extra init elts at the end.  */
       if (constructor_fields == 0)
@@ -5426,7 +5446,8 @@ push_init_level (implicit)
     }
 
   /* Turn off constructor_incremental if type is a struct with bitfields.  */
-  check_init_type_bitfields (constructor_type);
+  if (constructor_type != 0)
+    check_init_type_bitfields (constructor_type);
 
   if (constructor_type == 0)
     {
@@ -5688,7 +5709,11 @@ void
 set_init_index (first, last)
      tree first, last;
 {
-  if (tree_int_cst_lt (first, constructor_unfilled_index))
+  if (TREE_CODE (first) != INTEGER_CST)
+    error_init ("nonconstant array index in initializer%s", " for `%s'", NULL);
+  else if (last != 0 && TREE_CODE (last) != INTEGER_CST)
+    error_init ("nonconstant array index in initializer%s", " for `%s'", NULL);
+  else if (tree_int_cst_lt (first, constructor_unfilled_index))
     error_init ("duplicate array index in initializer%s", " for `%s'", NULL);
   else
     {
@@ -5710,7 +5735,7 @@ set_init_index (first, last)
 
 /* Within a struct initializer, specify the next field to be initialized.  */
 
-void 
+void
 set_init_label (fieldname)
      tree fieldname;
 {
@@ -5851,11 +5876,13 @@ output_init_element (value, type, field, pending)
       if (!duplicate)
 	{
 	  if (! constructor_incremental)
-	    constructor_elements
-	      = tree_cons ((TREE_CODE (constructor_type) != ARRAY_TYPE
-			    ? field : NULL),
-			   digest_init (type, value, 0, 0),
-			   constructor_elements);
+	    {
+	      if (TREE_CODE (field) == INTEGER_CST)
+		field = copy_node (field);
+	      constructor_elements
+		= tree_cons (field, digest_init (type, value, 0, 0),
+			     constructor_elements);
+	    }
 	  else
 	    {
 	      /* Structure elements may require alignment.
@@ -6031,6 +6058,22 @@ output_pending_init_elements (all)
 	  assemble_zeros (nextpos - TREE_INT_CST_LOW (filled));
 	}
     }
+  else
+    {
+      /* If it's not incremental, just skip over the gap,
+	 so that after jumping to retry we will output the next
+	 successive element.  */
+      if (TREE_CODE (constructor_type) == RECORD_TYPE
+	  || TREE_CODE (constructor_type) == UNION_TYPE)
+	constructor_unfilled_fields = next;
+      else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+	{
+	  TREE_INT_CST_LOW (constructor_unfilled_index)
+	    = TREE_INT_CST_LOW (next);
+	  TREE_INT_CST_HIGH (constructor_unfilled_index)
+	    = TREE_INT_CST_HIGH (next);
+	}
+    }
 
   goto retry;
 }
@@ -6192,10 +6235,16 @@ process_init_element (value)
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
 	  else
-	    /* If we are doing the bookkeeping for an element that was
-	       directly output as a constructor,
-	       we must update constructor_unfilled_fields.  */
-	    constructor_unfilled_fields = 0;
+	    /* Do the bookkeeping for an element that was
+	       directly output as a constructor.  */
+	    {
+	      TREE_INT_CST_LOW (constructor_bit_index)
+		= TREE_INT_CST_LOW (DECL_SIZE (constructor_fields));
+	      TREE_INT_CST_HIGH (constructor_bit_index)
+		= TREE_INT_CST_HIGH (DECL_SIZE (constructor_fields));
+
+	      constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
+	    }
 
 	  constructor_fields = 0;
 	  break;
