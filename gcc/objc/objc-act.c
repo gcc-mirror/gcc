@@ -3470,8 +3470,9 @@ synth_forward_declarations ()
   UOBJC_CLASS_decl = define_decl (an_id, decl_specs);
   TREE_USED (UOBJC_CLASS_decl) = 1;
   DECL_ARTIFICIAL (UOBJC_CLASS_decl) = 1;
+  TREE_PUBLIC (UOBJC_CLASS_decl) = 0;
 
-  /* extern struct objc_class _OBJC_METACLASS_<my_name>; */
+  /* static struct objc_class _OBJC_METACLASS_<my_name>; */
 
   an_id = synth_id_with_class_suffix ("_OBJC_METACLASS",
 				      objc_implementation_context);
