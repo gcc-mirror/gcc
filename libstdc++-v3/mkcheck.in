@@ -307,7 +307,7 @@ test_file()
 	fi
     else
         # the file did not compile. Write out compilation info to the log file.
- echo "$CXX $CXX_FLAG $S_FLAG $INC_PATH -L$LIB_PATH -Wl,--rpath -Wl,$LIB_PATH \
+ echo "$CXX $CXX_FLAG $S_FLAG $INC_PATH -L$LIB_PATH -Wl,-rpath -Wl,$LIB_PATH \
          $SRC_NAME -o $EXENAME" 2>> $LOG_FILE
 
 	RESULT="-"
