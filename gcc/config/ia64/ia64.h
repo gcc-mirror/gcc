@@ -224,10 +224,13 @@ extern const char *ia64_fixed_range_string;
 
 #if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GNU_AS) != 0
 /* GNU AS.  */
-#define ASM_SPEC "%{mno-gnu-as:-N so}%{!mno-gnu-as: -x}"
+#define ASM_SPEC \
+  "%{mno-gnu-as:-N so} %{!mno-gnu-as:-x} %{mconstant-gp} %{mauto-pic}"
 #else
 /* Intel ias.  */
-#define ASM_SPEC "%{!mgnu-as:-N so}%{mgnu-as: -x}"
+#define ASM_SPEC \
+  "%{!mgnu-as:-N so} %{mgnu-as:-x} %{mconstant-gp:-M const_gp}\
+   %{mauto-pic:-M no_plabel}"
 #endif
 
 /* A C string constant that tells the GNU CC driver program options to pass to
