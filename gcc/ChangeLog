@@ -1,5 +1,10 @@
 2003-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* ifcvt.c (dead_or_predicable): Fail if there are any references
+	to tablejump in merge_bb other than the final JUMP_INSN.
+
+2003-03-19  Jakub Jelinek  <jakub@redhat.com>
+
 	* stmt.c (expand_start_case): Call emit_queue ().
 
 2003-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>

@@ -2848,11 +2848,28 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 
   if (GET_CODE (end) == JUMP_INSN)
     {
+      rtx tmp, insn, label;
+
       if (head == end)
 	{
 	  head = end = NULL_RTX;
 	  goto no_body;
 	}
+
+      /* If there is a jump table following merge_bb, fail
+	 if there are any insn between head and PREV_INSN (end)
+	 references it.  */
+      if ((label = JUMP_LABEL (end)) != NULL_RTX
+	  && (tmp = NEXT_INSN (label)) != NULL_RTX
+	  && GET_CODE (tmp) == JUMP_INSN
+	  && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+	      || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+	{
+	  for (insn = head; insn != PREV_INSN (end); insn = NEXT_INSN (insn))
+	    if (find_reg_note (insn, REG_LABEL, label))
+	      return FALSE;
+	}
+
       end = PREV_INSN (end);
     }
 
