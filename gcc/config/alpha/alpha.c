@@ -5916,6 +5916,13 @@ print_operand (file, x, code)
       fputc ((TARGET_FLOAT_VAX ? 'g' : 't'), file);
       break;
 
+    case '+':
+      /* Generates a nop after a noreturn call at the very end of the
+	 function.  */
+      if (next_real_insn (current_output_insn) == 0)
+	fprintf (file, "\n\tnop");
+      break;
+
     case '#':
       if (alpha_this_literal_sequence_number == 0)
 	alpha_this_literal_sequence_number = alpha_next_sequence_number++;
