@@ -42,13 +42,11 @@ import gnu.java.text.FormatBuffer;
 import gnu.java.text.FormatCharacterIterator;
 import gnu.java.text.StringFormatBuffer;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-import java.io.ObjectInputStream;
-import java.io.IOException;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -849,7 +847,7 @@ public class DecimalFormat extends NumberFormat
     // FIXME: handle Inf and NaN.
 
     // FIXME: do we have to respect minimum digits?
-    // What about leading zeros?  What about multiplier?
+    // What about multiplier?
 
     StringBuffer buf = int_buf;
     StringBuffer frac_buf = null;
@@ -857,7 +855,13 @@ public class DecimalFormat extends NumberFormat
     int start_index = index;
     int max = str.length();
     int exp_index = -1;
-    int last = index + MAXIMUM_INTEGER_DIGITS;
+    int last = index + maximumIntegerDigits; 
+
+    if (maximumFractionDigits > 0)
+      last += maximumFractionDigits + 1;
+    
+    if (useExponentialNotation)
+      last += minExponentDigits + 1;
 
     if (last > 0 && max > last)
       max = last;
