@@ -984,12 +984,12 @@ __fixunssfsi (SFtype a)
 
 int
 __gcc_bcmp (s1, s2, size)
-     char *s1, *s2;
+     unsigned char *s1, *s2;
      size_t size;
 {
   while (size > 0)
     {
-      char c1 = *s1++, c2 = *s2++;
+      unsigned char c1 = *s1++, c2 = *s2++;
       if (c1 != c2)
 	return c1 - c2;
       size--;
