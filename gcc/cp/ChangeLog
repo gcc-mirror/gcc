@@ -1,5 +1,21 @@
 2000-02-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (merge_primary_and_secondary_vtables_p): New macro.
+	* class.c (build_secondary_vtable): Reorganize.  Don't create a
+	new vtable under the new ABI.
+	(layout_vtable_decl): Don't add num_extra_vtbl_entries when
+	computing the size.
+	(build_vtbl_initializer): Don't return a CONSTRUCTOR; just return
+	the initializing elements.
+	(initialize_vtable): New function.
+	(dfs_finish_vtbls): Use it.
+	(dfs_accumulate_vtbl_inits): New function.
+	(finish_vtbls): Merge primary and secondary vtables under the new
+	ABI.
+	(finish_struct_1): Remove redundant call to layout_vtable_decl.
+	* init.c (expand_virtual_init): Deal with BINFO_VTABLEs that
+	aren't VAR_DECLs.
+
 	* class.c (build_vtable): New function, split out from ...
 	(get_vtable_decl): ... here, and ...
 	(build_secondary_vtable): ... here.

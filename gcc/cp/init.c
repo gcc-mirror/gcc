@@ -656,9 +656,21 @@ expand_virtual_init (binfo, decl)
   vtype = DECL_CONTEXT (TYPE_VFIELD (type));
   vtype_binfo = get_binfo (vtype, TREE_TYPE (TREE_TYPE (decl)), 0);
   vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (TYPE_VFIELD (type)), binfo));
-  assemble_external (vtbl);
-  TREE_USED (vtbl) = 1;
-  vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
+
+  if (TREE_CODE (vtbl) == VAR_DECL)
+    {
+      assemble_external (vtbl);
+      TREE_USED (vtbl) = 1;
+      vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
+    }
+  else
+    /* Under the new ABI, secondary vtables are stored with the
+       primary vtable.  So, the BINFO_VTABLE may be an expression for
+       computing the secondary vtable, rather than the secondary
+       vtable itself.  */
+    my_friendly_assert (merge_primary_and_secondary_vtables_p (), 
+			20000220);
+
   /* Under the new ABI, we need to point into the middle of the
      vtable.  */
   if (vbase_offsets_in_vtable_p ())
