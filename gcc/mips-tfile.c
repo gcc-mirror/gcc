@@ -1032,7 +1032,7 @@ typedef struct tag {
   struct forward *forward_ref;	/* list of forward references */
   bt_t		  basic_type;	/* bt_Struct, bt_Union, or bt_Enum */
   symint_t	  ifd;		/* file # tag defined in */
-  symint_t	  index;	/* index within file's local symbols */
+  symint_t	  indx;		/* index within file's local symbols */
 } tag_t;
 
 
@@ -1066,7 +1066,7 @@ typedef struct shash {
   struct shash	*next;		/* next hash value */
   char		*string;	/* string we are hashing */
   symint_t	 len;		/* string length */
-  symint_t	 index;		/* index within string table */
+  symint_t	 indx;		/* index within string table */
   EXTR		*esym_ptr;	/* global symbol pointer */
   SYMR		*sym_ptr;	/* local symbol pointer */
   SYMR		*end_ptr;	/* symbol pointer to end block */
@@ -1087,7 +1087,7 @@ typedef struct shash {
 typedef struct thash {
   struct thash	*next;		/* next hash value */
   AUXU		 type;		/* type we are hashing */
-  symint_t	 index;		/* index within string table */
+  symint_t	 indx;		/* index within string table */
 } thash_t;
 
 
@@ -1566,17 +1566,17 @@ static EXTR	*orig_ext_syms;			/* external symbols */
 #define CHECK(num,max,str) \
   (((unsigned long)num > (unsigned long)max) ? out_of_bounds (num, max, str, __LINE__) : 0)
 
-#define ORIG_LINENUM(index)	(CHECK ((index), orig_sym_hdr.cbLine,    "line#"), (index) + orig_linenum)
-#define ORIG_DENSE(index)	(CHECK ((index), orig_sym_hdr.idnMax,    "dense"), (index) + orig_dense)
-#define ORIG_PROCS(index)	(CHECK ((index), orig_sym_hdr.ipdMax,    "procs"), (index) + orig_procs)
-#define ORIG_FILES(index)	(CHECK ((index), orig_sym_hdr.ifdMax,    "funcs"), (index) + orig_files)
-#define ORIG_LSYMS(index)	(CHECK ((index), orig_sym_hdr.isymMax,   "lsyms"), (index) + orig_local_syms)
-#define ORIG_LSTRS(index)	(CHECK ((index), orig_sym_hdr.issMax,    "lstrs"), (index) + orig_local_strs)
-#define ORIG_ESYMS(index)	(CHECK ((index), orig_sym_hdr.iextMax,   "esyms"), (index) + orig_ext_syms)
-#define ORIG_ESTRS(index)	(CHECK ((index), orig_sym_hdr.issExtMax, "estrs"), (index) + orig_ext_strs)
-#define ORIG_OPT(index)		(CHECK ((index), orig_sym_hdr.ioptMax,   "opt"),   (index) + orig_opt_syms)
-#define ORIG_AUX(index)		(CHECK ((index), orig_sym_hdr.iauxMax,   "aux"),   (index) + orig_aux_syms)
-#define ORIG_RFDS(index)	(CHECK ((index), orig_sym_hdr.crfd,      "rfds"),  (index) + orig_rfds)
+#define ORIG_LINENUM(indx)	(CHECK ((indx), orig_sym_hdr.cbLine,    "line#"), (indx) + orig_linenum)
+#define ORIG_DENSE(indx)	(CHECK ((indx), orig_sym_hdr.idnMax,    "dense"), (indx) + orig_dense)
+#define ORIG_PROCS(indx)	(CHECK ((indx), orig_sym_hdr.ipdMax,    "procs"), (indx) + orig_procs)
+#define ORIG_FILES(indx)	(CHECK ((indx), orig_sym_hdr.ifdMax,    "funcs"), (indx) + orig_files)
+#define ORIG_LSYMS(indx)	(CHECK ((indx), orig_sym_hdr.isymMax,   "lsyms"), (indx) + orig_local_syms)
+#define ORIG_LSTRS(indx)	(CHECK ((indx), orig_sym_hdr.issMax,    "lstrs"), (indx) + orig_local_strs)
+#define ORIG_ESYMS(indx)	(CHECK ((indx), orig_sym_hdr.iextMax,   "esyms"), (indx) + orig_ext_syms)
+#define ORIG_ESTRS(indx)	(CHECK ((indx), orig_sym_hdr.issExtMax, "estrs"), (indx) + orig_ext_strs)
+#define ORIG_OPT(indx)		(CHECK ((indx), orig_sym_hdr.ioptMax,   "opt"),   (indx) + orig_opt_syms)
+#define ORIG_AUX(indx)		(CHECK ((indx), orig_sym_hdr.iauxMax,   "aux"),   (indx) + orig_aux_syms)
+#define ORIG_RFDS(indx)		(CHECK ((indx), orig_sym_hdr.crfd,      "rfds"),  (indx) + orig_rfds)
 
 /* Various other statics.  */
 static HDRR	symbolic_header;		/* symbolic header */
@@ -1879,9 +1879,8 @@ add_string (vp, hash_tbl, start, end_p1, ret_hash)
       hash_tbl[hi] = hash_ptr;
 
       hash_ptr->len = len;
-      hash_ptr->index = vp->num_allocated;
-      hash_ptr->string = p =
-	& vp->last->datum->byte[ vp->objects_last_page ];
+      hash_ptr->indx = vp->num_allocated;
+      hash_ptr->string = p = & vp->last->datum->byte[ vp->objects_last_page ];
 
       vp->objects_last_page += len+1;
       vp->num_allocated += len+1;
@@ -1895,7 +1894,7 @@ add_string (vp, hash_tbl, start, end_p1, ret_hash)
   if (ret_hash != (shash_t **)0)
     *ret_hash = hash_ptr;
 
-  return hash_ptr->index;
+  return hash_ptr->indx;
 }
 
 
@@ -1928,7 +1927,7 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
   psym->value = value;
   psym->st = (unsigned) type;
   psym->sc = (unsigned) storage;
-  psym->index = indx;
+  psym->indx = indx;
   psym->iss = (str_start == (const char *)0)
 		? 0
 		: add_string (&cur_file_ptr->strings,
@@ -2016,13 +2015,13 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 	    }
 
 	  cur_file_ptr->cur_scope = pscope->prev;
-	  psym->index = pscope->lnumber;	/* blk end gets begin sym # */
+	  psym->indx = pscope->lnumber;		/* blk end gets begin sym # */
 
 	  if (storage != sc_Info)
 	    psym->iss = pscope->lsym->iss;	/* blk end gets same name */
 
 	  if (begin_type == st_File || begin_type == st_Block)
-	    pscope->lsym->index = ret+1; /* block begin gets next sym # */
+	    pscope->lsym->indx = ret+1;		/* block begin gets next sym # */
 
 	  /* Functions push two or more aux words as follows:
 	     1st word: index+1 of the end symbol
@@ -2031,14 +2030,14 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 	  else
 	    {
 	      symint_t type;
-	      pscope->lsym->index = add_aux_sym_symint (ret+1);
+	      pscope->lsym->indx = add_aux_sym_symint (ret+1);
 	      type = add_aux_sym_tir (&last_func_type_info,
 				      hash_no,
 				      &cur_file_ptr->thash_head[0]);
 	      if (last_func_eptr)
 		{
 		  last_func_eptr->ifd = cur_file_ptr->file_index;
-		  last_func_eptr->asym.index = type;
+		  last_func_eptr->asym.indx = type;
 		}
 	    }
 
@@ -2113,7 +2112,7 @@ add_ext_symbol (str_start, str_end_p1, type, storage, value, indx, ifd)
   psym->asym.value = value;
   psym->asym.st    = (unsigned) type;
   psym->asym.sc    = (unsigned) storage;
-  psym->asym.index = indx;
+  psym->asym.indx  = indx;
   psym->asym.iss   = (str_start == (const char *)0)
 			? 0
 			: add_string (&ext_strings,
@@ -2238,14 +2237,14 @@ add_aux_sym_tir (t, state, hash_tbl)
 	}
 
       if (hash_ptr != (thash_t *)0 && state == hash_yes)
-	return hash_ptr->index;
+	return hash_ptr->indx;
 
       if (hash_ptr == (thash_t *)0)
 	{
 	  hash_ptr = allocate_thash ();
 	  hash_ptr->next = hash_tbl[hi];
 	  hash_ptr->type = aux;
-	  hash_ptr->index = vp->num_allocated;
+	  hash_ptr->indx = vp->num_allocated;
 	  hash_tbl[hi] = hash_ptr;
 	}
     }
@@ -2281,7 +2280,7 @@ add_aux_sym_tir (t, state, hash_tbl)
       || t->basic_type == bt_Enum)
     {
       register symint_t file_index = t->tag_ptr->ifd;
-      register symint_t sym_index  = t->tag_ptr->index;
+      register symint_t sym_index  = t->tag_ptr->indx;
 
       if (t->unknown_tag)
 	{
@@ -2335,10 +2334,10 @@ add_aux_sym_tir (t, state, hash_tbl)
 /* Add a tag to the tag table (unless it already exists).  */
 
 STATIC tag_t *
-get_tag (tag_start, tag_end_p1, index, basic_type)
+get_tag (tag_start, tag_end_p1, indx, basic_type)
      const char *tag_start;		/* 1st byte of tag name */
      const char *tag_end_p1;		/* 1st byte after tag name */
-     symint_t index;			/* index of tag start block */
+     symint_t indx;			/* index of tag start block */
      bt_t basic_type;			/* bt_Struct, bt_Union, or bt_Enum */
 {
   shash_t *hash_ptr;
@@ -2352,11 +2351,11 @@ get_tag (tag_start, tag_end_p1, index, basic_type)
       && hash_ptr->tag_ptr != (tag_t *)0)
   {
     tag_ptr = hash_ptr->tag_ptr;
-    if (index != indexNil)
+    if (indx != indexNil)
       {
 	tag_ptr->basic_type = basic_type;
 	tag_ptr->ifd	    = cur_file_ptr->file_index;
-	tag_ptr->index	    = index;
+	tag_ptr->indx	    = indx;
       }
     return tag_ptr;
   }
@@ -2372,8 +2371,8 @@ get_tag (tag_start, tag_end_p1, index, basic_type)
   tag_ptr->hash_ptr	= hash_ptr;
   tag_ptr->same_name	= hash_ptr->tag_ptr;
   tag_ptr->basic_type	= basic_type;
-  tag_ptr->index	= index;
-  tag_ptr->ifd		= (index == indexNil) ? -1 : cur_file_ptr->file_index;
+  tag_ptr->indx		= indx;
+  tag_ptr->ifd		= (indx == indexNil) ? -1 : cur_file_ptr->file_index;
   tag_ptr->same_block	= cur_tag_head->first_tag;
 
   cur_tag_head->first_tag = tag_ptr;
@@ -2432,7 +2431,7 @@ add_unknown_tag (ptag)
       f_next = f_next->next;
 
       f_cur->ifd_ptr->isym = file_index;
-      f_cur->index_ptr->rndx.index = sym_index;
+      f_cur->index_ptr->rndx.indx = sym_index;
 
       free_forward (f_cur);
     }
@@ -2905,7 +2904,7 @@ parse_def (name_start)
   EXTR *eptr		  = (EXTR *)0;		/* ext. sym equivalent to def*/
   int is_function	  = 0;			/* != 0 if function */
   symint_t value	  = 0;
-  symint_t index	  = cur_file_ptr->void_type;
+  symint_t indx		  = cur_file_ptr->void_type;
   int error_line	  = 0;
   symint_t arg_number;
   symint_t temp_array[ N_TQ ];
@@ -3300,10 +3299,10 @@ parse_def (name_start)
      type word in the aux. symbol table.  */
 
   if (symbol_type == st_Block || symbol_type == st_End)
-    index = 0;
+    indx = 0;
 
   else if (inside_enumeration)
-    index = cur_file_ptr->void_type;
+    indx = cur_file_ptr->void_type;
 
   else
     {
@@ -3330,9 +3329,9 @@ parse_def (name_start)
 	  return;
 	}
 
-      index = add_aux_sym_tir (&t,
-			       hash_yes,
-			       &cur_file_ptr->thash_head[0]);
+      indx = add_aux_sym_tir (&t,
+			      hash_yes,
+			      &cur_file_ptr->thash_head[0]);
     }
 
 
@@ -3340,10 +3339,10 @@ parse_def (name_start)
      external symbol.  */
 
   if (eptr != (EXTR *)0
-      && (eptr->asym.index == indexNil || cur_proc_ptr == (PDR *)0))
+      && (eptr->asym.indx == indexNil || cur_proc_ptr == (PDR *)0))
     {
       eptr->ifd = cur_file_ptr->file_index;
-      eptr->asym.index = index;
+      eptr->asym.indx = indx;
     }
 
 
@@ -3385,7 +3384,7 @@ parse_def (name_start)
       /* Members of structures and unions that aren't bitfields, need
 	 to adjust the value from a byte offset to a bit offset.
 	 Members of enumerations do not have the value adjusted, and
-	 can be distinguished by index == indexNil.  For enumerations,
+	 can be distinguished by indx == indexNil.  For enumerations,
 	 update the maximum enumeration value.  */
 
     case st_Member:
@@ -3406,7 +3405,7 @@ parse_def (name_start)
       symint_t isym = add_local_symbol (name_start, name_end_p1,
 					symbol_type, storage_class,
 					value,
-					index);
+					indx);
 
       /* deal with struct, union, and enum tags.  */
       if (symbol_type == st_Block)
@@ -3430,7 +3429,7 @@ parse_def (name_start)
 	      f_next = f_next->next;
 
 	      f_cur->ifd_ptr->isym = file_index;
-	      f_cur->index_ptr->rndx.index = isym;
+	      f_cur->index_ptr->rndx.indx = isym;
 
 	      free_forward (f_cur);
 	    }
@@ -4565,7 +4564,7 @@ copy_object __proto((void))
 			     (st_t) eptr->asym.st,
 			     (sc_t) eptr->asym.sc,
 			     eptr->asym.value,
-			     (symint_t)((eptr->asym.index == indexNil) ? indexNil : 0),
+			     (symint_t)((eptr->asym.indx == indexNil) ? indexNil : 0),
 			     (ifd < orig_sym_hdr.ifdMax) ? remap_file_number[ ifd ] : ifd);
     }
 
@@ -4640,7 +4639,7 @@ copy_object __proto((void))
 		    orig_str_hash[hash_index] = shash_ptr;
 
 		    shash_ptr->len = len;
-		    shash_ptr->index = indexNil;
+		    shash_ptr->indx = indexNil;
 		    shash_ptr->string = str;
 		    shash_ptr->sym_ptr = sym;
 		  }
@@ -4999,17 +4998,17 @@ pfatal_with_name (msg)
    ORIG_xxx macros, but the function never returns.  */
 
 static int
-out_of_bounds (index, max, str, prog_line)
-     symint_t index;		/* index that is out of bounds */
+out_of_bounds (indx, max, str, prog_line)
+     symint_t indx;		/* index that is out of bounds */
      symint_t max;		/* maximum index */
      const char *str;		/* string to print out */
      int prog_line;		/* line number within mips-tfile.c */
 {
-  if (index < max)		/* just in case */
+  if (indx < max)		/* just in case */
     return 0;
 
   fprintf (stderr, "%s, %s:%ld index %u is out of bounds for %s, max is %u, mips-tfile.c line# %d\n",
-	   progname, input_name, line_number, index, str, max, prog_line);
+	   progname, input_name, line_number, indx, str, max, prog_line);
 
   exit (1);
   return 0;			/* turn off warning messages */

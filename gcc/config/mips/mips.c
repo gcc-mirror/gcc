@@ -2845,17 +2845,13 @@ override_options ()
     }
 #endif
 
-#ifdef _IOLBF
+#if defined(_IOLBF)
+#if defined(ultrix) || defined(__ultrix) || defined(__OSF1__) || defined(__osf__) || defined(osf)
   /* If -mstats and -quiet, make stderr line buffered.  */
   if (quiet_flag && TARGET_STATS)
-    {
-#if defined (MIPS_BSD43) || defined (MIPS_NEWS)
-      setlinebuf (stderr);
-#else
-      setvbuf (stderr, (char *)0, _IOLBF, BUFSIZ);
+    setvbuf (stderr, (char *)0, _IOLBF, BUFSIZ);
 #endif
 #endif
-    }
 
   /* Set up the classification arrays now.  */
   mips_rtx_classify[(int)PLUS]  = CLASS_ADD_OP;
