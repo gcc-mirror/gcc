@@ -379,7 +379,7 @@ mudflap_init (void)
   mf_cache_mask_decl = mf_make_builtin (VAR_DECL, "__mf_lc_mask",
                                         mf_uintptr_type);
   /* Don't process these in mudflap_enqueue_decl, should they come by
-     there for some reason. */
+     there for some reason.  */
   mf_mark (mf_cache_array_decl);
   mf_mark (mf_cache_shift_decl);
   mf_mark (mf_cache_mask_decl);
@@ -788,7 +788,7 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
                 /* Don't instrument this access if the underlying
                    variable is not "eligible".  This test matches
                    those arrays that have only known-valid indexes,
-                   and thus are not labeled TREE_ADDRESSABLE. */
+                   and thus are not labeled TREE_ADDRESSABLE.  */
                 if (! mf_decl_eligible_p (var))
                   return;
                 else

@@ -3091,7 +3091,7 @@ dbxout_parms (tree parms)
 	       That is, its address was passed in a register.
 	       Output it as if it lived in that register.
 	       The debugger will know from the type
-	       that it was actually passed by invisible reference. */
+	       that it was actually passed by invisible reference.  */
 
 	    code = DBX_REGPARM_STABS_CODE;
  
