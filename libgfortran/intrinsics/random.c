@@ -462,6 +462,9 @@ prefix(random_r4) (GFC_REAL_4 *x)
     {
       kiss = kiss_random_kernel ();
       *x = (GFC_REAL_4)kiss / (GFC_REAL_4)(~(GFC_UINTEGER_4) 0);
+      /* Burn a random number, so the REAL*4 and REAL*8 functions
+         produce similar sequences of random numbers.  */
+      kiss = kiss_random_kernel ();
     }
   while (*x == 1.0);
 
@@ -482,7 +485,7 @@ prefix(random_r8) (GFC_REAL_8 *x)
 	     + kiss_random_kernel ();
       *x = (GFC_REAL_8)kiss / (GFC_REAL_8)(~(GFC_UINTEGER_8) 0);
     }
-  while (*x != 0);
+  while (*x == 0);
 
 }
 
