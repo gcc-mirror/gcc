@@ -2812,6 +2812,8 @@ package body Sem_Ch12 is
          end if;
 
          for J in reverse 1 .. Num_Scopes loop
+            Scope_Stack.Table (Scope_Stack.Last - J + 1).First_Use_Clause :=
+              Use_Clauses (J);
             Install_Use_Clauses (Use_Clauses (J));
          end  loop;
 
