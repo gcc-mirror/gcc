@@ -7833,31 +7833,18 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
          compiler accepts it).
 
          John also confirms that deduction should proceed as in a function
-         call. Which implies the usual ARG and PARM bashing as DEDUCE_CALL.
+         call. Which implies the usual ARG and PARM conversions as DEDUCE_CALL.
          However, in ordering, ARG can have REFERENCE_TYPE, but no argument
          to an actual call can have such a type.
          
-         When deducing against a REFERENCE_TYPE, we can either not change
-         PARM's type, or we can change ARG's type too. The latter, though
-         seemingly more safe, turns out to give the following quirk. Consider
-         deducing a call to a `const int *' with the following template 
-         function parameters 
-           #1; T const *const &   ; T = int
-           #2; T *const &         ; T = const int
-           #3; T *                ; T = const int
-         It looks like #1 is the more specialized.  Taken pairwise, #1 is
-         more specialized than #2 and #2 is more specialized than #3, yet
-         there is no ordering between #1 and #3.
-         
-         So, if ARG is a reference, we look though it when PARM is
-         not a refence. When both are references we don't change either.  */
+         If both ARG and PARM are REFERENCE_TYPE, we change neither.
+         If only ARG is a REFERENCE_TYPE, we look through that and then
+         proceed as with DEDUCE_CALL (which could further convert it).  */
       if (TREE_CODE (*arg) == REFERENCE_TYPE)
         {
           if (TREE_CODE (*parm) == REFERENCE_TYPE)
             return 0;
           *arg = TREE_TYPE (*arg);
-          result |= UNIFY_ALLOW_OUTER_LESS_CV_QUAL;
-          goto skip_arg;
         }
       break;
     default:
@@ -7890,7 +7877,6 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
 	*arg = TYPE_MAIN_VARIANT (*arg);
     }
   
-  skip_arg:;
   /* [temp.deduct.call]
      
      If P is a cv-qualified type, the top level cv-qualifiers

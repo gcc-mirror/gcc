@@ -1,5 +1,11 @@
 2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (maybe_adjust_types_for_deduction, DEDUCE_ORDER case):
+	Remove spurious information in comment. Allow further
+	adjustments of REFERENCE_TYPE args.
+
+2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* errfn.c (cp_deprecated): Tweak diagnostic text.
 	* parse.y (new_initializer): Deprecate initializer lists
 	extension.
