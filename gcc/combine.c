@@ -6536,7 +6536,7 @@ apply_distributive_law (x)
 	  || (GET_MODE_CLASS (GET_MODE (lhs))
 	      != GET_MODE_CLASS (GET_MODE (SUBREG_REG (lhs))))
 	  || (GET_MODE_SIZE (GET_MODE (lhs))
-	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))))
+	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))))
 	  || GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))) > UNITS_PER_WORD)
 	return x;
 
