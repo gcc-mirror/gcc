@@ -1,3 +1,8 @@
+2004-06-10  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.c (gimplify_modify_expr): Don't force a temporary
+	of an aggregate_value_p type.
+
 2004-06-10  Jeff Law  <law@redhat.com>
 
 	* fold-const.c (fold_inf_compare): Avoid creating non-gimple

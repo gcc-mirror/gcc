@@ -2493,12 +2493,16 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
 
 	 FIXME this should be handled by the is_gimple_rhs predicate.  */
 
-      if (TREE_CODE (*from_p) == CALL_EXPR
-	  || (flag_non_call_exceptions && tree_could_trap_p (*from_p))
-	  /* If we're dealing with a renamable type, either source or dest
-	     must be a renamed variable.  */
-	  || (is_gimple_reg_type (TREE_TYPE (*from_p))
-	      && !is_gimple_reg (*to_p)))
+      if (aggregate_value_p (TREE_TYPE (*from_p), NULL_TREE))
+	/* Don't force a temp of a large aggregate type; the copy could be
+	   arbitrarily expensive.  Instead we will generate a V_MAY_DEF for
+	   the assignment.  */;
+      else if (TREE_CODE (*from_p) == CALL_EXPR
+	       || (flag_non_call_exceptions && tree_could_trap_p (*from_p))
+	       /* If we're dealing with a renamable type, either source or dest
+		  must be a renamed variable.  */
+	       || (is_gimple_reg_type (TREE_TYPE (*from_p))
+		   && !is_gimple_reg (*to_p)))
 	gimplify_expr (from_p, pre_p, post_p, is_gimple_val, fb_rvalue);
 
       /* If the value being copied is of variable width, expose the length
