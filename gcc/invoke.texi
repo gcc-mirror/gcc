@@ -4769,11 +4769,15 @@ These @samp{-m} options are defined for the MIPS family of computers:
 @item -mcpu=@var{cpu type}
 Assume the defaults for the machine type @var{cpu type} when scheduling
 instructions.  The choices for @var{cpu type} are @samp{r2000}, @samp{r3000},
-@samp{r4000}, @samp{r4400}, @samp{r4600}, and @samp{r6000}.  While picking a
-specific @var{cpu type} will schedule things appropriately for that
-particular chip, the compiler will not generate any code that does not
-meet level 1 of the MIPS ISA (instruction set architecture) without
-the @samp{-mips2} or @samp{-mips3} switches being used.
+@samp{r3900}, @samp{r4000}, @samp{r4100}, @samp{r4300}, @samp{r4400},
+@samp{r4600}, @samp{r4650}, @samp{r5000}, @samp{r6000}, @samp{r8000},
+and @samp{orion}.  Additionally, the @samp{r2000}, @samp{r3000},
+@samp{r4000}, @samp{r5000}, and @samp{r6000} can be abbreviated as
+@samp{r2k} (or @samp{r2K}), @samp{r3k}, etc.  While picking a specific
+@var{cpu type} will schedule things appropriately for that particular
+chip, the compiler will not generate any code that does not meet level 1
+of the MIPS ISA (instruction set architecture) without a @samp{-mipsX}
+or @samp{-mabi} switch being used.
 
 @item -mips1
 Issue instructions from level 1 of the MIPS ISA.  This is the default.
@@ -4789,8 +4793,9 @@ Issue instructions from level 3 of the MIPS ISA (64 bit instructions).
 @samp{r4000} is the default @var{cpu type} at this ISA level.
 
 @item -mips4
-Issue instructions from level 4 of the MIPS ISA.  @samp{r8000} is the
-default @var{cpu type} at this ISA level.
+Issue instructions from level 4 of the MIPS ISA (conditional move,
+prefetch, enhanced FPU instructions).  @samp{r8000} is the default
+@var{cpu type} at this ISA level.
 
 @item -mfp32
 Assume that 32 32-bit floating point registers are available.  This is
@@ -4830,10 +4835,15 @@ the smaller of the width of longs or the width of general purpose
 registers (which in turn depends on the ISA).
 
 @itemx -mabi=32
+@itemx -mabi=o64
 @itemx -mabi=n32
 @itemx -mabi=64
 @itemx -mabi=eabi
-Generate code for the indicated ABI.
+Generate code for the indicated ABI.  The default instruction level is
+@samp{-mips1} for @samp{32}, @samp{-mips3} for @samp{n32}, and
+@samp{-mips4} otherwise.  Conversely, with @samp{-mips1} or
+@samp{-mips2}, the default ABI is @samp{32}; otherwise, the default ABI
+is @samp{64}.
 
 @item -mmips-as
 Generate code for the MIPS assembler, and invoke @file{mips-tfile} to
@@ -4957,6 +4967,14 @@ as on the @samp{r4650} chip.
 @item -m4650
 Turns on @samp{-msingle-float}, @samp{-mmad}, and, at least for now,
 @samp{-mcpu=r4650}.
+
+@item -mips16
+@itemx -mno-mips16
+Enable 16-bit instructions.
+
+@item -mentry
+Use the entry and exit pseudo ops.  This option can only be used with
+@samp{-mips16}.
 
 @item -EL
 Compile code for the processor in little endian mode.
