@@ -25,6 +25,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "insn-config.h"
+#include "recog.h"
 #include "toplev.h"
 #include "obstack.h"
 #include "tm_p.h"
@@ -225,7 +227,7 @@ keep_with_call_p (insn)
     {
       if (GET_CODE (SET_DEST (set)) == REG
 	  && fixed_regs[REGNO (SET_DEST (set))]
-	  && general_operand (SET_SRC (set)))
+	  && general_operand (SET_SRC (set), VOIDmode))
 	return true;
       if (GET_CODE (SET_SRC (set)) == REG
 	  && FUNCTION_VALUE_REGNO_P (REGNO (SET_SRC (set)))
