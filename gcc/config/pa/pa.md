@@ -5721,8 +5721,6 @@
   ""
   "*
 {
-  extern int optimize;
-
   if (GET_MODE (insn) == SImode)
     return \"b %l0%#\";
 
@@ -5731,61 +5729,7 @@
       && get_attr_length (insn) != 16)
     return \"b%* %l0\";
 
-  /* An unconditional branch which can not reach its target.
-
-     We need to be able to use %r1 as a scratch register; however,
-     we can never be sure whether or not it's got a live value in
-     it.  Therefore, we must restore its original value after the
-     jump.
-
-     To make matters worse, we don't have a stack slot which we
-     can always clobber.  sp-12/sp-16 shouldn't ever have a live
-     value during a non-optimizing compilation, so we use those
-     slots for now.  We don't support very long branches when
-     optimizing -- they should be quite rare when optimizing.
-
-     Really the way to go long term is a register scavenger; goto
-     the target of the jump and find a register which we can use
-     as a scratch to hold the value in %r1.  */
-
-  /* We don't know how to register scavenge yet.  */
-  if (optimize)
-    abort ();
-
-  /* First store %r1 into the stack.  */
-  output_asm_insn (\"stw %%r1,-16(%%r30)\", operands);
-
-  /* Now load the target address into %r1 and do an indirect jump
-     to the value specified in %r1.  Be careful to generate PIC
-     code as needed.  */
-  if (flag_pic)
-    {
-      rtx xoperands[2];
-      xoperands[0] = operands[0];
-      if (TARGET_SOM || ! TARGET_GAS)
-	{
-	  xoperands[1] = gen_label_rtx ();
-
-	  output_asm_insn (\"{bl|b,l} .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\",
-			   xoperands);
-	  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-				     CODE_LABEL_NUMBER (xoperands[1]));
-	  output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\", xoperands);
-	}
-      else
-	{
-	  output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
-	  output_asm_insn (\"addil L'%l0-$PIC_pcrel$0+4,%%r1\", xoperands);
-	  output_asm_insn (\"ldo R'%l0-$PIC_pcrel$0+8(%%r1),%%r1\", xoperands);
-	}
-      output_asm_insn (\"bv %%r0(%%r1)\", xoperands);
-    }
-  else
-    output_asm_insn (\"ldil L'%l0,%%r1\\n\\tbe R'%l0(%%sr4,%%r1)\", operands);;
-
-  /* And restore the value of %r1 in the delay slot.  We're not optimizing,
-     so we know nothing else can be in the delay slot.  */
-  return \"ldw -16(%%r30),%%r1\";
+  return output_lbranch (operands[0], insn);
 }"
   [(set_attr "type" "uncond_branch")
    (set_attr "pa_combine_type" "uncond_branch")
@@ -8051,5 +7995,40 @@
      builtin_longjmp are the stack and frame pointers.  */
   emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
   emit_insn (gen_blockage ());
+  DONE;
+}")
+
+;; Allocate new stack space and update the saved stack pointer in the
+;; frame marker.  The HP C compilers also copy additional words in the
+;; frame marker.  The 64-bit compiler copies words at -48, -32 and -24.
+;; The 32-bit compiler copies the word at -16 (Static Link).  We
+;; currently don't copy these values.
+;;
+;; Since the copy of the frame marker can't be done atomically, I
+;; suspect that using it for unwind purposes may be somewhat unreliable.
+;; The HP compilers appear to raise the stack and copy the frame
+;; marker in a strict instruction sequence.  This suggests that the
+;; unwind library may check for an alloca sequence when ALLOCA_FRAME
+;; is set in the callinfo data.  We currently don't set ALLOCA_FRAME
+;; as GAS doesn't support it, or try to keep the instructions emitted
+;; here in strict sequence.
+(define_expand "allocate_stack"
+  [(match_operand 0 "" "")
+   (match_operand 1 "" "")]
+  ""
+  "
+{
+  /* Since the stack grows upward, we need to store virtual_stack_dynamic_rtx
+     in operand 0 before adjusting the stack.  */
+  emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
+  anti_adjust_stack (operands[1]);
+  if (TARGET_HPUX_UNWIND_LIBRARY)
+    {
+      rtx dst = gen_rtx_MEM (word_mode,
+  			     gen_rtx_PLUS (word_mode, stack_pointer_rtx,
+			  		   GEN_INT (TARGET_64BIT ? -8 : -4)));
+
+      emit_move_insn (dst, frame_pointer_rtx);
+    }
   DONE;
 }")

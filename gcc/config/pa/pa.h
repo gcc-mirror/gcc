@@ -211,6 +211,15 @@ extern int target_flags;
    definition symbols is buggy prior to HP-UX 11.X.  */
 #define TARGET_SOM_SDEF 0
 
+/* Define to a C expression evaluating to true to save the entry value
+   of SP in the current frame marker.  This is normally unnecessary.
+   However, the HP-UX unwind library looks at the SAVE_SP callinfo flag.
+   HP compilers don't use this flag but it is supported by the assembler.
+   We set this flag to indicate that register %r3 has been saved at the
+   start of the frame.  Thus, when the HP unwind library is used, we
+   need to generate additional code to save SP into the frame marker.  */
+#define TARGET_HPUX_UNWIND_LIBRARY 0
+
 /* Macro to define tables used to set the flags.  This is a
    list in braces of target switches with each switch being
    { "NAME", VALUE, "HELP_STRING" }.  VALUE is the bits to set,
@@ -714,9 +723,13 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
 /* The weird HPPA calling conventions require a minimum of 48 bytes on
    the stack: 16 bytes for register saves, and 32 bytes for magic.
    This is the difference between the logical top of stack and the
-   actual sp.  */
+   actual sp.
+
+   On the 64-bit port, the HP C compiler allocates a 48-byte frame
+   marker, although the runtime documentation only describes a 16
+   byte marker.  For compatibility, we allocate 48 bytes.  */
 #define STACK_POINTER_OFFSET \
-  (TARGET_64BIT ? -(current_function_outgoing_args_size + 16): -32)
+  (TARGET_64BIT ? -(current_function_outgoing_args_size + 48): -32)
 
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
   (TARGET_64BIT				\
