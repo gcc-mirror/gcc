@@ -2840,9 +2840,9 @@ value @code{STARTING_FRAME_OFFSET}.
 @findex STACK_ALIGNMENT_NEEDED
 @item STACK_ALIGNMENT_NEEDED
 Define to zero to disable final alignment of the stack during reload.
-The non-zero default for this macro is suitable for most ports.
+The nonzero default for this macro is suitable for most ports.
 
-On ports where @code{STARTING_FRAME_OFFSET} is non-zero or where there
+On ports where @code{STARTING_FRAME_OFFSET} is nonzero or where there
 is a register save block following the local block that doesn't require
 alignment to @code{STACK_BOUNDARY}, it may be beneficial to disable
 stack alignment and do it in the backend.

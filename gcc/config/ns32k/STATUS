@@ -28,7 +28,7 @@ correct if not ideal.
 gcc.dg/debug/debug-1.c scan-assembler xyzzy:
 At -O3 level of optimization, variable xyzzy gets eliminated. Isn't it
 reasonable that the debugging info is gone too? Indeed, the
-documentation says this is expected behaviour.
+documentation says this is expected behavior.
 
 gcc.dg/debug/debug-2.c scan-assembler xyzzy:
 As for the above.
@@ -61,7 +61,7 @@ gcc.dg/uninit-A.c -O2 -Wall -S
 Bogus warnings, almost certainly not backend.
 
 gcc.dg/special/weak-1.c execution test
-X  This fails for i386 too. I don't understand what the correct behaviour
+X  This fails for i386 too. I don't understand what the correct behavior
 for this test is.
 
 gcc.dg/special/gcsec-1.c (test for excess errors)

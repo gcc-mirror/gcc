@@ -371,7 +371,7 @@ pack_d ( fp_number_type *  src)
 	       if (low >= ((halffractype)1 << HALFFRACBITS))
 		 /* We don't shift left, since it has just become the
 		    smallest normal number, whose implicit 1 bit is
-		    now indicated by the non-zero exponent.  */
+		    now indicated by the nonzero exponent.  */
 		 exp++;
 	     }
 	 }
