@@ -1,3 +1,9 @@
+2002-10-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h: Rework comments; re-sort target macro definitions 
+	according to the sequence they are defined in the manual.
+	(POINTER_BOUNDARY): Remove.
+
 2002-10-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (round_frame_size): Replace 8 with
