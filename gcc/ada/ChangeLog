@@ -1,3 +1,7 @@
+2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gigi.h (yyparse): Remove.
+
 2002-03-23  Florian Weimer  <fw@deneb.enyo.de>
 
 	* gnat_rm.texi: Sync with ACT version. 

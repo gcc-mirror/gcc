@@ -161,10 +161,6 @@ extern const char *ref_filename;
    block, if any.  */
 extern tree gnu_block_stack;
 
-/* For most front-ends, this is the parser for the language.  For us, we
-   process the GNAT tree.  */
-extern int yyparse		PARAMS ((void));
-
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
 
