@@ -1,3 +1,7 @@
+2005-01-04  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.target/i386/amd64-abi-1.c: Only run as 64-bit tests.
+
 2005-01-03  Geoffrey Keating  <geoffk@apple.com>
 	    Robert Bowdidge <bowdidge@apple.com>
 
