@@ -74,16 +74,17 @@ copy-headers: $(OBJC_H)
 	done
 
 objc-msg.o: objc-msg.c fflags
-	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
+	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/objc-msg.c
 
 ## Next to are for heuristics on forwarding mechanism... 
 _forward: _forward.c
-	$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
-	$(GCC_FOR_TARGET) ./_forward.o -o _forward
+	-$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/_forward.c
+	-$(GCC_FOR_TARGET) ./_forward.o -o _forward
+	if [ \! -f ./_forward ]; then touch ./_forward; fi	
 
 fflags: _forward
 	-rm -f fflags
-	-./_forward > fflags
+	-if [ -x ./_forward ]; then ./_forward > fflags; else touch fflags; fi
 
 mostlyclean:
 	-rm -f *.o libobjc.a _forward fflags
