@@ -1,3 +1,8 @@
+2003-01-28  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* jargrep.c: Include xregex.h from libiberty instead of
+	system regex.h for better portability.
+
 2003-01-21  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* jartool.c (list_jar): Terminate the 'ascii_date' buffer
