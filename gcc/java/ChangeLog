@@ -1,5 +1,66 @@
 2004-09-30  Per Bothner  <per@bothner.com>
 
+	Simplify lexer.  Implement --enable-mapped-location support.
+	* jcf-parse.c (parse_class_file):  Use linemap_line_start.
+	(parse_source_file_1): Pass filename as extra parameter, so we can call
+	linemap_add and set input_location here, rather than in both callers.
+	(read_class): Pass copied filename to parse_source_file_1.
+	Don't initialize wfl_operator - only needed for source compilation.
+	(read_class, jcf_parse):  Call linemap_add with LC_LEAVE.
+	* lex.h:  Remove a bunch of debugging macros.
+	* lex.h (struct_java_line, struct java_error):  Remove types.
+	(JAVA_COLUMN_DELTA):  Remove - use java_lexer.next_colums instead.
+	(struct java_lc_s):  Remove prev_col field.
+	(struct java_lexer):  New fields next_unicode, next_columns, and
+	avail_unicode.  New position field, and maybe token_start field.
+	Don't need hit_eof field - use next_unicode == -1 instead.
+	(JAVA_INTEGERAL_RANGE_ERROR):  Rename to JAVA_RANGE_ERROR.
+	(JAVA_RANGE_ERROR, JAVA_FLOAT_ANGE_ERROR):  Update accordingly.
+	* parse.h:  Various changes for USE_MAPPED_LOCATION.
+	(EXPR_WFL_EMIT_LINE_NOTE): XXX
+	(BUILD_EXPR_WFL, EXPR_WFL_ADD_COL): Remove no-longer-used macros.
+	(struct parser_ctxt):  New file_start_location field.
+	Remove p_line, c_line fields since we no longer save lines.
+	Remove elc, lineno, and current_jcf fields - no longer used.
+	* parse.y:  Updates for USE_MAPPED_LOCATION and new lexer.
+	Don't use EXPR_WFL_ADD_COL since that isn't trivial with
+	source_location and is probably not needed anymore anyway.
+	Use new expr_add_Location function.
+	(SET_EXPR_LOCATION_FROM_TOKEN):  New convenience macro.
+	(java_pop_parser_context):  Minor cleanup.
+	(java_parser_context_save_global, java_parser_context_restore_global,
+	java_pop_parser_context):  Save/restore input_location as a unit.
+	(issue_warning_error_from_context):  If USE_MAPPED_LOCATION take
+	a source_location instead of a wfl context node.
+	(check_class_interface_creation):  input_filename is not addressable.
+	(create_artificial_method):  Calling java_parser_context_save_global
+	and java_parser_context_restore_global is overkill.  Instead,
+	temporarily set input_location from class decl.
+	(java_layout_seen_class_methods): Set input_location from method decl.
+	(fix_constructors): Make more robust if no EXPR_WITH_FILE_LOCATION.
+	(finish_loop_body):  Likewise.
+	* lex.c: Updates for USE_MAPPED_LOCATION.  Use build_unknwon_wfl.
+	(java_sprint_unicode):  Take a character, not index in line.
+	(java_sneak_uncode):  Replaced by java_peek_unicode.
+	(java_unget_unicode):  No longer used.
+	(java_allocate_new_line. java_store_unicode):  Removed, since we
+	no longer remember "lines".
+	(java_new_lexer):  Update for new data structures.
+	(java_read_char):  Move unget_value checking to java_read_unicode.
+	(java_get_unicode, java_peek_unicode, java_next_unicode): New more
+	efficient functions that are used directly when lexing.
+	(java_read_unicode_collapsing_terminators):  No longer needed.
+	(java_parse_end_comment, java_parse_escape_sequence, do_java_lex):
+	Re-organize to use java_peek_unicode to avoid java_unget_unicode.
+	(java_parse_escape_sequence):  Rewrite to be simpler / more efficient.
+	(do_java_lex):  Lots of movings around to avoid java_unget_unicode,
+	combine switch branches, and test for common token kinds earlier.
+	(java_lex_error):  Rewrite.
+	* jv-scan.c (expand_location): New function, copied from tree.c.
+	(main): Set ctxp->filename instead of setting input_filename directly.
+
+2004-09-30  Per Bothner  <per@bothner.com>
+
 	More cleanup for --enable-mapped-location.
 	* class.c (push_class):  If USE_MAPPED_LOCATION don't set
 	input_location here.  Instead do it in give_name_to_class.
@@ -30,7 +91,7 @@
 
 2004-09-29  Per Bothner  <per@bothner.com>
 
-	* java-tree.h:  Redefine some macros and add soem declaration
+	* java-tree.h:  Redefine some macros and add some declaration
 	to handle the USE_MAPPED_LOCATION case.
 	* parse.h (EXPR_WFL_QUALIFICATION):  Use operand 1, not 2.
 	* java-tree.h (EXPR_WFL_FILENAME_NODE):  Use operand 2, not 1.

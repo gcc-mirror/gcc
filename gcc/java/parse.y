@@ -97,8 +97,13 @@ static void fix_method_argument_names (tree ,tree);
 static tree method_declarator (tree, tree);
 static void parse_warning_context (tree cl, const char *msg, ...)
   ATTRIBUTE_PRINTF_2;
+#ifdef USE_MAPPED_LOCATION
+static void issue_warning_error_from_context
+  (source_location, const char *msg, va_list) ATTRIBUTE_PRINTF (2, 0);
+#else
 static void issue_warning_error_from_context (tree, const char *msg, va_list)
   ATTRIBUTE_PRINTF (2, 0);
+#endif
 static void parse_ctor_invocation_error (void);
 static tree parse_jdk1_1_error (const char *);
 static void complete_class_report_errors (jdep *);
@@ -175,7 +180,11 @@ static int build_type_name_from_array_name (tree, tree *);
 static tree build_array_from_name (tree, tree, tree, tree *);
 static tree build_array_ref (int, tree, tree);
 static tree patch_array_ref (tree);
+#ifdef USE_MAPPED_LOCATION
+static tree make_qualified_name (tree, tree, source_location);
+#else
 static tree make_qualified_name (tree, tree, int);
+#endif
 static tree merge_qualified_name (tree, tree);
 static tree make_qualified_primary (tree, tree, int);
 static int resolve_qualified_expression_name (tree, tree *, tree *, tree *);
@@ -214,13 +223,21 @@ static tree build_string_concatenation (tree, tree);
 static tree patch_string_cst (tree);
 static tree patch_string (tree);
 static tree encapsulate_with_try_catch (int, tree, tree, tree);
+#ifdef USE_MAPPED_LOCATION
+static tree build_assertion (source_location, tree, tree);
+#else
 static tree build_assertion (int, tree, tree);
+#endif
 static tree build_try_statement (int, tree, tree);
 static tree build_try_finally_statement (int, tree, tree);
 static tree patch_try_statement (tree);
 static tree patch_synchronized_statement (tree, tree);
 static tree patch_throw_statement (tree, tree);
+#ifdef USE_MAPPED_LOCATION
+static void check_thrown_exceptions (source_location, tree, tree);
+#else
 static void check_thrown_exceptions (int, tree, tree);
+#endif
 static int check_thrown_exceptions_do (tree);
 static void purge_unchecked_exceptions (tree);
 static bool ctors_unchecked_throws_clause_p (tree);
@@ -443,12 +460,24 @@ static GTY(()) tree src_parse_roots[1];
   int sub_token;
   struct {
     int token;
+#ifdef USE_MAPPED_LOCATION
+    source_location location;
+#else
     int location;
+#endif
   } operator;
   int value;
 }
 
 %{
+#ifdef USE_MAPPED_LOCATION
+#define SET_EXPR_LOCATION_FROM_TOKEN(EXPR, TOKEN) \
+  SET_EXPR_LOCATION(EXPR, (TOKEN).location)
+#else
+#define SET_EXPR_LOCATION_FROM_TOKEN(EXPR, TOKEN) \
+  (EXPR_WFL_LINECOL (EXPR) = (TOKEN).location)
+#endif
+
 #include "lex.c"
 %}
 
@@ -882,16 +911,14 @@ class_body:
 		{
 		  /* Store the location of the `}' when doing xrefs */
 		  if (flag_emit_xref)
-		    DECL_END_SOURCE_LINE (GET_CPC ()) =
-		      EXPR_WFL_ADD_COL ($2.location, 1);
+		    DECL_END_SOURCE_LINE (GET_CPC ()) = $2.location;
 		  $$ = GET_CPC ();
 		}
 |	OCB_TK class_body_declarations CCB_TK
 		{
 		  /* Store the location of the `}' when doing xrefs */
 		  if (flag_emit_xref)
-		    DECL_END_SOURCE_LINE (GET_CPC ()) =
-		      EXPR_WFL_ADD_COL ($3.location, 1);
+		    DECL_END_SOURCE_LINE (GET_CPC ()) = $3.location;
 		  $$ = GET_CPC ();
 		}
 ;
@@ -1055,7 +1082,7 @@ method_declarator:
 		{ $$ = method_declarator ($1, $3); }
 |	method_declarator OSB_TK CSB_TK
 		{
-		  EXPR_WFL_LINECOL (wfl_operator) = $2.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN (wfl_operator, $2);
 		  TREE_PURPOSE ($1) =
 		    build_unresolved_array_type (TREE_PURPOSE ($1));
 		  parse_warning_context
@@ -1236,13 +1263,13 @@ this_or_super:			/* Added, simplifies error diagnostics */
 	THIS_TK
 		{
 		  tree wfl = build_wfl_node (this_identifier_node);
-		  EXPR_WFL_LINECOL (wfl) = $1.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN (wfl, $1);
 		  $$ = wfl;
 		}
 |	SUPER_TK
 		{
 		  tree wfl = build_wfl_node (super_identifier_node);
-		  EXPR_WFL_LINECOL (wfl) = $1.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN (wfl, $1);
 		  $$ = wfl;
 		}
 ;
@@ -1369,8 +1396,7 @@ block_end:
 		  maybe_absorb_scoping_blocks ();
 		  /* Store the location of the `}' when doing xrefs */
 		  if (current_function_decl && flag_emit_xref)
-		    DECL_END_SOURCE_LINE (current_function_decl) =
-		      EXPR_WFL_ADD_COL ($1.location, 1);
+		    DECL_END_SOURCE_LINE (current_function_decl) = $1.location;
 		  $$ = exit_block ();
 		  if (!BLOCK_SUBBLOCKS ($$))
 		    BLOCK_SUBBLOCKS ($$) = build_java_empty_stmt ();
@@ -1449,7 +1475,11 @@ empty_statement:
 			   (DECL_CONTEXT (current_function_decl)))))
 
 		    {
+#ifdef USE_MAPPED_LOCATION
+		      SET_EXPR_LOCATION (wfl_operator, input_location);
+#else
 		      EXPR_WFL_SET_LINECOL (wfl_operator, input_line, -1);
+#endif
 		      parse_warning_context (wfl_operator, "An empty declaration is a deprecated feature that should not be used");
 		    }
 		  $$ = build_java_empty_stmt ();
@@ -1486,10 +1516,14 @@ expression_statement:
 		{
 		  /* We have a statement. Generate a WFL around it so
 		     we can debug it */
+#ifdef USE_MAPPED_LOCATION
+		  $$ = expr_add_location ($1, input_location, 1);
+#else
 		  $$ = build_expr_wfl ($1, input_filename, input_line, 0);
+		  JAVA_MAYBE_GENERATE_DEBUG_INFO ($$);
+#endif
 		  /* We know we have a statement, so set the debug
                      info to be eventually generate here. */
-		  $$ = JAVA_MAYBE_GENERATE_DEBUG_INFO ($$);
 		}
 |	error SC_TK
 		{
@@ -1587,7 +1621,7 @@ switch_expression:
 		{
 		  $$ = build3 (SWITCH_EXPR, NULL_TREE, $3,
 			       NULL_TREE, NULL_TREE);
-		  EXPR_WFL_LINECOL ($$) = $2.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN ($$, $2);
 		}
 |	SWITCH_TK error
 		{yyerror ("'(' expected"); RECOVER;}
@@ -1629,13 +1663,13 @@ switch_label:
 	CASE_TK constant_expression REL_CL_TK
 		{
 		  tree lab = build1 (CASE_EXPR, NULL_TREE, $2);
-		  EXPR_WFL_LINECOL (lab) = $1.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN (lab, $1);
 		  java_method_add_stmt (current_function_decl, lab);
 		}
 |	DEFAULT_TK REL_CL_TK
 		{
 		  tree lab = make_node (DEFAULT_EXPR);
-		  EXPR_WFL_LINECOL (lab) = $1.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN (lab, $1);
 		  java_method_add_stmt (current_function_decl, lab);
 		}
 |	CASE_TK error
@@ -1814,7 +1848,7 @@ throw_statement:
 	THROW_TK expression SC_TK
 		{
 		  $$ = build1 (THROW_EXPR, NULL_TREE, $2);
-		  EXPR_WFL_LINECOL ($$) = $1.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN ($$, $1);
 		}
 |	THROW_TK error
 		{yyerror ("Missing term"); RECOVER;}
@@ -1917,7 +1951,7 @@ catch_clause_parameter:
                                                build_tree_list 
 					       (TREE_PURPOSE ($3), init));
                       $$ = build1 (JAVA_CATCH_EXPR, NULL_TREE, ccpb);
-                      EXPR_WFL_LINECOL ($$) = $1.location;
+                      SET_EXPR_LOCATION_FROM_TOKEN ($$, $1);
                     }
                   else
                     {
@@ -2225,7 +2259,7 @@ field_access:
 |	SUPER_TK DOT_TK identifier
 		{
 		  tree super_wfl = build_wfl_node (super_identifier_node);
-		  EXPR_WFL_LINECOL (super_wfl) = $1.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN (super_wfl, $1);
 		  $$ = make_qualified_name (super_wfl, $3, $2.location);
 		}
 |	SUPER_TK error
@@ -2609,7 +2643,7 @@ conditional_expression:		/* Error handling here is weak */
 |	conditional_or_expression REL_QM_TK expression REL_CL_TK conditional_expression
 		{
 		  $$ = build3 (CONDITIONAL_EXPR, NULL_TREE, $1, $3, $5);
-		  EXPR_WFL_LINECOL ($$) = $2.location;
+		  SET_EXPR_LOCATION_FROM_TOKEN ($$, $2);
 		}
 |	conditional_or_expression REL_QM_TK REL_CL_TK error
 		{
@@ -2718,16 +2752,15 @@ void
 java_pop_parser_context (int generate)
 {
   tree current;
-  struct parser_ctxt *toFree, *next;
+  struct parser_ctxt *next;
 
   if (!ctxp)
     return;
 
-  toFree = ctxp;
   next = ctxp->next;
   if (next)
     {
-      input_line = ctxp->lineno;
+      input_location = ctxp->save_location;
       current_class = ctxp->class_type;
     }
 
@@ -2740,19 +2773,19 @@ java_pop_parser_context (int generate)
   for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
     IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (TREE_VALUE (current)) = 0;
 
-  /* And restore those of the previous context */
-  if ((ctxp = next))		/* Assignment is really meant here */
-    for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
-      IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (TREE_VALUE (current)) = 1;
-
   /* If we pushed a context to parse a class intended to be generated,
      we keep it so we can remember the class. What we could actually
      do is to just update a list of class names.  */
   if (generate)
     {
-      toFree->next = ctxp_for_generation;
-      ctxp_for_generation = toFree;
+      ctxp->next = ctxp_for_generation;
+      ctxp_for_generation = ctxp;
     }
+
+  /* And restore those of the previous context */
+  if ((ctxp = next))		/* Assignment is really meant here */
+    for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
+      IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (TREE_VALUE (current)) = 1;
 }
 
 /* Create a parser context for the use of saving some global
@@ -2775,9 +2808,8 @@ java_parser_context_save_global (void)
       ctxp->saved_data_ctx = 1;
     }
 
-  ctxp->lineno = input_line;
+  ctxp->save_location = input_location;
   ctxp->class_type = current_class;
-  ctxp->filename = input_filename;
   ctxp->function_decl = current_function_decl;
   ctxp->saved_data = 1;
 }
@@ -2788,11 +2820,14 @@ java_parser_context_save_global (void)
 void
 java_parser_context_restore_global (void)
 {
-  input_line = ctxp->lineno;
+  input_location = ctxp->save_location;
   current_class = ctxp->class_type;
-  input_filename = ctxp->filename;
   if (wfl_operator)
+#ifdef USE_MAPPED_LOCATION
+    SET_EXPR_LOCATION (wfl_operator, ctxp->save_location);
+#else
     EXPR_WFL_FILENAME_NODE (wfl_operator) = get_identifier (input_filename);
+#endif
   current_function_decl = ctxp->function_decl;
   ctxp->saved_data = 0;
   if (ctxp->saved_data_ctx)
@@ -2960,8 +2995,6 @@ java_debug_context_do (int tab)
       TAB_CONTEXT (tab);
       fprintf (stderr, "filename: %s\n", copy->filename);
       TAB_CONTEXT (tab);
-      fprintf (stderr, "lineno: %d\n", copy->lineno);
-      TAB_CONTEXT (tab);
       fprintf (stderr, "package: %s\n",
 	       (copy->package ?
 		IDENTIFIER_POINTER (copy->package) : "<none>"));
@@ -3016,22 +3049,36 @@ static int do_warning = 0;
 void
 yyerror (const char *msg)
 {
+#ifdef USE_MAPPED_LOCATION
+  static source_location elc;
+  expanded_location xloc = expand_location (input_location);
+  int current_line = xloc.line;
+#else
   static java_lc elc;
-  static int  prev_lineno;
+  int save_lineno;
+  int current_line = input_line;
+#endif
+  static int prev_lineno;
   static const char *prev_msg;
 
-  int save_lineno;
   char *remainder, *code_from_source;
 
-  if (!force_error && prev_lineno == input_line)
+  if (!force_error && prev_lineno == current_line)
     return;
+#ifndef USE_MAPPED_LOCATION
+  current_line = ctxp->lexer->token_start.line;
+#endif
 
   /* Save current error location but report latter, when the context is
      richer.  */
   if (ctxp->java_error_flag == 0)
     {
       ctxp->java_error_flag = 1;
-      elc = ctxp->elc;
+#ifdef USE_MAPPED_LOCATION
+      elc = input_location;
+#else
+      elc = ctxp->lexer->token_start;
+#endif
       /* Do something to use the previous line if we're reaching the
 	 end of the file... */
 #ifdef VERBOSE_SKELETON
@@ -3041,7 +3088,7 @@ yyerror (const char *msg)
     }
 
   /* Ignore duplicate message on the same line. BTW, this is dubious. FIXME */
-  if (!force_error && msg == prev_msg && prev_lineno == elc.line)
+  if (!force_error && msg == prev_msg && prev_lineno == current_line)
     return;
 
   ctxp->java_error_flag = 0;
@@ -3050,17 +3097,24 @@ yyerror (const char *msg)
   else
     java_error_count++;
 
+#if 0 /* FIXME */
   if (elc.col == 0 && msg && msg[1] == ';')
-    {
-      elc.col  = ctxp->p_line->char_col-1;
-      elc.line = ctxp->p_line->lineno;
-    }
+    elc = ctxp->prev_line_end;
+#endif
 
-  save_lineno = input_line;
-  prev_lineno = input_line = elc.line;
   prev_msg = msg;
 
-  code_from_source = java_get_line_col (ctxp->filename, elc.line, elc.col);
+#ifdef USE_MAPPED_LOCATION
+  prev_lineno = current_line;
+  code_from_source = java_get_line_col (xloc.file, current_line, xloc.column);
+#else
+  save_lineno = input_line;
+  prev_lineno = input_line = current_line;
+  code_from_source = java_get_line_col (input_filename, current_line,
+					ctxp->lexer->token_start.col);
+#endif
+
+
   obstack_grow0 (&temporary_obstack,
 		 code_from_source, strlen (code_from_source));
   remainder = obstack_finish (&temporary_obstack);
@@ -3074,46 +3128,80 @@ yyerror (const char *msg)
      the same line. This occurs when we report an error but don't have
      a synchronization point other than ';', which
      expression_statement is the only one to take care of.  */
-  ctxp->prevent_ese = input_line = save_lineno;
+#ifndef USE_MAPPED_LOCATION
+  input_line = save_lineno;
+#endif
+  ctxp->prevent_ese = input_line;
 }
 
 static void
-issue_warning_error_from_context (tree cl, const char *msg, va_list ap)
+issue_warning_error_from_context (
+#ifdef USE_MAPPED_LOCATION
+				  source_location cl,
+#else
+				  tree cl,
+#endif
+				  const char *msg, va_list ap)
 {
-  const char *saved, *saved_input_filename;
+#ifdef USE_MAPPED_LOCATION
+  source_location saved_location = input_location;
+  expanded_location xloc = expand_location (cl);
+#else
+  java_lc save_lc = ctxp->lexer->token_start;
+  const char *saved = ctxp->filename, *saved_input_filename;
+#endif
   char buffer [4096];
   vsprintf (buffer, msg, ap);
   force_error = 1;
 
-  ctxp->elc.line = EXPR_WFL_LINENO (cl);
-  ctxp->elc.col  = (EXPR_WFL_COLNO (cl) == 0xfff ? -1 :
-		    (EXPR_WFL_COLNO (cl) == 0xffe ? -2 : EXPR_WFL_COLNO (cl)));
+#ifdef USE_MAPPED_LOCATION
+  if (xloc.file != NULL)
+    {
+      ctxp->filename = xloc.file;
+      input_location = cl;
+    }
+#else
+  ctxp->lexer->token_start.line = EXPR_WFL_LINENO (cl);
+  ctxp->lexer->token_start.col  = (EXPR_WFL_COLNO (cl) == 0xfff ? -1
+				   : EXPR_WFL_COLNO (cl) == 0xffe ? -2
+				   : EXPR_WFL_COLNO (cl));
 
   /* We have a CL, that's a good reason for using it if it contains data */
-  saved = ctxp->filename;
   if (TREE_CODE (cl) == EXPR_WITH_FILE_LOCATION && EXPR_WFL_FILENAME_NODE (cl))
     ctxp->filename = EXPR_WFL_FILENAME (cl);
   saved_input_filename = input_filename;
   input_filename = ctxp->filename;
+#endif
   java_error (NULL);
   java_error (buffer);
+#ifdef USE_MAPPED_LOCATION
+  input_location = saved_location;
+#else
   ctxp->filename = saved;
   input_filename = saved_input_filename;
+  ctxp->lexer->token_start = save_lc;
+#endif
   force_error = 0;
 }
 
-/* Issue an error message at a current source line CL */
+/* Issue an error message at a current source line CL.
+   FUTURE/FIXME:  change cl to be a source_location. */
 
 void
 parse_error_context (tree cl, const char *msg, ...)
 {
   va_list ap;
   va_start (ap, msg);
+#ifdef USE_MAPPED_LOCATION
+  issue_warning_error_from_context (EXPR_LOCATION (cl), msg, ap);
+#else
   issue_warning_error_from_context (cl, msg, ap);
+#endif
   va_end (ap);
 }
 
-/* Issue a warning at a current source line CL */
+/* Issue a warning at a current source line CL.
+   FUTURE/FIXME:  change cl to be a source_location. */
 
 static void
 parse_warning_context (tree cl, const char *msg, ...)
@@ -3121,9 +3209,13 @@ parse_warning_context (tree cl, const char *msg, ...)
   va_list ap;
   va_start (ap, msg);
 
-  force_error = do_warning = 1;
+  do_warning = 1;
+#ifdef USE_MAPPED_LOCATION
+  issue_warning_error_from_context (EXPR_LOCATION (cl), msg, ap);
+#else
   issue_warning_error_from_context (cl, msg, ap);
-  do_warning = force_error = 0;
+#endif
+  do_warning = 0;
   va_end (ap);
 }
 
@@ -3174,7 +3266,11 @@ find_expr_with_wfl (tree node)
 static void
 missing_return_error (tree method)
 {
+#ifdef USE_MAPPED_LOCATION
+  SET_EXPR_LOCATION (wfl_operator, DECL_FUNCTION_LAST_LINE (method));
+#else
   EXPR_WFL_SET_LINECOL (wfl_operator, DECL_FUNCTION_LAST_LINE (method), -2);
+#endif
   parse_error_context (wfl_operator, "Missing return statement");
 }
 
@@ -3192,7 +3288,11 @@ unreachable_stmt_error (tree node)
 
   if (node)
     {
+#ifdef USE_MAPPED_LOCATION
+      SET_EXPR_LOCATION (wfl_operator, EXPR_LOCATION (node));
+#else
       EXPR_WFL_SET_LINECOL (wfl_operator, EXPR_WFL_LINENO (node), -2);
+#endif
       parse_error_context (wfl_operator, "Unreachable statement");
     }
   else
@@ -3383,10 +3483,14 @@ build_unresolved_array_type (tree type_or_wfl)
 		 IDENTIFIER_LENGTH (EXPR_WFL_NODE (type_or_wfl)));
   obstack_grow0 (&temporary_obstack, "[]", 2);
   ptr = obstack_finish (&temporary_obstack);
+#ifdef USE_MAPPED_LOCATION
+  wfl = build_expr_wfl (get_identifier (ptr), EXPR_LOCATION (type_or_wfl));
+#else
   wfl = build_expr_wfl (get_identifier (ptr),
 			EXPR_WFL_FILENAME (type_or_wfl),
 			EXPR_WFL_LINENO (type_or_wfl),
 			EXPR_WFL_COLNO (type_or_wfl));
+#endif
   /* Re-install the existing qualifications so that the type can be
      resolved properly. */
   EXPR_WFL_QUALIFICATION (wfl) = EXPR_WFL_QUALIFICATION (type_or_wfl);
@@ -3446,13 +3550,14 @@ check_class_interface_creation (int is_interface, int flags, tree raw_name,
      when dealing with an inner class */
   if (!CPC_INNER_P () && (flags & ACC_PUBLIC ))
     {
+      const char *fname = input_filename;
       const char *f;
 
-      for (f = &input_filename [strlen (input_filename)];
-	   f != input_filename && ! IS_DIR_SEPARATOR (f[0]);
+      for (f = fname + strlen (fname);
+	   f != fname && ! IS_DIR_SEPARATOR (*f);
 	   f--)
 	;
-      if (IS_DIR_SEPARATOR (f[0]))
+      if (IS_DIR_SEPARATOR (*f))
 	f++;
       if (strncmp (IDENTIFIER_POINTER (raw_name),
 		   f , IDENTIFIER_LENGTH (raw_name)) ||
@@ -3650,7 +3755,7 @@ find_as_inner_class (tree enclosing, tree name, tree cl)
   else if (cl)
     qual = build_tree_list (cl, NULL_TREE);
   else
-    qual = build_tree_list (build_expr_wfl (name, NULL, 0, 0), NULL_TREE);
+    qual = build_tree_list (build_unknown_wfl (name), NULL_TREE);
 
   if ((to_return = find_as_inner_class_do (qual, enclosing)))
     return to_return;
@@ -3680,7 +3785,7 @@ find_as_inner_class (tree enclosing, tree name, tree cl)
     }
   /* Otherwise, create a qual for the other part of the resolution. */
   else
-    qual = build_tree_list (build_expr_wfl (name, NULL, 0, 0), NULL_TREE);
+    qual = build_tree_list (build_unknown_wfl (name), NULL_TREE);
 
   return find_as_inner_class_do (qual, enclosing);
 }
@@ -3769,16 +3874,28 @@ maybe_create_class_interface_decl (tree decl, tree raw_name,
     decl = push_class (make_class (), qualified_name);
 
   /* Take care of the file and line business */
+#ifdef USE_MAPPED_LOCATION
+  DECL_SOURCE_LOCATION (decl) = EXPR_LOCATION (cl);
+#else
   DECL_SOURCE_FILE (decl) = EXPR_WFL_FILENAME (cl);
   /* If we're emitting xrefs, store the line/col number information */
   if (flag_emit_xref)
     DECL_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (cl);
   else
     DECL_SOURCE_LINE (decl) = EXPR_WFL_LINENO (cl);
+#endif
   CLASS_FROM_SOURCE_P (TREE_TYPE (decl)) = 1;
   CLASS_PARSED_P (TREE_TYPE (decl)) = 1;
+#ifdef USE_MAPPED_LOCATION
+  {
+    tree tmp = maybe_get_identifier (EXPR_FILENAME (cl));
+    CLASS_FROM_CURRENTLY_COMPILED_P (TREE_TYPE (decl)) =
+      tmp && IS_A_COMMAND_LINE_FILENAME_P (tmp);
+  }
+#else
   CLASS_FROM_CURRENTLY_COMPILED_P (TREE_TYPE (decl)) =
     IS_A_COMMAND_LINE_FILENAME_P (EXPR_WFL_FILENAME_NODE (cl));
+#endif
 
   PUSH_CPC (decl, raw_name);
   DECL_CONTEXT (decl) = GET_ENCLOSING_CPC_CONTEXT ();
@@ -4298,7 +4415,7 @@ register_fields (int flags, tree type, tree variable_list)
 {
   tree current, saved_type;
   tree class_type = NULL_TREE;
-  int saved_lineno = input_line;
+  location_t saved_location = input_location;
   int must_chain = 0;
   tree wfl = NULL_TREE;
 
@@ -4367,10 +4484,14 @@ register_fields (int flags, tree type, tree variable_list)
 
       /* Set input_line to the line the field was found and create a
          declaration for it. Eventually sets the @deprecated tag flag. */
+#ifdef USE_MAPPED_LOCATION
+      input_location = EXPR_LOCATION (cl);
+#else
       if (flag_emit_xref)
 	input_line = EXPR_WFL_LINECOL (cl);
       else
 	input_line = EXPR_WFL_LINENO (cl);
+#endif
       field_decl = add_field (class_type, current_name, real_type, flags);
       CHECK_DEPRECATED_NO_RESET (field_decl);
 
@@ -4432,7 +4553,7 @@ register_fields (int flags, tree type, tree variable_list)
     }
 
   CLEAR_DEPRECATED;
-  input_line = saved_lineno;
+  input_location = saved_location;
 }
 
 /* Generate finit$, using the list of initialized fields to populate
@@ -4553,7 +4674,7 @@ method_header (int flags, tree type, tree mdecl, tree throws)
   tree meth_name = NULL_TREE;
   tree current, orig_arg, this_class = NULL;
   tree id, meth;
-  int saved_lineno;
+  location_t saved_location;
   int constructor_ok = 0, must_chain;
   int count;
 
@@ -4684,12 +4805,17 @@ method_header (int flags, tree type, tree mdecl, tree throws)
   else
     TREE_TYPE (meth) = type;
 
-  saved_lineno = input_line;
+  saved_location = input_location;
   /* When defining an abstract or interface method, the curly
      bracket at level 1 doesn't exist because there is no function
      body */
-  input_line = (ctxp->first_ccb_indent1 ? ctxp->first_ccb_indent1 :
-	    EXPR_WFL_LINENO (id));
+#ifdef USE_MAPPED_LOCATION
+  input_location = (ctxp->first_ccb_indent1 ? ctxp->first_ccb_indent1 :
+		    EXPR_LOCATION (id));
+#else
+  input_line = (ctxp->first_ccb_indent1 ? (int) ctxp->first_ccb_indent1 :
+		EXPR_WFL_LINENO (id));
+#endif
 
   /* Remember the original argument list */
   orig_arg = TYPE_ARG_TYPES (meth);
@@ -4722,7 +4848,7 @@ method_header (int flags, tree type, tree mdecl, tree throws)
   /* Register the parameter number and re-install the current line
      number */
   DECL_MAX_LOCALS (meth) = ctxp->formal_parameter_number+1;
-  input_line = saved_lineno;
+  input_location = saved_location;
 
   /* Register exception specified by the `throws' keyword for
      resolution and set the method decl appropriate field to the list.
@@ -4763,7 +4889,13 @@ method_header (int flags, tree type, tree mdecl, tree throws)
   /* If doing xref, store column and line number information instead
      of the line number only. */
   if (flag_emit_xref)
-    DECL_SOURCE_LINE (meth) = EXPR_WFL_LINECOL (id);
+    {
+#ifdef USE_MAPPED_LOCATION
+      DECL_SOURCE_LOCATION (meth) = EXPR_LOCATION (id);
+#else
+      DECL_SOURCE_LINE (meth) = EXPR_WFL_LINECOL (id);
+#endif
+    }
 
   return meth;
 }
@@ -6746,22 +6878,28 @@ lookup_java_method2 (tree clas, tree method_decl, int do_interface)
 }
 
 /* Return the line that matches DECL line number, and try its best to
-   position the column number. Used during error reports.  */
+   position the column number. Used during error reports.
+   FUTURE/FIXME: return source_location instead of node. */
 
 static GTY(()) tree cl_v;
 static tree
 lookup_cl (tree decl)
 {
+#ifndef USE_MAPPED_LOCATION
   char *line, *found;
+#endif
 
   if (!decl)
     return NULL_TREE;
 
   if (cl_v == NULL_TREE)
     {
-      cl_v = build_expr_wfl (NULL_TREE, NULL, 0, 0);
+      cl_v = build_unknown_wfl (NULL_TREE);
     }
 
+#ifdef USE_MAPPED_LOCATION
+  SET_EXPR_LOCATION (cl_v, DECL_SOURCE_LOCATION (decl));
+#else
   EXPR_WFL_FILENAME_NODE (cl_v) = get_identifier (DECL_SOURCE_FILE (decl));
   EXPR_WFL_SET_LINECOL (cl_v, DECL_SOURCE_LINE (decl), -1);
 
@@ -6772,6 +6910,7 @@ lookup_cl (tree decl)
 		  (const char *)IDENTIFIER_POINTER (DECL_NAME (decl)));
   if (found)
     EXPR_WFL_SET_LINECOL (cl_v, EXPR_WFL_LINENO (cl_v), found - line);
+#endif
 
   return cl_v;
 }
@@ -7026,7 +7165,7 @@ find_in_imports_on_demand (tree enclosing_type, tree class_type)
 
   for (; import; import = TREE_CHAIN (import))
     {
-      int saved_lineno = input_line;
+      location_t saved_location = input_location;
       int access_check;
       const char *id_name;
       tree decl, type_name_copy;
@@ -7045,7 +7184,11 @@ find_in_imports_on_demand (tree enclosing_type, tree class_type)
 
       /* Setup input_line so that it refers to the line of the import (in
 	 case we parse a class file and encounter errors */
+#ifdef USE_MAPPED_LOCATION
+      input_location = EXPR_LOCATION (TREE_PURPOSE (import));
+#else
       input_line = EXPR_WFL_LINENO (TREE_PURPOSE (import));
+#endif
 
       type_name_copy = TYPE_NAME (class_type);
       TYPE_NAME (class_type) = node;
@@ -7066,7 +7209,7 @@ find_in_imports_on_demand (tree enclosing_type, tree class_type)
 	/* 6.6.1: Inner classes are subject to member access rules. */
 	access_check = 0;
 
-      input_line = saved_lineno;
+      input_location = saved_location;
 
       /* If the loaded class is not accessible or couldn't be loaded,
 	 we restore the original TYPE_NAME and process the next
@@ -7363,8 +7506,13 @@ declare_local_variables (int modifier, tree type, tree vlist)
 
       /* If doing xreferencing, replace the line number with the WFL
          compound value */
+#ifdef USE_MAPPED_LOCATION
+      if (flag_emit_xref)
+	DECL_SOURCE_LOCATION (decl) = EXPR_LOCATION (wfl);
+#else
       if (flag_emit_xref)
 	DECL_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (wfl);
+#endif
 
       /* Don't try to use an INIT statement when an error was found */
       if (init && java_error_count)
@@ -7462,9 +7610,9 @@ create_artificial_method (tree class, int flags, tree type,
 			  tree name, tree args)
 {
   tree mdecl;
+  location_t save_location = input_location;
 
-  java_parser_context_save_global ();
-  input_line = 0;
+  input_location = DECL_SOURCE_LOCATION (TYPE_NAME (class));
   mdecl = make_node (FUNCTION_TYPE);
   TREE_TYPE (mdecl) = type;
   TYPE_ARG_TYPES (mdecl) = args;
@@ -7473,7 +7621,7 @@ create_artificial_method (tree class, int flags, tree type,
      the type of the returned method, which trashes the cache in
      get_type_from_signature().  */
   mdecl = add_method_1 (class, flags, name, mdecl);
-  java_parser_context_restore_global ();
+  input_location = save_location;
   DECL_ARTIFICIAL (mdecl) = 1;
   return mdecl;
 }
@@ -7483,8 +7631,13 @@ create_artificial_method (tree class, int flags, tree type,
 static void
 start_artificial_method_body (tree mdecl)
 {
+#ifdef USE_MAPPED_LOCATION
+  DECL_SOURCE_LOCATION (mdecl) = ctxp->file_start_location;
+  DECL_FUNCTION_LAST_LINE (mdecl) = ctxp->file_start_location;
+#else
   DECL_SOURCE_LINE (mdecl) = 1;
   DECL_FUNCTION_LAST_LINE (mdecl) = 1;
+#endif
   source_start_java_method (mdecl);
   enter_block ();
 }
@@ -7528,7 +7681,11 @@ source_end_java_method (void)
     return;
 
   java_parser_context_save_global ();
+#ifdef USE_MAPPED_LOCATION
+  input_location = ctxp->last_ccb_indent1;
+#else
   input_line = ctxp->last_ccb_indent1;
+#endif
 
   /* Turn function bodies with only a NOP expr null, so they don't get
      generated at all and we won't get warnings when using the -W
@@ -7587,7 +7744,10 @@ java_layout_seen_class_methods (void)
       for (current = previous_list;
 	   current != end; current = TREE_CHAIN (current))
         {
-          tree cls = TREE_TYPE (TREE_VALUE (current));
+	  tree decl = TREE_VALUE (current);
+          tree cls = TREE_TYPE (decl);
+
+	  input_location = DECL_SOURCE_LOCATION (decl);
 
           if (! CLASS_LOADED_P (cls))
             load_class (cls, 0);
@@ -8018,7 +8178,7 @@ start_complete_expand_method (tree mdecl)
       TREE_CHAIN (tem) = next;
     }
   pushdecl_force_head (DECL_ARGUMENTS (mdecl));
-  input_line = DECL_SOURCE_LINE (mdecl);
+  input_location = DECL_SOURCE_LOCATION (mdecl);
   build_result_decl (mdecl);
 }
 
@@ -8690,7 +8850,11 @@ build_thisn_assign (void)
       tree lhs = make_qualified_primary (build_wfl_node (this_identifier_node),
 					 build_wfl_node (thisn), 0);
       tree rhs = build_wfl_node (thisn);
+#ifdef USE_MAPPED_LOCATION
+      SET_EXPR_LOCATION (lhs, input_location);
+#else
       EXPR_WFL_SET_LINECOL (lhs, input_line, 0);
+#endif
       return build_assignment (ASSIGN_TK, EXPR_WFL_LINECOL (lhs), lhs, rhs);
     }
   return NULL_TREE;
@@ -8714,7 +8878,11 @@ static tree
 build_dot_class_method (tree class)
 {
 #define BWF(S) build_wfl_node (get_identifier ((S)))
+#ifdef USE_MAPPED_LOCATION
+#define MQN(X,Y) make_qualified_name ((X), (Y), UNKNOWN_LOCATION)
+#else
 #define MQN(X,Y) make_qualified_name ((X), (Y), 0)
+#endif
   tree args, tmp, saved_current_function_decl, mdecl, qual_name;
   tree stmt, throw_stmt;
 
@@ -8752,8 +8920,13 @@ build_dot_class_method (tree class)
 
   /* Now onto the catch block. We start by building the expression
      throwing a new exception: throw new NoClassDefFoundError (_.getMessage) */
+#ifdef USE_MAPPED_LOCATION
+  throw_stmt = make_qualified_name (build_wfl_node (wpv_id),
+				    get_message_wfl, UNKNOWN_LOCATION);
+#else
   throw_stmt = make_qualified_name (build_wfl_node (wpv_id),
 				    get_message_wfl, 0);
+#endif
   throw_stmt = build_method_invocation (throw_stmt, NULL_TREE);
 
   /* Build new NoClassDefFoundError (_.getMessage) */
@@ -8818,7 +8991,7 @@ static void
 fix_constructors (tree mdecl)
 {
   tree iii;			/* Instance Initializer Invocation */
-  tree body = DECL_FUNCTION_BODY (mdecl);
+  tree *bodyp = &DECL_FUNCTION_BODY (mdecl);
   tree thisn_assign, compound = NULL_TREE;
   tree class_type = DECL_CONTEXT (mdecl);
 
@@ -8826,7 +8999,7 @@ fix_constructors (tree mdecl)
     return;
   DECL_FIXED_CONSTRUCTOR_P (mdecl) = 1;
 
-  if (!body)
+  if (!*bodyp)
     {
       /* It is an error for the compiler to generate a default
 	 constructor if the superclass doesn't have a constructor that
@@ -8870,31 +9043,30 @@ fix_constructors (tree mdecl)
     {
       int found = 0;
       int invokes_this = 0;
-      tree found_call = NULL_TREE;
-      tree main_block = BLOCK_EXPR_BODY (body);
+      tree main_block = BLOCK_EXPR_BODY (*bodyp);
 
-      while (body)
-	switch (TREE_CODE (body))
-	  {
-	  case CALL_EXPR:
-	    found = CALL_EXPLICIT_CONSTRUCTOR_P (body);
-	    if (CALL_THIS_CONSTRUCTOR_P (body))
-	      invokes_this = 1;
-	    body = NULL_TREE;
-	    break;
-	  case COMPOUND_EXPR:
-	  case EXPR_WITH_FILE_LOCATION:
-	    found_call = body;
-	    body = TREE_OPERAND (body, 0);
-	    break;
-	  case BLOCK:
-	    found_call = body;
-	    body = BLOCK_EXPR_BODY (body);
-	    break;
-	  default:
-	    found = 0;
-	    body = NULL_TREE;
-	  }
+      while (*bodyp)
+	{
+	  tree body = *bodyp;
+	  switch (TREE_CODE (body))
+	    {
+	    case CALL_EXPR:
+	      found = CALL_EXPLICIT_CONSTRUCTOR_P (body);
+	      if (CALL_THIS_CONSTRUCTOR_P (body))
+		invokes_this = 1;
+	      break;
+	    case COMPOUND_EXPR:
+	    case EXPR_WITH_FILE_LOCATION:
+	      bodyp = &TREE_OPERAND (body, 0);
+	      continue;
+	    case BLOCK:
+	      bodyp = &BLOCK_EXPR_BODY (body);
+	      continue;
+	    default:
+	      break;
+	    }
+	  break;
+	}
 
       /* Generate the assignment to this$<n>, if necessary */
       if ((thisn_assign = build_thisn_assign ()))
@@ -8908,9 +9080,8 @@ fix_constructors (tree mdecl)
          instance initializer blocks. */
       else
 	{
-	  compound = add_stmt_to_compound (compound, NULL_TREE,
-					   TREE_OPERAND (found_call, 0));
-	  TREE_OPERAND (found_call, 0) = build_java_empty_stmt ();
+	  compound = add_stmt_to_compound (compound, NULL_TREE, *bodyp);
+	  *bodyp = build_java_empty_stmt ();
 	}
 
       DECL_INIT_CALLS_THIS (mdecl) = invokes_this;
@@ -8997,6 +9168,7 @@ java_expand_classes (void)
     return;
   java_layout_classes ();
   java_parse_abort_on_error ();
+  location_t save_location = input_location;
 
   for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
@@ -9010,12 +9182,12 @@ java_expand_classes (void)
   for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
       ctxp = cur_ctxp;
-      input_filename = ctxp->filename;
+      input_location = ctxp->file_start_location;
       lang_init_source (2);	       /* Error msgs have method prototypes */
       java_complete_expand_classes (); /* Complete and expand classes */
       java_parse_abort_on_error ();
     }
-  input_filename = main_input_filename;
+  input_location = save_location;
 
   /* Find anonymous classes and expand their constructor. This extra pass is
      necessary because the constructor itself is only generated when the
@@ -9227,11 +9399,17 @@ merge_qualified_name (tree left, tree right)
    inherited from the location information of the `.' operator. */
 
 static tree
-make_qualified_name (tree left, tree right, int location)
+make_qualified_name (tree left, tree right,
+#ifdef USE_MAPPED_LOCATION
+		     source_location location
+#else
+		     int location
+#endif
+		     )
 {
 #ifdef USE_COMPONENT_REF
   tree node = build3 (COMPONENT_REF, NULL_TREE, left, right, NULL_TREE);
-  EXPR_WFL_LINECOL (node) = location;
+  SET_EXPR_LOCATION (node, location);
   return node;
 #else
   tree left_id = EXPR_WFL_NODE (left);
@@ -9241,6 +9419,15 @@ make_qualified_name (tree left, tree right, int location)
   merge = merge_qualified_name (left_id, right_id);
 
   /* Left wasn't qualified and is now qualified */
+#ifdef USE_MAPPED_LOCATION
+  if (!QUALIFIED_P (left_id))
+    {
+      tree wfl = build_expr_wfl (left_id, EXPR_LOCATION (left));
+      EXPR_WFL_QUALIFICATION (left) = build_tree_list (wfl, NULL_TREE);
+    }
+
+  wfl = build_expr_wfl (right_id, location);
+#else
   if (!QUALIFIED_P (left_id))
     {
       tree wfl = build_expr_wfl (left_id, ctxp->filename, 0, 0);
@@ -9250,8 +9437,8 @@ make_qualified_name (tree left, tree right, int location)
 
   wfl = build_expr_wfl (right_id, ctxp->filename, 0, 0);
   EXPR_WFL_LINECOL (wfl) = location;
+#endif
   chainon (EXPR_WFL_QUALIFICATION (left), build_tree_list (wfl, NULL_TREE));
-
   EXPR_WFL_NODE (left) = merge;
   return left;
 #endif
@@ -9523,7 +9710,11 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
     {
       tree qual_wfl = QUAL_WFL (q);
       tree ret_decl;		/* for EH checking */
+#ifdef USE_MAPPED_LOCATION
+      source_location location;  /* for EH checking */
+#else
       int location;		/* for EH checking */
+#endif
 
       /* 15.10.1 Field Access Using a Primary */
       switch (TREE_CODE (qual_wfl))
@@ -9569,8 +9760,14 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 
 	  if (from_super && TREE_CODE (qual_wfl) == CALL_EXPR)
 	    CALL_USING_SUPER (qual_wfl) = 1;
+#ifdef USE_MAPPED_LOCATION
+	  location = (TREE_CODE (qual_wfl) == CALL_EXPR
+		      ? EXPR_LOCATION (TREE_OPERAND (qual_wfl, 0))
+		      : UNKNOWN_LOCATION);
+#else
 	  location = (TREE_CODE (qual_wfl) == CALL_EXPR ?
 		      EXPR_WFL_LINECOL (TREE_OPERAND (qual_wfl, 0)) : 0);
+#endif
 	  *where_found = patch_method_invocation (qual_wfl, decl, type,
 						  from_super,
 						  &is_static, &ret_decl);
@@ -9602,7 +9799,11 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 	     instantiation using a primary qualified by a `new' */
 	  RESTORE_THIS_AND_CURRENT_CLASS;
 
+#ifdef USE_MAPPED_LOCATION
+	  if (location != UNKNOWN_LOCATION)
+#else
 	  if (location)
+#endif
 	    {
 	      tree arguments = NULL_TREE;
 	      if (TREE_CODE (qual_wfl) == CALL_EXPR
@@ -11603,7 +11804,11 @@ java_complete_lhs (tree node)
       /* Only one default label is allowed per switch statement */
       if (SWITCH_HAS_DEFAULT (nn))
 	{
+#ifdef USE_MAPPED_LOCATION
+	  SET_EXPR_LOCATION (wfl_operator, EXPR_LOCATION (node));
+#else
 	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
+#endif
 	  parse_error_context (wfl_operator,
 			       "Duplicate case label: `default'");
 	  return error_mark_node;
@@ -11756,10 +11961,16 @@ java_complete_lhs (tree node)
       else
 	{
 	  tree body;
-	  int save_lineno = input_line;
+	  location_t save_location = input_location;
+#ifdef USE_MAPPED_LOCATION
+	  input_location = EXPR_LOCATION (node);
+	  if (input_location == UNKNOWN_LOCATION)
+	    input_location = save_location;
+#else
 	  input_line = EXPR_WFL_LINENO (node);
+#endif
 	  body = java_complete_tree (EXPR_WFL_NODE (node));
-	  input_line = save_lineno;
+	  input_location = save_location;
 	  EXPR_WFL_NODE (node) = body;
 	  TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (body);
 	  CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (body);
@@ -11799,9 +12010,13 @@ java_complete_lhs (tree node)
 	      TREE_VALUE (cn) = dim;
 	      /* Setup the location of the current dimension, for
 		 later error report. */
+#ifdef USE_MAPPED_LOCATION
+	      TREE_PURPOSE (cn) = expr_add_location (NULL_TREE, location, 0);
+#else
 	      TREE_PURPOSE (cn) =
 		build_expr_wfl (NULL_TREE, input_filename, 0, 0);
 	      EXPR_WFL_LINECOL (TREE_PURPOSE (cn)) = location;
+#endif
 	    }
 	}
       /* They complete the array creation expression, if no errors
@@ -11840,7 +12055,11 @@ java_complete_lhs (tree node)
 	  int from_super = (EXPR_WFL_NODE (TREE_OPERAND (node, 0)) ==
                            super_identifier_node);
 	  tree arguments;
+#ifdef USE_MAPPED_LOCATION
+	  source_location location = EXPR_LOCATION (node);
+#else
 	  int location = EXPR_WFL_LINECOL (node);
+#endif
 
 	  node = patch_method_invocation (node, NULL_TREE, NULL_TREE,
 					  from_super, 0, &decl);
@@ -12204,10 +12423,14 @@ build_debugable_stmt (int location, tree stmt)
 {
   if (TREE_CODE (stmt) != EXPR_WITH_FILE_LOCATION)
     {
+#ifdef USE_MAPPED_LOCATION
+      stmt = expr_add_location (stmt, location, 1);
+#else
       stmt = build_expr_wfl (stmt, input_filename, 0, 0);
       EXPR_WFL_LINECOL (stmt) = location;
+      JAVA_MAYBE_GENERATE_DEBUG_INFO (stmt);
+#endif
     }
-  JAVA_MAYBE_GENERATE_DEBUG_INFO (stmt);
   return stmt;
 }
 
@@ -12335,9 +12558,15 @@ build_wfl_wrap (tree node, int location)
   if (TREE_CODE (node) == THIS_EXPR)
     node_to_insert = wfl = build_wfl_node (this_identifier_node);
   else
+#ifdef USE_MAPPED_LOCATION
+    wfl = build_unknown_wfl (NULL_TREE);
+
+  SET_EXPR_LOCATION (wfl, location);
+#else
     wfl = build_expr_wfl (NULL_TREE, ctxp->filename, 0, 0);
 
   EXPR_WFL_LINECOL (wfl) = location;
+#endif
   EXPR_WFL_QUALIFICATION (wfl) = build_tree_list (node_to_insert, NULL_TREE);
   return wfl;
 }
@@ -14478,8 +14707,18 @@ static tree
 maybe_build_array_element_wfl (tree node)
 {
   if (TREE_CODE (node) != EXPR_WITH_FILE_LOCATION)
-    return build_expr_wfl (NULL_TREE, ctxp->filename,
-			   ctxp->elc.line, ctxp->elc.prev_col);
+    {
+      /* FIXME - old code used "prev_lc.line" and "elc.prev_col */
+      return build_expr_wfl (NULL_TREE,
+#ifdef USE_MAPPED_LOCATION
+			     input_location
+#else
+			     ctxp->filename,
+			     ctxp->lexer->token_start.line,
+			     ctxp->lexer->token_start.col
+#endif
+			     );
+    }
   else
     return NULL_TREE;
 }
@@ -14882,9 +15121,13 @@ finish_loop_body (int location, tree condition, tree body, int reversed)
       /* We wrapped the EXIT_EXPR around a WFL so we can debug it.
          The real EXIT_EXPR is one operand further. */
       EXPR_WFL_LINECOL (cnode) = location;
-      /* This one is for accurate error reports */
-      EXPR_WFL_LINECOL (TREE_OPERAND (cnode, 0)) = location;
-      TREE_OPERAND (TREE_OPERAND (cnode, 0), 0) = condition;
+      if (TREE_CODE (cnode) == EXPR_WITH_FILE_LOCATION)
+	{
+	  cnode = EXPR_WFL_NODE (cnode);
+	  /* This one is for accurate error reports */
+	  EXPR_WFL_LINECOL (cnode) = location;
+	}
+      TREE_OPERAND (cnode, 0) = condition;
     }
   LOOP_EXPR_BODY_BODY_EXPR (loop_body, reversed) = body;
   POP_LOOP ();
@@ -15212,7 +15455,13 @@ patch_switch_statement (tree node)
 /* Build an assertion expression for `assert CONDITION : VALUE'; VALUE
    might be NULL_TREE.  */
 static tree
-build_assertion (int location, tree condition, tree value)
+build_assertion (
+#ifdef USE_MAPPED_LOCATION
+		 source_location location,
+#else
+		 int location,
+#endif
+		 tree condition, tree value)
 {
   tree node;
   tree klass = GET_CPC ();
@@ -15636,7 +15885,14 @@ patch_throw_statement (tree node, tree wfl_op1)
    effectively caught from where DECL is invoked.  THIS_EXPR is the
    expression that computes `this' for the method call.  */
 static void
-check_thrown_exceptions (int location, tree decl, tree this_expr)
+check_thrown_exceptions (
+#ifdef USE_MAPPED_LOCATION
+			 source_location location,
+#else
+
+			 int location,
+#endif
+			 tree decl, tree this_expr)
 {
   tree throws;
   int is_array_call = 0;
@@ -15659,7 +15915,11 @@ check_thrown_exceptions (int location, tree decl, tree this_expr)
 	if (is_array_call && DECL_NAME (decl) == get_identifier ("clone"))
 	  continue;
 
+#ifdef USE_MAPPED_LOCATION
+	SET_EXPR_LOCATION (wfl_operator, location);
+#else
 	EXPR_WFL_LINECOL (wfl_operator) = location;
+#endif
 	if (DECL_FINIT_P (current_function_decl))
 	  parse_error_context
             (wfl_operator, "Exception `%s' can't be thrown in initializer",
