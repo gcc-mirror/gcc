@@ -1,3 +1,9 @@
+2002-07-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/open.c (f_open): Do not indicate unformatted file
+	if record length is given without a FORMATTED/UNFORMATTED
+	specification.
+
 2002-06-25  DJ Delorie  <dj@redhat.com>
 
 	* aclocal.m4 (GLIBCPP_CONFIGURE): Split out
