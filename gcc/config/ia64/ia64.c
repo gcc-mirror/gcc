@@ -1777,6 +1777,8 @@ ia64_print_operand (file, x, code)
      rtx    x;
      int    code;
 {
+  const char *str;
+
   switch (code)
     {
     case 0:
@@ -1796,7 +1798,22 @@ ia64_print_operand (file, x, code)
       }
 
     case 'D':
-      fputs (GET_CODE (x) == NE ? "neq" : GET_RTX_NAME (GET_CODE (x)), file);
+      switch (GET_CODE (x))
+	{
+	case NE:
+	  str = "neq";
+	  break;
+	case UNORDERED:
+	  str = "unord";
+	  break;
+	case ORDERED:
+	  str = "ord";
+	  break;
+	default:
+	  str = GET_RTX_NAME (GET_CODE (x));
+	  break;
+	}
+      fputs (str, file);
       return;
 
     case 'E':
@@ -1805,13 +1822,14 @@ ia64_print_operand (file, x, code)
 
     case 'F':
       if (x == CONST0_RTX (GET_MODE (x)))
-	fputs (reg_names [FR_REG (0)], file);
+	str = reg_names [FR_REG (0)];
       else if (x == CONST1_RTX (GET_MODE (x)))
-	fputs (reg_names [FR_REG (1)], file);
+	str = reg_names [FR_REG (1)];
       else if (GET_CODE (x) == REG)
-	fputs (reg_names [REGNO (x)], file);
+	str = reg_names [REGNO (x)];
       else
 	abort ();
+      fputs (str, file);
       return;
 
     case 'I':
@@ -2834,8 +2852,15 @@ emit_insn_group_barriers (insns)
 	    break;
 	  else
 	    {
+	      rtx pat = PATTERN (insn);
+
+	      /* We play dependency tricks with the epilogue in order to
+		 get proper schedules.  Undo this for dv analysis.  */
+	      if (INSN_CODE (insn) == CODE_FOR_epilogue_deallocate_stack)
+		pat = XVECEXP (pat, 0, 0);
+
 	      memset (rws_insn, 0, sizeof (rws_insn));
-	      need_barrier |= rtx_needs_barrier (PATTERN (insn), flags, 0);
+	      need_barrier |= rtx_needs_barrier (pat, flags, 0);
 
 	      /* Check to see if the previous instruction was a volatile
 		 asm.  */
