@@ -1,3 +1,8 @@
+2002-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/6037
+	* decl.c (start_enum): Don't set TREE_ADDRESSABLE on TREE_LIST node.
+
 2002-03-23  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* error.c (dump_type): Be careful about implicit typenames.
