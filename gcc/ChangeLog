@@ -1,6 +1,12 @@
+2004-09-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR tree-optimization/17474
+	* tree-ssa-ccp.c (maybe_fold_offset_to_component_ref): Determine
+	offset of the field correctly when DECL_FIELD_BIT_OFFSET != 0.
+
 2004-09-25  Jan Hubicka  <jh@suse.cz>
 
-	* predict.c (counts_to_freqs): Make glolbal.
+	* predict.c (counts_to_freqs): Make global.
 	* predict.h (counts_to_freqa): Declare.
 	* profile.c (compute_branch_probabilities): Compute frequencies
 	* tree-profile.c (do_tree_profiling): Refine conditional on when

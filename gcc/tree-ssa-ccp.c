@@ -1395,7 +1395,7 @@ static tree
 maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 				    tree orig_type, bool base_is_ptr)
 {
-  tree f, t, field_type, tail_array_field;
+  tree f, t, field_type, tail_array_field, field_offset;
 
   if (TREE_CODE (record_type) != RECORD_TYPE
       && TREE_CODE (record_type) != UNION_TYPE
@@ -1415,7 +1415,9 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 	continue;
       if (DECL_BIT_FIELD (f))
 	continue;
-      if (TREE_CODE (DECL_FIELD_OFFSET (f)) != INTEGER_CST)
+
+      field_offset = byte_position (f);
+      if (TREE_CODE (field_offset) != INTEGER_CST)
 	continue;
 
       /* ??? Java creates "interesting" fields for representing base classes.
@@ -1428,7 +1430,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
       tail_array_field = NULL_TREE;
 
       /* Check to see if this offset overlaps with the field.  */
-      cmp = tree_int_cst_compare (DECL_FIELD_OFFSET (f), offset);
+      cmp = tree_int_cst_compare (field_offset, offset);
       if (cmp > 0)
 	continue;
 
