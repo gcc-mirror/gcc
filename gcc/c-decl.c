@@ -4798,9 +4798,9 @@ get_parm_info (bool ellipsis)
 	    }
 	  break;
 
-	case ENUMERAL_TYPE: keyword = "struct"; goto tag;
+	case ENUMERAL_TYPE: keyword = "enum"; goto tag;
 	case UNION_TYPE:    keyword = "union"; goto tag;
-	case RECORD_TYPE:   keyword = "enum"; goto tag;
+	case RECORD_TYPE:   keyword = "struct"; goto tag;
 	tag:
 	  /* Types may not have tag-names, in which case the type
 	     appears in the bindings list with b->id NULL.  */
