@@ -251,6 +251,18 @@ struct gcc_target
        scheduling.  */
     void (* init_dfa_bubbles) (void);
     rtx (* dfa_bubble) (int);
+    /* The following member value is a pointer to a function called
+       by the insn scheduler.  It should return true if there exists a
+       dependence which is considered costly by the target, between 
+       the insn passed as the first parameter, and the insn passed as 
+       the second parameter.  The third parameter is the INSN_DEPEND 
+       link that represents the dependence between the two insns.  The
+       fourth argument is the cost of the dependence as estimated by
+       the scheduler.  The last argument is the distance in cycles 
+       between the already scheduled insn (first parameter) and the
+       the second insn (second parameter).
+    */
+    bool (* is_costly_dependence) PARAMS ((rtx, rtx, rtx, int, int));
   } sched;
 
   /* Given two decls, merge their attributes and return the result.  */

@@ -517,6 +517,7 @@ static void ready_sort (struct ready_list *);
 static rtx ready_remove_first (struct ready_list *);
 
 static void queue_to_ready (struct ready_list *);
+static int early_queue_to_ready (state_t, struct ready_list *);
 
 static void debug_ready_list (struct ready_list *);
 
@@ -1247,6 +1248,7 @@ schedule_insn (rtx insn, struct ready_list *ready, int clock)
   rtx link;
   int advance = 0;
   int unit = 0;
+  int premature_issue = 0;
 
   if (!targetm.sched.use_dfa_pipeline_interface
       || !(*targetm.sched.use_dfa_pipeline_interface) ())
@@ -1290,12 +1292,19 @@ schedule_insn (rtx insn, struct ready_list *ready, int clock)
 	return 0;
     }
 
+  if (INSN_TICK (insn) > clock)
+    {
+      /* 'insn' has been prematurely moved from the queue to the
+	 ready list.  */
+      premature_issue = INSN_TICK (insn) - clock;
+    }
+
   for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
     {
       rtx next = XEXP (link, 0);
       int cost = insn_cost (insn, link, next);
 
-      INSN_TICK (next) = MAX (INSN_TICK (next), clock + cost);
+      INSN_TICK (next) = MAX (INSN_TICK (next), clock + cost + premature_issue);
 
       if ((INSN_DEP_COUNT (next) -= 1) == 0)
 	{
@@ -1809,6 +1818,159 @@ queue_to_ready (struct ready_list *ready)
     }
 }
 
+/* Used by early_queue_to_ready.  Determines whether it is "ok" to
+   prematurely move INSN from the queue to the ready list.  Currently, 
+   if a target defines the hook 'is_costly_dependence', this function 
+   uses the hook to check whether there exist any dependences which are
+   considered costly by the target, between INSN and other insns that 
+   have already been scheduled.  Dependences are checked up to Y cycles
+   back, with default Y=1; The flag -fsched-stalled-insns-dep=Y allows
+   controlling this value. 
+   (Other considerations could be taken into account instead (or in 
+   addition) depending on user flags and target hooks.  */
+
+static bool 
+ok_for_early_queue_removal (rtx insn)
+{
+  int n_cycles;
+  rtx prev_insn = last_scheduled_insn;
+
+  if (targetm.sched.is_costly_dependence)
+    {
+      for (n_cycles = flag_sched_stalled_insns_dep; n_cycles; n_cycles--)
+	{
+	  for ( ; prev_insn; prev_insn = PREV_INSN (prev_insn))
+	    {
+	      rtx dep_link = 0;
+	      int dep_cost;
+
+	      if (GET_CODE (prev_insn) != NOTE)
+		{
+		  dep_link = find_insn_list (insn, INSN_DEPEND (prev_insn));
+		  if (dep_link)
+		    {
+		      dep_cost = insn_cost (prev_insn, dep_link, insn) ;
+		      if (targetm.sched.is_costly_dependence (prev_insn, insn, 
+				dep_link, dep_cost, 
+				flag_sched_stalled_insns_dep - n_cycles))
+			return false;
+		    }
+		}
+
+	      if (GET_MODE (prev_insn) == TImode) /* end of dispatch group */
+		break;
+	    }
+
+	  if (!prev_insn) 
+	    break;
+	  prev_insn = PREV_INSN (prev_insn);     
+	}
+    }
+
+  return true;
+}
+
+
+/* Remove insns from the queue, before they become "ready" with respect
+   to FU latency considerations.   */
+
+static int 
+early_queue_to_ready (state_t state, struct ready_list *ready)
+{
+  rtx insn;
+  rtx link;
+  rtx next_link;
+  rtx prev_link;
+  bool move_to_ready;
+  int cost;
+  state_t temp_state = alloca (dfa_state_size);
+  int stalls;
+  int insns_removed = 0;
+
+  /*
+     Flag '-fsched-stalled-insns=X' determines the aggressiveness of this 
+     function: 
+
+     X == 0: There is no limit on how many queued insns can be removed          
+             prematurely.  (flag_sched_stalled_insns = -1).
+
+     X >= 1: Only X queued insns can be removed prematurely in each 
+	     invocation.  (flag_sched_stalled_insns = X).
+
+     Otherwise: Early queue removal is disabled.
+         (flag_sched_stalled_insns = 0)
+  */
+
+  if (! flag_sched_stalled_insns)   
+    return 0;
+
+  for (stalls = 0; stalls <= MAX_INSN_QUEUE_INDEX; stalls++)
+    {
+      if ((link = insn_queue[NEXT_Q_AFTER (q_ptr, stalls)]))
+	{
+	  if (sched_verbose > 6)
+	    fprintf (sched_dump, ";; look at index %d + %d\n", q_ptr, stalls);
+
+	  prev_link = 0;
+	  while (link)
+	    {
+	      next_link = XEXP (link, 1);
+	      insn = XEXP (link, 0);
+	      if (insn && sched_verbose > 6)
+		print_rtl_single (sched_dump, insn);
+
+	      memcpy (temp_state, state, dfa_state_size);
+	      if (recog_memoized (insn) < 0) 
+		/* non-negative to indicate that it's not ready
+		   to avoid infinite Q->R->Q->R... */
+		cost = 0;
+	      else
+		cost = state_transition (temp_state, insn);
+
+	      if (sched_verbose >= 6)
+		fprintf (sched_dump, "transition cost = %d\n", cost);
+
+	      move_to_ready = false;
+	      if (cost < 0) 
+		{
+		  move_to_ready = ok_for_early_queue_removal (insn);
+		  if (move_to_ready == true)
+		    {
+		      /* move from Q to R */
+		      q_size -= 1;
+		      ready_add (ready, insn);
+
+		      if (prev_link)   
+			XEXP (prev_link, 1) = next_link;
+		      else
+			insn_queue[NEXT_Q_AFTER (q_ptr, stalls)] = next_link;
+
+		      free_INSN_LIST_node (link);
+
+		      if (sched_verbose >= 2)
+			fprintf (sched_dump, ";;\t\tEarly Q-->Ready: insn %s\n",
+				 (*current_sched_info->print_insn) (insn, 0));
+
+		      insns_removed++;
+		      if (insns_removed == flag_sched_stalled_insns)
+			/* remove only one insn from Q at a time */
+			return insns_removed;
+		    }
+		}
+
+	      if (move_to_ready == false)
+		prev_link = link;
+
+	      link = next_link;
+	    } /* while link */
+	} /* if link */    
+
+    } /* for stalls.. */
+
+  return insns_removed; 
+}
+
+
 /* Print the ready list for debugging purposes.  Callable from debugger.  */
 
 static void
@@ -2251,6 +2413,20 @@ schedule_block (int b, int rgn_n_insns)
 	    }
 	  else
 	    {
+	      if (ready.n_ready == 0 
+		  && can_issue_more 
+		  && reload_completed) 
+		{
+		  /* Allow scheduling insns directly from the queue in case
+		     there's nothing better to do (ready list is empty) but
+		     there are still vacant dispatch slots in the current cycle.  */
+		  if (sched_verbose >= 6)
+		    fprintf(sched_dump,";;\t\tSecond chance\n");
+		  memcpy (temp_state, curr_state, dfa_state_size);
+		  if (early_queue_to_ready (temp_state, &ready))
+		    ready_sort (&ready);
+		}
+
 	      if (ready.n_ready == 0 || !can_issue_more
 		  || state_dead_lock_p (curr_state)
 		  || !(*current_sched_info->schedule_more_p) ())

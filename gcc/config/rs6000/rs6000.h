@@ -376,6 +376,16 @@ extern enum processor_type rs6000_cpu;
    and the old mnemonics are dialect zero.  */
 #define ASSEMBLER_DIALECT (TARGET_NEW_MNEMONICS ? 1 : 0)
 
+/* Types of costly dependences.  */
+enum rs6000_dependence_cost
+ {
+   max_dep_latency = 1000,
+   no_dep_costly,
+   all_deps_costly,
+   true_store_to_load_dep_costly,
+   store_to_load_dep_costly
+ };
+
 /* This is meant to be overridden in target specific files.  */
 #define	SUBTARGET_OPTIONS
 
@@ -402,6 +412,8 @@ extern enum processor_type rs6000_cpu;
    {"longcall", &rs6000_longcall_switch,				\
     N_("Avoid all range limits on call instructions"), 0},		\
    {"no-longcall", &rs6000_longcall_switch, "", 0},			\
+   {"sched-costly-dep=", &rs6000_sched_costly_dep_str,                  \
+    N_("determine which dependences between insns are considered costly"), 0}, \
    {"align-", &rs6000_alignment_string,					\
     N_("Specify alignment of structure fields default/natural"), 0},	\
    {"prioritize-restricted-insns=", &rs6000_sched_restricted_insns_priority_str, \
@@ -461,6 +473,8 @@ extern const char* rs6000_alignment_string;
 extern int rs6000_alignment_flags;
 extern const char *rs6000_sched_restricted_insns_priority_str;
 extern int rs6000_sched_restricted_insns_priority;
+extern const char *rs6000_sched_costly_dep_str;
+extern enum rs6000_dependence_cost rs6000_sched_costly_dep;
 
 /* Alignment options for fields in structures for sub-targets following
    AIX-like ABI.
@@ -478,6 +492,11 @@ extern int rs6000_sched_restricted_insns_priority;
 #else
 #define TARGET_ALIGN_NATURAL 0
 #endif
+
+/* Set a default value for DEFAULT_SCHED_COSTLY_DEP used by target hook
+   is_costly_dependence.  */ 
+#define DEFAULT_SCHED_COSTLY_DEP                           \
+  (rs6000_cpu == PROCESSOR_POWER4 ? store_to_load_dep_costly : no_dep_costly)
 
 /* Define if the target has restricted dispatch slot instructions.  */
 #define DEFAULT_RESTRICTED_INSNS_PRIORITY (rs6000_cpu == PROCESSOR_POWER4 ? 1 : 0)

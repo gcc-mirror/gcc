@@ -439,6 +439,20 @@ extern int flag_schedule_speculative;
 extern int flag_schedule_speculative_load;
 extern int flag_schedule_speculative_load_dangerous;
 
+/* The following flags have an effect during scheduling after register
+   allocation:   
+
+   sched_stalled_insns means that insns can be moved prematurely from the queue
+   of stalled insns into the ready list.
+
+   sched_stalled_insns_dep controls how many recently scheduled cycles will 
+   be examined for a dependency on a stalled insn that is candidate for
+   premature removal from the queue of stalled insns into the ready list (has 
+   an effect only if the flag 'sched_stalled_insns' is set).  */
+
+extern int flag_sched_stalled_insns;
+extern int flag_sched_stalled_insns_dep;
+
 /* flag_branch_on_count_reg means try to replace add-1,compare,branch tupple
    by a cheaper branch, on a count register.  */
 extern int flag_branch_on_count_reg;

@@ -1264,6 +1264,24 @@ common_handle_option (size_t scode, const char *arg,
       flag_schedule_insns_after_reload = value;
       break;
 
+    case OPT_fsched_stalled_insns:
+      flag_sched_stalled_insns = value;
+      break;
+
+    case OPT_fsched_stalled_insns_:
+      flag_sched_stalled_insns = value;
+      if (flag_sched_stalled_insns == 0)
+	flag_sched_stalled_insns = -1;
+      break;
+
+    case OPT_fsched_stalled_insns_dep:
+      flag_sched_stalled_insns_dep = 1;
+      break;
+
+    case OPT_fsched_stalled_insns_dep_:
+      flag_sched_stalled_insns_dep = value;
+      break;
+
     case OPT_fshared_data:
       flag_shared_data = value;
       break;
