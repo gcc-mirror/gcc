@@ -27,7 +27,10 @@ Boston, MA 02111-1307, USA.
    place.  The values of the parameters can be set on the
    command-line, thereby providing a way to control the amount of
    effort spent on particular optimization passes, or otherwise tune
-   the behavior of the compiler.  */
+   the behavior of the compiler.
+
+   Since their values can be set on the command-line, these parameters
+   should not be used for non-dynamic memory allocation.  */
 
 #ifndef PARAMS_H
 #define PARAMS_H
@@ -81,5 +84,7 @@ typedef enum compiler_param
 /* Macros for the various parameters.  */
 #define MAX_INLINE_INSNS \
   PARAM_VALUE (PARAM_MAX_INLINE_INSNS)
+#define MAX_DELAY_SLOT_INSN_SEARCH \
+  PARAM_VALUE (PARAM_MAX_DELAY_SLOT_INSN_SEARCH)
 
 #endif /* PARAMS_H */

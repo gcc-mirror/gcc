@@ -1481,7 +1481,7 @@ caller-save.o : caller-save.c $(CONFIG_H) system.h $(RTL_H) flags.h \
    $(RECOG_H) reload.h $(EXPR_H) toplev.h
 reorg.o : reorg.c $(CONFIG_H) system.h $(RTL_H) conditions.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(REGS_H) insn-config.h $(INSN_ATTR_H) insn-flags.h \
-   $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h
+   $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h params.h
 alias.o : alias.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(REGS_H) toplev.h output.h $(EXPR_H) insn-flags.h \
    $(GGC_H) function.h cselib.h $(TREE_H)
