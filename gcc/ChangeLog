@@ -1,3 +1,10 @@
+2004-12-07  Richard Henderson  <rth@redhat.com>
+
+	* tree-pretty-print.c (dump_array_domain): Split out from
+	dump_generic_node; fix off-by-one error on zero-based array bounds.
+	(dump_generic_node): Use it.
+	(print_declaration): Likewise.
+
 2004-12-08  Richard Guenther <richard.guenther@uni-tuebingen.de>
 
 	* doc/invoke.texi: Adjust default values for
