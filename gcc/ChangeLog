@@ -1,3 +1,10 @@
+2004-01-23  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* doc/tm.texi: Insert some weasel words when LOAD_EXTEND_OP
+	may or may not return non-NIL.
+	* postreload.c (reload_cse_simplify_operands): In LOAD_EXTEND_OP code,
+	check CANNOT_CHANGE_MODE_CLASS
+
 2004-01-23  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (PROP_POSTRELOAD): New macro.
