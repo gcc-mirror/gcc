@@ -334,6 +334,14 @@ struct gcc_target
      invalid addresses.  */
   int (* address_cost) PARAMS ((rtx x));
 
+  /* Given a register, this hook should return a parallel of registers
+     to represent where to find the register pieces.  Define this hook
+     if the register and its mode are represented in Dwarf in
+     non-contiguous locations, or if the register should be
+     represented in more than one register in Dwarf.  Otherwise, this
+     hook should return NULL_RTX.  */
+  rtx (* dwarf_register_span) PARAMS ((rtx));
+
   /* Leave the boolean fields at the end.  */
 
   /* True if arbitrary sections are supported.  */

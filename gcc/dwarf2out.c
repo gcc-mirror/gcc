@@ -3752,6 +3752,8 @@ static dw_die_ref modified_type_die	PARAMS ((tree, int, int, dw_die_ref));
 static int type_is_enum			PARAMS ((tree));
 static unsigned int reg_number		PARAMS ((rtx));
 static dw_loc_descr_ref reg_loc_descriptor PARAMS ((rtx));
+static dw_loc_descr_ref one_reg_loc_descriptor PARAMS ((unsigned int));
+static dw_loc_descr_ref multiple_reg_loc_descriptor PARAMS ((rtx, rtx));
 static dw_loc_descr_ref int_loc_descriptor PARAMS ((HOST_WIDE_INT));
 static dw_loc_descr_ref based_loc_descr	PARAMS ((unsigned, long));
 static int is_based_loc			PARAMS ((rtx));
@@ -8155,24 +8157,90 @@ reg_number (rtl)
 }
 
 /* Return a location descriptor that designates a machine register or
-   zero if there is no such.  */
+   zero if there is none.  */
 
 static dw_loc_descr_ref
 reg_loc_descriptor (rtl)
      rtx rtl;
 {
-  dw_loc_descr_ref loc_result = NULL;
   unsigned reg;
+  rtx regs;
 
   if (REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
     return 0;
 
   reg = reg_number (rtl);
-  if (reg <= 31)
-    loc_result = new_loc_descr (DW_OP_reg0 + reg, 0, 0);
-  else
-    loc_result = new_loc_descr (DW_OP_regx, reg, 0);
+  regs = (*targetm.dwarf_register_span) (rtl);
 
+  if (HARD_REGNO_NREGS (reg, GET_MODE (rtl)) > 1
+      || regs)
+    return multiple_reg_loc_descriptor (rtl, regs);
+  else
+    return one_reg_loc_descriptor (reg);
+}
+
+/* Return a location descriptor that designates a machine register for
+   a given hard register number.  */
+
+static dw_loc_descr_ref
+one_reg_loc_descriptor (regno)
+     unsigned int regno;
+{
+  if (regno <= 31)
+    return new_loc_descr (DW_OP_reg0 + regno, 0, 0);
+  else
+    return new_loc_descr (DW_OP_regx, regno, 0);
+}
+
+/* Given an RTL of a register, return a location descriptor that
+   designates a value that spans more than one register.  */
+
+static dw_loc_descr_ref
+multiple_reg_loc_descriptor (rtl, regs)
+     rtx rtl, regs;
+{
+  int nregs, size, i;
+  unsigned reg;
+  dw_loc_descr_ref loc_result = NULL;
+
+  reg = reg_number (rtl);
+  nregs = HARD_REGNO_NREGS (reg, GET_MODE (rtl));
+
+  /* Simple, contiguous registers.  */
+  if (regs == NULL_RTX)
+    {
+      size = GET_MODE_SIZE (GET_MODE (rtl)) / nregs;
+
+      loc_result = NULL;
+      while (nregs--)
+	{
+	  dw_loc_descr_ref t;
+
+	  ++reg;
+	  t = one_reg_loc_descriptor (reg);
+	  add_loc_descr (&loc_result, t);
+	  add_loc_descr (&loc_result, new_loc_descr (DW_OP_piece, size, 0));
+	}
+      return loc_result;
+    }
+
+  /* Now onto stupid register sets in non contiguous locations.  */
+
+  if (GET_CODE (regs) != PARALLEL)
+    abort ();
+
+  size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
+  loc_result = NULL;
+
+  for (i = 0; i < XVECLEN (regs, 0); ++i)
+    {
+      dw_loc_descr_ref t;
+
+      t = one_reg_loc_descriptor (REGNO (XVECEXP (regs, 0, i)));
+      add_loc_descr (&loc_result, t);
+      size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
+      add_loc_descr (&loc_result, new_loc_descr (DW_OP_piece, size, 0));
+    }
   return loc_result;
 }
 

@@ -1,3 +1,23 @@
+2003-03-05  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/tm.texi: Document TARGET_DWARF_REGISTER_SPAN.
+
+        * config/rs6000/rs6000.c (rs6000_dwarf_register_span): New.
+
+        * hooks.c (hook_rtx_rtx_null): New.
+
+        * hooks.h (hook_rtx_rtx_null): Protoize.
+
+        * target-def.h (TARGET_DWARF_REGISTER_SPAN): New macro.
+        (TARGET_INITIALIZER): Add TARGET_DWARF_REGISTER_SPAN.
+
+        * target.h (struct gcc_target): Add dwarf_register_span.
+
+        * dwarf2out.c (multiple_reg_loc_descriptor): New.
+        (one_reg_loc_descriptor): New.
+        (reg_loc_descriptor): Add support for values that span more than
+        one register.
+
 Wed Mar  5 23:16:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (calls.o, toplev.o alias.o): Depend on cgraph.h

@@ -268,6 +268,7 @@ static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *, int));
 static void altivec_frame_fixup PARAMS ((rtx, rtx, HOST_WIDE_INT));
 static int easy_vector_constant PARAMS ((rtx));
 static bool is_ev64_opaque_type PARAMS ((tree));
+static rtx rs6000_dwarf_register_span PARAMS ((rtx));
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -420,6 +421,9 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_VECTOR_OPAQUE_P
 #define TARGET_VECTOR_OPAQUE_P is_ev64_opaque_type
+
+#undef TARGET_DWARF_REGISTER_SPAN
+#define TARGET_DWARF_REGISTER_SPAN rs6000_dwarf_register_span
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13599,6 +13603,30 @@ is_ev64_opaque_type (type)
 	  && DECL_NAME (TYPE_NAME (type))
 	  && strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
 		     "__ev64_opaque__") == 0);
+}
+
+static rtx
+rs6000_dwarf_register_span (reg)
+     rtx reg;
+{
+  unsigned regno;
+
+  if (!TARGET_SPE || !SPE_VECTOR_MODE (GET_MODE (reg)))
+    return NULL_RTX;
+
+  regno = REGNO (reg);
+
+  /* The duality of the SPE register size wreaks all kinds of havoc.
+     This is a way of distinguishing r0 in 32-bits from r0 in
+     64-bits.  */
+  return
+    gen_rtx_PARALLEL (VOIDmode,
+		      gen_rtvec (2,
+				 gen_rtx_REG (SImode, regno),
+				 /* Who, where, what?  1200?  This
+				    will get changed to a sane value
+				    when the SPE ABI finalizes.  */
+				 gen_rtx_REG (SImode, regno + 1200)));
 }
 
 #include "gt-rs6000.h"

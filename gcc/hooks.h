@@ -46,5 +46,6 @@ bool default_can_output_mi_thunk_no_vcall
 bool hook_bool_tree_tree_false PARAMS ((tree, tree));
 
 rtx hook_rtx_rtx_identity PARAMS ((rtx));
+rtx hook_rtx_rtx_null PARAMS ((rtx));
 
 #endif
