@@ -1,5 +1,12 @@
 2002-06-28  Bob Wilson  <bob.wilson@acm.org>
 
+	* config/xtensa/xtensa-protos.h (xtensa_return_addr): Declare.
+	config/xtensa/xtensa.c (xtensa_return_addr): New function.
+	config/xtensa/xtensa.h (RETURN_ADDR_RTX): Use xtensa_return_addr.
+	config/xtensa/xtensa.md (fix_return_addr): New pattern.
+
+2002-06-28  Bob Wilson  <bob.wilson@acm.org>
+
 	* config/xtensa/xtensa.h (FUNCTION_PROFILER): Respect flag_pic
 	when generating the call to _mcount.
 	(NO_PROFILE_COUNTERS): Define.
