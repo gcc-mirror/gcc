@@ -1,3 +1,9 @@
+2003-06-10  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r.h (HARD_REGNO_RENAME_OK): New.
+	* config/m32r/m32r.c (m32r_hard_regno_rename_ok): New.
+	* config/m32r/m32r-protos.h: Prototype it.
+
 2003-06-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/rs6000/eabi.h (TARGET_OS_CPP_BUILTINS): Define builtins

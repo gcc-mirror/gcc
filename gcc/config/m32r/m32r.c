@@ -2944,3 +2944,23 @@ m32r_block_immediate_operand (op, mode)
 
   return 1;
 }
+
+/* Return true if using NEW_REG in place of OLD_REG is ok.  */
+
+int
+m32r_hard_regno_rename_ok (old_reg, new_reg)
+     unsigned int old_reg ATTRIBUTE_UNUSED;
+     unsigned int new_reg;
+{
+  /* Interrupt routines can't clobber any register that isn't already used.  */
+  if (lookup_attribute ("interrupt", DECL_ATTRIBUTES (current_function_decl))
+      && !regs_ever_live[new_reg])
+    return 0;
+
+  /* We currently emit epilogues as text, not rtl, so the liveness
+     of the return address register isn't visible.  */
+  if (current_function_is_leaf && new_reg == RETURN_ADDR_REGNUM)
+    return 0;
+
+  return 1;
+}
