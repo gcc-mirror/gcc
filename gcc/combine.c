@@ -5526,6 +5526,12 @@ apply_distributive_law (x)
   rtx tem;
   enum rtx_code inner_code;
 
+  /* Distributivity is not true for floating point.
+     It can change the value.  So don't do it.
+     -- rms and moshier@world.std.com.  */
+  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+    return x;
+
   /* The outer operation can only be one of the following:  */
   if (code != IOR && code != AND && code != XOR
       && code != PLUS && code != MINUS)
