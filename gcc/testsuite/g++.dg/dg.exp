@@ -31,7 +31,7 @@ dg-init
 # Gather a list of all tests, excluding those in special/; those are handled
 # well, specially.
 set all [lsort [find $srcdir/$subdir *.C]]
-set tests [prune $all $srcdir/$subdir/special/*]
+set tests [prune [prune $all $srcdir/$subdir/special/*] $srcdir/$subdir/debug/*]
 
 # Main loop.
 dg-runtest $tests "" $DEFAULT_CXXFLAGS

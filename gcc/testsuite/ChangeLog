@@ -1,5 +1,15 @@
 2002-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/dg.exp: Exclude debug subdir, it has its own .exp.
+	* g++.dg/debug/debug.exp: New.
+	* g++.dg/debug/trivial.C: New.
+	* g++.dg/debug/debug1.C: Moved...
+	* g++.dg/other/debug1.C: ...from here.
+	* g++.dg/debug/debug2.C: Moved...
+	* g++.dg/other/debug2.C: ...from here.
+	* g++.dg/debug/debug3.C: Moved...
+	* g++.dg/other/debug3.C: ...from here.
+
 	* gcc.dg/noncompile/20020213-1.c: New test.
 
 2002-02-13  Jakub Jelinek  <jakub@redhat.com>
