@@ -1747,6 +1747,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 	      case UNSPEC_FPATAN:
 	      case UNSPEC_FYL2X:
+	      case UNSPEC_FYL2XP1:
 		/* These insns operate on the top two stack slots.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
