@@ -4099,6 +4099,115 @@ init_asm_output (const char *name)
     }
 }
 
+/* Default version of get_pch_validity.
+   By default, every flag difference is fatal; that will be mostly right for
+   most targets, but completely right for very few.  */
+
+void *
+default_get_pch_validity (size_t *len)
+{
+  size_t i;
+  char *result, *r;
+  
+  *len = sizeof (target_flags) + 2;
+  for (i = 0; i < ARRAY_SIZE (target_options); i++)
+    {
+      *len += 1;
+      if (*target_options[i].variable)
+	*len += strlen (*target_options[i].variable);
+    }
+
+  result = r = xmalloc (*len);
+  r[0] = flag_pic;
+  r[1] = flag_pie;
+  r += 2;
+  memcpy (r, &target_flags, sizeof (target_flags));
+  r += sizeof (target_flags);
+  
+  for (i = 0; i < ARRAY_SIZE (target_options); i++)
+    {
+      const char *str = *target_options[i].variable;
+      size_t l;
+      if (! str)
+	str = "";
+      l = strlen (str) + 1;
+      memcpy (r, str, l);
+      r += l;
+    }
+
+  return result;
+}
+
+/* Default version of pch_valid_p.  */
+
+const char *
+default_pch_valid_p (const void *data_p, size_t len)
+{
+  const char *data = (const char *)data_p;
+  const char *flag_that_differs = NULL;
+  size_t i;
+  
+  /* -fpic and -fpie also usually make a PCH invalid.  */
+  if (data[0] != flag_pic)
+    return _("created and used with different settings of -fpic");
+  if (data[1] != flag_pie)
+    return _("created and used with different settings of -fpie");
+  data += 2;
+
+  /* Check target_flags.  */
+  if (memcmp (data, &target_flags, sizeof (target_flags)) != 0)
+    {
+      for (i = 0; i < ARRAY_SIZE (target_switches); i++)
+	{
+	  int bits;
+	  int tf;
+
+	  memcpy (&tf, data, sizeof (target_flags));
+
+	  bits = target_switches[i].value;
+	  if (bits < 0)
+	    bits = -bits;
+	  if ((target_flags & bits) != (tf & bits))
+	    {
+	      flag_that_differs = target_switches[i].name;
+	      goto make_message;
+	    }
+	}
+      abort ();
+    }
+  data += sizeof (target_flags);
+  len -= sizeof (target_flags);
+  
+  /* Check string options.  */
+  for (i = 0; i < ARRAY_SIZE (target_options); i++)
+    {
+      const char *str = *target_options[i].variable;
+      size_t l;
+      if (! str)
+	str = "";
+      l = strlen (str) + 1;
+      if (len < l || memcmp (data, str, l) != 0)
+	{
+	  flag_that_differs = target_options[i].prefix;
+	  goto make_message;
+	}
+      data += l;
+      len -= l;
+    }
+
+  return NULL;
+  
+ make_message:
+  {
+    char *r;
+    asprintf (&r, _("created and used with differing settings of `-m%s'"),
+		  flag_that_differs);
+    if (r == NULL)
+      r = _("out of memory");
+    return r;
+  }
+}
+
 /* Default tree printer.   Handles declarations only.  */
 static bool
 default_tree_printer (pretty_printer * pp, text_info *text)

@@ -1,3 +1,26 @@
+2003-10-24  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 10757
+	* c-pch.c: Include target.h.  Improve comments.
+	(struct c_pch_validity): Add target_data_length.
+	(pch_init): Add target's validity data.
+	(c_common_valid_pch): Check target's validity data.
+	* target-def.h (TARGET_GET_PCH_VALIDITY): New.
+	(TARGET_PCH_VALID_P): New.
+	(TARGET_INITIALIZER): Add new fields.
+	* target.h: Include tm.h.
+	(struct gcc_target): Add get_pch_validity, pch_valid_p.
+	* toplev.h (default_get_pch_validity): New prototype.
+	(default_pch_valid_p): New prototype.
+	* toplev.c (default_get_pch_validity): New routine.
+	(default_pch_valid_p): New routine.
+	* Makefile.in (TARGET_H): Add TM_H.  Replace all users of
+	target.h with $(TARGET_H).
+	(c-pch.o): Add TARGET_H.
+	* doc/tm.texi (PCH Target): New node.
+	(TARGET_GET_PCH_VALIDITY): Document.
+	(TARGET_PCH_VALID_P): Document.
+
 2003-10-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in: Define a vpath for %.texi.  Remove explicit $(docdir)
