@@ -792,7 +792,6 @@ struct saved_scope {
   varray_type lang_base;
   tree *lang_stack;
   tree lang_name;
-  tree x_function_parms;
   tree template_parms;
   tree x_previous_class_type;
   tree x_previous_class_values;
@@ -841,7 +840,6 @@ struct saved_scope {
 /* Parsing a function declarator leaves a list of parameter names
    or a chain or parameter decls here.  */
 
-#define current_function_parms scope_chain->x_function_parms
 #define current_template_parms scope_chain->template_parms
 
 #define processing_template_decl scope_chain->x_processing_template_decl
@@ -889,7 +887,6 @@ struct cp_language_function
 
   int returns_value;
   int returns_null;
-  int parms_stored;
   int in_function_try_handler;
   int x_expanding_p;
   int name_declared;
@@ -955,12 +952,6 @@ struct cp_language_function
    a return statement with no argument is seen.  */
 
 #define current_function_returns_null cp_function_chain->returns_null
-
-#define current_function_just_assigned_this \
-  cp_function_chain->just_assigned_this
-
-#define current_function_parms_stored \
-  cp_function_chain->parms_stored
 
 /* Nonzero if we have already generated code to initialize virtual
    function tables in this function.  */
@@ -3509,6 +3500,11 @@ extern int flag_inline_trees;
 
 extern int at_eof;
 
+/* Functions called along with real static constructors and destructors.  */
+
+extern tree static_ctors;
+extern tree static_dtors;
+
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 
 /* Some macros for char-based bitfields.  */
@@ -3637,8 +3633,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 				   already been parsed.  */
 #define SF_INCLASS_INLINE    2  /* The function is an inline, defined
 				   in the class body.  */
-#define SF_EXPAND            4  /* Generate RTL for this function.  */
-
 
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, or if TYPE2
    is derived from TYPE1, or if TYPE2 is a pointer (reference) to a
@@ -3905,8 +3899,6 @@ extern tree start_enum				PARAMS ((tree));
 extern tree finish_enum				PARAMS ((tree));
 extern void build_enumerator			PARAMS ((tree, tree, tree));
 extern int start_function			PARAMS ((tree, tree, tree, int));
-extern void expand_start_early_try_stmts	PARAMS ((void));
-extern void store_parm_decls			PARAMS ((void));
 extern tree finish_function			PARAMS ((int));
 extern tree start_method			PARAMS ((tree, tree, tree));
 extern tree finish_method			PARAMS ((tree));

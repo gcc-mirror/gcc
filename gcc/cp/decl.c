@@ -46,8 +46,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern int current_class_depth;
 
-extern tree static_ctors, static_dtors;
-
 extern tree global_namespace;
 
 extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
@@ -163,7 +161,7 @@ static void mark_saved_scope PARAMS ((void *));
 static void mark_lang_function PARAMS ((struct cp_language_function *));
 static void mark_stmt_tree PARAMS ((stmt_tree));
 static void save_function_data PARAMS ((tree));
-static void check_function_type PARAMS ((tree));
+static void check_function_type PARAMS ((tree, tree));
 static void destroy_local_var PARAMS ((tree));
 static void finish_constructor_body PARAMS ((void));
 static void finish_destructor_body PARAMS ((void));
@@ -179,6 +177,7 @@ static tree check_special_function_return_type
 static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
 static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
 static int case_compare PARAMS ((splay_tree_key, splay_tree_key));
+static void store_parm_decls PARAMS ((tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -446,10 +445,6 @@ struct binding_level
        a chain of BLOCK nodes for all the levels
        that were entered and exited one level down.  */
     tree blocks;
-
-    /* The BLOCK node for this level, if one has been preallocated.
-       If 0, the BLOCK is allocated (if needed) when the level is popped.  */
-    tree this_block;
 
     /* The _TYPE node for this level, if parm_flag == 2.  */
     tree this_class;
@@ -1288,7 +1283,6 @@ poplevel (keep, reverse, functionbody)
   tree subblocks;
   tree block = NULL_TREE;
   tree decl;
-  int block_previously_created;
   int leaving_for_scope;
 
   if (cfun && !doing_semantic_analysis_p ())
@@ -1396,34 +1390,12 @@ poplevel (keep, reverse, functionbody)
      or if this level is a function body,
      create a BLOCK to record them for the life of this function.  */
   block = NULL_TREE;
-  block_previously_created = (current_binding_level->this_block != NULL_TREE);
-  if (block_previously_created)
-    block = current_binding_level->this_block;
-  else if (keep == 1 || functionbody)
+  if (keep == 1 || functionbody)
     block = make_node (BLOCK);
   if (block != NULL_TREE)
     {
-      if (block_previously_created)
-	{
-	  if (decls || tags || subblocks)
-	    {
-	      if (BLOCK_VARS (block))
-		warning ("internal compiler error: debugging info corrupted");
-
-	      BLOCK_VARS (block) = decls;
-
-	      /* We can have previous subblocks and new subblocks when
-		 doing fixup_gotos with complex cleanups.  We chain the new
-		 subblocks onto the end of any pre-existing subblocks.  */
-	      BLOCK_SUBBLOCKS (block) = chainon (BLOCK_SUBBLOCKS (block),
-						 subblocks);
-	    }
-	}
-      else
-	{
-	  BLOCK_VARS (block) = decls;
-	  BLOCK_SUBBLOCKS (block) = subblocks;
-	}
+      BLOCK_VARS (block) = decls;
+      BLOCK_SUBBLOCKS (block) = subblocks;
     }
 
   /* In each subblock, record that this is its superior.  */
@@ -1574,11 +1546,9 @@ poplevel (keep, reverse, functionbody)
   if (functionbody)
     DECL_INITIAL (current_function_decl) = block;
   else if (block)
-    {
-      if (!block_previously_created)
-        current_binding_level->blocks
-          = chainon (current_binding_level->blocks, block);
-    }
+    current_binding_level->blocks
+      = chainon (current_binding_level->blocks, block);
+
   /* If we did not make a block for the level just exited,
      any blocks made for inner levels
      (since they cannot be recorded as subblocks in that level)
@@ -1655,9 +1625,11 @@ insert_block (block)
 
 void
 set_block (block)
-    register tree block;
+    tree block ATTRIBUTE_UNUSED;
 {
-  current_binding_level->this_block = block;
+  /* The RTL expansion machinery requires us to provide this callback,
+     but it is not applicable in function-at-a-time mode.  */
+  my_friendly_assert (cfun && !doing_semantic_analysis_p (), 20000911);
 }
 
 /* Do a pushlevel for class declarations.  */
@@ -2011,7 +1983,6 @@ mark_binding_level (arg)
       ggc_mark_tree (lvl->type_shadowed);
       ggc_mark_tree (lvl->shadowed_labels);
       ggc_mark_tree (lvl->blocks);
-      ggc_mark_tree (lvl->this_block);
       ggc_mark_tree (lvl->this_class);
       ggc_mark_tree (lvl->incomplete);
       ggc_mark_tree (lvl->dead_vars_from_for);
@@ -2469,7 +2440,6 @@ mark_saved_scope (arg)
       if (t->lang_base)
 	ggc_mark_tree_varray (t->lang_base);
       ggc_mark_tree (t->lang_name);
-      ggc_mark_tree (t->x_function_parms);
       ggc_mark_tree (t->template_parms);
       ggc_mark_tree (t->x_previous_class_type);
       ggc_mark_tree (t->x_previous_class_values);
@@ -6868,7 +6838,6 @@ init_decl_processing ()
 
   ggc_add_tree_root (&last_function_parm_tags, 1);
   ggc_add_tree_root (&current_function_return_value, 1);
-  ggc_add_tree_root (&current_function_parms, 1);
   ggc_add_tree_root (&current_function_parm_tags, 1);
   ggc_add_tree_root (&last_function_parms, 1);
   ggc_add_tree_root (&error_mark_list, 1);
@@ -13593,8 +13562,9 @@ build_enumerator (name, value, enumtype)
 /* We're defining DECL.  Make sure that it's type is OK.  */
 
 static void
-check_function_type (decl)
+check_function_type (decl, current_function_parms)
      tree decl;
+     tree current_function_parms;
 {
   tree fntype = TREE_TYPE (decl);
   tree return_type = complete_type (TREE_TYPE (fntype));
@@ -13636,9 +13606,7 @@ check_function_type (decl)
    FLAGS is a bitwise or of SF_PRE_PARSED (indicating that the
    DECLARATOR is really the DECL for the function we are about to
    process and that DECLSPECS should be ignored), SF_INCLASS_INLINE
-   indicating that the function is an inline defined in-class, and
-   SF_EXPAND indicating that we should generate RTL for this
-   function.
+   indicating that the function is an inline defined in-class.
 
    This function creates a binding context for the function body
    as well as setting up the FUNCTION_DECL in current_function_decl.
@@ -13665,6 +13633,7 @@ start_function (declspecs, declarator, attrs, flags)
   extern int used_extern_spec;
   int doing_friend = 0;
   struct binding_level *bl;
+  tree current_function_parms;
 
   /* Sanity check.  */
   my_friendly_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE, 160);
@@ -13812,7 +13781,7 @@ start_function (declspecs, declarator, attrs, flags)
      you declare a function, these types can be incomplete, but they
      must be complete when you define the function.  */
   if (! processing_template_decl)
-    check_function_type (decl1);
+    check_function_type (decl1, current_function_parms);
 
   /* Build the return declaration for the function.  */
   restype = TREE_TYPE (fntype);
@@ -13837,7 +13806,6 @@ start_function (declspecs, declarator, attrs, flags)
   bl = current_binding_level;
   init_function_start (decl1, input_filename, lineno);
   current_binding_level = bl;
-  expanding_p = (flags & SF_EXPAND) != 0;
 
   /* Even though we're inside a function body, we still don't want to
      call expand_expr to calculate the size of a variable-sized array.
@@ -13846,9 +13814,8 @@ start_function (declspecs, declarator, attrs, flags)
   immediate_size_expand = 0;
   cfun->x_dont_save_pending_sizes_p = 1;
 
-  /* If we're building a statement-tree, start the tree now.  */
-  if (processing_template_decl || !expanding_p)
-    begin_stmt_tree (&DECL_SAVED_TREE (decl1));
+  /* Start the statement-tree, start the tree now.  */
+  begin_stmt_tree (&DECL_SAVED_TREE (decl1));
 
   /* Let the user know we're compiling this function.  */
   announce_function (decl1);
@@ -13877,29 +13844,11 @@ start_function (declspecs, declarator, attrs, flags)
   current_function_decl = decl1;
   cfun->decl = decl1;
 
-  /* Initialize the per-function data.  */
-  if (!DECL_PENDING_INLINE_P (decl1) && DECL_SAVED_FUNCTION_DATA (decl1))
-    {
-      /* If we already parsed this function, and we're just expanding it
-	 now, restore saved state.  */
-      struct binding_level *bl = current_binding_level;
-      *cp_function_chain = *DECL_SAVED_FUNCTION_DATA (decl1);
-      current_binding_level = bl;
+  my_friendly_assert ((DECL_PENDING_INLINE_P (decl1) 
+		       || !DECL_SAVED_FUNCTION_DATA (decl1)),
+		      20000911);
 
-      /* This function is being processed in whole-function mode; we
-	 already did semantic analysis.  */
-      cfun->x_whole_function_mode_p = 1;
-
-      /* If we decided that we didn't want to inline this function,
-	 make sure the back-end knows that.  */
-      if (!current_function_cannot_inline)
-	current_function_cannot_inline = cp_function_chain->cannot_inline;
-
-      /* We don't need the saved data anymore.  */
-      free (DECL_SAVED_FUNCTION_DATA (decl1));
-      DECL_SAVED_FUNCTION_DATA (decl1) = NULL;
-    }
-  else if (ctype && !doing_friend && !DECL_STATIC_FUNCTION_P (decl1))
+  if (ctype && !doing_friend && !DECL_STATIC_FUNCTION_P (decl1))
     {
       /* We know that this was set up by `grokclassfn'.  We do not
 	 wait until `store_parm_decls', since evil parse errors may
@@ -13987,17 +13936,11 @@ start_function (declspecs, declarator, attrs, flags)
 	DECL_INTERFACE_KNOWN (decl1) = 1;
     }
 
-  if (doing_semantic_analysis_p ())
-    {
-      pushlevel (0);
-      current_binding_level->parm_flag = 1;
-    }
+  pushlevel (0);
+  current_binding_level->parm_flag = 1;
 
   if (attrs)
     cplus_decl_attributes (decl1, NULL_TREE, attrs);
-
-  if (!building_stmt_tree ())
-    GNU_xref_function (decl1, current_function_parms);
 
   /* We need to do this even if we aren't expanding yet so that
      assemble_external works.  */
@@ -14038,25 +13981,20 @@ start_function (declspecs, declarator, attrs, flags)
       DECL_CONTEXT (ctor_label) = current_function_decl;
     }
 
+  store_parm_decls (current_function_parms);
+
   return 1;
 }
 
-/* Called after store_parm_decls for a function-try-block.  */
-
-void
-expand_start_early_try_stmts ()
-{
-  expand_start_try_stmts ();
-}
-
 /* Store the parameter declarations into the current function declaration.
    This is called after parsing the parameter declarations, before
    digesting the body of the function.
 
    Also install to binding contour return value identifier, if any.  */
 
-void
-store_parm_decls ()
+static void
+store_parm_decls (current_function_parms)
+     tree current_function_parms;
 {
   register tree fndecl = current_function_decl;
   register tree parm;
@@ -14071,10 +14009,6 @@ store_parm_decls ()
      then CONST_DECLs for foo and bar are put here.  */
   tree nonparms = NULL_TREE;
 
-  /* Create a binding level for the parms.  */
-  if (!building_stmt_tree ())
-    expand_start_bindings (2);
-
   if (current_function_parms)
     {
       /* This case is when the function was defined with an ANSI prototype.
@@ -14085,45 +14019,34 @@ store_parm_decls ()
       tree specparms = current_function_parms;
       tree next;
 
-      if (doing_semantic_analysis_p ())
-	{
-	  /* Must clear this because it might contain TYPE_DECLs declared
+      /* Must clear this because it might contain TYPE_DECLs declared
 	     at class level.  */
-	  storedecls (NULL_TREE);
+      storedecls (NULL_TREE);
 
-	  /* If we're doing semantic analysis, then we'll call pushdecl
+      /* If we're doing semantic analysis, then we'll call pushdecl
 	     for each of these.  We must do them in reverse order so that
 	     they end in the correct forward order.  */
-	  specparms = nreverse (specparms);
-	}
+      specparms = nreverse (specparms);
 
       for (parm = specparms; parm; parm = next)
 	{
 	  next = TREE_CHAIN (parm);
 	  if (TREE_CODE (parm) == PARM_DECL)
 	    {
-	      tree type = TREE_TYPE (parm);
+	      tree cleanup;
 
-	      if (doing_semantic_analysis_p ())
-		{
-		  tree cleanup;
+	      if (DECL_NAME (parm) == NULL_TREE
+		  || TREE_CODE (parm) != VOID_TYPE)
+		pushdecl (parm);
+	      else
+		cp_error ("parameter `%D' declared void", parm);
 
-		  if (DECL_NAME (parm) == NULL_TREE
-		      || TREE_CODE (parm) != VOID_TYPE)
-		    pushdecl (parm);
-		  else
-		    cp_error ("parameter `%D' declared void", parm);
+	      cleanup = (processing_template_decl 
+			 ? NULL_TREE
+			 : maybe_build_cleanup (parm));
 
-		  cleanup = (processing_template_decl 
-			     ? NULL_TREE
-			     : maybe_build_cleanup (parm));
-
-		  if (cleanup)
-		    cleanups = tree_cons (parm, cleanup, cleanups);
-		}
-	      else if (type != error_mark_node
-		       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-		parms_have_cleanups = 1;
+	      if (cleanup)
+		cleanups = tree_cons (parm, cleanup, cleanups);
 	    }
 	  else
 	    {
@@ -14134,14 +14057,11 @@ store_parm_decls ()
 	    }
 	}
 
-      if (doing_semantic_analysis_p ())
-	{
-	  /* Get the decls in their original chain order
-	     and record in the function.  This is all and only the
-	     PARM_DECLs that were pushed into scope by the loop above.  */
-	  DECL_ARGUMENTS (fndecl) = getdecls ();
-	  storetags (chainon (parmtags, gettags ()));
-	}
+      /* Get the decls in their original chain order and record in the
+	 function.  This is all and only the PARM_DECLs that were
+	 pushed into scope by the loop above.  */
+      DECL_ARGUMENTS (fndecl) = getdecls ();
+      storetags (chainon (parmtags, gettags ()));
     }
   else
     DECL_ARGUMENTS (fndecl) = NULL_TREE;
@@ -14150,20 +14070,7 @@ store_parm_decls ()
      as the decl-chain of the current lexical scope.
      Put the enumerators in as well, at the front so that
      DECL_ARGUMENTS is not modified.  */
-  if (doing_semantic_analysis_p ())
-    storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
-
-  /* Initialize the RTL code for the function.  */
-  DECL_SAVED_INSNS (fndecl) = 0;
-  if (! building_stmt_tree ())
-    expand_function_start (fndecl, parms_have_cleanups);
-
-  current_function_parms_stored = 1;
-
-  /* If this function is `main', emit a call to `__main'
-     to run global initializers, etc.  */
-  if (DECL_MAIN_P (fndecl) && !building_stmt_tree ())
-    expand_main_function ();
+  storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
 
   /* Now that we have initialized the parms, we can start their
      cleanups.  We cannot do this before, since expand_decl_cleanup
@@ -14176,19 +14083,13 @@ store_parm_decls ()
     }
 
   /* Create a binding contour which can be used to catch
-     cleanup-generated temporaries.  Also, if the return value needs or
-     has initialization, deal with that now.  */
+     cleanup-generated temporaries.  */
   if (parms_have_cleanups)
-    {
-      pushlevel (0);
-      if (!building_stmt_tree ())
-	expand_start_bindings (2);
-    }
+    pushlevel (0);
 
   /* Do the starting of the exception specifications, if we have any.  */
   if (flag_exceptions && !processing_template_decl
       && flag_enforce_eh_specs
-      && building_stmt_tree ()
       && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
     current_eh_spec_try_block = expand_start_eh_spec ();
 }
@@ -14384,13 +14285,9 @@ finish_function (flags)
 {
   register tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
-  /* Label to use if this function is supposed to return a value.  */
-  tree no_return_label = NULL_TREE;
   int call_poplevel = (flags & 1) != 0;
   int inclass_inline = (flags & 2) != 0;
-  int expand_p;
   int nested;
-  int current_line = lineno;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
@@ -14404,18 +14301,11 @@ finish_function (flags)
       This caused &foo to be of type ptr-to-const-function
       which then got a warning when stored in a ptr-to-function variable.  */
 
-  /* This happens on strange parse errors.  */
-  if (! current_function_parms_stored)
-    {
-      call_poplevel = 0;
-      store_parm_decls ();
-    }
+  my_friendly_assert (building_stmt_tree (), 20000911);
 
   /* For a cloned function, we've already got all the code we need;
      there's no need to add any extra bits.  */
-  if (building_stmt_tree () && DECL_CLONED_FUNCTION_P (fndecl))
-    ;
-  else if (building_stmt_tree ())
+  if (!DECL_CLONED_FUNCTION_P (fndecl))
     {
       if (DECL_CONSTRUCTOR_P (fndecl))
 	{
@@ -14443,132 +14333,16 @@ finish_function (flags)
 			    (TREE_TYPE (current_function_decl)),
 			    current_eh_spec_try_block);
     }
-  else
-    {
-#if 0
-      if (write_symbols != NO_DEBUG /*&& TREE_CODE (fntype) != METHOD_TYPE*/)
-	{
-	  /* Keep this code around in case we later want to control debug info
-	     based on whether a type is "used".  (jason 1999-11-11) */
-
-	  tree ttype = target_type (fntype);
-	  tree parmdecl;
-
-	  if (IS_AGGR_TYPE (ttype))
-	    /* Let debugger know it should output info for this type.  */
-	    note_debug_info_needed (ttype);
-
-	  for (parmdecl = DECL_ARGUMENTS (fndecl); parmdecl; parmdecl = TREE_CHAIN (parmdecl))
-	    {
-	      ttype = target_type (TREE_TYPE (parmdecl));
-	      if (IS_AGGR_TYPE (ttype))
-		/* Let debugger know it should output info for this type.  */
-		note_debug_info_needed (ttype);
-	    }
-	}
-#endif
-
-      /* Clean house because we will need to reorder insns here.  */
-      do_pending_stack_adjust ();
-
-      if (dtor_label)
-	;
-      else if (DECL_CONSTRUCTOR_P (fndecl))
-	{
-	  if (call_poplevel)
-	    do_poplevel ();
-	}
-      else if (return_label != NULL_RTX
-	       && flag_this_is_variable <= 0
-	       && current_function_return_value == NULL_TREE
-	       && ! DECL_NAME (DECL_RESULT (current_function_decl)))
-	no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-      if (flag_exceptions)
-	expand_exception_blocks ();
-
-      /* If this function is supposed to return a value, ensure that
-	 we do not fall into the cleanups by mistake.  The end of our
-	 function will look like this:
-
-	 user code (may have return stmt somewhere)
-	 goto no_return_label
-	 cleanup_label:
-	 cleanups
-	 goto return_label
-	 no_return_label:
-	 NOTE_INSN_FUNCTION_END
-	 return_label:
-	 things for return
-
-	 If the user omits a return stmt in the USER CODE section, we
-	 will have a control path which reaches NOTE_INSN_FUNCTION_END.
-	 Otherwise, we won't.  */
-      if (no_return_label)
-	{
-	  DECL_CONTEXT (no_return_label) = fndecl;
-	  DECL_INITIAL (no_return_label) = error_mark_node;
-	  DECL_SOURCE_FILE (no_return_label) = input_filename;
-	  DECL_SOURCE_LINE (no_return_label) = current_line;
-	  expand_goto (no_return_label);
-	}
-
-      if (cleanup_label)
-	{
-	  /* Remove the binding contour which is used
-	     to catch cleanup-generated temporaries.  */
-	  expand_end_bindings (0, 0, 0);
-	  poplevel (0, 0, 0);
-
-	  /* Emit label at beginning of cleanup code for parameters.  */
-	  emit_label (cleanup_label);
-	}
-
-      /* Get return value into register if that's where it's supposed
-	 to be.  */
-      if (original_result_rtx)
-	fixup_result_decl (DECL_RESULT (fndecl), original_result_rtx);
-
-      /* Finish building code that will trigger warnings if users forget
-	 to make their functions return values.  */
-      if (no_return_label || cleanup_label)
-	emit_jump (return_label);
-      if (no_return_label)
-	{
-	  /* We don't need to call `expand_*_return' here because we
-	     don't need any cleanups here--this path of code is only
-	     for error checking purposes.  */
-	  expand_label (no_return_label);
-	}
-
-      /* We hard-wired immediate_size_expand to zero in
-	 start_function.  Expand_function_end will decrement this
-	 variable.  So, we set the variable to one here, so that after
-	 the decrement it will remain zero.  */
-      immediate_size_expand = 1;
-
-      /* Generate rtl for function exit.  */
-      expand_function_end (input_filename, current_line, 1);
-    }
-
-  /* We have to save this value here in case
-     maybe_end_member_template_processing decides to pop all the
-     template parameters.  */
-  expand_p = !building_stmt_tree ();
 
   /* If we're saving up tree structure, tie off the function now.  */
-  if (!expand_p)
-    finish_stmt_tree (&DECL_SAVED_TREE (fndecl));
+  finish_stmt_tree (&DECL_SAVED_TREE (fndecl));
 
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
      this function's blocks.  */
-  if (doing_semantic_analysis_p ())
-    {
-      if (current_binding_level->parm_flag != 1)
-	my_friendly_abort (122);
-      poplevel (1, 0, 1);
-    }
+  if (current_binding_level->parm_flag != 1)
+    my_friendly_abort (122);
+  poplevel (1, 0, 1);
 
   /* Remember that we were in class scope.  */
   if (current_class_name)
@@ -14582,7 +14356,7 @@ finish_function (flags)
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   /* Save away current state, if appropriate.  */
-  if (!expanding_p && !processing_template_decl)
+  if (!processing_template_decl)
     save_function_data (fndecl);
 
   /* If this function calls `setjmp' it cannot be inlined.  When
@@ -14594,96 +14368,15 @@ finish_function (flags)
      this function to modify local variables in `c', but their
      addresses may have been stored somewhere accessible to this
      function.)  */
-  if (!expanding_p && !processing_template_decl && calls_setjmp_p (fndecl))
+  if (!processing_template_decl && calls_setjmp_p (fndecl))
     DECL_UNINLINABLE (fndecl) = 1;
 
-  if (expand_p)
-    {
-      int returns_null;
-      int returns_value;
-
-      /* So we can tell if jump_optimize sets it to 1.  */
-      can_reach_end = 0;
-
-      /* Before we call rest_of_compilation (which will pop the
-	 CURRENT_FUNCTION), we must save these values.  */
-      returns_null = current_function_returns_null;
-      returns_value = current_function_returns_value;
-
-      /* If this is a nested function (like a template instantiation
-	 that we're compiling in the midst of compiling something
-	 else), push a new GC context.  That will keep local variables
-	 on the stack from being collected while we're doing the
-	 compilation of this function.  */
-      if (function_depth > 1)
-	ggc_push_context ();
-
-      /* Run the optimizers and output the assembler code for this
-         function.  */
-      rest_of_compilation (fndecl);
-
-      /* Undo the call to ggc_push_context above.  */
-      if (function_depth > 1)
-	ggc_pop_context ();
-
-      if (DECL_SAVED_INSNS (fndecl) && ! TREE_ASM_WRITTEN (fndecl))
-	{
-	  /* Set DECL_EXTERNAL so that assemble_external will be called as
-	     necessary.  We'll clear it again in finish_file.  */
-	  if (! DECL_EXTERNAL (fndecl))
-	    DECL_NOT_REALLY_EXTERN (fndecl) = 1;
-	  DECL_EXTERNAL (fndecl) = 1;
-	  defer_fn (fndecl);
-	}
-
-#if 0
-      /* Keep this code around in case we later want to control debug info
-	 based on whether a type is "used".  (jason 1999-11-11) */
-
-      if (ctype && TREE_ASM_WRITTEN (fndecl))
-	note_debug_info_needed (ctype);
-#endif
-
-      /* If this function is marked with the constructor attribute,
-	 add it to the list of functions to be called along with
-	 constructors from static duration objects.  */
-      if (DECL_STATIC_CONSTRUCTOR (fndecl))
-	static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
-
-      /* If this function is marked with the destructor attribute,
-	 add it to the list of functions to be called along with
-	 destructors from static duration objects.  */
-      if (DECL_STATIC_DESTRUCTOR (fndecl))
-	static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
-
-      if (DECL_NAME (DECL_RESULT (fndecl)))
-	returns_value |= can_reach_end;
-      else
-	returns_null |= can_reach_end;
-
-      if (TREE_THIS_VOLATILE (fndecl) && returns_null)
-	warning ("`noreturn' function does return");
-      else if (returns_null
-	       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE)
-	{
-	  /* Always complain if there's just no return statement.  */
-	  if (!returns_value)
-	    warning ("no return statement in function returning non-void");
-	  else if (warn_return_type || pedantic)
-	    /* If this function returns non-void and control can drop through,
-	       complain.  */
-	    warning ("control reaches end of non-void function");
-	}
-    }
-  else
-    {
-      /* Clear out memory we no longer need.  */
-      free_after_parsing (cfun);
-      /* Since we never call rest_of_compilation, we never clear
-	 CFUN.  Do so explicitly.  */
-      free_after_compilation (cfun);
-      cfun = NULL;
-    }
+  /* Clear out memory we no longer need.  */
+  free_after_parsing (cfun);
+  /* Since we never call rest_of_compilation, we never clear
+     CFUN.  Do so explicitly.  */
+  free_after_compilation (cfun);
+  cfun = NULL;
 
   /* If this is a in-class inline definition, we may have to pop the
      bindings for the template parameters that we added in
@@ -14697,19 +14390,6 @@ finish_function (flags)
     pop_nested_class ();
 
   --function_depth;
-
-  if (!DECL_SAVED_INSNS (fndecl) && !DECL_SAVED_FUNCTION_DATA (fndecl)
-      && !(flag_inline_trees && DECL_INLINE (fndecl)))
-    {
-      tree t;
-
-      /* Stop pointing to the local nodes about to be freed.  */
-      /* But DECL_INITIAL must remain nonzero so we know this
-	 was an actual function definition.  */
-      DECL_INITIAL (fndecl) = error_mark_node;
-      for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
-	DECL_RTL (t) = DECL_INCOMING_RTL (t) = NULL_RTX;
-    }
 
   /* Clean up.  */
   if (! nested)
