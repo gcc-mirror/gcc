@@ -2076,7 +2076,7 @@ struct machine_function GTY(())
    This declaration must be present, but it can be an abort if profiling is
    not implemented.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO) abort ()
+#define FUNCTION_PROFILER(FILE, LABELNO)
 
 
 /* Implementing the Varargs Macros.  */
@@ -2522,7 +2522,6 @@ __asm__("\n"								\
 
 /* Short Data Support */
 #define SDATA_SECTION_ASM_OP	"\t.section .sdata,\"aw\""
-#define SBSS_SECTION_ASM_OP	"\t.section .sbss,\"aw\""
 
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
@@ -2553,7 +2552,7 @@ __asm__("\n"								\
    `in_text' and `in_data'.  You need not define this macro
    on a system with no other sections (that GCC needs to use).  */
 #undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_sbss, in_const, in_fixup
+#define EXTRA_SECTIONS in_sdata, in_const, in_fixup
 
 /* One or more functions to be defined in "varasm.c".  These
    functions should do jobs analogous to those of `text_section' and
@@ -2562,7 +2561,6 @@ __asm__("\n"								\
 #undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
 	SDATA_SECTION_FUNCTION						\
-	SBSS_SECTION_FUNCTION						\
 	FIXUP_SECTION_FUNCTION
 
 #define SDATA_SECTION_FUNCTION						\
@@ -2573,17 +2571,6 @@ sdata_section ()							\
     {									\
       fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
       in_section = in_sdata;						\
-    }									\
-}
-
-#define SBSS_SECTION_FUNCTION						\
-void									\
-sbss_section ()								\
-{									\
-  if (in_section != in_sbss)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", SBSS_SECTION_ASM_OP);		\
-      in_section = in_sbss;						\
     }									\
 }
 
@@ -2682,7 +2669,7 @@ extern int size_directive_output;
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                   	\
   if ((SIZE) > 0 && (SIZE) <= g_switch_value)				\
-    sbss_section ();                                                 	\
+    named_section (0, ".sbss", 0);                                    	\
   else                                                                 	\
     bss_section ();                                                  	\
   ASM_OUTPUT_ALIGN (STREAM, floor_log2 ((ALIGN) / BITS_PER_UNIT));     	\

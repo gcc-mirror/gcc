@@ -1469,7 +1469,7 @@ frv_frame_insn (pattern, dwarf_pattern)
    simply be the stack pointer, but if several accesses are being made to a
    region far away from the stack pointer, it may be more efficient to set
    up a temporary instead.
-   
+
    Store instructions will be frame-related and will be annotated with the
    overall effect of the store.  Load instructions will be followed by a
    (use) to prevent later optimizations from zapping them.
@@ -1566,7 +1566,7 @@ frv_frame_access_standard_regs (op, info)
   frv_frame_access_multi (&accessor, info, STACK_REGS_GPR);
   frv_frame_access_multi (&accessor, info, STACK_REGS_FPR);
   frv_frame_access_multi (&accessor, info, STACK_REGS_LCR);
-}  
+}
 
 
 /* Called after register allocation to add any instructions needed for the
@@ -6933,7 +6933,7 @@ frv_ifcvt_modify_multiple_tests (ce_info, bb, p_true, p_false)
 
   if (GET_CODE (cr) != REG)
     goto fail;
-      
+
   if (mode == CCmode || mode == CC_UNSmode)
     {
       cr_class = ICR_REGS;
@@ -7794,15 +7794,17 @@ frv_adjust_field_align (field, computed)
      tree field;
      int computed;
 {
-  /* C++ provides a null DECL_CONTEXT if the bit field is wider than its
-     type.  */
-  if (DECL_BIT_FIELD (field) && DECL_CONTEXT (field))
+
+  tree type = TREE_TYPE (field);
+
+  /* Make sure that the bitfield is not wider than the type.  */
+  if (DECL_BIT_FIELD (field)
+      && tree_int_cst_compare (DECL_SIZE (field), TYPE_SIZE (type)) <= 0)
     {
       tree parent = DECL_CONTEXT (field);
       tree prev = NULL_TREE;
       tree cur;
 
-      /* Loop finding the previous field to the current one */
       for (cur = TYPE_FIELDS (parent); cur && cur != field; cur = TREE_CHAIN (cur))
 	{
 	  if (TREE_CODE (cur) != FIELD_DECL)
@@ -7925,8 +7927,8 @@ frv_hard_regno_mode_ok (regno, mode)
 	}
       else
 	{
-	  /* The other registers store one word.  */
-	  if (GPR_P (regno))
+	   /* The other registers store one word.  */
+	  if (GPR_P (regno) || regno == AP_FIRST)
 	    base = GPR_FIRST;
 
 	  else if (FPR_P (regno))
@@ -7935,6 +7937,10 @@ frv_hard_regno_mode_ok (regno, mode)
 	  else if (ACC_P (regno))
 	    base = ACC_FIRST;
 
+	  else if (SPR_P (regno))
+	    return mode == SImode;
+
+	  /* Fill in the table. */
 	  else
 	    return 0;
 
@@ -9075,7 +9081,7 @@ frv_init_builtins ()
   def_builtin ("__MPACKH", uw1_ftype_uh_uh, FRV_BUILTIN_MPACKH);
   def_builtin ("__MUNPACKH", uw2_ftype_uw1, FRV_BUILTIN_MUNPACKH);
   def_builtin ("__MDPACKH", uw2_ftype_uw2_uw2, FRV_BUILTIN_MDPACKH);
-  def_builtin ("__MDUNPACKH", void_ftype_uw4_uw2, FRV_BUILTIN_MDUNPACKH); 
+  def_builtin ("__MDUNPACKH", void_ftype_uw4_uw2, FRV_BUILTIN_MDUNPACKH);
   def_builtin ("__MBTOH", uw2_ftype_uw1, FRV_BUILTIN_MBTOH);
   def_builtin ("__MHTOB", uw1_ftype_uw2, FRV_BUILTIN_MHTOB);
   def_builtin ("__MBTOHE", void_ftype_uw4_uw1, FRV_BUILTIN_MBTOHE);

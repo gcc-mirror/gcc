@@ -1,3 +1,16 @@
+2003-10-13  Eric Christopher  <echristo@redhat.com>
+
+	* config/frv/frv.c (frv_adjust_field_align): Redo check for
+	too wide bitfields.
+	(frv_hard_regno_mode_ok): Add SPR_P and AP_FIRST.
+	* config/frv/frv.h (FUNCTION_PROFILER): Remove abort call.
+	(SBSS_SECTION_ASM_OP): Remove.
+	(EXTRA_SECTIONS): Remove in_sbss.
+	(EXTRA_SECTION_FUNCTIONS): Remove SBSS_SECTION_FUNCTION.
+	(SBSS_SECTION_FUNCTION, sbss_section): Remove.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Change sbss_section to
+	named_section.
+
 2003-10-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in, configure.in, config.host, mkheaders.in: Replace
