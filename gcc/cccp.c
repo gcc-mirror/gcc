@@ -57,10 +57,6 @@ typedef unsigned char U_CHAR;
 
 #include "pcp.h"
 
-#ifndef STDC_VALUE
-#define STDC_VALUE 1
-#endif
-
 /* By default, colon separates directories in a path.  */
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR ':'
@@ -714,10 +710,14 @@ struct definition {
   char rest_args;		/* Nonzero if last arg. absorbs the rest */
   struct reflist {
     struct reflist *next;
+
+    /* The following three members have the value '#' if spelled with "#",
+       and '%' if spelled with "%:".  */
     char stringify;		/* nonzero if this arg was preceded by a
 				   # operator. */
     char raw_before;		/* Nonzero if a ## operator before arg. */
     char raw_after;		/* Nonzero if a ## operator after arg. */
+
     char rest_args;		/* Nonzero if this arg. absorbs the rest */
     int nchars;			/* Number of literal chars to copy before
 				   this arg occurrence.  */
@@ -735,7 +735,6 @@ struct definition {
 /* different kinds of things that can appear in the value field
    of a hash node.  Actually, this may be useless now. */
 union hashval {
-  int ival;
   char *cpval;
   DEFINITION *defn;
   KEYDEF *keydef;
@@ -955,7 +954,7 @@ static struct directive directive_table[] = {
 };
 
 /* When a directive handler is called,
-   this points to the # that started the directive.  */
+   this points to the # (or the : of the %:) that started the directive.  */
 U_CHAR *directive_start;
 
 /* table to tell if char can be part of a C identifier. */
@@ -2581,9 +2580,24 @@ do { ip = &instack[indepth];		\
 	*obp++ = *ibp++;
       break;
 
+    case '%':
+      if (ident_length || ip->macro || traditional)
+	goto randomchar;
+      if (ip->fname == 0 && beg_of_line == ip->buf)
+	goto randomchar;
+      while (*ibp == '\\' && ibp[1] == '\n') {
+	ibp += 2;
+	++ip->lineno;
+      }
+      if (*ibp != ':')
+	break;
+      /* Treat this %: digraph as if it were #.  */
+      /* Fall through.  */
+
     case '#':
       if (assertions_flag) {
 	/* Copy #foo (bar lose) without macro expansion.  */
+	obp[-1] = '#';	/* In case it was '%'. */
 	SKIP_WHITE_SPACE (ibp);
 	while (is_idchar[*ibp])
 	  *obp++ = *ibp++;
@@ -2621,7 +2635,7 @@ do { ip = &instack[indepth];		\
 	   If not, this # is not special.  */
 	bp = beg_of_line;
 	/* If -traditional, require # to be at beginning of line.  */
-	if (!traditional)
+	if (!traditional) {
 	  while (1) {
 	    if (is_hor_space[*bp])
 	      bp++;
@@ -2638,6 +2652,18 @@ do { ip = &instack[indepth];		\
 	       comment and we would never reach here.  */
 	    else break;
 	  }
+	  if (c == '%') {
+	    if (bp[0] != '%')
+	      break;
+	    while (bp[1] == '\\' && bp[2] == '\n')
+	      bp += 2;
+	    if (bp + 1 != ibp)
+	      break;
+	    /* %: appears at start of line; skip past the ':' too.  */
+	    bp++;
+	    ibp++;
+	  }
+	}
 	if (bp + 1 != ibp)
 	  goto randomchar;
       }
@@ -2663,7 +2689,7 @@ do { ip = &instack[indepth];		\
 	  beg_of_line = ibp;
 	  break;
 	}
-	++obp;		/* Copy the '#' after all */
+	*obp++ = '#';	/* Copy # (even if it was originally %:).  */
 	/* Don't expand an identifier that could be a macro directive.
 	   (Section 3.8.3 of the ANSI C standard)			*/
 	SKIP_WHITE_SPACE (ibp);
@@ -3295,7 +3321,8 @@ startagain:
 		 before the macro call.  */
 	      if (!traditional && obp != op->buf) {
 		switch (obp[-1]) {
-		case '&': case '+': case '-': case '<': case '>': case '|':
+		case '%':  case '&':  case '+':  case '-':
+		case ':':  case '<':  case '>':  case '|':
 		  /* If we are expanding a macro arg, make a newline marker
 		     to separate the tokens.  If we are making real output,
 		     a plain space will do.  */
@@ -3956,11 +3983,10 @@ special_symbol (hp, op)
     break;
 
   case T_CONST:
-    buf = (char *) alloca (4 * sizeof (int));
-    sprintf (buf, "%d", hp->value.ival);
+    buf = hp->value.cpval;
     if (pcp_inside_if && pcp_outfile)
       /* Output a precondition for this macro use */
-      fprintf (pcp_outfile, "#define %s %d\n", hp->name, hp->value.ival);
+      fprintf (pcp_outfile, "#define %s %s\n", hp->name, buf);
     break;
 
   case T_SPECLINE:
@@ -5221,7 +5247,7 @@ pcfinclude (buf, limit, name, op)
 	hp = lookup (tmpbuf.bufp, -1, -1);
 	if (hp == NULL) {
 	  kp->chain = 0;
-	  install (tmpbuf.bufp, -1, T_PCSTRING, 0, (char *) kp, -1);
+	  install (tmpbuf.bufp, -1, T_PCSTRING, (char *) kp, -1);
 	}
 	else if (hp->type == T_PCSTRING) {
 	  kp->chain = hp->value.keydef;
@@ -5586,7 +5612,7 @@ do_define (buf, limit, op, keyword)
 	 that for this new definition now.  */
       if (debug_output && op)
 	pass_thru_directive (buf, limit, op, keyword);
-      install (mdef.symnam, mdef.symlen, T_MACRO, 0,
+      install (mdef.symnam, mdef.symlen, T_MACRO,
 	       (char *) mdef.defn, hashcode);
     }
   }
@@ -5735,6 +5761,9 @@ collect_expansion (buf, end, nargs, arglist)
   U_CHAR *concat = 0;
   /* Pointer to first nonspace after last single-# seen.  */
   U_CHAR *stringify = 0;
+  /* How those tokens were spelled: 0, '#', or '%' (meaning %:).  */
+  char concat_spelling = 0;
+  char stringify_spelling = 0;
   int maxsize;
   int expected_delimiter = '\0';
 
@@ -5775,9 +5804,11 @@ collect_expansion (buf, end, nargs, arglist)
     *exp_p++ = *p++;
   }
 
-  if (limit - p >= 2 && p[0] == '#' && p[1] == '#') {
+  if (p[0] == '#'
+      ? p[1] == '#'
+      : p[0] == '%' && p[1] == ':' && p[2] == '%' && p[3] == ':') {
     error ("`##' at start of macro definition");
-    p += 2;
+    p += p[0] == '#' ? 2 : 4;
   }
 
   /* Process the main body of the definition.  */
@@ -5806,11 +5837,32 @@ collect_expansion (buf, end, nargs, arglist)
 	}
 	break;
 
+      case '%':
+	if (!expected_delimiter && *p == ':') {
+	  /* %: is not a digraph if preceded by an odd number of '<'s.  */
+	  U_CHAR *p0 = p - 1;
+	  while (buf < p0 && p0[-1] == '<')
+	    p0--;
+	  if ((p - p0) & 1) {
+	    /* Treat %:%: as ## and %: as #.  */
+	    if (p[1] == '%' && p[2] == ':') {
+	      p += 2;
+	      goto hash_hash_token;
+	    }
+	    if (nargs >= 0) {
+	      p++;
+	      goto hash_token;
+	    }
+	  }
+	}
+	break;
+
       case '#':
 	/* # is ordinary inside a string.  */
 	if (expected_delimiter)
 	  break;
-	if (p < limit && *p == '#') {
+	if (*p == '#') {
+	hash_hash_token:
 	  /* ##: concatenate preceding and following tokens.  */
 	  /* Take out the first #, discard preceding whitespace.  */
 	  exp_p--;
@@ -5821,17 +5873,21 @@ collect_expansion (buf, end, nargs, arglist)
 	  /* Discard following whitespace.  */
 	  SKIP_WHITE_SPACE (p);
 	  concat = p;
+	  concat_spelling = c;
 	  if (p == limit)
 	    error ("`##' at end of macro definition");
 	} else if (nargs >= 0) {
 	  /* Single #: stringify following argument ref.
 	     Don't leave the # in the expansion.  */
+	hash_token:
 	  exp_p--;
 	  SKIP_WHITE_SPACE (p);
-	  if (p == limit || ! is_idstart[*p] || nargs == 0)
+	  if (! is_idstart[*p] || nargs == 0)
 	    error ("`#' operator is not followed by a macro argument name");
-	  else
+	  else {
 	    stringify = p;
+	    stringify_spelling = c;
+	  }
 	}
 	break;
       }
@@ -5913,11 +5969,11 @@ collect_expansion (buf, end, nargs, arglist)
 	       the pat list */
 	    tpat = (struct reflist *) xmalloc (sizeof (struct reflist));
 	    tpat->next = NULL;
-	    tpat->raw_before = concat == id_beg;
+	    tpat->raw_before = concat == id_beg ? concat_spelling : 0;
 	    tpat->raw_after = 0;
 	    tpat->rest_args = arg->rest_args;
 	    tpat->stringify = (traditional ? expected_delimiter != '\0'
-			       : stringify == id_beg);
+			       : stringify == id_beg) ? stringify_spelling : 0;
 
 	    if (endpat == NULL)
 	      defn->pattern = tpat;
@@ -5930,8 +5986,10 @@ collect_expansion (buf, end, nargs, arglist)
 	    {
 	      register U_CHAR *p1 = p;
 	      SKIP_WHITE_SPACE (p1);
-	      if (p1 + 2 <= limit && p1[0] == '#' && p1[1] == '#')
-		tpat->raw_after = 1;
+	      if (p1[0]=='#'
+	          ? p1[1]=='#'
+		  : p1[0]=='%' && p1[1]==':' && p1[2]=='%' && p1[3]==':')
+		tpat->raw_after = p1[0];
 	    }
 	    lastp = exp_p;	/* place to start copying from next time */
 	    skipped_arg = 1;
@@ -6841,7 +6899,7 @@ eval_if_expression (buf, length)
   HASHNODE *save_defined;
   HOST_WIDE_INT value;
 
-  save_defined = install ("defined", -1, T_SPEC_DEFINED, 0, NULL_PTR, -1);
+  save_defined = install ("defined", -1, T_SPEC_DEFINED, NULL_PTR, -1);
   pcp_inside_if = 1;
   temp_obuf = expand_to_temp_buffer (buf, buf + length, 0, 1);
   pcp_inside_if = 0;
@@ -7044,18 +7102,27 @@ skip_if_group (ip, any, op)
       ++ip->lineno;
       beg_of_line = bp;
       break;
-    case '#':
+    case '%':
+      if (beg_of_line == 0 || traditional)
+	break;
       ip->bufp = bp - 1;
-
+      while (bp[0] == '\\' && bp[1] == '\n')
+	bp += 2;
+      if (*bp == ':')
+	goto hash_token;
+      break;
+    case '#':
       /* # keyword: a # must be first nonblank char on the line */
       if (beg_of_line == 0)
 	break;
+      ip->bufp = bp - 1;
+    hash_token:
       /* Scan from start of line, skipping whitespace, comments
 	 and backslash-newlines, and see if we reach this #.
 	 If not, this # is not special.  */
       bp = beg_of_line;
       /* If -traditional, require # to be at beginning of line.  */
-      if (!traditional)
+      if (!traditional) {
 	while (1) {
 	  if (is_hor_space[*bp])
 	    bp++;
@@ -7072,12 +7139,21 @@ skip_if_group (ip, any, op)
 	     comment and we would never reach here.  */
 	  else break;
 	}
+      }
       if (bp != ip->bufp) {
 	bp = ip->bufp + 1;	/* Reset bp to after the #.  */
 	break;
       }
 
       bp = ip->bufp + 1;	/* Point after the '#' */
+      if (ip->bufp[0] == '%') {
+	/* Skip past the ':' again.  */
+	while (*bp == '\\') {
+	  ip->lineno++;
+	  bp += 2;
+	}
+	bp++;
+      }
 
       /* Skip whitespace and \-newline.  */
       while (1) {
@@ -8902,11 +8978,10 @@ grow_outbuf (obuf, needed)
  * Otherwise, compute the hash code.
  */
 static HASHNODE *
-install (name, len, type, ivalue, value, hash)
+install (name, len, type, value, hash)
      U_CHAR *name;
      int len;
      enum node_type type;
-     int ivalue;
      char *value;
      int hash;
 {
@@ -8935,10 +9010,7 @@ install (name, len, type, ivalue, value, hash)
     hp->next->prev = hp;
   hp->type = type;
   hp->length = len;
-  if (hp->type == T_CONST)
-    hp->value.ival = ivalue;
-  else
-    hp->value.cpval = value;
+  hp->value.cpval = value;
   hp->name = ((U_CHAR *) hp) + sizeof (HASHNODE);
   p = hp->name;
   q = name;
@@ -9086,14 +9158,14 @@ dump_single_macro (hp, of)
       if (ap->nchars != 0)
 	concat = 0;
       if (ap->stringify)
-	fprintf (of, " #");
+	fprintf (of, ap->stringify == '#' ? " #" : " %:");
       if (ap->raw_before && !concat)
-	fprintf (of, " ## ");
+	fprintf (of, ap->raw_before == '#' ? " ## " : " %:%: ");
       concat = 0;
     }
     dump_arg_n (defn, ap->argno, of);
     if (!traditional && ap->raw_after) {
-      fprintf (of, " ## ");
+      fprintf (of, ap->raw_after == '#' ? " ## " : " %:%: ");
       concat = 1;
     }
   }
@@ -9227,29 +9299,31 @@ initialize_builtins (inp, outp)
      FILE_BUF *inp;
      FILE_BUF *outp;
 {
-  install ("__LINE__", -1, T_SPECLINE, 0, NULL_PTR, -1);
-  install ("__DATE__", -1, T_DATE, 0, NULL_PTR, -1);
-  install ("__FILE__", -1, T_FILE, 0, NULL_PTR, -1);
-  install ("__BASE_FILE__", -1, T_BASE_FILE, 0, NULL_PTR, -1);
-  install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, NULL_PTR, -1);
-  install ("__VERSION__", -1, T_VERSION, 0, NULL_PTR, -1);
+  install ("__LINE__", -1, T_SPECLINE, NULL_PTR, -1);
+  install ("__DATE__", -1, T_DATE, NULL_PTR, -1);
+  install ("__FILE__", -1, T_FILE, NULL_PTR, -1);
+  install ("__BASE_FILE__", -1, T_BASE_FILE, NULL_PTR, -1);
+  install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, NULL_PTR, -1);
+  install ("__VERSION__", -1, T_VERSION, NULL_PTR, -1);
 #ifndef NO_BUILTIN_SIZE_TYPE
-  install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, NULL_PTR, -1);
+  install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, NULL_PTR, -1);
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, NULL_PTR, -1);
+  install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, NULL_PTR, -1);
 #endif
-  install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, NULL_PTR, -1);
-  install ("__USER_LABEL_PREFIX__",-1,T_USER_LABEL_PREFIX_TYPE,0,NULL_PTR, -1);
-  install ("__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, 0, NULL_PTR, -1);
-  install ("__TIME__", -1, T_TIME, 0, NULL_PTR, -1);
-  if (!traditional)
-    install ("__STDC__", -1, T_CONST, STDC_VALUE, NULL_PTR, -1);
+  install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, NULL_PTR, -1);
+  install ("__USER_LABEL_PREFIX__",-1,T_USER_LABEL_PREFIX_TYPE, NULL_PTR, -1);
+  install ("__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, NULL_PTR, -1);
+  install ("__TIME__", -1, T_TIME, NULL_PTR, -1);
+  if (!traditional) {
+    install ("__STDC__", -1, T_CONST, "1", -1);
+    install ("__STDC_VERSION__", -1, T_CONST, "199409L", -1);
+  }
   if (objc)
-    install ("__OBJC__", -1, T_CONST, 1, NULL_PTR, -1);
+    install ("__OBJC__", -1, T_CONST, "1", -1);
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
-/*  install ("__GNUC__", -1, T_CONST, 2, NULL_PTR, -1);  */
+/*  install ("__GNUC__", -1, T_CONST, "2", -1);  */
 
   if (debug_output)
     {
