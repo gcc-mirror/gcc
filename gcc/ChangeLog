@@ -1,3 +1,12 @@
+2002-07-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* profile.c: Add file comment describing the overall algorithm and
+	structures.
+	(struct edge_info): Add comments.
+	(struct bb_info): Add comments.
+	* basic-block.h (EDGE_*): Add comments.
+	* doc/gcov.texi (Gcov Data Files): Document bit flags.
+
 2002-07-29  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/elf.h, config/xtensa/linux.h

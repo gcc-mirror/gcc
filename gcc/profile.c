@@ -22,6 +22,40 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+/* Generate basic block profile instrumentation and auxiliary files.
+   Profile generation is optimized, so that not all arcs in the basic
+   block graph need instrumenting. First, the BB graph is closed with
+   one entry (function start), and one exit (function exit).  Any
+   ABNORMAL_EDGE cannot be instrumented (because there is no control
+   path to place the code). We close the graph by inserting fake
+   EDGE_FAKE edges to the EXIT_BLOCK, from the sources of abnormal
+   edges that do not go to the exit_block. We ignore such abnormal
+   edges.  Naturally these fake edges are never directly traversed,
+   and so *cannot* be directly instrumented.  Some other graph
+   massaging is done. To optimize the instrumentation we generate the
+   BB minimal span tree, only edges that are not on the span tree
+   (plus the entry point) need instrumenting. From that information
+   all other edge counts can be deduced.  By construction all fake
+   edges must be on the spanning tree. We also attempt to place
+   EDGE_CRITICAL edges on the spanning tree.
+
+   The two auxiliary files generated are <dumpbase>.bb and
+   <dumpbase>.bbg. The former contains the BB->linenumber
+   mappings, and the latter describes the BB graph.
+
+   The BB file contains line numbers for each block. For each basic
+   block, a zero count is output (to mark the start of a block), then
+   the line numbers of that block are listed. A zero ends the file
+   too.
+
+   The BBG file contains a count of the blocks, followed by edge
+   information, for every edge in the graph. The edge information
+   lists the source and target block numbers, and a bit mask
+   describing the type of edge.
+
+   The BB and BBG file formats are fully described in the gcov
+   documentation.  */
+
 /* ??? Register allocation should use basic block execution counts to
    give preference to the most commonly executed blocks.  */
 
@@ -54,18 +88,24 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 
 /* Additional information about the edges we need.  */
-struct edge_info
-  {
-    unsigned int count_valid : 1;
-    unsigned int on_tree : 1;
-    unsigned int ignore : 1;
-  };
-struct bb_info
-  {
-    unsigned int count_valid : 1;
-    gcov_type succ_count;
-    gcov_type pred_count;
-  };
+struct edge_info {
+  unsigned int count_valid : 1;
+  
+  /* Is on the spanning tree. */
+  unsigned int on_tree : 1;
+  
+  /* Pretend this edge does not exist (it is abnormal and we've
+     inserted a fake to compensate). */
+  unsigned int ignore : 1;
+};
+
+struct bb_info {
+  unsigned int count_valid : 1;
+
+  /* Number of successor and predecessor edges. */
+  gcov_type succ_count;
+  gcov_type pred_count;
+};
 
 #define EDGE_INFO(e)  ((struct edge_info *) (e)->aux)
 #define BB_INFO(b)  ((struct bb_info *) (b)->aux)
