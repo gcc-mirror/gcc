@@ -1,3 +1,9 @@
+2003-08-11  Andreas Jaeger  <aj@suse.de>
+
+	* include/Makefile.am (stamp-c_base): Add dependency on stamp-bits
+	to make SMP-safe.
+	* include/Makefile.in: Regenerated.
+
 2003-08-07  Bernardo Innocenti  <bernie@develer.com>
 
 	PR libstdc++/11784
