@@ -405,9 +405,6 @@
 /* Define to 1 if you have the `setrlimit' function. */
 #undef HAVE_SETRLIMIT
 
-/* Define if you have a working <stdbool.h> header file. */
-#undef HAVE_STDBOOL_H
-
 /* Define to 1 if you have the <stddef.h> header file. */
 #undef HAVE_STDDEF_H
 
@@ -492,9 +489,6 @@
 
 /* Define to 1 if `vfork' works. */
 #undef HAVE_WORKING_VFORK
-
-/* Define if the \`_Bool' type is built-in. */
-#undef HAVE__BOOL
 
 /* Define if your compiler supports the \`__int64' type. */
 #undef HAVE___INT64

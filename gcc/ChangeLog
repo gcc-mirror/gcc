@@ -1,3 +1,11 @@
+2004-06-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.ac: Don't invoke ACX_HEADER_STDBOOL.
+	* configure, config.in: Regenerate.
+	* system.h: Unconditionally define bool as unsigned char,
+	BOOL_BITFIELD as unsigned int.
+	* domwalk.h: Use BOOL_BITFIELD.
+
 2004-06-12  Andreas Jaeger  <aj@suse.de>
 
 	* libgcc-std.ver: Add __unorddf2 and __unordsf2 with version 3.3.4.

@@ -92,9 +92,6 @@
 /* Define to 1 if you have the `putc_unlocked' function. */
 #undef HAVE_PUTC_UNLOCKED
 
-/* Define if you have a working <stdbool.h> header file. */
-#undef HAVE_STDBOOL_H
-
 /* Define to 1 if you have the <stddef.h> header file. */
 #undef HAVE_STDDEF_H
 
@@ -124,9 +121,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* Define if the \`_Bool' type is built-in. */
-#undef HAVE__BOOL
 
 /* Define to the widest efficient host integer type at least as wide as the
    target's size_t type. */

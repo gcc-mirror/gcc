@@ -275,13 +275,6 @@ extern void abort (void);
   ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
 #endif
 
-/* 1 if we have _Bool.  */
-#ifndef HAVE__BOOL
-# define HAVE__BOOL \
-   ((GCC_VERSION >= 3000) || (__STDC_VERSION__ >= 199901L))
-#endif
-
-
 /* Be conservative and only use enum bitfields with GCC.
    FIXME: provide a complete autoconf test for buggy enum bitfields.  */
 
@@ -289,14 +282,6 @@ extern void abort (void);
 #define ENUM_BITFIELD(TYPE) __extension__ enum TYPE
 #else
 #define ENUM_BITFIELD(TYPE) unsigned int
-#endif
-
-/* We only use bool bitfields with gcc3.  Some supposedly C99
-   compilers don't handle them correctly.  */
-#if (GCC_VERSION >= 3000)
-#define BOOL_BITFIELD _Bool
-#else
-#define BOOL_BITFIELD unsigned int
 #endif
 
 #ifndef offsetof
@@ -310,26 +295,25 @@ extern void abort (void);
 #define __builtin_expect(a, b) (a)
 #endif
 
-/* Provide some sort of boolean type.  We use stdbool.h if it's
-  available.  This must be after all inclusion of system headers,
-  as some of them will mess us up.  */
+/* Provide a fake boolean type.  We make no attempt to use the
+   C99 _Bool, as it may not be available in the bootstrap compiler,
+   and even if it is, it is liable to be buggy.  
+   This must be after all inclusion of system headers, as some of
+   them will mess us up.  */
 #undef bool
 #undef true
 #undef false
 #undef TRUE
 #undef FALSE
 
-#ifdef HAVE_STDBOOL_H
-# include <stdbool.h>
-#else
-# if !HAVE__BOOL
-typedef char _Bool;
-# endif
-# define bool _Bool
-# define true 1
-# define false 0
-#endif
+#define bool unsigned char
+#define true 1
+#define false 0
 
+/* Some compilers do not allow the use of unsigned char in bitfields.  */
+#define BOOL_BITFIELD unsigned int
+
+/* Poison identifiers we do not want to use.  */
 #if (GCC_VERSION >= 3000)
 #undef calloc
 #undef strdup
@@ -359,5 +343,4 @@ typedef char _Bool;
  #pragma GCC poison bcopy bzero bcmp rindex
 
 #endif /* GCC >= 3.0 */
-
 #endif /* ! LIBCPP_SYSTEM_H */

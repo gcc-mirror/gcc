@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 AC_INIT(cpplib, [ ], gcc-bugs@gcc.gnu.org, cpplib)
 AC_CONFIG_SRCDIR(ucnid.h)
 AC_CANONICAL_SYSTEM
@@ -15,7 +15,6 @@ AC_PROG_RANLIB
 # Checks for header files.
 AC_HEADER_TIME
 ACX_HEADER_STRING
-ACX_HEADER_STDBOOL
 AC_CHECK_HEADERS(iconv.h locale.h fcntl.h limits.h stddef.h \
 	stdlib.h strings.h string.h sys/file.h unistd.h)
 
