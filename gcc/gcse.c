@@ -4312,9 +4312,18 @@ do_local_cprop (x, insn, alter_jumps)
       for (l = val->locs; l; l = l->next)
 	{
 	  rtx this_rtx = l->loc;
+	  rtx note;
+
 	  if (CONSTANT_P (this_rtx))
 	    newcnst = this_rtx;
-	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER)
+	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER
+	      /* Don't copy propagate if it has attached REG_EQUIV note.
+		 At this point this only function parameters should have
+		 REG_EQUIV notes and if the argument slot is used somewhere
+		 explicitly, it means address of parameter has been taken,
+		 so we should not extend the lifetime of the pseudo.  */
+	      && (!(note = find_reg_note (l->setting_insn, REG_EQUIV, NULL_RTX))
+		  || GET_CODE (XEXP (note, 0)) != MEM))
 	    newreg = this_rtx;
 	}
       if (newcnst && constprop_register (insn, x, newcnst, alter_jumps))
