@@ -1,3 +1,8 @@
+2002-03-27  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (expand_invoke): Don't generate null pointer check if
+	we're calling <init>.
+
 2002-03-27  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Fix for PR java/5850:
