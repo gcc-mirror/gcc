@@ -432,7 +432,9 @@ print_node (file, prefix, node, indent)
 
       if (TREE_CODE (node) == ARRAY_TYPE || TREE_CODE (node) == SET_TYPE)
 	print_node (file, "domain", TYPE_DOMAIN (node), indent + 4);
-      else if (TREE_CODE (node) == INTEGER_TYPE)
+      else if (TREE_CODE (node) == INTEGER_TYPE
+	       || TREE_CODE (node) == BOOLEAN_TYPE
+	       || TREE_CODE (node) == CHAR_TYPE)
 	{
 	  fprintf (file, " precision %d", TYPE_PRECISION (node));
 	  print_node (file, "min", TYPE_MIN_VALUE (node), indent + 4);
