@@ -201,6 +201,19 @@ decode_reg_name (asmspec)
     {
       int i;
 
+      /* Allow a decimal number as a "register name".  */
+      for (i = strlen (asmspec) - 1; i >= 0; i--)
+	if (! (asmspec[i] >= '0' && asmspec[i] <= '9'))
+	  break;
+      if (asmspec[0] != 0 && i < 0)
+	{
+	  i = atoi (asmspec);
+	  if (i < FIRST_PSEUDO_REGISTER && i >= 0)
+	    return i;
+	  else
+	    return -2;
+	}
+
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (reg_names[i][0] && ! strcmp (asmspec, reg_names[i]))
 	  return i;
@@ -896,22 +909,26 @@ assemble_variable (decl, top_level, at_end)
 }
 
 /* Output something to declare an external symbol to the assembler.
-   (Most assemblers don't need this, so we normally output nothing.)  */
+   (Most assemblers don't need this, so we normally output nothing.)
+   Do nothing if DECL is not external.  */
 
 void
 assemble_external (decl)
      tree decl;
 {
-  rtx rtl = DECL_RTL (decl);
-
 #ifdef ASM_OUTPUT_EXTERNAL
-  if (TREE_PUBLIC (decl)
-      && GET_CODE (rtl) == MEM && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
-      && ! SYMBOL_REF_USED (XEXP (rtl, 0)))
+  if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd'
+      && TREE_EXTERNAL (decl) && TREE_PUBLIC (decl))
     {
-      /* Some systems do require some output.  */
-      SYMBOL_REF_USED (XEXP (rtl, 0)) = 1;
-      ASM_OUTPUT_EXTERNAL (asm_out_file, decl, XSTR (XEXP (rtl, 0), 0));
+      rtx rtl = DECL_RTL (decl);
+
+      if (GET_CODE (rtl) == MEM && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
+	  && ! SYMBOL_REF_USED (XEXP (rtl, 0)))
+	{
+	  /* Some systems do require some output.  */
+	  SYMBOL_REF_USED (XEXP (rtl, 0)) = 1;
+	  ASM_OUTPUT_EXTERNAL (asm_out_file, decl, XSTR (XEXP (rtl, 0), 0));
+	}
     }
 #endif
 }
@@ -1107,11 +1124,16 @@ assemble_integer (x, size, force)
 	  if (word == 0)
 	    break;
 
-	  assemble_integer (word, UNITS_PER_WORD);
+	  if (! assemble_integer (word, UNITS_PER_WORD, 0))
+	    break;
 	}
 
       if (i == size / UNITS_PER_WORD)
 	return 1;
+      /* If we output at least one word and then could not finish,
+	 there is no valid way to continue.  */
+      if (i > 0)
+	abort ();
     }
 
   if (force)
@@ -2454,6 +2476,15 @@ output_constant (exp, size)
 
   if (size == 0)
     return;
+
+  /* Allow a constructor with no elements for any data type.
+     This means to fill the space with zeros.  */
+  if (TREE_CODE (exp) == CONSTRUCTOR
+      && TREE_OPERAND (exp, 1) == 0)
+    {
+      assemble_zeros (size);
+      return;
+    }
 
   /* Eliminate the NOP_EXPR that makes a cast not be an lvalue.
      That way we get the constant (we hope) inside it.  */
