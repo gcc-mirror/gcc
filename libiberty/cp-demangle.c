@@ -33,9 +33,7 @@
 #include <stdlib.h>
 #endif
 
-#if defined(CP_DEMANGLE_DEBUG) || defined(STANDALONE_DEMANGLER)
 #include <stdio.h>
-#endif
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -514,7 +512,7 @@ substitutions_print (dm, fp)
 /* Creates a new template argument list.  */
 
 static template_arg_list_t
-template_arg_list_new ()
+template_arg_list_new PARAMS((void))
 {
   template_arg_list_t new_list 
     = (template_arg_list_t) xmalloc (sizeof (struct template_arg_list_def));
