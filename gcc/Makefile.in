@@ -1328,8 +1328,10 @@ resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
    $(INSN_ATTR_H) except.h
 lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(INSN_ATTR_H) $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
-ssa.o : ssa.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) $(BASIC_BLOCK_H) \
-   output.h insn-config.h
+ssa.o : ssa.c $(CONFIG_H) system.h $(RTL_H) varray.h sbitmap.h		\
+   $(HASHTAB_H) $(REGS_H) hard-reg-set.h flags.h function.h real.h	\
+   insn-config.h $(RECOG_H) $(BASIC_BLOCK_H)				\
+   output.h
 conflict.o : conflict.c $(CONFIG_H) system.h $(OBSTACK_H) $(HASHTAB_H) \
    $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \

@@ -6202,7 +6202,8 @@ compute_flow_dominators (dominators, post_dominators)
   free (temp_bitmap);
 }
 
-/* Given DOMINATORS, compute the immediate dominators into IDOM.  */
+/* Given DOMINATORS, compute the immediate dominators into IDOM.  If a
+   block dominates only itself, its entry remains as INVALID_BLOCK.  */
 
 void
 compute_immediate_dominators (idom, dominators)
@@ -6240,6 +6241,19 @@ compute_immediate_dominators (idom, dominators)
     }
 
   sbitmap_vector_free (tmp);
+}
+
+/* Given POSTDOMINATORS, compute the immediate postdominators into
+   IDOM.  If a block is only dominated by itself, its entry remains as
+   INVALID_BLOCK.  */
+
+void
+compute_immediate_postdominators (idom, postdominators)
+     int *idom;
+     sbitmap *postdominators;
+{
+  compute_immediate_dominators (idom, postdominators);
+  return;
 }
 
 /* Recompute register set/reference counts immediately prior to register

@@ -27,13 +27,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Static Single Assignment Construction
    Preston Briggs, Tim Harvey, Taylor Simpson
    Technical Report, Rice University, 1995
-   ftp://ftp.cs.rice.edu/public/preston/optimizer/SSA.ps.gz
-*/
+   ftp://ftp.cs.rice.edu/public/preston/optimizer/SSA.ps.gz.  */
 
 #include "config.h"
 #include "system.h"
 
 #include "rtl.h"
+#include "varray.h"
+#include "partition.h"
+#include "sbitmap.h"
+#include "hashtab.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
@@ -43,8 +46,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "basic-block.h"
 #include "output.h"
-#include "partition.h"
 
+/* We cannot use <assert.h> in GCC source, since that would include
+   GCC's assert.h, which may not be compatible with the host compiler.  */
+#undef assert
+#ifdef NDEBUG
+# define assert(e)
+#else
+# define assert(e) do { if (! (e)) abort (); } while (0)
+#endif
 
 /* TODO: 
 
@@ -64,29 +74,112 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the representation, calling back into optabs to finish any necessary
    expansion.  */
 
+/* All pseudo-registers and select hard registers are converted to SSA
+   form.  When converting out of SSA, these select hard registers are
+   guaranteed to be mapped to their original register number.  Each
+   machine's .h file should define CONVERT_HARD_REGISTER_TO_SSA_P
+   indicating which hard registers should be converted.
+
+   When converting out of SSA, temporaries for all registers are
+   partitioned.  The partition is checked to ensure that all uses of
+   the same hard register in the same machine mode are in the same
+   class.  */
 
 /* If conservative_reg_partition is non-zero, use a conservative
    register partitioning algorithm (which leaves more regs after
    emerging from SSA) instead of the coalescing one.  This is being
    left in for a limited time only, as a debugging tool until the
    coalescing algorithm is validated.  */
+
+/* All pseudo-registers (having register number >=
+   FIRST_PSEUDO_REGISTER) and hard registers satisfying
+   CONVERT_HARD_REGISTER_TO_SSA_P are converted to SSA form.  */
+
+/* Given a hard register number REG_NO, return nonzero if and only if
+   the register should be converted to SSA.  */
+
+#ifndef CONVERT_HARD_REGISTER_TO_SSA_P
+#define CONVERT_HARD_REGISTER_TO_SSA_P(REG_NO) (0) /* default of no hard registers */
+#endif /* CONVERT_HARD_REGISTER_TO_SSA_P  */
+
+/* Given a register number REG_NO, return nonzero if and only if the
+   register should be converted to SSA.  */
+
+#define CONVERT_REGISTER_TO_SSA_P(REG_NO)	\
+	((!HARD_REGISTER_NUM_P (REG_NO)) || \
+	 (CONVERT_HARD_REGISTER_TO_SSA_P (REG_NO)))
+
 static int conservative_reg_partition;
 
 /* This flag is set when the CFG is in SSA form.  */
 int in_ssa_form = 0;
 
-/* Element I is the single instruction that sets register I+PSEUDO.  */
+/* Element I is the single instruction that sets register I.  */
 varray_type ssa_definition;
 
-/* Element I is an INSN_LIST of instructions that use register I+PSEUDO.  */
+/* Element I is an INSN_LIST of instructions that use register I.  */
 varray_type ssa_uses;
 
 /* Element I-PSEUDO is the normal register that originated the ssa
    register in question.  */
 varray_type ssa_rename_from;
 
-/* The running target ssa register for a given normal register.  */
-static rtx *ssa_rename_to;
+/* Element I is the normal register that originated the ssa
+   register in question.
+
+   A hash table stores the (register, rtl) pairs.  These are each
+   xmalloc'ed and deleted when the hash table is destroyed.  */
+htab_t ssa_rename_from_ht;
+
+/* The running target ssa register for a given pseudo register.
+   (Pseudo registers appear in only one mode.)  */
+static rtx *ssa_rename_to_pseudo;
+/* Similar, but for hard registers.  A hard register can appear in
+   many modes, so we store an equivalent pseudo for each of the
+   modes.  */
+static rtx ssa_rename_to_hard[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
+
+/* ssa_rename_from maps pseudo registers to the original corresponding
+   RTL.  It is implemented as using a hash table.  */
+
+typedef struct {
+  unsigned int reg;
+  rtx original;
+} ssa_rename_from_pair;
+
+struct ssa_rename_from_hash_table_data {
+  sbitmap canonical_elements;
+  partition reg_partition;
+};
+
+void ssa_rename_from_initialize
+  PARAMS ((void));
+rtx ssa_rename_from_lookup
+  PARAMS ((int reg));
+unsigned int original_register
+  PARAMS ((unsigned int regno));
+void ssa_rename_from_insert
+  PARAMS ((unsigned int reg, rtx r));
+void ssa_rename_from_free
+  PARAMS ((void));
+typedef int (*srf_trav) PARAMS ((int regno, rtx r, sbitmap canonical_elements, partition reg_partition));
+static void ssa_rename_from_traverse
+  PARAMS ((htab_trav callback_function, sbitmap canonical_elements, partition reg_partition));
+static void ssa_rename_from_print
+  PARAMS ((void));
+static int ssa_rename_from_print_1
+  PARAMS ((void **slot, void *data));
+static hashval_t ssa_rename_from_hash_function
+  PARAMS ((const void * srfp));
+static int ssa_rename_from_equal
+  PARAMS ((const void *srfp1, const void *srfp2));
+static void ssa_rename_from_delete
+  PARAMS ((void *srfp));
+
+static rtx ssa_rename_to_lookup
+  PARAMS ((rtx reg));
+static void ssa_rename_to_insert
+  PARAMS ((rtx reg, rtx r));
 
 /* The number of registers that were live on entry to the SSA routines.  */
 static unsigned int ssa_max_reg_num;
@@ -97,13 +190,10 @@ struct rename_context;
 
 static inline rtx * phi_alternative
   PARAMS ((rtx, int));
-
-static rtx first_insn_after_basic_block_note PARAMS ((basic_block));
-
+static rtx first_insn_after_basic_block_note
+  PARAMS ((basic_block));
 static int remove_phi_alternative
   PARAMS ((rtx, int));
-static void simplify_to_immediate_dominators 
-  PARAMS ((int *idom, sbitmap *dominators));
 static void compute_dominance_frontiers_1
   PARAMS ((sbitmap *frontiers, int *idom, int bb, sbitmap done));
 static void compute_dominance_frontiers
@@ -148,6 +238,10 @@ static int make_equivalent_phi_alternatives_equivalent
   PARAMS ((int bb, partition reg_partition));
 static partition compute_conservative_reg_partition 
   PARAMS ((void));
+static int record_canonical_element_1
+  PARAMS ((void **srfp, void *data));
+static int check_hard_regs_in_partition
+  PARAMS ((partition reg_partition));
 static int rename_equivalent_regs_in_insn 
   PARAMS ((rtx *ptr, void *data));
 
@@ -172,6 +266,171 @@ static int rename_equivalent_regs_in_insn
 static void rename_equivalent_regs 
   PARAMS ((partition reg_partition));
 
+/* Deal with hard registers.  */
+static int conflicting_hard_regs_p
+  PARAMS ((int reg1, int reg2));
+
+/* ssa_rename_to maps registers and machine modes to SSA pseudo registers.  */
+
+/* Find the register associated with REG in the indicated mode.  */
+
+static rtx
+ssa_rename_to_lookup (reg)
+     rtx reg;
+{
+  if (!HARD_REGISTER_P (reg))
+    return ssa_rename_to_pseudo[REGNO (reg) - FIRST_PSEUDO_REGISTER];
+  else
+    return ssa_rename_to_hard[REGNO (reg)][GET_MODE (reg)];
+}
+
+/* Store a new value mapping REG to R in ssa_rename_to.  */
+
+static void
+ssa_rename_to_insert(reg, r)
+     rtx reg;
+     rtx r;
+{
+  if (!HARD_REGISTER_P (reg))
+    ssa_rename_to_pseudo[REGNO (reg) - FIRST_PSEUDO_REGISTER] = r;
+  else
+    ssa_rename_to_hard[REGNO (reg)][GET_MODE (reg)] = r;
+}
+
+/* Prepare ssa_rename_from for use.  */
+
+void
+ssa_rename_from_initialize ()
+{
+  /* We use an arbitrary initial hash table size of 64.  */
+  ssa_rename_from_ht = htab_create (64,
+				    &ssa_rename_from_hash_function,
+				    &ssa_rename_from_equal,
+				    &ssa_rename_from_delete);
+}
+
+/* Find the REG entry in ssa_rename_from.  Return NULL_RTX if no entry is
+   found.  */
+
+rtx
+ssa_rename_from_lookup (reg)
+     int reg;
+{
+  ssa_rename_from_pair srfp;
+  ssa_rename_from_pair *answer;
+  srfp.reg = reg;
+  srfp.original = NULL_RTX;
+  answer = (ssa_rename_from_pair *)
+    htab_find_with_hash (ssa_rename_from_ht, (void *) &srfp, reg);
+  return (answer == 0 ? NULL_RTX : answer->original);
+}
+
+/* Find the number of the original register specified by REGNO.  If
+   the register is a pseudo, return the original register's number.
+   Otherwise, return this register number REGNO.  */
+
+unsigned int
+original_register (regno)
+     unsigned int regno;
+{
+  rtx original_rtx = ssa_rename_from_lookup (regno);
+  return original_rtx != NULL_RTX ? REGNO (original_rtx) : regno;
+}
+
+/* Add mapping from R to REG to ssa_rename_from even if already present.  */
+
+void
+ssa_rename_from_insert (reg, r)
+     unsigned int reg;
+     rtx r;
+{
+  void **slot;
+  ssa_rename_from_pair *srfp = xmalloc (sizeof (ssa_rename_from_pair));
+  srfp->reg = reg;
+  srfp->original = r;
+  slot = htab_find_slot_with_hash (ssa_rename_from_ht, (const void *) srfp,
+				   reg, INSERT);
+  if (*slot != 0)
+    free ((void *) *slot);
+  *slot = srfp;
+}
+
+/* Apply the CALLBACK_FUNCTION to each element in ssa_rename_from.
+   CANONICAL_ELEMENTS and REG_PARTITION pass data needed by the only
+   current use of this function.  */
+
+void
+ssa_rename_from_traverse (callback_function,
+			  canonical_elements, reg_partition)
+     htab_trav callback_function;
+     sbitmap canonical_elements;
+     partition reg_partition;
+{
+  struct ssa_rename_from_hash_table_data srfhd;
+  srfhd.canonical_elements = canonical_elements;
+  srfhd.reg_partition = reg_partition;
+  htab_traverse (ssa_rename_from_ht, callback_function, (void *) &srfhd);
+}
+
+/* Destroy ssa_rename_from.  */
+
+void
+ssa_rename_from_free ()
+{
+  htab_delete (ssa_rename_from_ht);
+}
+
+/* Print the contents of ssa_rename_from.  */
+
+static void
+ssa_rename_from_print ()
+{
+  printf ("ssa_rename_from's hash table contents:\n");
+  htab_traverse (ssa_rename_from_ht, &ssa_rename_from_print_1, NULL);
+}
+
+/* Print the contents of the hash table entry SLOT, passing the unused
+   sttribute DATA.  Used as a callback function with htab_traverse ().  */
+
+static int
+ssa_rename_from_print_1 (slot, data)
+     void **slot;
+     void *data ATTRIBUTE_UNUSED;
+{
+  ssa_rename_from_pair * p = *slot;
+  printf ("ssa_rename_from maps pseudo %i to original %i.\n",
+	  p->reg, REGNO (p->original));
+  return 1;
+}
+
+/* Given a hash entry SRFP, yield a hash value.  */
+
+static hashval_t
+ssa_rename_from_hash_function (srfp)
+     const void *srfp;
+{
+  return ((ssa_rename_from_pair *) srfp)->reg;
+}
+
+/* Test whether two hash table entries SRFP1 and SRFP2 are equal.  */
+
+static int
+ssa_rename_from_equal (srfp1, srfp2)
+     const void *srfp1;
+     const void *srfp2;
+{
+  return ssa_rename_from_hash_function (srfp1) ==
+    ssa_rename_from_hash_function (srfp2);
+}
+
+/* Delete the hash table entry SRFP.  */
+
+static void
+ssa_rename_from_delete (srfp)
+     void *srfp;
+{
+  free (srfp);
+}
 
 /* Given the SET of a PHI node, return the address of the alternative
    for predecessor block C.  */
@@ -219,51 +478,6 @@ remove_phi_alternative (set, c)
   return 0;
 }
 
-/* Computing the Immediate Dominators:
-
-   Throughout, we don't actually want the full dominators set as
-   calculated by flow, but rather the immediate dominators.
-*/
-
-static void
-simplify_to_immediate_dominators (idom, dominators)
-     int *idom;
-     sbitmap *dominators;
-{
-  sbitmap *tmp;
-  int b;
-
-  tmp = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-
-  /* Begin with tmp(n) = dom(n) - { n }.  */
-  for (b = n_basic_blocks; --b >= 0; )
-    {
-      sbitmap_copy (tmp[b], dominators[b]);
-      RESET_BIT (tmp[b], b);
-    }
-
-  /* Subtract out all of our dominator's dominators.  */
-  for (b = n_basic_blocks; --b >= 0; )
-    {
-      sbitmap tmp_b = tmp[b];
-      int s;
-
-      for (s = n_basic_blocks; --s >= 0; )
-	if (TEST_BIT (tmp_b, s))
-	  sbitmap_difference (tmp_b, tmp_b, tmp[s]);
-    }
-
-  /* Find the one bit set in the bitmap and put it in the output array.  */
-  for (b = n_basic_blocks; --b >= 0; )
-    {
-      int t;
-      EXECUTE_IF_SET_IN_SBITMAP (tmp[b], 0, t, { idom[b] = t; });
-    }
-
-  sbitmap_vector_free (tmp);
-}
-
-
 /* For all registers, find all blocks in which they are set.
 
    This is the transform of what would be local kill information that
@@ -279,8 +493,8 @@ find_evaluations_1 (dest, set, data)
      void *data ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (dest) == REG
-      && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
-    SET_BIT (fe_evals[REGNO (dest) - FIRST_PSEUDO_REGISTER], fe_current_bb);
+      && CONVERT_REGISTER_TO_SSA_P (REGNO (dest)))
+    SET_BIT (fe_evals[REGNO (dest)], fe_current_bb);
 }
 
 static void
@@ -311,7 +525,6 @@ find_evaluations (evals, nregs)
 	}
     }
 }
-
 
 /* Computing the Dominance Frontier:
   
@@ -385,7 +598,6 @@ compute_dominance_frontiers (frontiers, idom)
 
   sbitmap_free (done);
 }
-
 
 /* Computing the Iterated Dominance Frontier:
 
@@ -473,7 +685,6 @@ first_insn_after_basic_block_note (block)
   return NEXT_INSN (insn);
 }
 
-
 /* Insert the phi nodes.  */
 
 static void
@@ -498,8 +709,8 @@ insert_phi_node (regno, bb)
   if (npred == 0)
     return;
 
-  /* This is the register to which the phi function will be assinged.  */
-  reg = regno_reg_rtx[regno + FIRST_PSEUDO_REGISTER];
+  /* This is the register to which the phi function will be assigned.  */
+  reg = regno_reg_rtx[regno];
 
   /* Construct the arguments to the PHI node.  The use of pc_rtx is just
      a placeholder; we'll insert the proper value in rename_registers.  */
@@ -521,7 +732,6 @@ insert_phi_node (regno, bb)
     b->end = PREV_INSN (insn);
 }
 
-
 static void
 insert_phi_nodes (idfs, evals, nregs)
      sbitmap *idfs;
@@ -531,12 +741,12 @@ insert_phi_nodes (idfs, evals, nregs)
   int reg;
 
   for (reg = 0; reg < nregs; ++reg)
+    if (CONVERT_REGISTER_TO_SSA_P (reg))
     {
       int b;
       EXECUTE_IF_SET_IN_SBITMAP (idfs[reg], 0, b,
 	{
-	  if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, 
-			       reg + FIRST_PSEUDO_REGISTER))
+	  if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, reg))
 	    insert_phi_node (reg, b);
 	});
     }
@@ -547,7 +757,6 @@ insert_phi_nodes (idfs, evals, nregs)
    This is essentially the algorithm presented in Figure 7.8 of Morgan,
    with a few changes to reduce pattern search time in favour of a bit
    more memory usage.  */
-
 
 /* One of these is created for each set.  It will live in a list local
    to its basic block for the duration of that block's processing.  */
@@ -561,8 +770,8 @@ struct rename_set_data
   /* This is the REG that will replace OLD_REG.  It's set only
      when the rename data is moved onto the DONE_RENAMES queue.  */
   rtx new_reg;
-  /* This is what to restore ssa_rename_to[REGNO (old_reg)] to. 
-     It is usually the previous contents of ssa_rename_to[REGNO (old_reg)].  */
+  /* This is what to restore ssa_rename_to_lookup (old_reg) to.  It is
+     usually the previous contents of ssa_rename_to_lookup (old_reg).  */
   rtx prev_reg;
   /* This is the insn that contains all the SETs of the REG.  */
   rtx set_insn;
@@ -587,12 +796,12 @@ create_delayed_rename (c, reg_loc)
   r = (struct rename_set_data *) xmalloc (sizeof(*r));
   
   if (GET_CODE (*reg_loc) != REG
-      || REGNO (*reg_loc) < FIRST_PSEUDO_REGISTER)
+      || !CONVERT_REGISTER_TO_SSA_P (REGNO (*reg_loc)))
     abort();
 
   r->reg_loc = reg_loc;
   r->old_reg = *reg_loc;
-  r->prev_reg = ssa_rename_to [REGNO (r->old_reg) - FIRST_PSEUDO_REGISTER];
+  r->prev_reg = ssa_rename_to_lookup(r->old_reg);
   r->set_insn = c->current_insn;
   r->next = c->new_renames;
   c->new_renames = r;
@@ -600,7 +809,7 @@ create_delayed_rename (c, reg_loc)
 
 /* This is part of a rather ugly hack to allow the pre-ssa regno to be
    reused.  If, during processing, a register has not yet been touched,
-   ssa_rename_to[regno] will be NULL.  Now, in the course of pushing
+   ssa_rename_to[regno][machno] will be NULL.  Now, in the course of pushing
    and popping values from ssa_rename_to, when we would ordinarily 
    pop NULL back in, we pop RENAME_NO_RTX.  We treat this exactly the
    same as NULL, except that it signals that the original regno has
@@ -616,20 +825,19 @@ apply_delayed_renames (c)
 {
   struct rename_set_data *r;
   struct rename_set_data *last_r = NULL;
-  
+
   for (r = c->new_renames; r != NULL; r = r->next)
     {
-      int regno = REGNO (r->old_reg);
       int new_regno;
       
       /* Failure here means that someone has a PARALLEL that sets
 	 a register twice (bad!).  */
-      if (ssa_rename_to [regno - FIRST_PSEUDO_REGISTER] != r->prev_reg)
+      if (ssa_rename_to_lookup (r->old_reg) != r->prev_reg)
 	abort();
       /* Failure here means we have changed REG_LOC before applying
 	 the rename.  */
       /* For the first set we come across, reuse the original regno.  */
-      if (r->prev_reg == NULL_RTX)
+      if (r->prev_reg == NULL_RTX && !HARD_REGISTER_P (r->old_reg))
 	{
 	  r->new_reg = r->old_reg;
 	  /* We want to restore RENAME_NO_RTX rather than NULL_RTX. */
@@ -638,19 +846,17 @@ apply_delayed_renames (c)
       else
 	r->new_reg = gen_reg_rtx (GET_MODE (r->old_reg));
       new_regno = REGNO (r->new_reg);
-      ssa_rename_to[regno - FIRST_PSEUDO_REGISTER] = r->new_reg;
+      ssa_rename_to_insert (r->old_reg, r->new_reg);
 
       if (new_regno >= (int) ssa_definition->num_elements)
 	{
 	  int new_limit = new_regno * 5 / 4;
 	  ssa_definition = VARRAY_GROW (ssa_definition, new_limit);
 	  ssa_uses = VARRAY_GROW (ssa_uses, new_limit);
-	  ssa_rename_from = VARRAY_GROW (ssa_rename_from, new_limit);
 	}
 
       VARRAY_RTX (ssa_definition, new_regno) = r->set_insn;
-      VARRAY_RTX (ssa_rename_from, new_regno) = r->old_reg;
-
+      ssa_rename_from_insert (new_regno, r->old_reg);
       last_r = r;
     }
   if (last_r != NULL)
@@ -711,7 +917,7 @@ rename_insn_1 (ptr, data)
 		reg = XEXP (reg, 0);
 	    
 	    if (GET_CODE (reg) == REG
-		&& REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+		&& CONVERT_REGISTER_TO_SSA_P (REGNO (reg)))
 	      {
 		/* Generate (set reg reg), and do renaming on it so
 		   that it becomes (set reg_1 reg_0), and we will
@@ -726,8 +932,8 @@ rename_insn_1 (ptr, data)
 		context->new_renames = saved_new_renames;
 	      }
 	  }
-	else if (GET_CODE (dest) == REG
-		 && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
+	else if (GET_CODE (dest) == REG &&
+		 CONVERT_REGISTER_TO_SSA_P (REGNO (dest)))
 	  {
 	    /* We found a genuine set of an interesting register.  Tag
 	       it so that we can create a new name for it after we finish
@@ -749,10 +955,10 @@ rename_insn_1 (ptr, data)
       }
 
     case REG:
-      if (REGNO (x) >= FIRST_PSEUDO_REGISTER
-	  && REGNO (x) < ssa_max_reg_num)
+      if (CONVERT_REGISTER_TO_SSA_P (REGNO (x)) &&
+	  REGNO (x) < ssa_max_reg_num)
 	{
-	  rtx new_reg = ssa_rename_to[REGNO(x) - FIRST_PSEUDO_REGISTER];
+	  rtx new_reg = ssa_rename_to_lookup (x);
 
 	  if (new_reg != NULL_RTX && new_reg != RENAME_NO_RTX)
 	    {
@@ -763,6 +969,31 @@ rename_insn_1 (ptr, data)
 	  /* Else this is a use before a set.  Warn?  */
 	}
       return -1;
+
+    case CLOBBER:
+      /* There is considerable debate on how CLOBBERs ought to be
+	 handled in SSA.  For now, we're keeping the CLOBBERs, which
+	 means that we don't really have SSA form.  There are a couple
+	 of proposals for how to fix this problem, but neither is
+	 implemented yet.  */
+      {
+	rtx dest = XCEXP (x, 0, CLOBBER);
+	if (REG_P (dest))
+	  {
+	    if (CONVERT_REGISTER_TO_SSA_P (REGNO (dest))
+		&& REGNO (dest) < ssa_max_reg_num)
+	      {
+		rtx new_reg = ssa_rename_to_lookup (dest);
+		if (new_reg != NULL_RTX && new_reg != RENAME_NO_RTX)
+		    XCEXP (x, 0, CLOBBER) = new_reg;
+	      }
+	    /* Stop traversing.  */
+	    return -1;
+	  }	    
+	else
+	  /* Continue traversing.  */
+	  return 0;
+      }
 
     case PHI:
       /* Never muck with the phi.  We do that elsewhere, special-like.  */
@@ -843,19 +1074,19 @@ rename_block (bb, idom)
       while (PHI_NODE_P (insn))
 	{
 	  rtx phi = PATTERN (insn);
-	  unsigned int regno;
 	  rtx reg;
 
 	  /* Find out which of our outgoing registers this node is
-	     indended to replace.  Note that if this not the first PHI
+	     intended to replace.  Note that if this is not the first PHI
 	     node to have been created for this register, we have to
 	     jump through rename links to figure out which register
 	     we're talking about.  This can easily be recognized by
 	     noting that the regno is new to this pass.  */
-	  regno = REGNO (SET_DEST (phi));
-	  if (regno >= ssa_max_reg_num)
-	    regno = REGNO (VARRAY_RTX (ssa_rename_from, regno));
-	  reg = ssa_rename_to[regno - FIRST_PSEUDO_REGISTER];
+	  reg = SET_DEST (phi);
+	  if (REGNO (reg) >= ssa_max_reg_num)
+	    reg = ssa_rename_from_lookup (REGNO (reg));
+	  assert (reg != NULL_RTX);
+	  reg = ssa_rename_to_lookup (reg);
 
 	  /* It is possible for the variable to be uninitialized on
 	     edges in.  Reduce the arity of the PHI so that we don't
@@ -902,8 +1133,7 @@ rename_block (bb, idom)
 	abort();
       *set_data->reg_loc = set_data->new_reg;
 
-      ssa_rename_to[REGNO (old_reg)-FIRST_PSEUDO_REGISTER]
-	= set_data->prev_reg;
+      ssa_rename_to_insert (old_reg, set_data->prev_reg);
 
       next = set_data->next;
       free (set_data);
@@ -916,26 +1146,30 @@ rename_registers (nregs, idom)
      int nregs;
      int *idom;
 {
+  int reg;
+  int mach_mode;
+
   VARRAY_RTX_INIT (ssa_definition, nregs * 3, "ssa_definition");
   VARRAY_RTX_INIT (ssa_uses, nregs * 3, "ssa_uses");
-  VARRAY_RTX_INIT (ssa_rename_from, nregs * 3, "ssa_rename_from");
+  ssa_rename_from_initialize ();
 
-  ssa_rename_to = (rtx *) alloca (nregs * sizeof(rtx));
-  bzero ((char *) ssa_rename_to, nregs * sizeof(rtx));
+  ssa_rename_to_pseudo = (rtx *) alloca (nregs * sizeof(rtx));
+  bzero ((char *) ssa_rename_to_pseudo, nregs * sizeof(rtx));
+  bzero ((char *) ssa_rename_to_hard, 
+	 FIRST_PSEUDO_REGISTER * NUM_MACHINE_MODES * sizeof (rtx));
 
   rename_block (0, idom);
 
   /* ??? Update basic_block_live_at_start, and other flow info 
      as needed.  */
 
-  ssa_rename_to = NULL;
+  ssa_rename_to_pseudo = NULL;
 }
-
 
 /* The main entry point for moving to SSA.  */
 
 void
-convert_to_ssa()
+convert_to_ssa ()
 {
   /* Element I is the set of blocks that set register I.  */
   sbitmap *evals;
@@ -963,7 +1197,7 @@ convert_to_ssa()
 
   idom = (int *) alloca (n_basic_blocks * sizeof (int));
   memset ((void *)idom, -1, (size_t)n_basic_blocks * sizeof (int));
-  simplify_to_immediate_dominators (idom, dominators);
+  compute_immediate_dominators (idom, dominators);
 
   sbitmap_vector_free (dominators);
 
@@ -991,7 +1225,7 @@ convert_to_ssa()
   /* Compute register evaluations.  */
 
   ssa_max_reg_num = max_reg_num();
-  nregs = ssa_max_reg_num - FIRST_PSEUDO_REGISTER;
+  nregs = ssa_max_reg_num;
   evals = sbitmap_vector_alloc (nregs, n_basic_blocks);
   find_evaluations (evals, nregs);
 
@@ -1003,7 +1237,7 @@ convert_to_ssa()
   if (rtl_dump_file)
     {
       dump_sbitmap_vector (rtl_dump_file, ";; Iterated Dominance Frontiers:",
-			   "; Register-FIRST_PSEUDO_REGISTER", idfs, nregs);
+			   "; Register", idfs, nregs);
       fflush (rtl_dump_file);
     }
 
@@ -1024,7 +1258,6 @@ convert_to_ssa()
 
   reg_scan (get_insns (), max_reg_num (), 1);
 }
-
 
 /* REG is the representative temporary of its partition.  Add it to the
    set of nodes to be processed, if it hasn't been already.  Return the
@@ -1269,7 +1502,6 @@ out:
   sbitmap_vector_free (succ);
 }
 
-
 /* For basic block B, consider all phi insns which provide an
    alternative corresponding to an incoming abnormal critical edge.
    Place the phi alternative corresponding to that abnormal critical
@@ -1307,9 +1539,9 @@ make_regs_equivalent_over_bad_edges (bb, reg_partition)
       rtx set = PATTERN (phi);
       rtx tgt = SET_DEST (set);
 
-      /* The set target is expected to be a pseudo.  */
+      /* The set target is expected to be an SSA register.  */
       if (GET_CODE (tgt) != REG 
-	  || REGNO (tgt) < FIRST_PSEUDO_REGISTER)
+	  || !CONVERT_REGISTER_TO_SSA_P (REGNO (tgt)))
 	abort ();
       tgt_regno = REGNO (tgt);
 
@@ -1326,9 +1558,9 @@ make_regs_equivalent_over_bad_edges (bb, reg_partition)
 	    if (alt == 0)
 	      continue;
 
-	    /* The phi alternative is expected to be a pseudo.  */
+	    /* The phi alternative is expected to be an SSA register.  */
 	    if (GET_CODE (*alt) != REG 
-		|| REGNO (*alt) < FIRST_PSEUDO_REGISTER)
+		|| !CONVERT_REGISTER_TO_SSA_P (REGNO (*alt)))
 	      abort ();
 	    alt_regno = REGNO (*alt);
 
@@ -1338,6 +1570,11 @@ make_regs_equivalent_over_bad_edges (bb, reg_partition)
 		!= partition_find (reg_partition, alt_regno))
 	      {
 		/* ... make them such.  */
+		if (conflicting_hard_regs_p (tgt_regno, alt_regno))
+		  /* It is illegal to unify a hard register with a
+		     different register.  */
+		  abort ();
+		
 		partition_union (reg_partition, 
 				 tgt_regno, alt_regno);
 		++changed;
@@ -1347,7 +1584,6 @@ make_regs_equivalent_over_bad_edges (bb, reg_partition)
 
   return changed;
 }
-
 
 /* Consider phi insns in basic block BB pairwise.  If the set target
    of both isns are equivalent pseudos, make the corresponding phi
@@ -1396,7 +1632,7 @@ make_equivalent_phi_alternatives_equivalent (bb, reg_partition)
 	      for (e = b->pred; e; e = e->pred_next)
 		{
 		  int pred_block = e->src->index;
-		  /* Identify the phi altnernatives from both phi
+		  /* Identify the phi alternatives from both phi
 		     nodes corresponding to this edge.  */
 		  rtx *alt = phi_alternative (set, pred_block);
 		  rtx *alt2 = phi_alternative (set2, pred_block);
@@ -1406,20 +1642,25 @@ make_equivalent_phi_alternatives_equivalent (bb, reg_partition)
 		  if (alt == 0 || alt2 == 0)
 		    continue;
 
-		  /* Both alternatives should be pseudos.  */
+		  /* Both alternatives should be SSA registers.  */
 		  if (GET_CODE (*alt) != REG
-		      || REGNO (*alt) < FIRST_PSEUDO_REGISTER)
+		      || !CONVERT_REGISTER_TO_SSA_P (REGNO (*alt)))
 		    abort ();
 		  if (GET_CODE (*alt2) != REG
-		      || REGNO (*alt2) < FIRST_PSEUDO_REGISTER)
+		      || !CONVERT_REGISTER_TO_SSA_P (REGNO (*alt2)))
 		    abort ();
 
-		  /* If the altneratives aren't already in the same
+		  /* If the alternatives aren't already in the same
 		     class ... */
 		  if (partition_find (reg_partition, REGNO (*alt)) 
 		      != partition_find (reg_partition, REGNO (*alt2)))
 		    {
 		      /* ... make them so.  */
+		      if (conflicting_hard_regs_p (REGNO (*alt), REGNO (*alt2)))
+			/* It is illegal to unify a hard register with
+			   a different register. */
+			abort ();
+
 		      partition_union (reg_partition, 
 				       REGNO (*alt), REGNO (*alt2));
 		      ++changed;
@@ -1445,7 +1686,7 @@ compute_conservative_reg_partition ()
      carry them around anyway rather than constantly doing register
      number arithmetic.  */
   partition p = 
-    partition_new (ssa_definition->num_elements + FIRST_PSEUDO_REGISTER);
+    partition_new (ssa_definition->num_elements);
 
   /* The first priority is to make sure registers that might have to
      be copied on abnormal critical edges are placed in the same
@@ -1506,8 +1747,8 @@ coalesce_if_unconflicting (p, conflicts, reg1, reg2)
 {
   int reg;
 
-  /* Don't mess with hard regs.  */
-  if (reg1 < FIRST_PSEUDO_REGISTER || reg2 < FIRST_PSEUDO_REGISTER)
+  /* Work only on SSA registers. */
+  if (!CONVERT_REGISTER_TO_SSA_P (reg1) || !CONVERT_REGISTER_TO_SSA_P (reg2))
     return 0;
 
   /* Find the canonical regs for the classes containing REG1 and
@@ -1520,7 +1761,8 @@ coalesce_if_unconflicting (p, conflicts, reg1, reg2)
     return 0;
 
   /* If the regs conflict, our hands are tied.  */
-  if (conflict_graph_conflict_p (conflicts, reg1, reg2))
+  if (conflicting_hard_regs_p (reg1, reg2) ||
+      conflict_graph_conflict_p (conflicts, reg1, reg2))
     return 0;
 
   /* We're good to go.  Put the regs in the same partition.  */
@@ -1594,7 +1836,6 @@ coalesce_regs_in_copies (bb, p, conflicts)
   return changed;
 }
 
-
 struct phi_coalesce_context
 {
   partition p;
@@ -1660,11 +1901,8 @@ compute_coalesced_reg_partition ()
   int bb;
   int changed = 0;
 
-  /* We don't actually work with hard registers, but it's easier to
-     carry them around anyway rather than constantly doing register
-     number arithmetic.  */
   partition p = 
-    partition_new (ssa_definition->num_elements + FIRST_PSEUDO_REGISTER);
+    partition_new (ssa_definition->num_elements);
 
   /* The first priority is to make sure registers that might have to
      be copied on abnormal critical edges are placed in the same
@@ -1741,41 +1979,40 @@ static void
 mark_phi_and_copy_regs (phi_set)
      regset phi_set;
 {
-  int reg;
+  unsigned int reg;
 
   /* Scan the definitions of all regs.  */
-  for (reg = VARRAY_SIZE (ssa_definition); 
-       --reg >= FIRST_PSEUDO_REGISTER; 
-       ) 
-    {
-      rtx insn = VARRAY_RTX (ssa_definition, reg);
-      rtx pattern;
-      rtx src;
+  for (reg = 0; reg < VARRAY_SIZE (ssa_definition); ++reg)
+    if (CONVERT_REGISTER_TO_SSA_P (reg))
+      {
+	rtx insn = VARRAY_RTX (ssa_definition, reg);
+	rtx pattern;
+	rtx src;
 
-      if (insn == NULL)
-	continue;
-      pattern = PATTERN (insn);
-      /* Sometimes we get PARALLEL insns.  These aren't phi nodes or
-	 copies.  */
-      if (GET_CODE (pattern) != SET)
-	continue;
-      src = SET_SRC (pattern);
+	if (insn == NULL)
+	  continue;
+	pattern = PATTERN (insn);
+	/* Sometimes we get PARALLEL insns.  These aren't phi nodes or
+	   copies.  */
+	if (GET_CODE (pattern) != SET)
+	  continue;
+	src = SET_SRC (pattern);
 
-      if (GET_CODE (src) == REG)
-	{
-	  /* It's a reg copy.  */
-	  SET_REGNO_REG_SET (phi_set, reg);
-	  SET_REGNO_REG_SET (phi_set, REGNO (src));
-	}
-      else if (GET_CODE (src) == PHI)
-	{
-	  /* It's a phi node.  Mark the reg being set.  */
-	  SET_REGNO_REG_SET (phi_set, reg);
-	  /* Mark the regs used in the phi function.  */
-	  for_each_rtx (&src, mark_reg_in_phi, phi_set);
-	}
-      /* ... else nothing to do.  */
-    }
+	if (GET_CODE (src) == REG)
+	  {
+	    /* It's a reg copy.  */
+	    SET_REGNO_REG_SET (phi_set, reg);
+	    SET_REGNO_REG_SET (phi_set, REGNO (src));
+	  }
+	else if (GET_CODE (src) == PHI)
+	  {
+	    /* It's a phi node.  Mark the reg being set.  */
+	    SET_REGNO_REG_SET (phi_set, reg);
+	    /* Mark the regs used in the phi function.  */
+	    for_each_rtx (&src, mark_reg_in_phi, phi_set);
+	  }
+	/* ... else nothing to do.  */
+      }
 }
 
 /* Rename regs in insn PTR that are equivalent.  DATA is the register
@@ -1795,11 +2032,19 @@ rename_equivalent_regs_in_insn (ptr, data)
   switch (GET_CODE (x))
     {
     case REG:
-      if (REGNO (x) >= FIRST_PSEUDO_REGISTER)
+      if (CONVERT_REGISTER_TO_SSA_P (REGNO (x)))
 	{
-	  int regno = REGNO (x);
-	  int new_regno = partition_find (reg_partition, regno);
-	  if (regno != new_regno)
+	  unsigned int regno = REGNO (x);
+	  unsigned int new_regno = partition_find (reg_partition, regno);
+	  rtx canonical_element_rtx = ssa_rename_from_lookup (new_regno);
+
+	  if (canonical_element_rtx != NULL_RTX && 
+	      HARD_REGISTER_P (canonical_element_rtx))
+	    {
+	      if (REGNO (canonical_element_rtx) != regno)
+		*ptr = canonical_element_rtx;
+	    }
+	  else if (regno != new_regno)
 	    {
 	      rtx new_reg = regno_reg_rtx[new_regno];
 	      if (GET_MODE (x) != GET_MODE (new_reg))
@@ -1820,8 +2065,73 @@ rename_equivalent_regs_in_insn (ptr, data)
     }
 }
 
-/* Rename regs that are equivalent in REG_PARTITION.  
-   Also collapse any SEQUENCE insns.  */
+/* Record the register's canonical element stored in SRFP in the
+   canonical_elements sbitmap packaged in DATA.  This function is used
+   as a callback function for traversing ssa_rename_from.  */
+
+static int
+record_canonical_element_1 (srfp, data)
+     void **srfp;
+     void *data;
+{
+  unsigned int reg = ((ssa_rename_from_pair *) *srfp)->reg;
+  sbitmap canonical_elements =
+    ((struct ssa_rename_from_hash_table_data *) data)->canonical_elements;
+  partition reg_partition =
+    ((struct ssa_rename_from_hash_table_data *) data)->reg_partition;
+  
+  SET_BIT (canonical_elements, partition_find (reg_partition, reg));
+  return 1;
+}
+
+/* For each class in the REG_PARTITION corresponding to a particular
+   hard register and machine mode, check that there are no other
+   classes with the same hard register and machine mode.  Returns
+   nonzero if this is the case, i.e., the partition is acceptable.  */
+
+static int
+check_hard_regs_in_partition (reg_partition)
+     partition reg_partition;
+{
+  /* CANONICAL_ELEMENTS has a nonzero bit if a class with the given register
+     number and machine mode has already been seen.  This is a
+     problem with the partition.  */
+  sbitmap canonical_elements;
+  int element_index;
+  int already_seen[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
+  int reg;
+  int mach_mode;
+
+  /* Collect a list of canonical elements.  */
+  canonical_elements = sbitmap_alloc (max_reg_num ());
+  sbitmap_zero (canonical_elements);
+  ssa_rename_from_traverse (&record_canonical_element_1,
+			    canonical_elements, reg_partition);
+
+  /* We have not seen any hard register uses.  */
+  for (reg = 0; reg < FIRST_PSEUDO_REGISTER; ++reg)
+    for (mach_mode = 0; mach_mode < NUM_MACHINE_MODES; ++mach_mode)
+      already_seen[reg][mach_mode] = 0;
+
+  /* Check for classes with the same hard register and machine mode.  */
+  EXECUTE_IF_SET_IN_SBITMAP (canonical_elements, 0, element_index,
+  {
+    rtx hard_reg_rtx = ssa_rename_from_lookup (element_index);
+    if (hard_reg_rtx != NULL_RTX &&
+	HARD_REGISTER_P (hard_reg_rtx) &&
+	already_seen[REGNO (hard_reg_rtx)][GET_MODE (hard_reg_rtx)] != 0)
+	  /* Two distinct partition classes should be mapped to the same
+	     hard register.  */
+	  return 0;
+  });
+
+  sbitmap_free (canonical_elements);
+
+  return 1;
+}
+
+/* Rename regs that are equivalent in REG_PARTITION.  Also collapse
+   any SEQUENCE insns.  */
 
 static void
 rename_equivalent_regs (reg_partition)
@@ -1877,10 +2187,10 @@ convert_from_ssa()
   int bb;
   partition reg_partition;
   rtx insns = get_insns ();
-    
+
   /* Need global_live_at_{start,end} up to date.  */
   life_analysis (insns, NULL, 
-	  PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE | PROP_DEATH_NOTES);
+		 PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE | PROP_DEATH_NOTES);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
      therefore can be coalesced.  */
@@ -1888,6 +2198,11 @@ convert_from_ssa()
     reg_partition = compute_conservative_reg_partition ();
   else
     reg_partition = compute_coalesced_reg_partition ();
+
+  if (!check_hard_regs_in_partition (reg_partition))
+    /* Two separate partitions should correspond to the same hard
+       register but do not.  */
+    abort ();
 
   rename_equivalent_regs (reg_partition);
 
@@ -1937,6 +2252,11 @@ convert_from_ssa()
   in_ssa_form = 0;
 
   count_or_remove_death_notes (NULL, 1);
+
+  /* Deallocate the data structures.  */
+  VARRAY_FREE (ssa_definition);
+  VARRAY_FREE (ssa_uses);
+  ssa_rename_from_free ();
 }
 
 /* Scan phi nodes in successors to BB.  For each such phi node that
@@ -2000,5 +2320,28 @@ for_each_successor_phi (bb, fn, data)
 	}
     }
 
+  return 0;
+}
+
+/* Assuming the ssa_rename_from mapping has been established, yields
+   nonzero if 1) only one SSA register of REG1 and REG2 comes from a
+   hard register or 2) both SSA registers REG1 and REG2 come from
+   different hard registers.  */
+
+static int
+conflicting_hard_regs_p (reg1, reg2)
+     int reg1;
+     int reg2;
+{
+  int orig_reg1 = original_register (reg1);
+  int orig_reg2 = original_register (reg2);
+  if (HARD_REGISTER_NUM_P (orig_reg1) && HARD_REGISTER_NUM_P (orig_reg2)
+      && orig_reg1 != orig_reg2)
+    return 1;
+  if (HARD_REGISTER_NUM_P (orig_reg1) && !HARD_REGISTER_NUM_P (orig_reg2))
+    return 1;
+  if (!HARD_REGISTER_NUM_P (orig_reg1) && HARD_REGISTER_NUM_P (orig_reg2))
+    return 1;
+  
   return 0;
 }

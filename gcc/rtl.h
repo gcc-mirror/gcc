@@ -716,6 +716,12 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 /* 1 in a REG rtx if it corresponds to a variable declared by the user.  */
 #define REG_USERVAR_P(RTX) ((RTX)->volatil)
 
+/* 1 if the given register REG corresponds to a hard register.  */
+#define HARD_REGISTER_P(REG) (HARD_REGISTER_NUM_P (REGNO (REG)))
+
+/* 1 if the given register number REG_NO corresponds to a hard register.  */
+#define HARD_REGISTER_NUM_P(REG_NO) (REG_NO < FIRST_PSEUDO_REGISTER)
+
 /* For a CONST_INT rtx, INTVAL extracts the integer.  */
 
 #define INTVAL(RTX) XCWINT(RTX, 0, CONST_INT)

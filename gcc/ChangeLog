@@ -1,3 +1,62 @@
+2000-07-30  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	* Makefile.in (ssa.o): Updated header files in dependences.
+	* basic-block.h: Added compute_immediate_postdominators declaration.
+	* config/i386/i386.h (CONVERT_HARD_REGISTER_TO_SSA_P): Added
+	definition.
+	* flow.c (compute_immediate_dominators): Updated comment.
+	(compute_immediate_postdominators): Added definition.
+	* rtl.h (HARD_REGISTER_P): Added definition.
+	* ssa.c: Include additional header files.
+	(assert): Added definition.
+	(ssa_rename_to_lookup): Added to reimplement ssa_rename_to to
+	include select hard registers.
+	(ssa_rename_to_insert): Likewise.
+	(ssa_rename_from_initialize): Likewise.
+	(ssa_rename_from_lookup): Likewise.
+	(original_register): Likewise.
+	(ssa_rename_from_insert): Added to reimplement ssa_rename_from to
+	include select hard reigsters.
+	(ssa_rename_from_traverse): Likewise.
+	(ssa_rename_from_free): Likewise.
+	(ssa_rename_from_print): Likewise.
+	(ssa_rename_from_print_1): Likewise.
+	(ssa_rename_from_hash_function): Likewise.
+	(ssa_rename_from_equal): Likewise.
+	(ssa_rename_from_delete): Likewise.
+	(simplify_to_immediate_dominators): Removed in favor of
+	flow.c:compute_immediate_dominators.
+	(find_evaluations_1): Modified to work with hard registers.
+	(insert_phi_node): Likewise.
+	(insert_phi_nodes): Likewise.
+	(struct rename_set_data): Updated prev_reg comment.
+	(create_delayed_rename): Modified to work with hard registers.
+	(RENAME_NO_RTX): Updated comment.
+	(apply_delayed_renames): Modified to work with hard registers.
+	(rename_insn_1): Likewise and added handling of CLOBBER rtls.
+	(rename_block): Updated to use revised ssa_rename_to interface.
+	(rename_registers): Updated to use revised ssa_rename_to and
+	ssa_rename_from interface.
+	(convert_to_ssa): Revised to use compute_immediate_dominators and
+	deal with hard registers.
+	(make_regs_equivalent_over_bad_edges): Modified to work with hard
+	registers.  Added check for illegal unification of hard register.
+	(make_equivalent_phi_alternatives_equivalent): Modified to work
+	with hard registers.
+	(compute_conservative_reg_partition): Likewise.
+	(coalesce_if_unconflicting): Modified to work with hard registers
+	and check for conflicting hard registers.
+	(mark_phi_and_copy_regs): Revised loop to work only on pseudo
+	registers.
+	(rename_equivalent_regs_in_insn): Modified to work with hard
+	registers.
+	(record_canonical_element_1): Added definition.
+	(check_hard_regs_in_partition): Added definition.
+	(convert_from_ssa): Added data structure deallocation and check
+	for illegal hard register unification.
+	(conflict_hard_regs_p): Added definition.
+	* toplev.c (rest_of_compilation): Added comment.
+
 2000-07-31  Anthony Green  <green@redhat.com>
 
 	* config/ia64/crtbegin.asm (__EH_FRAME_BEGIN__): Align correctly.

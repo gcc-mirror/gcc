@@ -2978,6 +2978,11 @@ rest_of_compilation (decl)
 
       /* Currently, there's nothing to do in SSA form.  */
 
+      /* The SSA implementation uses basic block numbers in its phi
+	 nodes.  Thus, changing the control-flow graph or the basic
+	 blocks, e.g., calling find_basic_blocks () or cleanup_cfg (),
+	 may cause problems.  */
+
       /* Convert from SSA form.  */
 
       timevar_push (TV_FROM_SSA);
