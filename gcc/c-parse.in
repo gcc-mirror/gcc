@@ -677,6 +677,11 @@ primary:
 	| '(' typename ')' '{'
 		{ start_init (NULL_TREE, NULL, 0);
 		  $<ttype>$ = groktypename ($2);
+		  if (C_TYPE_VARIABLE_SIZE ($<ttype>$))
+		    {
+		      error ("compound literal has variable size");
+		      $<ttype>$ = error_mark_node;
+		    }
 		  really_start_incremental_init ($<ttype>$); }
 	  initlist_maybe_comma '}'  %prec UNARY
 		{ struct c_expr init = pop_init_level (0);

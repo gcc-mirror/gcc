@@ -1,3 +1,11 @@
+2004-09-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/16409
+	* c-decl.c (start_decl): Check for initializing incomplete array
+	of VLAs.
+	(build_compound_literal): Check for TYPE being error_mark_node.
+	* c-parse.in (primary): Check for VLA compound literals.
+
 2004-09-28  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-live.c (calculate_live_on_entry): Fix warnings
