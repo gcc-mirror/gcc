@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (okellogg@salyko.cube.net).
 
 This file is part of GNU CC.
@@ -934,9 +934,10 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
     void const_section()				\
     {							\
 	fprintf(asm_out_file,"\tkonst\n");		\
-	current_section = Konst;				\
+	current_section = Konst;			\
     }							\
-    check_section(enum section sect)			\
+    check_section(sect)			\
+        enum section sect;				\
     {							\
         if (current_section != sect) {			\
 	    fprintf(asm_out_file,"\t%s\n",sectname[(int)sect]); \
