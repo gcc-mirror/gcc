@@ -19,7 +19,13 @@ public interface ComponentPeer
   void disable();
   void dispose();
   void enable();
-  ColorModel getColorModel();
+
+  /** 
+   * Get the graphics configuration of the component. The color model
+   * of the component can be derived from the configuration.
+   */
+  GraphicsConfiguration getGraphicsConfiguration();
+
   FontMetrics getFontMetrics(Font f);
   Graphics getGraphics();
   Point getLocationOnScreen();
@@ -41,6 +47,7 @@ public interface ComponentPeer
   void setBounds(int x, int y, int width, int height);
   void setCursor(Cursor cursor);
   void setEnabled(boolean enabled);
+  void setEventMask(long eventMask);
   void setFont(Font font);
   void setForeground(Color color);
   void setVisible(boolean visible);

@@ -28,38 +28,32 @@ public class FontMetrics implements java.io.Serializable
 
   public int getLeading()
   {
-    // FIXME??
-    return getHeight() - (getDescent() + getAscent());
+    return getMaxAscent() + getMaxDescent() - (getAscent() + getDescent());
   }
 
   public int getAscent()
   {
-    // FIXME??
     return getHeight() - (getDescent() + getLeading());
   }
 
   public int getDescent()
   {
-    // FIXME??
-    return getHeight() - getDescent();
+    return getHeight() - (getLeading() + getDescent());
   }
 
   public int getHeight()
   {
-    // FIXME??
     return getLeading() + getAscent() + getDescent();
   }
 
   public int getMaxAscent()
   {
-    // FIXME
-    return 0;
+    return getAscent();
   }
 
   public int getMaxDescent()
   {
-    // FIXME
-    return 0;
+    return getDescent();
   }
 
   /* @deprecated Use getMaxDescent() instead. */
@@ -68,24 +62,24 @@ public class FontMetrics implements java.io.Serializable
     return getMaxDescent();
   }
 
+  /** @return max advance, or -1 if unknown. */
   public int getMaxAdvance()
   {
-    // FIXME
-    return 0;
+    return -1;
   }
+
 
   public int charWidth(int ch)
   {
-    // FIXME
-    return 0;
+    return charWidth((char) ch);
   }
 
   public int charWidth(char ch)
   {
-    // FIXME
-    return 0;
+    Character chObj = new Character(ch);
+    return stringWidth(chObj.toString());
   }
-
+    
   public int stringWidth(String str)
   {
     return charsWidth(str.toCharArray(), 0, str.length());
@@ -93,20 +87,19 @@ public class FontMetrics implements java.io.Serializable
 
   public int charsWidth(char[] data, int off, int len)
   {
-    // FIXME
-    return -1;
+    return stringWidth(new String(data, off, len));
   }
 
   public int bytesWidth(byte[] data, int off, int len)
   {
-    // FIXME?
-    return -1;
+    return stringWidth(new String(data, off, len));
   }
-
+    
   public int[] getWidths()
   {
-    // FIXME
-    return new int[0];
+    int[] widths = new int[256];
+    for (char c=0; c<256; c++) widths[c] = charWidth(c);
+    return widths;
   }
 
   public boolean hasUniformLineMetrics()

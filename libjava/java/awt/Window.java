@@ -28,20 +28,47 @@ public class Window extends Container
   private transient WindowListener windowListener;
   private transient GraphicsConfiguration graphicsConfiguration;
 
+  /** 
+   * This (package access) constructor is used by subclasses that want
+   * to build windows that do not have parents.  Eg. toplevel
+   * application frames.  Subclasses cannot call super(null), since
+   * null is an illegal argument.
+   */
+  Window()
+  {
+    setVisible(false);
+    setLayout((LayoutManager) new BorderLayout());
+  }
+
+  Window(GraphicsConfiguration gc)
+  {
+    this();
+    graphicsConfiguration = gc;
+  }
+    
   public Window(Frame owner)
   {
-    this (owner, null);
+    this((Window) owner);
   }
 
   /** @since 1.2 */
   public Window(Window owner)
   {
-    this (owner, null);
+    this();
+    if (owner == null)
+      throw new IllegalArgumentException("owner must not be null");
+    
+    this.parent = owner;
+
+    // FIXME: add to owner's "owned window" list
+    //owner.owned.add(this); // this should be a weak reference
   }
   
   /** @since 1.3 */
   public Window(Window owner, GraphicsConfiguration gc)
   {
+    this(owner);
+
     /*  FIXME: Security check
     SecurityManager.checkTopLevelWindow(...)
 
@@ -55,22 +82,21 @@ public class Window extends Container
 			     .getDefaultConfiguration();
     else
     */    
-      graphicsConfiguration = gc;
+    graphicsConfiguration = gc;
+  }
 
-    // FIXME: compiler bug
-    // this.layoutMgr = new BorderLayout ();
-    
-    if (owner == null)
-      throw new IllegalArgumentException ("Owner can not be null");
-          
-    this.parent = owner;
-    
-    // FIXME: add to owner's "owned window" list
+  GraphicsConfiguration getGraphicsConfigurationImpl()
+  {
+    if (graphicsConfiguration != null)
+	return graphicsConfiguration;
+
+    return super.getGraphicsConfigurationImpl();
   }
 
   protected void finalize() throws Throwable
   {
     // FIXME: remove from owner's "owned window" list (Weak References)
+    super.finalize();
   }
 
   public void addNotify()
@@ -78,6 +104,7 @@ public class Window extends Container
     if (peer == null)
       // FIXME: This cast should NOT be required. ??? Compiler bug ???
       peer = (ComponentPeer) getToolkit ().createWindow (this);
+    super.addNotify ();
   }
 
   /** @specnote pack() doesn't appear to be called internally by show(), so
@@ -87,16 +114,20 @@ public class Window extends Container
     if (parent != null
         && !parent.isDisplayable())
       parent.addNotify();
-        if (peer == null)
+    if (peer == null)
       addNotify();
-    
-    // FIXME: do layout stuff here
+
+    setSize(getPreferredSize());
     
     validate();
   }
 
   public void show ()
   {
+    if (peer == null)
+      addNotify();
+    validate ();
+
     if (isVisible())
       {
 	this.toFront();
@@ -126,7 +157,12 @@ public class Window extends Container
 
   public void dispose()
   {
-    // FIXME: first call removeNotify() on owned children
+    hide();
+
+    Window[] list = getOwnedWindows();
+    for (int i=0; i<list.length; i++)
+      list[i].dispose();
+
     for (int i = 0; i < ncomponents; ++i)
       component[i].removeNotify();
     this.removeNotify();
@@ -195,10 +231,7 @@ public class Window extends Container
 
   public Window getOwner()
   {
-    if (parent != null)
-      return (Window) parent;
-    else 
-      return null;
+    return (Window) parent;
   }
 
   /** @since 1.2 */
@@ -317,8 +350,16 @@ public class Window extends Container
   }
   */
 
+  /** 
+   * Get graphics configuration.  The implementation for Window will
+   * not ask any parent containers, since Window is a toplevel
+   * window and not actually embedded in the parent component.
+   */
   public GraphicsConfiguration getGraphicsConfiguration()
   {
-    return graphicsConfiguration;
+    if (graphicsConfiguration != null) return graphicsConfiguration;
+    if (peer != null) return peer.getGraphicsConfiguration();
+    return null;
   }
+
 }

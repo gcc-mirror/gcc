@@ -87,6 +87,29 @@ public class Color extends Object implements Paint, java.io.Serializable
   {
     return rgba;
   }
+
+  static final int BRIGHT_STEP = 0x30;
+
+  public Color brighter()
+  {
+    return new Color(Math.min(255, getRed()   + BRIGHT_STEP),
+		     Math.min(255, getGreen() + BRIGHT_STEP),
+		     Math.min(255, getBlue()  + BRIGHT_STEP),
+		     getAlpha());
+  }
+    
+  public Color darker()
+  {
+    return new Color(Math.max(0, getRed()   - BRIGHT_STEP),
+		     Math.max(0, getGreen() - BRIGHT_STEP),
+		     Math.max(0, getBlue()  - BRIGHT_STEP),
+		     getAlpha());
+  }
+    
+  public int hashCode()
+  {
+    return rgba;
+  }
   
   public int getTransparency()
   {
@@ -96,3 +119,4 @@ public class Color extends Object implements Paint, java.io.Serializable
       return Transparency.TRANSLUCENT;
   }
 }
+

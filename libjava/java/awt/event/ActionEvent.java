@@ -37,7 +37,7 @@ public class ActionEvent extends AWTEvent
     this.modifiers = modifiers;
   }
 
-  public String getcmd ()
+  public String getActionCommand ()
   {
     return cmd;
   }

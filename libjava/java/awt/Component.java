@@ -17,6 +17,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import java.awt.peer.ComponentPeer;
+import java.awt.peer.LightweightPeer;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 // import javax.accessibility.AccessibleContext;
@@ -59,8 +60,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
   Font peerFont;
   Cursor cursor;
   Locale locale;
-  boolean visible;
-  boolean enabled;
+  boolean visible = true; // default (except for Window)
+  boolean enabled = true;
   boolean valid;
   boolean hasFocus;
   //DropTarget dropTarget;
@@ -70,7 +71,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   Dimension minSize;
   Dimension prefSize;
   boolean newEventsOnly;  
-  long eventMask;
+  long eventMask = AWTEvent.PAINT_EVENT_MASK;
   PropertyChangeSupport changeSupport;
   boolean isPacked;
   int componentSerializedDataVersion;
@@ -143,8 +144,24 @@ public abstract class Component implements ImageObserver, MenuContainer,
   /** @since 1.3 */
   public GraphicsConfiguration getGraphicsConfiguration()
   {
+    return getGraphicsConfigurationImpl();
+  }
+
+  /** Implementation method that allows classes such as Canvas and
+      Window to override the graphics configuration without violating
+      the published API. */
+  GraphicsConfiguration getGraphicsConfigurationImpl()
+  {
+    if (peer != null)
+      {
+	GraphicsConfiguration config = peer.getGraphicsConfiguration();
+	if (config != null)
+	  return config;
+      }
+
     if (parent != null)
       return parent.getGraphicsConfiguration();
+
     return null;
   }
 
@@ -156,7 +173,11 @@ public abstract class Component implements ImageObserver, MenuContainer,
   public Toolkit getToolkit()
   {
     if (peer != null)
-      return peer.getToolkit ();
+      {
+	Toolkit tk = peer.getToolkit();
+	if (tk != null)
+	  return tk;
+      }
     if (parent != null)
       return parent.getToolkit ();
     return Toolkit.getDefaultToolkit ();
@@ -170,7 +191,9 @@ public abstract class Component implements ImageObserver, MenuContainer,
   /** @since 1.2 */
   public boolean isDisplayable()
   {
-    return (peer != null);
+    if (parent != null)
+      return parent.isDisplayable();
+    return false;
   }
   
   public boolean isVisible()
@@ -186,7 +209,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
     if (parent != null)
       return (parent.isShowing());
 
-    return true;
+    return false;
   }
   
   public boolean isEnabled()
@@ -264,7 +287,11 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public Color getForeground()
   {
-    return this.foreground;
+    if (foreground != null)
+      return foreground;
+    if (parent != null)
+      return parent.getForeground();
+    return null;
   }
   
   public void setForeground(Color c)
@@ -272,11 +299,21 @@ public abstract class Component implements ImageObserver, MenuContainer,
     if (peer != null)
       peer.setForeground(c);
     this.foreground = c;
+    if (peer != null)
+      peer.setForeground(foreground);
   }
-  
+
+  /** @return the background color of the component. null may be
+      returned instead of the actual background color, if this
+      method is called before the component is added to the
+      component hierarchy. */
   public Color getBackground()
   {
-    return this.background;
+    if (background != null)
+      return background;
+    if (parent != null)
+      return parent.getBackground();
+    return null;
   }
   
   public void setBackground(Color c)
@@ -284,11 +321,16 @@ public abstract class Component implements ImageObserver, MenuContainer,
     if (peer != null)
       peer.setBackground(c);
     this.background = c;
+    if (peer != null) peer.setBackground(background);
   }
   
   public Font getFont()
   {
-    return this.font;
+    if (font != null)
+      return font;
+    if (parent != null)
+      return parent.getFont();
+    return null;
   }
   
   public void setFont(Font f)
@@ -311,12 +353,20 @@ public abstract class Component implements ImageObserver, MenuContainer,
   public void setLocale(Locale l)  
   {
     this.locale = l;
+    
+    /* new writing/layout direction perhaps, or make more/less
+       room for localized text labels */
+    invalidate();
   }
   
   public ColorModel getColorModel()
   {
-    // FIXME
-    return null;
+    GraphicsConfiguration config = getGraphicsConfiguration();
+
+    if (config != null)
+      return config.getColorModel();
+
+    return getToolkit().getColorModel();    
   }
 
   public Point getLocation()
@@ -338,6 +388,11 @@ public abstract class Component implements ImageObserver, MenuContainer,
 
   public void setLocation (int x, int y)
   {
+    if ((this.x == x) && (this.y == y))
+      return;
+    
+    invalidate();
+    
     this.x = x;
     this.y = y;
     if (peer != null)
@@ -368,6 +423,11 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void setSize(int width, int height)
   {
+    if ((this.width == width) && (this.height == height))
+      return;
+
+    invalidate();
+
     this.width = width;
     this.height = height;
     if (peer != null)
@@ -404,10 +464,19 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void setBounds(int x, int y, int w, int h)
   {
+    if (this.x == x
+	&& this.y == y
+	&& this.width == w
+	&& this.height == h)
+      return;
+
+    invalidate();
+
     this.x = x;
     this.y = y;
     this.width = w;
     this.height = h;
+
     if (peer != null)
       peer.setBounds(x, y, w, h);
   }
@@ -473,14 +542,19 @@ public abstract class Component implements ImageObserver, MenuContainer,
   /** @since 1.2 */
   public boolean isOpaque()
   {
-    return false;
+    return !isLightweight();
   }
   
-  /** @since 1.2 */  
+  /** 
+   * Return whether the component is lightweight.
+   *
+   * @return true if component has a peer and and the peer is lightweight.
+   *
+   * @since 1.2
+   */  
   public boolean isLightweight()
   {
-    // FIXME
-    return false;
+    return (peer != null) && (peer instanceof LightweightPeer);
   }
   
   public Dimension getPreferredSize()
@@ -515,8 +589,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public Dimension getMaximumSize()
   {
-    // FIXME
-    return null;
+    return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
   }
   
   public float getAlignmentX()
@@ -533,7 +606,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void doLayout()
   {
-    // FIXME
+    // nothing to do unless we're a container
   }
   
   /** @deprecated */
@@ -544,26 +617,42 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void validate()
   {
-    // FIXME
+    // nothing to do unless we're a container
   }
   
   public void invalidate()
   {
     valid = false;
-    if (parent != null)
-      parent.invalidate ();
+
+    if ((parent != null) && parent.valid)
+	parent.invalidate ();
   }
   
   public Graphics getGraphics()
   {
-    // FIXME
+    if (peer != null)
+      {
+	Graphics gfx = peer.getGraphics();
+	if (gfx != null)
+	  return gfx;
+      
+	// create graphics for lightweight:
+	Container parent = getParent();
+	if (parent != null)
+	  {
+	    gfx = parent.getGraphics();
+	    Rectangle bounds = getBounds();
+	    gfx.setClip(bounds);
+	    gfx.translate(bounds.x, bounds.y);
+	    return gfx;
+	  }
+      }
     return null;
   }
   
   public FontMetrics getFontMetrics(Font font)
   {
-    // FIXME
-    return null;
+    return getToolkit().getFontMetrics(font);
   }
   
   public void setCursor(Cursor cursor)
@@ -582,41 +671,56 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void update(Graphics g)
   {
-    // FIXME
+    paint(g);
   }
   
   public void paintAll(Graphics g)
   {    
+    if (!visible)
+      return;
+	
+    if (peer != null)
+      peer.paint(g);
+    paint(g);
   }
   
   public void repaint()
   {
-    // FIXME
+    repaint(0, 0, 0, getWidth(), getHeight());
   }
   
   public void repaint(long tm)
   {
-    // FIXME
+    repaint(tm, 0, 0, getWidth(), getHeight());
   }
   
   public void repaint(int x, int y, int width, int height)
   {
-    // FIXME  
+    repaint(0, x, y, width, height);
   }
   
   public void repaint(long tm, int x, int y, int width, int height)
   {    
-    // FIXME  
+    // Handle lightweight repainting by forwarding to native parent
+    if (isLightweight() && (parent != null))
+      {
+	if (parent != null)
+	  parent.repaint(tm, x+getX(), y+getY(), width, height);
+	return;
+      }
+    
+    if (peer != null)
+      peer.repaint(tm, x, y, width, height);
   }
   
   public void print(Graphics g)
   {
-    // FIXME    
+    paint(g);
   }
   
   public void printAll(Graphics g)
   {
-    // FIXME      
+    paintAll(g);
   }
   
   public boolean imageUpdate(Image img, int infoflags, int x, int y, int w, int h)
@@ -633,8 +737,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public Image createImage(int width, int height)
   {
-    // FIXME
-    return null;
+    return getGraphicsConfiguration().createCompatibleImage(width, height);
   }
   
   public boolean prepareImage(Image image, ImageObserver observer)
@@ -717,6 +820,10 @@ public abstract class Component implements ImageObserver, MenuContainer,
   public final void dispatchEvent(AWTEvent e)
   {
     dispatchEventImpl(e);
+
+    /* Give the peer a chance to handle the event. */
+    if (peer != null)
+      peer.handleEvent(e);
   }
   
   void dispatchEventImpl(AWTEvent e)
@@ -753,6 +860,10 @@ public abstract class Component implements ImageObserver, MenuContainer,
 	     && (hierarchyListener != null
 		 || hierarchyBoundsListener != null
 		 || (eventMask & AWTEvent.HIERARCHY_EVENT_MASK) != 0))
+      processEvent(e);
+    else if (e.id <= PaintEvent.PAINT_LAST
+	     && e.id >= PaintEvent.PAINT_FIRST
+	     && (eventMask & AWTEvent.PAINT_EVENT_MASK) != 0)      
       processEvent(e);
   }
   
@@ -939,6 +1050,9 @@ public abstract class Component implements ImageObserver, MenuContainer,
     // interface, but thats okay because the peer interfaces have been
     // deprecated for a long time, and no longer feature in the 
     // API specification at all.
+
+    if (isLightweight() && (parent != null))
+      parent.enableEvents(eventsToEnable);
   }
   
   protected final void disableEvents(long eventsToDisable)
@@ -953,37 +1067,84 @@ public abstract class Component implements ImageObserver, MenuContainer,
     */
   protected AWTEvent coalesceEvents(AWTEvent existingEvent, AWTEvent newEvent)
   {
-    if (existingEvent instanceof MouseEvent
-        && (existingEvent.id == MouseEvent.MOUSE_DRAGGED
-	    || existingEvent.id == MouseEvent.MOUSE_MOVED))
+    switch (existingEvent.id)
       {
-        // Just drop the old (intermediate) event and return the new one.
+      case MouseEvent.MOUSE_MOVED:
+      case MouseEvent.MOUSE_DRAGGED:
+	// Just drop the old (intermediate) event and return the new one.
 	return newEvent;
+      case PaintEvent.PAINT:
+      case PaintEvent.UPDATE:
+	return coalescePaintEvents((PaintEvent) existingEvent,
+				   (PaintEvent) newEvent);
       }
-    /*
-    else if (existingEvent instanceof PaintEvent)
-      {
-        // The JDK 1.3 documentation says that in this case a complex 
-	// RepaintArea is generated. We don't do that yet, and creating a 
-	// union area as suggested by older documentation sounds ugly.
-      }
-    */
-      
-    // FIXME
     return null;
   }
   
+  /**
+   * Coalesce paint events. Current heuristic is: Merge if the union of
+   * areas is less than twice that of the sum of the areas. The X server
+   * tend to create a lot of paint events that are adjacent but not
+   * overlapping.
+   *
+   * <pre>
+   * +------+
+   * |      +-----+  ...will be merged
+   * |      |     |
+   * |      |     |
+   * +------+     |
+   *        +-----+
+   * 
+   * +---------------+--+
+   * |               |  |  ...will not be merged
+   * +---------------+  |
+   *                 |  |
+   *                 |  |
+   *                 |  |
+   *                 |  |
+   *                 |  |
+   *                 +--+
+   * </pre>
+   */
+
+  private PaintEvent coalescePaintEvents(PaintEvent queuedEvent,
+					 PaintEvent newEvent)
+  {
+    Rectangle r1 = queuedEvent.getUpdateRect();
+    Rectangle r2 = newEvent.getUpdateRect();
+    Rectangle union = r1.union(r2);
+    
+    int r1a = r1.width * r1.height;
+    int r2a = r2.width * r2.height;
+    int ua  = union.width * union.height;
+    
+    if (ua > (r1a+r2a)*2)
+      return null;
+    /* The 2 factor should maybe be reconsidered. Perhaps 3/2
+       would be better? */
+
+    newEvent.setUpdateRect(union);
+    return newEvent;
+  }
+
+
+
+
   /** Forward event to the appropriate processXXXEvent method based on the
     * event type.
     */
   protected void processEvent(AWTEvent e)
   {
-    if (e instanceof ComponentEvent)
-      processComponentEvent((ComponentEvent) e);
-    else if (e instanceof FocusEvent)
+
+    /* Note: the order of these if statements are
+       important. Subclasses must be checked first. Eg. MouseEvent
+       must be checked before ComponentEvent, since a MouseEvent
+       object is also an instance of a ComponentEvent. */
+
+    if (e instanceof FocusEvent)
       processFocusEvent((FocusEvent) e);
-    else if (e instanceof KeyEvent)
-      processKeyEvent((KeyEvent) e);
+    else if (e instanceof PaintEvent)
+      processPaintEvent((PaintEvent) e);
     else if (e instanceof MouseEvent)
       {
         if (e.id == MouseEvent.MOUSE_MOVED 
@@ -992,6 +1153,10 @@ public abstract class Component implements ImageObserver, MenuContainer,
 	else
 	  processMouseEvent((MouseEvent) e);
       }
+    else if (e instanceof ComponentEvent)
+      processComponentEvent((ComponentEvent) e);
+    else if (e instanceof KeyEvent)
+      processKeyEvent((KeyEvent) e);
     else if (e instanceof InputMethodEvent)
       processInputMethodEvent((InputMethodEvent) e);
     else if (e instanceof HierarchyEvent)
@@ -1067,7 +1232,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
     switch (e.id)
       {
 	case MouseEvent.MOUSE_CLICKED:
-	  mouseListener.mousePressed(e);
+	  mouseListener.mouseClicked(e);
 	break;
         case MouseEvent.MOUSE_ENTERED:
 	  mouseListener.mouseEntered(e);
@@ -1139,6 +1304,31 @@ public abstract class Component implements ImageObserver, MenuContainer,
 	break;
       }
   }
+
+  private void processPaintEvent(PaintEvent event)
+  {
+    ComponentPeer peer = getPeer();
+	
+    // Can't do graphics without peer
+    if (peer == null)
+      return;
+
+    Graphics gfx = getGraphics();
+    Shape clip = event.getUpdateRect();
+    gfx.setClip(clip);
+
+    switch (event.id)
+      {
+      case PaintEvent.PAINT:
+	if (peer != null) paint(gfx);
+	break;
+      case PaintEvent.UPDATE:
+	if (peer != null) update(gfx);
+	break;
+      default:
+	throw new IllegalArgumentException("unknown paint event");
+      }
+  }
   
   /** @deprecated */
   public boolean handleEvent(Event evt)
@@ -1204,14 +1394,33 @@ public abstract class Component implements ImageObserver, MenuContainer,
   {
     if (peer == null)
       peer = getToolkit().createComponent(this);
+
+    /* Add notify children using a template method, so that it is
+       possible to ensure that the new event mask delivered to the
+       peer. */
+    addNotifyContainerChildren();
+
+    /* Now that all the children has gotten their peers, we should
+       have the event mask needed for this component and its
+       lightweight subcomponents. */
+
+    peer.setEventMask(eventMask);
+
+    /* We do not invalidate here, but rather leave that job up to
+       the peer. For efficiency, the peer can choose not to
+       invalidate if it is happy with the current dimensions,
+       etc. */
   }
-  
+
+  void addNotifyContainerChildren() {
+    // nothing to do unless we're a container
+  }
+
   public void removeNotify()
   {    
     if (peer != null)
       peer.dispose();
     peer = null;
-    visible = false;
   }
   
   /** @deprecated */
@@ -1269,8 +1478,33 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   protected String paramString()
   {
-    // FIXME
-    return "FIXME";
+    StringBuffer param = new StringBuffer();
+    String name = getName();
+    if (name != null)
+      {
+	param.append(name);
+	param.append(",");
+      }
+    param.append(width);
+    param.append("x");
+    param.append(height);
+    param.append("+");
+    param.append(x);
+    param.append("+");
+    param.append(y);
+    
+    if (!isValid())
+      param.append(",invalid");
+    if (!isVisible())
+      param.append(",invisible");
+    if (!isEnabled())
+      param.append(",disabled");
+    if (!isOpaque())
+      param.append(",translucent");
+    if (isDoubleBuffered())
+      param.append(",doublebuffered");
+    
+    return param.toString();
   }
   
   public String toString()
@@ -1280,10 +1514,12 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void list()
   {
+    list(System.out);
   }
   
   public void list(PrintStream out)
   {
+    list(out, 0);
   }
   
   public void list(PrintStream out, int indent)

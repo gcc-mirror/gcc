@@ -220,7 +220,7 @@ public class Rectangle extends Rectangle2D implements Cloneable, Shape
 
   public boolean isEmpty()
   {
-    return (width > 0 && height > 0);
+    return !(width > 0 && height > 0);
   }
 
   /** @deprecated Use setLocation() instead. */

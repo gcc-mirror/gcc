@@ -14,6 +14,7 @@ import java.beans.*;
 import java.awt.image.*;
 import java.awt.datatransfer.Clipboard;
 import java.util.Hashtable;
+import gnu.gcj.awt.GLightweightPeer;
 
 /* A very incomplete placeholder. */
 
@@ -28,7 +29,7 @@ public abstract class Toolkit
   {
     if (defaultToolkit != null)
       return defaultToolkit;
-      
+    
     Class toolkit_class;
     String tk_class_name = System.getProperty("awt.toolkit");
     if (tk_class_name == null)
@@ -72,8 +73,7 @@ public abstract class Toolkit
 
   protected LightweightPeer createComponent(Component target)
   {
-    // FIXME
-    return null;
+    return GLightweightPeer.INSTANCE;
   }
   
   /* @deprecated Use GraphicsEnvironment.getAllFonts() */
@@ -191,7 +191,7 @@ public abstract class Toolkit
 
   public final EventQueue getSystemEventQueue()
   {
-      return systemEventQueue;
+      return getSystemEventQueueImpl();
   }
 
   protected abstract EventQueue getSystemEventQueueImpl();

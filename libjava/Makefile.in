@@ -84,7 +84,6 @@ GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
 INCLTDL = @INCLTDL@
-JC1GCSPEC = @JC1GCSPEC@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
 LIBGCJTESTSPEC = @LIBGCJTESTSPEC@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
@@ -281,6 +280,8 @@ gnu/java/beans/ExplicitBeanInfo.java \
 gnu/java/beans/IntrospectionIncubator.java \
 gnu/gcj/awt/BitMaskExtent.java \
 gnu/gcj/awt/Buffers.java \
+gnu/gcj/awt/ComponentDataBlitOp.java \
+gnu/gcj/awt/GLightweightPeer.java \
 java/applet/Applet.java \
 java/applet/AppletStub.java \
 java/applet/AppletContext.java \
@@ -313,6 +314,7 @@ java/awt/Font.java \
 java/awt/FontMetrics.java \
 java/awt/Frame.java \
 java/awt/Graphics.java \
+java/awt/Graphics2D.java \
 java/awt/GraphicsConfiguration.java \
 java/awt/IllegalComponentStateException.java \
 java/awt/Image.java \
@@ -334,6 +336,7 @@ java/awt/Panel.java \
 java/awt/Point.java \
 java/awt/PopupMenu.java	\
 java/awt/Rectangle.java	\
+java/awt/RenderingHints.java \
 java/awt/ScrollPane.java \
 java/awt/Scrollbar.java	\
 java/awt/Shape.java \
@@ -394,6 +397,7 @@ java/awt/geom/PathIterator.java	\
 java/awt/geom/Point2D.java \
 java/awt/geom/Rectangle2D.java \
 java/awt/geom/RectangularShape.java \
+java/awt/image/BufferedImage.java \
 java/awt/image/ColorModel.java \
 java/awt/image/ComponentColorModel.java	\
 java/awt/image/ComponentSampleModel.java \
@@ -408,6 +412,7 @@ java/awt/image/ImageProducer.java \
 java/awt/image/IndexColorModel.java \
 java/awt/image/PackedColorModel.java \
 java/awt/image/Raster.java \
+java/awt/image/RasterOp.java \
 java/awt/image/SampleModel.java	\
 java/awt/image/SinglePixelPackedSampleModel.java \
 java/awt/image/WritableRaster.java \
@@ -1003,8 +1008,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/$(srcdir)/$(CONVERT_DIR)/make-trie.P .deps/boehm.P \
 .deps/defineclass.P .deps/exception.P .deps/gij.P \
 .deps/gnu/gcj/RawData.P .deps/gnu/gcj/awt/BitMaskExtent.P \
-.deps/gnu/gcj/awt/Buffers.P .deps/gnu/gcj/convert/BytesToUnicode.P \
-.deps/gnu/gcj/convert/Convert.P .deps/gnu/gcj/convert/IOConverter.P \
+.deps/gnu/gcj/awt/Buffers.P .deps/gnu/gcj/awt/ComponentDataBlitOp.P \
+.deps/gnu/gcj/awt/GLightweightPeer.P \
+.deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
+.deps/gnu/gcj/convert/IOConverter.P \
 .deps/gnu/gcj/convert/Input_8859_1.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \
 .deps/gnu/gcj/convert/Input_JavaSrc.P \
@@ -1073,7 +1080,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/EventQueue.P .deps/java/awt/FileDialog.P \
 .deps/java/awt/Font.P .deps/java/awt/FontMetrics.P \
 .deps/java/awt/Frame.P .deps/java/awt/Graphics.P \
-.deps/java/awt/GraphicsConfiguration.P \
+.deps/java/awt/Graphics2D.P .deps/java/awt/GraphicsConfiguration.P \
 .deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
 .deps/java/awt/Insets.P .deps/java/awt/ItemSelectable.P \
 .deps/java/awt/Label.P .deps/java/awt/LayoutManager.P \
@@ -1084,12 +1091,12 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/Paint.P .deps/java/awt/PaintContext.P \
 .deps/java/awt/Panel.P .deps/java/awt/Point.P \
 .deps/java/awt/PopupMenu.P .deps/java/awt/Rectangle.P \
-.deps/java/awt/ScrollPane.P .deps/java/awt/Scrollbar.P \
-.deps/java/awt/Shape.P .deps/java/awt/TextArea.P \
-.deps/java/awt/TextComponent.P .deps/java/awt/TextField.P \
-.deps/java/awt/Toolkit.P .deps/java/awt/Transparency.P \
-.deps/java/awt/Window.P .deps/java/awt/color/ColorSpace.P \
-.deps/java/awt/color/ICC_ColorSpace.P \
+.deps/java/awt/RenderingHints.P .deps/java/awt/ScrollPane.P \
+.deps/java/awt/Scrollbar.P .deps/java/awt/Shape.P \
+.deps/java/awt/TextArea.P .deps/java/awt/TextComponent.P \
+.deps/java/awt/TextField.P .deps/java/awt/Toolkit.P \
+.deps/java/awt/Transparency.P .deps/java/awt/Window.P \
+.deps/java/awt/color/ColorSpace.P .deps/java/awt/color/ICC_ColorSpace.P \
 .deps/java/awt/color/ICC_Profile.P \
 .deps/java/awt/datatransfer/Clipboard.P \
 .deps/java/awt/event/AWTEventListener.P \
@@ -1130,7 +1137,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/geom/PathIterator.P .deps/java/awt/geom/Point2D.P \
 .deps/java/awt/geom/Rectangle2D.P \
 .deps/java/awt/geom/RectangularShape.P \
-.deps/java/awt/image/ColorModel.P \
+.deps/java/awt/image/BufferedImage.P .deps/java/awt/image/ColorModel.P \
 .deps/java/awt/image/ComponentColorModel.P \
 .deps/java/awt/image/ComponentSampleModel.P \
 .deps/java/awt/image/DataBuffer.P .deps/java/awt/image/DataBufferByte.P \
@@ -1142,7 +1149,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/image/ImageProducer.P \
 .deps/java/awt/image/IndexColorModel.P \
 .deps/java/awt/image/PackedColorModel.P .deps/java/awt/image/Raster.P \
-.deps/java/awt/image/SampleModel.P \
+.deps/java/awt/image/RasterOp.P .deps/java/awt/image/SampleModel.P \
 .deps/java/awt/image/SinglePixelPackedSampleModel.P \
 .deps/java/awt/image/WritableRaster.P .deps/java/awt/peer/ButtonPeer.P \
 .deps/java/awt/peer/CanvasPeer.P \
