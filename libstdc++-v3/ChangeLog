@@ -1,5 +1,10 @@
 2003-05-11  Phil Edwards  <pme@gcc.gnu.org>
 
+	* testsuite/Makefile.am:  Properly quote /both/ LD_RUN_PATHs.
+	* testsuite/Makefile.in:  Regenerate.
+
+2003-05-11  Phil Edwards  <pme@gcc.gnu.org>
+
 	* testsuite/Makefile.am:  Properly quote LD_RUN_PATH.
 	* testsuite/Makefile.in:  Regenerate.
 
