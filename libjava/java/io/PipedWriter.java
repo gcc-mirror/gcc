@@ -128,21 +128,21 @@ public class PipedWriter extends Writer
     * <code>PipedReader</code> to which this object is connected has
     * a buffer that cannot hold all of the chars to be written.
     *
-    * @param buf The array containing chars to write to the stream.
+    * @param buffer The array containing chars to write to the stream.
     * @param offset The index into the array to start writing chars from.
     * @param len The number of chars to write.
     *
     * @exception IOException If the stream has not been connected or has
     *                        been closed.
     */
-  public void write(char[] b, int off, int len) throws IOException
+  public void write(char[] buffer, int offset, int len) throws IOException
   {
     if (sink == null)
       throw new IOException ("Not connected");
     if (closed)
       throw new IOException ("Pipe closed");
       
-    sink.receive (b, off, len);
+    sink.receive(buffer, offset, len);
   }
 
   /**

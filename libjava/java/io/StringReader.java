@@ -52,7 +52,7 @@ package java.io;
  * method rewinds the read pointer to the beginning of the <code>String</code>.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @date October 19, 1998.  
  */
 public class StringReader extends Reader
@@ -74,7 +74,7 @@ public class StringReader extends Reader
    * passed in <code>String</code>.  This stream will read from the beginning 
    * to the end of the <code>String</code>.
    *
-   * @param s The <code>String</code> this stream will read from.
+   * @param buffer The <code>String</code> this stream will read from.
    */
   public StringReader(String buffer)
   {
@@ -185,7 +185,7 @@ public class StringReader extends Reader
     * buffer, then only enough chars are skipped to position the stream at
     * the end of the buffer.  The actual number of chars skipped is returned.
     *
-    * @param num_chars The requested number of chars to skip
+    * @param n The requested number of chars to skip
     *
     * @return The actual number of chars skipped.
     */

@@ -1097,6 +1097,8 @@ public class URLClassLoader extends SecureClassLoader
    * @param urls the initial URLs used to resolve classes and
    * resources
    *
+   * @return the class loader
+   *
    * @exception SecurityException when the calling code does not have
    * permission to access the given <code>URL</code>s
    */
@@ -1114,6 +1116,8 @@ public class URLClassLoader extends SecureClassLoader
    * @param urls the initial URLs used to resolve classes and
    * resources
    * @param parent the parent class loader
+   *
+   * @return the class loader
    *
    * @exception SecurityException when the calling code does not have
    * permission to access the given <code>URL</code>s

@@ -122,7 +122,7 @@ public class StreamTokenizer
    * them.  For details on how this method operates by default, see
    * <code>StreamTokenizer(Reader)</code>.
    *
-   * @param in The <code>InputStream</code> to read from
+   * @param is The <code>InputStream</code> to read from
    *
    * @deprecated Since JDK 1.1.
    */
@@ -150,7 +150,7 @@ public class StreamTokenizer
    * <li>C  and C++ (//) comments are not recognized</li>
    * </ul>
    *
-   * @param in The <code>Reader</code> to read chars from
+   * @param r The <code>Reader</code> to read chars from
    */
   public StreamTokenizer(Reader r)
   {
@@ -170,7 +170,7 @@ public class StreamTokenizer
    * This method sets the comment attribute on the specified
    * character.  Other attributes for the character are cleared.
    *
-   * @param c The character to set the comment attribute for, passed as an int
+   * @param ch The character to set the comment attribute for, passed as an int
    */
   public void commentChar(int ch)
   {
@@ -517,7 +517,7 @@ public class StreamTokenizer
    * quote, or comment) will be set on this character.  This character will
    * parse as its own token.
    *
-   * @param c The character to make ordinary, passed as an int
+   * @param ch The character to make ordinary, passed as an int
    */
   public void ordinaryChar(int ch)
   {
@@ -533,9 +533,9 @@ public class StreamTokenizer
    * range parse as its own token.
    *
    * @param low The low end of the range of values to set the whitespace
-   *            attribute for
-   * @param high The high end of the range of values to set the whitespace
-   *            attribute for
+   * attribute for
+   * @param hi The high end of the range of values to set the whitespace
+   * attribute for
    */
   public void ordinaryChars(int low, int hi)
   {
@@ -575,7 +575,7 @@ public class StreamTokenizer
    * This method sets the quote attribute on the specified character.
    * Other attributes for the character are cleared.
    *
-   * @param c The character to set the quote attribute for, passed as an int.
+   * @param ch The character to set the quote attribute for, passed as an int.
    */
   public void quoteChar(int ch)
   {
@@ -670,9 +670,9 @@ public class StreamTokenizer
    * specified range, range terminators included.
    *
    * @param low The low end of the range of values to set the whitespace
-   *            attribute for
-   * @param high The high end of the range of values to set the whitespace
-   *             attribute for
+   * attribute for
+   * @param hi The high end of the range of values to set the whitespace
+   * attribute for
    */
   public void whitespaceChars(int low, int hi)
   {
@@ -692,9 +692,9 @@ public class StreamTokenizer
    * specified range, range terminators included.
    *
    * @param low The low end of the range of values to set the alphabetic
-   *            attribute for
-   * @param high The high end of the range of values to set the alphabetic
-   *             attribute for
+   * attribute for
+   * @param hi The high end of the range of values to set the alphabetic
+   * attribute for
    */
   public void wordChars(int low, int hi)
   {

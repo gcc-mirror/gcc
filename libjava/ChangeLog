@@ -1,3 +1,26 @@
+2004-11-16  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/BufferedReader.java,
+	java/io/FileInputStream.java,
+	java/io/FileOutputStream.java,
+	java/io/FileWriter.java,
+	java/io/OutputStreamWriter.java,
+	java/io/PipedInputStream.java,
+	java/io/PipedOutputStream.java,
+	java/io/PipedReader.java,
+	java/io/PipedWriter.java,
+	java/io/PrintStream.java,
+	java/io/PushbackInputStream.java,
+	java/io/RandomAccessFile.java,
+	java/io/Reader.java,
+	java/io/StreamTokenizer.java,
+	java/io/StringReader.java,
+	java/net/NetworkInterface.java,
+	java/net/URLClassLoader.java,
+	java/nio/ByteOrder.java,
+	java/nio/channels/Channel.java:
+	Fixed javadocs all over.
+
 2004-11-16  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.am: Add imported files.

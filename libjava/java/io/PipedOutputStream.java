@@ -129,21 +129,21 @@ public class PipedOutputStream extends OutputStream
     * <code>PipedInputStream</code> to which this object is connected has
     * a buffer that cannot hold all of the bytes to be written.
     *
-    * @param buf The array containing bytes to write to the stream.
+    * @param buffer The array containing bytes to write to the stream.
     * @param offset The index into the array to start writing bytes from.
     * @param len The number of bytes to write.
     *
     * @exception IOException If the stream has not been connected or has
     *                        been closed.
     */
-  public void write(byte[] b, int off, int len) throws IOException
+  public void write(byte[] buffer, int offset, int len) throws IOException
   {
     if (sink == null)
       throw new IOException ("Not connected");
     if (closed)
       throw new IOException ("Pipe closed");
       
-    sink.receive (b, off, len);
+    sink.receive(buffer, offset, len);
   }
 
   /**

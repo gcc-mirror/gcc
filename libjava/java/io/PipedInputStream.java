@@ -151,14 +151,14 @@ public class PipedInputStream extends InputStream
   * This method receives a byte of input from the source PipedOutputStream.
   * If the internal circular buffer is full, this method blocks.
   *
-  * @param byte_received The byte to write to this stream
+  * @param val The byte to write to this stream
   *
   * @exception IOException if error occurs
   * @specnote Weird. This method must be some sort of accident.
   */
-  protected synchronized void receive(int b) throws IOException
+  protected synchronized void receive(int val) throws IOException
   {
-    read_buf[0] = (byte) (b & 0xff);
+    read_buf[0] = (byte) (val & 0xff);
     receive (read_buf, 0, 1);
   }
 
@@ -237,11 +237,7 @@ public class PipedInputStream extends InputStream
     * because the end of the stream was reached.  If the stream is already
     * closed, a -1 will again be returned to indicate the end of the stream.
     * <p>
-    * This method will block if no bytes are available to be read.
-    *
-    * @param buf The buffer into which bytes will be stored
-    * @param offset The index into the buffer at which to start writing.
-    * @param len The maximum number of bytes to read.
+    * This method will block if no byte is available to be read.
     */
   public int read() throws IOException
   {
@@ -252,11 +248,7 @@ public class PipedInputStream extends InputStream
     // if this method is never called.
 
     int r = read(read_buf, 0, 1);
-
-    if (r == -1)
-      return -1;
-    else
-      return read_buf[0];
+    return r != -1 ? read_buf[0] : -1;
   }
   
   /**

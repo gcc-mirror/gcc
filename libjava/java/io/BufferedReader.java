@@ -508,7 +508,7 @@ public class BufferedReader extends Reader
    * <code>skip</code> method on the underlying stream to skip the 
    * remaining chars.
    *
-   * @param numChars The requested number of chars to skip
+   * @param count The requested number of chars to skip
    *
    * @return The actual number of chars skipped.
    *
