@@ -734,16 +734,13 @@ extern int x86_prefetch_sse;
 #define INT_TYPE_SIZE 32
 #define FLOAT_TYPE_SIZE 32
 #define LONG_TYPE_SIZE BITS_PER_WORD
-#define MAX_WCHAR_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_LONG_TYPE_SIZE 64
 
 #if defined (TARGET_BI_ARCH) || TARGET_64BIT_DEFAULT
 #define MAX_BITS_PER_WORD 64
-#define MAX_LONG_TYPE_SIZE 64
 #else
 #define MAX_BITS_PER_WORD 32
-#define MAX_LONG_TYPE_SIZE 32
 #endif
 
 /* Define this if most significant byte of a word is the lowest numbered.  */

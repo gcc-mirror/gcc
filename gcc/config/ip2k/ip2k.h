@@ -90,7 +90,6 @@ extern int target_flags;
 
 #undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 32
-#define MAX_LONG_TYPE_SIZE 32
 
 #undef LONG_LONG_TYPE_SIZE
 #define LONG_LONG_TYPE_SIZE	64

@@ -573,8 +573,6 @@ do {									\
 
 #define MAX_BITS_PER_WORD 64
 
-#define MAX_LONG_TYPE_SIZE MAX_BITS_PER_WORD
-
 /* Width in bits of an `int'.  We want just 32-bits, even if words are
    longer.  */
 #define INT_TYPE_SIZE 32

@@ -48,11 +48,9 @@ Boston, MA 02111-1307, USA.  */
 /* Specify wchar_t types.  */
 #undef	WCHAR_TYPE
 #undef	WCHAR_TYPE_SIZE
-#undef	MAX_WCHAR_TYPE_SIZE
 
 #define WCHAR_TYPE     "int"
 #define WCHAR_TYPE_SIZE        INT_TYPE_SIZE
-#define MAX_WCHAR_TYPE_SIZE    64
 
 /* Plain char is unsigned in the SGI compiler.  */
 #undef DEFAULT_SIGNED_CHAR

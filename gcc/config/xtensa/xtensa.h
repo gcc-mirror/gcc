@@ -161,7 +161,6 @@ extern unsigned xtensa_current_frame_size;
 #define INT_TYPE_SIZE 32
 #define SHORT_TYPE_SIZE 16
 #define LONG_TYPE_SIZE 32
-#define MAX_LONG_TYPE_SIZE 32
 #define LONG_LONG_TYPE_SIZE 64
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64

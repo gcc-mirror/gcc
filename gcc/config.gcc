@@ -124,11 +124,8 @@
 #			system normally uses GNU as.
 #
 #  need_64bit_hwint	Set to yes if HOST_WIDE_INT must be 64 bits wide
-#			for this target.  This is true iff
-#			MAX_LONG_TYPE_SIZE is 64.  (The code which
-#			determines the underlying integral type for
-#			HOST_WIDE_INT cannot see the definition of
-#			MAX_LONG_TYPE_SIZE.)
+#			for this target.  This is true iff this target
+#			supports "long" or "wchar_t" wider than 32 bits.
 #
 #  configure_default_options
 #			Set to an initializer for configure_default_options

@@ -1313,20 +1313,11 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
 
-/* Tell the preprocessor the maximum size of wchar_t.  */
-#ifndef MAX_WCHAR_TYPE_SIZE
-#ifndef WCHAR_TYPE_SIZE
-#define MAX_WCHAR_TYPE_SIZE 64
-#endif
-#endif
-
 /* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE (TARGET_INT64 ? 64 : 32)
 #define LONG_TYPE_SIZE (TARGET_LONG64 ? 64 : 32)
 #define LONG_LONG_TYPE_SIZE 64
-
-#define MAX_LONG_TYPE_SIZE 64
 
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64

@@ -677,7 +677,6 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    target machine.  If you don't define this, the default is one
    word.  */
 #define LONG_TYPE_SIZE (TARGET_32BIT ? 32 : 64)
-#define MAX_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `long long' on the
    target machine.  If you don't define this, the default is two
@@ -698,9 +697,6 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    the target machine.  If you don't define this, the default is two
    words.  */
 #define LONG_DOUBLE_TYPE_SIZE rs6000_long_double_type_size
-
-/* Constant which presents upper bound of the above value.  */
-#define MAX_LONG_DOUBLE_TYPE_SIZE 128
 
 /* Define this to set long double type size to use in libgcc2.c, which can
    not depend on target_flags.  */
