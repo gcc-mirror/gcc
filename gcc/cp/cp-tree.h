@@ -3576,7 +3576,8 @@ extern tree type_passed_as (tree);
 extern tree convert_for_arg_passing (tree, tree);
 extern tree cp_convert_parm_for_inlining        (tree, tree, tree);
 extern bool is_properly_derived_from (tree, tree);
-extern tree initialize_reference (tree, tree);
+extern tree initialize_reference (tree, tree, tree);
+extern tree make_temporary_var_for_ref_to_temp (tree);
 extern tree strip_top_quals (tree);
 extern tree perform_implicit_conversion (tree, tree);
 extern tree in_charge_arg_for_name (tree);
@@ -3638,7 +3639,7 @@ extern tree ocp_convert (tree, tree, int, int);
 extern tree cp_convert (tree, tree);
 extern tree convert_to_void (tree, const char */*implicit context*/);
 extern tree convert_force (tree, tree, int);
-extern tree build_type_conversion (tree, tree, int);
+extern tree build_type_conversion (tree, tree);
 extern tree build_expr_type_conversion (int, tree, bool);
 extern tree type_promotes_to (tree);
 extern tree perform_qualification_conversions (tree, tree);
@@ -4355,6 +4356,8 @@ extern tree check_return_expr                   (tree);
 #define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, true)
 #define cxx_alignof(T) cxx_sizeof_or_alignof_type (T, ALIGNOF_EXPR, true)
 extern tree build_ptrmemfunc_access_expr       (tree, tree);
+extern tree build_address                       (tree);
+extern tree build_nop                           (tree, tree);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
