@@ -27,12 +27,35 @@ public final class Locale implements java.io.Serializable, Cloneable
   private String variant;
   private static Locale defaultLocale;
 
-  // FIXME: many are still missing.
+  // These are as specified in the JDK 1.2 AP documentation
+
+
+  // LANGUAGE constants ... country-neutral
+  public static final Locale CHINESE = new Locale ("zh", "");
+  public static final Locale ENGLISH = new Locale ("en", "");
+  public static final Locale FRENCH = new Locale ("fr", "");
+  public static final Locale GERMAN = new Locale ("de", "");
+  public static final Locale ITALIAN = new Locale ("it", "");
+  public static final Locale JAPANESE = new Locale ("ja", "");
+  public static final Locale KOREAN = new Locale ("ko", "");
+
+  // COUNTRY constants ... countries can be multi-lingual
   public static final Locale CANADA = new Locale ("en", "CA");
+  public static final Locale CANADA_FRENCH = new Locale ("fr", "CA");
   public static final Locale FRANCE = new Locale ("fr", "FR");
+  public static final Locale GERMANY = new Locale ("de", "DE");
+  public static final Locale ITALY = new Locale ("it", "IT");
   public static final Locale JAPAN = new Locale ("ja", "JP");
+  public static final Locale KOREA = new Locale ("ko", "KR");
   public static final Locale UK = new Locale ("en", "GB");
   public static final Locale US = new Locale ("en", "US");
+
+  // Chinese has multiple scripts and political bodies
+  public static final Locale SIMPLIFIED_CHINESE = new Locale ("zh", "CN");
+  public static final Locale TRADITIONAL_CHINESE = new Locale ("zh", "TW");
+  public static final Locale PRC = SIMPLIFIED_CHINESE;
+  public static final Locale TAIWAN = TRADITIONAL_CHINESE;
+  public static final Locale CHINA = PRC;
 
   public Locale (String languageCode, String countryCode)
   {
@@ -114,12 +137,15 @@ public final class Locale implements java.io.Serializable, Cloneable
   {
     StringBuffer result = new StringBuffer(20);
     result.append(language);
-    result.append('_');
-    result.append(country);
-    if (variant.length() > 0)
+    if (country.length() > 0)
       {
 	result.append('_');
-	result.append(variant);
+	result.append(country);
+	if (variant.length() > 0)
+	  {
+	    result.append('_');
+	    result.append(variant);
+	  }
       }
     return result.toString();
   }
