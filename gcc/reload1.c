@@ -7300,6 +7300,34 @@ emit_reload_insns (chain)
       register int r = reload_order[j];
       register int i = reload_spill_index[r];
 
+      /* If this is a non-inherited input reload from a pseudo, we must
+         clear any memory of a previous store to the same pseudo.  Only do
+         something if there will not be an output reload for the pseudo
+         being reloaded.  */
+      if (reload_in_reg[r] != 0
+          && ! (reload_inherited[r] || reload_override_in[r]))
+        {
+          rtx reg = reload_in_reg[r];
+
+          if (GET_CODE (reg) == SUBREG)
+	    reg = SUBREG_REG (reg);
+	
+          if (GET_CODE (reg) == REG
+	      && REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	      && ! reg_has_output_reload[REGNO (reg)])
+	    {
+	      int nregno = REGNO (reg);
+
+	      if (reg_last_reload_reg[nregno])
+	        {
+	          int last_regno = REGNO (reg_last_reload_reg[nregno]);
+
+	          if (reg_reloaded_contents[last_regno] == nregno)
+		    spill_reg_store[last_regno] = 0;
+	        }
+	    }
+	}
+		  
       /* I is nonneg if this reload used a register.
 	 If reload_reg_rtx[r] is 0, this is an optional reload
 	 that we opted to ignore.  */
