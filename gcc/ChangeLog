@@ -1,3 +1,10 @@
+Wed Jan  6 17:55:19 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* configure.in: New flag --with-dwarf2.   If set, enables DWARF-2
+	debugging as default.
+
+	* config/tm-dwarf2.h: New file.
+
 Wed Jan  6 16:08:54 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* calls.c (special_function_p): New function broken out of

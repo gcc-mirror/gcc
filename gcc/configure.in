@@ -278,6 +278,11 @@ changequote([,])
   JAVAGC=$enableval,
   JAVAGC=boehm)
 
+AC_ARG_WITH(dwarf2,
+[  --enable-dwarf2	  enable DWARF2 debugging as default.],
+dwarf2="$with_dwarf2",
+dwarf2=no)
+
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
@@ -3428,6 +3433,10 @@ then out_file=$cpu_type/$cpu_type.c; fi
 
 if test x"$tmake_file" = x
 then tmake_file=$cpu_type/t-$cpu_type
+fi
+
+if test x"$dwarf2" = xyes
+then tm_file="tm-dwarf2.h $tm_file"
 fi
 
 if test x$float_format = x
