@@ -1,4 +1,10 @@
 // Origin: Mark Mitchell <mark@codesourcery.com>
+// This test case checks that the return value optimization works for
+// empty classes.
+
+// xfailed because empty classes clobbering what they overlay as the
+// backend treats them as single byte objects. See bug 4222
+// execution test - XFAIL *-*-*
 
 extern "C" void abort();
 extern "C" int printf (const char *, ...);
