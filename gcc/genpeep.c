@@ -477,6 +477,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"real.h\"\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"except.h\"\n\n");
+  printf ("#include \"function.h\"\n\n");
 
   printf ("extern rtx peep_operand[];\n\n");
   printf ("#define operands peep_operand\n\n");
