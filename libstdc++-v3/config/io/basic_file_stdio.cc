@@ -207,33 +207,33 @@ namespace std
  
   streamsize 
   __basic_file<char>::xsgetn(char* __s, streamsize __n)
-  {
-    streamsize __ret;
-    do
-      __ret = read(this->fd(), __s, __n);
-    while (__ret == -1L && errno == EINTR);
-    return __ret;
-  }
+  { return fread(__s, 1, __n, _M_cfile); }
     
   streamsize 
   __basic_file<char>::xsputn(const char* __s, streamsize __n)
-  {
-    streamsize __ret;
-    do
-      __ret = write(this->fd(), __s, __n);
-    while (__ret == -1L && errno == EINTR);
-    return __ret;
-  }
-  
-  streamoff
-  __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way, 
-			      ios_base::openmode /*__mode*/)
-  { return lseek(this->fd(), __off, __way); }
+  { return fwrite(__s, 1, __n, _M_cfile); }
 
-  streamoff
-  __basic_file<char>::seekpos(streamoff __pos, ios_base::openmode /*__mode*/)
-  { return lseek(this->fd(), __pos, ios_base::beg); }
-  
+  streampos
+  __basic_file<char>::seekoff(streamoff off, ios_base::seekdir way, 
+			      ios_base::openmode /*__mode*/)
+  {
+    streampos ret(-1);
+    fpos_t tmp;
+    if (!fseek(_M_cfile, off, way) && !fgetpos(_M_cfile, &tmp))
+      ret = tmp; 
+    return ret;
+  }
+
+  streampos
+  __basic_file<char>::seekpos(streampos pos, ios_base::openmode /*__mode*/)
+  {
+    streampos ret(-1);
+    fpos_t tmp = pos; 
+    if (!fsetpos(_M_cfile, &tmp) && !fgetpos(_M_cfile, &tmp))
+      ret = tmp; 
+    return ret;
+  }
+
   int 
   __basic_file<char>::sync() 
   { return fflush(_M_cfile); }

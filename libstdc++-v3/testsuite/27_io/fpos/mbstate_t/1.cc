@@ -38,11 +38,11 @@ void test01()
   bool test = true;
 
   typedef std::mbstate_t state_type;
-  state_type state01;
-  state_type state02;
+  state_type state01 = state_type();
+  state_type state02 = state_type();
 
-  std::streampos pos01;
-  std::streampos pos02;
+  std::streampos pos01(0);
+  std::streampos pos02(0);
 
   std::streamoff off01;
   std::streamoff off02;
@@ -53,15 +53,16 @@ void test01()
   // 27.4.3.1 fpos members
   // void state(state_type s);
   // state_type state();
-#if 0
-// XXX Need to have some sanity checking for the mbstate_t type, or
-// whatever the insantiating type for class fpos happens to be for
-// streampos, as things like equality operators and assignment
-// operators, increment and deincrement operators need to be in place.
+
+  // XXX Need to have better sanity checking for the mbstate_t type,
+  // or whatever the insantiating type for class fpos happens to be
+  // for streampos, as things like equality operators and assignment
+  // operators, increment and deincrement operators need to be in
+  // place.
   pos01.state(state02);
   state01 = pos01.state();
-  VERIFY( state01 == state02 );
-#endif
+  test = memcmp(&state01, &state02, sizeof(state_type)) == 0;
+  VERIFY( test );
 }
 
 int main() 

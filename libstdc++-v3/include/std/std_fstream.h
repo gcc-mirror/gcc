@@ -218,9 +218,7 @@ namespace std
       */
       virtual
       ~basic_filebuf()
-      {
-	this->close();
-      }
+      { this->close(); }
 
       // Members:
       /**

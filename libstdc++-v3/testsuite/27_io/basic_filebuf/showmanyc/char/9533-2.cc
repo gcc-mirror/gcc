@@ -27,32 +27,28 @@ void test_02()
   using namespace std;
   bool test = true;  
   const char* name = "tmp_file1";
-
   const char* strlit = "0123456789";
   
-  filebuf fbout;
-  fbout.open(name, ios_base::out | ios_base::trunc);
-	
+  filebuf fb;
+
   int written = 0;
+  fb.open(name, ios_base::out | ios_base::trunc);	
   for (int i = 0; i < BUFSIZ; ++i)
-    written += fbout.sputn(strlit, 10);
-
-  fbout.close();
+    written += fb.sputn(strlit, 10);
+  fb.close();
   
-  ifstream in(name);
-  int sum = 0;
-  bool gotsome;
-
+  int read = 0;
+  int n = 0;
+  char buf[10];
+  fb.open(name, ios_base::in);
   do
     {
-      char buf[100];
-      int n = in.readsome(buf, sizeof(buf));
-      gotsome = (n > 0);
-      sum += n;
+      n = fb.sgetn(buf, sizeof(buf));
+      read += n;
     }
-  while (gotsome);
+  while (n);
 
-  VERIFY( sum == written );
+  VERIFY( read == written );
 }
 
 int

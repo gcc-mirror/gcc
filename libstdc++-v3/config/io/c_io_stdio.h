@@ -1,6 +1,6 @@
 // underlying io library  -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,20 +38,19 @@
 
 namespace std 
 {
-// for fpos.h
+  // for fpos.h
   typedef long  	streamoff;
   typedef ptrdiff_t	streamsize; // Signed integral type
 #if _GLIBCPP_USE_WCHAR_T
   typedef ptrdiff_t	wstreamsize;
 #endif
-  typedef fpos_t  	__c_streampos;
 
   typedef __gthread_mutex_t __c_lock;
 
-// for basic_file.h
+  // for basic_file.h
   typedef FILE __c_file;
 
-// for ios_base.h
+  // for ios_base.h
   struct __ios_flags
   {
     typedef short __int_type;
@@ -90,4 +89,4 @@ namespace std
   };
 }
 
-#endif // _CPP_IO_STDIO_H
+#endif

@@ -1,3 +1,38 @@
+2003-07-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (target_headers): Add fpos.h
+	(bits_headers): Remove.
+	* include/Makefile.in: Regenerate.
+	* configure.in: Add FPOS_INC_SRCDIR, substitute it.
+	* configure: Regenerate.
+	* configure.host: Add fpos_include_dir.
+	* config/os/gnu-linux/fpos.h: New.
+	* config/os/generic/fpos.h: Add.	
+	* include/bits/fpos.h: Remove.	
+
+	* config/io/c_io_stdio.h: Remove fpos_t typedef.
+
+	* include/bits/fstream.tcc: Tweaks.
+	* include/std/std_fstream.h: Same.
+	
+	* testsuite/27_io/fpos/1.cc (test01): Uncomment. Move to...
+	* testsuite/27_io/fpos/mbstate_t/1.cc: ...here.
+	* testsuite/27_io/fpos/mbstate_t/2.cc: Same.
+	* testsuite/27_io/fpos/mbstate_t/3.cc: Same.
+	* testsuite/27_io/fpos/1.cc: New.
+	
+2003-07-03  Benjamin Kosnik  <bkoz@redhat.com>
+	    Petur Runolfsson  <peturr02@ru.is>
+	
+	* include/std/std_streambuf.h: Remove _M_pos.
+	* config/io/basic_file_stdio.h: Use seekpos instead of seekoff.
+	* config/io/basic_file_stdio.cc: Same, use fseek instead of lseek,
+	use fread/fwrite instead of read/write.
+	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-2.cc: Fix.
+	* testsuite/27_io/basic_filebuf/sputn/char/9339.cc: Close filebufs
+	before reading again.
+	* testsuite/27_io/objects/char/6.cc: Tweak.
+	
 2003-07-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* testsuite/22_locale/num_put/put/char/7.cc: Guard with
