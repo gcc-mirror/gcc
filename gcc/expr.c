@@ -3250,16 +3250,11 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 
 	  target = gen_rtx_MEM (BLKmode, temp);
 
-	  if (type != 0)
-	    {
-	      set_mem_attributes (target, type, 1);
-	      /* Function incoming arguments may overlap with sibling call
-		 outgoing arguments and we cannot allow reordering of reads
-		 from function arguments with stores to outgoing arguments
-		 of sibling calls.  */
-	      set_mem_alias_set (target, 0);
-	    }
-
+	  /* We do *not* set_mem_attributes here, because incoming arguments
+	     may overlap with sibling call outgoing arguments and we cannot
+	     allow reordering of reads from function arguments with stores
+	     to outgoing arguments of sibling calls.  We do, however, want
+	     to record the alignment of the stack slot.  */
 	  /* ALIGN may well be better aligned than TYPE, e.g. due to
 	     PARM_BOUNDARY.  Assume the caller isn't lying.  */
 	  set_mem_align (target, align);
@@ -3355,15 +3350,15 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 	    addr = memory_address (mode, gen_rtx_PLUS (Pmode, args_addr,
 						       args_so_far));
 	  dest = gen_rtx_MEM (mode, addr);
-	  if (type != 0)
-	    {
-	      set_mem_attributes (dest, type, 1);
-	      /* Function incoming arguments may overlap with sibling call
-		 outgoing arguments and we cannot allow reordering of reads
-		 from function arguments with stores to outgoing arguments
-		 of sibling calls.  */
-	      set_mem_alias_set (dest, 0);
-	    }
+
+	  /* We do *not* set_mem_attributes here, because incoming arguments
+	     may overlap with sibling call outgoing arguments and we cannot
+	     allow reordering of reads from function arguments with stores
+	     to outgoing arguments of sibling calls.  We do, however, want
+	     to record the alignment of the stack slot.  */
+	  /* ALIGN may well be better aligned than TYPE, e.g. due to
+	     PARM_BOUNDARY.  Assume the caller isn't lying.  */
+	  set_mem_align (dest, align);
 
 	  emit_move_insn (dest, x);
 	}
