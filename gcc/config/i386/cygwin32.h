@@ -41,27 +41,27 @@ Boston, MA 02111-1307, USA. */
   -D__cdecl=__attribute__((__cdecl__)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
-/* We have to dynamic link to get to the system dlls,
-   and I've put all of libc and libm and the unix stuff into
-   cygwin.dll, the import library is called 'libcygwin.a' */
+/* We have to dynamic link to get to the system DLLs.  All of libc, libm and
+   the Unix stuff is in cygwin.dll.  The import library is called
+   'libcygwin.a'.  For Windows applications, include more libraries, but
+   always include kernel32.  We'd like to specific subsystem windows to
+   ld, but that doesn't work just yet.  */
 
 #undef LIB_SPEC
-#define LIB_SPEC "-lcygwin"
+#define LIB_SPEC "-lcygwin %{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32"
 
-/* No need for libgcc, it's in the shared library. */
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC ""
+/* Normally, -lgcc is not needed since everything in it is in the DLL, but we
+   want to allow things to be added to it when installing new versions of
+   GCC without making a new CYGWIN.DLL, so we leave it.  */
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!:crt0%O%s}"
+#define STARTFILE_SPEC "crt0%O%s"
 
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 #define WCHAR_UNSIGNED 1
 #define WCHAR_TYPE_SIZE 16
 #define WCHAR_TYPE "short unsigned int"
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 64
 #define HAVE_ATEXIT 1
 
 #undef EXTRA_SECTIONS
