@@ -1,3 +1,10 @@
+2005-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/20282
+	PR bootstrap/20305
+	* macro.c (replace_args, cpp_get_token): Copy whole
+	cpp_token_u instead of just cpp_string field from it.
+
 2005-02-28  Devang Patel  <dpatel@apple.com>
 
 	* directives.c (do_line): Save sysp early before line table is

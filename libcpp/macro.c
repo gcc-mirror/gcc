@@ -886,7 +886,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro, macro_arg
 	{
 	  cpp_token *token = _cpp_temp_token (pfile);
 	  token->type = (*paste_flag)->type;
-	  token->val.str = (*paste_flag)->val.str;
+	  token->val = (*paste_flag)->val;
 	  if (src->flags & PASTE_LEFT)
 	    token->flags = (*paste_flag)->flags | PASTE_LEFT;
 	  else
@@ -1120,7 +1120,7 @@ cpp_get_token (cpp_reader *pfile)
 	  cpp_token *t = _cpp_temp_token (pfile);
 	  t->type = result->type;
 	  t->flags = result->flags | NO_EXPAND;
-	  t->val.str = result->val.str;
+	  t->val = result->val;
 	  result = t;
 	}
 
