@@ -1391,7 +1391,6 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 { "register_is_ok_for_epilogue",{ REG }},				\
 { "pattern_is_ok_for_dispose",	{ PARALLEL }},				\
 { "pattern_is_ok_for_prepare",	{ PARALLEL }},				\
-{ "register_is_ok_for_dispose",	{ REG }},				\
 { "not_power_of_two_operand",	{ CONST_INT }},
   
 #endif /* ! GCC_V850_H */

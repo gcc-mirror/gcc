@@ -47,6 +47,9 @@
 	* config/pa/pa.md: Include predicates.md.
 	* config/pa/predicates.md: New.
 
+	* config/v850/v850.h (PREDICATE_CODES): Remove a nonexistent
+	predicate in PREDICATE_CODES.
+
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* hooks.c, hooks.h, intl.c, opts.h, prefix.c, tree-gimple.c,
