@@ -1,7 +1,0 @@
-# t-interix
-
-# System headers will track gcc's needs.
-USER_H=
-
-LIB1ASMSRC = alpha/lib1funcs.asm
-LIB1ASMFUNCS = _divqu _divq _divlu _divl _remqu _remq _remlu _reml
