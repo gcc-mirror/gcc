@@ -97,7 +97,7 @@ extern int ia64_issue_rate PARAMS ((void));
 extern int ia64_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 extern void ia64_sched_init PARAMS ((FILE *, int, int));
 extern void ia64_sched_finish PARAMS ((FILE *, int));
-extern int ia64_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int));
+extern int ia64_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int, int));
 extern int ia64_sched_reorder2 PARAMS ((FILE *, int, rtx *, int *, int));
 extern int ia64_variable_issue PARAMS ((FILE *, int, rtx, int));
 #endif /* RTX_CODE */

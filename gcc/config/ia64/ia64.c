@@ -4901,6 +4901,7 @@ static void maybe_rotate PARAMS ((FILE *));
 static void finish_last_head PARAMS ((FILE *, int));
 static void rotate_one_bundle PARAMS ((FILE *));
 static void rotate_two_bundles PARAMS ((FILE *));
+static void nop_cycles_until PARAMS ((int, FILE *));
 static void cycle_end_fill_slots PARAMS ((FILE *));
 static int packet_matches_p PARAMS ((const struct ia64_packet *, int, int *));
 static int get_split PARAMS ((const struct ia64_packet *, int));
@@ -5780,16 +5781,125 @@ maybe_rotate (dump)
   sched_data.first_slot = sched_data.cur;
 }
 
+/* The clock cycle when ia64_sched_reorder was last called.  */
+static int prev_cycle;
+
+/* The first insn scheduled in the previous cycle.  This is the saved
+   value of sched_data.first_slot.  */
+static int prev_first;
+
+/* The last insn that has been scheduled.  At the start of a new cycle
+   we know that we can emit new insns after it; the main scheduling code
+   has already emitted a cycle_display insn after it and is using that
+   as its current last insn.  */
+static rtx last_issued;
+
+/* Emit NOPs to fill the delay between PREV_CYCLE and CLOCK_VAR.  Used to
+   pad out the delay between MM (shifts, etc.) and integer operations.  */
+
+static void
+nop_cycles_until (clock_var, dump)
+     int clock_var;
+     FILE *dump;
+{
+  int prev_clock = prev_cycle;
+  int cycles_left = clock_var - prev_clock;
+
+  /* Finish the previous cycle; pad it out with NOPs.  */
+  if (sched_data.cur == 3)
+    {
+      rtx t = gen_insn_group_barrier (GEN_INT (3));
+      last_issued = emit_insn_after (t, last_issued);
+      maybe_rotate (dump);
+    }
+  else if (sched_data.cur > 0)
+    {
+      int need_stop = 0;
+      int split = itanium_split_issue (sched_data.packet, prev_first);
+
+      if (sched_data.cur < 3 && split > 3)
+	{
+	  split = 3;
+	  need_stop = 1;
+	}
+
+      if (split > sched_data.cur)
+	{
+	  int i;
+	  for (i = sched_data.cur; i < split; i++)
+	    {
+	      rtx t;
+
+	      t = gen_nop_type (sched_data.packet->t[i]);
+	      last_issued = emit_insn_after (t, last_issued);
+	      sched_data.types[i] = sched_data.packet->t[sched_data.cur];
+	      sched_data.insns[i] = last_issued;
+	      sched_data.stopbit[i] = 0;
+	    }
+	  sched_data.cur = split;
+	}
+
+      if (! need_stop && sched_data.cur > 0 && sched_data.cur < 6
+	  && cycles_left > 1)
+	{
+	  int i;
+	  for (i = sched_data.cur; i < 6; i++)
+	    {
+	      rtx t;
+
+	      t = gen_nop_type (sched_data.packet->t[i]);
+	      last_issued = emit_insn_after (t, last_issued);
+	      sched_data.types[i] = sched_data.packet->t[sched_data.cur];
+	      sched_data.insns[i] = last_issued;
+	      sched_data.stopbit[i] = 0;
+	    }
+	  sched_data.cur = 6;
+	  cycles_left--;
+	  need_stop = 1;
+	}
+
+      if (need_stop || sched_data.cur == 6)
+	{
+	  rtx t = gen_insn_group_barrier (GEN_INT (3));
+	  last_issued = emit_insn_after (t, last_issued);
+	}
+      maybe_rotate (dump);
+    }
+
+  cycles_left--;
+  while (cycles_left > 0)
+    {
+      rtx t = gen_bundle_selector (GEN_INT (0));
+      last_issued = emit_insn_after (t, last_issued);
+      t = gen_nop_type (TYPE_M);
+      last_issued = emit_insn_after (t, last_issued);
+      t = gen_nop_type (TYPE_I);
+      last_issued = emit_insn_after (t, last_issued);
+      if (cycles_left > 1)
+	{
+	  t = gen_insn_group_barrier (GEN_INT (2));
+	  last_issued = emit_insn_after (t, last_issued);
+	  cycles_left--;
+	}
+      t = gen_nop_type (TYPE_I);
+      last_issued = emit_insn_after (t, last_issued);
+      t = gen_insn_group_barrier (GEN_INT (3));
+      last_issued = emit_insn_after (t, last_issued);
+      cycles_left--;
+    }
+}
+
 /* We are about to being issuing insns for this clock cycle.
    Override the default sort algorithm to better slot instructions.  */
 
 int
-ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
+ia64_sched_reorder (dump, sched_verbose, ready, pn_ready,
+		    reorder_type, clock_var)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
      rtx *ready;
      int *pn_ready;
-     int reorder_type;
+     int reorder_type, clock_var;
 {
   int n_ready = *pn_ready;
   rtx *e_ready = ready + n_ready;
@@ -5801,6 +5911,38 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
       fprintf (dump, "// ia64_sched_reorder (type %d):\n", reorder_type);
       dump_current_packet (dump);
     }
+
+  if (reorder_type == 0 && clock_var > 0 && ia64_final_schedule)
+    {
+      for (insnp = ready; insnp < e_ready; insnp++)
+	{
+	  rtx insn = *insnp;
+	  enum attr_itanium_class t = ia64_safe_itanium_class (insn);
+	  if (t == ITANIUM_CLASS_IALU || t == ITANIUM_CLASS_ISHF
+	      || t == ITANIUM_CLASS_ILOG
+	      || t == ITANIUM_CLASS_LD || t == ITANIUM_CLASS_ST)
+	    {
+	      rtx link;
+	      for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+		if (REG_NOTE_KIND (link) != REG_DEP_OUTPUT
+		    && REG_NOTE_KIND (link) != REG_DEP_ANTI)
+		  {
+		    rtx other = XEXP (link, 0);
+		    enum attr_itanium_class t0 = ia64_safe_itanium_class (other);
+		    if (t0 == ITANIUM_CLASS_MMSHF
+			|| t0 == ITANIUM_CLASS_MMMUL)
+		      {
+			nop_cycles_until (clock_var, sched_verbose ? dump : NULL);
+			goto out;
+		      }
+		  }
+	    }
+	}
+    }
+ out:
+
+  prev_first = sched_data.first_slot;
+  prev_cycle = clock_var;
 
   if (reorder_type == 0)
     maybe_rotate (sched_verbose ? dump : NULL);
@@ -5893,7 +6035,7 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
      int sched_verbose ATTRIBUTE_UNUSED;
      rtx *ready;
      int *pn_ready;
-     int clock_var ATTRIBUTE_UNUSED;
+     int clock_var;
 {
   if (sched_data.last_was_stop)
     return 0;
@@ -5977,7 +6119,8 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
 
   if (*pn_ready > 0)
     {
-      int more = ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, 1);
+      int more = ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, 1,
+				     clock_var);
       if (more)
 	return more;
       /* Did we schedule a stop?  If so, finish this cycle.  */
@@ -6005,6 +6148,8 @@ ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
      int can_issue_more ATTRIBUTE_UNUSED;
 {
   enum attr_type t = ia64_safe_type (insn);
+
+  last_issued = insn;
 
   if (sched_data.last_was_stop)
     {

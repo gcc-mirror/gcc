@@ -1,3 +1,16 @@
+2001-04-20  Bernd Schmidt  <bernds@redhat.com>
+
+	* ia64.h (MD_SCHED_REORDER, MD_SCHED_REORDER2): Pass CLOCK to called
+	function.
+	* ia64-protos.h (ia64_sched_reorder): Additional arg for clock.
+	* ia64.c (nop_cycles_until): New function.
+	(prev_cycle, prev_first, last_issued): New static variables.
+	(ia64_sched_reorder): Additional arg for clock.
+	On final scheduling pass, emit extra NOPs as needed.
+	Set prev_first and prev_cycle.
+	(ia64_sched_reorder2): Pass clock arg down to ia64_sched_reorder.
+	(ia64_variable_issue): Set last_issued.
+
 2001-04-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_int_movcc,
