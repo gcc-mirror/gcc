@@ -168,6 +168,14 @@ extern int target_flags;
   ((GET_CODE (X) == PLUS ? OFFSET : 0) \
     + (frame_pointer_needed ? 0 : compute_frame_size (get_frame_size (), 0)))
 
+/* gdb needs a null N_SO at the end of each file for scattered loading. */
+
+#undef	DBX_OUTPUT_MAIN_SOURCE_FILE_END
+#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
+  fprintf (FILE,							\
+	   "%s\t.text\n\t.stabs \"%s\",%d,0,0,L$text_end\nL$text_end:\n",\
+	   TEXT_SECTION_ASM_OP, "" , N_SO)
+
 #if (TARGET_DEFAULT & 1) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
@@ -1774,19 +1782,6 @@ readonly_data ()							\
 	 fputs (",CODE\n", FILE);				\
        else							\
 	 fputs (",DATA\n", FILE);				\
-     } while (0)
-
-/* hpux ld doesn't output the object file name, or anything useful at
-   all, to indicate the start of an object file's symbols. This screws
-   up gdb, so we'll output this magic cookie at the end of an object
-   file with debugging symbols */
-
-#define ASM_FILE_END(FILE) \
-  do { if (write_symbols == DBX_DEBUG)\
-	 { fputs (TEXT_SECTION_ASM_OP, FILE);\
-	   fputs ("\t.stabs \"end_file.\",4,0,0,Ltext_end\nLtext_end:\n",\
-		  (FILE));\
-	 }\
      } while (0)
 
 /* The bogus HP assembler requires ALL external references to be
