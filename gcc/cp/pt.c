@@ -3988,6 +3988,8 @@ mark_decl_instantiated (result, extern_p)
     {
       DECL_INTERFACE_KNOWN (result) = 1;
       DECL_NOT_REALLY_EXTERN (result) = 1;
+      if (supports_one_only () && ! SUPPORTS_WEAK)
+	comdat_linkage (result);
     }
   else if (TREE_CODE (result) == FUNCTION_DECL)
     mark_inline_for_output (result);
@@ -4397,7 +4399,8 @@ do_type_instantiation (t, storage)
 
     if (! static_p)
       for (tmp = TYPE_METHODS (t); tmp; tmp = TREE_CHAIN (tmp))
-	if (DECL_TEMPLATE_INSTANTIATION (tmp))
+	if (TREE_CODE (t) == FUNCTION_DECL
+	    && DECL_TEMPLATE_INSTANTIATION (tmp))
 	  {
 	    mark_decl_instantiated (tmp, extern_p);
 	    repo_template_instantiated (tmp, extern_p);
