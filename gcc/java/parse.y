@@ -7524,7 +7524,7 @@ patch_invoke (patch, method, args)
 
 	case INVOKE_INTERFACE:
 	  dtable = invoke_build_dtable (1, args);
-	  func = build_invokeinterface (dtable, DECL_NAME (method), signature);
+	  func = build_invokeinterface (dtable, method);
 	  break;
 
 	default:

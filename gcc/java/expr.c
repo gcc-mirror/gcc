@@ -1648,11 +1648,15 @@ build_invokevirtual (dtable, method)
 }
 
 tree
-build_invokeinterface (dtable, method_name, method_signature)
-     tree dtable, method_name, method_signature;
+build_invokeinterface (dtable, method)
+     tree dtable, method;
 {
   static tree class_ident = NULL_TREE;
   tree lookup_arg;
+  tree interface;
+  tree idx;
+  tree meth;
+  int i;
 
   /* We expand invokeinterface here.  _Jv_LookupInterfaceMethod() will
      ensure that the selected method exists, is public and not
@@ -1664,14 +1668,25 @@ build_invokeinterface (dtable, method_name, method_signature)
   dtable = build1 (INDIRECT_REF, dtable_type, dtable);
   dtable = build (COMPONENT_REF, class_ptr_type, dtable,
 		  lookup_field (&dtable_type, class_ident));
-  lookup_arg = build_tree_list (NULL_TREE, 
-				(build_utf8_ref 
-				 (unmangle_classname
-				  (IDENTIFIER_POINTER(method_signature),
-				   IDENTIFIER_LENGTH(method_signature)))));
+
+  interface = DECL_CONTEXT (method);
+  
+  i = 1;
+  for (meth = TYPE_METHODS (interface); ; meth = TREE_CHAIN (meth), i++)
+    {
+      if (meth == method)
+        {
+	  idx = build_int_2 (i, 0);
+	  break;
+	}
+      if (meth == NULL_TREE)
+        fatal ("internal error in build_invokeinterface");
+    }
+
   lookup_arg = tree_cons (NULL_TREE, dtable,
-			  tree_cons (NULL_TREE, build_utf8_ref (method_name),
-				     lookup_arg));
+                          tree_cons (NULL_TREE, build_class_ref (interface),
+			             build_tree_list (NULL_TREE, idx)));
+				     			  
   return build (CALL_EXPR, ptr_type_node, 
 		build_address_of (soft_lookupinterfacemethod_node),
 		lookup_arg, NULL_TREE);
@@ -1770,7 +1785,7 @@ expand_invoke (opcode, method_ref_index, nargs)
       if (opcode == OPCODE_invokevirtual)
 	func = build_invokevirtual (dtable, method);
       else
-	func = build_invokeinterface (dtable, method_name, method_signature);
+	func = build_invokeinterface (dtable, method);
     }
   func = build1 (NOP_EXPR, build_pointer_type (method_type), func);
   call = build (CALL_EXPR, TREE_TYPE (method_type), func, arg_list, NULL_TREE);
