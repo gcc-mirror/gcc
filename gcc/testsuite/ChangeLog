@@ -1,3 +1,7 @@
+2003-03-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20030321-1.c: New test.
+
 2003-03-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/Wshadow-1.c: Add a dg-warning line.
