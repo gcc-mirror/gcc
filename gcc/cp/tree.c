@@ -2317,18 +2317,24 @@ mark_local_for_remap_r (tp, walk_subtrees, data)
 {
   tree t = *tp;
   splay_tree st = (splay_tree) data;
+  tree decl;
 
-  if ((TREE_CODE (t) == DECL_STMT
-       && nonstatic_local_decl_p (DECL_STMT_DECL (t)))
-      || TREE_CODE (t) == LABEL_STMT)
+  
+  if (TREE_CODE (t) == DECL_STMT
+      && nonstatic_local_decl_p (DECL_STMT_DECL (t)))
+    decl = DECL_STMT_DECL (t);
+  else if (TREE_CODE (t) == LABEL_STMT)
+    decl = LABEL_STMT_LABEL (t);
+  else if (TREE_CODE (t) == TARGET_EXPR
+	   && nonstatic_local_decl_p (TREE_OPERAND (t, 0)))
+    decl = TREE_OPERAND (t, 0);
+  else
+    decl = NULL_TREE;
+
+  if (decl)
     {
-      tree decl;
       tree copy;
 
-      /* Figure out what's being declared.  */
-      decl = (TREE_CODE (t) == DECL_STMT
-	      ? DECL_STMT_DECL (t) : LABEL_STMT_LABEL (t));
-      
       /* Make a copy.  */
       copy = copy_decl_for_inlining (decl, 
 				     DECL_CONTEXT (decl), 
@@ -2344,7 +2350,7 @@ mark_local_for_remap_r (tp, walk_subtrees, data)
 }
 
 /* Called via walk_tree when an expression is unsaved.  Using the
-   splay_tree pointed to by ST (which is really a `splay_tree *'),
+   splay_tree pointed to by ST (which is really a `splay_tree'),
    remaps all local declarations to appropriate replacements.  */
 
 static tree
