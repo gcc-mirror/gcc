@@ -222,7 +222,7 @@ static const char * rs6000_xcoff_strip_name_encoding PARAMS ((const char *));
 #endif
 static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
      ATTRIBUTE_UNUSED;
-static void rs6000_binds_local_p PARAMS ((tree));
+static bool rs6000_binds_local_p PARAMS ((tree));
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
 static int rs6000_issue_rate PARAMS ((void));
@@ -9503,8 +9503,14 @@ function_ok_for_sibcall (fndecl)
 	    }
         }
       if (DEFAULT_ABI == ABI_DARWIN
-	  || (TREE_ASM_WRITTEN (fndecl) && !flag_pic) || !TREE_PUBLIC (fndecl))
-        return 1;
+	  || (*targetm.binds_local_p) (fndecl))
+	{
+	  tree attr_list = TYPE_ATTRIBUTES (TREE_TYPE (fndecl));
+
+	  if (!lookup_attribute ("longcall", attr_list)
+	      || lookup_attribute ("shortcall", attr_list))
+	    return 1;
+	}
     }
   return 0;
 }
@@ -13207,13 +13213,13 @@ rs6000_xcoff_encode_section_info (decl, first)
 /* Cross-module name binding.  For AIX and PPC64 Linux, which always are
    PIC, use private copy of flag_pic.  */
 
-static void
+static bool
 rs6000_binds_local_p (decl)
      tree decl;
 {
   if (DEFAULT_ABI == ABI_AIX)
-    default_binds_local_p_1 (decl, rs6000_flag_pic);
+    return default_binds_local_p_1 (decl, rs6000_flag_pic);
   else
-    default_binds_local_p_1 (decl, flag_pic);
+    return default_binds_local_p_1 (decl, flag_pic);
 }
 
