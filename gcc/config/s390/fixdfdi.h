@@ -43,6 +43,7 @@ union double_long {
     UDItype_x ll;
 };
 
+UDItype_x __fixunsdfdi (double a1);
 
 /* convert double to unsigned int */
 UDItype_x
@@ -114,6 +115,8 @@ union double_long {
     UDItype_x ll;
 };
 
+DItype_x __fixdfdi (double a1);
+
 /* convert double to int */
 DItype_x
 __fixdfdi (double a1)
@@ -184,6 +187,8 @@ union float_long
     USItype_x l;
   };
 
+UDItype_x __fixunssfdi (float a1);
+
 /* convert float to unsigned int */
 UDItype_x
 __fixunssfdi (float a1)
@@ -249,6 +254,8 @@ union float_long
     float f;
     USItype_x l;
   };
+
+DItype_x __fixsfdi (float a1);
 
 /* convert double to int */
 DItype_x

@@ -605,7 +605,7 @@ s390_single_hi (op, mode, def)
 {
   if (GET_CODE (op) == CONST_INT)
     {
-      unsigned HOST_WIDE_INT value;
+      unsigned HOST_WIDE_INT value = 0;
       int n_parts = GET_MODE_SIZE (mode) / 2;
       int i, part = -1;
 
@@ -631,7 +631,7 @@ s390_single_hi (op, mode, def)
   else if (GET_CODE (op) == CONST_DOUBLE
            && GET_MODE (op) == VOIDmode)
     {
-      unsigned HOST_WIDE_INT value;
+      unsigned HOST_WIDE_INT value = 0;
       int n_parts = GET_MODE_SIZE (mode) / 2;
       int i, part = -1;
 
@@ -708,7 +708,7 @@ s390_single_qi (op, mode, def)
 {
   if (GET_CODE (op) == CONST_INT)
     {
-      unsigned HOST_WIDE_INT value;
+      unsigned HOST_WIDE_INT value = 0;
       int n_parts = GET_MODE_SIZE (mode);
       int i, part = -1;
 
@@ -734,7 +734,7 @@ s390_single_qi (op, mode, def)
   else if (GET_CODE (op) == CONST_DOUBLE
            && GET_MODE (op) == VOIDmode)
     {
-      unsigned HOST_WIDE_INT value;
+      unsigned HOST_WIDE_INT value = 0;
       int n_parts = GET_MODE_SIZE (mode);
       int i, part = -1;
 
@@ -4370,6 +4370,31 @@ s390_machine_dependent_reorg (first)
 }
 
 
+/* Return an RTL expression representing the value of the return address
+   for the frame COUNT steps up from the current frame.  FRAME is the
+   frame pointer of that frame.  */
+
+rtx
+s390_return_addr_rtx (count, frame)
+     int count;
+     rtx frame;
+{
+  rtx addr;
+
+  /* For the current frame, we use the initial value of RETURN_REGNUM.
+     This works both in leaf and non-leaf functions.  */
+
+  if (count == 0)
+    return get_hard_reg_initial_val (Pmode, RETURN_REGNUM);
+
+  /* For frames farther back, we read the stack slot where the
+     corresponding RETURN_REGNUM value was saved.  */
+
+  addr = plus_constant (frame, RETURN_REGNUM * UNITS_PER_WORD);
+  addr = memory_address (Pmode, addr);
+  return gen_rtx_MEM (Pmode, addr);
+} 
+
 /* Find first call clobbered register unsused in a function.
    This could be used as base register in a leaf function
    or for holding the return address before epilogue.  */
@@ -4794,7 +4819,7 @@ s390_emit_epilogue ()
 {
   struct s390_frame frame;
   rtx frame_pointer, return_reg;
-  int area_bottom, area_top, offset;
+  int area_bottom, area_top, offset = 0;
   rtvec p;
 
   /* Compute frame_info.  */
@@ -4916,7 +4941,7 @@ s390_emit_epilogue ()
 	  if (i == STACK_POINTER_REGNUM 
               || i == RETURN_REGNUM
               || i == BASE_REGISTER 
-              || (flag_pic && i == PIC_OFFSET_TABLE_REGNUM))
+              || (flag_pic && i == (int)PIC_OFFSET_TABLE_REGNUM))
 	    continue;
 
 	  if (global_regs[i])

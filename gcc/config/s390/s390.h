@@ -370,9 +370,9 @@ do								\
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)                             \
   (FLOAT_REGNO_P(REGNO)?                                            \
-   (GET_MODE_CLASS(MODE) == MODE_FLOAT ||                           \
-    GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT ||                   \
-    (MODE) == SImode || (MODE) == DImode) :                         \
+   ((MODE) == SImode || (MODE) == DImode ||                         \
+    GET_MODE_CLASS(MODE) == MODE_FLOAT ||                           \
+    GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT) :                   \
    INT_REGNO_P(REGNO)?                                              \
     (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1)) :        \
    CC_REGNO_P(REGNO)?                                               \
@@ -599,11 +599,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER]; /* smalled clas
    plus_constant (arg_pointer_rtx, -STACK_POINTER_OFFSET))
      
 #define RETURN_ADDR_RTX(COUNT, FRAME)						\
-  ((COUNT) == 0 ? get_hard_reg_initial_val (Pmode, RETURN_REGNUM) :		\
-   gen_rtx_MEM (Pmode,								\
-                memory_address (Pmode, 						\
-                                plus_constant (DYNAMIC_CHAIN_ADDRESS ((FRAME)),	\
-                                               RETURN_REGNUM * UNITS_PER_WORD))))
+  s390_return_addr_rtx ((COUNT), DYNAMIC_CHAIN_ADDRESS ((FRAME)))
 
 /* The following macros will turn on dwarf2 exception hndling
    Other code location for this exception handling are 
