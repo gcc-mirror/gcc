@@ -4967,7 +4967,7 @@ rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   int gregno = cum->sysv_gregno;
 
   /* On E500 v2, double arithmetic is done on the full 64-bit GPR, but
-     are passed and returned in a pair of GPRs for ABI compatability.  */
+     are passed and returned in a pair of GPRs for ABI compatibility.  */
   if (TARGET_E500_DOUBLE && mode == DFmode)
     {
       /* Doubles go in an odd/even register pair (r5/r6, etc).  */
