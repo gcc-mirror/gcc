@@ -24,30 +24,18 @@ Boston, MA 02111-1307, USA.  */
 /* these are different... */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
-	"%{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}} %{static:-static}"
+"%{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}} %{static:-static}"
 
 #undef ASM_APP_ON
 #undef ASM_APP_OFF
 #undef COMMENT_BEGIN
  
 /* We default to ARM3.  */
-#define __DEFAULT_CPP "-D__arm3__"
-#define __DEFAULT_ASM "-marm3"
-#define __DEFAULT_MLB "m3"
+#define TARGET_CPU_DEFAULT TARGET_CPU_arm3
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-	"-Dunix -Darm -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(arm) -Amachine(arm)"
-
-#undef CPP_SPEC
-#define CPP_SPEC \
-	"%{m2:-D__arm2__} %{m3:-D__arm3__} %{m6:-D__arm6__} %{m7:-D__arm7__} " \
-	"%{!m2:%{!m3:%{!m6:%{!m7:" __DEFAULT_CPP "}}}} %{posix:-D_POSIX_SOURCE}"
-
-#undef ASM_SPEC
-#define ASM_SPEC \
-	"%{m2:-marm2} %{m3:-marm3} %{m6:-marm6} %{m7:-marm7} " \
-	"%{!m2:%{!m3:%{!m6:%{!m7:" __DEFAULT_ASM "}}}}"
+"-Dunix -Darm -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(arm) -Amachine(arm)"
 
 #undef LIB_SPEC
 #define LIB_SPEC \
@@ -79,7 +67,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Maths operation domain error number, EDOM */
 #define TARGET_EDOM 33
-#include "arm/arm.h"
+#include "arm/aout.h"
 
-#undef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS { __DEFAULT_MLB }
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC  "%{posix:-D_POSIX_SOURCE}"
