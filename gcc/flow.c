@@ -306,7 +306,6 @@ static void commit_one_edge_insertion	PARAMS ((edge));
 static void delete_unreachable_blocks	PARAMS ((void));
 static void delete_eh_regions		PARAMS ((void));
 static int can_delete_note_p		PARAMS ((rtx));
-static int delete_block			PARAMS ((basic_block));
 static void expunge_block		PARAMS ((basic_block));
 static int can_delete_label_p		PARAMS ((rtx));
 static int merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
@@ -1749,7 +1748,7 @@ delete_unreachable_blocks ()
     }
 
   /* Delete all unreachable basic blocks.  Count down so that we don't
-     interfere with the block renumbering that happens in delete_block.  */
+     interfere with the block renumbering that happens in flow_delete_block. */
 
   deleted_handler = 0;
 
@@ -1761,7 +1760,7 @@ delete_unreachable_blocks ()
 	/* This block was found.  Tidy up the mark.  */
 	b->aux = NULL;
       else
-	deleted_handler |= delete_block (b);
+	deleted_handler |= flow_delete_block (b);
     }
 
   tidy_fallthru_edges ();
@@ -1849,8 +1848,8 @@ flow_delete_insn_chain (start, finish)
 /* ??? Preserving all such notes strikes me as wrong.  It would be nice
    to post-process the stream to remove empty blocks, loops, ranges, etc.  */
 
-static int
-delete_block (b)
+int
+flow_delete_block (b)
      basic_block b;
 {
   int deleted_handler = 0;
