@@ -239,8 +239,8 @@ static int rs6000_sr_alias_set;
 int rs6000_default_long_calls;
 const char *rs6000_longcall_switch;
 
-/* Control alignment for fields within structures. */
-/* String from -malign-XXXXX. */
+/* Control alignment for fields within structures.  */
+/* String from -malign-XXXXX.  */
 const char *rs6000_alignment_string;
 int rs6000_alignment_flags;
 
@@ -2129,7 +2129,7 @@ and64_operand (rtx op, enum machine_mode mode)
 int
 and64_2_operand (rtx op, enum machine_mode mode)
 {
-  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis. */
+  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis.  */
     return gpc_reg_operand (op, mode) || mask64_2_operand (op, mode);
 
   return logical_operand (op, mode) || mask64_2_operand (op, mode);
@@ -4040,7 +4040,7 @@ rs6000_mixed_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       else if (align_words + RS6000_ARG_SIZE (mode, type)
 	       > GP_ARG_NUM_REG)
 	/* If this is partially on the stack, then we only
-	   include the portion actually in registers here. */
+	   include the portion actually in registers here.  */
 	return gen_rtx_PARALLEL (DFmode,
 		 gen_rtvec (2,   
 			    gen_rtx_EXPR_LIST (VOIDmode,
@@ -4696,7 +4696,7 @@ rs6000_va_arg (tree valist, tree type)
       sav_scale = 4;
     }
 
-  /* Pull the value out of the saved registers ...  */
+  /* Pull the value out of the saved registers....  */
 
   lab_false = gen_label_rtx ();
   lab_over = gen_label_rtx ();
@@ -9734,7 +9734,7 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
     s += sprintf (s, "{b%s|b%s%s} ", ccode, ccode, pred);
 
   /* We need to escape any '%' characters in the reg_names string.
-     Assume they'd only be the first character...  */
+     Assume they'd only be the first character....  */
   if (reg_names[cc_regno + CR0_REGNO][0] == '%')
     *s++ = '%';
   s += sprintf (s, "%s", reg_names[cc_regno + CR0_REGNO]);
@@ -9767,7 +9767,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   enum machine_mode result_mode = GET_MODE (dest);
   rtx temp;
 
-  /* These modes should always match. */
+  /* These modes should always match.  */
   if (GET_MODE (op1) != compare_mode
       /* In the isel case however, we can use a compare immediate, so
 	 op1 may be a small constant.  */
@@ -9779,7 +9779,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
     return 0;
 
   /* First, work out if the hardware can do this at all, or
-     if it's too slow...  */
+     if it's too slow....  */
   if (! rs6000_compare_fp_p)
     {
       if (TARGET_ISEL)
@@ -10892,7 +10892,7 @@ rs6000_ra_ever_killed (void)
   /* regs_ever_live has LR marked as used if any sibcalls are present,
      but this should not force saving and restoring in the
      pro/epilogue.  Likewise, reg_set_between_p thinks a sibcall
-     clobbers LR, so that is inappropriate. */
+     clobbers LR, so that is inappropriate.  */
 
   /* Also, the prologue can generate a store into LR that
      doesn't really count, like this:
@@ -11966,7 +11966,7 @@ rs6000_output_function_prologue (FILE *file,
       rs6000_emit_prologue ();
       emit_note (NOTE_INSN_DELETED);
 
-      /* Expand INSN_ADDRESSES so final() doesn't crash. */
+      /* Expand INSN_ADDRESSES so final() doesn't crash.  */
       {
 	rtx insn;
 	unsigned addr = 0;
@@ -12398,7 +12398,7 @@ rs6000_output_function_epilogue (FILE *file,
 	  rs6000_emit_epilogue (FALSE);
 	  emit_note (NOTE_INSN_DELETED);
 
-	  /* Expand INSN_ADDRESSES so final() doesn't crash. */
+	  /* Expand INSN_ADDRESSES so final() doesn't crash.  */
 	  {
 	    rtx insn;
 	    unsigned addr = 0;
@@ -13481,7 +13481,7 @@ output_function_profiler (FILE *file, int labelno)
     case ABI_DARWIN:
       if (!TARGET_PROFILE_KERNEL)
 	{
-	  /* Don't do anything, done in output_profile_hook (). */
+	  /* Don't do anything, done in output_profile_hook ().  */
 	}
       else
 	{
@@ -13691,7 +13691,7 @@ is_cracked_insn (rtx insn)
 }
 
 /* The function returns true if INSN can be issued only from
-   the branch slot. */
+   the branch slot.  */
 
 static bool
 is_branch_slot_insn (rtx insn)
@@ -14965,7 +14965,7 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
       if (GET_CODE (XEXP (orig, 0)) == PLUS)
 	{
 	  /* Use a different reg for the intermediate value, as
-	     it will be marked UNCHANGING. */
+	     it will be marked UNCHANGING.  */
 	  rtx reg_temp = no_new_pseudos ? reg : gen_reg_rtx (Pmode);
 
 	  base =
@@ -15544,7 +15544,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
       return true;
 
     case MEM:
-      /* MEM should be slightly more expensive than (plus (reg) (const)) */
+      /* MEM should be slightly more expensive than (plus (reg) (const)).  */
       *total = 5;
       return true;
 
@@ -15571,7 +15571,7 @@ rs6000_register_move_cost (enum machine_mode mode,
 	return (rs6000_memory_move_cost (mode, from, 0)
 		+ rs6000_memory_move_cost (mode, GENERAL_REGS, 0));
 
-/* It's more expensive to move CR_REGS than CR0_REGS because of the shift...*/
+/* It's more expensive to move CR_REGS than CR0_REGS because of the shift....  */
       else if (from == CR_REGS)
 	return 4;
 
