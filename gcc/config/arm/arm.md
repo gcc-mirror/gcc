@@ -2139,14 +2139,12 @@
 [(set_attr "length" "8")])
 
 (define_insn "zero_extendqidi2"
-  [(set (match_operand:DI 0 "s_register_operand" "=r,r")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+	(zero_extend:DI (match_operand:QI 1 "s_register_operand" "r")))]
   ""
-  "@
-   and%?\\t%Q0, %1, #255\;mov%?\\t%R0, #0
-   ldr%?b\\t%Q0, %1\;mov%?\\t%R0, #0"
+  "and%?\\t%Q0, %1, #255\;mov%?\\t%R0, #0"
 [(set_attr "length" "8")
- (set_attr "type" "*,load")])
+ (set_attr "type" "*")])
 
 (define_insn "extendsidi2"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
