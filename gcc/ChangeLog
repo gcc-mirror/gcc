@@ -1,3 +1,8 @@
+Mon Nov 16 04:41:41 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* function.c (purge_addressof_1): Unshare rtl created by
+	store_bit_field.
+
 Mon Nov 16 04:23:06 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regmove.c (regmove_optimize): Don't do anything but
