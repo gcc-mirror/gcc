@@ -529,13 +529,36 @@ gen_lowpart_common (mode, x)
      from the low-order part of the constant.  */
   else if (GET_MODE_CLASS (mode) == MODE_INT && GET_MODE (x) == VOIDmode
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE))
-    return (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_INT ? x
-	    : (GET_MODE_BITSIZE (mode) == HOST_BITS_PER_INT
-	       && GET_CODE (x) == CONST_INT) ? x
-	    : gen_rtx (CONST_INT, VOIDmode,
-		       (GET_MODE_MASK (mode)
-			& (GET_CODE (x) == CONST_INT
-			   ? INTVAL (x) : CONST_DOUBLE_LOW (x)))));
+    {
+      /* If MODE is twice the host word size, X is already the desired
+	 representation.  Otherwise, if MODE is wider than a word, we can't
+	 do this.  If MODE is exactly a word, return just one CONST_INT.
+	 If MODE is smaller than a word, clear the bits that don't belong
+	 in our mode, unless they and our sign bit are all one.  So we get
+	 either a reasonable negative value or a reasonable unsigned value
+	 for this mode.  */
+
+      if (GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_INT)
+	return x;
+      else if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_INT)
+	return 0;
+      else if (GET_MODE_BITSIZE (mode) == HOST_BITS_PER_INT)
+	return (GET_CODE (x) == CONST_INT ? x
+		: gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (x)));
+      else
+	{
+	  /* MODE must be narrower than HOST_BITS_PER_INT.  */
+	  int width = GET_MODE_BITSIZE (mode);
+	  int val = (GET_CODE (x) == CONST_INT ? INTVAL (x)
+		     : CONST_DOUBLE_LOW (x));
+
+	  if (((val & ((-1) << (width - 1))) != ((-1) << (width - 1))))
+	    val &= (1 << width) - 1;
+
+	  return (GET_CODE (x) == CONST_INT && INTVAL (x) == val ? x
+		  : gen_rtx (CONST_INT, VOIDmode, val));
+	}
+    }
 
   /* Otherwise, we can't do this.  */
   return 0;
