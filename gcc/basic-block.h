@@ -274,7 +274,7 @@ struct loop
   int invalid;
 
   /* Auxiliary info specific to a pass.  */
-  void *info;
+  void *aux;
 
   /* The following are currently used by loop.c but they are likely to
      disappear as loop.c is converted to use the CFG.  */

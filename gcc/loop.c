@@ -467,7 +467,7 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   /* Allocate and initialize auxiliary loop information.  */
   loops_info = xcalloc (loops->num, sizeof (struct loop_info));
   for (i = 0; i < loops->num; i++)
-    loops->array[i].info = loops_info + i;
+    loops->array[i].aux = loops_info + i;
 
   /* Now find all register lifetimes.  This must be done after
      find_and_verify_loops, because it might reorder the insns in the
@@ -590,7 +590,7 @@ scan_loop (loop, unroll_p, bct_p)
   register int i;
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
-  struct loop_info *loop_info = loop->info;
+  struct loop_info *loop_info = LOOP_INFO (loop);
   rtx p;
   /* 1 if we are scanning insns that could be executed zero times.  */
   int maybe_never = 0;
@@ -2366,7 +2366,7 @@ constant_high_bytes (p, loop_start)
 #endif
 
 /* Scan a loop setting the elements `cont', `vtop', `loops_enclosed',
-   `has_call', `has_volatile', and `has_tablejump' within LOOP_INFO.
+   `has_call', `has_volatile', and `has_tablejump' within LOOP.
    Set the global variables `unknown_address_altered',
    `unknown_constant_address_altered', and `num_mem_sets'.  Also, fill
    in the array `loop_mems' and the list `loop_store_mems'.  */
@@ -2377,7 +2377,7 @@ prescan_loop (loop)
 {
   register int level = 1;
   rtx insn;
-  struct loop_info *loop_info = loop->info;
+  struct loop_info *loop_info = LOOP_INFO (loop);
   rtx start = loop->start;
   rtx end = loop->end;
   /* The label after END.  Jumping here is just like falling off the
@@ -3716,7 +3716,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
   int past_loop_latch = 0;
   /* Temporary list pointers for traversing loop_iv_list.  */
   struct iv_class *bl, **backbl;
-  struct loop_info *loop_info = loop->info;
+  struct loop_info *loop_info = LOOP_INFO (loop);
   /* Ratio of extra register life span we can justify
      for saving an instruction.  More if loop doesn't call subroutines
      since in that case saving an insn makes more difference
@@ -7854,7 +7854,7 @@ check_dbra_loop (loop, insn_count)
   int compare_and_branch;
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
-  struct loop_info *loop_info = loop->info;
+  struct loop_info *loop_info = LOOP_INFO (loop);
 
   /* If last insn is a conditional branch, and the insn before tests a
      register value, try to optimize it.  Otherwise, we can't do anything.  */
@@ -9278,7 +9278,7 @@ insert_bct (loop)
   unsigned HOST_WIDE_INT n_iterations;
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
-  struct loop_info *loop_info = loop->info;  
+  struct loop_info *loop_info = LOOP_INFO (loop);  
   int loop_num = loop->num;
 
 #if 0
@@ -9374,7 +9374,7 @@ insert_bct (loop)
       /* Mark all enclosing loops that they cannot use count register.  */
       for (outer_loop = loop; outer_loop; outer_loop = outer_loop->outer)
 	{
-	  outer_loop_info = outer_loop->info;
+	  outer_loop_info = LOOP_INFO (outer_loop);
 	  outer_loop_info->used_count_register = 1;
 	}
       instrument_loop_bct (loop_start, loop_end, GEN_INT (n_iterations));
