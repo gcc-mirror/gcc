@@ -46,7 +46,10 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "intl.h"
+#include "version.h"
 #undef abort
+
+#include <getopt.h>
 
 typedef HOST_WIDEST_INT gcov_type;
 #include "gcov-io.h"
@@ -78,8 +81,6 @@ typedef HOST_WIDEST_INT gcov_type;
 
 /* The functions in this file for creating and solution program flow graphs
    are very similar to functions in the gcc source file profile.c.  */
-
-static const char gcov_version_string[] = "GNU gcov version 1.5\n";
 
 /* This is the size of the buffer used to read in source file lines.  */
 
@@ -227,7 +228,8 @@ static void open_files PARAMS ((void));
 static void read_files PARAMS ((void));
 static void scan_for_source_files PARAMS ((void));
 static void output_data PARAMS ((void));
-static void print_usage PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void print_usage PARAMS ((int)) ATTRIBUTE_NORETURN;
+static void print_version PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void init_arc PARAMS ((struct adj_list *, int, int, struct bb_info *));
 static struct adj_list *reverse_arcs PARAMS ((struct adj_list *));
 static void create_program_flow_graph PARAMS ((struct bb_info_list *));
@@ -281,14 +283,56 @@ fancy_abort ()
   exit (FATAL_EXIT_CODE);
 }
 
-/* Print a usage message and exit.  */
+/* Print a usage message and exit.  If ERROR_P is nonzero, this is an error,
+   otherwise the output of --help.  */
 
 static void
-print_usage ()
+print_usage (error_p)
+     int error_p;
 {
-  fnotice (stderr, "gcov [-b] [-v] [-n] [-l] [-f] [-o OBJDIR] file\n");
-  exit (FATAL_EXIT_CODE);
+  FILE *file = error_p ? stderr : stdout;
+  int status = error_p ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
+  fnotice (file, "Usage: gcov [OPTION]... SOURCEFILE\n\n");
+  fnotice (file, "Print code coverage information.\n\n");
+  fnotice (file, "  -h, --help                      Print this help, then exit\n");
+  fnotice (file, "  -v, --version                   Print version number, then exit\n");
+  fnotice (file, "  -b, --branch-probabilities      Include branch probabilities in output\n");
+  fnotice (file, "  -c, --branch-counts             Given counts of branches taken\n\
+                                    rather than percentages\n");
+  fnotice (file, "  -n, --no-output                 Do not create an output file\n");
+  fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
+                                    source files\n");
+  fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
+  fnotice (file, "  -o, --object-directory OBJDIR   Search for object files in OBJDIR\n");
+  fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
+	   GCCBUGURL);
+  exit (status);
 }
+
+/* Print version information and exit.  */
+
+static void
+print_version ()
+{
+  fnotice (stdout, "gcov (GCC) %s\n", version_string);
+  fnotice (stdout, "Copyright (C) 2001 Free Software Foundation, Inc.\n");
+  fnotice (stdout,
+	   "This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+  exit (SUCCESS_EXIT_CODE);
+}
+
+static const struct option options[] =
+{
+  { "help",                 no_argument,       NULL, 'h' },
+  { "version",              no_argument,       NULL, 'v' },
+  { "branch-probabilities", no_argument,       NULL, 'b' },
+  { "branch-counts",        no_argument,       NULL, 'c' },
+  { "no-output",            no_argument,       NULL, 'n' },
+  { "long-file-names",      no_argument,       NULL, 'l' },
+  { "function-summaries",   no_argument,       NULL, 'f' },
+  { "object-directory",     required_argument, NULL, 'o' }
+};
 
 /* Parse the command line.  */
 
@@ -297,37 +341,46 @@ process_args (argc, argv)
      int argc;
      char **argv;
 {
-  int i;
+  int opt;
 
-  for (i = 1; i < argc; i++)
+  while ((opt = getopt_long (argc, argv, "hvbclnfo:", options, NULL)) != -1)
     {
-      if (argv[i][0] == '-')
+      switch (opt)
 	{
-	  if (argv[i][1] == 'b')
-	    output_branch_probs = 1;
-	  else if (argv[i][1] == 'c')
-	    output_branch_counts = 1;
-	  else if (argv[i][1] == 'v')
-	    fputs (gcov_version_string, stderr);
-	  else if (argv[i][1] == 'n')
-	    output_gcov_file = 0;
-	  else if (argv[i][1] == 'l')
-	    output_long_names = 1;
-	  else if (argv[i][1] == 'f')
-	    output_function_summary = 1;
-	  else if (argv[i][1] == 'o' && argv[i][2] == '\0')
-	    object_directory = argv[++i];
-	  else
-	    print_usage ();
+	case 'h':
+	  print_usage (false);
+	  /* print_usage will exit.  */
+	case 'v':
+	  print_version ();
+	  /* print_version will exit.  */
+	case 'b':
+	  output_branch_probs = 1;
+	  break;
+	case 'c':
+	  output_branch_counts = 1;
+	  break;
+	case 'n':
+	  output_gcov_file = 0;
+	  break;
+	case 'l':
+	  output_long_names = 1;
+	  break;
+	case 'f':
+	  output_function_summary = 1;
+	  break;
+	case 'o':
+	  object_directory = optarg;
+	  break;
+	default:
+	  print_usage (true);
+	  /* print_usage will exit.  */
 	}
-      else if (! input_file_name)
-	input_file_name = argv[i];
-      else
-	print_usage ();
     }
 
-  if (! input_file_name)
-    print_usage ();
+  if (optind != argc - 1)
+    print_usage (true);
+
+  input_file_name = argv[optind];
 }
 
 

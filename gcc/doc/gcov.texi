@@ -1,10 +1,10 @@
-@c Copyright (C) 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
+@c Copyright (C) 1996, 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
+Copyright @copyright{} 1996, 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -31,8 +31,6 @@ English.
 
 @command{gcov} is a tool you can use in conjunction with GCC to
 test code coverage in your programs.
-
-This chapter describes version 1.5 of @command{gcov}.
 
 @menu
 * Gcov Intro::         	        Introduction to gcov.
@@ -108,12 +106,18 @@ compatible with any other profiling or test coverage mechanism.
 @section Invoking gcov
 
 @smallexample
-gcov [-b] [-c] [-v] [-n] [-l] [-f] [-o directory] @var{sourcefile}
+gcov @r{[}@var{options}@r{]} @var{sourcefile}
 @end smallexample
+
+@command{gcov} accepts the following options:
 
 @ignore
 @c man begin SYNOPSIS
-gcov [@option{-b}] [@option{-c}] [@option{-v}] [@option{-n}] [@option{-l}] [@option{-f}] [@option{-o} @var{directory}] @var{sourcefile}
+gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
+     [@option{-b}|@option{--branch-probabilities}] [@option{-c}|@option{--branch-counts}]
+     [@option{-n}|@option{--no-output}] [@option{-l}|@option{--long-file-names}]
+     [@option{-f}|@option{--function-summaries}]
+     [@option{-o}|@option{--object-directory} @var{directory}] @var{sourcefile}
 @c man end
 @c man begin SEEALSO
 gcc(1) and the Info entry for @file{gcc}.
@@ -122,22 +126,33 @@ gcc(1) and the Info entry for @file{gcc}.
 
 @c man begin OPTIONS
 @table @gcctabopt
+@item -h
+@itemx --help
+Display help about using @command{gcov} (on the standard output), and
+exit without doing any further processing.
+
+@item -v
+@itemx --version
+Display the @command{gcov} version number (on the standard output),
+and exit without doing any further processing.
+
 @item -b
+@itemx --branch-probabilities
 Write branch frequencies to the output file, and write branch summary
 info to the standard output.  This option allows you to see how often
 each branch in your program was taken.
 
 @item -c
+@itemx --branch-counts
 Write branch frequencies as the number of branches taken, rather than
 the percentage of branches taken.
 
-@item -v
-Display the @command{gcov} version number (on the standard error stream).
-
 @item -n
+@itemx --no-output
 Do not create the @command{gcov} output file.
 
 @item -l
+@itemx --long-file-names
 Create long file names for included source files.  For example, if the
 header file @file{x.h} contains code, and was included in the file
 @file{a.c}, then running @command{gcov} on the file @file{a.c} will produce
@@ -145,9 +160,11 @@ an output file called @file{a.c.x.h.gcov} instead of @file{x.h.gcov}.
 This can be useful if @file{x.h} is included in multiple source files.
 
 @item -f
+@itemx --function-summaries
 Output summaries for each function in addition to the file level summary.
 
-@item -o
+@item -o @var{directory}
+@itemx --object-directory @var{directory}
 The directory where the object files live.  Gcov will search for @file{.bb},
 @file{.bbg}, and @file{.da} files in this directory.
 @end table
