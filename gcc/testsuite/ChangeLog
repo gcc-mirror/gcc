@@ -1,3 +1,8 @@
+2002-12-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.ext/memconst.C: Use old-deja, not dg, error
+	markers.
+
 2002-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/parse/parameter-declaration-1.C: Expect error on last line.

@@ -12,7 +12,7 @@ public:
 
 class foo {
 private:
-  static const unsigned char * const dummy_key = (unsigned char*)"ThisIs a dummy!"; // { dg-error "in-class" }
+  static const unsigned char * const dummy_key = (unsigned char*)"ThisIs a dummy!"; // ERROR - 
 
 public:
     void bar ();
@@ -21,5 +21,5 @@ public:
 void
 foo::bar ()
 {
-    qwerty QWERTY ((unsigned short*)dummy_key);
+  qwerty QWERTY ((unsigned short*)dummy_key); // ERROR - 
 }
