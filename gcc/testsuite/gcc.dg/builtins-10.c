@@ -18,8 +18,8 @@ extern double fabs(double);
 
 void test(double x)
 {
-  /*if (sqrt(pow(x,4.0)) != x*x)
-    link_error (); */
+  if (sqrt(pow(x,4.0)) != x*x)
+    link_error ();
 
   if (pow(sqrt(x),4.0) != x*x)
     link_error ();
