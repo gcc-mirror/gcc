@@ -1,3 +1,8 @@
+2004-07-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR java/16474
+	gjavah.c (print_field_info): Emit constant only if field is static.
+
 2004-07-11  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (java_truthvalue_conversion, flush_quick_stack,
