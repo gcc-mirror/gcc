@@ -2480,7 +2480,8 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
 
       next = NEXT_INSN (insn);
 
-      if (GET_CODE (PATTERN (insn)) == SET)
+      if (GET_CODE (PATTERN (insn)) == SET || GET_CODE (PATTERN (insn)) == USE
+	  || GET_CODE (PATTERN (insn)) == CLOBBER)
 	set = PATTERN (insn);
       else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	{
