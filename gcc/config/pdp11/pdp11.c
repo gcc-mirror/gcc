@@ -137,7 +137,7 @@ pdp11_output_function_prologue (stream, size)
     {
       fprintf (stream, "\t/*abuse empty parameter slot for locals!*/\n");
       if (size > 2)
-	fprintf(stream, "\tsub $%d, sp\n", size - 2);
+	fprintf(stream, "\tsub $0%o, sp\n", size - 2);
 
     }
 }
@@ -168,8 +168,8 @@ pdp11_output_function_prologue (stream, size)
     
     if (frame_pointer_needed) 					
     {								
-	fprintf(stream, "\tmov fp, -(sp)\n");			
-	fprintf(stream, "\tmov sp, fp\n");				
+	fprintf(stream, "\tmov r5, -(sp)\n");			
+	fprintf(stream, "\tmov sp, r5\n");				
     }								
     else 								
     {								
@@ -178,7 +178,7 @@ pdp11_output_function_prologue (stream, size)
 
     /* make frame */
     if (fsize)							
-	fprintf (stream, "\tsub $%o, sp\n", fsize);			
+	fprintf (stream, "\tsub $0%o, sp\n", fsize);			
 
     /* save CPU registers  */
     for (regno = 0; regno < 8; regno++)				
@@ -198,7 +198,7 @@ pdp11_output_function_prologue (stream, size)
 	    && regs_ever_live[regno] 
 	    && ! call_used_regs[regno])
 	{
-	    fprintf (stream, "\tfstd %s, -(sp)\n", reg_names[regno]);
+	    fprintf (stream, "\tstd %s, -(sp)\n", reg_names[regno]);
 	    via_ac = regno;
 	}
 	
@@ -211,8 +211,8 @@ pdp11_output_function_prologue (stream, size)
 	    if (via_ac == -1)
 		abort();
 	    
-	    fprintf (stream, "\tfldd %s, %s\n", reg_names[regno], reg_names[via_ac]);
-	    fprintf (stream, "\tfstd %s, -(sp)\n", reg_names[via_ac]);
+	    fprintf (stream, "\tldd %s, %s\n", reg_names[regno], reg_names[via_ac]);
+	    fprintf (stream, "\tstd %s, -(sp)\n", reg_names[via_ac]);
 	}
     }
 
@@ -277,9 +277,10 @@ pdp11_output_function_epilogue (stream, size)
 	/* remember # of pushed bytes for CPU regs */
 	k = 2*j;
 	
+	/* change fp -> r5 due to the compile error on libgcc2.c */
 	for (i =7 ; i >= 0 ; i--)					
 	    if (regs_ever_live[i] && ! call_used_regs[i])		
-		fprintf(stream, "\tmov %o(fp), %s\n",-fsize-2*j--, reg_names[i]);
+		fprintf(stream, "\tmov 0%o(r5), %s\n",(-fsize-2*j--)&0xffff, reg_names[i]);
 
 	/* get ACs */						
 	via_ac = FIRST_PSEUDO_REGISTER -1;
@@ -297,7 +298,7 @@ pdp11_output_function_epilogue (stream, size)
 		&& regs_ever_live[i]
 		&& ! call_used_regs[i])
 	    {
-		fprintf(stream, "\tfldd %o(fp), %s\n", -fsize-k, reg_names[i]);
+		fprintf(stream, "\tldd 0%o(r5), %s\n", (-fsize-k)&0xffff, reg_names[i]);
 		k -= 8;
 	    }
 	    
@@ -308,14 +309,14 @@ pdp11_output_function_epilogue (stream, size)
 		if (! LOAD_FPU_REG_P(via_ac))
 		    abort();
 		    
-		fprintf(stream, "\tfldd %o(fp), %s\n", -fsize-k, reg_names[via_ac]);
-		fprintf(stream, "\tfstd %s, %s\n", reg_names[via_ac], reg_names[i]);
+		fprintf(stream, "\tldd 0%o(r5), %s\n", (-fsize-k)&0xffff, reg_names[via_ac]);
+		fprintf(stream, "\tstd %s, %s\n", reg_names[via_ac], reg_names[i]);
 		k -= 8;
 	    }
 	}
 	
-	fprintf(stream, "\tmov fp, sp\n");				
-	fprintf (stream, "\tmov (sp)+, fp\n");     			
+	fprintf(stream, "\tmov r5, sp\n");				
+	fprintf (stream, "\tmov (sp)+, r5\n");     			
     }								
     else								
     {		   
@@ -331,7 +332,7 @@ pdp11_output_function_epilogue (stream, size)
 	    if (LOAD_FPU_REG_P(i)
 		&& regs_ever_live[i]
 		&& ! call_used_regs[i])
-	      fprintf(stream, "\tfldd (sp)+, %s\n", reg_names[i]);
+	      fprintf(stream, "\tldd (sp)+, %s\n", reg_names[i]);
 	    
 	    if (NO_LOAD_FPU_REG_P(i)
 		&& regs_ever_live[i]
@@ -340,8 +341,8 @@ pdp11_output_function_epilogue (stream, size)
 		if (! LOAD_FPU_REG_P(via_ac))
 		    abort();
 		    
-		fprintf(stream, "\tfldd (sp)+, %s\n", reg_names[via_ac]);
-		fprintf(stream, "\tfstd %s, %s\n", reg_names[via_ac], reg_names[i]);
+		fprintf(stream, "\tldd (sp)+, %s\n", reg_names[via_ac]);
+		fprintf(stream, "\tstd %s, %s\n", reg_names[via_ac], reg_names[i]);
 	    }
 	}
 
@@ -350,7 +351,7 @@ pdp11_output_function_epilogue (stream, size)
 		fprintf(stream, "\tmov (sp)+, %s\n", reg_names[i]);	
 								
 	if (fsize)						
-	    fprintf((stream), "\tadd $%o, sp\n", fsize);      		
+	    fprintf((stream), "\tadd $0%o, sp\n", (fsize)&0xffff);      		
     }			
 					
     fprintf (stream, "\trts pc\n");					
@@ -562,7 +563,7 @@ output_move_quad (operands)
   rtx latehalf[2];
   rtx addreg0 = 0, addreg1 = 0;
 
-  output_asm_insn(";; movdi/df: %1 -> %0", operands);
+  output_asm_insn(";/* movdi/df: %1 -> %0 */", operands);
   
   if (REG_P (operands[0]))
     optype0 = REGOP;
@@ -817,7 +818,7 @@ output_ascii (file, p, size)
       register int c = p[i];
       if (c < 0)
 	c += 256;
-      fprintf (file, "%o", c);
+      fprintf (file, "0%o", c);
       if (i < size - 1)
 	putc (',', file);
     }
@@ -851,10 +852,12 @@ print_operand_address (file, addr)
       fprintf (file, "(%s)", reg_names[REGNO (addr)]);
       break;
 
+    case PRE_MODIFY:
     case PRE_DEC:
       fprintf (file, "-(%s)", reg_names[REGNO (XEXP (addr, 0))]);
       break;
 
+    case POST_MODIFY:
     case POST_INC:
       fprintf (file, "(%s)+", reg_names[REGNO (XEXP (addr, 0))]);
       break;
@@ -1546,7 +1549,7 @@ output_addr_const_pdp11 (file, x)
     case CONST_INT:
       /* Should we check for constants which are too big?  Maybe cutting
 	 them off to 16 bits is OK?  */
-      fprintf (file, "%ho", (unsigned short) INTVAL (x));
+      fprintf (file, "0%ho", (unsigned short) INTVAL (x));
       break;
 
     case CONST:
@@ -1562,7 +1565,7 @@ output_addr_const_pdp11 (file, x)
 	  if (CONST_DOUBLE_HIGH (x))
 	    abort (); /* Should we just silently drop the high part?  */
 	  else
-	    fprintf (file, "%ho", (unsigned short) CONST_DOUBLE_LOW (x));
+	    fprintf (file, "0%ho", (unsigned short) CONST_DOUBLE_LOW (x));
 	}
       else
 	/* We can't handle floating point constants;
