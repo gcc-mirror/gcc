@@ -7788,10 +7788,13 @@ check_dbra_loop (loop, insn_count)
   {
     /* If more than one condition is present to control the loop, then
        do not proceed, as this function does not know how to rewrite
-       loop tests with more than one condition.  */
+       loop tests with more than one condition.
+
+       Look backwards from the first insn in the last comparison
+       sequence and see if we've got another comparison sequence.  */
 
     rtx jump1;
-    if ((jump1 = prev_nonnote_insn (jump)) != loop->cont)
+    if ((jump1 = prev_nonnote_insn (first_compare)) != loop->cont)
       if (GET_CODE (jump1) == JUMP_INSN)
         return 0;
   }
