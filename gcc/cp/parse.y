@@ -1279,6 +1279,8 @@ expr_no_commas:
 notype_unqualified_id:
 	  '~' see_typename identifier
 		{ $$ = build_parse_node (BIT_NOT_EXPR, $3); }
+	| '~' see_typename template_type
+		{ $$ = build_parse_node (BIT_NOT_EXPR, $3); }
         | template_id
 	| operator_name
 	| IDENTIFIER
