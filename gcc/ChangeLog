@@ -1,3 +1,10 @@
+2005-02-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*cmpdi_cct", "*cmpsi_cct", "*cmpdi_ccs",
+	"*cmpsi_ccs"): Use %h instead of %c to print immediate operand.
+	("*zero_extendhisi2_64", "*zero_extendhisi2_31"): Choose based on
+	TARGET_ZARCH instead of TARGET_64BIT.
+
 2005-02-11  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/rs6000/t-rtems:
