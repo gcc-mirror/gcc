@@ -100,9 +100,6 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-#undef ASM_SPEC
-#define ASM_SPEC "%{m68030} %{m68040} %{fpic:-k} %{fPIC:-k}"
-
 #define CPP_PREDEFINES \
   "-D__ELF__ -Dunix -Dmc68000 -Dmc68020 -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(m68k) -Amachine(m68k)"
 
@@ -199,6 +196,19 @@ Boston, MA 02111-1307, USA.  */
     fprintf (FILE, "\tjbsr _mcount\n");					\
 }
 
+/* Register in which address to store a structure value is passed to a
+   function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0. */
+
+#undef STRUCT_VALUE_REGNUM
+#define STRUCT_VALUE_REGNUM 8
+
+/* Register in which static-chain is passed to a function.  The
+   default in m68k.h is a0, but that is already the struct value
+   regnum.  Make it a1 instead.  */
+
+#undef STATIC_CHAIN_REGNUM
+#define STATIC_CHAIN_REGNUM 9
+
 /* How to renumber registers for dbx and gdb.
    On the Sun-3, the floating point registers have numbers
    18 to 25, not 16 to 23 as they do in the compiler.  */
@@ -292,3 +302,21 @@ do {									\
    technique. */
 #undef PCC_STATIC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.  */
+
+/* On m68k svr4, the trampoline is different from the generic version
+   in that we use a1 as the static call chain.  */
+
+#undef TRAMPOLINE_TEMPLATE
+#define TRAMPOLINE_TEMPLATE(FILE)					\
+{									\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x207b));	\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2f3a));	\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4e75));	\
+  ASM_OUTPUT_INT (FILE, const0_rtx);					\
+  ASM_OUTPUT_INT (FILE, const0_rtx);					\
+}
