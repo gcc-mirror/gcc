@@ -1,3 +1,11 @@
+2002-09-14  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.md ("movdi_internal"): Allow any offsetable
+	memory operand when source is 0 (K constraint).
+	("movsi_internal"): Likewise.
+	("movdf_internal"): Likewise.
+	("movsf_internal"): Likewise.
+
 2002-09-14  Alan Modra  <amodra@bigpond.net.au>
 
 	Merge from mainline.
