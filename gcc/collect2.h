@@ -1,5 +1,5 @@
-/* Header file for collect/tlink routines.  
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* Header file for collect/tlink routines.
+   Copyright (C) 1998, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,17 +21,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_COLLECT2_H
 #define GCC_COLLECT2_H
 
-extern void do_tlink PARAMS ((char **, char **));
+extern void do_tlink (char **, char **);
 
-extern void collect_execute PARAMS ((const char *, char **, const char *));
+extern void collect_execute (const char *, char **, const char *);
 
-extern void collect_exit PARAMS ((int)) ATTRIBUTE_NORETURN;
+extern void collect_exit (int) ATTRIBUTE_NORETURN;
 
-extern int collect_wait PARAMS ((const char *));
+extern int collect_wait (const char *);
 
-extern void dump_file PARAMS ((const char *));
+extern void dump_file (const char *);
 
-extern int file_exists PARAMS ((const char *));
+extern int file_exists (const char *);
 
 extern const char *ldout;
 extern const char *c_file_name;
@@ -39,12 +39,11 @@ extern struct obstack temporary_obstack;
 extern char *temporary_firstobj;
 extern int vflag, debug;
 
-extern void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
-extern void error PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
-extern void notice PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
-extern void fatal PARAMS ((const char *, ...)) 
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-extern void fatal_perror PARAMS ((const char *, ...))
+extern void fancy_abort (void) ATTRIBUTE_NORETURN;
+extern void error (const char *, ...) ATTRIBUTE_PRINTF_1;
+extern void notice (const char *, ...) ATTRIBUTE_PRINTF_1;
+extern void fatal (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+extern void fatal_perror (const char *, ...)
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 #endif /* ! GCC_COLLECT2_H */

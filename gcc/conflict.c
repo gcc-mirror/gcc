@@ -1,5 +1,5 @@
 /* Register conflict graph computation routines.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC
 
 This file is part of GCC.
@@ -114,17 +114,16 @@ struct conflict_graph_def
    R1 and R2.  R1 is assumed to be smaller or equal to R2.  */
 #define CONFLICT_HASH_FN(R1, R2) ((R2) * ((R2) - 1) / 2 + (R1))
 
-static hashval_t arc_hash	PARAMS ((const void *));
-static int arc_eq		PARAMS ((const void *, const void *));
-static int print_conflict	PARAMS ((int, int, void *));
-static void mark_reg		PARAMS ((rtx, rtx, void *));
+static hashval_t arc_hash (const void *);
+static int arc_eq (const void *, const void *);
+static int print_conflict (int, int, void *);
+static void mark_reg (rtx, rtx, void *);
 
 /* Callback function to compute the hash value of an arc.  Uses
    current_graph to locate the graph to which the arc belongs.  */
 
 static hashval_t
-arc_hash (arcp)
-     const void *arcp;
+arc_hash (const void *arcp)
 {
   const_conflict_graph_arc arc = (const_conflict_graph_arc) arcp;
 
@@ -135,9 +134,7 @@ arc_hash (arcp)
    table.  */
 
 static int
-arc_eq (arcp1, arcp2)
-     const void *arcp1;
-     const void *arcp2;
+arc_eq (const void *arcp1, const void *arcp2)
 {
   const_conflict_graph_arc arc1 = (const_conflict_graph_arc) arcp1;
   const_conflict_graph_arc arc2 = (const_conflict_graph_arc) arcp2;
@@ -149,8 +146,7 @@ arc_eq (arcp1, arcp2)
    registers.  */
 
 conflict_graph
-conflict_graph_new (num_regs)
-     int num_regs;
+conflict_graph_new (int num_regs)
 {
   conflict_graph graph
     = (conflict_graph) xmalloc (sizeof (struct conflict_graph_def));
@@ -175,8 +171,7 @@ conflict_graph_new (num_regs)
 /* Deletes a conflict graph.  */
 
 void
-conflict_graph_delete (graph)
-     conflict_graph graph;
+conflict_graph_delete (conflict_graph graph)
 {
   obstack_free (&graph->arc_obstack, NULL);
   htab_delete (graph->arc_hash_table);
@@ -189,10 +184,7 @@ conflict_graph_delete (graph)
    in GRAPH, in which case it does nothing and returns zero.  */
 
 int
-conflict_graph_add (graph, reg1, reg2)
-     conflict_graph graph;
-     int reg1;
-     int reg2;
+conflict_graph_add (conflict_graph graph, int reg1, int reg2)
 {
   int smaller = MIN (reg1, reg2);
   int larger = MAX (reg1, reg2);
@@ -238,10 +230,7 @@ conflict_graph_add (graph, reg1, reg2)
    and REG2.  */
 
 int
-conflict_graph_conflict_p (graph, reg1, reg2)
-     conflict_graph graph;
-     int reg1;
-     int reg2;
+conflict_graph_conflict_p (conflict_graph graph, int reg1, int reg2)
 {
   /* Build an arc to search for.  */
   struct conflict_graph_arc_def arc;
@@ -255,11 +244,8 @@ conflict_graph_conflict_p (graph, reg1, reg2)
    passed back to ENUM_FN.  */
 
 void
-conflict_graph_enum (graph, reg, enum_fn, extra)
-     conflict_graph graph;
-     int reg;
-     conflict_graph_enum_fn enum_fn;
-     void *extra;
+conflict_graph_enum (conflict_graph graph, int reg,
+		     conflict_graph_enum_fn enum_fn, void *extra)
 {
   conflict_graph_arc arc = graph->neighbor_heads[reg];
   while (arc != NULL)
@@ -282,10 +268,7 @@ conflict_graph_enum (graph, reg, enum_fn, extra)
    conflict to GRAPH between x and TARGET.  */
 
 void
-conflict_graph_merge_regs (graph, target, src)
-     conflict_graph graph;
-     int target;
-     int src;
+conflict_graph_merge_regs (conflict_graph graph, int target, int src)
 {
   conflict_graph_arc arc = graph->neighbor_heads[src];
 
@@ -328,10 +311,7 @@ struct print_context
 /* Callback function when enumerating conflicts during printing.  */
 
 static int
-print_conflict (reg1, reg2, contextp)
-     int reg1;
-     int reg2;
-     void *contextp;
+print_conflict (int reg1, int reg2, void *contextp)
 {
   struct print_context *context = (struct print_context *) contextp;
   int reg;
@@ -363,9 +343,7 @@ print_conflict (reg1, reg2, contextp)
 /* Prints the conflicts in GRAPH to FP.  */
 
 void
-conflict_graph_print (graph, fp)
-     conflict_graph graph;
-     FILE *fp;
+conflict_graph_print (conflict_graph graph, FILE *fp)
 {
   int reg;
   struct print_context context;
@@ -394,10 +372,7 @@ conflict_graph_print (graph, fp)
 /* Callback function for note_stores.  */
 
 static void
-mark_reg (reg, setter, data)
-     rtx reg;
-     rtx setter ATTRIBUTE_UNUSED;
-     void *data;
+mark_reg (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *data)
 {
   regset set = (regset) data;
 
@@ -441,9 +416,7 @@ mark_reg (reg, setter, data)
    canonical regs instead.  */
 
 conflict_graph
-conflict_graph_compute (regs, p)
-     regset regs;
-     partition p;
+conflict_graph_compute (regset regs, partition p)
 {
   conflict_graph graph = conflict_graph_new (max_reg_num ());
   regset_head live_head;

@@ -1,3 +1,12 @@
+2003-06-29  Andreas Jaeger  <aj@suse.de>
+
+	* collect2.h: Convert prototypes to ISO C90.
+	* collect2.c: Likewise.
+	* conflict.c: Likewise.
+	* coverage.c: Likewise.
+	* convert.h: Likewise.
+	* convert.c: Likewise.
+
 2003-06-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-decl.c (c_init_decl_processing): Use a location_t. Set input

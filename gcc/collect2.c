@@ -104,7 +104,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Some systems have an ISCOFF macro, but others do not.  In some cases
    the macro may be wrong.  MY_ISCOFF is defined in tm.h files for machines
-   that either do not have an ISCOFF macro in /usr/include or for those 
+   that either do not have an ISCOFF macro in /usr/include or for those
    where it is wrong.  */
 
 #ifndef MY_ISCOFF
@@ -175,7 +175,7 @@ int no_demangle;
 
 /* Linked lists of constructor and destructor names.  */
 
-struct id 
+struct id
 {
   struct id *next;
   int sequence;
@@ -264,58 +264,55 @@ static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 static const char *const libexts[3] = {"a", "so", NULL};  /* possible library extensions */
 #endif
 
-static void handler		PARAMS ((int));
-static int is_ctor_dtor		PARAMS ((const char *));
-static char *find_a_file	PARAMS ((struct path_prefix *, const char *));
-static void add_prefix		PARAMS ((struct path_prefix *, const char *));
-static void prefix_from_env	PARAMS ((const char *, struct path_prefix *));
-static void prefix_from_string	PARAMS ((const char *, struct path_prefix *));
-static void do_wait		PARAMS ((const char *));
-static void fork_execute	PARAMS ((const char *, char **));
-static void maybe_unlink	PARAMS ((const char *));
-static void add_to_list		PARAMS ((struct head *, const char *));
-static int extract_init_priority PARAMS ((const char *));
-static void sort_ids		PARAMS ((struct head *));
-static void write_list		PARAMS ((FILE *, const char *, struct id *));
+static void handler (int);
+static int is_ctor_dtor (const char *);
+static char *find_a_file (struct path_prefix *, const char *);
+static void add_prefix (struct path_prefix *, const char *);
+static void prefix_from_env (const char *, struct path_prefix *);
+static void prefix_from_string (const char *, struct path_prefix *);
+static void do_wait (const char *);
+static void fork_execute (const char *, char **);
+static void maybe_unlink (const char *);
+static void add_to_list (struct head *, const char *);
+static int extract_init_priority (const char *);
+static void sort_ids (struct head *);
+static void write_list (FILE *, const char *, struct id *);
 #ifdef COLLECT_EXPORT_LIST
-static void dump_list		PARAMS ((FILE *, const char *, struct id *));
+static void dump_list (FILE *, const char *, struct id *);
 #endif
 #if 0
-static void dump_prefix_list	PARAMS ((FILE *, const char *, struct prefix_list *));
+static void dump_prefix_list (FILE *, const char *, struct prefix_list *);
 #endif
-static void write_list_with_asm PARAMS ((FILE *, const char *, struct id *));
-static void write_c_file	PARAMS ((FILE *, const char *));
-static void write_c_file_stat	PARAMS ((FILE *, const char *));
+static void write_list_with_asm (FILE *, const char *, struct id *);
+static void write_c_file (FILE *, const char *);
+static void write_c_file_stat (FILE *, const char *);
 #ifndef LD_INIT_SWITCH
-static void write_c_file_glob	PARAMS ((FILE *, const char *));
+static void write_c_file_glob (FILE *, const char *);
 #endif
-static void scan_prog_file	PARAMS ((const char *, enum pass));
+static void scan_prog_file (const char *, enum pass);
 #ifdef SCAN_LIBRARIES
-static void scan_libraries	PARAMS ((const char *));
+static void scan_libraries (const char *);
 #endif
 #if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
-static int is_in_args		PARAMS ((const char *, const char **, const char **));
+static int is_in_args (const char *, const char **, const char **);
 #endif
 #ifdef COLLECT_EXPORT_LIST
 #if 0
-static int is_in_list		PARAMS ((const char *, struct id *));
+static int is_in_list (const char *, struct id *);
 #endif
-static void write_aix_file	PARAMS ((FILE *, struct id *));
-static char *resolve_lib_name	PARAMS ((const char *));
+static void write_aix_file (FILE *, struct id *);
+static char *resolve_lib_name (const char *);
 #endif
-static char *extract_string	PARAMS ((const char **));
+static char *extract_string (const char **);
 
 #ifndef HAVE_DUP2
-static int dup2 PARAMS ((int, int));
 static int
-dup2 (oldfd, newfd)
-     int oldfd;
-     int newfd;
+dup2 (int oldfd, int newfd)
 {
   int fdtmp[256];
   int fdx = 0;
   int fd;
- 
+
   if (oldfd == newfd)
     return oldfd;
   close (newfd);
@@ -331,8 +328,7 @@ dup2 (oldfd, newfd)
 /* Delete tempfiles and exit function.  */
 
 void
-collect_exit (status)
-     int status;
+collect_exit (int status)
 {
   if (c_file != 0 && c_file[0])
     maybe_unlink (c_file);
@@ -363,7 +359,7 @@ void
 notice (const char *msgid, ...)
 {
   va_list ap;
-  
+
   va_start (ap, msgid);
   vfprintf (stderr, _(msgid), ap);
   va_end (ap);
@@ -376,7 +372,7 @@ fatal_perror (const char * msgid, ...)
 {
   int e = errno;
   va_list ap;
-  
+
   va_start (ap, msgid);
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
@@ -392,7 +388,7 @@ void
 fatal (const char * msgid, ...)
 {
   va_list ap;
-  
+
   va_start (ap, msgid);
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
@@ -408,7 +404,7 @@ void
 error (const char * msgid, ...)
 {
   va_list ap;
-  
+
   va_start (ap, msgid);
   fprintf (stderr, "collect2: ");
   vfprintf (stderr, _(msgid), ap);
@@ -420,14 +416,13 @@ error (const char * msgid, ...)
    provide a default entry.  */
 
 void
-fancy_abort ()
+fancy_abort (void)
 {
   fatal ("internal error");
 }
 
 static void
-handler (signo)
-     int signo;
+handler (int signo)
 {
   if (c_file != 0 && c_file[0])
     maybe_unlink (c_file);
@@ -449,8 +444,7 @@ handler (signo)
 
 
 int
-file_exists (name)
-     const char *name;
+file_exists (const char *name)
 {
   return access (name, R_OK) == 0;
 }
@@ -458,8 +452,7 @@ file_exists (name)
 /* Parse a reasonable subset of shell quoting syntax.  */
 
 static char *
-extract_string (pp)
-     const char **pp;
+extract_string (const char **pp)
 {
   const char *p = *pp;
   int backquote = 0;
@@ -489,8 +482,7 @@ extract_string (pp)
 }
 
 void
-dump_file (name)
-     const char *name;
+dump_file (const char *name)
 {
   FILE *stream = fopen (name, "r");
 
@@ -552,8 +544,7 @@ dump_file (name)
    nothing special (0).  */
 
 static int
-is_ctor_dtor (s)
-     const char *s;
+is_ctor_dtor (const char *s)
 {
   struct names { const char *const name; const int len; const int ret;
     const int two_underscores; };
@@ -611,14 +602,12 @@ static const char *const target_machine = TARGET_MACHINE;
 #endif
 
 /* Search for NAME using prefix list PPREFIX.  We only look for executable
-   files. 
+   files.
 
    Return 0 if not found, otherwise return its name, allocated with malloc.  */
 
 static char *
-find_a_file (pprefix, name)
-     struct path_prefix *pprefix;
-     const char *name;
+find_a_file (struct path_prefix *pprefix, const char *name)
 {
   char *temp;
   struct prefix_list *pl;
@@ -626,7 +615,7 @@ find_a_file (pprefix, name)
 
   if (debug)
     fprintf (stderr, "Looking for '%s'\n", name);
-  
+
 #ifdef HOST_EXECUTABLE_SUFFIX
   len += strlen (HOST_EXECUTABLE_SUFFIX);
 #endif
@@ -647,7 +636,7 @@ find_a_file (pprefix, name)
 
 	  if (debug)
 	    fprintf (stderr, "  - found: absolute path\n");
-	  
+
 	  return temp;
 	}
 
@@ -656,7 +645,7 @@ find_a_file (pprefix, name)
 	   So try appending that.  */
       strcpy (temp, name);
 	strcat (temp, HOST_EXECUTABLE_SUFFIX);
-	
+
 	if (access (temp, X_OK) == 0)
 	  return temp;
 #endif
@@ -671,7 +660,7 @@ find_a_file (pprefix, name)
 
 	strcpy (temp, pl->prefix);
 	strcat (temp, name);
-	
+
 	if (stat (temp, &st) >= 0
 	    && ! S_ISDIR (st.st_mode)
 	    && access (temp, X_OK) == 0)
@@ -681,7 +670,7 @@ find_a_file (pprefix, name)
 	/* Some systems have a suffix for executable files.
 	   So try appending that.  */
 	strcat (temp, HOST_EXECUTABLE_SUFFIX);
-	
+
 	if (stat (temp, &st) >= 0
 	    && ! S_ISDIR (st.st_mode)
 	    && access (temp, X_OK) == 0)
@@ -699,9 +688,7 @@ find_a_file (pprefix, name)
 /* Add an entry for PREFIX to prefix list PPREFIX.  */
 
 static void
-add_prefix (pprefix, prefix)
-     struct path_prefix *pprefix;
-     const char *prefix;
+add_prefix (struct path_prefix *pprefix, const char *prefix)
 {
   struct prefix_list *pl, **prev;
   int len;
@@ -735,9 +722,7 @@ add_prefix (pprefix, prefix)
    add of the entries to PPREFIX.  */
 
 static void
-prefix_from_env (env, pprefix)
-     const char *env;
-     struct path_prefix *pprefix;
+prefix_from_env (const char *env, struct path_prefix *pprefix)
 {
   const char *p;
   GET_ENVIRONMENT (p, env);
@@ -747,16 +732,14 @@ prefix_from_env (env, pprefix)
 }
 
 static void
-prefix_from_string (p, pprefix)
-     const char *p;
-     struct path_prefix *pprefix;
+prefix_from_string (const char *p, struct path_prefix *pprefix)
 {
   const char *startp, *endp;
   char *nstore = (char *) xmalloc (strlen (p) + 3);
 
   if (debug)
     fprintf (stderr, "Convert string '%s' into prefixes, separator = '%c'\n", p, PATH_SEPARATOR);
-  
+
   startp = endp = p;
   while (1)
     {
@@ -777,7 +760,7 @@ prefix_from_string (p, pprefix)
 
 	  if (debug)
 	    fprintf (stderr, "  - add prefix: %s\n", nstore);
-	  
+
 	  add_prefix (pprefix, nstore);
 	  if (*endp == 0)
 	    break;
@@ -790,11 +773,8 @@ prefix_from_string (p, pprefix)
 
 /* Main program.  */
 
-int main 		PARAMS ((int, char *[]));
 int
-main (argc, argv)
-     int argc;
-     char *argv[];
+main (int argc, char **argv)
 {
   static const char *const ld_suffix	= "ld";
   static const char *const real_ld_suffix = "real-ld";
@@ -890,7 +870,7 @@ main (argc, argv)
      are called.  */
   {
     int i;
-    
+
     for (i = 1; argv[i] != NULL; i ++)
       if (! strcmp (argv[i], "-debug"))
 	debug = 1;
@@ -1053,7 +1033,7 @@ main (argc, argv)
   add_prefix (&libpath_lib_dirs, "/usr/lib");
 #endif
 
-  /* Get any options that the upper GCC wants to pass to the sub-GCC.  
+  /* Get any options that the upper GCC wants to pass to the sub-GCC.
 
      AIX support needs to know if -shared has been specified before
      parsing commandline arguments.  */
@@ -1143,10 +1123,10 @@ main (argc, argv)
 
 #ifdef COLLECT_EXPORT_LIST
 	    /* Saving directories where to search for libraries.  */
-       	    case 'L':
+	    case 'L':
 	      add_prefix (&cmdline_lib_dirs, arg+2);
 	      break;
-#else 
+#else
 #if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
 	    case 'L':
 	      if (is_in_args (arg, (const char **) ld1_argv, ld1-1))
@@ -1211,8 +1191,8 @@ main (argc, argv)
 	    *object++ = arg;
 #ifdef COLLECT_EXPORT_LIST
 	  /* libraries can be specified directly, i.e. without -l flag.  */
-       	  else
-       	    { 
+	  else
+	    {
 	      /* Saving a full library name.  */
               add_to_list (&libs, arg);
             }
@@ -1246,7 +1226,7 @@ main (argc, argv)
   if (exports.first)
     {
       char *buf = concat ("-bE:", export_file, NULL);
-      
+
       *ld1++ = buf;
       *ld2++ = buf;
 
@@ -1378,7 +1358,7 @@ main (argc, argv)
 	{
 	  char **real_strip_argv = (char **) xcalloc (sizeof (char *), 3);
 	  const char ** strip_argv = (const char **) real_strip_argv;
-	  
+
 	  strip_argv[0] = strip_file_name;
 	  strip_argv[1] = output_file;
 	  strip_argv[2] = (char *) 0;
@@ -1470,7 +1450,7 @@ main (argc, argv)
   /* Let scan_prog_file do any final mods (OSF/rose needs this for
      constructors/destructors in shared libraries.  */
   scan_prog_file (output_file, PASS_SECOND);
-#endif 
+#endif
 
   maybe_unlink (c_file);
   maybe_unlink (o_file);
@@ -1486,8 +1466,7 @@ main (argc, argv)
 /* Wait for a process to finish, and exit if a nonzero status is found.  */
 
 int
-collect_wait (prog)
-     const char *prog;
+collect_wait (const char *prog)
 {
   int status;
 
@@ -1510,8 +1489,7 @@ collect_wait (prog)
 }
 
 static void
-do_wait (prog)
-     const char *prog;
+do_wait (const char *prog)
 {
   int ret = collect_wait (prog);
   if (ret != 0)
@@ -1525,10 +1503,7 @@ do_wait (prog)
 /* Execute a program, and wait for the reply.  */
 
 void
-collect_execute (prog, argv, redir)
-     const char *prog;
-     char **argv;
-     const char *redir;
+collect_execute (const char *prog, char **argv, const char *redir)
 {
   char *errmsg_fmt;
   char *errmsg_arg;
@@ -1598,9 +1573,7 @@ collect_execute (prog, argv, redir)
 }
 
 static void
-fork_execute (prog, argv)
-     const char *prog;
-     char **argv;
+fork_execute (const char *prog, char **argv)
 {
   collect_execute (prog, argv, NULL);
   do_wait (prog);
@@ -1609,8 +1582,7 @@ fork_execute (prog, argv)
 /* Unlink a file unless we are debugging.  */
 
 static void
-maybe_unlink (file)
-     const char *file;
+maybe_unlink (const char *file)
 {
   if (!debug)
     unlink (file);
@@ -1624,9 +1596,7 @@ static long sequence_number = 0;
 /* Add a name to a linked list.  */
 
 static void
-add_to_list (head_ptr, name)
-     struct head *head_ptr;
-     const char *name;
+add_to_list (struct head *head_ptr, const char *name)
 {
   struct id *newid
     = (struct id *) xcalloc (sizeof (struct id) + strlen (name), 1);
@@ -1659,8 +1629,7 @@ add_to_list (head_ptr, name)
    looks like "_GLOBAL_.I.12345.foo".  */
 
 static int
-extract_init_priority (name)
-     const char *name;
+extract_init_priority (const char *name)
 {
   int pos = 0, pri;
 
@@ -1677,8 +1646,7 @@ extract_init_priority (name)
    ctors will be run from right to left, dtors from left to right.  */
 
 static void
-sort_ids (head_ptr)
-     struct head *head_ptr;
+sort_ids (struct head *head_ptr)
 {
   /* id holds the current element to insert.  id_next holds the next
      element to insert.  id_ptr iterates through the already sorted elements
@@ -1719,10 +1687,7 @@ sort_ids (head_ptr)
 /* Write: `prefix', the names on list LIST, `suffix'.  */
 
 static void
-write_list (stream, prefix, list)
-     FILE *stream;
-     const char *prefix;
-     struct id *list;
+write_list (FILE *stream, const char *prefix, struct id *list)
 {
   while (list)
     {
@@ -1736,10 +1701,8 @@ write_list (stream, prefix, list)
    [ARGS_BEGIN,ARGS_END).  */
 
 static int
-is_in_args (string, args_begin, args_end)
-     const char *string;
-     const char **args_begin;
-     const char **args_end;
+is_in_args (const char *string, const char **args_begin,
+	    const char **args_end)
 {
   const char **args_pointer;
   for (args_pointer = args_begin; args_pointer != args_end; ++args_pointer)
@@ -1753,9 +1716,7 @@ is_in_args (string, args_begin, args_end)
 /* This function is really used only on AIX, but may be useful.  */
 #if 0
 static int
-is_in_list (prefix, list)
-     const char *prefix;
-     struct id *list;
+is_in_list (const char *prefix, struct id *list)
 {
   while (list)
     {
@@ -1770,10 +1731,7 @@ is_in_list (prefix, list)
 /* Added for debugging purpose.  */
 #ifdef COLLECT_EXPORT_LIST
 static void
-dump_list (stream, prefix, list)
-     FILE *stream;
-     const char *prefix;
-     struct id *list;
+dump_list (FILE *stream, const char *prefix, struct id *list)
 {
   while (list)
     {
@@ -1785,10 +1743,7 @@ dump_list (stream, prefix, list)
 
 #if 0
 static void
-dump_prefix_list (stream, prefix, list)
-     FILE *stream;
-     const char *prefix;
-     struct prefix_list *list;
+dump_prefix_list (FILE *stream, const char *prefix, struct prefix_list *list)
 {
   while (list)
     {
@@ -1799,10 +1754,7 @@ dump_prefix_list (stream, prefix, list)
 #endif
 
 static void
-write_list_with_asm (stream, prefix, list)
-     FILE *stream;
-     const char *prefix;
-     struct id *list;
+write_list_with_asm (FILE *stream, const char *prefix, struct id *list)
 {
   while (list)
     {
@@ -1816,9 +1768,7 @@ write_list_with_asm (stream, prefix, list)
    object), along with the functions to execute them.  */
 
 static void
-write_c_file_stat (stream, name)
-     FILE *stream;
-     const char *name ATTRIBUTE_UNUSED;
+write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 {
   const char *p, *q;
   char *prefix, *r;
@@ -1947,16 +1897,14 @@ write_c_file_stat (stream, name)
 
 #ifndef LD_INIT_SWITCH
 static void
-write_c_file_glob (stream, name)
-     FILE *stream;
-     const char *name ATTRIBUTE_UNUSED;
+write_c_file_glob (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 {
   /* Write the tables as C code  */
 
   int frames = (frame_tables.number > 0);
 
   fprintf (stream, "typedef void entry_pt();\n\n");
-    
+
   write_list_with_asm (stream, "extern entry_pt ", constructors.first);
 
   if (frames)
@@ -2012,9 +1960,7 @@ write_c_file_glob (stream, name)
 #endif /* ! LD_INIT_SWITCH */
 
 static void
-write_c_file (stream, name)
-     FILE *stream;
-     const char *name;
+write_c_file (FILE *stream, const char *name)
 {
   fprintf (stream, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
 #ifndef LD_INIT_SWITCH
@@ -2028,9 +1974,7 @@ write_c_file (stream, name)
 
 #ifdef COLLECT_EXPORT_LIST
 static void
-write_aix_file (stream, list)
-     FILE *stream;
-     struct id *list;
+write_aix_file (FILE *stream, struct id *list)
 {
   for (; list; list = list->next)
     {
@@ -2052,12 +1996,10 @@ write_aix_file (stream, list)
    destructor table has the same format, and begins at __DTOR_LIST__.  */
 
 static void
-scan_prog_file (prog_name, which_pass)
-     const char *prog_name;
-     enum pass which_pass;
+scan_prog_file (const char *prog_name, enum pass which_pass)
 {
-  void (*int_handler) PARAMS ((int));
-  void (*quit_handler) PARAMS ((int));
+  void (*int_handler) (int);
+  void (*quit_handler) (int);
   char *real_nm_argv[4];
   const char **nm_argv = (const char **) real_nm_argv;
   int argc = 0;
@@ -2123,9 +2065,9 @@ scan_prog_file (prog_name, which_pass)
     }
 
   /* Parent context from here on.  */
-  int_handler  = (void (*) PARAMS ((int))) signal (SIGINT,  SIG_IGN);
+  int_handler  = (void (*) (int)) signal (SIGINT,  SIG_IGN);
 #ifdef SIGQUIT
-  quit_handler = (void (*) PARAMS ((int))) signal (SIGQUIT, SIG_IGN);
+  quit_handler = (void (*) (int)) signal (SIGQUIT, SIG_IGN);
 #endif
 
   if (close (pipe_fd[1]) < 0)
@@ -2149,7 +2091,7 @@ scan_prog_file (prog_name, which_pass)
 
       if (ch != '_')
 	continue;
-  
+
       name = p;
       /* Find the end of the symbol name.
 	 Do not include `|', because Encore nm can tack that on the end.  */
@@ -2229,8 +2171,8 @@ scan_prog_file (prog_name, which_pass)
 #include <sys/dir.h>
 
 /* pointers to the object file */
-unsigned object;    	/* address of memory mapped file */
-unsigned objsize;    	/* size of memory mapped to file */
+unsigned object;	/* address of memory mapped file */
+unsigned objsize;	/* size of memory mapped to file */
 char * code;		/* pointer to code segment */
 char * data;		/* pointer to data segment */
 struct nlist *symtab;	/* pointer to symbol table */
@@ -2240,11 +2182,8 @@ struct head libraries;
 
 /* Map the file indicated by NAME into memory and store its address.  */
 
-static void mapfile			PARAMS ((const char *));
-
 static void
-mapfile (name)
-     const char *name;
+mapfile (const char *name)
 {
   int fp;
   struct stat s;
@@ -2266,11 +2205,8 @@ mapfile (name)
 
 static const char *libname;
 
-static int libselect			PARAMS ((struct direct *));
-
 static int
-libselect (d)
-     struct direct *d;
+libselect (struct direct *d)
 {
   return (strncmp (libname, d->d_name, strlen (libname)) == 0);
 }
@@ -2282,11 +2218,9 @@ libselect (d)
    We must verify that the extension is numeric, because Sun saves the
    original versions of patched libraries with a .FCS extension.  Files with
    invalid extensions must go last in the sort, so that they will not be used.  */
-static int libcompare		PARAMS ((struct direct **, struct direct **));
 
 static int
-libcompare (d1, d2)
-     struct direct **d1, **d2;
+libcompare (struct direct **d1, struct direct **d2)
 {
   int i1, i2 = strlen (libname);
   char *e1 = (*d1)->d_name + i2;
@@ -2327,11 +2261,9 @@ libcompare (d1, d2)
 
 /* Given the name NAME of a dynamic dependency, find its pathname and add
    it to the list of libraries.  */
-static void locatelib			PARAMS ((const char *));
 
 static void
-locatelib (name)
-     const char *name;
+locatelib (const char *name)
 {
   static const char **l;
   static int cnt;
@@ -2344,7 +2276,7 @@ locatelib (name)
       char *ld_rules;
       char *ldr = 0;
       /* counting elements in array, need 1 extra for null */
-      cnt = 1;  
+      cnt = 1;
       ld_rules = (char *) (ld_2->ld_rules + code);
       if (ld_rules)
 	{
@@ -2370,7 +2302,7 @@ locatelib (name)
       if (ldr)
 	{
 	  *pp++ = ldr;
-	  for (; *ldr != 0; ldr++) 
+	  for (; *ldr != 0; ldr++)
 	    if (*ldr == ':')
 	      {
 		*ldr++ = 0;
@@ -2380,7 +2312,7 @@ locatelib (name)
       if (q)
 	{
 	  *pp++ = q;
-	  for (; *q != 0; q++) 
+	  for (; *q != 0; q++)
 	    if (*q == ':')
 	      {
 		*q++ = 0;
@@ -2419,9 +2351,8 @@ locatelib (name)
 /* Scan the _DYNAMIC structure of the output file to find shared libraries
    that it depends upon and any constructors or destructors they contain.  */
 
-static void 
-scan_libraries (prog_name)
-     const char *prog_name;
+static void
+scan_libraries (const char *prog_name)
 {
   struct exec *header;
   char *base;
@@ -2494,14 +2425,13 @@ scan_libraries (prog_name)
    the output file depends upon and their initialization/finalization
    routines, if any.  */
 
-static void 
-scan_libraries (prog_name)
-     const char *prog_name;
+static void
+scan_libraries (const char *prog_name)
 {
   static struct head libraries;		/* list of shared libraries found */
   struct id *list;
-  void (*int_handler) PARAMS ((int));
-  void (*quit_handler) PARAMS ((int));
+  void (*int_handler) (int);
+  void (*quit_handler) (int);
   char *real_ldd_argv[4];
   const char **ldd_argv = (const char **) real_ldd_argv;
   int argc = 0;
@@ -2564,9 +2494,9 @@ scan_libraries (prog_name)
     }
 
   /* Parent context from here on.  */
-  int_handler  = (void (*) PARAMS ((int))) signal (SIGINT,  SIG_IGN);
+  int_handler  = (void (*) (int))) signal (SIGINT,  SIG_IGN;
 #ifdef SIGQUIT
-  quit_handler = (void (*) PARAMS ((int))) signal (SIGQUIT, SIG_IGN);
+  quit_handler = (void (*) (int))) signal (SIGQUIT, SIG_IGN;
 #endif
 
   if (close (pipe_fd[1]) < 0)
@@ -2591,7 +2521,7 @@ scan_libraries (prog_name)
 	fatal ("dynamic dependency %s not found", buf);
 
       /* Find the end of the symbol name.  */
-      for (end = p; 
+      for (end = p;
 	   (ch2 = *end) != '\0' && ch2 != '\n' && !ISSPACE (ch2) && ch2 != '|';
 	   end++)
 	continue;
@@ -2696,10 +2626,9 @@ static const char *const aix_std_libs[] = {
 
 /* This function checks the filename and returns 1
    if this name matches the location of a standard AIX library.  */
-static int ignore_library	PARAMS ((const char *));
+static int ignore_library (const char *);
 static int
-ignore_library (name)
-     const char *name;
+ignore_library (const char *name)
 {
   const char *const *p = &aix_std_libs[0];
   while (*p++ != NULL)
@@ -2709,7 +2638,7 @@ ignore_library (name)
 #endif /* COLLECT_EXPORT_LIST */
 
 #if defined (HAVE_DECL_LDGETNAME) && !HAVE_DECL_LDGETNAME
-extern char *ldgetname PARAMS ((LDFILE *, GCC_SYMENT *));
+extern char *ldgetname (LDFILE *, GCC_SYMENT *);
 #endif
 
 /* COFF version to scan the name list of the loaded program for
@@ -2722,9 +2651,7 @@ extern char *ldgetname PARAMS ((LDFILE *, GCC_SYMENT *));
    destructor table has the same format, and begins at __DTOR_LIST__.  */
 
 static void
-scan_prog_file (prog_name, which_pass)
-     const char *prog_name;
-     enum pass which_pass;
+scan_prog_file (const char *prog_name, enum pass which_pass)
 {
   LDFILE *ldptr = NULL;
   int sym_index, sym_count;
@@ -2834,7 +2761,7 @@ scan_prog_file (prog_name, which_pass)
 #ifdef COLLECT_EXPORT_LIST
 			  /* If we are building a shared object on AIX we need
 			     to explicitly export all global symbols.  */
-			  if (shared_obj) 
+			  if (shared_obj)
 			    {
 			      if (which_pass == PASS_OBJ && (! export_flag))
 				add_to_list (&exports, name);
@@ -2887,8 +2814,7 @@ scan_prog_file (prog_name, which_pass)
 /* Given a library name without "lib" prefix, this function
    returns a full library name including a path.  */
 static char *
-resolve_lib_name (name)
-     const char *name;
+resolve_lib_name (const char *name)
 {
   char *lib_buf;
   int i, j, l = 0;
@@ -2912,7 +2838,7 @@ resolve_lib_name (name)
 	    p = "/";
 	  for (j = 0; libexts[j]; j++)
 	    {
-       	      sprintf (lib_buf, "%s%slib%s.%s",
+	      sprintf (lib_buf, "%s%slib%s.%s",
 		       list->prefix, p, name, libexts[j]);
 if (debug) fprintf (stderr, "searching for: %s\n", lib_buf);
 	      if (file_exists (lib_buf))
@@ -2976,16 +2902,16 @@ struct file_info
   int	use_mmap;			/* != 0 if mmap'ed */
 };
 
-extern int decode_mach_o_hdr ();
-extern int encode_mach_o_hdr ();
+extern int decode_mach_o_hdr (void);
+extern int encode_mach_o_hdr (void);
 
-static void add_func_table	PARAMS ((mo_header_t *, load_all_t *,
-				       symbol_info_t *, int));
-static void print_header	PARAMS ((mo_header_t *));
-static void print_load_command	PARAMS ((load_union_t *, size_t, int));
-static void bad_header		PARAMS ((int));
-static struct file_info	*read_file  PARAMS ((const char *, int, int));
-static void end_file		PARAMS ((struct file_info *));
+static void add_func_table (mo_header_t *, load_all_t *, symbol_info_t *,
+			    int);
+static void print_header (mo_header_t *);
+static void print_load_command (load_union_t *, size_t, int);
+static void bad_header (int);
+static struct file_info	*read_file (const char *, int, int);
+static void end_file (struct file_info *);
 
 /* OSF/rose specific version to scan the name list of the loaded
    program for the symbols g++ uses for static constructors and
@@ -2998,9 +2924,7 @@ static void end_file		PARAMS ((struct file_info *));
    destructor table has the same format, and begins at __DTOR_LIST__.  */
 
 static void
-scan_prog_file (prog_name, which_pass)
-     const char *prog_name;
-     enum pass which_pass;
+scan_prog_file (const char *prog_name, enum pass which_pass)
 {
   char *obj;
   mo_header_t hdr;
@@ -3267,15 +3191,15 @@ scan_prog_file (prog_name, which_pass)
 }
 
 
-/* Add a function table to the load commands to call a function
-   on initiation or termination of the process.  */
+/* Add a function table to the load commands to call a function on
+   initiation or termination of the process.  The function takes HDR_P
+   as pointer to the global header, LOAD_ARRAY as array of pointers to
+   load commands, SYM as pointer to symbol entry and the fntc_type
+   value TYPE.  */
 
 static void
-add_func_table (hdr_p, load_array, sym, type)
-     mo_header_t *hdr_p;		/* pointer to global header */
-     load_all_t *load_array;		/* array of ptrs to load cmds */
-     symbol_info_t *sym;		/* pointer to symbol entry */
-     int type;				/* fntc_type value */
+add_func_table (mo_header_t *hdr_p, load_all_t *load_array,
+		symbol_info_t *sym, int type)
 {
   /* Add a new load command.  */
   int num_cmds = ++hdr_p->moh_n_load_cmds;
@@ -3350,8 +3274,7 @@ add_func_table (hdr_p, load_array, sym, type)
 /* Print the global header for an OSF/rose object.  */
 
 static void
-print_header (hdr_ptr)
-     mo_header_t *hdr_ptr;
+print_header (mo_header_t *hdr_ptr)
 {
   fprintf (stderr, "\nglobal header:\n");
   fprintf (stderr, "\tmoh_magic            = 0x%.8lx\n", hdr_ptr->moh_magic);
@@ -3393,10 +3316,7 @@ print_header (hdr_ptr)
 /* Print a short summary of a load command.  */
 
 static void
-print_load_command (load_hdr, offset, number)
-     load_union_t *load_hdr;
-     size_t offset;
-     int number;
+print_load_command (load_union_t *load_hdr, size_t offset, int number)
 {
   mo_long_t type = load_hdr->hdr.ldci_cmd_type;
   const char *type_str = (char *) 0;
@@ -3460,8 +3380,7 @@ print_load_command (load_hdr, offset, number)
 /* Fatal error when {en,de}code_mach_o_header fails.  */
 
 static void
-bad_header (status)
-     int status;
+bad_header (int status)
 {
   switch (status)
     {
@@ -3477,13 +3396,12 @@ bad_header (status)
 }
 
 
-/* Read a file into a memory buffer.  */
+/* Read a file into a memory buffer. The file has filename NAME and is
+   opened with the file descriptor FD for read or write according to
+   RW.  */
 
 static struct file_info *
-read_file (name, fd, rw)
-     const char *name;		/* filename */
-     int fd;			/* file descriptor */
-     int rw;			/* read/write */
+read_file (const char *name, int fd, int rw)
 {
   struct stat stat_pkt;
   struct file_info *p = (struct file_info *) xcalloc (sizeof (struct file_info), 1);
@@ -3545,8 +3463,7 @@ read_file (name, fd, rw)
 /* Do anything necessary to write a file back from memory.  */
 
 static void
-end_file (ptr)
-     struct file_info *ptr;	/* file information block */
+end_file (struct file_info *pt)
 {
 #ifdef USE_MMAP
   if (ptr->use_mmap)
