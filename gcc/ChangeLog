@@ -1,5 +1,8 @@
 2003-01-10  Geoffrey Keating  <geoffk@apple.com>
 
+	* ggc-page.c (ggc_collect): Avoid overflow computing
+	min_expand.
+
 	* Makefile.in (RANLIB_FOR_TARGET): Use RANLIB when native.
 	(RANLIB_TEST_FOR_TARGET): Delete.  Don't pass down to sub-makes.
 	Remove calls.
