@@ -39,8 +39,13 @@ Boston, MA 02111-1307, USA.  */
   "%{!nostdlib:%{!r*:%{!e*:-e __start}}} -dc -dp %{assert*}"
 
 /* run-time target specifications */
-#define CPP_PREDEFINES "-D__unix__ -D__ANSI_COMPAT -Asystem=unix \
--D__OpenBSD__ -D__alpha__ -D__alpha"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__OpenBSD__");		\
+	builtin_define ("__ANSI_COMPAT");	\
+	builtin_define ("__unix__");		\
+	builtin_assert ("system=unix");		\
+    } while (0)
 
 /* Layout of source language data types.  */
 

@@ -32,8 +32,20 @@ Boston, MA 02111-1307, USA.  */
 /* The following defines are necessary for the standard headers to work
    correctly.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__unix=1 -D_UNICOS=205 -D_CRAY=1 -D_CRAYT3E=1 -D_CRAYMPP=1 -D_CRAYIEEE=1 -D_ADDR64=1 -D_LD64=1 -D__UNICOSMK__ -D__INT_MAX__=9223372036854775807 -D__SHRT_MAX__=2147483647"
+#define TARGET_OS_CPP_BUILTINS()				\
+    do {							\
+	builtin_define ("__unix");				\
+	builtin_define ("_UNICOS=205");				\
+	builtin_define ("_CRAY");				\
+	builtin_define ("_CRAYT3E");				\
+	builtin_define ("_CRAYMPP");				\
+	builtin_define ("_CRAYIEEE");				\
+	builtin_define ("_ADDR64");				\
+	builtin_define ("_LD64");				\
+	builtin_define ("__UNICOSMK__");			\
+	builtin_define ("__INT_MAX__=9223372036854775807");	\
+	builtin_define ("__SHRT_MAX__=2147483647")		\
+    } while (0)
 
 #define SHORT_TYPE_SIZE 32
 

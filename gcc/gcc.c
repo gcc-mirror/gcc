@@ -694,7 +694,7 @@ static const char *cpp_options =
  %{fshow-column} %{fno-show-column}\
  %{fsigned-char&funsigned-char}\
  %{fleading-underscore} %{fno-leading-underscore}\
- %{fno-operator-names} %{ftabstop=*}";
+ %{fno-operator-names} %{ftabstop=*} %{undef}";
 
 /* NB: This is shared amongst all front-ends.  */
 static const char *cc1_options =

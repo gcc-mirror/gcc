@@ -25,15 +25,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* cpp handles __STDC__ */
 /* The three "Alpha" defines on the first such line are from the CLAXP spec */
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES " \
-  -D__INTERIX \
-  -D__OPENNT \
-  -D__Alpha_AXP -D_M_ALPHA -D_ALPHA_  \
-  -D__alpha -D__alpha__\
-  -D__stdcall= \
-  -D__cdecl= \
-  -Asystem=unix -Asystem=interix -Acpu=alpha -Amachine=alpha"
+#define TARGET_OS_CPP_BUILTINS()				\
+    do {							\
+	builtin_define ("__INTERIX");				\
+	builtin_define ("__OPENNT");				\
+	builtin_define ("__Alpha_AXP");				\
+	builtin_define ("_M_ALPHA");				\
+	builtin_define ("_ALPHA_");				\
+	builtin_define ("__stdcall=");				\
+	builtin_define ("__cdecl=");				\
+	builtin_assert ("system=unix");				\
+	builtin_assert ("system=interix");			\
+    } while (0)
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\

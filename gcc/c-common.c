@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cpplib.h"
 #include "target.h"
 #include "langhooks.h"
+#include "except.h"		/* For USING_SJLJ_EXCEPTIONS.  */
 cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 
 #undef WCHAR_TYPE_SIZE
@@ -4325,11 +4326,14 @@ cb_register_builtins (pfile)
 	cpp_define (pfile, "__GXX_WEAK__=0");
     }
 
+  /* libgcc needs to know this.  */
+  if (USING_SJLJ_EXCEPTIONS)
+    cpp_define (pfile, "__USING_SJLJ_EXCEPTIONS__");
+
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
-#ifdef TARGET_REGISTER_CPP_BUILTINS
-  TARGET_REGISTER_CPP_BUILTINS;
-#endif
+  TARGET_CPU_CPP_BUILTINS ();
+  TARGET_OS_CPP_BUILTINS ();
 }
 
 /* Pass an object-like macro.  If it doesn't lie in the user's

@@ -623,12 +623,15 @@ The macro @code{STANDARD_STARTFILE_PREFIX}.
 Here are run-time target specifications.
 
 @table @code
-@findex TARGET_REGISTER_CPP_BUILTINS
-@item TARGET_REGISTER_CPP_BUILTINS
-This macro expands to a block of code that defines target-specific
-built-in preprocessor macros and assertions, using the functions
-@code{builtin_macro}, @code{builtin_macro_std} and
-@code{builtin_assert} declared in @file{c-lex.h}.
+@findex TARGET_CPU_CPP_BUILTINS
+@item TARGET_CPU_CPP_BUILTINS()
+This function-like macro expands to a block of code that defines
+built-in preprocessor macros and assertions for the target cpu, using
+the functions @code{builtin_macro}, @code{builtin_macro_std} and
+@code{builtin_assert} declared in @file{c-lex.h}.  When the front end
+calls this macro it provides a trailing semicolon, and since it has
+finished command line option processing your code can use those
+results freely.
 
 @code{builtin_assert} takes a string in the form you pass to the
 command-line option @option{-A}, such as @code{cpu=mips}, and creates
@@ -646,7 +649,16 @@ and possibly @code{unix}; passing @code{_mips} defines @code{__mips},
 @code{__mips__} and possibly @code{_mips}, and passing @code{_ABI64}
 defines only @code{_ABI64}.
 
-This macro obsoletes the @code{CPP_PREDEFINES} target macro.
+With @code{TARGET_OS_CPP_BUILTINS} this macro obsoletes the
+@code{CPP_PREDEFINES} target macro.
+
+@findex TARGET_OS_CPP_BUILTINS
+@item TARGET_OS_CPP_BUILTINS()
+Similarly to @code{TARGET_CPU_CPP_BUILTINS} but this macro is optional
+and is used for the target operating system instead.
+
+With @code{TARGET_CPU_CPP_BUILTINS} this macro obsoletes the
+@code{CPP_PREDEFINES} target macro.
 
 @findex CPP_PREDEFINES
 @item CPP_PREDEFINES

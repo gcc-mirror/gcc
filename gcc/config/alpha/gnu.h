@@ -3,9 +3,15 @@
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (Alpha GNU)");
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
-"-D__GNU__ -D__gnu_hurd__ -Dunix -Asystem=gnu -D_LONGLONG -D__alpha__ -D__ELF__"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__GNU__");		\
+	builtin_define ("__ELF__");		\
+	builtin_define ("__gnu_hurd__");	\
+	builtin_define ("_LONGLONG");		\
+	builtin_define_std ("unix");		\
+	builtin_assert ("system=gnu");		\
+    } while (0)
 
 #undef ELF_DYNAMIC_LINKER
 #define ELF_DYNAMIC_LINKER	"/lib/ld.so"
