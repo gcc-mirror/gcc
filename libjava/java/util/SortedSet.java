@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -31,7 +31,8 @@ executable file might be covered by the GNU General Public License. */
 
 package java.util;
 
-public interface SortedSet extends Set {
+public interface SortedSet extends Set
+{
   Comparator comparator();
   Object first();
   SortedSet headSet(Object toElement);
