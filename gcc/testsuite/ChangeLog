@@ -1,3 +1,7 @@
+2000-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/inline16.C: New test.
+
 2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* g++.old-deja/g++.pt/memtemp77.C (main): Adjust comparison against.

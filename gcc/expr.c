@@ -10285,7 +10285,7 @@ do_store_flag (exp, target, mode, only_cheap)
       op0 = expand_expr (inner, subtarget, VOIDmode, 0);
 
       if (bitnum != 0)
-	op0 = expand_shift (RSHIFT_EXPR, GET_MODE (op0), op0,
+	op0 = expand_shift (RSHIFT_EXPR, operand_mode, op0,
 			    size_int (bitnum), subtarget, ops_unsignedp);
 
       if (GET_MODE (op0) != mode)
