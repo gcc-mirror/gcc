@@ -1,3 +1,7 @@
+2000-11-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gansidecl.h (const): Check __STDC__ before undef'ing `const'.
+
 2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-typeck.c (build_conditional_expr): When merging type
