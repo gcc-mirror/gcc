@@ -4,6 +4,9 @@ Wed Mar 11 06:58:13 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 
 Wed Mar 11 06:15:52 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (emit_push_insn): Use loop to find movstr patterns
+	instead of explicit tests.
+
 	* Makefile.in (extraclean): Don't delete install1.texi.
 
 Tue Mar 10 14:27:51 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
