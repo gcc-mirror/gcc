@@ -1,3 +1,10 @@
+2002-02-21  Aldy Hernandez  <aldyh@redhat.com>
+
+        * cp/decl.c (duplicate_decls): Merge always_inline attribute.
+
+        * cp/tree.c (cp_cannot_inline_tree_fn): Do not inline at -O0
+        unless DECL_ALWAYS_INLINE.
+
 2002-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* typeck.c (cp_pointer_int_sum): Renamed from
