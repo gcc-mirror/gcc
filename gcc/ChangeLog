@@ -1,5 +1,14 @@
 2003-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.def (DEF_GCC_BUILTIN, DEF_LIB_BUILTIN,
+	DEF_EXT_LIB_BUILTIN, DEF_C99_BUILTIN, DEF_C99_C90RES_BUILTIN):
+	Prepend "__builtin_" onto NAME with string concatenation.  Remove
+	explicit "__builtin_" from each macro call.
+
+	Reformat entire file.
+
+2003-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* builtins.def (ATTR_MATHFN_ERRNO, ATTR_MATHFN_FPROUNDING,
 	ATTR_MATHFN_FPROUNDING_ERRNO): New macros.  Use throughout.
 
