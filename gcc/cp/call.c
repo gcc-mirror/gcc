@@ -3212,7 +3212,11 @@ standard_conversion (to, from, expr)
     }
   else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 	   && DERIVED_FROM_P (to, from))
-    conv = build_conv (BASE_CONV, to, conv);
+    {
+      if (TREE_CODE (conv) == RVALUE_CONV)
+	conv = TREE_OPERAND (conv, 0);
+      conv = build_conv (BASE_CONV, to, conv);
+    }
   else
     return 0;
 

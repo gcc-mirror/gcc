@@ -1,3 +1,7 @@
+Fri Feb 13 01:36:42 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (standard_conversion): A BASE_CONV replaces an RVALUE_CONV.
+
 Fri Feb 13 00:21:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h: Add access_protected_virtual_node.
