@@ -1453,7 +1453,9 @@ build_objc_string_object (tree string)
 	= objc_add_static_instance (constructor, constant_string_type);
     }
 
-  return (build_unary_op (ADDR_EXPR, constructor, 1));
+  constructor = build_unary_op (ADDR_EXPR, constructor, 1);
+  TREE_CONSTANT (constructor) = true;
+  return constructor;
 }
 
 /* Declare a static instance of CLASS_DECL initialized by CONSTRUCTOR.  */
