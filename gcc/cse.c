@@ -5861,7 +5861,15 @@ fold_rtx (x, insn)
 	     hence not save anything) or be incorrect.  */
 	  if (const_arg1 != 0 && GET_CODE (const_arg1) == CONST_INT
 	      && INTVAL (const_arg1) < 0
-	      && - INTVAL (const_arg1) >= 0
+	      /* This used to test
+
+	         - INTVAL (const_arg1) >= 0
+
+		 But The Sun V5.0 compilers mis-compiled that test.  So
+		 instead we test for the problematic value in a more direct
+		 manner and hope the Sun compilers get it correct.  */
+	      && INTVAL (const_arg1) !=
+	        ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1))
 	      && GET_CODE (folded_arg1) == REG)
 	    {
 	      rtx new_const = GEN_INT (- INTVAL (const_arg1));

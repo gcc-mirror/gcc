@@ -1,5 +1,14 @@
 Tue Sep  7 01:27:21 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Fri Aug 27 15:35:24 1999  Jeffrey A Law  (law@cygnus.com)
+	* cse.c (fold_rtx): Work around bug in Sun V5.0 compilers.
+	* pa.c (emit_move_sequence): Do not stop on SUBREG_WORD of an
+	operand.
+
+	Tue Aug 31 11:51:06 1999  Jim Kingdon  <http://developer.redhat.com>
+	* i386.c (output_strlen_unroll): Don't write xops[7]
+	label if it wasn't set.
+
 	Fri Aug 27 09:36:17 1999  Andreas Schwab  <schwab@suse.de>
 	* function.c (assign_stack_temp_for_type): Fix change of Mar 5 for
 	the fact that ALIGN is measured in bits, not bytes.

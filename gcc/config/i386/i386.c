@@ -5234,6 +5234,9 @@ output_strlen_unroll (operands)
           output_asm_insn (AS1 (je,%l12), xops);
           output_asm_insn (AS1 (inc%L0,%0), xops);
 
+	  /* Not needed with an alignment of 2 */
+	  if (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 2)
+	    {
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				     CODE_LABEL_NUMBER (xops[7]));
           output_asm_insn (AS2 (cmp%B13,%2,%13), xops);
@@ -5242,6 +5245,8 @@ output_strlen_unroll (operands)
 
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				     CODE_LABEL_NUMBER (xops[6]));
+	    }
+
           output_asm_insn (AS2 (cmp%B13,%2,%13), xops);
         }
 
