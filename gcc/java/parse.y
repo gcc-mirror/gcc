@@ -781,8 +781,14 @@ type_import_on_demand_declaration:
 	IMPORT_TK name DOT_TK MULT_TK SC_TK
 		{
 		  tree name = EXPR_WFL_NODE ($2);
-		  /* Don't import java.lang.* twice. */
-		  if (name != java_lang_id)
+		  tree it;
+		  /* Search for duplicates. */
+		  for (it = ctxp->import_demand_list; it; it = TREE_CHAIN (it))
+		    if (EXPR_WFL_NODE (TREE_PURPOSE (it)) == name)
+		      break;
+		  /* Don't import the same thing more than once, just ignore
+		     duplicates (7.5.2) */
+		  if (! it)
 		    {
 		      read_import_dir ($2);
 		      ctxp->import_demand_list = 

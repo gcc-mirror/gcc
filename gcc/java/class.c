@@ -394,6 +394,14 @@ set_super_info (access_flags, this_class, super_class, interfaces_count)
       CLASS_HAS_SUPER (this_class) = 1;
     }
 
+  set_class_decl_access_flags (access_flags, class_decl);
+}
+
+void
+set_class_decl_access_flags (access_flags, class_decl)
+     int access_flags;
+     tree class_decl;
+{
   if (access_flags & ACC_PUBLIC)    CLASS_PUBLIC (class_decl) = 1;
   if (access_flags & ACC_FINAL)     CLASS_FINAL (class_decl) = 1;
   if (access_flags & ACC_SUPER)     CLASS_SUPER (class_decl) = 1;
