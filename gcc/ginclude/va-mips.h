@@ -29,7 +29,7 @@ typedef char * __gnuc_va_list;
 #define __va_ellipsis
 #endif
 
-#if __mips==3
+#if __mips>=3
 #define __va_rounded_size(__TYPE)  \
   (((sizeof (__TYPE) + 8 - 1) / 8) * 8)
 #else
@@ -37,19 +37,38 @@ typedef char * __gnuc_va_list;
   (((sizeof (__TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
 #endif
 
+/* Get definitions for _MIPS_SIM_ABI64 etc.  */
+#ifdef _MIPS_SIM
+#include <sgidefs.h>
+#endif
+
 #ifdef _STDARG_H
+#if defined(_MIPS_SIM) && (_MIPS_SIM == _MIPS_SIM_ABI64)
+#define va_start(__AP, __LASTARG)					\
+  (__AP = __builtin_next_arg (__LASTARG) - 64				\
+   + (__builtin_args_info (2) > 8 ? 64 : __builtin_args_info(2) * 8))
+#else
 #define va_start(__AP, __LASTARG) \
   (__AP = (__gnuc_va_list) __builtin_next_arg (__LASTARG))
+#endif
 
 #else
 #define va_alist  __builtin_va_alist
-#if __mips==3
+#if __mips>=3
 /* This assumes that `long long int' is always a 64 bit type.  */
 #define va_dcl    long long int __builtin_va_alist; __va_ellipsis
 #else
 #define va_dcl    int __builtin_va_alist; __va_ellipsis
 #endif
+/* Need alternate code for _MIPS_SIM_ABI64, but don't use that symbol
+   because it may not be defined.  */
+#if defined(_MIPS_SIM) && (_MIPS_SIM == _MIPS_SIM_ABI64)
+#define va_start(__AP)							\
+  (__AP = __builtin_next_arg () - 64					\
+   + (__builtin_args_info (2) > 8 ? 64 : __builtin_args_info(2) * 8))
+#else
 #define va_start(__AP)  __AP = (char *) &__builtin_va_alist
+#endif
 #endif
 
 #ifndef va_end
@@ -59,11 +78,11 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
-/* The __mips==3 cases are reversed from the 32 bit cases, because the standard
+/* The __mips>=3 cases are reversed from the 32 bit cases, because the standard
    32 bit calling convention left-aligns all parameters smaller than a word,
-   whereas the __mips==3 calling convention does not (and hence they are
+   whereas the __mips>=3 calling convention does not (and hence they are
    right aligned).  */
-#if __mips==3
+#if __mips>=3
 #ifdef __MIPSEB__
 #define va_arg(__AP, __type)                                    \
   ((__type *) (void *) (__AP = (char *) ((((__PTRDIFF_TYPE__)__AP + 8 - 1) & -8) \
@@ -75,7 +94,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
    *(__type *) (void *) (__AP - __va_rounded_size (__type)))
 #endif
 
-#else /* not __mips==3 */
+#else /* not __mips>=3 */
 
 #ifdef __MIPSEB__
 /* For big-endian machines.  */
