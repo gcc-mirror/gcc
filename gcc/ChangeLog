@@ -1,3 +1,7 @@
+2002-06-13  Eric Christopher  <echristo@redhat.com>
+
+	* diagnostic.c (output_format): Fix thinko.
+
 Thu Jun 13 22:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/sh/coff.h (HAS_INIT_SECTION, INVOKE__MAIN): Don't define.
@@ -63,7 +67,7 @@ Thu Jun 13 18:18:17 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-06-13  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* tree-inline.c (expand_call_inline): Don' mess with _DECL
-	fields. 
+	fields.
 
 2002-06-13  Gabriel Dos Reis  <gdr@codesourcery.com>
 
@@ -120,6 +124,12 @@ Thu Jun 13 18:18:17 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	Don't expand macros whilst skipping, or if recursing.
 	(_cpp_create_trad_definition): scan_out_logical_line now sets
 	the output current position.
+
+2002-06-12  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.md (prefetch, prefetch_di, prefetch_si): New
+	patterns.
+	* config/mips/mips.h (RTX_COSTS): Fix formatting.
 
 2002-06-12  Eric Christopher  <echristo@redhat.com>
 
