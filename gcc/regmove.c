@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "basic-block.h"
+#include "except.h"
 #include "toplev.h"
 
 static int perhaps_ends_bb_p	PARAMS ((rtx));

@@ -1530,7 +1530,7 @@ alias.o : alias.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h hard-reg-set.h \
    $(GGC_H) function.h cselib.h $(TREE_H) $(TM_P_H)
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) insn-config.h \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h flags.h function.h \
-   $(EXPR_H) $(BASIC_BLOCK_H) toplev.h $(TM_P_H)
+   $(EXPR_H) $(BASIC_BLOCK_H) toplev.h $(TM_P_H) except.h
 haifa-sched.o : haifa-sched.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h $(TM_P_H)
