@@ -41,9 +41,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "except.h"
 #include "dwarf2.h"
 
-/* #define NDEBUG 1 */
-#include "assert.h"
-
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 
@@ -550,7 +547,8 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
 	  ranges[n_ranges].beg = i;
 	  ranges[n_ranges].size = last_size = GET_MODE_SIZE (reg_raw_mode[i]);
 	  ++n_ranges;
-	  assert (n_ranges < 5);
+	  if (n_ranges >= 5)
+	    abort ();
 	}
       ranges[n_ranges-1].end = i;
     }
@@ -558,9 +556,10 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
   /* The usual case: fp regs surrounded by general regs.  */
   if (n_ranges == 3 && ranges[0].size == ranges[2].size)
     {
-      assert ((DWARF_FRAME_REGNUM (ranges[1].end)
-	       - DWARF_FRAME_REGNUM (ranges[1].beg))
-	      == ranges[1].end - ranges[1].beg);
+      if ((DWARF_FRAME_REGNUM (ranges[1].end)
+	   - DWARF_FRAME_REGNUM (ranges[1].beg))
+	  != ranges[1].end - ranges[1].beg)
+	abort ();
       t  = fold (build (GE_EXPR, integer_type_node, reg_tree,
 			build_int_2 (DWARF_FRAME_REGNUM (ranges[1].beg), 0)));
       t2 = fold (build (LE_EXPR, integer_type_node, reg_tree,
@@ -577,10 +576,12 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
       size = DWARF_FRAME_REGNUM (ranges[n_ranges].beg);
       for (; n_ranges--; )
 	{
-	  assert ((DWARF_FRAME_REGNUM (ranges[n_ranges].end)
-		   - DWARF_FRAME_REGNUM (ranges[n_ranges].beg))
-		  == ranges[n_ranges].end - ranges[n_ranges].beg);
-	  assert (DWARF_FRAME_REGNUM (ranges[n_ranges].beg) < size);
+	  if ((DWARF_FRAME_REGNUM (ranges[n_ranges].end)
+	       - DWARF_FRAME_REGNUM (ranges[n_ranges].beg))
+	      != ranges[n_ranges].end - ranges[n_ranges].beg)
+	    abort ();
+	  if (DWARF_FRAME_REGNUM (ranges[n_ranges].beg) >= size)
+	    abort ();
 	  size = DWARF_FRAME_REGNUM (ranges[n_ranges].beg);
 	  t2 = fold (build (LE_EXPR, integer_type_node, reg_tree,
 			    build_int_2 (DWARF_FRAME_REGNUM
@@ -869,7 +870,8 @@ reg_save (label, reg, sreg, offset)
 	cfi->dw_cfi_opc = DW_CFA_offset;
 
       offset /= DWARF_CIE_DATA_ALIGNMENT;
-      assert (offset >= 0);
+      if (offset < 0)
+	abort ();
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
     }
   else
@@ -967,15 +969,18 @@ initial_return_save (rtl)
       switch (GET_CODE (rtl))
 	{
 	case REG:
-	  assert (REGNO (rtl) == STACK_POINTER_REGNUM);
+	  if (REGNO (rtl) != STACK_POINTER_REGNUM)
+	    abort ();
 	  offset = 0;
 	  break;
 	case PLUS:
-	  assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
+	  if (REGNO (XEXP (rtl, 0)) != STACK_POINTER_REGNUM)
+	    abort ();
 	  offset = INTVAL (XEXP (rtl, 1));
 	  break;
 	case MINUS:
-	  assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
+	  if (REGNO (XEXP (rtl, 0)) != STACK_POINTER_REGNUM)
+	    abort ();
 	  offset = -INTVAL (XEXP (rtl, 1));
 	  break;
 	default:
@@ -986,7 +991,8 @@ initial_return_save (rtl)
       /* The return address is at some offset from any value we can
 	 actually load.  For instance, on the SPARC it is in %i7+8. Just
 	 ignore the offset for now; it doesn't matter for unwinding frames.  */
-      assert (GET_CODE (XEXP (rtl, 1)) == CONST_INT);
+      if (GET_CODE (XEXP (rtl, 1)) != CONST_INT)
+	abort ();
       initial_return_save (XEXP (rtl, 0));
       return;
     default:
@@ -1097,7 +1103,8 @@ dwarf2out_frame_debug (insn)
     {
       /* Set up state for generating call frame debug info.  */
       lookup_cfa (&cfa_reg, &cfa_offset);
-      assert (cfa_reg == DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
+      if (cfa_reg != DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM))
+	abort ();
       cfa_reg = STACK_POINTER_REGNUM;
       cfa_store_reg = cfa_reg;
       cfa_store_offset = cfa_offset;
@@ -1119,7 +1126,8 @@ dwarf2out_frame_debug (insn)
      significant.  Currently this is true.  */
   if (GET_CODE (insn) == PARALLEL)
     insn = XVECEXP (insn, 0, 0);
-  assert (GET_CODE (insn) == SET);
+  if (GET_CODE (insn) != SET)
+    abort ();
 
   src = SET_SRC (insn);
   dest = SET_DEST (insn);
@@ -1133,10 +1141,12 @@ dwarf2out_frame_debug (insn)
 	{
 	  /* Setting FP from SP.  */
 	case REG:
-	  assert (cfa_reg == REGNO (src));
-	  assert (REGNO (dest) == STACK_POINTER_REGNUM
-		  || (frame_pointer_needed
-		      && REGNO (dest) == HARD_FRAME_POINTER_REGNUM));
+	  if (cfa_reg != REGNO (src))
+	    abort ();
+	  if (REGNO (dest) != STACK_POINTER_REGNUM
+	      && !(frame_pointer_needed
+		   && REGNO (dest) == HARD_FRAME_POINTER_REGNUM))
+	    abort ();
 	  cfa_reg = REGNO (dest);
 	  break;
 
@@ -1151,7 +1161,8 @@ dwarf2out_frame_debug (insn)
 		  offset = INTVAL (XEXP (src, 1));
 		  break;
 		case REG:
-		  assert (REGNO (XEXP (src, 1)) == cfa_temp_reg);
+		  if (REGNO (XEXP (src, 1)) != cfa_temp_reg)
+		    abort ();
 		  offset = cfa_temp_value;
 		  break;
 		default:
@@ -1161,11 +1172,12 @@ dwarf2out_frame_debug (insn)
 	      if (XEXP (src, 0) == hard_frame_pointer_rtx)
 		{
 		  /* Restoring SP from FP in the epilogue.  */
-		  assert (cfa_reg == HARD_FRAME_POINTER_REGNUM);
+		  if (cfa_reg != HARD_FRAME_POINTER_REGNUM)
+		    abort ();
 		  cfa_reg = STACK_POINTER_REGNUM;
 		}
-	      else
-		assert (XEXP (src, 0) == stack_pointer_rtx);
+	      else if (XEXP (src, 0) != stack_pointer_rtx)
+		abort ();
 
 	      if (GET_CODE (src) == PLUS)
 		offset = -offset;
@@ -1176,11 +1188,12 @@ dwarf2out_frame_debug (insn)
 	    }
 	  else
 	    {
-	      /* Initializing the store base register.  */
-	      assert (GET_CODE (src) == PLUS);
-	      assert (XEXP (src, 1) == stack_pointer_rtx);
-	      assert (GET_CODE (XEXP (src, 0)) == REG
-		      && REGNO (XEXP (src, 0)) == cfa_temp_reg);
+	      if (GET_CODE (src) != PLUS
+		  || XEXP (src, 1) != stack_pointer_rtx
+		abort ();
+	      if (GET_CODE (XEXP (src, 0)) != REG
+		  || REGNO (XEXP (src, 0)) != cfa_temp_reg)
+		abort ();
 	      cfa_store_reg = REGNO (dest);
 	      cfa_store_offset -= cfa_temp_value;
 	    }
@@ -1192,10 +1205,11 @@ dwarf2out_frame_debug (insn)
 	  break;
 
 	case IOR:
-	  assert (GET_CODE (XEXP (src, 0)) == REG
-		  && REGNO (XEXP (src, 0)) == cfa_temp_reg);
-	  assert (REGNO (dest) == cfa_temp_reg);
-	  assert (GET_CODE (XEXP (src, 1)) == CONST_INT);
+	  if (GET_CODE (XEXP (src, 0)) != REG
+	      || REGNO (XEXP (src, 0)) != cfa_temp_reg
+	      || REGNO (dest) != cfa_temp_reg
+	      || GET_CODE (XEXP (src, 1)) != CONST_INT)
+	    abort ();
 	  cfa_temp_value |= INTVAL (XEXP (src, 1));
 	  break;
 
@@ -1208,7 +1222,8 @@ dwarf2out_frame_debug (insn)
     case MEM:
       /* Saving a register to the stack.  Make sure dest is relative to the
          CFA register.  */
-      assert (GET_CODE (src) == REG);
+      if (GET_CODE (src) != REG)
+	abort ();
       switch (GET_CODE (XEXP (dest, 0)))
 	{
 	  /* With a push.  */
@@ -1218,8 +1233,9 @@ dwarf2out_frame_debug (insn)
 	  if (GET_CODE (XEXP (dest, 0)) == PRE_INC)
 	    offset = -offset;
 
-	  assert (REGNO (XEXP (XEXP (dest, 0), 0)) == STACK_POINTER_REGNUM);
-	  assert (cfa_store_reg == STACK_POINTER_REGNUM);
+	  if (REGNO (XEXP (XEXP (dest, 0), 0)) != STACK_POINTER_REGNUM
+	      || cfa_store_reg != STACK_POINTER_REGNUM)
+	    abort ();
 	  cfa_store_offset += offset;
 	  if (cfa_reg == STACK_POINTER_REGNUM)
 	    cfa_offset = cfa_store_offset;
@@ -1234,7 +1250,8 @@ dwarf2out_frame_debug (insn)
 	  if (GET_CODE (src) == MINUS)
 	    offset = -offset;
 
-	  assert (cfa_store_reg == REGNO (XEXP (XEXP (dest, 0), 0)));
+	  if (cfa_store_reg != REGNO (XEXP (XEXP (dest, 0), 0)))
+	    abort ();
 	  offset -= cfa_store_offset;
 	  break;
 
@@ -3862,7 +3879,8 @@ add_child_die (die, child_die)
 {
   if (die != NULL && child_die != NULL)
     {
-      assert (die != child_die);
+      if (die == child_die)
+	abort ();
       child_die->die_parent = die;
       child_die->die_sib = NULL;
 
@@ -6156,7 +6174,8 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	     that copy might have a different TYPE_UID from the original
 	     ..._TYPE node.  */
 	  mod_type_die = lookup_type_die (type_main_variant (type));
-	  assert (mod_type_die != NULL);
+	  if (mod_type_die == NULL)
+	    abort ();
 	}
     }
 
@@ -7152,8 +7171,10 @@ add_bit_offset_attribute (die, decl)
   register unsigned highest_order_field_bit_offset;
   register unsigned bit_offset;
 
-  assert (TREE_CODE (decl) == FIELD_DECL);	/* Must be a field.  */
-  assert (type);				/* Must be a bit field.  */
+  /* Must be a field and a bit field.  */
+  if (!type
+      || TREE_CODE (decl) != FIELD_DECL)
+    abort ();
 
   /* We can't yet handle bit-fields whose offsets are variable, so if we
      encounter such things, just return without generating any attribute
@@ -7195,8 +7216,10 @@ add_bit_size_attribute (die, decl)
      register dw_die_ref die;
      register tree decl;
 {
-  assert (TREE_CODE (decl) == FIELD_DECL);	/* Must be a field.  */
-  assert (DECL_BIT_FIELD_TYPE (decl));		/* Must be a bit field.  */
+  /* Must be a field and a bit field.  */
+  if (TREE_CODE (decl) != FIELD_DECL
+      || ! DECL_BIT_FIELD_TYPE (decl))
+    abort ();
   add_AT_unsigned (die, DW_AT_bit_size,
 		   (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl)));
 }
@@ -7345,10 +7368,12 @@ scope_die_for (t, context_die)
 
       if (i == 0)
 	{
-	  assert (scope_die == comp_unit_die);
-	  assert (TREE_CODE_CLASS (TREE_CODE (containing_scope)) == 't');
-	  if (debug_info_level > DINFO_LEVEL_TERSE)
-	    assert (TREE_ASM_WRITTEN (containing_scope));
+	  if (scope_die != comp_unit_die
+	      || TREE_CODE_CLASS (TREE_CODE (containing_scope)) != 't')
+	    abort ();
+	  if (debug_info_level > DINFO_LEVEL_TERSE
+	      && !TREE_ASM_WRITTEN (containing_scope))
+	    abort ();
 	}
     }
 
@@ -7359,7 +7384,8 @@ scope_die_for (t, context_die)
 static inline void
 pop_decl_scope ()
 {
-  assert (decl_scope_depth > 0);
+  if (decl_scope_depth <= 0)
+    abort ();
   --decl_scope_depth;
 }
 
@@ -7598,7 +7624,8 @@ output_pending_types_for_scope (context_die)
       --pending_types;
       type = pending_types_list[pending_types];
       gen_type_die (type, context_die);
-      assert (TREE_ASM_WRITTEN (type));
+      if (!TREE_ASM_WRITTEN (type))
+	abort ();
     }
 }
 
@@ -7612,7 +7639,8 @@ gen_inlined_enumeration_type_die (type, context_die)
   register dw_die_ref type_die = new_die (DW_TAG_enumeration_type,
 					  scope_die_for (type, context_die));
 
-  assert (TREE_ASM_WRITTEN (type));
+  if (!TREE_ASM_WRITTEN (type))
+    abort ();
   add_abstract_origin_attribute (type_die, type);
 }
 
@@ -7626,7 +7654,8 @@ gen_inlined_structure_type_die (type, context_die)
   register dw_die_ref type_die = new_die (DW_TAG_structure_type,
 					  scope_die_for (type, context_die));
 
-  assert (TREE_ASM_WRITTEN (type));
+  if (!TREE_ASM_WRITTEN (type))
+    abort ();
   add_abstract_origin_attribute (type_die, type);
 }
 
@@ -7640,7 +7669,8 @@ gen_inlined_union_type_die (type, context_die)
   register dw_die_ref type_die = new_die (DW_TAG_union_type,
 					  scope_die_for (type, context_die));
 
-  assert (TREE_ASM_WRITTEN (type));
+  if (!TREE_ASM_WRITTEN (type))
+    abort ();
   add_abstract_origin_attribute (type_die, type);
 }
 
@@ -7881,7 +7911,8 @@ gen_subprogram_die (decl, context_die)
       register unsigned file_index
 	= lookup_filename (DECL_SOURCE_FILE (decl));
 
-      assert (get_AT_flag (old_die, DW_AT_declaration) == 1);
+      if (get_AT_flag (old_die, DW_AT_declaration) != 1)
+	abort ();
 
       /* If the definition comes from the same place as the declaration,
 	 maybe use the old DIE.  We always want the DIE for this function
@@ -8784,8 +8815,9 @@ gen_tagged_type_instantiation_die (type, context_die)
      this type (i.e. without any const or volatile qualifiers) so make sure
      that we have the main variant (i.e. the unqualified version) of this
      type now.  */
-  assert (type == type_main_variant (type));
-  assert (TREE_ASM_WRITTEN (type));
+  if (type != type_main_variant (type)
+      || !TREE_ASM_WRITTEN (type))
+    abort ();
 
   switch (TREE_CODE (type))
     {
