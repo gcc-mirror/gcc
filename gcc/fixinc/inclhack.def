@@ -1305,8 +1305,8 @@ fix = {
  */
 fix = {
     hackname = limits_ifndefs;
-    files  = "limits.h";
     files  = "sys/limits.h";
+    files  = "limits.h";
     bypass = "ifndef[ \t]+FLT_MIN";
 
     c_fix     = format;
@@ -1520,8 +1520,8 @@ fix = {
 fix = {
     hackname = nested_motorola;
     mach     = "m68k-motorola-sysv*";
-    files    = limits.h;
     files    = sys/limits.h;
+    files    = limits.h;
     sed = "s@^\\(#undef[ \t][ \t]*PIPE_BUF[ \t]*"
                    "/\\* max # bytes atomic in write to a\\)$@\\1 */@";
     sed = "s@\\(/\\*#define\tHUGE_VAL\t3.[0-9e+]* \\)"
@@ -2761,12 +2761,14 @@ fix = {
  * Strip "|| CC$gfloat" from Ultrix math headers.
  */
 fix = {
-    hackname = ultrix_math_ifdef;
-    files = float.h;
-    files = math.h;
-    files = sys/limits.h;
-    select = "^#if.*\\|\\|[ \t]+CC\\$[a-z]+";
-    sed = "/^#if/s/||[ \t][ \t]*CC$[a-z][a-z]*//";
+    hackname  = ultrix_math_ifdef;
+    files     = sys/limits.h;
+    files     = float.h;
+    files     = math.h;
+    select    = "^(#if.*)\\|\\|[ \t]+CC\\$[a-z]+";
+    c_fix     = format;
+    c_fix_arg = "%1";
+
     test_text = '#if     defined(__GFLOAT) || CC\$gfloat';
 };
 
@@ -3037,15 +3039,13 @@ fix = {
  *  we find __cplusplus in the file.  These were found on the RS/6000.
  */
 fix = {
-    hackname = x11_class;
-    files    = X11/ShellP.h;
-    bypass   = __cplusplus;
-    sed      = "/char \\*class;/i\\\n"
-                   "#ifdef __cplusplus\\\n"
-                   "\tchar *c_class;\\\n"
-                   "#else\n";
-    sed      = "/char \\*class;/a\\\n"
-                   "#endif\n";
+    hackname  = x11_class;
+    files     = X11/ShellP.h;
+    bypass    = __cplusplus;
+    select    = "^([ \t]*char \\*)class;(.*)";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __cplusplus\n%1c_class;%2\n"
+                "#else\n%1class;%2\n#endif";
     test_text =
     "struct {\n"
     "   char *class;\n"

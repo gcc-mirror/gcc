@@ -4,6 +4,7 @@
 	for a single fix
 	* fixinc/inclhack.def(ctrl_quotes_def): add a second test
 	(io_quotes_def): add a second test
+	(various): reorder `files' so that "limits.h" is never first
 	* fixinc/tests/base/*: update the testing output
 
 Sat Jun 17 10:33:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
