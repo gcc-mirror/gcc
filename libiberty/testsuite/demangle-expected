@@ -2470,3 +2470,7 @@ _Utf390_1__1_9223372036854775807__9223372036854775
 --format=gnu
 call__H1Z4Test_RX01_t1C2ZX01PMX01FPX01i_vQ2X016output
 C<Test, Test::output> call<Test>(Test &)
+#
+--format=gnu
+fn__FPQ21n1cPMQ21n1cFPQ21n1c_i
+fn(n::c *, int (n::c::*)(n::c *))

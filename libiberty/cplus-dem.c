@@ -3072,7 +3072,12 @@ do_type (work, mangled, result)
 	    (*mangled)++;
 
 	    string_append (&decl, ")");
-	    string_prepend (&decl, SCOPE_STRING (work));
+
+	    /* We don't need to prepend `::' for a qualified name;
+	       demangle_qualified will do that for us.  */
+	    if (**mangled != 'Q')
+	      string_prepend (&decl, SCOPE_STRING (work));
+
 	    if (isdigit ((unsigned char)**mangled))
 	      {
 		n = consume_count (mangled);
@@ -3103,6 +3108,14 @@ do_type (work, mangled, result)
 		    string_clear (&temp);
 		  }
 		else
+		  break;
+	      }
+	    else if (**mangled == 'Q')
+	      {
+		success = demangle_qualified (work, mangled, &decl,
+					      /*isfuncnam=*/0, 
+					      /*append=*/0);
+		if (!success)
 		  break;
 	      }
 	    else
