@@ -5081,9 +5081,10 @@ build_new_method_call (tree instance, tree fns, tree args,
  finish:;
   
   if (processing_template_decl && call != error_mark_node)
-    return build_min (CALL_EXPR, TREE_TYPE (call),
-		      build_min_nt (COMPONENT_REF, orig_instance, orig_fns),
-		      orig_args);
+    return build_min_non_dep
+      (CALL_EXPR, call,
+       build_min_nt (COMPONENT_REF, orig_instance, orig_fns),
+       orig_args);
   return call;
 }
 

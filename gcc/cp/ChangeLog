@@ -1,3 +1,27 @@
+2003-09-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/12037
+	* cp-tree.h (COMPOUND_EXPR_OVERLOADED): New.
+	(build_min_non_dep): Declare.
+	* tree.c (build_min): Propagate TREE_SIDE_EFFECTS.
+	(build_min_non_dep): New.
+	* cvt.c (convert_to_void): Don't explicitly copy
+	TREE_SIDE_EFFECTS, TREE_NO_UNUSED_WARNING.
+	* call.c (build_new_method_call): Use build_min_non_dep.
+	* decl2.c (grok_array_decl): Likewise.
+	(build_offset_ref_call_from_tree): Likewise.
+	* typeck.c (finish_class_member_access_expr,
+	build_x_indirect_ref, build_x_binary_op, build_x_unary_op,
+	build_x_conditional_expr, build_x_compound_expr): Likewise.
+	(build_static_cast, build_reinterpret_cast,
+	build_const_cast): Propagate TREE_SIDE_EFFECTS inside a template.
+	* typeck2.c (build_x_arrow): Use build_min_non_dep.
+	(build_functional_cast): Propagate TREE_SIDE_EFFECTS inside a
+	template.
+	* rtti.c (build_dynamic_cast_1): Set DECL_IS_PURE.
+	(build_dynamic_cast): Set TREE_SIDE_EFFECTS.
+	* pt.c (build_non_dependent_expr): Check COMPOUND_EXPR_OVERLOADED.
+
 2003-09-04  Richard Henderson  <rth@redhat.com>
 
 	* decl2.c (mark_member_pointers_and_eh_handlers): Update for

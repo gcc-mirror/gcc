@@ -463,8 +463,8 @@ grok_array_decl (tree array_expr, tree index_exp)
       expr = build_array_ref (array_expr, index_exp);
     }
   if (processing_template_decl && expr != error_mark_node)
-    return build_min (ARRAY_REF, TREE_TYPE (expr), orig_array_expr, 
-		      orig_index_exp);
+    return build_min_non_dep (ARRAY_REF, expr,
+			      orig_array_expr, orig_index_exp);
   return expr;
 }
 
@@ -3029,7 +3029,7 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 
   expr = build_function_call (fn, args);
   if (processing_template_decl && expr != error_mark_node)
-    return build_min (CALL_EXPR, TREE_TYPE (expr), orig_fn, orig_args);
+    return build_min_non_dep (CALL_EXPR, expr, orig_fn, orig_args);
   return expr;
 }
 

@@ -835,8 +835,6 @@ convert_to_void (tree expr, const char *implicit)
 	  {
 	    tree t = build (COMPOUND_EXPR, TREE_TYPE (new_op1),
 			    TREE_OPERAND (expr, 0), new_op1);
-	    TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (expr);
-	    TREE_NO_UNUSED_WARNING (t) = TREE_NO_UNUSED_WARNING (expr);
 	    expr = t;
 	  }
 

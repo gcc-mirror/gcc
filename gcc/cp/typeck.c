@@ -1936,8 +1936,8 @@ finish_class_member_access_expr (tree object, tree name)
   expr = build_class_member_access_expr (object, member, access_path,
 					 /*preserve_reference=*/false);
   if (processing_template_decl && expr != error_mark_node)
-    return build_min (COMPONENT_REF, TREE_TYPE (expr), orig_object, 
-		      orig_name);
+    return build_min_non_dep (COMPONENT_REF, expr,
+			      orig_object, orig_name);
   return expr;
 }
 
@@ -1994,7 +1994,7 @@ build_x_indirect_ref (tree expr, const char *errorstring)
     rval = build_indirect_ref (expr, errorstring);
 
   if (processing_template_decl && rval != error_mark_node)
-    return build_min (INDIRECT_REF, TREE_TYPE (rval), orig_expr);
+    return build_min_non_dep (INDIRECT_REF, rval, orig_expr);
   else
     return rval;
 }
@@ -2637,7 +2637,7 @@ build_x_binary_op (enum tree_code code, tree arg1, tree arg2)
     expr = build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE);
 
   if (processing_template_decl && expr != error_mark_node)
-    return build_min (code, TREE_TYPE (expr), orig_arg1, orig_arg2);
+    return build_min_non_dep (code, expr, orig_arg1, orig_arg2);
   
   return expr;
 }
@@ -3537,7 +3537,8 @@ build_x_unary_op (enum tree_code code, tree xarg)
     }
 
   if (processing_template_decl && exp != error_mark_node)
-    return build_min (code, TREE_TYPE (exp), orig_expr, NULL_TREE);
+    return build_min_non_dep (code, exp, orig_expr,
+			      /*For {PRE,POST}{INC,DEC}REMENT_EXPR*/NULL_TREE);
   return exp;
 }
 
@@ -4277,8 +4278,8 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2)
 
   expr = build_conditional_expr (ifexp, op1, op2);
   if (processing_template_decl && expr != error_mark_node)
-    return build_min (COND_EXPR, TREE_TYPE (expr), 
-		      orig_ifexp, orig_op1, orig_op2);
+    return build_min_non_dep (COND_EXPR, expr, 
+			      orig_ifexp, orig_op1, orig_op2);
   return expr;
 }
 
@@ -4324,8 +4325,8 @@ build_x_compound_expr (tree op1, tree op2)
     result = build_compound_expr (op1, op2);
 
   if (processing_template_decl && result != error_mark_node)
-    return build_min (COMPOUND_EXPR, TREE_TYPE (result), 
-		      orig_op1, orig_op2);
+    return build_min_non_dep (COMPOUND_EXPR, result, orig_op1, orig_op2);
+  
   return result;
 }
 
@@ -4382,8 +4383,10 @@ build_static_cast (tree type, tree expr)
 
   if (processing_template_decl)
     {
-      tree t = build_min (STATIC_CAST_EXPR, type, expr); 
-      return t;
+      expr = build_min (STATIC_CAST_EXPR, type, expr);
+      /* We don't know if it will or will not have side effects.  */
+      TREE_SIDE_EFFECTS (expr) = 1;
+      return expr;
     }
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
@@ -4473,9 +4476,10 @@ build_static_cast (tree type, tree expr)
 	 converted to an enumeration type.  */
       || (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
 	  && INTEGRAL_OR_ENUMERATION_TYPE_P (intype)))
-      /* Really, build_c_cast should defer to this function rather
-	 than the other way around.  */
-      return build_c_cast (type, expr);
+    /* Really, build_c_cast should defer to this function rather
+       than the other way around.  */
+    return build_c_cast (type, expr);
+  
   if (TYPE_PTR_P (type) && TYPE_PTR_P (intype)
       && CLASS_TYPE_P (TREE_TYPE (type))
       && CLASS_TYPE_P (TREE_TYPE (intype))
@@ -4491,6 +4495,7 @@ build_static_cast (tree type, tree expr)
 			  ba_check | ba_quiet, NULL);
       return build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false);
     }
+  
   if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
       || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
     {
@@ -4567,6 +4572,11 @@ build_reinterpret_cast (tree type, tree expr)
   if (processing_template_decl)
     {
       tree t = build_min (REINTERPRET_CAST_EXPR, type, expr);
+      
+      if (!TREE_SIDE_EFFECTS (t)
+	  && type_dependent_expression_p (expr))
+	/* There might turn out to be side effects inside expr.  */
+	TREE_SIDE_EFFECTS (t) = 1;
       return t;
     }
 
@@ -4651,6 +4661,11 @@ build_const_cast (tree type, tree expr)
   if (processing_template_decl)
     {
       tree t = build_min (CONST_CAST_EXPR, type, expr);
+      
+      if (!TREE_SIDE_EFFECTS (t)
+	  && type_dependent_expression_p (expr))
+	/* There might turn out to be side effects inside expr.  */
+	TREE_SIDE_EFFECTS (t) = 1;
       return t;
     }
 
@@ -4720,6 +4735,8 @@ build_c_cast (tree type, tree expr)
     {
       tree t = build_min (CAST_EXPR, type,
 			  tree_cons (NULL_TREE, value, NULL_TREE));
+      /* We don't know if it will or will not have side effects. */
+      TREE_SIDE_EFFECTS (t) = 1;
       return t;
     }
 
