@@ -1,3 +1,13 @@
+2002-11-07  H.J. Lu <hjl@gnu.org>
+
+	Fix bootstrap/8146 and
+	gcc.c-torture/execute/20020307-2.c with -march=i686.
+
+	* calls.c (PUSH_ARGS_REVERSED): Define only if not defined.
+	* expr.c (PUSH_ARGS_REVERSED): Likewise.
+
+	* config/i386/i386.h (PUSH_ARGS_REVERSED): Set to 1.
+
 2002-11-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	Fix c/8252.

@@ -1588,6 +1588,10 @@ enum reg_class
 
 #define PUSH_ARGS (TARGET_PUSH_ARGS && !ACCUMULATE_OUTGOING_ARGS)
 
+/* We want the stack and args grow in opposite directions, even if
+   PUSH_ARGS is 0.  */
+#define PUSH_ARGS_REVERSED 1
+
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL) 0
 

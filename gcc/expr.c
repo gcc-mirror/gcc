@@ -54,8 +54,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef PUSH_ROUNDING
 
+#ifndef PUSH_ARGS_REVERSED
 #if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNWARD)
 #define PUSH_ARGS_REVERSED	/* If it's last to first.  */
+#endif
 #endif
 
 #endif
