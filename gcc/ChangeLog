@@ -1,3 +1,11 @@
+2001-12-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DECLS): Handle
+	DECL_WEAK for function descriptors.
+	* config/rs6000/xcoff.h (HANDLE_PRAGMA_WEAK): Define if assembler
+	weak support present.
+	(ASM_WEAKEN_LABEL): Same.
+
 2001-12-14  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (anonymous pattern): Add a missing

@@ -438,9 +438,6 @@ toc_section ()						\
 	 fprintf ((FILE), ",%d\n", (SIZE));		\
   } while (0)
 
-/* Used by definition of ASM_OUTPUT_DOUBLE_INT */
-#define DOUBLE_INT_ASM_OP "\t.llong "
-
 /* This says how to output an assembler line
    to define a local common symbol.
    Alignment cannot be specified, but we can try to maintain
@@ -454,9 +451,25 @@ toc_section ()						\
 		xcoff_bss_section_name);		\
      } while (0)
 
-/* This is how we tell the assembler that two symbols have the same value.  */
+/* Output a weak symbol, if weak support present.  */
+#ifdef HAVE_GAS_WEAK
+#define HANDLE_PRAGMA_WEAK 1
 
-#define SET_ASM_OP "\t.set\t"
+#define ASM_WEAKEN_LABEL(FILE, NAME)	\
+  do					\
+    {					\
+      fputs ("\t.weak ", (FILE));	\
+      assemble_name ((FILE), (NAME));	\
+      fputc ('\n', (FILE));		\
+    }					\
+  while (0)
+#endif /* HAVE_GAS_WEAK */
+
+/* This is how we tell the assembler that two symbols have the same value.  */
+#define SET_ASM_OP "\t.set "
+
+/* Used by definition of ASM_OUTPUT_DOUBLE_INT */
+#define DOUBLE_INT_ASM_OP "\t.llong "
 
 /* These are various definitions for DWARF output.  They could just
    use '.long' or '.word', but that aligns to a 4-byte boundary which
