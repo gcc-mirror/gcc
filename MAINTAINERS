@@ -26,7 +26,7 @@ hppa port		Jeff Law		law@cygnus.com
 m68k port (?)		Jeff Law		law@cygnus.com
 rs6000 port		Michael Meissner	meissner@cygnus.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
-mips port		Jim Wilson		wilson@cygnus.com
+mips port		Gavin Romig-Koch	gavin@cygnus.com
 i960 port		Jim Wilson		wilson@cygnus.com
 a29k port		Jim Wilson		wilson@cygnus.com
 alpha port		Richard Henderson	rth@cygnus.com
@@ -65,7 +65,7 @@ gcse.c 			Jeff Law		law@cygnus.com
 global opt framework	Jeff Law		law@cygnus.com
 jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
-C front end/isoc9x	Gavin Koch		gavin@cygnus.com
+C front end/isoc9x	Gavin Romig-Koch	gavin@cygnus.com
 config.sub/config.guess	Ben Elliston		bje@cygnus.com
 
 Note individuals who maintain parts of the compiler need approval to check
