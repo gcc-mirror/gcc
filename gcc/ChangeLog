@@ -1,3 +1,14 @@
+2002-07-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (adddi3): Change predicate of operand 2 to adddi3_operand.
+	Remove comment.  Change predicate of 32-bit adddi3 insn pattern to
+	arith11_operand.
+	* pa-protos.h (adddi3_operand): Add prototype.
+	* pa.c (cint_ok_for_move): Fix comment.
+	(adddi3_operand): New function.
+	(emit_move_sequence):  Don't directly split DImode constants on
+	32-bit targets.
+
 2002-07-05  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("*movqi_68hc12"): Avoid allocating

@@ -3653,22 +3653,14 @@
 (define_expand "adddi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "arith_operand" "")))]
+		 (match_operand:DI 2 "adddi3_operand" "")))]
   ""
   "")
-
-;; We allow arith_operand for operands2, even though strictly speaking it
-;; we would prefer to us arith11_operand since that's what the hardware
-;; can actually support.
-;;
-;; But the price of the extra reload in that case is worth the simplicity
-;; we get by allowing a trivial adddi3 expander to be used for both
-;; PA64 and PA32.
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (match_operand:DI 1 "register_operand" "%r")
-		 (match_operand:DI 2 "arith_operand" "rI")))]
+		 (match_operand:DI 2 "arith11_operand" "rI")))]
   "!TARGET_64BIT"
   "*
 {

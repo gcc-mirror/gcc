@@ -393,7 +393,7 @@ reg_before_reload_operand (op, mode)
   return 0;
 }
 
-/* Accept any constant that can be moved in one instructions into a
+/* Accept any constant that can be moved in one instruction into a
    general register.  */
 int
 cint_ok_for_move (intval)
@@ -527,6 +527,18 @@ arith11_operand (op, mode)
 {
   return (register_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && INT_11_BITS (op)));
+}
+
+/* Return truth value of whether OP can be used as an operand in a
+   adddi3 insn.  */
+int
+adddi3_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
+	      && (TARGET_64BIT ? INT_14_BITS (op) : INT_11_BITS (op))));
 }
 
 /* A constant integer suitable for use in a PRE_MODIFY memory
@@ -1695,9 +1707,13 @@ emit_move_sequence (operands, mode, scratch_reg)
 	  else
 	    temp = gen_reg_rtx (mode);
 
-	  if (GET_CODE (operand1) == CONST_INT)
+	  /* We don't directly split DImode constants on 32-bit targets
+	     because PLUS uses an 11-bit immediate and the insn sequence
+	     generated is not as efficient as the one using HIGH/LO_SUM.  */
+	  if (GET_CODE (operand1) == CONST_INT
+	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	    {
-	      /* Directly break constant into low and high parts.  This
+	      /* Directly break constant into high and low parts.  This
 		 provides better optimization opportunities because various
 		 passes recognize constants split with PLUS but not LO_SUM.
 		 We use a 14-bit signed low part except when the addition
