@@ -1,3 +1,9 @@
+2004-01-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.ac (gcc_cv_as_dwarf2_debug_line): Enable test for
+	s390*-*-* targets by specifying a 'nop' insn.
+	* configure: Regenerate.
+
 2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/11475

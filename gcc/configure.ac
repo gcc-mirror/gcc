@@ -2472,7 +2472,7 @@ case "$target" in
   | xstormy16*-*-* | cris-*-* | xtensa-*-*)
     insn="nop"
     ;;
-  ia64*-*-*)
+  ia64*-*-* | s390*-*-*)
     insn="nop 0"
     ;;
   mmix-*-*)
