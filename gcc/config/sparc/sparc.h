@@ -2704,11 +2704,17 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
   case MULT:						\
+    if (sparc_cpu == PROCESSOR_ULTRASPARC)		\
+      return (GET_MODE (X) == DImode ?			\
+              COSTS_N_INSNS (34) : COSTS_N_INSNS (19));	\
     return TARGET_HARD_MUL ? COSTS_N_INSNS (5) : COSTS_N_INSNS (25); \
   case DIV:						\
   case UDIV:						\
   case MOD:						\
   case UMOD:						\
+    if (sparc_cpu == PROCESSOR_ULTRASPARC)		\
+      return (GET_MODE (X) == DImode ?			\
+              COSTS_N_INSNS (68) : COSTS_N_INSNS (37));	\
     return COSTS_N_INSNS (25);				\
   /* Make FLOAT and FIX more expensive than CONST_DOUBLE,\
      so that cse will favor the latter.  */		\
@@ -2723,8 +2729,27 @@ extern struct rtx_def *legitimize_pic_address ();
   if (sparc_cpu == PROCESSOR_SUPERSPARC)			\
     (COST) = supersparc_adjust_cost (INSN, LINK, DEP, COST);	\
   else if (sparc_cpu == PROCESSOR_ULTRASPARC)			\
-    (COST) = ultrasparc_adjust_cost (INSN, LINK, DEP, COST);	\
+    (COST) = ultrasparc_adjust_cost (INSN, LINK, DEP,		\
+				     last_scheduled_insn, COST);\
   else
+
+extern void ultrasparc_sched_reorder ();
+extern void ultrasparc_sched_init ();
+extern int ultrasparc_variable_issue ();
+
+#define MD_SCHED_INIT(DUMP, SCHED_VERBOSE)				\
+  if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
+    ultrasparc_sched_init (DUMP, SCHED_VERBOSE)
+
+#define MD_SCHED_REORDER(DUMP, SCHED_VERBOSE, READY, N_READY)		\
+  if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
+    ultrasparc_sched_reorder (DUMP, SCHED_VERBOSE, READY, N_READY)
+
+#define MD_SCHED_VARIABLE_ISSUE(DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE) \
+  if (sparc_cpu == PROCESSOR_ULTRASPARC)			\
+    (CAN_ISSUE_MORE) = ultrasparc_variable_issue (INSN);	\
+  else								\
+    (CAN_ISSUE_MORE)--
 
 /* Conditional branches with empty delay slots have a length of two.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)				\

@@ -398,9 +398,9 @@
     (eq_attr "type" "store,fpstore"))
   1 1)
 
-(define_function_unit "ieu_unnamed" 2 0
+(define_function_unit "ieuN" 2 0
   (and (eq_attr "cpu" "ultrasparc")
-    (eq_attr "type" "ialu,binary,move,unary,shift,cmove,compare,call"))
+    (eq_attr "type" "ialu,binary,move,unary,shift,compare,call,call_no_delay_slot,uncond_branch"))
   1 1)
 
 (define_function_unit "ieu0" 1 0
@@ -415,7 +415,12 @@
 
 (define_function_unit "ieu1" 1 0
   (and (eq_attr "cpu" "ultrasparc")
-    (eq_attr "type" "compare,call,uncond_branch"))
+    (eq_attr "type" "compare,call,call_no_delay_slot,uncond_branch"))
+  1 1)
+
+(define_function_unit "cti" 1 0
+  (and (eq_attr "cpu" "ultrasparc")
+    (eq_attr "type" "branch"))
   1 1)
 
 ;; Timings; throughput/latency
@@ -1416,7 +1421,7 @@
 		  (match_operand:SI 1 "arith_operand" "rI")))]
   "! TARGET_LIVE_G0"
   "subx\\t%%g0, %1, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*neg_sltu_plus_x"
@@ -1425,7 +1430,7 @@
 			 (match_operand:SI 1 "arith_operand" "rI"))))]
   "! TARGET_LIVE_G0"
   "subx\\t%%g0, %1, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*sgeu_insn"
@@ -1454,7 +1459,7 @@
 		 (match_operand:SI 1 "arith_operand" "rI")))]
   "! TARGET_LIVE_G0"
   "addx\\t%%g0, %1, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*sltu_plus_x_plus_y"
@@ -1464,7 +1469,7 @@
 			  (match_operand:SI 2 "arith_operand" "rI"))))]
   ""
   "addx\\t%1, %2, %0"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*x_minus_sltu"
@@ -1473,7 +1478,7 @@
 		  (ltu:SI (reg:CC 100) (const_int 0))))]
   ""
   "subx\\t%1, 0, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 ;; ??? Combine should canonicalize these next two to the same pattern.
@@ -1484,7 +1489,7 @@
 		  (ltu:SI (reg:CC 100) (const_int 0))))]
   ""
   "subx\\t%r1, %2, %0"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*x_minus_sltu_plus_y"
@@ -1494,7 +1499,7 @@
 			   (match_operand:SI 2 "arith_operand" "rI"))))]
   ""
   "subx\\t%r1, %2, %0"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*sgeu_plus_x"
@@ -1503,7 +1508,7 @@
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
   "subx\\t%1, -1, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*x_minus_sgeu"
@@ -1512,7 +1517,7 @@
 		  (geu:SI (reg:CC 100) (const_int 0))))]
   ""
   "addx\\t%1, -1, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_split
@@ -2167,7 +2172,8 @@
                    (unspec:SI [(match_operand:SI 2 "immediate_operand" "in")] 0)))]
   "flag_pic"
   "or\\t%1, %%lo(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_insn "movsi_high_pic"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2212,7 +2218,8 @@
 		    (match_operand:SI 3 "" "")] 5)))]
   "flag_pic"
   "or\\t%1, %%lo(%a3-(%a2-.)), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_expand "movdi"
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "")
@@ -2394,7 +2401,8 @@
                    (unspec:DI [(match_operand:DI 2 "immediate_operand" "in")] 0)))]
   "TARGET_ARCH64 && flag_pic"
   "or\\t%1, %%lo(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_insn "*pic_sethi_di"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2426,7 +2434,8 @@
                    (match_operand:DI 2 "symbolic_operand" "")))]
   "TARGET_CM_MEDLOW"
   "or\\t%1, %%lo(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_insn "seth44"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2451,7 +2460,8 @@
                    (match_operand:DI 2 "symbolic_operand" "")))]
   "TARGET_CM_MEDMID"
   "or\\t%1, %%l44(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_insn "sethh"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2475,7 +2485,8 @@
                    (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")] 18)))]
   "TARGET_CM_MEDANY"
   "or\\t%1, %%hm(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_insn "setlo"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2483,7 +2494,8 @@
                    (match_operand:DI 2 "symbolic_operand" "")))]
   "TARGET_CM_MEDANY"
   "or\\t%1, %%lo(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_insn "embmedany_sethi"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2499,7 +2511,8 @@
                    (match_operand:DI 2 "data_segment_operand" "")))]
   "TARGET_CM_EMBMEDANY"
   "add\\t%1, %%lo(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_insn "embmedany_brsum"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2530,7 +2543,8 @@
                    (unspec:DI [(match_operand:DI 2 "text_segment_operand" "")] 15)))]
   "TARGET_CM_EMBMEDANY"
   "or\\t%1, %%ulo(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_insn "embmedany_textlo"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2538,7 +2552,8 @@
                    (match_operand:DI 2 "text_segment_operand" "")))]
   "TARGET_CM_EMBMEDANY"
   "or\\t%1, %%lo(%a2), %0"
-  [(set_attr "length" "1")])
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 ;; Now some patterns to help reload out a bit.
 (define_expand "reload_indi"
@@ -3797,7 +3812,7 @@
   "@
    srl\\t%1, 0, %0
    lduw\\t%1, %0"
-  [(set_attr "type" "unary,load")
+  [(set_attr "type" "shift,load")
    (set_attr "length" "1")])
 
 (define_insn "*zero_extendsidi2_insn_sp32"
@@ -4090,7 +4105,7 @@
 	(sign_extend:DI (match_operand:HI 1 "memory_operand" "m")))]
   "TARGET_ARCH64"
   "ldsh\\t%1, %0"
-  [(set_attr "type" "load")
+  [(set_attr "type" "sload")
    (set_attr "length" "1")])
 
 (define_expand "extendsidi2"
@@ -4106,7 +4121,7 @@
   "@
   sra\\t%1, 0, %0
   ldsw\\t%1, %0"
-  [(set_attr "type" "unary,sload")
+  [(set_attr "type" "shift,sload")
    (set_attr "length" "1")])
 
 ;; Special pattern for optimizing bit-field compares.  This is needed
@@ -4469,7 +4484,7 @@
                                  (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "TARGET_ARCH64"
   "addx\\t%r1, %2, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "subx"
@@ -4479,7 +4494,7 @@
 		  (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
   ""
   "subx\\t%r1, %2, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*subx_extend_sp64"
@@ -4489,7 +4504,7 @@
                                   (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "TARGET_ARCH64"
   "subx\\t%r1, %2, %0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "misc")
    (set_attr "length" "1")])
 
 (define_insn "*subx_extend"
@@ -4547,7 +4562,9 @@
 	(plus:DI (match_operand:DI 1 "arith_double_operand" "%r")
 		 (match_operand:DI 2 "arith_double_operand" "rHI")))]
   "TARGET_ARCH64"
-  "add\\t%1, %2, %0")
+  "add\\t%1, %2, %0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,d")
@@ -7016,7 +7033,9 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "nop")
+  "nop"
+  [(set_attr "type" "ialu")
+   (set_attr "length" "1")])
 
 (define_expand "indirect_jump"
   [(set (pc) (match_operand 0 "address_operand" "p"))]
@@ -7096,7 +7115,8 @@
   [(unspec_volatile [(const_int 0)] 1)]
   ""
   "* return TARGET_V9 ? \"flushw\" : \"ta\\t3\";"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "misc")
+   (set_attr "length" "1")])
 
 (define_insn "goto_handler_and_restore"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "=r")] 2)]
@@ -7162,7 +7182,8 @@
   [(unspec_volatile [(match_operand 0 "memory_operand" "m")] 4)]
   ""
   "* return TARGET_V9 ? \"flush\\t%f0\" : \"iflush\\t%f0\";"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "misc")
+   (set_attr "length" "1")])
 
 ;; find first set.
 
@@ -7527,7 +7548,8 @@
   [(trap_if (const_int 1) (const_int 5))]
   ""
   "ta\\t5"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "misc")
+   (set_attr "length" "1")])
 
 (define_expand "conditional_trap"
   [(trap_if (match_operator 0 "noov_compare_op"
@@ -7543,12 +7565,14 @@
 	    (match_operand:SI 1 "arith_operand" "rM"))]
   ""
   "t%C0\\t%1"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "misc")
+   (set_attr "length" "1")])
 
 (define_insn ""
   [(trap_if (match_operator 0 "noov_compare_op" [(reg:CCX 100) (const_int 0)])
 	    (match_operand:SI 1 "arith_operand" "rM"))]
   "TARGET_V9"
   "t%C0\\t%%xcc, %1"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "misc")
+   (set_attr "length" "1")])
 
