@@ -1,3 +1,9 @@
+2001-07-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* diagnostic.c (finish_diagnostic): Rename to
+	diagnostic_finish. Make it take an 'output_buffer *'.  Adjust
+	calls thourghout.
+
 2001-07-10  Jason Merrill  <jason_merrill@redhat.com>
 
 	* dwarf2out.c (dwarf2out_line): Emit -dA comment even when we have

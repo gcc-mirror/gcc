@@ -59,7 +59,7 @@ Boston, MA 02111-1307, USA.  */
 #define diagnostic_msg output_buffer_text_cursor (diagnostic_buffer)
 
 /* Prototypes. */
-static void finish_diagnostic PARAMS ((void));
+static void diagnostic_finish PARAMS ((output_buffer *));
 static void output_do_verbatim PARAMS ((output_buffer *,
                                         const char *, va_list *));
 static void output_buffer_to_stream PARAMS ((output_buffer *));
@@ -986,7 +986,7 @@ diagnostic_for_decl (decl, msgid, args_ptr, warn)
       output_buffer_ptr_to_format_args (diagnostic_buffer) = args_ptr;
       output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
       format_with_decl (diagnostic_buffer, decl);
-      finish_diagnostic ();
+      diagnostic_finish ((output_buffer *)global_dc);
       output_destroy_prefix (diagnostic_buffer);
   
       output_buffer_state (diagnostic_buffer) = os;
@@ -1068,7 +1068,7 @@ fatal_io_error VPARAMS ((const char *msgid, ...))
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
   output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
   output_format (diagnostic_buffer);
-  finish_diagnostic ();
+  diagnostic_finish ((output_buffer *)global_dc);
   output_buffer_state (diagnostic_buffer) = os;
   va_end (ap);
   exit (FATAL_EXIT_CODE);
@@ -1176,7 +1176,7 @@ sorry VPARAMS ((const char *msgid, ...))
   output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
   output_buffer_text_cursor (diagnostic_buffer) = _(msgid);
   output_format (diagnostic_buffer);
-  finish_diagnostic ();
+  diagnostic_finish ((output_buffer *)global_dc);
   output_buffer_state (diagnostic_buffer) = os;
   va_end (ap);
 }
@@ -1537,12 +1537,13 @@ warning VPARAMS ((const char *msgid, ...))
 /* Flush diagnostic_buffer content on stderr.  */
 
 static void
-finish_diagnostic ()
+diagnostic_finish (buffer)
+     output_buffer *buffer;
 {
-  output_buffer_to_stream (diagnostic_buffer);
-  clear_diagnostic_info (diagnostic_buffer);
-  fputc ('\n', output_buffer_attached_stream (diagnostic_buffer));
-  fflush (output_buffer_attached_stream (diagnostic_buffer));
+  output_buffer_to_stream (buffer);
+  clear_diagnostic_info (buffer);
+  fputc ('\n', output_buffer_attached_stream (buffer));
+  fflush (output_buffer_attached_stream (buffer));
 }
 
 /* Helper subroutine of output_verbatim and verbatim. Do the approriate
@@ -1628,7 +1629,7 @@ report_diagnostic (dc)
       (*diagnostic_starter (dc)) (diagnostic_buffer, dc);
       output_format (diagnostic_buffer);
       (*diagnostic_finalizer (dc)) (diagnostic_buffer, dc);
-      finish_diagnostic ();
+      diagnostic_finish ((output_buffer *)global_dc);
       output_buffer_state (diagnostic_buffer) = os;
     }
 
@@ -1644,7 +1645,7 @@ static void
 error_recursion ()
 {
   if (diagnostic_lock < 3)
-    finish_diagnostic ();
+    diagnostic_finish ((output_buffer *)global_dc);
 
   fnotice (stderr,
 	   "Internal compiler error: Error reporting routines re-entered.\n");
