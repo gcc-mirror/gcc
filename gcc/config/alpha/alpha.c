@@ -1464,6 +1464,88 @@ alpha_emit_set_long_const (target, c1, c2)
   return target;
 }
 
+/* Generate an unsigned DImode to FP conversion.  This is the same code
+   optabs would emit if we didn't have TFmode patterns.
+
+   For SFmode, this is the only construction I've found that can pass
+   gcc.c-torture/execute/ieee/rbug.c.  No scenario that uses DFmode
+   intermediates will work, because you'll get intermediate rounding
+   that ruins the end result.  Some of this could be fixed by turning
+   on round-to-positive-infinity, but that requires diddling the fpsr,
+   which kills performance.  I tried turning this around and converting
+   to a negative number, so that I could turn on /m, but either I did
+   it wrong or there's something else cause I wound up with the exact
+   same single-bit error.  There is a branch-less form of this same code:
+
+	srl     $16,1,$1
+	and     $16,1,$2
+	cmplt   $16,0,$3
+	or      $1,$2,$2
+	cmovge  $16,$16,$2
+	itoft	$3,$f10
+	itoft	$2,$f11
+	cvtqs   $f11,$f11
+	adds    $f11,$f11,$f0
+	fcmoveq $f10,$f11,$f0
+
+   I'm not using it because it's the same number of instructions as
+   this branch-full form, and it has more serialized long latency
+   instructions on the critical path.
+
+   For DFmode, we can avoid rounding errors by breaking up the word
+   into two pieces, converting them separately, and adding them back:
+
+   LC0: .long 0,0x5f800000
+
+	itoft	$16,$f11
+	lda	$2,LC0
+	cpyse	$f11,$f31,$f10
+	cpyse	$f31,$f11,$f11
+	s4addq	$1,$2,$1
+	lds	$f12,0($1)
+	cvtqt	$f10,$f10
+	cvtqt	$f11,$f11
+	addt	$f12,$f10,$f0
+	addt	$f0,$f11,$f0
+
+   This doesn't seem to be a clear-cut win over the optabs form.
+   It probably all depends on the distribution of numbers being
+   converted -- in the optabs form, all but high-bit-set has a
+   much lower minimum execution time.  */
+
+void
+alpha_emit_floatuns (operands)
+     rtx operands[2];
+{
+  rtx neglab, donelab, i0, i1, f0, in, out;
+  enum machine_mode mode;
+
+  out = operands[0];
+  in = operands[1];
+  mode = GET_MODE (out);
+  neglab = gen_label_rtx ();
+  donelab = gen_label_rtx ();
+  i0 = gen_reg_rtx (DImode);
+  i1 = gen_reg_rtx (DImode);
+  f0 = gen_reg_rtx (mode);
+
+  emit_cmp_and_jump_insns (in, const0_rtx, LT, const0_rtx, DImode, 0,
+			   8, neglab);
+
+  emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_FLOAT (mode, in)));
+  emit_jump_insn (gen_jump (donelab));
+
+  emit_label (neglab);
+
+  emit_insn (gen_lshrdi3 (i0, in, const1_rtx));
+  emit_insn (gen_anddi3 (i1, in, const1_rtx));
+  emit_insn (gen_iordi3 (i0, i0, i1));
+  emit_insn (gen_rtx_SET (VOIDmode, f0, gen_rtx_FLOAT (mode, i0)));
+  emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_PLUS (mode, f0, f0)));
+
+  emit_label (donelab);
+}
+
 /* Generate the comparison for a conditional branch.  */
 
 rtx
@@ -1676,7 +1758,7 @@ alpha_emit_conditional_move (cmp, mode)
 
   /* We may be able to use a conditional move directly.
      This avoids emitting spurious compares. */
-  if (signed_comparison_operator (cmp, cmp_op_mode)
+  if (signed_comparison_operator (cmp, VOIDmode)
       && (!fp_p || local_fast_math)
       && (op0 == CONST0_RTX (cmp_mode) || op1 == CONST0_RTX (cmp_mode)))
     return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);

@@ -1,3 +1,12 @@
+2000-01-27  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_emit_conditional_move): Use VOIDmode when
+	testing for a signed comparison.
+	(alpha_emit_floatuns): New.
+	* alpha-protos.h: Declare it.
+	* alpha.md (floatunsdisf2, floatunsdidf2): New.
+	(extendsfdf2): Tidy.
+
 2000-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/linux64.h (CC1_SPEC): If compiling -m32 with -g but
