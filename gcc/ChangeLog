@@ -1,3 +1,7 @@
+Wed Sep 15 09:59:59 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* dsp16xx.c (override_options): Fix typos in GC root registration.
+
 Wed Sep 15 15:23:28 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/linux-elf.h (MAKE_DECL_ONE_ONLY): Copy definition
