@@ -920,8 +920,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   /* If OP0 is a register, BITPOS must count within a word.
      But as we have it, it counts within whatever size OP0 now has.
      On a bigendian machine, these are not the same, so convert.  */
-  if (BYTES_BIG_ENDIAN &&
-      GET_CODE (op0) != MEM
+  if (BYTES_BIG_ENDIAN
+      && GET_CODE (op0) != MEM
       && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
     bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
 
@@ -2875,11 +2875,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    pre_shift = floor_log2 (d);
 		    if (rem_flag)
 		      {
-			remainder =
-			  expand_binop (compute_mode, and_optab, op0,
-					GEN_INT (((HOST_WIDE_INT) 1 << pre_shift) - 1),
-					remainder, 1,
-					OPTAB_LIB_WIDEN);
+			remainder
+			  = expand_binop (compute_mode, and_optab, op0,
+					  GEN_INT (((HOST_WIDE_INT) 1 << pre_shift) - 1),
+					  remainder, 1,
+					  OPTAB_LIB_WIDEN);
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
@@ -2940,10 +2940,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			    t4 = force_operand (gen_rtx (PLUS, compute_mode,
 							 t1, t3),
 						NULL_RTX);
-			    quotient =
-			      expand_shift (RSHIFT_EXPR, compute_mode, t4,
-					    build_int_2 (post_shift - 1, 0),
-					    tquotient, 1);
+			    quotient
+			      = expand_shift (RSHIFT_EXPR, compute_mode, t4,
+					      build_int_2 (post_shift - 1, 0),
+					      tquotient, 1);
 			  }
 			else
 			  {
@@ -2959,10 +2959,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						       max_cost - extra_cost);
 			    if (t2 == 0)
 			      goto fail1;
-			    quotient =
-			      expand_shift (RSHIFT_EXPR, compute_mode, t2,
-					    build_int_2 (post_shift, 0),
-					    tquotient, 1);
+			    quotient
+			      = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+					      build_int_2 (post_shift, 0),
+					      tquotient, 1);
 			  }
 		      }
 		  }

@@ -1526,9 +1526,9 @@ main (argc, argv)
       if (sym_hdr.ifdMax == 0)
 	last_aux_in_use = 0;
       else
-	last_aux_in_use =
-	  file_desc[sym_hdr.ifdMax-1].iauxBase +
-	  file_desc[sym_hdr.ifdMax-1].caux - 1;
+	last_aux_in_use
+	  = (file_desc[sym_hdr.ifdMax-1].iauxBase
+	     + file_desc[sym_hdr.ifdMax-1].caux - 1);
 
       if (last_aux_in_use < sym_hdr.iauxMax-1)
 	{

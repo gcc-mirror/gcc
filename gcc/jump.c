@@ -449,8 +449,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 					      sreg, NULL_PTR, dreg,
 					      GET_MODE (SET_SRC (body)));
 
-		    if (tem != 0 &&
-			GET_MODE (tem) == GET_MODE (SET_DEST (body)))
+		    if (tem != 0
+			&& GET_MODE (tem) == GET_MODE (SET_DEST (body)))
 		      {
 			/* DREG may have been the target of a REG_DEAD note in
 			   the insn which makes INSN redundant.  If so, reorg

@@ -4564,8 +4564,8 @@ get_set_constructor_bits (init, buffer, bit_size)
       if (TREE_CODE (TREE_VALUE (vals)) != INTEGER_CST
 	  || (TREE_PURPOSE (vals) != NULL_TREE
 	      && TREE_CODE (TREE_PURPOSE (vals)) != INTEGER_CST))
-	non_const_bits =
-	  tree_cons (TREE_PURPOSE (vals), TREE_VALUE (vals), non_const_bits);
+	non_const_bits
+	  = tree_cons (TREE_PURPOSE (vals), TREE_VALUE (vals), non_const_bits);
       else if (TREE_PURPOSE (vals) != NULL_TREE)
 	{
 	  /* Set a range of bits to ones.  */

@@ -632,8 +632,8 @@ read_scan_file (in_fname, argc, argv)
       && (fn = lookup_std_proto ("_filbuf", 7)) != NULL)
     {
       static char getchar_call[] = "getchar();";
-      cpp_buffer *buf =
-	cpp_push_buffer (&scan_in, getchar_call, sizeof(getchar_call) - 1);
+      cpp_buffer *buf
+	= cpp_push_buffer (&scan_in, getchar_call, sizeof(getchar_call) - 1);
       int old_written = CPP_WRITTEN (&scan_in);
       int seen_filbuf = 0;
 

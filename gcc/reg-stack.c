@@ -3122,8 +3122,8 @@ convert_regs ()
 
       }
      for (reg = regstack.top; reg >= 0; reg--)
-        if (regstack.reg[reg] < value_reg_low ||
-            regstack.reg[reg] > value_reg_high)
+        if (regstack.reg[reg] < value_reg_low
+	    || regstack.reg[reg] > value_reg_high)
            insn = emit_pop_insn (insn, &regstack,
 			    FP_MODE_REG (regstack.reg[reg], DFmode),
 			    emit_insn_after);

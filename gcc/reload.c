@@ -3576,20 +3576,20 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      }
 	  }
 	else if (goal_alternative_matched[i] == -1)
-	  operand_reloadnum[i] =
-	    push_reload (modified[i] != RELOAD_WRITE ? recog_operand[i] : 0,
-			 modified[i] != RELOAD_READ ? recog_operand[i] : 0,
-			 (modified[i] != RELOAD_WRITE ?
-			  recog_operand_loc[i] : 0),
-			 modified[i] != RELOAD_READ ? recog_operand_loc[i] : 0,
-			 (enum reg_class) goal_alternative[i],
-			 (modified[i] == RELOAD_WRITE
-			  ? VOIDmode : operand_mode[i]),
-			 (modified[i] == RELOAD_READ
-			  ? VOIDmode : operand_mode[i]),
-			 (insn_code_number < 0 ? 0
-			  : insn_operand_strict_low[insn_code_number][i]),
-			 0, i, operand_type[i]);
+	  operand_reloadnum[i]
+	    = push_reload (modified[i] != RELOAD_WRITE ? recog_operand[i] : 0,
+			   modified[i] != RELOAD_READ ? recog_operand[i] : 0,
+			   (modified[i] != RELOAD_WRITE
+			    ? recog_operand_loc[i] : 0),
+			   modified[i] != RELOAD_READ ? recog_operand_loc[i] : 0,
+			   (enum reg_class) goal_alternative[i],
+			   (modified[i] == RELOAD_WRITE
+			    ? VOIDmode : operand_mode[i]),
+			   (modified[i] == RELOAD_READ
+			    ? VOIDmode : operand_mode[i]),
+			   (insn_code_number < 0 ? 0
+			    : insn_operand_strict_low[insn_code_number][i]),
+			   0, i, operand_type[i]);
 	/* In a matching pair of operands, one must be input only
 	   and the other must be output only.
 	   Pass the input operand as IN and the other as OUT.  */
@@ -3828,8 +3828,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      int secondary_in_reload = reload_secondary_in_reload[i];
 
-	      reload_when_needed[secondary_in_reload] = 
-		RELOAD_FOR_OPADDR_ADDR;
+	      reload_when_needed[secondary_in_reload]
+		= RELOAD_FOR_OPADDR_ADDR;
 
 	      /* If there's a tertiary reload we have to change it also.  */
 	      if (secondary_in_reload > 0
@@ -3844,8 +3844,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      int secondary_out_reload = reload_secondary_out_reload[i];
 
-	      reload_when_needed[secondary_out_reload] = 
-		RELOAD_FOR_OPADDR_ADDR;
+	      reload_when_needed[secondary_out_reload]
+		= RELOAD_FOR_OPADDR_ADDR;
 
 	      /* If there's a tertiary reload we have to change it also.  */
 	      if (secondary_out_reload

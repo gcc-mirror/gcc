@@ -987,8 +987,8 @@ life_analysis (f, nregs)
 	  if (GET_CODE (PATTERN (insn)) == SET
 	      && GET_CODE (SET_DEST (PATTERN (insn))) == REG
 	      && GET_CODE (SET_SRC (PATTERN (insn))) == REG
-	      && REGNO (SET_DEST (PATTERN (insn))) ==
-			REGNO (SET_SRC (PATTERN (insn)))
+	      && (REGNO (SET_DEST (PATTERN (insn)))
+		  == REGNO (SET_SRC (PATTERN (insn))))
 	      /* Insns carrying these notes are useful later on.  */
 	      && ! find_reg_note (insn, REG_EQUAL, NULL_RTX))
 	    {
@@ -1002,8 +1002,8 @@ life_analysis (f, nregs)
 	      && GET_CODE (SUBREG_REG (SET_DEST (PATTERN (insn)))) == REG
 	      && GET_CODE (SET_SRC (PATTERN (insn))) == SUBREG
 	      && GET_CODE (SUBREG_REG (SET_SRC (PATTERN (insn)))) == REG
-	      && REGNO (SUBREG_REG (SET_DEST (PATTERN (insn)))) ==
-			REGNO (SUBREG_REG (SET_SRC (PATTERN (insn))))
+	      && (REGNO (SUBREG_REG (SET_DEST (PATTERN (insn))))
+		  == REGNO (SUBREG_REG (SET_SRC (PATTERN (insn)))))
 	      && SUBREG_WORD (SET_DEST (PATTERN (insn))) ==
 			      SUBREG_WORD (SET_SRC (PATTERN (insn)))
 	      /* Insns carrying these notes are useful later on.  */

@@ -4279,8 +4279,8 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
     }
   else
     {
-      arg_size_ptr->constant = (- initial_offset_ptr->constant -
-				offset_ptr->constant); 
+      arg_size_ptr->constant = (- initial_offset_ptr->constant
+				- offset_ptr->constant); 
     }
 #else /* !ARGS_GROW_DOWNWARD */
   pad_to_arg_alignment (initial_offset_ptr, boundary);
@@ -5134,8 +5134,8 @@ bc_expand_function_start (subr, parms_have_cleanups)
   ++nlab;
   name = (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
   this_function_callinfo = bc_gen_rtx (name, 0, (struct bc_label *) 0);
-  this_function_bytecode =
-    bc_emit_trampoline (BYTECODE_LABEL (this_function_callinfo));
+  this_function_bytecode
+    = bc_emit_trampoline (BYTECODE_LABEL (this_function_callinfo));
 }
 
 
