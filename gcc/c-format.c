@@ -830,7 +830,7 @@ static const format_char_info gcc_cdiag_char_table[] =
   { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
 
   /* These will require a "tree" at runtime.  */
-  { "DFT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "DEFT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
 
   { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }

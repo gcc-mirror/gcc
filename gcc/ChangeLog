@@ -1,3 +1,15 @@
+2003-07-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-common.c: Don't undefine GCC_DIAG_STYLE.
+	(fname_decl): Don't use xxx_with_decl.
+	(c_add_case_label): Likewise.
+	(handle_section_attribute): Likewise.
+	(handle_alias_attribute): Likewise.
+	(handle_no_instrument_function_attribute): Likewise.
+	(handle_no_limit_stack_attribute): Likewise.
+	* c-objc-common.c (c_tree_printer): Print IDENTIFIER_NODEs.
+	* c-format.c (gcc_cdiag_char_table): Add '%E' format-specifier.
+
 2003-07-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (ifcvt.o): Add cfgloop.h.

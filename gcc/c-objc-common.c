@@ -407,6 +407,7 @@ c_objc_common_finish_file (void)
    source-level entity onto BUFFER.  The meaning of the format specifiers
    is as follows:
    %D: a general decl,
+   %E: An expression,
    %F: a function declaration,
    %T: a type.
 
@@ -431,6 +432,14 @@ c_tree_printer (output_buffer *buffer, text_info *text)
         output_add_string (buffer, n);
       }
       return true;
+
+    case 'E':
+       if (TREE_CODE (t) == IDENTIFIER_NODE)
+         {
+           output_add_string (buffer, IDENTIFIER_POINTER (t));
+           return true;
+         }
+       return false;
 
     default:
       return false;
