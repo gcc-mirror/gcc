@@ -41,8 +41,9 @@ import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public class ActivationID
-	implements Serializable {
+public class ActivationID implements Serializable
+{
+  static final long serialVersionUID = -4608673054848209235L;
 
 private Activator activator;
 

@@ -41,8 +41,9 @@ import java.io.Serializable;
 import java.util.Properties;
 import java.rmi.MarshalledObject;
 
-public final class ActivationGroupDesc
-	implements Serializable {
+public final class ActivationGroupDesc implements Serializable
+{
+  static final long serialVersionUID = -4936225423168276595L;
 
 public static class CommandEnvironment
 	implements Serializable {

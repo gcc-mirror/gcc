@@ -1,3 +1,11 @@
+2002-10-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/rmi/activation/ActivationDesc.java,
+	java/rmi/activation/ActivationGroupDesc.java,
+	java/rmi/activation/ActivationGroupID.java,
+	java/rmi/activation/ActivationID.java: New versions from
+	Classpath.
+
 2002-09-30  Bo Thorsen  <bo@suse.de>
 
 	* sysdep/x86-64/locks.h (compare_and_swap): Fix multilib support.

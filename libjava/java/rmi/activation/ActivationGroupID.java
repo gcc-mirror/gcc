@@ -39,8 +39,9 @@ package java.rmi.activation;
 
 import java.io.Serializable;
 
-public class ActivationGroupID
-	implements Serializable {
+public class ActivationGroupID implements Serializable
+{
+  static final long serialVersionUID = -1648432278909740833L;
 
 private ActivationSystem system;
 
