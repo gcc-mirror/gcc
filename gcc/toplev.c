@@ -4222,7 +4222,7 @@ ignoring option `%s' due to invalid debug level specification",
     }
 
   if (! da->arg)
-    warning ("`%s': unknown or unsupported -g option", arg - 2);
+    return 0;
 
   return 1;
 }
@@ -4606,8 +4606,7 @@ main (argc, argv)
       indep_processed = independent_decode_option (argc - i, argv + i);
 
       if (lang_processed || indep_processed)
-	i += (lang_processed > indep_processed
-	      ? lang_processed : indep_processed);
+	i += MAX (lang_processed, indep_processed);
       else
 	{
 	  const char *option = NULL;
@@ -4637,10 +4636,13 @@ main (argc, argv)
 		{
 		  warning ("Ignoring command line option '%s'", argv[i]);
 		  if (lang)
-		    warning ("\
-(It is valid for %s but not the selected language)", lang);
+		    warning
+		      ("(It is valid for %s but not the selected language)",
+		       lang);
 		}
 	    }
+	  if (argv[i][0] == '-' && argv[i][1] == 'g')
+	    warning ("`%s': unknown or unsupported -g option", &argv[i][2]);
 	  else
 	    error ("Unrecognized option `%s'", argv[i]);
 

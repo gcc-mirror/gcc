@@ -1,3 +1,10 @@
+Mon Aug 28 19:02:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* toplev.c (decode_g_option): Don't give warning for unknown -g
+	option; return 0 instead.
+	(main): If -g option is not recognized by front end or
+	language-independent code, give warning.
+
 2000-08-28  Greg McGary  <greg@mcgary.org>
 
 	* config/i386/i386-protos.h (ix86_expand_compare): Add extern decl.
