@@ -1,3 +1,8 @@
+2003-03-02  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/Properties.java (load): Only skip line if the first
+	character is a comment, whitespaces don't count.
+
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/NetPermission.java:
