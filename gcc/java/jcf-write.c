@@ -670,7 +670,48 @@ find_constant_wide (lo, hi, state)
   lshift_double (lo, hi, -32, 64, &w1, &w2, 1);
   return find_constant2 (&state->cpool, CONSTANT_Long,
 			 w1 & 0xFFFFFFFF, lo & 0xFFFFFFFF);
- }
+}
+
+/* Find or allocate a constant pool entry for the given VALUE.
+   Return the index in the constant pool. */
+
+static int
+find_constant_index (value, state)
+     tree value;
+     struct jcf_partial *state;
+{
+  if (TREE_CODE (value) == INTEGER_CST)
+    {
+      if (TYPE_PRECISION (TREE_TYPE (value)) <= 32)
+	return find_constant1 (&state->cpool, CONSTANT_Integer,
+			       TREE_INT_CST_LOW (value) & 0xFFFFFFFF);
+      else
+	return find_constant_wide (TREE_INT_CST_LOW (value),
+				   TREE_INT_CST_HIGH (value), state);
+    }
+  else if (TREE_CODE (value) == REAL_CST)
+    {
+      long words[2];
+      if (TYPE_PRECISION (TREE_TYPE (value)) == 32)
+	{
+	  words[0] = etarsingle (TREE_REAL_CST (value)) & 0xFFFFFFFF;
+	  return find_constant1 (&state->cpool, CONSTANT_Float, words[0]);
+	}
+      else
+	{
+	  etardouble (TREE_REAL_CST (value), words);
+	  return find_constant2 (&state->cpool, CONSTANT_Double,
+				 words[1-FLOAT_WORDS_BIG_ENDIAN] & 0xFFFFFFFF,
+				 words[FLOAT_WORDS_BIG_ENDIAN] & 0xFFFFFFFF);
+	}
+    }
+  else if (TREE_CODE (value) == STRING_CST)
+    {
+      return find_string_constant (&state->cpool, value);
+    }
+  else
+    fatal ("find_constant_index - bad type");
+}
 
 /* Push 64-bit long constant on VM stack.
    Caller is responsible for doing NOTE_PUSH. */
@@ -1268,22 +1309,15 @@ generate_bytecode_insns (exp, target, state)
 	}
       break;
     case REAL_CST:
+      offset = find_constant_index (exp, state);
       switch (TYPE_PRECISION (type))
 	{
-	  long words[2];
-	  int index;
 	case 32:
-	  words[0] = etarsingle (TREE_REAL_CST (exp)) & 0xFFFFFFFF;
-	  index = find_constant1 (&state->cpool, CONSTANT_Float, words[0]);
-	  push_constant1 (index, state);
+	  push_constant1 (offset, state);
 	  NOTE_PUSH (1);
 	  break;
 	case 64:
-	  etardouble (TREE_REAL_CST (exp), words);
-	  index = find_constant2 (&state->cpool, CONSTANT_Double,
-				  words[1-FLOAT_WORDS_BIG_ENDIAN] & 0xFFFFFFFF,
-				  words[FLOAT_WORDS_BIG_ENDIAN] & 0xFFFFFFFF);
-	  push_constant2 (index, state);
+	  push_constant2 (offset, state);
 	  NOTE_PUSH (2);
 	  break;
 	default:
@@ -2018,6 +2052,43 @@ generate_bytecode_insns (exp, target, state)
       RESERVE (1);
       OP1 (OPCODE_athrow);
       break;
+    case NEW_ARRAY_INIT:
+      {
+	tree values;
+	tree array_type = TREE_TYPE (TREE_TYPE (exp));
+	tree element_type = TYPE_ARRAY_ELEMENT (array_type);
+	HOST_WIDE_INT length = java_array_type_length (array_type);
+	push_int_const (length, state);
+	NOTE_PUSH (1);
+	RESERVE (3);
+	if (JPRIMITIVE_TYPE_P (element_type))
+	  {
+	    int atype = encode_newarray_type (element_type);
+	    OP1 (OPCODE_newarray);
+	    OP1 (atype);
+	  }
+	else
+	  {
+	    int index = find_class_constant (&state->cpool,
+					     TREE_TYPE (element_type));
+	    OP1 (OPCODE_anewarray);
+	    OP2 (index);
+	  }
+	values = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
+	offset = 0;
+	jopcode = OPCODE_iastore + adjust_typed_op (element_type, 7);
+	for ( ;  values != NULL_TREE;  values = TREE_CHAIN (values), offset++)
+	  {
+	    int save_SP = state->code_SP;
+	    emit_dup (1, 0, state);
+	    push_int_const (offset, state);
+	    generate_bytecode_insns (TREE_VALUE (values), STACK_TARGET, state);
+	    RESERVE (1);
+	    OP1 (jopcode);
+	    state->code_SP = save_SP;
+	  }
+      }
+      break;
     case NEW_CLASS_EXPR:
       {
 	tree class = TREE_TYPE (TREE_TYPE (exp));
@@ -2444,18 +2515,7 @@ generate_classfile (clas, state)
 	  i = find_utf8_constant (&state->cpool, ConstantValue_node);
 	  PUT2 (i);  /* attribute_name_index */
 	  PUT4 (2); /* attribute_length */
-	  if (TREE_CODE (init) == INTEGER_CST)
-	    {
-	      if (TYPE_PRECISION (TREE_TYPE (part)) <= 32)
-		i = find_constant1 (&state->cpool, CONSTANT_Integer,
-				    TREE_INT_CST_LOW (init) & 0xFFFFFFFF);
-	      else
-		i = find_constant_wide (TREE_INT_CST_LOW (init),
-					TREE_INT_CST_HIGH (init), state);
-	    }
-	  else
-	    fatal ("unimplemented ConstantValue");
-	  PUT2 (i);
+	  i = find_constant_index (init, state);  PUT2 (i);
 	}
       fields_count++;
     }
