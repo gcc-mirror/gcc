@@ -1,3 +1,18 @@
+2002-04-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (_cpp_pop_file_buffer): Return void.  Move
+	file change and include code to _cpp_pop_buffer.
+	* cpphash.h (struct pending_option): Predeclare.
+	(struct cpp_reader): New member next_include_file.
+	(_cpp_pop_file_buffer): Update.
+	(_cpp_push_next_buffer): Update, rename.
+	* cppinit.c (cpp_destroy): Free include chain and pending here.
+	(cpp_finish_options): Simplify.
+	(_cpp_push_next_buffer): Rename and clean up.
+	* cpplib.c (cpp_pop_buffer): Move code from _cpp_pop_file_buffer.
+	Clarify.
+	* cppmacro.c (cpp_scan_nooutput): Set return_at_eof here.
+
 2002-04-22  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h (vec_xor): Add variant for both args

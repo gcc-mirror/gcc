@@ -26,6 +26,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "hashtable.h"
 
 struct directive;		/* Deliberately incomplete.  */
+struct pending_option;
 
 /* Test if a sign is valid within a preprocessing number.  */
 #define VALID_SIGN(c, prevc) \
@@ -250,6 +251,11 @@ struct cpp_reader
   /* If in_directive, the directive if known.  */
   const struct directive *directive;
 
+  /* The next -include-d file; NULL if they all are done.  If it
+     points to NULL, the last one is in progress, and
+     _cpp_maybe_push_include_file has yet to restore the line map.  */
+  struct pending_option **next_include_file;
+
   /* Multiple inlcude optimisation.  */
   const cpp_hashnode *mi_cmacro;
   const cpp_hashnode *mi_ind_cmacro;
@@ -381,7 +387,7 @@ extern int _cpp_compare_file_date       PARAMS ((cpp_reader *,
 extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
 extern void _cpp_init_includes		PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_includes	PARAMS ((cpp_reader *));
-extern bool _cpp_pop_file_buffer	PARAMS ((cpp_reader *,
+extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *,
 						 struct include_file *));
 
 /* In cppexp.c */
@@ -396,7 +402,7 @@ extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 extern void _cpp_init_tokenrun		PARAMS ((tokenrun *, unsigned int));
 
 /* In cppinit.c.  */
-extern bool _cpp_push_next_buffer	PARAMS ((cpp_reader *));
+extern void _cpp_maybe_push_include_file PARAMS ((cpp_reader *));
 
 /* In cpplib.c */
 extern int _cpp_test_assertion PARAMS ((cpp_reader *, int *));
