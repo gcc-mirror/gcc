@@ -6249,11 +6249,11 @@ These @option{-m} options are defined for Mitsubishi M32R/D architectures:
 @table @gcctabopt
 @item -m32rx
 @opindex m32rx
-Generate code for the M32R/X.
+Generate code for the M32R/X@.
 
 @item -m32r
 @opindex m32r
-Generate code for the M32R.  This is the default.
+Generate code for the M32R@.  This is the default.
 
 @item -mcode-model=small
 @opindex mcode-model=small
