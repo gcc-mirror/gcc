@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "ggc.h"
 #include "tm_p.h"
+#include "debug.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -947,17 +948,7 @@ assemble_start_function (decl, fnname)
   ASM_OUTPUT_FUNCTION_PREFIX (asm_out_file, fnname);
 #endif
 
-#ifdef SDB_DEBUGGING_INFO
-  /* Output SDB definition of the function.  */
-  if (write_symbols == SDB_DEBUG)
-    sdbout_mark_begin_function ();
-#endif
-
-#ifdef DBX_DEBUGGING_INFO
-  /* Output DBX definition of the function.  */
-  if (write_symbols == DBX_DEBUG)
-    dbxout_begin_function (decl);
-#endif
+  (*debug_hooks->begin_function) (decl);
 
   /* Make function name accessible from other files, if appropriate.  */
 

@@ -252,7 +252,7 @@ static void profile_function	PARAMS ((FILE *));
 static void profile_after_prologue PARAMS ((FILE *));
 static void add_bb		PARAMS ((FILE *));
 static int add_bb_string	PARAMS ((const char *, int));
-static void output_source_line	PARAMS ((rtx));
+static void notice_source_line	PARAMS ((rtx));
 static rtx walk_alter_subreg	PARAMS ((rtx));
 static void output_asm_name	PARAMS ((void));
 static void output_operand	PARAMS ((rtx, int));
@@ -1576,37 +1576,16 @@ final_start_function (first, file, optimize)
     }
 #endif
 
-  /* Initial line number is supposed to be output
-     before the function's prologue and label
-     so that the function's address will not appear to be
-     in the last statement of the preceding function.  */
   if (NOTE_LINE_NUMBER (first) != NOTE_INSN_DELETED)
-    last_linenum = high_block_linenum = high_function_linenum
-      = NOTE_LINE_NUMBER (first);
+    notice_source_line (first);
+  high_block_linenum = high_function_linenum = last_linenum;
 
-#if defined (DWARF2_UNWIND_INFO) || defined (IA64_UNWIND_INFO) \
-    || defined (DWARF2_DEBUGGING_INFO)
-  dwarf2out_begin_prologue ();
-#endif
+  (*debug_hooks->begin_prologue) (last_linenum, last_filename);
 
-  /* For SDB and XCOFF, the function beginning must be marked between
-     the function label and the prologue.  We always need this, even when
-     -g1 was used.  Defer on MIPS systems so that parameter descriptions
-     follow function entry.  */
-#if defined(SDB_DEBUGGING_INFO) && !defined(MIPS_DEBUGGING_INFO)
-  if (write_symbols == SDB_DEBUG)
-    sdbout_begin_function (last_linenum);
-  else
+#if defined (DWARF2_UNWIND_INFO) || defined (IA64_UNWIND_INFO)
+  if (write_symbols != DWARF2_DEBUG)
+    dwarf2out_begin_prologue (0, NULL);
 #endif
-#ifdef XCOFF_DEBUGGING_INFO
-    if (write_symbols == XCOFF_DEBUG)
-      xcoffout_begin_function (file, last_linenum);
-    else
-#endif
-      /* But only output line number for other debug info types if -g2
-	 or better.  */
-      if (NOTE_LINE_NUMBER (first) != NOTE_INSN_DELETED)
-	output_source_line (first);
 
 #ifdef LEAF_REG_REMAP
   if (current_function_uses_only_leaf_regs)
@@ -2079,24 +2058,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 
 	case NOTE_INSN_FUNCTION_BEG:
-#if defined(SDB_DEBUGGING_INFO) && defined(MIPS_DEBUGGING_INFO)
-	  /* MIPS stabs require the parameter descriptions to be after the
-	     function entry point rather than before.  */
-	  if (write_symbols == SDB_DEBUG)
-	    {
-	      app_disable ();
-	      sdbout_begin_function (last_linenum);
-	    }
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-	  /* This outputs a marker where the function body starts, so it
-	     must be after the prologue.  */
-	  if (write_symbols == DWARF_DEBUG)
-	    {
-	      app_disable ();
-	      dwarfout_begin_function ();
-	    }
-#endif
+	  app_disable ();
+	  (*debug_hooks->end_prologue) (last_linenum);
 	  break;
 
 	case NOTE_INSN_BLOCK_BEG:
@@ -2191,7 +2154,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    /* Output this line note if it is the first or the last line
 	       note in a row.  */
 	    if (!note_after)
-	      output_source_line (insn);
+	      {
+		notice_source_line (insn);
+		(*debug_hooks->source_line) (last_linenum, last_filename);
+	      }
 	  }
 	  break;
 	}
@@ -2906,7 +2872,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
    based on the NOTE-insn INSN, assumed to be a line number.  */
 
 static void
-output_source_line (insn)
+notice_source_line (insn)
      rtx insn;
 {
   register const char *filename = NOTE_SOURCE_FILE (insn);
@@ -2923,8 +2889,6 @@ output_source_line (insn)
   last_linenum = NOTE_LINE_NUMBER (insn);
   high_block_linenum = MAX (last_linenum, high_block_linenum);
   high_function_linenum = MAX (last_linenum, high_function_linenum);
-
-  (*debug_hooks->source_line) (filename, insn);
 }
 
 /* For each operand in INSN, simplify (subreg (reg)) so that it refers

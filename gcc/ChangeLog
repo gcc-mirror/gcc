@@ -1,3 +1,55 @@
+2001-07-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* dbxout.c (dbxout_really_begin_function): Rename to
+	dbxout_begin_function.
+	(dbx_debug_hooks, xcoff_debug_hooks): Update.
+	(dbxout_begin_function): Remove.
+	(dbxout_function): Update.
+	(dbxout_source_line): Update prototype.
+	* dbxout.h (dbxout_begin_function): Remove.
+	* debug.c (do_nothing_debug_hooks): Update.
+	(debug_nothing_tree): Update.
+	(debug_nothing_charstar_rtx): Remove.
+	* debug.h (union tree_node): Declare.
+	(struct rtx_def): Remove.
+	(gcc_debug_hooks): New hooks begin_prologue, end_prologue,
+	begin_function.  Change source_line prototype.
+	(debug_nothing_tree): New.
+	(debug_nothing_charstar_rtx): Delete.
+	(dwarf2out_begin_prologue): Moved from ...
+	* tree.h: ... here.
+	* dwarf2out.c (dwarf2_debug_hooks): Update.
+	(dwarf2out_begin_prologue): Update prototype.  If genuine dwarf2
+	debug info, call dwarf2out_source_line.
+	(dwarf2out_souce_line): Update prototype.
+	* dwarfout.c (dwarfout_begin_function): Rename dwarfout_end_prologue.
+	Change prototype, make static.
+	(dwarfout_source_line): Update prototype.
+	(dwarf_debug_hooks): Update.
+	* dwarfout.h (dwarfout_begin_function): Remove.
+	* final.c (final_start_function, final_scan_insn): Use appropriate
+	debug hooks, update to use notice_source_line.
+	(output_source_line): Rename notice_source_line.  Don't call the
+	source_line debug hook.
+	* sdbout.c (sdbout_begin_function): Rename sdbout_begin_prologue,
+	make static, update prototype.
+	(sdbout_mark_begin_function): Rename sdbout_begin_function, update
+	prototype.
+	(sdbout_end_prologue): New.
+	(sdbout_source_line): Update prototype.
+	(sdbout_debug_hooks): Update.
+	(sdbout_symbol): Remove unused var.
+	* sdbout.h (sdbout_begin_function, sdbout_mark_begin_function):
+	Delete.
+	* varasm.c: Include debug.h.
+	(assemble_start_function): Use begin_function debug_hook.
+	* xcoffout.c (xcoffout_begin_prologue): Rename xcoffout_begin_function,
+	update with prototype.
+	(xcoffout_source_line): Update prototype.
+	* xcoffout.h (xcoffout_begin_prologue): Rename xcoffout_begin_function,
+	update prototype.
+	(xcoffout_source_line): Update prototype.
+
 2001-07-17  Richard Henderson  <rth@redhat.com>
 
 	* c-typeck.c (build_binary_op): Do not shorten unsigned

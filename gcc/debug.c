@@ -30,9 +30,12 @@ struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_int,
   debug_nothing_int_int,
   debug_nothing_int_int,
-  debug_nothing_charstar_rtx,
-  debug_nothing_void,
-  debug_nothing_int
+  debug_nothing_int_charstar,	/* source_line */
+  debug_nothing_int_charstar,	/* begin_prologue */
+  debug_nothing_int,		/* end_prologue */
+  debug_nothing_void,		/* end_epilogue */
+  debug_nothing_tree,		/* begin_function */
+  debug_nothing_int		/* end_function */
 };
 
 /* This file contains implementations of each debug hook that do
@@ -40,6 +43,12 @@ struct gcc_debug_hooks do_nothing_debug_hooks =
 
 void
 debug_nothing_void ()
+{
+}
+
+void
+debug_nothing_tree (decl)
+     union tree_node *decl ATTRIBUTE_UNUSED;
 {
 }
 
@@ -66,12 +75,5 @@ void
 debug_nothing_int_int (line, n)
      unsigned int line ATTRIBUTE_UNUSED;
      unsigned int n ATTRIBUTE_UNUSED;
-{
-}
-
-void
-debug_nothing_charstar_rtx (filename, note)
-     const char *filename ATTRIBUTE_UNUSED;
-     struct rtx_def *note ATTRIBUTE_UNUSED;
 {
 }

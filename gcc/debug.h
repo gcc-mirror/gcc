@@ -18,7 +18,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef GCC_DEBUG_H
 #define GCC_DEBUG_H
 
-struct rtx_def;
+union tree_node;
 
 /* This structure contains hooks for the debug information output
    functions, accessed through the global instance debug_hooks set in
@@ -53,12 +53,23 @@ struct gcc_debug_hooks
   /* Record the end of a block.  Arguments as for begin_block.  */
   void (* end_block) PARAMS ((unsigned int line, unsigned int n));
 
-  /* Record a line based on NOTE.  Obtain the line number with
-     NOTE_LINE_NUMBER (note).  */
-  void (* source_line) PARAMS ((const char *filename, struct rtx_def *note));
+  /* Record a source file location at (FILE, LINE).  */
+  void (* source_line) PARAMS ((unsigned int line, const char *file));
+
+  /* Called at start of prologue code.  LINE is the first line in the
+     function.  This has been given the same prototype as source_line,
+     so that the source_line hook can be substituted if appropriate.  */
+  void (* begin_prologue) PARAMS ((unsigned int line, const char *file));
+
+  /* Called at end of prologue code.  LINE is the first line in the
+     function.  */
+  void (* end_prologue) PARAMS ((unsigned int line));
 
   /* Record end of epilogue code.  */
   void (* end_epilogue) PARAMS ((void));
+
+  /* Called at start of function DECL, before it is declared.  */
+  void (* begin_function) PARAMS ((union tree_node *decl));
 
   /* Record end of function.  LINE is highest line number in function.  */
   void (* end_function) PARAMS ((unsigned int line));
@@ -77,8 +88,8 @@ extern void debug_nothing_int
   PARAMS ((unsigned int));
 extern void debug_nothing_int_int
   PARAMS ((unsigned int, unsigned int));
-extern void debug_nothing_charstar_rtx
-  PARAMS ((const char *, struct rtx_def *));
+extern void debug_nothing_tree
+  PARAMS ((union tree_node *));
 
 /* Hooks for various debug formats.  */
 extern struct gcc_debug_hooks do_nothing_debug_hooks;
@@ -90,6 +101,10 @@ extern struct gcc_debug_hooks dwarf2_debug_hooks;
 
 /* Dwarf2 frame information.  */
 
+/* FILE is NULL iff being called for frame information for non-dwarf
+   debug output.  */
+extern void dwarf2out_begin_prologue
+  PARAMS ((unsigned int, const char * file));
 extern void dwarf2out_end_epilogue
   PARAMS ((void));
 

@@ -2919,11 +2919,6 @@ extern void dwarf2out_return_save	PARAMS ((const char *, long));
 
 extern void dwarf2out_return_reg	PARAMS ((const char *, unsigned));
 
-/* Output a marker (i.e. a label) for the beginning of a function, before
-   the prologue.  */
-
-extern void dwarf2out_begin_prologue	PARAMS ((void));
-
 
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  This logic

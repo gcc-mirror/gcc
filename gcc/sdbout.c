@@ -97,8 +97,13 @@ static void sdbout_start_source_file	PARAMS ((unsigned, const char *));
 static void sdbout_end_source_file	PARAMS ((unsigned));
 static void sdbout_begin_block		PARAMS ((unsigned, unsigned));
 static void sdbout_end_block		PARAMS ((unsigned, unsigned));
-static void sdbout_source_line		PARAMS ((const char *, rtx));
+static void sdbout_source_line		PARAMS ((unsigned int, const char *));
 static void sdbout_end_epilogue		PARAMS ((void));
+#ifndef MIPS_DEBUGGING_INFO
+static void sdbout_begin_prologue	PARAMS ((unsigned int, const char *));
+#endif
+static void sdbout_end_prologue		PARAMS ((unsigned int));
+static void sdbout_begin_function	PARAMS ((tree));
 static void sdbout_end_function		PARAMS ((unsigned int));
 static char *gen_fake_label		PARAMS ((void));
 static int plain_type			PARAMS ((tree));
@@ -299,7 +304,17 @@ struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_begin_block,
   sdbout_end_block,
   sdbout_source_line,
+#ifdef MIPS_DEBUGGING_INFO
+  /* Defer on MIPS systems so that parameter descriptions follow
+     function entry.  */
+  debug_nothing_int_charstar,	/* begin_prologue */
+  sdbout_end_prologue,		/* end_prologue */
+#else
+  sdbout_begin_prologue,	/* begin_prologue */
+  debug_nothing_int,		/* end_prologue */
+#endif
   sdbout_end_epilogue,
+  sdbout_begin_function,
   sdbout_end_function
 };
 
@@ -775,8 +790,6 @@ sdbout_symbol (decl, local)
 	}
       else if (GET_CODE (value) == SUBREG)
 	{
-	  int offset = 0;
-
 	  while (GET_CODE (value) == SUBREG)
 	    value = SUBREG_REG (value);
 	  if (GET_CODE (value) == REG)
@@ -1521,12 +1534,10 @@ sdbout_end_block (line, n)
 }
 
 static void
-sdbout_source_line (filename, note)
+sdbout_source_line (line, filename)
+     unsigned int line;
      const char *filename ATTRIBUTE_UNUSED;
-     rtx note;
 {
-  unsigned int line = NOTE_LINE_NUMBER (note);
-
   /* COFF relative line numbers must be positive.  */
   if (line > sdb_begin_function_line)
     {
@@ -1543,21 +1554,32 @@ sdbout_source_line (filename, note)
 /* Output sdb info for the current function name.
    Called from assemble_start_function.  */
 
-void
-sdbout_mark_begin_function ()
+static void
+sdbout_begin_function (decl)
+     tree decl ATTRIBUTE_UNUSED;
 {
   sdbout_symbol (current_function_decl, 0);
 }
 
-/* Called at beginning of function body (after prologue).
-   Record the function's starting line number, so we can output
-   relative line numbers for the other lines.
-   Describe beginning of outermost block.
-   Also describe the parameter list.  */
+/* Called at beginning of function body (before or after prologue,
+   depending on MIPS_DEBUGGING_INFO).  Record the function's starting
+   line number, so we can output relative line numbers for the other
+   lines.  Describe beginning of outermost block.  Also describe the
+   parameter list.  */
 
-void
-sdbout_begin_function (line)
-     int line;
+#ifndef MIPS_DEBUGGING_INFO
+static void
+sdbout_begin_prologue (line, file)
+     unsigned int line;
+     const char *file ATTRIBUTE_UNUSED;
+{
+  sdbout_end_prologue (line);
+}
+#endif
+
+static void
+sdbout_end_prologue (line)
+     unsigned int line;
 {
   sdb_begin_function_line = line - 1;
   PUT_SDB_FUNCTION_START (line);

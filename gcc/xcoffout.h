@@ -199,7 +199,8 @@ extern const char *xcoff_lastfile;
 
 extern int stab_to_sclass			PARAMS ((int));
 #ifdef BUFSIZ
-extern void xcoffout_begin_function		PARAMS ((FILE *, int));
+extern void xcoffout_begin_prologue		PARAMS ((unsigned int,
+							 const char *));
 extern void xcoffout_begin_block		PARAMS ((unsigned, unsigned));
 extern void xcoffout_end_epilogue		PARAMS ((void));
 extern void xcoffout_end_function		PARAMS ((unsigned int));
@@ -215,6 +216,7 @@ extern void xcoffout_declare_function		PARAMS ((FILE *, tree, const char *));
 
 #ifdef RTX_CODE
 #ifdef BUFSIZ
-extern void xcoffout_source_line		PARAMS ((const char *, rtx));
+extern void xcoffout_source_line		PARAMS ((unsigned int,
+							 const char *));
 #endif /* BUFSIZ */
 #endif /* RTX_CODE */
