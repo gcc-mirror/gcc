@@ -1549,6 +1549,18 @@ output_move_with_extension (operands)
     abort ();
 }
 
+#if 0
+/* ??? These are only used by the movstrsi pattern, but we get better code
+   in general without that, because emit_block_move can do just as good a
+   job as this function does when alignment and size are known.  When they
+   aren't known, a call to strcpy may be faster anyways, because it is
+   likely to be carefully crafted assembly language code, and below we just
+   do a byte-wise copy.
+
+   Also, emit_block_move expands into multiple read/write RTL insns, which
+   can then be optimized, whereas our movstrsi pattern can not be optimized
+   at all.  */
+
 /* Load the address specified by OPERANDS[3] into the register
    specified by OPERANDS[0].
 
@@ -1825,6 +1837,7 @@ output_block_move (operands)
 
   return "";
 }
+#endif
 
 /* Output reasonable peephole for set-on-condition-code insns.
    Note that these insns assume a particular way of defining
