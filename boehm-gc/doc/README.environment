@@ -1,0 +1,41 @@
+The garbage collector looks at a number of environment variables which are
+the used to affect its operation.  These are examined only on Un*x-like
+platforms.
+
+GC_INITIAL_HEAP_SIZE=<bytes> -	Initial heap size in bytes.  May speed up
+				process start-up.
+
+GC_LOOP_ON_ABORT - Causes the collector abort routine to enter a tight loop.
+		   This may make it easier to debug, such a process, especially
+		   for multithreaded platforms that don't produce usable core
+		   files, or if a core file would be too large.  On some
+		   platforms, this also causes SIGSEGV to be caught and
+		   result in an infinite loop in a handler, allowing
+		   similar debugging techniques.
+
+GC_PRINT_STATS - Turn on as much logging as is easily feasible without
+		 adding signifcant runtime overhead.  Doesn't work if
+		 the collector is built with SMALL_CONFIG.  Overridden
+		 by setting GC_quiet.  On by default if the collector
+		 was built without -DSILENT.
+
+GC_PRINT_ADDRESS_MAP - Linux only.  Dump /proc/self/maps, i.e. various address
+		       maps for the process, to stderr on every GC.  Useful for
+		       mapping root addresses to source for deciphering leak
+		       reports.
+
+GC_NPROCS=<n> - Linux w/threads only.  Explicitly sets the number of processors
+	        that the GC should expect to use.  Note that setting this to 1
+		when multiple processors are available will preserve
+		correctness, but may lead to really horrible performance.
+
+The following turn on runtime flags that are also program settable.  Checked
+only during initialization.  We expect that they will usually be set through
+other means, but this may help with debugging and testing:
+
+GC_FIND_LEAK - Turns on GC_find_leak and thus leak detection.
+
+GC_ALL_INTERIOR_POINTERS - Turns on GC_all_interior_pointers and thus interior
+			   pointer recognition.
+
+GC_DONT_GC - Turns off garbage collection.  Use cautiously.
