@@ -1,3 +1,7 @@
+2001-03-28  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.in (stage1_build): Revert CFLAGS patch.
+
 2001-03-28  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* reload1.c (eliminate_regs): Don't abort on MEM USEs.
