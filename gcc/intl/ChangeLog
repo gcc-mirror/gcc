@@ -1,3 +1,10 @@
+2000-09-18  Bruno Haible  <haible@clisp.cons.org>
+
+	* intl/dcgettext.c: Outside libc, use local variable names that don't
+	clash with those in libc.
+	* intl/bindtextdom.c: Likewise.
+	* intl/textdomain.c: Likewise.
+
 2000-09-05  John David Anglin <dave@hiauly1.hia.nrc.ca>
 
 	* gettext.h (nls_uint32): Choose via INT_MAX instead of UINT_MAX.
