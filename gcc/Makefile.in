@@ -657,7 +657,7 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
    $(LANG_MAKEFILES)
 	srcdir="$(srcdir)" ; export srcdir ; \
 	subdirs="$(SUBDIRS)" ; export subdirs ; \
-	$(SHELL) configure.frag
+	$(SHELL) $(srcdir)/configure.frag
 	cp config.status config.run
 	$(SHELL) config.run
 	rm -f config.run
