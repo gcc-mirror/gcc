@@ -1,3 +1,10 @@
+2002-10-10  Denis Chertykov  <denisc@overta.ru>
+
+	* config/ip2k/ip2k.c (function_epilogue): Optimize stack
+	deallocation.
+	* config/ip2k/libgcc.S: Combine routines used by function
+	epilogue.
+
 2002-10-10  Jim Wilson  <wilson@redhat.com>
 
 	* cse.c (fold_rtx): Don't perform associative optimization for DIV and

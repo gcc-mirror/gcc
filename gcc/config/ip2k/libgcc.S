@@ -1,4 +1,3 @@
-; libgcc.S for the Ubicom IP2k architecture.
 ;
 ; Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 ; Contributed by Red Hat, Inc and Ubicom, Inc.
@@ -1327,8 +1326,11 @@ __cmpdi2_dp:
 	.sect	.pram.libgcc,"ax"
 	.global	__fp_pop_args_ret
 	.global	__pop_args_ret
-	.func	__fp_pop_args_ret, __fp_pop_args_ret
+	.global	__pop2_args_ret
+	.func	__fp_pop2_args_ret, __fp_pop2_args_ret
 
+__fp_pop2_args_ret:
+	mov	w, #2
 __fp_pop_args_ret:
 	pop	0xfd
 	pop	0xfe
@@ -1341,29 +1343,11 @@ __pop_args_ret:
 	.endfunc
 #endif /* L_fp_pop_args_ret */
 
-#if defined(L_leaf_fp_pop_args_ret)
+#if defined(L__pop2_args_ret)
 	.sect	.pram.libgcc,"ax"
-	.global	__leaf_fp_pop_args_ret
-	.func	__leaf_fp_pop_args_ret, __leaf_fp_pop_args_ret
-
-__leaf_fp_pop_args_ret:
-	pop	0xfd
-	pop	0xfe
-	add	spl, w
-	ret
-
-	.endfunc
-#endif /* L_leaf_fp_pop_args_ret */
-
-#if defined(L_fp_pop2_args_ret)
-	.sect	.pram.libgcc,"ax"
-	.global	__fp_pop2_args_ret
 	.global	__pop2_args_ret
-	.func	__fp_pop2_args_ret, __fp_pop2_args_ret
+	.func	__pop2_args_ret, __pop2_args_ret
 
-__fp_pop2_args_ret:
-	pop	0xfd
-	pop	0xfe
 __pop2_args_ret:
 	mov	w, #2
 	pop	callh
@@ -1372,22 +1356,23 @@ __pop2_args_ret:
 	ret
 
 	.endfunc
-#endif /* L_fp_pop2_args_ret */
+#endif /* L__pop2_args_ret */
 
-#if defined(L_leaf_fp_pop2_args_ret)
+#if defined(L_leaf_fp_pop_args_ret)
 	.sect	.pram.libgcc,"ax"
-	.global	__leaf_fp_pop2_args_ret
-	.func	__leaf_fp_pop2_args_ret, __leaf_fp_pop2_args_ret
+	.global	__leaf_fp_pop_args_ret, __leaf_fp_pop2_args_ret
+	.func	__leaf_fp2_pop_args_ret, __leaf_fp_pop2_args_ret
 
 __leaf_fp_pop2_args_ret:
+	mov	w, #2
+__leaf_fp_pop_args_ret:
 	pop	0xfd
 	pop	0xfe
-	mov	w, #2
 	add	spl, w
 	ret
 
 	.endfunc
-#endif /* L_leaf_fp_pop2_args_ret */
+#endif /* L_leaf_fp_pop_args_ret */
 
 #if defined(L_movstrhi_countqi)
 	.sect	.pram.libgcc,"ax"
@@ -1529,4 +1514,3 @@ _write:
 	
 	.endfunc
 #endif
-
