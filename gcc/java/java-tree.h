@@ -1238,6 +1238,7 @@ extern int get_access_flags_from_decl (tree);
 extern int interface_of_p (tree, tree);
 extern int inherits_from_p (tree, tree);
 extern int common_enclosing_context_p (tree, tree);
+extern int common_enclosing_instance_p (tree, tree);
 extern int enclosing_context_p (tree, tree);
 extern tree build_result_decl (tree);
 extern void emit_handlers (void);
