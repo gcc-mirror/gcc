@@ -1,3 +1,7 @@
+Mon Sep  6 08:42:06 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* collect2.c (scan_libraries): Fix double-thinko :-).
+
 Mon Sep  6 02:42:36 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* collect2.c (scan_libraries): Fix thinko.
