@@ -2982,6 +2982,7 @@ schedule_insns (dump_file)
   sbitmap large_region_blocks, blocks;
   int rgn;
   int any_large_regions;
+  basic_block bb;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
@@ -3021,7 +3022,9 @@ schedule_insns (dump_file)
 
   any_large_regions = 0;
   large_region_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_ones (large_region_blocks);
+  sbitmap_zero (large_region_blocks);
+  FOR_ALL_BB (bb)
+    SET_BIT (large_region_blocks, bb->sindex);
 
   blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (blocks);

@@ -1,3 +1,8 @@
+2002-05-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* sched-rgn.c (schedule_insns): Initialize large_region_blocks
+	with only extant block numbers.
+
 2002-05-16  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* lcm.c (optimize_mode_switching): Fix typo.
