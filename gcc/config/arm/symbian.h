@@ -34,8 +34,18 @@
 
    Make all symbols hidden by default.  Symbian OS expects that all
    exported symbols will be explicitly marked with
-   "__declspec(dllexport)".  */
-#define CC1_SPEC "-fno-builtin -fvisibility=hidden -fno-short-enums"
+   "__declspec(dllexport)".  
+
+   Enumeration types use 4 bytes, even if the enumerals are small,
+   unless explicitly overridden.
+
+   The wchar_t type is a 2-byte type, unless explicitly
+   overridden.  */
+#define CC1_SPEC						\
+  "%{!fbuiltin:%{!fno-builtin:-fno-builtin}} "			\
+  "%{!fvisibility=*:-fvisibility=hidden} "			\
+  "%{!fshort-enums:%{!fno-short-enums:-fno-short-enums}} "	\
+  "%{!fshort-wchar:%{!fno-short-wchar:-fshort-wchar}} "
 #define CC1PLUS_SPEC CC1_SPEC
 
 /* Symbian OS does not use crt0.o, unlike the generic unknown-elf

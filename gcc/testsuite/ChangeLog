@@ -1,3 +1,9 @@
+2004-08-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/symbian4.c: Expect a 2-byte wchar_t, not a 4-byte
+	wchar_t.
+	* gcc.dg/symbian5.c: Test -fno-short-wchar.
+
 2004-08-06  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/ret_array_1.f90: New test.
