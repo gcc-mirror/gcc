@@ -1,3 +1,25 @@
+2001-04-13  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/bits/boost_concept_check.h:  Uglify, fork from Boost.
+	* include/bits/concept_check.h:  Uglify.
+	* include/bits/stl_algo.h:  Likewise.
+	* include/bits/stl_algobase.h:  Likewise.
+	* include/bits/stl_deque.h:  Likewise.
+	* include/bits/stl_heap.h:  Likewise.
+	* include/bits/stl_iterator_base_funcs.h:  Likewise.
+	* include/bits/stl_list.h:  Likewise.
+	* include/bits/stl_map.h:  Likewise.
+	* include/bits/stl_multimap.h:  Likewise.
+	* include/bits/stl_multiset.h:  Likewise.
+	* include/bits/stl_numeric.h:  Likewise.
+	* include/bits/stl_queue.h:  Likewise.
+	* include/bits/stl_set.h:  Likewise.
+	* include/bits/stl_stack.h:  Likewise.
+	* include/bits/stl_vector.h:  Likewise.
+	* include/ext/hash_map:  Likewise.
+	* include/ext/hash_set:  Likewise.
+	* include/ext/slist:  Likewise.
+
 2001-04-13  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/23_containers/set_operators.cc: Just try to compile.

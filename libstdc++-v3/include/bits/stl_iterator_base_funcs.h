@@ -51,7 +51,7 @@ inline void __distance(_InputIterator __first, _InputIterator __last,
                        _Distance& __n, input_iterator_tag)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
   while (__first != __last) { ++__first; ++__n; }
 }
 
@@ -61,7 +61,7 @@ inline void __distance(_RandomAccessIterator __first,
                        _Distance& __n, random_access_iterator_tag)
 {
   // concept requirements
-  glibcpp_function_requires(RandomAccessIteratorConcept<_RandomAccessIterator>);
+  __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>);
   __n += __last - __first;
 }
 
@@ -78,7 +78,7 @@ inline typename iterator_traits<_InputIterator>::difference_type
 __distance(_InputIterator __first, _InputIterator __last, input_iterator_tag)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
   typename iterator_traits<_InputIterator>::difference_type __n = 0;
   while (__first != __last) {
     ++__first; ++__n;
@@ -92,7 +92,7 @@ __distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
            random_access_iterator_tag)
 {
   // concept requirements
-  glibcpp_function_requires(RandomAccessIteratorConcept<_RandomAccessIterator>);
+  __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>);
   return __last - __first;
 }
 
@@ -110,7 +110,7 @@ template <class _InputIter, class _Distance>
 inline void __advance(_InputIter& __i, _Distance __n, input_iterator_tag)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIter>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter>);
   while (__n--) ++__i;
 }
 
@@ -119,7 +119,7 @@ inline void __advance(_BidirectionalIterator& __i, _Distance __n,
                       bidirectional_iterator_tag)
 {
   // concept requirements
-glibcpp_function_requires(BidirectionalIteratorConcept<_BidirectionalIterator>);
+__glibcpp_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>);
   if (__n >= 0)
     while (__n--) ++__i;
   else
@@ -131,7 +131,7 @@ inline void __advance(_RandomAccessIterator& __i, _Distance __n,
                       random_access_iterator_tag)
 {
   // concept requirements
-  glibcpp_function_requires(RandomAccessIteratorConcept<_RandomAccessIterator>);
+  __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>);
   __i += __n;
 }
 
