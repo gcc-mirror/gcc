@@ -11614,7 +11614,8 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx align_rtx)
 }
 
 void
-ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx callarg2,
+ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
+		  rtx callarg2 ATTRIBUTE_UNUSED,
 		  rtx pop, int sibcall)
 {
   rtx use = NULL, call;
@@ -15462,7 +15463,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 #if TARGET_MACHO
 	if (TARGET_MACHO)
 	  {
-	    char *ip = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
+	    const char *ip = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
 	    tmp = gen_rtx_SYMBOL_REF (Pmode, machopic_stub_name (ip));
 	    tmp = gen_rtx_MEM (QImode, tmp);
 	    xops[0] = tmp;
