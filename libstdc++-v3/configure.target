@@ -18,7 +18,7 @@
 #
 #   cpu_include_dir        CPU-specific directory, defaults to cpu/generic
 #                              if cpu/target_cpu doesn't exist.  This is
-#                              used to set the next two:
+#                              used to set ATOMICITYH.
 #
 #   os_include_dir         OS-specific directory, defaults to os/generic.
 #

@@ -921,9 +921,9 @@ dnl compilation, pick them up here.
 dnl 
 dnl GLIBCPP_CHECK_TARGET
 AC_DEFUN(GLIBCPP_CHECK_TARGET, [
-    . [$]{glibcpp_basedir}/configure.target
-    AC_MSG_RESULT(CPU config directory is $cpu_include_dir)
-    AC_MSG_RESULT(OS config directory is $os_include_dir)
+  . [$]{glibcpp_basedir}/configure.target
+  AC_MSG_RESULT(CPU config directory is $cpu_include_dir)
+  AC_MSG_RESULT(OS config directory is $os_include_dir)
 ])
 
 
@@ -1120,14 +1120,14 @@ fi
 dnl Run through flags (either default or command-line) and set anything
 dnl extra (e.g., #defines) that must accompany particular g++ options.
 if test -n "$enable_cxx_flags"; then
-    for f in $enable_cxx_flags; do
-        case "$f" in
-            -fhonor-std)  ;;
-            -*)  ;;
-            *)   # and we're trying to pass /what/ exactly?
-                 AC_MSG_ERROR([compiler flags start with a -]) ;;
-        esac
-    done
+  for f in $enable_cxx_flags; do
+    case "$f" in
+      -fhonor-std)  ;;
+      -*)  ;;
+      *)   # and we're trying to pass /what/ exactly?
+           AC_MSG_ERROR([compiler flags start with a -]) ;;
+    esac
+  done
 fi
 EXTRA_CXX_FLAGS="$enable_cxx_flags"
 AC_SUBST(EXTRA_CXX_FLAGS)
