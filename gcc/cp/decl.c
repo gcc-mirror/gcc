@@ -4792,10 +4792,6 @@ select_decl (binding, flags)
 	   && (!looking_for_template || TREE_CODE (val) != TEMPLATE_DECL))
     val = NULL_TREE;
 
-  /* If we have a single function from a using decl, pull it out.  */
-  if (val && TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
-    val = OVL_FUNCTION (val);
-
   return val;
 }
 
@@ -4848,9 +4844,7 @@ unqualified_namespace_lookup (name, flags)
       val = select_decl (b, flags);
       if (scope == global_namespace)
 	break;
-      scope = DECL_CONTEXT (scope);
-      if (scope == NULL_TREE)
-	scope = global_namespace;
+      scope = CP_DECL_CONTEXT (scope);
     }
   return val;
 }
@@ -5102,6 +5096,10 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	val = TYPE_MAIN_DECL (IDENTIFIER_TYPE_VALUE (name));
       else if (TREE_TYPE (val) == error_mark_node)
 	val = error_mark_node;
+
+      /* If we have a single function from a using decl, pull it out.  */
+      if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
+	val = OVL_FUNCTION (val);
     }
   else if (from_obj)
     val = from_obj;
