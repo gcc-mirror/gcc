@@ -1,3 +1,14 @@
+2001-03-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppfiles.c: Update comments.
+	(destroy_include_file_node): Rename destroy_node.
+	(find_or_create_entry): New function.
+	(open_file, _cpp_fake_include): Use it.
+	(handle_missing_header): New function, broken out of
+	_cpp_execute include.  Don't segfault if there is no
+	system or quoted path.
+	(_cpp_execute_include): Use handle_missing_header.
+
 2001-03-12  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* jump.c (reversed_comparison_code_parts): Reverse Jan Hubricka's
