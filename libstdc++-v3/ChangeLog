@@ -1,3 +1,13 @@
+2004-01-07  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+	
+	PR libstdc++/13007
+	* include/bits/fstream.tcc (imbue): Don't touch the stored
+	locale.
+	* include/std/std_streambuf.h (imbue): According to the
+	standard, base class version does nothing.
+	(pubimbue): Store the locale.
+
 2003-12-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/6243

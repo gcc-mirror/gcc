@@ -506,19 +506,8 @@ namespace std
   template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
-    imbue(const locale& __loc)
-    {
-      bool __testbeg = gptr() == eback() && pptr() == pbase();
-
-      if (__testbeg && _M_buf_locale != __loc)
-	_M_buf_locale = __loc;
-
-      // NB this may require the reconversion of previously
-      // converted chars. This in turn may cause the reconstruction
-      // of the original file. YIKES!!
-      // XXX The part in the above comment is not done.
-      _M_last_overflowed = false;	
-    }
+    imbue(const locale&)
+    { _M_last_overflowed = false; }
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  

@@ -379,6 +379,7 @@ namespace std
       {
 	locale __tmp(this->getloc());
 	this->imbue(__loc);
+	_M_buf_locale = __loc;
 	return __tmp;
       }
 
@@ -688,15 +689,13 @@ namespace std
        *  are changed by this call.  The standard adds, "Between invocations
        *  of this function a class derived from streambuf can safely cache
        *  results of calls to locale functions and to members of facets
-       *  so obtained."  This function simply stores the new locale for use
-       *  by derived classes.
+       *  so obtained."
+       *
+       *  @note  Base class version does nothing.
       */
       virtual void 
-      imbue(const locale& __loc) 
-      { 
-	if (_M_buf_locale != __loc)
-	  _M_buf_locale = __loc;
-      }
+      imbue(const locale&) 
+      { }
 
       // [27.5.2.4.2] buffer management and positioning
       /**
