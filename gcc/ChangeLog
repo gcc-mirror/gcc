@@ -1,3 +1,9 @@
+2001-09-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_frame_set): New.
+	(mips_emit_frame_related_store): When storing two 32-bit FPRs, use
+	a parallel frame-related expression with a set for each register.
+
 2001-09-18  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/lib1funcs.asm (L_dvmd_lnx): Don't rely on kernel

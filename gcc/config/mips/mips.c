@@ -94,6 +94,8 @@ static void block_move_call			PARAMS ((rtx, rtx, rtx));
 static rtx mips_add_large_offset_to_sp		PARAMS ((HOST_WIDE_INT,
 							 FILE *));
 static void mips_annotate_frame_insn		PARAMS ((rtx, rtx));
+static rtx mips_frame_set			PARAMS ((enum machine_mode,
+							 int, int));
 static void mips_emit_frame_related_store	PARAMS ((rtx, rtx,
 							 HOST_WIDE_INT));
 static void save_restore_insns			PARAMS ((int, rtx,
@@ -6599,8 +6601,27 @@ mips_annotate_frame_insn (insn, dwarf_pattern)
 				      REG_NOTES (insn));
 }
 
+/* Return a frame-related rtx that stores register REGNO at (SP + OFFSET).
+   The expression should only be used to store single registers.  */
+
+static rtx
+mips_frame_set (mode, regno, offset)
+     enum machine_mode mode;
+     int regno;
+     int offset;
+{
+  rtx address = plus_constant (stack_pointer_rtx, offset);
+  rtx set = gen_rtx_SET (mode,
+			 gen_rtx_MEM (mode, address),
+			 gen_rtx_REG (mode, regno));
+  RTX_FRAME_RELATED_P (set) = 1;
+  return set;
+}
+
+
 /* Emit a move instruction that stores REG in MEM.  Make the instruction
-   frame related and note that it stores REG at (SP + OFFSET).  */
+   frame related and note that it stores REG at (SP + OFFSET).  This
+   function may be asked to store an FPR pair.  */
 
 static void
 mips_emit_frame_related_store (mem, reg, offset)
@@ -6608,11 +6629,24 @@ mips_emit_frame_related_store (mem, reg, offset)
      rtx reg;
      HOST_WIDE_INT offset;
 {
-  rtx dwarf_address = plus_constant (stack_pointer_rtx, offset);
-  rtx dwarf_mem = gen_rtx_MEM (GET_MODE (reg), dwarf_address);
+  rtx dwarf_expr;
 
-  mips_annotate_frame_insn (emit_move_insn (mem, reg),
-			    gen_rtx_SET (GET_MODE (reg), dwarf_mem, reg));
+  if (GET_MODE (reg) == DFmode && ! TARGET_FLOAT64)
+    {
+      /* Two registers are being stored, so the frame-related expression
+	 must be a PARALLEL rtx with one SET for each register.  The
+	 higher numbered register is stored in the lower address on
+	 big-endian targets.  */
+      int regno1 = TARGET_BIG_ENDIAN ? REGNO (reg) + 1 : REGNO (reg);
+      int regno2 = TARGET_BIG_ENDIAN ? REGNO (reg) : REGNO (reg) + 1;
+      rtx set1 = mips_frame_set (SFmode, regno1, offset);
+      rtx set2 = mips_frame_set (SFmode, regno2, offset + UNITS_PER_FPREG);
+      dwarf_expr = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set1, set2));
+    }
+  else
+    dwarf_expr = mips_frame_set (GET_MODE (reg), REGNO (reg), offset);
+      
+  mips_annotate_frame_insn (emit_move_insn (mem, reg), dwarf_expr);
 }
 
 static void
