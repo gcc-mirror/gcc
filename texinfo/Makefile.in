@@ -1,5 +1,5 @@
 # Makefile for Texinfo distribution.
-# $Id: Makefile.in,v 1.1.1.1 1997/08/21 22:57:51 jason Exp $
+# $Id: Makefile.in,v 1.2 1997/09/03 04:25:21 law Exp $
 # 
 # Copyright (C) 1993, 96 Free Software Foundation, Inc.
 
@@ -80,7 +80,7 @@ MDEFINES = bindir='$(bindir)' mandir='$(mandir)' manext='$(manext)' \
 	INSTALL='$(INSTALL)' INSTALL_DATA='$(INSTALL_DATA)' \
 	INSTALL_PROGRAM='$(INSTALL_PROGRAM)'
 
-all: sub-all texinfo
+all: texinfo
 
 check:
 installcheck:
@@ -98,18 +98,26 @@ config.status: configure
 #configure: configure.in
 #	cd $(srcdir) && autoconf
 
-sub-all TAGS:
+TAGS:
 	for dir in $(SUBDIRS); do \
 	  echo making $@ in $$dir; \
 	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
 	done
-.PHONY: sub-all
+
+stmp-sub-all:
+	-rm -f stmp-sub-all
+	for dir in $(SUBDIRS); do \
+	  echo making sub-all in $$dir; \
+	  (cd $$dir && $(MAKE) $(MDEFINES) sub-all || exit 1); \
+	done
+	touch stmp-sub-all
 
 clean mostlyclean:
 	for dir in $(SUBDIRS); do \
 	  echo making $@ in $$dir; \
 	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
 	done
+	-rm -f stmp*
 
 distclean: clean texclean
 	for dir in $(SUBDIRS); do \
@@ -122,11 +130,11 @@ texclean:
 	$(RM) *.aux *.cp *.cps *.dvi *.fn *.fns *.ky *.kys *.pg *.pgs
 	$(RM) *.toc *.tp *.tps *.vr *.vrs
 
-realclean: distclean
+realclean maintainer-clean: distclean
 
 # Let's hope we weren't cross-compiling.
 # If we depend on sub-all, this always gets remade.  Annoying.
-info texinfo: texinfo.texi
+info texinfo: texinfo.texi stmp-sub-all
 	./makeinfo/makeinfo$(EXEEXT) -I$(srcdir) texinfo.texi
 .PHONY: info
 
