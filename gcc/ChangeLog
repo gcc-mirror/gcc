@@ -1,3 +1,7 @@
+Tue Apr 29 21:07:00 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (count_reg_usage): Revert my previous patch.
+	
 2003-04-29  Alexander Kabaev  <kan@FreeBSD.ORG>
 
 	bootstrap/10452
