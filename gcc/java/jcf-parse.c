@@ -750,6 +750,8 @@ parse_source_file (file)
   /* Mark the file as parsed */
   HAS_BEEN_ALREADY_PARSED_P (file) = 1;
 
+  jcf_dependency_add_file (input_filename, 0);
+
   lang_init_source (1);		    /* Error msgs have no method prototypes */
 
   java_init_lex ();		    /* Initialize the parser */
