@@ -641,13 +641,22 @@ delete_tree_ssa (void)
   /* Remove annotations from every tree in the function.  */
   FOR_EACH_BB (bb)
     for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-      bsi_stmt (bsi)->common.ann = NULL;
+      {
+	tree stmt = bsi_stmt (bsi);
+        release_defs (stmt);
+	ggc_free (stmt->common.ann);
+	stmt->common.ann = NULL;
+      }
 
   /* Remove annotations from every referenced variable.  */
   if (referenced_vars)
     {
       for (i = 0; i < num_referenced_vars; i++)
-	referenced_var (i)->common.ann = NULL;
+	{
+	  tree var = referenced_var (i);
+	  ggc_free (var->common.ann);
+	  var->common.ann = NULL;
+	}
       referenced_vars = NULL;
     }
 

@@ -302,7 +302,8 @@ release_defs (tree stmt)
   ssa_op_iter iter;
 
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
-    release_ssa_name (def);
+    if (TREE_CODE (def) == SSA_NAME)
+      release_ssa_name (def);
 }
 
 
