@@ -1,3 +1,9 @@
+2004-07-04  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (doc/gnat_ugn_unw.texi): Eliminate explicit
+	dependency on xgnatugn, instead build it via a submake.
+	(ADA_INFOFILES): Add doc/gnat_ugn_unw.texi.
+
 2004-07-04  Richard Henderson  <rth@redhat.com>
 
 	* utils2.c (gnat_mark_addressable): Don't put_var_into_stack.
