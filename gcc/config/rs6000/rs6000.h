@@ -1665,6 +1665,7 @@ typedef struct rs6000_stack {
 #define CALL_V4_CLEAR_FP_ARGS	0x00000002	/* V.4, no FP args passed */
 #define CALL_V4_SET_FP_ARGS	0x00000004	/* V.4, FP args were passed */
 #define CALL_LONG		0x00000008	/* always call indirect */
+#define CALL_LIBCALL		0x00000010	/* libcall */
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
@@ -1743,13 +1744,18 @@ typedef struct rs6000_args
    For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
-  init_cumulative_args (&CUM, FNTYPE, LIBNAME, FALSE)
+  init_cumulative_args (&CUM, FNTYPE, LIBNAME, FALSE, FALSE)
 
 /* Similar, but when scanning the definition of a procedure.  We always
    set NARGS_PROTOTYPE large so we never return an EXPR_LIST.  */
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,LIBNAME) \
-  init_cumulative_args (&CUM, FNTYPE, LIBNAME, TRUE)
+  init_cumulative_args (&CUM, FNTYPE, LIBNAME, TRUE, FALSE)
+
+/* Like INIT_CUMULATIVE_ARGS' but only used for outgoing libcalls.  */
+
+#define INIT_CUMULATIVE_LIBCALL_ARGS(CUM, MODE, LIBNAME) \
+  init_cumulative_args (&CUM, NULL_TREE, LIBNAME, FALSE, TRUE)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.

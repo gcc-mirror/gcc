@@ -3639,11 +3639,12 @@ rs6000_emit_move (dest, source, mode)
    so we never return a PARALLEL.  */
 
 void
-init_cumulative_args (cum, fntype, libname, incoming)
+init_cumulative_args (cum, fntype, libname, incoming, libcall)
      CUMULATIVE_ARGS *cum;
      tree fntype;
      rtx libname ATTRIBUTE_UNUSED;
      int incoming;
+     int libcall;
 {
   static CUMULATIVE_ARGS zero_cumulative;
 
@@ -3652,7 +3653,7 @@ init_cumulative_args (cum, fntype, libname, incoming)
   cum->fregno = FP_ARG_MIN_REG;
   cum->vregno = ALTIVEC_ARG_MIN_REG;
   cum->prototype = (fntype && TYPE_ARG_TYPES (fntype));
-  cum->call_cookie = CALL_NORMAL;
+  cum->call_cookie = libcall ? CALL_LIBCALL : CALL_NORMAL;
   cum->sysv_gregno = GP_ARG_MIN_REG;
   cum->stdarg = fntype
     && (TYPE_ARG_TYPES (fntype) != 0
@@ -3901,7 +3902,7 @@ rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type
 
    If this is floating-point and no prototype is specified, we use
    both an FP and integer register (or possibly FP reg and stack).  Library
-   functions (when TYPE is zero) always have the proper types for args,
+   functions (when CALL_LIBCALL is set) always have the proper types for args,
    so we can pass the FP value just in one register.  emit_library_function
    doesn't support PARALLEL anyway.  */
 
@@ -3922,7 +3923,8 @@ function_arg (cum, mode, type, named)
     {
       if (abi == ABI_V4
 	  && cum->nargs_prototype < 0
-	  && type && (cum->prototype || TARGET_NO_PROTOTYPE))
+	  && (cum->call_cookie & CALL_LIBCALL) == 0
+	  && (cum->prototype || TARGET_NO_PROTOTYPE))
 	{
 	  /* For the SPE, we need to crxor CR6 always.  */
 	  if (TARGET_SPE_ABI)

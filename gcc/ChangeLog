@@ -1,3 +1,15 @@
+2003-06-18  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/rs6000.c (init_cumulative_args): Add and handle LIBCALL
+	argument.
+	(function_arg): Handle CALL_LIBCALL flag.
+	* config/rs6000/rs6000-protos.h (init_cumulative_args): Update
+	prototype.
+	* config/rs6000/rs6000.h (CALL_LIBCALL): New macro.
+	(INIT_CUMULATIVE_LIBCALL_ARGS): New macro.
+	(INIT_CUMULATIVE_ARGS): Add LIBCALL argument.
+	(INIT_CUMULATIVE_INCOMING_ARGS): Likewise.
+
 2003-06-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update.
