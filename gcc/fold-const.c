@@ -4480,6 +4480,14 @@ extract_muldiv (t, c, code, wide_type)
       if (op1 == 0 || TREE_OVERFLOW (op1))
 	break;
 
+      /* If we have an unsigned type is not a sizetype, we cannot widen
+	 the operation since it will change the result if the original
+	 computation overflowed.  */
+      if (TREE_UNSIGNED (ctype)
+	  && ! TYPE_IS_SIZETYPE (ctype)
+	  && ctype != type)
+	break;
+
       /* If we were able to eliminate our operation from the first side,
 	 apply our operation to the second side and reform the PLUS.  */
       if (t1 != 0 && (TREE_CODE (t1) != code || code == MULT_EXPR))
