@@ -121,117 +121,137 @@ print_quote( q, text )
   return text;
 }
 
+
+/*
+ *  Copy the `format' string to std out, replacing `%n' expressions
+ *  with the matched text from a regular expression evaluation.
+ *  Doubled '%' characters will be replaced with a single copy.
+ *  '%' characters in other contexts and all other characters are
+ *  copied out verbatim.
+ */
 static void
 format_write (format, text, av)
      tCC* format;
      tCC* text;
      regmatch_t av[];
 {
-    int c;
+  int c;
 
-    while ((c = (unsigned)*(format++)) != NUL) {
+  while ((c = (unsigned)*(format++)) != NUL) {
 
-        if (c != '%') {
-            putchar(c);
-            continue;
+    if (c != '%')
+      {
+        putchar(c);
+        continue;
+      }
+
+    c = (unsigned)*(format++);
+
+    /*
+     *  IF the character following a '%' is not a digit,
+     *  THEN we will always emit a '%' and we may or may
+     *  not emit the following character.  We will end on
+     *  a NUL and we will emit only one of a pair of '%'.
+     */
+    if (! isdigit( c ))
+      {
+        putchar( '%' );
+        switch (c) {
+        case NUL:
+          return;
+        case '%':
+          break;
+        default:
+          putchar(c);
         }
+      }
 
-        c = (unsigned)*(format++);
+    /*
+     *  Emit the matched subexpression numbered 'c'.
+     *  IF, of course, there was such a match...
+     */
+    else {
+      regmatch_t*  pRM = av + (c - (unsigned)'0');
+      size_t len;
 
-        /*
-         *  IF the character following a '%' is not a digit,
-         *  THEN we will always emit a '%' and we may or may
-         *  not emit the following character.  We will end on
-         *  a NUL and we will emit only one of a pair of '%'.
-         */
-        if (! isdigit( c )) {
-            putchar( '%' );
-            switch (c) {
-            case NUL:
-                return;
-            case '%':
-                break;
-            default:
-                putchar(c);
-            }
-        }
+      if (pRM->rm_so < 0)
+        continue;
 
-        /*
-         *  Emit the matched subexpression numbered 'c'.
-         *  IF, of course, there was such a match...
-         */
-        else {
-            regmatch_t*  pRM = av + (c - (unsigned)'0');
-            size_t len;
-
-            if (pRM->rm_so < 0)
-                continue;
-
-            len = pRM->rm_eo - pRM->rm_so;
-            if (len > 0)
-                fwrite(text + pRM->rm_so, len, 1, stdout);
-        }
+      len = pRM->rm_eo - pRM->rm_so;
+      if (len > 0)
+        fwrite(text + pRM->rm_so, len, 1, stdout);
     }
+  }
 }
 
 
+/*
+ *  Search for multiple copies of a regular expression.  Each block
+ *  of matched text is replaced with the format string, as described
+ *  above in `format_write'.
+ */
 FIX_PROC_HEAD( format_fix )
 {
-    tSCC  zBad[] = "fixincl error:  `%s' needs %s c_fix_arg\n";
-    tCC*  pz_pat = p_fixd->patch_args[2];
-    tCC*  pz_fmt = p_fixd->patch_args[1];
-    const char *p;
-    regex_t re;
-    regmatch_t rm[10];
+  tSCC  zBad[] = "fixincl error:  `%s' needs %s c_fix_arg\n";
+  tCC*  pz_pat = p_fixd->patch_args[2];
+  tCC*  pz_fmt = p_fixd->patch_args[1];
+  const char *p;
+  regex_t re;
+  regmatch_t rm[10];
 
-    /*
-     *  We must have a format
-     */
-    if (pz_fmt == (tCC*)NULL) {
-        fprintf( stderr, zBad, p_fixd->fix_name, "replacement-format" );
-        exit( 3 );
+  /*
+   *  We must have a format
+   */
+  if (pz_fmt == (tCC*)NULL)
+    {
+      fprintf( stderr, zBad, p_fixd->fix_name, "replacement-format" );
+      exit( 3 );
     }
 
-    /*
-     *  IF we don't have a search text, then go find the first
-     *  regular expression among the tests.
-     */
-    if (pz_pat == (tCC*)NULL) {
-        tTestDesc* pTD = p_fixd->p_test_desc;
-        int        ct  = p_fixd->test_ct;
-        for (;;) {
-            if (ct-- <= 0) {
-                fprintf( stderr, zBad, p_fixd->fix_name, "search-text" );
-                exit( 3 );
+  /*
+   *  IF we don't have a search text, then go find the first
+   *  regular expression among the tests.
+   */
+  if (pz_pat == (tCC*)NULL)
+    {
+      tTestDesc* pTD = p_fixd->p_test_desc;
+      int        ct  = p_fixd->test_ct;
+      for (;;)
+        {
+          if (ct-- <= 0)
+            {
+              fprintf( stderr, zBad, p_fixd->fix_name, "search-text" );
+              exit( 3 );
             }
 
-            if (pTD->type == TT_EGREP) {
-                pz_pat = pTD->pz_test_text;
-                break;
+          if (pTD->type == TT_EGREP)
+            {
+              pz_pat = pTD->pz_test_text;
+              break;
             }
 
-            pTD++;
+          pTD++;
         }
     }
 
-    /*
-     *  Replace every copy of the text we find
-     */
-    compile_re (pz_pat, &re, 1, "format search-text", "format_fix" );
-    while (regexec (&re, text, 10, rm, 0) == 0)
+  /*
+   *  Replace every copy of the text we find
+   */
+  compile_re (pz_pat, &re, 1, "format search-text", "format_fix" );
+  while (regexec (&re, text, 10, rm, 0) == 0)
     {
-        char* apz[10];
-        int   i;
+      char* apz[10];
+      int   i;
 
-        fwrite( text, rm[0].rm_so, 1, stdout );
-       format_write( pz_fmt, text, rm );
-        text += rm[0].rm_eo;
+      fwrite( text, rm[0].rm_so, 1, stdout );
+      format_write( pz_fmt, text, rm );
+      text += rm[0].rm_eo;
     }
 
-    /*
-     *  Dump out the rest of the file
-     */
-    fputs (text, stdout);
+  /*
+   *  Dump out the rest of the file
+   */
+  fputs (text, stdout);
 }
 
 
@@ -245,175 +265,184 @@ FIX_PROC_HEAD( format_fix )
 
    which is the required syntax per the C standard.  (The definition of
    _IO also has to be tweaked - see below.)  'IO' is actually whatever you
-   provide in the STR argument.  */
+   provide as the `c_fix_arg' argument.  */
 
 FIX_PROC_HEAD( char_macro_use_fix )
 {
   /* This regexp looks for a traditional-syntax #define (# in column 1)
      of an object-like macro.  */
-  static const char pat[] =
-    "^#[ \t]*define[ \t]+[_A-Za-z][_A-Za-z0-9]*[ \t]+";
+  static const char zPatFmt[] =
+#ifdef __STDC__
+    /*
+     *  Match up to the replacement text
+     */
+    "^#[ \t]*define[ \t]+[_A-Za-z][_A-Za-z0-9]*[ \t]+"
+    /*
+     *  Match the replacement macro name and openening parenthesis
+     */
+    "[_A-Z][_A-Z0-9]*%s[A-Z]*\\("
+    /*
+     *  Match the single character that must be single-quoted,
+     *  plus some other non-name type character
+     */
+    "([A-Za-z])[^a-zA-Z0-9_]"
+#else
+    /*
+     *  Indecipherable gobbeldygook:
+     */
+
+    "^#[ \t]*define[ \t]+[_A-Za-z][_A-Za-z0-9]*[ \t]+[_A-Z][_A-Z0-9]*\
+%s[A-Z]*\\(([A-Za-z])[^a-zA-Z0-9_]"
+#endif
+    ;
+
+  char zPat[ sizeof( zPatFmt ) + 32 ];
+
   static regex_t re;
 
-  regmatch_t rm[1];
-  const char *p, *limit;
-  const char *str = p_fixd->patch_args[0];
-  size_t len;
+  regmatch_t rm[2];
 
-  if (str == NULL)
+  if (p_fixd->patch_args[1] == NULL)
     {
       fprintf (stderr, "%s needs macro-name-string argument",
               p_fixd->fix_name);
       exit(3);
     }
 
-  len = strlen (str);
-  compile_re (pat, &re, 1, "macro pattern", "fix_char_macro_uses");
-
-  for (p = text;
-       regexec (&re, p, 1, rm, 0) == 0;
-       p = limit + 1)
+  if (sprintf( zPat, zPatFmt, p_fixd->patch_args[1] ) >= sizeof( zPat ))
     {
-      /* p + rm[0].rm_eo is the first character of the macro replacement.
-	 Find the end of the macro replacement, and the STR we were
-	 sent to look for within the replacement.  */
-      p += rm[0].rm_eo;
-      limit = p - 1;
-      do
-	{
-	  limit = strchr (limit + 1, '\n');
-	  if (!limit)
-	    goto done;
-	}
-      while (limit[-1] == '\\');
-
-      do
-	{
-	  if (*p == str[0] && !strncmp (p+1, str+1, len-1))
-	    goto found;
-	}
-      while (++p < limit - len);
-      /* Hit end of line.  */
-      continue;
-
-    found:
-      /* Found STR on this line.  If the macro needs fixing,
-	 the next few chars will be whitespace or uppercase,
-	 then an open paren, then a single letter.  */
-      while ((isspace (*p) || isupper (*p)) && p < limit) p++;
-      if (*p++ != '(')
-	continue;
-      if (!isalpha (*p))
-	continue;
-      if (isalnum (p[1]) || p[1] == '_')
-	continue;
-
-      /* Splat all preceding text into the output buffer,
-	 quote the character at p, then proceed.  */
-      fwrite (text, 1, p - text, stdout);
-      putchar ('\'');
-      putchar (*p);
-      putchar ('\'');
-      text = p + 1;
+      fprintf( stderr, "Oversize format:  %s\n", zPat );
+      exit(3);
     }
- done:
+
+  compile_re (zPat, &re, 2, "macro pattern", "char_macro_use_fix");
+
+  while (regexec (&re, text, 3, rm, 0) == 0)
+    {
+      const char* pz = text + rm[1].rm_so;
+
+      /*
+       *  Write up to, but not including, the character we must quote
+       */
+      fwrite( text, 1, rm[1].rm_so, stdout );
+      fputc( '\'', stdout );
+      fputc( *(pz++), stdout );
+      fputc( '\'', stdout );
+      text = pz;
+    }
+
   fputs (text, stdout);
 }
 
+
 /* Scan the input file for all occurrences of text like this:
 
-   #define _IO(x, y) ('x'<<16+y)
+   #define xxxIOxx(x, y) ('x'<<16+y)
 
    and change them to read like this:
 
-   #define _IO(x, y) (x<<16+y)
+   #define xxxIOxx(x, y) (x<<16+y)
 
    which is the required syntax per the C standard.  (The uses of _IO
-   also have to be tweaked - see above.)  'IO' is actually whatever
-   you provide in the STR argument.  */
+   also has to be tweaked - see above.)  'IO' is actually whatever
+   you provide as the `c_fix_arg' argument.  */
 FIX_PROC_HEAD( char_macro_def_fix )
 {
-  /* This regexp looks for any traditional-syntax #define (# in col 1). */
-  static const char pat[] =
-    "^#[ \t]*define[ \t]+";
+  static const char zPatFmt[] =
+#ifdef __STDC__
+    /*
+     *  Find a #define name and opening parenthesis
+     */
+    "^#[ \t]*define[ \t]+[_A-Z][A-Z0-9_]*%s[A-Z]*\\("
+    /*
+     *  The next character must be alphabetic without a name-type
+     *  character following it
+     */
+    "([a-zA-Z])[^a-zA-Z0-9_]"  /* rm[1] */
+    /*
+     *  now match over the argument list, intervening white space
+     *  and opening parentheses, and on through a single quote character
+     */
+    "[^)]*\\)[ \t]+\\([ \t(]*'"
+    /*
+     *  Match the character that must match the remembered char above
+     */
+    "([a-zA-Z])'"  /* rm[2] */
+#else
+    /*
+     *  Indecipherable gobbeldygook:
+     */
+
+    "^#[ \t]*define[ \t]+[_A-Z][A-Z0-9_]*%s[A-Z]*\\(([a-zA-Z])[^a-zA-Z0-9_]\
+[^)]*\\)[ \t]+\\([ \t(]*'([a-zA-Z])'"
+#endif
+    ;
+
+  char zPat[ sizeof( zPatFmt ) + 32 ];
+
   static regex_t re;
 
-  regmatch_t rm[1];
-  const char *p, *limit;
-  const char *str = p_fixd->patch_args[0];
-  size_t len;
-  char arg;
+  regmatch_t rm[3];
+  const char *p;
+  int  rerr;
 
-  if (str == NULL)
+  if (p_fixd->patch_args[1] == NULL)
     {
       fprintf (stderr, "%s needs macro-name-string argument",
               p_fixd->fix_name);
       exit(3);
     }
 
-  compile_re (pat, &re, 1, "macro pattern", "fix_char_macro_defines");
-
-  for (p = text;
-       regexec (&re, p, 1, rm, 0) == 0;
-       p = limit + 1)
+  if (sprintf( zPat, zPatFmt, p_fixd->patch_args[1] ) >= sizeof( zPat ))
     {
-      /* p + rm[0].rm_eo is the first character of the macro name.
-	 Find the end of the macro replacement, and the STR we were
-	 sent to look for within the name.  */
-      p += rm[0].rm_eo;
-      limit = p - 1;
-      do
-	{
-	  limit = strchr (limit + 1, '\n');
-	  if (!limit)
-	    goto done;
-	}
-      while (limit[-1] == '\\');
-
-      do
-	{
-	  if (*p == str[0] && !strncmp (p+1, str+1, len-1))
-	    goto found;
-	  p++;
-	}
-      while (isalpha (*p) || isalnum (*p) || *p == '_');
-      /* Hit end of macro name without finding the string.  */
-      continue;
-
-    found:
-      /* Found STR in this macro name.  If the macro needs fixing,
-	 there may be a few uppercase letters, then there will be an
-	 open paren with _no_ intervening whitespace, and then a
-	 single letter.  */
-      while (isupper (*p) && p < limit) p++;
-      if (*p++ != '(')
-	continue;
-      if (!isalpha (*p))
-	continue;
-      if (isalnum (p[1]) || p[1] == '_')
-	continue;
-
-      /* The character at P is the one to look for in the following
-	 text.  */
-      arg = *p;
-      p += 2;
-
-      while (p < limit)
-	{
-	  if (p[-1] == '\'' && p[0] == arg && p[1] == '\'')
-	    {
-	      /* Remove the quotes from this use of ARG.  */
-	      p--;
-	      fwrite (text, 1, p - text, stdout);
-	      putchar (arg);
-	      p += 3;
-	      text = p;
-	    }
-	  else
-	    p++;
-	}
+      fprintf( stderr, "Oversize format:  %s\n", zPat );
+      exit(3);
     }
- done:
+
+  compile_re (zPat, &re, 1, "macro pattern", "char_macro_def_fix");
+
+  if ((rerr = regexec (&re, text, 3, rm, 0)) != 0)
+    {
+      fprintf( stderr, "Match error %d:\n%s\n", rerr, zPat );
+      exit(3);
+    }
+
+  while ((rerr = regexec (&re, text, 3, rm, 0)) == 0)
+    {
+      const char* pz = text + rm[2].rm_so;
+
+      /*
+       *  Write up to, but not including, the opening single quote.
+       */
+      fwrite( text, 1, rm[2].rm_so-1, stdout );
+
+      /*
+       *  The character inside the single quotes must match the
+       *  first single-character macro argument
+       */
+      if (text[ rm[1].rm_so ] != *pz)
+        {
+          /*
+           *  Advance text past what we have written out and continue
+           */
+          text = pz-1;
+          continue;
+        }
+
+      /*
+       *  emit the now unquoted character
+       */
+      putchar( *pz );
+
+      /*
+       *  Point text to the character after the closing single quote
+       */
+      text = pz+2;
+    }
+
+  /*
+   *  Emit the rest of the text
+   */
   fputs (text, stdout);
 }
 
@@ -447,71 +476,71 @@ FIX_PROC_HEAD( machine_name_fix )
     {
       base += match[0].rm_eo;
       /* We're looking at an #if or #ifdef.  Scan forward for the
-	 next non-escaped newline.  */
+         next non-escaped newline.  */
       line = limit = base;
       do
-	{
-	  limit++;
-	  limit = strchr (limit, '\n');
-	  if (!limit)
-	    goto done;
-	}
+        {
+          limit++;
+          limit = strchr (limit, '\n');
+          if (!limit)
+            goto done;
+        }
       while (limit[-1] == '\\');
 
       /* If the 'name_pat' matches in between base and limit, we have
-	 a bogon.  It is not worth the hassle of excluding comments
-	 because comments on #if/#ifdef lines are rare, and strings on
-	 such lines are illegal.
+         a bogon.  It is not worth the hassle of excluding comments
+         because comments on #if/#ifdef lines are rare, and strings on
+         such lines are illegal.
 
-	 REG_NOTBOL means 'base' is not at the beginning of a line, which
-	 shouldn't matter since the name_re has no ^ anchor, but let's
-	 be accurate anyway.  */
+         REG_NOTBOL means 'base' is not at the beginning of a line, which
+         shouldn't matter since the name_re has no ^ anchor, but let's
+         be accurate anyway.  */
 
       for (;;)
-	{
-	again:
-	  if (base == limit)
-	    break;
+        {
+        again:
+          if (base == limit)
+            break;
 
-	  if (regexec (name_re, base, 1, match, REG_NOTBOL))
-	    goto done;  /* No remaining match in this file */
+          if (regexec (name_re, base, 1, match, REG_NOTBOL))
+            goto done;  /* No remaining match in this file */
 
-	  /* Match; is it on the line?  */
-	  if (match[0].rm_eo > limit - base)
-	    break;
+          /* Match; is it on the line?  */
+          if (match[0].rm_eo > limit - base)
+            break;
 
-	  p = base + match[0].rm_so;
-	  base += match[0].rm_eo;
+          p = base + match[0].rm_so;
+          base += match[0].rm_eo;
 
-	  /* One more test: if on the same line we have the same string
-	     with the appropriate underscores, then leave it alone.
-	     We want exactly two leading and trailing underscores.  */
-	  if (*p == '_')
-	    {
-	      len = base - p - ((*base == '_') ? 2 : 1);
-	      q = p + 1;
-	    }
-	  else
-	    {
-	      len = base - p - ((*base == '_') ? 1 : 0);
-	      q = p;
-	    }
-	  if (len + 4 > SCRATCHSZ)
-	    abort ();
-	  memcpy (&scratch[2], q, len);
-	  len += 2;
-	  scratch[len++] = '_';
-	  scratch[len++] = '_';
+          /* One more test: if on the same line we have the same string
+             with the appropriate underscores, then leave it alone.
+             We want exactly two leading and trailing underscores.  */
+          if (*p == '_')
+            {
+              len = base - p - ((*base == '_') ? 2 : 1);
+              q = p + 1;
+            }
+          else
+            {
+              len = base - p - ((*base == '_') ? 1 : 0);
+              q = p;
+            }
+          if (len + 4 > SCRATCHSZ)
+            abort ();
+          memcpy (&scratch[2], q, len);
+          len += 2;
+          scratch[len++] = '_';
+          scratch[len++] = '_';
 
-	  for (q = line; q <= limit - len; q++)
-	    if (*q == '_' && !strncmp (q, scratch, len))
-	      goto again;
-	  
-	  fwrite (text, 1, p - text, stdout);
-	  fwrite (scratch, 1, len, stdout);
+          for (q = line; q <= limit - len; q++)
+            if (*q == '_' && !strncmp (q, scratch, len))
+              goto again;
+          
+          fwrite (text, 1, p - text, stdout);
+          fwrite (scratch, 1, len, stdout);
 
-	  text = base;
-	}
+          text = base;
+        }
     }
  done:
 #endif
