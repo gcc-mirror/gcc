@@ -1,3 +1,26 @@
+2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+
+         * config/rs6000/rs6000.c (rs6000_emit_move): split slow
+         unaligned load/store into smaller loads and stores.
+
+2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+
+        * function.c (assign_parms): Do not assign
+        long long argument to memory in prologue if
+        is it loaded into register.
+
+2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+
+	 PR middle-end/13779
+         * expr.c (emit_group_load): split constant
+         correctly into register components of PARALLEL insn.
+
+2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+
+	* gcc/config/rs6000/rs6000.md (save_stack_nonlocal):
+	Use adjust_address_nv directly with appropriate mode.
+	(restore_stack_nonlocal): Ditto.
+
 2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/xtensa/xtensa-protos.h: Remove the prototype for
