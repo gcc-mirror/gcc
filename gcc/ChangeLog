@@ -1,5 +1,11 @@
 2003-10-30  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (mov_lwl): Use memory_operand where appropriate.
+	(mov_lwr, mov_swl, mov_swr): Likewise.
+	(mov_ldl, mov_ldr, mov_sdl, mov_sdr): Likewise.
+
+2003-10-30  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_global_pointer): Don't try to use $25.
 
 2003-10-30  Richard Henderson  <rth@redhat.com>
