@@ -1,3 +1,13 @@
+2001-07-01  Toon Moene  <toon@moene.indiv.nluug.nl>
+            Pedro Vazquez  <vazquez@penelope.iqm.unicamp.br>
+
+	* libI77/fio.h: Use off_t when appropriate.
+	* libI77/backspace.c (f_back): Ditto.
+	* libI77/endfile.c (t_runc): Ditto.
+	* libI77/err.c (f__nowreading): Ditto.
+	* libI77/ftell_.c (unit_chk): Ditto.
+	* libI77/sue.c (global f__recloc, s_wsue): Ditto.
+
 2001-06-13  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libI77/inquire.c: Include "config.h".

@@ -14,7 +14,7 @@ unit_chk(integer Unit, char *who)
 	return f__units[Unit].ufd;
 	}
 
- integer
+ off_t
 #ifdef KR_headers
 G77_ftell_0 (Unit) integer *Unit;
 #else

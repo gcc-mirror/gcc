@@ -8,7 +8,7 @@ integer f_back(a) alist *a;
 integer f_back(alist *a)
 #endif
 {	unit *b;
-	long v, w, x, y, z;
+	off_t v, w, x, y, z;
 	uiolen n;
 	FILE *f;
 
