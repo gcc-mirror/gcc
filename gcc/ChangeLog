@@ -1,4 +1,13 @@
-2004-11-25  Ricahrd Henderson  <rth@redhat.com>
+2004-11-25  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (dwarf2out_stack_adjust): Add after_p argument.  Save
+	args_size adjustments for calls even with cfa as stack pointer.
+	Search calls for stack adjustments after the insn is issued.
+	(dwarf2out_frame_debug): Add after_p argument; pass it on.
+	* dwarf2out.h (dwarf2out_frame_debug): Update to match.
+	* final.c (final_start_function, final_scan_insn): Likewise.
+
+2004-11-25  Richard Henderson  <rth@redhat.com>
 
 	PR c++/6764
         * reload1.c (set_initial_eh_label_offset): New.

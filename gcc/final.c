@@ -1366,7 +1366,7 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
 
 #if defined (DWARF2_UNWIND_INFO) && defined (HAVE_prologue)
   if (dwarf2out_do_frame ())
-    dwarf2out_frame_debug (NULL_RTX);
+    dwarf2out_frame_debug (NULL_RTX, false);
 #endif
 
   /* If debugging, assign block numbers to all of the blocks in this
@@ -1848,7 +1848,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
     case BARRIER:
 #if defined (DWARF2_UNWIND_INFO)
       if (dwarf2out_do_frame ())
-	dwarf2out_frame_debug (insn);
+	dwarf2out_frame_debug (insn, false);
 #endif
       break;
 
@@ -2168,7 +2168,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #if defined (DWARF2_UNWIND_INFO)
 	    if (dwarf2out_do_frame ())
 	      for (i = 1; i < XVECLEN (body, 0); i++)
-		dwarf2out_frame_debug (XVECEXP (body, 0, i));
+		dwarf2out_frame_debug (XVECEXP (body, 0, i), false);
 #endif
 
 	    /* The first insn in this SEQUENCE might be a JUMP_INSN that will
@@ -2460,7 +2460,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 #if defined (DWARF2_UNWIND_INFO)
 	if (CALL_P (insn) && dwarf2out_do_frame ())
-	  dwarf2out_frame_debug (insn);
+	  dwarf2out_frame_debug (insn, false);
 #endif
 
 	/* Find the proper template for this insn.  */
@@ -2527,13 +2527,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	   the unwind info.   We've already done this for delay slots
 	   and call instructions.  */
 #if defined (DWARF2_UNWIND_INFO)
-	if (NONJUMP_INSN_P (insn)
+	if (final_sequence == 0
 #if !defined (HAVE_prologue)
 	    && !ACCUMULATE_OUTGOING_ARGS
 #endif
-	    && final_sequence == 0
 	    && dwarf2out_do_frame ())
-	  dwarf2out_frame_debug (insn);
+	  dwarf2out_frame_debug (insn, true);
 #endif
 
 	current_output_insn = debug_insn = 0;
