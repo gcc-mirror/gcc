@@ -2208,10 +2208,9 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	  touch deduced.h; \
 	fi
 
-GEN_PROTOS_OBJS = gen-protos.o cppalloc.o cpperror.o cppexp.o \
-  cpphash.o cpplib.o prefix.o scan.o version.o cppfiles.o cppulp.o
+GEN_PROTOS_OBJS = gen-protos.o scan.o libcpp.a
 gen-protos: $(GEN_PROTOS_OBJS) $(HOST_LIBDEPS)
-	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
+	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o gen-protos \
 	  $(GEN_PROTOS_OBJS) $(HOST_LIBS)
 
 gen-protos.o: gen-protos.c scan.h $(build_xm_file) system.h
