@@ -449,9 +449,9 @@ extern int leaf_function;
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 30
 
-/* Register in which static-chain is passed to a function.  */
-/* ??? */
-#define STATIC_CHAIN_REGNUM 1
+/* Register in which static-chain is passed to a function.  This must
+   not be a register used by the prologue.  */
+#define STATIC_CHAIN_REGNUM 2
 
 /* Register which holds offset table for position-independent
    data references.  */
@@ -994,17 +994,17 @@ extern union tree_node *current_function_decl;
    of a trampoline, leaving space for the variable parts.  */
 
 /* On the sparc, the trampoline contains five instructions:
-     sethi #TOP_OF_FUNCTION,%g2
-     or #BOTTOM_OF_FUNCTION,%g2,%g2
-     sethi #TOP_OF_STATIC,%g1
-     jmp g2
-     or #BOTTOM_OF_STATIC,%g1,%g1  */
+     sethi #TOP_OF_FUNCTION,%g1
+     or #BOTTOM_OF_FUNCTION,%g1,%g1
+     sethi #TOP_OF_STATIC,%g2
+     jmp g1
+     or #BOTTOM_OF_STATIC,%g2,%g2  */
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
   ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
   ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
   ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x81C08000));	\
+  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x81C04000));	\
   ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
 }
 
@@ -1041,16 +1041,16 @@ extern union tree_node *current_function_decl;
   rtx g2_ori = gen_rtx (HIGH, SImode,					\
 			gen_rtx (CONST_INT, VOIDmode, 0x8410A000));	\
   rtx tem = gen_reg_rtx (SImode);					\
-  emit_move_insn (tem, g2_sethi);					\
+  emit_move_insn (tem, g1_sethi);					\
   emit_insn (gen_iorsi3 (high_fn, high_fn, tem));			\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 0)), high_fn);\
-  emit_move_insn (tem, g2_ori);						\
+  emit_move_insn (tem, g1_ori);						\
   emit_insn (gen_iorsi3 (low_fn, low_fn, tem));				\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 4)), low_fn);\
-  emit_move_insn (tem, g1_sethi);					\
+  emit_move_insn (tem, g2_sethi);					\
   emit_insn (gen_iorsi3 (high_cxt, high_cxt, tem));			\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 8)), high_cxt);\
-  emit_move_insn (tem, g1_ori);						\
+  emit_move_insn (tem, g2_ori);						\
   emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));			\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 16)), low_cxt);\
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
