@@ -34,7 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "function.h"
 #include "except.h"
-#include "expr.h"
+#include "defaults.h"
 
 static tree push_jvm_slot PROTO ((int, tree));
 static tree builtin_function PROTO ((const char *, tree,
