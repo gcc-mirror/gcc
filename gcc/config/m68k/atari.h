@@ -20,6 +20,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "m68k/m68kv4.h"
 
+/* Dollars and dots in labels are not allowed. */
+
+#define NO_DOLLAR_IN_LABEL
+#define NO_DOT_IN_LABEL
+
 /* Alter assembler syntax for fsgldiv and fsglmul.
    It is highly likely that this is a generic SGS m68k assembler dependency.
    If so, it should eventually be handled in the m68k/sgs.h ASM_OUTPUT_OPCODE
