@@ -1,0 +1,18 @@
+global target_list
+
+case "$target_triplet" in {
+    { "powerpc*-*eabi*" } {
+#	if { [info exists tool] && $tool == "gcc" } {
+#	    set target_list { "powerpc-sim{,-fpic}" }
+#	} else {
+	    set target_list { "powerpc-sim" }
+#	}
+    }
+    { "mips-elf" } {
+	set target_list { "mips-sim" }
+    }
+
+    default {
+        set target_list { "unix" }
+    }
+}
