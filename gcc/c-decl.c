@@ -3994,6 +3994,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	}
     }
 
+  if ((specbits & (1 << (int) RID_COMPLEX))
+      && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
+    {
+      error ("complex invalid for `%s'", name);
+      specbits &= ~ (1 << (int) RID_COMPLEX);
+    }
+
   /* Decide whether an integer type is signed or not.
      Optionally treat bitfields as signed by default.  */
   if (specbits & 1 << (int) RID_UNSIGNED
@@ -4031,9 +4038,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     type = long_integer_type_node;
   else if (specbits & 1 << (int) RID_SHORT)
     type = short_integer_type_node;
-  else if (specbits & 1 << (int) RID_COMPLEX)
+
+  if (specbits & 1 << (int) RID_COMPLEX)
     {
-      if (defaulted_int)
+      /* If we just have "complex", it is equivalent to
+	 "complex double", but if any modifiers at all are specified it is
+	 the complex form of TYPE.  E.g, "complex short" is
+	 "complex short int".  */
+
+      if (defaulted_int && ! longlong
+	  && ! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
+			    | (1 << (int) RID_SIGNED)
+			    | (1 << (int) RID_UNSIGNED))))
 	type = complex_double_type_node;
       else if (type == integer_type_node)
 	type = complex_integer_type_node;
@@ -4044,7 +4060,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       else if (type == long_double_type_node)
 	type = complex_long_double_type_node;
       else
-	error ("invalid complex type");
+	type = build_complex_type (type);
     }
 
   /* Set CONSTP if this declaration is `const', whether by
