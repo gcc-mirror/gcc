@@ -32,6 +32,8 @@
 # Two functions with the same name in different programs
 # must agree about which argument (if any) is a msgid.
 
+# NOTE: Entries must not have trailing spaces!
+
 # Here are some reasons why a file might be commented-out in the list below:
 
 #   It is part of the GCC library.
@@ -392,7 +394,6 @@ config/mn10200/xm-mn10200.h
 config/mn10300/mn10300.c
 config/mn10300/mn10300.h
 config/mn10300/xm-mn10300.h
-config/msdos/mklibgcc.c
 config/netbsd.h
 config/netware.h
 config/nextstep.c
@@ -524,15 +525,6 @@ config/vax/xm-vms.h
 config/we32k/we32k.c
 config/we32k/we32k.h
 config/we32k/xm-we32k.h
-config/winnt/dirent.c
-config/winnt/dirent.h
-config/winnt/fixinc-nt.c
-config/winnt/ld.c
-config/winnt/mklibgcc.c
-config/winnt/oldnames.c
-config/winnt/spawnv.c
-config/winnt/win-nt.h
-config/winnt/xm-winnt.h
 config/xm-alloca.h
 config/xm-gnu.h
 config/xm-lynx.h
@@ -595,7 +587,7 @@ defaults.h
 ../include/demangle.h
 diagnostic.c
 diagnostic.h
-dominance.c  
+dominance.c
 #doprint.c
 doschk.c
 dwarf.h
