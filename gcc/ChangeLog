@@ -1,3 +1,9 @@
+Wed Sep 22 17:55:31 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (expand_block_move): DImode loads and stores require
+	word-aligned displacements.  Increment address registers with
+	adddi3 on 64-bit platform.  Use TARGET_POWERPC64 not TARGET_64BIT.
+
 Wed Sep 22 17:35:55 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* dwarf2out.c (base_type_die): Use the name __unknown__ if there
