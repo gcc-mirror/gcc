@@ -44,7 +44,11 @@ details.  */
 
 #include <stdlib.h>
 
+#if USE_LIBFFI
 #include <ffi.h>
+#else
+#include <java/lang/UnsupportedOperationException.h>
+#endif
 
 // FIXME: remove these.
 #define BooleanClass java::lang::Boolean::class$
@@ -107,6 +111,7 @@ can_widen (jclass from, jclass to)
   return fromx <= tox;
 }
 
+#ifdef USE_LIBFFI
 static inline ffi_type *
 get_ffi_type (jclass klass)
 {
@@ -148,6 +153,7 @@ get_ffi_type (jclass klass)
 
   return r;
 }
+#endif // USE_LIBFFI
 
 jobject
 java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
@@ -312,6 +318,7 @@ _Jv_CallAnyMethodA (jobject obj,
 		    jvalue *args,
 		    jvalue *result)
 {
+#ifdef USE_LIBFFI
   JvAssert (! is_constructor || ! obj);
   JvAssert (! is_constructor || return_type);
 
@@ -428,6 +435,10 @@ _Jv_CallAnyMethodA (jobject obj,
     result->l = obj;
 
   return ex;
+#else
+  throw new java::lang::UnsupportedOperationException;
+  return 0;
+#endif // USE_LIBFFI
 }
 
 // This is another version of _Jv_CallAnyMethodA, but this one does

@@ -105,7 +105,7 @@ endif
 JCFLAGS = -g
 JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
 
-LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/include
+LIBFFIINCS = @LIBFFIINCS@
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
@@ -260,7 +260,7 @@ libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@echo $(libgcj_la_OBJECTS) > libgcj.objectlist;
 	@echo $(libgcj_la_LIBADD) >> libgcj.objectlist;
 	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
-	../libffi/libfficonvenience.la \
+	@LIBFFI@ \
 	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)

@@ -170,6 +170,22 @@ if test "$enable_java_net" = no; then
    AC_DEFINE(DISABLE_JAVA_NET)
 fi
 
+dnl See if the user wants to configure without libffi.  Some
+dnl architectures don't support it, and default values are set in 
+dnl configure.host.
+AC_ARG_WITH(libffi,
+[  --without-libffi        don't use libffi],,with_libffi=${with_libffi_default-yes})
+
+LIBFFI=
+LIBFFIINCS=
+if test "$with_libffi" != no; then
+   AC_DEFINE(USE_LIBFFI)
+   LIBFFI=../libffi/libfficonvenience.la
+   LIBFFIINCS="-I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/include"
+fi
+AC_SUBST(LIBFFI)
+AC_SUBST(LIBFFIINCS)
+
 dnl See if the user wants to disable JVMPI support.
 AC_ARG_ENABLE(jvmpi,
 [  --disable-jvmpi         disable JVMPI support])

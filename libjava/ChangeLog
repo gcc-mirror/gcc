@@ -1,3 +1,21 @@
+2001-06-02  Anthony Green  <green@redhat.com>
+
+	* configure: Rebuild.
+	* configure.in (LIBFFIINCS, LIBFFI): Introduce.  Add
+	--without-libffi option.  Tweak --disable-java-net processing.
+	* Makefile.in: Rebuild.
+	* Makefile.am (LIBFFIINCS, LIBFFI): Use.
+	* include/config.h.in: Rebuild.
+	* acconfig.h (USE_LIBFFI): Define.
+	* java/lang/reflect/natMethod.c: Use USE_LIBFFI.
+
+2001-06-02  Anthony Green  <green@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Test for sigaction on native builds.
+	* prims.cc: Check HAVE_SIGACTION.
+	* include/config.h.in: Rebuilt.
+
 2001-05-31  Jeff Sturm  <jsturm@one-point.com>
 
 	* natFile.cc (get_entry): Removed functions.
