@@ -1,3 +1,8 @@
+2004-10-15  Jon Grimm <jgrimm2@us.ibm.com>
+
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Add __powerpc__
+	definition.
+
 2004-10-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bitmap.c, bitmap.h, builtin-attrs.def, cfglayout.h,
