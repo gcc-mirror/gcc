@@ -9227,8 +9227,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return frame_pointer_rtx;
     case BUILT_IN_SP:
       return stack_pointer_rtx;
+#ifdef DWARF2_UNWIND_INFO
     case BUILT_IN_DWARF_FP_REGNUM:
       return (rtx) expand_builtin_dwarf_fp_regnum ();
+#endif
     case BUILT_IN_FROB_RETURN_ADDR:
       return (rtx) expand_builtin_frob_return_addr (TREE_VALUE (arglist));
     case BUILT_IN_EXTRACT_RETURN_ADDR:
