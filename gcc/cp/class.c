@@ -3865,8 +3865,9 @@ finish_struct_1 (t)
   /* Delete all zero-width bit-fields from the fieldlist */
   {
     tree *fieldsp = &fields;
-    while (*fieldsp && TREE_CODE (*fieldsp) == FIELD_DECL)
-      if (DECL_C_BIT_FIELD (*fieldsp) && DECL_INITIAL (*fieldsp))
+    while (*fieldsp)
+      if (TREE_CODE (*fieldsp) == FIELD_DECL
+	  && DECL_C_BIT_FIELD (*fieldsp) && DECL_INITIAL (*fieldsp))
 	*fieldsp = TREE_CHAIN (*fieldsp);
       else
 	fieldsp = &TREE_CHAIN (*fieldsp);
