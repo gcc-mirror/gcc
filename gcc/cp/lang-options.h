@@ -38,6 +38,8 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-check-new", "" },
   { "-fconserve-space", "Reduce size of object files" },
   { "-fno-conserve-space", "" },
+  { "-fconst-strings", "" },
+  { "-fno-const-strings", "Make string literals `char[]' instead of `const char[]'" },
   { "-fdefault-inline", "" },
   { "-fno-default-inline", "Do not inline mmeber functions be default"},
   { "-frtti", "" },

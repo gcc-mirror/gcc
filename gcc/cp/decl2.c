@@ -211,9 +211,13 @@ int flag_use_repository;
 
 int flag_optional_diags = 1;
 
-/* Nonzero means give string constants the type `const char *'
-   to get extra warnings from them.  These warnings will be too numerous
-   to be useful, except in thoroughly ANSIfied programs.  */
+/* Nonzero means give string constants the type `const char *', as mandated
+   by the standard.  */
+
+int flag_const_strings = 1;
+
+/* Nonzero means warn about deprecated conversion from string constant to
+   `char *'.  */
 
 int warn_write_strings;
 
@@ -482,6 +486,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"builtin", &flag_no_builtin, 0},
   {"ident", &flag_no_ident, 0},
   {"labels-ok", &flag_labels_ok, 1},
+  {"const-strings", &flag_const_strings, 1},
   {"stats", &flag_detailed_statistics, 1},
   {"this-is-variable", &flag_this_is_variable, 1},
   {"strict-prototype", &flag_strict_prototype, 1},

@@ -883,6 +883,9 @@ standard_conversion (to, from, expr)
 	/* OK */;
       else if (comp_ptr_ttypes (TREE_TYPE (to), TREE_TYPE (from)))
 	conv = build_conv (QUAL_CONV, to, conv);
+      else if (expr && string_conv_p (to, expr, 0))
+	/* converting from string constant to char *.  */
+	conv = build_conv (QUAL_CONV, to, conv);
       else if (ptr_reasonably_similar (TREE_TYPE (to), TREE_TYPE (from)))
 	{
 	  conv = build_conv (PTR_CONV, to, conv);
@@ -3172,6 +3175,11 @@ convert_like (convs, expr)
     case LVALUE_CONV:
       return decay_conversion (expr);
 
+    case QUAL_CONV:
+      /* Warn about deprecated conversion if appropriate.  */
+      string_conv_p (TREE_TYPE (convs), expr, 1);
+      break;
+      
     default:
       break;
     }

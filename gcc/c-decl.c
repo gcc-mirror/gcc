@@ -498,7 +498,7 @@ int mesg_implicit_function_declaration;
    to get extra warnings from them.  These warnings will be too numerous
    to be useful, except in thoroughly ANSIfied programs.  */
 
-int warn_write_strings;
+int flag_const_strings;
 
 /* Nonzero means warn about pointer casts that can drop a type qualifier
    from the pointer target type.  */
@@ -713,9 +713,9 @@ c_decode_option (argc, argv)
   else if (!strcmp (p, "-Wno-long-long"))
     warn_long_long = 0;
   else if (!strcmp (p, "-Wwrite-strings"))
-    warn_write_strings = 1;
+    flag_const_strings = 1;
   else if (!strcmp (p, "-Wno-write-strings"))
-    warn_write_strings = 0;
+    flag_const_strings = 0;
   else if (!strcmp (p, "-Wcast-qual"))
     warn_cast_qual = 1;
   else if (!strcmp (p, "-Wno-cast-qual"))

@@ -342,9 +342,13 @@ extern int warn_ctor_dtor_privacy;
 
 extern int warn_return_type;
 
-/* Nonzero means give string constants the type `const char *'
-   to get extra warnings from them.  These warnings will be too numerous
-   to be useful, except in thoroughly ANSIfied programs.  */
+/* Nonzero means give string constants the type `const char *', as mandated
+   by the standard.  */
+
+extern int flag_const_strings;
+
+/* Nonzero means warn about deprecated conversion from string constant to
+   `char *'.  */
 
 extern int warn_write_strings;
 

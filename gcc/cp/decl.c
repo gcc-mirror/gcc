@@ -6200,6 +6200,11 @@ init_decl_processing ()
 
   print_error_function = lang_print_error_function;
   lang_get_alias_set = &c_get_alias_set;
+
+  /* Maintain consistency.  Perhaps we should just complain if they
+     say -fwritable-strings?  */
+  if (flag_writable_strings)
+    flag_const_strings = 0;
 }
 
 /* Function to print any language-specific context for an error message.  */

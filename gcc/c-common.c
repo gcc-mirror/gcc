@@ -298,7 +298,6 @@ combine_strings (strings)
       value = make_node (STRING_CST);
       TREE_STRING_POINTER (value) = p;
       TREE_STRING_LENGTH (value) = length;
-      TREE_CONSTANT (value) = 1;
     }
   else
     {
@@ -313,8 +312,9 @@ combine_strings (strings)
 
   /* Create the array type for the string constant.
      -Wwrite-strings says make the string constant an array of const char
-     so that copying it to a non-const pointer will get a warning.  */
-  if (warn_write_strings
+     so that copying it to a non-const pointer will get a warning.
+     For C++, this is the standard behavior.  */
+  if (flag_const_strings
       && (! flag_traditional  && ! flag_writable_strings))
     {
       tree elements
@@ -328,7 +328,8 @@ combine_strings (strings)
     TREE_TYPE (value)
       = build_array_type (wide_flag ? wchar_type_node : char_type_node,
 			  build_index_type (build_int_2 (nchars - 1, 0)));
-  TREE_CONSTANT (value) = 1;
+
+  TREE_READONLY (value) = TREE_CONSTANT (value) = ! flag_writable_strings;
   TREE_STATIC (value) = 1;
   return value;
 }
