@@ -1,3 +1,8 @@
+Mon Nov 16 02:22:29 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* toplev.c (compile_file): Don't pedwarn about undefined static
+	functions just because we passed -Wunused.
+
 Mon Nov 16 04:41:41 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* function.c (purge_addressof_1): Unshare rtl created by
@@ -1270,7 +1275,6 @@ Thu Oct 22 15:46:23 1998  Per Bothner (bothner@cygnus.com)
 	* Makefile.in (distdir-cvs, distdir-start):  Clean up so it
 	works if "$(srcdir)" != ".".
 
->>>>>>> 1.2469
 Wed Oct 21 19:23:59 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* expmed.c (store_bit_field): If need to add a SUBREG, then remove
