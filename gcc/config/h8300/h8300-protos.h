@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Declarations for functions used in insn-output.c.  */
 #ifdef RTX_CODE
+extern unsigned int compute_mov_length (rtx *);
 extern const char *output_plussi (rtx *);
 extern unsigned int compute_plussi_length (rtx *);
 extern int compute_plussi_cc (rtx *);

@@ -1806,6 +1806,255 @@ bit_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 	  || code == IOR);
 }
 
+/* Return the length of mov instruction.  */
+
+unsigned int
+compute_mov_length (rtx *operands)
+{
+  /* If the mov instruction involves a memory operand, we compute the
+     length, assuming the largest addressing mode is used, and then
+     adjust later in the function.  Otherwise, we compute and return
+     the exact length in one step.  */
+  enum machine_mode mode = GET_MODE (operands[0]);
+  rtx dest = operands[0];
+  rtx src = operands[1];
+  rtx addr;
+
+  if (GET_CODE (src) == MEM)
+    addr = XEXP (src, 0);
+  else if (GET_CODE (dest) == MEM)
+    addr = XEXP (dest, 0);
+  else
+    addr = NULL_RTX;
+
+  if (TARGET_H8300)
+    {
+      unsigned int base_length;
+
+      switch (mode)
+	{
+	case QImode:
+	  if (addr == NULL_RTX)
+	    return 2;
+
+	  /* The eightbit addressing is available only in QImode, so
+	     go ahead and take care of it.  */
+	  if (h8300_eightbit_constant_address_p (addr))
+	    return 2;
+
+	  base_length = 4;
+	  break;
+
+	case HImode:
+	  if (addr == NULL_RTX)
+	    {
+	      if (REG_P (src))
+		return 2;
+
+	      if (src == const0_rtx)
+		return 2;
+
+	      return 4;
+	    }
+
+	  base_length = 4;
+	  break;
+
+	case SImode:
+	  if (addr == NULL_RTX)
+	    {
+	      if (REG_P (src))
+		return 4;
+
+	      if (GET_CODE (src) == CONST_INT)
+		{
+		  if (src == const0_rtx)
+		    return 4;
+
+		  if ((INTVAL (src) & 0xffff) == 0)
+		    return 6;
+
+		  if ((INTVAL (src) & 0xffff) == 0)
+		    return 6;
+		}
+	      return 8;
+	    }
+
+	  base_length = 8;
+	  break;
+
+	case SFmode:
+	  if (addr == NULL_RTX)
+	    {
+	      if (REG_P (src))
+		return 4;
+
+	      if (src == const0_rtx)
+		return 2;
+
+	      return 6;
+	    }
+
+	  base_length = 8;
+	  break;
+
+	default:
+	  abort ();
+	}
+
+      /* Adjust the length based on the addressing mode used.
+	 Specifically, we subtract the difference between the actual
+	 length and the longest one, which is @(d:16,Rs).  For SImode
+	 and SFmode, we double the adjustment because two mov.w are
+	 used to do the job.  */
+
+      /* @Rs+ and @-Rd are 2 bytes shorter than the longest.  */
+      if (GET_CODE (addr) == PRE_DEC
+	  || GET_CODE (addr) == POST_INC)
+	{
+	  if (mode == QImode || mode == HImode)
+	    return base_length - 2;
+	  else
+	    /* In SImode and SFmode, we use two mov.w instructions, so
+	       double the adustment.  */
+	    return base_length - 4;
+	}
+
+      /* @Rs and @Rd are 2 bytes shorter than the longest.  Note that
+	 in SImode and SFmode, the second mov.w involves an address
+	 with displacement, namely @(2,Rs) or @(2,Rd), so we subtract
+	 only 2 bytes.  */
+      if (GET_CODE (addr) == REG)
+	return base_length - 2;
+
+      return base_length;
+    }
+  else
+    {
+      unsigned int base_length;
+
+      switch (mode)
+	{
+	case QImode:
+	  if (addr == NULL_RTX)
+	    return 2;
+
+	  /* The eightbit addressing is available only in QImode, so
+	     go ahead and take care of it.  */
+	  if (h8300_eightbit_constant_address_p (addr))
+	    return 2;
+
+	  base_length = 8;
+	  break;
+
+	case HImode:
+	  if (addr == NULL_RTX)
+	    {
+	      if (REG_P (src))
+		return 2;
+
+	      if (src == const0_rtx)
+		return 2;
+
+	      return 4;
+	    }
+
+	  base_length = 8;
+	  break;
+
+	case SImode:
+	  if (addr == NULL_RTX)
+	    {
+	      if (REG_P (src))
+		{
+		  if (REGNO (src) == MAC_REG || REGNO (dest) == MAC_REG)
+		    return 4;
+		  else
+		    return 2;
+		}
+
+	      if (GET_CODE (src) == CONST_INT)
+		{
+		  int val = INTVAL (src);
+
+		  if (val == 0)
+		    return 2;
+
+		  if (val == (val & 0x00ff) || val == (val & 0xff00))
+		    return 4;
+		  
+		  switch (val & 0xffffffff)
+		    {
+		    case 0xffffffff:
+		    case 0xfffffffe:
+		    case 0xfffffffc:
+		    case 0x0000ffff:
+		    case 0x0000fffe:
+		    case 0xffff0000:
+		    case 0xfffe0000:
+		    case 0x00010000:
+		    case 0x00020000:
+		      return 4;
+		    }
+		}
+	      return 6;
+	    }
+
+	  base_length = 10;
+	  break;
+
+	case SFmode:
+	  if (addr == NULL_RTX)
+	    {
+	      if (REG_P (src))
+		return 2;
+
+	      if (src == const0_rtx)
+		return 2;
+	      return 6;
+	    }
+
+	  base_length = 10;
+	  break;
+
+	default:
+	  abort ();
+	}
+
+      /* Adjust the length based on the addressing mode used.
+	 Specifically, we subtract the difference between the actual
+	 length and the longest one, which is @(d:24,ERs).  */
+
+      /* @ERs+ and @-ERd are 6 bytes shorter than the longest.  */
+      if (GET_CODE (addr) == PRE_DEC
+	  || GET_CODE (addr) == POST_INC)
+	return base_length - 6;
+
+      /* @ERs and @ERd are 6 bytes shorter than the longest.  */
+      if (GET_CODE (addr) == REG)
+	return base_length - 6;
+
+      /* @(d:16,ERs) and @(d:16,ERd) are 4 bytes shorter than the
+	 longest.  */
+      if (GET_CODE (addr) == PLUS
+	  && GET_CODE (XEXP (addr, 0)) == REG
+	  && GET_CODE (XEXP (addr, 1)) == CONST_INT
+	  && INTVAL (XEXP (addr, 1)) > -32768
+	  && INTVAL (XEXP (addr, 1)) < 32767)
+	return base_length - 4;
+
+      /* @aa:16 is 4 bytes shorter than the longest.  */
+      if (h8300_tiny_constant_address_p (addr))
+	return base_length - 4;
+
+      /* @aa:24 is 2 bytes shorter than the longest.  */
+      if (CONSTANT_P (addr))
+	return base_length - 2;
+
+      return base_length;
+    }
+}
+
 const char *
 output_plussi (rtx *operands)
 {
@@ -4066,101 +4315,6 @@ h8300_adjust_insn_length (rtx insn, int length ATTRIBUTE_UNUSED)
 
   if (get_attr_adjust_length (insn) == ADJUST_LENGTH_NO)
     return 0;
-
-  /* Adjust length for reg->mem and mem->reg copies.  */
-  if (GET_CODE (pat) == SET
-      && (GET_CODE (SET_SRC (pat)) == MEM
-	  || GET_CODE (SET_DEST (pat)) == MEM))
-    {
-      /* This insn might need a length adjustment.  */
-      rtx addr;
-
-      if (GET_CODE (SET_SRC (pat)) == MEM)
-	addr = XEXP (SET_SRC (pat), 0);
-      else
-	addr = XEXP (SET_DEST (pat), 0);
-
-      if (TARGET_H8300)
-	{
-	  /* On the H8/300, we subtract the difference between the
-             actual length and the longest one, which is @(d:16,ERs).  */
-
-	  /* @Rs is 2 bytes shorter than the longest.  */
-	  if (GET_CODE (addr) == REG)
-	    return -2;
-
-	  /* @aa:8 is 2 bytes shorter than the longest.  */
-	  if (GET_MODE (SET_SRC (pat)) == QImode
-	      && h8300_eightbit_constant_address_p (addr))
-	    return -2;
-	}
-      else
-	{
-	  /* On the H8/300H and H8S, we subtract the difference
-             between the actual length and the longest one, which is
-             @(d:24,ERs).  */
-
-	  /* @ERs is 6 bytes shorter than the longest.  */
-	  if (GET_CODE (addr) == REG)
-	    return -6;
-
-	  /* @(d:16,ERs) is 6 bytes shorter than the longest.  */
-	  if (GET_CODE (addr) == PLUS
-	      && GET_CODE (XEXP (addr, 0)) == REG
-	      && GET_CODE (XEXP (addr, 1)) == CONST_INT
-	      && INTVAL (XEXP (addr, 1)) > -32768
-	      && INTVAL (XEXP (addr, 1)) < 32767)
-	    return -4;
-
-	  /* @aa:8 is 6 bytes shorter than the longest.  */
-	  if (GET_MODE (SET_SRC (pat)) == QImode
-	      && h8300_eightbit_constant_address_p (addr))
-	    return -6;
-
-	  /* @aa:16 is 4 bytes shorter than the longest.  */
-	  if (h8300_tiny_constant_address_p (addr))
-	    return -4;
-
-	  /* @aa:24 is 2 bytes shorter than the longest.  */
-	  if (GET_CODE (addr) == CONST_INT)
-	    return -2;
-	}
-    }
-
-  /* Loading some constants needs adjustment.  */
-  if (GET_CODE (pat) == SET
-      && GET_CODE (SET_SRC (pat)) == CONST_INT
-      && GET_MODE (SET_DEST (pat)) == SImode
-      && INTVAL (SET_SRC (pat)) != 0)
-    {
-      int val = INTVAL (SET_SRC (pat));
-
-      if (TARGET_H8300
-	  && ((val & 0xffff) == 0
-	      || ((val >> 16) & 0xffff) == 0))
-	return -2;
-
-      if (TARGET_H8300H || TARGET_H8300S)
-	{
-	  if (val == (val & 0xff)
-	      || val == (val & 0xff00))
-	    return 4 - 6;
-
-	  switch (val & 0xffffffff)
-	    {
-	    case 0xffffffff:
-	    case 0xfffffffe:
-	    case 0xfffffffc:
-	    case 0x0000ffff:
-	    case 0x0000fffe:
-	    case 0xffff0000:
-	    case 0xfffe0000:
-	    case 0x00010000:
-	    case 0x00020000:
-	      return 4 - 6;
-	    }
-	}
-    }
 
   /* Rotations need various adjustments.  */
   if (GET_CODE (pat) == SET
