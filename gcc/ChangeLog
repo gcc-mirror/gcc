@@ -1,3 +1,9 @@
+2002-07-16  Rodney Brown  <rbrown64@csc.com.au>
+
+	* config/i386/i386.c (ix86_expand_int_movcc): In the case where
+	the comparison directly gives a mask suppress addition when cf is
+	zero by complementing the mask.
+
 2002-07-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in: Delete references to enquire.

@@ -8666,7 +8666,6 @@ ix86_expand_int_movcc (operands)
       if ((compare_code == LTU || compare_code == GEU)
 	  && !second_test && !bypass_test)
 	{
-
 	  /* Detect overlap between destination and compare sources.  */
 	  rtx tmp = out;
 
@@ -8723,7 +8722,7 @@ ix86_expand_int_movcc (operands)
 	      /*
 	       * cmpl op0,op1
 	       * sbbl dest,dest
-	       * xorl $-1, dest
+	       * notl dest
 	       * [addl dest, cf]
 	       *
 	       * Size 8 - 11.
@@ -8739,11 +8738,20 @@ ix86_expand_int_movcc (operands)
 	      /*
 	       * cmpl op0,op1
 	       * sbbl dest,dest
+	       * [notl dest]
 	       * andl cf - ct, dest
 	       * [addl dest, ct]
 	       *
 	       * Size 8 - 11.
 	       */
+
+	      if (cf == 0)
+		{
+		  cf = ct;
+		  ct = 0;
+		  tmp = expand_simple_unop (mode, NOT, tmp, tmp, 1);
+		}
+
 	      tmp = expand_simple_binop (mode, AND,
 					 tmp,
 					 gen_int_mode (cf - ct, mode),
