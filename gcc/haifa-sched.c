@@ -5194,9 +5194,6 @@ find_pre_sched_live (bb)
 		    && ! fixed_regs[j])
 		  {
 		    SET_REGNO_REG_SET (bb_live_regs, j);
-#if 0
-		    CLEAR_REGNO_REG_SET (bb_dead_regs, j);
-#endif
 		  }
 	    }
 
@@ -5368,9 +5365,6 @@ find_post_sched_live (bb)
 		&& ! fixed_regs[i])
 	      {
 		CLEAR_REGNO_REG_SET (bb_live_regs, i);
-#if 0
-		SET_REGNO_REG_SET (bb_dead_regs, i);
-#endif
 	      }
 
 	  /* Regs live at the time of a call instruction must not
@@ -6577,59 +6571,13 @@ schedule_block (bb, rgn, rgn_n_insns)
   rtx tail;
   int bb_src;
 
-  /* At the start of a function, before reload has run, don't delay getting
-     parameters from hard registers into pseudo registers.  */
-  if (reload_completed == 0 && b == 0)
-    {
-      head = basic_block_head[b];
-      tail = basic_block_end[b];
+  /* We used to have code to avoid getting parameters moved from hard
+     argument registers into pseudos.
 
-      while (head != tail
-	     && GET_CODE (head) == NOTE
-	     && NOTE_LINE_NUMBER (head) != NOTE_INSN_FUNCTION_BEG)
-	head = NEXT_INSN (head);
-
-      while (head != tail
-	     && GET_CODE (head) == INSN
-	     && GET_CODE (PATTERN (head)) == SET)
-	{
-	  rtx link;
-	  rtx src = SET_SRC (PATTERN (head));
-	  while (GET_CODE (src) == SUBREG
-		 || GET_CODE (src) == SIGN_EXTEND
-		 || GET_CODE (src) == ZERO_EXTEND
-		 || GET_CODE (src) == SIGN_EXTRACT
-		 || GET_CODE (src) == ZERO_EXTRACT)
-	    src = XEXP (src, 0);
-	  if (GET_CODE (src) != REG
-	      || REGNO (src) >= FIRST_PSEUDO_REGISTER)
-	    break;
-
-	  for (link = INSN_DEPEND (head); link != 0; link = XEXP (link, 1))
-	    INSN_DEP_COUNT (XEXP (link, 0)) -= 1;
-
-	  if (GET_CODE (head) != NOTE)
-	    sched_n_insns++;
-
-	  head = NEXT_INSN (head);
-	}
-
-      /* Don't include any notes or labels at the beginning of the
-         basic block, or notes at the ends of basic blocks.  */
-      while (head != tail)
-	{
-	  if (GET_CODE (head) == NOTE)
-	    head = NEXT_INSN (head);
-	  else if (GET_CODE (tail) == NOTE)
-	    tail = PREV_INSN (tail);
-	  else if (GET_CODE (head) == CODE_LABEL)
-	    head = NEXT_INSN (head);
-	  else
-	    break;
-	}
-    }
-  else
-    get_block_head_tail (bb, &head, &tail);
+     However, it was removed when it proved to be of marginal benefit
+     and caused problems because schedule_block and compute_forward_dependences
+     had different notions of what the "head" insn was.  */
+  get_block_head_tail (bb, &head, &tail);
 
   next_tail = NEXT_INSN (tail);
   prev_head = PREV_INSN (head);

@@ -1,3 +1,11 @@
+Mon Aug 25 13:12:24 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (find_pre_sched_live): Remove #if 0 code.
+	(find_post_sched_live): Likewise.
+
+	* haifa-sched.c (schedule_block): Remove old code to get arguments
+	from hard regs into pseudos early.
+
 Mon Aug 25 08:55:00 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for new snapshot.
