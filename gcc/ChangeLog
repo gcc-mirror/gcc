@@ -1,3 +1,7 @@
+Wed Feb 14 11:59:58 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (RETURN_IN_MEMORY): Fix formating; reject TFmodes
+
 Wed Feb 14 11:12:38 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (ix86_memory_move_cost): Move offline.

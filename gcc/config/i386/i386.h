@@ -920,11 +920,11 @@ extern int ix86_arch;
    should always be returned in memory.  You should instead use
    `DEFAULT_PCC_STRUCT_RETURN' to indicate this.  */
 
-#define RETURN_IN_MEMORY(TYPE)							\
-  ((TYPE_MODE (TYPE) == BLKmode)						\
-   || (VECTOR_MODE_P (TYPE_MODE (TYPE)) && int_size_in_bytes (TYPE) == 8)	\
-   || (int_size_in_bytes (TYPE) > 12 && TYPE_MODE (TYPE) != TImode		\
-       && ! VECTOR_MODE_P (TYPE_MODE (TYPE))))
+#define RETURN_IN_MEMORY(TYPE)						\
+  ((TYPE_MODE (TYPE) == BLKmode)					\
+   || (VECTOR_MODE_P (TYPE_MODE (TYPE)) && int_size_in_bytes (TYPE) == 8)\
+   || (int_size_in_bytes (TYPE) > 12 && TYPE_MODE (TYPE) != TImode	\
+       && TYPE_MODE (TYPE) != TFmode && ! VECTOR_MODE_P (TYPE_MODE (TYPE))))
 
 
 /* Define the classes of registers for register constraints in the
