@@ -1867,20 +1867,12 @@ struct sh_args {
     (CUM).outgoing = 0;						\
   } while (0)
  
-#define OLD_ARG_MODE(MODE, TYPE) \
-  (((TYPE) \
-    && (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE) \
-    && (MODE) != BLKmode && GET_MODE_CLASS (MODE) != MODE_INT) \
-   ? int_mode_for_mode (MODE) : (MODE))
-
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be
    available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-do {							\
- enum machine_mode MODE_ = OLD_ARG_MODE ((MODE), (TYPE));\
  if ((CUM).force_mem)					\
    (CUM).force_mem = 0;					\
  else if (TARGET_SH5)					\
@@ -1888,17 +1880,17 @@ do {							\
      tree TYPE_ = ((CUM).byref && (TYPE)		\
 		   ? TREE_TYPE (TYPE)			\
  		   : (TYPE));				\
-     int dwords, numregs;				\
+     enum machine_mode MODE_ = ((CUM).byref && (TYPE)	\
+				? TYPE_MODE (TYPE_)	\
+				: (MODE));		\
+     int dwords = (((CUM).byref				\
+		    ? (CUM).byref			\
+		    : (MODE_) == BLKmode		\
+		    ? int_size_in_bytes (TYPE_)		\
+		    : GET_MODE_SIZE (MODE_)) + 7) / 8;	\
+     int numregs = MIN (dwords, NPARM_REGS (SImode)	\
+			- (CUM).arg_count[(int) SH_ARG_INT]); \
 							\
-     MODE_ = ((CUM).byref && (TYPE)			\
-	      ? TYPE_MODE (TYPE_) : (MODE_));		\
-     dwords = (((CUM).byref				\
-		? (CUM).byref				\
-		: (MODE_) == BLKmode			\
-		? int_size_in_bytes (TYPE_)		\
-		: GET_MODE_SIZE (MODE_)) + 7) / 8;	\
-     numregs = MIN (dwords, NPARM_REGS (SImode)		\
-		    - (CUM).arg_count[(int) SH_ARG_INT]); \
      if (numregs)					\
        {						\
 	 (CUM).arg_count[(int) SH_ARG_INT] += numregs;	\
@@ -1990,13 +1982,12 @@ do {							\
 	   }						\
        }						\
    }							\
- else if (! TARGET_SH4 || PASS_IN_REG_P ((CUM), (MODE_), (TYPE))) \
-   ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE_)]	\
-    = (ROUND_REG ((CUM), (MODE_))			\
-       + ((MODE_) == BLKmode				\
+ else if (! TARGET_SH4 || PASS_IN_REG_P ((CUM), (MODE), (TYPE))) \
+   ((CUM).arg_count[(int) GET_SH_ARG_CLASS (MODE)]	\
+    = (ROUND_REG ((CUM), (MODE))			\
+       + ((MODE) == BLKmode				\
 	  ? ROUND_ADVANCE (int_size_in_bytes (TYPE))	\
-	  : ROUND_ADVANCE (GET_MODE_SIZE (MODE_)))));	\
-} while (0)
+	  : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))))
 
 /* Return boolean indicating arg of mode MODE will be passed in a reg.
    This macro is only used in this file.  */
@@ -2015,6 +2006,24 @@ do {							\
 	      + HARD_REGNO_NREGS (BASE_ARG_REG (MODE), (MODE))) \
 	     <= NPARM_REGS (MODE))) \
        : ROUND_REG ((CUM), (MODE)) < NPARM_REGS (MODE)))
+
+/* By accident we got stuck with passing SCmode on SH4 little endian
+   in two registers that are nominally successive - which is different from
+   two single SFmode values, where we take endianness translation into
+   account.  That does not work at all if an odd number of registers is
+   already in use, so that got fixed, but library functions are still more
+   likely to use complex numbers without mixing them with SFmode arguments
+   (which in C would have to be structures), so for the sake of ABI
+   compatibility the way SCmode values are passed when an even number of
+   FP registers is in use remains different from a pair of SFmode values for
+   now.
+   I.e.:
+   foo (double); a: fr5,fr4
+   foo (float a, float b); a: fr5 b: fr4
+   foo (__complex float a); a.real fr4 a.imag: fr5 - for consistency,
+                            this should be the other way round...
+   foo (float a, __complex float b); a: fr5 b.real: fr4 b.imag: fr7  */
+#define FUNCTION_ARG_SCmode_WART 1
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
@@ -2035,29 +2044,44 @@ do {							\
    its data type forbids.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  FUNCTION_ARG_1 ((CUM), OLD_ARG_MODE ((MODE), (TYPE)), (MODE), (TYPE), (NAMED))
-
-#define FUNCTION_ARG_1(CUM, MODE, NEW_MODE, TYPE, NAMED) \
   ((! TARGET_SH5 \
     && PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
     && ((NAMED) || !TARGET_HITACHI))					\
-   ? gen_rtx_REG ((NEW_MODE),						\
-		  ((BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))) 	\
-		   ^ ((MODE) == SFmode && TARGET_SH4			\
-		      && TARGET_LITTLE_ENDIAN != 0)))			\
+   ? (((MODE) == SCmode && TARGET_SH4 && TARGET_LITTLE_ENDIAN		\
+       && (! FUNCTION_ARG_SCmode_WART || (ROUND_REG ((CUM), (MODE)) & 1)))\
+      ? (gen_rtx_PARALLEL						\
+	 (SCmode,							\
+	  (gen_rtvec							\
+	   (2, 								\
+	    (gen_rtx_EXPR_LIST						\
+	     (VOIDmode,							\
+	      gen_rtx_REG (SFmode,					\
+			   BASE_ARG_REG (MODE)				\
+			   + ROUND_REG ((CUM), (MODE)) ^ 1),		\
+	      const0_rtx)),						\
+	    (gen_rtx_EXPR_LIST						\
+	     (VOIDmode,							\
+	      gen_rtx_REG (SFmode,					\
+			   BASE_ARG_REG (MODE)				\
+			   + (ROUND_REG ((CUM), (MODE)) + 1) ^ 1),	\
+	      GEN_INT (4)))))))						\
+      : gen_rtx_REG ((MODE),						\
+		     ((BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))) \
+		      ^ ((MODE) == SFmode && TARGET_SH4			\
+			 && TARGET_LITTLE_ENDIAN != 0))))		\
    : TARGET_SH5								\
    ? ((MODE) == VOIDmode && TARGET_SHCOMPACT				\
       ? GEN_INT ((CUM).call_cookie)					\
       /* The following test assumes unnamed arguments are promoted to	\
 	 DFmode.  */							\
       : (MODE) == SFmode && (CUM).free_single_fp_reg			\
-      ? SH5_PROTOTYPED_FLOAT_ARG ((CUM), (NEW_MODE), (CUM).free_single_fp_reg) \
+      ? SH5_PROTOTYPED_FLOAT_ARG ((CUM), (MODE), (CUM).free_single_fp_reg) \
       : (GET_SH_ARG_CLASS (MODE) == SH_ARG_FLOAT			\
          && ((NAMED) || ! (CUM).prototype_p)				\
          && (CUM).arg_count[(int) SH_ARG_FLOAT] < NPARM_REGS (SFmode))	\
       ? ((! (CUM).prototype_p && TARGET_SHMEDIA)			\
-	 ? SH5_PROTOTYPELESS_FLOAT_ARG ((CUM), (NEW_MODE))		\
-	 : SH5_PROTOTYPED_FLOAT_ARG ((CUM), (NEW_MODE),			\
+	 ? SH5_PROTOTYPELESS_FLOAT_ARG ((CUM), (MODE))			\
+	 : SH5_PROTOTYPED_FLOAT_ARG ((CUM), (MODE),			\
 				     FIRST_FP_PARM_REG			\
 				     + (CUM).arg_count[(int) SH_ARG_FLOAT])) \
       : ((CUM).arg_count[(int) SH_ARG_INT] < NPARM_REGS (SImode)	\
@@ -2065,7 +2089,7 @@ do {							\
 	     || (! SHCOMPACT_FORCE_ON_STACK ((MODE), (TYPE))		\
 	         && ! SH5_WOULD_BE_PARTIAL_NREGS ((CUM), (MODE),	\
 						  (TYPE), (NAMED)))))	\
-      ? gen_rtx_REG ((NEW_MODE), (FIRST_PARM_REG			\
+      ? gen_rtx_REG ((MODE), (FIRST_PARM_REG				\
  			      + (CUM).arg_count[(int) SH_ARG_INT]))	\
       : 0)								\
    : 0)
@@ -2076,7 +2100,7 @@ do {							\
    loads them into the full 64-bits registers.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM,MODE,TYPE,NAMED) \
   (MUST_PASS_IN_STACK ((MODE), (TYPE)) \
-   || SHCOMPACT_BYREF ((CUM), OLD_ARG_MODE ((MODE), (TYPE)), (TYPE), (NAMED)))
+   || SHCOMPACT_BYREF ((CUM), (MODE), (TYPE), (NAMED)))
 
 #define SHCOMPACT_BYREF(CUM, MODE, TYPE, NAMED) \
   ((CUM).byref								\

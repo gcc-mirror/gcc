@@ -1,3 +1,24 @@
+2003-06-24  J"orn Rennecke <joern.rennecke@superh.com>
+
+	Back out these patches:
+	 2003-06-02  J"orn Rennecke <joern.rennecke@superh.com>
+          * sh.h (OLD_ARG_MODE): New macro.
+          (FUNCTION_ARG_ADVANCE, FUNCTION_ARG_PASS_BY_REFERENCE): Use it.
+          (FUNCTION_ARG_1): Break out of:
+          (FUNCTION_ARG).  Use OLD_ARG_MODE.
+	 2003-06-06  J"orn Rennecke <joern.rennecke@superh.com>
+          * sh.h (FUNCTION_ARG_1): Consistently use NEW_MODE for the mode
+          of the generated register.
+
+	* sh.h (FUNCTION_ARG_SCmode_WART): Define.
+	(FUNCTION_ARG): Unless FUNCTION_ARG_SCmode_WART is defined and
+	an even number of floating point regs are in use, use the same
+	sequence of argument passing registers for SCmode as would be 
+	used for two SFmode values.
+	* sh.c (sh_va_arg): If FUNCTION_ARG_SCmode_WART is defined,
+	swap real / imaginary parts in incoming SCmode values passed
+	in registers.
+
 2003-06-24  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
         PR target/11260
