@@ -280,7 +280,7 @@ typedef struct objc_class *MetaClass_t;
 ** change type. The compiler generates "char* const" and places a string in
 ** the following member variables:  super_class. 
 */
-typedef struct objc_class {     
+struct objc_class {     
   MetaClass_t         class_pointer;          /* Pointer to the class's
                                                 meta class. */
   struct objc_class*  super_class;            /* Pointer to the super 
@@ -316,7 +316,10 @@ typedef struct objc_class {
 
   struct objc_protocol_list *protocols;	      /* Protocols conformed to */
 
-} Class, *Class_t, MetaClass;
+};
+#define Class struct objc_class
+#define Class_t Class*
+typedef struct objc_class MetaClass;
 
 /* Protocol support */
 
@@ -412,6 +415,7 @@ typedef struct objc_category {
 */
 
 typedef struct objc_typed_stream TypedStream;
+#include <objc/objc-archive.h>
 
 
 /*
