@@ -2594,7 +2594,8 @@ static tree
 mark_member_pointers (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 		      void *data ATTRIBUTE_UNUSED)
 {
-  if (TREE_CODE (*tp) == PTRMEM_CST)
+  if (TREE_CODE (*tp) == PTRMEM_CST
+      && TYPE_PTRMEMFUNC_P (TREE_TYPE (*tp)))
     cgraph_mark_needed_node (cgraph_node (PTRMEM_CST_MEMBER (*tp)), 1);
   return 0;
 }
