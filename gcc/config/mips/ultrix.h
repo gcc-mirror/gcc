@@ -20,30 +20,32 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DECSTATION
 
 #define CPP_PREDEFINES "-D__ANSI_COMPAT \
--D__LANGUAGE_C -D__MIPSEL -D__R3000 -D__SYSTYPE_BSD -D__bsd4_2 -D__host_mips -D__mips -D__ultrix -D__unix \
--DLANGUAGE_C -DMIPSEL -DR3000 -DSYSTYPE_BSD -Dbsd4_2 -Dhost_mips -Dmips -Dultrix -Dunix"
+-DMIPSEL -DR3000 -DSYSTYPE_BSD -Dbsd4_2 -Dhost_mips -Dmips -Dultrix -Dunix"
 
-#define ASM_SPEC	"%{!mgas:					\
-				%{!mrnames: -nocpp}			\
-				%{pipe:%e:-pipe not supported}		\
-				%{EL} %{!EL:-EL}			\
-				%{EB: %e-EB not supported}		\
-				%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}	\
-				%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K}}	\
-			 %{G*}"
+#define ASM_SPEC "\
+%{!mgas: \
+	%{!mrnames: -nocpp} \
+	%{pipe:%e:-pipe not supported} \
+	%{EL} %{!EL:-EL} \
+	%{EB: %e-EB not supported} \
+	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
+	%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K}} \
+%{G*}"
 
-#define CPP_SPEC	"%{.S:	-D__LANGUAGE_ASSEMBLY__			\
-				-D_LANGUAGE_ASSEMBLY			\
-				%{!ansi:-DLANGUAGE_ASSEMBLY}}		\
-			 %{!.S:	-D__LANGUAGE_C__			\
-				-D_LANGUAGE_C				\
-				%{!ansi:-DLANGUAGE_C}}"
+#define CPP_SPEC "\
+%{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C} \
+%{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
-#define LINK_SPEC	"%{G*}						\
-			 %{!mgas:					\
-				%{EL} %{!EL: -EL}			\
-				%{EB: %e-EB not supported}		\
-				%{bestGnum}}"
+#define LINK_SPEC "\
+%{G*} \
+%{!mgas: \
+	%{EL} %{!EL: -EL} \
+	%{EB: %e-EB not supported} \
+	%{bestGnum}}"
 
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"
 
