@@ -3610,13 +3610,13 @@ it as input or output but if this is not known, you should add
 @samp{memory}.  As an example, if you access ten bytes of a string, you
 can use a memory input like:
 
-@example
+@smallexample
 @{"m"( (@{ struct @{ char x[10]; @} *p = (void *)ptr ; *p; @}) )@}.
-@end example
+@end smallexample
 
 Note that in the following example the memory input is necessary,
 otherwise GCC might optimize the store to @code{x} away:
-@example
+@smallexample
 int foo ()
 @{
   int x = 42;
@@ -3626,7 +3626,7 @@ int foo ()
         "=&d" (r) : "a" (y), "m" (*y));
   return result;     
 @}
-@end example
+@end smallexample
 
 You can put multiple assembler instructions together in a single
 @code{asm} template, separated by the characters normally used in assembly
@@ -9246,14 +9246,14 @@ namespace std @{
     template <class T> struct A @{ @};
   @}
   using namespace debug __attribute ((__strong__));
-  template <> struct A<int> @{ @};   // ok to specialize
+  template <> struct A<int> @{ @};   // @r{ok to specialize}
 
   template <class T> void f (A<T>);
 @}
 
 int main()
 @{
-  f (std::A<float>());             // lookup finds std::f
+  f (std::A<float>());             // @r{lookup finds} std::f
   f (std::A<int>());
 @}
 @end smallexample
@@ -9270,7 +9270,7 @@ Sample problematic code is:
 
 @smallexample
   struct S @{ ~S(); @};
-  extern void bar();    // is written in Java, and may throw exceptions
+  extern void bar();    // @r{is written in Java, and may throw exceptions}
   void foo()
   @{
     S s;
