@@ -2405,17 +2405,6 @@ int
 contains_placeholder_p (exp)
      tree exp;
 {
-  return contains_this_placeholder_p (exp, NULL_TREE);
-}
-
-/* Similar, but if PL is non-zero it is assumed to be a PLACEHOLDER_EXPR
-   and we return 1 if that PLACEHOLDER_EXPR is in EXP.  */
-
-int
-contains_this_placeholder_p (exp, pl)
-     tree exp;
-     tree pl;
-{
   register enum tree_code code = TREE_CODE (exp);
 
   /* If we have a WITH_RECORD_EXPR, it "cancels" any PLACEHOLDER_EXPR
@@ -2423,31 +2412,16 @@ contains_this_placeholder_p (exp, pl)
   if (code == WITH_RECORD_EXPR)
     return 0;
   else if (code == PLACEHOLDER_EXPR)
-    return (pl == 0 || pl == exp);
+    return 1;
 
   switch (TREE_CODE_CLASS (code))
     {
     case 'r':
-      if (TREE_CODE (exp) == ARRAY_REF)
-	{
-	  tree domain = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (exp, 0)));
-
-	  if (domain != 0
-	      && ((TREE_CODE (TYPE_MIN_VALUE (domain)) != INTEGER_CST
-		   && contains_this_placeholder_p (TYPE_MIN_VALUE (domain),
-						   pl))
-		  || (TREE_CODE (TYPE_MAX_VALUE (domain)) != INTEGER_CST
-		      && contains_this_placeholder_p (TYPE_MAX_VALUE (domain),
-						      pl))
-		  || contains_this_placeholder_p (TREE_OPERAND (exp, 1), pl)))
-	    return 1;
-	}
-      else if (TREE_CODE (exp) == BIT_FIELD_REF
-	       && (contains_this_placeholder_p (TREE_OPERAND (exp, 1), pl)
-		   || contains_this_placeholder_p (TREE_OPERAND (exp, 2), pl)))
-	return 1;
-
-      return contains_this_placeholder_p (TREE_OPERAND (exp, 0), pl);
+      /* Don't look at any PLACEHOLDER_EXPRs that might be in index or bit
+	 position computations since they will be converted into a
+	 WITH_RECORD_EXPR involving the reference, which will assume
+	 here will be valid.  */
+      return contains_placeholder_p (TREE_OPERAND (exp, 0));
 
     case '1':
     case '2':  case '<':
@@ -2456,29 +2430,29 @@ contains_this_placeholder_p (exp, pl)
 	{
 	case COMPOUND_EXPR:
 	  /* Ignoring the first operand isn't quite right, but works best. */
-	  return contains_this_placeholder_p (TREE_OPERAND (exp, 1), pl);
+	  return contains_placeholder_p (TREE_OPERAND (exp, 1));
 
 	case RTL_EXPR:
 	case CONSTRUCTOR:
 	  return 0;
 
 	case COND_EXPR:
-	  return (contains_this_placeholder_p (TREE_OPERAND (exp, 0), pl)
-		  || contains_this_placeholder_p (TREE_OPERAND (exp, 1), pl)
-		  || contains_this_placeholder_p (TREE_OPERAND (exp, 2), pl));
+	  return (contains_placeholder_p (TREE_OPERAND (exp, 0))
+		  || contains_placeholder_p (TREE_OPERAND (exp, 1))
+		  || contains_placeholder_p (TREE_OPERAND (exp, 2)));
 
 	case SAVE_EXPR:
 	   return (SAVE_EXPR_RTL (exp) == 0
-		   && contains_this_placeholder_p (TREE_OPERAND (exp, 0), pl));
+		   && contains_placeholder_p (TREE_OPERAND (exp, 0)));
 	}
 
       switch (tree_code_length[(int) code])
 	{
 	case 1:
-	  return contains_this_placeholder_p (TREE_OPERAND (exp, 0), pl);
+	  return contains_placeholder_p (TREE_OPERAND (exp, 0));
 	case 2:
-	  return (contains_this_placeholder_p (TREE_OPERAND (exp, 0), pl)
-		  || contains_this_placeholder_p (TREE_OPERAND (exp, 1), pl));
+	  return (contains_placeholder_p (TREE_OPERAND (exp, 0))
+		  || contains_placeholder_p (TREE_OPERAND (exp, 1)));
 	}
     }
 
