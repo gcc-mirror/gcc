@@ -32,7 +32,7 @@
 #ifndef __SGI_STL_INTERNAL_ALGOBASE_H
 #define __SGI_STL_INTERNAL_ALGOBASE_H
 
-#include <bits/stl_config.h>
+#include <bits/c++config.h>
 #ifndef __SGI_STL_INTERNAL_PAIR_H
 #include <bits/stl_pair.h>
 #endif

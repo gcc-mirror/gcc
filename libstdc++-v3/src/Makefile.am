@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.71 2001/02/07 20:26:24 bkoz Exp $
+## $Id: Makefile.am,v 1.72 2001/02/16 00:43:41 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -98,7 +98,7 @@ base_headers = \
 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h \
 	bits/type_traits.h bits/std_algorithm.h \
 	bits/concept_checks.h bits/container_concepts.h \
-	bits/sequence_concepts.h bits/stl_config.h bits/stl_construct.h
+	bits/sequence_concepts.h bits/stl_construct.h
 
 backward_headers = \
 	backward/complex.h backward/iomanip.h backward/istream.h \

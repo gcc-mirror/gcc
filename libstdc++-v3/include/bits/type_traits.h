@@ -17,9 +17,7 @@
 
 #pragma GCC system_header
 
-#ifndef _CPP_BITS_STL_CONFIG_H
-#include <bits/stl_config.h>
-#endif
+#include <bits/c++config.h>
 
 /*
 This header file provides a framework for allowing compile time dispatch

@@ -14,9 +14,7 @@
 #ifndef _CPP_BACKWARD_ALLOC_H
 #define _CPP_BACKWARD_ALLOC_H 1
 
-#ifndef _CPP_BITS_STL_CONFIG_H
-#include <bits/stl_config.h>
-#endif
+#include <bits/c++config.h>
 #ifndef _CPP_BITS_STL_ALLOC_H
 #include <bits/stl_alloc.h>
 #endif

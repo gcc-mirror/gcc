@@ -32,7 +32,6 @@
 //
 
 #include <bits/c++config.h>
-#include <bits/stl_config.h>
 #include <bits/stl_alloc.h>
 #include <bits/std_vector.h>
 

@@ -27,8 +27,8 @@
 // cache lines among processors, with potentially serious performance
 // consequences.
 
+#include <bits/c++config.h>
 #include <bits/std_cerrno.h>
-#include <bits/stl_config.h>
 #include <bits/stl_alloc.h>
 #ifndef __RESTRICT
 #  define __RESTRICT
