@@ -1,3 +1,8 @@
+2003-07-01  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/8046
+        * g++.dg/other/error7.C: New test.
+
 2003-07-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* g++.old-deja/g++.abi/vbase1.C: Fix comment typos.
