@@ -1,12 +1,45 @@
 Sat Mar 14 05:45:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* i386/xm-aix.h, i386/xm-osf.h (i386/xm-i386.h): Don't include.
+	(USG): Don't define.
+	* i386/xm-isc.h (i386/xm-sysv3.h): Don't include.
+	* i386/xm-sco.h (i386/xm-sysv3.h): Likewise.
+	(BROKEN_LDEXP, SMALL_ARG_MAX, NO_SYS_SIGLIST): Don't define.
+	* m68k/xm-3b1.h (m68k/xm-m68k.h): Don't include.
+	(USG): Don't define.
+	* m68k/xm-atari.h (m68k/xm-m68kv.h): Don't include.
+	(HAVE_VPRINTF, FULL_PROTOTYPES): Don't define.
+	* m68k/xm-crds.h (m68k/xm-m68k.h): Don't include.
+	(USE_C_ALLOCA, unos, USG): Don't define.
+	* m68k/xm-mot3300.h (m68k/xm-m68k.h): Don't include.
+	(USE_C_ALLOCA, NO_SYS_SIGLIST): Don't define.
+	* m68k/xm-plexus.h (m68k/xm-m68k.h): Don't include.
+	(USE_C_ALLOCA, USG): Don't define.
+	* m88k/xm-sysv3.h (m88k/xm-m88k.h): Don't include.
+	* m68k/xm-next.h (m68k/xm-m68k.h): Don't include.
+	* ns32k/xm-pc532-min.h (ns32k/xm-ns32k.h): Don't include.
+	(USG): Don't define.
+	* rs6000/xm-mach.h: Don't include xm-rs6000.h.
+	* rs6000/xm-cygwin32.h (rs6000/xm-rs6000.h): Don't include.
+	(NO_STAB_H): Don't define.
+	* sparc/xm-linux.h (xm-linux.h): Don't include.
+	* sparc/xm-sol2.h (sparc/xm-sysv4.h): Don't include.
+	* a29k/xm-unix.h, alpha/xm-linux.h, arm/xm-linux.h: Deleted.
+	* arm/xm-netbsd.h, i386/xm-bsd386.h, i386/xm-gnu.h: Deleted.
+	* i386/xm-linux.h, i386/xm-sun.h, i386/xm-sysv3.h: Deleted.
+	* i386/xm-winnt.h,  m68k/xm-altos3068.h, m68k/xm-amix.h: Deleted.
+	* m68k/xm-amix.h, m68k/xm-hp320.h, m68k/xm-linux.h: Deleted.
+	* m68k/xm-m68kv.h, mips/xm-iris5.h, ns32k/xm-genix.h: Deleted.
+	* sparc/xm-pbd.h, vax/xm-vaxv.h, xm-svr3.h, xm-linux.h: Deleted.
+	* configure.in: Reflect above changes.
+
 	* xm-siglist.h, xm-alloca.h: New files.
 	* i386/xm-sysv4.h (i386/xm-i386.h, xm-svr4.h): Don't include.
 	(USE_C_ALLOCA, SMALL_ARG_MAX): Don't define.
 	* i386/xm-sco5.h (i386/xm-sysv3.h): Don't include.
 	(SYS_SIGLIST_DECLARED, USE_C_ALLOCA): Don't define.
 	* rs6000/xm-sysv4.h, sparc/xm-sysv4.h: Don't include xm-svr4.h.
-	* i386/xm-dgux.h, mips/xm-news.h, mips/xm-sysv4.h: Deleted.
+	* xm-svr4.h, i386/xm-dgux.h, mips/xm-news.h, mips/xm-sysv4.h: Deleted.
 	* configure.in: Reflect above changes.
 
 	* configure.in ({,host_,build_}xm_defines): New variables.
