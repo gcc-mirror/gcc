@@ -134,6 +134,19 @@ if test x$TARGET = xSPARC; then
 	AC_DEFINE(HAVE_AS_SPARC_UA_PCREL, 1,
 		  [Define if your assembler and linker support unaligned PC relative relocs.])
     fi
+
+    AC_CACHE_CHECK([assembler .register pseudo-op support],
+       libffi_cv_as_register_pseudo_op, [
+       libffi_cv_as_register_pseudo_op=unknown
+       # Check if we have .register
+       AC_TRY_COMPILE([asm (".register %g2, #scratch");],,
+                       [libffi_cv_as_register_pseudo_op=yes],
+                       [libffi_cv_as_register_pseudo_op=no])
+    ])
+    if test "x$libffi_cv_as_register_pseudo_op" = xyes; then
+       AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
+               [Define if your assembler supports .register.])
+    fi
 fi
 
 AC_SUBST(TARGET)
