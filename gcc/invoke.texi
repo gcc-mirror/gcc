@@ -375,7 +375,8 @@ in the following sections.
 -fno-common  -fno-ident  -fno-gnu-linker
 -fpcc-struct-return  -freg-struct-return
 -fshared-data  -fpic  -fPIC  -fexceptions
--fshort-enums  -fshort-double  -fvolatile  -fvolatile-global
+-fshort-enums  -fshort-double
+-fvolatile  -fvolatile-global  -fvolatile-static
 -fverbose-asm  -fpack-struct  -fstack-check  +e0  +e1
 @end smallexample
 @end table
@@ -5300,7 +5301,11 @@ Consider all memory references through pointers to be volatile.
 
 @item -fvolatile-global
 Consider all memory references to extern and global data items to
-be volatile.
+be volatile.  GNU CC does not consider static data items to be volatile
+because of this switch.
+
+@item -fvolatile-static
+Consider all memory references to static data to be volatile.
 
 @item -fpic
 @cindex global offset table
