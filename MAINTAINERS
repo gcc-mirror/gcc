@@ -160,6 +160,7 @@ new regalloc (ra*)	Michael Matz		matz@suse.de
 gcov			Jan Hubicka		jh@suse.cz
 gcov			Nathan Sidwell		nathan@codesourcery.com
 option handling		Neil Booth		neil@daikokuya.co.uk
+libffi testsuite	Andreas Tobler		andreast@gcc.gnu.org
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
@@ -261,7 +262,6 @@ Jeff Sturm					jsturm@gcc.gnu.org
 Ian Taylor					ian@wasabisystems.com
 Michael Tiemann					tiemann@redhat.com
 Kresten Krab Thorup				krab@gcc.gnu.org
-Andreas Tobler					andreast@gcc.gnu.org
 Jonathan Wakely					redi@gcc.gnu.org
 Krister Walfridsson				cato@df.lth.se
 John Wehle					john@feith.com
