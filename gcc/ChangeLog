@@ -1,8 +1,4 @@
 Wed May 13 12:54:19 1998  Michael Meissner  <meissner@cygnus.com>
-			  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
-
-	* acconfig.h (ENABLE_CHECKING): Undefine.
-	* configure.in (--enable-checking): New option.
 
 	* flow.c (reg_n_max): New global variable.
 	* regclass.c (allocate_reg_info): Keep reg_n_max up to date.
@@ -11,6 +7,11 @@ Wed May 13 12:54:19 1998  Michael Meissner  <meissner@cygnus.com>
 	(REG_N_REFS, REG_N_SETS, REG_N_DEATHS): Use REG_N_CHECK.
 	(REG_N_CHANGES_SIZE, REG_N_CALLS_CROSSED, REG_LIVE_LENGTH): Likewise.
 	(REGNO_FIRST_UID, REGNO_LAST_UID, REGNO_LAST_NOTE_UID): Likewise.
+
+Wed May 13 12:54:19 1998  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
+
+	* acconfig.h (ENABLE_CHECKING): Undefine.
+	* configure.in (--enable-checking): New option.
 
 Wed May 13 08:52:08 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
