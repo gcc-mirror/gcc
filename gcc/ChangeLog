@@ -1,3 +1,8 @@
+2003-02-27  James E Wilson  <wilson@tuliptree.org>
+
+	* combine.c (simplify_comparison): Require integral mode when
+	permuting SUBREG with AND.
+
 2003-02-27  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (STARTFILE_PREFIX_SPEC): Remove.

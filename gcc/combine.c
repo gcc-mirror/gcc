@@ -11130,6 +11130,9 @@ simplify_comparison (code, pop0, pop1)
 	     represents the low part, permute the SUBREG and the AND and
 	     try again.  */
 	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
+	      /* Require an integral mode, to avoid creating something like
+		 (AND:SF ...).  */
+	      && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
 	      /* It is unsafe to commute the AND into the SUBREG if the SUBREG
 		 is paradoxical and WORD_REGISTER_OPERATIONS is not defined.
 		 As originally written the upper bits have a defined value
