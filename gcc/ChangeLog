@@ -1,3 +1,8 @@
+2003-09-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.md: Revert 2003-09-17's patch.
+	(andsi3): Set attr cc to set_zn when using shifts or adds.
+
 2003-09-22  Bernardo Innocenti <bernie@develer.com>
 
 	* doc/contrib.texi: Add Peter Barada, Paul Dale and myself.
