@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- internal _Array helper class.
 
-// Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,128 +34,138 @@
 
 namespace std
 {
-
-export template<typename _Tp>
-void
-__valarray_fill (_Array<_Tp> __a, size_t __n, _Array<bool> __m, const _Tp& __t)
-{
-    _Tp* __p = __a._M_data;
-    bool* __ok (__m._M_data);
-    for (size_t __i=0; __i<__n; ++__i, ++__ok, ++__p) {
-        while (! *__ok) {
-            ++__ok;
-            ++__p;
-        }
-        *__p = __t;
+  template<typename _Tp>
+    void
+    __valarray_fill(_Array<_Tp> __a, size_t __n, _Array<bool> __m, 
+		    const _Tp& __t)
+    {
+      _Tp* __p = __a._M_data;
+      bool* __ok (__m._M_data);
+      for (size_t __i=0; __i < __n; ++__i, ++__ok, ++__p) 
+	{
+	  while (!*__ok) 
+	  {
+	    ++__ok;
+	    ++__p;
+	  }
+	  *__p = __t;
+	}
     }
-}
-
-export template<typename _Tp>
-void
-__valarray_copy(_Array<_Tp> __a, _Array<bool> __m, _Array<_Tp> __b, size_t __n)
-{
-    _Tp* __p (__a._M_data);
-    bool* __ok (__m._M_data);
-    for (_Tp* __q=__b._M_data; __q<__b._M_data+__n; ++__q, ++__ok, ++__p) {
-        while (! *__ok) {
-            ++__ok;
-            ++__p;
-        }
-        *__q = *__p;
+  
+  template<typename _Tp>
+    void
+    __valarray_copy(_Array<_Tp> __a, _Array<bool> __m, _Array<_Tp> __b, 
+		    size_t __n)
+    {
+      _Tp* __p (__a._M_data);
+      bool* __ok (__m._M_data);
+      for (_Tp* __q = __b._M_data; __q < __b._M_data + __n; 
+	   ++__q, ++__ok, ++__p) 
+	{
+	  while (! *__ok) 
+	    {
+	      ++__ok;
+	      ++__p;
+	    }
+	  *__q = *__p;
+	}
     }
-}
 
-export template<typename _Tp>
-void
-__valarray_copy (_Array<_Tp> __a, size_t __n, _Array<_Tp> __b, _Array<bool> __m)
-{
-    _Tp* __q (__b._M_data);
-    bool* __ok (__m._M_data);
-    for (_Tp* __p=__a._M_data; __p<__a._M_data+__n; ++__p, ++__ok, ++__q) {
-        while (! *__ok) {
-            ++__ok;
-            ++__q;
-        }
-        *__q = *__p;
+  template<typename _Tp>
+    void
+    __valarray_copy(_Array<_Tp> __a, size_t __n, _Array<_Tp> __b, 
+		    _Array<bool> __m)
+    {
+      _Tp* __q (__b._M_data);
+      bool* __ok (__m._M_data);
+      for (_Tp* __p = __a._M_data; __p < __a._M_data+__n; 
+	   ++__p, ++__ok, ++__q) 
+	{
+	  while (! *__ok) 
+	    {
+	      ++__ok;
+	      ++__q;
+	    }
+	  *__q = *__p;
+	}
     }
-}
 
-export template<typename _Tp, class _Dom>
-void
-__valarray_copy (const _Expr<_Dom, _Tp>& __e, size_t __n, _Array<_Tp> __a)
-{
-    _Tp* __p (__a._M_data);
-    for (size_t __i=0; __i<__n; ++__i, ++__p) *__p = __e[__i];
-}
-
-export template<typename _Tp, class _Dom>
-void
-__valarray_copy (const _Expr<_Dom, _Tp>& __e, size_t __n, 
-                 _Array<_Tp> __a, size_t __s)
-{
-    _Tp* __p (__a._M_data);
-    for (size_t __i=0; __i<__n; ++__i, __p+=__s) *__p = __e[__i];
-}
-
-export template<typename _Tp, class _Dom>
-void
-__valarray_copy (const _Expr<_Dom, _Tp>& __e, size_t __n, 
-                 _Array<_Tp> __a, _Array<size_t> __i)
-{
-    size_t* __j (__i._M_data);
-    for (size_t __k=0; __k<__n; ++__k, ++__j) __a._M_data[*__j] = __e[__k];
-}
-
-export template<typename _Tp, class _Dom>
-void
-__valarray_copy (const _Expr<_Dom, _Tp>& __e, size_t __n, 
-                 _Array<_Tp> __a, _Array<bool> __m)
-{
-    bool* __ok (__m._M_data);
-    _Tp* __p (__a._M_data);
-    for (size_t __i=0; __i<__n; ++__i, ++__ok, ++__p) {
-        while (! *__ok) {
-            ++__ok;
-            ++__p;
-        }
-        *__p = __e[__i];
+  template<typename _Tp, class _Dom>
+    void
+    __valarray_copy(const _Expr<_Dom, _Tp>& __e, size_t __n, _Array<_Tp> __a)
+    {
+      _Tp* __p (__a._M_data);
+      for (size_t __i = 0; __i < __n; ++__i, ++__p) 
+	*__p = __e[__i];
     }
-}
 
-
-export template<typename _Tp, class _Dom>
-void
-__valarray_copy_construct (const _Expr<_Dom, _Tp>& __e, size_t __n,
-                           _Array<_Tp> __a)
-{
-    _Tp* __p (__a._M_data);
-    for (size_t __i=0; __i<__n; ++__i, ++__p) new (__p) _Tp(__e[__i]);
-}
-
-
-export template<typename _Tp>
-void
-__valarray_copy_construct (_Array<_Tp> __a, _Array<bool> __m,
-                           _Array<_Tp> __b, size_t __n)
-{
-    _Tp* __p (__a._M_data);
-    bool* __ok (__m._M_data);
-    for (_Tp* __q=__b._M_data; __q<__b._M_data+__n; ++__q, ++__ok, ++__p) {
-        while (! *__ok) {
-            ++__ok;
-            ++__p;
-        }
-        new (__q) _Tp(*__p);
+  template<typename _Tp, class _Dom>
+    void
+    __valarray_copy(const _Expr<_Dom, _Tp>& __e, size_t __n, 
+		     _Array<_Tp> __a, size_t __s)
+    {
+      _Tp* __p (__a._M_data);
+      for (size_t __i = 0; __i < __n; ++__i, __p += __s) 
+	*__p = __e[__i];
     }
-}
+
+  template<typename _Tp, class _Dom>
+    void
+    __valarray_copy(const _Expr<_Dom, _Tp>& __e, size_t __n, 
+		    _Array<_Tp> __a, _Array<size_t> __i)
+    {
+      size_t* __j (__i._M_data);
+      for (size_t __k = 0; __k < __n; ++__k, ++__j) 
+	__a._M_data[*__j] = __e[__k];
+    }
+
+  template<typename _Tp, class _Dom>
+    void
+    __valarray_copy(const _Expr<_Dom, _Tp>& __e, size_t __n, 
+		    _Array<_Tp> __a, _Array<bool> __m)
+    {
+      bool* __ok (__m._M_data);
+      _Tp* __p (__a._M_data);
+      for (size_t __i = 0; __i < __n; ++__i, ++__ok, ++__p) 
+	{
+	  while (! *__ok) 
+	    {
+	      ++__ok;
+	      ++__p;
+	    }
+	  *__p = __e[__i];
+	}
+    }
+  
+
+  template<typename _Tp, class _Dom>
+    void
+    __valarray_copy_construct(const _Expr<_Dom, _Tp>& __e, size_t __n,
+			      _Array<_Tp> __a)
+    {
+      _Tp* __p (__a._M_data);
+      for (size_t __i = 0; __i < __n; ++__i, ++__p) 
+	new (__p) _Tp(__e[__i]);
+    }
 
 
-
-
-} // std::
+  template<typename _Tp>
+    void
+    __valarray_copy_construct(_Array<_Tp> __a, _Array<bool> __m,
+			      _Array<_Tp> __b, size_t __n)
+    {
+      _Tp* __p (__a._M_data);
+      bool* __ok (__m._M_data);
+      for (_Tp* __q = __b._M_data; __q < __b._M_data+__n; ++__q, ++__ok, ++__p)
+	{
+	  while (! *__ok) 
+	    {
+	      ++__ok;
+	      ++__p;
+	    }
+	  new (__q) _Tp(*__p);
+	}
+    }
+} // namespace std
 
 #endif /* _VALARRAY_ARRAY_TCC */
-
-// Local Variables:
-// mode:c++
-// End:

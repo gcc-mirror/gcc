@@ -1,6 +1,6 @@
 // -*- C++ -*- C math library.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@
 
 namespace std 
 {
-  export template<typename _Tp>
+  template<typename _Tp>
     _Tp
     __cmath_power(_Tp __x, unsigned int __n)
     {

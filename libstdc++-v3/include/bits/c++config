@@ -37,17 +37,9 @@
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCXX__ 20030730
 
-// This is necessary until GCC supports separate template compilation.
-#define _GLIBCXX_NO_TEMPLATE_EXPORT 1
-
-// This is a hack around not having either pre-compiled headers or
-// export compilation. If defined, the io, string, and valarray
-// headers will include all the necessary bits. If not defined, the
-// implementation optimizes the headers for the most commonly-used
-// types. For the io library, this means that larger, out-of-line
-// member functions are only declared, and definitions are not parsed
-// by the compiler, but instead instantiated into the library binary.
-#define _GLIBCXX_FULLY_COMPLIANT_HEADERS 1
+// Allow use of "export template." This is currently not a feature
+// that g++ supports.
+// #define _GLIBCXX_EXPORT_TEMPLATE 1
 
 // Allow use of the GNU syntax extension, "extern template." This
 // extension is fully documented in the g++ manual, but in a nutshell,
@@ -65,31 +57,6 @@
 // Use corrected code from the committee library group's issues list.
 #define _GLIBCXX_RESOLVE_LIB_DEFECTS 1
 
-// Hopefully temporary workaround to autoconf/m4 issue with quoting '@'.
-#define _GLIBCXX_AT_AT "@@"
-
-// In those parts of the standard C++ library that use a mutex instead
-// of a spin-lock, we now unconditionally use GCC's gthr.h mutex
-// abstraction layer.  All support to directly map to various
-// threading models has been removed.  Note: gthr.h may well map to
-// gthr-single.h which is a correct way to express no threads support
-// in gcc.  Support for the undocumented _NOTHREADS has been removed.
-
-// Default to the typically high-speed, pool-based allocator (as
-// libstdc++-v2) instead of the malloc-based allocator (libstdc++-v3
-// snapshots).  See libstdc++-v3/docs/html/17_intro/howto.html for
-// details on why you don't want to override this setting.  Ensure
-// that threads are properly configured on your platform before
-// assigning blame to the STL container-memory allocator.  After doing
-// so, please report any possible issues to libstdc++@gcc.gnu.org .
-// Do not define __USE_MALLOC on the command line.  Enforce it here:
-#ifdef __USE_MALLOC
-# error __USE_MALLOC should never be defined.  Read the release notes.
-#endif
-
-// The remainder of the prewritten config is mostly automatic; all the
-// user hooks are listed above.
-
 // Create a boolean flag to be used to determine if --fast-math is set.
 #ifdef __FAST_MATH__
 # define _GLIBCXX_FAST_MATH 1
@@ -103,4 +70,5 @@
 // for something else under certain OSes (see BADNAMES).
 #define __N(msgid)     (msgid)
 
-// End of prewritten config; the discovered settings follow.
+// The remainder of the prewritten config is mostly automatic; all the
+// user hooks are listed above: the discovered settings follow.
