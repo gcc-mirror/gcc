@@ -583,11 +583,10 @@ namespace std
   { return __c; }
   
   const char* 
-  ctype<char>::do_widen(const char* __low, const char* __high, 
-			char* __dest) const
+  ctype<char>::do_widen(const char* __lo, const char* __hi, char* __dest) const
   {
-    memcpy(__dest, __low, __high - __low);
-    return __high;
+    memcpy(__dest, __lo, __hi - __lo);
+    return __hi;
   }
   
   char
@@ -595,11 +594,11 @@ namespace std
   { return __c; }
   
   const char* 
-  ctype<char>::do_narrow(const char* __low, const char* __high, 
+  ctype<char>::do_narrow(const char* __lo, const char* __hi, 
 			 char /*__dfault*/, char* __dest) const
   {
-    memcpy(__dest, __low, __high - __low);
-    return __high;
+    memcpy(__dest, __lo, __hi - __lo);
+    return __hi;
   }
 
   ctype_byname<char>::ctype_byname(const char* /*__s*/, size_t __refs)
@@ -1110,14 +1109,14 @@ namespace std
   { return towupper(__c); }
 
   const wchar_t*
-  ctype<wchar_t>::do_toupper(wchar_t* __low, const wchar_t* __high) const
+  ctype<wchar_t>::do_toupper(wchar_t* __lo, const wchar_t* __hi) const
   {
-    while (__low < __high)
+    while (__lo < __hi)
       {
-        *__low = towupper(*__low);
-        ++__low;
+        *__lo = towupper(*__lo);
+        ++__lo;
       }
-    return __high;
+    return __hi;
   }
   
   wchar_t
@@ -1125,14 +1124,14 @@ namespace std
   { return towlower(__c); }
   
   const wchar_t*
-  ctype<wchar_t>::do_tolower(wchar_t* __low, const wchar_t* __high) const
+  ctype<wchar_t>::do_tolower(wchar_t* __lo, const wchar_t* __hi) const
   {
-    while (__low < __high)
+    while (__lo < __hi)
       {
-        *__low = towlower(*__low);
-        ++__low;
+        *__lo = towlower(*__lo);
+        ++__lo;
       }
-    return __high;
+    return __hi;
   }
 
   bool
@@ -1142,29 +1141,29 @@ namespace std
   
   const wchar_t* 
   ctype<wchar_t>::
-  do_is(const wchar_t* __low, const wchar_t* __high, mask* __m) const
+  do_is(const wchar_t* __lo, const wchar_t* __hi, mask* __m) const
   {
-    while (__low < __high && !this->is(*__m, *__low))
-      ++__low;
-    return __low;
+    while (__lo < __hi && !this->is(*__m, *__lo))
+      ++__lo;
+    return __lo;
   }
   
   const wchar_t* 
   ctype<wchar_t>::
-  do_scan_is(mask __m, const wchar_t* __low, const wchar_t* __high) const
+  do_scan_is(mask __m, const wchar_t* __lo, const wchar_t* __hi) const
   {
-    while (__low < __high && !this->is(__m, *__low))
-      ++__low;
-    return __low;
+    while (__lo < __hi && !this->is(__m, *__lo))
+      ++__lo;
+    return __lo;
   }
 
   const wchar_t*
   ctype<wchar_t>::
-  do_scan_not(mask __m, const char_type* __low, const char_type* __high) const
+  do_scan_not(mask __m, const char_type* __lo, const char_type* __hi) const
   {
-    while (__low < __high && this->is(__m, *__low) != 0)
-      ++__low;
-    return __low;
+    while (__lo < __hi && this->is(__m, *__lo) != 0)
+      ++__lo;
+    return __lo;
   }
 
   wchar_t
@@ -1174,12 +1173,12 @@ namespace std
   
   const char* 
   ctype<wchar_t>::
-  do_widen(const char* __low, const char* __high, wchar_t* __dest) const
+  do_widen(const char* __lo, const char* __hi, wchar_t* __dest) const
   {
     mbstate_t __state;
     memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-    mbsrtowcs(__dest, &__low, __high - __low, &__state);
-    return __high;
+    mbsrtowcs(__dest, &__lo, __hi - __lo, &__state);
+    return __hi;
   }
 
   char
@@ -1192,16 +1191,16 @@ namespace std
 
   const wchar_t*
   ctype<wchar_t>::
-  do_narrow(const wchar_t* __low, const wchar_t* __high, char __dfault, 
+  do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault, 
 	    char* __dest) const
   {
     mbstate_t __state;
     memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-    size_t __len = __high - __low;
-    size_t __conv = wcsrtombs(__dest, &__low, __len, &__state);
+    size_t __len = __hi - __lo;
+    size_t __conv = wcsrtombs(__dest, &__lo, __len, &__state);
     if (__conv == __len)
       *__dest = __dfault;
-    return __high;
+    return __hi;
   }
 
   ctype_byname<wchar_t>::

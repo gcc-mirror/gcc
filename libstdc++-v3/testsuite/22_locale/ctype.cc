@@ -153,8 +153,21 @@ test01()
   m01 ^= m02;
 }
 
+class gnu_obj 
+{ };
+
+class gnu_ctype2: public std::ctype<gnu_obj> 
+{ };
+
+// libstdc++/3017
+void test02()
+{
+  gnu_ctype2 obj;
+}
+
 int main() 
 { 
   test01();
+  test02();
   return 0;
 }

@@ -1,3 +1,12 @@
+2001-06-04  Brendan Kehoe  <brendan@zen.org>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+	
+	libstdc++/3017
+	* include/bits/locale_facets.h (ctype<_CharT>): Add definitions
+	for generic ctype virtuals.
+	* src/locale.cc: Minor tweaks, naming consistency.
+	* testsuite/22_locale/ctype.cc: Add test.
+	
 2001-06-04  Kenny Simpson <theonetruekenny@yahoo.com>
             Phil Edwards  <pme@sources.redhat.com>
 
@@ -57,7 +66,7 @@
 	make isn't found.
 	* configure: Regenerate.
 
-2001-05-27  scott snyder  <snyder@fnal.gov>
+2001-05-31  scott snyder  <snyder@fnal.gov>
 
 	libstdc++/2976
 	* include/bits/istream.tcc: Include std_ostream.h.
