@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988-1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1042,7 +1042,6 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   rtx *arg_vals;
   rtx insn;
   int max_regno;
-  int equiv_map_size;
   register int i;
   int min_labelno = FIRST_LABELNO (header);
   int max_labelno = LAST_LABELNO (header);
@@ -1173,16 +1172,26 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
   /* const_equiv_map maps pseudos in our routine to constants, so it needs to
      be large enough for all our pseudos.  This is the number we are currently
-     using plus the number in the called routine, plus one for each arg and
-     one for the return value.  */
-  equiv_map_size
-    = max_reg_num () + (max_regno - FIRST_PSEUDO_REGISTER) + nargs + 1;
+     using plus the number in the called routine, plus 15 for each arg,
+     five to compute the virtual frame pointer, and five for the return value.
+     This should be enough for most cases.  We do not reference entries
+     outside the range of the map.
 
-  map->const_equiv_map = (rtx *)alloca (equiv_map_size * sizeof (rtx));
-  bzero (map->const_equiv_map, equiv_map_size * sizeof (rtx));
+     ??? These numbers are quite arbitrary and were obtained by
+     experimentation.  At some point, we should try to allocate the
+     table after all the parameters are set up so we an more accurately
+     estimate the number of pseudos we will need.  */
 
-  map->const_age_map = (unsigned *)alloca (equiv_map_size * sizeof (unsigned));
-  bzero (map->const_age_map, equiv_map_size * sizeof (unsigned));
+  map->const_equiv_map_size
+    = max_reg_num () + (max_regno - FIRST_PSEUDO_REGISTER) + 15 * nargs + 10;
+
+  map->const_equiv_map
+    = (rtx *)alloca (map->const_equiv_map_size * sizeof (rtx));
+  bzero (map->const_equiv_map, map->const_equiv_map_size * sizeof (rtx));
+
+  map->const_age_map
+    = (unsigned *)alloca (map->const_equiv_map_size * sizeof (unsigned));
+  bzero (map->const_age_map, map->const_equiv_map_size * sizeof (unsigned));
   map->const_age = 0;
 
   /* Record the current insn in case we have to set up pointers to frame
@@ -2139,7 +2148,9 @@ subst_constants (loc, insn, map)
 	 hard regs used as user variables with constants.  */
       {
 	int regno = REGNO (x);
+
 	if (! (regno < FIRST_PSEUDO_REGISTER && REG_USERVAR_P (x))
+	    && regno < map->const_equiv_map_size
 	    && map->const_equiv_map[regno] != 0
 	    && map->const_age_map[regno] >= map->const_age)
 	  validate_change (insn, loc, map->const_equiv_map[regno], 1);
