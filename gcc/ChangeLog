@@ -1,3 +1,8 @@
+2000-08-23  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.h (STRUCT_VALUE): Define.
+	(STRUCT_VALUE_REGNUM): Delete.
+
 2000-08-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.h (IN_I): New flag for directive table.

@@ -876,9 +876,8 @@ extern const char * structure_size_string;
 /* Return the regiser number of the N'th (integer) argument.  */
 #define ARG_REGISTER(N) 	(N - 1)
 
-/* Register in which address to store a structure value
-   is passed to a function.  */
-#define STRUCT_VALUE_REGNUM	ARG_REGISTER (1)
+/* RTX for structure returns.  NULL means use a hidden first argument.  */
+#define STRUCT_VALUE		NULL
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
