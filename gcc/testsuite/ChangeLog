@@ -1,3 +1,7 @@
+2002-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* g77.f-torture/compile/cpp2.F: New test.
+
 2002-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/template/access1.C: New test.
