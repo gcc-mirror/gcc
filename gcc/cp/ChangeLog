@@ -1,3 +1,7 @@
+2005-04-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* pt.c: Fix comment typos.
+
 2005-04-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20723
