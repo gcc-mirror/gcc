@@ -48,7 +48,7 @@ public class GtkArgList extends Vector
 
   void add (String name, boolean value)
   {
-    addElement (new GtkArg (name, new Boolean (value)));
+    addElement (new GtkArg (name, Boolean.valueOf(value)));
   }
     
   void add (String name, int value)
