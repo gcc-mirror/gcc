@@ -1,3 +1,30 @@
+Tue Dec  1 09:35:45 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (C_AND_OBJC_OBJS): Add mbchar.o.
+	(c-lex.o, cexp.o, cccp.o): Depend on mbchar.h.
+	(mbchar.o): New rule.
+	(CCCP_OBJS, CPPMAIN_OBJS): Include mbchar.o.
+	* po/POTFILES.in (mbchar.[ch]): Add.
+
+Tue Dec  1 09:32:27 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* mbchar.[ch]: New files for multibyte character handling.
+	* configure.in (enable_c_mbchar): New configure option.
+	* cexp.y (mbchar.h): #include it.
+	(yylex): Handle Multibyte characters in character literals.
+	* cccp.c (mbchar.h): #include it.
+	(main): Set character set based on LANG environment variable.
+	(rescan): Handle multibyte characters in comments.
+	(skip_if_group, validate_else, skip_to_end_of_comment): Likewise.
+	(macarg1, discard_comments): Likewise.
+	(rescan): Handle multibyte characters in string and character literals.
+	(collect_expansion, skip_quoted_string, macroexpand): Likewise.
+	(macarg1, discard_comments, change_newlines): Likewise.
+	* c-lex.c (mbchar.h): #include it.
+	(GET_ENVIRONMENT): New macro.
+	(init_lex): Set character set based on LANG environment variable.
+	(yylex): Handle multibyte characters in character and string literals.
+
 Mon Nov 30 08:25:35 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* dyn-string.h: New file.
