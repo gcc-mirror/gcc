@@ -24,25 +24,12 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Exported functions. */
-int xref_flag_value (const char *);
 void expand_xref (tree);
-void xref_set_data (int, void *);
-void *xref_get_data (int);
-void xref_set_current_fp (FILE *);
-
-/* flag_emit_xref range of possible values. */
-
-enum {
-  XREF_NONE = 0
-};
 
 /* Lookup table to be used with the value of flag_emit_xref */
-
 typedef struct {
   char *key;			         /* Activator in -fxref=<key>  */
   void (*expand) (FILE *, tree);         /* Function to write xrefs out */
   FILE *fp;			         /* fp to use during the call.  */
   void *data;			         /* Placeholder for additional data */
 } xref_flag_table;
-
-#define XREF_GET_DATA(FLAG, T) ((T)xref_get_data (FLAG))

@@ -1,5 +1,16 @@
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
+	* xref.h (xref_flag_value): Remove.
+	(xref_set_data, xref_get_data): Likewise.
+	(xref_set_current_fp): Likewise.
+	(XREF_NONE): Likewise.
+	(XREF_GET_DATA): Likewise.
+	* xref.c (xref_flag_value): Remove.
+	(xref_set_data, xref_get_data): Likewise.
+	(xref_set_current_fp): Likewise.
+
+2004-11-23  Ben Elliston  <bje@au.ibm.com>
+
 	* gjavah.c (output_directory): Make static.
 	(temp_directory): Likewise.
 	
