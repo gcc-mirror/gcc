@@ -2250,13 +2250,11 @@
   [(set_attr "type" "load")
    (set_attr "length" "1")])
 
-;; Using shadd_operand works around a bug in reload.  For 2.4 fix
-;; reload and use register_operand instead.
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 			  (const_int 2))
-		 (match_operand:SI 1 "shadd_operand" "r")))]
+		 (match_operand:SI 1 "register_operand" "r")))]
   ""
   "sh1add %2,%1,%0")
 
@@ -2264,7 +2262,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 			  (const_int 4))
-		 (match_operand:SI 1 "shadd_operand" "r")))]
+		 (match_operand:SI 1 "register_operand" "r")))]
   ""
   "sh2add %2,%1,%0")
 
@@ -2272,9 +2270,46 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 			  (const_int 8))
-		 (match_operand:SI 1 "shadd_operand" "r")))]
+		 (match_operand:SI 1 "register_operand" "r")))]
   ""
   "sh3add %2,%1,%0")
+
+;; These variants of the above insns can occur if the first operand
+;; is the frame pointer.  This is a kludge, but there doesn't
+;; seem to be a way around it.  Only recognize them while reloading.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(plus:SI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+				   (const_int 2))
+			  (match_operand:SI 1 "register_operand" "r"))
+		 (match_operand:SI 3 "const_int_operand" "rJ")))]
+  "reload_in_progress"
+  "sh1add  %2,%1,%0\\n\\tadd%I3 %3,%0,%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "2")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(plus:SI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+				   (const_int 4))
+			  (match_operand:SI 1 "register_operand" "r"))
+		 (match_operand:SI 3 "const_int_operand" "rJ")))]
+  "reload_in_progress"
+  "sh2add  %2,%1,%0\\n\\tadd%I3 %3,%0,%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "2")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(plus:SI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+				   (const_int 8))
+			  (match_operand:SI 1 "register_operand" "r"))
+		 (match_operand:SI 3 "const_int_operand" "rJ")))]
+  "reload_in_progress"
+  "sh3add  %2,%1,%0\\n\\tadd%I3 %3,%0,%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "2")])
 
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
