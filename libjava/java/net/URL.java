@@ -119,7 +119,7 @@ import java.util.StringTokenizer;
 public final class URL implements Serializable
 {
   private static final String DEFAULT_SEARCH_PATH =
-    "gnu.java.net.protocol|sun.net.www.protocol";
+    "gnu.gcj.protocol|sun.net.www.protocol";
   
   /**
    * The name of the protocol for this URL.
