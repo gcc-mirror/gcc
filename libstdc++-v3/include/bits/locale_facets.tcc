@@ -2007,9 +2007,9 @@ namespace std
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       while (__beg != __end)
 	{
-	  const _CharT* __tmp = __beg;
+	  const _CharT __tmp = *__beg;
 	  ++__beg;
-	  if (__ctype.narrow(*__tmp, 0) == '%' && __beg != __end)
+	  if (__ctype.narrow(__tmp, 0) == '%' && __beg != __end)
 	    {
 	      char __format;
 	      char __mod = 0;
@@ -2026,7 +2026,7 @@ namespace std
 	      __s = this->do_put(__s, __io, __fill, __tm, __format, __mod);
 	    }
 	  else
-	    *__s++ = *__tmp;
+	    *__s++ = __tmp;
 	}
       return __s;
     }
