@@ -1140,7 +1140,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		    end_sequence ();
 
 		    emit_insns_before (seq1, temp5);
-		    emit_insns_before (seq2, insn);
+		    /* Insert conditional move after insn, to be sure that
+		       the jump and a possible compare won't be separated */
+		    emit_insns_after (seq2, insn);
 
 		    /* ??? We can also delete the insn that sets X to A.
 		       Flow will do it too though.  */
