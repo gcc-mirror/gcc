@@ -529,7 +529,14 @@ gen_lowpart_common (mode, x)
       else if (REGNO (x) < FIRST_PSEUDO_REGISTER
 	       /* integrate.c can't handle parts of a return value register. */
 	       && (! REG_FUNCTION_VALUE_P (x)
-		   || ! rtx_equal_function_value_matters))
+		   || ! rtx_equal_function_value_matters)
+	       /* We want to keep the stack, frame, and arg pointers
+		  special.  */
+	       && REGNO (x) != FRAME_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	       && REGNO (x) != ARG_POINTER_REGNUM
+#endif
+	       && REGNO (x) != STACK_POINTER_REGNUM)
 	return gen_rtx (REG, mode, REGNO (x) + word);
       else
 	return gen_rtx (SUBREG, mode, x, word);
@@ -776,7 +783,13 @@ gen_highpart (mode, x)
 		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
 		/ UNITS_PER_WORD);
 #endif
-      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+      if (REGNO (x) < FIRST_PSEUDO_REGISTER
+	  /* We want to keep the stack, frame, and arg pointers special.  */
+	  && REGNO (x) != FRAME_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  && REGNO (x) != ARG_POINTER_REGNUM
+#endif
+	  && REGNO (x) != STACK_POINTER_REGNUM)
 	return gen_rtx (REG, mode, REGNO (x) + word);
       else
 	return gen_rtx (SUBREG, mode, x, word);
@@ -860,7 +873,14 @@ operand_subword (op, i, validate_address, mode)
 	return 0;
       else if (REGNO (op) >= FIRST_PSEUDO_REGISTER
 	       || (REG_FUNCTION_VALUE_P (op)
-		   && rtx_equal_function_value_matters))
+		   && rtx_equal_function_value_matters)
+	       /* We want to keep the stack, frame, and arg pointers
+		  special.  */
+	       || REGNO (op) == FRAME_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	       || REGNO (op) == ARG_POINTER_REGNUM
+#endif
+	       || REGNO (op) == STACK_POINTER_REGNUM)
 	return gen_rtx (SUBREG, word_mode, op, i);
       else
 	return gen_rtx (REG, word_mode, REGNO (op) + i);
