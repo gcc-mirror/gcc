@@ -24,27 +24,25 @@ extern "C" unsigned long long _clock (void);
 #endif
 
 // gettimeofday implementation.
-void
-_Jv_platform_gettimeofday (struct timeval *tv)
+jlong
+_Jv_platform_gettimeofday ()
 {
 #if defined (HAVE_GETTIMEOFDAY)
-  gettimeofday (tv, NULL);
+  timeval tv;
+  gettimeofday (&tv, NULL);
+  return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 #elif defined (HAVE_TIME)
-  tv->tv_sec = time (NULL);
-  tv->tv_usec = 0;
+  return time (NULL) * 1000;
 #elif defined (HAVE_FTIME)
   struct timeb t;
   ftime (&t);
-  tv->tv_sec = t.time;
-  tv->tv_usec = t.millitm * 1000;
+  return t.time * 1000 + t.millitm;
 #elif defined (ECOS)
   // FIXME.
-  tv->tv_sec = _clock () / 1000;
-  tv->tv_usec = 0;
+  return _clock();
 #else
   // In the absence of any function, time remains forever fixed.
-  tv->tv_sec = 23;
-  tv->tv_usec = 0;
+  return 23000;
 #endif
 }
 
