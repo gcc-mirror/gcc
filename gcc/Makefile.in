@@ -953,7 +953,7 @@ alloca.o:	alloca.c
 # because insn-* is older than stamp-*
 # and thus make -n thinks that insn-* will be updated
 # and force recompilation of things that depend on it.
-# We use move-if-changed precisely to avoid such recompilation.
+# We use move-if-change precisely to avoid such recompilation.
 # But there is no way to teach make -n that it will be avoided.
 
 # Each of the insn-*.[ch] rules has a semicolon at the end,
