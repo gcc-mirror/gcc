@@ -1,3 +1,11 @@
+2002-09-05  Paolo Carlini  <pcarlini@unitus.it>
+            Roland McGrath  <roland@redhat.com>
+
+	PR libstdc++/7811
+	* src/locale.cc (locale::locale(__s)): Use getenv instead
+	of setenv for the environment locale.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test03): New.
+
 2002-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/ia64-unknown-linux-gnu: Add.

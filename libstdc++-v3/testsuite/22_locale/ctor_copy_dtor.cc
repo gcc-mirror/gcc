@@ -310,6 +310,21 @@ void test02()
   VERIFY( loc_1 == loc_2 );
 }
 
+// libstdc++/7811
+void test03()
+{
+  bool test = true;
+#ifdef _GLIBCPP_HAVE_SETENV 
+  const char* oldLANG = getenv("LANG");
+  if (!setenv("LANG", "it_IT", 1))
+    {
+      std::locale loc(""); 
+      VERIFY( loc.name() == "it_IT" );
+      setenv("LANG", oldLANG ? oldLANG : "", 1);
+    }
+#endif
+}
+
 int main()
 {
   test00();
@@ -319,6 +334,7 @@ int main()
 #endif 
 
   test02();
+  test03();
 
   return 0;
 }
