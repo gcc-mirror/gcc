@@ -1,3 +1,7 @@
+Fri Jun  9 21:54:28 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* gcc.dg/20000609-1.c: New test.
+
 2000-06-08  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.c-torture/noncompile/noncompile.exp: Remove poison-1 block.
