@@ -2348,8 +2348,17 @@ truth_value_p (enum tree_code code)
 int
 operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 {
+  /* If one is specified and the other isn't, they aren't equal and if
+     neither is specified, they are.
+
+     ??? This is temporary and is meant only to handle the cases of the
+     optional operands for COMPONENT_REF and ARRAY_REF.  */
+  if ((arg0 && !arg1) || (!arg0 && arg1))
+    return 0;
+  else if (!arg0 && !arg1)
+    return 1;
   /* If either is ERROR_MARK, they aren't equal.  */
-  if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK)
+  else if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK)
     return 0;
 
   /* If both types don't have the same signedness, then we can't consider
@@ -2483,13 +2492,26 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 	  return operand_equal_p (TREE_OPERAND (arg0, 0),
 				  TREE_OPERAND (arg1, 0), flags);
 
-	case COMPONENT_REF:
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
 				   TREE_OPERAND (arg1, 0), flags)
 		  && operand_equal_p (TREE_OPERAND (arg0, 1),
-				      TREE_OPERAND (arg1, 1), flags));
+				      TREE_OPERAND (arg1, 1), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 2),
+				      TREE_OPERAND (arg1, 2), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 3),
+				      TREE_OPERAND (arg1, 3), flags));
+
+
+	case COMPONENT_REF:
+	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
+				   TREE_OPERAND (arg1, 0), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 1),
+				      TREE_OPERAND (arg1, 1), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 2),
+				      TREE_OPERAND (arg1, 2), flags));
+
 
 	case BIT_FIELD_REF:
 	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
