@@ -1,3 +1,9 @@
+2005-02-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/20008
+	* stmt.c (expand_case): Don't assume cleanup_tree_cfg will remove
+	cases that are out-of-range for the index type.
+
 2005-02-18  James A. Morrison  <phython@gcc.gnu.org>
 
 	* stmt.c (emit_case_bit_tests): Call fold_convert instead of convert.
