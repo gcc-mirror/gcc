@@ -1664,6 +1664,52 @@
    (set (match_dup 0) (lo_sum:SI (match_dup 2) (match_dup 1)))]
   "")
 
+;; hppa_legitimize_address goes to a great deal of trouble to
+;; create addresses which use indexing.  In some cases, this
+;; is a lose because there isn't any store instructions which
+;; allow indexed addresses (with integer register source).
+;;
+;; These define_splits try to turn a 3 insn store into
+;; a 2 insn store with some creative RTL rewriting.
+(define_split
+  [(set (mem:SI (plus:SI (mult:SI (match_operand:SI 0 "register_operand" "")
+			       (match_operand:SI 1 "shadd_operand" ""))
+		   (plus:SI (match_operand:SI 2 "register_operand" "")
+			    (match_operand:SI 3 "const_int_operand" ""))))
+	(match_operand:SI 4 "register_operand" ""))
+   (clobber (match_operand:SI 5 "register_operand" ""))]
+  ""
+  [(set (match_dup 5) (plus:SI (mult:SI (match_dup 0) (match_dup 1))
+			       (match_dup 2)))
+   (set (mem:SI (plus:SI (match_dup 5) (match_dup 3))) (match_dup 4))]
+  "")
+
+(define_split
+  [(set (mem:HI (plus:SI (mult:SI (match_operand:SI 0 "register_operand" "")
+			       (match_operand:SI 1 "shadd_operand" ""))
+		   (plus:SI (match_operand:SI 2 "register_operand" "")
+			    (match_operand:SI 3 "const_int_operand" ""))))
+	(match_operand:HI 4 "register_operand" ""))
+   (clobber (match_operand:SI 5 "register_operand" ""))]
+  ""
+  [(set (match_dup 5) (plus:SI (mult:SI (match_dup 0) (match_dup 1))
+			       (match_dup 2)))
+   (set (mem:HI (plus:SI (match_dup 5) (match_dup 3))) (match_dup 4))]
+  "")
+
+(define_split
+  [(set (mem:QI (plus:SI (mult:SI (match_operand:SI 0 "register_operand" "")
+			       (match_operand:SI 1 "shadd_operand" ""))
+		   (plus:SI (match_operand:SI 2 "register_operand" "")
+			    (match_operand:SI 3 "const_int_operand" ""))))
+	(match_operand:QI 4 "register_operand" ""))
+   (clobber (match_operand:SI 5 "register_operand" ""))]
+  ""
+  [(set (match_dup 5) (plus:SI (mult:SI (match_dup 0) (match_dup 1))
+			       (match_dup 2)))
+   (set (mem:QI (plus:SI (match_dup 5) (match_dup 3))) (match_dup 4))]
+  "")
+
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]

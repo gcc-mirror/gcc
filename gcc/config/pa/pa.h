@@ -1405,7 +1405,8 @@ extern struct rtx_def *hppa_builtin_saveregs ();
   ((C) == 'Q' ?						\
    (IS_RELOADING_PSEUDO_P (OP)				\
     || (GET_CODE (OP) == MEM				\
-	&& memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
+	&& (memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
+	    || reload_in_progress)			\
 	&& ! symbolic_memory_operand (OP, VOIDmode)	\
         && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
 	     && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
@@ -1416,7 +1417,8 @@ extern struct rtx_def *hppa_builtin_saveregs ();
       && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT	\
 	  || GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)	\
       && (move_operand (OP, GET_MODE (OP))		\
-	  || memory_address_p (GET_MODE (OP), XEXP (OP, 0))))\
+	  || memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
+	  || reload_in_progress))			\
    : ((C) == 'T' ? 					\
       (GET_CODE (OP) == MEM				\
        /* Using DFmode forces only short displacements	\

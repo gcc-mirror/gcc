@@ -771,11 +771,7 @@ hppa_legitimize_address (x, oldx, mode)
       return plus_constant (ptr_reg, offset - newoffset);
     }
 
-  /* Try to arrange things so that indexing modes can be used, but
-     only do so if indexing is safe.
-
-     Indexing is safe when the second operand for the outer PLUS
-     is a REG, SUBREG, SYMBOL_REF or the like.  */
+  /* Handle (plus (mult (a) (shadd_constant)) (b)).  */
 
   if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT
       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
@@ -786,66 +782,145 @@ hppa_legitimize_address (x, oldx, mode)
     {
       int val = INTVAL (XEXP (XEXP (x, 0), 1));
       rtx reg1, reg2;
-      reg1 = force_reg (Pmode, force_operand (XEXP (x, 1), 0));
-      reg2 = force_reg (Pmode,
-			force_operand (XEXP (XEXP (x, 0), 0), 0));
-      return force_reg (Pmode,
-		        gen_rtx (PLUS, Pmode,
-				 gen_rtx (MULT, Pmode, reg2,
-					  GEN_INT (val)),
-				 reg1));
+
+      reg1 = XEXP (x, 1);
+      if (GET_CODE (reg1) != REG)
+	reg1 = force_reg (Pmode, force_operand (reg1, 0));
+
+      reg2 = XEXP (XEXP (x, 0), 0);
+      if (GET_CODE (reg2) != REG)
+        reg2 = force_reg (Pmode, force_operand (reg2, 0));
+
+      if (INTVAL (XEXP (XEXP (x, 0), 1)) != GET_MODE_SIZE (mode))
+	{
+	  reg2 = force_reg (Pmode, gen_rtx (MULT, Pmode, reg2, GEN_INT (val)));
+	  return force_reg (Pmode, gen_rtx (PLUS, Pmode, reg1, reg2));
+	}
+	
+      return force_reg (Pmode, gen_rtx (PLUS, Pmode,
+					gen_rtx (MULT, Pmode,
+						 reg2, GEN_INT (val)),
+					reg1));
     }
 
   /* Similarly for (plus (plus (mult (a) (shadd_constant)) (b)) (c)).
 
      Only do so for floating point modes since this is more speculative
      and we lose if it's an integer store.  */
-  if ((mode == DFmode || mode == SFmode)
-      && GET_CODE (x) == PLUS
+  if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
       && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
-      && shadd_constant_p (INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))))
+      && shadd_constant_p (INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)))
+      && (mode == SFmode || mode == DFmode))
     {
-      rtx regx1, regx2;
 
-      /* Add the two unscaled terms B and C; if either B or C isn't
-	 a register or small constant int, then fail.  */
-      regx1 = XEXP (XEXP (x, 0), 1);
-      if (! (GET_CODE (regx1) == REG
-	     || (GET_CODE (regx1) == CONST_INT
-		 && INT_14_BITS (regx1))))
+      /* First, try and figure out what to use as a base register.  */
+      rtx reg1, reg2, base, idx, orig_base;
+
+      reg1 = XEXP (XEXP (x, 0), 1);
+      reg2 = XEXP (x, 1);
+      base = NULL_RTX;
+      idx = NULL_RTX;
+
+      /* Make sure they're both regs.  If one was a SYMBOL_REF [+ const],
+	 then emit_move_sequence will turn on REGNO_POINTER_FLAG so we'll
+	 know it's a base register below.  */
+      if (GET_CODE (reg1) != REG)
+	reg1 = force_reg (Pmode, force_operand (reg1, 0));
+
+      if (GET_CODE (reg2) != REG)
+	reg2 = force_reg (Pmode, force_operand (reg2, 0));
+
+      /* Figure out what the base and index are.  */
+	 
+      if (GET_CODE (reg1) == REG
+	  && REGNO_POINTER_FLAG (REGNO (reg1)))
+	{
+	  base = reg1;
+	  orig_base = XEXP (XEXP (x, 0), 1);
+	  idx = gen_rtx (PLUS, Pmode,
+			 gen_rtx (MULT, Pmode,
+				  XEXP (XEXP (XEXP (x, 0), 0), 0),
+				  XEXP (XEXP (XEXP (x, 0), 0), 1)),
+			 XEXP (x, 1));
+	}
+      else if (GET_CODE (reg2) == REG
+	       && REGNO_POINTER_FLAG (REGNO (reg2)))
+	{
+	  base = reg2;
+	  orig_base = XEXP (x, 1);
+	  idx = XEXP (x, 0);
+	}
+
+      if (base == 0)
 	return orig;
+
+      /* If the index adds a large constant, try to scale the
+	 constant so that it can be loaded with only one insn.  */
+      if (GET_CODE (XEXP (idx, 1)) == CONST_INT
+	  && VAL_14_BITS_P (INTVAL (XEXP (idx, 1))
+			    / INTVAL (XEXP (XEXP (idx, 0), 1)))
+	  && INTVAL (XEXP (idx, 1)) % INTVAL (XEXP (XEXP (idx, 0), 1)) == 0)
+	{
+	  /* Divide the CONST_INT by the scale factor, then add it to A.  */
+	  int val = INTVAL (XEXP (idx, 1));
+
+	  val /= INTVAL (XEXP (XEXP (idx, 0), 1));
+	  reg1 = XEXP (XEXP (idx, 0), 0);
+	  if (GET_CODE (reg1) != REG)
+	    reg1 = force_reg (Pmode, force_operand (reg1, 0));
+
+	  reg1 = force_reg (Pmode, gen_rtx (PLUS, Pmode, reg1, GEN_INT (val)));
+
+	  /* We can now generate a simple scaled indexed address.  */
+	  return force_reg (Pmode, gen_rtx (PLUS, Pmode,
+					    gen_rtx (MULT, Pmode, reg1,
+						     XEXP (XEXP (idx, 0), 1)),
+					    base));
+	}
+
+      /* If B + C is still a valid base register, then add them.  */
+      if (GET_CODE (XEXP (idx, 1)) == CONST_INT
+	  && INTVAL (XEXP (idx, 1)) <= 4096
+	  && INTVAL (XEXP (idx, 1)) >= -4096)
+	{
+	  int val = INTVAL (XEXP (XEXP (idx, 0), 1));
+	  rtx reg1, reg2;
+
+	  reg1 = force_reg (Pmode, gen_rtx (PLUS, Pmode, base, XEXP (idx, 1)));
+
+	  reg2 = XEXP (XEXP (idx, 0), 0);
+	  if (GET_CODE (reg2) != CONST_INT)
+	    reg2 = force_reg (Pmode, force_operand (reg2, 0));
+
+	  return force_reg (Pmode, gen_rtx (PLUS, Pmode,
+					    gen_rtx (MULT, Pmode,
+						     reg2, GEN_INT (val)),
+					    reg1));
+	}
+
+      /* Get the index into a register, then add the base + index and
+	 return a register holding the result.  */
+
+      /* First get A into a register.  */
+      reg1 = XEXP (XEXP (idx, 0), 0);
+      if (GET_CODE (reg1) != REG)
+	reg1 = force_reg (Pmode, force_operand (reg1, 0));
+
+      /* And get B into a register.  */
+      reg2 = XEXP (idx, 1);
+      if (GET_CODE (reg2) != REG)
+	reg2 = force_reg (Pmode, force_operand (reg2, 0));
+
+      reg1 = force_reg (Pmode, gen_rtx (PLUS, Pmode,
+					gen_rtx (MULT, Pmode, reg1,
+						 XEXP (XEXP (idx, 0), 1)),
+					reg2));
+
+      /* Add the result to our base register and return.  */
+      return force_reg (Pmode, gen_rtx (PLUS, Pmode, base, reg1));
       
-      regx2 = XEXP (x, 1);
-      if (! (GET_CODE (regx2) == REG
-	     || (GET_CODE (regx2) == CONST_INT
-		 && INT_14_BITS (regx2))))
-	return orig;
-      
-      /* Add them, make sure the result is in canonical form.  */
-      if (GET_CODE (regx1) == REG)
-	regx1 = force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regx2));
-      else if (GET_CODE (regx2) == REG)
-	regx1 = force_reg (Pmode, gen_rtx (PLUS, Pmode, regx2, regx1));
-      else
-	regx1 = force_reg (Pmode, gen_rtx (PLUS, Pmode,
-					   force_reg (Pmode, regx1),
-					   regx2));
-
-      /* Get the term to scale in a register.  */
-      regx2 = XEXP (XEXP (XEXP (x, 0), 0), 0);
-      if (GET_CODE (regx2) != REG)
-	regx2 = force_reg (Pmode, force_operand (regx2, 0));
-
-      /* And make an indexed address.  */
-      regx2 = gen_rtx (PLUS, Pmode,
-		       gen_rtx (MULT, Pmode, regx2,
-				XEXP (XEXP (XEXP (x, 0), 0), 1)),
-			regx1);
-
-      /* Return it.  */
-      return force_reg (Pmode, regx2);
     }
 
   /* Uh-oh.  We might have an address for x[n-100000].  This needs
@@ -879,12 +954,42 @@ hppa_legitimize_address (x, oldx, mode)
 		(plus (mult (reg) (shadd_const))
 		      (const (plus (symbol_ref) (const_int))))
 
-	     Where const_int can be divided evenly by shadd_const and
-	     added to (reg).  This allows more scaled indexed addresses.  */
-	  if ((mode == DFmode || mode == SFmode)
-	      && GET_CODE (XEXP (y, 0)) == SYMBOL_REF
+	     Where const_int is small.  In that case the const
+	     expression is a valid pointer for indexing. 
+
+	     If const_int is big, but can be divided evenly by shadd_const
+	     and added to (reg).  This allows more scaled indexed addresses.  */
+	  if (GET_CODE (XEXP (y, 0)) == SYMBOL_REF
+	      && GET_CODE (XEXP (x, 0)) == MULT
 	      && GET_CODE (XEXP (y, 1)) == CONST_INT
-	      && INTVAL (XEXP (y, 1)) % INTVAL (XEXP (XEXP (x, 0), 1)) == 0)
+	      && INTVAL (XEXP (y, 1)) >= -4096
+	      && INTVAL (XEXP (y, 1)) <= 4095
+	      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	      && shadd_constant_p (INTVAL (XEXP (XEXP (x, 0), 1))))
+	    {
+	      int val = INTVAL (XEXP (XEXP (x, 0), 1));
+	      rtx reg1, reg2;
+
+	      reg1 = XEXP (x, 1);
+	      if (GET_CODE (reg1) != REG)
+		reg1 = force_reg (Pmode, force_operand (reg1, 0));
+
+	      reg2 = XEXP (XEXP (x, 0), 0);
+	      if (GET_CODE (reg2) != REG)
+	        reg2 = force_reg (Pmode, force_operand (reg2, 0));
+
+	      return force_reg (Pmode, gen_rtx (PLUS, Pmode,
+						gen_rtx (MULT, Pmode,
+							 reg2, GEN_INT (val)),
+						reg1));
+	    }
+	  else if ((mode == DFmode || mode == SFmode)
+		   && GET_CODE (XEXP (y, 0)) == SYMBOL_REF
+		   && GET_CODE (XEXP (x, 0)) == MULT
+		   && GET_CODE (XEXP (y, 1)) == CONST_INT
+		   && INTVAL (XEXP (y, 1)) % INTVAL (XEXP (XEXP (x, 0), 1)) == 0
+		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+		   && shadd_constant_p (INTVAL (XEXP (XEXP (x, 0), 1))))
 	    {
 	      regx1
 		= force_reg (Pmode, GEN_INT (INTVAL (XEXP (y, 1))
