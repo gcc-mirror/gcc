@@ -2133,12 +2133,10 @@ do {                                                                    \
 
 #define FASCIST_ASSEMBLER
 
-#ifndef ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(file, name)
-#endif
-#ifndef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(file, name)
-#endif
+/* AIX does not have any init/fini or ctor/dtor sections, so create
+   static constructors and destructors as normal functions.  */
+/* #define ASM_OUTPUT_CONSTRUCTOR(file, name) */
+/* #define ASM_OUTPUT_DESTRUCTOR(file, name) */
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
