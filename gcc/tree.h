@@ -1557,6 +1557,8 @@ extern void rest_of_type_compilation PROTO((tree, int));
 /* Save the current set of obstacks, but don't change them.  */
 extern void push_obstacks_nochange PROTO((void));
 
+extern void permanent_allocation PROTO((int));
+
 extern void push_momentary PROTO((void));
 
 extern void clear_momentary PROTO((void));
