@@ -77,7 +77,7 @@
 ;;            |
 ;;           fpu
 ;; We add dummy "port" pipes allocated only first cycle of
-;; instruction to specify this behaviour.
+;; instruction to specify this behavior.
 
 (define_cpu_unit "pentium-portu,pentium-portv" "pentium")
 (define_cpu_unit "pentium-u,pentium-v" "pentium")

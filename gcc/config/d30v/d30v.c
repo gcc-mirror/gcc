@@ -1867,7 +1867,7 @@ debug_stack_info (info)
 }
 
 
-/* Return non-zero if this function is known to have a null or 1 instruction epilogue.  */
+/* Return nonzero if this function is known to have a null or 1 instruction epilogue.  */
 
 int
 direct_return ()
@@ -1985,7 +1985,7 @@ d30v_function_arg_boundary (mode, type)
    You may use the macro `MUST_PASS_IN_STACK (MODE, TYPE)' in the definition of
    this macro to determine if this argument is of a type that must be passed in
    the stack.  If `REG_PARM_STACK_SPACE' is not defined and `FUNCTION_ARG'
-   returns non-zero for such an argument, the compiler will abort.  If
+   returns nonzero for such an argument, the compiler will abort.  If
    `REG_PARM_STACK_SPACE' is defined, the argument will be computed in the
    stack and then loaded into a register.  */
 

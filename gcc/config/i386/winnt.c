@@ -135,7 +135,7 @@ associated_type (decl)
   return t;
 }
 
-/* Return non-zero if DECL is a dllexport'd object.  */
+/* Return nonzero if DECL is a dllexport'd object.  */
 
 int
 i386_pe_dllexport_p (decl)
@@ -162,7 +162,7 @@ i386_pe_dllexport_p (decl)
   return 0;
 }
 
-/* Return non-zero if DECL is a dllimport'd object.  */
+/* Return nonzero if DECL is a dllimport'd object.  */
 
 int
 i386_pe_dllimport_p (decl)
@@ -193,7 +193,7 @@ i386_pe_dllimport_p (decl)
   return 0;
 }
 
-/* Return non-zero if SYMBOL is marked as being dllexport'd.  */
+/* Return nonzero if SYMBOL is marked as being dllexport'd.  */
 
 int
 i386_pe_dllexport_name_p (symbol)
@@ -202,7 +202,7 @@ i386_pe_dllexport_name_p (symbol)
   return symbol[0] == '@' && symbol[1] == 'e' && symbol[2] == '.';
 }
 
-/* Return non-zero if SYMBOL is marked as being dllimport'd.  */
+/* Return nonzero if SYMBOL is marked as being dllimport'd.  */
 
 int
 i386_pe_dllimport_name_p (symbol)
@@ -583,7 +583,7 @@ i386_pe_asm_named_section (name, flags)
 /* Mark a function appropriately.  This should only be called for
    functions for which we are not emitting COFF debugging information.
    FILE is the assembler output file, NAME is the name of the
-   function, and PUBLIC is non-zero if the function is globally
+   function, and PUBLIC is nonzero if the function is globally
    visible.  */
 
 void

@@ -346,7 +346,7 @@ while (0)
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
 /* By default, the C++ compiler will use function addresses in the
-   vtable entries.  Setting this non-zero tells the compiler to use
+   vtable entries.  Setting this nonzero tells the compiler to use
    function descriptors instead.  The value of this macro says how
    many words wide the descriptor is (normally 2).  It is assumed
    that the address of a function descriptor may be treated as a
@@ -973,7 +973,7 @@ enum reg_class
 
 /* Certain machines have the property that some registers cannot be copied to
    some other registers without using memory.  Define this macro on those
-   machines to be a C expression that is non-zero if objects of mode M in
+   machines to be a C expression that is nonzero if objects of mode M in
    registers of CLASS1 can only be copied to registers of class CLASS2 by
    storing a register of CLASS1 into memory and loading that memory location
    into a register of CLASS2.  */
@@ -1203,7 +1203,7 @@ enum reg_class
   {RETURN_ADDRESS_POINTER_REGNUM, BR_REG (0)},				\
 }
 
-/* A C expression that returns non-zero if the compiler is allowed to try to
+/* A C expression that returns nonzero if the compiler is allowed to try to
    replace register number FROM with register number TO.  The frame pointer
    is automatically handled.  */
 

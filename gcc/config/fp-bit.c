@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tconfig.h"
 #include "fp-bit.h"
 
-/* The following macros can be defined to change the behaviour of this file:
+/* The following macros can be defined to change the behavior of this file:
    FLOAT: Implement a `float', aka SFmode, fp library.  If this is not
      defined, then this file implements a `double', aka DFmode, fp library.
    FLOAT_ONLY: Used with FLOAT, to implement a `float' only library, i.e.

@@ -2366,11 +2366,11 @@ struct shift_info {
   const char *special;
 
   /* Insn for a one-bit shift.  Valid when ALG is either SHIFT_INLINE
-     or SHIFT_SPECIAL, and REMAINDER is non-zero.  */
+     or SHIFT_SPECIAL, and REMAINDER is nonzero.  */
   const char *shift1;
 
   /* Insn for a two-bit shift.  Valid when ALG is either SHIFT_INLINE
-     or SHIFT_SPECIAL, and REMAINDER is non-zero.  */
+     or SHIFT_SPECIAL, and REMAINDER is nonzero.  */
   const char *shift2;
 
   /* Valid CC flags.  */
@@ -3206,7 +3206,7 @@ expand_a_rotate (code, operands)
       tmp = gen_rtx_PLUS (QImode, counter, GEN_INT (-1));
       emit_insn (gen_rtx_SET (VOIDmode, counter, tmp));
 
-      /* If the loop counter is non-zero, we go back to the beginning
+      /* If the loop counter is nonzero, we go back to the beginning
 	 of the loop.  */
       emit_cmp_and_jump_insns (counter, GEN_INT (0), NE, NULL_RTX, QImode, 1,
 			       start_label);

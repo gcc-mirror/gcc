@@ -530,7 +530,7 @@ extern int target_flags;
    LEVEL is the optimization level specified; 2 if `-O2' is specified, 1 if
    `-O' is specified, and 0 if neither is specified.
 
-   SIZE is non-zero if `-Os' is specified, 0 otherwise.
+   SIZE is nonzero if `-Os' is specified, 0 otherwise.
 
    You should not use this macro to change options that are not
    machine-specific.  These should uniformly selected by the same optimization
@@ -1776,7 +1776,7 @@ struct machine_function GTY(())
   {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}				\
 }
 
-/* A C expression that returns non-zero if the compiler is allowed to try to
+/* A C expression that returns nonzero if the compiler is allowed to try to
    replace register number FROM with register number TO.  This macro need only
    be defined if `ELIMINABLE_REGS' is defined, and will usually be the constant
    1, since most of the cases preventing register elimination are things that
@@ -1892,7 +1892,7 @@ struct machine_function GTY(())
    You may use the macro `MUST_PASS_IN_STACK (MODE, TYPE)' in the definition of
    this macro to determine if this argument is of a type that must be passed in
    the stack.  If `REG_PARM_STACK_SPACE' is not defined and `FUNCTION_ARG'
-   returns non-zero for such an argument, the compiler will abort.  If
+   returns nonzero for such an argument, the compiler will abort.  If
    `REG_PARM_STACK_SPACE' is defined, the argument will be computed in the
    stack and then loaded into a register.  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)                    \
@@ -2202,7 +2202,7 @@ frv_asm_output_mi_thunk (FILE, THUNK_FNDECL, (long)DELTA, FUNCTION)
   frv_setup_incoming_varargs (& ARGS_SO_FAR, (int) MODE, TYPE, 	\
 			      & PRETEND_ARGS_SIZE, SECOND_TIME)
 
-/* Implement the stdarg/varargs va_start macro.  STDARG_P is non-zero if this
+/* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
    is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
    variable to initialize.  NEXTARG is the machine independent notion of the
    'next' argument after the variable arguments.  If not defined, a standard

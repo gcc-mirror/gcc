@@ -880,7 +880,7 @@ extern enum reg_class reg_class_from_letter[256];
 
 /* Certain machines have the property that some registers cannot be copied to
    some other registers without using memory.  Define this macro on those
-   machines to be a C expression that is non-zero if objects of mode M in
+   machines to be a C expression that is nonzero if objects of mode M in
    registers of CLASS1 can only be copied to registers of class CLASS2 by
    storing a register of CLASS1 into memory and loading that memory location
    into a register of CLASS2.
@@ -923,15 +923,15 @@ extern enum reg_class reg_class_from_letter[256];
    few registers of certain classes that there would not be enough registers to
    use as spill registers if this were done.
 
-   Define `SMALL_REGISTER_CLASSES' to be an expression with a non-zero value on
-   these machines.  When this macro has a non-zero value, the compiler allows
+   Define `SMALL_REGISTER_CLASSES' to be an expression with a nonzero value on
+   these machines.  When this macro has a nonzero value, the compiler allows
    registers explicitly used in the rtl to be used as spill registers but
    avoids extending the lifetime of these registers.
 
-   It is always safe to define this macro with a non-zero value, but if you
+   It is always safe to define this macro with a nonzero value, but if you
    unnecessarily define it, you will reduce the amount of optimizations that
    can be performed in some cases.  If you do not define this macro with a
-   non-zero value when it is required, the compiler will run out of spill
+   nonzero value when it is required, the compiler will run out of spill
    registers and print a fatal error message.  For most machines, you should
    not define this macro at all.  */
 /* #define SMALL_REGISTER_CLASSES */
@@ -1355,7 +1355,7 @@ typedef struct d30v_stack {
   { FRAME_POINTER_REGNUM,	STACK_POINTER_REGNUM }			\
 }
 
-/* A C expression that returns non-zero if the compiler is allowed to try to
+/* A C expression that returns nonzero if the compiler is allowed to try to
    replace register number FROM-REG with register number TO-REG.  This macro
    need only be defined if `ELIMINABLE_REGS' is defined, and will usually be
    the constant 1, since most of the cases preventing register elimination are
@@ -1535,7 +1535,7 @@ typedef struct d30v_stack {
    You may use the macro `MUST_PASS_IN_STACK (MODE, TYPE)' in the definition of
    this macro to determine if this argument is of a type that must be passed in
    the stack.  If `REG_PARM_STACK_SPACE' is not defined and `FUNCTION_ARG'
-   returns non-zero for such an argument, the compiler will abort.  If
+   returns nonzero for such an argument, the compiler will abort.  If
    `REG_PARM_STACK_SPACE' is defined, the argument will be computed in the
    stack and then loaded into a register.  */
 
@@ -2007,7 +2007,7 @@ typedef struct machine_function GTY(())
   (VALIST) = d30v_build_va_list ()
 
 
-/* Implement the stdarg/varargs va_start macro.  STDARG_P is non-zero if this
+/* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
    is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
    variable to initialize.  NEXTARG is the machine independent notion of the
    'next' argument after the variable arguments.  If not defined, a standard
@@ -2610,10 +2610,10 @@ extern const char *d30v_branch_cost_string;
    times greater than aligned accesses, for example if they are emulated in a
    trap handler.
 
-   When this macro is non-zero, the compiler will act as if `STRICT_ALIGNMENT'
-   were non-zero when generating code for block moves.  This can cause
+   When this macro is nonzero, the compiler will act as if `STRICT_ALIGNMENT'
+   were nonzero when generating code for block moves.  This can cause
    significantly more instructions to be produced.  Therefore, do not set this
-   macro non-zero if unaligned accesses only add a cycle or two to the time for
+   macro nonzero if unaligned accesses only add a cycle or two to the time for
    a memory access.
 
    If the value of this macro is always zero, it need not be defined.  */
@@ -2821,7 +2821,7 @@ extern const char *d30v_branch_cost_string;
 /* #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN) */
 
 /* You may define this macro as a C expression.  You should define the
-   expression to have a non-zero value if GNU CC should output the
+   expression to have a nonzero value if GNU CC should output the
    constant pool for a function before the code for the function, or
    a zero value if GNU CC should output the constant pool after the
    function.  If you do not define this macro, the usual case, GNU CC
@@ -4123,7 +4123,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* A C expression that is nonzero if on this machine the number of bits
    actually used for the count of a shift operation is equal to the number of
    bits needed to represent the size of the object being shifted.  When this
-   macro is non-zero, the compiler will assume that it is safe to omit a
+   macro is nonzero, the compiler will assume that it is safe to omit a
    sign-extend, zero-extend, and certain bitwise `and' instructions that
    truncates the count of a shift operation.  On machines that have
    instructions that act on bitfields at variable positions, which may include
@@ -4234,7 +4234,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    instructions.  */
 /* #define STORE_FLAG_VALUE */
 
-/* A C expression that gives a non-zero floating point value that is returned
+/* A C expression that gives a nonzero floating point value that is returned
    when comparison operators with floating-point results are true.  Define this
    macro on machine that have comparison operations that return floating-point
    values.  If there are no such operations, do not define this macro.  */
