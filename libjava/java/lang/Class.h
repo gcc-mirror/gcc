@@ -1,6 +1,6 @@
 // Class.h - Header file for java.lang.Class.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -210,6 +210,7 @@ public:
 
   jobject newInstance (void);
   jstring toString (void);
+  jboolean desiredAssertionStatus (void);
 
   // FIXME: this probably shouldn't be public.
   jint size (void)
@@ -231,6 +232,8 @@ private:
   void checkMemberAccess (jint flags);
 
   void initializeClass (void);
+
+  static jstring getPackagePortion (jstring);
 
   // Friend functions implemented in natClass.cc.
   friend _Jv_Method *_Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,

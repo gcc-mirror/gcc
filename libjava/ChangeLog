@@ -1,3 +1,24 @@
+2002-06-10  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (Class::desiredAssertionStatus): Declare.
+	(Class::getPackagePortion): Likewise.
+	* java/lang/Class.java (desiredAssertionStatus): New method from
+	Classpath.
+	(getPackagePortion): Likewise.
+	* java/lang/VMClassLoader.java (defaultAssertionStatus,
+	packageAssertionStatus, classAssertionStatus): New methods from
+	Classpath.
+	* java/lang/ClassLoader.java (defaultAssertionStatus,
+	systemPackageAssertionStatus, packageAssertionStatus,
+	systemClassAssertionStatus, classAssertionStatus): New fields from
+	Classpath.
+	(setDefaultAssertionStatus, setPackageAssertionStatus,
+	setClassAssertionStatus, clearAssertionStatus): New methods from
+	Classpath.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added AssertionError.java.
+	* java/lang/AssertionError.java: New from Classpath.
+
 2002-06-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* configure.host: Disable hash synchronization and slow_pthread_self

@@ -1029,6 +1029,7 @@ java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
 java/lang/ArrayIndexOutOfBoundsException.java \
 java/lang/ArrayStoreException.java \
+java/lang/AssertionError.java \
 java/lang/Boolean.java \
 java/lang/Byte.java \
 java/lang/Character.java \
