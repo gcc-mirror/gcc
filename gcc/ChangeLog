@@ -1,5 +1,9 @@
 2002-01-08  Richard Henderson  <rth@redhat.com>
 
+	* regrename.c (copy_value): Ignore overlapping copies.
+
+2002-01-08  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (alpha_split_conditional_move): Call copy_rtx
 	as needed to avoid shared structure.
 
