@@ -153,7 +153,7 @@ f77.rest.encap:
 
 # Note the kludge to get g77.1 to build.
 
-f77.info: $(srcdir)/f/g77.info f/g77.1
+f77.info: $(srcdir)/f/g77.info $(srcdir)/f/g77.1
 f77.dvi: f/g77.dvi
 
 # g77 documentation.
