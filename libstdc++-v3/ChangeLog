@@ -1,3 +1,8 @@
+2002-12-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (libtool_VERSION): Update to 5:2:0.
+	* configure: Regenerate.
+
 2002-12-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.tcc
@@ -27,6 +32,7 @@
 	the NULL-pointer, zero-size case.
 
 2002-11-28  Jonathan Wakely  <redi@gcc.gnu.org>
+
 	* docs/html/faq/index.html: Add tip about a namespace for extensions.
 
 2002-11-28  Paolo Carlini  <pcarlini@unitus.it>
@@ -444,8 +450,8 @@
 	for FreeBSD 5.
 
 2002-10-18  Loren J. Rittle  <ljrittle@acm.org>
-	    Brad Spencer  <spencer@infointeractive.com> (provided alternate
-						         patch and improvements)
+	    Brad Spencer  <spencer@infointeractive.com> 
+	    (provided alternate patch and improvements)
 
 	* docs/html/23_containers/howto.html (GLIBCPP_FORCE_NEW): Document
 	new environment variable which replaces all uses of __USE_MALLOC
