@@ -181,7 +181,9 @@ public class Thread implements Runnable
 
   public final void stop ()
   {
-    stop (new ThreadDeath ());
+    // Argument doesn't matter, because this is no longer
+    // supported.
+    stop (null);
   }
 
   public final synchronized native void stop (Throwable e);
