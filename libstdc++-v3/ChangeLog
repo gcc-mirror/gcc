@@ -1,3 +1,7 @@
+2004-02-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_function.h: Minor formatting changes.
+
 2004-02-04  Zack Weinberg  <zack@codesourcery.com>
 
 	Revert previous change to config/abi/*/baseline_symbols.txt.
