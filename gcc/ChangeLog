@@ -1,5 +1,7 @@
 2003-09-20  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.in: Don't set (unused) DLLTOOL.
+
 	* config/arm/t-linux, config/arm/t-netbsd, config/arm-t-semi:
 	Remove obsolete references to ENQUIRE.
 
