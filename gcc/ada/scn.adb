@@ -134,8 +134,15 @@ package body Scn is
          SS : Source_Ptr;
 
       begin
+         --  Loop to check characters. This loop is terminated by end of
+         --  line, and also we need to check for the EOF case, to take
+         --  care of files containing only comments.
+
          SP := Scan_Ptr;
-         while Source (SP) /= CR and then Source (SP) /= LF loop
+         while Source (SP) /= CR and then
+               Source (SP) /= LF and then
+               Source (SP) /= EOF
+         loop
             if Source (SP) = S (S'First) then
                SS := SP;
                CP := S'First;

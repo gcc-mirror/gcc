@@ -2793,10 +2793,8 @@ ada/s-sopco5.o : ada/system.ads ada/s-secsta.ads ada/s-stoele.ads \
    ada/s-stoele.adb ada/s-strops.ads ada/s-sopco3.ads ada/s-sopco4.ads \
    ada/s-sopco5.ads ada/s-sopco5.adb ada/unchconv.ads 
 
-ada/s-stache.o : ada/ada.ads ada/a-except.ads ada/system.ads \
-   ada/s-crtl.ads ada/s-parame.ads ada/s-soflin.ads ada/s-stache.ads \
-   ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
-   ada/s-traent.ads ada/unchconv.ads 
+ada/s-stache.o : ada/system.ads ada/s-stache.ads ada/s-stache.adb \
+   ada/s-stoele.ads ada/s-stoele.adb ada/unchconv.ads 
 
 ada/s-stalib.o : ada/ada.ads ada/a-except.ads ada/system.ads \
    ada/s-memory.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \

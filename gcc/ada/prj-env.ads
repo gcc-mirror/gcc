@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2003 Free Software Foundation, Inc        --
+--             Copyright (C) 2001-2004 Free Software Foundation, Inc        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ package Prj.Env is
 
    procedure Initialize;
    --  Put Standard_Naming_Data into Namings table (called by Prj.Initialize)
+   --  Above comment is obsolete (see body) ???
 
    procedure Print_Sources;
    --  Output the list of sources, after Project files have been scanned

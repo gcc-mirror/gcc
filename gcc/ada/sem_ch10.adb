@@ -394,7 +394,9 @@ package body Sem_Ch10 is
                if Unum /= No_Unit then
 
                   --  Build subprogram declaration and attach parent unit to it
-                  --  This subprogram declaration does not come from source!
+                  --  This subprogram declaration does not come from source,
+                  --  Nevertheless the backend must generate debugging info for
+                  --  it, and this must be indicated explicitly.
 
                   declare
                      Loc : constant Source_Ptr := Sloc (N);
@@ -418,6 +420,7 @@ package body Sem_Ch10 is
                      Set_Parent_Spec (Unit (Lib_Unit), Cunit (Unum));
                      Semantics (Lib_Unit);
                      Set_Acts_As_Spec (N, False);
+                     Set_Needs_Debug_Info (Defining_Entity (Unit (Lib_Unit)));
                      Set_Comes_From_Source_Default (SCS);
                   end;
                end if;

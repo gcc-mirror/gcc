@@ -3786,6 +3786,13 @@ package body Sem_Util is
             when N_Explicit_Dereference =>
                return True;
 
+            --  A view conversion of a tagged object is an object reference.
+
+            when N_Type_Conversion =>
+               return Is_Tagged_Type (Etype (Subtype_Mark (N)))
+                 and then Is_Tagged_Type (Etype (Expression (N)))
+                 and then Is_Object_Reference (Expression (N));
+
             --  An unchecked type conversion is considered to be an object if
             --  the operand is an object (this construction arises only as a
             --  result of expansion activities).

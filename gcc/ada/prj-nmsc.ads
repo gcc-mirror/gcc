@@ -29,6 +29,10 @@
 
 private package Prj.Nmsc is
 
+   --  It would be nicer to have a higher level statement of what these
+   --  procedures do (related to their names), rather than just an english
+   --  language summary of the implementation ???
+
    procedure Ada_Check
      (Project      : Project_Id;
       Report_Error : Put_Line_Access;
@@ -48,7 +52,7 @@ private package Prj.Nmsc is
       Report_Error : Put_Line_Access);
    --  Check the object directory and the source directories.
    --  Check the library attributes, including the library directory if any.
-   --  Get the set of specification and implementation suffixs, if any.
+   --  Get the set of specification and implementation suffixes, if any.
    --  If Report_Error is null , use the standard error reporting mechanism
    --  (Errout). Otherwise, report errors using Report_Error.
 

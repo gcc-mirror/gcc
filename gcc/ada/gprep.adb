@@ -39,9 +39,12 @@ with Snames;
 with Stringt;  use Stringt;
 with Types;    use Types;
 
-with Ada.Text_IO;       use Ada.Text_IO;
+with Ada.Text_IO;               use Ada.Text_IO;
+with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Command_Line;
-with GNAT.OS_Lib;       use GNAT.OS_Lib;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.OS_Lib;               use GNAT.OS_Lib;
+
 
 package body GPrep is
 
@@ -52,15 +55,26 @@ package body GPrep is
    -- Argument Line Data --
    ------------------------
 
-   Infile_Name  : String_Access;
-   Outfile_Name : String_Access;
-   Deffile_Name : String_Access;
+   Infile_Name  : Name_Id := No_Name;
+   Outfile_Name : Name_Id := No_Name;
+   Deffile_Name : Name_Id := No_Name;
+
+   Output_Directory : Name_Id := No_Name;
+   --  Used when the specified output is an existing directory
+
+   Input_Directory : Name_Id := No_Name;
+   --  Used when the specified input and output are existing directories
 
    Source_Ref_Pragma : Boolean := False;
    --  Record command line options (set if -r switch set)
 
    Text_Outfile : aliased Ada.Text_IO.File_Type;
    Outfile      : constant File_Access := Text_Outfile'Access;
+
+   File_Name_Buffer_Initial_Size : constant := 50;
+   File_Name_Buffer : String_Access :=
+                        new String (1 .. File_Name_Buffer_Initial_Size);
+   --  A buffer to build output file names from input file names.
 
    -----------------
    -- Subprograms --
@@ -81,8 +95,22 @@ package body GPrep is
       Errutil.Style);
    --  The scanner for the preprocessor
 
+   function Is_ASCII_Letter (C : Character) return Boolean;
+   --  True if C is in 'a' .. 'z' or in 'A' .. 'Z'
+
+   procedure Double_File_Name_Buffer;
+   --  Double the size of the file name buffer.
+
+   procedure Preprocess_Infile_Name;
+   --  When the specified output is a directory, preprocess the infile name
+   --  for symbol substitution, to get the output file name.
+
+   procedure Process_Files;
+   --  Process the single input file or all the files in the directory tree
+   --  rooted at the input directory.
+
    procedure Process_Command_Line_Symbol_Definition (S : String);
-   --  Process a -D switch on ther command line
+   --  Process a -D switch on the command line
 
    procedure Put_Char_To_Outfile (C : Character);
    --  Output one character to the output file.
@@ -112,13 +140,24 @@ package body GPrep is
       end if;
    end Display_Copyright;
 
+   -----------------------------
+   -- Double_File_Name_Buffer --
+   -----------------------------
+
+   procedure Double_File_Name_Buffer is
+      New_Buffer : constant String_Access :=
+                     new String (1 .. 2 * File_Name_Buffer'Length);
+   begin
+      New_Buffer (File_Name_Buffer'Range) := File_Name_Buffer.all;
+      Free (File_Name_Buffer);
+      File_Name_Buffer := New_Buffer;
+   end Double_File_Name_Buffer;
+
    --------------
    -- Gnatprep --
    --------------
 
    procedure Gnatprep is
-      Infile : Source_File_Index;
-
    begin
       --  Do some initializations (order is important here!)
 
@@ -156,12 +195,13 @@ package body GPrep is
 
       --  Test we had all the arguments needed
 
-      if Infile_Name = null then
+      if Infile_Name = No_Name then
          --  No input file specified, just output the usage and exit
 
          Usage;
          return;
-      elsif Outfile_Name = null then
+
+      elsif Outfile_Name = No_Name then
          --  No output file specified, just output the usage and exit
 
          Usage;
@@ -178,13 +218,13 @@ package body GPrep is
 
       --  If we have a definition file, parse it
 
-      if Deffile_Name /= null then
+      if Deffile_Name /= No_Name then
          declare
             Deffile : Source_File_Index;
 
          begin
             Errutil.Initialize;
-            Deffile := Sinput.C.Load_File (Deffile_Name.all);
+            Deffile := Sinput.C.Load_File (Get_Name_String (Deffile_Name));
 
             --  Set Main_Source_File to the definition file for the benefit of
             --  Errutil.Finalize.
@@ -193,7 +233,7 @@ package body GPrep is
 
             if Deffile = No_Source_File then
                Fail ("unable to find definition file """,
-                     Deffile_Name.all,
+                     Get_Name_String (Deffile_Name),
                      """");
             end if;
 
@@ -208,7 +248,8 @@ package body GPrep is
 
       if Total_Errors_Detected > 0 then
          Errutil.Finalize (Source_Type => "definition");
-         Fail ("errors in definition file """, Deffile_Name.all, """");
+         Fail ("errors in definition file """,
+               Get_Name_String (Deffile_Name), """");
       end if;
 
       --  If -s switch was specified, print a sorted list of symbol names and
@@ -218,68 +259,37 @@ package body GPrep is
          Prep.List_Symbols (Foreword => "");
       end if;
 
-      --  Load the input file
+      Output_Directory := No_Name;
+      Input_Directory  := No_Name;
 
-      Infile := Sinput.C.Load_File (Infile_Name.all);
+      --  Check if the specified output is an existing directory
 
-      if Infile = No_Source_File then
-         Fail ("unable to find input file """, Infile_Name.all, """");
-      end if;
+      if Is_Directory (Get_Name_String (Outfile_Name)) then
+         Output_Directory := Outfile_Name;
 
-      --  Set Main_Source_File to the input file for the benefit of
-      --  Errutil.Finalize.
+         --  As the output is an existing directory, check if the input too
+         --  is a directory.
 
-      Sinput.Main_Source_File := Infile;
-
-      Scanner.Initialize_Scanner (No_Unit, Infile);
-
-      --  If an output file were specified, create it; fails if this did not
-      --  work.
-
-      if Outfile_Name /= null then
-         begin
-            Create (Text_Outfile, Out_File, Outfile_Name.all);
-
-         exception
-            when others =>
-               Fail
-                 ("unable to create output file """, Outfile_Name.all, """");
-         end;
-      end if;
-
-      --  Output the SFN pragma if asked to
-
-      if Source_Ref_Pragma then
-         Put_Line (Outfile.all, "pragma Source_Reference (1, """ &
-                   Get_Name_String (Sinput.File_Name (Infile)) &
-                   """);");
-      end if;
-
-      --  Preprocess the input file
-
-      Prep.Preprocess;
-
-      --  In verbose mode, if there is no error, report it
-
-      if Opt.Verbose_Mode and then Err_Vars.Total_Errors_Detected = 0 then
-         Errutil.Finalize (Source_Type => "input");
-      end if;
-
-      --  If we had some errors, delete the output file, and report the errors,
-
-      if Err_Vars.Total_Errors_Detected > 0 then
-         if Outfile /= Standard_Output then
-            Delete (Text_Outfile);
+         if Is_Directory (Get_Name_String (Infile_Name)) then
+            Input_Directory := Infile_Name;
          end if;
-
-         Errutil.Finalize (Source_Type => "input");
-
-      --  otherwise, close the output file, and we are done.
-
-      elsif Outfile /= Standard_Output then
-         Close (Text_Outfile);
       end if;
+
+      --  And process the single input or the files in the directory tree
+      --  rooted at the input directory.
+
+      Process_Files;
+
    end Gnatprep;
+
+   ---------------------
+   -- Is_ASCII_Letter --
+   ---------------------
+
+   function Is_ASCII_Letter (C : Character) return Boolean is
+   begin
+      return C in 'A' .. 'Z' or else C in 'a' .. 'z';
+   end Is_ASCII_Letter;
 
    ------------------------
    -- New_EOL_To_Outfile --
@@ -298,6 +308,112 @@ package body GPrep is
    begin
       null;
    end Post_Scan;
+
+   ----------------------------
+   -- Preprocess_Infile_Name --
+   ----------------------------
+
+   procedure Preprocess_Infile_Name is
+      Len    : Natural;
+      First  : Positive := 1;
+      Last   : Natural;
+      Symbol : Name_Id;
+      Data   : Symbol_Data;
+
+   begin
+      --  Initialize the buffer with the name of the input file
+
+      Get_Name_String (Infile_Name);
+      Len := Name_Len;
+
+      while File_Name_Buffer'Length < Len loop
+         Double_File_Name_Buffer;
+      end loop;
+
+      File_Name_Buffer (1 .. Len) := Name_Buffer (1 .. Len);
+
+      --  Look for possible symbols in the file name
+
+      while First < Len loop
+
+         --  A symbol starts with a dollar sign followed by a letter
+
+         if File_Name_Buffer (First) = '$' and then
+           Is_ASCII_Letter (File_Name_Buffer (First + 1))
+         then
+            Last := First + 1;
+
+            --  Find the last letter of the symbol
+
+            while Last < Len and then
+               Is_ASCII_Letter (File_Name_Buffer (Last + 1))
+            loop
+               Last := Last + 1;
+            end loop;
+
+            --  Get the symbol name id
+
+            Name_Len := Last - First;
+            Name_Buffer (1 .. Name_Len) :=
+              File_Name_Buffer (First + 1 .. Last);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+            Symbol := Name_Find;
+
+            --  And look for this symbol name in the symbol table
+
+            for Index in 1 .. Symbol_Table.Last (Mapping) loop
+               Data := Mapping.Table (Index);
+
+               if Data.Symbol = Symbol then
+
+                  --  We found the symbol. If its value is not a string,
+                  --  replace the symbol in the file name with the value of
+                  --  the symbol.
+
+                  if not Data.Is_A_String then
+                     String_To_Name_Buffer (Data.Value);
+
+                     declare
+                        Sym_Len : constant Positive := Last - First + 1;
+                        Offset : constant Integer := Name_Len - Sym_Len;
+                        New_Len : constant Natural := Len + Offset;
+
+                     begin
+                        while New_Len > File_Name_Buffer'Length loop
+                           Double_File_Name_Buffer;
+                        end loop;
+
+                        File_Name_Buffer (Last + 1 + Offset .. New_Len) :=
+                          File_Name_Buffer (Last + 1 .. Len);
+                        Len := New_Len;
+                        Last := Last + Offset;
+                        File_Name_Buffer (First .. Last) :=
+                          Name_Buffer (1 .. Name_Len);
+                     end;
+                  end if;
+
+                  exit;
+               end if;
+            end loop;
+
+            --  Skip over the symbol name or its value: we are not checking
+            --  for another symbol name in the value.
+
+            First := Last + 1;
+
+         else
+            First := First + 1;
+         end if;
+      end loop;
+
+      --  We now have the output file name in the buffer. Get the output
+      --  path and put it in Outfile_Name.
+
+      Get_Name_String (Output_Directory);
+      Add_Char_To_Name_Buffer (Directory_Separator);
+      Add_Str_To_Name_Buffer (File_Name_Buffer (1 .. Len));
+      Outfile_Name := Name_Find;
+   end Preprocess_Infile_Name;
 
    --------------------------------------------
    -- Process_Command_Line_Symbol_Definition --
@@ -325,6 +441,228 @@ package body GPrep is
 
       Mapping.Table (Symbol) := Data;
    end Process_Command_Line_Symbol_Definition;
+
+   -------------------
+   -- Process_Files --
+   -------------------
+
+   procedure Process_Files is
+
+      procedure Process_One_File;
+      --  Process input file Infile_Name and put the result in file
+      --  Outfile_Name.
+
+      procedure Recursive_Process (In_Dir : String; Out_Dir : String);
+      --  Process recursively files in In_Dir. Results go to Out_Dir.
+
+      ----------------------
+      -- Process_One_File --
+      ----------------------
+
+      procedure Process_One_File is
+         Infile : Source_File_Index;
+
+      begin
+         --  Create the output file; fails if this does not work.
+
+         begin
+            Create (Text_Outfile, Out_File, Get_Name_String (Outfile_Name));
+
+         exception
+            when others =>
+               Fail
+                 ("unable to create output file """,
+                  Get_Name_String (Outfile_Name), """");
+         end;
+
+         --  Load the input file
+
+         Infile := Sinput.C.Load_File (Get_Name_String (Infile_Name));
+
+         if Infile = No_Source_File then
+            Fail ("unable to find input file """,
+                  Get_Name_String (Infile_Name), """");
+         end if;
+
+         --  Set Main_Source_File to the input file for the benefit of
+         --  Errutil.Finalize.
+
+         Sinput.Main_Source_File := Infile;
+
+         Scanner.Initialize_Scanner (No_Unit, Infile);
+
+         --  Output the SFN pragma if asked to
+
+         if Source_Ref_Pragma then
+            Put_Line (Outfile.all, "pragma Source_Reference (1, """ &
+                      Get_Name_String (Sinput.File_Name (Infile)) &
+                      """);");
+         end if;
+
+         --  Preprocess the input file
+
+         Prep.Preprocess;
+
+         --  In verbose mode, if there is no error, report it
+
+         if Opt.Verbose_Mode and then Err_Vars.Total_Errors_Detected = 0 then
+            Errutil.Finalize (Source_Type => "input");
+         end if;
+
+         --  If we had some errors, delete the output file, and report
+         --  the errors.
+
+         if Err_Vars.Total_Errors_Detected > 0 then
+            if Outfile /= Standard_Output then
+               Delete (Text_Outfile);
+            end if;
+
+            Errutil.Finalize (Source_Type => "input");
+
+            OS_Exit (0);
+
+         --  otherwise, close the output file, and we are done.
+
+         elsif Outfile /= Standard_Output then
+            Close (Text_Outfile);
+         end if;
+      end Process_One_File;
+
+      -----------------------
+      -- Recursive_Process --
+      -----------------------
+
+      procedure Recursive_Process (In_Dir : String; Out_Dir : String) is
+         Dir_In : Dir_Type;
+         Name : String (1 .. 255);
+         Last : Natural;
+         In_Dir_Name  : Name_Id;
+         Out_Dir_Name : Name_Id;
+
+         procedure Set_Directory_Names;
+         --  Establish or reestablish the current input and output directories
+
+         -------------------------
+         -- Set_Directory_Names --
+         -------------------------
+
+         procedure Set_Directory_Names is
+         begin
+            Input_Directory := In_Dir_Name;
+            Output_Directory := Out_Dir_Name;
+         end Set_Directory_Names;
+
+      begin
+         --  Open the current input directory
+
+         begin
+            Open (Dir_In, In_Dir);
+
+         exception
+            when Directory_Error =>
+               Fail ("could not read directory " & In_Dir);
+         end;
+
+         --  Set the new input and output directory names
+
+         Name_Len := In_Dir'Length;
+         Name_Buffer (1 .. Name_Len) := In_Dir;
+         In_Dir_Name := Name_Find;
+         Name_Len := Out_Dir'Length;
+         Name_Buffer (1 .. Name_Len) := Out_Dir;
+         Out_Dir_Name := Name_Find;
+
+         Set_Directory_Names;
+
+         --  Traverse the input directory
+         loop
+            Read (Dir_In, Name, Last);
+            exit when Last = 0;
+
+            if Name (1 .. Last) /= "." and then Name (1 .. Last) /= ".." then
+               declare
+                  Input : constant String :=
+                            In_Dir & Directory_Separator & Name (1 .. Last);
+                  Output : constant String :=
+                             Out_Dir & Directory_Separator & Name (1 .. Last);
+
+               begin
+                  --  If input is an ordinary file, process it
+
+                  if Is_Regular_File (Input) then
+                     --  First get the output file name
+
+                     Name_Len := Last;
+                     Name_Buffer (1 .. Name_Len) := Name (1 .. Last);
+                     Infile_Name := Name_Find;
+                     Preprocess_Infile_Name;
+
+                     --  Set the input file name and process the file
+
+                     Name_Len := Input'Length;
+                     Name_Buffer (1 .. Name_Len) := Input;
+                     Infile_Name := Name_Find;
+                     Process_One_File;
+
+                  elsif Is_Directory (Input) then
+                     --  Input is a directory. If the corresponding output
+                     --  directory does not already exist, create it.
+
+                     if not Is_Directory (Output) then
+                        begin
+                           Make_Dir (Dir_Name => Output);
+
+                        exception
+                           when Directory_Error =>
+                              Fail ("could not create directory """,
+                                    Output, """");
+                        end;
+                     end if;
+
+                     --  And process this new input directory
+
+                     Recursive_Process (Input, Output);
+
+                     --  Reestablish the input and output directory names
+                     --  that have been modified by the recursive call.
+
+                     Set_Directory_Names;
+                  end if;
+               end;
+            end if;
+         end loop;
+      end Recursive_Process;
+
+   begin
+      if Output_Directory = No_Name then
+         --  If the output is not a directory, fail if the input is
+         --  an existing directory, to avoid possible problems.
+
+         if Is_Directory (Get_Name_String (Infile_Name)) then
+            Fail ("input file """ & Get_Name_String (Infile_Name) &
+                  """ is a directory");
+         end if;
+
+         --  Just process the single input file
+
+         Process_One_File;
+
+      elsif Input_Directory = No_Name then
+         --  Get the output file name from the input file name, and process
+         --  the single input file.
+
+         Preprocess_Infile_Name;
+         Process_One_File;
+
+      else
+         --  Recursively process files in the directory tree rooted at the
+         --  input directory.
+
+         Recursive_Process
+           (In_Dir => Get_Name_String (Input_Directory),
+            Out_Dir => Get_Name_String (Output_Directory));
+      end if;
+   end Process_Files;
 
    -------------------------
    -- Put_Char_To_Outfile --
@@ -397,12 +735,15 @@ package body GPrep is
          begin
             exit when S'Length = 0;
 
-            if Infile_Name = null then
-               Infile_Name := new String'(S);
-            elsif Outfile_Name = null then
-               Outfile_Name := new String'(S);
-            elsif Deffile_Name = null then
-               Deffile_Name := new String'(S);
+            Name_Len := S'Length;
+            Name_Buffer (1 .. Name_Len) := S;
+
+            if Infile_Name = No_Name then
+               Infile_Name := Name_Find;
+            elsif Outfile_Name = No_Name then
+               Outfile_Name := Name_Find;
+            elsif Deffile_Name = No_Name then
+               Deffile_Name := Name_Find;
             else
                Fail ("too many arguments specifed");
             end if;

@@ -1,3 +1,57 @@
+2004-03-22  Cyrille Comar  <comar@act-europe.fr>
+
+	* ali.ads: Fix Comment about Dynamic_Elab.
+
+	* gnatls.adb (Output_Unit): Add output of many flags (Dynamic_Elab,
+	Has_RACW, Is_Generic, etc.)
+	(Output_Object, Gnatls): Take into account ALI files not attached to
+	an object.
+
+2004-03-22  Vincent Celier  <celier@gnat.com>
+
+	* gprep.adb: Change all String_Access to Name_Id
+	(Is_ASCII_Letter): new function
+	(Double_File_Name_Buffer): New procedure
+	(Preprocess_Infile_Name): New procedure
+	(Process_Files): New procedure
+	(Gnatprep): Check if output and input are existing directories.
+	Call Process_Files to do the real job.
+
+2004-03-22  Robert Dewar  <dewar@gnat.com>
+
+	* prj-env.adb, prj-nmsc.ads, prj-proc.ads,
+	s-stache.ads, s-stache.adb: Comment updates. Minor reformatting.
+
+2004-03-22  Sergey Rybin  <rybin@act-europe.fr>
+
+	* scn.adb (Contains): Add check for EOF, is needed for a degenerated
+	case when the source contains only comments.
+
+2004-03-22  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): When generating a
+	declaration for a child subprogram body that acts as a spec, indicate
+	that the entity in the declaration needs debugging information.
+
+	* sem_ch3.adb (Complete_Private_Subtype): Do not build an underlying
+	full view if the subtype is created for a constrained record component;
+	gigi has enough information to construct the record, and there is no
+	place in the tree for the declaration.
+
+	* sem_ch6.adb (Build_Body_To_Inline): Use an internal name without
+	serial number for the dummy body that is built for analysis, to avoid
+	inconsistencies in the generation of internal names when compiling
+	with -gnatN.
+
+2004-03-22  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_util.adb (Is_Object_Reference): A view conversion denotes an
+	object.
+
+2004-03-22  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-03-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (gnat_to_gnu_entity): Use SUBSTITUTE_PLACEHOLDER_IN_EXPR.
