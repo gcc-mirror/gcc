@@ -4235,6 +4235,30 @@ independent_decode_option (argc, argv)
 	return decode_W_option (arg + 1);
       break;
 
+    case 'a':
+      if (!strncmp (arg, "aux-info", 8))
+	{
+	  if (arg[8] == '\0')
+	    {
+	      if (argc == 1)
+		return 0;
+
+	      aux_info_file_name = argv[1];
+	      flag_gen_aux_info = 1;
+	      return 2;
+	    }
+	  else if (arg[8] == '=')
+	    {
+	      aux_info_file_name = arg + 9;
+	      flag_gen_aux_info = 1;
+	    }
+	  else
+	    return 0;
+	}
+      else
+	return 0;
+      break;
+
     case 'o':
       if (arg[1] == 0)
 	{
