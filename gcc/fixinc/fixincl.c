@@ -67,7 +67,7 @@ typedef enum {
 te_verbose  verbose_level = VERB_PROGRESS;
 int have_tty = 0;
 
-#define VLEVEL(l)  (verbose_level >= l)
+#define VLEVEL(l)  ((unsigned int) verbose_level >= (unsigned int) l)
 #define NOT_SILENT VLEVEL(VERB_FIXES)
 
 pid_t process_chain_head = (pid_t) -1;

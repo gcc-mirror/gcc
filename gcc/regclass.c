@@ -430,7 +430,7 @@ init_reg_sets_1 ()
     }
   memset (contains_reg_of_mode, 0, sizeof (contains_reg_of_mode));
   memset (allocatable_regs_of_mode, 0, sizeof (allocatable_regs_of_mode));
-  for (m = 0; m < MAX_MACHINE_MODE; m++)
+  for (m = 0; m < (unsigned int) MAX_MACHINE_MODE; m++)
     for (i = 0; i < N_REG_CLASSES; i++)
       if (CLASS_MAX_NREGS (i, m) <= reg_class_size[i])
 	for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
@@ -445,7 +445,7 @@ init_reg_sets_1 ()
   /* Initialize the move cost table.  Find every subset of each class
      and take the maximum cost of moving any subset to any other.  */
 
-  for (m = 0; m < MAX_MACHINE_MODE; m++)
+  for (m = 0; m < (unsigned int) MAX_MACHINE_MODE; m++)
     if (allocatable_regs_of_mode [m])
       {
 	for (i = 0; i < N_REG_CLASSES; i++)
@@ -631,6 +631,7 @@ choose_hard_reg_mode (regno, nregs)
      unsigned int regno ATTRIBUTE_UNUSED;
      unsigned int nregs;
 {
+  unsigned int /* enum machine_mode */ m;
   enum machine_mode found_mode = VOIDmode, mode;
 
   /* We first look for the largest integer mode that can be validly
@@ -658,10 +659,13 @@ choose_hard_reg_mode (regno, nregs)
     return found_mode;
 
   /* Iterate over all of the CCmodes.  */
-  for (mode = CCmode; mode < NUM_MACHINE_MODES; ++mode)
-    if (HARD_REGNO_NREGS (regno, mode) == nregs
-        && HARD_REGNO_MODE_OK (regno, mode))
-    return mode;
+  for (m = (unsigned int) CCmode; m < (unsigned int) NUM_MACHINE_MODES; ++m)
+    {
+      mode = (enum machine_mode) m;
+      if (HARD_REGNO_NREGS (regno, mode) == nregs
+	  && HARD_REGNO_MODE_OK (regno, mode))
+	return mode;
+    }
 
   /* We can't find a mode valid for this register.  */
   return VOIDmode;
@@ -859,22 +863,23 @@ dump_regclass (dump)
   int i;
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
-      enum reg_class class;
+      int /* enum reg_class */ class;
       if (REG_N_REFS (i))
 	{
 	  fprintf (dump, "  Register %i costs:", i);
-	  for (class = 0; class < N_REG_CLASSES; class++)
-	    if (contains_reg_of_mode [class][PSEUDO_REGNO_MODE (i)]
+	  for (class = 0; class < (int) N_REG_CLASSES; class++)
+	    if (contains_reg_of_mode [(enum reg_class) class][PSEUDO_REGNO_MODE (i)]
 #ifdef FORBIDDEN_INC_DEC_CLASSES
-		&& (!in_inc_dec[i] || !forbidden_inc_dec_class[class])
+		&& (!in_inc_dec[i]
+		    || !forbidden_inc_dec_class[(enum reg_class) class])
 #endif
 #ifdef CLASS_CANNOT_CHANGE_MODE
 		&& (!REGNO_REG_SET_P (reg_changes_mode, i)
-		     || class_can_change_mode [class])
+		     || class_can_change_mode [(enum reg_class) class])
 #endif
 		)
-	    fprintf (dump, " %s:%i", reg_class_names[(int) class],
-		     costs[i].cost[class]);
+	    fprintf (dump, " %s:%i", reg_class_names[class],
+		     costs[i].cost[(enum reg_class) class]);
 	  fprintf (dump, " MEM:%i\n", costs[i].mem_cost);
 	}
     }

@@ -1,3 +1,36 @@
+2001-03-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* print-rtl.c (print_rtx): Cast enums to int for comparison.
+	* c-decl.c (grokdeclarator): Cast enums to int for comparison and
+	shifts.
+	* c-format.c (C_STD_VER): Cast to int for comparisons.
+	(check_function_format): Cast various enums to int for &.
+	(maybe_read_dollar_number): Likewise.
+	(check_format_info): Likewise.
+	(check_format_info_main): Likewise.
+	* expr.c (emit_move_insn_1): Cast enums to unsigned int for comparison.
+	(safe_from_p): Likewise.
+	* varasm.c (const_hash): Cast enum to int for %.
+	* emit-rtl.c (init_emit_once): Use int loop variable to work around
+	pcc enum problems with < and ++ operators.
+	* regclass.c (init_reg_sets_1): Cast enums for comparison.
+	(choose_hard_reg_mode): Use unsigned int to iterate over CCmodes.
+	(regclass_init): Change enum class to int to iterate over reg_classes.
+	* genrecog.c (merge_trees): Cast enums for comparison.
+	* rtl.h (GET_CODE): Cast to enum rtx_code.
+	(PUT_CODE): Cast to ENUM_BITFIELD(rtx_code).
+	(GET_MODE): Cast to enum machine_mode.
+	(PUT_MODE): Cast to ENUM_BITFIELD(machine_mode).
+	(GET_NOTE_INSN_NAME): Cast enum to int.
+	* tree.h (TREE_CODE): Cast to enum tree_code.
+	(TREE_SET_CODE): Cast VALUE to ENUM_BITFIELD(tree_code).
+        * timevar.c (timevar_print): Change loop variable id from enum to
+	unsigned int.
+	* fixinc/fixincl.c (VLEVEL): Cast enums in comparison to unsigned int.
+	* config/i386/i386.md: Use PUT_MODE for mode assignment.
+	* toplev.c (compile_file): Cast enum DFI to int.
+	(decode_d_option): Likewise.
+
 Fri Mar  2 12:18:13 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* cppinit.c (append_include_chain): Mark "after" include file name list

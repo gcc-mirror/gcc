@@ -401,7 +401,7 @@ timevar_print (fp)
 {
   /* Only print stuff if we have some sort of time information.  */
 #if defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME) || defined (HAVE_WALL_TIME)
-  timevar_id_t id;
+  unsigned int /* timevar_id_t */ id;
   struct timevar_time_def *total = &timevars[TV_TOTAL].elapsed;
   struct timevar_time_def now;
 
@@ -426,13 +426,13 @@ timevar_print (fp)
   start_time = now;
 
   fprintf (fp, _("\nExecution times (seconds)\n"));
-  for (id = 0; id < TIMEVAR_LAST; ++id)
+  for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
     {
-      struct timevar_def *tv = &timevars[id];
+      struct timevar_def *tv = &timevars[(timevar_id_t) id];
 
       /* Don't print the total execution time here; that goes at the
 	 end.  */
-      if (id == TV_TOTAL)
+      if ((timevar_id_t) id == TV_TOTAL)
 	continue;
 
       /* Don't print timing variables that were never used.  */

@@ -2500,7 +2500,7 @@ compile_file (name)
     {
       int i;
 
-      for (i = 0; i < DFI_MAX; ++i)
+      for (i = 0; i < (int) DFI_MAX; ++i)
 	if (dump_file[i].initialized && dump_file[i].graph_dump_p)
 	  {
 	    char seq[16];
@@ -4021,7 +4021,7 @@ decode_d_option (arg)
     switch (c = *arg++)
       {
       case 'a':
-	for (i = 0; i < DFI_MAX; ++i)
+	for (i = 0; i < (int) DFI_MAX; ++i)
 	  dump_file[i].enabled = 1;
 	break;
       case 'A':
@@ -4052,7 +4052,7 @@ decode_d_option (arg)
 
       default:
 	matched = 0;
-	for (i = 0; i < DFI_MAX; ++i)
+	for (i = 0; i < (int) DFI_MAX; ++i)
 	  if (c == dump_file[i].debug_switch)
 	    {
 	      dump_file[i].enabled = 1;

@@ -476,11 +476,11 @@ enum format_std_version
    or inheriting from, for the purpose of format features supported.  */
 #define CPLUSPLUS_STD_VER	STD_C89
 /* The C standard version we are checking formats against when pedantic.  */
-#define C_STD_VER		(c_language == clk_cplusplus		  \
+#define C_STD_VER		((int)(c_language == clk_cplusplus	  \
 				 ? CPLUSPLUS_STD_VER			  \
 				 : (flag_isoc99				  \
 				    ? STD_C99				  \
-				    : (flag_isoc94 ? STD_C94 : STD_C89)))
+				    : (flag_isoc94 ? STD_C94 : STD_C89))))
 /* The name to give to the standard version we are warning about when
    pedantic.  FEATURE_VER is the version in which the feature warned out
    appeared, which is higher than C_STD_VER.  */
@@ -1105,7 +1105,8 @@ check_function_format (status, name, assembler_name, params)
 	  /* Yup; check it.  */
 	  check_format_info (status, info, params);
 	  if (warn_missing_format_attribute && info->first_arg_num == 0
-	      && (format_types[info->format_type].flags & FMT_FLAG_ARG_CONVERT))
+	      && (format_types[info->format_type].flags
+		  & (int) FMT_FLAG_ARG_CONVERT))
 	    {
 	      function_format_info *info2;
 	      for (info2 = function_format_list; info2; info2 = info2->next)
@@ -1298,7 +1299,7 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
 	      nalloc - dollar_arguments_alloc);
       dollar_arguments_alloc = nalloc;
     }
-  if (!(fki->flags & FMT_FLAG_DOLLAR_MULTIPLE)
+  if (!(fki->flags & (int) FMT_FLAG_DOLLAR_MULTIPLE)
       && dollar_arguments_used[argnum - 1] == 1)
     {
       dollar_arguments_used[argnum - 1] = 2;
@@ -1434,7 +1435,7 @@ check_format_info (status, info, params)
       /* Functions taking a va_list normally pass a non-literal format
 	 string.  These functions typically are declared with
 	 first_arg_num == 0, so avoid warning in those cases.  */
-      if (!(format_types[info->format_type].flags & FMT_FLAG_ARG_CONVERT))
+      if (!(format_types[info->format_type].flags & (int) FMT_FLAG_ARG_CONVERT))
 	{
 	  /* For strftime-like formats, warn for not checking the format
 	     string; but there are no arguments to check.  */
@@ -1746,7 +1747,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	}
       flag_chars[0] = 0;
 
-      if ((fki->flags & FMT_FLAG_USE_DOLLAR) && has_operand_number != 0)
+      if ((fki->flags & (int) FMT_FLAG_USE_DOLLAR) && has_operand_number != 0)
 	{
 	  /* Possibly read a $ operand number at the start of the format.
 	     If one was previously used, one is required here.  If one
@@ -1867,7 +1868,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		  ++format_chars;
 		}
 	      if (found_width && !non_zero_width_char &&
-		  (fki->flags & FMT_FLAG_ZERO_WIDTH_BAD))
+		  (fki->flags & (int) FMT_FLAG_ZERO_WIDTH_BAD))
 		status_warning (status, "zero width in %s format",
 				fki->name);
 	      if (found_width)
@@ -1954,7 +1955,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	    }
 	  else
 	    {
-	      if (!(fki->flags & FMT_FLAG_EMPTY_PREC_OK)
+	      if (!(fki->flags & (int) FMT_FLAG_EMPTY_PREC_OK)
 		  && !ISDIGIT (*format_chars))
 		status_warning (status, "empty precision in %s format",
 				fki->name);
@@ -2025,7 +2026,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	}
 
       /* Handle the scanf allocation kludge.  */
-      if (fki->flags & FMT_FLAG_SCANF_A_KLUDGE)
+      if (fki->flags & (int) FMT_FLAG_SCANF_A_KLUDGE)
 	{
 	  if (*format_chars == 'a' && !flag_isoc99)
 	    {
@@ -2043,7 +2044,8 @@ check_format_info_main (status, res, info, format_chars, format_length,
 
       format_char = *format_chars;
       if (format_char == 0
-	  || (!(fki->flags & FMT_FLAG_FANCY_PERCENT_OK) && format_char == '%'))
+	  || (!(fki->flags & (int) FMT_FLAG_FANCY_PERCENT_OK)
+	      && format_char == '%'))
 	{
 	  status_warning (status, "conversion lacks type at end of format");
 	  continue;
@@ -2109,7 +2111,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	flag_chars[i - d] = 0;
       }
 
-      if ((fki->flags & FMT_FLAG_SCANF_A_KLUDGE)
+      if ((fki->flags & (int) FMT_FLAG_SCANF_A_KLUDGE)
 	  && strchr (flag_chars, 'a') != 0)
 	aflag = 1;
 
@@ -2190,7 +2192,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 
       wanted_type = 0;
       wanted_type_name = 0;
-      if (fki->flags & FMT_FLAG_ARG_CONVERT)
+      if (fki->flags & (int) FMT_FLAG_ARG_CONVERT)
 	{
 	  wanted_type = (fci->types[length_chars_val].type
 			 ? *fci->types[length_chars_val].type : 0);

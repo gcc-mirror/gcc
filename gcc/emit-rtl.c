@@ -4140,9 +4140,9 @@ init_emit_once (line_numbers)
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
     }
 
-  for (mode = CCmode; mode < MAX_MACHINE_MODE; ++mode)
-    if (GET_MODE_CLASS (mode) == MODE_CC)
-      const_tiny_rtx[0][(int) mode] = const0_rtx;
+  for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)
+    if (GET_MODE_CLASS ((enum machine_mode) i) == MODE_CC)
+      const_tiny_rtx[0][i] = const0_rtx;
 
   const_tiny_rtx[0][(int) BImode] = const0_rtx;
   if (STORE_FLAG_VALUE == 1)

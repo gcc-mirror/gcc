@@ -373,8 +373,8 @@ print_rtx (in_rtx)
       /* Print NOTE_INSN names rather than integer codes.  */
 
       case 'n':
-	if (XINT (in_rtx, i) >= NOTE_INSN_BIAS
-	    && XINT (in_rtx, i) < NOTE_INSN_MAX)
+	if (XINT (in_rtx, i) >= (int) NOTE_INSN_BIAS
+	    && XINT (in_rtx, i) < (int) NOTE_INSN_MAX)
 	  fprintf (outfile, " %s", GET_NOTE_INSN_NAME (XINT (in_rtx, i)));
 	else
 	  fprintf (outfile, " %d", XINT (in_rtx, i));
