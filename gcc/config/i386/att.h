@@ -71,6 +71,10 @@ do								\
 
 /* Define the syntax of labels and symbol definitions/declarations.  */
 
+/* The prefix to add for compiler private assembler symbols.  */
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX "."
+
 /* This is how to store into the string BUF
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
@@ -78,14 +82,14 @@ do								\
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-  sprintf ((BUF), ".%s%d", (PREFIX), (NUMBER))
+  sprintf ((BUF), "%s%s%d", LOCAL_LABEL_PREFIX, (PREFIX), (NUMBER))
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
+  fprintf (FILE, "%s%s%d:\n", LOCAL_LABEL_PREFIX, PREFIX, NUM)
 
 /* The prefix to add to user-visible assembler symbols. */
 
