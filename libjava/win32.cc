@@ -11,9 +11,11 @@ details.  */
 #include <config.h>
 #include <jvm.h>
 #include <sys/timeb.h>
+#include <stdlib.h>
 
 #include "platform.h"
 #include <java/lang/ArithmeticException.h>
+#include <java/util/Properties.h>
 
 static LONG CALLBACK
 win32_exception_handler (LPEXCEPTION_POINTERS e)
@@ -62,3 +64,131 @@ __mingwthr_key_dtor (DWORD, void (*) (void *))
   //        approximately 24 bytes per thread created.
   return 0;
 }
+
+// Set platform-specific System properties.
+void
+_Jv_platform_initProperties (java::util::Properties* newprops)
+{
+  // A convenience define.
+#define SET(Prop,Val) \
+  newprops->put(JvNewStringLatin1 (Prop), JvNewStringLatin1 (Val))
+
+  SET ("file.separator", "\\");
+  SET ("path.separator", ";");
+  SET ("line.separator", "\r\n");
+  SET ("java.io.tmpdir", "C:\\temp");
+
+  // Use GetCurrentDirectory to set 'user.dir'.
+  DWORD buflen = MAX_PATH;
+  char* buffer = (char *) malloc (buflen);
+  if (buffer != NULL)
+    {
+      if (GetCurrentDirectory (buflen, buffer))
+          SET ("user.dir", buffer);
+      free (buffer);
+    }
+  
+  // Use GetUserName to set 'user.name'.
+  buflen = 257;  // UNLEN + 1
+  buffer = (char *) malloc (buflen);
+  if (buffer != NULL)
+    {
+      if (GetUserName (buffer, &buflen))
+        SET ("user.name", buffer);
+      free (buffer);
+    }
+
+  // According to the api documentation for 'GetWindowsDirectory()', the 
+  // environmental variable HOMEPATH always specifies the user's home 
+  // directory or a default directory.  On the 3 windows machines I checked
+  // only 1 had it set.  If it's not set, JDK1.3.1 seems to set it to
+  // the windows directory, so we'll do the same.
+  char* userHome = NULL;
+  if ((userHome = ::getenv( "HOMEPATH" )) == NULL )
+    {
+      // Check HOME since it's what I use.
+      if ((userHome = ::getenv( "HOME" )) == NULL )
+        {
+          // Not found - use the windows directory like JDK1.3.1 does.
+          char* winHome = (char *)malloc (MAX_PATH);
+          if ( winHome != NULL )
+            {
+              if (GetWindowsDirectory (winHome, MAX_PATH))
+                  SET ("user.home", winHome);
+              free (winHome);
+            }
+        }
+     }
+  if( userHome != NULL )
+    SET ("user.home", userHome);
+
+  // Get and set some OS info.
+  OSVERSIONINFO osvi;
+  ZeroMemory (&osvi, sizeof(OSVERSIONINFO));
+  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  if (GetVersionEx (&osvi))
+    {
+      char *buffer = (char *) malloc (30);
+      if (buffer != NULL)
+        {
+          sprintf (buffer, "%d.%d", (int)osvi.dwMajorVersion, (int)osvi.dwMinorVersion);
+          SET ("os.version", buffer);
+          free (buffer);
+        }
+
+      switch (osvi.dwPlatformId)
+        {
+          case VER_PLATFORM_WIN32_WINDOWS:
+            if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 0)
+              SET ("os.name", "Windows 95");
+            else if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 10)
+              SET ("os.name", "Windows 98");
+            else if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 90)
+              SET ("os.name", "Windows Me");
+            else
+              SET ("os.name", "Windows ??"); 
+            break;
+
+          case VER_PLATFORM_WIN32_NT:
+            if (osvi.dwMajorVersion <= 4 )
+              SET ("os.name", "Windows NT");
+            else if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0)
+              SET ("os.name", "Windows 2000");
+            else if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1)
+              SET ("os.name", "Windows XP");
+            else
+              SET ("os.name", "Windows NT ??");
+            break;
+
+          default:
+            SET ("os.name", "Windows UNKNOWN");
+            break;
+       }
+  }
+
+  // Set the OS architecture.
+  SYSTEM_INFO si;
+  GetSystemInfo (&si);
+  switch( si.dwProcessorType )
+    {
+      case PROCESSOR_INTEL_386:
+        SET ("os.arch", "i386");
+        break;
+      case PROCESSOR_INTEL_486:
+        SET ("os.arch", "i486");
+        break;
+      case PROCESSOR_INTEL_PENTIUM:
+        SET ("os.arch", "i586");
+        break;
+      case PROCESSOR_MIPS_R4000:	
+        SET ("os.arch", "MIPS4000");
+        break;
+      case PROCESSOR_ALPHA_21064:
+        SET ("os.arch", "ALPHA");
+        break;
+      default:
+        SET ("os.arch", "unknown");
+        break;
+    }
+}
+

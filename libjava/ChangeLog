@@ -1,3 +1,13 @@
+2002-04-07  Adam King <aking@dreammechanics.com>
+
+	* java/lang/natSystem.cc (init_properties): Call new function
+	_Jv_platform_initProperties.
+	* win32.cc (_Jv_platform_initProperties): New function that adds Win32 
+	support for the System properties os.name, os.arch, os.version, 
+	user.name, user.home, and user.dir.
+	* include/posix.h, include/win32.h, posix.cc: New function
+	_Jv_platform_initProperties.
+
 2002-04-06  Mark Wielaard <mark@klomp.org>
 
 	* java/lang/Character,java (isDefined): getType() != UNASSIGNED.
@@ -40,7 +50,7 @@
 
 	* java/util/Arrays.java (qsort): Fix off-by-one errors and use of
 	incorrect "hi" value when count > 40.
-	
+
 2002-04-03  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/reflect/Modifier.java (toString(int,StringBuffer)): Fix
