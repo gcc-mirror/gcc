@@ -6892,7 +6892,7 @@ sparc_flat_epilogue_delay_slots ()
   return 0;
 }
 
-/* Return true is TRIAL is a valid insn for the epilogue delay slot.
+/* Return true if TRIAL is a valid insn for the epilogue delay slot.
    Any single length instruction which doesn't reference the stack or frame
    pointer is OK.  */
 

@@ -291,7 +291,7 @@ fp_arith_operand (op, mode)
   return (register_operand (op, mode) || fp_literal (op, mode));
 }
 
-/* Return true is OP is a register or a valid signed integer literal.  */
+/* Return true if OP is a register or a valid signed integer literal.  */
 
 int
 signed_arith_operand (op, mode)

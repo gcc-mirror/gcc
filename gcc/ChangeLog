@@ -2,6 +2,10 @@
 
 	* config/h8300/h8300.c (general_operand_src): Fix a comment typo.
 
+	* config/sparc/sparc.c (sparc_flat_eligible_for_epilogue_delay):
+	Fix a comment typo.
+	* config/i960/i960.c (signed_arith_operand): Likewise.
+
 Fri Apr 20 12:22:15 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config/pa/som.h (NM_FLAGS): Define.
