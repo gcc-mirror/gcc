@@ -112,15 +112,26 @@ int seen_S_IFDIR = 0, seen_S_ISDIR  = 0;
 int seen_S_IFIFO = 0, seen_S_ISFIFO = 0;
 int seen_S_IFLNK = 0, seen_S_ISLNK  = 0;
 int seen_S_IFREG = 0, seen_S_ISREG  = 0;
-
+
 /* Wrapper around free, to avoid prototype clashes. */
 
-void xfree (ptr)
+void
+xfree (ptr)
      char *ptr;
 {
   free (ptr);
 }
 
+/* Avoid error if config defines abort as fancy_abort.
+   It's not worth "really" implementing this because ordinary
+   compiler users never run fix-header.  */
+
+void
+fancy_abort ()
+{
+  abort ();
+}
+
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free xfree
 struct obstack scan_file_obstack;
@@ -360,11 +371,23 @@ write_rbrac ()
   /* Now we print out prototypes for those functions that we haven't seen. */
   for (rptr = required_functions; *rptr; rptr++)
     {
+      int macro_protect = 0;
+
       fn = lookup_std_proto (*rptr);
       if (fn == NULL || !REQUIRED (fn))
 	continue;
+
+      /* In the case of memmove, protect in case the application
+	 defines it as a macro before including the header.  */
+      if (!strcmp (fn->fname, "memmove"))
+	macro_protect = 1;
+
+      if (macro_protect)
+	fprintf (outf, "#ifndef %s\n", fn->fname);
       fprintf (outf, "extern %s %s (%s);\n",
 	       fn->rtype, fn->fname, fn->params);
+      if (macro_protect)
+	fprintf (outf, "#endif\n");
     }
   if (required_unseen_count)
     fprintf (outf,
