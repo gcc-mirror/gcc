@@ -1,3 +1,11 @@
+Wed Mar 14 16:36:25 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (emit_move_insn_1):  Split push of complex value when
+	no suitable push instruction exist.
+
+	* i386.md (QImode move/add/shift patterns): Use ANY_QI_REG_P
+	instead of QI_REG_P.
+
 Tue Mar 13 22:22:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (handled_component_p, can_address_p): New functions.
