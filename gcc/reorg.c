@@ -2572,8 +2572,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 	      && ! insn_sets_resource_p (next_trial, &set, 1)
 	      && ! insn_sets_resource_p (next_trial, &needed, 1)
 #ifdef HAVE_cc0
-	      && ! (reg_mentioned_p (cc0_rtx, PATTERN (next_trial))
-		    && ! sets_cc0_p (PATTERN (next_trial)))
+	      && ! reg_mentioned_p (cc0_rtx, PATTERN (next_trial))
 #endif
 	      && ! (maybe_never && may_trap_p (PATTERN (next_trial)))
 	      && (next_trial = try_split (PATTERN (next_trial), next_trial, 0))
