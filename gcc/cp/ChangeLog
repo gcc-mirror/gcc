@@ -1,3 +1,8 @@
+2004-12-17  Steven Bosscher  <stevenb@suse.de>
+
+	* init.c (build_zero_init): max_index is the number of
+	elements, minus 1.
+
 2004-12-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18721
