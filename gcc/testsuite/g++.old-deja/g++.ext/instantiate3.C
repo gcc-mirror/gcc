@@ -10,7 +10,7 @@ template <class T> struct A {
 inline template struct A<int>;
 
 A<int> a;			// gets bogus error
-A<char> b;			// ERROR - not instantiated XFAIL mips*-*-* *-*-hpux*
+A<char> b;			// ERROR - not instantiated XFAIL mips*-*-* *-*-hpux* i?86-pc-cygwin
 				// Irix's default linker does not
 				// produce line numbers so XFAIL it.
 				// Similarly for HPUX.
