@@ -30,7 +30,7 @@ short p[5];
 
 main ()
 {
-  execute (0);
+  execute ((unsigned short *) 0);
   p[0] = optab[1];
   p[1] = optab[0];
   p[2] = optab[1];
