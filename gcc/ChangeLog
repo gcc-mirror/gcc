@@ -1,3 +1,10 @@
+2002-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (cpp_macro): Move here, and make expansion a union.
+	* cppmacro.c (cpp_macro): Remove.
+	(enter_macro_context, replace_args, warn_of_redefinition,
+	_cpp_create_definition, cpp_macro_definition): Update.
+
 2002-05-16  Jason Merrill  <jason@redhat.com>
 
 	* config/mips/mips.c (mips_output_external): Don't do sdata

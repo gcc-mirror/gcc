@@ -29,6 +29,9 @@ struct directive;		/* Deliberately incomplete.  */
 struct pending_option;
 struct op;
 
+typedef unsigned char uchar;
+#define U (const uchar *)  /* Intended use: U"string" */
+
 #define BITS_PER_CPPCHAR_T (CHAR_BIT * sizeof (cppchar_t))
 
 /* Test if a sign is valid within a preprocessing number.  */
@@ -46,6 +49,24 @@ struct op;
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for
    efficiency, and partly to limit runaway recursion.  */
 #define CPP_STACK_MAX 200
+
+/* Each macro definition is recorded in a cpp_macro structure.
+   Variadic macros cannot occur with traditional cpp.  */
+struct cpp_macro
+{
+  cpp_hashnode **params;	/* Parameters, if any.  */
+  union
+  {
+    cpp_token *tokens;	        /* Tokens of replacement list (ISO).  */
+    const uchar *text;		/* Expansion text (traditional).  */
+  } exp;
+  unsigned int line;		/* Starting line number.  */
+  unsigned int count;		/* Number of tokens / bytes in expansion.  */
+  unsigned short paramc;	/* Number of parameters.  */
+  unsigned int fun_like : 1;	/* If a function-like macro.  */
+  unsigned int variadic : 1;	/* If a variadic macro.  */
+  unsigned int syshdr   : 1;	/* If macro defined in system header.  */
+};
 
 /* A generic memory buffer, and operations on it.  */
 typedef struct _cpp_buff _cpp_buff;
@@ -436,9 +457,6 @@ extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
 
 /* These are inline functions instead of macros so we can get type
    checking.  */
-typedef unsigned char uchar;
-#define U (const uchar *)  /* Intended use: U"string" */
-
 static inline int ustrcmp	PARAMS ((const uchar *, const uchar *));
 static inline int ustrncmp	PARAMS ((const uchar *, const uchar *,
 					 size_t));
