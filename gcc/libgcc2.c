@@ -1310,30 +1310,10 @@ BLOCK_PROFILER_CODE
 
 static struct bb *bb_head;
 
-static int num_digits (long long value, int base) __attribute__ ((const));
-
-/* Return the number of digits needed to print a value */
-/* __inline__ */ static int num_digits (long long value, int base)
-{
-  int minus = (value < 0 && base != 16);
-  unsigned long long v = (minus) ? -value : value;
-  int ret = minus;
-
-  do
-    {
-      v /= base;
-      ret++;
-    }
-  while (v);
-
-  return ret;
-}
-
 void
 __bb_exit_func (void)
 {
   FILE *da_file;
-  long time_value;
   int i;
   struct bb *ptr;
 

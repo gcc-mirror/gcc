@@ -1,3 +1,8 @@
+2001-12-20  Andreas Jaeger  <aj@suse.de>
+
+	* libgcc2.c (__bb_exit_func): Remove unused variable.
+	(num_digits): Remove unused function.
+
 2001-12-20 Alan Shieh <ashieh@hkn.eecs.berkeley.edu>
 
 	* config/arm/arm.c (arm_output_epilogue): Changed IP restore
@@ -12,7 +17,7 @@
         function. Compute which of registers r0 through r12 should be
 	saved onto the stack during a function's prologue.
         (arm_compute_save_reg_mask): Use
-        arm_compute_save_reg0_reg12_mask. 
+        arm_compute_save_reg0_reg12_mask.
         (arm_compute_initial_elimination_offset): Use
         arm_compute_save_reg0_reg12_mask.
 
@@ -34,13 +39,13 @@
 	* 1750a/1750a-protos.h: Update.
 
 	* 1750a/1750a.h, a29k/a29k.h, alpha/alpha.h, alpha/unicosmk.h,
-	alpha/vms.h, arc/arc.h, arm/aof.h, arm/aout.h, avr/avr.c, 
+	alpha/vms.h, arc/arc.h, arm/aof.h, arm/aout.h, avr/avr.c,
 	avr/avr.h, c4x/c4x.h, clipper/clix.h, convex/convex.h, cris/cris.h,
 	d30v/d30v.h, dsp16xx/dsp16xx.c, dsp16xx/dsp16xx.h, elxsi/elxsi.h,
 	fr30/fr30.h, h8300/h8300.h, i370/i370.h, i386/i386.h, i386/i386elf.h,
 	i386/next.h, i386/ptx4-i.h, i386/sysv4.h, i860/fx2800.h, i860/i860.h,
 	i860/paragon.h, i860/sysv4.h, i960/i960-protos.h, i960/i960.c,
-	i960/i960.h, ia64/ia64.h, m32r/m32r.h, m68hc11/m68hc11.c, 
+	i960/i960.h, ia64/ia64.h, m32r/m32r.h, m68hc11/m68hc11.c,
 	m68hc11/m68hc11.h, m68k/3b1.h, m68k/altos3068.h, m68k/crds.h,
 	m68k/dpx2.h, m68k/hp320.h, m68k/m68k.h, m68k/mot3300.h, m68k/news.h,
 	m68k/next.h, m68k/next21.h, m68k/sgs.h, m68k/sun2o4.h, m68k/sun3.h,
@@ -160,7 +165,7 @@ Wed Dec 19 11:01:21 2001  Jeffrey A Law  (law@redhat.com)
 	* config/arm/t-xscale-coff (EXTRA_MULTILIB_PARTS): Remove definition.
 
 	* config/arm/coff.h (SUPPORTS_INIT_PRIORITY): Define (to false).
-	* config/arm/elf.h (SUPPORTS_INIT_PRIORITY): Define (to true).	
+	* config/arm/elf.h (SUPPORTS_INIT_PRIORITY): Define (to true).
 
 Wed Dec 19 06:12:34 2001  Douglas B. Rupp  <rupp@gnat.com>
 
@@ -358,7 +363,7 @@ Mon Dec 17 14:21:21 2001  Jeffrey A Law  (law@redhat.com)
 	(generate_set_vrsave): New parameter epiloguep.  Generate unspec
 	sets instead of clobbers for call saved registers.
 	(altivec_frame_fixup): New.
-	
+
 2001-12-17  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.md (movdi_zero): Remove.
@@ -393,8 +398,8 @@ Mon Dec 17 17:57:05 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-12-17  Tom Rix  <trix@redhat.com>
 
-	* config/rs6000/rs6000.c (expand_block_move): Fix limits on max size 
- 	of bytes.
+	* config/rs6000/rs6000.c (expand_block_move): Fix limits on max size
+	of bytes.
 
 2001-12-17  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -575,7 +580,7 @@ Mon Dec 17 17:57:05 CET 2001  Jan Hubicka  <jh@suse.cz>
 	TARGET_ASM_UNALIGNED_HI_OP, TARGET_ASM_UNALIGNED_SI_OP,
 	TARGET_ASM_UNALIGNED_DI_OP, TARGET_ASM_INTEGER): Redefine as
 	appropriate.
-	
+
 	* config/defaults.h, config/darwin.h, config/elfos.h, config/svr3.h,
 	config/1750a/1750a.h, config/a29k/a29k.h, config/alpha/alpha.h,
 	config/arc/arc.h, config/arm/arm.h, config/avr/avr.h, config/c4x/c4x.h,
