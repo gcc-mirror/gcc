@@ -126,16 +126,11 @@ AC_HEADER_TIME
 
 libiberty_AC_DECLARE_ERRNO
 
-AC_MSG_CHECKING(for uintptr_t)
-AC_EGREP_HEADER(uintptr_t, sys/types.h,
-                libiberty_cv_uintptr_t=yes, libiberty_cv_uintptr_t=no)
+AC_CHECK_TYPE(uintptr_t, unsigned long)
 
-if test $libiberty_cv_uintptr_t = yes
+if test $ac_cv_type_uintptr_t = yes
 then
   AC_DEFINE(HAVE_UINTPTR_T, 1, [Define if you have the \`uintptr_t' type.])
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
 fi
 
 # This is the list of functions which libiberty will provide if they
