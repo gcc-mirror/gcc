@@ -1192,8 +1192,8 @@ ggc_page_print_statistics ()
 	  in_use += 
 	    (OBJECTS_PER_PAGE (i) - p->num_free_objects) * (1 << i);
 	}
-      fprintf (stderr, "%-3d %-15lu %-15u\n", i, 
-	       (unsigned long) allocated, in_use);
+      fprintf (stderr, "%-3d %-15lu %-15lu\n", i, 
+	       (unsigned long) allocated, (unsigned long) in_use);
     }
 
   /* Print out some global information.  */
