@@ -1,3 +1,10 @@
+Tue Aug 15 00:38:56 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* configure.in: Create a config.h file. Check for <sched.h>.
+	* configure: Regenerate.
+
+	* config.h.in: Check for <sched.h>.
+
 2000-08-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure: Regenerate after change to ../libtool.m4.
