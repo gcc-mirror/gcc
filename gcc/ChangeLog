@@ -1,3 +1,20 @@
+Wed Aug 27 01:24:25 1997  H.J. Lu   (hjl@gnu.ai.mit.edu)
+
+	* config/linux.h (CC1_SPEC): Define it only if not defined.
+
+	* config/m68k/linux.h (CC1_SPEC): Undefine it before include
+	<linux.h>
+
+	* config/linux.h (DEFAULT_VTABLE_THUNKS): New. Defined as 1 if
+	USE_GNULIBC_1 is not defined.
+
+	* config/alpha/linux.h (DEFAULT_VTABLE_THUNKS): New. Defined
+	as 1.
+	* config/rs6000/linux.h (DEFAULT_VTABLE_THUNKS): Ditto.
+
+	* config/sparc/linux.h (DEFAULT_VTABLE_THUNKS): New. Defined
+	as 1 if USE_GNULIBC_1 is not defined.
+
 Wed Aug 27 00:49:14 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* t-freebsd (USER_H): Include EXTRA_HEADERS and LANG_EXTRA_HEADERS.

@@ -60,3 +60,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mbig", "mcall-linux" }
+
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1

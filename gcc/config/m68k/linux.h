@@ -23,6 +23,10 @@ Boston, MA 02111-1307, USA.  */
 #define USE_GAS			/* But GAS wants jbsr instead of jsr */
 
 #include <m68k/m68k.h>
+
+/* Make sure CC1 is undefined. */
+#undef CC1_SPEC
+
 #include <linux.h>		/* some common stuff */
 
 #undef TARGET_VERSION

@@ -35,6 +35,11 @@ Boston, MA 02111-1307, USA.  */
 #define MULTIBYTE_CHARS 1
 #endif
 
+#ifndef USE_GNULIBC_1
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
+#endif
+
 /* There are conflicting reports about whether this system uses
    a different assembler syntax.  wilson@cygnus.com says # is right.  */
 #undef COMMENT_BEGIN
