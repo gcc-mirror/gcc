@@ -3478,10 +3478,28 @@ internal_build_compound_expr (list, first_p)
 
   rest = internal_build_compound_expr (TREE_CHAIN (list), FALSE);
 
-  /* When pedantic, a compound expression can be neither an lvalue
-     nor an integer constant expression.  */
-  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)) && ! pedantic)
-    return rest;
+  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
+    {
+      /* The left-hand operand of a comma expression is like an expression
+         statement: with -W or -Wunused, we should warn if it doesn't have
+	 any side-effects, unless it was explicitly cast to (void).  */
+      if ((extra_warnings || warn_unused)
+           && ! (TREE_CODE (TREE_VALUE (list)) == CONVERT_EXPR
+                && TREE_TYPE (TREE_VALUE (list)) == void_type_node))
+        warning ("left-hand operand of comma expression has no effect");
+
+      /* When pedantic, a compound expression can be neither an lvalue
+         nor an integer constant expression.  */
+      if (! pedantic)
+        return rest;
+    }
+
+  /* With -Wunused, we should also warn if the left-hand operand does have
+     side-effects, but computes a value which is not used.  For example, in
+     `foo() + bar(), baz()' the result of the `+' operator is not used,
+     so we should issue a warning.  */
+  else if (warn_unused)
+    warn_if_unused_value (TREE_VALUE (list));
 
   return build (COMPOUND_EXPR, TREE_TYPE (rest), TREE_VALUE (list), rest);
 }
