@@ -224,8 +224,8 @@ compute_earliest (edge_list, n_exprs, antin, antout, avout, kill, earliest)
 	}
     }
 
-  free (temp_bitmap);
-  free (difference);
+  sbitmap_free (temp_bitmap);
+  sbitmap_free (difference);
 }
 
 /* later(p,s) is dependent on the calculation of laterin(p).
@@ -612,8 +612,8 @@ compute_farthest (edge_list, n_exprs, st_avout, st_avin, st_antin,
 	}
     }
 
-  free (temp_bitmap);
-  free (difference);
+  sbitmap_free (temp_bitmap);
+  sbitmap_free (difference);
 }
 
 /* Compute nearer and nearerout vectors for edge based lcm.
