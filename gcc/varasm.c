@@ -278,6 +278,43 @@ function_section (decl)
   else
     text_section ();
 }
+
+/* Switch to section for variable DECL.
+
+   RELOC is the `reloc' argument to SELECT_SECTION.  */
+
+void
+variable_section (decl, reloc)
+     tree decl;
+     int reloc;
+{
+  if (IN_NAMED_SECTION (decl))
+    named_section (decl, NULL);
+  else
+    {
+      /* C++ can have const variables that get initialized from constructors,
+	 and thus can not be in a readonly section.  We prevent this by
+	 verifying that the initial value is constant for objects put in a
+	 readonly section.
+
+	 error_mark_node is used by the C front end to indicate that the
+	 initializer has not been seen yet.  In this case, we assume that
+	 the initializer must be constant.  */
+#ifdef SELECT_SECTION
+      SELECT_SECTION (decl, reloc);
+#else
+      if (TREE_READONLY (decl)
+	  && ! TREE_THIS_VOLATILE (decl)
+	  && DECL_INITIAL (decl)
+	  && (DECL_INITIAL (decl) == error_mark_node
+	      || TREE_CONSTANT (DECL_INITIAL (decl)))
+	  && ! (flag_pic && reloc))
+	readonly_data_section ();
+      else
+	data_section ();
+#endif
+    }
+}
 
 /* Create the rtl to represent a function, for a function definition.
    DECL is a FUNCTION_DECL node which describes which function.
@@ -1217,33 +1254,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   else if (DECL_INITIAL (decl))
     reloc = output_addressed_constants (DECL_INITIAL (decl));
 
-  /* Switch to the proper section for this data.  */
-  if (IN_NAMED_SECTION (decl))
-    named_section (decl, NULL);
-  else
-    {
-      /* C++ can have const variables that get initialized from constructors,
-	 and thus can not be in a readonly section.  We prevent this by
-	 verifying that the initial value is constant for objects put in a
-	 readonly section.
-
-	 error_mark_node is used by the C front end to indicate that the
-	 initializer has not been seen yet.  In this case, we assume that
-	 the initializer must be constant.  */
-#ifdef SELECT_SECTION
-      SELECT_SECTION (decl, reloc);
-#else
-      if (TREE_READONLY (decl)
-	  && ! TREE_THIS_VOLATILE (decl)
-	  && DECL_INITIAL (decl)
-	  && (DECL_INITIAL (decl) == error_mark_node
-	      || TREE_CONSTANT (DECL_INITIAL (decl)))
-	  && ! (flag_pic && reloc))
-	readonly_data_section ();
-      else
-	data_section ();
-#endif
-    }
+  /* Switch to the appropriate section.  */
+  variable_section (decl, reloc);
 
   /* dbxout.c needs to know this.  */
   if (in_text_section ())
@@ -1278,22 +1290,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   /* If the debugging output changed sections, reselect the section
      that's supposed to be selected.  */
   if (in_section != saved_in_section)
-    {
-      /* Switch to the proper section for this data.  */
-#ifdef SELECT_SECTION
-      SELECT_SECTION (decl, reloc);
-#else
-      if (TREE_READONLY (decl)
-	  && ! TREE_THIS_VOLATILE (decl)
-	  && DECL_INITIAL (decl)
-	  && (DECL_INITIAL (decl) == error_mark_node
-	      || TREE_CONSTANT (DECL_INITIAL (decl)))
-	  && ! (flag_pic && reloc))
-	readonly_data_section ();
-      else
-	data_section ();
-#endif
-    }
+    variable_section (decl, reloc);
 
   /* Compute and output the alignment of this data.  */
 
@@ -1375,22 +1372,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       dbxout_symbol (decl, 0);
 
       if (in_section != saved_in_section)
-	{
-	  /* Switch to the proper section for this data.  */
-#ifdef SELECT_SECTION
-	  SELECT_SECTION (decl, reloc);
-#else
-	  if (TREE_READONLY (decl)
-	      && ! TREE_THIS_VOLATILE (decl)
-	      && DECL_INITIAL (decl)
-	      && (DECL_INITIAL (decl) == error_mark_node
-		  || TREE_CONSTANT (DECL_INITIAL (decl)))
-	      && ! (flag_pic && reloc))
-	    readonly_data_section ();
-	  else
-	    data_section ();
-#endif
-	}
+	variable_section (decl, reloc);
     }
 #else
   /* There must be a statement after a label.  */
