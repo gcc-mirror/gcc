@@ -811,6 +811,54 @@ outer:
     return fieldsArray;
   }
 
+  /**
+   * Returns a new instance of the Class this ObjectStreamClass corresponds
+   * to.
+   * Note that this should only be used for Externalizable classes.
+   *
+   * @return A new instance.
+   */
+  Externalizable newInstance() throws InvalidClassException
+  {
+    synchronized(this)
+    {
+	if (constructor == null)
+	{
+	    try
+	    {
+		final Constructor c = clazz.getConstructor(new Class[0]);
+
+		AccessController.doPrivileged(new PrivilegedAction()
+		{
+		    public Object run()
+		    {
+			c.setAccessible(true);
+			return null;
+		    }
+		});
+
+		constructor = c;
+	    }
+	    catch(NoSuchMethodException x)
+	    {
+		throw new InvalidClassException(clazz.getName(),
+		    "No public zero-argument constructor");
+	    }
+	}
+    }
+
+    try
+    {
+	return (Externalizable)constructor.newInstance(null);
+    }
+    catch(Throwable t)
+    {
+	throw (InvalidClassException)
+	    new InvalidClassException(clazz.getName(),
+		     "Unable to instantiate").initCause(t);
+    }
+  }
+
   public static final ObjectStreamField[] NO_FIELDS = {};
 
   private static Hashtable classLookupTable = new Hashtable();
@@ -840,6 +888,7 @@ outer:
   boolean realClassIsExternalizable;
   ObjectStreamField[] fieldMapping;
   Class firstNonSerializableParent;
+  private Constructor constructor;  // default constructor for Externalizable
 
   boolean isProxyClass = false;
 
