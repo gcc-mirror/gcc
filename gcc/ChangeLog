@@ -1,5 +1,11 @@
 2003-05-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (store_field): Don't clobber TEMP in shift: it might be
+	a variable.
+	(get_inner_reference): Don't go through a VIEW_CONVERT_EXPR
+	whose purpose is to step up the alignment.
+	(expand_expr, case ADDR_EXPR): Force LO_SUM into memory, just like REG.
+
 	* stor-layout.c (compute_record_mode): Relax restriction
 	on fields crossing word boundaries forcing BLKmode.
 
