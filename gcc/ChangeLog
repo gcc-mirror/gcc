@@ -1,3 +1,7 @@
+Mon Feb 8 09:13:38 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Feb  7 22:18:42 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* tree.h (TYPE_CHECK): Make it clear to the preprocessor
