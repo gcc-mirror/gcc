@@ -107,6 +107,7 @@ extern "C" void __cxa_throw (void *thrown_exception,
      __attribute__((noreturn));
 
 // Used to implement exception handlers.
+extern "C" void *__cxa_get_exception_ptr (void *) throw();
 extern "C" void *__cxa_begin_catch (void *) throw();
 extern "C" void __cxa_end_catch ();
 extern "C" void __cxa_rethrow () __attribute__((noreturn));

@@ -1,3 +1,9 @@
+2005-02-18  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/10606
+	* except.c (do_get_exception_ptr): New.
+	(expand_start_catch_block): Use it.
+
 2005-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (start_decl_1): Only check TYPE_NEEDS_CONSTRUCTING

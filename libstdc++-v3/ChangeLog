@@ -1,4 +1,17 @@
+2005-02-18  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/10606
+	* config/linker-map.gnu (CXXABI_1.3.1): Add __cxa_get_exception_ptr.
+	* libsupc++/eh_alloc.cc (__cxa_allocate_exception): Increment
+	uncaughtExceptions here instead of ...
+	* libsupc++/eh_throw.cc (__cxa_throw) ... here.
+	(__cxa_rethrow): Increment uncaughtExceptions here instead of ...
+	* libsupc++/eh_catch.cc (__cxa_end_catch): ... here.
+	(__cxa_get_exception_ptr): New.
+	* libsupc++/unwind-cxx.h (__cxa_get_exception_ptr): Declare.
+
 2005-02-18  Matt Austern  <austern@apple.com>
+
 	* testsuite/tr1/6_containers/unordered/insert/array_syntax.cc: Fix
 	test case to use assignment instead of ==
 	* testsuite/tr1/6_containers/unordered/insert/map_range.cc: New test.

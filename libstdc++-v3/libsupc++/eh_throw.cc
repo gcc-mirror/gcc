@@ -66,9 +66,6 @@ __cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
   header->unwindHeader.exception_class = __gxx_exception_class;
   header->unwindHeader.exception_cleanup = __gxx_exception_cleanup;
 
-  __cxa_eh_globals *globals = __cxa_get_globals ();
-  globals->uncaughtExceptions += 1;
-
 #ifdef _GLIBCXX_SJLJ_EXCEPTIONS
   _Unwind_SjLj_RaiseException (&header->unwindHeader);
 #else
@@ -85,6 +82,8 @@ __cxxabiv1::__cxa_rethrow ()
 {
   __cxa_eh_globals *globals = __cxa_get_globals ();
   __cxa_exception *header = globals->caughtExceptions;
+
+  globals->uncaughtExceptions += 1;
 
   // Watch for luser rethrowing with no active exception.
   if (header)
