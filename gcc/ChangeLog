@@ -1,3 +1,10 @@
+Mon Feb 15 23:04:48 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c: Include insn-attr.h.
+	(delete_computation): If reload has completed and insn scheduling
+	after reload is enabled, then do not depend on REG_DEAD notes.
+	* Makefile.in (jump.o): Depend on insn-attr.h.
+
 Mon Feb 15 16:57:38 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (addsi3): Allow lea for any constant_p.
