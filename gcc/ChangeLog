@@ -1,5 +1,7 @@
 2001-01-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/sh/sh.c (sh_expand_epilogue): Use PR explicitly.
+
 	* config/sh/sh.c (sh_expand_prologue): Let the second toggle_sz be
 	optimized away.
 
