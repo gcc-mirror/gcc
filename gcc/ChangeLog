@@ -1,5 +1,8 @@
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
+	* integrate.c (copy_insn_list): Use returnjump_p.
+	(copy_insn_notes): Recurse for CALL_PLACEHOLDER.
+
 	* function.h (struct function): Move all boolean valued fields
 	to single bit fields at the end of the struct.
 
