@@ -9813,6 +9813,8 @@ instantiate_pending_templates ()
 	      else 
 		t = &TREE_CHAIN (*t);
 	    }
+	  tinst_depth = 0;
+	  current_tinst_level = NULL_TREE;
 	}
       template_tail = t;
 
