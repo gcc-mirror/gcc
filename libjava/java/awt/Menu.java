@@ -1,5 +1,5 @@
 /* Menu.java -- A Java AWT Menu
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -294,7 +294,8 @@ insert(String label, int index)
 public void
 addSeparator()
 {
-  add(separator);
+  if (peer != null)
+    ((MenuPeer) peer).addSeparator();
 }
 
 /*************************************************************************/
@@ -376,8 +377,14 @@ removeAll()
 public void
 addNotify()
 {
-  if (peer != null)
+  if (peer == null)
     peer = getToolkit().createMenu(this);
+  java.util.Enumeration e = items.elements();
+  while (e.hasMoreElements())
+  {
+    MenuItem mi = (MenuItem)e.nextElement();
+    mi.addNotify();
+  }    
   super.addNotify ();
 }
 

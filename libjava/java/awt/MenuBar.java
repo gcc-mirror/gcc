@@ -1,5 +1,5 @@
 /* MenuBar.java -- An AWT menu bar class
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -263,6 +263,12 @@ addNotify()
 {
   if (getPeer() == null)
     setPeer((MenuComponentPeer)getToolkit().createMenuBar(this));
+  Enumeration e = menus.elements();
+  while (e.hasMoreElements())
+  {
+    Menu mi = (Menu)e.nextElement();
+    mi.addNotify();
+  }
 }
 
 /*************************************************************************/
