@@ -1,6 +1,6 @@
 2000-07-21  Michael Meissner  <meissner@redhat.com>
 
-	* gcc.c-torture/execute/ieee/hugeval.c (main): New test.
+	* gcc.c-torture/execute/ieee/hugeval.c: New test.
 
 2000-07-20  Zack Weinberg  <zack@wolery.cumb.org>
 
