@@ -2819,7 +2819,7 @@ build_type_variant (type, constp, volatilep)
    This is the right thing to do only when something else
    about TYPE is modified in place.  */
 
-tree
+void
 change_main_variant (type, new_main)
      tree type, new_main;
 {
