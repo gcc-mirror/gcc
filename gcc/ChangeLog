@@ -1,3 +1,8 @@
+2003-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*addsi3_and_r_1): New.
+	(*addsi3_and_not_r_1): Likewise.
+
 2003-03-19  Loren James Rittle  <ljrittle@acm.org>
 
 	* Makefile.in (STRICT2_WARN): Add @WERROR@.
