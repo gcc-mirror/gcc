@@ -1,3 +1,7 @@
+2001-01-01  Andreas Jaeger  <aj@suse.de>
+
+	* loop.c (scan_loop): Use xmalloc to allocate movables.
+
 2001-01-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tm.texi (REGISTER_MOVE_COST): Add a mode argument.
