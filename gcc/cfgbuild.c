@@ -546,6 +546,8 @@ find_basic_blocks (rtx f, int nregs ATTRIBUTE_UNUSED,
 
   find_basic_blocks_1 (f);
 
+  profile_status = PROFILE_ABSENT;
+
   /* Discover the edges of our cfg.  */
   make_edges (ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, 0);
 

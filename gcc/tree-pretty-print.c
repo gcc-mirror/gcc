@@ -2144,6 +2144,8 @@ dump_bb_header (pretty_printer *buffer, basic_block bb, int indent, int flags)
 	  pp_newline (buffer);
 	}
     }
+  pp_write_text_to_stream (buffer);
+  check_bb_profile (bb, buffer->buffer->stream);
 }
 
 /* Dumps end of basic block BB to buffer BUFFER indented by INDENT

@@ -1,3 +1,18 @@
+2004-08-04  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (profile_staus): New global variable.
+	* cfg.c (profile_status): Declare.
+	(check_bb_profile): Break out from ....; use profile_status
+	(dump_flow_info): ... here.
+	* cfgbuild.c (find_basic_blocks): Set profile_status.
+	* cfgexpand.c (tree_expand_cfg): Likewise.
+	* predict.c (estimate_probability): Likewise.
+	* profile.c (branch_prob): Likewise.
+	* tree-cfg.c (build_tree_cfg): Likewise.
+	(dump_function_to_file): Use check_bb_profile.
+	* tree-pretty-print (dump_bb_header): Likewise.
+	* tree-profile.c (do_tree_profiling): Cleanup.
+
 2004-08-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (RTL_BASE_H, RTL_H): Correct.

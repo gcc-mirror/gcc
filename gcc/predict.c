@@ -805,6 +805,8 @@ estimate_probability (struct loops *loops_info)
     }
   estimate_bb_frequencies (loops_info);
   free_dominance_info (CDI_POST_DOMINATORS);
+  if (profile_status == PROFILE_ABSENT)
+    profile_status = PROFILE_GUESSED;
 }
 
 
@@ -988,6 +990,8 @@ tree_estimate_probability (void)
   flow_loops_free (&loops_info);
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_tree_cfg (dump_file, dump_flags);
+  if (profile_status == PROFILE_ABSENT)
+    profile_status = PROFILE_GUESSED;
 }
 
 /* __builtin_expect dropped tokens into the insn stream describing expected
