@@ -5608,7 +5608,8 @@ force_to_mode (x, mode, mask, reg, just_select)
   /* We want to perform the operation is its present mode unless we know
      that the operation is valid in MODE, in which case we do the operation
      in MODE.  */
-  op_mode = ((code_to_optab[(int) code] != 0
+  op_mode = ((GET_MODE_CLASS (mode) == GET_MODE_CLASS (GET_MODE (x))
+	      && code_to_optab[(int) code] != 0
 	      && (code_to_optab[(int) code]->handlers[(int) mode].insn_code
 		  != CODE_FOR_nothing))
 	     ? mode : GET_MODE (x));
@@ -6667,6 +6668,10 @@ nonzero_bits (x, mode)
   int mode_width = GET_MODE_BITSIZE (mode);
   rtx tem;
 
+  /* For floating-point values, assume all bits are needed.  */
+  if (FLOAT_MODE_P (GET_MODE (x)) || FLOAT_MODE_P (mode))
+    return nonzero;
+
   /* If X is wider than MODE, use its mode instead.  */
   if (GET_MODE_BITSIZE (GET_MODE (x)) > mode_width)
     {
@@ -7026,12 +7031,13 @@ num_sign_bit_copies (x, mode)
   rtx tem;
 
   /* If we weren't given a mode, use the mode of X.  If the mode is still
-     VOIDmode, we don't know anything.  */
+     VOIDmode, we don't know anything.  Likewise if one of the modes is
+     floating-point.  */
 
   if (mode == VOIDmode)
     mode = GET_MODE (x);
 
-  if (mode == VOIDmode)
+  if (mode == VOIDmode || FLOAT_MODE_P (mode) || FLOAT_MODE_P (GET_MODE (x)))
     return 1;
 
   bitwidth = GET_MODE_BITSIZE (mode);
