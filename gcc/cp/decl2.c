@@ -571,6 +571,7 @@ lang_decode_option (p)
 	{
 	  flag_new_abi = 1;
 	  flag_do_squangling = 1;
+	  flag_vtable_thunks = 1;
 	}
       else if (!strcmp (p, "no-new-abi"))
 	{

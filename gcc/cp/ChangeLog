@@ -1,3 +1,18 @@
+Fri Apr 17 14:30:45 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (lang_decode_option): -fnew-abi implies -fvtable-thunks.
+
+	* typeck.c (comp_target_types): Tweak pedantic case.
+	(comp_target_parms): Tweak pedantic case.  Clean up somewhat.
+	Return -1 or 1 instead of 1 or 2.
+	(compparms): Remove STRICT handling.
+
+Fri Apr 17 14:04:16 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* typeck.c (comp_target_types): Handle references like pointers.
+	(comp_target_parms): Note that return code from comp_target_types
+	can be negative to indicate failure.
+
 Fri Apr 17 09:10:52 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* Make-lang.in (c++.all.build): Don't depend on $(DEMANGLER_PROG),
@@ -51,6 +66,8 @@ Fri Apr 17 00:45:12 1998  Mark Mitchell  <mmitchell@usa.net>
 	* typeck2.c (process_init_constructor): Don't strip cv-qualifiers
 	when doing initializations.
 
+	* pt.c (unify): Use comptypes to compare type args.
+
 Fri Apr 17 00:24:22 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (duplicate_decls): Fix check for when it's safe to free
@@ -58,8 +75,6 @@ Fri Apr 17 00:24:22 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (mangle_class_name_for_template): Don't pass a typedef type
 	to type_as_string.
-	From Mark Mitchell:
-	(unify): Use comptypes to compare type args.
 
 Thu Apr 16 17:47:30 1998  Jeffrey A Law  (law@cygnus.com)
 
