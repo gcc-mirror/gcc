@@ -2,7 +2,6 @@
 /* Under winnt, 1) gas supports the following as names and 2) in particular
    defining "toc" breaks the FUNC_START macro as ".toc" becomes ".2" */
 
-#if !defined(__WINNT__)
 #define r0	0
 #define sp	1
 #define toc	2
@@ -77,7 +76,6 @@
 #define f29	29
 #define f30	30
 #define f31	31
-#endif
 
 /*
  * Macros to glue together two tokens.
@@ -121,43 +119,6 @@ GLUE(.,name):
 #define FUNC_END(name) \
 GLUE(.L,name): \
 	.size GLUE(.,name),GLUE(.L,name)-GLUE(.,name)
-
-#elif defined(__WINNT__)
-#define FUNC_NAME(name) GLUE(..,name)
-#define JUMP_TARGET(name) FUNC_NAME(name)
-#define FUNC_START(name) \
-	.pdata; \
-	.align 2; \
-	.ualong GLUE(..,name),GLUE(name,.e),0,0,GLUE(..,name); \
-	.reldata; \
-name: \
-	.ualong GLUE(..,name),.toc; \
-	.section .text; \
-	.globl name; \
-	.globl GLUE(..,name); \
-GLUE(..,name):
-
-#define FUNC_END(name) \
-GLUE(name,.e): ; \
-GLUE(FE_MOT_RESVD..,name):
-
-#elif defined(_CALL_NT)
-#define FUNC_NAME(name) GLUE(..,name)
-#define JUMP_TARGET(name) FUNC_NAME(name)
-#define FUNC_START(name) \
-	.section DESC_SECTION,"aw"; \
-name: \
-	.long GLUE(..,name); \
-	.long _GLOBAL_OFFSET_TABLE_; \
-	.previous; \
-	.type GLUE(..,name),@function; \
-	.globl name; \
-	.globl GLUE(..,name); \
-GLUE(..,name):
-
-#define FUNC_END(name) \
-GLUE(.L,name): \
-	.size GLUE(..,name),GLUE(.L,name)-GLUE(..,name)
 
 #elif defined (__powerpc64__)
 #define FUNC_NAME(name) GLUE(.,name)
