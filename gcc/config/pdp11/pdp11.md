@@ -621,7 +621,7 @@
 ;; Move instructions
 
 (define_insn "movdi"
-  [(set (match_operand:DI 0 "general_operand" "=g,rm,m")
+  [(set (match_operand:DI 0 "general_operand" "=g,rm,o")
 	(match_operand:DI 1 "general_operand" "m,r,a"))]
   ""
   "* return output_move_quad (operands);"
@@ -1395,7 +1395,7 @@
 	(lshiftrt:SI (match_operand:SI 1 "general_operand" "0")
                    (const_int 1)))]
   ""
-{ /* Here we trust that operands don't overlap */
+{
 
   rtx lateoperands[2];
 
@@ -1614,7 +1614,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_operand:SI 1 "general_operand" "0")))]
   ""
-{ /* Here we trust that operands don't overlap */
+{
 
   rtx lateoperands[2];
 
