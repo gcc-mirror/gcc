@@ -1,3 +1,7 @@
+Wed Jan 29 10:26:12 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (subdi3_carry_rex64): Fix typo.
+
 2003-01-28  Fariborz Jahanian  <fjahanian@apple.com>
 
 	* pt.c (last_pending_template) Declare GTY().
