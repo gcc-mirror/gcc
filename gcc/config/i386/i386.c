@@ -3385,16 +3385,7 @@ notice_update_cc (exp)
       /* Jumps do not alter the cc's.  */
       if (SET_DEST (exp) == pc_rtx)
 	return;
-#ifdef IS_STACK_MODE
-      /* Moving into a memory of stack_mode may have been moved
-         in between the use and set of cc0 by loop_spl(). So
-         old value of cc.status must be retained */
-      if(GET_CODE(SET_DEST(exp))==MEM 
-         && IS_STACK_MODE(GET_MODE(SET_DEST(exp))))
-        {
-          return;
-        }
-#endif
+
       /* Moving register or memory into a register:
 	 it doesn't alter the cc's, but it might invalidate
 	 the RTX's which we remember the cc's came from.
