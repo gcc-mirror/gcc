@@ -344,11 +344,6 @@ get_alias_set (t)
 {
   tree orig_t;
   HOST_WIDE_INT set;
-  HOST_WIDE_INT bitsize, bitpos;
-  tree offset;
-  enum machine_mode mode;
-  int volatilep, unsignedp;
-  unsigned int alignment;
 
   /* If we're not doing any alias analysis, just assume everything
      aliases everything else.  Also return 0 if this or its type is
@@ -376,12 +371,38 @@ get_alias_set (t)
       if ((set = lang_get_alias_set (t)) != -1)
 	return set;
 
-      /* If this is a reference, go inside it and use the underlying
-         object.  */
-      if (TREE_CODE_CLASS (TREE_CODE (t)) == 'r')
-	t = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
-				 &unsignedp, &volatilep, &alignment);
+      /* Now loop the same way as get_inner_reference and get the alias
+	 set to use.  Pick up the outermost object that we could have
+	 a pointer to.  */
+      while (1)
+	{
+	  /* Unnamed bitfields are not an addressable object.  */
+	  if (TREE_CODE (t) == BIT_FIELD_REF)
+	    ;
+	  else if (TREE_CODE (t) == COMPONENT_REF)
+	    {
+	      if (! DECL_NONADDRESSABLE_P (TREE_OPERAND (t, 1)))
+		/* Stop at an adressable decl.  */
+		break;
+	    }
+	  else if (TREE_CODE (t) == ARRAY_REF)
+	    {
+	      if (! TYPE_NONALIASED_COMPONENT
+		  (TREE_TYPE (TREE_OPERAND (t, 0))))
+		/* Stop at an addresssable array element.  */
+		break;
+	    }
+	  else if (TREE_CODE (t) != NON_LVALUE_EXPR
+		   && ! ((TREE_CODE (t) == NOP_EXPR
+		      || TREE_CODE (t) == CONVERT_EXPR)
+		     && (TYPE_MODE (TREE_TYPE (t))
+			 == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0))))))
+	    /* Stop if not one of above and not mode-preserving conversion. */
+	    break;
 
+	  t = TREE_OPERAND (t, 0);
+	}
+		   
       if (TREE_CODE (t) == INDIRECT_REF)
 	{
 	  /* Check for accesses through restrict-qualified pointers.  */
