@@ -1,3 +1,48 @@
+2000-05-19  Jan Hubicka  <jh@suse.cz>
+	    Richard Henderson  <rth@cygnus.com>
+
+	* basic-block.h (struct edge_def): New field "count".
+	(struct basic_block_def): Likewise.
+	* flow.c (entry_exit_blocks): Add count fileds.
+	(split_edge): Keep count information up-to-date.
+	(dump_edge_info, dump_flow_info): Dump count fields.
+
+	* final.c (count_instrumented_edges): Rename to edge from arc.
+	(end_final): Update users.
+	* profile.c: Include expr.h, basic-block.h.
+	(struct adj_list, ARC_TARGET, ARC_SOURCE, ARC_COUNT): Kill.
+	(struct bb_info, label_to_bb, label_to_bb_size, bb_graph): Kill.
+	(ignore_next_note, return_label_execution_count): Kill.
+	(bbg_file_name, da_file_name): Kill.
+	(edge_info, bb_info): New structures.
+	(EDGE_INFO, BB_INFO, GCOV_INDEX_TO_BB, BB_TO_GCOV_INDEX): New macros.
+	(count_instrumented_edges, total_num_edges): Rename to edge from arc.
+	(total_num_edges_instrumented): Likewise.
+	(init_arc, expand_spanning_tree): Kill.
+	(fill_spanning_tree, tablejump_entry_p): Kill.
+	(instrument_edges):  Rewrite from instrument_arcs to use
+	commit_edge_insertions infrastructure.
+	(compute_branch_probabilities): Remove arguments; rewrite for
+	CFG infrastructure; use rtl_dump_file directly.
+	(branch_prob, find_spanning_tree): Likewise.
+	(union_groups, find_group): New.
+	(init_branch_prob): Make bbg_file_name and da_file_name local.
+	(end_branch_prob): Use rtl_dump_file directly.
+	(init_edge_profiler): Rename to edge from arc.
+	(output_arc_profiler): Kill.
+	(gen_edge_profiler): New.
+	(output_func_start_profiler): Turn off profiling.  Make the
+	constructor static when we can.
+	* rtl.h (branch_prob, end_branch_prob): Update prototypes.
+
+	* toplev.c (DFI_flow): Remove.
+	(DFI_cfg, DFI_life): New.
+	(dump_file): Update accordingly.
+	(compile_file): Call end_branch_prob if profile_arc_flag too.
+	(rest_of_compilation): Move flow1 cfg creation to DFI_cfg.  Do edge
+	profiling after the CFG is built.  Move flow1 life analysis to
+	DFI_life.  Always estimate remaining probabilities.
+
 2000-05-19  Richard Henderson  <rth@cygnus.com>
 
 	* ifcvt.c (find_if_case_2): Don't allow THEN to be EXIT.

@@ -129,6 +129,8 @@ typedef struct edge_def {
 
   int flags;			/* see EDGE_* below  */
   int probability;		/* biased by REG_BR_PROB_BASE */
+  int count;			/* Expected number of executions calculated
+				   in profile.c  */
 } *edge;
 
 #define EDGE_FALLTHRU		1
@@ -164,6 +166,8 @@ typedef struct basic_block_def {
 
   /* The active eh region before head and after end.  */
   int eh_beg, eh_end;
+
+  int count;		/* Expected number of executions calculated in profile.c  */
 } *basic_block;
 
 /* Number of basic blocks in the current function.  */

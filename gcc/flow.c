@@ -194,7 +194,8 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* aux */
     ENTRY_BLOCK,		/* index */
     0,				/* loop_depth */
-    -1, -1			/* eh_beg, eh_end */
+    -1, -1,			/* eh_beg, eh_end */
+    0				/* count */
   },
   {
     NULL,			/* head */
@@ -207,7 +208,8 @@ struct basic_block_def entry_exit_blocks[2]
     NULL,			/* aux */
     EXIT_BLOCK,			/* index */
     0,				/* loop_depth */
-    -1, -1			/* eh_beg, eh_end */
+    -1, -1,			/* eh_beg, eh_end */
+    0				/* count */
   }
 };
 
@@ -1382,6 +1384,7 @@ split_edge (edge_in)
   /* Wire them up.  */
   bb->pred = edge_in;
   bb->succ = edge_out;
+  bb->count = edge_in->count;
 
   edge_in->dest = bb;
   edge_in->flags &= ~EDGE_CRITICAL;
@@ -1392,6 +1395,7 @@ split_edge (edge_in)
   edge_out->dest = old_succ;
   edge_out->flags = EDGE_FALLTHRU;
   edge_out->probability = REG_BR_PROB_BASE;
+  edge_out->count = edge_in->count;
 
   old_succ->pred = edge_out;
 
@@ -3809,7 +3813,7 @@ insn_dead_p (pbi, x, call_ok, notes)
 	  /* Walk the set of memory locations we are currently tracking
 	     and see if one is an identical match to this memory location.
 	     If so, this memory write is dead (remember, we're walking
-	     backwards from the end of the block to the start.  */
+	     backwards from the end of the block to the start).  */
 	  temp = pbi->mem_set_list;
 	  while (temp)
 	    {
@@ -5608,8 +5612,8 @@ dump_flow_info (file)
       register basic_block bb = BASIC_BLOCK (i);
       register edge e;
 
-      fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d.\n",
-	       i, INSN_UID (bb->head), INSN_UID (bb->end), bb->loop_depth);
+      fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d, count %d.\n",
+	       i, INSN_UID (bb->head), INSN_UID (bb->end), bb->loop_depth, bb->count);
 
       fprintf (file, "Predecessors: ");
       for (e = bb->pred; e ; e = e->pred_next)
@@ -5652,6 +5656,9 @@ dump_edge_info (file, e, do_succ)
   else
     fprintf (file, " %d", side->index);
 
+  if (e->count)
+    fprintf (file, " count:%d", e->count);
+
   if (e->flags)
     {
       static const char * const bitnames[] = {
@@ -5690,8 +5697,8 @@ dump_bb (bb, outf)
   rtx last;
   edge e;
 
-  fprintf (outf, ";; Basic block %d, loop depth %d",
-	   bb->index, bb->loop_depth);
+  fprintf (outf, ";; Basic block %d, loop depth %d, count %d",
+	   bb->index, bb->loop_depth, bb->count);
   if (bb->eh_beg != -1 || bb->eh_end != -1)
     fprintf (outf, ", eh regions %d/%d", bb->eh_beg, bb->eh_end);
   putc ('\n', outf);

@@ -159,7 +159,7 @@ static const char *last_filename;
 static int count_basic_blocks;
 
 /* Number of instrumented arcs when profile_arc_flag is set.  */
-extern int count_instrumented_arcs;
+extern int count_instrumented_edges;
 
 extern int length_unit_log; /* This is defined in insn-attrtab.c.  */
 
@@ -333,7 +333,7 @@ end_final (filename)
       if (profile_block_flag)
 	size = long_bytes * count_basic_blocks;
       else
-	size = long_bytes * count_instrumented_arcs;
+	size = long_bytes * count_instrumented_edges;
       rounded = size;
 
       rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
@@ -376,8 +376,7 @@ end_final (filename)
       if (profile_block_flag)
 	assemble_integer (GEN_INT (count_basic_blocks), long_bytes, 1);
       else
-	assemble_integer (GEN_INT (count_instrumented_arcs), long_bytes,
-			  1);
+	assemble_integer (GEN_INT (count_instrumented_edges), long_bytes, 1);
 
       /* zero word (link field) */
       assemble_integer (const0_rtx, pointer_bytes, 1);
