@@ -97,7 +97,7 @@ cc1chill$(exeext): $(P) $(CHILL_SRCS) $(LIBDEPS) stamp-objlist \
 	insn-config.h insn-flags.h insn-attr.h insn-codes.h \
 	c-typeck.o c-aux-info.o c-common.o c-iterate.o \
         ggc-callbacks.o
-	cd ch; $(MAKE) $(FLAGS_TO_PASS) $(CHILL_FLAGS_TO_PASS) ../cc1chill$(exeext)
+	cd ch; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CHILL_FLAGS_TO_PASS) ../cc1chill$(exeext)
 
 #
 # Build hooks:
@@ -191,7 +191,7 @@ CHILL.stage4: stage4-start
 # distribution anyway.  It then copies the files to the distdir directory.
 CHILL.distdir:
 	mkdir tmp/ch
-	cd ch ; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) hash.h
+	cd ch ; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) hash.h
 	cd ch; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/ch >/dev/null 2>&1 || cp $$file ../tmp/ch; \

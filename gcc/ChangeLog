@@ -1,3 +1,12 @@
+2000-05-03  Jason Merrill  <jason@casey.cygnus.com>
+
+	* Makefile.in (WARN_CFLAGS): Add -pedantic -Wno-long-long.
+	(LOOSE_CFLAGS): New: CFLAGS without -pedantic and -Wtraditional.
+	(GCC_CFLAGS): Use it.
+	(LANG_FLAGS_TO_PASS): New: SUBDIR_FLAGS_TO_PASS with LOOSE_CFLAGS.
+	* cp/Make-lang.in, java/Make-lang.in, f/Make-lang.in, ch/Make-lang.in,
+	objc/Make-lang.in: Use it.
+
 2000-05-03  Jason R Thorpe  <thorpej@zembu.com>
 
 	* config/i386/i386.md (lshrqi2_cmpno): Use q not r in constraint.
@@ -203,13 +212,6 @@ Tue May  2 17:06:53 2000  Jason Eckhardt  <jle@cygnus.com>
 	* final.c (final_start_function): Fix spelling of "necessary".
 
 2000-05-02  Jason Merrill  <jason@casey.cygnus.com>
-
-	* Makefile.in (WARN_CFLAGS): Add -pedantic -Wno-long-long.
-	(LOOSE_CFLAGS): New: CFLAGS without -pedantic and -Wtraditional.
-	(GCC_CFLAGS): Use it.
-	(LANG_FLAGS_TO_PASS): New: SUBDIR_FLAGS_TO_PASS with LOOSE_CFLAGS.
-	* cp/Make-lang.in, java/Make-lang.in, f/Make-lang.in, ch/Make-lang.in,
-	objc/Make-lang.in: Use it.
 
 	* toplev.c (debug_ignore_block): Return int.
 	* dwarf2out.c (dwarf2out_ignore_block): Likewise.

@@ -160,7 +160,7 @@ objc.stage4: stage4-start
 # the build in the inner directory.
 objc.distdir: $(srcdir)/objc/objc-parse.c
 	mkdir tmp/objc
-#	cd objc ; $(MAKE) $(FLAGS_TO_PASS) objc-parse.c
+#	cd objc ; $(MAKE) $(LANG_FLAGS_TO_PASS) objc-parse.c
 	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/objc >/dev/null 2>&1 || cp $$file ../tmp/objc; \

@@ -84,7 +84,7 @@ $(srcdir)/cp/parse.c: $(srcdir)/cp/parse.y
 	@cp_srcdir=`sed -n 's/^srcdir[ 	]*=[	 ]*//p' cp/Makefile` && \
 	echo "cd cp && $(MAKE) $$cp_srcdir/parse.c" && \
 	cd cp && \
-	  $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) \
+	  $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) \
 	    $$cp_srcdir/parse.c
 
 # Create the compiler driver for g++.
@@ -124,7 +124,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/class.c $(srcdir)/cp/cp-tree.def \
 cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o \
         c-pragma.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \
 	$(srcdir)/cp/gxx.gperf $(srcdir)/cp/cfns.gperf hash.o
-	cd cp; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus$(exeext)
+	cd cp; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus$(exeext)
 #
 # Build hooks:
 
@@ -304,7 +304,7 @@ c++.stage4: stage4-start
 c++.distdir:
 	mkdir tmp/cp
 	mkdir tmp/cp/inc
-	cd cp ; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) parse.c hash.h
+	cd cp ; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) parse.c hash.h
 	cd cp; \
 	for file in *[0-9a-zA-Z+]; do \
 	  $(LN) $$file ../tmp/cp; \
