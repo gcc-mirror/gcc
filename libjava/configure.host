@@ -169,6 +169,7 @@ case "${host}" in
   sparc*-linux* | \
   ia64-* | \
   x86_64*-linux* | \
+  hppa*-linux* | \
   sh-linux* | sh[34]*-linux*)
   	can_unwind_signal=yes
 	if test x$slow_pthread_self = xyes \

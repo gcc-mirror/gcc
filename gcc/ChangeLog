@@ -1,3 +1,7 @@
+2004-07-08  Randolph Chung  <tausq@debian.org>
+
+	* pa32-linux.h (MD_FALLBACK_FRAME_STATE_FOR): Define.
+
 2004-07-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* builtins.c (fold_builtin_strncpy): Make sure len is a constant
