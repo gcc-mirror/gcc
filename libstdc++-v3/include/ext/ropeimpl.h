@@ -49,6 +49,9 @@
 #include <bits/std_iostream.h>
 #include <bits/functexcept.h>
 
+#include <ext/algorithm> // For copy_n and lexicographical_compare_3way
+#include <ext/memory> // For uninitialized_copy_n
+
 namespace __gnu_cxx
 {
 using std::size_t;
@@ -58,8 +61,6 @@ using std::__throw_length_error;
 using std::__alloc;
 using std::_Destroy;
 using std::uninitialized_fill_n;
-using std::lexicographical_compare_3way;
-using std::uninitialized_copy_n;
 
 // Set buf_start, buf_end, and buf_ptr appropriately, filling tmp_buf
 // if necessary.  Assumes _M_path_end[leaf_index] and leaf_pos are correct.
@@ -983,7 +984,7 @@ rope<_CharT,_Alloc>::_S_flatten(_RopeRep* __r, _CharT* __buffer)
 	case _RopeRep::_S_leaf:
 	    {
 		_RopeLeaf* __l = (_RopeLeaf*)__r;
-		return std::copy_n(__l->_M_data, __l->_M_size, __buffer).second;
+		return copy_n(__l->_M_data, __l->_M_size, __buffer).second;
 	    }
 	case _RopeRep::_S_function:
 	case _RopeRep::_S_substringfn:

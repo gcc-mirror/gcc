@@ -127,64 +127,6 @@ namespace std
     return __result + (__last - __first);
   }
 
-  // uninitialized_copy_n (not part of the C++ standard)
-
-  template<typename _InputIter, typename _Size, typename _ForwardIter>
-    pair<_InputIter, _ForwardIter>
-    __uninitialized_copy_n(_InputIter __first, _Size __count,
-			   _ForwardIter __result,
-			   input_iterator_tag)
-    {
-      _ForwardIter __cur = __result;
-      try {
-	for ( ; __count > 0 ; --__count, ++__first, ++__cur) 
-	  _Construct(&*__cur, *__first);
-	return pair<_InputIter, _ForwardIter>(__first, __cur);
-      }
-      catch(...)
-	{
-	  _Destroy(__result, __cur);
-	  __throw_exception_again; 
-	}
-    }
-
-  template<typename _RandomAccessIter, typename _Size, typename _ForwardIter>
-    inline pair<_RandomAccessIter, _ForwardIter>
-    __uninitialized_copy_n(_RandomAccessIter __first, _Size __count,
-			   _ForwardIter __result,
-			   random_access_iterator_tag)
-    {
-      _RandomAccessIter __last = __first + __count;
-      return pair<_RandomAccessIter, _ForwardIter>(
-		     __last,
-		     uninitialized_copy(__first, __last, __result));
-    }
-
-  template<typename _InputIter, typename _Size, typename _ForwardIter>
-    inline pair<_InputIter, _ForwardIter>
-    __uninitialized_copy_n(_InputIter __first, _Size __count,
-			 _ForwardIter __result) {
-      return __uninitialized_copy_n(__first, __count, __result,
-				    __iterator_category(__first));
-    }
-
-  /**
-   *  @brief Copies the range [first,last) into result.
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  result An output iterator.
-   *  @return   result + (first - last)
-   *
-   *  Like copy(), but does not require an initialized output range.
-  */
-  template<typename _InputIter, typename _Size, typename _ForwardIter>
-    inline pair<_InputIter, _ForwardIter>
-    uninitialized_copy_n(_InputIter __first, _Size __count,
-			 _ForwardIter __result) {
-      return __uninitialized_copy_n(__first, __count, __result,
-				    __iterator_category(__first));
-    }
-
   // Valid if copy construction is equivalent to assignment, and if the
   // destructor is trivial.
   template<typename _ForwardIter, typename _Tp>
