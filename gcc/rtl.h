@@ -1996,6 +1996,7 @@ extern void fancy_abort PARAMS ((const char *, int, const char *))
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
 /* In alias.c */
+extern void clear_reg_alias_info	PARAMS ((rtx));
 extern rtx canon_rtx                    PARAMS ((rtx));
 extern int true_dependence		PARAMS ((rtx, enum machine_mode, rtx,
 						int (*)(rtx, int)));

@@ -5345,6 +5345,9 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
       for (temp = insn; temp != incr; temp = NEXT_INSN (temp))
 	if (GET_CODE (temp) == CALL_INSN)
 	  REG_N_CALLS_CROSSED (regno)++;
+
+      /* Invalidate alias info for Q since we just changed its value.  */
+      clear_reg_alias_info (q);
     }
   else
     return;

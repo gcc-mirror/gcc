@@ -937,6 +937,20 @@ record_base_value (regno, val, invariant)
   reg_base_value[regno] = find_base_value (val);
 }
 
+/* Clear alias info for a register.  This is used if an RTL transformation
+   changes the value of a register.  This is used in flow by AUTO_INC_DEC
+   optimizations.  We don't need to clear reg_base_value, since flow only
+   changes the offset.  */
+
+void
+clear_reg_alias_info (rtx reg)
+{
+  int regno = REGNO (reg);
+
+  if (regno < reg_known_value_size)
+    reg_known_value[regno] = reg;
+}
+
 /* Returns a canonical version of X, from the point of view alias
    analysis.  (For example, if X is a MEM whose address is a register,
    and the register has a known value (say a SYMBOL_REF), then a MEM

@@ -1,3 +1,9 @@
+2001-09-07  Jim Wilson  <wilson@redhat.com>
+
+	* alias.c (clear_reg_alias_info): New.
+	* flow.c (attempt_auto_inc): Call clear_reg_alias_info.
+	* rtl.h (clear_reg_alias_info): Declare.
+
 2001-09-06  Richard Henderson  <rth@redhat.com>
 
 	* simplify-rtx.c (simplify_binary_operation): Revert last change.
