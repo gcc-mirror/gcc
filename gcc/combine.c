@@ -12533,7 +12533,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 							      PATTERN (tem)))
 				  {
 				    REG_NOTES (tem)
-				      = gen_rtx_EXPR_LIST (REG_DEAD, piece,
+				      = gen_rtx_EXPR_LIST (REG_UNUSED, piece,
 							   REG_NOTES (tem));
 				    break;
 				  }
