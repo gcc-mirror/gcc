@@ -1701,10 +1701,20 @@ add_prefixed_path (suffix, chain)
      const char *suffix;
      size_t chain;
 {
+  char *path;
   const char *prefix;
+  size_t prefix_len, suffix_len;
 
-  prefix = iprefix ? iprefix: cpp_GCC_INCLUDE_DIR;
-  add_path (concat (prefix, suffix), chain, 0);
+  suffix_len = strlen (suffix);
+  prefix     = iprefix ? iprefix : cpp_GCC_INCLUDE_DIR;
+  prefix_len = iprefix ? strlen (iprefix) : cpp_GCC_INCLUDE_DIR_len;
+
+  path = xmalloc (prefix_len + suffix_len + 1);
+  memcpy (path, prefix, prefix_len);
+  memcpy (path + prefix_len, suffix, suffix_len);
+  path[prefix_len + suffix_len] = '\0';
+
+  add_path (path, chain, 0);
 }
 
 /* Set the C 89 standard (with 1994 amendments if C94, without GNU
