@@ -5369,7 +5369,11 @@ expand_expr (exp, target, tmode, modifier)
 	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
 				   op0);
 
-	  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+	  /* These cases happen in Fortran.  Is that legitimate?
+	     Should Fortran work in another way?
+	     Do they happen in C?  */
+	  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
+	      || GET_CODE (op0) == CONCAT)
 	    {
 	      /* If this object is in a register, it must be not
 		 be BLKmode. */
