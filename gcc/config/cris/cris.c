@@ -1953,17 +1953,34 @@ cris_notice_update_cc (exp, insn)
 		{
 		  /* For "move.S rz,[rx=ry+o]" and "clear.S [rx=ry+o]",
 		     say flags are not changed, except for overlap.  */
-		  if ((cc_status.value1
-		       && cris_reg_overlap_mentioned_p (XEXP
-							(XVECEXP
-							 (exp, 0, 0), 0),
-							cc_status.value1))
-		      || (cc_status.value2
-			  && cris_reg_overlap_mentioned_p (XEXP
-							   (XVECEXP
-							    (exp, 0, 1), 0),
-							   cc_status.value2)))
-		    CC_STATUS_INIT;
+		  if (cc_status.value1
+		      && cris_reg_overlap_mentioned_p (XEXP
+						       (XVECEXP
+							(exp, 0, 0), 0),
+						       cc_status.value1))
+		    cc_status.value1 = 0;
+
+		  if (cc_status.value1
+		      && cris_reg_overlap_mentioned_p (XEXP
+						       (XVECEXP
+							(exp, 0, 1), 0),
+						       cc_status.value1))
+		    cc_status.value1 = 0;
+
+		  if (cc_status.value2
+		      && cris_reg_overlap_mentioned_p (XEXP
+						       (XVECEXP
+							(exp, 0, 0), 0),
+						       cc_status.value2))
+		    cc_status.value2 = 0;
+
+		  if (cc_status.value2
+		      && cris_reg_overlap_mentioned_p (XEXP
+						       (XVECEXP
+							(exp, 0, 1), 0),
+						       cc_status.value2))
+		    cc_status.value2 = 0;
+
 		  return;
 		}
 	    }

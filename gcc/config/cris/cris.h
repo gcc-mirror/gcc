@@ -204,7 +204,7 @@ extern const char *cris_elinux_stacksize_str;
 #undef LINK_SPEC
 #define LINK_SPEC \
  "%{v:--verbose}\
-  %(link_subtarget)" 
+  %(link_subtarget)"
 
 /* For the cris-*-elf subtarget.  */
 #define CRIS_LINK_SUBTARGET_SPEC \
@@ -775,16 +775,13 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
   || CONSTANT_INDEX_P (X)					\
  )
 
-/* FIXME: Bug below: We can't have XEXP (X, 0)) both be MEM and a
-   CONSTANT_P.  Parens don't match indentation.  */
-
 #define EXTRA_CONSTRAINT_T(X)						\
  (									\
-  /* Three-address-operands.  All are indirect-memory:  */		\
+  /* Memory three-address operand.  All are indirect-memory:  */	\
   GET_CODE (X) == MEM							\
   && ((GET_CODE (XEXP (X, 0)) == MEM					\
-  /* Double indirect: [[reg]] or [[reg+]]?  */				\
-  && (BASE_OR_AUTOINCR_P (XEXP (XEXP (X, 0), 0))))			\
+       /* Double indirect: [[reg]] or [[reg+]]?  */			\
+       && (BASE_OR_AUTOINCR_P (XEXP (XEXP (X, 0), 0))))			\
       /* Just an explicite indirect reference: [const]?  */		\
       || CONSTANT_P (XEXP (X, 0))					\
       /* Something that is indexed; [...+...]?  */			\

@@ -1,3 +1,13 @@
+2001-11-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_notice_update_cc): Check first
+	destination also against overlap with cc_status.value2 and second
+	destination against overlap with cc_status.value1.  For overlaps,
+	clear overlapped value, don't just CC_STATUS_INIT.
+
+	* config/cris/cris.h (EXTRA_CONSTRAINT_T): Fix spacing and FIXME.
+	(LINK_SPEC): Remove whitespace at end of line.
+	
 2001-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lex.c (init_c_lex): Canonicalize "-" filename to "".
