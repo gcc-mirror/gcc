@@ -2512,8 +2512,6 @@ life_analysis (f, file, flags)
   if (flags & PROP_SCAN_DEAD_CODE)
     init_alias_analysis ();
 
-  max_regno = max_reg_num ();
-
   /* Always remove no-op moves.  Do this before other processing so
      that we don't have to keep re-scanning them.  */
   delete_noop_moves (f);
@@ -3205,6 +3203,8 @@ void
 allocate_reg_life_data ()
 {
   int i;
+
+  max_regno = max_reg_num ();
 
   /* Recalculate the register space, in case it has grown.  Old style
      vector oriented regsets would set regset_{size,bytes} here also.  */
