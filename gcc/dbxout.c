@@ -83,6 +83,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "ggc.h"
 #include "debug.h"
+#include "function.h"
 #include "target.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
@@ -148,7 +149,9 @@ static int have_used_extensions = 0;
 /* Number for the next N_SOL filename stabs label.  The number 0 is reserved
    for the N_SO filename stabs label.  */
 
+#if defined (DBX_DEBUGGING_INFO) && !defined (DBX_OUTPUT_SOURCE_FILENAME)
 static int source_label_number = 1;
+#endif
 
 #ifdef DEBUG_SYMS_TEXT
 #define FORCE_TEXT text_section ();
@@ -289,9 +292,6 @@ static void dbxout_init			PARAMS ((const char *));
 static void dbxout_finish		PARAMS ((const char *));
 static void dbxout_start_source_file	PARAMS ((unsigned, const char *));
 static void dbxout_end_source_file	PARAMS ((unsigned));
-static void dbxout_source_line		PARAMS ((unsigned int, const char *));
-static void dbxout_source_file		PARAMS ((FILE *, const char *));
-static void dbxout_function_end		PARAMS ((void));
 static void dbxout_typedefs		PARAMS ((tree));
 static void dbxout_type_index		PARAMS ((tree));
 #if DBX_CONTIN_LENGTH > 0
@@ -312,12 +312,15 @@ static void dbxout_symbol_name		PARAMS ((tree, const char *, int));
 static void dbxout_prepare_symbol	PARAMS ((tree));
 static void dbxout_finish_symbol	PARAMS ((tree));
 static void dbxout_block		PARAMS ((tree, int, tree));
-static void dbxout_begin_function	PARAMS ((tree));
 static void dbxout_global_decl		PARAMS ((tree));
 
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
 
+static void dbxout_source_line		PARAMS ((unsigned int, const char *));
+static void dbxout_source_file		PARAMS ((FILE *, const char *));
+static void dbxout_function_end		PARAMS ((void));
+static void dbxout_begin_function	PARAMS ((tree));
 static void dbxout_begin_block		PARAMS ((unsigned, unsigned));
 static void dbxout_end_block		PARAMS ((unsigned, unsigned));
 static void dbxout_function_decl	PARAMS ((tree));
@@ -377,6 +380,7 @@ struct gcc_debug_hooks xcoff_debug_hooks =
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
 
+#if defined (DBX_DEBUGGING_INFO)
 static void
 dbxout_function_end ()
 {
@@ -397,6 +401,7 @@ dbxout_function_end ()
   assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
   fprintf (asmfile, "\n");
 }
+#endif /* DBX_DEBUGGING_INFO */
 
 /* At the beginning of compilation, start writing the symbol table.
    Initialize `typevec' and output the standard data types of C.  */
@@ -552,6 +557,7 @@ dbxout_end_source_file (line)
 #endif
 }
 
+#if defined (DBX_DEBUGGING_INFO)
 /* Output debugging info to FILE to switch to sourcefile FILENAME.  */
 
 static void
@@ -599,8 +605,6 @@ dbxout_source_line (lineno, filename)
   fprintf (asmfile, "%s%d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
 #endif
 }
-
-#if defined (DBX_DEBUGGING_INFO)
 
 /* Describe the beginning of an internal block within a function.  */
 
@@ -2824,6 +2828,7 @@ dbxout_block (block, depth, args)
    Usually this follows the function's code,
    but on some systems, it comes before.  */
 
+#if defined (DBX_DEBUGGING_INFO)
 static void
 dbxout_begin_function (decl)
      tree decl;
@@ -2833,5 +2838,6 @@ dbxout_begin_function (decl)
   if (DECL_NAME (DECL_RESULT (decl)) != 0)
     dbxout_symbol (DECL_RESULT (decl), 1);
 }
+#endif /* DBX_DEBUGGING_INFO */
 
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */

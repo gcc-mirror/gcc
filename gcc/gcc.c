@@ -97,6 +97,7 @@ extern int getrusage PARAMS ((int, struct rusage *));
 #if defined(TARGET_EXECUTABLE_SUFFIX) && defined(HOST_EXECUTABLE_SUFFIX)
 #define HAVE_TARGET_EXECUTABLE_SUFFIX
 #else
+#undef TARGET_EXECUTABLE_SUFFIX
 #define TARGET_EXECUTABLE_SUFFIX ""
 #endif
 

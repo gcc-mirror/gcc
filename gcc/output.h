@@ -190,6 +190,10 @@ extern void init_section PARAMS ((void));
 extern void fini_section PARAMS ((void));
 #endif
 
+#ifdef EXPORTS_SECTION_ASM_OP
+extern void exports_section PARAMS ((void));
+#endif
+
 #ifdef TDESC_SECTION_ASM_OP
 extern void tdesc_section PARAMS ((void));
 #endif

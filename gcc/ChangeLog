@@ -1,5 +1,14 @@
 2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (dbxout.o): Depend on function.h.
+	* collect2.c (is_in_list): Hide unused function.
+	* dbxout.c: Include function.h.
+	(source_label_number, dbxout_source_line, dbxout_source_file,
+	dbxout_function_end, dbxout_begin_function): Wrap/move inside
+	macros controlling usage.
+	* gcc.c (TARGET_EXECUTABLE_SUFFIX): Undef before defining.
+	* output.h (exports_section): Prototype.
+
 	* convex.c (convex_output_function_prologue): Fix format specifier
 	warning.
 	(asm_declare_function_name): Fix signed/unsigned warning.
