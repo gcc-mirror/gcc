@@ -1,3 +1,8 @@
+Wed Aug  2 16:26:15 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (legitimate_address_p): Accept other bases than
+	pic_offset_table_rtx for GOTOFF constructs.
+
 Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (shift to lea splitter): Use const_int_operand.
