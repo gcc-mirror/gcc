@@ -1,3 +1,8 @@
+Wed Feb 11 01:39:47 1998  Richard Henderson  <rth@cygnus.com>
+
+	* stor-layout.c (layout_type): Do upper - lower in the native type,
+	so as to properly handle negative indices.
+
 Tue Feb 10 00:26:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rs6000.c (setup_incoming_varargs): Always set rs6000_sysv_varargs_p.

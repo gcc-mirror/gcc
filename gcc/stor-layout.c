@@ -777,8 +777,11 @@ layout_type (type)
 					 lb, 0))
 	      ub = TREE_OPERAND (ub, 0);
 
+	    /* The initial subtraction should happen in the original type so
+	       that (possible) negative values are handled appropriately.  */
 	    length = size_binop (PLUS_EXPR, size_one_node,
-				 size_binop (MINUS_EXPR, ub, lb));
+				 fold (build (MINUS_EXPR, TREE_TYPE (lb),
+					      ub, lb)));
 
 	    /* If neither bound is a constant and sizetype is signed, make
 	       sure the size is never negative.  We should really do this
