@@ -1,5 +1,9 @@
 2001-11-18  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (type::to_array): New method.
+	(_Jv_BytecodeVerifier::verify_instructions_0) [op_anewarray]:
+	Construct new array type.
+
 	* verify.cc (_Jv_BytecodeVerifier::branch_prepass) [op_sipush]:
 	Skip a short, not a byte.
 	[op_newarray]: Skip a byte, not a short.
