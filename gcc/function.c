@@ -3160,10 +3160,16 @@ purge_addressof_1 (loc, insn, force, store, ht)
 	  size_x = GET_MODE_BITSIZE (GET_MODE (x));
 	  size_sub = GET_MODE_BITSIZE (GET_MODE (sub));
 
+	  /* Do not frob unchanging MEMs.  If a later reference forces the
+	     pseudo to the stack, we can wind up with multiple writes to
+	     an unchanging memory, which is invalid.  */
+	  if (RTX_UNCHANGING_P (x) && size_x != size_sub)
+	    ;
+
 	  /* Don't even consider working with paradoxical subregs,
 	     or the moral equivalent seen here.  */
-	  if (size_x <= size_sub
-	      && int_mode_for_mode (GET_MODE (sub)) != BLKmode)
+	  else if (size_x <= size_sub
+	           && int_mode_for_mode (GET_MODE (sub)) != BLKmode)
 	    {
 	      /* Do a bitfield insertion to mirror what would happen
 		 in memory.  */
