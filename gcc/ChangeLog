@@ -1,3 +1,8 @@
+2005-01-24  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.md (*extendsfdf2_sse): Use "nonimmediate_operand"
+	operand constraint for operand 0.
+
 2005-01-23  Richard Henderson  <rth@redhat.com>
 
 	PR 19486
