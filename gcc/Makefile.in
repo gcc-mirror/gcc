@@ -1455,7 +1455,7 @@ dwarfout.o : dwarfout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) dwarf.h \
 dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) dwarf2.h \
    debug.h flags.h insn-config.h reload.h output.h diagnostic.h real.h \
    hard-reg-set.h $(REGS_H) $(EXPR_H) libfuncs.h toplev.h dwarf2out.h varray.h \
-   $(GGC_H) except.h dwarf2asm.h $(TM_P_H) langhooks.h gt-dwarf2out.h
+   $(GGC_H) except.h dwarf2asm.h $(TM_P_H) langhooks.h $(HASHTAB_H) gt-dwarf2out.h
 dwarf2asm.o : dwarf2asm.c $(CONFIG_H) $(SYSTEM_H) flags.h $(RTL_H) $(TREE_H) \
    output.h dwarf2asm.h $(TM_P_H) $(GGC_H)
 vmsdbgout.o : vmsdbgout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h \

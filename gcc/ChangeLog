@@ -1,3 +1,17 @@
+2002-10-27  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (dwarf2out.o): Add dependendcy on hashtab.h.
+	* dwarf2out.c: Include hashtab.h.
+	(is_main_source): New static variable.
+	(attr_checksum, die_checksum): Modified to handle die references.
+	(same_loc_p, same_dw_val_p, same_attr_p, same_die_p, same_die_p_wrap,
+	unmark_all_dies, htab_cu_hash, htab_cu_eq, htab_cu_del, check_duplicate_cu,
+	record_comdat_symbol_number): New static functions.
+	(output_comp_unit, compute_section_prefix, is_type_die, break_out_includes,
+	mark_dies, unmark_dies, dwarf2out_start_source_file): Modified.
+	* toplev.c (rest_of_decl_compilation): Call of dwarf2out_decl for type
+	declarations added.
+
 2002-10-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (initial_offset): Change to

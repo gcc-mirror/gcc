@@ -2316,6 +2316,17 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
       timevar_pop (TV_SYMOUT);
     }
 #endif
+#ifdef DWARF2_DEBUGGING_INFO
+  else if ((write_symbols == DWARF2_DEBUG
+	   || write_symbols == VMS_AND_DWARF2_DEBUG)
+	   && top_level
+	   && TREE_CODE (decl) == TYPE_DECL)
+    {
+      timevar_push (TV_SYMOUT);
+      dwarf2out_decl (decl);
+      timevar_pop (TV_SYMOUT);
+    }
+#endif
 }
 
 /* Called after finishing a record, union or enumeral type.  */
