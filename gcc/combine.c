@@ -7512,7 +7512,12 @@ known_cond (x, cond, reg, val)
 	    {
 	      int unsignedp = (code == UMIN || code == UMAX);
 
-	      if (code == SMAX || code == UMAX)
+	      /* Do not reverse the condition when it is NE or EQ.
+		 This is because we cannot conclude anything about
+		 the value of 'SMAX (x, y)' when x is not equal to y,
+		 but we can when x equals y.  */ 
+	      if ((code == SMAX || code == UMAX)
+		  && ! (cond == EQ || cond == NE))
 		cond = reverse_condition (cond);
 
 	      switch (cond)
