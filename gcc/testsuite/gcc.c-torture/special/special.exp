@@ -36,7 +36,7 @@ load_lib gcc-dg.exp
 
 # 921210-1
 set lines [gcc_target_compile $srcdir/$subdir/921210-1.c "" preprocess ""]
-set lines [split [prune_warnings [prune_gcc_output $lines]] "\n"]
+set lines [prune [split [prune_warnings [prune_gcc_output $lines]] "\n"] ""]
 set line [lindex $lines [expr [llength $lines]-1]]
 regsub -all " " $line "" clean
 if [expr [string compare $clean "(a->f+1)+1"]==0] then {
