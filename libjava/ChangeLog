@@ -1,3 +1,10 @@
+2004-03-11  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/ClasspathFontPeer.java:
+	Fixed javadoc to be correct xhtml.
+	* gnu/java/awt/peer/gtk/GtkArgList.java
+	(add): Use Boolean.valueOf() instead of new Boolean().
+
 2004-03-09  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/Thread.java

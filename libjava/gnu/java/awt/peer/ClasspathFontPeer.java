@@ -56,12 +56,12 @@ import gnu.java.awt.*;
  * <p><b>State kept by the peer:</b> a peer is generated for each Font
  * object in the default implementation. If you wish to share peers between
  * fonts, you will need to subclass both ClasspathFontPeer and
- * {@link ClasspathToolKit}.
+ * {@link ClasspathToolKit}.</p>
  * 
  * <p><b>Thread Safety:</b> Methods of this interface may be called
  * from arbitrary threads at any time. Implementations of the
  * <code>ClasspathFontPeer</code> interface are required to perform
- * the necessary synchronization.
+ * the necessary synchronization.</p>
  *
  * @see java.awt.Font#getPeer
  * @see java.awt.Toolkit#getFontPeer
