@@ -1,3 +1,8 @@
+2001-08-21  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_return_in_memory): True for variable
+	sized types.
+
 2001-06-19  Bernd Schmidt  <bernds@redhat.com>
 
 	* regmove.c (optimize_reg_copy_3): Do nothing if previous insn
