@@ -2,7 +2,7 @@
 
 	* gcc.target/frv/all-mdpackh-1.c: New test.
 
-2005-01-26  Steven Bosscher  <stevenb@suse.de>
+2005-01-28  Steven Bosscher  <stevenb@suse.de>
 
 	* gcc.dg/tree-ssa/20030711-2.c: Run at -O2, not -O1.
 
