@@ -811,10 +811,14 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
       else
 	fns->use (rhs_elt, &TREE_OPERAND (expr, 1), bsi, false);
     }
-  else if (TREE_CODE (rhs) == CALL_EXPR)
-    sra_walk_call_expr (rhs, bsi, fns);
   else
-    sra_walk_expr (&TREE_OPERAND (expr, 1), bsi, false, fns);
+    {
+      tree call = get_call_expr_in (rhs);
+      if (call)
+	sra_walk_call_expr (call, bsi, fns);
+      else
+	sra_walk_expr (&TREE_OPERAND (expr, 1), bsi, false, fns);
+    }
 }
 
 /* Entry point to the walk functions.  Search the entire function,

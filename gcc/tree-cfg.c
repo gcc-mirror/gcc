@@ -510,7 +510,7 @@ make_ctrl_stmt_edges (basic_block bb)
 static void
 make_exit_edges (basic_block bb)
 {
-  tree last = last_stmt (bb);
+  tree last = last_stmt (bb), op;
 
   if (last == NULL_TREE)
     abort ();
@@ -550,8 +550,8 @@ make_exit_edges (basic_block bb)
       /* A MODIFY_EXPR may have a CALL_EXPR on its RHS and the CALL_EXPR
 	 may have an abnormal edge.  Search the RHS for this case and
 	 create any required edges.  */
-      if (TREE_CODE (TREE_OPERAND (last, 1)) == CALL_EXPR
-	  && TREE_SIDE_EFFECTS (TREE_OPERAND (last, 1))
+      op = get_call_expr_in (last);
+      if (op && TREE_SIDE_EFFECTS (op)
 	  && current_function_has_nonlocal_label)
 	make_goto_expr_edges (bb);
 
@@ -1520,7 +1520,7 @@ clear_special_calls (void)
 static void
 remove_useless_stmts_1 (tree *tp, struct rus_data *data)
 {
-  tree t = *tp;
+  tree t = *tp, op;
 
   switch (TREE_CODE (t))
     {
@@ -1566,10 +1566,11 @@ remove_useless_stmts_1 (tree *tp, struct rus_data *data)
     case MODIFY_EXPR:
       data->last_goto = NULL;
       fold_stmt (tp);
-      if (TREE_CODE (TREE_OPERAND (t, 1)) == CALL_EXPR)
+      op = get_call_expr_in (t);
+      if (op)
 	{
-	  update_call_expr_flags (TREE_OPERAND (t, 1));
-	  notice_special_calls (TREE_OPERAND (t, 1));
+	  update_call_expr_flags (op);
+	  notice_special_calls (op);
 	}
       if (tree_could_throw_p (t))
 	data->may_throw = true;
@@ -2478,37 +2479,24 @@ is_ctrl_stmt (tree t)
 bool
 is_ctrl_altering_stmt (tree t)
 {
-  tree call = t;
+  tree call;
 
 #if defined ENABLE_CHECKING
   if (t == NULL)
     abort ();
 #endif
 
-  switch (TREE_CODE (t))
+  call = get_call_expr_in (t);
+  if (call)
     {
-    case MODIFY_EXPR:
-      /* A MODIFY_EXPR with a rhs of a call has the characteristics
-	 of the call.  */
-      call = TREE_OPERAND (t, 1);
-      if (TREE_CODE (call) != CALL_EXPR)
-	break;
-      /* FALLTHRU */
-
-    case CALL_EXPR:
       /* A non-pure/const CALL_EXPR alters flow control if the current
 	 function has nonlocal labels.  */
-      if (TREE_SIDE_EFFECTS (t)
-	  && current_function_has_nonlocal_label)
+      if (TREE_SIDE_EFFECTS (call) && current_function_has_nonlocal_label)
 	return true;
 
       /* A CALL_EXPR also alters control flow if it does not return.  */
       if (call_expr_flags (call) & (ECF_NORETURN | ECF_LONGJMP))
 	return true;
-      break;
-
-    default:
-      return false;
     }
 
   /* If a statement can throw, it alters control flow.  */
@@ -4509,15 +4497,7 @@ static bool
 tree_block_ends_with_call_p (basic_block bb)
 {
   block_stmt_iterator bsi = bsi_last (bb);
-  tree t = tsi_stmt (bsi.tsi);
-
-  if (TREE_CODE (t) == RETURN_EXPR && TREE_OPERAND (t, 0))
-    t = TREE_OPERAND (t, 0);
-
-  if (TREE_CODE (t) == MODIFY_EXPR)
-    t = TREE_OPERAND (t, 1);
-
-  return TREE_CODE (t) == CALL_EXPR;
+  return get_call_expr_in (bsi_stmt (bsi)) != NULL;
 }
 
 
@@ -4538,11 +4518,7 @@ tree_block_ends_with_condjump_p (basic_block bb)
 static bool
 need_fake_edge_p (tree t)
 {
-  if (TREE_CODE (t) == RETURN_EXPR && TREE_OPERAND (t, 0))
-    t = TREE_OPERAND (t, 0);
-
-  if (TREE_CODE (t) == MODIFY_EXPR)
-    t = TREE_OPERAND (t, 1);
+  tree call;
 
   /* NORETURN and LONGJMP calls already have an edge to exit.
      CONST, PURE and ALWAYS_RETURN calls do not need one.
@@ -4551,9 +4527,10 @@ need_fake_edge_p (tree t)
      figured out from the RTL in mark_constant_function, and
      the counter incrementation code from -fprofile-arcs
      leads to different results from -fbranch-probabilities.  */
-  if (TREE_CODE (t) == CALL_EXPR
-      && !(call_expr_flags (t) & 
-	    (ECF_NORETURN | ECF_LONGJMP | ECF_ALWAYS_RETURN)))
+  call = get_call_expr_in (t);
+  if (call
+      && !(call_expr_flags (call) & 
+	   (ECF_NORETURN | ECF_LONGJMP | ECF_ALWAYS_RETURN)))
     return true;
 
   if (TREE_CODE (t) == ASM_EXPR

@@ -2106,27 +2106,30 @@ get_rhs (tree stmt)
 {
   enum tree_code code = TREE_CODE (stmt);
 
-  if (code == MODIFY_EXPR)
-    return TREE_OPERAND (stmt, 1);
-  if (code == COND_EXPR)
-    return COND_EXPR_COND (stmt);
-  else if (code == SWITCH_EXPR)
-    return SWITCH_COND (stmt);
-  else if (code == RETURN_EXPR)
+  switch (code)
     {
-      if (!TREE_OPERAND (stmt, 0))
-	return NULL_TREE;
-      if (TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
-	return TREE_OPERAND (TREE_OPERAND (stmt, 0), 1);
+    case RETURN_EXPR:
+      stmt = TREE_OPERAND (stmt, 0);
+      if (stmt)
+	return get_rhs (stmt);
       else
-	return TREE_OPERAND (stmt, 0);
+	return NULL;
+
+    case MODIFY_EXPR:
+      return TREE_OPERAND (stmt, 1);
+
+    case COND_EXPR:
+      return COND_EXPR_COND (stmt);
+    case SWITCH_EXPR:
+      return SWITCH_COND (stmt);
+    case GOTO_EXPR:
+      return GOTO_DESTINATION (stmt);
+    case LABEL_EXPR:
+      return LABEL_EXPR_LABEL (stmt);
+
+    default:
+      return stmt;
     }
-  else if (code == GOTO_EXPR)
-    return GOTO_DESTINATION (stmt);
-  else if (code == LABEL_EXPR)
-    return LABEL_EXPR_LABEL (stmt);
-  else
-    return stmt;
 }
 
 
@@ -2135,8 +2138,9 @@ get_rhs (tree stmt)
 static bool
 set_rhs (tree *stmt_p, tree expr)
 {
-  tree stmt = *stmt_p;
+  tree stmt = *stmt_p, op;
   enum tree_code code = TREE_CODE (expr);
+  stmt_ann_t ann;
 
   /* Verify the constant folded result is valid gimple.  */
   if (TREE_CODE_CLASS (code) == '2')
@@ -2151,30 +2155,39 @@ set_rhs (tree *stmt_p, tree expr)
 	return false;
     }
 
-  code = TREE_CODE (stmt);
-  if (code == MODIFY_EXPR)
-    TREE_OPERAND (stmt, 1) = expr;
-  else if (code == COND_EXPR)
-    COND_EXPR_COND (stmt) = expr;
-  else if (code == SWITCH_EXPR)
-    SWITCH_COND (stmt) = expr;
-  else if (code == RETURN_EXPR)
+  switch (TREE_CODE (stmt))
     {
-      if (TREE_OPERAND (stmt, 0)
-	  && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
-	TREE_OPERAND (TREE_OPERAND (stmt, 0), 1) = expr;
-      else
-	TREE_OPERAND (stmt, 0) = expr;
-    }
-  else if (code == GOTO_EXPR)
-    GOTO_DESTINATION (stmt) = expr;
-  else if (code == LABEL_EXPR)
-    LABEL_EXPR_LABEL (stmt) = expr;
-  else
-    {
+    case RETURN_EXPR:
+      op = TREE_OPERAND (stmt, 0);
+      if (TREE_CODE (op) != MODIFY_EXPR)
+	{
+	  TREE_OPERAND (stmt, 0) = expr;
+	  break;
+	}
+      stmt = op;
+      /* FALLTHRU */
+
+    case MODIFY_EXPR:
+      TREE_OPERAND (stmt, 1) = expr;
+      break;
+
+    case COND_EXPR:
+      COND_EXPR_COND (stmt) = expr;
+      break;
+    case SWITCH_EXPR:
+      SWITCH_COND (stmt) = expr;
+      break;
+    case GOTO_EXPR:
+      GOTO_DESTINATION (stmt) = expr;
+      break;
+    case LABEL_EXPR:
+      LABEL_EXPR_LABEL (stmt) = expr;
+      break;
+
+    default:
       /* Replace the whole statement with EXPR.  If EXPR has no side
 	 effects, then replace *STMT_P with an empty statement.  */
-      stmt_ann_t ann = stmt_ann (stmt);
+      ann = stmt_ann (stmt);
       *stmt_p = TREE_SIDE_EFFECTS (expr) ? expr : build_empty_stmt ();
       (*stmt_p)->common.ann = (tree_ann_t) ann;
 
@@ -2211,6 +2224,7 @@ set_rhs (tree *stmt_p, tree expr)
 		SSA_NAME_DEF_STMT (var) = *stmt_p;
 	    }
 	}
+      break;
     }
 
   return true;
