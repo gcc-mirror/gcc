@@ -1,3 +1,9 @@
+2004-03-31  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (optimize_function): Kill prototype.
+	* optimize.c (dump_function, optimize_function, dump_finction): Kill.
+	* semantics.c (expand_body): Kill.
+
 2004-03-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14724
