@@ -185,35 +185,35 @@ c_base_headers = \
 std_srcdir = ${glibcpp_srcdir}/include/std
 std_builddir = ./
 std_headers = \
-	${std_srcdir}/algorithm \
-	${std_srcdir}/bitset \
-	${std_srcdir}/complex \
-	${std_srcdir}/deque \
-	${std_srcdir}/fstream \
-	${std_srcdir}/functional \
-	${std_srcdir}/iomanip \
-	${std_srcdir}/ios \
-	${std_srcdir}/iosfwd \
-	${std_srcdir}/iostream \
-	${std_srcdir}/istream \
-	${std_srcdir}/iterator \
-	${std_srcdir}/limits \
-	${std_srcdir}/list \
-	${std_srcdir}/locale \
-	${std_srcdir}/map \
-	${std_srcdir}/memory \
-	${std_srcdir}/numeric \
-	${std_srcdir}/ostream \
-	${std_srcdir}/queue \
-	${std_srcdir}/set \
-	${std_srcdir}/sstream \
-	${std_srcdir}/stack \
-	${std_srcdir}/stdexcept \
-	${std_srcdir}/streambuf \
-	${std_srcdir}/string \
-	${std_srcdir}/utility \
-	${std_srcdir}/valarray \
-	${std_srcdir}/vector 
+	${std_srcdir}/std_algorithm.h \
+	${std_srcdir}/std_bitset.h \
+	${std_srcdir}/std_complex.h \
+	${std_srcdir}/std_deque.h \
+	${std_srcdir}/std_fstream.h \
+	${std_srcdir}/std_functional.h \
+	${std_srcdir}/std_iomanip.h \
+	${std_srcdir}/std_ios.h \
+	${std_srcdir}/std_iosfwd.h \
+	${std_srcdir}/std_iostream.h \
+	${std_srcdir}/std_istream.h \
+	${std_srcdir}/std_iterator.h \
+	${std_srcdir}/std_limits.h \
+	${std_srcdir}/std_list.h \
+	${std_srcdir}/std_locale.h \
+	${std_srcdir}/std_map.h \
+	${std_srcdir}/std_memory.h \
+	${std_srcdir}/std_numeric.h \
+	${std_srcdir}/std_ostream.h \
+	${std_srcdir}/std_queue.h \
+	${std_srcdir}/std_set.h \
+	${std_srcdir}/std_sstream.h \
+	${std_srcdir}/std_stack.h \
+	${std_srcdir}/std_stdexcept.h \
+	${std_srcdir}/std_streambuf.h \
+	${std_srcdir}/std_string.h \
+	${std_srcdir}/std_utility.h \
+	${std_srcdir}/std_valarray.h \
+	${std_srcdir}/std_vector.h
 
 target_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
 target_builddir = ./${target_alias}/bits
@@ -248,11 +248,16 @@ allstamps = stamp-std stamp-bits stamp-c_base stamp-backward stamp-ext \
 # Here are the rules for building the headers
 all-local: ${target_builddir}/c++config.h ${allstamps}
 
+# This rule is slightly different, in that we must change the name of the
+# local file from std_foo.h to foo.
 stamp-std: ${std_headers}
 	@if [ ! -d "${std_builddir}" ]; then \
 	  mkdir -p ${std_builddir} ;\
 	fi ;\
-	(cd ${std_builddir} && @LN_S@ $? . || true) ;\
+	(cd ${std_builddir} && for h in $?; do \
+	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
+	  @LN_S@ $$h ./$${official_name || true} ;\
+	done) ;\
 	echo `date` > stamp-std 
 
 stamp-bits: ${bits_headers}
