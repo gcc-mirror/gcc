@@ -486,6 +486,10 @@ struct cpp_options {
    where they are defined.  */
   int debug_output;
 
+  /* Nonzero means pass #include lines through to the output,
+     even if they are ifdeffed out.  */
+  int dump_includes;
+
   /* Pending -D, -U and -A options, in reverse order. */
   struct cpp_pending *pending;
 
