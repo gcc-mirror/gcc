@@ -168,6 +168,16 @@ do {									\
   ASM_OUTPUT_SKIP((FILE), (SIZE));					\
 } while (0)
 
+/* This says how to output assembler code to declare an
+   uninitialized external linkage data object.  */
+
+#undef  ASM_OUTPUT_ALIGNED_BSS
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
+do {									\
+  ASM_GLOBALIZE_LABEL (FILE, NAME);					\
+  ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
+} while (0)
+
 /* Biggest alignment supported by the object file format of this
    machine.  Use this macro to limit the alignment which can be
    specified using the `__attribute__ ((aligned (N)))' construct.  If
