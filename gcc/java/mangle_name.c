@@ -87,12 +87,11 @@ append_unicode_mangled_name (name, len)
     {
       int ch = UTF8_GET(ptr, limit);
 
-      if ((ch >= '0' && ch <= '9')
+      if ((ISALNUM (ch) && ch != 'U')
 #ifndef NO_DOLLAR_IN_LABEL
 	  || ch == '$'
 #endif
-	  || (ch >= 'a' && ch <= 'z')
-	  || (ch >= 'A' && ch <= 'Z' && ch != 'U'))
+	  )
 	obstack_1grow (mangle_obstack, ch);
       /* Everything else needs encoding */
       else
@@ -149,12 +148,11 @@ unicode_mangling_length (name, len)
 
       if (ch < 0)
 	error ("internal error - invalid Utf8 name");
-      if ((ch >= '0' && ch <= '9')
+      if ((ISALNUM (ch) && ch != 'U')
 #ifndef NO_DOLLAR_IN_LABEL
 	  || ch == '$'
 #endif
-	  || (ch >= 'a' && ch <= 'z')
-	  || (ch >= 'A' && ch <= 'Z' && ch != 'U'))
+	  )
 	num_chars++;
       /* Everything else needs encoding */
       else

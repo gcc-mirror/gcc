@@ -374,7 +374,7 @@ FIX_PROC_HEAD( char_macro_use_fix )
 	continue;
       if (!ISALPHA (*p))
 	continue;
-      if (ISALNUM (p[1]) || p[1] == '_')
+      if (ISIDNUM (p[1]))
 	continue;
 
       /* Splat all preceding text into the output buffer,
@@ -447,7 +447,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
 	    goto found;
 	  p++;
 	}
-      while (ISALPHA (*p) || ISALNUM (*p) || *p == '_');
+      while (ISIDNUM (*p));
       /* Hit end of macro name without finding the string.  */
       continue;
 
@@ -461,7 +461,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
 	continue;
       if (!ISALPHA (*p))
 	continue;
-      if (ISALNUM (p[1]) || p[1] == '_')
+      if (ISIDNUM (p[1]))
 	continue;
 
       /* The character at P is the one to look for in the following

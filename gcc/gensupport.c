@@ -588,8 +588,7 @@ shift_output_template (new, old, disp)
 	  c = *old++;
 	  if (ISDIGIT ((unsigned char) c))
 	    c += disp;
-	  else if (ISUPPER ((unsigned char) c)
-		   || ISLOWER ((unsigned char) c))
+	  else if (ISALPHA (c))
 	    {
 	      *new++ = c;
 	      c = *old++ + disp;

@@ -758,7 +758,7 @@ decode_reg_name (asmspec)
 
       /* Allow a decimal number as a "register name".  */
       for (i = strlen (asmspec) - 1; i >= 0; i--)
-	if (! (asmspec[i] >= '0' && asmspec[i] <= '9'))
+	if (! ISDIGIT (asmspec[i]))
 	  break;
       if (asmspec[0] != 0 && i < 0)
 	{

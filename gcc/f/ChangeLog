@@ -1,3 +1,15 @@
+Sun Oct 21 17:28:17 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bad.c (ffebad_finish): Use safe-ctype macros and/or fold extra
+	calls into fewer ones.
+	* implic.c (ffeimplic_lookup_): Likewise.
+	* intdoc.c (dumpimp): Likewise.
+	* intrin.c (ffeintrin_init_0): Likewise.
+	* lex.c (ffelex_backslash_, ffelex_cfebackslash_, ffelex_hash_):
+	Likewise.
+	* lex.h (ffelex_is_firstnamechar): Likewise.
+	* target.c (ffetarget_integerhex): Likewise.
+
 2001-10-21  Craig Prescott  <prescott@phys.ufl.edu>
 
 	* target.h (FFETARGET_32bit_longs): Don't define 

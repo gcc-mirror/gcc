@@ -976,7 +976,7 @@ check_attr_test (exp, is_const, lineno)
 	  if (attr->is_numeric)
 	    {
 	      for (p = XSTR (exp, 1); *p; p++)
-		if (*p < '0' || *p > '9')
+		if (! ISDIGIT (*p))
 		  fatal ("Attribute `%s' takes only numeric values",
 			 XSTR (exp, 0));
 	    }
@@ -1112,7 +1112,7 @@ check_attr_value (exp, attr)
 	  if (attr && attr->negative_ok && *p == '-')
 	    p++;
 	  for (; *p; p++)
-	    if (*p > '9' || *p < '0')
+	    if (! ISDIGIT (*p))
 	      {
 		message_with_line (attr ? attr->lineno : 0,
 				   "non-numeric value for numeric attribute %s",

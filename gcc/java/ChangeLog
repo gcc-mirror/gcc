@@ -1,3 +1,13 @@
+2001-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (jni_print_char, decode_signature_piece): Use
+	safe-ctype macros and/or fold extra calls into fewer ones.
+	* lex.c (java_read_unicode, java_lex): Likewise.
+	* lex.h (JAVA_START_CHAR_P, JAVA_PART_CHAR_P, JAVA_ASCII_DIGIT,
+	JAVA_ASCII_HEXDIGIT, JAVA_ASCII_LETTER): Likewise.
+	* mangle_name.c (append_unicode_mangled_name,
+	unicode_mangling_length): Likewise.
+
 2001-10-17  Richard Henderson  <rth@redhat.com>
 
 	* Make-lang.in (java/lang.o): Depend on langhooks.h.

@@ -109,7 +109,8 @@ parse_fn_proto (start, end, fn)
     }
   name_end = ptr+1;
 
-  while (ISALNUM ((unsigned char)*ptr) || *ptr == '_') --ptr;
+  while (ISIDNUM (*ptr))
+    --ptr;
   name_start = ptr+1;
   while (*ptr == ' ' || *ptr == '\t') ptr--;
   ptr[1] = 0;

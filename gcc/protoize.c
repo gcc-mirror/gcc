@@ -716,7 +716,7 @@ static int
 is_id_char (ch)
      int ch;
 {
-  return (ISALNUM (ch) || (ch == '_') || (ch == '$'));
+  return (ISIDNUM (ch) || (ch == '$'));
 }
 
 /* Give a message indicating the proper way to invoke this program and then
@@ -4700,8 +4700,7 @@ main (argc, argv)
   {
     const char *cp;
 
-    for (cp = varargs_style_indicator;
-	 ISALNUM ((const unsigned char)*cp) || *cp == '_'; cp++)
+    for (cp = varargs_style_indicator; ISIDNUM (*cp); cp++)
       continue;
     if (*cp != 0)
       varargs_style_indicator = savestring (varargs_style_indicator,

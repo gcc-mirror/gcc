@@ -92,7 +92,7 @@ static ffeimplic_
 ffeimplic_lookup_ (unsigned char c)
 {
   /* NOTE: This is definitely ASCII-specific!!  */
-  if (ISALPHA (c) || (c == '_'))
+  if (ISIDST (c))
     return &ffeimplic_table_[c - 'A'];
   return NULL;
 }

@@ -144,8 +144,7 @@ do {							\
       else						\
         {						\
           fprintf ((file), "\\%o", c);			\
-          if (i < (size) - 1 				\
-              && (p)[i + 1] >= '0' && (p)[i + 1] <= '9')\
+          if (i < (size) - 1 && ISDIGIT ((p)[i + 1]))	\
           fprintf ((file), "\"\n\t.ascii \"");		\
         }						\
     }							\

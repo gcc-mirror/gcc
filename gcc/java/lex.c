@@ -562,7 +562,7 @@ java_read_unicode (lex, unicode_escape_p)
 	    {
 	      if ((c = java_read_char (lex)) == UEOF)
 	        return UEOF;
-	      if (c >= '0' && c <= '9')
+	      if (ISDIGIT (c))
 		unicode |= (unicode_t)((c-'0') << shift);
 	      else if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
 	        unicode |= (unicode_t)((10+(c | 0x20)-'a') << shift);
@@ -1058,7 +1058,7 @@ java_lex (java_lval)
 	{
 	  /* We store in a string (in case it turns out to be a FP) and in
 	     PARTS if we have to process a integer literal.  */
-	  int numeric = (RANGE (c, '0', '9') ? c-'0' : 10 +(c|0x20)-'a');
+	  int numeric = (ISDIGIT (c) ? c-'0' : 10 +(c|0x20)-'a');
 	  int count;
 
 	  /* Remember when we find a valid hexadecimal digit */

@@ -681,7 +681,7 @@ main ()
 #endif
 
 #define IS_ASM_IDENT(ch) \
-  (ISALNUM (ch) || (ch) == '_' || (ch) == '.' || (ch) == '$')
+  (ISIDNUM (ch) || (ch) == '.' || (ch) == '$')
 
 
 /* Redefinition of storage classes as an enumeration for better

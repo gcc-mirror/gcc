@@ -1127,8 +1127,7 @@ real_hex_to_f (s, mode)
   shcount = 0;
   while ((c = *p) != '\0')
     {
-      if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')
-	  || (c >= 'a' && c <= 'f'))
+      if (ISXDIGIT (c))
 	{
 	  k = c & CHARMASK;
 	  if (k >= 'a' && k <= 'f')

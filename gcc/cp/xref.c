@@ -615,11 +615,11 @@ GNU_xref_member(cls, fld)
 #ifdef XREF_SHORT_MEMBER_NAMES
   for (p = &bufa[1]; *p != 0; ++p)
     {
-      if (p[0] == '_' && p[1] == '_' && p[2] >= '0' && p[2] <= '9') {
+      if (p[0] == '_' && p[1] == '_' && ISDIGIT (p[2])) {
 	if (strncmp(&p[2], buf, i) == 0) *p = 0;
 	break;
       }
-      else if (p[0] == '_' && p[1] == '_' && p[2] == 'C' && p[3] >= '0' && p[3] <= '9') {
+      else if (p[0] == '_' && p[1] == '_' && p[2] == 'C' && ISDIGIT (p[3])) {
 	if (strncmp(&p[3], buf, i) == 0) *p = 0;
 	break;
       }

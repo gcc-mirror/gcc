@@ -394,16 +394,14 @@ ffelex_backslash_ (int c, ffewhereColumnNumber col)
       return c;
 
     case 2:
-      if ((c >= 'a' && c <= 'f')
-	  || (c >= 'A' && c <= 'F')
-	  || (c >= '0' && c <= '9'))
+      if (ISXDIGIT (c))
 	{
 	  code *= 16;
 	  if (c >= 'a' && c <= 'f')
 	    code += c - 'a' + 10;
 	  if (c >= 'A' && c <= 'F')
 	    code += c - 'A' + 10;
-	  if (c >= '0' && c <= '9')
+	  if (ISDIGIT (c))
 	    code += c - '0';
 	  if (code != 0 || count != 0)
 	    {
@@ -599,9 +597,7 @@ ffelex_cfebackslash_ (int *use_d, int *d, FILE *finput)
       while (1)
 	{
 	  c = getc (finput);
-	  if (!(c >= 'a' && c <= 'f')
-	      && !(c >= 'A' && c <= 'F')
-	      && !(c >= '0' && c <= '9'))
+	  if (! ISXDIGIT (c))
 	    {
 	      *use_d = 1;
 	      *d = c;
@@ -612,7 +608,7 @@ ffelex_cfebackslash_ (int *use_d, int *d, FILE *finput)
 	    code += c - 'a' + 10;
 	  if (c >= 'A' && c <= 'F')
 	    code += c - 'A' + 10;
-	  if (c >= '0' && c <= '9')
+	  if (ISDIGIT (c))
 	    code += c - '0';
 	  if (code != 0 || count != 0)
 	    {
@@ -1079,7 +1075,7 @@ ffelex_hash_ (FILE *finput)
      it and ignore it; otherwise, ignore the line, with an error
      if the word isn't `pragma', `ident', `define', or `undef'.  */
 
-  if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+  if (ISALPHA(c))
     {
       if (c == 'p')
 	{

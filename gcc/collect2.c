@@ -502,7 +502,7 @@ dump_file (name)
     {
       int c;
       while (c = getc (stream),
-	     c != EOF && (ISALNUM (c) || c == '_' || c == '$' || c == '.'))
+	     c != EOF && (ISIDNUM (c) || c == '$' || c == '.'))
 	obstack_1grow (&temporary_obstack, c);
       if (obstack_object_size (&temporary_obstack) > 0)
 	{

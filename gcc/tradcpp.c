@@ -1474,7 +1474,7 @@ do { ip = &instack[indepth];		\
 	    ibp += 2;
 	  }
 	  c = *ibp++;
-	  if (!ISALNUM (c) && c != '.' && c != '_') {
+	  if (! ISIDNUM (c) && c != '.') {
 	    --ibp;
 	    break;
 	  }

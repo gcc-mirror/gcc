@@ -399,15 +399,12 @@ dumpimp (int menu, const char *name, const char *name_uc, size_t genno,
 
 	  for (c = summaries[imp]; c[0] != '\0'; ++c)
 	    {
-	      if ((c[0] == '@')
-		  && (c[1] >= '0')
-	      && (c[1] <= '9'))
+	      if (c[0] == '@' && ISDIGIT (c[1]))
 		{
 		  int argno = c[1] - '0';
 
 		  c += 2;
-		  while ((c[0] >= '0')
-			 && (c[0] <= '9'))
+		  while (ISDIGIT (c[0]))
 		    {
 		      argno = 10 * argno + (c[0] - '0');
 		      ++c;
@@ -495,8 +492,7 @@ external procedure.\n\
       const char *arg_string;
       const char *arg_info;
 
-      if ((c[colon + 1] >= '0')
-	  && (c[colon + 1] <= '9'))
+      if (ISDIGIT (c[colon + 1]))
 	{
 	  other_arg = c[colon + 1] - '0';
 	  arg_string = argument_name_string (imp, other_arg);
@@ -548,9 +544,7 @@ this intrinsic is valid only when used as the argument to\n\
 	printf (", the exact type being wide enough to hold a pointer\n\
 on the target system (typically @code{INTEGER(KIND=1)} or @code{INTEGER(KIND=4)}).\n\n");
 #endif
-      else if ((c[1] == '=')
-	       && (c[colon + 1] >= '0')
-	       && (c[colon + 1] <= '9'))
+      else if (c[1] == '=' && ISDIGIT (c[colon + 1]))
 	{
 	  assert (other_arg >= 0);
 
@@ -1011,15 +1005,12 @@ Description:\n\
 
       while (c[0] != '\0')
 	{
-	  if ((c[0] == '@')
-	      && (c[1] >= '0')
-	  && (c[1] <= '9'))
+	  if (c[0] == '@' && ISDIGIT (c[1]))
 	    {
 	      int argno = c[1] - '0';
 
 	      c += 2;
-	      while ((c[0] >= '0')
-		     && (c[0] <= '9'))
+	      while (ISDIGIT (c[0]))
 		{
 		  argno = 10 * argno + (c[0] - '0');
 		  ++c;

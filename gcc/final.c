@@ -3500,12 +3500,12 @@ output_asm_insn (template, operands)
 	   Letters `acln' are implemented directly.
 	   Other letters are passed to `output_operand' so that
 	   the PRINT_OPERAND macro can define them.  */
-	else if (ISLOWER (*p) || ISUPPER (*p))
+	else if (ISALPHA (*p))
 	  {
 	    int letter = *p++;
 	    c = atoi (p);
 
-	    if (! (*p >= '0' && *p <= '9'))
+	    if (! ISDIGIT (*p))
 	      output_operand_lossage ("operand number missing after %-letter");
 	    else if (this_is_asm_operands
 		     && (c < 0 || (unsigned int) c >= insn_noperands))
@@ -3539,11 +3539,11 @@ output_asm_insn (template, operands)
 	      oporder[ops++] = c;
 	    opoutput[c] = 1;
 
-	    while ((c = *p) >= '0' && c <= '9')
+	    while (ISDIGIT (c = *p))
 	      p++;
 	  }
 	/* % followed by a digit outputs an operand the default way.  */
-	else if (*p >= '0' && *p <= '9')
+	else if (ISDIGIT (*p))
 	  {
 	    c = atoi (p);
 	    if (this_is_asm_operands
@@ -3556,7 +3556,7 @@ output_asm_insn (template, operands)
 	      oporder[ops++] = c;
 	    opoutput[c] = 1;
 
-	    while ((c = *p) >= '0' && c <= '9')
+	    while (ISDIGIT (c = *p))
 	      p++;
 	  }
 	/* % followed by punctuation: output something for that
@@ -3819,7 +3819,7 @@ asm_fprintf VPARAMS ((FILE *file, const char *p, ...))
       case '%':
 	c = *p++;
 	q = &buf[1];
-	while ((c >= '0' && c <= '9') || c == '.')
+	while (ISDIGIT (c) || c == '.')
 	  {
 	    *q++ = c;
 	    c = *p++;

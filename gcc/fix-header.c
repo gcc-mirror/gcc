@@ -933,13 +933,13 @@ inf_scan_ident (s, c)
      int c;
 {
   s->ptr = s->base;
-  if (ISALPHA (c) || c == '_')
+  if (ISIDST (c))
     {
       for (;;)
 	{
 	  SSTRING_PUT (s, c);
 	  c = INF_GET ();
-	  if (c == EOF || !(ISALNUM (c) || c == '_'))
+	  if (c == EOF || !(ISIDNUM (c)))
 	    break;
 	}
     }
@@ -1250,7 +1250,7 @@ main (argc, argv)
 	  c = INF_GET ();
 	  if (c == EOF)
 	    break;
-	  if (ISALPHA (c) || c == '_')
+	  if (ISIDST (c))
 	    {
 	      c = inf_scan_ident (&buf, c);
 	      (void) INF_UNGET (c);

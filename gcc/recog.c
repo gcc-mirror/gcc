@@ -1657,7 +1657,7 @@ asm_operand_ok (op, constraint)
 	     proper matching constraint, but we can't actually fail
 	     the check if they didn't.  Indicate that results are
 	     inconclusive.  */
-	  while (*constraint >= '0' && *constraint <= '9')
+	  while (ISDIGIT (*constraint))
 	    constraint++;
 	  result = -1;
 	  break;

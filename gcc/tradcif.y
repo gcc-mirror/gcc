@@ -246,9 +246,10 @@ parse_number (olen)
   while (len > 0) {
     c = *p++;
     len--;
-    if (c >= 'A' && c <= 'Z') c += 'a' - 'A';
+    if (ISUPPER (c))
+      c += 'a' - 'A';
 
-    if (c >= '0' && c <= '9') {
+    if (ISDIGIT (c)) {
       n *= base;
       n += c - '0';
     } else if (base == 16 && c >= 'a' && c <= 'f') {
@@ -396,7 +397,7 @@ yylex ()
     yyerror ("double quoted strings not allowed in #if expressions");
     return ERROR;
   }
-  if (c >= '0' && c <= '9') {
+  if (ISDIGIT (c)) {
     /* It's a number */
     for (namelen = 0;
 	 c = tokstart[namelen], is_idchar (c) || c == '.'; 
@@ -507,7 +508,7 @@ parse_escape (string_ptr)
 	for (;;)
 	  {
 	    c = *(*string_ptr)++;
-	    if (c >= '0' && c <= '9')
+	    if (ISDIGIT (c))
 	      i = (i << 4) + c - '0';
 	    else if (c >= 'a' && c <= 'f')
 	      i = (i << 4) + c - 'a' + 10;

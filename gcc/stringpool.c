@@ -86,7 +86,7 @@ ggc_alloc_string (contents, length)
 
   if (length == 0)
     return empty_string;
-  if (length == 1 && contents[0] >= '0' && contents[0] <= '9')
+  if (length == 1 && ISDIGIT (contents[0]))
     return digit_string (contents[0] - '0');
 
   obstack_grow0 (&string_stack, contents, length);

@@ -171,8 +171,7 @@ ffelexToken ffelex_token_use (ffelexToken t);
 #define ffelex_init_2()
 #define ffelex_init_3()
 #define ffelex_init_4()
-#define ffelex_is_firstnamechar(c) \
-  (ISALPHA ((c)) || ((c) == '_'))
+#define ffelex_is_firstnamechar(c) ISIDST (c)
 #define ffelex_terminate_0()
 #define ffelex_terminate_1()
 #define ffelex_terminate_2()
