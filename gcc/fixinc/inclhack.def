@@ -2978,6 +2978,22 @@ fix = {
 };
 #endif
 
+
+/*
+ * Correct types for signal handler constants like SIG_DFL; they might be
+ * void (*) (), and should be void (*) (int).  C++ doesn't like the
+ * old style.
+ */
+fix = {
+    hackname = svr4_sighandler_type;
+    files = sys/signal.h;
+    select = 'void *\(\*\)\(\)';
+    c_fix = format;
+    c_fix_arg = "void (*)(int)";
+    test_text = "#define SIG_DFL (void(*)())0\n"
+                "#define SIG_IGN (void (*)())0\n";
+};
+
 /*
  *  Put storage class at start of decl, to avoid warning.
  */

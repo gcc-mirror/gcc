@@ -21,3 +21,10 @@ void	(*signal(...))(...);
 void	(*signal())();
 #endif
 #endif  /* SUN_SIGNAL_CHECK */
+
+
+#if defined( SVR4_SIGHANDLER_TYPE_CHECK )
+#define SIG_DFL (void (*)(int))0
+#define SIG_IGN (void (*)(int))0
+
+#endif  /* SVR4_SIGHANDLER_TYPE_CHECK */
