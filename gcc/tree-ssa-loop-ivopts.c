@@ -4878,15 +4878,17 @@ rewrite_use_compare (struct ivopts_data *data,
   
   if (may_eliminate_iv (data, use, cand, &compare, &bound))
     {
+      tree var = var_at_stmt (data->current_loop, cand, use->stmt);
+      tree var_type = TREE_TYPE (var);
+
+      bound = fold_convert (var_type, bound);
       op = force_gimple_operand (unshare_expr (bound), &stmts,
 				 true, NULL_TREE);
 
       if (stmts)
 	bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
 
-      *use->op_p = build2 (compare, boolean_type_node,
-			  var_at_stmt (data->current_loop,
-				       cand, use->stmt), op);
+      *use->op_p = build2 (compare, boolean_type_node, var, op);
       modify_stmt (use->stmt);
       return;
     }
