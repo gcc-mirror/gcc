@@ -201,7 +201,7 @@ EOF
 
 trait_name=numeric_limits
 
-cat <<EOF > $OUT_C
+cat <<EOF > $OUT_C-t
 // Static data members of -*- C++ -*- numeric_limits classes
 
 // Copyright (C) 1999, 2000 Free Software Foundation, Inc.
