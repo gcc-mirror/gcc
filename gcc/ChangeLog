@@ -1,3 +1,10 @@
+2003-10-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* vax.c: Include toplev.h.
+	(vax_init_libfuncs): Fix typo (umod).
+	* vax.h (ASM_COMMENT_START): Define.
+	(PRINT_OPERAND): Fix warning when HOST_WIDE_INT is a long long.
+
 2003-10-31  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/11968

@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "optabs.h"
 #include "flags.h"
 #include "debug.h"
+#include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -152,7 +153,7 @@ static void
 vax_init_libfuncs (void)
 {
   set_optab_libfunc (udiv_optab, SImode, TARGET_ELF ? "*__udiv" : "*udiv");
-  set_optab_libfunc (umod_optab, SImode, TARGET_ELF ? "*__umod" : "*umod");
+  set_optab_libfunc (umod_optab, SImode, TARGET_ELF ? "*__urem" : "*urem");
 }
 
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
