@@ -429,7 +429,10 @@ all_java_source_files = \
 
 all_java_class_files = $(all_java_source_files:.java=.class)
 
-MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
+# Note: The libtool objects are removed by mostlyclean-local
+# because of command-line-length issues.
+MOSTLYCLEANFILES = $(nat_headers) $(x_nat_headers)
+
 CLEANFILES = libgcj-@gcc_version@.jar
 
 SUFFIXES = .class .java .h
@@ -4802,7 +4805,8 @@ maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
 		mostlyclean-libtool mostlyclean-binPROGRAMS \
 		mostlyclean-noinstPROGRAMS mostlyclean-tags \
-		mostlyclean-depend mostlyclean-generic
+		mostlyclean-depend mostlyclean-generic \
+		mostlyclean-local
 
 mostlyclean: mostlyclean-recursive
 
@@ -4815,7 +4819,8 @@ clean: clean-recursive
 distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
 		distclean-libtool distclean-binPROGRAMS \
 		distclean-noinstPROGRAMS distclean-tags \
-		distclean-depend distclean-generic clean-am
+		distclean-depend distclean-generic clean-am \
+		distclean-local
 	-rm -f libtool
 
 distclean: distclean-recursive
@@ -4883,8 +4888,14 @@ libgcj-@gcc_version@.jar: $(all_java_source_files)
 # is built.
 $(all_java_class_files): libgcj-@gcc_version@.jar
 
+mostlyclean-local:
+	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f
+
 clean-local:
 	find . -name '*.class' -print | xargs rm -f
+
+distclean-local:
+	find . -name '*.d' -print | xargs rm -f
 
 # Just remove the objects from C++ sources, for testing the C++ compiler.
 clean-nat:

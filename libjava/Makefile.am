@@ -356,12 +356,23 @@ libgcj-@gcc_version@.jar: $(all_java_source_files)
 # is built.
 $(all_java_class_files): libgcj-@gcc_version@.jar
 
-MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
+# Note: The libtool objects are removed by mostlyclean-local
+# because of command-line-length issues.
+MOSTLYCLEANFILES = $(nat_headers) $(x_nat_headers)
+
 CLEANFILES = libgcj-@gcc_version@.jar
 
+mostlyclean-local:
+## Use libtool rm to remove each libtool object
+	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f
+
 clean-local:
-## We just remove every .class file that was created.
+## Remove every .class file that was created.
 	find . -name '*.class' -print | xargs rm -f
+
+distclean-local:
+## Remove every .d file that was created.
+	find . -name '*.d' -print | xargs rm -f
 
 # Just remove the objects from C++ sources, for testing the C++ compiler.
 clean-nat:
