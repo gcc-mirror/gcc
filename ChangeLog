@@ -1,3 +1,7 @@
+Thu Apr 23 21:31:16 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure: Set CXXFLAGS from CXXFLAGS, not CFLAGS.
+
 Wed Apr 22 12:30:10 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* configure.in (target_makefile_frag): If --enable-target-optspace,
