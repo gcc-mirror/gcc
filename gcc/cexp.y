@@ -161,6 +161,9 @@ extern int pedantic;
 /* Flag for -traditional.  */
 extern int traditional;
 
+/* Flag for -lang-c89.  */
+extern int c89;
+
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
@@ -531,7 +534,7 @@ parse_number (olen)
 	    yylval.integer.signedp = UNSIGNED;
 	  }
 	else {
-	  if (c == '.' || c == 'e' || c == 'E')
+	  if (c == '.' || c == 'e' || c == 'E' || c == 'p' || c == 'P')
 	    yyerror ("Floating point numbers not allowed in #if expressions");
 	  else {
 	    char *buf = (char *) alloca (p - lexptr + 40);
@@ -834,7 +837,9 @@ yylex ()
     for (namelen = 1; ; namelen++) {
       int d = tokstart[namelen];
       if (! ((is_idchar[d] || d == '.')
-	     || ((d == '-' || d == '+') && (c == 'e' || c == 'E')
+	     || ((d == '-' || d == '+')
+		 && (c == 'e' || c == 'E'
+		     || ((c == 'p' || c == 'P') && ! c89))
 		 && ! traditional)))
 	break;
       c = d;
