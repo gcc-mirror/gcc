@@ -497,6 +497,12 @@ extern int current_function_outgoing_args_size;
   gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, \
                                      TARGET_64BIT? -48 : -40))
 
+/* Select a format to encode pointers in exception handling data.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)			    \
+  (flag_pic								    \
+    ? ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4 \
+   : DW_EH_PE_absptr)
+
 
 /* Frame registers.  */
 

@@ -152,10 +152,12 @@ ffi_closure_SYSV:
 .LSCIE1:
 	.4byte	0x0	# CIE Identifier Tag
 	.byte	0x1	# CIE Version
-	.ascii "\0"	# CIE Augmentation
+	.ascii "zR\0"	# CIE Augmentation
 	.uleb128 0x1	# CIE Code Alignment Factor
 	.sleb128 -4	# CIE Data Alignment Factor
 	.byte	0xe	# CIE RA Column
+	.uleb128 0x1	# Augmentation size
+	.byte	0x1b	# FDE Encoding (pcrel sdata4)
 	.byte	0xc	# DW_CFA_def_cfa
 	.uleb128 0xf
 	.uleb128 0x60
@@ -165,8 +167,9 @@ ffi_closure_SYSV:
 	.4byte	.LEFDE1-.LASFDE1	# FDE Length
 .LASFDE1:
 	.4byte	.LASFDE1-.Lframe1	# FDE CIE offset
-	.4byte	.LFB1	# FDE initial location
+	.4byte	.LFB1-.	# FDE initial location
 	.4byte	.LFE1-.LFB1	# FDE address range
+	.uleb128 0x0	# Augmentation size
 	.byte	0x4	# DW_CFA_advance_loc4
 	.4byte	.LCFI0-.LFB1
 	.byte	0x8f	# DW_CFA_offset, column 0xf
@@ -203,8 +206,9 @@ ffi_closure_SYSV:
 	.4byte	.LEFDE2-.LASFDE2	# FDE Length
 .LASFDE2:
 	.4byte	.LASFDE2-.Lframe1	# FDE CIE offset
-	.4byte	.LFB2	# FDE initial location
+	.4byte	.LFB2-.	# FDE initial location
 	.4byte	.LFE2-.LFB2	# FDE address range
+	.uleb128 0x0	# Augmentation size
 	.byte	0x4	# DW_CFA_advance_loc4
 	.4byte	.LCFI10-.LFB2
 	.byte	0x8f	# DW_CFA_offset, column 0xf
@@ -347,10 +351,12 @@ ffi_closure_SYSV:
 .LSCIE1:
 	.4byte	0x0	# CIE Identifier Tag
 	.byte	0x1	# CIE Version
-	.ascii "\0"	# CIE Augmentation
+	.ascii "zR\0"	# CIE Augmentation
 	.uleb128 0x1	# CIE Code Alignment Factor
 	.sleb128 -8	# CIE Data Alignment Factor
 	.byte	0xe	# CIE RA Column
+	.uleb128 0x1	# Augmentation size
+	.byte	0x1b	# FDE Encoding (pcrel sdata4)
 	.byte	0xc	# DW_CFA_def_cfa
 	.uleb128 0xf
 	.uleb128 0xa0
@@ -360,8 +366,9 @@ ffi_closure_SYSV:
 	.4byte	.LEFDE1-.LASFDE1	# FDE Length
 .LASFDE1:
 	.4byte	.LASFDE1-.Lframe1	# FDE CIE offset
-	.8byte	.LFB1	# FDE initial location
-	.8byte	.LFE1-.LFB1	# FDE address range
+	.4byte	.LFB1-.	# FDE initial location
+	.4byte	.LFE1-.LFB1	# FDE address range
+	.uleb128 0x0	# Augmentation size
 	.byte	0x4	# DW_CFA_advance_loc4
 	.4byte	.LCFI0-.LFB1
 	.byte	0x8f	# DW_CFA_offset, column 0xf
@@ -398,8 +405,9 @@ ffi_closure_SYSV:
 	.4byte	.LEFDE2-.LASFDE2	# FDE Length
 .LASFDE2:
 	.4byte	.LASFDE2-.Lframe1	# FDE CIE offset
-	.8byte	.LFB2	# FDE initial location
-	.8byte	.LFE2-.LFB2	# FDE address range
+	.4byte	.LFB2-.	# FDE initial location
+	.4byte	.LFE2-.LFB2	# FDE address range
+	.uleb128 0x0	# Augmentation size
 	.byte	0x4	# DW_CFA_advance_loc4
 	.4byte	.LCFI10-.LFB2
 	.byte	0x8f	# DW_CFA_offset, column 0xf
