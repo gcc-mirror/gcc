@@ -1473,7 +1473,7 @@ init_spec ()
     const char *p = libgcc_spec;
     int in_sep = 1;
  
-    /* Transform the extent libgcc_spec into one that uses the shared libgcc
+    /* Transform the extant libgcc_spec into one that uses the shared libgcc
        when given the proper command line arguments.  */
     while (*p)
       {

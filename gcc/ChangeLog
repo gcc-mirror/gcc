@@ -1,3 +1,8 @@
+2001-08-13  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c (init_spec): Revert last patch by Theodore Papadopoulo,
+	the english is correct.
+
 2001-08-13  Zack Weinberg  <zackw@panix.com>
 
 	* expr.h: Split out optab- and libfunc-related code to...
@@ -21,13 +26,13 @@
 	* genemit.c, genopinit.c: Include optabs.h in generated file.
 	* genoutput.c: Include insn-codes.h in generated file.
 	* builtins.c, caller-save.c, combine.c, doloop.c, explow.c,
-	expmed.c, expr.c, function.c, ifcvt.c, loop.c, optabs.c, profile.c, 
-	reload1.c, simplify-rtx.c, stmt.c, unroll.c, config/alpha/alpha.c, 
+	expmed.c, expr.c, function.c, ifcvt.c, loop.c, optabs.c, profile.c,
+	reload1.c, simplify-rtx.c, stmt.c, unroll.c, config/alpha/alpha.c,
 	config/arm/arm.c, config/c4x/c4x.c, config/clipper/clipper.c,
 	config/i386/i386.c, config/ia64/ia64.c, config/mn10300/mn10300.c,
 	config/pj/pj.c, config/sh/sh.c, config/sparc/sparc.c:
 	Include optabs.h.
-	* builtins.c, calls.c, dwarf2out.c, except.c, expr.c, function.c, 
+	* builtins.c, calls.c, dwarf2out.c, except.c, expr.c, function.c,
 	optabs.c, stmt.c, config/c4x/c4x.c, config/clipper/clipper.c,
 	config/m88k/m88k.c, config/sparc/sparc.c:
 	Include libfuncs.h.
