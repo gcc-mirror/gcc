@@ -1717,7 +1717,8 @@ compare_defs (d1, d2)
 
   if (d1->nargs != d2->nargs)
     return 1;
-  if (strcmp ((char *)d1->args.argnames, (char *)d2->args.argnames))
+  if (pedantic
+      && strcmp ((char *)d1->args.argnames, (char *)d2->args.argnames))
     return 1;
   for (a1 = d1->pattern, a2 = d2->pattern; a1 && a2;
        a1 = a1->next, a2 = a2->next) {
