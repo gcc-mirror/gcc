@@ -2786,6 +2786,7 @@ emit_move_insn_1 (x, y)
       /* Don't split destination if it is a stack push.  */
       int stack = push_operand (x, GET_MODE (x));
 
+#ifdef PUSH_ROUNDING
       /* In case we output to the stack, but the size is smaller machine can
 	 push exactly, we need to use move instructions.  */
       if (stack
@@ -2829,6 +2830,7 @@ emit_move_insn_1 (x, y)
 							GEN_INT (offset2))),
 			  gen_imagpart (submode, y));
 	}
+#endif
       /* If this is a stack, push the highpart first, so it
 	 will be in the argument order.
 
