@@ -1,5 +1,18 @@
 2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/elf.h (ASM_DECLARE_OBJECT_NAME): Use
+	mips_declare_object_name.
+	(ASM_FINISH_DECLARE_OBJECT): Likewise mips_finish_declare_object.
+	* config/mips/elf64.h: As for elf.h.
+	* config/mips/iris6.h: Likewise.
+	* config/mips/linux.h (ASM_DECLARE_OBJECT_NAME): As for elf.h.
+	* config/mips/mips.h (ASM_DECLARE_OBJECT_NAME): Remove unnecessary
+	do...while (0) block.
+	* config/mips/mips-protos.h (mips_declare_object_name): Declare.
+	(mips_finish_declare_object): Declare.
+	* config/mips/mips.c (mips_declare_object_name): New function.
+	(mips_finish_declare_object): New function.
+
 	* config/mips/elf.h (SBSS_SECTION_ASM_OP): Delete.
 	* config/mips/linux.h: Likewise.
 

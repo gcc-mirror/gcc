@@ -6236,6 +6236,61 @@ mips_declare_object (stream, name, init_string, final_string, size)
       TREE_ASM_WRITTEN (name_tree) = 1;
     }
 }
+
+#ifdef ASM_OUTPUT_SIZE_DIRECTIVE
+extern int size_directive_output;
+
+/* Implement ASM_DECLARE_OBJECT_NAME.  This is like most of the standard ELF
+   definitions except that it uses mips_declare_object() to emit the label.  */
+
+void
+mips_declare_object_name (stream, name, decl)
+     FILE *stream;
+     const char *name;
+     tree decl ATTRIBUTE_UNUSED;
+{
+#ifdef ASM_OUTPUT_TYPE_DIRECTIVE
+  ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");
+#endif
+
+  size_directive_output = 0;
+  if (!flag_inhibit_size_directive && DECL_SIZE (decl))
+    {
+      HOST_WIDE_INT size;
+
+      size_directive_output = 1;
+      size = int_size_in_bytes (TREE_TYPE (decl));
+      ASM_OUTPUT_SIZE_DIRECTIVE (stream, name, size);
+    }
+
+  mips_declare_object (stream, name, "", ":\n", 0);
+}
+
+/* Implement ASM_FINISH_DECLARE_OBJECT.  This is generic ELF stuff.  */
+
+void
+mips_finish_declare_object (stream, decl, top_level, at_end)
+     FILE *stream;
+     tree decl;
+     int top_level, at_end;
+{
+  const char *name;
+
+  name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  if (!flag_inhibit_size_directive
+      && DECL_SIZE (decl) != 0
+      && !at_end && top_level
+      && DECL_INITIAL (decl) == error_mark_node
+      && !size_directive_output)
+    {
+      HOST_WIDE_INT size;
+
+      size_directive_output = 1;
+      size = int_size_in_bytes (TREE_TYPE (decl));
+      ASM_OUTPUT_SIZE_DIRECTIVE (stream, name, size);
+    }
+}
+#endif
 
 /* Return the register that should be used as the global pointer
    within this function.  Return 0 if the function doesn't need

@@ -370,51 +370,17 @@ while (0)
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
-/* Write the extra assembler code needed to declare an object properly.  */
-
-#undef ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
-do									\
- {									\
-   HOST_WIDE_INT size;							\
-   size_directive_output = 0;						\
-   if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
-     {									\
-       size_directive_output = 1;					\
-       size = int_size_in_bytes (TREE_TYPE (DECL));			\
-       ASM_OUTPUT_SIZE_DIRECTIVE (STREAM, NAME, size);			\
-     }									\
-   mips_declare_object (STREAM, NAME, "", ":\n", 0);			\
- }									\
-while (0)
-
 /* Define the `__builtin_va_list' type for the ABI.  On IRIX 6, this
    type is `char *'.  */
 #undef BUILD_VA_LIST_TYPE
 #define BUILD_VA_LIST_TYPE(VALIST) \
   (VALIST) = build_pointer_type (char_type_node)
 
-/* Output the size directive for a decl in rest_of_decl_compilation
-   in the case where we did not do so before the initializer.
-   Once we find the error_mark_node, we know that the value of
-   size_directive_output was set
-   by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
+#undef ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME mips_declare_object_name
 
 #undef ASM_FINISH_DECLARE_OBJECT
-#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
-do {									 \
-     const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
-     HOST_WIDE_INT size;						 \
-     if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
-         && ! AT_END && TOP_LEVEL					 \
-	 && DECL_INITIAL (DECL) == error_mark_node			 \
-	 && !size_directive_output)					 \
-       {								 \
-	 size_directive_output = 1;					 \
-	 size = int_size_in_bytes (TREE_TYPE (DECL));			 \
-	 ASM_OUTPUT_SIZE_DIRECTIVE (FILE, name, size);			 \
-       }								 \
-   } while (0)
+#define ASM_FINISH_DECLARE_OBJECT mips_finish_declare_object
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX ((mips_abi == ABI_32 || mips_abi == ABI_O64) \
