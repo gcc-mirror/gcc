@@ -31,11 +31,8 @@ SUB_CPP_PREDEFINES
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{pg:-lc_p} %{!pg:-lc}"
 
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)			\
-	fputs ("\tlda $28,_mcount\n\tjsr $28,($28),_mcount\n", (FILE))
-
 /* Show that we need a GP when profiling.  */
+#undef TARGET_PROFILING_NEEDS_GP
 #define TARGET_PROFILING_NEEDS_GP 1
 
 /* Don't care about faults in the prologue.  */

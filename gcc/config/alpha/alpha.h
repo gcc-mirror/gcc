@@ -185,6 +185,9 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #ifndef TARGET_HAS_XFLOATING_LIBS
 #define TARGET_HAS_XFLOATING_LIBS 0
 #endif
+#ifndef TARGET_PROFILING_NEEDS_GP
+#define TARGET_PROFILING_NEEDS_GP 0
+#endif
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
