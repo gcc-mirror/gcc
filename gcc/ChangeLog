@@ -1,5 +1,6 @@
 2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/7513
 	* arm.h (CONDITIONAL_REGISTER_USAGE): Disable use of LR in Thumb
 	code.
 
