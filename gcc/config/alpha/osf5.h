@@ -49,3 +49,8 @@
    linked.  */
 #undef TARGET_LD_BUGGY_LDGP
 #define TARGET_LD_BUGGY_LDGP 1
+
+/* Tru64 v5.1 has the float and long double forms of math functions.  */
+#undef TARGET_C99_FUNCTIONS
+#define TARGET_C99_FUNCTIONS  1
+
