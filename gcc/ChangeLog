@@ -1,3 +1,8 @@
+2005-04-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfghooks.c, cfgrtl.c, modulo-sched.c, config/i386/winnt.c:
+	Fix comment typos.
+
 2005-04-03  Steven Bosscher  <stevenb@suse.de>
 
 	PR middle-end/20648

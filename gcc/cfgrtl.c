@@ -2998,7 +2998,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
 }
 
 /* Add COMP_RTX as a condition at end of COND_BB.  FIRST_HEAD is
-   the conditional branch traget, SECOND_HEAD should be the fall-thru
+   the conditional branch target, SECOND_HEAD should be the fall-thru
    there is no need to handle this here the loop versioning code handles
    this.  the reason for SECON_HEAD is that it is needed for condition
    in trees, and this should be of the same type since it is a hook.  */

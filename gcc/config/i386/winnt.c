@@ -681,7 +681,7 @@ i386_pe_asm_named_section (const char *name, unsigned int flags,
       /* Functions may have been compiled at various levels of
 	 optimization so we can't use `same_size' here.
 	 Instead, have the linker pick one, without warning.
-	 If 'selectany' attibute has been specified,  MS compiler
+	 If 'selectany' attribute has been specified,  MS compiler
 	 sets 'discard' characteristic, rather than telling linker
 	 to warn of size or content mismatch, so do the same.  */ 
       bool discard = (flags & SECTION_CODE)

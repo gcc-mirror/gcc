@@ -867,7 +867,7 @@ extract_cond_bb_edges (basic_block b, edge *e1, edge *e2)
 }
 
 /* Responsible for updating the ssa info (PHI nodes) on the
-   new conidtion basic block that guargs the versioned loop.  */
+   new condition basic block that guards the versioned loop.  */
 void
 lv_adjust_loop_header_phi (basic_block first, basic_block second,
 			   basic_block new, edge e)
