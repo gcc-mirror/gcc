@@ -66,14 +66,6 @@ do {						\
   char c;					\
 						\
   putc ('\"', asm_file);			\
-  if (STRING[1] == ':'				\
-      && (STRING[2] == '/' || STRING[2] == '\\')) \
-    {						\
-      putc ('/', asm_file);			\
-      putc ('/', asm_file);			\
-      putc (*string, asm_file);			\
-      string += 2;				\
-    }						\
 						\
   while ((c = *string++) != 0)			\
     {						\
