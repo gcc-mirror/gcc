@@ -1,5 +1,5 @@
 /* Generate code from machine description to extract operands from insn as rtl.
-   Copyright (C) 1987, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,6 +32,9 @@ struct obstack *rtl_obstack = &obstack;
 
 extern void free ();
 extern rtx read_rtx ();
+
+/* Names for patterns.  Need to allow linking with print-rtl.  */
+char **insn_name_ptr;
 
 /* This structure contains all the information needed to describe one
    set of extractions methods.  Each method may be used by more than 
@@ -216,13 +219,28 @@ walk_rtx (x, path)
       break;
 
     case MATCH_DUP:
-    case MATCH_OP_DUP:
     case MATCH_PAR_DUP:
       duplocs[dup_count] = copystr (path);
       dupnums[dup_count] = XINT (x, 0);
       dup_count++;
       break;
 
+    case MATCH_OP_DUP:
+      duplocs[dup_count] = copystr (path);
+      dupnums[dup_count] = XINT (x, 0);
+      dup_count++;
+      
+      newpath = (char *) alloca (depth + 2);
+      strcpy (newpath, path);
+      newpath[depth + 1] = 0;
+      
+      for (i = XVECLEN (x, 1) - 1; i >= 0; i--)
+        {
+	  newpath[depth] = '0' + i;
+	  walk_rtx (XVECEXP (x, 1, i), newpath);
+        }
+      return;
+      
     case MATCH_OPERATOR:
       oplocs[XINT (x, 0)] = copystr (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
