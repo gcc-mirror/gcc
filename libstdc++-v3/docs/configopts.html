@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.6 2000/07/11 21:45:07 pme Exp $ -->
+<!-- $Id: configopts.html,v 1.7 2000/08/09 07:33:39 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -152,6 +152,14 @@ options</A></H1>
         and -fno- forms of the same.  Tell us (the mailing list) if
         you discover more!
      </P>
+
+ <DT><TT>--enable-wchar  </TT>[default]
+ <DD><P>Certain template specializations are required for wide character
+        conversion support.  This is tricky and currently changing rapidly,
+        and can cause problems on new platforms.  Disabling wide character
+        specializations is useful for initial porting steps, but builds
+        only a subset of what is required by ISO.
+     </P>
 </DL>
 </P>
 <P>Return <A HREF="#top">to the top of the page</A> or
@@ -163,7 +171,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.6 2000/07/11 21:45:07 pme Exp $
+$Id: configopts.html,v 1.7 2000/08/09 07:33:39 bkoz Exp $
 </EM></P>
 
 

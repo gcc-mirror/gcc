@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.6 2000/07/26 21:30:45 pme Exp $ -->
+<!-- $Id: install.html,v 1.7 2000/08/01 18:07:23 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -74,15 +74,26 @@
       <A HREF="ftp://sources.redhat.com/pub/binutils">here</A>.
    </P>
  
-   <P>Finally, if you are using Cygwin to compile libstdc++-v3 on
-      Win32, you'll have to get a version of the cygwin1.dll that is
-      dated on or after February 1, 2000.  This is necessary to
-      successfully run the script "mknumeric_limits" which probes the
-      floating-point environment of the host in question -- before this
-      date, Cygwin would freeze when running this script.  In addition,
-      you may want to get a current version of libtool (say
-      libtool-1.3.4 and above) as earlier versions supposedly had
-      problems creating shared libraries.
+   <P>Finally, a few system-specific requirements:
+      <DL>
+        <DT>Cygwin
+        <DD>If you are using Cygwin to compile libstdc++-v3 on Win32, you'll
+            have to get a version of the cygwin1.dll that is dated on or
+            after February 1, 2000.  This is necessary to successfully run
+            the script &quot;mknumeric_limits&quot; which probes the
+            floating-point
+            environment of the host in question -- before this date, Cygwin
+            would freeze when running this script.  In addition, you may
+            want to get a current version of libtool (say libtool-1.3.4
+            and above) as earlier versions supposedly had problems creating
+            shared libraries.
+
+        <DT>Solaris
+        <DD>We recommend installing the <TT>SUNWxcu4</TT> package from the
+            Solaris CD before configuring the library.  You can check for
+            this package as a non-privileged user with the command
+            &quot;pkginfo SUNWxcu4&quot;.
+      </DL>
    </P>
 
 <HR>
@@ -393,7 +404,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: install.html,v 1.6 2000/07/26 21:30:45 pme Exp $
+<BR> $Id: install.html,v 1.7 2000/08/01 18:07:23 bkoz Exp $
 </EM></P>
 
 

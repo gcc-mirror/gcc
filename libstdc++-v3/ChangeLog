@@ -1,3 +1,12 @@
+2000-08-28  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/configopts.html:  Mention new options.
+	* docs/install.html:  Formatting changes for platform-specific
+	  pre-reqs, previously only Cygwin.
+	* docs/mail.html:  Fix new link.
+	* docs/thanks.html:  A couple more people.
+	* docs/26_numerics/howto.html:  Fix typo.
+
 2000-08-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* docs/22_locale/howto.html: Add notes on codecvt implementation.
