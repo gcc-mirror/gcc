@@ -1,3 +1,10 @@
+1999-06-21  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* real.c (ereal_from_double): Fix for 64-bit big endian hosts.
+	* emit-rtl.c (gen_lowpart_common): Add case for hosts where double
+	fits in HOST_WIDE_INT and one uses union to access a long constant
+	as double.
+
 Mon Jun 21 17:18:25 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (sparc_override_options): Don't allow profiling for

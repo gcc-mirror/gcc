@@ -896,6 +896,22 @@ gen_lowpart_common (mode, x)
       r = REAL_VALUE_FROM_TARGET_SINGLE (i);
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
     }
+  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
+	    || flag_pretend_float)
+	   && GET_MODE_CLASS (mode) == MODE_FLOAT
+	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
+	   && GET_CODE (x) == CONST_INT
+	   && (sizeof (double) * HOST_BITS_PER_CHAR
+	       == HOST_BITS_PER_WIDE_INT))
+    {
+      REAL_VALUE_TYPE r;
+      HOST_WIDE_INT i;
+
+      i = INTVAL (x);
+      r = REAL_VALUE_FROM_TARGET_DOUBLE (&i);
+      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
+    }
 #endif
 
   /* Similarly, if this is converting a floating-point value into a
