@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,14 +106,6 @@ package body Nlists is
    -- Local Subprograms --
    -----------------------
 
-   procedure Prepend_Debug (Node : Node_Id; To : List_Id);
-   pragma Inline (Prepend_Debug);
-   --  Output debug information if Debug_Flag_N set
-
-   procedure Remove_Next_Debug (Node : Node_Id);
-   pragma Inline (Remove_Next_Debug);
-   --  Output debug information if Debug_Flag_N set
-
    procedure Set_First (List : List_Id; To : Node_Id);
    pragma Inline (Set_First);
    --  Sets First field of list header List to reference To
@@ -154,6 +146,10 @@ package body Nlists is
       procedure Append_Debug;
       pragma Inline (Append_Debug);
       --  Output debug information if Debug_Flag_N set
+
+      ------------------
+      -- Append_Debug --
+      ------------------
 
       procedure Append_Debug is
       begin
@@ -201,6 +197,10 @@ package body Nlists is
       procedure Append_List_Debug;
       pragma Inline (Append_List_Debug);
       --  Output debug information if Debug_Flag_N set
+
+      -----------------------
+      -- Append_List_Debug --
+      -----------------------
 
       procedure Append_List_Debug is
       begin
@@ -288,9 +288,6 @@ package body Nlists is
    -- First --
    -----------
 
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
-
    function First (List : List_Id) return Node_Id is
    begin
       if List = No_List then
@@ -349,6 +346,10 @@ package body Nlists is
       pragma Inline (Insert_After_Debug);
       --  Output debug information if Debug_Flag_N set
 
+      ------------------------
+      -- Insert_After_Debug --
+      ------------------------
+
       procedure Insert_After_Debug is
       begin
          if Debug_Flag_N then
@@ -403,6 +404,10 @@ package body Nlists is
       pragma Inline (Insert_Before_Debug);
       --  Output debug information if Debug_Flag_N set
 
+      -------------------------
+      -- Insert_Before_Debug --
+      -------------------------
+
       procedure Insert_Before_Debug is
       begin
          if Debug_Flag_N then
@@ -456,6 +461,10 @@ package body Nlists is
       procedure Insert_List_After_Debug;
       pragma Inline (Insert_List_After_Debug);
       --  Output debug information if Debug_Flag_N set
+
+      -----------------------------
+      -- Insert_List_After_Debug --
+      -----------------------------
 
       procedure Insert_List_After_Debug is
       begin
@@ -519,6 +528,10 @@ package body Nlists is
       procedure Insert_List_Before_Debug;
       pragma Inline (Insert_List_Before_Debug);
       --  Output debug information if Debug_Flag_N set
+
+      ------------------------------
+      -- Insert_List_Before_Debug --
+      ------------------------------
 
       procedure Insert_List_Before_Debug is
       begin
@@ -603,9 +616,6 @@ package body Nlists is
    ----------
    -- Last --
    ----------
-
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
 
    function Last (List : List_Id) return Node_Id is
    begin
@@ -779,6 +789,10 @@ package body Nlists is
       pragma Inline (New_List_Debug);
       --  Output debugging information if Debug_Flag_N is set
 
+      --------------------
+      -- New_List_Debug --
+      --------------------
+
       procedure New_List_Debug is
       begin
          if Debug_Flag_N then
@@ -815,6 +829,10 @@ package body Nlists is
       procedure New_List_Debug;
       pragma Inline (New_List_Debug);
       --  Output debugging information if Debug_Flag_N is set
+
+      --------------------
+      -- New_List_Debug --
+      --------------------
 
       procedure New_List_Debug is
       begin
@@ -856,7 +874,6 @@ package body Nlists is
 
    function New_List (Node1, Node2 : Node_Id) return List_Id is
       L : constant List_Id := New_List (Node1);
-
    begin
       Append (Node2, L);
       return L;
@@ -864,7 +881,6 @@ package body Nlists is
 
    function New_List (Node1, Node2, Node3 : Node_Id) return List_Id is
       L : constant List_Id := New_List (Node1);
-
    begin
       Append (Node2, L);
       Append (Node3, L);
@@ -873,7 +889,6 @@ package body Nlists is
 
    function New_List (Node1, Node2, Node3, Node4 : Node_Id) return List_Id is
       L : constant List_Id := New_List (Node1);
-
    begin
       Append (Node2, L);
       Append (Node3, L);
@@ -886,11 +901,9 @@ package body Nlists is
       Node2 : Node_Id;
       Node3 : Node_Id;
       Node4 : Node_Id;
-      Node5 : Node_Id)
-      return  List_Id
+      Node5 : Node_Id) return List_Id
    is
       L : constant List_Id := New_List (Node1);
-
    begin
       Append (Node2, L);
       Append (Node3, L);
@@ -905,11 +918,9 @@ package body Nlists is
       Node3 : Node_Id;
       Node4 : Node_Id;
       Node5 : Node_Id;
-      Node6 : Node_Id)
-      return  List_Id
+      Node6 : Node_Id) return List_Id
    is
       L : constant List_Id := New_List (Node1);
-
    begin
       Append (Node2, L);
       Append (Node3, L);
@@ -922,9 +933,6 @@ package body Nlists is
    ----------
    -- Next --
    ----------
-
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
 
    function Next (Node : Node_Id) return Node_Id is
    begin
@@ -958,7 +966,7 @@ package body Nlists is
       loop
          N := Next (N);
          exit when Nkind (N) /= N_Pragma
-                    and then
+                     and then
                    Nkind (N) /= N_Null_Statement;
       end loop;
 
@@ -973,9 +981,6 @@ package body Nlists is
    --------
    -- No --
    --------
-
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
 
    function No (List : List_Id) return Boolean is
    begin
@@ -999,10 +1004,8 @@ package body Nlists is
    begin
       if U in Node_Range then
          return Parent (Node_Id (U));
-
       elsif U in List_Range then
          return Parent (List_Id (U));
-
       else
          return 99_999_999;
       end if;
@@ -1041,6 +1044,27 @@ package body Nlists is
    procedure Prepend (Node : Node_Id; To : List_Id) is
       F : constant Node_Id := First (To);
 
+      procedure Prepend_Debug;
+      pragma Inline (Prepend_Debug);
+      --  Output debug information if Debug_Flag_N set
+
+      -------------------
+      -- Prepend_Debug --
+      -------------------
+
+      procedure Prepend_Debug is
+      begin
+         if Debug_Flag_N then
+            Write_Str ("Prepend node ");
+            Write_Int (Int (Node));
+            Write_Str (" to list ");
+            Write_Int (Int (To));
+            Write_Eol;
+         end if;
+      end Prepend_Debug;
+
+   --  Start of processing for Prepend_Debug
+
    begin
       pragma Assert (not Is_List_Member (Node));
 
@@ -1048,7 +1072,7 @@ package body Nlists is
          return;
       end if;
 
-      pragma Debug (Prepend_Debug (Node, To));
+      pragma Debug (Prepend_Debug);
 
       if No (F) then
          Set_Last (To, Node);
@@ -1064,21 +1088,6 @@ package body Nlists is
       Set_Prev      (Node, Empty);
       Set_List_Link (Node, To);
    end Prepend;
-
-   -------------------
-   -- Prepend_Debug --
-   -------------------
-
-   procedure Prepend_Debug (Node : Node_Id; To : List_Id) is
-   begin
-      if Debug_Flag_N then
-         Write_Str ("Prepend node ");
-         Write_Int (Int (Node));
-         Write_Str (" to list ");
-         Write_Int (Int (To));
-         Write_Eol;
-      end if;
-   end Prepend_Debug;
 
    ----------------
    -- Prepend_To --
@@ -1101,9 +1110,6 @@ package body Nlists is
    ----------
    -- Prev --
    ----------
-
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
 
    function Prev (Node : Node_Id) return Node_Id is
    begin
@@ -1160,6 +1166,10 @@ package body Nlists is
       pragma Inline (Remove_Debug);
       --  Output debug information if Debug_Flag_N set
 
+      ------------------
+      -- Remove_Debug --
+      ------------------
+
       procedure Remove_Debug is
       begin
          if Debug_Flag_N then
@@ -1200,6 +1210,10 @@ package body Nlists is
       procedure Remove_Head_Debug;
       pragma Inline (Remove_Head_Debug);
       --  Output debug information if Debug_Flag_N set
+
+      -----------------------
+      -- Remove_Head_Debug --
+      -----------------------
 
       procedure Remove_Head_Debug is
       begin
@@ -1245,6 +1259,25 @@ package body Nlists is
    function Remove_Next (Node : Node_Id) return Node_Id is
       Nxt : constant Node_Id := Next (Node);
 
+      procedure Remove_Next_Debug;
+      pragma Inline (Remove_Next_Debug);
+      --  Output debug information if Debug_Flag_N set
+
+      -----------------------
+      -- Remove_Next_Debug --
+      -----------------------
+
+      procedure Remove_Next_Debug is
+      begin
+         if Debug_Flag_N then
+            Write_Str ("Remove next node after ");
+            Write_Int (Int (Node));
+            Write_Eol;
+         end if;
+      end Remove_Next_Debug;
+
+   --  Start of processing for Remove_Next
+
    begin
       if Present (Nxt) then
          declare
@@ -1252,7 +1285,7 @@ package body Nlists is
             LC   : constant List_Id := List_Containing (Node);
 
          begin
-            pragma Debug (Remove_Next_Debug (Node));
+            pragma Debug (Remove_Next_Debug);
             Set_Next (Node, Nxt2);
 
             if No (Nxt2) then
@@ -1269,25 +1302,9 @@ package body Nlists is
       return Nxt;
    end Remove_Next;
 
-   -----------------------
-   -- Remove_Next_Debug --
-   -----------------------
-
-   procedure Remove_Next_Debug (Node : Node_Id) is
-   begin
-      if Debug_Flag_N then
-         Write_Str ("Remove next node after ");
-         Write_Int (Int (Node));
-         Write_Eol;
-      end if;
-   end Remove_Next_Debug;
-
    ---------------
    -- Set_First --
    ---------------
-
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
 
    procedure Set_First (List : List_Id; To : Node_Id) is
    begin
@@ -1298,9 +1315,6 @@ package body Nlists is
    -- Set_Last --
    --------------
 
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
-
    procedure Set_Last (List : List_Id; To : Node_Id) is
    begin
       Lists.Table (List).Last := To;
@@ -1310,9 +1324,6 @@ package body Nlists is
    -- Set_List_Link --
    -------------------
 
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
-
    procedure Set_List_Link (Node : Node_Id; To : List_Id) is
    begin
       Nodes.Table (Node).Link := Union_Id (To);
@@ -1321,9 +1332,6 @@ package body Nlists is
    --------------
    -- Set_Next --
    --------------
-
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
 
    procedure Set_Next (Node : Node_Id; To : Node_Id) is
    begin
@@ -1343,9 +1351,6 @@ package body Nlists is
    --------------
    -- Set_Prev --
    --------------
-
-   --  This subprogram is deliberately placed early on, out of alphabetical
-   --  order, so that it can be properly inlined from within this unit.
 
    procedure Set_Prev (Node : Node_Id; To : Node_Id) is
    begin

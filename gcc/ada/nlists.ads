@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,8 +89,7 @@ package Nlists is
       Node2 : Node_Id;
       Node3 : Node_Id;
       Node4 : Node_Id;
-      Node5 : Node_Id)
-      return  List_Id;
+      Node5 : Node_Id) return List_Id;
    --  Build a new list initially containing the five given nodes
 
    function New_List
@@ -99,9 +98,8 @@ package Nlists is
       Node3 : Node_Id;
       Node4 : Node_Id;
       Node5 : Node_Id;
-      Node6 : Node_Id)
-      return  List_Id;
-   --  Build a new list initially containing the five given nodes
+      Node6 : Node_Id) return List_Id;
+   --  Build a new list initially containing the six given nodes
 
    function New_Copy_List (List : List_Id) return List_Id;
    --  Creates a new list containing copies (made with Atree.New_Copy) of every
@@ -174,11 +172,10 @@ package Nlists is
 
    function Prev (Node : Node_Id) return Node_Id;
    pragma Inline (Prev);
-   --  This function returns the previous node on a node list list, or Empty if
-   --  Node is the first element of the node list. The argument must be a
-   --  member of a node list. Note that the implementation does not maintain
-   --  back pointers, so this function potentially requires traversal of the
-   --  entire list, or more accurately of the part of the list preceding Node.
+   --  This function returns the previous node on a node list list, or Empty
+   --  if Node is the first element of the node list. The argument must be
+   --  a member of a node list. Note: the implementation does maintain back
+   --  pointers, so this function executes quickly in constant time.
 
    function Pick (List : List_Id; Index : Pos) return Node_Id;
    --  Given a list, picks out the Index'th entry (1 = first entry). The
@@ -193,8 +190,9 @@ package Nlists is
    --  This function returns the previous node on a node list, skipping any
    --  pragmas. If Node is the first element of the list, or if the only
    --  elements preceding it are pragmas, then Empty is returned. The
-   --  argument must be a member of a node list. Like Prev, this function
-   --  may require expensive traversal of the head section of the list.
+   --  argument must be a member of a node list. Note: the implementation
+   --  does maintain back pointers, so this function executes quickly in
+   --  constant time.
 
    procedure Prev_Non_Pragma (Node : in out Node_Id);
    pragma Inline (Prev_Non_Pragma);
@@ -261,7 +259,6 @@ package Nlists is
    --  List is reset to be the empty node list.
 
    procedure Prepend (Node : Node_Id; To : List_Id);
-   pragma Inline (Prepend);
    --  Prepends Node at the start of node list To. Node must be a non-empty
    --  node that is not already a member of a node list, and To must be a
    --  node list. An attempt to prepend an error node is ignored without
@@ -281,7 +278,6 @@ package Nlists is
    --  is empty, then Empty is returned.
 
    function Remove_Next (Node : Node_Id) return Node_Id;
-   pragma Inline (Remove_Next);
    --  Removes the item immediately following the given node, and returns it
    --  as the result. If Node is the last element of the list, then Empty is
    --  returned. Node must be a member of a list. Unlike Remove, Remove_Next
