@@ -1,3 +1,9 @@
+2005-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/19472
+	* semantics.c (finish_asm_stmt): Strip nops off
+	input memory operands.
+
 2005-01-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* Make-lang.in, call.c, cvt.c, init.c, rtti.c, tree.c,

@@ -1206,8 +1206,14 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	    {
 	      /* If the operand is going to end up in memory,
 		 mark it addressable.  */
-	      if (!allows_reg && allows_mem && !cxx_mark_addressable (operand))
-		operand = error_mark_node;
+	      if (!allows_reg && allows_mem)
+		{
+		  /* Strip the nops as we allow this case.  FIXME, this really
+		     should be rejected or made deprecated.  */
+		  STRIP_NOPS (operand);
+		  if (!cxx_mark_addressable (operand))
+		    operand = error_mark_node;
+		}
 	    }
 	  else
 	    operand = error_mark_node;
