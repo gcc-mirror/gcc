@@ -10451,10 +10451,8 @@ do_jump (exp, if_false_label, if_true_label)
       {
 	tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 
-	if (integer_zerop (TREE_OPERAND (exp, 1)))
-	  do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
-	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
-		 || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
+	if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
+	    || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
 	  do_jump
 	    (fold
 	     (build (TRUTH_ANDIF_EXPR, TREE_TYPE (exp),
@@ -10473,6 +10471,10 @@ do_jump (exp, if_false_label, if_true_label)
 						TREE_TYPE (inner_type),
 						TREE_OPERAND (exp, 1))))))),
 	     if_false_label, if_true_label);
+
+	else if (integer_zerop (TREE_OPERAND (exp, 1)))
+	  do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
+
 	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
 		 && !can_compare_p (TYPE_MODE (inner_type)))
 	  do_jump_by_parts_equality (exp, if_false_label, if_true_label);
@@ -10485,10 +10487,8 @@ do_jump (exp, if_false_label, if_true_label)
       {
 	tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 
-	if (integer_zerop (TREE_OPERAND (exp, 1)))
-	  do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
-	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
-		 || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
+	if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
+	    || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
 	  do_jump
 	    (fold
 	     (build (TRUTH_ORIF_EXPR, TREE_TYPE (exp),
@@ -10507,6 +10507,10 @@ do_jump (exp, if_false_label, if_true_label)
 						TREE_TYPE (inner_type),
 						TREE_OPERAND (exp, 1))))))),
 	     if_false_label, if_true_label);
+
+	else if (integer_zerop (TREE_OPERAND (exp, 1)))
+	  do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
+
 	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
 		 && !can_compare_p (TYPE_MODE (inner_type)))
 	  do_jump_by_parts_equality (exp, if_true_label, if_false_label);
