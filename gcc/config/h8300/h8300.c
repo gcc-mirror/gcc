@@ -148,63 +148,35 @@ dosize (file, op, size)
      const char *op;
      unsigned int size;
 {
-  /* On the h8300h and h8300s, for sizes <= 8 bytes it is as good or
-     better to use adds/subs insns rather than add.l/sub.l
-     with an immediate value.   */
-  if (size > 4 && size <= 8 && (TARGET_H8300H || TARGET_H8300S))
+  /* On the H8/300H and H8/S, for sizes <= 8 bytes, it is as good or
+     better to use adds/subs insns rather than add.l/sub.l with an
+     immediate value.
+
+     Also, on the H8/300, if we don't have a temporary to hold the
+     size of the frame in the prologue, we simply emit a sequence of
+     subs since this shouldn't happen often.  */
+  if ((TARGET_H8300 && size <= 4)
+      || ((TARGET_H8300H || TARGET_H8300S) && size <= 8)
+      || (TARGET_H8300 && current_function_needs_context
+	  && strcmp (op, "sub")))
     {
-      /* Crank the size down to <= 4.  */
-      fprintf (file, "\t%ss\t#%d,sp\n", op, 4);
-      size -= 4;
+      HOST_WIDE_INT amount;
+
+      /* Try different amounts in descending order.  */
+      for (amount = (TARGET_H8300H || TARGET_H8300S) ? 4 : 2;
+	   amount > 0;
+	   amount /= 2)
+	{
+	  for(; size >= amount; size -= amount)
+	    fprintf (file, "\t%ss\t#%d,sp\n", op, amount);
+	}
     }
-
-  switch (size)
+  else
     {
-    case 4:
-      if (TARGET_H8300H || TARGET_H8300S)
-	{
-	  fprintf (file, "\t%ss\t#%d,sp\n", op, 4);
-	  size = 0;
-	  break;
-	}
-    case 3:
-      fprintf (file, "\t%ss\t#%d,sp\n", op, 2);
-      size -= 2;
-      /* Fall through...  */
-    case 2:
-    case 1:
-      fprintf (file, "\t%ss\t#%d,sp\n", op, size);
-      size = 0;
-      break;
-    case 0:
-      break;
-    default:
       if (TARGET_H8300)
-	{
-	  if (current_function_needs_context
-	      && strcmp (op, "sub") == 0)
-	    {
-	      /* Egad.  We don't have a temporary to hold the
-		 size of the frame in the prologue!  Just inline
-		 the bastard since this shouldn't happen often.  */
-	      while (size >= 2)
-		{
-		  fprintf (file, "\tsubs\t#2,sp\n");
-		  size -= 2;
-		}
-
-	      if (size)
-		fprintf (file, "\tsubs\t#1,sp\n");
-
-	      size = 0;
-	    }
-	  else
-	    fprintf (file, "\tmov.w\t#%d,r3\n\t%s.w\tr3,sp\n", size, op);
-	}
+	fprintf (file, "\tmov.w\t#%d,r3\n\t%s.w\tr3,sp\n", size, op);
       else
-	fprintf (file, "\t%s\t#%d,sp\n", op, size);
-      size = 0;
-      break;
+	fprintf (file, "\t%s.l\t#%d,sp\n", op, size);
     }
 }
 
@@ -640,11 +612,10 @@ split_adds_subs (mode, operands)
        amount > 0;
        amount /= 2)
     {
-      while (val >= amount)
+      for(; val >= amount; val -= amount)
 	{
 	  rtx tmp = gen_rtx_PLUS (mode, reg, GEN_INT (sign * amount));
 	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
-	  val -= amount;
 	}
     }
 
