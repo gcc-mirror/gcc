@@ -3,6 +3,8 @@
 	* config/sparc/sparc.c (INIT_TARGET_OPTABS): If ARCH64, set the
 	32-bit ABI libfuncs to NULL.
 
+	* config/sparc/sparc.md: Use define_insn_and_split.
+
 	* expmed.c (expand_divmod): Do not set optab1/optab2 to the shift
 	optabs if op1 is const0_rtx.
 

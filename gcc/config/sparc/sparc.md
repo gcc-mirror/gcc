@@ -826,263 +826,193 @@
 ;; them to always use the splitz below so the results can be
 ;; scheduled.
 
-(define_insn "*snesi_zero"
+(define_insn_and_split "*snesi_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ne:SI (match_operand:SI 1 "register_operand" "r")
 	       (const_int 0)))
    (clobber (reg:CC 100))]
   ""
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ne:SI (match_operand:SI 1 "register_operand" "")
-	       (const_int 0)))
-   (clobber (reg:CC 100))]
   ""
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
    (set (match_dup 0) (ltu:SI (reg:CC 100) (const_int 0)))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
-(define_insn "*neg_snesi_zero"
+(define_insn_and_split "*neg_snesi_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (ne:SI (match_operand:SI 1 "register_operand" "r")
 		       (const_int 0))))
    (clobber (reg:CC 100))]
   ""
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(neg:SI (ne:SI (match_operand:SI 1 "register_operand" "")
-		       (const_int 0))))
-   (clobber (reg:CC 100))]
   ""
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
    (set (match_dup 0) (neg:SI (ltu:SI (reg:CC 100) (const_int 0))))]
-  "")
-
-(define_insn "*snesi_zero_extend"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ne:DI (match_operand:SI 1 "register_operand" "r")
-	       (const_int 0)))
-   (clobber (reg:CC 100))]
-  "TARGET_ARCH64"
-  "#"
+  ""
   [(set_attr "length" "2")])
 
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (ne:DI (match_operand:SI 1 "register_operand" "")
+(define_insn_and_split "*snesi_zero_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (ne:DI (match_operand:SI 1 "register_operand" "r")
                (const_int 0)))
    (clobber (reg:CC 100))]
   "TARGET_ARCH64"
-  [(set (reg:CC_NOOV 100) (compare:CC_NOOV (minus:SI (const_int 0) (match_dup 1))
+  "#"
+  "&& 1"
+  [(set (reg:CC_NOOV 100) (compare:CC_NOOV (minus:SI (const_int 0)
+                                                     (match_dup 1))
                                            (const_int 0)))
    (set (match_dup 0) (zero_extend:DI (plus:SI (plus:SI (const_int 0)
                                                         (const_int 0))
                                                (ltu:SI (reg:CC_NOOV 100)
                                                        (const_int 0)))))]
-  "")
-
-(define_insn "*snedi_zero"
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(ne:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))]
-  "TARGET_ARCH64"
-  "#"
+  ""
   [(set_attr "length" "2")])
 
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (ne:DI (match_operand:DI 1 "register_operand" "")
+(define_insn_and_split "*snedi_zero"
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+        (ne:DI (match_operand:DI 1 "register_operand" "r")
                (const_int 0)))]
-  "TARGET_ARCH64
-   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
+  "TARGET_ARCH64"
+  "#"
+  "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:DI (ne:DI (match_dup 1)
                                               (const_int 0))
                                        (const_int 1)
                                        (match_dup 0)))]
-  "")
-
-(define_insn "*neg_snedi_zero"
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(neg:DI (ne:DI (match_operand:DI 1 "register_operand" "r")
-		       (const_int 0))))]
-  "TARGET_ARCH64"
-  "#"
+  ""
   [(set_attr "length" "2")])
 
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (neg:DI (ne:DI (match_operand:DI 1 "register_operand" "")
+(define_insn_and_split "*neg_snedi_zero"
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+        (neg:DI (ne:DI (match_operand:DI 1 "register_operand" "r")
                        (const_int 0))))]
-  "TARGET_ARCH64
-   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
+  "TARGET_ARCH64"
+  "#"
+  "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:DI (ne:DI (match_dup 1)
                                               (const_int 0))
                                        (const_int -1)
                                        (match_dup 0)))]
-  "")
-
-(define_insn "*snedi_zero_trunc"
-  [(set (match_operand:SI 0 "register_operand" "=&r")
-	(ne:SI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))]
-  "TARGET_ARCH64"
-  "#"
+  ""
   [(set_attr "length" "2")])
 
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-        (ne:SI (match_operand:DI 1 "register_operand" "")
+(define_insn_and_split "*snedi_zero_trunc"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+        (ne:SI (match_operand:DI 1 "register_operand" "r")
                (const_int 0)))]
-  "TARGET_ARCH64
-   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
+  "TARGET_ARCH64"
+  "#"
+  "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:SI (ne:DI (match_dup 1)
                                               (const_int 0))
                                        (const_int 1)
                                        (match_dup 0)))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
-(define_insn "*seqsi_zero"
+(define_insn_and_split "*seqsi_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(eq:SI (match_operand:SI 1 "register_operand" "r")
 	       (const_int 0)))
    (clobber (reg:CC 100))]
   ""
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(eq:SI (match_operand:SI 1 "register_operand" "")
-	       (const_int 0)))
-   (clobber (reg:CC 100))]
   ""
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
    (set (match_dup 0) (geu:SI (reg:CC 100) (const_int 0)))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
-(define_insn "*neg_seqsi_zero"
+(define_insn_and_split "*neg_seqsi_zero"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (eq:SI (match_operand:SI 1 "register_operand" "r")
 		       (const_int 0))))
    (clobber (reg:CC 100))]
   ""
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(neg:SI (eq:SI (match_operand:SI 1 "register_operand" "")
-		       (const_int 0))))
-   (clobber (reg:CC 100))]
   ""
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
    (set (match_dup 0) (neg:SI (geu:SI (reg:CC 100) (const_int 0))))]
-  "")
-
-(define_insn "*seqsi_zero_extend"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(eq:DI (match_operand:SI 1 "register_operand" "r")
-	       (const_int 0)))
-   (clobber (reg:CC 100))]
-  "TARGET_ARCH64"
-  "#"
+  ""
   [(set_attr "length" "2")])
 
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (eq:DI (match_operand:SI 1 "register_operand" "")
+(define_insn_and_split "*seqsi_zero_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (eq:DI (match_operand:SI 1 "register_operand" "r")
                (const_int 0)))
    (clobber (reg:CC 100))]
   "TARGET_ARCH64"
-  [(set (reg:CC_NOOV 100) (compare:CC_NOOV (minus:SI (const_int 0) (match_dup 1))
+  "#"
+  "&& 1"
+  [(set (reg:CC_NOOV 100) (compare:CC_NOOV (minus:SI (const_int 0)
+                                                     (match_dup 1))
                                            (const_int 0)))
    (set (match_dup 0) (zero_extend:DI (minus:SI (minus:SI (const_int 0)
                                                           (const_int -1))
                                                 (ltu:SI (reg:CC_NOOV 100)
                                                         (const_int 0)))))]
-  "")
-
-(define_insn "*seqdi_zero"
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(eq:DI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))]
-  "TARGET_ARCH64"
-  "#"
+  ""
   [(set_attr "length" "2")])
 
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (eq:DI (match_operand:DI 1 "register_operand" "")
+(define_insn_and_split "*seqdi_zero"
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+        (eq:DI (match_operand:DI 1 "register_operand" "r")
                (const_int 0)))]
-  "TARGET_ARCH64
-   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
+  "TARGET_ARCH64"
+  "#"
+  "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:DI (eq:DI (match_dup 1)
                                               (const_int 0))
                                        (const_int 1)
                                        (match_dup 0)))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
-(define_insn "*neg_seqdi_zero"
+(define_insn_and_split "*neg_seqdi_zero"
   [(set (match_operand:DI 0 "register_operand" "=&r")
-	(neg:DI (eq:DI (match_operand:DI 1 "register_operand" "r")
-		       (const_int 0))))]
+        (neg:DI (eq:DI (match_operand:DI 1 "register_operand" "r")
+                       (const_int 0))))]
   "TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")]) 
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (neg:DI (eq:DI (match_operand:DI 1 "register_operand" "")
-                       (const_int 0))))]
-  "TARGET_ARCH64
-   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
+  "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:DI (eq:DI (match_dup 1)
                                               (const_int 0))
                                        (const_int -1)
                                        (match_dup 0)))]
-  "")
+  ""
+  [(set_attr "length" "2")]) 
 
-(define_insn "*seqdi_zero_trunc"
+(define_insn_and_split "*seqdi_zero_trunc"
   [(set (match_operand:SI 0 "register_operand" "=&r")
-	(eq:SI (match_operand:DI 1 "register_operand" "r")
-	       (const_int 0)))]
+        (eq:SI (match_operand:DI 1 "register_operand" "r")
+               (const_int 0)))]
   "TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-        (eq:SI (match_operand:DI 1 "register_operand" "")
-               (const_int 0)))]
-  "TARGET_ARCH64
-   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
+  "&& ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:SI (eq:DI (match_dup 1)
                                               (const_int 0))
                                        (const_int 1)
                                        (match_dup 0)))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
 ;; We can also do (x + (i == 0)) and related, so put them in.
 ;; ??? The addx/subx insns use the 32 bit carry flag so there are no DImode
 ;; versions for v9.
 
-(define_insn "*x_plus_i_ne_0"
+(define_insn_and_split "*x_plus_i_ne_0"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (ne:SI (match_operand:SI 1 "register_operand" "r")
 			(const_int 0))
@@ -1090,22 +1020,15 @@
    (clobber (reg:CC 100))]
   ""
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (ne:SI (match_operand:SI 1 "register_operand" "")
-			(const_int 0))
-		 (match_operand:SI 2 "register_operand" "")))
-   (clobber (reg:CC 100))]
   ""
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
    (set (match_dup 0) (plus:SI (ltu:SI (reg:CC 100) (const_int 0))
 			       (match_dup 2)))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
-(define_insn "*x_minus_i_ne_0"
+(define_insn_and_split "*x_minus_i_ne_0"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(minus:SI (match_operand:SI 2 "register_operand" "r")
 		  (ne:SI (match_operand:SI 1 "register_operand" "r")
@@ -1113,22 +1036,15 @@
    (clobber (reg:CC 100))]
   ""
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(minus:SI (match_operand:SI 2 "register_operand" "")
-		  (ne:SI (match_operand:SI 1 "register_operand" "")
-			 (const_int 0))))
-   (clobber (reg:CC 100))]
   ""
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
    (set (match_dup 0) (minus:SI (match_dup 2)
 				(ltu:SI (reg:CC 100) (const_int 0))))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
-(define_insn "*x_plus_i_eq_0"
+(define_insn_and_split "*x_plus_i_eq_0"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (eq:SI (match_operand:SI 1 "register_operand" "r")
 			(const_int 0))
@@ -1136,22 +1052,15 @@
    (clobber (reg:CC 100))]
   ""
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (eq:SI (match_operand:SI 1 "register_operand" "")
-			(const_int 0))
-		 (match_operand:SI 2 "register_operand" "")))
-   (clobber (reg:CC 100))]
   ""
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
    (set (match_dup 0) (plus:SI (geu:SI (reg:CC 100) (const_int 0))
 			       (match_dup 2)))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
-(define_insn "*x_minus_i_eq_0"
+(define_insn_and_split "*x_minus_i_eq_0"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(minus:SI (match_operand:SI 2 "register_operand" "r")
 		  (eq:SI (match_operand:SI 1 "register_operand" "r")
@@ -1159,20 +1068,13 @@
    (clobber (reg:CC 100))]
   ""
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(minus:SI (match_operand:SI 2 "register_operand" "")
-		  (eq:SI (match_operand:SI 1 "register_operand" "")
-			 (const_int 0))))
-   (clobber (reg:CC 100))]
   ""
   [(set (reg:CC_NOOV 100) (compare:CC_NOOV (neg:SI (match_dup 1))
 					   (const_int 0)))
    (set (match_dup 0) (minus:SI (match_dup 2)
 				(geu:SI (reg:CC 100) (const_int 0))))]
-  "")
+  ""
+  [(set_attr "length" "2")])
 
 ;; We can also do GEU and LTU directly, but these operate after a compare.
 ;; ??? The addx/subx insns use the 32 bit carry flag so there are no DImode
@@ -3952,25 +3854,16 @@
    fmovq%c1\\t%x2, %4, %0"
   [(set_attr "type" "fpcmove")])
 
-(define_insn "*movtf_cc_sp64"
+(define_insn_and_split "*movtf_cc_sp64"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(if_then_else:TF (match_operator 1 "comparison_operator"
-				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
-				 (const_int 0)])
+			    [(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+			     (const_int 0)])
                          (match_operand:TF 3 "register_operand" "e,0")
                          (match_operand:TF 4 "register_operand" "0,e")))]
   "TARGET_V9 && TARGET_FPU && !TARGET_HARD_QUAD"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:TF 0 "register_operand" "")
-	(if_then_else:TF (match_operator 1 "comparison_operator"
-				[(match_operand 2 "icc_or_fcc_reg_operand" "")
-				 (const_int 0)])
-                         (match_operand:TF 3 "register_operand" "")
-                         (match_operand:TF 4 "register_operand" "")))]
-  "reload_completed && TARGET_V9 && TARGET_FPU && !TARGET_HARD_QUAD"
+  "&& reload_completed"
   [(clobber (const_int 0))]
   "
 {
@@ -4002,7 +3895,8 @@
       emit_insn (gen_movdf_cc_sp64 (dest2, operands[1], operands[2], srca2, srcb2));
     }
   DONE;
-}")
+}"
+  [(set_attr "length" "2")])
 
 (define_insn "*movqi_cc_reg_sp64"
   [(set (match_operand:QI 0 "register_operand" "=r,r")
@@ -4110,7 +4004,7 @@
    fmovrq%d1\\t%2, %4, %0"
   [(set_attr "type" "fpcrmove")])
 
-(define_insn "*movtf_cc_reg_sp64"
+(define_insn_and_split "*movtf_cc_reg_sp64"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(if_then_else:TF (match_operator 1 "v9_regcmp_op"
 				[(match_operand:DI 2 "register_operand" "r,r")
@@ -4119,16 +4013,7 @@
                          (match_operand:TF 4 "register_operand" "0,e")))]
   "TARGET_ARCH64 && TARGET_FPU && ! TARGET_HARD_QUAD"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:TF 0 "register_operand" "")
-	(if_then_else:TF (match_operator 1 "v9_regcmp_op"
-				[(match_operand:DI 2 "register_operand" "")
-				 (const_int 0)])
-                         (match_operand:TF 3 "register_operand" "")
-                         (match_operand:TF 4 "register_operand" "")))]
-  "reload_completed && TARGET_ARCH64 && TARGET_FPU && ! TARGET_HARD_QUAD"
+  "&& reload_completed"
   [(clobber (const_int 0))]
   "
 {
@@ -4160,7 +4045,8 @@
       emit_insn (gen_movdf_cc_reg_sp64 (dest2, operands[1], operands[2], srca2, srcb2));
     }
   DONE;
-}")
+}"
+  [(set_attr "length" "2")])
 
 
 ;;- zero extension instructions
@@ -4299,17 +4185,12 @@
    lduw\\t%1, %0"
   [(set_attr "type" "shift,load")])
 
-(define_insn "*zero_extendsidi2_insn_sp32"
+(define_insn_and_split "*zero_extendsidi2_insn_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (zero_extend:DI (match_operand:SI 1 "register_operand" "r")))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (zero_extend:DI (match_operand:SI 1 "register_operand" "")))]
-  "! TARGET_ARCH64 && reload_completed"
+  "&& reload_completed"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "
@@ -4334,7 +4215,8 @@
       operands[4] = dest2;
       operands[5] = operands[1];
     }
-}")
+}"
+  [(set_attr "length" "2")])
 
 ;; Simplify comparisons of extended values.
 
@@ -4978,21 +4860,14 @@
     }
 }")
 
-(define_insn "adddi3_insn_sp32"
+(define_insn_and_split "adddi3_insn_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (match_operand:DI 1 "arith_double_operand" "%r")
 		 (match_operand:DI 2 "arith_double_operand" "rHI")))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "arith_double_operand" "")
-		 (match_operand:DI 2 "arith_double_operand" "")))
-   (clobber (reg:CC 100))]
-  "! TARGET_ARCH64 && reload_completed"
+  "&& reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
 		   (compare:CC_NOOV (plus:SI (match_dup 4)
 					     (match_dup 5))
@@ -5021,7 +4896,8 @@
   else
 #endif
     operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
-}")
+}"
+  [(set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5069,26 +4945,21 @@
   "addx\\t%1, %2, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*addx_extend_sp32"
+(define_insn_and_split "*addx_extend_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (plus:SI (plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
-                                          (match_operand:SI 2 "arith_operand" "rI"))
+	(zero_extend:DI (plus:SI (plus:SI
+                                  (match_operand:SI 1 "reg_or_0_operand" "%rJ")
+                                  (match_operand:SI 2 "arith_operand" "rI"))
                                  (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extend:DI (plus:SI (plus:SI (match_operand:SI 1 "reg_or_0_operand" "")
-                                          (match_operand:SI 2 "arith_operand" ""))
-                                 (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
-  "! TARGET_ARCH64 && reload_completed"
+  "&& reload_completed"
   [(set (match_dup 3) (plus:SI (plus:SI (match_dup 1) (match_dup 2))
                                (ltu:SI (reg:CC_NOOV 100) (const_int 0))))
    (set (match_dup 4) (const_int 0))]
   "operands[3] = gen_lowpart (SImode, operands[0]);
-   operands[4] = gen_highpart_mode (SImode, DImode, operands[1]);")
+   operands[4] = gen_highpart_mode (SImode, DImode, operands[1]);"
+  [(set_attr "length" "2")])
 
 (define_insn "*addx_extend_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5117,42 +4988,29 @@
   "subx\\t%r1, %2, %0"
   [(set_attr "type" "ialuX")])
 
-(define_insn "*subx_extend"
+(define_insn_and_split "*subx_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (minus:SI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
                                             (match_operand:SI 2 "arith_operand" "rI"))
                                   (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extend:DI (minus:SI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "")
-                                            (match_operand:SI 2 "arith_operand" ""))
-                                  (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
-  "! TARGET_ARCH64 && reload_completed"
+  "&& reload_completed"
   [(set (match_dup 3) (minus:SI (minus:SI (match_dup 1) (match_dup 2))
                                 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))
    (set (match_dup 4) (const_int 0))]
   "operands[3] = gen_lowpart (SImode, operands[0]);
-   operands[4] = gen_highpart (SImode, operands[0]);")
+   operands[4] = gen_highpart (SImode, operands[0]);"
+  [(set_attr "length" "2")])
 
-(define_insn ""
+(define_insn_and_split ""
   [(set (match_operand:DI 0 "register_operand" "=r")
         (plus:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
                  (match_operand:DI 2 "register_operand" "r")))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (plus:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
-                 (match_operand:DI 2 "register_operand" "")))
-   (clobber (reg:CC 100))]
-  "! TARGET_ARCH64 && reload_completed"
+  "&& reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
                    (compare:CC_NOOV (plus:SI (match_dup 3) (match_dup 1))
                                     (const_int 0)))
@@ -5163,7 +5021,8 @@
   "operands[3] = gen_lowpart (SImode, operands[2]);
    operands[4] = gen_highpart (SImode, operands[2]);
    operands[5] = gen_lowpart (SImode, operands[0]);
-   operands[6] = gen_highpart (SImode, operands[0]);")
+   operands[6] = gen_highpart (SImode, operands[0]);"
+  [(set_attr "length" "2")])
 
 (define_insn "*adddi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5268,22 +5127,14 @@
     }
 }")
 
-(define_insn "*subdi3_sp32"
+(define_insn_and_split "*subdi3_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(minus:DI (match_operand:DI 1 "register_operand" "r")
-		  (match_operand:DI 2 "arith_double_operand" "rHI")))
+        (minus:DI (match_operand:DI 1 "register_operand" "r")
+                  (match_operand:DI 2 "arith_double_operand" "rHI")))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (minus:DI (match_operand:DI 1 "register_operand" "")
-                  (match_operand:DI 2 "arith_double_operand" "")))
-   (clobber (reg:CC 100))]
-  "! TARGET_ARCH64
-   && reload_completed
+  "&& reload_completed
    && (GET_CODE (operands[2]) == CONST_INT
        || GET_CODE (operands[2]) == CONST_DOUBLE)"
   [(clobber (const_int 0))]
@@ -5313,7 +5164,8 @@
                            highp));
     }
   DONE;
-}")
+}"
+  [(set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5334,21 +5186,14 @@
   DONE;
 }")
 
-(define_insn ""
+(define_insn_and_split ""
   [(set (match_operand:DI 0 "register_operand" "=r")
       (minus:DI (match_operand:DI 1 "register_operand" "r")
                 (zero_extend:DI (match_operand:SI 2 "register_operand" "r"))))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (minus:DI (match_operand:DI 1 "register_operand" "")
-                  (zero_extend:DI (match_operand:SI 2 "register_operand" ""))))
-   (clobber (reg:CC 100))]
-  "! TARGET_ARCH64 && reload_completed"
+  "&& reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
                    (compare:CC_NOOV (minus:SI (match_dup 3) (match_dup 2))
                                     (const_int 0)))
@@ -5359,7 +5204,8 @@
   "operands[3] = gen_lowpart (SImode, operands[1]);
    operands[4] = gen_highpart (SImode, operands[1]);
    operands[5] = gen_lowpart (SImode, operands[0]);
-   operands[6] = gen_highpart (SImode, operands[0]);")
+   operands[6] = gen_highpart (SImode, operands[0]);"
+  [(set_attr "length" "2")])
 
 (define_insn "*subdi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -6192,7 +6038,7 @@
   operands[9] = gen_lowpart (SImode, operands[3]);
 }")
 
-(define_insn "*and_not_di_sp32"
+(define_insn_and_split "*and_not_di_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
 	(and:DI (not:DI (match_operand:DI 1 "register_operand" "r,b"))
 		(match_operand:DI 2 "register_operand" "r,b")))]
@@ -6200,16 +6046,7 @@
   "@
    #
    fandnot1\\t%1, %2, %0"
-  [(set_attr "type" "*,fp")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "double")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (and:DI (not:DI (match_operand:DI 1 "register_operand" ""))
-                (match_operand:DI 2 "register_operand" "")))]
-  "! TARGET_ARCH64
-   && reload_completed
+  "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
         && REGNO (operands[0]) < 32)
        || (GET_CODE (operands[0]) == SUBREG
@@ -6222,7 +6059,10 @@
    operands[5] = gen_highpart (SImode, operands[2]);
    operands[6] = gen_lowpart (SImode, operands[0]);
    operands[7] = gen_lowpart (SImode, operands[1]);
-   operands[8] = gen_lowpart (SImode, operands[2]);")
+   operands[8] = gen_lowpart (SImode, operands[2]);"
+  [(set_attr "type" "*,fp")
+   (set_attr "length" "2,*")
+   (set_attr "fptype" "double")])
 
 (define_insn "*and_not_di_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
@@ -6300,7 +6140,7 @@
   operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
-(define_insn "*or_not_di_sp32"
+(define_insn_and_split "*or_not_di_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
 	(ior:DI (not:DI (match_operand:DI 1 "register_operand" "r,b"))
 		(match_operand:DI 2 "register_operand" "r,b")))]
@@ -6308,16 +6148,7 @@
   "@
    #
    fornot1\\t%1, %2, %0"
-  [(set_attr "type" "*,fp")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "double")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (ior:DI (not:DI (match_operand:DI 1 "register_operand" ""))
-                (match_operand:DI 2 "register_operand" "")))]
-  "! TARGET_ARCH64
-   && reload_completed
+  "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
         && REGNO (operands[0]) < 32)
        || (GET_CODE (operands[0]) == SUBREG
@@ -6330,7 +6161,10 @@
    operands[5] = gen_highpart (SImode, operands[2]);
    operands[6] = gen_lowpart (SImode, operands[0]);
    operands[7] = gen_lowpart (SImode, operands[1]);
-   operands[8] = gen_lowpart (SImode, operands[2]);")
+   operands[8] = gen_lowpart (SImode, operands[2]);"
+  [(set_attr "type" "*,fp")
+   (set_attr "length" "2,*")
+   (set_attr "fptype" "double")])
 
 (define_insn "*or_not_di_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
@@ -6433,7 +6267,7 @@
 
 ;; xnor patterns.  Note that (a ^ ~b) == (~a ^ b) == ~(a ^ b).
 ;; Combine now canonicalizes to the rightmost expression.
-(define_insn "*xor_not_di_sp32"
+(define_insn_and_split "*xor_not_di_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
 	(not:DI (xor:DI (match_operand:DI 1 "register_operand" "r,b")
 			(match_operand:DI 2 "register_operand" "r,b"))))]
@@ -6441,16 +6275,7 @@
   "@
    #
    fxnor\\t%1, %2, %0"
-  [(set_attr "type" "*,fp")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "double")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (not:DI (xor:DI (match_operand:DI 1 "register_operand" "")
-                        (match_operand:DI 2 "register_operand" ""))))]
-  "! TARGET_ARCH64
-   && reload_completed
+  "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
         && REGNO (operands[0]) < 32)
        || (GET_CODE (operands[0]) == SUBREG
@@ -6463,7 +6288,10 @@
    operands[5] = gen_highpart (SImode, operands[2]);
    operands[6] = gen_lowpart (SImode, operands[0]);
    operands[7] = gen_lowpart (SImode, operands[1]);
-   operands[8] = gen_lowpart (SImode, operands[2]);")
+   operands[8] = gen_lowpart (SImode, operands[2]);"
+  [(set_attr "type" "*,fp")
+   (set_attr "length" "2,*")
+   (set_attr "fptype" "double")])
 
 (define_insn "*xor_not_di_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
@@ -6654,20 +6482,13 @@
     }
 }")
 
-(define_insn "*negdi2_sp32"
+(define_insn_and_split "*negdi2_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))
    (clobber (reg:CC 100))]
   "TARGET_ARCH32"
   "#"
-  [(set_attr "length" "2")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (neg:DI (match_operand:DI 1 "register_operand" "")))
-   (clobber (reg:CC 100))]
-  "TARGET_ARCH32
-   && reload_completed"
+  "&& reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
                    (compare:CC_NOOV (minus:SI (const_int 0) (match_dup 5))
                                     (const_int 0)))
@@ -6677,7 +6498,8 @@
   "operands[2] = gen_highpart (SImode, operands[0]);
    operands[3] = gen_highpart (SImode, operands[1]);
    operands[4] = gen_lowpart (SImode, operands[0]);
-   operands[5] = gen_lowpart (SImode, operands[1]);")
+   operands[5] = gen_lowpart (SImode, operands[1]);"
+  [(set_attr "length" "2")])
 
 (define_insn "*negdi2_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -6735,22 +6557,14 @@
   ""
   "")
 
-(define_insn "*one_cmpldi2_sp32"
+(define_insn_and_split "*one_cmpldi2_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
 	(not:DI (match_operand:DI 1 "register_operand" "r,b")))]
   "! TARGET_ARCH64"
   "@
    #
    fnot1\\t%1, %0"
-  [(set_attr "type" "*,fp")
-   (set_attr "length" "2,*")
-   (set_attr "fptype" "double")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (not:DI (match_operand:DI 1 "register_operand" "")))]
-  "! TARGET_ARCH64
-   && reload_completed
+  "&& reload_completed
    && ((GET_CODE (operands[0]) == REG
         && REGNO (operands[0]) < 32)
        || (GET_CODE (operands[0]) == SUBREG
@@ -6761,7 +6575,10 @@
   "operands[2] = gen_highpart (SImode, operands[0]);
    operands[3] = gen_highpart (SImode, operands[1]);
    operands[4] = gen_lowpart (SImode, operands[0]);
-   operands[5] = gen_lowpart (SImode, operands[1]);")
+   operands[5] = gen_lowpart (SImode, operands[1]);"
+  [(set_attr "type" "*,fp")
+   (set_attr "length" "2,*")
+   (set_attr "fptype" "double")])
 
 (define_insn "*one_cmpldi2_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r,b")
@@ -6992,7 +6809,7 @@
   "TARGET_FPU"
   "")
 
-(define_insn "*negtf2_notv9"
+(define_insn_and_split "*negtf2_notv9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(neg:TF (match_operand:TF 1 "register_operand" "0,e")))]
   ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
@@ -7001,15 +6818,7 @@
   "@
   fnegs\\t%0, %0
   #"
-  [(set_attr "type" "fpmove,*")
-   (set_attr "length" "*,2")])
-
-(define_split
-  [(set (match_operand:TF 0 "register_operand" "")
-	(neg:TF (match_operand:TF 1 "register_operand" "")))]
-  "TARGET_FPU
-   && ! TARGET_V9
-   && reload_completed
+  "&& reload_completed
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (neg:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))
@@ -7019,9 +6828,11 @@
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
    operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);
    operands[6] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
-   operands[7] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
+   operands[7] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);"
+  [(set_attr "type" "fpmove,*")
+   (set_attr "length" "*,2")])
 
-(define_insn "*negtf2_v9"
+(define_insn_and_split "*negtf2_v9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(neg:TF (match_operand:TF 1 "register_operand" "0,e")))]
   ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
@@ -7029,23 +6840,17 @@
   "@
   fnegd\\t%0, %0
   #"
-  [(set_attr "type" "fpmove,*")
-   (set_attr "length" "*,2")
-   (set_attr "fptype" "double")])
-
-(define_split
-  [(set (match_operand:TF 0 "register_operand" "")
-	(neg:TF (match_operand:TF 1 "register_operand" "")))]
-  "TARGET_FPU
-   && TARGET_V9
-   && reload_completed
+  "&& reload_completed
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (neg:DF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
   "operands[2] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
-   operands[5] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
+   operands[5] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);"
+  [(set_attr "type" "fpmove,*")
+   (set_attr "length" "*,2")
+   (set_attr "fptype" "double")])
 
 (define_expand "negdf2"
   [(set (match_operand:DF 0 "register_operand" "")
@@ -7053,29 +6858,23 @@
   "TARGET_FPU"
   "")
 
-(define_insn "*negdf2_notv9"
+(define_insn_and_split "*negdf2_notv9"
   [(set (match_operand:DF 0 "register_operand" "=e,e")
 	(neg:DF (match_operand:DF 1 "register_operand" "0,e")))]
   "TARGET_FPU && ! TARGET_V9"
   "@
   fnegs\\t%0, %0
   #"
-  [(set_attr "type" "fpmove,*")
-   (set_attr "length" "*,2")])
-
-(define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-        (neg:DF (match_operand:DF 1 "register_operand" "")))]
-  "TARGET_FPU
-   && ! TARGET_V9
-   && reload_completed
+  "&& reload_completed
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (neg:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
   "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
-   operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);")
+   operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);"
+  [(set_attr "type" "fpmove,*")
+   (set_attr "length" "*,2")])
 
 (define_insn "*negdf2_v9"
   [(set (match_operand:DF 0 "register_operand" "=e")
@@ -7098,7 +6897,7 @@
   "TARGET_FPU"
   "")
 
-(define_insn "*abstf2_notv9"
+(define_insn_and_split "*abstf2_notv9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
   ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
@@ -7106,15 +6905,7 @@
   "@
   fabss\\t%0, %0
   #"
-  [(set_attr "type" "fpmove,*")
-   (set_attr "length" "*,2")])
-
-(define_split
-  [(set (match_operand:TF 0 "register_operand" "")
-	(abs:TF (match_operand:TF 1 "register_operand" "")))]
-  "TARGET_FPU
-   && ! TARGET_V9
-   && reload_completed
+  "&& reload_completed
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (abs:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))
@@ -7124,7 +6915,9 @@
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
    operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);
    operands[6] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
-   operands[7] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
+   operands[7] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);"
+  [(set_attr "type" "fpmove,*")
+   (set_attr "length" "*,2")])
 
 (define_insn "*abstf2_hq_v9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
@@ -7136,30 +6929,24 @@
   [(set_attr "type" "fpmove")
    (set_attr "fptype" "double,*")])
 
-(define_insn "*abstf2_v9"
+(define_insn_and_split "*abstf2_v9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
   "TARGET_FPU && TARGET_V9 && !TARGET_HARD_QUAD"
   "@
   fabsd\\t%0, %0
   #"
-  [(set_attr "type" "fpmove,*")
-   (set_attr "length" "*,2")
-   (set_attr "fptype" "double,*")])
-
-(define_split
-  [(set (match_operand:TF 0 "register_operand" "")
-	(abs:TF (match_operand:TF 1 "register_operand" "")))]
-  "TARGET_FPU
-   && TARGET_V9
-   && reload_completed
+  "&& reload_completed
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (abs:DF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
   "operands[2] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
-   operands[5] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
+   operands[5] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);"
+  [(set_attr "type" "fpmove,*")
+   (set_attr "length" "*,2")
+   (set_attr "fptype" "double,*")])
 
 (define_expand "absdf2"
   [(set (match_operand:DF 0 "register_operand" "")
@@ -7167,29 +6954,23 @@
   "TARGET_FPU"
   "")
 
-(define_insn "*absdf2_notv9"
+(define_insn_and_split "*absdf2_notv9"
   [(set (match_operand:DF 0 "register_operand" "=e,e")
 	(abs:DF (match_operand:DF 1 "register_operand" "0,e")))]
   "TARGET_FPU && ! TARGET_V9"
   "@
   fabss\\t%0, %0
   #"
-  [(set_attr "type" "fpmove,*")
-   (set_attr "length" "*,2")])
-
-(define_split
-  [(set (match_operand:DF 0 "register_operand" "")
-	(abs:DF (match_operand:DF 1 "register_operand" "")))]
-  "TARGET_FPU
-   && ! TARGET_V9
-   && reload_completed
+  "&& reload_completed
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (abs:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
   "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
-   operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);")
+   operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);"
+  [(set_attr "type" "fpmove,*")
+   (set_attr "length" "*,2")])
 
 (define_insn "*absdf2_v9"
   [(set (match_operand:DF 0 "register_operand" "=e")
