@@ -58,11 +58,11 @@ button_to_awt_mods (int button)
   switch (button)
     {
     case 1:
-      return AWT_BUTTON1_DOWN_MASK;
+      return AWT_BUTTON1_MASK;
     case 2:
-      return AWT_BUTTON2_DOWN_MASK;
+      return AWT_BUTTON2_MASK;
     case 3:
-      return AWT_BUTTON3_DOWN_MASK;
+      return AWT_BUTTON3_MASK;
     }
 
   return 0;

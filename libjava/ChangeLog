@@ -1,3 +1,9 @@
+2005-02-21  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/19842
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(button_to_awt_mods): Return BUTTON masks, not BUTTON_DOWN masks.
+
 2005-02-21  Bryce McKinlay  <mckinlay@redhat.com>
 
 	Merge serialization from GNU Classpath.
