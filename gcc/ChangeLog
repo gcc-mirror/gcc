@@ -9,8 +9,8 @@
 	* opts.h (struct cl_option, cl_options, cl_options_count): Move from...
 	* opts.sh: ... here.
 
-2003-06-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+2003-06-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR pch/9830
 	* ggc-common.c (HAVE_MMAP_FILE): Include sys/types.h
