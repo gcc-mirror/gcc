@@ -1,3 +1,7 @@
+2003-05-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* loop.c (check_dbra_loop): Factor common test.
+
 2003-05-14  Ben Elliston  <bje@wasabisystems.com>
 
 	* doc/md.texi (Automaton pipeline description): Grammar fixes.
@@ -504,6 +508,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(s390_function_arg): Likewise.
 	(s390_va_arg): Likewise
 
+>>>>>>> 1.17806
 2003-05-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* coverage.h (coverage_counter_alloc): New function.
