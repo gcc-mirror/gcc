@@ -1501,6 +1501,15 @@ build_functional_cast (exp, parms)
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
     return build_c_cast (type, TREE_VALUE (parms));
 
+  /* We need to zero-initialize POD types.  Let's do that for everything
+     that doesn't need a constructor.  */
+  if (parms == NULL_TREE && !TYPE_NEEDS_CONSTRUCTING (type)
+      && TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
+    {
+      exp = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      return get_target_expr (exp);
+    }
+
   exp = build_method_call (NULL_TREE, ctor_identifier, parms,
 			   TYPE_BINFO (type), LOOKUP_NORMAL);
 

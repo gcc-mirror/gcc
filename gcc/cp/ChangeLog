@@ -1,9 +1,12 @@
 1998-07-27  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck2.c (build_functional_cast): Handle default-initialization.
+
 	* call.c (build_over_call): Pass 1 to popclass.
 
 	* parse.y (direct_notype_declarator): Add precedence declaration
 	to notype_unqualified_id case.
+	* Makefile.in (EXPECT): Adjust.
 
 	* tree.c (ovl_member): Fix for single function in OVL.
 
