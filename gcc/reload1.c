@@ -6818,8 +6818,10 @@ gen_reload (out, in, opnum, type)
 
   if (GET_CODE (in) == PLUS
       && (GET_CODE (XEXP (in, 0)) == REG
+	  || GET_CODE (XEXP (in, 0)) == SUBREG
 	  || GET_CODE (XEXP (in, 0)) == MEM)
       && (GET_CODE (XEXP (in, 1)) == REG
+	  || GET_CODE (XEXP (in, 1)) == SUBREG
 	  || CONSTANT_P (XEXP (in, 1))
 	  || GET_CODE (XEXP (in, 1)) == MEM))
     {
@@ -6880,12 +6882,12 @@ gen_reload (out, in, opnum, type)
 	 DEFINE_PEEPHOLE should be specified that recognizes the sequence
 	 we emit below.  */
 
-      if (CONSTANT_P (op1) || GET_CODE (op1) == MEM
+      if (CONSTANT_P (op1) || GET_CODE (op1) == MEM || GET_CODE (op1) == SUBREG
 	  || (GET_CODE (op1) == REG
 	      && REGNO (op1) >= FIRST_PSEUDO_REGISTER))
 	tem = op0, op0 = op1, op1 = tem;
 
-      emit_insn (gen_move_insn (out, op0));
+      gen_reload (out, op0, opnum, type);
 
       /* If OP0 and OP1 are the same, we can use OUT for OP1.
 	 This fixes a problem on the 32K where the stack pointer cannot
@@ -6913,7 +6915,7 @@ gen_reload (out, in, opnum, type)
 
       delete_insns_since (last);
 
-      emit_insn (gen_move_insn (out, op1));
+      gen_reload (out, op1, opnum, type);
       emit_insn (gen_add2_insn (out, op0));
     }
 
@@ -6934,8 +6936,8 @@ gen_reload (out, in, opnum, type)
       if (GET_MODE (loc) != GET_MODE (in))
 	in = gen_rtx (REG, GET_MODE (loc), REGNO (in));
 
-      emit_insn (gen_move_insn (loc, in));
-      emit_insn (gen_move_insn (out, loc));
+      gen_reload (loc, in, opnum, type);
+      gen_reload (out, loc, opnum, type);
     }
 #endif
 
