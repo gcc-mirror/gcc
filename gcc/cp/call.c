@@ -4795,31 +4795,28 @@ build_over_call (struct z_candidate *cand, int flags)
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);
 
-      arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
+      arg = TREE_VALUE (TREE_CHAIN (converted_args));
       if (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (as_base)))
-	val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
+	{
+	  arg = build_indirect_ref (arg, 0);
+	  val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
+	}
       else
 	{
-	  /* We must only copy the non-tail padding parts. Use
-	     CLASSTYPE_AS_BASE for the bitwise copy.  */
-	  tree to_ptr, arg_ptr, to_as_base, arg_as_base, base_ptr_type;
-	  tree save_to;
+	  /* We must only copy the non-tail padding parts.
+	     Use __builtin_memcpy for the bitwise copy.  */
 
-	  to_ptr = save_expr (build_unary_op (ADDR_EXPR, to, 0));
-	  arg_ptr = build_unary_op (ADDR_EXPR, arg, 0);
+	  tree args, t;
 
-	  base_ptr_type = build_pointer_type (as_base);
-	  to_as_base = build_nop (base_ptr_type, to_ptr);
-	  to_as_base = build_indirect_ref (to_as_base, 0);
-	  arg_as_base = build_nop (base_ptr_type, arg_ptr);
-	  arg_as_base = build_indirect_ref (arg_as_base, 0);
+	  args = tree_cons (NULL, TYPE_SIZE_UNIT (as_base), NULL);
+	  args = tree_cons (NULL, arg, args);
+	  t = build_unary_op (ADDR_EXPR, to, 0);
+	  args = tree_cons (NULL, t, args);
+	  t = implicit_built_in_decls[BUILT_IN_MEMCPY];
+	  t = build_call (t, args);
 
-	  save_to = build_indirect_ref (to_ptr, 0);
-
-	  val = build (MODIFY_EXPR, as_base, to_as_base, arg_as_base);
-	  val = convert_to_void (val, NULL);
-	  val = build (COMPOUND_EXPR, type, val, save_to);
-	  TREE_NO_WARNING (val) = 1;
+	  t = convert (TREE_TYPE (TREE_VALUE (args)), t);
+	  val = build_indirect_ref (t, 0);
 	}
       
       return val;
