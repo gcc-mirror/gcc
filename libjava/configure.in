@@ -147,16 +147,6 @@ fi
 AC_LANG_RESTORE
 AC_MSG_RESULT($ac_exception_model_name)
 
-AC_MSG_CHECKING([for data_start])
-LIBDATASTARTSPEC=
-NEEDS_DATA_START=
-AC_TRY_LINK([extern int data_start;], [return ((int) &data_start);],
-  [AC_MSG_RESULT(found it)],
-  [LIBDATASTARTSPEC="-u data_start libgcjdata.a%s"
-   NEEDS_DATA_START=yes	
-   AC_MSG_RESULT(missing)])
-AC_SUBST(LIBDATASTARTSPEC)
-
 dnl See if the user wants to disable java.net.  This is the mildly
 dnl ugly way that we admit that target-side configuration sucks.
 AC_ARG_ENABLE(java-net,

@@ -1,6 +1,15 @@
 2001-06-02  Anthony Green  <green@redhat.com>
 
 	* configure: Rebuild.
+	* configure.in: Remove data_start hack.
+	* libgcj.spec.in: Ditto.
+	* Makefile.in: Rebuild.
+	* Makefile.am: Ditto.
+	* libgcjdata.c: Remove.
+	
+2001-06-02  Anthony Green  <green@redhat.com>
+
+	* configure: Rebuild.
 	* configure.in (LIBFFIINCS, LIBFFI): Introduce.  Add
 	--without-libffi option.  Tweak --disable-java-net processing.
 	* Makefile.in: Rebuild.
