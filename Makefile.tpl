@@ -72,7 +72,8 @@ includedir = @includedir@
 oldincludedir = @oldincludedir@
 infodir = @infodir@
 mandir = @mandir@
-gxx_include_dir=@gxx_include_dir@
+gxx_include_dir = @gxx_include_dir@
+libstdcxx_incdir = @libstdcxx_incdir@
 
 tooldir = @tooldir@
 build_tooldir = @build_tooldir@

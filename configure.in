@@ -1736,6 +1736,7 @@ s%@build_subdir@%${build_subdir}%
 s%@build_prefix@%${build_prefix}%
 s%@build_configargs@%${buildargs}%
 s%@gxx_include_dir@%${gxx_include_dir}%
+s%@libstdcxx_incdir@%${libstdcxx_incdir}%
 s%@host_configargs@%${hostargs}%
 EOF
 sed -f $sedtemp Makefile > Makefile.tem
