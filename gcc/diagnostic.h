@@ -221,7 +221,7 @@ struct diagnostic_context
    displayed.  */
 #define diagnostic_finalizer(DC) (DC)->end_diagnostic
 
-/* Extention hook for client.  */
+/* Extension hook for client.  */
 #define diagnostic_auxiliary_data(DC) (DC)->x_data
 
 /* Client supplied function used to decode formats.  Can operate on both

@@ -655,7 +655,7 @@ safe_read (desc, ptr, len)
       }
     if (nchars == 0)
       break;
-    /* Arithmetic on void pointers is a gcc extention.  */
+    /* Arithmetic on void pointers is a gcc extension.  */
     ptr = (char *) ptr + nchars;
     left -= nchars;
   }
@@ -685,7 +685,7 @@ safe_write (desc, ptr, len, out_fname)
 		pname, shortpath (NULL, out_fname), xstrerror (errno_val));
 	return;
       }
-    /* Arithmetic on void pointers is a gcc extention.  */
+    /* Arithmetic on void pointers is a gcc extension.  */
     ptr = (char *) ptr + written;
     len -= written;
   }

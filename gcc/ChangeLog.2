@@ -10993,7 +10993,7 @@ Tue Aug 10 10:47:42 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 	a rethrow symbol instead of an integer exception region number.
 	* flow.c (Make_edges): Use new exception nesting routines to determine
 	which handlers are reachable from a CALL or asynchronous insn.
-	Dont add an edge for calls with a REG_EH_REGION of -1 to non-local
+	Don't add an edge for calls with a REG_EH_REGION of -1 to non-local
 	goto receivers.
 	(delete_eh_regions): Update rethrow labels, and don't delete
 	regions which are the target of a rethrow.

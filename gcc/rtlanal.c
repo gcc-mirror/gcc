@@ -923,7 +923,7 @@ single_set_2 (insn, pat)
 	      /* We can consider insns having multiple sets, where all
 		 but one are dead as single set insns.  In common case
 		 only single set is present in the pattern so we want
-		 to avoid checking for REG_UNUSED notes unless neccesary.
+		 to avoid checking for REG_UNUSED notes unless necessary.
 
 		 When we reach set first time, we just expect this is
 		 the single set we are looking for and only when more
@@ -2595,7 +2595,7 @@ commutative_operand_precedence (op)
   return 0;
 }
 
-/* Return 1 iff it is neccesary to swap operands of commutative operation
+/* Return 1 iff it is necessary to swap operands of commutative operation
    in order to canonicalize expression.  */
 
 int

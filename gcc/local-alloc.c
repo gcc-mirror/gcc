@@ -1586,7 +1586,7 @@ block_alloc (b)
 	     discourage the register allocator from creating false
 	     dependencies.
 
-	     The adjustment value is choosen to indicate that this qty
+	     The adjustment value is chosen to indicate that this qty
 	     conflicts with all the qtys in the instructions immediately
 	     before and after the lifetime of this qty.
 

@@ -4007,7 +4007,7 @@ display_target_options ()
     }
 }
 
-/* Parse a -d... comand line switch.  */
+/* Parse a -d... command line switch.  */
 
 static void
 decode_d_option (arg)
@@ -4060,7 +4060,7 @@ decode_d_option (arg)
       }
 }
 
-/* Parse a -f... comand line switch.  ARG is the value after the -f.
+/* Parse a -f... command line switch.  ARG is the value after the -f.
    It is safe to access 'ARG - 2' to generate the full switch name.
    Return the number of strings consumed.  */
 
@@ -4164,7 +4164,7 @@ decode_f_option (arg)
   return 1;
 }
 
-/* Parse a -W... comand line switch.  ARG is the value after the -W.
+/* Parse a -W... command line switch.  ARG is the value after the -W.
    It is safe to access 'ARG - 2' to generate the full switch name.
    Return the number of strings consumed.  */
 
@@ -4215,7 +4215,7 @@ decode_W_option (arg)
   return 1;
 }
 
-/* Parse a -g... comand line switch.  ARG is the value after the -g.
+/* Parse a -g... command line switch.  ARG is the value after the -g.
    It is safe to access 'ARG - 2' to generate the full switch name.
    Return the number of strings consumed.  */
 

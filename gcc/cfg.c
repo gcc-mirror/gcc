@@ -569,7 +569,7 @@ dump_edge_info (file, e, do_succ)
     }
 }
 
-/* Simple routies to easilly allocate AUX fields of basic blocks.  */
+/* Simple routies to easily allocate AUX fields of basic blocks.  */
 static struct obstack block_aux_obstack;
 static void *first_block_aux_obj = 0;
 static struct obstack edge_aux_obstack;

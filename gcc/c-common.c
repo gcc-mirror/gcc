@@ -465,7 +465,7 @@ fname_string (rid)
    now. RID indicates how it should be formatted and IDENTIFIER_NODE
    ID is its name (unfortunately C and C++ hold the RID values of
    keywords in different places, so we can't derive RID from ID in
-   this language independant code.  */
+   this language independent code.  */
 
 tree
 fname_decl (rid, id)

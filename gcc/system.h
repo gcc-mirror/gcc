@@ -510,7 +510,7 @@ extern void abort PARAMS ((void));
 
 /* Traditional C cannot initialize union members of structs.  Provide
    a macro which expands appropriately to handle it.  This only works
-   if you intend to initalize the union member to zero since it relies
+   if you intend to initialize the union member to zero since it relies
    on default initialization to zero in the traditional C case.  */
 #ifdef __STDC__
 #define UNION_INIT_ZERO , {0}

@@ -90,7 +90,7 @@ int n_vis_no_unit;
 #define MAX_VISUAL_NO_UNIT 20
 rtx vis_no_unit[MAX_VISUAL_NO_UNIT];
 
-/* Finds units that are in use in this fuction.  Required only
+/* Finds units that are in use in this function.  Required only
    for visualization.  */
 
 void
