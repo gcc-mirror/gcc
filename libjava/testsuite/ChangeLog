@@ -1,3 +1,7 @@
+2000-05-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava.compile/PR232B.java: Additional PR gcj/232 test.
+
 2000-05-22  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/PR235.java: New file.  For PR gcj/235.
