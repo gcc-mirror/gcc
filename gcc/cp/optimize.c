@@ -67,7 +67,7 @@ typedef struct inline_data
 
 /* Prototypes.  */
 
-static tree initialize_inlined_parameters PROTO((inline_data *, tree));
+static tree initialize_inlined_parameters PROTO((inline_data *, tree, tree));
 static tree declare_return_variable PROTO((inline_data *, tree *));
 static tree copy_body_r PROTO((tree *, int *, void *));
 static tree copy_body PROTO((inline_data *));
@@ -342,18 +342,17 @@ copy_body (id)
    top of the stack in ID from the ARGS (presented as a TREE_LIST).  */
 
 static tree
-initialize_inlined_parameters (id, args)
+initialize_inlined_parameters (id, args, fn)
      inline_data *id;
      tree args;
+     tree fn;
 {
-  tree fn;
   tree init_stmts;
   tree parms;
   tree a;
   tree p;
 
   /* Figure out what the parameters are.  */
-  fn = VARRAY_TOP_TREE (id->fns);
   parms = DECL_ARGUMENTS (fn);
 
   /* Start with no initializations whatsoever.  */
@@ -517,6 +516,7 @@ expand_call_inline (tp, walk_subtrees, data)
   tree fn;
   tree scope_stmt;
   tree use_stmt;
+  tree arg_inits;
   splay_tree st;
 
   /* See what we've got.  */
@@ -570,21 +570,12 @@ expand_call_inline (tp, walk_subtrees, data)
   if (!inlinable_function_p (fn, id))
     return NULL_TREE;
 
-  /* Return statements in the function body will be replaced by jumps
-     to the RET_LABEL.  */
-  id->ret_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-  DECL_CONTEXT (id->ret_label) = VARRAY_TREE (id->fns, 0);
-
   /* Build a statement-expression containing code to initialize the
      arguments, the actual inline expansion of the body, and a label
      for the return statements within the function to jump to.  The
      type of the statement expression is the return type of the
      function call.  */
   expr = build_min (STMT_EXPR, TREE_TYPE (TREE_TYPE (fn)), NULL_TREE);
-
-  /* Record the function we are about to inline so that we can avoid
-     recursing into it.  */
-  VARRAY_PUSH_TREE (id->fns, fn);
 
   /* Local declarations will be replaced by their equivalents in this
      map.  */
@@ -593,9 +584,24 @@ expand_call_inline (tp, walk_subtrees, data)
 				 NULL, NULL);
 
   /* Initialize the parameters.  */
-  STMT_EXPR_STMT (expr) 
-    = initialize_inlined_parameters (id, TREE_OPERAND (t, 1));
-    
+  arg_inits = initialize_inlined_parameters (id, TREE_OPERAND (t, 1), fn);
+  /* Expand any inlined calls in the initializers.  Do this before we
+     push FN on the stack of functions we are inlining; we want to
+     inline calls to FN that appear in the initializers for the
+     parameters.  */
+  expand_calls_inline (&arg_inits, id);
+  /* And add them to the tree.  */
+  STMT_EXPR_STMT (expr) = chainon (STMT_EXPR_STMT (expr), arg_inits);
+
+  /* Record the function we are about to inline so that we can avoid
+     recursing into it.  */
+  VARRAY_PUSH_TREE (id->fns, fn);
+
+  /* Return statements in the function body will be replaced by jumps
+     to the RET_LABEL.  */
+  id->ret_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+  DECL_CONTEXT (id->ret_label) = VARRAY_TREE (id->fns, 0);
+
   /* Create a block to put the parameters in.  We have to do this
      after the parameters have been remapped because remapping
      parameters is different from remapping ordinary variables.  */
