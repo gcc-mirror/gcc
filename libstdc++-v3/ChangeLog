@@ -1,3 +1,9 @@
+2003-11-07  Robert Millan  <robertmh@gnu.org>
+
+        * configure.host: Add kfreebsd*-gnu and knetbsd*-gnu.
+        * crossconfig.m4: Likewise.
+        * configure: Regenerate.
+
 2003-11-07  Carlo Wood  <carlo@alinoe.com>
 
         * include/bits/demangle.h

@@ -123,7 +123,7 @@ case "${host}" in
 	;;
     esac
     ;;
-  *-linux* | *-uclinux* | *-gnu*)
+  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu)
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
       fp.h locale.h float.h inttypes.h])
