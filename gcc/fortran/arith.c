@@ -108,8 +108,8 @@ arctangent2 (mpfr_t y, mpfr_t x, mpfr_t result)
       if (mpfr_sgn (y) < 0)
 	mpfr_neg (result, result, GFC_RND_MODE);
     }
-      else
-	{
+  else
+    {
       if (mpfr_sgn (y) == 0)
 	mpfr_set_ui (result, 0, GFC_RND_MODE);
       else
@@ -376,7 +376,7 @@ done:
 /* Function to return a constant expression node of a given type and
    kind.  */
 
-gfc_expr *
+gfc_expr * 
 gfc_constant_result (bt type, int kind, locus * where)
 {
   gfc_expr *result;
@@ -541,7 +541,6 @@ gfc_range_check (gfc_expr * e)
 static arith
 gfc_arith_uplus (gfc_expr * op1, gfc_expr ** resultp)
 {
-
   *resultp = gfc_copy_expr (op1);
   return ARITH_OK;
 }
@@ -1110,7 +1109,6 @@ gfc_compare_expr (gfc_expr * op1, gfc_expr * op2)
 static int
 compare_complex (gfc_expr * op1, gfc_expr * op2)
 {
-
   return (mpfr_cmp (op1->value.complex.r, op2->value.complex.r) == 0
 	  && mpfr_cmp (op1->value.complex.i, op2->value.complex.i) == 0);
 }
@@ -1431,7 +1429,6 @@ reduce_binary (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	       gfc_expr * op1, gfc_expr * op2,
 	       gfc_expr ** result)
 {
-
   if (op1->expr_type == EXPR_CONSTANT && op2->expr_type == EXPR_CONSTANT)
     return eval (op1, op2, result);
 
@@ -1661,7 +1658,6 @@ eval_type_intrinsic0 (gfc_intrinsic_op operator, gfc_expr *op)
 static int
 gfc_zero_size_array (gfc_expr * e)
 {
-
   if (e->expr_type != EXPR_ARRAY)
     return 0;
 
@@ -1676,7 +1672,6 @@ gfc_zero_size_array (gfc_expr * e)
 static gfc_expr *
 reduce_binary0 (gfc_expr * op1, gfc_expr * op2)
 {
-
   if (gfc_zero_size_array (op1))
     {
       gfc_free_expr (op2);
@@ -1915,7 +1910,6 @@ gfc_convert_complex (gfc_expr * real, gfc_expr * imag, int kind)
 static void
 arith_error (arith rc, gfc_typespec * from, gfc_typespec * to, locus * where)
 {
-
   gfc_error ("%s converting %s to %s at %L", gfc_arith_error (rc),
 	     gfc_typename (from), gfc_typename (to), where);
 
