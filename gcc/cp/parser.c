@@ -2394,11 +2394,6 @@ cp_parser_primary_expression (cp_parser *parser,
 	      {
 		if (TYPE_P (TREE_OPERAND (decl, 0)))
 		  *qualifying_class = TREE_OPERAND (decl, 0);
-		/* Since this name was dependent, the expression isn't
-		   constant -- yet.  No error is issued because it
-		   might be constant when things are instantiated.  */
-		if (parser->constant_expression_p)
-		  parser->non_constant_expression_p = true;
 		return decl;
 	      }
 	    /* Check to see if DECL is a local variable in a context
