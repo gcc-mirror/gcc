@@ -153,10 +153,15 @@ static int rs6000_issue_rate PARAMS ((void));
 static void rs6000_init_builtins PARAMS ((tree));
 static void altivec_init_builtins PARAMS ((void));
 static rtx rs6000_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
-static rtx altivec_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
+static rtx altivec_expand_builtin PARAMS ((tree, rtx));
 static rtx altivec_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
 
 static void rs6000_parse_abi_options PARAMS ((void));
+static int first_altivec_reg_to_save PARAMS ((void));
+static unsigned int compute_vrsave_mask PARAMS ((void));
+static void is_altivec_return_reg PARAMS ((rtx, void *));
+int vrsave_operation PARAMS ((rtx, enum machine_mode));
+static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *));
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -233,6 +238,9 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN rs6000_expand_builtin
+
+/* The VRSAVE bitmask puts bit %v0 as the most significant bit.  */
+#define ALTIVEC_REG_BIT(REGNO) (0x80000000 >> ((REGNO) - FIRST_ALTIVEC_REGNO))
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -496,7 +504,8 @@ rs6000_override_options (default_cpu)
 }
 
 /* Handle -mabi= options.  */
-void rs6000_parse_abi_options ()
+static void
+rs6000_parse_abi_options ()
 {
   if (rs6000_abi_string == 0)
     return;
@@ -585,8 +594,10 @@ direct_return ()
 
       if (info->first_gp_reg_save == 32
 	  && info->first_fp_reg_save == 64
+	  && info->first_altivec_reg_save == LAST_ALTIVEC_REGNO + 1
 	  && ! info->lr_save_p
 	  && ! info->cr_save_p
+	  && info->vrsave_mask == 0
 	  && ! info->push_p)
 	return 1;
     }
@@ -3108,21 +3119,18 @@ altivec_expand_binop_builtin (icode, arglist, target)
 }
 
 static rtx
-altivec_expand_builtin (exp, target, subtarget, mode, ignore)
+altivec_expand_builtin (exp, target)
      tree exp;
      rtx target;
-     rtx subtarget;
-     enum machine_mode mode;
-     int ignore;
 {
   struct builtin_description *d;
   size_t i;
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0, arg1, arg2, arg3;
-  rtx op0, op1, op2, pat;
-  enum machine_mode tmode, mode0, mode1, mode2;
+  tree arg0, arg1;
+  rtx op0, op1, pat;
+  enum machine_mode tmode, mode0, mode1;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   
   switch (fcode)
@@ -3170,7 +3178,8 @@ altivec_expand_builtin (exp, target, subtarget, mode, ignore)
     }
 
   /* Handle simple binary operations.  */
-  for (i = 0, d = bdesc_2arg; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
+  d = (struct builtin_description *) bdesc_2arg;
+  for (i = 0; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
     if (d->code == fcode)
       return altivec_expand_binop_builtin (d->icode, arglist, target);
 
@@ -3188,12 +3197,12 @@ static rtx
 rs6000_expand_builtin (exp, target, subtarget, mode, ignore)
      tree exp;
      rtx target;
-     rtx subtarget;
-     enum machine_mode mode;
-     int ignore;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore ATTRIBUTE_UNUSED;
 {
   if (TARGET_ALTIVEC)
-    return altivec_expand_builtin (exp, target, subtarget, mode, ignore);
+    return altivec_expand_builtin (exp, target);
 
   abort ();
 }
@@ -3322,7 +3331,8 @@ altivec_init_builtins (void)
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal", void_ftype_pint_v4si, ALTIVEC_BUILTIN_ST_INTERNAL);
 
   /* Add the simple binary operators.  */
-  for (i = 0, d = bdesc_2arg; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
+  d = (struct builtin_description *) bdesc_2arg;
+  for (i = 0; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
     {
       enum machine_mode mode0, mode1, mode2;
       tree type;
@@ -3825,6 +3835,41 @@ store_multiple_operation (op, mode)
 	  || ! rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
 	  || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
 	  || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != i * 4)
+	return 0;
+    }
+
+  return 1;
+}
+
+/* Return 1 for a parallel vrsave operation.  */
+
+int
+vrsave_operation (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  int count = XVECLEN (op, 0);
+  unsigned int dest_regno, src_regno;
+  int i;
+
+  if (count <= 1
+      || GET_CODE (XVECEXP (op, 0, 0)) != SET
+      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
+      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC)
+    return 0;
+
+  dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
+  src_regno  = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
+
+  if (dest_regno != VRSAVE_REGNO
+      && src_regno != VRSAVE_REGNO)
+    return 0;
+
+  for (i = 1; i < count; i++)
+    {
+      rtx elt = XVECEXP (op, 0, i);
+
+      if (GET_CODE (elt) != CLOBBER)
 	return 0;
     }
 
@@ -5926,6 +5971,85 @@ first_fp_reg_to_save ()
 
   return first_reg;
 }
+
+/* Similar, for AltiVec regs.  */
+
+static int
+first_altivec_reg_to_save ()
+{
+  int i;
+
+  /* Stack frame remains as is unless we are in AltiVec ABI.  */
+  if (! TARGET_ALTIVEC_ABI)
+    return LAST_ALTIVEC_REGNO + 1;
+
+  /* Find lowest numbered live register.  */
+  for (i = FIRST_ALTIVEC_REGNO + 20; i <= LAST_ALTIVEC_REGNO; ++i)
+    if (regs_ever_live[i])
+      break;
+
+  return i;
+}
+
+/* Return a 32-bit mask of the AltiVec registers we need to set in
+   VRSAVE.  Bit n of the return value is 1 if Vn is live.  The MSB in
+   the 32-bit word is 0.  */
+
+static unsigned int
+compute_vrsave_mask ()
+{
+  unsigned int i, mask = 0;
+
+  /* First, find out if we use _any_ altivec registers.  */
+  for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
+    if (regs_ever_live[i])
+      mask |= ALTIVEC_REG_BIT (i);
+
+  if (mask == 0)
+    return mask;
+
+  /* Next, add all registers that are call-clobbered.  We do this
+     because post-reload register optimizers such as regrename_optimize
+     may choose to use them.  They never change the register class
+     chosen by reload, so cannot create new uses of altivec registers
+     if there were none before, so the early exit above is safe.  */
+  /* ??? Alternately, we could define HARD_REGNO_RENAME_OK to disallow
+     altivec registers not saved in the mask, which might well make the
+     adjustments below more effective in eliding the save/restore of
+     VRSAVE in small functions.  */
+  for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
+    if (call_used_regs[i])
+      mask |= ALTIVEC_REG_BIT (i);
+
+  /* Next, remove the argument registers from the set.  These must
+     be in the VRSAVE mask set by the caller, so we don't need to add
+     them in again.  More importantly, the mask we compute here is
+     used to generate CLOBBERs in the set_vrsave insn, and we do not
+     wish the argument registers to die.  */
+  for (i = cfun->args_info.vregno; i >= ALTIVEC_ARG_MIN_REG; --i)
+    mask &= ~ALTIVEC_REG_BIT (i);
+
+  /* Similarly, remove the return value from the set.  */
+  {
+    bool yes = false;
+    diddle_return_value (is_altivec_return_reg, &yes);
+    if (yes)
+      mask &= ~ALTIVEC_REG_BIT (ALTIVEC_ARG_RETURN);
+  }
+
+  return mask;
+}
+
+static void
+is_altivec_return_reg (reg, xyes)
+     rtx reg;
+     void *xyes;
+{
+  bool *yes = (bool *) xyes;
+  if (REGNO (reg) == ALTIVEC_ARG_RETURN)
+    *yes = true;
+}
+
 
 /* Calculate the stack information for the current function.  This is
    complicated by having two separate calling sequences, the AIX calling
@@ -5954,9 +6078,15 @@ first_fp_reg_to_save ()
 		+---------------------------------------+
 		| Float/int conversion temporary (X)	| 24+P+A+L
 		+---------------------------------------+
-		| Save area for GP registers (G)	| 24+P+A+X+L
+		| Save area for AltiVec registers (W)	| 24+P+A+L+X
 		+---------------------------------------+
-		| Save area for FP registers (F)	| 24+P+A+X+L+G
+		| AltiVec alignment padding (Y)		| 24+P+A+L+X+W
+		+---------------------------------------+
+		| Save area for VRSAVE register (Z)	| 24+P+A+L+X+W+Y
+		+---------------------------------------+
+		| Save area for GP registers (G)	| 24+P+A+X+L+X+W+Y+Z
+		+---------------------------------------+
+		| Save area for FP registers (F)	| 24+P+A+X+L+X+W+Y+Z+G
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
@@ -5982,11 +6112,17 @@ first_fp_reg_to_save ()
 		+---------------------------------------+    
 		| Float/int conversion temporary (X)	| 8+P+A+V+L
 		+---------------------------------------+
-		| saved CR (C)				| 8+P+A+V+L+X
+		| Save area for AltiVec registers (W)	| 8+P+A+V+L+X
+		+---------------------------------------+
+		| AltiVec alignment padding (Y)		| 8+P+A+V+L+X+W
+		+---------------------------------------+
+		| Save area for VRSAVE register (Z)	| 8+P+A+V+L+X+W+Y
+		+---------------------------------------+
+		| saved CR (C)				| 8+P+A+V+L+X+W+Y+Z
 		+---------------------------------------+    
-		| Save area for GP registers (G)	| 8+P+A+V+L+X+C
+		| Save area for GP registers (G)	| 8+P+A+V+L+X+W+Y+Z+C
 		+---------------------------------------+    
-		| Save area for FP registers (F)	| 8+P+A+V+L+X+C+G
+		| Save area for FP registers (F)	| 8+P+A+V+L+X+W+Y+Z+C+G
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
@@ -6042,6 +6178,10 @@ rs6000_stack_info ()
   info_ptr->first_fp_reg_save = first_fp_reg_to_save ();
   info_ptr->fp_size = 8 * (64 - info_ptr->first_fp_reg_save);
 
+  info_ptr->first_altivec_reg_save = first_altivec_reg_to_save ();
+  info_ptr->altivec_size = 16 * (LAST_ALTIVEC_REGNO + 1
+				 - info_ptr->first_altivec_reg_save);
+
   /* Does this function call anything?  */
   info_ptr->calls_p = (! current_function_is_leaf
 		       || cfun->machine->ra_needs_full_frame);
@@ -6054,6 +6194,7 @@ rs6000_stack_info ()
 #endif
       || (info_ptr->first_fp_reg_save != 64
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
+      || info_ptr->first_altivec_reg_save <= LAST_ALTIVEC_REGNO
       || (abi == ABI_V4 && current_function_calls_alloca)
       || (abi == ABI_SOLARIS && current_function_calls_alloca)
       || (DEFAULT_ABI == ABI_DARWIN
@@ -6095,14 +6236,17 @@ rs6000_stack_info ()
   info_ptr->vars_size    = RS6000_ALIGN (get_frame_size (), 8);
   info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size,
 					 8);
-  info_ptr->save_size    = RS6000_ALIGN (info_ptr->fp_size
-					 + info_ptr->gp_size
-					 + ehrd_size
-					 + info_ptr->cr_size
-					 + info_ptr->lr_size
-					 + info_ptr->toc_size, 8);
-  if (DEFAULT_ABI == ABI_DARWIN)
-    info_ptr->save_size = RS6000_ALIGN (info_ptr->save_size, 16);
+
+  if (TARGET_ALTIVEC_ABI)
+    {
+      info_ptr->vrsave_mask = compute_vrsave_mask ();
+      info_ptr->vrsave_size  = info_ptr->vrsave_mask ? 4 : 0;
+    }
+  else
+    {
+      info_ptr->vrsave_mask = 0;
+      info_ptr->vrsave_size = 0;
+    }
 
   /* Calculate the offsets.  */
   switch (abi)
@@ -6116,7 +6260,29 @@ rs6000_stack_info ()
     case ABI_DARWIN:
       info_ptr->fp_save_offset   = - info_ptr->fp_size;
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
-      info_ptr->ehrd_offset      = info_ptr->gp_save_offset - ehrd_size;
+
+      if (TARGET_ALTIVEC_ABI)
+	{
+	  info_ptr->vrsave_save_offset
+	    = info_ptr->gp_save_offset - info_ptr->vrsave_size;
+
+	  /* Align stack so vector save area is on a quadword boundary.  */
+	  if (info_ptr->altivec_size != 0)
+	    info_ptr->altivec_padding_size
+	      = 16 - (-info_ptr->vrsave_save_offset % 16);
+	  else
+	    info_ptr->altivec_padding_size = 0;
+
+	  info_ptr->altivec_save_offset
+	    = info_ptr->vrsave_save_offset
+	    - info_ptr->altivec_padding_size
+	    - info_ptr->altivec_size;
+
+	  /* Adjust for AltiVec case.  */
+	  info_ptr->ehrd_offset = info_ptr->altivec_save_offset - ehrd_size;
+	}
+      else
+	info_ptr->ehrd_offset      = info_ptr->gp_save_offset - ehrd_size;
       info_ptr->cr_save_offset   = reg_size; /* first word when 64-bit.  */
       info_ptr->lr_save_offset   = 2*reg_size;
       break;
@@ -6126,11 +6292,47 @@ rs6000_stack_info ()
       info_ptr->fp_save_offset   = - info_ptr->fp_size;
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
       info_ptr->cr_save_offset   = info_ptr->gp_save_offset - info_ptr->cr_size;
-      info_ptr->toc_save_offset  = info_ptr->cr_save_offset - info_ptr->toc_size;
+
+      if (TARGET_ALTIVEC_ABI)
+	{
+	  info_ptr->vrsave_save_offset
+	    = info_ptr->cr_save_offset - info_ptr->vrsave_size;
+
+	  /* Align stack so vector save area is on a quadword boundary.  */
+	  if (info_ptr->altivec_size != 0)
+	    info_ptr->altivec_padding_size
+	      = 16 - (-info_ptr->vrsave_save_offset % 16);
+	  else
+	    info_ptr->altivec_padding_size = 0;
+
+	  info_ptr->altivec_save_offset
+	    = info_ptr->vrsave_save_offset
+	    - info_ptr->altivec_padding_size
+	    - info_ptr->altivec_size;
+
+	  /* Adjust for AltiVec case.  */
+	  info_ptr->toc_save_offset
+	    = info_ptr->altivec_save_offset - info_ptr->toc_size;
+	}
+      else
+	info_ptr->toc_save_offset  = info_ptr->cr_save_offset - info_ptr->toc_size;
       info_ptr->ehrd_offset      = info_ptr->toc_save_offset - ehrd_size;
       info_ptr->lr_save_offset   = reg_size;
       break;
     }
+
+  info_ptr->save_size    = RS6000_ALIGN (info_ptr->fp_size
+					 + info_ptr->gp_size
+					 + info_ptr->altivec_size
+					 + info_ptr->altivec_padding_size
+					 + info_ptr->vrsave_size
+					 + ehrd_size
+					 + info_ptr->cr_size
+					 + info_ptr->lr_size
+					 + info_ptr->vrsave_size
+					 + info_ptr->toc_size,
+					 (TARGET_ALTIVEC_ABI || ABI_DARWIN)
+					 ? 16 : 8);
 
   total_raw_size	 = (info_ptr->vars_size
 			    + info_ptr->parm_size
@@ -6173,6 +6375,12 @@ rs6000_stack_info ()
   if (info_ptr->gp_size == 0)
     info_ptr->gp_save_offset = 0;
 
+  if (! TARGET_ALTIVEC_ABI || info_ptr->altivec_size == 0)
+    info_ptr->altivec_save_offset = 0;
+
+  if (! TARGET_ALTIVEC_ABI || info_ptr->vrsave_mask == 0)
+    info_ptr->vrsave_save_offset = 0;
+
   if (! info_ptr->lr_save_p)
     info_ptr->lr_save_offset = 0;
 
@@ -6212,11 +6420,18 @@ debug_stack_info (info)
 
   fprintf (stderr, "\tABI                 = %5s\n", abi_string);
 
+  if (TARGET_ALTIVEC_ABI)
+    fprintf (stderr, "\tALTIVEC ABI extensions enabled.\n");
+
   if (info->first_gp_reg_save != 32)
     fprintf (stderr, "\tfirst_gp_reg_save   = %5d\n", info->first_gp_reg_save);
 
   if (info->first_fp_reg_save != 64)
     fprintf (stderr, "\tfirst_fp_reg_save   = %5d\n", info->first_fp_reg_save);
+
+  if (info->first_altivec_reg_save <= LAST_ALTIVEC_REGNO)
+    fprintf (stderr, "\tfirst_altivec_reg_save = %5d\n",
+	     info->first_altivec_reg_save);
 
   if (info->lr_save_p)
     fprintf (stderr, "\tlr_save_p           = %5d\n", info->lr_save_p);
@@ -6226,6 +6441,9 @@ debug_stack_info (info)
 
   if (info->toc_save_p)
     fprintf (stderr, "\ttoc_save_p          = %5d\n", info->toc_save_p);
+
+  if (info->vrsave_mask)
+    fprintf (stderr, "\tvrsave_mask         = 0x%x\n", info->vrsave_mask);
 
   if (info->push_p)
     fprintf (stderr, "\tpush_p              = %5d\n", info->push_p);
@@ -6238,6 +6456,14 @@ debug_stack_info (info)
 
   if (info->fp_save_offset)
     fprintf (stderr, "\tfp_save_offset      = %5d\n", info->fp_save_offset);
+
+  if (info->altivec_save_offset)
+    fprintf (stderr, "\taltivec_save_offset = %5d\n",
+	     info->altivec_save_offset);
+
+  if (info->vrsave_save_offset)
+    fprintf (stderr, "\tvrsave_save_offset  = %5d\n",
+	     info->vrsave_save_offset);
 
   if (info->lr_save_offset)
     fprintf (stderr, "\tlr_save_offset      = %5d\n", info->lr_save_offset);
@@ -6271,6 +6497,16 @@ debug_stack_info (info)
 
   if (info->fp_size)
     fprintf (stderr, "\tfp_size             = %5d\n", info->fp_size);
+
+  if (info->altivec_size)
+    fprintf (stderr, "\taltivec_size        = %5d\n", info->altivec_size);
+
+  if (info->vrsave_size)
+    fprintf (stderr, "\tvrsave_size         = %5d\n", info->vrsave_size);
+
+  if (info->altivec_padding_size)
+    fprintf (stderr, "\taltivec_padding_size= %5d\n",
+	     info->altivec_padding_size);
 
   if (info->lr_size)
     fprintf (stderr, "\tlr_size             = %5d\n", info->lr_size);
@@ -6806,6 +7042,36 @@ rs6000_frame_related (insn, reg, val, reg2, rreg)
 					REG_NOTES (insn));
 }
 
+/* Returns an insn that has a vrsave set operation with the
+   appropriate CLOBBERs.  */
+
+static rtx
+generate_set_vrsave (reg, info)
+     rtx reg;
+     rs6000_stack_t *info;
+{
+  int nclobs, i;
+  rtx insn, clobs[TOTAL_ALTIVEC_REGS + 1];
+
+  clobs[0] = gen_set_vrsave (reg);
+
+  nclobs = 1;
+
+  /* CLOBBER the registers in the mask.  */
+
+  for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
+    if (info->vrsave_mask != 0 && ALTIVEC_REG_BIT (i) != 0)
+      clobs[nclobs++] = gen_rtx_CLOBBER (VOIDmode,
+					 gen_rtx_REG (V4SImode, i));
+
+  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nclobs));
+
+  for (i = 0; i < nclobs; ++i)
+    XVECEXP (insn, 0, i) = clobs[i];
+
+  return insn;
+}
+
 /* Emit function prologue as insns.  */
 
 void
@@ -7041,6 +7307,70 @@ rs6000_emit_prologue ()
      for which it was done previously.  */
   if (info->push_p && DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
     rs6000_emit_allocate_stack (info->total_size, FALSE);
+
+  /* Save AltiVec registers if needed.  */
+  if (TARGET_ALTIVEC_ABI && info->altivec_size != 0)
+    {
+      int i;
+
+      /* There should be a non inline version of this, for when we
+	 are saving lots of vector registers.  */
+      for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
+	if (regs_ever_live[i] && ! call_used_regs[i])
+	  {
+	    rtx addr, areg, savereg, mem;
+
+	    savereg = gen_rtx_REG (V4SImode, i);
+
+	    areg = gen_rtx_REG (Pmode, 0);
+	    emit_move_insn
+	      (areg, GEN_INT (info->altivec_save_offset
+			      + sp_offset
+			      + 16 * (i - info->first_altivec_reg_save)));
+
+	    /* AltiVec addressing mode is [reg+reg].  */
+	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, areg);
+	    mem = gen_rtx_MEM (V4SImode, addr);
+	    set_mem_alias_set (mem, rs6000_sr_alias_set);
+
+	    insn = emit_move_insn (mem, savereg);
+	    rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
+				  NULL_RTX, NULL_RTX);
+	  }
+    }
+
+  /* VRSAVE is a bit vector representing which AltiVec registers
+     are used.  The OS uses this to determine which vector
+     registers to save on a context switch.  We need to save
+     VRSAVE on the stack frame, add whatever AltiVec registers we
+     used in this function, and do the corresponding magic in the
+     epilogue.  */
+
+  if (TARGET_ALTIVEC && info->vrsave_mask != 0)
+    {
+      rtx reg, addr, mem;
+
+      /* Get VRSAVE onto a GPR.  */
+      reg = gen_rtx_REG (SImode, 12);
+      emit_insn (gen_get_vrsave (reg));
+
+      /* Save VRSAVE.  */
+      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
+			   GEN_INT (info->vrsave_save_offset + sp_offset));
+      mem = gen_rtx_MEM (SImode, addr);
+      set_mem_alias_set (mem, rs6000_sr_alias_set);
+      insn = emit_move_insn (mem, reg);
+      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+			    NULL_RTX, NULL_RTX);
+
+      /* Include the registers in the mask.  */
+      emit_insn (gen_iorsi3 (reg, reg, GEN_INT ((int) info->vrsave_mask)));
+
+      insn = emit_insn (generate_set_vrsave (reg, info));
+
+      rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+			    NULL_RTX, NULL_RTX);
+    }
 
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
@@ -7320,6 +7650,46 @@ rs6000_emit_epilogue (sibcall)
 				       info->first_fp_reg_save + i),
 			  mem);
 	}
+
+  /* Restore AltiVec registers if needed.  */
+  if (TARGET_ALTIVEC_ABI && info->altivec_size != 0)
+    {
+      int i;
+
+      for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
+	if (regs_ever_live[i] && ! call_used_regs[i])
+	  {
+	    rtx addr, areg, mem;
+
+	    areg = gen_rtx_REG (Pmode, 0);
+	    emit_move_insn
+	      (areg, GEN_INT (info->altivec_save_offset
+			      + sp_offset
+			      + 16 * (i - info->first_altivec_reg_save)));
+
+	    /* AltiVec addressing mode is [reg+reg].  */
+	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, areg);
+	    mem = gen_rtx_MEM (V4SImode, addr);
+	    set_mem_alias_set (mem, rs6000_sr_alias_set);
+
+	    emit_move_insn (gen_rtx_REG (V4SImode, i), mem);
+	  }
+    }
+
+  /* Restore VRSAVE if needed.  */
+  if (TARGET_ALTIVEC_ABI && info->vrsave_mask != 0)
+    {
+      rtx addr, mem, reg;
+
+      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
+			   GEN_INT (info->vrsave_save_offset + sp_offset));
+      mem = gen_rtx_MEM (SImode, addr);
+      set_mem_alias_set (mem, rs6000_sr_alias_set);
+      reg = gen_rtx_REG (SImode, 12);
+      emit_move_insn (reg, mem);
+
+      emit_insn (generate_set_vrsave (reg, info));
+    }
 
   /* If we saved cr, restore it here.  Just those that were used.  */
   if (info->cr_save_p)

@@ -1,3 +1,38 @@
+2001-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* rs6000.c (direct_return): Check if we are saving altivec
+	registers.
+	(first_altivec_reg_to_save): New.
+	Updated stack frame layout comments.
+	(rs6000_stack_info): Calculate altivec register save size.
+	Save link register if we saved some altivec registers.
+	(rs6000_stack_info): Align save size to 16 if altivec abi or
+	abi_darwin.
+	(rs6000_stack_info): Calculate altivec register offsets.
+	(rs6000_stack_info): Add altivec info to save_size.
+	(debug_stack_info): Add altivec debug info.
+	(rs6000_emit_prologue): Save altivec registers and vrsave.
+	(compute_vrsave_mask): New.
+	(altivec_expand_builtin): Remove unused variables.
+	(rs6000_parse_abi_options): Add static qualifier.
+	(rs6000_expand_builtin): Remove unused parameters.
+	(altivec_expand_builtin): Cast bdesc_2arg to get rid of warning.
+	(altivec_init_builtins): Same.
+	(is_altivec_return_reg): New.
+	(vrsave_operation): New.
+	(ALTIVEC_REG_BIT): New.
+	(generate_set_vrsave): New.
+
+	* rs6000.md (get_vrsave): New.
+	(set_vrsave): New.
+	(*set_vrsave_internal): New.
+
+	* rs6000.h (rs6000_stack): Add first_altivec_reg_save,
+	altivec_save_offset, vrsave_save_offset, altive_size, vrsave_size,
+	altivec_padding_size, vrsave_mask.
+	(TOTAL_ALTIVEC_REGS): New.
+	(EPILOGUE_USES): Add VRSAVE_REGNO.
+
 2001-11-20  Jeff Law <law@redhat.com>
 
 	* unroll.c (copy_loop_body): Update LABEL_NUSES for the
