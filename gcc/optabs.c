@@ -1748,6 +1748,7 @@ emit_indirect_jump (loc)
 			    loc);
 
   emit_jump_insn (gen_indirect_jump (loc));
+  emit_barrier ();
 }
 
 /* These three functions generate an insn body and return it
