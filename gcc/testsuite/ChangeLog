@@ -5,6 +5,10 @@
 
 2004-01-16  J"orn Rennecke <joern.rennecke@superh.com>
 
+	PR 11864
+	From Kazumoto Kojima / Dan Kegel:
+	* gcc.dg/pr11864-1.c: New test.
+
 	PR 10392
 	From Marcus Comstedt / Dan Kegel:
 	* gcc.dg/pr10392-1.c: New test.
