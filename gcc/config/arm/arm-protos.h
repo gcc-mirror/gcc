@@ -210,10 +210,8 @@ extern rtx arm_expand_builtin		PARAMS ((tree, rtx, rtx,
 					       enum machine_mode, int));
 #endif
 
-#ifdef GCC_C_PRAGMA_H  /* included from code that cares about pragmas */
 extern void arm_pr_long_calls		PARAMS ((struct cpp_reader *));
 extern void arm_pr_no_long_calls	PARAMS ((struct cpp_reader *));
 extern void arm_pr_long_calls_off	PARAMS ((struct cpp_reader *));
-#endif
 
 #endif /* ! GCC_ARM_PROTOS_H */
