@@ -6639,6 +6639,9 @@ c_strlen (src)
    SUBTARGET may be used as the target for computing one of EXP's operands.
    IGNORE is nonzero if the value is to be ignored.  */
 
+#define CALLED_AS_BUILT_IN(NODE) \
+   (!strncmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__builtin_", 10))
+
 static rtx
 expand_builtin (exp, target, subtarget, mode, ignore)
      tree exp;
@@ -7110,7 +7113,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_FFS:
       /* If not optimizing, call the library function.  */
-      if (!optimize)
+      if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
 	break;
 
       if (arglist == 0
@@ -7130,7 +7133,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_STRLEN:
       /* If not optimizing, call the library function.  */
-      if (!optimize)
+      if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
 	break;
 
       if (arglist == 0
@@ -7212,7 +7215,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_STRCPY:
       /* If not optimizing, call the library function.  */
-      if (!optimize)
+      if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
 	break;
 
       if (arglist == 0
@@ -7236,7 +7239,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* Drops in.  */
     case BUILT_IN_MEMCPY:
       /* If not optimizing, call the library function.  */
-      if (!optimize)
+      if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
 	break;
 
       if (arglist == 0
@@ -7290,7 +7293,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 #ifdef HAVE_cmpstrsi
     case BUILT_IN_STRCMP:
       /* If not optimizing, call the library function.  */
-      if (!optimize)
+      if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
 	break;
 
       if (arglist == 0
@@ -7343,7 +7346,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* Drops in.  */
     case BUILT_IN_MEMCMP:
       /* If not optimizing, call the library function.  */
-      if (!optimize)
+      if (!optimize && ! CALLED_AS_BUILT_IN (fndecl))
 	break;
 
       if (arglist == 0
