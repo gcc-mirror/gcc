@@ -1,3 +1,8 @@
+2003-02-03  Ranjit Mathew <rmathew@hotmail.com>
+
+	* resolve.cc (_Jv_JNIMethod::ncode): Use stdcall calling
+	convention on Win32 to invoke native JNI methods.
+
 2003-02-03  Andrew Haley  <aph@redhat.com>
 
 	* configure.host (x86_64): Enable interpreter.
