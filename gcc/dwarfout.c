@@ -21,7 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 
-#ifdef DWARF_DEBUGGING_INFO
+#if defined (DWARF_DEBUGGING_INFO) && (! defined (DWARF_VERSION) \
+				       || DWARF_VERSION != 2)
 #include <stdio.h>
 #include "dwarf.h"
 #include "tree.h"
