@@ -122,6 +122,12 @@ package System.OS_Interface is
    --  Change this if you want to use another signal for task abort.
    --  SIGTERM might be a good one.
 
+   SIGUNUSED  : constant := 0;
+   SIGSTKFLT  : constant := 0;
+   SIGLOST    : constant := 0;
+   --  These don't exist for Linux/Alpha.  The constants are present
+   --  so that we can continue to use a-intnam-linux.ads.
+
    type Signal_Set is array (Natural range <>) of Signal;
 
    Unmasked    : constant Signal_Set := (

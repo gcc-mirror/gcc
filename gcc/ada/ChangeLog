@@ -1,3 +1,11 @@
+2005-01-20  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (alpha-linux, LIBGNAT_TARGET_PAIRS): Use
+	a-intnam-linux.ads and system-linux-alpha.ads.
+	* a-intnam-linux-alpha.ads: Remove file.
+	* s-osinte-linux-alpha.ads (SIGUNUSED, SIGSTKFLT, SIGLOST): New.
+	* system-linux-alpha.ads: New file.
+
 2005-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ada/13470
