@@ -1,3 +1,8 @@
+2001-09-13  Andreas Schwab  <schwab@suse.de>
+
+	* config/float-m68k.h: Define DECIMAL_DIG and FLT_EVAL_METHOD for
+	C99.
+
 2001-09-13  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (small_symbolic_operand): New.
