@@ -10,7 +10,7 @@ ADA_CFLAGS=-mdisable-indexing
 LIB2FUNCS_EXTRA=fp-bit.c dp-bit.c lib2funcs.asm
 
 dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
+	cat $(srcdir)/config/fp-bit.c > dp-bit.c
 
 fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
