@@ -1284,6 +1284,7 @@ java/beans/BeanInfo.java \
 java/beans/Beans.java \
 java/beans/Customizer.java \
 java/beans/DesignMode.java \
+java/beans/EventHandler.java \
 java/beans/EventSetDescriptor.java \
 java/beans/ExceptionListener.java \
 java/beans/Expression.java \

@@ -963,6 +963,7 @@ java/beans/BeanInfo.java \
 java/beans/Beans.java \
 java/beans/Customizer.java \
 java/beans/DesignMode.java \
+java/beans/EventHandler.java \
 java/beans/EventSetDescriptor.java \
 java/beans/ExceptionListener.java \
 java/beans/Expression.java \
@@ -3075,7 +3076,7 @@ libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -3732,7 +3733,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/print/PrinterJob.P .deps/java/beans/AppletInitializer.P \
 .deps/java/beans/BeanDescriptor.P .deps/java/beans/BeanInfo.P \
 .deps/java/beans/Beans.P .deps/java/beans/Customizer.P \
-.deps/java/beans/DesignMode.P .deps/java/beans/EventSetDescriptor.P \
+.deps/java/beans/DesignMode.P .deps/java/beans/EventHandler.P \
+.deps/java/beans/EventSetDescriptor.P \
 .deps/java/beans/ExceptionListener.P .deps/java/beans/Expression.P \
 .deps/java/beans/FeatureDescriptor.P \
 .deps/java/beans/IndexedPropertyDescriptor.P \
