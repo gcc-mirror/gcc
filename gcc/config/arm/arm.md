@@ -1837,7 +1837,8 @@
 
 (define_insn "negdi2"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(neg:DI (match_operand:DI 1 "s_register_operand" "?r,0")))]
+	(neg:DI (match_operand:DI 1 "s_register_operand" "?r,0")))
+   (clobber (reg:CC 24))]
   ""
   "rsbs\\t%Q0, %Q1, #0\;rsc\\t%R0, %R1, #0"
 [(set_attr "conds" "clob")

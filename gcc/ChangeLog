@@ -1,3 +1,7 @@
+Fri May 26 10:30:02 2000  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.md (negdi2): Add clobber of condition code register.
+
 Wed May 24 00:25:45 2000  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	2000-05-22  Richard Henderson  <rth@cygnus.com>
