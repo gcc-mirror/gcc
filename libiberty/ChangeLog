@@ -1,3 +1,7 @@
+Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* config.table: Cleanup and add mh-*pic handling for alpha, arm, powerpc
+
 Tue Feb  9 16:39:01 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* Makefile.in: Change mkstemp -> mkstemps.
