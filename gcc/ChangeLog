@@ -1,5 +1,9 @@
 2000-09-19  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* final.c (insn_current_reference_address): Use INSN_SHUID of seq
+	rather than that of branch.
+	(shorten_branches): Don't increment insn_current_address twice.
+
 	Undo most of the Wed Jan 27 23:39:53 1999 patch:
 	* loop.h (struct induction): Delete members derived, ix and last_use.
 	(struct loop_ivs): Delete members first_increment_giv and
@@ -21,8 +25,6 @@
 	(find_splittable_givs): Don't check for givs made from biv
 	increments.
 	Don't set derived_regs.
-
-2000-09-19  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	Fix misapplied earlier patch:
 	* config/sh/sh.md (floatsisf_ie): Reenable.  Remove explicit reference
