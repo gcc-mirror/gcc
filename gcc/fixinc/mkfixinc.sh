@@ -33,6 +33,10 @@ case $machine in
 		fixincludes=fixinc.svr4
 		;;
 
+	i[34567]86-*-interix*)
+		fixincludes=fixinc.interix
+		;;
+
 	*-*-netbsd* | \
 	alpha*-*-linux-gnulibc1* | \
 	i[34567]86-*-freebsd* | \
