@@ -2956,6 +2956,7 @@ package body Sem_Ch6 is
    is
       Type_1 : Entity_Id := T1;
       Type_2 : Entity_Id := T2;
+      Are_Anonymous_Access_To_Subprogram_Types : Boolean := False;
 
       function Base_Types_Match (T1, T2 : Entity_Id) return Boolean;
       --  If neither T1 nor T2 are generic actual types, or if they are
@@ -3030,11 +3031,32 @@ package body Sem_Ch6 is
            or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
       end if;
 
+      --  Ada 0Y (AI-254): Detect anonymous access to subprogram types. In
+      --  case of anonymous access to protected subprogram types the anonymous
+      --  type declaration has been replaced by an occurrence of an internal
+      --  access to subprogram type declaration
+
+      Are_Anonymous_Access_To_Subprogram_Types :=
+        (Ekind (Type_1) = E_Anonymous_Access_Subprogram_Type
+           and then Ekind (Type_2) = E_Anonymous_Access_Subprogram_Type)
+      or else
+        ((Ekind (Type_1) = E_Access_Protected_Subprogram_Type
+          and then Ekind (Type_2) = E_Access_Protected_Subprogram_Type)
+         and then (not Comes_From_Source (Type_1)
+                     and not Comes_From_Source (Type_2))
+         and then (Present (Original_Access_Type (Type_1))
+                     and Present (Original_Access_Type (Type_2)))
+         and then (Ekind (Original_Access_Type (Type_1))
+                     = E_Anonymous_Access_Protected_Subprogram_Type
+                   and Ekind (Original_Access_Type (Type_2))
+                     = E_Anonymous_Access_Protected_Subprogram_Type));
+
       --  Test anonymous access type case. For this case, static subtype
       --  matching is required for mode conformance (RM 6.3.1(15))
 
-      if Ekind (Type_1) = E_Anonymous_Access_Type
-        and then Ekind (Type_2) = E_Anonymous_Access_Type
+      if (Ekind (Type_1) = E_Anonymous_Access_Type
+          and then Ekind (Type_2) = E_Anonymous_Access_Type)
+        or else Are_Anonymous_Access_To_Subprogram_Types --  Ada 0Y (AI-254)
       then
          declare
             Desig_1 : Entity_Id;
@@ -3083,11 +3105,17 @@ package body Sem_Ch6 is
                  Conforming_Types
                    (Etype (Base_Type (Desig_1)),
                     Etype (Base_Type (Desig_2)), Ctype);
+
+            elsif Are_Anonymous_Access_To_Subprogram_Types then
+               return Ctype = Type_Conformant
+                        or else
+                      Subtypes_Statically_Match (Desig_1, Desig_2);
+
             else
                return Base_Type (Desig_1) = Base_Type (Desig_2)
                 and then (Ctype = Type_Conformant
-                          or else
-                        Subtypes_Statically_Match (Desig_1, Desig_2));
+                            or else
+                          Subtypes_Statically_Match (Desig_1, Desig_2));
             end if;
          end;
 
@@ -4958,14 +4986,17 @@ package body Sem_Ch6 is
 
             --  Ada 0Y (AI-254)
 
-            if Present (Access_To_Subprogram_Definition
-                         (Parameter_Type (Param_Spec)))
-              and then Protected_Present (Access_To_Subprogram_Definition
-                                           (Parameter_Type (Param_Spec)))
-            then
-               Formal_Type :=
-                 Replace_Anonymous_Access_To_Protected_Subprogram (Param_Spec);
-            end if;
+            declare
+               AD : constant Node_Id :=
+                      Access_To_Subprogram_Definition
+                        (Parameter_Type (Param_Spec));
+            begin
+               if Present (AD) and then Protected_Present (AD) then
+                  Formal_Type :=
+                    Replace_Anonymous_Access_To_Protected_Subprogram
+                      (Param_Spec, Formal_Type);
+               end if;
+            end;
          end if;
 
          Set_Etype (Formal, Formal_Type);

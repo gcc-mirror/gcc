@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -786,9 +786,6 @@ package body Rtsfind is
       ---------------
 
       procedure Check_RPC is
-         Body_Name    : Unit_Name_Type;
-         Unum         : Unit_Number_Type;
-
       begin
          --  Bypass this check if debug flag -gnatdR set
 
@@ -799,47 +796,33 @@ package body Rtsfind is
          --  Otherwise we need the check if we are going after one of
          --  the critical entities in System.RPC in stubs mode.
 
+         --  ??? Should we do this for other s-parint/s-polint entities
+         --  too?
+
          if (Distribution_Stub_Mode = Generate_Receiver_Stub_Body
                       or else
                         Distribution_Stub_Mode = Generate_Caller_Stub_Body)
            and then (E = RE_Do_Rpc
-                       or else E = RE_Do_Apc
-                       or else E = RE_Params_Stream_Type
-                       or else E = RE_RPC_Receiver)
+                       or else
+                     E = RE_Do_Apc
+                       or else
+                     E = RE_Params_Stream_Type
+                       or else
+                     E = RE_RPC_Receiver)
          then
-            --  Load body of System.Rpc, and abort if this is the body that is
-            --  provided by GNAT, for which these features are not supported
-            --  on current target. We identify the gnat body by the presence
-            --  of a local entity called Gnat in the first declaration.
-
-            Lib_Unit := Unit (Cunit (U.Unum));
-            Body_Name := Get_Body_Name (Get_Unit_Name (Lib_Unit));
-            Unum :=
-              Load_Unit
-                (Load_Name  => Body_Name,
-                 Required   => False,
-                 Subunit    => False,
-                 Error_Node => Empty,
-                 Renamings  => True);
-
-            if Unum /= No_Unit then
-               declare
-                  Decls : constant List_Id :=
-                            Declarations (Unit (Cunit (Unum)));
-
-               begin
-                  if Present (Decls)
-                    and then Nkind (First (Decls)) = N_Object_Declaration
-                    and then
-                      Chars (Defining_Identifier (First (Decls))) = Name_Gnat
-                  then
-                     Set_Standard_Error;
-                     Write_Str ("distribution feature not supported");
-                     Write_Eol;
-                     raise Unrecoverable_Error;
-                  end if;
-               end;
-            end if;
+            declare
+               DSA_Implementation : constant Entity_Id :=
+                                      RTE (RE_DSA_Implementation);
+            begin
+               if Chars (Entity (Expression
+                                  (Parent (DSA_Implementation)))) = Name_No_DSA
+               then
+                  Set_Standard_Error;
+                  Write_Str ("distribution feature not supported");
+                  Write_Eol;
+                  raise Unrecoverable_Error;
+               end if;
+            end;
          end if;
       end Check_RPC;
 

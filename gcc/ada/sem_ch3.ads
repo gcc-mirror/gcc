@@ -207,11 +207,14 @@ package Sem_Ch3  is
    --  Prev is entity on the partial view, on which references are posted.
 
    function Replace_Anonymous_Access_To_Protected_Subprogram
-     (N : Node_Id) return Entity_Id;
+     (N      : Node_Id;
+      Prev_E : Entity_Id) return Entity_Id;
    --  Ada 0Y (AI-254): Create and decorate an internal full type declaration
    --  in the enclosing scope corresponding to an anonymous access to protected
    --  subprogram. In addition, replace the anonymous access by an occurrence
-   --  of this internal type. Return the entity of this type declaration.
+   --  of this internal type. Prev_Etype is used to link the new internal
+   --  entity with the anonymous entity. Return the entity of this type
+   --  declaration.
 
    procedure Set_Completion_Referenced (E : Entity_Id);
    --  If E is the completion of a private or incomplete  type declaration,

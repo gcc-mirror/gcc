@@ -6,7 +6,7 @@
  *                                                                          *
  *                                  Body                                    *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -146,16 +146,6 @@ Pos
 get_target_maximum_alignment (void)
 {
   return BIGGEST_ALIGNMENT / BITS_PER_UNIT;
-}
-
-Boolean
-get_target_no_dollar_in_label (void)
-{
-#ifdef NO_DOLLAR_IN_LABEL
-  return 1;
-#else
-  return 0;
-#endif
 }
 
 #ifndef FLOAT_WORDS_BIG_ENDIAN

@@ -2688,7 +2688,8 @@ package body Sem_Util is
         or else K = N_Package_Body
         or else K = N_Protected_Body
         or else K = N_Subprogram_Body
-        or else K = N_Task_Body;
+        or else K = N_Task_Body
+        or else K = N_Package_Specification;
    end Has_Declarations;
 
    --------------------

@@ -30,10 +30,9 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This file contains parameterizations used by gnatlink.adb in handling   */
-/*  very long linker lines in systems where there are limitations on the    */
-/*  argument length when the command line is used to pass items to the      */
-/*  linker                                                                  */
+/*  This file contains host-specific parameters describing the behaviour    */
+/*  of the linker. It is used by gnatlink as well as all tools that use     */
+/*  Mlib.                                                                   */
 
 #include <string.h>
 
@@ -83,113 +82,113 @@
 #define STATIC 'T'
 
 #if defined (__osf__)
-const char *object_file_option = "-Wl,-input,";
-const char *run_path_option = "-Wl,-rpath,";
-int link_max = 10000;
-unsigned char objlist_file_supported = 1;
-char shared_libgnat_default = STATIC;
-unsigned char using_gnu_linker = 0;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "-Wl,-input,";
+const char *__gnat_run_path_option = "-Wl,-rpath,";
+int __gnat_link_max = 10000;
+unsigned char __gnat_objlist_file_supported = 1;
+char __gnat_shared_libgnat_default = STATIC;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
 
 #elif defined (sgi)
-const char *object_file_option = "-Wl,-objectlist,";
-const char *run_path_option = "-Wl,-rpath,";
-int link_max = 5000;
-unsigned char objlist_file_supported = 1;
-char shared_libgnat_default = STATIC;
-unsigned char using_gnu_linker = 0;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "-Wl,-objectlist,";
+const char *__gnat_run_path_option = "-Wl,-rpath,";
+int __gnat_link_max = 5000;
+unsigned char __gnat_objlist_file_supported = 1;
+char __gnat_shared_libgnat_default = STATIC;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
 
 #elif defined (__WIN32)
-const char *object_file_option = "";
-const char *run_path_option = "";
-int link_max = 30000;
-unsigned char objlist_file_supported = 1;
-char shared_libgnat_default = STATIC;
-unsigned char using_gnu_linker = 1;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "";
+int __gnat_link_max = 30000;
+unsigned char __gnat_objlist_file_supported = 1;
+char __gnat_shared_libgnat_default = STATIC;
+unsigned char __gnat_using_gnu_linker = 1;
+const char *__gnat_object_library_extension = ".a";
 
 #elif defined (__INTERIX)
-const char *object_file_option = "";
-const char *run_path_option = "";
-int link_max = 5000;
-unsigned char objlist_file_supported = 1;
-char shared_libgnat_default = STATIC;
-unsigned char using_gnu_linker = 1;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "";
+int __gnat_link_max = 5000;
+unsigned char __gnat_objlist_file_supported = 1;
+char __gnat_shared_libgnat_default = STATIC;
+unsigned char __gnat_using_gnu_linker = 1;
+const char *__gnat_object_library_extension = ".a";
 
 #elif defined (hpux)
-const char *object_file_option = "-Wl,-c,";
-const char *run_path_option = "-Wl,+b,";
-int link_max = 5000;
-unsigned char objlist_file_supported = 1;
-char shared_libgnat_default = STATIC;
-unsigned char using_gnu_linker = 0;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "-Wl,-c,";
+const char *__gnat_run_path_option = "-Wl,+b,";
+int __gnat_link_max = 5000;
+unsigned char __gnat_objlist_file_supported = 1;
+char __gnat_shared_libgnat_default = STATIC;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
 
 #elif defined (_AIX)
-const char *object_file_option = "-Wl,-f,";
-const char *run_path_option = "";
-int link_max = 15000;
-const unsigned char objlist_file_supported = 1;
-char shared_libgnat_default = STATIC;
-unsigned char using_gnu_linker = 0;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "-Wl,-f,";
+const char *__gnat_run_path_option = "";
+int __gnat_link_max = 15000;
+const unsigned char __gnat_objlist_file_supported = 1;
+char __gnat_shared_libgnat_default = STATIC;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
 
 #elif defined (VMS)
-const char *object_file_option = "";
-const char *run_path_option = "";
-char shared_libgnat_default = STATIC;
-int link_max = 2147483647;
-unsigned char objlist_file_supported = 0;
-unsigned char using_gnu_linker = 0;
-const char *object_library_extension = ".olb";
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "";
+char __gnat_shared_libgnat_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".olb";
 
 #elif defined (sun)
-const char *object_file_option = "";
-const char *run_path_option = "-Wl,-R,";
-char shared_libgnat_default = STATIC;
-int link_max = 2147483647;
-unsigned char objlist_file_supported = 0;
-unsigned char using_gnu_linker = 0;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "-Wl,-R";
+char __gnat_shared_libgnat_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
 
 #elif defined (__FreeBSD__)
-char *object_file_option = "";
-char *run_path_option = "-Wl,-rpath,";
-char shared_libgnat_default = STATIC;
-int link_max = 2147483647;
-unsigned char objlist_file_supported = 0;
-unsigned char using_gnu_linker = 0;
-char *object_library_extension = ".a";
+char *__gnat_object_file_option = "";
+char *__gnat_run_path_option = "-Wl,-rpath,";
+char __gnat_shared_libgnat_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+char *__gnat_object_library_extension = ".a";
 
 #elif defined (linux)
-const char *object_file_option = "";
-const char *run_path_option = "-Wl,-rpath,";
-char shared_libgnat_default = STATIC;
-int link_max = 8192;
-unsigned char objlist_file_supported = 1;
-unsigned char using_gnu_linker = 1;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "-Wl,-rpath,";
+char __gnat_shared_libgnat_default = STATIC;
+int __gnat_link_max = 8192;
+unsigned char __gnat_objlist_file_supported = 1;
+unsigned char __gnat_using_gnu_linker = 1;
+const char *__gnat_object_library_extension = ".a";
 
 #elif defined (__svr4__) && defined (i386)
-const char *object_file_option = "";
-const char *run_path_option = "";
-char shared_libgnat_default = STATIC;
-int link_max = 2147483647;
-unsigned char objlist_file_supported = 0;
-unsigned char using_gnu_linker = 0;
-const char *object_library_extension = ".a";
+const char *__gnat_object_file_option = "";
+const char *__gnat_run_path_option = "";
+char __gnat_shared_libgnat_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
 
 #else
 
 /*  These are the default settings for all other systems. No response file
     is supported, the shared library default is STATIC.  */
-const char *run_path_option = "";
-const char *object_file_option = "";
-char shared_libgnat_default = STATIC;
-int link_max = 2147483647;
-unsigned char objlist_file_supported = 0;
-unsigned char using_gnu_linker = 0;
-const char *object_library_extension = ".a";
+const char *__gnat_run_path_option = "";
+const char *__gnat_object_file_option = "";
+char __gnat_shared_libgnat_default = STATIC;
+int __gnat_link_max = 2147483647;
+unsigned char __gnat_objlist_file_supported = 0;
+unsigned char __gnat_using_gnu_linker = 0;
+const char *__gnat_object_library_extension = ".a";
 #endif

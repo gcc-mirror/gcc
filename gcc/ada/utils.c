@@ -2994,11 +2994,13 @@ convert (tree type, tree expr)
     case STRING_CST:
     case CONSTRUCTOR:
       /* If we are converting a STRING_CST to another constrained array type,
-	 just make a new one in the proper type.  Likewise for a
-	 CONSTRUCTOR.  */
+	 just make a new one in the proper type.  Likewise for
+	 CONSTRUCTOR if the alias sets are the same.  */
       if (code == ecode && AGGREGATE_TYPE_P (etype)
 	  && ! (TREE_CODE (TYPE_SIZE (etype)) == INTEGER_CST
-		&& TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST))
+		&& TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	  && (TREE_CODE (expr) == STRING_CST
+	      || get_alias_set (etype) == get_alias_set (type)))
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
@@ -3014,7 +3016,8 @@ convert (tree type, tree expr)
       if (code == ecode && TYPE_MODE (type) == TYPE_MODE (etype)
 	  && AGGREGATE_TYPE_P (type) && AGGREGATE_TYPE_P (etype)
 	  && TYPE_ALIGN (type) == TYPE_ALIGN (etype)
-	  && operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (etype), 0))
+	  && operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (etype), 0)
+	  && get_alias_set (type) == get_alias_set (etype))
 	return build (COMPONENT_REF, type, TREE_OPERAND (expr, 0),
 		      TREE_OPERAND (expr, 1));
 

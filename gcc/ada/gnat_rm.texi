@@ -1341,18 +1341,32 @@ pragma Eliminate (
     [Entity          =>]  IDENTIFIER |
                           SELECTED_COMPONENT |
                           STRING_LITERAL
-  [,[Parameter_Types =>]  PARAMETER_TYPES]
-  [,[Result_Type     =>]  result_SUBTYPE_NAME]
-  [,[Homonym_Number  =>]  INTEGER_LITERAL]);
+    [,OVERLOADING_RESOLUTION]);
+
+OVERLOADING_RESOLUTION ::= PARAMETER_AND_RESULT_TYPE_PROFILE |
+                           SOURCE_LOCATION
+
+PARAMETER_AND_RESULT_TYPE_PROFILE ::= PROCEDURE_PROFILE |
+                                      FUNCTION_PROFILE
+
+PROCEDURE_PROFILE ::= Parameter_Types => PARAMETER_TYPES
+
+FUNCTION_PROFILE ::= [Parameter_Types => PARAMETER_TYPES,]
+                      Result_Type => result_SUBTYPE_NAME]
 
 PARAMETER_TYPES ::= (SUBTYPE_NAME @{, SUBTYPE_NAME@})
 SUBTYPE_NAME    ::= STRING_LITERAL
+
+SOURCE_LOCATION ::= Source_Location => SOURCE_TRACE
+SOURCE_TRACE    ::= STRING_LITERAL
 @end smallexample
 
 @noindent
+
 This pragma indicates that the given entity is not used outside the
-compilation unit it is defined in.  The entity may be either a subprogram
-or a variable.
+compilation unit it is defined in. The entity an explicitly declared
+subprogram, including subprogram declared by subprogram instantiations and
+subprograms declared in package instantiations.
 
 If the entity to be eliminated is a library level subprogram, then
 the first form of pragma @code{Eliminate} is used with only a single argument.
@@ -1366,28 +1380,54 @@ the particular entity.  If the second argument is in string form, it must
 correspond to the internal manner in which GNAT stores entity names (see
 compilation unit Namet in the compiler sources for details).
 
-The remaining parameters are optionally used to distinguish
-between overloaded subprograms.  There are two ways of doing this.
+The remaining parameters (OVERLOADING_RESOLUTION) are optionally used
+to distinguish between overloaded subprograms. If a pragma does not contain
+the OVERLOADING_RESOLUTION parameter(s), it is applied to all the overloaded
+subprograms denoted by the first two parameters.
 
-Use @code{Parameter_Types} and @code{Result_Type} to specify the
-profile of the subprogram to be eliminated in a manner similar to that
-used for
-the extended @code{Import} and @code{Export} pragmas, except that the
-subtype names are always given as string literals, again corresponding
-to the internal manner in which GNAT stores entity names.
+Use PARAMETER_AND_RESULT_TYPE_PROFILE to specify the profile of the subprogram
+to be eliminated in a manner similar to that used for the extended
+@code{Import} and @code{Export} pragmas, except that the subtype names are
+always given as string literals. At the moment, this form of distinguishing
+overloaded subprograms is implemented only partially, so we do not recommend
+using it for practical subprogram elimination.
 
-Alternatively, the @code{Homonym_Number} parameter is used to specify
-which overloaded alternative is to be eliminated.  A value of 1 indicates
-the first subprogram (in lexical order), 2 indicates the second etc.
+Note, that in case of a parameterless procedure its profile is represented
+as @code{Parameter_Types => ("")}
+
+Alternatively, the @code{Source_Location} parameter is used to specify
+which overloaded alternative is to be eliminated by pointing to the
+location of the DEFINING_PROGRAM_UNIT_NAME of this subprogram in the
+source text. The string literal submitted as SOURCE_TRACE should have
+the following format:
+
+@smallexample @c ada
+SOURCE_TRACE ::= SOURCE_LOCATION@{LBRACKET SOURCE_LOCATION RBRACKET@}
+
+LBRACKET ::= [
+RBRACKET ::= ]
+
+SOURCE_LOCATION ::= FILE_NAME:LINE_NUMBER
+FILE_NAME       ::= STRING_LITERAL
+LINE_NUMBER     ::= DIGIT @{DIGIT@}
+@end smallexample
+
+SOURCE_TRACE should be the short name of the source file (with no directory
+information), and LINE_NUMBER is supposed to point to the line where the
+defining name of the subprogram is located.
+
+For the subprograms that are not a part of generic instantiations, only one
+SOURCE_LOCATION is used. If a subprogram is declared in a package
+instantiation, SOURCE_TRACE contains two SOURCE_LOCATIONs, the first one is
+the location of the (DEFINING_PROGRAM_UNIT_NAME of the) instantiation, and the
+second one denotes the declaration of the corresponding subprogram in the
+generic package. This approach is recursively used to create SOURCE_LOCATIONs
+in case of nested instantiations.
 
 The effect of the pragma is to allow the compiler to eliminate
 the code or data associated with the named entity.  Any reference to
 an eliminated entity outside the compilation unit it is defined in,
 causes a compile time or link time error.
-
-The parameters of this pragma may be given in any order, as long as
-the usual rules for use of named parameters and position parameters
-are used.
 
 The intention of pragma @code{Eliminate} is to allow a program to be compiled
 in a system independent manner, with unused entities eliminated, without
@@ -1399,6 +1439,10 @@ automatic, without requiring the use of pragma @code{Eliminate}.
 Note that the reason this pragma takes string literals where names might
 be expected is that a pragma @code{Eliminate} can appear in a context where the
 relevant names are not visible.
+
+Note that any change in the source files that includes removing, splitting of
+adding lines may make the set of Eliminate pragmas using SOURCE_LOCATION
+parameter illegal.
 
 @node Pragma Export_Exception
 @unnumberedsec Pragma Export_Exception
@@ -12568,7 +12612,6 @@ primarily intended to be constructed automatically using a binding generator
 tool, although it is possible to construct them by hand.  No suitable binding
 generator tool is supplied with GNAT though.
 
-
 Using these pragmas it is possible to achieve complete
 inter-operability between Ada tagged types and C class definitions.
 See @ref{Implementation Defined Pragmas}, for more details.
@@ -12692,7 +12735,7 @@ including machine instructions in a subprogram.
 The two features are similar, and both are closely related to the mechanism
 provided by the asm instruction in the GNU C compiler.  Full understanding
 and use of the facilities in this package requires understanding the asm
-instruction as described in @cite{Using the GNU Compiler Collection (GCC)} 
+instruction as described in @cite{Using the GNU Compiler Collection (GCC)}
 by Richard Stallman. The relevant section is titled ``Extensions to the C
 Language Family'' -> ``Assembler Instructions with C Expression Operands''.
 
@@ -14099,3 +14142,4 @@ environment in which the gnat tool will execute.
 @contents
 
 @bye
+

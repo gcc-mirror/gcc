@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -395,6 +395,8 @@ package Lib.Xref is
 
       E_Access_Subprogram_Type           => 'P',
       E_Access_Protected_Subprogram_Type => 'P',
+      E_Anonymous_Access_Subprogram_Type => ' ',
+      E_Anonymous_Access_Protected_Subprogram_Type => ' ',
       E_Anonymous_Access_Type            => ' ',
       E_Array_Type                       => 'A',
       E_Array_Subtype                    => 'A',

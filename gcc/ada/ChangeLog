@@ -1,3 +1,107 @@
+2004-04-21  Pascal Obry  <obry@gnat.com>
+
+	* adaint.c (__gnat_portable_spawn): Quote first argument (argv[0])
+	passed to spawnvp() to properly handle program pathname with spaces on
+	Win32.
+
+2004-04-21  Emmanuel Briot  <briot@act-europe.fr>
+
+	* g-debpoo.adb (Print_Info): Avoid extra work if Display_Slots is False.
+	(Allocate, Deallocate, Free_Physically): Make sure the tasks are
+	unlocked in case of exceptions.
+
+2004-04-21  Joel Brobecker  <brobecker@gnat.com>
+
+	* gigi.h (get_target_no_dollar_in_label): Remove extern declaration.
+	This function does not exist anymore.
+
+2004-04-21  Thomas Quinot  <quinot@act-europe.fr>
+
+	* gnatbind.adb, gnatlink.adb: Update name of imported C symbol.
+
+	* link.c: Move variables to the __gnat name space.
+
+	* Makefile.in: list link.o explicitly when needed.
+
+	* mlib.adb: Remove pragma Linker_Option for "link.o" from mlib.
+
+2004-04-21  Javier Miranda  <miranda@gnat.com>
+
+	* einfo.adb (Original_Access_Type): New subprogram
+	(Set_Original_Access_Type): New subprogram
+	(Write_Field21_Name): Write the name of the new field
+
+	* einfo.ads (Original_Access_Type): New field present in access to
+	subprogram types.
+	Addition of two new entities: E_Anonymous_Access_Subprogram_Type, and
+	E_Anonymous_Access_Protected_Subprogram_Type.
+
+	* lib-xref.adb (Output_One_Ref): Give support to anonymous access to
+	subprogram types.
+
+	* lib-xref.ads (Xref_Entity_Letters): Initialize values corresponding
+	to anonymous access to subprogram types.
+
+	* sem_attr.adb (Resolve_Attribute): Give support to anonymous access
+	to subprogram types.
+
+	* sem_ch3.adb (Access_Definition): Complete decoration of entities
+	corresponding to anonymous access to subprogram types.
+	(Analyze_Component_Declaration): Add new actual to the call to
+	subprogram replace_anonymous_access_to_protected_subprogram.
+	(Array_Type_Declaration): Add new actual to the call to subprogram
+	replace_anonymous_access_to_protected_subprogram.
+	(Process_Discriminants): Add new actual to the call to subprogram
+	replace_anonymous_access_to_protected_subprogram.
+	(Replace_Anonymous_Access_To_Protected_Subprogram): New formal.
+
+	* sem_ch3.ads (Replace_Anonymous_Access_To_Protected_Subprogram): New
+	formal.
+
+	* sem_ch6.adb, sem_type.adb, sem_res.adb: Give support to anonymous
+	access to subprogram types.
+
+	* sem_util.adb (Has_Declarations): Addition of package_specification
+	nodes.
+
+2004-04-21  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_prag.adb (Make_Inline): If subprogram is a renaming, propagate
+	inlined flags to renamed entity only if in current unit.
+
+2004-04-21  Thomas Quinot  <quinot@act-europe.fr>
+
+	* s-parint.ads: Add DSA implementation marker.
+
+	* rtsfind.ads, rtsfind.adb, snames.ads, snames.adb, s-rpc.adb: Use the
+	value of System.Partition_Interface.DSA_Implementation to determine
+	what version of the distributed systems annex is available (no
+	implementation, GLADE, or PolyORB).
+
+2004-04-21  Joel Brobecker  <brobecker@gnat.com>
+
+	* targtyps.c (get_target_no_dollar_in_label): Remove, no longer used.
+
+2004-04-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* utils.c (convert, case CONSTRUCTOR, COMPONENT_REF): Do not make node
+	with new type if alias sets differ.
+	Fixes ACATS c41103b.
+
+2004-04-21  Vincent Celier  <celier@gnat.com>
+
+	* prj.ads: Remove FORTRAN as an accepted language: not tested yet.
+	Add array Lang_Args for the language specific compiling argument
+	switches.
+
+	* gnat_ugn.texi: Explain in more details when a library is rebuilt.
+
+2004-04-21  Sergey Rybin  <rybin@act-europe.fr>
+
+	* gnat_rm.texi: Update the descripton of the Eliminate pragma
+	according to the recent changes in the format of the parameters of the
+	pragma (replacing Homonym_Number with Source_Location).
+
 2004-04-19  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* 5isystem.ads: Removed, unused.

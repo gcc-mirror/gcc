@@ -731,6 +731,27 @@ package body Sem_Type is
       then
          return True;
 
+      --  Ada 0Y (AI-254): An Anonymous_Access_To_Subprogram is compatible with
+      --  itself, or with an anonymous type created for an attribute
+      --  reference Access.
+
+      elsif (Ekind (Base_Type (T1)) = E_Anonymous_Access_Subprogram_Type
+               or else
+             Ekind (Base_Type (T1))
+                      = E_Anonymous_Access_Protected_Subprogram_Type)
+        and then Is_Access_Type (T2)
+        and then (not Comes_From_Source (T1)
+                   or else not Comes_From_Source (T2))
+        and then (Is_Overloadable (Designated_Type (T2))
+                    or else
+                  Ekind (Designated_Type (T2)) = E_Subprogram_Type)
+        and then
+           Type_Conformant (Designated_Type (T1), Designated_Type (T2))
+        and then
+           Mode_Conformant (Designated_Type (T1), Designated_Type (T2))
+      then
+         return True;
+
       --  The context can be a remote access type, and the expression the
       --  corresponding source type declared in a categorized package, or
       --  viceversa.
