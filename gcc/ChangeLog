@@ -1,3 +1,10 @@
+2001-12-19  Bruce Korb  <bkorb@gnu.org>
+
+	* gcc/fixinc/inclhack.def:  Remove all the fix suppression "fixes".
+	(strict_ansi_not_ctd):  accommodate __STDC__ == 0 tests in UW 2.1.2
+	* gcc/fixinc/mkfixinc.sh(i?86-*-sysv4.2uw2*): now uses fixincl program
+	* gcc/fixinc/base/...: adjust for changes in fixes
+
 2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* po/gcc.pot: Regenerate.

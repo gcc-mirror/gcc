@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 145 fixup descriptions.
+ * This file contains 138 fixup descriptions.
  *
  * See README for more information.
  *
@@ -32,229 +32,6 @@
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Aaa_Bad_Fixes fix
- */
-tSCC zAaa_Bad_FixesName[] =
-     "AAA_bad_fixes";
-
-/*
- *  File name selection pattern
- */
-tSCC zAaa_Bad_FixesList[] =
-  "|sundev/ipi_error.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAaa_Bad_FixesMachs (const char**)NULL
-#define AAA_BAD_FIXES_TEST_CT  0
-#define aAaa_Bad_FixesTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Aaa_Bad_Fixes
- */
-static const char* apzAaa_Bad_FixesPatch[] = {
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aaa_Ki fix
- */
-tSCC zAaa_KiName[] =
-     "AAA_ki";
-
-/*
- *  File name selection pattern
- */
-tSCC zAaa_KiList[] =
-  "|sys/ki.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAaa_KiMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAaa_KiSelect0[] =
-       "11.00 HP-UX LP64";
-
-#define    AAA_KI_TEST_CT  1
-static tTestDesc aAaa_KiTests[] = {
-  { TT_EGREP,    zAaa_KiSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aaa_Ki
- */
-static const char* apzAaa_KiPatch[] = {
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aaa_Ki_Calls fix
- */
-tSCC zAaa_Ki_CallsName[] =
-     "AAA_ki_calls";
-
-/*
- *  File name selection pattern
- */
-tSCC zAaa_Ki_CallsList[] =
-  "|sys/ki_calls.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAaa_Ki_CallsMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAaa_Ki_CallsSelect0[] =
-       "kthread_create_caller_t";
-
-#define    AAA_KI_CALLS_TEST_CT  1
-static tTestDesc aAaa_Ki_CallsTests[] = {
-  { TT_EGREP,    zAaa_Ki_CallsSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aaa_Ki_Calls
- */
-static const char* apzAaa_Ki_CallsPatch[] = {
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aaa_Ki_Defs fix
- */
-tSCC zAaa_Ki_DefsName[] =
-     "AAA_ki_defs";
-
-/*
- *  File name selection pattern
- */
-tSCC zAaa_Ki_DefsList[] =
-  "|sys/ki_defs.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAaa_Ki_DefsMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAaa_Ki_DefsSelect0[] =
-       "Kernel Instrumentation Definitions";
-
-#define    AAA_KI_DEFS_TEST_CT  1
-static tTestDesc aAaa_Ki_DefsTests[] = {
-  { TT_EGREP,    zAaa_Ki_DefsSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aaa_Ki_Defs
- */
-static const char* apzAaa_Ki_DefsPatch[] = {
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aaa_Ki_Iface fix
- */
-tSCC zAaa_Ki_IfaceName[] =
-     "AAA_ki_iface";
-
-/*
- *  File name selection pattern
- */
-tSCC zAaa_Ki_IfaceList[] =
-  "|sys/ki_iface.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAaa_Ki_IfaceMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAaa_Ki_IfaceSelect0[] =
-       "These definitions are for HP Internal developers";
-
-#define    AAA_KI_IFACE_TEST_CT  1
-static tTestDesc aAaa_Ki_IfaceTests[] = {
-  { TT_EGREP,    zAaa_Ki_IfaceSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aaa_Ki_Iface
- */
-static const char* apzAaa_Ki_IfacePatch[] = {
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aaa_Standards fix
- */
-tSCC zAaa_StandardsName[] =
-     "AAA_standards";
-
-/*
- *  File name selection pattern
- */
-tSCC zAaa_StandardsList[] =
-  "|standards.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAaa_StandardsMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAaa_StandardsSelect0[] =
-       "GNU and MIPS C compilers define __STDC__ differently";
-
-#define    AAA_STANDARDS_TEST_CT  1
-static tTestDesc aAaa_StandardsTests[] = {
-  { TT_EGREP,    zAaa_StandardsSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aaa_Standards
- */
-static const char* apzAaa_StandardsPatch[] = {
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aaa_Time fix
- */
-tSCC zAaa_TimeName[] =
-     "AAA_time";
-
-/*
- *  File name selection pattern
- */
-tSCC zAaa_TimeList[] =
-  "|sys/time.h|";
-/*
- *  Machine/OS name selection pattern
- */
-#define apzAaa_TimeMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAaa_TimeSelect0[] =
-       "11.0 and later representation of ki time";
-
-#define    AAA_TIME_TEST_CT  1
-static tTestDesc aAaa_TimeTests[] = {
-  { TT_EGREP,    zAaa_TimeSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Aaa_Time
- */
-static const char* apzAaa_TimePatch[] = {
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
  *  Description of Aab_Dgux_Int_Varargs fix
  */
 tSCC zAab_Dgux_Int_VarargsName[] =
@@ -278,9 +55,9 @@ tSCC zAab_Dgux_Int_VarargsList[] =
 static const char* apzAab_Dgux_Int_VarargsPatch[] = {
 "#ifndef __INT_VARARGS_H\n\
 #define __INT_VARARGS_H\n\n\
-/************************************************************************/\n\
-/* _INT_VARARGS.H - Define the common stuff for varargs/stdarg/stdio.   */\n\
-/************************************************************************/\n\n\
+/********************************************************/\n\
+/*  Define the common stuff for varargs/stdarg/stdio.   */\n\
+/********************************************************/\n\n\
 /*\n\
 ** This file is a DG internal header.  Never include this\n\
 ** file directly.\n\
@@ -321,7 +98,7 @@ typedef char * va_list;\n\
 #endif  /*  _IX86_ANY */\n\n\
 #endif /* __LINT__ */\n\
 #endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */\n\
-#endif /*  #ifndef __INT_VARARGS_H  */\n",
+#endif /*  #ifndef __INT_VARARGS_H  */",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2081,14 +1858,14 @@ tSCC zHpux11_Size_TName[] =
  *  Machine/OS name selection pattern
  */
 tSCC* apzHpux11_Size_TMachs[] = {
-        "*-hp-hpux*",
+        "*-hp-hpux11*",
         (const char*)NULL };
 
 /*
  *  content selection pattern - do fix if pattern found
  */
 tSCC zHpux11_Size_TSelect0[] =
-       "^#define __size_t size_t";
+       "__size_t";
 
 #define    HPUX11_SIZE_T_TEST_CT  1
 static tTestDesc aHpux11_Size_TTests[] = {
@@ -2100,7 +1877,6 @@ static tTestDesc aHpux11_Size_TTests[] = {
 static const char* apzHpux11_Size_TPatch[] = {
     "format",
     "_hpux_size_t",
-    "__size_t",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2159,7 +1935,7 @@ tSCC zHpux11_VsnprintfList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zHpux11_VsnprintfSelect0[] =
-       "extern int vsnprintf\\(char \\*, __size_t, const char \\*, __va__list\\);";
+       "(extern int vsnprintf\\(char \\*, _[hpux]*_size_t, const char \\*,) __va__list\\);";
 
 #define    HPUX11_VSNPRINTF_TEST_CT  1
 static tTestDesc aHpux11_VsnprintfTests[] = {
@@ -2170,7 +1946,7 @@ static tTestDesc aHpux11_VsnprintfTests[] = {
  */
 static const char* apzHpux11_VsnprintfPatch[] = {
     "format",
-    "extern int vsnprintf(char *, __size_t, const char *, __va_list);",
+    "%1 __va_list);",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3985,7 +3761,7 @@ tSCC zStrict_Ansi_NotName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zStrict_Ansi_NotSelect0[] =
-       "^([ \t]*#[ \t]*if.*)(!__STDC__|__STDC__[ \t]*==[ \t]*0|__STDC__[ \t]*!=[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)(.*)";
+       "^([ \t]*#[ \t]*if.*)(!__STDC__|__STDC__[ \t]*==[ \t]*0|__STDC__[ \t]*!=[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)";
 
 /*
  *  perform the C function call test
@@ -4002,7 +3778,7 @@ static tTestDesc aStrict_Ansi_NotTests[] = {
  */
 static const char* apzStrict_Ansi_NotPatch[] = {
     "format",
-    "%1 !defined(__STRICT_ANSI__)%3",
+    "%1 !defined(__STRICT_ANSI__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4016,7 +3792,7 @@ tSCC zStrict_Ansi_Not_CtdName[] =
  *  File name selection pattern
  */
 tSCC zStrict_Ansi_Not_CtdList[] =
-  "|math.h|limits.h|stdio.h|signal.h|stdlib.h|time.h|";
+  "|math.h|limits.h|stdio.h|signal.h|stdlib.h|sys/signal.h|time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -4026,7 +3802,7 @@ tSCC zStrict_Ansi_Not_CtdList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zStrict_Ansi_Not_CtdSelect0[] =
-       "^([ \t]*[|&][|&][ \t(]*)(__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)(.*)";
+       "^([ \t]*(\\(|&&|\\|\\|)([ \t(]*!*[ \t]*defined\\([a-zA-Z_0-9]+\\)[ \t]*[|&][|&])*[ \t(]*)(__STDC__[ \t]*(|-[ \t]*0[ \t]*)==[ \t]*0)";
 
 /*
  *  perform the C function call test
@@ -4043,7 +3819,7 @@ static tTestDesc aStrict_Ansi_Not_CtdTests[] = {
  */
 static const char* apzStrict_Ansi_Not_CtdPatch[] = {
     "format",
-    "%1 !defined(__STRICT_ANSI__)%3",
+    "%1 !defined(__STRICT_ANSI__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4066,7 +3842,7 @@ tSCC zStrict_Ansi_OnlyName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zStrict_Ansi_OnlySelect0[] =
-       "^([ \t]*#[ \t]*if.*)(__STDC__[ \t]*!=[ \t]*0|__STDC__[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0)(.*)";
+       "^([ \t]*#[ \t]*if.*)(__STDC__[ \t]*!=[ \t]*0|__STDC__[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0)";
 
 /*
  *  perform the C function call test
@@ -4083,7 +3859,7 @@ static tTestDesc aStrict_Ansi_OnlyTests[] = {
  */
 static const char* apzStrict_Ansi_OnlyPatch[] = {
     "format",
-    "%1 defined(__STRICT_ANSI__)%3",
+    "%1 defined(__STRICT_ANSI__)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5652,21 +5428,14 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          152
+#define REGEX_COUNT          146
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            145
+#define FIX_COUNT            138
 
 /*
  *  Enumerate the fixes
  */
 typedef enum {
-    AAA_BAD_FIXES_FIXIDX,
-    AAA_KI_FIXIDX,
-    AAA_KI_CALLS_FIXIDX,
-    AAA_KI_DEFS_FIXIDX,
-    AAA_KI_IFACE_FIXIDX,
-    AAA_STANDARDS_FIXIDX,
-    AAA_TIME_FIXIDX,
     AAB_DGUX_INT_VARARGS_FIXIDX,
     AAB_FD_ZERO_ASM_POSIX_TYPES_H_FIXIDX,
     AAB_FD_ZERO_GNU_TYPES_H_FIXIDX,
@@ -5808,41 +5577,6 @@ typedef enum {
 } t_fixinc_idx;
 
 tFixDesc fixDescList[ FIX_COUNT ] = {
-  {  zAaa_Bad_FixesName,    zAaa_Bad_FixesList,
-     apzAaa_Bad_FixesMachs,
-     AAA_BAD_FIXES_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAaa_Bad_FixesTests,   apzAaa_Bad_FixesPatch, 0 },
-
-  {  zAaa_KiName,    zAaa_KiList,
-     apzAaa_KiMachs,
-     AAA_KI_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAaa_KiTests,   apzAaa_KiPatch, 0 },
-
-  {  zAaa_Ki_CallsName,    zAaa_Ki_CallsList,
-     apzAaa_Ki_CallsMachs,
-     AAA_KI_CALLS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAaa_Ki_CallsTests,   apzAaa_Ki_CallsPatch, 0 },
-
-  {  zAaa_Ki_DefsName,    zAaa_Ki_DefsList,
-     apzAaa_Ki_DefsMachs,
-     AAA_KI_DEFS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAaa_Ki_DefsTests,   apzAaa_Ki_DefsPatch, 0 },
-
-  {  zAaa_Ki_IfaceName,    zAaa_Ki_IfaceList,
-     apzAaa_Ki_IfaceMachs,
-     AAA_KI_IFACE_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAaa_Ki_IfaceTests,   apzAaa_Ki_IfacePatch, 0 },
-
-  {  zAaa_StandardsName,    zAaa_StandardsList,
-     apzAaa_StandardsMachs,
-     AAA_STANDARDS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAaa_StandardsTests,   apzAaa_StandardsPatch, 0 },
-
-  {  zAaa_TimeName,    zAaa_TimeList,
-     apzAaa_TimeMachs,
-     AAA_TIME_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAaa_TimeTests,   apzAaa_TimePatch, 0 },
-
   {  zAab_Dgux_Int_VarargsName,    zAab_Dgux_Int_VarargsList,
      apzAab_Dgux_Int_VarargsMachs,
      AAB_DGUX_INT_VARARGS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
