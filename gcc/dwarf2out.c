@@ -1526,12 +1526,18 @@ output_call_frame_info (for_eh)
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
+  if (for_eh)
+    /* Now that the CIE pointer is PC-relative for EH,
+       use 0 to identify the CIE.  */
+    ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
+  else
+    ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
+
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s CIE Identifier Tag", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  if (for_eh ? PTR_SIZE == 8 : DWARF_OFFSET_SIZE == 8)
+  if (! for_eh && DWARF_OFFSET_SIZE == 8)
     {
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
       fputc ('\n', asm_out_file);
@@ -1544,11 +1550,19 @@ output_call_frame_info (for_eh)
   fputc ('\n', asm_out_file);
   if (eh_ptr)
     {
-      /* The FDE contains a pointer
-	 to the exception region info for the frame.  */
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "e");
+      /* The CIE contains a pointer to the exception region info for the
+         frame.  Make the augmentation string three bytes (including the
+         trailing null) so the pointer is 4-byte aligned.  The Solaris ld
+         can't handle unaligned relocs.  */
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, "eh");
       if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s CIE Augmentation", ASM_COMMENT_START);
+      fputc ('\n', asm_out_file);
+
+      ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
+      if (flag_debug_asm)
+	fprintf (asm_out_file, "\t%s pointer to exception region info",
+		 ASM_COMMENT_START);
     }
   else
     {
@@ -1599,7 +1613,7 @@ output_call_frame_info (for_eh)
       ASM_OUTPUT_LABEL (asm_out_file, l1);
 
       if (for_eh)
-	ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__FRAME_BEGIN__");
+	ASM_OUTPUT_DWARF_DELTA (asm_out_file, ".", "__FRAME_BEGIN__");
       else
 	ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (FRAME_SECTION));
       if (flag_debug_asm)
@@ -1617,16 +1631,6 @@ output_call_frame_info (for_eh)
 	fprintf (asm_out_file, "\t%s FDE address range", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
-      if (eh_ptr)
-	{
-	  /* For now, a pointer to the translation unit's info will do.
-	     ??? Eventually this should point to the function's info.  */
-	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
-	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s pointer to exception region info",
-		     ASM_COMMENT_START);
-	  fputc ('\n', asm_out_file);
-	}
 
       /* Loop through the Call Frame Instructions associated with
 	 this FDE.  */
