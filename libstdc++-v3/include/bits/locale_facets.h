@@ -125,7 +125,7 @@ namespace std
   template<typename _CharT>
     bool
     __verify_grouping(const basic_string<_CharT>& __grouping, 
-		      basic_string<_CharT>& __grouping_tmp);
+		      const basic_string<_CharT>& __grouping_tmp);
 
   // Used by both numeric and monetary facets.
   // Inserts "group separator" characters into an array of characters.

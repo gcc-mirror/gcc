@@ -1,3 +1,32 @@
+2003-10-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12750
+	* include/bits/locale_facets.tcc
+	(time_get::_M_extract_via_format): Deal with code 'e'.
+	* testsuite/22_locale/time_get/get_date/char/12750.cc: New.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12750.cc: Ditto.
+
+	* include/bits/locale_facets.tcc
+	(time_get::_M_extract_via_format): Tweak to absolutely avoid
+	dereferencing end iterators.
+
+	* include/bits/locale_facets.h (__verify_grouping):
+	Const-ify second parameter.
+	* include/bits/locale_facets.tcc (__verify_grouping): Ditto.
+	* src/locale-inst.cc (__verify_grouping): Ditto.
+
+2003-10-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
+	Various things: 1- Avoid absolutely end iterator dereferences;
+	2- Improve performance-wise the code skipping leading zeros;
+	3- Fix two bugs wrt early bail out in case of parsing errors
+	(see testcases); 4- General clean up.
+	(num_get::_M_extract_int): Likewise, except 3-. Additionally,
+	use __builtin_expect to favor base 10 inputs.
+	* testsuite/22_locale/num_get/get/char/7.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/7.cc: Ditto.
+
 2003-10-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/22_locale/money_put/put/char/1.cc: Clean up.
