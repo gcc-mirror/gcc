@@ -1,3 +1,15 @@
+2004-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18738
+	* decl.c (make_typename_type): Do not handle namespace-scoped
+	names here.
+	(tag_name): Handle typename_type.
+	(check_elaborated_type_specifier): Handle typenames.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Improve
+	comment.
+	(cp_parser_elaborated_type_specifier): Use
+	cp_parser_diagnose_invalid_type_name.
+
 2004-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/18965
