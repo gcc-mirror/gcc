@@ -16,6 +16,12 @@
 	* recog.c (verify_changes): Make it static.
 	* recog.h: Remove the corresponding prototype.
 
+	* cfgbuild.c (find_sub_basic_blocks): Remove.
+	* basic-block.h: Remove the corresponding prototype.
+	* cfgexpand.c, cfgrtl.c: Don't mention find_sub_basic_blocks
+	in comments.
+	* doc/cfg.texi: Don't mention find_sub_basic_blocks.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.

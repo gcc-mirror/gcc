@@ -580,14 +580,12 @@ low level functions, such as @code{redirect_jump} that operate on RTL
 chain only.  The CFG hooks defined in @file{cfghooks.h} should provide
 the complete API required for manipulating and maintaining the CFG@.
 
-@findex find_sub_basic_blocks, split_block
+@findex split_block
 It is also possible that a pass has to insert control flow instruction
 into the middle of a basic block, thus creating an entry point in the
 middle of the basic block, which is impossible by definition: The
 block must be split to make sure it only has one entry point, i.e.@: the
-head of the basic block.  In the RTL representation, the
-@code{find_sub_basic_blocks} may be used to split existing basic block
-and add necessary edges.  The CFG hook @code{split_block} may be used
+head of the basic block.  The CFG hook @code{split_block} may be used
 when an instruction in the middle of a basic block has to become the
 target of a jump or branch instruction.
 

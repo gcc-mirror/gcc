@@ -1003,7 +1003,7 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
 
   /* This is somewhat ugly: the call_expr expander often emits instructions
      after the sibcall (to perform the function return).  These confuse the
-     find_sub_basic_blocks code, so we need to get rid of these.  */
+     find_many_sub_basic_blocks code, so we need to get rid of these.  */
   last = NEXT_INSN (last);
   gcc_assert (BARRIER_P (last));
 
@@ -1088,7 +1088,7 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
       e->flags &= ~EDGE_EXECUTABLE;
 
       /* At the moment not all abnormal edges match the RTL representation.
-         It is safe to remove them here as find_sub_basic_blocks will
+         It is safe to remove them here as find_many_sub_basic_blocks will
          rediscover them.  In the future we should get this fixed properly.  */
       if (e->flags & EDGE_ABNORMAL)
 	remove_edge (e);
