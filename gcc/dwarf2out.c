@@ -293,6 +293,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #ifndef FUNC_END_LABEL
 #define FUNC_END_LABEL		"LFE"
 #endif
+#define FRAME_BEGIN_LABEL	"Lframe"
 #define CIE_AFTER_SIZE_LABEL	"LSCIE"
 #define CIE_END_LABEL		"LECIE"
 #define CIE_LENGTH_LABEL	"LLCIE"
@@ -1720,7 +1721,7 @@ output_call_frame_info (for_eh)
   register unsigned long i;
   register dw_fde_ref fde;
   register dw_cfi_ref cfi;
-  char l1[20], l2[20];
+  char l1[20], l2[20], section_start_label[20];
   int any_lsda_needed = 0;
   char augmentation[6];
   int augmentation_size;
@@ -1759,10 +1760,12 @@ output_call_frame_info (for_eh)
       ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
       ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
 #endif
-      assemble_label ("__FRAME_BEGIN__");
     }
   else
     ASM_OUTPUT_SECTION (asm_out_file, FRAME_SECTION);
+
+  ASM_GENERATE_INTERNAL_LABEL (section_start_label, FRAME_BEGIN_LABEL, for_eh);
+  ASM_OUTPUT_LABEL (asm_out_file, section_start_label);
 
   /* Output the CIE.  */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
@@ -1894,19 +1897,10 @@ output_call_frame_info (for_eh)
 			    "FDE Length");
       ASM_OUTPUT_LABEL (asm_out_file, l1);
 
-      /* ??? This always emits a 4 byte offset when for_eh is true, but it
-	 emits a target dependent sized offset when for_eh is not true.
-	 This inconsistency may confuse gdb.  The only case where we need a
-	 non-4 byte offset is for the Irix6 N64 ABI, so we may lose SGI
-	 compatibility if we emit a 4 byte offset.  We need a 4 byte offset
-	 though in order to be compatible with the dwarf_fde struct in frame.c.
-	 If the for_eh case is changed, then the struct in frame.c has
-	 to be adjusted appropriately.  */
       if (for_eh)
-	dw2_asm_output_delta (4, l1, "__FRAME_BEGIN__", "FDE CIE offset");
+	dw2_asm_output_delta (4, l1, section_start_label, "FDE CIE offset");
       else
-	dw2_asm_output_offset (DWARF_OFFSET_SIZE,
-			       stripattributes (FRAME_SECTION),
+	dw2_asm_output_offset (DWARF_OFFSET_SIZE, section_start_label,
 			       "FDE CIE offset");
 
       if (for_eh)
