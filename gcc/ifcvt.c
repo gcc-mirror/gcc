@@ -77,7 +77,7 @@ static int num_removed_blocks;
 static bool life_data_ok;
 
 /* The post-dominator relation on the original block numbers.  */
-static sbitmap *post_dominators;
+static dominance_info post_dominators;
 
 /* Forward references.  */
 static int count_bb_insns		PARAMS ((basic_block));
@@ -1814,6 +1814,8 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
       if (combo_bb->global_live_at_end)
 	COPY_REG_SET (combo_bb->global_live_at_end,
 		      then_bb->global_live_at_end);
+      if (post_dominators)
+	delete_from_dominance_info (post_dominators, then_bb);
       merge_blocks_nomove (combo_bb, then_bb);
       num_removed_blocks++;
     }
@@ -1823,6 +1825,8 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
      get their addresses taken.  */
   if (else_bb)
     {
+      if (post_dominators)
+	delete_from_dominance_info (post_dominators, else_bb);
       merge_blocks_nomove (combo_bb, else_bb);
       num_removed_blocks++;
     }
@@ -1877,6 +1881,8 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
       if (combo_bb->global_live_at_end)
 	COPY_REG_SET (combo_bb->global_live_at_end,
 		      join_bb->global_live_at_end);
+      if (post_dominators)
+	delete_from_dominance_info (post_dominators, join_bb);
       merge_blocks_nomove (combo_bb, join_bb);
       num_removed_blocks++;
     }
@@ -2135,6 +2141,8 @@ find_cond_trap (test_bb, then_edge, else_edge)
   remove_edge (trap_bb == then_bb ? then_edge : else_edge);
   if (trap_bb->pred == NULL)
     {
+      if (post_dominators)
+	delete_from_dominance_info (post_dominators, trap_bb);
       flow_delete_block (trap_bb);
       num_removed_blocks++;
     }
@@ -2316,6 +2324,8 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   
   new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb), else_bb);
   then_bb_index = then_bb->index;
+  if (post_dominators)
+    delete_from_dominance_info (post_dominators, then_bb);
   flow_delete_block (then_bb);
   /* Make rest of code believe that the newly created block is the THEN_BB
      block we removed.  */
@@ -2366,8 +2376,8 @@ find_if_case_2 (test_bb, then_edge, else_edge)
   if (note && INTVAL (XEXP (note, 0)) >= REG_BR_PROB_BASE / 2)
     ;
   else if (else_succ->dest->index < 0
-	   || TEST_BIT (post_dominators[then_bb->index], 
-			else_succ->dest->index))
+	   || dominated_by_p (post_dominators, then_bb, 
+			      else_succ->dest))
     ;
   else
     return FALSE;
@@ -2393,6 +2403,8 @@ find_if_case_2 (test_bb, then_edge, else_edge)
 		    then_bb->global_live_at_start,
 		    else_bb->global_live_at_end, BITMAP_IOR);
   
+  if (post_dominators)
+    delete_from_dominance_info (post_dominators, else_bb);
   flow_delete_block (else_bb);
 
   num_removed_blocks++;
@@ -2700,8 +2712,7 @@ if_convert (x_life_data_ok)
   post_dominators = NULL;
   if (HAVE_conditional_execution || life_data_ok)
     {
-      post_dominators = sbitmap_vector_alloc (last_basic_block, last_basic_block);
-      calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
+      post_dominators = calculate_dominance_info (CDI_POST_DOMINATORS);
     }
   if (life_data_ok)
     clear_bb_flags ();
@@ -2712,7 +2723,7 @@ if_convert (x_life_data_ok)
       continue;
 
   if (post_dominators)
-    sbitmap_vector_free (post_dominators);
+    free_dominance_info (post_dominators);
 
   if (rtl_dump_file)
     fflush (rtl_dump_file);

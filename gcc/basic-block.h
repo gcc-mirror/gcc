@@ -350,6 +350,10 @@ extern void clear_edges			PARAMS ((void));
 extern void mark_critical_edges		PARAMS ((void));
 extern rtx first_insn_after_basic_block_note	PARAMS ((basic_block));
 
+/* Dominator information for basic blocks.  */
+
+typedef struct dominance_info *dominance_info;
+
 /* Structure to hold information for each natural loop.  */
 struct loop
 {
@@ -498,7 +502,7 @@ struct loops
   struct cfg
   {
     /* The bitmap vector of dominators or NULL if not computed.  */
-    sbitmap *dom;
+    dominance_info dom;
 
     /* The ordering of the basic blocks in a depth first search.  */
     int *dfs_order;
@@ -770,7 +774,21 @@ enum cdi_direction
   CDI_POST_DOMINATORS
 };
 
-extern void calculate_dominance_info	PARAMS ((int *, sbitmap *,
-						 enum cdi_direction));
-
+extern dominance_info calculate_dominance_info	PARAMS ((enum cdi_direction));
+extern void free_dominance_info			PARAMS ((dominance_info));
+extern basic_block nearest_common_dominator	PARAMS ((dominance_info,
+						 basic_block, basic_block));
+extern void set_immediate_dominator	PARAMS ((dominance_info,
+						 basic_block, basic_block));
+extern basic_block get_immediate_dominator	PARAMS ((dominance_info,
+						 basic_block));
+extern bool dominated_by_p	PARAMS ((dominance_info, basic_block, basic_block));
+extern int get_dominated_by PARAMS ((dominance_info, basic_block, basic_block **));
+extern void add_to_dominance_info PARAMS ((dominance_info, basic_block));
+extern void delete_from_dominance_info PARAMS ((dominance_info, basic_block));
+basic_block recount_dominator PARAMS ((dominance_info, basic_block));
+extern void redirect_immediate_dominators PARAMS ((dominance_info, basic_block,
+						 basic_block));
+void iterate_fix_dominators PARAMS ((dominance_info, basic_block *, int));
+extern void verify_dominators PARAMS ((dominance_info));
 #endif /* GCC_BASIC_BLOCK_H */

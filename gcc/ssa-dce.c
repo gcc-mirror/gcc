@@ -98,13 +98,13 @@ static void set_control_dependent_block_to_edge_map_bit
 static void control_dependent_block_to_edge_map_free
   PARAMS ((control_dependent_block_to_edge_map c));
 static void find_all_control_dependences
-  PARAMS ((struct edge_list *el, int *pdom,
+  PARAMS ((struct edge_list *el, dominance_info pdom,
 	   control_dependent_block_to_edge_map cdbte));
 static void find_control_dependence
-  PARAMS ((struct edge_list *el, int edge_index, int *pdom,
+  PARAMS ((struct edge_list *el, int edge_index, dominance_info pdom,
 	   control_dependent_block_to_edge_map cdbte));
 static basic_block find_pdom
-  PARAMS ((int *pdom, basic_block block));
+  PARAMS ((dominance_info pdom, basic_block block));
 static int inherently_necessary_register_1
   PARAMS ((rtx *current_rtx, void *data));
 static int inherently_necessary_register
@@ -218,7 +218,7 @@ control_dependent_block_to_edge_map_free (c)
 static void
 find_all_control_dependences (el, pdom, cdbte)
    struct edge_list *el;
-   int *pdom;
+   dominance_info pdom;
    control_dependent_block_to_edge_map cdbte;
 {
   int i;
@@ -237,7 +237,7 @@ static void
 find_control_dependence (el, edge_index, pdom, cdbte)
    struct edge_list *el;
    int edge_index;
-   int *pdom;
+   dominance_info pdom;
    control_dependent_block_to_edge_map cdbte;
 {
   basic_block current_block;
@@ -266,7 +266,7 @@ find_control_dependence (el, edge_index, pdom, cdbte)
 
 static basic_block
 find_pdom (pdom, block)
-     int *pdom;
+     dominance_info pdom;
      basic_block block;
 {
   if (!block)
@@ -276,10 +276,15 @@ find_pdom (pdom, block)
 
   if (block == ENTRY_BLOCK_PTR)
     return ENTRY_BLOCK_PTR->next_bb;
-  else if (block == EXIT_BLOCK_PTR || pdom[block->index] == EXIT_BLOCK)
+  else if (block == EXIT_BLOCK_PTR)
     return EXIT_BLOCK_PTR;
   else
-    return BASIC_BLOCK (pdom[block->index]);
+    {
+      basic_block bb = get_immediate_dominator (pdom, block);
+      if (!bb)
+	return EXIT_BLOCK_PTR;
+      return bb;
+    }
 }
 
 /* Determine if the given CURRENT_RTX uses a hard register not
@@ -488,7 +493,6 @@ delete_insn_bb (insn)
 void
 ssa_eliminate_dead_code ()
 {
-  int i;
   rtx insn;
   basic_block bb;
   /* Necessary instructions with operands to explore.  */
@@ -497,7 +501,7 @@ ssa_eliminate_dead_code ()
      edge.  "cdbte" abbreviates control dependent block to edge.  */
   control_dependent_block_to_edge_map cdbte;
  /* Element I is the immediate postdominator of block I.  */
-  int *pdom;
+  dominance_info pdom;
   struct edge_list *el;
 
   /* Initialize the data structures.  */
@@ -510,14 +514,7 @@ ssa_eliminate_dead_code ()
   connect_infinite_loops_to_exit ();
 
   /* Compute control dependence.  */
-  pdom = (int *) xmalloc (last_basic_block * sizeof (int));
-  for (i = 0; i < last_basic_block; ++i)
-    pdom[i] = INVALID_BLOCK;
-  calculate_dominance_info (pdom, NULL, CDI_POST_DOMINATORS);
-  /* Assume there is a path from each node to the exit block.  */
-  for (i = 0; i < last_basic_block; ++i)
-    if (pdom[i] == INVALID_BLOCK)
-      pdom[i] = EXIT_BLOCK;
+  pdom = calculate_dominance_info (CDI_POST_DOMINATORS);
   el = create_edge_list ();
   find_all_control_dependences (el, pdom, cdbte);
 
