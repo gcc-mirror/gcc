@@ -1483,6 +1483,16 @@ javax/print/attribute/SupportedValuesAttribute.java \
 javax/print/attribute/TextSyntax.java \
 javax/print/attribute/UnmodifiableSetException.java \
 javax/print/attribute/URISyntax.java \
+javax/print/attribute/standard/Copies.java \
+javax/print/attribute/standard/JobImpressions.java \
+javax/print/attribute/standard/JobMediaSheets.java \
+javax/print/attribute/standard/JobPriority.java \
+javax/print/attribute/standard/NumberOfDocuments.java \
+javax/print/attribute/standard/NumberOfInterveningJobs.java \
+javax/print/attribute/standard/NumberUp.java \
+javax/print/attribute/standard/PagesPerMinute.java \
+javax/print/attribute/standard/PagesPerMinuteColor.java \
+javax/print/attribute/standard/QueuedJobCount.java \
 javax/security/auth/x500/X500Principal.java \
 javax/sql/ConnectionEvent.java \
 javax/sql/ConnectionEventListener.java \
@@ -4098,6 +4108,16 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/print/attribute/TextSyntax.P \
 .deps/javax/print/attribute/URISyntax.P \
 .deps/javax/print/attribute/UnmodifiableSetException.P \
+.deps/javax/print/attribute/standard/Copies.P \
+.deps/javax/print/attribute/standard/JobImpressions.P \
+.deps/javax/print/attribute/standard/JobMediaSheets.P \
+.deps/javax/print/attribute/standard/JobPriority.P \
+.deps/javax/print/attribute/standard/NumberOfDocuments.P \
+.deps/javax/print/attribute/standard/NumberOfInterveningJobs.P \
+.deps/javax/print/attribute/standard/NumberUp.P \
+.deps/javax/print/attribute/standard/PagesPerMinute.P \
+.deps/javax/print/attribute/standard/PagesPerMinuteColor.P \
+.deps/javax/print/attribute/standard/QueuedJobCount.P \
 .deps/javax/rmi/BAD_OPERATION.P .deps/javax/rmi/CORBA/ClassDesc.P \
 .deps/javax/rmi/CORBA/ObjectImpl.P \
 .deps/javax/rmi/CORBA/PortableRemoteObjectDelegate.P \

@@ -1,5 +1,20 @@
 2003-12-23  Michael Koch  <konqueror@gmx.de>
 
+	* javax/print/attribute/standard/Copies.java,
+	javax/print/attribute/standard/JobImpressions.java,
+	javax/print/attribute/standard/JobMediaSheets.java,
+	javax/print/attribute/standard/JobPriority.java,
+	javax/print/attribute/standard/NumberOfDocuments.java,
+	javax/print/attribute/standard/NumberOfInterveningJobs.java,
+	javax/print/attribute/standard/NumberUp.java,
+	javax/print/attribute/standard/PagesPerMinuteColor.java,
+	javax/print/attribute/standard/PagesPerMinute.java,
+	javax/print/attribute/standard/QueuedJobCount.java: New files.
+	* Makefile.am (ordinary_java_source_files): Added new files.
+	* Makefile.in: Regenerated.
+
+2003-12-23  Michael Koch  <konqueror@gmx.de>
+
 	* javax/print/attribute/AttributeSetUtilities.java
 	(verifyCategoryForValue): Renamed from verifyCategoryForAttribute.
 	* javax/print/attribute/HashAttributeSet.java
