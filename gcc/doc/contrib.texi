@@ -125,7 +125,7 @@ previous contributions to the steering committee, loop optimizations, etc.
 Stephane Carrez for 68HC11 and 68HC12 ports.
 
 @item
-Steve Chamberlain for support for the Hitachi SH and H8 processors
+Steve Chamberlain for support for the Renesas SH and H8 processors
 and the PicoJava processor, and for GCJ config fixes.
 
 @item
@@ -316,7 +316,7 @@ Nobuyuki Hikichi of Software Research Associates, Tokyo, contributed
 the support for the Sony NEWS machine.
 
 @item
-Kazu Hirata for caring and feeding the Hitachi H8/300 port and various fixes.
+Kazu Hirata for caring and feeding the Renesas H8/300 port and various fixes.
 
 @item
 Manfred Hollstein for his ongoing work to keep the m88k alive, lots

@@ -1742,8 +1742,8 @@ AIX:
 DOS---@uref{http://www.delorie.com/djgpp/,,DJGPP}.
 
 @item
-Hitachi H8/300[HS]---@uref{http://h8300-hms.sourceforge.net/,,GNU
-Development Tools for the Hitachi H8/300[HS] Series}.
+Renesas H8/300[HS]---@uref{http://h8300-hms.sourceforge.net/,,GNU
+Development Tools for the Renesas H8/300[HS] Series}.
 
 @item
 HP-UX:
@@ -2306,7 +2306,7 @@ Shared @file{libgcc_s.so} is now built and installed by default.
 <hr />
 @end html
 @heading @anchor{h8300-hms}h8300-hms
-Hitachi H8/300 series of processors.
+Renesas H8/300 series of processors.
 
 Please have a look at our @uref{binaries.html,,binaries page}.
 
