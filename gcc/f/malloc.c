@@ -33,10 +33,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "proj.h"
 #include "malloc.h"
 
-/* Assume gcc/toplev.o is linked in.  */
-void *xmalloc (unsigned size);
-void *xrealloc (void *ptr, int size);
-
 /* Externals defined here.  */
 
 struct _malloc_root_ malloc_root_

@@ -62,7 +62,7 @@ static FILE *out;
 static char prefix[32];
 static char postfix[32];
 static char storage[32];
-static char *spaces[]
+static char *xspaces[]
 =
 {
   "",				/* 0 */
@@ -636,7 +636,7 @@ testname (bool nested, int indent, name first, name last)
   int numhalf;
 
   assert (!nested || indent >= 2);
-  assert (((size_t) indent) + 4 < ARRAY_SIZE (spaces));
+  assert (((size_t) indent) + 4 < ARRAY_SIZE (xspaces));
 
   num = 0;
   numhalf = 0;
@@ -654,15 +654,15 @@ testname (bool nested, int indent, name first, name last)
 	     "\
 %s{\n\
 ",
-	     spaces[indent - 2]);
+	     xspaces[indent - 2]);
 
   fprintf (out,
 	   "\
 %sif ((c = ffesrc_strcmp_2c (ffe_case_match (), p, \"%s\", \"%s\", \"%s\")) == 0)\n\
 %sreturn %s%s%s;\n\
 ",
-	   spaces[indent], nhalf->name_uc, nhalf->name_lc, nhalf->name_ic,
-	   spaces[indent + 2], prefix, nhalf->kwname, postfix);
+	   xspaces[indent], nhalf->name_uc, nhalf->name_lc, nhalf->name_ic,
+	   xspaces[indent + 2], prefix, nhalf->kwname, postfix);
 
   if (num != 1)
     {
@@ -670,14 +670,14 @@ testname (bool nested, int indent, name first, name last)
 	       "\
 %selse if (c < 0)\n\
 ",
-	       spaces[indent]);
+	       xspaces[indent]);
 
       if (numhalf == 0)
 	fprintf (out,
 		 "\
 %s;\n\
 ",
-		 spaces[indent + 2]);
+		 xspaces[indent + 2]);
       else
 	testname (TRUE, indent + 4, first, nhalf->previous);
 
@@ -687,7 +687,7 @@ testname (bool nested, int indent, name first, name last)
 		   "\
 %selse\n\
 ",
-		   spaces[indent]);
+		   xspaces[indent]);
 
 	  testname (TRUE, indent + 4, nhalf->next, last);
 	}
@@ -698,7 +698,7 @@ testname (bool nested, int indent, name first, name last)
 	     "\
 %s}\n\
 ",
-	     spaces[indent - 2]);
+	     xspaces[indent - 2]);
 }
 
 void
@@ -710,7 +710,7 @@ testnames (bool nested, int indent, int len, name first, name last)
   int numhalf;
 
   assert (!nested || indent >= 2);
-  assert (((size_t) indent) + 4 < ARRAY_SIZE (spaces));
+  assert (((size_t) indent) + 4 < ARRAY_SIZE (xspaces));
 
   num = 0;
   numhalf = 0;
@@ -728,15 +728,15 @@ testnames (bool nested, int indent, int len, name first, name last)
 	     "\
 %s{\n\
 ",
-	     spaces[indent - 2]);
+	     xspaces[indent - 2]);
 
   fprintf (out,
 	   "\
 %sif ((c = ffesrc_strncmp_2c (ffe_case_match (), p, \"%s\", \"%s\", \"%s\", %d)) == 0)\n\
 %sreturn %s%s%s;\n\
 ",
-	   spaces[indent], nhalf->name_uc, nhalf->name_lc, nhalf->name_ic,
-	   len, spaces[indent + 2], prefix, nhalf->kwname, postfix);
+	   xspaces[indent], nhalf->name_uc, nhalf->name_lc, nhalf->name_ic,
+	   len, xspaces[indent + 2], prefix, nhalf->kwname, postfix);
 
   if (num != 1)
     {
@@ -744,14 +744,14 @@ testnames (bool nested, int indent, int len, name first, name last)
 	       "\
 %selse if (c < 0)\n\
 ",
-	       spaces[indent]);
+	       xspaces[indent]);
 
       if (numhalf == 0)
 	fprintf (out,
 		 "\
 %s;\n\
 ",
-		 spaces[indent + 2]);
+		 xspaces[indent + 2]);
       else
 	testnames (TRUE, indent + 4, len, first, nhalf->previous);
 
@@ -761,7 +761,7 @@ testnames (bool nested, int indent, int len, name first, name last)
 		   "\
 %selse\n\
 ",
-		   spaces[indent]);
+		   xspaces[indent]);
 
 	  testnames (TRUE, indent + 4, len, nhalf->next, last);
 	}
@@ -772,5 +772,5 @@ testnames (bool nested, int indent, int len, name first, name last)
 	     "\
 %s}\n\
 ",
-	     spaces[indent - 2]);
+	     xspaces[indent - 2]);
 }

@@ -92,8 +92,6 @@ static void (*g77_fn)();
 static int g77_newargc;
 static char **g77_newargv;
 
-extern char *xmalloc PROTO((size_t));
-
 extern char *version_string;
 
 /* --- This comes from gcc.c (2.8.1) verbatim: */
