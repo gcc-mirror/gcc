@@ -2073,7 +2073,8 @@ symbol_ref_operand (op, mode)
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
 
-  return (GET_CODE (op) == SYMBOL_REF);
+  return (GET_CODE (op) == SYMBOL_REF
+	  && (DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op)));
 }
 
 /* Return 1 if the operand, used inside a MEM, is a valid first argument
@@ -2102,17 +2103,10 @@ current_file_function_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_CODE (op) == SYMBOL_REF
-      && (SYMBOL_REF_LOCAL_P (op)
-	  || (op == XEXP (DECL_RTL (current_function_decl), 0))))
-    {
-#ifdef ENABLE_CHECKING
-      if (!SYMBOL_REF_FUNCTION_P (op))
-	abort ();
-#endif
-      return 1;
-    }
-  return 0;
+  return (GET_CODE (op) == SYMBOL_REF
+	  && (DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op))
+	  && (SYMBOL_REF_LOCAL_P (op)
+	      || (op == XEXP (DECL_RTL (current_function_decl), 0))));
 }
 
 /* Return 1 if this operand is a valid input for a move insn.  */

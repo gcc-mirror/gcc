@@ -1,3 +1,14 @@
+2003-05-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/{603.md,6xx.md,7450.md,7xx.md,rs64.md}: Decrease
+	number of automata.
+
+	* config/rs6000/rs6000.c (symbol_ref_operand): Check
+	SYMBOL_REF_FUNCTION_P on AIX.
+	(current_file_function_operand): Same.
+	* config/rs6000/rs6000.md (call,call_value): Force non-function
+	symbol_ref into register on AIX.
+
 2003-05-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* calls.c (struct arg_data): Move offset, slot_offset, size and

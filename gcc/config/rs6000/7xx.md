@@ -18,12 +18,12 @@
 ;; Free Software Foundation, 59 Temple Place - Suite 330, Boston,
 ;; MA 02111-1307, USA.
 
-(define_automaton "ppc7xx,ppc7xxfp,ppc7xxother,ppc7xxvec")
+(define_automaton "ppc7xx,ppc7xxfp")
 (define_cpu_unit "iu1_7xx,iu2_7xx" "ppc7xx")
 (define_cpu_unit "fpu_7xx" "ppc7xxfp")
-(define_cpu_unit "lsu_7xx,bpu_7xx,sru_7xx" "ppc7xxother")
+(define_cpu_unit "lsu_7xx,bpu_7xx,sru_7xx" "ppc7xx")
 (define_cpu_unit "du1_7xx,du2_7xx" "ppc7xx")
-(define_cpu_unit "veccmplx_7xx,vecperm_7xx,vdu_7xx" "ppc7xxvec")
+(define_cpu_unit "veccmplx_7xx,vecperm_7xx,vdu_7xx" "ppc7xx")
 
 ;; PPC740/PPC750/PPC7400  32-bit 2xIU, LSU, SRU, FPU, BPU
 ;; IU1 can perform all integer operations
