@@ -14,6 +14,7 @@ details.  */
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #pragma implementation "gcj/array.h"
 
@@ -595,8 +596,8 @@ static java::lang::ThreadGroup *main_group;
 // The primary thread.
 static java::lang::Thread *main_thread;
 
-void
-JvRunMain (jclass klass, int argc, const char **argv)
+static void
+main_init (void)
 {
   INIT_SEGV;
 #ifdef HANDLE_FPE
@@ -611,6 +612,19 @@ JvRunMain (jclass klass, int argc, const char **argv)
 #ifdef USE_LTDL
   LTDL_SET_PRELOADED_SYMBOLS ();
 #endif
+
+  // FIXME: we only want this on POSIX systems.
+  struct sigaction act;
+  act.sa_handler = SIG_IGN;
+  sigemptyset (&act.sa_mask);
+  act.sa_flags = 0;
+  sigaction (SIGPIPE, &act, NULL);
+}
+
+void
+JvRunMain (jclass klass, int argc, const char **argv)
+{
+  main_init ();
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
   main_group = new java::lang::ThreadGroup (23);
@@ -625,19 +639,7 @@ JvRunMain (jclass klass, int argc, const char **argv)
 void
 _Jv_RunMain (const char *class_name, int argc, const char **argv)
 {
-  INIT_SEGV;
-#ifdef HANDLE_FPE
-  INIT_FPE;
-#else
-  arithexception = new java::lang::ArithmeticException
-    (JvNewStringLatin1 ("/ by zero"));
-#endif
-
-  no_memory = new java::lang::OutOfMemoryError;
-
-#ifdef USE_LTDL
-  LTDL_SET_PRELOADED_SYMBOLS ();
-#endif
+  main_init ();
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
   main_group = new java::lang::ThreadGroup (23);
