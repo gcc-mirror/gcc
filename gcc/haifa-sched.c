@@ -3687,36 +3687,54 @@ sched_analyze_insn (x, insn, loop_notes)
 	  sched_analyze_2 (XEXP (link, 0), insn);
       }
 
-  /* If there is a {LOOP,EHREGION}_{BEG,END} note in the middle of a basic block, then
-     we must be sure that no instructions are scheduled across it.
+  /* If there is a {LOOP,EHREGION}_{BEG,END} note in the middle of a basic
+     block, then we must be sure that no instructions are scheduled across it.
      Otherwise, the reg_n_refs info (which depends on loop_depth) would
      become incorrect.  */
 
   if (loop_notes)
     {
       int max_reg = max_reg_num ();
+      int schedule_barrier_found = 0;
       rtx link;
 
-      for (i = 0; i < max_reg; i++)
-	{
-	  rtx u;
-	  for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
-	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	  reg_last_uses[i] = 0;
-
-	  /* reg_last_sets[r] is now a list of insns */
-	  for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
-	    add_dependence (insn, XEXP (u, 0), 0);
-	}
-      reg_pending_sets_all = 1;
-
-      flush_pending_lists (insn, 0);
-
+      /* Update loop_notes with any notes from this insn.  Also determine
+	 if any of the notes on the list correspond to instruction scheduling
+	 barriers (loop, eh & setjmp notes, but not range notes.  */
       link = loop_notes;
       while (XEXP (link, 1))
-	link = XEXP (link, 1);
+	{
+	  if (XINT (link, 0) == NOTE_INSN_LOOP_BEG
+	      || XINT (link, 0) == NOTE_INSN_LOOP_END
+	      || XINT (link, 0) == NOTE_INSN_EH_REGION_BEG
+	      || XINT (link, 0) == NOTE_INSN_EH_REGION_END
+	      || XINT (link, 0) == NOTE_INSN_SETJMP)
+	    schedule_barrier_found = 1;
+
+	  link = XEXP (link, 1);
+	}
       XEXP (link, 1) = REG_NOTES (insn);
       REG_NOTES (insn) = loop_notes;
+
+      /* Add dependencies if a scheduling barrier was found.  */
+      if (schedule_barrier_found)
+	{
+	  for (i = 0; i < max_reg; i++)
+	    {
+	      rtx u;
+	      for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+	      reg_last_uses[i] = 0;
+
+	      /* reg_last_sets[r] is now a list of insns */
+	      for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), 0);
+	    }
+	  reg_pending_sets_all = 1;
+
+	  flush_pending_lists (insn, 0);
+	}
+
     }
 
   /* After reload, it is possible for an instruction to have a REG_DEAD note

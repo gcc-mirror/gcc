@@ -5,6 +5,9 @@ Wed Aug 26 09:30:59 1998  Nick Clifton  <nickc@cygnus.com>
 
 Wed Aug 26 12:57:09 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (sched_analyze_insn): Only create scheduling
+	barriers for LOOP, EH and SETJMP notes on the loop_notes list.
+
 	* mn10300.h (RTX_COSTS): Handle UDIV and UMOD too.
 
 Wed Aug 26 16:35:37 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
