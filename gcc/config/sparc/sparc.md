@@ -4769,20 +4769,21 @@
 (define_insn "negtf2"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(neg:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
   "TARGET_FPU"
   "*
 {
-  if (TARGET_V9)
-    return \"fnegd %1,%0\"; /* Can't use fnegs, won't work with upper regs.  */
-  else if (which_alternative == 0)
-   return \"fnegs %0,%0\";
+  /* v9: can't use fnegs, won't work with upper regs.  */
+  if (which_alternative == 0)
+   return TARGET_V9 ? \"fnegd %0,%0\" : \"fnegs %0,%0\";
   else
-   return \"fnegs %1,%0\;fmovs %R1,%R0\;fmovs %S1,%S0\;fmovs %T1,%T0\";
+   return TARGET_V9 ? \"fnegd %1,%0\;fmovd %S1,%S0\"
+     : \"fnegs %1,%0\;fmovs %R1,%R0\;fmovs %S1,%S0\;fmovs %T1,%T0\";
 }"
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "isa" "v9") (const_int 1) (const_int 4))])])
+      (if_then_else (eq_attr "isa" "v9") (const_int 2) (const_int 4))])])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=e,e")
@@ -4812,20 +4813,21 @@
 (define_insn "abstf2"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
   "TARGET_FPU"
   "*
 {
-  if (TARGET_V9)
-    return \"fabsd %1,%0\"; /* Can't use fabss, won't work with upper regs.  */
-  else if (which_alternative == 0)
-    return \"fabss %0,%0\";
+  /* v9: can't use fabss, won't work with upper regs.  */
+  if (which_alternative == 0)
+    return TARGET_V9 ? \"fabsd %0,%0\" : \"fabss %0,%0\";
   else
-    return \"fabss %1,%0\;fmovs %R1,%R0\;fmovs %S1,%S0\;fmovs %T1,%T0\";
+    return TARGET_V9 ? \"fabsd %1,%0\;fmovd %S1,%S0\"
+      : \"fabss %1,%0\;fmovs %R1,%R0\;fmovs %S1,%S0\;fmovs %T1,%T0\";
 }"
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "isa" "v9") (const_int 1) (const_int 4))])])
+      (if_then_else (eq_attr "isa" "v9") (const_int 2) (const_int 4))])])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=e,e")
