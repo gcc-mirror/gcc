@@ -287,7 +287,7 @@ public class OutputStreamWriter extends Writer
   /**
    * This method writes a single character to the output stream.
    *
-   * @param c The char to write, passed as an int.
+   * @param ch The char to write, passed as an int.
    *
    * @exception IOException If an error occurs
    */

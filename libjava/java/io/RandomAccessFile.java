@@ -205,7 +205,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * <p>
    * The file must be open for write access for this operation to succeed.
    *
-   * @param newlen The new length of the file
+   * @param newLen The new length of the file
    *
    * @exception IOException If an error occurs
    */
@@ -256,7 +256,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * bytes are stored starting at the beginning of the array and up to 
    * <code>buf.length</code> bytes can be read.
    *
-   * @param buf The buffer to read bytes from the file into
+   * @param buffer The buffer to read bytes from the file into
    *
    * @return The actual number of bytes read or -1 if end of file
    *
@@ -271,7 +271,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * This methods reads up to <code>len</code> bytes from the file into the
    * specified array starting at position <code>offset</code> into the array.
    *
-   * @param buf The array to read the bytes into
+   * @param buffer The array to read the bytes into
    * @param offset The index into the array to start storing bytes
    * @param len The requested number of bytes to read
    *
@@ -414,7 +414,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * throws an exception if there is not enough data left in the stream to
    * fill the buffer
    *
-   * @param buf The buffer into which to read the data
+   * @param buffer The buffer into which to read the data
    *
    * @exception EOFException If end of file is reached before filling the 
    * buffer
@@ -434,9 +434,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    * available and throws an exception if there is not enough data left in 
    * the stream to read <code>len</code> bytes.
    *
-   * @param buf The buffer into which to read the data
+   * @param buffer The buffer into which to read the data
    * @param offset The offset into the buffer to start storing data
-   * @param len The number of bytes to read into the buffer
+   * @param count The number of bytes to read into the buffer
    *
    * @exception EOFException If end of file is reached before filling 
    * the buffer
@@ -460,8 +460,8 @@ public class RandomAccessFile implements DataOutput, DataInput
    * four bytes read from the stream, they will be
    * transformed to an <code>int</code> in the following manner:
    * <p>
-   * <code>(int)(((byte1 & 0xFF) << 24) + ((byte2 & 0xFF) << 16) + 
-   * ((byte3 & 0xFF) << 8) + (byte4 & 0xFF)))</code>
+   * <code>(int)(((byte1 &amp; 0xFF) &lt;&lt; 24) + ((byte2 &amp; 0xFF) &lt;&lt; 16) + 
+   * ((byte3 &amp; 0xFF) &lt;&lt; 8) + (byte4 &amp; 0xFF)))</code>
    * <p>
    * The value returned is in the range of 0 to 65535.
    * <p>
@@ -524,10 +524,10 @@ public class RandomAccessFile implements DataOutput, DataInput
    * transformed to an <code>long</code> in the following manner:
    * <p>
    * <code>
-   * (long)((((long)byte1 & 0xFF) << 56) + (((long)byte2 & 0xFF) << 48) + 
-   * (((long)byte3 & 0xFF) << 40) + (((long)byte4 & 0xFF) << 32) + 
-   * (((long)byte5 & 0xFF) << 24) + (((long)byte6 & 0xFF) << 16) + 
-   * (((long)byte7 & 0xFF) << 8) + ((long)byte9 & 0xFF)))</code>
+   * (long)((((long)byte1 &amp; 0xFF) &lt;&lt; 56) + (((long)byte2 &amp; 0xFF) &lt;&lt; 48) + 
+   * (((long)byte3 &amp; 0xFF) &lt;&lt; 40) + (((long)byte4 &amp; 0xFF) &lt;&lt; 32) + 
+   * (((long)byte5 &amp; 0xFF) &lt;&lt; 24) + (((long)byte6 &amp; 0xFF) &lt;&lt; 16) + 
+   * (((long)byte7 &amp; 0xFF) &lt;&lt; 8) + ((long)byte9 &amp; 0xFF)))</code>
    * <p>
    * The value returned is in the range of 0 to 65535.
    * <p>
@@ -612,7 +612,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * and second byte read from the stream respectively, they will be
    * transformed to an <code>int</code> in the following manner:
    * <p>
-   * <code>(int)(((byte1 & 0xFF) << 8) + (byte2 & 0xFF))</code>
+   * <code>(int)(((byte1 &amp; 0xFF) &lt;&lt; 8) + (byte2 &amp; 0xFF))</code>
    * <p>
    * The value returned is in the range of 0 to 65535.
    * <p>
@@ -756,7 +756,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * This method writes a single byte of data to the file. The file must
    * be open for read-write in order for this operation to succeed.
    *
-   * @param The byte of data to write, passed as an int.
+   * @param oneByte The byte of data to write, passed as an int.
    *
    * @exception IOException If an error occurs
    */
@@ -769,7 +769,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * This method writes all the bytes in the specified array to the file.
    * The file must be open read-write in order for this operation to succeed.
    *
-   * @param buf The array of bytes to write to the file
+   * @param buffer The array of bytes to write to the file
    */
   public void write (byte[] buffer) throws IOException
   {
@@ -780,7 +780,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * This method writes <code>len</code> bytes to the file from the specified
    * array starting at index <code>offset</code> into the array.
    *
-   * @param buf The array of bytes to write to the file
+   * @param buffer The array of bytes to write to the file
    * @param offset The index into the array to start writing file
    * @param len The number of bytes to write
    *
@@ -796,7 +796,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    * stream. For a value of <code>true</code>, 1 is written to the stream.
    * For a value of <code>false</code>, 0 is written.
    *
-   * @param b The <code>boolean</code> value to write to the stream
+   * @param val The <code>boolean</code> value to write to the stream
    *
    * @exception IOException If an error occurs
    */
@@ -809,68 +809,68 @@ public class RandomAccessFile implements DataOutput, DataInput
    * This method writes a Java <code>byte</code> value to the underlying
    * output stream.
    *
-   * @param b The <code>byte</code> to write to the stream, passed 
+   * @param val The <code>byte</code> to write to the stream, passed 
    * as an <code>int</code>.
    *
    * @exception IOException If an error occurs
    */
-  public final void writeByte (int v) throws IOException
+  public final void writeByte (int val) throws IOException
   {
-    out.writeByte(v);
+    out.writeByte(val);
   }
 
   /**
    * This method writes a Java <code>short</code> to the stream, high byte
    * first.  This method requires two bytes to encode the value.
    *
-   * @param s The <code>short</code> value to write to the stream, 
+   * @param val The <code>short</code> value to write to the stream, 
    * passed as an <code>int</code>.
    *
    * @exception IOException If an error occurs
    */
-  public final void writeShort (int v) throws IOException
+  public final void writeShort (int val) throws IOException
   {
-    out.writeShort(v);
+    out.writeShort(val);
   }
 
   /**
    * This method writes a single <code>char</code> value to the stream,
    * high byte first.
    *
-   * @param v The <code>char</code> value to write, passed as 
+   * @param val The <code>char</code> value to write, passed as 
    * an <code>int</code>.
    *
    * @exception IOException If an error occurs
    */
-  public final void writeChar (int v) throws IOException
+  public final void writeChar (int val) throws IOException
   {
-    out.writeChar(v);
+    out.writeChar(val);
   }
 
   /**
    * This method writes a Java <code>int</code> to the stream, high bytes
    * first.  This method requires four bytes to encode the value.
    *
-   * @param v The <code>int</code> value to write to the stream.
+   * @param val The <code>int</code> value to write to the stream.
    *
    * @exception IOException If an error occurs
    */
-  public final void writeInt (int v) throws IOException
+  public final void writeInt (int val) throws IOException
   {
-    out.writeInt(v);
+    out.writeInt(val);
   }
 
   /**
    * This method writes a Java <code>long</code> to the stream, high bytes
    * first.  This method requires eight bytes to encode the value.
    *
-   * @param v The <code>long</code> value to write to the stream.
+   * @param val The <code>long</code> value to write to the stream.
    *
    * @exception IOException If an error occurs
    */
-  public final void writeLong (long v) throws IOException
+  public final void writeLong (long val) throws IOException
   {
-    out.writeLong(v);
+    out.writeLong(val);
   }
 
   /**
@@ -881,15 +881,15 @@ public class RandomAccessFile implements DataOutput, DataInput
    * then writing this <code>int</code> value to the stream exactly the same
    * as the <code>writeInt()</code> method does.
    *
-   * @param v The floating point number to write to the stream.
+   * @param val The floating point number to write to the stream.
    *
    * @exception IOException If an error occurs
    *
    * @see #writeInt(int)
    */
-  public final void writeFloat (float v) throws IOException
+  public final void writeFloat (float val) throws IOException
   {
-    out.writeFloat(v);
+    out.writeFloat(val);
   }
 
   /**
@@ -900,16 +900,16 @@ public class RandomAccessFile implements DataOutput, DataInput
    * then writing this <code>long</code> value to the stream exactly the same
    * as the <code>writeLong()</code> method does.
    *
-   * @param v The double precision floating point number to write to the 
+   * @param val The double precision floating point number to write to the 
    * stream.
    *
    * @exception IOException If an error occurs
    *
    * @see #writeLong(long)
    */
-  public final void writeDouble (double v) throws IOException
+  public final void writeDouble (double val) throws IOException
   {
-    out.writeDouble(v);
+    out.writeDouble(val);
   }
 
   /**
@@ -917,13 +917,13 @@ public class RandomAccessFile implements DataOutput, DataInput
    * stream.  One byte is written for each character in the <code>String</code>.
    * The high eight bits of each character are discarded.
    *
-   * @param s The <code>String</code> to write to the stream
+   * @param val The <code>String</code> to write to the stream
    *
    * @exception IOException If an error occurs
    */
-  public final void writeBytes (String s) throws IOException
+  public final void writeBytes (String val) throws IOException
   {
-    out.writeBytes(s);
+    out.writeBytes(val);
   }
   
   /**
@@ -931,13 +931,13 @@ public class RandomAccessFile implements DataOutput, DataInput
    * stream.  There will be two bytes for each character value.  The high
    * byte of the character will be written first.
    *
-   * @param s The <code>String</code> to write to the stream.
+   * @param val The <code>String</code> to write to the stream.
    *
    * @exception IOException If an error occurs
    */
-  public final void writeChars (String s) throws IOException
+  public final void writeChars (String val) throws IOException
   {
-    out.writeChars(s);
+    out.writeChars(val);
   }
   
   /**
@@ -965,13 +965,13 @@ public class RandomAccessFile implements DataOutput, DataInput
    * character value are stored in bits 0-5 of byte three, with the high bits
    * of that byte set to "10".
    *
-   * @param s The <code>String</code> to write to the output in UTF format
+   * @param val The <code>String</code> to write to the output in UTF format
    *
    * @exception IOException If an error occurs
    */
-  public final void writeUTF (String s) throws IOException
+  public final void writeUTF (String val) throws IOException
   {
-    out.writeUTF(s);
+    out.writeUTF(val);
   }
   
   /**
@@ -984,6 +984,4 @@ public class RandomAccessFile implements DataOutput, DataInput
   {
     return ch;
   }
-
-} // class RandomAccessFile
-
+}

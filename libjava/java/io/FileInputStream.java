@@ -122,7 +122,7 @@ public class FileInputStream extends InputStream
    * An exception is 
    * thrown if reading is not allowed.
    *
-   * @param fd The <code>FileDescriptor</code> object this stream 
+   * @param fdObj The <code>FileDescriptor</code> object this stream 
    * should read from
    *
    * @exception SecurityException If read access to the file is not allowed
