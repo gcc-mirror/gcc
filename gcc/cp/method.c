@@ -1458,7 +1458,7 @@ hack_identifier (value, name, yychar)
       return build_component_ref (C_C_D, name, 0, 1);
     }
 
-  if (TREE_CODE (value) == TREE_LIST)
+  if (really_overloaded_fn (value))
     {
       tree t = get_first_fn (value);
       while (t)
@@ -1466,6 +1466,16 @@ hack_identifier (value, name, yychar)
 	  assemble_external (t);
 	  TREE_USED (t) = 1;
 	  t = DECL_CHAIN (t);
+	}
+    }
+  else if (TREE_CODE (value) == TREE_LIST)
+    {
+      tree t = value;
+      while (t && TREE_CODE (t) == TREE_LIST)
+	{
+	  assemble_external (TREE_VALUE (t));
+	  TREE_USED (t) = 1;
+	  t = TREE_CHAIN (t);
 	}
     }
   else
