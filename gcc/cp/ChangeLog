@@ -1,3 +1,22 @@
+1999-07-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c: Sync with C frontend.
+	(whitespace_cr): New fn.
+	(skip_white_space): Use it.
+	(init_parse): Reorder.
+	(yyprint): Support CONSTANT.
+	(pragma_getc, pragma_ungetc): Bring back.
+	(read_line_number): Change in_system_header directly.
+	(handle_generic_pragma, handle_cp_pragma, yyerror): Move up in file.
+	(parse_float): Update to C version.
+	(yylex): Handle '$' under the letter case.
+	Remove looking_for_typename handling.
+	Support hex floating point constants.
+	Follow C's lead for choosing type of integer constants.
+	Rearrange stuff to match C frontend.
+	(yyungetc, reinit_parse_for_block, yylex): Support indent_level.
+	* spew.c (yylex): Clear looking_for_typename if we see a TYPESPEC.
+
 1999-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (reference_binding): Tweak.
