@@ -1,26 +1,19 @@
 Notes on GCC's Native Language Support
 
-GCC's Native Language Support (NLS) is relatively new and
-experimental, so NLS is currently disabled by default.  Use
-configure's --enable-nls option to enable it.  Eventually, NLS will be
-enabled by default, and you'll need --disable-nls to disable it.  You
-must enable NLS in order to make a GCC distribution.
-
 By and large, only diagnostic messages have been internationalized.
 Some work remains in other areas; for example, GCC does not yet allow
 non-ASCII letters in identifiers.
 
-Not all of GCC's diagnostic messages have been internationalized.
-Programs like `enquire' and `genattr' are not internationalized, as
-their users are GCC maintainers who typically need to be able to read
-English anyway; internationalizing them would thus entail needless
-work for the human translators.  And no one has yet gotten around to
-internationalizing the messages in the C++ compiler, or in the
-specialized MIPS-specific programs mips-tdump and mips-tfile.
+Not all of GCC's diagnostic messages have been internationalized. Programs
+like `enquire' and `genattr' (in fact all gen* programs) are not
+internationalized, as their users are GCC maintainers who typically need to
+be able to read English anyway; internationalizing them would thus entail
+needless work for the human translators. Messages used for debugging, such
+as used in dumped tables, should also not be translated.
 
 The GCC library should not contain any messages that need
-internationalization, because it operates below the
-internationalization library.
+internationalization, because it operates below the internationalization
+library.
 
 Currently, the only language translation supplied is en_UK (British English).
 
@@ -42,501 +35,133 @@ line, where MSGID does not contain `%' or `}', corresponds to a
 message MSGID that requires translation; this is needed to identify
 diagnostics in GCC spec strings.
 
-If you enable NLS and modify source files, you'll need to use a
-special version of the GNU gettext package to propagate the
-modifications to the translation tables.  Apply the following patch
-(use `patch -p0') to GNU gettext 0.10.35, which you can retrieve from:
+If you modify source files, you'll need to use a special
+version of the GNU gettext package to propagate the modifications to the
+translation tables.
 
-ftp://alpha.gnu.org/gnu/gettext-0.10.35.tar.gz
+Paul Eggerts original patches have been incorporated into the official
+gettext CVS. These sources may be accessed via anonymous cvs. The root for
+the gettext CVS is :pserver:anoncvs@anoncvs.cygnus.com:/cvs/gettext 
+Password is `anoncvs' like for the GCC CVS. After having retrieved the
+sources, you have to apply the following patch, which is pending approval by
+the gettext maintainer.
 
-This patch has been submitted to the GNU gettext maintainer, so
-eventually we shouldn't need this special gettext version.
+After having built and installed these gettext tools, you have to configure
+GCC with --enable-maintainer-mode to get the master catalog rebuilt.
 
-This patch is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+2000-06-01  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
-This patch is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+        * xgettext.c (long_options): New option defines.
+        * xget-lex.c (phase6_get): If set, process #defines as well.
 
-You should have received a copy of the GNU General Public License
-along with this patch; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-
-1998-07-26  Paul Eggert  <eggert@twinsun.com>
-
-	* po/Makefile.in.in (maintainer-clean): Remove cat-id-tbl.c and
-	stamp-cat-id.
-
-1998-07-24  Paul Eggert  <eggert@twinsun.com>
-
-	* po/Makefile.in.in (cat-id-tbl.o): Depend on
-	$(top_srcdir)/intl/libgettext.h, not ../intl/libgettext.h.
-
-1998-07-20  Paul Eggert  <eggert@twinsun.com>
-
-	* po/Makefile.in.in (.po.pox, all-yes, $(srcdir)/cat-id-tbl.c,
-	$(srcdir)/stamp-cat-id, update-po): Prepend `$(srcdir)/' to
-	files built in the source directory; this is needed for
-	VPATH-based make in Solaris 2.6.
-
-1998-07-17  Paul Eggert  <eggert@twinsun.com>
-
-	Add support for user-specified argument numbers for keywords.
-	Extract all strings from a keyword arg, not just the first one.
-	Handle parenthesized commas inside keyword args correctly.
-	Warn about nested keywords.
-
-	* doc/gettext.texi: Document --keyword=id:argnum.
-
-	* src/xgettext.c (scan_c_file):
-	Warn about nested keywords, e.g. _(_("xxx")).
-	Warn also about not-yet-implemented but allowed nesting, e.g.
-	dcgettext(..._("xxx")..., "yyy").
-	Get all strings in a keyword arg, not just the first one.
-	Handle parenthesized commas inside keyword args correctly.
-
-	* src/xget-lex.h (enum xgettext_token_type_ty):
-	Replace xgettext_token_type_keyword1 and
-	xgettext_token_type_keyword2 with just plain
-	xgettext_token_type_keyword; it now has argnum value.
-	Add xgettext_token_type_rp.
-	(struct xgettext_token_ty): Add argnum member.
-	line_number and file_name are now also set for
-	xgettext_token_type_keyword.
-	(xgettext_lex_keyword): Arg is const char *.
-
-	* src/xget-lex.c: Include "hash.h".
-	(enum token_type_ty): Add token_type_rp.
-	(keywords): Now a hash table.
-	(phase5_get): Return token_type_rp for ')'.
-	(xgettext_lex, xgettext_lex_keyword): Add support for keyword argnums.
-	(xgettext_lex): Return xgettext_token_type_rp for ')'.
-	Report keyword argnum, line number, and file name back to caller.
-
-1998-07-09  Paul Eggert  <eggert@twinsun.com>
-
-        * intl/Makefile.in (uninstall):
-	Do nothing unless $(PACKAGE) is gettext.
-
-===================================================================
-RCS file: doc/gettext.texi,v
-retrieving revision 0.10.35.0
-retrieving revision 0.10.35.1
-diff -pu -r0.10.35.0 -r0.10.35.1
---- doc/gettext.texi	1998/05/01 05:53:32	0.10.35.0
-+++ doc/gettext.texi	1998/07/18 00:25:15	0.10.35.1
-@@ -1854,13 +1854,19 @@ List of directories searched for input f
- Join messages with existing file.
+--- doc/gettext.texi	2000/07/28 21:11:32	1.2
++++ doc/gettext.texi	2000/08/27 23:28:32
+@@ -20,7 +20,7 @@
+ This file provides documentation for GNU @code{gettext} utilities.
+ It also serves as a reference for the free Translation Project.
  
- @item -k @var{word}
--@itemx --keyword[=@var{word}]
--Additonal keyword to be looked for (without @var{word} means not to
-+@itemx --keyword[=@var{keywordspec}]
-+Additonal keyword to be looked for (without @var{keywordspec} means not to
- use default keywords).
+-Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
++Copyright (C) 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
  
--The default keywords, which are always looked for if not explicitly
--disabled, are @code{gettext}, @code{dgettext}, @code{dcgettext} and
--@code{gettext_noop}.
-+If @var{keywordspec} is a C identifer @var{id}, @code{xgettext} looks
-+for strings in the first argument of each call to the function or macro
-+@var{id}.  If @var{keywordspec} is of the form
-+@samp{@var{id}:@var{argnum}}, @code{xgettext} looks for strings in the
-+@var{argnum}th argument of the call.
+ Permission is granted to make and distribute verbatim copies of
+ this manual provided the copyright notice and this permission notice
+@@ -54,7 +54,7 @@ by the Foundation.
+ 
+ @page
+ @vskip 0pt plus 1filll
+-Copyright @copyright{} 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
++Copyright @copyright{} 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
+ 
+ Permission is granted to make and distribute verbatim copies of
+ this manual provided the copyright notice and this permission notice
+@@ -1828,6 +1828,10 @@ not have to care about these details.
+ @item -d @var{name}
+ @itemx --default-domain=@var{name}
+ Use @file{@var{name}.po} for output (instead of @file{messages.po}).
 +
-+The default keyword specifications, which are always looked for if not
-+explicitly disabled, are @code{gettext}, @code{dgettext:2},
-+@code{dcgettext:2} and @code{gettext_noop}.
++@itemx --defines
++Look for the keywords in #define statements as well. Normally, xgettext
++will treat them as white space.
  
- @item -m [@var{string}]
- @itemx --msgstr-prefix[=@var{string}]
-===================================================================
-RCS file: intl/Makefile.in,v
-retrieving revision 0.10.35.0
-retrieving revision 0.10.35.1
-diff -pu -r0.10.35.0 -r0.10.35.1
---- intl/Makefile.in	1998/04/27 21:53:18	0.10.35.0
-+++ intl/Makefile.in	1998/07/09 21:39:18	0.10.35.1
-@@ -143,10 +143,14 @@ install-data: all
- installcheck:
+ The special domain name @file{-} or @file{/dev/stdout} means to write
+ the output to @file{stdout}.
+
+--- src/xget-lex.c	2000/07/28 21:11:32	1.2
++++ src/xget-lex.c	2000/08/27 23:28:33
+@@ -1045,6 +1045,7 @@ phaseX_get (tp)
+ static token_ty phase6_pushback[4];
+ static int phase6_pushback_length;
  
- uninstall:
--	dists="$(DISTFILES.common)"; \
--	for file in $$dists; do \
--	  rm -f $(gettextsrcdir)/$$file; \
--	done
-+	if test "$(PACKAGE)" = "gettext"; then \
-+	  dists="$(DISTFILES.common)"; \
-+	  for file in $$dists; do \
-+	    rm -f $(gettextsrcdir)/$$file; \
-+	  done
-+	else \
-+	  : ; \
-+	fi
++extern int defines;
  
- info dvi:
+ static void
+ phase6_get (tp)
+@@ -1068,9 +1069,36 @@ phase6_get (tp)
+       if (tp->type != token_type_hash)
+ 	return;
  
-===================================================================
-RCS file: src/xget-lex.c,v
-retrieving revision 0.10.35.0
-retrieving revision 0.10.35.1
-diff -pu -r0.10.35.0 -r0.10.35.1
---- src/xget-lex.c	1998/07/09 22:49:48	0.10.35.0
-+++ src/xget-lex.c	1998/07/18 00:25:15	0.10.35.1
-@@ -33,6 +33,7 @@
- #include "error.h"
- #include "system.h"
- #include "libgettext.h"
-+#include "hash.h"
- #include "str-list.h"
- #include "xget-lex.h"
- 
-@@ -83,6 +84,7 @@ enum token_type_ty
-   token_type_eoln,
-   token_type_hash,
-   token_type_lp,
-+  token_type_rp,
-   token_type_comma,
-   token_type_name,
-   token_type_number,
-@@ -109,7 +111,7 @@ static FILE *fp;
- static int trigraphs;
- static int cplusplus_comments;
- static string_list_ty *comment;
--static string_list_ty *keywords;
-+static hash_table keywords;
- static int default_keywords = 1;
- 
- /* These are for tracking whether comments count as immediately before
-@@ -941,6 +943,10 @@ phase5_get (tp)
-       tp->type = token_type_lp;
-       return;
- 
-+    case ')':
-+      tp->type = token_type_rp;
-+      return;
-+
-     case ',':
-       tp->type = token_type_comma;
-       return;
-@@ -1179,6 +1185,7 @@ xgettext_lex (tp)
-   while (1)
-     {
-       token_ty token;
-+      void *keyword_value;
- 
-       phase8_get (&token);
-       switch (token.type)
-@@ -1213,17 +1220,20 @@ xgettext_lex (tp)
- 	  if (default_keywords)
- 	    {
- 	      xgettext_lex_keyword ("gettext");
--	      xgettext_lex_keyword ("dgettext");
--	      xgettext_lex_keyword ("dcgettext");
-+	      xgettext_lex_keyword ("dgettext:2");
-+	      xgettext_lex_keyword ("dcgettext:2");
- 	      xgettext_lex_keyword ("gettext_noop");
- 	      default_keywords = 0;
- 	    }
- 
--	  if (string_list_member (keywords, token.string))
--	    {
--	      tp->type = (strcmp (token.string, "dgettext") == 0
--			  || strcmp (token.string, "dcgettext") == 0)
--		? xgettext_token_type_keyword2 : xgettext_token_type_keyword1;
-+	  if (find_entry (&keywords, token.string, strlen (token.string),
-+			  &keyword_value)
-+	      == 0)
-+	    {
-+	      tp->type = xgettext_token_type_keyword;
-+	      tp->argnum = (int) keyword_value;
-+	      tp->line_number = token.line_number;
-+	      tp->file_name = logical_file_name;
- 	    }
- 	  else
- 	    tp->type = xgettext_token_type_symbol;
-@@ -1236,6 +1246,12 @@ xgettext_lex (tp)
- 	  tp->type = xgettext_token_type_lp;
- 	  return;
- 
-+	case token_type_rp:
-+	  last_non_comment_line = newline_count;
-+
-+	  tp->type = xgettext_token_type_rp;
-+	  return;
-+
- 	case token_type_comma:
- 	  last_non_comment_line = newline_count;
- 
-@@ -1263,16 +1279,32 @@ xgettext_lex (tp)
- 
- void
- xgettext_lex_keyword (name)
--     char *name;
-+     const char *name;
- {
-   if (name == NULL)
-     default_keywords = 0;
-   else
-     {
--      if (keywords == NULL)
--	keywords = string_list_alloc ();
-+      int argnum;
-+      size_t len;
-+      const char *sp;
-+
-+      if (keywords.table == NULL)
-+	init_hash (&keywords, 100);
-+
-+      sp = strchr (name, ':');
-+      if (sp)
++      /* Find the first non-whitespace token. If it is a define, we
++ 	 will treat the rest of the line as normal input, if defines
++ 	 is set. */
++      if (defines)
 +	{
-+	  len = sp - name;
-+	  argnum = atoi (sp + 1);
++	  while (1)
++	    {
++	      phaseX_get (tp);
++	      if (tp->type == token_type_eoln || tp->type == token_type_eof)
++		return;
++	      if (tp->type != token_type_white_space)
++		break;
++	    }
++	  if (tp->type == token_type_name 
++	      && strcmp (tp->string, "define") == 0)
++	    return;
++	  /* It's not a define, so we start collecting tokens.  */
++	  if (!bufmax)
++	    {
++	      bufmax = 100;
++	      buf = xrealloc (buf, bufmax * sizeof (buf[0]));
++	    }
++	  buf[0] = *tp;
++	  bufpos = 1;
 +	}
 +      else
-+	{
-+	  len = strlen (name);
-+	  argnum = 1;
-+	}
- 
--      string_list_append_unique (keywords, name);
-+      insert_entry (&keywords, name, len, (void *) argnum);
-     }
- }
- 
-===================================================================
-RCS file: src/xget-lex.h,v
-retrieving revision 0.10.35.0
-retrieving revision 0.10.35.1
-diff -pu -r0.10.35.0 -r0.10.35.1
---- src/xget-lex.h	1998/07/09 22:49:48	0.10.35.0
-+++ src/xget-lex.h	1998/07/18 00:25:15	0.10.35.1
-@@ -23,9 +23,9 @@ Foundation, Inc., 59 Temple Place - Suit
- enum xgettext_token_type_ty
- {
-   xgettext_token_type_eof,
--  xgettext_token_type_keyword1,
--  xgettext_token_type_keyword2,
-+  xgettext_token_type_keyword,
-   xgettext_token_type_lp,
-+  xgettext_token_type_rp,
-   xgettext_token_type_comma,
-   xgettext_token_type_string_literal,
-   xgettext_token_type_symbol
-@@ -37,8 +37,14 @@ struct xgettext_token_ty
- {
-   xgettext_token_type_ty type;
- 
--  /* These 3 are only set for xgettext_token_type_string_literal.  */
-+  /* This 1 is set only for xgettext_token_type_keyword.  */
-+  int argnum;
++	bufpos = 0;
 +
-+  /* This 1 is set only for xgettext_token_type_string_literal.  */
-   char *string;
+       /* Accumulate the rest of the directive in a buffer.  Work out
+ 	 what it is later.  */
+-      bufpos = 0;
+       while (1)
+ 	{
+ 	  phaseX_get (tp);
+
+--- src/xgettext.c	2000/07/28 21:11:32	1.2
++++ src/xgettext.c	2000/08/27 23:28:35
+@@ -80,6 +80,9 @@ static char *comment_tag;
+ /* Name of default domain file.  If not set defaults to messages.po.  */
+ static char *default_domain;
+ 
++/* If preprocessor defines are also analyzed for keywords.  */
++int defines;
 +
-+  /* These 2 are set only for xgettext_token_type_keyword and
-+     xgettext_token_type_string_literal.  */
-   int line_number;
-   char *file_name;
- };
-@@ -50,7 +56,7 @@ void xgettext_lex PARAMS ((xgettext_toke
- const char *xgettext_lex_comment PARAMS ((size_t __n));
- void xgettext_lex_comment_reset PARAMS ((void));
- /* void xgettext_lex_filepos PARAMS ((char **, int *)); FIXME needed?  */
--void xgettext_lex_keyword PARAMS ((char *__name));
-+void xgettext_lex_keyword PARAMS ((const char *__name));
- void xgettext_lex_cplusplus PARAMS ((void));
- void xgettext_lex_trigraphs PARAMS ((void));
- 
-===================================================================
-RCS file: src/xgettext.c,v
-retrieving revision 0.10.35.0
-retrieving revision 0.10.35.1
-diff -pu -r0.10.35.0 -r0.10.35.1
---- src/xgettext.c	1998/07/09 22:49:48	0.10.35.0
-+++ src/xgettext.c	1998/07/18 00:25:15	0.10.35.1
-@@ -835,6 +835,8 @@ scan_c_file(filename, mlp, is_cpp_file)
-      int is_cpp_file;
- {
-   int state;
-+  int commas_to_skip;	/* defined only when in states 1 and 2 */
-+  int paren_nesting;	/* defined only when in state 2 */
- 
-   /* Inform scanner whether we have C++ files or not.  */
-   if (is_cpp_file)
-@@ -854,63 +856,79 @@ scan_c_file(filename, mlp, is_cpp_file)
-    {
-      xgettext_token_ty token;
- 
--     /* A simple state machine is used to do the recognising:
-+     /* A state machine is used to do the recognising:
-         State 0 = waiting for something to happen
--        State 1 = seen one of our keywords with string in first parameter
--        State 2 = was in state 1 and now saw a left paren
--	State 3 = seen one of our keywords with string in second parameter
--	State 4 = was in state 3 and now saw a left paren
--	State 5 = waiting for comma after being in state 4
--	State 6 = saw comma after being in state 5  */
-+        State 1 = seen one of our keywords
-+        State 2 = waiting for part of an argument */
-      xgettext_lex (&token);
-      switch (token.type)
-        {
--       case xgettext_token_type_keyword1:
-+       case xgettext_token_type_keyword:
-+	 if (!extract_all && state == 2)
-+	   {
-+	     if (commas_to_skip == 0)
-+	       {
-+		 error (0, 0,
-+			_("%s:%d: warning: keyword nested in keyword arg"),
-+			token.file_name, token.line_number);
-+		 continue;
-+	       }
-+
-+	     /* Here we should nest properly, but this would require a
-+		potentially unbounded stack.  We haven't run across an
-+		example that needs this functionality yet.  For now,
-+		we punt and forget the outer keyword.  */
-+	     error (0, 0,
-+		    _("%s:%d: warning: keyword between outer keyword and its arg"),
-+		    token.file_name, token.line_number);
-+	   }
-+	 commas_to_skip = token.argnum - 1;
- 	 state = 1;
- 	 continue;
- 
--       case xgettext_token_type_keyword2:
--	 state = 3;
--	 continue;
--
-        case xgettext_token_type_lp:
- 	 switch (state)
- 	   {
- 	   case 1:
-+	     paren_nesting = 0;
- 	     state = 2;
- 	     break;
--	   case 3:
--	     state = 4;
-+	   case 2:
-+	     paren_nesting++;
- 	     break;
--	   default:
--	     state = 0;
- 	   }
- 	 continue;
- 
-+       case xgettext_token_type_rp:
-+	 if (state == 2 && paren_nesting != 0)
-+	   paren_nesting--;
-+	 else
-+	   state = 0;
-+	 continue;
-+
-        case xgettext_token_type_comma:
--	 state = state == 5 ? 6 : 0;
-+	 if (state == 2 && commas_to_skip != 0)
-+	   commas_to_skip -= paren_nesting == 0;
-+	 else
-+	   state = 0;
- 	 continue;
- 
-        case xgettext_token_type_string_literal:
--	 if (extract_all || state == 2 || state == 6)
--	   {
--	     remember_a_message (mlp, &token);
--	     state = 0;
--	   }
-+	 if (extract_all || (state == 2 && commas_to_skip == 0))
-+	   remember_a_message (mlp, &token);
- 	 else
- 	   {
- 	     free (token.string);
--	     state = (state == 4 || state == 5) ? 5 : 0;
-+	     state = state == 2 ? 2 : 0;
- 	   }
- 	 continue;
- 
-        case xgettext_token_type_symbol:
--	 state = (state == 4 || state == 5) ? 5 : 0;
-+	 state = state == 2 ? 2 : 0;
- 	 continue;
- 
-        default:
--	 state = 0;
--	 continue;
-+	 abort ();
- 
-        case xgettext_token_type_eof:
- 	 break;
-===================================================================
-RCS file: po/Makefile.in.in,v
-retrieving revision 0.10.35.0
-retrieving revision 0.10.35.5
-diff -u -r0.10.35.0 -r0.10.35.5
---- po/Makefile.in.in	1998/07/20 20:20:38	0.10.35.0
-+++ po/Makefile.in.in	1998/07/26 09:07:52	0.10.35.5
-@@ -62,7 +62,7 @@
- 	$(COMPILE) $<
- 
- .po.pox:
--	$(MAKE) $(PACKAGE).pot
-+	$(MAKE) $(srcdir)/$(PACKAGE).pot
- 	$(MSGMERGE) $< $(srcdir)/$(PACKAGE).pot -o $*.pox
- 
- .po.mo:
-@@ -79,7 +79,7 @@
- 
- all: all-@USE_NLS@
- 
--all-yes: cat-id-tbl.c $(CATALOGS)
-+all-yes: $(srcdir)/cat-id-tbl.c $(CATALOGS)
- all-no:
- 
- $(srcdir)/$(PACKAGE).pot: $(POTFILES)
-@@ -90,8 +90,8 @@
- 	   || ( rm -f $(srcdir)/$(PACKAGE).pot \
- 		&& mv $(PACKAGE).po $(srcdir)/$(PACKAGE).pot )
- 
--$(srcdir)/cat-id-tbl.c: stamp-cat-id; @:
--$(srcdir)/stamp-cat-id: $(PACKAGE).pot
-+$(srcdir)/cat-id-tbl.c: $(srcdir)/stamp-cat-id; @:
-+$(srcdir)/stamp-cat-id: $(srcdir)/$(PACKAGE).pot
- 	rm -f cat-id-tbl.tmp
- 	sed -f ../intl/po2tbl.sed $(srcdir)/$(PACKAGE).pot \
- 		| sed -e "s/@PACKAGE NAME@/$(PACKAGE)/" > cat-id-tbl.tmp
-@@ -180,7 +180,8 @@
- 
- check: all
- 
--cat-id-tbl.o: ../intl/libgettext.h
-+cat-id-tbl.o: $(srcdir)/cat-id-tbl.c $(top_srcdir)/intl/libgettext.h
-+	$(COMPILE) $(srcdir)/cat-id-tbl.c
- 
- dvi info tags TAGS ID:
- 
-@@ -196,7 +197,7 @@
- maintainer-clean: distclean
- 	@echo "This command is intended for maintainers to use;"
- 	@echo "it deletes files that may require special tools to rebuild."
--	rm -f $(GMOFILES)
-+	rm -f $(GMOFILES) cat-id-tbl.c stamp-cat-id
- 
- distdir = ../$(PACKAGE)-$(VERSION)/$(subdir)
- dist distdir: update-po $(DISTFILES)
-@@ -207,7 +208,7 @@
- 	done
- 
- update-po: Makefile
--	$(MAKE) $(PACKAGE).pot
-+	$(MAKE) $(srcdir)/$(PACKAGE).pot
- 	PATH=`pwd`/../src:$$PATH; \
- 	cd $(srcdir); \
- 	catalogs='$(CATALOGS)'; \
+ /* If called with --debug option the output reflects whether format
+    string recognition is done automatically or forced by the user.  */
+ static int do_debug;
+@@ -125,6 +128,7 @@ static const struct option long_options[
+   { "debug", no_argument, &do_debug, 1 },
+   { "default-domain", required_argument, NULL, 'd' },
+   { "directory", required_argument, NULL, 'D' },
++  { "defines", no_argument, &defines, 1 },
+   { "escape", no_argument, NULL, 'E' },
+   { "exclude-file", required_argument, NULL, 'x' },
+   { "extract-all", no_argument, &extract_all, 1 },
+@@ -552,6 +556,7 @@ Mandatory arguments to long options are 
+   -C, --c++                      shorthand for --language=C++\n\
+       --debug                    more detailed formatstring recognision result\n\
+   -d, --default-domain=NAME      use NAME.po for output (instead of messages.po)\n\
++      --defines                  analyze preprocessor defines\n\
+   -D, --directory=DIRECTORY      add DIRECTORY to list for input files search\n\
+   -e, --no-escape                do not use C escapes in output (default)\n\
+   -E, --escape                   use C escapes in output, no extended chars\n\
+
+
