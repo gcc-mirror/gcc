@@ -1065,56 +1065,59 @@ extern union tree_node *current_function_decl;
 
    If you change this, execute "rm explow.o recog.o reload.o".  */
 
+#define RTX_OK_FOR_BASE_P(X)						\
+  ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
+  || (GET_CODE (X) == SUBREG						\
+      && GET_CODE (SUBREG_REG (X)) == REG				\
+      && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
+
+#define RTX_OK_FOR_INDEX_P(X)						\
+  ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))			\
+  || (GET_CODE (X) == SUBREG						\
+      && GET_CODE (SUBREG_REG (X)) == REG				\
+      && REG_OK_FOR_INDEX_P (SUBREG_REG (X))))
+
+#define RTX_OK_FOR_OFFSET_P(X)						\
+  (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0x1000)
+
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
-{ if (GET_CODE (X) == REG)				\
-    { if (REG_OK_FOR_BASE_P (X)) goto ADDR; }		\
+{ if (RTX_OK_FOR_BASE_P (X))				\
+    goto ADDR;						\
   else if (GET_CODE (X) == PLUS)			\
     {							\
-      if (flag_pic && XEXP (X, 0) == pic_offset_table_rtx)\
+      register rtx op0 = XEXP (X, 0);			\
+      register rtx op1 = XEXP (X, 1);			\
+      if (flag_pic && op0 == pic_offset_table_rtx)	\
 	{						\
-	  if (GET_CODE (XEXP (X, 1)) == REG		\
-	      && REG_OK_FOR_BASE_P (XEXP (X, 1)))	\
+	  if (RTX_OK_FOR_BASE_P (op1))			\
 	    goto ADDR;					\
 	  else if (flag_pic == 1			\
-		   && GET_CODE (XEXP (X, 1)) != REG	\
-		   && GET_CODE (XEXP (X, 1)) != LO_SUM	\
-		   && GET_CODE (XEXP (X, 1)) != MEM)	\
+		   && GET_CODE (op1) != REG		\
+		   && GET_CODE (op1) != LO_SUM		\
+		   && GET_CODE (op1) != MEM)		\
 	    goto ADDR;					\
 	}						\
-      else if (GET_CODE (XEXP (X, 0)) == REG		\
-	  && REG_OK_FOR_BASE_P (XEXP (X, 0)))		\
+      else if (RTX_OK_FOR_BASE_P (op0))			\
 	{						\
-	  if (GET_CODE (XEXP (X, 1)) == REG		\
-	      && REG_OK_FOR_INDEX_P (XEXP (X, 1)))	\
-	    goto ADDR;					\
-	  if (GET_CODE (XEXP (X, 1)) == CONST_INT	\
-	      && INTVAL (XEXP (X, 1)) >= -0x1000	\
-	      && INTVAL (XEXP (X, 1)) < 0x1000)		\
+	  if (RTX_OK_FOR_INDEX_P (op1)			\
+	      || RTX_OK_FOR_OFFSET_P (op1))		\
 	    goto ADDR;					\
 	}						\
-      else if (GET_CODE (XEXP (X, 1)) == REG		\
-	  && REG_OK_FOR_BASE_P (XEXP (X, 1)))		\
+      else if (RTX_OK_FOR_BASE_P (op1))			\
 	{						\
-	  if (GET_CODE (XEXP (X, 0)) == REG		\
-	      && REG_OK_FOR_INDEX_P (XEXP (X, 0)))	\
-	    goto ADDR;					\
-	  if (GET_CODE (XEXP (X, 0)) == CONST_INT	\
-	      && INTVAL (XEXP (X, 0)) >= -0x1000	\
-	      && INTVAL (XEXP (X, 0)) < 0x1000)		\
+	  if (RTX_OK_FOR_INDEX_P (op0)			\
+	      || RTX_OK_FOR_OFFSET_P (op0))		\
 	    goto ADDR;					\
 	}						\
     }							\
-  else if (GET_CODE (X) == LO_SUM			\
-	   && GET_CODE (XEXP (X, 0)) == REG		\
-	   && REG_OK_FOR_BASE_P (XEXP (X, 0))		\
-	   && CONSTANT_P (XEXP (X, 1)))			\
-    goto ADDR;						\
-  else if (GET_CODE (X) == LO_SUM			\
-	   && GET_CODE (XEXP (X, 0)) == SUBREG		\
-	   && GET_CODE (SUBREG_REG (XEXP (X, 0))) == REG\
-	   && REG_OK_FOR_BASE_P (SUBREG_REG (XEXP (X, 0)))\
-	   && CONSTANT_P (XEXP (X, 1)))			\
-    goto ADDR;						\
+  else if (GET_CODE (X) == LO_SUM)			\
+    {							\
+      register rtx op0 = XEXP (X, 0);			\
+      register rtx op1 = XEXP (X, 1);			\
+      if (RTX_OK_FOR_BASE_P (op0)			\
+	  && CONSTANT_P (op1))				\
+	goto ADDR;					\
+    }							\
   else if (GET_CODE (X) == CONST_INT && SMALL_INT (X))	\
     goto ADDR;						\
 }
