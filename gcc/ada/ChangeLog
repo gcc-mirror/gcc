@@ -1,5 +1,7 @@
 2002-05-31  Florian Weimer  <fw@deneb.enyo.de>
 
+	* 5ntaprop.adb (with System.OS_Primitives): Remove.
+
 	* cstreams.c (max_path_len): Move from here ...
 	* adaint.c (__gnat_max_path_len): ... to here.
 	* adaint.c (__gnat_max_path_len): Declare.

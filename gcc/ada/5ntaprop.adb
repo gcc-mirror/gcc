@@ -45,9 +45,6 @@ with System.Tasking;
 --  used for Ada_Task_Control_Block
 --           Task_ID
 
-with System.OS_Primitives;
---  used for Delay_Modes
-
 with System.Error_Reporting;
 --  used for Shutdown
 
@@ -55,7 +52,6 @@ package body System.Task_Primitives.Operations is
 
    use System.Tasking;
    use System.Parameters;
-   use System.OS_Primitives;
 
    -----------------
    -- Stack_Guard --
