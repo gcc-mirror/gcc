@@ -5229,6 +5229,8 @@ resolve_address_of_overloaded_function (target_type,
   /* Good, exactly one match.  Now, convert it to the correct type.  */
   fn = TREE_PURPOSE (matches);
 
+  mark_used (fn);
+
   if (TYPE_PTRFN_P (target_type) || TYPE_PTRMEMFUNC_P (target_type))
     return build_unary_op (ADDR_EXPR, fn, 0);
   else

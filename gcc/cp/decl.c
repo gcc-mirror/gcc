@@ -8147,7 +8147,7 @@ expand_static_init (decl, init)
 				    build_function_type (void_type_node,
 							 pfvlist),
 				    NOT_BUILT_IN, NULL_PTR);
-	      assemble_external (atexit_fndecl);
+	      mark_used (atexit_fndecl);
 	      Atexit = default_conversion (atexit_fndecl);
 	      pop_lang_context ();
 	      pop_obstacks ();

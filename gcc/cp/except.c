@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-97, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -318,9 +318,9 @@ call_eh_info ()
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
+  mark_used (fn);
   return build_function_call (fn, NULL_TREE);
 }
 
@@ -531,10 +531,10 @@ do_pop_exception ()
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
 
+  mark_used (fn);
   /* Arrange to do a dynamically scoped cleanup upon exit from this region.  */
   cleanup = lookup_name (get_identifier ("__exception_info"), 0);
   cleanup = build_function_call (fn, expr_tree_cons
@@ -797,10 +797,10 @@ expand_end_eh_spec (raises)
       TREE_THIS_VOLATILE (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
 
+  mark_used (fn);
   tmp = expr_tree_cons (NULL_TREE, build_int_2 (count, 0), expr_tree_cons
 			(NULL_TREE, decl, NULL_TREE));
   tmp = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), tmp);
@@ -939,10 +939,10 @@ alloc_eh_object (type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
 
+  mark_used (fn);
   exp = build_function_call (fn, expr_tree_cons
 			     (NULL_TREE, size_in_bytes (type), NULL_TREE));
   exp = build1 (NOP_EXPR, build_pointer_type (type), exp);
@@ -1096,10 +1096,10 @@ expand_throw (exp)
 	  DECL_ARTIFICIAL (fn) = 1;
 	  pushdecl_top_level (fn);
 	  make_function_rtl (fn);
-	  assemble_external (fn);
 	  pop_obstacks ();
 	}
 
+      mark_used (fn);
       e = expr_tree_cons (NULL_TREE, exp, expr_tree_cons
 			  (NULL_TREE, throw_type, expr_tree_cons
 			   (NULL_TREE, cleanup, NULL_TREE)));
@@ -1127,10 +1127,10 @@ expand_throw (exp)
 	  DECL_ARTIFICIAL (fn) = 1;
 	  pushdecl_top_level (fn);
 	  make_function_rtl (fn);
-	  assemble_external (fn);
 	  pop_obstacks ();
 	}
 
+      mark_used (fn);
       exp = build_function_call (fn, NULL_TREE);
       expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }

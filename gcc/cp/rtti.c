@@ -1,5 +1,5 @@
 /* RunTime Type Identification
-   Copyright (C) 1995, 96-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 96-97, 1998, 1999 Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -151,11 +151,10 @@ call_void_fn (name)
       DECL_ARTIFICIAL (d) = 1;
       pushdecl_top_level (d);
       make_function_rtl (d);
-      assemble_external (d);
-
       pop_obstacks ();
     }
 
+  mark_used (d);
   return build_call (d, void_type_node, NULL_TREE);
 }
 
@@ -377,7 +376,7 @@ get_tinfo_fn (type)
 
   pushdecl_top_level (d);
   make_function_rtl (d);
-  assemble_external (d);
+  mark_used (d);
   mark_inline_for_output (d);
   pop_obstacks ();
 
@@ -653,10 +652,10 @@ build_dynamic_cast_1 (type, expr)
 	      DECL_ARTIFICIAL (dcast_fn) = 1;
 	      pushdecl_top_level (dcast_fn);
 	      make_function_rtl (dcast_fn);
-	      assemble_external (dcast_fn);
 	      pop_obstacks ();
 	    }
 	  
+	  mark_used (dcast_fn);
           result = build_call
 	    (dcast_fn, TREE_TYPE (TREE_TYPE (dcast_fn)), elems);
 
@@ -751,10 +750,10 @@ expand_si_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
 
+  mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
@@ -932,10 +931,10 @@ expand_class_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
 
+  mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
@@ -979,10 +978,10 @@ expand_ptr_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
 
+  mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
@@ -1027,10 +1026,10 @@ expand_attr_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
 
+  mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
@@ -1067,10 +1066,10 @@ expand_generic_desc (tdecl, type, fnname)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
-      assemble_external (fn);
       pop_obstacks ();
     }
 
+  mark_used (fn);
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
