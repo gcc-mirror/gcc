@@ -4011,7 +4011,7 @@ new_insn_dead_notes (pat, insn, last, orig_insn)
 		     || GET_CODE (tem_dest) == SIGN_EXTRACT)
 		tem_dest = XEXP (tem_dest, 0);
 
-	      if (tem_dest != dest)
+	      if (! rtx_equal_p (tem_dest, dest))
 		{
 		  /* Use the same scheme as combine.c, don't put both REG_DEAD
 		     and REG_UNUSED notes on the same insn.  */
