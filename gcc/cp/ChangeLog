@@ -1,5 +1,14 @@
 1999-09-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (language_function): Add cannot_inline.
+	* decl.c (start_function): Restore current_function_cannot_inline
+	from the saved value.
+	(save_function_data): Save current_function_cannot_inline.
+	* decl2.c (start_objects): Change prototype.  Build the function
+	in function-at-a-time mode.
+	(finish_objects): Likewise.
+	(generate_ctor_or_dtor_function): Adjust accordingly.
+	
 	* cp-tree.h (DECL_ANON_UNION_ELEMS): New macro.
 	* decl2.c (finish_anon_union): Set DECL_ANON_UNION_ELEMS.
 	Don't call expand_anon_union_decl here

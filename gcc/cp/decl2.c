@@ -78,8 +78,8 @@ static tree ambiguous_decl PROTO((tree, tree, tree,int));
 static tree build_anon_union_vars PROTO((tree, tree*, int, int));
 static int acceptable_java_type PROTO((tree));
 static void output_vtable_inherit PROTO((tree));
-static void start_objects PROTO((int, int));
-static void finish_objects PROTO((int, int));
+static tree start_objects PROTO((int, int));
+static void finish_objects PROTO((int, int, tree));
 static tree merge_functions PROTO((tree, tree));
 static tree decl_namespace PROTO((tree));
 static tree validate_nonmember_using_decl PROTO((tree, tree *, tree *));
@@ -2758,11 +2758,12 @@ get_sentry (base)
 /* Start the process of running a particular set of global constructors
    or destructors.  Subroutine of do_[cd]tors.  */
 
-static void
+static tree
 start_objects (method_type, initp)
      int method_type, initp;
 {
   tree fnname;
+  tree body;
   char type[10];
 
   /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
@@ -2787,7 +2788,7 @@ start_objects (method_type, initp)
   start_function (void_list_node,
 		  make_call_declarator (fnname, void_list_node, NULL_TREE,
 					NULL_TREE),
-		  NULL_TREE, SF_DEFAULT | SF_EXPAND);
+		  NULL_TREE, SF_DEFAULT);
 
 #if defined(ASM_OUTPUT_CONSTRUCTOR) && defined(ASM_OUTPUT_DESTRUCTOR)
   /* It can be a static function as long as collect2 does not have
@@ -2798,11 +2799,7 @@ start_objects (method_type, initp)
   /* Mark this declaration as used to avoid spurious warnings.  */
   TREE_USED (current_function_decl) = 1;
 
-  store_parm_decls ();
-  pushlevel (0);
-  clear_last_expr ();
-  push_momentary ();
-  expand_start_bindings (0);
+  body = begin_compound_stmt (/*has_no_scope=*/0);
 
   /* We cannot allow these functions to be elided, even if they do not
      have external linkage.  And, there's no point in deferring
@@ -2810,23 +2807,27 @@ start_objects (method_type, initp)
      out anyhow.  */
   current_function_cannot_inline
     = "static constructors and destructors cannot be inlined";
+
+  return body;
 }
 
 /* Finish the process of running a particular set of global constructors
    or destructors.  Subroutine of do_[cd]tors.  */
 
 static void
-finish_objects (method_type, initp)
+finish_objects (method_type, initp, body)
      int method_type, initp;
+     tree body;
 {
-  char *fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+  char *fnname;
+  tree fn;
 
   /* Finish up. */
-  expand_end_bindings (getdecls (), 1, 0);
-  poplevel (1, 0, 0);
-  pop_momentary ();
-  finish_function (lineno, 0);
+  finish_compound_stmt(/*has_no_scope=*/0, body);
+  fn = finish_function (lineno, 0);
+  expand_body (fn);
 
+  fnname = XSTR (XEXP (DECL_RTL (fn), 0), 0);
   if (initp == DEFAULT_INIT_PRIORITY)
     {
       if (method_type == 'I')
@@ -3338,6 +3339,7 @@ generate_ctor_or_dtor_function (constructor_p, priority)
 {
   char function_key;
   tree arguments;
+  tree body;
   size_t i;
 
   /* We use `I' to indicate initialization and `D' to indicate
@@ -3348,7 +3350,7 @@ generate_ctor_or_dtor_function (constructor_p, priority)
     function_key = 'D';
 
   /* Begin the function.  */
-  start_objects (function_key, priority);
+  body = start_objects (function_key, priority);
 
   /* Call the static storage duration function with appropriate
      arguments.  */
@@ -3358,7 +3360,7 @@ generate_ctor_or_dtor_function (constructor_p, priority)
 			     NULL_TREE);
       arguments = tree_cons (NULL_TREE, build_int_2 (constructor_p, 0),
 			     arguments);
-      expand_expr_stmt (build_function_call (VARRAY_TREE (ssdf_decls, i),
+      finish_expr_stmt (build_function_call (VARRAY_TREE (ssdf_decls, i),
 					     arguments));
     }
 
@@ -3372,11 +3374,11 @@ generate_ctor_or_dtor_function (constructor_p, priority)
       for (fns = constructor_p ? static_ctors : static_dtors; 
 	   fns;
 	   fns = TREE_CHAIN (fns))
-	expand_expr_stmt (build_function_call (TREE_VALUE (fns), NULL_TREE));
+	finish_expr_stmt (build_function_call (TREE_VALUE (fns), NULL_TREE));
     }
 
   /* Close out the function.  */
-  finish_objects (function_key, priority);
+  finish_objects (function_key, priority, body);
 }
 
 /* Generate constructor and destructor functions for the priority

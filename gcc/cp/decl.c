@@ -12944,6 +12944,11 @@ start_function (declspecs, declarator, attrs, flags)
 	 already did semantic analysis.  */
       current_function->x_whole_function_mode_p = 1;
 
+      /* If we decided that we didn't want to inline this function,
+	 make sure the back-end knows that.  */
+      if (!current_function_cannot_inline)
+	current_function_cannot_inline = cp_function_chain->cannot_inline;
+
       /* We don't need the saved data anymore.  */
       free (DECL_SAVED_FUNCTION_DATA (decl1));
       DECL_SAVED_FUNCTION_DATA (decl1) = NULL;
@@ -13305,6 +13310,11 @@ save_function_data (decl)
 
   /* When we get back here again, we will be expanding.  */
   f->x_expanding_p = 1;
+
+  /* If we've already decided that we cannot inline this function, we
+     must remember that fact when we actually go to expand the
+     function.  */
+  f->cannot_inline = current_function_cannot_inline;
 }
 
 /* At the end of every destructor we generate code to restore virtual
