@@ -1,3 +1,9 @@
+Fri Aug 14 01:23:23 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm/netbsd.h (TARGET_DEFAULT): Default includes software floating 
+	point.
+	(CPP_FLOAT_DEFAULT_SPEC): Re-define accordingly.
+
 Fri Aug 14 01:23:23 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* README.RS6000: Bring over dje's changes from the mainline
