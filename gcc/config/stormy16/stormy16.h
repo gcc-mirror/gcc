@@ -2435,7 +2435,7 @@ do {							\
    uninitialized global data will be output in the data section if
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
-#define BSS_SECTION_ASM_OP ".bss"
+#define BSS_SECTION_ASM_OP "\t.section\t.bss"
 
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as
