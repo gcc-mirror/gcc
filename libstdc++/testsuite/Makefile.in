@@ -33,7 +33,7 @@ RUNTESTFLAGS =
 all:
 
 .PHONY: check
-check: site.exp all just-check
+check: all just-check
 
 site.exp: ./config.status Makefile
 	@echo "Making a new config file..."
@@ -56,7 +56,7 @@ site.exp: ./config.status Makefile
 			-e '1,/^## All variables above are.*##/ d' >> site.exp
 	-@rm -f ./tmp?
 
-just-check:
+just-check: site.exp
 	rootme=`pwd`; export rootme; \
 	srcdir=${srcdir} ; export srcdir ; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
