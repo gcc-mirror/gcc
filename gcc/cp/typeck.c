@@ -1889,7 +1889,7 @@ build_component_ref (datum, component, basetype_path, protect)
 			  fndecl = build_vfn_ref (&addr, datum, DECL_VINDEX (fndecl));
 			}
 		      mark_used (fndecl);
-		      return fndecl;
+		      return build (OFFSET_REF, TREE_TYPE (fndecl), datum, fndecl);
 		    }
 		  if (access == access_protected_node)
 		    cp_error ("member function `%D' is protected", fndecl);
@@ -2372,6 +2372,9 @@ build_x_function_call (function, params, decl)
 	}
       else
 	{
+#ifdef NEW_OVER
+	  return build_new_function_call (function, params, NULL_TREE);
+#else
 	  tree val = TREE_VALUE (function);
 
 	  if (TREE_CODE (val) == TEMPLATE_DECL)
@@ -2382,6 +2385,7 @@ build_x_function_call (function, params, decl)
 	      (function, params, LOOKUP_COMPLAIN);
 	  else
 	    my_friendly_abort (360);
+#endif
 	}
     }
 
@@ -6007,6 +6011,79 @@ get_delta_difference (from, to, force)
   return BINFO_OFFSET (binfo);
 }
 
+static tree
+build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
+     tree type, delta, idx, pfn, delta2;
+{
+  tree u;
+
+#if 0
+  /* This is the old way we did it.  We want to avoid calling
+     digest_init, so that it can give an error if we use { } when
+     initializing a pointer to member function.  */
+
+  if (pfn)
+    {
+      u = build_nt (CONSTRUCTOR, NULL_TREE,
+		    tree_cons (pfn_identifier, pfn, NULL_TREE));
+    }
+  else
+    {
+      u = build_nt (CONSTRUCTOR, NULL_TREE,
+		    tree_cons (delta2_identifier, delta2, NULL_TREE));
+    }
+
+  u = build_nt (CONSTRUCTOR, NULL_TREE,
+		tree_cons (NULL_TREE, delta,
+			   tree_cons (NULL_TREE, idx,
+				      tree_cons (NULL_TREE, u, NULL_TREE))));
+
+  return digest_init (type, u, (tree*)0);
+#else
+  tree delta_field, idx_field, pfn_or_delta2_field, pfn_field, delta2_field;
+  tree subtype;
+  int allconstant, allsimple;
+
+  delta_field = TYPE_FIELDS (type);
+  idx_field = TREE_CHAIN (delta_field);
+  pfn_or_delta2_field = TREE_CHAIN (idx_field);
+  subtype = TREE_TYPE (pfn_or_delta2_field);
+  pfn_field = TYPE_FIELDS (subtype);
+  delta2_field = TREE_CHAIN (pfn_field);
+
+  if (pfn)
+    {
+      allconstant = TREE_CONSTANT (pfn);
+      allsimple = initializer_constant_valid_p (pfn, TREE_TYPE (pfn));
+      u = tree_cons (pfn_field, pfn, NULL_TREE);
+    }
+  else
+    {
+      delta2 = convert_and_check (delta_type_node, delta2);
+      allconstant = TREE_CONSTANT (delta2);
+      allsimple = initializer_constant_valid_p (delta2, TREE_TYPE (delta2));
+      u = tree_cons (delta2_field, delta2, NULL_TREE);
+    }
+
+  delta = convert_and_check (delta_type_node, delta);
+  idx = convert_and_check (delta_type_node, idx);
+
+  allconstant = allconstant && TREE_CONSTANT (delta) && TREE_CONSTANT (idx);
+  allsimple = allsimple
+    && initializer_constant_valid_p (delta, TREE_TYPE (delta))
+      && initializer_constant_valid_p (idx, TREE_TYPE (idx));
+
+  u = build (CONSTRUCTOR, subtype, NULL_TREE, u);
+  u = tree_cons (delta_field, delta,
+		 tree_cons (idx_field, idx,
+			    tree_cons (pfn_or_delta2_field, u, NULL_TREE)));
+  u = build (CONSTRUCTOR, type, NULL_TREE, u);
+  TREE_CONSTANT (u) = allconstant;
+  TREE_STATIC (u) = allconstant && allsimple;
+  return u;
+#endif
+}
+
 /* Build a constructor for a pointer to member function.  It can be
    used to initialize global variables, local variable, or used
    as a value in expressions.  TYPE is the POINTER to METHOD_TYPE we
@@ -6027,87 +6104,50 @@ build_ptrmemfunc (type, pfn, force)
   tree delta = integer_zero_node;
   tree delta2 = integer_zero_node;
   tree vfield_offset;
-  tree npfn;
+  tree npfn = NULL_TREE;
   tree u;
 
   /* Handle multiple conversions of pointer to member functions.  */
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (pfn)))
     {
       tree ndelta, ndelta2, nindex;
+      tree e1, e2, e3, n;
+
       /* Is is already the right type? */
       if (type == TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))
 	return pfn;
 
-      if (TREE_CODE (pfn) != CONSTRUCTOR)
-	{
-	  tree e1, e2, e3;
-	  ndelta = convert (ptrdiff_type_node, build_component_ref (pfn, delta_identifier, NULL_TREE, 0));
-	  ndelta2 = convert (ptrdiff_type_node, DELTA2_FROM_PTRMEMFUNC (pfn));
-	  idx = build_component_ref (pfn, index_identifier, NULL_TREE, 0);
-	  delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))),
-					TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
-					force);
-	  delta = build_binary_op (PLUS_EXPR, delta, ndelta, 1);
-	  delta2 = build_binary_op (PLUS_EXPR, ndelta2, delta2, 1);
-	  e1 = fold (build (GT_EXPR, boolean_type_node, idx, integer_zero_node));
+      ndelta = convert (ptrdiff_type_node, build_component_ref (pfn, delta_identifier, NULL_TREE, 0));
+      ndelta2 = convert (ptrdiff_type_node, DELTA2_FROM_PTRMEMFUNC (pfn));
+      idx = build_component_ref (pfn, index_identifier, NULL_TREE, 0);
+
+      n = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))),
+				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
+				force);
+
+      delta = build_binary_op (PLUS_EXPR, ndelta, n, 1);
+      delta2 = build_binary_op (PLUS_EXPR, ndelta2, n, 1);
+      e1 = fold (build (GT_EXPR, boolean_type_node, idx, integer_zero_node));
 	  
-	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (delta2_identifier, delta2, NULL_TREE));
-	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (NULL_TREE, delta,
-							   tree_cons (NULL_TREE, idx,
-								      tree_cons (NULL_TREE, u, NULL_TREE))));
-	  e2 = digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
+      e2 = build_ptrmemfunc1 (TYPE_GET_PTRMEMFUNC_TYPE (type), delta, idx,
+			      NULL_TREE, delta2);
 
-	  pfn = PFN_FROM_PTRMEMFUNC (pfn);
-	  npfn = build1 (NOP_EXPR, type, pfn);
-	  TREE_CONSTANT (npfn) = TREE_CONSTANT (pfn);
+      pfn = PFN_FROM_PTRMEMFUNC (pfn);
+      npfn = build1 (NOP_EXPR, type, pfn);
+      TREE_CONSTANT (npfn) = TREE_CONSTANT (pfn);
 
-	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (pfn_identifier, npfn, NULL_TREE));
-	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (NULL_TREE, delta,
-							   tree_cons (NULL_TREE, idx,
-								      tree_cons (NULL_TREE, u, NULL_TREE))));
-	  e3 = digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
-	  return build_conditional_expr (e1, e2, e3);
-	}
-
-      ndelta = TREE_VALUE (CONSTRUCTOR_ELTS (pfn));
-      nindex = TREE_VALUE (TREE_CHAIN (CONSTRUCTOR_ELTS (pfn)));
-      npfn = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (pfn))));
-      npfn = TREE_VALUE (CONSTRUCTOR_ELTS (npfn));
-      if (integer_zerop (nindex))
-	pfn = integer_zero_node;
-      else if (integer_zerop (fold (size_binop (PLUS_EXPR, nindex, integer_one_node))))
-	{
-	  tree e3;
-	  delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))),
-					TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
-					force);
-	  delta = build_binary_op (PLUS_EXPR, delta, ndelta, 1);
-	  pfn = build1 (NOP_EXPR, type, npfn);
-	  TREE_CONSTANT (pfn) = TREE_CONSTANT (npfn);
-
-	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (pfn_identifier, pfn, NULL_TREE));
-	  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (NULL_TREE, delta,
-							   tree_cons (NULL_TREE, nindex,
-								      tree_cons (NULL_TREE, u, NULL_TREE))));
-	  e3 = digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
-	  return e3;
-	}
-      else
-	{
-	  sorry ("value casting of variable nonnull pointer to member functions not supported");
-	  return error_mark_node;
-	}
+      e3 = build_ptrmemfunc1 (TYPE_GET_PTRMEMFUNC_TYPE (type), delta, idx, npfn,
+			      NULL_TREE);
+      return build_conditional_expr (e1, e2, e3);
     }
 
   /* Handle null pointer to member function conversions.  */
   if (integer_zerop (pfn))
     {
       pfn = build_c_cast (type, integer_zero_node, 0);
-      u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (pfn_identifier, pfn, NULL_TREE));
-      u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (NULL_TREE, integer_zero_node,
-						       tree_cons (NULL_TREE, integer_zero_node,
-								  tree_cons (NULL_TREE, u, NULL_TREE))));
-      return digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
+      return build_ptrmemfunc1 (TYPE_GET_PTRMEMFUNC_TYPE (type),
+				integer_zero_node, integer_zero_node,
+				pfn, NULL_TREE);
     }
 
   if (TREE_CODE (pfn) == TREE_LIST
@@ -6151,7 +6191,6 @@ build_ptrmemfunc (type, pfn, force)
       idx = size_binop (PLUS_EXPR,
 			DECL_VINDEX (TREE_OPERAND (pfn, 0)),
 			integer_one_node);
-      u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (delta2_identifier, delta2, NULL_TREE));
     }
   else
     {
@@ -6166,14 +6205,9 @@ build_ptrmemfunc (type, pfn, force)
 	  npfn = build1 (NOP_EXPR, type, pfn);
 	  TREE_CONSTANT (npfn) = TREE_CONSTANT (pfn);
 	}
-
-      u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (pfn_identifier, npfn, NULL_TREE));
     }
 
-  u = build_nt (CONSTRUCTOR, NULL_TREE, tree_cons (NULL_TREE, delta,
-						   tree_cons (NULL_TREE, idx,
-							      tree_cons (NULL_TREE, u, NULL_TREE))));
-  return digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
+  return build_ptrmemfunc1 (TYPE_GET_PTRMEMFUNC_TYPE (type), delta, idx, npfn, delta2);
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment

@@ -719,6 +719,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 #ifdef NEW_OVER
       rval_as_conversion
 	= build_type_conversion (CONVERT_EXPR, reftype, expr, 1);
+      if (rval_as_conversion)
+	rval_as_conversion = convert_from_reference (rval_as_conversion);
 #else
       rval_as_conversion = build_type_conversion (CONVERT_EXPR, type, expr, 1);
 #endif
@@ -1340,6 +1342,7 @@ cp_convert (type, expr, convtype, flags)
 	  return conversion;
 	}
 
+#ifndef NEW_OVER
       if (TYPE_HAS_CONSTRUCTOR (complete_type (type)))
 	ctor = build_method_call (NULL_TREE, ctor_identifier,
 				  build_tree_list (NULL_TREE, e),
@@ -1366,13 +1369,14 @@ cp_convert (type, expr, convtype, flags)
 	    return NULL_TREE;
 	  return error_mark_node;
 	}
-      else if (conversion)
-	return conversion;
       else if (ctor)
 	{
 	  ctor = build_cplus_new (type, ctor);
 	  return ctor;
 	}
+#endif
+      else if (conversion)
+	return conversion;
     }
 
   /* If TYPE or TREE_TYPE (E) is not on the permanent_obstack,
@@ -1914,6 +1918,7 @@ build_conv (code, type, from)
       break;
     }
   ICS_STD_RANK (t) = rank;
+  ICS_USER_FLAG (t) = ICS_USER_FLAG (from);
   return t;
 }
 
@@ -2124,6 +2129,14 @@ implicit_conversion (to, from, expr, flags)
   tree conv;
   struct z_candidate *cand;
 
+  if (expr && type_unknown_p (expr))
+    {
+      expr = instantiate_type (to, expr, 0);
+      if (expr == error_mark_node)
+	return 0;
+      from = TREE_TYPE (expr);
+    }
+
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr);
   else
@@ -2137,7 +2150,7 @@ implicit_conversion (to, from, expr, flags)
 	    || IS_AGGR_TYPE (non_reference (to)))
 	   && (flags & LOOKUP_NO_CONVERSION) == 0)
     {
-      cand = build_user_type_conversion_1 (to, expr, LOOKUP_NORMAL);
+      cand = build_user_type_conversion_1 (to, expr, LOOKUP_ONLYCONVERTING);
       if (cand)
 	conv = cand->second_conv;
       else if (TREE_CODE (to) == REFERENCE_TYPE
@@ -2145,7 +2158,7 @@ implicit_conversion (to, from, expr, flags)
 	       && ! TYPE_VOLATILE (TREE_TYPE (to)))
 	{
 	  cand = build_user_type_conversion_1
-	    (TYPE_MAIN_VARIANT (TREE_TYPE (to)), expr, LOOKUP_NORMAL);
+	    (TYPE_MAIN_VARIANT (TREE_TYPE (to)), expr, LOOKUP_ONLYCONVERTING);
 	  if (cand)
 	    conv = build_conv (REF_BIND, TREE_TYPE (to), cand->second_conv);
 	}
@@ -2180,6 +2193,9 @@ add_function_candidate (candidates, fn, arglist, flags)
       tree arg = TREE_VALUE (argnode);
       tree argtype = TREE_TYPE (arg);
       tree t;
+
+      argtype = cp_build_type_variant
+	(argtype, TREE_READONLY (arg), TREE_THIS_VOLATILE (arg));
 
       if (parmnode == void_list_node)
 	break;
@@ -2286,6 +2302,17 @@ build_this (obj)
   return build_unary_op (ADDR_EXPR, obj, 0);
 }
 
+void
+print_z_candidates (candidates)
+     struct z_candidate *candidates;
+{
+  cp_error_at ("candidates are: %D", candidates->fn);
+  candidates = candidates->next;
+
+  for (; candidates; candidates = candidates->next)
+    cp_error_at ("                %D", candidates->fn);
+}
+
 /* Returns the best overload candidate to perform the requested
    conversion.  */
 
@@ -2314,6 +2341,9 @@ build_user_type_conversion_1 (totype, expr, flags)
     }
   for (; ctors; ctors = DECL_CHAIN (ctors))
     {
+      if ((flags & LOOKUP_ONLYCONVERTING) && DECL_NONCONVERTING_P (ctors))
+	continue;
+
       candidates = add_function_candidate (candidates, ctors, args, flags);
       candidates->second_conv = build1 (EXACT_CONV, totype, NULL_TREE);
       candidates->basetype_path = TYPE_BINFO (totype);
@@ -2355,12 +2385,16 @@ build_user_type_conversion_1 (totype, expr, flags)
 
   if (cand == 0)
     {
-      /* For recursive overloading, we need to wait and only diagnose this
-	 if we are chosen */
       if (flags & LOOKUP_COMPLAIN)
-	cp_error ("ambiguous user-defined type conversion");
+	{
+	  cp_error ("ambiguous user-defined type conversion");
+	  print_z_candidates (candidates);
+	}
 
-      return 0;
+      cand = candidates;	/* any one will do */
+      cand->second_conv = build1 (AMBIG_CONV, totype, expr);
+
+      return cand;
     }
 
   for (p = &(cand->second_conv); TREE_CODE (*p) != EXACT_CONV; )
@@ -2384,7 +2418,11 @@ build_user_type_conversion (totype, expr, flags)
     = build_user_type_conversion_1 (totype, expr, flags);
 
   if (cand)
-    return convert_like (cand->second_conv, expr);
+    {
+      if (TREE_CODE (cand->second_conv) == AMBIG_CONV)
+	return error_mark_node;
+      return convert_like (cand->second_conv, expr);
+    }
   return NULL_TREE;
 }
 
@@ -2422,6 +2460,7 @@ build_new_function_call (fn, args, obj)
       if (cand == 0)
 	{
 	  cp_error ("ambiguous function call");
+	  print_z_candidates (candidates);
 	  return error_mark_node;
 	}
 
@@ -2466,21 +2505,35 @@ convert_like (convs, expr)
 	expr = build_over_call
 	  (TREE_OPERAND (convs, 1), TREE_OPERAND (convs, 2),
 	   DECL_CONSTRUCTOR_P (fn) ? expr : build_this (expr), LOOKUP_NORMAL);
-	
-	if (IS_AGGR_TYPE (TREE_TYPE (convs)))
+
+	/* If this is a constructor or a function returning an aggr type,
+	   we need to build up a TARGET_EXPR.  */
+	if (DECL_CONSTRUCTOR_P (fn)
+	    || IS_AGGR_TYPE (TREE_TYPE (TREE_TYPE (fn))))
 	  expr = build_cplus_new (TREE_TYPE (convs), expr);
 
 	return expr;
       }
     case EXACT_CONV:
+      if (type_unknown_p (expr))
+	expr = instantiate_type (TREE_TYPE (convs), expr, 1);
       return expr;
+    case AMBIG_CONV:
+      /* Call build_user_type_conversion again for the error.  */
+      return build_user_type_conversion
+	(TREE_TYPE (convs), TREE_OPERAND (convs, 0), LOOKUP_NORMAL);
+    };
+
+  expr = convert_like (TREE_OPERAND (convs, 0), expr);
+  switch (TREE_CODE (convs))
+    {
     case REF_BIND:
-      expr = convert_like (TREE_OPERAND (convs, 0), expr);
       return convert_to_reference
 	(build_reference_type (TREE_TYPE (convs)), expr,
 	 CONV_IMPLICIT, LOOKUP_NORMAL|LOOKUP_NO_CONVERSION, error_mark_node);
+    case LVALUE_CONV:
+      return decay_conversion (expr);
     }
-  expr = convert_like (TREE_OPERAND (convs, 0), expr);
   return cp_convert (TREE_TYPE (convs), expr, CONV_IMPLICIT,
 		     LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
 }
@@ -2526,7 +2579,7 @@ build_over_call (fn, convs, args, flags)
   tree conv, arg;
   int i;
 
-  if (TREE_CODE (args) != TREE_LIST)
+  if (args && TREE_CODE (args) != TREE_LIST)
     args = build_tree_list (NULL_TREE, args);
   arg = args;
 
@@ -2555,17 +2608,23 @@ build_over_call (fn, convs, args, flags)
       conv = TREE_CHAIN (conv);
     }
 
-  for (i = 0; conv = TREE_VEC_ELT (convs, i), arg;
+  for (i = 0; conv = TREE_VEC_ELT (convs, i), arg && parm;
        parm = TREE_CHAIN (parm), arg = TREE_CHAIN (arg), ++i)
     converted_args = tree_cons
       (NULL_TREE, convert_like (conv, TREE_VALUE (arg)),
        converted_args);
 
+  /* Default arguments */
   for (; parm && parm != void_list_node; parm = TREE_CHAIN (parm))
     converted_args = tree_cons
       (NULL_TREE,
        convert_default_arg (TREE_VALUE (parm), TREE_PURPOSE (parm)),
        converted_args);
+
+  /* Ellipsis */
+  for (; arg; arg = TREE_CHAIN (arg))
+    converted_args = tree_cons
+      (NULL_TREE, default_conversion (TREE_VALUE (arg)), converted_args);
 
   converted_args = nreverse (converted_args);
 
@@ -2594,9 +2653,9 @@ build_over_call (fn, convs, args, flags)
 }
 
 /* Compare two implicit conversion sequences that differ only in their
-   qualification conversion.  */
+   qualification conversion.  Subroutine of compare_ics.  */
 
-int
+static int
 compare_qual (ics1, ics2)
      tree ics1, ics2;
 {

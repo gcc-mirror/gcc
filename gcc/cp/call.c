@@ -1928,6 +1928,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      && TYPE_IDENTIFIER (basetype) != name)
 	    basetype = SIGNATURE_TYPE (basetype);
 
+	  basetype = complete_type (basetype);
+
 	  if ((IS_SIGNATURE (basetype)
 	       && (instance_ptr = instance))
 	      || (lvalue_p (instance)

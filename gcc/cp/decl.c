@@ -4444,11 +4444,9 @@ lookup_name_real (name, prefer_type, nonclass)
 	}
 #endif
 
-      if (got_scope || val)
+      if (got_scope)
 	goto done;
-
-      /* This special lookup only applies to types.  */
-      else if (got_object && val && TREE_CODE (val) == TYPE_DECL)
+      else if (got_object && val)
 	from_obj = val;
     }
 
@@ -4522,6 +4520,8 @@ lookup_name_real (name, prefer_type, nonclass)
 	      cp_pedwarn ("  does not match lookup in the current scope (`%#T')",
 			  TREE_TYPE (val));
 	    }
+
+	  val = from_obj;
 	}
 
       if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
@@ -8435,6 +8435,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 						  integer_one_node), 1));
 		if (! TREE_CONSTANT (itype))
 		  itype = variable_size (itype);
+		else if (TREE_OVERFLOW (itype))
+		  {
+		    error ("overflow in array dimension");
+		    TREE_OVERFLOW (itype) = 0;
+		  }
 
 		/* If we're a parm, we need to have a permanent type so
                    mangling checks for re-use will work right.  If both the
