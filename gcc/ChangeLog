@@ -1,3 +1,9 @@
+2004-03-30  Aldy Hernandez  <aldyh@redhat.com>
+ 
+        PR 14219
+        * c-typeck.c (build_binary_op): Do not allow comparisons of
+        vectors.
+
 2004-03-26  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR target/14206
