@@ -1,5 +1,5 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2002,
-@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+@c 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -337,6 +337,19 @@ Loop dependency analysis routines are contained in @file{dependence.c}.
 The option @option{-dL} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.loop} to
 the input file name.
+
+@cindex jump bypassing
+@item
+Jump bypassing.  This pass is an aggressive form of GCSE that transforms
+the control flow graph of a function by propagating constants into
+conditional branch instructions.
+
+The source file for this pass is @file{gcse.c}.
+
+@opindex dG
+The option @option{-dG} causes a debugging dump of the RTL code after
+this pass.  This dump file's name is made by appending @samp{.bypass}
+to the input file name.
 
 @item
 @opindex frerun-cse-after-loop

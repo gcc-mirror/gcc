@@ -1,6 +1,6 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -59,6 +59,7 @@ DEFTIMEVAR (TV_JUMP                  , "jump")
 DEFTIMEVAR (TV_CSE                   , "CSE")
 DEFTIMEVAR (TV_GCSE                  , "global CSE")
 DEFTIMEVAR (TV_LOOP                  , "loop analysis")
+DEFTIMEVAR (TV_BYPASS                , "bypass jumps")
 DEFTIMEVAR (TV_TRACER                , "tracer")
 DEFTIMEVAR (TV_CSE2                  , "CSE 2")
 DEFTIMEVAR (TV_BRANCH_PROB           , "branch prediction")

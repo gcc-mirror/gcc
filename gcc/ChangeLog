@@ -1,3 +1,17 @@
+2003-01-15  Roger Sayle  <roger@eyesopen.com>
+
+	* gcse.c (one_cprop_pass): Change function arguments to take both
+	cprop_jumps and bypass_jumps flags instead of just alter_jumps.
+	(gcse_main): Update calls to one_cprop_pass, disabling bypassing.
+	(bypass_jumps): New function to perform separate jump bypassing pass.
+	* rtl.h (bypass_jumps): Add function prototype.
+	* timevar.def (TV_BYPASS): New timing variable.
+	* toplev.c (enum dump_file_index): Add new entry DFI_bypass.
+	(dump_file): New entry for the bypass RTL dump file.
+	(rest_of_compilation): Insert new jump bypassing optimization
+	pass after loop.
+	* doc/passes.texi: Document new pass.
+
 2003-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* som.h (SUPPORTS_WEAK, SUPPORTS_ONE_ONLY, MAKE_DECL_ONE_ONLY,
