@@ -87,10 +87,12 @@ typedef unsigned char U_CHAR;
 #endif /* USG */
 #endif /* not VMS */
 
+/* This defines "errno" properly for VMS, and gives us EACCES. */
+#include <errno.h>
+
 /* VMS-specific definitions */
 #ifdef VMS
 #include <time.h>
-#include <errno.h>		/* This defines "errno" properly */
 #include <perror.h>		/* This defines sys_errlist/sys_nerr properly */
 #include <descrip.h>
 #define O_RDONLY	0	/* Open arg for Read/Only  */
@@ -3957,6 +3959,10 @@ get_filename:
 	f = open (fname, O_RDONLY, 0666);
       if (f == -2)
 	return 0;			/* Already included this file */
+#ifdef EACCES
+      else if (f == -1 && errno == EACCES)
+	warning ("Header file %s exists, but is not readable", fname);
+#endif
       if (redundant_include_p (fname)) {
 	close (f);
 	return 0;
