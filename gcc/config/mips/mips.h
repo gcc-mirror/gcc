@@ -2181,17 +2181,12 @@ __enable_execute_stack (addr)						\
 
 
 /* A C expression that is 1 if the RTX X is a constant which is a
-   valid address.  On most machines, this can be defined as
-   `CONSTANT_P (X)', but a few machines are more restrictive in
-   which constant addresses are supported.
-
-   `CONSTANT_P' accepts integer-values expressions whose values are
-   not explicitly known, such as `symbol_ref', `label_ref', and
-   `high' expressions and `const' arithmetic expressions, in
-   addition to `const_int' and `const_double' expressions.  */
-
+   valid address.  This is defined to be the same as `CONSTANT_P (X)',
+   but rejecting CONST_DOUBLE.  */
 #define CONSTANT_ADDRESS_P(X)						\
-  (CONSTANT_P (X) && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
+  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+   || GET_CODE (X) == HIGH) && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
 
 
 /* Nonzero if the constant value X is a legitimate general operand.

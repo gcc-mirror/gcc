@@ -1135,7 +1135,10 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 
 /* Recognize any constant value that is a valid address.  */
 
-#define CONSTANT_ADDRESS_P(X) (CONSTANT_P (X))
+#define CONSTANT_ADDRESS_P(X)   \
+  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+   || GET_CODE (X) == HIGH)
 
 /* Nonzero if the constant value X is a legitimate general operand.
    Anything can be made to work except floating point constants.  */
