@@ -119,22 +119,37 @@ typedef __gnuc_va_list va_list;
 
 #else /* not __SVR4_2__ */
 
+/* On 4.3bsd-net2, make sure ansi.h is included, so we have
+   one less case to deal with in the following.  */
+#if defined (__BSD_NET2__) || defined (____386BSD____)
+#include <ansi.h>
+#endif
+
+/* In 4.3bsd-net2, machine/ansi.h defines these symbols, which remain
+   defined as long as the corresponding type is *not* defined.  */
+#ifdef _ANSI_H_
+#ifndef _VA_LIST_
+#define _VA_LIST
+#endif
+#undef _VA_LIST_
+#endif /* _ANSI_H_ */
+
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
-/* However, 4.3bsd-net2 uses it in a completely different way.
-   So if we are in 4.3bsd-net2, pay no attention to _VA_LIST_.  */
-#if ! defined (_VA_LIST_) || defined (_ANSI_H_) || defined (__BSD_NET2__) || defined (____386BSD____)
+#ifndef _VA_LIST_
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
-#if !(defined (_ANSI_H_) || defined (__BSD_NET2__) || defined (____386BSD____))
-   /* Don't mess with _VA_LIST_ at all, on 4.3bsd-net2.  */
 #define _VA_LIST_
-#endif /* not net2 */
 #define _VA_LIST
 typedef __gnuc_va_list va_list;
 #endif /* not _VA_LIST */
-#endif /* not _VA_LIST_ (or _ANSI_H_) */
+#endif /* not _VA_LIST_ */
 
 #endif /* not __SVR4_2__ */
+
+/* On 4.3bsd-net2, leave _VA_LIST_ undef to indicate va_list is defined.  */
+#ifdef _ANSI_H_
+#undef _VA_LIST_
+#endif
 
 /* The next BSD release (if there is one) wants this symbol to be
    undefined instead of _VA_LIST_.  */
