@@ -8,6 +8,9 @@
 
 Fri Feb 16 12:41:30 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* recog.c (validate_replace_rtx): Replace in operands of
+	ZERO_EXTRACT in SET_DEST.
+
 	* cse.c (new_label_ref): New variable.
 	(insert): Set it instead of recorded_label_ref.
 	(cse_basic_block): Set recorded_label_ref if new_label_ref use, has
