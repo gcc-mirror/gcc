@@ -1,3 +1,14 @@
+2002-11-27  Casper S. Hornstrup  <chorns@users.sourceforge.net>
+
+	* config/i386/i386.h (DLL_IMPORT_EXPORT_PREFIX): Define.
+	* config/i386/winnt.c (i386_pe_dllexport_name_p): Use
+	DLL_IMPORT_EXPORT_PREFIX, not '@'.
+	(i386_pe_dllimport_name_p): Likewise.
+	(i386_pe_mark_dllexport): Likewise.
+	(i386_pe_mark_dllimport): Likewise.
+	(i386_pe_encode_section_info): Likewise.
+	(i386_pe_strip_name_encoding): Likewise.
+
 2002-11-27  Richard Henderson  <rth@redhat.com>
 
 	* mkmap-symver.awk (BEGIN): Set sawsymbol false.
@@ -21,8 +32,8 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 	
 2002-11-26  Hartmut Penner  <hpenner@de.ibm.com>
 
-        * config/s390/s390.c (390_output_constant_pool): Set alignment 
-        before label in 64 bit mode, behind otherwise.  
+	* config/s390/s390.c (390_output_constant_pool): Set alignment 
+	before label in 64 bit mode, behind otherwise.  
 
 2002-11-26  Richard Henderson  <rth@redhat.com>
 
@@ -141,25 +152,25 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-11-25  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.h (__ev_create_sfix32_fs): Change macro into
-        new function.
-        (__ev_create_ufix32_fs): Same.
-        (__ev_get_sfix32_fs_internal): New.
-        (__ev_get_sfix32_fs): Define to use function.
-        (__ev_get_ufix32_fs_internal): New.
-        (__ev_get_ufix32_fs): Define to use function.
-        (__ev_get_upper_ufix32_fs): Call __ev_get_ufix32_fs.
-        (__ev_get_lower_ufix32_fs): Same.
-        (__ev_get_upper_sfix32_fs): Call __ev_get_sfix32_fs.
-        (__ev_get_lower_sfix32_fs): Same.
-        (__ev_set_sfix32_fs_internal): New.
-        (__ev_set_ufix32_fs_internal): New.
-        (__ev_set_sfix32_fs): Call __ev_set_sfix32_fs_internal.
-        (__ev_set_ufix32_fs): Call __ev_set_ufix32_fs_internal.
-        (__ev_set_upper_sfix32_fs): Call function.
-        (__ev_set_lower_sfix32_fs): Same.
-        (__ev_set_upper_ufix32_fs): Same.
-        (__ev_set_lower_ufix32_fs): Same.
+	* config/rs6000/spe.h (__ev_create_sfix32_fs): Change macro into
+	new function.
+	(__ev_create_ufix32_fs): Same.
+	(__ev_get_sfix32_fs_internal): New.
+	(__ev_get_sfix32_fs): Define to use function.
+	(__ev_get_ufix32_fs_internal): New.
+	(__ev_get_ufix32_fs): Define to use function.
+	(__ev_get_upper_ufix32_fs): Call __ev_get_ufix32_fs.
+	(__ev_get_lower_ufix32_fs): Same.
+	(__ev_get_upper_sfix32_fs): Call __ev_get_sfix32_fs.
+	(__ev_get_lower_sfix32_fs): Same.
+	(__ev_set_sfix32_fs_internal): New.
+	(__ev_set_ufix32_fs_internal): New.
+	(__ev_set_sfix32_fs): Call __ev_set_sfix32_fs_internal.
+	(__ev_set_ufix32_fs): Call __ev_set_ufix32_fs_internal.
+	(__ev_set_upper_sfix32_fs): Call function.
+	(__ev_set_lower_sfix32_fs): Same.
+	(__ev_set_upper_ufix32_fs): Same.
+	(__ev_set_lower_ufix32_fs): Same.
 
 2002-11-25  Douglas B Rupp  <rupp@gnat.com>
 
@@ -249,10 +260,10 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-11-25  Andrew Haley  <aph@redhat.com>
 
-        * libgcc-std.ver (_Unwind_Find_Enclosing_Function): Add.
-        * config/ia64/unwind-ia64.c (_Unwind_Find_Enclosing_Function): New.
-        * unwind-sjlj.c (_Unwind_Find_Enclosing_Function): Likewise.
-        * unwind-dw2.c (_Unwind_Find_Enclosing_Function): Likewise.
+	* libgcc-std.ver (_Unwind_Find_Enclosing_Function): Add.
+	* config/ia64/unwind-ia64.c (_Unwind_Find_Enclosing_Function): New.
+	* unwind-sjlj.c (_Unwind_Find_Enclosing_Function): Likewise.
+	* unwind-dw2.c (_Unwind_Find_Enclosing_Function): Likewise.
 
 2002-11-24  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -303,7 +314,7 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-11-22  Dale Johannesen  <dalej@apple.com>
 
-        * toplev.c (rest_of_compilation):  Fix comments.
+	* toplev.c (rest_of_compilation):  Fix comments.
 
 2002-11-22  Geoffrey Keating  <geoffk@apple.com>
 
@@ -529,7 +540,7 @@ Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
 	directory.
 	(MULTILIB_DIRNAMES): Create target dependent directory
 	'normal'.
-        (MULTILIB_EXCEPTIONS): Don't turn on -mn on H8/300.
+	(MULTILIB_EXCEPTIONS): Don't turn on -mn on H8/300.
 	* doc/invoke.texi (gccoptlist): Describe the new switch -mn.
 
 Tue Nov 19 23:50:56 CET 2002  Jan Hubicka  <jh@suse.cz>
