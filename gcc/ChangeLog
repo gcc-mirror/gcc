@@ -1,3 +1,7 @@
+2003-08-02  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* config.gcc: Enable posix threads by default on darwin.
+
 2003-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgcleanup.c (outgoing_edges_match): Check REG_EH_REGION notes
