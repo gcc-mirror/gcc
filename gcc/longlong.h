@@ -452,7 +452,7 @@
 	   : "=d" ((USItype)(count))					\
 	   : "od" ((USItype)(x)), "n" (0))
 #else /* not mc68020 */
-/* %/ inserts REGISTER_PREFIX.  */
+/* %/ inserts REGISTER_PREFIX, %# inserts IMMEDIATE_PREFIX.  */
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("| Inlined umul_ppmm
 	move%.l	%2,%/d0
@@ -472,9 +472,9 @@
 	add%.l	%/d0,%/d2
 	add%.l	%/d3,%/d2
 	jcc	1f
-	add%.l	#65536,%/d1
+	add%.l	%#65536,%/d1
 1:	swap	%/d2
-	moveq	#0,%/d0
+	moveq	%#0,%/d0
 	move%.w	%/d2,%/d0
 	move%.w	%/d4,%/d2
 	move%.l	%/d2,%1
