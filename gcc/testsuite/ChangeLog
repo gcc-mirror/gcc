@@ -1,3 +1,8 @@
+2001-11-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* g++.dg/warn/Wshadow-1.C: New tests.
+	* g++.old-deja/g++.mike/for3.C: Update.
+
 2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-array-lval-1.c, gcc.dg/c90-array-lval-2.c,

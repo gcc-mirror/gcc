@@ -147,6 +147,7 @@ static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
 static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
 static void store_parm_decls PARAMS ((tree));
 static int cp_missing_noreturn_ok_p PARAMS ((tree));
+static void shadow_warning PARAMS ((const char *, tree, tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -3788,6 +3789,20 @@ duplicate_decls (newdecl, olddecl)
   return 1;
 }
 
+/* Output a -Wshadow warning MSGID, if non-NULL, and give the location
+   of the previous declaration.  */
+static void
+shadow_warning (msgid, name, decl)
+     const char *msgid;
+     tree name, decl;
+{
+  warning ("declaration of `%s' shadows %s", IDENTIFIER_POINTER (name), msgid);
+  warning_with_file_and_line (DECL_SOURCE_FILE (decl),
+			      DECL_SOURCE_LINE (decl),
+			      "shadowed declaration is here");
+}
+
+
 /* Record a decl-node X as belonging to the current lexical scope.
    Check for errors (such as an incompatible declaration for the same
    name already seen in the same scope).
@@ -4173,47 +4188,53 @@ pushdecl (x)
 	  if (oldlocal != NULL_TREE && !DECL_EXTERNAL (x)
 	      /* Inline decls shadow nothing.  */
 	      && !DECL_FROM_INLINE (x)
-	      && TREE_CODE (oldlocal) == PARM_DECL
-	      /* Don't complain if it's from an enclosing function.  */
-	      && DECL_CONTEXT (oldlocal) == current_function_decl
-	      && TREE_CODE (x) != PARM_DECL)
+	      && TREE_CODE (oldlocal) == PARM_DECL)
 	    {
-	      /* Go to where the parms should be and see if we
-		 find them there.  */
-	      struct binding_level *b = current_binding_level->level_chain;
+	      bool err = false;
 
-	      if (cleanup_label)
-		b = b->level_chain;
+	      /* Don't complain if it's from an enclosing function.  */
+	      if (DECL_CONTEXT (oldlocal) == current_function_decl
+		  && TREE_CODE (x) != PARM_DECL)
+		{
+		  /* Go to where the parms should be and see if we find
+		     them there.  */
+		  struct binding_level *b = current_binding_level->level_chain;
 
-	      /* ARM $8.3 */
-	      if (b->parm_flag == 1)
-		cp_error ("declaration of `%#D' shadows a parameter", name);
+		  if (cleanup_label)
+		    b = b->level_chain;
+
+		  /* ARM $8.3 */
+		  if (b->parm_flag == 1)
+		    {
+		      cp_error ("declaration of `%#D' shadows a parameter",
+				name);
+		      err = true;
+		    }
+		}
+
+	      if (warn_shadow && !err)
+		shadow_warning ("a parameter", name, oldlocal);
 	    }
 
 	  /* Maybe warn if shadowing something else.  */
-	  if (warn_shadow && !DECL_EXTERNAL (x)
-	      /* Inline decls shadow nothing.  */
-	      && !DECL_FROM_INLINE (x)
+	  else if (warn_shadow && !DECL_EXTERNAL (x)
 	      /* No shadow warnings for internally generated vars.  */
 	      && ! DECL_ARTIFICIAL (x)
 	      /* No shadow warnings for vars made for inlining.  */
 	      && ! DECL_FROM_INLINE (x))
 	    {
-	      if (oldlocal != NULL_TREE && TREE_CODE (oldlocal) == PARM_DECL)
-		warning ("declaration of `%s' shadows a parameter",
-			IDENTIFIER_POINTER (name));
-	      else if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE
+	      if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE
 		       && current_class_ptr
 		       && !TREE_STATIC (name))
-		warning ("declaration of `%s' shadows a member of `this'",
-			IDENTIFIER_POINTER (name));
-	      else if (oldlocal != NULL_TREE)
-		warning ("declaration of `%s' shadows previous local",
-			IDENTIFIER_POINTER (name));
-	      else if (oldglobal != NULL_TREE)
+		cp_warning ("declaration of `%s' shadows a member of `this'",
+			    IDENTIFIER_POINTER (name));
+	      else if (oldlocal != NULL_TREE
+		       && TREE_CODE (oldlocal) == VAR_DECL)
+		shadow_warning ("a previous local", name, oldlocal);
+	      else if (oldglobal != NULL_TREE
+		       && TREE_CODE (oldglobal) == VAR_DECL)
 		/* XXX shadow warnings in outer-more namespaces */
-		warning ("declaration of `%s' shadows global declaration",
-			IDENTIFIER_POINTER (name));
+		shadow_warning ("a global declaration", name, oldglobal);
 	    }
 	}
 
