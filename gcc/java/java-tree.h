@@ -112,6 +112,9 @@ extern tree main_class;
 /* The class we are currently processing. */
 extern tree current_class;
 
+/* List of all class DECLs seen so far.  */
+extern tree all_class_list;
+
 /* Nonzero if we want to automatically do array bounds checking;
    on by default.  Use -fno-bounds-check to disable.  */
 
@@ -483,6 +486,8 @@ extern tree unmangle_classname PROTO ((const char *name, int name_length));
 extern tree parse_signature_string PROTO ((const unsigned char *, int));
 extern tree get_type_from_signature PROTO ((tree));
 extern void layout_class PROTO ((tree));
+extern tree layout_class_method PROTO ((tree, tree, tree, tree));
+extern void layout_class_methods PROTO ((tree));
 extern tree make_class ();
 extern tree build_class_ref PROTO ((tree));
 extern tree build_dtable_decl PROTO ((tree));
@@ -835,3 +840,10 @@ extern tree *type_map;
      if (java_error_count)						\
        return;								\
    }
+
+#define LAYOUT_SEEN_CLASS_METHODS()					    \
+  {									    \
+    tree current;							    \
+    for (current = all_class_list; current; current = TREE_CHAIN (current)) \
+      layout_class_methods (TREE_TYPE (TREE_VALUE (current)));		    \
+  }

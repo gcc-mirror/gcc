@@ -2342,7 +2342,8 @@ generate_classfile (clas, state)
   else
     i = 8 + 2 * total_supers;
   ptr = append_chunk (NULL, i, state);
-  i = get_access_flags (TYPE_NAME (clas));  PUT2 (i); /* acces_flags */
+  i = get_access_flags (TYPE_NAME (clas)) | ACC_SUPER;
+  PUT2 (i); /* acces_flags */
   i = find_class_constant (&state->cpool, clas);  PUT2 (i);  /* this_class */
   if (clas == object_type_node)
     {

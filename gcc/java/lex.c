@@ -153,12 +153,12 @@ java_allocate_new_line ()
 
   if (!ctxp->c_line)
     {
-      ctxp->c_line = (struct java_line *)malloc (sizeof (struct java_line));
+      ctxp->c_line = (struct java_line *)xmalloc (sizeof (struct java_line));
       ctxp->c_line->max = JAVA_LINE_MAX;
-      ctxp->c_line->line = (unicode_t *)malloc 
-	  (sizeof (unicode_t)*ctxp->c_line->max);
+      ctxp->c_line->line = (unicode_t *)xmalloc 
+	(sizeof (unicode_t)*ctxp->c_line->max);
       ctxp->c_line->unicode_escape_p = 
-	  (char *)malloc (sizeof (char)*ctxp->c_line->max);
+	  (char *)xmalloc (sizeof (char)*ctxp->c_line->max);
       ctxp->c_line->white_space_only = 0;
     }
 

@@ -358,7 +358,12 @@ put_decl_node (node)
 	  put_decl_string (".", 1);
 	}
 #endif
-      put_decl_node (DECL_NAME (node));
+      if (TREE_CODE (node) == FUNCTION_DECL
+	  && DECL_NAME (node) == init_identifier_node
+	  && !DECL_ARTIFICIAL (node) && current_class)
+	put_decl_node (TYPE_NAME (current_class));
+      else
+	put_decl_node (DECL_NAME (node));
       if (TREE_CODE (node) == FUNCTION_DECL && TREE_TYPE (node) != NULL_TREE)
 	{
 	  int i = 0;
