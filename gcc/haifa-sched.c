@@ -6597,7 +6597,7 @@ reemit_notes (insn, last)
 	    }
 	  else
 	    {
-	      last = emit_note_before (INTVAL (XEXP (note, 0)), last);
+	      last = emit_note_before (note_type, last);
 	      remove_note (insn, note);
 	      note = XEXP (note, 1);
 	      NOTE_BLOCK_NUMBER (last) = INTVAL (XEXP (note, 0));
