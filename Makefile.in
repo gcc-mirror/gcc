@@ -667,6 +667,7 @@ configure-host:  \
     maybe-configure-fileutils \
     maybe-configure-findutils \
     maybe-configure-find \
+    maybe-configure-fixincludes \
     maybe-configure-flex \
     maybe-configure-gas \
     maybe-configure-gcc \
@@ -768,6 +769,7 @@ all-host:  \
     maybe-all-fileutils \
     maybe-all-findutils \
     maybe-all-find \
+    maybe-all-fixincludes \
     maybe-all-flex \
     maybe-all-gas \
     maybe-all-gcc \
@@ -864,6 +866,7 @@ info-host:  \
     maybe-info-fileutils \
     maybe-info-findutils \
     maybe-info-find \
+    maybe-info-fixincludes \
     maybe-info-flex \
     maybe-info-gas \
     maybe-info-gcc \
@@ -956,6 +959,7 @@ dvi-host:  \
     maybe-dvi-fileutils \
     maybe-dvi-findutils \
     maybe-dvi-find \
+    maybe-dvi-fixincludes \
     maybe-dvi-flex \
     maybe-dvi-gas \
     maybe-dvi-gcc \
@@ -1048,6 +1052,7 @@ TAGS-host:  \
     maybe-TAGS-fileutils \
     maybe-TAGS-findutils \
     maybe-TAGS-find \
+    maybe-TAGS-fixincludes \
     maybe-TAGS-flex \
     maybe-TAGS-gas \
     maybe-TAGS-gcc \
@@ -1140,6 +1145,7 @@ install-info-host:  \
     maybe-install-info-fileutils \
     maybe-install-info-findutils \
     maybe-install-info-find \
+    maybe-install-info-fixincludes \
     maybe-install-info-flex \
     maybe-install-info-gas \
     maybe-install-info-gcc \
@@ -1232,6 +1238,7 @@ installcheck-host:  \
     maybe-installcheck-fileutils \
     maybe-installcheck-findutils \
     maybe-installcheck-find \
+    maybe-installcheck-fixincludes \
     maybe-installcheck-flex \
     maybe-installcheck-gas \
     maybe-installcheck-gcc \
@@ -1324,6 +1331,7 @@ mostlyclean-host:  \
     maybe-mostlyclean-fileutils \
     maybe-mostlyclean-findutils \
     maybe-mostlyclean-find \
+    maybe-mostlyclean-fixincludes \
     maybe-mostlyclean-flex \
     maybe-mostlyclean-gas \
     maybe-mostlyclean-gcc \
@@ -1416,6 +1424,7 @@ clean-host:  \
     maybe-clean-fileutils \
     maybe-clean-findutils \
     maybe-clean-find \
+    maybe-clean-fixincludes \
     maybe-clean-flex \
     maybe-clean-gas \
     maybe-clean-gcc \
@@ -1508,6 +1517,7 @@ distclean-host:  \
     maybe-distclean-fileutils \
     maybe-distclean-findutils \
     maybe-distclean-find \
+    maybe-distclean-fixincludes \
     maybe-distclean-flex \
     maybe-distclean-gas \
     maybe-distclean-gcc \
@@ -1600,6 +1610,7 @@ maintainer-clean-host:  \
     maybe-maintainer-clean-fileutils \
     maybe-maintainer-clean-findutils \
     maybe-maintainer-clean-find \
+    maybe-maintainer-clean-fixincludes \
     maybe-maintainer-clean-flex \
     maybe-maintainer-clean-gas \
     maybe-maintainer-clean-gcc \
@@ -1749,6 +1760,7 @@ do-check: unstage  \
     maybe-check-fileutils \
     maybe-check-findutils \
     maybe-check-find \
+    maybe-check-fixincludes \
     maybe-check-flex \
     maybe-check-gas \
     maybe-check-gcc \
@@ -1861,6 +1873,7 @@ install-host-nogcc:  \
     maybe-install-fileutils \
     maybe-install-findutils \
     maybe-install-find \
+    maybe-install-fixincludes \
     maybe-install-flex \
     maybe-install-gas \
     maybe-install-gawk \
@@ -1928,6 +1941,7 @@ install-host:  \
     maybe-install-fileutils \
     maybe-install-findutils \
     maybe-install-find \
+    maybe-install-fixincludes \
     maybe-install-flex \
     maybe-install-gas \
     maybe-install-gcc \
@@ -7992,6 +8006,310 @@ maintainer-clean-find:
 	  || exit 1
 
 @endif find
+
+
+.PHONY: configure-fixincludes maybe-configure-fixincludes
+maybe-configure-fixincludes:
+@if fixincludes
+maybe-configure-fixincludes: configure-fixincludes
+configure-fixincludes:
+	@test ! -f fixincludes/Makefile || exit 0; \
+	[ -d fixincludes ] || mkdir fixincludes; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	echo Configuring in fixincludes; \
+	cd fixincludes || exit 1; \
+	case $(srcdir) in \
+	  \.) \
+	    srcdiroption="--srcdir=."; \
+	    libsrcdir=".";; \
+	  /* | [A-Za-z]:[\\/]*) \
+	    srcdiroption="--srcdir=$(srcdir)/fixincludes"; \
+	    libsrcdir="$$s/fixincludes";; \
+	  *) \
+	    srcdiroption="--srcdir=../$(srcdir)/fixincludes"; \
+	    libsrcdir="$$s/fixincludes";; \
+	esac; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  || exit 1
+@endif fixincludes
+
+.PHONY: all-fixincludes maybe-all-fixincludes
+maybe-all-fixincludes:
+@if fixincludes
+TARGET-fixincludes=all
+maybe-all-fixincludes: all-fixincludes
+all-fixincludes: configure-fixincludes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	(cd fixincludes && $(MAKE) $(FLAGS_TO_PASS)  \
+	  $(TARGET-fixincludes))
+@endif fixincludes
+
+.PHONY: check-fixincludes maybe-check-fixincludes
+maybe-check-fixincludes:
+@if fixincludes
+maybe-check-fixincludes: check-fixincludes
+
+check-fixincludes:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	(cd fixincludes && $(MAKE) $(FLAGS_TO_PASS) check)
+
+@endif fixincludes
+
+.PHONY: install-fixincludes maybe-install-fixincludes
+maybe-install-fixincludes:
+@if fixincludes
+maybe-install-fixincludes: install-fixincludes
+
+install-fixincludes: installdirs
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	(cd fixincludes && $(MAKE) $(FLAGS_TO_PASS) install)
+
+@endif fixincludes
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-fixincludes info-fixincludes
+maybe-info-fixincludes:
+@if fixincludes
+maybe-info-fixincludes: info-fixincludes
+
+info-fixincludes: \
+    configure-fixincludes 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+@endif fixincludes
+
+.PHONY: maybe-dvi-fixincludes dvi-fixincludes
+maybe-dvi-fixincludes:
+@if fixincludes
+maybe-dvi-fixincludes: dvi-fixincludes
+
+dvi-fixincludes: \
+    configure-fixincludes 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+@endif fixincludes
+
+.PHONY: maybe-TAGS-fixincludes TAGS-fixincludes
+maybe-TAGS-fixincludes:
+@if fixincludes
+maybe-TAGS-fixincludes: TAGS-fixincludes
+
+TAGS-fixincludes: \
+    configure-fixincludes 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+@endif fixincludes
+
+.PHONY: maybe-install-info-fixincludes install-info-fixincludes
+maybe-install-info-fixincludes:
+@if fixincludes
+maybe-install-info-fixincludes: install-info-fixincludes
+
+install-info-fixincludes: \
+    configure-fixincludes \
+    info-fixincludes 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+@endif fixincludes
+
+.PHONY: maybe-installcheck-fixincludes installcheck-fixincludes
+maybe-installcheck-fixincludes:
+@if fixincludes
+maybe-installcheck-fixincludes: installcheck-fixincludes
+
+installcheck-fixincludes: \
+    configure-fixincludes 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+@endif fixincludes
+
+.PHONY: maybe-mostlyclean-fixincludes mostlyclean-fixincludes
+maybe-mostlyclean-fixincludes:
+@if fixincludes
+maybe-mostlyclean-fixincludes: mostlyclean-fixincludes
+
+mostlyclean-fixincludes: 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif fixincludes
+
+.PHONY: maybe-clean-fixincludes clean-fixincludes
+maybe-clean-fixincludes:
+@if fixincludes
+maybe-clean-fixincludes: clean-fixincludes
+
+clean-fixincludes: 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+@endif fixincludes
+
+.PHONY: maybe-distclean-fixincludes distclean-fixincludes
+maybe-distclean-fixincludes:
+@if fixincludes
+maybe-distclean-fixincludes: distclean-fixincludes
+
+distclean-fixincludes: 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+@endif fixincludes
+
+.PHONY: maybe-maintainer-clean-fixincludes maintainer-clean-fixincludes
+maybe-maintainer-clean-fixincludes:
+@if fixincludes
+maybe-maintainer-clean-fixincludes: maintainer-clean-fixincludes
+
+maintainer-clean-fixincludes: 
+	@[ -f ./fixincludes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in fixincludes" ; \
+	(cd fixincludes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif fixincludes
 
 
 .PHONY: configure-flex maybe-configure-flex
@@ -28133,7 +28451,7 @@ stage1-bubble::
 all-stage1:     \
   maybe-all-stage1-bfd \
   maybe-all-stage1-opcodes \
-  maybe-all-stage1-binutils             \
+  maybe-all-stage1-binutils              \
   maybe-all-stage1-gas \
   maybe-all-stage1-gcc        \
   maybe-all-stage1-intl   \
@@ -28146,7 +28464,7 @@ do-clean: clean-stage1
 clean-stage1:     \
   maybe-clean-stage1-bfd \
   maybe-clean-stage1-opcodes \
-  maybe-clean-stage1-binutils             \
+  maybe-clean-stage1-binutils              \
   maybe-clean-stage1-gas \
   maybe-clean-stage1-gcc        \
   maybe-clean-stage1-intl   \
@@ -28830,7 +29148,7 @@ stage2-bubble:: stage1-bubble
 all-stage2:     \
   maybe-all-stage2-bfd \
   maybe-all-stage2-opcodes \
-  maybe-all-stage2-binutils             \
+  maybe-all-stage2-binutils              \
   maybe-all-stage2-gas \
   maybe-all-stage2-gcc        \
   maybe-all-stage2-intl   \
@@ -28843,7 +29161,7 @@ do-clean: clean-stage2
 clean-stage2:     \
   maybe-clean-stage2-bfd \
   maybe-clean-stage2-opcodes \
-  maybe-clean-stage2-binutils             \
+  maybe-clean-stage2-binutils              \
   maybe-clean-stage2-gas \
   maybe-clean-stage2-gcc        \
   maybe-clean-stage2-intl   \
@@ -29551,7 +29869,7 @@ stage3-bubble:: stage2-bubble
 all-stage3:     \
   maybe-all-stage3-bfd \
   maybe-all-stage3-opcodes \
-  maybe-all-stage3-binutils             \
+  maybe-all-stage3-binutils              \
   maybe-all-stage3-gas \
   maybe-all-stage3-gcc        \
   maybe-all-stage3-intl   \
@@ -29564,7 +29882,7 @@ do-clean: clean-stage3
 clean-stage3:     \
   maybe-clean-stage3-bfd \
   maybe-clean-stage3-opcodes \
-  maybe-clean-stage3-binutils             \
+  maybe-clean-stage3-binutils              \
   maybe-clean-stage3-gas \
   maybe-clean-stage3-gcc        \
   maybe-clean-stage3-intl   \
@@ -30302,7 +30620,7 @@ stage4-bubble:: stage3-bubble
 all-stage4:     \
   maybe-all-stage4-bfd \
   maybe-all-stage4-opcodes \
-  maybe-all-stage4-binutils             \
+  maybe-all-stage4-binutils              \
   maybe-all-stage4-gas \
   maybe-all-stage4-gcc        \
   maybe-all-stage4-intl   \
@@ -30315,7 +30633,7 @@ do-clean: clean-stage4
 clean-stage4:     \
   maybe-clean-stage4-bfd \
   maybe-clean-stage4-opcodes \
-  maybe-clean-stage4-binutils             \
+  maybe-clean-stage4-binutils              \
   maybe-clean-stage4-gas \
   maybe-clean-stage4-gcc        \
   maybe-clean-stage4-intl   \
@@ -31049,7 +31367,7 @@ stageprofile-bubble:: stage1-bubble
 all-stageprofile:     \
   maybe-all-stageprofile-bfd \
   maybe-all-stageprofile-opcodes \
-  maybe-all-stageprofile-binutils             \
+  maybe-all-stageprofile-binutils              \
   maybe-all-stageprofile-gas \
   maybe-all-stageprofile-gcc        \
   maybe-all-stageprofile-intl   \
@@ -31062,7 +31380,7 @@ do-clean: clean-stageprofile
 clean-stageprofile:     \
   maybe-clean-stageprofile-bfd \
   maybe-clean-stageprofile-opcodes \
-  maybe-clean-stageprofile-binutils             \
+  maybe-clean-stageprofile-binutils              \
   maybe-clean-stageprofile-gas \
   maybe-clean-stageprofile-gcc        \
   maybe-clean-stageprofile-intl   \
@@ -31766,7 +32084,7 @@ stagefeedback-bubble:: stage1-bubble
 all-stagefeedback:     \
   maybe-all-stagefeedback-bfd \
   maybe-all-stagefeedback-opcodes \
-  maybe-all-stagefeedback-binutils             \
+  maybe-all-stagefeedback-binutils              \
   maybe-all-stagefeedback-gas \
   maybe-all-stagefeedback-gcc        \
   maybe-all-stagefeedback-intl   \
@@ -31779,7 +32097,7 @@ do-clean: clean-stagefeedback
 clean-stagefeedback:     \
   maybe-clean-stagefeedback-bfd \
   maybe-clean-stagefeedback-opcodes \
-  maybe-clean-stagefeedback-binutils             \
+  maybe-clean-stagefeedback-binutils              \
   maybe-clean-stagefeedback-gas \
   maybe-clean-stagefeedback-gcc        \
   maybe-clean-stagefeedback-intl   \
@@ -32647,15 +32965,22 @@ all-stage3-gcc: all-stage3-libcpp
 all-stage4-gcc: all-stage4-libcpp
 all-stageprofile-gcc: all-stageprofile-libcpp
 all-stagefeedback-gcc: all-stagefeedback-libcpp
-all-gcc: maybe-all-build-libiberty
+all-gcc: maybe-all-libiberty
 
-all-stage1-gcc: maybe-all-build-libiberty
-all-stage2-gcc: maybe-all-build-libiberty
-all-stage3-gcc: maybe-all-build-libiberty
-all-stage4-gcc: maybe-all-build-libiberty
-all-stageprofile-gcc: maybe-all-build-libiberty
-all-stagefeedback-gcc: maybe-all-build-libiberty
-all-prebootstrap: maybe-all-build-libiberty
+all-stage1-gcc: maybe-all-stage1-libiberty
+all-stage2-gcc: maybe-all-stage2-libiberty
+all-stage3-gcc: maybe-all-stage3-libiberty
+all-stage4-gcc: maybe-all-stage4-libiberty
+all-stageprofile-gcc: maybe-all-stageprofile-libiberty
+all-stagefeedback-gcc: maybe-all-stagefeedback-libiberty
+all-gcc: maybe-all-fixincludes
+
+all-stage1-gcc: maybe-all-stage1-fixincludes
+all-stage2-gcc: maybe-all-stage2-fixincludes
+all-stage3-gcc: maybe-all-stage3-fixincludes
+all-stage4-gcc: maybe-all-stage4-fixincludes
+all-stageprofile-gcc: maybe-all-stageprofile-fixincludes
+all-stagefeedback-gcc: maybe-all-stagefeedback-fixincludes
 configure-libcpp: configure-libiberty
 
 configure-stage1-libcpp: configure-stage1-libiberty
@@ -32688,6 +33013,7 @@ all-stage3-libcpp: maybe-all-stage3-intl
 all-stage4-libcpp: maybe-all-stage4-intl
 all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
+all-fixincludes: maybe-all-libiberty
 configure-gdb: maybe-configure-itcl
 configure-gdb: maybe-configure-tcl
 configure-gdb: maybe-configure-tk

@@ -1,13 +1,12 @@
 #! /bin/sh
 
-if [ $# -ne 2 ]
+if [ $# -ne 1 ]
 then
-  echo "Usage: $0 <build-mach-triplet> <target-mach-triplet>"
+  echo "Usage: $0 <target-mach-triplet>"
   exit 1
 fi
 
-build=$1
-machine=$2
+machine=$1
 target=fixinc.sh
 
 # Check for special fix rules for particular targets
@@ -37,8 +36,7 @@ case $machine in
 
     *)
 	../${build_subdir}/fixincludes/fixincl -v < /dev/null
-	sed "s,@FIXINCL@,\${ORIGDIR}/../${build_subdir}/fixincludes/fixincl,g" \
-	  ${srcdir}/fixinc.in > ${target}
+	cat < ${srcdir}/fixinc.in > ${target}
 	;;
 esac
 chmod 755 ${target}

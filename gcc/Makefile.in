@@ -1080,9 +1080,6 @@ gccbug:	$(srcdir)/gccbug.in
 mklibgcc: $(srcdir)/mklibgcc.in
 	CONFIG_FILES=mklibgcc CONFIG_HEADERS= ./config.status
 
-mkheaders: $(srcdir)/mkheaders.in
-	CONFIG_FILES=mkheaders CONFIG_HEADERS= ./config.status
-
 # cstamp-h.in controls rebuilding of config.in.
 # It is named cstamp-h.in and not stamp-h.in so the mostlyclean rule doesn't
 # delete it.  A stamp file is needed as autoheader won't update the file if
@@ -2783,31 +2780,24 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 	chmod a+r include/limits.h
 # Install the README
 	rm -f include/README
-	cp $(srcdir)/README-fixinc include/README
+	cp $(srcdir)/../fixincludes/README-fixinc include/README
 	chmod a+r include/README
 	$(STAMP) $@
-
-# fixinc.sh depends on this, not on specs directly.
-# The idea is to make sure specs gets built, but not rerun fixinc.sh
-# after each stage just because specs' mtime has changed.
-# It also depends on cc1 since fixinc.sh uses it.
-specs.ready: specs cc1$(exeext)
-	-if [ -f specs.ready ] ; then \
-		true; \
-	else \
-		$(STAMP) specs.ready; \
-	fi
-
-fixinc.sh: mkfixinc.sh fixinc.in
-	build_subdir="$(build_subdir)" srcdir="$(srcdir)" \
-	  $(SHELL) $(srcdir)/mkfixinc.sh $(build) $(target)
 
 .PHONY: install-gcc-tooldir
 install-gcc-tooldir:
 	$(mkinstalldirs) $(DESTDIR)$(gcc_tooldir)
 
+macro_list : $(GCC_PASSES)
+	echo | $(GCC_FOR_TARGET) -E -dM - | \
+	  sed -n 's/^#define \([^_][a-zA-Z0-9_]*\).*/\1/p ; \
+		s/^#define \(_[^_A-Z][a-zA-Z0-9_]*\).*/\1/p' | \
+	  sort -u > $@
+
 # Build fixed copies of system files.
-stmp-fixinc: fixinc.sh gsyslimits.h specs.ready
+stmp-fixinc: gsyslimits.h macro_list \
+  ../$(build_subdir)/fixincludes/fixincl \
+  ../$(build_subdir)/fixincludes/fixinc.sh
 	@if test ! -d ${SYSTEM_HEADER_DIR}; then \
 	  echo The directory that should contain system headers does not exist: >&2 ; \
 	  echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
@@ -2817,23 +2807,19 @@ stmp-fixinc: fixinc.sh gsyslimits.h specs.ready
 	rm -rf include; mkdir include
 	-chmod a+rx include
 	(TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); ${PWD_COMMAND}`; \
-	SHELL='$(SHELL)' ;\
-	export TARGET_MACHINE srcdir SHELL ; \
-	$(SHELL) ./fixinc.sh `${PWD_COMMAND}`/include $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); \
-	rm -f include/syslimits.h; \
+	  SHELL='$(SHELL)'; MACRO_LIST=`${PWD_COMMAND}`/macro_list ; \
+	  export TARGET_MACHINE srcdir SHELL MACRO_LIST && \
+	  cd ../$(build_subdir)/fixincludes && \
+	  $(SHELL) ./fixinc.sh ../../gcc/include \
+	    $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) )
+	rm -f include/syslimits.h
 	if [ -f include/limits.h ]; then \
 	  mv include/limits.h include/syslimits.h; \
 	else \
 	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
-	fi; \
-	chmod a+r include/syslimits.h)
+	fi
+	chmod a+r include/syslimits.h
 	$(STAMP) stmp-fixinc
-
-# We can't run fixinc (it's being built for a different host), but we still
-# need to install it so that the user can run it when the compiler is
-# installed.
-stmp-install-fixinc: fixinc.sh gsyslimits.h
-	$(STAMP) $@
 
 # Files related to the fixproto script.
 # gen-protos and fix-header are compiled with CC_FOR_BUILD, but they are only
@@ -3065,10 +3051,8 @@ mostlyclean: lang.mostlyclean
 	-rm -f specs $(SPECS) SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump
 # Delete files generated for fixproto
-	-rm -rf fix-header$(build_exeext) xsys-protos.h deduced.h tmp-deduced.h \
+	-rm -rf $(build_exeext) xsys-protos.h deduced.h tmp-deduced.h \
 	  gen-protos$(build_exeext) fixproto.list fixtmp.* fixhdr.ready
-# Delete files generated for fixincl
-	-rm -rf fixinc.sh specs.ready
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 	-rm -f */*.toc */*.log */*.vr */*.fn */*.cp */*.tp */*.ky */*.pg
@@ -3126,12 +3110,11 @@ distclean: clean lang.distclean
 	-cd testsuite && rm -f *.out *.gcov *$(coverageexts)
 	-rm -rf ${QMTEST_DIR} stamp-qmtest
 	-rm -f cxxmain.c
-	-rm -f mklibgcc mkheaders gccbug .gdbinit configargs.h
+	-rm -f mklibgcc gccbug .gdbinit configargs.h
 	-rm -f gcov.pod
-	-rm -f fixinc/Makefile
 # Delete po/*.gmo only if we are not building in the source directory.
 	-if [ ! -f po/exgettext ]; then rm -f po/*.gmo; fi
-	-rmdir ada cp f java objc fixinc intl po testsuite 2>/dev/null
+	-rmdir ada cp f java objc intl po testsuite 2>/dev/null
 
 # Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.
@@ -3361,28 +3344,18 @@ install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 
 itoolsdir = $(libexecsubdir)/install-tools
 itoolsdatadir = $(libsubdir)/install-tools
-# Don't install the headers.  Instead, install appropriate scripts
-# and supporting files for fixincludes to be run later.
+# Install supporting files for fixincludes to be run later.
 install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
-    mkheaders xlimits.h
-	-rm -rf $(DESTDIR)$(itoolsdir) $(DESTDIR)$(itoolsdatadir)
-	$(mkinstalldirs) $(DESTDIR)$(itoolsdatadir)/include
-	$(mkinstalldirs) $(DESTDIR)$(itoolsdir)
+  macro_list xlimits.h
 	for file in $(USER_H); do \
 	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	  $(INSTALL_DATA) $$file \
 	    $(DESTDIR)$(itoolsdatadir)/include/$$realfile ; \
 	done
 	$(INSTALL_DATA) xlimits.h $(DESTDIR)$(itoolsdatadir)/include/limits.h
-	if [ x$(STMP_FIXINC) != x ] ; then \
-	  $(INSTALL_DATA) $(srcdir)/README-fixinc \
-	    $(DESTDIR)$(itoolsdatadir)/include/README ; \
-	  $(INSTALL_SCRIPT) fixinc.sh $(DESTDIR)$(itoolsdir)/fixinc.sh ; \
-	  $(INSTALL_PROGRAM) ../$(build_subdir)/fixincludes/fixincl$(build_exeext) \
-		$(DESTDIR)$(itoolsdir)/fixincl ; \
-	  $(INSTALL_DATA) $(srcdir)/gsyslimits.h \
-	    $(DESTDIR)$(itoolsdatadir)/gsyslimits.h ; \
-	else :; fi
+	$(INSTALL_DATA) $(srcdir)/gsyslimits.h \
+	  $(DESTDIR)$(itoolsdatadir)/gsyslimits.h
+	$(INSTALL_DATA) macro_list $(DESTDIR)$(itoolsdatadir)/macro_list
 	if [ x$(STMP_FIXPROTO) != x ] ; then \
 	  $(INSTALL_SCRIPT) $(mkinstalldirs) \
 		$(DESTDIR)$(itoolsdir)/mkinstalldirs ; \
@@ -3390,7 +3363,6 @@ install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
 	  $(INSTALL_PROGRAM) build/fix-header$(build_exeext) \
 		$(DESTDIR)$(itoolsdir)/fix-header$(build_exeext) ; \
 	else :; fi
-	$(INSTALL_SCRIPT) mkheaders $(DESTDIR)$(itoolsdir)/mkheaders
 	echo 'SYSTEM_HEADER_DIR="'"$(SYSTEM_HEADER_DIR)"'"' \
 		> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
 	echo 'OTHER_FIXINCLUDES_DIRS="$(OTHER_FIXINCLUDES_DIRS)"' \

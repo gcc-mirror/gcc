@@ -12683,18 +12683,10 @@ then
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD)'
 
     if test "x$TARGET_SYSTEM_ROOT" = x; then
-	STMP_FIXINC=stmp-install-fixinc
 	if  "x$STMP_FIXPROTO" != x  ; then
 	  STMP_FIXPROTO=stmp-install-fixproto
 	fi
     fi
-fi
-
-# When bootstrapping from the toplevel, only run fixincludes during stage1
-if test -d ../prev-gcc
-then
-    STMP_FIXINC=stmp-install-fixinc
-    cp -R ../prev-gcc/include include
 fi
 
 # Expand extra_headers to include complete path.
@@ -14992,7 +14984,7 @@ all_languages=
 all_boot_languages=
 all_compilers=
 all_stagestuff=
-all_outputs='Makefile gccbug mklibgcc mkheaders libada-mk'
+all_outputs='Makefile gccbug mklibgcc libada-mk'
 # List of language makefile fragments.
 all_lang_makefrags=
 # List of language subdirectory makefiles.  Deprecated.
