@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-97, 1998, 1999, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1415,9 +1415,6 @@ struct lang_type
 #define BINFO_FOR_VBASE(T, C) \
   (binfo_member (T, CLASSTYPE_VBASECLASSES (C)))
 
-/* The virtual function pointer fields that this type contains.  */
-#define CLASSTYPE_VFIELDS(NODE) (TYPE_LANG_SPECIFIC(NODE)->vfields)
-
 /* Number of direct baseclasses of NODE.  */
 #define CLASSTYPE_N_BASECLASSES(NODE) \
   (BINFO_N_BASETYPES (TYPE_BINFO (NODE)))
@@ -1563,19 +1560,34 @@ struct lang_type
 #define CLEAR_BINFO_PUSHDECLS_MARKED(NODE) CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
 
 /* Nonzero if this BINFO has been marked as a primary base class.  */
-#define BINFO_PRIMARY_MARKED_P(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
+#define BINFO_PRIMARY_MARKED_P(NODE)		\
+  (TREE_VIA_VIRTUAL (NODE) 			\
+   ? CLASSTYPE_MARKED5 (BINFO_TYPE (NODE))	\
+   : TREE_LANG_FLAG_5 (NODE))
 
 /* Mark NODE as a primary base class.  */
-#define SET_BINFO_PRIMARY_MARKED_P(NODE) SET_BINFO_VTABLE_PATH_MARKED (NODE)
+#define SET_BINFO_PRIMARY_MARKED_P(NODE)	\
+  (TREE_VIA_VIRTUAL (NODE)			\
+   ? SET_CLASSTYPE_MARKED5 (BINFO_TYPE (NODE))	\
+   : (TREE_LANG_FLAG_5 (NODE) = 1))
 
 /* Clear the primary base class mark.  */
-#define CLEAR_BINFO_PRIMARY_MARKED_P(NODE) \
-  CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
+#define CLEAR_BINFO_PRIMARY_MARKED_P(NODE) 		\
+  (TREE_VIA_VIRTUAL (NODE)				\
+   ? CLEAR_CLASSTYPE_MARKED5 (BINFO_TYPE (NODE))	\
+   : (TREE_LANG_FLAG_5 (NODE) = 0))
 
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
 
 /* Accessor macros for the vfield slots in structures.  */
+
+/* The virtual function pointer fields that this type contains.  For a
+   vfield defined just for this class, or from a primary base, the
+   TREE_PURPOSE is NULL.  Otherwise, the TREE_PURPOSE is the BINFO for
+   the class containing the vfield.  The TREE_VALUE is the class where
+   the vfield was first defined.  */
+#define CLASSTYPE_VFIELDS(NODE) (TYPE_LANG_SPECIFIC(NODE)->vfields)
 
 /* Get the assoc info that caused this vfield to exist.  */
 #define VF_BINFO_VALUE(NODE) TREE_PURPOSE (NODE)
@@ -3908,10 +3920,11 @@ extern tree dfs_walk                            PROTO((tree,
 						       tree (*) (tree, void *),
 						       void *));
 extern tree dfs_unmark                          PROTO((tree, void *));
+extern tree dfs_vbase_unmark                    PROTO((tree, void *));
 extern tree markedp                             PROTO((tree, void *));
+extern tree unmarkedp                           PROTO((tree, void *));
 extern tree dfs_mark_primary_bases_queue_p      PROTO((tree, void *));
 extern void mark_primary_bases                  PROTO((tree));
-extern void unmark_primary_bases                PROTO((tree));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PROTO((tree));
