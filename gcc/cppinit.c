@@ -849,9 +849,11 @@ do_includes (pfile, p, scan)
     {
       struct pending_option *q;
 
-      /* Later: maybe update this to use the #include "" search path
-	 if cpp_read_file fails.  */
-      if (_cpp_read_file (pfile, p->arg) && scan)
+      /* Don't handle if -fpreprocessed.  Later: maybe update this to
+	 use the #include "" search path if cpp_read_file fails.  */
+      if (! CPP_OPTION (pfile, preprocessed))
+	cpp_error (pfile, "-include and -imacros cannot be used with -fpreprocessed");
+      else if (_cpp_read_file (pfile, p->arg) && scan)
 	cpp_scan_buffer_nooutput (pfile, 0);
       q = p->next;
       free (p);
@@ -859,10 +861,9 @@ do_includes (pfile, p, scan)
     }
 }
 
-/* This is called after options have been processed.  Check options
- for consistency, and setup for processing input from the file named
- FNAME.  (Use standard input if FNAME == NULL.)  Return 1 on success,
- 0 on failure.  */
+/* This is called after options have been processed.  Setup for
+   processing input from the file named FNAME.  (Use standard input if
+   FNAME == NULL.)  Return 1 on success, 0 on failure.  */
 
 int
 cpp_start_read (pfile, fname)
@@ -915,18 +916,22 @@ cpp_start_read (pfile, fname)
   if (!_cpp_read_file (pfile, fname))
     return 0;
 
-  /* Install __LINE__, etc.  */
-  init_builtins (pfile);
+  /* If already preprocessed, don't install __LINE__, etc., and ignore
+     command line definitions and assertions.  Handle -U's, -D's and
+     -A's in the order they were seen.  */
+  if (! CPP_OPTION (pfile, preprocessed))
+    init_builtins (pfile);
 
-  /* Do -U's, -D's and -A's in the order they were seen.  */
   p = CPP_OPTION (pfile, pending)->directive_head;
   while (p)
     {
-      (*p->handler) (pfile, p->arg);
+      if (! CPP_OPTION (pfile, preprocessed))
+	(*p->handler) (pfile, p->arg);
       q = p->next;
       free (p);
       p = q;
     }
+
   pfile->done_initializing = 1;
 
   /* The -imacros files can be scanned now, but the -include files
@@ -1131,10 +1136,10 @@ static const struct cl_option cl_options[] =
    command-line matches.  Returns its index in the option array,
    negative on failure.  Complications arise since some options can be
    suffixed with an argument, and multiple complete matches can occur,
-   e.g. -iwithprefix and -iwithprefixbefore.  Moreover, we want to
-   accept options beginning with -g and -W that we do not recognise,
-   but not to swallow any subsequent command line argument; these are
-   handled as special cases in cpp_handle_option.  */
+   e.g. -iwithprefix and -iwithprefixbefore.  Moreover, we need to
+   accept options beginning with -W that we do not recognise, but not
+   to swallow any subsequent command line argument; this is handled as
+   special cases in cpp_handle_option.  */
 static int
 parse_option (input)
      const char *input;

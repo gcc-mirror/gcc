@@ -344,18 +344,15 @@ cb_define (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  if (pfile->done_initializing)
-    {
-      maybe_print_line (cpp_get_line (pfile)->output_line);
-      fprintf (print.outf, "#define %s", node->name);
+  maybe_print_line (cpp_get_line (pfile)->output_line);
+  fprintf (print.outf, "#define %s", node->name);
 
-      /* -dD command line option.  */
-      if (CPP_OPTION (pfile, dump_macros) == dump_definitions)
-	fputs ((const char *) cpp_macro_definition (pfile, node), print.outf);
+  /* -dD command line option.  */
+  if (CPP_OPTION (pfile, dump_macros) == dump_definitions)
+    fputs ((const char *) cpp_macro_definition (pfile, node), print.outf);
 
-      putc ('\n', print.outf);
-      print.lineno++;
-    }
+  putc ('\n', print.outf);
+  print.lineno++;
 }
 
 static void
@@ -363,12 +360,9 @@ cb_undef (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  if (pfile->done_initializing)
-    {
-      maybe_print_line (cpp_get_line (pfile)->output_line);
-      fprintf (print.outf, "#undef %s\n", node->name);
-      print.lineno++;
-    }
+  maybe_print_line (cpp_get_line (pfile)->output_line);
+  fprintf (print.outf, "#undef %s\n", node->name);
+  print.lineno++;
 }
 
 static void
