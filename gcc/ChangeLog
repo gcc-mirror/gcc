@@ -1,3 +1,16 @@
+Wed Nov 14 14:17:05 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* dbxout.c (dbxout_symbol_location): Update call of alter_subreg.
+	* final.c (walk_alter_subreg): Take pointer; update call of alter_subreg.
+	(final_scan_insn): Update call of alter_subreg.
+	(cleanup_subreg_operands): Likewise.
+	(alter_subreg): Rewrite using simplify_subreg.
+	(output_address, output_operand): Update call of alter_subreg.
+	* output.h (alter_subreg): Update prototype.
+	* sdbout.c (sdbout_symbol): Update call of alter_subreg.
+	* simplify-rtx.c (simplify_subreg): Copy ORIGINAL_REGNO.
+	* Makefile.in (final.o): Add depdendancy on expr.h
+
 Wed Nov 14 06:37:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-lang.c (finish_file): Make I unsigned to eliminate warning.

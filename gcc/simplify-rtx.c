@@ -2587,7 +2587,18 @@ simplify_subreg (outermode, op, innermode, byte)
 	 arguments are passed on 32-bit Sparc and should be fixed.  */
       if (HARD_REGNO_MODE_OK (final_regno, outermode)
 	  || ! HARD_REGNO_MODE_OK (REGNO (op), innermode))
-	return gen_rtx_REG (outermode, final_regno);
+	{
+	  rtx x = gen_rtx_REG (outermode, final_regno);
+
+	  /* Propagate original regno.  We don't have any way to specify
+	     the offset inside orignal regno, so do so only for lowpart.
+	     The information is used only by alias analysis that can not
+	     grog partial register anyway.  */
+
+	  if (subreg_lowpart_offset (outermode, innermode) == byte)
+	    ORIGINAL_REGNO (x) = ORIGINAL_REGNO (op);
+	  return x;
+	}
     }
 
   /* If we have a SUBREG of a register that we are replacing and we are

@@ -77,7 +77,7 @@ extern rtx final_scan_insn	PARAMS ((rtx, FILE *, int, int, int));
 
 /* Replace a SUBREG with a REG or a MEM, based on the thing it is a
    subreg of.  */
-extern rtx alter_subreg PARAMS ((rtx));
+extern rtx alter_subreg PARAMS ((rtx *));
 
 /* Report inconsistency between the assembler template and the operands.
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */
