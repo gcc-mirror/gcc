@@ -38,9 +38,9 @@ exception statement from your version. */
 
 package gnu.java.locale;
 
+import java.util.Date;
 import java.util.ListResourceBundle;
 import java.util.Locale;
-import java.util.Date;
 
 /**
  * This class contains locale data for java.util.Calendar.<br>

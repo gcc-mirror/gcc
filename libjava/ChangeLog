@@ -1,3 +1,31 @@
+2004-07-29 Dalibor Topic <robilad@kaffe.org>
+
+	* gnu/java/awt/ComponentDataBlitOp.java,
+	gnu/java/beans/ExplicitBeanInfo.java,
+	gnu/java/beans/IntrospectionIncubator.java,
+	gnu/java/beans/editors/ColorEditor.java,
+	gnu/java/beans/editors/FontEditor.java,
+	gnu/java/beans/editors/NativeBooleanEditor.java,
+	gnu/java/beans/editors/NativeByteEditor.java,
+	gnu/java/beans/editors/NativeDoubleEditor.java,
+	gnu/java/beans/editors/NativeFloatEditor.java,
+	gnu/java/beans/editors/NativeIntEditor.java,
+	gnu/java/beans/editors/NativeLongEditor.java,
+	gnu/java/beans/editors/NativeShortEditor.java,
+	gnu/java/beans/editors/StringEditor.java,
+	gnu/java/io/ClassLoaderObjectInputStream.java,
+	gnu/java/io/decode/Decoder.java,
+	gnu/java/io/encode/Encoder.java,
+	gnu/java/lang/ClassHelper.java,
+	gnu/java/locale/Calendar.java,
+	gnu/java/locale/Calendar_de.java,
+	gnu/java/locale/Calendar_en.java,
+	gnu/java/locale/Calendar_nl.java,
+	gnu/java/locale/LocaleInformation_de.java,
+	gnu/java/locale/LocaleInformation_en.java,
+	gnu/java/locale/LocaleInformation_nl.java:
+	Cleaned up imports.
+
 2004-07-28  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* README: Remove obsolete info. Update bug URL.

@@ -38,10 +38,22 @@ exception statement from your version. */
 
 package gnu.java.beans;
 
-import java.beans.*;
-import java.util.*;
-import java.lang.reflect.*;
-import gnu.java.lang.*;
+import gnu.java.lang.ArrayHelper;
+import gnu.java.lang.ClassHelper;
+
+import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
+import java.beans.IndexedPropertyDescriptor;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  ** IntrospectionIncubator takes in a bunch of Methods, and

@@ -39,8 +39,6 @@ exception statement from your version. */
 package gnu.java.locale;
 
 import java.util.ListResourceBundle;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
   * This class contains locale data for the Dutch locale

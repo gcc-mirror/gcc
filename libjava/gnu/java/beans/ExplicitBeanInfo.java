@@ -38,7 +38,11 @@ exception statement from your version. */
 
 package gnu.java.beans;
 
-import java.beans.*;
+import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
 
 /**
  ** ExplicitBeanInfo lets you specify in the constructor
