@@ -148,7 +148,7 @@ public class ZipFile implements ZipConstants
    * @exception IOException if a i/o error occured.
    * @exception EOFException if the file ends prematurely
    */
-  private final int readLeShort(DataInput di, byte[] b) throws IOException
+  private int readLeShort(DataInput di, byte[] b) throws IOException
   {
     di.readFully(b, 0, 2);
     return (b[0] & 0xff) | (b[1] & 0xff) << 8;
@@ -165,14 +165,13 @@ public class ZipFile implements ZipConstants
    * @exception IOException if a i/o error occured.
    * @exception EOFException if the file ends prematurely
    */
-  private final int readLeInt(DataInput di, byte[] b) throws IOException
+  private int readLeInt(DataInput di, byte[] b) throws IOException
   {
     di.readFully(b, 0, 4);
     return ((b[0] & 0xff) | (b[1] & 0xff) << 8)
 	    | ((b[2] & 0xff) | (b[3] & 0xff) << 8) << 16;
   }
 
-  
   /**
    * Read an unsigned short in little endian byte order from the given
    * byte buffer at the given offset.
@@ -181,7 +180,7 @@ public class ZipFile implements ZipConstants
    * @param off the offset to read from.
    * @return The value read.
    */
-  private final int readLeShort(byte[] b, int off)
+  private int readLeShort(byte[] b, int off)
   {
     return (b[off] & 0xff) | (b[off+1] & 0xff) << 8;
   }
@@ -194,7 +193,7 @@ public class ZipFile implements ZipConstants
    * @param off the offset to read from.
    * @return The value read.
    */
-  private final int readLeInt(byte[] b, int off)
+  private int readLeInt(byte[] b, int off)
   {
     return ((b[off] & 0xff) | (b[off+1] & 0xff) << 8)
 	    | ((b[off+2] & 0xff) | (b[off+3] & 0xff) << 8) << 16;

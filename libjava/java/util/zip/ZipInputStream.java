@@ -106,7 +106,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
       }
   }
   
-  private final int readLeByte() throws IOException
+  private int readLeByte() throws IOException
   {
     if (avail <= 0)
       {
@@ -120,7 +120,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   /**
    * Read an unsigned short in little endian byte order.
    */
-  private final int readLeShort() throws IOException 
+  private int readLeShort() throws IOException 
   {
     return readLeByte() | (readLeByte() << 8);
   }
@@ -128,7 +128,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   /**
    * Read an int in little endian byte order.
    */
-  private final int readLeInt() throws IOException 
+  private int readLeInt() throws IOException 
   {
     return readLeShort() | (readLeShort() << 16);
   }

@@ -109,7 +109,7 @@ public final class StringBuffer implements Serializable, CharSequence
   /**
    * The default capacity of a buffer.
    */
-  private final static int DEFAULT_CAPACITY = 16;
+  private static final int DEFAULT_CAPACITY = 16;
 
   /**
    * Create a new StringBuffer with default capacity 16.

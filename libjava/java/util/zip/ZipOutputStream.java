@@ -1,5 +1,5 @@
-/* java.util.zip.ZipOutputStream
-   Copyright (C) 2001 Free Software Foundation, Inc.
+/* ZipOutputStream.java --
+   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,17 +71,18 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
   /**
    * Our Zip version is hard coded to 1.0 resp. 2.0
    */
-  private final static int ZIP_STORED_VERSION   = 10;
-  private final static int ZIP_DEFLATED_VERSION = 20;
+  private static final int ZIP_STORED_VERSION = 10;
+  private static final int ZIP_DEFLATED_VERSION = 20;
 
   /**
    * Compression method.  This method doesn't compress at all.
    */
-  public final static int STORED      =  0;
+  public static final int STORED = 0;
+  
   /**
    * Compression method.  This method uses the Deflater.
    */
-  public final static int DEFLATED    =  8;
+  public static final int DEFLATED = 8;
 
   /**
    * Creates a new Zip output stream, writing a zip archive.
@@ -136,7 +137,7 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
   /**
    * Write an unsigned short in little endian byte order.
    */
-  private final void writeLeShort(int value) throws IOException 
+  private void writeLeShort(int value) throws IOException 
   {
     out.write(value & 0xff);
     out.write((value >> 8) & 0xff);
@@ -145,7 +146,7 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
   /**
    * Write an int in little endian byte order.
    */
-  private final void writeLeInt(int value) throws IOException 
+  private void writeLeInt(int value) throws IOException 
   {
     writeLeShort(value);
     writeLeShort(value >> 16);
