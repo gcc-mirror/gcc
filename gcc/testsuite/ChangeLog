@@ -1,3 +1,9 @@
+2003-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.old-deja/g++.bugs/900404_04.C: Remove XFAIL.
+	* g++.old-deja/g++.jason/access8.C: Likewise.
+	* g++.old-deja/g++.other/decl5.C: Likewise.
+
 2003-01-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* g++.dg/parse/parse7.C: New test.

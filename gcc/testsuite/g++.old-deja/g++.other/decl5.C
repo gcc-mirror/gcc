@@ -31,7 +31,7 @@ struct B {
   };
   int m;
   int n;
-  struct ::Q {        // ERROR - ::Q not a member of B XFAIL 
+  struct ::Q {        // ERROR - ::Q not a member of B
     int m;
   };
   int A::fn() {       // ERROR - A::fn not a member of B

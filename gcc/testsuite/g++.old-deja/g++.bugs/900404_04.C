@@ -12,6 +12,6 @@
 
 int i;
 
-;			// ERROR - , XFAIL *-*-*
+;			// ERROR - 
 
 int main () { return 0; }
