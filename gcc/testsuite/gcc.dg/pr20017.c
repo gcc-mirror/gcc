@@ -1,6 +1,6 @@
 /* PR rtl-optimization/20017
 
-   After CSE/GCSE folds a switch statement to an unconditonal jump,
+   After CSE/GCSE folds a switch statement to an unconditional jump,
    cfg_cleanup did not remove a dead jump table, confusing the CFG
    layout code later on.  */
 
