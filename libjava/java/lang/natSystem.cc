@@ -53,7 +53,6 @@ details.  */
 #define SystemClass _CL_Q34java4lang6System
 extern java::lang::Class SystemClass;
 
-extern property_pair *_Jv_Environment_Properties;
 
 
 #if defined (ECOS)
@@ -336,8 +335,8 @@ java::lang::System::init_properties (void)
 
   while (buf_r != NULL)
     {
-      int r = getpwuid_adaptor
-	(getpwuid_r, user_id, &pwd_r, buf_r, len_r, &pwd_entry);
+      int r = getpwuid_adaptor (getpwuid_r, user_id, &pwd_r,
+				buf_r, len_r, &pwd_entry);
       if (r == 0)
 	break;
       else if (r != ERANGE)
@@ -378,6 +377,19 @@ java::lang::System::init_properties (void)
   if (buffer != NULL)
     free (buffer);
 #endif
+
+  // Set some properties according to whatever was compiled in with
+  // `-D'.
+  for (int i = 0; _Jv_Compiler_Properties[i]; ++i)
+    {
+      const char *s, *p;
+      // Find the `='.
+      for (s = p = _Jv_Compiler_Properties[i]; *s && *s != '='; ++s)
+	;
+      jstring name = JvNewStringLatin1 (p, s - p);
+      jstring val = JvNewStringLatin1 (*s == '=' ? s + 1 : s);
+      properties->put (name, val);
+    }
 
   // Set the system properties from the user's environment.
   if (_Jv_Environment_Properties)
