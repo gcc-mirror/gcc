@@ -1,3 +1,33 @@
+2000-02-21  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* call.c (build_object_call): Compress consecutive calls to
+	cp_error.
+	(build_conditional_expr): Say 'ISO C++' not 'ANSI C++'.
+	(build_op_delete_call): Adjust message formatting.
+
+	* class.c (check_bases): Compress consecutive calls to
+	cp_pedwarn. 
+	(finish_struct_anon): Say 'ISO C++'.
+
+	* decl.c (start_decl): Same here.
+	(grok_reference_init): Likewise.
+	(grokfndecl): Correct message formatting.
+	(grokfndecl): Improve diagnostic.
+	(check_static_variable_definition): Likewise. Say 'ISO C++'
+	(compute_array_index_type): Say 'ISO C++'
+	(create_array_type_for_decl): Compress consecutive calls to
+	cp_error. 
+	(grokdeclarator): Say 'ISO C++'
+	(grok_op_properties): Likewise.
+
+	* decl2.c (delete_sanity): Clairify diagnostic.
+	(check_member_template): Same here.
+	(grok_function_init): Use consistent terminology.
+
+	* expr.c (do_case): Say 'ISO C++'
+
+	* friend.c (do_friend): Compress consecutive calls to warning.
+	
 2000-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (merge_primary_and_secondary_vtables_p): New macro.

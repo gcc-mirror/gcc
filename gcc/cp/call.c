@@ -2556,8 +2556,7 @@ build_object_call (obj, args)
     {
       /* It's no good looking for an overloaded operator() on a
 	 pointer-to-member-function.  */
-      cp_error ("pointer-to-member function %E cannot be called", obj);
-      cp_error ("without an object; consider using .* or ->*");
+      cp_error ("pointer-to-member function %E cannot be called without an object; consider using .* or ->*", obj);
       return error_mark_node;
     }
 
@@ -2773,7 +2772,7 @@ build_conditional_expr (arg1, arg2, arg3)
   if (!arg2)
     {
       if (pedantic)
-	pedwarn ("ANSI C++ forbids omitting the middle term of a ?: expression");
+	pedwarn ("ISO C++ forbids omitting the middle term of a ?: expression");
       arg1 = arg2 = save_expr (arg1);
     }
 
@@ -3579,7 +3578,7 @@ build_op_delete_call (code, addr, size, flags, placement)
   if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
 
-  cp_error ("no suitable operator delete for `%T'", type);
+  cp_error ("no suitable `operator delete' for `%T'", type);
   return error_mark_node;
 }
 

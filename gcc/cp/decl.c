@@ -6789,7 +6789,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	    {
 	      if (DECL_CONTEXT (field) != context)
 		{
-		  cp_pedwarn ("ANSI C++ does not permit `%T::%D' to be defined as `%T::%D'",
+		  cp_pedwarn ("ISO C++ does not permit `%T::%D' to be defined as `%T::%D'",
 			      DECL_CONTEXT (field), DECL_NAME (decl),
 			      context, DECL_NAME (decl));
 		  DECL_CONTEXT (decl) = DECL_CONTEXT (field);
@@ -6959,7 +6959,7 @@ grok_reference_init (decl, type, init)
 
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
-      cp_error ("ANSI C++ forbids use of initializer list to initialize reference `%D'", decl);
+      cp_error ("ISO C++ forbids use of initializer list to initialize reference `%D'", decl);
       return;
     }
 
@@ -8449,11 +8449,11 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
       if (processing_template_decl)
-	error ("cannot declare `main' to be a template");
+	error ("cannot declare `::main' to be a template");
       if (inlinep)
-	error ("cannot declare `main' to be inline");
+	error ("cannot declare `::main' to be inline");
       else if (! publicp)
-	error ("cannot declare `main' to be static");
+	error ("cannot declare `::main' to be static");
       inlinep = 0;
       publicp = 1;
     }
@@ -8532,7 +8532,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
 	    {
 	      /* Something like `template <class T> friend void f<T>()'.  */
-	      cp_error ("template-id `%D' in declaration of primary template",
+	      cp_error ("invalid use of template-id `%D' in declaration of primary template",
 			orig_declarator);
 	      return NULL_TREE;
 	    }
@@ -8870,7 +8870,7 @@ check_static_variable_definition (decl, type)
      required.  */
   if (CLASS_TYPE_P (type) || TREE_CODE (type) == REFERENCE_TYPE)
     {
-      cp_error ("in-class initialization of static data member of non-integral type `%T'",
+      cp_error ("invalid in-class initialization of static data member of non-integral type `%T'",
 		type);
       /* If we just return the declaration, crashes will sometimes
 	 occur.  We therefore return void_type_node, as if this was a
@@ -8879,10 +8879,10 @@ check_static_variable_definition (decl, type)
       return 1;
     }
   else if (!CP_TYPE_CONST_P (type))
-    cp_error ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
+    cp_error ("ISO C++ forbids in-class initialization of non-const static member `%D'",
 	      decl);
   else if (pedantic && !INTEGRAL_TYPE_P (type))
-    cp_pedwarn ("ANSI C++ forbids initialization of member constant `%D' of non-integral type `%T'", decl, type);
+    cp_pedwarn ("ISO C++ forbids initialization of member constant `%D' of non-integral type `%T'", decl, type);
 
   return 0;
 }
@@ -8966,9 +8966,9 @@ compute_array_index_type (name, size)
       else if (integer_zerop (size) && pedantic && !in_system_header)
 	{
 	  if (name)
-	    cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", name);
+	    cp_pedwarn ("ISO C++ forbids zero-size array `%D'", name);
 	  else
-	    cp_pedwarn ("ANSI C++ forbids zero-size array");
+	    cp_pedwarn ("ISO C++ forbids zero-size array");
 	}
     }
 
@@ -8987,10 +8987,10 @@ compute_array_index_type (name, size)
       if (pedantic)
 	{
 	  if (name)
-	    cp_pedwarn ("ANSI C++ forbids variable-size array `%D'",
+	    cp_pedwarn ("ISO C++ forbids variable-size array `%D'",
 			name);
 	  else
-	    cp_pedwarn ("ANSI C++ forbids variable-size array");
+	    cp_pedwarn ("ISO C++ forbids variable-size array");
 	}
 
       /* Create a variable-sized array index type.  */
@@ -9073,9 +9073,8 @@ create_array_type_for_decl (name, type, size)
      can be omitted only for the first member of the sequence.  */
   if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
     {
-      cp_error ("declaration of `%D' as multidimensional array",
+      cp_error ("declaration of `%D' as multidimensional array must have bounds for all dimensions except the first",
 		name);
-      cp_error ("must have bounds for all dimensions except the first");
 
       return error_mark_node;
     }
@@ -9604,7 +9603,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  if (i == (int) RID_LONG && RIDBIT_SETP (i, specbits))
 		    {
 		      if (pedantic && ! in_system_header && warn_long_long)
-			pedwarn ("ANSI C++ does not support `long long'");
+			pedwarn ("ISO C++ does not support `long long'");
 		      if (longlong)
 			error ("`long long long' is too long for GCC");
 		      else
@@ -9694,10 +9693,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (in_system_header || flag_ms_extensions)
 	    /* Allow it, sigh.  */;
 	  else if (pedantic || ! is_main)
-	    cp_pedwarn ("ANSI C++ forbids declaration of `%s' with no type",
+	    cp_pedwarn ("ISO C++ forbids declaration of `%s' with no type",
 			name);
 	  else if (warn_return_type)
-	    cp_warning ("ANSI C++ forbids declaration of `%s' with no type",
+	    cp_warning ("ISO C++ forbids declaration of `%s' with no type",
 			name);
 
 	  type = integer_type_node;
@@ -10655,7 +10654,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       if (decl_context == FIELD)
 	{
 	  if (declarator == constructor_name (current_class_type))
-	    cp_pedwarn ("ANSI C++ forbids nested type `%D' with same name as enclosing class",
+	    cp_pedwarn ("ISO C++ forbids nested type `%D' with same name as enclosing class",
 			declarator);
 	  decl = build_lang_decl (TYPE_DECL, declarator, type);
 	}
@@ -10726,7 +10725,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (ctype == NULL_TREE)
 	    {
 	      if (TREE_CODE (type) != METHOD_TYPE)
-		cp_error_at ("invalid type qualifier for non-method type", decl);
+		cp_error_at ("invalid type qualifier for non-member function type", decl);
 	      else
 		ctype = TYPE_METHOD_BASETYPE (type);
 	    }
@@ -11042,7 +11041,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  {
 	    if (friendp)
 	      {
-		error ("`%s' is neither function nor method; cannot be declared friend",
+		error ("`%s' is neither function nor member function; cannot be declared friend",
 		       IDENTIFIER_POINTER (declarator));
 		friendp = 0;
 	      }
@@ -11125,7 +11124,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   allow non-static data members here, because C does
 		   and /usr/include/netinet/in.h uses that.  */
 		&& (staticp || ! in_system_header))
-	      cp_pedwarn ("ANSI C++ forbids data member `%D' with same name as enclosing class",
+	      cp_pedwarn ("ISO C++ forbids data member `%D' with same name as enclosing class",
 			  declarator);
 
 	    if (staticp)
@@ -12004,7 +12003,7 @@ grok_op_properties (decl, virtualp, friendp)
       else if (name == ansi_opname[(int) COND_EXPR])
 	{
 	  /* 13.4.0.3 */
-	  cp_error ("ANSI C++ prohibits overloading operator ?:");
+	  cp_error ("ISO C++ prohibits overloading operator ?:");
 	}
       else if (ambi_op_p (name))
 	{
