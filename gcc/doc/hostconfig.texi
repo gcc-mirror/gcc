@@ -232,6 +232,15 @@ different buffer, the old path should be freed and the new buffer should
 have been allocated with malloc.
 @end table
 
+@findex DUMPFILE_FORMAT
+@item DUMPFILE_FORMAT
+Define this macro to be a C string representing the format to use
+for constructing the index part of the dump file name on your host machine.
+If you do not define this macro, GCC will use @samp{.%02d.}.  The full
+filename will be the prefix of the assembler file name concatenated with
+the string resulting from applying this format concatenated with a string
+unique to each dump file kind, e.g. @samp{rtl}.
+
 @findex bzero
 @findex bcmp
 In addition, configuration files for system V define @code{bcopy},

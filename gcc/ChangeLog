@@ -1,3 +1,11 @@
+Mon Nov 19 16:57:44 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* toplev.c (DUMPFILE_FORMAT): Define default.
+	(open_dump_file): Use DUMPFILE_FORMAT in sprintf.
+	(close_dump_file, compile_file): Likewise.
+	* config/alpha/xm-vms.h (DUMPFILE_FORMAT): Define.
+	* doc/hostconfig.texi (DUMPFILE_FORMAT): Document
+
 2001-11-19  Jeff Law <law@redhat.com>
 
 	* gcse.c (cprop_jump): Clear JUMP_LABEL field when we create
