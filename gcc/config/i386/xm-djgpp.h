@@ -43,9 +43,6 @@ Boston, MA 02111-1307, USA.  */
       strcat (xref_file, xref_ext); \
   } while (0)
 
-/* Change /dev/env/DJDIR/prefix/dir/ to canonical form so gcc_exec_prefix
-   is set properly in 'gcc.c'. It also helps to cut down the number of times
-   the value of the DJGPP environment variable 'DJDIR' is evaluated.  */
 #undef GCC_DRIVER_HOST_INITIALIZATION
 #define GCC_DRIVER_HOST_INITIALIZATION \
   do { \
@@ -69,9 +66,6 @@ Boston, MA 02111-1307, USA.  */
           fatal ("environment variable DJGPP points to corrupt file '%s'", \
                   djgpp); \
       } \
-    standard_exec_prefix = update_path (standard_exec_prefix, NULL); \
-    standard_bindir_prefix = update_path (standard_bindir_prefix, NULL); \
-    standard_startfile_prefix = update_path (standard_startfile_prefix, NULL); \
   } while (0)
 
 /* Canonicalize paths containing '/dev/env/'; used in prefix.c.
