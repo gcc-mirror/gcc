@@ -1,3 +1,19 @@
+Sat Sep 27 16:48:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/complext.h: Lose injection decls.
+	* std/fcomplex.h: Likewise.
+	* std/dcomplex.h: Likewise.
+	* std/ldcomplex.h: Likewise.
+
+Sat Sep 27 16:47:35 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* std/complext.h: Declare templates before making them
+	friends.  Use new friend <> syntax.
+	* std/complext.cc: Don't rely on guiding declarations.
+	* std/fcomplex.h: Use new friend <> syntax.
+	* std/dcomplex.h: Likewise.
+	* std/ldcomplex.h: Likewise.
+
 Thu Sep 25 19:55:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.h: Enable exceptions.

@@ -41,6 +41,16 @@ class istream;
 class ostream;
 
 extern "C++" {
+template <class _FLT> class complex;
+template <class _FLT> complex<_FLT>&
+  __doapl (complex<_FLT>* ths, const complex<_FLT>& r);
+template <class _FLT> complex<_FLT>&
+  __doami (complex<_FLT>* ths, const complex<_FLT>& r);
+template <class _FLT> complex<_FLT>&
+  __doaml (complex<_FLT>* ths, const complex<_FLT>& r);
+template <class _FLT> complex<_FLT>&
+  __doadv (complex<_FLT>* ths, const complex<_FLT>& r);
+
 template <class _FLT>
 class complex
 {
@@ -55,40 +65,10 @@ public:
 private:
   _FLT re, im;
 
-  friend complex& __doapl (complex *, const complex&);
-  friend complex& __doami (complex *, const complex&);
-  friend complex& __doaml (complex *, const complex&);
-  friend complex& __doadv (complex *, const complex&);
-
-  // These functions are specified as friends for purposes of name injection;
-  // they do not actually reference private members.
-  friend _FLT real (const complex&) __attribute__ ((const));
-  friend _FLT imag (const complex&) __attribute__ ((const));
-  friend complex operator + (const complex&, const complex&) __attribute__ ((const));
-  friend complex operator + (const complex&, _FLT) __attribute__ ((const));
-  friend complex operator + (_FLT, const complex&) __attribute__ ((const));
-  friend complex operator - (const complex&, const complex&) __attribute__ ((const));
-  friend complex operator - (const complex&, _FLT) __attribute__ ((const));
-  friend complex operator - (_FLT, const complex&) __attribute__ ((const));
-  friend complex operator * (const complex&, const complex&) __attribute__ ((const));
-  friend complex operator * (const complex&, _FLT) __attribute__ ((const));
-  friend complex operator * (_FLT, const complex&) __attribute__ ((const));
-  friend complex operator / (const complex&, const complex&) __attribute__ ((const));
-  friend complex operator / (const complex&, _FLT) __attribute__ ((const));
-  friend complex operator / (_FLT, const complex&) __attribute__ ((const));
-  friend bool operator == (const complex&, const complex&) __attribute__ ((const));
-  friend bool operator == (const complex&, _FLT) __attribute__ ((const));
-  friend bool operator == (_FLT, const complex&) __attribute__ ((const));
-  friend bool operator != (const complex&, const complex&) __attribute__ ((const));
-  friend bool operator != (const complex&, _FLT) __attribute__ ((const));
-  friend bool operator != (_FLT, const complex&) __attribute__ ((const));
-  friend complex polar (_FLT, _FLT) __attribute__ ((const));
-  friend complex pow (const complex&, const complex&) __attribute__ ((const));
-  friend complex pow (const complex&, _FLT) __attribute__ ((const));
-  friend complex pow (const complex&, int) __attribute__ ((const));
-  friend complex pow (_FLT, const complex&) __attribute__ ((const));
-  friend istream& operator>> (istream&, complex&);
-  friend ostream& operator<< (ostream&, const complex&);
+  friend complex& __doapl<> (complex *, const complex&);
+  friend complex& __doami<> (complex *, const complex&);
+  friend complex& __doaml<> (complex *, const complex&);
+  friend complex& __doadv<> (complex *, const complex&);
 };
 
 // Declare specializations.
@@ -141,9 +121,6 @@ complex<_FLT>::operator *= (const complex<_FLT>& r)
 {
   return __doaml (this, r);
 }
-
-template <class _FLT> complex<_FLT>&
-  __doadv (complex<_FLT>* ths, const complex<_FLT>& r);
 
 template <class _FLT>
 inline complex<_FLT>&
