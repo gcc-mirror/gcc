@@ -1,5 +1,9 @@
 2004-10-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-phinodes.c: Remove trailing whitespace.
+
+2004-10-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-ssa-loop-ivopts.c: Fix a comment typo.
 	* doc/invoke.texi: Fix a typo.
 
