@@ -1,5 +1,7 @@
 Sun Oct 25 06:12:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* x-alpha (CLIB): Add -lexc.
+
 	* i386/mingw32.h (OUTPUT_QUOTED_STRING): Don't use Cygwin format
 	for drive letter.
 
