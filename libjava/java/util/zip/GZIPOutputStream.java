@@ -62,6 +62,11 @@ public class GZIPOutputStream extends DeflaterOutputStream
     crc = new CRC32 ();
   }
 
+  public synchronized void write (byte[] buf) throws IOException
+  {
+    write (buf, 0, buf.length);
+  }
+
   public synchronized void write (byte[] buf, int off, int len)
     throws IOException
   {
