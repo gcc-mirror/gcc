@@ -1,3 +1,8 @@
+2003-06-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm-proto.h: Convert to ISO C90 prototypes.
+	* arm.c: Likewise.
+
 2003-06-10  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_output_mi_thunk): Call insn_locators_initialize.
