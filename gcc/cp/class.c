@@ -4645,8 +4645,7 @@ finish_struct_1 (t)
     {
       tree binfo = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
 
-      vfield = copy_node (vfield);
-      copy_lang_decl (vfield);
+      vfield = copy_decl (vfield);
 
       DECL_FIELD_CONTEXT (vfield) = t;
       DECL_FIELD_OFFSET (vfield)

@@ -8283,7 +8283,7 @@ end_cleanup_fn ()
 {
   do_poplevel ();
 
-  expand_body (finish_function (lineno, 0));
+  expand_body (finish_function (0));
 
   pop_from_top_level ();
 }
@@ -13939,8 +13939,7 @@ finish_destructor_body ()
        after the class definition is complete.)  */
 
 tree
-finish_function (lineno, flags)
-     int lineno;
+finish_function (flags)
      int flags;
 {
   register tree fndecl = current_function_decl;
@@ -13951,6 +13950,7 @@ finish_function (lineno, flags)
   int inclass_inline = (flags & 2) != 0;
   int expand_p;
   int nested;
+  int current_line = lineno;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
@@ -14065,7 +14065,7 @@ finish_function (lineno, flags)
 	  DECL_CONTEXT (no_return_label) = fndecl;
 	  DECL_INITIAL (no_return_label) = error_mark_node;
 	  DECL_SOURCE_FILE (no_return_label) = input_filename;
-	  DECL_SOURCE_LINE (no_return_label) = lineno;
+	  DECL_SOURCE_LINE (no_return_label) = current_line;
 	  expand_goto (no_return_label);
 	}
 
@@ -14104,7 +14104,7 @@ finish_function (lineno, flags)
       immediate_size_expand = 1;
 
       /* Generate rtl for function exit.  */
-      expand_function_end (input_filename, lineno, 1);
+      expand_function_end (input_filename, current_line, 1);
     }
 
   /* We have to save this value here in case

@@ -1,5 +1,23 @@
 2000-04-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tre.h (finish_function): Change prototype.
+	* decl.c (end_cleanup_fn): Adjust caller.
+	(finish_function): Take only one parameter.
+	* decl2.c (finish_objects): Adjust caller.
+	(finish_static_storage_duration_function): Likewise.
+	* method.c (emit_thunk): Likewise.
+	* parse.y: Likewise.
+	* parse.c: Regenerated.
+	* pt.c (instantiate_decl): Likewise.
+	* rtti.c (synthesize_tinfo_fn): Likewise.
+	* semantics.c (expand_body): Likewise.
+
+	* cp-tree.h (copy_decl): New function.
+	* class.c (finish_struct_1): Use it.
+	* lex.c (copy_decl): Define it.
+	* pt.c (tsubst_decl): Likewise.
+	* tree.c (copy_template_template_parm): Likewise.
+	
 	* cp-tree.h (lang_type): Remove has_nonpublic_ctor and
 	has_nonpublic_assign_ref.
 	(TYPE_HAS_NONPUBLIC_CTOR): Don't declare.

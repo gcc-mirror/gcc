@@ -1274,7 +1274,7 @@ synthesize_tinfo_fn (fndecl)
   finish_return_stmt (tmp);
   /* Finish the function body.  */
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
-  expand_body (finish_function (lineno, 0));
+  expand_body (finish_function (0));
 }
 
 /* Return the runtime bit mask encoding the qualifiers of TYPE.  */

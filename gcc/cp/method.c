@@ -2157,7 +2157,7 @@ emit_thunk (thunk_fndecl)
     t = build_call (function, t);
     finish_return_stmt (t);
 
-    expand_body (finish_function (lineno, 0));
+    expand_body (finish_function (0));
 
     /* Don't let the backend defer this function.  */
     if (DECL_DEFER_OUTPUT (thunk_fndecl))
@@ -2405,7 +2405,7 @@ synthesize_method (fndecl)
       finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
     }
 
-  expand_body (finish_function (lineno, 0));
+  expand_body (finish_function (0));
 
   extract_interface_info ();
   if (! context)
