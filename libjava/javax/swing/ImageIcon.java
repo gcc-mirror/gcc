@@ -56,7 +56,10 @@ public class ImageIcon implements Icon
 
   public ImageIcon(String s)
     {
-	this(s, "");
+    	// if description is not specified, then file name becomes
+	// desciption for this icon
+	
+	this(s, s);
     }
 
   public ImageIcon(String file,

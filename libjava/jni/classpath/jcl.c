@@ -1,5 +1,5 @@
 /* jcl.c
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,7 +37,7 @@ exception statement from your version. */
 
 #include <stdio.h>
 #include <jcl.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 #ifndef __GNUC__
 #define __attribute__(x) /* nothing */

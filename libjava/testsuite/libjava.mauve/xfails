@@ -32,7 +32,6 @@ FAIL: gnu.testlet.java.lang.String.getBytes13: String.getBytes("UnicodeLittleUnm
 FAIL: gnu.testlet.java.lang.String.getBytes14: String.getBytes("ISO8859_15") (number 1)
 FAIL: gnu.testlet.java.lang.String.getBytes14: String.getBytes("UTF-16BE") (number 1)
 FAIL: gnu.testlet.java.lang.String.getBytes14: String.getBytes("UTF-16LE") (number 1)
-FAIL: gnu.testlet.java.text.AttributedString.Test: Attribute key count (number 1)
 FAIL: gnu.testlet.java.text.DateFormatSymbols.Test: patterns (number 2)
 FAIL: gnu.testlet.java.text.SimpleDateFormat.getAndSet2DigitYearStart: get2DigitYearStart() initial (number 1)
 FAIL: gnu.testlet.java.text.DateFormatSymbols.Test: invalid locale (number 1)

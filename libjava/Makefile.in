@@ -1008,17 +1008,21 @@ javax/swing/border/TitledBorder.java \
 javax/swing/GrayFilter.java \
 javax/swing/AbstractAction.java \
 javax/swing/AbstractButton.java \
+javax/swing/plaf/basic/BasicArrowButton.java \
 javax/swing/plaf/basic/BasicButtonListener.java \
 javax/swing/plaf/basic/BasicButtonUI.java \
 javax/swing/plaf/basic/BasicCheckBoxUI.java \
 javax/swing/plaf/basic/BasicGraphicsUtils.java \
 javax/swing/plaf/basic/BasicLabelUI.java \
 javax/swing/plaf/basic/BasicListUI.java \
+javax/swing/plaf/basic/BasicMenuItemUI.java \
 javax/swing/plaf/basic/BasicOptionPaneUI.java \
 javax/swing/plaf/basic/BasicPanelUI.java \
 javax/swing/plaf/basic/BasicProgressBarUI.java \
 javax/swing/plaf/basic/BasicRootPaneUI.java \
 javax/swing/plaf/basic/BasicRadioButtonUI.java \
+javax/swing/plaf/basic/BasicRadioButtonMenuItemUI.java \
+javax/swing/plaf/basic/BasicCheckBoxMenuItemUI.java \
 javax/swing/plaf/basic/BasicScrollBarUI.java \
 javax/swing/plaf/basic/BasicScrollPaneUI.java \
 javax/swing/plaf/basic/BasicSeparatorUI.java \
@@ -4533,18 +4537,22 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/swing/plaf/TextUI.P .deps/javax/swing/plaf/ToolBarUI.P \
 .deps/javax/swing/plaf/ToolTipUI.P .deps/javax/swing/plaf/TreeUI.P \
 .deps/javax/swing/plaf/UIResource.P .deps/javax/swing/plaf/ViewportUI.P \
+.deps/javax/swing/plaf/basic/BasicArrowButton.P \
 .deps/javax/swing/plaf/basic/BasicBorders.P \
 .deps/javax/swing/plaf/basic/BasicButtonListener.P \
 .deps/javax/swing/plaf/basic/BasicButtonUI.P \
+.deps/javax/swing/plaf/basic/BasicCheckBoxMenuItemUI.P \
 .deps/javax/swing/plaf/basic/BasicCheckBoxUI.P \
 .deps/javax/swing/plaf/basic/BasicGraphicsUtils.P \
 .deps/javax/swing/plaf/basic/BasicIconFactory.P \
 .deps/javax/swing/plaf/basic/BasicLabelUI.P \
 .deps/javax/swing/plaf/basic/BasicListUI.P \
 .deps/javax/swing/plaf/basic/BasicLookAndFeel.P \
+.deps/javax/swing/plaf/basic/BasicMenuItemUI.P \
 .deps/javax/swing/plaf/basic/BasicOptionPaneUI.P \
 .deps/javax/swing/plaf/basic/BasicPanelUI.P \
 .deps/javax/swing/plaf/basic/BasicProgressBarUI.P \
+.deps/javax/swing/plaf/basic/BasicRadioButtonMenuItemUI.P \
 .deps/javax/swing/plaf/basic/BasicRadioButtonUI.P \
 .deps/javax/swing/plaf/basic/BasicRootPaneUI.P \
 .deps/javax/swing/plaf/basic/BasicScrollBarUI.P \

@@ -145,7 +145,7 @@ grab_current_drawable (GtkWidget *widget, GdkDrawable **draw, GdkWindow **win)
     }
 
   *draw = *win;
-  gdk_window_get_internal_paint_info (*win, draw, 0, 0);
+  gdk_window_get_internal_paint_info (*win, draw, 0, 0); 
   g_object_ref (*draw);
 }
 
@@ -349,7 +349,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_initState__II
 
   if (gr->debug) printf ("constructing offscreen drawable of size (%d,%d)\n",
 			 width, height);
-  
+
   gr->drawable = (GdkDrawable *) gdk_pixmap_new (NULL, width, height, 
 						 gdk_rgb_get_visual ()->depth);
   g_assert (gr->drawable != NULL);
@@ -371,9 +371,12 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_initState__II
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_gdkDrawDrawable
   (JNIEnv *env, jobject self, jobject other, jint x, jint y)
 {
+  GdkRectangle clipRect;
   struct graphics2d *src = NULL, *dst = NULL;
   gint s_height, s_width, d_height, d_width, height, width;
+  cairo_matrix_t *matrix;
   GdkGC *gc;
+  cairo_operator_t tmp_op;
 
   src = (struct graphics2d *)NSA_GET_G2D_PTR (env, other);
   dst = (struct graphics2d *)NSA_GET_G2D_PTR (env, self);
@@ -386,19 +389,33 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_gdkDrawDrawable
   gdk_drawable_get_size (src->drawable, &s_width, &s_height);
   gdk_drawable_get_size (dst->drawable, &d_width, &d_height);
   width = min (s_width, d_width);
-  height = min (s_width, d_height);
+  height = min (s_height, d_height);
+  gdk_threads_leave ();  
 
-  gc = gdk_gc_new (dst->drawable);
-  g_assert (gc != NULL);
+  begin_drawing_operation(dst); 
 
-  gdk_draw_drawable(dst->drawable, gc, src->drawable, 
- 		    0, 0, x, y, width, height); 
+  matrix = cairo_matrix_create ();
+  cairo_surface_get_matrix (src->surface, matrix);
+  cairo_matrix_translate (matrix, (double)-x, (double)-y);
+  cairo_surface_set_matrix (src->surface, matrix);
+
+  tmp_op = cairo_current_operator (dst->cr); 
+  cairo_set_operator(dst->cr, CAIRO_OPERATOR_SRC); 
+  cairo_show_surface (dst->cr, src->surface, width, height);
+  cairo_set_operator(dst->cr, tmp_op);
+
+  cairo_matrix_translate (matrix, (double)x, (double)y);
+  cairo_surface_set_matrix (src->surface, matrix);
+  cairo_matrix_destroy (matrix);
+
+  end_drawing_operation(dst);
+
+  gdk_threads_enter ();  
   gdk_flush ();
-
-  g_object_unref (gc);
+  gdk_threads_leave ();  
 
   if (src->debug) printf ("copied %d x %d pixels from offscreen drawable\n", width, height);
-  gdk_threads_leave ();  
+
 }
 
 static jintArray
@@ -1215,7 +1232,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoClip
   gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
   g_assert (gr != NULL);
   if (gr->debug) printf ("cairo_clip\n");
-  cairo_clip (gr->cr);
+  cairo_init_clip (gr->cr); 
+  cairo_clip (gr->cr); 
 }
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSurfaceSetFilter

@@ -186,6 +186,7 @@ ok_clicked (GtkButton *button __attribute__((unused)),
   static jmethodID hideID;
   void *ptr;
   G_CONST_RETURN gchar *fileName;
+  jstring str_fileName;
 
   ptr = NSA_GET_PTR (gdk_env, peer_obj);
   
@@ -204,7 +205,7 @@ ok_clicked (GtkButton *button __attribute__((unused)),
   gdk_threads_leave ();
   
   /* Set the Java object field 'file' with this value. */
-  jstring str_fileName = (*gdk_env)->NewStringUTF (gdk_env, fileName);
+  str_fileName = (*gdk_env)->NewStringUTF (gdk_env, fileName);
   (*gdk_env)->CallVoidMethod (gdk_env, peer_obj, gtkSetFilenameID, str_fileName);
 
   /* We can hide the dialog now (and unblock show) */

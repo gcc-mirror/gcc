@@ -1,5 +1,5 @@
-/* MenuPeer.java -- Interface for menu peers
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* BasicRadioButtonMenuItemUI.java
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,14 +35,44 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+package javax.swing.plaf.basic;
 
-package java.awt.peer;
+import java.awt.event.MouseEvent;
+import javax.swing.AbstractButton;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
 
-import java.awt.MenuItem;
+import javax.swing.plaf.ComponentUI;
 
-public interface MenuPeer extends MenuItemPeer
+
+public class BasicRadioButtonMenuItemUI extends BasicMenuItemUI
 {
-  void addItem (MenuItem item);
-  void delItem (int index);
-}
 
+  public BasicRadioButtonMenuItemUI()
+  {    
+    super();
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    checkIcon = defaults.getIcon("RadioButtonMenuItem.checkIcon");
+  }
+
+  public static ComponentUI createUI(JComponent b)
+  {
+    return new BasicRadioButtonMenuItemUI();
+  }
+
+  protected String getPropertyPrefix()
+  {
+    return null;
+    // TODO
+  }
+
+  void processMouseEvent(JMenuItem item, MouseEvent e, MenuElement[] path,
+                         MenuSelectionManager manager)
+  {
+  }
+}

@@ -289,7 +289,7 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
 	String oldText = labelText;
 	labelText = text;
 	firePropertyChange(TEXT_CHANGED_PROPERTY, oldText, labelText);
-	if (labelText.length() <= underlinedChar)
+	if (labelText != null && labelText.length() <= underlinedChar)
 	  setDisplayedMnemonicIndex(labelText.length() - 1);
       }
   }

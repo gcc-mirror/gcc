@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.text;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -219,26 +220,7 @@ AttributedString(AttributedCharacterIterator aci, int begin_index,
   // Get the valid attribute list
   Set all_attribs = aci.getAllAttributeKeys();
   if (attributes != null)
-    {
-      Set valid_attribs = new HashSet();
-      Iterator iter = all_attribs.iterator();
-      while (iter.hasNext())
-        {
-          Object obj = iter.next();
-
-          int i;
-          for (i = 0; i < attributes.length; i++)
-            if (obj.equals(attributes[0]))
-              break;
-
-          if (i == attributes.length)
-            continue;
-
-          valid_attribs.add(obj);
-        }
-
-      all_attribs = valid_attribs;
-    } 
+    all_attribs.retainAll(Arrays.asList(attributes));
 
   // Loop through and extract the attributes
   char c = aci.setIndex(begin_index);
@@ -320,7 +302,7 @@ AttributedString(AttributedCharacterIterator aci, int begin_index,
 public void
 addAttribute(AttributedCharacterIterator.Attribute attrib, Object value)
 {
-  addAttribute(attrib, value, 0, sci.getEndIndex() - 1);
+  addAttribute(attrib, value, 0, sci.getEndIndex());
 }
 
 /*************************************************************************/
@@ -389,8 +371,7 @@ addAttributes(Map attributes, int begin_index, int end_index)
 public AttributedCharacterIterator
 getIterator()
 {
-  return(new AttributedStringIterator(sci, attribs, 0, sci.getEndIndex() - 1,
-                                      null));
+  return(new AttributedStringIterator(sci, attribs, 0, sci.getEndIndex(), null));
 }
 
 /*************************************************************************/
@@ -409,7 +390,7 @@ getIterator()
 public AttributedCharacterIterator
 getIterator(AttributedCharacterIterator.Attribute[] attributes)
 {
-  return(getIterator(attributes, 0, sci.getEndIndex() - 1));
+  return(getIterator(attributes, 0, sci.getEndIndex()));
 }
 
 /*************************************************************************/

@@ -196,11 +196,11 @@ public class BasicIconFactory implements Serializable
   }
   public static Icon getCheckBoxMenuItemIcon()
   {
-    return new DummyIcon();
+    return getCheckBoxIcon();
   }
   public static Icon getRadioButtonMenuItemIcon()
   {
-    return new DummyIcon();
+    return getRadioButtonIcon();
   }
   public static Icon createEmptyFrameIcon()
   {

@@ -115,7 +115,7 @@ public class DefaultSingleSelectionModel
    */
   public boolean isSelected ()
   {
-    return (index == -1);
+    return (index != -1);
   }
 
   /**

@@ -501,7 +501,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "MenuBar.windowBindings", new Object[] {
         "F10", "takeFocus"
       },
-      "MenuItem.acceleratorDelimiter", "+",
+      "MenuItem.acceleratorDelimiter", "-",
       "MenuItem.acceleratorFont", new FontUIResource("Dialog", Font.PLAIN, 12),
       "MenuItem.acceleratorForeground", new ColorUIResource(Color.black),
       "MenuItem.acceleratorSelectionForeground", new ColorUIResource(Color.white),
@@ -703,9 +703,9 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "ctrl UP", "requestFocus",
         "ctrl KP_UP", "requestFocus"
       }),
-      "TabbedPane.background", new ColorUIResource(Color.lightGray),
+      "TabbedPane.background", new ColorUIResource(Color.GRAY),
       "TabbedPane.contentBorderInsets", new InsetsUIResource(2, 2, 3, 3),
-      "TabbedPane.darkShadow", new ColorUIResource(Color.black),
+      "TabbedPane.darkShadow", new ColorUIResource(Color.darkGray),
       "TabbedPane.focus", new ColorUIResource(Color.black),
       "TabbedPane.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
         "LEFT",  "navigateLeft",
@@ -725,8 +725,10 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "TabbedPane.lightHighlight", new ColorUIResource(Color.white),
       "TabbedPane.selectedTabPadInsets", new InsetsUIResource(2, 2, 2, 1),
       "TabbedPane.shadow", new ColorUIResource(Color.gray),
-      "TabbedPane.tabAreaInsets", new InsetsUIResource(3, 2, 0, 2),
-      "TabbedPane.tabInsets", new InsetsUIResource(0, 4, 1, 4),
+      "TabbedPane.tabbedPaneTabAreaInsets", new InsetsUIResource(3, 2, 1, 2),
+      "TabbedPane.tabbedPaneTabInsets", new InsetsUIResource(1, 4, 1, 4),
+      "TabbedPane.tabbedPaneContentBorderInsets", new InsetsUIResource(3, 2, 1, 2),
+      "TabbedPane.tabbedPaneTabPadInsets", new InsetsUIResource(1, 1, 1, 1),
       "TabbedPane.tabRunOverlay", new Integer(2),
       "TabbedPane.textIconGap", new Integer(4),
       "Table.ancestorInputMap", new UIDefaults.LazyInputMap(new Object[] {

@@ -82,7 +82,7 @@ private boolean isHelpMenu;
 // From the serialization spec.  FIXME: what should it be?
 private int menuSerializedDataVersion;
 
-static final MenuItem separator = new MenuItem("-");
+static final String separatorLabel = "-";
 
 /*************************************************************************/
 
@@ -295,8 +295,7 @@ insert(String label, int index)
 public void
 addSeparator()
 {
-  if (peer != null)
-    ((MenuPeer) peer).addSeparator();
+  add(new MenuItem(separatorLabel));
 }
 
 /*************************************************************************/
@@ -314,7 +313,7 @@ addSeparator()
 public void
 insertSeparator(int index)
 {
-  insert(separator, index);
+  insert(new MenuItem(separatorLabel), index);
 }
 
 /*************************************************************************/
