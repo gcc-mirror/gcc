@@ -1,3 +1,13 @@
+2003-02-11  Bob Wilson  <bob.wilson@acm.org>
+
+	Backport following patch:
+
+	2003-02-11  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.md (set_frame_ptr): Change rtl to set reg a7.
+	* config/xtensa/xtensa.c (xtensa_reorg): Search for UNSPECV_SET_FP
+	as a SET pattern.
+	
 2003-02-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 

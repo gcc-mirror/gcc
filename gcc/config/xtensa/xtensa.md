@@ -2392,7 +2392,7 @@
 ;; to set up the frame pointer.
 
 (define_insn "set_frame_ptr"
-  [(unspec_volatile [(const_int 0)] UNSPECV_SET_FP)]
+  [(set (reg:SI A7_REG) (unspec_volatile [(const_int 0)] UNSPECV_SET_FP))]
   ""
   "*
 {
@@ -2406,7 +2406,7 @@
 
 ;; Post-reload splitter to remove fp assignment when it's not needed.
 (define_split
-  [(unspec_volatile [(const_int 0)] UNSPECV_SET_FP)]
+  [(set (reg:SI A7_REG) (unspec_volatile [(const_int 0)] UNSPECV_SET_FP))]
   "reload_completed && !frame_pointer_needed"
   [(unspec [(const_int 0)] UNSPEC_NOP)]
   "")
