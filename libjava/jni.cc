@@ -47,6 +47,8 @@ extern java::lang::Class ClassClass;
 #define ObjectClass _CL_Q34java4lang6Object
 extern java::lang::Class ObjectClass;
 
+#define ThrowableClass _CL_Q34java4lang9Throwable
+extern java::lang::Class ThrowableClass;
 #define MethodClass _CL_Q44java4lang7reflect6Method
 extern java::lang::Class MethodClass;
 
@@ -278,7 +280,7 @@ template<>
 static jobject
 wrap_value (JNIEnv *env, jobject value)
 {
-  return _Jv_JNI_NewLocalRef (env, value);
+  return value == NULL ? value : _Jv_JNI_NewLocalRef (env, value);
 }
 
 
@@ -302,7 +304,7 @@ _Jv_JNI_DefineClass (JNIEnv *env, jobject loader,
 
   // FIXME: exception processing.
   jclass result = l->defineClass (bytes, 0, bufLen);
-  return (jclass) _Jv_JNI_NewLocalRef (env, result);
+  return (jclass) wrap_value (env, result);
 }
 
 static jclass
@@ -328,13 +330,13 @@ _Jv_JNI_FindClass (JNIEnv *env, const char *name)
   // FIXME: exception processing.
   jclass r = loader->findClass (n);
 
-  return (jclass) _Jv_JNI_NewLocalRef (env, r);
+  return (jclass) wrap_value (env, r);
 }
 
 static jclass
 _Jv_JNI_GetSuperclass (JNIEnv *env, jclass clazz)
 {
-  return (jclass) _Jv_JNI_NewLocalRef (env, clazz->getSuperclass ());
+  return (jclass) wrap_value (env, clazz->getSuperclass ());
 }
 
 static jboolean
@@ -346,6 +348,8 @@ _Jv_JNI_IsAssignableFrom(JNIEnv *, jclass clazz1, jclass clazz2)
 static jint
 _Jv_JNI_Throw (JNIEnv *env, jthrowable obj)
 {
+  // We check in case the user did some funky cast.
+  JvAssert (obj != NULL && (&ThrowableClass)->isInstance (obj));
   env->ex = obj;
   return 0;
 }
@@ -354,6 +358,8 @@ static jint
 _Jv_JNI_ThrowNew (JNIEnv *env, jclass clazz, const char *message)
 {
   using namespace java::lang::reflect;
+
+  JvAssert ((&ThrowableClass)->isAssignableFrom (clazz));
 
   JArray<jclass> *argtypes
     = (JArray<jclass> *) JvNewObjectArray (1, &ClassClass, NULL);
@@ -378,7 +384,7 @@ _Jv_JNI_ThrowNew (JNIEnv *env, jclass clazz, const char *message)
 static jthrowable
 _Jv_JNI_ExceptionOccurred (JNIEnv *env)
 {
-  return (jthrowable) _Jv_JNI_NewLocalRef (env, env->ex);
+  return (jthrowable) wrap_value (env, env->ex);
 }
 
 static void
@@ -419,6 +425,8 @@ _Jv_JNI_AllocObject (JNIEnv *env, jclass clazz)
 {
   jobject obj = NULL;
   using namespace java::lang::reflect;
+
+  JvAssert (clazz && ! clazz->isArray ());
   if (clazz->isInterface() || Modifier::isAbstract(clazz->getModifiers()))
     env->ex = new java::lang::InstantiationException ();
   else
@@ -428,13 +436,14 @@ _Jv_JNI_AllocObject (JNIEnv *env, jclass clazz)
       obj = JvAllocObject (clazz);
     }
 
-  return _Jv_JNI_NewLocalRef (env, obj);
+  return wrap_value (env, obj);
 }
 
 static jclass
 _Jv_JNI_GetObjectClass (JNIEnv *env, jobject obj)
 {
-  return (jclass) _Jv_JNI_NewLocalRef (env, obj->getClass());
+  JvAssert (obj);
+  return (jclass) wrap_value (env, obj->getClass());
 }
 
 static jboolean
@@ -784,6 +793,9 @@ static jobject
 _Jv_JNI_NewObjectV (JNIEnv *env, jclass klass,
 		    jmethodID id, va_list args)
 {
+  JvAssert (klass && ! klass->isArray ());
+  JvAssert (! strcmp (id->name->data, "<init>")
+	    && ! strcmp (id->signature->data, "()V"));
   return _Jv_JNI_CallAnyMethodV<jobject, constructor> (env, NULL, klass,
 						       id, args);
 }
@@ -791,6 +803,10 @@ _Jv_JNI_NewObjectV (JNIEnv *env, jclass klass,
 static jobject
 _Jv_JNI_NewObject (JNIEnv *env, jclass klass, jmethodID id, ...)
 {
+  JvAssert (klass && ! klass->isArray ());
+  JvAssert (! strcmp (id->name->data, "<init>")
+	    && ! strcmp (id->signature->data, "()V"));
+
   va_list args;
   jobject result;
 
@@ -806,6 +822,9 @@ static jobject
 _Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
 		    jvalue *args)
 {
+  JvAssert (klass && ! klass->isArray ());
+  JvAssert (! strcmp (id->name->data, "<init>")
+	    && ! strcmp (id->signature->data, "()V"));
   return _Jv_JNI_CallAnyMethodA<jobject, constructor> (env, NULL, klass,
 						       id, args);
 }
@@ -816,6 +835,7 @@ template<typename T>
 static T
 _Jv_JNI_GetField (JNIEnv *env, jobject obj, jfieldID field) 
 {
+  JvAssert (obj);
   T *ptr = (T *) ((char *) obj + field->getOffset ());
   return wrap_value (env, *ptr);
 }
@@ -824,6 +844,7 @@ template<typename T>
 static void
 _Jv_JNI_SetField (JNIEnv *, jobject obj, jfieldID field, T value)
 {
+  JvAssert (obj);
   T *ptr = (T *) ((char *) obj + field->getOffset ());
   *ptr = value;
 }
@@ -900,7 +921,7 @@ _Jv_JNI_NewString (JNIEnv *env, const jchar *unichars, jsize len)
 {
   // FIXME: exception processing.
   jstring r = _Jv_NewString (unichars, len);
-  return (jstring) _Jv_JNI_NewLocalRef (env, r);
+  return (jstring) wrap_value (env, r);
 }
 
 static jsize
@@ -930,7 +951,7 @@ _Jv_JNI_NewStringUTF (JNIEnv *env, const char *bytes)
 {
   // FIXME: exception processing.
   jstring result = JvNewStringUTF (bytes);
-  return (jstring) _Jv_JNI_NewLocalRef (env, result);
+  return (jstring) wrap_value (env, result);
 }
 
 static jsize
@@ -1010,14 +1031,14 @@ _Jv_JNI_NewObjectArray (JNIEnv *env, jsize length, jclass elementClass,
 {
   // FIXME: exception processing.
   jarray result = JvNewObjectArray (length, elementClass, init);
-  return (jarray) _Jv_JNI_NewLocalRef (env, result);
+  return (jarray) wrap_value (env, result);
 }
 
 static jobject
 _Jv_JNI_GetObjectArrayElement (JNIEnv *env, jobjectArray array, jsize index)
 {
   jobject *elts = elements (array);
-  return _Jv_JNI_NewLocalRef (env, elts[index]);
+  return wrap_value (env, elts[index]);
 }
 
 static void
@@ -1035,8 +1056,7 @@ static JArray<T> *
 _Jv_JNI_NewPrimitiveArray (JNIEnv *env, jsize length)
 {
   // FIXME: exception processing.
-  return (JArray<T> *) _Jv_JNI_NewLocalRef (env,
-					    _Jv_NewPrimArray (K, length));
+  return (JArray<T> *) wrap_value (env, _Jv_NewPrimArray (K, length));
 }
 
 template<typename T>
@@ -1145,7 +1165,7 @@ _Jv_JNI_ToReflectedField (JNIEnv *env, jclass cls, jfieldID fieldID,
   field->declaringClass = cls;
   field->offset = (char*) fieldID - (char *) cls->fields;
   field->name = _Jv_NewStringUtf8Const (fieldID->getNameUtf8Const (cls));
-  return _Jv_JNI_NewLocalRef (env, field);
+  return wrap_value (env, field);
 }
 
 // JDK 1.2
@@ -1184,7 +1204,7 @@ _Jv_JNI_ToReflectedMethod (JNIEnv *env, jclass klass, jmethodID id,
       result = meth;
     }
 
-  return _Jv_JNI_NewLocalRef (env, result);
+  return wrap_value (env, result);
 }
 
 static jmethodID
