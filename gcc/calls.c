@@ -1723,17 +1723,17 @@ expand_call (exp, target, ignore)
 			       BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
 	save_mode = BLKmode;
 
+#ifdef ARGS_GROW_DOWNWARD
       stack_area = gen_rtx_MEM (save_mode,
 				memory_address (save_mode,
-					    
-#ifdef ARGS_GROW_DOWNWARD
 						plus_constant (argblock,
-							       - high_to_save)
+							       - high_to_save)));
 #else
+      stack_area = gen_rtx_MEM (save_mode,
+				memory_address (save_mode,
 						plus_constant (argblock,
-							       low_to_save)
+							       low_to_save)));
 #endif
-						));
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
@@ -2215,17 +2215,19 @@ expand_call (exp, target, ignore)
       if (save_area)
 	{
 	  enum machine_mode save_mode = GET_MODE (save_area);
+#ifdef ARGS_GROW_DOWNWARD
 	  rtx stack_area
 	    = gen_rtx_MEM (save_mode,
 			   memory_address (save_mode,
-#ifdef ARGS_GROW_DOWNWARD
 					   plus_constant (argblock,
-							  - high_to_save)
+							  - high_to_save)));
 #else
+	  rtx stack_area
+	    = gen_rtx_MEM (save_mode,
+			   memory_address (save_mode,
 					   plus_constant (argblock,
-							  low_to_save)
+							  low_to_save)));
 #endif
-					   ));
 
 	  if (save_mode != BLKmode)
 	    emit_move_insn (stack_area, save_area);
@@ -2574,17 +2576,17 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 			       BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
 	save_mode = BLKmode;
 
+#ifdef ARGS_GROW_DOWNWARD
       stack_area = gen_rtx_MEM (save_mode,
 				memory_address (save_mode,
-					    
-#ifdef ARGS_GROW_DOWNWARD
 						plus_constant (argblock,
-							       - high_to_save)
+							       - high_to_save)));
 #else
+      stack_area = gen_rtx_MEM (save_mode,
+				memory_address (save_mode,
 						plus_constant (argblock,
-							       low_to_save)
+							       low_to_save)));
 #endif
-						));
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
@@ -2740,15 +2742,18 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   if (save_area)
     {
       enum machine_mode save_mode = GET_MODE (save_area);
+#ifdef ARGS_GROW_DOWNWARD
       rtx stack_area
 	= gen_rtx_MEM (save_mode,
 		       memory_address (save_mode,
-#ifdef ARGS_GROW_DOWNWARD
-				       plus_constant (argblock, - high_to_save)
+				       plus_constant (argblock,
+						       - high_to_save)));
 #else
-				       plus_constant (argblock, low_to_save)
+      rtx stack_area
+	= gen_rtx_MEM (save_mode,
+		       memory_address (save_mode,
+				       plus_constant (argblock, low_to_save)));
 #endif
-				       ));
 
       if (save_mode != BLKmode)
 	emit_move_insn (stack_area, save_area);
@@ -3142,17 +3147,17 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 			       BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
 	save_mode = BLKmode;
 
+#ifdef ARGS_GROW_DOWNWARD
       stack_area = gen_rtx_MEM (save_mode,
 				memory_address (save_mode,
-					    
-#ifdef ARGS_GROW_DOWNWARD
 						plus_constant (argblock,
-							       - high_to_save)
+							       - high_to_save)));
 #else
+      stack_area = gen_rtx_MEM (save_mode,
+				memory_address (save_mode,
 						plus_constant (argblock,
-							       low_to_save)
+							       low_to_save)));
 #endif
-						));
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
@@ -3334,15 +3339,18 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   if (save_area)
     {
       enum machine_mode save_mode = GET_MODE (save_area);
+#ifdef ARGS_GROW_DOWNWARD
       rtx stack_area
 	= gen_rtx_MEM (save_mode,
 		       memory_address (save_mode,
-#ifdef ARGS_GROW_DOWNWARD
-				       plus_constant (argblock, - high_to_save)
+				       plus_constant (argblock,
+						      - high_to_save)));
 #else
-				       plus_constant (argblock, low_to_save)
+      rtx stack_area
+	= gen_rtx_MEM (save_mode,
+		       memory_address (save_mode,
+				       plus_constant (argblock, low_to_save)));
 #endif
-				       ));
       if (save_mode != BLKmode)
 	emit_move_insn (stack_area, save_area);
       else
