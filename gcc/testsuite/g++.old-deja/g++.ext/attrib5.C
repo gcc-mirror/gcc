@@ -4,8 +4,8 @@
 // { dg-require-alias "" }
 
 extern "C" {
-  void f () __attribute__((weak, alias ("_f")));
   void _f () { }
+  void f () __attribute__((weak, alias ("_f")));
 }
 
 int main ()
