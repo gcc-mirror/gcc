@@ -4956,6 +4956,13 @@ set_init_index (tree first, tree last)
 
   designator_errorneous = 1;
 
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (first))
+      || (last && !INTEGRAL_TYPE_P (TREE_TYPE (last))))
+    {
+      error_init ("array index in initializer not of integer type");
+      return;
+    }
+
   while ((TREE_CODE (first) == NOP_EXPR
 	  || TREE_CODE (first) == CONVERT_EXPR
 	  || TREE_CODE (first) == NON_LVALUE_EXPR)

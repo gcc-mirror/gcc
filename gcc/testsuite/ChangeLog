@@ -1,5 +1,10 @@
 2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* gcc.dg/c99-init-3.c, gcc.dg/gnu99-init-2.c: New tests.
+	* gcc.dg/noncompile/921102-1.c: Update expected error message.
+
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/11250
 	* gcc.dg/init-string-1.c: New test.
 

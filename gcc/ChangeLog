@@ -1,5 +1,10 @@
 2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* c-typeck.c (set_init_index): Require designator to be of integer
+	type.
+
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/11250
 	* c-parse.in (init): Change to exprtype.
 	(primary): Set original_code for STRING to STRING_CST.
