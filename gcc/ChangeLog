@@ -1,3 +1,8 @@
+Fri Apr 12 08:06:54 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (widen_memory_access): Don't do anything if MEMOFFSET
+	not specified.
+
 Fri Apr 12 12:11:26 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (calc_live_regs, sh_pr_n_sets): Use of PR_MEDIA_REG / PR_REG
