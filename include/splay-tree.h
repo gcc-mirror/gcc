@@ -1,5 +1,5 @@
 /* A splay-tree datatype.  
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.

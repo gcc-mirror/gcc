@@ -1,3 +1,15 @@
+2001-03-14  Nick Clifton  <nickc@redhat.com>
+
+	* ansidecl.h: Fix copyright dates.
+	* demangle.h: Fix copyright dates.
+	* floatformat.h: Fix copyright dates.
+	* fnmatch.h: Fix copyright dates.
+	* getopt.h: Fix copyright dates.
+	* libiberty.h: Add FSF copyright notice.
+	* md5.h: Fix copyright dates.
+	* obstack.h: Fix copyright dates.
+	* splay-tree.h: Fix copyright dates.
+
 2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
