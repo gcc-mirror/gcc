@@ -814,8 +814,7 @@ package ALI is
       Err          : Boolean;
       Read_Xref    : Boolean := False;
       Read_Lines   : String := "";
-      Ignore_Lines : String := "X")
-      return         ALI_Id;
+      Ignore_Lines : String := "X") return ALI_Id;
    --  Given the text, T, of an ALI file, F, scan and store the information
    --  from the file, and return the Id of the resulting entry in the ALI
    --  table. Switch settings may be modified as described above in the

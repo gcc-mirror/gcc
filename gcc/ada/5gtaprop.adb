@@ -141,7 +141,6 @@ package body System.Task_Primitives.Operations is
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
       pragma Unreferenced (T);
       pragma Unreferenced (On);
-
    begin
       null;
    end Stack_Guard;
@@ -251,7 +250,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_destroy (L);
       pragma Assert (Result = 0);
@@ -259,7 +257,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access RTS_Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_destroy (L);
       pragma Assert (Result = 0);
@@ -271,10 +268,8 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_lock (L);
-
       Ceiling_Violation := Result = FUNC_ERR and then errno = EINVAL;
       pragma Assert (Result /= FUNC_ERR);
    end Write_Lock;
@@ -283,7 +278,6 @@ package body System.Task_Primitives.Operations is
      (L : access RTS_Lock; Global_Lock : Boolean := False)
    is
       Result : Interfaces.C.int;
-
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_lock (L);
@@ -293,7 +287,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       if not Single_Lock then
          Result := pthread_mutex_lock (T.Common.LL.L'Access);
@@ -316,7 +309,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_mutex_unlock (L);
       pragma Assert (Result = 0);
@@ -324,7 +316,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : Interfaces.C.int;
-
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_unlock (L);
@@ -334,7 +325,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       if not Single_Lock then
          Result := pthread_mutex_unlock (T.Common.LL.L'Access);
@@ -543,7 +533,6 @@ package body System.Task_Primitives.Operations is
       Reason : System.Tasking.Task_States)
    is
       pragma Unreferenced (Reason);
-
       Result : Interfaces.C.int;
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
@@ -813,10 +802,8 @@ package body System.Task_Primitives.Operations is
 
    procedure Exit_Task is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_set_ada_tcb (pthread_self, System.Null_Address);
-
       pragma Assert (Result = 0);
    end Exit_Task;
 
@@ -826,7 +813,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Task (T : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       Result :=
         pthread_kill (T.Common.LL.Thread,
@@ -854,7 +840,6 @@ package body System.Task_Primitives.Operations is
 
    function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
       pragma Unreferenced (Self_ID);
-
    begin
       return True;
    end Check_No_Locks;
@@ -961,8 +946,9 @@ package body System.Task_Primitives.Operations is
       if Result = FUNC_ERR then
          raise Storage_Error;               --  Insufficient resources.
       end if;
-
    end Initialize_Athread_Library;
+
+--  Package initialization
 
 begin
    Initialize_Athread_Library;

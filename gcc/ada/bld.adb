@@ -525,11 +525,16 @@ package body Bld is
                                   First_Expression_In_List (Current_Term);
 
                begin
-                  if String_Node /= Empty_Node then
+                  if String_Node = Empty_Node then
 
                      --  If String_Node is nil, it is an empty list,
-                     --  there is nothing to do
+                     --  set Expression_Kind if it is still Undecided
 
+                     if Expression_Kind = Undecided then
+                        Expression_Kind := Static_String;
+                     end if;
+
+                  else
                      Expression
                        (Project    => Project,
                         First_Term => Tree.First_Term (String_Node),

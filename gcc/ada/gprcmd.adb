@@ -113,6 +113,7 @@ procedure Gprcmd is
          Put_Line
            (Standard_Error,
             "bad call to gprcmd with" & Argument_Count'Img & " arguments.");
+
          for J in 0 .. Argument_Count loop
             Put (Standard_Error, Argument (J) & " ");
          end loop;
@@ -473,9 +474,9 @@ begin
             end if;
          end;
 
-      else
-         --  Uknown command
+      --  Unknown command
 
+      else
          Check_Args (False);
       end if;
    end;

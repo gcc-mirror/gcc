@@ -1,3 +1,55 @@
+2004-02-04  Robert Dewar  <dewar@gnat.com>
+
+	* 5gtasinf.adb, 5gtasinf.ads, 5gtaprop.adb, ali.adb,
+	ali.ads, gprcmd.adb: Minor reformatting
+
+	* bindgen.adb: Output restrictions string for new style restrictions
+	handling
+
+	* impunit.adb: Add s-rident.ads (System.Rident) and
+	s-restri (System.Restrictions)
+
+	* lib-writ.adb: Fix bug in writing restrictions string (last few
+	entries wrong)
+
+	* s-restri.ads, s-restri.adb: Change name Restrictions to
+	Run_Time_Restrictions to avoid conflict with package name.
+	Add circuit to read and acquire run time restrictions.
+
+2004-02-04  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* restrict.ads, restrict.adb: Use the new restriction
+	No_Task_Attributes_Package instead of the old No_Task_Attributes.
+
+	* sem_prag.adb: No_Task_Attributes is a synonym of
+	No_Task_Attributes_Package.
+
+	* snames.ads, snames.adb: New entry for proper handling of
+	No_Task_Attributes.
+
+	* s-rident.ads: Adding restriction No_Task_Attributes_Package
+	(AI-00249) that supersedes the GNAT specific restriction
+	No_Task_Attributes.
+
+2004-02-04  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_prag.adb: 
+	(Analyze_Pragma, case Warnings): In an inlined body, as in an instance
+	 body, an identifier may be wrapped in an unchecked conversion.
+
+2004-02-04  Vincent Celier  <celier@gnat.com>
+
+	* lib-writ.ads: Comment update for the W lines
+
+	* bld.adb: (Expression): An empty string list is static
+
+	* fname-uf.adb: Minor comment update
+
+	* fname-uf.ads: (Get_File_Name): Document new parameter May_Fail
+
+	* gnatbind.adb: Initialize Cumulative_Restrictions with the
+	restrictions on the target.
+
 2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ada/trans.c (gigi): Use gen_rtx_SYMBOL_REF instead of

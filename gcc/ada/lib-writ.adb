@@ -691,7 +691,7 @@ package body Lib.Writ is
          end loop;
       end Write_With_Lines;
 
-   --  Start of processing for Writ_ALI
+   --  Start of processing for Write_ALI
 
    begin
       --  We never write an ALI file if the original operating mode was
@@ -919,7 +919,6 @@ package body Lib.Writ is
          then
             if not Has_No_Elaboration_Code (Cunit (Unit)) then
                Main_Restrictions.Violated (No_Elaboration_Code) := True;
-               Main_Restrictions.Count    (No_Elaboration_Code) := -1;
             end if;
          end if;
       end loop;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,14 +63,14 @@ package System.Task_Info is
 
    --  Each thread has a number of attributes that dictate it's scheduling.
    --  These attributes are:
-   --
+
    --      Bound_To_Sproc:  whether the thread is bound to a specific sproc
    --                       for its entire lifetime.
-   --
+
    --      Timeslice:       Amount of time that a thread is allowed to execute
    --                       before the system yeilds control to another thread
    --                       of equal priority.
-   --
+
    --      Resource_Vector: A bitmask used to control the binding of threads
    --                       to sprocs.
    --
@@ -113,33 +113,27 @@ package System.Task_Info is
 
    package Resource_Vector_Functions is
       function "+"
-        (R    : Resource_T)
-         return Resource_Vector_T;
+        (R : Resource_T) return Resource_Vector_T;
 
       function "+"
-        (R1   : Resource_T;
-         R2   : Resource_T)
-         return Resource_Vector_T;
+        (R1 : Resource_T;
+         R2 : Resource_T) return Resource_Vector_T;
 
       function "+"
-        (R    : Resource_T;
-         S    : Resource_Vector_T)
-         return Resource_Vector_T;
+        (R : Resource_T;
+         S : Resource_Vector_T) return Resource_Vector_T;
 
       function "+"
-        (S    : Resource_Vector_T;
-         R    : Resource_T)
-         return Resource_Vector_T;
+        (S : Resource_Vector_T;
+         R : Resource_T) return Resource_Vector_T;
 
       function "+"
-        (S1   : Resource_Vector_T;
-         S2   : Resource_Vector_T)
-         return Resource_Vector_T;
+        (S1 : Resource_Vector_T;
+         S2 : Resource_Vector_T) return Resource_Vector_T;
 
       function "-"
-        (S    : Resource_Vector_T;
-         R    : Resource_T)
-         return Resource_Vector_T;
+        (S : Resource_Vector_T;
+         R : Resource_T) return Resource_Vector_T;
    end Resource_Vector_Functions;
 
    ----------------------
@@ -208,8 +202,7 @@ package System.Task_Info is
      (Sproc_Resources : Resource_Vector_T      := NO_RESOURCES;
       CPU             : CPU_Number             := ANY_CPU;
       Resident        : Page_Locking           := NOLOCK;
-      NDPRI           : Non_Degrading_Priority := NDP_NONE)
-      return            sproc_t;
+      NDPRI           : Non_Degrading_Priority := NDP_NONE) return sproc_t;
    --  Allocates a sproc_t control structure and creates the
    --  corresponding sproc.
 
@@ -239,14 +232,12 @@ package System.Task_Info is
 
    function Unbound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
-      Thread_Timeslice : Duration          := 0.0)
-      return             Thread_Attributes;
+      Thread_Timeslice : Duration          := 0.0) return Thread_Attributes;
 
    function Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
       Thread_Timeslice : Duration          := 0.0;
-      Sproc            : sproc_t)
-      return             Thread_Attributes;
+      Sproc            : sproc_t) return Thread_Attributes;
 
    function Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T      := NO_RESOURCES;
@@ -255,20 +246,19 @@ package System.Task_Info is
       CPU              : CPU_Number             := ANY_CPU;
       Resident         : Page_Locking           := NOLOCK;
       NDPRI            : Non_Degrading_Priority := NDP_NONE)
-      return             Thread_Attributes;
+      return Thread_Attributes;
 
    type Task_Info_Type is access all Thread_Attributes;
 
    function New_Unbound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
       Thread_Timeslice : Duration          := 0.0)
-      return             Task_Info_Type;
+      return Task_Info_Type;
 
    function New_Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
       Thread_Timeslice : Duration          := 0.0;
-      Sproc            : sproc_t)
-      return             Task_Info_Type;
+      Sproc            : sproc_t) return Task_Info_Type;
 
    function New_Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T      := NO_RESOURCES;
@@ -277,7 +267,7 @@ package System.Task_Info is
       CPU              : CPU_Number             := ANY_CPU;
       Resident         : Page_Locking           := NOLOCK;
       NDPRI            : Non_Degrading_Priority := NDP_NONE)
-      return             Task_Info_Type;
+      return Task_Info_Type;
 
    Unspecified_Task_Info : constant Task_Info_Type := null;
 

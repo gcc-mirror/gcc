@@ -447,6 +447,12 @@ begin
 
    Targparm.Get_Target_Parameters;
 
+   --  Initialize Cumulative_Restrictions with the restrictions on the target
+   --  scanned from the system.ads file. Then as we read ALI files, we will
+   --  accumulate additional restrictions specified in other files.
+
+   Cumulative_Restrictions := Targparm.Restrictions_On_Target;
+
    --  On OpenVMS, when -L is used, all external names used in pragmas Export
    --  are in upper case. The reason is that on OpenVMS, the macro-assembler
    --  MACASM-32, used to build Stand-Alone Libraries, only understands

@@ -335,6 +335,7 @@ package body Snames is
      "parameter_types#" &
      "reference#" &
      "no_requeue#" &
+     "no_task_attributes#" &
      "restricted#" &
      "result_mechanism#" &
      "result_type#" &

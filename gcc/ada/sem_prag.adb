@@ -3280,6 +3280,15 @@ package body Sem_Prag is
                      Set_Restriction (No_Requeue_Statements, N);
                      Set_Warning (No_Requeue_Statements);
 
+                  --  No_Task_Attributes is a synonym for
+                  --  No_Task_Attributes_Package
+
+                  elsif Chars (Expr) = Name_No_Task_Attributes then
+                     Check_Restriction
+                       (No_Implementation_Restrictions, Arg);
+                     Set_Restriction (No_Task_Attributes_Package, N);
+                     Set_Warning (No_Task_Attributes_Package);
+
                   --  Normal processing for all other cases
 
                   else
@@ -9648,7 +9657,8 @@ package body Sem_Prag is
                   --  the formal may be wrapped in a conversion if the actual
                   --  is a conversion. Retrieve the real entity name.
 
-                  if In_Instance_Body
+                  if (In_Instance_Body
+                       or else In_Inlined_Body)
                     and then Nkind (E_Id) = N_Unchecked_Type_Conversion
                   then
                      E_Id := Expression (E_Id);

@@ -406,11 +406,13 @@ package Lib.Writ is
    --      One of these lines is present for each unit that is mentioned in
    --      an explicit with clause by the current unit. The first parameter
    --      is the unit name in internal format. The second parameter is the
-   --      file name of the file that must be compiled to compile this unit
-   --      (which is usually the file for the body, except for packages
-   --      which have no body). The third parameter is the file name of the
-   --      library information file that contains the results of compiling
-   --      this unit. The optional modifiers are used as follows:
+   --      file name of the file that must be compiled to compile this unit.
+   --      It is usually the file for the body, except for packages
+   --      which have no body; for units that need a body, if the source file
+   --      for the body cannot be found, the file name of the spec is used
+   --      instead. The third parameter is the file name of the library
+   --      information file that contains the results of compiling this unit.
+   --      The optional modifiers are used as follows:
    --
    --        E   pragma Elaborate applies to this unit
    --

@@ -97,7 +97,7 @@ package System.Rident is
       No_Standard_Storage_Pools,               -- GNAT
       No_Streams,                              -- GNAT
       No_Task_Allocators,                      -- (RM D.7(7))
-      No_Task_Attributes,                      -- GNAT
+      No_Task_Attributes_Package,              -- GNAT
       No_Task_Hierarchy,                       -- (RM D.7(3), H.4(3))
       No_Task_Termination,                     -- GNAT (Ravenscar)
       No_Tasking,                              -- GNAT
@@ -154,8 +154,9 @@ package System.Rident is
 
    --  Synonyms permitted for historical purposes of compatibility
 
-   --   No_Requeue   synonym for No_Requeue_Statements
-   --   No_Tasking   synonym for Max_Tasks => 0
+   --   No_Requeue         synonym for No_Requeue_Statements
+   --   No_Tasking         synonym for Max_Tasks => 0
+   --   No_Task_Attributes synonym for No_Task_Attributes_Package
 
    subtype All_Restrictions is Restriction_Id range
      Boolean_Entry_Barriers .. Max_Storage_At_Blocking;
