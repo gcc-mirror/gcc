@@ -35,10 +35,6 @@ Boston, MA 02111-1307, USA.  */
    During optimization and output, this is function_obstack.  */
 
 extern struct obstack *rtl_obstack;
-
-#ifdef NEED_DECLARATION_ATOL
-extern long atol();
-#endif
 
 /* Indexed by rtx code, gives number of operands for an rtx with that code.
    Does NOT include rtx header data (code and links).

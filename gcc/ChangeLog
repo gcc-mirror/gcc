@@ -1,3 +1,11 @@
+Wed May  6 11:21:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (AC_CHECK_FUNCS): Add isascii.
+	(GCC_NEED_DECLARATIONS): Add atof.
+
+	* system.h: Provide prototypes for abort, atof, atol and sbrk here.
+	* rtl.c, rtl.h, toplev.c, tree.h: Not here.
+
 Wed May  6 10:52:49 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h: Wrap time.h and sys/file.h in autoconf checks.
