@@ -1,3 +1,8 @@
+2000-03-29  Richard Henderson  <rth@cygnus.com>
+
+	* config/i386/att.h (LOCAL_LABEL_PREFIX): Define.
+	(ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_INTERNAL_LABEL): Use it.
+
 2000-03-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* except.c (add_eh_table_entry): Mark type_info's as referenced.	
