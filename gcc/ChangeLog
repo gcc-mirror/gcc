@@ -1,3 +1,20 @@
+2004-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/frv/frv.h (LEGITIMIZE_ADDRESS): New.
+
+	* config/frv/frv-protos.h (frv_legitimize_address): Protoize.
+	(frv_emit_move): Same.
+
+	* config/frv/frv.c (frv_emit_move): New.
+	(frv_legitimize_address): New.
+
+	* config/frv/frv.md ("movsi"): Call frv_emit_move.
+	("movqi"): Same.
+	("movhi"): Same.
+	("movdi"): Same.
+	("movsf"): Same.
+	("movdf"): Same.
+
 2004-10-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (declspecs_add_type): Don't pedwarn for _Complex in

@@ -1558,14 +1558,7 @@
   [(set (match_operand:QI 0 "general_operand" "")
 	(match_operand:QI 1 "general_operand" ""))]
   ""
-  "
-{
-  if (!reload_in_progress
-      && !reload_completed
-      && !register_operand (operands[0], QImode)
-      && !reg_or_0_operand (operands[1], QImode))
-    operands[1] = copy_to_mode_reg (QImode, operands[1]);
-}")
+  "{ frv_emit_move (QImode, operands[0], operands[1]); DONE; }")
 
 (define_insn "*movqi_load"
   [(set (match_operand:QI 0 "register_operand" "=d,f")
@@ -1587,14 +1580,7 @@
   [(set (match_operand:HI 0 "general_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]
   ""
-  "
-{
-  if (!reload_in_progress
-      && !reload_completed
-      && !register_operand (operands[0], HImode)
-      && !reg_or_0_operand (operands[1], HImode))
-    operands[1] = copy_to_mode_reg (HImode, operands[1]);
-}")
+  "{ frv_emit_move (HImode, operands[0], operands[1]); DONE; }")
 
 (define_insn "*movhi_load"
   [(set (match_operand:HI 0 "register_operand" "=d,f")
@@ -1645,11 +1631,7 @@
   [(set (match_operand:SI 0 "move_destination_operand" "")
 	(match_operand:SI 1 "move_source_operand" ""))]
   ""
-  "
-{
-  if (frv_emit_movsi (operands[0], operands[1]))
-    DONE;
-}")
+  "{ frv_emit_move (SImode, operands[0], operands[1]); DONE; }")
 
 ;; Note - it is best to only have one movsi pattern and to handle
 ;; all the various contingencies by the use of alternatives.  This
@@ -1673,7 +1655,9 @@
 ;; re-recognize them again after the substitution for memory.  So keep
 ;; a memory constraint available, just make sure reload won't be
 ;; tempted to use it.
-
+;;
+		   
+		   
 (define_insn "*movsi_load"
   [(set (match_operand:SI 0 "register_operand" "=d,f")
 	(match_operand:SI 1 "frv_load_operand" "m,m"))]
@@ -1752,14 +1736,7 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "")
 	(match_operand:DI 1 "general_operand" ""))]
   ""
-  "
-{
-  if (!reload_in_progress
-      && !reload_completed
-      && !register_operand (operands[0], DImode)
-      && !reg_or_0_operand (operands[1], DImode))
-    operands[1] = copy_to_mode_reg (DImode, operands[1]);
-}")
+  "{ frv_emit_move (DImode, operands[0], operands[1]); DONE; }")
 
 (define_insn "*movdi_double"
   [(set (match_operand:DI 0 "move_destination_operand" "=e,?h,??d,??f,R,?R,??m,??m,e,?h,??d,??f,?e,??d,?h,??f,R,m,e,??d,e,??d,?h,??f")
@@ -1893,14 +1870,7 @@
   [(set (match_operand:SF 0 "general_operand" "")
 	(match_operand:SF 1 "general_operand" ""))]
   ""
-  "
-{
-  if (!reload_in_progress
-      && !reload_completed
-      && !register_operand (operands[0], SFmode)
-      && !reg_or_0_operand (operands[1], SFmode))
-    operands[1] = copy_to_mode_reg (SFmode, operands[1]);
-}")
+  "{ frv_emit_move (SFmode, operands[0], operands[1]); DONE; }")
 
 (define_split
   [(set (match_operand:SF 0 "integer_register_operand" "")
@@ -1962,14 +1932,7 @@
   [(set (match_operand:DF 0 "nonimmediate_operand" "")
 	(match_operand:DF 1 "general_operand" ""))]
   ""
-  "
-{
-  if (!reload_in_progress
-      && !reload_completed
-      && !register_operand (operands[0], DFmode)
-      && !reg_or_0_operand (operands[1], DFmode))
-    operands[1] = copy_to_mode_reg (DFmode, operands[1]);
-}")
+  "{ frv_emit_move (DFmode, operands[0], operands[1]); DONE; }")
 
 (define_insn "*movdf_double"
   [(set (match_operand:DF 0 "move_destination_operand" "=h,?e,??f,??d,R,?R,??m,??m,h,?e,??f,??d,?h,??f,?e,??d,R,m,h,??f,e,??d,e,??d")
