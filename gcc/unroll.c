@@ -2536,8 +2536,8 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 			 Try to validate both the first and the last
 			 address resulting from loop unrolling, if
 			 one fails, then can't do const elim here.  */
-		      if (memory_address_p (v->mode, v->dest_reg)
-			  && memory_address_p (v->mode,
+		      if (memory_address_p (v->mem_mode, v->dest_reg)
+			  && memory_address_p (v->mem_mode,
 				       plus_constant (v->dest_reg,
 						      INTVAL (giv_inc)
 						      * (unroll_number - 1))))
@@ -2563,8 +2563,8 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		     now, and fail completely if either the first or the last
 		     unrolled copy of the address is not a valid address.  */
 		  if (v->dest_reg == tem
-		      && (! memory_address_p (v->mode, v->dest_reg)
-			  || ! memory_address_p (v->mode,
+		      && (! memory_address_p (v->mem_mode, v->dest_reg)
+			  || ! memory_address_p (v->mem_mode,
 				 plus_constant (v->dest_reg,
 						INTVAL (giv_inc)
 						* (unroll_number -1)))))
@@ -2600,8 +2600,8 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		  
 		  /* Check the resulting address for validity, and fail
 		     if the resulting address would be illegal.  */
-		  if (! memory_address_p (v->mode, v->dest_reg)
-		      || ! memory_address_p (v->mode,
+		  if (! memory_address_p (v->mem_mode, v->dest_reg)
+		      || ! memory_address_p (v->mem_mode,
 				     plus_constant (v->dest_reg,
 						    INTVAL (giv_inc) *
 						    (unroll_number -1))))
