@@ -2616,12 +2616,12 @@ subst_constants (loc, insn, map)
 	if ((map->num_sets < MAX_RECOG_OPERANDS)
 	    && (CONSTANT_P (src)
 		|| (GET_CODE (src) == REG
-		    && REGNO (src) >= FIRST_VIRTUAL_REGISTER
-		    && REGNO (src) <= LAST_VIRTUAL_REGISTER)
+		    && (REGNO (src) == VIRTUAL_INCOMING_ARGS_REGNUM
+			|| REGNO (src) == VIRTUAL_STACK_VARS_REGNUM))
 		|| (GET_CODE (src) == PLUS
 		    && GET_CODE (XEXP (src, 0)) == REG
-		    && REGNO (XEXP (src, 0)) >= FIRST_VIRTUAL_REGISTER
-		    && REGNO (XEXP (src, 0)) <= LAST_VIRTUAL_REGISTER
+		    && (REGNO (XEXP (src, 0)) == VIRTUAL_INCOMING_ARGS_REGNUM
+			|| REGNO (XEXP (src, 0)) == VIRTUAL_STACK_VARS_REGNUM)
 		    && CONSTANT_P (XEXP (src, 1)))
 		|| GET_CODE (src) == COMPARE
 #ifdef HAVE_cc0
