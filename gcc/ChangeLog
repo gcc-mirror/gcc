@@ -1,3 +1,7 @@
+2002-04-22	Joel Sherrill <joel@OARcorp.com>
+
+	* gthr-rtems.h: Correct prototypes to remove warnings.
+
 2002-04-22  Richard Henderson  <rth@redhat.com>
 
 	PR c/6344
