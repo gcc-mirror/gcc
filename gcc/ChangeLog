@@ -1,4 +1,16 @@
+2002-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (legitimate_constant_p): UNSPEC_TP is not
+	legitimate constant.
+	(legitimate_pic_operand_p): Neither pic operand.
+	(legitimate_address_p): But legitimate address.
+	(get_thread_pointer): Generate MEM/u instead of CONST around
+	UNSPEC_TP.
+	(print_operand): Remove printing of UNSPEC_TP.
+	(print_operand_address): And print it here.
+
 2002-08-08  Devang Patel  <dpatel@apple.com>
+
 	* objc/objc-act.c (build_selector_translation_table): Issue warning, 
 	when  -Wselector is used,if method for which selector is being 
 	created does not exist.
