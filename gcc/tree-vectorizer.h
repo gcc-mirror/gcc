@@ -22,6 +22,20 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_TREE_VECTORIZER_H
 #define GCC_TREE_VECTORIZER_H
 
+#ifdef USE_MAPPED_LOCATION
+  typedef source_location LOC;
+  #define UNKNOWN_LOC UNKNOWN_LOCATION
+  #define EXPR_LOC(e) EXPR_LOCATION(e)
+  #define LOC_FILE(l) LOCATION_FILE (l)
+  #define LOC_LINE(l) LOCATION_LINE (l)
+#else
+  typedef source_locus LOC;
+  #define UNKNOWN_LOC NULL
+  #define EXPR_LOC(e) EXPR_LOCUS(e)
+  #define LOC_FILE(l) (l)->file
+  #define LOC_LINE(l) (l)->line
+#endif
+
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
   vect_simple_var,
@@ -78,6 +92,8 @@ typedef struct _loop_vec_info {
   /* All data references in the loop that are being read from.  */
   varray_type data_ref_reads;
 
+  /* The loop location in the source.  */
+  LOC loop_line_number;
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -92,6 +108,9 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_INT_NITERS(L) (TREE_INT_CST_LOW ((L)->num_iters))
 #define LOOP_DO_PEELING_FOR_ALIGNMENT(L) (L)->do_peeling_for_alignment
 #define LOOP_VINFO_UNALIGNED_DR(L) (L)->unaligned_dr
+#define LOOP_VINFO_LOC(L)          (L)->loop_line_number
+
+#define LOOP_LOC(L)    LOOP_VINFO_LOC(L)
 
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)                     \
