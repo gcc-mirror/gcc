@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.naming;
 
+import java.applet.Applet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -46,8 +47,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.applet.Applet;
-import java.util.Hashtable;
 import javax.naming.spi.NamingManager;
 
 public class InitialContext implements Context
@@ -57,22 +56,27 @@ public class InitialContext implements Context
   protected Hashtable myProps;
   
   public InitialContext (Hashtable environment)
+    throws NamingException
     {
       init (environment);
     }
   
   protected InitialContext (boolean lazy)
+    throws NamingException
     {
       if (! lazy)
 	init (null);
     }
   
   public InitialContext ()
+    throws NamingException
     {
       init (null);
     }
-  
+ 
+  /** @since 1.3 */
   protected void init (Hashtable environment)
+    throws NamingException
     {
       // FIXME: Is this enough?
       final String[] properties = {

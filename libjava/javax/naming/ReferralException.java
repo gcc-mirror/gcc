@@ -48,6 +48,8 @@ import java.util.Hashtable;
 
 public abstract class ReferralException extends NamingException
 {
+  private static final long serialVersionUID = -2881363844695698876L;
+  
   protected ReferralException ()
   {
     super ();
