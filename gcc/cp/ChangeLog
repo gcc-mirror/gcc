@@ -1,3 +1,13 @@
+2002-12-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9053
+	* decl.c (duplicate_decls): Templates may be disambiguated by
+	return type.
+	
+	PR c++/8702
+	* decl2.c (check_classfn): Use lookup_fnfield_1. List all
+	conversion operators on failure.
+
 2002-12-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* call.c (tourney, build_field_call, equal_functions, joust) 
