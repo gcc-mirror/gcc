@@ -1,3 +1,18 @@
+2000-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* class.c (build_secondary_vtable): Set DECL_USER_ALIGN.
+	(check_bitfield_decl, check_field_decl): Likewise.
+	(build_vtbl_or_vbase_field, build_base_field): Likewise.
+	(layout_class_type): Set DECL_USER_ALIGN resp. CLASSTYPE_USER_ALIGN.
+	* decl.c (record_unknown_type): Set TYPE_USER_ALIGN.
+	(xfer_tag, finish_enum): Likewise.
+	* decl2.c (finish_builtin_type): Likewise.
+	* init.c (init_init_processing): Likewise.
+	* pt.c (instantiate_class_template): Likewise.
+	* rtti.c (get_tinfo_decl, synthesize_tinfo_fn): Set DECL_USER_ALIGN.
+	* cp-tree.h (struct lang_type): Add user_align member.
+	(CLASSTYPE_USER_ALIGN): Define.
+
 Tue Jun 13 15:48:03 2000  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
 	* Make-lang.in (c++.install-common): Install g++-cross in

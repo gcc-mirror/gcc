@@ -1,3 +1,11 @@
+2000-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (init_decl_processing): Set TYPE_USER_ALIGN.
+	(layout_enum): Set DECL_USER_ALIGN resp. TYPE_USER_ALIGN.
+	* typeck.c (layout_chill_range_type): Set TYPE_USER_ALIGN.
+	(apply_chill_field_layout): Set DECL_USER_ALIGN.
+	(layout_chill_struct_type): Set TYPE_USER_ALIGN.
+
 Tue Jun 13 15:30:46 2000  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
 	* Make-lang.in (CHILL.install-common): Use $(INSTALL_SCRIPT), not

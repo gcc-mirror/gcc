@@ -330,7 +330,10 @@ layout_decl (decl, known_align)
       && (DECL_ALIGN (decl) == 0
 	  || (! (code == FIELD_DECL && DECL_PACKED (decl))
 	      && TYPE_ALIGN (type) > DECL_ALIGN (decl))))
-    DECL_ALIGN (decl) = TYPE_ALIGN (type);
+    {	      
+      DECL_ALIGN (decl) = TYPE_ALIGN (type);
+      DECL_USER_ALIGN (decl) = TYPE_USER_ALIGN (type);
+    }
 
   /* For fields, set the bit field type and update the alignment.  */
   if (code == FIELD_DECL)
@@ -339,7 +342,10 @@ layout_decl (decl, known_align)
       if (maximum_field_alignment != 0)
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
       else if (DECL_PACKED (decl))
-	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
+	{
+	  DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
+	  DECL_USER_ALIGN (decl) = 0;
+	}
     }
 
   /* See if we can use an ordinary integer mode for a bit-field. 
@@ -572,14 +578,27 @@ place_union_field (rli, field)
      record_layout_info rli;
      tree field;
 {
+  unsigned int desired_align;
+
   layout_decl (field, 0);
   
   DECL_FIELD_OFFSET (field) = size_zero_node;
   DECL_FIELD_BIT_OFFSET (field) = bitsize_zero_node;
   DECL_OFFSET_ALIGN (field) = BIGGEST_ALIGNMENT;
 
+  desired_align = DECL_ALIGN (field);
+
+#ifdef BIGGEST_FIELD_ALIGNMENT
+  /* Some targets (i.e. i386) limit union field alignment
+     to a lower boundary than alignment of variables unless
+     it was overridden by attribute aligned.  */
+  if (! DECL_USER_ALIGN (field))
+    desired_align =
+      MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
+#endif
+
   /* Union must be at least as aligned as any field requires.  */
-  rli->record_align = MAX (rli->record_align, DECL_ALIGN (field));
+  rli->record_align = MAX (rli->record_align, desired_align);
 
 #ifdef PCC_BITFIELD_TYPE_MATTERS
   /* On the m88000, a bit field of declare type `int' forces the
@@ -615,6 +634,7 @@ place_field (rli, field)
      record as it presently stands.  */
   unsigned int known_align;
   unsigned int actual_align;
+  unsigned int user_align;
   /* The type of this field.  */
   tree type = TREE_TYPE (field);
  
@@ -660,14 +680,21 @@ place_field (rli, field)
      packed field, use the alignment as specified, disregarding what
      the type would want.  */
   desired_align = DECL_ALIGN (field);
+  user_align = DECL_USER_ALIGN (field);
   layout_decl (field, known_align);
   if (! DECL_PACKED (field))
-    desired_align = DECL_ALIGN (field);
+    {
+      desired_align = DECL_ALIGN (field);
+      user_align = DECL_USER_ALIGN (field);
+    }
 
-  /* Some targets (i.e. VMS) limit struct field alignment
-     to a lower boundary than alignment of variables.  */
 #ifdef BIGGEST_FIELD_ALIGNMENT
-  desired_align = MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
+  /* Some targets (i.e. i386, VMS) limit struct field alignment
+     to a lower boundary than alignment of variables unless
+     it was overridden by attribute aligned.  */
+  if (! user_align)
+    desired_align =
+      MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
 #endif
 #ifdef ADJUST_FIELD_ALIGN
   desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
@@ -902,6 +929,7 @@ finalize_record_size (rli)
 #else
   TYPE_ALIGN (rli->t) = MAX (TYPE_ALIGN (rli->t), rli->record_align);
 #endif
+  TYPE_USER_ALIGN (rli->t) = 1;
 
   /* Compute the size so far.  Be sure to allow for extra bits in the
      size in bytes.  We have guaranteed above that it will be no more
@@ -1083,7 +1111,10 @@ finalize_type_size (type)
 	  || (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE
 	      && TREE_CODE (type) != QUAL_UNION_TYPE
 	      && TREE_CODE (type) != ARRAY_TYPE)))
-    TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+    {
+      TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+      TYPE_USER_ALIGN (type) = 0;
+    }
 
   /* Do machine-dependent extra alignment.  */
 #ifdef ROUND_TYPE_ALIGN
@@ -1133,6 +1164,7 @@ finalize_type_size (type)
       tree size = TYPE_SIZE (type);
       tree size_unit = TYPE_SIZE_UNIT (type);
       unsigned int align = TYPE_ALIGN (type);
+      unsigned int user_align = TYPE_USER_ALIGN (type);
       enum machine_mode mode = TYPE_MODE (type);
 
       /* Copy it into all variants.  */
@@ -1143,6 +1175,7 @@ finalize_type_size (type)
 	  TYPE_SIZE (variant) = size;
 	  TYPE_SIZE_UNIT (variant) = size_unit;
 	  TYPE_ALIGN (variant) = align;
+	  TYPE_USER_ALIGN (variant) = user_align;
 	  TYPE_MODE (variant) = mode;
 	}
     }
@@ -1256,6 +1289,7 @@ layout_type (type)
     case VOID_TYPE:
       /* This is an incomplete type and so doesn't have a size.  */
       TYPE_ALIGN (type) = 1;
+      TYPE_USER_ALIGN (type) = 0;
       TYPE_MODE (type) = VOIDmode;
       break;
 
@@ -1460,6 +1494,7 @@ layout_type (type)
 	  TYPE_SIZE (type) = bitsize_int (rounded_size);
 	  TYPE_SIZE_UNIT (type) = size_int (rounded_size / BITS_PER_UNIT);
 	  TYPE_ALIGN (type) = alignment;
+	  TYPE_USER_ALIGN (type) = 0;
 	  TYPE_PRECISION (type) = size_in_bits;
 	}
       break;
@@ -1468,6 +1503,7 @@ layout_type (type)
       /* The size may vary in different languages, so the language front end
 	 should fill in the size.  */
       TYPE_ALIGN (type) = BIGGEST_ALIGNMENT;
+      TYPE_USER_ALIGN (type) = 0;
       TYPE_MODE  (type) = BLKmode;
       break;
 
@@ -1534,6 +1570,7 @@ initialize_sizetypes ()
 
   TYPE_MODE (t) = SImode;
   TYPE_ALIGN (t) = GET_MODE_ALIGNMENT (SImode);
+  TYPE_USER_ALIGN (t) = 0;
   TYPE_SIZE (t) = build_int_2 (GET_MODE_BITSIZE (SImode), 0);
   TYPE_SIZE_UNIT (t) = build_int_2 (GET_MODE_SIZE (SImode), 0);
   TREE_UNSIGNED (t) = 1;

@@ -1,3 +1,28 @@
+2000-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (TYPE_USER_ALIGN, DECL_USER_ALIGN): Define.
+	(struct tree_type, struct tree_decl): Add user_align member.
+	* stor-layout.c (layout_decl): Set DECL_USER_ALIGN.
+	(place_union_field): If BIGGEST_FIELD_ALIGNMENT is defined
+	and DECL_USER_ALIGN 0, cap alignment to this value.
+	(place_field): Likewise.
+	(finalize_type_size): Set TYPE_USER_ALIGN.
+	(layout_type): Likewise.
+	(initialize_sizetypes): Likewise.
+	* c-common.c (decl_attributes): Set TYPE_USER_ALIGN resp.
+	DECL_USER_ALIGN to 1.
+	* c-decl.c (duplicate_decls): Set DECL_USER_ALIGN.
+	(xfer_tag): Set TYPE_USER_ALIGN.
+	(finish_struct): Set DECL_USER_ALIGN resp. TYPE_USER_ALIGN.
+	(finish_enum): Likewise.
+	* stmt.c (expand_decl): Set DECL_USER_ALIGN.
+	(expand_anon_union_decl): Likewise.
+	* tree.c (make_node): Set DECL_USER_ALIGN resp. TYPE_USER_ALIGN.
+	(build_index_type): Set TYPE_USER_ALIGN.
+	(build_range_type): Likewise.
+	(build_common_tree_nodes_2): Likewise.
+	* tm.texi (BIGGEST_FIELD_ALIGNMENT): Document the changed meaning.
+
 2000-06-13  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in: Use --enable-checking=misc,tree,gc by default if

@@ -931,6 +931,10 @@ struct tree_block
    The value is an int, measured in bits.  */
 #define TYPE_ALIGN(NODE) (TYPE_CHECK (NODE)->type.align)
 
+/* 1 if the alignment for this type was requested by "aligned" attribute,
+   0 if it is the default for this type.  */
+#define TYPE_USER_ALIGN(NODE) (TYPE_CHECK (NODE)->type.user_align)
+
 /* The alignment for NODE, in bytes.  */
 #define TYPE_ALIGN_UNIT(NODE) \
   (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
@@ -1113,6 +1117,7 @@ struct tree_type
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
+  unsigned user_align : 1;
 
   unsigned int align;
   union tree_node *pointer_to;
@@ -1297,6 +1302,9 @@ struct tree_type
 #define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.u1.a.align)
 /* For FIELD_DECLs, holds the alignment that DECL_FIELD_OFFSET has.  */
 #define DECL_OFFSET_ALIGN(NODE) (FIELD_DECL_CHECK (NODE)->decl.u1.a.off_align)
+/* 1 if the alignment for this type was requested by "aligned" attribute,
+   0 if it is the default for this type.  */
+#define DECL_USER_ALIGN(NODE) (DECL_CHECK (NODE)->decl.user_align)
 /* Holds the machine mode corresponding to the declaration of a variable or
    field.  Always equal to TYPE_MODE (TREE_TYPE (decl)) except for a
    FIELD_DECL.  */
@@ -1595,7 +1603,8 @@ struct tree_decl
   unsigned pure_flag : 1;
   unsigned pointer_depth : 2;
   unsigned non_addressable : 1;
-  /* Four unused bits.  */
+  unsigned user_align : 1;
+  /* Three unused bits.  */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

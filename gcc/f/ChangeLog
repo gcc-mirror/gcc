@@ -1,3 +1,10 @@
+2000-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* com.c (ffecom_transform_common_): Set DECL_USER_ALIGN.
+	(ffecom_transform_equiv_, ffecom_decl_field): Likewise.
+	(ffecom_init_0): Set DECL_USER_ALIGN resp. TYPE_USER_ALIGN.
+	(duplicate_decls): Set DECL_USER_ALIGN.
+
 Sun Jun 11 00:03:00 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (lang_get_alias_set): Mark parameter with ATTRIBUTE_UNUSED.

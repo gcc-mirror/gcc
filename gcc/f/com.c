@@ -8801,6 +8801,7 @@ ffecom_transform_common_ (ffesymbol s)
      this seems easy enough.  */
 
   DECL_ALIGN (cbt) = BIGGEST_ALIGNMENT;
+  DECL_USER_ALIGN (cbt) = 0;
 
   if (is_init && (ffestorag_init (st) == NULL))
     init = ffecom_init_zero_ (cbt);
@@ -8936,6 +8937,7 @@ ffecom_transform_equiv_ (ffestorag eqst)
      this seems easy enough.  */
 
   DECL_ALIGN (eqt) = BIGGEST_ALIGNMENT;
+  DECL_USER_ALIGN (eqt) = 0;
 
   if ((!is_init && ffe_is_init_local_zero ())
       || (is_init && (ffestorag_init (eqst) == NULL)))
@@ -10999,6 +11001,7 @@ ffecom_decl_field (tree context, tree prevfield,
   field = build_decl (FIELD_DECL, get_identifier (name), type);
   DECL_CONTEXT (field) = context;
   DECL_ALIGN (field) = 0;
+  DECL_USER_ALIGN (field) = 0;
   if (prevfield != NULL_TREE)
     TREE_CHAIN (prevfield) = field;
 
@@ -11634,6 +11637,7 @@ ffecom_init_0 ()
   /* We are not going to have real types in C with less than byte alignment,
      so we might as well not have any types that claim to have it.  */
   TYPE_ALIGN (void_type_node) = BITS_PER_UNIT;
+  TYPE_USER_ALIGN (void_type_node) = 0;
 
   string_type_node = build_pointer_type (char_type_node);
 
@@ -12055,6 +12059,7 @@ ffecom_init_0 ()
 	DECL_CONTEXT (ffecom_multi_fields_[i][j])
 	  = ffecom_multi_type_node_;
 	DECL_ALIGN (ffecom_multi_fields_[i][j]) = 0;
+	DECL_USER_ALIGN (ffecom_multi_fields_[i][j]) = 0;
 	TREE_CHAIN (ffecom_multi_fields_[i][j]) = field;
 	field = ffecom_multi_fields_[i][j];
       }
@@ -13783,7 +13788,10 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  DECL_SIZE_UNIT (newdecl) = DECL_SIZE_UNIT (olddecl);
 	  if (TREE_CODE (olddecl) != FUNCTION_DECL)
 	    if (DECL_ALIGN (olddecl) > DECL_ALIGN (newdecl))
-	      DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
+	      {
+		DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
+		DECL_USER_ALIGN (newdecl) |= DECL_USER_ALIGN (olddecl);
+	      }
 	}
 
       /* Keep the old rtl since we can safely use it.  */

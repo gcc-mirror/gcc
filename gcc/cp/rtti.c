@@ -438,6 +438,7 @@ get_tinfo_decl (type)
       
       DECL_ARTIFICIAL (d) = 1;
       DECL_ALIGN (d) = TYPE_ALIGN (ptr_type_node);
+      DECL_USER_ALIGN (d) = 0;
       TREE_READONLY (d) = 1;
       TREE_STATIC (d) = 1;
       DECL_EXTERNAL (d) = 1;
@@ -1180,6 +1181,7 @@ synthesize_tinfo_fn (fndecl)
   DECL_COMMON (tdecl) = 1;
   TREE_USED (tdecl) = 1;
   DECL_ALIGN (tdecl) = TYPE_ALIGN (ptr_type_node);
+  DECL_USER_ALIGN (tdecl) = 0;
   cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0);
 
   /* Begin processing the function.  */

@@ -3447,6 +3447,7 @@ init_decl_processing ()
   /* We are not going to have real types in C with less than byte alignment,
      so we might as well not have any types that claim to have it.  */
   TYPE_ALIGN (void_type_node) = BITS_PER_UNIT;
+  TYPE_USER_ALIGN (void_type_node) = 0;
 
   /* This is for wide string constants.  */
   wchar_type_node = short_unsigned_type_node;
@@ -4596,6 +4597,7 @@ layout_enum (enumtype)
       DECL_SIZE (decl) = TYPE_SIZE (enumtype);
       DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (enumtype);
       DECL_ALIGN (decl) = TYPE_ALIGN (enumtype);
+      DECL_USER_ALIGN (decl) = TYPE_USER_ALIGN (enumtype);
 
       /* Set the TREE_VALUE to the name, rather than the decl,
 	 since that is what the rest of the compiler expects. */
@@ -4612,6 +4614,7 @@ layout_enum (enumtype)
       TYPE_MODE (tem) = TYPE_MODE (enumtype);
       TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
       TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
+      TYPE_USER_ALIGN (tem) = TYPE_USER_ALIGN (enumtype);
       TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
     }
 

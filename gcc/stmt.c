@@ -3849,6 +3849,7 @@ expand_decl (decl)
       /* Set alignment we actually gave this decl.  */
       DECL_ALIGN (decl) = (DECL_MODE (decl) == BLKmode ? BIGGEST_ALIGNMENT
 			   : GET_MODE_BITSIZE (DECL_MODE (decl)));
+      DECL_USER_ALIGN (decl) = 0;
 
       if (oldaddr)
 	{
@@ -3901,6 +3902,7 @@ expand_decl (decl)
 #else
       DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
 #endif
+      DECL_USER_ALIGN (decl) = 0;
     }
 }
 
@@ -4204,6 +4206,7 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 
       /* Propagate the union's alignment to the elements.  */
       DECL_ALIGN (decl_elt) = DECL_ALIGN (decl);
+      DECL_USER_ALIGN (decl_elt) = DECL_USER_ALIGN (decl);
 
       /* If the element has BLKmode and the union doesn't, the union is
          aligned such that the element doesn't need to have BLKmode, so

@@ -779,13 +779,19 @@ decl_attributes (node, attributes, prefix_attributes)
 	    else if (i > HOST_BITS_PER_INT - 2)
 	      error ("requested alignment is too large");
 	    else if (is_type)
-	      TYPE_ALIGN (type) = (1 << i) * BITS_PER_UNIT;
+	      {
+		TYPE_ALIGN (type) = (1 << i) * BITS_PER_UNIT;
+		TYPE_USER_ALIGN (type) = 1;
+	      }
 	    else if (TREE_CODE (decl) != VAR_DECL
 		     && TREE_CODE (decl) != FIELD_DECL)
 	      error_with_decl (decl,
 			       "alignment may not be specified for `%s'");
 	    else
-	      DECL_ALIGN (decl) = (1 << i) * BITS_PER_UNIT;
+	      {
+		DECL_ALIGN (decl) = (1 << i) * BITS_PER_UNIT;
+		DECL_USER_ALIGN (decl) = 1;
+	      }
 	  }
 	  break;
 

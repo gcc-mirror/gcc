@@ -2725,6 +2725,7 @@ layout_chill_range_type (rangetype, must_be_const)
   TYPE_SIZE (rangetype) = TYPE_SIZE (type);
   TYPE_SIZE_UNIT (rangetype) = TYPE_SIZE_UNIT (type);
   TYPE_ALIGN (rangetype) = TYPE_ALIGN (type);
+  TYPE_USER_ALIGN (rangetype) = TYPE_USER_ALIGN (type);
   TREE_UNSIGNED (rangetype) = TREE_UNSIGNED (type);
   CH_NOVELTY (rangetype) = CH_NOVELTY (type);
   return rangetype;
@@ -3113,7 +3114,10 @@ apply_chill_field_layout (decl, next_struct_offset)
 	  DECL_SIZE (decl) = bitsize_int (natural_length);
 	}
       else
-	DECL_ALIGN (decl) = BITS_PER_UNIT;
+	{
+	  DECL_ALIGN (decl) = BITS_PER_UNIT;
+	  DECL_USER_ALIGN (decl) = 0;
+	}
 
       DECL_PACKED (decl) = 1;
       *next_struct_offset += natural_length;
@@ -3351,6 +3355,7 @@ layout_chill_struct_type (t)
       TYPE_FIELDS (x) = TYPE_FIELDS (t);
       TYPE_LANG_SPECIFIC (x) = TYPE_LANG_SPECIFIC (t);
       TYPE_ALIGN (x) = TYPE_ALIGN (t);
+      TYPE_USER_ALIGN (x) = TYPE_USER_ALIGN (t);
     }
 
   resume_momentary (old_momentary);
