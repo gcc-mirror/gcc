@@ -90,7 +90,7 @@ typedef u_int16_t ub2;
 typedef unsigned int ub4;
 #elif SIZEOF_LONG == 4
 typedef unsigned long ub4;
-#elif SIZEOF_LONG_LONG == 4
+#elif defined(HAVE_LONG_LONG) && SIZEOF_LONG_LONG == 4
 typedef unsigned long long ub4;
 #else
 typedef u_int32_t ub4;
