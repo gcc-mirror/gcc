@@ -10,9 +10,21 @@ fi
 host_gnatmake=`type gnatmake | awk '{print $3}'`
 ROOT=`${PWDCMD-pwd}`
 BASE=`cd $ROOT/../../..; ${PWDCMD-pwd}`
+
 PATH=$BASE:$ROOT:$PATH
 ADA_INCLUDE_PATH=$BASE/ada/rts
 ADA_OBJECTS_PATH=$ADA_INCLUDE_PATH
+
+if [ ! -d $ADA_INCLUDE_PATH ]; then
+   echo gnatlib missing, exiting.
+   exit 1
+fi
+
+if [ ! -f $BASE/gnatmake ]; then
+   echo gnattools missing, exiting.
+   exit 1
+fi
+
 GCC="$BASE/xgcc -B$BASE/"
 export PATH ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC
 
