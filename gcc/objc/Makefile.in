@@ -53,7 +53,7 @@ all:
 	cd ..; $(MAKE) sublibobjc.a
 
 OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o \
-         selector.o objects.o misc.o Object.o Protocol.o FREED.o
+         selector.o objects.o misc.o Object.o Protocol.o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
@@ -61,7 +61,7 @@ libobjc.a: $(OBJC_O)
 # ranlib is run in the parent directory's makefile.
 
 OBJC_H = hash.h list.h sarray.h objc.h \
-         objc-api.h error.h \
+         objc-api.h \
 	 Object.h Protocol.h mutex.h \
 	 typedstream.h
 
