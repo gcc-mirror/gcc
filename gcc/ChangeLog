@@ -1,3 +1,7 @@
+2000-05-02  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* final.c (final_start_function): Fix spelling of "necessary".
+
 2000-05-02  Jason Merrill  <jason@casey.cygnus.com>
 
 	* Makefile.in (WARN_CFLAGS): Add -pedantic -Wno-long-long.
