@@ -1,3 +1,12 @@
+Mon Jun  7 13:33:39 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* cpplib.c (do_define): Cast `alloca' return value.
+	(do_include, do_undef, do_pragma): Likewise.
+	* cpphash.c (dump_definition): Cast `xstrdup' and `alloca' return
+ 	values.
+	* cppfiles.c (initialize_input_buffer): Cast `xmalloc' return values.
+	* gcc/cppspec.c (lang_specific_driver): Cast xmalloc return value.
+
 Sun Jun  6 11:58:34 1999  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* sparc.md (abstf2): This should be an expand.

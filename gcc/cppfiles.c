@@ -1100,7 +1100,7 @@ initialize_input_buffer (pfile, fd, st)
      read_and_prescan inner loop.  The number of non-EMPTY entries
      should be as small as humanly possible.  */
 
-  tmp = xmalloc (1 << CHAR_BIT);
+  tmp = (U_CHAR *) xmalloc (1 << CHAR_BIT);
   memset (tmp, SPECCASE_EMPTY, 1 << CHAR_BIT);
   tmp['\0'] = SPECCASE_NUL;
   tmp['\r'] = SPECCASE_CR;
@@ -1138,7 +1138,7 @@ initialize_input_buffer (pfile, fd, st)
      the case there's a potential trigraph or end-of-line digraph at
      the end of a block. */
 
-  tmp = xmalloc (pipe_buf + 2 + 2);
+  tmp = (U_CHAR *) xmalloc (pipe_buf + 2 + 2);
   pfile->input_buffer = tmp;
   pfile->input_buffer_len = pipe_buf;
 }
