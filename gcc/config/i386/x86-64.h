@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 
 /* Output assembler code to FILE to call the profiler.  */
-#define NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS 1
 
 #undef MCOUNT_NAME
 #define MCOUNT_NAME "mcount"
@@ -82,7 +82,7 @@ Boston, MA 02111-1307, USA.  */
 #define DWARF2_UNWIND_INFO 1
 /* Incorrectly autodetected in cross compilation.  */
 #undef HAVE_AS_DWARF2_DEBUG_LINE
-#define HAVE_AS_DWARF2_DEBUG_LINE
+#define HAVE_AS_DWARF2_DEBUG_LINE 1
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
