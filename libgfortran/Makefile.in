@@ -119,9 +119,9 @@ am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo rewind.lo transfer.lo \
 	unit.lo unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo cpu_time.lo cshift0.lo \
-	date_and_time.lo eoshift0.lo eoshift2.lo ishftc.lo \
+	date_and_time.lo eoshift0.lo eoshift2.lo etime.lo ishftc.lo \
 	pack_generic.lo size.lo spread_generic.lo string_intrinsics.lo \
-	random.lo reshape_generic.lo reshape_packed.lo \
+	rand.lo random.lo reshape_generic.lo reshape_packed.lo \
 	selected_kind.lo system_clock.lo transpose_generic.lo \
 	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo
 am__objects_34 =
@@ -314,11 +314,13 @@ intrinsics/cshift0.c \
 intrinsics/date_and_time.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
+intrinsics/etime.c \
 intrinsics/ishftc.c \
 intrinsics/pack_generic.c \
 intrinsics/size.c \
 intrinsics/spread_generic.c \
 intrinsics/string_intrinsics.c \
+intrinsics/rand.c \
 intrinsics/random.c \
 intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
@@ -2029,6 +2031,15 @@ eoshift2.obj: intrinsics/eoshift2.c
 eoshift2.lo: intrinsics/eoshift2.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift2.lo `test -f 'intrinsics/eoshift2.c' || echo '$(srcdir)/'`intrinsics/eoshift2.c
 
+etime.o: intrinsics/etime.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o etime.o `test -f 'intrinsics/etime.c' || echo '$(srcdir)/'`intrinsics/etime.c
+
+etime.obj: intrinsics/etime.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o etime.obj `if test -f 'intrinsics/etime.c'; then $(CYGPATH_W) 'intrinsics/etime.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/etime.c'; fi`
+
+etime.lo: intrinsics/etime.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o etime.lo `test -f 'intrinsics/etime.c' || echo '$(srcdir)/'`intrinsics/etime.c
+
 ishftc.o: intrinsics/ishftc.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ishftc.o `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
 
@@ -2073,6 +2084,15 @@ string_intrinsics.obj: intrinsics/string_intrinsics.c
 
 string_intrinsics.lo: intrinsics/string_intrinsics.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o string_intrinsics.lo `test -f 'intrinsics/string_intrinsics.c' || echo '$(srcdir)/'`intrinsics/string_intrinsics.c
+
+rand.o: intrinsics/rand.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rand.o `test -f 'intrinsics/rand.c' || echo '$(srcdir)/'`intrinsics/rand.c
+
+rand.obj: intrinsics/rand.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rand.obj `if test -f 'intrinsics/rand.c'; then $(CYGPATH_W) 'intrinsics/rand.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/rand.c'; fi`
+
+rand.lo: intrinsics/rand.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rand.lo `test -f 'intrinsics/rand.c' || echo '$(srcdir)/'`intrinsics/rand.c
 
 random.o: intrinsics/random.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o random.o `test -f 'intrinsics/random.c' || echo '$(srcdir)/'`intrinsics/random.c

@@ -42,11 +42,13 @@ intrinsics/cshift0.c \
 intrinsics/date_and_time.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
+intrinsics/etime.c \
 intrinsics/ishftc.c \
 intrinsics/pack_generic.c \
 intrinsics/size.c \
 intrinsics/spread_generic.c \
 intrinsics/string_intrinsics.c \
+intrinsics/rand.c \
 intrinsics/random.c \
 intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \

@@ -1877,6 +1877,23 @@ gfc_check_random_seed (gfc_expr * size, gfc_expr * put, gfc_expr * get)
   return SUCCESS;
 }
 
+try
+gfc_check_second_sub (gfc_expr * time)
+{
+
+  if (scalar_check (time, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (time, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(time, 0, 4) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
 /* The arguments of SYSTEM_CLOCK are scalar, integer variables.  Note,
    count, count_rate, and count_max are all optional arguments */
 
@@ -1934,4 +1951,100 @@ gfc_check_system_clock (gfc_expr * count, gfc_expr * count_rate,
    }
 
     return SUCCESS;
+}
+
+try
+gfc_check_irand (gfc_expr * x)
+{
+  if (scalar_check (x, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (x, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(x, 0, 4) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+try
+gfc_check_rand (gfc_expr * x)
+{
+  if (scalar_check (x, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (x, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(x, 0, 4) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+try
+gfc_check_srand (gfc_expr * x)
+{
+  if (scalar_check (x, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (x, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(x, 0, 4) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+try
+gfc_check_etime (gfc_expr * x)
+{
+  if (array_check (x, 0) == FAILURE)
+    return FAILURE;
+
+  if (rank_check (x, 0, 1) == FAILURE)
+    return FAILURE;
+
+  if (variable_check (x, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (x, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(x, 0, 4) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+try
+gfc_check_etime_sub (gfc_expr * values, gfc_expr * time)
+{
+  if (array_check (values, 0) == FAILURE)
+    return FAILURE;
+
+  if (rank_check (values, 0, 1) == FAILURE)
+    return FAILURE;
+
+  if (variable_check (values, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (values, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(values, 0, 4) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (time, 1) == FAILURE)
+    return FAILURE;
+
+  if (type_check (time, 1, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(time, 1, 4) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
 }

@@ -1,6 +1,6 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -44,6 +44,8 @@ try gfc_check_dble (gfc_expr *);
 try gfc_check_digits (gfc_expr *);
 try gfc_check_dot_product (gfc_expr *, gfc_expr *);
 try gfc_check_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+try gfc_check_etime (gfc_expr *);
+try gfc_check_etime_sub (gfc_expr *, gfc_expr *);
 try gfc_check_huge (gfc_expr *);
 try gfc_check_i (gfc_expr *);
 try gfc_check_iand (gfc_expr *, gfc_expr *);
@@ -55,6 +57,7 @@ try gfc_check_ieor (gfc_expr *, gfc_expr *);
 try gfc_check_index (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_int (gfc_expr *, gfc_expr *);
 try gfc_check_ior (gfc_expr *, gfc_expr *);
+try gfc_check_irand (gfc_expr *);
 try gfc_check_ishft (gfc_expr *, gfc_expr *);
 try gfc_check_ishftc (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_kind (gfc_expr *);
@@ -75,18 +78,21 @@ try gfc_check_precision (gfc_expr *);
 try gfc_check_present (gfc_expr *);
 try gfc_check_product (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_radix (gfc_expr *);
+try gfc_check_rand (gfc_expr *);
 try gfc_check_range (gfc_expr *);
 try gfc_check_real (gfc_expr *, gfc_expr *);
 try gfc_check_repeat (gfc_expr *, gfc_expr *);
 try gfc_check_reshape (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_scale (gfc_expr *, gfc_expr *);
 try gfc_check_scan (gfc_expr *, gfc_expr *, gfc_expr *);
+try gfc_check_second_sub (gfc_expr *);
 try gfc_check_selected_real_kind (gfc_expr *, gfc_expr *);
 try gfc_check_set_exponent (gfc_expr *, gfc_expr *);
 try gfc_check_shape (gfc_expr *);
 try gfc_check_size (gfc_expr *, gfc_expr *);
 try gfc_check_sign (gfc_expr *, gfc_expr *);
 try gfc_check_spread (gfc_expr *, gfc_expr *, gfc_expr *);
+try gfc_check_srand (gfc_expr *);
 try gfc_check_sum (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_transfer (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_transpose (gfc_expr *);
@@ -240,6 +246,7 @@ void gfc_resolve_dot_product (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_dprod (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 			  gfc_expr *);
+void gfc_resolve_etime_sub (gfc_code *);
 void gfc_resolve_exp (gfc_expr *, gfc_expr *);
 void gfc_resolve_exponent (gfc_expr *, gfc_expr *);
 void gfc_resolve_floor (gfc_expr *, gfc_expr *, gfc_expr *);
@@ -283,6 +290,7 @@ void gfc_resolve_reshape (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 void gfc_resolve_rrspacing (gfc_expr *, gfc_expr *);
 void gfc_resolve_scale (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_scan (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_second_sub (gfc_code *);
 void gfc_resolve_set_exponent (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_shape (gfc_expr *, gfc_expr *);
 void gfc_resolve_sign (gfc_expr *, gfc_expr *, gfc_expr *);
@@ -291,6 +299,7 @@ void gfc_resolve_sinh (gfc_expr *, gfc_expr *);
 void gfc_resolve_spacing (gfc_expr *, gfc_expr *);
 void gfc_resolve_spread (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_sqrt (gfc_expr *, gfc_expr *);
+void gfc_resolve_srand (gfc_code *);
 void gfc_resolve_sum (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_tan (gfc_expr *, gfc_expr *);
 void gfc_resolve_tanh (gfc_expr *, gfc_expr *);
