@@ -1031,6 +1031,26 @@ fix = {
 
 
 /*
+ *  math.h on SunOS 4 puts the declaration of matherr before the definition
+ *  of struct exception, so the prototype (added by fixproto) causes havoc.
+ *  This must appear before the math_exception fix.
+ */
+fix = {
+    hackname  = exception_structure;
+    files     = math.h;
+
+    /*  If matherr has a prototype already, the header needs no fix.  */
+    bypass    = 'matherr.*(struct exception|__MATH_EXCEPTION)';
+    select    = matherr;
+
+    c_fix     = wrap;
+    c_fix_arg = "struct exception;\n";
+
+    test_text = "extern int matherr();";
+};
+
+
+/*
  *  Between 8/24/1998 and 2/17/2001, FreeBSD system headers presume
  *  neither the existence of GCC 3 nor its exact feature set yet break
  *  (by design?) when __GNUC__ is set beyond 2.
@@ -1853,11 +1873,10 @@ fix = {
 
 /*
  *  Some math.h files define struct exception (it's in the System V
- *  Interface Definition), which conflicts with
- *  the class exception defined in the C++ file std/stdexcept.h.  We
- *  redefine it to __math_exception.  This is not a great fix, but I
- *  haven't been able to think of anything better.
- *  Note that we have to put the #ifdef/#endif blocks at beginning
+ *  Interface Definition), which conflicts with the class exception defined
+ *  in the C++ file std/stdexcept.h.  We redefine it to __math_exception.
+ *  This is not a great fix, but I haven't been able to think of anything
+ *  better.  Note that we have to put the #ifdef/#endif blocks at beginning
  *  and end of file, because fixproto runs after us and may insert
  *  additional references to struct exception.
  */
@@ -1865,7 +1884,13 @@ fix = {
     hackname  = math_exception;
     files     = math.h;
     select    = "struct exception";
-    bypass    = '__cplusplus';
+    /*
+     * This should be bypassed on __cplusplus, but some supposedly C++ C++
+     * aware headers, such as Solaris 8 and 9, don't wrap their struct
+     * exception either.  So currently we bypass only for glibc, based on a
+     * comment in the fixed glibc header.  Ick.
+     */
+    bypass    = 'We have a problem when using C\+\+';
     c_fix     = wrap;
 
     c_fix_arg = "#ifdef __cplusplus\n"
@@ -2802,25 +2827,6 @@ fix = {
           "#else\n%0\n#endif";
 
     test_text = "void\t(*signal())();";
-};
-
-
-/*
- *  math.h on SunOS 4 puts the declaration of matherr before the definition
- *  of struct exception, so the prototype (added by fixproto) causes havoc.
- */
-fix = {
-    hackname  = sunos_matherr_decl;
-    files     = math.h;
-
-    /*  If matherr has a prototype already, the header needs no fix.  */
-    bypass    = 'matherr.*(struct exception|__MATH_EXCEPTION)';
-    select    = matherr;
-
-    c_fix     = wrap;
-    c_fix_arg = "struct exception;\n";
-
-    test_text = "extern int matherr();";
 };
 
 

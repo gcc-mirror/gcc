@@ -1,3 +1,10 @@
+2004-01-29  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def(math_exception): bypass only for glibc.
+	(matherr_decl): rename & relocate as exception_structure.
+	This fix must precede the math_exception fix.
+	* fixinc/fixincl.x: regen
+
 2004-01-29  Richard Henderson  <rth@redhat.com>
 
         * c-parse.in (extension): Use itype.
