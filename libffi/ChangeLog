@@ -1,3 +1,24 @@
+2004-03-12  Alan Modra  <amodra@bigpond.net.au>
+
+	* src/powerpc/ffi.c (ffi_prep_args64): Correct long double handling.
+	(ffi_prep_cif_machdep <FFI_LINUX64>): Correct long double function
+	return and long double arg handling.
+	(ffi_closure_helper_LINUX64): Formatting.  Delete unused "ng" var.
+	Use "end_pfr" instead of "nf".  Correct long double handling.
+	Localise "temp".
+	* src/powerpc/linux64.S (ffi_call_LINUX64): Save f2 long double
+	return value.
+	* src/powerpc/linux64_closure.S (ffi_closure_LINUX64): Allocate
+	space for long double return value.  Adjust stack frame and offsets.
+	Load f2 long double return.
+	* testsuite/libffi.call/cls_align_longdouble.c: Pass -mlong-double-128
+	for powerpc64-*-*.
+	* testsuite/libffi.call/float.c: Likewise.
+	* testsuite/libffi.call/float2.c: Likewise.
+
+	* src/types.c: Use 16 byte long double for POWERPC64.
+	(pointer): POWERPC64 has 8 byte pointers.
+
 2004-01-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* src/sparc/ffi.c (ffi_prep_args_v9): Shift the parameter array

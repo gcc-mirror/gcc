@@ -43,7 +43,7 @@ FFI_INTEGRAL_TYPEDEF(sint32, 4, 4, FFI_TYPE_SINT32);
 FFI_INTEGRAL_TYPEDEF(float, 4, 4, FFI_TYPE_FLOAT);
 
 #if defined ALPHA || defined SPARC64 || defined X86_64 || defined S390X \
-    || defined IA64
+    || defined IA64 || defined POWERPC64
 
 FFI_INTEGRAL_TYPEDEF(pointer, 8, 8, FFI_TYPE_POINTER);
 
@@ -90,7 +90,7 @@ FFI_INTEGRAL_TYPEDEF(longdouble, 16, 16, FFI_TYPE_LONGDOUBLE);
 FFI_INTEGRAL_TYPEDEF(longdouble, 16, 8, FFI_TYPE_LONGDOUBLE);
 #endif
 
-#elif defined X86_64
+#elif defined X86_64 || defined POWERPC64
 
 FFI_INTEGRAL_TYPEDEF(double, 8, 8, FFI_TYPE_DOUBLE);
 FFI_INTEGRAL_TYPEDEF(longdouble, 16, 16, FFI_TYPE_LONGDOUBLE);

@@ -5,6 +5,8 @@
    Originator:	From the original ffitest.c  */
 
 /* { dg-do run } */
+/* { dg-options -mlong-double-128 { target powerpc64*-*-* } } */
+
 #include "ffitest.h"
 #include "float.h"
 
@@ -23,14 +25,14 @@ int main (void)
 
   args[0] = &ffi_type_float;
   values[0] = &f;
-  
+
   /* Initialize the cif */
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1, 
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
 		     &ffi_type_longdouble, args) == FFI_OK);
-  
+
   f = 3.14159;
-  
-#if 1 
+
+#if 1
   /* This is ifdef'd out for now. long double support under SunOS/gcc
      is pretty much non-existent.  You'll get the odd bus error in library
      routines like printf().  */
@@ -38,14 +40,14 @@ int main (void)
 #endif
   ld = 666;
   ffi_call(&cif, FFI_FN(ldblit), &ld, values);
-  
-#if 1 
+
+#if 1
   /* This is ifdef'd out for now. long double support under SunOS/gcc
      is pretty much non-existent.  You'll get the odd bus error in library
      routines like printf().  */
   printf ("%Lf, %Lf, %Lf, %Lf\n", ld, ldblit(f), ld - ldblit(f), LDBL_EPSILON);
 #endif
-  
+
   /* These are not always the same!! Check for a reasonable delta */
   /*@-realcompare@*/
   if (ld - ldblit(f) < LDBL_EPSILON)
