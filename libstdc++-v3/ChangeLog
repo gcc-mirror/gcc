@@ -1,5 +1,8 @@
 2002-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* config/os/irix/irix5.2/bits/os_defines.h
+	(__glibcpp_long_double_bits, __glibcpp_long_bits): Define.
+
 	* config/os/irix/irix5.2/bits/ctype_inline.h: Cast to unsigned
 	char.
 
