@@ -2742,6 +2742,7 @@ if_convert (x_life_data_ok)
 
       sbitmap_free (update_life_blocks);
     }
+  clear_aux_for_blocks ();
 
   /* Write the final stats.  */
   if (rtl_dump_file && num_possible_if_blocks > 0)
