@@ -3183,38 +3183,50 @@ problem, which I will refer to as the Borland model and the Cfront model.
 @table @asis
 @item Borland model
 Borland C++ solved the template instantiation problem by adding the code
-equivalent of common blocks to their linker; template instances
-are emitted in each translation unit that uses them, and they are
-collapsed together at run time.  The advantage of this model is that the
-linker only has to consider the object files themselves; there is no
-external complexity to worry about.  This disadvantage is that
-compilation time is increased because the template code is being
-compiled repeatedly.  Code written for this model tends to include
-definitions of all member templates in the header file, since they must
-be seen to be compiled.
+equivalent of common blocks to their linker; the compiler emits template
+instances in each translation unit that uses them, and the linker
+collapses them together.  The advantage of this model is that the linker
+only has to consider the object files themselves; there is no external
+complexity to worry about.  This disadvantage is that compilation time
+is increased because the template code is being compiled repeatedly.
+Code written for this model tends to include definitions of all
+templates in the header file, since they must be seen to be
+instantiated.
 
 @item Cfront model
 The AT&T C++ translator, Cfront, solved the template instantiation
 problem by creating the notion of a template repository, an
-automatically maintained place where template instances are stored.  As
-individual object files are built, notes are placed in the repository to
-record where templates and potential type arguments were seen so that
-the subsequent instantiation step knows where to find them.  At link
-time, any needed instances are generated and linked in.  The advantages
-of this model are more optimal compilation speed and the ability to use
-the system linker; to implement the Borland model a compiler vendor also
+automatically maintained place where template instances are stored.  A
+more modern version of the repository works as follows: As individual
+object files are built, the compiler places any template definitions and
+instantiations encountered in the repository.  At link time, the link
+wrapper adds in the objects in the repository and compiles any needed
+instances that were not previously emitted.  The advantages of this
+model are more optimal compilation speed and the ability to use the
+system linker; to implement the Borland model a compiler vendor also
 needs to replace the linker.  The disadvantages are vastly increased
-complexity, and thus potential for error; theoretically, this should be
-just as transparent, but in practice it has been very difficult to build
+complexity, and thus potential for error; for some code this can be
+just as transparent, but in practice it can been very difficult to build
 multiple programs in one directory and one program in multiple
-directories using Cfront.  Code written for this model tends to separate
-definitions of non-inline member templates into a separate file, which
-is magically found by the link preprocessor when a template needs to be
-instantiated.
+directories.  Code written for this model tends to separate definitions
+of non-inline member templates into a separate file, which should be
+compiled separately.
 @end table
 
-Currently, g++ implements neither automatic model.  In the mean time,
-you have three options for dealing with template instantiations:
+When used with GNU ld version 2.8 or later on an ELF system such as
+GNU/Linux or Solaris 2, g++ supports the Borland model.  On other systems,
+g++ implements neither automatic model.
+
+A future version of g++ will support a hybrid model whereby the compiler
+will emit any instantiations for which the template definition is
+included in the compile, and store template definitions and
+instantiation context information into the object file for the rest.
+The link wrapper will extract that information as necessary and invoke
+the compiler to produce the remaining instantiations.  The linker will
+then combine duplicate instantiations.
+
+In the mean time, you have the following options for dealing with
+template instantiations:
 
 @enumerate
 @item
