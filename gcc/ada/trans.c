@@ -2620,7 +2620,7 @@ tree_transform (gnat_node)
 	   correctly.  */
 	set_lineno (gnat_node, 0);
 	DECL_SOURCE_FILE (gnu_subprog_decl) = input_filename;
-	DECL_SOURCE_LINE (gnu_subprog_decl) = lineno;
+	DECL_SOURCE_LINE (gnu_subprog_decl) = input_line;
 
 	begin_subprog_body (gnu_subprog_decl);
 	set_lineno (gnat_node, 1);
@@ -3782,7 +3782,7 @@ tree_transform (gnat_node)
 	  gnu_orig_out_list = nreverse (gnu_orig_out_list);
 	  expand_asm_operands (gnu_template, gnu_output_list, gnu_input_list,
 			       gnu_clobber_list, Is_Asm_Volatile (gnat_node),
-			       input_filename, lineno);
+			       input_filename, input_line);
 
 	  /* Copy all the intermediate outputs into the specified outputs.  */
 	  for (; gnu_output_list;
@@ -5351,7 +5351,7 @@ build_unit_elab (gnat_unit, body_p, gnu_elab_list)
 	    && TYPE_IS_PADDING_P (TREE_TYPE (lhs)))
 	  lhs = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (lhs))), lhs);
 
-	emit_line_note (input_filename, lineno);
+	emit_line_note (input_filename, input_line);
 	expand_expr_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE,
 					   TREE_PURPOSE (gnu_elab_list),
 					   TREE_VALUE (gnu_elab_list)));
@@ -5380,9 +5380,9 @@ build_unit_elab (gnat_unit, body_p, gnu_elab_list)
 
 extern char *__gnat_to_canonical_file_spec PARAMS ((char *));
 
-/* Determine the input_filename and the lineno from the source location
+/* Determine the input_filename and the input_line from the source location
    (Sloc) of GNAT_NODE node.  Set the global variable input_filename and
-   lineno.  If WRITE_NOTE_P is true, emit a line number note.  */
+   input_line.  If WRITE_NOTE_P is true, emit a line number note.  */
 
 void
 set_lineno (gnat_node, write_note_p)
@@ -5417,7 +5417,7 @@ set_lineno (gnat_node, write_note_p)
   input_line = Get_Logical_Line_Number (source_location);
 
   if (write_note_p)
-    emit_line_note (input_filename, lineno);
+    emit_line_note (input_filename, input_line);
 }
 
 /* Post an error message.  MSG is the error message, properly annotated.
