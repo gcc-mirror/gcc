@@ -1,3 +1,62 @@
+2000-03-27  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.in: New #defines and friends for Thread.h.
+	* posix-threads.cc: (struct starter): Remove `object'.
+	(_Jv_CondWait): Use interruptable condition variables and new
+	recursive mutexes. New return codes on interrupt or non-ownership
+	of mutex.
+	(_Jv_CondNotify): Ditto.
+	(_Jv_CondNotifyAll): Ditto.
+	(_Jv_ThreadInterrupt): Set thread interrupt flag directly. Interrupt
+	the target thread by signaling its wait condition.
+	(_Jv_ThreadInitData): Set `thread_obj' in the thread data struct,
+	not the starter struct. Initialize wait_mutex and wait_cond.
+	(_Jv_MutexLock): New recursive mutex implementation. Moved from 
+	posix-threads.h.
+	(_Jv_MutexUnlock): Ditto.
+	(really_start): Set info->data->thread from pthread_self() to work 
+	around a race condition. Destroy wait_mutex and wait_cond when run()
+	returns.
+	* java/lang/Thread.java: (isInterrupted_): Renamed to overloaded
+	`isInterrupted(boolean)'. Clear interrupted flag if clear_flag is
+	set.
+	startable_flag: New private field.
+	(Thread): Initialize `startable_flag'.
+	(toString): Check for null thread group.
+	* java/lang/natThread.cc: (struct natThread): New fields 
+	`join_mutex', `join_cond'. Removed fields `joiner', `next'.
+	(class locker): Removed.
+	(initialize_native): Initialize `join_cond' and `join_mutex'.
+	(interrupt): Now just calls _Jv_ThreadInterrupt().
+	(join): Simplified. Just wait on the target thread's join condition.
+	(finish_): Remove join list code. Unset thread group. Signal
+	potential joiners by notifying the dying threads join_cond.
+	(start): Check for illegal restarts.
+	* java/lang/natObject.cc: Check for return value of _Jv_CondWait and
+	act appropriatly.
+	* include/posix-threads.h: Remove all HAVE_RECURSIVE_MUTEX related
+	#defines and #ifdefs.
+	(struct _Jv_Thread_t): New fields `thread_obj', `wait_cond',
+	`wait_mutex', `next'.
+	(struct _Jv_ConditionVariable_t): Define as a struct instead of 
+	directly mapping to pthread_cond_t.
+	(struct _Jv_Mutex_t): New recursive implementation.
+	(_Jv_PthreadCheckMonitor): Reimplemented. Simple `owner' check.
+	_Jv_HaveCondDestroy: Never define this for posix-threads.
+	(_Jv_CondNotify): Remove inline implementation(s), prototype instead.
+	(_Jv_CondNotifyAll): Ditto.
+	(_Jv_MutexLock): Ditto.
+	(_Jv_MutexUnlock): Ditto.
+	(_Jv_MutexInit): Changed to reflect new mutex implementation.
+	(_Jv_MutexDestroy): Ditto.
+	(_Jv_CondDestroy): Removed.
+	(_Jv_PthreadGetMutex): Removed.
+	* include/win32-threads.h: (_Jv_CondNotify): Guess _JV_NOT_OWNER on an 
+	error. Add a FIXME about this.
+	(_Jv_CondNotifyAll): Ditto.
+	* win32-threads.cc: (_Jv_CondWait): Return 0 on a timeout. Guess 
+	_JV_NOT_OWNER on other errors. Add FIXME.
+
 2000-03-26  Tom Tromey  <tromey@cygnus.com>
 
 	* jni.cc (_Jv_JNI_PopSystemFrame): If environment has exception

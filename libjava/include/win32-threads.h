@@ -54,13 +54,15 @@ int _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 inline int
 _Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *)
 {
-  return PulseEvent (*cv) ? 0 : GetLastError ();        // FIXME: Map error code?
+  // FIXME: check for mutex ownership?
+  return PulseEvent (*cv) ? 0 : _JV_NOT_OWNER;        // FIXME?
 }
 
 inline int
 _Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *)
 {
-  return PulseEvent (*cv) ? 0 : GetLastError ();        // FIXME: Map error code?
+  // FIXME: check for mutex ownership?
+  return PulseEvent (*cv) ? 0 : _JV_NOT_OWNER;        // FIXME?
 }
 
 //

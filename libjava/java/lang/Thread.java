@@ -79,12 +79,11 @@ public class Thread implements Runnable
 
   public static boolean interrupted ()
   {
-    return currentThread().isInterrupted_();
+    return currentThread().isInterrupted (true);
   }
 
-  // FIXME: it seems to me that this should be synchronized.
   // Check the threads interrupted status. Note that this does not clear the
-  // threads interrupted status (per JDK 1.2 online API documentation).
+  // thread's interrupted status (per JDK 1.2 online API documentation).
   public boolean isInterrupted ()
   {
     return interrupt_flag;
@@ -119,11 +118,18 @@ public class Thread implements Runnable
   private static final native void run_ (Object obj);
   private final native void finish_ ();
 
-  // Convenience method to check and clear the thread's interrupted status.  
-  private boolean isInterrupted_ ()
+  // Check the thread's interrupted status. If clear_flag is true, the 
+  // thread's interrupted status is also cleared.
+  private boolean isInterrupted (boolean clear_flag)
   {
     boolean r = interrupt_flag;
-    interrupt_flag = false;
+    if (clear_flag && r)
+      {
+	// Only clear the flag if we saw it as set. Otherwise this could 
+	// potentially cause us to miss an interrupt in a race condition, 
+	// because this method is not synchronized.
+	interrupt_flag = false;
+      }
     return r;
   }
   
@@ -221,6 +227,8 @@ public class Thread implements Runnable
     data = null;
     interrupt_flag = false;
     alive_flag = false;
+    startable_flag = true;
+    
     if (current != null)
       {
 	daemon_flag = current.isDaemon();
@@ -267,7 +275,8 @@ public class Thread implements Runnable
 
   public String toString ()
   {
-    return "Thread[" + name + "," + priority + "," + group.getName() + "]";
+    return "Thread[" + name + "," + priority + "," + 
+	   (group == null ? "" : group.getName()) + "]";
   }
 
   public static native void yield ();
@@ -280,6 +289,7 @@ public class Thread implements Runnable
   private boolean daemon_flag;
   private boolean interrupt_flag;
   private boolean alive_flag;
+  private boolean startable_flag;
 
   // Our native data.
   private RawData data;
