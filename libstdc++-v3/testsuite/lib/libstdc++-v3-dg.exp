@@ -185,6 +185,7 @@ proc libstdc++-v3_target_compile { source dest type options } {
     global cxx
     global cxxflags
     global includes
+    global blddir
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
@@ -199,9 +200,9 @@ proc libstdc++-v3_target_compile { source dest type options } {
 
     lappend options "compiler=$cxx_final"
 
-    # Picks up our local freshly-built testsuite library.  We could just
-    # name it directly, "./libv3test.a" but this is more portable.
-    lappend options "ldflags=-L."
+    # Picks up the freshly-built testsuite library corresponding to the
+    # multilib under test.
+    lappend options "ldflags=-L${blddir}/testsuite"
     lappend options "libs=-lv3test"
 
     return [target_compile $source $dest $type $options]
