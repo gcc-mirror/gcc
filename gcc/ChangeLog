@@ -1,5 +1,8 @@
 2001-12-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree.c (get_callee_fndecl): Only use DECL_ABSTRACT_ORIGIN if
+	it has DECL_SAVED_TREE.
+	
 	* c-decl.c (duplicate_decls): Revert rth's patch.  If newdecl
 	is in a different binding level, get its abstract origin to be
 	olddecl.
