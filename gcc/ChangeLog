@@ -1,3 +1,9 @@
+2004-07-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/16414
+	* config/ia64/ia64.c (ia64_dfa_new_cycle): Fix typo in comparison
+	of asm_noperands result.
+
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (ind_gimplify_va_arg_expr): New.
