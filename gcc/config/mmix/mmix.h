@@ -348,10 +348,6 @@ extern int target_flags;
 
 #define DEFAULT_SIGNED_CHAR 1
 
-/* I have no rationale for this other than pointing at Alpha.  */
-#define	WCHAR_TYPE "unsigned int"
-#define	WCHAR_TYPE_SIZE 32
-
 
 /* Node: Register Basics */
 /* We tell GCC about all 256 general registers, and we also include

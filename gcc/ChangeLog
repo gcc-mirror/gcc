@@ -1,3 +1,13 @@
+2002-03-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("fixuns_truncdfdi2"): Use (unsigned_fix:DI
+	(unsigned_fix:DF op1)), not (unsigned_fix:DI (fix:DF op1)).
+	("truncdfsf2"): Correct operator is float_truncate, not fix.
+	("*truncdfsf2_real"): Ditto.
+	("*nonlocal_goto_receiver_expanded"): Fix output template formatting.
+
+	* config/mmix/mmix.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Don't define.
+
 2002-03-19  Jim Blandy  <jimb@redhat.com>
 
 	* c-lex.c (cb_file_change): Pass the #inclusion's line number to
