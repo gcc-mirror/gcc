@@ -2165,8 +2165,6 @@ extern void expand_start_case_dummy	PROTO ((void));
 extern void expand_end_case_dummy	PROTO ((void));
 extern tree case_index_expr_type	PROTO ((void));
 extern HOST_WIDE_INT all_cases_count	PROTO ((tree, int *));
-extern void mark_seen_cases		PROTO ((tree, unsigned char *,
-						long, int));
 extern void check_for_full_enumeration_handling PROTO ((tree));
 extern void declare_nonlocal_label	PROTO ((tree));
 #ifdef BUFSIZ

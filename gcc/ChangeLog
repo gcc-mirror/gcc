@@ -1,3 +1,7 @@
+Fri Apr 17 17:01:25 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* tree.h (mark_seen_cases): Delete declaration.
+
 Fri Apr 17 13:32:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* stmt.c (mark_seen_cases): Make static and add prototype.
