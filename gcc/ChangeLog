@@ -1,3 +1,8 @@
+2001-07-30  Janis Johnson  <janis@us.ibm.com>
+
+	* profile.c (branch_prob): Fix .bbg info for computed gotos
+	and C++ EH code.
+
 2001-07-28  Golubev I. N.  <gin@mo.msk.ru>
 
 	* config/i386/sco5.h (DWARF2_DEBUGGING_INFO): Define.
