@@ -4811,7 +4811,7 @@ print_operand (file, op, letter)
     }
 
   else if (letter == 'x' && GET_CODE (op) == CONST_INT)
-    fprintf (file, "0x%04x", 0xffff & INTVAL(op));
+    fprintf (file, HOST_WIDE_INT_PRINT_HEX, 0xffff & INTVAL(op));
 
   else if (letter == 'X' && GET_CODE(op) == CONST_INT)
     fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (op));
