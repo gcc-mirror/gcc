@@ -1,3 +1,10 @@
+Sun Jan  7 18:37:43 2001  Mark P Mitchell  <mark@codesourcery.com>
+
+	* ggc-page.c (max_alignment): New structure.
+	(MAX_ALIGNMENT): New macro.
+	(init_ggc): Use it to round up the sizes in the
+	extra_order_size_table.
+
 2001-01-07  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.h (EPILOGUE_USES): New, mark link register

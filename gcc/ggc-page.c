@@ -140,22 +140,11 @@ Boston, MA 02111-1307, USA.  */
 /* The size of an object on a page of the indicated ORDER.  */
 #define OBJECT_SIZE(ORDER) object_size_table[ORDER]
 
-#ifdef NO_ALIGNMENT_PROBLEM
-
 /* The number of extra orders, not corresponding to power-of-two sized
    objects.  */
 
 #define NUM_EXTRA_ORDERS \
   (sizeof (extra_order_size_table) / sizeof (extra_order_size_table[0]))
-
-#else /* !defined(NO_ALIGNMENT_PROBLEM) */
-
-/* For now, we can't use this code because we don't ensure that the
-   objects returned are appropriately aligned.  The problem is that
-   some tree_list sized things, for example, use */
-#define NUM_EXTRA_ORDERS 0
-
-#endif /* !defined(NO_ALIGNMENT_PROBLEM) */
 
 /* The Ith entry is the maximum size of an object to be stored in the
    Ith extra order.  Adding a new entry to this array is the *only*
@@ -169,6 +158,26 @@ static const size_t extra_order_size_table[] = {
 /* The total number of orders.  */
 
 #define NUM_ORDERS (HOST_BITS_PER_PTR + NUM_EXTRA_ORDERS)
+
+/* We use this structure to determine the alignment required for
+   allocations.  For power-of-two sized allocations, that's not a
+   problem, but it does matter for odd-sized allocations.  */
+
+struct max_alignment {
+  char c;
+  union {
+    HOST_WIDEST_INT i;
+#ifdef HAVE_LONG_DOUBLE
+    long double d;
+#else
+    double d;
+#endif
+  } u;
+};
+
+/* The biggest alignment required.  */
+
+#define MAX_ALIGNMENT (offsetof (struct max_alignment, u))
 
 /* The Ith entry is the number of objects on a page or order I.  */
 
@@ -878,8 +887,14 @@ init_ggc ()
   for (order = 0; order < HOST_BITS_PER_PTR; ++order)
     object_size_table[order] = (size_t) 1 << order;
   for (order = HOST_BITS_PER_PTR; order < NUM_ORDERS; ++order)
-    object_size_table[order] = 
-      extra_order_size_table[order - HOST_BITS_PER_PTR];
+    {
+      size_t s = extra_order_size_table[order - HOST_BITS_PER_PTR];
+
+      /* If S is not a multiple of the MAX_ALIGNMENT, then round it up
+	 so that we're sure of getting aligned memory.  */
+      s = CEIL (s, MAX_ALIGNMENT) * MAX_ALIGNMENT;
+      object_size_table[order] = s;
+    }
 
   /* Initialize the objects-per-page table.  */
   for (order = 0; order < NUM_ORDERS; ++order)
