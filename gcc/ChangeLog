@@ -1,3 +1,10 @@
+2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/arm/netbsd.h (TARGET_OS_CPP_BUILTINS): Use
+	NETBSD_OS_CPP_BUILTINS_AOUT.
+	(SUBTARGET_EXTRA_SPECS): Define.
+	(CPP_SPEC): Use %(netbsd_cpp_spec).
+
 2002-05-29  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_output_function_epilogue): New.

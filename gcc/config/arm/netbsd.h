@@ -46,19 +46,19 @@ Boston, MA 02111-1307, USA.  */
    arm32 is the NetBSD port name, so we always define arm32 and __arm32__.  */
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
+	NETBSD_OS_CPP_BUILTINS_AOUT();		\
 	builtin_define_std ("arm32");		\
 	builtin_define_std ("unix");		\
 	builtin_define_std ("riscbsd");		\
-	builtin_define ("__NetBSD__");		\
-	builtin_assert ("system=unix");		\
-	builtin_assert ("system=NetBSD");	\
     } while (0)
 
-/* Define _POSIX_SOURCE if necessary.  */
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },
+
 #undef CPP_SPEC
 #define CPP_SPEC "\
-%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %(cpp_endian) \
-%{posix:-D_POSIX_SOURCE} \
+%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %(cpp_endian) %(netbsd_cpp_spec) \
 "
 
 /* Because TARGET_DEFAULT sets ARM_FLAG_APCS_32 */
