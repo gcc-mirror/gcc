@@ -46,7 +46,7 @@ import java.rmi.RemoteException;
 
 public interface RemoteRef extends Externalizable
 {
-  long serialVersionUID = 0;
+  long serialVersionUID = 3632638527362204081L;
   
   String packagePrefix = "gnu.java.rmi.server";
 
