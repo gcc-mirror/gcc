@@ -5790,6 +5790,14 @@ force_to_mode (x, mode, mask, reg)
       op1 = gen_lowpart_for_combine (op_mode, force_to_mode (XEXP (x, 1),
 							     mode, mask, reg));
 
+      /* If OP1 is a CONST_INT and X is an IOR or XOR, clear bits outside
+	 MASK since OP1 might have been sign-extended but we never want
+	 to turn on extra bits, since combine might have previously relied
+	 on them being off.  */
+      if (GET_CODE (op1) == CONST_INT && (code == IOR || code == XOR)
+	  && (INTVAL (op1) & mask) != 0)
+	op1 = GEN_INT (INTVAL (op1) & mask);
+	 
       if (op_mode != GET_MODE (x) || op0 != XEXP (x, 0) || op1 != XEXP (x, 1))
 	x = gen_binary (code, op_mode, op0, op1);
       break;
