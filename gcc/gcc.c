@@ -4706,7 +4706,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		for (t = temp_names; t; t = t->next)
 		  if (t->length == suffix_length
 		      && strncmp (t->suffix, suffix, suffix_length) == 0
-		      && t->unique == (c == 'u' || c == 'j'))
+		      && t->unique == (c == 'u' || c == 'U' || c == 'j'))
 		    break;
 
 		/* Make a new association if needed.  %u and %j
@@ -4727,7 +4727,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      }
 		    else
 		      t->suffix = save_string (suffix, suffix_length);
-		    t->unique = (c == 'u' || c == 'j');
+		    t->unique = (c == 'u' || c == 'U' || c == 'j');
 		    temp_filename = make_temp_file (t->suffix);
 		    temp_filename_length = strlen (temp_filename);
 		    t->filename = temp_filename;
