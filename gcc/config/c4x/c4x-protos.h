@@ -88,6 +88,8 @@ extern int c4x_check_legit_addr PARAMS ((enum machine_mode, rtx, int));
 
 extern int c4x_hard_regno_mode_ok PARAMS ((unsigned int, enum machine_mode));
 
+extern int c4x_hard_regno_rename_ok PARAMS ((unsigned int, unsigned int));
+
 extern struct rtx_def *c4x_legitimize_address PARAMS ((rtx,
 						       enum machine_mode));
 
