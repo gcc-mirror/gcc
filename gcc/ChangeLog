@@ -1,3 +1,14 @@
+Thu Mar  5 02:45:48 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/alpha.h (TARGET_WINDOWS_NT, TARGET_OPEN_VMS): Just make them
+	real constants, since they can't be changed.
+	(TARGET_AS_CAN_SUBTRACT_LABELS): New.
+	* alpha/alpha.md (builtin_setjmp_receiver): Use it.
+	* alpha/osf.h (TARGET_AS_CAN_SUBTRACT_LABELS): New.
+	* alpha/osf2or3.h (TARGET_AS_CAN_SUBTRACT_LABELS): New.
+	* alpha/vms.h (TARGET_OPEN_VMS): New.
+	* alpha/win-nt.h (TARGET_WINDOWS_NT): New.
+
 Thu Mar  5 02:41:27 1998  Richard Henderson  <rth@cygnus.com>
 
 	* reload.c (find_reloads): Always force (subreg (mem)) to be

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -122,21 +122,11 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_IEEE_WITH_INEXACT 32
 #define TARGET_IEEE_WITH_INEXACT (target_flags & MASK_IEEE_WITH_INEXACT)
 
-/* This means we are compiling for Windows NT.  */
-
-#define MASK_WINDOWS_NT	64
-#define TARGET_WINDOWS_NT (target_flags & MASK_WINDOWS_NT)
-
 /* This means we must construct all constants rather than emitting
    them as literal data.  */
 
 #define MASK_BUILD_CONSTANTS 128
 #define TARGET_BUILD_CONSTANTS (target_flags & MASK_BUILD_CONSTANTS)
-
-/* This means we are compiling for openVMS.  */
-
-#define MASK_OPEN_VMS	256
-#define TARGET_OPEN_VMS (target_flags & MASK_OPEN_VMS)
 
 /* This means we handle floating points in VAX F- (float)
    or G- (double) Format.  */
@@ -169,6 +159,19 @@ extern enum alpha_fp_trap_mode alpha_fptm;
    defined in TARGET_CPU_DEFAULT.  */
 #define MASK_SUPPORT_ARCH 32768
 #define TARGET_SUPPORT_ARCH	(target_flags & MASK_SUPPORT_ARCH)
+
+/* These are for target os support and cannot be changed at runtime.  */
+#ifndef TARGET_WINDOWS_NT
+#define TARGET_WINDOWS_NT 0
+#endif
+#ifndef TARGET_OPEN_VMS
+#define TARGET_OPEN_VMS 0
+#endif
+
+#ifndef TARGET_AS_CAN_SUBTRACT_LABELS
+#define TARGET_AS_CAN_SUBTRACT_LABELS TARGET_GAS
+#endif
+
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
