@@ -86,7 +86,7 @@ identify_call_return_value (cp, p_hard_return, p_soft_return)
   /* If we didn't get a single hard register (e.g. a parallel), give up.  */
   if (GET_CODE (hard) != REG)
     return 0;
-    
+
   /* Stack adjustment done after call may appear here.  */
   insn = skip_stack_adjustment (insn);
   if (! insn)
@@ -101,7 +101,7 @@ identify_call_return_value (cp, p_hard_return, p_soft_return)
   insn = NEXT_INSN (insn);
   if (! insn)
     return 0;
-  
+
   /* We're looking for a source of the hard return register.  */
   set = single_set (insn);
   if (! set || SET_SRC (set) != hard)
@@ -168,7 +168,7 @@ skip_copy_to_return_value (orig_insn)
 
   /* The destination must be the same as the called function's return
      value to ensure that any return value is put in the same place by the
-     current function and the function we're calling. 
+     current function and the function we're calling.
 
      Further, the source must be the same as the pseudo into which the
      called function's return value was copied.  Otherwise we're returning
@@ -554,7 +554,7 @@ replace_call_placeholder (insn, use)
      pass above from deleting it as unused.  */
   if (XEXP (PATTERN (insn), 3))
     LABEL_PRESERVE_P (XEXP (PATTERN (insn), 3)) = 0;
-  
+
   /* "Delete" the placeholder insn.  */
   remove_insn (insn);
 }
@@ -586,7 +586,7 @@ optimize_sibling_and_tail_recursive_calls ()
   if (n_basic_blocks == 0)
     return;
 
-  /* If we are using sjlj exceptions, we may need to add a call to 
+  /* If we are using sjlj exceptions, we may need to add a call to
      _Unwind_SjLj_Unregister at exit of the function.  Which means
      that we cannot do any sibcall transformations.  */
   if (USING_SJLJ_EXCEPTIONS && current_function_has_exception_handlers ())
@@ -676,7 +676,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	     sibling call optimizations, but not tail recursion.
 	     Similarly if we use varargs or stdarg since they implicitly
 	     may take the address of an argument.  */
- 	  if (current_function_calls_alloca
+	  if (current_function_calls_alloca
 	      || current_function_varargs || current_function_stdarg)
 	    sibcall = 0;
 
@@ -709,8 +709,8 @@ optimize_sibling_and_tail_recursive_calls ()
 	    successful_sibling_call = 1;
 
 	  replaced_call_placeholder = 1;
-	  replace_call_placeholder (insn, 
-				    tailrecursion != 0 
+	  replace_call_placeholder (insn,
+				    tailrecursion != 0
 				      ? sibcall_use_tail_recursion
 				      : sibcall != 0
 					 ? sibcall_use_sibcall
@@ -724,11 +724,11 @@ optimize_sibling_and_tail_recursive_calls ()
       tree arg;
 
       /* A sibling call sequence invalidates any REG_EQUIV notes made for
-	 this function's incoming arguments. 
+	 this function's incoming arguments.
 
 	 At the start of RTL generation we know the only REG_EQUIV notes
 	 in the rtl chain are those for incoming arguments, so we can safely
-	 flush any REG_EQUIV note. 
+	 flush any REG_EQUIV note.
 
 	 This is (slight) overkill.  We could keep track of the highest
 	 argument we clobber and be more selective in removing notes, but it
@@ -738,7 +738,7 @@ optimize_sibling_and_tail_recursive_calls ()
       /* A sibling call sequence also may invalidate RTX_UNCHANGING_P
 	 flag of some incoming arguments MEM RTLs, because it can write into
 	 those slots.  We clear all those bits now.
-	 
+
 	 This is (slight) overkill, we could keep track of which arguments
 	 we actually write into.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -749,8 +749,8 @@ optimize_sibling_and_tail_recursive_calls ()
 
       /* Similarly, invalidate RTX_UNCHANGING_P for any incoming
 	 arguments passed in registers.  */
-      for (arg = DECL_ARGUMENTS (current_function_decl); 
-	   arg; 
+      for (arg = DECL_ARGUMENTS (current_function_decl);
+	   arg;
 	   arg = TREE_CHAIN (arg))
 	{
 	  if (REG_P (DECL_RTL (arg)))
@@ -758,7 +758,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	}
     }
 
-  /* There may have been NOTE_INSN_BLOCK_{BEGIN,END} notes in the 
+  /* There may have been NOTE_INSN_BLOCK_{BEGIN,END} notes in the
      CALL_PLACEHOLDER alternatives that we didn't emit.  Rebuild the
      lexical block tree to correspond to the notes that still exist.  */
   if (replaced_call_placeholder)

@@ -370,7 +370,7 @@ find_inherently_necessary (x)
     return !0;
   else
     switch (GET_CODE (x))
-      {  
+      {
       case CALL_INSN:
       case BARRIER:
       case PREFETCH:
@@ -691,7 +691,7 @@ ssa_eliminate_dead_code ()
 	    remove_edge (temp);
 	  }
 
-	/* Create an edge from this block to the post dominator.  
+	/* Create an edge from this block to the post dominator.
 	   What about the PHI nodes at the target?  */
 	make_edge (bb, pdom_bb, 0);
 
@@ -711,7 +711,7 @@ ssa_eliminate_dead_code ()
     else if (!JUMP_P (insn))
       delete_insn_bb (insn);
   });
-  
+
   /* Remove fake edges from the CFG.  */
   remove_fake_edges ();
 

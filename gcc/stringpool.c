@@ -110,7 +110,7 @@ get_identifier (text)
 
 /* Identical to get_identifier, except that the length is assumed
    known.  */
-   
+
 tree
 get_identifier_with_length (text, length)
      const char *text;

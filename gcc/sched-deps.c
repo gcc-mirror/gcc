@@ -280,7 +280,7 @@ add_dependence (insn, elem, dep_type)
       else if (TEST_BIT (output_dependency_cache[INSN_LUID (insn)],
 			 INSN_LUID (elem)))
 	present_dep_type = REG_DEP_OUTPUT;
-      else 
+      else
 	present_p = 0;
       if (present_p && (int) dep_type >= (int) present_dep_type)
 	return;
@@ -313,7 +313,7 @@ add_dependence (insn, elem, dep_type)
 	     one, then change the existing dependence to this type.  */
 	  if ((int) dep_type < (int) REG_NOTE_KIND (link))
 	    PUT_REG_NOTE_KIND (link, dep_type);
-	  
+
 #ifdef INSN_SCHEDULING
 	  /* If we are adding a dependency to INSN's LOG_LINKs, then
 	     note that in the bitmap caches of dependency information.  */
@@ -1032,7 +1032,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
     }
 
   /* If this instruction can throw an exception, then moving it changes
-     where block boundaries fall.  This is mighty confusing elsewhere. 
+     where block boundaries fall.  This is mighty confusing elsewhere.
      Therefore, prevent such an instruction from being moved.  */
   if (can_throw_internal (insn))
     reg_pending_barrier = true;

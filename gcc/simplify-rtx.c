@@ -43,7 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    virtual regs here because the simplify_*_operation routines are called
    by integrate.c, which is called before virtual register instantiation.
 
-   ?!? FIXED_BASE_PLUS_P and NONZERO_BASE_PLUS_P need to move into 
+   ?!? FIXED_BASE_PLUS_P and NONZERO_BASE_PLUS_P need to move into
    a header file so that their definitions can be shared with the
    simplification routines in simplify-rtx.c.  Until then, do not
    change these macros without also changing the copy in simplify-rtx.c.  */
@@ -113,7 +113,7 @@ neg_const_int (mode, i)
 }
 
 
-/* Make a binary operation by properly ordering the operands and 
+/* Make a binary operation by properly ordering the operands and
    seeing if the expression folds.  */
 
 rtx
@@ -300,7 +300,7 @@ simplify_replace_rtx (x, old, new)
 	rtx op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
 
 	return
-	  simplify_gen_ternary (code, mode, 
+	  simplify_gen_ternary (code, mode,
 				(op_mode != VOIDmode
 				 ? op_mode
 				 : GET_MODE (op0)),
@@ -677,7 +677,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	    return convert_memory_address (Pmode, op);
 	  break;
 #endif
-	  
+
 	default:
 	  break;
 	}
@@ -964,7 +964,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	    }
 
 	  /* If one of the operands is a PLUS or a MINUS, see if we can
-	     simplify this by the associative law. 
+	     simplify this by the associative law.
 	     Don't use the associative law for floating point.
 	     The inaccuracy makes it nonassociative,
 	     and subtle programs can break if operations are associated.  */
@@ -1013,7 +1013,7 @@ simplify_binary_operation (code, mode, op0, op1)
 #endif
 		return xop00;
 	    }
-	  break;	      
+	  break;
 
 	case MINUS:
 	  /* We can't assume x-x is 0 even with non-IEEE floating point,
@@ -1102,7 +1102,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	    return simplify_gen_binary (PLUS, mode, op0, XEXP (op1, 0));
 
 	  /* If one of the operands is a PLUS or a MINUS, see if we can
-	     simplify this by the associative law. 
+	     simplify this by the associative law.
 	     Don't use the associative law for floating point.
 	     The inaccuracy makes it nonassociative,
 	     and subtle programs can break if operations are associated.  */
@@ -1280,7 +1280,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	      if (! REAL_VALUES_EQUAL (d, dconst0))
 		{
 		  REAL_ARITHMETIC (d, rtx_to_tree_code (DIV), dconst1, d);
-		  return gen_rtx_MULT (mode, op0, 
+		  return gen_rtx_MULT (mode, op0,
 				       CONST_DOUBLE_FROM_REAL_VALUE (d, mode));
 		}
 	    }
@@ -1320,14 +1320,14 @@ simplify_binary_operation (code, mode, op0, op1)
 	  break;
 
 	case SMIN:
-	  if (width <= HOST_BITS_PER_WIDE_INT && GET_CODE (trueop1) == CONST_INT 
+	  if (width <= HOST_BITS_PER_WIDE_INT && GET_CODE (trueop1) == CONST_INT
 	      && INTVAL (trueop1) == (HOST_WIDE_INT) 1 << (width -1)
 	      && ! side_effects_p (op0))
 	    return op1;
 	  else if (rtx_equal_p (trueop0, trueop1) && ! side_effects_p (op0))
 	    return op0;
 	  break;
-	   
+
 	case SMAX:
 	  if (width <= HOST_BITS_PER_WIDE_INT && GET_CODE (trueop1) == CONST_INT
 	      && ((unsigned HOST_WIDE_INT) INTVAL (trueop1)
@@ -1344,7 +1344,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  else if (rtx_equal_p (trueop0, trueop1) && ! side_effects_p (op0))
 	    return op0;
 	  break;
-	    
+
 	case UMAX:
 	  if (trueop1 == constm1_rtx && ! side_effects_p (op0))
 	    return op1;
@@ -1362,7 +1362,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	default:
 	  abort ();
 	}
-      
+
       return 0;
     }
 
@@ -1549,9 +1549,9 @@ simplify_binary_operation (code, mode, op0, op1)
 
    Rather than test for specific case, we do this by a brute-force method
    and do all possible simplifications until no more changes occur.  Then
-   we rebuild the operation. 
+   we rebuild the operation.
 
-   If FORCE is true, then always generate the rtx.  This is used to 
+   If FORCE is true, then always generate the rtx.  This is used to
    canonicalize stuff emitted from simplify_gen_binary.  Note that this
    can still fail if the rtx is too complex.  It won't fail just because
    the result is not 'simpler' than the input, however.  */
@@ -1588,7 +1588,7 @@ simplify_plus_minus (code, mode, op0, op1, force)
   int i, j;
 
   memset ((char *) ops, 0, sizeof ops);
-  
+
   /* Set up the two operands and then expand them until nothing has been
      changed.  If we run out of room in our array, give up; this should
      almost never happen.  */
@@ -1712,7 +1712,7 @@ simplify_plus_minus (code, mode, op0, op1, force)
 
 		tem = simplify_binary_operation (ncode, mode, lhs, rhs);
 
-		/* Reject "simplifications" that just wrap the two 
+		/* Reject "simplifications" that just wrap the two
 		   arguments in a CONST.  Failure to do so can result
 		   in infinite recursion with simplify_binary_operation
 		   when it calls us to simplify CONST operations.  */
@@ -1784,7 +1784,7 @@ simplify_plus_minus (code, mode, op0, op1, force)
      is also an improvement, so accept it.  */
   if (!force
       && (n_ops + n_consts > input_ops
-          || (n_ops + n_consts == input_ops && n_consts <= input_consts)))
+	  || (n_ops + n_consts == input_ops && n_consts <= input_consts)))
     return NULL_RTX;
 
   /* Put a non-negated operand first.  If there aren't any, make all
@@ -1955,7 +1955,7 @@ simplify_relational_operation (code, mode, op0, op1)
 	  l0u = l0s = INTVAL (trueop0);
 	  h0u = h0s = HWI_SIGN_EXTEND (l0s);
 	}
-	  
+
       if (GET_CODE (trueop1) == CONST_DOUBLE)
 	{
 	  l1u = l1s = CONST_DOUBLE_LOW (trueop1);
@@ -2044,7 +2044,7 @@ simplify_relational_operation (code, mode, op0, op1)
 	      && INTEGRAL_MODE_P (mode))
 	    return const0_rtx;
 	  break;
-	  
+
 	default:
 	  break;
 	}
@@ -2188,7 +2188,7 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	    {
 	      HOST_WIDE_INT t = INTVAL (op1);
 	      HOST_WIDE_INT f = INTVAL (op2);
-	      
+
 	      if (t == STORE_FLAG_VALUE && f == 0)
 	        code = GET_CODE (op0);
 	      else if (t == 0 && f == STORE_FLAG_VALUE)
@@ -2288,7 +2288,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	  val = part ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op);
 	  offset %= HOST_BITS_PER_WIDE_INT;
 
-	  /* We've already picked the word we want from a double, so 
+	  /* We've already picked the word we want from a double, so
 	     pretend this is actually an integer.  */
 	  innermode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
 
@@ -2553,7 +2553,7 @@ simplify_gen_subreg (outermode, op, innermode, byte)
     maintain and improve.  It's totally silly that when we add a
     simplification that it needs to be added to 4 places (3 for RTL
     simplification and 1 for tree simplification.  */
-	   
+
 rtx
 simplify_rtx (x)
      rtx x;
@@ -2597,7 +2597,7 @@ simplify_rtx (x)
     case 'x':
       /* The only case we try to handle is a SUBREG.  */
       if (code == SUBREG)
-        return simplify_gen_subreg (mode, SUBREG_REG (x),
+	return simplify_gen_subreg (mode, SUBREG_REG (x),
 				    GET_MODE (SUBREG_REG (x)),
 				    SUBREG_BYTE (x));
       return NULL;

@@ -677,13 +677,13 @@ print_pattern (buf, x, verbose)
 	  && XEXP (COND_EXEC_TEST (x), 1) == const0_rtx)
 	print_value (t1, XEXP (COND_EXEC_TEST (x), 0), verbose);
       else if (GET_CODE (COND_EXEC_TEST (x)) == EQ
-               && XEXP (COND_EXEC_TEST (x), 1) == const0_rtx)
-        {
+	       && XEXP (COND_EXEC_TEST (x), 1) == const0_rtx)
+	{
 	  t1[0] = '!';
 	  print_value (t1 + 1, XEXP (COND_EXEC_TEST (x), 0), verbose);
 	}
       else
-        print_value (t1, COND_EXEC_TEST (x), verbose);
+	print_value (t1, COND_EXEC_TEST (x), verbose);
       print_pattern (t2, COND_EXEC_CODE (x), verbose);
       sprintf (buf, "(%s) %s", t1, t2);
       break;

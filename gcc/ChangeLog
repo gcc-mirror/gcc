@@ -1,3 +1,22 @@
+2002-05-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* sbitmap.c: Fix formatting.
+	* scan.c: Likewise.
+	* scan-decls.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sched-ebb.c: Likewise.
+	* sched-rgn.c: Likewise.
+	* sched-vis.c: Likewise.
+	* sdbout.c: Likewise.
+	* sibcall.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* ssa.c: Likewise.
+	* ssa-ccp.c: Likewise.
+	* ssa-dce.c: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* stringpool.c: Likewise.
+
 2002-05-09  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sol2.h (ASM_CPU_SPEC): Handle -mcpu=v9.

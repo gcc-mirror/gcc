@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -297,7 +297,7 @@ schedule_ebbs (dump_file)
 
   /* Schedule every region in the subroutine.  */
   for (i = 0; i < n_basic_blocks; i++)
-    { 
+    {
       rtx head = BASIC_BLOCK (i)->head;
       rtx tail;
 
