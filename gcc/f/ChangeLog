@@ -1,3 +1,7 @@
+2003-11-30  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (f77.rebuilt): Fix dependency on g77.info.
+
 2003-11-24  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/12633
