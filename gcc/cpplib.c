@@ -2615,7 +2615,7 @@ cpp_get_token (pfile)
 	      c = PEEKC ();
 	      if (c == EOF)
 		break;
-	      if (!is_idchar(c) && c != '.'
+	      if (!is_numchar(c) && c != '.'
 		  && ((c2 != 'e' && c2 != 'E'
 		       && ((c2 != 'p' && c2 != 'P') || CPP_C89 (pfile)))
 		      || (c != '+' && c != '-')))
@@ -2640,7 +2640,7 @@ cpp_get_token (pfile)
 		  c = GETC();
 		  if (c == EOF)
 		    goto chill_number_eof;
-		  if (!is_idchar(c))
+		  if (!is_numchar(c))
 		    break;
 		  CPP_PUTC (pfile, c);
 		}

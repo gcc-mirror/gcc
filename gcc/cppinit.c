@@ -22,7 +22,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 
-#define FAKE_CONST
 #include "cpplib.h"
 #include "cpphash.h"
 #include "output.h"
@@ -103,7 +102,7 @@ static const char * const known_suffixes[] =
    All these directories are treated as `system' include directories
    (they are not subject to pedantic warnings in some cases).  */
 
-static struct default_include
+struct default_include
 {
   const char *fname;		/* The name of the directory.  */
   const char *component;	/* The component containing the directory
@@ -112,8 +111,9 @@ static struct default_include
   int cxx_aware;		/* Includes in this directory don't need to
 				   be wrapped in extern "C" when compiling
 				   C++.  */
-}
-include_defaults_array[]
+};
+
+static const struct default_include include_defaults_array[]
 #ifdef INCLUDE_DEFAULTS
 = INCLUDE_DEFAULTS;
 #else
@@ -204,24 +204,21 @@ static void new_pending_define		PARAMS ((struct cpp_options *,
 /* Fourth argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 
-/* If gcc is in use (stage2/stage3) we can make this table initialized data. */
-#ifdef __STDC__
-#define CAT(a, b) a##b
-#else
-#define CAT(a, b) a/**/b
-#endif
+/* If we have designated initializers (GCC >2.7, or C99) this table
+   can be initialized, constant data.  Otherwise, it has to be filled
+   in at runtime.  */
 
-#if (GCC_VERSION >= 2007)
-#define TABLE(id) static inline void CAT(init_, id) PARAMS ((void)) {} \
-unsigned char id[256] = {
-#define s(p, v) [p] = v,
+#if (GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)
+#define init_IStable()  /* nothing */
+#define ISTABLE const unsigned char _cpp_IStable[256] = {
 #define END };
+#define s(p, v) [p] = v,
 #else
-#define TABLE(id) unsigned char id[256] = { 0 }; \
-static void CAT(init_,id) PARAMS ((void)) { \
-unsigned char *x = id;
-#define s(p, v) x[p] = v;
+#define ISTABLE unsigned char _cpp_IStable[256] = { 0 }; \
+ static void init_IStable PARAMS ((void)) { \
+ unsigned char *x = id;
 #define END } 
+#define s(p, v) x[p] = v;
 #endif
 
 #define A(x) s(x, ISidnum|ISidstart)
@@ -229,7 +226,7 @@ unsigned char *x = id;
 #define H(x) s(x, IShspace|ISspace)
 #define S(x) s(x, ISspace)
 
-TABLE (IStable)
+ISTABLE
   A('_')
 
   A('a') A('b') A('c') A('d') A('e') A('f') A('g') A('h') A('i')
@@ -251,10 +248,9 @@ END
 #undef N
 #undef H
 #undef S
-#undef TABLE
-#undef END
 #undef s
-#undef CAT
+#undef ISTABLE
+#undef END
 
 /* Given a colon-separated list of file names PATH,
    add all the names to the search path for include files.  */
@@ -668,7 +664,7 @@ initialize_standard_includes (pfile)
 {
   cpp_options *opts = CPP_OPTIONS (pfile);
   char *path;
-  struct default_include *p = include_defaults_array;
+  const struct default_include *p;
   char *specd_prefix = opts->include_prefix;
 
   /* Several environment variables may add to the include search path.
@@ -793,14 +789,10 @@ cpp_start_read (pfile, fname)
      preprocessing.  */
   if (opts->preprocessed)
     pfile->no_macro_expand++;
-  
-  /* Now that we know dollars_in_ident, we can initialize the syntax
-     tables. */
+
+  /* Set up the IStable.  This doesn't do anything if we were compiled
+     with a compiler that supports C99 designated initializers.  */
   init_IStable ();
-  /* XXX Get rid of code that depends on this, then IStable can
-     be truly const.  */
-  if (opts->dollars_in_ident)
-    IStable['$'] = ISidstart|ISidnum;
 
   /* Set up the include search path now.  */
   if (! opts->no_standard_includes)
