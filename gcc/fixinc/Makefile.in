@@ -109,7 +109,7 @@ fixlib.o    : fixlib.c
 machname.h: ../specs
 	$(SHELL) $(srcdir)/genfixes $@
 
-$(srcdir)/fixincl.x: fixincl.tpl inclhack.def
+$(srcdir)/fixincl.x: @MAINT@ fixincl.tpl inclhack.def
 	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
 clean:
