@@ -3103,12 +3103,15 @@ beq\t%2,%.,1b\;\
 ;;	dsll	op0,op0,16
 ;;	daddiu	op0,op0,%hi(op1)
 ;;	dsll	op0,op0,16
+;;
+;; The split is deferred until after flow2 to allow the peephole2 below
+;; to take effect.
 (define_insn_and_split "*lea_high64"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(high:DI (match_operand:DI 1 "general_symbolic_operand" "")))]
   "TARGET_EXPLICIT_RELOCS && ABI_HAS_64BIT_SYMBOLS"
   "#"
-  "&& reload_completed"
+  "&& flow2_completed"
   [(set (match_dup 0) (high:DI (match_dup 2)))
    (set (match_dup 0) (lo_sum:DI (match_dup 0) (match_dup 2)))
    (set (match_dup 0) (ashift:DI (match_dup 0) (const_int 16)))
@@ -3119,6 +3122,29 @@ beq\t%2,%.,1b\;\
   operands[3] = mips_unspec_address (operands[1], SYMBOL_64_MID);
 }
   [(set_attr "length" "20")])
+
+;; Use a scratch register to reduce the latency of the above pattern
+;; on superscalar machines.  The optimized sequence is:
+;;
+;;	lui	op1,%highest(op2)
+;;	lui	op0,%hi(op2)
+;;	daddiu	op1,op1,%higher(op2)
+;;	dsll32	op1,op1,0
+;;	daddu	op1,op1,op0
+(define_peephole2
+  [(match_scratch:DI 0 "d")
+   (set (match_operand:DI 1 "register_operand")
+	(high:DI (match_operand:DI 2 "general_symbolic_operand")))]
+  "TARGET_EXPLICIT_RELOCS && ABI_HAS_64BIT_SYMBOLS"
+  [(set (match_dup 1) (high:DI (match_dup 3)))
+   (set (match_dup 0) (high:DI (match_dup 4)))
+   (set (match_dup 1) (lo_sum:DI (match_dup 1) (match_dup 3)))
+   (set (match_dup 1) (ashift:DI (match_dup 1) (const_int 32)))
+   (set (match_dup 1) (plus:DI (match_dup 1) (match_dup 0)))]
+{
+  operands[3] = mips_unspec_address (operands[2], SYMBOL_64_HIGH);
+  operands[4] = mips_unspec_address (operands[2], SYMBOL_64_LOW);
+})
 
 ;; On most targets, the expansion of (lo_sum (high X) X) for a 64-bit
 ;; SYMBOL_GENERAL X will take 6 cycles.  This next pattern allows combine

@@ -1,3 +1,8 @@
+2004-09-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (*lea_high64): Change split condition to
+	flow2_completed.  Add a peephole2 to generate a more parallel version.
+
 2004-09-02  Jan Hubicka  <jh@suse.cz>
 
 	* gimplify.c (gimplify_compound_lval): Move "stack" varray out of
