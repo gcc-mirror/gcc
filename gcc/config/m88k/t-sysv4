@@ -16,7 +16,3 @@ LIBGCC1 = libgcc1.null
 # end labels to the .ctors and .dtors section when we link using gcc.
 
 EXTRA_PARTS=crtbegin.o crtend.o
-
-# For svr4 we run the special svr4 fixincludes script.
-
-FIXINCLUDES=fixinc.svr4
