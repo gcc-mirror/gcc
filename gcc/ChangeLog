@@ -1,3 +1,18 @@
+2000-05-03  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (STAGESTUFF): Add libgcc libgcc.mk.
+	(libgcc1.null, libgcc1.cross, libgcc1.a): Remove targets.
+	(libgcc1-asm.a, libgcc1.S, libgcc2.a): Remove targets.
+	(mklibgcc, libgcc.mk): New targets.
+	(libgcc.a): Use libgcc.mk.
+	(stmp-multilib): Likewise.
+	(stmp-multilib-sub): Remove.
+	(mostlyclean): Don't delete libgcc2 temp files.
+	* configure.in (AC_PROG_CC_C_O): Add.
+	(NO_MINUS_C_MINUS_O): Substitute it.
+	(all_outputs): Add mklibgcc.
+	* mklibgcc.in: New file.
+
 2000-05-03  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cppexp.c (op_t): Make an int.
@@ -35,10 +50,10 @@ Wed May  3 12:40:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 Tue May  2 00:20:30 2000  Jason Eckhardt  <jle@cygnus.com>
 
-        * flow.c (verify_flow_info): Added two more sanity checks. The
-        first checks that the blocks are numbered consecutively. The second
-        checks that n_basic_blocks is actually equal to the number of
-        basic blocks in the insn chain.
+	* flow.c (verify_flow_info): Added two more sanity checks. The
+	first checks that the blocks are numbered consecutively. The second
+	checks that n_basic_blocks is actually equal to the number of
+	basic blocks in the insn chain.
 
 2000-05-03  Zack Weinberg  <zack@wolery.cumb.org>
 
@@ -59,9 +74,9 @@ Wed May  3 13:14:49 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 Tue May  2 23:38:37 2000  Jason Eckhardt  <jle@cygnus.com>
 
-        * bb-reorder (chain_reorder_blocks): Changed code to test for
-        EDGE_FALLTHRU rather than making erroneous assumption that the
-        first outgoing edge is the fall-through edge.
+	* bb-reorder (chain_reorder_blocks): Changed code to test for
+	EDGE_FALLTHRU rather than making erroneous assumption that the
+	first outgoing edge is the fall-through edge.
 
 Tue May  2 18:20:31 2000  Donald Lindsay  <dlindsay@hound.cygnus.com>
 
@@ -74,12 +89,12 @@ Tue May  2 18:20:31 2000  Donald Lindsay  <dlindsay@hound.cygnus.com>
 
 Tue May  2 19:18:43 2000  Jason Eckhardt  <jle@cygnus.com>
 
-        * bb-reorder.c (struct reorder_block_def): Remove members end,
-        block_begin, and block_end.
-        (REORDER_BLOCK_OLD_END): Delete.
-        (REORDER_BLOCK_BEGIN): Delete.
-        (REORDER_BLOCK_END): Delete.
-        (chain_reorder_blocks): Remove dead code.
+	* bb-reorder.c (struct reorder_block_def): Remove members end,
+	block_begin, and block_end.
+	(REORDER_BLOCK_OLD_END): Delete.
+	(REORDER_BLOCK_BEGIN): Delete.
+	(REORDER_BLOCK_END): Delete.
+	(chain_reorder_blocks): Remove dead code.
 
 Tue May  2 17:06:53 2000  Jason Eckhardt  <jle@cygnus.com>
 

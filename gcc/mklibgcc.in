@@ -1,0 +1,324 @@
+#!/bin/sh
+# Construct makefile for libgcc.
+#   Copyright (C) 2000 Free Software Foundation, Inc.
+#
+# This file is part of GNU CC.
+
+# Arguments, taken from the environment, since there are a lot
+# of them, and positional args becomes quite ugly.
+#
+# objext
+# OLDCC
+# LIBGCC1
+# LIB1FUNCS
+# LIB1ASMFUNCS
+# LIB1FUNCS_EXTRA
+# LIB2FUNCS
+# LIB2FUNCS_EH
+# LIB2ADD
+# FPBIT
+# FPBIT_FUNCS
+# DPBIT
+# DPBIT_FUNCS
+# LIBGCC
+# MULTILIBS
+# EXTRA_MULTILIB_PARTS
+
+# Make needs VPATH to be literal.
+echo 'srcdir = @srcdir@'
+echo 'VPATH = @srcdir@'
+echo
+
+# Detect gcc as OLDCC.  This indicates a target for which LIB1FUNCS
+# is not needed.  This is not quite the same as libgcc1.null, even
+# on a target not using libgcc1-asm.a.
+
+tmp="tmp-$$.c"
+cat > $tmp <<EOF
+#ifdef __GNUC__
+  yes;
+#endif
+EOF
+if $OLDCC -E $tmp | grep yes > /dev/null 2>&1; then
+  LIB1FUNCS=""
+fi
+rm -f $tmp
+
+
+#
+# Utility functions
+#
+
+emit_gcc_compile() {
+  dst=$1; shift
+  src=$1; shift
+  flags=$*
+
+  echo '	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES)' \
+    $flags -c $src -o $dst
+}
+
+emit_oldcc_compile() {
+  dst=$1; shift
+  src=$1; shift
+  flags=$*
+
+  if [ -z "@NO_MINUS_C_MINUS_O@" ]; then
+    echo '	$(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES)' \
+      $flags -c $src -o $dst
+  else
+    echo '	$(OLDCC) -DIN_LIBGCC1 $(CCLIBFLAGS) $(INCLUDES)'
+      $flags -c $src
+    tmp=`echo $src | sed -e 's/[.]c$/'${objext}/ -e 's,.*/,,'`
+    echo "	mv $tmp $dst"
+  fi
+}
+
+emit_make_compile() {
+  dst=$1; shift
+  tgt=$1; shift
+  tmp="";
+  if [ "$1" = "T=t" ]; then
+    tmp="T=t"; tgt="t$tgt"; shift
+  fi
+  flags=$*
+
+  echo '	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)"' \\
+  echo '	  AR_FOR_TARGET="$(AR_FOR_TARGET)"' \\
+  echo '	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)"' \\
+  echo '	  AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)"' \\
+  echo '	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)"' \\
+  echo '	  CC="$(CC)" CFLAGS="$(CFLAGS)"' \\
+  echo '	  HOST_PREFIX="$(HOST_PREFIX)"' \\
+  echo '	  HOST_PREFIX_1="$(HOST_PREFIX_1)"' \\
+  echo '	  LANGUAGES="$(LANGUAGES)"' \\
+  echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
+  echo '	  MULTILIB_CFLAGS="'$flags'"' $tmp $tgt
+  echo "	mv ${tgt} ${dst}"
+}
+
+# Dependancies for libgcc1.c
+libgcc1_c_dep='$(srcdir)/libgcc1.c $(CONFIG_H)'
+
+# Dependancies for libgcc2.c
+libgcc2_c_dep='$(srcdir)/libgcc2.c $(CONFIG_H) $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'
+
+# Dependancies for fp-bit.c
+fpbit_c_dep='$(srcdir)/config/fp-bit.c config.status tsystem.h'
+
+#
+# Build libgcc1 components.
+#
+
+libgcc1_objs=""
+
+case "$LIBGCC1" in
+  libgcc1.null)
+    ;;
+
+  libgcc1.cross)
+    echo "You must find a way to make libgcc1 components yourself" 1>&2
+    ;;
+
+  libgcc1-asm.a)
+    for name in $LIB1ASMFUNCS; do
+      for ml in $MULTILIBS; do
+        dir=`echo ${ml} | sed -e 's/;.*$//'`
+        flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+        out="libgcc/${dir}/${name}${objext}"
+
+        echo ${out}: '$(srcdir)/config/$(LIB1ASMSRC)'
+        emit_gcc_compile $out '$(srcdir)/config/$(LIB1ASMSRC)' \
+	  $flags -DL$name -xassembler-with-cpp
+      done
+      libgcc1_objs="$libgcc1_objs ${name}${objext}"
+    done
+    ;;
+
+  *)
+    for name in $LIB1FUNCS; do
+      out="libgcc/${name}${objext}"
+
+      echo $out: $libgcc1_c_dep
+      emit_oldcc_compile $out '$(srcdir)/libgcc1.c' -DL${name}
+      libgcc1_objs="$libgcc1_objs ${name}${objext}"
+    done
+
+    for file in $LIB1FUNCS_EXTRA; do
+      name=`echo $file | sed -e 's/[.][cS]$//' -e 's/[.]asm$//'`
+      out="libgcc/${name}${objext}"
+
+      echo $out: $file
+      if [ ${name}.asm = $file ]; then
+        echo "	cp $file ${name}.s"
+        file=${name}.s
+      fi
+      emit_oldcc_compile $out $file
+      libgcc1_objs="$libgcc1_objs ${name}${objext}"
+    done
+    ;;
+esac
+
+#
+# Build libgcc2 components.
+#
+
+libgcc2_objs=""
+
+for name in $LIB2FUNCS; do
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="libgcc/${dir}/${name}${objext}"
+
+    echo $out: $libgcc2_c_dep
+    emit_gcc_compile $out '$(srcdir)/libgcc2.c' '$(MAYBE_USE_COLLECT2)' \
+      $flags -DL$name
+  done
+  libgcc2_objs="$libgcc2_objs ${name}${objext}"
+done
+
+for name in $LIB2FUNCS_EH; do
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="libgcc/${dir}/${name}${objext}"
+
+    echo $out: $libgcc2_c_dep
+    emit_gcc_compile $out '$(srcdir)/libgcc2.c' '$(MAYBE_USE_COLLECT2)' \
+      -fexceptions $flags -DL$name
+  done
+  libgcc2_objs="$libgcc2_objs ${name}${objext}"
+done
+
+if [ "$FPBIT" ]; then
+  for name in $FPBIT_FUNCS; do
+    for ml in $MULTILIBS; do
+      dir=`echo ${ml} | sed -e 's/;.*$//'`
+      flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+      out="libgcc/${dir}/${name}${objext}"
+
+      echo $out: $fpbit_c_dep
+      emit_gcc_compile $out '$(srcdir)/config/fp-bit.c' \
+	-DFLOAT -DFINE_GRAINED_LIBRARIES $flags -DL$name
+    done
+    libgcc2_objs="$libgcc2_objs ${name}${objext}"
+  done
+fi
+
+if [ "$DPBIT" ]; then
+  for name in $DPBIT_FUNCS; do
+    for ml in $MULTILIBS; do
+      dir=`echo ${ml} | sed -e 's/;.*$//'`
+      flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+      out="libgcc/${dir}/${name}${objext}"
+
+      echo $out: $fpbit_c_dep
+      emit_gcc_compile $out '$(srcdir)/config/fp-bit.c' \
+	-DFINE_GRAINED_LIBRARIES $flags -DL$name
+    done
+    libgcc2_objs="$libgcc2_objs ${name}${objext}"
+  done
+fi
+
+for file in $LIB2ADD; do
+  name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
+  oname=`echo $name | sed -e 's,.*/,,'`
+
+  if [ ${name}.txt = ${file} ]; then
+    fprime=`cat $file`
+    for f in $fprime; do
+
+      lastout=""
+      for ml in $MULTILIBS; do
+        dir=`echo ${ml} | sed -e 's/;.*$//'`
+        flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+        out="libgcc/${dir}/${f}"
+
+	# Depend on previous out to serialize all sub-makes of this
+	# target file.  This because ./$f is used as a temporary in
+	# each case before being moved to libgcc/$dir/.
+	echo $out: $lastout
+	emit_make_compile $out $f $flags
+
+	lastout="$out"
+      done
+
+      libgcc2_objs="$libgcc2_objs $f"
+    done
+  else
+    for ml in $MULTILIBS; do
+      dir=`echo ${ml} | sed -e 's/;.*$//'`
+      flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+      out="libgcc/${dir}/${oname}${objext}"
+      if [ ${name}.asm = ${file} ]; then
+	flags="$flags -xassembler-with-cpp"
+      fi
+
+      echo $out: $file
+      emit_gcc_compile $out $file $flags
+    done
+    libgcc2_objs="$libgcc2_objs ${oname}${objext}"
+  fi
+done
+
+for ml in $MULTILIBS; do
+  dir=`echo ${ml} | sed -e 's/;.*$//'`
+
+  libgcc_objs=""
+  for o in $libgcc1_objs; do
+    if [ "$LIBGCC1" = libgcc1-asm.a ]; then
+      libgcc_objs="$libgcc_objs libgcc/${dir}/$o"
+    else
+      libgcc_objs="$libgcc_objs libgcc/$o"
+    fi
+  done
+  for o in $libgcc2_objs; do
+    libgcc_objs="$libgcc_objs libgcc/${dir}/$o"
+  done
+
+  echo ""
+  echo "${dir}/libgcc.a: $libgcc_objs"
+  echo "	-rm -rf ${dir}/libgcc.a"
+  echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc.a $libgcc_objs
+  echo '	if $(RANLIB_TEST_FOR_TARGET) ; then' \\
+  echo '	  $(RANLIB_FOR_TARGET)' ${dir}/libgcc.a ';' \\
+  echo '	else true; fi;'
+done
+
+echo ""
+all=""
+
+for ml in $MULTILIBS; do
+  dir=`echo ${ml} | sed -e 's/;.*$//'`
+  if [ $dir = . ]; then
+    echo "libgcc:; mkdir libgcc"
+    all="$all libgcc"
+  else
+    echo "${dir}:; mkdir ${dir}"
+    echo "libgcc/${dir}:; mkdir libgcc/${dir}"
+    all="$all libgcc/${dir} ${dir}"
+  fi
+  all="$all ${dir}/libgcc.a"
+done
+
+for f in $EXTRA_MULTILIB_PARTS; do
+  lastout=""
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="$dir/$f"
+
+    # Depend on previous out to serialize all sub-makes of this
+    # target file.  This because ./$f is used as a temporary in
+    # each case before being moved to libgcc/$dir/.
+    echo $out: $lastout
+    emit_make_compile $out $f T=t $flags
+
+    all="$all $out"
+    lastout="$out"
+  done
+done
+
+echo ""
+echo "all: $all"
