@@ -1,3 +1,19 @@
+2000-07-17  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+        * diagnostic.h (report_diagnostic): Change prototype.
+
+        * diagnostic.c (output_do_verbatim, diagnostic_for_asm,
+        diagnostic_for_decl):  Change prototype.
+        (error_with_decl, warning_with_decl, pedwarn_with_decl, warning,
+        error, warning, error_with_file_and_line,
+        warning_with_file_and_line, pedwarn_with_file_and_line, fatal):
+        Adjust call to report_diagnostic, diagnostic_for_decl.
+        (error_for_asm, warning_for_asm): Adjust call to diagnostic_for_asm. 
+        (output_verbatim, verbatim): Adjust call to output_do_verbatim.
+        
+        * c-errors.c (pedwarn_c99): Adjust call to report_diagnostic. End
+        varaible argument list.
+	
 2000-02-17  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c: Don't include hashtab.h.  Most macro-handling code

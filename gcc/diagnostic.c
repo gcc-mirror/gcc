@@ -64,7 +64,7 @@ Boston, MA 02111-1307, USA.  */
 /* Prototypes. */
 static void finish_diagnostic PARAMS ((void));
 static void output_do_verbatim PARAMS ((output_buffer *,
-                                        const char *, va_list));
+                                        const char *, va_list *));
 static void output_to_stream PARAMS ((output_buffer *, FILE *));
 static void output_format PARAMS ((output_buffer *));
 
@@ -75,8 +75,8 @@ static char *context_as_prefix PARAMS ((const char *, int, int));
 static void output_do_printf PARAMS ((output_buffer *, const char *));
 static void format_with_decl PARAMS ((output_buffer *, tree));
 static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
-static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list, int));
-static void diagnostic_for_decl PARAMS ((tree, const char *, va_list, int));
+static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list *, int));
+static void diagnostic_for_decl PARAMS ((tree, const char *, va_list *, int));
 static void vnotice PARAMS ((FILE *, const char *, va_list));
 static void set_real_maximum_length PARAMS ((output_buffer *));
                                           
@@ -875,27 +875,27 @@ file_and_line_for_asm (insn, pfile, pline)
    of the insn INSN.  This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 static void
-diagnostic_for_asm (insn, msg, args, warn)
+diagnostic_for_asm (insn, msg, args_ptr, warn)
      rtx insn;
      const char *msg;
-     va_list args;
+     va_list *args_ptr;
      int warn;
 {
   const char *file;
   int line;
 
   file_and_line_for_asm (insn, &file, &line);
-  report_diagnostic (msg, args, file, line, warn);
+  report_diagnostic (msg, args_ptr, file, line, warn);
 }
 
 /* Report a diagnostic MESSAGE at the declaration DECL.
    MSG is a format string which uses %s to substitute the declaration
    name; subsequent substitutions are a la output_format.  */
 static void
-diagnostic_for_decl (decl, msg, args, warn)
+diagnostic_for_decl (decl, msg, args_ptr, warn)
      tree decl;
      const char *msg;
-     va_list args;
+     va_list *args_ptr;
      int warn;
 {
   output_state os;
@@ -907,7 +907,7 @@ diagnostic_for_decl (decl, msg, args, warn)
   output_set_prefix
     (diagnostic_buffer, context_as_prefix
      (DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl), warn));
-  output_buffer_ptr_to_format_args (diagnostic_buffer) = &args;
+  output_buffer_ptr_to_format_args (diagnostic_buffer) = args_ptr;
   output_buffer_text_cursor (diagnostic_buffer) = msg;
   format_with_decl (diagnostic_buffer, decl);
   finish_diagnostic ();
@@ -1000,7 +1000,8 @@ pedwarn VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, ap, input_filename, lineno, !flag_pedantic_errors);
+  report_diagnostic (msgid, &ap, input_filename, lineno,
+                     !flag_pedantic_errors);
   va_end (ap);
 }
 
@@ -1027,7 +1028,7 @@ pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
      or kernel uses the original layout).  There's no point in issuing a
      warning either, it's just unnecessary noise.  */
   if (!DECL_IN_SYSTEM_HEADER (decl))
-    diagnostic_for_decl (decl, msgid, ap, !flag_pedantic_errors);
+    diagnostic_for_decl (decl, msgid, &ap, !flag_pedantic_errors);
   va_end (ap);
 }
 
@@ -1051,7 +1052,7 @@ pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, ap, file, line, !flag_pedantic_errors);
+  report_diagnostic (msgid, &ap, file, line, !flag_pedantic_errors);
   va_end (ap);
 }
 
@@ -1191,7 +1192,7 @@ error_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, ap, file, line, /* warn = */ 0);
+  report_diagnostic (msgid, &ap, file, line, /* warn = */ 0);
   va_end (ap);
 }
 
@@ -1211,7 +1212,7 @@ error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  diagnostic_for_decl (decl, msgid, ap, /* warn = */ 0);
+  diagnostic_for_decl (decl, msgid, &ap, /* warn = */ 0);
   va_end (ap);
 }
 
@@ -1231,7 +1232,7 @@ error_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  diagnostic_for_asm (insn, msgid, ap, /* warn = */ 0);
+  diagnostic_for_asm (insn, msgid, &ap, /* warn = */ 0);
   va_end (ap);
 }
 
@@ -1249,7 +1250,7 @@ error VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, ap, input_filename, lineno, /* warn = */ 0);
+  report_diagnostic (msgid, &ap, input_filename, lineno, /* warn = */ 0);
   va_end (ap);
 }
 
@@ -1285,7 +1286,7 @@ fatal VPARAMS ((const char *msgid, ...))
   if (fatal_function != NULL)
     (*fatal_function) (_(msgid), args_for_fatal_msg);
   va_end (args_for_fatal_msg);
-  report_diagnostic (msgid, ap, input_filename, lineno, 0);
+  report_diagnostic (msgid, &ap, input_filename, lineno, 0);
   va_end (ap);
   exit (FATAL_EXIT_CODE);
 }
@@ -1336,7 +1337,7 @@ warning_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, ap, file, line, /* warn = */ 1);
+  report_diagnostic (msgid, &ap, file, line, /* warn = */ 1);
   va_end (ap);
 }
 
@@ -1356,7 +1357,7 @@ warning_with_decl VPARAMS ((tree decl, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  diagnostic_for_decl (decl, msgid, ap, /* warn = */ 1);
+  diagnostic_for_decl (decl, msgid, &ap, /* warn = */ 1);
   va_end (ap);
 }
 
@@ -1376,7 +1377,7 @@ warning_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  diagnostic_for_asm (insn, msgid, ap, /* warn = */ 1);
+  diagnostic_for_asm (insn, msgid, &ap, /* warn = */ 1);
   va_end (ap);
 }
 
@@ -1394,7 +1395,7 @@ warning VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, ap, input_filename, lineno, /* warn = */ 1);
+  report_diagnostic (msgid, &ap, input_filename, lineno, /* warn = */ 1);
   va_end (ap);
 }
 
@@ -1411,10 +1412,10 @@ finish_diagnostic ()
 /* Helper subroutine of output_verbatim and verbatim. Do the approriate
    settings needed by BUFFER for a verbatim formatting.  */
 static void
-output_do_verbatim (buffer, msg, args)
+output_do_verbatim (buffer, msg, args_ptr)
      output_buffer *buffer;
      const char *msg;
-     va_list args;
+     va_list *args_ptr;
 {
   output_state os;
 
@@ -1422,7 +1423,7 @@ output_do_verbatim (buffer, msg, args)
   output_prefix (buffer) = NULL;
   prefixing_policy (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
   output_buffer_text_cursor (buffer) = msg;
-  output_buffer_ptr_to_format_args (buffer) = &args;
+  output_buffer_ptr_to_format_args (buffer) = args_ptr;
   output_set_maximum_length (buffer, 0);
   output_format (buffer);
   buffer->state = os;
@@ -1443,7 +1444,7 @@ output_verbatim VPARAMS ((output_buffer *buffer, const char *msg, ...))
   buffer = va_arg (ap, output_buffer *);
   msg = va_arg (ap, const char *);
 #endif
-  output_do_verbatim (buffer, msg, ap);
+  output_do_verbatim (buffer, msg, &ap);
   va_end (ap);
 }
 
@@ -1460,7 +1461,7 @@ verbatim VPARAMS ((const char *msg, ...))
 #ifndef ANSI_PROTOTYPES
   msg = va_arg (ap, const char *);
 #endif
-  output_do_verbatim (diagnostic_buffer, msg, ap);
+  output_do_verbatim (diagnostic_buffer, msg, &ap);
   output_to_stream (diagnostic_buffer, stderr);
   va_end (ap);
 }
@@ -1472,9 +1473,9 @@ verbatim VPARAMS ((const char *msg, ...))
    The front-end independent format specifiers are exactly those described
    in the documentation of output_format.  */
 void
-report_diagnostic (msg, args, file, line, warn)
+report_diagnostic (msg, args_ptr, file, line, warn)
      const char *msg;
-     va_list args;
+     va_list *args_ptr;
      const char *file;
      int line;
      int warn;
@@ -1485,7 +1486,7 @@ report_diagnostic (msg, args, file, line, warn)
     return;
   os = diagnostic_buffer->state;
   diagnostic_msg = msg;
-  diagnostic_args = &args;
+  diagnostic_args = args_ptr;
   report_error_function (file);
   output_set_prefix
     (diagnostic_buffer, context_as_prefix (file, line, warn));
