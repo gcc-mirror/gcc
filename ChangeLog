@@ -1,3 +1,7 @@
+2002-03-20  Anthony Green  <green@redhat.com>
+
+	* configure.in: Enable libgcj for xscale-elf target.
+
 Tue Mar 19 09:05:08 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* MAINTAINERS:  Update my email address.

@@ -725,7 +725,7 @@ case "${target}" in
     fi
     ;;
   xscale-*-elf)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libgloss target-libffi target-qthreads"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
