@@ -1,3 +1,7 @@
+2002-05-01	Joel Sherrill <joel@OARcorp.com>
+
+	* config/arm/rtems-elf.h: Add #undef TARGET_VERSION to prevent warning.
+
 2002-05-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (abssi2_nopower): Convert to define_insn_and_split.
