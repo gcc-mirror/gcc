@@ -1,3 +1,8 @@
+2004-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (nothrow attribute): The attribute is not
+	implemented in 3.2 and earlier.
+
 2004-09-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* genrecog.c (compute_predicate_codes): Use op0_codes
