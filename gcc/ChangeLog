@@ -1,3 +1,9 @@
+Wed Jan 28 20:11:06 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (push_reload): If WORD_REGISTER_OPERATIONS, reload the
+	SUBREG_REG if the word count is unchanged, also in the input reload
+	case.  Disable non-applicable sanity checks.
+
 Wed Jan 28 20:08:26 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* config/t-svr4 (TARGET_LIBGCC2_CFLAGS): Add -fPIC.
