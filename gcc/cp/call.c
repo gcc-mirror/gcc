@@ -3566,8 +3566,7 @@ builtin:
    match with the placement new is accepted.
 
    CODE is either DELETE_EXPR or VEC_DELETE_EXPR.
-   ADDR is the pointer to be deleted.  For placement delete, it is also
-     used to determine what the corresponding new looked like.
+   ADDR is the pointer to be deleted.
    SIZE is the size of the memory block to be deleted.
    FLAGS are the usual overloading flags.
    PLACEMENT is the corresponding placement new call, or NULL_TREE.  */
