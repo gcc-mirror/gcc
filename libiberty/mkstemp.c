@@ -82,7 +82,7 @@ mkstemps (template, suffix_len)
 
   len = strlen (template);
 
-  if (len < 6 + suffix_len
+  if ((int) len < 6 + suffix_len
       || strncmp (&template[len - 6 - suffix_len], "XXXXXX", 6))
     {
       return -1;

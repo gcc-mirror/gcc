@@ -53,6 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #ifdef IN_GCC
 #include "gansidecl.h"
 extern char *xmalloc ();
+extern int mkstemps ();
 #else
 #include "ansidecl.h"
 #include "libiberty.h"
