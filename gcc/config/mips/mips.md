@@ -10395,3 +10395,27 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")
    (set_attr "length"	"8")])
+
+;; For the rare case where we need to load an address into a register
+;; that can not be recognized by the normal movsi/addsi instructions.
+;; I have no idea how many insns this can actually generate.  It should
+;; be rare, so over-estimating as 10 instructions should not have any
+;; real performance impact.
+(define_insn "leasi"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+        (match_operand:SI 1 "address_operand" "p"))]
+  "Pmode == SImode"
+  "la %0,%a1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"40")])
+
+;; Similarly for targets where we have 64bit pointers.
+(define_insn "leadi"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+        (match_operand:DI 1 "address_operand" "p"))]
+  "Pmode == DImode"
+  "la %0,%a1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"40")])
