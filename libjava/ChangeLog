@@ -1,3 +1,13 @@
+2004-11-18  Robert Schuster <address@bogus.example.com>
+
+	Complete 1.4 support
+	* java/beans/PropertyDescriptor.java:
+	(setReadMethod): New method
+	(setWriteMethod): New method
+	(equals): Implemented (1.4)
+	(checkMethods): operates on arguments now (private)
+
+
 2004-11-18  Mattias Rehnberg  <Mattias.Rehnberg@home.se>
 
 	* java/net/Inet6Address.java (getHostAddress): Fix textual
