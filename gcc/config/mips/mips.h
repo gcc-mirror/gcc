@@ -482,7 +482,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 30]"
+#define MIPS_VERSION "[AL 1.1, MM 31]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -2265,7 +2265,7 @@ __enable_execute_stack (addr)						\
       GO_DEBUG_RTX (xinsn);						\
     }									\
 									\
-  if (GET_CODE (xinsn) == PLUS && optimize)				\
+  if (GET_CODE (xinsn) == PLUS)						\
     {									\
       register rtx xplus0 = XEXP (xinsn, 0);				\
       register rtx xplus1 = XEXP (xinsn, 1);				\
