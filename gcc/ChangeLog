@@ -1,3 +1,7 @@
+2001-08-06  Stan Shebs  <shebs@apple.com>
+
+	* doc/install.texi: Document powerpc-*-darwin* details.
+
 2001-08-06  Daniel Berlin  <dan@cgsoftware.com>
 
 	* config/rs6000/aix.h (CPP_CPU_SPEC): Move back to rs6000.h
