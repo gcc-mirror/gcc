@@ -47,6 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 static int optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_3	PROTO((rtx, rtx, rtx));
+static rtx gen_add3_insn	PROTO((rtx, rtx, rtx));
 
 struct match {
   int with[MAX_RECOG_OPERANDS];
@@ -64,6 +65,23 @@ static int fixup_match_1 PROTO((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
 static int reg_is_remote_constant_p PROTO((rtx, rtx, rtx));
 static int stable_but_for_p PROTO((rtx, rtx, rtx));
 static int loop_depth;
+
+/* Generate and return an insn body to add r1 and c,
+   storing the result in r0.  */
+static rtx
+gen_add3_insn (r0, r1, c)
+     rtx r0, r1, c;
+{
+  int icode = (int) add_optab->handlers[(int) GET_MODE (r0)].insn_code;
+
+    if (icode == CODE_FOR_nothing
+      || ! (*insn_operand_predicate[icode][0]) (r0, insn_operand_mode[icode][0])
+      || ! (*insn_operand_predicate[icode][1]) (r1, insn_operand_mode[icode][1])
+      || ! (*insn_operand_predicate[icode][2]) (c, insn_operand_mode[icode][2]))
+    return NULL_RTX;
+
+  return (GEN_FCN (icode) (r0, r1, c));
+}
 
 #ifdef AUTO_INC_DEC
 
@@ -639,8 +657,9 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
         {
 	  HOST_WIDE_INT newconst
 	    = INTVAL (offset) - INTVAL (XEXP (SET_SRC (pset), 1));
-	  if (validate_change (insn, &PATTERN (insn),
-			       gen_addsi3 (dst, dst, GEN_INT (newconst)), 0))
+	  rtx add = gen_add3_insn (dst, dst, GEN_INT (newconst));
+
+	  if (add && validate_change (insn, &PATTERN (insn), add, 0))
 	    {
 	      /* Remove the death note for DST from DST_DEATH.  */
 	      if (dst_death)

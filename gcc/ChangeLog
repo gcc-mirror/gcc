@@ -1,3 +1,8 @@
+Thu May 21 19:50:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* regmove.c (gen_add3_insn): New function.
+	(fixup_match_2): Use it instead of calling gen_addsi3.
+
 Thu May 21 23:09:50 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* alias.c (rtx_equal_for_memref_p): Handle SCRATCH as a memory
