@@ -9361,11 +9361,6 @@ mark_decl_instantiated (result, extern_p)
      tree result;
      int extern_p;
 {
-  if (TREE_CODE (result) != FUNCTION_DECL)
-    /* The TREE_PUBLIC flag for function declarations will have been
-       set correctly by tsubst.  */
-    TREE_PUBLIC (result) = 1;
-
   /* We used to set this unconditionally; we moved that to
      do_decl_instantiation so it wouldn't get set on members of
      explicit class template instantiations.  But we still need to set
@@ -9373,6 +9368,16 @@ mark_decl_instantiated (result, extern_p)
      implicit instantiations.  */
   if (extern_p)
     SET_DECL_EXPLICIT_INSTANTIATION (result);
+
+  /* If this entity has already been written out, it's too late to
+     make any modifications.  */
+  if (TREE_ASM_WRITTEN (result))
+    return;
+
+  if (TREE_CODE (result) != FUNCTION_DECL)
+    /* The TREE_PUBLIC flag for function declarations will have been
+       set correctly by tsubst.  */
+    TREE_PUBLIC (result) = 1;
 
   if (! extern_p)
     {
@@ -9387,7 +9392,8 @@ mark_decl_instantiated (result, extern_p)
       else if (TREE_PUBLIC (result))
 	maybe_make_one_only (result);
     }
-  else if (TREE_CODE (result) == FUNCTION_DECL)
+
+  if (TREE_CODE (result) == FUNCTION_DECL)
     defer_fn (result);
 }
 
