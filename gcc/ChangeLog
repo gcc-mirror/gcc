@@ -1,3 +1,9 @@
+2000-09-03  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.h: Update various comments about XER_REGNO.
+	(REGNO_REG_CLASS): Use symbolic register
+	names.
+
 2000-09-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (final_prescan_insn): If the form of a jump insn isn't 
