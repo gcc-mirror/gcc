@@ -1,3 +1,11 @@
+2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (PREDICATE_CODES): Add macc_msac_operand.
+	* config/mips/mips.c (macc_msac_operand): New function.
+	* config/mips/mips.md (*msac): Move after *macc.
+	(*msac2): New.  Generalize macc-related peepholes so that they apply
+	to msac too.
+
 2004-04-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* opts.c (decode_options): Do not enable flag_rename_registers

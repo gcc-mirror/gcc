@@ -1449,6 +1449,22 @@ extend_operator (rtx op, enum machine_mode mode)
 	  && (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND));
 }
 
+/* Return true if X is the right hand side of a "macc" or "msac" instruction.
+   This predicate is intended for use in peephole optimizations.  */
+
+int
+macc_msac_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  if (ISA_HAS_MACC && GET_CODE (x) == PLUS && REG_P (XEXP (x, 1)))
+    x = XEXP (x, 0);
+  else if (ISA_HAS_MSAC && GET_CODE (x) == MINUS && REG_P (XEXP (x, 0)))
+    x = XEXP (x, 1);
+  else
+    return false;
+
+  return GET_CODE (x) == MULT && REG_P (XEXP (x, 0)) && REG_P (XEXP (x, 1));
+}
+
 /* Return nonzero if the code of this rtx pattern is EQ or NE.  */
 
 int
