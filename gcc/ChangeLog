@@ -1,3 +1,7 @@
+2004-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* predict.c (expr_expected_value): Use *_CLASS_P macros.
+
 2004-09-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (compute_antic_aux): Use malloc'd worklist, to avoid 

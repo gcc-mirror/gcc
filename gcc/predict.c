@@ -944,8 +944,7 @@ expr_expected_value (tree expr, bitmap visited)
 	  return TREE_VALUE (TREE_CHAIN (TREE_OPERAND (expr, 1)));
 	}
     }
-  if (TREE_CODE_CLASS (TREE_CODE (expr)) == '2'
-      || TREE_CODE_CLASS (TREE_CODE (expr)) == '<')
+  if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
     {
       tree op0, op1, res;
       op0 = expr_expected_value (TREE_OPERAND (expr, 0), visited);
@@ -959,7 +958,7 @@ expr_expected_value (tree expr, bitmap visited)
 	return res;
       return NULL;
     }
-  if (TREE_CODE_CLASS (TREE_CODE (expr)) == '1')
+  if (UNARY_CLASS_P (expr))
     {
       tree op0, res;
       op0 = expr_expected_value (TREE_OPERAND (expr, 0), visited);
