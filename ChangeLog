@@ -1,3 +1,7 @@
+2001-07-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* MAINTAINERS (Various maintainers: s390 port): Added myself.
+
 2001-07-16  Aldy Hernandez  <aldyh@redhat.com>
 
         * config.sub: Fix mips64vr5000el typo in CPU-COMPANY.

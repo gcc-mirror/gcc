@@ -105,6 +105,7 @@ docs co-maintainer	Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 Pico-Java port		Steve Chamberlain	sac@transmeta.com
 RTEMS Ports		Joel Sherrill	
 s390 port		Hartmut Penner		hpenner@de.ibm.com
+s390 port		Ulrich Weigand		uweigand@de.ibm.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
