@@ -1,3 +1,21 @@
+2004-09-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (struct lang_type_class): Remove marked flags, add
+	diamond_shaped and repeated_base flags.  Reorder to keep 8-bit blocks.
+	(TYPE_MARKED_P): New.
+	(CLASSTYPE_DIAMOND_SHAPED_P, CLASSTYPE_REPEATED_BASE_P): New.
+	(CLASSTYPE_MARKED_N, SET_CLASSTYPE_MARKED_N,
+	CLEAR_CLASSTYPE_MARKED_N): Remove.
+	(CLASSTYPE_MARKED_*, SET_CLASSTYPE_MARKED_*,
+	CLEAR_CLASSTYPE_MARKED_*): Remove.
+	* decl.c (xref_basetypes): Use TYPE_MARKED_P. Determine diamond
+	shaped and repeated base properties.
+	* lex.c (cxx_make_type): Don't clear TYPE_ALIAS_SET.
+	* rtti.c (dfs_class_hint_mark, dfs_class_hint_unmark,
+	class_hint_flags): Remove.
+	(get_pseudo_ti_init): Use CLASSTYPE_REPEATED_BASE_P and
+	CLASSTYPE_DIAMOND_SHAPED_P.
+	
 2004-09-21  Ziemowit Laski  <zlaski@apple.com>
 
 	* cp-lang.c (LANG_HOOKS_FOLD_OBJ_TYPE_REF): Moved here from

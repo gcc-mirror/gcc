@@ -782,11 +782,6 @@ cxx_make_type (enum tree_code code)
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
     }
-  else
-    /* We use TYPE_ALIAS_SET for the CLASSTYPE_MARKED bits.  But,
-       TYPE_ALIAS_SET is initialized to -1 by default, so we must
-       clear it here.  */
-    TYPE_ALIAS_SET (t) = 0;
 
   return t;
 }

@@ -89,9 +89,6 @@ static int qualifier_flags (tree);
 static bool target_incomplete_p (tree);
 static tree tinfo_base_init (tree, tree);
 static tree generic_initializer (tree, tree);
-static tree dfs_class_hint_mark (tree, void *);
-static tree dfs_class_hint_unmark (tree, void *);
-static int class_hint_flags (tree);
 static tree class_initializer (tree, tree, tree);
 static tree create_pseudo_type_info (const char *, int, ...);
 static tree get_pseudo_ti_init (tree, tree);
@@ -924,59 +921,6 @@ ptm_initializer (tree desc, tree target)
   return init;  
 }
 
-/* Check base BINFO to set hint flags in *DATA, which is really an int.
-   We use CLASSTYPE_MARKED to tag types we've found as non-virtual bases and
-   CLASSTYPE_MARKED2 to tag those which are virtual bases. Remember it is
-   possible for a type to be both a virtual and non-virtual base.  */
-
-static tree
-dfs_class_hint_mark (tree binfo, void *data)
-{
-  tree basetype = BINFO_TYPE (binfo);
-  int *hint = (int *) data;
-  
-  if (BINFO_VIRTUAL_P (binfo))
-    {
-      if (CLASSTYPE_MARKED (basetype))
-        *hint |= 1;
-      if (CLASSTYPE_MARKED2 (basetype))
-        *hint |= 2;
-      SET_CLASSTYPE_MARKED2 (basetype);
-    }
-  else
-    {
-      if (CLASSTYPE_MARKED (basetype) || CLASSTYPE_MARKED2 (basetype))
-        *hint |= 1;
-      SET_CLASSTYPE_MARKED (basetype);
-    }
-  return NULL_TREE;
-}
-
-/* Clear the base's dfs marks, after searching for duplicate bases.  */
-
-static tree
-dfs_class_hint_unmark (tree binfo, void *data ATTRIBUTE_UNUSED)
-{
-  tree basetype = BINFO_TYPE (binfo);
-  
-  CLEAR_CLASSTYPE_MARKED (basetype);
-  CLEAR_CLASSTYPE_MARKED2 (basetype);
-  return NULL_TREE;
-}
-
-/* Determine the hint flags describing the features of a class's hierarchy.  */
-
-static int
-class_hint_flags (tree type)
-{
-  int hint_flags = 0;
-  
-  dfs_walk (TYPE_BINFO (type), dfs_class_hint_mark, NULL, &hint_flags);
-  dfs_walk (TYPE_BINFO (type), dfs_class_hint_unmark, NULL, NULL);
-  
-  return hint_flags;
-}
-        
 /* Return the CONSTRUCTOR expr for a type_info of class TYPE.
    DESC provides information about the particular __class_type_info derivation,
    which adds hint flags and TRAIL initializers to the type_info base.  */
@@ -1058,7 +1002,8 @@ get_pseudo_ti_init (tree type, tree var_desc)
 	}
       else
         {
-	  int hint = class_hint_flags (type);
+	  int hint = ((CLASSTYPE_REPEATED_BASE_P (type) << 0)
+		      | (CLASSTYPE_DIAMOND_SHAPED_P (type) << 1));
 	  tree binfo = TYPE_BINFO (type);
           int nbases = BINFO_N_BASE_BINFOS (binfo);
 	  VEC (tree) *base_accesses = BINFO_BASE_ACCESSES (binfo);
