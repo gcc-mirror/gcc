@@ -1,3 +1,8 @@
+2002-05-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install.texi: Update Texinfo version requirement
+	documentation.
+
 2002-05-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/6512, PR target/5628
