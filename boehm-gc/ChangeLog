@@ -1,5 +1,10 @@
 1999-07-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* Makefile.am (.s.lo): Avoid `#line' directives.
+	* Makefile.in: Rebuilt.
+
+1999-07-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
 	* Makefile.am (*-recursive, *-am, *-multi): Automake does not
 	generate *-recursive for this Makefile, use *-am instead.
 	* Makefile.in: Rebuilt.

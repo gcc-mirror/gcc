@@ -55,7 +55,9 @@ $(all_objs) : config.h gc_priv.h gc_hdrs.h gc.h gc_mark.h
 
 ## FIXME: we shouldn't have to do this, but automake forces us to.
 .s.lo:
-	$(LTCOMPILE) -x assembler-with-cpp -c $<
+## We use -Wp,-P to strip #line directives.  Irix `as' chokes on
+## these.
+	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<
 
 ## We have our own definition of LTCOMPILE because we want to use our
 ## CFLAGS, not those passed in from the top level make.
