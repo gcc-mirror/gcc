@@ -1,3 +1,21 @@
+2004-03-24  DJ Delorie  <dj@redhat.com>
+	    Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (MASK_FIX_VR4122, TARGET_FIX_VR4122): New macros.
+	(TARGET_SWITCHES): Add -mfix-vr4122-bugs and -mno-fix-vr4122-bugs.
+	(ASM_SPEC): Pass down -mfix-vr4122-bugs.
+	* config/mips/mips.c (mips_avoid_hazards): Don't emit whole functions
+	in .set noreorder and .set nomacro if TARGET_FIX_VR4122.
+	(mips_init_libfuncs): Use special functions for divsi3 and modsi3
+	if TARGET_FIX_VR4122.
+	* config/mips/mips.md (define_attr length): Account for nops inserted
+	after macc and dmult when using -mfix-vr4122-bugs.
+	(umuldi3_highpart, divmodsi4, divmoddi4): Disable if TARGET_FIX_VR4122.
+	* config/mips/t-vr (LIB2FUNCS_STATIC_EXTRA): Define instead of
+	LIB2FUNCS_EXTRA.  Add config/mips/vr4122-div.S.
+	* config/mips/vr4122-div.S: New file.
+	* doc/invoke.texi: Document -mfix-vr4122-bugs.
+
 2004-03-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (PROCESSOR_R4130): New processor_type.
