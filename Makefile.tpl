@@ -1269,7 +1269,7 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
 	  LANGUAGES="c c++" all
 
-.PHONY: check-gcc
+.PHONY: check-gcc maybe-check-gcc
 maybe-check-gcc:
 check-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
