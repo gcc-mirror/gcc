@@ -1,3 +1,11 @@
+Thu Jun  8 09:25:54 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* cp-demangle.c (stdio.h): File included unconditionaly.
+	(template_arg_list_new): Parameter list is PARAMS ((void)), not ().
+	* dyn-string.c (stdio.h): File included.
+	* partition.c (partition_print): No `&' needed to take the address of
+	a function.
+
 2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (ac_libiberty_warn_cflags): Add -pedantic.

@@ -177,7 +177,7 @@ partition_print (part, fp)
 	  c = elements[c].next - elements;
 	}
 	/* Sort them.  */
-	qsort ((void *) class_elements, count, sizeof (int), &elem_compare);
+	qsort ((void *) class_elements, count, sizeof (int), elem_compare);
 	/* Print them.  */
 	fputc ('(', fp);
 	for (i = 0; i < count; ++i) 
