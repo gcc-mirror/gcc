@@ -1,3 +1,7 @@
+2001-01-11  Ulrich Drepper  <drepper@redhat.com>
+
+	* config/float-i386.h: Define FLT_EVAL_METHOD and DECIMAL_DIG for C99.
+
 Thu Jan 11 17:06:30 EST 2001  John Wehle  (john@feith.com)
 
 	* final.c: (leaf_function_p): Fix typo.
@@ -1712,4 +1716,3 @@ Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* unroll.c (REG_IV_CLASS): Likewise.
 
 See ChangeLog.4 for earlier changes.
-
