@@ -39,15 +39,15 @@ Boston, MA 02111-1307, USA.  */
 
 #include <getopt.h>
 
-extern void fatal_error PARAMS ((const char *s, ...))
+extern void fatal_error (const char *s, ...)
      ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void warning PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1;
-void gcc_obstack_init PARAMS ((struct obstack *obstack));
-void report PARAMS ((void));
+void warning (const char *s, ...) ATTRIBUTE_PRINTF_1;
+void gcc_obstack_init (struct obstack *obstack);
+void report (void);
 
-static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
-static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
-static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void usage (void) ATTRIBUTE_NORETURN;
+static void help (void) ATTRIBUTE_NORETURN;
+static void version (void) ATTRIBUTE_NORETURN;
 
 #define JC1_LITE
 #include "jcf.h"

@@ -24,11 +24,11 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Exported functions. */
-int xref_flag_value PARAMS ((const char *));
-void expand_xref PARAMS ((tree));
-void xref_set_data PARAMS ((int, void *));
-void *xref_get_data PARAMS ((int));
-void xref_set_current_fp PARAMS ((FILE *));
+int xref_flag_value (const char *);
+void expand_xref (tree);
+void xref_set_data (int, void *);
+void *xref_get_data (int);
+void xref_set_current_fp (FILE *);
 
 /* flag_emit_xref range of possible values. */
 
@@ -40,7 +40,7 @@ enum {
 
 typedef struct {
   char *key;			         /* Activator in -fxref=<key>  */
-  void (*expand) PARAMS ((FILE *, tree)); /* Function to write xrefs out */
+  void (*expand) (FILE *, tree);         /* Function to write xrefs out */
   FILE *fp;			         /* fp to use during the call.  */
   void *data;			         /* Placeholder for additional data */
 } xref_flag_table;

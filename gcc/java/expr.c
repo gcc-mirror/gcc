@@ -44,48 +44,47 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "except.h"
 #include "ggc.h"
 
-static void flush_quick_stack PARAMS ((void));
-static void push_value PARAMS ((tree));
-static tree pop_value PARAMS ((tree));
-static void java_stack_swap PARAMS ((void));
-static void java_stack_dup PARAMS ((int, int));
-static void build_java_athrow PARAMS ((tree));
-static void build_java_jsr PARAMS ((int, int));
-static void build_java_ret PARAMS ((tree));
-static void expand_java_multianewarray PARAMS ((tree, int));
-static void expand_java_arraystore PARAMS ((tree));
-static void expand_java_arrayload PARAMS ((tree));
-static void expand_java_array_length PARAMS ((void));
-static tree build_java_monitor PARAMS ((tree, tree));
-static void expand_java_pushc PARAMS ((int, tree));
-static void expand_java_return PARAMS ((tree));
-static void expand_load_internal PARAMS ((int, tree, int));
-static void expand_java_NEW PARAMS ((tree));
-static void expand_java_INSTANCEOF PARAMS ((tree));
-static void expand_java_CHECKCAST PARAMS ((tree));
-static void expand_iinc PARAMS ((unsigned int, int, int));
-static void expand_java_binop PARAMS ((tree, enum tree_code));
-static void note_label PARAMS ((int, int));
-static void expand_compare PARAMS ((enum tree_code, tree, tree, int));
-static void expand_test PARAMS ((enum tree_code, tree, int));
-static void expand_cond PARAMS ((enum tree_code, tree, int));
-static void expand_java_goto PARAMS ((int));
+static void flush_quick_stack (void);
+static void push_value (tree);
+static tree pop_value (tree);
+static void java_stack_swap (void);
+static void java_stack_dup (int, int);
+static void build_java_athrow (tree);
+static void build_java_jsr (int, int);
+static void build_java_ret (tree);
+static void expand_java_multianewarray (tree, int);
+static void expand_java_arraystore (tree);
+static void expand_java_arrayload (tree);
+static void expand_java_array_length (void);
+static tree build_java_monitor (tree, tree);
+static void expand_java_pushc (int, tree);
+static void expand_java_return (tree);
+static void expand_load_internal (int, tree, int);
+static void expand_java_NEW (tree);
+static void expand_java_INSTANCEOF (tree);
+static void expand_java_CHECKCAST (tree);
+static void expand_iinc (unsigned int, int, int);
+static void expand_java_binop (tree, enum tree_code);
+static void note_label (int, int);
+static void expand_compare (enum tree_code, tree, tree, int);
+static void expand_test (enum tree_code, tree, int);
+static void expand_cond (enum tree_code, tree, int);
+static void expand_java_goto (int);
 #if 0
-static void expand_java_call PARAMS ((int, int));
-static void expand_java_ret PARAMS ((tree)); 
+static void expand_java_call (int, int);
+static void expand_java_ret (tree); 
 #endif
-static tree pop_arguments PARAMS ((tree)); 
-static void expand_invoke PARAMS ((int, int, int)); 
-static void expand_java_field_op PARAMS ((int, int, int)); 
-static void java_push_constant_from_pool PARAMS ((struct JCF *, int)); 
-static void java_stack_pop PARAMS ((int)); 
-static tree build_java_throw_out_of_bounds_exception PARAMS ((tree)); 
-static tree build_java_check_indexed_type PARAMS ((tree, tree)); 
-static tree case_identity PARAMS ((tree, tree)); 
-static unsigned char peek_opcode_at_pc PARAMS ((struct JCF *, int, int));
-static int emit_init_test_initialization PARAMS ((void **entry,
-						  void * ptr));
-static int get_offset_table_index PARAMS ((tree));
+static tree pop_arguments (tree); 
+static void expand_invoke (int, int, int); 
+static void expand_java_field_op (int, int, int); 
+static void java_push_constant_from_pool (struct JCF *, int); 
+static void java_stack_pop (int); 
+static tree build_java_throw_out_of_bounds_exception (tree); 
+static tree build_java_check_indexed_type (tree, tree); 
+static tree case_identity (tree, tree); 
+static unsigned char peek_opcode_at_pc (struct JCF *, int, int);
+static int emit_init_test_initialization (void **entry, void * ptr);
+static int get_offset_table_index (tree);
 
 static GTY(()) tree operand_type[59];
 

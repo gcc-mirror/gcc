@@ -123,43 +123,41 @@ struct method_name
 /* List of method names we've seen.  */
 static struct method_name *method_name_list;
 
-static void print_field_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
-static void print_mangled_classname PARAMS ((FILE*, JCF*, const char*, int));
-static int  print_cxx_classname PARAMS ((FILE*, const char*, JCF*, int, int));
-static void print_method_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
-static void print_c_decl PARAMS ((FILE*, JCF*, int, int, int, const char *,
-				  int));
-static void print_stub_or_jni PARAMS ((FILE*, JCF*, int, int, int,
-				       const char *, int));
-static void print_full_cxx_name PARAMS ((FILE*, JCF*, int, int, int,
-					 const char *, int));
-static void decompile_method PARAMS ((FILE*, JCF*, int));
-static void add_class_decl PARAMS ((FILE*, JCF*, JCF_u2));
+static void print_field_info (FILE*, JCF*, int, int, JCF_u2);
+static void print_mangled_classname (FILE*, JCF*, const char*, int);
+static int  print_cxx_classname (FILE*, const char*, JCF*, int, int);
+static void print_method_info (FILE*, JCF*, int, int, JCF_u2);
+static void print_c_decl (FILE*, JCF*, int, int, int, const char *, int);
+static void print_stub_or_jni (FILE*, JCF*, int, int, int, const char *, int);
+static void print_full_cxx_name (FILE*, JCF*, int, int, int, const char *, int);
+static void decompile_method (FILE*, JCF*, int);
+static void add_class_decl (FILE*, JCF*, JCF_u2);
 
-static int java_float_finite PARAMS ((jfloat));
-static int java_double_finite PARAMS ((jdouble));
-static void print_name PARAMS ((FILE *, JCF *, int));
-static void print_base_classname PARAMS ((FILE *, JCF *, int));
-static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
-static char *cxx_keyword_subst PARAMS ((const unsigned char *, int));
-static void generate_access PARAMS ((FILE *, JCF_u2));
-static int name_is_method_p PARAMS ((const unsigned char *, int));
-static char *get_field_name PARAMS ((JCF *, int, JCF_u2));
-static void print_field_name PARAMS ((FILE *, JCF *, int, JCF_u2));
-static const unsigned char *super_class_name PARAMS ((JCF *, int *));
-static void print_include PARAMS ((FILE *, const unsigned char *, int));
-static int gcjh_streq PARAMS ((const void *p1, const void *p2));
-static int throwable_p PARAMS ((const unsigned char *signature));
-static const unsigned char *decode_signature_piece
-  PARAMS ((FILE *, const unsigned char *, const unsigned char *, int *));
-static void print_class_decls PARAMS ((FILE *, JCF *, int));
-static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
-static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
-static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
-static int overloaded_jni_method_exists_p PARAMS ((const unsigned char *, int,
-						   const char *, int));
-static void jni_print_char PARAMS ((FILE *, int));
-static void decompile_return_statement PARAMS ((FILE *, JCF *, int, int, int));
+static int java_float_finite (jfloat);
+static int java_double_finite (jdouble);
+static void print_name (FILE *, JCF *, int);
+static void print_base_classname (FILE *, JCF *, int);
+static int utf8_cmp (const unsigned char *, int, const char *);
+static char *cxx_keyword_subst (const unsigned char *, int);
+static void generate_access (FILE *, JCF_u2);
+static int name_is_method_p (const unsigned char *, int);
+static char *get_field_name (JCF *, int, JCF_u2);
+static void print_field_name (FILE *, JCF *, int, JCF_u2);
+static const unsigned char *super_class_name (JCF *, int *);
+static void print_include (FILE *, const unsigned char *, int);
+static int gcjh_streq (const void *p1, const void *p2);
+static int throwable_p (const unsigned char *signature);
+static const unsigned char *
+  decode_signature_piece (FILE *, const unsigned char *,
+			  const unsigned char *, int *);
+static void print_class_decls (FILE *, JCF *, int);
+static void usage (void) ATTRIBUTE_NORETURN;
+static void help (void) ATTRIBUTE_NORETURN;
+static void version (void) ATTRIBUTE_NORETURN;
+static int overloaded_jni_method_exists_p (const unsigned char *, int,
+					   const char *, int);
+static void jni_print_char (FILE *, int);
+static void decompile_return_statement (FILE *, JCF *, int, int, int);
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
@@ -1755,9 +1753,9 @@ struct namelet
   struct namelet *next;
 };
 
-static void add_namelet PARAMS ((const unsigned char *,
-				const unsigned char *, struct namelet *));
-static void print_namelet PARAMS ((FILE *, struct namelet *, int));
+static void add_namelet (const unsigned char *, const unsigned char *,
+			 struct namelet *);
+static void print_namelet (FILE *, struct namelet *, int);
 
 /* The special root namelet.  */
 static struct namelet root =

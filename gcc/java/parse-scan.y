@@ -116,15 +116,15 @@ struct method_declarator {
 }
 
 /* Two actions for this grammar */
-static int make_class_name_recursive PARAMS ((struct obstack *stack,
-					      struct class_context *ctx));
-static char *get_class_name PARAMS ((void));
-static void report_class_declaration PARAMS ((const char *));
-static void report_main_declaration PARAMS ((struct method_declarator *));
-static void push_class_context PARAMS ((const char *));
-static void pop_class_context PARAMS ((void));
+static int make_class_name_recursive (struct obstack *stack,
+				      struct class_context *ctx);
+static char *get_class_name (void);
+static void report_class_declaration (const char *);
+static void report_main_declaration (struct method_declarator *);
+static void push_class_context (const char *);
+static void pop_class_context (void);
 
-void report PARAMS ((void)); 
+void report (void); 
 
 #include "lex.h"
 #include "parse.h"

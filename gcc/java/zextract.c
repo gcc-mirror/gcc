@@ -214,9 +214,9 @@ typedef unsigned long     ulg;  /*  predefined on some systems) & match zip  */
 /* Prototypes          */
 /***********************/
 
-static ush makeword PARAMS ((const uch *));
-static ulg makelong PARAMS ((const uch *));
-static long find_zip_file_start PARAMS ((int fd, long offset));
+static ush makeword (const uch *);
+static ulg makelong (const uch *);
+static long find_zip_file_start (int fd, long offset);
 
 /***********************/
 /* Function makeword() */

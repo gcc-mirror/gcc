@@ -39,11 +39,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "ggc.h"
 
-static tree convert_ieee_real_to_integer PARAMS ((tree, tree));
-static tree parse_signature_type PARAMS ((const unsigned char **,
-					 const unsigned char *));
-static tree lookup_do PARAMS ((tree, tree, tree, tree, tree (*)(tree)));
-static tree build_null_signature PARAMS ((tree));
+static tree convert_ieee_real_to_integer (tree, tree);
+static tree parse_signature_type (const unsigned char **,
+				  const unsigned char *);
+static tree lookup_do (tree, tree, tree, tree, tree (*)(tree));
+static tree build_null_signature (tree);
 
 tree * type_map;
 
@@ -790,7 +790,7 @@ has_method (class, method_name)
 static tree
 lookup_do (searched_class, searched_interface, method_name, signature, signature_builder)
      tree searched_class, searched_interface, method_name, signature;
-     tree (*signature_builder) PARAMS ((tree));
+     tree (*signature_builder) (tree);
 {
   tree method;
   

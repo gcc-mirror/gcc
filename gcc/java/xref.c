@@ -81,7 +81,7 @@ expand_xref (node)
 {
   /* Maintain these two cached. */
   static FILE *fp = NULL;
-  static void (*current_expand) PARAMS ((FILE *, tree)) = NULL;
+  static void (*current_expand) (FILE *, tree) = NULL;
 
   if ( !flag_emit_xref )
     return;

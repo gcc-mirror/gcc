@@ -91,21 +91,21 @@ int class_access_flags = 0;
 /* Print in format similar to javap.  VERY IMCOMPLETE. */
 int flag_javap_compatible = 0;
 
-static void print_access_flags PARAMS ((FILE *, uint16, char));
-static void print_constant_terse PARAMS ((FILE*, JCF*, int, int));
-static void print_constant PARAMS ((FILE *, JCF *, int, int));
-static void print_constant_ref PARAMS ((FILE *, JCF *, int));
-static void disassemble_method PARAMS ((JCF*, const unsigned char *, int));
-static void print_name PARAMS ((FILE*, JCF*, int));
-static void print_signature PARAMS ((FILE*, JCF*, int, int));
-static int utf8_equal_string PARAMS ((struct JCF*, int, const char *));
-static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
-static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
-static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
-static void process_class PARAMS ((struct JCF *));
-static void print_constant_pool PARAMS ((struct JCF *));
-static void print_exception_table PARAMS ((struct JCF *,
-					  const unsigned char *entries, int));
+static void print_access_flags (FILE *, uint16, char);
+static void print_constant_terse (FILE*, JCF*, int, int);
+static void print_constant (FILE *, JCF *, int, int);
+static void print_constant_ref (FILE *, JCF *, int);
+static void disassemble_method (JCF*, const unsigned char *, int);
+static void print_name (FILE*, JCF*, int);
+static void print_signature (FILE*, JCF*, int, int);
+static int utf8_equal_string (struct JCF*, int, const char *);
+static void usage (void) ATTRIBUTE_NORETURN;
+static void help (void) ATTRIBUTE_NORETURN;
+static void version (void) ATTRIBUTE_NORETURN;
+static void process_class (struct JCF *);
+static void print_constant_pool (struct JCF *);
+static void print_exception_table (struct JCF *, const unsigned char *entries,
+				   int);
 
 #define PRINT_SIGNATURE_RESULT_ONLY 1
 #define PRINT_SIGNATURE_ARGS_ONLY 2

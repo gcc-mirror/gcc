@@ -280,81 +280,76 @@ struct jcf_partial
   struct jcf_switch_state *sw_state;
 };
 
-static void generate_bytecode_insns PARAMS ((tree, int, struct jcf_partial *));
-static struct chunk * alloc_chunk PARAMS ((struct chunk *, unsigned char *,
-					  int, struct obstack *));
-static unsigned char * append_chunk PARAMS ((unsigned char *, int,
-					    struct jcf_partial *));
-static void append_chunk_copy PARAMS ((unsigned char *, int,
-				      struct jcf_partial *));
-static struct jcf_block * gen_jcf_label PARAMS ((struct jcf_partial *));
-static void finish_jcf_block PARAMS ((struct jcf_partial *));
-static void define_jcf_label PARAMS ((struct jcf_block *,
-				     struct jcf_partial *));
-static struct jcf_block * get_jcf_label_here PARAMS ((struct jcf_partial *));
-static void put_linenumber PARAMS ((int, struct jcf_partial *));
-static void localvar_alloc PARAMS ((tree, struct jcf_partial *));
-static void localvar_free PARAMS ((tree, struct jcf_partial *));
-static int get_access_flags PARAMS ((tree));
-static void write_chunks PARAMS ((FILE *, struct chunk *));
-static int adjust_typed_op PARAMS ((tree, int));
-static void generate_bytecode_conditional PARAMS ((tree, struct jcf_block *,
-						  struct jcf_block *, int,
-						  struct jcf_partial *));
-static void generate_bytecode_return PARAMS ((tree, struct jcf_partial *));
-static void perform_relocations PARAMS ((struct jcf_partial *));
-static void init_jcf_state PARAMS ((struct jcf_partial *, struct obstack *));
-static void init_jcf_method PARAMS ((struct jcf_partial *, tree));
-static void release_jcf_state PARAMS ((struct jcf_partial *));
-static struct chunk * generate_classfile PARAMS ((tree, struct jcf_partial *));
-static struct jcf_handler *alloc_handler PARAMS ((struct jcf_block *,
-						 struct jcf_block *,
-						 struct jcf_partial *));
-static void emit_iinc PARAMS ((tree, HOST_WIDE_INT, struct jcf_partial *));
-static void emit_reloc PARAMS ((HOST_WIDE_INT, int, struct jcf_block *, 
-			       struct jcf_partial *));
-static void push_constant1 PARAMS ((HOST_WIDE_INT, struct jcf_partial *));
-static void push_constant2 PARAMS ((HOST_WIDE_INT, struct jcf_partial *));
-static void push_int_const PARAMS ((HOST_WIDE_INT, struct jcf_partial *));
-static int find_constant_wide PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				      struct jcf_partial *));
-static void push_long_const PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT, 
-				    struct jcf_partial *));
-static int find_constant_index PARAMS ((tree, struct jcf_partial *));
-static void push_long_const PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-				    struct jcf_partial *));
-static void field_op PARAMS ((tree, int, struct jcf_partial *));
-static void maybe_wide PARAMS ((int, int, struct jcf_partial *));
-static void emit_dup PARAMS ((int, int, struct jcf_partial *));
-static void emit_pop PARAMS ((int, struct jcf_partial *));
-static void emit_load_or_store PARAMS ((tree, int, struct jcf_partial *));
-static void emit_load PARAMS ((tree, struct jcf_partial *));
-static void emit_store PARAMS ((tree, struct jcf_partial *));
-static void emit_unop PARAMS ((enum java_opcode, tree, struct jcf_partial *));
-static void emit_binop PARAMS ((enum java_opcode, tree, struct jcf_partial *));
-static void emit_reloc PARAMS ((HOST_WIDE_INT, int, struct jcf_block *,
-			       struct jcf_partial *));
-static void emit_switch_reloc PARAMS ((struct jcf_block *,
-				      struct jcf_partial *));
-static void emit_case_reloc PARAMS ((struct jcf_relocation *,
-				    struct jcf_partial *));
-static void emit_if PARAMS ((struct jcf_block *, int, int,
-			    struct jcf_partial *));
-static void emit_goto PARAMS ((struct jcf_block *, struct jcf_partial *));
-static void emit_jsr PARAMS ((struct jcf_block *, struct jcf_partial *));
-static void call_cleanups PARAMS ((struct jcf_block *, struct jcf_partial *));
-static char *make_class_file_name PARAMS ((tree));
-static unsigned char *append_synthetic_attribute PARAMS ((struct jcf_partial *));
-static void append_innerclasses_attribute PARAMS ((struct jcf_partial *, tree));
-static void append_innerclasses_attribute_entry PARAMS ((struct jcf_partial *, tree, tree));
-static void append_gcj_attribute PARAMS ((struct jcf_partial *, tree));
+static void generate_bytecode_insns (tree, int, struct jcf_partial *);
+static struct chunk * alloc_chunk (struct chunk *, unsigned char *,
+				   int, struct obstack *);
+static unsigned char * append_chunk (unsigned char *, int,
+				     struct jcf_partial *);
+static void append_chunk_copy (unsigned char *, int, struct jcf_partial *);
+static struct jcf_block * gen_jcf_label (struct jcf_partial *);
+static void finish_jcf_block (struct jcf_partial *);
+static void define_jcf_label (struct jcf_block *, struct jcf_partial *);
+static struct jcf_block * get_jcf_label_here (struct jcf_partial *);
+static void put_linenumber (int, struct jcf_partial *);
+static void localvar_alloc (tree, struct jcf_partial *);
+static void localvar_free (tree, struct jcf_partial *);
+static int get_access_flags (tree);
+static void write_chunks (FILE *, struct chunk *);
+static int adjust_typed_op (tree, int);
+static void generate_bytecode_conditional (tree, struct jcf_block *,
+					   struct jcf_block *, int,
+					   struct jcf_partial *);
+static void generate_bytecode_return (tree, struct jcf_partial *);
+static void perform_relocations (struct jcf_partial *);
+static void init_jcf_state (struct jcf_partial *, struct obstack *);
+static void init_jcf_method (struct jcf_partial *, tree);
+static void release_jcf_state (struct jcf_partial *);
+static struct chunk * generate_classfile (tree, struct jcf_partial *);
+static struct jcf_handler *alloc_handler (struct jcf_block *,
+					  struct jcf_block *,
+					  struct jcf_partial *);
+static void emit_iinc (tree, HOST_WIDE_INT, struct jcf_partial *);
+static void emit_reloc (HOST_WIDE_INT, int, struct jcf_block *, 
+			struct jcf_partial *);
+static void push_constant1 (HOST_WIDE_INT, struct jcf_partial *);
+static void push_constant2 (HOST_WIDE_INT, struct jcf_partial *);
+static void push_int_const (HOST_WIDE_INT, struct jcf_partial *);
+static int find_constant_wide (HOST_WIDE_INT, HOST_WIDE_INT,
+			       struct jcf_partial *);
+static void push_long_const (HOST_WIDE_INT, HOST_WIDE_INT,
+			     struct jcf_partial *);
+static int find_constant_index (tree, struct jcf_partial *);
+static void push_long_const (HOST_WIDE_INT, HOST_WIDE_INT,
+			     struct jcf_partial *);
+static void field_op (tree, int, struct jcf_partial *);
+static void maybe_wide (int, int, struct jcf_partial *);
+static void emit_dup (int, int, struct jcf_partial *);
+static void emit_pop (int, struct jcf_partial *);
+static void emit_load_or_store (tree, int, struct jcf_partial *);
+static void emit_load (tree, struct jcf_partial *);
+static void emit_store (tree, struct jcf_partial *);
+static void emit_unop (enum java_opcode, tree, struct jcf_partial *);
+static void emit_binop (enum java_opcode, tree, struct jcf_partial *);
+static void emit_reloc (HOST_WIDE_INT, int, struct jcf_block *,
+			struct jcf_partial *);
+static void emit_switch_reloc (struct jcf_block *, struct jcf_partial *);
+static void emit_case_reloc (struct jcf_relocation *, struct jcf_partial *);
+static void emit_if (struct jcf_block *, int, int, struct jcf_partial *);
+static void emit_goto (struct jcf_block *, struct jcf_partial *);
+static void emit_jsr (struct jcf_block *, struct jcf_partial *);
+static void call_cleanups (struct jcf_block *, struct jcf_partial *);
+static char *make_class_file_name (tree);
+static unsigned char *append_synthetic_attribute (struct jcf_partial *);
+static void append_innerclasses_attribute (struct jcf_partial *, tree);
+static void append_innerclasses_attribute_entry (struct jcf_partial *, tree, tree);
+static void append_gcj_attribute (struct jcf_partial *, tree);
 
 /* Utility macros for appending (big-endian) data to a buffer.
    We assume a local variable 'ptr' points into where we want to
    write next, and we assume enough space has been allocated. */
 
 #ifdef ENABLE_JC1_CHECKING
-static int CHECK_PUT PARAMS ((void *, struct jcf_partial *, int));
+static int CHECK_PUT (void *, struct jcf_partial *, int);
 
 static int
 CHECK_PUT (ptr, state, i)
@@ -411,7 +406,7 @@ alloc_chunk (last, data, size, work)
 }
 
 #ifdef ENABLE_JC1_CHECKING
-static int CHECK_OP PARAMS ((struct jcf_partial *));
+static int CHECK_OP (struct jcf_partial *);
 
 static int
 CHECK_OP (state)

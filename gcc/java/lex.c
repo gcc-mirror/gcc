@@ -40,35 +40,34 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "chartables.h"
 
 /* Function declarations.  */
-static char *java_sprint_unicode PARAMS ((struct java_line *, int));
-static void java_unicode_2_utf8 PARAMS ((unicode_t));
-static void java_lex_error PARAMS ((const char *, int));
+static char *java_sprint_unicode (struct java_line *, int);
+static void java_unicode_2_utf8 (unicode_t);
+static void java_lex_error (const char *, int);
 #ifndef JC1_LITE
-static int java_is_eol PARAMS ((FILE *, int));
-static tree build_wfl_node PARAMS ((tree));
+static int java_is_eol (FILE *, int);
+static tree build_wfl_node (tree);
 #endif
-static void java_store_unicode PARAMS ((struct java_line *, unicode_t, int));
-static int java_parse_escape_sequence PARAMS ((void));
-static int java_start_char_p PARAMS ((unicode_t));
-static int java_part_char_p PARAMS ((unicode_t));
-static int java_parse_doc_section PARAMS ((int));
-static void java_parse_end_comment PARAMS ((int));
-static int java_get_unicode PARAMS ((void));
-static int java_read_unicode PARAMS ((java_lexer *, int *));
-static int java_read_unicode_collapsing_terminators PARAMS ((java_lexer *,
-							     int *));
-static void java_store_unicode PARAMS ((struct java_line *, unicode_t, int));
-static int java_read_char PARAMS ((java_lexer *));
-static void java_allocate_new_line PARAMS ((void));
-static void java_unget_unicode PARAMS ((void));
-static unicode_t java_sneak_unicode PARAMS ((void));
+static void java_store_unicode (struct java_line *, unicode_t, int);
+static int java_parse_escape_sequence (void);
+static int java_start_char_p (unicode_t);
+static int java_part_char_p (unicode_t);
+static int java_parse_doc_section (int);
+static void java_parse_end_comment (int);
+static int java_get_unicode (void);
+static int java_read_unicode (java_lexer *, int *);
+static int java_read_unicode_collapsing_terminators (java_lexer *, int *);
+static void java_store_unicode (struct java_line *, unicode_t, int);
+static int java_read_char (java_lexer *);
+static void java_allocate_new_line (void);
+static void java_unget_unicode (void);
+static unicode_t java_sneak_unicode (void);
 #ifndef JC1_LITE
-static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
+static int utf8_cmp (const unsigned char *, int, const char *);
 #endif
 
-java_lexer *java_new_lexer PARAMS ((FILE *, const char *));
+java_lexer *java_new_lexer (FILE *, const char *);
 #ifndef JC1_LITE
-static void error_if_numeric_overflow PARAMS ((tree));
+static void error_if_numeric_overflow (tree);
 #endif
 
 #ifdef HAVE_ICONV
@@ -838,7 +837,7 @@ java_parse_escape_sequence ()
    with an 'f', indicating it is of type 'float'; NUMBER_BEGINNING
    is the line number on which to report any error.  */
 
-static void java_perform_atof	PARAMS ((YYSTYPE *, char *, int, int));
+static void java_perform_atof (YYSTYPE *, char *, int, int);
 
 static void
 java_perform_atof (java_lval, literal_token, fflag, number_beginning)
@@ -888,7 +887,7 @@ java_perform_atof (java_lval, literal_token, fflag, number_beginning)
 }
 #endif
 
-static int yylex		PARAMS ((YYSTYPE *));
+static int yylex (YYSTYPE *);
 
 static int
 #ifdef JC1_LITE

@@ -55,7 +55,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #endif 
 
 struct JCF;
-typedef int (*jcf_filbuf_t) PARAMS ((struct JCF*, int needed));
+typedef int (*jcf_filbuf_t) (struct JCF*, int needed);
 
 typedef struct CPool {
   /* Available number of elements in the constants array, before it
@@ -217,10 +217,10 @@ typedef struct JCF {
 
 #define DEFAULT_CLASS_PATH "."
 
-extern const char *find_class PARAMS ((const char *, int, JCF*, int));
-extern const char *find_classfile PARAMS ((char *, JCF*, const char *));
-extern int jcf_filbuf_from_stdio PARAMS ((JCF *jcf, int count));
-extern int jcf_unexpected_eof PARAMS ((JCF*, int)) ATTRIBUTE_NORETURN;
+extern const char *find_class (const char *, int, JCF*, int);
+extern const char *find_classfile (char *, JCF*, const char *);
+extern int jcf_filbuf_from_stdio (JCF *jcf, int count);
+extern int jcf_unexpected_eof (JCF*, int) ATTRIBUTE_NORETURN;
 
 /* Extract a character from a Java-style Utf8 string.
  * PTR points to the current character.
@@ -251,27 +251,27 @@ extern int quiet_flag;
 #endif
 
 /* Declarations for dependency code.  */
-extern void jcf_dependency_reset PARAMS ((void));
-extern void jcf_dependency_set_target PARAMS ((const char *));
-extern void jcf_dependency_add_target PARAMS ((const char *));
-extern void jcf_dependency_set_dep_file PARAMS ((const char *));
-extern void jcf_dependency_add_file PARAMS ((const char *, int));
-extern void jcf_dependency_write PARAMS ((void));
-extern void jcf_dependency_init PARAMS ((int));
-extern void jcf_dependency_print_dummies PARAMS ((void));
+extern void jcf_dependency_reset (void);
+extern void jcf_dependency_set_target (const char *);
+extern void jcf_dependency_add_target (const char *);
+extern void jcf_dependency_set_dep_file (const char *);
+extern void jcf_dependency_add_file (const char *, int);
+extern void jcf_dependency_write (void);
+extern void jcf_dependency_init (int);
+extern void jcf_dependency_print_dummies (void);
 
 /* Declarations for path handling code.  */
-extern void jcf_path_init PARAMS ((void));
-extern void jcf_path_classpath_arg PARAMS ((const char *));
-extern void jcf_path_bootclasspath_arg PARAMS ((const char *));
-extern void jcf_path_extdirs_arg PARAMS ((const char *));
-extern void jcf_path_include_arg PARAMS ((const char *));
-extern void jcf_path_seal PARAMS ((int));
-extern void *jcf_path_start PARAMS ((void));
-extern void *jcf_path_next PARAMS ((void *));
-extern char *jcf_path_name PARAMS ((void *));
-extern int jcf_path_is_zipfile PARAMS ((void *));
-extern int jcf_path_is_system PARAMS ((void *));
-extern int jcf_path_max_len PARAMS ((void));
+extern void jcf_path_init (void);
+extern void jcf_path_classpath_arg (const char *);
+extern void jcf_path_bootclasspath_arg (const char *);
+extern void jcf_path_extdirs_arg (const char *);
+extern void jcf_path_include_arg (const char *);
+extern void jcf_path_seal (int);
+extern void *jcf_path_start (void);
+extern void *jcf_path_next (void *);
+extern char *jcf_path_name (void *);
+extern int jcf_path_is_zipfile (void *);
+extern int jcf_path_is_system (void *);
+extern int jcf_path_max_len (void);
 
 #endif /* ! GCC_JCF_H */

@@ -61,19 +61,17 @@ enum builtin_type
   BT_LAST
 };
 
-static tree max_builtin PARAMS ((tree, tree));
-static tree min_builtin PARAMS ((tree, tree));
-static tree abs_builtin PARAMS ((tree, tree));
-static tree cos_builtin PARAMS ((tree, tree));
-static tree sin_builtin PARAMS ((tree, tree));
-static tree sqrt_builtin PARAMS ((tree, tree));
+static tree max_builtin (tree, tree);
+static tree min_builtin (tree, tree);
+static tree abs_builtin (tree, tree);
+static tree cos_builtin (tree, tree);
+static tree sin_builtin (tree, tree);
+static tree sqrt_builtin (tree, tree);
 
-static tree build_function_call_expr PARAMS ((tree, tree));
-static void define_builtin PARAMS ((enum built_in_function,
-				    const char *,
-				    enum built_in_class,
-				    tree, int));
-static tree define_builtin_type PARAMS ((int, int, int, int, int));
+static tree build_function_call_expr (tree, tree);
+static void define_builtin (enum built_in_function, const char *,
+			    enum built_in_class, tree, int);
+static tree define_builtin_type (int, int, int, int, int);
 
 
 

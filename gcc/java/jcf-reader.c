@@ -28,19 +28,19 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "zipfile.h"
 
-static int get_attribute PARAMS ((JCF *));
-static int jcf_parse_preamble PARAMS ((JCF *));
-static int jcf_parse_constant_pool PARAMS ((JCF *));
-static void jcf_parse_class PARAMS ((JCF *));
-static int jcf_parse_fields PARAMS ((JCF *));
-static int jcf_parse_one_method PARAMS ((JCF *));
-static int jcf_parse_methods PARAMS ((JCF *));
-static int jcf_parse_final_attributes PARAMS ((JCF *));
+static int get_attribute (JCF *);
+static int jcf_parse_preamble (JCF *);
+static int jcf_parse_constant_pool (JCF *);
+static void jcf_parse_class (JCF *);
+static int jcf_parse_fields (JCF *);
+static int jcf_parse_one_method (JCF *);
+static int jcf_parse_methods (JCF *);
+static int jcf_parse_final_attributes (JCF *);
 #ifdef NEED_PEEK_ATTRIBUTE
-static int peek_attribute PARAMS ((JCF *, int, const char *, int));
+static int peek_attribute (JCF *, int, const char *, int);
 #endif
 #ifdef NEED_SKIP_ATTRIBUTE
-static void skip_attribute PARAMS ((JCF *, int));
+static void skip_attribute (JCF *, int);
 #endif
 
 /* Go through all available attribute (ATTRIBUTE_NUMER) and try to

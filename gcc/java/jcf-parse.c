@@ -91,18 +91,18 @@ static struct JCF main_jcf[1];
 static struct ZipFile *localToFile;
 
 /* Declarations of some functions used here.  */
-static void handle_innerclass_attribute PARAMS ((int count, JCF *));
-static tree give_name_to_class PARAMS ((JCF *jcf, int index));
-static void parse_zip_file_entries PARAMS ((void));
-static void process_zip_dir PARAMS ((FILE *));
-static void parse_source_file_1 PARAMS ((tree, FILE *));
-static void parse_source_file_2 PARAMS ((void));
-static void parse_source_file_3 PARAMS ((void));
-static void parse_class_file PARAMS ((void));
-static void set_source_filename PARAMS ((JCF *, int));
-static void ggc_mark_jcf PARAMS ((void**));
-static void jcf_parse PARAMS ((struct JCF*));
-static void load_inner_classes PARAMS ((tree));
+static void handle_innerclass_attribute (int count, JCF *);
+static tree give_name_to_class (JCF *jcf, int index);
+static void parse_zip_file_entries (void);
+static void process_zip_dir (FILE *);
+static void parse_source_file_1 (tree, FILE *);
+static void parse_source_file_2 (void);
+static void parse_source_file_3 (void);
+static void parse_class_file (void);
+static void set_source_filename (JCF *, int);
+static void ggc_mark_jcf (void**);
+static void jcf_parse (struct JCF*);
+static void load_inner_classes (tree);
 
 /* Mark (for garbage collection) all the tree nodes that are
    referenced from JCF's constant pool table. Do that only if the JCF
