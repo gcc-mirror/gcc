@@ -6470,8 +6470,7 @@ get_pointer_alignment (exp, max_align)
 	  if (TREE_CODE (TREE_TYPE (exp)) != POINTER_TYPE)
 	    return align;
 	  inner = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
-	  inner = MIN (inner, max_align);
-	  align = MAX (align, inner);
+	  align = MIN (inner, max_align);
 	  break;
 
 	case PLUS_EXPR:
@@ -6493,9 +6492,9 @@ get_pointer_alignment (exp, max_align)
 	  /* See what we are pointing at and look at its alignment.  */
 	  exp = TREE_OPERAND (exp, 0);
 	  if (TREE_CODE (exp) == FUNCTION_DECL)
-	    align = MAX (align, FUNCTION_BOUNDARY);
+	    align = FUNCTION_BOUNDARY;
 	  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
-	    align = MAX (align, DECL_ALIGN (exp));
+	    align = DECL_ALIGN (exp);
 #ifdef CONSTANT_ALIGNMENT
 	  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c')
 	    align = CONSTANT_ALIGNMENT (exp, align);
