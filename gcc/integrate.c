@@ -52,8 +52,12 @@ extern tree poplevel ();
 /* Default max number of insns a function can have and still be inline.
    This is overridden on RISC machines.  */
 #ifndef INTEGRATE_THRESHOLD
+/* Inlining small functions might save more space then not inlining at
+   all.  Assume 1 instruction for the call and 1.5 insns per argument.  */
 #define INTEGRATE_THRESHOLD(DECL) \
-  (8 * (8 + list_length (DECL_ARGUMENTS (DECL))))
+  (optimize_size \
+   ? (1 + (3 * list_length (DECL_ARGUMENTS (DECL)) / 2)) \
+   : (8 * (8 + list_length (DECL_ARGUMENTS (DECL)))))
 #endif
 
 static rtx initialize_for_inline PROTO((tree, int, int, int, int));
