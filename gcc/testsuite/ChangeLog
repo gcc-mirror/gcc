@@ -1,3 +1,8 @@
+2003-07-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/const-elim-1.c (dg-final): Change regexp to match labels
+	with zero or one occurence of `$' after the initial `L'.
+
 2003-07-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/compile/20030704-1.c: Add a comment.
