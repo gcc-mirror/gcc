@@ -2693,7 +2693,7 @@ exp_equiv_p (x, y, validate, equal_values)
 static int
 cse_rtx_varies_p (x, from_alias)
      register rtx x;
-     int from_alias ATTRIBUTE_UNUSED;
+     int from_alias;
 {
   /* We need not check for X and the equivalence class being of the same
      mode because if X is equivalent to a constant in some mode, it
