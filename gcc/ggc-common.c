@@ -244,7 +244,7 @@ ggc_mark_rtx_children (r)
 	case NOTE:
 	  switch (NOTE_LINE_NUMBER (r))
 	    {
-	    case NOTE_INSN_RANGE_START:
+	    case NOTE_INSN_RANGE_BEG:
 	    case NOTE_INSN_RANGE_END:
 	    case NOTE_INSN_LIVE:
 	      ggc_mark_rtx (NOTE_RANGE_INFO (r));

@@ -819,7 +819,7 @@ branch_prob (f, dump_file)
 	    /* Must ignore the line number notes that immediately follow the
 	       end of an inline function to avoid counting it twice.  There
 	       is a note before the call, and one after the call.  */
-	    if (NOTE_LINE_NUMBER (insn) == NOTE_REPEATED_LINE_NUMBER)
+	    if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_REPEATED_LINE_NUMBER)
 	      ignore_next_note = 1;
 	    else if (NOTE_LINE_NUMBER (insn) > 0)
 	      {

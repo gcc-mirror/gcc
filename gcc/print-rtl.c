@@ -184,7 +184,7 @@ print_rtx (in_rtx)
 		sawclose = 1;
 		break;
 
-	      case NOTE_INSN_RANGE_START:
+	      case NOTE_INSN_RANGE_BEG:
 	      case NOTE_INSN_RANGE_END:
 	      case NOTE_INSN_LIVE:
 		indent += 2;
