@@ -1,3 +1,8 @@
+Thu Feb 18 17:03:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case COMPONENT_REF): Propagate
+	EXPAND_CONST_ADDRESS to recursive call when expanding inner.
+
 Mon Feb 15 22:29:49 1999  Douglas Rupp <rupp@gnat.com>
 
 	* dbxout.c (dbxout_parms): Generate a second stabs line for parameters
