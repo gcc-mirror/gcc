@@ -1,3 +1,7 @@
+2002-11-23  Simon Burge  <simonb@wasabisystems.com>
+
+	* libiberty.h (basename): Add NetBSD to the list.
+
 2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	* libiberty.h (make_relative_prefix): Add prototype.
