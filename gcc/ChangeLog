@@ -1,3 +1,10 @@
+2004-05-30  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/14819
+	* builtins.c (fold_builtin_strchr): New.
+	(fold_builtin_1): Handle BUILT_IN_STRCHR and BUILT_IN_STRRCHR
+	with fold_builtin_strchr().
+
 2004-05-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bb-reorder.c, builtins.c, c-common.c, c-gimplify.c,
