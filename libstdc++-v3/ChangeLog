@@ -1,24 +1,30 @@
-2000-10-07  benjamin kosnik  <bkoz@fillmore.constant.com>
-
-
-
-	* config/*/ctype.cc: Move to...
-	* config/os/*/bits/ctype_noninline.h: ..here.
-	* src/locale.cc: Change include to ctype_noninline.h.
-
-	* config/*/bits/ctype_specializations.h: Move to...
-	* config/os/*/bits/ctype_inline.h: ...here.
-	* include/bits/locale_facets.h: Change here.
-	
-	* configure.in: Change config/ to config/os/
-	* configure: Regenerate.
-	* acinclude.m4 (GLIBCPP_CHECK_CTYPE): Change config/ to config/os/.
-	* aclocal.m4: Regenerate.
-	* mkcheck.in (SRC_DIR): Remove ctype_include_dir, cpu_include_dir.
-
 2000-10-07  David Edelsohn  <dje@watson.ibm.com> 
 	
 	* config/os/aix/bits/atomicity.h: New file.
+
+2000-10-07  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+        
+        * acinclude.m4: Remove CPU_FLAGS
+        * libio/Makefile.am: Here too.
+        * Makefile.am: Here too.
+        
+        * src/Makefile.am (CONFIG_INCLUDES): Remove.
+        (INCLUDES): Remove CONFIG_INCLUDES.
+        (cpu_headers): Remove.
+        (myinstallheaders): Remove cpu_headers.
+        (generated_headers): Rename to build_headers.
+        (build_headers): Add atomicity.h, ctype_base.h,
+        ctype_specializations.h.
+        
+        * config/os: New directory.
+        * config/aix: Move to...
+        * config/bsd: Move to...
+        * config/generic: Move to...
+        * config/gnu-linux: Move to...
+        * config/irix: Move to...
+        * config/newlib: Move to...
+        * config/solaris: Move to...
+        * config/os/*: Here.
 
 2000-10-07  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
