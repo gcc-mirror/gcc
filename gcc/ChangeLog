@@ -1,3 +1,10 @@
+2001-02-20  Will Cohen  <wcohen@redhat.com>
+
+	* config/pa/quadlib.c (_U_Qfcnvfxt_quad_to_usgl): New function.
+	* config/pa/long_double.h (FIXUNS_TRUNCTFSI2_LIBCALL): Added.
+	(INIT_TARGET_OPTABS): Use FIXUNS_TRUNCTFSI2_LIBCALL for
+	fixunstfsi_libfunc.
+
 2001-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* stmt.c (expand_return): If an attempt is made to return the
