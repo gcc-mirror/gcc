@@ -1,3 +1,8 @@
+2003-06-20  Nick Clifton  <nickc@redhat.com>
+
+	* doc/extend.texi (ARM Built-in Functions): New node.  Document
+	ARM builtin functions for iWMMXt support.
+
 2003-06-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (--with-gnu-as): Mention SPARC/Solaris and
