@@ -344,6 +344,12 @@ in the following sections.
 -Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}
 @end smallexample
 
+@emph{V850 Options}
+-mlong-calls -mno-long-calls -mep -mno-ep
+-mprolog-function -mno-prolog-function -mspace
+-mtda=@var{n} -msda=@var{n} -mzda=@var{n}
+@end smallexample
+
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @smallexample
@@ -2766,6 +2772,7 @@ that macro, which enables you to change the defaults.
 * H8/300 Options::
 * SH Options::
 * System V Options::
+* V850 Options::
 @end menu
 
 @node M680x0 Options
@@ -4918,6 +4925,53 @@ Look in the directory @var{dir} to find the M4 preprocessor.
 The assembler uses this option.
 @c This is supposed to go with a -Yd for predefined M4 macro files, but
 @c the generic assembler that comes with Solaris takes just -Ym.
+@end table
+
+@node V850 Options
+@subsection V850 Options
+@cindex V850 Options
+
+These @samp{-m} options are defined for V850 implementations:
+
+@table @code
+@item -mlong-calls
+@itemx -mno-long-calls
+Treat all calls as being far away (near).  If calls are assumed to be
+far away, the compiler will always load the functions address up into a
+register, and call indirect through the pointer.
+
+@item -mno-ep
+@item -mep
+Do not optimize (do optimize) basic blocks that use the same index
+pointer 4 or more times to copy pointer into the @code{ep} register, and
+use the shorter @code{sld} and @code{sst} instructions.  The @samp{-mep}
+option is on by default if you optimize.
+
+@item -mno-prolog-function
+@itemx -mprolog-function
+Do not use (do use) external functions to save and restore registers at
+the prolog and epilog of a function.  The external functions are slower,
+but use less code space if more than one function saves the same number
+of registers.  The @samp{-mprolog-function} option is on by default if
+you optimize.
+
+@item -mspace
+Try to make the code as small as possible.  At present, this just turns
+on the @samp{-mep} and @samp{-mprolog-function} options.
+
+@item -mtda=@var{n}
+Put static or global variables whose size is @var{n} bytes or less into
+the tiny data area that register @code{ep} points to.  The tiny data
+area can hold up to 256 bytes in total (128 bytes for byte references).
+
+@item -msda=@var{n}
+Put static or global variables whose size is @var{n} bytes or less into
+the small data area that register @code{gp} points to.  The small data
+area can hold up to 64 kilobytes.
+
+@item -mzda=@var{n}
+Put static or global variables whose size is @var{n} bytes or less into
+the first 32 kilobytes of memory.
 @end table
 
 @node Code Gen Options

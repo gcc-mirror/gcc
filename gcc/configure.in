@@ -2434,6 +2434,16 @@ for machine in $build $host $target; do
 #		cpu_type=gmicro
 #		use_collect2=yes
 #		;;
+	v850-*-*)
+		cpu_type=v850
+		tm_file="v850/v850.h"
+		xm_file="v850/xm-v850.h"
+		if [[ x$stabs = xyes ]]
+		then
+			tm_file="${tm_file} dbx.h"
+		fi
+		use_collect2=no
+		;;
 	vax-*-bsd*)			# vaxen running BSD
 		use_collect2=yes
 		float_format=vax
