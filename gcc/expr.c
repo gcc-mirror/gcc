@@ -4673,8 +4673,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	 clear the whole structure first.  Don't do this if TARGET is a
 	 register whose mode size isn't equal to SIZE since clear_storage
 	 can't handle this case.  */
-      else if (((list_length (CONSTRUCTOR_ELTS (exp)) != fields_length (type))
-		|| mostly_zeros_p (exp))
+      else if (size > 0
+	       && ((list_length (CONSTRUCTOR_ELTS (exp)) != fields_length (type))
+		   || mostly_zeros_p (exp))
 	       && (GET_CODE (target) != REG
 		   || ((HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target))
 		       == size)))
