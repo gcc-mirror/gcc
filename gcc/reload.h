@@ -231,25 +231,9 @@ struct insn_chain
   regset live_before;
   regset live_after;
 
-  /* For each class, size of group of consecutive regs
-     that is needed for the reloads of this class.  */
-  char group_size[N_REG_CLASSES];
-  /* For each class, the machine mode which requires consecutive
-     groups of regs of that class.
-     If two different modes ever require groups of one class,
-     they must be the same size and equally restrictive for that class,
-     otherwise we can't handle the complexity.  */
-  enum machine_mode group_mode[N_REG_CLASSES];
-
-  /* Indicates if a register was counted against the need for
-     groups.  0 means it can count against max_nongroup instead.  */
-  HARD_REG_SET counted_for_groups;
-
-  /* Indicates if a register was counted against the need for
-     non-groups.  0 means it can become part of a new group.
-     During choose_reload_regs, 1 here means don't use this reg
-     as part of a group, even if it seems to be otherwise ok.  */
-  HARD_REG_SET counted_for_nongroups;
+  /* Copies of the global variables computed by find_reloads.  */
+  struct reload *rld;
+  int n_reloads;
 
   /* Indicates which registers have already been used for spills.  */
   HARD_REG_SET used_spill_regs;

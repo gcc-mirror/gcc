@@ -465,7 +465,6 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	  rld[t_reload].outmode = ! in_p ? t_mode : VOIDmode;
 	  rld[t_reload].reg_rtx = 0;
 	  rld[t_reload].optional = optional;
-	  rld[t_reload].nongroup = 0;
 	  rld[t_reload].inc = 0;
 	  /* Maybe we could combine these, but it seems too tricky.  */
 	  rld[t_reload].nocombine = 1;
@@ -535,7 +534,6 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
       rld[s_reload].outmode = ! in_p ? mode : VOIDmode;
       rld[s_reload].reg_rtx = 0;
       rld[s_reload].optional = optional;
-      rld[s_reload].nongroup = 0;
       rld[s_reload].inc = 0;
       /* Maybe we could combine these, but it seems too tricky.  */
       rld[s_reload].nocombine = 1;
@@ -1246,7 +1244,6 @@ push_reload (in, out, inloc, outloc, class,
       rld[i].outmode = outmode;
       rld[i].reg_rtx = 0;
       rld[i].optional = optional;
-      rld[i].nongroup = 0;
       rld[i].inc = 0;
       rld[i].nocombine = 0;
       rld[i].in_reg = inloc ? *inloc : 0;
@@ -4118,67 +4115,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  && rld[i].when_needed != RELOAD_FOR_OUTPUT_ADDRESS)
 	abort ();
 #endif
-
-  /* Set which reloads must use registers not used in any group.  Start
-     with those that conflict with a group and then include ones that
-     conflict with ones that are already known to conflict with a group.  */
-
-  changed = 0;
-  for (i = 0; i < n_reloads; i++)
-    {
-      enum machine_mode mode = rld[i].inmode;
-      enum reg_class class = rld[i].class;
-      int size;
-
-      if (GET_MODE_SIZE (rld[i].outmode) > GET_MODE_SIZE (mode))
-	mode = rld[i].outmode;
-      size = CLASS_MAX_NREGS (class, mode);
-
-      if (size == 1)
-	for (j = 0; j < n_reloads; j++)
-	  if ((CLASS_MAX_NREGS (rld[j].class,
-				(GET_MODE_SIZE (rld[j].outmode)
-				 > GET_MODE_SIZE (rld[j].inmode))
-				? rld[j].outmode : rld[j].inmode)
-	       > 1)
-	      && !rld[j].optional
-	      && (rld[j].in != 0 || rld[j].out != 0
-		  || rld[j].secondary_p)
-	      && reloads_conflict (i, j)
-	      && reg_classes_intersect_p (class, rld[j].class))
-	    {
-	      rld[i].nongroup = 1;
-	      changed = 1;
-	      break;
-	    }
-    }
-
-  while (changed)
-    {
-      changed = 0;
-
-      for (i = 0; i < n_reloads; i++)
-	{
-	  enum machine_mode mode = rld[i].inmode;
-	  enum reg_class class = rld[i].class;
-	  int size;
-
-	  if (GET_MODE_SIZE (rld[i].outmode) > GET_MODE_SIZE (mode))
-	    mode = rld[i].outmode;
-	  size = CLASS_MAX_NREGS (class, mode);
-
-	  if (! rld[i].nongroup && size == 1)
-	    for (j = 0; j < n_reloads; j++)
-	      if (rld[j].nongroup
-		  && reloads_conflict (i, j)
-		  && reg_classes_intersect_p (class, rld[j].class))
-		{
-		  rld[i].nongroup = 1;
-		  changed = 1;
-		  break;
-		}
-	}
-    }
 
   /* Compute reload_mode and reload_nregs.  */
   for (i = 0; i < n_reloads; i++)
