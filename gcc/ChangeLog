@@ -1,3 +1,8 @@
+2003-07-03  Andreas Schwab  <schwab@suse.de>
+
+	* dbxout.c (pending_bincls): Move decl down inside
+	DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO section.
+
 2003-07-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* rtl.h (NOTE_DATA): Refer to whole union.
