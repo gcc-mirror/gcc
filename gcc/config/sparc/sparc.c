@@ -5226,10 +5226,10 @@ output_cbranch (op, dest, label, reversed, annul, noop, insn)
 	    labelno = "";
 	}
 
-      if (*labelno && insn && (note = find_reg_note (insn, REG_BR_PRED, NULL_RTX)))
+      if (*labelno && insn && (note = find_reg_note (insn, REG_BR_PROB, NULL_RTX)))
 	{
 	  strcpy (p,
-		  (((INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely) != 0) ^ far)
+		  ((INTVAL (XEXP (note, 0)) >= REG_BR_PROB_BASE / 2) ^ far)
 		  ? ",pt" : ",pn");
 	  p += 3;
 	  spaces -= 3;
@@ -5534,10 +5534,10 @@ output_v9branch (op, dest, reg, label, reversed, annul, noop, insn)
       p += 2;
     }
 
-  if (insn && (note = find_reg_note (insn, REG_BR_PRED, NULL_RTX)))
+  if (insn && (note = find_reg_note (insn, REG_BR_PROB, NULL_RTX)))
     {
       strcpy (p,
-	      (((INTVAL (XEXP (note, 0)) & ATTR_FLAG_likely) != 0) ^ far)
+	      ((INTVAL (XEXP (note, 0)) >= REG_BR_PROB_BASE / 2) ^ far)
 	      ? ",pt" : ",pn");
       p += 3;
     }
