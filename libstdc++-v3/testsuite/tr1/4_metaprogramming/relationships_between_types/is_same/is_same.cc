@@ -31,16 +31,16 @@ void test01()
   using namespace __gnu_test;
 
   // Positive tests.
-  VERIFY( (test_relationship<is_same, int, int, true>()) );
-  VERIFY( (test_relationship<is_same, const int, const int, true>()) );
-  VERIFY( (test_relationship<is_same, int&, int&, true>()) );
-  VERIFY( (test_relationship<is_same, ClassType, ClassType, true>()) );
+  VERIFY( (test_relationship<is_same, int, int>(true)) );
+  VERIFY( (test_relationship<is_same, const int, const int>(true)) );
+  VERIFY( (test_relationship<is_same, int&, int&>(true)) );
+  VERIFY( (test_relationship<is_same, ClassType, ClassType>(true)) );
 
   // Negative tests.
-  VERIFY( (test_relationship<is_same, void, int, false>()) );
-  VERIFY( (test_relationship<is_same, int, const int, false>()) );
-  VERIFY( (test_relationship<is_same, int, int&, false>()) );
-  VERIFY( (test_relationship<is_same, int, ClassType, false>()) );
+  VERIFY( (test_relationship<is_same, void, int>(false)) );
+  VERIFY( (test_relationship<is_same, int, const int>(false)) );
+  VERIFY( (test_relationship<is_same, int, int&>(false)) );
+  VERIFY( (test_relationship<is_same, int, ClassType>(false)) );
 }
 
 int main()

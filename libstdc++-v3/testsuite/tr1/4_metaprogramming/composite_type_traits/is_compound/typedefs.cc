@@ -1,4 +1,4 @@
-// 2004-12-07  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-11  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -18,33 +18,19 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 4.5.3 Type properties
+// 
+// NB: This file is for testing tr1/type_traits with NO OTHER INCLUDES.
 
 #include <tr1/type_traits>
-#include <testsuite_hooks.h>
-#include <testsuite_tr1.h>
+
+// { dg-do compile }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  using std::tr1::is_const;
-  using namespace __gnu_test;
-
-  // Positive tests.
-  VERIFY( (test_property<is_const, const int>(true)) );
-  VERIFY( (test_property<is_const, const volatile int>(true)) );
-  VERIFY( (test_property<is_const, cClassType>(true)) );
-  VERIFY( (test_property<is_const, cvClassType>(true)) );
-
-  // Negative tests.
-  VERIFY( (test_property<is_const, int>(false)) );
-  VERIFY( (test_property<is_const, volatile int>(false)) );
-  VERIFY( (test_property<is_const, ClassType>(false)) );
-  VERIFY( (test_property<is_const, vClassType>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  // Check for required typedefs
+  typedef std::tr1::is_compound<int>          test_type;
+  typedef test_type::value_type               value_type;
+  typedef test_type::type                     type;
+  typedef test_type::type::value_type         type_value_type;
+  typedef test_type::type::type               type_type;
 }

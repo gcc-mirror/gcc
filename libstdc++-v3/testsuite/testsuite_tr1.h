@@ -35,41 +35,41 @@ namespace __gnu_test
 {  
   // For tr1/type_traits.
   template<template<typename> class Category,
-	   typename Type, bool Tv>
+	   typename Type>
     bool
-    test_category()
+    test_category(bool value)
     {
       bool ret = true;
-      ret &= Category<Type>::value == Tv;
-      ret &= Category<const Type>::value == Tv;
-      ret &= Category<volatile Type>::value == Tv;
-      ret &= Category<const volatile Type>::value == Tv;
-      ret &= Category<Type>::type::value == Tv;
-      ret &= Category<const Type>::type::value == Tv;
-      ret &= Category<volatile Type>::type::value == Tv;
-      ret &= Category<const volatile Type>::type::value == Tv;
+      ret &= Category<Type>::value == value;
+      ret &= Category<const Type>::value == value;
+      ret &= Category<volatile Type>::value == value;
+      ret &= Category<const volatile Type>::value == value;
+      ret &= Category<Type>::type::value == value;
+      ret &= Category<const Type>::type::value == value;
+      ret &= Category<volatile Type>::type::value == value;
+      ret &= Category<const volatile Type>::type::value == value;
       return ret;
     }
 
   template<template<typename> class Property,
-	   typename Type, bool Tv>
+	   typename Type>
     bool
-    test_property()
+    test_property(typename Property<Type>::value_type value)
     {
       bool ret = true;
-      ret &= Property<Type>::value == Tv;
-      ret &= Property<Type>::type::value == Tv;
+      ret &= Property<Type>::value == value;
+      ret &= Property<Type>::type::value == value;
       return ret;
     }
 
   template<template<typename, typename> class Relationship,
-	   typename Type1, typename Type2, bool Tv>
+	   typename Type1, typename Type2>
     bool
-    test_relationship()
+    test_relationship(bool value)
     {
       bool ret = true;
-      ret &= Relationship<Type1, Type2>::value == Tv;
-      ret &= Relationship<Type1, Type2>::type::value == Tv;
+      ret &= Relationship<Type1, Type2>::value == value;
+      ret &= Relationship<Type1, Type2>::type::value == value;
       return ret;
     }
 

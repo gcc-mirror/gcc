@@ -34,12 +34,12 @@ void test01()
   typedef ClassType&     ClassType_ref;
   typedef int (&fun_ref) (int);
 
-  VERIFY( (test_category<is_reference, int_ref, true>()) );
-  VERIFY( (test_category<is_reference, ClassType_ref, true>()) );
-  VERIFY( (test_category<is_reference, fun_ref, true>()) );
+  VERIFY( (test_category<is_reference, int_ref>(true)) );
+  VERIFY( (test_category<is_reference, ClassType_ref>(true)) );
+  VERIFY( (test_category<is_reference, fun_ref>(true)) );
 
   // Sanity check.
-  VERIFY( (test_category<is_reference, ClassType, false>()) );
+  VERIFY( (test_category<is_reference, ClassType>(false)) );
 }
 
 int main()
