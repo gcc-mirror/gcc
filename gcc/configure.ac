@@ -2697,15 +2697,7 @@ foo:	nop
     case $target in
       *-*-aix*) conftest_s='	.csect .text[[PR]]
 	mfcr 3,128';;
-      *-*-darwin*)
-       gcc_GAS_CHECK_FEATURE([.machine directive support],
-         gcc_cv_as_machine_directive,,,
-         [	.machine ppc7400])
-       if test x$gcc_cv_as_machine_directive != xyes; then
-         echo "*** This target requires an assembler supporting \".machine\"" >&2
-         exit 1
-       fi
-       conftest_s='	.text
+      *-*-darwin*) conftest_s='	.text
 	mfcr r3,128';;
       *) conftest_s='	.machine power4
 	.text
