@@ -3018,7 +3018,7 @@ rs6000_stack_info ()
   info_ptr->calls_p = rs6000_makes_calls ();
 
   /* Allocate space to save the toc. */
-  if (abi == ABI_NT)
+  if (abi == ABI_NT && info_ptr->calls_p)
     {
       info_ptr->toc_save_p = 1;
       info_ptr->toc_size = reg_size;
