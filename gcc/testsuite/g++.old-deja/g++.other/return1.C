@@ -1,6 +1,5 @@
 // Build don't link:
 // Special g++ Option: 
-// Origin: holmen@mail.nu
 
 struct C {
     int f() {return 0;}

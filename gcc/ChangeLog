@@ -1,3 +1,8 @@
+2001-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (expand_return): If an attempt is made to return the
+	error_mar_node, treat the return like a return without a value.
+
 Mon Feb 19 20:24:50 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (move_operand): Accept code to load the address of a
