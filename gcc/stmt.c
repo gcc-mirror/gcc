@@ -558,33 +558,6 @@ parse_input_constraint (const char **constraint_p, int input_num,
   return true;
 }
 
-/* INPUT is one of the input operands from EXPR, an ASM_EXPR.  Returns true
-   if it is an operand which must be passed in memory (i.e. an "m"
-   constraint), false otherwise.  */
-
-bool
-asm_op_is_mem_input (tree input, tree expr)
-{
-  const char *constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (input)));
-  tree outputs = ASM_OUTPUTS (expr);
-  int noutputs = list_length (outputs);
-  const char **constraints
-    = (const char **) alloca ((noutputs) * sizeof (const char *));
-  int i = 0;
-  bool allows_mem, allows_reg;
-  tree t;
-
-  /* Collect output constraints.  */
-  for (t = outputs; t ; t = TREE_CHAIN (t), i++)
-    constraints[i] = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
-
-  /* We pass 0 for input_num, ninputs and ninout; they are only used for
-     error checking which will be done at expand time.  */
-  parse_input_constraint (&constraint, 0, 0, noutputs, 0, constraints,
-			  &allows_mem, &allows_reg);
-  return (!allows_reg && allows_mem);
-}
-
 /* Check for overlap between registers marked in CLOBBERED_REGS and
    anything inappropriate in DECL.  Emit error and return TRUE for error,
    FALSE for ok.  */
