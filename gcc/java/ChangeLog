@@ -1,3 +1,31 @@
+2001-02-16  Per Bothner  <per@bothner.com>
+
+	Handle compiling multiple input files at once, and @FILE syntax.
+	* java-tree.h (flag_filelist_file, init_src_parse):  New declarations.
+	* jcf-parse.c (parse_source_file):  Split into ...
+	(parse_source_file_1):  New function - and:
+	(parse_source_file_2):  New function.
+	(yyparse):  On -ffilelist-file, open and scan named file.
+	On first pass over files, only do parse_source_file_1.
+	A new second pass calls parse_source_file_2 for each file to compile.
+	(init_jcf_parse):  Call init_src_parse.
+	* jvspec.c (INDIRECT_FILE_ARG):  New flag.
+	(lang_specific_driver):  Support @FILELIST-FILE syntax, as well
+	as multiple input file combined in one compilation.
+	* lang-options.h:  Add -ffilelist-file
+	* lang.c (flag_filelist_file):  New flag variable.
+	(lang_f_options):  Handle -ffilelist-file.
+	* lex.c (java_init_lex): Don't clear ctxp->incomplete_class.
+	* parse.h (struct parse_ctxt):  Remove fields incomplete_class and
+	gclass_list - use global fields of src_parse_roots instead.
+	* parse.y (src_parse_roots):  New array.
+	(incomplete_class_list, gclass_list):  New macros.
+	(push_parser_context, java_pop_parser_context,
+	java_parser_context_resume):  Don't fiddle with deleted fields.
+	(various):  Use incomplete_class gclass_list and global macros
+	instead of parse_ctxt fields - the lists are global.
+	(init_src_parse):  New function.
+
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (set_block): Set NAMES and BLOCKS from BLOCK.

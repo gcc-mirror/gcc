@@ -105,6 +105,10 @@ int flag_assume_compiled = 1;
 
 int flag_emit_class_files = 0;
 
+/* Nonzero if input file is a file with a list of filenames to compile. */
+
+int flag_filelist_file = 0;
+
 /* When non zero, we emit xref strings. Values of the flag for xref
    backends are defined in xref_flag_table, xref.c.  */
 
@@ -156,6 +160,7 @@ lang_f_options[] =
 {
   {"emit-class-file", &flag_emit_class_files, 1},
   {"emit-class-files", &flag_emit_class_files, 1},
+  {"filelist-file", &flag_filelist_file, 1},
   {"use-divide-subroutine", &flag_use_divide_subroutine, 1},
   {"use-boehm-gc", &flag_use_boehm_gc, 1},
   {"hash-synchronization", &flag_hash_synchronization, 1},

@@ -348,7 +348,7 @@ static int in_instance_initializer;
 struct parser_ctxt *ctxp;
 
 /* List of things that were analyzed for which code will be generated */
-static struct parser_ctxt *ctxp_for_generation = NULL;
+struct parser_ctxt *ctxp_for_generation = NULL;
 
 /* binop_lookup maps token to tree_code. It is used where binary
    operations are involved and required by the parser. RDIV_EXPR
@@ -410,6 +410,14 @@ static tree current_this;
 /* Hold a list of catch clauses list. The first element of this list is
    the list of the catch clauses of the currently analysed try block. */
 static tree currently_caught_type_list;
+
+static tree src_parse_roots[2] = { NULL_TREE, NULL_TREE };
+
+/* All classes seen from source code */
+#define gclass_list src_parse_roots[0]
+
+/* List of non-complete classes */
+#define incomplete_class_list src_parse_roots[1]
 
 /* Check modifiers. If one doesn't fit, retrieve it in its declaration
    line and point it out.  */
@@ -2640,11 +2648,6 @@ void
 java_push_parser_context ()
 {
   create_new_parser_context (0);
-  if (ctxp->next)
-    {
-      ctxp->incomplete_class = ctxp->next->incomplete_class;
-      ctxp->gclass_list = ctxp->next->gclass_list;
-    }
 }  
 
 void 
@@ -2661,8 +2664,6 @@ java_pop_parser_context (generate)
   next = ctxp->next;
   if (next)
     {
-      next->incomplete_class = ctxp->incomplete_class;
-      next->gclass_list = ctxp->gclass_list;
       lineno = ctxp->lineno;
       current_class = ctxp->class_type;
     }
@@ -2776,8 +2777,6 @@ java_parser_context_resume ()
   struct parser_ctxt *restored = saver->next; /* This one is the old current */
 
   /* We need to inherit the list of classes to complete/generate */
-  restored->incomplete_class = old->incomplete_class;
-  restored->gclass_list = old->gclass_list;
   restored->classd_list = old->classd_list;
   restored->class_list = old->class_list;
 
@@ -3652,7 +3651,7 @@ maybe_create_class_interface_decl (decl, raw_name, qualified_name, cl)
   ctxp->class_list = decl;
 
   /* Create a new nodes in the global lists */
-  ctxp->gclass_list = tree_cons (NULL_TREE, decl, ctxp->gclass_list);
+  gclass_list = tree_cons (NULL_TREE, decl, gclass_list);
   all_class_list = tree_cons (NULL_TREE, decl, all_class_list);
 
   /* Install a new dependency list element */
@@ -4991,7 +4990,7 @@ obtain_incomplete_type (type_name)
   else
     abort ();
 
-  for (ptr = ctxp->incomplete_class; ptr; ptr = TREE_CHAIN (ptr))
+  for (ptr = incomplete_class_list; ptr; ptr = TREE_CHAIN (ptr))
     if (TYPE_NAME (ptr) == name)
       break;
 
@@ -4999,8 +4998,8 @@ obtain_incomplete_type (type_name)
     {
       BUILD_PTR_FROM_NAME (ptr, name);
       layout_type (ptr);
-      TREE_CHAIN (ptr) = ctxp->incomplete_class;
-      ctxp->incomplete_class = ptr;
+      TREE_CHAIN (ptr) = incomplete_class_list;
+      incomplete_class_list = ptr;
     }
 
   return ptr;
@@ -7285,7 +7284,7 @@ java_reorder_fields ()
       initialized_p = 1;
     }
 
-  for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
+  for (current = gclass_list; current; current = TREE_CHAIN (current))
     {
       current_class = TREE_TYPE (TREE_VALUE (current));
 
@@ -7315,11 +7314,11 @@ java_reorder_fields ()
 	  }
       }
     }
-  stop_reordering = TREE_TYPE (TREE_VALUE (ctxp->gclass_list));
+  stop_reordering = TREE_TYPE (TREE_VALUE (gclass_list));
 }
 
-/* Layout the methods of all classes loaded in one way on an
-   other. Check methods of source parsed classes. Then reorder the
+/* Layout the methods of all classes loaded in one way or another.
+   Check methods of source parsed classes. Then reorder the
    fields and layout the classes or the type of all source parsed
    classes */
 
@@ -7335,12 +7334,12 @@ java_layout_classes ()
   all_class_list = NULL_TREE;
 
   /* Then check the methods of all parsed classes */
-  for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
+  for (current = gclass_list; current; current = TREE_CHAIN (current))
     if (CLASS_FROM_SOURCE_P (TREE_TYPE (TREE_VALUE (current))))
       java_check_methods (TREE_VALUE (current));
   java_parse_abort_on_error ();
 
-  for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
+  for (current = gclass_list; current; current = TREE_CHAIN (current))
     {
       current_class = TREE_TYPE (TREE_VALUE (current));
       layout_class (current_class);
@@ -15688,8 +15687,6 @@ mark_parser_ctxt (p)
   ggc_mark_tree (pc->class_type);
   ggc_mark_tree (pc->function_decl);
   ggc_mark_tree (pc->package);
-  ggc_mark_tree (pc->incomplete_class);
-  ggc_mark_tree (pc->gclass_list);
   ggc_mark_tree (pc->class_list);
   ggc_mark_tree (pc->current_parsed_class);
   ggc_mark_tree (pc->current_parsed_class_un);
@@ -15704,4 +15701,11 @@ mark_parser_ctxt (p)
 
   if (pc->next)
     mark_parser_ctxt (&pc->next);
+}
+
+void
+init_src_parse ()
+{
+  /* Register roots with the garbage collector.  */
+  ggc_add_tree_root (src_parse_roots, sizeof (src_parse_roots) / sizeof(tree));
 }
