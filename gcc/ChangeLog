@@ -1,3 +1,8 @@
+Fri Oct  3 15:49:27 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* flow.c (print_rtl_with_bb): Cast alloca return value for
+	in_bb_p.
+
 Thu Oct  2 21:15:03 1997  Richard Henderson  <rth@cygnus.com>
 
 	* i386.h (RETURN_ADDR_RTX): New definition that works for 
@@ -13,9 +18,9 @@ Wed Oct  1 13:43:53 1997  Jim Wilson  <wilson@cygnus.com>
 
 Wed Oct  1 11:13:25 1997  Ian Lance Taylor  <ian@cygnus.com>
 
-        * pexecute.c: Use spawn if __CYGWIN32__.
+	* pexecute.c: Use spawn if __CYGWIN32__.
 
-        * pexecute.c: Include "config.h" first, as per autoconf manual
+	* pexecute.c: Include "config.h" first, as per autoconf manual
 	(from Paul Eggert  <eggert@twinsun.com>).
 
 Wed Oct  1 01:44:36 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
