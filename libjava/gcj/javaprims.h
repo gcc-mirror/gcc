@@ -418,6 +418,8 @@ jint
 _Jv_AttachCurrentThread(java::lang::Thread* thread);
 extern "C" java::lang::Thread*
 _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group);
+extern "C" java::lang::Thread*
+_Jv_AttachCurrentThreadAsDaemon(jstring name, java::lang::ThreadGroup* group);
 extern "C" jint _Jv_DetachCurrentThread (void);
 
 extern "C" void _Jv_Throw (jthrowable) __attribute__ ((__noreturn__));

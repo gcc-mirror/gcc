@@ -1,6 +1,6 @@
 // natThread.cc - Native part of Thread class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -405,6 +405,21 @@ _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group)
   if (name == NULL)
     name = java::lang::Thread::gen_name ();
   thread = new java::lang::Thread (NULL, group, NULL, name);
+  _Jv_AttachCurrentThread (thread);
+  _Jv_NotifyThreadStart (thread);
+  return thread;
+}
+
+java::lang::Thread*
+_Jv_AttachCurrentThreadAsDaemon(jstring name, java::lang::ThreadGroup* group)
+{
+  java::lang::Thread *thread = _Jv_ThreadCurrent ();
+  if (thread != NULL)
+    return thread;
+  if (name == NULL)
+    name = java::lang::Thread::gen_name ();
+  thread = new java::lang::Thread (NULL, group, NULL, name);
+  thread->setDaemon (true);
   _Jv_AttachCurrentThread (thread);
   _Jv_NotifyThreadStart (thread);
   return thread;

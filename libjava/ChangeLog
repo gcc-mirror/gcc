@@ -1,3 +1,36 @@
+2002-04-10  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java/lang/Thread.h): Mark
+	_Jv_AttachCurrentThreadAsDaemon as friend.
+	* gcj/javaprims.h (_Jv_AttachCurrentThreadAsDaemon): Declare.
+	* gcj/cni.h (JvAttachCurrentThreadAsDaemon): New function.
+	* java/lang/natThread.cc (_Jv_AttachCurrentThreadAsDaemon): New
+	function.
+	* java/lang/natRuntime.cc (_load): Recognize JNI_VERSION_1_4.
+	* jni.cc (_Jv_JNI_GetVersion): Return JNI_VERSION_1_4.
+	(_Jv_JNI_InvokeFunctions): Added
+	_Jv_JNI_AttachCurrentThreadAsDaemon.
+	(_Jv_JNI_GetEnv): Handle JNI_VERSION_1_4.
+	(JNI_GetDefaultJavaVMInitArgs): Likewise.
+	(JNI_CreateJavaVM): Likewise.
+	(_Jv_JNI_AttachCurrentThread): Likewise.
+	(_Jv_JNI_AttachCurrentThread): Added `is_daemon' argument.
+	(_Jv_JNI_AttachCurrentThreadAsDaemon): New method.
+	(_Jv_JNIFunctions): Initialize new fields.
+	(_Jv_JNI_NewDirectByteBuffer): New function.
+	(_Jv_JNI_GetDirectBufferAddress): Likewise.
+	(_Jv_JNI_GetDirectBufferCapacity): Likewise.
+	* include/jni.h (JNI_VERSION_1_4): New macro.
+	(JNIInvokeInterface::AttachCurrentThreadAsDaemon): New field.
+	(_Jv_JavaVM::AttachCurrentThreadAsDaemon): New method.
+	(JNINativeInterface::NewDirectByteBuffer): New field.
+	(JNINativeInterface::GetDirectBufferAddress): New field.
+	(JNINativeInterface::GetDirectBufferCapacity): New field.
+	(_Jv_JNIEnv::NewDirectByteBuffer): New method.
+	(_Jv_JNIEnv::GetDirectBufferAddress): New method.
+	(_Jv_JNIEnv::GetDirectBufferCapacity): New method.
+
 2002-04-09  Tom Tromey  <tromey@redhat.com>
 
 	* win32.cc (_Jv_platform_initProperties): Use GetTempPath.
