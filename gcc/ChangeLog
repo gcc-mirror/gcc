@@ -1,5 +1,7 @@
 Sun Jun 18 21:42:15 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcse.c (insert_insn_end_bb): Always put after NOTE_INSN_BASIC_BLOCK.
+
 	* function.c (put_var_into_stack): Don't reference DECL_ fields
 	if input is a SAVE_EXPR.
 	Use set_mem_attributes in COMPLEX case.
