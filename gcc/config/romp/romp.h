@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ROMP chip.
-   Copyright (C) 1989, 1991, 1993, 1995, 1996, 1998, 1999, 2000
+   Copyright (C) 1989, 1991, 1993, 1995, 1996, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
@@ -246,7 +246,7 @@ extern int target_flags;
 
    On the ROMP, access to floating-point registers is expensive (even between
    two FP regs.)  */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)	\
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
   (2 + 10 * ((CLASS1) == FP_REGS) + 10 * (CLASS2 == FP_REGS))
 
 /* Specify the registers used for certain standard purposes.

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -1312,7 +1312,7 @@ enum reg_class
   ((CLASS) == FPU_REGS ? 1 : NUM_REGS (MODE))
 
 /* Moves between FPU_REGS and GENERAL_REGS are two memory insns.  */
-#define REGISTER_MOVE_COST(FROM, TO)			\
+#define REGISTER_MOVE_COST(MODE, FROM, TO)		\
   (TARGET_ARM ?						\
    ((FROM) == FPU_REGS && (TO) != FPU_REGS ? 20 :	\
     (FROM) != FPU_REGS && (TO) == FPU_REGS ? 20 : 2)	\

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000 Free Software Foundation, Inc.
+   2000, 2001 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -882,7 +882,7 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    reduce the impact of not being able to allocate a pseudo to a
    hard register.  */
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)		\
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
   (((CLASS1) == FLOAT_REGS) == ((CLASS2) == FLOAT_REGS)	\
    ? 2							\
    : TARGET_FIX ? 3 : 4+2*alpha_memory_latency)

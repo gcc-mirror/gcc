@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU.
    Copyright (C) 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   2000 Free Software Foundation, Inc.
+   2000, 2001 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -668,7 +668,7 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
    involving a general register is cheap, but moving between the other types
    (even within a class) is two insns.  */
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)	\
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
   ((CLASS1) == GENERAL_REGS || (CLASS2) == GENERAL_REGS ? 2 : 4)
 
 /* A C expressions returning the cost of moving data of MODE from a register to

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -1817,7 +1817,7 @@ while (0)
    If SECONDARY*_RELOAD_CLASS says something about the src/dst pair,
    it uses this information.  Hence, the general register <-> floating point
    register information here is not used for SFmode.  */
-#define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS) \
+#define REGISTER_MOVE_COST(MODE, SRCCLASS, DSTCLASS) \
   ((((DSTCLASS) == T_REGS) || ((DSTCLASS) == PR_REGS)) ? 10		\
    : ((((DSTCLASS) == FP0_REGS || (DSTCLASS) == FP_REGS || (DSTCLASS) == DF_REGS) \
        && ((SRCCLASS) == GENERAL_REGS || (SRCCLASS) == R0_REGS))	\

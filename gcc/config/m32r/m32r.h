@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1469,7 +1470,7 @@ do {									\
 
 /* Compute extra cost of moving data between one register class
    and another.  */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2) 2
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) 2
 
 /* Compute the cost of moving data between registers and memory.  */
 /* Memory is 3 times as expensive as registers.

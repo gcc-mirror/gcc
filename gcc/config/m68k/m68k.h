@@ -1,6 +1,7 @@
-/* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler.
+   Sun 68000/68020 version.
+   Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -869,7 +870,7 @@ extern enum reg_class regno_reg_class[];
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Moves between fp regs and other regs are two insns.  */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)		\
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
   (((CLASS1) == FP_REGS && (CLASS2) != FP_REGS)	        \
     || ((CLASS2) == FP_REGS && (CLASS1) != FP_REGS)	\
     ? 4 : 2)
@@ -882,7 +883,7 @@ extern enum reg_class regno_reg_class[];
 
 /* Moves between fp regs and other regs are two insns.  */
 /* Likewise for high fpa regs and other regs.  */
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)		\
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
   ((((CLASS1) == FP_REGS && (CLASS2) != FP_REGS)	\
     || ((CLASS2) == FP_REGS && (CLASS1) != FP_REGS)	\
     || ((CLASS1) == FPA_REGS && (CLASS2) != FPA_REGS)	\

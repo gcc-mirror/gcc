@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
-   Copyright (C) 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1477,7 +1477,8 @@ while (0)
   to memory move (default cost 4)
  */
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)  register_move_cost(CLASS1, CLASS2)
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
+  register_move_cost (CLASS1, CLASS2)
 
 #define OUTPUT_JUMP(NORMAL, NO_OV)  \
 { if (cc_status.flags & CC_NO_OVERFLOW)				\

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for IA-32.
-   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2339,7 +2339,7 @@ while (0)
    arbitary high cost.
  */
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)			\
+#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)		\
   ((FLOAT_CLASS_P (CLASS1) && ! FLOAT_CLASS_P (CLASS2))		\
    ? (MEMORY_MOVE_COST (DFmode, CLASS1, 0)			\
      + MEMORY_MOVE_COST (DFmode, CLASS2, 1))			\
