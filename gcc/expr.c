@@ -6732,7 +6732,7 @@ expand_builtin_apply (function, arguments, argsize)
   emit_move_insn (incoming_args,
 		  gen_rtx (MEM, Pmode, arguments));
 #ifndef STACK_GROWS_DOWNWARD
-  incoming_args = expand_binop (Pmode, add_optab, incoming_args, argsize,
+  incoming_args = expand_binop (Pmode, sub_optab, incoming_args, argsize,
 				incoming_args, 0, OPTAB_LIB_WIDEN);
 #endif
 
