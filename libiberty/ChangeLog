@@ -1,3 +1,8 @@
+2003-10-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.in: Check if $MAKEINFO is missing.
+	* configure: Regenerated.
+
 2003-09-24  Daniel Jacobowitz  <drow@mvista.com>
 
 	* configure.in: Use AC_PROG_CPP_WERROR.
