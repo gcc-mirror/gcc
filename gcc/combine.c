@@ -3590,6 +3590,12 @@ simplify_rtx (x, op0_mode, last, in_dest)
       break;
 
     case TRUNCATE:
+      /* We can't handle truncation to a partial integer mode here
+	 because we don't know the real bitsize of the partial
+	 integer mode.  */
+      if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+	break;
+
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	SUBST (XEXP (x, 0),
 	       force_to_mode (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
