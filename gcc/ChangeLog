@@ -1,3 +1,8 @@
+2004-11-16  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* regmove.c (regmove_optimize): Use lowpart_subreg instead of
+	gen_rtx_SUBREG with incorrect offset to compute SRC_SUBREG.
+
 2004-11-16  Devang Patel  <dpatel@apple.com>
 
 	* tree-if-conv.c (clean_predicate_lists): Update gcc_assert check.
