@@ -733,11 +733,6 @@ init_parse (filename)
   /* This is for ANSI C++.  */
   ridpointers[(int) RID_MUTABLE] = get_identifier ("mutable");
 
-  /* Signature handling extensions.  */
-  signature_type_node = build_int_2 (signature_type, 0);
-  TREE_TYPE (signature_type_node) = signature_type_node;
-  ridpointers[(int) RID_SIGNATURE] = signature_type_node;
-
   /* Create the built-in __null node.  Note that we can't yet call for
      type_for_size here because integer_type_node and so forth are not
      set up.  Therefore, we don't set the type of these nodes until
@@ -850,13 +845,6 @@ init_parse (filename)
       UNSET_RESERVED_WORD ("headof");
     }
 
-  if (! flag_handle_signatures || flag_no_gnu_keywords)
-    {
-      /* Easiest way to not recognize signature
-	 handling extensions...  */
-      UNSET_RESERVED_WORD ("signature");
-      UNSET_RESERVED_WORD ("sigof");
-    }
   if (flag_no_asm || flag_no_gnu_keywords)
     UNSET_RESERVED_WORD ("typeof");
   if (! flag_operator_names)
@@ -941,8 +929,6 @@ yyprint (file, yychar, yylval)
 	fprintf (file, " `union'");
       else if (yylval.ttype == enum_type_node)
 	fprintf (file, " `enum'");
-      else if (yylval.ttype == signature_type_node)
-	fprintf (file, " `signature'");
       else
 	my_friendly_abort (80);
       break;

@@ -239,8 +239,6 @@ tree error_mark_list;
 	tree class_star_type_node;
 	tree class_type_node, record_type_node, union_type_node, enum_type_node;
 	tree unknown_type_node;
-	tree opaque_type_node, signature_type_node;
-	tree sigtable_entry_type;
 
    Array type `vtable_entry_type[]'
 
@@ -1807,18 +1805,6 @@ vtype_decl_p (t, data)
 	  && TREE_TYPE (t) != error_mark_node
 	  && TYPE_LANG_SPECIFIC (TREE_TYPE (t))
 	  && CLASSTYPE_VSIZE (TREE_TYPE (t)));
-}
-
-/* Returns non-zero if T is a signature table.  */
-
-int 
-sigtable_decl_p (t, data)
-     tree t;
-     void *data ATTRIBUTE_UNUSED;
-{
-  return (TREE_CODE (t) == VAR_DECL
-	  && TREE_TYPE (t) != error_mark_node
-	  && IS_SIGNATURE (TREE_TYPE (t)));
 }
 
 /* Return the declarations that are members of the namespace NS.  */
@@ -6119,7 +6105,6 @@ init_decl_processing ()
   tree fields[20];
   int wchar_type_size;
   tree array_domain_type;
-  tree vb_off_identifier = NULL_TREE;
 
   /* Have to make these distinct before we try using them.  */
   lang_name_cplusplus = get_identifier ("C++");
@@ -6197,12 +6182,6 @@ init_decl_processing ()
   delta_identifier = get_identifier (VTABLE_DELTA_NAME);
   delta2_identifier = get_identifier (VTABLE_DELTA2_NAME);
   pfn_or_delta2_identifier = get_identifier ("__pfn_or_delta2");
-  if (flag_handle_signatures)
-    {
-      tag_identifier = get_identifier (SIGTABLE_TAG_NAME);
-      vb_off_identifier = get_identifier (SIGTABLE_VB_OFF_NAME);
-      vt_off_identifier = get_identifier (SIGTABLE_VT_OFF_NAME);
-    }
 
   /* Define `int' and `char' first so that dbx will output them first.  */
 
@@ -6449,11 +6428,6 @@ init_decl_processing ()
   TYPE_POINTER_TO (unknown_type_node) = unknown_type_node;
   TYPE_REFERENCE_TO (unknown_type_node) = unknown_type_node;
 
-  /* This is for handling opaque types in signatures.  */
-  opaque_type_node = copy_node (ptr_type_node);
-  TYPE_MAIN_VARIANT (opaque_type_node) = opaque_type_node;
-  record_builtin_type (RID_MAX, 0, opaque_type_node);
-
   /* This is special for C++ so functions can be overloaded.  */
   wchar_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WCHAR_TYPE)));
@@ -6519,44 +6493,6 @@ init_decl_processing ()
   vtbl_ptr_type_node = build_pointer_type (vtable_entry_type);
   layout_type (vtbl_ptr_type_node);
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_ptr_type_node);
-
-  /* Simplify life by making a "sigtable_entry_type".  Give its
-     fields names so that the debugger can use them.  */
-
-  if (flag_handle_signatures)
-    {
-      sigtable_entry_type = make_lang_type (RECORD_TYPE);
-      fields[0] = build_lang_field_decl (FIELD_DECL, tag_identifier,
-					 delta_type_node);
-      fields[1] = build_lang_field_decl (FIELD_DECL, vb_off_identifier,
-					 delta_type_node);
-      fields[2] = build_lang_field_decl (FIELD_DECL, delta_identifier,
-					 delta_type_node);
-      fields[3] = build_lang_field_decl (FIELD_DECL, index_identifier,
-					 delta_type_node);
-      fields[4] = build_lang_field_decl (FIELD_DECL, pfn_identifier,
-					 ptr_type_node);
-
-      /* Set the alignment to the max of the alignment of ptr_type_node and
-	 delta_type_node.  Double alignment wastes a word on the Sparc.  */
-      finish_builtin_type (sigtable_entry_type, SIGTABLE_PTR_TYPE, fields, 4,
-			   (TYPE_ALIGN (ptr_type_node) > TYPE_ALIGN (delta_type_node))
-			   ? ptr_type_node
-			   : delta_type_node);
-
-      /* Make this part of an invisible union.  */
-      fields[5] = copy_node (fields[4]);
-      TREE_TYPE (fields[5]) = delta_type_node;
-      DECL_NAME (fields[5]) = vt_off_identifier;
-      DECL_MODE (fields[5]) = TYPE_MODE (delta_type_node);
-      DECL_SIZE (fields[5]) = TYPE_SIZE (delta_type_node);
-      TREE_UNSIGNED (fields[5]) = 0;
-      TREE_CHAIN (fields[4]) = fields[5];
-
-      sigtable_entry_type = build_qualified_type (sigtable_entry_type, 
-						  TYPE_QUAL_CONST);
-      record_builtin_type (RID_MAX, SIGTABLE_PTR_TYPE, sigtable_entry_type);
-    }
 
   std_node = build_decl (NAMESPACE_DECL, 
 			 get_identifier (flag_honor_std ? "fake std":"std"),
@@ -7544,8 +7480,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
     init = NULL_TREE;
   else if (DECL_EXTERNAL (decl))
     ;
-  else if (TREE_CODE (type) == REFERENCE_TYPE
-	   || (TYPE_LANG_SPECIFIC (type) && IS_SIGNATURE_REFERENCE (type)))
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       if (TREE_STATIC (decl))
 	make_decl_rtl (decl, NULL_PTR,
@@ -7901,14 +7836,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  && (TREE_CODE (type) == FUNCTION_TYPE
 	      || TREE_CODE (type) == METHOD_TYPE))
 	abstract_virtuals_error (decl, TREE_TYPE (type));
-
-      if (TYPE_LANG_SPECIFIC (core_type) && IS_SIGNATURE (core_type))
-	signature_error (decl, core_type);
-      else if ((TREE_CODE (type) == FUNCTION_TYPE
-		|| TREE_CODE (type) == METHOD_TYPE)
-	       && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
-	       && IS_SIGNATURE (TREE_TYPE (type)))
-	signature_error (decl, TREE_TYPE (type));
 
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	;
@@ -8994,7 +8921,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   int explicit_int = 0;
   int explicit_char = 0;
   int defaulted_int = 0;
-  int opaque_typedef = 0;
   tree typedef_decl = NULL_TREE;
   const char *name;
   tree typedef_type = NULL_TREE;
@@ -9484,10 +9410,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   typedef_type = type;
 
   /* No type at all: default to `int', and set DEFAULTED_INT
-     because it was not a user-defined typedef.
-     Except when we have a `typedef' inside a signature, in
-     which case the type defaults to `unknown type' and is
-     instantiated when assigning to a signature pointer or ref.  */
+     because it was not a user-defined typedef.  */
 
   if (type == NULL_TREE
       && (RIDBIT_SETP (RID_SIGNED, specbits)
@@ -9509,15 +9432,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	type = build_pointer_type (ctor_return_type);
       else if (return_type == return_conversion)
 	type = ctor_return_type;
-      else if (current_class_type
-	       && IS_SIGNATURE (current_class_type)
-	       && RIDBIT_SETP (RID_TYPEDEF, specbits)
-	       && (decl_context == FIELD || decl_context == NORMAL))
-	{
-	  explicit_int = 0;
-	  opaque_typedef = 1;
-	  type = copy_node (opaque_type_node);
-	}
       else
 	{
 	  /* We handle `main' specially here, because 'main () { }' is so
@@ -9799,37 +9713,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       && ANON_AGGR_TYPE_P (TREE_VALUE (declspecs)))
     decl_context = FIELD;
 
-  /* Give error if `const,' `volatile,' `inline,' `friend,' or `virtual'
-     is used in a signature member function declaration.  */
-  if (decl_context == FIELD
-      && IS_SIGNATURE (current_class_type)
-      && RIDBIT_NOTSETP (RID_TYPEDEF, specbits))
-    {
-      if (type_quals != TYPE_UNQUALIFIED)
-	{
-	  error ("type qualifiers specified for signature member function `%s'", name);
-	  type_quals = TYPE_UNQUALIFIED;
-	}
-      if (inlinep)
-	{
-	  error ("`inline' specified for signature member function `%s'", name);
-	  /* Later, we'll make signature member functions inline.  */
-	  inlinep = 0;
-	}
-      if (friendp)
-	{
-	  error ("`friend' declaration in signature definition");
-	  friendp = 0;
-	}
-      if (virtualp)
-	{
-	  error ("`virtual' specified for signature member function `%s'",
-		 name);
-	  /* Later, we'll make signature member functions virtual.  */
-	  virtualp = 0;
-	}
-    }
-
   /* Warn about storage classes that are invalid for certain
      kinds of declarations (parameters, typenames, etc.).  */
 
@@ -9844,7 +9727,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
 	;
       else if (decl_context == FIELD
-	       && ! IS_SIGNATURE (current_class_type)
  	       /* C++ allows static class elements  */
  	       && RIDBIT_SETP (RID_STATIC, specbits))
  	/* C++ also allows inlines and signed and unsigned elements,
@@ -9867,11 +9749,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  op = IDENTIFIER_OPNAME_P (tmp);
 		}
 	      error ("storage class specified for %s `%s'",
-		     IS_SIGNATURE (current_class_type)
-		     ? (op
-			? "signature member operator"
-			: "signature member function")
-		     : (op ? "member operator" : "field"),
+		     op ? "member operator" : "field",
 		     op ? operator_name_string (tmp) : name);
 	    }
 	  else
@@ -9881,12 +9759,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  RIDBIT_RESET (RID_REGISTER, specbits);
 	  RIDBIT_RESET (RID_AUTO, specbits);
 	  RIDBIT_RESET (RID_EXTERN, specbits);
-
-	  if (decl_context == FIELD && IS_SIGNATURE (current_class_type))
-	    {
-	      RIDBIT_RESET (RID_STATIC, specbits);
-	      staticp = 0;
-	    }
 	}
     }
   else if (RIDBIT_SETP (RID_EXTERN, specbits) && initialized && !funcdef_flag)
@@ -10290,13 +10162,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			error ("return value type specifier for constructor ignored");
 		    }
 		    type = build_pointer_type (ctype);
-		    if (decl_context == FIELD
-			&& IS_SIGNATURE (current_class_type))
-		      {
-			error ("constructor not allowed in signature");
-			return void_type_node;
-		      }			  
-		    else if (decl_context == FIELD)
+		    if (decl_context == FIELD)
 		      {
 			if (! member_function_or_else (ctype, current_class_type,
 						       "constructor for alien class `%s' cannot be member"))
@@ -10403,31 +10269,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	     but to the target of the pointer.  */
 	  type_quals = TYPE_UNQUALIFIED;
 
-	  if (IS_SIGNATURE (type))
-	    {
-	      if (TREE_CODE (declarator) == ADDR_EXPR)
-		{
-		  if (CLASSTYPE_METHOD_VEC (type) == NULL_TREE
-		      && TYPE_SIZE (type))
-		    cp_warning ("empty signature `%T' used in signature reference declaration",
-				type);
-#if 0
-		  type = build_signature_reference_type (type);
-#else
-		  sorry ("signature reference");
-		  return NULL_TREE;
-#endif
-		}
-	      else
-		{
-		  if (CLASSTYPE_METHOD_VEC (type) == NULL_TREE
-		      && TYPE_SIZE (type))
-		    cp_warning ("empty signature `%T' used in signature pointer declaration",
-				type);
-		  type = build_signature_pointer_type (type);
-		}
-	    }
-	  else if (TREE_CODE (declarator) == ADDR_EXPR)
+	  if (TREE_CODE (declarator) == ADDR_EXPR)
 	    {
 	      if (TREE_CODE (type) == VOID_TYPE)
 		error ("invalid type: `void &'");
@@ -10736,8 +10578,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    cp_pedwarn ("ANSI C++ forbids nested type `%D' with same name as enclosing class",
 			declarator);
 	  decl = build_lang_decl (TYPE_DECL, declarator, type);
-	  if (IS_SIGNATURE (current_class_type) && opaque_typedef)
-	    SIGNATURE_HAS_OPAQUE_TYPEDECLS (current_class_type) = 1;
 	}
       else
 	{
@@ -10851,11 +10691,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       /* Note that the grammar rejects storage classes
 	 in typenames, fields or parameters.  */
       if (type_quals != TYPE_UNQUALIFIED)
-	{
-	  if (IS_SIGNATURE (type))
-	    error ("type qualifiers specified for signature type");
-	  type_quals = TYPE_UNQUALIFIED;
-	}
+	type_quals = TYPE_UNQUALIFIED;
 
       /* Special case: "friend class foo" looks like a TYPENAME context.  */
       if (friendp)
@@ -10965,16 +10801,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	bad_specifiers (decl, "parameter", virtualp, quals != NULL_TREE,
 			inlinep, friendp, raises != NULL_TREE);
-	if (current_class_type
-	    && IS_SIGNATURE (current_class_type))
-	  {
-	    if (inlinep)
-	      error ("parameter of signature member function declared `inline'");
-	    if (RIDBIT_SETP (RID_AUTO, specbits))
-	      error ("parameter of signature member function declared `auto'");
-	    if (RIDBIT_SETP (RID_REGISTER, specbits))
-	      error ("parameter of signature member function declared `register'");
-	  }
 
 	/* Compute the type actually passed in the parmlist,
 	   for the case where there is no prototype.
@@ -11671,13 +11497,6 @@ grokparms (first_parm, funcdef_flag)
 		    }
                   else if (abstract_virtuals_error (decl, type))
 		    any_error = 1;  /* Seems like a good idea. */
-                  else if (TREE_CODE (type) == RECORD_TYPE
-                           && TYPE_LANG_SPECIFIC (type)
-                           && IS_SIGNATURE (type))
-                    {
-                      signature_error (decl, type);
-                      any_error = 1;  /* Seems like a good idea. */
-                    }
 		  else if (POINTER_TYPE_P (type))
 		    {
 		      tree t = type;
@@ -12208,8 +12027,6 @@ tag_name (code)
       return "union ";
     case enum_type:
       return "enum";
-    case signature_type:
-      return "signature";
     default:
       my_friendly_abort (981122);
     }
@@ -12255,7 +12072,6 @@ xref_tag (code_type_node, name, globalize)
     {
     case record_type:
     case class_type:
-    case signature_type:
       code = RECORD_TYPE;
       break;
     case union_type:
@@ -12420,17 +12236,6 @@ xref_tag (code_type_node, name, globalize)
 	  ref = make_lang_type (code);
 	  TYPE_CONTEXT (ref) = context;
 
-	  if (tag_code == signature_type)
-	    {
-	      SET_SIGNATURE (ref);
-	      /* Since a signature type will be turned into the type
-		 of signature tables, it's not only an interface.  */
-	      CLASSTYPE_INTERFACE_ONLY (ref) = 0;
-	      SET_CLASSTYPE_INTERFACE_KNOWN (ref);
-	      /* A signature doesn't have a vtable.  */
-	      CLASSTYPE_VTABLE_NEEDS_WRITING (ref) = 0;
-	    }
-
 #ifdef NONNESTED_CLASSES
 	  /* Class types don't nest the way enums do.  */
 	  class_binding_level = (struct binding_level *)0;
@@ -12464,7 +12269,7 @@ xref_tag (code_type_node, name, globalize)
     {
       if (tag_code == class_type)
 	CLASSTYPE_DECLARED_CLASS (ref) = 1;
-      else if (tag_code == record_type || tag_code == signature_type)
+      else if (tag_code == record_type)
 	CLASSTYPE_DECLARED_CLASS (ref) = 0;
     }
 
@@ -13305,35 +13110,28 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	     we keep the consistency between `current_class_type'
 	     and `current_class_ptr'.  */
 	  tree t = current_function_parms;
-
+	  int i;
+	      
 	  my_friendly_assert (t != NULL_TREE
 			      && TREE_CODE (t) == PARM_DECL, 162);
-
-	  if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
-	    {
-	      int i;
-
-	      if (! hack_decl_function_context (decl1))
-		temporary_allocation ();
-	      i = suspend_momentary ();
-
-	      /* Normally, build_indirect_ref returns
-		 current_class_ref whenever current_class_ptr is
-		 dereferenced.  This time, however, we want it to
-		 *create* current_class_ref, so we temporarily clear
-		 current_class_ptr to fool it.  */
-	      current_class_ptr = NULL_TREE;
-	      current_class_ref = build_indirect_ref (t, NULL_PTR);
-	      current_class_ptr = t;
-
-	      resume_momentary (i);
-	      if (! hack_decl_function_context (decl1))
-		end_temporary_allocation ();
-	    }
-	  else
-	    /* We're having a signature pointer here.  */
-	    current_class_ref = current_class_ptr = t;
-
+	  my_friendly_assert (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE,
+			      19990811);
+	  
+	  if (! hack_decl_function_context (decl1))
+	    temporary_allocation ();
+	  i = suspend_momentary ();
+	  
+	  /* Normally, build_indirect_ref returns current_class_ref
+	     whenever current_class_ptr is dereferenced.  This time,
+	     however, we want it to *create* current_class_ref, so we
+	     temporarily clear current_class_ptr to fool it.  */
+	  current_class_ptr = NULL_TREE;
+	  current_class_ref = build_indirect_ref (t, NULL_PTR);
+	  current_class_ptr = t;
+	  
+	  resume_momentary (i);
+	  if (! hack_decl_function_context (decl1))
+	    end_temporary_allocation ();
 	}
     }
   else
@@ -14272,9 +14070,6 @@ start_method (declspecs, declarator, attrlist)
   if (TREE_CODE (fndecl) != FUNCTION_DECL)
     /* Not a function, tell parser to report parse error.  */
     return NULL_TREE;
-
-  if (IS_SIGNATURE (current_class_type))
-    IS_DEFAULT_IMPLEMENTATION (fndecl) = 1;
 
   if (DECL_IN_AGGR_P (fndecl))
     {

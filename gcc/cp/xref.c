@@ -367,7 +367,6 @@ GNU_xref_decl (fndecl,decl)
   else if (TREE_CODE (decl) == RECORD_TYPE)
     {
       if (CLASSTYPE_DECLARED_CLASS (decl)) cls = "CLASSID";
-      else if (IS_SIGNATURE (decl)) cls = "SIGNATUREID";
       else cls = "STRUCTID";
       decl = TYPE_NAME (decl);
       uselin = TRUE;
@@ -417,8 +416,7 @@ GNU_xref_decl (fndecl,decl)
 	   (cur_scope != NULL ? cur_scope->lid : 0),
 	   cls, fctname(fndecl), buf);
 
-  if (STREQL (cls, "STRUCTID") || STREQL (cls, "UNIONID")
-      || STREQL (cls, "SIGNATUREID"))
+  if (STREQL (cls, "STRUCTID") || STREQL (cls, "UNIONID"))
     {
       cls = "CLASSID";
       fprintf (xref_file, "DCL %s %d %s %d %s %s %s\n",

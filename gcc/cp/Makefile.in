@@ -185,7 +185,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 
 # Language-specific object files for g++
 
-CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
+CXX_OBJS = call.o decl.o errfn.o expr.o pt.o typeck2.o \
  class.o decl2.o error.o lex.o parse.o ptree.o rtti.o spew.o typeck.o cvt.o \
  except.o friend.o init.o method.o search.o semantics.o tree.o xref.o \
  repo.o dump.o @extra_cxx_objs@
@@ -302,8 +302,6 @@ error.o : error.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
 errfn.o : errfn.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
-sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
-  $(srcdir)/../system.h $(srcdir)/../toplev.h
 repo.o : repo.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
 semantics.o: semantics.c $(CONFIG_H) $(CXX_TREE_H) lex.h \

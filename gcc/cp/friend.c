@@ -243,12 +243,7 @@ make_friend_class (type, friend_type)
   tree classes;
   int is_template_friend;
 
-  if (IS_SIGNATURE (type))
-    {
-      error ("`friend' declaration in signature definition");
-      return;
-    }
-  if (IS_SIGNATURE (friend_type) || ! IS_AGGR_TYPE (friend_type))
+  if (! IS_AGGR_TYPE (friend_type))
     {
       cp_error ("invalid type `%T' declared `friend'", friend_type);
       return;

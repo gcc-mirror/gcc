@@ -227,18 +227,7 @@ dump_type_real (t, v, canonical_name)
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
-      if (TYPE_LANG_SPECIFIC (t)
-	  && (IS_SIGNATURE_POINTER (t) || IS_SIGNATURE_REFERENCE (t)))
-	{
-	  dump_qualifiers (t, after);
-	  dump_type_real (SIGNATURE_TYPE (t), v, canonical_name);
-	  if (IS_SIGNATURE_POINTER (t))
-	    OB_PUTC ('*');
-	  else
-	    OB_PUTC ('&');
-	}
-      else
-	dump_aggr_type (t, v, canonical_name);
+      dump_aggr_type (t, v, canonical_name);
       break;
 
     case TYPE_DECL:
@@ -356,8 +345,6 @@ aggr_variety (t)
     return "union";
   else if (TYPE_LANG_SPECIFIC (t) && CLASSTYPE_DECLARED_CLASS (t))
     return "class";
-  else if (TYPE_LANG_SPECIFIC (t) && IS_SIGNATURE (t))
-    return "signature";
   else
     return "struct";
 }
@@ -1035,15 +1022,8 @@ dump_function_decl (t, v)
     dump_type_suffix (TREE_TYPE (fntype), 1, 0);
 
   if (TREE_CODE (fntype) == METHOD_TYPE)
-    {
-      if (IS_SIGNATURE (cname))
-	/* We look at the type pointed to by the `optr' field of `this.'  */
-	dump_qualifiers
-	  (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_VALUE (TYPE_ARG_TYPES (fntype))))), before);
-      else
-	dump_qualifiers
-	  (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))), before);
-    }
+    dump_qualifiers (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))),
+		     before);
   
   if (v >= 2)
     dump_exception_spec (TYPE_RAISES_EXCEPTIONS (fntype), 0);

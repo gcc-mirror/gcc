@@ -410,10 +410,7 @@ build_cplus_method_type (basetype, rettype, argtypes)
 
   TYPE_METHOD_BASETYPE (t) = TYPE_MAIN_VARIANT (basetype);
   TREE_TYPE (t) = rettype;
-  if (IS_SIGNATURE (basetype))
-    ptype = build_signature_pointer_type (basetype);
-  else
-    ptype = build_pointer_type (basetype);
+  ptype = build_pointer_type (basetype);
 
   /* The actual arglist for this function includes a "hidden" argument
      which is "this".  Put it into the list of argument types.  */

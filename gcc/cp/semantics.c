@@ -1035,14 +1035,8 @@ finish_qualified_object_call_expr (fn, object, args)
      tree object;
      tree args;
 {
-  if (IS_SIGNATURE (TREE_OPERAND (fn, 0)))
-    {
-      warning ("signature name in scope resolution ignored");
-      return finish_object_call_expr (TREE_OPERAND (fn, 1), object, args);
-    }
-  else
-    return build_scoped_method_call (object, TREE_OPERAND (fn, 0),
-				     TREE_OPERAND (fn, 1), args);
+  return build_scoped_method_call (object, TREE_OPERAND (fn, 0),
+				   TREE_OPERAND (fn, 1), args);
 }
 
 /* Finish a pseudo-destructor call expression of OBJECT, with SCOPE
@@ -1231,9 +1225,7 @@ finish_template_type_parm (aggr, identifier)
      tree aggr;
      tree identifier;
 {
-  if (aggr == signature_type_node)
-    sorry ("signature as template type parameter");
-  else if (aggr != class_type_node)
+  if (aggr != class_type_node)
     {
       pedwarn ("template type parameters must use the keyword `class' or `typename'");
       aggr = class_type_node;
@@ -1364,24 +1356,22 @@ begin_class_definition (t)
   /* Reset the interface data, at the earliest possible
      moment, as it might have been set via a class foo;
      before.  */
-  /* Don't change signatures.  */
-  if (! IS_SIGNATURE (t))
-    {
-      tree name = TYPE_IDENTIFIER (t);
-      
-      if (! ANON_AGGRNAME_P (name))
-	{
-	  CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X
-	    (t, interface_unknown);
-	}
-
-      /* Only leave this bit clear if we know this
-	 class is part of an interface-only specification.  */
-      if (! CLASSTYPE_INTERFACE_KNOWN (t)
-	  || ! CLASSTYPE_INTERFACE_ONLY (t))
-	CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
-    }
+  {
+    tree name = TYPE_IDENTIFIER (t);
+    
+    if (! ANON_AGGRNAME_P (name))
+      {
+	CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
+	SET_CLASSTYPE_INTERFACE_UNKNOWN_X
+	  (t, interface_unknown);
+      }
+    
+    /* Only leave this bit clear if we know this
+       class is part of an interface-only specification.  */
+    if (! CLASSTYPE_INTERFACE_KNOWN (t)
+	|| ! CLASSTYPE_INTERFACE_ONLY (t))
+      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
+  }
 #if 0
   tmp = TYPE_IDENTIFIER ($<ttype>0);
   if (tmp && IDENTIFIER_TEMPLATE (tmp))
@@ -1652,11 +1642,9 @@ enter_scope_of (sr)
    access_{default,public,protected_private}[_virtual]_node.*/
 
 tree 
-finish_base_specifier (access_specifier, base_class,
-		       current_aggr_is_signature)
+finish_base_specifier (access_specifier, base_class)
      tree access_specifier;
      tree base_class;
-     int current_aggr_is_signature;
 {
   tree type;
   tree result;
@@ -1668,27 +1656,9 @@ finish_base_specifier (access_specifier, base_class,
     }
   else
     type = TREE_TYPE (base_class);
-  if (current_aggr_is_signature && access_specifier)
-    error ("access and source specifiers not allowed in signature");
+
   if (! is_aggr_type (type, 1))
     result = NULL_TREE;
-  else if (current_aggr_is_signature
-	   && (! type) && (! IS_SIGNATURE (type)))
-    {
-      error ("class name not allowed as base signature");
-      result = NULL_TREE;
-    }
-  else if (current_aggr_is_signature)
-    {
-      sorry ("signature inheritance, base type `%s' ignored",
-	     IDENTIFIER_POINTER (access_specifier));
-      result = build_tree_list (access_public_node, type);
-    }
-  else if (type && IS_SIGNATURE (type))
-    {
-      error ("signature name not allowed as base class");
-      result = NULL_TREE;
-    }
   else
     result = build_tree_list (access_specifier, type);
 

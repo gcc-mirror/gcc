@@ -116,7 +116,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
  $(srcdir)/cp/errfn.c $(srcdir)/cp/rtti.c $(srcdir)/cp/method.c \
  $(srcdir)/cp/search.c $(srcdir)/cp/typeck.c $(srcdir)/cp/decl.c \
  $(srcdir)/cp/error.c $(srcdir)/cp/friend.c $(srcdir)/cp/init.c \
- $(srcdir)/cp/parse.y $(srcdir)/cp/sig.c $(srcdir)/cp/typeck2.c \
+ $(srcdir)/cp/parse.y $(srcdir)/cp/typeck2.c \
  $(srcdir)/cp/repo.c $(srcdir)/cp/semantics.c \
  $(srcdir)/cp/dump.c
 

@@ -104,10 +104,7 @@ require_complete_type (value)
 
   /* First, detect a valid value with a complete type.  */
   if (TYPE_SIZE (type) != 0
-      && TYPE_SIZE (type) != size_zero_node
-      && ! (TYPE_LANG_SPECIFIC (type)
-	    && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type))
-	    && TYPE_SIZE (SIGNATURE_TYPE (type)) == 0))
+      && TYPE_SIZE (type) != size_zero_node)
     return value;
 
   /* If we see X::Y, we build an OFFSET_TYPE which has
@@ -1697,14 +1694,7 @@ c_sizeof (type)
   if (code == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
-  /* @@ This also produces an error for a signature ref.
-        In that case we should be able to do better.  */
-  if (IS_SIGNATURE (type))
-    {
-      error ("`sizeof' applied to a signature type");
-      return size_int (0);
-    }
-  else if (code == OFFSET_TYPE)
+  if (code == OFFSET_TYPE)
     {
       cp_error ("`sizeof' applied to non-static member");
       return size_int (0);
@@ -1815,14 +1805,6 @@ c_alignof (type)
   /* C++: this is really correct!  */
   if (code == REFERENCE_TYPE)
     type = TREE_TYPE (type);
-
-  /* @@ This also produces an error for a signature ref.
-        In that case we should be able to do better.  */
-  if (IS_SIGNATURE (type))
-    {
-      error ("`__alignof' applied to a signature type");
-      return size_int (1);
-    }
 
   t = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
   force_fit_type (t, 0);
@@ -2037,11 +2019,6 @@ build_object_ref (datum, basetype, field)
       cp_error ("request for member `%T::%D' in expression of non-aggregate type `%T'",
 		basetype, field, dtype);
       return error_mark_node;
-    }
-  else if (IS_SIGNATURE (basetype))
-    {
-      warning ("signature name in scope resolution ignored");
-      return build_component_ref (datum, field, NULL_TREE, 1);
     }
   else if (is_aggr_type (basetype, 1))
     {
@@ -2401,8 +2378,7 @@ build_component_ref (datum, component, basetype_path, protect)
 	 not const, even within a const object.  */
       if (DECL_LANG_SPECIFIC (field) && DECL_MUTABLE_P (field))
 	type_quals &= ~TYPE_QUAL_CONST;
-      if (!IS_SIGNATURE (field_type))
-	field_type = cp_build_qualified_type (field_type, type_quals);
+      field_type = cp_build_qualified_type (field_type, type_quals);
     }
 
   ref = fold (build (COMPONENT_REF, field_type,
@@ -2513,9 +2489,6 @@ build_indirect_ref (ptr, errorstring)
      pointer to member, so it's cool to check for this here.  */
   else if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
     error ("invalid use of `%s' on pointer to member", errorstring);
-  else if (TREE_CODE (type) == RECORD_TYPE
-	   && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type)))
-    error ("cannot dereference signature pointer/reference");
   else if (pointer != error_mark_node)
     {
       if (errorstring)
@@ -5580,12 +5553,6 @@ build_c_cast (type, expr)
       return error_mark_node;
     }
 
-  if (IS_SIGNATURE (type))
-    {
-      error ("cast specifies signature type");
-      return error_mark_node;
-    }
-
   if (processing_template_decl)
     {
       tree t = build_min (CAST_EXPR, type,
@@ -5725,14 +5692,6 @@ build_modify_expr (lhs, modifycode, rhs)
   lhs = require_complete_type (lhs);
 
   newrhs = rhs;
-
-  /* Handle assignment to signature pointers/refs.  */
-
-  if (TYPE_LANG_SPECIFIC (lhstype)
-      && (IS_SIGNATURE_POINTER (lhstype) || IS_SIGNATURE_REFERENCE (lhstype)))
-    {
-      return build_signature_pointer_constructor (lhs, rhs);
-    }
 
   /* Handle control structure constructs used as "lvalues".  */
 
@@ -5923,11 +5882,6 @@ build_modify_expr (lhs, modifycode, rhs)
   /* Warn about storing in something that is `const'.  */
   /* For C++, don't warn if this is initialization.  */
   if (modifycode != INIT_EXPR
-      /* For assignment to `const' signature pointer/reference fields,
-	 don't warn either, we already printed a better message before.  */
-      && ! (TREE_CODE (lhs) == COMPONENT_REF
-	    && (IS_SIGNATURE_POINTER (TREE_TYPE (TREE_OPERAND (lhs, 0)))
-		|| IS_SIGNATURE_REFERENCE (TREE_TYPE (TREE_OPERAND (lhs, 0)))))
       && (TREE_READONLY (lhs) || CP_TYPE_CONST_P (lhstype)
 	  /* Functions are not modifiable, even though they are
 	     lvalues.  */
@@ -6734,10 +6688,6 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
     rhstype = TREE_TYPE (rhstype);
 
   type = complete_type (type);
-
-  if (TYPE_LANG_SPECIFIC (type)
-      && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type)))
-    return build_signature_pointer_constructor (type, rhs);
 
   if (IS_AGGR_TYPE (type))
     return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);

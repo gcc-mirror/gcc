@@ -56,8 +56,6 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-gnu-keywords", "Do not recognise GNU defined keywords" },
   { "-fhandle-exceptions", "" },
   { "-fno-handle-exceptions", "" },
-  { "-fhandle-signatures", "Handle signature language constructs" },
-  { "-fno-handle-signatures", "" },
   { "-fhonor-std", "Treat the namespace `std' as a normal namespace" },
   { "-fno-honor-std", "" },
   { "-fhuge-objects", "Enable support for huge objects" },

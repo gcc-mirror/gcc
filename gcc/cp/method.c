@@ -1654,12 +1654,7 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 
       if (for_method)
 	{
-	  tree this_type = TREE_VALUE (parms);
-
-	  if (TREE_CODE (this_type) == RECORD_TYPE)  /* a signature pointer */
-	    this_type = SIGNATURE_TYPE (this_type);
-	  else
-	    this_type = TREE_TYPE (this_type);
+	  tree this_type = TREE_TYPE (TREE_VALUE (parms));
 
 	  build_mangled_name_for_type (this_type);
 
@@ -1947,9 +1942,6 @@ hack_identifier (value, name)
 
       if (TREE_CODE (value) == OVERLOAD)
 	value = OVL_CURRENT (value);
-
-      if (IS_SIGNATURE (DECL_CLASS_CONTEXT (value)))
-	return value;
 
       decl = maybe_dummy_object (DECL_CLASS_CONTEXT (value), 0);
       value = build_component_ref (decl, name, NULL_TREE, 1);
