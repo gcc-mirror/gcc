@@ -1146,7 +1146,15 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       if (TREE_CODE (val) != VAR_DECL
 	  && TREE_CODE (val) != PARM_DECL
 	  && TREE_CODE (val) != INDIRECT_REF)
-	TREE_VALUE (tail) = save_expr (TREE_VALUE (tail));
+	{
+	  TREE_VALUE (tail) = save_expr (TREE_VALUE (tail));
+	  /* If it's a constant, print error now so don't crash later.  */
+	  if (TREE_CODE (TREE_VALUE (tail)) != SAVE_EXPR)
+	    {
+	      error ("invalid output in `asm'");
+	      return;
+	    }
+	}
 
       output_rtx[i] = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
     }
