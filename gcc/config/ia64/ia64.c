@@ -7885,13 +7885,14 @@ ia64_expand_fetch_and_op (optab binoptab, enum machine_mode mode,
     }
 
   tmp = gen_reg_rtx (mode);
-  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
+  /* ar.ccv must always be loaded with a zero-extended DImode value.  */
+  ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
   emit_move_insn (tmp, mem);
 
   label = gen_label_rtx ();
   emit_label (label);
   emit_move_insn (ret, tmp);
-  emit_move_insn (ccv, tmp);
+  convert_move (ccv, tmp, /*unsignedp=*/1);
 
   /* Perform the specific operation.  Special case NAND by noticing
      one_cmpl_optab instead.  */
@@ -7951,14 +7952,15 @@ ia64_expand_op_and_fetch (optab binoptab, enum machine_mode mode,
   emit_insn (gen_mf ());
   tmp = gen_reg_rtx (mode);
   old = gen_reg_rtx (mode);
-  ccv = gen_rtx_REG (mode, AR_CCV_REGNUM);
+  /* ar.ccv must always be loaded with a zero-extended DImode value.  */
+  ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
 
   emit_move_insn (tmp, mem);
 
   label = gen_label_rtx ();
   emit_label (label);
   emit_move_insn (old, tmp);
-  emit_move_insn (ccv, tmp);
+  convert_move (ccv, tmp, /*unsignedp=*/1);
 
   /* Perform the specific operation.  Special case NAND by noticing
      one_cmpl_optab instead.  */
@@ -8007,6 +8009,11 @@ ia64_expand_compare_and_swap (enum machine_mode rmode, enum machine_mode mode,
   mem = gen_rtx_MEM (mode, force_reg (ptr_mode, mem));
   MEM_VOLATILE_P (mem) = 1;
 
+  if (GET_MODE (old) != mode)
+    old = convert_to_mode (mode, old, /*unsignedp=*/1);
+  if (GET_MODE (new) != mode)
+    new = convert_to_mode (mode, new, /*unsignedp=*/1);
+
   if (! register_operand (old, mode))
     old = copy_to_mode_reg (mode, old);
   if (! register_operand (new, mode))
@@ -8018,14 +8025,7 @@ ia64_expand_compare_and_swap (enum machine_mode rmode, enum machine_mode mode,
     tmp = gen_reg_rtx (mode);
 
   ccv = gen_rtx_REG (DImode, AR_CCV_REGNUM);
-  if (mode == DImode)
-    emit_move_insn (ccv, old);
-  else
-    {
-      rtx ccvtmp = gen_reg_rtx (DImode);
-      emit_insn (gen_zero_extendsidi2 (ccvtmp, old));
-      emit_move_insn (ccv, ccvtmp);
-    }
+  convert_move (ccv, old, /*unsignedp=*/1);
   emit_insn (gen_mf ());
   if (mode == SImode)
     insn = gen_cmpxchg_acq_si (tmp, mem, new, ccv);
