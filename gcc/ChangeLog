@@ -1,3 +1,21 @@
+2001-12-14  Ira Ruben	<ira@apple.com>
+
+	Add -### option (displays driver-generated commands without
+	executing and quotes all arguments).
+	* doc/invoke.texi: Add -###.
+	* gcc.c (verbose_only_flag) - New flag.
+	* (execute): If -### write quoted arguments and return.
+	* (display_help): Print meaning of -###.
+	* (process_command): Handle -###.
+
+2001-12-14  Ira Ruben	<ira@apple.com>
+
+	Fix to no allow -save-temps to clobber user's source file.
+	* gcc.c: Add static globals input_stat and input_stat_set.
+	(do_spec_1): For 'g', 'u', 'U' case with save_temps_flag
+	set, check that user's input file is not overwritten.
+	(set_input): Reset input_stat_set for each new file.
+
 Fri Dec 14 22:14:44 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (estimate_probability): Fix LOOP_EXIT heuristic.

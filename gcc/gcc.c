@@ -186,6 +186,13 @@ static int print_help_list;
 
 static int verbose_flag;
 
+/* Flag indicating whether we should ONLY print the command and
+   arguments (like verbose_flag) without executing the command.
+   Displayed arguments are quoted so that the generated command
+   line is suitable for execution.  This is intended for use in
+   shell scripts to capture the driver-generated command line.  */
+static int verbose_only_flag;
+
 /* Flag indicating to print target specific command line options.  */
 
 static int target_help_flag;
@@ -2726,8 +2733,24 @@ execute ()
 	{
 	  const char *const *j;
 
-	  for (j = commands[i].argv; *j; j++)
-	    fprintf (stderr, " %s", *j);
+     	  if (verbose_only_flag)
+     	    {
+	      for (j = commands[i].argv; *j; j++)
+		{
+		  char *p;
+		  fprintf (stderr, " \"");
+		  for (p = *j; *p; ++p)
+		    {
+		      if (*p == '"' || *p == '\\' || *p == '$')
+			fputc ('\\', stderr);
+		      fputc (*p, stderr);
+		    }
+		  fputc ('"', stderr);
+		}
+     	    }
+     	  else
+	    for (j = commands[i].argv; *j; j++)
+	      fprintf (stderr, " %s", *j);
 
 	  /* Print a pipe symbol after all but the last command.  */
 	  if (i + 1 != n_commands)
@@ -2735,6 +2758,8 @@ execute ()
 	  fprintf (stderr, "\n");
 	}
       fflush (stderr);
+      if (verbose_only_flag != 0)
+        return 0;
 #ifdef DEBUG
       notice ("\nGo ahead? (y or n) ");
       fflush (stderr);
@@ -3018,6 +3043,7 @@ display_help ()
   fputs (_("  -b <machine>             Run gcc for target <machine>, if installed\n"), stdout);
   fputs (_("  -V <version>             Run gcc version number <version>, if installed\n"), stdout);
   fputs (_("  -v                       Display the programs invoked by the compiler\n"), stdout);
+  fputs (_("  -###                     Like -v but options quoted and commands not executed\n"), stdout);
   fputs (_("  -E                       Preprocess only; do not compile, assemble or link\n"), stdout);
   fputs (_("  -S                       Compile only; do not assemble or link\n"), stdout);
   fputs (_("  -c                       Compile and assemble, but do not link\n"), stdout);
@@ -3452,6 +3478,15 @@ process_command (argc, argv)
 	}
       else if (strcmp (argv[i], "-time") == 0)
 	report_times = 1;
+      else if (strcmp (argv[i], "-###") == 0)
+	{
+	  /* This is similar to -v except that there is no execution
+	     of the commands and the echoed arguments are quoted.  It
+	     is intended for use in shell scripts to capture the
+	     driver-generated command line.  */
+	  verbose_only_flag++;
+	  verbose_flag++;
+	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  const char *p = &argv[i][1];
@@ -3870,6 +3905,8 @@ process_command (argc, argv)
 	  else if (report_times)
 	    error ("warning: -pipe ignored because -time specified");
 	}
+      else if (strcmp (argv[i], "-###") == 0)
+	;
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  const char *p = &argv[i][1];
@@ -4077,6 +4114,8 @@ static int basename_length;
 static int suffixed_basename_length;
 static const char *input_basename;
 static const char *input_suffix;
+static struct stat input_stat;
+static int input_stat_set;
 
 /* The compiler used to process the current input file.  */
 static struct compiler *input_file_compiler;
@@ -4442,12 +4481,6 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'g':
 	  case 'u':
 	  case 'U':
-	    if (save_temps_flag)
-	      {
-		obstack_grow (&obstack, input_basename, basename_length);
-		delete_this_arg = 0;
-	      }
-	    else
 	      {
 		struct temp_name *t;
 		int suffix_length;
@@ -4475,6 +4508,54 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 				TARGET_OBJECT_SUFFIX);
 		      }
 		    suffix_length += strlen (TARGET_OBJECT_SUFFIX);
+		  }
+		
+		/* If the input_filename has the same suffix specified
+		   for the %g, %u, or %U, and -save-temps is specified,
+		   we could end up using that file as an intermediate
+		   thus clobbering the user's source file (.e.g.,
+		   gcc -save-temps foo.s would clobber foo.s with the
+		   output of cpp0).  So check for this condition and
+		   generate a temp file as the intermediate.  */
+		   
+		if (save_temps_flag)
+		  {
+		    temp_filename_length = basename_length + suffix_length;
+		    temp_filename = alloca (temp_filename_length + 1);
+		    strncpy ((char *) temp_filename, input_basename, basename_length);
+		    strncpy ((char *) temp_filename + basename_length, suffix,
+		    	     suffix_length);
+		    *((char *) temp_filename + temp_filename_length) = '\0';
+		    if (strcmp (temp_filename, input_filename) != 0)
+		      {
+		      	struct stat st_temp;
+		      	
+		      	/* Note, set_input() resets input_stat_set to 0.  */
+		      	if (input_stat_set == 0)
+		      	  {
+		      	    input_stat_set = stat (input_filename, &input_stat);
+		      	    if (input_stat_set >= 0)
+		      	      input_stat_set = 1;
+		      	  }
+		      	  
+		      	/* If we have the stat for the input_filename
+		      	   and we can do the stat for the temp_filename
+		      	   then the they could still refer to the same
+		      	   file if st_dev/st_ino's are the same.  */
+		      	
+			if (input_stat_set != 1
+			    || stat (temp_filename, &st_temp) < 0
+			    || input_stat.st_dev != st_temp.st_dev
+			    || input_stat.st_ino != st_temp.st_ino)
+ 		      	  {
+			    temp_filename = save_string (temp_filename,
+							 temp_filename_length + 1);
+			    obstack_grow (&obstack, temp_filename,
+			    			    temp_filename_length);
+			    arg_going = 1;
+			    break;
+			  }
+		      }
 		  }
 
 		/* See if we already have an association of %g/%u/%U and
@@ -5618,6 +5699,11 @@ set_input (filename)
     }
   else
     input_suffix = "";
+  
+  /* If a spec for 'g', 'u', or 'U' is seen with -save-temps then
+     we will need to do a stat on the input_filename.  The
+     INPUT_STAT_SET signals that the stat is needed.  */
+  input_stat_set = 0;
 }
 
 /* On fatal signals, delete all the temporary files.  */
