@@ -85,6 +85,11 @@ extern int target_flags;
 
 #define TARGET_NO_REUSE_ARGS	(target_flags & 256)
 
+/* This means that neither builtin nor emulated float operations are
+   available, and that GCC should generate libcalls instead. */
+
+#define TARGET_SOFT_FLOAT	(target_flags & 512)
+
 #define TARGET_SWITCHES			\
   { {"dw", 1},				\
     {"ndw", -1},			\
@@ -103,6 +108,7 @@ extern int target_flags;
     {"no-storem-bug", 128},		\
     {"reuse-arg-regs", -256},		\
     {"no-reuse-arg-regs", 256},		\
+    {"soft-float", 512},		\
     {"", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
