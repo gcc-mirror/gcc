@@ -1,3 +1,10 @@
+2001-05-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c (c_lex): Just cast cpp's hashnode to gcc's one.
+	* stringpool.c:	(IS_FE_IDENT, make_identifier): Delete.
+	(maybe_get_identifier): Update.
+	* tree.h (make_identifier): Delete.
+
 2001-05-21  Richard Henderson  <rth@redhat.com>
 
 	* combine.c (subst): Do not substitute for a register as

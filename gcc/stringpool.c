@@ -35,8 +35,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "toplev.h"
 
-#define IS_FE_IDENT(NODE) (TREE_CODE (NODE) == IDENTIFIER_NODE)
-
 /* The "" allocated string.  */
 const char empty_string[] = "";
 
@@ -99,23 +97,6 @@ ggc_alloc_string (contents, length)
   return obstack_finish (&string_stack);
 }
 
-/* NODE is an identifier known to the preprocessor.  Make it known to
-   the front ends as well.  */
-
-void
-make_identifier (node)
-     tree node;
-{
-  /* If this identifier is longer than the clash-warning length,
-     do a brute force search of the entire table for clashes.  */
-  if (warn_id_clash && do_identifier_warnings
-      && IDENTIFIER_LENGTH (node) >= id_clash_len)
-    ht_forall (ident_hash, (ht_cb) scan_for_clashes,
-	       IDENTIFIER_POINTER (node));
-
-  TREE_SET_CODE (node, IDENTIFIER_NODE);
-}
-
 /* Return an IDENTIFIER_NODE whose name is TEXT (a null-terminated string).
    If an identifier with that name has previously been referred to,
    the same node is returned this time.  */
@@ -141,17 +122,11 @@ maybe_get_identifier (text)
      const char *text;
 {
   hashnode ht_node;
-  tree node;
-  size_t length = strlen (text);
 
   ht_node = ht_lookup (ident_hash, (const unsigned char *) text,
-		       length, HT_NO_INSERT);
+		       strlen (text), HT_NO_INSERT);
   if (ht_node)
-    {
-      node = HT_IDENT_TO_GCC_IDENT (ht_node);
-      if (IS_FE_IDENT (node))
-	return node;
-    }
+    return HT_IDENT_TO_GCC_IDENT (ht_node);
 
   return NULL_TREE;
 }
@@ -167,8 +142,7 @@ scan_for_clashes (pfile, h, text)
 {
   tree node = HT_IDENT_TO_GCC_IDENT (h);
 
-  if (IS_FE_IDENT (node)
-      && IDENTIFIER_LENGTH (node) >= id_clash_len
+  if (IDENTIFIER_LENGTH (node) >= id_clash_len
       && !memcmp (IDENTIFIER_POINTER (node), text, id_clash_len))
     {
       warning ("\"%s\" and \"%s\" identical in first %d characters",
