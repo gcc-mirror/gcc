@@ -1,5 +1,11 @@
 2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/8849
+	* error.c (dump_expr): Handle BASELINK.
+	* pt.c (resolve_overloaded_unification): Handle FUNCTION_DECL.
+
+2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/9453
 	* friend.c (is_friend): Always accept when SUPPLICANT is still
 	a TEMPLATE_DECL.

@@ -2048,6 +2048,10 @@ dump_expr (t, flags)
       output_add_string (scratch_buffer, ") break; ");
       break;
 
+    case BASELINK:
+      print_tree_identifier (scratch_buffer, DECL_NAME (get_first_fn (t)));
+      break;
+
     case TREE_LIST:
       if (TREE_VALUE (t) && TREE_CODE (TREE_VALUE (t)) == FUNCTION_DECL)
 	{

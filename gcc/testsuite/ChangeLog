@@ -1,5 +1,10 @@
 2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/8849
+	* g++.dg/template/ptrmem4.C: New test.
+
+2003-01-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/9453
 	* g++.dg/template/friend14.C: New test.
 	* g++.dg/template/friend15.C: New test.
