@@ -1,5 +1,6 @@
 2002-09-07  Glen Nakamura  <glen@imodulo.com>
 
+	PR opt/7814
 	* sched-deps.c (sched_analyze_insn): Make sure to add insn
 	to reg_last->sets after flushing the dependency lists to guarantee
 	that subsequent clobbers will be dependent on it.
