@@ -1,3 +1,12 @@
+Thu May 10 09:17:42 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* ifcvt.c (merge_if_block): Use any_uncondjump_p, not simplejump_p
+	to determine if a block has an unconditional jump at its end.
+
+	* jump.c (jump_optimize_1): When converting a conditional jump
+	to an unconditional jump, build the jump using gen_jump instead
+	of just modify operands in-place.
+
 2001-05-09  Zack Weinberg  <zackw@stanford.edu>
 
 	* cppinit.c (cpp_post_options): Shut off macro expansion if
