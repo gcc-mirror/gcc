@@ -1,3 +1,39 @@
+2002-12-19  Casper S. Hornstrup  <chorns@users.sourceforge.net>
+	    Danny Smith  <dannysmith@users.sourceforge.net>
+	    Eric Kohl  <ekohl@rz-online.de>
+
+	* config/i386/i386.c (ix86_handle_cdecl_attribute): Check for
+	attributes incompatible with fastcall attribute.
+	(ix86_handle_regparm_attribute): Likewise.
+
+	* config/i386/i386.c (ix86_comp_type_attributes): Check for mismatched
+	fastcall types.
+
+	* config/i386/cygwin.h (TARGET_OS_CPP_BUILTINS): Add fastcall
+	attributes.
+	(ASM_OUTPUT_LABELREF): Define as i386_pe_output_labelref.
+	* config/i386/i386-protos.h (i386_pe_output_labelref): Declare.
+	* config/i386/winnt.c (i386_pe_mark_dllimport). Add __imp_ prefix in
+	i386_pe_output_labelref rather than here.
+	(gen_fastcall_suffix): New function. Decorates a label name with the
+	fastcall prefix (@) and the stdcall suffix.
+	(i386_pe_encode_section_info): Call gen_fastcall_suffix() if a symbol
+	has a fastcall attribute.
+	(i386_pe_output_labelref): New function. Outputs a label reference.
+	* config/i386/i386.c (ix86_attribute_table): Accept 'fastcall' as a
+	valid attribute.
+	(ix86_return_pops_args): Fastcall functions pop the stack.
+	(init_cumulative_args): Reserve registers ECX and EDX if function has
+	fastcall attribute.
+	(function_arg): Use registers ECX and EDX if function has fastcall
+	attribute.
+	* config/i386/i386.h (CUMULATIVE_ARGS): Add fastcall attribute flag.
+	(DLL_IMPORT_EXPORT_PREFIX): Redefine as '#'.
+	(FASTCALL_PREFIX): Define as '@'.
+	* config/i386/mingw32.h (TARGET_OS_CPP_BUILTINS): Add fastcall
+	attributes.
+	* doc/extend.texi: Add documentation of fastcall attribute.
+
 2002-12-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: FORBUILD when build!=host changed from 

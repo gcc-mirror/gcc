@@ -50,11 +50,13 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("WINNT");					\
 	builtin_define ("_X86_=1");					\
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
+	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
 	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
 	builtin_define ("__declspec(x)=__attribute__((x))");		\
 	if (!flag_iso)							\
 	  {								\
 	    builtin_define ("_stdcall=__attribute__((__stdcall__))");	\
+	    builtin_define ("_fastcall=__attribute__((__fastcall__))");	\
 	    builtin_define ("_cdecl=__attribute__((__cdecl__))");	\
 	  }								\
 	EXTRA_OS_CPP_BUILTINS ();					\
