@@ -6890,25 +6890,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
       
     case TREE_BINFO:
-      /* A binfo node.  We always need to make a copy, of the node
-	 itself and of its BINFO_BASE_BINFOS.  */
-      my_friendly_assert (type, 20040628);
-      
-      t = copy_node (t);
-
-      /* Make sure type isn't a typedef copy.  */
-      type = BINFO_TYPE (TYPE_BINFO (type));
-      
-      TREE_TYPE (t) = complete_type (type);
-      if (IS_AGGR_TYPE (type))
-	{
-	  BINFO_VTABLE (t) = BINFO_VTABLE (TYPE_BINFO (type));
-	  BINFO_VIRTUALS (t) = BINFO_VIRTUALS (TYPE_BINFO (type));
-	  if (BINFO_BASE_BINFOS (TYPE_BINFO (type)) != NULL_TREE)
-	    BINFO_BASE_BINFOS (t)
-	      = copy_node (BINFO_BASE_BINFOS (TYPE_BINFO (type)));
-	}
-      return t;
+      /* We should never be tsubsting a binfo.  */
+      abort ();
 
     case TREE_VEC:
       /* A vector of template arguments.  */
