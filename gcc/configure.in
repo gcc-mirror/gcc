@@ -2896,7 +2896,7 @@ done
 # FLAGS_TO_PASS so CC="stage1/xgcc -Bstage1/" works.
 # Otherwise, we can use "CC=$(CC)".
 rm -f symtest.tem
-if $symbolic_link symtest1.tem symtest.tem 2>/dev/null
+if $symbolic_link $srcdir/gcc.c symtest.tem 2>/dev/null
 then
 	cc_set_by_configure="\$(CC)"
 	stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
