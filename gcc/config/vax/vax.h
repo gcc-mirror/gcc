@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vax version.
-   Copyright (C) 1987, 88, 91, 93, 94, 95 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1202,6 +1202,21 @@ do { char dstr[30];							\
     if (write_symbols == DBX_DEBUG)				\
       fprintf (FILE, "___vax_%c_doubles:\n", ASM_DOUBLE_CHAR);	\
   } while (0)
+
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.
+	.mask	^m<r2,r3,r4,r5,r6,r7,r8,r9,r10,r11>	#conservative entry mask
+	addl2	$DELTA, 4(ap)	#adjust first argument
+	jmp	FUNCTION+2	#jump beyond FUNCTION's entry mask
+ */
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
+do {						\
+  fprintf (FILE, "\t.word 0x0ffc\n");		\
+  fprintf (FILE, "\taddl2 $%d,4(ap)\n", DELTA);	\
+  fprintf (FILE, "\tjmp ");			\
+  assemble_name (FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION))); \
+  fprintf (FILE, "+2\n");			\
+} while (0)
 
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
