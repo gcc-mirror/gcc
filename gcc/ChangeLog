@@ -1,3 +1,9 @@
+2004-08-13  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/darwin.h (EXTRA_SECTION_FUNCTIONS): Mark the __sel_fixup,
+	__cstring_object and __image_info sections with the no_dead_strip
+	attribute.
+
 2004-08-13  Roger Sayle  <roger@eyesopen.com>
 	    David Billinghurst  <David.Billinghurst@riotinto.com>
 
