@@ -597,6 +597,9 @@ sdbout_symbol (decl, local)
   int regno = -1;
   char *name;
 
+  if (DECL_IGNORED_P (decl))
+    return;
+
   sdbout_one_type (type);
 
   switch (TREE_CODE (decl))
@@ -800,6 +803,9 @@ sdbout_toplevel_data (decl)
      tree decl;
 {
   tree type = TREE_TYPE (decl);
+
+  if (DECL_IGNORED_P (decl))
+    return;
 
   if (! (TREE_CODE (decl) == VAR_DECL
 	 && GET_CODE (DECL_RTL (decl)) == MEM
