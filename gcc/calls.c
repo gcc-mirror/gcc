@@ -1212,6 +1212,16 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 					   args[i].tree_value);
 	      type = build_pointer_type (type);
 	    }
+	  else if (TREE_CODE (args[i].tree_value) == TARGET_EXPR)
+	    {
+	      /* In the V3 C++ ABI, parameters are destroyed in the caller.
+		 We implement this by passing the address of the temporary
+	         rather than expanding it into another allocated slot.  */
+	      args[i].tree_value = build1 (ADDR_EXPR,
+					   build_pointer_type (type),
+					   args[i].tree_value);
+	      type = build_pointer_type (type);
+	    }
 	  else
 	    {
 	      /* We make a copy of the object and pass the address to the

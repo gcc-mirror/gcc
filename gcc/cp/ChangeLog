@@ -1,3 +1,10 @@
+2001-12-18  Jason Merrill  <jason@redhat.com>
+
+	C++ ABI change: destroy value arguments in caller.
+	* semantics.c (genrtl_start_function, genrtl_finish_function): Don't
+	create an extra binding level for the parameters.
+	* decl.c (store_parm_decls): Don't do parameter cleanups.
+
 2001-12-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (build_new_method_call): Use '%#V'.
