@@ -3373,7 +3373,7 @@ package body Sem_Ch13 is
           Specification => Build_Spec,
           Name => New_Reference_To (Subp, Loc));
 
-      if Is_Tagged_Type (Ent) and then not Is_Limited_Type (Ent) then
+      if Is_Tagged_Type (Ent) then
          Set_TSS (Base_Type (Ent), Subp_Id);
       else
          Insert_Action (N, Subp_Decl);
@@ -3451,7 +3451,7 @@ package body Sem_Ch13 is
           Specification => Build_Spec,
           Name => New_Reference_To (Subp, Loc));
 
-      if Is_Tagged_Type (Ent) and then not Is_Limited_Type (Ent) then
+      if Is_Tagged_Type (Ent) then
          Set_TSS (Base_Type (Ent), Subp_Id);
       else
          Insert_Action (N, Subp_Decl);
