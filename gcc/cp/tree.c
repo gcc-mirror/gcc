@@ -2134,7 +2134,23 @@ cp_tree_equal (t1, t2)
 		  TREE_STRING_LENGTH (t1));
 
     case CONSTRUCTOR:
-      abort ();
+      /* We need to do this when determining whether or not two
+	 non-type pointer to member function template arguments
+	 are the same.  */
+      if (!(comptypes (TREE_TYPE (t1), TREE_TYPE (t2), 1)
+	    /* The first operand is RTL.  */
+	    && TREE_OPERAND (t1, 0) == TREE_OPERAND (t2, 0)))
+	return 0;
+      return cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
+
+    case TREE_LIST:
+      cmp = cp_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2));
+      if (cmp <= 0)
+	return cmp;
+      cmp = cp_tree_equal (TREE_VALUE (t1), TREE_VALUE (t2));
+      if (cmp <= 0)
+	return cmp;
+      return cp_tree_equal (TREE_CHAIN (t1), TREE_CHAIN (t2));
 
     case SAVE_EXPR:
       return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));

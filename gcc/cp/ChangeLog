@@ -1,5 +1,7 @@
 1998-05-24  Mark Mitchell  <mark@markmitchell.com>
 
+	* tree.c (cp_tree_equal): Handle pointers to member functions.
+
 	* call.c (maybe_handle_implicit_object): Handle QUAL_CONVs.  Make
 	sure the type of the REF_BIND is a reference type.
 	(maybe_handle_ref_bind, compare_ics): Rename reference_type to
