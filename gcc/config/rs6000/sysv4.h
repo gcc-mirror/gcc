@@ -1104,6 +1104,7 @@ scrti.o%s"
   { "endfile_linux",		ENDFILE_LINUX_SPEC },			\
   { "endfile_solaris",		ENDFILE_SOLARIS_SPEC },			\
   { "endfile_default",		ENDFILE_DEFAULT_SPEC },			\
+  { "link_start",		LINK_START_SPEC },			\
   { "link_start_mvme",		LINK_START_MVME_SPEC },			\
   { "link_start_sim",		LINK_START_SIM_SPEC },			\
   { "link_start_linux",		LINK_START_LINUX_SPEC },		\
