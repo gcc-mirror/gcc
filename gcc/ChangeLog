@@ -1,3 +1,7 @@
+2001-04-12  kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* sh.md (builtin_setjmp_receiver): New expander.
+
 2001-04-12  David Edelsohn  <dje@watson.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): Do not
