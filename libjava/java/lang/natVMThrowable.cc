@@ -44,7 +44,7 @@ details.  */
    arbitrary.  It may be better to configure this.  */
 
 java::lang::VMThrowable *
-java::lang::VMThrowable::fillInStackTrace (java::lang::Throwable* t)
+java::lang::VMThrowable::fillInStackTrace (java::lang::Throwable*)
 {
   if (! trace_enabled)
     return NULL;
