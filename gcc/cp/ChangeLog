@@ -1,3 +1,7 @@
+2000-01-11  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* lex.c (DIR_SEPARATOR): Delete macro.
+
 2000-01-12  Gabriel Dos Reis  <gdr@codesourcery.com>
  
        * decl2.c (lang_decode_option): Handle automatic line wrapping

@@ -48,10 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 extern void yyprint PROTO((FILE *, int, YYSTYPE));
 
 static tree get_time_identifier PROTO((const char *));
