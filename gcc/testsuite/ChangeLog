@@ -1,3 +1,10 @@
+2004-01-23  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* g++.dg/compat/compat.exp: Add LD_LIBRARY_PATH_32/64 for Solaris.
+	* lib/g77.exp: Likewise.
+	* lib/objc.exp: Likewise.
+	* lib/g++.exp: Likewise.
+
 2004-01-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/struct-by-value-2.c: New test.
