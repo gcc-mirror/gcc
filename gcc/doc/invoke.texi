@@ -1,12 +1,12 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001 Free Software Foundation, Inc.
+@c 2000, 2001, 2002 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -430,7 +430,7 @@ in the following sections.
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
 -mnew-mnemonics  -mold-mnemonics @gol
 -mfull-toc   -mminimal-toc  -mno-fop-in-toc  -mno-sum-in-toc @gol
--m64  -m32  -mxl-call  -mno-xl-call  -mthreads  -mpe @gol
+-m64  -m32  -mxl-call  -mno-xl-call  -mpe @gol
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
 -mstring  -mno-string  -mupdate  -mno-update @gol
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align @gol
@@ -439,7 +439,7 @@ in the following sections.
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mcall-aix -mcall-sysv -mcall-netbsd -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
--msdata=@var{opt}  -mvxworks -G @var{num}}
+-msdata=@var{opt}  -mvxworks -G @var{num}  -pthread}
 
 @emph{RT Options}
 @gccoptlist{
@@ -6476,13 +6476,12 @@ allow use of the MQ register; specify this for the Motorola MPC601.
 @itemx -mold-mnemonics
 @opindex mnew-mnemonics
 @opindex mold-mnemonics
-Select which mnemonics to use in the generated assembler code.
-@option{-mnew-mnemonics} requests output that uses the assembler mnemonics
-defined for the PowerPC architecture, while @option{-mold-mnemonics}
-requests the assembler mnemonics defined for the POWER architecture.
-Instructions defined in only one architecture have only one mnemonic;
-GCC uses that mnemonic irrespective of which of these options is
-specified.
+Select which mnemonics to use in the generated assembler code.  With
+@option{-mnew-mnemonics}, GCC uses the assembler mnemonics defined for
+the PowerPC architecture.  With @option{-mold-mnemonics} it uses the
+assembler mnemonics defined for the POWER architecture.  Instructions
+defined in only one architecture have only one mnemonic; GCC uses that
+mnemonic irrespective of which of these options is specified.
 
 GCC defaults to the mnemonics appropriate for the architecture in
 use.  Specifying @option{-mcpu=@var{cpu_type}} sometimes overrides the
@@ -6606,12 +6605,6 @@ stack is inefficient and rarely needed, this option is not enabled by
 default and only is necessary when calling subroutines compiled by AIX
 XL compilers without optimization.
 
-@item -mthreads
-@opindex mthreads
-Support @dfn{AIX Threads}.  Link an application written to use
-@dfn{pthreads} with special libraries and startup code to enable the
-application to run.
-
 @item -mpe
 @opindex mpe
 Support @dfn{IBM RS/6000 SP} @dfn{Parallel Environment} (PE)@.  Link an
@@ -6620,7 +6613,7 @@ enable the application to run.  The system must have PE installed in the
 standard location (@file{/usr/lpp/ppe.poe/}), or the @file{specs} file
 must be overridden with the @option{-specs=} option to specify the
 appropriate directory location.  The Parallel Environment does not
-support threads, so the @option{-mpe} option and the @option{-mthreads}
+support threads, so the @option{-mpe} option and the @option{-pthread}
 option are incompatible.
 
 @item -msoft-float
@@ -6902,6 +6895,11 @@ All modules should be compiled with the same @option{-G @var{num}} value.
 @opindex mno-regnames
 On System V.4 and embedded PowerPC systems do (do not) emit register
 names in the assembly language output using symbolic forms.
+
+@item -pthread
+@opindex pthread
+Adds support for multithreading with the @dfn{pthreads} library.
+This option sets flags for both the preprocessor and linker.
 
 @end table
 
