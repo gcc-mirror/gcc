@@ -1,3 +1,11 @@
+2002-03-13  Jason Merrill  <jason@redhat.com>
+
+	* varasm.c (globalize_decl): New fn.
+	(assemble_start_function): Use it.
+	(asm_emit_uninitialized): Use it.
+	(assemble_alias): Use it.
+	(assemble_variable): Use it.
+
 2002-03-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_target_asm_function_prologue): Revert
