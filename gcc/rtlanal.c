@@ -2862,7 +2862,8 @@ find_first_parameter_load (call_insn, boundary)
 	  break;
 	}
 
-      note_stores (PATTERN (before), parms_set, &parm);
+      if (INSN_P (before))
+        note_stores (PATTERN (before), parms_set, &parm);
     }
   return before;
 }
