@@ -1,5 +1,5 @@
 /* Definitions for SPARC running LynxOS.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "%{mthreads:-D_MULTITHREADED}  \
   %{mposix:-D_POSIX_SOURCE}  \
   %{msystem-v:-I/usr/include_v}  \
-  %{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
+  %(cpp_cpu)"
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
