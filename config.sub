@@ -215,7 +215,7 @@ case $basic_machine in
 	      | alphaev6-* | we32k-* | cydra-* | ns16k-* | pn-* | np1-* \
 	      | xps100-* | clipper-* | orion-* \
 	      | sparclite-* | pdp11-* | sh-* | powerpc-* | powerpcle-* \
-	      | sparc64-* | sparc86x-* | mips64-* | mipsel-* \
+	      | sparc64-* | sparcv9 | sparc86x-* | mips64-* | mipsel-* \
 	      | mips64el-* | mips64orion-* | mips64orionel-*  \
 	      | mipstx39-* | mipstx39el-* \
 	      | f301-*)
