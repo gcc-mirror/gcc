@@ -1,3 +1,8 @@
+2003-05-15  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/invoke.texi (Warning Options): Mark -Wmissing-declarations
+	as a C only option.
+
 2003-05-15  Wolfgang Bangerth <bangerth@dealii.org>
 
 	* doc/bugreport.texi: Remove most of the bug reporting
