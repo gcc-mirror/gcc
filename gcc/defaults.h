@@ -28,11 +28,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_ASCII(MYFILE, MYSTRING, MYLENGTH) \
   do {									      \
     FILE *_hide_asm_out_file = (MYFILE);				      \
-    char *_hide_p = (char *) (MYSTRING);				      \
+    unsigned char *_hide_p = (unsigned char *) (MYSTRING);		      \
     int _hide_thissize = (MYLENGTH);					      \
     {									      \
       FILE *asm_out_file = _hide_asm_out_file;				      \
-      char *p = _hide_p;						      \
+      unsigned char *p = _hide_p;					      \
       int thissize = _hide_thissize;					      \
       int i;								      \
       fprintf (asm_out_file, "\t.ascii \"");				      \
