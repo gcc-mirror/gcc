@@ -1,3 +1,10 @@
+2004-09-27  Michael Matz <matz@suse.de>
+
+	PR bootstrap/17698
+	PR bootstrap/17702
+	* bitmap.h (bmp_iter_single_init, bmp_iter_and_not_init,
+	bmp_iter_and_init): Shift by bit_in_word.
+
 2004-09-27  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* aclocal.m4: Quote m4_includes. Include ../config/gcc-lib-path.m4.
