@@ -169,6 +169,9 @@ STRICT2_WARN = -pedantic -Wno-long-long -Wold-style-definition @WERROR@
 # "extern" tags in header files.
 NOCOMMON_FLAG = @nocommon_flag@
 
+# This is set by --disable-maintainer-mode (default) to "#"
+MAINT = @MAINT@
+
 # These are set by --enable-checking=valgrind.
 RUN_GEN = @valgrind_command@
 VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@

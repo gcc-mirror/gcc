@@ -449,12 +449,15 @@ ada.generated-manpages:
 # tree with the documentation already generated such that "make" will not
 # attempt to rebuild them.
 # 
+# As a compromise this only will execute with --enable-maintainer mode.
+#
 # If gnu make 3.80 is ever made a requirement to build, then this could be
 # avoided using an order-only dependency:
 #
 # $(srcdir)/ada/gnat_ug_unx.texi: \
 #     ada/gnat_ug.texi ada/ug_words | ada/doctools/xgnatug$(build_exeext)
 
+ifndef MAINT
 ada/doctools/xgnatug$(build_exeext): ada/xgnatug.adb
 	-$(MKDIR) ada/doctools
 	cp $^ ada/doctools
@@ -475,6 +478,7 @@ $(srcdir)/ada/gnat_ug_vxw.texi : ada/doctools/xgnatug$(build_exeext) \
 $(srcdir)/ada/gnat_ug_wnt.texi : ada/doctools/xgnatug$(build_exeext) \
 	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
 	ada/doctools/xgnatug wnt $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_wnt.texi
+endif
 
 $(docobjdir)/gnat_ug_unx.info : $(srcdir)/ada/gnat_ug_unx.texi \
 	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi \

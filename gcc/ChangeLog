@@ -1,3 +1,7 @@
+2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in: Define MAINT from --enable-maintainer-mode.
+
 2004-01-14  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* gcc/config/rs6000/rs6000.c (rs6000_stack_info)
