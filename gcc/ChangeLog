@@ -1,3 +1,9 @@
+2004-03-23  Olivier Hainque  <hainque@act-europe.fr>
+
+        * optabs.c (expand_binop): When synthesizing double word rotates
+        from single word shifts, use a new register target if the provided
+        target is not a REG already.
+
 2004-03-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (get_alias_set): Add support for TYPE_REF_CAN_ALIAS_ALL.
