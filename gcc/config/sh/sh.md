@@ -1788,8 +1788,12 @@
   [(set_attr "type" "move,move,pcload,load,store,move,move")])
 
 (define_insn "movsf_ie"
-  [(set (match_operand:SF 0 "general_movdst_operand" "=f,r,f,f,f,m,r,r,m,!r,!f")
-	(match_operand:SF 1 "general_movsrc_operand"  "f,r,G,H,m,f,FQ,m,r,f,r"))]
+  [(set (match_operand:SF 0 "general_movdst_operand"
+	 "=f,r,f,f,?f,f,m,r,r,m,!??r,!??f")
+	(match_operand:SF 1 "general_movsrc_operand"
+	  "f,r,G,H,FQ,m,f,FQ,m,r,f,r"))
+   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X"))]
+
   "TARGET_SH3E
    && (arith_reg_operand (operands[0], SFmode)
        || arith_reg_operand (operands[1], SFmode))"
@@ -1798,6 +1802,7 @@
 	mov	%1,%0
 	fldi0	%0
 	fldi1	%0
+	#
 	fmov.s	%1,%0
 	fmov.s	%1,%0
 	mov.l	%1,%0
@@ -1805,25 +1810,16 @@
 	mov.l	%1,%0
 	flds	%1,fpul\;sts	fpul,%0
 	lds	%1,fpul\;fsts	fpul,%0"
-  [(set_attr "type" "move,move,fp,fp,load,store,pcload,load,store,move,fp")
-   (set_attr "length" "*,*,*,*,*,*,*,*,*,4,4")])
-
-(define_insn "movsf_ieq"
-  [(set (match_operand:SF 0 "general_movdst_operand" "=f")
-	(match_operand:SF 1 "general_movsrc_operand"  "FQ"))
-   (clobber (reg:SI 0))]
-  "TARGET_SH3E
-   && (arith_reg_operand (operands[0], SFmode)
-       || arith_reg_operand (operands[1], SFmode))"
-  "#"
-  [(set_attr "type" "pcload") (set_attr "length" "4")])
+  [(set_attr "type" "move,move,fp,fp,pcload,load,store,pcload,load,store,move,fp")
+   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,4,4")])
 
 (define_split
   [(set (match_operand:SF 0 "general_movdst_operand" "")
 	(match_operand:SF 1 "general_movsrc_operand"  ""))
    (clobber (reg:SI 0))]
   "GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER"
-  [(set (match_dup 0) (match_dup 1))]
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (clobber (scratch:SI))])]
   "
 {
   if (REGNO (operands[0]) >= FIRST_FP_REG && REGNO (operands[0]) <= LAST_FP_REG)
@@ -1841,17 +1837,19 @@
 {
   if (prepare_move_operands (operands, SFmode))
     DONE;
-  if (TARGET_SH3E && GET_CODE (operands[1]) == CONST_DOUBLE
-      && ! fp_zero_operand (operands[1]) && ! fp_one_operand (operands[1])
-      && GET_CODE (operands[0]) == REG
-      && (REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER
-	  || (REGNO (operands[0]) >= FIRST_FP_REG
-	      && REGNO (operands[0]) <= LAST_FP_REG)))
+  if (TARGET_SH3E)
     {
-      emit_insn (gen_movsf_ieq (operands[0], operands[1]));
+      emit_insn (gen_movsf_ie (operands[0], operands[1]));
       DONE;
     }
 }")
+
+(define_expand "reload_insf"
+  [(parallel [(set (match_operand:SF 0 "register_operand" "=f")
+		   (match_operand:SF 1 "immediate_operand" "FQ"))
+	      (clobber (match_operand:SI 2 "register_operand" "=&z"))])]
+  ""
+  "")
 
 ;; ------------------------------------------------------------------------
 ;; Define the real conditional branch instructions.
