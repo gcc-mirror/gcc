@@ -33,16 +33,18 @@ echo
 # is not needed.  This is not quite the same as libgcc1.null, even
 # on a target not using libgcc1-asm.a.
 
-tmp="tmp-$$.c"
-cat > $tmp <<EOF
+if [ "@build_canonical@" = "@target@" ]; then
+  tmp="tmp-$$.c"
+  cat > $tmp <<EOF
 #ifdef __GNUC__
   yes;
 #endif
 EOF
-if $OLDCC -E $tmp | grep yes > /dev/null 2>&1; then
-  LIB1FUNCS=""
+  if $OLDCC -E $tmp | grep yes > /dev/null 2>&1; then
+    LIB1FUNCS=""
+  fi
+  rm -f $tmp
 fi
-rm -f $tmp
 
 
 #
@@ -112,15 +114,15 @@ fpbit_c_dep='$(srcdir)/config/fp-bit.c config.status tsystem.h'
 
 libgcc1_objs=""
 
-case "$LIBGCC1" in
-  libgcc1.null)
+case X"$LIBGCC1" in
+  Xlibgcc1.null | X)
     ;;
 
-  libgcc1.cross)
+  Xlibgcc1.cross)
     echo "You must find a way to make libgcc1 components yourself" 1>&2
     ;;
 
-  libgcc1-asm.a)
+  Xlibgcc1-asm.a)
     for name in $LIB1ASMFUNCS; do
       for ml in $MULTILIBS; do
         dir=`echo ${ml} | sed -e 's/;.*$//'`
@@ -135,7 +137,7 @@ case "$LIBGCC1" in
     done
     ;;
 
-  *)
+  Xlibgcc.a)
     for name in $LIB1FUNCS; do
       out="libgcc/${name}${objext}"
 
@@ -156,6 +158,10 @@ case "$LIBGCC1" in
       emit_oldcc_compile $out $file
       libgcc1_objs="$libgcc1_objs ${name}${objext}"
     done
+    ;;
+  *)
+    echo "I'm confused about libgcc1." 1>&2
+    exit 1
     ;;
 esac
 
