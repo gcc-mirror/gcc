@@ -3587,17 +3587,22 @@ secondary_reload_class (class, mode, in)
 {
   int regno;
 
-#if TARGET_ELF
-  /* We can not copy a symbolic operand directly into anything other than
-     BASE_REGS for TARGET_ELF.  So indicate that a register from BASE_REGS
-     is needed as an intermediate register.  */
-  if (class != BASE_REGS
-      && (GET_CODE (in) == SYMBOL_REF
-	  || GET_CODE (in) == HIGH
-	  || GET_CODE (in) == LABEL_REF
-	  || GET_CODE (in) == CONST))
-    return BASE_REGS;
-#endif
+  if (TARGET_ELF || (DEFAULT_ABI == ABI_DARWIN && flag_pic))
+    {
+      /* We cannot copy a symbolic operand directly into anything
+         other than BASE_REGS for TARGET_ELF.  So indicate that a
+         register from BASE_REGS is needed as an intermediate
+         register.
+         
+	 On Darwin, pic addresses require a load from memory, which
+	 needs a base register.  */
+      if (class != BASE_REGS
+          && (GET_CODE (in) == SYMBOL_REF
+              || GET_CODE (in) == HIGH
+              || GET_CODE (in) == LABEL_REF
+              || GET_CODE (in) == CONST))
+        return BASE_REGS;
+    }
 
   if (GET_CODE (in) == REG)
     {

@@ -1,3 +1,8 @@
+2001-05-18  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (secondary_reload_class): Fix Darwin
+	specific misuse of r0 as a reload address.
+
 Fri May 18 22:42:04 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (combine_simplify_rtx): Clear op0_mode if simplification
