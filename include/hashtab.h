@@ -129,6 +129,12 @@ extern size_t	htab_size	PARAMS ((htab_t));
 extern size_t	htab_elements	PARAMS ((htab_t));
 extern double	htab_collisions	PARAMS ((htab_t));
 
+/* A hash function for pointers.  */
+extern htab_hash htab_hash_pointer;
+
+/* An equality function for pointers.  */
+extern htab_eq htab_eq_pointer;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
