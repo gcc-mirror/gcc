@@ -8062,7 +8062,7 @@ loc_descriptor_from_tree (loc, addressp)
 
 	  /* The way DW_OP_GNU_push_tls_address is specified, we can only
 	     look up addresses of objects in the current module.  */
-	  if (! (*targetm.binds_local_p) (loc))
+	  if (DECL_EXTERNAL (loc))
 	    return 0;
 
 	  rtl = rtl_for_decl_location (loc);

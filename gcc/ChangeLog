@@ -1,3 +1,8 @@
+2002-10-01  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (loc_descriptor_from_tree): Relax requirement
+	for TLS debug info to !DECL_EXTERNAL.
+
 2002-10-01  Matt Thomas  <matt@3am-software.com>
             Jason Thorpe  <thorpej@wasabisystems.com>
 
