@@ -445,6 +445,14 @@ void __cxa_vec_ctor (void *__array_address,
                      void (*__constructor) (void *),
                      void (*__destructor) (void *));
 
+extern "C++"
+void __cxa_vec_cctor (void *dest_array,
+		      void *src_array,
+		      __SIZE_TYPE__ element_count,
+		      __SIZE_TYPE__ element_size,
+		      void (*constructor) (void *, void *),
+		      void (*destructor) (void *));
+ 
 /* destruct array */
 extern "C++"
 void __cxa_vec_dtor (void *__array_address,

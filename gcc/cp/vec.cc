@@ -94,6 +94,35 @@ __cxa_vec_ctor (void *array_address,
     }
 }
 
+/* construct an array by copying */
+
+extern "C++" void
+__cxa_vec_cctor (void *dest_array,
+		 void *src_array,
+		 size_t element_count,
+		 size_t element_size,
+		 void (*constructor) (void *, void *),
+		 void (*destructor) (void *))
+{
+  size_t ix = 0;
+  char *dest_ptr = static_cast <char *> (dest_array);
+  char *src_ptr = static_cast <char *> (src_array);
+
+  try
+    {
+      if (constructor)
+	for (; ix != element_count; 
+	     ix++, src_ptr += element_size, dest_ptr += element_size)
+	  constructor (dest_ptr, src_ptr);
+    }
+  catch (...)
+    {
+      __uncatch_exception ();
+      __cxa_vec_dtor (dest_array, ix, element_size, destructor);
+      throw;
+    }
+}
+
 /* destruct array */
 extern "C++" void
 __cxa_vec_dtor (void *array_address,
