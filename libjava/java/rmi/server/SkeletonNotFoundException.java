@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.rmi.server;
 
 import java.rmi.RemoteException;
@@ -59,7 +60,6 @@ public class SkeletonNotFoundException extends RemoteException
    * Create an exception with the specified message.
    *
    * @param s the message
-   * @deprecated no longer needed
    */
   public SkeletonNotFoundException(String s)
   {
@@ -71,7 +71,6 @@ public class SkeletonNotFoundException extends RemoteException
    *
    * @param s the message
    * @param e the cause
-   * @deprecated no longer needed
    */
   public SkeletonNotFoundException(String s, Exception e)
   {
