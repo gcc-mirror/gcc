@@ -1,3 +1,9 @@
+2005-01-20  Roger Sayle  <roger@eyesopen.com>
+
+	* real.c (real_floor): Don't leave the result uninitialized when
+	mode is VOIDMode, but return the unrounded intermediate value.
+	(real_ceil): Likewise.
+
 2005-01-20  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (insv): Use gen_int_mode.
