@@ -1704,23 +1704,14 @@ pop{l} %0"							\
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE 10
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 23 : 10)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  /* Compute offset from the end of the jmp to the target function.  */	\
-  rtx disp = expand_binop (SImode, sub_optab, FNADDR,			\
-			   plus_constant (TRAMP, 10),			\
-			   NULL_RTX, 1, OPTAB_DIRECT);			\
-  emit_move_insn (gen_rtx_MEM (QImode, TRAMP), GEN_INT (0xb9));		\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 1)), CXT); \
-  emit_move_insn (gen_rtx_MEM (QImode, plus_constant (TRAMP, 5)), GEN_INT (0xe9));\
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 6)), disp); \
-}
+   x86_initialize_trampoline (TRAMP, FNADDR, CXT)
 
 /* Definitions for register eliminations.
 
