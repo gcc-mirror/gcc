@@ -135,9 +135,9 @@ extern int target_flags;
     { "68020", (MASK_68020|MASK_BITFIELD)},				\
     { "c68020", (MASK_68020|MASK_BITFIELD)},				\
     { "68000", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		|MASK_68020|MASK_BITFIELD)},				\
+		|MASK_68020|MASK_BITFIELD|MASK_68881)},			\
     { "c68000", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		|MASK_68020|MASK_BITFIELD)},				\
+		|MASK_68020|MASK_BITFIELD|MASK_68881)},			\
     { "bitfield", MASK_BITFIELD},					\
     { "nobitfield", - MASK_BITFIELD},					\
     { "rtd", MASK_RTD},							\
@@ -169,10 +169,13 @@ extern int target_flags;
     { "5200", (MASK_5200)},						\
     { "68851", 0},							\
     { "no-68851", 0},							\
-    { "68302", - (MASK_5200|MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)}, \
-    { "68332", - (MASK_5200|MASK_68060|MASK_68040|MASK_BITFIELD)},	\
+    { "68302", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+		  |MASK_68020|MASK_BITFIELD|MASK_68881)},		\
+    { "68332", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+		  |MASK_BITFIELD)},					\
     { "68332", MASK_68020},						\
-    { "cpu32", - (MASK_5200|MASK_68060|MASK_68040|MASK_BITFIELD)},	\
+    { "cpu32", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+		  |MASK_BITFIELD)},					\
     { "cpu32", MASK_68020},						\
     { "align-int", MASK_ALIGN_INT },					\
     { "no-align-int", -MASK_ALIGN_INT },				\
