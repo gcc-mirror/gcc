@@ -212,6 +212,8 @@ $!  that should not be compiled.  This allows us to handle special cases.
 $!
 $compile:
 $subroutine
+$on error then goto c_err
+$on control_y then goto c_err
 $open ifile$ 'p1'
 $loop: read ifile$ line/end=c_done
 $!
@@ -246,6 +248,13 @@ $!'f$verify(0)
 $goto loop1
 $!
 $goto loop
+$!
+$! In case of error or abort, go here (In order to close file).
+$!
+$c_err: !'f$verify(0)
+$close ifile$
+$exit %x2c
+$!
 $c_done:
 $close ifile$
 $endsubroutine
