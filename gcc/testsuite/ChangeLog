@@ -1,3 +1,8 @@
+2005-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20157
+	* g++.dg/template/error18.C: New test.
+
 2005-03-13  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/anon-struct-6.c, gcc.dg/array-8.c,

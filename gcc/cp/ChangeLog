@@ -1,3 +1,8 @@
+2005-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20157
+	* pt.c (determine_specialization): Reject non-specializations. 
+
 2005-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/18384, c++/18327
