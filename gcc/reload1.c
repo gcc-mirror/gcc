@@ -371,6 +371,7 @@ static void count_possible_groups	PROTO((int *, enum machine_mode *,
 static int modes_equiv_for_class_p	PROTO((enum machine_mode,
 					       enum machine_mode,
 					       enum reg_class));
+static void delete_caller_save_insns	PROTO((rtx));
 static void spill_failure		PROTO((rtx));
 static int new_spill_reg		PROTO((int, int, int *, int *, int,
 					       FILE *));
@@ -566,10 +567,6 @@ static int something_needs_reloads;
 /* Set during calculate_needs if an insn needs register elimination.  */
 static int something_needs_elimination;
 
-/* Indicate whether caller saves need a spill register.  */
-static enum reg_class caller_save_spill_class = NO_REGS;
-static int caller_save_group_size = 1;
-
 /* For each class, number of reload regs needed in that class.
    This is the maximum over all insns of the needs in that class
    of the individual insn.  */
@@ -644,11 +641,12 @@ reload (first, global, dumpfile)
 
   reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
 
+  /* Make sure that the last insn in the chain
+     is not something that needs reloading.  */
+  emit_note (NULL_PTR, NOTE_INSN_DELETED);
+
   /* Enable find_equiv_reg to distinguish insns made by reload.  */
   reload_first_uid = get_max_uid ();
-
-  caller_save_spill_class = NO_REGS;
-  caller_save_group_size = 1;
 
   for (i = 0; i < N_REG_CLASSES; i++)
     basic_block_needs[i] = 0;
@@ -686,10 +684,6 @@ reload (first, global, dumpfile)
 	if (! call_used_regs[i] && ! fixed_regs[i])
 	  regs_ever_live[i] = 1;
       }
-
-  /* Make sure that the last insn in the chain
-     is not something that needs reloading.  */
-  emit_note (NULL_PTR, NOTE_INSN_DELETED);
 
   /* Find all the pseudo registers that didn't get hard regs
      but do have known equivalent constants or memory slots.
@@ -986,18 +980,26 @@ reload (first, global, dumpfile)
 	      }
 	  }
 
+      /* Insert code to save and restore call-clobbered hard regs
+	 around calls.  Tell if what mode to use so that we will process
+	 those insns in reload_as_needed if we have to.  */
+
+      if (caller_save_needed)
+	setup_save_areas ();
+
+      if (starting_frame_size != get_frame_size ())
+	something_changed = 1;
+
       /* If we allocated another pseudo to the stack, redo elimination
 	 bookkeeping.  */
       if (something_changed)
 	continue;
 
-      /* If caller-saves needs a group, initialize the group to include
-	 the size and mode required for caller-saves.  */
-
-      if (caller_save_group_size > 1)
+      if (caller_save_needed)
 	{
-	  group_mode[(int) caller_save_spill_class] = Pmode;
-	  group_size[(int) caller_save_spill_class] = caller_save_group_size;
+	  save_call_clobbered_regs ();
+	  /* That might have allocated new insn_chain structures.  */
+	  reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
 	}
 
       something_changed |= calculate_needs_all_insns (first, global);
@@ -1009,32 +1011,6 @@ reload (first, global, dumpfile)
 
       if (dumpfile)
 	dump_needs (dumpfile);
-
-      /* If we have caller-saves, set up the save areas and see if caller-save
-	 will need a spill register.  */
-
-      if (caller_save_needed)
-	{
-	  /* Set the offsets for setup_save_areas.  */
-	  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
-	       ep++)
-	    ep->previous_offset = ep->max_offset;
-
-	  if ( ! setup_save_areas (&something_changed)
-	      && caller_save_spill_class  == NO_REGS)
-	    {
-	      /* The class we will need depends on whether the machine
-		 supports the sum of two registers for an address; see
-	      find_address_reloads for details.  */
-
-	      caller_save_spill_class
-		= (double_reg_address_ok ? reload_address_index_reg_class
-		   : reload_address_base_reg_class);
-	      caller_save_group_size
-		= CLASS_MAX_NREGS (caller_save_spill_class, Pmode);
-	      something_changed = 1;
-	    }
-	}
 
       {
 	HARD_REG_SET to_spill;
@@ -1098,6 +1074,9 @@ reload (first, global, dumpfile)
       something_changed |= find_reload_regs (global, dumpfile);
       if (failure)
 	goto failed;
+
+      if (something_changed)
+	delete_caller_save_insns (first);
     }
 
   /* If global-alloc was run, notify it of any register eliminations we have
@@ -1106,15 +1085,6 @@ reload (first, global, dumpfile)
     for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
       if (ep->can_eliminate)
 	mark_elimination (ep->from, ep->to);
-
-  /* Insert code to save and restore call-clobbered hard regs
-     around calls.  Tell if what mode to use so that we will process
-     those insns in reload_as_needed if we have to.  */
-
-  if (caller_save_needed)
-    save_call_clobbered_regs (num_eliminable ? QImode
-			      : caller_save_spill_class != NO_REGS ? HImode
-			      : VOIDmode);
 
   /* If a pseudo has no hard reg, delete the insns that made the equivalence.
      If that insn didn't set the register (i.e., it copied the register to
@@ -1141,9 +1111,7 @@ reload (first, global, dumpfile)
      by generating move instructions to move the must-be-register
      values into or out of the reload registers.  */
 
-  if (something_needs_reloads || something_needs_elimination
-      || (caller_save_needed && num_eliminable)
-      || caller_save_spill_class != NO_REGS)
+  if (something_needs_reloads || something_needs_elimination)
     reload_as_needed (first, global);
 
   /* If we were able to eliminate the frame pointer, show that it is no
@@ -1384,13 +1352,7 @@ calculate_needs_all_insns (first, global)
 	      something_needs_elimination = 1;
 	    }
 
-	  /* If this insn has no reloads, we need not do anything except
-	     in the case of a CALL_INSN when we have caller-saves and
-	     caller-save needs reloads.  */
-
-	  if (n_reloads != 0
-	      || (GET_CODE (insn) == CALL_INSN
-		  && caller_save_spill_class != NO_REGS))
+	  if (n_reloads != 0)
 	    something_changed |= calculate_needs (this_block, insn,
 						  avoid_return_reg, global);
 	}
@@ -1648,75 +1610,6 @@ calculate_needs (this_block, insn, avoid_return_reg, global)
 	+= MAX (MAX (insn_needs.input.groups[i],
 		     insn_needs.output.groups[i]),
 		insn_needs.other_addr.groups[i]);
-    }
-
-  /* If this is a CALL_INSN and caller-saves will need
-     a spill register, act as if the spill register is
-     needed for this insn.   However, the spill register
-     can be used by any reload of this insn, so we only
-     need do something if no need for that class has
-     been recorded.
-
-     The assumption that every CALL_INSN will trigger a
-     caller-save is highly conservative, however, the number
-     of cases where caller-saves will need a spill register but
-     a block containing a CALL_INSN won't need a spill register
-     of that class should be quite rare.
-
-     If a group is needed, the size and mode of the group will
-     have been set up at the beginning of this loop.  */
-
-  if (GET_CODE (insn) == CALL_INSN
-      && caller_save_spill_class != NO_REGS)
-    {
-      int j;
-      /* See if this register would conflict with any reload that
-	 needs a group or any reload that needs a nongroup.  */
-      int nongroup_need = 0;
-      int *caller_save_needs;
-
-      for (j = 0; j < n_reloads; j++)
-	if (reg_classes_intersect_p (caller_save_spill_class,
-				     reload_reg_class[j])
-	    && ((CLASS_MAX_NREGS
-		 (reload_reg_class[j],
-		  (GET_MODE_SIZE (reload_outmode[j])
-		   > GET_MODE_SIZE (reload_inmode[j]))
-		  ? reload_outmode[j] : reload_inmode[j])
-		 > 1)
-		|| reload_nongroup[j]))
-	  {
-	    nongroup_need = 1;
-	    break;
-	  }
-
-      caller_save_needs 
-	= (caller_save_group_size > 1
-	   ? insn_needs.other.groups
-	   : insn_needs.other.regs[nongroup_need]); 
-
-      if (caller_save_needs[(int) caller_save_spill_class] == 0)
-	{
-	  register enum reg_class *p
-	    = reg_class_superclasses[(int) caller_save_spill_class];
-
-	  caller_save_needs[(int) caller_save_spill_class]++;
-
-	  while (*p != LIM_REG_CLASSES)
-	    caller_save_needs[(int) *p++] += 1;
-	}
-
-      /* Show that this basic block will need a register of
-	 this class.  */
-
-      if (global
-	  && ! (basic_block_needs[(int) caller_save_spill_class]
-		[this_block]))
-	{
-	  basic_block_needs[(int) caller_save_spill_class]
-	    [this_block] = 1;
-	  something_changed = 1;
-	}
     }
 
   /* If this insn stores the value of a function call,
@@ -2163,6 +2056,47 @@ dump_needs (dumpfile)
 		 max_groups[i], max_groups[i] == 1 ? "" : "s",
 		 mode_name[(int) group_mode[i]],
 		 reg_class_names[i], INSN_UID (max_groups_insn[i]));
+    }
+}
+
+/* Delete all insns that were inserted by emit_caller_save_insns during
+   this iteration.  */
+static void
+delete_caller_save_insns (first)
+     rtx first;
+{
+  rtx insn = first;
+  int b = -1;
+
+  while (insn != 0)
+    {
+      if (b + 1 != n_basic_blocks
+	  && basic_block_head[b + 1] == insn)
+	b++;
+
+      while (insn != 0 && INSN_UID (insn) >= reload_first_uid)
+	{
+	  rtx next = NEXT_INSN (insn);
+	  rtx prev = PREV_INSN (insn);
+
+	  if (insn == basic_block_head[b])
+	    basic_block_head[b] = next;
+	  if (insn == basic_block_end[b])
+	    basic_block_end[b] = prev;
+
+	  if (next != 0)
+	    PREV_INSN (next) = prev;
+	  if (prev != 0)
+	    NEXT_INSN (prev) = next;
+
+	  insn = next;
+
+	  if (b + 1 != n_basic_blocks
+	      && basic_block_head[b + 1] == insn)
+	    b++;
+	}
+      if (insn != 0)
+	insn = NEXT_INSN (insn);
     }
 }
 

@@ -327,7 +327,7 @@ extern void init_caller_save PROTO((void));
 extern void init_save_areas PROTO((void));
 
 /* Allocate save areas for any hard registers that might need saving.  */
-extern int setup_save_areas PROTO((int *));
+extern void setup_save_areas PROTO((void));
 
 /* Find the places where hard regs are live across calls and save them.  */
-extern void save_call_clobbered_regs PROTO((enum machine_mode));
+extern void save_call_clobbered_regs PROTO((void));

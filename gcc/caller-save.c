@@ -82,14 +82,11 @@ int n_regs_saved;
 
 static void set_reg_live		PROTO((rtx, rtx));
 static void clear_reg_live		PROTO((rtx));
-static void restore_referenced_regs	PROTO((rtx, rtx, enum machine_mode,
-					       int));
-static int insert_restore		PROTO((rtx, int, int,
-					       enum machine_mode, int, int));
-static int insert_save			PROTO((rtx, int, int,
-					       enum machine_mode, int));
+static void restore_referenced_regs	PROTO((rtx, rtx, int));
+static int insert_restore		PROTO((rtx, int, int, int, int));
+static int insert_save			PROTO((rtx, int, int, int));
 static void insert_one_insn		PROTO((rtx, int, enum rtx_code,
-					       enum machine_mode, rtx, int));
+					       rtx, int));
 
 /* Initialize for caller-save.
 
@@ -234,13 +231,6 @@ init_save_areas ()
    overestimate slightly (especially if some of these registers are later
    used as spill registers), but it should not be significant.
 
-   Then perform register elimination in the addresses of the save area
-   locations; return 1 if all eliminated addresses are strictly valid.
-   We assume that our caller has set up the elimination table to the
-   worst (largest) possible offsets.
-
-   Set *PCHANGED to 1 if we had to allocate some memory for the save area.  
-
    Future work:
 
      In the fallback case we should iterate backwards across all possible
@@ -253,14 +243,11 @@ init_save_areas ()
      machine independent since they might be saving non-consecutive 
      registers. (imagine caller-saving d0,d1,a0,a1 on the 68k) */
 
-int
-setup_save_areas (pchanged)
-     int *pchanged;
+void
+setup_save_areas ()
 {
   int i, j, k;
   HARD_REG_SET hard_regs_used;
-  int ok = 1;
-
 
   /* Allocate space in the save area for the largest multi-register
      pseudos first, then work backwards to single register
@@ -334,28 +321,16 @@ setup_save_areas (pchanged)
 		regno_save_mem[i+k][1] 
 		  = adj_offsettable_operand (temp, k * UNITS_PER_WORD);
 	      }
-	    *pchanged = 1;
 	  }
       }
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    for (j = 1; j <= MOVE_MAX / UNITS_PER_WORD; j++)
-      if (regno_save_mem[i][j] != 0)
-	ok &= strict_memory_address_p (GET_MODE (regno_save_mem[i][j]),
-				       XEXP (eliminate_regs (regno_save_mem[i][j], 0, NULL_RTX), 0));
-
-  return ok;
+  return;
 }
 
-/* Find the places where hard regs are live across calls and save them.
-
-   INSN_MODE is the mode to assign to any insns that we add.  This is used
-   by reload to determine whether or not reloads or register eliminations
-   need be done on these insns.  */
+/* Find the places where hard regs are live across calls and save them.  */
 
 void
-save_call_clobbered_regs (insn_mode)
-     enum machine_mode insn_mode;
+save_call_clobbered_regs ()
 {
   rtx insn;
   int b;
@@ -403,7 +378,7 @@ save_call_clobbered_regs (insn_mode)
 		 any of them.  We must restore them before the insn if so.  */
 
 	      if (n_regs_saved)
-		restore_referenced_regs (PATTERN (insn), insn, insn_mode, b);
+		restore_referenced_regs (PATTERN (insn), insn, b);
 
 	      /* NB: the normal procedure is to first enliven any
 		 registers set by insn, then deaden any registers that
@@ -453,7 +428,7 @@ save_call_clobbered_regs (insn_mode)
 			/* It must not be set by this instruction.  */
 		        && ! TEST_HARD_REG_BIT (this_call_sets, regno)
 		        && ! TEST_HARD_REG_BIT (hard_regs_saved, regno))
-		      regno += insert_save (insn, 1, regno, insn_mode, b);
+		      regno += insert_save (insn, 1, regno, b);
 
 		  /* Put the information for this CALL_INSN on top of what
 		     we already had.  */
@@ -493,7 +468,7 @@ save_call_clobbered_regs (insn_mode)
 	for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	  if (TEST_HARD_REG_BIT (hard_regs_need_restore, regno))
 	    regno += insert_restore (insn, GET_CODE (insn) == JUMP_INSN,
-				     regno, insn_mode,
+				     regno,
 				     MOVE_MAX / UNITS_PER_WORD, b);
     }
 }
@@ -557,14 +532,13 @@ clear_reg_live (reg)
 }      
 
 /* If any register currently residing in the save area is referenced in X,
-   which is part of INSN, emit code to restore the register in front of INSN.
-   INSN_MODE is the mode to assign to any insns that we add.  */
+   which is part of INSN, emit code to restore the register in front of
+   INSN.  */
 
 static void
-restore_referenced_regs (x, insn, insn_mode, block)
+restore_referenced_regs (x, insn, block)
      rtx x;
      rtx insn;
-     enum machine_mode insn_mode;
      int block;
 {
   enum rtx_code code = GET_CODE (x);
@@ -584,11 +558,11 @@ restore_referenced_regs (x, insn, insn_mode, block)
       if (regno >= FIRST_PSEUDO_REGISTER
 	  && reg_equiv_mem[regno] != 0)
 	restore_referenced_regs (XEXP (reg_equiv_mem[regno], 0),
-				 insn, insn_mode, block);
+				 insn, block);
       else if (regno >= FIRST_PSEUDO_REGISTER
 	       && reg_equiv_address[regno] != 0)
 	restore_referenced_regs (reg_equiv_address[regno],
-				 insn, insn_mode, block);
+				 insn, block);
 
       /* Otherwise if this is a hard register, restore any piece of it that
 	 is currently saved.  */
@@ -603,7 +577,7 @@ restore_referenced_regs (x, insn, insn_mode, block)
 
 	  for (i = regno; i < endregno; i++)
 	    if (TEST_HARD_REG_BIT (hard_regs_need_restore, i))
-	      i += insert_restore (insn, 1, i, insn_mode, saveregs, block);
+	      i += insert_restore (insn, 1, i, saveregs, block);
 	}
 
       return;
@@ -613,18 +587,17 @@ restore_referenced_regs (x, insn, insn_mode, block)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	restore_referenced_regs (XEXP (x, i), insn, insn_mode, block);
+	restore_referenced_regs (XEXP (x, i), insn, block);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  restore_referenced_regs (XVECEXP (x, i, j), insn, insn_mode, block);
+	  restore_referenced_regs (XVECEXP (x, i, j), insn, block);
     }
 }
 
 /* Insert a sequence of insns to restore REGNO.  Place these insns in front
-   of or after INSN (determined by BEFORE_P).  INSN_MODE is the mode
-   to assign to these insns.   MAXRESTORE is the maximum number of registers
-   which should be restored during this call.  It should never be less than
-   1 since we only work with entire registers.
+   of or after INSN (determined by BEFORE_P).   MAXRESTORE is the maximum
+   number of registers which should be restored during this call.  It should
+   never be less than 1 since we only work with entire registers.
 
    Note that we have verified in init_caller_save that we can do this
    with a simple SET, so use it.  Set INSN_CODE to what we save there
@@ -635,11 +608,10 @@ restore_referenced_regs (x, insn, insn_mode, block)
    Return the extra number of registers saved.  */
 
 static int
-insert_restore (insn, before_p, regno, insn_mode, maxrestore, block)
+insert_restore (insn, before_p, regno, maxrestore, block)
      rtx insn;
      int before_p;
      int regno;
-     enum machine_mode insn_mode;
      int maxrestore;
      int block;
 {
@@ -697,7 +669,7 @@ insert_restore (insn, before_p, regno, insn_mode, maxrestore, block)
       break;
     }
 
-  insert_one_insn (insn, before_p, code, insn_mode, pat, block);
+  insert_one_insn (insn, before_p, code, pat, block);
 
   /* Tell our callers how many extra registers we saved/restored */
   return numregs - 1;
@@ -705,11 +677,10 @@ insert_restore (insn, before_p, regno, insn_mode, maxrestore, block)
 
 /* Like insert_restore, but emit code to save REGNO.  */
 static int
-insert_save (insn, before_p, regno, insn_mode, block)
+insert_save (insn, before_p, regno, block)
      rtx insn;
      int before_p;
      int regno;
-     enum machine_mode insn_mode;
      int block;
 {
   rtx pat = NULL_RTX;
@@ -767,20 +738,18 @@ insert_save (insn, before_p, regno, insn_mode, block)
       break;
     }
 
-  insert_one_insn (insn, before_p, code, insn_mode, pat, block);
+  insert_one_insn (insn, before_p, code, pat, block);
 
   /* Tell our callers how many extra registers we saved/restored */
   return numregs - 1;
 }
 
-/* Emit one insn, set the code and mode, and update basic block
-   boundaries.  */
+/* Emit one insn, set the code, and update basic block boundaries.  */
 static void
-insert_one_insn (insn, before_p, code, mode, pat, block)
+insert_one_insn (insn, before_p, code, pat, block)
      rtx insn;
      int before_p;
      enum rtx_code code;
-     enum machine_mode mode;
      rtx pat;
      int block;
 {
@@ -811,7 +780,6 @@ insert_one_insn (insn, before_p, code, mode, pat, block)
       if (insert_point == basic_block_end[block])
 	basic_block_end[block] = new;
     }
-    
-  PUT_MODE (new, mode);
+
   INSN_CODE (new) = code;
 }
