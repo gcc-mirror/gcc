@@ -1670,7 +1670,7 @@ pushdecl (x)
 
       if (TREE_CODE (x) == TYPE_DECL)
         {
-          if (DECL_SOURCE_LINE (x) == 0 || !flag_gen_aux_info)
+          if (DECL_SOURCE_LINE (x) == 0)
             {
 	      if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	        TYPE_NAME (TREE_TYPE (x)) = x;
