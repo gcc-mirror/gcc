@@ -33,22 +33,46 @@
  *  executable file might be covered by the GNU General Public License.
  */ 
 
+/* Some 32/64 macros, donated from /usr/include/architecture/ppc . */
+
+#if defined(__ppc64__)
+#define MODE_CHOICE(x, y) y
+#else
+#define MODE_CHOICE(x, y) x
+#endif
+
+#define cmpg    MODE_CHOICE(cmpw, cmpd)
+#define lg      MODE_CHOICE(lwz, ld)
+#define stg     MODE_CHOICE(stw, std)
+#define lgx     MODE_CHOICE(lwzx, ldx)
+#define stgx    MODE_CHOICE(stwx, stdx)
+#define lgu     MODE_CHOICE(lwzu, ldu)
+#define stgu    MODE_CHOICE(stwu, stdu)
+#define lgux    MODE_CHOICE(lwzux, ldux)
+#define stgux   MODE_CHOICE(stwux, stdux)
+#define lgwa    MODE_CHOICE(lwz, lwa)
+
+#define g_long  MODE_CHOICE(long, quad)         /* usage is ".g_long" */
+
+#define GPR_BYTES       MODE_CHOICE(4,8)        /* size of a GPR in bytes */
+#define LOG2_GPR_BYTES  MODE_CHOICE(2,3)        /* log2(GPR_BYTES) */
+
 /* Set up trampolines.  */
 
 .text
-	.align	2
+	.align	LOG2_GPR_BYTES
 Ltrampoline_initial:
 	mflr	r0
 	bl	1f
 Lfunc = .-Ltrampoline_initial
-	.long	0		/* will be replaced with function address */
+	.g_long	0		/* will be replaced with function address */
 Lchain = .-Ltrampoline_initial
-	.long	0		/* will be replaced with static chain */
+	.g_long	0		/* will be replaced with static chain */
 1:	mflr	r11
-	lwz	r12,0(r11)	/* function address */
+	lg	r12,0(r11)	/* function address */
 	mtlr	r0
 	mtctr	r12
-	lwz	r11,4(r11)	/* static chain */
+	lg	r11,GPR_BYTES(r11)	/* static chain */
 	bctr
 
 trampoline_size = .-Ltrampoline_initial
@@ -65,12 +89,12 @@ ___trampoline_setup:
 LCF0:
         mflr	r11
         addis	r7,r11,ha16(LTRAMP-LCF0)
-	lwz	r7,lo16(LTRAMP-LCF0)(r7)
-	subi	r7,r7,4
+	lg	r7,lo16(LTRAMP-LCF0)(r7)
+	subi	r7,r7,GPR_BYTES
 	li	r8,trampoline_size	/* verify trampoline big enough */
-	cmpw	cr1,r8,r4
-	srwi	r4,r4,2		/* # words to move */
-	addi	r9,r3,-4	/* adjust pointer for lwzu */
+	cmpg	cr1,r8,r4
+	srwi	r4,r4,2			/* # words to move (insns always 4-byte) */
+	addi	r9,r3,-GPR_BYTES	/* adjust pointer for lgu */
 	mtctr	r4
 	blt	cr1,Labort
 
@@ -78,13 +102,13 @@ LCF0:
 
 	/* Copy the instructions to the stack */
 Lmove:
-	lwzu	r10,4(r7)
-	stwu	r10,4(r9)
+	lgu	r10,GPR_BYTES(r7)
+	stgu	r10,GPR_BYTES(r9)
 	bdnz	Lmove
 
 	/* Store correct function and static chain */
-	stw	r5,Lfunc(r3)
-	stw	r6,Lchain(r3)
+	stg	r5,Lfunc(r3)
+	stg	r6,Lchain(r3)
 
 	/* Now flush both caches */
 	mtctr	r4
@@ -113,23 +137,19 @@ L0$_abort:
         mflr r11
         addis r11,r11,ha16(L_abort$lazy_ptr-L0$_abort)
         mtlr r0
-	lwzu r12,lo16(L_abort$lazy_ptr-L0$_abort)(r11)
+	lgu r12,lo16(L_abort$lazy_ptr-L0$_abort)(r11)
         mtctr r12
         bctr
 .data
 .lazy_symbol_pointer
 L_abort$lazy_ptr:
         .indirect_symbol _abort
-#ifdef __ppc64__
-	.quad	dyld_stub_binding_helper
-#else
-	.long	dyld_stub_binding_helper
-#endif
+	.g_long	dyld_stub_binding_helper
 #else
 	bl	_abort
 #endif
 .data
-	.align 2
+	.align LOG2_GPR_BYTES
 LTRAMP:
-	.long Ltrampoline_initial
+	.g_long Ltrampoline_initial
 
