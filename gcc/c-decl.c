@@ -4496,7 +4496,7 @@ grokparms (parms_info, funcdef_flag)
 	    }
 
       /* Allocate the list of types the way we allocate a type.  */
-      if (allocation_temporary_p ())
+      if (first_parm && ! TREE_PERMANENT (first_parm))
 	{
 	  /* Construct a copy of the list of types
 	     on the saveable obstack.  */
