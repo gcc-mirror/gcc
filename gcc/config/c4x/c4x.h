@@ -37,7 +37,7 @@
 
 #define LD_PROG "c4x-ld"
 
-/* Define assembler options */
+/* Define assembler options.  */
 
 #define ASM_SPEC "\
 %{!mcpu=30:%{!mcpu=31:%{!mcpu=32:%{!mcpu=40:%{!mcpu=44:\
@@ -57,7 +57,7 @@
 %{mbig:-b} %{msmall:-s} \
 %{!msmall:%{!mbig:-b}}"
 
-/* Define linker options */
+/* Define linker options.  */
 
 #define LINK_SPEC "\
 %{m30:--architecture c3x} \
@@ -88,43 +88,11 @@
 %{!msmall:%{!mbig:-D_BIGMODEL }} \
 %{finline-functions:-D_INLINE }"
 
-/* Specify the startup file to link with.  */
-
-#define STARTFILE_SPEC "\
-%{!mmemparm:%{m30:%{msmall:crt0_3sr%O%s} %{!msmall:crt0_3br%O%s}}} \
-%{mmemparm:%{m30:%{msmall:crt0_3sm%O%s} %{!msmall:crt0_3bm%O%s}}} \
-%{!mmemparm:%{m31:%{msmall:crt0_3sr%O%s} %{!msmall:crt0_3br%O%s}}} \
-%{mmemparm:%{m31:%{msmall:crt0_3sm%O%s} %{!msmall:crt0_3bm%O%s}}} \
-%{!mmemparm:%{m32:%{msmall:crt0_3sr%O%s} %{!msmall:crt0_3br%O%s}}} \
-%{mmemparm:%{m32:%{msmall:crt0_3sm%O%s} %{!msmall:crt0_3bm%O%s}}} \
-%{!mmemparm:%{mcpu=30:%{msmall:crt0_3sr%O%s} %{!msmall:crt0_3br%O%s}}} \
-%{mmemparm:%{mcpu=30:%{msmall:crt0_3sm%O%s} %{!msmall:crt0_3bm%O%s}}} \
-%{!mmemparm:%{mcpu=31:%{msmall:crt0_3sr%O%s} %{!msmall:crt0_3br%O%s}}} \
-%{mmemparm:%{mcpu=31:%{msmall:crt0_3sm%O%s} %{!msmall:crt0_3bm%O%s}}} \
-%{!mmemparm:%{mcpu=32:%{msmall:crt0_3sr%O%s} %{!msmall:crt0_3br%O%s}}} \
-%{mmemparm:%{mcpu=32:%{msmall:crt0_3sm%O%s} %{!msmall:crt0_3bm%O%s}}} \
-%{!mmemparm:%{m40:%{msmall:crt0_4sr%O%s} %{!msmall:crt0_4br%O%s}}} \
-%{mmemparm:%{m40:%{msmall:crt0_4sm%O%s} %{!msmall:crt0_4bm%O%s}}} \
-%{!mmemparm:%{m44:%{msmall:crt0_4sr%O%s} %{!msmall:crt0_4br%O%s}}} \
-%{mmemparm:%{m44:%{msmall:crt0_4sm%O%s} %{!msmall:crt0_4bm%O%s}}} \
-%{!mmemparm:%{mcpu=40:%{msmall:crt0_4sr%O%s} %{!msmall:crt0_4br%O%s}}} \
-%{mmemparm:%{mcpu=40:%{msmall:crt0_4sm%O%s} %{!msmall:crt0_4bm%O%s}}} \
-%{!mmemparm:%{mcpu=44:%{msmall:crt0_4sr%O%s} %{!msmall:crt0_4br%O%s}}} \
-%{mmemparm:%{mcpu=44:%{msmall:crt0_4sm%O%s} %{!msmall:crt0_4bm%O%s}}} \
-%{!mmemparm:%{!m30:%{!m31:%{!m32:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32: \
-  %{!mcpu=40:%{!mcpu=44:%{!m40:%{!m44:%{msmall:crt0_4sr%O%s}}}}}}}}}}}} \
-%{mmemparm:%{!m30:%{!m31:%{!m32:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32: \
-  %{!mcpu=40:%{!mcpu=44:%{!m40:%{!m44:%{msmall:crt0_4sm%O%s}}}}}}}}}}}} \
-%{!mmemparm:%{!m30:%{!m31:%{!m32:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32: \
-  %{!mcpu=40:%{!mcpu=44:%{!m40:%{!m44:%{!msmall:crt0_4br%O%s}}}}}}}}}}}} \
-%{mmemparm:%{!m30:%{!m31:%{!m32:%{!mcpu=30:%{!mcpu=31:%{!mcpu=32: \
-  %{!mcpu=40:%{!mcpu=44:%{!m40:%{!m44:%{!msmall:crt0_4bm%O%s}}}}}}}}}}}}"
-
-/* Specify the end file to link with */
+/* Specify the end file to link with.  */
 
 #define ENDFILE_SPEC ""
 
-/* Target compilation option flags */
+/* Target compilation option flags.  */
 
 #define SMALL_MEMORY_FLAG   0x0000001 /* small memory model */
 #define MPYI_FLAG           0x0000002 /* use 24-bit MPYI for C3x */
