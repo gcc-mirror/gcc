@@ -64,3 +64,29 @@ gen_stdcall_suffix (decl)
   return IDENTIFIER_POINTER (get_identifier (newsym));
 }
 
+/* Cover function for UNIQUE_SECTION.  */
+
+tree
+i386_pe_unique_section (decl)
+     tree decl;
+{
+  int len;
+  char *name,*string,*prefix;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  /* The object is put in, for example, section .text$foo.
+     The linker will then ultimately place them in .text
+     (everything from the $ on is stripped).  */
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    prefix = ".text$";
+  else if (TREE_READONLY (decl))
+    prefix = ".rdata$";
+  else
+    prefix = ".data$";
+  len = strlen (name) + strlen (prefix);
+  string = alloca (len + 1);
+  sprintf (string, "%s%s", prefix, name);
+
+  return build_string (len, string);
+}

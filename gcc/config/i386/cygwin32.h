@@ -158,14 +158,6 @@ while (0)
 #define TARGET_DEFAULT \
    (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE) 
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
-   define this macro in such cases.  */
-
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
-  fprintf (FILE, "\t.section %s\n", NAME)
-
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
@@ -173,3 +165,36 @@ while (0)
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
     if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
+
+/* For objects going into their own sections, a C expression of name of the
+   section, expressed as a STRING_CST node, to put DECL into.  The
+   STRING_CST node must be allocated in the saveable obstack.  Function
+   build_string can be used to do this.  Define this macro if the name of a
+   symbol cannot be used as its section name.  */
+extern union tree_node *i386_pe_unique_section ();
+#define UNIQUE_SECTION(DECL) i386_pe_unique_section (DECL)
+
+#define MAKE_DECL_ONE_ONLY(DECL)			\
+  DECL_SECTION_NAME (DECL) = UNIQUE_SECTION (DECL)
+
+/* A C statement to output something to the assembler file to switch to section
+   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
+   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
+   define this macro in such cases.  */
+#undef ASM_OUTPUT_SECTION_NAME
+#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME) \
+do {								\
+  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		\
+    fprintf (STREAM, "\t.section %s,\"x\"\n", (NAME));		\
+  else if ((DECL) && TREE_READONLY (DECL))			\
+    fprintf (STREAM, "\t.section %s,\"\"\n", (NAME));		\
+  else								\
+    fprintf (STREAM, "\t.section %s,\"w\"\n", (NAME));		\
+  /* Functions may have been compiled at various levels of	\
+     optimization so we can't use `same_size' here.  Instead,	\
+     have the linker pick one.  */				\
+  if ((DECL) && DECL_ONE_ONLY (DECL))				\
+    fprintf (STREAM, "\t.linkonce %s\n",			\
+	     TREE_CODE (DECL) == FUNCTION_DECL			\
+	     ? "discard" : "same_size");			\
+} while (0)
