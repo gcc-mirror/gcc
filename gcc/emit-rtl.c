@@ -1568,7 +1568,6 @@ reset_used_flags (x)
   register int i, j;
   register enum rtx_code code;
   register char *format_ptr;
-  int copied = 0;
 
   if (x == 0)
     return;
@@ -2921,7 +2920,6 @@ gen_sequence ()
 {
   rtx result;
   rtx tem;
-  rtvec newvec;
   int i;
   int len;
 
