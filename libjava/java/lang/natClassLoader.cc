@@ -261,7 +261,6 @@ _Jv_PrepareCompiledClass(jclass klass)
 	  pool->data[index].clazz = found;
 	  pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
 	}
-	    
       else if (pool->tags[index] == JV_CONSTANT_String)
 	{
 	  jstring str;
@@ -269,6 +268,24 @@ _Jv_PrepareCompiledClass(jclass klass)
 	  pool->data[index].o = str;
 	  pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
 	}
+    }
+
+  jfieldID f = JvGetFirstStaticField (klass);
+  for (int n = JvNumStaticFields (klass); n > 0; --n)
+    {
+      int mod = f->getModifiers ();
+      // Maybe the compiler should mark these with
+      // _Jv_FIELD_CONSTANT_VALUE?  For now we just know that this
+      // only happens for constant strings.
+      if (f->getClass () == &StringClass
+	  && java::lang::reflect::Modifier::isStatic (mod)
+	  && java::lang::reflect::Modifier::isFinal (mod))
+	{
+	  jstring *strp = (jstring *) f->u.addr;
+	  if (*strp)
+	    *strp = _Jv_NewStringUtf8Const ((_Jv_Utf8Const *) *strp);
+	}
+      f = f->getNextField ();
     }
 
   klass->notifyAll ();
