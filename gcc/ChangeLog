@@ -1,3 +1,7 @@
+2000-04-03  Nick Clifton  <nickc@cygnus.com>
+
+	* Makefile.in (diagnostic.o): Depend upon diagnostic.c
+
 2000-04-03  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/linux-elf.h (SUBTARGET_EXTRA_LINK_SPEC): Fix typos.
