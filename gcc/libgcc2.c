@@ -1256,7 +1256,7 @@ __fixdfdi (DFtype a)
 }
 #endif
 
-#ifdef L_fixunssfdi
+#if defined(L_fixunssfdi) && LIBGCC2_HAS_SF_MODE
 DWtype
 __fixunssfDI (SFtype a)
 {
@@ -1320,7 +1320,7 @@ __fixunssfDI (SFtype a)
 }
 #endif
 
-#ifdef L_fixsfdi
+#if defined(L_fixsfdi) && LIBGCC2_HAS_SF_MODE
 DWtype
 __fixsfdi (SFtype a)
 {
@@ -1363,7 +1363,7 @@ __floatdidf (DWtype u)
 }
 #endif
 
-#ifdef L_floatdisf
+#if defined(L_floatdisf) && LIBGCC2_HAS_SF_MODE
 #define DI_SIZE (W_TYPE_SIZE * 2)
 #define SF_SIZE FLT_MANT_DIG
 
@@ -1495,7 +1495,7 @@ __fixunsdfSI (DFtype a)
 }
 #endif
 
-#ifdef L_fixunssfsi
+#if defined(L_fixunssfsi) && LIBGCC2_HAS_SF_MODE
 /* Reenable the normal types, in case limits.h needs them.  */
 #undef char
 #undef short
@@ -1520,7 +1520,7 @@ __fixunssfSI (SFtype a)
 /* Integer power helper used from __builtin_powi for non-constant
    exponents.  */
 
-#if defined(L_powisf2) \
+#if (defined(L_powisf2) && LIBGCC2_HAS_SF_MODE) \
     || (defined(L_powidf2) && LIBGCC2_HAS_DF_MODE) \
     || (defined(L_powixf2) && LIBGCC2_HAS_XF_MODE) \
     || (defined(L_powitf2) && LIBGCC2_HAS_TF_MODE)
@@ -1554,7 +1554,7 @@ NAME (TYPE x, Wtype m)
 
 #endif
 
-#if defined(L_mulsc3) || defined(L_divsc3) \
+#if ((defined(L_mulsc3) || defined(L_divsc3)) && LIBGCC2_HAS_SF_MODE) \
     || ((defined(L_muldc3) || defined(L_divdc3)) && LIBGCC2_HAS_DF_MODE) \
     || ((defined(L_mulxc3) || defined(L_divxc3)) && LIBGCC2_HAS_XF_MODE) \
     || ((defined(L_multc3) || defined(L_divtc3)) && LIBGCC2_HAS_TF_MODE)

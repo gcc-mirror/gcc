@@ -1,3 +1,18 @@
+2005-03-21  Richard Sandiford  <rsandifo@redhat.com>
+
+	* libgcc2.h (LIBGCC2_HAS_SF_MODE): New macro.
+	(LIBGCC2_HAS_DF_MODE, LIBGCC2_HAS_TF_MODE, LIBGCC2_HAS_XF_MODE): Make
+	the defaults false if BITS_PER_UNIT != 8.
+	(SFtype, SCtype, __fixsfdi, __floatdisf, __fixunssfSI, __fixunssfDI)
+	(__powisf2, __divsc3, __mulsc3): Guard with LIBGCC2_HAS_SF_MODE rather
+	than BITS_PER_UNIT != 8.
+	(L_fixdfdi, L_fixsfdi, L_fixtfdi, L_fixunsdfdi, L_fixunsdfsi)
+	(L_fixunssfdi, L_fixunssfsi, L_fixunstfdi, L_fixunsxfdi, L_fixunsxfsi)
+	(L_fixxfdi, L_floatdidf, L_floatdisf, L_floatditf, L_floatdixf): Remove
+	#undefs.
+	* libgcc2.c (__fixunssfDI, __fixsfdi, __floatdisf, __fixunssfSI)
+	(__powisf2, __divsc3, __mulsc3): Guard with LIBGCC2_HAS_SF_MODE.
+
 2005-03-20  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	PR target/18551
