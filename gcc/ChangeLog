@@ -1,3 +1,7 @@
+2004-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("divmoddisi3"): Fix incorrect mode.
+
 2004-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.h (PIC_OFFSET_TABLE_REGNUM): Define to INVALID_REGNUM when not
