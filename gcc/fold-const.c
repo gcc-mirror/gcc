@@ -7038,20 +7038,16 @@ fold_binary (tree expr)
   /* WINS will be nonzero when the switch is done
      if all operands are constant.  */
   int wins = 1;
-  int i;
 
   gcc_assert (IS_EXPR_CODE_CLASS (kind)
 	      && TREE_CODE_LENGTH (code) == 2);
 
-  op0 = TREE_OPERAND (t, 0);
-  op1 = TREE_OPERAND (t, 1);
-  for (i = 0; i < 2; i++)
-    {
-      tree op = TREE_OPERAND (t, i);
-      tree subop;
+  arg0 = op0 = TREE_OPERAND (t, 0);
+  arg1 = op1 = TREE_OPERAND (t, 1);
 
-      if (op == 0)
-	continue;		/* Valid for CALL_EXPR, at least.  */
+  if (arg0)
+    {
+      tree subop;
 
       /* Strip any conversions that don't change the mode.  This is
 	 safe for every expression, except for a comparison expression
@@ -7065,14 +7061,14 @@ fold_binary (tree expr)
 	 cases, the appropriate type conversions should be put back in
 	 the tree that will get out of the constant folder.  */
       if (kind == tcc_comparison)
-	STRIP_SIGN_NOPS (op);
+	STRIP_SIGN_NOPS (arg0);
       else
-	STRIP_NOPS (op);
+	STRIP_NOPS (arg0);
 
-      if (TREE_CODE (op) == COMPLEX_CST)
-	subop = TREE_REALPART (op);
+      if (TREE_CODE (arg0) == COMPLEX_CST)
+	subop = TREE_REALPART (arg0);
       else
-	subop = op;
+	subop = arg0;
 
       if (TREE_CODE (subop) != INTEGER_CST
 	  && TREE_CODE (subop) != REAL_CST)
@@ -7080,11 +7076,39 @@ fold_binary (tree expr)
 	   static var addresses are constant but we can't
 	   do arithmetic on them.  */
 	wins = 0;
+    }
 
-      if (i == 0)
-	arg0 = op;
-      else if (i == 1)
-	arg1 = op;
+  if (arg1)
+    {
+      tree subop;
+
+      /* Strip any conversions that don't change the mode.  This is
+	 safe for every expression, except for a comparison expression
+	 because its signedness is derived from its operands.  So, in
+	 the latter case, only strip conversions that don't change the
+	 signedness.
+
+	 Note that this is done as an internal manipulation within the
+	 constant folder, in order to find the simplest representation
+	 of the arguments so that their form can be studied.  In any
+	 cases, the appropriate type conversions should be put back in
+	 the tree that will get out of the constant folder.  */
+      if (kind == tcc_comparison)
+	STRIP_SIGN_NOPS (arg1);
+      else
+	STRIP_NOPS (arg1);
+
+      if (TREE_CODE (arg1) == COMPLEX_CST)
+	subop = TREE_REALPART (arg1);
+      else
+	subop = arg1;
+
+      if (TREE_CODE (subop) != INTEGER_CST
+	  && TREE_CODE (subop) != REAL_CST)
+	/* Note that TREE_CONSTANT isn't enough:
+	   static var addresses are constant but we can't
+	   do arithmetic on them.  */
+	wins = 0;
     }
 
   /* If this is a commutative operation, and ARG0 is a constant, move it

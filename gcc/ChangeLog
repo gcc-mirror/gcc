@@ -2,6 +2,9 @@
 
 	* fold-const.c (fold_binary): Remove handling of RANGE_EXPR.
 
+	* fold-const.c (fold_binary): Unroll the very first "for"
+	loop.
+
 2005-03-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/predicates.md (branch_comparison_operator): Remove
