@@ -3896,21 +3896,6 @@ int valid_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
 }
 
 
-int valid_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
-{
-
-  /* If we are not optimizing then we have to let anything go and let
-     reload fix things up.  instantiate_decl in function.c can produce
-     invalid insns by changing the offset of a memory operand from a
-     valid one into an invalid one, when the second operand is also a
-     memory operand.  The alternative is not to allow two memory
-     operands for an insn when not optimizing.  The problem only rarely
-     occurs, for example with the C-torture program DFcmp.c.  */
-
-  return ! optimize || c4x_valid_operands (code, operands, mode, 0);
-}
-
-
 int
 legitimize_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
 {
