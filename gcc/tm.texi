@@ -4436,6 +4436,21 @@ instructions.  @var{outer_code} is the code of the expression in which
 This macro is optional; do not define it if the default cost assumptions
 are adequate for the target machine.
 
+@findex DEFAULT_RTX_COSTS
+@item DEFAULT_RTX_COSTS (@var{x}, @var{code}, @var{outer_code})
+This macro, if defined, is called for any case not handled by the
+@code{RTX_COSTS} or @code{CONST_COSTS} macros.  This eliminates the need
+to put case labels into the macro, but the code, or any functions it
+calls, must assume that the RTL in @var{x} could be of any type that has
+not already been handled.  The arguments are the same as for
+@code{RTX_COSTS}, and the macro should execute a return statement giving
+the cost of any RTL expressions that it can handle.  The default cost
+calculation is used for any RTL for which this macro does not return a
+value.
+
+This macro is optional; do not define it if the default cost assumptions
+are adequate for the target machine.  
+
 @findex ADDRESS_COST
 @item ADDRESS_COST (@var{address})
 An expression giving the cost of an addressing mode that contains
