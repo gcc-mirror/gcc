@@ -235,44 +235,6 @@ const_section ()							\
    go into the const section.  */
 #define SELECT_RTX_SECTION(MODE,RTX) const_section ()
 
-#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-#define UNIQUE_SECTION_P(DECL)   (DECL_ONE_ONLY (DECL))
-
-#define UNIQUE_SECTION(DECL, RELOC)				\
-  do								\
-    {								\
-      int len;							\
-      char *name;						\
-      char *string;						\
-      char *prefix;						\
-								\
-      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
-      								\
-      if (! DECL_ONE_ONLY (DECL))				\
-	{							\
-	  prefix = ".";                                         \
-	  if (TREE_CODE (DECL) == FUNCTION_DECL)		\
-	    prefix = ".text.";					\
-	  else if (DECL_READONLY_SECTION (DECL, RELOC))		\
-	    prefix = ".rodata.";				\
-	  else							\
-	    prefix = ".data.";					\
-	}							\
-      else if (TREE_CODE (DECL) == FUNCTION_DECL)		\
-	prefix = ".gnu.linkonce.t.";				\
-      else if (DECL_READONLY_SECTION (DECL, RELOC))		\
-	prefix = ".gnu.linkonce.r.";				\
-      else							\
-	prefix = ".gnu.linkonce.d.";				\
-      								\
-      len = strlen (name) + strlen (prefix);			\
-      string = alloca (len + 1);				\
-      sprintf (string, "%s%s", prefix, name);			\
-      								\
-      DECL_SECTION_NAME (DECL) = build_string (len, string);	\
-    }								\
-  while (0)
-
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
    crtstuff.c and other files know this by defining the following symbols.
