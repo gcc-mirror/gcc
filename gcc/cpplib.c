@@ -478,8 +478,6 @@ copy_rest_of_line (pfile)
 	  /* else fall through */
 	case '-':
 	  c = skip_comment (pfile, c);
-	  if (c == ' ')
-	    return;
 	  break;
 
 	case '\f':
