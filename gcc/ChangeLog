@@ -1,3 +1,10 @@
+2001-09-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/rtl.texi: Mention that besides as a CODE_LABEL, a label can
+	sometimes be represented as a NOTE of type
+	NOTE_INSN_DELETED_LABEL.
+	(Insns): Document NOTE_INSN_DELETED_LABEL.
+
 2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-common.h (tree_dump_index): Add more comments.

@@ -659,7 +659,9 @@ outside the innermost loop containing the insn in which the @code{label_ref}
 was found.
 
 In @code{code_label} expressions, it is 1 if the label may never be deleted.
-This is used for labels which are the target of non-local gotos.
+This is used for labels which are the target of non-local gotos.  Such a
+label that would have been deleted is replaced with a @code{note} of type
+@code{NOTE_INSN_DELETED_LABEL}.
 
 In an RTL dump, this flag is represented as @samp{/s}.
 
@@ -1080,9 +1082,9 @@ Usually that is the only mode for which a symbol is directly valid.
 @findex label_ref
 @item (label_ref @var{label})
 Represents the value of an assembler label for code.  It contains one
-operand, an expression, which must be a @code{code_label} that appears
-in the instruction sequence to identify the place where the label
-should go.
+operand, an expression, which must be a @code{code_label} or a @code{note}
+of type @code{NOTE_INSN_DELETED_LABEL} that appears in the instruction
+sequence to identify the place where the label should go.
 
 The reason for using a distinct expression type for code label
 references is so that jump optimization can distinguish them.
@@ -2625,6 +2627,9 @@ When a @code{code_label} appears in an RTL expression, it normally
 appears within a @code{label_ref} which represents the address of
 the label, as a number.
 
+Besides as a @code{code_label}, a label can also be represented as a
+@code{note} of type @code{NOTE_INSN_DELETED_LABEL}.
+
 @findex LABEL_NUSES
 The field @code{LABEL_NUSES} is only defined once the jump optimization
 phase is completed and contains the number of times this label is
@@ -2667,6 +2672,12 @@ must contain a null pointer):
 Such a note is completely ignorable.  Some passes of the compiler
 delete insns by altering them into notes of this kind.
 
+@findex NOTE_INSN_DELETED_LABEL
+@item NOTE_INSN_DELETED_LABEL
+This marks what used to be a @code{code_label}, but was not used for other
+purposes than taking its address and was transformed to mark that no
+code jumps to it.
+
 @findex NOTE_INSN_BLOCK_BEG
 @findex NOTE_INSN_BLOCK_END
 @item NOTE_INSN_BLOCK_BEG
@@ -2681,7 +2692,8 @@ of debugging information.
 @itemx NOTE_INSN_EH_REGION_END
 These types of notes indicate the position of the beginning and end of a
 level of scoping for exception handling.  @code{NOTE_BLOCK_NUMBER}
-identifies which @code{CODE_LABEL} is associated with the given region.
+identifies which @code{CODE_LABEL} or @code{note} of type
+@code{NOTE_INSN_DELETED_LABEL} is associated with the given region.
 
 @findex NOTE_INSN_LOOP_BEG
 @findex NOTE_INSN_LOOP_END
@@ -2876,7 +2888,8 @@ last insns, respectively.
 
 @findex REG_LABEL
 @item REG_LABEL
-This insn uses @var{op}, a @code{code_label}, but is not a
+This insn uses @var{op}, a @code{code_label} or a @code{note} of type
+@code{NOTE_INSN_DELETED_LABEL}, but is not a
 @code{jump_insn}, or it is a @code{jump_insn} that required the label to
 be held in a register.  The presence of this note allows jump
 optimization to be aware that @var{op} is, in fact, being used, and flow
