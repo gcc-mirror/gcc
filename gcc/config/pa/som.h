@@ -281,7 +281,14 @@ while (0)
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE) \
-do { fputs ("\t.SPACE $PRIVATE$\n\
+do {  \
+     if (TARGET_PA_20) \
+       fputs("\t.LEVEL 2.0\n", FILE); \
+     else if (TARGET_PA_11) \
+       fputs("\t.LEVEL 1.1\n", FILE); \
+     else \
+       fputs("\t.LEVEL 1.0\n", FILE); \
+     fputs ("\t.SPACE $PRIVATE$\n\
 \t.SUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31\n\
 \t.SUBSPA $BSS$,QUAD=1,ALIGN=8,ACCESS=31,ZERO,SORT=82\n\
 \t.SPACE $TEXT$\n\
