@@ -1,3 +1,8 @@
+Tue Feb 13 07:52:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.c (function_value): Treat all non-record
+	aggregate types like used to treat UNION_TYPE.
+
 2001-02-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD): New macro.
