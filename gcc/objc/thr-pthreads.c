@@ -183,14 +183,14 @@ objc_mutex_allocate(void)
 {
   _objc_mutex_t mutex;
     
-  if (!(mutex = (_objc_mutex_t)__objc_xmalloc(sizeof(struct _objc_mutex))))
+  if (!(mutex = (_objc_mutex_t) objc_malloc(sizeof(struct _objc_mutex))))
     return NULL;                            /* Abort if malloc failed.  */
 
   /* Create PCThread mutex */
   if ( pthread_mutex_init(&(mutex->mutex), NULL) )
     {
       /* Failed */
-      free(mutex);
+      objc_free(mutex);
       return NULL;
     }
 
@@ -218,7 +218,7 @@ objc_mutex_deallocate(_objc_mutex_t mutex)
   /* Destroy PCThread mutex */
   pthread_mutex_destroy(&(mutex->mutex));
 
-  free(mutex);                                /* Free memory.             */
+  objc_free(mutex);                           /* Free memory.             */
   return depth;                               /* Return last depth.       */
 }
 

@@ -191,14 +191,14 @@ objc_mutex_allocate(void)
     _objc_mutex_t       mutex;
     int                 err = 0;
     
-    if (!(mutex = (_objc_mutex_t)__objc_xmalloc(sizeof(struct _objc_mutex))))
+    if (!(mutex = (_objc_mutex_t) objc_malloc(sizeof(struct _objc_mutex))))
         return NULL;                            /* Abort if malloc failed.  */
     
     if (!(mutex->lock = usnewlock(__objc_shared_arena_handle)))
         err = -1;
     
     if (err != 0) {                             /* System init failed?      */
-        free(mutex);                            /* Yes, free local memory.  */
+        objc_free(mutex);                       /* Yes, free local memory.  */
         return NULL;                            /* Abort.                   */
     }
     mutex->owner = NULL;                        /* No owner.                */
@@ -224,7 +224,7 @@ objc_mutex_deallocate(_objc_mutex_t mutex)
     
     usfreelock(mutex->lock, __objc_shared_arena_handle); /* Free IRIX lock. */
     
-    free(mutex);                                /* Free memory.             */
+    objc_free(mutex);                           /* Free memory.             */
     return depth;                               /* Return last depth.       */
 }
 

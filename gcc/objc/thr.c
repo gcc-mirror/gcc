@@ -79,7 +79,7 @@ __objc_thread_detach_function(struct __objc_thread_start_state *istate)
         id      object   = istate->object;
         id      argument = istate->argument;
 
-        free(istate);
+        objc_free(istate);
 
 	/* Clear out the thread local storage */
 	objc_thread_set_data(NULL);
@@ -117,7 +117,7 @@ objc_thread_detach(SEL selector, id object, id argument)
   _objc_thread_t        thread_id = NULL;     /* Detached thread id.      */
 
   if (!(istate = (struct __objc_thread_start_state *)
-	__objc_xmalloc(sizeof(*istate))))     /* Can we allocate state?   */
+	objc_malloc(sizeof(*istate))))     /* Can we allocate state?   */
     return NULL;                              /* No, abort.               */
 
   istate->selector = selector;                /* Initialize the thread's  */
@@ -126,7 +126,7 @@ objc_thread_detach(SEL selector, id object, id argument)
 
   if ((thread_id = objc_thread_create((void *)__objc_thread_detach_function,
                                       istate)) == NULL) {
-    free(istate);                           /* Release state if failed.   */
+    objc_free(istate);                       /* Release state if failed.   */
     return thread_id;
   }
 

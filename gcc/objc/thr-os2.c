@@ -228,7 +228,7 @@ objc_mutex_allocate(void)
     _objc_mutex_t mutex;
     int         err = 0;
 
-    if (!(mutex = (_objc_mutex_t)__objc_xmalloc(sizeof(struct _objc_mutex))))
+    if (!(mutex = (_objc_mutex_t) objc_malloc(sizeof(struct _objc_mutex))))
         return NULL;                            /* Abort if malloc failed.  */
 
     if (DosCreateMutexSem (NULL,&(mutex->handle),0L,0) > 0) {
@@ -259,7 +259,7 @@ objc_mutex_deallocate(_objc_mutex_t mutex)
 
     DosCloseMutexSem (mutex->handle);
     
-    free(mutex);                                /* Free memory.             */
+    objc_free(mutex);                           /* Free memory.             */
     return depth;                               /* Return last depth.       */
 }
 

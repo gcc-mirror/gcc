@@ -220,11 +220,11 @@ objc_mutex_allocate(void)
     _objc_mutex_t mutex;
     int         err = 0;
 
-    if (!(mutex = (_objc_mutex_t)__objc_xmalloc(sizeof(struct _objc_mutex))))
+    if (!(mutex = (_objc_mutex_t) objc_malloc(sizeof(struct _objc_mutex))))
         return NULL;                            /* Abort if malloc failed.  */
 
     if ((mutex->handle = CreateMutex(NULL, 0, NULL)) == NULL) {
-        free(mutex);                            /* Failed, free memory.     */
+        objc_free(mutex);                       /* Failed, free memory.     */
         return NULL;                            /* Abort.                   */
     }
     mutex->owner = NULL;                        /* No owner.                */
@@ -250,7 +250,7 @@ objc_mutex_deallocate(_objc_mutex_t mutex)
 
     CloseHandle(mutex->handle);			/* Close Win32 handle.      */
     
-    free(mutex);                                /* Free memory.             */
+    objc_free(mutex);                           /* Free memory.             */
     return depth;                               /* Return last depth.       */
 }
 

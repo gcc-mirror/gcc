@@ -63,7 +63,7 @@ sarray_remove_garbage(void)
 
   while (vp) {
     np = *vp;
-    free(vp);
+    objc_free(vp);
     vp = np;
   }
   
@@ -80,7 +80,7 @@ sarray_free_garbage(void *vp)
   objc_mutex_lock(__objc_runtime_mutex);
   
   if (__objc_runtime_threads_alive == 1) {
-    free(vp);
+    objc_free(vp);
     if (first_free_data)
       sarray_remove_garbage();
   }
@@ -145,7 +145,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
   if ((*the_index) == array->empty_index) {
 
     /* The index was previously empty, allocate a new */
-    new_index = (struct sindex*)__objc_xmalloc(sizeof(struct sindex));
+    new_index = (struct sindex*)objc_malloc(sizeof(struct sindex));
     memcpy(new_index, array->empty_index, sizeof(struct sindex));
     new_index->version.version = array->version.version;
     *the_index = new_index;                     /* Prepared for install. */
@@ -156,7 +156,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
 
     /* This index must be lazy copied */
     struct sindex* old_index = *the_index;
-    new_index = (struct sindex*)__objc_xmalloc(sizeof(struct sindex));
+    new_index = (struct sindex*)objc_malloc(sizeof(struct sindex));
     memcpy( new_index, old_index, sizeof(struct sindex));
     new_index->version.version = array->version.version;
     *the_index = new_index;                     /* Prepared for install. */
@@ -173,7 +173,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
 
     /* The bucket was previously empty (or something like that), */
     /* allocate a new.  This is the effect of `lazy' allocation */  
-    new_bucket = (struct sbucket*)__objc_xmalloc(sizeof(struct sbucket));
+    new_bucket = (struct sbucket*)objc_malloc(sizeof(struct sbucket));
     memcpy((void *) new_bucket, (const void*)array->empty_bucket, 
 	   sizeof(struct sbucket));
     new_bucket->version.version = array->version.version;
@@ -185,7 +185,7 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
 
     /* Perform lazy copy. */
     struct sbucket* old_bucket = *the_bucket;
-    new_bucket = (struct sbucket*)__objc_xmalloc(sizeof(struct sbucket));
+    new_bucket = (struct sbucket*)objc_malloc(sizeof(struct sbucket));
     memcpy( new_bucket, old_bucket, sizeof(struct sbucket));
     new_bucket->version.version = array->version.version;
     *the_bucket = new_bucket;                   /* Prepared for install. */
@@ -220,16 +220,16 @@ sarray_new (int size, void* default_element)
   assert(size > 0);
 
   /* Allocate core array */
-  arr = (struct sarray*) __objc_xmalloc(sizeof(struct sarray));
+  arr = (struct sarray*) objc_malloc(sizeof(struct sarray));
   arr->version.version = 0;
   
   /* Initialize members */
 #ifdef OBJC_SPARSE3
   arr->capacity = num_indices*INDEX_CAPACITY;
   new_indices = (struct sindex**) 
-    __objc_xmalloc(sizeof(struct sindex*)*num_indices);
+    objc_malloc(sizeof(struct sindex*)*num_indices);
 
-  arr->empty_index = (struct sindex*) __objc_xmalloc(sizeof(struct sindex));
+  arr->empty_index = (struct sindex*) objc_malloc(sizeof(struct sindex));
   arr->empty_index->version.version = 0;
   
   narrays  += 1;
@@ -239,14 +239,14 @@ sarray_new (int size, void* default_element)
 #else /* OBJC_SPARSE2 */
   arr->capacity = num_indices*BUCKET_SIZE;
   new_buckets = (struct sbucket**) 
-    __objc_xmalloc(sizeof(struct sbucket*)*num_indices);
+    objc_malloc(sizeof(struct sbucket*)*num_indices);
   
   narrays  += 1;
   idxsize  += num_indices;
 
 #endif
 
-  arr->empty_bucket = (struct sbucket*) __objc_xmalloc(sizeof(struct sbucket));
+  arr->empty_bucket = (struct sbucket*) objc_malloc(sizeof(struct sbucket));
   arr->empty_bucket->version.version = 0;
   
   nbuckets += 1;
@@ -337,11 +337,11 @@ sarray_realloc(struct sarray* array, int newsize)
       /* alloc to force re-read by any concurrent readers. */
       old_indices = array->indices;
       new_indices = (struct sindex**)
-	__objc_xmalloc((new_max_index+1)*sizeof(struct sindex*));
+	objc_malloc((new_max_index+1)*sizeof(struct sindex*));
 #else /* OBJC_SPARSE2 */
       old_buckets = array->buckets;
       new_buckets = (struct sbucket**)
-	__objc_xmalloc((new_max_index+1)*sizeof(struct sbucket*));
+	objc_malloc((new_max_index+1)*sizeof(struct sbucket*));
 #endif
 
       /* copy buckets below old_max_index (they are still valid) */
@@ -488,7 +488,7 @@ sarray_lazy_copy(struct sarray* oarr)
 #endif
 
   /* Allocate core array */
-  arr = (struct sarray*) __objc_xmalloc(sizeof(struct sarray)); /* !!! */
+  arr = (struct sarray*) objc_malloc(sizeof(struct sarray)); /* !!! */
   arr->version.version = oarr->version.version + 1;
 #ifdef OBJC_SPARSE3
   arr->empty_index = oarr->empty_index;
@@ -502,14 +502,14 @@ sarray_lazy_copy(struct sarray* oarr)
 #ifdef OBJC_SPARSE3
   /* Copy bucket table */
   new_indices = (struct sindex**) 
-    __objc_xmalloc(sizeof(struct sindex*)*num_indices);
+    objc_malloc(sizeof(struct sindex*)*num_indices);
   memcpy( new_indices,oarr->indices, 
 	sizeof(struct sindex*)*num_indices);
   arr->indices = new_indices;
 #else 
   /* Copy bucket table */
   new_buckets = (struct sbucket**) 
-    __objc_xmalloc(sizeof(struct sbucket*)*num_indices);
+    objc_malloc(sizeof(struct sbucket*)*num_indices);
   memcpy( new_buckets,oarr->buckets, 
 	sizeof(struct sbucket*)*num_indices);
   arr->buckets = new_buckets;
