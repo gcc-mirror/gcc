@@ -1,8 +1,8 @@
 /* { dg-do run  { target powerpc-*-* i?386-*-* x86_64-*-* } } */
 /* { dg-options "-O1" } */
-/* Test to make sure that inline-asm causes the tree optimizators get the
-   V_MAY_DEFs and clober memory.  */
-/* Test from Jakub Jelinek, modified by Andrew Pinski to work on all powerpc targets. */
+/* Test to make sure that inline-asm causes the tree optimizers to get the
+   V_MAY_DEFs and clobber memory.  */
+/* Test from Jakub Jelinek, modified by Andrew Pinski to work on all powerpc targets.  */
 extern void abort (void);
 
 unsigned short v = 0x0300;
