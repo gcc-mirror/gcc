@@ -1,5 +1,7 @@
 2002-01-22  Zack Weinberg  <zack@codesourcery.com>
 
+	* gcc.pot: Regenerate - now includes Fortran error messages.
+
 	* exgettext: Merge changes from diffutils.  Scan .def files in
 	addition to .c and .h.  Add --language=c to xgettext command line.
 
