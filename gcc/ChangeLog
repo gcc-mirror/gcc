@@ -1,5 +1,9 @@
 2004-01-30  Jan Hubicka  <jh@suse.cz>
 
+	* reload.c (secondary_memlocs_elim_used): New static variable.
+	(get_secondary_mem): Update it.
+	(find_reloads): Use it.
+
 	* alias.c (reg_base_value): Turn into varray.
 	(reg_base_value_size): Kill.
 	(old_reg_base_value): New deletable varray.
