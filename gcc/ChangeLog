@@ -1,3 +1,18 @@
+2005-04-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/20342
+	PR target/20447
+	* config/i386/i386.c (print_operand): Handle vector zeros.
+	(ix86_split_to_parts): Handle CONST_VECTOR.
+	(ix86_hard_regno_mode_ok): Allow MMX modes in general regs.
+	(ix86_modes_tieable_p): Use ix86_hard_regno_mode_ok to decide
+	what modes to tie for MMX and SSE registers.
+	* config/i386/i386.h (MMX_REG_MODE_P): Remove.
+	* config/i386/i386.md: Extend move 0 -> xor peephole to apply
+	to vector modes as well.
+	* config/i386/predicates.md (const0_operand): Handle VOIDmode
+	properly as an input mode.
+
 2005-04-05  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-operands.c (verify_abort): Use %p for pointers.

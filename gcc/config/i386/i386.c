@@ -6773,6 +6773,17 @@ print_operand (FILE *file, rtx x, int code)
 
   else
     {
+      /* We have patterns that allow zero sets of memory, for instance.
+	 In 64-bit mode, we should probably support all 8-byte vectors,
+	 since we can in fact encode that into an immediate.  */
+      if (GET_CODE (x) == CONST_VECTOR)
+	{
+	  if (x == CONST0_RTX (GET_MODE (x)))
+	    x = const0_rtx;
+	  else
+	    abort ();
+	}
+
       if (code != 'P')
 	{
 	  if (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
@@ -10350,8 +10361,18 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
       operand = copy_rtx (operand);
       PUT_MODE (operand, Pmode);
       parts[0] = parts[1] = parts[2] = operand;
+      return size;
     }
-  else if (!TARGET_64BIT)
+
+  if (GET_CODE (operand) == CONST_VECTOR)
+    {
+      enum machine_mode imode = int_mode_for_mode (mode);
+      operand = simplify_subreg (imode, operand, mode, 0);
+      gcc_assert (operand != NULL);
+      mode = imode;
+    }
+
+  if (!TARGET_64BIT)
     {
       if (mode == DImode)
 	split_di (&operand, 1, &parts[0], &parts[1]);
@@ -15111,15 +15132,30 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
       return (VALID_MMX_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE_3DNOW (mode));
     }
-  /* We handle both integer and floats in the general purpose registers.
-     In future we should be able to handle vector modes as well.  */
-  if (!VALID_INT_MODE_P (mode) && !VALID_FP_MODE_P (mode))
-    return 0;
-  /* Take care for QImode values - they can be in non-QI regs, but then
-     they do cause partial register stalls.  */
-  if (regno < 4 || mode != QImode || TARGET_64BIT)
+
+  if (mode == QImode)
+    {
+      /* Take care for QImode values - they can be in non-QI regs,
+	 but then they do cause partial register stalls.  */
+      if (regno < 4 || TARGET_64BIT)
+	return 1;
+      if (!TARGET_PARTIAL_REG_STALL)
+	return 1;
+      return reload_in_progress || reload_completed;
+    }
+  /* We handle both integer and floats in the general purpose registers.  */
+  else if (VALID_INT_MODE_P (mode))
     return 1;
-  return reload_in_progress || reload_completed || !TARGET_PARTIAL_REG_STALL;
+  else if (VALID_FP_MODE_P (mode))
+    return 1;
+  /* Lots of MMX code casts 8 byte vector modes to DImode.  If we then go
+     on to use that value in smaller contexts, this can easily force a 
+     pseudo to be allocated to GENERAL_REGS.  Since this is no worse than
+     supporting DImode, allow it.  */
+  else if (VALID_MMX_REG_MODE_3DNOW (mode) || VALID_MMX_REG_MODE (mode))
+    return 1;
+
+  return 0;
 }
 
 /* A subroutine of ix86_modes_tieable_p.  Return true if MODE is a 
@@ -15172,12 +15208,14 @@ ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 
   /* If MODE2 is only appropriate for an SSE register, then tie with 
      any other mode acceptable to SSE registers.  */
-  if (SSE_REG_MODE_P (mode2))
+  if (GET_MODE_SIZE (mode2) >= 8
+      && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
     return ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1);
 
   /* If MODE2 is appropriate for an MMX (or SSE) register, then tie
      with any other mode acceptable to MMX registers.  */
-  if (MMX_REG_MODE_P (mode2))
+  if (GET_MODE_SIZE (mode2) == 8
+      && ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode2))
     return ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode1);
 
   return false;
