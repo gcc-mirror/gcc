@@ -1,3 +1,11 @@
+999-03-25 Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* gcc.c: Compile unconditionally all code formerly dependent
+	on #ifdef LANG_SPECIFIC_DRIVER.
+	* gccspec.c: New file with stub lang_specific_driver,
+	lang_specific_pre_link.
+	* Makefile.in: Link gccspec.o into xgcc.  Add rule to compile
+
 Thu Mar 25 21:08:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* gcc.texi (Temporaries): Update.

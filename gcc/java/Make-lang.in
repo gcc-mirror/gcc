@@ -79,30 +79,15 @@ JAVA_SRCS = $(srcdir)/java/parse.y $(srcdir)/java/class.c \
 jc1$(exeext): $(P) $(JAVA_SRCS) $(LIBDEPS) stamp-objlist
 	cd java; $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jc1$(exeext)
 
-$(GCJ).c: $(srcdir)/gcc.c
-	-rm -f $@
-	$(LN_S) $(srcdir)/gcc.c $@
-
 jvspec.o: $(srcdir)/java/jvspec.c
 	$(CC) -c -DWITH_THREAD_$(GCC_THREAD_FILE) -DWITH_GC_$(JAVAGC) \
 		$(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c
 
-# N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
-# It'd be nice if we could find an easier way to do this---rather than have
-# to track changes to the toplevel gcc Makefile as well.
-# We depend on $(GCJ).c last, to make it obvious where it came from.
-$(GCJ).o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) $(GCJ).c \
-       system.h prefix.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(DRIVER_DEFINES) \
-	-DLANG_SPECIFIC_DRIVER \
-  -c $(GCJ).c
-
 # Create the compiler driver for $(GCJ).
-$(GCJ)$(exeext): $(GCJ).o jvspec.o version.o \
+$(GCJ)$(exeext): gcc.o jvspec.o version.o \
 	   prefix.o intl.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCJ).o jvspec.o prefix.o intl.o \
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o jvspec.o prefix.o intl.o \
 	  version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the $(GCJ) driver which calls the cross-compiler.

@@ -75,10 +75,6 @@ C++ c++: cc1plus$(exeext)
 # Tell GNU make to ignore these if they exist.
 .PHONY: C++ c++
 
-g++.c: $(srcdir)/gcc.c
-	-rm -f $@
-	$(LN_S) $(srcdir)/gcc.c $@
-
 g++spec.o: $(srcdir)/cp/g++spec.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/cp/g++spec.c
 
@@ -90,19 +86,8 @@ $(srcdir)/cp/parse.c: $(srcdir)/cp/parse.y
 	  $(MAKE) $(SUBDIR_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) \
 	    $$cp_srcdir/parse.c
 
-# N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
-# It'd be nice if we could find an easier way to do this---rather than have
-# to track changes to the toplevel gcc Makefile as well.
-# We depend on g++.c last, to make it obvious where it came from.
-g++.o: $(CONFIG_H) intl.h multilib.h config.status system.h \
-    Makefile $(lang_specs_files) g++.c prefix.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(DRIVER_DEFINES) \
-	-DLANG_SPECIFIC_DRIVER \
-  -c g++.c
-
 # Create the compiler driver for g++.
-GXX_OBJS = g++.o g++spec.o intl.o prefix.o version.o 
+GXX_OBJS = gcc.o g++spec.o intl.o prefix.o version.o 
 g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
@@ -290,7 +275,6 @@ c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
 	-rm -f cp/parse.output
-	-rm -f g++.c
 c++.extraclean:
 c++.maintainer-clean:
 	-rm -f cp/parse.c cp/parse.h
