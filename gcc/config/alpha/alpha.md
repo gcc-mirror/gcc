@@ -4840,11 +4840,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
 
-;; Need 's' alternative for OSF/1, which implements profiling via linker
-;; tricks.  Note that the DEC assembler expands "jmp foo" with $at, which
+;; Note that the DEC assembler expands "jmp foo" with $at, which
 ;; doesn't do what we want.
 (define_insn "*sibcall_osf_1"
-  [(call (mem:DI (match_operand:DI 0 "current_file_function_operand" "R,s"))
+  [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "R,s"))
 	 (match_operand 1 "" ""))
    (use (reg:DI 29))]
   "TARGET_ABI_OSF"
@@ -6800,11 +6799,9 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
 
-;; Need 's' alternative for OSF/1, which implements profiling
-;; via linker tricks.
 (define_insn "*sibcall_value_osf_1"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "current_file_function_operand" "R,s"))
+	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "R,s"))
 	      (match_operand 2 "" "")))
    (use (reg:DI 29))]
   "TARGET_ABI_OSF"
