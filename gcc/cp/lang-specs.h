@@ -1,5 +1,5 @@
 /* Definitions for specs for C++.
-   Copyright (C) 1995, 96-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 96-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
                             %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
 			    %{v:-version} %{pg:-p} %{p}\
-			    %{f*} %{+e*} %{aux-info*}\
+			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
 			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
               %{!S:as %a %Y\
@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
 			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
 			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
 			    %{v:-version} %{pg:-p} %{p}\
-			    %{f*} %{+e*} %{aux-info*}\
+			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
 			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
               %{!S:as %a %Y\
@@ -84,7 +84,7 @@ Boston, MA 02111-1307, USA.  */
    {"%{!M:%{!MM:%{!E:cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
 			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
 			    %{v:-version} %{pg:-p} %{p}\
-			    %{f*} %{+e*} %{aux-info*}\
+			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
 			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 	            %{!S:as %a %Y\

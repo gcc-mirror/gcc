@@ -1,3 +1,7 @@
+Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* lang-specs.h: Map -Qn to -fno-ident.
+
 Tue Jan  5 22:12:41 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Make-lang.in (g77.o): Depend on prefix.h.

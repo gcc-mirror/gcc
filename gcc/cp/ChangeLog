@@ -1,3 +1,10 @@
+Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* decl2.c: Don't define flag_no_ident here.  Don't process
+	-f(no-)ident here.
+	* cp-tree.h: Don't declare flag_no_ident here.
+	* lang-specs.h: Map -Qn to -fno-ident.
+
 1999-01-28  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (struct tree_binding): Replace scope field with a union.

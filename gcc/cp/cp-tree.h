@@ -386,10 +386,6 @@ extern int flag_gnu_xref;
 
 extern int flag_gnu_binutils;
 
-/* Nonzero means ignore `#ident' directives.  */
-
-extern int flag_no_ident;
-
 /* Nonzero means warn about implicit declarations.  */
 
 extern int warn_implicit;
