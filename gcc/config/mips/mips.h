@@ -135,6 +135,7 @@ extern char	       *mips_move_2words ();
 extern int		mips_output_external ();
 extern void		mips_output_filename ();
 extern void		mips_output_lineno ();
+extern char	       *output_block_move ();
 extern void		override_options ();
 extern void		print_operand_address ();
 extern void		print_operand ();
@@ -160,6 +161,8 @@ extern void		text_section ();
 #define HALF_PIC_ENCODE(DECL)
 #define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it.")
 #define HALF_PIC_ADDRESS_P(X) 0
+#define HALF_PIC_PTR(X) X
+#define HALF_PIC_FINISH(STREAM)
 #endif
 
 
@@ -235,6 +238,9 @@ while (0)
 
 #define OPTIMIZATION_OPTIONS(LEVEL)					\
 {									\
+  flag_no_function_cse			= TRUE;				\
+  flag_gnu_linker			= FALSE;			\
+									\
   if (LEVEL)								\
     {									\
       flag_omit_frame_pointer		= TRUE;				\
@@ -375,10 +381,6 @@ while (0)
 %{save-temps: }"
 #endif
 
-#ifndef CC1PLUS_SPEC
-#define CC1PLUS_SPEC "%{!fgnu-binutils: -fno-gnu-binutils}"
-#endif
-
 /* Preprocessor specs */
 
 #ifndef CPP_SPEC
@@ -405,7 +407,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 14]"
+#define MIPS_VERSION "[AL 1.1, MM 15]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
