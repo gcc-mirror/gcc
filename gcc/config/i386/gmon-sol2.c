@@ -259,6 +259,7 @@ internal_mcount()
 	register struct tostruct	*top;
 	register struct tostruct	*prevtop;
 	register long			toindex;
+	static char already_setup;
 
 	/*
 	 *	find the return address for mcount,
@@ -272,6 +273,17 @@ internal_mcount()
 	   This identifies the caller of the function just entered.  */
 	frompcindex = (void *) __builtin_return_address (1);
 
+	if(!already_setup) {
+          extern etext();
+	  already_setup = 1;
+/*	  monstartup(0, etext); */
+	  monstartup(0x08040000, etext);
+#ifdef USE_ONEXIT
+	  on_exit(_mcleanup, 0);
+#else
+	  atexit(_mcleanup);
+#endif
+	}
 	/*
 	 *	check that we are profiling
 	 *	and that we aren't recursively invoked.
