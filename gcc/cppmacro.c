@@ -990,13 +990,14 @@ void
 cpp_scan_buffer_nooutput (pfile)
      cpp_reader *pfile;
 {
+  cpp_buffer *buffer = pfile->buffer->prev;
   cpp_token token;
 
   do
     do
       cpp_get_token (pfile, &token);
     while (token.type != CPP_EOF);
-  while (cpp_pop_buffer (pfile) != 0);
+  while (cpp_pop_buffer (pfile) != buffer);
 }
 
 /* Lookahead handling.  */
