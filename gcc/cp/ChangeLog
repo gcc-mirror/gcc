@@ -1,3 +1,11 @@
+2002-03-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/775
+	* decl.c (lookup_tag): Only reject enum/class mismatch, not
+	class/union mismatch.
+	* parse.y (check_class_key): New function.
+	(structsp): Call it.
+
 2002-03-01  Michael Matz  <matz@suse.de>
 
 	* typeck.c (cp_pointer_int_sum): Complete inner type which is
