@@ -394,7 +394,7 @@ PERSONALITY_FUNCTION (int version,
 
           // ??? Completely unknown what this field is supposed to be for.
           // ??? Need to cache TType encoding base for call_unexpected.
-          xh->catchTemp = (void *) (_Unwind_Ptr) landing_pad;
+          xh->catchTemp = landing_pad;
 	}
       return _URC_HANDLER_FOUND;
     }
@@ -411,7 +411,7 @@ PERSONALITY_FUNCTION (int version,
   if (handler_switch_value < 0)
     {
       parse_lsda_header (context, xh->languageSpecificData, &info);
-      xh->catchTemp = (void *) base_of_encoded_value (info.ttype_encoding,
+      xh->catchTemp = base_of_encoded_value (info.ttype_encoding,
 						      context);
     }
 
