@@ -1,3 +1,7 @@
+2004-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* bpabi.h (FPUTYPE_DEFAULT): Set it to FPUTYPE_VFP.
+
 2004-08-18  Andrew Pinski  <apinski@apple.com>
 
 	* varasm.c (ecode_reg_name): Do nothing if the asmspec is empty.
