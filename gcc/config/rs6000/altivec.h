@@ -70,6 +70,38 @@ extern int __altivec_link_error_invalid_argument ();
 
 #ifdef __cplusplus
 
+/* Prototypes for builtins that take literals and must always be
+   inlined.  */
+inline vector float vec_ctf (vector unsigned int, const char) __attribute__ ((always_inline));
+inline vector float vec_ctf (vector signed int, const char) __attribute__ ((always_inline));
+inline vector signed int vec_cts (vector float, const char) __attribute__ ((always_inline));
+inline vector unsigned int vec_ctu (vector float, const char) __attribute__ ((always_inline));
+inline void vec_dss (const char) __attribute__ ((always_inline));
+inline void vec_dst (void *, int, const char) __attribute__ ((always_inline));
+inline void vec_dstst (void *, int, const char) __attribute__ ((always_inline));
+inline void vec_dststt (void *, int, const char) __attribute__ ((always_inline));
+inline void vec_dstt (void *, int, const char) __attribute__ ((always_inline));
+inline vector float vec_sld (vector float, vector float, const char) __attribute__ ((always_inline));
+inline vector signed int vec_sld (vector signed int, vector signed int, const char) __attribute__ ((always_inline));
+inline vector unsigned int vec_sld (vector unsigned int, vector unsigned int, const char) __attribute__ ((always_inline));
+inline vector signed short vec_sld (vector signed short, vector signed short, const char) __attribute__ ((always_inline));
+inline vector unsigned short vec_sld (vector unsigned short, vector unsigned short, const char) __attribute__ ((always_inline));
+inline vector signed char vec_sld (vector signed char, vector signed char, const char) __attribute__ ((always_inline));
+inline vector unsigned char vec_sld (vector unsigned char, vector unsigned char, const char) __attribute__ ((always_inline));
+inline vector signed char vec_splat (vector signed char, const char) __attribute__ ((always_inline));
+inline vector unsigned char vec_splat (vector unsigned char, const char) __attribute__ ((always_inline));
+inline vector signed short vec_splat (vector signed short, const char) __attribute__ ((always_inline));
+inline vector unsigned short vec_splat (vector unsigned short, const char) __attribute__ ((always_inline));
+inline vector float vec_splat (vector float, const char) __attribute__ ((always_inline));
+inline vector signed int vec_splat (vector signed int, const char) __attribute__ ((always_inline));
+inline vector unsigned int vec_splat (vector unsigned int, const char) __attribute__ ((always_inline));
+inline vector signed char vec_splat_s8 (const char) __attribute__ ((always_inline));
+inline vector signed short vec_splat_s16 (const char) __attribute__ ((always_inline));
+inline vector signed int vec_splat_s32 (const char) __attribute__ ((always_inline));
+inline vector unsigned char vec_splat_u8 (const char) __attribute__ ((always_inline));
+inline vector unsigned short vec_splat_u16 (const char) __attribute__ ((always_inline));
+inline vector unsigned int vec_splat_u32 (const char) __attribute__ ((always_inline));
+
 /* vec_abs */
 
 inline vector signed char

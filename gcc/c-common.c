@@ -4109,15 +4109,14 @@ c_common_post_options ()
 {
   cpp_post_options (parse_in);
 
+  flag_inline_trees = 1;
+
   /* Use tree inlining if possible.  Function instrumentation is only
      done in the RTL level, so we disable tree inlining.  */
   if (! flag_instrument_function_entry_exit)
     {
       if (!flag_no_inline)
-	{
-	  flag_inline_trees = 1;
-	  flag_no_inline = 1;
-	}
+	flag_no_inline = 1;
       if (flag_inline_functions)
 	{
 	  flag_inline_trees = 2;

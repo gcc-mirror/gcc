@@ -1,3 +1,34 @@
+2002-02-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/gcc.dg/attr-alwaysinline.c: New.
+
+	* c-common.c (c_common_post_options): Set inline trees by
+	default.
+
+	* doc/extend.texi (Function Attributes): Document always_inline
+	attribute.
+	Update documentation about inlining when not optimizing.
+
+	* cp/decl.c (duplicate_decls): Merge always_inline attribute.
+
+	* cp/tree.c (cp_cannot_inline_tree_fn): Do not inline at -O0
+	unless DECL_ALWAYS_INLINE.
+
+	* c-objc-common.c (c_cannot_inline_tree_fn): Do not inline at -O0
+	unless DECL_ALWAYS_INLINE.
+	(c_disregard_inline_limits): Disregard if always_inline set.
+
+	* langhooks.c (lhd_tree_inlining_disregard_inline_limits):
+	Disregard if always_inline set.
+	(lhd_tree_inlining_cannot_inline_tree_fn): Do not inline at -O0
+	unless DECL_ALWAYS_INLINE.
+
+	* attribs.c (handle_always_inline_attribute): New.
+	(c_common_attribute_table): Add always_inline.
+
+	* config/rs6000/altivec.h: Add prototypes for builtins
+	requiring the always_inline attribute.
+
 2002-02-21  Eric Christopher  <echristo@redhat.com>
 
 	* expmed.c (store_bit_field): Try to simplify the subreg

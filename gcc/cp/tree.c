@@ -2099,6 +2099,10 @@ cp_cannot_inline_tree_fn (fnp)
 {
   tree fn = *fnp;
 
+  if (optimize == 0
+      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
+    return 1;
+
   /* We can inline a template instantiation only if it's fully
      instantiated.  */
   if (DECL_TEMPLATE_INFO (fn)

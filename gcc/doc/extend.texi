@@ -1880,7 +1880,8 @@ The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
-@code{noreturn}, @code{noinline}, @code{pure}, @code{const},
+@code{noreturn}, @code{noinline}, @code{always_inline},
+@code{pure}, @code{const},
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
 @code{unused}, @code{deprecated}, @code{weak}, @code{malloc}, and
@@ -1945,6 +1946,12 @@ volatile voidfn fatal;
 @item noinline
 This function attribute prevents a function from being considered for
 inlining.
+
+@cindex @code{always_inline} function attribute
+@item always_inline
+Generally, functions are not inlined unless optimization is specified.
+For functions declared inline, this attribute inlines the function even
+if no optimization level was specified.
 
 @cindex @code{pure} function attribute
 @item pure
@@ -3388,10 +3395,13 @@ existing semantics will remain available when @option{-std=gnu89} is
 specified, but eventually the default will be @option{-std=gnu99} and
 that will implement the C99 semantics, though it does not do so yet.)
 
-GCC does not inline any functions when not optimizing.  It is not
-clear whether it is better to inline or not, in this case, but we found
-that a correct implementation when not optimizing was difficult.  So we
-did the easy thing, and turned it off.
+GCC does not inline any functions when not optimizing unless you specify
+the @samp{always_inline} attribute for the function, like this:
+
+@example
+/* Prototype.  */
+inline void foo (const char) __attribute__((always_inline));
+@end example
 
 @node Extended Asm
 @section Assembler Instructions with C Expression Operands
