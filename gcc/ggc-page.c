@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
    file open.  Prefer either to valloc.  */
 #ifdef HAVE_MMAP_ANON
 # undef HAVE_MMAP_DEV_ZERO
-# undef HAVE_VALLOC
 
 # include <sys/mman.h>
 # ifndef MAP_FAILED
@@ -47,7 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifdef HAVE_MMAP_DEV_ZERO
-# undef HAVE_VALLOC
 
 # include <sys/mman.h>
 # ifndef MAP_FAILED
@@ -57,9 +55,8 @@ Boston, MA 02111-1307, USA.  */
 
 #endif
 
-#ifdef HAVE_VALLOC
-# undef MAP_FAILED
-# define MAP_FAILED 0
+#ifndef USING_MMAP
+#define USING_MALLOC_PAGE_GROUPS
 #endif
 
 /* Stategy: 
@@ -223,6 +220,11 @@ typedef struct page_entry
   /* The address at which the memory is allocated.  */
   char *page;
 
+#ifdef USING_MALLOC_PAGE_GROUPS
+  /* Back pointer to the page group this page came from.  */
+  struct page_group *group;
+#endif
+
   /* Saved in-use bit vector for pages that aren't in the topmost
      context during collection.  */
   unsigned long *save_in_use_p;
@@ -246,6 +248,24 @@ typedef struct page_entry
   unsigned long in_use_p[1];
 } page_entry;
 
+#ifdef USING_MALLOC_PAGE_GROUPS
+/* A page_group describes a large allocation from malloc, from which
+   we parcel out aligned pages.  */
+typedef struct page_group
+{
+  /* A linked list of all extant page groups.  */
+  struct page_group *next;
+
+  /* The address we received from malloc.  */
+  char *allocation;
+
+  /* The size of the block.  */
+  size_t alloc_size;
+
+  /* A bitmask of pages in use.  */
+  unsigned int in_use;
+} page_group;
+#endif
 
 #if HOST_BITS_PER_PTR <= 32
 
@@ -307,6 +327,10 @@ static struct globals
   /* A cache of free system pages.  */
   page_entry *free_pages;
 
+#ifdef USING_MALLOC_PAGE_GROUPS
+  page_group *page_groups;
+#endif
+
   /* The file descriptor for debugging output.  */
   FILE *debug_file;
 } G;
@@ -326,15 +350,24 @@ static struct globals
    test from triggering too often when the heap is small.  */
 #define GGC_MIN_LAST_ALLOCATED (4 * 1024 * 1024)
 
-/* Allocate pages in chunks of this size, to throttle calls to mmap.
-   The first page is used, the rest go onto the free list.  */
+/* Allocate pages in chunks of this size, to throttle calls to memory
+   allocation routines.  The first page is used, the rest go onto the
+   free list.  This cannot be larger than HOST_BITS_PER_INT for the
+   in_use bitmask for page_group.  */
 #define GGC_QUIRE_SIZE 16
 
 
 static int ggc_allocated_p PARAMS ((const void *));
 static page_entry *lookup_page_table_entry PARAMS ((const void *));
 static void set_page_table_entry PARAMS ((void *, page_entry *));
+#ifdef USING_MMAP
 static char *alloc_anon PARAMS ((char *, size_t));
+#endif
+#ifdef USING_MALLOC_PAGE_GROUPS
+static size_t page_group_index PARAMS ((char *, char *));
+static void set_page_group_in_use PARAMS ((page_group *, char *));
+static void clear_page_group_in_use PARAMS ((page_group *, char *));
+#endif
 static struct page_entry * alloc_page PARAMS ((unsigned));
 static void free_page PARAMS ((struct page_entry *));
 static void release_pages PARAMS ((void));
@@ -465,6 +498,7 @@ debug_print_page_list (order)
   fflush (stdout);
 }
 
+#ifdef USING_MMAP
 /* Allocate SIZE bytes of anonymous memory, preferably near PREF,
    (if non-null).  The ifdef structure here is intended to cause a
    compile error unless exactly one of the HAVE_* is defined.  */
@@ -482,9 +516,6 @@ alloc_anon (pref, size)
   char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
 			      MAP_PRIVATE, G.dev_zero_fd, 0);
 #endif
-#ifdef HAVE_VALLOC
-  char *page = (char *) valloc (size);
-#endif
 
   if (page == (char *) MAP_FAILED)
     {
@@ -497,6 +528,35 @@ alloc_anon (pref, size)
 
   return page;
 }
+#endif
+#ifdef USING_MALLOC_PAGE_GROUPS
+/* Compute the index for this page into the page group.  */
+
+static inline size_t
+page_group_index (allocation, page)
+     char *allocation, *page;
+{
+  return (size_t)(page - allocation) >> G.lg_pagesize;
+}
+
+/* Set and clear the in_use bit for this page in the page group.  */
+
+static inline void
+set_page_group_in_use (group, page)
+     page_group *group;
+     char *page;
+{
+  group->in_use |= 1 << page_group_index (group->allocation, page);
+}
+
+static inline void
+clear_page_group_in_use (group, page)
+     page_group *group;
+     char *page;
+{
+  group->in_use &= ~(1 << page_group_index (group->allocation, page));
+}
+#endif
 
 /* Allocate a new page for allocating objects of size 2^ORDER,
    and return an entry for it.  The entry is not added to the
@@ -512,6 +572,9 @@ alloc_page (order)
   size_t bitmap_size;
   size_t page_entry_size;
   size_t entry_size;
+#ifdef USING_MALLOC_PAGE_GROUPS
+  page_group *group;
+#endif
 
   num_objects = OBJECTS_PER_PAGE (order);
   bitmap_size = BITMAP_SIZE (num_objects + 1);
@@ -533,6 +596,9 @@ alloc_page (order)
       /* Recycle the allocated memory from this page ... */
       *pp = p->next;
       page = p->page;
+#ifdef USING_MALLOC_PAGE_GROUPS
+      group = p->group;
+#endif
       /* ... and, if possible, the page entry itself.  */
       if (p->order == order)
 	{
@@ -565,9 +631,80 @@ alloc_page (order)
 	}
       G.free_pages = f;
     }
-#endif
   else
     page = alloc_anon (NULL, entry_size);
+#endif
+#ifdef USING_MALLOC_PAGE_GROUPS
+  else
+    {
+      /* Allocate a large block of memory and serve out the aligned
+	 pages therein.  This results in much less memory wastage
+	 than the traditional implementation of valloc.  */
+
+      char *allocation, *a, *enda;
+      size_t alloc_size, head_slop, tail_slop;
+      int multiple_pages = (entry_size == G.pagesize);
+
+      if (multiple_pages)
+	alloc_size = GGC_QUIRE_SIZE * G.pagesize;
+      else
+	alloc_size = entry_size + G.pagesize - 1;
+      allocation = xmalloc (alloc_size);
+
+      page = (char *)(((size_t) allocation + G.pagesize - 1) & -G.pagesize);
+      head_slop = page - allocation;
+      if (multiple_pages)
+	tail_slop = ((size_t) allocation + alloc_size) & (G.pagesize - 1);
+      else
+	tail_slop = alloc_size - entry_size - head_slop;
+      enda = allocation + alloc_size - tail_slop;
+
+      /* We allocated N pages, which are likely not aligned, leaving
+	 us with N-1 usable pages.  We plan to place the page_group
+	 structure somewhere in the slop.  */
+      if (head_slop >= sizeof (page_group))
+	group = (page_group *)page - 1;
+      else
+	{
+	  /* We magically got an aligned allocation.  Too bad, we have
+	     to waste a page anyway.  */
+	  if (tail_slop == 0)
+	    {
+	      enda -= G.pagesize;
+	      tail_slop += G.pagesize;
+	    }
+	  if (tail_slop < sizeof (page_group))
+	    abort ();
+	  group = (page_group *)enda;
+	  tail_slop -= sizeof (page_group);
+	}
+
+      /* Remember that we allocated this memory.  */
+      group->next = G.page_groups;
+      group->allocation = allocation;
+      group->alloc_size = alloc_size;
+      group->in_use = 0;
+      G.page_groups = group;
+      G.bytes_mapped += alloc_size;
+
+      /* If we allocated multiple pages, put the rest on the free list.  */
+      if (multiple_pages)
+	{
+	  struct page_entry *e, *f = G.free_pages;
+	  for (a = enda - G.pagesize; a != page; a -= G.pagesize)
+	    {
+	      e = (struct page_entry *) xcalloc (1, page_entry_size);
+	      e->order = order;
+	      e->bytes = G.pagesize;
+	      e->page = a;
+	      e->group = group;
+	      e->next = f;
+	      f = e;
+	    }
+	  G.free_pages = f;
+	}
+    }
+#endif
 
   if (entry == NULL)
     entry = (struct page_entry *) xcalloc (1, page_entry_size);
@@ -578,6 +715,11 @@ alloc_page (order)
   entry->order = order;
   entry->num_free_objects = num_objects;
   entry->next_bit_hint = 1;
+
+#ifdef USING_MALLOC_PAGE_GROUPS
+  entry->group = group;
+  set_page_group_in_use (group, page);
+#endif
 
   /* Set the one-past-the-end in-use bit.  This acts as a sentry as we
      increment the hint.  */
@@ -607,6 +749,10 @@ free_page (entry)
 
   set_page_table_entry (entry->page, NULL);
 
+#ifdef USING_MALLOC_PAGE_GROUPS
+  clear_page_group_in_use (entry->group, entry->page);
+#endif
+
   entry->next = G.free_pages;
   G.free_pages = entry;
 }
@@ -616,9 +762,8 @@ free_page (entry)
 static void
 release_pages ()
 {
-  page_entry *p, *next;
-
 #ifdef USING_MMAP
+  page_entry *p, *next;
   char *start;
   size_t len;
 
@@ -644,17 +789,36 @@ release_pages ()
       munmap (start, len);
       G.bytes_mapped -= len;
     }
-#else
-  for (p = G.free_pages; p; p = next)
-    {
-      next = p->next;
-      free (p->page);
-      G.bytes_mapped -= p->bytes;
-      free (p);
-    }
-#endif /* USING_MMAP */
 
   G.free_pages = NULL;
+#endif
+#ifdef USING_MALLOC_PAGE_GROUPS
+  page_entry **pp, *p;
+  page_group **gp, *g;
+
+  /* Remove all pages from free page groups from the list.  */
+  pp = &G.free_pages;
+  while ((p = *pp) != NULL)
+    if (p->group->in_use == 0)
+      {
+	*pp = p->next;
+	free (p);
+      }
+    else
+      pp = &p->next;
+
+  /* Remove all free page groups, and release the storage.  */
+  gp = &G.page_groups;
+  while ((g = *gp) != NULL)
+    if (g->in_use == 0)
+      {
+	*gp = g->next;
+        G.bytes_mapped -= g->alloc_size;
+	free (g->allocation);
+      }
+    else
+      gp = &g->next;
+#endif
 }
 
 /* This table provides a fast way to determine ceil(log_2(size)) for

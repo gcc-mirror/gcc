@@ -541,7 +541,7 @@ fi
 AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy \
 	strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
-	fputs_unlocked getrusage valloc iconv nl_langinfo)
+	fputs_unlocked getrusage iconv nl_langinfo)
 
 AC_CHECK_TYPE(ssize_t, int)
 
@@ -1565,13 +1565,7 @@ AC_ARG_WITH(gc,
     AC_MSG_ERROR([$withval is an invalid option to --with-gc])
     ;;
 esac],
-[if test $ac_cv_func_mmap_dev_zero = yes \
-    || test $ac_cv_func_mmap_anon = yes \
-    || test $ac_cv_func_valloc = yes; then
-  GGC=ggc-page
-else
-  GGC=ggc-simple
-fi])
+[GGC=ggc-page])
 AC_SUBST(GGC)
 echo "Using $GGC for garbage collection."
 
