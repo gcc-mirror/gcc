@@ -821,70 +821,177 @@
 
 (define_expand "extendqihi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "register_operand" "")
+	(ashift:DI (match_operand:QI 1 "reg_or_unaligned_mem_operand" "")
 		   (const_int 56)))
    (set (match_operand:HI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
 		     (const_int 56)))]
   ""
   "
-{ operands[0] = gen_lowpart (DImode, operands[0]);
+{
+  /* If we have a MEM (must be unaligned), extend to DImode (which we do
+	specially) and then copy to the result.  */
+  if (GET_CODE (operands[1]) == MEM)
+    {
+      rtx temp = gen_reg_rtx (DImode);
+
+      emit_insn (gen_extendqidi2 (temp, operands[1]));
+      emit_move_insn (operands[0], gen_lowpart (HImode, temp));
+      DONE;
+    }
+
+  operands[0] = gen_lowpart (DImode, operands[0]);
   operands[1] = gen_lowpart (DImode, operands[1]);
   operands[2] = gen_reg_rtx (DImode);
 }")
 
 (define_expand "extendqisi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "register_operand" "")
+	(ashift:DI (match_operand:QI 1 "reg_or_unaligned_mem_operand" "")
 		   (const_int 56)))
    (set (match_operand:SI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
 		     (const_int 56)))]
   ""
   "
-{ operands[0] = gen_lowpart (DImode, operands[0]);
+{
+  /* If we have a MEM (must be unaligned), extend to a DImode form of
+     the result (which we do specially).  */
+  if (GET_CODE (operands[1]) == MEM)
+    {
+      rtx temp = gen_reg_rtx (DImode);
+
+      emit_insn (gen_extendqidi2 (temp, operands[1]));
+      emit_move_insn (operands[0], gen_lowpart (SImode, temp));
+      DONE;
+    }
+
+  operands[0] = gen_lowpart (DImode, operands[0]);
   operands[1] = gen_lowpart (DImode, operands[1]);
   operands[2] = gen_reg_rtx (DImode);
 }")
 
 (define_expand "extendqidi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "register_operand" "")
+	(ashift:DI (match_operand:QI 1 "reg_or_unaligned_mem_operand" "")
 		   (const_int 56)))
    (set (match_operand:DI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
 		     (const_int 56)))]
   ""
   "
-{ operands[1] = gen_lowpart (DImode, operands[1]);
+{ extern rtx get_unaligned_address ();
+  if (GET_CODE (operands[1]) == MEM)
+    {
+      rtx seq
+	= gen_unaligned_extendqidi (operands[0],
+				    get_unaligned_address (operands[1], 1));
+
+      alpha_set_memflags (seq, operands[1]);
+      emit_insn (seq);
+      DONE;
+    }
+
+  operands[1] = gen_lowpart (DImode, operands[1]);
   operands[2] = gen_reg_rtx (DImode);
 }")
 
 (define_expand "extendhisi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:HI 1 "register_operand" "")
+	(ashift:DI (match_operand:HI 1 "reg_or_unaligned_mem_operand" "")
 		   (const_int 48)))
    (set (match_operand:SI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
 		     (const_int 48)))]
   ""
   "
-{ operands[0] = gen_lowpart (DImode, operands[0]);
+{
+  /* If we have a MEM (must be unaligned), extend to a DImode form of
+     the result (which we do specially).  */
+  if (GET_CODE (operands[1]) == MEM)
+    {
+      rtx temp = gen_reg_rtx (DImode);
+
+      emit_insn (gen_extendhidi2 (temp, operands[1]));
+      emit_move_insn (operands[0], gen_lowpart (SImode, temp));
+      DONE;
+    }
+
+  operands[0] = gen_lowpart (DImode, operands[0]);
   operands[1] = gen_lowpart (DImode, operands[1]);
   operands[2] = gen_reg_rtx (DImode);
 }")
 
 (define_expand "extendhidi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:HI 1 "register_operand" "")
+	(ashift:DI (match_operand:HI 1 "reg_or_unaligned_mem_operand" "")
 		   (const_int 48)))
    (set (match_operand:DI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
 		     (const_int 48)))]
   ""
   "
-{ operands[1] = gen_lowpart (DImode, operands[1]);
+{ extern rtx get_unaligned_address ();
+  if (GET_CODE (operands[1]) == MEM)
+    {
+      rtx seq
+	= gen_unaligned_extendhidi (operands[0],
+				    get_unaligned_address (operands[1], 2));
+
+      alpha_set_memflags (seq, operands[1]);
+      emit_insn (seq);
+      DONE;
+    }
+
+  operands[1] = gen_lowpart (DImode, operands[1]);
   operands[2] = gen_reg_rtx (DImode);
+}")
+
+;; Here's how we sign extend an unaligned byte and halfword.  Doing this
+;; as a pattern saves one instruction.  The code is similar to that for
+;; the unaligned loads (see below).
+;;
+;; Operand 1 is the address + 1 (+2 for HI), operand 0 is the result.
+(define_expand "unaligned_extendqidi"
+  [(set (match_dup 2) (match_operand:DI 1 "address_operand" ""))
+   (set (match_dup 3)
+	(mem:DI (and:DI (plus:DI (match_dup 2) (const_int -1))
+			(const_int -8))))
+   (set (match_dup 4)
+	(ashift:DI (match_dup 3)
+		   (minus:DI (const_int 56)
+			     (ashift:DI
+			      (and:DI (plus:DI (match_dup 2) (const_int -1))
+				      (const_int 7))
+			      (const_int 3)))))
+   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+	(ashiftrt:DI (match_dup 4) (const_int 56)))]
+  ""
+  "
+{ operands[2] = gen_reg_rtx (DImode);
+  operands[3] = gen_reg_rtx (DImode);
+  operands[4] = gen_reg_rtx (DImode);
+}")
+
+(define_expand "unaligned_extendhidi"
+  [(set (match_dup 2) (match_operand:DI 1 "address_operand" ""))
+   (set (match_dup 3)
+	(mem:DI (and:DI (plus:DI (match_dup 2) (const_int -2))
+			(const_int -8))))
+   (set (match_dup 4)
+	(ashift:DI (match_dup 3)
+		   (minus:DI (const_int 56)
+			     (ashift:DI
+			      (and:DI (plus:DI (match_dup 2) (const_int -1))
+				      (const_int 7))
+			      (const_int 3)))))
+   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+	(ashiftrt:DI (match_dup 4) (const_int 48)))]
+  ""
+  "
+{ operands[2] = gen_reg_rtx (DImode);
+  operands[3] = gen_reg_rtx (DImode);
+  operands[4] = gen_reg_rtx (DImode);
 }")
 
 (define_insn ""
@@ -907,70 +1014,87 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
-	 (zero_extract:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-			  (const_int 8)
-			  (ashift:DI
-			   (plus:DI
-			    (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			    (const_int -1))
-			   (const_int 3)))
-	 (const_int 56)))]
+	 (match_operand:DI 1 "reg_or_0_operand" "rJ")
+	  (minus:DI (const_int 56)
+		    (ashift:DI
+		     (and:DI
+		      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			       (const_int -1))
+		      (const_int 7))
+		     (const_int 3)))))]
   ""
   "extqh %r1,%2,%0")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
-	 (zero_extract:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-			  (const_int 16)
-			  (ashift:DI
-			   (plus:DI
-			    (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			    (const_int -2))
-			   (const_int 3)))
-	 (const_int 48)))]
+	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+		 (const_int 2147483647))
+	 (minus:DI (const_int 56)
+		    (ashift:DI
+		     (and:DI
+		      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			       (const_int -1))
+		      (const_int 7))
+		     (const_int 3)))))]
+  ""
+  "extlh %r1,%2,%0")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ashift:DI
+	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+		 (const_int 65535))
+	 (minus:DI (const_int 56)
+		    (ashift:DI
+		     (and:DI
+		      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			       (const_int -1))
+		      (const_int 7))
+		     (const_int 3)))))]
   ""
   "extwh %r1,%2,%0")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
-	 (zero_extract:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-			  (const_int 32)
-			  (ashift:DI
-			   (plus:DI
-			    (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			    (const_int -4))
-			   (const_int 3)))
-	 (const_int 32)))]
+	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+		 (const_int 8))
+	 (minus:DI (const_int 56)
+		    (ashift:DI
+		     (and:DI
+		      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			       (const_int -1))
+		      (const_int 7))
+		     (const_int 3)))))]
   ""
-  "extlh %r1,%2,%0")
+  "extbh %r1,%2,%0")
 
 ;; This converts an extXl into an extXh with an appropriate adjustment
 ;; to the address calculation.
 
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ashift:DI (zero_extract:DI (match_operand:DI 1 "register_operand" "")
-				    (match_operand:DI 2 "mode_width_operand" "")
-				    (ashift:DI (match_operand:DI 3 "" "")
-					       (const_int 3)))
-		   (match_operand:DI 4 "const_int_operand" "")))
-   (clobber (match_operand:DI 5 "register_operand" ""))]
-  "INTVAL (operands[4]) == 64 - INTVAL (operands[2])"
-  [(set (match_dup 5) (match_dup 6))
-   (set (match_dup 0)
-	(ashift:DI (zero_extract:DI (match_dup 1) (match_dup 2)
-				    (ashift:DI (plus:DI (match_dup 5)
-							(match_dup 7))
-					       (const_int 3)))
-		   (match_dup 4)))]
-  "
-{
-  operands[6] = plus_constant (operands[3], 
-			       INTVAL (operands[2]) / BITS_PER_UNIT);
-  operands[7] = GEN_INT (- INTVAL (operands[2]) / BITS_PER_UNIT);
-}")
+;;(define_split
+;;  [(set (match_operand:DI 0 "register_operand" "")
+;;	(ashift:DI (zero_extract:DI (match_operand:DI 1 "register_operand" "")
+;;				    (match_operand:DI 2 "mode_width_operand" "")
+;;				    (ashift:DI (match_operand:DI 3 "" "")
+;;					       (const_int 3)))
+;;		   (match_operand:DI 4 "const_int_operand" "")))
+;;   (clobber (match_operand:DI 5 "register_operand" ""))]
+;;  "INTVAL (operands[4]) == 64 - INTVAL (operands[2])"
+;;  [(set (match_dup 5) (match_dup 6))
+;;   (set (match_dup 0)
+;;	(ashift:DI (zero_extract:DI (match_dup 1) (match_dup 2)
+;;				    (ashift:DI (plus:DI (match_dup 5)
+;;							(match_dup 7))
+;;					       (const_int 3)))
+;;		   (match_dup 4)))]
+;;  "
+;;{
+;;  operands[6] = plus_constant (operands[3], 
+;;			       INTVAL (operands[2]) / BITS_PER_UNIT);
+;;  operands[7] = GEN_INT (- INTVAL (operands[2]) / BITS_PER_UNIT);
+;;}")
   
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3230,16 +3354,10 @@
   ""
   "")
   
-;; Similar for unaligned loads.  For QImode, we use the sequence from the
-;; Alpha Architecture manual.  However, for HImode, we do not.  HImode pointers
-;; are normally aligned to the byte boundary, so an HImode object cannot
-;; cross a longword boundary.  We could use a sequence similar to that for
-;; QImode, but that would fail if the pointer, was, in fact, not aligned.
-;; Instead, we clear bit 1 in the address and do an ldl.  If the low-order
-;; bit was not aligned, this will trap and the trap handler will do what is
-;; needed.
+;; Similar for unaligned loads, where we use the sequence from the
+;; Alpha Architecture manual.
 ;;
-;; Here operand 1 is the address.  Operands 2 and 3 are temporaries, where
+;; Operand 1 is the address.  Operands 2 and 3 are temporaries, where
 ;; operand 3 can overlap the input and output registers.
 
 (define_expand "unaligned_loadqi"
@@ -3255,26 +3373,19 @@
   ""
   "")
 
-;; For this, the address must already be in a register.  We also need two
-;; DImode temporaries, neither of which may overlap the input (and hence the
-;; output, since they might be the same register), but both of which may
-;; be the same.
-
 (define_expand "unaligned_loadhi"
   [(set (match_operand:DI 2 "register_operand" "")
-	(and:DI (match_operand:DI 1 "register_operand" "")
-		(const_int -7)))
+	(mem:DI (and:DI (match_operand:DI 1 "address_operand" "")
+			(const_int -8))))
    (set (match_operand:DI 3 "register_operand" "")
-	(mem:DI (match_dup 2)))
-   (set (match_operand:DI 4 "register_operand" "")
-	(and:DI (match_dup 1) (const_int -2)))
-   (set (subreg:DI (match_operand:HI 0 "register_operand" "") 0)
-	(zero_extract:DI (match_dup 3)
+	(match_dup 1))
+   (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
+	(zero_extract:DI (match_dup 2)
 			 (const_int 16)
-			 (ashift:DI (match_dup 4) (const_int 3))))]
+			 (ashift:DI (match_dup 3) (const_int 3))))]
   ""
   "")
-       
+
 ;; Storing an aligned byte or word requires two temporaries.  Operand 0 is the
 ;; aligned SImode MEM.  Operand 1 is the register containing the 
 ;; byte or word to store.  Operand 2 is the number of bits within the word that
@@ -3297,8 +3408,8 @@
 			    << INTVAL (operands[2])));
 }")
 
-;; For the unaligned byte case, we use code similar to that in the
-;; Architecture book, but reordered to lower the number of registers
+;; For the unaligned byte and halfword cases, we use code similar to that
+;; in the ;; Architecture book, but reordered to lower the number of registers
 ;; required.  Operand 0 is the address.  Operand 1 is the data to store.
 ;; Operands 2, 3, and 4 are DImode temporaries, where operands 2 and 4 may
 ;; be the same temporary, if desired.  If the address is in a register,
@@ -3323,42 +3434,22 @@
   ""
   "")
 
-;; This is the code for storing into an unaligned short.  It uses the same
-;; trick as loading from an unaligned short.  It needs lots of temporaries.
-;; However, during reload, we only have two registers available.  So we
-;; repeat code so that only two temporaries are available.  During RTL
-;; generation, we can use different pseudos for each temporary and CSE
-;; will remove the redundancies.  During reload, we have to settle with
-;; what we get.  Luckily, unaligned accesses of this kind produced during
-;; reload are quite rare.
-;;
-;; Operand 0 is the address of the memory location.  Operand 1 contains the
-;; data to store.  The rest of the operands are all temporaries, with
-;; various overlap possibilities during reload.  See reload_outhi for
-;; details of this use.
-
 (define_expand "unaligned_storehi"
-  [(set (match_operand:DI 2 "register_operand" "")
-	(match_operand:DI 0 "address_operand" ""))
-   (set (match_operand:DI 3 "register_operand" "")
-	(and:DI (match_dup 2) (const_int -7)))
-   (set (match_operand:DI 4 "register_operand" "")
-	(mem:DI (match_dup 3)))
-   (set (match_operand:DI 10 "register_operand" "")
-	(and:DI (match_dup 2) (const_int -2)))
-   (set (match_operand:DI 5 "register_operand" "")
+  [(set (match_operand:DI 3 "register_operand" "")
+	(mem:DI (and:DI (match_operand:DI 0 "address_operand" "")
+			(const_int -8))))
+   (set (match_operand:DI 2 "register_operand" "")
+	(match_dup 0))
+   (set (match_dup 3)
 	(and:DI (not:DI (ashift:DI (const_int 65535)
-				   (ashift:DI (match_dup 10) (const_int 3))))
-		(match_dup 4)))
-   (set (match_operand:DI 6 "register_operand" "")
+				   (ashift:DI (match_dup 2) (const_int 3))))
+		(match_dup 3)))
+   (set (match_operand:DI 4 "register_operand" "")
 	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" ""))
-		   (ashift:DI (match_dup 10) (const_int 3))))
-   (set (match_operand:DI 7 "register_operand" "")
-	(ior:DI (match_dup 5) (match_dup 6)))
-   (set (match_operand:DI 8 "register_operand" "") (match_dup 0))
-   (set (match_operand:DI 9 "register_operand" "")
-	(and:DI (match_dup 8) (const_int -7)))
-   (set (mem:DI (match_dup 9)) (match_dup 7))]
+		   (ashift:DI (match_dup 2) (const_int 3))))
+   (set (match_dup 4) (ior:DI (match_dup 4) (match_dup 3)))
+   (set (mem:DI (and:DI (match_dup 0) (const_int -8)))
+	(match_dup 4))]
   ""
   "")
 
@@ -3410,9 +3501,10 @@
 
 	  rtx temp1 = gen_reg_rtx (DImode);
 	  rtx temp2 = gen_reg_rtx (DImode);
-	  rtx seq = gen_unaligned_loadqi (operands[0],
-					  get_unaligned_address (operands[1]),
-					  temp1, temp2);
+	  rtx seq
+	    = gen_unaligned_loadqi (operands[0],
+				    get_unaligned_address (operands[1], 0),
+				    temp1, temp2);
 
 	  alpha_set_memflags (seq, operands[1]);
 	  emit_insn (seq);
@@ -3446,7 +3538,8 @@
 	  rtx temp1 = gen_reg_rtx (DImode);
 	  rtx temp2 = gen_reg_rtx (DImode);
 	  rtx temp3 = gen_reg_rtx (DImode);
-	  rtx seq = gen_unaligned_storeqi (get_unaligned_address (operands[0]),
+	  rtx seq
+	    = gen_unaligned_storeqi (get_unaligned_address (operands[0], 0),
 					   operands[1], temp1, temp2, temp3);
 
 	  alpha_set_memflags (seq, operands[0]);
@@ -3494,16 +3587,16 @@
 	}
       else
 	{
-	  rtx addr
-	    = force_reg (DImode,
-			 force_operand (get_unaligned_address (operands[1]),
-					NULL_RTX));
-	  rtx scratch1 = gen_reg_rtx (DImode);
-	  rtx scratch2 = gen_reg_rtx (DImode);
-	  rtx scratch3 = gen_reg_rtx (DImode);
+	  /* Don't pass these as parameters since that makes the generated
+	     code depend on parameter evaluation order which will cause
+	     bootstrap failures.  */
 
-	  rtx seq = gen_unaligned_loadhi (operands[0], addr, scratch1,
-					  scratch2, scratch3);
+	  rtx temp1 = gen_reg_rtx (DImode);
+	  rtx temp2 = gen_reg_rtx (DImode);
+	  rtx seq
+	    = gen_unaligned_loadhi (operands[0],
+				    get_unaligned_address (operands[1], 0),
+				    temp1, temp2);
 
 	  alpha_set_memflags (seq, operands[1]);
 	  emit_insn (seq);
@@ -3537,17 +3630,9 @@
 	  rtx temp1 = gen_reg_rtx (DImode);
 	  rtx temp2 = gen_reg_rtx (DImode);
 	  rtx temp3 = gen_reg_rtx (DImode);
-	  rtx temp4 = gen_reg_rtx (DImode);
-	  rtx temp5 = gen_reg_rtx (DImode);
-	  rtx temp6 = gen_reg_rtx (DImode);
-	  rtx temp7 = gen_reg_rtx (DImode);
-	  rtx temp8 = gen_reg_rtx (DImode);
-	  rtx temp9 = gen_reg_rtx (DImode);
-
-	  rtx seq = gen_unaligned_storehi (get_unaligned_address (operands[0]),
-					   operands[1], temp1, temp2,temp3,
-					   temp4, temp5, temp6,temp7,
-					   temp8, temp9);
+	  rtx seq
+	    = gen_unaligned_storehi (get_unaligned_address (operands[0], 0),
+				     operands[1], temp1, temp2, temp3);
 
 	  alpha_set_memflags (seq, operands[0]);
 	  emit_insn (seq);
@@ -3568,7 +3653,7 @@
   ""
   "
 { extern rtx get_unaligned_address ();
-  rtx addr = get_unaligned_address (operands[1]);
+  rtx addr = get_unaligned_address (operands[1], 0);
   /* It is possible that one of the registers we got for operands[2]
      might coincide with that of operands[0] (which is why we made
      it TImode).  Pick the other one to use as our scratch.  */
@@ -3590,18 +3675,16 @@
   ""
   "
 { extern rtx get_unaligned_address ();
-  rtx addr = get_unaligned_address (operands[1]);
-  rtx scratch1 = gen_rtx (REG, DImode, REGNO (operands[2]));
-  rtx scratch2 = gen_rtx (REG, DImode, REGNO (operands[2]) + 1);
-  rtx seq;
+  rtx addr = get_unaligned_address (operands[1], 0);
+  /* It is possible that one of the registers we got for operands[2]
+     might coincide with that of operands[0] (which is why we made
+     it TImode).  Pick the other one to use as our scratch.  */
+  rtx scratch = gen_rtx (REG, DImode,
+			 REGNO (operands[0]) == REGNO (operands[2]) 
+			 ? REGNO (operands[2]) + 1 : REGNO (operands[2]));
+  rtx seq = gen_unaligned_loadhi (operands[0], addr, scratch,
+				  gen_rtx (REG, DImode, REGNO (operands[0])));
 
-  if (GET_CODE (addr) != REG)
-    {
-      emit_insn (gen_rtx (SET, VOIDmode, scratch2, addr));
-      addr = scratch2;
-    }
-      
-  seq = gen_unaligned_loadhi (operands[0], addr, scratch1, scratch1, scratch2);
   alpha_set_memflags (seq, operands[1]);
   emit_insn (seq);
   DONE;
@@ -3628,7 +3711,7 @@
     }
   else
     {
-      rtx addr = get_unaligned_address (operands[0]);
+      rtx addr = get_unaligned_address (operands[0], 0);
       rtx scratch1 = gen_rtx (REG, DImode, REGNO (operands[2]));
       rtx scratch2 = gen_rtx (REG, DImode, REGNO (operands[2]) + 1);
       rtx scratch3 = scratch1;
@@ -3667,16 +3750,17 @@
     }
   else
     {
-      rtx addr = get_unaligned_address (operands[0]);
+      rtx addr = get_unaligned_address (operands[0], 0);
       rtx scratch1 = gen_rtx (REG, DImode, REGNO (operands[2]));
       rtx scratch2 = gen_rtx (REG, DImode, REGNO (operands[2]) + 1);
-      rtx scratch_a = GET_CODE (addr) == REG ? addr : scratch1;
+      rtx scratch3 = scratch1;
       rtx seq;
 
-      seq = gen_unaligned_storehi (addr, operands[1], scratch_a,
-				   scratch2, scratch2, scratch2,
-				   scratch1, scratch2, scratch_a,
-				   scratch1, scratch_a);
+      if (GET_CODE (addr) == REG)
+	scratch1 = addr;
+
+      seq = gen_unaligned_storehi (addr, operands[1], scratch1,
+				   scratch2, scratch3);
       alpha_set_memflags (seq, operands[0]);
       emit_insn (seq);
     }
