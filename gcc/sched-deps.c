@@ -545,7 +545,7 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 	  cselib_lookup (XEXP (t, 0), Pmode, 1);
 	  XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
 	}
-      XEXP (t, 0) = canon_rtx (XEXP (t, 0));
+      t = canon_rtx (t);
 
       if (deps->pending_lists_length > MAX_PENDING_LIST_LENGTH)
 	{
@@ -687,7 +687,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	    cselib_lookup (XEXP (t, 0), Pmode, 1);
 	    XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
 	  }
-        XEXP (t, 0) = canon_rtx (XEXP (t, 0));
+	t = canon_rtx (t);
 	pending = deps->pending_read_insns;
 	pending_mem = deps->pending_read_mems;
 	while (pending)
