@@ -1,3 +1,10 @@
+Fri Aug 28 13:52:35 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* sparc.md (DImode, DFmode, TFmode splits): Delete self_reference
+	code.  Use reg_overlap_mentioned_p to detect when source and
+	destination overlap.
+	(negtf2_notv9+1): Use DFmode instead of SFmode in last two operands.
+
 1998-08-28  Brendan Kehoe  <brendan@cygnus.com>
 
 	* loop.c (check_dbra_loop): Pass COMPARISON_VALUE, not
