@@ -3995,6 +3995,7 @@ pop_tinst_level ()
      this instantiation.  */
   lineno = old->line;
   input_filename = old->file;
+  extract_interface_info ();
   
   current_tinst_level = old->next;
   old->next = free_tinst_level;
@@ -8004,8 +8005,6 @@ instantiate_decl (d)
   tree gen_tmpl;
   int nested = in_function_p ();
   int pattern_defined;
-  int line = lineno;
-  char *file = input_filename;
 
   /* This function should only be used to instantiate templates for
      functions and static member variables.  */
@@ -8142,9 +8141,6 @@ instantiate_decl (d)
     {
       /* Defer all templates except inline functions used in another
          function.  */
-      lineno = line;
-      input_filename = file;
-
       if (at_eof && !pattern_defined 
 	  && DECL_EXPLICIT_INSTANTIATION (d))
 	/* [temp.explicit]
@@ -8217,9 +8213,6 @@ instantiate_decl (d)
     }
 
 out:
-  lineno = line;
-  input_filename = file;
-
   pop_from_top_level ();
   pop_tinst_level ();
 
