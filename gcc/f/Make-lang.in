@@ -339,6 +339,12 @@ f77.install-info: f77.info
 	  done; \
 	  chmod a-x $(infodir)/g77.info*; \
 	fi
+	@if [ -f lang-f77 -a -f $(srcdir)/f/g77.info ] ; then \
+	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
+	    echo " install-info --info-dir=$(infodir) $(infodir)/g77.info"; \
+	    install-info --info-dir=$(infodir) $(infodir)/g77.info || : ; \
+	  else : ; fi; \
+	else : ; fi
 
 f77.install-man: $(srcdir)/f/g77.1
 	-if [ -f f771$(exeext) ] ; then \
@@ -362,6 +368,12 @@ f77.install-man: $(srcdir)/f/g77.1
 	else true; fi
 
 f77.uninstall:
+	@if [ -f lang-f77 ] ; then \
+	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
+	    echo " install-info --delete --info-dir=$(infodir) $(infodir)/g77.info"; \
+	    install-info --delete --info-dir=$(infodir) $(infodir)/g77.info || : ; \
+	  else : ; fi; \
+	else : ; fi
 	-if $(F77_INSTALL_FLAG) ; then \
 	  rm -rf $(bindir)/$(F77_INSTALL_NAME)$(exeext) ; \
 	  rm -rf $(bindir)/$(F77_CROSS_NAME)$(exeext) ; \
