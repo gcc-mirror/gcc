@@ -1566,12 +1566,14 @@ maybe_emit_vtables (tree ctype)
     return false;
 
   import_export_class (ctype);
-  import_export_vtable (primary_vtbl, ctype, 1);
 
   /* See if any of the vtables are needed.  */
   for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = TREE_CHAIN (vtbl))
-    if (!DECL_EXTERNAL (vtbl) && DECL_NEEDED_P (vtbl))
-      break;
+    {
+      import_export_vtable (vtbl, ctype, 1);
+      if (!DECL_EXTERNAL (vtbl) && DECL_NEEDED_P (vtbl))
+	break;
+    }
   if (!vtbl)
     {
       /* If the references to this class' vtables are optimized away,
