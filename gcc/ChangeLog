@@ -1,3 +1,26 @@
+2004-06-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_emit_compare): Add prototype.
+	(s390_emit_jump): Likewise.
+	* config/s390/s390.c (s390_emit_compare): New function.
+	(s390_emit_jump): Likewise.
+	* config/s390/s390.md ("beq", "bne", "bgt", "bgtu", "blt", "bltu",
+	"bge", "bgeu", "ble", "bleu", "bunordered", "bordered", "buneq",
+	"bungt", "bunlt", "bunge", "bunle", "bltgt"): Use s390_emit_compare
+	and s390_emit_jump.
+	("cjump"): Remove, replace by ...
+	("*cjump_64", "*cjump_31"): ... these insns.  Improve length default.
+	("icjump", "*icjump_64", "*icjump_31"): Likewise.
+	("trap"): Fix type attribute.
+	("conditional_trap"): Use s390_emit_compare.
+	("doloop_si"): Remove, replace by ...
+	("doloop_si64", "doloop_si31"): ... these new insn_and_split.
+	Merge existing splitter into insn_and_split.  Improve length default.
+	("doloop_di"): Merge with existing splitter into insn_and_split.
+	("doloop"): Adapt.
+	("jump"): Convert to expander.  Use s390_emit_jump.
+	("*jump_64", "*jump_31"): New insns.  Improve length default.
+	
 2004-06-23  Wu Yongwei  <adah@sh163.net>
 
 	* gthr-win32.h (__GTHREAD_MUTEX_INIT_DEFAULT): Adjust.

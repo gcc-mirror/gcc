@@ -468,6 +468,36 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
     }
 }
 
+/* Emit a compare instruction suitable to implement the comparison
+   OP0 CODE OP1.  Return the correct condition RTL to be placed in
+   the IF_THEN_ELSE of the conditional branch testing the result.  */
+
+rtx
+s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
+{
+  enum machine_mode mode = s390_select_ccmode (code, op0, op1);
+  rtx cc = gen_rtx_REG (mode, CC_REGNUM);
+
+  emit_insn (gen_rtx_SET (VOIDmode, cc, gen_rtx_COMPARE (mode, op0, op1)));
+  return gen_rtx_fmt_ee (code, VOIDmode, cc, const0_rtx);
+}
+
+/* Emit a jump instruction to TARGET.  If COND is NULL_RTX, emit an
+   unconditional jump, else a conditional jump under condition COND.  */
+
+void
+s390_emit_jump (rtx target, rtx cond)
+{
+  rtx insn;
+
+  target = gen_rtx_LABEL_REF (VOIDmode, target);
+  if (cond)
+    target = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, target, pc_rtx);
+
+  insn = gen_rtx_SET (VOIDmode, pc_rtx, target);
+  emit_jump_insn (insn);
+}
+
 /* Return nonzero if OP is a valid comparison operator
    for an ALC condition in mode MODE.  */
 
