@@ -3705,8 +3705,8 @@
 ;; Be careful, fmovq and {st,ld}{x,q} do not exist when !arch64 so
 ;; we must split them all.  :-(
 (define_insn "*movtf_insn_sp32"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,U,o,r,o")
-	(match_operand:TF 1 "input_operand"    "oe,Ge,o,U,ro,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,U,r")
+	(match_operand:TF 1 "input_operand"    "oe,GeUr,o,roG"))]
   "TARGET_FPU
    && ! TARGET_VIS
    && ! TARGET_ARCH64
@@ -3717,8 +3717,8 @@
   [(set_attr "length" "4")])
 
 (define_insn "*movtf_insn_vis_sp32"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,U,o,r,o")
-	(match_operand:TF 1 "input_operand"    "Goe,Ge,o,U,ro,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,U,r")
+	(match_operand:TF 1 "input_operand"    "Goe,GeUr,o,roG"))]
   "TARGET_FPU
    && TARGET_VIS
    && ! TARGET_ARCH64
@@ -3734,7 +3734,7 @@
 
 (define_insn "*movtf_no_e_insn_sp32"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=o,U,o,r,o")
-	(match_operand:TF 1 "input_operand"    "G,o,U,ro,r"))]
+	(match_operand:TF 1 "input_operand"    "G,o,U,roG,r"))]
   "! TARGET_FPU
    && ! TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
@@ -3746,8 +3746,8 @@
 ;; Now handle the float reg cases directly when arch64,
 ;; hard_quad, and proper reg number alignment are all true.
 (define_insn "*movtf_insn_hq_sp64"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,e,m,o,r,o")
-        (match_operand:TF 1 "input_operand"    "e,m,e,G,ro,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,e,m,o,r")
+        (match_operand:TF 1 "input_operand"    "e,m,e,Gr,roG"))]
   "TARGET_FPU
    && ! TARGET_VIS
    && TARGET_ARCH64
@@ -3760,14 +3760,13 @@
   ldq\\t%1, %0
   stq\\t%1, %0
   #
-  #
   #"
-  [(set_attr "type" "fpmove,fpload,fpstore,*,*,*")
-   (set_attr "length" "1,1,1,2,2,2")])
+  [(set_attr "type" "fpmove,fpload,fpstore,*,*")
+   (set_attr "length" "1,1,1,2,2")])
 
 (define_insn "*movtf_insn_hq_vis_sp64"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=e,e,m,eo,r,o")
-        (match_operand:TF 1 "input_operand"    "e,m,e,G,ro,r"))]
+        (match_operand:TF 1 "input_operand"    "e,m,e,G,roG,r"))]
   "TARGET_FPU
    && TARGET_VIS
    && TARGET_ARCH64
@@ -3788,8 +3787,8 @@
 ;; Now we allow the integer register cases even when
 ;; only arch64 is true.
 (define_insn "*movtf_insn_sp64"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=o,e,r")
-        (match_operand:TF 1 "input_operand"    "Ge,oe,or"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,r")
+        (match_operand:TF 1 "input_operand"    "oe,Ger,orG"))]
   "TARGET_FPU
    && ! TARGET_VIS
    && TARGET_ARCH64
@@ -3801,8 +3800,8 @@
   [(set_attr "length" "2")])
 
 (define_insn "*movtf_insn_vis_sp64"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=eo,e,r")
-        (match_operand:TF 1 "input_operand"    "Ge,o,or"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,r")
+        (match_operand:TF 1 "input_operand"    "Goe,Ger,orG"))]
   "TARGET_FPU
    && TARGET_VIS
    && TARGET_ARCH64
@@ -3815,7 +3814,7 @@
 
 (define_insn "*movtf_no_e_insn_sp64"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
-        (match_operand:TF 1 "input_operand"    "or,rG"))]
+        (match_operand:TF 1 "input_operand"    "orG,rG"))]
   "! TARGET_FPU
    && TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
