@@ -10787,6 +10787,11 @@ rs6000_select_rtx_section (mode, x)
 {
   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x, mode))
     toc_section ();
+  else if (flag_pic
+	   && (GET_CODE (x) == SYMBOL_REF
+	       || GET_CODE (x) == LABEL_REF
+	       || GET_CODE (x) == CONST))
+    data_section ();
   else
     const_section ();
 }
