@@ -5591,6 +5591,10 @@ craft_constructor (tree class_decl, tree args)
   /* Then if there are any args to be enforced, enforce them now */
   for (; args && args != end_params_node; args = TREE_CHAIN (args))
     {
+      /* If we see a `void *', we need to change it to Object.  */
+      if (TREE_VALUE (args) == TREE_TYPE (null_pointer_node))
+	TREE_VALUE (args) = object_ptr_type_node;
+
       sprintf (buffer, "parm%d", i++);
       parm = tree_cons (get_identifier (buffer), TREE_VALUE (args), parm);
     }
