@@ -1,3 +1,11 @@
+2004-11-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/16546
+	* objc-act.c (generate_method_descriptors): Remove setting
+	the new decls' type to variable_length_type.
+	(generate_ivar_lists): Likewise.
+	(generate_dispatch_tables): Likewise.
+
 2004-10-30  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_lookup_ivar): The new OTHER parameter

@@ -3773,9 +3773,6 @@ static void
 generate_method_descriptors (tree protocol)
 {
   tree initlist, chain, method_list_template;
-  tree variable_length_type
-    = xref_tag (RECORD_TYPE,
-		get_identifier (UTAG_METHOD_PROTOTYPE_LIST));
   int size;
 
   if (!objc_method_prototype_template)
@@ -3798,7 +3795,6 @@ generate_method_descriptors (tree protocol)
 	= generate_descriptor_table (method_list_template,
 				     "_OBJC_PROTOCOL_CLASS_METHODS",
 				     size, initlist, protocol);
-      TREE_TYPE (UOBJC_CLASS_METHODS_decl) = variable_length_type;
     }
   else
     UOBJC_CLASS_METHODS_decl = 0;
@@ -3819,7 +3815,6 @@ generate_method_descriptors (tree protocol)
 	= generate_descriptor_table (method_list_template,
 				     "_OBJC_PROTOCOL_INSTANCE_METHODS",
 				     size, initlist, protocol);
-      TREE_TYPE (UOBJC_INSTANCE_METHODS_decl) = variable_length_type;
     }
   else
     UOBJC_INSTANCE_METHODS_decl = 0;
@@ -4503,8 +4498,6 @@ static void
 generate_ivar_lists (void)
 {
   tree initlist, ivar_list_template, chain;
-  tree variable_length_type
-    = xref_tag (RECORD_TYPE, get_identifier (UTAG_IVAR_LIST));
   int size;
 
   generating_instance_variables = 1;
@@ -4526,7 +4519,6 @@ generate_ivar_lists (void)
       UOBJC_CLASS_VARIABLES_decl
 	= generate_ivars_list (ivar_list_template, "_OBJC_CLASS_VARIABLES",
 			       size, initlist);
-      TREE_TYPE (UOBJC_CLASS_VARIABLES_decl) = variable_length_type;
     }
   else
     UOBJC_CLASS_VARIABLES_decl = 0;
@@ -4541,7 +4533,6 @@ generate_ivar_lists (void)
       UOBJC_INSTANCE_VARIABLES_decl
 	= generate_ivars_list (ivar_list_template, "_OBJC_INSTANCE_VARIABLES",
 			       size, initlist);
-      TREE_TYPE (UOBJC_INSTANCE_VARIABLES_decl) = variable_length_type;
     }
   else
     UOBJC_INSTANCE_VARIABLES_decl = 0;
@@ -4673,8 +4664,6 @@ static void
 generate_dispatch_tables (void)
 {
   tree initlist, chain, method_list_template;
-  tree variable_length_type
-    = xref_tag (RECORD_TYPE, get_identifier (UTAG_METHOD_LIST));
   int size;
 
   if (!objc_method_template)
@@ -4697,7 +4686,6 @@ generate_dispatch_tables (void)
 				    ? "_OBJC_CLASS_METHODS"
 				    : "_OBJC_CATEGORY_CLASS_METHODS"),
 				   size, initlist);
-      TREE_TYPE (UOBJC_CLASS_METHODS_decl) = variable_length_type;
     }
   else
     UOBJC_CLASS_METHODS_decl = 0;
@@ -4723,7 +4711,6 @@ generate_dispatch_tables (void)
 	  = generate_dispatch_table (method_list_template,
 				     "_OBJC_CATEGORY_INSTANCE_METHODS",
 				     size, initlist);
-      TREE_TYPE (UOBJC_INSTANCE_METHODS_decl) = variable_length_type;
     }
   else
     UOBJC_INSTANCE_METHODS_decl = 0;
