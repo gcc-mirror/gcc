@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP PA-RISC 1.1
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@defmacro.cs.utah.edu)
 
 This file is part of GNU CC.
@@ -19,12 +19,4 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is the same as pa-hpux.h, except that we generate snake code by
-   default and emits assembly code accepted by the 8.02 assembler. */
-
-
-#define TARGET_DEFAULT 0
 #define HP_FP_ARG_DESCRIPTOR_REVERSED
-
-#include "pa/pa-hpux.h"
-
