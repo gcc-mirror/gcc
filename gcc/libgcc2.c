@@ -129,7 +129,7 @@ DWtype
 __subvdi3 (DWtype a, DWtype b)
 {
 #ifdef L_addvdi3
-  return (a, (-b));
+  return __addvdi3 (a, (-b));
 #else
   DWtype w;
 
