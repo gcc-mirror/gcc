@@ -1261,7 +1261,7 @@ test_for_changes (read_fd)
 {
   FILE *in_fp = fdopen (read_fd, "r");
   FILE *out_fp = (FILE *) NULL;
-  char *pz_cmp = pz_curr_data;
+  unsigned char *pz_cmp = (unsigned char*)pz_curr_data;
 
 #ifdef DO_STATS
   fixed_ct++;
@@ -1273,6 +1273,7 @@ test_for_changes (read_fd)
       ch = getc (in_fp);
       if (ch == EOF)
         break;
+      ch &= 0xFF; /* all bytes are 8 bits */
 
       /*  IF we are emitting the output
           THEN emit this character, too.
