@@ -1952,7 +1952,7 @@ __result, __binary_pred, _IterType());
       // concept requirements
       __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIter>);
-      __glibcpp_function_requires(_LessThanComparableConcept<_ValueType);
+      __glibcpp_function_requires(_LessThanComparableConcept<_ValueType>);
     
       make_heap(__first, __middle);
       for (_RandomAccessIter __i = __middle; __i < __last; ++__i)

@@ -79,7 +79,7 @@ namespace std
       raw_storage_iterator& 
       operator=(const _Tp& __element) 
       {
-	construct(&*_M_iter, __element);
+	_Construct(&*_M_iter, __element);
 	return *this;
       }        
 

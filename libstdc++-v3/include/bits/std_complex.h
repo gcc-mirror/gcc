@@ -56,7 +56,7 @@ namespace std
   template<typename _Tp> _Tp norm(const complex<_Tp>&);
 
   template<typename _Tp> complex<_Tp> conj(const complex<_Tp>&);
-  template<typename _Tp> complex<_Tp> polar(const _Tp&, const _Tp&);
+  template<typename _Tp> complex<_Tp> polar(const _Tp&, const _Tp& = 0);
 
   // Transcendentals:
   template<typename _Tp> complex<_Tp> cos(const complex<_Tp>&);

@@ -1,3 +1,46 @@
+2001-08-19  Brendan Kehoe  <brendan@zen.org>
+
+        * include/bits/std_complex.h: Default initialize second argument
+	of polar to 0, as specified in Library DR #79
+
+2001-10-19  Brendan Kehoe  <brendan@zen.org>
+
+        * include/bits/stl_raw_storage_iter.h (operator=): Fix to call
+	_Construct instead of construct.
+
+2001-10-19  Brendan Kehoe  <brendan@zen.org>
+
+        * include/bits/basic_string.tcc (find_first_not_of): Take out check for
+        __n being non-zero, since the standard does not mandate that.
+        e.g., a search for "" in "" should yield position 0, not npos.
+        (find_last_not_of): Likewise.
+
+2001-10-19  Brendan Kehoe  <brendan@zen.org>
+
+        * include/bits/stl_bvector.h (vector<bool>::_M_range_check): Fix
+	to throw out_of_range, not range_error, thus sayeth $23.1.1.13.
+
+2001-10-19  Brendan Kehoe  <brendan@zen.org>
+
+        * include/bits/stl_iterator.h (reverse_iterator::current): Rename
+        member from _M_current, and change all uses; thus sayeth $24.4.1.1.
+
+2001-10-19  Brendan Kehoe  <brendan@zen.org>
+ 
+        * include/bits/stl_algo.h (partial_sort): Add missing `>' on the
+        template parameter _ValueType.
+
+2001-10-19  Brendan Kehoe  <brendan@zen.org>
+
+	* include/bits/std_limits.h: Clean up extra semicolons.
+        * include/bits/locale_facets.h: Likewise.
+        * include/bits/type_traits.h: Likewise.
+
+2001-10-19  Brendan Kehoe  <brendan@zen.org>
+
+        * include/bits/localefwd.h (locale::combine): Add const for lib DR 14.
+        * include/bits/locale_facets.tcc (locale::combine): Likewise.
+
 2001-10-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (__timepunct::_M_put_helper):

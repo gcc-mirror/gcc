@@ -234,7 +234,7 @@ namespace std
 
     template<typename _Facet>
       locale  
-      combine(const locale& __other);
+      combine(const locale& __other) const;
 
     // Locale operations:
     string 

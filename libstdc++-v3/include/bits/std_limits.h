@@ -1861,8 +1861,8 @@ namespace std
       static const bool has_quiet_NaN = __glibcpp_double_has_quiet_NaN;
       static const bool has_signaling_NaN = __glibcpp_double_has_signaling_NaN;
       static const float_denorm_style has_denorm =
-              __glibcpp_double_has_denorm;;
-      static const bool has_denorm_loss = __glibcpp_double_has_denorm_loss;;
+              __glibcpp_double_has_denorm;
+      static const bool has_denorm_loss = __glibcpp_double_has_denorm_loss;
 
       static double infinity() throw()
       { return __glibcpp_double_infinity; }
