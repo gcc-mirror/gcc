@@ -3325,8 +3325,6 @@ static const struct resword reswords[] =
   { "__asm__",		RID_ASM,	0 },
   { "__attribute",	RID_ATTRIBUTE,	0 },
   { "__attribute__",	RID_ATTRIBUTE,	0 },
-  { "__bounded",	RID_BOUNDED,	0 },
-  { "__bounded__",	RID_BOUNDED,	0 },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, 0 },
   { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, 0 },
   { "__builtin_va_arg",	RID_VA_ARG,	0 },
@@ -3356,8 +3354,6 @@ static const struct resword reswords[] =
   { "__thread",		RID_THREAD,	0 },
   { "__typeof",		RID_TYPEOF,	0 },
   { "__typeof__",	RID_TYPEOF,	0 },
-  { "__unbounded",	RID_UNBOUNDED,	0 },
-  { "__unbounded__",	RID_UNBOUNDED,	0 },
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
   { "asm",		RID_ASM,	D_EXT },
@@ -3446,8 +3442,6 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_RESTRICT */	TYPE_QUAL,
 
   /* C extensions */
-  /* RID_BOUNDED */	TYPE_QUAL,
-  /* RID_UNBOUNDED */	TYPE_QUAL,
   /* RID_COMPLEX */	TYPESPEC,
   /* RID_THREAD */	SCSPEC,
 

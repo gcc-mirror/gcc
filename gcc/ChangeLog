@@ -1,3 +1,24 @@
+2003-05-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.h (enum rid): Remove RID_BOUNDED, RID_UNBOUNDED.
+	* c-parse.in (reswords): Remove __bounded__ and __unbounded__.
+	(rid_to_yy): Remove RID_BOUNDED, RID_UNBOUNDED slots.
+	* print-tree.c (print_node): Remove ambient-boundedness.
+	* tree.h (tree_common): Remove bounded_flag.
+	(BOUNDED_INDIRECT_YPE_P, BOUNDED_POINTER_TYPE_P,
+	BOUNDED_REFERENCE_TYPE_P, MAYBE_BOUNDED_INDIRECT_TYPE_P,
+	MAYBE_BOUNDED_POINTER_TYPE_P, MAYBE_BOUNDED_REFERENCE_TYPE_P,
+	TREE_BOUNDED, TYPE_MAIN_VARIANTS_PHYSICALLY_EQUAL_P,
+	TYPE_MAIN_PHYSICAL_VARIANT, TYPE_BOUNDED, TYPE_QUAL_BOUNDED):
+	Remove.
+	(TYPE_QUALS): Remove BOUNDED.
+	(TREE_EXPR_QUALS, TREE_FUNC_QUALS): Remove.
+	(TYPE_BOUNDED_VALUE, TYPE_BOUNDED_BASE, TYPE_BOUNDED_EXTENT,
+	TYPE_BOUNDED_SUBTYPE, TYPE_UNBOUNDED_VARIANT, TYPE_POINTER_DEPTH,
+	TYPE_AMBIENT_BOUNDEDNESS, MAX_POINTER_DEPT,
+	VA_LIST_POINTER_DEPTH): Remove.
+	(struct tree_type): Remove pointer_depth.
+
 2003-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-pretty-print.c (pp_c_integer_literal): Use
@@ -137,6 +158,7 @@
 	* doc/invoke.texi (Option Summary, PowerPC Options): Document
 	new options.
 
+>>>>>>> 1.17889
 2003-05-19  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-decl.c (finish_decl): When setting the DECL_ASSEMBLER_NAME
