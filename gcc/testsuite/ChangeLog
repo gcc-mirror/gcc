@@ -1,3 +1,7 @@
+2004-09-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.dg/tree-ssa/copy-headers.c: Update outcome.
+
 2004-09-16  Frank Ch. Eigler  <fche@redhat.com>
 
 	* gcc.misc-tests/bprob.exp, g++.dg/bprob/bprob.exp: Iterate tests

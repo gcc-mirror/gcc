@@ -732,6 +732,8 @@ extern void set_immediate_dominator (enum cdi_direction, basic_block,
 extern basic_block get_immediate_dominator (enum cdi_direction, basic_block);
 extern bool dominated_by_p (enum cdi_direction, basic_block, basic_block);
 extern int get_dominated_by (enum cdi_direction, basic_block, basic_block **);
+extern unsigned get_dominated_by_region (enum cdi_direction, basic_block *,
+					 unsigned, basic_block *);
 extern void add_to_dominance_info (enum cdi_direction, basic_block);
 extern void delete_from_dominance_info (enum cdi_direction, basic_block);
 basic_block recount_dominator (enum cdi_direction, basic_block);
