@@ -342,12 +342,6 @@
 					   || reload_in_progress,
 					   mode, XEXP (op, 0))")))
 
-;; Return 1 if the operand is either an easy FP constant or memory.
-(define_predicate "mem_or_easy_const_operand"
-  (if_then_else (match_code "const_double")
-    (match_operand 0 "easy_fp_constant")
-    (match_operand 0 "memory_operand")))
-
 ;; Return 1 if the operand is either a non-special register or can be used
 ;; as the operand of a `mode' add insn.
 (define_predicate "add_operand"
@@ -536,6 +530,20 @@
 	  (ior (match_test "macho_lo_sum_memory_operand (op, mode)")
 	       (match_operand 0 "volatile_mem_operand")))
      (match_operand 0 "gpc_reg_operand")))
+
+;; Return 1 if the operand is either an easy FP constant or memory or reg.
+(define_predicate "reg_or_none500mem_operand"
+  (if_then_else (match_code "mem")
+     (and (match_test "!TARGET_E500_DOUBLE")
+	  (ior (match_operand 0 "memory_operand")
+	       (ior (match_test "macho_lo_sum_memory_operand (op, mode)")
+		    (match_operand 0 "volatile_mem_operand"))))
+     (match_operand 0 "gpc_reg_operand")))
+
+;; Return 1 if the operand is CONST_DOUBLE 0, register or memory operand.
+(define_predicate "zero_reg_mem_operand"
+  (ior (match_operand 0 "zero_fp_constant")
+       (match_operand 0 "reg_or_mem_operand")))
 
 ;; Return 1 if the operand is a general register or memory operand without
 ;; pre_inc or pre_dec, which produces invalid form of PowerPC lwa

@@ -1,3 +1,14 @@
+2005-03-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/predicates.md (mem_or_easy_const_operand): Delete.
+	(reg_or_none500mem_operand): New predicate.
+	(zero_reg_mem_operand): New predicate.
+	* config/rs6000/rs6000.md (extendsfdf2): Change operand1 predicate
+	to reg_or_none500mem_operand.
+	(extendsfdf2_fpr): Add MEM alternative.
+	(extenddftf2_internal): Change operand2 predicate to
+	zero_reg_mem_operand.
+
 2005-03-13  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* ggc-zone.c: Rewritten.
