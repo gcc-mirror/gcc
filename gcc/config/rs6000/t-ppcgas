@@ -26,26 +26,27 @@ eabi-ctors.c: $(srcdir)/config/rs6000/eabi-ctors.c
 MULTILIB_OPTIONS	= msoft-float \
 			  mrelocatable \
 			  mlittle/mbig \
-			  mcall-sysv-noeabi/mcall-sysv-eabi/mcall-aix
+			  mcall-sysv-noeabi/mcall-sysv-eabi/mcall-aix/mcall-solaris
 
 MULTILIB_DIRNAMES	= nof \
 			  rel \
 			  le be \
-			  cs ce ca
+			  cs ce ca sol
 
 MULTILIB_MATCHES	= mlittle=mlittle-endian \
 			  mbig=mbig-endian \
-			  mlittle=mcall-solaris \
 			  mbig=mcall-linux \
 			  msoft-float=mcpu?403 \
 			  msoft-float=mcpu?821 \
 			  msoft-float=mcpu?860 \
-			  mcall-sysv-noeabi=mcall-solaris \
 			  mcall-sysv-noeabi=mcall-linux \
 			  mcall-sysv-eabi=meabi \
 			  mcall-sysv-noeabi=mno-eabi
 
-MULTILIB_EXCEPTIONS	= *mrelocatable*/*mcall-sysv-noeabi*
+MULTILIB_EXCEPTIONS	= *mrelocatable*/*mcall-sysv-noeabi* \
+			  *mrelocatable*/*mcall-solaris* \
+			  *mbig*/*mcall-solaris* \
+			  *mlittle*/*mcall-solaris*
 
 LIBGCC = stmp-multilib stmp-crt
 INSTALL_LIBGCC = install-multilib install-crt

@@ -31,13 +31,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Make the simulator the default */
 #undef	LIB_DEFAULT_SPEC
-#define LIB_DEFAULT_SPEC LIB_SIM_SPEC
+#define LIB_DEFAULT_SPEC "%(lib_sim)"
 
 #undef	STARTFILE_DEFAULT_SPEC
-#define STARTFILE_DEFAULT_SPEC STARTFILE_SIM_SPEC
+#define STARTFILE_DEFAULT_SPEC "%(startfile_sim)"
 
 #undef	ENDFILE_DEFAULT_SPEC
-#define ENDFILE_DEFAULT_SPEC ENDFILE_SIM_SPEC
+#define ENDFILE_DEFAULT_SPEC "%(endfile_sim)"
 
 #undef	LINK_START_DEFAULT_SPEC
-#define LINK_START_DEFAULT_SPEC LINK_START_SIM_SPEC
+#define LINK_START_DEFAULT_SPEC "%(link_start_sim)"

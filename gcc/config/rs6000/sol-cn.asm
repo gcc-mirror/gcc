@@ -39,6 +39,12 @@
 	.file	"scrtn.s"
 	.ident	"GNU C scrtn.s"
 
+# Default versions of exception handling register/deregister
+	.weak	_ex_register
+	.weak	_ex_deregister
+	.set	_ex_register,0
+	.set	_ex_deregister,0
+
 # End list of C++ constructors
 	.section ".ctors","aw"
 	.globl	__CTOR_END__
@@ -51,16 +57,24 @@ __CTOR_END__:
 	.type	__DTOR_END__,@object
 __DTOR_END__:
 
+	.section ".text"
+	.globl	_ex_text1
+_ex_text1:
+
+	.section ".exception_ranges","aw"
+	.globl	_ex_range1
+_ex_range1:
+
 # Tail of __init used for static constructors in Solaris
 	.section ".init","ax"
-	lwz %r0,12(%r1)
-	mtlr %r0
-	addi %r1,%r1,16
+	lwz	%r0,16(%r1)
+	mtlr	%r0
+	addi	%r1,%r1,16
 	blr
 
 # Tail of __fini used for static destructors in Solaris
 	.section ".fini","ax"
-	lwz %r0,12(%r1)
-	mtlr %r0
-	addi %r1,%r1,16
+	lwz	%r0,16(%r1)
+	mtlr	%r0
+	addi	%r1,%r1,16
 	blr

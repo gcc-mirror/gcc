@@ -28,12 +28,51 @@ Boston, MA 02111-1307, USA.  */
 extern char **_environ;
 
 extern int atexit (void (*__func) (void));
-extern void __init (void);
-extern void __fini (void);
-extern void __do_global_ctors (void);
+extern void __init (void) __attribute__ ((__longcall__));
+extern void __fini (void) __attribute__ ((__longcall__));
 
 typedef void (*func_ptr) (void);
 int (*__atexit)(func_ptr) = atexit;
+
+/* Exception handling */
+struct ex_shared1 {
+  void	*prev;
+  void	*next;
+  char	*text_start;
+  char	*range_start;
+  char	*text_end;
+  char	*range_end;
+};
+
+struct ex_shared {
+  void (*ex_register) (struct ex_shared1 *);
+  void (*ex_deregister) (struct ex_shared1 *);
+  struct ex_shared1 shared_info;
+};
+
+extern char _ex_text0[], _ex_text1[];
+extern char _ex_range0[], _ex_range1[];
+extern void _ex_register (struct ex_shared1 *);
+extern void _ex_deregister (struct ex_shared1 *);
+
+struct ex_shared shared __attribute__((section(".ex_shared"))) = {
+  _ex_register,
+  _ex_deregister,
+  {
+    (void *)0,
+    (void *)0,
+    _ex_text0,
+    _ex_range0,
+    _ex_text1,
+    _ex_range1
+  }
+};
+
+static void
+deregister (void)
+{
+  (* shared.ex_deregister) (&shared.shared_info);
+}
 
 /* Start function.  */
 
@@ -48,10 +87,17 @@ _start(int argc, char *argv[], char *envp[], void *auxp, void (*termfunc)())
   if (termfunc)
     atexit (termfunc);
 
-#if 0
+  /* Register exception handler if needed */
+  if (shared.ex_register)
+    (* shared.ex_register) (&shared.shared_info);
+
+  if (shared.ex_deregister)
+    atexit (deregister);
+
   /* Call any global constructors and destructors.  */
-  __do_global_ctors ();
-#endif
+  __init ();
+
+  atexit (__fini);
 
   /* Call the main program now */
   ret = main (argc, argv, envp, auxp);
