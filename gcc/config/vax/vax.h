@@ -283,6 +283,16 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 		 || (VALUE) == CONST0_RTX (SFmode))	\
    : 0)
 
+/* Optional extra constraints for this machine.
+
+   For the VAX, `Q' means that OP is a MEM that does not have a mode-dependent
+   address.  */
+
+#define EXTRA_CONSTRAINT(OP, C) \
+  ((C) == 'Q'								\
+   ? GET_CODE (OP) == MEM && ! mode_dependent_address_p (XEXP (OP, 0))	\
+   : 0)
+
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
