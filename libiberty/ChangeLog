@@ -1,3 +1,7 @@
+2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* strdup.c (strdup): Constify the argument.
+
 2004-01-14  Loren J. Rittle  <ljrittle@acm.org>
 
 	* Makefile.in (distclean): Remove config.cache.
