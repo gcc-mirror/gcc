@@ -3,6 +3,9 @@
 /* Define if you have a working `mmap' system call.  */
 #undef HAVE_MMAP
 
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
 // Include support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG
 
@@ -71,6 +74,24 @@
 
 // Define if modf is present in <math.h>
 #undef HAVE_MODF
+
+// Define if multiple threads are to be taken into account.
+#undef _GLIBCPP_USING_THREADS
+
+// Define to some workaround if not directly available.
+#undef off64_t
+
+// Define to some workaround if not directly available.
+#undef __off_t
+
+// Define to some workaround if not directly available.
+#undef __off64_t
+
+// Define to some workaround if not directly available.
+#undef __ssize_t
+
+// Define to regular stat if not directly supported.
+#undef stat64
 
 /* Define if you have the _acosf function.  */
 #undef HAVE__ACOSF
