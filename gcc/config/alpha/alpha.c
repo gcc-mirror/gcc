@@ -173,10 +173,10 @@ and_operand (op, mode)
   return register_operand (op, mode);
 }
 
-/* Return 1 if OP is a valid first operand to an IOR insn.  */
+/* Return 1 if OP is a valid first operand to an IOR or XOR insn.  */
 
 int
-ior_operand (op, mode)
+or_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
