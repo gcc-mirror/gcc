@@ -4,6 +4,10 @@
 
 Mon Oct 25 00:42:35 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* arm.c (arm_override_options): Correct initialization of
+	arm_fast_multiply, arm_arch4, arm_arch5, arm_ld_sched,
+	arm_is_strong, and arm_is_6_or_7.
+
 	* loop.c (note_set_pseudo_multiple_uses_retval): New variable.
 	(note_set_pseudo_multiple_uses): New function.
 	(check_dbra_loop): Use not_set_pseudo_multiple_uses to determine
