@@ -1477,7 +1477,7 @@ main (argc, argv)
       char *startp, *endp;
 
       for (num_dirs = 1, startp = epath; *startp; startp++)
-	if (*startp == ':')
+	if (*startp == PATH_SEPARATOR)
 	  num_dirs++;
       include_defaults
 	= (struct default_include *) xmalloc ((num_dirs
@@ -1861,12 +1861,7 @@ path_include (path)
       struct file_name_list *dirtmp;
 
       /* Find the end of this name.  */
-#ifdef __MSDOS__
-      /* Handle cases like c:/usr/lib:d:/gcc/lib */
-      while (*q != 0 && (*q != ':' || (q - p == 1 && isalpha (*p)))) q++;
-#else
-      while (*q != 0 && *q != ':') q++;
-#endif
+      while (*q != 0 && *q != PATH_SEPARATOR) q++;
       if (p == q) {
 	/* An empty name in the path stands for the current directory.  */
 	name = (char *) xmalloc (2);
