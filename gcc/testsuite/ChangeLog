@@ -5,6 +5,7 @@ Mon Jul 13 22:26:37 1998  Jeffrey A Law  (law@cygnus.com)
 	* gcc.c-torture/execute/strct-varg-1.x: New file.  Expect failure on
 	the mn10200.
 	* gcc.c-torture/execute/va-arg-3.x: Similarly.
+	* gcc.c-torture/compile/930326-1.x: Similarly.
 
 1998-07-13  Dave Love  <d.love@dl.ac.uk>
 
