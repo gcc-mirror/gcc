@@ -1870,6 +1870,7 @@ write_classfile (clas)
   FILE* stream = fopen (class_file_name, "wb");
   if (stream == NULL)
     fatal ("failed to open `%s' for writing", class_file_name);
+  jcf_dependency_add_target (class_file_name);
   init_jcf_state (state, work);
   chunks = generate_classfile (clas, state);
   write_chunks (stream, chunks);

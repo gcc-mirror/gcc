@@ -793,9 +793,9 @@ DEFUN(main, (argc, argv),
     {
       fprintf (out, "Reading .class from <standard input>.\n");
 #if JCF_USE_STDIO
-      open_class ("<stdio>", jcf, stdin);
+      open_class ("<stdio>", jcf, stdin, NULL);
 #else
-      open_class ("<stdio>", jcf, 0);
+      open_class ("<stdio>", jcf, 0, NULL);
 #endif
       process_class (jcf);
     }
@@ -806,7 +806,7 @@ DEFUN(main, (argc, argv),
 	  char *arg = argv[argi];
 	  char* class_filename = find_class (arg, strlen (arg), jcf, 1);
 	  if (class_filename == NULL)
-	    class_filename = find_classfile (arg, jcf);
+	    class_filename = find_classfile (arg, jcf, NULL);
 	  if (class_filename == NULL)
 	    {
 	      perror ("Could not find class");

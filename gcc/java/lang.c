@@ -31,6 +31,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "jcf.h"
 #include "toplev.h"
+#include "flags.h"
 
 /* Table indexed by tree code giving a string containing a character
    classifying the tree code.  Possibilities are
@@ -104,6 +105,14 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
 JCF main_jcf[1];
 JCF *current_jcf;
 
+/* Variable controlling how dependency tracking is enabled in
+   init_parse.  */
+static int dependency_tracking = 0;
+
+/* Flag values for DEPENDENCY_TRACKING.  */
+#define DEPEND_SET_FILE 1
+#define DEPEND_ENABLE   2
+
 /*
  * process java-specific compiler command-line options
  */
@@ -140,7 +149,33 @@ lang_decode_option (argc, argv)
 	      found = 1;
 	    }
 	}
+
       return found;
+    }
+
+  if (strcmp (p, "-MD") == 0)
+    {
+      jcf_dependency_init (1);
+      dependency_tracking |= DEPEND_SET_FILE | DEPEND_ENABLE;
+      return 1;
+    }
+  else if (strcmp (p, "-MMD") == 0)
+    {
+      jcf_dependency_init (0);
+      dependency_tracking |= DEPEND_SET_FILE | DEPEND_ENABLE;
+      return 1;
+    }
+  else if (strcmp (p, "-M") == 0)
+    {
+      jcf_dependency_init (1);
+      dependency_tracking |= DEPEND_ENABLE;
+      return 1;
+    }
+  else if (strcmp (p, "-MM") == 0)
+    {
+      jcf_dependency_init (0);
+      dependency_tracking |= DEPEND_ENABLE;
+      return 1;
     }
 
   return 0;
@@ -157,9 +192,49 @@ init_parse (filename)
     {
       finput = stdin;
       filename = "stdin";
+
+      if (dependency_tracking)
+	error ("can't do dependency tracking with input from stdin");
     }
   else
-    finput = fopen (filename, "r");
+    {
+      if (dependency_tracking)
+	{
+	  char *dot;
+	  dot = strrchr (filename, '.');
+	  if (dot == NULL)
+	    error ("couldn't determine target name for dependency tracking");
+	  else
+	    {
+	      char *buf = (char *) xmalloc (dot - filename + 3);
+	      strncpy (buf, filename, dot - filename);
+
+	      /* If emitting class files, we might have multiple
+		 targets.  The class generation code takes care of
+		 registering them.  Otherwise we compute the target
+		 name here.  */
+	      if (flag_emit_class_files)
+		jcf_dependency_set_target (NULL);
+	      else
+		{
+		  strcpy (buf + (dot - filename), ".o");
+		  jcf_dependency_set_target (buf);
+		}
+
+	      if ((dependency_tracking & DEPEND_SET_FILE))
+		{
+		  strcpy (buf + (dot - filename), ".d");
+		  jcf_dependency_set_dep_file (buf);
+		}
+	      else
+		jcf_dependency_set_dep_file ("-");
+
+	      free (buf);
+	    }
+	}
+
+      finput = fopen (filename, "r");
+    }
   if (finput == 0)
     pfatal_with_name (filename);
 
@@ -175,6 +250,7 @@ void
 finish_parse ()
 {
   fclose (finput);
+  jcf_dependency_write ();
 }
 
 /* Buffer used by lang_printable_name. */

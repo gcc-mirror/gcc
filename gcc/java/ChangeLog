@@ -1,3 +1,39 @@
+1998-10-14  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf-write.c (write_classfile): Add output class file as target.
+	* lang-options.h: Added -MD, -MMD, -M, and -MM.
+	* jcf.h: Added declarations for dependency-tracking functions.
+	* lang-specs.h: Handle -M, -MM, MD, and -MMD.
+	* lang.c (lang_decode_option): Recognize -MD and -MMD.
+	(finish_parse): Call jcf_dependency_write.
+	(dependency_tracking): New global.
+	(DEPEND_SET_FILE): New define.
+	(DEPEND_ENABLE): New define.
+	(init_parse): Enable dependency tracking if required.
+	Include "flags.h".
+	* Makefile.in (JAVA_OBJS): Added jcf-depend.o.
+	(../jcf-dump$(exeext)): Depend on and link with jcf-depend.o.
+	(../gcjh$(exeext)): Likewise.
+	(jcf-depend.o): New target.
+	* Make-lang.in (JAVA_SRCS): Added jcf-depend.c.
+	(GCJH_SOURCES): Likewise.
+	* jcf-io.c (open_class): Call jcf_dependency_add_file.  Added
+	dep_name argument.
+	(find_classfile): Added dep_name argument.
+	(find_class): Compute name of dependency.
+	(open_in_zip): Call jcf_dependency_add_file.
+	* gjavah.c (output_file): No longer global.
+	(usage): Don't mention "gjavah".
+	(help): Likewise.
+	(java_no_argument): Likewise.
+	(version): Likewise.
+	(main): Recognize and handle -M family of options.
+	(print_mangled_classname): Return is void.
+	(process_file): Handle case where output is suppressed.
+	(HANDLE_END_FIELD): Likewise.
+	(HANDLE_METHOD): Likewise.
+	* jcf-depend.c: New file.
+
 Tue Oct 13 23:34:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* java-tree.def: Add missing newline at EOF.

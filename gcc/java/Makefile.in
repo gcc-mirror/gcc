@@ -182,7 +182,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 #
 JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
   except.o verify.o zextract.o jcf-io.o jcf-parse.o mangle.o jcf-write.o \
-  buffer.o memmove.o
+  buffer.o memmove.o jcf-depend.o
 
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
 
@@ -200,15 +200,15 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	      $(JAVA_OBJS_LITE) $(LIBS)
 
-../jcf-dump$(exeext): jcf-dump.o jcf-io.o zextract.o memmove.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o zextract.o memmove.o
+../jcf-dump$(exeext): jcf-dump.o jcf-io.o jcf-depend.o zextract.o memmove.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o jcf-depend.o zextract.o memmove.o
 
 # Dependencies here must be kept in sync with dependencies in Make-lang.in.
 ../jvgenmain$(exeext):  jvgenmain.o mangle.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jvgenmain.o mangle.o ../obstack.o
 
-../gcjh$(exeext): gjavah.o jcf-io.o zextract.o memmove.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o zextract.o memmove.o 
+../gcjh$(exeext): gjavah.o jcf-io.o jcf-depend.o zextract.o memmove.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o jcf-depend.o zextract.o memmove.o 
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
@@ -287,6 +287,7 @@ expr.o : expr.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../real.h \
   $(RTL_H) $(EXPR_H) javaop.h java-opcodes.h $(srcdir)/../except.h \
   java-except.h java-except.h parse.h $(srcdir)/../toplev.h \
   $(srcdir)/../system.h
+jcf-depend.o: jcf-depend.c $(CONFIG_H) $(srcdir)/../system.h
 jcf-io.o: jcf-io.c $(CONFIG_H) $(srcdir)/../system.h
 jcf-parse.o : jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../input.h java-except.h $(srcdir)/../system.h
