@@ -36,7 +36,7 @@ Currently only Linux uses this. */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
 -D__alpha -D__alpha__ -D__linux__ -D__linux -D_LONGLONG -Dlinux -Dunix \
--Asystem(linux) -Acpu(alpha) -Amachine(alpha) -D__ELF__ -D__PIC__ -D__pic__"
+-Asystem(linux) -Acpu(alpha) -Amachine(alpha) -D__ELF__"
 
 #undef LINK_SPEC
 #ifdef USE_GNULIBC_1
