@@ -7885,6 +7885,10 @@ add_vect (tab, vect_num, vect, vect_length)
           tab->min_comb_vect_el_value = vect [vect_index];
         check_vect_start [comb_vect_index + vect_index] = vect_num;
       }
+  if (tab->max_comb_vect_el_value < undefined_vect_el_value)
+    tab->max_comb_vect_el_value = undefined_vect_el_value;
+  if (tab->min_comb_vect_el_value > undefined_vect_el_value)
+    tab->min_comb_vect_el_value = undefined_vect_el_value;
   if (tab->max_base_vect_el_value < comb_vect_index)
     tab->max_base_vect_el_value = comb_vect_index;
   if (tab->min_base_vect_el_value > comb_vect_index)
