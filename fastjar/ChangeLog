@@ -1,3 +1,8 @@
+2001-06-28  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Accept --with-system-zlib.  Fixes PR java/3441.
+
 2001-05-15  Per Bothner  <per@bothner.com>
 
         * Makefile.am (bin_PROGRAMS):  Renamed from "fastjar" to "jar".

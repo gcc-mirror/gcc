@@ -37,10 +37,25 @@ AC_CHECK_SIZEOF(long long)
 dnl Check byte order
 AC_C_BIGENDIAN
 
-dnl Brain dead check for tree's zlib
-ZDEPS='$(top_builddir)/../zlib/libz.a'
-ZLIBS="$ZDEPS -L\$(here)/../zlib/$libsubdir"
-ZINCS='-I$(top_srcdir)/../zlib'
+AC_ARG_WITH(system-zlib,
+[  --with-system-zlib      use installed libz])
+
+ZLIBS=
+ZDEPS=
+ZINCS=
+use_zlib=maybe
+if test "$with_system_zlib" = yes; then
+   AC_CHECK_LIB(z, deflate, ZLIBS=-lz, use_zlib=no)
+else
+   use_zlib=no
+fi
+
+if test "$use_zlib" = no; then
+   # Brain dead way to find tree's zlib.
+   ZDEPS='$(top_builddir)/../zlib/libz.a'
+   ZLIBS="$ZDEPS -L\$(here)/../zlib/$libsubdir"
+   ZINCS='-I$(top_srcdir)/../zlib'
+fi
 AC_SUBST(ZLIBS)
 AC_SUBST(ZDEPS)
 AC_SUBST(ZINCS)
