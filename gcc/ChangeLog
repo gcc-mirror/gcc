@@ -1,3 +1,16 @@
+Fri Jun  8 21:34:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (diddle_return_value): Kill code to determine
+	return value before expand_function_end.
+	(expand_function_end): Delay call to clobber_return_register
+	after fucntion return value is computed.
+
+	Re-install temporary reverted patch:
+	* toplev.c (rest_of_compilation): Call split_all_insns
+	before reg-stack and shorten-branches. Do shorten-branches
+	after reg-stack.
+	* final.c (shorten_branches): Remove insn splitting code.
+
 2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi, doc/invoke.texi: Add index of command line
