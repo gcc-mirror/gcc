@@ -670,12 +670,8 @@ expand_used_vars_for_block (tree block, bool toplevel)
       resize_stack_vars_conflict (new_sv_num);
 
       for (i = old_sv_num; i < new_sv_num; ++i)
-	for (j = i < this_sv_num ? i : this_sv_num; ; --j)
-	  {
-	    add_stack_var_conflict (i, j);
-	    if (j == old_sv_num)
-	      break;
-	  }
+	for (j = i < this_sv_num ? i+1 : this_sv_num; j-- > old_sv_num ;)
+	  add_stack_var_conflict (i, j);
     }
 }
 

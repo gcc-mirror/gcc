@@ -1,3 +1,9 @@
+2004-09-11  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/17416
+	* cfgexpand.c (expand_used_vars_for_block): Fix off-by-one bug
+	in conflict loop.
+
 2004-09-11  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (MODE_NEEDED): Calls need UNINITIALIZED mode; add comment.
