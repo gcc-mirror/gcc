@@ -12536,6 +12536,10 @@ xref_basetypes (code_type_node, name, ref, binfo)
     CLEAR_CLASSTYPE_MARKED (BINFO_TYPE (TREE_VEC_ELT (binfos, i)));
   CLEAR_CLASSTYPE_MARKED (ref);
 
+  /* Now that we know all the base-classes, set up the list of virtual
+     bases.  */
+  CLASSTYPE_VBASECLASSES (ref) = get_vbase_types (ref);
+
   pop_obstacks ();
 }
   
