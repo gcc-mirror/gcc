@@ -3770,14 +3770,12 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       d1 = DECL_NAME (template);
       context = DECL_CONTEXT (template);
     }
-  else
-    my_friendly_abort (272);
 
   /* With something like `template <class T> class X class X { ... };'
      we could end up with D1 having nothing but an IDENTIFIER_VALUE.
      We don't want to do that, but we have to deal with the situation,
      so let's give them some syntax errors to chew on instead of a
-     crash.  */
+     crash. Alternatively D1 might not be a template type at all.  */
   if (! template)
     {
       cp_error ("`%T' is not a template", d1);
