@@ -89,7 +89,7 @@ public final class Security extends Object
 	int i = 1;
 	String name;
 
-	while ((name = secprops.getProperty("security.provider." + i++)) !=
+	while ((name = secprops.getProperty("security.provider." + i)) !=
 	       null)
 	  {
 	    Exception exception = null;
@@ -97,7 +97,6 @@ public final class Security extends Object
 	    try
 	      {
 		providers.addElement(Class.forName(name).newInstance());
-		i++;
 	      }
 	    catch (ClassNotFoundException x)
 	      {
@@ -114,6 +113,7 @@ public final class Security extends Object
 	    if (exception != null)
 	      System.err.println ("Error loading security provider " + name
 	                          + ": " + exception);
+	    i++;
 	  }
       }
     catch (FileNotFoundException ignored)
