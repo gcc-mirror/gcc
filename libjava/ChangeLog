@@ -1,3 +1,8 @@
+2003-09-25  Guilhem Lavaux  <guilhem@kaffe.org>
+
+	* java/text/SimpleDateFormat.java (parse): Don't use class calendar
+	field.
+
 2003-09-25  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/SelectorImpl.java
