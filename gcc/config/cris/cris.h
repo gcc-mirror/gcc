@@ -1648,7 +1648,7 @@ call_ ## FUNC (void)						\
 #define CASE_VECTOR_PC_RELATIVE 1
 
 /* FIXME: Investigate CASE_VECTOR_SHORTEN_MODE to make sure HImode is not
-   used when broken-.word could possibly fail (plus test-case).  */
+   used when broken-.word could possibly fail (plus testcase).  */
 
 #define FIXUNS_TRUNC_LIKE_FIX_TRUNC
 

@@ -1094,7 +1094,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 
 ;; Don't use 'p' here.  A 'p' must stand first in constraints, or reload
 ;; messes up, not registering the address for reload.  Several C++
-;; test-cases, including g++.brendan/crash40.C.  FIXME: This is arguably a
+;; testcases, including g++.brendan/crash40.C.  FIXME: This is arguably a
 ;; bug in gcc.  Note line ~2612 in reload.c, that does things on the
 ;; condition <<else if (constraints[i][0] == 'p')>> and the comment on
 ;; ~3017 that says:

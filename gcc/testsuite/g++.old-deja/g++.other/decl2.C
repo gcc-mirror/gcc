@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// Based on a test-case by Maciej Radziejewski <maciejr@iws.uni-stuttgart.de>
+// Based on a testcase by Maciej Radziejewski <maciejr@iws.uni-stuttgart.de>
 
 int i(0)(1); // { dg-error "" } multiple initialization
 int j(2) = 3; // { dg-error "" } multiple initialization

@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// Based on a test-case in the Standard, submitted by several people
+// Based on a testcase in the Standard, submitted by several people
 
 class Outer {
   typedef int T;

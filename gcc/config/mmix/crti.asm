@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 % segments.
 
 % This little treasure is here so the 32 lowest address bits of user data
-% will not be zero.  Because of truncation, that would cause test-case
+% will not be zero.  Because of truncation, that would cause testcase
 % gcc.c-torture/execute/980701-1.c to incorrectly fail.
 
 	.data	! mmixal:= 8H LOC Data_Segment
