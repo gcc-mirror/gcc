@@ -679,6 +679,26 @@ standard_conversion (to, from, expr)
   else if (fromref || (expr && real_lvalue_p (expr)))
     conv = build_conv (RVALUE_CONV, from, conv);
 
+   /* Allow conversion between `__complex__' data types  */
+  if (tcode == COMPLEX_TYPE && fcode == COMPLEX_TYPE)
+    {
+      /* The standard conversion sequence to convert FROM to TO is
+         the standard conversion sequence to perform componentwise
+         conversion.  */
+      tree part_conv = standard_conversion
+        (TREE_TYPE (to), TREE_TYPE (from), NULL_TREE);
+      
+      if (part_conv)
+        {
+          conv = build_conv (TREE_CODE (part_conv), to, conv);
+          ICS_STD_RANK (conv) = ICS_STD_RANK (part_conv);
+        }
+      else
+        conv = NULL_TREE;
+
+      return conv;
+    }
+
   if (same_type_p (from, to))
     return conv;
 

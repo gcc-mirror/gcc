@@ -692,6 +692,10 @@ ocp_convert (type, expr, convtype, flags)
 	   that can result in infinite recursion; fold will call
 	   convert, which will call ocp_convert, etc.  */
 	return e;
+      /* For complex data types, we need to perform componentwise
+         conversion.  */
+      else if (TREE_CODE (type) == COMPLEX_TYPE)
+        return fold (convert_to_complex (type, e));
       else
 	return fold (build1 (NOP_EXPR, type, e));
     }
