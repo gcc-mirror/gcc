@@ -4,6 +4,8 @@
 	REGISTER_TARGET_PRAGMAS.
 	* config/rs6000/darwin.h (REGISTER_TARGET_PRAGMAS): Redefine.
 
+	* config.gcc: Do not use rs6000-c.c on powerpc-darwin.
+
 2002-05-18  Richard Henderson  <rth@redhat.com>
 
 	* system.h (SELECT_RTX_SECTION): Poison.
