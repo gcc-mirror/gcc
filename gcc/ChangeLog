@@ -1,3 +1,8 @@
+Tue Nov 25 14:08:12 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* mips.md (fix_truncdfsi2, fix_truncsfsi2, fix_truncdfdi2,
+	fix_truncsfdi2): Change *.
+
 Sun Nov 30 19:59:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stmt.c (expand_decl_cleanup): Update thisblock after eh_region_start.
