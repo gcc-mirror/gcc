@@ -5069,7 +5069,6 @@ shadow_tag (declspecs)
      tree declspecs;
 {
   int found_tag = 0;
-  int warned = 0;
   tree ob_modifier = NULL_TREE;
   register tree link;
   register enum tree_code code, ok_code = ERROR_MARK;
@@ -5082,41 +5081,14 @@ shadow_tag (declspecs)
       code = TREE_CODE (value);
       if (IS_AGGR_TYPE_CODE (code) || code == ENUMERAL_TYPE)
 	{
-	  register tree name = TYPE_NAME (value);
+	  my_friendly_assert (TYPE_NAME (value) != NULL_TREE, 261);
 
 	  if (code == ENUMERAL_TYPE && TYPE_SIZE (value) == 0)
 	    cp_error ("forward declaration of `%#T'", value);
 
-	  if (name == NULL_TREE)
-	    name = lookup_tag_reverse (value, NULL_TREE);
-
-	  if (name && TREE_CODE (name) == TYPE_DECL)
-	    name = DECL_NAME (name);
-
-	  t = lookup_tag (code, name, inner_binding_level, 1);
-
-	  if (t == NULL_TREE)
-	    {
-	      push_obstacks (&permanent_obstack, &permanent_obstack);
-	      if (IS_AGGR_TYPE_CODE (code))
-		t = make_lang_type (code);
-	      else
-		t = make_node (code);
-	      pushtag (name, t, 0);
-	      pop_obstacks ();
-	      ok_code = code;
-	    }
-	  else if (name != NULL_TREE || code == ENUMERAL_TYPE)
-	    ok_code = code;
-
-	  if (ok_code != ERROR_MARK)
-	    found_tag++;
-	  else
-	    {
-	      if (!warned)
-		pedwarn ("useless keyword or type name in declaration");
-	      warned = 1;
-	    }
+	  t = value;
+	  ok_code = code;
+	  found_tag++;
 	}
       else if (value == ridpointers[(int) RID_STATIC]
 	       || value == ridpointers[(int) RID_EXTERN]
@@ -5156,32 +5128,9 @@ shadow_tag (declspecs)
 	cp_error ("`%D' can only be specified for objects and functions",
 		  ob_modifier);
 
-      if (ok_code == RECORD_TYPE
-	  && found_tag == 1
-	  && TYPE_LANG_SPECIFIC (t)
-	  && CLASSTYPE_DECLARED_EXCEPTION (t))
-	{
-	  if (TYPE_SIZE (t))
-	    cp_error ("redeclaration of exception `%T'", t);
-	  else
-	    {
-	      tree ename, decl;
-
-	      push_obstacks (&permanent_obstack, &permanent_obstack);
-
-	      pushclass (t, 0);
-
-	      ename = TYPE_NAME (t);
-	      if (TREE_CODE (ename) == TYPE_DECL)
-		ename = DECL_NAME (ename);
-	      decl = build_lang_field_decl (VAR_DECL, ename, t);
-
-	      pop_obstacks ();
-	    }
-	}
-      else if (found_tag == 0)
+      if (found_tag == 0)
 	pedwarn ("abstract declarator used as declaration");
-      else if (!warned && found_tag > 1)
+      else if (found_tag > 1)
 	pedwarn ("multiple types in one declaration");
     }
 }
@@ -7598,10 +7547,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
   volatilep = !! RIDBIT_SETP (RID_VOLATILE, specbits) + TYPE_VOLATILE (type);
   staticp = 0;
   inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
+#if 0
+  /* This sort of redundancy is blessed in a footnote to the Sep 94 WP.  */
   if (constp > 1)
     warning ("duplicate `const'");
   if (volatilep > 1)
     warning ("duplicate `volatile'");
+#endif
   virtualp = RIDBIT_SETP (RID_VIRTUAL, specbits);
 
   if (RIDBIT_SETP (RID_STATIC, specbits))
