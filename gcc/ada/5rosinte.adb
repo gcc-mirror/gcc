@@ -118,10 +118,4 @@ package body System.OS_Interface is
       return 0;
    end Get_Page_Size;
 
-   function mprotect
-     (addr : Address; len : size_t; prot : int) return int is
-   begin
-      return 0;
-   end mprotect;
-
 end System.OS_Interface;
