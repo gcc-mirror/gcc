@@ -121,58 +121,59 @@ OBJC_O = objc/hash.o objc/sarray.o \
 	objc/thr.o objc/linking.o \
 	objc/$(OBJC_THREAD_FILE).o
 
-objc/hash.o: $(srcdir)/objc/hash.c
+objc/hash.o: $(srcdir)/objc/hash.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/hash.c -o $@
-objc/sarray.o: $(srcdir)/objc/sarray.c
+objc/sarray.o: $(srcdir)/objc/sarray.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/sarray.c -o $@
-objc/class.o: $(srcdir)/objc/class.c
+objc/class.o: $(srcdir)/objc/class.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/class.c -o $@
-objc/sendmsg.o: $(srcdir)/objc/sendmsg.c
+objc/sendmsg.o: $(srcdir)/objc/sendmsg.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/sendmsg.c -o $@
-objc/init.o: $(srcdir)/objc/init.c
+objc/init.o: $(srcdir)/objc/init.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/init.c -o $@
-objc/archive.o: $(srcdir)/objc/archive.c
+objc/archive.o: $(srcdir)/objc/archive.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/archive.c -o $@
-objc/encoding.o: $(srcdir)/objc/encoding.c
+objc/encoding.o: $(srcdir)/objc/encoding.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/encoding.c -o $@
-objc/selector.o: $(srcdir)/objc/selector.c
+objc/selector.o: $(srcdir)/objc/selector.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/selector.c -o $@
-objc/objects.o: $(srcdir)/objc/objects.c
+objc/objects.o: $(srcdir)/objc/objects.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/objects.c -o $@
-objc/misc.o: $(srcdir)/objc/misc.c
+objc/misc.o: $(srcdir)/objc/misc.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/misc.c -o $@
-objc/NXConstStr.o: $(srcdir)/objc/NXConstStr.m
+objc/NXConstStr.o: $(srcdir)/objc/NXConstStr.m $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/NXConstStr.m -o $@
-objc/Object.o: $(srcdir)/objc/Object.m
+objc/Object.o: $(srcdir)/objc/Object.m $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/Object.m -o $@
-objc/Protocol.o: $(srcdir)/objc/Protocol.m
+objc/Protocol.o: $(srcdir)/objc/Protocol.m $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/Protocol.m -o $@
-objc/thr.o: $(srcdir)/objc/thr.h $(srcdir)/objc/thr.c
+objc/thr.o: $(srcdir)/objc/thr.h $(srcdir)/objc/thr.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/thr.c -o $@
-objc/$(OBJC_THREAD_FILE).o: $(srcdir)/objc/$(OBJC_THREAD_FILE).c
+objc/$(OBJC_THREAD_FILE).o: $(srcdir)/objc/$(OBJC_THREAD_FILE).c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/$(OBJC_THREAD_FILE).c -o $@
-objc/nil_method.o: $(srcdir)/objc/nil_method.c
+objc/nil_method.o: $(srcdir)/objc/nil_method.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/nil_method.c -o $@
-objc/linking.o: $(srcdir)/objc/linking.m
+objc/linking.o: $(srcdir)/objc/linking.m $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/linking.m -o $@
-$(srcdir)/objc/libobjc_entry.o: $(srcdir)/objc/libobjc_entry.c
+
+$(srcdir)/objc/libobjc_entry.o: $(srcdir)/objc/libobjc_entry.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/libobjc_entry.c -o $@
 
