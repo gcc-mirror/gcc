@@ -9471,10 +9471,10 @@ simplify_comparison (code, pop0, pop1)
 		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (inner_op0))))
 	      && (GET_MODE (SUBREG_REG (inner_op0))
 		  == GET_MODE (SUBREG_REG (inner_op1)))
-	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
+	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (inner_op0)))
 		  <= HOST_BITS_PER_WIDE_INT)
 	      && (0 == ((~c0) & nonzero_bits (SUBREG_REG (inner_op0),
-					     GET_MODE (SUBREG_REG (op0)))))
+					     GET_MODE (SUBREG_REG (inner_op0)))))
 	      && (0 == ((~c1) & nonzero_bits (SUBREG_REG (inner_op1),
 					     GET_MODE (SUBREG_REG (inner_op1))))))
 	    {
