@@ -1,3 +1,8 @@
+2004-06-12  Peter Jakubek  <peter@laseranimation.com>
+
+	* reload.c (find_reloads): Force reload for pseudo registers on big
+	endian machines.
+
 2004-06-11  Steven Bosscher <stevenb@suse.de>
 
 	* tree-ssa-dce.c (mark_control_dependent_edges_necessary):

@@ -2963,7 +2963,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			    < BIGGEST_ALIGNMENT)
 			   && (GET_MODE_SIZE (operand_mode[i])
 			       > GET_MODE_SIZE (GET_MODE (operand))))
-			  || (GET_CODE (operand) == MEM && BYTES_BIG_ENDIAN)
+			  || BYTES_BIG_ENDIAN
 #ifdef LOAD_EXTEND_OP
 			  || (GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
 			      && (GET_MODE_SIZE (GET_MODE (operand))
