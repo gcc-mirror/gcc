@@ -255,12 +255,14 @@ GLIBCXX_3.4.2 {
 
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4fileEv;
 
-    # pool_alloc
     _ZN9__gnu_cxx17__pool_alloc_base9_M_refillE[jm];
     _ZN9__gnu_cxx17__pool_alloc_base16_M_get_free_listE[jm];
     _ZN9__gnu_cxx17__pool_alloc_base12_M_get_mutexEv;
 
-    # mt_alloc
+} GLIBCXX_3.4.1;
+
+GLIBCXX_3.4.3 {
+ 
     _ZN9__gnu_cxx6__poolILb0EE13_M_initializeEv;
     _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEPFvPvE;
     _ZN9__gnu_cxx6__poolILb1EE21_M_destroy_thread_keyEPv;
@@ -268,8 +270,8 @@ GLIBCXX_3.4.2 {
     _ZN9__gnu_cxx6__poolILb[01]EE17_M_reserve_memoryE[jm][jm];
     _ZN9__gnu_cxx6__poolILb[01]EE17_M_reclaim_memoryEPc[jm];
     _ZN9__gnu_cxx20__common_pool_policyILb[01]EE11_S_get_poolEv;
-
-} GLIBCXX_3.4.1;
+ 
+} GLIBCXX_3.4.2;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
