@@ -1,5 +1,8 @@
 2002-10-24  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	PR other/3337
+	PR bootstrap/6763
+	PR bootstrap/8122
 	* fixinc/inclhack.def (libc1_G_va_list): New fix.
 	* fixinc/fixincl.x: Regenerate.
 	* config/i386/linux.h: Move MD_FALLBACK_FRAME_STATE_FOR inside
