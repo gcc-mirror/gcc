@@ -1093,7 +1093,7 @@ Mon Aug 13 02:27:39 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-10  Richard Sandiford  <rsandifo@redhat.com>
 
-	* config/mips/mips.md (reload_outcc): Use HARD_REGNO_NREGS to
+	* config/mips/mips.md (reload_incc): Use HARD_REGNO_NREGS to
 	access the second half of the TFmode scratch operand.
 
 2001-08-10  Anthony Green  <green@redhat.com>
