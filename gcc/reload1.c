@@ -346,7 +346,6 @@ static int hard_reg_use_compare		PROTO((struct hard_reg_n_uses *,
 					       struct hard_reg_n_uses *));
 static void order_regs_for_reload	PROTO((void));
 static void reload_as_needed		PROTO((rtx, int));
-static int reloads_conflict 		PROTO((int, int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
 static int reload_reg_class_lower	PROTO((short *, short *));
 static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
@@ -356,6 +355,7 @@ static void clear_reload_reg_in_use	PROTO((int, int, enum reload_type,
 static int reload_reg_free_p		PROTO((int, int, enum reload_type));
 static int reload_reg_free_before_p	PROTO((int, int, enum reload_type));
 static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
+static int reloads_conflict 		PROTO((int, int));
 static int allocate_reload_reg		PROTO((int, rtx, int, int));
 static void choose_reload_regs		PROTO((rtx, rtx));
 static void merge_assigned_reloads	PROTO((rtx));
@@ -4066,99 +4066,6 @@ forget_old_reloads_1 (x, ignored)
     if (n_reloads == 0 || reg_has_output_reload[regno + nr] == 0)
       reg_last_reload_reg[regno + nr] = 0;
 }
-
-/* 1 if reload1 and reload2 conflict with each other */
-
-static int
-reloads_conflict (reload1, reload2)
-int reload1, reload2;
-{
-  int i;
-  enum reload_type reload1_type = reload_when_needed[reload1];
-  enum reload_type reload2_type = reload_when_needed[reload2];
-  int reload1_opnum = reload_opnum[reload1];
-  int reload2_opnum = reload_opnum[reload2];
-
-  /* RELOAD_OTHER conflicts with everything. */
-  
-  if (reload1_type == RELOAD_OTHER 
-      || reload2_type == RELOAD_OTHER)
-    return 1;
-
-  switch (reload1_type)
-    {
-    case RELOAD_FOR_OTHER_ADDRESS:
-      if (reload2_type == RELOAD_FOR_OTHER_ADDRESS)
-	return 1;
-      break;
-
-    case RELOAD_FOR_INPUT:
-      if (reload2_type == RELOAD_FOR_INSN 
-	  || reload2_type == RELOAD_FOR_OPERAND_ADDRESS
-	  || reload2_type == RELOAD_FOR_INPUT)
-	return 1;
-
-      /* RELOAD_FOR_INPUT conflicts with any later
-	 RELOAD_FOR_INPUT_ADDRESS reloads */
-      for (i = reload2_opnum + 1; i < n_reloads; i++) 
-	if (reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS) 
-	  return 1;
-      break;
-
-    case RELOAD_FOR_INPUT_ADDRESS:
-      if (reload2_type == RELOAD_FOR_INPUT_ADDRESS 
-	  && (reload1_opnum == reload2_opnum))
-	return 1;
-
-      /* RELOAD_FOR_INPUT_ADDRESS conflicts with any
-	 earlier RELOAD_FOR_INPUT reloads */
-      for (i = 0; i < reload2_opnum; i++)
-	if (reload_when_needed[i] == RELOAD_FOR_INPUT)
-	  return 1;
-      break;
-
-    case RELOAD_FOR_OUTPUT_ADDRESS:
-      if (reload2_type == RELOAD_FOR_OUTPUT_ADDRESS
-	  && (reload1_opnum == reload2_opnum))
-	return 1;
-
-      for (i = reload2_opnum; i < n_reloads; i++)
-	if (reload_when_needed[i] == RELOAD_FOR_INPUT)
-	  return 1;
-      break;
-
-    case RELOAD_FOR_OPERAND_ADDRESS:
-      if (reload2_type == RELOAD_FOR_INPUT 
-	  || reload2_type == RELOAD_FOR_INSN
-	  || reload2_type == RELOAD_FOR_OPERAND_ADDRESS)
-	  return 1;
-      break;
-
-    case RELOAD_FOR_OUTPUT:
-      if (reload2_type == RELOAD_FOR_INSN 
-	  || reload2_type == RELOAD_FOR_OUTPUT)
-	  return 1;
-
-      for (i = 0; i <= reload2_opnum; i++)
-	if (reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS)
-	  return 1;
-      break;
-
-    case RELOAD_FOR_INSN:
-      if (reload2_type == RELOAD_FOR_INPUT
-	  || reload2_type == RELOAD_FOR_OUTPUT
-	  || reload2_type == RELOAD_FOR_INSN
-	  || reload2_type == RELOAD_FOR_OPERAND_ADDRESS
-	  || reload2_type == RELOAD_FOR_OTHER_ADDRESS)
-	return 1;
-      break;
-    }
-
-  /* No conflict */
-  return 0;
-}
-
-
 
 /* For each reload, the mode of the reload register.  */
 static enum machine_mode reload_mode[MAX_RELOADS];
@@ -4659,6 +4566,67 @@ reload_reg_reaches_end_p (regno, opnum, type)
     }
 
   abort ();
+}
+
+/* Return 1 if the reloads denoted by R1 and R2 cannot share a register.
+   Return 0 otherwise.
+
+   This function uses the same algorithm as reload_reg_free_p above.  */
+
+static int
+reloads_conflict (r1, r2)
+     int r1, r2;
+{
+  enum reload_type r1_type = reload_when_needed[r1];
+  enum reload_type r2_type = reload_when_needed[r2];
+  int r1_opnum = reload_opnum[r1];
+  int r2_opnum = reload_opnum[r2];
+
+  /* RELOAD_OTHER conflicts with everything except
+     RELOAD_FOR_OTHER_ADDRESS.  */
+  
+  if ((r1_type == RELOAD_OTHER && r2_type != RELOAD_FOR_OTHER_ADDRESS)
+      || (r2_type == RELOAD_OTHER && r1_type != RELOAD_FOR_OTHER_ADDRESS))
+    return 1;
+
+  /* Otherwise, check conflicts differently for each type.  */
+
+  switch (r1_type)
+    {
+    case RELOAD_FOR_INPUT:
+      return (r2_type == RELOAD_FOR_INSN 
+	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS
+	      || r2_type == RELOAD_FOR_INPUT
+	      || (r2_type == RELOAD_FOR_INPUT_ADDRESS && r2_opnum > r1_opnum));
+
+    case RELOAD_FOR_INPUT_ADDRESS:
+      return ((r2_type == RELOAD_FOR_INPUT_ADDRESS && r1_opnum == r2_opnum)
+	      || (r2_type == RELOAD_FOR_INPUT && r2_opnum < r1_opnum));
+
+    case RELOAD_FOR_OUTPUT_ADDRESS:
+      return ((r2_type == RELOAD_FOR_OUTPUT_ADDRESS && r2_opnum == r1_opnum)
+	      || (r2_type == RELOAD_FOR_OUTPUT && r2_opnum >= r1_opnum));
+
+    case RELOAD_FOR_OPERAND_ADDRESS:
+      return (r2_type == RELOAD_FOR_INPUT || r2_type == RELOAD_FOR_INSN
+	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS);
+
+    case RELOAD_FOR_OUTPUT:
+      return (r2_type == RELOAD_FOR_INSN || r2_type == RELOAD_FOR_OUTPUT
+	      || (r2_type == RELOAD_FOR_OPERAND_ADDRESS
+		  && r2_opnum >= r1_opnum));
+
+    case RELOAD_FOR_INSN:
+      return (r2_type == RELOAD_FOR_INPUT || r2_type == RELOAD_FOR_OUTPUT
+	      || r2_type == RELOAD_FOR_INSN
+	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS);
+
+    case RELOAD_FOR_OTHER_ADDRESS:
+      return r2_type == RELOAD_FOR_OTHER_ADDRESS;
+
+    default:
+      abort ();
+    }
 }
 
 /* Vector of reload-numbers showing the order in which the reloads should
