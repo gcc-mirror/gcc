@@ -1,3 +1,8 @@
+Fri Oct 30 14:50:25 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (assembler features): Also make gas is configured if
+	we find it in the souce tree.
+
 Fri Oct 30 13:23:20 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (i386_comp_type_attributes): Compare whether the 
