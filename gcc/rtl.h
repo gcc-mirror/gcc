@@ -802,7 +802,6 @@ extern rtx gen_mem_addressof		PROTO((rtx, union tree_node *));
 extern rtx eliminate_constant_term	PROTO((rtx, rtx *));
 extern rtx expand_complex_abs		PROTO((enum machine_mode, rtx, rtx, int));
 extern enum machine_mode choose_hard_reg_mode PROTO((int, int));
-extern rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
 
 /* Functions in rtlanal.c */
 
