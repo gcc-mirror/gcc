@@ -1,3 +1,11 @@
+Mon Sep  8 02:33:20 1997  Jody Goldberg  <jodyg@idt.net>
+
+	* decl.c (current_local_enum): Remove static.
+	* pt.c (tsubst_enum): Save and restore value of current_local_enum
+	in case template is expanded in enum decl.
+	(instantiate_class_template) : Use new tsubst_enum signature.
+	(tsubst_expr): Likewise.
+
 Mon Sep  8 01:21:43 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (begin_member_template_processing): Take a function as
