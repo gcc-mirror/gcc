@@ -200,10 +200,28 @@ struct __class_type_info::__upcast_result
                               // if in vbase the __class_type_info of vbase
                               // if a non-virtual base then 1
                               // else NULL
-  public:
   __upcast_result (int d)
     :dst_ptr (NULL), part2dst (__unknown), src_details (d), base_type (NULL)
     {}
+
+  explicit
+  __upcast_result(const __upcast_result& r)
+  : dst_ptr(r.dst_ptr), part2dst(r.part2dst), src_details(r.src_details), 
+    base_type(r.base_type) 
+  { }
+
+  __upcast_result&
+  operator=(const __upcast_result& r)
+  {
+    if (&r != this)
+      {
+	dst_ptr = r.dst_ptr;
+	part2dst = r.part2dst;
+	src_details = r.src_details;
+	base_type = r.base_type;
+      }
+    return *this;
+  }
 };
 
 // __dyncast_result is used to hold information during traversal of a class
@@ -216,12 +234,17 @@ struct __class_type_info::__dyncast_result
   __sub_kind dst2src;         // path from target to sub object
   int whole_details;          // details of the whole class hierarchy
   
-  public:
   __dyncast_result (int details_ = __vmi_class_type_info::__flags_unknown_mask)
     :dst_ptr (NULL), whole2dst (__unknown),
      whole2src (__unknown), dst2src (__unknown),
      whole_details (details_)
     {}
+
+protected:
+  __dyncast_result(const __dyncast_result&);
+  
+  __dyncast_result&
+  operator=(const __dyncast_result&);
 };
 
 bool __class_type_info::

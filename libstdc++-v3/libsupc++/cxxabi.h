@@ -1,6 +1,6 @@
 // new abi support -*- C++ -*-
   
-// Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -42,517 +42,487 @@
 #ifndef _CXXABI_H
 #define _CXXABI_H 1
 
+#include <stddef.h>
+ 
 #ifdef __cplusplus
+namespace __cxxabiv1
+{  
+  extern "C" 
+  {
+#endif
 
-// We use the compiler builtins __SIZE_TYPE__ and __PTRDIFF_TYPE__ instead of
-// std::size_t and std::ptrdiff_t respectively. This makes us independent of
-// the conformance level of <cstddef> and whether -fhonor-std was supplied.
-// <cstddef> is not currently available during compiler building anyway.
-// Including <stddef.h> would be wrong, as that would rudely place size_t in
-// the global namespace.
+  // Allocate array.
+  void* 
+  __cxa_vec_new(size_t __element_count, size_t __element_size, 
+		size_t __padding_size, void (*__constructor) (void*),
+		void (*__destructor) (void*));
+
+  void*
+  __cxa_vec_new2(size_t __element_count, size_t __element_size,
+		 size_t __padding_size, void (*__constructor) (void*),
+		 void (*__destructor) (void*), void *(*__alloc) (size_t), 
+		 void (*__dealloc) (void*));
+
+  void*
+  __cxa_vec_new3(size_t __element_count, size_t __element_size,
+		 size_t __padding_size, void (*__constructor) (void*),
+		 void (*__destructor) (void*), void *(*__alloc) (size_t), 
+		 void (*__dealloc) (void*, size_t));
+
+  // Construct array.
+  void 
+  __cxa_vec_ctor(void* __array_address, size_t __element_count,
+		 size_t __element_size, void (*__constructor) (void*),
+		 void (*__destructor) (void*));
+
+  void 
+  __cxa_vec_cctor(void* dest_array, void* src_array, size_t element_count, 
+		  size_t element_size, void (*constructor) (void*, void*), 
+		  void (*destructor) (void*));
+ 
+  // Destruct array.
+  void 
+  __cxa_vec_dtor(void* __array_address, size_t __element_count,
+		 size_t __element_size, void (*__destructor) (void*));
+  
+  void 
+  __cxa_vec_cleanup(void* __array_address, size_t __element_count,
+		    size_t __element_size, void (*__destructor) (void*));
+  
+  // Destruct and release array.
+  void 
+  __cxa_vec_delete(void* __array_address, size_t __element_size,
+		   size_t __padding_size, void (*__destructor) (void*));
+
+  void 
+  __cxa_vec_delete2(void* __array_address, size_t __element_size,
+		    size_t __padding_size, void (*__destructor) (void*),
+		    void (*__dealloc) (void*));
+                  
+  void 
+  __cxa_vec_delete3(void* __array_address, size_t __element_size,
+		    size_t __padding_size, void (*__destructor) (void*),
+		    void (*__dealloc) (void*, size_t));
+
+  // The ABI requires a 64-bit type.
+  __extension__ typedef int __guard __attribute__((mode (__DI__)));
+
+  int 
+  __cxa_guard_acquire(__guard*);
+
+  void 
+  __cxa_guard_release(__guard*);
+
+  void 
+  __cxa_guard_abort(__guard*);
+
+  // Pure virtual functions.
+  void
+  __cxa_pure_virtual(void);
+
+  // Exception handling.
+  void
+  __cxa_bad_cast();
+
+  void
+  __cxa_bad_typeid();
+
+  // DSO destruction.
+  int
+  __cxa_atexit(void (*)(void*), void*, void*);
+
+  int
+  __cxa_finalize(void*);
+
+  // Demangling routines. 
+  char*
+  __cxa_demangle(const char* __mangled_name, char* __output_buffer,
+		 size_t* __length, int* __status);
+#ifdef __cplusplus
+  }
+} // namespace __cxxabiv1
+#endif
+
+#ifdef __cplusplus
 
 #include <typeinfo>
 
 namespace __cxxabiv1
 {
-
-/* type information for int, float etc */
-class __fundamental_type_info
-  : public std::type_info
-{
-public:
-  virtual ~__fundamental_type_info ();
-public:
-  explicit __fundamental_type_info (const char *__n)
-    : std::type_info (__n)
-    { }
-};
-
-/* type information for array objects */
-class __array_type_info
-  : public std::type_info
-{
-/* abi defined member functions */
-protected:
-  virtual ~__array_type_info ();
-public:
-  explicit __array_type_info (const char *__n)
-    : std::type_info (__n)
-    { }
-};
-
-/* type information for functions (both member and non-member) */
-class __function_type_info
-  : public std::type_info
-{
-/* abi defined member functions */
-public:
-  virtual ~__function_type_info ();
-public:
-  explicit __function_type_info (const char *__n)
-    : std::type_info (__n)
-    { }
-  
-/* implementation defined member functions */
-protected:
-  virtual bool __is_function_p () const;
-};
-
-/* type information for enumerations */
-class __enum_type_info
-  : public std::type_info
-{
-/* abi defined member functions */
-public:
-  virtual ~__enum_type_info ();
-public:
-  explicit __enum_type_info (const char *__n)
-    : std::type_info (__n)
-    { }
-};
-
-/* common type information for simple pointers and pointers to member */
-class __pbase_type_info
-  : public std::type_info
-{
-/* abi defined member variables */
-public:
-  unsigned int __flags; /* qualification of the target object */
-  const std::type_info *__pointee;   /* type of pointed to object */
-
-/* abi defined member functions */
-public:
-  virtual ~__pbase_type_info ();
-public:
-  explicit __pbase_type_info (const char *__n,
-                                int __quals,
-                                const std::type_info *__type)
-    : std::type_info (__n), __flags (__quals), __pointee (__type)
-    { }
-
-/* implementation defined types */
-public:
-  enum __masks {
-    __const_mask = 0x1,
-    __volatile_mask = 0x2,
-    __restrict_mask = 0x4,
-    __incomplete_mask = 0x8,
-    __incomplete_class_mask = 0x10
-  };
-
-/* implementation defined member functions */
-protected:
-  virtual bool __do_catch (const std::type_info *__thr_type,
-                           void **__thr_obj,
-                           unsigned __outer) const;
-protected:
-  inline virtual bool __pointer_catch (const __pbase_type_info *__thr_type,
-                                       void **__thr_obj,
-                                       unsigned __outer) const;
-};
-
-/* type information for simple pointers */
-class __pointer_type_info
-  : public __pbase_type_info
-{
-/* abi defined member functions */
-public:
-  virtual ~__pointer_type_info ();
-public:
-  explicit __pointer_type_info (const char *__n,
-                                int __quals,
-                                const std::type_info *__type)
-    : __pbase_type_info (__n, __quals, __type)
-    { }
-
-/* implementation defined member functions */
-protected:
-  virtual bool __is_pointer_p () const;
-
-protected:
-  virtual bool __pointer_catch (const __pbase_type_info *__thr_type,
-                                void **__thr_obj,
-                                unsigned __outer) const;
-};
-
-class __class_type_info;
-
-/* type information for a pointer to member variable */
-class __pointer_to_member_type_info
-  : public __pbase_type_info
-{
-/* abi defined member variables */
-public:
-  __class_type_info *__context;   /* class of the member */
-
-/* abi defined member functions */
-public:
-  virtual ~__pointer_to_member_type_info ();
-public:
-  explicit __pointer_to_member_type_info (const char *__n,
-                                          int __quals,
-                                          const std::type_info *__type,
-                                          __class_type_info *__klass)
-    : __pbase_type_info (__n, __quals, __type), __context (__klass)
-    { }
-
-/* implementation defined member functions */
-protected:
-  virtual bool __pointer_catch (const __pbase_type_info *__thr_type,
-                                void **__thr_obj,
-                                unsigned __outer) const;
-};
-
-/* helper class for __vmi_class_type */
-class __base_class_type_info
-{
-/* abi defined member variables */
-public:
-  const __class_type_info* __base_type;    /* base class type */
-  long __offset_flags;            /* offset and info */
-
-/* implementation defined types */
-public:
-  enum __offset_flags_masks {
-    __virtual_mask = 0x1,
-    __public_mask = 0x2,
-    __hwm_bit = 2,
-    __offset_shift = 8          /* bits to shift offset by */
-  };
-  
-/* implementation defined member functions */
-public:
-  bool __is_virtual_p () const
-    { return __offset_flags & __virtual_mask; }
-  bool __is_public_p () const
-    { return __offset_flags & __public_mask; }
-  __PTRDIFF_TYPE__ __offset () const
-    { 
-      // This shift, being of a signed type, is implementation defined. GCC
-      // implements such shifts as arithmetic, which is what we want.
-      return static_cast<__PTRDIFF_TYPE__> (__offset_flags) >> __offset_shift;
-    }
-};
-
-/* type information for a class */
-class __class_type_info
-  : public std::type_info
-{
-/* abi defined member functions */
-public:
-  virtual ~__class_type_info ();
-public:
-  explicit __class_type_info (const char *__n)
-    : type_info (__n)
-    { }
-
-/* implementation defined types */
-public:
-  /* sub_kind tells us about how a base object is contained within a derived
-     object. We often do this lazily, hence the UNKNOWN value. At other times
-     we may use NOT_CONTAINED to mean not publicly contained. */
-  enum __sub_kind
+  // Type information for int, float etc.
+  class __fundamental_type_info : public std::type_info
   {
-    __unknown = 0,              /* we have no idea */
-    __not_contained,            /* not contained within us (in some */
-                                /* circumstances this might mean not contained */
-                                /* publicly) */
-    __contained_ambig,          /* contained ambiguously */
-    
-    __contained_virtual_mask = __base_class_type_info::__virtual_mask, /* via a virtual path */
-    __contained_public_mask = __base_class_type_info::__public_mask,   /* via a public path */
-    __contained_mask = 1 << __base_class_type_info::__hwm_bit,         /* contained within us */
-    
-    __contained_private = __contained_mask,
-    __contained_public = __contained_mask | __contained_public_mask
+  public:
+    explicit 
+    __fundamental_type_info(const char* __n) : std::type_info(__n) { }
+
+    virtual 
+    ~__fundamental_type_info();
   };
 
-public:  
-  struct __upcast_result;
-  struct __dyncast_result;
+  // Type information for array objects.
+  class __array_type_info : public std::type_info
+  {
+  public:
+    explicit 
+    __array_type_info(const char* __n) : std::type_info(__n) { }
 
-/* implementation defined member functions */
-protected:
-  virtual bool __do_upcast (const __class_type_info *__dst_type, void **__obj_ptr) const;
-
-protected:
-  virtual bool __do_catch (const type_info *__thr_type, void **__thr_obj,
-                           unsigned __outer) const;
-
-
-public:
-  /* Helper for upcast. See if DST is us, or one of our bases. */
-  /* Return false if not found, true if found. */
-  virtual bool __do_upcast (const __class_type_info *__dst,
-                            const void *__obj,
-                            __upcast_result &__restrict __result) const;
-
-public:
-  /* Indicate whether SRC_PTR of type SRC_TYPE is contained publicly within
-     OBJ_PTR. OBJ_PTR points to a base object of our type, which is the
-     destination type. SRC2DST indicates how SRC objects might be contained
-     within this type.  If SRC_PTR is one of our SRC_TYPE bases, indicate the
-     virtuality. Returns not_contained for non containment or private
-     containment. */
-  inline __sub_kind __find_public_src (__PTRDIFF_TYPE__ __src2dst,
-                                       const void *__obj_ptr,
-                                       const __class_type_info *__src_type,
-                                       const void *__src_ptr) const;
-
-public:
-  /* dynamic cast helper. ACCESS_PATH gives the access from the most derived
-     object to this base. DST_TYPE indicates the desired type we want. OBJ_PTR
-     points to a base of our type within the complete object. SRC_TYPE
-     indicates the static type started from and SRC_PTR points to that base
-     within the most derived object. Fill in RESULT with what we find. Return
-     true if we have located an ambiguous match. */
-  virtual bool __do_dyncast (__PTRDIFF_TYPE__ __src2dst,
-                             __sub_kind __access_path,
-                             const __class_type_info *__dst_type,
-                             const void *__obj_ptr,
-                             const __class_type_info *__src_type,
-                             const void *__src_ptr,
-                             __dyncast_result &__result) const;
-public:
-  /* Helper for find_public_subobj. SRC2DST indicates how SRC_TYPE bases are
-     inherited by the type started from -- which is not necessarily the
-     current type. The current type will be a base of the destination type.
-     OBJ_PTR points to the current base. */
-  virtual __sub_kind __do_find_public_src (__PTRDIFF_TYPE__ __src2dst,
-                                           const void *__obj_ptr,
-                                           const __class_type_info *__src_type,
-                                           const void *__src_ptr) const;
-};
-
-/* type information for a class with a single non-virtual base */
-class __si_class_type_info
-  : public __class_type_info
-{
-/* abi defined member variables */
-public:
-  const __class_type_info *__base_type;
-
-/* abi defined member functions */
-public:
-  virtual ~__si_class_type_info ();
-public:
-  explicit __si_class_type_info (const char *__n,
-                                 const __class_type_info *__base)
-    : __class_type_info (__n), __base_type (__base)
-    { }
-
-/* implementation defined member functions */
-protected:
-  virtual bool __do_dyncast (__PTRDIFF_TYPE__ __src2dst,
-                             __sub_kind __access_path,
-                             const __class_type_info *__dst_type,
-                             const void *__obj_ptr,
-                             const __class_type_info *__src_type,
-                             const void *__src_ptr,
-                             __dyncast_result &__result) const;
-  virtual __sub_kind __do_find_public_src (__PTRDIFF_TYPE__ __src2dst,
-                                           const void *__obj_ptr,
-                                           const __class_type_info *__src_type,
-                                           const void *__sub_ptr) const;
-  virtual bool __do_upcast (const __class_type_info *__dst,
-                            const void *__obj,
-                            __upcast_result &__restrict __result) const;
-};
-
-/* type information for a class with multiple and/or virtual bases */
-class __vmi_class_type_info : public __class_type_info {
-/* abi defined member variables */
-public:
-  unsigned int __flags;         /* details about the class hierarchy */
-  unsigned int __base_count;    /* number of direct bases */
-  __base_class_type_info __base_info[1]; /* array of bases */
-  /* The array of bases uses the trailing array struct hack
-     so this class is not constructable with a normal constructor. It is
-     internally generated by the compiler. */
-
-/* abi defined member functions */
-public:
-  virtual ~__vmi_class_type_info ();
-public:
-  explicit __vmi_class_type_info (const char *__n,
-                                  int ___flags)
-    : __class_type_info (__n), __flags (___flags), __base_count (0)
-    { }
-
-/* implementation defined types */
-public:
-  enum __flags_masks {
-    __non_diamond_repeat_mask = 0x1,   /* distinct instance of repeated base */
-    __diamond_shaped_mask = 0x2,       /* diamond shaped multiple inheritance */
-    __flags_unknown_mask = 0x10
+    virtual 
+    ~__array_type_info();
   };
 
-/* implementation defined member functions */
-protected:
-  virtual bool __do_dyncast (__PTRDIFF_TYPE__ __src2dst,
-                             __sub_kind __access_path,
-                             const __class_type_info *__dst_type,
-                             const void *__obj_ptr,
-                             const __class_type_info *__src_type,
-                             const void *__src_ptr,
-                             __dyncast_result &__result) const;
-  virtual __sub_kind __do_find_public_src (__PTRDIFF_TYPE__ __src2dst,
-                                           const void *__obj_ptr,
-                                           const __class_type_info *__src_type,
-                                           const void *__src_ptr) const;
-  virtual bool __do_upcast (const __class_type_info *__dst,
-                            const void *__obj,
-                            __upcast_result &__restrict __result) const;
-};
+  // Type information for functions (both member and non-member).
+  class __function_type_info : public std::type_info
+  {
+  public:
+    explicit 
+    __function_type_info(const char* __n) : std::type_info(__n) { }
 
-/* dynamic cast runtime */
-extern "C"
-void *__dynamic_cast (const void *__src_ptr,    /* object started from */
-                      const __class_type_info *__src_type, /* static type of object */
-                      const __class_type_info *__dst_type, /* desired target type */
-                      __PTRDIFF_TYPE__ __src2dst); /* how src and dst are related */
+    virtual 
+    ~__function_type_info();
 
-    /* src2dst has the following possible values
-       >= 0: src_type is a unique public non-virtual base of dst_type
-             dst_ptr + src2dst == src_ptr
-       -1: unspecified relationship
-       -2: src_type is not a public base of dst_type
-       -3: src_type is a multiple public non-virtual base of dst_type */
+  protected:
+    // Implementation defined member function.
+    virtual bool 
+    __is_function_p() const;
+  };
 
-/* array ctor/dtor routines */
+  // Type information for enumerations.
+  class __enum_type_info : public std::type_info
+  {
+  public:
+    explicit 
+    __enum_type_info(const char* __n) : std::type_info(__n) { }
 
-/* allocate and construct array */
-extern "C"
-void *__cxa_vec_new (__SIZE_TYPE__ __element_count,
-                     __SIZE_TYPE__ __element_size,
-                     __SIZE_TYPE__ __padding_size,
-                     void (*__constructor) (void *),
-                     void (*__destructor) (void *));
+    virtual 
+    ~__enum_type_info();
+  };
 
-extern "C"
-void *__cxa_vec_new2 (__SIZE_TYPE__ __element_count,
-                      __SIZE_TYPE__ __element_size,
-                      __SIZE_TYPE__ __padding_size,
-                      void (*__constructor) (void *),
-                      void (*__destructor) (void *),
-                      void *(*__alloc) (__SIZE_TYPE__),
-                      void (*__dealloc) (void *));
+  // Common type information for simple pointers and pointers to member.
+  class __pbase_type_info : public std::type_info
+  {
+  public:
+    unsigned int 		__flags; // Qualification of the target object.
+    const std::type_info* 	__pointee; // Type of pointed to object.
 
-extern "C"
-void *__cxa_vec_new3 (__SIZE_TYPE__ __element_count,
-                      __SIZE_TYPE__ __element_size,
-                      __SIZE_TYPE__ __padding_size,
-                      void (*__constructor) (void *),
-                      void (*__destructor) (void *),
-                      void *(*__alloc) (__SIZE_TYPE__),
-                      void (*__dealloc) (void *, __SIZE_TYPE__));
+    explicit 
+    __pbase_type_info(const char* __n, int __quals, 
+		      const std::type_info* __type)
+    : std::type_info(__n), __flags(__quals), __pointee(__type)
+    { }
+    
+    virtual 
+    ~__pbase_type_info();
 
-/* construct array */
-extern "C"
-void __cxa_vec_ctor (void *__array_address,
-                     __SIZE_TYPE__ __element_count,
-                     __SIZE_TYPE__ __element_size,
-                     void (*__constructor) (void *),
-                     void (*__destructor) (void *));
+    // Implementation defined type.
+    enum __masks 
+      {
+	__const_mask = 0x1,
+	__volatile_mask = 0x2,
+	__restrict_mask = 0x4,
+	__incomplete_mask = 0x8,
+	__incomplete_class_mask = 0x10
+      };
 
-extern "C"
-void __cxa_vec_cctor (void *dest_array,
-		      void *src_array,
-		      __SIZE_TYPE__ element_count,
-		      __SIZE_TYPE__ element_size,
-		      void (*constructor) (void *, void *),
-		      void (*destructor) (void *));
- 
-/* destruct array */
-extern "C"
-void __cxa_vec_dtor (void *__array_address,
-                     __SIZE_TYPE__ __element_count,
-                     __SIZE_TYPE__ __element_size,
-                     void (*__destructor) (void *));
+  protected:
+    __pbase_type_info(const __pbase_type_info&);
 
-/* destruct array */
-extern "C"
-void __cxa_vec_cleanup (void *__array_address,
-			__SIZE_TYPE__ __element_count,
-			__SIZE_TYPE__ __element_size,
-			void (*__destructor) (void *));
+    __pbase_type_info&
+    operator=(const __pbase_type_info&);
 
-/* destruct and release array */
-extern "C"
-void __cxa_vec_delete (void *__array_address,
-                       __SIZE_TYPE__ __element_size,
-                       __SIZE_TYPE__ __padding_size,
-                       void (*__destructor) (void *));
+    // Implementation defined member functions.
+    virtual bool 
+    __do_catch(const std::type_info* __thr_type, void** __thr_obj, 
+	       unsigned int __outer) const;
 
-extern "C"
-void __cxa_vec_delete2 (void *__array_address,
-                        __SIZE_TYPE__ __element_size,
-                        __SIZE_TYPE__ __padding_size,
-                        void (*__destructor) (void *),
-                        void (*__dealloc) (void *));
-                  
-extern "C"
-void __cxa_vec_delete3 (void *__array_address,
-                        __SIZE_TYPE__ __element_size,
-                        __SIZE_TYPE__ __padding_size,
-                        void (*__destructor) (void *),
-                        void (*__dealloc) (void *, __SIZE_TYPE__));
+    inline virtual bool 
+    __pointer_catch(const __pbase_type_info* __thr_type, void** __thr_obj,
+		    unsigned __outer) const;
+  };
 
-/* guard variables */
+  // Type information for simple pointers.
+  class __pointer_type_info : public __pbase_type_info
+  {
+  public:
+    explicit 
+    __pointer_type_info(const char* __n, int __quals, 
+			const std::type_info* __type)
+    : __pbase_type_info (__n, __quals, __type) { }
 
-/* The ABI requires a 64-bit type.  */
-__extension__ typedef int __guard __attribute__((mode (__DI__)));
 
-extern "C"
-int __cxa_guard_acquire (__guard *);
+    virtual 
+    ~__pointer_type_info();
 
-extern "C"
-void __cxa_guard_release (__guard *);
+  protected:
+    // Implementation defined member functions.
+    virtual bool 
+    __is_pointer_p() const;
 
-extern "C"
-void __cxa_guard_abort (__guard *);
+    virtual bool 
+    __pointer_catch(const __pbase_type_info* __thr_type, void** __thr_obj, 
+		    unsigned __outer) const;
+  };
 
-/* pure virtual functions */
+  class __class_type_info;
 
-extern "C" void
-__cxa_pure_virtual (void);
+  // Type information for a pointer to member variable.
+  class __pointer_to_member_type_info : public __pbase_type_info
+  {
+  public:
+    __class_type_info* __context;   // Class of the member.
 
-/* exception handling */
+    explicit 
+    __pointer_to_member_type_info(const char* __n, int __quals,
+				  const std::type_info* __type, 
+				  __class_type_info* __klass)
+    : __pbase_type_info(__n, __quals, __type), __context(__klass) { }
 
-extern "C" void
-__cxa_bad_cast ();
+    virtual 
+    ~__pointer_to_member_type_info();
 
-extern "C" void
-__cxa_bad_typeid ();
+  protected:
+    __pointer_to_member_type_info(const __pointer_to_member_type_info&);
 
-/* DSO destruction */
+    __pointer_to_member_type_info&
+    operator=(const __pointer_to_member_type_info&);
 
-extern "C" int
-__cxa_atexit (void (*)(void *), void *, void *);
+    // Implementation defined member function.
+    virtual bool 
+    __pointer_catch(const __pbase_type_info* __thr_type, void** __thr_obj,
+		    unsigned __outer) const;
+  };
 
-extern "C" int
-__cxa_finalize (void *);
+  // Helper class for __vmi_class_type.
+  class __base_class_type_info
+  {
+  public:
+    const __class_type_info* 	__base_type;  // Base class type.
+    long 			__offset_flags;  // Offset and info.
 
-/* demangling routines */
+    enum __offset_flags_masks 
+      {
+	__virtual_mask = 0x1,
+	__public_mask = 0x2,
+	__hwm_bit = 2,
+	__offset_shift = 8          // Bits to shift offset.
+      };
+  
+    // Implementation defined member functions.
+    bool 
+    __is_virtual_p() const
+    { return __offset_flags & __virtual_mask; }
 
-extern "C" 
-char *__cxa_demangle (const char *__mangled_name,
-		      char *__output_buffer,
-		      __SIZE_TYPE__ *__length,
-		      int *__status);
+    bool 
+    __is_public_p() const
+    { return __offset_flags & __public_mask; }
 
-// Returns the type_info for the currently handled exception [15.3/8], or
-// null if there is none.
-extern "C"
-std::type_info *__cxa_current_exception_type ();
+    ptrdiff_t 
+    __offset() const
+    { 
+      // This shift, being of a signed type, is implementation
+      // defined. GCC implements such shifts as arithmetic, which is
+      // what we want.
+      return static_cast<ptrdiff_t>(__offset_flags) >> __offset_shift;
+    }
+  };
 
-} /* namespace __cxxabiv1 */
+  // Type information for a class.
+  class __class_type_info : public std::type_info
+  {
+  public:
+    explicit 
+    __class_type_info (const char *__n) : type_info(__n) { }
 
-/* User programs should use the alias `abi'. */
+    virtual 
+    ~__class_type_info ();
+
+    // Implementation defined types.
+    // The type sub_kind tells us about how a base object is contained
+    // within a derived object. We often do this lazily, hence the
+    // UNKNOWN value. At other times we may use NOT_CONTAINED to mean
+    // not publicly contained.
+    enum __sub_kind
+      {
+	// We have no idea.
+	__unknown = 0, 
+
+	// Not contained within us (in some circumstances this might
+	// mean not contained publicly)
+	__not_contained, 
+
+	// Contained ambiguously.
+	__contained_ambig, 
+    
+	// Via a virtual path.
+	__contained_virtual_mask = __base_class_type_info::__virtual_mask, 
+
+	// Via a public path.
+	__contained_public_mask = __base_class_type_info::__public_mask,   
+
+	// Contained within us.
+	__contained_mask = 1 << __base_class_type_info::__hwm_bit,
+    
+	__contained_private = __contained_mask,
+	__contained_public = __contained_mask | __contained_public_mask
+      };
+
+    struct __upcast_result;
+    struct __dyncast_result;
+
+  protected:
+    // Implementation defined member functions.
+    virtual bool 
+    __do_upcast(const __class_type_info* __dst_type, void**__obj_ptr) const;
+
+    virtual bool 
+    __do_catch(const type_info* __thr_type, void** __thr_obj, 
+	       unsigned __outer) const;
+
+  public:
+    // Helper for upcast. See if DST is us, or one of our bases. 
+    // Return false if not found, true if found. 
+    virtual bool 
+    __do_upcast(const __class_type_info* __dst, const void* __obj,
+		__upcast_result& __restrict __result) const;
+
+    // Indicate whether SRC_PTR of type SRC_TYPE is contained publicly
+    // within OBJ_PTR. OBJ_PTR points to a base object of our type,
+    // which is the destination type. SRC2DST indicates how SRC
+    // objects might be contained within this type.  If SRC_PTR is one
+    // of our SRC_TYPE bases, indicate the virtuality. Returns
+    // not_contained for non containment or private containment.
+    inline __sub_kind 
+    __find_public_src(ptrdiff_t __src2dst, const void* __obj_ptr,
+		      const __class_type_info* __src_type, 
+		      const void* __src_ptr) const;
+
+    // Helper for dynamic cast. ACCESS_PATH gives the access from the
+    // most derived object to this base. DST_TYPE indicates the
+    // desired type we want. OBJ_PTR points to a base of our type
+    // within the complete object. SRC_TYPE indicates the static type
+    // started from and SRC_PTR points to that base within the most
+    // derived object. Fill in RESULT with what we find. Return true
+    // if we have located an ambiguous match.
+    virtual bool 
+    __do_dyncast(ptrdiff_t __src2dst, __sub_kind __access_path,
+		 const __class_type_info* __dst_type, const void* __obj_ptr, 
+		 const __class_type_info* __src_type, const void* __src_ptr, 
+		 __dyncast_result& __result) const;
+    
+    // Helper for find_public_subobj. SRC2DST indicates how SRC_TYPE
+    // bases are inherited by the type started from -- which is not
+    // necessarily the current type. The current type will be a base
+    // of the destination type.  OBJ_PTR points to the current base.
+    virtual __sub_kind 
+    __do_find_public_src(ptrdiff_t __src2dst, const void* __obj_ptr,
+			 const __class_type_info* __src_type,
+			 const void* __src_ptr) const;
+  };
+
+  // Type information for a class with a single non-virtual base.
+  class __si_class_type_info : public __class_type_info
+  {
+  public:
+    const __class_type_info* __base_type;
+
+    explicit 
+    __si_class_type_info(const char *__n, const __class_type_info *__base)
+    : __class_type_info(__n), __base_type(__base) { }
+
+    virtual 
+    ~__si_class_type_info();
+
+  protected:
+    __si_class_type_info(const __si_class_type_info&);
+
+    __si_class_type_info&
+    operator=(const __si_class_type_info&);
+
+    // Implementation defined member functions.
+    virtual bool 
+    __do_dyncast(ptrdiff_t __src2dst, __sub_kind __access_path,
+		 const __class_type_info* __dst_type, const void* __obj_ptr,
+		 const __class_type_info* __src_type, const void* __src_ptr,
+		 __dyncast_result& __result) const;
+
+    virtual __sub_kind 
+    __do_find_public_src(ptrdiff_t __src2dst, const void* __obj_ptr,
+			 const __class_type_info* __src_type,
+			 const void* __sub_ptr) const;
+
+    virtual bool 
+    __do_upcast(const __class_type_info*__dst, const void*__obj,
+		__upcast_result& __restrict __result) const;
+  };
+
+  // Type information for a class with multiple and/or virtual bases.
+  class __vmi_class_type_info : public __class_type_info 
+  {
+  public:
+    unsigned int 		__flags;  // Details about the class hierarchy.
+    unsigned int 		__base_count;  // Dumber of direct bases.
+
+    // The array of bases uses the trailing array struct hack so this
+    // class is not constructable with a normal constructor. It is
+    // internally generated by the compiler.
+    __base_class_type_info 	__base_info[1];  // Array of bases.
+
+    explicit 
+    __vmi_class_type_info(const char* __n, int ___flags)
+    : __class_type_info(__n), __flags(___flags), __base_count(0) { }
+
+    virtual 
+    ~__vmi_class_type_info();
+
+    // Implementation defined types.
+    enum __flags_masks 
+      {
+	__non_diamond_repeat_mask = 0x1, // Distinct instance of repeated base.
+	__diamond_shaped_mask = 0x2, // Diamond shaped multiple inheritance.
+	__flags_unknown_mask = 0x10
+      };
+
+  protected:
+    // Implementation defined member functions.
+    virtual bool 
+    __do_dyncast(ptrdiff_t __src2dst, __sub_kind __access_path,
+		 const __class_type_info* __dst_type, const void* __obj_ptr,
+		 const __class_type_info* __src_type, const void* __src_ptr,
+		 __dyncast_result& __result) const;
+
+    virtual __sub_kind 
+    __do_find_public_src(ptrdiff_t __src2dst, const void* __obj_ptr, 
+			 const __class_type_info* __src_type,
+			 const void* __src_ptr) const;
+    
+    virtual bool 
+    __do_upcast(const __class_type_info* __dst, const void* __obj,
+		__upcast_result& __restrict __result) const;
+  };
+
+  // Dynamic cast runtime.
+  // src2dst has the following possible values
+  //  >-1: src_type is a unique public non-virtual base of dst_type
+  //       dst_ptr + src2dst == src_ptr
+  //   -1: unspecified relationship
+  //   -2: src_type is not a public base of dst_type
+  //   -3: src_type is a multiple public non-virtual base of dst_type
+  extern "C" void*
+  __dynamic_cast(const void* __src_ptr, // Starting object.
+		 const __class_type_info* __src_type, // Static type of object.
+		 const __class_type_info* __dst_type, // Desired target type.
+		 ptrdiff_t __src2dst); // How src and dst are related.
+
+
+  // Returns the type_info for the currently handled exception [15.3/8], or
+  // null if there is none.
+  extern "C" std::type_info*
+  __cxa_current_exception_type();
+} // namespace __cxxabiv1
+
+// User programs should use the alias `abi'. 
 namespace abi = __cxxabiv1;
 
-#else
-#endif /* __cplusplus */
+#endif // __cplusplus
 
-
-#endif /* __CXXABI_H */
+#endif // __CXXABI_H 
