@@ -58,6 +58,7 @@
 
 2004-01-12  Hartmut Penner  <hpenner@de.ibm.com>
 
+	PR target/13534
 	* gcc/config/rs6000/rs6000.c (word_offset_memref_operand): New
 	predicate to handle 'ld' conform addresses.
 	* gcc/config/rs6000/rs6000.h (EXTRA_CONSTRAINT): New 'Y'
