@@ -2407,7 +2407,7 @@ stabilize_reference (ref)
     case RTL_EXPR:
       result = build1 (INDIRECT_REF, TREE_TYPE (ref),
 		       save_expr (build1 (ADDR_EXPR,
-					  TREE_TYPE (TREE_TYPE (ref)),
+					  build_pointer_type (TREE_TYPE (ref)),
 					  ref)));
       break;
 
