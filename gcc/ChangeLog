@@ -2,6 +2,9 @@
 
 	* dependence.c (build_def_use): Remove array_idx.
 
+	* dwarfout.c (last_filename): Remove.
+	(output_compile_unit_die): Remove last_filename.
+
 2002-01-22  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 
