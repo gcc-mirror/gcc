@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "toplev.h"
+#include "output.h"
 
 static tree process_init_constructor PROTO((tree, tree, tree *));
 static void ack PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1;

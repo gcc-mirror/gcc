@@ -255,7 +255,7 @@ decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../toplev.h $(srcdir)/../dwarf2out.h $(srcdir)/../dwarfout.h \
   $(srcdir)/../../include/splay-tree.h $(srcdir)/../ggc.h $(RTL_H)
 typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
-  $(srcdir)/../system.h $(srcdir)/../toplev.h
+  $(srcdir)/../system.h $(srcdir)/../toplev.h $(srcdir)/../output.h
 typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h 
 class.o : class.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \

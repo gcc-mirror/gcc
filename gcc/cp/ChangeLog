@@ -1,3 +1,33 @@
+1999-11-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (typeck2.o): Depend on output.h.
+	* typeck2.c: Include output.h.
+
+	* decl.c (flag_ansi): Remove declaration.
+
+	* pt.c (tinst_level_tick): Make it static.
+	(last_template_error_tick): Likewise.
+	
+	* cp-tree.h (mapcar): Remove declaration.
+	(search_tree): Likewise.
+	(walk_tree_fn): New typedef.
+	(walk_tree): New function.
+	* tree.c (bot_manip): Change prototype.  Adjust to be called via
+	walk_tree.
+	(bot_replace): Likewise.
+	(no_linkage_helper): Likewise.
+	(copy_tree_r): New function.
+	(search_tree): Rename, and adjust, to become ...
+	(walk_tree): New function.
+	(mapcar): Rtemove.
+	(target_remap): Remove.
+	(target_remap_count): Likewise.
+	(break_out_target_exprs): Use walk_tree.
+	* decl.c (local_variable_p): Change prototype.
+	(check_default_argument): Use walk_tree.
+	* pt.c (for_each_template_parm_r): New function, split out from ...
+	(for_each_template_parm): Here.  Use it, via walk_tree.
+	
 1999-11-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (check_bitfield_decl): New function, split out from
