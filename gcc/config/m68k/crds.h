@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler;
    Charles River Data Systems UNiverse/32.
-   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1996 Free Software Foundation, Inc.
    Contributed by Gary E. Miller (Gary_Edmunds_Miller@cup.portal.com)
 
 This file is part of GNU CC.
@@ -105,18 +105,7 @@ Boston, MA 02111-1307, USA.  */
 #define STRUCT_VALUE gen_rtx(MEM, Pmode, gen_rtx( , , ) )
 */
 
-#define EXTRA_SECTIONS in_bss
-
-#define EXTRA_SECTION_FUNCTIONS						\
-void									\
-bss_section ()								\
-{									\
-  if (in_section != in_bss)						\
-    {									\
-      fprintf (asm_out_file, ".bss\n");					\
-      in_section = in_bss;						\
-    }									\
-}
+#define BSS_SECTION_ASM_OP ".bss"
 
 /* Specify how to pad function arguments.
    Value should be `upward', `downward' or `none'.
