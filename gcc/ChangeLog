@@ -1,5 +1,7 @@
 2005-03-10  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* bitmap.c (bitmap_copy): Remove manual loop unrolling.
+
 	* value-prof.c (rtl_find_values_to_profile): Use gcc_assert and
 	gcc_unreachable.
 	(rtl_register_value_prof_hooks,
