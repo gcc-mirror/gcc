@@ -1906,17 +1906,6 @@ generate_local_decl (gfc_symbol * sym)
 {
   if (sym->attr.flavor == FL_VARIABLE)
     {
-      /* TODO: The frontend sometimes creates symbols for things which don't
-         actually exist.  E.g. common block names and the names of formal
-	 arguments.  The latter are created while attempting to parse
-	 the argument list as a substring reference.
-
-	 The proper fix is to avoid adding these symbols in the first place.
-	 For now we hack round it by ignoring anything with an unknown type.
-       */
-      if (sym->ts.type == BT_UNKNOWN)
-	return;
-
       if (sym->attr.referenced)
         gfc_get_symbol_decl (sym);
       else if (sym->attr.dummy)

@@ -12,6 +12,9 @@
 
 	* parse.c (decode_statement): Fix matching of BLOCK DATA.
 
+	* trans-decl.c (generate_local_decl): Remove workaround obsoleted
+	by fix for PR 15481.
+	
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-common.c: Fix whitespace issues, make variable names
