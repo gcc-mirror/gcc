@@ -2890,7 +2890,7 @@ expand_call (exp, target, ignore)
 #ifdef PREFERRED_STACK_BOUNDARY
       /* Stack must be properly aligned now.  */
       if (pass && stack_pointer_delta % preferred_unit_stack_boundary)
-	abort();
+	abort ();
 #endif
 
       /* Generate the actual call instruction.  */
