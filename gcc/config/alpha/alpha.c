@@ -1652,7 +1652,7 @@ output_prolog (file, size)
 	break;
       }
 
-  if (WINDOWS_NT == 0)
+  if (TARGET_WINDOWS_NT == 0)
     {
       if (alpha_function_needs_gp)
 	fprintf (file, "\tldgp $29,0($27)\n");
