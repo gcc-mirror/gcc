@@ -1,6 +1,6 @@
 /* Verify that we optimize to conditional traps.  */
 /* { dg-options "-O" } */
-/* { dg-do compile { target rs6000-* powerpc-* sparc*-* } } */
+/* { dg-do compile { target rs6000-*-* powerpc-*-* sparc*-*-* } } */
 /* { dg-final { scan-assembler-not iftrap-1.c "^\t(trap|ta)\[ \t\]" } } */
 
 void f1(int p)
