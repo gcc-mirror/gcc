@@ -1623,6 +1623,7 @@ expand_call (exp, target, ignore)
 	    < MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
       {
 	int bytes = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
+	int big_endian_correction = 0;
 
 	args[i].n_aligned_regs
 	  = args[i].partial ? args[i].partial
@@ -1630,6 +1631,13 @@ expand_call (exp, target, ignore)
 
 	args[i].aligned_regs = (rtx *) alloca (sizeof (rtx)
 					       * args[i].n_aligned_regs);
+
+	/* Structures smaller than a word are aligned to the least signifcant
+	   byte (to the right).  On a BYTES_BIG_ENDIAN machine, this means we
+	   must skip the empty high order bytes when calculating the bit
+	   offset.  */
+	if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
+	  big_endian_correction = (BITS_PER_WORD  - (bytes * BITS_PER_UNIT));
 
 	for (j = 0; j < args[i].n_aligned_regs; j++)
 	  {
@@ -1651,12 +1659,10 @@ expand_call (exp, target, ignore)
 		 bitpos < BITS_PER_WORD && bytes > 0;
 		 bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
 	      {
-		int xbitpos = (BYTES_BIG_ENDIAN
-			       ? BITS_PER_WORD - bitpos - bitsize
-			       : bitpos);
+		int xbitpos = bitpos + big_endian_correction;
 
 		store_bit_field (reg, bitsize, xbitpos, word_mode,
-				 extract_bit_field (word, bitsize, xbitpos, 1,
+				 extract_bit_field (word, bitsize, bitpos, 1,
 						    NULL_RTX, word_mode,
 						    word_mode,
 						    bitsize / BITS_PER_UNIT,
