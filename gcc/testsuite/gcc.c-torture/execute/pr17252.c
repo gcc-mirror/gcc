@@ -5,14 +5,11 @@ char *a;
 
 main ()
 {
-  int i;
-
   /* Make 'a' point to itself.  */
   a = (char *)&a;
 
-  /* Assign NULL to 'a' byte by byte.  */
-  for (i = 0; i < sizeof(char *); i++)
-    a[i] = 0;
+  /* Change what 'a' is pointing to.  */
+  a[0] = 0;
 
   /* If a's memory tag does not contain 'a' in its alias set, we will
      think that this predicate is superfluous and change it to
