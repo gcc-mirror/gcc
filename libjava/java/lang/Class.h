@@ -134,10 +134,7 @@ public:
   static jclass forName (jstring className);
   JArray<jclass> *getClasses (void);
 
-  java::lang::ClassLoader *getClassLoader (void)
-    {
-      return loader;
-    }
+  java::lang::ClassLoader *getClassLoader (void);
 
   java::lang::reflect::Constructor *getConstructor (JArray<jclass> *);
   JArray<java::lang::reflect::Constructor *> *getConstructors (void);
