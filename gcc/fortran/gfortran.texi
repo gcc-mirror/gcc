@@ -3,7 +3,6 @@
 @setfilename gfortran.info
 @set last-update 13 May 2004
 @set copyrights-gfortran 1999-2004
-@set version-gfortran 0.235
 
 @include gcc-common.texi
 
@@ -87,10 +86,10 @@ Contributed by Steven Bosscher (@email{s.bosscher@@gcc.gnu.org}).
 @sp 3 
 @center Last updated @value{last-update}
 @sp 1
-@center for version @value {version-gfortran}
+@center for version @value {version-GCC}
 @page
 @vskip 0pt plus 1filll
-For the @value{version-gfortran} Version*
+For the @value{version-GCC} Version*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
