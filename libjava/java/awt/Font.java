@@ -1,5 +1,5 @@
 /* Font.java -- Font object
-   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -247,7 +247,10 @@ private static final long serialVersionUID = -4206021311591459213L;
         {
           tokenval = Integer.parseInt(token);
         }
-      catch(NumberFormatException e) { ; }
+      catch(NumberFormatException e)
+        {
+	  // Ignored.
+	}
 
       if (tokenval != 0)
         size = tokenval;

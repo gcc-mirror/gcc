@@ -1,3 +1,14 @@
+2005-02-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Button.java,
+	java/awt/Container.java,
+	java/awt/Font.java,
+	java/awt/Frame.java,
+	java/text/CollationElementIterator.java,
+	java/text/RuleBasedCollator.java,
+	java/util/PropertyPermission.java:
+	Fixed formatting issues all over.
+
 2005-02-21  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/FileDescriptor.java (sync): Add real exception to

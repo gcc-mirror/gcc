@@ -1,5 +1,5 @@
 /* PropertyPermission.java -- permission to get and set System properties
-   Copyright (C) 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -154,17 +154,18 @@ public final class PropertyPermission extends BasicPermission
       actions = WRITE;
     else if ("read,write".equals(str) || "write,read".equals(str))
       actions = READ | WRITE;
-    else {
-      String lstr = str.toLowerCase();
-      if ("read".equals(lstr))
-	actions = READ;
-      else if ("write".equals(lstr))
-	actions = WRITE;
-      else if ("read,write".equals(lstr) || "write,read".equals(lstr))
-	actions = READ | WRITE;
-      else
-	throw new IllegalArgumentException("illegal action " + str);
-    }
+    else
+      {
+	String lstr = str.toLowerCase();
+	if ("read".equals(lstr))
+ 	  actions = READ;
+	else if ("write".equals(lstr))
+	  actions = WRITE;
+	else if ("read,write".equals(lstr) || "write,read".equals(lstr))
+	  actions = READ | WRITE;
+	else
+	  throw new IllegalArgumentException("illegal action " + str);
+      }
   }
 
   /**
