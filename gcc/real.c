@@ -824,19 +824,14 @@ target_isnan (x)
 
 
 /* Check for a negative REAL_VALUE_TYPE number.
- * this means strictly less than zero, not -0.
+ * This just checks the sign bit, so that -0 counts as negative.
  */
 
 int
 target_negative (x)
      REAL_VALUE_TYPE x;
 {
-  unsigned EMUSHORT e[NE];
-
-  GET_REAL (&x, e);
-  if (ecmp (e, ezero) == -1)
-    return (1);
-  return (0);
+  return ereal_isneg (x);
 }
 
 /* Expansion of REAL_VALUE_TRUNCATE.
