@@ -5526,3 +5526,19 @@ build_self_reference ()
   pushdecl_class_level (value);
   return value;
 }
+
+/* Returns 1 if TYPE contains only padding bytes.  */
+
+int
+is_empty_class (type)
+     tree type;
+{
+  tree t;
+
+  if (! IS_AGGR_TYPE (type) || TYPE_BINFO_BASETYPES (type))
+    return 0;
+  t = TYPE_FIELDS (type);
+  while (t && TREE_CODE (t) != FIELD_DECL)
+    t = TREE_CHAIN (t);
+  return (t == NULL_TREE);
+}

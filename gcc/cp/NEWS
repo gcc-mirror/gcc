@@ -1,8 +1,24 @@
 *** Changes since EGCS 1.0:
 
-* Template template parameters are now supported.
+* Massive template improvements:
+  + member template classes are supported.
+  + template friends are supported.
+  + template template parameters are supported.
+  + local classes in templates are supported.
+  + lots of bugs fixed.
 
 * operator new now throws bad_alloc where appropriate.
+
+* Exception handling is now thread safe, and supports nested
+  exceptions and placement delete.
+
+* protected virtual inheritance is now supported.
+
+* Loops are optimized better; we now move the test to the end in most
+  cases, like the C frontend does.
+
+* For class D derived from B which has a member 'int i', &D::i is now of
+  type 'int B::*' instead of 'int D::*'.
 
 *** Changes in EGCS 1.0:
 
