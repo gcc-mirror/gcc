@@ -22,7 +22,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Emacs needs to know if the arch is 64 or 32-bits.  */
 
 #undef  CPP_CPU64_DEFAULT_SPEC
-#define CPP_CPU64_DEFAULT_SPEC "-D__sparc64__ -D__sparc_v9__ -D__arch64__"
+#define CPP_CPU64_DEFAULT_SPEC \
+  "-D__sparc64__ -D__sparc_v9__ -D__sparcv9 -D__sparc__ -D__arch64__"
 
 #define LINK_SPEC "%(link_arch)						\
   %{!mno-relax:%{!r:-relax}}						\
