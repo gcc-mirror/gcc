@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.29 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -249,7 +249,7 @@ procedure XEinfo is
 begin
    Anchored_Mode := True;
 
-   Match ("$Revision: 1.29 $", "$Rev" & "ision: " & Break (' ') * XEinforev);
+   Match ("$Revision$", "$Rev" & "ision: " & Break (' ') * XEinforev);
 
    if Argument_Count > 0 then
       Create (Ofile, Out_File, Argument (1));
@@ -311,7 +311,6 @@ begin
    loop
       Line := Get_Line (InF);
       exit when Match (Line, "   --  END XEINFO INLINES");
-
 
       if Match (Line, Inline) then
          Set (Inlined, Name, True);
@@ -383,14 +382,13 @@ begin
             Put_Line (Ofile, "");
          end if;
 
-
       --  Case of type declaration
 
       elsif Match (Line, F_Typ) then
          --  Process type declaration (must be enumeration type)
 
          Ctr := 0;
-         Put_Line (Ofile, A & "typedef int " & N & ';');
+         Put_Line (Ofile, A & "typedef char " & N & ';');
 
          loop
             Line := Getlin;

@@ -1,3 +1,9 @@
+2001-10-10  Robert Dewar <dewar@gnat.com>
+
+	* xeinfo.adb: Change int to char in translation of enumeration types. 
+	This fixes a problem in the C representation of component alignment.
+	Add 2001 to copyright notice
+
 2001-10-10  Richard Kenner <kenner@gnat.com>
 
 	* decl.c: (validate_size): Do check size of object of integral type 
