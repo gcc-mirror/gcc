@@ -101,6 +101,18 @@ Boston, MA 02111-1307, USA.  */
    specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
 #define DWARF_OFFSET_SIZE PTR_SIZE
 
+/* There is no GNU as port for Irix6 yet, so we set MD_EXEC_PREFIX so that
+   gcc will automatically find SGI as instead of searching the user's path.
+   The latter can fail when building a cross compiler if the user has . in
+   the path before /usr/bin, since then gcc will find and try to use the link
+   to the cross assembler which can't possibly work.  */
+
+#undef MD_EXEC_PREFIX
+#define MD_EXEC_PREFIX "/usr/bin/"
+
+/* We have no need for MD_STARTFILE_PREFIX.  */
+#undef MD_STARTFILE_PREFIX
+
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 6.x"
 

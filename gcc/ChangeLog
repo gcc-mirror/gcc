@@ -1,3 +1,8 @@
+Wed Apr  1 14:38:10 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* config/mips/iris6.h (MD_EXEC_PREFIX): Set to /usr/bin/.
+	(MD_STARTFILE_PREFIX): Unset.
+
 1998-04-01  Mark Mitchell  <mmitchell@usa.net>
 
 	* varasm.c (make_decl_rtl): Update the DECL_ASSEMBLER_NAME for a
