@@ -10,7 +10,7 @@
 	(real_non_cast_lvalue_p): New method.
 	* cvt.c (build_up_reference): Adjust use of
 	make_temporary_var_for_ref_to_temp.
-	* tree.c (
+	* tree.c (real_non_cast_lvalue_p): New method.
 	 
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
