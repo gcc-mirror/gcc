@@ -213,7 +213,16 @@
 	* xref.h: Likewise.
 	* zextract.c: Likewise.
 	* zipfile.h: Likewise.
-	
+
+Mon Jan 18 14:30:09 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
+
+	* gjavah.c: Delete ACC_VISIBILITY define.
+	* jcf.h: Add ACC_VISIBILITY define.
+	* parse.y: final: rule tagged <value>.
+	(java_check_regular_methods): Use ACC_VISIBILITY define for
+	default package access check.
+	(local_variable_declaration_statement): Use final: rule.
+
 Mon Jan 17 11:58:17 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* parse.y (format_parameter:): Use final: rule instead of modifiers:.
