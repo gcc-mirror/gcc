@@ -150,7 +150,7 @@ namespace __cxxabiv1
       {
 	{
 	  uncatch_exception ue;
-	  __cxa_vec_dtor(array_address, ix, element_size, destructor);
+	  __cxa_vec_cleanup(array_address, ix, element_size, destructor);
 	}
 	__throw_exception_again;
       }
@@ -180,7 +180,7 @@ namespace __cxxabiv1
       {
 	{
 	  uncatch_exception ue;
-	  __cxa_vec_dtor (dest_array, ix, element_size, destructor);
+	  __cxa_vec_cleanup(dest_array, ix, element_size, destructor);
 	}
 	__throw_exception_again;
       }
@@ -197,10 +197,9 @@ namespace __cxxabiv1
       {
 	char *ptr = static_cast<char *>(array_address);
 	std::size_t ix = element_count;
-	bool unwinding = std::uncaught_exception();
-      
+
 	ptr += element_count * element_size;
-      
+
 	try
 	  {
 	    while (ix--)
@@ -211,15 +210,42 @@ namespace __cxxabiv1
 	  }
 	catch (...)
 	  {
-	    if (unwinding)
-	      // [except.ctor]/3 If a destructor called during stack unwinding
-	      // exits with an exception, terminate is called.
-	      std::terminate ();
 	    {
 	      uncatch_exception ue;
-	      __cxa_vec_dtor(array_address, ix, element_size, destructor);
+	      __cxa_vec_cleanup(array_address, ix, element_size, destructor);
 	    }
 	    __throw_exception_again;
+	  }
+      }
+  }
+
+  // Destruct array as a result of throwing an exception.
+  // [except.ctor]/3 If a destructor called during stack unwinding
+  // exits with an exception, terminate is called.
+  extern "C" void
+  __cxa_vec_cleanup(void *array_address,
+		    std::size_t element_count,
+		    std::size_t element_size,
+		    void (*destructor) (void *))
+  {
+    if (destructor)
+      {
+	char *ptr = static_cast <char *> (array_address);
+	std::size_t ix = element_count;
+
+	ptr += element_count * element_size;
+
+	try
+	  {
+	    while (ix--)
+	      {
+		ptr -= element_size;
+		destructor(ptr);
+	      }
+	  }
+	catch (...)
+	  {
+	    std::terminate();
 	  }
       }
   }

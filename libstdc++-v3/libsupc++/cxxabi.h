@@ -473,6 +473,13 @@ void __cxa_vec_dtor (void *__array_address,
                      __SIZE_TYPE__ __element_size,
                      void (*__destructor) (void *));
 
+/* destruct array */
+extern "C"
+void __cxa_vec_cleanup (void *__array_address,
+			__SIZE_TYPE__ __element_count,
+			__SIZE_TYPE__ __element_size,
+			void (*__destructor) (void *));
+
 /* destruct and release array */
 extern "C"
 void __cxa_vec_delete (void *__array_address,
