@@ -1,3 +1,10 @@
+2005-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (BUILT_IN_STPNCPY, BUILT_IN_STRCASECMP,
+	BUILT_IN_STRNCASECMP): New.
+	* doc/extend.texi: Document stpncpy, strcasecmp, strncasecmp
+	and strndup.
+
 2005-04-03  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/14812

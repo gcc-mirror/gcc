@@ -4880,6 +4880,8 @@ identifier, or a sequence of member accesses and array references.
 @findex sqrtl
 @findex sscanf
 @findex stpcpy
+@findex stpncpy
+@findex strcasecmp
 @findex strcat
 @findex strchr
 @findex strcmp
@@ -4889,9 +4891,11 @@ identifier, or a sequence of member accesses and array references.
 @findex strfmon
 @findex strftime
 @findex strlen
+@findex strncasecmp
 @findex strncat
 @findex strncmp
 @findex strncpy
+@findex strndup
 @findex strpbrk
 @findex strrchr
 @findex strspn
@@ -4963,9 +4967,10 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
 @code{scalb}, @code{signbit}, @code{signbitf}, @code{signbitl},
 @code{significandf}, @code{significandl}, @code{significand},
 @code{sincosf}, @code{sincosl}, @code{sincos}, @code{stpcpy},
-@code{strdup}, @code{strfmon}, @code{toascii}, @code{y0f}, @code{y0l},
-@code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and
-@code{yn}
+@code{stpncpy}, @code{strcasecmp}, @code{strdup}, @code{strfmon},
+@code{strncasecmp}, @code{strndup}, @code{toascii}, @code{y0f},
+@code{y0l}, @code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf},
+@code{ynl} and @code{yn}
 may be handled as built-in functions.
 All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C89
