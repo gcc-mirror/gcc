@@ -505,10 +505,12 @@ static int generating_instance_variables = 0;
 void
 lang_init ()
 {
+#if !USE_CPPLIB
   /* The beginning of the file is a new line; check for #.
      With luck, we discover the real source file's name from that
      and put it in input_filename.  */
   ungetc (check_newline (), finput);
+#endif
 
   /* The line number can be -1 if we had -g3 and the input file
      had a directive specifying line 0.  But we want predefined
