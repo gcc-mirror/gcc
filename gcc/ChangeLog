@@ -1,5 +1,13 @@
 2002-05-10  David S. Miller  <davem@redhat.com>
 
+	* rtl.h (INSN_ANNULLED_BRANCH_P): Accept INSN too, update comment.
+	(struct rtx_def): Update unchanging flag comment.
+	* doc/rtl.texi (INSN_ANNULLED_BRANCH_P): Update description.
+	* reorg.c (delete_from_delay_list): INSN_ANNULLED_BRANCH_P needs
+	to be handled to INSN too.
+	(dbr_schedule): Likewise.
+	* resource.c (next_insn_no_annul): Likewise.
+
 	* cse.c (rtx_cost): Remove multiplication by power of 2 special
 	casing.
 

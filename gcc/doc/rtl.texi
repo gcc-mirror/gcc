@@ -397,11 +397,13 @@ Stored in the @code{unchanging} field and printed as @samp{/u}.
 @findex INSN_ANNULLED_BRANCH_P
 @cindex @code{jump_insn} and @samp{/u}
 @cindex @code{call_insn} and @samp{/u}
-@cindex @code{unchanging}, in @code{jump_insn} and @code{call_insn}
+@cindex @code{insn} and @samp{/u}
+@cindex @code{unchanging}, in @code{jump_insn}, @code{call_insn} and @code{insn}
 @item INSN_ANNULLED_BRANCH_P (@var{x})
-In a @code{jump_insn} or @code{call_insn} indicates that the branch is
-an annulling one.  See the discussion under @code{sequence} below.
-Stored in the @code{unchanging} field and printed as @samp{/u}.
+In a @code{jump_insn}, @code{call_insn}, or @code{insn} indicates
+that the branch is an annulling one.  See the discussion under
+@code{sequence} below. Stored in the @code{unchanging} field and
+printed as @samp{/u}.
 
 @findex INSN_DEAD_CODE_P
 @cindex @code{insn} and @samp{/s}

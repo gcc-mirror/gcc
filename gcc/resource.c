@@ -175,7 +175,9 @@ next_insn_no_annul (insn)
     {
       /* If INSN is an annulled branch, skip any insns from the target
 	 of the branch.  */
-      if (GET_CODE (insn) == JUMP_INSN
+      if ((GET_CODE (insn) == JUMP_INSN
+	   || GET_CODE (insn) == CALL_INSN
+	   || GET_CODE (insn) == INSN)
 	  && INSN_ANNULLED_BRANCH_P (insn)
 	  && NEXT_INSN (PREV_INSN (insn)) != insn)
 	{

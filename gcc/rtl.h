@@ -140,7 +140,7 @@ struct rtx_def
      1 in a SYMBOL_REF if it addresses something in the per-function
      constants pool.
      1 in a CALL_INSN, NOTE, or EXPR_LIST for a const or pure call.
-     1 in a JUMP_INSN or CALL_INSN of an annulling branch.  */
+     1 in a JUMP_INSN, CALL_INSN, or INSN of an annulling branch.  */
   unsigned int unchanging : 1;
   /* 1 in a MEM or ASM_OPERANDS expression if the memory reference is volatile.
      1 in an INSN, CALL_INSN, JUMP_INSN, CODE_LABEL, BARRIER, or NOTE
@@ -537,9 +537,9 @@ do {				\
 #define SIBLING_CALL_P(RTX)						\
   (RTL_FLAG_CHECK1("SIBLING_CALL_P", (RTX), CALL_INSN)->jump)
 
-/* 1 if RTX is an insn that is an annulling branch.  */
+/* 1 if RTX is a jump_insn, call_insn, or insn that is an annulling branch.  */
 #define INSN_ANNULLED_BRANCH_P(RTX)					\
-  (RTL_FLAG_CHECK2("INSN_ANNULLED_BRANCH_P", (RTX), JUMP_INSN, CALL_INSN)->unchanging)
+  (RTL_FLAG_CHECK3("INSN_ANNULLED_BRANCH_P", (RTX), JUMP_INSN, CALL_INSN, INSN)->unchanging)
 
 /* 1 if RTX is an insn that is dead code.  Valid only for dead-code
    elimination phase.  */
