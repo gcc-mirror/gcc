@@ -232,6 +232,19 @@ package body System.Arith_64 is
       end if;
 
       Du := Lo (T2) & Lo (T1);
+
+      --  Set final signs (RM 4.5.5(27-30))
+
+      Den_Pos := (Y < 0) = (Z < 0);
+
+      --  Check overflow case of largest negative number divided by 1
+
+      if X = Int64'First and then Du = 1 and then not Den_Pos then
+         Raise_Error;
+      end if;
+
+      --  Perform the actual division
+
       Qu := Xu / Du;
       Ru := Xu rem Du;
 
@@ -240,10 +253,6 @@ package body System.Arith_64 is
       if Round and then Ru > (Du - Uns64'(1)) / Uns64'(2) then
          Qu := Qu + Uns64'(1);
       end if;
-
-      --  Set final signs (RM 4.5.5(27-30))
-
-      Den_Pos := (Y < 0) = (Z < 0);
 
       --  Case of dividend (X) sign positive
 
