@@ -355,7 +355,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "=f,f")
 	(plus:SF (match_operand:SF 1 "s_register_operand" "f,f")
 		 (match_operand:SF 2 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    adf%?s\\t%0, %1, %2
    suf%?s\\t%0, %1, #%N2"
@@ -365,7 +365,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
 	(plus:DF (match_operand:DF 1 "s_register_operand" "f,f")
 		 (match_operand:DF 2 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    adf%?d\\t%0, %1, %2
    suf%?d\\t%0, %1, #%N2"
@@ -376,7 +376,7 @@
 	(plus:DF (float_extend:DF
 		  (match_operand:SF 1 "s_register_operand" "f,f"))
 		 (match_operand:DF 2 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    adf%?d\\t%0, %1, %2
    suf%?d\\t%0, %1, #%N2"
@@ -387,7 +387,7 @@
 	(plus:DF (match_operand:DF 1 "s_register_operand" "f")
 		 (float_extend:DF
 		  (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "adf%?d\\t%0, %1, %2"
 [(set_attr "type" "farith")])
 
@@ -397,7 +397,7 @@
 		  (match_operand:SF 1 "s_register_operand" "f"))
 		 (float_extend:DF
 		  (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "adf%?d\\t%0, %1, %2"
 [(set_attr "type" "farith")])
 
@@ -405,7 +405,7 @@
   [(set (match_operand:XF 0 "s_register_operand" "=f,f")
 	(plus:XF (match_operand:XF 1 "s_register_operand" "f,f")
 		 (match_operand:XF 2 "fpu_add_operand" "fG,H")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "@
    adf%?e\\t%0, %1, %2
    suf%?e\\t%0, %1, #%N2"
@@ -544,7 +544,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "=f,f")
 	(minus:SF (match_operand:SF 1 "fpu_rhs_operand" "f,G")
 		  (match_operand:SF 2 "fpu_rhs_operand" "fG,f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    suf%?s\\t%0, %1, %2
    rsf%?s\\t%0, %2, %1"
@@ -554,7 +554,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
 	(minus:DF (match_operand:DF 1 "fpu_rhs_operand" "f,G")
 		  (match_operand:DF 2 "fpu_rhs_operand" "fG,f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    suf%?d\\t%0, %1, %2
    rsf%?d\\t%0, %2, %1"
@@ -565,7 +565,7 @@
 	(minus:DF (float_extend:DF
 		   (match_operand:SF 1 "s_register_operand" "f"))
 		  (match_operand:DF 2 "fpu_rhs_operand" "fG")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "suf%?d\\t%0, %1, %2"
 [(set_attr "type" "farith")])
 
@@ -574,7 +574,7 @@
 	(minus:DF (match_operand:DF 1 "fpu_rhs_operand" "f,G")
 		  (float_extend:DF
 		   (match_operand:SF 2 "s_register_operand" "f,f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    suf%?d\\t%0, %1, %2
    rsf%?d\\t%0, %2, %1"
@@ -586,7 +586,7 @@
 		   (match_operand:SF 1 "s_register_operand" "f"))
 		  (float_extend:DF
 		   (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "suf%?d\\t%0, %1, %2"
 [(set_attr "type" "farith")])
 
@@ -594,7 +594,7 @@
   [(set (match_operand:XF 0 "s_register_operand" "=f,f")
 	(minus:XF (match_operand:XF 1 "fpu_rhs_operand" "f,G")
 		  (match_operand:XF 2 "fpu_rhs_operand" "fG,f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "@
    suf%?e\\t%0, %1, %2
    rsf%?e\\t%0, %2, %1"
@@ -676,7 +676,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "f")
 		 (match_operand:SF 2 "fpu_rhs_operand" "fG")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "fml%?s\\t%0, %1, %2"
 [(set_attr "type" "ffmul")])
 
@@ -684,7 +684,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "s_register_operand" "f")
 		 (match_operand:DF 2 "fpu_rhs_operand" "fG")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "muf%?d\\t%0, %1, %2"
 [(set_attr "type" "fmul")])
 
@@ -693,7 +693,7 @@
 	(mult:DF (float_extend:DF
 		  (match_operand:SF 1 "s_register_operand" "f"))
 		 (match_operand:DF 2 "fpu_rhs_operand" "fG")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "muf%?d\\t%0, %1, %2"
 [(set_attr "type" "fmul")])
 
@@ -702,7 +702,7 @@
 	(mult:DF (match_operand:DF 1 "s_register_operand" "f")
 		 (float_extend:DF
 		  (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "muf%?d\\t%0, %1, %2"
 [(set_attr "type" "fmul")])
 
@@ -712,7 +712,7 @@
 		  (match_operand:SF 1 "s_register_operand" "f"))
 		 (float_extend:DF
 		  (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "muf%?d\\t%0, %1, %2"
 [(set_attr "type" "fmul")])
 
@@ -720,7 +720,7 @@
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(mult:XF (match_operand:XF 1 "s_register_operand" "f")
 		 (match_operand:XF 2 "fpu_rhs_operand" "fG")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "muf%?e\\t%0, %1, %2"
 [(set_attr "type" "fmul")])
 
@@ -730,7 +730,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "=f,f")
 	(div:SF (match_operand:SF 1 "fpu_rhs_operand" "f,G")
 		(match_operand:SF 2 "fpu_rhs_operand" "fG,f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    fdv%?s\\t%0, %1, %2
    frd%?s\\t%0, %2, %1"
@@ -740,7 +740,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
 	(div:DF (match_operand:DF 1 "fpu_rhs_operand" "f,G")
 		(match_operand:DF 2 "fpu_rhs_operand" "fG,f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    dvf%?d\\t%0, %1, %2
    rdf%?d\\t%0, %2, %1"
@@ -751,7 +751,7 @@
 	(div:DF (float_extend:DF
 		 (match_operand:SF 1 "s_register_operand" "f"))
 		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "dvf%?d\\t%0, %1, %2"
 [(set_attr "type" "fdivd")])
 
@@ -760,7 +760,7 @@
 	(div:DF (match_operand:DF 1 "fpu_rhs_operand" "fG")
 		(float_extend:DF
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "rdf%?d\\t%0, %2, %1"
 [(set_attr "type" "fdivd")])
 
@@ -770,7 +770,7 @@
 		 (match_operand:SF 1 "s_register_operand" "f"))
 		(float_extend:DF
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "dvf%?d\\t%0, %1, %2"
 [(set_attr "type" "fdivd")])
 
@@ -778,7 +778,7 @@
   [(set (match_operand:XF 0 "s_register_operand" "=f,f")
 	(div:XF (match_operand:XF 1 "fpu_rhs_operand" "f,G")
 		(match_operand:XF 2 "fpu_rhs_operand" "fG,f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "@
    dvf%?e\\t%0, %1, %2
    rdf%?e\\t%0, %2, %1"
@@ -790,7 +790,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(mod:SF (match_operand:SF 1 "s_register_operand" "f")
 		(match_operand:SF 2 "fpu_rhs_operand" "fG")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "rmf%?s\\t%0, %1, %2"
 [(set_attr "type" "fdivs")])
 
@@ -798,7 +798,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(mod:DF (match_operand:DF 1 "s_register_operand" "f")
 		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "rmf%?d\\t%0, %1, %2"
 [(set_attr "type" "fdivd")])
 
@@ -807,7 +807,7 @@
 	(mod:DF (float_extend:DF
 		 (match_operand:SF 1 "s_register_operand" "f"))
 		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "rmf%?d\\t%0, %1, %2"
 [(set_attr "type" "fdivd")])
 
@@ -816,7 +816,7 @@
 	(mod:DF (match_operand:DF 1 "s_register_operand" "f")
 		(float_extend:DF
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "rmf%?d\\t%0, %1, %2"
 [(set_attr "type" "fdivd")])
 
@@ -826,7 +826,7 @@
 		 (match_operand:SF 1 "s_register_operand" "f"))
 		(float_extend:DF
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "rmf%?d\\t%0, %1, %2"
 [(set_attr "type" "fdivd")])
 
@@ -834,7 +834,7 @@
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(mod:XF (match_operand:XF 1 "s_register_operand" "f")
 		(match_operand:XF 2 "fpu_rhs_operand" "fG")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "rmf%?e\\t%0, %1, %2"
 [(set_attr "type" "fdivx")])
 
@@ -1463,14 +1463,14 @@
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "mnf%?s\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "mnf%?d\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
@@ -1478,14 +1478,14 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(neg:DF (float_extend:DF
 		 (match_operand:SF 1 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "mnf%?d\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
 (define_insn "negxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(neg:XF (match_operand:XF 1 "s_register_operand" "f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "mnf%?e\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
@@ -1519,14 +1519,14 @@
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	 (abs:SF (match_operand:SF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "abs%?s\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(abs:DF (match_operand:DF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "abs%?d\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
@@ -1534,28 +1534,28 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(abs:DF (float_extend:DF
 		 (match_operand:SF 1 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "abs%?d\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
 (define_insn "absxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(abs:XF (match_operand:XF 1 "s_register_operand" "f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "abs%?e\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "sqt%?s\\t%0, %1"
 [(set_attr "type" "float_em")])
 
 (define_insn "sqrtdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "sqt%?d\\t%0, %1"
 [(set_attr "type" "float_em")])
 
@@ -1563,28 +1563,28 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(sqrt:DF (float_extend:DF
 		  (match_operand:SF 1 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "sqt%?d\\t%0, %1"
 [(set_attr "type" "float_em")])
 
 (define_insn "sqrtxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(sqrt:XF (match_operand:XF 1 "s_register_operand" "f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "sqt%?e\\t%0, %1"
 [(set_attr "type" "float_em")])
 
 (define_insn "sinsf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(unspec:SF [(match_operand:SF 1 "s_register_operand" "f")] 0))]
-  ""
+  "TARGET_HARD_FLOAT"
   "sin%?s\\t%0, %1"
 [(set_attr "type" "float_em")])
 
 (define_insn "sindf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(unspec:DF [(match_operand:DF 1 "s_register_operand" "f")] 0))]
-  ""
+  "TARGET_HARD_FLOAT"
   "sin%?d\\t%0, %1"
 [(set_attr "type" "float_em")])
 
@@ -1592,28 +1592,28 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(unspec:DF [(float_extend:DF
 		     (match_operand:SF 1 "s_register_operand" "f"))] 0))]
-  ""
+  "TARGET_HARD_FLOAT"
   "sin%?d\\t%0, %1"
 [(set_attr "type" "float_em")])
 
 (define_insn "sinxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(unspec:XF [(match_operand:XF 1 "s_register_operand" "f")] 0))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "sin%?e\\t%0, %1"
 [(set_attr "type" "float_em")])
 
 (define_insn "cossf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(unspec:SF [(match_operand:SF 1 "s_register_operand" "f")] 1))]
-  ""
+  "TARGET_HARD_FLOAT"
   "cos%?s\\t%0, %1"
 [(set_attr "type" "float_em")])
 
 (define_insn "cosdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(unspec:DF [(match_operand:DF 1 "s_register_operand" "f")] 1))]
-  ""
+  "TARGET_HARD_FLOAT"
   "cos%?d\\t%0, %1"
 [(set_attr "type" "float_em")])
 
@@ -1621,14 +1621,14 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(unspec:DF [(float_extend:DF
 		     (match_operand:SF 1 "s_register_operand" "f"))] 1))]
-  ""
+  "TARGET_HARD_FLOAT"
   "cos%?d\\t%0, %1"
 [(set_attr "type" "float_em")])
 
 (define_insn "cosxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(unspec:XF [(match_operand:XF 1 "s_register_operand" "f")] 1))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "cos%?e\\t%0, %1"
 [(set_attr "type" "float_em")])
 
@@ -1669,42 +1669,42 @@
 (define_insn "floatsisf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(float:SF (match_operand:SI 1 "s_register_operand" "r")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "flt%?s\\t%0, %1"
 [(set_attr "type" "r_2_f")])
 
 (define_insn "floatsidf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(float:DF (match_operand:SI 1 "s_register_operand" "r")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "flt%?d\\t%0, %1"
 [(set_attr "type" "r_2_f")])
 
 (define_insn "floatsixf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(float:XF (match_operand:SI 1 "s_register_operand" "r")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "flt%?e\\t%0, %1"
 [(set_attr "type" "r_2_f")])
 
 (define_insn "fix_truncsfsi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(fix:SI (match_operand:SF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "fix%?z\\t%0, %1"
 [(set_attr "type" "f_2_r")])
 
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(fix:SI (match_operand:DF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "fix%?z\\t%0, %1"
 [(set_attr "type" "f_2_r")])
 
 (define_insn "fix_truncxfsi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(fix:SI (match_operand:XF 1 "s_register_operand" "f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "fix%?z\\t%0, %1"
 [(set_attr "type" "f_2_r")])
 
@@ -1714,7 +1714,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(float_truncate:SF
 	 (match_operand:DF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "mvf%?s\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
@@ -1722,7 +1722,7 @@
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(float_truncate:SF
 	 (match_operand:XF 1 "s_register_operand" "f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "mvf%?s\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
@@ -1730,7 +1730,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(float_truncate:DF
 	 (match_operand:XF 1 "s_register_operand" "f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "mvf%?d\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
@@ -1901,21 +1901,21 @@
 (define_insn "extendsfdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(float_extend:DF (match_operand:SF 1 "s_register_operand" "f")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "mvf%?d\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
 (define_insn "extendsfxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(float_extend:XF (match_operand:SF 1 "s_register_operand" "f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "mvf%?e\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
 (define_insn "extenddfxf2"
   [(set (match_operand:XF 0 "s_register_operand" "=f")
 	(float_extend:XF (match_operand:DF 1 "s_register_operand" "f")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "mvf%?e\\t%0, %1"
 [(set_attr "type" "ffarith")])
 
@@ -2071,7 +2071,7 @@
              (ior (eq_attr "alternative" "5")
 		  (eq_attr "alternative" "6")) (const_int 16)]
             (const_int 4)))
- (set_attr "type" "load,load,*,*,store1,*,*")])
+ (set_attr "type" "load,load,*,*,store1,*,*,*")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -2438,7 +2438,8 @@
 (define_insn ""
   [(set (match_operand:SF 0 "general_operand" "=f,f,f,m,f,r,r,r,m")
 	(match_operand:SF 1 "general_operand" "fG,H,m,f,r,f,r,m,r"))]
-  "GET_CODE (operands[0]) != MEM || register_operand (operands[1], SFmode)"
+  "TARGET_HARD_FLOAT
+   && (GET_CODE (operands[0]) != MEM || register_operand (operands[1], SFmode))"
   "@
    mvf%?s\\t%0, %1
    mnf%?s\\t%0, #%N1
@@ -2452,6 +2453,22 @@
 [(set_attr "length" "4,4,4,4,8,8,4,4,4")
  (set_attr "type"
 	 "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*,load,store1")])
+
+;; Exactly the same as above, except that all `f' cases are deleted.
+;; This is necessary to prevent reload from ever trying to use a `f' reg
+;; when -msoft-float.
+
+(define_insn "*movsf_soft_insn"
+  [(set (match_operand:SF 0 "general_operand" "=r,r,m")
+	(match_operand:SF 1 "general_operand" "r,m,r"))]
+  "TARGET_SOFT_FLOAT
+   && (GET_CODE (operands[0]) != MEM || register_operand (operands[1], SFmode))"
+  "@
+   mov%?\\t%0, %1
+   ldr%?\\t%0, %1\\t%@ float
+   str%?\\t%1, %0\\t%@ float"
+[(set_attr "length" "4,4,4")
+ (set_attr "type" "*,load,store1")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
@@ -2507,7 +2524,8 @@
   [(set (match_operand:DF 0 "general_operand" "=r,Q#m,r,f,f,f,f,m,!f,!r,r")
 	(match_operand:DF 1 "general_operand" 
 	 	"Q,r,?o,?f,!G,!H,m,f,r,f,??r"))]
-  "GET_CODE (operands[0]) != MEM || register_operand (operands[1], DFmode)"
+  "TARGET_HARD_FLOAT
+   && (GET_CODE (operands[0]) != MEM || register_operand (operands[1], DFmode))"
   "*
 {
   rtx ops[3];
@@ -2547,10 +2565,49 @@
  (set_attr "type" 
 "load,store2,load,ffarith,ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*")])
 
+;; Exactly the same as above, except that all `f' cases are deleted.
+;; This is necessary to prevent reload from ever trying to use a `f' reg
+;; when -msoft-float.
+
+(define_insn "*movdf_soft_insn"
+  [(set (match_operand:DF 0 "general_operand" "=r,Q#m,r,r")
+	(match_operand:DF 1 "general_operand" 
+	 	"Q,r,?o,??r"))]
+  "TARGET_SOFT_FLOAT
+   && (GET_CODE (operands[0]) != MEM || register_operand (operands[1], DFmode))"
+  "*
+{
+  rtx ops[3];
+
+  switch (which_alternative)
+    {
+    case 0:
+      return \"ldm%?ia\\t%m1, {%0, %R0}\\t%@ double\";
+
+    case 1:
+      return \"stm%?ia\\t%m0, {%1, %R1}\\t%@ double\";
+
+    case 2:
+      ops[0] = operands[0];
+      ops[1] = XEXP (XEXP (operands[1], 0), 0);
+      ops[2] = XEXP (XEXP (operands[1], 0), 1);
+      if (!INTVAL (ops[2]) || const_ok_for_arm (INTVAL (ops[2])))
+	output_asm_insn (\"add%?\\t%0, %1, %2\", ops);
+      else
+	output_asm_insn (\"sub%?\\t%0, %1, #%n2\", ops);
+      return \"ldm%?ia\\t%0, {%0, %R0}\\t%@ double\";
+
+    case 3: return output_move_double (operands);
+    }
+}
+"
+[(set_attr "length" "4,4,8,8")
+ (set_attr "type" "load,store2,load,*")])
+
 (define_expand "movxf"
   [(set (match_operand:XF 0 "general_operand" "")
 	(match_operand:XF 1 "general_operand" ""))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "")
 
 ;; Even when the XFmode patterns aren't enabled, we enable this after
@@ -2559,7 +2616,7 @@
 (define_insn ""
   [(set (match_operand:XF 0 "general_operand" "=f,f,f,m,f,r,r")
 	(match_operand:XF 1 "general_operand" "fG,H,m,f,r,f,r"))]
-  "ENABLE_XF_PATTERNS || reload_completed"
+  "TARGET_HARD_FLOAT && (ENABLE_XF_PATTERNS || reload_completed)"
   "*
   switch (which_alternative)
     {
@@ -2765,7 +2822,7 @@
   [(set (reg:CC 24)
 	(compare:CC (match_operand:SF 0 "s_register_operand" "")
 		    (match_operand:SF 1 "fpu_rhs_operand" "")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "
 {
   arm_compare_op0 = operands[0];
@@ -2779,7 +2836,7 @@
   [(set (reg:CC 24)
 	(compare:CC (match_operand:DF 0 "s_register_operand" "")
 		    (match_operand:DF 1 "fpu_rhs_operand" "")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "
 {
   arm_compare_op0 = operands[0];
@@ -2793,7 +2850,7 @@
   [(set (reg:CC 24)
 	(compare:CC (match_operand:XF 0 "s_register_operand" "")
 		    (match_operand:XF 1 "fpu_rhs_operand" "")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "
 {
   arm_compare_op0 = operands[0];
@@ -2845,7 +2902,7 @@
   [(set (reg:CCFP 24)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand" "f,f")
 		      (match_operand:SF 1 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    cmf%?\\t%0, %1
    cnf%?\\t%0, #%N1"
@@ -2856,7 +2913,7 @@
   [(set (reg:CCFP 24)
 	(compare:CCFP (match_operand:DF 0 "s_register_operand" "f,f")
 		      (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    cmf%?\\t%0, %1
    cnf%?\\t%0, #%N1"
@@ -2868,7 +2925,7 @@
 	(compare:CCFP (float_extend:DF
 		       (match_operand:SF 0 "s_register_operand" "f,f"))
 		      (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    cmf%?\\t%0, %1
    cnf%?\\t%0, #%N1"
@@ -2880,7 +2937,7 @@
 	(compare:CCFP (match_operand:DF 0 "s_register_operand" "f")
 		      (float_extend:DF
 		       (match_operand:SF 1 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "cmf%?\\t%0, %1"
 [(set_attr "conds" "set")
  (set_attr "type" "f_2_r")])
@@ -2889,7 +2946,7 @@
   [(set (reg:CCFP 24)
 	(compare:CCFP (match_operand:XF 0 "s_register_operand" "f,f")
 		      (match_operand:XF 1 "fpu_add_operand" "fG,H")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "@
    cmf%?\\t%0, %1
    cnf%?\\t%0, #%N1"
@@ -2900,7 +2957,7 @@
   [(set (reg:CCFPE 24)
 	(compare:CCFPE (match_operand:SF 0 "s_register_operand" "f,f")
 		       (match_operand:SF 1 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    cmf%?e\\t%0, %1
    cnf%?e\\t%0, #%N1"
@@ -2911,7 +2968,7 @@
   [(set (reg:CCFPE 24)
 	(compare:CCFPE (match_operand:DF 0 "s_register_operand" "f,f")
 		       (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    cmf%?e\\t%0, %1
    cnf%?e\\t%0, #%N1"
@@ -2923,7 +2980,7 @@
 	(compare:CCFPE (float_extend:DF
 			(match_operand:SF 0 "s_register_operand" "f,f"))
 		       (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
-  ""
+  "TARGET_HARD_FLOAT"
   "@
    cmf%?e\\t%0, %1
    cnf%?e\\t%0, #%N1"
@@ -2935,7 +2992,7 @@
 	(compare:CCFPE (match_operand:DF 0 "s_register_operand" "f")
 		       (float_extend:DF
 			(match_operand:SF 1 "s_register_operand" "f"))))]
-  ""
+  "TARGET_HARD_FLOAT"
   "cmf%?e\\t%0, %1"
 [(set_attr "conds" "set")
  (set_attr "type" "f_2_r")])
@@ -2944,7 +3001,7 @@
   [(set (reg:CCFPE 24)
 	(compare:CCFPE (match_operand:XF 0 "s_register_operand" "f,f")
 		       (match_operand:XF 1 "fpu_add_operand" "fG,H")))]
-  "ENABLE_XF_PATTERNS"
+  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
   "@
    cmf%?e\\t%0, %1
    cnf%?e\\t%0, #%N1"
