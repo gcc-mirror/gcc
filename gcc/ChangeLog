@@ -1,3 +1,10 @@
+2001-11-19  DJ Delorie  <dj@redhat.com>
+
+	* read-rtl.c (ISDIGIT, ISSPACE): Make sure we have these.
+	(validate_const_int): New.
+	(read_rtx): Validate constant integers.
+	* config/i386/i386.md (pmulhrwv4hi3): Use decimal constants.
+
 2001-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/hostconfig.texi (DUMPFILE_FORMAT): Move into the table.
