@@ -1234,8 +1234,6 @@ dbxout_begin_prologue (unsigned int lineno, const char *filename)
 static void
 dbxout_source_line (unsigned int lineno, const char *filename)
 {
-  const char *begin_label = XSTR(XEXP(DECL_RTL(current_function_decl), 0), 0);
-
   dbxout_source_file (filename);
 
 #ifdef DBX_OUTPUT_SOURCE_LINE
@@ -1243,9 +1241,10 @@ dbxout_source_line (unsigned int lineno, const char *filename)
 #else
   if (DBX_LINES_FUNCTION_RELATIVE)
     {
+      rtx begin_label = XEXP (DECL_RTL (current_function_decl), 0);
       dbxout_begin_stabn_sline (lineno);
       dbxout_stab_value_internal_label_diff ("LM", &dbxout_source_line_counter,
-					     begin_label);
+					     XSTR (begin_label, 0));
 
     }
   else
