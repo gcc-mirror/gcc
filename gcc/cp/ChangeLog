@@ -1,3 +1,10 @@
+2003-12-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13323
+	* class.c (same_signature_p): Handle conversion operators
+	correctly.
+	(check_for_override): Likewise.
+
 2003-12-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (GXX_CROSS_NAME, CXX_CROSS_NAME): Delete.

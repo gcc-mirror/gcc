@@ -1,3 +1,8 @@
+2003-12-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13323
+	* g++.dg/inherit/operator2.C: New test.
+
 2003-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13305
