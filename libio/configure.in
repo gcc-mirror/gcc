@@ -55,8 +55,12 @@ if [ "${shared}" = "yes" ]; then
   case "${target}" in
     hppa*-*)	 frags="${frags} ../../config/mh-papic" ;;
     i[3456]86-*) frags="${frags} ../../config/mh-x86pic" ;;
-    alpha*-*-linux*)
-		 frags="${frags} ../../config/mh-elfalphapic" ;;
+    alpha*-*-linux*) frags="${frags} ../../config/mh-elfalphapic" ;;
+
+    # There doesn't seem to be a simpler way to say all-ppc except AIX
+    *-*-aix*)    ;;
+    powerpc*-* | ppc*-*) frags="${frags} ../../config/mh-ppcpic" ;;
+
     *)	         frags="${frags} ../../config/mh-${target_cpu}pic" ;;
   esac
 fi

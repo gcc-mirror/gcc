@@ -1,3 +1,7 @@
+Mon Nov 23 09:44:26 1998  Richard Henderson <rth@cygnus.com>
+
+        * configure.in: Append mh-ppcpic and mh-elfalphapic as appropriate.
+
 1998-08-25 14:34  Ulrich Drepper  <drepper@cygnus.com>
 
 	* libio/iogetline.c (_IO_getline_info): Don't read anything for
