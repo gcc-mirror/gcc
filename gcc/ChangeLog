@@ -1,3 +1,10 @@
+2004-05-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/15202
+	* pa.md (movdi, movsi, movhi, movqi): Support move from shift amount
+	register to general register for DI, SI, HI and QI modes.  Remove
+	move to shift amount register in DF mode.
+
 2004-05-18  Ulrich Weigand  <uweigand@de.ibm.com>
 	
 	PR middle-end/15054
