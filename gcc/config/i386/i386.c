@@ -6267,6 +6267,8 @@ ix86_split_fp_branch (code, op1, op2, target1, target2, tmp)
   rtx second, bypass;
   rtx label = NULL_RTX;
   rtx condition;
+  int bypass_probability = -1, second_probability = -1, probability = -1;
+  rtx i;
 
   if (target2 != pc_rtx)
     {
@@ -6278,35 +6280,59 @@ ix86_split_fp_branch (code, op1, op2, target1, target2, tmp)
 
   condition = ix86_expand_fp_compare (code, op1, op2,
 				      tmp, &second, &bypass);
+
+  if (split_branch_probability >= 0)
+    {
+      /* Distribute the probabilities across the jumps.
+	 Assume the BYPASS and SECOND to be always test
+	 for UNORDERED.  */
+      probability = split_branch_probability;
+
+      /* Value of 1 is low enought to make no need for probability
+	 to be updated.  Later we may run some experiments and see
+	 if unordered values are more frequent in practice.  */
+      if (bypass)
+	bypass_probability = 1;
+      if (second)
+	second_probability = 1;
+    }
   if (bypass != NULL_RTX)
     {
       label = gen_label_rtx ();
-      emit_jump_insn (gen_rtx_SET
+      i = emit_jump_insn (gen_rtx_SET
+			  (VOIDmode, pc_rtx,
+			   gen_rtx_IF_THEN_ELSE (VOIDmode,
+						 bypass,
+						 gen_rtx_LABEL_REF (VOIDmode,
+								    label),
+						 pc_rtx)));
+      if (bypass_probability >= 0)
+	REG_NOTES (i)
+	  = gen_rtx_EXPR_LIST (REG_BR_PROB,
+			       GEN_INT (bypass_probability),
+			       REG_NOTES (i));
+    }
+  i = emit_jump_insn (gen_rtx_SET
 		      (VOIDmode, pc_rtx,
 		       gen_rtx_IF_THEN_ELSE (VOIDmode,
-					     bypass,
-					     gen_rtx_LABEL_REF (VOIDmode,
-								label),
-					     pc_rtx)));
-    }
-  /* AMD Athlon and probably other CPUs too have fast bypass path between the
-     comparison and first branch.  The second branch takes longer to execute
-     so place first branch the worse predicable one if possible.  */
-  if (second != NULL_RTX
-      && (GET_CODE (second) == UNORDERED || GET_CODE (second) == ORDERED))
-    {
-      rtx tmp = condition;
-      condition = second;
-      second = tmp;
-    }
-  emit_jump_insn (gen_rtx_SET
-		  (VOIDmode, pc_rtx,
-		   gen_rtx_IF_THEN_ELSE (VOIDmode,
-					 condition, target1, target2)));
+					     condition, target1, target2)));
+  if (probability >= 0)
+    REG_NOTES (i)
+      = gen_rtx_EXPR_LIST (REG_BR_PROB,
+			   GEN_INT (probability),
+			   REG_NOTES (i));
   if (second != NULL_RTX)
-    emit_jump_insn (gen_rtx_SET
-		    (VOIDmode, pc_rtx,
-		     gen_rtx_IF_THEN_ELSE (VOIDmode, second, target1, target2)));
+    {
+      i = emit_jump_insn (gen_rtx_SET
+			  (VOIDmode, pc_rtx,
+			   gen_rtx_IF_THEN_ELSE (VOIDmode, second, target1,
+						 target2)));
+      if (second_probability >= 0)
+	REG_NOTES (i)
+	  = gen_rtx_EXPR_LIST (REG_BR_PROB,
+			       GEN_INT (second_probability),
+			       REG_NOTES (i));
+    }
   if (label != NULL_RTX)
     emit_label (label);
 }

@@ -106,7 +106,7 @@ static int find_if_case_2		PARAMS ((basic_block, edge, edge));
 static int find_cond_trap		PARAMS ((basic_block, edge, edge));
 static int find_memory			PARAMS ((rtx *, void *));
 static int dead_or_predicable		PARAMS ((basic_block, basic_block,
-						 basic_block, rtx, int));
+						 basic_block, basic_block, int));
 static void noce_emit_move_insn		PARAMS ((rtx, rtx));
 
 /* Abuse the basic_block AUX field to store the original block index,
@@ -2183,9 +2183,8 @@ find_if_case_1 (test_bb, then_edge, else_edge)
       edge then_edge, else_edge;
 {
   basic_block then_bb = then_edge->dest;
-  basic_block else_bb = else_edge->dest;
+  basic_block else_bb = else_edge->dest, new_bb;
   edge then_succ = then_bb->succ;
-  rtx new_lab;
 
   /* THEN has one successor.  */
   if (!then_succ || then_succ->succ_next != NULL)
@@ -2199,8 +2198,8 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   if (then_bb->pred->pred_next != NULL)
     return FALSE;
 
-  /* ELSE follows THEN.  (??? could be moved)  */
-  if (else_bb->index != then_bb->index + 1)
+  /* THEN must do something.  */
+  if (forwarder_block_p (then_bb))
     return FALSE;
 
   num_possible_if_blocks++;
@@ -2213,18 +2212,9 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   if (count_bb_insns (then_bb) > BRANCH_COST)
     return FALSE;
 
-  /* Find the label for THEN's destination.  */
-  if (then_succ->dest == EXIT_BLOCK_PTR)
-    new_lab = NULL_RTX;
-  else
-    {
-      new_lab = JUMP_LABEL (then_bb->end);
-      if (! new_lab)
-	abort ();
-    }
-
   /* Registers set are dead, or are predicable.  */
-  if (! dead_or_predicable (test_bb, then_bb, else_bb, new_lab, 1))
+  if (! dead_or_predicable (test_bb, then_bb, else_bb, 
+			    then_bb->succ->dest, 1))
     return FALSE;
 
   /* Conversion went ok, including moving the insns and fixing up the
@@ -2235,9 +2225,17 @@ find_if_case_1 (test_bb, then_edge, else_edge)
 		    else_bb->global_live_at_start,
 		    then_bb->global_live_at_end, BITMAP_IOR);
   
-  make_edge (NULL, test_bb, then_succ->dest, 0);
+  new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb), else_bb);
+  /* Make rest of code believe that the newly created block is the THEN_BB
+     block we are going to remove.  */
+  if (new_bb)
+    {
+      new_bb->aux = then_bb->aux;
+      SET_UPDATE_LIFE (then_bb);
+    }
   flow_delete_block (then_bb);
-  tidy_fallthru_edge (else_edge, test_bb, else_bb);
+  /* We've possibly created jump to next insn, cleanup_cfg will solve that
+     later.  */
 
   num_removed_blocks++;
   num_updated_if_blocks++;
@@ -2255,7 +2253,7 @@ find_if_case_2 (test_bb, then_edge, else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   edge else_succ = else_bb->succ;
-  rtx new_lab, note;
+  rtx note;
 
   /* ELSE has one successor.  */
   if (!else_succ || else_succ->succ_next != NULL)
@@ -2294,27 +2292,8 @@ find_if_case_2 (test_bb, then_edge, else_edge)
   if (count_bb_insns (then_bb) > BRANCH_COST)
     return FALSE;
 
-  /* Find the label for ELSE's destination.  */
-  if (else_succ->dest == EXIT_BLOCK_PTR)
-    new_lab = NULL_RTX;
-  else
-    {
-      if (else_succ->flags & EDGE_FALLTHRU)
-	{
-	  new_lab = else_succ->dest->head;
-	  if (GET_CODE (new_lab) != CODE_LABEL)
-	    abort ();
-	}
-      else
-	{
-	  new_lab = JUMP_LABEL (else_bb->end);
-	  if (! new_lab)
-	    abort ();
-	}
-    }
-
   /* Registers set are dead, or are predicable.  */
-  if (! dead_or_predicable (test_bb, else_bb, then_bb, new_lab, 0))
+  if (! dead_or_predicable (test_bb, else_bb, then_bb, else_succ->dest, 0))
     return FALSE;
 
   /* Conversion went ok, including moving the insns and fixing up the
@@ -2325,8 +2304,6 @@ find_if_case_2 (test_bb, then_edge, else_edge)
 		    then_bb->global_live_at_start,
 		    else_bb->global_live_at_end, BITMAP_IOR);
   
-  remove_edge (else_edge);
-  make_edge (NULL, test_bb, else_succ->dest, 0);
   flow_delete_block (else_bb);
 
   num_removed_blocks++;
@@ -2360,10 +2337,10 @@ find_memory (px, data)
 static int
 dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
      basic_block test_bb, merge_bb, other_bb;
-     rtx new_dest;
+     basic_block new_dest;
      int reversep;
 {
-  rtx head, end, jump, earliest, old_dest;
+  rtx head, end, jump, earliest, old_dest, new_label;
 
   jump = test_bb->end;
 
@@ -2548,9 +2525,10 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
      change group management.  */
 
   old_dest = JUMP_LABEL (jump);
+  new_label = block_label (new_dest);
   if (reversep
-      ? ! invert_jump_1 (jump, new_dest)
-      : ! redirect_jump_1 (jump, new_dest))
+      ? ! invert_jump_1 (jump, new_label)
+      : ! redirect_jump_1 (jump, new_label))
     goto cancel;
 
   if (! apply_change_group ())
@@ -2558,12 +2536,24 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 
   if (old_dest)
     LABEL_NUSES (old_dest) -= 1;
-  if (new_dest)
-    LABEL_NUSES (new_dest) += 1;
-  JUMP_LABEL (jump) = new_dest;
+  if (new_label)
+    LABEL_NUSES (new_label) += 1;
+  JUMP_LABEL (jump) = new_label;
 
   if (reversep)
     invert_br_probabilities (jump);
+
+  redirect_edge_succ (BRANCH_EDGE (test_bb), new_dest);
+  if (reversep)
+    {
+      gcov_type count, probability;
+      count = BRANCH_EDGE (test_bb)->count;
+      BRANCH_EDGE (test_bb)->count = FALLTHRU_EDGE (test_bb)->count;
+      FALLTHRU_EDGE (test_bb)->count = count;
+      probability = BRANCH_EDGE (test_bb)->probability;
+      BRANCH_EDGE (test_bb)->probability = FALLTHRU_EDGE (test_bb)->probability;
+      FALLTHRU_EDGE (test_bb)->probability = probability;
+    }
 
   /* Move the insns out of MERGE_BB to before the branch.  */
   if (head != NULL)

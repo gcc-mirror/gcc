@@ -393,7 +393,6 @@ static int merge_blocks_move_successor_nojumps PARAMS ((basic_block,
 static int merge_blocks			PARAMS ((edge,basic_block,basic_block,
 						 int));
 static bool try_optimize_cfg		PARAMS ((int));
-static bool forwarder_block_p		PARAMS ((basic_block));
 static bool can_fallthru		PARAMS ((basic_block, basic_block));
 static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
 static bool try_simplify_condjump	PARAMS ((basic_block));
@@ -485,9 +484,6 @@ static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
 static void find_sub_basic_blocks	PARAMS ((basic_block));
-static bool redirect_edge_and_branch 	PARAMS ((edge, basic_block));
-static basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
-static rtx block_label			PARAMS ((basic_block));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -1598,10 +1594,12 @@ split_block (bb, insn)
 }
 
 /* Return label in the head of basic block.  Create one if it doesn't exist.  */
-static rtx
+rtx
 block_label (block)
      basic_block block;
 {
+  if (block == EXIT_BLOCK_PTR)
+    return NULL_RTX;
   if (GET_CODE (block->head) != CODE_LABEL)
     block->head = emit_label_before (gen_label_rtx (), block->head);
   return block->head;
@@ -1609,7 +1607,7 @@ block_label (block)
 
 /* Return true if the block has no effect and only forwards control flow to
    its single destination.  */
-static bool
+bool
 forwarder_block_p (bb)
      basic_block bb;
 {
@@ -1759,7 +1757,7 @@ try_redirect_by_replacing_jump (e, target)
    Return true if transformation suceeded.  We still return flase in case
    E already destinated TARGET and we didn't managed to simplify instruction
    stream.  */
-static bool
+bool
 redirect_edge_and_branch (e, target)
      edge e;
      basic_block target;
@@ -1867,7 +1865,7 @@ redirect_edge_and_branch (e, target)
 /* Redirect edge even at the expense of creating new jump insn or
    basic block.  Return new basic block if created, NULL otherwise.
    Abort if converison is impossible.  */
-static basic_block
+basic_block
 redirect_edge_and_branch_force (e, target)
      edge e;
      basic_block target;
@@ -1937,7 +1935,7 @@ redirect_edge_and_branch_force (e, target)
       new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       COPY_REG_SET (new_bb->global_live_at_start,
-		    e->dest->global_live_at_start);
+		    target->global_live_at_start);
       COPY_REG_SET (new_bb->global_live_at_end, new_bb->global_live_at_start);
     }
 

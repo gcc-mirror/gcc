@@ -3805,6 +3805,22 @@ insns that don't.  Instead, write two separate @code{define_split}
 definitions, one for the insns that are valid and one for the insns that
 are not valid.
 
+The splitter is allowed to split jump instructions into sequence of
+jumps or create new jumps in while splitting non-jump instructions.  As
+the central flowgraph and branch prediction information needs to be updated,
+several restriction apply. 
+
+Splitting of jump instruction into sequence that over by another jump
+instruction is always valid, as compiler expect identical behaviour of new
+jump.  When new sequence contains multiple jump instructions or new labels,
+more assistance is needed.  Splitter is required to create only unconditional
+jumps, or simple conditional jump instructions.  Additionally it must attach a
+@code{REG_BR_PROB} note to each conditional jump. An global variable
+@code{split_branch_probability} hold the probability of original branch in case
+it was an simple conditional jump, @minus{}1 otherwise.  To simplify
+recomputing of edge frequencies, new sequence is required to have only
+forward jumps to the newly created labels.
+
 For the common case where the pattern of a define_split exactly matches the
 pattern of a define_insn, use @code{define_insn_and_split}.  It looks like
 this:
