@@ -1,3 +1,16 @@
+2003-11-12  Mike Stump  <mrs@apple.com>
+
+	* c-typeck.c (c_convert_parm_for_inlining): Add argnum, which
+	is the argumnt we are processing so that warnings and errors
+	will have that information.
+	* c-tree.h (c_convert_parm_for_inlining): Add argnum.
+	* lang-hooks-def.h
+	(lhd_tree_inlining_convert_parm_for_inlining): Likewse.
+	* langhooks.c (lhd_tree_inlining_convert_parm_for_inlining): Likewise.
+	* langhooks.h (convert_parm_for_inlining): Likewise.
+	* tree-inline.c (initialize_inlined_parameters): Compute and
+	pass argnum down.
+
 2003-11-12  Alexey Starovoytov  <alexey.starovoytov@sun.com>
 	    Roger Sayle  <roger@eyesopen.com>
 

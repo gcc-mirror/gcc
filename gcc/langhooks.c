@@ -420,7 +420,8 @@ lhd_tree_inlining_end_inlining (tree fn ATTRIBUTE_UNUSED)
 tree
 lhd_tree_inlining_convert_parm_for_inlining (tree parm ATTRIBUTE_UNUSED,
 					     tree value,
-					     tree fndecl ATTRIBUTE_UNUSED)
+					     tree fndecl ATTRIBUTE_UNUSED,
+					     int argnum ATTRIBUTE_UNUSED)
 {
   return value;
 }
