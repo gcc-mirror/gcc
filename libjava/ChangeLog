@@ -1,5 +1,7 @@
 2004-07-07  Per Bothner  <per@bothner.com>
 
+	* Makefile.am:  Add rules to build libgij from just gij.cc.
+
 	* include/jvm.h (namespace jcj):  Declare verbose_class_flag
 	* java/lang/natClass.cc (gcj::verbose_class_flag):  New variable.
 	(initializeClass):  If verbose_class_flag, print message.
