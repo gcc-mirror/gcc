@@ -1,5 +1,10 @@
 2001-05-24  Philip Blundell  <philb@gnu.org>
 
+	* config/arm/arm.h (TARGET_SWITCHES): Correct misleading help for
+	-m{no-}sched-prolog.  Fix typos and improve formatting.
+
+2001-05-24  Philip Blundell  <philb@gnu.org>
+
 	* invoke.texi (ARM Options): Improve wording slightly.  Add
 	documentation for more options, including those for Thumb mode.
 	Don't mention options that don't exist or are unimplemented.
