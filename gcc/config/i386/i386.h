@@ -101,6 +101,8 @@ extern int target_flags;
 #define MASK_NO_FANCY_MATH_387	0x00000040	/* Disable sin, cos, sqrt */
 #define MASK_OMIT_LEAF_FRAME_POINTER 0x080      /* omit leaf frame pointers */
 #define MASK_STACK_PROBE	0x00000100	/* Enable stack probing */
+#define MASK_NO_ALIGN_STROPS	0x00001000	/* Enable aligning of string ops. */
+#define MASK_INLINE_ALL_STROPS	0x00002000	/* Inline stringops in all cases */
 
 /* Temporary codegen switches */
 #define MASK_INTEL_SYNTAX	0x00000200
@@ -190,6 +192,9 @@ extern const int x86_promote_QImode, x86_single_stringop;
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
+#define TARGET_ALIGN_STRINGOPS (!(target_flags & MASK_NO_ALIGN_STROPS))
+#define TARGET_INLINE_ALL_STRINGOPS (target_flags & MASK_INLINE_ALL_STROPS)
+
 #define ASSEMBLER_DIALECT ((target_flags & MASK_INTEL_SYNTAX) != 0)
 
 #define TARGET_SWITCHES							      \
@@ -238,6 +243,14 @@ extern const int x86_promote_QImode, x86_single_stringop;
   { "intel-syntax",		MASK_INTEL_SYNTAX,			      \
     "Emit Intel syntax assembler opcodes" },				      \
   { "no-intel-syntax",		-MASK_INTEL_SYNTAX, "" },		      \
+  { "align-stringops",		-MASK_NO_ALIGN_STROPS,			      \
+    "Align destination of the string operations" },			      \
+  { "no-align-stringops",	 MASK_NO_ALIGN_STROPS,			      \
+    "Do not align destination of the string operations" },		      \
+  { "inline-all-strinops",	 MASK_INLINE_ALL_STROPS,		      \
+    "Inline all known string operations" },				      \
+  { "no-inline-all-stringops",	-MASK_INLINE_ALL_STROPS,		      \
+    "Do not inline all known string operations" },			      \
   SUBTARGET_SWITCHES							      \
   { "", TARGET_DEFAULT, 0 }}
 

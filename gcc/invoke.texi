@@ -360,7 +360,7 @@ in the following sections.
 -mreg-alloc=@var{list}  -mregparm=@var{num}
 -malign-jumps=@var{num}  -malign-loops=@var{num}
 -malign-functions=@var{num} -mpreferred-stack-boundary=@var{num}
--mthreads
+-mthreads -mno-align-stringops -minline-all-stringops
 
 @emph{HPPA Options}
 -march=@var{architecture type}
@@ -5954,6 +5954,19 @@ on thread-safe exception handling must compile and link all code with the
 @samp{-mthreads} option. When compiling, @samp{-mthreads} defines 
 @samp{-D_MT}; when linking, it links in a special thread helper library 
 @samp{-lmingwthrd} which cleans up per thread exception handling data.
+
+@item -mno-align-stringops
+@kindex -mno-align-stringops
+Do not align destination of inlined string operations. This switch reduces
+code size and improves performance in case the destination is already aligned,
+but gcc don't know about it.
+
+@item -minline-all-stringops
+@kindex -minline-all-stringops
+By default GCC inlines string operations only when destination is known to be
+aligned at least to 4 byte boundary. This enables more inlining, increase code
+size, but may improve performance of code that depends on fast memcpy, strlen
+and memset for short lengths.
 @end table
 
 @node HPPA Options
