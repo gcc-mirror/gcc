@@ -33,12 +33,15 @@
    December 1989, add parens around `&' in pow.
    November 1990, added alternate definition of HUGE_VAL for Sun.  */
 
+/* Changed by Jim Wilson:
+   September 1993, Use #undef before HUGE_VAL instead of #ifdef/#endif.  */
+
 #ifndef __math_68881
 #define __math_68881
 
 #include <errno.h>
 
-#ifndef HUGE_VAL
+#undef HUGE_VAL
 #ifdef __sun__
 /* The Sun assembler fails to handle the hex constant in the usual defn.  */
 #define HUGE_VAL							\
@@ -56,7 +59,6 @@
 	 : /* no inputs */);						\
   huge_val;								\
 })
-#endif
 #endif
 
 __inline static const double

@@ -21,7 +21,7 @@
 
 #include <errno.h>
 
-#ifndef HUGE_VAL
+#undef HUGE_VAL
 #define HUGE_VAL							\
 ({									\
   double huge_val;							\
@@ -31,7 +31,6 @@
 	 : /* no inputs */);						\
   huge_val;								\
 })
-#endif
 
 __inline static const double sin (double x)
 {
