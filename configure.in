@@ -1456,7 +1456,7 @@ fi
 if test "x${CXX_FOR_TARGET+set}" = xset; then
   :
 elif test -d ${topsrcdir}/gcc; then
-  CXX_FOR_TARGET='$$r/gcc/g++ -B$$r/gcc/ -nostdinc++ '$libstdcxx_flags
+  CXX_FOR_TARGET='$$r/gcc/`case $$dir in libstdc++-v3) echo xgcc ;; *) echo g++ ;; esac` -B$$r/gcc/ -nostdinc++ '$libstdcxx_flags
 elif test "$host" = "$target"; then
   CXX_FOR_TARGET='$(CXX)'
 else
