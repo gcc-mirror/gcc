@@ -170,11 +170,6 @@ static int last_call_cuid;
 
 static rtx subst_insn;
 
-/* If nonzero, this is the insn that should be presumed to be
-   immediately in front of `subst_insn'.  */
-
-static rtx subst_prev_insn;
-
 /* This is the lowest CUID that `subst' is currently dealing with.
    get_last_value will not return a value if the register was set at or
    after this CUID.  If not for this mechanism, we could get confused if
@@ -1240,7 +1235,6 @@ try_combine (i3, i2, i1)
   if (i1 && INSN_CUID (i1) > INSN_CUID (i2))
     temp = i1, i1 = i2, i2 = temp;
 
-  subst_prev_insn = 0;
   added_links_insn = 0;
 
   /* First check for one important special-case that the code below will
@@ -1356,9 +1350,8 @@ try_combine (i3, i2, i1)
 	     never appear in the insn stream so giving it the same INSN_UID
 	     as I2 will not cause a problem.  */
 
-	  subst_prev_insn = i1
-	    = gen_rtx (INSN, VOIDmode, INSN_UID (i2), 0, i2,
-		       XVECEXP (PATTERN (i2), 0, 1), -1, 0, 0);
+	  i1 = gen_rtx (INSN, VOIDmode, INSN_UID (i2), 0, i2,
+			XVECEXP (PATTERN (i2), 0, 1), -1, 0, 0);
 
 	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
 	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
@@ -9826,15 +9819,10 @@ get_last_value (x)
     {
       rtx insn, set;
 
-      /* If there is an insn that is supposed to be immediately
-	 in front of subst_insn, use it.  */
-      if (subst_prev_insn != 0)
-	insn = subst_prev_insn;
-      else
-	for (insn = prev_nonnote_insn (subst_insn);
-	     insn && INSN_CUID (insn) >= subst_low_cuid;
-	     insn = prev_nonnote_insn (insn))
-	  ;
+      for (insn = prev_nonnote_insn (subst_insn);
+	   insn && INSN_CUID (insn) >= subst_low_cuid;
+	   insn = prev_nonnote_insn (insn))
+	;
 
       if (insn
 	  && (set = single_set (insn)) != 0
