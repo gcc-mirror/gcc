@@ -1,3 +1,8 @@
+2004-12-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* trans-expr.c (gfc_conv_cst_int_power): Only check for
+	flag_unsafe_math_optimizations if we have a float type.
+
 2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de> 
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Change to

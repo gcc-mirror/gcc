@@ -542,7 +542,8 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
   n = abs (TREE_INT_CST_LOW (rhs));
   sgn = tree_int_cst_sgn (rhs);
 
-  if ((!flag_unsafe_math_optimizations || optimize_size) && (n > 2 || n < -1))
+  if (((FLOAT_TYPE_P (type) && !flag_unsafe_math_optimizations) || optimize_size)
+      && (n > 2 || n < -1))
     return 0;
 
   /* rhs == 0  */
