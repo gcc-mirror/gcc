@@ -1,3 +1,12 @@
+2004-02-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*andsi_movu"): Correct parentheses in
+	predicate.
+	("*andsi_clear"): Tweak constraints to not match postincrement.
+	Adjust the predicate to exclude a volatile memory reference.
+	("*andhi_clear"): Ditto.  Rename from "*andhi_clear_signed".
+	("*andhi_clear_unsigned"): Remove, non-matching pattern.
+
 2004-02-19  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* move-if-change: Remove.
