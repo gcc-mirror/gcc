@@ -743,12 +743,11 @@ public final class URL implements Serializable
     this.host = host;
     this.userInfo = userInfo;
     this.port = port;
-    this.file = path;
     this.authority = authority;
     if (query == null)
-      this.file = file;
+      this.file = path;
     else
-      this.file = file + "?" + query;
+      this.file = path + "?" + query;
     this.ref = ref;
     hashCode = hashCode(); // Used for serialization.
   }
