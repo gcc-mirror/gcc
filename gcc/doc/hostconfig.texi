@@ -163,6 +163,10 @@ If you do not define this macro, GCC will use the default version. You
 should define this macro if the default version does not reliably remove
 the temp file as, for example, on VMS which allows multiple versions
 of a file.
+
+@item HOST_LACKS_INODE_NUMBERS
+Define this macro if the host filesystem does not report meaningful inode
+numbers in struct stat.
 @end ftable
 
 @node Host Misc

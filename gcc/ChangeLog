@@ -1,3 +1,13 @@
+2004-08-20  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR 5620
+	* gcc.c (struct stat input_stat): Don't define if
+	HOST_LACKS_INODE_NUMBERS
+	(do_spec_1): If HOST_LACKS_INODE_NUMBERS, use lrealpath rather
+	than stat to determine if temp file is same as input file.
+	* doc/hostconfig.texi: Document HOST_LACKS_INODE_NUMBERS.
+	* config/i386/xm-mingw32.h: Define HOST_LACKS_INODE_NUMBERS
+
 2004-08-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.ac (mips*-*-*): Print an error if not using GAS.
