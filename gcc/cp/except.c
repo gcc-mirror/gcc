@@ -814,8 +814,9 @@ expand_builtin_throw ()
   /* These two can be frontend specific.  If wanted, they can go in
      expand_throw.  */
   /* Do we have a valid object we are throwing? */
-  emit_cmp_insn (DECL_RTL (saved_throw_type), const0_rtx, EQ, NULL_RTX,
-		 GET_MODE (DECL_RTL (saved_throw_type)), 0, 0);
+  t = get_eh_type ();
+  emit_cmp_insn (DECL_RTL (t), const0_rtx, EQ, NULL_RTX,
+		 GET_MODE (DECL_RTL (t)), 0, 0);
   emit_jump_insn (gen_beq (gotta_call_terminate));
 
   /* search for an exception handler for the saved_pc */
