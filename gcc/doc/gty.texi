@@ -231,7 +231,7 @@ typedef struct GTY(()) @{
 @end smallexample
 and then declare variables like this:
 @smallexample
-  htab_t GTY ((param_is (union tree_node))) ict;
+  static htab_t GTY ((param_is (union tree_node))) ict;
 @end smallexample
 
 @findex param@var{n}_is
