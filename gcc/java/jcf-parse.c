@@ -259,10 +259,12 @@ get_constant (jcf, index)
 #ifdef REAL_ARITHMETIC
 	d = REAL_VALUE_FROM_TARGET_DOUBLE (num);
 #else
-	union { double d;  jint i[2]; } u;
-	u.i[0] = (jint) num[0];
-	u.i[1] = (jint) num[1];
-	d = u.d;
+	{
+	  union { double d;  jint i[2]; } u;
+	  u.i[0] = (jint) num[0];
+	  u.i[1] = (jint) num[1];
+	  d = u.d;
+	}
 #endif
 	value = build_real (double_type_node, d);
 	break;
