@@ -1,3 +1,10 @@
+2004-02-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c (process_command): Allow translation of the copyright
+	symbol but not the rest of the copyright message.
+	* gcov.c (print_version): Likewise.  Allow translation of the
+	message about warranty.
+
 2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
  
         * config/rs6000/spe.md (spe_fixunssfsi2): Rename to

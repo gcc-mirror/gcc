@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the Fortran front-end.
-   Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -50,6 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "gcc.h"
+#include "intl.h"
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "-lm"
@@ -345,16 +346,17 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	  break;
 
 	case OPTION_version:
-	  printf ("\
-GNU Fortran (GCC) %s\n\
-Copyright (C) 2002 Free Software Foundation, Inc.\n\
-\n\
+	  printf ("GNU Fortran (GCC) %s\n", version_string);
+	  printf ("Copyright %s 2004 Free Software Foundation, Inc.\n",
+		  _("(C)"));
+	  printf ("\n");
+	  printf (_("\
 GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute copies of GNU Fortran\n\
 under the terms of the GNU General Public License.\n\
 For more information about these matters, see the file named COPYING\n\
 or type the command `info -f g77 Copying'.\n\
-", version_string);
+"));
 	  exit (0);
 	  break;
 

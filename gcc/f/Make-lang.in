@@ -63,7 +63,7 @@ F77 f77: f771$(exeext)
   f77.stageprofile f77.stagefeedback
 
 g77spec.o: $(srcdir)/f/g77spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
-	$(CONFIG_H)
+	$(CONFIG_H) intl.h
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \

@@ -1,3 +1,11 @@
+2004-02-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* Make-lang.in (g77spec.o): Depend on intl.h.
+	* g77spec.c: Include intl.h.
+	(lang_specific_driver): Allow translation of the copyright
+	symbol but not the rest of the copyright message.  Allow
+	translation of the message about warranty.
+
 2004-02-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/14129
