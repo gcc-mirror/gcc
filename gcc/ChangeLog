@@ -1,3 +1,8 @@
+Thu Jul  8 18:03:19 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (choose_reload_regs): Never call remove_adress_replacements
+	when reload_out equals reload_in.
+
 Thu Jul  8 16:50:14 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* invoke.texi (Spec Files): New node: Describe the contents of
