@@ -3870,7 +3870,7 @@ output_constant (exp, size)
 {
   register enum tree_code code = TREE_CODE (TREE_TYPE (exp));
 
-  if (size == 0)
+  if (size == 0 || flag_syntax_only)
     return;
 
   /* Eliminate the NON_LVALUE_EXPR_EXPR that makes a cast not be an lvalue.

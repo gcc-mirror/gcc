@@ -1,3 +1,7 @@
+Sat May  8 01:25:09 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* varasm.c (output_constant): Do nothing if -fsyntax-only.
+
 Fri May  7 19:10:15 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
 
 	* sparc.h (GO_IF_LEGITIMATE_ADDRESS): Prohibit REG+REG addressing
