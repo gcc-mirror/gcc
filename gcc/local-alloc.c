@@ -1294,6 +1294,8 @@ block_alloc (b)
 			win = combine_regs (r1, r0, may_save_copy,
 					    insn_number, insn, 0);
 		    }
+		  if (win)
+		    break;
 		}
 	    }
 
