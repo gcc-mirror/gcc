@@ -2104,6 +2104,13 @@ i960_output_double (file, value)
      FILE *file;
      double value;
 {
+#ifdef REAL_VALUE_TO_TARGET_DOUBLE
+  long value_long[2];
+  REAL_VALUE_TO_TARGET_DOUBLE (value, value_long);
+
+  fprintf (stream, "\t.word\t0x%08lx\t\t# %.20g\n\t.word\t0x%08lx\n",
+	   value_long[0], value, value_long[1]);
+#else
   if (REAL_VALUE_ISINF (value))
     {
       fprintf (file, "\t.word	0\n");
@@ -2111,6 +2118,7 @@ i960_output_double (file, value)
     }
   else
     fprintf (file, "\t.double 0d%.17e\n", (value));
+#endif
 }
 
 void
@@ -2118,10 +2126,17 @@ i960_output_float (file, value)
      FILE *file;
      double value;
 {
+#ifdef REAL_VALUE_TO_TARGET_SINGLE
+  long value_long;
+  REAL_VALUE_TO_TARGET_SINGLE (value, value_long);
+
+  fprintf (stream, "\t.word\t0x%08lx\t\t# %.12g (float)\n", value_long, value);
+#else
   if (REAL_VALUE_ISINF (value))
     fprintf (file, "\t.word	0x7f800000	# Infinity\n");
   else
     fprintf (file, "\t.float 0f%.12e\n", (value));
+#endif
 }
 
 /* Return the number of bits that an object of size N bytes is aligned to.  */
