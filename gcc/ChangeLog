@@ -1,3 +1,12 @@
+Wed Jul 12 13:15:16 2000  Marc Espie <espie@openbsd.org>
+
+	* configure.in (m88k-openbsd): Express configuration using new fragment
+	style.
+	* configure: Rebuilt.
+	* m88k/aout-dbx.h: New.
+	* m88k/openbsd.h: New.
+	* m88k/xm-openbsd.h: New.
+
 2000-07-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c (expand_expr): Return const0_rtx, not error_mark_node.
