@@ -136,7 +136,7 @@ web pages		Janis Johnson		janis187@us.ibm.com
 config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pthomas@suse.de
-diagnostic messages	Gabriel Dos Reis	gdr@codesourcery.com
+diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
 windows, cygwin, mingw	DJ Delorie		dj@redhat.com
 DJGPP			DJ Delorie		dj@delorie.com
@@ -173,7 +173,6 @@ Andrew Cagney					cagney@redhat.com
 Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com
 Chris Demetriou					cgd@broadcom.com
-Gabriel Dos Reis                                gdr@integrable-solutions.net
 *Paul Eggert					eggert@twinsun.com
 Steve Ellcey					sje@cup.hp.com
 Ben Elliston					bje@redhat.com
