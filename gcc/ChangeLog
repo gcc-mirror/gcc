@@ -1,3 +1,7 @@
+Tue Jul 7 09:12:08 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Jul  7 10:07:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* print-rtl.c (print_rtx): Use REAL_VALUE_TYPE instead of "double".
