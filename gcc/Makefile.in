@@ -541,10 +541,6 @@ FLAGS_TO_PASS = \
 C_OBJS = c-parse.o c-lang.o c-lex.o c-pragma.o $(EXTRA_C_OBJS) \
    c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
 
-# Language-specific object files for Objective C.
-OBJC_OBJS = objc-parse.o objc-act.o c-lex.o c-pragma.o $(EXTRA_C_OBJS) \
-   c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
-
 # Files specific to the C interpreter bytecode compiler(s).
 BC_OBJS = bc-emit.o bc-optab.o
 
