@@ -1748,11 +1748,12 @@ mcore-*-pe*)
 mips-sgi-irix6*o32)		# SGI System V.4., IRIX 6, O32 ABI
 	if test x$gas = xyes
 	then
-		tm_file="mips/iris5.h mips/iris5gas.h"
+		tm_file="mips/iris5.h mips/iris5gas.h mips/iris6-o32-gas.h"
 		if test x$stabs = xyes
 		then
 			tm_file="${tm_file} dbx.h"
 		fi
+		tmake_file=mips/t-iris5-gas
 	else
 		tm_file="mips/iris5.h mips/iris6-o32-as.h"
 		tmake_file=mips/t-iris5-as
@@ -1826,6 +1827,7 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 		then
 			tm_file="${tm_file} dbx.h"
 		fi
+		tmake_file=mips/t-iris5-gas
 	else
 		tm_file=mips/iris5.h
 		tmake_file=mips/t-iris5-as

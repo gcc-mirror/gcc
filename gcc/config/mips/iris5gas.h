@@ -2,13 +2,43 @@
 
 /* Enable debugging.  */
 #define DBX_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO
 #define MIPS_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* GNU as does handle DWARF2 directives.  */
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 1
+
+/* Override iris5.h version to invoke [cd]tors and register eh frame
+   information.  */
+#undef LINK_SPEC
+#define LINK_SPEC "\
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
+%{bestGnum} %{shared} %{non_shared} \
+%{call_shared} %{no_archive} %{exact_version} \
+%{static: -non_shared} \
+%{!static: \
+  %{!shared:%{!non_shared:%{!call_shared: -call_shared -no_unresolved}}}} \
+%{rpath} -init __do_global_ctors -fini __do_global_dtors \
+%{shared:-hidden_symbol __do_global_ctors,__do_global_ctors_1,__do_global_dtors} \
+-_SYSTYPE_SVR4"
+
+/* Override iris5.h versions to include crtbegin.o and crtend.o.  */
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+%{!static: \
+  %{!shared:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}}} \
+%{static: \
+  %{pg:gcrt1.o%s} \
+  %{!pg:%{p:/usr/lib/nonshared/mcrt1.o%s libprof1.a%s} \
+  %{!p:/usr/lib/nonshared/crt1.o%s}}} \
+crtbegin.o%s"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "crtend.o%s %{!shared:crtn.o%s}"
 
 /* Irix 5 does not have some strange restrictions that Irix 3 had.  */
 #undef SET_FILE_NUMBER

@@ -66,19 +66,3 @@
    to -mips1 if no ISA is specified.  */
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC "-32 %{!mips*:-mips2}"
-
-/* Enforce use of O32 linker, irrespective of SGI_ABI environment variable
-   and machine type (e.g., R8000 systems default to -64).  Copied from
-   iris5.h, only adding -32.  The default options -call_shared -no_unresolved
-   are only passed if not invoked with -r.  */
-#undef LINK_SPEC
-#define LINK_SPEC "\
-%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
-%{bestGnum} %{shared} %{non_shared} \
-%{call_shared} %{no_archive} %{exact_version} \
-%{static: -non_shared} \
-%{!static: \
-  %{!shared:%{!non_shared:%{!call_shared:%{!r: -call_shared -no_unresolved}}}}} \
-%{rpath} \
--_SYSTYPE_SVR4 \
--32"
