@@ -38,12 +38,6 @@ extern tree grokdeclarator PARAMS ((tree, tree, enum decl_context, int,
    or a chain or parameter decls here.  */
 extern GTY(()) tree last_function_parms;
 
-/* A list of objects which have constructors or destructors
-   which reside in the global scope.  The decl is stored in
-   the TREE_VALUE slot and the initializer is stored
-   in the TREE_PURPOSE slot.  */
-extern GTY(()) tree static_aggregates;
-
 #ifdef DEBUG_CP_BINDING_LEVELS
 /* Purely for debugging purposes.  */
 extern int debug_bindings_indentation;

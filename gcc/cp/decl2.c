@@ -2076,8 +2076,7 @@ get_guard (decl)
       
       DECL_ARTIFICIAL (guard) = 1;
       TREE_USED (guard) = 1;
-      pushdecl_top_level (guard);
-      cp_finish_decl (guard, NULL_TREE, NULL_TREE, 0);
+      pushdecl_top_level_and_finish (guard, NULL_TREE);
     }
   return guard;
 }

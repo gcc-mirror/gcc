@@ -3351,6 +3351,12 @@ extern GTY(()) varray_type local_classes;
 
 extern int at_eof;
 
+/* A list of namespace-scope objects which have constructors or
+   destructors which reside in the global scope.  The decl is stored
+   in the TREE_VALUE slot and the initializer is stored in the
+   TREE_PURPOSE slot.  */
+extern GTY(()) tree static_aggregates;
+
 /* Functions called along with real static constructors and destructors.  */
 
 extern GTY(()) tree static_ctors;
@@ -3729,6 +3735,7 @@ extern void clear_anon_tags			PARAMS ((void));
 extern int decls_match				PARAMS ((tree, tree));
 extern int duplicate_decls			PARAMS ((tree, tree));
 extern tree pushdecl_top_level			PARAMS ((tree));
+extern tree pushdecl_top_level_and_finish       (tree, tree);
 extern void pushdecl_class_level		PARAMS ((tree));
 extern tree pushdecl_namespace_level            PARAMS ((tree));
 extern tree push_using_decl                     PARAMS ((tree, tree));
