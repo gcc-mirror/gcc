@@ -639,8 +639,11 @@ CUMULATIVE_ARGS;
    a scalar value cannot be returned in registers.  */
 #define RETURN_IN_MEMORY(type)       				\
   (TYPE_MODE (type) == BLKmode || 				\
+   GET_MODE_SIZE (TYPE_MODE (type)) > 8	||			\
    GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_INT  ||	\
-   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_FLOAT)
+   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_FLOAT ||	\
+   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_INT ||	\
+   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_VECTOR_FLOAT)
 
 /* Structure value address is passed as invisible first argument (gpr 2).  */
 #define STRUCT_VALUE 0

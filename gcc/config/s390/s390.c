@@ -5594,6 +5594,8 @@ s390_function_arg_pass_by_reference (mode, type)
      tree type;
 {
   int size = s390_function_arg_size (mode, type);
+  if (size > 8)
+    return 1;
 
   if (type)
     {
@@ -5601,7 +5603,8 @@ s390_function_arg_pass_by_reference (mode, type)
           size != 1 && size != 2 && size != 4 && size != 8)
         return 1;
 
-      if (TREE_CODE (type) == COMPLEX_TYPE)
+      if (TREE_CODE (type) == COMPLEX_TYPE
+          || TREE_CODE (type) == VECTOR_TYPE)
         return 1;
     }
   return 0;
