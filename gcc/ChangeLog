@@ -4,7 +4,7 @@ Fri Feb 20 08:21:49 1998  H.J. Lu  (hjl@gnu.org)
 	(LIB_SPEC, DEFAULT_VTABLE_THUNKS): Defined #ifndef USE_GNULIBC_1.
 	* sparc/linux.h (DEFAULT_VTABLE_THUNKS): Likewise.
 	(LIB_SPEC): Add -lc for -shared #ifndef USE_GNULIBC_1.
-	* linux (LIB_SPEC): Likewise.
+	* linux.h (LIB_SPEC): Likewise.
 	* sparc/linux64.h (LIB_SPEC): Likewise; also updated for glibc 2.
 	(LIBGCC_SPEC): Removed.
 	(CPP_SUBTARGET_SPEC): Add %{pthread:-D_REENTRANT}.
