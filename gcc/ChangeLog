@@ -1,3 +1,10 @@
+2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Sebastian Pop <sebastian.pop@cri.ensmp.fr>
+
+	PR tree-optimization/19903
+	* tree-chrec.c (chrec_convert): Return chrec_dont_know for constants
+	that don't fit in their type after conversion.
+
 2005-04-05 Uros Bizjak <uros@kss-loka.si>
 
 	PR target/20421
