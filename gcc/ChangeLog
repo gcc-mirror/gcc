@@ -1,3 +1,8 @@
+Sun Oct 11 23:04:30 1998  Robert Lipe  <robertl@dgii.com>
+
+        * c-pragma.c (handle_pragma_token): If passed a token instead
+        of a tree, use that as the pack value.
+
 Sun Oct 11 14:21:14 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* flow.c (find_basic_blocks_1): Fix prototype.
