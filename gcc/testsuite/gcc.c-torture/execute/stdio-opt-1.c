@@ -42,6 +42,11 @@ int main()
   if (s_ptr != s_array+1 || *s_ptr != 0)
     abort();
 
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  s_ptr = s_array;
+  __builtin_fputs ("", *s_ptr);
+
   return 0;
 }
 

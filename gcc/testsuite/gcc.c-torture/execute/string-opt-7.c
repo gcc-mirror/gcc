@@ -56,6 +56,12 @@ int main ()
   if (strncpy (dst, src, 12) != dst || strcmp (dst, src))
     abort();
 
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  memset (dst, 0, sizeof (dst));
+  if (__builtin_strncpy (dst, src, 4) != dst || strncmp (dst, src, 4))
+    abort();
+
   return 0;
 }
 

@@ -1,3 +1,22 @@
+2000-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/stdio-opt-1.c: Test __builtin_ style too.
+	* gcc.c-torture/execute/stdio-opt-2.c: Likewise.
+	* gcc.c-torture/execute/string-opt-1.c: Likewise.
+	* gcc.c-torture/execute/string-opt-2.c: Likewise.
+	* gcc.c-torture/execute/string-opt-3.c: Likewise.
+	* gcc.c-torture/execute/string-opt-4.c: Likewise.
+	* gcc.c-torture/execute/string-opt-6.c: Likewise.
+	* gcc.c-torture/execute/string-opt-7.c: Likewise.
+	* gcc.c-torture/execute/string-opt-8.c: Likewise.
+	* gcc.c-torture/execute/string-opt-9.c: Likewise.
+	* gcc.c-torture/execute/string-opt-10.c: Likewise.
+	* gcc.c-torture/execute/string-opt-11.c: Likewise.
+	* gcc.c-torture/execute/string-opt-12.c: Likewise.
+
+	* gcc.c-torture/execute/string-opt-3.c: Test rindex.
+	* gcc.c-torture/execute/string-opt-4.c: Test index.
+
 2000-12-26  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.c-torture/compile/20001226-1.c: New test.

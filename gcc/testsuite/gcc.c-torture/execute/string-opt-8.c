@@ -142,6 +142,11 @@ int main ()
     abort();
 #endif  
   
+  /* Test at least one instance of the __builtin_ style.  We do this
+     to ensure that it works and that the prototype is correct.  */
+  if (__builtin_strncmp ("hello", "a", 100) <= 0)
+    abort();
+
   return 0;
 }
 
