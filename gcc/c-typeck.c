@@ -111,6 +111,7 @@ static void set_nonincremental_init_from_string (tree);
 static tree find_init_member (tree);
 static int lvalue_or_else (tree, enum lvalue_use);
 static void readonly_error (tree, enum lvalue_use);
+static void record_maybe_used_decl (tree);
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -1126,7 +1127,7 @@ type_lists_compatible_p (tree args1, tree args2)
 
 /* Compute the size to increment a pointer by.  */
 
-tree
+static tree
 c_size_in_bytes (tree type)
 {
   enum tree_code code = TREE_CODE (type);
@@ -1807,7 +1808,7 @@ static struct maybe_used_decl *maybe_used_decls;
    a VLA type or the operand of typeof is a variably modified
    type.  */
 
-void
+static void
 record_maybe_used_decl (tree decl)
 {
   struct maybe_used_decl *t = XOBNEW (&parser_obstack, struct maybe_used_decl);
