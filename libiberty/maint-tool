@@ -213,6 +213,12 @@ sub locals_first {
 
 sub deps {
 
+    $crule  = "\tif [ x\"\$(PICFLAG)\" != x ]; then \\\n";
+    $crule .= "\t  \$(COMPILE.c) \$(PICFLAG) \$< -o pic/\$@; \\\n";
+    $crule .= "\telse true; fi\n";
+    $crule .= "\t\$(COMPILE.c) \$< \$(OUTPUT_OPTION)\n";
+    $crule .= "\n";
+
     $incdir = shift @ARGV;
 
     opendir(INC, $incdir);
@@ -260,10 +266,10 @@ sub deps {
 	    @deps = sort { &locals_first($a,$b) } keys %scanned;
 	    $obj = $f;
 	    $obj =~ s/\.c$/.o/;
-	    $obj = "$obj:";
+	    $obj = "./$obj:";
 	    if ($#deps >= 0) {
-		print OUT $obj;
-		$len = length($obj);
+		print OUT "$obj \$(srcdir)/$f";
+		$len = length("$obj $f");
 		for $dt (@deps) {
 		    $d = $mine{$dt};
 		    if ($len + length($d) > 70) {
@@ -275,7 +281,12 @@ sub deps {
 		    }
 		}
 		print OUT "\n";
+	    } else {
+		print OUT "$obj \$(srcdir)/$f\n";
 	    }
+	    $c = $crule;
+	    $c =~ s@\$\<@\$\(srcdir\)\/$f@g;
+	    print OUT $c;
 	}
     }
     closedir(S);
