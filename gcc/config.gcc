@@ -1235,6 +1235,13 @@ i[34567]86-*-kaos*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h kaos.h i386/kaos-i386.h"
 	tmake_file="i386/t-i386elf t-svr4"
 	;;
+i860-*-sysv4*)
+        tm_file="${tm_file} elfos.h svr4.h i860/sysv4.h"
+        xm_defines="USG SVR3"
+        xmake_file=i860/x-sysv4
+        tmake_file=t-svr4
+        extra_parts="crtbegin.o crtend.o"
+        ;;
 i960-*-coff*)
 	tm_file="${tm_file} dbxcoff.h i960/i960-coff.h libgloss.h"
 	tmake_file=i960/t-960bare
