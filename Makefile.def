@@ -6,7 +6,6 @@ host_modules= { module= autoconf; };
 host_modules= { module= automake; };
 host_modules= { module= bash; };
 host_modules= { module= bfd; };
-// Put install-opcodes before install-binutils: should be Makefile dependency.
 host_modules= { module= opcodes; };
 host_modules= { module= binutils; };
 host_modules= { module= bison; no_check_cross= true; };
@@ -32,7 +31,6 @@ host_modules= { module= gzip; };
 host_modules= { module= hello; };
 host_modules= { module= indent; };
 host_modules= { module= intl; };
-// Put install-tcl before install-itcl: should be Makefile dependency.
 host_modules= { module= tcl; };
 host_modules= { module= itcl; };
 host_modules= { module= ld; };

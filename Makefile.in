@@ -653,11 +653,6 @@ CHECK_MODULES=$(NATIVE_CHECK_MODULES) $(CROSS_CHECK_MODULES)
 
 # This is a list of the install targets for all of the modules which are
 # compiled using $(FLAGS_TO_PASS).
-# We put install-opcodes before install-binutils because the installed
-# binutils might be on PATH, and they might need the shared opcodes
-# library.
-# We put install-tcl before install-itcl because itcl wants to run a
-# program on installation which uses the Tcl libraries.
 INSTALL_MODULES = \
 	install-ash \
 	install-autoconf \
@@ -1745,6 +1740,16 @@ all-target: $(ALL_TARGET_MODULES)
 install-target: $(INSTALL_TARGET_MODULES)
 install-gdb: install-tcl install-tk install-itcl install-tix install-libgui
 install-sid: install-tcl install-tk
+
+# We put install-opcodes before install-binutils because the installed
+# binutils might be on PATH, and they might need the shared opcodes
+# library.
+install-binutils: install-opcodes
+
+# We put install-tcl before install-itcl because itcl wants to run a
+# program on installation which uses the Tcl libraries.
+install-itcl: install-tcl
+
 
 # Dependencies of all-target-foo on configure-target-foo.
 all-target-libstdc++-v3: configure-target-libstdc++-v3
