@@ -1,3 +1,8 @@
+2005-02-02  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/PersistentByteMap.java: Fixed typo.
+	* prims.cc: Fixed comment.
+
 2005-02-01  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

@@ -1,4 +1,4 @@
-/* Copyright (C) 2004  Free Software Foundation
+/* Copyright (C) 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,7 +11,7 @@ details.  */
 /*  A PersistentByteMap maps a byte array to another byte array.  It
 uses a file that does not need to be serialized but may be
 memory-mapped and read in-place.  So, even if there are many instances
-of gcj applications running, the can share PersistentByteMaps.
+of gcj applications running, they can share PersistentByteMaps.
 
 The idea is to make searches as fast as possible: opening a
 PersistentByteMap is cheap and search time doesn't grow with the
