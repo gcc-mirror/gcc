@@ -5557,11 +5557,8 @@ fix_lexical_addr (addr, var)
 #ifdef NEED_SEPARATE_AP
       rtx addr;
 
-      if (fp->x_arg_pointer_save_area == 0)
-	fp->x_arg_pointer_save_area
-	  = assign_stack_local_1 (Pmode, GET_MODE_SIZE (Pmode), 0, fp);
-
-      addr = fix_lexical_addr (XEXP (fp->x_arg_pointer_save_area, 0), var);
+      addr = get_arg_pointer_save_area (fp);
+      addr = fix_lexical_addr (XEXP (addr, 0), var);
       addr = memory_address (Pmode, addr);
 
       base = gen_rtx_MEM (Pmode, addr);
@@ -6703,20 +6700,6 @@ expand_function_end (filename, line, end_bindings)
     }
 #endif
 
-  /* Save the argument pointer if a save area was made for it.  */
-  if (arg_pointer_save_area)
-    {
-      /* arg_pointer_save_area may not be a valid memory address, so we
-	 have to check it and fix it if necessary.  */
-      rtx seq;
-      start_sequence ();
-      emit_move_insn (validize_mem (arg_pointer_save_area),
-		      virtual_incoming_args_rtx);
-      seq = gen_sequence ();
-      end_sequence ();
-      emit_insn_before (seq, tail_recursion_reentry);
-    }
-
   /* Initialize any trampolines required by this function.  */
   for (link = trampoline_list; link; link = TREE_CHAIN (link))
     {
@@ -7012,6 +6995,40 @@ expand_function_end (filename, line, end_bindings)
      and they need to create temporary variables,
      then you will lose.  */
   expand_fixups (get_insns ());
+}
+
+rtx
+get_arg_pointer_save_area (f)
+     struct function *f;
+{
+  rtx ret = f->x_arg_pointer_save_area;
+
+  if (! ret)
+    {
+      rtx seq;
+
+      ret = assign_stack_local_1 (Pmode, GET_MODE_SIZE (Pmode), 0, f);
+      f->x_arg_pointer_save_area = ret;
+
+      /* Save the arg pointer at the beginning of the function.  The 
+	 generated stack slot may not be a valid memory address, so w
+	 have to check it and fix it if necessary.  */
+      start_sequence ();
+      emit_move_insn (validize_mem (ret), virtual_incoming_args_rtx);
+      seq = gen_sequence ();
+      end_sequence ();
+
+      if (f == cfun)
+	{
+	  push_topmost_sequence ();
+	  emit_insn_after (seq, get_insns ());
+	  pop_topmost_sequence ();
+	}
+      else
+	emit_insn_before (seq, f->x_tail_recursion_reentry);
+    }
+
+  return ret;
 }
 
 /* Extend a vector that records the INSN_UIDs of INSNS (either a
