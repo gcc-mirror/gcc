@@ -9802,7 +9802,6 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 		  list = TREE_CHAIN (q);
 		  while (list)
 		    {
-		      RESOLVE_EXPRESSION_NAME_P (QUAL_WFL (list)) = 1;
 		      RESOLVE_PACKAGE_NAME_P (QUAL_WFL (list)) = 0;
 		      list = TREE_CHAIN (list);
 		    }
@@ -11280,211 +11279,58 @@ argument_types_convertible (tree m1, tree m2_or_arglist)
 
 /* Qualification routines */
 
+/* Given a name x.y.z, look up x locally.  If it's found, save the
+   decl.  If it's not found, mark the name as RESOLVE_PACKAGE_NAME_P,
+   so that we later try and load the appropriate classes.  */
 static void
 qualify_ambiguous_name (tree id)
 {
-  tree qual, qual_wfl, name = NULL_TREE, decl, ptr_type = NULL_TREE,
-    saved_current_class;
-  int again, super_found = 0, this_found = 0, new_array_found = 0;
-  int code;
+  tree name, decl;
 
-  /* We first qualify the first element, then derive qualification of
-     others based on the first one. If the first element is qualified
-     by a resolution (field or type), this resolution is stored in the
-     QUAL_RESOLUTION of the qual element being examined. We need to
-     save the current_class since the use of SUPER might change the
-     its value. */
-  saved_current_class = current_class;
-  qual = EXPR_WFL_QUALIFICATION (id);
-  do {
+  /* We inspect the first item of the qualification list.  As a sanity
+     check, make sure that it is an identfier node.  */
+  tree qual = EXPR_WFL_QUALIFICATION (id);
+  tree qual_wfl = QUAL_WFL (qual);
 
-    /* Simple qualified expression feature a qual_wfl that is a
-       WFL. Expression derived from a primary feature more complicated
-       things like a CALL_EXPR. Expression from primary need to be
-       worked out to extract the part on which the qualification will
-       take place. */
-    qual_wfl = QUAL_WFL (qual);
-    switch (TREE_CODE (qual_wfl))
-      {
-      case CALL_EXPR:
-	qual_wfl = TREE_OPERAND (qual_wfl, 0);
-	if (TREE_CODE (qual_wfl) != EXPR_WITH_FILE_LOCATION
-	    || (EXPR_WFL_QUALIFICATION (qual_wfl)
-		&& TREE_CODE (EXPR_WFL_QUALIFICATION (qual_wfl)) == TREE_LIST))
-	  {
-	    qual = EXPR_WFL_QUALIFICATION (qual_wfl);
-	    qual_wfl = QUAL_WFL (qual);
-	  }
-	break;
-      case NEW_ARRAY_EXPR:
-      case NEW_ANONYMOUS_ARRAY_EXPR:
-	qual = TREE_CHAIN (qual);
-	again = new_array_found = 1;
-	continue;
-      case CONVERT_EXPR:
-	break;
-      case NEW_CLASS_EXPR:
-	qual_wfl = TREE_OPERAND (qual_wfl, 0);
-	break;
-      case ARRAY_REF:
-	while (TREE_CODE (qual_wfl) == ARRAY_REF)
-	  qual_wfl = TREE_OPERAND (qual_wfl, 0);
-	break;
-      case STRING_CST:
-	qual = TREE_CHAIN (qual);
-	qual_wfl = QUAL_WFL (qual);
-	break;
-      case CLASS_LITERAL:
-	qual = TREE_CHAIN (qual);
-	qual_wfl = QUAL_WFL (qual);
-      break;
-      default:
-	/* Fix for -Wall. Just break doing nothing */
-	break;
-      }
+  if (TREE_CODE (qual_wfl) != EXPR_WITH_FILE_LOCATION)
+    return;
 
-    ptr_type = current_class;
-    again = 0;
-    code = TREE_CODE (qual_wfl);
+  name = EXPR_WFL_NODE (qual_wfl);
 
-    /* Pos evaluation: non WFL leading expression nodes */
-    if (code == CONVERT_EXPR
-	&& TREE_CODE (TREE_TYPE (qual_wfl)) == EXPR_WITH_FILE_LOCATION)
-      name = EXPR_WFL_NODE (TREE_TYPE (qual_wfl));
-
-    else if (code == INTEGER_CST)
-      name = qual_wfl;
-
-    else if (code == CONVERT_EXPR &&
-	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
-      name = TREE_OPERAND (qual_wfl, 0);
-
-    else if (code == CONVERT_EXPR
-	     && TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == CALL_EXPR
-	     && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (qual_wfl, 0), 0))
-		 == EXPR_WITH_FILE_LOCATION))
-      name = TREE_OPERAND (TREE_OPERAND (qual_wfl, 0), 0);
-
-    else if ((code == ARRAY_REF || code == CALL_EXPR || code == MODIFY_EXPR) &&
-	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
-      name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
-
-    else if (code == TREE_LIST)
-      name = EXPR_WFL_NODE (TREE_PURPOSE (qual_wfl));
-
-    else if (code == STRING_CST || code == CONDITIONAL_EXPR
-	     || code == PLUS_EXPR)
-      {
-	qual = TREE_CHAIN (qual);
-	qual_wfl = QUAL_WFL (qual);
-	again = 1;
-      }
-    else
-      {
-	name = EXPR_WFL_NODE (qual_wfl);
-	if (!name)
-	  {
-	    qual = EXPR_WFL_QUALIFICATION (qual_wfl);
-	    again = 1;
-	  }
-      }
-
-    /* If we have a THIS (from a primary), we set the context accordingly */
-    if (name == this_identifier_node)
-      {
-	/* This isn't really elegant. One more added irregularity
-	   before I start using COMPONENT_REF (hopefully very soon.)  */
-	if (TREE_CODE (TREE_PURPOSE (qual)) == ARRAY_REF
-	    && TREE_CODE (TREE_OPERAND (TREE_PURPOSE (qual), 0)) ==
-	       EXPR_WITH_FILE_LOCATION
-	    && EXPR_WFL_NODE (TREE_OPERAND (TREE_PURPOSE (qual), 0)) ==
-	       this_identifier_node)
-	    {
-	      qual = TREE_OPERAND (TREE_PURPOSE (qual), 0);
-	      qual = EXPR_WFL_QUALIFICATION (qual);
-	    }
-	qual = TREE_CHAIN (qual);
-	qual_wfl = QUAL_WFL (qual);
-	if (TREE_CODE (qual_wfl) == CALL_EXPR)
-	  again = 1;
-	else if (TREE_CODE (qual_wfl) == EXPR_WITH_FILE_LOCATION)
-	  name = EXPR_WFL_NODE (qual_wfl);
-	else if (TREE_CODE (qual_wfl) == NEW_CLASS_EXPR)
-	  name = TREE_OPERAND (qual_wfl, 0);
-	this_found = 1;
-      }
-    /* If we have a SUPER, we set the context accordingly */
-    if (name == super_identifier_node)
-      {
-	current_class = CLASSTYPE_SUPER (ptr_type);
-	/* Check that there is such a thing as a super class. If not,
-	   return.  The error will be caught later on, during the
-	   resolution */
-	if (!current_class)
-	  {
-	    current_class = saved_current_class;
-	    return;
-	  }
-	qual = TREE_CHAIN (qual);
-	/* Do one more iteration to set things up */
-	super_found = again = 1;
-      }
-  } while (again);
+  /* If we don't have an identifier, or we have a 'this' or 'super',
+     then field access processing is all we need : there is nothing
+     for us to do.  */
+  if (!name || TREE_CODE (name) != IDENTIFIER_NODE ||
+      name == this_identifier_node ||
+      name == super_identifier_node)
+    return;
 
   /* If name appears within the scope of a local variable declaration
-     or parameter declaration, then it is an expression name. We don't
-     carry this test out if we're in the context of the use of SUPER
-     or THIS */
-  if (!this_found && !super_found
-      && TREE_CODE (name) != STRING_CST && TREE_CODE (name) != INTEGER_CST
-      && (decl = IDENTIFIER_LOCAL_VALUE (name)))
+     or parameter declaration, or is a field within an enclosing
+     class, then it is an expression name.  Save the decl and let
+     resolve_field_access do it's work.  */
+  if ((decl = IDENTIFIER_LOCAL_VALUE (name)) ||
+      (decl = lookup_field_wrapper (current_class, name)))
     {
-      RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
       QUAL_RESOLUTION (qual) = decl;
+      return;
     }
 
-  /* If within the class/interface NAME was found to be used there
-     exists a (possibly inherited) field named NAME, then this is an
-     expression name. If we saw a NEW_ARRAY_EXPR before and want to
-     address length, it is OK. */
-  else if ((decl = lookup_field_wrapper (ptr_type, name))
-	   || name == length_identifier_node)
-    {
-      RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
-      QUAL_RESOLUTION (qual) = (new_array_found ? NULL_TREE : decl);
-    }
-
-  /* We reclassify NAME as yielding to a type name resolution if:
-     - NAME is a class/interface declared within the compilation
-       unit containing NAME,
-     - NAME is imported via a single-type-import declaration,
-     - NAME is declared in an another compilation unit of the package
-       of the compilation unit containing NAME,
-     - NAME is declared by exactly on type-import-on-demand declaration
-     of the compilation unit containing NAME.
-     - NAME is actually a STRING_CST.
-     This can't happen if the expression was qualified by `this.' */
-  else if (! this_found &&
-	   (TREE_CODE (name) == STRING_CST ||
-	    TREE_CODE (name) == INTEGER_CST ||
-	    (decl = resolve_and_layout (name, NULL_TREE))))
+  /* If name is a known class name (either declared or imported), mark
+     us as a type name.  */
+  if ((decl = resolve_and_layout (name, NULL_TREE)))
     {
       RESOLVE_TYPE_NAME_P (qual_wfl) = 1;
       QUAL_RESOLUTION (qual) = decl;
     }
 
-  /* Method call, array references and cast are expression name */
-  else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR
-	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF
-	   || TREE_CODE (QUAL_WFL (qual)) == CONVERT_EXPR
-	   || TREE_CODE (QUAL_WFL (qual)) == MODIFY_EXPR)
-    RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
-
   /* Check here that NAME isn't declared by more than one
      type-import-on-demand declaration of the compilation unit
      containing NAME. FIXME */
 
-  /* Otherwise, NAME is reclassified as a package name */
+  /* We couldn't find a declaration for the name.  Assume for now that
+     we have a qualified class name that needs to be loaded from an
+     external class file.  */
   else
     RESOLVE_PACKAGE_NAME_P (qual_wfl) = 1;
 
@@ -11495,21 +11341,14 @@ qualify_ambiguous_name (tree id)
     {
       if (RESOLVE_PACKAGE_NAME_P (qual_wfl))
 	RESOLVE_PACKAGE_NAME_P (QUAL_WFL (qual)) = 1;
-      else
-	RESOLVE_EXPRESSION_NAME_P (QUAL_WFL (qual)) = 1;
     }
 
   /* Store the global qualification for the ambiguous part of ID back
      into ID fields */
-  if (RESOLVE_EXPRESSION_NAME_P (qual_wfl))
-    RESOLVE_EXPRESSION_NAME_P (id) = 1;
-  else if (RESOLVE_TYPE_NAME_P (qual_wfl))
+  if (RESOLVE_TYPE_NAME_P (qual_wfl))
     RESOLVE_TYPE_NAME_P (id) = 1;
   else if (RESOLVE_PACKAGE_NAME_P (qual_wfl))
     RESOLVE_PACKAGE_NAME_P (id) = 1;
-
-  /* Restore the current class */
-  current_class = saved_current_class;
 }
 
 static int
