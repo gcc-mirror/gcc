@@ -1,3 +1,10 @@
+2002-08-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (flexible_array_type_p): New function.
+	(grokdeclarator, finish_struct): Use it.
+	* doc/extend.texi: Document constraints on use of structures with
+	flexible array members.
+
 2002-08-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/t-coff, config/mips/t-elf, config/mips/t-isa3264,

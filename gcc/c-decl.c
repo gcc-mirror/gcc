@@ -282,6 +282,7 @@ static void layout_array_type		PARAMS ((tree));
 static tree c_make_fname_decl           PARAMS ((tree, int));
 static void c_expand_body               PARAMS ((tree, int, int));
 static void warn_if_shadowing		PARAMS ((tree, tree));
+static bool flexible_array_type_p	PARAMS ((tree));
 
 /* States indicating how grokdeclarator() should handle declspecs marked
    with __attribute__((deprecated)).  An object declared as
@@ -3357,6 +3358,40 @@ complete_array_type (type, initial_value, do_default)
   return value;
 }
 
+/* Determine whether TYPE is a structure with a flexible array member,
+   or a union containing such a structure (possibly recursively).  */
+
+static bool
+flexible_array_type_p (type)
+     tree type;
+{
+  tree x;
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+      x = TYPE_FIELDS (type);
+      if (x == NULL_TREE)
+	return false;
+      while (TREE_CHAIN (x) != NULL_TREE)
+	x = TREE_CHAIN (x);
+      if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
+	  && TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
+	  && TYPE_DOMAIN (TREE_TYPE (x)) != NULL_TREE
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (x))) == NULL_TREE)
+	return true;
+      return false;
+    case UNION_TYPE:
+      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = TREE_CHAIN (x))
+	{
+	  if (flexible_array_type_p (TREE_TYPE (x)))
+	    return true;
+	}
+      return false;
+    default:
+    return false;
+  }
+}
+
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -3952,6 +3987,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	      error ("declaration of `%s' as array of functions", name);
 	      type = error_mark_node;
 	    }
+
+	  if (pedantic && flexible_array_type_p (type))
+	    pedwarn ("invalid use of structure with flexible array member");
 
 	  if (size == error_mark_node)
 	    type = error_mark_node;
@@ -5216,6 +5254,11 @@ finish_struct (t, fieldlist, attributes)
 	  else if (! saw_named_field)
 	    error_with_decl (x, "flexible array member in otherwise empty struct");
 	}
+
+      if (pedantic && TREE_CODE (t) == RECORD_TYPE
+	  && flexible_array_type_p (TREE_TYPE (x)))
+	pedwarn_with_decl (x, "invalid use of structure with flexible array member");
+
       if (DECL_NAME (x))
 	saw_named_field = 1;
     }

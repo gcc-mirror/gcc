@@ -1,3 +1,8 @@
+2002-08-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/c90-flex-array-1.c, gcc.dg/c99-flex-array-3.c,
+	gcc.dg/c99-flex-array-4.c: New tests.
+
 2002-08-16  Stan Shebs  <shebs@apple.com>
 
 	* objc/execute/selector-1.m: Add __NEXT_RUNTIME__ case.
