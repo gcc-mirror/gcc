@@ -4339,7 +4339,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
   /* Long double is a special combination.  */
 
-  if ((specbits & 1 << (int) RID_LONG)
+  if ((specbits & 1 << (int) RID_LONG) && ! longlong
       && TYPE_MAIN_VARIANT (type) == double_type_node)
     {
       specbits &= ~ (1 << (int) RID_LONG);
@@ -4353,11 +4353,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     {
       int ok = 0;
 
-      if (TREE_CODE (type) != INTEGER_TYPE)
-	error ("long, short, signed or unsigned invalid for `%s'", name);
-      else if ((specbits & 1 << (int) RID_LONG)
-	       && (specbits & 1 << (int) RID_SHORT))
-	error ("long and short specified together for `%s'", name);
+      if ((specbits & 1 << (int) RID_LONG)
+	  && (specbits & 1 << (int) RID_SHORT))
+	error ("both long and short specified for `%s'", name);
       else if (((specbits & 1 << (int) RID_LONG)
 		|| (specbits & 1 << (int) RID_SHORT))
 	       && explicit_char)
@@ -4365,10 +4363,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       else if (((specbits & 1 << (int) RID_LONG)
 		|| (specbits & 1 << (int) RID_SHORT))
 	       && TREE_CODE (type) == REAL_TYPE)
-	error ("long or short specified with floating type for `%s'", name);
+	{
+	  static int already = 0;
+
+	  error ("long or short specified with floating type for `%s'", name);
+	  if (! already && ! pedantic)
+	    {
+	      error ("the only valid combination is `long double'");
+	      already = 1;
+	    }
+	}
       else if ((specbits & 1 << (int) RID_SIGNED)
 	       && (specbits & 1 << (int) RID_UNSIGNED))
-	error ("signed and unsigned given together for `%s'", name);
+	error ("both signed and unsigned specified for `%s'", name);
+      else if (TREE_CODE (type) != INTEGER_TYPE)
+	error ("long, short, signed or unsigned invalid for `%s'", name);
       else
 	{
 	  ok = 1;
