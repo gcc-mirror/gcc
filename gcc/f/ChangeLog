@@ -1,3 +1,8 @@
+2004-04-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* g77.texi (Floating-point Errors): Avoid referencing 
+	http://www.linuxsupportline.com/~billm/ which as has been hijacked.
+
 2004-03-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* g77.texi (Aligned Data): Remove obsolete paragraph including a
