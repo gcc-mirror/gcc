@@ -9,7 +9,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-03-02
+@c 1999-03-03
 
 @ifclear NEWSONLY
 @node News
@@ -827,6 +827,18 @@ For example, @samp{DO 10 J=2,J} now is compiled correctly.
 @item
 Fix @code{DTime} intrinsic so as not to truncate
 results to integer values (on some systems).
+
+@item
+@c Toon Moene discovered these.
+Some Fortran code, miscompiled
+by @code{g77} built on @code{gcc} version 2.8.1
+on m68k-next-nextstep3 configurations
+when using the @samp{-O2} option,
+is now compiled correctly.
+It is believed that a C function known to miscompile
+on that configuration
+when using the @samp{-O2 -funroll-loops} options
+also is now compiled correctly.
 
 @item
 Remove support for non-@code{egcs} versions of @code{gcc}.

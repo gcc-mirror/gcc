@@ -1,3 +1,8 @@
+Wed Mar  3 00:12:31 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi, bugs.texi: Delete fixed bugs, make one
+	of them into the appropriate news item.
+
 Wed Mar  3 00:05:52 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: Copy over 1.1.2 news.
