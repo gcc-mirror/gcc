@@ -129,7 +129,7 @@ today=`date +%d`
 if test $today = 15; then
   find $DOCSDIR -type f -maxdepth 1 -print | grep -v index.html | xargs rm
   for m in $MANUALS; do
-    rm $DOCSDIR/$m/*.html
+    rm $DOCSDIR/$m/*.html $DOCSDIR/$m/*.html.gz
   done
 fi
 
