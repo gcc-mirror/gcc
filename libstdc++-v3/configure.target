@@ -69,6 +69,7 @@ esac
 case "${target_os}" in
   aix4.[3456789]* | aix[56789]*)
     os_include_dir="config/os/aix"
+    OPT_LDFLAGS="-Wl,-G"
     ;;
   bsd* | freebsd* )
     os_include_dir="config/os/bsd/freebsd"
