@@ -2237,16 +2237,18 @@ changequote([,])dnl
       [AC_DEFINE(HAVE_GAS_FILDS_FISTS, 1,
         [Define if your assembler uses the new HImode fild and fist notation.])])
 
+    # This one is used unconditionally by i386.[ch]; it is to be defined
+    # to 1 if the feature is present, 0 otherwise.
     gcc_GAS_CHECK_FEATURE([GOTOFF in data],
         gcc_cv_as_ix86_gotoff_in_data, [2,11,0],,
 [	.text
 .L0:
 	nop
 	.data
-	.long .L0@GOTOFF],,
-    [AC_DEFINE_UNQUOTED(HAVE_AS_GOTOFF_IN_DATA,
-      [`if test $gcc_cv_as_gotoff_in_data = yes; then echo 1; else echo 0; fi`],
-      [Define true if the assembler supports '.long foo@GOTOFF'.])])
+	.long .L0@GOTOFF])
+    AC_DEFINE_UNQUOTED(HAVE_AS_GOTOFF_IN_DATA,
+      [`if test $gcc_cv_as_ix86_gotoff_in_data = yes; then echo 1; else echo 0; fi`],
+      [Define true if the assembler supports '.long foo@GOTOFF'.])
     ;;
 
   ia64*-*-*)

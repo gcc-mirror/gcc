@@ -1,3 +1,9 @@
+2003-07-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.in: Always define HAVE_AS_GOTOFF_IN_DATA for
+	i?86-*-*.  Use correct name of cache variable.
+	* configure: Regenerate.
+
 2003-07-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/alpha/alpha.c: Fix comment typos.
@@ -21,7 +27,7 @@
 
 2003-07-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	* fixinc/inclhack.def (alpha_sbrk): Note that OpenBSD needs this 
+	* fixinc/inclhack.def (alpha_sbrk): Note that OpenBSD needs this
 	fix.
 
 2003-07-12  Zack Weinberg  <zack@codesourcery.com>
