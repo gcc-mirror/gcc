@@ -1,3 +1,10 @@
+2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Delete three unused variables.  Move a variable
+	definition closer to its use.  Simplify use_collect2 logic.  Start to
+	organize.  Simplify tests for in-tree gas and ld.
+	* configure: Regenerate.
+
 2003-03-04  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update.
