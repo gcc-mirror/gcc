@@ -1,3 +1,13 @@
+2005-03-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_fstream.h (basic_fstream<>::open,
+	basic_ifstream<>::open, basic_ofstream<>::open): Implement the
+	resolution of DR 409 [Ready], call clear() on success.
+	* docs/html/ext/howto.html: Add an entry for DR 409.
+	* docs/html/faq/index.html (4_4): Clarify the new behavior.
+	* testsuite/27_io/basic_ifstream/open/char/1.cc: Adjust.
+	* testsuite/27_io/basic_ofstream/open/char/1.cc: Likewise.
+
 2005-03-05  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* testsuite/22_locale/collate/compare/wchar_t/2.cc,
