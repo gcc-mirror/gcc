@@ -8234,8 +8234,7 @@ split_block_insns (b)
 
   for (insn = basic_block_head[b];; insn = next)
     {
-      rtx prev;
-      rtx set;
+      rtx set, last, first, notes;
 
       /* Can't use `next_real_insn' because that
          might go across CODE_LABELS and short-out basic blocks.  */
@@ -8272,31 +8271,24 @@ split_block_insns (b)
 	}
 
       /* Split insns here to get max fine-grain parallelism.  */
-      prev = PREV_INSN (insn);
-      /* It is probably not worthwhile to try to split again in
-	 the second pass.  However, if flag_schedule_insns is not set,
-	 the first and only (if any) scheduling pass is after reload.  */
-      if (reload_completed == 0 || ! flag_schedule_insns)
+      first = PREV_INSN (insn);
+      notes = REG_NOTES (insn);
+      last = try_split (PATTERN (insn), insn, 1);
+      if (last != insn)
 	{
-	  rtx last, first = PREV_INSN (insn);
-	  rtx notes = REG_NOTES (insn);
-	  last = try_split (PATTERN (insn), insn, 1);
-	  if (last != insn)
-	    {
-	      /* try_split returns the NOTE that INSN became.  */
-	      first = NEXT_INSN (first);
-	      update_flow_info (notes, first, last, insn);
+	  /* try_split returns the NOTE that INSN became.  */
+	  first = NEXT_INSN (first);
+	  update_flow_info (notes, first, last, insn);
 
-	      PUT_CODE (insn, NOTE);
-	      NOTE_SOURCE_FILE (insn) = 0;
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      if (insn == basic_block_head[b])
-		basic_block_head[b] = first;
-	      if (insn == basic_block_end[b])
-		{
-		  basic_block_end[b] = last;
-		  break;
-		}
+	  PUT_CODE (insn, NOTE);
+	  NOTE_SOURCE_FILE (insn) = 0;
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	  if (insn == basic_block_head[b])
+	    basic_block_head[b] = first;
+	  if (insn == basic_block_end[b])
+	    {
+	      basic_block_end[b] = last;
+	      break;
 	    }
 	}
 
