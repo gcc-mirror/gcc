@@ -1,3 +1,15 @@
+1998-10-15  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokfndecl): ::main and __builtin_* get C linkage.
+	Do mangling here.
+	(grokdeclarator): Instead of here.
+	* friend.c (do_friend): Lose special handling of ::main and
+	__builtin_*.
+	* cp-tree.h (DECL_MAIN_P): Check for C linkage.
+
+	* spew.c (yylex): Clear looking_for_typename if we got
+	'enum { ... };'.
+
 1998-10-15  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (maybe_warn_about_overly_private_class): Improve error

@@ -8016,6 +8016,19 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (in_namespace)
     set_decl_namespace (decl, in_namespace);
 
+  /* `main' and builtins have implicit 'C' linkage.  */
+  if ((MAIN_NAME_P (declarator)
+       || (IDENTIFIER_LENGTH (declarator) > 10
+	   && IDENTIFIER_POINTER (declarator)[0] == '_'
+	   && IDENTIFIER_POINTER (declarator)[1] == '_'
+	   && strncmp (IDENTIFIER_POINTER (declarator)+2, "builtin_", 8) == 0))
+      && current_lang_name == lang_name_cplusplus
+      /* context == 0 could mean global scope or not set yet; either is fine
+	 for us here, as we check current_namespace.  */
+      && DECL_CONTEXT (decl) == NULL_TREE
+      && current_namespace == global_namespace)
+    DECL_LANGUAGE (decl) = lang_c;
+
   /* Should probably propagate const out from type to decl I bet (mrs).  */
   if (staticp)
     {
@@ -8026,7 +8039,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (ctype)
     DECL_CLASS_CONTEXT (decl) = ctype;
 
-  if (ctype == NULL_TREE && MAIN_NAME_P (declarator))
+  if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
       if (inlinep)
 	error ("cannot declare `main' to be inline");
@@ -8122,6 +8135,12 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 			      NULL_TREE);
 	}
     }
+
+  /* Plain overloading: will not be grok'd by grokclassfn.  */
+  if (! ctype && ! processing_template_decl
+      && DECL_LANGUAGE (decl) != lang_c
+      && (! DECL_USE_TEMPLATE (decl) || name_mangling_version < 1))
+    set_mangled_name_for_decl (decl);
 
   /* Caller will do the rest of this.  */
   if (check < 0)
@@ -10625,18 +10644,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		error ("virtual non-class function `%s'", name);
 		virtualp = 0;
 	      }
-
-	    if (current_lang_name == lang_name_cplusplus
-		&& ! processing_template_decl
-		&& ! MAIN_NAME_P (original_name)
-		&& ! (IDENTIFIER_LENGTH (original_name) > 10
-		      && IDENTIFIER_POINTER (original_name)[0] == '_'
-		      && IDENTIFIER_POINTER (original_name)[1] == '_'
-		      && strncmp (IDENTIFIER_POINTER (original_name)+2, "builtin_", 8) == 0))
-	      /* Plain overloading: will not be grok'd by grokclassfn.  */
-	      if (name_mangling_version < 1 
-		  || TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
-		declarator = build_decl_overload (dname, TYPE_ARG_TYPES (type), 0);
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE && staticp < 2)
 	  type = build_cplus_method_type (ctype, TREE_TYPE (type),
@@ -10660,11 +10667,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	if (decl == error_mark_node)
 	  return error_mark_node;
 
-	if (ctype == NULL_TREE && DECL_LANGUAGE (decl) != lang_c
-	    && (! DECL_USE_TEMPLATE (decl) ||
-		name_mangling_version < 1)) 
-	  DECL_ASSEMBLER_NAME (decl) = declarator;
-	
 	if (staticp == 1)
 	  {
 	    int illegal_static = 0;

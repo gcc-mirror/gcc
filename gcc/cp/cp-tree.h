@@ -2203,7 +2203,7 @@ extern int current_function_parms_stored;
    `main'.  */
 #define DECL_MAIN_P(NODE)				\
    (TREE_CODE (NODE) == FUNCTION_DECL			\
-    && DECL_CONTEXT (NODE) == NULL_TREE 		\
+    && DECL_LANGUAGE (NODE) == lang_c	 		\
     && DECL_NAME (NODE) != NULL_TREE			\
     && MAIN_NAME_P (DECL_NAME (NODE)))
 
