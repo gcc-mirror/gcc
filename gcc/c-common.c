@@ -83,10 +83,6 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 			: "long long unsigned int"))
 #endif
 
-#ifndef STDC_0_IN_SYSTEM_HEADERS
-#define STDC_0_IN_SYSTEM_HEADERS 0
-#endif
-
 #ifndef REGISTER_PREFIX
 #define REGISTER_PREFIX ""
 #endif
@@ -309,10 +305,6 @@ int warn_conversion;
 /* Warn about #pragma directives that are not recognised.  */      
 
 int warn_unknown_pragmas; /* Tri state variable.  */  
-
-/* Nonzero means warn about use of multicharacter literals.  */
-
-int warn_multichar = 1;
 
 /* Warn about format/argument anomalies in calls to formatted I/O functions
    (*printf, *scanf, strftime, strfmon, etc.).  */
@@ -691,8 +683,6 @@ static int if_stack_space = 0;
 
 /* Stack pointer.  */
 static int if_stack_pointer = 0;
-
-static void cb_register_builtins PARAMS ((cpp_reader *));
 
 static tree handle_packed_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
@@ -4672,7 +4662,7 @@ boolean_increment (code, arg)
 }
 
 /* Hook that registers front end and target-specific built-ins.  */
-static void
+void
 cb_register_builtins (pfile)
      cpp_reader *pfile;
 {
@@ -4882,52 +4872,6 @@ builtin_define_type_max (macro, type, is_long)
 	   (is_long == 1 ? "L" : is_long == 2 ? "LL" : ""));
 
   cpp_define (parse_in, buf);
-}
-
-/* Front end initialization common to C, ObjC and C++.  */
-const char *
-c_common_init (filename)
-     const char *filename;
-{
-  cpp_options *options = cpp_get_options (parse_in);
-
-  /* Set up preprocessor arithmetic.  Must be done after call to
-     c_common_nodes_and_builtins for wchar_type_node to be good.  */
-  options->precision = TYPE_PRECISION (intmax_type_node);
-  options->char_precision = TYPE_PRECISION (char_type_node);
-  options->int_precision = TYPE_PRECISION (integer_type_node);
-  options->wchar_precision = TYPE_PRECISION (wchar_type_node);
-  options->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
-  options->unsigned_char = !flag_signed_char;
-  options->warn_multichar = warn_multichar;
-  options->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
-
-  /* We want -Wno-long-long to override -pedantic -std=non-c99
-     and/or -Wtraditional, whatever the ordering.  */
-  options->warn_long_long
-    = warn_long_long && ((!flag_isoc99 && pedantic) || warn_traditional);
-
-  /* Register preprocessor built-ins before calls to
-     cpp_main_file.  */
-  cpp_get_callbacks (parse_in)->register_builtins = cb_register_builtins;
-
-  /* NULL is passed up to toplev.c and we exit quickly.  */
-  if (flag_preprocess_only)
-    {
-      preprocess_file ();
-      return NULL;
-    }
-
-  /* Do this before initializing pragmas, as then cpplib's hash table
-     has been set up.  */
-  filename = init_c_lex (filename);
-
-  init_pragma ();
-
-  if (!c_attrs_initialized)
-    c_init_attributes ();
-
-  return filename;
 }
 
 static void

@@ -481,10 +481,6 @@ extern int warn_conversion;
 
 extern int warn_unknown_pragmas; /* Tri state variable.  */  
 
-/* Nonzero means warn about use of multicharacter literals.  */
-
-extern int warn_multichar;
-
 /* Warn about format/argument anomalies in calls to formatted I/O functions
    (*printf, *scanf, strftime, strfmon, etc.).  */
 
@@ -1209,7 +1205,7 @@ extern int c_common_unsafe_for_reeval		PARAMS ((tree));
 
 extern const char *init_c_lex			PARAMS ((const char *));
 
-extern void preprocess_file			PARAMS ((void));
+extern void cb_register_builtins		PARAMS ((cpp_reader *));
 
 /* Information recorded about each file examined during compilation.  */
 

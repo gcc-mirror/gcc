@@ -1452,12 +1452,6 @@ void
 cpp_post_options (pfile)
      cpp_reader *pfile;
 {
-  /* Canonicalize in_fname and out_fname.  We guarantee they are not
-     NULL, and that the empty string represents stdin / stdout.  */
-  if (CPP_OPTION (pfile, in_fname) == NULL
-      || !strcmp (CPP_OPTION (pfile, in_fname), "-"))
-    CPP_OPTION (pfile, in_fname) = "";
-
   /* -Wtraditional is not useful in C++ mode.  */
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;

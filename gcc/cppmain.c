@@ -67,8 +67,9 @@ static struct printer print;
 
 /* Preprocess and output.  */
 void
-cpp_preprocess_file (pfile, out_stream)
+cpp_preprocess_file (pfile, in_fname, out_stream)
      cpp_reader *pfile;
+     const char *in_fname;
      FILE *out_stream;
 {
   options = cpp_get_options (pfile);
@@ -84,7 +85,7 @@ cpp_preprocess_file (pfile, out_stream)
 
   setup_callbacks (pfile);
 
-  if (cpp_read_main_file (pfile, options->in_fname, NULL))
+  if (cpp_read_main_file (pfile, in_fname, NULL))
     {
       cpp_finish_options (pfile);
 

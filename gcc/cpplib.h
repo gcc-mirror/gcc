@@ -221,9 +221,6 @@ enum { dump_none = 0, dump_only, dump_names, dump_definitions };
    carries all the options visible to the command line.  */
 struct cpp_options
 {
-  /* Name of input and output files.  */
-  const char *in_fname;
-
   /* Characters between tab stops.  */
   unsigned int tabstop;
 
@@ -726,7 +723,7 @@ extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
 
 /* In cppmain.c */
-extern void cpp_preprocess_file PARAMS ((cpp_reader *, FILE *));
+extern void cpp_preprocess_file PARAMS ((cpp_reader *, const char *, FILE *));
 
 #ifdef __cplusplus
 }
