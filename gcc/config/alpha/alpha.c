@@ -6938,7 +6938,7 @@ alpha_sa_mask (imaskP, fmaskP)
     }
 
   if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
-    imask |= (1L << HARD_FRAME_POINTER_REGNUM);
+    imask |= (1UL << HARD_FRAME_POINTER_REGNUM);
 
   /* One for every register we have to save.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -6947,9 +6947,9 @@ alpha_sa_mask (imaskP, fmaskP)
 	&& (!TARGET_ABI_UNICOSMK || i != HARD_FRAME_POINTER_REGNUM))
       {
 	if (i < 32)
-	  imask |= (1L << i);
+	  imask |= (1UL << i);
 	else
-	  fmask |= (1L << (i - 32));
+	  fmask |= (1UL << (i - 32));
       }
 
   /* We need to restore these for the handler.  */
@@ -6959,14 +6959,14 @@ alpha_sa_mask (imaskP, fmaskP)
 	unsigned regno = EH_RETURN_DATA_REGNO (i);
 	if (regno == INVALID_REGNUM)
 	  break;
-	imask |= 1L << regno;
+	imask |= 1UL << regno;
       }
      
   /* If any register spilled, then spill the return address also.  */
   /* ??? This is required by the Digital stack unwind specification
      and isn't needed if we're doing Dwarf2 unwinding.  */
   if (imask || fmask || alpha_ra_ever_killed ())
-    imask |= (1L << REG_RA);
+    imask |= (1UL << REG_RA);
 
   *imaskP = imask;
   *fmaskP = fmask;
@@ -7430,18 +7430,18 @@ alpha_expand_prologue ()
 	}
 
       /* Save register RA next.  */
-      if (imask & (1L << REG_RA))
+      if (imask & (1UL << REG_RA))
 	{
 	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
 	  set_mem_alias_set (mem, alpha_sr_alias_set);
 	  FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
-	  imask &= ~(1L << REG_RA);
+	  imask &= ~(1UL << REG_RA);
 	  reg_offset += 8;
 	}
 
       /* Now save any other registers required to be saved.  */
       for (i = 0; i < 32; i++)
-	if (imask & (1L << i))
+	if (imask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
 	    set_mem_alias_set (mem, alpha_sr_alias_set);
@@ -7450,7 +7450,7 @@ alpha_expand_prologue ()
 	  }
 
       for (i = 0; i < 32; i++)
-	if (fmask & (1L << i))
+	if (fmask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DFmode, plus_constant (sa_reg, reg_offset));
 	    set_mem_alias_set (mem, alpha_sr_alias_set);
@@ -7466,7 +7466,7 @@ alpha_expand_prologue ()
 
       reg_offset = -56;
       for (i = 9; i < 15; i++)
-	if (imask & (1L << i))
+	if (imask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx,
 						     reg_offset));
@@ -7475,7 +7475,7 @@ alpha_expand_prologue ()
 	    reg_offset -= 8;
 	  }
       for (i = 2; i < 10; i++)
-	if (fmask & (1L << i))
+	if (fmask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DFmode, plus_constant (hard_frame_pointer_rtx,
 						      reg_offset));
@@ -7690,7 +7690,7 @@ alpha_start_function (file, fnname, decl)
     {
       fprintf (file, "\t.frame $%d,", vms_unwind_regno);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-	       frame_size >= ((HOST_WIDE_INT) 1 << 31) ? 0 : frame_size);
+	       frame_size >= (1UL << 31) ? 0 : frame_size);
       fputs (",$26,", file);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, reg_offset);
       fputs ("\n", file);
@@ -7701,7 +7701,7 @@ alpha_start_function (file, fnname, decl)
 	       (frame_pointer_needed
 		? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM));
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-	       frame_size >= (1l << 31) ? 0 : frame_size);
+	       frame_size >= (1UL << 31) ? 0 : frame_size);
       fprintf (file, ",$26,%d\n", current_function_pretend_args_size);
     }
 
@@ -7713,7 +7713,7 @@ alpha_start_function (file, fnname, decl)
       if (imask)
         /* ??? Does VMS care if mask contains ra?  The old code didn't
            set it, so I don't here.  */
-	fprintf (file, "\t.mask 0x%lx,0\n", imask & ~(1L << REG_RA));
+	fprintf (file, "\t.mask 0x%lx,0\n", imask & ~(1UL << REG_RA));
       if (fmask)
 	fprintf (file, "\t.fmask 0x%lx,0\n", fmask);
       if (alpha_procedure_type == PT_REGISTER)
@@ -7725,11 +7725,11 @@ alpha_start_function (file, fnname, decl)
 	{
 	  fprintf (file, "\t.mask 0x%lx,", imask);
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		   frame_size >= (1l << 31) ? 0 : reg_offset - frame_size);
+		   frame_size >= (1UL << 31) ? 0 : reg_offset - frame_size);
 	  putc ('\n', file);
 
 	  for (i = 0; i < 32; ++i)
-	    if (imask & (1L << i))
+	    if (imask & (1UL << i))
 	      reg_offset += 8;
 	}
 
@@ -7737,7 +7737,7 @@ alpha_start_function (file, fnname, decl)
 	{
 	  fprintf (file, "\t.fmask 0x%lx,", fmask);
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		   frame_size >= (1l << 31) ? 0 : reg_offset - frame_size);
+		   frame_size >= (1UL << 31) ? 0 : reg_offset - frame_size);
 	  putc ('\n', file);
 	}
     }
@@ -7873,10 +7873,10 @@ alpha_expand_epilogue ()
       FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA), mem));
 
       reg_offset += 8;
-      imask &= ~(1L << REG_RA);
+      imask &= ~(1UL << REG_RA);
 
       for (i = 0; i < 32; ++i)
-	if (imask & (1L << i))
+	if (imask & (1UL << i))
 	  {
 	    if (i == HARD_FRAME_POINTER_REGNUM && fp_is_frame_pointer)
 	      fp_offset = reg_offset;
@@ -7890,7 +7890,7 @@ alpha_expand_epilogue ()
 	  }
 
       for (i = 0; i < 32; ++i)
-	if (fmask & (1L << i))
+	if (fmask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DFmode, plus_constant(sa_reg, reg_offset));
 	    set_mem_alias_set (mem, alpha_sr_alias_set);
@@ -7905,7 +7905,7 @@ alpha_expand_epilogue ()
       reg_offset = -56;
 
       for (i = 9; i < 15; i++)
-	if (imask & (1L << i))
+	if (imask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DImode, plus_constant(hard_frame_pointer_rtx,
 						     reg_offset));
@@ -7915,7 +7915,7 @@ alpha_expand_epilogue ()
 	  }
 
       for (i = 2; i < 10; i++)
-	if (fmask & (1L << i))
+	if (fmask & (1UL << i))
 	  {
 	    mem = gen_rtx_MEM (DFmode, plus_constant(hard_frame_pointer_rtx,
 						     reg_offset));
@@ -9931,14 +9931,14 @@ unicosmk_gen_dsib (imaskP)
       mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 56));
       set_mem_alias_set (mem, alpha_sr_alias_set);
       FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
-      (*imaskP) &= ~(1L << REG_RA);
+      (*imaskP) &= ~(1UL << REG_RA);
 
       /* Save the old frame pointer.  */
 
       mem = gen_rtx_MEM (DImode, plus_constant (stack_pointer_rtx, 48));
       set_mem_alias_set (mem, alpha_sr_alias_set);
       FRP (emit_move_insn (mem, hard_frame_pointer_rtx));
-      (*imaskP) &= ~(1L << HARD_FRAME_POINTER_REGNUM);
+      (*imaskP) &= ~(1UL << HARD_FRAME_POINTER_REGNUM);
 
       emit_insn (gen_blockage ());
 

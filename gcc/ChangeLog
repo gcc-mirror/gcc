@@ -1,3 +1,10 @@
+2003-05-01  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+ 
+        PR target/8257
+        * config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
+        alpha_start_function, alpha_expand_epilogue, unicosmk_gen_dsib):
+        Avoid undefined shifts by making the shift operand unsigned.
+ 
 2003-05-01  DJ Delorie  <dj@redhat.com>
 
 	* reload.c (find_reloads): Also check that all of a multi-reg
