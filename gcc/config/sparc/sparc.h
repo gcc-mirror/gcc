@@ -1139,16 +1139,6 @@ extern int sparc_mode_class[];
       || !leaf_function_p ())				\
    : ! (leaf_function_p () && only_leaf_regs_used ()))
 
-/* C statement to store the difference between the frame pointer
-   and the stack pointer values immediately after the function prologue.
-
-   Note, we always pretend that this is a leaf function because if
-   it's not, there's no point in trying to eliminate the
-   frame pointer.  If it is a leaf function, we guessed right!  */
-#define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  ((VAR) = (TARGET_FLAT ? sparc_flat_compute_frame_size (get_frame_size ()) \
-	    : compute_frame_size (get_frame_size (), 1)))
-
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
@@ -1577,12 +1567,28 @@ extern const char leaf_reg_remap[];
 /* ??? In TARGET_FLAT mode we needn't have a hard frame pointer.  */
    
 #define ELIMINABLE_REGS \
-  {{ FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
+  {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}, \
+   { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM} }
 
 #define CAN_ELIMINATE(FROM, TO) 1
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
-  ((OFFSET) = SPARC_STACK_BIAS)
+  do {								\
+    (OFFSET) = 0;						\
+    if ((TO) == STACK_POINTER_REGNUM)				\
+      {								\
+	/* Note, we always pretend that this is a leaf function	\
+	   because if it's not, there's no point in trying to	\
+	   eliminate the frame pointer.  If it is a leaf	\
+	   function, we guessed right!  */			\
+	if (TARGET_FLAT)					\
+	  (OFFSET) =						\
+	    sparc_flat_compute_frame_size (get_frame_size ());	\
+	else							\
+	  (OFFSET) = compute_frame_size (get_frame_size (), 1);	\
+      }								\
+    (OFFSET) += SPARC_STACK_BIAS;				\
+  } while (0)
 
 /* Keep the stack pointer constant throughout the function.
    This is both an optimization and a necessity: longjmp
