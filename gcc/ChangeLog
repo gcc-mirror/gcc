@@ -1,3 +1,7 @@
+Tue Sep 29 11:11:38 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* invoke.texi (-fexceptions): Merge 2 different descriptions.
+
 Mon Sep 28 22:08:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.c (documented_lang_options): Spelling corrections.
