@@ -223,8 +223,7 @@ fp_literal_one (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (TARGET_NUMERICS && (mode == VOIDmode || mode == GET_MODE (op))
-	  && (op == CONST1_RTX (mode)));
+  return (TARGET_NUMERICS && mode == GET_MODE (op) && op == CONST1_RTX (mode));
 }
 
 /* Return true if OP is a float constant of 0.  */
@@ -234,8 +233,7 @@ fp_literal_zero (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (TARGET_NUMERICS && (mode == VOIDmode || mode == GET_MODE (op))
-	  && (op == CONST0_RTX (mode)));
+  return (TARGET_NUMERICS && mode == GET_MODE (op) && op == CONST0_RTX (mode));
 }
 
 /* Return true if OP is a valid floating point literal.  */
@@ -571,15 +569,9 @@ i960_output_ldconst (dst, src)
     {
       rtx first, second;
 
-      if (fp_literal_zero (src, VOIDmode))
-	{
-	  if (FP_REG_P (dst))
-	    return "movrl	%1,%0";
-	  else
-	    return "movl	0,%0";
-	}
+      if (fp_literal_zero (src, DFmode))
+	return "movl	0,%0";
 
-#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
       split_double (src, &first, &second);
 
       output_asm_insn ("# ldconst	%1,%0",operands);
@@ -593,11 +585,6 @@ i960_output_ldconst (dst, src)
       output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 		      operands);
       return "";
-#else
-      if (fp_literal_one (src, VOIDmode))
-	return "movrl	0f1.0,%0";
-      fatal ("inline double constants not supported on this host");
-#endif
     }
   else if (mode == TImode)
     {
@@ -645,7 +632,6 @@ i960_output_ldconst (dst, src)
     }
   else if (mode == SFmode)
     {
-#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
       REAL_VALUE_TYPE d;
       long value;
 
@@ -657,13 +643,6 @@ i960_output_ldconst (dst, src)
       operands[1] = gen_rtx (CONST_INT, VOIDmode, value);
       output_asm_insn (i960_output_ldconst (operands[0], operands[1]),
 		      operands);
-#else
-      if (fp_literal_zero (src, VOIDmode))
-	return "movr	0f0.0,%0";
-      if (fp_literal_one (src, VOIDmode))
-	return "movr	0f1.0,%0";
-      fatal ("inline float constants not supported on this host");
-#endif
       return "";
     }
   else
