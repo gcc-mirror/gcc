@@ -1,3 +1,8 @@
+2002-06-03  Roger Sayle  <roger@eyesopen.com>
+
+	* gcse.c (cprop_jump): Use single_set to get the pattern
+	from the setcc argument.
+
 2002-06-03  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h (diagnostic_count): Move from output_buffer to 
