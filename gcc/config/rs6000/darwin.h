@@ -240,11 +240,14 @@ do {									\
    symbol.  */
 /* ? */
 #undef  ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
-  do { fputs (".comm ", (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n",\
-		(SIZE)); } while (0)
+#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)			\
+  do {									\
+    unsigned HOST_WIDE_INT size = SIZE;					\
+    fputs (".comm ", (FILE));						\
+    RS6000_OUTPUT_BASENAME ((FILE), (NAME));				\
+    if (size == 0) size = 1;						\
+    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);	\
+  } while (0)
 
 /* Override the standard rs6000 definition.  */
 
