@@ -1,7 +1,9 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
    Contributed by   A. Lichnewsky,	lich@inria.inria.fr
    Changed by Michael Meissner,		meissner@osf.org
+   64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
+   Brendan Eich, brendan@microunity.com.
+   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -44,7 +46,8 @@ extern char    *version_string;
 
 /* comparison type */
 enum cmp_type {
-  CMP_SI,				/* compare integers */
+  CMP_SI,				/* compare four byte integers */
+  CMP_DI,				/* compare eight byte integers */
   CMP_SF,				/* compare single precision floats */
   CMP_DF,				/* compare double precision floats */
   CMP_MAX				/* max comparison type */
@@ -67,7 +70,8 @@ enum processor_type {
   PROCESSOR_DEFAULT,
   PROCESSOR_R3000,
   PROCESSOR_R6000,
-  PROCESSOR_R4000
+  PROCESSOR_R4000,
+  PROCESSOR_R4600
 };
 
 /* Recast the cpu class to be the cpu attribute.  */
@@ -243,7 +247,7 @@ extern char	       *mktemp ();
 
 					/* Bits for real switches */
 #define MASK_INT64	0x00000001	/* ints are 64 bits */
-#define MASK_LONG64	0x00000002	/* longs are 64 bits */
+#define MASK_LONG64	0x00000002	/* longs and pointers are 64 bits */
 #define MASK_LLONG128	0x00000004	/* long longs are 128 bits */
 #define MASK_GPOPT	0x00000008	/* Optimize for global pointer */
 #define MASK_GAS	0x00000010	/* Gas used instead of MIPS as */
@@ -255,13 +259,13 @@ extern char	       *mktemp ();
 #define MASK_ABICALLS	0x00000400	/* emit .abicalls/.cprestore/.cpload */
 #define MASK_HALF_PIC	0x00000800	/* Emit OSF-style pic refs to externs*/
 #define MASK_LONG_CALLS	0x00001000	/* Always call through a register */
-#define MASK_UNUSED1	0x00002000
-#define MASK_UNUSED2	0x00004000
-#define MASK_UNUSED3	0x00008000
-#define MASK_UNUSED4	0x00010000
-#define MASK_UNUSED5	0x00020000
-#define MASK_UNUSED6	0x00040000
-#define MASK_UNUSED7	0x00080000
+#define MASK_64BIT	0x00002000	/* Use 64 bit registers and insns */
+#define MASK_UNUSED1	0x00004000
+#define MASK_UNUSED2	0x00008000
+#define MASK_UNUSED3	0x00010000
+#define MASK_UNUSED4	0x00020000
+#define MASK_UNUSED5	0x00040000
+#define MASK_UNUSED6	0x00080000
 
 					/* Dummy switches used only in spec's*/
 #define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
@@ -284,6 +288,7 @@ extern char	       *mktemp ();
 #define TARGET_LONG64		(target_flags & MASK_LONG64)
 #define TARGET_LLONG128		(target_flags & MASK_LLONG128)
 #define TARGET_FLOAT64		(target_flags & MASK_FLOAT64)
+#define TARGET_64BIT		(target_flags & MASK_64BIT)
 
 					/* Mips vs. GNU assembler */
 #define TARGET_GAS		(target_flags & MASK_GAS)
@@ -414,9 +419,20 @@ extern char	       *mktemp ();
    depending on the instruction set architecture level.  */
 
 #define BRANCH_LIKELY_P()	(mips_isa >= 2)
-#define HAVE_64BIT_P()		(mips_isa >= 3)
 #define HAVE_SQRT_P()		(mips_isa >= 2)
 
+/* If mips_isa >= 3, then override_options will set MASK_64BIT
+   in target_flags.  This is in target_flags, not mips_isa, because
+   the gen* programs link code that refers to it, and they don't have
+   mips_isa.  They don't actually use the information in target_flags;
+   they just refer to it.
+
+   Setting mips_isa >= 3 will cause gcc to assume that registers are
+   64 bits wide.  int, long and void * will be 32 bit; this may be
+   changed with -mint64 or -mlong64.
+
+   CC1_SPEC causes -mips3 to set -mfp64, and -mips1 or -mips2 to set -mfp32.
+   This can be overridden by an explicit -mfp32 or -mfp64.  */
 
 /* Switch  Recognition by gcc.c.  Add -G xx support */
 
@@ -477,23 +493,6 @@ do									\
   }									\
 while (0)
 
-
-/* Some machines may desire to change what optimizations are
-   performed for various optimization levels.   This macro, if
-   defined, is executed once just after the optimization level is
-   determined and before the remainder of the command options have
-   been parsed.  Values set in this macro are used as the default
-   values for the other command line options.
-
-   LEVEL is the optimization level specified; 2 if -O2 is
-   specified, 1 if -O is specified, and 0 if neither is specified.  */
-
-#define OPTIMIZATION_OPTIONS(LEVEL)					\
-{									\
-  if (LEVEL)								\
-    target_flags |= MASK_GPOPT;					\
-}
-
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
 
@@ -511,10 +510,6 @@ while (0)
 
 #ifndef CPP_PREDEFINES
 	#error "Define CPP_PREDEFINES in the appropriate tm.h file"
-#endif
-
-#ifndef CPP_SPEC
-	#error "Define CPP_SPEC in the appropriate tm.h file"
 #endif
 
 #ifndef LINK_SPEC
@@ -625,6 +620,7 @@ while (0)
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
+%{mips1:-mfp32}%{mips2:-mfp32}%{mips3:-mfp64} \
 %{G*} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
@@ -643,7 +639,10 @@ while (0)
 %{.m:	-D__LANGUAGE_OBJECTIVE_C -D_LANGUAGE_OBJECTIVE_C} \
 %{.S:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{.s:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
-%{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
+%{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
+%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE=int} \
+%{mips3:-U__mips -D__mips=3}"
 #endif
 
 /* If defined, this macro is an additional prefix to try after
@@ -916,15 +915,28 @@ do {							\
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD 32
+#define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
+#define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD 4
+#define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define MAX_UNITS_PER_WORD 8
+
+/* For MIPS, width of a floating point register.  */
+#define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)
 
 /* A C expression for the size in bits of the type `int' on the
    target machine.  If you don't define this, the default is one
    word.  */
-#define INT_TYPE_SIZE 32
+#define INT_TYPE_SIZE (TARGET_INT64 ? 64 : 32)
+#define MAX_INT_TYPE_SIZE 64
+
+/* Tell the preprocessor the maximum size of wchar_t.  */
+#ifndef MAX_WCHAR_TYPE_SIZE
+#ifndef WCHAR_TYPE_SIZE
+#define MAX_WCHAR_TYPE_SIZE MAX_INT_TYPE_SIZE
+#endif
+#endif
 
 /* A C expression for the size in bits of the type `short' on the
    target machine.  If you don't define this, the default is half a
@@ -935,12 +947,13 @@ do {							\
 /* A C expression for the size in bits of the type `long' on the
    target machine.  If you don't define this, the default is one
    word.  */
-#define LONG_TYPE_SIZE 32
+#define LONG_TYPE_SIZE (TARGET_LONG64 ? 64 : 32)
+#define MAX_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `long long' on the
    target machine.  If you don't define this, the default is two
    words.  */
-#define LONG_LONG_TYPE_SIZE 64
+#define LONG_LONG_TYPE_SIZE (TARGET_LLONG128 ? 128 : 64)
 
 /* A C expression for the size in bits of the type `char' on the
    target machine.  If you don't define this, the default is one
@@ -965,19 +978,19 @@ do {							\
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 32
+#define POINTER_SIZE (TARGET_LONG64 ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
-#define POINTER_BOUNDARY 32
+#define POINTER_BOUNDARY (TARGET_LONG64 ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY 32
+#define PARM_BOUNDARY (TARGET_64BIT ? 64 : 32)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
 
 /* Alignment of field after `int : 0' in a structure.  */
-#define EMPTY_FIELD_BOUNDARY 32
+#define EMPTY_FIELD_BOUNDARY (TARGET_LONG64 ? 64 : 32)
 
 /* Every structure's size must be a multiple of this.  */
 /* 8 is observed right on a DECstation and on riscos 4.02.  */
@@ -1166,14 +1179,13 @@ do {							\
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (! FP_REG_P (REGNO)							\
 	? ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD) \
-	: (((GET_MODE_SIZE (MODE) + (2*UNITS_PER_WORD) - 1) / (2*UNITS_PER_WORD)) \
-		<< (TARGET_FLOAT64 == 0)))
+        : (((GET_MODE_SIZE (MODE) + 7) / 8) << (TARGET_FLOAT64 == 0)))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode
-   MODE.  Require that DImode and DFmode be in even registers.  For
-   DImode, this makes some of the insns easier to write, since you
-   don't have to worry about a DImode value in registers 3 & 4,
-   producing a result in 4 & 5.
+   MODE.  In 32 bit mode, require that DImode and DFmode be in even
+   registers.  For DImode, this makes some of the insns easier to
+   write, since you don't have to worry about a DImode value in
+   registers 3 & 4, producing a result in 4 & 5.
 
    To make the code simpler HARD_REGNO_MODE_OK now just references an
    array built in override_options.  Because machmodes.h is not yet
@@ -1357,7 +1369,7 @@ extern enum reg_class mips_regno_to_class[];
    factor or added to another register (as well as added to a
    displacement).  */
 
-#define INDEX_REG_CLASS GR_REGS
+#define INDEX_REG_CLASS NO_REGS
 
 
 /* REGISTER AND CONSTANT CLASSES */
@@ -1413,10 +1425,14 @@ extern enum reg_class mips_char_to_class[];
   ((C) == 'I' ? ((unsigned) ((VALUE) + 0x8000) < 0x10000)		\
    : (C) == 'J' ? ((VALUE) == 0)					\
    : (C) == 'K' ? ((unsigned) (VALUE) < 0x10000)			\
-   : (C) == 'L' ? (((VALUE) & 0xffff0000) == (VALUE))			\
+   : (C) == 'L' ? (((VALUE) & 0x0000ffff) == 0				\
+		   && (((VALUE) & ~2147483647) == 0			\
+		       || ((VALUE) & ~2147483647) == ~2147483647))	\
    : (C) == 'M' ? ((((VALUE) & ~0x0000ffff) != 0)			\
 		   && (((VALUE) & ~0x0000ffff) != ~0x0000ffff)		\
-		   && ((VALUE) & 0x0000ffff) != 0)			\
+		   && (((VALUE) & 0x0000ffff) != 0			\
+		       || (((VALUE) & ~2147483647) != 0			\
+			   && ((VALUE) & ~2147483647) != ~2147483647)))	\
    : (C) == 'N' ? (((VALUE) & ~0x0000ffff) == ~0x0000ffff)		\
    : (C) == 'O' ? (exact_log2 (VALUE) >= 0)				\
    : (C) == 'P' ? ((VALUE) != 0 && (((VALUE) & ~0x0000ffff) == 0))	\
@@ -1431,8 +1447,7 @@ extern enum reg_class mips_char_to_class[];
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
   ((C) == 'G'								\
-   && CONST_DOUBLE_HIGH (VALUE) == 0					\
-   && CONST_DOUBLE_LOW (VALUE) == 0)
+   && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))
 
 /* Letters in the range `Q' through `U' may be defined in a
    machine-dependent fashion to stand for arbitrary operand types. 
@@ -1458,12 +1473,15 @@ extern enum reg_class mips_char_to_class[];
    in some cases it is preferable to use a more restrictive class.  */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)					\
-  ((GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT				\
-     || GET_MODE_CLASS (GET_MODE (X)) == MODE_COMPLEX_FLOAT)		\
-	    ? (TARGET_SOFT_FLOAT ? GR_REGS : FP_REGS)			\
-	    : ((GET_MODE (X) == VOIDmode)				\
-		? GR_REGS						\
-		: CLASS))
+  ((CLASS) != ALL_REGS							\
+   ? (CLASS)								\
+   : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT			\
+       || GET_MODE_CLASS (GET_MODE (X)) == MODE_COMPLEX_FLOAT)		\
+      ? (TARGET_SOFT_FLOAT ? GR_REGS : FP_REGS)				\
+      : ((GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\
+	  || GET_MODE (X) == VOIDmode)					\
+	 ? GR_REGS							\
+	 : (CLASS))))
 
 /* Certain machines have the property that some registers cannot be
    copied to some other registers without using memory.  Define this
@@ -1667,7 +1685,7 @@ extern struct mips_frame_info current_frame_info;
    the first argument's address.
 
    On the MIPS, we must skip the first argument position if we are
-   returning a structure or a union, to account for it's address being
+   returning a structure or a union, to account for its address being
    passed in $4.  However, at the current time, this produces a compiler
    that can't bootstrap, so comment it out for now.  */
 
@@ -1704,13 +1722,13 @@ extern struct mips_frame_info current_frame_info;
 /* Align stack frames on 64 bits (Double Word ).  */
 #define STACK_BOUNDARY 64
 
-/* Make sure 16 bytes are always allocated on the stack.  */
+/* Make sure 4 words are always allocated on the stack.  */
 
 #ifndef STACK_ARGS_ADJUST
 #define STACK_ARGS_ADJUST(SIZE)						\
 {									\
-  if (SIZE.constant < 16)						\
-    SIZE.constant = 16;							\
+  if (SIZE.constant < 4 * UNITS_PER_WORD)				\
+    SIZE.constant = 4 * UNITS_PER_WORD;					\
 }
 #endif
 
@@ -1941,9 +1959,12 @@ typedef struct mips_args {
   fprintf (FILE, "\tmove\t%s,%s\t\t# save current return address\n",	\
 	   reg_names[GP_REG_FIRST + 1], reg_names[GP_REG_FIRST + 31]);	\
   fprintf (FILE, "\tjal\t_mcount\n");					\
-  fprintf (FILE, "\tsubu\t%s,%s,8\t\t# _mcount pops 2 words from  stack\n", \
+  fprintf (FILE,							\
+	   "\t%s\t%s,%s,%d\t\t# _mcount pops 2 words from  stack\n",	\
+	   TARGET_64BIT ? "dsubu" : "subu",				\
 	   reg_names[STACK_POINTER_REGNUM],				\
-	   reg_names[STACK_POINTER_REGNUM]);				\
+	   reg_names[STACK_POINTER_REGNUM],				\
+	   TARGET_LONG64 ? 16 : 8);					\
   fprintf (FILE, "\t.set\treorder\n");					\
   fprintf (FILE, "\t.set\tat\n");					\
 }
@@ -1972,25 +1993,39 @@ typedef struct mips_args {
   fprintf (STREAM, "\t.word\t0x03e00821\t\t# move   $1,$31\n");		\
   fprintf (STREAM, "\t.word\t0x04110001\t\t# bgezal $0,.+8\n");		\
   fprintf (STREAM, "\t.word\t0x00000000\t\t# nop\n");			\
-  fprintf (STREAM, "\t.word\t0x8fe30010\t\t# lw     $3,16($31)\n");	\
-  fprintf (STREAM, "\t.word\t0x8fe20014\t\t# lw     $2,20($31)\n");	\
+  if (TARGET_LONG64)							\
+    {									\
+      fprintf (STREAM, "\t.word\t0xdfe30014\t\t# ld     $3,20($31)\n");	\
+      fprintf (STREAM, "\t.word\t0xdfe2001c\t\t# ld     $2,28($31)\n");	\
+    }									\
+  else									\
+    {									\
+      fprintf (STREAM, "\t.word\t0x8fe30010\t\t# lw     $3,16($31)\n");	\
+      fprintf (STREAM, "\t.word\t0x8fe20014\t\t# lw     $2,20($31)\n");	\
+    }									\
   fprintf (STREAM, "\t.word\t0x00600008\t\t# jr     $3\n");		\
   fprintf (STREAM, "\t.word\t0x0020f821\t\t# move   $31,$1\n");		\
-  fprintf (STREAM, "\t.word\t0x00000000\t\t# <function address>\n");	\
-  fprintf (STREAM, "\t.word\t0x00000000\t\t# <static chain value>\n");	\
+  if (TARGET_LONG64)							\
+    {									\
+      fprintf (STREAM, "\t.word\t0x00000000\t\t# <alignment padding>\n"); \
+      fprintf (STREAM, "\t.dword\t0x00000000\t\t# <function address>\n"); \
+      fprintf (STREAM, "\t.dword\t0x00000000\t\t# <static chain value>\n"); \
+    }									\
+  else									\
+    {									\
+      fprintf (STREAM, "\t.word\t0x00000000\t\t# <function address>\n"); \
+      fprintf (STREAM, "\t.word\t0x00000000\t\t# <static chain value>\n"); \
+    }									\
 }
 
 /* A C expression for the size in bytes of the trampoline, as an
    integer.  */
 
-#define TRAMPOLINE_SIZE (9*4)
+#define TRAMPOLINE_SIZE (TARGET_LONG64 ? (8 * 4 + 2 * 8) : (9 * 4))
 
-/* Alignment required for trampolines, in bits.
+/* Alignment required for trampolines, in bits.  */
 
-   If you don't define this macro, the value of `BIGGEST_ALIGNMENT'
-   is used for aligning trampolines.  */
-
-/* #define TRAMPOLINE_ALIGNMENT 32 */
+#define TRAMPOLINE_ALIGNMENT (TARGET_LONG64 ? 64 : 32)
 
 /* A C statement to initialize the variable parts of a trampoline. 
    ADDR is an RTX for the address of the trampoline; FNADDR is an
@@ -2001,24 +2036,24 @@ typedef struct mips_args {
 #define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			    \
 {									    \
   rtx addr = ADDR;							    \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 28)), FUNC);   \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 32)), CHAIN);  \
+  if (TARGET_LONG64)							    \
+    {									    \
+      emit_move_insn (gen_rtx (MEM, DImode, plus_constant (addr, 32)), FUNC); \
+      emit_move_insn (gen_rtx (MEM, DImode, plus_constant (addr, 40)), CHAIN);\
+    }									    \
+  else									    \
+    {									    \
+      emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 28)), FUNC); \
+      emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 32)), CHAIN);\
+    }									    \
 									    \
   /* Flush the instruction cache.  */					    \
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__gcc_flush_cache"), \
-		     0, VOIDmode, 1, addr, Pmode);			    \
-}
-
-/* Flush the instruction cache.  */
-
-#define TRANSFER_FROM_TRAMPOLINE					\
-									\
-void									\
-__gcc_flush_cache (addr)						\
-     char *addr;							\
-{									\
-  if (cacheflush (addr, TRAMPOLINE_SIZE, 1) < 0)			\
-    perror ("cacheflush of trampoline code");				\
+  /* ??? Are the modes right? Maybe they should depend on -mint64/-mlong64? */\
+  /* ??? Should check the return value for errors.  */			    \
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "cacheflush"),		    \
+		     0, VOIDmode, 3, addr, Pmode,			    \
+		     GEN_INT (TRAMPOLINE_SIZE), SImode,  		    \
+		     GEN_INT (1), SImode);				    \
 }
 
 /* Addressing modes, and classification of registers for them.  */
@@ -2040,7 +2075,7 @@ __gcc_flush_cache (addr)						\
 #define GP_REG_OR_PSEUDO_NONSTRICT_P(regno) \
   (((regno) >= FIRST_PSEUDO_REGISTER) || (GP_REG_P (regno)))
 
-#define REGNO_OK_FOR_INDEX_P(regno)	GP_REG_OR_PSEUDO_STRICT_P (regno)
+#define REGNO_OK_FOR_INDEX_P(regno)	0
 #define REGNO_OK_FOR_BASE_P(regno)	GP_REG_OR_PSEUDO_STRICT_P (regno)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
@@ -2057,13 +2092,13 @@ __gcc_flush_cache (addr)						\
 #ifndef REG_OK_STRICT
 
 #define REG_OK_STRICT_P 0
-#define REG_OK_FOR_INDEX_P(X) GP_REG_OR_PSEUDO_NONSTRICT_P (REGNO (X))
+#define REG_OK_FOR_INDEX_P(X) 0
 #define REG_OK_FOR_BASE_P(X)  GP_REG_OR_PSEUDO_NONSTRICT_P (REGNO (X))
 
 #else
 
 #define REG_OK_STRICT_P 1
-#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
+#define REG_OK_FOR_INDEX_P(X) 0
 #define REG_OK_FOR_BASE_P(X)  REGNO_OK_FOR_BASE_P  (REGNO (X))
 
 #endif
@@ -2168,14 +2203,10 @@ __gcc_flush_cache (addr)						\
 									\
       if (code0 == REG && REG_OK_FOR_BASE_P (xplus0))			\
 	{								\
-	  if (code1 == CONST_INT)					\
-	    {								\
-	      register unsigned adj_offset = INTVAL (xplus1) + 0x8000;	\
-									\
-	      if ((adj_offset <= 0xffff)				\
-		  && (adj_offset + GET_MODE_SIZE (MODE) - 1 <= 0xffff))	\
-		goto ADDR;						\
-	    }								\
+	  if (code1 == CONST_INT					\
+	      && INTVAL (xplus1) >= -32768				\
+	      && INTVAL (xplus1) + GET_MODE_SIZE (MODE) - 1 <= 32767)	\
+	    goto ADDR;							\
 									\
 	  /* For some code sequences, you actually get better code by	\
 	     pretending that the MIPS supports an address mode of a	\
@@ -2190,7 +2221,6 @@ __gcc_flush_cache (addr)						\
 	     appropriate relocation.  */				\
 									\
 	  else if (!TARGET_DEBUG_A_MODE					\
-		   && code0 == REG					\
 		   && CONSTANT_ADDRESS_P (xplus1))			\
 	    goto ADDR;							\
 	}								\
@@ -2348,8 +2378,7 @@ __gcc_flush_cache (addr)						\
 #define ENCODE_SECTION_INFO(DECL)					\
 do									\
   {									\
-    if (optimize && mips_section_threshold > 0 && TARGET_GP_OPT		\
-	&& TREE_CODE (DECL) == VAR_DECL)				\
+    if (TARGET_GP_OPT && TREE_CODE (DECL) == VAR_DECL)			\
       {									\
 	int size = int_size_in_bytes (TREE_TYPE (DECL));		\
 									\
@@ -2365,7 +2394,7 @@ while (0)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE SImode
+#define CASE_VECTOR_MODE (TARGET_LONG64 ? DImode : SImode)
 
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
@@ -2385,7 +2414,8 @@ while (0)
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX 4
+#define MOVE_MAX (TARGET_64BIT ? 8 : 4)
+#define MAX_MOVE_MAX 8
 
 /* Define this macro as a C expression which is nonzero if
    accessing less than a word of memory (i.e. a `char' or a
@@ -2411,7 +2441,14 @@ while (0)
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
+/* In 64 bit mode, 32 bit instructions require that register values be properly
+   sign-extended to 64 bits.  As a result, a truncate is not a no-op if it
+   converts a value >32 bits to a value <32 bits.  */
+/* ??? This results in inefficient code for 64 bit to 32 conversions.
+   Something needs to be done about this.  Perhaps not use any 32 bit
+   instructions?  Perhaps use PROMOTE_MODE?  */
+#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) \
+  (TARGET_64BIT ? ((INPREC) <= 32 || (OUTPREC) > 32) : 1)
 
 /* Define this macro to control use of the character `$' in
    identifier names.  The value should be 0, 1, or 2.  0 means `$'
@@ -2427,13 +2464,14 @@ while (0)
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode SImode
+
+#define Pmode (TARGET_LONG64 ? DImode : SImode)
 
 /* A function address in a call instruction
    is a word address (for indexing purposes)
    so give the MEM rtx a words's mode.  */
 
-#define FUNCTION_MODE SImode
+#define FUNCTION_MODE (TARGET_LONG64 ? DImode : SImode)
 
 /* Define TARGET_MEM_FUNCTIONS if we want to use calls to memcpy and
    memset, instead of the BSD functions bcopy and bzero.  */
@@ -2460,7 +2498,7 @@ while (0)
     /* Always return 0, since we don't have different sized		\
        instructions, hence different costs according to Richard		\
        Kenner */							\
-    return COSTS_N_INSNS (0);						\
+    return 0;								\
 									\
   case LABEL_REF:							\
     return COSTS_N_INSNS (2);						\
@@ -2468,7 +2506,7 @@ while (0)
   case CONST:								\
     {									\
       rtx offset = const0_rtx;						\
-      rtx symref = eliminate_constant_term (X, &offset);		\
+      rtx symref = eliminate_constant_term (XEXP (X, 0), &offset);	\
 									\
       if (GET_CODE (symref) == LABEL_REF)				\
 	return COSTS_N_INSNS (2);					\
@@ -2518,25 +2556,13 @@ while (0)
     return COSTS_N_INSNS (6);						\
 									\
   case NOT:								\
-    return COSTS_N_INSNS ((GET_MODE (X) == DImode) ? 2 : 1);		\
+    return COSTS_N_INSNS ((GET_MODE (X) == DImode && !TARGET_64BIT) ? 2 : 1); \
 									\
   case AND:								\
   case IOR:								\
   case XOR:								\
-    if (GET_MODE (X) == DImode)						\
+    if (GET_MODE (X) == DImode && !TARGET_64BIT)			\
       return COSTS_N_INSNS (2);						\
-									\
-    if (GET_CODE (XEXP (X, 1)) == CONST_INT)				\
-      {									\
-	rtx number = XEXP (X, 1);					\
-	if (SMALL_INT_UNSIGNED (number))				\
-	  return COSTS_N_INSNS (1);					\
-									\
-	else if (SMALL_INT (number))					\
-	  return COSTS_N_INSNS (2);					\
-									\
-	return COSTS_N_INSNS (3);					\
-      }									\
 									\
     return COSTS_N_INSNS (1);						\
 									\
@@ -2544,8 +2570,8 @@ while (0)
   case ASHIFTRT:							\
   case LSHIFT:								\
   case LSHIFTRT:							\
-    if (GET_MODE (X) == DImode)						\
-      return COSTS_N_INSNS ((GET_CODE (XEXP (X, 1)) == CONST_INT) ? 12 : 4); \
+    if (GET_MODE (X) == DImode && !TARGET_64BIT)			\
+      return COSTS_N_INSNS ((GET_CODE (XEXP (X, 1)) == CONST_INT) ? 4 : 12); \
 									\
     return COSTS_N_INSNS (1);						\
 									\
@@ -2565,14 +2591,14 @@ while (0)
       if (xmode == SFmode || xmode == DFmode)				\
 	return COSTS_N_INSNS (2);					\
 									\
-      if (xmode == DImode)						\
+      if (xmode == DImode && !TARGET_64BIT)				\
 	return COSTS_N_INSNS (4);					\
 									\
       return COSTS_N_INSNS (1);						\
     }									\
 									\
   case NEG:								\
-    return COSTS_N_INSNS ((GET_MODE (X) == DImode) ? 4 : 1);		\
+    return COSTS_N_INSNS ((GET_MODE (X) == DImode && !TARGET_64BIT) ? 4 : 1); \
 									\
   case MULT:								\
     {									\
@@ -2664,6 +2690,9 @@ while (0)
    not allow such copying.  */
 
 #define REGISTER_MOVE_COST(FROM, TO) 4	/* force reload to use constraints */
+
+#define MEMORY_MOVE_COST(MODE) \
+  ((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R6000) ? 6 : 4)
 
 /* A C expression for the cost of a branch instruction.  A value of
    1 is the default; other values are interpreted relative to that.  */
@@ -3105,7 +3134,7 @@ while (0)
 #define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE)				\
   mips_output_lineno (STREAM, LINE)
 
-/* The MIPS implementation uses some labels for it's own purposed.  The
+/* The MIPS implementation uses some labels for it's own purpose.  The
    following lists what labels are created, and are all formed by the
    pattern $L[a-z].*.  The machine independent portion of GCC creates
    labels matching:  $L[A-Z][0-9]+ and $L[0-9]+.
@@ -3242,7 +3271,24 @@ do {									\
   fprintf (STREAM, "\n");						\
 } while (0)
 
-/* Likewise for `char' and `short' constants.  */
+/* Likewise for 64 bit, `char' and `short' constants.  */
+
+#define ASM_OUTPUT_DOUBLE_INT(STREAM,VALUE)				\
+do {									\
+  if (TARGET_64BIT)							\
+    {									\
+      fprintf (STREAM, "\t.dword\t");					\
+      output_addr_const (STREAM, (VALUE));				\
+      fprintf (STREAM, "\n");						\
+    }									\
+  else									\
+    {									\
+      assemble_integer (operand_subword ((VALUE), 0, 0, DImode),	\
+			UNITS_PER_WORD, 1);				\
+      assemble_integer (operand_subword ((VALUE), 1, 0, DImode),	\
+			UNITS_PER_WORD, 1);				\
+    }									\
+} while (0)
 
 #define ASM_OUTPUT_SHORT(STREAM,VALUE)					\
 {									\
@@ -3266,26 +3312,18 @@ do {									\
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\
-  fprintf (STREAM, "\t.word\t$L%d\n", VALUE)
+  fprintf (STREAM, "\t%s\t$L%d\n",					\
+	   TARGET_LONG64 ? ".dword" : ".word",				\
+	   VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
    (We  do not use such vectors,
    but we must define this macro anyway.)  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, VALUE, REL)			\
-  fprintf (STREAM, "\t.word\t$L%d-$L%d\n", VALUE, REL)
-
-/* This is how to emit the initial label for switch statements.  We
-   need to put the switch labels somewhere else from the text section,
-   because the MIPS assembler gets real confused about line numbers if
-   .word's appear in the text section.  */
-
-#define ASM_OUTPUT_CASE_LABEL(STREAM, PREFIX, NUM, JUMPTABLE)		\
-{									\
-  rdata_section ();							\
-  ASM_OUTPUT_ALIGN (STREAM, 2);						\
-  ASM_OUTPUT_INTERNAL_LABEL (STREAM, PREFIX, NUM);			\
-}
+  fprintf (STREAM, "\t%s\t$L%d-$L%d\n",					\
+	   TARGET_LONG64 ? ".dword" : ".word",				\
+	   VALUE, REL)
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -3401,7 +3439,7 @@ do {									\
 
 /* What other sections we support other than the normal .data/.text.  */
 
-#define EXTRA_SECTIONS in_sdata, in_rdata, in_last_p1
+#define EXTRA_SECTIONS in_sdata, in_rdata
 
 /* Define the additional functions to select our additional sections.  */
 
@@ -3439,7 +3477,7 @@ rdata_section ()							\
 
 #define SELECT_RTX_SECTION(MODE,RTX)					\
 {									\
-  if ((GET_MODE_SIZE(MODE) / BITS_PER_UNIT) <= mips_section_threshold	\
+  if (GET_MODE_SIZE (MODE) <= mips_section_threshold			\
       && mips_section_threshold > 0)					\
     sdata_section ();							\
   else									\
@@ -3486,9 +3524,11 @@ rdata_section ()							\
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO)				\
 do									\
   {									\
-    fprintf (STREAM, "\tsubu\t%s,%s,8\n\tsw\t%s,0(%s)\n",		\
+    fprintf (STREAM, "\t%s\t%s,%s,8\n\t%s\t%s,0(%s)\n",			\
+	     TARGET_64BIT ? "dsubu" : "subu",				\
 	     reg_names[STACK_POINTER_REGNUM],				\
 	     reg_names[STACK_POINTER_REGNUM],				\
+	     TARGET_64BIT ? "sd" : "sw",				\
 	     reg_names[REGNO],						\
 	     reg_names[STACK_POINTER_REGNUM]);				\
   }									\
@@ -3502,9 +3542,11 @@ do									\
 									\
     dslots_load_total++;						\
     dslots_load_filled++;						\
-    fprintf (STREAM, "\tlw\t%s,0(%s)\n\taddu\t%s,%s,8\n",		\
+    fprintf (STREAM, "\t%s\t%s,0(%s)\n\t%s\t%s,%s,8\n",			\
+	     TARGET_64BIT ? "ld" : "lw",				\
 	     reg_names[REGNO],						\
 	     reg_names[STACK_POINTER_REGNUM],				\
+	     TARGET_64BIT ? "daddu" : "addu",				\
 	     reg_names[STACK_POINTER_REGNUM],				\
 	     reg_names[STACK_POINTER_REGNUM]);				\
 									\
@@ -3541,10 +3583,11 @@ while (0)
 /* Default definitions for size_t and ptrdiff_t.  */
 
 #ifndef SIZE_TYPE
-#define SIZE_TYPE	"unsigned int"
+#define NO_BUILTIN_SIZE_TYPE
+#define SIZE_TYPE (TARGET_LONG64 ? "long unsigned int" : "unsigned int")
 #endif
 
 #ifndef PTRDIFF_TYPE
-#define PTRDIFF_TYPE	"int"
+#define NO_BUILTIN_PTRDIFF_TYPE
+#define PTRDIFF_TYPE (TARGET_LONG64 ? "long int" : "int")
 #endif
-
