@@ -4315,9 +4315,11 @@ mips_arg_info (cum, mode, type, named, info)
 	 is a double, but $f14 if it is a single.  Otherwise, on a
 	 32-bit double-float machine, each FP argument must start in a
 	 new register pair.  */
-      even_reg_p = ((mips_abi == ABI_O64 && mode == SFmode) || FP_INC > 1);
+      even_reg_p = (GET_MODE_SIZE (mode) > UNITS_PER_HWFPVALUE
+		    || (mips_abi == ABI_O64 && mode == SFmode)
+		    || FP_INC > 1);
     }
-  else if (!TARGET_64BIT)
+  else if (!TARGET_64BIT || LONG_DOUBLE_TYPE_SIZE == 128)
     {
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  || GET_MODE_CLASS (mode) == MODE_FLOAT)
@@ -4629,7 +4631,7 @@ mips_setup_incoming_varargs (cum, mode, type, no_rtl)
 	      rtx ptr = plus_constant (virtual_incoming_args_rtx, off);
 	      emit_move_insn (gen_rtx_MEM (mode, ptr),
 			      gen_rtx_REG (mode, FP_ARG_FIRST + i));
-	      off += UNITS_PER_FPVALUE;
+	      off += UNITS_PER_HWFPVALUE;
 	    }
 	}
     }
@@ -4705,6 +4707,15 @@ mips_va_start (valist, nextarg)
      rtx nextarg;
 {
   const CUMULATIVE_ARGS *cum = &current_function_args_info;
+
+  /* ARG_POINTER_REGNUM is initialized to STACK_POINTER_BOUNDARY, but
+     since the stack is aligned for a pair of argument-passing slots,
+     and the beginning of a variable argument list may be an odd slot,
+     we have to decrease its alignment.  */
+  if (cfun && cfun->emit->regno_pointer_align)
+    while (((current_function_pretend_args_size * BITS_PER_UNIT)
+	    & (REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) - 1)) != 0)
+      REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) /= 2;
 
   if (mips_abi == ABI_EABI)
     {
@@ -4903,9 +4914,9 @@ mips_va_arg (valist, type)
 	      off = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
 
 	      /* When floating-point registers are saved to the stack,
-		 each one will take up UNITS_PER_FPVALUE bytes, regardless
+		 each one will take up UNITS_PER_HWFPVALUE bytes, regardless
 		 of the float's precision.  */
-	      rsize = UNITS_PER_FPVALUE;
+	      rsize = UNITS_PER_HWFPVALUE;
 	    }
 	  else
 	    {
@@ -4924,7 +4935,7 @@ mips_va_arg (valist, type)
 	     bytes (= PARM_BOUNDARY bits).  RSIZE can sometimes be smaller
 	     than that, such as in the combination -mgp64 -msingle-float
 	     -fshort-double.  Doubles passed in registers will then take
-	     up UNITS_PER_FPVALUE bytes, but those passed on the stack
+	     up UNITS_PER_HWFPVALUE bytes, but those passed on the stack
 	     take up UNITS_PER_WORD bytes.  */
 	  osize = MAX (rsize, UNITS_PER_WORD);
 
@@ -4998,7 +5009,10 @@ mips_va_arg (valist, type)
 	 that alignments <= UNITS_PER_WORD are preserved by the va_arg
 	 increment mechanism.  */
 
-      if (TARGET_64BIT)
+      if ((mips_abi == ABI_N32 || mips_abi == ABI_64)
+	  && TYPE_ALIGN (type) > 64)
+	align = 16;
+      else if (TARGET_64BIT)
 	align = 8;
       else if (TYPE_ALIGN (type) > 32)
 	align = 8;
@@ -7080,7 +7094,7 @@ save_restore_insns (store_p, large_reg, large_offset)
       /* Pick which pointer to use as a base register.  */
       fp_offset = cfun->machine->frame.fp_sp_offset;
       end_offset = fp_offset - (cfun->machine->frame.fp_reg_size
-				- UNITS_PER_FPVALUE);
+				- UNITS_PER_HWFPVALUE);
 
       if (fp_offset < 0 || end_offset < 0)
 	internal_error
@@ -7133,7 +7147,7 @@ save_restore_insns (store_p, large_reg, large_offset)
 	    else
 	      emit_move_insn (reg_rtx, mem_rtx);
 
-	    fp_offset -= UNITS_PER_FPVALUE;
+	    fp_offset -= UNITS_PER_HWFPVALUE;
 	  }
     }
 }
@@ -8264,11 +8278,26 @@ mips_function_value (valtype, func, mode)
     }
   mclass = GET_MODE_CLASS (mode);
 
-  if (mclass == MODE_FLOAT && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE)
+  if (mclass == MODE_FLOAT && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE)
     reg = FP_RETURN;
 
+  else if (mclass == MODE_FLOAT && mode == TFmode)
+    /* long doubles are really split between f0 and f2, not f1.  Eek.
+       Use DImode for each component, since GCC wants integer modes
+       for subregs.  */
+    return gen_rtx_PARALLEL
+      (VOIDmode,
+       gen_rtvec (2,
+		  gen_rtx_EXPR_LIST (VOIDmode,
+				     gen_rtx_REG (DImode, FP_RETURN),
+				     GEN_INT (0)),
+		  gen_rtx_EXPR_LIST (VOIDmode,
+				     gen_rtx_REG (DImode, FP_RETURN + 2),
+				     GEN_INT (GET_MODE_SIZE (mode) / 2))));
+       
+
   else if (mclass == MODE_COMPLEX_FLOAT
-	   && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE * 2)
+	   && GET_MODE_SIZE (mode) <= UNITS_PER_HWFPVALUE * 2)
     {
       enum machine_mode cmode = GET_MODE_INNER (mode);
 

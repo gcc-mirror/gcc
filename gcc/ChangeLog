@@ -1,3 +1,27 @@
+2003-01-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (UNITS_PER_HWFPVALUE): Renamed from...
+	(UNITS_PER_FPVALUE): Defined as the width of a long double, or
+	zero if no hardware floating point.
+	(LONG_DUBLE_TYPE_SIZE): Set to 128 on N32 and N64.
+	(MAX_FIXED_MODE_SIZE): Define to LONG_DOUBLE_TYPE_SIZE.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Define.
+	(BIGGEST_ALIGNMENT): Same as LONG_DOUBLE_TYPE_SIZE.
+	(FUNCTION_VALUE_REGNO_P): Set for FP_RETURN+2 on N32 and N64.
+	* config/mips/mips.c (mips_arg_info): Pass TFmode values in
+	even FP registers on N32 and N64.
+	(mips_setup_incoming_varargs): Use UNITS_PER_HWFPVALUE.
+	(mips_va_start): Adjust alignment of ARG_POINTER_REGNUM.
+	(mips_va_arg): Use UNITS_PER_HWFPVALUE.  Impose additional
+	even-register-like alignment to 128-bit arguments.
+	(save_restore_insns): Use UNITS_PER_HWFPVALUE.
+	(mips_function_value): Likewise.  Return TFmode in $f0 and $f2
+	on N32 or N64.
+	* config/mips/_tilib.c (__negti2, __ashlti3, __lshrti3): New.
+	* config/mips/t-iris6 (LIB2FUNCS_EXTRA): Add _tilib.c.
+	(TPBIT): Set to tp-bit.c.
+	(tp-bit.c): Create out of fp-bit.c.
+
 2003-01-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-parse.in: Remove '%expect 32' directive in objc mode.
