@@ -310,7 +310,8 @@
 
 ;; Describe a user's asm statement.
 (define_asm_attributes
-  [(set_attr "type" "multi")])
+  [(set_attr "type" "multi")
+   (set_attr "can_delay" "no")])
 
 ;; This mode macro allows 32-bit and 64-bit GPR patterns to be generated
 ;; from the same template.
