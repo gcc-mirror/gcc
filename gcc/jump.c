@@ -342,7 +342,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	  if (nlabel != JUMP_LABEL (insn))
 	    changed |= redirect_jump (insn, nlabel);
 
-	  if (! optimize || ! minimal)
+	  if (! optimize || minimal)
 	    continue;
 
 	  /* If a dispatch table always goes to the same place,

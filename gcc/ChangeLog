@@ -1,3 +1,8 @@
+2000-03-26  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (jump_optimize_1): Fix typo in elide optimizations
+	for minimal jump pass test.
+
 2000-03-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* integrate.c (function_cannot_inline_p): Do inline functions that
