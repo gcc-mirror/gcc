@@ -521,6 +521,10 @@ ia64_compute_frame_size (size)
   int regno;
   HARD_REG_SET mask;
 
+  /* Reload used to round the frame size to STACK_BOUNDARY.  Now we do it
+     here.  */
+  size = IA64_STACK_ALIGN (size);
+
   CLEAR_HARD_REG_SET (mask);
 
   /* Calculate space needed for general registers.  */

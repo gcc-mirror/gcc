@@ -1907,10 +1907,10 @@ do {									\
 
 #define REGISTER_MOVE_COST(FROM, TO) \
 ((FROM) == BR_REGS && (TO) == BR_REGS ? 8				\
- : ((FROM) == BR_REGS && (TO) != GENERAL_REGS				\
-    || (TO) == BR_REGS && (FROM) != GENERAL_REGS) ? 6			\
- : ((FROM) == FR_FP_REGS && (TO) == FR_INT_REGS				\
-    || (FROM) == FR_INT_REGS && (TO) == FR_FP_REGS) ? 4			\
+ : (((FROM) == BR_REGS && (TO) != GENERAL_REGS)				\
+    || ((TO) == BR_REGS && (FROM) != GENERAL_REGS)) ? 6			\
+ : (((FROM) == FR_FP_REGS && (TO) == FR_INT_REGS)			\
+    || ((FROM) == FR_INT_REGS && (TO) == FR_FP_REGS)) ? 4		\
  : 2)
 
 /* A C expression for the cost of moving data of mode M between a register and

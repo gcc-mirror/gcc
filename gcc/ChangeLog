@@ -1,3 +1,9 @@
+Sat Mar 11 23:54:26 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.c (ia64_compute_frame_size): Align size to
+	STACK_BOUNDARY.
+	* config/ia64/ia64.h (REGISTER_MOVE_COST): Add missing parentheses.
+
 2000-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppinit.c (no_arg, no_ass, no_dir, no_fil, no_mac, no_pth):
