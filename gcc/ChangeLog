@@ -1,3 +1,9 @@
+2000-09-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* configure.in: Correct test of gcc_cv_glibc.
+	* configure: Rebuilt.
+	* config.in: Rebuilt.
+
 2000-09-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_fputs): Also expand when length!=1.
@@ -199,7 +205,7 @@ Mon Sep 18 20:26:50 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 	* toplev.c (rest_of_compilation): Call purge_hard_subreg_sets to
 	remove all SETs of SUBREGs of hard registers.
- 	* function.c (purge_hard_subreg_sets): New function.
+	* function.c (purge_hard_subreg_sets): New function.
 	(purge_single_hard_subreg_set): New function.
 	* rtl.h: (purge_hard_subreg_sets): New function.
 
@@ -596,7 +602,7 @@ Sun Sep 17 10:46:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(finish_method_def): Use it.
 	(init_objc): Initialize more language-specific hooks.
 	* objc/Make-lang.in: Update dependencies.
-	
+
 2000-09-16  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* configure.in: Define macros that affect features before
@@ -619,7 +625,7 @@ Sat Sep 16 14:35:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	no_debugging_symbols.
 	* toplev.c (rest_of_compilation): Call save_for_inline.
 	* tree.h: Update comment.
-	
+
 	* stor-layout.c (place_field): Don't do anything if field or
 	its type are ERROR_MARK.
 

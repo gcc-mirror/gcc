@@ -1516,7 +1516,7 @@ rm -f conftest*
 fi
 
 echo "$ac_t""$gcc_cv_glibc" 1>&6
-if test "gcc_cv_glibc" = "yes"; then
+if test $gcc_cv_glibc" = yes; then
   cat >> confdefs.h <<\EOF
 #define _GNU_SOURCE 1
 EOF

@@ -331,9 +331,6 @@
 /* Always define this when using the GNU C Library */
 #undef _GNU_SOURCE
 
-/* Always define this */
-#undef _GNU_SOURCE
-
 /* Define if your compiler understands volatile. */
 #undef HAVE_VOLATILE
 
