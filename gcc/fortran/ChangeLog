@@ -1,3 +1,11 @@
+2005-01-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* arith.c, array.c, check.c, decl.c, expr.c, f95-lang.c,
+	gfortran.h, interface.c, intrinsic.c, io.c, iresolve.c,
+	match.c, matchexp.c, misc.c, module.c, options.c, parse.c,
+	scanner.c, simplify.c, symbol.c, trans-array.c, trans-expr.c,
+	trans-io.c, trans-stmt.c, trans.c: Update copyright.
+
 2005-01-17  Ira Rosen  <irar@il.ibm.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Call targetm.init_builtins.
