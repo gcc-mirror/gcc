@@ -1560,14 +1560,16 @@ v_pedwarn_with_decl (decl, s, ap)
      "errors" in system header files.  Sometimes fixincludes can't fix what's
      broken (eg: unsigned char bitfields - fixing it may change the alignment
      which will cause programs to mysteriously fail because the C library
-     or kernel uses the original layout).
+     or kernel uses the original layout).  There's no point in issuing a
+     warning either, it's just unnecessary noise.  */
 
-     ??? In fact, we may wish not to issue any message in this case.  */
-
-  if (flag_pedantic_errors && ! DECL_IN_SYSTEM_HEADER (decl))
-    v_error_with_decl (decl, s, ap);
-  else
-    v_warning_with_decl (decl, s, ap);
+  if (! DECL_IN_SYSTEM_HEADER (decl))
+    {
+      if (flag_pedantic_errors)
+	v_error_with_decl (decl, s, ap);
+      else
+	v_warning_with_decl (decl, s, ap);
+    }
 }
 
 void
