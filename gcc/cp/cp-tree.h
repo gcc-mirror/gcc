@@ -1598,34 +1598,15 @@ struct lang_type
 /* A chain of BINFOs for the direct and indirect virtual base classes
    that this type uses in a post-order depth-first left-to-right
    order.  (In other words, these bases appear in the order that they
-   should be initialized.)
-
-   These BINFOs are distinct from those in the TYPE_BINFO hierarchy.
-   So, given:
-
-     struct A {};
-     struct B : public A {};
-     struct C : virtual public B {};
-     struct D : virtual public B {};
-     struct E : public C, public D {};
-
-   there will be two copies of `A' and `B' in the TYPE_BINFO hierarchy
-   for `E'.  On the CLASSTYPE_VBASECLASSES list, there will be just
-   one copy of `B' (distinct from the other two) with its own copy of `A'
-   (also distinct from the copies in the TYPE_BINFO hierarchy.)  */
+   should be initialized.)  */
 #define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbases)
 
-/* The BINFO (if any) for the virtual baseclass T of the class C from
-   the CLASSTYPE_VBASECLASSES list.  */
-#define BINFO_FOR_VBASE(T, C) \
-  (binfo_member (T, CLASSTYPE_VBASECLASSES (C)))
-
 /* For a non-virtual BINFO, the BINFO itself; for a virtual BINFO, the
-   BINFO_FOR_VBASE.  C is the most derived class for the hierarchy
+   binfo_for_vbase.  C is the most derived class for the hierarchy
    containing BINFO.  */
 #define CANONICAL_BINFO(BINFO, C)		\
   (TREE_VIA_VIRTUAL (BINFO) 			\
-   ? BINFO_FOR_VBASE (BINFO_TYPE (BINFO), C) 	\
+   ? binfo_for_vbase (BINFO_TYPE (BINFO), C) 	\
    : BINFO)
 
 /* Number of direct baseclasses of NODE.  */
@@ -1718,9 +1699,7 @@ struct lang_type
    for B (in D) will have a BINFO_INHERITANCE_CHAIN pointing to
    D.  In tree.h, this pointer is described as pointing in other
    direction.  There is a different BINFO for each path to a virtual
-   base; BINFOs for virtual bases are not shared.  In addition, shared
-   versions of each of the virtual class BINFOs are stored in
-   CLASSTYPE_VBASECLASSES.
+   base; BINFOs for virtual bases are not shared.
 
    We use TREE_VIA_PROTECTED and TREE_VIA_PUBLIC, but private
    inheritance is indicated by the absence of the other two flags, not
@@ -1760,29 +1739,13 @@ struct lang_type
 /* Nonzero if this BINFO is a primary base class.
 
    In the TYPE_BINFO hierarchy, this flag is never set for a base
-   class of a non-primary virtual base because the copies of a
-   non-primary virtual base that appear in the TYPE_BINFO hierarchy do
-   not really exist.  Instead, it is the BINFOs in the
-   CLASSTYPE_VBASECLASSES list that are used.  In other words, this
-   flag is only valid for paths (given by BINFO_INHERITANCE_CHAIN)
-   that really exist in the final object.  
-
-   For example, consider:
-
-      struct A {};
-      struct B : public A { };
-      struct C : virtual public B { void f(); int i; };
-
-   `A' is the primary base class for `B'.  But, `B' is not a primary
-   base class for `C'.  So, in the copy of `A' that appears in the
-   TYPE_BINFO hierarcy for `C' does not have BINFO_PRIMARY_MARKED_P
-   set; the copy in the CLASSTYPE_VBASECLASSES list does have this
-   set.  */
+   class of a non-primary virtual base.  This flag is only valid for
+   paths (given by BINFO_INHERITANCE_CHAIN) that really exist in the
+   final object.  */
 #define BINFO_PRIMARY_MARKED_P(NODE) TREE_LANG_FLAG_5 (NODE)
 
 /* Nonzero if the virtual baseclass with the type given by this BINFO
-   is primary *somewhere* in the hierarchy.  This flag is only set on 
-   entries in the CLASSTYPE_VBASECLASSES list.  */
+   is primary *somewhere* in the hierarchy.  */
 #define BINFO_VBASE_PRIMARY_P(NODE) TREE_LANG_FLAG_6 (NODE)
 
 /* Used by various search routines.  */
@@ -4365,6 +4328,7 @@ extern tree marked_vtable_pathp                 PARAMS ((tree, void *));
 extern tree unmarked_vtable_pathp               PARAMS ((tree, void *));
 extern tree convert_pointer_to_vbase            PARAMS ((tree, tree));
 extern tree find_vbase_instance                 PARAMS ((tree, tree));
+extern tree binfo_for_vbase                     PARAMS ((tree, tree));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PARAMS ((tree));

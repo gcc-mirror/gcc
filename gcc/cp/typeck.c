@@ -5986,11 +5986,10 @@ get_delta_difference (from, to, force)
   if (to == from)
     return delta;
 
-  /* Should get_base_distance here, so we can check if any thing along the
-     path is virtual, and we need to make sure we stay
-     inside the real binfos when going through virtual bases.
-     Maybe we should replace virtual bases with
-     binfo_member (...CLASSTYPE_VBASECLASSES...)...  (mrs) */
+  /* Should get_base_distance here, so we can check if any thing along
+     the path is virtual, and we need to make sure we stay inside the
+     real binfos when going through virtual bases.  Maybe we should
+     replace virtual bases with BINFO_FOR_VBASE ... (mrs) */
   binfo = get_binfo (from, to, 1);
   if (binfo == error_mark_node)
     {
@@ -6010,7 +6009,7 @@ get_delta_difference (from, to, force)
 	return delta;
       if (binfo_from_vbase (binfo))
 	{
-	  binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), from);
+	  binfo = binfo_for_vbase (BINFO_TYPE (binfo), from);
 	  cp_warning ("pointer to member cast to virtual base `%T' will only work if you are very careful", BINFO_TYPE (binfo));
 	}
       delta = BINFO_OFFSET (binfo);

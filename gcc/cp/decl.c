@@ -13863,26 +13863,34 @@ finish_destructor_body ()
       /* Run destructors for all virtual baseclasses.  */
       if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
 	{
-	  tree vbases = nreverse (copy_list (CLASSTYPE_VBASECLASSES (current_class_type)));
-	  tree if_stmt = begin_if_stmt ();
+	  tree vbases;
+	  tree if_stmt;
+
+	  if_stmt = begin_if_stmt ();
 	  finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
 				      current_in_charge_parm,
 				      integer_two_node),
 			       if_stmt);
 
-	  while (vbases)
+	  vbases = CLASSTYPE_VBASECLASSES (current_class_type);
+	  /* The CLASSTYPE_VBASECLASSES list is in initialization
+	     order, so we have to march through it in reverse order.  */
+	  for (vbases = nreverse (copy_list (vbases));
+	       vbases;
+	       vbases = TREE_CHAIN (vbases))
 	    {
-	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (vbases)))
+	      tree vbase = TREE_VALUE (vbases);
+
+	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (vbase)))
 		{
 		  tree vb = get_vbase
-		    (BINFO_TYPE (vbases),
+		    (BINFO_TYPE (vbase),
 		     TYPE_BINFO (current_class_type));
 		  finish_expr_stmt
 		    (build_scoped_method_call
 		     (current_class_ref, vb, base_dtor_identifier,
 		      NULL_TREE));
 		}
-	      vbases = TREE_CHAIN (vbases);
 	    }
 
 	  finish_then_clause (if_stmt);
