@@ -1,5 +1,10 @@
 2004-06-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/ia64/unwind-ia64.c (uw_frame_state_for): Don't assume a
+	leaf function without unwind info at RP 0.
+
+2004-06-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/14791
 	* tree.h (enum tree_index): Add TI_FILEPTR_TYPE.
 	(fileptr_type_node): Define.
