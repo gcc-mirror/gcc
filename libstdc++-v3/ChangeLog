@@ -1,3 +1,14 @@
+2003-11-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (time_get::_M_extract_name): Add
+	ctype argument.	
+	* include/bits/locale_facets.tcc: Same, use it to allow
+	capitalized names.
+	
+	* include/bits/fstream.tcc: Spacing tweak.
+	* include/bits/istream.tcc: Same.
+	* include/bits/ostream.tcc: Same.
+
 2003-10-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get::_M_extract_via_format):

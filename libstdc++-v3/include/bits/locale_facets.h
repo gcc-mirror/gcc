@@ -1519,6 +1519,7 @@ namespace std
       void
       _M_extract_name(iter_type& __beg, iter_type& __end, int& __member,
 		      const _CharT** __names, size_t __indexlen, 
+		      const ctype<_CharT>& __ctype, 
 		      ios_base::iostate& __err) const;
 
       // Extract on a component-by-component basis, via __format argument.

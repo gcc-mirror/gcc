@@ -1533,7 +1533,7 @@ namespace std
 			  const _CharT* __format) const
     {  
       const locale __loc = __io.getloc();
-      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
+      const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
       const size_t __len = char_traits<_CharT>::length(__format);
 
@@ -1556,14 +1556,14 @@ namespace std
 		  const char_type*  __days1[7];
 		  __tp._M_days_abbreviated(__days1);
 		  _M_extract_name(__beg, __end, __tm->tm_wday, __days1, 7, 
-				  __err);
+				  __ctype, __err);
 		  break;
 		case 'A':
 		  // Weekday name [tm_wday].
 		  const char_type*  __days2[7];
 		  __tp._M_days(__days2);
 		  _M_extract_name(__beg, __end, __tm->tm_wday, __days2, 7, 
-				  __err);
+				  __ctype, __err);
 		  break;
 		case 'h':
 		case 'b':
@@ -1571,14 +1571,14 @@ namespace std
 		  const char_type*  __months1[12];
 		  __tp._M_months_abbreviated(__months1);
 		  _M_extract_name(__beg, __end, __tm->tm_mon, __months1, 12, 
-				  __err);
+				  __ctype, __err);
 		  break;
 		case 'B':
 		  // Month name [tm_mon].
 		  const char_type*  __months2[12];
 		  __tp._M_months(__months2);
 		  _M_extract_name(__beg, __end, __tm->tm_mon, __months2, 12, 
-				  __err);
+				  __ctype, __err);
 		  break;
 		case 'c':
 		  // Default time and date representation.
@@ -1697,7 +1697,7 @@ namespace std
 		      int __tmp;
 		      _M_extract_name(__beg, __end, __tmp, 
 				      __timepunct_cache<_CharT>::_S_timezones, 
-				      14, __err);
+				      14, __ctype, __err);
 		      
 		      // GMT requires special effort.
 		      if (__beg != __end && !__err && __tmp == 0
@@ -1764,6 +1764,7 @@ namespace std
     time_get<_CharT, _InIter>::
     _M_extract_name(iter_type& __beg, iter_type& __end, int& __member,
 		    const _CharT** __names, size_t __indexlen, 
+		    const ctype<_CharT>& __ctype, 
 		    ios_base::iostate& __err) const
     {
       typedef char_traits<_CharT> 		__traits_type;
@@ -1774,12 +1775,16 @@ namespace std
       bool __testvalid = true;
       const char_type* __name;
 
-      // Look for initial matches.
+      // Look for initial matches.  
+      // NB: Some of the locale data is in the form of all lowercase
+      // names, and some is in the form of initially-capitalized
+      // names. Look for both.
       if (__beg != __end)
 	{
 	  const char_type __c = *__beg;
 	  for (size_t __i1 = 0; __i1 < __indexlen; ++__i1)
-	    if (__c == __names[__i1][0])
+	    if (__c == __names[__i1][0] 
+		|| __c == __ctype.toupper(__names[__i1][0]))
 	      __matches[__nmatches++] = __i1;
 	}
       
@@ -1807,6 +1812,13 @@ namespace std
 
       if (__nmatches == 1)
 	{
+	  // If there was only one match, the first compare is redundant.
+	  if (__pos == 0)
+	    {
+	      ++__pos;
+	      ++__beg;
+	    }
+
 	  // Make sure found name is completely extracted.
 	  __name = __names[__matches[0]];
 	  const size_t __len = __traits_type::length(__name);
@@ -1866,11 +1878,12 @@ namespace std
     {
       typedef char_traits<_CharT> 		__traits_type;
       const locale __loc = __io.getloc();
-      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
+      const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
       const char_type*  __days[7];
       __tp._M_days_abbreviated(__days);
       int __tmpwday;
-      _M_extract_name(__beg, __end, __tmpwday, __days, 7, __err);
+      _M_extract_name(__beg, __end, __tmpwday, __days, 7, __ctype, __err);
 
       // Check to see if non-abbreviated name exists, and extract.
       // NB: Assumes both _M_days and _M_days_abbreviated organized in
@@ -1909,11 +1922,12 @@ namespace std
     {
       typedef char_traits<_CharT> 		__traits_type;
       const locale __loc = __io.getloc();
-      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
+      const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
       const char_type*  __months[12];
       __tp._M_months_abbreviated(__months);
       int __tmpmon;
-      _M_extract_name(__beg, __end, __tmpmon, __months, 12, __err);
+      _M_extract_name(__beg, __end, __tmpmon, __months, 12, __ctype, __err);
 
       // Check to see if non-abbreviated name exists, and extract.
       // NB: Assumes both _M_months and _M_months_abbreviated organized in
