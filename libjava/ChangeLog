@@ -1,3 +1,13 @@
+2000-06-28  Warren Levy  <warrenl@cygnus.com>
+
+	* gnu/java/security/provider/Gnu.java: New file.
+	* gnu/java/security/provider/SHA.java: New file.
+	* gnu/java/security/provider/SHA1PRNG.java: New file.
+	* Makefile.am: Added the above files.
+	* Makefile.in: Rebuilt.
+
+	* java/io/ObjectStreamClass.java (setUID): Use Gnu SHA instead of SHS.
+
 2000-06-28  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* ThreadGroup.java: Added synchronized flag to many methods.

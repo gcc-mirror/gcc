@@ -615,6 +615,9 @@ gnu/java/io/ObjectIdentityWrapper.java \
 gnu/java/lang/reflect/TypeSignature.java \
 gnu/java/lang/ArrayHelper.java \
 gnu/java/lang/ClassHelper.java \
+gnu/java/security/provider/Gnu.java \
+gnu/java/security/provider/SHA.java \
+gnu/java/security/provider/SHA1PRNG.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \

@@ -385,6 +385,9 @@ gnu/java/io/ObjectIdentityWrapper.java \
 gnu/java/lang/reflect/TypeSignature.java \
 gnu/java/lang/ArrayHelper.java \
 gnu/java/lang/ClassHelper.java \
+gnu/java/security/provider/Gnu.java \
+gnu/java/security/provider/SHA.java \
+gnu/java/security/provider/SHA1PRNG.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
@@ -963,7 +966,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/io/NullOutputStream.P \
 .deps/gnu/java/io/ObjectIdentityWrapper.P \
 .deps/gnu/java/lang/ArrayHelper.P .deps/gnu/java/lang/ClassHelper.P \
-.deps/gnu/java/lang/reflect/TypeSignature.P .deps/interpret.P \
+.deps/gnu/java/lang/reflect/TypeSignature.P \
+.deps/gnu/java/security/provider/Gnu.P \
+.deps/gnu/java/security/provider/SHA.P \
+.deps/gnu/java/security/provider/SHA1PRNG.P .deps/interpret.P \
 .deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
 .deps/java/awt/AWTException.P .deps/java/awt/ActiveEvent.P \
 .deps/java/awt/Adjustable.P .deps/java/awt/BorderLayout.P \
