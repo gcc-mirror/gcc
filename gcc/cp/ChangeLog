@@ -1,3 +1,10 @@
+2003-05-07  Richard Henderson  <rth@redhat.com>
+
+        PR c++/10570
+        * cfns.gperf: Comment out POSIX thread cancellation points,
+        plus abort and raise.
+        * cfns.h: Regenerate.
+
 2003-05-07  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_conditional_expr): Don't assume that the folded

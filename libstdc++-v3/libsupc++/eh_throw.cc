@@ -1,5 +1,5 @@
 // -*- C++ -*- Exception handling routines for throwing.
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of GNU CC.
 //
@@ -90,12 +90,15 @@ __cxa_rethrow ()
   if (header)
     {
       // Tell __cxa_end_catch this is a rethrow.
-      header->handlerCount = -header->handlerCount;
+      if (header->unwindHeader.exception_class != __gxx_exception_class)
+	globals->caughtExceptions = 0;
+      else
+	header->handlerCount = -header->handlerCount;
 
 #ifdef _GLIBCPP_SJLJ_EXCEPTIONS
-      _Unwind_SjLj_RaiseException (&header->unwindHeader);
+      _Unwind_SjLj_Resume_or_Rethrow (&header->unwindHeader);
 #else
-      _Unwind_RaiseException (&header->unwindHeader);
+      _Unwind_Resume_or_Rethrow (&header->unwindHeader);
 #endif
   
       // Some sort of unwinding error.  Note that terminate is a handler.

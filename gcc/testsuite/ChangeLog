@@ -1,3 +1,13 @@
+2003-05-07  Richard Henderson  <rth@redhat.com>
+
+        PR c++/10570
+        * g++.dg/eh/forced1.C: Expect catch-all handlers to run.
+        Verify exception_cleanup not called for rethrows.
+        * g++.dg/eh/forced2.C: Test that exception_cleanup is called
+        when exiting catch block without rethrowing.
+        * g++.dg/eh/forced3.C: New.
+        * g++.dg/eh/forced4.C: New.
+
 2003-05-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/20030505.c: Fix triplet.
