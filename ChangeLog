@@ -1,3 +1,8 @@
+Tue Feb  2 20:05:05 1999  Catherine Moore  <clm@cygnus.com>
+ 
+        * config.sub (oabi):  Recognize.
+        * configure.in (arm-*-oabi):  Handle.
+
 Sat Jan 30 06:09:00 1999  Robert Lipe  (robertlipe@usa.net)
 
 	* config.guess: Improve detection of i686 on UnixWare 7.

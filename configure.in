@@ -578,6 +578,18 @@ case "${target}" in
   arm-*-coff*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
+  arm-*-elf*)
+    noconfigdirs="$noconfigdirs target-libgloss"
+    if [ x${is_cross_compiler} != xno ] ; then
+           target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
+    fi
+    ;;
+  arm-*-oabi*)
+    noconfigdirs="$noconfigdirs target-libgloss"
+    if [ x${is_cross_compiler} != xno ] ; then
+           target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
+    fi
+    ;;
   c4x-*-*)
     noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio target-librx target-libgloss"
     ;;
