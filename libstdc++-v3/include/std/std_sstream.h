@@ -133,15 +133,11 @@ namespace std
       __string_type
       str() const
       {
+	const bool __testout = this->_M_mode & ios_base::out;
 	__string_type __ret = _M_string;
-	if (this->_M_mode & ios_base::out)
-	  {
-	    const __size_type __nlen = this->_M_out_lim
-                                       - this->_M_out_beg;
-	    if (__nlen)
-	      __ret = __string_type(this->_M_out_beg, 
-				    this->_M_out_beg + __nlen);
-	  }
+	if (__testout && this->_M_out_beg < this->_M_out_lim)
+	  __ret = __string_type(this->_M_out_beg,
+				this->_M_out_lim);
 	return __ret;
       }
 
