@@ -25,7 +25,7 @@
 <h1>Contents</h1>
 <ul>
    <li><a href="#2">The Standard C++ header files</a>
-   <li><a href="#3">Thread-safety</a>
+   <li><a href="#3">The Standard C++ library and multithreading</a>
    <li><a href="#4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a>
    <li><a href="porting-howto.html">Porting HOWTO</a>
 </ul>
@@ -50,59 +50,77 @@
    </p>
 
 <hr>
-<h2><a name="3">Thread-safety</a></h2>
-   <p>This is a thorny issue that gets brought up on the libstdc++-v3
-      and gcc mailing lists on a regular basis (probably by a cron job).
-      This entry will mention a very little bit about the general MT
-      issues with libstdc++.  The latest status and quick notes will be
-      in FAQ 5.6.  Some discussion about thread-safe containers will be
-      in section 6.8 (the HOWTOs on containers).  This section only applies
-      when gcc and libstdc++-v3 were configured with --enable-threads.
+<h2><a name="3">The Standard C++ library and multithreading</a></h2>
+   <p>This section discusses issues surrounding the proper compilation
+      of multithreaded applications which use the Standard C++
+      library.  This information is gcc-specific since the C++
+      standard does not address matters of multithreaded applications.
+      Unless explicitly prefaced, all information in this section is
+      current as of the gcc 3.0 release and all later point releases.
    </p>
-   <p>The libstdc++ code (all of it, not just the containers) has been
-      designed so that thread-safety will be easily possible.  The first
-      (!) problem is finding a <em>fast</em> method of implementation
-      portable to all platforms.  A minor problem that pops up every so
-      often is different interpretations of what &quot;thread-safe&quot;
-      means for a library (not a general program).  We currently use the
-      <a href="http://www.sgi.com/tech/stl/thread_safety.html">same
-      definition that SGI</a> uses for their STL subset.
-      <em>Please see the many cautions given in
-      <a href="../23_containers/howto.html">HOWTOs on containers</a>.</em>
+   <p>Earlier gcc releases had a somewhat different approach to
+      threading configuration and proper compilation.  Before gcc 3.0,
+      configuration of the threading model was dictated by compiler
+      command-line options and macros (both of which were somewhat
+      thread-implementation and port-specific).  There were no
+      guarantees related to being able to link code compiled with one
+      set of options and macro setting with another set.  For gcc 3.0,
+      configuration of the threading model used with libraries and
+      user-code is performed when gcc is configured and built using
+      the --enable-threads and --disable-threads options.  The ABI is
+      stable for symbol name-mangling and limited functional
+      compatibility exists between code compiled under different
+      threading models.
    </p>
-   <p>Here is another attempt at explaining the dangers of using the
-      STL with threading support without understanding some important
-      details.  The STL implementation is currently configured to use
-      the high-speed caching memory allocator.  If you absolutely
-      think you must change this on a global basis for your platform
-      to support multi-threading, then please consult all commentary
-      in include/bits/c++config and the HOWTOs on containers.  Be
-      fully aware that you may change the external or internal ABI of
-      libstdc++-v3 when you provide -D__USE_MALLOC on the command line
-      or make a change to that configuration file.
+   <p>All normal disclaimers aside, multithreaded C++ application are
+      only supported when libstdc++ and all user code was built with
+      compilers which report (via <em>gcc/g++ -v</em>) the same thread
+      model and that model is not <em>single</em>.  As long as your
+      final application is actually single-threaded, then it should be
+      safe to mix user code built with a thread model of
+      <em>single</em> with a libstdc++ and other C++ libraries built
+      with another thread model useful on the platform.  Other mixes
+      may or may not work but are not considered supported.  (Thus, if
+      you distribute a shared C++ library in binary form only, it may
+      be best to compile it with a gcc configured with
+      --enable-threads for maximal interchangeability and usefulness
+      with a user population that may have built gcc with either
+      --enable-threads or --disable-threads.)
    </p>
-   <p>If you don't like caches of objects being retained inside the STL, then
-      you might be tempted to define __USE_MALLOC either on the command
-      line or by rebuilding c++config.h.  Please note, once you define
-      __USE_MALLOC, only the malloc allocator is visible to application code
-      (i.e. the typically higher-speed allocator is not even available
-      in this configuration).  There is a better way:  It is possible
-      to force the malloc-based allocator on a per-case-basis for some
-      application code even when the above macro symbol is not defined.
-      The library team generally believes that this is a better way to tune
-      an application for high-speed using this implementation of the STL.
-      Here is one possible example displaying the forcing of the malloc-based
-      allocator over the typically higher-speed default allocator:
-      <pre>
-      std::list &lt;my_type, std::malloc_alloc&gt;  my_malloc_based_list;</pre>
+   <p>When you link a multithreaded application, you will probably
+      need to add a library or flag to g++.  This is a very
+      non-standardized area of gcc across ports.  Some ports support a
+      special flag (the spelling isn't even standardized yet) to add
+      all required macros to a compilation (if any such flags are
+      required then you must provide the flag for all compilations not
+      just linking) and link-library additions and/or replacements at
+      link time.  The documentation is weak.  Here is a quick summary
+      to display how ad hoc this is: On Solaris, both -pthreads and
+      -threads (with subtly different meanings) are honored.  On OSF,
+      -pthread and -threads (with subtly different meanings) are
+      honored.  On Linux/i386, -pthread is honored.  On FreeBSD,
+      -pthread is honored.  Some other ports use other switches.
+      AFAIK, none of this is properly documented anywhere other than
+      in ``gcc -dumpspecs'' (look at lib and cpp entries).
    </p>
-   <p>A recent journal article has described &quot;atomic integer
-      operations,&quot; which would allow us to, well, perform updates
-      on integers atomically, and without requiring an explicit mutex
-      lock.  This appears promising, but the major difficulty is that
-      these operations &quot;may not be available on all systems, and
-      if they are, may have different interfaces.&quot; [quoting from
-      mailing list messages]
+   <p>See <a href="../faq/index.html#3">FAQ</a> (general overview), <a
+      href="../23_containers/howto.html#3">23</a> (containers), and <a
+      href="../27_io/howto.html#9">27</a> (I/O) for more information.
+   </p>
+   <p>The libstdc++-v3 library (unlike libstdc++-v2, all of it, not
+      just the STL) has been designed so that multithreaded
+      applications using it may be written.  The first problem is
+      finding a <em>fast</em> method of implementation portable to all
+      platforms.  Due to historical reasons, some of the library is
+      written against per-CPU-architecture spinlocks and other parts
+      against the gthr.h abstraction layer which is provided by gcc.
+      A minor problem that pops up every so often is different
+      interpretations of what &quot;thread-safe&quot; means for a
+      library (not a general program).  We currently use the <a
+      href="http://www.sgi.com/tech/stl/thread_safety.html">same
+      definition that SGI</a> uses for their STL subset.  However, the
+      exception for read-only containers only applies to the STL
+      components.
    </p>
    <p>Here is a small link farm to threads (no pun) in the mail archives
       that discuss the threading problem.  Each link is to the first

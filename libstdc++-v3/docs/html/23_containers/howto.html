@@ -242,6 +242,40 @@
       mechanism.  Trying to provide a catch-all general template
       solution would probably be more trouble than it's worth.
    </p>
+   <p>The STL implementation is currently configured to use the
+      high-speed caching memory allocator.  If you absolutely think
+      you must change this on a global basis for your platform to
+      better support multi-threading, then please consult all
+      commentary in include/bits/c++config.  (Explicit warning since
+      so many people post after getting confused while attempting
+      this:) Adding -D__USE_MALLOC on the command line is not a good
+      idea.  Related to threading or otherwise, the current
+      recommendation is that users not add any macro defines on the
+      command line to enable features out of libstdc++-v3.  There is
+      no condition under which it will help you without causing other
+      issues to perhaps raise up (possible linkage/ABI problems).  In
+      particular, __USE_MALLOC should only be added to a libstdc++-v3
+      configuration file, include/bits/c++config (where such user
+      action is cautioned against), and the entire library should be
+      rebuilt.  If you do not, then you might be violating the
+      one-definition rule of C/C++ and you might cause yourself untold
+      problems.  If you find any platform where gcc reports a
+      threading model other than single and where libstdc++-v3 builds
+      a buggy container allocator when used with threads unless you
+      define __USE_MALLOC, we want to hear about it ASAP.  In the
+      past, correctness was the main reason people were led to believe
+      that they should define __USE_MALLOC when using threads.
+   </p>
+   <p>There is a better way (not standardized yet): It is possible to
+      force the malloc-based allocator on a per-case-basis for some
+      application code.  The library team generally believes that this
+      is a better way to tune an application for high-speed using this
+      implementation of the STL.  Here is one possible example
+      displaying the forcing of the malloc-based allocator over the
+      typically higher-speed default allocator:
+      <pre>
+      std::list &lt;my_type, std::__malloc_alloc_template&lt;0&gt; &gt;  my_malloc_based_list;</pre>
+   </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
