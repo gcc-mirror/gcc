@@ -1511,10 +1511,12 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
 {
   int n_baseclasses;
   int i;
+  int seen_nearly_empty_base_p;
   tree binfos;
 
   binfos = TYPE_BINFO_BASETYPES (t);
   n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
+  seen_nearly_empty_base_p = 0;
 
   /* An aggregate cannot have baseclasses.  */
   CLASSTYPE_NON_AGGREGATE (t) |= (n_baseclasses != 0);
@@ -1577,6 +1579,20 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
 	      cp_pedwarn ("in class without a constructor");
 	    }
 	}
+
+      /* If the base class is not empty or nearly empty, then this
+	 class cannot be nearly empty.  */
+      if (!CLASSTYPE_NEARLY_EMPTY_P (basetype) && !is_empty_class (basetype))
+	CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
+      /* And if there is more than one nearly empty base, then the
+	 derived class is not nearly empty either.  */
+      else if (CLASSTYPE_NEARLY_EMPTY_P (basetype) 
+	       && seen_nearly_empty_base_p)
+	CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
+      /* If this is the first nearly empty base class, then remember
+	 that we saw it.  */
+      else if (CLASSTYPE_NEARLY_EMPTY_P (basetype))
+	seen_nearly_empty_base_p = 1;
 
       /* A lot of properties from the bases also apply to the derived
 	 class.  */
@@ -3480,7 +3496,12 @@ check_field_decls (t, access_decls, empty_p,
 	       non-empty.  */
 	    ;
 	  else
-	    *empty_p = 0;
+	    {
+	      /* The class is non-empty.  */
+	      *empty_p = 0;
+	      /* The class is not even nearly empty.  */
+	      CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
+	    }
 	}
 
       if (TREE_CODE (x) == USING_DECL)
@@ -3986,6 +4007,10 @@ check_bases_and_members (t, empty_p)
   cant_have_const_ctor = 0;
   no_const_asn_ref = 0;
 
+  /* Assume that the class is nearly empty; we'll clear this flag if
+     it turns out not to be nearly empty.  */
+  CLASSTYPE_NEARLY_EMPTY_P (t) = 1;
+
   /* Check all the base-classes. */
   check_bases (t, &cant_have_default_ctor, &cant_have_const_ctor,
 	       &no_const_asn_ref);
@@ -3998,6 +4023,11 @@ check_bases_and_members (t, empty_p)
 
   /* Check all the method declarations.  */
   check_methods (t);
+
+  /* A nearly-empty class has to be polymorphic; a nearly empty class
+     contains a vptr.  */
+  if (!TYPE_POLYMORPHIC_P (t))
+    CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
 
   /* Do some bookkeeping that will guide the generation of implicitly
      declared member functions.  */

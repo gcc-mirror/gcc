@@ -1218,6 +1218,7 @@ struct lang_type
 
   unsigned com_interface : 1;
   unsigned non_pod_class : 1;
+  unsigned nearly_empty_p : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1226,7 +1227,7 @@ struct lang_type
   /* There are six bits left to fill out a 32-bit word.  Keep track of
      this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 6;
+  unsigned dummy : 5;
       
   int vsize;
   int vfield_parent;
@@ -1460,6 +1461,11 @@ struct lang_type
 
 /*  Nonzero means that this class type is a non-POD class.  */
 #define CLASSTYPE_NON_POD_P(NODE) (TYPE_LANG_SPECIFIC (NODE)->non_pod_class)
+
+/* Nonzero if this class is "nearly empty", i.e., contains only a
+   virtual function table pointer.  */
+#define CLASSTYPE_NEARLY_EMPTY_P(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE)->nearly_empty_p)
 
 /* Nonzero means that this type is meant for communication via COM.  */
 #define CLASSTYPE_COM_INTERFACE(NODE) \
