@@ -543,8 +543,8 @@ static GTY(()) tree src_parse_roots[1];
 			if_then_else_statement_nsi while_statement_nsi
 			for_statement_nsi statement_expression_list for_init
 			for_update statement_expression expression_statement
-			primary_no_new_array expression primary
-			array_creation_expression array_type
+			primary_no_new_array expression primary array_type
+			array_creation_initialized array_creation_uninitialized
 			class_instance_creation_expression field_access
 			method_invocation array_access something_dot_new
 			argument_list postfix_expression while_expression
@@ -1945,7 +1945,8 @@ finally:
 /* 19.12 Production from 15: Expressions  */
 primary:
 	primary_no_new_array
-|	array_creation_expression
+|	array_creation_uninitialized
+|	array_creation_initialized
 ;
 
 primary_no_new_array:
@@ -2106,7 +2107,7 @@ argument_list:
 		{yyerror ("Missing term"); RECOVER;}
 ;
 
-array_creation_expression:
+array_creation_uninitialized:
 	NEW_TK primitive_type dim_exprs
 		{ $$ = build_newarray_node ($2, $3, 0); }
 |	NEW_TK class_or_interface_type dim_exprs
@@ -2115,9 +2116,16 @@ array_creation_expression:
 		{ $$ = build_newarray_node ($2, $3, pop_current_osb (ctxp));}
 |	NEW_TK class_or_interface_type dim_exprs dims
 		{ $$ = build_newarray_node ($2, $3, pop_current_osb (ctxp));}
+|	NEW_TK error CSB_TK
+		{yyerror ("'[' expected"); DRECOVER ("]");}
+|	NEW_TK error OSB_TK
+		{yyerror ("']' expected"); RECOVER;}
+;
+
+array_creation_initialized:
         /* Added, JDK1.1 anonymous array. Initial documentation rule
            modified */
-|	NEW_TK class_or_interface_type dims array_initializer
+	NEW_TK class_or_interface_type dims array_initializer
 		{
 		  char *sig;
 		  int osb = pop_current_osb (ctxp);
@@ -2271,6 +2279,8 @@ array_access:
 		{ $$ = build_array_ref ($2.location, $1, $3); }
 |	primary_no_new_array OSB_TK expression CSB_TK
 		{ $$ = build_array_ref ($2.location, $1, $3); }
+|	array_creation_initialized OSB_TK expression CSB_TK
+		{ $$ = build_array_ref ($2.location, $1, $3); }
 |	name OSB_TK error
 		{
 		  yyerror ("Missing term and ']' expected");
@@ -2287,6 +2297,16 @@ array_access:
 		  DRECOVER(array_access);
 		}
 |	primary_no_new_array OSB_TK expression error
+		{
+		  yyerror ("']' expected");
+		  DRECOVER(array_access);
+		}
+|	array_creation_initialized OSB_TK error
+		{
+		  yyerror ("Missing term and ']' expected");
+		  DRECOVER(array_access);
+		}
+|	array_creation_initialized OSB_TK expression error
 		{
 		  yyerror ("']' expected");
 		  DRECOVER(array_access);
