@@ -383,7 +383,7 @@ extern int flag_pic;				/* -fpic */
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
 
-/* A bitfield declared as `int' forces `int' alignment for the struct.  */
+/* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /* Maximum size (in bits) to use for the largest integral type that

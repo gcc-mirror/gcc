@@ -224,7 +224,7 @@ extern int target_flags;
    structure layouts.  */
 #define EMPTY_FIELD_BOUNDARY 16
 
-/* A bitfield declared as `int' forces `int' alignment for the struct.  */
+/* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS  0
 
 /* No data type wants to be aligned rounder than this.

@@ -1858,9 +1858,9 @@
 ;;; ??? This pattern is bogus.  If operand3 has bits outside the range
 ;;; represented by the bitfield, then this will produce incorrect results.
 ;;; Somewhere, the value needs to be truncated.  On targets like the m68k,
-;;; which have a real bitfield insert instruction, the truncation happens
-;;; in the bitfield insert instruction itself.  Since arm does not have a
-;;; bitfield insert instruction, we would have to emit code here to truncate
+;;; which have a real bit-field insert instruction, the truncation happens
+;;; in the bit-field insert instruction itself.  Since arm does not have a
+;;; bit-field insert instruction, we would have to emit code here to truncate
 ;;; the value before we insert.  This loses some of the advantage of having
 ;;; this insv pattern, so this pattern needs to be reevalutated.
 

@@ -1729,7 +1729,7 @@ mcore_expand_insv (operands)
       return 1;
     }
 
-  /* Look at some bitfield placements that we aren't interested
+  /* Look at some bit-field placements that we aren't interested
      in handling ourselves, unless specifically directed to do so.  */
   if (! TARGET_W_FIELD)
     return 0;		/* Generally, give up about now.  */

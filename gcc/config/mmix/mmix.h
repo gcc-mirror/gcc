@@ -261,7 +261,7 @@ extern int target_flags;
 
 
 /* Node: Storage Layout */
-/* I see no bitfield instructions.  Anyway, the common order is from low
+/* I see no bit-field instructions.  Anyway, the common order is from low
    to high, as the power of two, hence little-endian.  */
 #define BITS_BIG_ENDIAN 0
 #define BYTES_BIG_ENDIAN 1
