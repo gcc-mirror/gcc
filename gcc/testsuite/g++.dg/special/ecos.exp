@@ -29,15 +29,15 @@ load_lib g++-dg.exp
 ###########
 
 dg-init
-set lines [g++_target_compile "$srcdir/$subdir/conpr-1.C" "$objdir/a.out" executable ""]
+set lines [g++_target_compile "$srcdir/$subdir/conpr-1.C" "$objdir/conpr-1.exe" executable ""]
 if [string match "*init_priority*" $lines] then {
     xfail "conpr-1.C"
-    file delete $objdir/a.out
+    file delete $objdir/conpr-1.exe
 } elseif ![string match "" $lines] then {
     fail "conpr-1.C"
 } else {
     dg-runtest "$srcdir/$subdir/conpr-1.C" "" "" 
-    file delete $objdir/a.out
+    file delete $objdir/conpr-1.exe
 }
 dg-finish
 
@@ -89,15 +89,15 @@ dg-finish
 ###########
 
 dg-init
-set lines [g++_target_compile "$srcdir/$subdir/initp1.C" "$objdir/a.out" executable ""]
+set lines [g++_target_compile "$srcdir/$subdir/initp1.C" "$objdir/initp1.exe" executable ""]
 if [string match "*init_priority*" $lines] then {
     xfail "initp1.C"
-    file delete $objdir/a.out
+    file delete $objdir/initp1.exe
 } elseif ![string match "" $lines] then {
     fail "initp1.C"
 } else {
     dg-runtest "$srcdir/$subdir/initp1.C" "" ""
-    file delete $objdir/a.out
+    file delete $objdir/initp1.exe
 }
 dg-finish
 
