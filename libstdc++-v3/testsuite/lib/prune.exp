@@ -19,7 +19,7 @@
 proc prune_g++_output { text } {
 
     # Cygwin warns about -ffunction-sections
-    regsub -all "(^|\n)\[^\n\].*: -ffunction-sections may affect debugging on some targets.*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: -ffunction-sections may affect debugging on some targets\[^\n\]*" $text "" text
 
     return $text
 }

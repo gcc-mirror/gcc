@@ -1,3 +1,8 @@
+2002-01-03  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* testsuite/lib/prune.exp: Correct regular expression for
+	-ffunction-sections
+
 2002-01-02  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/stl_algo.h (upper_bound, equal_range, binary_search):
