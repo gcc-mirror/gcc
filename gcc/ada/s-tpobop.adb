@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2004, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -537,6 +537,17 @@ package body System.Tasking.Protected_Objects.Operations is
            (Storage_Error'Identity, "not enough ATC nesting levels");
       end if;
 
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if Detect_Blocking
+        and then Self_ID.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       Initialization.Defer_Abort (Self_ID);
       Lock_Entries (Object, Ceiling_Violation);
 
@@ -887,6 +898,17 @@ package body System.Tasking.Protected_Objects.Operations is
       if Self_Id.ATC_Nesting_Level = ATC_Level'Last then
          Raise_Exception (Storage_Error'Identity,
            "not enough ATC nesting levels");
+      end if;
+
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if Detect_Blocking
+        and then Self_Id.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
       end if;
 
       if Runtime_Traces then
