@@ -2451,7 +2451,7 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
 /* Generate code for RRSPACING (X) intrinsic function.
    RRSPACING (X) = |X * POW (2, -e)| * POW (2, p) = |FRACTION (X)| * POW (2, p)
 
-   So the result's exponenet is p. And if X is normalized, X's fraction part
+   So the result's exponent is p. And if X is normalized, X's fraction part
    is the result's fraction. If X is denormalized, to get the X's fraction we
    shift X's fraction part to left until the first '1' is removed.
    
