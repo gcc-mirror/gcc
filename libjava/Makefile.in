@@ -2441,6 +2441,7 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
+	"CPPFLAGS=$(CPPFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
 	"INSTALL=$(INSTALL)" \
@@ -2771,8 +2772,6 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/xlib/natXImage.P .deps/gnu/gcj/xlib/natXUnmapEvent.P \
 .deps/gnu/java/awt/BitMaskExtent.P .deps/gnu/java/awt/Buffers.P \
 .deps/gnu/java/awt/ComponentDataBlitOp.P \
-.deps/gnu/java/awt/EmbeddedWindow.P \
-.deps/gnu/java/awt/EmbeddedWindowSupport.P \
 .deps/gnu/java/awt/EventModifier.P \
 .deps/gnu/java/awt/GLightweightPeer.P \
 .deps/gnu/java/awt/image/ImageDecoder.P \
