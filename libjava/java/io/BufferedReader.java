@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -128,9 +128,9 @@ public class BufferedReader extends Reader
     */
   public void mark(int readLimit) throws IOException
   {
-    checkStatus();
     synchronized (lock)
       {
+	checkStatus();
 	// In this method we need to be aware of the special case where
 	// pos + 1 == limit.  This indicates that a '\r' was the last char
 	// in the buffer during a readLine.  We'll want to maintain that
@@ -185,9 +185,9 @@ public class BufferedReader extends Reader
     */
   public void reset() throws IOException
   {
-    checkStatus();
     synchronized (lock)
       {
+	checkStatus();
 	if (markPos < 0)
 	  throw new IOException("mark never set or invalidated");
 
@@ -215,9 +215,9 @@ public class BufferedReader extends Reader
     */
   public boolean ready() throws IOException
   {
-    checkStatus();
     synchronized (lock)
       {
+	checkStatus();
 	return pos < limit || in.ready();
       }
   }
@@ -242,9 +242,9 @@ public class BufferedReader extends Reader
     */
   public int read(char[] buf, int offset, int count) throws IOException
   {
-    checkStatus();
     synchronized (lock)
       {
+	checkStatus();
 	// Once again, we need to handle the special case of a readLine
 	// that has a '\r' at the end of the buffer.  In this case, we'll
 	// need to skip a '\n' if it is the next char to be read.
@@ -329,9 +329,9 @@ public class BufferedReader extends Reader
   
   public int read() throws IOException
   {
-    checkStatus();
     synchronized (lock)
       {
+	checkStatus();
 	if (pos >= limit && fill () <= 0)
 	  return -1;
 	return buffer[pos++];
@@ -444,11 +444,11 @@ public class BufferedReader extends Reader
     */
   public long skip(long count) throws IOException
   {
-    checkStatus();
-    if (count <= 0)
-      return 0;
     synchronized (lock)
       {
+	checkStatus();
+	if (count <= 0)
+	  return 0;
 	// Yet again, we need to handle the special case of a readLine
 	// that has a '\r' at the end of the buffer.  In this case, we need
 	// to ignore a '\n' if it is the next char to be read.
