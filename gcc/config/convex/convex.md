@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Convex Version
-;;  Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
+;;  Copyright (C) 1988, 1994 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1094,6 +1094,8 @@
    shf %2,%0"
   [(set_attr "type" "shfl,shfw")])
 
+;; but C2 left shift by a constant is faster via multiply
+
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashift:SI (match_operand:SI 1 "register_operand" "0")
@@ -1453,21 +1455,21 @@
   "* return output_cmp (operands[0], operands[1], 'b');")
 
 (define_insn ""
-  [(set (cc0) (match_operand:QI 0 "register_operand" "d,a"))
-   (clobber (match_scratch:QI 1 "=d,a"))]
+  [(set (cc0) (match_operand:QI 0 "register_operand" "d"))
+   (clobber (match_scratch:QI 1 "=d"))]
   "next_insn_tests_no_inequality (insn)"
   "* return output_cmp (operands[0], operands[1], 'B');")
 
 (define_insn ""
-  [(set (cc0) (subreg (match_operand:QI 0 "register_operand" "d,a") 0))
-   (clobber (match_scratch:QI 1 "=d,a"))]
+  [(set (cc0) (subreg (match_operand:QI 0 "register_operand" "d") 0))
+   (clobber (match_scratch:QI 1 "=d"))]
   "next_insn_tests_no_inequality (insn)"
   "* return output_cmp (operands[0], operands[1], 'B');")
 
 (define_insn ""
   [(set (cc0)
-	(zero_extend (subreg (match_operand:QI 0 "register_operand" "d,a") 0)))
-   (clobber (match_scratch:QI 1 "=d,a"))]
+	(zero_extend (subreg (match_operand:QI 0 "register_operand" "d") 0)))
+   (clobber (match_scratch:QI 1 "=d"))]
   "next_insn_tests_no_inequality (insn)"
   "* return output_cmp (operands[0], operands[1], 'B');")
 
@@ -1553,12 +1555,12 @@
 {
   if (which_alternative == 0)
     {
-      output_cmp (operands[0], constm1_rtx, 'W');
-      return \"add.w #-1,%0\";
+      output_cmp (operands[0], constm1_rtx, 'H');
+      return \"add.h #-1,%0\";
     }
   else
     {
-      output_cmp (gen_rtx (REG, HImode, 7), constm1_rtx, 'W');
+      output_cmp (gen_rtx (REG, HImode, 7), constm1_rtx, 'H');
       return \"psh.w s7\;ld.h %0,s7\;add.h #-1,s7\;st.h s7,%0\;pop.w s7\";
     }
 }")
@@ -1575,12 +1577,12 @@
 {
   if (which_alternative == 0)
     {
-      output_cmp (operands[0], const0_rtx, 'W');
-      return \"add.w #-1,%0\";
+      output_cmp (operands[0], const0_rtx, 'H');
+      return \"add.h #-1,%0\";
     }
   else
     {
-      output_cmp (gen_rtx (REG, HImode, 7), const0_rtx, 'W');
+      output_cmp (gen_rtx (REG, HImode, 7), const0_rtx, 'H');
       return \"psh.w s7\;ld.h %0,s7\;add.h #-1,s7\;st.h s7,%0\;pop.w s7\";
     }
 }")

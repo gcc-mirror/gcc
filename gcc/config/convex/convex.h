@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Convex version.
-   Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1487,20 +1487,10 @@ bss_section ()								\
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)				\
     print_operand_address (FILE, ADDR)
 
-/* Definitions for g++.  */
-
 /* Do not put out GNU stabs for constructors and destructors.
    ld bounces them.  */
 
 #define FASCIST_ASSEMBLER
-
-/* Convex user addresses are negative, so use positive numbers
-   to mean `vtable index'.  */
-
-#define VTABLE_USES_MASK
-#define VINDEX_MAX ((unsigned) 0x80000000)
-#define SET_DECL_VINDEX(DECL, INDEX) \
-  (DECL_VINDEX (DECL) = (INDEX))
 
 /* __gcc_cleanup is loader-aliased to __ap$do_registered_functions if we
    are linking against standard libc, 0 if old (-traditional) libc. */
@@ -1513,12 +1503,6 @@ bss_section ()								\
   _cleanup ();								\
 }
 
-/* cexp.y uses LONG_TYPE_SIZE which depends on target_flags, which it
-   doesn't have.  Until some better way exists, provide a def here. */
-#ifdef YYBISON
-int target_flags;
-#endif
-
 /* Header for convex.c.
    Here at the end so we can use types defined above. */
 
