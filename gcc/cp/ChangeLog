@@ -1,3 +1,7 @@
+Tue Sep 22 21:01:19 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* friend.c (do_friend): Make warning a full sentence.
+
 1998-09-22  Mark Mitchell  <mark@markmitchell.com>
 
 	* parse.y (component_decl_list): Improve error-recovery.
