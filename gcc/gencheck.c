@@ -20,13 +20,16 @@ Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include "hconfig.h"
-#include "system.h"
 
-#define DEFTREECODE(SYM, NAME, TYPE, LEN)   STRINGIFY(SYM),
+#ifdef __STDC__
+#define DEFTREECODE(SYM, NAME, TYPE, LEN)	#SYM,
+#else
+#define DEFTREECODE(SYM, NAME, TYPE, LEN)	"SYM",
+#endif
 
 char *tree_codes[] = {
 #include "tree.def"
-(char*)0
+(char *) 0
 };
 
 void usage ()
@@ -39,10 +42,12 @@ int main (argc, argv)
      char *argv[];
 {
   int i;
+
   switch (argc)
     {
     case 1:
       break;
+
     default:
       usage ();
       exit (1);
