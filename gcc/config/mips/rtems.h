@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a MIPS using ELF.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -23,4 +23,4 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dmips -DMIPSEB -D_mips -D_MIPSEB \
-   -D__rtems__ -Asystem=rtems"
+   -D__rtems__ -D__USE_INIT_FINI__ -Asystem=rtems"

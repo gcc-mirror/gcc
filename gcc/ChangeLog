@@ -1,3 +1,9 @@
+2003-01-13	Joel Sherrill <joel@OARcorp.com>
+
+	* config/mips/rtems.h: Predefine __USE_INIT_FINI__ so generic
+	RTEMS code knows which C++ initialization style the toolset
+	configuration is using. This was tracked as PR9295.
+
 2003-01-29	Joel Sherrill <joel@OARcorp.com>
 
 	* config/m68k/t-crtstuff: Replace spaces with tabs, add 
