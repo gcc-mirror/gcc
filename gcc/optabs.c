@@ -1673,6 +1673,7 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	  enum machine_mode result_mode
 	    = insn_operand_mode[(int) CODE_FOR_cmpstrsi][0];
 	  rtx result = gen_reg_rtx (result_mode);
+	  size = protect_from_queue (size, 0);
 	  emit_insn (gen_cmpstrsi (result, x, y,
 				   convert_to_mode (SImode, size, 1),
 				   GEN_INT (align)));
@@ -1753,6 +1754,8 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 	  if (cmp_optab->handlers[(int) wider_mode].insn_code
 	      != CODE_FOR_nothing)
 	    {
+	      x = protect_from_queue (x, 0);
+	      y = protect_from_queue (y, 0);
 	      x = convert_to_mode (wider_mode, x, unsignedp);
 	      y = convert_to_mode (wider_mode, y, unsignedp);
 	      emit_cmp_insn (x, y, comparison, NULL_RTX,
@@ -1939,6 +1942,8 @@ emit_float_lib_cmp (x, y, comparison)
 	       != CODE_FOR_nothing)
 	      || (cmp_optab->handlers[(int) wider_mode].libfunc != 0))
 	    {
+	      x = protect_from_queue (x, 0);
+	      y = protect_from_queue (y, 0);
 	      x = convert_to_mode (wider_mode, x, 0);
 	      y = convert_to_mode (wider_mode, y, 0);
 	      emit_float_lib_cmp (x, y, comparison);
@@ -2820,11 +2825,10 @@ expand_float (to, from, unsignedp)
 	if (icode != CODE_FOR_nothing)
 	  {
 	    to = protect_from_queue (to, 1);
+	    from = protect_from_queue (from, 0);
 
 	    if (imode != GET_MODE (from))
 	      from = convert_to_mode (imode, from, unsignedp);
-	    else
-	      from = protect_from_queue (from, 0);
 
 	    if (fmode != GET_MODE (to))
 	      target = gen_reg_rtx (fmode);
@@ -2893,11 +2897,10 @@ expand_float (to, from, unsignedp)
       rtx insns;
 
       to = protect_from_queue (to, 1);
+      from = protect_from_queue (from, 0);
 
       if (GET_MODE_SIZE (GET_MODE (from)) < GET_MODE_SIZE (SImode))
 	from = convert_to_mode (SImode, from, unsignedp);
-      else
-	from = protect_from_queue (from, 0);
 
       if (flag_force_mem)
 	from = force_not_mem (from);
@@ -3012,11 +3015,10 @@ expand_fix (to, from, unsignedp)
 	if (icode != CODE_FOR_nothing)
 	  {
 	    to = protect_from_queue (to, 1);
+	    from = protect_from_queue (from, 0);
 
 	    if (fmode != GET_MODE (from))
 	      from = convert_to_mode (fmode, from, 0);
-	    else
-	      from = protect_from_queue (from, 0);
 
 	    if (must_trunc)
 	      from = ftruncify (from);
