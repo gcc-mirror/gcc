@@ -1,3 +1,8 @@
+2004-08-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/14428
+	* g++.dg/template/redecl2.C: New test.
+
 2004-08-24  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/17143
