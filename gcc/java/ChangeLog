@@ -6,6 +6,11 @@
 
 	* lang.c (lang_decode_option): Extend comment.
 
+Thu Sep 16 15:42:39 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_method_add_stmt): Test against GET_CURRENT_BLOCK
+ 	instead of fndecl.
+
 1999-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (get_field_name, print_method_info, print_include,

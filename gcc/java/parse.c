@@ -8428,8 +8428,8 @@ tree
 java_method_add_stmt (fndecl, expr)
      tree fndecl, expr;
 {
-  if (!fndecl)
-    return NULL;
+  if (!GET_CURRENT_BLOCK (fndecl))
+    return NULL_TREE;
   return add_stmt_to_block (GET_CURRENT_BLOCK (fndecl), NULL_TREE, expr);
 }
 
