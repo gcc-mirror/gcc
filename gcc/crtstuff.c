@@ -119,8 +119,6 @@ typedef void (*func_ptr) (void);
 
 #ifdef CRT_BEGIN
 
-#ifdef INIT_SECTION_ASM_OP
-
 /* NOTE:  In order to be able to support SVR4 shared libraries, we arrange
    to have one set of symbols { __CTOR_LIST__, __DTOR_LIST__, __CTOR_END__,
    __DTOR_END__ } per root executable and also one set of these symbols
@@ -167,10 +165,7 @@ STATIC func_ptr __DTOR_LIST__[1]
 #ifdef EH_FRAME_SECTION_NAME
 /* Stick a label at the beginning of the frame unwind info so we can register
    and deregister it with the exception handling library code.  */
-#ifdef INIT_SECTION_ASM_OP
-STATIC
-#endif
-char __EH_FRAME_BEGIN__[]
+STATIC char __EH_FRAME_BEGIN__[]
      __attribute__((section(EH_FRAME_SECTION_NAME), aligned(4)))
      = { };
 #endif /* EH_FRAME_SECTION_NAME */
@@ -178,11 +173,12 @@ char __EH_FRAME_BEGIN__[]
 #ifdef JCR_SECTION_NAME
 /* Stick a label at the beginning of the java class registration info
    so we can register them properly.  */
-
 STATIC void *__JCR_LIST__[]
   __attribute__ ((unused, section(JCR_SECTION_NAME), aligned(sizeof(void*))))
   = { };
 #endif /* JCR_SECTION_NAME */
+
+#ifdef INIT_SECTION_ASM_OP
 
 #ifdef OBJECT_FORMAT_ELF
 
@@ -338,12 +334,11 @@ static void __do_global_ctors_aux (void);
 void
 __do_global_ctors (void)
 {
-#ifdef INVOKE__main  /* If __main won't actually call __do_global_ctors
-			then it doesn't matter what's inside the function.
-			The inside of __do_global_ctors_aux is called
-			automatically in that case.
-			And the Alliant fx2800 linker crashes
-			on this reference.  So prevent the crash.  */
+#ifdef INVOKE__main
+  /* If __main won't actually call __do_global_ctors then it doesn't matter
+     what's inside the function.  The inside of __do_global_ctors_aux is
+     called automatically in that case.  And the Alliant fx2800 linker
+     crashes on this reference.  So prevent the crash.  */
   __do_global_ctors_aux ();
 #endif
 }
@@ -378,9 +373,8 @@ __do_global_ctors_aux (void)	/* prologue goes in .init section */
 
 #endif /* OBJECT_FORMAT_ELF */
 
-#else /* INIT_SECTION_ASM_OP */
+#elif defined(HAS_INIT_SECTION) /* ! INIT_SECTION_ASM_OP */
 
-#ifdef HAS_INIT_SECTION
 /* This case is used by the Irix 6 port, which supports named sections but
    not an SVR4-style .fini section.  __do_global_dtors can be non-static
    in this case because we protect it with -hidden_symbol.  */
@@ -399,11 +393,12 @@ __do_global_dtors (void)
 }
 
 #if defined(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
-/* Define a function here to call __register_frame.  crtend.o is linked in
-   after libgcc.a, and hence can't call libgcc.a functions directly.  That
-   can lead to unresolved function references.  */
+/* A helper function for __do_global_ctors, which is in crtend.o.  Here
+   in crtbegin.o, we can reference a couple of symbols not visible there.
+   Plus, since we're before libgcc.a, we have no problems referencing
+   functions from there.  */
 void
-__frame_dummy (void)
+__do_global_ctors_1(void)
 {
 #ifdef EH_FRAME_SECTION_NAME
   static struct object object;
@@ -417,17 +412,68 @@ __frame_dummy (void)
 }
 #endif /* EH_FRAME_SECTION_NAME || JCR_SECTION_NAME */
 
-#endif /* HAS_INIT_SECTION */
-#endif /* INIT_SECTION_ASM_OP */
-#endif /* defined(CRT_BEGIN) */
+#else /* ! INIT_SECTION_ASM_OP && ! HAS_INIT_SECTION */
+#error "What are you doing with crtstuff.c, then?"
+#endif
 
-#ifdef CRT_END
+#elif defined(CRT_END) /* ! CRT_BEGIN */
+
+/* Put a word containing zero at the end of each of our two lists of function
+   addresses.  Note that the words defined here go into the .ctors and .dtors
+   sections of the crtend.o file, and since that file is always linked in
+   last, these words naturally end up at the very ends of the two lists
+   contained in these two sections.  */
+
+#ifdef CTOR_LIST_END
+CTOR_LIST_END;
+#elif defined(CTORS_SECTION_ASM_OP)
+/* Hack: force cc1 to switch to .data section early, so that assembling
+   __CTOR_LIST__ does not undo our behind-the-back change to .ctors.  */
+static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
+asm (CTORS_SECTION_ASM_OP);
+STATIC func_ptr __CTOR_END__[1]
+  __attribute__((aligned(sizeof(func_ptr))))
+  = { (func_ptr) 0 };
+#else
+STATIC func_ptr __CTOR_END__[1]
+  __attribute__((section(".ctors"), aligned(sizeof(func_ptr))))
+  = { (func_ptr) 0 };
+#endif
+
+#ifdef DTOR_LIST_END
+DTOR_LIST_END;
+#elif defined(DTORS_SECTION_ASM_OP)
+asm (DTORS_SECTION_ASM_OP);
+STATIC func_ptr __DTOR_END__[1]
+  __attribute__ ((unused, aligned(sizeof(func_ptr))))
+  = { (func_ptr) 0 };
+#else
+STATIC func_ptr __DTOR_END__[1]
+  __attribute__((unused, section(".dtors"), aligned(sizeof(func_ptr))))
+  = { (func_ptr) 0 };
+#endif
+
+#ifdef EH_FRAME_SECTION_NAME
+/* Terminate the frame unwind info section with a 4byte 0 as a sentinel;
+   this would be the 'length' field in a real FDE.  */
+STATIC int __FRAME_END__[]
+     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
+		     aligned(4)))
+     = { 0 };
+#endif /* EH_FRAME_SECTION */
+
+#ifdef JCR_SECTION_NAME
+/* Null terminate the .jcr section array.  */
+STATIC void *__JCR_END__[1] 
+   __attribute__ ((unused, section(JCR_SECTION_NAME),
+		   aligned(sizeof(void *))))
+   = { 0 };
+#endif /* JCR_SECTION_NAME */
 
 #ifdef INIT_SECTION_ASM_OP
 
 #ifdef OBJECT_FORMAT_ELF
 
-static func_ptr __CTOR_END__[];
 static void
 __do_global_ctors_aux (void)
 {
@@ -491,85 +537,30 @@ asm (TEXT_SECTION_ASM_OP);
 
 #endif /* OBJECT_FORMAT_ELF */
 
-#else /* defined(INIT_SECTION_ASM_OP) */
+#elif defined(HAS_INIT_SECTION) /* ! INIT_SECTION_ASM_OP */
 
-#ifdef HAS_INIT_SECTION
 /* This case is used by the Irix 6 port, which supports named sections but
    not an SVR4-style .init section.  __do_global_ctors can be non-static
    in this case because we protect it with -hidden_symbol.  */
-static func_ptr __CTOR_END__[];
-extern void __frame_dummy (void);
+extern void __do_global_ctors_1(void);
 void
 __do_global_ctors (void)
 {
   func_ptr *p;
 #if defined(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
-  __frame_dummy ();
+  __do_global_ctors_1();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
     (*p) ();
 }
+
+#else /* ! INIT_SECTION_ASM_OP && ! HAS_INIT_SECTION */
+#error "What are you doing with crtstuff.c, then?"
 #endif
 
-#endif /* defined(INIT_SECTION_ASM_OP) */
-
-/* Put a word containing zero at the end of each of our two lists of function
-   addresses.  Note that the words defined here go into the .ctors and .dtors
-   sections of the crtend.o file, and since that file is always linked in
-   last, these words naturally end up at the very ends of the two lists
-   contained in these two sections.  */
-
-#ifdef CTOR_LIST_END
-CTOR_LIST_END;
-
-#elif defined(CTORS_SECTION_ASM_OP)
-/* Hack: force cc1 to switch to .data section early, so that assembling
-   __CTOR_LIST__ does not undo our behind-the-back change to .ctors.  */
-static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
-asm (CTORS_SECTION_ASM_OP);
-STATIC func_ptr __CTOR_END__[1]
-  __attribute__((aligned(sizeof(func_ptr))))
-  = { (func_ptr) 0 };
-
-#else
-STATIC func_ptr __CTOR_END__[1]
-  __attribute__((section(".ctors"), aligned(sizeof(func_ptr))))
-  = { (func_ptr) 0 };
+#else /* ! CRT_BEGIN && ! CRT_END */
+#error "One of CRT_BEGIN or CRT_END must be defined."
 #endif
-
-#ifdef DTOR_LIST_END
-DTOR_LIST_END;
-#elif defined(DTORS_SECTION_ASM_OP)
-asm (DTORS_SECTION_ASM_OP);
-STATIC func_ptr __DTOR_END__[1]
-  __attribute__ ((unused, aligned(sizeof(func_ptr))))
-  = { (func_ptr) 0 };
-#else
-STATIC func_ptr __DTOR_END__[1]
-  __attribute__((unused, section(".dtors"), aligned(sizeof(func_ptr))))
-  = { (func_ptr) 0 };
-#endif
-
-#ifdef EH_FRAME_SECTION_NAME
-/* Terminate the frame unwind info section with a 4byte 0 as a sentinel;
-   this would be the 'length' field in a real FDE.  */
-STATIC int __FRAME_END__[]
-     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
-		     aligned(4)))
-     = { 0 };
-#endif /* EH_FRAME_SECTION */
-
-#ifdef JCR_SECTION_NAME
-/* Stick a label at the beginning of the java class registration info
-   so we can register them properly.  */
-
-STATIC void *__JCR_END__[1] 
-   __attribute__ ((unused, section(JCR_SECTION_NAME),
-		   aligned(sizeof(func_ptr))))
-   = { 0 };
-#endif /* JCR_SECTION_NAME */
-
-#endif /* defined(CRT_END) */
 
 #else  /* OBJECT_FORMAT_MACHO */
 
@@ -609,9 +600,7 @@ __reg_frame_ctor (void)
   __register_frame_info ((void *) eh_frame->addr, &object);
 }
 
-#endif /* CRT_BEGIN */
-
-#ifdef CRT_END
+#elif defined(CRT_END)
 
 static void __dereg_frame_dtor (void) __attribute__ ((destructor));
 
@@ -630,6 +619,9 @@ STATIC int __FRAME_END__[]
      __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
 		     aligned(4)))
      = { 0 };
-#endif /* CRT_END */
+
+#else /* ! CRT_BEGIN && ! CRT_END */
+#error "One of CRT_BEGIN or CRT_END must be defined."
+#endif
 
 #endif /* OBJECT_FORMAT_MACHO */
