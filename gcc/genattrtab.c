@@ -3561,7 +3561,7 @@ static rtx
 simplify_by_exploding (exp)
      rtx exp;
 {
-  rtx list = 0, link, condexp, defval;
+  rtx list = 0, link, condexp, defval = NULL_RTX;
   struct dimension *space;
   rtx *condtest, *condval;
   int i, j, total, ndim = 0;

@@ -640,9 +640,9 @@ insert_save_restore (insn, save_p, regno, insn_mode, maxrestore)
      enum machine_mode insn_mode;
      int maxrestore;
 {
-  rtx pat;
-  enum insn_code code;
-  int numregs;
+  rtx pat = NULL_RTX;
+  enum insn_code code = CODE_FOR_nothing;
+  int numregs = 0;
 
   /* A common failure mode if register status is not correct in the RTL
      is for this routine to be called with a REGNO we didn't expect to

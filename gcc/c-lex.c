@@ -1674,6 +1674,7 @@ yylex ()
 	    int spec_imag = 0;
 	    int bytes, warn, i;
 
+	    traditional_type = ansi_type = type = NULL_TREE;
 	    while (1)
 	      {
 		if (c == 'u' || c == 'U')

@@ -618,7 +618,7 @@ branch_prob (f, dump_file)
     register int i;
     int fall_through = 0;
     struct adj_list *arcptr;
-    int dest;
+    int dest = NULL_RTX;
 
     /* Block 0 always falls through to block 1.  */
     num_arcs = 0;
