@@ -706,6 +706,8 @@ const_costs (r, c)
    'L' fake label, changed after used twice.
    'M' turn a 'M' constant into its negative mod 2.
    'P' if operand is incing/decing sp, print .w, otherwise .b.
+   'R' print operand as a byte:8 address if appropriate, else fall back to
+       'X' handling.
    'S' print operand as a long word
    'T' print operand as a word
    'U' if operand is incing/decing sp, print l, otherwise nothing.
@@ -713,6 +715,7 @@ const_costs (r, c)
    'W' find the clear bit, and print its number.
    'X' print operand as a byte
    'Y' print either l or h depending on whether last 'Z' operand < 8 or >= 8.
+       If this operand isn't a register, fall back to 'R' handling.
    'Z' print int & 7.
    'b' print the bit opcode
    'c' print the ibit opcode
@@ -890,6 +893,7 @@ print_operand (file, x, code)
 	abort ();
       fprintf (file, "#%d", bitint & 7);
       break;
+    case 'R':
     case 'X':
       if (GET_CODE (x) == REG)
 	fprintf (file, "%s", byte_reg (x, 0));
@@ -902,7 +906,7 @@ print_operand (file, x, code)
       if (GET_CODE (x) == REG)
 	fprintf (file, "%s%c", names_big[REGNO (x)], bitint > 7 ? 'h' : 'l');
       else
-	print_operand (file, x, 0);
+	print_operand (file, x, 'R');
       bitint = -1;
       break;
     case 'Z':
@@ -1081,6 +1085,13 @@ print_operand (file, x, code)
 	case MEM:
 	  fprintf (file, "@");
 	  output_address (XEXP (x, 0));
+
+	  /* If this is an 'R' operand (reference into the 8-bit area),
+	     then specify a symbolic address as "foo:8".  */
+ 	  if (code == 'R'
+	      && GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	      && SYMBOL_REF_FLAG (XEXP (x, 0)))
+	    fprintf (file, ":8");
 	  break;
 
 	case CONST_INT:
@@ -2050,7 +2061,6 @@ fix_bit_operand (operands, what, type)
   return 1;
 }
 
-
 /* Return nonzero if FUNC is an interrupt function as specified
    by the "interrupt" attribute.  */
 
@@ -2083,6 +2093,22 @@ h8300_funcvec_function_p (func)
   return a != NULL_TREE;
 }
 
+/* Return nonzero if DECL is a variable that's in the tiny
+   data area.  */
+
+int
+h8300_tiny_data_p (decl)
+     tree decl;
+{
+  tree a;
+
+  if (TREE_CODE (decl) != VAR_DECL)
+    return 0;
+
+  a = lookup_attribute ("tiny_data", DECL_MACHINE_ATTRIBUTES (decl));
+  return a != NULL_TREE;
+}
+
 /* Return nonzero if ATTR is a valid attribute for DECL.
    ATTRIBUTES are any existing attributes and ARGS are the arguments
    supplied with ATTR.
@@ -2108,6 +2134,19 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
   if (is_attribute_p ("interrupt_handler", attr)
       || is_attribute_p ("function_vector", attr))
     return TREE_CODE (decl) == FUNCTION_DECL;
+
+  if (is_attribute_p ("tiny_data", attr)
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
+    {
+      if (DECL_INITIAL (decl) == NULL_TREE)
+	{
+	  warning ("Only initialized variables can be placed into the 8-bit area.");
+	  return 0;
+	}
+      DECL_SECTION_NAME (decl) = build_string (8, ".eight");
+      return 1;
+    }
+      
   return 0;
 }
 
