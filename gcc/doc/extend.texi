@@ -3844,13 +3844,35 @@ represents the condition codes as a specific hardware register;
 condition code is handled differently, and specifying @samp{cc} has no
 effect.  But it is valid no matter what the machine.
 
-If your assembler instruction modifies memory in an unpredictable
+If your assembler instructions access memory in an unpredictable
 fashion, add @samp{memory} to the list of clobbered registers.  This
-will cause GCC to not keep memory values cached in registers across
-the assembler instruction.  You will also want to add the
-@code{volatile} keyword if the memory affected is not listed in the
-inputs or outputs of the @code{asm}, as the @samp{memory} clobber does
-not count as a side-effect of the @code{asm}.
+will cause GCC to not keep memory values cached in registers across the
+assembler instruction and not optimize stores or loads to that memory.
+You will also want to add the @code{volatile} keyword if the memory
+affected is not listed in the inputs or outputs of the @code{asm}, as
+the @samp{memory} clobber does not count as a side-effect of the
+@code{asm}.  If you know how large the accessed memory is, you can add
+it as input or output but if this is not known, you should add
+@samp{memory}.  As an example, if you access ten bytes of a string, you
+can use a memory input like:
+
+@example
+@{"m"( (@{ struct @{ char x[10]; @} *p = (void *)ptr ; *p; @}) )@}.
+@end example
+
+Note that in the following example the memory input is necessary,
+otherwise GCC might optimize the store to @code{x} away:
+@example
+int foo ()
+@{
+  int x = 42;
+  int *y = &x;
+  int result;
+  asm ("magic stuff accessing an 'int' pointed to by '%1'"
+        "=&d" (r) : "a" (y), "m" (*y));
+  return result;     
+@}
+@end example
 
 You can put multiple assembler instructions together in a single
 @code{asm} template, separated by the characters normally used in assembly
