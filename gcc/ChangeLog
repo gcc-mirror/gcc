@@ -1,3 +1,7 @@
+2003-03-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/libgcc.texi: Remove @tie.
+
 2003-03-15  Josef Zlomek  <zlomekj@suse.cz>
 
 	* rtl.h (subrtx_p): Renamed to rtx_referenced_p.

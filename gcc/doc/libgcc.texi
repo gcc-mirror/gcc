@@ -260,7 +260,7 @@ These functions return 1 if either argument is NaN, otherwise 0.
 @end deftypefn
 
 There is also a complete group of higher level functions which
-correspond directly to comparison operators.  They implement the ISO@tie{}C
+correspond directly to comparison operators.  They implement the ISO C
 semantics for floating-point comparisons, taking NaN into account.
 Pay careful attention to the return values defined for each set.
 Under the hood, all of these routines are implemented as
