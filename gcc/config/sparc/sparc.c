@@ -7257,17 +7257,39 @@ struct sparc_frame_info current_frame_info;
 /* Zero structure to initialize current_frame_info.  */
 struct sparc_frame_info zero_frame_info;
 
-/* Tell prologue and epilogue if register REGNO should be saved / restored.  */
-
 #define RETURN_ADDR_REGNUM 15
 #define HARD_FRAME_POINTER_MASK (1 << (HARD_FRAME_POINTER_REGNUM))
 #define RETURN_ADDR_MASK (1 << (RETURN_ADDR_REGNUM))
+
+/* Tell prologue and epilogue if register REGNO should be saved / restored.  */
 
-#define MUST_SAVE_REGISTER(regno) \
- ((regs_ever_live[regno] && !call_used_regs[regno])			\
-  || (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)	\
-  || (regno == RETURN_ADDR_REGNUM && regs_ever_live[RETURN_ADDR_REGNUM]))
+static bool
+sparc_flat_must_save_register_p (int regno)
+{
+  /* General case: call-saved registers live at some point.  */
+  if (!call_used_regs[regno] && regs_ever_live[regno])
+    return true;
+  
+  /* Frame pointer register (%i7) if needed.  */
+  if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
+    return true;
 
+  /* PIC register (%l7) if needed.  */
+  if (regno == (int) PIC_OFFSET_TABLE_REGNUM
+      && flag_pic && current_function_uses_pic_offset_table)
+    return true;
+
+  /* Return address register (%o7) if needed.  */
+  if (regno == RETURN_ADDR_REGNUM
+      && (regs_ever_live[RETURN_ADDR_REGNUM]
+	  /* When the PIC offset table is used, the PIC register
+	     is set by using a bare call that clobbers %o7.  */
+	  || (flag_pic && current_function_uses_pic_offset_table)))
+    return true;
+
+  return false;
+}
+
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.  */
 
@@ -7309,11 +7331,11 @@ sparc_flat_compute_frame_size (int size)
   /* Calculate space needed for gp registers.  */
   for (regno = 1; regno <= 31; regno++)
     {
-      if (MUST_SAVE_REGISTER (regno))
+      if (sparc_flat_must_save_register_p (regno))
 	{
 	  /* If we need to save two regs in a row, ensure there's room to bump
 	     up the address to align it to a doubleword boundary.  */
-	  if ((regno & 0x1) == 0 && MUST_SAVE_REGISTER (regno+1))
+	  if ((regno & 0x1) == 0 && sparc_flat_must_save_register_p (regno+1))
 	    {
 	      if (gp_reg_size % 8 != 0)
 		gp_reg_size += 4;
