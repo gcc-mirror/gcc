@@ -625,17 +625,17 @@ DEF_RTL_EXPR(BARRIER, "barrier", "iuu000000", 'x')
 
 /* Holds a label that is followed by instructions.
    Operand:
-   5: is used in jump.c for the use-count of the label.
-   6: is used in flow.c to point to the chain of label_ref's to this label.
-   7: is a number that is unique in the entire compilation.
-   8: is the user-given name of the label, if any.  */
+   4: is used in jump.c for the use-count of the label.
+   5: is used in flow.c to point to the chain of label_ref's to this label.
+   6: is a number that is unique in the entire compilation.
+   7: is the user-given name of the label, if any.  */
 DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00is", 'x')
 
 /* Say where in the code a source line starts, for symbol table's sake.
    Operand:
-   5: filename, if line number > 0, note-specific data otherwise.
-   6: line number if > 0, enum note_insn otherwise.
-   7: unique number if line number == note_insn_deleted_label.  */
+   4: filename, if line number > 0, note-specific data otherwise.
+   5: line number if > 0, enum note_insn otherwise.
+   6: unique number if line number == note_insn_deleted_label.  */
 DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", 'x')
 
 /* ----------------------------------------------------------------------
