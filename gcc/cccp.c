@@ -9289,7 +9289,18 @@ make_definition (str, op)
     p++;
     q = &buf[p - str];
     while (*p) {
-      if (*p == '\\' && p[1] == '\n')
+      if (*p == '\"' || *p == '\'') {
+	int unterminated = 0;
+	U_CHAR *p1 = skip_quoted_string (p, p + strlen (p), 0,
+					 NULL_PTR, NULL_PTR, &unterminated);
+	if (unterminated)
+	  return;
+	while (p != p1)
+	  if (*p == '\\' && p[1] == '\n')
+	    p += 2;
+	  else
+	    *q++ = *p++;
+      } else if (*p == '\\' && p[1] == '\n')
 	p += 2;
       /* Change newline chars into newline-markers.  */
       else if (*p == '\n')
