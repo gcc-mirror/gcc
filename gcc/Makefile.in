@@ -1265,27 +1265,34 @@ stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimi
 	cd $(srcdir); \
 	for file in $(USER_H); do \
 	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	  rm -f $$objdir/include/$$realfile; \
 	  cp $$realfile $$objdir/include; \
 	  chmod a+r $$objdir/include/$$realfile; \
 	done
+	rm -f include/syslimits.h
 	if [ -f include/limits.h ]; then \
-	  rm -f include/syslimits.h; \
 	  mv include/limits.h include/syslimits.h; \
 	else \
 	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
 	fi
 	chmod a+r include/syslimits.h
+	rm -f include/varargs.h
 	cp $(srcdir)/gvarargs.h include/varargs.h
 	chmod a+r include/varargs.h
+	rm -f include/stdarg.h
 	cp $(srcdir)/gstdarg.h include/stdarg.h
 	chmod a+r include/stdarg.h
+	rm -f include/stddef.h
 	cp $(srcdir)/gstddef.h include/stddef.h
 	chmod a+r include/stddef.h
+	rm -f include/limits.h
 	cp xlimits.h include/limits.h
 	chmod a+r include/limits.h
+	rm -f include/float.h
 	cp float.h include/float.h
 	chmod a+r include/float.h
 # Install the README
+	rm -f include/README
 	cp $(srcdir)/README-fixinc include/README
 	chmod a+r include/README
 	touch stmp-headers
