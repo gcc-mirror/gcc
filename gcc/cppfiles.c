@@ -757,15 +757,51 @@ actual_directory (pfile, fname)
   return x;
 }
 
-/* Read the entire contents of file DESC into buffer BUF, convert end-of-line
-   markers to canonical form, and convert trigraphs if enabled.  Also, make
-   sure there is a newline at the end of the file.  LEN is how much room we
-   have to start with (this can be expanded if necessary).
-   Returns -1 on failure, or the actual length of the data to be scanned.
+/* Almost but not quite the same as adjust_position in cpplib.c.
+   Used only by read_and_prescan. */
+static void
+find_position (start, limit, linep, colp)
+     U_CHAR *start;
+     U_CHAR *limit;
+     long *linep;
+     long *colp;
+{
+  long line = *linep, col = 0;
+  while (start < limit)
+    {
+      U_CHAR ch = *start++;
+      if (ch == '\n' || ch == '\r')
+	line++, col = 1;
+      else
+	col++;
+    }
+  *linep = line, *colp = col;
+}
 
-   N.B. This function has been rearranged to out-of-line the uncommon cases
-   as much as possible; this is important to prevent it from being a
-   performance bottleneck.  */
+/* Read the entire contents of file DESC into buffer BUF.  LEN is how
+   much memory to allocate initially; more will be allocated if
+   necessary.  Convert end-of-line markers (\n, \r, \r\n, \n\r) to
+   canonical form (\n).  If enabled, convert and/or warn about
+   trigraphs.  Convert backslash-newline to a one-character escape
+   (\r) and remove it from "embarrassing" places (i.e. the middle of a
+   token).  If there is no newline at the end of the file, add one and
+   warn.  Returns -1 on failure, or the actual length of the data to
+   be scanned.
+
+   This function does a lot of work, and can be a serious performance
+   bottleneck.  It has been tuned heavily; make sure you understand it
+   before hacking.  The common case - no trigraphs, Unix style line
+   breaks, backslash-newline set off by whitespace, newline at EOF -
+   has been optimized at the expense of the others.  The performance
+   penalty for DOS style line breaks (\r\n) is about 15%.
+   
+   Warnings lose particularly heavily since we have to determine the
+   line number, which involves scanning from the beginning of the file
+   or from the last warning.  The penalty for the absence of a newline
+   at the end of reload1.c is about 60%.  (reload1.c is 329k.)
+
+   If your file has more than one kind of end-of-line marker, you
+   will get messed-up line numbering.  */
 
 static long
 read_and_prescan (pfile, fp, desc, len)
@@ -774,29 +810,47 @@ read_and_prescan (pfile, fp, desc, len)
      int desc;
      size_t len;
 {
-  U_CHAR *buf = (U_CHAR *) xmalloc (len);
+  U_CHAR *buf = xmalloc (len);
   U_CHAR *ip, *op, *line_base;
   U_CHAR *ibase;
-  unsigned int line;
+  unsigned int line, deferred_newlines;
   int count;
   size_t offset;
-  /* 4096 bytes of buffer proper, 2 to detect running off the end without
-     address arithmetic all the time, and 2 for pushback in the case there's
-     a potential trigraph or end-of-line digraph at the end of a block. */
-#define INTERMED_BUFFER_SIZE 4096
-  U_CHAR intermed[INTERMED_BUFFER_SIZE + 2 + 2];
+  /* PIPE_BUF bytes of buffer proper, 2 to detect running off the end
+     without address arithmetic all the time, and 2 for pushback in
+     the case there's a potential trigraph or end-of-line digraph at
+     the end of a block. */
+  U_CHAR intermed[PIPE_BUF + 2 + 2];
+
+  /* Table of characters that can't be handled in the inner loop.
+     Keep these contiguous to optimize the performance of the code generated
+     for the switch that uses them.  */
+  #define SPECCASE_EMPTY     0
+  #define SPECCASE_NUL       1
+  #define SPECCASE_CR        2
+  #define SPECCASE_BACKSLASH 3
+  #define SPECCASE_QUESTION  4
+  U_CHAR speccase[256];
 
   offset = 0;
   op = buf;
   line_base = buf;
   line = 1;
   ibase = intermed + 2;
+  deferred_newlines = 0;
+
+  memset (speccase, SPECCASE_EMPTY, sizeof (speccase));
+  speccase['\0'] = SPECCASE_NUL;
+  speccase['\r'] = SPECCASE_CR;
+  speccase['\\'] = SPECCASE_BACKSLASH;
+  if (CPP_OPTIONS (pfile)->trigraphs || CPP_OPTIONS (pfile)->warn_trigraphs)
+    speccase['?'] = SPECCASE_QUESTION;
 
   for (;;)
     {
     read_next:
 
-      count = read (desc, intermed + 2, INTERMED_BUFFER_SIZE);
+      count = read (desc, intermed + 2, PIPE_BUF);
       if (count < 0)
 	goto error;
       else if (count == 0)
@@ -806,16 +860,16 @@ read_and_prescan (pfile, fp, desc, len)
       ip = ibase;
       ibase = intermed + 2;
       ibase[count] = ibase[count+1] = '\0';
-      
+
       if (offset > len)
 	{
 	  size_t delta_op;
 	  size_t delta_line_base;
 	  len *= 2;
 	  if (offset > len)
-	      /* len overflowed.
-		 This could happen if the file is larger than half the
-		 maximum address space of the machine. */
+	    /* len overflowed.
+	       This could happen if the file is larger than half the
+	       maximum address space of the machine. */
 	    goto too_big;
 
 	  delta_op = op - buf;
@@ -827,93 +881,155 @@ read_and_prescan (pfile, fp, desc, len)
 
       for (;;)
 	{
-	  unsigned int c;
-	  c = *ip++;
-	  switch (c)
+	  unsigned int span = 0;
+
+	  /* Deal with \-newline in the middle of a token. */
+	  if (deferred_newlines)
 	    {
-	      /* The default case is at the top so gcc will realize
-		 it's the common case, and leave c in a register.
-	         Also, cache utilization is a little better this way. */
-	    default:
-	      *op++ = c;
-	      break;
-	      
-	    case '\0':
+	      while (speccase[ip[span]] == SPECCASE_EMPTY
+		     && ip[span] != '\n'
+		     && ip[span] != '\t'
+		     && ip[span] != ' ')
+		span++;
+	      memcpy (op, ip, span);
+	      op += span;
+	      ip += span;
+	      if (*ip == '\n' || *ip == '\t'
+		  || *ip == ' ' || *ip == ' ')
+		while (deferred_newlines)
+		  deferred_newlines--, *op++ = '\r';
+	      span = 0;
+	    }
+
+	  /* Copy as much as we can without special treatment. */
+	  while (speccase[ip[span]] == SPECCASE_EMPTY) span++;
+	  memcpy (op, ip, span);
+	  op += span;
+	  ip += span;
+
+	  switch (speccase[*ip++])
+	    {
+	    case SPECCASE_NUL:  /* \0 */
+	      ibase[-1] = op[-1];
 	      goto read_next;
-	    case '\r':
-	      if (*ip == '\n') ip++;
+
+	    case SPECCASE_CR:  /* \r */
+	      if (*ip == '\n')
+		ip++;
 	      else if (*ip == '\0')
 		{
 		  --ibase;
 		  intermed[1] = '\r';
 		  goto read_next;
 		}
+	      else if (ip[-2] == '\n')
+		continue;
 	      *op++ = '\n';
-	      line++;
-	      line_base = op;
 	      break;
 
-	    case '\n':
-	      if (*ip == '\r') ip++;
-	      else if (*ip == '\0')
+	    case SPECCASE_BACKSLASH:  /* \ */
+	    backslash:
+	    {
+	      /* If we're at the end of the intermediate buffer,
+		 we have to shift the backslash down to the start
+		 and come back next pass. */
+	      if (*ip == '\0')
 		{
 		  --ibase;
-		  intermed[1] = '\n';
+		  intermed[1] = '\\';
 		  goto read_next;
 		}
-	      *op++ = '\n';
-	      line++;
-	      line_base = op;
-	      break;
-
-	    case '?':
-	      if (CPP_OPTIONS (pfile)->trigraphs
-		  || CPP_OPTIONS (pfile)->warn_trigraphs)
+	      else if (*ip == '\n')
 		{
-		  unsigned int d;
-		  /* If we're at the end of the intermediate buffer,
-		     we have to shift the ?'s down to the start and
-		     come back next pass. */
-		  d = ip[0];
-		  if (d == '\0')
-		    {
-		      --ibase;
-		      intermed[1] = '?';
-		      goto read_next;
-		    }
-		  if (d != '?')
-		    {
-		      *op++ = '?';
-		      break;
-		    }
-		  d = ip[1];
-		  if (d == '\0')
+		  ip++;
+		  if (*ip == '\r') ip++;
+		  if (*ip == '\n' || *ip == '\t' || *ip == ' ')
+		    *op++ = '\r';
+		  else if (op[-1] == '\t' || op[-1] == ' '
+			   || op[-1] == '\r' || op[-1] == '\n')
+		    *op++ = '\r';
+		  else
+		    deferred_newlines++;
+		  line++;
+		  line_base = op;
+		}
+	      else if (*ip == '\r')
+		{
+		  ip++;
+		  if (*ip == '\n') ip++;
+		  else if (*ip == '\0')
 		    {
 		      ibase -= 2;
-		      intermed[0] = intermed[1] = '?';
+		      intermed[0] = '\\';
+		      intermed[1] = '\r';
 		      goto read_next;
 		    }
-		  if (!trigraph_table[d])
-		    {
-		      *op++ = '?';
-		      break;
-		    }
-
-		  if (CPP_OPTIONS (pfile)->warn_trigraphs)
-		    cpp_warning_with_line (pfile, line, op-line_base,
-					   "trigraph ??%c encountered", d);
-		  if (CPP_OPTIONS (pfile)->trigraphs)
-		    *op++ = trigraph_table[d];
+		  else if (*ip == '\r' || *ip == '\t' || *ip == ' ')
+		    *op++ = '\r';
 		  else
-		    {
-		      *op++ = '?';
-		      *op++ = '?';
-		      *op++ = d;
-		    }
-		  ip += 2;
+		    deferred_newlines++;
+		  line++;
+		  line_base = op;
 		}
 	      else
-		*op++ = c;
+		*op++ = '\\';
+	    }
+	    break;
+
+	    case SPECCASE_QUESTION: /* ? */
+	      {
+		unsigned int d;
+		/* If we're at the end of the intermediate buffer,
+		   we have to shift the ?'s down to the start and
+		   come back next pass. */
+		d = ip[0];
+		if (d == '\0')
+		  {
+		    --ibase;
+		    intermed[1] = '?';
+		    goto read_next;
+		  }
+		if (d != '?')
+		  {
+		    *op++ = '?';
+		    break;
+		  }
+		d = ip[1];
+		if (d == '\0')
+		  {
+		    ibase -= 2;
+		    intermed[0] = intermed[1] = '?';
+		    goto read_next;
+		  }
+		if (!trigraph_table[d])
+		  {
+		    *op++ = '?';
+		    break;
+		  }
+
+		if (CPP_OPTIONS (pfile)->warn_trigraphs)
+		  {
+		    long col;
+		    find_position (line_base, op, &line, &col);
+		    line_base = op - col;
+		    cpp_warning_with_line (pfile, line, col,
+					   "trigraph ??%c encountered", d);
+		  }
+		if (CPP_OPTIONS (pfile)->trigraphs)
+		  {
+		    if (trigraph_table[d] == '\\')
+		      goto backslash;
+		    else
+		      *op++ = trigraph_table[d];
+		  }
+		else
+		  {
+		    *op++ = '?';
+		    *op++ = '?';
+		    *op++ = d;
+		  }
+		ip += 2;
+	      }
 	    }
 	}
     }
@@ -922,47 +1038,48 @@ read_and_prescan (pfile, fp, desc, len)
     return 0;
 
   /* Deal with pushed-back chars at true EOF.
-     If two chars were pushed back, they must both be ?'s.
-     If one was, it might be ?, \r, or \n, and \r needs to
-     become \n.
+     This may be any of:  ?? ? \ \r \n \\r \\n.
+     \r must become \n, \\r or \\n must become \r.
      We know we have space already. */
   if (ibase == intermed)
     {
-      *op++ = '?';
-      *op++ = '?';
+      if (*ibase == '?')
+	{
+	  *op++ = '?';
+	  *op++ = '?';
+	}
+      else
+	*op++ = '\r';
     }
   else if (ibase == intermed + 1)
     {
-      if (*ibase == '?')
-	*op++ = '?';
-      else
+      if (*ibase == '\r')
 	*op++ = '\n';
+      else
+	*op++ = *ibase;
     }
 
-  if (op[-1] != '\n' || op[-2] == '\\')
+  if (op[-1] != '\n')
     {
-      if (CPP_PEDANTIC (pfile))
-	cpp_pedwarn_with_line (pfile, line, op - line_base,
-			       "no newline at end of file");
-      if (offset + 2 > len)
+      long col;
+      find_position (line_base, op, &line, &col);
+      cpp_warning_with_line (pfile, line, col, "no newline at end of file\n");
+      if (offset + 1 > len)
 	{
-	  len += 2;
-	  if (offset + 2 > len)
+	  len += 1;
+	  if (offset + 1 > len)
 	    goto too_big;
 	  buf = (U_CHAR *) xrealloc (buf, len);
 	  op = buf + offset;
 	}
-      if (op[-1] == '\\')
-	*op++ = '\n';
       *op++ = '\n';
     }
 
-  fp->buf =
-    (U_CHAR *) ((len - offset < 20) ? (PTR) buf : xrealloc (buf, op - buf));
+  fp->buf = ((len - offset < 20) ? buf : (U_CHAR *)xrealloc (buf, op - buf));
   return op - buf;
 
  too_big:
-  cpp_error (pfile, "file is too large");
+  cpp_error (pfile, "file is too large (>%lu bytes)\n", (unsigned long)offset);
   free (buf);
   return -1;
 
