@@ -1,3 +1,12 @@
+2003-06-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* aclocal.m4 (gcc_AC_C_CHARSET): Delete.
+	* configure.in: Don't use gcc_AC_C_CHARSET.
+	* configure, config.in: Regenerate.
+	* config/i370/i370.c, config/i370/i370.h: Use
+	(HOST_CHARSET == HC_EBCDIC) or (HOST_CHARSET == HC_ASCII)
+	instead of HOST_EBCDIC or !HOST_EBCDIC.  Clarify comments a tad.
+
 2003-06-21  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update.
@@ -58,7 +67,7 @@ Sat Jun 21 13:41:00 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* toplev.h (decode_g_option): New.
 
 2003-06-20  Aldy Hernandez  <aldyh@redhat.com>
-	
+
 	PR/11092
 	* config/rs6000/rs6000.h (LEGITIMATE_CONSTANT_P): Adjust for
 	vectors.
@@ -120,7 +129,7 @@ Sat Jun 21 13:41:00 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	to ASM_OUTPUT_SOURCE_LINE.
 
 2003-06-20  Daniel Egger  <degger@fhm.edu>
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Building): Correct and improve statement
 	about parallel builds.

@@ -1,3 +1,8 @@
+2003-06-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* safe-ctype.c: Separate out EOF==-1 check.  Use HOST_CHARSET
+	for charset determination.
+
 2003-06-19  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	* configure.in: Add check for malloc.h needed by
@@ -8,14 +13,14 @@
 	free().
 
 2003-06-09  Albert Chin-A-Young  <china@thewrittenword.com>
-	
+
 	PR bootstrap/10974
 	* physmem.c: Update comment.
 	* configure.in: Modify test for _system_configuration for older
 	AIX systems.
 
 	* config.in, configure: Regenerated.
-	
+
 2003-06-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR other/10810
@@ -109,7 +114,7 @@
 	ANSI_PROTOTYPES.
 	* vsprintf.c: Include "ansidecl.h" earlier, rely on
 	ANSI_PROTOTYPES and possibly include <stdarg.h>.
-	
+
 	* Makefile.in: Regenerate dependencies.
 
 2003-04-15  DJ Delorie  <dj@redhat.com>
@@ -207,7 +212,7 @@
 2003-02-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	    Richard Earnshaw  <rearnsha@arm.com>
 	    Geoffrey Keating  <geoffk@apple.com>
-	
+
 	* configure.in: Check for sys/sysctl.h and sysctl.
 	* physmem.c: Add support for *bsd and darwin.
 	* Makefile.in: Generate depedency for physmem.o.
@@ -236,7 +241,7 @@
 	* physmem.c (physmem_total, physmem_available): De-ANSI-fy.
 	* configure.in (AC_CHECK_FUNCS): Add pstat_getstatic and
 	pstat_getdynamic.
-	
+
 2003-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (CFILES): Add physmem.c.

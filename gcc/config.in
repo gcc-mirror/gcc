@@ -321,9 +321,6 @@
 /* The number of bytes in type __int64 */
 #undef SIZEOF___INT64
 
-/* Define if the host execution character set is EBCDIC. */
-#undef HOST_EBCDIC
-
 /* Define if you want more run-time sanity checks.  This one gets a grab
    bag of miscellaneous but relatively cheap checks. */
 #undef ENABLE_CHECKING

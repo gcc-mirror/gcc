@@ -564,34 +564,6 @@ AC_CACHE_CHECK(for __int64, ac_cv_c___int64,
   fi
 ])
 
-dnl Host character set probe.
-dnl The EBCDIC values match the table in config/i370/i370.c;
-dnl there are other versions of EBCDIC but GCC won't work with them.
-dnl
-AC_DEFUN([gcc_AC_C_CHARSET],
-[AC_CACHE_CHECK(execution character set, ac_cv_c_charset,
-  [AC_EGREP_CPP(ASCII,
-[#if '\n' == 0x0A && ' ' == 0x20 && '0' == 0x30 \
-   && 'A' == 0x41 && 'a' == 0x61 && '!' == 0x21
-ASCII
-#endif], ac_cv_c_charset=ASCII)
-  if test x${ac_cv_c_charset+set} != xset; then
-    AC_EGREP_CPP(EBCDIC,
-[#if '\n' == 0x15 && ' ' == 0x40 && '0' == 0xF0 \
-   && 'A' == 0xC1 && 'a' == 0x81 && '!' == 0x5A
-EBCDIC
-#endif], ac_cv_c_charset=EBCDIC)
-  fi
-  if test x${ac_cv_c_charset+set} != xset; then
-    ac_cv_c_charset=unknown
-  fi])
-if test $ac_cv_c_charset = unknown; then
-  AC_MSG_ERROR([*** Cannot determine host character set.])
-elif test $ac_cv_c_charset = EBCDIC; then
-  AC_DEFINE(HOST_EBCDIC, 1,
-  [Define if the host execution character set is EBCDIC.])
-fi])
-
 #serial AM2
 
 dnl From Bruno Haible.
