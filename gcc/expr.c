@@ -3840,8 +3840,6 @@ expand_assignment (to, from, want_value, suggest_reg)
 
       if (GET_CODE (to_rtx) == MEM)
 	{
-	  tree old_expr = MEM_EXPR (to_rtx);
-
 	  /* If the field is at offset zero, we could have been given the
 	     DECL_RTX of the parent struct.  Don't munge it.  */
 	  to_rtx = shallow_copy_rtx (to_rtx);
