@@ -3732,6 +3732,72 @@ mips_output_float (stream, value)
 }
 
 
+/* Return TRUE if any register used in the epilogue is used.  This to insure
+   any insn put into the epilogue delay slots is safe.  */
+
+int
+epilogue_reg_mentioned_p (insn)
+     rtx insn;
+{
+  register char *fmt;
+  register int i;
+  register enum rtx_code code;
+  register int regno;
+
+  if (insn == (rtx)0)
+    return 0;
+
+  if (GET_CODE (insn) == LABEL_REF)
+    return 0;
+
+  code = GET_CODE (insn);
+  switch (code)
+    {
+    case REG:
+      regno = REGNO (insn);
+      if (regno == STACK_POINTER_REGNUM)
+	return 1;
+
+      if (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)
+	return 1;
+
+      if (!call_used_regs[regno])
+	return 1;
+
+      if (regno != MIPS_TEMP1_REGNUM && regno != MIPS_TEMP2_REGNUM)
+	return 0;
+
+      if (!current_frame_info.initialized)
+	compute_frame_size (get_frame_size ());
+
+      return (current_frame_info.total_size >= 32768);
+
+    case SCRATCH:
+    case CC0:
+    case PC:
+    case CONST_INT:
+    case CONST_DOUBLE:
+      return 0;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+	  for (j = XVECLEN (insn, i) - 1; j >= 0; j--)
+	    if (epilogue_reg_mentioned_p (XVECEXP (insn, i, j)))
+	      return 1;
+	}
+      else if (fmt[i] == 'e' && epilogue_reg_mentioned_p (XEXP (insn, i)))
+	return 1;
+    }
+
+  return 0;
+}
+
+
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.
 
@@ -3785,22 +3851,22 @@ mips_output_float (stream, value)
 
 */
 
-unsigned long
+long
 compute_frame_size (size)
      int size;			/* # of var. bytes allocated */
 {
   int regno;
-  unsigned long total_size;	/* # bytes that the entire frame takes up */
-  unsigned long var_size;	/* # bytes that variables take up */
-  unsigned long args_size;	/* # bytes that outgoing arguments take up */
-  unsigned long extra_size;	/* # extra bytes */
-  unsigned int  gp_reg_rounded;	/* # bytes needed to store gp after rounding */
-  unsigned int  gp_reg_size;	/* # bytes needed to store gp regs */
-  unsigned int  fp_reg_size;	/* # bytes needed to store fp regs */
-  unsigned long mask;		/* mask of saved gp registers */
-  unsigned long fmask;		/* mask of saved fp registers */
-  int fp_inc;			/* 1 or 2 depending on the size of fp regs */
-  int fp_bits;			/* bitmask to use for each fp register */
+  long total_size;		/* # bytes that the entire frame takes up */
+  long var_size;		/* # bytes that variables take up */
+  long args_size;		/* # bytes that outgoing arguments take up */
+  long extra_size;		/* # extra bytes */
+  long gp_reg_rounded;		/* # bytes needed to store gp after rounding */
+  long gp_reg_size;		/* # bytes needed to store gp regs */
+  long fp_reg_size;		/* # bytes needed to store fp regs */
+  long mask;			/* mask of saved gp registers */
+  long fmask;			/* mask of saved fp registers */
+  int  fp_inc;			/* 1 or 2 depending on the size of fp regs */
+  long fp_bits;			/* bitmask to use for each fp register */
 
   gp_reg_size	 = 0;
   fp_reg_size	 = 0;
@@ -3826,7 +3892,7 @@ compute_frame_size (size)
       if (MUST_SAVE_REGISTER (regno))
 	{
 	  gp_reg_size += UNITS_PER_WORD;
-	  mask |= 1 << (regno - GP_REG_FIRST);
+	  mask |= 1L << (regno - GP_REG_FIRST);
 	}
     }
 
@@ -3900,156 +3966,213 @@ compute_frame_size (size)
 }
 
 
-/* Save/restore registers printing out the instructions to a file.  */
+/* Common code to emit the insns (or to write the instructions to a file)
+   to save/restore registers.
 
-void
-save_restore (file, gp_op, gp_2word_op, fp_op)
-     FILE *file;		/* stream to write to */
-     char *gp_op;		/* operation to do on gp registers */
-     char *gp_2word_op;		/* 2 word op to do on gp registers */
-     char *fp_op;		/* operation to do on fp registers */
-{
-  int regno;
-  unsigned long mask	  = current_frame_info.mask;
-  unsigned long fmask	  = current_frame_info.fmask;
-  unsigned long gp_offset;
-  unsigned long fp_offset;
-  unsigned long min_offset;
-  char *base_reg;
+   Other parts of the code assume that MIPS_TEMP1_REGNUM (aka large_reg)
+   is not modified within save_restore_insns.  */
 
-  if (mask == 0 && fmask == 0)
-    return;
-
-  base_reg   = reg_names[STACK_POINTER_REGNUM];
-  gp_offset  = current_frame_info.gp_sp_offset;
-  fp_offset  = current_frame_info.fp_sp_offset;
-  min_offset = (gp_offset < fp_offset && mask != 0) ? gp_offset : fp_offset;
-
-  /* Deal with calling functions with a large structure.  */
-  if (min_offset >= 32768)
-    {
-      char *temp = reg_names[MIPS_TEMP2_REGNUM];
-      fprintf (file, "\tli\t%s,%ld\n", temp, min_offset);
-      fprintf (file, "\taddu\t%s,%s,%s\n", temp, temp, base_reg);
-      base_reg = temp;
-      gp_offset = min_offset - gp_offset;
-      fp_offset = min_offset - fp_offset;
-    }
-
-  /* Save registers starting from high to low.  The debuggers prefer
-     at least the return register be stored at func+4, and also it
-     allows us not to need a nop in the epilog if at least one
-     register is reloaded in addition to return address.  */
-
-  if (mask || frame_pointer_needed)
-    {
-      for  (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
-	{
-	  if ((mask & (1L << (regno - GP_REG_FIRST))) != 0
-	      || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed))
-	    {
-	      fprintf (file, "\t%s\t%s,%d(%s)\n",
-		       gp_op, reg_names[regno],
-		       gp_offset, base_reg);
-
-	      gp_offset -= UNITS_PER_WORD;
-	    }
-	}
-    }
-
-  if (fmask)
-    {
-      int fp_inc = (TARGET_FLOAT64) ? 1 : 2;
-
-      for  (regno = FP_REG_LAST-1; regno >= FP_REG_FIRST; regno -= fp_inc)
-	{
-	  if ((fmask & (1L << (regno - FP_REG_FIRST))) != 0)
-	    {
-	      fprintf (file, "\t%s\t%s,%d(%s)\n",
-		       fp_op, reg_names[regno], fp_offset, base_reg);
-
-	      fp_offset -= 2*UNITS_PER_WORD;
-	    }
-	}
-    }
-}
-
-
-/* Common code to emit the insns to save/restore registers.  */
+#define BITSET_P(value,bit) (((value) & (1L << (bit))) != 0)
 
 static void
-save_restore_insns (store_p)
+save_restore_insns (store_p, large_reg, large_offset, file)
      int store_p;		/* true if this is prologue */
+     rtx large_reg;		/* register holding large offset constant or NULL */
+     long large_offset;		/* large constant offset value */
+     FILE *file;		/* file to write instructions to instead of making RTL */
 {
+  long mask		= current_frame_info.mask;
+  long fmask		= current_frame_info.fmask;
   int regno;
-  rtx base_reg_rtx		= stack_pointer_rtx;
-  unsigned long mask		= current_frame_info.mask;
-  unsigned long fmask		= current_frame_info.fmask;
-  unsigned long gp_offset;
-  unsigned long fp_offset;
-  unsigned long min_offset;
+  rtx base_reg_rtx;
+  long base_offset;
+  long gp_offset;
+  long fp_offset;
+  long end_offset;
+
+  if (frame_pointer_needed && !BITSET_P (mask, FRAME_POINTER_REGNUM - GP_REG_FIRST))
+    abort ();
 
   if (mask == 0 && fmask == 0)
     return;
-
-  gp_offset  = current_frame_info.gp_sp_offset;
-  fp_offset  = current_frame_info.fp_sp_offset;
-  min_offset = (gp_offset < fp_offset && mask != 0) ? gp_offset : fp_offset;
-
-  /* Deal with calling functions with a large structure.  */
-  if (min_offset >= 32768)
-    {
-      base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
-      emit_move_insn (base_reg_rtx, GEN_INT (min_offset));
-      emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
-      gp_offset = min_offset - gp_offset;
-      fp_offset = min_offset - fp_offset;
-    }
 
   /* Save registers starting from high to low.  The debuggers prefer
      at least the return register be stored at func+4, and also it
      allows us not to need a nop in the epilog if at least one
      register is reloaded in addition to return address.  */
 
-  if (mask || frame_pointer_needed)
+  /* Save GP registers if needed.  */
+  if (mask)
     {
+      /* Pick which pointer to use as a base register.  For small
+	 frames, just use the stack pointer.  Otherwise, use a
+	 temporary register.  Save 2 cycles if the save area is near
+	 the end of a large frame, by reusing the constant created in
+	 the prologue/epilogue to adjust the stack frame.  */
+
+      gp_offset  = current_frame_info.gp_sp_offset;
+      end_offset = gp_offset - (current_frame_info.gp_reg_size - UNITS_PER_WORD);
+
+      if (gp_offset < 0 || end_offset < 0)
+	fatal ("gp_offset (%ld) or end_offset (%ld) is less than zero.",
+	       gp_offset, end_offset);
+
+      else if (gp_offset < 32768)
+	{
+	  base_reg_rtx = stack_pointer_rtx;
+	  base_offset  = 0;
+	}
+
+      else if (large_reg != (rtx)0
+	       && (((unsigned long)(large_offset - gp_offset))  < 32768)
+	       && (((unsigned long)(large_offset - end_offset)) < 32768))
+	{
+	  base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+	  base_offset  = large_offset;
+	  if (file == (FILE *)0)
+	    emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
+	  else
+	    fprintf (file, "\taddu\t%s,%s,%s\n",
+		     reg_names[MIPS_TEMP2_REGNUM],
+		     reg_names[REGNO (large_reg)],
+		     reg_names[STACK_POINTER_REGNUM]);
+	}
+
+      else
+	{
+	  base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+	  base_offset  = gp_offset;
+	  if (file == (FILE *)0)
+	    {
+	      emit_move_insn (base_reg_rtx, GEN_INT (gp_offset));
+	      emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+	    }
+	  else
+	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\taddu\t%s,%s,%s\n",
+		     reg_names[MIPS_TEMP2_REGNUM],
+		     (long)base_offset,
+		     (long)base_offset,
+		     reg_names[MIPS_TEMP2_REGNUM],
+		     reg_names[MIPS_TEMP2_REGNUM],
+		     reg_names[STACK_POINTER_REGNUM]);
+	}
+
       for  (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
 	{
-	  if ((mask & (1L << (regno - GP_REG_FIRST))) != 0
-	      || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed))
+	  if (BITSET_P (mask, regno - GP_REG_FIRST))
 	    {
-	      rtx reg_rtx = gen_rtx (REG, Pmode, regno);
-	      rtx mem_rtx = gen_rtx (MEM, Pmode,
-				     gen_rtx (PLUS, Pmode, base_reg_rtx,
-					      GEN_INT (gp_offset)));
+	      if (file == (FILE *)0)
+		{
+		  rtx reg_rtx = gen_rtx (REG, Pmode, regno);
+		  rtx mem_rtx = gen_rtx (MEM, Pmode,
+					 gen_rtx (PLUS, Pmode, base_reg_rtx,
+						  GEN_INT (gp_offset - base_offset)));
 
-	      if (store_p)
-		emit_move_insn (mem_rtx, reg_rtx);
+		  if (store_p)
+		    emit_move_insn (mem_rtx, reg_rtx);
+		  else
+		    emit_move_insn (reg_rtx, mem_rtx);
+		}
 	      else
-		emit_move_insn (reg_rtx, mem_rtx);
+		fprintf (file, "\t%s\t%s,%ld(%s)\n",
+			 (store_p) ? "sw" : "lw",
+			 reg_names[regno],
+			 gp_offset - base_offset,
+			 reg_names[REGNO(base_reg_rtx)]);
 
 	      gp_offset -= UNITS_PER_WORD;
 	    }
 	}
     }
+  else
+    {
+      base_reg_rtx = (rtx)0;		/* Make sure these are initialzed */
+      base_offset  = 0;
+    }
 
+  /* Save floating point registers if needed.  */
   if (fmask)
     {
       int fp_inc = (TARGET_FLOAT64) ? 1 : 2;
 
+      /* Pick which pointer to use as a base register.  */
+      fp_offset  = current_frame_info.fp_sp_offset;
+      end_offset = fp_offset - (current_frame_info.fp_reg_size - UNITS_PER_WORD);
+
+      if (fp_offset < 0 || end_offset < 0)
+	fatal ("fp_offset (%ld) or end_offset (%ld) is less than zero.",
+	       fp_offset, end_offset);
+
+      else if (fp_offset < 32768)
+	{
+	  base_reg_rtx = stack_pointer_rtx;
+	  base_offset  = 0;
+	}
+
+      else if (base_reg_rtx != (rtx)0
+	       && (((unsigned long)(base_offset - fp_offset))  < 32768)
+	       && (((unsigned long)(base_offset - end_offset)) < 32768))
+	{
+	  ;			/* already set up for gp registers above */
+	}
+
+      else if (large_reg != (rtx)0
+	       && (((unsigned long)(large_offset - fp_offset))  < 32768)
+	       && (((unsigned long)(large_offset - end_offset)) < 32768))
+	{
+	  base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+	  base_offset  = large_offset;
+	  if (file == (FILE *)0)
+	    emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
+	  else
+	    fprintf (file, "\taddu\t%s,%s,%s\n",
+		     reg_names[MIPS_TEMP2_REGNUM],
+		     reg_names[REGNO (large_reg)],
+		     reg_names[STACK_POINTER_REGNUM]);
+	}
+
+      else
+	{
+	  base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+	  base_offset  = fp_offset;
+	  if (file == (FILE *)0)
+	    {
+	      emit_move_insn (base_reg_rtx, GEN_INT (fp_offset));
+	      emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+	    }
+	  else
+	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\taddu\t%s,%s,%s\n",
+		     reg_names[MIPS_TEMP2_REGNUM],
+		     (long)base_offset,
+		     (long)base_offset,
+		     reg_names[MIPS_TEMP2_REGNUM],
+		     reg_names[MIPS_TEMP2_REGNUM],
+		     reg_names[STACK_POINTER_REGNUM]);
+	}
+
       for  (regno = FP_REG_LAST-1; regno >= FP_REG_FIRST; regno -= fp_inc)
 	{
-	  if ((fmask & (1L << (regno - FP_REG_FIRST))) != 0)
+	  if (BITSET_P (fmask, regno - FP_REG_FIRST))
 	    {
-	      rtx reg_rtx = gen_rtx (REG, DFmode, regno);
-	      rtx mem_rtx = gen_rtx (MEM, DFmode,
-				     gen_rtx (PLUS, Pmode, base_reg_rtx,
-					      GEN_INT (fp_offset)));
+	      if (file == (FILE *)0)
+		{
+		  rtx reg_rtx = gen_rtx (REG, DFmode, regno);
+		  rtx mem_rtx = gen_rtx (MEM, DFmode,
+					 gen_rtx (PLUS, Pmode, base_reg_rtx,
+						  GEN_INT (fp_offset - base_offset)));
 
-	      if (store_p)
-		emit_move_insn (mem_rtx, reg_rtx);
+		  if (store_p)
+		    emit_move_insn (mem_rtx, reg_rtx);
+		  else
+		    emit_move_insn (reg_rtx, mem_rtx);
+		}
 	      else
-		emit_move_insn (reg_rtx, mem_rtx);
+		fprintf (file, "\t%s\t%s,%ld(%s)\n",
+			 (store_p) ? "s.d" : "l.d",
+			 reg_names[regno],
+			 fp_offset - base_offset,
+			 reg_names[REGNO(base_reg_rtx)]);
+
 
 	      fp_offset -= 2*UNITS_PER_WORD;
 	    }
@@ -4065,7 +4188,7 @@ function_prologue (file, size)
      FILE *file;
      int size;
 {
-  int tsize = current_frame_info.total_size;
+  long tsize = current_frame_info.total_size;
 
   ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
 
@@ -4076,6 +4199,7 @@ function_prologue (file, size)
   fputs ("\t.ent\t", file);
   assemble_name (file, current_function_name);
   fputs ("\n", file);
+
   assemble_name (file, current_function_name);
   fputs (":\n", file);
 
@@ -4112,7 +4236,7 @@ void
 mips_expand_prologue ()
 {
   int regno;
-  int tsize;
+  long tsize;
   tree fndecl = current_function_decl; /* current... is tooo long */
   tree fntype = TREE_TYPE (fndecl);
   tree fnargs = (TREE_CODE (fntype) != METHOD_TYPE)
@@ -4120,6 +4244,7 @@ mips_expand_prologue ()
 			: 0;
   tree next_arg;
   tree cur_arg;
+  rtx tmp_rtx	 = (rtx)0;
   char *arg_name = (char *)0;
   CUMULATIVE_ARGS args_so_far;
 
@@ -4200,14 +4325,14 @@ mips_expand_prologue ()
 
       if (tsize > 32767)
 	{
-	  rtx tmp_rtx = gen_rtx (REG, SImode, MIPS_TEMP1_REGNUM);
+	  tmp_rtx = gen_rtx (REG, SImode, MIPS_TEMP1_REGNUM);
 	  emit_move_insn (tmp_rtx, tsize_rtx);
 	  tsize_rtx = tmp_rtx;
 	}
 
       emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tsize_rtx));
 
-      save_restore_insns (TRUE);
+      save_restore_insns (TRUE, tmp_rtx, tsize, (FILE *)0);
 
       if (frame_pointer_needed)
 	emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
@@ -4228,7 +4353,7 @@ function_epilogue (file, size)
      FILE *file;
      int size;
 {
-  int tsize;
+  long tsize;
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
   char *t1_str = reg_names[MIPS_TEMP1_REGNUM];
   rtx epilogue_delay = current_function_epilogue_delay_list;
@@ -4236,6 +4361,9 @@ function_epilogue (file, size)
   int noepilogue = FALSE;
   int load_nop = FALSE;
   int load_only_r31;
+  rtx tmp_rtx = (rtx)0;
+  rtx restore_rtx;
+  int i;
 
   /* The epilogue does not depend on any registers, but the stack
      registers, so we assume that if we have 1 pending nop, it can be
@@ -4316,13 +4444,16 @@ function_epilogue (file, size)
 	fprintf (file, "\t.set\tnoreorder\n");
 
       if (tsize > 32767)
-	fprintf (file, "\tli\t%s,%d\n", t1_str, tsize);
+	{
+	  fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n", t1_str, (long)tsize, (long)tsize);
+	  tmp_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
+	}
 
       if (frame_pointer_needed)
 	fprintf (file, "\tmove\t%s,%s\t\t\t# sp not trusted here\n",
 		 sp_str, reg_names[FRAME_POINTER_REGNUM]);
 
-      save_restore (file, "lw", "ld", "l.d");
+      save_restore_insns (FALSE, tmp_rtx, tsize, file);
 
       load_only_r31 = (current_frame_info.mask == (1 << 31)
 		       && current_frame_info.fmask == 0);
@@ -4469,12 +4600,13 @@ function_epilogue (file, size)
 void
 mips_expand_epilogue ()
 {
-  int tsize = current_frame_info.total_size;
+  long tsize = current_frame_info.total_size;
   rtx tsize_rtx = GEN_INT (tsize);
+  rtx tmp_rtx = (rtx)0;
 
   if (tsize > 32767)
     {
-      rtx tmp_rtx = gen_rtx (REG, SImode, MIPS_TEMP1_REGNUM);
+      tmp_rtx = gen_rtx (REG, SImode, MIPS_TEMP1_REGNUM);
       emit_move_insn (tmp_rtx, tsize_rtx);
       tsize_rtx = tmp_rtx;
     }
@@ -4484,7 +4616,7 @@ mips_expand_epilogue ()
       if (frame_pointer_needed)
 	emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
 
-      save_restore_insns (FALSE);
+      save_restore_insns (FALSE, tmp_rtx, tsize, (FILE *)0);
 
       emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, tsize_rtx));
     }
