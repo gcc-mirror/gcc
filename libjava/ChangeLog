@@ -1,5 +1,14 @@
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/JLayeredPane.java,
+	javax/swing/plaf/BorderUIResource.java,
+	javax/swing/plaf/ComponentUI.java,
+	javax/swing/undo/CompoundEdit.java,
+	javax/swing/undo/StateEdit.java:
+	Fixed HTML tags in javadocs all over.
+
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* javax/print/attribute/EnumSyntax.java
 	(getOffset): Made protected.
 	* javax/print/attribute/HashAttributeSet.java

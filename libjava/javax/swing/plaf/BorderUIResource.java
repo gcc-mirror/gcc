@@ -279,7 +279,7 @@ public class BorderUIResource
      *
      * <p><img src="../border/doc-files/BevelBorder-1.png"
      * width="500" height="150"
-     * alt="[An illustration showing raised and lowered BevelBorders]" />
+     * alt="[An illustration showing raised and lowered BevelBorders]" /></p>
      *
      * @param bevelType the desired appearance of the border. The value
      *        must be either {@link javax.swing.border.BevelBorder#RAISED}
@@ -300,7 +300,7 @@ public class BorderUIResource
      *
      * <p><img src="../border/doc-files/BevelBorder-2.png" width="500"
      * height="150" alt="[An illustration showing BevelBorders that were
-     * constructed with this method]" />
+     * constructed with this method]" /></p>
      *
      * @param bevelType the desired appearance of the border. The value
      *        must be either {@link javax.swing.border.BevelBorder#RAISED}
@@ -340,7 +340,7 @@ public class BorderUIResource
      *
      * <p><img src="../border/doc-files/BevelBorder-3.png" width="500"
      * height="150" alt="[An illustration showing BevelBorders that
-     * were constructed with this method]" />
+     * were constructed with this method]" /></p>
      *
      * @param bevelType the desired appearance of the border. The value
      *        must be either {@link javax.swing.border.BevelBorder#RAISED}
@@ -432,7 +432,7 @@ public class BorderUIResource
    *
    * <p><img src="../border/doc-files/EmptyBorder-1.png"
    * width="290" height="200"
-   * alt="[An illustration of EmptyBorder]" />
+   * alt="[An illustration of EmptyBorder]" /></p>
    *
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -487,7 +487,7 @@ public class BorderUIResource
    *
    * <p><img src="../border/doc-files/EtchedBorder-1.png" width="500"
    * height="200" alt="[An illustration of the two EtchedBorder
-   * variants]" />
+   * variants]" /></p>
    *
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -514,7 +514,7 @@ public class BorderUIResource
      *
      * <p><img src="../border/doc-files/EtchedBorder-1.png"
      * width="500" height="200" alt="[An illustration of the two
-     * EtchedBorder variants]" />
+     * EtchedBorder variants]" /></p>
      *
      * @param etchType the desired appearance of the border. The value
      *        must be either {@link javax.swing.border.EtchedBorder#RAISED}
@@ -555,7 +555,7 @@ public class BorderUIResource
      *
      * <p><img src="../border/doc-files/EtchedBorder-2.png" width="500"
      * height="200" alt="[An illustration that shows which pixels get
-     * painted in what color]" />
+     * painted in what color]" /></p>
      *
      * @param etchType the desired appearance of the border. The value
      *        must be either {@link javax.swing.border.EtchedBorder#RAISED}
@@ -588,7 +588,7 @@ public class BorderUIResource
    * such as the borders provided by this class.
    *
    * <p><img src="../border/doc-files/LineBorder-1.png" width="500"
-   * height="200" alt="[An illustration of two LineBorders] />
+   * height="200" alt="[An illustration of two LineBorders]" /></p>
    *
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -643,7 +643,7 @@ public class BorderUIResource
    * such as the borders provided by this class.
    *
    * <p><img src="../border/doc-files/MatteBorder-1.png" width="500"
-   * height="150" alt="[An illustration of two MatteBorders] />
+   * height="150" alt="[An illustration of two MatteBorders]" /></p>
    *
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -658,7 +658,7 @@ public class BorderUIResource
      *
      * <p><img src="../border/doc-files/MatteBorder-2.png" width="500"
      * height="150" alt="[A picture of a MatteBorder made by this
-     * constructor]" />
+     * constructor]" /></p>
      *
      * @param top the width of the border at its top edge.
      * @param left the width of the border at its left edge.
@@ -680,7 +680,7 @@ public class BorderUIResource
      *
      * <p><img src="../border/doc-files/MatteBorder-4.png" width="500"
      * height="150" alt="[A picture of a MatteBorder made by this
-     * constructor]" />
+     * constructor]" /></p>
      *
      * @param top the width of the border at its top edge.
      * @param left the width of the border at its left edge.
@@ -704,7 +704,7 @@ public class BorderUIResource
      *
      * <p><img src="../border/doc-files/MatteBorder-6.png" width="500"
      * height="150" alt="[A picture of a MatteBorder made by this
-     * constructor]" />
+     * constructor]" /></p>
      *
      * @param tileIcon an icon for tiling the border area. 
      */

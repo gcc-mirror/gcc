@@ -52,7 +52,7 @@ import javax.swing.JComponent;
  *
  * <p><img src="doc-files/ComponentUI-1.png" width="700" height="550"
  * alt="[UML diagram illustrating the architecture for pluggable
- * look and feels]" />
+ * look and feels]" /></p>
  *
  * <p>Components such as {@link javax.swing.JSlider} do not directly
  * implement operations related to the look and feel of the user
@@ -68,14 +68,14 @@ import javax.swing.JComponent;
  * services. Soon before the end of its lifecycle, the
  * <code>ComponentUI</code> will receive an {@link #uninstallUI}
  * message, at which time the <code>ComponentUI</code> is expected to
- * undo any changes.
+ * undo any changes.</p>
  *
  * <p>Note that the <code>ui</code> of a <code>JComponent</code>
  * changes whenever the user switches between look and feels.  For
  * example, the <code>ui</code> property of a <code>JSlider</code>
  * could change from an instance of <code>MetalSliderUI</code> to an
  * instance of <code>FooSliderUI</code>. This switch can happen at any
- * time, but it will always be performed from inside the Swing thread.
+ * time, but it will always be performed from inside the Swing thread.</p>
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
@@ -96,26 +96,24 @@ public abstract class ComponentUI
    * The delegate object then receives an <code>installUI</code>
    * message.
    *
-   * <p>This method should perform the following tasks:
+   * <p>This method should perform the following tasks:</p>
    *
-   * <ul><li>Set visual properties such as borders, fonts, colors, or
-   * icons. However, no change should be performed for those
-   * properties whose values have been directly set by the client
-   * application. To allow the distinction, LookAndFeels are expected
-   * to use values that implement the {@link UIResource} marker
-   * interface, such as {@link BorderUIResource} or {@link
-   * ColorUIResource}.</li>
-   *
+   * <ul>
+   * <li>Set visual properties such as borders, fonts, colors, or
+   *     icons. However, no change should be performed for those
+   *     properties whose values have been directly set by the client
+   *     application. To allow the distinction, LookAndFeels are expected
+   *     to use values that implement the {@link UIResource} marker
+   *     interface, such as {@link BorderUIResource} or {@link
+   *     ColorUIResource}.</li>
    * <li>If necessary, install a {@link java.awt.LayoutManager}.</li>
-   *
    * <li>Embed custom sub-components. For instance, the UI delegate
-   * for a {@link javax.swing.JSplitPane} might install a special
-   * component for the divider.</li>
-   *
+   *     for a {@link javax.swing.JSplitPane} might install a special
+   *     component for the divider.</li>
    * <li>Register event listeners.</li>
-   *
    * <li>Set up properties related to keyborad navigation, such as
-   * mnemonics or focus traversal policies.</li></ul>
+   *     mnemonics or focus traversal policies.</li>
+   * </ul>
    *
    * @param c the component for which this delegate will provide
    *        services.

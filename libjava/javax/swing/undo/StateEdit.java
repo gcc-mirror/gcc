@@ -44,52 +44,54 @@ import java.util.Iterator;
 /**
  * A helper class, making it easy to support undo and redo.
  *
- * <p>The following example shows how to use this class.
+ * <p>The following example shows how to use this class.</p>
  *
- * <pre>  Foo foo; // class Foo implements {@link StateEditable}
- *  StateEdit edit;
+ * <pre>
+ * Foo foo; // class Foo implements {@link StateEditable}
+ * StateEdit edit;
  *
- *  edit = new StateEdit(foo, "Name Change");
- *  foo.setName("Jane Doe");
- *  edit.end();
- *  undoManager.addEdit(edit);</pre>
+ * edit = new StateEdit(foo, "Name Change");
+ * foo.setName("Jane Doe");
+ * edit.end();
+ * undoManager.addEdit(edit);
+ * </pre>
  *
  * <p>If <code>Foo</code>&#x2019;s implementation of {@link
  * StateEditable} considers the name as part of the editable state,
  * the user can now choose &#x201c;Undo Name Change&#x201d; or
  * &#x201c;Redo Name Change&#x201d; from the respective menu. No
- * further undo support is needed from the application.
+ * further undo support is needed from the application.</p>
  *
- * <p>The following explains what happens in the example.
+ * <p>The following explains what happens in the example.</p>
  *
- * <p><ol><li>When a <code>StateEdit</code> is created, the associated
- * {@link StateEditable} gets asked to store its state into a hash
- * table, {@link #preState}.</li>
- *
+ * <ol>
+ * <li>When a <code>StateEdit</code> is created, the associated
+ *     {@link StateEditable} gets asked to store its state into a hash
+ *     table, {@link #preState}.</li>
  * <li>The application will now perform some changes to the edited
- * object.  This typically happens by invoking methods on the edited
- * object.</li>
- *
+ *     object. This typically happens by invoking methods on the edited
+ *     object.</li>
  * <li>The editing phase is terminated by invoking the {@link #end()}
- * method of the <code>StateEdit</code>. The <code>end()</code> method
- * does two things.
+ *     method of the <code>StateEdit</code>. The <code>end()</code> method
+ *     does two things.
  *
- *   <ul><li>The edited object receives a second request for storing
- *   its state.  This time, it will use a different hash table, {@link
- *   #postState}.</li>
- *
- *   <li>To increase efficiency, the <code>StateEdit</code> now removes
- *   any entries from {@link #preState} and {@link #postState} that have
- *   the same key, and whose values are equal. Equality is determined
- *   by invoking the <code>equals</code> method inherited from
- *   {@link java.lang.Object}.</li></ul></li>
- *
+ *     <ul>
+ *     <li>The edited object receives a second request for storing
+ *         its state.  This time, it will use a different hash table, {@link
+ *         #postState}.</li>
+ *     <li>To increase efficiency, the <code>StateEdit</code> now removes
+ *         any entries from {@link #preState} and {@link #postState} that have
+ *         the same key, and whose values are equal. Equality is determined
+ *         by invoking the <code>equals</code> method inherited from
+ *         {@link java.lang.Object}.</li>
+ *     </ul></li>
  * <li>When the user later chooses to undo the <code>StateEdit</code>,
  * the edited object is asked to {@linkplain StateEditable#restoreState
  * restore its state} from the {@link #preState} table.  Similarly,
  * when the user chooses to <i>redo</i> the <code>StateEdit</code>,
  * the edited object gets asked to restore its state from the {@link
- * #postState}.</li></ol>
+ * #postState}.</li>
+ * </ol>
  *
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
