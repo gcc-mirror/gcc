@@ -251,7 +251,7 @@ struct identity {
 
 template <typename Pair>
 struct extract1st {
-  typename Pair::first_type operator()(const Pair& p) { return p.first; }
+  typename Pair::first_type operator()(const Pair& p) const { return p.first; }
 };
 
 // Default range hashing function: use division to fold a large number
@@ -519,17 +519,17 @@ protected:
     : m_extract(ex), m_eq(eq), m_ranged_hash(h) { }
 
   typedef void* hash_code_t;
-  hash_code_t m_hash_code (const Key& k) { return 0; }
+  hash_code_t m_hash_code (const Key& k) const { return 0; }
   std::size_t bucket_index (const Key& k, hash_code_t, std::size_t N) const
     { return m_ranged_hash (k, N); }
-  std::size_t bucket_index (const hash_node<Value, false>* p, std::size_t N) {
+  std::size_t bucket_index (const hash_node<Value, false>* p, std::size_t N) const {
     return m_ranged_hash (m_extract (p->m_v), N); 
   }
   
-  bool compare (const Key& k, hash_code_t, hash_node<Value, false>* n)
+  bool compare (const Key& k, hash_code_t, hash_node<Value, false>* n) const
     { return m_eq (k, m_extract(n->m_v)); }
 
-  void copy_code (hash_node<Value, false>*, const hash_node<Value, false>*) { }
+  void copy_code (hash_node<Value, false>*, const hash_node<Value, false>*) const { }
 
   void m_swap(hash_code_base& x) {
     m_extract.m_swap(x);
@@ -576,17 +576,17 @@ protected:
     : m_extract(ex), m_eq(eq), m_h1(h1), m_h2(h2) { }
 
   typedef std::size_t hash_code_t;
-  hash_code_t m_hash_code (const Key& k) { return m_h1(k); }
+  hash_code_t m_hash_code (const Key& k) const { return m_h1(k); }
   std::size_t bucket_index (const Key&, hash_code_t c, std::size_t N) const
     { return m_h2 (c, N); }
-  std::size_t bucket_index (const hash_node<Value, false>* p, std::size_t N) {
+  std::size_t bucket_index (const hash_node<Value, false>* p, std::size_t N) const {
     return m_h2 (m_h1 (m_extract (p->m_v)), N);
   }
 
-  bool compare (const Key& k, hash_code_t,  hash_node<Value, false>* n)
+  bool compare (const Key& k, hash_code_t,  hash_node<Value, false>* n) const
     { return m_eq (k, m_extract(n->m_v)); }
 
-  void copy_code (hash_node<Value, false>*, const hash_node<Value, false>*) { }
+  void copy_code (hash_node<Value, false>*, const hash_node<Value, false>*) const { }
 
   void m_swap(hash_code_base& x) {
     m_extract.m_swap(x);
@@ -619,18 +619,18 @@ protected:
     : m_extract(ex), m_eq(eq), m_h1(h1), m_h2(h2) { }
 
   typedef std::size_t hash_code_t;
-  hash_code_t m_hash_code (const Key& k) { return m_h1(k); }
+  hash_code_t m_hash_code (const Key& k) const { return m_h1(k); }
   std::size_t bucket_index (const Key&, hash_code_t c, std::size_t N) const
     { return m_h2 (c, N); }
 
-  std::size_t bucket_index (const hash_node<Value, true>* p, std::size_t N) {
+  std::size_t bucket_index (const hash_node<Value, true>* p, std::size_t N) const {
     return m_h2 (p->hash_code, N);
   }
 
-  bool compare (const Key& k, hash_code_t c,  hash_node<Value, true>* n)
+  bool compare (const Key& k, hash_code_t c,  hash_node<Value, true>* n) const
     { return c == n->hash_code && m_eq (k, m_extract(n->m_v)); }
 
-  void copy_code (hash_node<Value, true>* to, const hash_node<Value, true>* from)
+  void copy_code (hash_node<Value, true>* to, const hash_node<Value, true>* from) const
     { to->hash_code = from->hash_code; }
 
   void m_swap(hash_code_base& x) {
@@ -1109,7 +1109,7 @@ typename hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::iterator
 hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::find (const key_type& k)
 {
   typename hashtable::hash_code_t code = this->m_hash_code (k);
-  std::size_t n = this->bucket_index (k, code, this->bucket_count);
+  std::size_t n = this->bucket_index (k, code, this->bucket_count());
   node* p = find_node (m_buckets[n], k, code);
   return p ? iterator(p, m_buckets + n) : this->end();
 }
@@ -1122,7 +1122,7 @@ typename hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::const_iterator
 hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::find (const key_type& k) const
 {
   typename hashtable::hash_code_t code = this->m_hash_code (k);
-  std::size_t n = this->bucket_index (k, code, this->bucket_count);
+  std::size_t n = this->bucket_index (k, code, this->bucket_count());
   node* p = find_node (m_buckets[n], k, code);
   return p ? const_iterator(p, m_buckets + n) : this->end();
 }
@@ -1135,7 +1135,7 @@ typename hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::size_type
 hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::count (const key_type& k) const
 {
   typename hashtable::hash_code_t code = this->m_hash_code (k);
-  std::size_t n = this->bucket_index (k, code, this->bucket_count);
+  std::size_t n = this->bucket_index (k, code, this->bucket_count());
   size_t result = 0;
   for (node* p = m_buckets[n]; p ; p = p->m_next)
     if (this->compare (k, code, p))
@@ -1152,7 +1152,7 @@ std::pair<typename hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::iterator,
 hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::equal_range (const key_type& k)
 {
   typename hashtable::hash_code_t code = this->m_hash_code (k);
-  std::size_t n = this->bucket_index (k, code, this->bucket_count);
+  std::size_t n = this->bucket_index (k, code, this->bucket_count());
   node** head = m_buckets + n;
   node* p = find_node (*head, k, code);
 
@@ -1164,7 +1164,7 @@ hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::equal_range (const key_type& k)
     iterator first(p, head);
     iterator last(p1, head);
     if (!p1)
-      p1->m_incr_bucket();
+      last.m_incr_bucket();
     return std::make_pair(first, last);
   }
   else
@@ -1180,7 +1180,7 @@ std::pair<typename hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::const_iterator,
 hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::equal_range (const key_type& k) const
 {
   typename hashtable::hash_code_t code = this->m_hash_code (k);
-  std::size_t n = this->bucket_index (k, code, this->bucket_count);
+  std::size_t n = this->bucket_index (k, code, this->bucket_count());
   node** head = m_buckets + n;
   node* p = find_node (*head, k, code);
 
@@ -1192,7 +1192,7 @@ hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::equal_range (const key_type& k) const
     const_iterator first(p, head);
     const_iterator last(p1, head);
     if (!p1)
-      p1->m_incr_bucket();
+      last.m_incr_bucket();
     return std::make_pair(first, last);
   }
   else
