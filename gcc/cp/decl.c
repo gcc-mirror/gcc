@@ -324,8 +324,9 @@ tree dtor_label;
 static rtx last_dtor_insn;
 
 /* In a constructor, the last insn emitted after the start of the
-   function and the parms, but before the start of the exception
-   specification.  */
+   function and the parms, the exception specification and any
+   function-try-block.  The constructor initializers are emitted after
+   this insn.  */
 
 static rtx last_parm_cleanup_insn;
 
@@ -11658,45 +11659,15 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   return 1;
 }
 
-void
-store_after_parms (insns)
-     rtx insns;
-{
-  rtx x;
-
-  for (x = get_insns (); x; x = next_insn (x))
-    {
-      if (GET_CODE (x) == NOTE && NOTE_LINE_NUMBER (x) == NOTE_INSN_FUNCTION_BEG)
-	{
-	  emit_insns_after (insns, x);
-	  return;
-	}
-    }
-#if 0
-  /* This doesn't work, because the inline output routine doesn't reset
-     last_parm_insn correctly for get_first_nonparm_insn () to work.  */
-
-  last_parm_insn = get_first_nonparm_insn ();
-  if (last_parm_insn == NULL_RTX)
-    emit_insns (insns);
-  else
-    emit_insns_before (insns,  last_parm_insn);
-#endif
-}
+/* Called after store_parm_decls for a function-try-block.  We need to update
+   last_parm_cleanup_insn so that the base initializers for a constructor
+   are run within this block, not before it.  */
 
 void
 expand_start_early_try_stmts ()
 {
-  rtx insns;
-  start_sequence ();
   expand_start_try_stmts ();
-  insns = get_insns ();
-  end_sequence ();
-#if 1
-  emit_insns_after (insns, get_insns ());
-#else
-  store_after_parms (insns);
-#endif
+  last_parm_cleanup_insn = get_last_insn ();
 }
 
 /* Store the parameter declarations into the current function declaration.

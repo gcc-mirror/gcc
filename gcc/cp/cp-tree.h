@@ -2085,7 +2085,6 @@ extern tree finish_enum				PROTO((tree, tree));
 extern tree build_enumerator			PROTO((tree, tree));
 extern tree grok_enum_decls			PROTO((tree, tree));
 extern int start_function			PROTO((tree, tree, tree, int));
-extern void store_after_parms			PROTO((struct rtx_def *));
 extern void expand_start_early_try_stmts	PROTO((void));
 extern void store_parm_decls			PROTO((void));
 extern void store_return_init			PROTO((tree, tree));
