@@ -430,12 +430,12 @@ do {									\
 
 /* Put PC relative got entries in .got2 */
 #define MINIMAL_TOC_SECTION_ASM_OP \
-  ((TARGET_RELOCATABLE) ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
+  ((TARGET_RELOCATABLE || flag_pic) ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
 
 /* Put relocatable data in .data, not .rodata so initialized pointers can be updated */
 #undef	CONST_SECTION_ASM_OP
 #define CONST_SECTION_ASM_OP \
-  ((TARGET_RELOCATABLE) ? "\t.section\t\".data\"\t# .rodata" : "\t.section\t\".rodata\"")
+  ((TARGET_RELOCATABLE || flag_pic) ? "\t.section\t\".data\"\t# .rodata" : "\t.section\t\".rodata\"")
 
 
 #define SDATA_SECTION_ASM_OP "\t.section \".sdata\",\"aw\""
@@ -703,7 +703,7 @@ extern int rs6000_pic_labelno;
 do {									\
   if (TARGET_SDATA && (SIZE) > 0 && (SIZE) <= g_switch_value)		\
     {									\
-      sbss_section ();							\
+      sdata_section ();							\
       ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
       ASM_OUTPUT_SKIP (FILE, SIZE);					\
@@ -755,7 +755,7 @@ do {									\
 #define ASM_OUTPUT_INT(FILE,VALUE)					\
 do {									\
   static int recurse = 0;						\
-  if (TARGET_RELOCATABLE						\
+  if ((TARGET_RELOCATABLE || flag_pic)					\
       && in_section != in_toc						\
       && in_section != in_text						\
       && in_section != in_ctors						\
@@ -883,7 +883,7 @@ do {									\
 									\
   if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
     type = SECT_EXEC, mode = "ax";					\
-  else if (DECL && TREE_READONLY (DECL) && !TARGET_RELOCATABLE)		\
+  else if (DECL && TREE_READONLY (DECL) && !TARGET_RELOCATABLE && !flag_pic) \
     type = SECT_RO, mode = "a";						\
   else									\
     type = SECT_RW, mode = "aw";					\
