@@ -376,6 +376,23 @@ tsi_gimplify_val (struct nesting_info *info, tree exp, tree_stmt_iterator *tsi)
     return init_tmp_var (info, exp, tsi);
 }
 
+/* Similarly, but copy from the temporary and insert the statement
+   after the iterator.  */
+
+static tree
+save_tmp_var (struct nesting_info *info, tree exp,
+	      tree_stmt_iterator *tsi)
+{
+  tree t, stmt;
+
+  t = create_tmp_var_for (info, TREE_TYPE (exp), NULL);
+  stmt = build (MODIFY_EXPR, TREE_TYPE (t), exp, t);
+  SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
+  tsi_link_after (tsi, stmt, TSI_SAME_STMT);
+
+  return t;
+}
+
 /* Build or return the type used to represent a nested function trampoline.  */
 
 static GTY(()) tree trampoline_type;
@@ -517,6 +534,7 @@ struct walk_stmt_info
   tree_stmt_iterator tsi;
   struct nesting_info *info;
   bool val_only;
+  bool is_lhs;
   bool changed;
 };
 
@@ -567,12 +585,18 @@ walk_stmts (struct walk_stmt_info *wi, tree *tp)
       break;
 
     case MODIFY_EXPR:
-      /* The immediate arguments of a MODIFY_EXPR may use COMPONENT_REF.  */
-      wi->val_only = false;
-      walk_tree (&TREE_OPERAND (t, 0), wi->callback, wi, NULL);
-      wi->val_only = false;
+      /* A formal temporary lhs may use a COMPONENT_REF rhs.  */
+      wi->val_only = !is_gimple_formal_tmp_var (TREE_OPERAND (t, 0));
       walk_tree (&TREE_OPERAND (t, 1), wi->callback, wi, NULL);
+
+      /* If the rhs is appropriate for a memory, we may use a
+	 COMPONENT_REF on the lhs.  */
+      wi->val_only = !is_gimple_mem_rhs (TREE_OPERAND (t, 1));
+      wi->is_lhs = true;
+      walk_tree (&TREE_OPERAND (t, 0), wi->callback, wi, NULL);
+
       wi->val_only = true;
+      wi->is_lhs = false;
       break;
 
     default:
@@ -789,8 +813,14 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	      x = init_tmp_var (info, x, &wi->tsi);
 	      x = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (x)), x);
 	    }
+
 	  if (wi->val_only)
-	    x = init_tmp_var (info, x, &wi->tsi);
+	    {
+	      if (wi->is_lhs)
+		x = save_tmp_var (info, x, &wi->tsi);
+	      else
+		x = init_tmp_var (info, x, &wi->tsi);
+	    }
 
 	  *tp = x;
 	}
@@ -802,6 +832,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	{
 	  *walk_subtrees = 1;
 	  wi->val_only = true;
+	  wi->is_lhs = false;
 	}
       break;
 
@@ -818,8 +849,9 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
       {
 	bool save_val_only = wi->val_only;
 
-	wi->changed = false;
 	wi->val_only = false;
+	wi->is_lhs = false;
+	wi->changed = false;
 	walk_tree (&TREE_OPERAND (t, 0), convert_nonlocal_reference, wi, NULL);
 	wi->val_only = true;
 
@@ -848,6 +880,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	 anything that describes the references.  Otherwise, we lose track
 	 of whether a NOP_EXPR or VIEW_CONVERT_EXPR needs a simple value.  */
       wi->val_only = true;
+      wi->is_lhs = false;
       for (; handled_component_p (t); tp = &TREE_OPERAND (t, 0), t = *tp)
 	{
 	  if (TREE_CODE (t) == COMPONENT_REF)
@@ -880,6 +913,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	{
 	  *walk_subtrees = 1;
           wi->val_only = true;
+	  wi->is_lhs = false;
 	}
       break;
     }
@@ -922,8 +956,15 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	  wi->changed = true;
 
 	  x = get_frame_field (info, info->context, field, &wi->tsi);
+
 	  if (wi->val_only)
-	    x = init_tmp_var (info, x, &wi->tsi);
+	    {
+	      if (wi->is_lhs)
+		x = save_tmp_var (info, x, &wi->tsi);
+	      else
+		x = init_tmp_var (info, x, &wi->tsi);
+	    }
+
 	  *tp = x;
 	}
       break;
@@ -932,8 +973,9 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
       {
 	bool save_val_only = wi->val_only;
 
-	wi->changed = false;
 	wi->val_only = false;
+	wi->is_lhs = false;
+	wi->changed = false;
 	walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
 	wi->val_only = save_val_only;
 
@@ -963,6 +1005,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	 anything that describes the references.  Otherwise, we lose track
 	 of whether a NOP_EXPR or VIEW_CONVERT_EXPR needs a simple value.  */
       wi->val_only = true;
+      wi->is_lhs = false;
       for (; handled_component_p (t); tp = &TREE_OPERAND (t, 0), t = *tp)
 	{
 	  if (TREE_CODE (t) == COMPONENT_REF)
@@ -995,6 +1038,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	{
 	  *walk_subtrees = 1;
 	  wi->val_only = true;
+	  wi->is_lhs = false;
 	}
       break;
     }
