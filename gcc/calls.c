@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -710,8 +710,7 @@ expand_call (exp, target, ignore)
 	    DECL_RTL (d) = assign_temp (TREE_TYPE (exp), 1, 0, 1);
 	    mark_addressable (d);
 	    structure_value_addr = XEXP (DECL_RTL (d), 0);
-	    MEM_IN_STRUCT_P (structure_value_addr)
-	      = AGGREGATE_TYPE_P (TREE_TYPE (exp));
+	    TREE_USED (d) = 1;
 	    target = 0;
 	  }
       }
