@@ -112,8 +112,9 @@ add_scope_stmt (begin_p, partial_p)
      int begin_p;
      int partial_p;
 {
+  tree *stack_ptr = current_scope_stmt_stack ();
   tree ss;
-  tree top;
+  tree top = *stack_ptr;
 
   /* Build the statement.  */
   ss = build_stmt (SCOPE_STMT, NULL_TREE);
@@ -123,15 +124,13 @@ add_scope_stmt (begin_p, partial_p)
   /* Keep the scope stack up to date.  */
   if (begin_p)
     {
-      *current_scope_stmt_stack () 
-	= tree_cons (ss, NULL_TREE, *current_scope_stmt_stack ());
-      top = *current_scope_stmt_stack ();
+      top = tree_cons (ss, NULL_TREE, top);
+      *stack_ptr = top;
     }
   else
     {
-      top = *current_scope_stmt_stack ();
       TREE_VALUE (top) = ss;
-      *current_scope_stmt_stack () = TREE_CHAIN (top);
+      *stack_ptr = TREE_CHAIN (top);
     }
 
   /* Add the new statement to the statement-tree.  */
