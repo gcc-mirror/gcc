@@ -25,6 +25,10 @@ details.  */
 #include <sys/utsname.h>
 #endif
 
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
