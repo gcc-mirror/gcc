@@ -3435,6 +3435,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   /* Either char* or void*.  */
   tree traditional_ptr_type_node;
   tree va_list_ptr_type_node;
+  tree va_list_arg_type_node;
 
 #ifdef BUILD_VA_LIST_TYPE
   BUILD_VA_LIST_TYPE(va_list_type_node);
@@ -3443,7 +3444,13 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 #endif
   pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
 			va_list_type_node));
+
   va_list_ptr_type_node = build_pointer_type (va_list_type_node);
+
+  if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
+    va_list_arg_type_node = build_pointer_type (TREE_TYPE (va_list_type_node));
+  else
+    va_list_arg_type_node = va_list_type_node;
 
   endlink = void_list_node;
   int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
@@ -3636,7 +3643,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   builtin_function ("__builtin_va_end",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
-						    va_list_type_node,
+						    va_list_arg_type_node,
 						    endlink)),
 		    BUILT_IN_VA_END, NULL_PTR);
 
@@ -3645,7 +3652,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 					 tree_cons (NULL_TREE,
 						    va_list_ptr_type_node,
 						    tree_cons (NULL_TREE,
-						      va_list_type_node,
+						      va_list_arg_type_node,
 						      endlink))),
 		    BUILT_IN_VA_COPY, NULL_PTR);
 

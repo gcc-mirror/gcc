@@ -1,3 +1,12 @@
+Mon Jul 26 22:43:12 1999  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (stabilize_va_list): Don't INDIRECT_REF through
+	an ARRAY_TYPE.
+	(std_expand_builtin_va_start): Back out one word if !stdarg_p.
+	(expand_builtin_va_end): Evaluate arg for side effects.
+	* c-common.c (c_common_nodes_and_builtins): Construct a
+	va_list_arg_type_node to handle array decomposition to pointer.
+
 Mon Jul 26 18:51:34 1999  Richard Henderson  <rth@cygnus.com>
 
 	* except.c (start_dynamic_cleanup): Use force_operand on the

@@ -1840,13 +1840,17 @@ stabilize_va_list (valist, was_ptr)
       if (is_array
 	  && TREE_CODE (valist) == ADDR_EXPR
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (valist, 0))) == POINTER_TYPE)
-	valist = TREE_OPERAND (valist, 0);
-
-      if (TREE_SIDE_EFFECTS (valist))
-	valist = save_expr (valist);
-
-      if (! is_array)
-        valist = fold (build1 (INDIRECT_REF, va_list_type_node, valist));
+	{
+	  valist = TREE_OPERAND (valist, 0);
+	  if (TREE_SIDE_EFFECTS (valist))
+	    valist = save_expr (valist);
+	}
+      else
+	{
+	  if (TREE_SIDE_EFFECTS (valist))
+	    valist = save_expr (valist);
+	  valist = fold (build1 (INDIRECT_REF, va_list_type_node, valist));
+	}
     }
   else if (TREE_SIDE_EFFECTS (valist))
     {
@@ -1874,6 +1878,9 @@ std_expand_builtin_va_start (stdarg_p, valist, nextarg)
      rtx nextarg;
 {
   tree t;
+
+  if (!stdarg_p)
+    nextarg = plus_constant (nextarg, -UNITS_PER_WORD);
 
   t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
 	     make_tree (ptr_type_node, nextarg));
@@ -2002,12 +2009,18 @@ expand_builtin_va_arg (valist, type)
 /* Expand ARGLIST, from a call to __builtin_va_end.  */
 static rtx
 expand_builtin_va_end (arglist)
-     tree arglist ATTRIBUTE_UNUSED;
+     tree arglist;
 {
+  tree valist = TREE_VALUE (arglist);
+
 #ifdef EXPAND_BUILTIN_VA_END
-  tree valist = TREE_VALUE (arglist, 0);
   valist = stabilize_va_list (valist, 0);
   EXPAND_BUILTIN_VA_END(arglist);
+#else
+  /* Evaluate for side effects, if needed.  I hate macros that don't
+     do that.  */
+  if (TREE_SIDE_EFFECTS (valist))
+    expand_expr (valist, const0_rtx, VOIDmode, EXPAND_NORMAL);
 #endif
 
   return const0_rtx;
