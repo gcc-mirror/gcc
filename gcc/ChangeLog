@@ -1,6 +1,7 @@
 Wed Jul  8 21:43:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386/cygwin32.h (STDIO_PROTO): Fix typo.
+	* m32r.h (STDIO_PROTO): Fix typo.
 
 	* pa.h (LEGITIMIZE_RELOAD_ADDRESS): Handle addresses created by
 	LEGITIMIZE_RELOAD_ADDRESS.
