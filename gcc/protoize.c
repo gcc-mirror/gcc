@@ -2541,20 +2541,20 @@ reverse_def_dec_list (hp)
 {
   file_info *file_p = hp->fip;
   def_dec_info *prev = NULL;
-  def_dec_info *current = file_p->defs_decs;
+  def_dec_info *current = (def_dec_info *)file_p->defs_decs;
 
-  if (!( current = file_p->defs_decs))
+  if (!current)
     return;        		/* no list to reverse */
 
   prev = current;
-  if (! (current = current->next_in_file))
+  if (! (current = (def_dec_info *)current->next_in_file))
     return;        		/* can't reverse a single list element */
 
   prev->next_in_file = NULL;
 
   while (current)
     {
-      def_dec_info *next = current->next_in_file;
+      def_dec_info *next = (def_dec_info *)current->next_in_file;
 
       current->next_in_file = prev;
       prev = current;
