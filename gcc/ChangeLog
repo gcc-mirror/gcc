@@ -1,3 +1,11 @@
+2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-lex.c (lex_lineno): Remove.
+        (init_c_lex, c_lex): Remove lex_lineno.
+        (cb_change_file): Update lineno correctly, both before calling
+        push_srcloc and before leaving the function.
+        (cb_def_pragma): Set lineno before outputting diagnostics.
+
 Sun Dec 17 18:45:41 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* print-tree.c (print_node): Print DECL_USER_ALIGN and TYPE_USER_ALIGN.
