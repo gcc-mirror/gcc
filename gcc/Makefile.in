@@ -2830,7 +2830,7 @@ bootstrap-lean_d:  bootstrap-lean_c stage_c
 bootstrap-lean_e:  bootstrap-lean_d stage_d
 bootstrap-lean_f:  bootstrap-lean_e clean_s2
 bootstrap-lean_g:  bootstrap-lean_f stage_e
-bootstrap-lean: force bootstrap-lean_f
+bootstrap-lean: force bootstrap-lean_g
 
 bootstrap2_c:               stage_c
 bootstrap2_d:  bootstrap2_c stage_d

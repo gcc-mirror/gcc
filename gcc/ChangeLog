@@ -1,3 +1,8 @@
+2000-09-06  Manfred Hollstein  <manfredh@redhat.com>
+
+	* Makefile.in (bootstrap-lean): Depend on bootstrap-lean_g,
+	not bootstrap-lean_f.
+
 2000-09-06  Andreas Schwab  <schwab@suse.de>
 
 	* mklibgcc.in: Emit rule for libgcc-stage-start.
