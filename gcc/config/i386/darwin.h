@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_MACHO
 #define TARGET_MACHO 1
 
-#define TARGET_VERSION fprintf (stderr, " (i386 Darwin)");
+#define TARGET_VERSION fprintf (stderr, " (i686 Darwin)");
 
 #define TARGET_OS_CPP_BUILTINS()                \
   do                                            \
@@ -41,7 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #undef CC1_SPEC
 #define CC1_SPEC "%{!static:-fPIC}"
 
-#define ASM_SPEC "-arch i386 \
+#define ASM_SPEC "-arch i686 \
+  -force_cpusubtype_ALL \
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
   %{!Zforce_cpusubtype_ALL:%{mmmx:-force_cpusubtype_ALL}\
 			   %{msse:-force_cpusubtype_ALL}\
@@ -49,11 +50,12 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
-  { "darwin_arch", "i386" },
+  { "darwin_arch", "i686" },
 
 /* Use the following macro for any Darwin/x86-specific command-line option
    translation.  */
-#define SUBTARGET_OPTION_TRANSLATE_TABLE
+#define SUBTARGET_OPTION_TRANSLATE_TABLE \
+  { "", "" }
 
 /* The Darwin assembler mostly follows AT&T syntax.  */
 #undef ASSEMBLER_DIALECT
