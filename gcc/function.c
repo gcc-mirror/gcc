@@ -279,6 +279,7 @@ static void pad_below		PARAMS ((struct args_size *, enum machine_mode,
 					 tree));
 #endif
 static rtx round_trampoline_addr PARAMS ((rtx));
+static rtx adjust_trampoline_addr PARAMS ((rtx));
 static tree *identify_blocks_1	PARAMS ((rtx, tree *, tree *, tree *));
 static void reorder_blocks_1	PARAMS ((rtx, tree, varray_type *));
 static tree blocks_nreverse	PARAMS ((tree));
@@ -5553,7 +5554,7 @@ trampoline_address (function)
   for (link = trampoline_list; link; link = TREE_CHAIN (link))
     if (TREE_PURPOSE (link) == function)
       return
-	round_trampoline_addr (XEXP (RTL_EXPR_RTL (TREE_VALUE (link)), 0));
+	adjust_trampoline_addr (XEXP (RTL_EXPR_RTL (TREE_VALUE (link)), 0));
 
   for (fp = outer_function_chain; fp; fp = fp->next)
     for (link = fp->x_trampoline_list; link; link = TREE_CHAIN (link))
@@ -5561,7 +5562,7 @@ trampoline_address (function)
 	{
 	  tramp = fix_lexical_addr (XEXP (RTL_EXPR_RTL (TREE_VALUE (link)), 0),
 				    function);
-	  return round_trampoline_addr (tramp);
+	  return adjust_trampoline_addr (tramp);
 	}
 
   /* None exists; we must make one.  */
@@ -5612,7 +5613,7 @@ trampoline_address (function)
     }
 
   tramp = fix_lexical_addr (XEXP (tramp, 0), function);
-  return round_trampoline_addr (tramp);
+  return adjust_trampoline_addr (tramp);
 }
 
 /* Given a trampoline address,
@@ -5631,6 +5632,21 @@ round_trampoline_addr (tramp)
   tramp = expand_binop (Pmode, and_optab, temp,
 			GEN_INT (-TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT),
 			temp, 0, OPTAB_LIB_WIDEN);
+#endif
+  return tramp;
+}
+
+/* Given a trampoline address, round it then apply any
+   platform-specific adjustments so that the result can be used for a
+   function call . */
+
+static rtx
+adjust_trampoline_addr (tramp)
+     rtx tramp;
+{
+  tramp = round_trampoline_addr (tramp);
+#ifdef TRAMPOLINE_ADJUST_ADDRESS
+  TRAMPOLINE_ADJUST_ADDRESS (tramp);
 #endif
   return tramp;
 }

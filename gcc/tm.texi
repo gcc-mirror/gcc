@@ -4034,6 +4034,16 @@ an RTX for the address of the nested function; @var{static_chain} is an
 RTX for the static chain value that should be passed to the function
 when it is called.
 
+@findex TRAMPOLINE_ADJUST_ADDRESS
+@item TRAMPOLINE_ADJUST_ADDRESS (@var{addr})
+A C statement that should perform any machine-specific adjustment in
+the address of the trampoline.  Its argument contains the address that
+was passed to @code{INITIALIZE_TRAMPOLINE}.  In case the address to be
+used for a function call should be different from the address in which
+the template was stored, the different address should be assigned to
+@var{addr}.  If this macro is not defined, @var{addr} will be used for
+function calls.
+
 @findex ALLOCATE_TRAMPOLINE
 @item ALLOCATE_TRAMPOLINE (@var{fp})
 A C expression to allocate run-time space for a trampoline.  The
