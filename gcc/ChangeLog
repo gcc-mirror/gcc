@@ -1,3 +1,7 @@
+2005-01-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-vectorizer.c, tree.def: Fix comment typos.
+
 2005-01-10  Mark Dettinger  <dettinge@de.ibm.com>
 
 	* config/s390/s390.c (struct processor_costs): 4 new fields:
