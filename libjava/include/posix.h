@@ -8,6 +8,9 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
+#ifndef __JV_POSIX_H__
+#define __JV_POSIX_H__
+
 /* Required on Tru64 UNIX V4/V5 so <sys/socket.h> defines prototypes of
    socket functions with socklen_t instead of size_t.  This must be defined
    early so <standards.h> defines the correct version of __PIIX.  */
@@ -42,3 +45,5 @@ _Jv_platform_close_on_exec (jint fd)
   // Ignore errors.
   fcntl (fd, F_SETFD, FD_CLOEXEC);
 }
+
+#endif
