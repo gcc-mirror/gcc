@@ -57,9 +57,9 @@ namespace std
 
 #ifdef MAIN
   template C S::_Rep::_S_terminal;
-  // XXX Fix me: 2000-04-18 g++ ICE.
-//  template S::size_type S::_S_max_size;
-//  template S::allocator_type::size_type S::S_empty_rep_storage[];
+  template S::size_type S::_Rep::_S_max_size;
+  template S::size_type S::_S_empty_rep_storage[];
+
   template S::basic_string(S const&);
   template S::_Rep* S::_Rep::_S_create(size_t, S::allocator_type const&);
   template void S::_Rep::_M_destroy(S::allocator_type const&) throw();

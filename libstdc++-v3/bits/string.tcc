@@ -399,7 +399,7 @@ namespace std
   // Linker sets _S_empty_rep_storage to all 0s (one reference, empty string)
   // at static init time (before static ctors are run).
   template<typename _CharT, typename _Traits, typename _Alloc>
-    typename _Alloc::size_type
+    basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::_S_empty_rep_storage[
     (sizeof(_Rep) + sizeof(_CharT) + sizeof(size_type) - 1)/sizeof(size_type)];
 

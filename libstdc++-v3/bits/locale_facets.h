@@ -597,7 +597,7 @@ namespace std
       // Types:
       typedef _InternT intern_type;
       typedef _ExternT extern_type;
-      typedef _StateT state_type;
+      typedef _StateT  state_type;
 
       // Data Members:
       static locale::id id;
@@ -618,8 +618,8 @@ namespace std
     {
     public:      
       // Types:
-      typedef char intern_type;
-      typedef char extern_type;
+      typedef char 	intern_type;
+      typedef char 	extern_type;
       typedef mbstate_t state_type;
 
       explicit codecvt (size_t __refs = 0);
@@ -657,8 +657,8 @@ namespace std
     {
     public:
       // Types:
-      typedef wchar_t intern_type;
-      typedef char extern_type;
+      typedef wchar_t 	intern_type;
+      typedef char 	extern_type;
       typedef mbstate_t state_type;
 
       explicit codecvt(size_t __refs = 0);
@@ -774,7 +774,7 @@ namespace std
 
       // A list of valid numeric literals: for the standard "C" locale,
       // this would usually be: "-+xX0123456789abcdef0123456789ABCDEF"
-      static const char _S_literals[];
+      static const char 	_S_literals[];
 
       // NB: Code depends on the order of definitions of the names
       // these are indices into _S_literals, above.
