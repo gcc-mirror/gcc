@@ -423,6 +423,7 @@ FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *dump_file = NULL;
 FILE *cgraph_dump_file = NULL;
+char *dump_file_name;
 
 /* The current working directory of a translation.  It's generally the
    directory from which compilation was initiated, but a preprocessed
@@ -1984,7 +1985,7 @@ lang_dependent_init (const char *name)
 {
   location_t save_loc = input_location;
   if (dump_base_name == 0)
-    dump_base_name = name ? name : "gccdump";
+    dump_base_name = name && name[0] ? name : "gccdump";
 
   /* Other front-end initialization.  */
 #ifdef USE_MAPPED_LOCATION
@@ -2003,7 +2004,6 @@ lang_dependent_init (const char *name)
      front end is initialized.  */
   init_eh ();
   init_optabs ();
-  init_optimization_passes ();
 
   /* The following initialization functions need to generate rtl, so
      provide a dummy function context for them.  */

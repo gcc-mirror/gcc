@@ -935,7 +935,8 @@ struct tree_opt_pass pass_lower_vector_ssa =
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_rename_vars	/* todo_flags_finish */
     | TODO_ggc_collect | TODO_verify_ssa
-    | TODO_verify_stmts | TODO_verify_flow
+    | TODO_verify_stmts | TODO_verify_flow,
+  0					/* letter */
 };
 
 struct tree_opt_pass pass_pre_expand = 
@@ -952,5 +953,6 @@ struct tree_opt_pass pass_pre_expand =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_ggc_collect
-    | TODO_verify_stmts			/* todo_flags_finish */
+    | TODO_verify_stmts,		/* todo_flags_finish */
+  0					/* letter */
 };

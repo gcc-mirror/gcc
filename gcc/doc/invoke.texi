@@ -3349,160 +3349,280 @@ generate test coverage data. Coverage data will match the source files
 more closely, if you do not optimize.
 
 @item -d@var{letters}
+@item -fdump-rtl-@var{pass}
 @opindex d
 Says to make debugging dumps during compilation at times specified by
-@var{letters}.  This is used for debugging the compiler.  The file names
-for most of the dumps are made by appending a pass number and a word to
-the @var{dumpname}. @var{dumpname} is generated from the name of the
-output file, if explicitly specified and it is not an executable,
-otherwise it is the basename of the source file. In both cases any
-suffix is removed (e.g.  @file{foo.01.rtl} or @file{foo.02.sibling}).
-Here are the possible letters for use in @var{letters}, and their
-meanings:
+@var{letters}.    This is used for debugging the RTL-based passes of the
+compiler.  The file names for most of the dumps are made by appending a
+pass number and a word to the @var{dumpname}.  @var{dumpname} is generated
+from the name of the output file, if explicitly specified and it is not
+an executable, otherwise it is the basename of the source file.
 
-@table @samp
-@item A
+Most debug dumps can be enabled either passing a letter to the @option{-d}
+option, or with a long @option{-fdump-rtl} switch; here are the possible
+letters for use in @var{letters} and @var{pass}, and their meanings:
+
+@table @gcctabopt
+@item -dA
 @opindex dA
 Annotate the assembler output with miscellaneous debugging information.
-@item b
+
+@item -db
+@itemx -fdump-rtl-bp
 @opindex db
-Dump after computing branch probabilities, to @file{@var{file}.12.bp}.
-@item B
+@opindex fdump-rtl-bp
+Dump after computing branch probabilities, to @file{@var{file}.09.bp}.
+
+@item -dB
+@itemx -fdump-rtl-bbro
 @opindex dB
-Dump after block reordering, to @file{@var{file}.32.bbro}.
-@item c
+@opindex fdump-rtl-bbro
+Dump after block reordering, to @file{@var{file}.30.bbro}.
+
+@item -dc
+@itemx -fdump-rtl-combine
 @opindex dc
-Dump after instruction combination, to the file @file{@var{file}.20.combine}.
-@item C
+@opindex fdump-rtl-combine
+Dump after instruction combination, to the file @file{@var{file}.17.combine}.
+
+@item -dC
+@itemx -fdump-rtl-ce1
+@itemx -fdump-rtl-ce2
 @opindex dC
-Dump after the first if conversion, to the file @file{@var{file}.14.ce1}.
-Also dump after the second if conversion, to the file @file{@var{file}.21.ce2}.
-@item d
+@opindex fdump-rtl-ce1
+@opindex fdump-rtl-ce2
+@option{-dC} and @option{-fdump-rtl-ce1} enable dumping after the
+first if conversion, to the file @file{@var{file}.11.ce1}.  @option{-dC}
+and @option{-fdump-rtl-ce2} enable dumping after the second if
+conversion, to the file @file{@var{file}.18.ce2}.
+
+@item -dd
+@itemx -fdump-rtl-btl
+@itemx -fdump-rtl-dbr
 @opindex dd
-Dump after branch target load optimization, to to @file{@var{file}.33.btl}.
-Also dump after delayed branch scheduling, to @file{@var{file}.37.dbr}.
-@item D
+@opindex fdump-rtl-btl
+@opindex fdump-rtl-dbr
+@option{-dd} and @option{-fdump-rtl-btl} enable dumping after branch
+target load optimization, to to @file{@var{file}.31.btl}.  @option{-dd}
+and @option{-fdump-rtl-dbr} enable dumping after delayed branch
+scheduling, to @file{@var{file}.36.dbr}.
+
+@item -dD
 @opindex dD
 Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
-@item E
+
+@item -dE
+@itemx -fdump-rtl-ce3
 @opindex dE
-Dump after the third if conversion, to @file{@var{file}.31.ce3}.
-@item f
+@opindex fdump-rtl-ce3
+Dump after the third if conversion, to @file{@var{file}.28.ce3}.
+
+@item -df
+@itemx -fdump-rtl-cfg
+@itemx -fdump-rtl-life
 @opindex df
-Dump after control and data flow analysis, to @file{@var{file}.11.cfg}.
-Also dump after life analysis, to @file{@var{file}.19.life}.
-@item g
+@opindex fdump-rtl-cfg
+@opindex fdump-rtl-life
+@option{-df} and @option{-fdump-rtl-cfg} enable dumping after control
+and data flow analysis, to @file{@var{file}.08.cfg}.  @option{-df}
+and @option{-fdump-rtl-cfg} enable dumping dump after life analysis,
+to @file{@var{file}.16.life}.
+
+@item -dg
+@itemx -fdump-rtl-greg
 @opindex dg
-Dump after global register allocation, to @file{@var{file}.26.greg}.
-@item G
+@opindex fdump-rtl-greg
+Dump after global register allocation, to @file{@var{file}.23.greg}.
+
+@item -dG
+@itemx -fdump-rtl-gcse
+@itemx -fdump-rtl-bypass
 @opindex dG
-Dump after GCSE, to @file{@var{file}.08.gcse}.
-Also dump after jump bypassing and control flow optimizations, to
-@file{@var{file}.10.bypass}.
-@item h
+@opindex fdump-rtl-gcse
+@opindex fdump-rtl-bypass
+@option{-dG} and @option{-fdump-rtl-gcse} enable dumping after GCSE, to
+@file{@var{file}.05.gcse}.  @option{-dG} and @option{-fdump-rtl-bypass}
+enable dumping after jump bypassing and control flow optimizations, to
+@file{@var{file}.07.bypass}.
+
+@item -dh
+@itemx -fdump-rtl-eh
 @opindex dh
-Dump after finalization of EH handling code, to @file{@var{file}.03.eh}.
-@item i
+@opindex fdump-rtl-eh
+Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
+
+@item -di
+@itemx -fdump-rtl-sibling
 @opindex di
-Dump after sibling call optimizations, to @file{@var{file}.02.sibling}.
-@item j
+@opindex fdump-rtl-sibling
+Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
+
+@item -dj
+@itemx -fdump-rtl-jump
 @opindex dj
-Dump after the first jump optimization, to @file{@var{file}.04.jump}.
-@item k
+@opindex fdump-rtl-jump
+Dump after the first jump optimization, to @file{@var{file}.03.jump}.
+
+@item -dk
+@itemx -fdump-rtl-stack
 @opindex dk
-Dump after conversion from registers to stack, to @file{@var{file}.35.stack}.
-@item l
+@opindex fdump-rtl-stack
+Dump after conversion from registers to stack, to @file{@var{file}.33.stack}.
+
+@item -dl
+@itemx -fdump-rtl-lreg
 @opindex dl
-Dump after local register allocation, to @file{@var{file}.25.lreg}.
-@item L
+@opindex fdump-rtl-lreg
+Dump after local register allocation, to @file{@var{file}.22.lreg}.
+
+@item -dL
+@itemx -fdump-rtl-loop
+@itemx -fdump-rtl-loop2
 @opindex dL
-Dump after loop optimization passes, to @file{@var{file}.09.loop} and
-@file{@var{file}.16.loop2}.
-@item m
+@opindex fdump-rtl-loop
+@opindex fdump-rtl-loop2
+@option{-dL} and @option{-fdump-rtl-loop} enable dumping after the first
+loop optimization pass, to @file{@var{file}.06.loop}.  @option{-dL} and
+@option{-fdump-rtl-loop2} enable dumping after the second pass, to
+@file{@var{file}.13.loop2}.
+
+@item -dm
+@itemx -fdump-rtl-sms
 @opindex dm
-Dump after modulo scheduling, to @file{@var{file}.23.sms}.
-@item M
+@opindex fdump-rtl-sms
+Dump after modulo scheduling, to @file{@var{file}.20.sms}. 
+
+@item -dM
+@itemx -fdump-rtl-mach
 @opindex dM
+@opindex fdump-rtl-mach
 Dump after performing the machine dependent reorganization pass, to
-@file{@var{file}.36.mach}.
-@item n
+@file{@var{file}.35.mach}.
+
+@item -dn
+@itemx -fdump-rtl-rnreg
 @opindex dn
-Dump after register renumbering, to @file{@var{file}.30.rnreg}.
-@item N
+@opindex fdump-rtl-rnreg
+Dump after register renumbering, to @file{@var{file}.29.rnreg}.
+
+@item -dN
+@itemx -fdump-rtl-regmove
 @opindex dN
-Dump after the register move pass, to @file{@var{file}.22.regmove}.
-@item o
+@opindex fdump-rtl-regmove
+Dump after the register move pass, to @file{@var{file}.19.regmove}.
+
+@item -do
+@itemx -fdump-rtl-postreload
 @opindex do
-Dump after post-reload optimizations, to @file{@var{file}.27.postreload}.
-@item r
+@opindex fdump-rtl-postreload
+Dump after post-reload optimizations, to @file{@var{file}.24.postreload}.
+
+@item -dr
+@itemx -fdump-rtl-expand
 @opindex dr
-Dump after RTL generation, to @file{@var{file}.01.rtl}.
-@item R
+@opindex fdump-rtl-expand
+Dump after RTL generation, to @file{@var{file}.00.expand}.
+
+@item -dR
+@itemx -fdump-rtl-sched2
 @opindex dR
-Dump after the second scheduling pass, to @file{@var{file}.34.sched2}.
-@item s
+@opindex fdump-rtl-sched2
+Dump after the second scheduling pass, to @file{@var{file}.32.sched2}.
+
+@item -ds
+@itemx -fdump-rtl-cse
 @opindex ds
+@opindex fdump-rtl-cse
 Dump after CSE (including the jump optimization that sometimes follows
-CSE), to @file{@var{file}.06.cse}.
-@item S
+CSE), to @file{@var{file}.04.cse}.
+
+@item -dS
+@itemx -fdump-rtl-sched
 @opindex dS
-Dump after the first scheduling pass, to @file{@var{file}.24.sched}.
-@item t
+@opindex fdump-rtl-sched
+Dump after the first scheduling pass, to @file{@var{file}.21.sched}.
+
+@item -dt
+@itemx -fdump-rtl-cse2
 @opindex dt
+@opindex fdump-rtl-cse2
 Dump after the second CSE pass (including the jump optimization that
-sometimes follows CSE), to @file{@var{file}.18.cse2}.
-@item T
+sometimes follows CSE), to @file{@var{file}.15.cse2}.
+
+@item -dT
+@itemx -fdump-rtl-tracer
 @opindex dT
-Dump after running tracer, to @file{@var{file}.15.tracer}.
-@item u
-@opindex du
-Dump after null pointer elimination pass to @file{@var{file}.05.null}.
-@item U
-@opindex dU
-Dump callgraph and unit-at-a-time optimization @file{@var{file}.00.unit}.
-@item V
+@opindex fdump-rtl-tracer
+Dump after running tracer, to @file{@var{file}.12.tracer}.
+
+@item -dV
+@itemx -fdump-rtl-vpt
+@itemx -fdump-rtl-vartrack
 @opindex dV
-Dump after the value profile transformations, to @file{@var{file}.13.vpt}.
-Also dump after variable tracking, to @file{@var{file}.35.vartrack}.
-@item w
+@opindex fdump-rtl-vpt
+@opindex fdump-rtl-vartrack
+@option{-dV} and @option{-fdump-rtl-vpt} enable dumping after the value
+profile transformations, to @file{@var{file}.10.vpt}.  @option{-dV}
+and @option{-fdump-rtl-vartrack} enable dumping after variable tracking,
+to @file{@var{file}.34.vartrack}.
+
+@item -dw
+@itemx -fdump-rtl-flow2
 @opindex dw
-Dump after the second flow pass, to @file{@var{file}.28.flow2}.
-@item z
+@opindex fdump-rtl-flow2
+Dump after the second flow pass, to @file{@var{file}.26.flow2}.
+
+@item -dz
+@itemx -fdump-rtl-peephole2
 @opindex dz
-Dump after the peephole pass, to @file{@var{file}.29.peephole2}.
-@item Z
+@opindex fdump-rtl-peephole2
+Dump after the peephole pass, to @file{@var{file}.27.peephole2}.
+
+@item -dZ
+@itemx -fdump-rtl-web
 @opindex dZ
-Dump after constructing the web, to @file{@var{file}.17.web}.
-@item a
+@opindex fdump-rtl-web
+Dump after live range splitting, to @file{@var{file}.14.web}.
+
+@item -da
+@itemx -fdump-rtl-all
 @opindex da
+@opindex fdump-rtl-all
 Produce all the dumps listed above.
-@item H
+
+@item -dH
 @opindex dH
 Produce a core dump whenever an error occurs.
-@item m
+
+@item -dm
 @opindex dm
 Print statistics on memory usage, at the end of the run, to
 standard error.
-@item p
+
+@item -dp
 @opindex dp
 Annotate the assembler output with a comment indicating which
 pattern and alternative was used.  The length of each instruction is
 also printed.
-@item P
+
+@item -dP
 @opindex dP
 Dump the RTL in the assembler output as a comment before each instruction.
 Also turns on @option{-dp} annotation.
-@item v
+
+@item -dv
 @opindex dv
-For each of the other indicated dump files (except for
-@file{@var{file}.01.rtl}), dump a representation of the control flow graph
-suitable for viewing with VCG to @file{@var{file}.@var{pass}.vcg}.
-@item x
+For each of the other indicated dump files (either with @option{-d} or
+@option{-fdump-rtl-@var{pass}}), dump a representation of the control flow
+graph suitable for viewing with VCG to @file{@var{file}.@var{pass}.vcg}.
+
+@item -dx
 @opindex dx
 Just generate RTL for a function instead of compiling it.  Usually used
-with @samp{r}.
-@item y
+with @samp{r} (@option{-fdump-rtl-expand}).
+
+@item -dy
 @opindex dy
 Dump debugging information during parsing, to standard error.
 @end table

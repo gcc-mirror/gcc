@@ -138,7 +138,8 @@ struct tree_opt_pass pass_lower_cf =
   PROP_gimple_lcf,			/* properties_provided */
   PROP_gimple_any,			/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
+  TODO_dump_func,			/* todo_flags_finish */
+  0					/* letter */
 };
 
 
@@ -538,5 +539,6 @@ struct tree_opt_pass pass_remove_useless_vars =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
+  TODO_dump_func,			/* todo_flags_finish */
+  0					/* letter */
 };

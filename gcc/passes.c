@@ -81,6 +81,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "value-prof.h"
 #include "alloc-pool.h"
 #include "tree-pass.h"
+#include "tree-dump.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -108,166 +109,27 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define DUMPFILE_FORMAT ".%02d."
 #endif
 
-/* Describes a dump file.  */
-
-struct dump_file_info
-{
-  /* The unique extension to apply, e.g. ".jump".  */
-  const char *const extension;
-
-  /* The -d<c> character that enables this dump file.  */
-  char const debug_switch;
-
-  /* True if there is a corresponding graph dump file.  */
-  char const graph_dump_p;
-
-  /* True if the user selected this dump.  */
-  char enabled;
-
-  /* True if the files have been initialized (ie truncated).  */
-  char initialized;
-};
-
-/* Enumerate the extant dump files.  */
-
-enum dump_file_index
-{
-  DFI_cgraph,
-  DFI_rtl,
-  DFI_sibling,
-  DFI_eh,
-  DFI_jump,
-  DFI_null,
-  DFI_cse,
-  DFI_gcse,
-  DFI_loop,
-  DFI_bypass,
-  DFI_cfg,
-  DFI_bp,
-  DFI_vpt,
-  DFI_ce1,
-  DFI_tracer,
-  DFI_loop2,
-  DFI_web,
-  DFI_cse2,
-  DFI_life,
-  DFI_combine,
-  DFI_ce2,
-  DFI_regmove,
-  DFI_sms,
-  DFI_sched,
-  DFI_lreg,
-  DFI_greg,
-  DFI_postreload,
-  DFI_gcse2,
-  DFI_flow2,
-  DFI_peephole2,
-  DFI_ce3,
-  DFI_rnreg,
-  DFI_bbro,
-  DFI_branch_target_load,
-  DFI_sched2,
-  DFI_stack,
-  DFI_vartrack,
-  DFI_mach,
-  DFI_dbr,
-  DFI_MAX
-};
-
-/* Describes all the dump files.  Should be kept in order of the
-   pass and in sync with dump_file_index above.
-
-   Remaining -d letters:
-
-	"   e            q         "
-	"    F     K   O Q     WXY "
-*/
-
-static struct dump_file_info dump_file_tbl[DFI_MAX] =
-{
-  { "cgraph",	'U', 0, 0, 0 },
-  { "rtl",	'r', 0, 0, 0 },
-  { "sibling",  'i', 0, 0, 0 },
-  { "eh",	'h', 0, 0, 0 },
-  { "jump",	'j', 0, 0, 0 },
-  { "null",	'u', 0, 0, 0 },
-  { "cse",	's', 0, 0, 0 },
-  { "gcse",	'G', 1, 0, 0 },
-  { "loop",	'L', 1, 0, 0 },
-  { "bypass",   'G', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
-  { "cfg",	'f', 1, 0, 0 },
-  { "bp",	'b', 1, 0, 0 },
-  { "vpt",	'V', 1, 0, 0 },
-  { "ce1",	'C', 1, 0, 0 },
-  { "tracer",	'T', 1, 0, 0 },
-  { "loop2",	'L', 1, 0, 0 },
-  { "web",      'Z', 0, 0, 0 },
-  { "cse2",	't', 1, 0, 0 },
-  { "life",	'f', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
-  { "combine",	'c', 1, 0, 0 },
-  { "ce2",	'C', 1, 0, 0 },
-  { "regmove",	'N', 1, 0, 0 },
-  { "sms",      'm', 0, 0, 0 },
-  { "sched",	'S', 1, 0, 0 },
-  { "lreg",	'l', 1, 0, 0 },
-  { "greg",	'g', 1, 0, 0 },
-  { "postreload", 'o', 1, 0, 0 },
-  { "gcse2",    'J', 0, 0, 0 },
-  { "flow2",	'w', 1, 0, 0 },
-  { "peephole2", 'z', 1, 0, 0 },
-  { "ce3",	'E', 1, 0, 0 },
-  { "rnreg",	'n', 1, 0, 0 },
-  { "bbro",	'B', 1, 0, 0 },
-  { "btl",	'd', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
-  { "sched2",	'R', 1, 0, 0 },
-  { "stack",	'k', 1, 0, 0 },
-  { "vartrack",	'V', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
-  { "mach",	'M', 1, 0, 0 },
-  { "dbr",	'd', 0, 0, 0 },
-};
+static int initializing_dump = 0;
 
 /* Routine to open a dump file.  Return true if the dump file is enabled.  */
 
 static int
-open_dump_file (enum dump_file_index index, tree decl)
+open_dump_file (enum tree_dump_index index, tree decl)
 {
-  char *dump_name;
-  const char *open_arg;
-  char seq[16];
-
-  if (! dump_file_tbl[index].enabled)
+  if (! dump_enabled_p (index))
     return 0;
 
   timevar_push (TV_DUMP);
-  if (dump_file != NULL)
-    fclose (dump_file);
 
-  sprintf (seq, DUMPFILE_FORMAT, index);
+  if (dump_file != NULL || dump_file_name != NULL)
+    abort ();
 
-  if (! dump_file_tbl[index].initialized)
-    {
-      /* If we've not initialized the files, do so now.  */
-      if (graph_dump_format != no_graph
-	  && dump_file_tbl[index].graph_dump_p)
-	{
-	  dump_name = concat (seq, dump_file_tbl[index].extension, NULL);
-	  clean_graph_dump_file (dump_base_name, dump_name);
-	  free (dump_name);
-	}
-      dump_file_tbl[index].initialized = 1;
-      open_arg = "w";
-    }
-  else
-    open_arg = "a";
+  dump_file_name = get_dump_file_name (index);
+  initializing_dump = !dump_initialized_p (index);
+  dump_file = dump_begin (index, NULL);
 
-  dump_name = concat (dump_base_name, seq,
-		      dump_file_tbl[index].extension, NULL);
-
-  dump_file = fopen (dump_name, open_arg);
   if (dump_file == NULL)
-    fatal_error ("can't open %s: %m", dump_name);
-
-  free (dump_name);
+    fatal_error ("can't open %s: %m", dump_file_name);
 
   if (decl)
     fprintf (dump_file, "\n;; Function %s%s\n\n",
@@ -285,7 +147,7 @@ open_dump_file (enum dump_file_index index, tree decl)
 /* Routine to close a dump file.  */
 
 static void
-close_dump_file (enum dump_file_index index,
+close_dump_file (enum tree_dump_index index,
 		 void (*func) (FILE *, rtx),
 		 rtx insns)
 {
@@ -294,25 +156,23 @@ close_dump_file (enum dump_file_index index,
 
   timevar_push (TV_DUMP);
   if (insns
-      && graph_dump_format != no_graph
-      && dump_file_tbl[index].graph_dump_p)
+      && graph_dump_format != no_graph)
     {
-      char seq[16];
-      char *suffix;
+      /* If we've not initialized the files, do so now.  */
+      if (initializing_dump)
+	clean_graph_dump_file (dump_file_name);
 
-      sprintf (seq, DUMPFILE_FORMAT, index);
-      suffix = concat (seq, dump_file_tbl[index].extension, NULL);
-      print_rtl_graph_with_bb (dump_base_name, suffix, insns);
-      free (suffix);
+      print_rtl_graph_with_bb (dump_file_name, insns);
     }
 
   if (func && insns)
     func (dump_file, insns);
 
-  fflush (dump_file);
-  fclose (dump_file);
+  dump_end (index, dump_file);
+  free ((char *) dump_file_name);
 
   dump_file = NULL;
+  dump_file_name = NULL;
   timevar_pop (TV_DUMP);
 }
 
@@ -603,7 +463,7 @@ rest_of_handle_new_regalloc (void)
 
   ggc_collect ();
 
-  if (dump_file_tbl[DFI_greg].enabled)
+  if (dump_enabled_p (DFI_greg))
     {
       timevar_push (TV_DUMP);
       dump_global_regs (dump_file);
@@ -657,7 +517,7 @@ rest_of_handle_old_regalloc (void)
       timevar_pop (TV_JUMP);
     }
 
-  if (dump_file_tbl[DFI_lreg].enabled)
+  if (dump_enabled_p (DFI_lreg))
     {
       timevar_push (TV_DUMP);
       dump_flow_info (dump_file);
@@ -683,7 +543,7 @@ rest_of_handle_old_regalloc (void)
       failure = reload (get_insns (), 0);
     }
 
-  if (dump_file_tbl[DFI_greg].enabled)
+  if (dump_enabled_p (DFI_greg))
     {
       timevar_push (TV_DUMP);
       dump_global_regs (dump_file);
@@ -1454,6 +1314,11 @@ rest_of_handle_jump (void)
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
+
+  if (cfun->tail_call_emit)
+    fixup_tail_calls ();
+
+  close_dump_file (DFI_sibling, print_rtl, get_insns ());
   timevar_pop (TV_JUMP);
 }
 
@@ -1713,27 +1578,8 @@ rest_of_clean_state (void)
 void
 rest_of_compilation (void)
 {
-  /* There's no need to defer outputting this function any more; we
-     know we want to output it.  */
-  DECL_DEFER_OUTPUT (current_function_decl) = 0;
-
-  /* Now that we're done expanding trees to RTL, we shouldn't have any
-     more CONCATs anywhere.  */
-  generating_concat_p = 0;
-
-  /* When processing delayed functions, prepare_function_start () won't
-     have been run to re-initialize it.  */
-  cse_not_expected = ! optimize;
-
-  finalize_block_changes ();
-
-  /* Dump the rtl code if we are dumping rtl.  */
-  if (open_dump_file (DFI_rtl, current_function_decl))
-    close_dump_file (DFI_rtl, print_rtl, get_insns ());
-
   /* Convert from NOTE_INSN_EH_REGION style notes, and do other
-     sorts of eh initialization.  Delay this until after the
-     initial rtl dump so that we can see the original nesting.  */
+     sorts of eh initialization.  */
   convert_from_eh_region_ranges ();
 
   /* If we're emitting a nested function, make sure its parent gets
@@ -1769,9 +1615,6 @@ rest_of_compilation (void)
     goto exit_rest_of_compilation;
 
   rest_of_handle_jump ();
-
-  if (cfun->tail_call_emit)
-    fixup_tail_calls ();
 
   rest_of_handle_eh ();
 
@@ -2002,16 +1845,12 @@ rest_of_compilation (void)
 }
 
 void
-init_optimization_passes (void)
-{
-  open_dump_file (DFI_cgraph, NULL);
-  cgraph_dump_file = dump_file;
-  dump_file = NULL;
-}
-
-void
 finish_optimization_passes (void)
 {
+  enum tree_dump_index i;
+  struct dump_file_info *dfi;
+  char *name;
+
   timevar_push (TV_DUMP);
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
@@ -2026,59 +1865,23 @@ finish_optimization_passes (void)
       close_dump_file (DFI_combine, NULL, NULL_RTX);
     }
 
-  dump_file = cgraph_dump_file;
-  cgraph_dump_file = NULL;
-  close_dump_file (DFI_cgraph, NULL, NULL_RTX);
-
   /* Do whatever is necessary to finish printing the graphs.  */
   if (graph_dump_format != no_graph)
-    {
-      int i;
-
-      for (i = 0; i < (int) DFI_MAX; ++i)
-	if (dump_file_tbl[i].initialized && dump_file_tbl[i].graph_dump_p)
-	  {
-	    char seq[16];
-	    char *suffix;
-
-	    sprintf (seq, DUMPFILE_FORMAT, i);
-	    suffix = concat (seq, dump_file_tbl[i].extension, NULL);
-	    finish_graph_dump_file (dump_base_name, suffix);
-	    free (suffix);
-	  }
-    }
+    for (i = DFI_MIN; (dfi = get_dump_file_info (i)) != NULL; ++i)
+      if (dump_initialized_p (i)
+	  && (dfi->flags & TDF_RTL) != 0
+	  && (name = get_dump_file_name (i)) != NULL)
+        {
+          finish_graph_dump_file (name);
+          free (name);
+        }
 
   timevar_pop (TV_DUMP);
 }
 
-bool
-enable_rtl_dump_file (int letter)
-{
-  bool matched = false;
-  int i;
-
-  if (letter == 'a')
-    {
-      for (i = 0; i < (int) DFI_MAX; ++i)
-	dump_file_tbl[i].enabled = 1;
-      matched = true;
-    }
-  else
-    {
-      for (i = 0; i < (int) DFI_MAX; ++i)
-	if (letter == dump_file_tbl[i].debug_switch)
-	  {
-	    dump_file_tbl[i].enabled = 1;
-	    matched = true;
-	  }
-    }
-
-  return matched;
-}
-
 struct tree_opt_pass pass_rest_of_compilation =
 {
-  "rest of compilation",                /* name */
+  NULL,			                /* name */
   NULL,		                        /* gate */
   rest_of_compilation,                  /* execute */
   NULL,                                 /* sub */
@@ -2089,7 +1892,8 @@ struct tree_opt_pass pass_rest_of_compilation =
   0,                                    /* properties_provided */
   PROP_rtl,                             /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect			/* todo_flags_finish */
+  TODO_ggc_collect,			/* todo_flags_finish */
+  0					/* letter */
 };
 
 

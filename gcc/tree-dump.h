@@ -88,6 +88,6 @@ extern void queue_and_dump_type (dump_info_p, tree);
 extern void dump_function (enum tree_dump_index, tree);
 extern void dump_function_to_file (tree, FILE *, int);
 
-extern unsigned int dump_register (const char *, const char *);
+extern unsigned int dump_register (const char *, const char *, int, unsigned int, int);
 
 #endif /* ! GCC_TREE_DUMP_H */
