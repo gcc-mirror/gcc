@@ -462,7 +462,7 @@ while getopts "d:fr:u:t:p:sl" ARG; do
     l)    LOCAL=1
 	  SCP=cp
 	  FTP_PATH=~ftp/pub/gcc
-	  PATH=~:$PATH;;
+	  PATH=~:/usr/local/bin:$PATH;;
     p)    OLD_TARS="${OLD_TARS} ${OPTARG}";;
     \?)   usage;;
     esac
