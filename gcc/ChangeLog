@@ -1,5 +1,10 @@
 2004-06-06  Steven Bosscher  <stevenb@suse.de>
 
+	* tree-cfg.c (tree_verify_flow_info): Make sure that labels in
+	SWITCH_LABELS are always sorted.
+
+2004-06-06  Steven Bosscher  <stevenb@suse.de>
+
 	* hooks.c (hook_int_void_1): New generic hook.
 	* hooks.h (hook_int_void_1): Add prototype.
 	* config/c4x/c4x.c (TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE):
