@@ -18,17 +18,23 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Irix 6 uses DWARF.  */
-#define DWARF_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
-
 /* Default to -mabi=n32 and -mips3.  */
 #define MIPS_ISA_DEFAULT 3
 #define MIPS_ABI_DEFAULT ABI_N32
 #define MULTILIB_DEFAULTS { "mabi=n32" }
 
-#include "mips/iris5gas.h"
+#include "mips/iris5.h"
 #include "mips/abi64.h"
+
+/* Irix 6 uses DWARF.  */
+#define DWARF_DEBUGGING_INFO
+#define DWARF_VERSION 2
+#define MIPS_DEBUGGING_INFO
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+
+#undef MACHINE_TYPE
+#define MACHINE_TYPE "SGI running IRIX 6.x"
 
 /* The Irix 6.0.1 assembler doesn't like labels in the text section, so
    just avoid emitting them.  */
@@ -42,6 +48,32 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_DECLARE_FUNCTION_SIZE
 
 /* Stuff we need for Irix 6 that isn't in Irix 5.  */
+
+/* The SGI assembler doesn't like labels before the .ent, so we must output
+   the .ent and function name here, which is the normal place for it.  */
+
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)			\
+  do {									\
+    fputs ("\t.ent\t", STREAM);						\
+    assemble_name (STREAM, NAME);					\
+    fputs ("\n", STREAM);						\
+    assemble_name (STREAM, NAME);					\
+    fputs (":\n", STREAM);						\
+  } while (0)
+
+/* Likewise, the SGI assembler doesn't like labels after the .end, so we
+   must output the .end here.  */
+#define ASM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)			\
+  do {									\
+    fputs ("\t.end\t", STREAM);						\
+    assemble_name (STREAM, NAME);					\
+    fputs ("\n", STREAM);						\
+  } while (0)
+
+/* Tell function_prologue in mips.c that we have already output the .ent/.end
+   psuedo-ops.  */
+#define FUNCTION_NAME_ALREADY_DECLARED
 
 #undef SET_ASM_OP	/* Has no equivalent.  See ASM_OUTPUT_DEF below.  */
 
@@ -59,13 +91,15 @@ Boston, MA 02111-1307, USA.  */
 
 #define POPSECTION_ASM_OP	".popsection"
 
-#define DEBUG_SECTION		".debug,1,0,0,1"
-#define LINE_SECTION		".line,1,0,0,1"
-#define SFNAMES_SECTION		".debug_sfnames,1,0,0,1"
-#define SRCINFO_SECTION		".debug_srcinfo,1,0,0,1"
-#define MACINFO_SECTION		".debug_macinfo,1,0,0,1"
-#define PUBNAMES_SECTION	".debug_pubnames,1,0,0,1"
-#define ARANGES_SECTION		".debug_aranges,1,0,0,1"
+#define DEBUG_SECTION		".debug_info,0x7000001e,0,0,1"
+#define LINE_SECTION		".debug_line,0x7000001e,0,0,1"
+#define SFNAMES_SECTION		".debug_sfnames,0x7000001e,0,0,1"
+#define SRCINFO_SECTION		".debug_srcinfo,0x7000001e,0,0,1"
+#define MACINFO_SECTION		".debug_macinfo,0x7000001e,0,0,1"
+#define PUBNAMES_SECTION	".debug_pubnames,0x7000001e,0,0,1"
+#define ARANGES_SECTION		".debug_aranges,0x7000001e,0,0,1"
+#define FRAME_SECTION		".debug_frame,0x7000001e,0x08000000,0,1"
+#define ABBREV_SECTION		".debug_abbrev,0x7000001e,0,0,1"
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
@@ -293,11 +327,3 @@ while (0)
 -_SYSTYPE_SVR4 -woff 84 \
 %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} \
 %{!mabi=32:%{!mabi=n32:%{!mabi=64: -n32}}}"
-
-/* ??? Debugging does not work.  We get many assembler core dumps,
-   and even some linker core dumps.  */
-#undef DBX_DEBUGGING_INFO
-#undef SDB_DEBUGGING_INFO
-#undef MIPS_DEBUGGING_INFO
-#undef DWARF_DEBUGGING_INFO
-#undef PREFERRED_DEBUGGING_TYPE
