@@ -1,7 +1,0 @@
-# We also need to override LIBGCC2_DEBUG_CFLAGS so libgcc2 will be
-# built without debugging information
-
-LIBGCC2_DEBUG_CFLAGS=
-
-# custom installation rules for mingw32 (append .exe to binaries, etc.)
-# INSTALL_DOSREL=install-dosrel

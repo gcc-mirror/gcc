@@ -1,3 +1,9 @@
+2005-03-30  J"orn Rennecke <joern.rennecke@st.com>
+
+	* config/mh-mingw32: Delete.
+	* configure.in: Don't use it.
+	* configure: Regenerate.
+
 2005-03-31  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (bfd, opcodes, libstdc++-v3, libmudflap): Set lib_path.
