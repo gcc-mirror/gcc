@@ -1,3 +1,12 @@
+2004-04-05  Paul Brook  <paul@codesourcery.com>
+
+	PR 2123
+	* g++.dg/expr/anew1.C: XFAIL and make reproducible.  Call abort on
+	failure and exit(0) on success.
+	* g++.dg/expr/anew2.C: Ditto.
+	* g++.dg/expr/anew3.C: Ditto.
+	* g++.dg/expr/anew4.C: Ditto. 
+
 2004-04-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* lib/target-supports.exp (check_named_sections_available): New.
