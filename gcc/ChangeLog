@@ -1,3 +1,7 @@
+Thu Oct 23 09:35:12 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Thu Oct 23 08:03:59 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* dbxout.c (dbxout_start_new_source_file): Use output_quoted_string
