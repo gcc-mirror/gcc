@@ -1,6 +1,6 @@
 /* Definitions for Intel 386 running SCO Unix System V,
    using dbx-in-coff encapsulation.
-   Copyright (C) 1992, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995, 1996, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

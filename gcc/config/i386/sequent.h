@@ -1,5 +1,5 @@
 /* Definitions for Sequent Intel 386.
-   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
