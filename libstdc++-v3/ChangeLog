@@ -1,3 +1,13 @@
+2003-03-08  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9826
+	* include/bits/istream.tcc (operator>>(_CharT*),
+	operator>>(basic_string&), ws): Pass a char_type to __ctype.is.
+	* testsuite/27_io/stringstream.cc (test02): Add.
+
+	* include/bits/istream.tcc (operator>>(_CharT*)):
+	Assign a char_type to *__s.
+
 2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
 
 	* src/ios.cc (ios_base::ios_base): Correct order of _M_word and

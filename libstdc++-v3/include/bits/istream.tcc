@@ -1036,9 +1036,9 @@ namespace std
 	      
 	      while (__extracted < __num - 1 
 		     && !_Traits::eq_int_type(__c, __eof)
-		     && !__ctype.is(ctype_base::space, __c))
+		     && !__ctype.is(ctype_base::space, _Traits::to_char_type(__c)))
 		{
-		  *__s++ = __c;
+		  *__s++ = _Traits::to_char_type(__c);
 		  ++__extracted;
 		  __c = __sb->snextc();
 		}
@@ -1081,7 +1081,7 @@ namespace std
       __int_type __c = __sb->sgetc();
 
       while (!_Traits::eq_int_type(__c, __eof) 
-	     && __ctype.is(ctype_base::space, __c))
+	     && __ctype.is(ctype_base::space, _Traits::to_char_type(__c)))
 	__c = __sb->snextc();
 
        if (_Traits::eq_int_type(__c, __eof))
@@ -1119,7 +1119,7 @@ namespace std
 	  
 	  while (__extracted < __n 
 		 && !_Traits::eq_int_type(__c, __eof)
-		 && !__ctype.is(ctype_base::space, __c))
+		 && !__ctype.is(ctype_base::space, _Traits::to_char_type(__c)))
 	    {
 	      __str += _Traits::to_char_type(__c);
 	      ++__extracted;
