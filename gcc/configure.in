@@ -29,6 +29,59 @@ hard_link=ln
 symbolic_link='ln -s'
 copy=cp
 
+# Check for bogus environment variables.
+# Test if LIBRARY_PATH contains the notation for the current directory
+# since this would lead to problems installing/building glibc.
+# LIBRARY_PATH contains the current directory if one of the following
+# is true:
+# - one of the terminals (":" and ";") is the first or last sign
+# - two terminals occur directly after each other
+# - the path contains an element with a dot in it
+AC_MSG_CHECKING(LIBRARY_PATH variable)
+changequote(,)dnl
+case ${LIBRARY_PATH} in
+  [:\;]* | *[:\;] | *[:\;][:\;]* |  *[:\;]. | .[:\;]*| . | *[:\;].[:\;]* )
+    library_path_setting="contains current directory"
+    ;;
+  *)
+    library_path_setting="ok"
+    ;;
+esac
+changequote([,])dnl
+AC_MSG_RESULT($library_path_setting)
+if test "$library_path_setting" != "ok"; then
+AC_MSG_ERROR([
+*** LIBRARY_PATH shouldn't contain the current directory when
+*** building egcs. Please change the environment variable
+*** and run configure again.])
+fi
+
+# Test if GCC_EXEC_PREFIX contains the notation for the current directory
+# since this would lead to problems installing/building glibc.
+# GCC_EXEC_PREFIX contains the current directory if one of the following
+# is true:
+# - one of the terminals (":" and ";") is the first or last sign
+# - two terminals occur directly after each other
+# - the path contains an element with a dot in it
+AC_MSG_CHECKING(GCC_EXEC_PREFIX variable)
+changequote(,)dnl
+case ${GCC_EXEC_PREFIX} in
+  [:\;]* | *[:\;] | *[:\;][:\;]* |  *[:\;]. | .[:\;]*| . | *[:\;].[:\;]* )
+    gcc_exec_prefix_setting="contains current directory"
+    ;;
+  *)
+    gcc_exec_prefix_setting="ok"
+    ;;
+esac
+changequote([,])dnl
+AC_MSG_RESULT($gcc_exec_prefix_setting)
+if test "$gcc_exec_prefix_setting" != "ok"; then
+AC_MSG_ERROR([
+*** GCC_EXEC_PREFIX shouldn't contain the current directory when
+*** building egcs. Please change the environment variable
+*** and run configure again.])
+fi
+
 # Check for additional parameters
 
 # With GNU ld
