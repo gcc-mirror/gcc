@@ -1,5 +1,14 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (UNSPEC_[LS][WD][LR]): Delete in favor of...
+	(UNSPEC_{LOAD,STORE}_{LEFT,RIGHT}): ...these new constants.  Shuffle
+	later constants to cover the gap.
+	(load, store): New mode attributes.
+	(mov_l[wd]l, mov_l[wd]r, mov_s[wd]l, mov_s[wd]r): Redefine using :GPR.
+	Use new unspec constants.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (one_cmpl[sd]i2): Redefine using :GPR.
 	(and[sd]3, ior[sd]i3, xor[sd]i3): Likewise.  Change 32-bit patterns
 	to use register_operand rather than uns_arith_operand as the predicate
