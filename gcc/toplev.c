@@ -1276,6 +1276,10 @@ strip_off_ending (name, len)
     name[len - 3] = 0;
   else if (len > 3 && ! strcmp (".cc", name + len - 3))
     name[len - 3] = 0;
+  else if (len > 2 && ! strcmp (".C", name + len - 2))
+    name[len - 2] = 0;
+  else if (len > 4 && ! strcmp (".cxx", name + len - 4))
+    name[len - 4] = 0;
   else if (len > 2 && ! strcmp (".f", name + len - 2))
     name[len - 2] = 0;
   else if (len > 4 && ! strcmp (".ada", name + len - 4))
