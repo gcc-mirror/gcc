@@ -428,7 +428,9 @@ public final class Double extends Number implements Comparable
    * @return the bits of the <code>double</code>
    * @see #longBitsToDouble(long)
    */
+  // GCJ LOCAL: We diverge from Classpath for efficiency.
   public static native long doubleToLongBits(double value);
+  // END GCJ LOCAL
 
   /**
    * Convert the double to the IEEE 754 floating-point "double format" bit
@@ -444,7 +446,9 @@ public final class Double extends Number implements Comparable
    * @return the bits of the <code>double</code>
    * @see #longBitsToDouble(long)
    */
+  // GCJ LOCAL: We diverge from Classpath for efficiency.
   public static native long doubleToRawLongBits(double value);
+  // END GCJ LOCAL
 
   /**
    * Convert the argument in IEEE 754 floating-point "double format" bit
@@ -459,7 +463,9 @@ public final class Double extends Number implements Comparable
    * @see #doubleToLongBits(double)
    * @see #doubleToRawLongBits(double)
    */
+  // GCJ LOCAL: We diverge from Classpath for efficiency.
   public static native double longBitsToDouble(long bits);
+  // END GCJ LOCAL
 
   /**
    * Compare two Doubles numerically by comparing their <code>double</code>

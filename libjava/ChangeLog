@@ -1,3 +1,8 @@
+2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* java/lang/Float.java, java/lang/Double.java: Add GCJ LOCAL
+	markers.
+
 2003-09-22  Anthony Green  <green@redhat.com>
 
 	* configure.in (HAVE_USLEEP_DECL): Define for newlib build.
