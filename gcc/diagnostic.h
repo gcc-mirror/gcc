@@ -132,6 +132,11 @@ struct output_buffer
    the context of a diagnostic message.  */
 struct diagnostic_context
 {
+  /* Where most of the diagnostic formatting work is done.  In Object
+     Oriented terms, we'll say that diagnostic_context is a sub-class of
+     output_buffer.  */
+  output_buffer buffer;
+
   /* The diagnostic message to output.  */
   const char *message;
 
@@ -185,9 +190,6 @@ struct diagnostic_context
 
 extern printer_fn lang_printer;
 
-extern diagnostic_starter_fn lang_diagnostic_starter;
-extern diagnostic_finalizer_fn lang_diagnostic_finalizer;
-
 extern int diagnostic_message_length_per_line;
 
 /* This output buffer is used by front-ends that directly output
@@ -196,6 +198,7 @@ extern int diagnostic_message_length_per_line;
    avoided.  This global buffer will go away, once all such usage
    has been removed.  */
 extern output_buffer *diagnostic_buffer;
+extern diagnostic_context *global_dc;
 
 #define diagnostic_kind_count(BUFFER, DK) \
    (BUFFER)->state.diagnostic_count[(int) DK]

@@ -108,9 +108,12 @@ extern int warnings_are_errors;
 /* Front-end specific tree formatter, if non-NULL.  */
 printer_fn lang_printer = NULL;
 
-/* An output_buffer surrogate for stderr.  */
-static output_buffer global_output_buffer;
-output_buffer *diagnostic_buffer = &global_output_buffer;
+/* A diagnostic_context surrogate for stderr.  */
+static diagnostic_context global_diagnostic_context;
+diagnostic_context *global_dc = &global_diagnostic_context;
+
+/* This will be removed shortly.  */
+output_buffer *diagnostic_buffer = &global_diagnostic_context.buffer;
 
 /* Function of last error message;
    more generally, function such that if next error message is in it
@@ -125,10 +128,6 @@ static int last_error_tick;
 
 void (*print_error_function) PARAMS ((const char *)) =
   default_print_error_function;
-
-/* Hooks for language specific diagnostic messages pager and finalizer.  */
-diagnostic_starter_fn lang_diagnostic_starter;
-diagnostic_finalizer_fn lang_diagnostic_finalizer;
 
 /* Maximum characters per line in automatic line wrapping mode.
    Zero means don't wrap lines. */
@@ -189,8 +188,8 @@ initialize_diagnostics ()
   /* Proceed to actual initialization.  */
   default_initialize_buffer (diagnostic_buffer);
 
-  lang_diagnostic_starter = default_diagnostic_starter;
-  lang_diagnostic_finalizer = default_diagnostic_finalizer;
+  diagnostic_starter (global_dc) = default_diagnostic_starter;
+  diagnostic_finalizer (global_dc) = default_diagnostic_finalizer;
 }
 
 void
@@ -1772,8 +1771,8 @@ set_diagnostic_context (dc, msgid, args_ptr, file, line, warn)
   diagnostic_file_location (dc) = file;
   diagnostic_line_location (dc) = line;
   diagnostic_is_warning (dc) = warn;
-  diagnostic_starter (dc) = lang_diagnostic_starter;
-  diagnostic_finalizer (dc) = lang_diagnostic_finalizer;
+  diagnostic_starter (dc) = diagnostic_starter (global_dc);
+  diagnostic_finalizer (dc) = diagnostic_finalizer (global_dc);
 }
 
 void
