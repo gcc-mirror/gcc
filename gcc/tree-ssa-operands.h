@@ -175,11 +175,9 @@ typedef stmt_operands_t *stmt_operands_p;
 #define SET_PHI_ARG_DEF(PHI, I, V)					\
 				SET_USE (PHI_ARG_DEF_PTR ((PHI), (I)), (V))
 #define PHI_ARG_DEF_FROM_EDGE(PHI, E)					\
-				PHI_ARG_DEF ((PHI),			\
-					     phi_arg_from_edge ((PHI),(E)))
+				PHI_ARG_DEF ((PHI), (E)->dest_idx)
 #define PHI_ARG_DEF_PTR_FROM_EDGE(PHI, E)				\
-				PHI_ARG_DEF_PTR ((PHI), 		\
-					     phi_arg_from_edge ((PHI),(E)))
+				PHI_ARG_DEF_PTR ((PHI), (E)->dest_idx)
 
 
 extern void init_ssa_operands (void);

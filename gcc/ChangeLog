@@ -1,3 +1,10 @@
+2005-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-flow-inline.h (phi_arg_from_edge): Remove.
+	* tree-flow.h: Remove the corresponding prototype.
+	* tree-ssa-operands.h, tree-ssa-threadupdate.c, tree-ssa.c,
+	tree-vectorizer.c: Use dest_idx instead of phi_arg_from_edge.
+
 2005-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/17751

@@ -298,7 +298,7 @@ create_edge_and_update_destination_phis (struct redirection_data *rd)
      associated with the outgoing edge stored in RD.  */
   for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
     {
-      int indx = phi_arg_from_edge (phi, rd->outgoing_edge);
+      int indx = rd->outgoing_edge->dest_idx;
       add_phi_arg (phi, PHI_ARG_DEF_TREE (phi, indx), e);
     }
 }

@@ -523,7 +523,7 @@ slpeel_update_phis_for_duplicate_loop (struct loop *orig_loop,
         {
           gcc_assert (new_loop_exit_e == orig_entry_e);
           SET_PHI_ARG_DEF (phi_orig,
-                           phi_arg_from_edge (phi_orig, new_loop_exit_e),
+                           new_loop_exit_e->dest_idx,
                            new_ssa_name);
         }
     }
@@ -639,8 +639,7 @@ slpeel_update_phi_nodes_for_guard (edge guard_edge,
       /* 3. Update phi in successor block.  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (update_phi, e) == loop_arg
                   || PHI_ARG_DEF_FROM_EDGE (update_phi, e) == guard_arg);
-      SET_PHI_ARG_DEF (update_phi, phi_arg_from_edge (update_phi, e),
-                       PHI_RESULT (new_phi));
+      SET_PHI_ARG_DEF (update_phi, e->dest_idx, PHI_RESULT (new_phi));
     }
 
   set_phi_nodes (new_merge_bb, phi_reverse (phi_nodes (new_merge_bb)));
@@ -3188,7 +3187,7 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters, edge update_e)
       /* Fix phi expressions in the successor bb.  */
       gcc_assert (PHI_ARG_DEF_FROM_EDGE (phi1, update_e) ==
                   PHI_ARG_DEF_FROM_EDGE (phi, EDGE_SUCC (loop->latch, 0)));
-      SET_PHI_ARG_DEF (phi1, phi_arg_from_edge (phi1, update_e), ni_name);
+      SET_PHI_ARG_DEF (phi1, update_e->dest_idx, ni_name);
     }
 }
 

@@ -56,18 +56,16 @@ ssa_redirect_edge (edge e, basic_block dest)
   tree phi, next;
   tree list = NULL, *last = &list;
   tree src, dst, node;
-  int i;
 
   /* Remove the appropriate PHI arguments in E's destination block.  */
   for (phi = phi_nodes (e->dest); phi; phi = next)
     {
       next = PHI_CHAIN (phi);
 
-      i = phi_arg_from_edge (phi, e);
-      if (PHI_ARG_DEF (phi, i) == NULL_TREE)
+      if (PHI_ARG_DEF (phi, e->dest_idx) == NULL_TREE)
 	continue;
 
-      src = PHI_ARG_DEF (phi, i);
+      src = PHI_ARG_DEF (phi, e->dest_idx);
       dst = PHI_RESULT (phi);
       node = build_tree_list (dst, src);
       *last = node;
