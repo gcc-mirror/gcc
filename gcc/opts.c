@@ -1412,6 +1412,10 @@ common_handle_option (size_t scode, const char *arg,
     case OPT_fverbose_asm:
       flag_verbose_asm = value;
       break;
+
+    case OPT_fweb:
+      flag_web = value;
+      break;
       
     case OPT_fwrapv:
       flag_wrapv = value;
