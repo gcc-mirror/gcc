@@ -1,3 +1,9 @@
+2004-06-17  Matthias Klose  <doko@debian.org>
+
+	* libtool-version: New.
+	* Makefile.am (libffi_la_LDFLAGS): Use -version-info for soname.
+	* Makefile.in: Regenerate.
+
 2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.am: Remove useless multilib rules.

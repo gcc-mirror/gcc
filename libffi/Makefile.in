@@ -381,7 +381,7 @@ nodist_libffi_la_SOURCES = $(am__append_1) $(am__append_2) $(am__append_3) $(am_
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 AM_CFLAGS = -Wall -g -fexceptions
-libffi_la_LDFLAGS = -release $(VERSION)
+libffi_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 INCLUDES = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 AM_CCASFLAGS = $(INCLUDES)
 all: fficonfig.h
