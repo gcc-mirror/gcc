@@ -1,5 +1,9 @@
 2004-01-23  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* recog.c: Fix a typo in copyright.
+
+2004-01-23  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* alias.c, basic-block.h, c-common.c, c-common.h,
 	c-cppbuiltin.c, c-pragma.c, c-pretty-print.c, c-semantics.c,
 	calls.c, cfg.c, cfgcleanup.c, cfgrtl.c, cgraph.h, collect2.c,
