@@ -39,22 +39,12 @@ std::type_info::
 ~type_info ()
 { }
 
-#ifndef __COMMON_UNRELIABLE
+// We can't rely on common symbols being shared between shared objects.
 bool type_info::
 operator== (const type_info& arg) const
 {
-  return &arg == this;
+  return (&arg == this) || (fast_compare (name (), arg.name ()) == 0);
 }
-#else
-// We can't rely on common symbols being shared between translation units
-// under Windows.  Sigh.
-
-bool type_info::
-operator== (const type_info& arg) const
-{
-  return fast_compare (name (), arg.name ()) == 0;
-}
-#endif
 
 extern "C" void
 __rtti_class (void *addr, const char *name,

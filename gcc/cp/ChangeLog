@@ -1,3 +1,7 @@
+1998-10-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo.cc (operator==): Always compare names.
+
 1998-10-12  Herman ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* decl.c (start_function): Fix cut-and-paste error.
