@@ -1,3 +1,7 @@
+2004-09-18  Paul Brook  <paul@codesourcery.com>
+
+	* g++.old-deja/g++.pt/static11.C: XFAIL on arm*-*-eabi.
+
 2004-09-18  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17424
