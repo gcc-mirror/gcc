@@ -1256,7 +1256,7 @@ extern char *current_function_name;
 { extern char *version_string;					\
   char *p, *after_dir = main_input_filename;			\
 								\
-  fprintf (FILE, "\t.verstamp 9 0 ");				\
+  fprintf (FILE, "\t.verstamp 10 0 ");				\
   for (p = version_string; *p != ' ' && *p != 0; p++)		\
     fprintf (FILE, "%c", *p == '.' ? ' ' : *p);			\
   fprintf (FILE, "\n\t.set noreorder\n");			\

@@ -314,13 +314,14 @@
   [(set_attr "type" "imulq")])
 
 ;; The divide and remainder operations always take their inputs from
-;; r24 and r25, put their output in r27, and clobber r23.
+;; r24 and r25, put their output in r27, and clobber r23 and r28.
 
 (define_expand "divsi3"
   [(parallel [(set (reg:SI 27)
 		   (div:SI (match_operand:SI 1 "general_operand" "")
 			   (match_operand:SI 2 "general_operand" "")))
-	      (clobber (reg:DI 23))])
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
   ""
@@ -337,7 +338,8 @@
   [(parallel [(set (reg:SI 27)
 		   (udiv:SI (match_operand:SI 1 "general_operand" "")
 			    (match_operand:SI 2 "general_operand" "")))
-	      (clobber (reg:DI 23))])
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
   ""
@@ -354,7 +356,8 @@
   [(parallel [(set (reg:SI 27)
 		   (mod:SI (match_operand:SI 1 "general_operand" "")
 			   (match_operand:SI 2 "general_operand" "")))
-	      (clobber (reg:DI 23))])
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
   ""
@@ -371,6 +374,7 @@
   [(parallel [(set (reg:SI 27)
 		   (umod:SI (match_operand:SI 1 "general_operand" "")
 			    (match_operand:SI 2 "general_operand" "")))
+	      (clobber (reg:DI 28))
 	      (clobber (reg:DI 23))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
@@ -388,6 +392,7 @@
   [(parallel [(set (reg:DI 27)
 		   (div:DI (match_operand:DI 1 "general_operand" "")
 			   (match_operand:DI 2 "general_operand" "")))
+	      (clobber (reg:DI 28))
 	      (clobber (reg:DI 23))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
@@ -405,6 +410,7 @@
   [(parallel [(set (reg:DI 27)
 		   (udiv:DI (match_operand:DI 1 "general_operand" "")
 			    (match_operand:DI 2 "general_operand" "")))
+	      (clobber (reg:DI 28))
 	      (clobber (reg:DI 23))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
@@ -422,6 +428,7 @@
   [(parallel [(set (reg:DI 27)
 		   (mod:DI (match_operand:DI 1 "general_operand" "")
 			   (match_operand:DI 2 "general_operand" "")))
+	      (clobber (reg:DI 28))
 	      (clobber (reg:DI 23))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
@@ -439,6 +446,7 @@
   [(parallel [(set (reg:DI 27)
 		   (umod:DI (match_operand:DI 1 "general_operand" "")
 			    (match_operand:DI 2 "general_operand" "")))
+	      (clobber (reg:DI 28))
 	      (clobber (reg:DI 23))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
@@ -456,7 +464,8 @@
   [(set (reg:SI 27)
 	(match_operator:SI 1 "divmod_operator"
 			[(reg:SI 24) (reg:SI 25)]))
-   (clobber (reg:DI 23))]
+   (clobber (reg:DI 23))
+   (clobber (reg:DI 28))]
   ""
   "%E1 $24,$25,$27")
 
@@ -464,7 +473,8 @@
   [(set (reg:DI 27)
 	(match_operator:DI 1 "divmod_operator"
 			[(reg:DI 24) (reg:DI 25)]))
-   (clobber (reg:DI 23))]
+   (clobber (reg:DI 23))
+   (clobber (reg:DI 28))]
   ""
   "%E1 $24,$25,$27")
 
