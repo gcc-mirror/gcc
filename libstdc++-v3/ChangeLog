@@ -1,3 +1,11 @@
+2001-12-06  Paolo Carlini  <pcarlini@unitus.it>
+	    Loren J. Rittle <ljrittle@acm.org>
+
+	* include/bits/basic_string.tcc (_M_mutate, _M_clone): Implement
+	exponential growth policy to meet linear amortized time
+	requirements of the standard.
+        (_S_create): Adjust comment.
+
 2001-12-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/3720

@@ -265,6 +265,12 @@ namespace std
       _M_rep()->_M_set_leaked();
     }
 
+  // _M_mutate and, below, _M_clone, include, in the same form, an exponential
+  // growth policy, necessary to meet amortized linear time requirements of
+  // the library: see http://gcc.gnu.org/ml/libstdc++/2001-07/msg00085.html.
+  // The policy is active for allocations requiring an amount of memory above
+  // system pagesize. This is consistent with the requirements of the standard:
+  // see, f.i., http://gcc.gnu.org/ml/libstdc++/2001-07/msg00130.html
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
     basic_string<_CharT, _Traits, _Alloc>::
@@ -279,7 +285,21 @@ namespace std
 	{
 	  // Must reallocate.
 	  allocator_type __a = get_allocator();
-	  _Rep* __r = _Rep::_S_create(__new_size, __a);
+	  // See below (_S_create) for the meaning and value of these
+	  // constants.
+	  const size_type __pagesize = 4096;
+	  const size_type __malloc_header_size = 4 * sizeof (void*);
+	  // The biggest string which fits in a memory page
+	  const size_type __page_capacity = !(__pagesize - __malloc_header_size
+					      - sizeof(_Rep) - sizeof(_CharT)) 
+	    				      / sizeof(_CharT);
+	  _Rep* __r;
+	  if (__new_size > capacity() && __new_size > __page_capacity)
+	    // Growing exponentially.
+	    __r = _Rep::_S_create(__new_size > 2*capacity() ?
+				  __new_size : 2*capacity(), __a);
+	  else
+	    __r = _Rep::_S_create(__new_size, __a);
 	  try 
 	    {
 	      if (__pos)
@@ -380,11 +400,6 @@ namespace std
       // with tuned parameters to get this perfect for any particular
       // malloc implementation.  Fortunately, generalizations about
       // common features seen among implementations seems to suffice.
-      // This algorithm does not replace the need for an exponential
-      // growth shaper to meet library specification.  Note: THIS IS
-      // NOT THE CORRECT LOCATION FOR AN EXPONENTIAL GROWTH SHAPER
-      // (since this code affect initial allocation as well as
-      // reallocation).
 
       // __pagesize need not match the actual VM page size for good
       // results in practice, thus we pick a common value on the low
@@ -430,7 +445,23 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _M_clone(const _Alloc& __alloc, size_type __res)
     {
-      _Rep* __r = _Rep::_S_create(_M_length + __res, __alloc);
+      // Requested capacity of the clone.
+      const size_type __requested_cap = _M_length + __res;
+      // See above (_S_create) for the meaning and value of these constants.
+      const size_type __pagesize = 4096;
+      const size_type __malloc_header_size = 4 * sizeof (void*);
+      // The biggest string which fits in a memory page.
+      const size_type __page_capacity =
+        (__pagesize - __malloc_header_size - sizeof(_Rep) - sizeof(_CharT))
+        / sizeof(_CharT);
+      _Rep* __r;
+      if (__requested_cap > _M_capacity && __requested_cap > __page_capacity)
+        // Growing exponentially.
+        __r = _Rep::_S_create(__requested_cap > 2*_M_capacity ?
+                              __requested_cap : 2*_M_capacity, __alloc);
+      else
+        __r = _Rep::_S_create(__requested_cap, __alloc);
+      
       if (_M_length)
 	{
 	  try 
