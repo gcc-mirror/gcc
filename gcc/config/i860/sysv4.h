@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (i860 System V Release 4)");
 
 /* Provide a set of pre-definitions and pre-assertions appropriate for
-   the i860 running svr4.  Note that the symbol `__SVR4__' MUST BE
+   the i860 running svr4.  Note that the symbol `__svr4__' MUST BE
    DEFINED!  It is needed so that the va_list struct in va-i860.h
    will get correctly defined for the svr4 (ABI compliant) case rather
    than for the previous (svr3, svr2, ...) case.  It also needs to be
