@@ -1975,31 +1975,26 @@ finish_anon_union (anon_union_decl)
       return;
     }
 
-  if (!processing_template_decl)
-    {
-      main_decl 
-	= build_anon_union_vars (anon_union_decl,
-				 &DECL_ANON_UNION_ELEMS (anon_union_decl),
-				 static_p, external_p);
-      
-      if (main_decl == NULL_TREE)
-	{
-	  warning ("anonymous aggregate with no members");
-	  return;
-	}
+  main_decl = build_anon_union_vars (anon_union_decl,
+				     &DECL_ANON_UNION_ELEMS (anon_union_decl),
+				     static_p, external_p);
 
-      if (static_p)
-	{
-	  make_decl_rtl (main_decl, 0);
-	  COPY_DECL_RTL (main_decl, anon_union_decl);
-	  expand_anon_union_decl (anon_union_decl, 
-				  NULL_TREE,
-				  DECL_ANON_UNION_ELEMS (anon_union_decl));
-	  return;
-	}
+  if (main_decl == NULL_TREE)
+    {
+      warning ("anonymous aggregate with no members");
+      return;
     }
 
-  add_decl_stmt (anon_union_decl);
+  if (static_p)
+    {
+      make_decl_rtl (main_decl, 0);
+      COPY_DECL_RTL (main_decl, anon_union_decl);
+      expand_anon_union_decl (anon_union_decl, 
+			      NULL_TREE,
+			      DECL_ANON_UNION_ELEMS (anon_union_decl));
+    }
+  else
+    add_decl_stmt (anon_union_decl);
 }
 
 /* Finish processing a builtin type TYPE.  It's name is NAME,
