@@ -361,7 +361,6 @@ CORD CORD_substr_checked(CORD x, size_t i, size_t n)
             return(CORD_substr_closure(x, i, n, CORD_index_access_fn));
         } else {
             register char * result = GC_MALLOC_ATOMIC(n+1);
-            register char * p = result;
             
             if (result == 0) OUT_OF_MEMORY;
             strncpy(result, x+i, n);

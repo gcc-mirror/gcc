@@ -36,11 +36,19 @@
 #endif
 
 #if defined(_MSC_VER) && defined(_DLL)
-#ifdef GC_BUILD
-#define GC_API __declspec(dllexport)
-#else
-#define GC_API __declspec(dllimport)
+# ifdef GC_BUILD
+#   define GC_API __declspec(dllexport)
+# else
+#   define GC_API __declspec(dllimport)
+# endif
 #endif
+
+#if defined(__WATCOMC__) && defined(GC_DLL)
+# ifdef GC_BUILD
+#   define GC_API extern __declspec(dllexport)
+# else
+#   define GC_API extern __declspec(dllimport)
+# endif
 #endif
 
 #ifndef GC_API
@@ -126,7 +134,19 @@ GC_API GC_word GC_max_retries;
 			/* reporting out of memory after heap		*/
 			/* expansion fails.  Initially 0.		*/
 			
-			
+
+GC_API char *GC_stackbottom;	/* Cool end of user stack.		*/
+				/* May be set in the client prior to	*/
+				/* calling any GC_ routines.  This	*/
+				/* avoids some overhead, and 		*/
+				/* potentially some signals that can 	*/
+				/* confuse debuggers.  Otherwise the	*/
+				/* collector attempts to set it 	*/
+				/* automatically.			*/
+				/* For multithreaded code, this is the	*/
+				/* cold end of the stack for the	*/
+				/* primordial thread.			*/
+				
 /* Public procedures */
 /*
  * general purpose allocation routines, with roughly malloc calling conv.
@@ -193,8 +213,8 @@ GC_API size_t GC_size GC_PROTO((GC_PTR object_addr));
 /* If the argument is stubborn, the result will have changes enabled.	*/
 /* It is an error to have changes enabled for the original object.	*/
 /* Follows ANSI comventions for NULL old_object.			*/
-GC_API GC_PTR GC_realloc GC_PROTO((GC_PTR old_object,
-				   size_t new_size_in_bytes));
+GC_API GC_PTR GC_realloc
+	GC_PROTO((GC_PTR old_object, size_t new_size_in_bytes));
 				   
 /* Explicitly increase the heap size.	*/
 /* Returns 0 on failure, 1 on success.  */
@@ -248,6 +268,7 @@ GC_API void GC_gcollect GC_PROTO((void));
 /* than normal pause times for incremental collection.  However,	*/
 /* aborted collections do no useful work; the next collection needs	*/
 /* to start from the beginning.						*/
+/* Return 0 if the collection was aborted, 1 if it succeeded.		*/
 typedef int (* GC_stop_func) GC_PROTO((void));
 GC_API int GC_try_to_collect GC_PROTO((GC_stop_func stop_func));
 
@@ -604,6 +625,10 @@ GC_API void (*GC_is_valid_displacement_print_proc)
 GC_API void (*GC_is_visible_print_proc)
 	GC_PROTO((GC_PTR p));
 
+#if defined(_SOLARIS_PTHREADS) && !defined(SOLARIS_THREADS)
+#   define SOLARIS_THREADS
+#endif
+
 #ifdef SOLARIS_THREADS
 /* We need to intercept calls to many of the threads primitives, so 	*/
 /* that we can locate thread stacks and stop the world.			*/
@@ -660,7 +685,10 @@ GC_API void (*GC_is_visible_print_proc)
 
 #endif /* IRIX_THREADS || LINUX_THREADS */
 
-#if defined(THREADS) && !defined(SRC_M3)
+# if defined(PCR) || defined(SOLARIS_THREADS) || defined(WIN32_THREADS) || \
+	defined(IRIX_THREADS) || defined(LINUX_THREADS) || \
+	defined(IRIX_JDK_THREADS)
+   	/* Any flavor of threads except SRC_M3.	*/
 /* This returns a list of objects, linked through their first		*/
 /* word.  Its use can greatly reduce lock contention problems, since	*/
 /* the allocation lock can be acquired and released many fewer times.	*/
@@ -689,6 +717,13 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 # else
 #   define GC_INIT()
 # endif
+#endif
+
+#if (defined(_MSDOS) || defined(_MSC_VER)) && (_M_IX86 >= 300) \
+     || defined(_WIN32)
+  /* win32S may not free all resources on process exit.  */
+  /* This explicitly deallocates the heap.		 */
+    GC_API void GC_win32_free_heap ();
 #endif
 
 #ifdef __cplusplus

@@ -268,6 +268,7 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
 
       case WM_DESTROY:
            PostQuitMessage (0);
+	   GC_win32_free_heap();
            return 0;
       
       case WM_PAINT:
