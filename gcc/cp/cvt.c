@@ -796,10 +796,10 @@ ocp_convert (type, expr, convtype, flags)
 
       if ((flags & LOOKUP_ONLYCONVERTING)
 	  && ! (IS_AGGR_TYPE (dtype) && DERIVED_FROM_P (type, dtype)))
-	{
-	  ctor = build_user_type_conversion (type, ctor, flags);
-	  flags |= LOOKUP_NO_CONVERSION;
-	}
+	/* For copy-initialization, first we create a temp of the proper type
+	   with a user-defined conversion sequence, then we direct-initialize
+	   the target with the temp (see [dcl.init]).  */
+	ctor = build_user_type_conversion (type, ctor, flags);
       if (ctor)
 	ctor = build_method_call (NULL_TREE, ctor_identifier,
 				  build_expr_list (NULL_TREE, ctor),

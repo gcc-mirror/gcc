@@ -3786,11 +3786,16 @@ maybe_handle_ref_bind (ics, reference_type)
 	 cv-qualification is subsumed by the initialization itself and
 	 does not constitute a conversion.  */
 
+      tree old_ics = *ics;
+
       *reference_type = TREE_TYPE (TREE_TYPE (*ics));
       *ics = TREE_OPERAND (*ics, 0);
       if (TREE_CODE (*ics) == IDENTITY_CONV
 	  && is_properly_derived_from (TREE_TYPE (*ics), *reference_type))
 	*ics = build_conv (BASE_CONV, *reference_type, *ics);
+      ICS_USER_FLAG (*ics) = ICS_USER_FLAG (old_ics);
+      ICS_BAD_FLAG (*ics) = ICS_BAD_FLAG (old_ics);
+      
       return 1;
     }
   
