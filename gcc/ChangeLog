@@ -1,5 +1,10 @@
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* sched-deps.c (add_insn_mem_dependence): Make it static.
+	* sched-int.h: Remove the corresponding prototypes.
+
+2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* flow.c (allocate_bb_life_data): Make it static.
 	* basic-block.h: Remove the corresponding prototype.
 

@@ -357,7 +357,6 @@ extern void print_insn (char *, rtx, int);
 
 /* Functions in sched-deps.c.  */
 extern int add_dependence (rtx, rtx, enum reg_note);
-extern void add_insn_mem_dependence (struct deps *, rtx *, rtx *, rtx, rtx);
 extern void sched_analyze (struct deps *, rtx, rtx);
 extern void init_deps (struct deps *);
 extern void free_deps (struct deps *);
