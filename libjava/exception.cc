@@ -23,7 +23,8 @@ details.  */
 // stdlib.h's abort().
 namespace std
 {
-  __attribute__ ((__noreturn__)) void abort ()
+  static __attribute__ ((__noreturn__)) void
+  abort ()
   {
     ::abort ();
   }
