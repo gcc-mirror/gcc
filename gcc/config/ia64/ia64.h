@@ -338,6 +338,8 @@ extern const char *ia64_tune_string;
 
 #define UNITS_PER_WORD 8
 
+#define UNITS_PER_SIMD_WORD UNITS_PER_WORD
+
 #define POINTER_SIZE (TARGET_ILP32 ? 32 : 64)
 
 /* A C expression whose value is zero if pointers that need to be extended
@@ -1024,18 +1026,8 @@ enum reg_class
    The value is a register class; perhaps CLASS, or perhaps another, smaller
    class.  */
 
-/* Don't allow volatile mem reloads into floating point registers.  This
-   is defined to force reload to choose the r/m case instead of the f/f case
-   when reloading (set (reg fX) (mem/v)).
-
-   Do not reload expressions into AR regs.  */
-
 #define PREFERRED_RELOAD_CLASS(X, CLASS) \
-  (CLASS == FR_REGS && GET_CODE (X) == MEM && MEM_VOLATILE_P (X) ? NO_REGS   \
-   : CLASS == FR_REGS && GET_CODE (X) == CONST_DOUBLE ? NO_REGS		     \
-   : !OBJECT_P (X)							     \
-     && (CLASS == AR_M_REGS || CLASS == AR_I_REGS) ? NO_REGS		     \
-   : CLASS)
+  ia64_preferred_reload_class (X, CLASS)
 
 /* You should define this macro to indicate to the reload phase that it may
    need to allocate at least one register for a reload in addition to the
@@ -1106,15 +1098,7 @@ enum reg_class
 #define CONST_OK_FOR_P(VALUE) ((VALUE) == 0 || (VALUE) == -1)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
-((C) == 'I' ? CONST_OK_FOR_I (VALUE)		\
- : (C) == 'J' ? CONST_OK_FOR_J (VALUE)		\
- : (C) == 'K' ? CONST_OK_FOR_K (VALUE)		\
- : (C) == 'L' ? CONST_OK_FOR_L (VALUE)		\
- : (C) == 'M' ? CONST_OK_FOR_M (VALUE)		\
- : (C) == 'N' ? CONST_OK_FOR_N (VALUE)		\
- : (C) == 'O' ? CONST_OK_FOR_O (VALUE)		\
- : (C) == 'P' ? CONST_OK_FOR_P (VALUE)		\
- : 0)
+  ia64_const_ok_for_letter_p (VALUE, C)
 
 /* A C expression that defines the machine-dependent operand constraint letters
    (`G', `H') that specify particular ranges of `const_double' values.  */
@@ -1125,33 +1109,14 @@ enum reg_class
    || (VALUE) == CONST1_RTX (GET_MODE (VALUE)))
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
-  ((C) == 'G' ? CONST_DOUBLE_OK_FOR_G (VALUE) : 0)
+  ia64_const_double_ok_for_letter_p (VALUE, C)
 
 /* A C expression that defines the optional machine-dependent constraint
    letters (`Q', `R', `S', `T', `U') that can be used to segregate specific
    types of operands, usually memory references, for the target machine.  */
 
-/* Non-volatile memory for FP_REG loads/stores.  */
-#define CONSTRAINT_OK_FOR_Q(VALUE) \
-  (memory_operand((VALUE), VOIDmode) && ! MEM_VOLATILE_P (VALUE))
-/* 1..4 for shladd arguments.  */
-#define CONSTRAINT_OK_FOR_R(VALUE) \
-  (GET_CODE (VALUE) == CONST_INT && INTVAL (VALUE) >= 1 && INTVAL (VALUE) <= 4)
-/* Non-post-inc memory for asms and other unsavory creatures.  */
-#define CONSTRAINT_OK_FOR_S(VALUE)					\
-  (GET_CODE (VALUE) == MEM						\
-   && GET_RTX_CLASS (GET_CODE (XEXP ((VALUE), 0))) != RTX_AUTOINC	\
-   && (reload_in_progress || memory_operand ((VALUE), VOIDmode)))
-/* Symbol ref to small-address-area: */
-#define CONSTRAINT_OK_FOR_T(VALUE)						\
-	(GET_CODE (VALUE) == SYMBOL_REF && SYMBOL_REF_SMALL_ADDR_P (VALUE))
-
 #define EXTRA_CONSTRAINT(VALUE, C) \
-  ((C) == 'Q' ? CONSTRAINT_OK_FOR_Q (VALUE)	\
-   : (C) == 'R' ? CONSTRAINT_OK_FOR_R (VALUE)	\
-   : (C) == 'S' ? CONSTRAINT_OK_FOR_S (VALUE)	\
-   : (C) == 'T' ? CONSTRAINT_OK_FOR_T (VALUE)	\
-   : 0)
+  ia64_extra_constraint (VALUE, C)
 
 /* Basic Stack Layout */
 

@@ -236,8 +236,8 @@
 ;; True if OP is a GR register operand, or zero.
 (define_predicate "gr_reg_or_0_operand"
   (ior (match_operand 0 "gr_register_operand")
-       (and (match_code "const_int")
-	    (match_test "op == const0_rtx"))))
+       (and (match_code "const_int,const_double,const_vector")
+	    (match_test "op == CONST0_RTX (GET_MODE (op))"))))
 
 ;; True if OP is a GR register operand, or a 5 bit immediate operand.
 (define_predicate "gr_reg_or_5bit_operand"
@@ -320,6 +320,10 @@
                     INTVAL (op) == 1   || INTVAL (op) == 4  ||
                     INTVAL (op) == 8   || INTVAL (op) == 16")))
 
+;; True if OP is 0..3.
+(define_predicate "const_int_2bit_operand"
+  (and (match_code "const_int")
+        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 3")))
 
 ;; True if OP is a floating-point constant zero, one, or a register.
 (define_predicate "fr_reg_or_fp01_operand"
@@ -331,6 +335,12 @@
 (define_predicate "xfreg_or_fp01_operand"
   (and (match_operand 0 "fr_reg_or_fp01_operand")
        (not (match_code "subreg"))))
+
+;; True if OP is a constant zero, or a register.
+(define_predicate "fr_reg_or_0_operand"
+  (ior (match_operand 0 "fr_register_operand")
+       (and (match_code "const_double,const_vector")
+	    (match_test "op == CONST0_RTX (GET_MODE (op))"))))
 
 ;; True if this is a comparison operator, which accepts a normal 8-bit
 ;; signed immediate operand.

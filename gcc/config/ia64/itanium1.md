@@ -589,6 +589,11 @@
   (and (and (eq_attr "cpu" "itanium")
             (eq_attr "itanium_class" "ilog"))
        (eq (symbol_ref "bundling_p") (const_int 0))) "1_A")
+(define_insn_reservation "1_mmalua" 2
+    (and (and (eq_attr "cpu" "itanium")
+              (eq_attr "itanium_class" "mmalua"))
+         (eq (symbol_ref "bundling_p") (const_int 0)))
+    "1_A")
 (define_insn_reservation "1_ishf"    1
   (and (and (eq_attr "cpu" "itanium")
             (eq_attr "itanium_class" "ishf"))
@@ -920,7 +925,7 @@
 ;; There is only one insn `mov ar.pfs =' for toar_i.
 (define_bypass  0 "1_tobr,1_topr,1_toar_i" "1_br,1_scall")
 
-(define_bypass  3 "1_ialu,1_ialu_addr" "1_mmmul,1_mmshf")
+(define_bypass  3 "1_ialu,1_ialu_addr" "1_mmmul,1_mmshf,1_mmalua")
 ;; ??? howto describe ialu for I slot only.  We use ialu_addr for that
 ;;(define_bypass  2 "1_ialu" "1_ld"  "ia64_ld_address_bypass_p")
 ;; ??? howto describe ialu st/address for I slot only.  We use ialu_addr
@@ -940,7 +945,7 @@
 
 ;; Intel docs say only LD, ST, IALU, ILOG, ISHF consumers have latency 4,
 ;;      but HP engineers say any non-MM operation.
-(define_bypass  4 "1_mmmul,1_mmshf"
+(define_bypass  4 "1_mmmul,1_mmshf,1_mmalua"
      "1_br,1_fcmp,1_fcvtfx,1_fld,1_fmac,1_fmisc,1_frar_i,1_frar_m,\
       1_frbr,1_frfr,1_frpr,1_ialu,1_icmp,1_ilog,1_ishf,1_ld,1_chk_s,\
       1_long_i,1_rse_m,1_sem,1_stf,1_st,1_syst_m0,1_syst_m,\
@@ -958,13 +963,13 @@
 ;; We don't use here fcmp because scall may be predicated.
 (define_bypass  0 "1_fcvtfx,1_fld,1_fmac,1_fmisc,1_frar_i,1_frar_m,\
                    1_frbr,1_frfr,1_frpr,1_ialu,1_ialu_addr,1_ilog,1_ishf,\
-	           1_ld,1_long_i,1_mmmul,1_mmshf,1_mmshfi,1_toar_m,1_tofr,\
-                   1_xmpy,1_xtd" "1_scall")
+	           1_ld,1_long_i,2_mmalua,1_mmmul,1_mmshf,1_mmshfi,1_toar_m,\
+		   1_tofr,1_xmpy,1_xtd" "1_scall")
 
 (define_bypass  0 "1_unknown,1_ignore,1_stop_bit,1_br,1_fcmp,1_fcvtfx,\
                    1_fld,1_fmac,1_fmisc,1_frar_i,1_frar_m,1_frbr,1_frfr,\
                    1_frpr,1_ialu,1_ialu_addr,1_icmp,1_ilog,1_ishf,1_ld,\
-                   1_chk_s,1_long_i,1_mmmul,1_mmshf,1_mmshfi,1_nop,\
+                   1_chk_s,1_long_i,1_mmalua,1_mmmul,1_mmshf,1_mmshfi,1_nop,\
                    1_nop_b,1_nop_f,1_nop_i,1_nop_m,1_nop_x,1_rse_m,1_scall,\
                    1_sem,1_stf,1_st,1_syst_m0,1_syst_m,1_tbit,1_toar_i,\
                    1_toar_m,1_tobr,1_tofr,1_topr,1_xmpy,1_xtd,1_lfetch"
@@ -1457,6 +1462,10 @@
 (define_insn_reservation "1b_ilog"    1
   (and (and (eq_attr "cpu" "itanium")
             (eq_attr "itanium_class" "ilog"))
+       (ne (symbol_ref "bundling_p") (const_int 0))) "1b_A")
+(define_insn_reservation "1b_mmalua"  2
+  (and (and (eq_attr "cpu" "itanium")
+            (eq_attr "itanium_class" "mmalua"))
        (ne (symbol_ref "bundling_p") (const_int 0))) "1b_A")
 (define_insn_reservation "1b_ishf"    1
   (and (and (eq_attr "cpu" "itanium")

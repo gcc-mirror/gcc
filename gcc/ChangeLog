@@ -1,5 +1,39 @@
 2005-01-03  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (TARGET_VECTOR_MODE_SUPPORTED_P): New.
+	(ia64_const_ok_for_letter_p): New.
+	(ia64_const_double_ok_for_letter_p): New.
+	(ia64_extra_constraint): New.
+	(ia64_expand_vecint_compare): New.
+	(ia64_expand_vcondu_v2si): New.
+	(ia64_expand_vecint_cmov): New.
+	(ia64_expand_vecint_minmax): New.
+	(ia64_print_operand): Add 'v'.
+	(ia64_preferred_reload_class): New.
+	(ia64_vector_mode_supported_p): New.
+	* config/ia64/ia64.h (UNITS_PER_SIMD_WORD): New.
+	(PREFERRED_RELOAD_CLASS): Move to function.
+	(CONST_OK_FOR_LETTER_P): Move to function.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Move to function.
+	(CONSTRAINT_OK_FOR_Q, CONSTRAINT_OK_FOR_R): Remove.
+	(CONSTRAINT_OK_FOR_S, CONSTRAINT_OK_FOR_T): Remove.
+	(EXTRA_CONSTRAINT): Move to function.
+	* config/ia64/ia64.md: Include vect.md.
+	(itanium_class): Add mmalua.
+	(type): Handle it.
+	* config/ia64/itanium1.md (1_mmalua): New.  Add it to bypasses.
+	(1b_mmalua): New.
+	* config/ia64/itanium2.md (2_mmalua, 2b_mmalua): Similarly.
+	* config/ia64/predicates.md (gr_reg_or_0_operand): Accept any
+	CONST0_RTX.
+	(const_int_2bit_operand): New.
+	(fr_reg_or_0_operand): New.
+	* config/ia64/ia64-modes.def: Add vector modes.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/vect.md: New file.
+
+2005-01-03  Richard Henderson  <rth@redhat.com>
+
 	* simplify-rtx.c (simplify_binary_operation): Handle VEC_CONCAT.
 
 2005-01-03  Uros Bizjak  <uros@kss-loka.si>

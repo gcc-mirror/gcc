@@ -66,3 +66,11 @@ INT_MODE (OI, 32);
    so that flow doesn't do something stupid.  */
 
 CC_MODE (CCI);
+
+/* Vector modes.  */
+VECTOR_MODES (INT, 4);		/* V4QI V2HI */
+VECTOR_MODES (INT, 8);		/* V8QI V4HI V2SI */
+VECTOR_MODE (INT, QI, 16);
+VECTOR_MODE (INT, HI, 8);
+VECTOR_MODE (INT, SI, 4);
+VECTOR_MODE (FLOAT, SF, 2);

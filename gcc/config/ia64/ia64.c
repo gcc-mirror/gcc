@@ -279,6 +279,7 @@ static void ia64_encode_section_info (tree, rtx, int);
 static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
+static bool ia64_vector_mode_supported_p (enum machine_mode mode);
 
 
 /* Table of valid machine attributes.  */
@@ -423,6 +424,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P ia64_scalar_mode_supported_p
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P ia64_vector_mode_supported_p
 
 /* ia64 architecture manual 4.4.7: ... reads, writes, and flushes may occur
    in an order different from the specified program order.  */
@@ -472,7 +475,8 @@ ia64_get_addr_area (tree decl)
 }
 
 static tree
-ia64_handle_model_attribute (tree *node, tree name, tree args, int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+ia64_handle_model_attribute (tree *node, tree name, tree args,
+			     int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   ia64_addr_area addr_area = ADDR_AREA_NORMAL;
   ia64_addr_area area;
@@ -552,6 +556,103 @@ ia64_encode_section_info (tree decl, rtx rtl, int first)
       && GET_CODE (XEXP (DECL_RTL (decl), 0)) == SYMBOL_REF
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     ia64_encode_addr_area (decl, XEXP (rtl, 0));
+}
+
+/* Implement CONST_OK_FOR_LETTER_P.  */
+
+bool
+ia64_const_ok_for_letter_p (HOST_WIDE_INT value, char c)
+{
+  switch (c)
+    {
+    case 'I':
+      return CONST_OK_FOR_I (value);
+    case 'J':
+      return CONST_OK_FOR_J (value);
+    case 'K':
+      return CONST_OK_FOR_K (value);
+    case 'L':
+      return CONST_OK_FOR_L (value);
+    case 'M':
+      return CONST_OK_FOR_M (value);
+    case 'N':
+      return CONST_OK_FOR_N (value);
+    case 'O':
+      return CONST_OK_FOR_O (value);
+    case 'P':
+      return CONST_OK_FOR_P (value);
+    default:
+      return false;
+    }
+}
+
+/* Implement CONST_DOUBLE_OK_FOR_LETTER_P.  */
+
+bool
+ia64_const_double_ok_for_letter_p (rtx value, char c)
+{
+  switch (c)
+    {
+    case 'G':
+      return CONST_DOUBLE_OK_FOR_G (value);
+    default:
+      return false;
+    }
+}
+
+/* Implement EXTRA_CONSTRAINT.  */
+
+bool
+ia64_extra_constraint (rtx value, char c)
+{
+  switch (c)
+    {
+    case 'Q':
+      /* Non-volatile memory for FP_REG loads/stores.  */
+      return memory_operand(value, VOIDmode) && !MEM_VOLATILE_P (value);
+
+    case 'R':
+      /* 1..4 for shladd arguments.  */
+      return (GET_CODE (value) == CONST_INT
+	      && INTVAL (value) >= 1 && INTVAL (value) <= 4);
+
+    case 'S':
+      /* Non-post-inc memory for asms and other unsavory creatures.  */
+      return (GET_CODE (value) == MEM
+	      && GET_RTX_CLASS (GET_CODE (XEXP (value, 0))) != RTX_AUTOINC
+	      && (reload_in_progress || memory_operand (value, VOIDmode)));
+
+    case 'T':
+      /* Symbol ref to small-address-area.  */
+      return (GET_CODE (value) == SYMBOL_REF
+	      && SYMBOL_REF_SMALL_ADDR_P (value));
+
+    case 'U':
+      /* Vector zero.  */
+      return value == CONST0_RTX (GET_MODE (value));
+
+    case 'W':
+      /* An integer vector, such that conversion to an integer yields a
+	 value appropriate for an integer 'J' constraint.  */
+      if (GET_CODE (value) == CONST_VECTOR
+	  && GET_MODE_CLASS (GET_MODE (value)) == MODE_VECTOR_INT)
+	{
+	  value = simplify_subreg (DImode, value, GET_MODE (value), 0);
+	  return ia64_const_ok_for_letter_p (INTVAL (value), 'J');
+	}
+      return false;
+
+    case 'Y':
+      /* A V2SF vector containing elements that satisfy 'G'.  */
+      return
+	(GET_CODE (value) == CONST_VECTOR
+	 && GET_MODE (value) == V2SFmode
+	 && ia64_const_double_ok_for_letter_p (XVECEXP (value, 0, 0), 'G')
+	 && ia64_const_double_ok_for_letter_p (XVECEXP (value, 0, 1), 'G'));
+
+    default:
+      return false;
+    }
 }
 
 /* Return 1 if the operands of a move are ok.  */
@@ -1164,6 +1265,264 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
     }
 
   return gen_rtx_fmt_ee (code, mode, cmp, const0_rtx);
+}
+
+/* Generate an integral vector comparison.  */
+
+static bool
+ia64_expand_vecint_compare (enum rtx_code code, enum machine_mode mode,
+			    rtx dest, rtx op0, rtx op1)
+{
+  bool negate = false;
+  rtx x;
+
+  switch (code)
+    {
+    case EQ:
+    case GT:
+      break;
+
+    case NE:
+      code = EQ;
+      negate = true;
+      break;
+
+    case LE:
+      code = GT;
+      negate = true;
+      break;
+
+    case GE:
+      negate = true;
+      /* FALLTHRU */
+
+    case LT:
+      x = op0;
+      op0 = op1;
+      op1 = x;
+      code = GT;
+      break;
+
+    case GTU:
+    case GEU:
+    case LTU:
+    case LEU:
+      {
+	rtx w0h, w0l, w1h, w1l, ch, cl;
+	enum machine_mode wmode;
+	rtx (*unpack_l) (rtx, rtx, rtx);
+	rtx (*unpack_h) (rtx, rtx, rtx);
+	rtx (*pack) (rtx, rtx, rtx);
+
+	/* We don't have native unsigned comparisons, but we can generate
+	   them better than generic code can.  */
+
+	if (mode == V2SImode)
+	  abort ();
+	else if (mode == V8QImode)
+	  {
+	    wmode = V4HImode;
+	    pack = gen_pack2_sss;
+	    unpack_l = gen_unpack1_l;
+	    unpack_h = gen_unpack1_h;
+	  }
+	else if (mode == V4HImode)
+	  {
+	    wmode = V2SImode;
+	    pack = gen_pack4_sss;
+	    unpack_l = gen_unpack2_l;
+	    unpack_h = gen_unpack2_h;
+	  }
+	else
+	  abort ();
+
+	/* Unpack into wider vectors, zero extending the elements.  */
+
+	w0l = gen_reg_rtx (wmode);
+	w0h = gen_reg_rtx (wmode);
+	w1l = gen_reg_rtx (wmode);
+	w1h = gen_reg_rtx (wmode);
+	emit_insn (unpack_l (gen_lowpart (mode, w0l), op0, CONST0_RTX (mode)));
+	emit_insn (unpack_h (gen_lowpart (mode, w0h), op0, CONST0_RTX (mode)));
+	emit_insn (unpack_l (gen_lowpart (mode, w1l), op1, CONST0_RTX (mode)));
+	emit_insn (unpack_h (gen_lowpart (mode, w1h), op1, CONST0_RTX (mode)));
+
+	/* Compare in the wider mode.  */
+
+	cl = gen_reg_rtx (wmode);
+	ch = gen_reg_rtx (wmode);
+	code = signed_condition (code);
+	ia64_expand_vecint_compare (code, wmode, cl, w0l, w1l);
+	negate = ia64_expand_vecint_compare (code, wmode, ch, w0h, w1h);
+
+	/* Repack into a single narrower vector.  */
+
+	emit_insn (pack (dest, cl, ch));
+      }
+      return negate;
+
+    default:
+      abort ();
+    }
+
+  x = gen_rtx_fmt_ee (code, mode, op0, op1);
+  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+
+  return negate;
+}
+
+static void
+ia64_expand_vcondu_v2si (enum rtx_code code, rtx operands[])
+{
+  rtx dl, dh, bl, bh, op1l, op1h, op2l, op2h, op4l, op4h, op5l, op5h, x;
+
+  /* In this case, we extract the two SImode quantities and generate
+     normal comparisons for each of them.  */
+
+  op1l = gen_lowpart (SImode, operands[1]);
+  op2l = gen_lowpart (SImode, operands[2]);
+  op4l = gen_lowpart (SImode, operands[4]);
+  op5l = gen_lowpart (SImode, operands[5]);
+
+  op1h = gen_reg_rtx (SImode);
+  op2h = gen_reg_rtx (SImode);
+  op4h = gen_reg_rtx (SImode);
+  op5h = gen_reg_rtx (SImode);
+
+  emit_insn (gen_lshrdi3 (gen_lowpart (DImode, op1h),
+			  gen_lowpart (DImode, operands[1]), GEN_INT (32)));
+  emit_insn (gen_lshrdi3 (gen_lowpart (DImode, op2h),
+			  gen_lowpart (DImode, operands[2]), GEN_INT (32)));
+  emit_insn (gen_lshrdi3 (gen_lowpart (DImode, op4h),
+			  gen_lowpart (DImode, operands[4]), GEN_INT (32)));
+  emit_insn (gen_lshrdi3 (gen_lowpart (DImode, op5h),
+			  gen_lowpart (DImode, operands[5]), GEN_INT (32)));
+
+  bl = gen_reg_rtx (BImode);
+  x = gen_rtx_fmt_ee (code, BImode, op4l, op5l);
+  emit_insn (gen_rtx_SET (VOIDmode, bl, x));
+
+  bh = gen_reg_rtx (BImode);
+  x = gen_rtx_fmt_ee (code, BImode, op4h, op5h);
+  emit_insn (gen_rtx_SET (VOIDmode, bh, x));
+
+  /* With the results of the comparisons, emit conditional moves.  */
+
+  dl = gen_reg_rtx (SImode);
+  x = gen_rtx_IF_THEN_ELSE (SImode, bl, op1l, op2l);
+  emit_insn (gen_rtx_SET (VOIDmode, dl, x));
+
+  dh = gen_reg_rtx (SImode);
+  x = gen_rtx_IF_THEN_ELSE (SImode, bh, op1h, op2h);
+  emit_insn (gen_rtx_SET (VOIDmode, dh, x));
+
+  /* Merge the two partial results back into a vector.  */
+
+  x = gen_rtx_VEC_CONCAT (V2SImode, dl, dh);
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+}
+
+/* Emit an integral vector conditional move.  */
+
+void
+ia64_expand_vecint_cmov (rtx operands[])
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+  enum rtx_code code = GET_CODE (operands[3]);
+  bool negate;
+  rtx cmp, x, ot, of;
+
+  /* Since we don't have unsigned V2SImode comparisons, it's more efficient
+     to special-case them entirely.  */
+  if (mode == V2SImode
+      && (code == GTU || code == GEU || code == LEU || code == LTU))
+    {
+      ia64_expand_vcondu_v2si (code, operands);
+      return;
+    }
+
+  cmp = gen_reg_rtx (mode);
+  negate = ia64_expand_vecint_compare (code, mode, cmp,
+				       operands[4], operands[5]);
+
+  ot = operands[1+negate];
+  of = operands[2-negate];
+
+  if (ot == CONST0_RTX (mode))
+    {
+      if (of == CONST0_RTX (mode))
+	{
+	  emit_move_insn (operands[0], ot);
+	  return;
+	}
+
+      x = gen_rtx_NOT (mode, cmp);
+      x = gen_rtx_AND (mode, x, of);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+    }
+  else if (of == CONST0_RTX (mode))
+    {
+      x = gen_rtx_AND (mode, cmp, ot);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+    }
+  else
+    {
+      rtx t, f;
+
+      t = gen_reg_rtx (mode);
+      x = gen_rtx_AND (mode, cmp, operands[1+negate]);
+      emit_insn (gen_rtx_SET (VOIDmode, t, x));
+
+      f = gen_reg_rtx (mode);
+      x = gen_rtx_NOT (mode, cmp);
+      x = gen_rtx_AND (mode, x, operands[2-negate]);
+      emit_insn (gen_rtx_SET (VOIDmode, f, x));
+
+      x = gen_rtx_IOR (mode, t, f);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+    }
+}
+
+/* Emit an integral vector min or max operation.  Return true if all done.  */
+
+bool
+ia64_expand_vecint_minmax (enum rtx_code code, enum machine_mode mode,
+			   rtx operands[])
+{
+  rtx xops[5];
+
+  /* These four combinations are supported directly.  */
+  if (mode == V8QImode && (code == UMIN || code == UMAX))
+    return false;
+  if (mode == V4HImode && (code == SMIN || code == SMAX))
+    return false;
+
+  /* Everything else implemented via vector comparisons.  */
+  xops[0] = operands[0];
+  xops[4] = xops[1] = operands[1];
+  xops[5] = xops[2] = operands[2];
+
+  switch (code)
+    {
+    case UMIN:
+      code = LTU;
+      break;
+    case UMAX:
+      code = GTU;
+      break;
+    case SMIN:
+      code = LT;
+      break;
+    case SMAX:
+      code = GT;
+      break;
+    default:
+      abort ();
+    }
+  xops[3] = gen_rtx_fmt_ee (code, VOIDmode, operands[1], operands[2]);
+
+  ia64_expand_vecint_cmov (xops);
+  return true;
 }
 
 /* Emit the appropriate sequence for a call.  */
@@ -3613,7 +3972,9 @@ ia64_print_operand_address (FILE * stream ATTRIBUTE_UNUSED,
    U	Print an 8-bit sign extended number (K) as a 64-bit unsigned number
 	for Intel assembler.
    r	Print register name, or constant 0 as r0.  HP compatibility for
-	Linux kernel.  */
+	Linux kernel.
+   v    Print vector constant value as an 8-byte integer value.  */
+
 void
 ia64_print_operand (FILE * file, rtx x, int code)
 {
@@ -3770,6 +4131,11 @@ ia64_print_operand (FILE * file, rtx x, int code)
       else
 	output_operand_lossage ("invalid %%r value");
       return;
+
+    case 'v':
+      gcc_assert (GET_CODE (x) == CONST_VECTOR);
+      x = simplify_subreg (DImode, x, GET_MODE (x), 0);
+      break;
 
     case '+':
       {
@@ -3992,6 +4358,39 @@ ia64_register_move_cost (enum machine_mode mode, enum reg_class from,
     }
 
   return 2;
+}
+
+/* Implement PREFERRED_RELOAD_CLASS.  Place additional restrictions on CLASS
+   to use when copying X into that class.  */
+
+enum reg_class
+ia64_preferred_reload_class (rtx x, enum reg_class class)
+{
+  switch (class)
+    {
+    case FR_REGS:
+      /* Don't allow volatile mem reloads into floating point registers.
+	 This is defined to force reload to choose the r/m case instead
+	 of the f/f case when reloading (set (reg fX) (mem/v)).  */
+      if (MEM_P (x) && MEM_VOLATILE_P (x))
+	return NO_REGS;
+      
+      /* Force all unrecognized constants into the constant pool.  */
+      if (CONSTANT_P (x))
+	return NO_REGS;
+      break;
+
+    case AR_M_REGS:
+    case AR_I_REGS:
+      if (!OBJECT_P (x))
+	return NO_REGS;
+      break;
+
+    default:
+      break;
+    }
+
+  return class;
 }
 
 /* This function returns the register class required for a secondary
@@ -8581,6 +8980,24 @@ ia64_scalar_mode_supported_p (enum machine_mode mode)
 
     case TFmode:
       return TARGET_HPUX;
+
+    default:
+      return false;
+    }
+}
+
+static bool
+ia64_vector_mode_supported_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case V8QImode:
+    case V4HImode:
+    case V2SImode:
+      return true;
+
+    case V2SFmode:
+      return true;
 
     default:
       return false;
