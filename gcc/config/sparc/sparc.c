@@ -155,6 +155,7 @@ static void ultra_build_types_avail PARAMS ((rtx *, int));
 static void ultra_flush_pipeline PARAMS ((void));
 static void ultra_rescan_pipeline_state PARAMS ((rtx *, int));
 static int set_extends PARAMS ((rtx, rtx));
+static void output_restore_regs PARAMS ((FILE *, int));
 
 /* Option handling.  */
 
@@ -5052,7 +5053,7 @@ sparc_emit_float_lib_cmp (x, y, comparison)
      rtx x, y;
      enum rtx_code comparison;
 {
-  char *qpfunc;
+  const char *qpfunc;
   rtx slot0, slot1, result, tem, tem2;
   enum machine_mode mode;
 

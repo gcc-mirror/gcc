@@ -281,6 +281,7 @@ static void mark_type_hash PARAMS ((void *));
 static int type_hash_eq PARAMS ((const void*, const void*));
 static unsigned int type_hash_hash PARAMS ((const void*));
 static void print_type_hash_statistics PARAMS((void));
+static int mark_hash_entry PARAMS((void **, void *));
 
 /* If non-null, these are language-specific helper functions for
    unsave_expr_now.  If present, LANG_UNSAVE is called before its

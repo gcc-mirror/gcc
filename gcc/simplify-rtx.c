@@ -2141,7 +2141,7 @@ entry_and_rtx_equal_p (entry, x_arg)
      const void *entry, *x_arg;
 {
   struct elt_loc_list *l;
-  cselib_val *v = (cselib_val *)entry;
+  const cselib_val *v = (const cselib_val *)entry;
   rtx x = (rtx)x_arg;
 
   /* We don't guarantee that distinct rtx's have different hash values,
@@ -2159,7 +2159,7 @@ static unsigned int
 get_value_hash (entry)
      const void *entry;
 {
-  cselib_val *v = (cselib_val *) entry;
+  const cselib_val *v = (const cselib_val *) entry;
   return v->value;
 }
 
@@ -2543,7 +2543,7 @@ hash_rtx (x, mode, create)
 	  }
       else if (fmt[i] == 's')
 	{
-	  unsigned char *p = (unsigned char *) XSTR (x, i);
+	  const unsigned char *p = (const unsigned char *) XSTR (x, i);
 	  if (p)
 	    while (*p)
 	      hash += *p++;
