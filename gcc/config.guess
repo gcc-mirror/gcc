@@ -142,7 +142,7 @@ EOF
     SR2?01:HI-UX/MPP:*:*)
 	echo hppa1.1-hitachi-hiuxmpp
 	exit 0;;
-    Pyramid*:OSx*:*:*|MIS*:OSx*:*:*)
+    Pyramid*:OSx*:*:*|MIS*:OSx*:*:*|MIS*:SMP_DC-OSx*:*:*)
 	# akee@wpdis03.wpafb.af.mil (Earle F. Ake) contributed MIS and NILE.
 	if test "`(/bin/universe) 2>/dev/null`" = att ; then
 		echo pyramid-pyramid-sysv3
@@ -330,7 +330,8 @@ EOF
 	fi
 	exit 0 ;;
     *:AIX:*:4)
-	if /usr/sbin/lsattr -EHl proc0 | grep POWER >/dev/null 2>&1; then
+	IBM_CPU_ID=`/usr/sbin/lsdev -C -c processor -S available | head -1 | awk '{ print $1 }'`
+	if /usr/sbin/lsattr -EHl ${IBM_CPU_ID} | grep POWER >/dev/null 2>&1; then
 		IBM_ARCH=rs6000
 	else
 		IBM_ARCH=powerpc
@@ -363,11 +364,11 @@ EOF
     hp300:4.4BSD:*:* | 9000/[34]??:4.3bsd:2.*:*)
 	echo m68k-hp-bsd4.4
 	exit 0 ;;
-    9000/[3478]??:HP-UX:*:*)
+    9000/[34678]??:HP-UX:*:*)
 	case "${UNAME_MACHINE}" in
 	    9000/31? )            HP_ARCH=m68000 ;;
 	    9000/[34]?? )         HP_ARCH=m68k ;;
-	    9000/7?? | 9000/8?[13679] )
+	    9000/6?? | 9000/7?? | 9000/80[24] | 9000/8?[13679] | 9000/892 )
               sed 's/^              //' << EOF >dummy.c
               #include <stdlib.h>
               #include <unistd.h>
@@ -505,6 +506,9 @@ EOF
 	exit 0 ;;
     hp300:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    sparc*:BSD/OS:*:*)
+	echo sparc-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     i?86:BSD/386:*:* | *:BSD/OS:*:*)
 	echo ${UNAME_MACHINE}-pc-bsdi${UNAME_RELEASE}
@@ -699,6 +703,13 @@ EOF
 	else
 		echo ${UNAME_MACHINE}-pc-sysv32
 	fi
+	exit 0 ;;
+    i?86:UnixWare:*:*)
+	if /bin/uname -X 2>/dev/null >/dev/null ; then
+	  (/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
+	    && UNAME_MACHINE=i586
+	fi
+	echo ${UNAME_MACHINE}-unixware-${UNAME_RELEASE}-${UNAME_VERSION}
 	exit 0 ;;
     pc:*:*:*)
         # uname -m prints for DJGPP always 'pc', but it prints nothing about
