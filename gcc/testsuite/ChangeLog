@@ -1,3 +1,7 @@
+2004-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/tree-ssa/loop-1.c: Use -msmall-exec on s390-*-* targets.
+
 2004-09-26  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15164
