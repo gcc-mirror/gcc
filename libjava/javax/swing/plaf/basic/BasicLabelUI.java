@@ -65,6 +65,10 @@ public class BasicLabelUI extends LabelUI
     public Dimension getPreferredSize(JComponent c) 
     {
 	JLabel b = (JLabel)c;
+        /*
+          We cannot use this method because it is not part of the
+          official Swing API.
+
 	Dimension d = BasicGraphicsUtils.getPreferredSize(b, 
 							  gap,
 							  b.getText(),
@@ -74,7 +78,8 @@ public class BasicLabelUI extends LabelUI
 							  b.getHorizontalTextPosition(),
 							  b.getVerticalTextPosition());
 	System.out.println("JLABEL->^^^^^^^^^^^^^^^^^^^^^^   BASIC-PREF="+d + ",T="+b.getText());
-	return d;
+        */
+        return new Dimension(100, 30);
     }
     
 
@@ -90,7 +95,7 @@ public class BasicLabelUI extends LabelUI
 
         g.setFont(f);
 
-        FontMetrics fm = SwingUtilities.getFontMetrics(f);
+        FontMetrics fm = g.getFontMetrics(f);
 
         Insets i = c.getInsets();
 

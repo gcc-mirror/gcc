@@ -60,14 +60,7 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
     public Dimension getPreferredSize(JComponent c) 
     {
 	AbstractButton b = (AbstractButton)c;
-	Dimension d = BasicGraphicsUtils.getPreferredSize(b, 
-							  gap,
-							  b.getText(),
-							  b.getIcon(),
-							  b.getVerticalAlignment(),
-							  b.getHorizontalAlignment(),
-							  b.getHorizontalTextPosition(),
-							  b.getVerticalTextPosition());
+	Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b, gap);
 	
 	// and add a little something for the circles:
 

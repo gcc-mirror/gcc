@@ -1,5 +1,5 @@
 /* Border.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,10 +42,64 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
 
+
+/**
+ * An interface for decorative or spacing borders around a Component.
+ *
+ * <p>To reduce memory consumption, several Components may share a
+ * single Border instance. {@link javax.swing.BorderFactory} is a
+ * factory class for producing commonly used shared borders.
+ *
+ * @see javax.swing.BorderFactory
+ * @see EmptyBorder
+ * @see CompoundBorder
+ * @see BevelBorder
+ * @see EtchedBorder
+ * @see LineBorder
+ * @see MatteBorder
+ * @see SoftBevelBorder
+ * @see TitledBorder
+ * @see AbstractBorder
+ *
+ * @author Ronald Veldema (rveldema@cs.vu.nl)
+ * @author Michael Koch (konqueror@gmx.de)
+ * @author Sascha Brawer (brawer@dandelis.ch)
+ */
 public interface Border
 {
-  public Insets getBorderInsets (Component c);
-  public boolean isBorderOpaque ();
-  public void paintBorder (Component c, Graphics g, int x, int y,
-                           int width, int height);
+  /**
+   * Paints the border for a given component.
+   *
+   * @param c the component whose border is to be painted.
+   * @param g the graphics for painting.
+   * @param x the horizontal position for painting the border.
+   * @param y the vertical position for painting the border.
+   * @param width the width of the available area for painting the border.
+   * @param height the height of the available area for painting the border.
+   */
+  public void paintBorder(Component c, Graphics g,
+                          int x, int y, int width, int height);
+  
+  
+  /**
+   * Measures the width of this border.
+   *
+   * @param c the component whose border is to be measured.
+   *
+   * @return an Insets object whose <code>left</code>, <code>right</code>,
+   *         <code>top</code> and <code>bottom</code> fields indicate the
+   *         width of the border at the respective edge.
+   */
+  public Insets getBorderInsets(Component c);
+  
+  
+  /**
+   * Determines whether this border fills every pixel in its area
+   * when painting.
+   *
+   * @return <code>true</code> if the border is fully opaque, or
+   *         <code>false</code> if some pixels of the background
+   *         can shine through the border.
+   */
+  public boolean isBorderOpaque();
 }

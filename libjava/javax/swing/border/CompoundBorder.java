@@ -51,6 +51,10 @@ import java.awt.Insets;
 public class CompoundBorder
   extends AbstractBorder
 {
+  /**
+   * Determined using the <code>serialver</code> tool
+   * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
+   */
   static final long serialVersionUID = 9054540377030555103L;
 
 
@@ -90,14 +94,14 @@ public class CompoundBorder
    * outside borders.
    *
    * @param outsideBorder the outside border, which is painted to the
-   *        outside of both <code>insideBorder</code> and the bordered
-   *        compoonent. It is acceptable to pass <code>null</code>, in
-   *        which no outside border is painted.
+   *        outside of both <code>insideBorder</code> and the enclosed
+   *        component. It is acceptable to pass <code>null</code>, in
+   *        which case no outside border is painted.
    *
    * @param insideBorder the inside border, which is painted to
-   *        between <code>outsideBorder</code> and the bordered
+   *        between <code>outsideBorder</code> and the enclosed
    *        component. It is acceptable to pass <code>null</code>, in
-   *        which no intside border is painted.
+   *        which case no inside border is painted.
    */
   public CompoundBorder (Border outsideBorder, Border insideBorder)
   {
