@@ -503,10 +503,9 @@ namespace std {
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
-	  const int_type __eof = traits_type::eof();
-	  int_type __bufval;
  	  try {
-	    __bufval = this->rdbuf()->sbumpc();
+	    const int_type __eof = traits_type::eof();
+	    int_type __bufval = this->rdbuf()->sbumpc();
 	    // 27.6.1.1 paragraph 3
 	    if (__bufval != __eof)
 	      {
@@ -537,10 +536,10 @@ namespace std {
       if (__cerb && __n > 1) 
 	{
 	  try {
-	    int_type __idelim = traits_type::to_int_type(__delim);
+	    const int_type __idelim = traits_type::to_int_type(__delim);
+	    const int_type __eof = traits_type::eof();
 	    __streambuf_type* __sb = this->rdbuf();
 	    int_type __c = __sb->sbumpc();	
-	    const int_type __eof = traits_type::eof();
 	    bool __testdelim = __c == __idelim;
 	    bool __testeof =  __c == __eof;
 	    
@@ -580,12 +579,12 @@ namespace std {
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
-	  __streambuf_type* __this_sb = this->rdbuf();
 	  int_type __c;
+	  __streambuf_type* __this_sb = this->rdbuf();
 	  try {
-	    int_type __idelim = traits_type::to_int_type(__delim);
-	    __c = __this_sb->sbumpc();
+	    const int_type __idelim = traits_type::to_int_type(__delim);
 	    const int_type __eof = traits_type::eof();	      
+	    __c = __this_sb->sbumpc();
 	    bool __testdelim = __c == __idelim;
 	    bool __testeof =  __c == __eof;
 	    bool __testput = true;
@@ -627,30 +626,49 @@ namespace std {
       if (__cerb) 
 	{
 	  try {
-	    int_type __idelim = traits_type::to_int_type(__delim);
-	    __streambuf_type* __sb = this->rdbuf();
-	    int_type __c = __sb->sbumpc();
+	    const int_type __idelim = traits_type::to_int_type(__delim);
 	    const int_type __eof = traits_type::eof();
-	    bool __testdelim = __c == __idelim;
-	    bool __testeof =  __c == __eof;
-	    
-	    while (_M_gcount < __n - 1 && !__testeof && !__testdelim)
+	    __streambuf_type* __sb = this->rdbuf();
+	    bool __testdelim = false;
+	    bool __testeof = false;
+
+	    // This is completely idiotic, but attempts to recreate
+	    // the smoke-filled air of the committee meeting where
+	    // getline was defined. It's unspecified for __n == 1,
+	    // what happens to the extracted char if it is not a
+	    // delimiter or EOF. Assume it's not extracted, for the
+	    // time being. . . 
+	    if (__n == 1)
 	      {
-		*__s++ = traits_type::to_char_type(__c);
-		++_M_gcount;
-		__c = __sb->sbumpc();
-		__testeof = __c == __eof;
+		int_type __c = __sb->sgetc();
 		__testdelim = __c == __idelim;
+		__testeof = __c == __eof;
+		if (__testdelim)
+		  {
+		    ++_M_gcount;
+		    __sb->sbumpc();
+		  }
 	      }
-	    if (_M_gcount == __n - 1 && !__testeof && !__testdelim)
+	    else
 	      {
-		__sb->sputbackc(traits_type::to_char_type(__c));
-		this->setstate(ios_base::failbit);
-	      }	    
-	    if (__testdelim)
-	      ++_M_gcount;
+		while (_M_gcount < __n - 1 && !__testdelim && !__testeof)
+		  {
+		    int_type __c = __sb->sbumpc();
+		    __testdelim = __c == __idelim;
+		    __testeof = __c == __eof;
+		    if (__testdelim)
+		      ++_M_gcount;
+		    else if (!__testeof)
+		      {
+			*__s++ = traits_type::to_char_type(__c);
+			++_M_gcount;
+		      }
+		  }
+	      }
 	    if (__testeof)
 	      this->setstate(ios_base::eofbit);
+	    else if (!__testdelim && _M_gcount == __n - 1)
+	      this->setstate(ios_base::failbit);
 	  }
 	  catch(exception& __fail){
 	    // 27.6.1.3 paragraph 1
@@ -661,7 +679,7 @@ namespace std {
 	  }
 	}
       *__s = char_type(NULL);
-      if (!_M_gcount || _M_gcount == __n - 1)
+      if (!_M_gcount)
 	this->setstate(ios_base::failbit);
       return *this;
     }
@@ -676,10 +694,10 @@ namespace std {
       if (__cerb && __n > 0) 
 	{
 	  try {
-	    int_type __idelim = traits_type::to_int_type(__delim);
+	    const int_type __idelim = traits_type::to_int_type(__delim);
+	    const int_type __eof = traits_type::eof();
 	    __streambuf_type* __sb = this->rdbuf();
 	    int_type __c = __sb->sbumpc();	
-	    const int_type __eof = traits_type::eof();
 	    bool __testdelim = __c == __idelim;
 	    bool __testeof =  __c == __eof;
 	    		
@@ -743,9 +761,9 @@ namespace std {
 	  if (__n > 0)
 	    {
 	      try {
+		const int_type __eof = traits_type::eof();
 		__streambuf_type* __sb = this->rdbuf();
 		int_type __c = __sb->sbumpc();	
-		const int_type __eof = traits_type::eof();
 		bool __testeof =  __c == __eof;
 		
 		while (_M_gcount < __n - 1 && !__testeof)
@@ -847,12 +865,12 @@ namespace std {
     basic_istream<_CharT, _Traits>::
     unget(void)
     {
-      const int_type __eof = traits_type::eof();
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
 	  try {
+	    const int_type __eof = traits_type::eof();
 	    __streambuf_type* __sb = this->rdbuf();
 	    if (!__sb || __eof == __sb->sungetc())
 	      this->setstate(ios_base::badbit);		    

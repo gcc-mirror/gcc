@@ -1,3 +1,11 @@
+2000-07-07   brent verner  <brent@rcfile.org> 
+
+	* testsuite/27_io/istream_unformatted.cc (test05): New test.
+
+2000-07-07  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* bits/istream.tcc (istream::getline): Minor tweaks.
+
 2000-07-07  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* docs/download.html:  Mention gcc_update.

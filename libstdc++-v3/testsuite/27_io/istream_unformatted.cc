@@ -24,7 +24,10 @@
 #include <sstream>
 #include <fstream>
 #ifdef DEBUG_ASSERT
-  #include <assert.h>
+#include <cassert>
+#  define VERIFY(fn) assert(fn)
+#else
+#  define VERIFY(fn) 
 #endif
 
 bool test01() {
@@ -317,7 +320,7 @@ bool test03(void)
 }
 
 // http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00177.html
-void test06()
+void test04()
 {
   bool test = true;
 
@@ -345,12 +348,79 @@ void test06()
 #endif
 }
 
+// http://sourceware.cygnus.com/ml/libstdc++/2000-07/msg00003.html
+bool test05()
+{
+
+  const char* charray = "
+a
+aa
+aaa
+aaaa
+aaaaa
+aaaaaa
+aaaaaaa
+aaaaaaaa
+aaaaaaaaa
+aaaaaaaaaa
+aaaaaaaaaaa
+aaaaaaaaaaaa
+aaaaaaaaaaaaa
+aaaaaaaaaaaaaa
+";
+
+  bool test = true;
+  const std::streamsize it = 5;
+  std::streamsize br = 0;
+  char tmp[it];
+  std::stringbuf sb(charray, std::ios_base::in);
+  std::istream ifs(&sb);
+  std::streamsize blen = strlen(charray);
+  VERIFY(ifs);
+  while(ifs.getline(tmp, it) || ifs.gcount())
+    {
+      br += ifs.gcount();
+      if(ifs.eof())
+        {
+          // Just sanity checks to make sure we've extracted the same
+          // number of chars that were in the file.
+          VERIFY(br == blen);
+          // Also, we should only set the failbit if we could
+          // _extract_ no chars from the stream, i.e. the first read
+          // returned EOF. 
+          VERIFY(ifs.fail() && ifs.gcount() == 0);
+        }
+      else if(ifs.fail())
+        {
+	  // either
+	  // -> extracted no characters
+	  // or
+	  // -> n - 1 characters are stored
+          VERIFY(strlen(tmp) == it - 1);
+          ifs.clear(ifs.rdstate() & ~std::ios::failbit);
+          VERIFY(ifs);
+          continue;
+        }
+      else 
+        {
+	  // -> strlen(__s) < n - 1 
+	  // -> delimiter was seen -> gcount() > strlen(__s)
+          VERIFY(ifs.gcount() > strlen(tmp));
+          VERIFY(it - 1 > strlen(tmp));
+          continue;
+        }
+    }
+
+  return 0;
+}
+
 int main()
 {
   test01();
   test02();
   test03();
-  test06();
+  test04();
+  test05();
   return 0;
 }
 
