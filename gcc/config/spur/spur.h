@@ -83,7 +83,7 @@ extern int target_flags;
    since there are no machine instructions for them.  */
 #define WORDS_BIG_ENDIAN 0
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -117,9 +117,9 @@ extern int target_flags;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 /* Standard register usage.  */
 

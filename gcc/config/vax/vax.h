@@ -93,7 +93,7 @@ extern int target_flags;
 /* This is not true on the vax.  */
 #define WORDS_BIG_ENDIAN 0
 
-/* Number of bits in an addressible storage unit */
+/* Number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -133,6 +133,9 @@ extern int target_flags;
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
+
+/* Let's keep the stack somewhat aligned.  */
+#define STACK_BOUNDARY 32
 
 /* Standard register usage.  */
 
@@ -877,7 +880,7 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 
 /* Check a `double' value for validity for a particular machine mode.  */
 
-/* note that it is very hard to accidently create a number that fits in a
+/* note that it is very hard to accidentally create a number that fits in a
    double but not in a float, since their ranges are almost the same */
 #define CHECK_FLOAT_VALUE(mode, d) \
   if ((mode) == SFmode) \

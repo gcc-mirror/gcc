@@ -99,7 +99,7 @@ extern int target_flags;
 
 #define TARGET_DEFAULT 3
 
-/* Define this to change the optimizations peformed by default.  */
+/* Define this to change the optimizations performed by default.  */
 
 #define OPTIMIZATION_OPTIONS(LEVEL)	\
 {					\
@@ -141,7 +141,7 @@ extern int target_flags;
    for them.  Might as well be consistent with bytes. */
 #define WORDS_BIG_ENDIAN 1
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -171,6 +171,9 @@ extern int target_flags;
 
 /* Every structure's size must be a multiple of this.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
+
+/* A bitfield declared as `int' forces `int' alignment for the struct.  */
+#define PCC_BITFIELD_TYPE_MATTERS 1
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 32

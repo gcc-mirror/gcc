@@ -37,13 +37,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
-/* Names of bss and data sections.  These should be unique names for each
-   compilation unit.  */
-
-char *rs6000_bss_section_name;
-char *rs6000_private_data_section_name;
-char *rs6000_read_only_section_name;
-
 /* Set to non-zero by "fix" operation to indicate that itrunc and
    uitrunc must be defined.  */
 
@@ -591,7 +584,7 @@ secondary_reload_class (class, mode, in)
    SCC_P is 1 if this is for an scc.  That means that %D will have been
    used instead of %C, so the bits will be in different places.
 
-   Return -1 if OP isn't a valid compaison for some reason.  */
+   Return -1 if OP isn't a valid comparison for some reason.  */
 
 int
 ccr_bit (op, scc_p)
@@ -835,7 +828,7 @@ print_operand (file, x, code)
       return;
 
     case 'U':
-      /* Print `u' is this has an auto-increment or auto-decremement.  */
+      /* Print `u' is this has an auto-increment or auto-decrement.  */
       if (GET_CODE (x) == MEM
 	  && (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC))
@@ -1008,8 +1001,8 @@ print_operand (file, x, code)
       return;
 
     case 'z':
-      /* X is a SYMBOL_REF.  Write out the name preceeded by a
-	 period and without any trailing data in backets.  Used for function
+      /* X is a SYMBOL_REF.  Write out the name preceded by a
+	 period and without any trailing data in brackets.  Used for function
 	 names.  */
       if (GET_CODE (x) != SYMBOL_REF)
 	abort ();
@@ -1287,18 +1280,17 @@ output_epilog (file, size)
       else if (must_push)
 	fprintf (file, "\tai 1,1,%d\n", total_size);
 
-      /* Get the old lr if we saved it.  To speed things up, copy it into
-	 lr here if we don't have to save more than 2 fp regs.  */
+      /* Get the old lr if we saved it.  */
       if (regs_ever_live[65])
-	{
-	  fprintf (file, "\tl 0,8(1)\n");
-	  if (first_fp_reg >= 62)
-	    fprintf (file, "\tmtlr 0\n");
-	}
+	fprintf (file, "\tl 0,8(1)\n");
 
       /* Get the old cr if we saved it.  */
       if (must_save_cr ())
 	fprintf (file, "\tl 12,4(1)\n");
+
+      /* Set LR here to try to overlap restores below.  */
+      if (regs_ever_live[65])
+	fprintf (file, "\tmtlr 0\n");
 
       /* Restore gpr's.  */
       if (first_reg == 31)
@@ -1307,25 +1299,26 @@ output_epilog (file, size)
 	fprintf (file, "\tlm %d,%d(1)\n", first_reg,
 		 - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8);
 
-      /* Restore fpr's.  */
+      /* Restore fpr's if we can do it without calling a function.  */
       if (first_fp_reg == 62)
 	fprintf (file, "\tlfd 30,-16(1)\n\tlfd 31,-8(1)\n");
       else if (first_fp_reg == 63)
 	fprintf (file, "\tlfd 31,-8(1)\n");
-      else if (first_fp_reg != 64)
-	fprintf (file, "\tbl ._restf%d\n\tcror 15,15,15\n", first_fp_reg - 32);
-
-      /* If we used the link register, get it from r0 if we haven't
-	 already.  */
-      if (regs_ever_live[65] && first_fp_reg < 62)
-	fprintf (file, "\tmtlr 0\n");
 
       /* If we saved cr, restore it here.  Just set cr2, cr3, and cr4.  */
       if (must_save_cr ())
 	fprintf (file, "\tmtcrf 0x38,12\n");
 
-      fprintf (file, "\tbr\n");
+      /* If we have to restore more than two FP registers, branch to the
+	 restore function.  It will return to our caller.  */
+      if (first_fp_reg < 62)
+	fprintf (file, "\tb ._restf%d\n\tcror 15,15,15\n", first_fp_reg - 32);
+      else
+	fprintf (file, "\tbr\n");
     }
+
+  /* ??? Need to output a traceback table here when -g was given for complete
+     debugging output.  */
 }
 
 /* Output a TOC entry.  We derive the entry name from what is

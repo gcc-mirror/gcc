@@ -122,7 +122,7 @@ extern int target_flags;
    matters when cross-compiling.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -171,9 +171,9 @@ extern int target_flags;
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 /* Things that must be doubleword aligned cannot go in the text section,
    because the linker fails to align the text section enough!
@@ -422,9 +422,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* This is the order in which to allocate registers
    normally.  */
 #define REG_ALLOC_ORDER \
-{ 8, 9, 10, 11, 12, 13, 2, 15,		\
-  16, 17, 18, 19, 20, 21, 22, 23,	\
-  24, 25, 26, 27, 28, 29, 3, 31,	\
+{ 8, 9, 10, 11, 12, 13, 2, 3, 		\
+  15, 16, 17, 18, 19, 20, 21, 22, 	\
+  23, 24, 25, 26, 27, 28, 29, 31,	\
   32, 33, 34, 35, 36, 37, 38, 39,	\
   40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49, 50, 51, 52, 53, 54, 55,	\
@@ -571,7 +571,7 @@ extern char leaf_reg_backmap[];
 #define REG_PARM_STACK_SPACE(DECL) (NPARM_REGS * UNITS_PER_WORD)
 
 /* Keep the stack pointer constant throughout the function.
-   This is both an optimization and a neccessity: longjmp
+   This is both an optimization and a necessity: longjmp
    doesn't behave itself when the stack pointer moves within
    the function!  */
 #define ACCUMULATE_OUTGOING_ARGS
@@ -1186,6 +1186,9 @@ extern struct rtx_def *legitimize_pic_address ();
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 #define Pmode SImode
+
+/* Generate calls to memcpy, memcmp and memset.  */
+#define TARGET_MEM_FUNCTIONS
 
 /* Add any extra modes needed to represent the condition code.
 

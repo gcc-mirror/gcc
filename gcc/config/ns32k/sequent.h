@@ -18,10 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* Two flags to control how addresses are printed in assembler insns.  */
-#define SEQUENT_ADDRESS_BUG 1
-#define SEQUENT_BASE_REGS
-
 #include "ns32k.h"
 
 /* This is BSD, so it wants DBX format.  */
@@ -33,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Don't split DBX symbols into continuations.  */
 #define DBX_CONTIN_LENGTH 0
 
-#define TARGET_DEFAULT 9  /* 32332 with 32081 (guessing) */
+#define TARGET_DEFAULT 9  /* 32332 with 32081 (guessing).  */
 
 /* Print subsidiary information on the compiler version in use.  */
 #undef TARGET_VERSION
@@ -51,64 +47,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_ALIGN_CODE
 
-/* Assember pseudo-op for shared data segment. */
+/* Assembler pseudo-op for shared data segment. */
 #define SHARED_SECTION_ASM_OP ".shdata"
 
 /* Control how stack adjust insns are output.  */
 #define SEQUENT_ADJUST_STACK
 
-/* %$ means print the prefix for an immediate operand.
-   On the sequent, no prefix is used for such.  */
+#define NO_ABSOLUTE_PREFIX_IF_SYMBOLIC
 
-#undef PRINT_OPERAND
-#define PRINT_OPERAND(FILE, X, CODE)  \
-{ if (CODE == '$') ;							\
-  else if (CODE == '?');						\
-  else if (GET_CODE (X) == REG)						\
-    fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
-  else if (GET_CODE (X) == MEM)						\
-    {									\
-      rtx xfoo;								\
-      xfoo = XEXP (X, 0);						\
-      switch (GET_CODE (xfoo))						\
-	{								\
-	case MEM:							\
-	  if (GET_CODE (XEXP (xfoo, 0)) == REG)				\
-	    if (REGNO (XEXP (xfoo, 0)) == STACK_POINTER_REGNUM)		\
-	      fprintf (FILE, "0(0(sp))");				\
-	    else fprintf (FILE, "0(0(%s))",				\
-			  reg_names[REGNO (XEXP (xfoo, 0))]);		\
-	  else								\
-	    {								\
-	      fprintf (FILE, "0(");					\
-	      output_address (xfoo);					\
-	      putc (')', FILE);						\
-	    }								\
-	  break;							\
-	case REG:							\
-	  fprintf (FILE, "0(%s)", reg_names[REGNO (xfoo)]);		\
-	  break;							\
-	case PRE_DEC:							\
-	case POST_INC:							\
-	  fprintf (FILE, "tos");					\
-	  break;							\
-	case CONST_INT:							\
-	  fprintf (FILE, "@%d", INTVAL (xfoo));				\
-	  break;							\
-	default:							\
-	  output_address (xfoo);					\
-	  break;							\
-	}								\
-    }									\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
-    if (GET_MODE (X) == DFmode)						\
-      { union { double d; int i[2]; } u;				\
-	u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-	fprintf (FILE, "0d%.20e", u.d); }				\
-    else { union { double d; int i[2]; } u;				\
-	   u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X); \
-	   fprintf (FILE, "0f%.20e", u.d); }				\
-  else output_addr_const (FILE, X); }
+#define IMMEDIATE_PREFIX 0
 
-#undef PRINT_OPERAND_ADDRESS
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR)  print_operand_address(FILE, ADDR)
+#define SEQUENT_ASM

@@ -144,7 +144,7 @@ static int *insn_priority;
 #define DONE_PRIORITY_P(INSN) (INSN_PRIORITY (INSN) < 0)
 #define LOW_PRIORITY_P(INSN) ((INSN_PRIORITY (INSN) & 0x7f000000) == 0)
 
-/* Vector indexed by INSN_UID giving number of insns refering to this insn.  */
+/* Vector indexed by INSN_UID giving number of insns referring to this insn.  */
 static int *insn_ref_count;
 #define INSN_REF_COUNT(INSN) (insn_ref_count[INSN_UID (INSN)])
 
@@ -2324,13 +2324,20 @@ schedule_block (b, file)
       && GET_CODE (PATTERN (tail)) == USE
       && next_nonnote_insn (tail) == 0)
     {
-      /* If this was the only insn in the block, then there are no insns to
-	 schedule.  */
-      if (head == tail)
-	return;
+      /* Don't try to reorder any USE insns at the end of a function.
+	 They must be last to ensure proper register allocation.
+	 Exclude them all from scheduling.  */
+      do
+	{
+	  /* If we are down to one USE insn, then there are no insns to
+	     schedule.  */
+	  if (head == tail)
+	    return;
 
-      /* We don't try to reorder the USE at the end of a function.  */
-      tail = prev_nonnote_insn (tail);
+	  tail = prev_nonnote_insn (tail);
+	}
+      while (GET_CODE (tail) == INSN
+	     && GET_CODE (PATTERN (tail)) == USE);
 
 #if 0
       /* This short-cut does not work.  See comment above.  */
@@ -3944,7 +3951,10 @@ schedule_insns (dump_file)
 		  fprintf (dump_file,
 			   ";; register %d now crosses calls\n", regno);
 	      }
-	    reg_live_length[regno] = sched_reg_live_length[regno];
+	    /* Negative values are special; don't overwrite the current
+	       reg_live_length value if it is negative.  */
+	    if (reg_live_length[regno] >= 0)
+	      reg_live_length[regno] = sched_reg_live_length[regno];
 	    reg_n_calls_crossed[regno] = sched_reg_n_calls_crossed[regno];
 	  }
     }

@@ -112,7 +112,7 @@ extern char *output_call ();
 /* Define this if most significant word of a multiword number is numbered.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Number of bits in an addressible storage unit */
+/* Number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -150,9 +150,9 @@ extern char *output_call ();
 /* beware of doubles in structs -- 64 is incompatible with pcc */
 #define BIGGEST_ALIGNMENT 32
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-/* #define STRICT_ALIGNMENT */
+#define STRICT_ALIGNMENT 0
 
 /* Define sizes of basic C types to conform to ordinary usage -- these
    types depend on BITS_PER_WORD otherwise.  */

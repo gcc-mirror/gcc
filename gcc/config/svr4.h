@@ -117,7 +117,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
 
-/* Provide a LIB_SPEC appropropriate for svr4.  Here we tack on the default
+/* Provide a LIB_SPEC appropriate for svr4.  Here we tack on the default
    standard C library (unless we are building a shared library) followed by
    our own magical crtend.o file (see crtstuff.c) which provides part of
    the support for getting C++ file-scope static object constructed before
@@ -154,11 +154,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    not being done.  */
 
 #undef	LINK_SPEC
-#define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
-		   %{b} %{t} %{Wl,*:%*} \
+#define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
+		   %{b} %{Wl,*:%*} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy} \
 		   %{symbolic:-Bsymbolic -G -dy} \
+		   %{G:-G} \
 		   %{YP,*} \
 		   %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
 		    %{!p:-Y P,/usr/ccs/lib:/usr/lib}} \
@@ -173,7 +174,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    The SVR4 library routines query the value of `_lib_version' at run
    to decide how they should behave.  Specifically, they decide (based
    upon the value of `_lib_version') if they will act in a strictly ANSI
-   conformant manner or not.
+   conforming manner or not.
 */
 
 #undef	STARTFILE_SPEC
@@ -186,9 +187,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 			   %{traditional:values-Xt.o%s} \
 			   %{!traditional:values-Xa.o%s}}}} crtbegin.o%s"
 
-/* Attach a sepcial .ident directive to the end of the file to identify
+/* Attach a special .ident directive to the end of the file to identify
    the version of GCC which compiled this code.  The format of the
-   .ident string is patterened after the ones produced by native svr4
+   .ident string is patterned after the ones produced by native svr4
    C compilers.  */
 
 #define ASM_FILE_END(FILE)					\
@@ -558,7 +559,7 @@ dtors_section ()							\
    has such a limitation, you should define STRING_LIMIT to reflect that
    limit.  Note that at least some svr4 assemblers have a limit on the
    actual number of bytes in the double-quoted string, and that they
-   count each chanacter in an escape sequence as one byte.  Thus, an
+   count each character in an escape sequence as one byte.  Thus, an
    escape sequence like \377 would count as four bytes.
 
    If your target assembler doesn't support the .string directive, you

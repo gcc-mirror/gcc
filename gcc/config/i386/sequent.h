@@ -88,5 +88,29 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
    fprintf (FILE, "\tmovl $LP%d,%%eax\n\tcall mcount\n", (LABELNO));
 
-/* Assember pseudo-op for shared data segment. */
+/* Assembler pseudo-op for shared data segment. */
 #define SHARED_SECTION_ASM_OP ".shdata"
+
+/* A C statement or statements which output an assembler instruction
+   opcode to the stdio stream STREAM.  The macro-operand PTR is a
+   variable of type `char *' which points to the opcode name in its
+   "internal" form--the form that is written in the machine description.
+
+   The Sequent assembler (identified as "Balance 8000 Assembler
+   07/17/85 3.90" by "as -v") does not understand the `movs[bwl]' string
+   move mnemonics - it uses `smov[bwl]' instead.  Change "movs" into
+   "smov", carefully avoiding the sign-extend opcodes.  */
+
+#define ASM_OUTPUT_OPCODE(STREAM, PTR)	\
+{									\
+  if ((PTR)[0] == 'm'							\
+      && (PTR)[1] == 'o'						\
+      && (PTR)[2] == 'v'						\
+      && (PTR)[3] == 's'						\
+      && ((PTR)[4] == 'b' || (PTR)[4] == 'w' || (PTR)[4] == 'l')	\
+      && ((PTR)[5] == ' ' || (PTR)[5] == '\t'|| (PTR)[5] == '\0'))	\
+    {									\
+      fprintf (STREAM, "smov");						\
+      (PTR) += 4;							\
+    }									\
+}

@@ -29,35 +29,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 
-/* Return 1 if the operand is a REG, a SUBREG, or a MEM that is does not
-   have an index.  This is used when we are using an operand in a different
-   mode than the hardware expects.  See jlbc/jlbs.
-
-   This is nonimmedate_operand with a restriction on the type of MEM.  */
-
-int
-reg_or_nxmem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (! nonimmediate_operand (op, mode))
-    return 0;
-
-  if (GET_CODE (op) != MEM)
-    return 1;
-
-  GO_IF_NONINDEXED_ADDRESS (XEXP (op, 0), nonidx);
-
-  return 0;
-
- nonidx:
-  return 1;
-}
 
 void
 split_quadword_operands (operands, low, n)
      rtx *operands, *low;
-     int n;
+   This is nonimmediate_operand with a restriction on the type of MEM.  */
 {
   int i;
   /* Split operands.  */
