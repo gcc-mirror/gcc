@@ -90,7 +90,7 @@ namespace std
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
-    basic_filebuf(__c_file_type* __f, bool __s, ios_base::openmode __mode)
+    basic_filebuf(__c_file_type* __f, ios_base::openmode __mode, int_type __s)
     : __streambuf_type(),  _M_file(NULL), _M_state_cur(__state_type()), 
     _M_state_beg(__state_type()), _M_last_overflowed(false)
     {
@@ -99,8 +99,9 @@ namespace std
       if (this->is_open())
 	{
 	  _M_mode = __mode;
-	  if (!__s)
+	  if (__s)
 	    {
+	      _M_buf_size_opt = __s;
 	      _M_allocate_buffers();
 	      _M_set_indeterminate();
 	    }
@@ -208,7 +209,9 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       bool __testin = _M_mode & ios_base::in;
-      
+      bool __testout = _M_mode & ios_base::out;
+
+      // XXX Should re-enable codecvt bits disabled after 2.90.8.
       if (__testin)
 	{
 	  // Check for pback madness, and if so swich back to the
@@ -223,8 +226,6 @@ namespace std
 
 	  bool __testget = _M_in_cur && _M_in_beg < _M_in_cur;
 	  bool __testinit = _M_is_indeterminate();
-	  bool __testout = _M_mode & ios_base::out;
-
 	  // Sync internal and external buffers.
 	  // NB: __testget -> __testput as _M_buf_unified here.
 	  if (__testget)
@@ -238,7 +239,7 @@ namespace std
 
 	  if (__testinit || __testget)
 	    {
-#if 1
+	      // Assume buffered case, need to refill internal buffers.
 	      streamsize __size = _M_file->xsgetn(_M_in_beg, _M_buf_size);
 	      if (0 < __size)
 		{
@@ -252,53 +253,7 @@ namespace std
 		    {
 		      // XXX Something is wrong, do error checking.
 		    }
-		}
-#else
-	      // 2000-08-04 bkoz disable
-	      // Part one: (Re)fill external buf (_M_file->_IO_*) from
-	      // external byte sequence (whatever physical byte sink or
-	      // FILE actually is.)
-	      char_type* __conv_buf = static_cast<char_type*>(__builtin_alloca(sizeof(char_type) * _M_buf_size));
-	      streamsize __size = _M_file->xsgetn(__conv_buf, _M_buf_size);
-	      
-	      // Part two: (Re)fill internal buf contents from external buf.
-	      if (0 < __size)
-		{
-		  _M_set_determinate(__size);
-		  
-		  char* __conv_cur = __conv_buf;
-		  _M_state_beg = _M_state_cur;
-		  __res_type __r = _M_fcvt->in(_M_state_cur, 
-					       __conv_buf,
-					       __conv_buf + __size,
-					 const_cast<const char*&>(__conv_cur), 
-					      _M_in_beg, _M_in_end, _M_in_cur);
-	      
-		  if (__r == codecvt_base::partial)
-		    {
-		      // XXX Retry with larger _M_buf size.
-		    }
-		  
-		  // Set pointers to internal and external buffers
-		  // correctly. . .
-		  if (__r != codecvt_base::error)
-		    {
-		      if (__testout)
-			_M_out_cur = _M_in_cur;
-		      __ret = traits_type::to_int_type(*_M_in_cur);
-		    }
-
-		  // Part three: Sync the current internal buffer
-		  // position with the (now overshot) external buffer
-		  // position.  
-		  streamoff __p = _M_file->seekoff(0 - __size, ios_base::cur, 
-						  ios_base::in);
-		  if (__p == -1)
-		    {
-		      // XXX Something is wrong, do error checking.
-		    }
-		}
-#endif	      
+		}	   
 	    }
 	}
       _M_last_overflowed = false;	

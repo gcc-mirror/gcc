@@ -44,24 +44,16 @@ namespace std {
 	  if (!__noskipws && (__in.flags() & ios_base::skipws))
 	    {	  
 	      const __int_type __eof = traits_type::eof();
-	      __int_type __c = __int_type(0);
-	      __streambuf_type* __sb = __in.rdbuf();
 	      const __ctype_type* __ctype = __in._M_get_fctype_ios();
-	      bool __testsp = true;
-	      bool __testeof = false;
+	      __streambuf_type* __sb = __in.rdbuf();
+	      __int_type __c = __sb->sgetc();
 	      
-	      while (!__testeof && __testsp)
-		{
-		  __c = __sb->sbumpc();
-		  __testeof = __c == __eof;
-		  __testsp = __ctype->is(ctype_base::space, __c);
-		}
-	      
-	      if (!__testeof && !__testsp)
-		__sb->sputbackc(__c);
+	      while (__c != __eof && __ctype->is(ctype_base::space, __c))
+		__c = __sb->snextc();
+
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 //195.  Should basic_istream::sentry's constructor ever set eofbit? 
-	      else
+	      if (__c == __eof)
 		__in.setstate(ios_base::eofbit);
 #endif
 	    }

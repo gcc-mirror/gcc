@@ -1,3 +1,22 @@
+2001-05-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2523
+	* include/bits/std_fstream.h (basic_filebuf): Change signature.
+	* include/bits/fstream.tcc (basic_filebuf): Change bool argument
+	to int_type, pass in buffer size info.
+	* include/bits/std_streambuf.h (_M_is_indeterminate): Check for
+	unbuffered situation.
+	(underflow): Remove codecvt bits for the time being.
+	* include/bits/istream.tcc (istream::sentry): Avoid sputbackc call.
+	* include/bits/locale_facets.tcc (_M_extract): Cache dereference
+	values from iterators, clean.
+	* src/locale.cc: Ditto.
+	* include/bits/sbuf_iter.h: Format.
+	* src/ios.cc: Explicitly pass in buffer sizes at creation time.
+	* testsuite/27_io/narrow_stream_objects.cc: Add tests.
+	* testsuite/27_io/filebuf.cc: Tweaks.
+	* testsuite/27_io/filebuf_members.cc: Tweaks.
+	
 2001-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/os/solaris/solaris2.7/bits/os_defines.h

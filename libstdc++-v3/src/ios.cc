@@ -136,19 +136,21 @@ namespace std
   void
   ios_base::Init::_S_ios_create(bool __sync)
   {
+    int __bufsize = __sync ? 0 : static_cast<int>(BUFSIZ);
     // NB: The file std_iostream.h creates the four standard files
-    // with NULL buffers. At this point, we swap out these
-    new (&cout) ostream(new filebuf(stdout, __sync, ios_base::out));
-    new (&cin) istream(new filebuf(stdin, __sync, ios_base::in));
-    new (&cerr) ostream(new filebuf(stderr, __sync, ios_base::out));
+    // with NULL buffers. At this point, we swap out the dummy NULL
+    // buffers with the real deal.
+    new (&cout) ostream(new filebuf(stdout, ios_base::out, __bufsize));
+    new (&cin) istream(new filebuf(stdin, ios_base::in, 1));
+    new (&cerr) ostream(new filebuf(stderr, ios_base::out, __bufsize));
     new (&clog) ostream(cerr.rdbuf());
     cin.tie(&cout);
     cerr.flags(ios_base::unitbuf);
     
 #ifdef _GLIBCPP_USE_WCHAR_T
-    new (&wcout) wostream( new wfilebuf(stdout, __sync, ios_base::out));
-    new (&wcin) wistream(new wfilebuf(stdin, __sync, ios_base::in));
-    new (&wcerr) wostream(new wfilebuf(stderr, __sync, ios_base::out));
+    new (&wcout) wostream( new wfilebuf(stdout, ios_base::out, __bufsize));
+    new (&wcin) wistream(new wfilebuf(stdin, ios_base::in, 1));
+    new (&wcerr) wostream(new wfilebuf(stderr, ios_base::out, __bufsize));
     new (&wclog) wostream(wcerr.rdbuf());
     wcin.tie(&wcout);
     wcerr.flags(ios_base::unitbuf);

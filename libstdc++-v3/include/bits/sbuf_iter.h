@@ -46,7 +46,12 @@ namespace std
       typedef _Traits                          traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
       typedef basic_ostream<_CharT, _Traits>   ostream_type;
-      
+
+    private:
+      streambuf_type* 	_M_sbuf;
+      bool 		_M_failed;
+
+    public:
       inline 
       ostreambuf_iterator(ostream_type& __s) throw ()
       : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }
@@ -72,10 +77,6 @@ namespace std
       bool 
       failed() const throw()
       { return _M_failed; }
-
-    private:
-      streambuf_type* 	_M_sbuf;
-      bool 		_M_failed;
     };
 
   template<typename _CharT, typename _Traits>
@@ -90,13 +91,12 @@ namespace std
 
 
   // 24.5.3 Template class istreambuf_iterator
-  template<class _CharT, class _Traits>
+  template<typename _CharT, typename _Traits>
     class istreambuf_iterator
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
     		      _CharT*, _CharT&>
     {
     public:
-
       // Types:
       typedef _CharT                         		char_type;
       typedef _Traits                        		traits_type;
@@ -106,6 +106,18 @@ namespace std
       // Non-standard Types:
       typedef istreambuf_iterator<_CharT, _Traits>	__istreambufiter_type;
 
+    private:
+      // 24.5.3 istreambuf_iterator 
+      // p 1 
+      // If the end of stream is reached (streambuf_type::sgetc()
+      // returns traits_type::eof()), the iterator becomes equal to
+      // the "end of stream" iterator value.
+      // NB: This implementation assumes the "end of stream" value
+      // is EOF, or -1.
+      streambuf_type* 		_M_sbuf;  
+      int_type 			_M_c;
+
+    public:
       istreambuf_iterator() throw() 
       : _M_sbuf(NULL), _M_c(-2) { }
       
@@ -174,17 +186,6 @@ namespace std
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 #endif
-
-    private:
-      // 24.5.3 istreambuf_iterator 
-      // p 1 
-      // If the end of stream is reached (streambuf_type::sgetc()
-      // returns traits_type::eof()), the iterator becomes equal to
-      // the "end of stream" iterator value.
-      // NB: This implementation assumes the "end of stream" value
-      // is EOF, or -1.
-      streambuf_type* 		_M_sbuf;  
-      int_type 			_M_c;
     };
 
   template<typename _CharT, typename _Traits>
@@ -198,10 +199,5 @@ namespace std
     operator!=(const istreambuf_iterator<_CharT, _Traits>& __a,
 	       const istreambuf_iterator<_CharT, _Traits>& __b)
     { return !__a.equal(__b); }
-
 } // namespace std
-
 #endif
-
-
-

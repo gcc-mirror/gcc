@@ -676,9 +676,9 @@ namespace std
 
       // Stage 2: extract characters.
       __cache_type const* __fmt = __cache_type::_S_get(__io);
-      bool __valid = __beg != __end;
+
       // Fail quickly if !__valid
-      if (!__valid)
+      if (__beg == __end)
         {
           __err |= (ios_base::eofbit | ios_base::failbit);
           return;
@@ -694,14 +694,19 @@ namespace std
       // Check first for sign
       bool __testsign = false;
       if ((__c == __lits[__cache_type::_S_minus])
-          || (__c == __lits[__cache_type::_S_plus]))
+	  || (__c == __lits[__cache_type::_S_plus]))
         {
+          __testsign = true;
           __xtrc[__pos++] = __c;
           ++__beg;
-          __testsign = true;
-          // whitespace may follow a sign
-          while ((__beg != __end) && (isspace(*__beg)))
-            ++__beg;
+	  __c = * __beg;
+
+          // Whitespace may follow a sign
+          while ((__beg != __end) && (isspace(__c)))
+	    {
+	      ++__beg;
+	      __c = *__beg;
+	    }
 
           // There had better be more to come...
           if (__beg == __end)
@@ -712,20 +717,19 @@ namespace std
             }
         }
 
-      bool __testzero = false;    // Has there been a leading zero?
-
-      // Now check if first character is a zero
-      __c = *__beg;
+      // Now check if first character is a zero.
+      bool __testzero = false;    
       if (__c == __lits[__cache_type::_S_digits])
         {
            __testzero = true;
            ++__beg;
+	   __c = *__beg;
 
            // We have to check for __beg == __end here. If so,
            // a plain '0' (possibly with a sign) can be got rid of now
            if (__beg == __end)
              {
-               __xtrc[__pos++] = __c;
+               __xtrc[__pos++] = __lits[__cache_type::_S_digits];
                __xtrc[__pos] = '\0';
                __err |= ios_base::eofbit;
                return;
@@ -736,11 +740,11 @@ namespace std
           if (!__fp && __base != 10 && __base != 8)
             {
               // Here, __base == 0 or 16
-              __c = *__beg;
               if ((__c == __lits[__cache_type::_S_x])
                  || (__c == __lits[__cache_type::_S_X]))
                 {
                   ++__beg;
+		  __c = *__beg;
                   __base = 16;
                   __testzero = false; // "0x" is not a leading zero
                 }
@@ -751,9 +755,10 @@ namespace std
           // Remove any more leading zeros
           while (__beg != __end)
             {
-              if (*__beg == __lits[__cache_type::_S_digits])
+              if (__c == __lits[__cache_type::_S_digits])
                 {
                   ++__beg;
+		  __c = *__beg;
                   __testzero = true;
                 }
               else
@@ -767,44 +772,45 @@ namespace std
       // We may need to know if anything is found here. A leading zero
       // (removed by now) would count.
       bool __testunits = __testzero;
-      while (__valid && __beg != __end)
+      while (__beg != __end)
         {
-          __valid = false;
-          __c = *__beg;
-          const char* __p = strchr(__fmt->_S_literals, __c);
+          const char* __p = strchr(__lits, __c);
 
           // NB: strchr returns true for __c == 0x0
-          if (__p && __c)
-            {
-              // Try first for acceptable digit; record it if found
-              if ((__p >= &__lits[__cache_type::_S_digits]
-                    && __p < &__lits[__cache_type::_S_digits + __base])
-                   || (__p >= &__lits[__cache_type::_S_udigits]
-                       && __p < &__lits[__cache_type::_S_udigits + __base]))
-                {
-                  __xtrc[__pos++] = __c;
-                  ++__sep_pos;
-                  __valid = true;
-                  __testunits = true;
-                }
-            }
-          else if (__c == __fmt->_M_thousands_sep
-                   && __fmt->_M_use_grouping)
-            {
+          if (__p && __c
+	      &&((__p >= &__lits[__cache_type::_S_digits]
+		  && __p < &__lits[__cache_type::_S_digits + __base])
+		 || (__p >= &__lits[__cache_type::_S_udigits]
+		     && __p < &__lits[__cache_type::_S_udigits + __base])))
+	    {
+	      // Try first for acceptable digit; record it if found.
+	      __xtrc[__pos++] = __c;
+	      ++__sep_pos;
+	      __testunits = true;
+	      ++__beg;
+	      __c = *__beg;
+	    }
+          else if (__c == __fmt->_M_thousands_sep && __fmt->_M_use_grouping)
+	    {
               // NB: Thousands separator at the beginning of a string
               // is a no-no, as is two consecutive thousands
-              // separators
+              // separators.
               if (__sep_pos)
                 {
                   __grp += static_cast<char>(__sep_pos);
                   __sep_pos = 0;
-                  __valid = true;
+		  ++__beg;
+		  __c = *__beg;
                 }
               else
-                __err |= ios_base::failbit;
+		{
+		  __err |= ios_base::failbit;
+		  break;
+		}
             }
-          if (__valid)
-            ++__beg;
+	  else
+	    // Not a valid input item.
+	    break;
         }
 
       // Digit grouping is checked. If _M_groupings() doesn't
@@ -852,7 +858,6 @@ namespace std
       // That's it for integer types. Remaining code is for floating point
       if (__fp && __beg != __end)
         {
-          __c = *__beg;
           // Check first for decimal point. There MUST be one if
           // __testunits is false.
           bool __testdec = false;    // Is there a decimal point
@@ -861,12 +866,13 @@ namespace std
             {
               __xtrc[__pos++] = '.';
               ++__beg;
+	      __c = *__beg;
+
               // Now we get any digits after the decimal point
               // There MUST be some if __testunits is false.
               while (__beg != __end)
                 {
-                  __c = *__beg;
-                  const char* __p = strchr(__fmt->_S_literals, __c);
+                  const char* __p = strchr(__lits, __c);
                   if ((__p >= &__lits[__cache_type::_S_digits]
                         && __p < &__lits[__cache_type::_S_digits + __base])
                        || (__p >= &__lits[__cache_type::_S_udigits]
@@ -874,6 +880,7 @@ namespace std
                     {
                       __xtrc[__pos++] = __c;
                       ++__beg;
+		      __c = *__beg;
                       __testdec = true;
                     }
                   else
@@ -892,25 +899,28 @@ namespace std
           // Now we may find an exponent
           if (__beg != __end)
             {
-              __c = *__beg;
               if ((__c == __lits[__cache_type::_S_ee])
                    || (__c == __lits[__cache_type::_S_Ee]))
                 {
                   __xtrc[__pos++] = __c;
                   ++__beg;
+		  __c = *__beg;
+
                   // Now there may be a sign
                   if (__beg != __end)
                     {
-                      __c = *__beg;
                       if ((__c == __lits[__cache_type::_S_minus])
                           || (__c == __lits[__cache_type::_S_plus]))
                         {
                           __xtrc[__pos++] = __c;
                           ++__beg;
+			  __c = *__beg;
                           // whitespace may follow a sign
-                          while ((__beg != __end) && (isspace(*__beg)))
-                            ++__beg;
-
+                          while ((__beg != __end) && (isspace(__c)))
+			    {
+			      ++__beg;
+			      __c = *__beg;
+			    }
                         }
                     }
                   // And now there must be some digits
@@ -922,8 +932,7 @@ namespace std
                     }
                   while (__beg != __end)
                     {
-                      __c = *__beg;
-                      const char* __p = strchr(__fmt->_S_literals, __c);
+                      const char* __p = strchr(__lits, __c);
                       if ((__p >= &__lits[__cache_type::_S_digits]
                             && __p < &__lits[__cache_type::_S_digits + __base])
                            || (__p >= &__lits[__cache_type::_S_udigits]
@@ -931,6 +940,7 @@ namespace std
                         {
                           __xtrc[__pos++] = __c;
                           ++__beg;
+			  __c = *__beg;
                         }
                       else
                         break;

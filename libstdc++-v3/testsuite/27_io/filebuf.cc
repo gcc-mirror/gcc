@@ -546,6 +546,9 @@ public:
   operator<(const gnu_char_type& __lhs) 
   { return character < __lhs.character; }
 
+  // default ctor
+  gnu_char_type() { }
+
   // to_char_type
   gnu_char_type(const unsigned long& __l) : character(__l) { } 
 
