@@ -1,5 +1,10 @@
 2000-02-28  Mo DeJong  <mdejong@cygnus.com>
 
+	* java/util/zip/ZipOutputStream.java(closeEntry) : Fixed
+	error caused by the incorrect casting of a long to an int.
+
+2000-02-28  Mo DeJong  <mdejong@cygnus.com>
+
 	* java/util/zip/ZipOutputStream.java(write_entry) : Fixed
 	SIGSEV caused by use of the wrong instance variable.
 
