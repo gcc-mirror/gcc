@@ -2343,6 +2343,7 @@ mark_vtable_entries (decl)
 	{
 	  TREE_OPERAND (fnaddr, 0) = fn = copy_node (fn);
 	  DECL_RTL (fn) = DECL_RTL (abort_fndecl);
+	  mark_used (abort_fndecl);
 	}
       if (TREE_CODE (fn) == THUNK_DECL && DECL_EXTERNAL (fn))
 	{

@@ -4579,6 +4579,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
   tree fns, mem_arglist, arglist, fnname;
   enum tree_code code2 = NOP_EXPR;
   tree templates = NULL_TREE;
+  tree conv;
 
   if (arg1 == error_mark_node
       || arg2 == error_mark_node
@@ -4860,8 +4861,13 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	}
     }
 
-  arg1 = convert_from_reference
-    (convert_like (TREE_VEC_ELT (cand->convs, 0), arg1));
+  /* We need to strip any leading REF_BIND so that bitfields don't cause
+     errors.  This should not remove any important conversions, because
+     builtins don't apply to class objects directly.  */
+  conv = TREE_VEC_ELT (cand->convs, 0);
+  if (TREE_CODE (conv) == REF_BIND)
+    conv = TREE_OPERAND (conv, 0);
+  arg1 = convert_like (conv, arg1);
   if (arg2)
     arg2 = convert_like (TREE_VEC_ELT (cand->convs, 1), arg2);
   if (arg3)

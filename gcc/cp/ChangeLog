@@ -1,3 +1,11 @@
+Mon Sep  1 13:19:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_new_op): Strip leading REF_BIND from first operand
+	to builtin operator.
+
+	* decl2.c (mark_vtable_entries): Mark abort_fndecl as used when we
+	use its RTL.
+
 Thu Aug 28 09:45:23 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (null_ptr_cst_p): Remove support for (void*)0.
