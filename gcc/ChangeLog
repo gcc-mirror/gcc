@@ -1,3 +1,7 @@
+Wed Sep 15 21:20:38 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-typeck.c (qualify_type): Merge qualifiers from both types.
+
 Wed Sep 15 10:07:27 1999  Scott Bambrough <scottb@netwinder.org>
  
 	* config/arm/linux-elf.h: define NO_IMPLICIT_EXTERN_C
