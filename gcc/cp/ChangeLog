@@ -1,5 +1,8 @@
 2003-07-10  Mark Mitchell  <mark@codesourcery.com>
 
+	* typeck.c (build_binary_op): Do not warn about signed
+	vs. unsigned comparisons in the bodies of templates.
+
 	PR c++/9411
 	* parser.c (cp_parser_postfix_expression): Check dependency of
 	functions.
