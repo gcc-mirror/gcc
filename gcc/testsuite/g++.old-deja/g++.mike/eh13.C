@@ -1,5 +1,5 @@
 // Special g++ Options: -fexceptions
-// excess errors test - XFAIL a29k-*-* sh-*-* arm-*-pe**-*
+// excess errors test - XFAIL a29k-*-* arm-*-pe
 
 #include <string>
 
