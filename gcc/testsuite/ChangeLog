@@ -1,3 +1,10 @@
+Wed Sep  8 09:39:56 BST 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/sizeof3.C: New test.
+	* g++.old-deja/g++.other/sizeof4.C: New test.
+	* g++.old-deja/g++.other/ambig2.C: Mark XFAILs.
+	* g++.old-deja/g++.other/lookup16.C: Mark XFAIL.
+
 1999-09-07  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/va-arg-1.c: New.
