@@ -1,3 +1,9 @@
+2003-05-21  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_vec_delete): Copy the address into a temporary
+	variable before calling build_vec_delete_1.
+	* decl2.c (delete_sanity): Don't call stabilize_reference.
+
 2003-05-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (register_specialization): Update the decl's location,

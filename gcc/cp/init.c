@@ -3359,13 +3359,13 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
      int use_global_delete;
 {
   tree type;
+  tree rval;
+  tree base_init = NULL_TREE;
 
   if (TREE_CODE (base) == OFFSET_REF)
     base = resolve_offset_ref (base);
 
   type = TREE_TYPE (base);
-
-  base = stabilize_reference (base);
 
   if (TREE_CODE (type) == POINTER_TYPE)
     {
@@ -3373,7 +3373,10 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
       tree cookie_addr;
 
       if (TREE_SIDE_EFFECTS (base))
-	base = save_expr (base);
+	{
+	  base_init = get_target_expr (base);
+	  base = TARGET_EXPR_SLOT (base_init);
+	}
       type = strip_array_types (TREE_TYPE (type));
       cookie_addr = build (MINUS_EXPR,
 			   build_pointer_type (sizetype),
@@ -3388,7 +3391,10 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
       type = strip_array_types (type);
       base = build_unary_op (ADDR_EXPR, base, 1);
       if (TREE_SIDE_EFFECTS (base))
-	base = save_expr (base);
+	{
+	  base_init = get_target_expr (base);
+	  base = TARGET_EXPR_SLOT (base_init);
+	}
     }
   else
     {
@@ -3397,6 +3403,10 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
       return error_mark_node;
     }
 
-  return build_vec_delete_1 (base, maxindex, type, auto_delete_vec,
+  rval = build_vec_delete_1 (base, maxindex, type, auto_delete_vec,
 			     use_global_delete);
+  if (base_init)
+    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), base_init, rval);
+
+  return rval;
 }
