@@ -1,3 +1,96 @@
+2001-08-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/rmi/activation/Activatable.java,
+	java/rmi/activation/ActivateFailedException.java,
+	java/rmi/activation/ActivationDesc.java,
+	java/rmi/activation/ActivationException.java,
+	java/rmi/activation/ActivationGroup.java,
+	java/rmi/activation/ActivationGroupDesc.java,
+	java/rmi/activation/ActivationGroupID.java,
+	java/rmi/activation/ActivationID.java,
+	java/rmi/activation/ActivationInstantiator.java,
+	java/rmi/activation/ActivationMonitor.java,
+	java/rmi/activation/ActivationSystem.java,
+	java/rmi/activation/Activator.java,
+	java/rmi/activation/UnknownGroupException.java,
+	java/rmi/activation/UnknownObjectException.java,
+	java/rmi/AccessException.java,
+	java/rmi/AlreadyBoundException.java,
+	java/rmi/ConnectException.java, java/rmi/ConnectIOException.java,
+	java/rmi/MarshalException.java, java/rmi/MarshalledObject.java,
+	java/rmi/Naming.java, java/rmi/NoSuchObjectException.java,
+	java/rmi/NotBoundException.java,
+	java/rmi/RMISecurityException.java,
+	java/rmi/RMISecurityManager.java, java/rmi/Remote.java,
+	java/rmi/RemoteException.java, java/rmi/ServerError.java,
+	java/rmi/ServerException.java,
+	java/rmi/ServerRuntimeException.java,
+	java/rmi/StubNotFoundException.java,
+	java/rmi/UnexpectedException.java,
+	java/rmi/UnknownHostException.java,
+	java/rmi/UnmarshalException.java, java/rmi/dgc/DGC.java,
+	java/rmi/dgc/Lease.java, java/rmi/dgc/VMID.java,
+	java/rmi/registry/LocateRegistry.java,
+	java/rmi/registry/Registry.java,
+	java/rmi/registry/RegistryHandler.java,
+	java/rmi/server/ExportException.java,
+	java/rmi/server/LoaderHandler.java,
+	java/rmi/server/LogStream.java, java/rmi/server/ObjID.java,
+	java/rmi/server/Operation.java,
+	java/rmi/server/RMIClassLoader.java,
+	java/rmi/server/RMIClientSocketFactory.java,
+	java/rmi/server/RMIFailureHandler.java,
+	java/rmi/server/RMIServerSocketFactory.java,
+	java/rmi/server/RMISocketFactory.java,
+	java/rmi/server/RemoteCall.java,
+	java/rmi/server/RemoteObject.java, java/rmi/server/RemoteRef.java,
+	java/rmi/server/RemoteServer.java,
+	java/rmi/server/RemoteStub.java,
+	java/rmi/server/ServerCloneException.java,
+	java/rmi/server/ServerNotActiveException.java,
+	java/rmi/server/ServerRef.java, java/rmi/server/Skeleton.java,
+	java/rmi/server/SkeletonMismatchException.java,
+	java/rmi/server/SkeletonNotFoundException.java,
+	java/rmi/server/SocketSecurityException.java,
+	java/rmi/server/UID.java,
+	java/rmi/server/UnicastRemoteObject.java,
+	java/rmi/server/Unreferenced.java, gnu/java/rmi/dgc/DGCImpl.java,
+	gnu/java/rmi/dgc/DGCImpl_Skel.java,
+	gnu/java/rmi/dgc/DGCImpl_Stub.java,
+	gnu/java/rmi/registry/RegistryImpl.java,
+	gnu/java/rmi/registry/RegistryImpl_Skel.java,
+	gnu/java/rmi/registry/RegistryImpl_Stub.java,
+	gnu/java/rmi/rmic/RMIC.java, gnu/java/rmi/rmic/TabbedWriter.java,
+	gnu/java/rmi/server/ProtocolConstants.java,
+	gnu/java/rmi/server/RMIDefaultSocketFactory.java,
+	gnu/java/rmi/server/RMIHashes.java,
+	gnu/java/rmi/server/RMIObjectInputStream.java,
+	gnu/java/rmi/server/RMIObjectOutputStream.java,
+	gnu/java/rmi/server/UnicastConnection.java,
+	gnu/java/rmi/server/UnicastConnectionManager.java,
+	gnu/java/rmi/server/UnicastRef.java,
+	gnu/java/rmi/server/UnicastRemoteCall.java,
+	gnu/java/rmi/server/UnicastRemoteStub.java,
+	gnu/java/rmi/server/UnicastServer.java,
+	gnu/java/rmi/server/UnicastServerRef.java: RMI implementation from
+	Kaffe.  Relabelled classes to fit into Classpath tree.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (rmi_java_source_files): New macro.
+	(ordinary_java_source_files): Reference it.
+	(bin_PROGRAMS): Added rmic and rmiregistry.
+	(rmic_SOURCES): New macro.
+	(EXTRA_rmic_SOURCES): Likewise.
+	(rmic_LDFLAGS): Likewise.
+	(rmic_LINK): Likewise.
+	(rmic_LDADD): Likewise.
+	(rmic_DEPENDENCIES): Likewise.
+	(rmiregistry_SOURCES): New macro.
+	(EXTRA_rmiregistry_SOURCES): Likewise.
+	(rmiregistry_LDFLAGS): Likewise.
+	(rmiregistry_LINK): Likewise.
+	(rmiregistry_LDADD): Likewise.
+	(rmiregistry_DEPENDENCIES): Likewise.
+
 2001-08-26  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* name-finder.cc (lookup): Ignore a null dli_fname from dladdr.
