@@ -1,3 +1,7 @@
+2003-01-27  Gabriel Dos_Reis  <gdosreis@sophia.inria.fr>
+
+	* c-parse.in: Remove '%expect 32' directive when in objc mode.
+	
 2003-01-27  Josef Zlomek  <zlomekj@suse.cz>
 
 	* gcse.c (constprop_register): Check NEXT_INSN (insn) != NULL.
