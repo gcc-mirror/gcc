@@ -3913,6 +3913,19 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
 
+      /* Consider an example where a template template parameter declared as
+
+	   template <class T, class U = std::allocator<T> > class TT
+
+	 The template parameter level of T and U are one level larger than 
+	 of TT.  To proper process the default argument of U, say when an 
+	 instantiation `TT<int>' is seen, we need to build the full
+	 arguments containing {int} as the innermost level.  Outer levels
+	 can be obtained from `current_template_args ()'.  */
+
+      if (processing_template_decl)
+	arglist = add_to_template_args (current_template_args (), arglist);
+
       arglist2 = coerce_template_parms (parmlist, arglist, template,
                                         complain, /*require_all_args=*/1);
       if (arglist2 == error_mark_node)
