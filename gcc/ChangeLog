@@ -1,3 +1,10 @@
+2004-10-25  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/16667
+	* c-parse.in (array_designator): New.
+	(designator): Use it.
+	(initelt): Only permit array_designator without '=', not ".foo".
+
 2004-10-25  Kenneth Zadeck <zadeck@naturalbridge.com>
 	* gcc/Makefile.in: removed ggc for cgraphunit.
 	* gcc/cgraph.c.dump_cgraph_node: removed static var analysis.
