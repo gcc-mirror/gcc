@@ -1,3 +1,9 @@
+Sat May  2 16:44:46 1998  Craig Burley  <burley@gnu.org>
+
+	* libF77/signal_.c, libI77/dfe.c, libI77/due.c,
+	libI77/wsfe.c: Tweaks to eliminate unnecessary
+	differences vs. netlib libf2c.
+
 Fri May  1 11:57:45 1998  Craig Burley  <burley@gnu.org>
 
 	Update to Netlib version of 1998-04-20:
@@ -513,7 +519,7 @@ Wed Feb  5 00:21:23 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 	* Makefile.in: Don't invoke config.status here -- let
 	compiler-level stuff handle all that.
 
-	* err.c [MISSING_FILE_ELEMS]: Declare malloc in this case
+	* libI77/err.c [MISSING_FILE_ELEMS]: Declare malloc in this case
 	too, so it doesn't end up as an integer.
 
 Sat Feb  1 02:43:48 1997  Craig Burley  <burley@gnu.ai.mit.edu>
