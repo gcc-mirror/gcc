@@ -108,6 +108,8 @@ static rtx ftruncify	PARAMS ((rtx));
 static optab new_optab	PARAMS ((void));
 static inline optab init_optab	PARAMS ((enum rtx_code));
 static inline optab init_optabv	PARAMS ((enum rtx_code));
+static inline int complex_part_zero_p PARAMS ((rtx, enum mode_class,
+						enum machine_mode));
 static void init_libfuncs PARAMS ((optab, int, int, const char *, int));
 static void init_integral_libfuncs PARAMS ((optab, const char *, int));
 static void init_floating_libfuncs PARAMS ((optab, const char *, int));
@@ -212,6 +214,22 @@ widen_operand (op, mode, oldmode, unsignedp, no_extend)
   return result;
 }
 
+/* Test whether either the real or imaginary part of a complex floating
+   point number is 0.0, so that it can be ignored (when compiling
+   with -funsafe-math-optimizations). */
+
+static inline int
+complex_part_zero_p (part, class, submode)
+  rtx part;
+  enum mode_class class;
+  enum machine_mode submode;
+{
+  return part == 0 ||
+	  (flag_unsafe_math_optimizations
+	   && class == MODE_COMPLEX_FLOAT
+	   && part == CONST0_RTX (submode));
+}
+
 /* Generate code to perform a straightforward complex divide.  */
 
 static int
@@ -265,7 +283,7 @@ expand_cmplxdiv_straight (real0, real1, imag0, imag1, realr, imagr, submode,
   if (divisor == 0)
     return 0;
 
-  if (imag0 == 0)
+  if (complex_part_zero_p (imag0, class, submode))
     {
       /* Mathematically, ((a)(c-id))/divisor.  */
       /* Computationally, (a+i0) / (c+id) = (ac/(cc+dd)) + i(-ad/(cc+dd)).  */
@@ -431,7 +449,7 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
 
   /* Calculate dividend.  */
 
-  if (imag0 == 0)
+  if (complex_part_zero_p (imag0, class, submode))
     {
       real_t = real0;
 
@@ -1657,7 +1675,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	case DIV:
 	  /* (a+ib) / (c+id) = ((ac+bd)/(cc+dd)) + i((bc-ad)/(cc+dd)) */
 	  
-	  if (imag1 == 0)
+	  if (complex_part_zero_p (imag1, class, submode))
 	    {
 	      /* (a+ib) / (c+i0) = (a/c) + i(b/c) */
 
