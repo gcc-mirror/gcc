@@ -188,6 +188,7 @@ while [ $# != 0 ]; do
 	  s/__STDC__[ 	][ 	]*==[ 	][ 	]*1/defined (__STRICT_ANSI__)/g
 	  s/__STDC__[ 	][ 	]*!=[ 	][ 	]*0/defined (__STRICT_ANSI__)/g
 	  s/__STDC__ - 0 == 0/!defined (__STRICT_ANSI__)/g
+	  /^typedef[ 	][ 	]*[unsigned 	]*long[ 	][ 	]*[u_]*longlong_t;/s/long/long long/
 	' $2/$file > $2/$file.sed
 	mv $2/$file.sed $2/$file
 	if cmp $file $2/$file >/dev/null 2>&1; then
