@@ -1,3 +1,12 @@
+2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.am: Remove useless multilib rules.
+	* configure.ac: Rewrite multilib support to use
+	features of recent automakes.
+	* aclocal.m4: Regenerate with Automake 1.8.5.
+	* Makefile.in: Regenerate with Automake 1.8.5.
+	* configure: Regenerate.
+
 2004-04-12  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am: Add in libz_a_CFLAGS as recommended by automake doc.

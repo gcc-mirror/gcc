@@ -1,3 +1,11 @@
+2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* acinclude.m4: Remove useless multilib configury.
+	* Makefile.am: Remove useless multilib rules.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2004-06-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/hashtable.h: Trivial formatting fixes.
@@ -33,6 +41,7 @@
 	decrease __nmatches and increase __i3 at once, only either of
 	the two; tidy.
 
+>>>>>>> 1.2516
 2004-06-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get<>::do_get_time,

@@ -43,12 +43,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure $(top_srcdir)/fragment.am \
 	$(top_srcdir)/scripts/check_survey.in \
-	$(top_srcdir)/scripts/testsuite_flags.in ../ABOUT-NLS \
-	../COPYING ../COPYING.LIB ../ChangeLog ../README ../compile \
-	../config.guess ../config.rpath ../config.sub ../depcomp \
-	../install-sh ../ltcf-c.sh ../ltcf-cxx.sh ../ltcf-gcj.sh \
-	../ltconfig ../ltmain.sh ../missing ../mkinstalldirs ../ylwrap \
-	ChangeLog acconfig.h
+	$(top_srcdir)/scripts/testsuite_flags.in ChangeLog acconfig.h
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -66,6 +61,12 @@ depcomp =
 am__depfiles_maybe =
 SOURCES =
 DIST_SOURCES =
+MULTISRCTOP = 
+MULTIBUILDTOP = 
+MULTIDIRS = 
+MULTISUBDIR = 
+MULTIDO = true
+MULTICLEAN = true
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -271,14 +272,6 @@ SUBDIRS = include libmath libsupc++ $(hosted_source) testsuite
 # Multilib support.
 MAKEOVERRIDES = 
 
-# Multilib support variables.
-MULTISRCTOP = 
-MULTIBUILDTOP = 
-MULTIDIRS = 
-MULTISUBDIR = 
-MULTIDO = true
-MULTICLEAN = true
-
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
@@ -392,6 +385,20 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool
+
+all-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
+install-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do
+
+mostlyclean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=mostlyclean multi-clean
+clean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=clean multi-clean
+distclean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
+maintainer-clean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
 uninstall-info-am:
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -750,30 +757,6 @@ doxygen-man:
 # Handy forwarding targets.
 check-%:
 	cd testsuite && $(MAKE) $@
-
-# Multilib support.
-.PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
-	maintainer-clean-multi
-
-all-recursive: all-multi
-install-recursive: install-multi
-mostlyclean-recursive: mostlyclean-multi
-clean-recursive: clean-multi
-distclean-recursive: distclean-multi
-maintainer-clean-recursive: maintainer-clean-multi
-
-all-multi:
-	: $(MAKE) ; exec $(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
-install-multi:
-	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do
-mostlyclean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=mostlyclean multi-clean
-clean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=clean multi-clean
-distclean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
-maintainer-clean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
 
 # All the machinations with string instantiations messes up the
 # automake-generated TAGS rule. Make a simple one here.

@@ -4,32 +4,7 @@ AC_PREREQ(2.59)
 AC_INIT
 AC_CONFIG_SRCDIR([zlib.h])
 
-# This works around the fact that libtool configuration may change LD
-# for this particular configuration, but some shells, instead of
-# keeping the changes in LD private, export them just because LD is
-# exported.
-ORIGINAL_LD_FOR_MULTILIBS=$LD
-
-dnl We may get other options which we dont document:
-dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
-
-if test "x[$]{with_target_subdir}" != x && \
-   test "[$]{srcdir}" = "."; then
-  if test "[$]{with_target_subdir}" != "."; then
-    zlib_basedir="[$]{srcdir}/[$]{with_multisrctop}../"
-  else
-    zlib_basedir="[$]{srcdir}/[$]{with_multisrctop}"
-  fi
-else
-  zlib_basedir="[$]{srcdir}/"
-fi
-AC_SUBST(zlib_basedir)
-AC_CONFIG_AUX_DIR($zlib_basedir..)
-if :; then :; else
-  # This overrides the previous occurrence for automake, but not for
-  # autoconf, which is exactly what we want.
-  AC_CONFIG_AUX_DIR(..)
-fi
+AM_ENABLE_MULTILIB(, ..)
 
 AC_CANONICAL_SYSTEM
 
@@ -71,9 +46,19 @@ AC_ARG_WITH(system-zlib,
 # Make sure we don't test executables when making cross-tools.
 GCC_NO_EXECUTABLES
 
-AC_PROG_CC
+# The same as in boehm-gc and libstdc++. Have to borrow it from there.
+# We must force CC to /not/ be precious variables; otherwise
+# the wrong, non-multilib-adjusted value will be used in multilibs.
+# As a side effect, we have to subst CFLAGS ourselves.
 
-AM_PROG_LIBTOOL
+m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
+m4_define([_AC_ARG_VAR_PRECIOUS],[])
+AC_PROG_CC
+m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+
+AC_SUBST(CFLAGS)
+
+AC_PROG_LIBTOOL
 
 # Find CPP now so that any conditional tests below won't do it and
 # thereby make the resulting definitions conditional.
@@ -135,22 +120,4 @@ else
 fi
 
 AC_CONFIG_FILES([Makefile])
-
-AC_CONFIG_COMMANDS([default],
-[[if test -n "$CONFIG_FILES"; then
-  LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-  ac_file=Makefile . ${zlib_basedir}/../config-ml.in
-fi]],
-[[srcdir=${srcdir}
-host=${host}
-target=${target}
-with_multisubdir=${with_multisubdir}
-ac_configure_args="${multilib_arg} ${ac_configure_args}"
-CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-zlib_basedir=${zlib_basedir}
-CC="${CC}"
-CXX="${CXX}"
-ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
-]])
-
 AC_OUTPUT
