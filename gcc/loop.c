@@ -3961,6 +3961,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 			      other_giv = tv;
 			  }
 		      if (! tv && other_giv
+			  && REGNO (other_giv->dest_reg) <= max_reg_before_loop
 			  && (REGNO_LAST_UID (REGNO (other_giv->dest_reg))
 			      == INSN_UID (v->insn))
 			  && INSN_LUID (v->insn) < INSN_LUID (bl->biv->insn))
