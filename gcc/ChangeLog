@@ -1,3 +1,22 @@
+Wed Feb 28 19:31:42 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (pentium4_cost): New.
+	(m_PENT4): New macro.
+	(x86_push_memory, x86_movx,x86_cmove, x86_deep_branch, x86_use_sahf
+	x86_sub_esp_4, x86_sub_esp_8, x86_add_esp_4, x86_add_esp_8
+	x86_integer_DFmode_moves, x86_partial_reg_dependency,
+	x86_memory_mismatch_stall): Add Pentium4
+	(x86_use_q_reg, x86_use_any_reg): Kill.
+	(override_options): Add pentium4.
+	(incdec_operand): Return 0 for pentium4.
+	(ix86_issue_rate): Add PROCESSOR_PENTIUM4 and PROCESSOR_ATHLON.
+	* i386.h (x86_use_q_reg, x86_use_any_reg): Kill.
+	(TARGET_PENTIUM4): Define.
+	(enum processor_type): Add PROCESSOR_PENTIUM4.
+	(CPP_CPU_DEFAULT_SPEC): Add pentium4 support.
+	* i386.md (attribute "cpu"): Add pentium4.
+	* invoke.texi (march): Add pentium4.
+
 Wed Feb 28 19:28:06 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse_mov?fcc*): New patterns and splitters.
