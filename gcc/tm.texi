@@ -100,9 +100,9 @@ If this macro is not defined, the default value is @code{""}.
 
 @findex CPP_SPEC
 @item CPP_SPEC
-A C string constant that tells the GNU CC driver program options to
+A C string constant that tells the GCC driver program options to
 pass to CPP.  It can also specify how to translate options you
-give to GNU CC into options for GNU CC to pass to the CPP.
+give to GCC into options for GCC to pass to the CPP.
 
 Do not define this macro if it does not need to do anything.
 
@@ -128,7 +128,7 @@ be defined.
 
 @findex SIGNED_CHAR_SPEC
 @item SIGNED_CHAR_SPEC
-A C string constant that tells the GNU CC driver program options to
+A C string constant that tells the GCC driver program options to
 pass to CPP.  By default, this macro is defined to pass the option
 @samp{-D__CHAR_UNSIGNED__} to CPP if @code{char} will be treated as
 @code{unsigned char} by @code{cc1}.
@@ -138,32 +138,33 @@ definition.
 
 @findex CC1_SPEC
 @item CC1_SPEC
-A C string constant that tells the GNU CC driver program options to
-pass to @code{cc1}.  It can also specify how to translate options you
-give to GNU CC into options for GNU CC to pass to the @code{cc1}.
+A C string constant that tells the GCC driver program options to
+pass to @code{cc1, cc1plus, f771, and the other language front ends}.
+It can also specify how to translate options you give to GCC into options
+for GCC to pass to front ends..
 
 Do not define this macro if it does not need to do anything.
 
 @findex CC1PLUS_SPEC
 @item CC1PLUS_SPEC
-A C string constant that tells the GNU CC driver program options to
+A C string constant that tells the GCC driver program options to
 pass to @code{cc1plus}.  It can also specify how to translate options you
-give to GNU CC into options for GNU CC to pass to the @code{cc1plus}.
+give to GCC into options for GCC to pass to the @code{cc1plus}.
 
 Do not define this macro if it does not need to do anything.
 
 @findex ASM_SPEC
 @item ASM_SPEC
-A C string constant that tells the GNU CC driver program options to
+A C string constant that tells the GCC driver program options to
 pass to the assembler.  It can also specify how to translate options
-you give to GNU CC into options for GNU CC to pass to the assembler.
+you give to GCC into options for GCC to pass to the assembler.
 See the file @file{sun3.h} for an example of this.
 
 Do not define this macro if it does not need to do anything.
 
 @findex ASM_FINAL_SPEC
 @item ASM_FINAL_SPEC
-A C string constant that tells the GNU CC driver program how to
+A C string constant that tells the GCC driver program how to
 run any programs which cleanup after the normal assembler.
 Normally, this is not needed.  See the file @file{mips.h} for
 an example of this.
@@ -172,9 +173,9 @@ Do not define this macro if it does not need to do anything.
 
 @findex LINK_SPEC
 @item LINK_SPEC
-A C string constant that tells the GNU CC driver program options to
+A C string constant that tells the GCC driver program options to
 pass to the linker.  It can also specify how to translate options you
-give to GNU CC into options for GNU CC to pass to the linker.
+give to GCC into options for GCC to pass to the linker.
 
 Do not define this macro if it does not need to do anything.
 
@@ -189,12 +190,12 @@ loads the standard C library from the usual place.  See @file{gcc.c}.
 
 @findex LIBGCC_SPEC
 @item LIBGCC_SPEC
-Another C string constant that tells the GNU CC driver program
+Another C string constant that tells the GCC driver program
 how and when to place a reference to @file{libgcc.a} into the
 linker command line.  This constant is placed both before and after
 the value of @code{LIB_SPEC}.
 
-If this macro is not defined, the GNU CC driver provides a default that
+If this macro is not defined, the GCC driver provides a default that
 passes the string @samp{-lgcc} to the linker unless the @samp{-shared}
 option is specified.
 
@@ -643,7 +644,7 @@ generated code.
 @findex CAN_DEBUG_WITHOUT_FP
 @item CAN_DEBUG_WITHOUT_FP
 Define this macro if debugging can be performed even without a frame
-pointer.  If this macro is defined, GNU CC will turn on the
+pointer.  If this macro is defined, GCC will turn on the
 @samp{-fomit-frame-pointer} option whenever @samp{-O} is specified.
 @end table
 
@@ -678,7 +679,7 @@ word has the lowest number.  This macro need not be a constant.
 @item WORDS_BIG_ENDIAN
 Define this macro to have the value 1 if, in a multiword object, the
 most significant word has the lowest number.  This applies to both
-memory locations and registers; GNU CC fundamentally assumes that the
+memory locations and registers; GCC fundamentally assumes that the
 order of words in memory is the same as the order in registers.  This
 macro need not be a constant.
 
@@ -834,7 +835,7 @@ structure fields only.
 @findex ADJUST_FIELD_ALIGN
 @item ADJUST_FIELD_ALIGN (@var{field}, @var{computed})
 An expression for the alignment of a structure field @var{field} if the
-alignment computed in the usual way is @var{computed}.  GNU CC uses
+alignment computed in the usual way is @var{computed}.  GCC uses
 this value instead of the value in @code{BIGGEST_ALIGNMENT} or
 @code{BIGGEST_FIELD_ALIGNMENT}, if defined, for structure fields only.
 
@@ -941,7 +942,7 @@ Unless the machine has bitfield instructions or you define
 @code{STRUCTURE_SIZE_BOUNDARY} that way, you must define
 @code{PCC_BITFIELD_TYPE_MATTERS} to have a nonzero value.
 
-If your aim is to make GNU CC use the same conventions for laying out
+If your aim is to make GCC use the same conventions for laying out
 bitfields as are used by another compiler, here is how to investigate
 what the other compiler does.  Compile and run this program:
 
@@ -1075,10 +1076,10 @@ machine and @code{HOST_FLOAT_WORDS_BIG_ENDIAN} for the host.
 
 @findex DEFAULT_VTABLE_THUNKS
 @item DEFAULT_VTABLE_THUNKS
-GNU CC supports two ways of implementing C++ vtables:  traditional or with
+GCC supports two ways of implementing C++ vtables:  traditional or with
 so-called ``thunks''.  The flag @samp{-fvtable-thunk} chooses between them.
 Define this macro to be a C expression for the default value of that flag.
-If @code{DEFAULT_VTABLE_THUNKS} is 0, GNU CC uses the traditional
+If @code{DEFAULT_VTABLE_THUNKS} is 0, GCC uses the traditional
 implementation by default.  The ``thunk'' implementation is more efficient
 (especially if you have provided an implementation of
 @code{ASM_OUTPUT_MI_THUNK}, see @ref{Function Entry}), but is not binary
@@ -1445,7 +1446,7 @@ Registers are allocated in order.
 @findex REG_ALLOC_ORDER
 @item REG_ALLOC_ORDER
 If defined, an initializer for a vector of integers, containing the
-numbers of hard registers in the order in which GNU CC should prefer
+numbers of hard registers in the order in which GCC should prefer
 to use them (from most preferred to least).
 
 If this macro is not defined, registers are used lowest numbered first
@@ -1580,7 +1581,7 @@ this macro to return zero unless some other mechanism ensures the
 accessibility of the value in a narrower mode.
 
 You should define this macro to return nonzero in as many cases as
-possible since doing so will allow GNU CC to perform better register
+possible since doing so will allow GCC to perform better register
 allocation.
 
 @findex AVOID_CCMODE_COPIES
@@ -1608,7 +1609,7 @@ function'' to mean a function that is suitable for this special
 handling, so that functions with no calls are not necessarily ``leaf
 functions''.
 
-GNU CC assigns register numbers before it knows whether the function is
+GCC assigns register numbers before it knows whether the function is
 suitable for leaf function treatment.  So it needs to renumber the
 registers in order to output a leaf function.  The following macros
 accomplish this.
@@ -1622,7 +1623,7 @@ function treatment.
 
 If leaf function treatment involves renumbering the registers, then the
 registers marked here should be the ones before renumbering---those that
-GNU CC would ordinarily allocate.  The registers which will actually be
+GCC would ordinarily allocate.  The registers which will actually be
 used in the assembler code, after renumbering, should not be marked with 1
 in this vector.
 
@@ -1665,7 +1666,7 @@ There are special features to handle computers where some of the
 Stack registers are normally written by pushing onto the stack, and are
 numbered relative to the top of the stack.
 
-Currently, GNU CC can only handle one group of stack-like registers, and
+Currently, GCC can only handle one group of stack-like registers, and
 they must be consecutively numbered.
 
 @table @code
@@ -1700,7 +1701,7 @@ register number @var{regno} is an overlapping register.  This means a
 hard register which overlaps a hard register with a different number.
 (Such overlap is undesirable, but occasionally it allows a machine to
 be supported which otherwise could not be.)  This macro must return
-nonzero for @emph{all} the registers which overlap each other.  GNU CC
+nonzero for @emph{all} the registers which overlap each other.  GCC
 can use an overlapping register only in certain limited ways.  It can
 be used for allocation within a basic block, and may be spilled for
 reloading; that is all.
@@ -2319,29 +2320,29 @@ debugging information like that provided by DWARF 2.
 @node Stack Checking
 @subsection Specifying How Stack Checking is Done
 
-GNU CC will check that stack references are within the boundaries of
+GCC will check that stack references are within the boundaries of
 the stack, if the @samp{-fstack-check} is specified, in one of three ways:
 
 @enumerate
 @item
-If the value of the @code{STACK_CHECK_BUILTIN} macro is nonzero, GNU CC
+If the value of the @code{STACK_CHECK_BUILTIN} macro is nonzero, GCC
 will assume that you have arranged for stack checking to be done at
 appropriate places in the configuration files, e.g., in
-@code{FUNCTION_PROLOGUE}.  GNU CC will do not other special processing.
+@code{FUNCTION_PROLOGUE}.  GCC will do not other special processing.
 
 @item
 If @code{STACK_CHECK_BUILTIN} is zero and you defined a named pattern
-called @code{check_stack} in your @file{md} file, GNU CC will call that
+called @code{check_stack} in your @file{md} file, GCC will call that
 pattern with one argument which is the address to compare the stack
 value against.  You must arrange for this pattern to report an error if
 the stack pointer is out of range.
 
 @item
-If neither of the above are true, GNU CC will generate code to periodically
+If neither of the above are true, GCC will generate code to periodically
 ``probe'' the stack pointer using the values of the macros defined below.
 @end enumerate
 
-Normally, you will use the default values of these macros, so GNU CC
+Normally, you will use the default values of these macros, so GCC
 will use the third approach.
 
 @table @code
@@ -2350,20 +2351,20 @@ will use the third approach.
 A nonzero value if stack checking is done by the configuration files in a
 machine-dependent manner.  You should define this macro if stack checking 
 is require by the ABI of your machine or if you would like to have to stack 
-checking in some more efficient way than GNU CC's portable approach.
+checking in some more efficient way than GCC's portable approach.
 The default value of this macro is zero.
 
 @findex STACK_CHECK_PROBE_INTERVAL
 @item STACK_CHECK_PROBE_INTERVAL
-An integer representing the interval at which GNU CC must generate stack
+An integer representing the interval at which GCC must generate stack
 probe instructions.  You will normally define this macro to be no larger
 than the size of the ``guard pages'' at the end of a stack area.  The
 default value of 4096 is suitable for most systems.
 
 @findex STACK_CHECK_PROBE_LOAD
 @item STACK_CHECK_PROBE_LOAD
-A integer which is nonzero if GNU CC should perform the stack probe 
-as a load instruction and zero if GNU CC should use a store instruction.
+A integer which is nonzero if GCC should perform the stack probe 
+as a load instruction and zero if GCC should use a store instruction.
 The default is zero, which is the most efficient choice on most systems.
 
 @findex STACK_CHECK_PROTECT
@@ -2374,16 +2375,16 @@ for languages where such a recovery is supported.  The default value of
 
 @findex STACK_CHECK_MAX_FRAME_SIZE
 @item STACK_CHECK_MAX_FRAME_SIZE
-The maximum size of a stack frame, in bytes.  GNU CC will generate probe
+The maximum size of a stack frame, in bytes.  GCC will generate probe
 instructions in non-leaf functions to ensure at least this many bytes of
 stack are available.  If a stack frame is larger than this size, stack
-checking will not be reliable and GNU CC will issue a warning.  The
-default is chosen so that GNU CC only generates one instruction on most
+checking will not be reliable and GCC will issue a warning.  The
+default is chosen so that GCC only generates one instruction on most
 systems.  You should normally not change the default value of this macro.
 
 @findex STACK_CHECK_FIXED_FRAME_SIZE
 @item STACK_CHECK_FIXED_FRAME_SIZE
-GNU CC uses this value to generate the above warning message.  It
+GCC uses this value to generate the above warning message.  It
 represents the amount of fixed frame used by a function, not including
 space for any callee-saved registers, temporaries and user variables.
 You need only specify an upper bound for this amount and will normally
@@ -2391,10 +2392,10 @@ use the default of four words.
 
 @findex STACK_CHECK_MAX_VAR_SIZE
 @item STACK_CHECK_MAX_VAR_SIZE
-The maximum size, in bytes, of an object that GNU CC will place in the
+The maximum size, in bytes, of an object that GCC will place in the
 fixed area of the stack frame when the user specifies
 @samp{-fstack-check}.
-GNU CC computed the default from the values of the above macros and you will
+GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end table
 
@@ -2621,7 +2622,7 @@ A C expression that is the number of bytes actually pushed onto the
 stack when an instruction attempts to push @var{npushed} bytes.
 
 If the target machine does not have a push instruction, do not define
-this macro.  That directs GNU CC to use an alternate strategy: to
+this macro.  That directs GCC to use an alternate strategy: to
 allocate the entire argument block and then store the arguments into
 it.
 
@@ -2660,7 +2661,7 @@ registers.
 
 The value of this macro is the size, in bytes, of the area reserved for
 arguments passed in registers for the function represented by @var{fndecl},
-which can be zero if GNU CC is calling a library function.
+which can be zero if GCC is calling a library function.
 
 This space can be allocated by the caller, or be a part of the
 machine-dependent stack frame: @code{OUTGOING_REG_PARM_STACK_SPACE} says
@@ -2693,7 +2694,7 @@ being called when it is known that such stack space must be allocated.
 In each case this value can be easily computed.
 
 When deciding whether a called function needs such stack space, and how
-much space to reserve, GNU CC uses these two macros instead of
+much space to reserve, GCC uses these two macros instead of
 @code{REG_PARM_STACK_SPACE}.
 
 @findex OUTGOING_REG_PARM_STACK_SPACE
@@ -2927,7 +2928,7 @@ finding the arguments for the function being compiled.  If this macro is
 undefined, @code{INIT_CUMULATIVE_ARGS} is used instead.
 
 The value passed for @var{libname} is always 0, since library routines
-with special calling conventions are never compiled with GNU CC.  The
+with special calling conventions are never compiled with GCC.  The
 argument @var{libname} exists for symmetry with
 @code{INIT_CUMULATIVE_ARGS}.
 @c could use "this macro" in place of @code{INIT_CUMULATIVE_ARGS}, maybe.
@@ -3183,7 +3184,7 @@ nothing when you use @samp{-freg-struct-return} mode.
 @node Caller Saves
 @subsection Caller-Saves Register Allocation
 
-If you enable it, GNU CC can save registers around function calls.  This
+If you enable it, GCC can save registers around function calls.  This
 makes it possible to use call-clobbered registers to hold variables that
 must live across calls.
 
@@ -3460,7 +3461,7 @@ by the number @var{labelno}, so you would generate the name using
 
 @findex mcount
 The details of how the address should be passed to @code{mcount} are
-determined by your operating system environment, not by GNU CC.  To
+determined by your operating system environment, not by GCC.  To
 figure them out, compile a small program for profiling using the
 system's installed C compiler and look at the assembler code that
 results.
@@ -3643,7 +3644,7 @@ support block profiling.
 @section Implementing the Varargs Macros
 @cindex varargs implementation
 
-GNU CC comes with an implementation of @file{varargs.h} and
+GCC comes with an implementation of @file{varargs.h} and
 @file{stdarg.h} that work without change on machines that pass arguments
 on the stack.  Other machines require their own implementations of
 varargs, and the two machine independent header files must have
@@ -3809,7 +3810,7 @@ Otherwise, you should not define this macro.
 A @dfn{trampoline} is a small piece of code that is created at run time
 when the address of a nested function is taken.  It normally resides on
 the stack, in the stack frame of the containing function.  These macros
-tell GNU CC how to generate code to allocate and initialize a
+tell GCC how to generate code to allocate and initialize a
 trampoline.
 
 The instructions in the trampoline must do two things: load a constant
@@ -3950,7 +3951,7 @@ its cache line.  Look in @file{m68k.h} as a guide.
 @item TRANSFER_FROM_TRAMPOLINE
 Define this macro if trampolines need a special subroutine to do their
 work.  The macro should expand to a series of @code{asm} statements
-which will be compiled with GNU CC.  They go in a library function named
+which will be compiled with GCC.  They go in a library function named
 @code{__transfer_from_trampoline}.
 
 If you need to avoid executing the ordinary prologue code of a compiled
@@ -4059,7 +4060,7 @@ Most ports don't need to define this macro.
 @cindex @code{EDOM}, implicit usage
 @item TARGET_EDOM
 The value of @code{EDOM} on the target machine, as a C integer constant
-expression.  If you don't define this macro, GNU CC does not attempt to
+expression.  If you don't define this macro, GCC does not attempt to
 deposit the value of @code{EDOM} into @code{errno} directly.  Look in
 @file{/usr/include/errno.h} to find the value of @code{EDOM} on your
 system.
@@ -4084,7 +4085,7 @@ macro, a reasonable default is used.
 @cindex @code{bzero}, implicit usage
 @cindex @code{memset}, implicit usage
 @item TARGET_MEM_FUNCTIONS
-Define this macro if GNU CC should generate calls to the System V
+Define this macro if GCC should generate calls to the System V
 (and ANSI C) library functions @code{memcpy} and @code{memset}
 rather than the BSD functions @code{bcopy} and @code{bzero}.
 
@@ -4550,7 +4551,7 @@ and @var{op0} and @var{op1} are the left and right operands of the
 comparison, respectively.  You should modify @var{code}, @var{op0}, and
 @var{op1} as required.
 
-GNU CC will not assume that the comparison resulting from this macro is
+GCC will not assume that the comparison resulting from this macro is
 valid but will see if the resulting insn matches a pattern in the
 @file{md} file.
 
@@ -4697,14 +4698,14 @@ is relative to those in @code{REGISTER_MOVE_COST}.  If moving between
 registers and memory is more expensive than between two registers, you
 should define this macro to express the relative cost.
 
-If you do not define this macro, GNU CC uses a default cost of 4 plus
+If you do not define this macro, GCC uses a default cost of 4 plus
 the cost of copying via a secondary reload register, if one is
 needed.  If your machine requires a secondary reload register to copy
 between memory and a register of @var{class} but the reload mechanism is
 more complex than copying via an intermediate, define this macro to
 reflect the actual cost of the move.
 
-GNU CC defines the function @code{memory_move_secondary_cost} if
+GCC defines the function @code{memory_move_secondary_cost} if
 secondary reloads are needed.  It computes the costs due to copying via
 a secondary register.  If your machine copies from memory using a
 secondary register in the conventional way but the default base value of
@@ -4719,7 +4720,7 @@ the default; other values are interpreted relative to that.
 @end table
 
 Here are additional macros which do not specify precise relative costs,
-but only that certain actions are more expensive than GNU CC would
+but only that certain actions are more expensive than GCC would
 ordinarily expect.
 
 @table @code
@@ -4930,7 +4931,7 @@ will be used.
 @item INIT_SECTION_ASM_OP
 If defined, a C expression whose value is a string containing the
 assembler operation to identify the following data as initialization
-code.  If not defined, GNU CC will assume such a section does not
+code.  If not defined, GCC will assume such a section does not
 exist.
 
 @findex EXTRA_SECTIONS
@@ -5030,7 +5031,7 @@ unique sections.
 A C statement to build up a unique section name, expressed as a
 STRING_CST node, and assign it to @samp{DECL_SECTION_NAME (@var{decl})}.
 @var{reloc} indicates whether the initial value of @var{exp} requires
-link-time relocations.  If you do not define this macro, GNU CC will use
+link-time relocations.  If you do not define this macro, GCC will use
 the symbol name prefixed by @samp{.} as the section name.
 @end table
 
@@ -5154,7 +5155,7 @@ see @file{attasm.h}.
 @findex ASM_IDENTIFY_GCC
 @item ASM_IDENTIFY_GCC (@var{file})
 A C statement to output assembler commands which will identify
-the object file as having been compiled with GNU CC (or another
+the object file as having been compiled with GCC (or another
 GNU compiler).
 
 If you don't define this macro, the string @samp{gcc_compiled.:}
@@ -5201,7 +5202,7 @@ for the file format in use is appropriate.
 @item OUTPUT_QUOTED_STRING (@var{stream}, @var{name})
 A C statement to output the string @var{string} to the stdio stream
 @var{stream}.  If you do not call the function @code{output_quoted_string}
-in your config files, GNU CC will only call it to output filenames to
+in your config files, GCC will only call it to output filenames to
 the assembler source.  So you can use it to canonicalize the format
 of the filename using this macro.
 
@@ -5312,10 +5313,10 @@ Berkeley Unix assembler, do not define the macro
 @findex CONSTANT_POOL_BEFORE_FUNCTION
 @item CONSTANT_POOL_BEFORE_FUNCTION
 You may define this macro as a C expression.  You should define the
-expression to have a non-zero value if GNU CC should output the constant
+expression to have a non-zero value if GCC should output the constant
 pool for a function before the code for the function, or a zero value if
-GNU CC should output the constant pool after the function.  If you do
-not define this macro, the usual case, GNU CC will output the constant
+GCC should output the constant pool after the function.  If you do
+not define this macro, the usual case, GCC will output the constant
 pool before the function.
 
 @findex ASM_OUTPUT_POOL_PROLOGUE
@@ -5371,7 +5372,7 @@ A C statement to output assembler commands to at the end of the constant
 pool for a function.  @var{funname} is a string giving the name of the
 function.  Should the return type of the function be required, you can
 obtain it via @var{fundecl}.  @var{size} is the size, in bytes, of the
-constant pool that GNU CC wrote immediately before this call.
+constant pool that GCC wrote immediately before this call.
 
 If no constant-pool epilogue is required, the usual case, you need not
 define this macro.
@@ -5465,7 +5466,7 @@ as the number of bits.
 @item ASM_OUTPUT_ALIGNED_DECL_COMMON (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{alignment})
 Like @code{ASM_OUTPUT_ALIGNED_COMMON} except that @var{decl} of the
 variable to be output, if there is one, or @code{NULL_TREE} if there
-is not corresponding variable.  If you define this macro, GNU CC wil use it
+is not corresponding variable.  If you define this macro, GCC wil use it
 in place of both @code{ASM_OUTPUT_COMMON} and
 @code{ASM_OUTPUT_ALIGNED_COMMON}.  Define this macro when you need to see
 the variable's decl in order to chose what to output.
@@ -5540,7 +5541,7 @@ as the number of bits.
 @item ASM_OUTPUT_ALIGNED_DECL_LOCAL (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{alignment})
 Like @code{ASM_OUTPUT_ALIGNED_DECL} except that @var{decl} of the
 variable to be output, if there is one, or @code{NULL_TREE} if there
-is not corresponding variable.  If you define this macro, GNU CC wil use it
+is not corresponding variable.  If you define this macro, GCC wil use it
 in place of both @code{ASM_OUTPUT_DECL} and
 @code{ASM_OUTPUT_ALIGNED_DECL}.  Define this macro when you need to see
 the variable's decl in order to chose what to output.
@@ -5641,7 +5642,7 @@ no other definition is available.  Use the expression
 itself; before and after that, output the additional assembler syntax
 for making that name weak, and a newline.
 
-If you don't define this macro, GNU CC will not support weak
+If you don't define this macro, GCC will not support weak
 symbols and you should not define the @code{SUPPORTS_WEAK} macro.
 
 @findex SUPPORTS_WEAK
@@ -5790,7 +5791,7 @@ the tree nodes are available.
 A C statement to output to the stdio stream @var{stream} assembler code
 which defines (equates) the symbol @var{symbol} to have a value equal to
 the difference of the two symbols @var{high} and @var{low}, i.e.
-@var{high} minus @var{low}.  GNU CC guarantees that the symbols @var{high}
+@var{high} minus @var{low}.  GCC guarantees that the symbols @var{high}
 and @var{low} are already known by the assembler so that the difference
 resolves into a constant.
 
@@ -5940,7 +5941,7 @@ this case, @code{ASM_OUTPUT_CONSTRUCTOR} does not produce an
 @code{N_SETT} symbol; initialization and termination functions are
 recognized simply by their names.  This requires an extra program in the
 linkage step, called @code{collect2}.  This program pretends to be the
-linker, for use with GNU CC; it does its job by running the ordinary
+linker, for use with GCC; it does its job by running the ordinary
 linker, but also arranges to include the vectors of initialization and
 termination functions.  These functions are called via @code{__main} as
 described above.
@@ -5983,7 +5984,7 @@ and termination functions:
 @findex INIT_SECTION_ASM_OP
 @item INIT_SECTION_ASM_OP
 If defined, a C string constant for the assembler operation to identify
-the following data as initialization code.  If not defined, GNU CC will
+the following data as initialization code.  If not defined, GCC will
 assume such a section does not exist.  When you are using special
 sections for initialization and termination functions, this macro also
 controls how @file{crtstuff.c} and @file{libgcc2.c} arrange to run the
@@ -6408,7 +6409,7 @@ or @samp{-fPIC} is in effect, the @code{data_section}, otherwise the
 @item EH_FRAME_SECTION_ASM_OP
 If defined, a C string constant for the assembler operation to switch to
 the section for exception handling frame unwind information.  If not
-defined, GNU CC will provide a default definition if the target supports
+defined, GCC will provide a default definition if the target supports
 named sections.  @file{crtstuff.c} uses this macro to switch to the
 appropriate section.
 
@@ -6550,7 +6551,7 @@ registers that the compiler knows about and DBX does not, or vice
 versa.  In such cases, some register may need to have one number in
 the compiler and another for DBX.
 
-If two registers have consecutive numbers inside GNU CC, and they can be
+If two registers have consecutive numbers inside GCC, and they can be
 used as a pair to hold a multiword value, then they @emph{must} have
 consecutive numbers after renumbering with @code{DBX_REGISTER_NUMBER}.
 Otherwise, debuggers will be unable to access such a pair, because they
@@ -6578,19 +6579,19 @@ having address @var{x} (an RTL expression).  The nominal offset is
 
 @findex PREFERRED_DEBUGGING_TYPE
 @item PREFERRED_DEBUGGING_TYPE
-A C expression that returns the type of debugging output GNU CC should
+A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @samp{-g}.  Define
-this if you have arranged for GNU CC to support more than one format of
+this if you have arranged for GCC to support more than one format of
 debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
 @code{SDB_DEBUG}, @code{DWARF_DEBUG}, @code{DWARF2_DEBUG}, and
 @code{XCOFF_DEBUG}.
 
-When the user specifies @samp{-ggdb}, GNU CC normally also uses the
+When the user specifies @samp{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
 exceptions.  If @code{DWARF2_DEBUGGING_INFO} is defined and
-@code{LINKER_DOES_NOT_WORK_WITH_DWARF2} is not defined, GNU CC uses the
+@code{LINKER_DOES_NOT_WORK_WITH_DWARF2} is not defined, GCC uses the
 value @code{DWARF2_DEBUG}.  Otherwise, if @code{DBX_DEBUGGING_INFO} is
-defined, GNU CC uses @code{DBX_DEBUG}.
+defined, GCC uses @code{DBX_DEBUG}.
 
 The value of this macro only affects the default debugging output; the
 user can always get a specific type of output by using @samp{-gstabs},
@@ -6606,17 +6607,17 @@ These are specific options for DBX output.
 @table @code
 @findex DBX_DEBUGGING_INFO
 @item DBX_DEBUGGING_INFO
-Define this macro if GNU CC should produce debugging output for DBX
+Define this macro if GCC should produce debugging output for DBX
 in response to the @samp{-g} option.
 
 @findex XCOFF_DEBUGGING_INFO
 @item XCOFF_DEBUGGING_INFO
-Define this macro if GNU CC should produce XCOFF format debugging output
+Define this macro if GCC should produce XCOFF format debugging output
 in response to the @samp{-g} option.  This is a variant of DBX format.
 
 @findex DEFAULT_GDB_EXTENSIONS
 @item DEFAULT_GDB_EXTENSIONS
-Define this macro to control whether GNU CC should by default generate
+Define this macro to control whether GCC should by default generate
 GDB's extended version of DBX debugging information (assuming DBX-format
 debugging information is enabled at all).  If you don't define the
 macro, the default is 1: always generate the extended information
@@ -6902,17 +6903,17 @@ Here are macros for SDB and DWARF output.
 @table @code
 @findex SDB_DEBUGGING_INFO
 @item SDB_DEBUGGING_INFO
-Define this macro if GNU CC should produce COFF-style debugging output
+Define this macro if GCC should produce COFF-style debugging output
 for SDB in response to the @samp{-g} option.
 
 @findex DWARF_DEBUGGING_INFO
 @item DWARF_DEBUGGING_INFO
-Define this macro if GNU CC should produce dwarf format debugging output
+Define this macro if GCC should produce dwarf format debugging output
 in response to the @samp{-g} option.
 
 @findex DWARF2_DEBUGGING_INFO
 @item DWARF2_DEBUGGING_INFO
-Define this macro if GNU CC should produce dwarf version 2 format
+Define this macro if GCC should produce dwarf version 2 format
 debugging output in response to the @samp{-g} option.
 
 To support optional call frame debugging information, you must also
@@ -6923,15 +6924,15 @@ as appropriate from @code{FUNCTION_PROLOGUE} if you don't.
 
 @findex DWARF2_FRAME_INFO
 @item DWARF2_FRAME_INFO
-Define this macro to a nonzero value if GNU CC should always output
+Define this macro to a nonzero value if GCC should always output
 Dwarf 2 frame information.  If @code{DWARF2_UNWIND_INFO}
-(@pxref{Exception Region Output} is nonzero, GNU CC will output this
+(@pxref{Exception Region Output} is nonzero, GCC will output this
 information not matter how you define @code{DWARF2_FRAME_INFO}.
 
 @findex LINKER_DOES_NOT_WORK_WITH_DWARF2
 @item LINKER_DOES_NOT_WORK_WITH_DWARF2
 Define this macro if the linker does not work with Dwarf version 2.
-Normally, if the user specifies only @samp{-ggdb} GNU CC will use Dwarf
+Normally, if the user specifies only @samp{-ggdb} GCC will use Dwarf
 version 2 if available; this macro disables this.  See the description
 of the @code{PREFERRED_DEBUGGING_TYPE} macro for more details.
 
@@ -7366,7 +7367,7 @@ tested into the sign bit.
 There is no way to describe a machine that always sets the low-order bit
 for a true value, but does not guarantee the value of any other bits,
 but we do not know of any machine that has such an instruction.  If you
-are trying to port GNU CC to such a machine, include an instruction to
+are trying to port GCC to such a machine, include an instruction to
 perform a logical-and of the result with 1 in the pattern for the
 comparison operators and let us know
 @ifset USING
@@ -7640,7 +7641,7 @@ only needed if neither @code{HAVE_ATEXIT} nor
 Define this macro as a C expression that is nonzero if it is safe for the
 delay slot scheduler to place instructions in the delay slot of @var{insn},
 even if they appear to use a resource set or clobbered in @var{insn}.
-@var{insn} is always a @code{jump_insn} or an @code{insn}; GNU CC knows that
+@var{insn} is always a @code{jump_insn} or an @code{insn}; GCC knows that
 every @code{call_insn} has this behavior.  On machines where some @code{insn}
 or @code{jump_insn} is really a function call and hence has this behavior,
 you should define this macro.
