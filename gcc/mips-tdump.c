@@ -1171,7 +1171,7 @@ print_file_desc (fdp, number)
 	 (ulong) (fdp->copt * sizeof (OPTR)),
 	 (ulong) (fdp->ioptBase * sizeof (OPTR) + sym_hdr.cbOptOffset));
 
-  printf("    %-*s %11llu %11lu %11lu %11lu\n",
+  printf("    %-*s %11lu %11lu %11lu %11lu\n",
 	 width, "Procedures",
 	 (ulong) fdp->ipdFirst,
 	 (ulong) fdp->cpd,
@@ -1457,7 +1457,7 @@ main (argc, argv)
   if (errors || optind != argc - 1)
     {
       fprintf (stderr, "Calling Sequence:\n");
-      fprintf (stderr, "\t%0 [-alrst] <object-or-T-file>\n", argv[0]);
+      fprintf (stderr, "\t%s [-alrst] <object-or-T-file>\n", argv[0]);
       fprintf (stderr, "\n");
       fprintf (stderr, "switches:\n");
       fprintf (stderr, "\t-a Print out auxiliary table.\n");
