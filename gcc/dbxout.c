@@ -183,6 +183,11 @@ static int source_label_number = 1;
 #ifndef N_CATCH
 #define N_CATCH 0x54
 #endif
+
+/* This is a Solaris extension we need to reference in this file. */
+#ifndef N_OPT
+#define N_OPT 0x3c
+#endif
 #endif
 
 #ifdef __GNU_STAB__
