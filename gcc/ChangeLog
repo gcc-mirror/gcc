@@ -1,3 +1,8 @@
+2001-01-22  Alan Modra <alan@linuxcare.com.au>
+
+        * cppexp.c (parse_charconst):  Change `mask' type to agree
+        with parse_escape.
+
 2001-01-21  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_asm_file_end): Disable putting
