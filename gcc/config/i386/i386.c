@@ -817,18 +817,42 @@ override_options ()
     {
       const char *const name;		/* processor name or nickname.  */
       const enum processor_type processor;
+      const enum pta_flags
+	{
+	  PTA_SSE = 1,
+	  PTA_SSE2 = 2,
+	  PTA_MMX = 4,
+	  PTA_SSEPREFETCH = 8,
+	  PTA_3DNOW = 16,
+	  PTA_3DNOW_A = 64
+	} flags;
     }
   const processor_alias_table[] =
     {
-      {"i386", PROCESSOR_I386},
-      {"i486", PROCESSOR_I486},
-      {"i586", PROCESSOR_PENTIUM},
-      {"pentium", PROCESSOR_PENTIUM},
-      {"i686", PROCESSOR_PENTIUMPRO},
-      {"pentiumpro", PROCESSOR_PENTIUMPRO},
-      {"k6", PROCESSOR_K6},
-      {"athlon", PROCESSOR_ATHLON},
-      {"pentium4", PROCESSOR_PENTIUM4},
+      {"i386", PROCESSOR_I386, 0},
+      {"i486", PROCESSOR_I486, 0},
+      {"i586", PROCESSOR_PENTIUM, 0},
+      {"pentium", PROCESSOR_PENTIUM, 0},
+      {"pentium-mmx", PROCESSOR_PENTIUM, PTA_MMX},
+      {"i686", PROCESSOR_PENTIUMPRO, 0},
+      {"pentiumpro", PROCESSOR_PENTIUMPRO, 0},
+      {"pentium2", PROCESSOR_PENTIUMPRO, PTA_MMX},
+      {"pentium3", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_SSEPREFETCH},
+      {"pentium4", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2 |
+				       PTA_MMX | PTA_SSEPREFETCH},
+      {"k6", PROCESSOR_K6, PTA_MMX},
+      {"k6-2", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
+      {"k6-3", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
+      {"athlon", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH | PTA_3DNOW
+				   | PTA_3DNOW_A},
+      {"athlon-tbird", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH
+					 | PTA_3DNOW | PTA_3DNOW_A},
+      {"athlon-4", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH | PTA_3DNOW
+				    | PTA_3DNOW_A | PTA_SSE},
+      {"athlon-xp", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH | PTA_3DNOW
+				      | PTA_3DNOW_A | PTA_SSE},
+      {"athlon-mp", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH | PTA_3DNOW
+				      | PTA_3DNOW_A | PTA_SSE},
     };
 
   int const pta_size = sizeof (processor_alias_table) / sizeof (struct pta);
@@ -880,6 +904,21 @@ override_options ()
 	    ix86_arch = processor_alias_table[i].processor;
 	    /* Default cpu tuning to the architecture.  */
 	    ix86_cpu = ix86_arch;
+	    if (processor_alias_table[i].flags & PTA_MMX
+	        && !(target_flags & MASK_MMX_SET))
+	      target_flags |= MASK_MMX;
+	    if (processor_alias_table[i].flags & PTA_3DNOW
+	        && !(target_flags & MASK_3DNOW_SET))
+	      target_flags |= MASK_3DNOW;
+	    if (processor_alias_table[i].flags & PTA_3DNOW_A
+	        && !(target_flags & MASK_3DNOW_A_SET))
+	      target_flags |= MASK_3DNOW_A;
+	    if (processor_alias_table[i].flags & PTA_SSE
+	        && !(target_flags & MASK_SSE_SET))
+	      target_flags |= MASK_SSE;
+	    if (processor_alias_table[i].flags & PTA_SSE2
+	        && !(target_flags & MASK_SSE2_SET))
+	      target_flags |= MASK_SSE2;
 	    break;
 	  }
 
@@ -1045,7 +1084,7 @@ override_options ()
 	target_flags |= MASK_3DNOW_A;
     }
   if ((x86_accumulate_outgoing_args & CPUMASK)
-      && !(target_flags & MASK_NO_ACCUMULATE_OUTGOING_ARGS)
+      && !(target_flags & MASK_ACCUMULATE_OUTGOING_ARGS_SET)
       && !optimize_size)
     target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
 

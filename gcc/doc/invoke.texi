@@ -272,7 +272,7 @@ in the following sections.
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations -fno-trapping-math @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
--foptimize-sibling-calls  -freduce-all-givs @gol
+-foptimize-sibling-calls  -fprefetch-loop-arrays  -freduce-all-givs @gol
 -fregmove  -frename-registers @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fschedule-insns  -fschedule-insns2 @gol
@@ -3570,6 +3570,10 @@ the loop is entered.  This usually makes programs run more slowly.
 @option{-funroll-all-loops} implies the same options as
 @option{-funroll-loops},
 
+@item -fprefetch-loop-arrays
+@opindex fprefetch-loop-arrays
+If supported by the target machine, generate instructions to prefetch
+memory to improve the performance of loops that access large arrays.
 
 @item -fmove-all-movables
 @opindex fmove-all-movables
@@ -7476,10 +7480,13 @@ computers:
 @table @gcctabopt
 @item -mcpu=@var{cpu-type}
 @opindex mcpu
-Assume the defaults for the machine type @var{cpu-type} when scheduling
-instructions.  The choices for @var{cpu-type} are @samp{i386},
-@samp{i486}, @samp{i586}, @samp{i686}, @samp{pentium},
-@samp{pentiumpro}, @samp{pentium4}, @samp{k6}, and @samp{athlon}
+Tune to @var{cpu-type} everything applicable about the generated code, except
+for the ABI and the set of available instructions.  The choices for
+@var{cpu-type} are @samp{i386}, @samp{i486}, @samp{i586}, @samp{i686},
+@samp{pentium}, @samp{pentium-mmx}, @samp{pentiumpro}, @samp{pentium2},
+@samp{pentium3}, @samp{pentium4}, @samp{k6}, @samp{k6-2}, @samp{k6-3},
+@samp{athlon}, @samp{athlon-tbird}, @samp{athlon-4}, @samp{athlon-xp}
+and @samp{athlon-mp}.
 
 While picking a specific @var{cpu-type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that

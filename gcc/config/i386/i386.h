@@ -112,25 +112,30 @@ extern int target_flags;
 #define MASK_NO_FANCY_MATH_387	0x00000040	/* Disable sin, cos, sqrt */
 #define MASK_OMIT_LEAF_FRAME_POINTER 0x080      /* omit leaf frame pointers */
 #define MASK_STACK_PROBE	0x00000100	/* Enable stack probing */
-#define MASK_NO_ALIGN_STROPS	0x00001000	/* Enable aligning of string ops.  */
-#define MASK_INLINE_ALL_STROPS	0x00002000	/* Inline stringops in all cases */
-#define MASK_NO_PUSH_ARGS	0x00004000	/* Use push instructions */
-#define MASK_ACCUMULATE_OUTGOING_ARGS 0x00008000/* Accumulate outgoing args */
-#define MASK_NO_ACCUMULATE_OUTGOING_ARGS 0x00010000
-#define MASK_MMX		0x00020000	/* Support MMX regs/builtins */
-#define MASK_SSE		0x00040000	/* Support SSE regs/builtins */
-#define MASK_SSE2		0x00080000	/* Support SSE2 regs/builtins */
+#define MASK_NO_ALIGN_STROPS	0x00000200	/* Enable aligning of string ops.  */
+#define MASK_INLINE_ALL_STROPS	0x00000400	/* Inline stringops in all cases */
+#define MASK_NO_PUSH_ARGS	0x00000800	/* Use push instructions */
+#define MASK_ACCUMULATE_OUTGOING_ARGS 0x00001000/* Accumulate outgoing args */
+#define MASK_ACCUMULATE_OUTGOING_ARGS_SET 0x00002000
+#define MASK_MMX		0x00004000	/* Support MMX regs/builtins */
+#define MASK_MMX_SET		0x00008000
+#define MASK_SSE		0x00010000	/* Support SSE regs/builtins */
+#define MASK_SSE_SET		0x00020000
+#define MASK_SSE2		0x00040000	/* Support SSE2 regs/builtins */
+#define MASK_SSE2_SET		0x00080000
 #define MASK_3DNOW		0x00100000	/* Support 3Dnow builtins */
-#define MASK_3DNOW_A		0x00200000	/* Support Athlon 3Dnow builtins */
-#define MASK_128BIT_LONG_DOUBLE 0x00400000	/* long double size is 128bit */
-#define MASK_MIX_SSE_I387	0x00800000	/* Mix SSE and i387 instructions */
-#define MASK_64BIT		0x01000000	/* Produce 64bit code */
-#define MASK_NO_RED_ZONE	0x02000000	/* Do not use red zone */
+#define MASK_3DNOW_SET		0x00200000
+#define MASK_3DNOW_A		0x00400000	/* Support Athlon 3Dnow builtins */
+#define MASK_3DNOW_A_SET	0x00800000
+#define MASK_128BIT_LONG_DOUBLE 0x01000000	/* long double size is 128bit */
+#define MASK_MIX_SSE_I387	0x02000000	/* Mix SSE and i387 instructions */
+#define MASK_64BIT		0x04000000	/* Produce 64bit code */
+#define MASK_NO_RED_ZONE	0x08000000	/* Do not use red zone */
 
 /* Temporary codegen switches */
-#define MASK_INTEL_SYNTAX	0x00000200
-#define MASK_DEBUG_ARG		0x00000400	/* function_arg */   
-#define MASK_DEBUG_ADDR		0x00000800	/* GO_IF_LEGITIMATE_ADDRESS */
+#define MASK_INTEL_SYNTAX	0x10000000
+#define MASK_DEBUG_ARG		0x20000000	/* function_arg */   
+#define MASK_DEBUG_ADDR		0x40000000	/* GO_IF_LEGITIMATE_ADDRESS */
 
 /* Use the floating point instructions */
 #define TARGET_80387 (target_flags & MASK_80387)
@@ -335,24 +340,30 @@ extern const int x86_epilogue_using_move, x86_decompose_lea;
     N_("Use push instructions to save outgoing arguments") },		      \
   { "no-push-args",		MASK_NO_PUSH_ARGS,			      \
     N_("Do not use push instructions to save outgoing arguments") },	      \
-  { "accumulate-outgoing-args",	MASK_ACCUMULATE_OUTGOING_ARGS,		      \
+  { "accumulate-outgoing-args",	(MASK_ACCUMULATE_OUTGOING_ARGS		      \
+				 | MASK_ACCUMULATE_OUTGOING_ARGS_SET),	      \
     N_("Use push instructions to save outgoing arguments") },		      \
-  { "no-accumulate-outgoing-args",MASK_NO_ACCUMULATE_OUTGOING_ARGS,	      \
+  { "no-accumulate-outgoing-args",MASK_ACCUMULATE_OUTGOING_ARGS_SET,	      \
     N_("Do not use push instructions to save outgoing arguments") },	      \
-  { "mmx",			 MASK_MMX, N_("Support MMX builtins") },      \
-  { "no-mmx",			-MASK_MMX,				      \
+  { "mmx",			 MASK_MMX | MASK_MMX_SET,		      \
+    N_("Support MMX builtins") },					      \
+  { "no-mmx",			 -MASK_MMX,				      \
     N_("Do not support MMX builtins") },				      \
-  { "3dnow",                     MASK_3DNOW,				      \
+  { "no-mmx",			 MASK_MMX_SET, N_("") },		      \
+  { "3dnow",                     MASK_3DNOW | MASK_3DNOW_SET,		      \
     N_("Support 3DNow! builtins") },					      \
-  { "no-3dnow",                 -MASK_3DNOW,				      \
+  { "no-3dnow",                  -MASK_3DNOW, N_("") },			      \
+  { "no-3dnow",                  MASK_3DNOW_SET,			      \
     N_("Do not support 3DNow! builtins") },				      \
-  { "sse",			 MASK_SSE,				      \
+  { "sse",			 MASK_SSE | MASK_SSE_SET,		      \
     N_("Support MMX and SSE builtins and code generation") },		      \
-  { "no-sse",			-MASK_SSE,				      \
+  { "no-sse",			 -MASK_SSE, N_("") },	 		      \
+  { "no-sse",			 MASK_SSE_SET,				      \
     N_("Do not support MMX and SSE builtins and code generation") },	      \
-  { "sse2",			 MASK_SSE2,				      \
+  { "sse2",			 MASK_SSE2 | MASK_SSE2_SET,		      \
     N_("Support MMX, SSE and SSE2 builtins and code generation") },	      \
-  { "no-sse2",			-MASK_SSE2,				      \
+  { "no-sse2",			 -MASK_SSE2, N_("") },			      \
+  { "no-sse2",			 MASK_SSE2_SET,				      \
     N_("Do not support MMX, SSE and SSE2 builtins and code generation") },    \
   { "mix-sse-i387",		 MASK_MIX_SSE_I387,			      \
     N_("Use both SSE and i387 instruction sets for floating point arithmetics") },\
@@ -522,11 +533,22 @@ extern int ix86_arch;
 %{march=pentium4:-D__pentium4 -D__pentium4__ %{!mcpu*:-D__tune_pentium4__ }}\
 %{m386|mcpu=i386:-D__tune_i386__ }\
 %{m486|mcpu=i486:-D__tune_i486__ }\
-%{mpentium|mcpu=pentium|mcpu=i586:-D__tune_i586__ -D__tune_pentium__ }\
-%{mpentiumpro|mcpu=pentiumpro|mcpu=i686:-D__tune_i686__ -D__tune_pentiumpro__ }\
-%{mcpu=k6:-D__tune_k6__ }\
-%{mcpu=athlon:-D__tune_athlon__ }\
+%{mpentium|mcpu=pentium|mcpu=i586|mcpu=pentium-mmx:-D__tune_i586__ -D__tune_pentium__ }\
+%{mpentiumpro|mcpu=pentiumpro|mcpu=i686|cpu=pentium2|cpu=pentium3:-D__tune_i686__\
+-D__tune_pentiumpro__ }\
+%{mcpu=k6|mcpu=k6-2|mcpu=k6-3:-D__tune_k6__ }\
+%{mcpu=athlon|mcpu=athlon-tbird|mcpu=athlon-4|mcpu=athlon-xp|mcpu=athlon-mp:\
+-D__tune_athlon__ }\
 %{mcpu=pentium4:-D__tune_pentium4__ }\
+%{march=march=athlon-tbird|march=athlon-xp|march=athlon-mp|march=pentium3|march=pentium4:\
+-D__SSE__ }\
+%{march=pentium-mmx|march=k6|march=k6-2|march=k6-3\
+march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
+|march=athlon-mp|march=pentium2|march=pentium3|march=pentium4: -D__MMX__ }\
+%{march=k6|march=k6-2|march=k6-3\
+march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
+|march=athlon-mp: -D__3dNOW__ }\
+%{mcpu=mcpu=pentium4: -D__SSE2__ }\
 %{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
 
 #ifndef CPP_CPU_SPEC
