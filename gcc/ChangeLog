@@ -1,3 +1,8 @@
+2004-01-14  J. Brobecker  <brobecker@gnat.com>
+
+	* dwarf2out.c (is_ada_subrange_type): No longer check the TYPE_NAME.
+	(subrange_type_die): Add handle for nameless subrange types.
+
 2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Replace do_movsi with
