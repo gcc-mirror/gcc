@@ -1,5 +1,9 @@
 Sat Mar 17 11:52:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* combine.c (undobuf): Remove field previous_undos; all refs deleted.
+	(gen_rtx_combine): Deleted; all references changed as appropriate.
+	(gen_unary): Deleted; all refs changed to call simplify_gen_unary.
+
 	* print-tree.c (print_node): Print DECL_NONADDRESSABLE_P.
 
 2001-03-17  David Billinghurst  <David.Billinghurst@riotinto.com>
