@@ -47,8 +47,11 @@ import gnu.java.nio.FileChannelImpl;
  */
 
 /**
+ * This classes allows a stream of data to be written to a disk file or
+ * any open <code>FileDescriptor</code>.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Tom Tromey <tromey@cygnus.com>
- * @date September 24, 1998 
  */
 public class FileOutputStream extends OutputStream
 {
@@ -174,9 +177,15 @@ public class FileOutputStream extends OutputStream
   public FileOutputStream (FileDescriptor fdObj)
     throws SecurityException
   {
+    // Hmm, no other exception but this one to throw, but if the descriptor
+    // isn't valid, we surely don't have "permission" to write to it.
+    if (!fdObj.valid())
+      throw new SecurityException("Invalid FileDescriptor");
+
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkWrite(fdObj);
+
     fd = fdObj;
   }
 
@@ -221,9 +230,10 @@ public class FileOutputStream extends OutputStream
    *
    * @exception IOException If an error occurs
    */
-  public void write (byte[] b) throws IOException, NullPointerException
+  public void write (byte[] buf)
+    throws IOException
   {
-    fd.write (b, 0, b.length);
+    fd.write (buf, 0, buf.length);
   }
 
   /**
@@ -236,12 +246,15 @@ public class FileOutputStream extends OutputStream
    *
    * @exception IOException If an error occurs
    */
-  public void write (byte[] b, int off, int len)
-    throws IOException, NullPointerException, IndexOutOfBoundsException
+  public void write (byte[] buf, int offset, int len)
+    throws IOException
   {
-    if (off < 0 || len < 0 || off + len > b.length)
+    if (offset < 0
+        || len < 0
+        || offset + len > buf.length)
       throw new ArrayIndexOutOfBoundsException ();
-    fd.write (b, off, len);
+    
+    fd.write (buf, offset, len);
   }
 
   /**
@@ -263,15 +276,13 @@ public class FileOutputStream extends OutputStream
    * A file channel must be created by first creating an instance of
    * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
    */
-  public FileChannel getChannel ()
+  public synchronized FileChannel getChannel() 
   {
-    synchronized (this)
-      {
-        if (ch == null)
-          ch = new FileChannelImpl (fd, true, this);
+    if (ch == null)
+      ch = new FileChannelImpl (fd, true, this);
 
-        return ch;
-      }
+    return ch;
   }
 
-}
+} // class FileOutputStream
+
