@@ -3299,7 +3299,9 @@ output_constant_def (exp, defer)
      encoded in it.  */
   if (! found)
     {
-      ENCODE_SECTION_INFO (exp, true);
+      if (TREE_CODE (exp) == INTEGER_CSY)
+	ENCODE_SECTION_INFO (exp, true);
+
       desc->rtl = rtl;
       desc->label = XSTR (XEXP (desc->rtl, 0), 0);
     }

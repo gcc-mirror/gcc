@@ -1,3 +1,8 @@
+2002-03-19  Olivier Hainque  <hainque@act-europe.fr>
+
+	* varasm.c (output_constant_def): Don't call ENCODE_SECTION_INFO
+	for INTEGER_CST.
+
 2002-03-19  Richard Henderson  <rth@redhat.com>
 
 	PR 5977, 5991
