@@ -7289,6 +7289,14 @@ output_file_names ()
   size_t i;
   int idx;
 
+  /* Handle the case where file_table is empty.  */
+  if (VARRAY_ACTIVE_SIZE (file_table) <= 1)
+    {
+      dw2_asm_output_data (1, 0, "End directory table");
+      dw2_asm_output_data (1, 0, "End file name table");
+      return;
+    }
+
   /* Allocate the various arrays we need.  */
   files = (struct file_info *) alloca (VARRAY_ACTIVE_SIZE (file_table)
 				       * sizeof (struct file_info));
