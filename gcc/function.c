@@ -4674,9 +4674,8 @@ assign_parms (tree fndecl)
 
 	      if (stack_parm == 0)
 		{
-		  stack_parm
-		    = assign_stack_local (GET_MODE (entry_parm),
-					  size_stored, 0);
+		  stack_parm = assign_stack_local (BLKmode, size_stored, 0);
+		  PUT_MODE (stack_parm, GET_MODE (entry_parm));
 		  set_mem_attributes (stack_parm, parm, 1);
 		}
 

@@ -1399,9 +1399,8 @@ extern const struct mips_cpu_info *mips_tune_info;
 	|| TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
 
 
-/* Force right-alignment for small varargs in 32 bit little_endian mode */
-
-#define PAD_VARARGS_DOWN (TARGET_64BIT ? BYTES_BIG_ENDIAN : !BYTES_BIG_ENDIAN)
+#define PAD_VARARGS_DOWN \
+  (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
 
 /* Arguments declared as 'char' or 'short' in a prototype should be
    passed as 'int's.  */
@@ -2295,15 +2294,6 @@ typedef struct mips_args {
 
   /* True if the function has a prototype.  */
   int prototype;
-
-  /* When a structure does not take up a full register, the argument
-     should sometimes be shifted left so that it occupies the high part
-     of the register.  These two fields describe an array of ashl
-     patterns for doing this.  See function_arg_advance, which creates
-     the shift patterns, and function_arg, which returns them when given
-     a VOIDmode argument.  */
-  unsigned int num_adjusts;
-  rtx adjust[BIGGEST_MAX_ARGS_IN_REGISTERS];
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -2361,18 +2351,11 @@ typedef struct mips_args {
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
   function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED)
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE)				\
-  (! BYTES_BIG_ENDIAN							\
-   ? upward								\
-   : (((MODE) == BLKmode						\
-       ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
-	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT))\
-       : (GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY			\
-	  && (mips_abi == ABI_32					\
-	      || mips_abi == ABI_O64					\
-	      || mips_abi == ABI_EABI					\
-	      || GET_MODE_CLASS (MODE) == MODE_INT)))			\
-      ? downward : upward))
+#define FUNCTION_ARG_PADDING(MODE, TYPE)		\
+  (mips_pad_arg_upward (MODE, TYPE) ? upward : downward)
+
+#define BLOCK_REG_PADDING(MODE, TYPE, FIRST)		\
+  (mips_pad_reg_upward (MODE, TYPE) ? upward : downward)
 
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
   (mips_abi == ABI_EABI && (NAMED)					\

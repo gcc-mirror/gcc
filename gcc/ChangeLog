@@ -1,3 +1,28 @@
+2003-08-27  Richard Sandiford  <rsandifo@redhat.com>
+
+	* calls.c (initialize_argument_information): If an argument has no
+	stack space associated with it, and BLOCK_REG_PADDING is defined,
+	use it to decide at which end the argument should be padded.
+	* function.c (assign_parms): Allocate BLKmode stack slots.
+	* config/mips/mips-protos.h (mips_pad_arg_upward): Declare.
+	(mips_pad_reg_upward): Declare.
+	* config/mips/mips.h (PAD_VARARGS_DOWN): Use FUNCTION_ARG_PADDING.
+	(CUMULATIVE_ARGS): Remove num_adjusts and adjusts.
+	(FUNCTION_ARG_PADDING): Use mips_pad_arg_upward.
+	(BLOCK_REG_PADDING): Use mips_pad_reg_upward.
+	* config/mips/mips.c (struct mips_arg_info): Remove struct_p.
+	(mips_expand_call): Remove code for generating structure shifts.
+	(mips_arg_info): Don't set struct_p.  Don't set fpr_p for non-float
+	types unless using the EABI.
+	(function_arg_advance): Don't generate shift instructions.
+	(function_arg): Don't return them.  Don't short-circuit the
+	check for double structure chunks for DFmode arguments.
+	(mips_pad_arg_upward, mips_pad_reg_upward): New functions.
+	(mips_expand_prologue): Remove code to emit structure shifts.
+	* config/mips/irix6-libc-compat.c: Remove workarounds for buggy
+	structure passing (inet_ntoa, inet_lnaof, inet_netof).  Update
+	comments to say that only structure returns are a problem.
+
 2003-08-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/tests/base/string.h, fixinc/tests/base/sys/regset.h:
