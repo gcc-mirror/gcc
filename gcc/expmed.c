@@ -1722,14 +1722,9 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 				 target, unsignedp, methods);
 	}
       else if (unsignedp)
-	{
-	  temp = expand_binop (mode,
-			       left ? lshl_optab : lshr_optab,
-			       shifted, op1, target, unsignedp, methods);
-	  if (temp == 0 && left)
-	    temp = expand_binop (mode, ashl_optab,
-				 shifted, op1, target, unsignedp, methods);
-	}
+	temp = expand_binop (mode,
+			     left ? ashl_optab : lshr_optab,
+			     shifted, op1, target, unsignedp, methods);
 
       /* Do arithmetic shifts.
 	 Also, if we are going to widen the operand, we can just as well
