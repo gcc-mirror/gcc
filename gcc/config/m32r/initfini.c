@@ -88,7 +88,8 @@ __init:\n\
 	push fp\n\
 	push lr\n\
 	mv fp,sp\n\
-	ld24 r0,#__fini\n\
+	seth r0, #shigh(__fini)\n\
+	add3 r0, r0, #low(__fini)\n\
 	bl atexit\n\
 	.fillinsn\n\
 ");
