@@ -1,3 +1,8 @@
+2003-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-decl.c (implicitly_declare): Copy declarations that are going
+	to be placed in a local scope.
+
 2003-04-15  James A. Morrison  <ja2morri@uwaterloo.ca>
 
 	* invoke.texi (Spec Files): Wrap if-exists-else example.
