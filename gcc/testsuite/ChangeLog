@@ -1,3 +1,7 @@
+2002-09-06  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c-torture/execute/extzvsi.c: New test.
+
 2002-09-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/other/cxa-atexit1.C: New test.
