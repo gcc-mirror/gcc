@@ -797,7 +797,7 @@ comp_except_types (tree a, tree b, bool exact)
           || TREE_CODE (b) != RECORD_TYPE)
         return false;
       
-      if (ACCESSIBLY_UNIQUELY_DERIVED_P (a, b))
+      if (PUBLICLY_UNIQUELY_DERIVED_P (a, b))
         return true;
     }
   return false;
@@ -1689,7 +1689,7 @@ build_class_member_access_expr (tree object, tree member,
 	  base_kind kind;
 
 	  binfo = lookup_base (access_path ? access_path : object_type,
-			       member_scope, ba_ignore,  &kind);
+			       member_scope, ba_unique,  &kind);
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
 

@@ -924,15 +924,11 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* Nonzero iff TYPE is uniquely derived from PARENT. Ignores
    accessibility.  */
 #define UNIQUELY_DERIVED_FROM_P(PARENT, TYPE) \
-  (lookup_base ((TYPE), (PARENT), ba_ignore | ba_quiet, NULL) != NULL_TREE)
-/* Nonzero iff TYPE is accessible in the current scope and uniquely
-   derived from PARENT.  */
-#define ACCESSIBLY_UNIQUELY_DERIVED_P(PARENT, TYPE) \
-  (lookup_base ((TYPE), (PARENT), ba_check | ba_quiet, NULL) != NULL_TREE)
+  (lookup_base ((TYPE), (PARENT), ba_unique | ba_quiet, NULL) != NULL_TREE)
 /* Nonzero iff TYPE is publicly & uniquely derived from PARENT.  */
 #define PUBLICLY_UNIQUELY_DERIVED_P(PARENT, TYPE) \
-  (lookup_base ((TYPE), (PARENT),  ba_not_special | ba_quiet, NULL) \
-   != NULL_TREE)
+  (lookup_base ((TYPE), (PARENT), ba_ignore_scope | ba_check | ba_quiet, \
+   		NULL) != NULL_TREE)
 
 /* Gives the visibility specification for a class type.  */
 #define CLASSTYPE_VISIBILITY(TYPE)		\
@@ -2972,13 +2968,13 @@ typedef enum tsubst_flags_t {
 
 /* The kind of checking we can do looking in a class hierarchy.  */
 typedef enum base_access {
-  ba_any = 0,      /* Do not check access, allow an ambiguous base,
+  ba_any = 0,  /* Do not check access, allow an ambiguous base,
 		      prefer a non-virtual base */
-  ba_ignore = 1,   /* Do not check access */
-  ba_check = 2,    /* Check access */
-  ba_not_special = 3, /* Do not consider special privilege
-		         current_class_type might give.  */
-  ba_quiet = 4     /* Do not issue error messages (bit mask).  */
+  ba_unique = 1 << 0,  /* Must be a unique base.  */
+  ba_check_bit = 1 << 1,   /* Check access.  */
+  ba_check = ba_unique | ba_check_bit,
+  ba_ignore_scope = 1 << 2, /* Ignore access allowed by local scope.  */
+  ba_quiet = 1 << 3     /* Do not issue error messages.  */
 } base_access;
 
 /* The various kinds of access check during parsing.  */
@@ -3999,10 +3995,10 @@ extern void emit_support_tinfos (void);
 extern bool emit_tinfo_decl (tree);
 
 /* in search.c */
-extern bool accessible_base_p (tree, tree);
+extern bool accessible_base_p (tree, tree, bool);
 extern tree lookup_base (tree, tree, base_access, base_kind *);
 extern tree dcast_base_hint                     (tree, tree);
-extern int accessible_p                         (tree, tree);
+extern int accessible_p                         (tree, tree, bool);
 extern tree lookup_field_1                      (tree, tree, bool);
 extern tree lookup_field			(tree, tree, int, bool);
 extern int lookup_fnfields_1                    (tree, tree);

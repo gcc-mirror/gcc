@@ -327,11 +327,11 @@ convert_to_pointer_force (tree type, tree expr)
 	  tree binfo;
 
 	  binfo = lookup_base (TREE_TYPE (intype), TREE_TYPE (type),
-			       ba_ignore, NULL);
+			       ba_unique, NULL);
 	  if (!binfo)
 	    {
 	      binfo = lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
-				   ba_ignore, NULL);
+				   ba_unique, NULL);
 	      code = MINUS_EXPR;
 	    }
 	  if (binfo == error_mark_node)

@@ -1,3 +1,31 @@
+2004-10-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (UNIQUELY_DERIVED_FROM_P): Adjust lookup_base call.
+	(ACCESSIBLY_UNIQUELY_DERIVED_P): Remove.
+	(PUBLICLY_UNIQUELY_DERIVED_P): Adjust lookup_base call.
+	(enum base_access): Reorganize.
+	(accessible_base_p, accessible_p): Add consider_local_p parameter.
+	* call.c (standard_conversion): Update comment about
+	DERIVED_FROM_P.
+	(enforce_access): Adjust accessible_p call.
+	(build_over_call): Adjust accessible_base_p call.
+	* class.c (convert_to_base): Adjust lookup_base call.
+	(build_vtbl_ref_1): Likewise.
+	(warn_about_ambiguous_bases): Likewise. Add early exit.
+	* cvt.c (convert_to_pointer_force) Adjust lookup_base call.
+	* search.c (accessible_base_p): Add consider_local_p parameter.
+	(lookup_base): Pass consider_local_p to accessible_base_p call.
+	(friend_accessible_p): Check whether scope is a class member.
+	Remove unnecessary class template check.
+	(accessible_p): Add consider_local_p parameter. Use it.
+	(adjust_result_of_qualified_name_lookup): Adjust lookup_base call.
+	* tree.c (maybe_dummy_object): Likewise.
+	* typeck.c (comp_except_type): Use PUBLICLY_UNIQUELY_DERIVED_P.
+	(build_class_member_access_expr): Adjust lookup_base call.
+	* typeck2.c (binfo_or_else): Likewise.
+	* rtti.c (build_dynamic_cast_1): Access can consider friendship
+	and current scope.
+
 2004-10-17  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/17743

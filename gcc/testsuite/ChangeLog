@@ -1,3 +1,7 @@
+2004-10-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/eh/shadow1.C: New.
+
 2004-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20041018-1.c: New test.
