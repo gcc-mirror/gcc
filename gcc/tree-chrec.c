@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -383,63 +383,111 @@ chrec_fold_multiply (tree type,
 
 /* Operations.  */
 
-/* The factorial.  */
- 
+/* Evaluate the binomial coefficient.  Return NULL_TREE if the intermediate
+   calculation overflows, otherwise return C(n,k) with type TYPE.  */
+
 static tree 
-tree_fold_factorial (tree f)
+tree_fold_binomial (tree type, tree n, unsigned int k)
 {
-  if (tree_int_cst_sgn (f) <= 0)
-    return integer_one_node;
+  unsigned HOST_WIDE_INT lidx, lnum, ldenom, lres, ldum;
+  HOST_WIDE_INT hidx, hnum, hdenom, hres, hdum;
+  unsigned int i;
+  tree res;
+
+  /* Handle the most frequent cases.  */
+  if (k == 0)
+    return build_int_cst (type, 1);
+  if (k == 1)
+    return fold_convert (type, n);
+
+  /* Check that k <= n.  */
+  if (TREE_INT_CST_HIGH (n) == 0
+      && TREE_INT_CST_LOW (n) < k)
+    return NULL_TREE;
+
+  /* Numerator = n.  */
+  lnum = TREE_INT_CST_LOW (n);
+  hnum = TREE_INT_CST_HIGH (n);
+
+  /* Denominator = 2.  */
+  ldenom = 2;
+  hdenom = 0;
+
+  /* Index = Numerator-1.  */
+  if (lnum == 0)
+    {
+      hidx = hnum - 1;
+      lidx = ~ (unsigned HOST_WIDE_INT) 0;
+    }
   else
-    return fold 
-      (build (MULT_EXPR, integer_type_node, f, 
-	      tree_fold_factorial (fold (build (MINUS_EXPR, integer_type_node, 
-						f, integer_one_node)))));
-}
+    {
+      hidx = hnum;
+      lidx = lnum - 1;
+    }
 
-/* The binomial coefficient.  */
+  /* Numerator = Numerator*Index = n*(n-1).  */
+  if (mul_double (lnum, hnum, lidx, hidx, &lnum, &hnum))
+    return NULL_TREE;
 
-static tree 
-tree_fold_binomial (tree n,
-		    tree k)
-{
-  return fold 
-    (build (EXACT_DIV_EXPR, integer_type_node, tree_fold_factorial (n), 
-	    fold (build (MULT_EXPR, integer_type_node, 
-			 tree_fold_factorial (k),
-			 tree_fold_factorial 
-			 (fold (build (MINUS_EXPR, integer_type_node, 
-				       n, k)))))));
+  for (i = 3; i <= k; i++)
+    {
+      /* Index--.  */
+      if (lidx == 0)
+	{
+	  hidx--;
+	  lidx = ~ (unsigned HOST_WIDE_INT) 0;
+	}
+      else
+        lidx--;
+
+      /* Numerator *= Index.  */
+      if (mul_double (lnum, hnum, lidx, hidx, &lnum, &hnum))
+	return NULL_TREE;
+
+      /* Denominator *= i.  */
+      mul_double (ldenom, hdenom, i, 0, &ldenom, &hdenom);
+    }
+
+  /* Result = Numerator / Denominator.  */
+  div_and_round_double (EXACT_DIV_EXPR, 1, lnum, hnum, ldenom, hdenom,
+			&lres, &hres, &ldum, &hdum);
+
+  res = build_int_cst_wide (type, lres, hres);
+  return int_fits_type_p (res, type) ? res : NULL_TREE;
 }
 
 /* Helper function.  Use the Newton's interpolating formula for
    evaluating the value of the evolution function.  */
 
 static tree 
-chrec_evaluate (unsigned var,
-		tree chrec,
-		tree n,
-		tree k)
+chrec_evaluate (unsigned var, tree chrec, tree n, unsigned int k)
 {
-  tree type = chrec_type (chrec);
-  tree binomial_n_k = tree_fold_binomial (n, k);
-  
-  if (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
+  tree arg0, arg1, binomial_n_k;
+  tree type = TREE_TYPE (chrec);
+
+  while (TREE_CODE (chrec) == POLYNOMIAL_CHREC
+	 && CHREC_VARIABLE (chrec) > var)
+    chrec = CHREC_LEFT (chrec);
+
+  if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
+      && CHREC_VARIABLE (chrec) == var)
     {
-      if (CHREC_VARIABLE (chrec) > var)
-	return chrec_evaluate (var, CHREC_LEFT (chrec), n, k);
-      
-      if (CHREC_VARIABLE (chrec) == var)
-	return chrec_fold_plus 
-	  (type, 
-	   fold (build (MULT_EXPR, type, binomial_n_k, CHREC_LEFT (chrec))),
-	   chrec_evaluate (var, CHREC_RIGHT (chrec), n, 
-			   fold (build (PLUS_EXPR, type, k, integer_one_node))));
-      
-      return fold (build (MULT_EXPR, type, binomial_n_k, chrec));
+      arg0 = chrec_evaluate (var, CHREC_RIGHT (chrec), n, k + 1);
+      if (arg0 == chrec_dont_know)
+	return chrec_dont_know;
+      binomial_n_k = tree_fold_binomial (type, n, k);
+      if (!binomial_n_k)
+	return chrec_dont_know;
+      arg1 = fold (build2 (MULT_EXPR, type,
+			   CHREC_LEFT (chrec), binomial_n_k));
+      return chrec_fold_plus (type, arg0, arg1);
     }
-  else
-    return fold (build (MULT_EXPR, type, binomial_n_k, chrec));
+
+  binomial_n_k = tree_fold_binomial (type, n, k);
+  if (!binomial_n_k)
+    return chrec_dont_know;
+  
+  return fold (build2 (MULT_EXPR, type, chrec, binomial_n_k));
 }
 
 /* Evaluates "CHREC (X)" when the varying variable is VAR.  
@@ -493,7 +541,7 @@ chrec_apply (unsigned var,
   else if (TREE_CODE (x) == INTEGER_CST
 	   && tree_int_cst_sgn (x) == 1)
     /* testsuite/.../ssa-chrec-38.c.  */
-    res = chrec_evaluate (var, chrec, x, integer_zero_node);
+    res = chrec_evaluate (var, chrec, x, 0);
 
   else
     res = chrec_dont_know;
