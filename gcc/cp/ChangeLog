@@ -1,3 +1,9 @@
+2002-12-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9112
+	* parser.c (cp_parser_direct_declarator): Handle erroneous
+	parenthesized declarators correctly.
+
 2002-12-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (pending_lang_change): Declare.

@@ -10023,6 +10023,8 @@ cp_parser_direct_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
      declarator.  */
   if (token->type == CPP_OPEN_PAREN)
     {
+      bool error_p;
+
       /* For an abstract declarator we do not know whether we are
 	 looking at the beginning of a parameter-declaration-clause,
 	 or at a parenthesized abstract declarator.  For example, if
@@ -10041,7 +10043,7 @@ cp_parser_direct_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
       declarator 
 	= cp_parser_declarator (parser, abstract_p, ctor_dtor_or_conv_p);
       /* Expect a `)'.  */
-      cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+      error_p = !cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 
       /* If parsing a parenthesized abstract declarator didn't work,
 	 try a parameter-declaration-clause.  */
@@ -10050,7 +10052,8 @@ cp_parser_direct_declarator (parser, abstract_p, ctor_dtor_or_conv_p)
       /* If we were not parsing an abstract declarator, but failed to
 	 find a satisfactory nested declarator, then an error has
 	 occurred.  */
-      else if (!abstract_p && declarator == error_mark_node)
+      else if (!abstract_p 
+	       && (declarator == error_mark_node || error_p))
 	return error_mark_node;
       /* Default args cannot appear in an abstract decl.  */
       parser->default_arg_ok_p = false;
