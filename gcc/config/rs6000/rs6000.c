@@ -373,6 +373,24 @@ rs6000_immed_double_const (i0, i1, mode)
 }
 
 
+/* Return the GOT register, creating it if needed.  */
+
+struct rtx_def *
+rs6000_got_register (value)
+     rtx value;
+{
+  if (!pic_offset_table_rtx)
+    {
+      if (reload_in_progress || reload_completed)
+	fatal_insn ("internal error -- needed new GOT register during reload phase to load:", value);
+
+      pic_offset_table_rtx = gen_reg_rtx (SImode);
+    }
+
+  return pic_offset_table_rtx;
+}
+
+
 /* Return non-zero if this function is known to have a null epilogue.  */
 
 int
@@ -614,7 +632,7 @@ num_insns_constant (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (mode != SImode && mode != DImode)
+  if (mode != SImode && mode != DImode && mode != SFmode && mode != DFmode)
     abort ();
 
   if (GET_CODE (op) == CONST_INT)

@@ -1029,12 +1029,13 @@ enum reg_class
    We flag for special constants when we can copy the constant into
    a general register in two insns for DF/DI and one insn for SF.
 
-   'H' is used for DI constants that take 3 insns.  */
+   'H' is used for DI/DF constants that take 3 insns.  */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)				\
-  ((C) == 'G' ? easy_fp_constant (VALUE, GET_MODE (VALUE)) :		\
-   (C) == 'H' ? (num_insns_constant (VALUE, DImode) == 3) :		\
-   0)
+  (  (C) == 'G' ? (num_insns_constant (VALUE, GET_MODE (VALUE))		\
+		   == ((GET_MODE (VALUE) == SFmode) ? 1 : 2))		\
+   : (C) == 'H' ? (num_insns_constant (VALUE, GET_MODE (VALUE)) == 3)	\
+   : 0)
 
 /* Optional extra constraints for this machine.
 
@@ -3018,6 +3019,7 @@ extern void rs6000_override_options ();
 extern void rs6000_file_start ();
 extern struct rtx_def *rs6000_float_const ();
 extern struct rtx_def *rs6000_immed_double_const ();
+extern struct rtx_def *rs6000_got_register ();
 extern int direct_return ();
 extern int any_operand ();
 extern int short_cint_operand ();
