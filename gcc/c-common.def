@@ -92,6 +92,10 @@ DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 5)
    variables declared in this scope.  */
 DEFTREECODE (SCOPE_STMT, "scope_stmt", 'e', 1)
 
+/* A FILE_STMT marks the spot where a function changes files.  It has no
+   other semantics.  FILE_STMT_FILENAME gives the name.  */
+DEFTREECODE (FILE_STMT, "file_stmt", 'e', 1)
+
 /* Used to represent a CASE_LABEL. The operands are CASE_LOW and
    CASE_HIGH, respectively. If CASE_LOW is NULL_TREE, the label is a
    'default' label. If CASE_HIGH is NULL_TREE, the label is a normal case
@@ -101,3 +105,9 @@ DEFTREECODE (CASE_LABEL, "case_label", 'e', 3)
 /* A STMT_EXPR represents a statement-expression.  The
    STMT_EXPR_STMT is the statement given by the expression.  */
 DEFTREECODE (STMT_EXPR, "stmt_expr", 'e', 1)
+
+/*
+Local variables:
+mode:c
+End:
+*/

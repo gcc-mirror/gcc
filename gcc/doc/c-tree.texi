@@ -1294,6 +1294,8 @@ This predicate holds if the function an overloaded
 @findex FOR_COND
 @findex FOR_EXPR
 @findex FOR_BODY
+@tindex FILE_STMT
+@findex FILE_STMT_FILENAME
 @tindex GOTO_STMT
 @findex GOTO_DESTINATION
 @tindex HANDLER
@@ -1517,6 +1519,11 @@ address is never taken.  (All such objects are interchangeable.)  The
 
 Used to represent an expression statement.  Use @code{EXPR_STMT_EXPR} to
 obtain the expression.
+
+@item FILE_STMT
+
+Used to record a change in filename within the body of a function.
+Use @code{FILE_STMT_FILENAME} to obtain the new filename.
 
 @item FOR_STMT
 

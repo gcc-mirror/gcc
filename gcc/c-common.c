@@ -3781,6 +3781,7 @@ statement_code_p (code)
     case GOTO_STMT:
     case LABEL_STMT:
     case ASM_STMT:
+    case FILE_STMT:
     case CASE_LABEL:
       return 1;
 

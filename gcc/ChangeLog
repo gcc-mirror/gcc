@@ -1,3 +1,15 @@
+2002-01-15  Jason Merrill  <jason@redhat.com>
+
+	* c-common.def (FILE_STMT): New code.
+	* c-common.c (statement_code_p): It's a statement.
+	* c-common.h (stmt_tree_s): Add x_last_filename.
+	(FILE_STMT_FILENAME_NODE, FILE_STMT_FILENAME): New macros.
+	(last_expr_filename): New macro.
+	* c-semantics.c (begin_stmt_tree): Initialize it.
+	(add_stmt): If the filename changed, also insert a
+	FILE_STMT.
+	(expand_stmt): Handle seeing one.
+
 2002-01-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Binaries): Make link to ftp.writtenword.com
