@@ -1,3 +1,10 @@
+2004-11-30  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-opt/18173
+	* tree-vectorizer.c (vect_can_force_dr_alignment_p): Return false for
+	decls that are assembled before vectorization takes place.
+	(vect_compute_data_ref_alignment): Set DECL_USER_ALIGN to 1.	
+
 2004-11-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* passes.c (rest_of_handle_old_regalloc): Delete unreachable blocks

@@ -1509,6 +1509,9 @@ vect_can_force_dr_alignment_p (tree decl, unsigned int alignment)
   if (DECL_EXTERNAL (decl))
     return false;
 
+  if (TREE_ASM_WRITTEN (decl))
+    return false;
+
   if (TREE_STATIC (decl))
     return (alignment <= MAX_OFILE_ALIGNMENT);
   else
@@ -4130,7 +4133,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr,
       if (vect_debug_details (NULL))
 	fprintf (dump_file, "force alignment");
       DECL_ALIGN (base) = TYPE_ALIGN (vectype);
-      DECL_USER_ALIGN (base) = TYPE_ALIGN (vectype);
+      DECL_USER_ALIGN (base) = 1;
     }
 
   /* At this point we assume that the base is aligned, and the offset from it
