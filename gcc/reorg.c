@@ -223,25 +223,26 @@ static int *uid_to_ruid;
 /* Highest valid index in `uid_to_ruid'.  */
 static int max_uid;
 
-static void mark_referenced_resources PROTO((rtx, struct resources *, int));
-static void mark_set_resources	PROTO((rtx, struct resources *, int, int));
-static int stop_search_p	PROTO((rtx, int));
-static int resource_conflicts_p	PROTO((struct resources *,
-				       struct resources *));
-static int insn_references_resource_p PROTO((rtx, struct resources *, int));
-static int insn_sets_resources_p PROTO((rtx, struct resources *, int));
-static rtx find_end_label	PROTO((void));
-static rtx emit_delay_sequence	PROTO((rtx, rtx, int, int));
-static rtx add_to_delay_list	PROTO((rtx, rtx));
-static void delete_from_delay_slot PROTO((rtx));
-static void delete_scheduled_jump PROTO((rtx));
-static void note_delay_statistics PROTO((int, int));
-static rtx optimize_skip	PROTO((rtx));
-static int get_jump_flags PROTO((rtx, rtx));
-static int rare_destination PROTO((rtx));
-static int mostly_true_jump	PROTO((rtx, rtx));
-static rtx get_branch_condition	PROTO((rtx, rtx));
-static int condition_dominates_p PROTO((rtx, rtx));
+static void mark_referenced_resources	PROTO((rtx, struct resources *, int));
+static void mark_set_resources		PROTO((rtx, struct resources *,
+					       int, int));
+static int stop_search_p		PROTO((rtx, int));
+static int resource_conflicts_p		PROTO((struct resources *,
+					       struct resources *));
+static int insn_references_resource_p	PROTO((rtx, struct resources *, int));
+static int insn_sets_resources_p	PROTO((rtx, struct resources *, int));
+static rtx find_end_label		PROTO((void));
+static rtx emit_delay_sequence		PROTO((rtx, rtx, int, int));
+static rtx add_to_delay_list		PROTO((rtx, rtx));
+static rtx delete_from_delay_slot	PROTO((rtx));
+static void delete_scheduled_jump	PROTO((rtx));
+static void note_delay_statistics	PROTO((int, int));
+static rtx optimize_skip		PROTO((rtx));
+static int get_jump_flags		PROTO((rtx, rtx));
+static int rare_destination		PROTO((rtx));
+static int mostly_true_jump		PROTO((rtx, rtx));
+static rtx get_branch_condition		PROTO((rtx, rtx));
+static int condition_dominates_p	PROTO((rtx, rtx));
 static rtx steal_delay_list_from_target PROTO((rtx, rtx, rtx, rtx,
 					       struct resources *,
 					       struct resources *,
@@ -252,26 +253,27 @@ static rtx steal_delay_list_from_fallthrough PROTO((rtx, rtx, rtx, rtx,
 						    struct resources *,
 						    struct resources *,
 						    int, int *, int *));
-static void try_merge_delay_insns PROTO((rtx, rtx));
-static rtx redundant_insn	PROTO((rtx, rtx, rtx));
-static int own_thread_p		PROTO((rtx, rtx, int));
-static int find_basic_block	PROTO((rtx));
-static void update_block	PROTO((rtx, rtx));
-static int reorg_redirect_jump PROTO((rtx, rtx));
-static void update_reg_dead_notes PROTO((rtx, rtx));
-static void fix_reg_dead_note PROTO((rtx, rtx));
-static void update_reg_unused_notes PROTO((rtx, rtx));
-static void update_live_status	PROTO((rtx, rtx));
-static rtx next_insn_no_annul	PROTO((rtx));
-static void mark_target_live_regs PROTO((rtx, struct resources *));
-static void fill_simple_delay_slots PROTO((rtx, int));
-static rtx fill_slots_from_thread PROTO((rtx, rtx, rtx, rtx, int, int,
-					 int, int, int, int *, rtx));
-static void fill_eager_delay_slots PROTO((rtx));
-static void relax_delay_slots	PROTO((rtx));
-static void make_return_insns	PROTO((rtx));
+static void try_merge_delay_insns	PROTO((rtx, rtx));
+static rtx redundant_insn		PROTO((rtx, rtx, rtx));
+static int own_thread_p			PROTO((rtx, rtx, int));
+static int find_basic_block		PROTO((rtx));
+static void update_block		PROTO((rtx, rtx));
+static int reorg_redirect_jump		PROTO((rtx, rtx));
+static void update_reg_dead_notes	PROTO((rtx, rtx));
+static void fix_reg_dead_note		PROTO((rtx, rtx));
+static void update_reg_unused_notes	PROTO((rtx, rtx));
+static void update_live_status		PROTO((rtx, rtx));
+static rtx next_insn_no_annul		PROTO((rtx));
+static void mark_target_live_regs	PROTO((rtx, struct resources *));
+static void fill_simple_delay_slots	PROTO((rtx, int));
+static rtx fill_slots_from_thread	PROTO((rtx, rtx, rtx, rtx, int, int,
+					       int, int, int, int *, rtx));
+static void fill_eager_delay_slots	PROTO((rtx));
+static void relax_delay_slots		PROTO((rtx));
+static void make_return_insns		PROTO((rtx));
 static int redirect_with_delay_slots_safe_p PROTO ((rtx, rtx, rtx));
 static int redirect_with_delay_list_safe_p PROTO ((rtx, rtx, rtx));
+static int check_annul_list_true_false	PROTO ((int, rtx));
 
 /* Given X, some rtl, and RES, a pointer to a `struct resource', mark
    which resources are references by the insn.  If INCLUDE_DELAYED_EFFECTS
@@ -996,10 +998,10 @@ add_to_delay_list (insn, delay_list)
   return delay_list;
 }   
 
-/* Delete INSN from the the delay slot of the insn that it is in.  This may
-   produce an insn without anything in its delay slots.  */
+/* Delete INSN from the the delay slot of the insn that it is in, which may
+   produce an insn with no delay slots.  Return the new insn.  */
 
-static void
+static rtx
 delete_from_delay_slot (insn)
      rtx insn;
 {
@@ -1048,6 +1050,8 @@ delete_from_delay_slot (insn)
 
   /* Show we need to fill this insn again.  */
   obstack_ptr_grow (&unfilled_slots_obstack, trial);
+
+  return trial;
 }
 
 /* Delete INSN, a JUMP_INSN.  If it is a conditional jump, we must track down
@@ -1606,6 +1610,32 @@ redirect_with_delay_list_safe_p (jump, newlabel, delay_list)
   return (li == NULL);
 }
 
+/* DELAY_LIST is a list of insns that have already been placed into delay
+   slots.  See if all of them have the same annulling status as ANNUL_TRUE_P.
+   If not, return 0; otherwise return 1.  */
+
+static int
+check_annul_list_true_false (annul_true_p, delay_list)
+     int annul_true_p;
+     rtx delay_list;
+{
+  rtx temp, trial;
+
+  if (delay_list)
+    {
+      for (temp = delay_list; temp; temp = XEXP (temp, 1))
+        {
+          rtx trial = XEXP (temp, 0);
+ 
+          if ((annul_true && INSN_FROM_TARGET_P (trial))
+	      || (!annul_true && !INSN_FROM_TARGET_P (trial)))
+	    return 0;
+        }
+    }
+
+  return 1;
+}
+
 
 /* INSN branches to an insn whose pattern SEQ is a SEQUENCE.  Given that
    the condition tested by INSN is CONDITION and the resources shown in
@@ -1646,6 +1676,7 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
   int total_slots_filled = *pslots_filled;
   rtx new_delay_list = 0;
   int must_annul = *pannul_p;
+  int used_annul = 0;
   int i;
 
   /* We can't do anything if there are more delay slots in SEQ than we
@@ -1696,9 +1727,15 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
 	       || (! insn_sets_resource_p (trial, other_needed, 0)
 		   && ! may_trap_p (PATTERN (trial)))))
 	  ? eligible_for_delay (insn, total_slots_filled, trial, flags)
-	  : (must_annul = 1,
-	     eligible_for_annul_false (insn, total_slots_filled, trial, flags)))
+	  : (must_annul || (delay_list == NULL && new_delay_list == NULL))
+	     && (must_annul = 1,
+	         check_annul_list_true_false (0, delay_list)
+	         && check_annul_list_true_false (0, new_delay_list)
+	         && eligible_for_annul_false (insn, total_slots_filled,
+					      trial, flags)))
 	{
+	  if (must_annul)
+	    used_annul = 1;
 	  temp = copy_rtx (trial);
 	  INSN_FROM_TARGET_P (temp) = 1;
 	  new_delay_list = add_to_delay_list (temp, new_delay_list);
@@ -1717,7 +1754,8 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
   /* Add any new insns to the delay list and update the count of the
      number of slots filled.  */
   *pslots_filled = total_slots_filled;
-  *pannul_p = must_annul;
+  if (used_annul)
+    *pannul_p = 1;
 
   if (delay_list == 0)
     return new_delay_list;
@@ -1747,6 +1785,8 @@ steal_delay_list_from_fallthrough (insn, condition, seq,
 {
   int i;
   int flags;
+  int must_annul = *pannul_p;
+  int used_annul = 0;
 
   flags = get_jump_flags (insn, JUMP_LABEL (insn));
 
@@ -1780,14 +1820,17 @@ steal_delay_list_from_fallthrough (insn, condition, seq,
 	  continue;
 	}
 
-      if (! *pannul_p
+      if (! must_annul
 	  && ((condition == const_true_rtx
 	       || (! insn_sets_resource_p (trial, other_needed, 0)
 		   && ! may_trap_p (PATTERN (trial)))))
 	  ? eligible_for_delay (insn, *pslots_filled, trial, flags)
-	  : (*pannul_p = 1,
-	     eligible_for_annul_true (insn, *pslots_filled, trial, flags)))
+	  : (must_annul || delay_list == NULL) && (must_annul = 1,
+	     check_annul_list_true_false (1, delay_list)
+	     && eligible_for_annul_true (insn, *pslots_filled, trial, flags)))
 	{
+	  if (must_annul)
+	    used_annul = 1;
 	  delete_from_delay_slot (trial);
 	  delay_list = add_to_delay_list (trial, delay_list);
 
@@ -1798,8 +1841,11 @@ steal_delay_list_from_fallthrough (insn, condition, seq,
 	break;
     }
 
+  if (used_annul)
+    *pannul_p = 1;
   return delay_list;
 }
+
 
 /* Try merging insns starting at THREAD which match exactly the insns in
    INSN's delay list.
@@ -1923,8 +1969,12 @@ try_merge_delay_insns (insn, thread)
 	    {
 	      if (! annul_p)
 		{
+		  rtx new;
+
 		  update_block (dtrial, thread);
-		  delete_from_delay_slot (dtrial);
+		  new = delete_from_delay_slot (dtrial);
+	          if (INSN_DELETED_P (thread))
+		    thread = new;
 		  INSN_FROM_TARGET_P (next_to_match) = 0;
 		}
 	      else
@@ -1950,8 +2000,12 @@ try_merge_delay_insns (insn, thread)
 	{
 	  if (GET_MODE (merged_insns) == SImode)
 	    {
+	      rtx new;
+
 	      update_block (XEXP (merged_insns, 0), thread);
-	      delete_from_delay_slot (XEXP (merged_insns, 0));
+	      new = delete_from_delay_slot (XEXP (merged_insns, 0));
+	      if (INSN_DELETED_P (thread))
+		thread = new;
 	    }
 	  else
 	    {
@@ -3570,9 +3624,10 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	  /* There are two ways we can win:  If TRIAL doesn't set anything
 	     needed at the opposite thread and can't trap, or if it can
 	     go into an annulled delay slot.  */
-	  if (condition == const_true_rtx
-	      || (! insn_sets_resource_p (trial, &opposite_needed, 1)
-		  && ! may_trap_p (pat)))
+	  if (!must_annul
+	      && (condition == const_true_rtx
+	          || (! insn_sets_resource_p (trial, &opposite_needed, 1)
+		      && ! may_trap_p (pat))))
 	    {
 	      old_trial = trial;
 	      trial = try_split (pat, trial, 0);
@@ -3600,9 +3655,11 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	      if (thread == old_trial)
 		thread = trial;
 	      pat = PATTERN (trial);
-	      if ((thread_if_true
-		   ? eligible_for_annul_false (insn, *pslots_filled, trial, flags)
-		   : eligible_for_annul_true (insn, *pslots_filled, trial, flags)))
+	      if ((must_annul || delay_list == NULL) && (thread_if_true
+		   ? check_annul_list_true_false (0, delay_list)
+		     && eligible_for_annul_false (insn, *pslots_filled, trial, flags)
+		   : check_annul_list_true_false (1, delay_list)
+		     && eligible_for_annul_true (insn, *pslots_filled, trial, flags)))
 		{
 		  rtx temp;
 
