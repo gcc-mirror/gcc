@@ -39,6 +39,7 @@ gtfiles="\$(srcdir)/ada/ada-tree.h \$(srcdir)/ada/gigi.h \$(srcdir)/ada/decl.c \
 outputs=ada/Makefile
 
 target_libs="target-libada"
+lang_dirs="gnattools"
 
 # Ada will not work until the front end starts emitting GIMPLE trees.
 build_by_default=no

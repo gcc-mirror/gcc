@@ -58,13 +58,9 @@ AC_SUBST([enable_shared])
 
 # Start of actual configure tests
 
-AC_PROG_INSTALL
-
-AC_CANONICAL_SYSTEM
-
-sinclude(../config/acx.m4)
-_GCC_TOPLEV_NONCANONICAL_TARGET
-AC_SUBST(target_noncanonical)
+AC_CANONICAL_BUILD
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
 
 # Need to pass this down for now :-P
 AC_PROG_LN_S
@@ -85,15 +81,6 @@ else
   default_gnatlib_target="gnatlib-plain"
 fi
 AC_SUBST([default_gnatlib_target])
-
-# Determine what to build for 'gnattools'
-if test $build = $target ; then
-  # Note that build=target is almost certainly the wrong test; FIXME
-  default_gnattools_target="gnattools-native"
-else
-  default_gnattools_target="gnattools-cross"
-fi
-AC_SUBST([default_gnattools_target])
 
 # Output: create a Makefile.
 AC_CONFIG_FILES([Makefile])

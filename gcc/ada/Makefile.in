@@ -193,9 +193,6 @@ SYSLIBS = @GNAT_LIBEXC@
 # List of extra object files linked in with various programs.
 EXTRA_GNATTOOLS_OBJS = ../../prefix.o ../../version.o
 
-# List extra gnattools
-EXTRA_GNATTOOLS =
-
 # List of target dependent sources, overridden below as necessary
 TARGET_ADA_SRCS =
 
@@ -1478,44 +1475,13 @@ GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
 ADA_INCLUDE_SRCS =\
  ada.ads calendar.ads directio.ads gnat.ads interfac.ads ioexcept.ads \
  machcode.ads text_io.ads unchconv.ads unchdeal.ads \
- sequenio.ads system.ads Makefile.adalib memtrack.adb \
+ sequenio.ads system.ads memtrack.adb \
  a-*.adb a-*.ads g-*.ad? i-*.ad? \
  s-[a-o]*.adb s-[p-z]*.adb \
  s-[a-o]*.ads s-[p-z]*.ads
 
 LIBGNAT=../rts/libgnat.a 
-TOOLS_FLAGS_TO_PASS=		\
-        "CC=$(CC)" 		\
-        "CFLAGS=$(CFLAGS)"	\
-	"LDFLAGS=$(LDFLAGS)"	\
-        "ADAFLAGS=$(ADAFLAGS)"	\
-        "INCLUDES=$(INCLUDES_FOR_SUBDIR)"\
-	"ADA_INCLUDES=$(ADA_INCLUDES) $(ADA_INCLUDES_FOR_SUBDIR)"\
-	"libsubdir=$(libsubdir)"	\
-	"exeext=$(exeext)"	\
-	"fsrcdir=$(fsrcdir)"	\
-	"srcdir=$(fsrcdir)"	\
-        "TOOLS_LIBS=$(TOOLS_LIBS) $(TGT_LIB)"	\
-	"GNATMAKE=$(GNATMAKE)"	\
-	"GNATLINK=$(GNATLINK)"	\
-	"GNATBIND=$(GNATBIND)"
-
 GCC_LINK="$(CC) -static-libgcc $(ADA_INCLUDES)"
-
-# Build directory for the tools. Let's copy the target-dependent
-# sources using the same mechanism as for gnatlib. The other sources are 
-# accessed using the vpath directive below
-
-../stamp-tools:
-	-$(RM) tools/*
-	-$(RMDIR) tools
-	-$(MKDIR) tools
-	-(cd tools; $(LN_S) ../sdefault.adb .)
-	-$(foreach PAIR,$(TOOLS_TARGET_PAIRS), \
-	          $(RM) tools/$(word 1,$(subst <, ,$(PAIR)));\
-	          $(LN_S) $(fsrcdir)/$(word 2,$(subst <, ,$(PAIR))) \
-	                tools/$(word 1,$(subst <, ,$(PAIR)));)
-	touch ../stamp-tools
 
 # when compiling the tools, the runtime has to be first on the path so that
 # it hides the runtime files lying with the rest of the sources
@@ -1535,113 +1501,73 @@ ifeq ($(TOOLSCASE),cross)
   vpath %.h   ../
 endif
 
-# gnatmake/link tools cannot always be built with gnatmake/link for bootstrap 
-# reasons: gnatmake should be built with a recent compiler, a recent compiler
-# may not generate ALI files compatible with an old gnatmake so it is important
-# to be able to build gnatmake without a version of gnatmake around. Once 
-# everything has been compiled once, gnatmake can be recompiled with itself 
-# (see target gnattools1-re) 
-gnattools1: ../stamp-tools ../stamp-gnatlib
-	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
-	  TOOLSCASE=native \
-	  ../../gnatmake$(exeext) ../../gnatlink$(exeext) ../../gnatbl$(exeext)
 
-# gnatmake/link can be built with recent gnatmake/link if they are available.
-# This is especially convenient for building cross tools or for rebuilding
-# the tools when the original bootstrap has already be done.
-gnattools1-re: ../stamp-tools
-	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
-	  TOOLSCASE=cross INCLUDES="" gnatmake-re gnatlink-re
-
-# these tools are built with gnatmake & are common to native and cross
-gnattools2: ../stamp-tools
-	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
-	  TOOLSCASE=native \
-	  ../../gnatchop$(exeext) ../../gnat$(exeext) ../../gnatkr$(exeext) \
-	  ../../gnatls$(exeext) ../../gnatprep$(exeext) \
-	  ../../gnatxref$(exeext) \
-	  ../../gnatfind$(exeext) ../../gnatname$(exeext) \
-	  ../../gnatclean$(exeext) ../../gprmake$(exeext)
-
-# These tools are only built for the native version.
-gnattools3: ../stamp-tools
-ifneq ($(EXTRA_GNATTOOLS),)
-	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
-	  TOOLSCASE=native top_builddir=../../.. $(EXTRA_GNATTOOLS)
-endif
-
-# those tools are only built for the cross version
-gnattools4: ../stamp-tools
-	$(MAKE) -C tools -f ../Makefile $(TOOLS_FLAGS_TO_PASS) \
-	  TOOLSCASE=cross top_buildir=../../.. \
-           ../../vxaddr2line$(exeext)
-
-../../gnatchop$(exeext): ../stamp-tools
+../../gnatchop$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatchop --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatchop 
 	$(GNATLINK) -v gnatchop -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnat$(exeext): ../stamp-tools
+../../gnat$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatcmd --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatcmd 
 	$(GNATLINK) -v gnatcmd -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatkr$(exeext): ../stamp-tools
+../../gnatkr$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatkr --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatkr 
 	$(GNATLINK) -v gnatkr -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatls$(exeext): ../stamp-tools
+../../gnatls$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatls --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatls 
 	$(GNATLINK) -v gnatls -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatname$(exeext): ../stamp-tools
+../../gnatname$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatname --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatname 
 	$(GNATLINK) -v gnatname -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gprmake$(exeext): ../stamp-tools
+../../gprmake$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gprmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gprmake
 	$(GNATLINK) -v gprmake -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatprep$(exeext): ../stamp-tools
+../../gnatprep$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatprep --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatprep 
 	$(GNATLINK) -v gnatprep -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatxref$(exeext): ../stamp-tools
+../../gnatxref$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatxref --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatxref 
 	$(GNATLINK) -v gnatxref -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatfind$(exeext): ../stamp-tools
+../../gnatfind$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatfind --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatfind 
 	$(GNATLINK) -v gnatfind -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatclean$(exeext): ../stamp-tools
+../../gnatclean$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatclean --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatclean
 	$(GNATLINK) -v gnatclean -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatsym$(exeext): ../stamp-tools
+../../gnatsym$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatsym --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatsym
 	$(GNATLINK) -v gnatsym -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../gnatdll$(exeext): ../stamp-tools
+../../gnatdll$(exeext): 
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
 
-../../vxaddr2line$(exeext): ../stamp-tools
+../../vxaddr2line$(exeext): 
 	$(GNATMAKE) -c  $(ADA_INCLUDES) vxaddr2line --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line 
 	$(GNATLINK) -v vxaddr2line -o $@ --GCC=$(GCC_LINK) $(CLIB)
 
-gnatmake-re: ../stamp-tools link.o
+gnatmake-re:  link.o
 	$(GNATMAKE) $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake 
@@ -1650,7 +1576,7 @@ gnatmake-re: ../stamp-tools link.o
 
 # Note the use of the "mv" command in order to allow gnatlink to be linked with
 # with the former version of gnatlink itself which cannot override itself.
-gnatlink-re: ../stamp-tools link.o
+gnatlink-re:  link.o
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink 
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
