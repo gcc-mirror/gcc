@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* The code in sections .init and .fini is supposed to be a single
    regular function.  The function in .init is called directly from
-   start in crt1.asm.  The function in .fini is atexit()ed in crt1.asm
+   start in crt0.asm.  The function in .fini is atexit()ed in crt0.asm
    too.
 
    crti.asm contributes the prologue of a function to these sections,
