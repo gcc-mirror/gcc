@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -101,6 +101,9 @@
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef ssize_t
+
+/* Define if cpp should also search $prefix/include. */
+#undef PREFIX_INCLUDE_DIR
 
 /* Define if you have the __argz_count function.  */
 #undef HAVE___ARGZ_COUNT

@@ -26,6 +26,9 @@
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef ssize_t
 
+/* Define if cpp should also search $prefix/include. */
+#undef PREFIX_INCLUDE_DIR
+
 @BOTTOM@
 
 /* Bison unconditionally undefines `const' if neither `__STDC__' nor

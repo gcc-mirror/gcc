@@ -1,3 +1,15 @@
+2001-11-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    Per Bothner  <per@bothner.com>
+	    H.J. Lu <hjl@gnu.org>
+
+	* acconfig.h (PREFIX_INCLUDE_DIR): New variable.
+	* config.in: Rebuild.
+	* cppdefault.c (cpp_include_defaults):  Also search PREFIX_INCLUDE_DIR.
+	* Makefile.in (includedir):  Rename to local_includedir.
+	(includedir):  Define as $(prefix)/include.
+	* config.in (PREFIX_INCLUDE_DIR):  New variable.
+	* configure.in (PREFIX_INCLUDE_DIR):  Test for new variable.
+
 2001-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Move terminology and spelling conventions to

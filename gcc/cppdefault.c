@@ -47,6 +47,9 @@ const struct default_include cpp_include_defaults[]
     /* /usr/local/include comes before the fixincluded header files.  */
     { LOCAL_INCLUDE_DIR, 0, 0, 1 },
 #endif
+#ifdef PREFIX_INCLUDE_DIR
+    { PREFIX_INCLUDE_DIR, 0, 0, 1 },
+#endif
 #ifdef GCC_INCLUDE_DIR
     /* This is the dir for fixincludes and for gcc's private headers.  */
     { GCC_INCLUDE_DIR, "GCC", 0, 0 },

@@ -1612,6 +1612,10 @@ if test x"$gcc_cv_as_dwarf2_debug_line" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_as_dwarf2_debug_line)
 
+if test "$prefix" != "/usr" && test "$prefix" != "/usr/local" ; then
+  AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include")
+fi
+
 # Figure out what language subdirectories are present.
 # Look if the user specified --enable-languages="..."; if not, use
 # the environment variable $LANGUAGES if defined. $LANGUAGES might
