@@ -1,6 +1,7 @@
 Tue Dec  9 01:16:06 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Partially cleaned up prototyping code from HJ.
+	* tree.h: Add many prototypes.
 	* haifa-sched.c (haifa_classify_insn): Renamed from classify_insn.
 	All references changed.
 	* rtl.h: Protect from multiple inclusions.  Add many prototypes.
