@@ -92,7 +92,7 @@ $(srcdir)/java/parse-scan.c:  $(srcdir)/java/parse-scan.y
 
 $(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
 	(cd $(srcdir)/java || exit 1; \
-	gperf -L C -C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,4,$$ \
+	gperf -L ANSI-C -C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,4,$$ \
 		keyword.gperf > k$$$$.h || { \
 	echo "Please update gperf from ftp://ftp.gnu.org/pub/gnu/gperf/" >&2; \
 	rm -f k$$$$.h; \
