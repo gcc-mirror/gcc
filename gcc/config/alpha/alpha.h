@@ -2293,7 +2293,8 @@ do {									\
   {"unaligned_memory_operand", {MEM}},					\
   {"reg_or_unaligned_mem_operand", {SUBREG, REG, MEM}},			\
   {"any_memory_operand", {MEM}},					\
-  {"hard_fp_register_operand", {SUBREG, REG}},
+  {"hard_fp_register_operand", {SUBREG, REG}},				\
+  {"reg_not_elim_operand", {SUBREG, REG}},
 
 /* Tell collect that the object format is ECOFF.  */
 #define OBJECT_FORMAT_COFF
@@ -2484,6 +2485,7 @@ extern int divmod_operator ();
 extern int call_operand ();
 extern int reg_or_cint_operand ();
 extern int hard_fp_register_operand ();
+extern int reg_not_elim_operand ();
 extern void alpha_set_memflags ();
 extern int aligned_memory_operand ();
 extern void get_aligned_mem ();

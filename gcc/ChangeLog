@@ -1,3 +1,10 @@
+Fri Nov 13 22:19:23 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (reg_not_elim_operand): New.
+	* alpha.h (PREDICATE_CODES): Add it.
+	* alpha.md (s48addq, s48subq patterns): Use it as the predicate
+	for the multiplicand.
+
 Fri Nov 13 22:50:37 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (movsf): Remove explicit secondary-reload-like

@@ -833,6 +833,31 @@ any_memory_operand (op, mode)
 	      && REGNO (SUBREG_REG (op)) >= FIRST_PSEUDO_REGISTER));
 }
 
+/* Returns 1 if OP is not an eliminable register.
+
+   This exists to cure a pathological abort in the s8addq (et al) patterns,
+
+	long foo () { long t; bar(); return (long) &t * 26107; }
+
+   which run afoul of a hack in reload to cure a (presumably) similar
+   problem with lea-type instructions on other targets.  But there is
+   one of us and many of them, so work around the problem by selectively
+   preventing combine from making the optimization.  */
+
+int
+reg_not_elim_operand (op, mode)
+      register rtx op;
+      enum machine_mode mode;
+{
+  rtx inner = op;
+  if (GET_CODE (op) == SUBREG)
+    inner = SUBREG_REG (op);
+  if (inner == frame_pointer_rtx || inner == arg_pointer_rtx)
+    return 0;
+
+  return register_operand (op, mode);
+}
+
 /* Return 1 if this function can directly return via $26.  */
 
 int
