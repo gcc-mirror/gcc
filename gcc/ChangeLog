@@ -11,6 +11,15 @@
 	(expand_expr): Handle EXPAND_STACK_PARM modifier.  When cse
 	expected, set target to 0 rather than to subtarget.  Formatting.
 
+2003-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/invoke.texi (ggc-min-expand, ggc-min-heapsize): Document
+	new default behavior.
+	* ggc-common.c: Include sys/resource.h.
+	(ggc_rlimit_bound): New function.
+	(ggc_min_expand_heuristic, ggc_min_heapsize_heuristic): Update
+	defaults to account for rlimits.
+
 Sat Feb 22 19:34:29 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/linux.h (TARGET_HAS_F_SETLKW): Define.
