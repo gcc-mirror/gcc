@@ -2469,8 +2469,7 @@ fix = {
      * instead of va_list.
      * Don't claim to have defined va_list.
      */
-    sed = "s@ va_list @ __gnuc_va_list @\n"
-          "s@ va_list)@ __gnuc_va_list)@\n"
+    sed = "s@[ \t]va_list\\([ \t)]\\)@ __gnuc_va_list\\1@\n"
 	  "s@(va_list)&@(__gnuc_va_list)\\&@\n"
           "s@ _VA_LIST_));@ __gnuc_va_list));@\n"
           "s@ __VA_LIST__));@ __gnuc_va_list));@\n"

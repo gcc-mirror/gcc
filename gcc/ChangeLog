@@ -1,3 +1,10 @@
+2003-11-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (stdio_va_list): Allow tab before va_list.
+	Merge two substitutions.
+	* fixinc/fixincl.x: Regenerate.
+	Fixes PR bootstrap/12666.
+
 2003-11-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/install-old.texi: Remove VMS documentation.
