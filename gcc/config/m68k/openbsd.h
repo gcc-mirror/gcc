@@ -33,12 +33,12 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ -D__HAVE_FPU__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
 
-/* Run-time target specifications */
+/* Run-time target specifications.  */
 #define CPP_PREDEFINES "-D__unix__ -D__m68k__ -D__mc68000__ -D__mc68020__ -D__OpenBSD__ -Asystem(unix) -Asystem(OpenBSD) -Acpu(m68k) -Amachine(m68k)"
 
-/* TODO: activate subtarget types when gas is updated.
+/* m68k as needs to know about the processor subtype.  */
+#undef ASM_SPEC
 #define ASM_SPEC "%| %{m68030} %{m68040} %{m68060} %{fpic:-k} %{fPIC:-k -K}"
- */
 
 /* Layout of source language data types.  */
 
