@@ -373,7 +373,13 @@ convert_and_check (type, expr)
   tree t = convert (type, expr);
   if (TREE_CODE (t) == INTEGER_CST)
     {
-      if (TREE_CONSTANT_OVERFLOW (t))
+      if (TREE_UNSIGNED (TREE_TYPE (expr))
+	  && !TREE_UNSIGNED (type)
+	  && TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (expr)))
+	/* No warning for converting 0x80000000 to int.  */
+	TREE_CONSTANT_OVERFLOW (t) = 0;
+      else if (TREE_CONSTANT_OVERFLOW (t))
 	{
 	  pedwarn ("overflow in implicit constant conversion");
 	  TREE_CONSTANT_OVERFLOW (t) = 0;
@@ -829,7 +835,8 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	 TYPE is already properly set.  */
     }
   else if (real1 && real2
-	   && TYPE_PRECISION (TREE_TYPE (primop0)) == TYPE_PRECISION (TREE_TYPE (primop1)))
+	   && (TYPE_PRECISION (TREE_TYPE (primop0))
+	       == TYPE_PRECISION (TREE_TYPE (primop1))))
     type = TREE_TYPE (primop0);
 
   /* If args' natural types are both narrower than nominal type
@@ -958,6 +965,12 @@ truthvalue_conversion (expr)
 		      TREE_OPERAND (expr, 0), integer_one_node);
       else
 	return integer_one_node;
+
+    case COMPLEX_EXPR:
+      return build_binary_op (TRUTH_ANDIF_EXPR,
+			      truthvalue_conversion (TREE_REALPART (expr)),
+			      truthvalue_conversion (TREE_IMAGPART (expr)),
+			      0);
 
     case NEGATE_EXPR:
     case ABS_EXPR:
