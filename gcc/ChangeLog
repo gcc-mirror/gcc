@@ -1,5 +1,7 @@
 2002-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* ifcvt.c (dead_or_predicable): Fix uninitialized variable.
+
 	* predict.c (estimate_bb_frequencies): Delete unused variables.
 
 2002-03-17  Richard Henderson  <rth@redhat.com>
