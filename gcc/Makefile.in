@@ -385,7 +385,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
      _lshrdi3 _lshldi3 _ashldi3 _ashrdi3  \
     _udiv_w_sdiv _udivmoddi4 _cmpdi2 _ucmpdi2 _floatdidf _floatdisf \
     _fixunsdfsi _fixunssfsi _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi \
-    _varargs _eprintf _builtin_new _caps_New _builtin_del \
+    __gcc_bcmp _varargs _eprintf _builtin_new _caps_New _builtin_del \
     _bb _shtab _clear_cache _trampoline __main _exit
 
 # Header files that are made available under the same name
