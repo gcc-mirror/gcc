@@ -1,5 +1,5 @@
 ;;- Machine description for Advanced RISC Machines' ARM for GNU compiler
-;;  Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+;;  Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;             and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -49,7 +49,7 @@
 ; by a call insn: on the arm6 they are if in 32-bit addressing mode; on the
 ; arm2 and arm3 the condition codes are restored by the return.
 
-(define_attr "cpu" "arm2,arm3,arm6,arm7"
+(define_attr "cpu" "arm2,arm3,arm6,arm7,arm8,st_arm"
 	(const (symbol_ref "arm_cpu_attr")))
 
 ; Floating Point Unit.  If we only have floating point emulation, then there
@@ -101,6 +101,12 @@
 (define_attr "type"
 	"normal,mult,block,float,fdivx,fdivd,fdivs,fmul,ffmul,farith,ffarith,float_em,f_load,f_store,f_mem_r,r_mem_f,f_2_r,r_2_f,call,load,store1,store2,store3,store4" 
 	(const_string "normal"))
+
+; Load scheduling, set from the cpu characteristic
+(define_attr "ldsched" "no,yes"
+  (if_then_else (eq_attr "cpu" "arm8,st_arm")
+		(const_string "yes")
+		(const_string "no")))
 
 ; condition codes: this one is used by final_prescan_insn to speed up
 ; conditionalizing instructions.  It saves having to scan the rtl to see if
@@ -210,13 +216,23 @@
 (define_function_unit "write_blockage" 1 0 
 	(eq_attr "write_conflict" "yes") 1 1)
 
+
+
 (define_function_unit "core" 1 1 (eq_attr "core_cycles" "single") 1 1)
 
-(define_function_unit "core" 1 1 (eq_attr "type" "load") 2 2)
+(define_function_unit "core" 1 1 
+  (and (eq_attr "ldsched" "yes") (eq_attr "type" "load")) 1 1)
+
+(define_function_unit "core" 1 1 
+  (and (eq_attr "ldsched" "!yes") (eq_attr "type" "load")) 2 2)
 
 (define_function_unit "core" 1 1 (eq_attr "type" "mult") 16 16)
 
-(define_function_unit "core" 1 1 (eq_attr "type" "store1") 2 2)
+(define_function_unit "core" 1 1 
+  (and (eq_attr "ldsched" "yes") (eq_attr "type" "store1")) 1 1)
+
+(define_function_unit "core" 1 1 
+  (and (eq_attr "ldsched" "!yes") (eq_attr "type" "store1")) 2 2)
 
 (define_function_unit "core" 1 1 (eq_attr "type" "store2") 3 3)
 
@@ -227,6 +243,9 @@
 (define_function_unit "core" 1 1
   (and (eq_attr "core_cycles" "multi")
        (eq_attr "type" "!mult,load,store2,store3,store4")) 32 32)
+
+(define_function_unit "loader" 1 0 
+  (and (eq_attr "ldsched" "yes") (eq_attr "type" "load")) 2 1)
 
 
 ;; Note: For DImode insns, there is normally no reason why operands should
@@ -2420,6 +2439,11 @@
 			   : preserve_subexpressions_p ()));
       DONE;
     }
+  if (CONSTANT_P (operands[1]) && flag_pic)
+    operands[1] = legitimize_pic_address (operands[1], SImode,
+					  ((reload_in_progress
+					    || reload_completed)
+					   ? operands[0] : 0));
 ")
 
 (define_insn "*movsi_insn"
@@ -2462,6 +2486,46 @@
 	   && GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == LABEL_REF
 	   && GET_CODE (XEXP (XEXP (operands[1], 0), 1)) == CONST_INT))"
   "adr%?\\t%0, %a1")
+
+/* When generating pic, we need to load the symbol offset into a register.
+   So that the optimizer does not confuse this with a normal symbol load
+   we use an unspec.  The offset will be loaded from a constant pool entry,
+   since that is the only type of relocation we can use.  */
+
+(define_insn "pic_load_addr"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI [(match_operand 1 "" "")] 3))]
+  "flag_pic"
+  "ldr%?\\t%0, %a1"
+ [(set_attr "type" "load")])
+
+;; This variant is used for AOF assembly, since it needs to mention the
+;; pic register in the rtl.
+(define_expand "pic_load_addr_based"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI [(match_operand 1 "" "") (match_dup 2)] 3))]
+  "flag_pic"
+  "operands[2] = pic_offset_table_rtx;")
+
+(define_insn "*pic_load_addr_based_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(unspec:SI [(match_operand 1 "" "")
+		    (match_operand 2 "s_register_operand" "r")] 3))]
+  "flag_pic && operands[2] == pic_offset_table_rtx"
+  "*
+#ifdef AOF_ASSEMBLER
+  operands[1] = aof_pic_entry (operands[1]);
+#endif
+  output_asm_insn (\"ldr%?\\t%0, %a1\", operands);
+  return \"\";
+" [(set_attr "type" "load")])
+
+(define_insn "pic_add_dot_plus_eight"
+  [(set (pc) (label_ref (match_operand 0 "" "")))
+   (set (match_operand 1 "register_operand" "+r")
+	(plus:SI (match_dup 1) (const (plus:SI (pc) (const_int 8)))))]
+  "flag_pic"
+  "add%?\\t%1, %|pc, %1")
 
 ;; If copying one reg to another we can set the condition codes according to
 ;; its value.  Such a move is common after a return from subroutine and the
@@ -5774,98 +5838,6 @@
 }"
 [(set_attr "type" "call")
  (set_attr "length" "8")])
-
-;; If calling a subroutine and then jumping back to somewhere else, but not
-;; too far away, then we can set the link register with the branch address
-;; and jump direct to the subroutine.  On return from the subroutine
-;; execution continues at the branch; this avoids a prefetch stall.
-;; We use the length attribute (via short_branch ()) to establish whether or
-;; not this is possible, this is the same as the sparc does.
-
-(define_peephole
-  [(parallel[(call (mem:SI (match_operand:SI 0 "" "X"))
-                   (match_operand:SI 1 "general_operand" "g"))
-             (clobber (reg:SI 14))])
-   (set (pc)
-        (label_ref (match_operand 2 "" "")))]
-  "0 && GET_CODE (operands[0]) == SYMBOL_REF 
-   && short_branch (INSN_UID (insn), INSN_UID (operands[2]))
-   && arm_insn_not_targeted (insn)"
-  "*
-{
-  int backward = arm_backwards_branch (INSN_UID (insn),
-				       INSN_UID (operands[2]));
-
-#if 0
-  /* Putting this in means that TARGET_6 code will ONLY run on an arm6 or
-   * above, leaving it out means that the code will still run on an arm 2 or 3
-   */
-  if (TARGET_6)
-    {
-      if (backward)
-	output_asm_insn (\"sub%?\\t%|lr, %|pc, #(8 + . -%l2)\", operands);
-      else
-	output_asm_insn (\"add%?\\t%|lr, %|pc, #(%l2 - . -8)\", operands);
-    }
-  else
-#endif
-    {
-      output_asm_insn (\"mov%?\\t%|lr, %|pc\\t%@ protect cc\", operands);
-      if (backward)
-	output_asm_insn (\"sub%?\\t%|lr, %|lr, #(4 + . -%l2)\", operands);
-      else
-	output_asm_insn (\"add%?\\t%|lr, %|lr, #(%l2 - . -4)\", operands);
-    }
-  return \"b%?\\t%a0\";
-}"
-[(set_attr "type" "call")
- (set (attr "length")
-      (if_then_else (eq_attr "prog_mode" "prog32")
-		    (const_int 8)
-		    (const_int 12)))])
-
-(define_peephole
-  [(parallel[(set (match_operand:SI 0 "s_register_operand" "=r")
-		  (call (mem:SI (match_operand:SI 1 "" "X"))
-                        (match_operand:SI 2 "general_operand" "g")))
-             (clobber (reg:SI 14))])
-   (set (pc)
-        (label_ref (match_operand 3 "" "")))]
-  "0 && GET_CODE (operands[0]) == SYMBOL_REF
-   && short_branch (INSN_UID (insn), INSN_UID (operands[3]))
-   && arm_insn_not_targeted (insn)"
-  "*
-{
-  int backward = arm_backwards_branch (INSN_UID (insn),
-				       INSN_UID (operands[3]));
-
-#if 0
-  /* Putting this in means that TARGET_6 code will ONLY run on an arm6 or
-   * above, leaving it out means that the code will still run on an arm 2 or 3
-   */
-  if (TARGET_6)
-    {
-      if (backward)
-	output_asm_insn (\"sub%?\\t%|lr, %|pc, #(8 + . -%l3)\", operands);
-      else
-	output_asm_insn (\"add%?\\t%|lr, %|pc, #(%l3 - . -8)\", operands);
-    }
-  else
-#endif
-    {
-      output_asm_insn (\"mov%?\\t%|lr, %|pc\\t%@ protect cc\", operands);
-      if (backward)
-	output_asm_insn (\"sub%?\\t%|lr, %|lr, #(4 + . -%l3)\", operands);
-      else
-	output_asm_insn (\"add%?\\t%|lr, %|lr, #(%l3 - . -4)\", operands);
-    }
-  return \"b%?\\t%a1\";
-}"
-[(set_attr "type" "call")
- (set (attr "length")
-      (if_then_else (eq_attr "prog_mode" "prog32")
-		    (const_int 8)
-		    (const_int 12)))])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
