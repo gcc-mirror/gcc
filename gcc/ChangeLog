@@ -1,3 +1,7 @@
+Mon Nov  9 00:39:02 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (call, call_value) [OSF]: Correct alt 3 insn length.
+
 Sun Nov  8 17:50:30 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gansidecl.h: Prepend a "G" to the macro wrapping this file
