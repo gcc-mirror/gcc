@@ -2522,7 +2522,7 @@ copy_constant (exp)
 	tree list = copy_list (CONSTRUCTOR_ELTS (exp));
 	tree tail;
 
-	CONSTRUCTOR_ELTS (exp) = list;
+	CONSTRUCTOR_ELTS (copy) = list;
 	for (tail = list; tail; tail = TREE_CHAIN (tail))
 	  TREE_VALUE (tail) = copy_constant (TREE_VALUE (tail));
 
