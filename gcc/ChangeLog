@@ -1,3 +1,8 @@
+2002-03-08  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (h8300_adjust_insn_length): Tighten
+	insn length for memory load/store.
+
 2002-03-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
  
 	* doc/install.texi (--with-libiconv-prefix): Document.

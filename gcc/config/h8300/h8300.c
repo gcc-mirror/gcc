@@ -3549,9 +3549,20 @@ h8300_adjust_insn_length (insn, length)
 	      && INTVAL (XEXP (addr, 1)) < 32767)
 	    return -4;
 
-	  /* @aa:16 is 2 bytes shorter than the longest.  */
-	  if (GET_CODE (addr) == SYMBOL_REF
-	      && TINY_DATA_NAME_P (XSTR (addr, 0)))
+	  /* @aa:8 is 6 bytes shorter than the longest.  */
+	  if (GET_MODE (SET_SRC (pat)) == QImode
+	      && ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FLAG (addr))
+		  || EIGHTBIT_CONSTANT_ADDRESS_P (addr)))
+	    return -6;
+
+	  /* @aa:16 is 4 bytes shorter than the longest.  */
+	  if ((GET_CODE (addr) == SYMBOL_REF
+	       && TINY_DATA_NAME_P (XSTR (addr, 0)))
+	      || TINY_CONSTANT_ADDRESS_P (addr))
+	    return -4;
+
+	  /* @aa:24 is 2 bytes shorter than the longest.  */
+	  if (GET_CODE (addr) == CONST_INT)
 	    return -2;
 	}
     }
