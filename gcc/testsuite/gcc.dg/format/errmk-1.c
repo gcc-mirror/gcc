@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat" } */
 
-extern int printf (const char *, ...);
+#include "format.h"
 
 void
 foo (int t)

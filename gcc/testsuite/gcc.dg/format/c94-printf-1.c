@@ -3,14 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:199409 -pedantic -Wformat" } */
 
-typedef __WCHAR_TYPE__ wchar_t;
-
-#ifndef __WINT_TYPE__
-#define __WINT_TYPE__ unsigned int
-#endif
-typedef __WINT_TYPE__ wint_t;
-
-extern int printf (const char *, ...);
+#include "format.h"
 
 void
 foo (wint_t lc, wchar_t *ls)

@@ -6,13 +6,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
-typedef __WCHAR_TYPE__ wchar_t;
-typedef __WINT_TYPE__ wint_t;
-typedef __builtin_va_list va_list;
-
-extern int printf (const char *, ...);
-extern int vprintf (const char *, va_list);
-extern int scanf (const char *, ...);
+#include "format.h"
 
 void
 foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,

@@ -3,11 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1999 -pedantic -Wformat" } */
 
-typedef __SIZE_TYPE__ size_t;
-
-struct tm;
-
-extern size_t strftime (char *, size_t, const char *, const struct tm *);
+#include "format.h"
 
 void
 foo (char *s, size_t m, const struct tm *tp)

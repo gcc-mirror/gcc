@@ -3,11 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
-extern int printf (const char *, ...);
-
-extern char *gettext (const char *);
-extern char *dgettext (const char *, const char *);
-extern char *dcgettext (const char *, const char *, int);
+#include "format.h"
 
 void
 foo (int i, long l)

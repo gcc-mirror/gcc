@@ -5,8 +5,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1990 -pedantic -Wformat -Wno-long-long" } */
 
-extern int printf (const char *, ...);
-extern int scanf (const char *, ...);
+#include "format.h"
 
 void
 foo (long long ll, unsigned long long ull, long long *lln,

@@ -3,10 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat -Wmissing-format-attribute" } */
 
-#include <stdarg.h>
-
-extern int vprintf (const char *restrict, va_list);
-extern int vscanf (const char *restrict, va_list);
+#include "format.h"
 
 void
 foo (const char *fmt, ...)

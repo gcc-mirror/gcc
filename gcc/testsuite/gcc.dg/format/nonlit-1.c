@@ -3,10 +3,10 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat -Wformat-nonliteral" } */
 
-extern int printf (const char *, ...);
+#include "format.h"
 
 void
-foo (char *s, __SIZE_TYPE__ i)
+foo (char *s, size_t i)
 {
   printf ((const char *)i, i); /* { dg-warning "argument types" "non-literal" } */
   printf (s, i); /* { dg-warning "argument types" "non-literal" } */

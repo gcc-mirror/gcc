@@ -4,7 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat -Wno-format-extra-args" } */
 
-extern int printf (const char *, ...);
+#include "format.h"
 
 void
 foo (int i)

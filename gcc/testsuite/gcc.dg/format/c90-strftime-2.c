@@ -4,22 +4,18 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1990 -pedantic -Wformat" } */
 
-typedef __SIZE_TYPE__ size_t;
-
-struct tm;
-
-extern size_t strftime (char *, size_t, const char *, const struct tm *);
+#include "format.h"
 
 void
 foo (char *s, size_t m, const struct tm *tp)
 {
   strftime (s, m, "%C", tp); /* { dg-warning "C" "%C not in C90" } */
   strftime (s, m, "%D", tp); /* { dg-warning "C" "%D not in C90" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 17 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 13 } */
   strftime (s, m, "%e", tp); /* { dg-warning "C" "%e not in C90" } */
   strftime (s, m, "%F", tp); /* { dg-warning "C" "%F not in C90" } */
   strftime (s, m, "%g", tp); /* { dg-warning "C" "%g not in C90" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 21 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 17 } */
   strftime (s, m, "%G", tp); /* { dg-warning "C" "%G not in C90" } */
   strftime (s, m, "%h", tp); /* { dg-warning "C" "%h not in C90" } */
   strftime (s, m, "%n", tp); /* { dg-warning "C" "%n not in C90" } */

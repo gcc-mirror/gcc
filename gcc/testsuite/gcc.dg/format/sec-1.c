@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat -Wformat-security" } */
 
-extern int printf (const char *, ...);
+#include "format.h"
 
 void
 foo (char *s)

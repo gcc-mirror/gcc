@@ -5,11 +5,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
-typedef __SIZE_TYPE__ size_t;
-
-struct tm;
-
-extern size_t strftime (char *, size_t, const char *, const struct tm *);
+#include "format.h"
 
 void
 foo (char *s, size_t m, const struct tm *tp)
@@ -102,6 +98,10 @@ foo (char *s, size_t m, const struct tm *tp)
   strftime (s, m, "%-x", tp); /* { dg-warning "flag" "bad %x" } */
   strftime (s, m, "%_x", tp); /* { dg-warning "flag" "bad %x" } */
   strftime (s, m, "%0x", tp); /* { dg-warning "flag" "bad %x" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 89 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 90 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 91 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 92 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 93 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 94 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 95 } */
@@ -110,10 +110,6 @@ foo (char *s, size_t m, const struct tm *tp)
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 98 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 99 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 100 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 101 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 102 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 103 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 104 } */
   /* Incorrect usages with GNU extension conversion characters.  */
   strftime (s, m, "%5P", tp); /* { dg-warning "width" "bad %P" } */
   strftime (s, m, "%-P", tp); /* { dg-warning "flag" "bad %P" } */
@@ -193,16 +189,16 @@ foo (char *s, size_t m, const struct tm *tp)
   strftime (s, m, "%#x", tp); /* { dg-warning "flag" "bad %x" } */
   strftime (s, m, "%^y", tp); /* { dg-warning "flag" "bad %y" } */
   strftime (s, m, "%#y", tp); /* { dg-warning "flag" "bad %y" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 182 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 183 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 184 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 185 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 186 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 187 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 188 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 189 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 190 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 191 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 192 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 193 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 194 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 195 } */
   /* GCC also accepts the glibc format extensions %P, %k, %l, %s.  */
   strftime (s, m, "%P%k%l%s", tp);
   /* GCC also accepts the glibc extension of the "O" modifier on some

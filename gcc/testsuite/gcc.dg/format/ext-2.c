@@ -5,13 +5,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
-/* %q formats want a "quad"; GCC considers this to be a long long.  */
-typedef long long int quad_t;
-typedef unsigned long long int u_quad_t;
-
-typedef __WCHAR_TYPE__ wchar_t;
-
-extern int scanf (const char *, ...);
+#include "format.h"
 
 void
 foo (quad_t *qp, u_quad_t *uqp, quad_t *qn, long long int *llp,
