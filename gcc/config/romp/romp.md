@@ -454,9 +454,9 @@
    (set_attr "length" "8,12")])
 
 (define_expand "reload_outdi"
-  [(set (match_operand:DI 0 "symbolic_memory_operand" "=m")
-	(match_operand:DI 1 "" "r"))
-   (match_operand:SI 2 "" "=&b")]
+  [(parallel [(set (match_operand:DI 0 "symbolic_memory_operand" "=m")
+		   (match_operand:DI 1 "" "r"))
+	      (clobber (match_operand:SI 2 "" "=&b"))])]
   ""
   "")
 
