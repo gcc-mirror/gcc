@@ -1107,7 +1107,7 @@ do {						\
 
 /* Override svr4.h definition.  */
 #undef	ENDFILE_SPEC
-#define	ENDFILE_SPEC "\
+#define	ENDFILE_SPEC "crtsavres.o%s \
 %{mads: %(endfile_ads)} \
 %{myellowknife: %(endfile_yellowknife)} \
 %{mmvme: %(endfile_mvme)} \

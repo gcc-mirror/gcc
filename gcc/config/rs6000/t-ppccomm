@@ -40,7 +40,8 @@ INSTALL_LIBGCC = install-multilib
 EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext) \
   crtbeginS$(objext) crtendS$(objext) crtbeginT$(objext) \
   ecrti$(objext) ecrtn$(objext) \
-  ncrti$(objext) ncrtn$(objext)
+  ncrti$(objext) ncrtn$(objext) \
+  crtsavres$(objext)
 
 # We build {e,n}crti.o and {e,n}crtn.o, which serve to add begin and
 # end labels to all of the special sections used when we link using gcc.
@@ -58,6 +59,9 @@ ncrti.S: $(srcdir)/config/rs6000/sol-ci.asm
 ncrtn.S: $(srcdir)/config/rs6000/sol-cn.asm
 	cat $(srcdir)/config/rs6000/sol-cn.asm >ncrtn.S
 
+crtsavres.S: $(srcdir)/config/rs6000/crtsavres.asm
+	cat $(srcdir)/config/rs6000/crtsavres.asm >crtsavres.S
+
 # Build multiple copies of ?crt{i,n}.o, one for each target switch.
 $(T)ecrti$(objext): ecrti.S
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)ecrti$(objext)
@@ -70,6 +74,9 @@ $(T)ncrti$(objext): ncrti.S
 
 $(T)ncrtn$(objext): ncrtn.S
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ncrtn.S -o $(T)ncrtn$(objext)
+
+$(T)crtsavres$(objext): crtsavres.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c crtsavres.S -o $(T)crtsavres$(objext)
 
 # It is important that crtbegin.o, etc., aren't surprised by stuff in .sdata.
 CRTSTUFF_T_CFLAGS = -msdata=none
