@@ -237,12 +237,9 @@ private:
 	if (target->isPrimitive () || source->isPrimitive ())
 	  return false;
 
-	// _Jv_IsAssignableFrom can handle a target which is an
-	// interface even if it hasn't been prepared.
-	if ((target->state > JV_STATE_LINKED || target->isInterface ())
-	    && source->state > JV_STATE_LINKED)
-	  return _Jv_IsAssignableFrom (target, source);
-
+	// Check array case first because we can have an array whose
+	// component type is not prepared; _Jv_IsAssignableFrom
+	// doesn't handle this correctly.
 	if (target->isArray ())
 	  {
 	    if (! source->isArray ())
@@ -250,6 +247,11 @@ private:
 	    target = target->getComponentType ();
 	    source = source->getComponentType ();
 	  }
+	// _Jv_IsAssignableFrom can handle a target which is an
+	// interface even if it hasn't been prepared.
+	else if ((target->state > JV_STATE_LINKED || target->isInterface ())
+		 && source->state > JV_STATE_LINKED)
+	  return _Jv_IsAssignableFrom (target, source);
 	else if (target->isInterface ())
 	  {
 	    for (int i = 0; i < source->interface_count; ++i)
