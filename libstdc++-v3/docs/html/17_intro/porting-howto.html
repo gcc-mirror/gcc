@@ -3,9 +3,9 @@
 <head>
 <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type">
 <title>Libstdc++-porting-howto</title>
-<meta name="generator" content="DocBook XSL Stylesheets V1.29">
+<meta name="generator" content="DocBook XSL Stylesheets V1.48">
 </head>
-<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="libstdc++-porting-howto" class="article">
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="article">
 <div class="titlepage">
 <div><h1 class="title">
 <a name="libstdc++-porting-howto"></a>Libstdc++-porting-howto</h1></div>
@@ -84,9 +84,7 @@
 	</td></tr>
 </table></div></div>
 <div><div class="abstract">
-<p>
-<a name="id2697062"></a><b>Abstract</b>
-</p>
+<p><b>Abstract</b></p>
 <p>
 	Some notes on porting applications from libstdc++-2.90 (or earlier
 	versions) to libstdc++-v3. Not speaking in terms of the GNU libstdc++
@@ -102,8 +100,8 @@
 <dt>1. <a href="#sec-nsstd">Namespace std::</a>
 </dt>
 <dd><dl>
-<dt>1.1.1. <a href="#sec-gtkmm-hack">Using <i>namespace
-	  composition</i> if the project uses a separate
+<dt>1.1.1. <a href="#sec-gtkmm-hack">Using namespace
+	  composition if the project uses a separate
 	namespace</a>
 </dt>
 <dt>1.1.2. <a href="#sec-emptyns">Defining an empty namespace std</a>
@@ -118,8 +116,8 @@
 <dt>2. <a href="#sec-nocreate">there is no ios::nocreate/ios::noreplace
       in ISO 14882</a>
 </dt>
-<dt>3. <a href="#sec-stream::attach"><b>stream::attach(int
-	fd)</b> is not in the standard any more</a>
+<dt>3. <a href="#sec-stream::attach">stream::attach(int
+	fd) is not in the standard any more</a>
 </dt>
 <dt>4. <a href="#sec-headers">The new headers</a>
 </dt>
@@ -127,16 +125,16 @@
 <dt>4.4.1. <a href="#sec-cheaders">New headers replacing C-headers</a>
 </dt>
 <dt>4.4.2. <a href="#sec-fstream-header">
-	<tt>&lt;fstream&gt;</tt> does
-	not define <b>std::cout</b>,
-	<b>std::cin</b> etc.</a>
+	&lt;fstream&gt; does
+	not define std::cout,
+	std::cin etc.</a>
 </dt>
 </dl></dd>
 <dt>5. <a href="#sec-iterators">Iterators</a>
 </dt>
 <dt>6. <a href="#sec-macros">
-      Libc-macros (i.e. <b>isspace</b> from
-      <tt>&lt;cctype&gt;</tt>)</a>
+      Libc-macros (i.e. isspace from
+      &lt;cctype&gt;)</a>
 </dt>
 <dt>7. <a href="#sec-stream-state">State of streams</a>
 </dt>
@@ -161,29 +159,25 @@
     libstdc++-implementations&quot;.
   </p>
 <div class="section">
-<a name="sec-nsstd"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-nsstd"></a><span class="label">1.</span> <span class="title">Namespace std::</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-nsstd"></a>Namespace std::</h2></div></div>
 <p>
       The latest C++-standard (ISO-14882) requires that the standard
       C++-library is defined in namespace std::. Thus, in order to use
       classes from the standard C++-library, you can do one of three
       things:
-      <div class="itemizedlist"><ul>
-<li><p>
-<a name="id2697113"></a>wrap your code in <b>namespace std {
+      <div class="itemizedlist"><ul type="disc">
+<li><p>wrap your code in <b>namespace std {
 	      ... }</b> =&gt; This is not an option because only symbols
 	    from the standard c++-library are defined in namespace std::.
 	  </p></li>
-<li><p>
-<a name="id2697126"></a>put a kind of
-	    <i>using-declaration</i> in your source (either
+<li><p>put a kind of
+	    <span class="emphasis"><i>using-declaration</i></span> in your source (either
 	    <b>using namespace std;</b> or i.e. <b>using
 	      std::string;</b>) =&gt; works well for source-files, but
 	    cannot be used in header-files.
 	  </p></li>
-<li><p>
-<a name="id2697047"></a>use a <i>fully qualified name</i> for
+<li><p>use a <span class="emphasis"><i>fully qualified name</i></span> for
 	    each libstdc++-symbol (i.e. <b>std::string</b>,
 	    <b>std::cout</b>) =&gt; can always be used
 	  </p></li>
@@ -210,17 +204,16 @@
       that cannot ignore std::.
     </p>
 <div class="section">
-<a name="sec-gtkmm-hack"></a><div class="titlepage"><div><h3 class="title">
-<a name="sec-gtkmm-hack"></a><span class="label">1.1.1.</span> <span class="title">Using <i>namespace
-	  composition</i> if the project uses a separate
-	namespace</span>
-</h3></div></div>
+<div class="titlepage"><div><h3 class="title">
+<a name="sec-gtkmm-hack"></a>Using <span class="emphasis"><i>namespace
+	  composition</i></span> if the project uses a separate
+	namespace</h3></div></div>
 <p>
 	<a href="http://gtkmm.sourceforge.net" target="_top">Gtk--</a> defines
 	most of its classes in namespace Gtk::. Thus, it was possible to
 	adapt Gtk-- to namespace std:: by using a C++-feature called
-	<i>namespace composition</i>. This is what happens if
-	you put a <i>using</i>-declaration into a
+	<span class="emphasis"><i>namespace composition</i></span>. This is what happens if
+	you put a <span class="emphasis"><i>using</i></span>-declaration into a
 	namespace-definition: the imported symbol(s) gets imported into the
 	currently active namespace(s). For example:
 	<pre class="programlisting">
@@ -245,9 +238,8 @@
       </p>
 </div>
 <div class="section">
-<a name="sec-emptyns"></a><div class="titlepage"><div><h3 class="title">
-<a name="sec-emptyns"></a><span class="label">1.1.2.</span> <span class="title">Defining an empty namespace std</span>
-</h3></div></div>
+<div class="titlepage"><div><h3 class="title">
+<a name="sec-emptyns"></a>Defining an empty namespace std</h3></div></div>
 <p>
 	By defining an (empty) namespace <b>std::</b> before
 	using it, you avoid getting errors on systems where no part of the
@@ -259,18 +251,16 @@
       </p>
 </div>
 <div class="section">
-<a name="sec-avoidfqn"></a><div class="titlepage"><div><h3 class="title">
-<a name="sec-avoidfqn"></a><span class="label">1.1.3.</span> <span class="title">Avoid to use fully qualified names
-	(i.e. std::string)</span>
-</h3></div></div>
+<div class="titlepage"><div><h3 class="title">
+<a name="sec-avoidfqn"></a>Avoid to use fully qualified names
+	(i.e. std::string)</h3></div></div>
 <p>
 	If some compilers complain about <b>using
 	  std::string;</b>, and if the &quot;hack&quot; for gtk-- mentioned above
 	does not work, then I see two solutions:
 	
-	<div class="itemizedlist"><ul>
+	<div class="itemizedlist"><ul type="disc">
 <li><p>
-<a name="id2698648"></a>
 	      Define <b>std::</b> as a macro if the compiler
 	      doesn't know about <b>std::</b>.
 	      <pre class="programlisting">
@@ -282,7 +272,6 @@
 	      gnu.gcc.help)
 	    </p></li>
 <li><p>
-<a name="id2698680"></a>
 	      Define a macro NS_STD, which is defined to
 	      either &quot;&quot; or &quot;std&quot;
 	      based on an autoconf-test. Then you should be able to use
@@ -295,18 +284,15 @@
       </p>
 </div>
 <div class="section">
-<a name="sec-osprojects"></a><div class="titlepage"><div><h3 class="title">
-<a name="sec-osprojects"></a><span class="label">1.1.4.</span> <span class="title">How some open-source-projects deal
-	with this</span>
-</h3></div></div>
+<div class="titlepage"><div><h3 class="title">
+<a name="sec-osprojects"></a>How some open-source-projects deal
+	with this</h3></div></div>
 <p>
 	This information was gathered around May 2000. It may not be correct
 	by the time you read this.
       </p>
 <div class="table">
-<p>
-<a name="id2698746"></a><b>Table 1. Namespace std:: in Open-Source programs</b>
-</p>
+<p><b>Table 1. Namespace std:: in Open-Source programs</b></p>
 <table summary="Namespace std:: in Open-Source programs" border="1">
 <colgroup>
 <col>
@@ -338,9 +324,7 @@
 </table>
 </div>
 <div class="table">
-<p>
-<a name="id2698876"></a><b>Table 2. Notations for categories</b>
-</p>
+<p><b>Table 2. Notations for categories</b></p>
 <table summary="Notations for categories" border="1">
 <colgroup>
 <col>
@@ -368,15 +352,16 @@
 <p>
 	As you can see, this currently lacks an example of a project
 	which uses libstdc++-symbols in headers in a back-portable way
-	(except for Gtk--: see the <a href="#sec-gtkmm-hack">section on the gtkmm-hack</a>).
+	(except for Gtk--: see the <a href="#sec-gtkmm-hack" title="Using namespace
+	  composition if the project uses a separate
+	namespace">section on the gtkmm-hack</a>).
       </p>
 </div>
 </div>
 <div class="section">
-<a name="sec-nocreate"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-nocreate"></a><span class="label">2.</span> <span class="title">there is no ios::nocreate/ios::noreplace
-      in ISO 14882</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-nocreate"></a>there is no ios::nocreate/ios::noreplace
+      in ISO 14882</h2></div></div>
 <p>
       I have seen <b>ios::nocreate</b> being used for
       input-streams, most probably because the author thought it would be
@@ -394,10 +379,9 @@
     </p>
 </div>
 <div class="section">
-<a name="sec-stream::attach"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-stream::attach"></a><span class="label">3.</span> <span class="title"><b>stream::attach(int
-	fd)</b> is not in the standard any more</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-stream::attach"></a><b>stream::attach(int
+	fd)</b> is not in the standard any more</h2></div></div>
 <p>
       Phil Edwards <tt>&lt;<a href="mailto:pedwards@disaster.jaj.com">pedwards@disaster.jaj.com</a>&gt;</tt> writes:
       It was considered and rejected.  Not all environments use file
@@ -406,16 +390,14 @@
     </p>
 <p>
       When using libstdc++-v3, you can use
-      <div class="funcsynopsis" id="id2692860">
-<p>
-<a name="id2692860"></a><pre class="funcsynopsisinfo">
+      <div class="funcsynopsis">
+<pre class="funcsynopsisinfo">
 	  #include &lt;fstream&gt;
 	</pre>
 <p><code><code class="funcdef">
 	    <b class="fsfunc">basic_filebuf&lt;...&gt;::basic_filebuf&lt;...&gt;
 	    </b>
 	  </code>(<var class="pdparam">file</var>, <var class="pdparam">mode</var>, <var class="pdparam">size</var>);<br>__c_file_type* <var class="pdparam">file</var>;<br>ios_base::open_mode <var class="pdparam">mode</var>;<br>int <var class="pdparam">size</var>;</code></p>
-<p>
 </div>
       but the the signature of this constructor has changed often, and
       it might change again. For the current state of this, check
@@ -427,13 +409,14 @@
       <b>std::streambuf</b> (or
       <b>std::basic_streambuf&lt;..&gt;</b>) which opens a file
       given a descriptor, and then pass an instance of this to the
-      stream-constructor (from the Josuttis-book).
+      stream-constructor.  For an example of this, refer to
+      <a href="http://www.josuttis.com/cppcode/fdstream.html" target="_top">fdstream example</a> 
+      by Nicolai Josuttis.
     </p>
 </div>
 <div class="section">
-<a name="sec-headers"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-headers"></a><span class="label">4.</span> <span class="title">The new headers</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-headers"></a>The new headers</h2></div></div>
 <p>
       All new headers can be seen in this <a href="headers_cc.txt" target="_top">
 	source-code</a>.
@@ -443,9 +426,8 @@
       a warning that you are using deprecated headers.
     </p>
 <div class="section">
-<a name="sec-cheaders"></a><div class="titlepage"><div><h3 class="title">
-<a name="sec-cheaders"></a><span class="label">4.4.1.</span> <span class="title">New headers replacing C-headers</span>
-</h3></div></div>
+<div class="titlepage"><div><h3 class="title">
+<a name="sec-cheaders"></a>New headers replacing C-headers</h3></div></div>
 <p>
 	You should not use the C-headers (except for system-level
 	headers) from C++ programs. Instead, you should use a set of
@@ -474,12 +456,11 @@
       </p>
 </div>
 <div class="section">
-<a name="sec-fstream-header"></a><div class="titlepage"><div><h3 class="title">
-<a name="sec-fstream-header"></a><span class="label">4.4.2.</span> <span class="title">
+<div class="titlepage"><div><h3 class="title">
+<a name="sec-fstream-header"></a>
 	<tt>&lt;fstream&gt;</tt> does
 	not define <b>std::cout</b>,
-	<b>std::cin</b> etc.</span>
-</h3></div></div>
+	<b>std::cin</b> etc.</h3></div></div>
 <p>
 	In earlier versions of the standard,
 	<tt>&lt;fstream.h&gt;</tt>,
@@ -494,42 +475,38 @@
 </div>
 </div>
 <div class="section">
-<a name="sec-iterators"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-iterators"></a><span class="label">5.</span> <span class="title">Iterators</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-iterators"></a>Iterators</h2></div></div>
 <p>
       The following are not proper uses of iterators, but may be working
       fixes for existing uses of iterators.
-      <div class="itemizedlist"><ul>
-<li><p>
-<a name="id2693156"></a>you cannot do
+      <div class="itemizedlist"><ul type="disc">
+<li><p>you cannot do
 	    <b>ostream::operator&lt;&lt;(iterator)</b> to
 	    print the address of the iterator =&gt; use
 	    <b>operator&lt;&lt; &amp;*iterator</b> instead ?
 	  </p></li>
-<li><p>
-<a name="id2693255"></a>you cannot clear an iterator's reference
+<li><p>you cannot clear an iterator's reference
 	    (<b>iterator = 0</b>) =&gt; use
 	    <b>iterator = iterator_type();</b> ?
 	  </p></li>
 <li><p>
-<a name="id2693277"></a><b>if (iterator)</b> won't work any
+<b>if (iterator)</b> won't work any
 	    more =&gt; use <b>if (iterator != iterator_type())</b>
 	    ?</p></li>
 </ul></div>
     </p>
 </div>
 <div class="section">
-<a name="sec-macros"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-macros"></a><span class="label">6.</span> <span class="title">
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-macros"></a>
       Libc-macros (i.e. <b>isspace</b> from
-      <tt>&lt;cctype&gt;</tt>)</span>
-</h2></div></div>
+      <tt>&lt;cctype&gt;</tt>)</h2></div></div>
 <p>
       Glibc 2.0.x and 2.1.x define the
       <tt>&lt;ctype.h&gt;</tt>
       -functionality as macros (isspace, isalpha etc.). Libstdc++-v3
-      &quot;shadows&quot; these macros as described in the <a href="#sec-cheaders">section about
+      &quot;shadows&quot; these macros as described in the <a href="#sec-cheaders" title="New headers replacing C-headers">section about
 	c-headers</a>.
     </p>
 <p>
@@ -577,18 +554,17 @@
       The solution to this problem was posted to the libstdc++-v3
       mailing-list:
       Benjamin Kosnik <tt>&lt;<a href="mailto:bkoz@redhat.com">bkoz@redhat.com</a>&gt;</tt> writes:
-      `
+      &#x2018;
 	--enable-cshadow-headers is currently broken. As a result, shadow
 	headers are not being searched....
-      '
+      &#x2019;
       This is now outdated, but gcc 3.0 still does not have fully
       compliant &quot;shadow headers&quot;.
     </p>
 </div>
 <div class="section">
-<a name="sec-stream-state"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-stream-state"></a><span class="label">7.</span> <span class="title">State of streams</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-stream-state"></a>State of streams</h2></div></div>
 <p>
       At least some older implementations don't have
       <b>std::ios_base</b>, so you should use
@@ -598,9 +574,8 @@
     </p>
 </div>
 <div class="section">
-<a name="sec-vector-at"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-vector-at"></a><span class="label">8.</span> <span class="title">vector::at is missing (i.e. gcc 2.95.x)</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-vector-at"></a>vector::at is missing (i.e. gcc 2.95.x)</h2></div></div>
 <p>
       One solution is to add an autoconf-test for this:
       <pre class="programlisting">
@@ -630,9 +605,8 @@
     </p>
 </div>
 <div class="section">
-<a name="sec-eof"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-eof"></a><span class="label">9.</span> <span class="title">Using std::char_traits&lt;char&gt;::eof()</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-eof"></a>Using std::char_traits&lt;char&gt;::eof()</h2></div></div>
 <p>
       <pre class="programlisting">
 	#ifdef HAVE_CHAR_TRAITS
@@ -644,9 +618,8 @@
     </p>
 </div>
 <div class="section">
-<a name="sec-string-clear"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-string-clear"></a><span class="label">10.</span> <span class="title">Using string::clear()/string::erase()</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-string-clear"></a>Using string::clear()/string::erase()</h2></div></div>
 <p>
       There are two functions for deleting the contents of a string:
       <b>clear</b> and <b>erase</b> (the latter
@@ -671,19 +644,17 @@
     </p>
 </div>
 <div class="section">
-<a name="sec-scan-form"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-scan-form"></a><span class="label">11.</span> <span class="title">GNU Extensions ostream::form and istream::scan</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-scan-form"></a>GNU Extensions ostream::form and istream::scan</h2></div></div>
 <p>
       These	are not supported any more - use
-      <a href="#sec-stringstream">
+      <a href="#sec-stringstream" title="Using stringstreams">
 	stringstreams</a> instead.	
     </p>
 </div>
 <div class="section">
-<a name="sec-stringstream"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-stringstream"></a><span class="label">12.</span> <span class="title">Using stringstreams</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-stringstream"></a>Using stringstreams</h2></div></div>
 <p>
       Libstdc++-v3 provides the new
       <b>i/ostringstream</b>-classes, (<tt>&lt;sstream&gt;</tt>), but for compatibility
@@ -696,22 +667,18 @@
 	#include &lt;strstream&gt;
 	#endif
       </pre>
-      <div class="itemizedlist"><ul>
-<li><p>
-<a name="id2693683"></a> <b>strstream</b> is considered to be
+      <div class="itemizedlist"><ul type="disc">
+<li><p> <b>strstream</b> is considered to be
 	    deprecated
 	  </p></li>
-<li><p>
-<a name="id2693629"></a> <b>strstream</b> is limited to
+<li><p> <b>strstream</b> is limited to
 	    <b>char</b>
 	  </p></li>
-<li><p>
-<a name="id2693718"></a> with <b>ostringstream</b> you don't
+<li><p> with <b>ostringstream</b> you don't
 	    have to take care of terminating the string or freeing its
 	    memory
 	  </p></li>
-<li><p>
-<a name="id2693735"></a> <b>istringstream</b> can be re-filled
+<li><p> <b>istringstream</b> can be re-filled
 	    (clear(); str(input);)
 	  </p></li>
 </ul></div>
@@ -789,9 +756,8 @@
     </p>
 </div>
 <div class="section">
-<a name="sec-about"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
-<a name="sec-about"></a><span class="label">13.</span> <span class="title">About...</span>
-</h2></div></div>
+<div class="titlepage"><div><h2 class="title" style="clear: both">
+<a name="sec-about"></a>About...</h2></div></div>
 <p>
       Please send any experience, additions, corrections or questions to
       <a href="mailto:fnatter@gmx.net" target="_top">fnatter@gmx.net</a> or for

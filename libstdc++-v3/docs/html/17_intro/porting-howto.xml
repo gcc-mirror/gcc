@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1//EN"
-                         "dtd/docbook-4/docbookx.dtd">
+                         "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
 
 <?xml-stylesheet type="text/xsl" href="docbook-xslt/docbook/html/docbook.xsl"?>
 
