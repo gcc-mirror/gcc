@@ -1998,10 +1998,10 @@ ia64_print_operand (file, x, code)
 	  case POST_MODIFY:
 	    x = XEXP (XEXP (XEXP (x, 0), 1), 1);
 	    if (GET_CODE (x) == CONST_INT)
-	      value = INTVAL (y);
+	      value = INTVAL (x);
 	    else if (GET_CODE (x) == REG)
 	      {
-		fprintf (file, ", %s", reg_names[REGNO (y)]);
+		fprintf (file, ", %s", reg_names[REGNO (x)]);
 		return;
 	      }
 	    else
@@ -2020,7 +2020,7 @@ ia64_print_operand (file, x, code)
 	    break;
 
 	  case POST_DEC:
-	    value = - GET_MODE_SIZE (GET_MODE (x));
+	    value = - (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (x));
 	    if (value == -12)
 	      value = -16;
 	    break;
