@@ -4,7 +4,7 @@
 
 // by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
 // bug report by Martin Sebor <sebor@roguewave.com>
-// from C++ Standard [temp.expl.spec]/5
+// based on C++ Standard example in [temp.expl.spec]/5
 
 /* Members of explicitly specialized template classes shall not be
    defined with template-specialization syntax.  The example in the
@@ -15,8 +15,8 @@
 template<class T> struct A {};
 
 template<> struct A<int> {
-  static const bool a, b;
+  static bool a, b;
 };
 
-const bool A<int>::a; // ok
-template<> const bool A<int>::b; // ERROR - bad specialization - XFAIL *-*-*
+bool A<int>::a = true; // ok
+template<> bool A<int>::b = false; // ERROR - XFAIL *-*-*
