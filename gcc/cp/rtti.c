@@ -373,9 +373,6 @@ get_tinfo_fn (type)
   make_function_rtl (d);
   assemble_external (d);
   mark_inline_for_output (d);
-  if (at_eof)
-    import_export_decl (d);
-
   pop_obstacks ();
 
   return d;
@@ -1074,6 +1071,9 @@ synthesize_tinfo_fn (fndecl)
   TREE_USED (tdecl) = 1;
   DECL_ALIGN (tdecl) = TYPE_ALIGN (ptr_type_node);
   cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
+
+  if (at_eof)
+    import_export_decl (fndecl);
 
   start_function (NULL_TREE, fndecl, NULL_TREE, 1);
   store_parm_decls ();
