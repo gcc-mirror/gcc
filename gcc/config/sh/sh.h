@@ -3211,6 +3211,7 @@ extern int rtx_equal_function_value_matters;
 /* Define the codes that are matched by predicates in sh.c.  */
 #define PREDICATE_CODES \
   {"and_operand", {SUBREG, REG, CONST_INT}},				\
+  {"any_register_operand", {SUBREG, REG}},				\
   {"arith_operand", {SUBREG, REG, CONST_INT}},				\
   {"arith_reg_dest", {SUBREG, REG}},					\
   {"arith_reg_operand", {SUBREG, REG}},					\
@@ -3227,6 +3228,7 @@ extern int rtx_equal_function_value_matters;
   {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}}, \
   {"general_movdst_operand", {SUBREG, REG, MEM}},			\
   {"greater_comparison_operator", {GT,GE,GTU,GEU}},			\
+  {"int_gpr_dest", {SUBREG, REG}},					\
   {"inqhi_operand", {TRUNCATE}},					\
   {"less_comparison_operator", {LT,LE,LTU,LEU}},			\
   {"logical_operand", {SUBREG, REG, CONST_INT}},			\
@@ -3235,12 +3237,21 @@ extern int rtx_equal_function_value_matters;
   {"shmedia_6bit_operand", {SUBREG, REG, CONST_INT}},			\
   {"target_reg_operand", {SUBREG, REG}},				\
   {"target_operand", {SUBREG, REG, LABEL_REF, SYMBOL_REF, CONST, UNSPEC}},\
+  {"trunc_hi_operand", {SUBREG, REG, TRUNCATE}},			\
   {"register_operand", {SUBREG, REG}},					\
   {"sh_const_vec", {CONST_VECTOR}},					\
   {"sh_1el_vec", {CONST_VECTOR, PARALLEL}},				\
   {"sh_rep_vec", {CONST_VECTOR, PARALLEL}},				\
   {"symbol_ref_operand", {SYMBOL_REF}},					\
   {"unary_float_operator", {ABS, NEG, SQRT}},				\
+
+#define SPECIAL_MODE_PREDICATES \
+  "any_register_operand", \
+  "int_gpr_dest", \
+  "trunc_hi_operand", \
+  /* This line intentionally left blank.  */
+
+#define any_register_operand register_operand
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases, 
