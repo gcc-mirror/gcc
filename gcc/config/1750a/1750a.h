@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (oliver.kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
@@ -909,7 +909,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define REGISTER_MOVE_COST(FROM,TO)	2
 
-#define MEMORY_MOVE_COST(M)		4
+#define MEMORY_MOVE_COST(M,C,I)		4
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Acorn RISC Machine.
-   Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -1624,7 +1624,7 @@ extern struct rtx_def *legitimize_pic_address ();
    return arm_rtx_costs (X, CODE, OUTER_CODE);
 
 /* Moves to and from memory are quite expensive */
-#define MEMORY_MOVE_COST(MODE)  10
+#define MEMORY_MOVE_COST(MODE,CLASS,IN)  10
 
 /* All address computations that can be done are free, but rtx cost returns
    the same for practically all of them.  So we weight the different types

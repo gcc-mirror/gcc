@@ -801,7 +801,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
    On the Alpha, bump this up a bit.  */
 
-#define MEMORY_MOVE_COST(MODE)  6
+#define MEMORY_MOVE_COST(MODE,CLASS,IN)  6
 
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST 5

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1268,7 +1268,7 @@ m32r_select_cc_mode (OP, X, Y)
 /* Compute the cost of moving data between registers and memory.  */
 /* Memory is 3 times as expensive as registers.
    ??? Is that the right way to look at it?  */
-#define MEMORY_MOVE_COST(MODE) \
+#define MEMORY_MOVE_COST(MODE,CLASS,IN) \
 (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD ? 6 : 12)
 
 /* The cost of a branch insn.  */

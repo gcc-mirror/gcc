@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU.
-   Copyright (C) 1988, 90-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 90-97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -681,7 +681,7 @@ extern struct rtx_def *a29k_get_reloaded_address ();
    this higher.  In addition, we need to keep it more expensive than the
    most expensive register-register copy.  */
 
-#define MEMORY_MOVE_COST(MODE) 6
+#define MEMORY_MOVE_COST(MODE,CLASS,IN) 6
 
 /* A C statement (sans semicolon) to update the integer variable COST
    based on the relationship between INSN that is dependent on
