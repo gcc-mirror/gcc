@@ -1,5 +1,16 @@
 2003-12-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* lib/gcc-dg.exp (dg-require-profiling): New function.
+	* lib/target-supports.exp (check_profiling_available): Likewise.
+	* g++.dg/bprob/bprob.exp: Use check_profiling_available.
+	* g77.dg/bprob/bprob.exp: Likewise.
+	* gcc.misc-tests/bprob.exp: Likewise.
+	* g++.old-deja/g++.law/profile1.C: Use dg-require-profiling.
+	* gcc.dg/20021014-1.c: Likewise.
+	* gcc.dg/nest.c: Likewise.
+
+2003-12-23  Mark Mitchell  <mark@codesourcery.com>
+
 	* g++.dg/lookup/java1.C: Use -fdollars-in-identifiers when
 	compiling.
 	* g++.dg/lookup/java2.C: Likewise.
