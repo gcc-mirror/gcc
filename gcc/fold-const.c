@@ -3776,7 +3776,7 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 
 /* Given a range, LOW, HIGH, and IN_P, an expression, EXP, and a result
    type, TYPE, return an expression to test if EXP is in (or out of, depending
-   on IN_P) the range.  */
+   on IN_P) the range.  Return 0 if the test couldn't be created.  */
 
 static tree
 build_range_check (tree type, tree exp, int in_p, tree low, tree high)
@@ -3784,9 +3784,14 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
   tree etype = TREE_TYPE (exp);
   tree value;
 
-  if (! in_p
-      && (0 != (value = build_range_check (type, exp, 1, low, high))))
-    return invert_truthvalue (value);
+  if (! in_p)
+    {
+      value = build_range_check (type, exp, 1, low, high);
+      if (value != 0)
+        return invert_truthvalue (value);
+
+      return 0;
+    }
 
   if (low == 0 && high == 0)
     return fold_convert (type, integer_one_node);
@@ -3842,8 +3847,39 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 	}
     }
 
-  if (0 != (value = const_binop (MINUS_EXPR, high, low, 0))
-      && ! TREE_OVERFLOW (value))
+  value = const_binop (MINUS_EXPR, high, low, 0);
+  if (value != 0 && TREE_OVERFLOW (value) && ! TYPE_UNSIGNED (etype))
+    {
+      tree utype, minv, maxv;
+
+      /* Check if (unsigned) INT_MAX + 1 == (unsigned) INT_MIN
+	 for the type in question, as we rely on this here.  */
+      switch (TREE_CODE (etype))
+	{
+	case INTEGER_TYPE:
+	case ENUMERAL_TYPE:
+	case CHAR_TYPE:
+	  utype = lang_hooks.types.unsigned_type (etype);
+	  maxv = fold_convert (utype, TYPE_MAX_VALUE (etype));
+	  maxv = range_binop (PLUS_EXPR, NULL_TREE, maxv, 1,
+			      integer_one_node, 1);
+	  minv = fold_convert (utype, TYPE_MIN_VALUE (etype));
+	  if (integer_zerop (range_binop (NE_EXPR, integer_type_node,
+					  minv, 1, maxv, 1)))
+	    {
+	      etype = utype;
+	      high = fold_convert (etype, high);
+	      low = fold_convert (etype, low);
+	      exp = fold_convert (etype, exp);
+	      value = const_binop (MINUS_EXPR, high, low, 0);
+	    }
+	  break;
+	default:
+	  break;
+	}
+    }
+
+  if (value != 0 && ! TREE_OVERFLOW (value))
     return build_range_check (type,
 			      fold (build2 (MINUS_EXPR, etype, exp, low)),
 			      1, fold_convert (etype, integer_zero_node),
@@ -3973,7 +4009,75 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 					 1, low1, 0)))
 	    in_p = 0, low = low0, high = high1;
 	  else
-	    return 0;
+	    {
+	      /* Canonicalize - [min, x] into - [-, x].  */
+	      if (low0 && TREE_CODE (low0) == INTEGER_CST)
+		switch (TREE_CODE (TREE_TYPE (low0)))
+		  {
+		  case ENUMERAL_TYPE:
+		    if (TYPE_PRECISION (TREE_TYPE (low0))
+			!= GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (low0))))
+		      break;
+		    /* FALLTHROUGH */
+		  case INTEGER_TYPE:
+		  case CHAR_TYPE:
+		    if (tree_int_cst_equal (low0,
+					    TYPE_MIN_VALUE (TREE_TYPE (low0))))
+		      low0 = 0;
+		    break;
+		  case POINTER_TYPE:
+		    if (TYPE_UNSIGNED (TREE_TYPE (low0))
+			&& integer_zerop (low0))
+		      low0 = 0;
+		    break;
+		  default:
+		    break;
+		  }
+
+	      /* Canonicalize - [x, max] into - [x, -].  */
+	      if (high1 && TREE_CODE (high1) == INTEGER_CST)
+		switch (TREE_CODE (TREE_TYPE (high1)))
+		  {
+		  case ENUMERAL_TYPE:
+		    if (TYPE_PRECISION (TREE_TYPE (high1))
+			!= GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (high1))))
+		      break;
+		    /* FALLTHROUGH */
+		  case INTEGER_TYPE:
+		  case CHAR_TYPE:
+		    if (tree_int_cst_equal (high1,
+					    TYPE_MAX_VALUE (TREE_TYPE (high1))))
+		      high1 = 0;
+		    break;
+		  case POINTER_TYPE:
+		    if (TYPE_UNSIGNED (TREE_TYPE (high1))
+			&& integer_zerop (range_binop (PLUS_EXPR, NULL_TREE,
+						       high1, 1,
+						       integer_one_node, 1)))
+		      high1 = 0;
+		    break;
+		  default:
+		    break;
+		  }
+
+	      /* The ranges might be also adjacent between the maximum and
+	         minimum values of the given type.  For
+	         - [{min,-}, x] and - [y, {max,-}] ranges where x + 1 < y
+	         return + [x + 1, y - 1].  */
+	      if (low0 == 0 && high1 == 0)
+	        {
+		  low = range_binop (PLUS_EXPR, NULL_TREE, high0, 1,
+				     integer_one_node, 1);
+		  high = range_binop (MINUS_EXPR, NULL_TREE, low1, 0,
+				      integer_one_node, 0);
+		  if (low == 0 || high == 0)
+		    return 0;
+
+		  in_p = 1;
+		}
+	      else
+		return 0;
+	    }
 	}
       else if (subset)
 	in_p = 0, low = low0, high = high0;
