@@ -1,3 +1,8 @@
+2004-12-05  Roger Sayle  <roger@eyesopen.com>
+
+	* c-typeck.c (c_finish_loop): Improve initial implementations
+	for loops whose conditions are known at compile-time.
+
 2004-12-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c: Fix comment typos.

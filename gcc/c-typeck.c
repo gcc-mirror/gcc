@@ -6659,10 +6659,17 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 {
   tree entry = NULL, exit = NULL, t;
 
-  /* Detect do { ... } while (0) and don't generate loop construct.  */
-  if (cond && !cond_is_first && integer_zerop (cond))
-    cond = NULL;
-  if (cond_is_first || cond)
+  /* If the condition is zero don't generate a loop construct.  */
+  if (cond && integer_zerop (cond))
+    {
+      if (cond_is_first)
+	{
+	  t = build_and_jump (&blab);
+	  SET_EXPR_LOCATION (t, start_locus);
+	  add_stmt (t);
+	}
+    }
+  else
     {
       tree top = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
  
@@ -6671,7 +6678,7 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
          then we just build a jump back to the top.  */
       exit = build_and_jump (&LABEL_EXPR_LABEL (top));
  
-      if (cond)
+      if (cond && !integer_nonzerop (cond))
         {
           /* Canonicalize the loop condition to the end.  This means
              generating a branch to the loop condition.  Reuse the
