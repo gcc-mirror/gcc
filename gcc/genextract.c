@@ -274,7 +274,7 @@ walk_rtx (x, path)
 	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    {
-	      newpath[depth] = 'a' + i;
+	      newpath[depth] = 'a' + j;
 	      walk_rtx (XVECEXP (x, i, j), newpath);
 	    }
 	}
