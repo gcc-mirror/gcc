@@ -3547,7 +3547,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 
 	      *pbitpos += TREE_INT_CST_LOW (constant);
 	      offset = size_binop (PLUS_EXPR, offset,
-				   size_binop (FLOOR_DIV_EXPR, var,
+				   size_binop (EXACT_DIV_EXPR, var,
 					       size_int (BITS_PER_UNIT)));
 	    }
 	  else if (TREE_CODE (pos) == INTEGER_CST)
@@ -3557,7 +3557,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	      /* Assume here that the offset is a multiple of a unit.
 		 If not, there should be an explicitly added constant.  */
 	      offset = size_binop (PLUS_EXPR, offset,
-				   size_binop (FLOOR_DIV_EXPR, pos,
+				   size_binop (EXACT_DIV_EXPR, pos,
 					       size_int (BITS_PER_UNIT)));
 	    }
 	}
