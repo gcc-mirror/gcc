@@ -142,6 +142,8 @@ extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,
 extern void alpha_start_function PARAMS ((FILE *, const char *, tree));
 extern void alpha_end_function PARAMS ((FILE *, const char *, tree));
 
+extern int alpha_find_lo_sum_using_gp PARAMS ((rtx));
+
 #ifdef REAL_VALUE_TYPE
 extern int check_float_value PARAMS ((enum machine_mode,
 				      REAL_VALUE_TYPE *, int));

@@ -1,3 +1,14 @@
+2003-02-11  Richard Henderson  <rth@redhat.com>
+
+	2003-01-15  Richard Henderson  <rth@redhat.com>
+        * config/alpha/alpha.c (find_lo_sum_using_gp): Rename from find_lo_sum;
+        also check that GP is being used.
+        (alpha_find_lo_sum_using_gp): New.
+        (alpha_does_function_need_gp): Use get_attr_usegp.
+        * config/alpha/alpha-protos.h: Update.
+        * config/alpha/alpha.md (attr usegp): New.  Annotate patterns
+        as needed.
+
 2003-02-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* inclhack.def (hpux_long_double, hpux10_ctype_declarations1,
