@@ -463,15 +463,13 @@ __internal_ev_mwhumianw (__ev64_opaque__ a, __ev64_opaque__ b)
   return __ev_subfumiaaw (t);
 }
 
-/* ** */
-
 static inline __ev64_opaque__
 __internal_ev_mwhgssfaa (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
   t = __ev_mwhssf (a, b);
-  return __ev_mwsmiaa (t, ((__ev64_opaque__){1, 1}));
+  return __ev_mwsmiaa (t, ((__ev64_s32__){1, 1}));
 }
 
 static inline __ev64_opaque__
@@ -480,7 +478,7 @@ __internal_ev_mwhgsmfaa (__ev64_opaque__ a, __ev64_opaque__ b)
   __ev64_opaque__ t;
 
   t = __ev_mwhsmf (a, b);
-  return __ev_mwsmiaa (t, ((__ev64_opaque__){1, 1}));
+  return __ev_mwsmiaa (t, ((__ev64_s32__){1, 1}));
 }
 
 static inline __ev64_opaque__
@@ -489,7 +487,7 @@ __internal_ev_mwhgsmiaa (__ev64_opaque__ a, __ev64_opaque__ b)
   __ev64_opaque__ t;
 
   t = __ev_mwhsmi (a, b);
-  return __ev_mwsmiaa (t, ((__ev64_opaque__){1, 1}));
+  return __ev_mwsmiaa (t, ((__ev64_s32__){1, 1}));
 }
 
 static inline __ev64_opaque__
@@ -498,7 +496,7 @@ __internal_ev_mwhgumiaa (__ev64_opaque__ a, __ev64_opaque__ b)
   __ev64_opaque__ t;
 
   t = __ev_mwhumi (a, b);
-  return __ev_mwumiaa (t, ((__ev64_opaque__){1, 1}));
+  return __ev_mwumiaa (t, ((__ev64_s32__){1, 1}));
 }
 
 static inline __ev64_opaque__
@@ -507,7 +505,7 @@ __internal_ev_mwhgssfan (__ev64_opaque__ a, __ev64_opaque__ b)
   __ev64_opaque__ t;
 
   t = __ev_mwhssf (a, b);
-  return __ev_mwsmian (t, ((__ev64_opaque__){1, 1}));
+  return __ev_mwsmian (t, ((__ev64_s32__){1, 1}));
 }
 
 static inline __ev64_opaque__
@@ -516,7 +514,7 @@ __internal_ev_mwhgsmfan (__ev64_opaque__ a, __ev64_opaque__ b)
   __ev64_opaque__ t;
 
   t = __ev_mwhsmf (a, b);
-  return __ev_mwsmian (t, ((__ev64_opaque__){1, 1}));
+  return __ev_mwsmian (t, ((__ev64_s32__){1, 1}));
 }
 
 static inline __ev64_opaque__
@@ -525,7 +523,7 @@ __internal_ev_mwhgsmian (__ev64_opaque__ a, __ev64_opaque__ b)
   __ev64_opaque__ t;
 
   t = __ev_mwhsmi (a, b);
-  return __ev_mwsmian (t, ((__ev64_opaque__){1, 1}));
+  return __ev_mwsmian (t, ((__ev64_s32__){1, 1}));
 }
 
 static inline __ev64_opaque__
@@ -534,7 +532,7 @@ __internal_ev_mwhgumian (__ev64_opaque__ a, __ev64_opaque__ b)
   __ev64_opaque__ t;
 
   t = __ev_mwhumi (a, b);
-  return __ev_mwumian (t, ((__ev64_opaque__){1, 1}));
+  return __ev_mwumian (t, ((__ev64_s32__){1, 1}));
 }
 
 /* END OF NOT SUPPORTED */

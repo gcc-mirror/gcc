@@ -1,3 +1,15 @@
+2002-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/spe.h (__internal_ev_mwhgumian): Cast vector
+	constants to __ev64_s32__.
+	(__internal_ev_mwhgsmian): Same.
+	(__internal_ev_mwhgsmfan): Same.
+	(__internal_ev_mwhgssfan): Same.
+	(__internal_ev_mwhgumiaa): Same.
+	(__internal_ev_mwhgsmiaa): Same.
+	(__internal_ev_mwhgsmfaa): Same.
+	(__internal_ev_mwhgssfaa): Same.
+
 2002-07-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* varasm.c (assemble_variable): Narrow test for uninitialized
