@@ -1,3 +1,10 @@
+2002-01-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/invoke.texi: Avoid overfull hboxes.  Add summary of D30V
+	options.  Use @table @gcctabopt for MMIX options.  Add index
+	entries for MMIX options.  Start new paragraph with first
+	heading of the machine-dependent options.
+
 2002-01-11  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR other/5299

@@ -274,8 +274,8 @@ in the following sections.
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations -fno-trapping-math @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
--foptimize-sibling-calls  -fprefetch-loop-arrays  -freduce-all-givs @gol
--fregmove  -frename-registers @gol
+-foptimize-sibling-calls  -fprefetch-loop-arrays @gol
+-freduce-all-givs -fregmove  -frename-registers @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
@@ -324,6 +324,7 @@ in the following sections.
 
 @item Machine Dependent Options
 @xref{Submodel Options,,Hardware Models and Configurations}.
+
 @emph{M680x0 Options}
 @gccoptlist{
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
@@ -602,6 +603,11 @@ in the following sections.
 -minline-divide-max-throughput  -mno-dwarf2-asm @gol
 -mfixed-range=@var{register-range}}
 
+@emph{D30V Options}
+@gccoptlist{
+-mextmem  -mextmemory  -monchip  -mno-asm-optimize  -masm-optimize @gol
+-mbranch-cost=@var{n} -mcond-exec=@var{n}}
+
 @emph{S/390 and zSeries Options}
 @gccoptlist{
 -mhard-float  -msoft-float  -mbackchain  -mno-backchain @gol
@@ -631,7 +637,8 @@ in the following sections.
 @gccoptlist{
 -fcall-saved-@var{reg}  -fcall-used-@var{reg} @gol
 -ffixed-@var{reg} -fexceptions @gol
--fnon-call-exceptions  -funwind-tables -fasynchronous-unwind-tables @gol
+-fnon-call-exceptions  -funwind-tables @gol
+-fasynchronous-unwind-tables @gol
 -finhibit-size-directive  -finstrument-functions @gol
 -fno-common  -fno-ident  -fno-gnu-linker @gol
 -fpcc-struct-return  -fpic  -fPIC @gol
@@ -9719,31 +9726,41 @@ Like @option{-sim}, but pass linker options to locate initialized data at
 
 These options are defined for the MMIX:
 
-@table @code
+@table @gcctabopt
 @item -mlibfuncs
 @itemx -mno-libfuncs
+@opindex mlibfuncs
+@opindex mno-libfuncs
 Specify that intrinsic library functions are being compiled, passing all
 values in registers, no matter the size.
 
 @item -mepsilon
 @itemx -mno-epsilon
+@opindex mepsilon
+@opindex mno-epsilon
 Generate floating-point comparison instructions that compare with respect
 to the @code{rE} epsilon register.
 
 @item -mabi=mmixware
 @itemx -mabi=gnu
+@opindex mabi-mmixware
+@opindex mabi=gnu
 Generate code that passes function parameters and return values that (in
 the called function) are seen as registers @code{$0} and up, as opposed to
 the GNU ABI which uses global registers @code{$231} and up.
 
 @item -mzero-extend
 @itemx -mno-zero-extend
+@opindex mzero-extend
+@opindex mno-zero-extend
 When reading data from memory in sizes shorter than 64 bits, use (do not
 use) zero-extending load instructions by default, rather than
 sign-extending ones.
 
 @item -mknuthdiv
 @itemx -mno-knuthdiv
+@opindex mknuthdiv
+@opindex mno-knuthdiv
 Make the result of a division yielding a remainder have the same sign as
 the divisor.  With the default, @option{-mno-knuthdiv}, the sign of the
 remainder follows the sign of the dividend.  Both methods are
@@ -9751,20 +9768,27 @@ arithmetically valid, the latter being almost exclusively used.
 
 @item -mtoplevel-symbols
 @itemx -mno-toplevel-symbols
+@opindex mtoplevel-symbols
+@opindex mno-toplevel-symbols
 Prepend (do not prepend) a @samp{:} to all global symbols, so the assembly
 code can be used with the @code{PREFIX} assembly directive.
 
 @item -melf
+@opindex melf
 Generate an executable in the ELF format, rather than the default
 @samp{mmo} format used by the @command{mmix} simulator.
 
 @item -mbranch-predict
 @itemx -mno-branch-predict
+@opindex mbranch-predict
+@opindex mno-branch-predict
 Use (do not use) the probable-branch instructions, when static branch
 prediction indicates a probable branch.
 
 @item -mreg-stack-fill-bug-workaround
 @itemx -mno-reg-stack-fill-bug-workaround
+@opindex mreg-stack-fill-bug-workaround
+@opindex mno-reg-stack-fill-bug-workaround
 Work around (do not work around) an inconsistency in the circular
 register stack mechanism in the @command{mmix} simulator, which
 causes entries in the register stack to not be flushed to memory if
