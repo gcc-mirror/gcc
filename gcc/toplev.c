@@ -3376,8 +3376,9 @@ rest_of_compilation (decl)
 	}
 
       /* If specified extern inline but we aren't inlining it, we are
-	 done.  */
-      if (DECL_INLINE (decl) && DECL_EXTERNAL (decl))
+	 done.  This goes for anything that gets here with DECL_EXTERNAL
+	 set, not just things with DECL_INLINE.  */
+      if (DECL_EXTERNAL (decl))
 	goto exit_rest_of_compilation;
     }
 

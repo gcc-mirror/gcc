@@ -1,3 +1,8 @@
+Mon Sep 21 14:10:51 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* toplev.c (rest_of_compilation): Skip compiling anything with
+	DECL_EXTERNAL set, not just if it has DECL_INLINE as well.
+
 Mon Sep 21 13:51:05 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* flow.c (find_basic_blocks): Delete check for in_libcall_block when
@@ -184,6 +189,7 @@ Fri Sep 18 23:50:56 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 	(REG_ALLOC_ORDER): Allocate highest numbered condition regsiters
 	first; cr1 can be used for FP record condition insns.
 
+>>>>>>> 1.2125
 Fri Sep 18 09:44:55 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/m32r/m32r.h (m32r_block_immediate_operand): Add to
@@ -352,11 +358,13 @@ Tue Sep 15 19:09:06 1998  Richard Henderson  <rth@cygnus.com>
 	* m68h.h (ARG_POINTER_CFA_OFFSET): New.
 	* sparc.h (ARG_POINTER_CFA_OFFSET): New.
 
+>>>>>>> 1.2099
 Tue Sep 15 19:31:58 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* i960.h (CONST_COSTS): Fix thinko.  Test flag, not the constant
 	flag bit mask.
 
+>>>>>>> 1.2079
 Tue Sep 15 14:10:54 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (struct eh_entry): Add false_label field.
