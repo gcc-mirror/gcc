@@ -721,7 +721,7 @@ do_line (pfile)
   cpp_buffer *buffer = pfile->buffer;
   const char *filename = buffer->nominal_fname;
   unsigned int lineno = buffer->lineno;
-  enum cpp_fc_reason reason = (enum cpp_fc_reason) -1;
+  enum cpp_fc_reason reason = FC_RENAME;
   unsigned long new_lineno;
   unsigned int cap;
   cpp_token token;
@@ -749,19 +749,14 @@ do_line (pfile)
       unsigned int len;
       int action_number = 0;
 
+      /* FIXME: memory leak.  */
       len = token.val.str.len;
-      fname = alloca (len + 1);
+      fname = xmalloc (len + 1);
       memcpy (fname, token.val.str.text, len);
       fname[len] = '\0';
     
-      if (strcmp (fname, buffer->nominal_fname))
-	{
-	  reason = FC_RENAME;
-	  if (!strcmp (fname, buffer->inc->name))
-	    buffer->nominal_fname = buffer->inc->name;
-	  else
-	    buffer->nominal_fname = _cpp_fake_include (pfile, fname);
-	}
+      _cpp_simplify_pathname (fname);
+      buffer->nominal_fname = fname;
 
       if (read_line_number (pfile, &action_number) != 0)
 	{
@@ -803,8 +798,7 @@ do_line (pfile)
 
   /* Our line number is incremented after the directive is processed.  */
   buffer->lineno = new_lineno - 1;
-  if (reason != (enum cpp_fc_reason) -1)
-    _cpp_do_file_change (pfile, reason, filename, lineno);
+  _cpp_do_file_change (pfile, reason, filename, lineno);
 }
 
 /* Arrange the file_change callback.  The assumption is that the

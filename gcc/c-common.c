@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "obstack.h"
 #include "cpplib.h"
-cpp_reader  parse_in;
+cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
