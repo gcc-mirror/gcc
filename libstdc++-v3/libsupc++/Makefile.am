@@ -126,7 +126,7 @@ dyn-string.o: dyn-string.c
 
 # LTCOMPILE is copied from LTCXXCOMPILE below.
 LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared --mode=compile $(CC) \
-	    $(DEFS) $(GCC_INCLUDES) \
+	    $(DEFS) $(GCC_INCLUDES) $(LIBSUPCXX_PICFLAGS) \
             $(AM_CPPFLAGS) $(CPPFLAGS) 
 
 
