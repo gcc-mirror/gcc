@@ -3593,7 +3593,7 @@ bubblestrap:
 
 quickstrap:
 	if test -f stage_last ; then \
-	  LAST=`cat stage_last`; rm $$LAST; $(MAKE) LANGUAGES="$(LANGUAGES)" $$LAST; \
+	  LAST=`cat stage_last`; rm $$LAST; $(MAKE) BOOT_CFLAGS="$(BOOT_CFLAGS)" LANGUAGES="$(LANGUAGES)" $$LAST; \
 	else \
 	  $(MAKE) stage1_build; \
 	fi
