@@ -1,3 +1,7 @@
+Fri May 28 03:07:10 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.c (output_mi_thunk): Enable full support again.
+
 Thu May 27 13:04:52 1999  H.J. Lu  (hjl@gnu.org)
 
 	* i386.c (output_fp_cc0_set): Don't check the JUMP_INSN code for
