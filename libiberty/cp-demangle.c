@@ -79,13 +79,22 @@ static int flag_verbose;
    specification -- don't demangle special g++ manglings.  */
 static int flag_strict;
 
-/* String_list_t is an extended form of dyn_string_t which provides a link
-   field.  A string_list_t may safely be cast to and used as a
-   dyn_string_t.  */
+/* String_list_t is an extended form of dyn_string_t which provides a
+   link field and a caret position for additions to the string.  A
+   string_list_t may safely be cast to and used as a dyn_string_t.  */
 
 struct string_list_def
 {
+  /* The dyn_string; must be first.  */
   struct dyn_string string;
+
+  /* The position at which additional text is added to this string
+     (using the result_add* macros).  This value is an offset from the
+     end of the string, not the beginning (and should be
+     non-positive).  */
+  int caret_position;
+
+  /* The next string in the list.  */
   struct string_list_def *next;
 };
 
@@ -272,19 +281,28 @@ static void demangling_delete
 /* Returns the string containing the current demangled result.  */
 #define result_string(DM)       (&(DM)->result->string)
 
-/* Appends a dyn_string_t to the demangled result.  */
-#define result_append_string(DM, STRING)                                \
-  (dyn_string_append (&(DM)->result->string, (STRING))                  \
+/* Returns the position at which new text is inserted into the
+   demangled result.  */
+#define result_caret_pos(DM)                                            \
+  (result_length (DM) +                                                 \
+   ((string_list_t) result_string (DM))->caret_position)
+
+/* Adds a dyn_string_t to the demangled result.  */
+#define result_add_string(DM, STRING)                                   \
+  (dyn_string_insert (&(DM)->result->string,                            \
+		      result_caret_pos (DM), (STRING))                  \
    ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
-/* Appends NUL-terminated string CSTR to the demangled result.  */
-#define result_append(DM, CSTR)                                         \
-  (dyn_string_append_cstr (&(DM)->result->string, (CSTR))               \
+/* Adds NUL-terminated string CSTR to the demangled result.    */
+#define result_add(DM, CSTR)                                            \
+  (dyn_string_insert_cstr (&(DM)->result->string,                       \
+			   result_caret_pos (DM), (CSTR))               \
    ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
-/* Appends character CHAR to the demangled result.  */
-#define result_append_char(DM, CHAR)                                    \
-  (dyn_string_append_char (&(DM)->result->string, (CHAR))               \
+/* Adds character CHAR to the demangled result.  */
+#define result_add_char(DM, CHAR)                                       \
+  (dyn_string_insert_char (&(DM)->result->string,                       \
+			   result_caret_pos (DM), (CHAR))               \
    ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
 /* Inserts a dyn_string_t to the demangled result at position POS.  */
@@ -306,12 +324,6 @@ static void demangling_delete
 /* The length of the current demangled result.  */
 #define result_length(DM)                                               \
   dyn_string_length (&(DM)->result->string)
-
-/* Appends a space to the demangled result if the last character is
-   not a space.  */
-#define result_append_space(DM)                                         \
-  (dyn_string_append_space (&(DM)->result->string)                      \
-   ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
 /* Appends a (less-than, greater-than) character to the result in DM
    to (open, close) a template argument or parameter list.  Appends a
@@ -380,6 +392,7 @@ string_list_new (length)
      int length;
 {
   string_list_t s = (string_list_t) malloc (sizeof (struct string_list_def));
+  s->caret_position = 0;
   if (s == NULL)
     return NULL;
   if (!dyn_string_init ((dyn_string_t) s, length))
@@ -409,20 +422,15 @@ result_add_separated_char (dm, character)
      demangling_t dm;
      int character;
 {
-  dyn_string_t s = &dm->result->string;
+  char *result = dyn_string_buf (result_string (dm));
+  int caret_pos = result_caret_pos (dm);
 
-  /* Add a space if the last character is already a closing angle
-     bracket, so that a nested template arg list doesn't look like
-     it's closed with a right-shift operator.  */
-  if (dyn_string_last_char (s) == character)
-    {
-      if (!dyn_string_append_char (s, ' '))
-	return STATUS_ALLOCATION_FAILED;
-    }
-
-  /* Add closing angle brackets.  */
-  if (!dyn_string_append_char (s, character))
-    return STATUS_ALLOCATION_FAILED;
+  /* Add a space if the last character is already the character we
+     want to add.  */
+  if (caret_pos > 0 && result[caret_pos - 1] == character)
+    RETURN_IF_ERROR (result_add_char (dm, ' '));
+  /* Add the character.  */
+  RETURN_IF_ERROR (result_add_char (dm, character));
 
   return STATUS_OK;
 }
@@ -460,6 +468,51 @@ result_pop (dm)
   return top;
 }
 
+/* Returns the current value of the caret for the result string.  The
+   value is an offet from the end of the result string.  */
+
+static int
+result_get_caret (dm)
+     demangling_t dm;
+{
+  return ((string_list_t) result_string (dm))->caret_position;
+}
+
+/* Sets the value of the caret for the result string, counted as an
+   offet from the end of the result string.  */
+
+static void
+result_set_caret (dm, position)
+     demangling_t dm;
+     int position;
+{
+  ((string_list_t) result_string (dm))->caret_position = position;
+}
+
+/* Shifts the position of the next addition to the result by
+   POSITION_OFFSET.  A negative value shifts the caret to the left.  */
+
+static void
+result_shift_caret (dm, position_offset)
+     demangling_t dm;
+     int position_offset;
+{
+  ((string_list_t) result_string (dm))->caret_position += position_offset;
+}
+
+/* Returns non-zero if the character that comes right before the place
+   where text will be added to the result is a space.  In this case,
+   the caller should supress adding another space.  */
+
+static int
+result_previous_char_is_space (dm)
+     demangling_t dm;
+{
+  char *result = dyn_string_buf (result_string (dm));
+  int pos = result_caret_pos (dm);
+  return pos > 0 && result[pos - 1] == ' ';
+}
+
 /* Returns the start position of a fragment of the demangled result
    that will be a substitution candidate.  Should be called at the
    start of productions that can add substitutions.  */
@@ -468,7 +521,7 @@ static int
 substitution_start (dm)
      demangling_t dm;
 {
-  return result_length (dm);
+  return result_caret_pos (dm);
 }
 
 /* Adds the suffix of the current demangled result of DM starting at
@@ -491,7 +544,7 @@ substitution_add (dm, start_position, template_p)
   /* Extract the substring of the current demangling result that
      represents the subsitution candidate.  */
   if (!dyn_string_substring (substitution, 
-			     result, start_position, result_length (dm)))
+			     result, start_position, result_caret_pos (dm)))
     {
       dyn_string_delete (substitution);
       return STATUS_ALLOCATION_FAILED;
@@ -843,7 +896,7 @@ static status_t demangle_bare_function_type
 static status_t demangle_class_enum_type
   PARAMS ((demangling_t, int *));
 static status_t demangle_array_type
-  PARAMS ((demangling_t));
+  PARAMS ((demangling_t, int *));
 static status_t demangle_template_param
   PARAMS ((demangling_t));
 static status_t demangle_template_args
@@ -933,7 +986,7 @@ demangle_encoding (dm)
   
   /* Remember where the name starts.  If it turns out to be a template
      function, we'll have to insert the return type here.  */
-  start_position = result_length (dm);
+  start_position = result_caret_pos (dm);
 
   if (peek == 'G' || peek == 'T')
     RETURN_IF_ERROR (demangle_special_name (dm));
@@ -943,7 +996,7 @@ demangle_encoding (dm)
       RETURN_IF_ERROR (demangle_name (dm, &encode_return_type));
 
       /* If there's anything left, the name was a function name, with
-	 maybe its return type, and its parameters types, following.  */
+	 maybe its return type, and its parameter types, following.  */
       if (!end_of_name_p (dm) 
 	  && peek_char (dm) != 'E')
 	{
@@ -1017,7 +1070,7 @@ demangle_name (dm, encode_return_type)
 	{
 	  (void) next_char (dm);
 	  (void) next_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "std::"));
+	  RETURN_IF_ERROR (result_add (dm, "std::"));
 	  RETURN_IF_ERROR 
 	    (demangle_unqualified_name (dm, &suppress_return_type));
 	  is_std_substitution = 1;
@@ -1082,20 +1135,30 @@ demangle_nested_name (dm, encode_return_type)
   peek = peek_char (dm);
   if (peek == 'r' || peek == 'V' || peek == 'K')
     {
+      dyn_string_t cv_qualifiers;
       status_t status;
 
-      /* Snarf up and emit CV qualifiers.  */
-      dyn_string_t cv_qualifiers = dyn_string_new (24);
+      /* Snarf up CV qualifiers.  */
+      cv_qualifiers = dyn_string_new (24);
       if (cv_qualifiers == NULL)
 	return STATUS_ALLOCATION_FAILED;
-
       demangle_CV_qualifiers (dm, cv_qualifiers);
-      status = result_append_string (dm, cv_qualifiers);
+
+      /* Emit them, preceded by a space.  */
+      status = result_add_char (dm, ' ');
+      if (STATUS_NO_ERROR (status)) 
+	status = result_add_string (dm, cv_qualifiers);
+      /* The CV qualifiers that occur in a <nested-name> will be
+	 qualifiers for member functions.  These are placed at the end
+	 of the function.  Therefore, shift the caret to the left by
+	 the length of the qualifiers, so other text is inserted
+	 before them and they stay at the end.  */
+      result_shift_caret (dm, -dyn_string_length (cv_qualifiers) - 1);
+      /* Clean up.  */
       dyn_string_delete (cv_qualifiers);
       RETURN_IF_ERROR (status);
-      RETURN_IF_ERROR (result_append_space (dm));
     }
-  
+
   RETURN_IF_ERROR (demangle_prefix (dm, encode_return_type));
   /* No need to demangle the final <unqualified-name>; demangle_prefix
      will handle it.  */
@@ -1159,7 +1222,7 @@ demangle_prefix (dm, encode_return_type)
 	{
 	  /* We have another level of scope qualification.  */
 	  if (nested)
-	    RETURN_IF_ERROR (result_append (dm, "::"));
+	    RETURN_IF_ERROR (result_add (dm, "::"));
 	  else
 	    nested = 1;
 
@@ -1275,7 +1338,7 @@ demangle_source_name (dm)
 					dm->last_source_name));
 
   /* Emit it.  */
-  RETURN_IF_ERROR (result_append_string (dm, dm->last_source_name));
+  RETURN_IF_ERROR (result_add_string (dm, dm->last_source_name));
 
   return STATUS_OK;
 }
@@ -1547,7 +1610,7 @@ demangle_operator_name (dm, short_name, num_args)
   /* Is this a vendor-extended operator?  */
   if (c0 == 'v' && IS_DIGIT (c1))
     {
-      RETURN_IF_ERROR (result_append (dm, "operator "));
+      RETURN_IF_ERROR (result_add (dm, "operator "));
       RETURN_IF_ERROR (demangle_source_name (dm));
       *num_args = 0;
       return STATUS_OK;
@@ -1556,7 +1619,7 @@ demangle_operator_name (dm, short_name, num_args)
   /* Is this a conversion operator?  */
   if (c0 == 'c' && c1 == 'v')
     {
-      RETURN_IF_ERROR (result_append (dm, "operator "));
+      RETURN_IF_ERROR (result_add (dm, "operator "));
       /* Demangle the converted-to type.  */
       RETURN_IF_ERROR (demangle_type (dm));
       *num_args = 0;
@@ -1574,8 +1637,8 @@ demangle_operator_name (dm, short_name, num_args)
 	/* Found it.  */
 	{
 	  if (!short_name)
-	    RETURN_IF_ERROR (result_append (dm, "operator"));
-	  RETURN_IF_ERROR (result_append (dm, p->name));
+	    RETURN_IF_ERROR (result_add (dm, "operator"));
+	  RETURN_IF_ERROR (result_add (dm, p->name));
 	  *num_args = p->num_args;
 
 	  return STATUS_OK;
@@ -1615,11 +1678,11 @@ demangle_nv_offset (dm)
   /* Don't display the offset unless in verbose mode.  */
   if (flag_verbose)
     {
-      status = result_append (dm, " [nv:");
+      status = result_add (dm, " [nv:");
       if (STATUS_NO_ERROR (status))
-	status = result_append_string (dm, number);
+	status = result_add_string (dm, number);
       if (STATUS_NO_ERROR (status))
-	status = result_append_char (dm, ']');
+	status = result_add_char (dm, ']');
     }
 
   /* Clean up.  */
@@ -1651,11 +1714,11 @@ demangle_v_offset (dm)
   /* Don't display the offset unless in verbose mode.  */
   if (flag_verbose)
     {
-      status = result_append (dm, " [v:");
+      status = result_add (dm, " [v:");
       if (STATUS_NO_ERROR (status))
-	status = result_append_string (dm, number);
+	status = result_add_string (dm, number);
       if (STATUS_NO_ERROR (status))
-	result_append_char (dm, ',');
+	result_add_char (dm, ',');
     }
   dyn_string_delete (number);
   RETURN_IF_ERROR (status);
@@ -1672,9 +1735,9 @@ demangle_v_offset (dm)
   /* Don't display the vcall offset unless in verbose mode.  */
   if (flag_verbose)
     {
-      status = result_append_string (dm, number);
+      status = result_add_string (dm, number);
       if (STATUS_NO_ERROR (status))
-	status = result_append_char (dm, ']');
+	status = result_add_char (dm, ']');
     }
   dyn_string_delete (number);
   RETURN_IF_ERROR (status);
@@ -1763,7 +1826,7 @@ demangle_special_name (dm)
       /* A guard variable name.  Consume the G.  */
       advance_char (dm);
       RETURN_IF_ERROR (demangle_char (dm, 'V'));
-      RETURN_IF_ERROR (result_append (dm, "guard variable for "));
+      RETURN_IF_ERROR (result_add (dm, "guard variable for "));
       RETURN_IF_ERROR (demangle_name (dm, &unused));
     }
   else if (peek == 'T')
@@ -1778,77 +1841,77 @@ demangle_special_name (dm)
 	case 'V':
 	  /* Virtual table.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "vtable for "));
+	  RETURN_IF_ERROR (result_add (dm, "vtable for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'T':
 	  /* VTT structure.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "VTT for "));
+	  RETURN_IF_ERROR (result_add (dm, "VTT for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'I':
 	  /* Typeinfo structure.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "typeinfo for "));
+	  RETURN_IF_ERROR (result_add (dm, "typeinfo for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'F':
 	  /* Typeinfo function.  Used only in old ABI with new mangling.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "typeinfo fn for "));
+	  RETURN_IF_ERROR (result_add (dm, "typeinfo fn for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'S':
 	  /* Character string containing type name, used in typeinfo. */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "typeinfo name for "));
+	  RETURN_IF_ERROR (result_add (dm, "typeinfo name for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'J':
 	  /* The java Class variable corresponding to a C++ class.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "java Class for "));
+	  RETURN_IF_ERROR (result_add (dm, "java Class for "));
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
 	case 'h':
 	  /* Non-virtual thunk.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "non-virtual thunk"));
+	  RETURN_IF_ERROR (result_add (dm, "non-virtual thunk"));
 	  RETURN_IF_ERROR (demangle_nv_offset (dm));
 	  /* Demangle the separator.  */
 	  RETURN_IF_ERROR (demangle_char (dm, '_'));
 	  /* Demangle and emit the target name and function type.  */
-	  RETURN_IF_ERROR (result_append (dm, " to "));
+	  RETURN_IF_ERROR (result_add (dm, " to "));
 	  RETURN_IF_ERROR (demangle_encoding (dm));
 	  break;
 
 	case 'v':
 	  /* Virtual thunk.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "virtual thunk"));
+	  RETURN_IF_ERROR (result_add (dm, "virtual thunk"));
 	  RETURN_IF_ERROR (demangle_v_offset (dm));
 	  /* Demangle the separator.  */
 	  RETURN_IF_ERROR (demangle_char (dm, '_'));
 	  /* Demangle and emit the target function.  */
-	  RETURN_IF_ERROR (result_append (dm, " to "));
+	  RETURN_IF_ERROR (result_add (dm, " to "));
 	  RETURN_IF_ERROR (demangle_encoding (dm));
 	  break;
 
 	case 'c':
 	  /* Covariant return thunk.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "covariant return thunk"));
+	  RETURN_IF_ERROR (result_add (dm, "covariant return thunk"));
 	  RETURN_IF_ERROR (demangle_call_offset (dm));
 	  RETURN_IF_ERROR (demangle_call_offset (dm));
 	  /* Demangle and emit the target function.  */
-	  RETURN_IF_ERROR (result_append (dm, " to "));
+	  RETURN_IF_ERROR (result_add (dm, " to "));
 	  RETURN_IF_ERROR (demangle_encoding (dm));
 	  break;
 
@@ -1859,7 +1922,7 @@ demangle_special_name (dm)
 	      dyn_string_t derived_type;
 
 	      advance_char (dm);
-	      RETURN_IF_ERROR (result_append (dm, "construction vtable for "));
+	      RETURN_IF_ERROR (result_add (dm, "construction vtable for "));
 
 	      /* Demangle the derived type off to the side.  */
 	      RETURN_IF_ERROR (result_push (dm));
@@ -1883,17 +1946,17 @@ demangle_special_name (dm)
 
 	      /* Emit the derived type.  */
 	      if (STATUS_NO_ERROR (status))
-		status = result_append (dm, "-in-");
+		status = result_add (dm, "-in-");
 	      if (STATUS_NO_ERROR (status))
-		status = result_append_string (dm, derived_type);
+		status = result_add_string (dm, derived_type);
 	      dyn_string_delete (derived_type);
 
 	      /* Don't display the offset unless in verbose mode.  */
 	      if (flag_verbose)
 		{
-		  status = result_append_char (dm, ' ');
+		  status = result_add_char (dm, ' ');
 		  if (STATUS_NO_ERROR (status))
-		    result_append_string (dm, number);
+		    result_add_string (dm, number);
 		}
 	      dyn_string_delete (number);
 	      RETURN_IF_ERROR (status);
@@ -1949,14 +2012,14 @@ demangle_ctor_dtor_name (dm)
       advance_char (dm);
       if (peek_char (dm) < '1' || peek_char (dm) > '3')
 	return "Unrecognized constructor.";
-      RETURN_IF_ERROR (result_append_string (dm, dm->last_source_name));
+      RETURN_IF_ERROR (result_add_string (dm, dm->last_source_name));
       /* Print the flavor of the constructor if in verbose mode.  */
       flavor = next_char (dm) - '1';
       if (flag_verbose)
 	{
-	  RETURN_IF_ERROR (result_append (dm, "["));
-	  RETURN_IF_ERROR (result_append (dm, ctor_flavors[flavor]));
-	  RETURN_IF_ERROR (result_append_char (dm, ']'));
+	  RETURN_IF_ERROR (result_add (dm, "["));
+	  RETURN_IF_ERROR (result_add (dm, ctor_flavors[flavor]));
+	  RETURN_IF_ERROR (result_add_char (dm, ']'));
 	}
     }
   else if (peek == 'D')
@@ -1965,15 +2028,15 @@ demangle_ctor_dtor_name (dm)
       advance_char (dm);
       if (peek_char (dm) < '0' || peek_char (dm) > '2')
 	return "Unrecognized destructor.";
-      RETURN_IF_ERROR (result_append_char (dm, '~'));
-      RETURN_IF_ERROR (result_append_string (dm, dm->last_source_name));
+      RETURN_IF_ERROR (result_add_char (dm, '~'));
+      RETURN_IF_ERROR (result_add_string (dm, dm->last_source_name));
       /* Print the flavor of the destructor if in verbose mode.  */
       flavor = next_char (dm) - '0';
       if (flag_verbose)
 	{
-	  RETURN_IF_ERROR (result_append (dm, " ["));
-	  RETURN_IF_ERROR (result_append (dm, dtor_flavors[flavor]));
-	  RETURN_IF_ERROR (result_append_char (dm, ']'));
+	  RETURN_IF_ERROR (result_add (dm, " ["));
+	  RETURN_IF_ERROR (result_add (dm, dtor_flavors[flavor]));
+	  RETURN_IF_ERROR (result_add_char (dm, ']'));
 	}
     }
   else
@@ -2014,7 +2077,6 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
      int *insert_pos;
      int substitution_start;
 {
-  char next;
   status_t status;
   int is_substitution_candidate = 1;
 
@@ -2022,9 +2084,9 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
 
   /* Scan forward, collecting pointers and references into symbols,
      until we hit something else.  Then emit the type.  */
-  next = peek_char (dm);
-  if (next == 'P')
+  switch (peek_char (dm))
     {
+    case 'P':
       /* A pointer.  Snarf the `P'.  */
       advance_char (dm);
       /* Demangle the underlying type.  */
@@ -2036,9 +2098,9 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
       /* The next (outermost) pointer or reference character should go
 	 after this one.  */
       ++(*insert_pos);
-    }
-  else if (next == 'R')
-    {
+      break;
+
+    case 'R':
       /* A reference.  Snarf the `R'.  */
       advance_char (dm);
       /* Demangle the underlying type.  */
@@ -2050,8 +2112,9 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
       /* The next (outermost) pointer or reference character should go
 	 after this one.  */
       ++(*insert_pos);
-    }
-  else if (next == 'M')
+      break;
+
+    case 'M':
     {
       /* A pointer-to-member.  */
       dyn_string_t class_type;
@@ -2071,17 +2134,24 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
 	   and set *insert_pos to the spot between the first
 	   parentheses.  */
 	status = demangle_type_ptr (dm, insert_pos, substitution_start);
+      else if (peek_char (dm) == 'A')
+	/* A pointer-to-member array variable.  We want output that
+	   looks like `int (Klass::*) [10]'.  Demangle the array type
+	   as `int () [10]', and set *insert_pos to the spot between
+	   the parentheses.  */
+	status = demangle_array_type (dm, insert_pos);
       else
         {
 	  /* A pointer-to-member variable.  Demangle the type of the
              pointed-to member.  */
 	  status = demangle_type (dm);
 	  /* Make it pretty.  */
-	  if (STATUS_NO_ERROR (status))
-	    status = result_append_space (dm);
+	  if (STATUS_NO_ERROR (status)
+	      && !result_previous_char_is_space (dm))
+	    status = result_add_char (dm, ' ');
 	  /* The pointer-to-member notation (e.g. `C::*') follows the
              member's type.  */
-	  *insert_pos = result_length (dm);
+	  *insert_pos = result_caret_pos (dm);
 	}
 
       /* Build the pointer-to-member notation.  */
@@ -2100,15 +2170,16 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
 
       RETURN_IF_ERROR (status);
     }
-  else if (next == 'F')
-    {
+    break;
+
+    case 'F':
       /* Ooh, tricky, a pointer-to-function.  When we demangle the
 	 function type, the return type should go at the very
 	 beginning.  */
-      *insert_pos = result_length (dm);
+      *insert_pos = result_caret_pos (dm);
       /* The parentheses indicate this is a function pointer or
 	 reference type.  */
-      RETURN_IF_ERROR (result_append (dm, "()"));
+      RETURN_IF_ERROR (result_add (dm, "()"));
       /* Now demangle the function type.  The return type will be
 	 inserted before the `()', and the argument list will go after
 	 it.  */
@@ -2120,20 +2191,27 @@ demangle_type_ptr (dm, insert_pos, substitution_start)
 	 type.  Move it one character over so it points inside the
 	 `()'.  */
       ++(*insert_pos);
-    }
-  else
-    {
+      break;
+
+    case 'A':
+      /* An array pointer or reference.  demangle_array_type will figure
+	 out where the asterisks and ampersands go.  */
+      RETURN_IF_ERROR (demangle_array_type (dm, insert_pos));
+      break;
+
+    default:
       /* No more pointer or reference tokens; this is therefore a
 	 pointer to data.  Finish up by demangling the underlying
 	 type.  */
       RETURN_IF_ERROR (demangle_type (dm));
       /* The pointer or reference characters follow the underlying
 	 type, as in `int*&'.  */
-      *insert_pos = result_length (dm);
+      *insert_pos = result_caret_pos (dm);
       /* Because of the production <type> ::= <substitution>,
 	 demangle_type will already have added the underlying type as
 	 a substitution candidate.  Don't do it again.  */
       is_substitution_candidate = 0;
+      break;
     }
   
   if (is_substitution_candidate)
@@ -2201,34 +2279,30 @@ demangle_type (dm)
 	{
 	  status_t status;
 	  dyn_string_t cv_qualifiers = dyn_string_new (24);
+	  int old_caret_position = result_get_caret (dm);
 
 	  if (cv_qualifiers == NULL)
 	    return STATUS_ALLOCATION_FAILED;
 
+	  /* Decode all adjacent CV qualifiers.  */
 	  demangle_CV_qualifiers (dm, cv_qualifiers);
-
-	  /* If the qualifiers apply to a pointer or reference, they
-	     need to come after the whole qualified type.  */
-	  if (peek_char (dm) == 'P' || peek_char (dm) == 'R')
-	    {
-	      status = demangle_type (dm);
-	      if (STATUS_NO_ERROR (status))
-		status = result_append_space (dm);
-	      if (STATUS_NO_ERROR (status))
-		status = result_append_string (dm, cv_qualifiers);
-	    }
-	  /* Otherwise, the qualifiers come first.  */
-	  else
-	    {
-	      status = result_append_string (dm, cv_qualifiers);
-	      if (STATUS_NO_ERROR (status))
-		status = result_append_space (dm);
-	      if (STATUS_NO_ERROR (status))
-		status = demangle_type (dm);
-	    }
-
+	  /* Emit them, and shift the caret left so that the
+	     underlying type will be emitted before the qualifiers.  */
+	  status = result_add_string (dm, cv_qualifiers);
+	  result_shift_caret (dm, -dyn_string_length (cv_qualifiers));
+	  /* Clean up.  */
 	  dyn_string_delete (cv_qualifiers);
 	  RETURN_IF_ERROR (status);
+	  /* Also prepend a blank, if needed.  */
+	  RETURN_IF_ERROR (result_add_char (dm, ' '));
+	  result_shift_caret (dm, -1);
+
+	  /* Demangle the underlying type.  It will be emitted before
+	     the CV qualifiers, since we moved the caret.  */
+	  RETURN_IF_ERROR (demangle_type (dm));
+
+	  /* Put the caret back where it was previously.  */
+	  result_set_caret (dm, old_caret_position);
 	}
 	break;
 
@@ -2236,7 +2310,7 @@ demangle_type (dm)
 	return "Non-pointer or -reference function type.";
 
       case 'A':
-	RETURN_IF_ERROR (demangle_array_type (dm));
+	RETURN_IF_ERROR (demangle_array_type (dm, NULL));
 	break;
 
       case 'T':
@@ -2325,14 +2399,14 @@ demangle_type (dm)
 
       case 'C':
 	/* A C99 complex type.  */
-	RETURN_IF_ERROR (result_append (dm, "complex "));
+	RETURN_IF_ERROR (result_add (dm, "complex "));
 	advance_char (dm);
 	RETURN_IF_ERROR (demangle_type (dm));
 	break;
 
       case 'G':
 	/* A C99 imaginary type.  */
-	RETURN_IF_ERROR (result_append (dm, "imaginary "));
+	RETURN_IF_ERROR (result_add (dm, "imaginary "));
 	advance_char (dm);
 	RETURN_IF_ERROR (demangle_type (dm));
 	break;
@@ -2341,7 +2415,7 @@ demangle_type (dm)
 	/* Vendor-extended type qualifier.  */
 	advance_char (dm);
 	RETURN_IF_ERROR (demangle_source_name (dm));
-	RETURN_IF_ERROR (result_append_char (dm, ' '));
+	RETURN_IF_ERROR (result_add_char (dm, ' '));
 	RETURN_IF_ERROR (demangle_type (dm));
 	break;
 
@@ -2441,7 +2515,7 @@ demangle_builtin_type (dm)
       if (type_name == NULL)
 	return "Unrecognized <builtin-type> code.";
 
-      RETURN_IF_ERROR (result_append (dm, type_name));
+      RETURN_IF_ERROR (result_add (dm, type_name));
       advance_char (dm);
       return STATUS_OK;
     }
@@ -2512,7 +2586,7 @@ demangle_function_type (dm, function_name_pos)
     {
       /* Indicate this function has C linkage if in verbose mode.  */
       if (flag_verbose)
-	RETURN_IF_ERROR (result_append (dm, " [extern \"C\"] "));
+	RETURN_IF_ERROR (result_add (dm, " [extern \"C\"] "));
       advance_char (dm);
     }
   RETURN_IF_ERROR (demangle_bare_function_type (dm, function_name_pos));
@@ -2539,7 +2613,7 @@ demangle_bare_function_type (dm, return_type_pos)
 
   DEMANGLE_TRACE ("bare-function-type", dm);
 
-  RETURN_IF_ERROR (result_append_char (dm, '('));
+  RETURN_IF_ERROR (result_add_char (dm, '('));
   while (!end_of_name_p (dm) && peek_char (dm) != 'E')
     {
       if (sequence == -1)
@@ -2581,7 +2655,7 @@ demangle_bare_function_type (dm, return_type_pos)
 	    {
 	      /* Separate parameter types by commas.  */
 	      if (sequence > 0)
-		RETURN_IF_ERROR (result_append (dm, ", "));
+		RETURN_IF_ERROR (result_add (dm, ", "));
 	      /* Demangle the type.  */
 	      RETURN_IF_ERROR (demangle_type (dm));
 	    }
@@ -2589,7 +2663,7 @@ demangle_bare_function_type (dm, return_type_pos)
 
       ++sequence;
     }
-  RETURN_IF_ERROR (result_append_char (dm, ')'));
+  RETURN_IF_ERROR (result_add_char (dm, ')'));
 
   /* We should have demangled at least one parameter type (which would
      be void, for a function that takes no parameters), plus the
@@ -2620,16 +2694,31 @@ demangle_class_enum_type (dm, encode_return_type)
 
 /* Demangles and emits an <array-type>.  
 
+   If PTR_INSERT_POS is not NULL, the array type is formatted as a
+   pointer or reference to an array, except that asterisk and
+   ampersand punctuation is omitted (since it's not know at this
+   point).  *PTR_INSERT_POS is set to the position in the demangled
+   name at which this punctuation should be inserted.  For example,
+   `A10_i' is demangled to `int () [10]' and *PTR_INSERT_POS points
+   between the parentheses.
+
+   If PTR_INSERT_POS is NULL, the array type is assumed not to be
+   pointer- or reference-qualified.  Then, for example, `A10_i' is
+   demangled simply as `int[10]'.  
+
     <array-type> ::= A [<dimension number>] _ <element type>  
                  ::= A <dimension expression> _ <element type>  */
 
 static status_t
-demangle_array_type (dm)
+demangle_array_type (dm, ptr_insert_pos)
      demangling_t dm;
+     int *ptr_insert_pos;
 {
   status_t status = STATUS_OK;
   dyn_string_t array_size = NULL;
   char peek;
+
+  DEMANGLE_TRACE ("array-type", dm);
 
   RETURN_IF_ERROR (demangle_char (dm, 'A'));
 
@@ -2664,13 +2753,24 @@ demangle_array_type (dm)
   if (STATUS_NO_ERROR (status))
     status = demangle_type (dm);
 
+  if (ptr_insert_pos != NULL)
+    {
+      /* This array is actually part of an pointer- or
+	 reference-to-array type.  Format appropriately, except we
+	 don't know which and how much punctuation to use.  */
+      if (STATUS_NO_ERROR (status))
+	status = result_add (dm, " () ");
+      /* Let the caller know where to insert the punctuation.  */
+      *ptr_insert_pos = result_caret_pos (dm) - 2;
+    }
+
   /* Emit the array dimension syntax.  */
   if (STATUS_NO_ERROR (status))
-    status = result_append_char (dm, '[');
+    status = result_add_char (dm, '[');
   if (STATUS_NO_ERROR (status) && array_size != NULL)
-    status = result_append_string (dm, array_size);
+    status = result_add_string (dm, array_size);
   if (STATUS_NO_ERROR (status))
-    status = result_append_char (dm, ']');
+    status = result_add_char (dm, ']');
   if (array_size != NULL)
     dyn_string_delete (array_size);
   
@@ -2714,7 +2814,7 @@ demangle_template_param (dm)
     /* parm_number exceeded the number of arguments in the current
        template argument list.  */
     return "Template parameter number out of bounds.";
-  RETURN_IF_ERROR (result_append_string (dm, (dyn_string_t) arg));
+  RETURN_IF_ERROR (result_add_string (dm, (dyn_string_t) arg));
 
   return STATUS_OK;
 }
@@ -2752,7 +2852,7 @@ demangle_template_args (dm)
       if (first)
 	first = 0;
       else
-	RETURN_IF_ERROR (result_append (dm, ", "));
+	RETURN_IF_ERROR (result_add (dm, ", "));
 
       /* Capture the template arg.  */
       RETURN_IF_ERROR (result_push (dm));
@@ -2760,7 +2860,7 @@ demangle_template_args (dm)
       arg = result_pop (dm);
 
       /* Emit it in the demangled name.  */
-      RETURN_IF_ERROR (result_append_string (dm, (dyn_string_t) arg));
+      RETURN_IF_ERROR (result_add_string (dm, (dyn_string_t) arg));
 
       /* Save it for use in expanding <template-param>s.  */
       template_arg_list_add_arg (arg_list, arg);
@@ -2836,9 +2936,9 @@ demangle_literal (dm)
 	     corresponding to false or true, respectively.  */
 	  value = peek_char (dm);
 	  if (value == '0')
-	    RETURN_IF_ERROR (result_append (dm, "false"));
+	    RETURN_IF_ERROR (result_add (dm, "false"));
 	  else if (value == '1')
-	    RETURN_IF_ERROR (result_append (dm, "true"));
+	    RETURN_IF_ERROR (result_add (dm, "true"));
 	  else
 	    return "Unrecognized bool constant.";
 	  /* Consume the 0 or 1.  */
@@ -2856,10 +2956,10 @@ demangle_literal (dm)
 	  value_string = dyn_string_new (0);
 	  status = demangle_number_literally (dm, value_string, 10, 1);
 	  if (STATUS_NO_ERROR (status))
-	    status = result_append_string (dm, value_string);
+	    status = result_add_string (dm, value_string);
 	  /* For long integers, append an l.  */
 	  if (code == 'l' && STATUS_NO_ERROR (status))
-	    status = result_append_char (dm, code);
+	    status = result_add_char (dm, code);
 	  dyn_string_delete (value_string);
 
 	  RETURN_IF_ERROR (status);
@@ -2869,9 +2969,9 @@ demangle_literal (dm)
 	 literal's type explicitly using cast syntax.  */
     }
 
-  RETURN_IF_ERROR (result_append_char (dm, '('));
+  RETURN_IF_ERROR (result_add_char (dm, '('));
   RETURN_IF_ERROR (demangle_type (dm));
-  RETURN_IF_ERROR (result_append_char (dm, ')'));
+  RETURN_IF_ERROR (result_add_char (dm, ')'));
 
   value_string = dyn_string_new (0);
   if (value_string == NULL)
@@ -2879,7 +2979,7 @@ demangle_literal (dm)
 
   status = demangle_number_literally (dm, value_string, 10, 1);
   if (STATUS_NO_ERROR (status))
-    status = result_append_string (dm, value_string);
+    status = result_add_string (dm, value_string);
   dyn_string_delete (value_string);
   RETURN_IF_ERROR (status);
 
@@ -2967,30 +3067,30 @@ demangle_expression (dm)
       /* If it's binary, do an operand first.  */
       if (num_args > 1)
 	{
-	  status = result_append_char (dm, '(');
+	  status = result_add_char (dm, '(');
 	  if (STATUS_NO_ERROR (status))
 	    status = demangle_expression (dm);
 	  if (STATUS_NO_ERROR (status))
-	    status = result_append_char (dm, ')');
+	    status = result_add_char (dm, ')');
 	}
 
       /* Emit the operator.  */  
       if (STATUS_NO_ERROR (status))
-	status = result_append_string (dm, operator_name);
+	status = result_add_string (dm, operator_name);
       dyn_string_delete (operator_name);
       RETURN_IF_ERROR (status);
       
       /* Emit its second (if binary) or only (if unary) operand.  */
-      RETURN_IF_ERROR (result_append_char (dm, '('));
+      RETURN_IF_ERROR (result_add_char (dm, '('));
       RETURN_IF_ERROR (demangle_expression (dm));
-      RETURN_IF_ERROR (result_append_char (dm, ')'));
+      RETURN_IF_ERROR (result_add_char (dm, ')'));
 
       /* The ternary operator takes a third operand.  */
       if (num_args == 3)
 	{
-	  RETURN_IF_ERROR (result_append (dm, ":("));
+	  RETURN_IF_ERROR (result_add (dm, ":("));
 	  RETURN_IF_ERROR (demangle_expression (dm));
-	  RETURN_IF_ERROR (result_append_char (dm, ')'));
+	  RETURN_IF_ERROR (result_add_char (dm, ')'));
 	}
     }
 
@@ -3009,7 +3109,7 @@ demangle_scope_expression (dm)
   RETURN_IF_ERROR (demangle_char (dm, 's'));
   RETURN_IF_ERROR (demangle_char (dm, 'r'));
   RETURN_IF_ERROR (demangle_type (dm));
-  RETURN_IF_ERROR (result_append (dm, "::"));
+  RETURN_IF_ERROR (result_add (dm, "::"));
   RETURN_IF_ERROR (demangle_encoding (dm));
   return STATUS_OK;
 }
@@ -3100,17 +3200,17 @@ demangle_substitution (dm, template_p)
       switch (peek)
 	{
 	case 't':
-	  RETURN_IF_ERROR (result_append (dm, "std"));
+	  RETURN_IF_ERROR (result_add (dm, "std"));
 	  break;
 
 	case 'a':
-	  RETURN_IF_ERROR (result_append (dm, "std::allocator"));
+	  RETURN_IF_ERROR (result_add (dm, "std::allocator"));
 	  new_last_source_name = "allocator";
 	  *template_p = 1;
 	  break;
 
 	case 'b':
-	  RETURN_IF_ERROR (result_append (dm, "std::basic_string"));
+	  RETURN_IF_ERROR (result_add (dm, "std::basic_string"));
 	  new_last_source_name = "basic_string";
 	  *template_p = 1;
 	  break;
@@ -3118,12 +3218,12 @@ demangle_substitution (dm, template_p)
 	case 's':
 	  if (!flag_verbose)
 	    {
-	      RETURN_IF_ERROR (result_append (dm, "std::string"));
+	      RETURN_IF_ERROR (result_add (dm, "std::string"));
 	      new_last_source_name = "string";
 	    }
 	  else
 	    {
-	      RETURN_IF_ERROR (result_append (dm, "std::basic_string<char, std::char_traits<char>, std::allocator<char> >"));
+	      RETURN_IF_ERROR (result_add (dm, "std::basic_string<char, std::char_traits<char>, std::allocator<char> >"));
 	      new_last_source_name = "basic_string";
 	    }
 	  *template_p = 0;
@@ -3132,12 +3232,12 @@ demangle_substitution (dm, template_p)
 	case 'i':
 	  if (!flag_verbose)
 	    {
-	      RETURN_IF_ERROR (result_append (dm, "std::istream"));
+	      RETURN_IF_ERROR (result_add (dm, "std::istream"));
 	      new_last_source_name = "istream";
 	    }
 	  else
 	    {
-	      RETURN_IF_ERROR (result_append (dm, "std::basic_istream<char, std::char_traints<char> >"));
+	      RETURN_IF_ERROR (result_add (dm, "std::basic_istream<char, std::char_traints<char> >"));
 	      new_last_source_name = "basic_istream";
 	    }
 	  *template_p = 0;
@@ -3146,12 +3246,12 @@ demangle_substitution (dm, template_p)
 	case 'o':
 	  if (!flag_verbose)
 	    {
-	      RETURN_IF_ERROR (result_append (dm, "std::ostream"));
+	      RETURN_IF_ERROR (result_add (dm, "std::ostream"));
 	      new_last_source_name = "ostream";
 	    }
 	  else
 	    {
-	      RETURN_IF_ERROR (result_append (dm, "std::basic_ostream<char, std::char_traits<char> >"));
+	      RETURN_IF_ERROR (result_add (dm, "std::basic_ostream<char, std::char_traits<char> >"));
 	      new_last_source_name = "basic_ostream";
 	    }
 	  *template_p = 0;
@@ -3160,12 +3260,12 @@ demangle_substitution (dm, template_p)
 	case 'd':
 	  if (!flag_verbose) 
 	    {
-	      RETURN_IF_ERROR (result_append (dm, "std::iostream"));
+	      RETURN_IF_ERROR (result_add (dm, "std::iostream"));
 	      new_last_source_name = "iostream";
 	    }
 	  else
 	    {
-	      RETURN_IF_ERROR (result_append (dm, "std::basic_iostream<char, std::char_traits<char> >"));
+	      RETURN_IF_ERROR (result_add (dm, "std::basic_iostream<char, std::char_traits<char> >"));
 	      new_last_source_name = "basic_iostream";
 	    }
 	  *template_p = 0;
@@ -3196,7 +3296,7 @@ demangle_substitution (dm, template_p)
     return "Substitution number out of range.";
 
   /* Emit the substitution text.  */
-  RETURN_IF_ERROR (result_append_string (dm, text));
+  RETURN_IF_ERROR (result_add_string (dm, text));
 
   RETURN_IF_ERROR (demangle_char (dm, '_'));
   return STATUS_OK;
@@ -3216,12 +3316,12 @@ demangle_local_name (dm)
   RETURN_IF_ERROR (demangle_char (dm, 'Z'));
   RETURN_IF_ERROR (demangle_encoding (dm));
   RETURN_IF_ERROR (demangle_char (dm, 'E'));
-  RETURN_IF_ERROR (result_append (dm, "::"));
+  RETURN_IF_ERROR (result_add (dm, "::"));
 
   if (peek_char (dm) == 's')
     {
       /* Local character string literal.  */
-      RETURN_IF_ERROR (result_append (dm, "string literal"));
+      RETURN_IF_ERROR (result_add (dm, "string literal"));
       /* Consume the s.  */
       advance_char (dm);
       RETURN_IF_ERROR (demangle_discriminator (dm, 0));
@@ -3258,7 +3358,7 @@ demangle_discriminator (dm, suppress_first)
       /* Consume the underscore.  */
       advance_char (dm);
       if (flag_verbose)
-	RETURN_IF_ERROR (result_append (dm, " [#"));
+	RETURN_IF_ERROR (result_add (dm, " [#"));
       /* Check if there's a number following the underscore.  */
       if (IS_DIGIT ((unsigned char) peek_char (dm)))
 	{
@@ -3276,15 +3376,15 @@ demangle_discriminator (dm, suppress_first)
 	{
 	  if (flag_verbose)
 	    /* A missing digit correspond to one.  */
-	    RETURN_IF_ERROR (result_append_char (dm, '1'));
+	    RETURN_IF_ERROR (result_add_char (dm, '1'));
 	}
       if (flag_verbose)
-	RETURN_IF_ERROR (result_append_char (dm, ']'));
+	RETURN_IF_ERROR (result_add_char (dm, ']'));
     }
   else if (!suppress_first)
     {
       if (flag_verbose)
-	RETURN_IF_ERROR (result_append (dm, " [#0]"));
+	RETURN_IF_ERROR (result_add (dm, " [#0]"));
     }
 
   return STATUS_OK;
