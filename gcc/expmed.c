@@ -3159,14 +3159,17 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	   and return the result right away.  */
 	if (target == 0)
 	  target = gen_reg_rtx (compute_mode);
+
 	if (rem_flag)
 	  {
-	    remainder = target;
+	    remainder
+	      = GET_CODE (target) == REG ? target : gen_reg_rtx (compute_mode);
 	    quotient = gen_reg_rtx (compute_mode);
 	  }
 	else
 	  {
-	    quotient = target;
+	    quotient
+	      = GET_CODE (target) == REG ? target : gen_reg_rtx (compute_mode);
 	    remainder = gen_reg_rtx (compute_mode);
 	  }
 
@@ -3283,14 +3286,17 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	       value here, and return the result right away.  */
 	    if (target == 0)
 	      target = gen_reg_rtx (compute_mode);
+
 	    if (rem_flag)
 	      {
-		remainder = target;
+		remainder = (GET_CODE (target) == REG
+			     ? target : gen_reg_rtx (compute_mode));
 		quotient = gen_reg_rtx (compute_mode);
 	      }
 	    else
 	      {
-		quotient = target;
+		quotient = (GET_CODE (target) == REG
+			    ? target : gen_reg_rtx (compute_mode));
 		remainder = gen_reg_rtx (compute_mode);
 	      }
 
@@ -3384,12 +3390,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	      target = gen_reg_rtx (compute_mode);
 	    if (rem_flag)
 	      {
-		remainder = target;
+		remainder= (GET_CODE (target) == REG
+			    ? target : gen_reg_rtx (compute_mode));
 		quotient = gen_reg_rtx (compute_mode);
 	      }
 	    else
 	      {
-		quotient = target;
+		quotient = (GET_CODE (target) == REG
+			    ? target : gen_reg_rtx (compute_mode));
 		remainder = gen_reg_rtx (compute_mode);
 	      }
 
