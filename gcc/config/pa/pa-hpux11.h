@@ -59,7 +59,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* hpux11 has the new HP assembler.  It's still lousy, but it's a whole lot
    better than the assembler shipped with older versions of hpux.  */
-#define NEW_HP_ASSEMBLER
+#undef NEW_HP_ASSEMBLER
+#define NEW_HP_ASSEMBLER 1
 
 /* Make GCC agree with types.h.  */
 #undef SIZE_TYPE

@@ -1116,28 +1116,20 @@ extern int may_call_alloca;
 
    ?!? For now also reject CONST_DOUBLES in 64bit mode.  This will need
    further work.  */
-#ifdef NEW_HP_ASSEMBLER
-#define LEGITIMATE_CONSTANT_P(X)  		\
-  ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
-    || (X) == CONST0_RTX (GET_MODE (X)))	\
-   && !(TARGET_64BIT && GET_CODE (X) == CONST_DOUBLE) \
-   && !(TARGET_64BIT && GET_CODE (X) == CONST_INT \
-	&& !(cint_ok_for_move (INTVAL (X))	\
-	     || ((INTVAL (X) & 0xffffffff80000000L) == 0xffffffff80000000L) \
-	     || ((INTVAL (X) & 0xffffffff00000000L) == 0x0000000000000000L))) \
-   && !function_label_operand (X, VOIDmode))
-#else
-#define LEGITIMATE_CONSTANT_P(X)  		\
-  ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
-    || (X) == CONST0_RTX (GET_MODE (X)))	\
-   && (GET_CODE (X) != LABEL_REF || TARGET_GAS)\
-   && !(TARGET_64BIT && GET_CODE (X) == CONST_DOUBLE) \
-   && !(TARGET_64BIT && GET_CODE (X) == CONST_INT \
-	&& !(cint_ok_for_move (INTVAL (X))	\
-	     || ((INTVAL (X) & 0xffffffff80000000L) == 0xffffffff80000000L) \
-	     || ((INTVAL (X) & 0xffffffff00000000L) == 0x0000000000000000L))) \
-   && !function_label_operand (X, VOIDmode))
+#ifndef NEW_HP_ASSEMBLER
+#define NEW_HP_ASSEMBLER 0
 #endif
+#define LEGITIMATE_CONSTANT_P(X)				\
+  ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT			\
+    || (X) == CONST0_RTX (GET_MODE (X)))			\
+   && (NEW_HP_ASSEMBLER || TARGET_GAS || GET_CODE (X) != LABEL_REF)	\
+   && !(TARGET_64BIT && GET_CODE (X) == CONST_DOUBLE)		\
+   && !(TARGET_64BIT && GET_CODE (X) == CONST_INT		\
+	&& !(HOST_BITS_PER_WIDE_INT <= 32			\
+	     || (INTVAL (X) >= (HOST_WIDE_INT) -1 << 31		\
+		 && INTVAL (X) < (HOST_WIDE_INT) 1 << 32)	\
+	     || cint_ok_for_move (INTVAL (X))))			\
+   && !function_label_operand (X, VOIDmode))
 
 /* Subroutine for EXTRA_CONSTRAINT.
 

@@ -1,5 +1,10 @@
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
+	* pa-hpux10.h (NEW_HP_ASSEMBLER): Define to 1.
+	* pa-hpux11.h (NEW_HP_ASSEMBLER): Likewise.
+	* pa.h (LEGITIMATE_CONSTANT_P) Collapse two defines depending on
+	NEW_HP_ASSEMBLER into one.  Kill warnings.
+
 	* pa-gas.h: Delete file.
 	* config.gcc: Match `parisc' as well as `hppa' for cpu_type=pa.
 	Add new targets hppa*64*-*-linux* and parisc*64*-*-linux*.  Update
