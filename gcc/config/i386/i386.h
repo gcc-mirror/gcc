@@ -657,6 +657,7 @@ enum reg_class
    (C) == 'K' ? (VALUE) == 0xff :		\
    (C) == 'L' ? (VALUE) == 0xffff :		\
    (C) == 'M' ? (VALUE) >= 0 && (VALUE) <= 3 :	\
+   (C) == 'N' ? (VALUE) >= 0 && (VALUE) <= 255 :\
    0)
 
 /* Similar, but for floating constants, and defining letters G and H.
