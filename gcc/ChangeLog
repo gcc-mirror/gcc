@@ -1,6 +1,9 @@
 Thu Apr 15 01:03:21 1999  Jan Hubicka <hubicka@freesoft.cz>
 			  Jeff Law <law@cygnus.com>
 
+	* i386.md (QImode add pattern): Support lea instruction.
+	(HImode add pattern): Likewise.
+
 	* i386.md (ashlsi patterns): Call output_ashl instead of output_ashlsi3.
 	(ashlqi): Use expander, separate LEA and SAL / ADD patterns; call
 	output_ashl.
