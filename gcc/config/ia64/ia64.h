@@ -1270,7 +1270,7 @@ extern int ia64_local_regs;
    be computed and placed into the variable
    `current_function_outgoing_args_size'.  */
 
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* A C expression that should indicate the number of bytes of its own arguments
    that a function pops on returning, or 0 if the function pops no arguments

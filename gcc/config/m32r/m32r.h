@@ -983,7 +983,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    `current_function_outgoing_args_size'.  No space will be pushed
    onto the stack for each call; instead, the function prologue should
    increase the stack frame size by this amount.  */
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Define this macro if functions should assume that stack space has
    been allocated for arguments even when their values are passed in

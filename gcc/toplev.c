@@ -61,6 +61,10 @@ Boston, MA 02111-1307, USA.  */
 #include "loop.h"
 #include "regs.h"
 
+#ifndef ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 0
+#endif
+
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
 #endif
@@ -3568,9 +3572,14 @@ rest_of_compilation (decl)
 		 life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
 	       });
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
-      TIMEVAR (flow2_time, { combine_stack_adjustments (); });
+      /* This is kind of heruistics.  We need to run combine_stack_adjustments
+         even for machines with possibly nonzero RETURN_POPS_ARGS
+         and ACCUMULATE_OUTGOING_ARGS.  We expect that only ports having
+         push instructions will have popping returns.  */
+#ifndef PUSH_ROUNDING
+      if (!ACCUMULATE_OUTGOING_ARGS)
 #endif
+	TIMEVAR (flow2_time, { combine_stack_adjustments (); });
 
       if (ggc_p)
 	ggc_collect ();

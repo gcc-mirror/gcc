@@ -45,6 +45,19 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "tm_p.h"
 
+#ifndef ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 0
+#endif
+
+/* Supply a default definition for PUSH_ARGS.  */
+#ifndef PUSH_ARGS
+#ifdef PUSH_ROUNDING
+#define PUSH_ARGS	!ACCUMULATE_OUTGOING_ARGS
+#else
+#define PUSH_ARGS	0
+#endif
+#endif
+
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
 
@@ -2820,27 +2833,36 @@ push_block (size, extra, below)
       anti_adjust_stack (temp);
     }
 
-#if defined (STACK_GROWS_DOWNWARD) \
-    || (defined (ARGS_GROW_DOWNWARD) \
-	&& !defined (ACCUMULATE_OUTGOING_ARGS))
-
-  /* Return the lowest stack address when STACK or ARGS grow downward and
-     we are not aaccumulating outgoing arguments (the c4x port uses such
-     conventions).  */
-  temp = virtual_outgoing_args_rtx;
-  if (extra != 0 && below)
-    temp = plus_constant (temp, extra);
+#ifndef STACK_GROWS_DOWNWARD
+#ifdef ARGS_GROW_DOWNWARD
+  if (!ACCUMULATE_OUTGOING_ARGS)
 #else
-  if (GET_CODE (size) == CONST_INT)
-    temp = plus_constant (virtual_outgoing_args_rtx,
-			  - INTVAL (size) - (below ? 0 : extra));
-  else if (extra != 0 && !below)
-    temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
-		    negate_rtx (Pmode, plus_constant (size, extra)));
-  else
-    temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
-			 negate_rtx (Pmode, size));
+  if (0)
 #endif
+#else
+  if (1)
+#endif
+    {
+
+      /* Return the lowest stack address when STACK or ARGS grow downward and
+	 we are not aaccumulating outgoing arguments (the c4x port uses such
+	 conventions).  */
+      temp = virtual_outgoing_args_rtx;
+      if (extra != 0 && below)
+	temp = plus_constant (temp, extra);
+    }
+  else
+    {
+      if (GET_CODE (size) == CONST_INT)
+	temp = plus_constant (virtual_outgoing_args_rtx,
+			      - INTVAL (size) - (below ? 0 : extra));
+      else if (extra != 0 && !below)
+	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
+			negate_rtx (Pmode, plus_constant (size, extra)));
+      else
+	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
+			     negate_rtx (Pmode, size));
+    }
 
   return memory_address (GET_CLASS_NARROWEST_MODE (MODE_INT), temp);
 }
@@ -2971,6 +2993,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	 and if there is no difficulty with push insns that skip bytes
 	 on the stack for alignment purposes.  */
       if (args_addr == 0
+	  && PUSH_ARGS
 	  && GET_CODE (size) == CONST_INT
 	  && skip == 0
 	  && (MOVE_BY_PIECES_P ((unsigned) INTVAL (size) - used, align))
@@ -3123,15 +3146,16 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 		}
 	    }
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
-	  /* If the source is referenced relative to the stack pointer,
-	     copy it to another register to stabilize it.  We do not need
-	     to do this if we know that we won't be changing sp.  */
+	  if (!ACCUMULATE_OUTGOING_ARGS)
+	    {
+	      /* If the source is referenced relative to the stack pointer,
+		 copy it to another register to stabilize it.  We do not need
+		 to do this if we know that we won't be changing sp.  */
 
-	  if (reg_mentioned_p (virtual_stack_dynamic_rtx, temp)
-	      || reg_mentioned_p (virtual_outgoing_args_rtx, temp))
-	    temp = copy_to_reg (temp);
-#endif
+	      if (reg_mentioned_p (virtual_stack_dynamic_rtx, temp)
+		  || reg_mentioned_p (virtual_outgoing_args_rtx, temp))
+		temp = copy_to_reg (temp);
+	    }
 
 	  /* Make inhibit_defer_pop nonzero around the library call
 	     to force it to pop the bcopy-arguments right away.  */
@@ -3227,7 +3251,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	anti_adjust_stack (GEN_INT (extra));
 
 #ifdef PUSH_ROUNDING
-      if (args_addr == 0)
+      if (args_addr == 0 && PUSH_ARGS)
 	addr = gen_push_operand ();
       else
 #endif

@@ -1,3 +1,47 @@
+Wed Mar 29 15:08:01 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	Convert ACCUMULATE_OUTGOING_ARGS to an expression.
+	* calls.c (PUSH_ARGS_REVERSED) Change to expression.
+	(ACCUMULATE_OUTGOING_ARGS, PUSH_ARGS): Provide default value.
+	(struct arg_data): Remove #ifdef ACCUMULATE_OUTGOING_ARGS.
+	(save_fixed_argument_area, restore_fixed_argument_area):
+	conditionize by #ifdef REG_PARM_STACK_SPACE only.
+	(emit_call): Change #ifdefs on ACCUMULATE_OUTGOING_ARGS
+	to conditions, handle RETURN_POPS_ARGS on ACCUMULATE_OUTGOING_ARGS.
+	(precompute_register_parameters): Avoid #ifdefs on
+	ACCUMULATE_OUTGOING_ARGS and PUSH_ARGS_REVERSED.
+	(stire_one_args): Likewise.
+	(expand_call): Likewise; conditionize PUSH_ROUNDING code by PUSH_ARGS.
+	(emit_library_call_value_1): Likewise.
+	(compute_argument_block_size): Align to STACK_BOUNDARY only for
+	ACCUMULATE_OUTGOING_ARGS.
+	* combine.c (ACCUMULATE_OUTGOING_ARGS, PUSH_ARGS): Provide default
+	value.
+	(nonzero_bits): Conditionize PUSH_ROUNDING code by USE_PUSH.
+	(use_crosses_set_p): Likewise.
+	* all targets (ACCUMULATE_OUTGOING_ARGS define): Change to
+	#define ACCUMULATE_OUTGOING_ARGS 1.
+	* i386.c (ix86_compute_frame_size): Handle ACCUMULATE_OUTGOING_ARGS
+	frames.
+	* i386.h (MASK_NO_PUSH_ARGS, MASK_ACCUMULATE_OUTGOING_ARGS): New
+	constants.
+	(TARGET_PUSH_ARGS, TARGET_ACCUMULATE_OUTGOING_ARGS): New macros.
+	(TARGET_SWITCHES): Add push-args, no-push-args,
+	accumulate-outgoing-args and no-accumulate-outgoing-args.
+	(ACCUMULATE_OUTGOING_ARGS, PUSH_ARGS): New macro.
+	* expr.c (ACCUMULATE_OUTGONG_ARGS, PUSH_ARGS): Provide default.
+	(push_block): Avoid ifdefs on ACCUMULATE_OUTGONG_ARGS
+	and PUSH_ROUNDING.
+	(emit_push_insn): Likewise.
+	* final.c (ACCUMULATE_OUTGOING_ARGS): Provide default.
+	(final_scan_insn): Avoid ifdefs on ACCUMULATE_OUTGOING_ARGS.
+	* function.c (ACCUMULATE_OUTGOING_ARGS): Provide default.
+	(STACK_DYNAMIC_OFFSET): Define correctly for both
+	ACCUMULATE_OUTGOING_ARGS and normal mode.
+	* invoke.texi (-mpush_args, -maccumulate-outgoing-args): Document.
+	* tm.texi (PUSH_ARGS): Document.
+	(ACCUMULATE_OUTGOING_ARGS, PUSH_ROUNDING): Update documentation.
+
 Wed Mar 29 11:51:13 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* flags.h (flag_optimize_sibling_calls): Declare.

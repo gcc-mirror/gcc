@@ -61,6 +61,10 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 
+#ifndef ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 0
+#endif
+
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
 #endif
@@ -2738,7 +2742,6 @@ static int cfa_offset;
 
 #ifndef STACK_DYNAMIC_OFFSET
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
 /* The bottom of the stack points to the actual arguments.  If
    REG_PARM_STACK_SPACE is defined, this includes the space for the register
    parameters.  However, if OUTGOING_REG_PARM_STACK space is not defined,
@@ -2749,16 +2752,14 @@ static int cfa_offset;
 
 #if defined(REG_PARM_STACK_SPACE) && ! defined(OUTGOING_REG_PARM_STACK_SPACE)
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
-(current_function_outgoing_args_size	\
- + REG_PARM_STACK_SPACE (FNDECL) + (STACK_POINTER_OFFSET))
+((ACCUMULATE_OUTGOING_ARGS						      \
+  ? (current_function_outgoing_args_size + REG_PARM_STACK_SPACE (FNDECL)) : 0)\
+ + (STACK_POINTER_OFFSET))						      \
 
 #else
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
-(current_function_outgoing_args_size + (STACK_POINTER_OFFSET))
-#endif
-
-#else
-#define STACK_DYNAMIC_OFFSET(FNDECL) STACK_POINTER_OFFSET
+((ACCUMULATE_OUTGOING_ARGS ? current_function_outgoing_args_size : 0)	      \
+ + (STACK_POINTER_OFFSET))
 #endif
 #endif
 

@@ -447,7 +447,7 @@ enum reg_class {
    for a register flushback area.  */
 #define REG_PARM_STACK_SPACE(DECL) 8
 #define OUTGOING_REG_PARM_STACK_SPACE
-#define ACCUMULATE_OUTGOING_ARGS
+#define ACCUMULATE_OUTGOING_ARGS 1
 
 /* So we can allocate space for return pointers once for the function
    instead of around every call.  */
