@@ -2577,7 +2577,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
     {
       mul_highpart_optab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
       target = expand_binop (mode, mul_highpart_optab,
-			     op0, op1, target, unsignedp, OPTAB_DIRECT);
+			     op0, wide_op1, target, unsignedp, OPTAB_DIRECT);
       if (target)
 	return target;
     }
@@ -2588,7 +2588,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
     {
       mul_highpart_optab = unsignedp ? smul_highpart_optab : umul_highpart_optab;
       target = expand_binop (mode, mul_highpart_optab,
-			     op0, op1, target, unsignedp, OPTAB_DIRECT);
+			     op0, wide_op1, target, unsignedp, OPTAB_DIRECT);
       if (target)
 	/* We used the wrong signedness.  Adjust the result.  */
 	return expand_mult_highpart_adjust (mode, target, op0,
@@ -2827,9 +2827,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       case TRUNC_DIV_EXPR:
 	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
 	  {
-	    if (unsignedp
-		|| (INTVAL (op1)
-		    == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (compute_mode) - 1)))
+	    if (unsignedp)
 	      {
 		unsigned HOST_WIDE_INT mh, ml;
 		int pre_shift, post_shift;
@@ -2958,6 +2956,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		else if (d == -1)
 		  quotient = expand_unop (compute_mode, neg_optab, op0,
 					  tquotient, 0);
+		else if (INTVAL (op1) == (HOST_WIDE_INT) 1 << (size - 1))
+		  /* This case is not handled correctly below.  */
+		  quotient = emit_store_flag (tquotient, EQ, op0, op1,
+					      compute_mode, 1, 1);
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (d)
 			 && (rem_flag ? smod_pow2_cheap : sdiv_pow2_cheap))
 		  ;
