@@ -1,7 +1,25 @@
+2000-03-08  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* hashtab.c: Remove debugging variables (all_searches,
+	all_collisions, all_expansions). Delete
+	all_hash_table_collisions.
+	(create_hash_table, delete_hash_table, empty_hash_table,
+	find_hash_table_entry, remove_element_from_hash_table_entry,
+	clear_hash_table_slot, traverse_hash_table, hash_table_size,
+	hash_table_elements_number, hash_table_collisions): Rename to:
+	htab_create, htab_delete, htab_empty, htab_find_slot,
+	htab_remove_elt, htab_clear_slot, htab_traverse, htab_size,
+	htab_elements, htab_collisions.
+	(htab_find): New function, handles common case where you don't
+	plan to add or delete an entry.
+	(htab_expand): Don't create a whole new table, just a new
+	entry vector.
+	(htab_find_slot): Simplify logic.
+
 2000-01-04  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* pexecute.c: Conditionally include string.h.
-	(fix_argv): Handle embedded whitespace in args for Mingw32. 
+	(fix_argv): Handle embedded whitespace in args for Mingw32.
 
 2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -80,7 +98,7 @@ Tue Nov  2 03:23:13 1999  Philippe De Muyter  <phdm@macqel.be>
 	(demangle_qualified): Use consume_count_with_underscores.
 	(get_count): Tweak formatting.
 	(do_type): Use string_append_template_idx.
-	
+
 1999-10-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calloc.c: Add a public domain notice.
@@ -143,7 +161,7 @@ Wed Sep  8 20:03:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Tue Sep  7 23:32:18 1999  Linas Vepstas  <linas@linas.org>
 
-        * config.table: Add openedition target.
+	* config.table: Add openedition target.
 	* config/mh-openedition: New file.
 
 Thu Sep  2 01:36:12 1999  Marc Espie <espie@cvs.openbsd.org>
@@ -172,7 +190,7 @@ Thu Sep  2 01:36:12 1999  Marc Espie <espie@cvs.openbsd.org>
 	(arm_special): Likewise.
 	(demangle_fund_type): Likewise.
 	(do_hpacc_template_const_value): Mark parameter `work' with
-	ATTRIBUTE_UNUSED.	
+	ATTRIBUTE_UNUSED.
 	(main): Constify variable `valid_symbols'.
 
 Tue Aug 24 02:50:45 1999  Philippe De Muyter  <phdm@macqel.be>
@@ -190,7 +208,7 @@ Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
 
 1999-07-14  Richard Henderson  <rth@cygnus.com>
 
-	* argv.c: Include stdlib.h and string.h instead of 
+	* argv.c: Include stdlib.h and string.h instead of
 	prototyping directly.
 	* choose-temp.c: Conditionally include string.h.
 
@@ -284,7 +302,7 @@ Sun Apr 25 01:18:21 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 1999-04-20  Jim Blandy  <jimb@zwingli.cygnus.com>
 
 	Fix from Dale Hawkins:
-	* cplus-dem.c (mop_up): Set typevec_size to zero, so it'll be 
+	* cplus-dem.c (mop_up): Set typevec_size to zero, so it'll be
 	reallocated properly if we use it again.
 
 	* cplus-dem.c (demangle_fund_type): Check for buffer overrun.  Be
@@ -375,7 +393,7 @@ Sun Apr 11 23:20:59 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	* cplus-dem.c (demangle_prefix): Don't grab all the '__' strings
 	when doing arm or hp style.
 	(demangle_nested_args): Decr forgetting_types field when done.
-	
+
 Thu Mar 11 01:22:58 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* pexecute.c (__CYGWIN32__): Rename to
@@ -409,10 +427,10 @@ Tue Feb  9 01:12:27 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
 	* configure.in (funcs): Check for and conditionally add mkstemps to
 	the list of functions libiberty will provide.
 	* configure: Rebuilt.
-	
+
 Wed Feb  3 00:01:15 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
-	* clock.c (HZ): Define in terms of (ISO C) CLOCKS_PER_SEC on 
+	* clock.c (HZ): Define in terms of (ISO C) CLOCKS_PER_SEC on
 	platforms that don't have HZ.
 	* getruntime.c (HZ): Likewise.
 
@@ -481,7 +499,7 @@ Fri Dec 18 17:50:18 1998  David Taylor  <taylor@texas.cygnus.com>
 	* cplus-dem.c (demangle_arm_pt): remove declaration -- function
  	doesn't exist.
 	(do_hpacc_template_literal): remove unused variable `i'.
-	
+
 Fri Dec 18 16:11:43 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* cplus-dem.c (demangle_fund_type): Process CV and u codes before
@@ -587,7 +605,7 @@ Mon Nov 23 16:59:49 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 1998-11-16  Benjamin Kosnik  <bkoz@haight.constant.com>
 
-        * cplus-dem.c (demangle_fund_type): Add demangling for C9x types.
+	* cplus-dem.c (demangle_fund_type): Add demangling for C9x types.
 
 Thu Nov 19 22:15:50 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -640,8 +658,8 @@ Sat Nov  7 16:02:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Mon Nov  2 15:05:33 1998  Geoffrey Noer  <noer@cygnus.com>
 
-        * configure.in: detect cygwin* instead of cygwin32*
-        * configure: regenerate
+	* configure.in: detect cygwin* instead of cygwin32*
+	* configure: regenerate
 
 Mon Nov  2 10:22:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -731,9 +749,9 @@ Thu Oct 15 18:51:12 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Tue Oct 13 23:51:51 1998  Jeffrey A Law  (law@cygnus.com)
 
-        * mkstemp.c: Check HAVE_SYS_TIME_H before including sys/time.h
-        * configure.in (AC_CHECK_HEADERS): Check for sys/time.h too.
-        * config.in, configure: Rebuilt.
+	* mkstemp.c: Check HAVE_SYS_TIME_H before including sys/time.h
+	* configure.in (AC_CHECK_HEADERS): Check for sys/time.h too.
+	* config.in, configure: Rebuilt.
 
 	* getopt.c: Check HAVE_STRINGS_H before including strings.h.
 	* configure.in (AC_CHECK_HEADERS): Check for strings.h too.
@@ -741,7 +759,7 @@ Tue Oct 13 23:51:51 1998  Jeffrey A Law  (law@cygnus.com)
 
 Mon Oct 12 19:15:59 1998  Geoffrey Noer  <noer@cygnus.com>
 
-        * configure.in: in comment, call AC_EXEEXT instead of AM_EXEEXT
+	* configure.in: in comment, call AC_EXEEXT instead of AM_EXEEXT
 
 Sun Oct 11 17:36:06 1998  Michael Tiemann  <tiemann@holodeck.cygnus.com>
 
@@ -1181,8 +1199,8 @@ Fri Feb  6 01:35:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 Thu Feb  5 18:48:56 1998  Geoffrey Noer  <noer@cygnus.com>
 
-        * config/mh-cygwin32: remove vasprintf.o from EXTRA_OFILES
-        since it gets built automatically
+	* config/mh-cygwin32: remove vasprintf.o from EXTRA_OFILES
+	since it gets built automatically
 
 Sun Feb  1 02:52:32 1998  Mike Stump  <mrs@wrs.com>
 
@@ -1267,24 +1285,24 @@ Mon Sep 29 12:28:41 1997  Ian Lance Taylor  <ian@cygnus.com>
 
 	Mon Sep 29 12:27:59 1997  Ian Lance Taylor  <ian@cygnus.com>
 
-        * pexecute.c: Use spawn if __CYGWIN32__.
+	* pexecute.c: Use spawn if __CYGWIN32__.
 
 	1997-08-08  Paul Eggert  <eggert@twinsun.com>
 
-        * pexecute.c: Include "config.h" first, as per autoconf manual.
+	* pexecute.c: Include "config.h" first, as per autoconf manual.
 
 	Fri Jun 27 15:20:29 1997  Scott Christley <scottc@net-community.com>
 
-        * pexecute.c (fix_argv): New function.
-        (pexecute): Win32 but not Cygwin32 needs its arguments fixed.
-        Add underscore to cwait function call.
+	* pexecute.c (fix_argv): New function.
+	(pexecute): Win32 but not Cygwin32 needs its arguments fixed.
+	Add underscore to cwait function call.
 
 Sun Sep 28 12:00:52 1997  Mark Mitchell  <mmitchell@usa.net>
 
-        * cplus-dem.c (demangle_template): Add new parameter.  Handle new
-        template-function mangling.
-        (consume_count_with_underscores): New function.
-        (demangle_signature): Handle new name-mangling scheme.
+	* cplus-dem.c (demangle_template): Add new parameter.  Handle new
+	template-function mangling.
+	(consume_count_with_underscores): New function.
+	(demangle_signature): Handle new name-mangling scheme.
 
 Wed Sep 24 00:31:59 1997  Felix Lee  <flee@yin.cygnus.com>
 
@@ -1662,7 +1680,7 @@ Tue Jun 25 23:01:07 1996  Jason Molenda  (crash@godzilla.cygnus.co.jp)
 
 Tue Jun 25 22:50:07 1996  Jason Molenda  (crash@godzilla.cygnus.co.jp)
 
-        * Makefile.in (datadir): Set to $(prefix)/share.
+	* Makefile.in (datadir): Set to $(prefix)/share.
 
 Thu Jun 20 21:17:52 1996  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -1708,7 +1726,7 @@ Wed Apr 17 11:17:55 1996  Doug Evans  <dje@canuck.cygnus.com>
 
 Tue Apr 16 11:27:16 1996  Jeffrey A Law  (law@cygnus.com)
 
-        * Makefile.in (lneeded-list): If alloca.o is needed, so is xmalloc.o.
+	* Makefile.in (lneeded-list): If alloca.o is needed, so is xmalloc.o.
 	Reverts Feb 8, 1995 change.
 
 Mon Apr 15 12:53:26 1996  Doug Evans  <dje@canuck.cygnus.com>
@@ -1962,7 +1980,7 @@ Wed Jun 28 19:13:23 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 	* cplus-dem.c: Update from gcc.
 
 	* argv.c, dummy.c: If __STDC__, #include "alloca-conf.h" after
-        <stddef.h>.
+	<stddef.h>.
 	* alloca-norm.h: If __STDC__, declare alloca with its parameter.
 
 Thu Jun 22 18:57:47 1995  Stan Shebs  <shebs@andros.cygnus.com>
@@ -2055,17 +2073,17 @@ Mon May 15 19:53:17 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 Thu May  4 14:36:42 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* cplus-dem.c: Use const instead of CONST.  Don't include
-        ansidecl.h directly.
+	ansidecl.h directly.
 
 Wed Apr 19 01:30:27 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* cplus-dem.c: Don't include libiberty.h.  Do declare xmalloc and
-        xrealloc.
+	xrealloc.
 	(-DMAIN): Don't rely on an externally-defined version number;
-        instead, require the version number to be defined as a
-        preprocessor macro.  Handle the RS/6000 leading dot.  Define
-        xmalloc, xrealloc and fatal.  Don't strip a leading underscore
-        if we couldn't demangle the word.
+	instead, require the version number to be defined as a
+	preprocessor macro.  Handle the RS/6000 leading dot.  Define
+	xmalloc, xrealloc and fatal.  Don't strip a leading underscore
+	if we couldn't demangle the word.
 
 Tue Apr  4 13:03:51 1995  Stan Shebs  <shebs@andros.cygnus.com>
 
@@ -2239,7 +2257,7 @@ Fri Aug 19 15:29:12 1994  Kung Hsu  (kung@mexican.cygnus.com)
 Thu Aug 18 14:37:14 1994  Kung Hsu  (kung@mexican.cygnus.com)
 
 	* cplus-dem.c (demangle args): Handle ARM repeat encoding where
-        the type index is greater than 9.
+	the type index is greater than 9.
 
 Wed Aug 17 16:13:49 1994  Kung Hsu  (kung@mexican.cygnus.com)
 
@@ -2301,7 +2319,7 @@ Thu Jun 16 17:54:01 1994  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 Sun Jun 12 01:37:09 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* cplus-dem.c (demangle_template): Separate consecutive >'s with a
-        space.
+	space.
 	(gnu_special): Demangle template and qualified names in a vtable name.
 
 Fri May 27 12:27:52 1994  Ken Raeburn  (raeburn@cujo.cygnus.com)
@@ -2345,13 +2363,13 @@ Fri May  6 11:01:59 1994  D. V. Henkel-Wallace  (gumby@rtl.cygnus.com)
 
 Mon Apr 11 00:54:33 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
-        * getopt.c [not __GNU_LIBRARY__] [__GCC__] [not __STDC__]:
-        Declare strlen to return int.  Don't include stddef.h.
+	* getopt.c [not __GNU_LIBRARY__] [__GCC__] [not __STDC__]:
+	Declare strlen to return int.  Don't include stddef.h.
 
 Fri Apr  1 00:38:17 1994  Jim Wilson  (wilson@mole.gnu.ai.mit.edu)
 
-        * getopt.c: Delete use of IN_GCC to control whether
-        stddef.h or gstddef.h is included.
+	* getopt.c: Delete use of IN_GCC to control whether
+	stddef.h or gstddef.h is included.
 
 Thu Apr 14 14:00:56 1994  Kung Hsu  (kung@mexican.cygnus.com)
 
@@ -2424,27 +2442,27 @@ Thu Feb 24 11:51:12 1994  David J. Mackenzie  (djm@rtl.cygnus.com)
 
 Thu Feb 10 14:44:16 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
-        * getopt.c [not __GNU_LIBRARY__] [__GNUC__] [not IN_GCC]:
-        Test just __STDC__, not emacs.
+	* getopt.c [not __GNU_LIBRARY__] [__GNUC__] [not IN_GCC]:
+	Test just __STDC__, not emacs.
 
 Wed Feb  9 00:14:00 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
-        * getopt.c [not __GNU_LIBRARY__] [__GNUC__] [not IN_GCC]
-        [emacs] [not __STDC__]: Don't include stddef.h.  Don't declare strlen.
+	* getopt.c [not __GNU_LIBRARY__] [__GNUC__] [not IN_GCC]
+	[emacs] [not __STDC__]: Don't include stddef.h.  Don't declare strlen.
 
 Fri Dec 24 19:43:00 1993  Noah Friedman  (friedman@nutrimat.gnu.ai.mit.edu)
 
-        * getopt.c (_NO_PROTO): Define before config.h is included.
+	* getopt.c (_NO_PROTO): Define before config.h is included.
 
 Mon Sep 20 15:59:03 1993  Roland McGrath  (roland@churchy.gnu.ai.mit.edu)
 
-        * getopt.c, getopt1.c [emacs || CONFIG_BROKETS]: Include
+	* getopt.c, getopt1.c [emacs || CONFIG_BROKETS]: Include
 	<config.h> only under these, else "config.h".
 
 Thu Aug 12 18:16:49 1993  Roland McGrath  (roland@churchy.gnu.ai.mit.edu)
 
-        * getopt.c, getopt1.c [HAVE_CONFIG_H]: Include
-        <config.h> instead of "config.h".
+	* getopt.c, getopt1.c [HAVE_CONFIG_H]: Include
+	<config.h> instead of "config.h".
 
 Sun Feb 20 17:17:01 1994  Ian Lance Taylor  (ian@lisa.cygnus.com)
 
@@ -2820,7 +2838,7 @@ Fri May 21 09:53:57 1993  Jim Kingdon  (kingdon@lioth.cygnus.com)
 
 Tue May 18 17:12:10 1993  Fred Fish  (fnf@cygnus.com)
 
-        (merge changes from dlong@cse.ucsc.edu)
+	(merge changes from dlong@cse.ucsc.edu)
 	* cplus-dem.c (consume_count):  Simplify.
 	* cplus-dem.c (arm_pt, demangle_class_name):  New functions.
 	* cplus-dem.c (various):  Calls to arm_pt, demangle_class_name.
