@@ -3780,6 +3780,9 @@ init_propagate_block_info (bb, live, local_set, flags)
      recording any such that are made and show them dead at the end.  We do
      a very conservative and simple job here.  */
   if (optimize
+      && ! (TREE_CODE (TREE_TYPE (current_function_decl)) == FUNCTION_TYPE
+	    && (TYPE_RETURNS_STACK_DEPRESSED
+		(TREE_TYPE (current_function_decl))))
       && (flags & PROP_SCAN_DEAD_CODE)
       && (bb->succ == NULL
 	  || (bb->succ->succ_next == NULL
