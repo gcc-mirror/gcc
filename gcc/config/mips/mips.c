@@ -828,6 +828,17 @@ double_memory_operand (op, mode)
 	  && double_memory_operand (reg_equiv_mem[REGNO (op)], mode))
 	return 1;
 
+      /* All reloaded addresses are valid in TARGET_64BIT mode.  This is
+	 the same test performed for 'm' in find_reloads.  */
+
+      if (reload_in_progress
+	  && TARGET_64BIT
+	  && (GET_CODE (op) == MEM
+	      || (GET_CODE (op) == REG
+		  && REGNO (op) >= FIRST_PSEUDO_REGISTER
+		  && reg_renumber[REGNO (op)] < 0)))
+	return 1;
+
       if (reload_in_progress
 	  && TARGET_MIPS16
 	  && GET_CODE (op) == MEM)

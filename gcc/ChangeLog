@@ -1,3 +1,8 @@
+Tue May 19 19:08:52 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* config/mips/mips.c (double_memory_operand): Accept any MEM during
+	reload when TARGET_64BIT.
+
 Tue May 19 18:21:25 1998  Jim Wilson  <wilson@cygnus.com>
 
 	Finish incomplete change started by Kenner.
