@@ -22,7 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "i386.h"
 
-#ifdef YES_UNDERSCORES
+#ifndef YES_UNDERSCORES
 /* Define this now, because bsd386.h tests it.  */
 #define NO_UNDERSCORES
 #endif
@@ -61,14 +61,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Output #ident as a .ident.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) fprintf (FILE, "\t.ident \"%s\"\n", NAME);
-
-/* We do not want to output SDB debugging information.  */
-
-#undef SDB_DEBUGGING_INFO
-
-/* We want to output DBX debugging information.  */
-
-#define DBX_DEBUGGING_INFO
 
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 
