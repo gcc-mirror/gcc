@@ -423,7 +423,7 @@ lang_finish ()
   if (flag_gnu_xref) GNU_xref_end (errorcount+sorrycount);
 }
 
-char *
+const char *
 lang_identify ()
 {
   return "cplusplus";
