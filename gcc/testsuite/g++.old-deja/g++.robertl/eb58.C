@@ -1,3 +1,6 @@
+// Special g++ Options:
+// Test for g++ array init extension 
+
 class A {
 public:
         A(int i) {}
