@@ -577,17 +577,17 @@ too_large (block, num_bbs, num_insns)
 /* Update_loop_relations(blk, hdr): Check if the loop headed by max_hdr[blk]
    is still an inner loop.  Put in max_hdr[blk] the header of the most inner
    loop containing blk.  */
-#define UPDATE_LOOP_RELATIONS(blk, hdr)                              \
-{                                                                    \
-  if (max_hdr[blk] == -1)                                            \
-    max_hdr[blk] = hdr;                                              \
-  else if (dfs_nr[max_hdr[blk]] > dfs_nr[hdr])                       \
-         RESET_BIT (inner, hdr);                                     \
-  else if (dfs_nr[max_hdr[blk]] < dfs_nr[hdr])                       \
-         {                                                           \
-            RESET_BIT (inner,max_hdr[blk]);			     \
-            max_hdr[blk] = hdr;                                      \
-         }                                                           \
+#define UPDATE_LOOP_RELATIONS(blk, hdr)		\
+{						\
+  if (max_hdr[blk] == -1)			\
+    max_hdr[blk] = hdr;				\
+  else if (dfs_nr[max_hdr[blk]] > dfs_nr[hdr])	\
+    RESET_BIT (inner, hdr);			\
+  else if (dfs_nr[max_hdr[blk]] < dfs_nr[hdr])	\
+    {						\
+      RESET_BIT (inner,max_hdr[blk]);		\
+      max_hdr[blk] = hdr;			\
+    }						\
 }
 
 /* Find regions for interblock scheduling.
@@ -1094,7 +1094,7 @@ compute_dom_prob_ps (bb)
 	  if (CONTAINING_RGN (TO_BLOCK (nxt_out_edge)) !=
 	      CONTAINING_RGN (BB_TO_BLOCK (bb)))
 	    ++nr_rgn_out_edges;
-        SET_BIT (pot_split[bb], EDGE_TO_BIT (nxt_out_edge));
+	  SET_BIT (pot_split[bb], EDGE_TO_BIT (nxt_out_edge));
 	  nxt_out_edge = NEXT_OUT (nxt_out_edge);
 
 	}
@@ -1562,17 +1562,17 @@ enum INSN_TRAP_CLASS
 
 /* Non-zero if block bb_to is equal to, or reachable from block bb_from.  */
 #define IS_REACHABLE(bb_from, bb_to)					\
-(bb_from == bb_to                                                       \
+  (bb_from == bb_to							\
    || IS_RGN_ENTRY (bb_from)						\
-   || (TEST_BIT (ancestor_edges[bb_to],                               \
-                    EDGE_TO_BIT (IN_EDGES (BB_TO_BLOCK (bb_from))))))
+   || (TEST_BIT (ancestor_edges[bb_to],					\
+		 EDGE_TO_BIT (IN_EDGES (BB_TO_BLOCK (bb_from))))))
 
 /* Non-zero iff the address is comprised from at most 1 register.  */
 #define CONST_BASED_ADDRESS_P(x)			\
   (GET_CODE (x) == REG					\
-   || ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS   \
-	|| (GET_CODE (x) == LO_SUM))	                \
-       && (CONSTANT_P (XEXP (x, 0))		\
+   || ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS	\
+	|| (GET_CODE (x) == LO_SUM))			\
+       && (CONSTANT_P (XEXP (x, 0))			\
 	   || CONSTANT_P (XEXP (x, 1)))))
 
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
@@ -2497,7 +2497,7 @@ propagate_deps (bb, pred_deps)
 	succ_deps->last_pending_memory_flush
 	  = concat_INSN_LIST (pred_deps->last_pending_memory_flush,
 			      succ_deps->last_pending_memory_flush);
-	
+
 	succ_deps->pending_lists_length += pred_deps->pending_lists_length;
 	succ_deps->pending_flush_length += pred_deps->pending_flush_length;
 
@@ -2657,7 +2657,7 @@ debug_dependencies ()
 			   INSN_DEP_COUNT (insn),
 			   INSN_PRIORITY (insn),
 			   insn_cost (insn, 0, 0));
-		  
+
 		  if (recog_memoized (insn) < 0)
 		    fprintf (sched_dump, "nothing");
 		  else
@@ -2996,7 +2996,7 @@ schedule_insns (dump_file)
   init_regions ();
 
   current_sched_info = &region_sched_info;
-  
+
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
     schedule_region (rgn);

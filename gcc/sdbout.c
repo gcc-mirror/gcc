@@ -782,7 +782,7 @@ sdbout_symbol (decl, local)
       if (!DECL_RTL_SET_P (decl))
 	return;
 
-      SET_DECL_RTL (decl, 
+      SET_DECL_RTL (decl,
 		    eliminate_regs (DECL_RTL (decl), 0, NULL_RTX));
 #ifdef LEAF_REG_REMAP
       if (current_function_uses_only_leaf_regs)
@@ -858,12 +858,12 @@ sdbout_symbol (decl, local)
 	  if (TREE_PUBLIC (decl))
 	    {
 	      PUT_SDB_VAL (XEXP (value, 0));
-              PUT_SDB_SCL (C_EXT);
+	      PUT_SDB_SCL (C_EXT);
 	    }
 	  else
 	    {
 	      PUT_SDB_VAL (XEXP (value, 0));
-              PUT_SDB_SCL (C_STAT);
+	      PUT_SDB_SCL (C_STAT);
 	    }
 	}
       else if (regno >= 0)
@@ -1759,7 +1759,7 @@ sdbout_init (input_file_name)
     if (DECL_NAME (t) && IDENTIFIER_POINTER (DECL_NAME (t)) != 0
 	&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (t)), "__vtbl_ptr_type"))
       sdbout_symbol (t, 0);
-#endif  
+#endif
 
 #ifdef SDB_ALLOW_FORWARD_REFERENCES
   ggc_add_tree_root (&anonymous_types, 1);

@@ -72,7 +72,7 @@ skip_to_closing_brace (pfile)
 
 /* This function scans a C source file (actually, the output of cpp),
    reading from FP.  It looks for function declarations, and
-   external variable declarations.  
+   external variable declarations.
 
    The following grammar (as well as some extra stuff) is recognized:
 
@@ -155,7 +155,7 @@ scan_decls (pfile, argc, argv)
 	  /* ... fall through ...  */
 	case CPP_OPEN_BRACE:  case CPP_CLOSE_BRACE:
 	  goto new_statement;
-	  
+
 	case CPP_EOF:
 	  return 0;
 
