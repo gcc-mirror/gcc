@@ -1,5 +1,5 @@
 /* gtkcheckboxpeer.c -- Native implementation of GtkCheckboxPeer
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -78,7 +78,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer_remove
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeCreate
-  (JNIEnv *env, jobject obj, jobject group)
+  (JNIEnv *env, jobject obj, jobject group, jboolean state)
 {
   GtkWidget *button;
 
@@ -97,7 +97,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeCreate
 	  NSA_SET_PTR (env, group, button);
 	}
     }
-
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), state);
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, button);

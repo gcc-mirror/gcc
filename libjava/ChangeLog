@@ -1,3 +1,16 @@
+2003-12-08  Kim Ho  <kho@redhat.com>
+
+	Fix for Checkbox states.
+	* gnu/java/awt/peer/gtk/GtkCheckboxPeer.java:
+	(currentState): New field.
+	(nativeCreate): Add initial state parameter.
+	(create): Changed to reflect new parameter.
+	(setState): Fire only on changed states.
+	(postItemEvent): Fire only on changed states. Also change the 
+	Java Checkbox to reflect new state.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c:
+	(nativeCreate): Add parameter and set active state.
+
 2003-12-08  Fernando Nasser  <fnasser@redhat.com>
  
 	* java/awt/datatransfer/StringSelection.java (getTransferData): Return
