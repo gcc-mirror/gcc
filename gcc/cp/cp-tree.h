@@ -2353,7 +2353,7 @@ extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
 extern tree instantiate_template		PROTO((tree, tree));
 extern void overload_template_name		PROTO((tree));
-extern int fn_type_unification                  PROTO((tree, tree, tree, tree, tree, int));
+extern int fn_type_unification                  PROTO((tree, tree, tree, tree, tree, int, tree));
 extern int type_unification			PROTO((tree, tree *, tree, tree, tree, int *, int, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));

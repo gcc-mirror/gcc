@@ -1,5 +1,12 @@
 Mon Feb  2 11:24:22 1998  Mark Mitchell  <mmitchell@usa.net>
 
+	* call.c (add_template_candidate_real): Pass extra parameter to
+	fn_type_unification. 
+	* cp-tree.h (fn_type_unification): Add parameter.
+	* pt.c (fn_type_unification): Add additional parameter to deal with
+	static member functions.
+	(get_bindings): Deal with static member functions.
+
 	* cp-tree.h (DECL_NONSTATIC_MEMBER_FUNCTION_P): New macro.	
 	(revert_static_member_fn): Declare.
 	* decl.c (revert_static_member_fn): Remove declaration.  Change
