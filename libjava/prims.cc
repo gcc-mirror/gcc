@@ -543,7 +543,7 @@ public:
       interfaces = NULL;
       loader = NULL;
       interface_count = 0;
-      state = JV_STATE_NOTHING;
+      state = JV_STATE_DONE;
       thread = NULL;
 
       // Note that we have to set `methods' to NULL.

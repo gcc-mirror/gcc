@@ -1,3 +1,14 @@
+2000-06-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Fix for PR java.lang/258:
+	* prims.cc (_Jv_PrimClass): Set state of primitive class to 
+	JV_STATE_DONE, to prevent accidental initialization.
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Call 
+	_Jv_InterfaceAssignableFrom if target is an interface and source is an
+	interface or an abstract class.	Remove redundant initializeClass calls. 
+	Remove duplicate if_idt test. 
+	* java/lang/Class.h (_Jv_InterfaceAssignableFrom): New function.
+
 2000-05-31  Tom Tromey  <tromey@cygnus.com>
 
 	* prims.cc (DECLARE_PRIM_TYPE): Define a vtable as well.
