@@ -1,5 +1,10 @@
 2003-02-18  Ben Elliston  <bje@redhat.com>
 
+	Part of fix for PR ada/9406
+	* gnat_ug.texi (Binder output file): Grammar fix.
+
+2003-02-18  Ben Elliston  <bje@redhat.com>
+
 	PR other/7350
 	* 5qtaprop.adb (Sleep): Fix typo in comment.
 
