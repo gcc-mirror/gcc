@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 1988, 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1991, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3569,12 +3569,12 @@ identify_blocks (top_block, insns)
 	  {
 	    block_stack[depth++] = current_block_number;
 	    current_block_number = next_block_number;
-	    SET_NOTE_BLOCK_NUMBER (insn, next_block_number++);
+	    NOTE_BLOCK_NUMBER (insn) =  next_block_number++;
 	  }
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 	  {
 	    current_block_number = block_stack[--depth];
-	    SET_NOTE_BLOCK_NUMBER (insn, current_block_number);
+	    NOTE_BLOCK_NUMBER (insn) = current_block_number;
 	  }
       }
 
@@ -3610,14 +3610,14 @@ reorder_blocks (block_vector, insns)
 	    BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
 	    BLOCK_SUBBLOCKS (current_block) = block;
 	    current_block = block;
-	    SET_NOTE_BLOCK_NUMBER (insn, 0);
+	    NOTE_SOURCE_FILE (insn) = 0;
 	  }
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 	  {
 	    BLOCK_SUBBLOCKS (current_block)
 	      = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
 	    current_block = BLOCK_SUPERCONTEXT (current_block);
-	    SET_NOTE_BLOCK_NUMBER (insn, 0);
+	    NOTE_SOURCE_FILE (insn) = 0;
 	  }
       }
 
