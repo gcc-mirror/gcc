@@ -38,12 +38,10 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 /*@=exportheader@*/
 {
   register unsigned int i;
-  register int tmp;
   register void **p_argv;
   register char *argp;
   register ffi_type **p_arg;
 
-  tmp = 0;
   argp = stack;
 
   if (ecif->cif->rtype->type == FFI_TYPE_STRUCT)
@@ -268,12 +266,10 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 /*@=exportheader@*/
 {
   register unsigned int i;
-  register int tmp;
   register void **p_argv;
   register char *argp;
   register ffi_type **p_arg;
 
-  tmp = 0;
   argp = stack;
 
   if ( cif->rtype->type == FFI_TYPE_STRUCT ) {
