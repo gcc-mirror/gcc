@@ -1,3 +1,7 @@
+2000-07-20  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/Vector.java (remove(Object)): Implemented.
+
 2000-07-19  Jeff Sturm  <jeff.sturm@appnet.com>
 
 	* java/lang/natThrowable.cc (fillInStackTrace): Check for
