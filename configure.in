@@ -192,6 +192,7 @@ if [ x${shared} = xyes ]; then
     i[3456]86-*)	waugh=config/mh-x86pic ;;
     sparc64-*)		waugh=config/mh-sparcpic ;;
     powerpc*-*)		waugh=config/mh-ppcpic ;;
+    alpha-*-linux*)     waugh=config/mh-elfalphapic ;;
     *)			waugh=config/mh-${host_cpu}pic ;;
   esac
   if [ -f ${srcdir}/${waugh} ]; then
@@ -454,6 +455,10 @@ case "${target}" in
   i[3456]86-*-go32* | i[3456]-*-msdosdjgpp*)
     # but don't build gdb
     noconfigdirs="$noconfigdirs gdb target-libg++ target-libstdc++ target-libio target-librx"
+    ;;
+  *-*-linux*)
+    # linux has rx in libc
+    skipdirs="$skipdirs target-librx"
     ;;
   *-*-cygwin32)
     target_configdirs="$target_configdirs target-winsup"
@@ -759,6 +764,7 @@ if [ x${shared} = xyes ]; then
     hppa*)		target_makefile_frag=config/mt-papic ;;
     i[3456]86-*)	target_makefile_frag=config/mt-x86pic ;;
     powerpc*-*)		target_makefile_frag=config/mt-ppcpic ;;
+    alpha-*-linux*)	target_makefile_frag=config/mt-elfalphapic ;;
     *)			target_makefile_frag=config/mt-${target_cpu}pic ;;
   esac
 fi

@@ -1,3 +1,10 @@
+Thu Sep 11 16:40:46 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* Makefile.in (local-distclean): Also remove mh-frag mt-frag.
+
+	* configure.in (skipdirs): Add target-librx for Linux.
+	(alpha-*-linux*): Use config/mh-elfalphapic and config/mt-elfalphapic.
+
 Wed Sep 10 21:29:54 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (bootstrap): New target.
