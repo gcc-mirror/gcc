@@ -5296,6 +5296,21 @@ make_compound_operation (x, in_code)
 				 XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
 				 0, in_code == COMPARE);
 	}
+      /* Same as previous, but for (xor/ior (lshift...) (lshift...)).  */
+      else if ((GET_CODE (XEXP (x, 0)) == XOR
+		|| GET_CODE (XEXP (x, 0)) == IOR)
+	       && GET_CODE (XEXP (XEXP (x, 0), 0)) == LSHIFTRT
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == LSHIFTRT
+	       && (i = exact_log2 (INTVAL (XEXP (x, 1)) + 1)) >= 0)
+	{
+	  /* Apply the distributive law, and then try to make extractions.  */
+	  new = gen_rtx_combine (GET_CODE (XEXP (x, 0)), mode,
+				 gen_rtx (AND, mode, XEXP (XEXP (x, 0), 0),
+					  XEXP (x, 1)),
+				 gen_rtx (AND, mode, XEXP (XEXP (x, 0), 1),
+					  XEXP (x, 1)));
+	  new = make_compound_operation (new, in_code);
+	}
 
       /* If we are have (and (rotate X C) M) and C is larger than the number
 	 of bits in M, this is an extraction.  */
@@ -6100,7 +6115,7 @@ make_field_assignment (x)
   else
     return x;
 
-  pos = get_pos_from_mask (~c1, &len);
+  pos = get_pos_from_mask (c1 ^ GET_MODE_MASK (GET_MODE (dest)), &len);
   if (pos < 0 || pos + len > GET_MODE_BITSIZE (GET_MODE (dest))
       || (GET_MODE_BITSIZE (GET_MODE (other)) <= HOST_BITS_PER_WIDE_INT
 	  && (c1 & nonzero_bits (other, GET_MODE (other))) != 0))
