@@ -3981,12 +3981,10 @@ write_varray (varray_t *vp,    /* virtual array */
     return;
 
   if (debug)
-    {
-      fputs ("\twarray\tvp = ", stderr);
-      fprintf (stderr, HOST_PTR_PRINTF, (void *) vp);
-      fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
-	       (unsigned long) offset, vp->num_allocated * vp->object_size, str);
-    }
+    fprintf (stderr, "\twarray\tvp = " HOST_PTR_PRINTF
+	     ", offset = %7lu, size = %7lu, %s\n",
+	     (void *) vp, (unsigned long) offset,
+	     vp->num_allocated * vp->object_size, str);
 
   if (file_offset != (unsigned long) offset
       && fseek (object_stream, (long) offset, SEEK_SET) < 0)
@@ -4023,12 +4021,10 @@ write_object (void)
   off_t offset;
 
   if (debug)
-    {
-      fputs ("\n\twrite\tvp = ", stderr);
-      fprintf (stderr, HOST_PTR_PRINTF, (void *) &symbolic_header);
-      fprintf (stderr, ", offset = %7u, size = %7lu, %s\n",
-	       0, (unsigned long) sizeof (symbolic_header), "symbolic header");
-    }
+    fprintf (stderr, "\n\twrite\tvp = " HOST_PTR_PRINTF
+	     ", offset = %7u, size = %7lu, %s\n",
+	     (void *) &symbolic_header, 0,
+	     (unsigned long) sizeof (symbolic_header), "symbolic header");
 
   sys_write = fwrite (&symbolic_header,
 		      1,
@@ -4056,13 +4052,10 @@ write_object (void)
 	pfatal_with_name (object_name);
 
       if (debug)
-	{
-	  fputs ("\twrite\tvp = ", stderr);
-	  fprintf (stderr, HOST_PTR_PRINTF, (void *) &orig_linenum);
-	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
-		   (long) symbolic_header.cbLineOffset,
-		   (long) symbolic_header.cbLine, "Line numbers");
-	}
+	fprintf (stderr, "\twrite\tvp = " HOST_PTR_PRINTF
+		 ", offset = %7lu, size = %7lu, %s\n",
+		 (void *) &orig_linenum, (long) symbolic_header.cbLineOffset,
+		 (long) symbolic_header.cbLine, "Line numbers");
 
       sys_write = fwrite (orig_linenum,
 			  1,
@@ -4091,13 +4084,10 @@ write_object (void)
 	pfatal_with_name (object_name);
 
       if (debug)
-	{
-	  fputs ("\twrite\tvp = ", stderr);
-	  fprintf (stderr, HOST_PTR_PRINTF, (void *) &orig_opt_syms);
-	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
-		   (long) symbolic_header.cbOptOffset,
-		   num_write, "Optimizer symbols");
-	}
+	fprintf (stderr, "\twrite\tvp = " HOST_PTR_PRINTF
+		 ", offset = %7lu, size = %7lu, %s\n",
+		 (void *) &orig_opt_syms, (long) symbolic_header.cbOptOffset,
+		 num_write, "Optimizer symbols");
 
       sys_write = fwrite (orig_opt_syms,
 			  1,
@@ -4183,13 +4173,10 @@ write_object (void)
 	   file_ptr = file_ptr->next_file)
 	{
 	  if (debug)
-	    {
-	      fputs ("\twrite\tvp = ", stderr);
-	      fprintf (stderr, HOST_PTR_PRINTF, (void *) &file_ptr->fdr);
-	      fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
-		       file_offset, (unsigned long) sizeof (FDR),
-		       "File header");
-	    }
+	    fprintf (stderr, "\twrite\tvp = " HOST_PTR_PRINTF
+		     ", offset = %7lu, size = %7lu, %s\n",
+		     (void *) &file_ptr->fdr, file_offset,
+		     (unsigned long) sizeof (FDR), "File header");
 
 	  sys_write = fwrite (&file_ptr->fdr,
 			      1,
@@ -4219,13 +4206,10 @@ write_object (void)
 	pfatal_with_name (object_name);
 
       if (debug)
-	{
-	  fputs ("\twrite\tvp = ", stderr);
-	  fprintf (stderr, HOST_PTR_PRINTF, (void *) &orig_rfds);
-	  fprintf (stderr, ", offset = %7lu, size = %7lu, %s\n",
-		   (long) symbolic_header.cbRfdOffset,
-		   num_write, "Relative file descriptors");
-	}
+	fprintf (stderr, "\twrite\tvp = " HOST_PTR_PRINTF
+		 ", offset = %7lu, size = %7lu, %s\n",
+		 (void *) &orig_rfds, (long) symbolic_header.cbRfdOffset,
+		 num_write, "Relative file descriptors");
 
       sys_write = fwrite (orig_rfds,
 			  1,
@@ -5016,12 +5000,8 @@ allocate_cluster (Size_t npages)
     pfatal_with_name ("allocate_cluster");
 
   if (debug > 3)
-    {
-      fprintf (stderr, "\talloc\tnpages = %lu, value = ",
-	       (unsigned long) npages);
-      fprintf (stderr, HOST_PTR_PRINTF, (void *) ptr);
-      fputs ("\n", stderr);
-    }
+    fprintf (stderr, "\talloc\tnpages = %lu, value = " HOST_PTR_PRINTF "\n",
+	     (unsigned long) npages, (void *) ptr);
 
   return ptr;
 }

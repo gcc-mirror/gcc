@@ -1,3 +1,10 @@
+2003-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (print_binding_level, print_other_binding_stack,
+	print_binding_stack): Merge uses of HOST_PTR_PRINTF with adjacent
+	stdio calls.
+	* ptree.c (cxx_print_decl, cxx_print_binding): Likewise.
+
 2003-07-07  Andreas Jaeger  <aj@suse.de>
 
 	* friend.c: Convert to ISO C90 prototypes.

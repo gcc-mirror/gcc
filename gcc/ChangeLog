@@ -1,3 +1,16 @@
+2003-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bitmap.c (debug_bitmap_file): Merge uses of HOST_PTR_PRINTF with
+	adjacent stdio calls.
+	* c-decl.c (c_print_identifier): Likewise.
+	* mips-tfile.c (write_varray, write_object, allocate_cluster): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* print-tree.c (print_node_brief, print_node): Likewise.
+	* system.h (HOST_PTR_PRINTF): Ensure we have a literal string.
+	
+	* configure.in (AC_COMPILE_CHECK_SIZEOF): Check for `void *'.
+	* config.in, configure: Regenerated.
+
 2003-07-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/10979

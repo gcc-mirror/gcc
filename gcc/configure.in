@@ -249,6 +249,7 @@ gcc_AC_C_LONG_LONG
 gcc_AC_C__BOOL
 
 # sizeof(char) is 1 by definition.
+AC_COMPILE_CHECK_SIZEOF(void *)
 AC_COMPILE_CHECK_SIZEOF(short)
 AC_COMPILE_CHECK_SIZEOF(int)
 AC_COMPILE_CHECK_SIZEOF(long)
