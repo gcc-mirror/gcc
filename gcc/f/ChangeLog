@@ -1,3 +1,11 @@
+2000-12-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (f77.info): Depend on info files in source
+	directory.
+	(f/g77.info): Build info files in source directory; don't build
+	them unless BUILD_INFO is "info".
+	(f77.install-info): Install info files from source directory.
+
 2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* Make-lang.in: Link f/fini with safe-ctype.o.

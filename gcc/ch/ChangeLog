@@ -1,3 +1,10 @@
+2000-12-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (CHILL.info): Depend on info files in source
+	directory.
+	(ch/chill.info): Build info files in source directory.
+	(CHILL.install-info): Install info files from source directory.
+
 2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* lex.c: Don't bother checking whether ISUPPER(c) before
