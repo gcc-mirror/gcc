@@ -1,3 +1,7 @@
+2004-06-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* g++.dg/abi/bitfield3.C: Add comment..
+
 2004-06-15  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/ext/stmtexpr1.C: XFAIL.
