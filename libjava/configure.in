@@ -955,16 +955,6 @@ GCJVERSION=$gcjversion
 AC_SUBST(GCJVERSION)
 AC_DEFINE_UNQUOTED(GCJVERSION, "$GCJVERSION", [Short GCJ version ID])
 
-dnl Work around a g++ bug.  Reported to gcc-bugs@gcc.gnu.org on Jan 22, 2000.
-AC_MSG_CHECKING([for g++ -ffloat-store bug])
-save_CFLAGS="$CFLAGS"
-CFLAGS="-x c++ -O2 -ffloat-store"
-AC_TRY_COMPILE([#include <math.h>], , 
-  [AC_MSG_RESULT(no)],
-  [AC_DEFINE(__NO_MATH_INLINES)
-   AC_MSG_RESULT(yes)])
-CFLAGS="$save_CFLAGS"
-
 dnl We check for sys/filio.h because Solaris 2.5 defines FIONREAD there.
 dnl On that system, sys/ioctl.h will not include sys/filio.h unless
 dnl BSD_COMP is defined; just including sys/filio.h is simpler.

@@ -1,3 +1,11 @@
+2003-09-10  Michael Koch  <konqueror@gmx.de>
+
+	* acconfig.h (__NO_MATH_INLINES): Removed.
+	* configure.in: Removed check for g++ math inlining bug from 2000.
+	* configure.host: Removed -D__NO_MATH_INLINES in libgcj_cflags and
+	libgcj_cxxflags.
+	* configure: Regenerated.
+
 2003-09-10  David Daney <ddaney@avtrex.com>
 
 	* java/util/Arrays.java (equals(all variants)): Quit using
