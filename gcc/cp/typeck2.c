@@ -814,12 +814,18 @@ process_init_constructor (type, init, elts)
 		next1 = build_functional_cast (TREE_TYPE (field),
 					       NULL_TREE);
 	      else
-		next1 = build (CONSTRUCTOR, NULL_TREE, NULL_TREE,
-			       NULL_TREE);
+	        {
+		  next1 = build (CONSTRUCTOR, NULL_TREE, NULL_TREE,
+			         NULL_TREE);
+                  if (init)
+                    TREE_HAS_CONSTRUCTOR (next1)
+                       = TREE_HAS_CONSTRUCTOR (init);
+                }
 	      next1 = digest_init (TREE_TYPE (field), next1, 0);
 
 	      /* Warn when some struct elements are implicitly initialized.  */
-	      if (extra_warnings)
+	      if (extra_warnings
+	          && (!init || TREE_HAS_CONSTRUCTOR (init)))
 		cp_warning ("missing initializer for member `%D'", field);
 	    }
 	  else
@@ -835,7 +841,8 @@ process_init_constructor (type, init, elts)
 
 	      /* Warn when some struct elements are implicitly initialized
 		 to zero.  */
-	      if (extra_warnings)
+	      if (extra_warnings
+	          && (!init || TREE_HAS_CONSTRUCTOR (init)))
 		cp_warning ("missing initializer for member `%D'", field);
 
 	      /* The default zero-initialization is fine for us; don't
