@@ -228,12 +228,8 @@ extern void add_eh_table_entry			PROTO((int n));
 /* Start a catch clause, triggered by runtime value paramter. */
 
 #ifdef TREE_CODE
-extern void expand_start_catch                  PROTO((tree));
+extern void start_catch_handler                 PROTO((tree));
 #endif
-
-/* End a catch clause. */
-
-extern void expand_end_catch                    PROTO((void));
 
 /* Returns a non-zero value if we need to output an exception table.  */
 

@@ -1511,7 +1511,7 @@ expand_start_try_stmts ()
 /* Called to begin a catch clause. The parameter is the object which
    will be passed to the runtime type check routine. */
 void 
-expand_start_catch (rtime)
+start_catch_handler (rtime)
      tree rtime;
 {
   rtx handler_label = catchstack.top->entry->exception_handler_label;
@@ -1527,16 +1527,6 @@ expand_start_catch (rtime)
   receive_exception_label (handler_label);
 
   add_new_handler (eh_region_entry, get_new_handler (handler_label, rtime));
-}
-
-/* End a catch clause by dequeuing the current region */
-
-void 
-expand_end_catch ()
-{
-  struct eh_entry *entry;
-  entry = pop_eh_entry (&catchstack);
-  free (entry);
 }
 
 /* Generate RTL for the start of a group of catch clauses. 
@@ -1641,9 +1631,14 @@ void
 expand_end_all_catch ()
 {
   rtx new_catch_clause, outer_context = NULL_RTX;
+  struct eh_entry *entry;
 
   if (! doing_eh (1))
     return;
+
+  /* Dequeue the current catch clause region. */
+  entry = pop_eh_entry (&catchstack);
+  free (entry);
 
   if (! exceptions_via_longjmp)
     {
