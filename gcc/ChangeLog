@@ -1,3 +1,10 @@
+2005-01-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/18820
+	* varasm.c (initializer_constant_valid_p) <ADDR_EXPR>: Return
+	zero for nested functions needing a static chain or functions
+	with a non-constant address.
+
 2005-01-13  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_binary_operation) <AND>: Optimize
