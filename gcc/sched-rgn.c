@@ -680,7 +680,7 @@ find_rgns (edge_list, dom)
   in_stack = sbitmap_alloc (last_basic_block);
   sbitmap_zero (in_stack);
 
-  for (i = 0; i < n_basic_blocks; i++)
+  for (i = 0; i < last_basic_block; i++)
     max_hdr[i] = -1;
 
   /* DFS traversal to find inner loops in the cfg.  */

@@ -258,29 +258,16 @@ flow_call_edges_add (blocks)
 {
   int i;
   int blocks_split = 0;
-  int bb_num = 0;
-  basic_block *bbs, bb;
+  int last_bb = last_basic_block;
   bool check_last_block = false;
 
-  /* Map bb indices into basic block pointers since split_block
-     will renumber the basic blocks.  */
-
-  bbs = xmalloc (n_basic_blocks * sizeof (*bbs));
+  if (n_basic_blocks == 0)
+    return 0;
 
   if (! blocks)
-    {
-      FOR_EACH_BB (bb)
-	bbs[bb_num++] = bb;
-
-      check_last_block = true;
-    }
+    check_last_block = true;
   else
-    EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
-			       {
-				 bbs[bb_num++] = BASIC_BLOCK (i);
-				 if (i == n_basic_blocks - 1)
-				   check_last_block = true;
-			       });
+    check_last_block = TEST_BIT (blocks, EXIT_BLOCK_PTR->prev_bb->index);
 
   /* In the last basic block, before epilogue generation, there will be
      a fallthru edge to EXIT.  Special care is required if the last insn
@@ -321,11 +308,17 @@ flow_call_edges_add (blocks)
      calls since there is no way that we can determine if they will
      return or not...  */
 
-  for (i = 0; i < bb_num; i++)
+  for (i = 0; i < last_bb; i++)
     {
-      basic_block bb = bbs[i];
+      basic_block bb = BASIC_BLOCK (i);
       rtx insn;
       rtx prev_insn;
+
+      if (!bb)
+	continue;
+
+      if (blocks && !TEST_BIT (blocks, i))
+	continue;
 
       for (insn = bb->end; ; insn = prev_insn)
 	{
@@ -374,7 +367,6 @@ flow_call_edges_add (blocks)
   if (blocks_split)
     verify_flow_info ();
 
-  free (bbs);
   return blocks_split;
 }
 
@@ -927,7 +919,7 @@ flow_preorder_transversal_compute (pot_order)
       for (e = bb->succ; e; e = e->succ_next)
 	max_successors++;
 
-      dfst[i].node
+      dfst[bb->index].node
 	= (max_successors
 	   ? (struct dfst_node **) xcalloc (max_successors,
 					    sizeof (struct dfst_node *))

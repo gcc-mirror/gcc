@@ -336,22 +336,12 @@ create_basic_block (head, end, after)
      basic_block after;
 {
   basic_block bb;
-  int i;
-  int index = after->index + 1;
+  int index = last_basic_block++;
 
-  /* Place the new block just after the block being split.  */
-  VARRAY_GROW (basic_block_info, ++n_basic_blocks);
+  /* Place the new block just after the end.  */
+  VARRAY_GROW (basic_block_info, last_basic_block);
 
-  /* Some parts of the compiler expect blocks to be number in
-     sequential order so insert the new block immediately after the
-     block being split..  */
-  for (i = n_basic_blocks - 1; i > index; --i)
-    {
-      basic_block tmp = BASIC_BLOCK (i - 1);
-
-      BASIC_BLOCK (i) = tmp;
-      tmp->index = i;
-    }
+  n_basic_blocks++;
 
   bb = create_basic_block_structure (index, head, end, NULL, after);
   bb->aux = NULL;
@@ -435,7 +425,7 @@ flow_delete_block (b)
 {
   int deleted_handler = flow_delete_block_noexpunge (b);
 
-  /* Remove the basic block from the array, and compact behind it.  */
+  /* Remove the basic block from the array.  */
   expunge_block (b);
 
   return deleted_handler;
@@ -1210,11 +1200,18 @@ back_edge_of_syntactic_loop_p (bb1, bb2)
 {
   rtx insn;
   int count = 0;
+  basic_block bb;
 
-  if (bb1->index > bb2->index)
-    return false;
-  else if (bb1->index == bb2->index)
+  if (bb1 == bb2)
     return true;
+
+  /* ??? Could we guarantee that bb indices are monotone, so that we could
+     just compare them?  */
+  for (bb = bb1; bb && bb != bb2; bb = bb->next_bb)
+    continue;
+
+  if (!bb)
+    return false;
 
   for (insn = bb1->end; insn != bb2->head && count >= 0;
        insn = NEXT_INSN (insn))
@@ -1708,7 +1705,7 @@ verify_flow_info ()
   basic_block *bb_info, *last_visited;
   size_t *edge_checksum;
   rtx x;
-  int i, num_bb_notes, err = 0;
+  int num_bb_notes, err = 0;
   basic_block bb, last_bb_seen;
 
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
@@ -1731,21 +1728,6 @@ verify_flow_info ()
 	{
 	  error ("prev_bb of %d should be %d, not %d",
 		 bb->index, last_bb_seen->index, bb->prev_bb->index);
-	  err = 1;
-	}
-
-      /* For now, also check that we didn't change the order.  */
-      if (bb != EXIT_BLOCK_PTR && bb->index != last_bb_seen->index + 1)
-	{
-	  error ("Wrong order of blocks %d and %d",
-		 last_bb_seen->index, bb->index);
-	  err = 1;
-	}
-
-      if (bb == EXIT_BLOCK_PTR && last_bb_seen->index != n_basic_blocks - 1)
-	{
-	  error ("Only %d of %d blocks in chain",
-		 last_bb_seen->index + 1, n_basic_blocks);
 	  err = 1;
 	}
 
@@ -2065,10 +2047,10 @@ verify_flow_info ()
       edge_checksum[e->dest->index + 2] -= (size_t) e;
   }
 
-  for (i = -2; i < n_basic_blocks; ++i)
-    if (edge_checksum[i + 2])
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+    if (edge_checksum[bb->index + 2])
       {
-	error ("basic block %i edge lists are corrupted", i);
+	error ("basic block %i edge lists are corrupted", bb->index);
 	err = 1;
       }
 
@@ -2079,7 +2061,7 @@ verify_flow_info ()
     {
       if (NOTE_INSN_BASIC_BLOCK_P (x))
 	{
-	  basic_block bb = NOTE_BASIC_BLOCK (x);
+	  bb = NOTE_BASIC_BLOCK (x);
 
 	  num_bb_notes++;
 	  if (bb != last_bb_seen->next_bb)

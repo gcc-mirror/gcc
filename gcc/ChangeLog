@@ -1,3 +1,37 @@
+2002-05-28  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* basic-block.h (last_basic_block): Declare.
+	(expunge_block_nocompact): Declaration removed.
+	(compact_blocks): Declare.
+	* cfg.c (last_basic_block): New variable.
+	(expunge_block_nocompact): Removed.
+	(expunge_block): Do not compact basic blocks.
+	(compact_blocks): New.
+	* cfganal.c (flow_call_edges_add): Use the fact that bb indices no
+	longer change.
+	* cfgbuild.c (find_basic_blocks_1, find_basic_blocks): Set
+	last_basic_block.
+	* cfgcleanup.c (merge_blocks_move_predecessor_nojumps): Do not change
+	real positions of blocks.
+	(delete_unreachable_blocks): Simplified -- quadratic behavior now
+	cannot occur.
+	(cleanup_cfg): Compact blocks.
+	* cfgrtl.c (create_basic_block): Insert basic blocks to the end of
+	basic_block_info varray.
+	(flow_delete_block): Comment update.
+	(back_edge_of_syntactic_loop_p): Modify position check code.
+	(verify_flow_info): Update checking.
+	* flow.c (calculate_global_regs_live): Use FOR_EACH_BB.
+	* ifcvt.c (SET_ORIG_INDEX, ORIG_INDEX): Removed.
+	(find_if_case_1, find_if_case_2, if_convert): Use the fact that bb
+	indices no longer change.
+	* lcm.c (optimize_mode_switching): Replace n_basic_blocks with
+	last_basic_block.
+	* predict.c (estimate_bb_frequencies): Remove unneccessary code.
+	* profile.c (branch_prob): Compact blocks.
+	* sched-rgn.c (find_rgns): Replace n_basic_blocks with
+	last_basic_block.
+
 2002-05-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (two anonymous patterns): New.
