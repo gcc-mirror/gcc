@@ -1660,7 +1660,7 @@ xtensa_emit_call (callop, operands)
      int callop;
      rtx *operands;
 {
-  char *result = (char *) malloc (64);
+  static char result[64];
   rtx tgt = operands[callop];
 
   if (GET_CODE (tgt) == CONST_INT)

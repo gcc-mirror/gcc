@@ -1,3 +1,8 @@
+2002-12-02  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_emit_call): Use a static buffer.
+	* config/xtensa/xtensa.h (MAX_WCHAR_TYPE_SIZE): Delete.
+
 2002-12-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* builtin-types.def (BT_SIZE): Use size_type_node.

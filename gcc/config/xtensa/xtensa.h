@@ -262,13 +262,6 @@ extern unsigned xtensa_current_frame_size;
 #define LONG_DOUBLE_TYPE_SIZE 64
 #define POINTER_SIZE 32
 
-/* Tell the preprocessor the maximum size of wchar_t.  */
-#ifndef MAX_WCHAR_TYPE_SIZE
-#ifndef WCHAR_TYPE_SIZE
-#define MAX_WCHAR_TYPE_SIZE MAX_INT_TYPE_SIZE
-#endif
-#endif
-
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
 #define POINTER_BOUNDARY 32
 
