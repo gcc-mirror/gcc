@@ -1,3 +1,27 @@
+2003-05-02  Alan Modra  <amodra@bigpond.net.au>
+
+	* calls.c (struct arg_data): Move offset, slot_offset, size and
+	alignment_pad to struct locate_and_pad_arg_data.  Update all refs.
+	(initialize_argument_information): Adjust call to locate_and_pad_parm.
+	Delete alignment_pad var.  Don't calculate slot_offset here.
+	(emit_library_call_value_1): Delete alignment_pad, offset and size
+	vars.  Use struct locate_and_pad_arg_data instead.  Adjust refs.
+	Adjust call to locate_and_pad_parm.  Don't tweak arg size for
+	partial in-regs here.  Formatting fixes.
+	* expr.h (struct locate_and_pad_arg_data): New struct.
+	(locate_and_pad_parm): Adjust declaration.
+	* function.c (assign_parms): Localize vars.  Use "locate" instead of
+	other arg location vars.  Don't invoke FUNCTION_ARG or
+	FUNCTION_INCOMING_ARG unless pretend_named is different from
+	named_arg.  Heed MUST_PASS_IN_STACK and set up "partial" before
+	calling locate_and_pad_parm.  Adjust locate_and_pad_parm call.
+	Use slot_offset for stack home of reg parms.  Correct test for
+	parm passed in memory.  Formatting fixes.
+	(locate_and_pad_parm): Add "partial" to params.  Replace offset_ptr
+	arg_size_ptr and alignment pad with "locate".  Set slot_offset here.
+	Correct initial_offset_ptr handling.  Localize vars.  Always pad
+	locate->offset even when in_regs.
+
 2003-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Makefile.in (TREE_H): Replace location.h with input.h.

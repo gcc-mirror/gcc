@@ -98,16 +98,8 @@ struct arg_data
      even though pass_on_stack is zero, just because FUNCTION_ARG says so.
      pass_on_stack identifies arguments that *cannot* go in registers.  */
   int pass_on_stack;
-  /* Offset of this argument from beginning of stack-args.  */
-  struct args_size offset;
-  /* Similar, but offset to the start of the stack slot.  Different from
-     OFFSET if this arg pads downward.  */
-  struct args_size slot_offset;
-  /* Size of this argument on the stack, rounded up for any padding it gets,
-     parts of the argument passed in registers do not count.
-     If REG_PARM_STACK_SPACE is defined, then register parms
-     are counted here as well.  */
-  struct args_size size;
+  /* Some fields packaged up for locate_and_pad_parm.  */
+  struct locate_and_pad_arg_data locate;
   /* Location on the stack at which parameter should be stored.  The store
      has already been done if STACK == VALUE.  */
   rtx stack;
@@ -123,9 +115,6 @@ struct arg_data
      word-sized pseudos we made.  */
   rtx *aligned_regs;
   int n_aligned_regs;
-  /* The amount that the stack pointer needs to be adjusted to
-     force alignment for the next argument.  */
-  struct args_size alignment_pad;
 };
 
 /* A vector of one char per byte of stack space.  A byte if nonzero if
@@ -1120,7 +1109,6 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
   /* Count arg position in order args appear.  */
   int argpos;
 
-  struct args_size alignment_pad;
   int i;
   tree p;
 
@@ -1331,39 +1319,14 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 #else
 			     args[i].reg != 0,
 #endif
-			     fndecl, args_size, &args[i].offset,
-			     &args[i].size, &alignment_pad);
-
-#ifndef ARGS_GROW_DOWNWARD
-      args[i].slot_offset = *args_size;
-#endif
-
-      args[i].alignment_pad = alignment_pad;
-
-      /* If a part of the arg was put into registers,
-	 don't include that part in the amount pushed.  */
-      if (reg_parm_stack_space == 0 && ! args[i].pass_on_stack)
-	args[i].size.constant -= ((args[i].partial * UNITS_PER_WORD)
-				  / (PARM_BOUNDARY / BITS_PER_UNIT)
-				  * (PARM_BOUNDARY / BITS_PER_UNIT));
+			     args[i].pass_on_stack ? 0 : args[i].partial,
+			     fndecl, args_size, &args[i].locate);
 
       /* Update ARGS_SIZE, the total stack space for args so far.  */
 
-      args_size->constant += args[i].size.constant;
-      if (args[i].size.var)
-	{
-	  ADD_PARM_SIZE (*args_size, args[i].size.var);
-	}
-
-      /* Since the slot offset points to the bottom of the slot,
-	 we must record it after incrementing if the args grow down.  */
-#ifdef ARGS_GROW_DOWNWARD
-      args[i].slot_offset = *args_size;
-
-      args[i].slot_offset.constant = -args_size->constant;
-      if (args_size->var)
-	SUB_PARM_SIZE (args[i].slot_offset, args_size->var);
-#endif
+      args_size->constant += args[i].locate.size.constant;
+      if (args[i].locate.size.var)
+	ADD_PARM_SIZE (*args_size, args[i].locate.size.var);
 
       /* Increment ARGS_SO_FAR, which has info about which arg-registers
 	 have been used, etc.  */
@@ -1616,8 +1579,8 @@ compute_argument_addresses (args, argblock, num_actuals)
 
       for (i = 0; i < num_actuals; i++)
 	{
-	  rtx offset = ARGS_SIZE_RTX (args[i].offset);
-	  rtx slot_offset = ARGS_SIZE_RTX (args[i].slot_offset);
+	  rtx offset = ARGS_SIZE_RTX (args[i].locate.offset);
+	  rtx slot_offset = ARGS_SIZE_RTX (args[i].locate.slot_offset);
 	  rtx addr;
 
 	  /* Skip this parm if it will not be passed on the stack.  */
@@ -2060,12 +2023,12 @@ check_sibcall_argument_overlap (insn, arg, mark_stored_args_map)
   if (mark_stored_args_map)
     {
 #ifdef ARGS_GROW_DOWNWARD
-      low = -arg->slot_offset.constant - arg->size.constant;
+      low = -arg->locate.slot_offset.constant - arg->locate.size.constant;
 #else
-      low = arg->slot_offset.constant;
+      low = arg->locate.slot_offset.constant;
 #endif
 
-      for (high = low + arg->size.constant; low < high; low++)
+      for (high = low + arg->locate.size.constant; low < high; low++)
 	SET_BIT (stored_args_map, low);
     }
   return insn != NULL_RTX;
@@ -3364,7 +3327,7 @@ expand_call (exp, target, ignore)
 		  emit_move_insn (stack_area, args[i].save_area);
 		else
 		  emit_block_move (stack_area, args[i].save_area,
-				   GEN_INT (args[i].size.constant),
+				   GEN_INT (args[i].locate.size.constant),
 				   BLOCK_OP_CALL_PARM);
 	      }
 
@@ -3513,7 +3476,6 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   rtx fun;
   int inc;
   int count;
-  struct args_size alignment_pad;
   rtx argblock = 0;
   CUMULATIVE_ARGS args_so_far;
   struct arg
@@ -3522,8 +3484,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
     enum machine_mode mode;
     rtx reg;
     int partial;
-    struct args_size offset;
-    struct args_size size;
+    struct locate_and_pad_arg_data locate;
     rtx save_area;
   };
   struct arg *argvec;
@@ -3683,12 +3644,11 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #else
 			   argvec[count].reg != 0,
 #endif
-			   NULL_TREE, &args_size, &argvec[count].offset,
-			   &argvec[count].size, &alignment_pad);
+			   0, NULL_TREE, &args_size, &argvec[count].locate);
 
       if (argvec[count].reg == 0 || argvec[count].partial != 0
 	  || reg_parm_stack_space > 0)
-	args_size.constant += argvec[count].size.constant;
+	args_size.constant += argvec[count].locate.size.constant;
 
       FUNCTION_ARG_ADVANCE (args_so_far, Pmode, (tree) 0, 1);
 
@@ -3802,18 +3762,15 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #else
 			   argvec[count].reg != 0,
 #endif
-			   NULL_TREE, &args_size, &argvec[count].offset,
-			   &argvec[count].size, &alignment_pad);
+			   argvec[count].partial,
+			   NULL_TREE, &args_size, &argvec[count].locate);
 
-      if (argvec[count].size.var)
+      if (argvec[count].locate.size.var)
 	abort ();
-
-      if (reg_parm_stack_space == 0 && argvec[count].partial)
-	argvec[count].size.constant -= argvec[count].partial * UNITS_PER_WORD;
 
       if (argvec[count].reg == 0 || argvec[count].partial != 0
 	  || reg_parm_stack_space > 0)
-	args_size.constant += argvec[count].size.constant;
+	args_size.constant += argvec[count].locate.size.constant;
 
       FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree) 0, 1);
     }
@@ -3951,11 +3908,11 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #ifdef ARGS_GROW_DOWNWARD
 	      /* stack_slot is negative, but we want to index stack_usage_map
 		 with positive values.  */
-	      upper_bound = -argvec[argnum].offset.constant + 1;
-	      lower_bound = upper_bound - argvec[argnum].size.constant;
+	      upper_bound = -argvec[argnum].locate.offset.constant + 1;
+	      lower_bound = upper_bound - argvec[argnum].locate.size.constant;
 #else
-	      lower_bound = argvec[argnum].offset.constant;
-	      upper_bound = lower_bound + argvec[argnum].size.constant;
+	      lower_bound = argvec[argnum].locate.offset.constant;
+	      upper_bound = lower_bound + argvec[argnum].locate.size.constant;
 #endif
 
 	      i = lower_bound;
@@ -3968,19 +3925,16 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 
 	      if (i < upper_bound)
 		{
-		  /* We need to make a save area.  See what mode we can make
-		     it.  */
+		  /* We need to make a save area.  */
+		  unsigned int size
+		    = argvec[argnum].locate.size.constant * BITS_PER_UNIT;
 		  enum machine_mode save_mode
-		    = mode_for_size (argvec[argnum].size.constant
-				     * BITS_PER_UNIT,
-				     MODE_INT, 1);
+		    = mode_for_size (size, MODE_INT, 1);
+		  rtx adr
+		    = plus_constant (argblock,
+				     argvec[argnum].locate.offset.constant);
 		  rtx stack_area
-		    = gen_rtx_MEM
-		      (save_mode,
-		       memory_address
-		       (save_mode,
-			plus_constant (argblock,
-				       argvec[argnum].offset.constant)));
+		    = gen_rtx_MEM (save_mode, memory_address (save_mode, adr));
 		  argvec[argnum].save_area = gen_reg_rtx (save_mode);
 
 		  emit_move_insn (argvec[argnum].save_area, stack_area);
@@ -3989,8 +3943,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, PARM_BOUNDARY,
 			  partial, reg, 0, argblock,
-			  GEN_INT (argvec[argnum].offset.constant),
-			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
+			  GEN_INT (argvec[argnum].locate.offset.constant),
+			  reg_parm_stack_space,
+			  ARGS_SIZE_RTX (argvec[argnum].locate.alignment_pad));
 
 	  /* Now mark the segment we just used.  */
 	  if (ACCUMULATE_OUTGOING_ARGS)
@@ -4195,12 +4150,10 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	if (argvec[count].save_area)
 	  {
 	    enum machine_mode save_mode = GET_MODE (argvec[count].save_area);
-	    rtx stack_area
-	      = gen_rtx_MEM (save_mode,
-			     memory_address
-			     (save_mode,
-			      plus_constant (argblock,
-					     argvec[count].offset.constant)));
+	    rtx adr = plus_constant (argblock,
+				     argvec[count].locate.offset.constant);
+	    rtx stack_area = gen_rtx_MEM (save_mode,
+					  memory_address (save_mode, adr));
 
 	    emit_move_insn (stack_area, argvec[count].save_area);
 	  }
@@ -4327,14 +4280,14 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	  else
 	    upper_bound = 0;
 
-	  lower_bound = upper_bound - arg->size.constant;
+	  lower_bound = upper_bound - arg->locate.size.constant;
 #else
 	  if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
 	    lower_bound = INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1));
 	  else
 	    lower_bound = 0;
 
-	  upper_bound = lower_bound + arg->size.constant;
+	  upper_bound = lower_bound + arg->locate.size.constant;
 #endif
 
 	  i = lower_bound;
@@ -4347,13 +4300,11 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 
 	  if (i < upper_bound)
 	    {
-	      /* We need to make a save area.  See what mode we can make it.  */
-	      enum machine_mode save_mode
-		= mode_for_size (arg->size.constant * BITS_PER_UNIT, MODE_INT, 1);
-	      rtx stack_area
-		= gen_rtx_MEM (save_mode,
-			       memory_address (save_mode,
-					       XEXP (arg->stack_slot, 0)));
+	      /* We need to make a save area.  */
+	      unsigned int size = arg->locate.size.constant * BITS_PER_UNIT;
+	      enum machine_mode save_mode = mode_for_size (size, MODE_INT, 1);
+	      rtx adr = memory_address (save_mode, XEXP (arg->stack_slot, 0));
+	      rtx stack_area = gen_rtx_MEM (save_mode, adr);
 
 	      if (save_mode == BLKmode)
 		{
@@ -4481,8 +4432,8 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	 This can either be done with push or copy insns.  */
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), NULL_RTX, 
 		      PARM_BOUNDARY, partial, reg, used - size, argblock,
-		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
-		      ARGS_SIZE_RTX (arg->alignment_pad));
+		      ARGS_SIZE_RTX (arg->locate.offset), reg_parm_stack_space,
+		      ARGS_SIZE_RTX (arg->locate.alignment_pad));
 
       /* Unless this is a partially-in-register argument, the argument is now
 	 in the stack.  */
@@ -4504,16 +4455,17 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
       /* Round its size up to a multiple
 	 of the allocation unit for arguments.  */
 
-      if (arg->size.var != 0)
+      if (arg->locate.size.var != 0)
 	{
 	  excess = 0;
-	  size_rtx = ARGS_SIZE_RTX (arg->size);
+	  size_rtx = ARGS_SIZE_RTX (arg->locate.size);
 	}
       else
 	{
 	  /* PUSH_ROUNDING has no effect on us, because
 	     emit_push_insn for BLKmode is careful to avoid it.  */
-	  excess = (arg->size.constant - int_size_in_bytes (TREE_TYPE (pval))
+	  excess = (arg->locate.size.constant
+		    - int_size_in_bytes (TREE_TYPE (pval))
 		    + partial * UNITS_PER_WORD);
 	  size_rtx = expand_expr (size_in_bytes (TREE_TYPE (pval)),
 				  NULL_RTX, TYPE_MODE (sizetype), 0);
@@ -4527,7 +4479,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	 PARM_BOUNDARY, but the actual argument isn't.  */
       if (FUNCTION_ARG_PADDING (arg->mode, TREE_TYPE (pval)) == downward)
 	{
-	  if (arg->size.var)
+	  if (arg->locate.size.var)
 	    parm_align = BITS_PER_UNIT;
 	  else if (excess)
 	    {
@@ -4539,7 +4491,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
       if ((flags & ECF_SIBCALL) && GET_CODE (arg->value) == MEM)
 	{
 	  /* emit_push_insn might not work properly if arg->value and
-	     argblock + arg->offset areas overlap.  */
+	     argblock + arg->locate.offset areas overlap.  */
 	  rtx x = arg->value;
 	  int i = 0;
 
@@ -4553,17 +4505,17 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 		i = INTVAL (XEXP (XEXP (x, 0), 1));
 
 	      /* expand_call should ensure this */
-	      if (arg->offset.var || GET_CODE (size_rtx) != CONST_INT)
+	      if (arg->locate.offset.var || GET_CODE (size_rtx) != CONST_INT)
 		abort ();
 
-	      if (arg->offset.constant > i)
+	      if (arg->locate.offset.constant > i)
 		{
-		  if (arg->offset.constant < i + INTVAL (size_rtx))
+		  if (arg->locate.offset.constant < i + INTVAL (size_rtx))
 		    sibcall_failure = 1;
 		}
-	      else if (arg->offset.constant < i)
+	      else if (arg->locate.offset.constant < i)
 		{
-		  if (i < arg->offset.constant + INTVAL (size_rtx))
+		  if (i < arg->locate.offset.constant + INTVAL (size_rtx))
 		    sibcall_failure = 1;
 		}
 	    }
@@ -4571,8 +4523,8 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
 		      parm_align, partial, reg, excess, argblock,
-		      ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
-		      ARGS_SIZE_RTX (arg->alignment_pad));
+		      ARGS_SIZE_RTX (arg->locate.offset), reg_parm_stack_space,
+		      ARGS_SIZE_RTX (arg->locate.alignment_pad));
 
       /* Unless this is a partially-in-register argument, the argument is now
 	 in the stack.
