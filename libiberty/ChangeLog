@@ -1,3 +1,10 @@
+Tue Feb  9 01:12:27 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
+
+	* Makefile.in (REQUIRED_OFILES): remove mkstemp.o
+	* configure.in (funcs): Check for and conditionally add mkstemps to
+	the list of functions libiberty will provide.
+	* configure: Rebuilt.
+	
 Wed Feb  3 00:01:15 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* clock.c (HZ): Define in terms of (ISO C) CLOCKS_PER_SEC on 
