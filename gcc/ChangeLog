@@ -1,3 +1,8 @@
+Fri Dec 15 15:32:16 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (cant_combine_insn_p): Get around SUBREGs when determining
+	hardreg<->reg moves.
+
 Fri Dec 15 14:48:37 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* genrecog.c (add_to_sequence): Remove special case for
