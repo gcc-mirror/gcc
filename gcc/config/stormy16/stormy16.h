@@ -4534,7 +4534,7 @@ do {									\
 
    If this macro is defined to anything, the DWARF 2 unwinder will be used
    instead of inline unwinders and __unwind_function in the non-setjmp case.  */
-/* #define DWARF2_UNWIND_INFO */
+#define DWARF2_UNWIND_INFO 0
 
 
 /* Assembler Commands for Alignment.  */
