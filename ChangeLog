@@ -8,7 +8,7 @@
 	(rs6000_initialize_trampoline): Call __trampoline_setup for
 	ABI_DARWIN too.
 	* darwin-tramp.asm: New file, implements __trampoline_setup.
-	* t-darwin: LIB2FUNCS_EXTRA now includes darwin_tramp.asm.
+	* t-darwin (LIB2FUNCS_EXTRA): Include darwin-tramp.asm.
 
 2001-12-07  Paolo Carlini  <pcarlini@unitus.it>
 
