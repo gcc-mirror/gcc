@@ -390,7 +390,7 @@ namespace std
  
   template<>
     const ctype<char>&
-    use_facet<const ctype<char> >(const locale& __loc);
+    use_facet<ctype<char> >(const locale& __loc);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   // ctype<wchar_t> specialization
@@ -503,7 +503,7 @@ namespace std
 
   template<>
     const ctype<wchar_t>&
-    use_facet< const ctype<wchar_t> >(const locale& __loc);
+    use_facet<ctype<wchar_t> >(const locale& __loc);
 #endif //_GLIBCPP_USE_WCHAR_T
 
   // Include host-specific ctype inlines.

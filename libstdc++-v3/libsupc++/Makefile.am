@@ -84,7 +84,7 @@ sources = \
 	del_opnt.cc \
 	del_opv.cc \
 	del_opvnt.cc \
-	exception.cc \
+	exception_support.cc \
 	new_handler.cc \
 	new_op.cc \
 	new_opnt.cc \
@@ -127,7 +127,6 @@ AM_CXXFLAGS = \
 	$(OPTIMIZE_CXXFLAGS) \
 	$(CONFIG_CXXFLAGS) 
 
-
 # libstdc++ libtool notes
 
 # 1) Need to explicitly set LTCXXCOMPILE so that AM_CXXFLAGS is
@@ -153,5 +152,11 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # the rules automake generates would be used.  We cannot allow CXX to
 # be used in libtool since this would add -lstdc++ to the link line
 # which of course is problematic at this point.
-CXXLINK = $(LIBTOOL) --tag CC --mode=link "$(CC)" \
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" \
 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+
+
+
+
+
+

@@ -70,11 +70,11 @@ namespace std
     use_facet(const locale& __loc)
     {
       typedef locale::_Impl::__vec_facet        __vec_facet;
-      const locale::facet* __fp = (const _Facet*)0;    // check derivation
       locale::id& __id = _Facet::id;         // check member id
       size_t __i = __id._M_index;
       __vec_facet* __facet = __loc._M_impl->_M_facets;
-      if (__i >= __facet->size() || (__fp = (*(__facet))[__i]) == 0)
+      const locale::facet* __fp = (*__facet)[__i]; // check derivation
+      if (__i >= __facet->size() || __fp == 0)
         return _Use_facet_failure_handler<_Facet>(__loc);
       return static_cast<const _Facet&>(*__fp);
     }

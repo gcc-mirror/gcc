@@ -141,7 +141,7 @@ namespace std
 
   template<typename _CharT> 
     class ctype_byname;
-  // NB: Specialized for char and wchar_t in locfacets.h.
+  // NB: Specialized for char and wchar_t in locale_facets.h.
 
   class codecvt_base;
   template<typename _InternT, typename _ExternT, typename _StateT>

@@ -1,4 +1,27 @@
-Tue Oct 17 20:06:59 2000  Martin Buchholz <martin@xemacs.org>
+2000-10-18   Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* libsupc++/Makefile.am (exception): Change exception.cc to
+	exception_support.cc.
+	(CXXLINK): Remove bogus --tag CC.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/exception.cc: Move to...
+	* libsupc++/exception_support.cc: ...here.
+
+	* src/Makefile.am: Remove bogus --tag CC.
+	* src/Makefile.in: Regenerate.
+	
+	* include/bits/locale_facets.tcc (use_facet): Simplify.
+	* include/bits/locale_facets.h (use_facet<ctype<char> >): Correct
+	use_facet declaration. Replace 'const ctype<T>' with ctype<T>.
+	(use_facet<ctype<wchar_t> >): Same.
+	* src/locale-inst.cc: Remove explicit instantiation.
+	* src/locale.cc: Correct signature here too.
+	(_Bad_use_facet::what()): Correct error string.
+	* include/bits/localefwd.h: Correct comment.
+
+	* mkcheck.in (C_DIR): Change libsupc++/include to libsupc++.
+
+2000-10-17  Martin Buchholz <martin@xemacs.org>
 
 	* testsuite/27_io/istream_seeks.cc: Fix spelling typo.
 	* testsuite/27_io/ostream_seeks.cc: Similarly.

@@ -189,7 +189,7 @@ namespace std {
 
   template<>
     const ctype<char>&
-    use_facet<const ctype<char> > (const locale& __loc)
+    use_facet<ctype<char> >(const locale& __loc)
     {
       size_t __i = ctype<char>::id._M_index;
       const locale::_Impl* __tmp = __loc._M_impl;
@@ -199,7 +199,7 @@ namespace std {
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
     const ctype<wchar_t>&
-    use_facet< const ctype<wchar_t> > (const locale& __loc)
+    use_facet<ctype<wchar_t> >(const locale& __loc)
     {
       size_t __i = ctype<wchar_t>::id._M_index;
       const locale::_Impl* __tmp = __loc._M_impl;
@@ -649,6 +649,7 @@ namespace std {
 	try {
 	  // 26 Standard facets, 2 references.
 	  // One reference for _M_classic, one for _M_global
+	  // XXX _S_classic = _S_global = new _Impl(26, 2);
 	  _S_classic = new _Impl(_S_facets_num, 2, true, "C");
 	  _S_global = _S_classic; 
 
@@ -771,7 +772,7 @@ namespace std {
   char const* 
   _Bad_use_facet::
   what() const throw()
-  { return "bad_cast thrown from use_facet"; }
+  { return "_Bad_use_facet thrown from use_facet"; }
 
   _Bad_use_facet::
   ~_Bad_use_facet() throw() { }

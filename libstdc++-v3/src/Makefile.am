@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.41 2000/10/15 08:45:33 bkoz Exp $
+## $Id: Makefile.am,v 1.42 2000/10/17 10:12:23 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -337,5 +337,5 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # the rules automake generates would be used.  We cannot allow CXX to
 # be used in libtool since this would add -lstdc++ to the link line
 # which of course is problematic at this point.
-CXXLINK = $(LIBTOOL) --tag CC --mode=link "$(CC)" \
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" \
 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@

@@ -147,7 +147,7 @@ INCLUDES =  	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include 	$(CSHADOW_INCLUD
 headers =  	cxxabi.h exception new new.h typeinfo
 
 
-sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	pure.cc 	tinfo.cc 	tinfo2.cc 	vec.cc
+sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception_support.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	pure.cc 	tinfo.cc 	tinfo2.cc 	vec.cc
 
 
 libsupc___la_SOURCES = $(sources)
@@ -195,7 +195,7 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) 	       $(
 # the rules automake generates would be used.  We cannot allow CXX to
 # be used in libtool since this would add -lstdc++ to the link line
 # which of course is problematic at this point.
-CXXLINK = $(LIBTOOL) --tag CC --mode=link "$(CC)" 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -210,12 +210,12 @@ LIBS = @LIBS@
 libsupc__convenience_la_LDFLAGS = 
 libsupc__convenience_la_LIBADD = 
 libsupc__convenience_la_OBJECTS =  del_op.lo del_opnt.lo del_opv.lo \
-del_opvnt.lo exception.lo new_handler.lo new_op.lo new_opnt.lo \
+del_opvnt.lo exception_support.lo new_handler.lo new_op.lo new_opnt.lo \
 new_opv.lo new_opvnt.lo pure.lo tinfo.lo tinfo2.lo vec.lo
 libsupc___la_LDFLAGS = 
 libsupc___la_LIBADD = 
 libsupc___la_OBJECTS =  del_op.lo del_opnt.lo del_opv.lo del_opvnt.lo \
-exception.lo new_handler.lo new_op.lo new_opnt.lo new_opv.lo \
+exception_support.lo new_handler.lo new_op.lo new_opnt.lo new_opv.lo \
 new_opvnt.lo pure.lo tinfo.lo tinfo2.lo vec.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)

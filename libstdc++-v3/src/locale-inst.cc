@@ -153,9 +153,6 @@ namespace std {
     const num_get<char, ibuf_iterator >& 
     use_facet<num_get<char, ibuf_iterator> >(const locale &);
   template
-    const ctype<char>&
-    use_facet<ctype<char> >(const locale& __loc);
-  template
     const codecvt<char, char, mbstate_t>& 
     use_facet<codecvt<char, char, mbstate_t> >(const locale&);
    template 
@@ -169,9 +166,6 @@ namespace std {
   template 
     const num_get<wchar_t, wibuf_iterator>& 
     use_facet<num_get<wchar_t, wibuf_iterator> >(const locale &);
-  template
-    const ctype<wchar_t>&
-    use_facet<ctype<wchar_t> >(const locale& __loc);
   template
     const codecvt<wchar_t, char, mbstate_t>& 
     use_facet<codecvt<wchar_t, char, mbstate_t> >(locale const &);
