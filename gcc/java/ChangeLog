@@ -1,3 +1,7 @@
+1999-10-14  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (jvgenmain_spec): Use `%umain', not just `%u'.
+
 1999-10-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-dump.c (print_constant, disassemble_method): Don't call a
