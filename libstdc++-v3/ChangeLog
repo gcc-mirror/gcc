@@ -1,3 +1,23 @@
+2003-06-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/basic_string.h (_M_fold, insert(iterator, _CharT),
+	erase(iterator), erase(iterator, iterator), c_str,
+	compare(const basic_string&)): Constify various variables.
+	* include/bits/basic_string.tcc (_S_construct(_InIter, _InIter,
+	const _Alloc&, input_iterator_tag), _M_destroy, _M_mutate,
+	_S_create, resize, _M_replace, _M_replace_safe,
+	append(const basic_string&), append(const basic_string&, size_type,
+	size_type), append(const _CharT*, size_type), append(size_type,
+	_CharT), operator+(const _CharT*, const basic_string&),
+	operator+(_CharT, const basic_string&), replace(iterator, iterator,
+	size_type, _CharT), find(const _CharT*, size_type, size_type),
+	find(_CharT, size_type), rfind(const _CharT*, size_type, size_type),
+	rfind(_CharT, size_type), compare(size_type, size_type,
+	const basic_string&), compare(size_type, size_type,
+	const basic_string&, size_type, size_type), compare(const _CharT*),
+	compare(size_type, size_type, const _CharT*), compare(size_type,
+	size_type, const _CharT*, size_type)): Likewise.
+
 2003-06-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/fstream.tcc (pbackfail): Make a rarely taken
