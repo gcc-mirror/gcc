@@ -10190,6 +10190,32 @@ simplify_comparison (code, pop0, pop1)
 	      continue;
 	    }
 
+	  /* Likewise if OP0 is a PLUS of a sign extension with a
+	     constant, which is usually represented with the PLUS
+	     between the shifts.  */
+	  if (! unsigned_comparison_p
+	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	      && GET_CODE (XEXP (op0, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (op0, 0), 1)) == CONST_INT
+	      && GET_CODE (XEXP (XEXP (op0, 0), 0)) == ASHIFT
+	      && XEXP (op0, 1) == XEXP (XEXP (XEXP (op0, 0), 0), 1)
+	      && (tmode = mode_for_size (mode_width - INTVAL (XEXP (op0, 1)),
+					 MODE_INT, 1)) != BLKmode
+	      && ((unsigned HOST_WIDE_INT) const_op <= GET_MODE_MASK (tmode)
+		  || ((unsigned HOST_WIDE_INT) - const_op
+		      <= GET_MODE_MASK (tmode))))
+	    {
+	      rtx inner = XEXP (XEXP (XEXP (op0, 0), 0), 0);
+	      rtx add_const = XEXP (XEXP (op0, 0), 1);
+	      rtx new_const = gen_binary (ASHIFTRT, GET_MODE (op0), add_const,
+					  XEXP (op0, 1));
+
+	      op0 = gen_binary (PLUS, tmode,
+				gen_lowpart_for_combine (tmode, inner),
+				new_const);
+	      continue;
+	    }
+
 	  /* ... fall through ...  */
 	case LSHIFTRT:
 	  /* If we have (compare (xshiftrt FOO N) (const_int C)) and
