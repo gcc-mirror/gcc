@@ -1,3 +1,7 @@
+2005-04-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-pretty-print.c (dump_generic_node): Use %p for pointer.
+
 2005-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (init_cumulative_args): For -m32 -mfpmath=sse
