@@ -72,8 +72,8 @@ _Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
 
 // A wrapper for recv so we don't have to do configure tests.
 template <typename T_fd, typename T_buf, typename T_len, typename T_flags>
-static inline int
-_Jv_recv (int (*recv_func) (T_fd s, T_buf buf, T_len len, T_flags flags),
+static inline ssize_t
+_Jv_recv (ssize_t (*recv_func) (T_fd s, T_buf buf, T_len len, T_flags flags),
 	  int s, void *buf, size_t len, int flags)
 {
   return recv_func ((T_fd) s, (T_buf) buf, (T_len) len, (T_flags) flags);

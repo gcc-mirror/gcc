@@ -1,3 +1,9 @@
+2002-01-20  Andreas Schwab  <schwab@suse.de>
+
+	* java/net/natPlainSocketImpl.cc (_Jv_recv): Change return type of
+	function and of parameter recv_func to ssize_t, as specified by
+	POSIX.
+
 2002-01-19  Per Bothner  <per@bothner.com>
 
 	* java/util/zip/ZipOutputStream.java (putNextEntry):  Clear
