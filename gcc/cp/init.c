@@ -2832,11 +2832,13 @@ build_vec_init (base, maxindex, init, from_array)
 
 	  num_initialized_elts++;
 
+	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  if (IS_AGGR_TYPE (type) || TREE_CODE (type) == ARRAY_TYPE)
 	    finish_expr_stmt (build_aggr_init (baseref, elt, 0));
 	  else
 	    finish_expr_stmt (build_modify_expr (baseref, NOP_EXPR,
 						 elt));
+	  current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 
 	  finish_expr_stmt (build_unary_op (PREINCREMENT_EXPR, base, 0));
 	  finish_expr_stmt (build_unary_op (PREDECREMENT_EXPR, iterator, 0));
