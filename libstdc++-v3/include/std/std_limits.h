@@ -378,7 +378,7 @@ namespace std
       static unsigned char max() throw()
       { return __SCHAR_MAX__ * 2U + 1; }
 
-      static const int digits = __glibcpp_digits10 (unsigned char);
+      static const int digits = __glibcpp_digits (unsigned char);
       static const int digits10 = __glibcpp_digits10 (unsigned char);
       static const bool is_signed = false;
       static const bool is_integer = true;
