@@ -2954,18 +2954,22 @@ import_milli (code)
    the proper registers. */
 
 char *
-output_mul_insn (unsignedp)
+output_mul_insn (unsignedp, insn)
      int unsignedp;
+     rtx insn;
 {
+
   if (unsignedp)
     {
       import_milli (mulU);
-      return "bl $$mulU,31%#";
+      return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$mulU"),
+			  gen_rtx (REG, SImode, 31));
     }
   else
     {
       import_milli (mulI);
-      return "bl $$mulI,31%#";
+      return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$mulI"),
+			  gen_rtx (REG, SImode, 31));
     }
 }
 
@@ -3026,9 +3030,10 @@ emit_hpdiv_const (operands, unsignedp)
 }
 
 char *
-output_div_insn (operands, unsignedp)
+output_div_insn (operands, unsignedp, insn)
      rtx *operands;
      int unsignedp;
+     rtx insn;
 {
   int divisor;
   
@@ -3036,18 +3041,28 @@ output_div_insn (operands, unsignedp)
      opcodes .*/
   if (GET_CODE (operands[0]) == CONST_INT)
     {
+      static char buf[100];
       divisor = INTVAL (operands[0]);
       if (!div_milli[divisor][unsignedp])
 	{
+	  div_milli[divisor][unsignedp] = 1;
 	  if (unsignedp)
 	    output_asm_insn (".IMPORT $$divU_%0,MILLICODE", operands);
 	  else
 	    output_asm_insn (".IMPORT $$divI_%0,MILLICODE", operands);
-	  div_milli[divisor][unsignedp] = 1;
 	}
       if (unsignedp)
-	return "bl $$divU_%0,31%#";
-      return "bl $$divI_%0,31%#";
+	{
+	  sprintf (buf, "$$divU_%d", INTVAL (operands[0]));
+	  return output_call (insn, gen_rtx (SYMBOL_REF, SImode, buf),
+			      gen_rtx (REG, SImode, 31));
+	}
+      else
+	{
+	  sprintf (buf, "$$divI_%d", INTVAL (operands[0]));
+	  return output_call (insn, gen_rtx (SYMBOL_REF, SImode, buf),
+			      gen_rtx (REG, SImode, 31));
+	}
     }
   /* Divisor isn't a special constant. */
   else
@@ -3055,12 +3070,14 @@ output_div_insn (operands, unsignedp)
       if (unsignedp)
 	{
 	  import_milli (divU);
-	  return "bl $$divU,31%#";
+	  return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$divU"),
+			      gen_rtx (REG, SImode, 31));
 	}
       else
 	{
 	  import_milli (divI);
-	  return "bl $$divI,31%#";
+	  return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$divI"),
+			      gen_rtx (REG, SImode, 31));
 	}
     }
 }
@@ -3068,18 +3085,21 @@ output_div_insn (operands, unsignedp)
 /* Output a $$rem millicode to do mod. */
 
 char *
-output_mod_insn (unsignedp)
+output_mod_insn (unsignedp, insn)
      int unsignedp;
+     rtx insn;
 {
   if (unsignedp)
     {
       import_milli (remU);
-      return "bl $$remU,31%#";
+      return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$remU"),
+			  gen_rtx (REG, SImode, 31));
     }
   else
     {
       import_milli (remI);
-      return "bl $$remI,31%#";
+      return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$remI"),
+			  gen_rtx (REG, SImode, 31));
     }
 }
 
@@ -3650,6 +3670,68 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 }
 
 
+/* INSN is either a function call or a millicode call.  It may have an
+   unconditional jump in its delay slot.  
+
+   CALL_DEST is the routine we are calling.
+
+   RETURN_POINTER is the register which will hold the return address.
+   %r2 for most calls, %r31 for millicode calls.  */
+char *
+output_call (insn, call_dest, return_pointer)
+  rtx insn;
+  rtx call_dest;
+  rtx return_pointer;
+
+{
+  int distance;
+  rtx xoperands[4];
+  rtx seq_insn;
+
+  /* Handle common case -- empty delay slot or no jump in the delay slot.  */
+  if (dbr_sequence_length () == 0
+      || (dbr_sequence_length () != 0 
+	  && GET_CODE (NEXT_INSN (insn)) != JUMP_INSN))
+    {
+      xoperands[0] = call_dest;
+      xoperands[1] = return_pointer;
+      output_asm_insn ("bl %0,%r1%#", xoperands);
+      return "";
+    }
+    
+  /* This call has an unconditional jump in its delay slot.  */
+
+  /* Use the containing sequence insn's address.  */
+  seq_insn = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
+
+  distance = insn_addresses[INSN_UID (JUMP_LABEL (NEXT_INSN (insn)))] 
+	       - insn_addresses[INSN_UID (seq_insn)] - 8;
+
+  /* If the branch was too far away, emit a normal call followed
+     by a nop, followed by the unconditional branch.
+
+     If the branch is close, then adjust %r2 from within the 
+     call's delay slot.  */
+
+  xoperands[0] = call_dest;
+  xoperands[1] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
+  xoperands[2] = return_pointer;
+  if (! VAL_14_BITS_P (distance))
+    output_asm_insn ("bl %0,%r2\n\tnop\n\tbl,n %1,%%r0", xoperands);
+  else
+    {
+      xoperands[3] = gen_label_rtx ();
+      output_asm_label (xoperands[3]);
+      output_asm_insn ("\n\tbl %0,%r2\n\tldo %1-%3-8(%r2),%r2", xoperands);
+    }
+
+  /* Delete the jump.  */
+  PUT_CODE (NEXT_INSN (insn), NOTE);
+  NOTE_LINE_NUMBER (NEXT_INSN (insn)) = NOTE_INSN_DELETED;
+  NOTE_SOURCE_FILE (NEXT_INSN (insn)) = 0;
+  return "";
+}
+
 extern struct obstack *saveable_obstack;
 
 /* In HPUX 8.0's shared library scheme, special relocations are needed
@@ -3829,5 +3911,28 @@ movb_comparison_operator (op, mode)
 {
   return (GET_CODE (op) == EQ || GET_CODE (op) == NE
 	  || GET_CODE (op) == LT || GET_CODE (op) == GE);
+}
+
+/* Return 1 if INSN is in the delay slot of a call instruction.  */
+int
+jump_in_call_delay (insn)
+     rtx insn;
+{
+
+  if (GET_CODE (insn) != JUMP_INSN)
+    return 0;
+
+  if (PREV_INSN (insn)
+      && PREV_INSN (PREV_INSN (insn))
+      && GET_CODE (next_active_insn (PREV_INSN (PREV_INSN (insn)))) == INSN)
+    {
+      rtx test_insn = next_active_insn (PREV_INSN (PREV_INSN (insn)));
+
+      return (GET_CODE (PATTERN (test_insn)) == SEQUENCE
+	      && XVECEXP (PATTERN (test_insn), 0, 1) == insn);
+
+    }
+  else
+    return 0;
 }
 
