@@ -1,10 +1,10 @@
 /* Configuration for an i386 running Mach as the target machine.  */
 
 /* We do want to add an underscore to the front of each user symbol.
-   i386gas.h checks this.  */
+   i386/gas.h checks this.  */
 #define YES_UNDERSCORES
 
-#include "i386gstabs.h"
+#include "i386/gstabs.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -DMACH"
