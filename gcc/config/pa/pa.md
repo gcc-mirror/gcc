@@ -773,17 +773,6 @@
    (set_attr "length" "1")])
 
 (define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(match_operand:HI 1 "zdepi_operand" "n"))]
-  ""
-  "*
-{
-  return output_zdepi (operands);
-}"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=a,?*r")
 	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
 		 (high:SI (match_operand 2 "" ""))))]
@@ -879,6 +868,17 @@
     return \"ldo %1(0),%0\";
   else
     return \"ldil L'%1,%0\";
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(match_operand:HI 1 "zdepi_operand" "n"))]
+  ""
+  "*
+{
+  return output_zdepi (operands);
 }"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
@@ -1122,7 +1122,7 @@
 			  "fx,r,!fx,!r,Q,Q,fx,r"))]
   ""
   "@
-   fcpy %1,%0
+   fcpy,sgl %1,%0
    copy %1,%0
    fstws %1,-16(0,30)\;ldw -16(0,30),%0
    stw %r1,-16(0,30)\;fldws -16(0,30),%0
