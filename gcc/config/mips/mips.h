@@ -329,6 +329,8 @@ extern void		sbss_section PARAMS ((void));
 
 #define TARGET_SWITCHES							\
 {									\
+  {"no-crt0",          0,                                               \
+     "No default crt0.o" },					 	\
   {"int64",		  MASK_INT64 | MASK_LONG64,			\
      "Use 64-bit int type"},						\
   {"long64",		  MASK_LONG64,					\

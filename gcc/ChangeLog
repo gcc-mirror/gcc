@@ -1,3 +1,9 @@
+1999-12-01  Mark Salter <msalter@cygnus.com>
+
+	* config/mips/elf.h (STARTFILE_SPEC): Add no-crt0.
+	* config/mips/elf64.h (STARTFILE_SPEC): Add no-crt0.
+	* config/mips/mips.h (TARGET_SWITCHES): Add no-crt0.
+
 Tue Nov 30 15:20:52 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.c (ix86_expand_move): Never add clobbers to move patterns.
