@@ -4492,8 +4492,8 @@ expand_builtin_cabs (tree arglist, rtx target)
 static rtx
 expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
 {
-  tree dest, fmt, stripped;
-  tree orig_arglist;
+  tree orig_arglist, dest, fmt;
+  const char *fmt_str;
 
   orig_arglist = arglist;
 
@@ -4512,36 +4512,33 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
   arglist = TREE_CHAIN (arglist);
 
   /* Check whether the format is a literal string constant.  */
-  stripped = fmt;
-  STRIP_NOPS (stripped);
-  if (stripped && TREE_CODE (stripped) == ADDR_EXPR)
-    stripped = TREE_OPERAND (stripped, 0);
-  if (TREE_CODE (stripped) != STRING_CST)
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
     return 0;
 
   /* If the format doesn't contain % args or %%, use strcpy.  */
-  if (strchr (TREE_STRING_POINTER (stripped), '%') == 0)
+  if (strchr (fmt_str, '%') == 0)
     {
       tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
       tree exp;
 
-      if (arglist || !fn)
+      if (arglist || ! fn)
 	return 0;
       expand_expr (build_function_call_expr (fn, orig_arglist),
 		   const0_rtx, VOIDmode, EXPAND_NORMAL);
       if (target == const0_rtx)
 	return const0_rtx;
-      exp = build_int_2 (TREE_STRING_LENGTH (stripped) - 1, 0);
+      exp = build_int_2 (strlen (fmt_str), 0);
       exp = fold (build1 (NOP_EXPR, integer_type_node, exp));
       return expand_expr (exp, target, mode, EXPAND_NORMAL);
     }
-  /* If the format is "%s", use strcpy and possibly strlen.  */
-  else if (strcmp (TREE_STRING_POINTER (stripped), "%s") == 0)
+  /* If the format is "%s", use strcpy if the result isn't used.  */
+  else if (strcmp (fmt_str, "%s") == 0)
     {
-      tree strcpy_fn, strlen_fn, exp, arg;
-      strcpy_fn = implicit_built_in_decls[BUILT_IN_STRCPY];
+      tree fn, arg, len;
+      fn = implicit_built_in_decls[BUILT_IN_STRCPY];
 
-      if (! strcpy_fn)
+      if (! fn)
 	return 0;
 
       if (! arglist || TREE_CHAIN (arglist))
@@ -4552,25 +4549,21 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
 
       if (target != const0_rtx)
 	{
-	  strlen_fn = implicit_built_in_decls[BUILT_IN_STRLEN];
-	  if (! strlen_fn)
+	  len = c_strlen (arg);
+	  if (! len || TREE_CODE (len) != INTEGER_CST)
 	    return 0;
-	  arg = save_expr (arg);
 	}
       else
-	strlen_fn = 0;
+	len = NULL_TREE;
 
       arglist = build_tree_list (NULL_TREE, arg);
       arglist = tree_cons (NULL_TREE, dest, arglist);
-      expand_expr (build_function_call_expr (strcpy_fn, arglist),
+      expand_expr (build_function_call_expr (fn, arglist),
 		   const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       if (target == const0_rtx)
 	return const0_rtx;
-
-      exp = build_function_call_expr (strlen_fn, TREE_CHAIN (arglist));
-      exp = fold (build1 (NOP_EXPR, integer_type_node, exp));
-      return expand_expr (exp, target, mode, EXPAND_NORMAL);
+      return expand_expr (len, target, mode, EXPAND_NORMAL);
     }
 
   return 0;
