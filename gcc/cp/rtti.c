@@ -196,7 +196,7 @@ throw_bad_typeid (void)
       fn = push_throw_library_fn (fn, t);
     }
 
-  return convert_from_reference (build_call (fn, NULL_TREE));
+  return convert_from_reference (build_cxx_call (fn, NULL_TREE, NULL_TREE));
 }
 
 /* Return an lvalue expression whose type is "const std::type_info"
