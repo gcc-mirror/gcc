@@ -7773,9 +7773,7 @@ schedule_insns (dump_file)
   /* Initialize issue_rate.  */
   issue_rate = ISSUE_RATE;
 
-  /* Do the splitting first for all blocks.  */
-  for (b = 0; b < n_basic_blocks; b++)
-    split_block_insns (b, 1);
+  split_all_insns (1);
 
   max_uid = (get_max_uid () + 1);
 

@@ -4149,6 +4149,13 @@ rest_of_compilation (decl)
   if (rebuild_label_notes_after_reload)
     TIMEVAR (jump_time, rebuild_jump_labels (insns));
 
+  /* On some machines, the prologue and epilogue code, or parts thereof,
+     can be represented as RTL.  Doing so lets us schedule insns between
+     it and the rest of the code and also allows delayed branch
+     scheduling to operate in the epilogue.  */
+
+  thread_prologue_and_epilogue_insns (insns);
+
   /* If optimizing and we are performing instruction scheduling after
      reload, then go ahead and split insns now since we are about to
      recompute flow information anyway.
@@ -4156,26 +4163,7 @@ rest_of_compilation (decl)
      reload_cse_regs may expose more splitting opportunities, expecially
      for double-word operations.  */
   if (optimize > 0 && flag_schedule_insns_after_reload)
-    {
-      rtx insn;
-
-      for (insn = insns; insn; insn = NEXT_INSN (insn))
-	{
-	  rtx last;
-
-	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	    continue;
-
-	  last = try_split (PATTERN (insn), insn, 1);
-
-	  if (last != insn)
-	    {
-	      PUT_CODE (insn, NOTE);
-	      NOTE_SOURCE_FILE (insn) = 0;
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	    }
-	}
-    }
+    split_all_insns (0);
 
   if (global_reg_dump)
     {
@@ -4203,13 +4191,6 @@ rest_of_compilation (decl)
     }
 
   flow2_completed = 1;
-
-  /* On some machines, the prologue and epilogue code, or parts thereof,
-     can be represented as RTL.  Doing so lets us schedule insns between
-     it and the rest of the code and also allows delayed branch
-     scheduling to operate in the epilogue.  */
-
-  thread_prologue_and_epilogue_insns (insns);
 
   if (flow2_dump)
     {
