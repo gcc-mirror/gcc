@@ -38,7 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "xcoff.h"
 
-#ifdef USG
+#if defined (USG) || defined (NO_STAB_H)
 #include "gstab.h"
 #else
 #include <stab.h>
