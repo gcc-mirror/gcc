@@ -1764,11 +1764,6 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
       COPY_DECL_RTL (olddecl, newdecl);
 
       /* Merge the type qualifiers.  */
-      if (TREE_CODE (olddecl) == FUNCTION_DECL
-	  && DECL_BUILT_IN_NONANSI (olddecl) && TREE_THIS_VOLATILE (olddecl)
-	  && ! TREE_THIS_VOLATILE (newdecl))
-	TREE_THIS_VOLATILE (write_olddecl) = 0;
-
       if (TREE_READONLY (newdecl))
 	TREE_READONLY (write_olddecl) = 1;
 

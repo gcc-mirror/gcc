@@ -3,10 +3,8 @@
 
 extern void abort (void);
 extern void exit (int);
-#if 0 /* Doesn't work with prototype (bug?).  */
 extern void _exit (int);
 extern void _Exit (int);
-#endif
 
 extern void tabort (void);
 extern void texit (void);

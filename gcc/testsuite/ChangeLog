@@ -1,3 +1,7 @@
+2002-07-11  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/builtin-noret-1.c: Test non-ANSI functions.
+
 2002-07-10  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/20000217-1.c: Fix usage of "abort".
