@@ -8,5 +8,5 @@ template <typename> struct A {};
 
 template <typename> struct B
 {
-    typedef A<typename X::Y> C; // { dg-error "declared|invalid|no type" }
+    typedef A<typename X::Y> C; // { dg-error "declared|invalid|no type|expected" }
 };
