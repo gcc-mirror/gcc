@@ -971,7 +971,7 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
       return;
 
     case MEM:
-      df_uses_record (df, &XEXP (x, 0), DF_REF_REG_MEM_LOAD, bb, insn, flags);
+      df_uses_record (df, &XEXP (x, 0), DF_REF_REG_MEM_LOAD, bb, insn, 0);
       return;
 
     case SUBREG:
@@ -987,7 +987,6 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
       /* ... Fall through ...  */
 
     case REG:
-      /* See a REG (or SUBREG) other than being set.  */
       df_ref_record (df, x, loc, insn, ref_type, flags);
       return;
 
@@ -999,14 +998,12 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
 
 	switch (GET_CODE (dst))
 	  {
-	    enum df_ref_flags use_flags;
 	    case SUBREG:
 	      if ((df->flags & DF_FOR_REGALLOC) == 0
                   && read_modify_subreg_p (dst))
 		{
-		  use_flags = DF_REF_READ_WRITE;
 		  df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
-				  insn, use_flags);
+				  insn, DF_REF_READ_WRITE);
 		  break;
 		}
 	      /* ... FALLTHRU ...  */
@@ -1025,9 +1022,8 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
 	      dst = XEXP (dst, 0);
 	      if (GET_CODE (dst) != SUBREG)
 		abort ();
-	      use_flags = DF_REF_READ_WRITE;
 	      df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
-			     insn, use_flags);
+			     insn, DF_REF_READ_WRITE);
 	      break;
 	    case ZERO_EXTRACT:
 	    case SIGN_EXTRACT:
