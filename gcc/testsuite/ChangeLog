@@ -1,3 +1,7 @@
+2004-05-25  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/compat.exp (compat-execute): Break up long lines.
+
 2004-05-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/altivec-7.c: Don't use 'vector long'.
