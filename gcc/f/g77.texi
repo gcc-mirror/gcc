@@ -11389,6 +11389,7 @@ GNU Fortran language:
 * Better Source Model::
 * Fortran 90 Support::
 * Intrinsics in PARAMETER Statements::
+* Arbitrary Concatenation::
 * SELECT CASE on CHARACTER Type::
 * RECURSIVE Keyword::
 * Popular Non-standard Types::
@@ -11528,6 +11529,22 @@ building @code{g77} as a cross-compiler.
 But, if the @code{gcc} back end is enhanced to provide
 such a facility, @code{g77} will likely use that facility
 in implementing this feature soon afterwards.
+
+@node Arbitrary Concatenation
+@subsection Arbitrary Concatenation
+@cindex concatenation
+@cindex CHARACTER*(*)
+@cindex run-time, dynamic allocation
+
+@code{g77} doesn't support arbitrary operands for concatenation
+in contexts where run-time allocation is required.
+For example:
+
+@smallexample
+SUBROUTINE X(A)
+CHARACTER*(*) A
+CALL FOO(A // 'suffix')
+@end smallexample
 
 @node SELECT CASE on CHARACTER Type
 @subsection @code{SELECT CASE} on @code{CHARACTER} Type
@@ -14058,20 +14075,6 @@ sprinkled throughout.
 It is not worth repeating them here.
 
 @item
-@cindex concatenation
-@cindex CHARACTER*(*)
-@cindex run-time, dynamic allocation
-Support arbitrary operands for concatenation, even in contexts where
-run-time allocation is required.
-For example:
-
-@smallexample
-SUBROUTINE X(A)
-CHARACTER*(*) A
-CALL FOO(A // 'suffix')
-@end smallexample
-
-@item
 Consider adding a @code{NUMERIC} type to designate typeless numeric constants,
 named and unnamed.
 The idea is to provide a forward-looking, effective
@@ -14175,6 +14178,9 @@ libraries are installed) after building.
 Better info on how @code{g77} works and how to port it is needed.
 Much of this should be done only after the redesign planned for
 0.6 is complete.
+
+@xref{Front End}, which contains some information
+on @code{g77} internals.
 
 @node Internals Improvements
 @section Internals Improvements
