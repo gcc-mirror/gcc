@@ -14,20 +14,28 @@
 #   host		The configuration host
 #   host_cpu		The configuration host CPU
 #   target_optspace	--enable-target-optspace ("yes", "no", "")
+#   GCC                 should be "yes" if using gcc
 
 # It sets the following shell variables:
 #   gc_cflags	Special CFLAGS to use when building
 
+gc_cflags=""
+
 # We should set -fexceptions if we are using gcc and might be used
 # inside something like gcj.  This is the zeroth approximation:
-case "$host" in 
-    *-*-linux* )
-    gc_cflags=-fexceptions
-    ;;
-    *-*-hpux* )
-    gc_cflags=+ESdbgasm
-    ;;
-esac
+if test :"$GCC": = :yes: ; then
+    gc_cflags="${gc_cflags} -fexceptions"
+else
+    case "$host" in 
+        hppa*-*-hpux* )
+	if test :$GCC: != :"yes": ; then
+            gc_cflags="${gc_flags} +ESdbgasm"
+	fi
+        # :TODO: actaully we should check using Autoconf if
+        #     the compiler supports this option.
+        ;;
+    esac
+fi
 
 case "${target_optspace}:${host}" in
   yes:*)
@@ -46,7 +54,7 @@ esac
 
 case "${host}" in
   mips-tx39-*|mipstx39-unknown-*)
-	boehm_gc_cflags="${boehm_gc_cflags} -G 0"
+	gc_cflags="${gc_cflags} -G 0"
 	;;
   *)
 	;;
