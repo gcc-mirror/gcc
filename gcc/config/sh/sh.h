@@ -1494,9 +1494,9 @@ dtors_section()							\
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)  			\
   if (TARGET_BIGTABLE) 							\
-    fprintf (STREAM, "\t.long	L%d-L%d\n", VALUE,REL); 		\
+    asm_fprintf ((STREAM), "\t.long\t%LL%d-%LL%d\n", (VALUE),(REL));	\
   else									\
-    fprintf (STREAM, "\t.word	L%d-L%d\n", VALUE,REL); 		\
+    asm_fprintf ((STREAM), "\t.word\t%LL%d-%LL%d\n", (VALUE),(REL));	\
 
 /* Output an absolute table element.  */
 

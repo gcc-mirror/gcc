@@ -1,5 +1,17 @@
 Tue Nov 25 10:00:42 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* sh/elf.h (PREFERRED_DEBUGGING_TYPE): Undefine before including
+	svr4.h.
+
+	* sh/elf.h (PREFERRED_DEBUGGING_TYPE): Don't redefine.
+
+	* sh/elf.h (HANDLE_SYSV_PRAGMA): Undefine.
+
+	* sh/elf.h: (LINK_SPEC): Use shlelf.
+	(USER_LABEL_PREFIX, LOCAL_LABEL_PREFIX, ASM_FILE_START): Redefine.
+
+	* sh.h: dwarf patches from Fred Fish.
+
 	* va-sh.h (__va_arg_sh1): Define.
 	(va_arg): Use it.
 	SH3E doesn't use any integer registers for subsequent arguments
