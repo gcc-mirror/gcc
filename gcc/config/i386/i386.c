@@ -3726,8 +3726,11 @@ ix86_expand_binary_operator (code, mode, operands)
 	src1 = force_reg (mode, src1);
     }
 
-  /* If the operation is not commutable, source 1 cannot be a constant.  */
-  if (CONSTANT_P (src1) && GET_RTX_CLASS (code) != 'c')
+  /* If the operation is not commutable, source 1 cannot be a constant
+     or non-matching memory.  */
+  if ((CONSTANT_P (src1) 
+       || (!matching_memory && GET_CODE (src1) == MEM))
+      && GET_RTX_CLASS (code) != 'c')
     src1 = force_reg (mode, src1);
     
   /* If optimizing, copy to regs to improve CSE */
@@ -3784,6 +3787,12 @@ ix86_binary_operator_ok (code, mode, operands)
 	    || (GET_RTX_CLASS (code) == 'c'
 		&& rtx_equal_p (operands[0], operands[2]))))
     return 0;
+  /* If the operation is not commutable and the source 1 is memory, we must
+     have a matching destionation.  */
+  if (GET_CODE (operands[1]) == MEM
+      && GET_RTX_CLASS (code) != 'c'
+      && ! rtx_equal_p (operands[0], operands[1]))
+    return 0;
   return 1;
 }
 
@@ -3798,27 +3807,56 @@ ix86_expand_unary_operator (code, mode, operands)
      enum machine_mode mode;
      rtx operands[];
 {
-  /* If optimizing, copy to regs to improve CSE */
-  if (optimize
-      && ((reload_in_progress | reload_completed) == 0)
-      && GET_CODE (operands[1]) == MEM)
-    operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
+  int matching_memory;
+  rtx src, dst, op, clob;
 
-  if (! ix86_unary_operator_ok (code, mode, operands))
+  dst = operands[0];
+  src = operands[1];
+
+  /* If the destination is memory, and we do not have matching source
+     operands, do things in registers.  */
+  matching_memory = 0;
+  if (GET_CODE (dst) == MEM)
     {
-      if (optimize == 0
-	  && ((reload_in_progress | reload_completed) == 0)
-	  && GET_CODE (operands[1]) == MEM)
-	{
-	  operands[1] = force_reg (GET_MODE (operands[1]), operands[1]);
-	  if (! ix86_unary_operator_ok (code, mode, operands))
-	    return FALSE;
-	}
+      if (rtx_equal_p (dst, src))
+	matching_memory = 1;
       else
-	return FALSE;
+	dst = gen_reg_rtx (mode);
     }
 
-  return TRUE;
+  /* When source operand is memory, destination must match.  */
+  if (!matching_memory && GET_CODE (src) == MEM)
+    src = force_reg (mode, src);
+  
+  /* If optimizing, copy to regs to improve CSE */
+  if (optimize && !reload_in_progress && !reload_completed)
+    {
+      if (GET_CODE (dst) == MEM)
+	dst = gen_reg_rtx (mode);
+      if (GET_CODE (src) == MEM)
+	src = force_reg (mode, src);
+    }
+
+  /* Emit the instruction.  */
+
+  op = gen_rtx_SET (VOIDmode, dst, gen_rtx_fmt_e (code, mode, src));
+  if (reload_in_progress || code == NOT)
+    {
+      /* Reload doesn't know about the flags register, and doesn't know that
+         it doesn't want to clobber it.  */
+      if (code != NOT)
+        abort ();
+      emit_insn (op);
+    }
+  else
+    {
+      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clob)));
+    }
+
+  /* Fix up the destination if needed.  */
+  if (dst != operands[0])
+    emit_move_insn (operands[0], dst);
 }
 
 /* Return TRUE or FALSE depending on whether the unary operator meets the
@@ -3830,6 +3868,11 @@ ix86_unary_operator_ok (code, mode, operands)
      enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx operands[2] ATTRIBUTE_UNUSED;
 {
+  /* If one of operands is memory, source and destination must match.  */
+  if ((GET_CODE (operands[0]) == MEM
+       || GET_CODE (operands[1]) == MEM)
+      && ! rtx_equal_p (operands[0], operands[1]))
+    return FALSE;
   return TRUE;
 }
 

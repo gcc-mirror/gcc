@@ -1,4 +1,16 @@
 Fri Nov 19 06:32:19 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (neg, not and abs patterns): Revmap to use
+	ix86_expand_unary_operator and ix86_unary_operator_ok.
+	(add?f and sub?f expanders): Force operand 1 to register.
+	* i386.c (ix86_expand_unary_operator): Rewrite.
+	(ix86_unary_operator_ok): Ensure that memory operands
+	match real opcode.
+	(ix86_binary_operator_ok): Do not allow operand 1 to
+	come into memory and operand 0 not.
+	(ix86_expand_binary_operator): Ensure that
+	src1 is not non-matching memory.
+
 	* i386.md (negs?2): Rewrite to expanders, new patterns and splitters
 	to support integer registers and memory.
 	(abss?2_integer): Likewise.
