@@ -1,5 +1,24 @@
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
+	* Makefile.in (NM_FOR_TARGET): New.
+	(libgcc.mk): Pass SHLIB_MKMAP, SHLIB_MAPFILES.
+	(libgcc.a, stmp-multilib): Pass NM_FOR_TARGET.
+	* mklibgcc.in: If SHLIB_MKMAP, build libgcc.map.  Depend the
+	shared library build on that and EXTRA_MULTILIB_PARTS.
+	* mkmap-flat.awk: New file.
+	* mkmap-symver.awk: New file.
+	* libgcc-std.ver: New file.
+	* config/libgcc-glibc.ver: New file.
+	* config/ia64/libgcc-ia64.ver: New file.
+	* config/t-linux (SHLIB_MKMAP, SHLIB_MAPFILES): New.
+	(SHLIB_LINK): Add --version-script.
+	* config/ia64/t-ia64 (SHLIB_MAPFILES): Add libgcc-ia64.ver.
+	* config/mips/t-iris6 (SHLIB_MKMAP, SHLIB_MAPFILES): New.
+	* config/sparc/t-sol2 (SHLIB_MKMAP, SHLIB_MAPFILES): New.
+	(SHLIB_LINK): Add -M.
+
+2000-10-05  Richard Henderson  <rth@cygnus.com>
+
 	* Makefile.in (LIB2FUNCS): Add _clz.
 	* libgcc2.c (__ffsdi2): Use count_trailing_zeros.
 	(__clz_tab): Put in its own unit, non-static.

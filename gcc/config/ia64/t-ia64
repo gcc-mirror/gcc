@@ -20,6 +20,8 @@ LIB1ASMFUNCS  = __divtf3 __divdf3 __divsf3 \
 # to support the Intel assembler.
 #LIBGCC2_DEBUG_CFLAGS = -g1 -P
 
+SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-ia64.ver
+
 # For svr4 we build crtbegin.o and crtend.o which serve to add begin and
 # end labels to the .ctors and .dtors section when we link using gcc.
 
