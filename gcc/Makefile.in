@@ -1827,7 +1827,7 @@ distclean: clean bytecode.distclean lang.distclean
 	-rm -f md md.pre-cpp
 	-rm -f Makefile *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
-	-rm -f */stage1 */stage2 */stage3 */stage4
+	-rm -f */stage1 */stage2 */stage3 */stage4 */include
 	-rm -f objc-parse.output
 	-rm -f c-parse.output
 
