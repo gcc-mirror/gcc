@@ -78,6 +78,9 @@ public final class VMID	implements Serializable
     uid = new UID();
   }
 
+  /**
+   * @deprecated
+   */
   public static boolean isUnique ()
   {
     return areWeUnique;

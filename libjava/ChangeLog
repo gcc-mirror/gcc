@@ -1,5 +1,10 @@
 2003-03-31  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/dgc/VMID.java
+	(isUnique): Deprecated.
+
+2003-03-31  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/File.java
 	(separator): Merged documentation from classpath.
 	(separatorChar): Merged documentation from classpath.
