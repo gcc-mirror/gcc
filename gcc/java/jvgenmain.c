@@ -96,6 +96,7 @@ main (int argc, const char **argv)
 
   gcc_obstack_init (&name_obstack);
   append_gpp_mangled_classtype (&name_obstack, classname);
+  obstack_1grow (&name_obstack, '\0');
   mangled_classname = obstack_finish (&name_obstack);
 
   if (argc > 2 && strcmp (argv[2], "-") != 0)
