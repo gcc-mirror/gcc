@@ -1308,7 +1308,8 @@ mangled_name (jclass klass, _Jv_Utf8Const *func_name,
   const unsigned char *sig = (const unsigned char *) signature->data;
   limit = sig + signature->length;
   JvAssert (signature[0] == '(');
-  for (int i = 1; ; ++i)
+  ++sig;
+  while (1)
     {
       int ch = UTF8_GET (sig, limit);
       if (ch == ')' || ch < 0)
