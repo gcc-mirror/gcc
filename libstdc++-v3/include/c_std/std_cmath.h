@@ -350,15 +350,15 @@ namespace std
 
   inline double
   pow(double __x, int __i)
-  { return __pow_helper(__x, __i); }
+  { return __builtin_powi(__x, __i); }
 
   inline float
   pow(float __x, int __n)
-  { return __pow_helper(__x, __n); }
+  { return __builtin_powif(__x, __n); }
 
   inline long double
   pow(long double __x, int __n)
-  { return __pow_helper(__x, __n); }
+  { return __builtin_powil(__x, __n); }
 
   using ::sin;
 

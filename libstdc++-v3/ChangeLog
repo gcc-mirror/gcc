@@ -1,3 +1,12 @@
+2005-02-13  Richard Guenther  <rguenth@gcc.gnu.org>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/11706
+	* include/c_std/std_cmath.h (pow): Use __builtin_powi[lf]
+	for integer overloads.
+
+	* testsuite/26_numerics/cmath/powi.cc: New.
+
 2005-02-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* testsuite/26_numerics/complex/13450.cc: Fix XFAIL selector.
