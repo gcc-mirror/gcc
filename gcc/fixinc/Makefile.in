@@ -22,7 +22,7 @@
 # Its purpose is to build the any-platforms fixinc.sh script.
 
 CFLAGS = -g
-FIXINC_DEFS = @fixinc_defs@
+FIXINC_DEFS = $(CFLAGS) $(CPPFLAGS) @fixinc_defs@ $(INCLUDES)
 
 CC = @CC@
 SHELL = /bin/sh
@@ -45,7 +45,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
-	$(CC) -c $(CFLAGS) $(FIXINC_DEFS) $(CPPFLAGS) $(INCLUDES) $<
+	$(CC) -c $(FIXINC_DEFS) $<
 
 # The only suffixes we want for implicit rules are .c and .o.
 .SUFFIXES:
@@ -59,27 +59,36 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-OBJ = fixincl.o server.o gnu-regex.o procopen.o
-HDR = server.h gnu-regex.h
 LIBERTY = ../../libiberty/libiberty.a
+LIBOBJ  = gnu-regex.o fixlib.o $(LIBERTY)
+FIOBJ   = fixincl.o server.o procopen.o $(LIBOBJ)
+
+HDR = server.h gnu-regex.h fixlib.h
 
 SH_TARGET  = inclhack.sh fixincl.sh
-BIN_TARGET = fixincl
-AG_TEXT    = $(SH_TARGET) fixincl.x \
-	inclhack.def inclhack.tpl hackshell.tpl fixincl.tpl
+BIN_TARGET = fixincl fixfixes fixtests
+
 TARGETS    = $(SH_TARGET) $(BIN_TARGET)
 
 all : $(TARGETS)
 sh  : $(SH_TARGET)
 gen : $(SH_TARGET) fixincl.x
 
-$(OBJ): $(HDR)
+$(FIOBJ): $(HDR)
 
-fixincl: $(OBJ)
-	@echo $(CC) -o $@ $(OBJ) $(LIBERTY) $(LIB) ; \
-	if $(CC) -o $@ $(OBJ) $(LIBERTY) $(LIB) ; then : ; else \
+fixincl: $(FIOBJ)
+	@echo $(CC) -o $@ $(FIOBJ) $(LIBERTY) $(LIB) ; \
+	if $(CC) -o $@ $(FIOBJ) $(LIBERTY) $(LIB) ; then : ; else \
 	rm -f $@ ; (echo "#! /bin/sh" ; echo exit 1 ) > $@ ; \
 	chmod 777 $@ ; fi
+
+fixfixes: fixfixes.c $(LIBOBJ)
+	$(CC) -o $@ $(FIXINC_DEFS) -DMAIN \
+		$(srcdir)/fixfixes.c $(LIBOBJ) $(LIB)
+
+fixtests: fixtests.c $(LIBOBJ)
+	$(CC) -o $@ $(FIXINC_DEFS) -DMAIN \
+		$(srcdir)/fixtests.c $(LIBOBJ) $(LIB)
 
 gnu-regex.o: gnu-regex.c
 	-$(CC) $(CFLAGS) $(FIXINC_DEFS) $(INCLUDES) -DREGEX_MALLOC \

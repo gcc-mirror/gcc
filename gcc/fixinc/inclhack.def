@@ -45,7 +45,7 @@ The rules for making fixes:
         that the backslash is processed before '\\', '\'' and '#'
         characters (using C character syntax).
 
-4.  There are currently two methods of fixing a file:
+4.  There are currently four methods of fixing a file:
 
     1.  a series of sed expressions.  Each will be an individual
         "-e" argument to a single invocation of sed.
@@ -54,16 +54,182 @@ The rules for making fixes:
         of stdin in order to avoid pipe stalls.  They may choose to
         discard the input.
 
-    A C language subroutine method is planned for both tests and fixes
-    in the near term.  Awk ought to be possible too, but there may
-    be portability issues that I am not familiar with.
+    3.  A C language subroutine method for both tests and fixes.
 
-5.  If the fix is to remove the file (i.e. the fixing process broke
-    the file), then you must use a shell script that deletes all
-    copies of the output file and does not write _anything_ to stdout.
-    See the "zzz_*" fixes at the end of this file.
+    4.  Replacement text.  If the replacement is empty, then
+        no fix is applied.  Otherwise, the replacement text is written
+        to the output file and no further fixes are applied.
 
-Let the fixes begin: */
+        Replacement text "fixes" must be first in this file!!
+
+
+    Now, first:  DO NOT DO BROKEN FIXES (empty replacement fixes) */
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = AAA_ki_iface;
+    files    = sys/ki_iface.h;
+    select   = 'These definitions are for HP Internal developers';
+    replace; /* empty replacement -> no fixing the file */
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = AAA_ki;
+    files    = sys/ki.h;
+    select   = '11.00 HP-UX LP64';
+    replace; /* empty replacement -> no fixing the file */
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = AAA_ki_calls;
+    files    = sys/ki_calls.h;
+    select   = 'kthread_create_caller_t';
+    replace; /* empty replacement -> no fixing the file */
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = AAA_ki_defs;
+    files    = sys/ki_defs.h;
+    select   = 'Kernel Instrumentation Definitions';
+    replace; /* empty replacement -> no fixing the file */
+};
+
+
+/*
+ *  This file on SunOS 4 has a very large macro.  When the sed loop
+ *  tries pull it in, it overflows the pattern space size of the SunOS
+ *  sed (GNU sed does not have this problem).  Since the file does not
+ *  require fixing, we remove it from the fixed directory.
+ */
+fix = {
+    hackname = AAA_bad_fixes;
+    files    = sundev/ipi_error.h;
+    /* shouldn't there be a select expression here??? */
+    replace; /* empty replacement -> no fixing the file */
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = AAA_time;
+    files    = sys/time.h;
+    select   = '11.0 and later representation of ki time';
+    replace; /* empty replacement -> no fixing the file */
+};
+
+/* And now, the real fixes, replacement text fixes first: */
+
+/*
+ *  Completely replace &lt;_int_varargs.h&gt; with a file that includes gcc's
+ *  stdarg.h or varargs.h files as appropriate on DG/UX
+ */
+fix = {
+    hackname = AAB_dgux_int_varargs;
+    files    = _int_varargs.h;
+    replace  = "#ifndef __INT_VARARGS_H
+\#define __INT_VARARGS_H
+
+/************************************************************************/
+/* _INT_VARARGS.H - Define the common stuff for varargs/stdarg/stdio.   */
+/************************************************************************/
+
+/*
+** This file is a DG internal header.  Never include this
+** file directly.
+*/
+
+\#ifndef ___int_features_h
+\#include &lt;sys/_int_features.h&gt;
+\#endif
+
+\#if !(defined(_VA_LIST) || defined(_VA_LIST_))
+\#define _VA_LIST
+\#define _VA_LIST_
+
+\#ifdef __LINT__
+
+\#ifdef __STDC__
+typedef void * va_list;
+\#else
+typedef char * va_list;
+\#endif
+
+\#else
+\#if _M88K_ANY
+
+\#if defined(__DCC__)
+
+typedef struct {
+      int     next_arg;
+      int     *mem_ptr;
+      int     *reg_ptr;
+} va_list;
+
+\#else  /* ! defined(__DCC__) */
+
+typedef struct {
+      int  __va_arg;       /* argument number */
+      int *__va_stk;       /* start of args passed on stack */
+      int *__va_reg;       /* start of args passed in regs */
+} va_list;
+
+\#endif  /* ! defined(__DCC__) */
+
+\#elif _IX86_ANY
+
+\#if defined(__GNUC__) || defined(__STDC__)
+typedef void * va_list;
+\#else
+typedef char * va_list;
+\#endif
+
+\#endif  /*  _IX86_ANY */
+
+\#endif /* __LINT__ */
+\#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
+\#endif /*  #ifndef __INT_VARARGS_H  */\n";
+};
+
+
+/*
+ *  Completely replace <sys/varargs.h> with a file that includes gcc's
+ *  stdarg.h or varargs.h files as appropriate.
+ */
+#ifdef SVR4
+fix = {
+    hackname = AAB_svr4_no_varargs;
+    files    = sys/varargs.h;
+    replace  = "/* This file was generated by fixincludes.  */\n"
+               "#ifndef _SYS_VARARGS_H\n"
+               "#define _SYS_VARARGS_H\n\n"
+
+               "#ifdef __STDC__\n"
+               "#include <stdarg.h>\n"
+               "#else\n"
+               "#include <varargs.h>\n"
+               "#endif\n\n"
+
+               "#endif  /* _SYS_VARARGS_H */\n";
+};
+#endif
+
 
 /*
  *  sys/wait.h on AIX 3.2.5 puts the declaration of wait3 before the definition
@@ -322,80 +488,6 @@ fix = {
 
 
 /*
- *  Completely replace &lt;_int_varargs.h&gt; with a file that includes gcc's
- *  stdarg.h or varargs.h files as appropriate on DG/UX
- */
-fix = {
-    hackname = dgux_int_varargs;
-    files    = _int_varargs.h;
-    shell    = "cat > /dev/null\ncat << '_EOF_'
-\#ifndef __INT_VARARGS_H
-\#define __INT_VARARGS_H
-
-/************************************************************************/
-/* _INT_VARARGS.H - Define the common stuff for varargs/stdarg/stdio.   */
-/************************************************************************/
-
-/*
-** This file is a DG internal header.  Never include this
-** file directly.
-*/
-
-\#ifndef ___int_features_h
-\#include &lt;sys/_int_features.h&gt;
-\#endif
-
-\#if !(defined(_VA_LIST) || defined(_VA_LIST_))
-\#define _VA_LIST
-\#define _VA_LIST_
-
-\#ifdef __LINT__
-
-\#ifdef __STDC__
-typedef void * va_list;
-\#else
-typedef char * va_list;
-\#endif
-
-\#else
-\#if _M88K_ANY
-
-\#if defined(__DCC__)
-
-typedef struct {
-      int     next_arg;
-      int     *mem_ptr;
-      int     *reg_ptr;
-} va_list;
-
-\#else  /* ! defined(__DCC__) */
-
-typedef struct {
-      int  __va_arg;       /* argument number */
-      int *__va_stk;       /* start of args passed on stack */
-      int *__va_reg;       /* start of args passed in regs */
-} va_list;
-
-\#endif  /* ! defined(__DCC__) */
-
-\#elif _IX86_ANY
-
-\#if defined(__GNUC__) || defined(__STDC__)
-typedef void * va_list;
-\#else
-typedef char * va_list;
-\#endif
-
-\#endif  /*  _IX86_ANY */
-
-\#endif /* __LINT__ */
-\#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
-\#endif /*  #ifndef __INT_VARARGS_H  */
-_EOF_\n";
-};
-
-
-/*
  *  Remove the double-slash comments
  *  They *must* be removed so it will not create nested comments!!
  *  However, they will *not* be removed if the file name ends with
@@ -435,11 +527,17 @@ fix = {
      *  and do not appear to be within a single-line C-style comment
      *  and are not the end of a quoted string.
      */
+#ifdef NO_C_TESTS
     test   = ' -z "`echo ${file} | egrep \'(CC|cxx|\+\+)/\'`"';
     select = '(^|[^:])//[^"*]';
     sed    = 's,^//.*$,,';
     sed    = 's,\(/\*.*\)//\(.*\*/\),\1/ /\2,g';
     sed    = 's,\([^:]\)//[^"].*$,\1,';
+    sed    = 's,[^:]//[^"].*$,,';
+#else
+    c_test = "double_slash";
+    c_fix  = "no_double_slash";
+#endif
 };
 
 
@@ -1451,7 +1549,7 @@ fix = {
 
   sed -e 's@ va_list @ __gnuc_va_list @' \\
       -e 's@ va_list)@ __gnuc_va_list)@' \\
-      -e 's@ _BSD_VA_LIST_))@ __gnuc_va_list))@' \\
+      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \\
       -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \\
       -e 's@ va_list@ __va_list__@' \\
       -e 's@\\*va_list@*__va_list__@' \\
@@ -1864,31 +1962,6 @@ fix = {
     files    = sys/adv.h;
     select   = '\[NMSZ\]';
     sed      = 's/\[NMSZ\]/\[RFS_NMSZ\]/g';
-};
-#endif
-
-/*
- *  Completely replace <sys/varargs.h> with a file that includes gcc's
- *  stdarg.h or varargs.h files as appropriate.
- */
-#ifdef SVR4
-fix = {
-    hackname = svr4_no_varargs;
-    files    = sys/varargs.h;
-    shell    = "cat > /dev/null\n"
-               "cat << _EOF_\n"
-               "/* This file was generated by fixincludes.  */\n"
-               "#ifndef _SYS_VARARGS_H\n"
-               "#define _SYS_VARARGS_H\n\n"
-
-               "#ifdef __STDC__\n"
-               "#include <stdarg.h>\n"
-               "#else\n"
-               "#include <varargs.h>\n"
-               "#endif\n\n"
-
-               "#endif  /* _SYS_VARARGS_H */\n"
-               "_EOF_";
 };
 #endif
 
@@ -2441,101 +2514,6 @@ fix = {
     sed      = "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n"
                "extern char *\tsprintf();\\\n"
                "#endif /* !defined __STDC__ */,";
-};
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  UNDO BROKEN FIXES
- *
- *  We sure do hope that broken fixes and needed fixes are never
- *  applied to the same file!!  :-}
- */
-
-/*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
- */
-fix = {
-    hackname = zzz_ki_iface;
-    files    = sys/ki_iface.h;
-    select   = 'These definitions are for HP Internal developers';
-    shell    =
-         "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp\n"
-         "cat > /dev/null";
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
- */
-fix = {
-    hackname = zzz_ki;
-    files    = sys/ki.h;
-    select   = '11.00 HP-UX LP64';
-    shell    =
-         "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp\n"
-         "cat > /dev/null";
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
- */
-fix = {
-    hackname = zzz_ki_calls;
-    files    = sys/ki_calls.h;
-    select   = 'kthread_create_caller_t';
-    shell    =
-         "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp\n"
-         "cat > /dev/null";
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
- */
-fix = {
-    hackname = zzz_ki_defs;
-    files    = sys/ki_defs.h;
-    select   = 'Kernel Instrumentation Definitions';
-    shell    =
-         "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp\n"
-         "cat > /dev/null";
-};
-
-
-/*
- *  This file on SunOS 4 has a very large macro.  When the sed loop
- *  tries pull it in, it overflows the pattern space size of the SunOS
- *  sed (GNU sed does not have this problem).  Since the file does not
- *  require fixing, we remove it from the fixed directory.
- */
-fix = {
-    hackname = zzz_bad_fixes;
-    files    = sundev/ipi_error.h;
-    /* shouldn't there be a select expression here??? */
-    shell    =
-         "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp\n"
-         "cat > /dev/null";
-};
-
-
-/*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
- */
-fix = {
-    hackname = zzz_time;
-    files    = sys/time.h;
-    select   = '11.0 and later representation of ki time';
-    shell    =
-         "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTFILE} ${DESTDIR}/fixinc.tmp\n"
-         "cat > /dev/null";
 };
 
 /*EOF*/

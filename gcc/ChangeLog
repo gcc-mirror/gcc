@@ -1,3 +1,7 @@
+Tue Oct 12 07:38:41 1999  Bruce Korb  <autogen@linuxbox.com>
+
+	* fixincl/*: Merged "no_bogosity" branch
+
 Mon Oct 11 20:18:41 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* genoutput.c: Include toplev.h.
