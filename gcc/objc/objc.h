@@ -19,10 +19,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.3 1991/11/16 15:57:35 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.4 1991/11/19 12:37:49 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/16 15:57:35 $
+  $Date: 1991/11/19 12:37:49 $
   $Log: ObjC.h,v $
+ * Revision 0.4  1991/11/19  12:37:49  dennisg
+ * changed typedef and struct decls.
+ * the run-time was changed and those decls changed too.
+ *
  * Revision 0.3  1991/11/16  15:57:35  dennisg
  * changed the defs for class structures for new implementation of run-time.
  * changed def of SEL back to its original type.
@@ -71,7 +75,11 @@ typedef char  BOOL;
                                                   class hierarchy using 
                                                   strcmp() to locate the
                                                   method. */
+#if 0
 typedef struct objc_selector*   SEL;
+#else
+typedef void* SEL;
+#endif
 
                                                 /* ObjC uses this typedef 
                                                   for untyped instances. */
