@@ -2347,7 +2347,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # that don't exist in the distribution.
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
-	-rm -f libgcc.a libgcc_s$(SHLIB_EXT)
+	-rm -f libgcc.a libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).0
 	-rm -f config.h tconfig.h hconfig.h tm_p.h 
 	-rm -f cs-*
 	-rm -rf libgcc
