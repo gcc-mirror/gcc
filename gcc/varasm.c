@@ -522,8 +522,10 @@ make_function_rtl (decl)
   char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *new_name = name;
 
-  /* Rename a nested function to avoid conflicts.  */
+  /* Rename a nested function to avoid conflicts, unless it's a member of
+     a local class, in which case the class name is already unique.  */
   if (decl_function_context (decl) != 0
+      && ! TYPE_P (DECL_CONTEXT (decl))
       && DECL_INITIAL (decl) != 0
       && DECL_RTL (decl) == 0)
     {
@@ -765,9 +767,12 @@ make_decl_rtl (decl, asmspec, top_level)
       if (DECL_RTL (decl) == 0)
 	{
 	  /* Can't use just the variable's own name for a variable
-	     whose scope is less than the whole file.
+	     whose scope is less than the whole file, unless it's a member
+	     of a local class (which will already be unambiguous).
 	     Concatenate a distinguishing number.  */
-	  if (!top_level && !TREE_PUBLIC (decl) && asmspec == 0)
+	  if (!top_level && !TREE_PUBLIC (decl)
+	      && ! TYPE_P (DECL_CONTEXT (decl))
+	      && asmspec == 0)
 	    {
 	      char *label;
 

@@ -1,3 +1,11 @@
+2000-03-06  Jason Merrill  <jason@casey.cygnus.com>
+
+	* cpphash.c (collect_expansion): Also catch ## at start of macro.
+
+	* varasm.c (make_decl_rtl): Don't add a number to members of
+	local classes.
+	(make_function_rtl): Likewise.
+
 2000-03-06  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* gcse.c (compute_can_copy): Adjust if/else blocks from rth's
