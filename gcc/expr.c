@@ -188,6 +188,7 @@ static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
 static tree defer_cleanups_to	PROTO((tree));
 extern void (*interim_eh_hook)	PROTO((tree));
+extern tree get_set_constructor_words PROTO((tree, HOST_WIDE_INT*, int));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -3097,6 +3098,172 @@ store_constructor (exp, target)
 			   TYPE_ALIGN (type) / BITS_PER_UNIT,
 			   int_size_in_bytes (type));
 	    }
+	}
+    }
+  /* set constructor assignments */
+  else if (TREE_CODE (type) == SET_TYPE)
+    {
+      tree elt;
+      rtx xtarget = XEXP (target, 0);
+      int set_word_size = TYPE_ALIGN (type);
+      int nbytes = int_size_in_bytes (type);
+      int nwords;
+      tree non_const_elements;
+      int need_to_clear_first;
+      tree domain = TYPE_DOMAIN (type);
+      tree domain_min, domain_max, bitlength;
+
+      /* The default implementation stategy is to extract the constant
+	 parts of the constructor, use that to initialize the target,
+	 and then "or" in whatever non-constant ranges we need in addition.
+
+	 If a large set is all zero or all ones, it is
+	 probably better to set it using memset (if available) or bzero.
+	 Also, if a large set has just a single range, it may also be
+	 better to first clear all the first clear the set (using
+	 bzero/memset), and set the bits we want. */
+       
+      /* Check for all zeros. */
+      if (CONSTRUCTOR_ELTS (exp) == NULL_TREE)
+	{
+	  clear_storage (target, nbytes);
+	  return;
+	}
+
+      if (nbytes < 0)
+	abort();
+
+      nwords = (nbytes * BITS_PER_UNIT) / set_word_size;
+      if (nwords == 0)
+	nwords = 1;
+
+      domain_min = convert (sizetype, TYPE_MIN_VALUE (domain));
+      domain_max = convert (sizetype, TYPE_MAX_VALUE (domain));
+      bitlength = size_binop (PLUS_EXPR,
+			      size_binop (MINUS_EXPR, domain_max, domain_min),
+			      size_one_node);
+
+      /* Check for range all ones, or at most a single range.
+       (This optimization is only a win for big sets.) */
+      if (GET_MODE (target) == BLKmode && nbytes > 16
+	  && TREE_CHAIN (CONSTRUCTOR_ELTS (exp)) == NULL_TREE)
+	{
+	  need_to_clear_first = 1;
+	  non_const_elements = CONSTRUCTOR_ELTS (exp);
+	}
+      else
+	{
+	  HOST_WIDE_INT *buffer
+	    = (HOST_WIDE_INT*) alloca (sizeof (HOST_WIDE_INT) * nwords);
+	  non_const_elements = get_set_constructor_words (exp, buffer, nwords);
+
+	  if (nbytes * BITS_PER_UNIT <= set_word_size)
+	    {
+	      if (BITS_BIG_ENDIAN)
+		buffer[0] >>= set_word_size - nbytes * BITS_PER_UNIT;
+	      emit_move_insn (target, GEN_INT (buffer[0]));
+	    }
+	  else
+	    {
+	      rtx addr = XEXP (target, 0);
+	      rtx to_rtx;
+	      register int i;
+	      enum machine_mode mode
+		= mode_for_size (set_word_size, MODE_INT, 1);
+
+	      for (i = 0; i < nwords; i++)
+		{
+		  int offset = i * set_word_size / BITS_PER_UNIT;
+		  rtx datum = GEN_INT (buffer[i]);
+		  rtx to_rtx = change_address (target, mode,
+					       plus_constant (addr, offset));
+		  MEM_IN_STRUCT_P (to_rtx) = 1;
+		  emit_move_insn (to_rtx, datum);
+		}
+	    }
+	  need_to_clear_first = 0;
+	}
+
+      for (elt = non_const_elements; elt != NULL_TREE; elt = TREE_CHAIN (elt))
+	{
+	  /* start of range of element or NULL */
+	  tree startbit = TREE_PURPOSE (elt);
+	  /* end of range of element, or element value */
+	  tree endbit   = TREE_VALUE (elt);
+	  HOST_WIDE_INT startb, endb;
+	  rtx  bitlength_rtx, startbit_rtx, endbit_rtx, targetx;
+
+	  bitlength_rtx = expand_expr (bitlength,
+			    NULL_RTX, MEM, EXPAND_CONST_ADDRESS);
+
+	  /* handle non-range tuple element like [ expr ]  */
+	  if (startbit == NULL_TREE)
+	    {
+	      startbit = save_expr (endbit);
+	      endbit = startbit;
+	    }
+	  startbit = convert (sizetype, startbit);
+	  endbit = convert (sizetype, endbit);
+	  if (! integer_zerop (domain_min))
+	    {
+	      startbit = size_binop (MINUS_EXPR, startbit, domain_min);
+	      endbit = size_binop (MINUS_EXPR, endbit, domain_min);
+	    }
+	  startbit_rtx = expand_expr (startbit, NULL_RTX, MEM, 
+				      EXPAND_CONST_ADDRESS);
+	  endbit_rtx = expand_expr (endbit, NULL_RTX, MEM, 
+				    EXPAND_CONST_ADDRESS);
+
+	  if (REG_P (target))
+	    {
+	      targetx = assign_stack_temp (GET_MODE (target),
+					   GET_MODE_SIZE (GET_MODE (target)),
+					   0);
+	      emit_move_insn (targetx, target);
+	    }
+	  else if (GET_CODE (target) == MEM)
+	    targetx = target;
+	  else
+	    abort ();
+
+#ifdef TARGET_MEM_FUNCTIONS
+	  /* Optimization:  If startbit and endbit are
+	     constants divisble by BITS_PER_UNIT,
+	     call memset instead. */
+	  if (TREE_CODE (startbit) == INTEGER_CST
+	      && TREE_CODE (endbit) == INTEGER_CST
+	      && (startb = TREE_INT_CST_LOW (startbit)) % BITS_PER_UNIT == 0
+	      && (endb = TREE_INT_CST_LOW (endbit)) % BITS_PER_UNIT == 0)
+	    {
+		
+	      if (need_to_clear_first
+		  && endb - startb != nbytes * BITS_PER_UNIT)
+		clear_storage (target, nbytes);
+	      need_to_clear_first = 0;
+	      emit_library_call (memset_libfunc, 0,
+				 VOIDmode, 3,
+				 plus_constant (XEXP (targetx, 0), startb),
+				 Pmode,
+				 constm1_rtx, Pmode,
+				 GEN_INT ((endb - startb) / BITS_PER_UNIT),
+				 Pmode);
+	    }
+	  else
+#endif
+	    {
+	      if (need_to_clear_first)
+		{
+		  clear_storage (target, nbytes);
+		  need_to_clear_first = 0;
+		}
+	      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__setbits"),
+				 0, VOIDmode, 4, XEXP (targetx, 0), Pmode,
+				 bitlength_rtx, TYPE_MODE (sizetype),
+				 startbit_rtx, TYPE_MODE (sizetype),
+				 endbit_rtx, TYPE_MODE (sizetype));
+	    }
+	  if (REG_P (target))
+	    emit_move_insn (target, targetx);
 	}
     }
 
