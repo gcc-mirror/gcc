@@ -1,3 +1,8 @@
+Thu Jul  2 17:41:14 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/m32r/m32r.h (MUST_PASS_IN_STACK): Override default
+	version. 
+
 Thu Jul  2 14:34:48 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* expr.h (STACK_SIZE_MODE): New macro.
