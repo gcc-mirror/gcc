@@ -1,3 +1,9 @@
+1997-09-15  Brendan Kehoe  <brendan@cygnus.com>
+
+	* except.c (find_exception_handler_labels): Use xmalloc instead of
+	alloca, since MAX_LABELNO - MIN_LABELNO can be more than 1 million
+	in some cases.
+
 Sun Sep 14 21:01:23 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Various changes to build info files
