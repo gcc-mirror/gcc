@@ -1,3 +1,11 @@
+Wed Dec  3 11:41:13 1997  Gavin Koch  <gavin@cygnus.com>
+
+	* mips/mips.md (muldi3_r4000): Broaden the output template
+	and attribute assignments to handle three operand dmult;
+	rename to muldi3_internal2.
+	(muldi3): Call the new muldi3_internal2 for R4000, and
+	any GENERATE_MULT3 chip.
+
 Tue Dec  2 19:40:43 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stmt.c (expand_decl_cleanup): Update thisblock after eh_region_start.

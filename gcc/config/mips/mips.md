@@ -1111,10 +1111,10 @@
   "TARGET_64BIT"
   "
 {
-  if (mips_cpu != PROCESSOR_R4000)
-    emit_insn (gen_muldi3_internal (operands[0], operands[1], operands[2]));
+  if (GENERATE_MULT3 || mips_cpu == PROCESSOR_R4000)
+    emit_insn (gen_muldi3_internal2 (operands[0], operands[1], operands[2]));
   else
-    emit_insn (gen_muldi3_r4000 (operands[0], operands[1], operands[2]));
+    emit_insn (gen_muldi3_internal (operands[0], operands[1], operands[2]));
   DONE;
 }")
 
@@ -1135,28 +1135,36 @@
    (set_attr "mode"	"DI")
    (set_attr "length"	"1")])
 
-(define_insn "muldi3_r4000"
+(define_insn "muldi3_internal2"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(mult:DI (match_operand:DI 1 "se_register_operand" "d")
 		 (match_operand:DI 2 "register_operand" "d")))
    (clobber (match_scratch:DI 3 "=h"))
    (clobber (match_scratch:DI 4 "=l"))
    (clobber (match_scratch:DI 5 "=a"))]
-  "TARGET_64BIT && mips_cpu == PROCESSOR_R4000"
+  "TARGET_64BIT && (GENERATE_MULT3 || mips_cpu == PROCESSOR_R4000)"
   "*
 {
-  rtx xoperands[10];
+  if (GENERATE_MULT3)
+    output_asm_insn (\"dmult\\t%0,%1,%2\", operands);
+  else 
+    {
+    rtx xoperands[10];
 
-  xoperands[0] = operands[0];
-  xoperands[1] = gen_rtx (REG, DImode, LO_REGNUM);
+    xoperands[0] = operands[0];
+    xoperands[1] = gen_rtx (REG, DImode, LO_REGNUM);
 
-  output_asm_insn (\"dmult\\t%1,%2\", operands);
-  output_asm_insn (mips_move_1word (xoperands, insn, FALSE), xoperands);
+    output_asm_insn (\"dmult\\t%1,%2\", operands);
+    output_asm_insn (mips_move_1word (xoperands, insn, FALSE), xoperands);
+    }
   return \"\";
 }"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"3")])		;; mult + mflo + delay
+   (set (attr "length")
+	(if_then_else (ne (symbol_ref "GENERATE_MULT3") (const_int 0))
+		       (const_int 1)
+		       (const_int 3)))]) 	;; mult + mflo + delay
 
 ;; ??? We could define a mulditi3 pattern when TARGET_64BIT.
 
