@@ -230,6 +230,8 @@ Boston, MA 02111-1307, USA.  */
 {
 #if TARGET_MACHO
   return output_call(insn, operands, 0, 2);
+#else
+  abort();
 #endif
 }
   [(set_attr "type" "branch,branch")
@@ -259,7 +261,9 @@ Boston, MA 02111-1307, USA.  */
 {
 #if TARGET_MACHO
   return output_call(insn, operands, 1, 3);
-#endif     
+#else
+  abort();
+#endif
 }
   [(set_attr "type" "branch,branch")
    (set_attr "length" "4,8")])
