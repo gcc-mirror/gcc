@@ -1,6 +1,6 @@
 Fri Apr 12 15:42:59 2002  Jeffrey A Law  (law@redhat.com)
 
-	* pa.c (pa_can_combine_p): Call insn_extract before calling
+	* pa.c (pa_can_combine_p): Call extract_insn before calling
 	constrain_operands.
 
 2002-04-12  Douglas B Rupp  <rupp@gnat.com>
