@@ -467,6 +467,10 @@ fi
 
 # Add a `static' declaration of `getrnge' into <regexp.h>.
 
+# Don't do this if there is already a `static void getrnge' declaration
+# present, since this would cause a redeclaration error.  Solaris 2.x has
+# such a declaration.
+
 file=regexp.h
 base=`basename $file`
 if [ -r ${LIB}/$file ]; then
@@ -480,22 +484,26 @@ else
 fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
-  cp $file_to_fix /tmp/$base
-  chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-  /^static int[ 	]*size;/c
+  if grep "static void getrnge" $file_to_fix > /dev/null; then
+    true
+  else
+    cp $file_to_fix /tmp/$base
+    chmod +w /tmp/$base
+    ex /tmp/$base <<EOF
+    /^static int[ 	]*size;/c
 static int	size ;
 
 static int getrnge ();
 .
-  wq
+    wq
 EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
-    echo No change needed in $file_to_fix
-  else
-    echo Fixed $file_to_fix
-    rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+      No change needed in $file_to_fix
+    else
+      echo Fixed $file_to_fix
+      rm -f ${LIB}/$file
+      cp /tmp/$base ${LIB}/$file
+    fi
   fi
   rm -f /tmp/$base
 fi
