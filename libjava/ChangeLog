@@ -1,3 +1,13 @@
+2004-08-16  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am
+	(math_c_files): Renamed from c_files.
+	(math_c_source_files): Renamed from c_source_files.
+	* Makefile.in,
+	gcj/Makefile.in,
+	include/Makefile.in,
+	testsuite/Makefile.in: Regenerated.
+
 2004-08-16  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* configure.in (AC_CONF_SUBDIRS): Use literal for ltdl directory
