@@ -1084,7 +1084,36 @@ convert_to_mode (mode, x, unsignedp)
      rtx x;
      int unsignedp;
 {
+  return convert_modes (mode, VOIDmode, x, unsignedp);
+}
+
+/* Return an rtx for a value that would result
+   from converting X from mode OLDMODE to mode MODE.
+   Both modes may be floating, or both integer.
+   UNSIGNEDP is nonzero if X is an unsigned value.
+
+   This can be done by referring to a part of X in place
+   or by copying to a new temporary with conversion.
+
+   You can give VOIDmode for OLDMODE, if you are sure X has a nonvoid mode.
+
+   This function *must not* call protect_from_queue
+   except when putting X into an insn (in which case convert_move does it).  */
+
+rtx
+convert_modes (mode, oldmode, x, unsignedp)
+     enum machine_mode mode, oldmode;
+     rtx x;
+     int unsignedp;
+{
   register rtx temp;
+
+  if (GET_MODE (x) != mode)
+    oldmode = GET_MODE (x);
+  /* If X doesnt have a mode, and we didn't specify one, 
+     we have a potential bug, so crash now and get it fixed.  */
+  if (oldmode == VOIDmode)
+    abort ();
  
   /* If FROM is a SUBREG that indicates that we have already done at least
      the required extension, strip it.  */
@@ -1094,7 +1123,7 @@ convert_to_mode (mode, x, unsignedp)
       && SUBREG_PROMOTED_UNSIGNED_P (x) == unsignedp)
     x = gen_lowpart (mode, x);
 
-  if (mode == GET_MODE (x))
+  if (mode == oldmode)
     return x;
 
   /* There is one case that we must handle specially: If we are converting
@@ -1115,9 +1144,9 @@ convert_to_mode (mode, x, unsignedp)
 
   if (GET_CODE (x) == CONST_INT
       || (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
+	  && GET_MODE_CLASS (oldmode) == MODE_INT
 	  && (GET_CODE (x) == CONST_DOUBLE
-	      || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (x))
+	      || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (oldmode)
 		  && ((GET_CODE (x) == MEM && ! MEM_VOLATILE_P (x)
 		       && direct_load[(int) mode])
 		      || GET_CODE (x) == REG)))))
@@ -2246,8 +2275,10 @@ expand_assignment (to, from, want_value, suggest_reg)
 
       /* If the value is meaningful, convert RESULT to the proper mode.
 	 Otherwise, return nothing.  */
-      return (want_value ? convert_to_mode (TYPE_MODE (TREE_TYPE (to)), result,
-					    TREE_UNSIGNED (TREE_TYPE (to)))
+      return (want_value ? convert_modes (TYPE_MODE (TREE_TYPE (to)),
+					  TYPE_MODE (TREE_TYPE (from)),
+					  result,
+					  TREE_UNSIGNED (TREE_TYPE (to)))
 	      : NULL_RTX);
     }
 
