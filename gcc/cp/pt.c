@@ -167,6 +167,8 @@ static int template_args_equal PARAMS ((tree, tree));
 static void tsubst_default_arguments PARAMS ((tree));
 static tree for_each_template_parm_r PARAMS ((tree *, int *, void *));
 static tree instantiate_clone PARAMS ((tree, tree));
+static tree copy_default_args_to_explicit_spec_1 PARAMS ((tree, tree));
+static void copy_default_args_to_explicit_spec PARAMS ((tree));
 
 /* Called once to initialize pt.c.  */
 
@@ -1151,7 +1153,112 @@ determine_specialization (template_id, decl, targs_out,
     *targs_out = TREE_PURPOSE (templates);
   return TREE_VALUE (templates);
 }
+
+/* Returns a chain of parameter types, exactly like the SPEC_TYPES,
+   but with the default argument values filled in from those in the
+   TMPL_TYPES.  */
       
+static tree
+copy_default_args_to_explicit_spec_1 (spec_types,
+				      tmpl_types)
+     tree spec_types;
+     tree tmpl_types;
+{
+  tree new_spec_types;
+
+  if (!spec_types)
+    return NULL_TREE;
+
+  if (spec_types == void_list_node)
+    return void_list_node;
+
+  /* Substitute into the rest of the list.  */
+  new_spec_types =
+    copy_default_args_to_explicit_spec_1 (TREE_CHAIN (spec_types),
+					  TREE_CHAIN (tmpl_types));
+  
+  /* Add the default argument for this parameter.  */
+  return hash_tree_cons (TREE_PURPOSE (tmpl_types),
+			 TREE_VALUE (spec_types),
+			 new_spec_types);
+}
+
+/* DECL is an explicit specialization.  Replicate default arguments
+   from the template it specializes.  (That way, code like:
+
+     template <class T> void f(T = 3);
+     template <> void f(double);
+     void g () { f (); } 
+
+   works, as required.)  An alternative approach would be to look up
+   the correct default arguments at the call-site, but this approach
+   is consistent with how implicit instantiations are handled.  */
+
+static void
+copy_default_args_to_explicit_spec (decl)
+     tree decl;
+{
+  tree tmpl;
+  tree spec_types;
+  tree tmpl_types;
+  tree new_spec_types;
+  tree old_type;
+  tree new_type;
+  tree t;
+
+  /* See if there's anything we need to do.  */
+  tmpl = DECL_TI_TEMPLATE (decl);
+  tmpl_types = TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (tmpl)));
+  for (t = tmpl_types; t; t = TREE_CHAIN (t))
+    if (TREE_PURPOSE (t))
+      break;
+  if (!t)
+    return;
+
+  old_type = TREE_TYPE (decl);
+  spec_types = TYPE_ARG_TYPES (old_type);
+  
+  /* DECL may contain more parameters than TMPL due to the extra
+     in-charge parameter in constructors and destructors.  */
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+    {
+      spec_types = TREE_CHAIN (spec_types);
+      tmpl_types = TREE_CHAIN (tmpl_types);
+      if (DECL_HAS_IN_CHARGE_PARM_P (decl))
+	spec_types = TREE_CHAIN (spec_types);
+    }
+
+  /* Compute the merged default arguments.  */
+  new_spec_types = 
+    copy_default_args_to_explicit_spec_1 (spec_types, tmpl_types);
+
+  /* Put the extra parameters back together -- but note that
+     build_cplus_method_type will automatically add the `this'
+     pointer.  */
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+      && DECL_HAS_IN_CHARGE_PARM_P (decl))
+    {
+      tree t = TREE_CHAIN (TYPE_ARG_TYPES (old_type));
+      new_spec_types = hash_tree_cons (TREE_PURPOSE (t),
+				       TREE_VALUE (t),
+				       new_spec_types);
+    }
+  
+  /* Compute the new FUNCTION_TYPE.  */
+  if (TREE_CODE (old_type) == METHOD_TYPE)
+    new_type = build_cplus_method_type (TYPE_METHOD_BASETYPE (old_type),
+					TREE_TYPE (old_type),
+					new_spec_types);
+  else
+    new_type = build_function_type (TREE_TYPE (old_type),
+				  new_spec_types);
+  new_type = build_type_attribute_variant (new_type,
+					   TYPE_ATTRIBUTES (old_type));
+  new_type = build_exception_variant (new_type,
+				      TYPE_RAISES_EXCEPTIONS (old_type));
+  TREE_TYPE (decl) = new_type;
+}
+
 /* Check to see if the function just declared, as indicated in
    DECLARATOR, and in DECL, is a specialization of a function
    template.  We may also discover that the declaration is an explicit
@@ -1542,33 +1649,12 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      last_function_parms = TREE_CHAIN (last_function_parms);
 	    }
 
-	  /* Inherit default function arguments from the template
-	     DECL is specializing.  */
-	  {
-	    tree t1 = TYPE_ARG_TYPES (TREE_TYPE (decl));
-	    tree t2 = TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (tmpl)));
-
-	    /* DECL may contain more parameters than TMPL due to the extra
-	       in-charge parameter in constructors and destructors.  */
-	    if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
-	      t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2);
-	    if (DECL_HAS_IN_CHARGE_PARM_P (decl))
-	      t1 = TREE_CHAIN (t1);
-
-	     /* Note that we do not need to reparse default arguments, 
-		since explicit specialization cannot be declared in 
-		class scope as in [temp.expl.spec].  */
-	    for (; t1 && t2; t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
-	      {
-		if (TREE_PURPOSE (t2))
-		  TREE_PURPOSE (t1) = TREE_PURPOSE (t2);
-	      }
-
-	    my_friendly_assert (t1 == NULL_TREE && t2 == NULL_TREE, 20001211);
-	  }
-
 	  /* Set up the DECL_TEMPLATE_INFO for DECL.  */
 	  DECL_TEMPLATE_INFO (decl) = tree_cons (tmpl, targs, NULL_TREE);
+
+	  /* Inherit default function arguments from the template
+	     DECL is specializing.  */
+	  copy_default_args_to_explicit_spec (decl);
 
 	  /* Mangle the function name appropriately.  Note that we do
 	     not mangle specializations of non-template member
