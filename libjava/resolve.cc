@@ -578,7 +578,7 @@ _Jv_PrepareClass(jclass klass)
 
   // set the instance size for the class
   clz->size_in_bytes = instance_size;
-    
+
   // allocate static memory
   if (static_size != 0)
     {
@@ -628,6 +628,8 @@ _Jv_PrepareClass(jclass klass)
       else if (imeth != 0)		// it could be abstract
 	{
 	  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (imeth);
+	  // FIXME: enable once verifier is more fully tested.
+	  // _Jv_VerifyMethod (im);
 	  clz->methods[i].ncode = im->ncode ();
 	}
     }

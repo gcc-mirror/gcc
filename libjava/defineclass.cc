@@ -940,7 +940,7 @@ _Jv_ClassReader::handleClassBegin
       pool_data[super_class].clazz = the_super;
       pool_tags[super_class] = JV_CONSTANT_ResolvedClass;
     }
-	    
+
   // now we've come past the circularity problem, we can 
   // now say that we're loading...
 
@@ -1315,15 +1315,6 @@ void _Jv_ClassReader::handleMethodsEnd ()
 	{
 	  if (def->interpreted_methods[i] == 0)
 	    throw_class_format_error ("method with no code");
-
-	  if (verify)
-	    {
-	      _Jv_InterpMethod *m;
-	      m = (reinterpret_cast<_Jv_InterpMethod *>
-		   (def->interpreted_methods[i]));
-	      // FIXME: enable once verifier is more fully tested.
-	      // _Jv_VerifyMethod (m);
-	    }
 	}
     }
 }

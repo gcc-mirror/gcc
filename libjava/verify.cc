@@ -764,6 +764,13 @@ private:
     // This is used to keep a linked list of all the states which
     // require re-verification.  We use the PC to keep track.
     int next;
+    // We keep track of the type of `this' specially.  This is used to
+    // ensure that an instance initializer invokes another initializer
+    // on `this' before returning.  We must keep track of this
+    // specially because otherwise we might be confused by code which
+    // assigns to locals[0] (overwriting `this') and then returns
+    // without really initializing.
+    type this_type;
 
     // INVALID marks a state which is not on the linked list of states
     // requiring reverification.
@@ -772,6 +779,7 @@ private:
     static const int NO_NEXT = -2;
 
     state ()
+      : this_type ()
     {
       stack = NULL;
       locals = NULL;
@@ -779,6 +787,7 @@ private:
     }
 
     state (int max_stack, int max_locals)
+      : this_type ()
     {
       stacktop = 0;
       stackdepth = 0;
@@ -855,6 +864,7 @@ private:
 	    locals[i] = copy->locals[i];
 	  local_changed[i] = copy->local_changed[i];
 	}
+      this_type = copy->this_type;
       // Don't modify `next'.
     }
 
@@ -870,13 +880,18 @@ private:
       // FIXME: subroutine handling?
     }
 
-    // Merge STATE into this state.  Destructively modifies this state.
-    // Returns true if the new state was in fact changed.  Will throw an
-    // exception if the states are not mergeable.
+    // Merge STATE_OLD into this state.  Destructively modifies this
+    // state.  Returns true if the new state was in fact changed.
+    // Will throw an exception if the states are not mergeable.
     bool merge (state *state_old, bool ret_semantics,
 		int max_locals)
     {
       bool changed = false;
+
+      // Special handling for `this'.  If one or the other is
+      // uninitialized, then the merge is uninitialized.
+      if (this_type.isinitialized ())
+	this_type = state_old->this_type;
 
       // Merge subroutine states.  *THIS and *STATE_OLD must be in the
       // same subroutine.  Also, recursive subroutine calls must be
@@ -940,6 +955,21 @@ private:
       for (int i = 0; i < max_locals; ++i)
 	if (locals[i].isreference () && ! locals[i].isinitialized ())
 	  verify_fail ("uninitialized object in local variable");
+
+      check_this_initialized ();
+    }
+
+    // Ensure that `this' has been initialized.
+    void check_this_initialized ()
+    {
+      if (this_type.isreference () && ! this_type.isinitialized ())
+	verify_fail ("`this' is uninitialized");
+    }
+
+    // Set type of `this'.
+    void set_this_type (const type &k)
+    {
+      this_type = k;
     }
 
     // Note that a local variable was modified.
@@ -957,6 +987,7 @@ private:
 	stack[i].set_initialized (pc);
       for (int i = 0; i < max_locals; ++i)
 	locals[i].set_initialized (pc);
+      this_type.set_initialized (pc);
     }
 
     // Return true if this state is the unmerged result of a `ret'.
@@ -1870,6 +1901,42 @@ private:
       verify_fail ("incompatible return type", start_PC);
   }
 
+  // Initialize the stack for the new method.  Returns true if this
+  // method is an instance initializer.
+  bool initialize_stack ()
+  {
+    int var = 0;
+    bool is_init = false;
+
+    using namespace java::lang::reflect;
+    if (! Modifier::isStatic (current_method->self->accflags))
+      {
+	type kurr (current_class);
+	if (_Jv_equalUtf8Consts (current_method->self->name, gcj::init_name))
+	  {
+	    kurr.set_uninitialized (type::SELF);
+	    is_init = true;
+	  }
+	set_variable (0, kurr);
+	current_state->set_this_type (kurr);
+	++var;
+      }
+
+    // We have to handle wide arguments specially here.
+    int arg_count = _Jv_count_arguments (current_method->self->signature);
+    type arg_types[arg_count];
+    compute_argument_types (current_method->self->signature, arg_types);
+    for (int i = 0; i < arg_count; ++i)
+      {
+	set_variable (var, arg_types[i]);
+	++var;
+	if (arg_types[i].iswide ())
+	  ++var;
+      }
+
+    return is_init;
+  }
+
   void verify_instructions_0 ()
   {
     current_state = new state (current_method->max_stack,
@@ -1878,31 +1945,8 @@ private:
     PC = 0;
     start_PC = 0;
 
-    {
-      int var = 0;
-
-      using namespace java::lang::reflect;
-      if (! Modifier::isStatic (current_method->self->accflags))
-	{
-	  type kurr (current_class);
-	  if (_Jv_equalUtf8Consts (current_method->self->name, gcj::init_name))
-	    kurr.set_uninitialized (type::SELF);
-	  set_variable (0, kurr);
-	  ++var;
-	}
-
-      // We have to handle wide arguments specially here.
-      int arg_count = _Jv_count_arguments (current_method->self->signature);
-      type arg_types[arg_count];
-      compute_argument_types (current_method->self->signature, arg_types);
-      for (int i = 0; i < arg_count; ++i)
-	{
-	  set_variable (var, arg_types[i]);
-	  ++var;
-	  if (arg_types[i].iswide ())
-	    ++var;
-	}
-    }
+    // True if we are verifying an instance initializer.
+    bool this_is_init = initialize_stack ();
 
     states = (state **) _Jv_Malloc (sizeof (state *)
 				    * current_method->code_length);
@@ -2561,6 +2605,10 @@ private:
 	    invalidate_pc ();
 	    break;
 	  case op_return:
+	    // We only need to check this when the return type is
+	    // void, because all instance initializers return void.
+	    if (this_is_init)
+	      current_state->check_this_initialized ();
 	    check_return_type (void_type);
 	    invalidate_pc ();
 	    break;
@@ -2583,6 +2631,13 @@ private:
 	      type klass;
 	      type field = check_field_constant (get_ushort (), &klass);
 	      pop_type (field);
+
+	      // We have an obscure special case here: we can use
+	      // `putfield' on a field declared in this class, even if
+	      // `this' has not yet been initialized.
+	      if (! current_state->this_type.isinitialized ()
+		  && current_state->this_type.pc == type::SELF)
+		klass.set_uninitialized (type::SELF);
 	      pop_type (klass);
 	    }
 	    break;

@@ -1,5 +1,23 @@
 2001-12-09  Tom Tromey  <tromey@redhat.com>
 
+	* resolve.cc (_Jv_PrepareClass): Verify method here...
+	* defineclass.cc (handleMethodsEnd): ... not here.
+	* verify.cc (_Jv_BytecodeVerifier::initialize_stack): New method.
+	(_Jv_BytecodeVerifier::verify_instructions_0) [op_return]: Ensure
+	there are no uninitialized objects.
+	(_Jv_BytecodeVerifier::state::this_type): New field.
+	(_Jv_BytecodeVerifier::state::state): Initialize this_type.
+	(_Jv_BytecodeVerifier::state::copy): Copy this_type.
+	(_Jv_BytecodeVerifier::state::merge): Merge this_type.
+	(_Jv_BytecodeVerifier::state::check_no_uninitialized_objects):
+	Handle this_type.
+	(_Jv_BytecodeVerifier::state::check_this_initialized): New
+	method.
+	(_Jv_BytecodeVerifier::state::set_initialized): Handle this_type.
+	(_Jv_BytecodeVerifier::state::set_this_type): New method.
+	(_Jv_BytecodeVerifier::verify_instructions_0) [op_putfield]: Allow
+	assignment to fields of `this' before another initializer is run.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (gnu/gcj/runtime/VMClassLoader.h): Use `::java'.
 
