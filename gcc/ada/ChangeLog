@@ -1,3 +1,9 @@
+2001-10-11  Ed Schonberg <schonber@gnat.com>
+
+	* exp_ch7.adb (Make_Transient_Block): if statement is within 
+	exception handler, always use new transient scope to place Clean 
+	procedure.
+
 2001-10-11  Pascal Obry <obry@gnat.com>
 
 	* Makefile.in:

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.245 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -2404,6 +2404,7 @@ package body Exp_Ch7 is
    is
       Flist  : constant Entity_Id := Finalization_Chain_Entity (Current_Scope);
       Decls  : constant List_Id   := New_List;
+      Par    : constant Node_Id   := Parent (Action);
       Instrs : constant List_Id   := New_List (Action);
       Blk    : Node_Id;
 
@@ -2413,6 +2414,7 @@ package body Exp_Ch7 is
       if Uses_Sec_Stack (Current_Scope)
         and then No (Flist)
         and then Nkind (Action) /= N_Return_Statement
+        and then Nkind (Par) /= N_Exception_Handler
       then
 
          declare
