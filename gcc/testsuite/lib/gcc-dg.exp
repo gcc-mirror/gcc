@@ -4,15 +4,15 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 load_lib dg.exp
 load_lib file-format.exp
@@ -175,7 +175,7 @@ proc gcc-dg-runtest { testcases default-extra-flags } {
     global runtests
 
     foreach test $testcases {
-	# If we're only testing specific files and this isn't one of 
+	# If we're only testing specific files and this isn't one of
 	# them, skip it.
 	if ![runtest_file_p $runtests $test] {
 	    continue
@@ -226,7 +226,7 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
     global runtests
 
     foreach test $testcases {
-	# If we're only testing specific files and this isn't one of 
+	# If we're only testing specific files and this isn't one of
 	# them, skip it.
 	if ![runtest_file_p $runtests $test] {
 	    continue
@@ -237,7 +237,7 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
 	foreach flags $DEBUG_TORTURE_OPTIONS {
 	    set doit 1
 	    if { [string match {*/debug-[126].c} "$nshort"] \
-		    && [string match "*1" [lindex "$flags" 0] ] } { 
+		    && [string match "*1" [lindex "$flags" 0] ] } {
 		set doit 0
 	    }
 
@@ -333,7 +333,7 @@ proc dg-require-profiling { args } {
 
 # If this target does not support DLL attributes skip this test.
 
-proc dg-require-dll { args } { 
+proc dg-require-dll { args } {
     global target_triplet
     # As a special case, the mcore-*-elf supports dllimport/dllexport.
     if { [string match "mcore-*-elf" $target_triplet] } {
@@ -346,6 +346,15 @@ proc dg-require-dll { args } {
 
     upvar dg-do-what dg-do-what
     set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+}
+
+proc dg-require-iconv { args } {
+    if { ![ check_iconv_available ${args} ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
 }
 
 # Prune any messages matching ARGS[1] (a regexp) from test output.

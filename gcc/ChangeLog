@@ -1,3 +1,20 @@
+2004-02-26  Eric Christopher  <echristo@redhat.com>
+
+	* c-lex.c (c_lex_string_translate): New variable.
+	(lex_string): Use to determine string translation.
+	* c-pragma.h: Prototype.
+	* c-parse.in (start_string_translation): New. Set above.
+	(stop_string_translation): Ditto.
+	(attribute, attribute_list, asm_def, asm_stmt,
+	asm_operand): Use above functions.
+	* cp/parser.c (cp_parser_declaration): Translate strings
+	unless token is RID_EXTERN. Set c_lex_string_translate
+	for recursive use.
+	(cp_parser_asm_definition): Only translate argument strings
+	to asms.
+	(cp_parser_asm_operand_list): Ditto.
+	(cp_parser_attribute_list): Do not translate attribute strings.
+
 2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* stmt.c (expand_start_case_dummy): Remove.
@@ -104,7 +121,7 @@
 	* cfglayout.c (break_superblocks): Likewise; fix memory leak.
 	* except.c (build_post_landing_pads, connect_post_landing_pads,
 	dw2_build_landing_pads, sjlj_emit_function_enter,
-	sjlj_emit_function_exit, sjlj_emit_dispatch_table, 
+	sjlj_emit_function_exit, sjlj_emit_dispatch_table,
 	sjlj_build_landing_pads): Update CFG.
 	(emit_to_new_bb_before): New function.
 	(finish_eh_generation): Do not rebuild the CFG.
@@ -715,7 +732,7 @@
 2004-02-23  Fariborz Jahanian <fjahanian@apple.com>
         * config/rs6000/rs6000.c (function_arg): call to
 	rs6000_mixed_function_arg for DFmode moved to allow
-	normal DFmode incoming register assignment.  
+	normal DFmode incoming register assignment.
 
 2004-02-23  Dale Johannesen  <dalej@apple.com>
 
@@ -864,7 +881,7 @@
 	merely its number.
 	(rs6000_attribute_table): Add "altivec" attribute.
 	(rs6000_handle_altivec_attribute): New function.
-	* config/rs6000/rs6000.h (TARGET_OPTIONS): Describe 
+	* config/rs6000/rs6000.h (TARGET_OPTIONS): Describe
 	'-m[no-]-warn-altivec-long' (which '-W[no-]altivec-long-deprecated'
 	maps to).
 	(rs6000_warn_altivec_long, rs6000_warn_altivec_long_switch): Forward

@@ -1,4 +1,4 @@
-#   Copyright (C) 2000 Free Software Foundation, Inc.
+#   Copyright (C) 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,34 +14,31 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-# G++ testsuite that uses the `dg.exp' driver.
+# GCC testsuite that uses the 'dg.exp' driver.
+
+# There's a bunch of headers we need.
+if [is_remote host] {
+    foreach header [glob -nocomplain $srcdir/$subdir/*.{h,def} ] {
+        remote_download host $header
+    }
+}
 
 # Load support procs.
 load_lib g++-dg.exp
+load_lib target-supports.exp
 
 # If a testcase doesn't have special options, use these.
-global DEFAULT_CXXFLAGS
-if ![info exists DEFAULT_CXXFLAGS] then {
-    set DEFAULT_CXXFLAGS " -ansi -pedantic-errors -Wno-long-long"
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS "-fexec-charset=IBM-1047"
 }
 
 # Initialize `dg'.
 dg-init
 
-# Gather a list of all tests, with the exception of those in directories
-# that are handled specially.
-set tests [lsort [find $srcdir/$subdir *.C]]
-set tests [prune $tests $srcdir/$subdir/bprob/*]
-set tests [prune $tests $srcdir/$subdir/charset/*]
-set tests [prune $tests $srcdir/$subdir/compat/*]
-set tests [prune $tests $srcdir/$subdir/debug/*]
-set tests [prune $tests $srcdir/$subdir/gcov/*]
-set tests [prune $tests $srcdir/$subdir/pch/*]
-set tests [prune $tests $srcdir/$subdir/special/*]
-set tests [prune $tests $srcdir/$subdir/tls/*]
-
 # Main loop.
-dg-runtest $tests "" $DEFAULT_CXXFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{c,S} ]] \
+        "" $DEFAULT_CFLAGS
 
 # All done.
 dg-finish

@@ -54,6 +54,7 @@ static splay_tree file_info_tree;
 
 int pending_lang_change; /* If we need to switch languages - C++ only */
 int c_header_level;	 /* depth in C headers - C++ only */
+bool c_lex_string_translate = true; /* If we need to translate characters received.  */
 
 static tree interpret_integer (const cpp_token *, unsigned int);
 static tree interpret_float (const cpp_token *, unsigned int);
@@ -308,7 +309,7 @@ get_nonpadding_token (void)
   timevar_pop (TV_CPP);
 
   return tok;
-}  
+}
 
 int
 c_lex_with_flags (tree *value, unsigned char *cpp_flags)
@@ -675,7 +676,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 	  if (tok->type == CPP_WSTRING)
 	    wide = true;
 	  obstack_grow (&str_ob, &tok->val.str, sizeof (cpp_string));
-	  
+
 	  tok = get_nonpadding_token ();
 	  if (c_dialect_objc () && tok->type == CPP_ATSIGN)
 	    {
@@ -693,7 +694,9 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
   if (count > 1 && !objc_string && warn_traditional && !in_system_header)
     warning ("traditional C rejects string constant concatenation");
 
-  if (cpp_interpret_string (parse_in, strs, count, &istr, wide))
+  if ((c_lex_string_translate
+       ? cpp_interpret_string : cpp_interpret_string_notranslate)
+      (parse_in, strs, count, &istr, wide))
     {
       value = build_string (istr.len, (char *)istr.text);
       free ((void *)istr.text);
