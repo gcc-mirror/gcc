@@ -305,7 +305,7 @@ from the machine description file `md'.  */\n\n");
 	    {
 	      printf ("#define DELAY_SLOTS\n");
 	      printf ("extern int num_delay_slots PROTO((rtx));\n");
-	      printf ("extern int eligible_for_delay PROTO((rtx, int, rtx));\n\n");
+	      printf ("extern int eligible_for_delay PROTO((rtx, int, rtx, int));\n\n");
 	      printf ("extern int const_num_delay_slots PROTO((rtx));\n\n");
 	      have_delay = 1;
 	    }
@@ -414,6 +414,17 @@ from the machine description file `md'.  */\n\n");
       write_units (num_units, &all_multiplicity, &all_simultaneity,
 		   &all_ready_cost, &all_issue_delay, &all_blockage);
     }
+
+  /* Output flag masks for use by reorg.  
+
+     Flags are used to hold branch direction and prediction information
+     for use by eligible_for_...  */
+  printf("\n#define ATTR_FLAG_forward\t0x1\n");
+  printf("#define ATTR_FLAG_backward\t0x2\n");
+  printf("#define ATTR_FLAG_likely\t0x4\n");
+  printf("#define ATTR_FLAG_very_likely\t0x8\n");
+  printf("#define ATTR_FLAG_unlikely\t0x10\n");
+  printf("#define ATTR_FLAG_very_unlikely\t0x20\n");
 
   fflush (stdout);
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
