@@ -1211,8 +1211,8 @@ outgoing_edges_match (mode, bb1, bb2)
 	 roughly similar.  */
       if (match
 	  && !optimize_size
-	  && bb1->frequency > BB_FREQ_MAX / 1000
-	  && bb2->frequency > BB_FREQ_MAX / 1000)
+	  && maybe_hot_bb_p (bb1)
+	  && maybe_hot_bb_p (bb2))
 	{
 	  int prob2;
 

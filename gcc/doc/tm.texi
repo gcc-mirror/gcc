@@ -5651,6 +5651,17 @@ Normally this is not needed, as simply defining @code{TEXT_SECTION_ASM_OP}
 is enough.  The MIPS port uses this to sort all functions after all data
 declarations.
 
+@findex HOT_TEXT_SECTION_NAME
+@item HOT_TEXT_SECTION_NAME
+If defined, a C string constant for the name of the section containing most
+frequently executed functions of the program.  If not defined, GCC will provide
+a default definition if the target supports named sections.
+
+@findex UNLIKELY_EXECUTED_TEXT_SECTION_NAME
+@item UNLIKELY_EXECUTED_TEXT_SECTION_NAME
+If defined, a C string constant for the name of the section containing unlikely
+executed functions in the program.
+
 @findex DATA_SECTION_ASM_OP
 @item DATA_SECTION_ASM_OP
 A C expression whose value is a string, including spacing, containing the

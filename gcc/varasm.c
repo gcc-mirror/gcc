@@ -1197,7 +1197,8 @@ assemble_start_function (decl, fnname)
   /* Handle a user-specified function alignment.
      Note that we still need to align to FUNCTION_BOUNDARY, as above,
      because ASM_OUTPUT_MAX_SKIP_ALIGN might not do any alignment at all.  */
-  if (align_functions_log > align)
+  if (align_functions_log > align
+      && cfun->function_frequency != FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
     {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       ASM_OUTPUT_MAX_SKIP_ALIGN (asm_out_file,

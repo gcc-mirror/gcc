@@ -517,4 +517,12 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
    && !ROUND_TOWARDS_ZERO)
 #endif
 
+#ifndef HOT_TEXT_SECTION_NAME
+#define HOT_TEXT_SECTION_NAME "text.hot"
+#endif
+
+#ifndef UNLIKELY_EXECUTED_TEXT_SECTION_NAME
+#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME "text.unlikely"
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

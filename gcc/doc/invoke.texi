@@ -278,6 +278,7 @@ in the following sections.
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
 -freduce-all-givs -fregmove  -frename-registers @gol
+-freorder-blocks -freorder-functions @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
@@ -3712,6 +3713,23 @@ non-determinism is of paramount import.  This switch allows users to
 reduce non-determinism, possibly at the expense of inferior
 optimization.
 
+@item -freorder-blocks
+@opindex freorder-blocks
+Reorder basic blocks in the compiled function in order to reduce number of
+taken branches and improve code locality.
+
+@item -freorder-functions
+@opindex freorder-functions
+Reorder basic blocks in the compiled function in order to reduce number of
+taken branches and improve code locality. This is implemented by using special
+subsections @code{text.hot} for most frequently executed functions and
+@code{text.unlikely} for unlikely executed functions.  Reordering is done by
+the linker so object file format must support named sections and linker must
+place them in resonable way.
+
+Also profile feedback must be available in to make this option effective.  See
+@option{-fprofile-arcs} for details.
+
 @item -fstrict-aliasing
 @opindex fstrict-aliasing
 Allows the compiler to assume the strictest aliasing rules applicable to
@@ -3900,6 +3918,13 @@ The maximum number of instructions that a loop should have if that loop
 is unrolled, and if the loop is unrolled, it determines how many times
 the loop code is unrolled.
 
+@item hot-bb-count-fraction
+Select fraction of the maximal count of repetitions of basic block in program
+given basic block needs to have to be considered hot.
+
+@item hot-bb-frequency-fraction
+Select fraction of the maximal frequency of executions of basic block in
+function given basic block needs to have to be considered hot
 @end table
 @end table
 
@@ -7388,6 +7413,10 @@ Control whether GCC aligns @code{double}, @code{long double}, and
 boundary.  Aligning @code{double} variables on a two word boundary will
 produce code that runs somewhat faster on a @samp{Pentium} at the
 expense of more memory.
+
+@strong{Warning:} if you use the @samp{-malign-double} switch,
+structures containing the above types will be aligned differently than
+the published application binary interface specifications for the 386.
 
 @item -m128bit-long-double
 @opindex m128bit-long-double

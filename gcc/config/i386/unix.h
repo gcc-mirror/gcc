@@ -79,57 +79,5 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	    \
-do {									    \
-  tree parm;								    \
-  rtx xops[3];								    \
-									    \
-  if (ix86_regparm > 0)							    \
-    parm = TYPE_ARG_TYPES (TREE_TYPE (function));			    \
-  else									    \
-    parm = NULL_TREE;							    \
-  for (; parm; parm = TREE_CHAIN (parm))				    \
-    if (TREE_VALUE (parm) == void_type_node)				    \
-      break;								    \
-									    \
-  xops[0] = GEN_INT (DELTA);						    \
-  if (parm)								    \
-    xops[1] = gen_rtx_REG (SImode, 0);					    \
-  else if (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))))	    \
-    xops[1] = gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 8));   \
-  else									    \
-    xops[1] = gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 4));   \
-  output_asm_insn ("add{l} {%0, %1|%1, %0}", xops);			    \
-									    \
-  if (flag_pic && !TARGET_64BIT)					    \
-    {									    \
-      xops[0] = pic_offset_table_rtx;					    \
-      xops[1] = gen_label_rtx ();					    \
-      xops[2] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");        \
-									    \
-      if (ix86_regparm > 2)						    \
-	abort ();							    \
-      output_asm_insn ("push{l}\t%0", xops);				    \
-      output_asm_insn ("call\t%P1", xops);				    \
-      ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", CODE_LABEL_NUMBER (xops[1]));   \
-      output_asm_insn ("pop{l}\t%0", xops);				    \
-      output_asm_insn ("add{l}\t{%2+[.-%P1], %0|%0, OFFSET FLAT: %2+[.-%P1]}", xops); \
-      xops[0] = gen_rtx_MEM (SImode, XEXP (DECL_RTL (FUNCTION), 0));	    \
-      output_asm_insn ("mov{l}\t{%0@GOT(%%ebx), %%ecx|%%ecx, %0@GOT[%%ebx]}",\
-	               xops);						    \
-      asm_fprintf (FILE, "\tpop{l\t%%ebx|\t%%ebx}\n");			    \
-      asm_fprintf (FILE, "\tjmp\t{*%%ecx|%%ecx}\n");			    \
-    }									    \
-  else if (flag_pic && TARGET_64BIT)					    \
-    {									    \
-      fprintf (FILE, "\tjmp *");					    \
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	    \
-      fprintf (FILE, "@GOTPCREL(%%rip)\n");				    \
-    }									    \
-  else									    \
-    {									    \
-      fprintf (FILE, "\tjmp ");						    \
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	    \
-      fprintf (FILE, "\n");						    \
-    }									    \
-} while (0)
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
+    x86_output_mi_thunk (FILE, DELTA, FUNCTION);
