@@ -2574,93 +2574,16 @@
 ;; We could let this apply for blocks of less than this, but it clobbers so
 ;; many registers that there is then probably a better way.
 
-;; If optimizing, output redundant moves with REG_NOTES on them, this 
-;; produces better code.
-
-(define_expand "movstrsi"
-  [(set (match_operand:BLK 0 "general_operand" "=m")
-        (match_operand:BLK 1 "general_operand" "m"))
-   (use (match_operand:SI 2 "immediate_operand" "n"))
-   (use (match_operand:SI 3 "immediate_operand" "n"))
-   (clobber (reg:SI 0))
-   (clobber (reg:SI 1))
-   (clobber (reg:SI 2))
-   (clobber (reg:SI 3))
-   (clobber (match_scratch:SI 4 "=+r"))
-   (clobber (match_scratch:SI 5 "=+r"))]
+(define_expand "movstrqi"
+  [(match_operand:BLK 0 "general_operand" "")
+   (match_operand:BLK 1 "general_operand" "")
+   (match_operand:SI 2 "const_int_operand" "")
+   (match_operand:SI 3 "const_int_operand" "")]
   ""
   "
-{
-  int words_to_go;
-  int i, r;
-  rtx const_sxteen = gen_rtx (CONST_INT, SImode, 16);
-  rtx src = gen_reg_rtx (SImode);
-  rtx dst = gen_reg_rtx (SImode);
-  rtx st_src, st_dst, end_src, end_dst, fin_src, fin_dst;
-  extern int optimize;
-
-  if (GET_CODE (operands[2]) != CONST_INT
-      || GET_CODE (operands[3]) != CONST_INT
-      || INTVAL (operands[2]) % 4 != 0
-      || INTVAL (operands[2]) < 4
-      || INTVAL (operands[2]) > 64
-      || INTVAL (operands[3]) < 4
-      || INTVAL (operands[3]) % 4 != 0)
-    FAIL;
-  emit_move_insn (dst, st_dst = force_reg (SImode, XEXP (operands[0], 0)));
-  emit_move_insn (src, st_src = force_reg (SImode, XEXP (operands[1], 0)));
-  fin_src = src;
-  fin_dst = dst;
-
-  for (i = 0, words_to_go = INTVAL (operands[2]) / 4; words_to_go >= 2; i+=4)
-    {
-      emit_insn (arm_gen_load_multiple (0, words_to_go > 4 ? 4 : words_to_go,
-                                        src, TRUE, TRUE));
-      emit_insn (arm_gen_store_multiple (0, words_to_go > 4 ? 4 : words_to_go,
-                                        dst, TRUE, TRUE));
-      if (optimize)
-        for (r = (words_to_go > 4) ? 3 : words_to_go - 1; r >= 0; r--)
-          {
-            rtx note;
-            note = emit_move_insn (gen_reg_rtx (SImode),
-                                   gen_rtx (REG, SImode, r));
-            REG_NOTES (note) = gen_rtx (EXPR_LIST, REG_EQUIV,
-                                        gen_rtx (MEM, SImode,
-                                              plus_constant (st_src, 4*(i+r))),
-                                        REG_NOTES (note));
-            REG_NOTES (note) = gen_rtx (EXPR_LIST, REG_EQUIV,
-                                        gen_rtx (MEM, SImode,
-                                              plus_constant (st_dst, 4*(i+r))),
-                                        REG_NOTES (note));
-          }
-      words_to_go -= words_to_go < 4 ? words_to_go : 4;
-    }
-  if (words_to_go)
-  {
-    rtx sreg;
-
-    emit_move_insn (sreg = gen_reg_rtx (SImode), gen_rtx (MEM, SImode, src));
-    emit_move_insn (fin_src = gen_reg_rtx (SImode), plus_constant (src, 4));
-    emit_move_insn (gen_rtx (MEM, SImode, dst), sreg);
-    emit_move_insn (fin_dst = gen_reg_rtx (SImode), plus_constant (dst, 4));
-  }
-  if (optimize)
-    {
-      /* Insns for the REG_NOTES: These notes tell the optimiser where the
-         index registers have got to so that consecutive block moves of
-         contiguous data work efficiently */
-
-      end_src = emit_move_insn (fin_src, fin_src);
-      REG_NOTES (end_src) = gen_rtx(EXPR_LIST, REG_EQUAL,
-                                  plus_constant (st_src, INTVAL (operands[2])),
-                                  REG_NOTES (end_src));
-      end_dst = emit_move_insn (fin_dst, fin_dst);
-      REG_NOTES (end_dst) = gen_rtx(EXPR_LIST, REG_EQUAL,
-                                  plus_constant (st_dst, INTVAL (operands[2])),
-                                  REG_NOTES (end_dst));
-    }
-  DONE;
-}
+  if (arm_gen_movstrqi (operands))
+    DONE;
+  FAIL;
 ")
 
 
