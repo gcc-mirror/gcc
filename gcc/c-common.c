@@ -788,16 +788,22 @@ decl_attributes (node, attributes, prefix_attributes)
 	      error ("requested alignment is too large");
 	    else if (is_type)
 	      {
-		if (decl)
+		/* If we have a TYPE_DECL, then copy the type, so that we
+		   don't accidentally modify a builtin type.  See pushdecl.  */
+		if (decl && TREE_TYPE (decl) != error_mark_node
+		    && DECL_ORIGINAL_TYPE (decl) == NULL_TREE)
 		  {
-		    DECL_ALIGN (decl) = (1 << i) * BITS_PER_UNIT;
-		    DECL_USER_ALIGN (decl) = 1;
+		    tree tt = TREE_TYPE (decl);
+		    DECL_ORIGINAL_TYPE (decl) = tt;
+		    tt = build_type_copy (tt);
+		    TYPE_NAME (tt) = decl;
+		    TREE_USED (tt) = TREE_USED (decl);
+		    TREE_TYPE (decl) = tt;
+		    type = tt;
 		  }
-		else
-		  {
-		    TYPE_ALIGN (type) = (1 << i) * BITS_PER_UNIT;
-		    TYPE_USER_ALIGN (type) = 1;
-		  }
+
+		TYPE_ALIGN (type) = (1 << i) * BITS_PER_UNIT;
+		TYPE_USER_ALIGN (type) = 1;
 	      }
 	    else if (TREE_CODE (decl) != VAR_DECL
 		     && TREE_CODE (decl) != FIELD_DECL)

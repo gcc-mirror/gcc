@@ -1,3 +1,8 @@
+2000-08-24  Jim Wilson  <wilson@cygnus.com>
+
+	* c-common.c (decl_attributes, case A_ALIGN): Revert last change.
+	Copy type in a TYPE_DECL, just like pushdecl does.
+
 2000-08-24  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (main): Enable flag_reorder_blocks at -O2.
