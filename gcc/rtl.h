@@ -2447,7 +2447,8 @@ extern void tracer (void);
 extern void variable_tracking_main (void);
 
 /* In stor-layout.c.  */
-extern void get_mode_bounds (enum machine_mode, int, rtx *, rtx *);
+extern void get_mode_bounds (enum machine_mode, int, enum machine_mode,
+			     rtx *, rtx *);
 
 /* In loop-unswitch.c  */
 extern rtx reversed_condition (rtx);

@@ -3539,7 +3539,6 @@ extern void put_var_into_stack (tree, int);
 extern void flush_addressof (tree);
 extern void setjmp_vars_warning (tree);
 extern void setjmp_args_warning (void);
-extern void mark_all_temps_used (void);
 extern void init_temp_slots (void);
 extern void combine_temp_slots (void);
 extern void free_temp_slots (void);

@@ -322,8 +322,11 @@ struct function GTY(())
      element in this vector is one less than MAX_PARM_REG, above.  */
   rtx * GTY ((length ("%h.x_max_parm_reg"))) x_parm_reg_stack_loc;
 
-  /* List of all temporaries allocated, both available and in use.  */
-  struct temp_slot *x_temp_slots;
+  /* List of all used temporaries allocated, by level.  */
+  struct varray_head_tag * GTY((param_is (struct temp_slot))) x_used_temp_slots;
+
+  /* List of available temp slots.  */
+  struct temp_slot *x_avail_temp_slots;
 
   /* Current nesting level for temporaries.  */
   int x_temp_slot_level;
@@ -563,7 +566,8 @@ extern int trampolines_created;
 #define rtl_expr_chain (cfun->x_rtl_expr_chain)
 #define last_parm_insn (cfun->x_last_parm_insn)
 #define function_call_count (cfun->x_function_call_count)
-#define temp_slots (cfun->x_temp_slots)
+#define used_temp_slots (cfun->x_used_temp_slots)
+#define avail_temp_slots (cfun->x_avail_temp_slots)
 #define temp_slot_level (cfun->x_temp_slot_level)
 #define target_temp_slot_level (cfun->x_target_temp_slot_level)
 #define var_temp_slot_level (cfun->x_var_temp_slot_level)

@@ -2160,26 +2160,32 @@ get_best_mode (int bitsize, int bitpos, unsigned int align,
 }
 
 /* Gets minimal and maximal values for MODE (signed or unsigned depending on
-   SIGN).  */
+   SIGN).  The returned constants are made to be usable in TARGET_MODE.  */
 
 void
-get_mode_bounds (enum machine_mode mode, int sign, rtx *mmin, rtx *mmax)
+get_mode_bounds (enum machine_mode mode, int sign,
+		 enum machine_mode target_mode,
+		 rtx *mmin, rtx *mmax)
 {
-  int size = GET_MODE_BITSIZE (mode);
+  unsigned size = GET_MODE_BITSIZE (mode);
+  unsigned HOST_WIDE_INT min_val, max_val;
 
   if (size > HOST_BITS_PER_WIDE_INT)
     abort ();
 
   if (sign)
     {
-      *mmin = GEN_INT (-((unsigned HOST_WIDE_INT) 1 << (size - 1)));
-      *mmax = GEN_INT (((unsigned HOST_WIDE_INT) 1 << (size - 1)) - 1);
+      min_val = -((unsigned HOST_WIDE_INT) 1 << (size - 1));
+      max_val = ((unsigned HOST_WIDE_INT) 1 << (size - 1)) - 1;
     }
   else
     {
-      *mmin = const0_rtx;
-      *mmax = GEN_INT (((unsigned HOST_WIDE_INT) 1 << (size - 1) << 1) - 1);
+      min_val = 0;
+      max_val = ((unsigned HOST_WIDE_INT) 1 << (size - 1) << 1) - 1;
     }
+
+  *mmin = GEN_INT (trunc_int_for_mode (min_val, target_mode));
+  *mmax = GEN_INT (trunc_int_for_mode (max_val, target_mode));
 }
 
 #include "gt-stor-layout.h"

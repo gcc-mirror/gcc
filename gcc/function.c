@@ -168,6 +168,9 @@ struct temp_slot GTY(())
 {
   /* Points to next temporary slot.  */
   struct temp_slot *next;
+  /* Points to previous temporary slot.  */
+  struct temp_slot *prev;
+
   /* The rtx to used to reference the slot.  */
   rtx slot;
   /* The rtx used to represent the address if not the address of the
@@ -427,7 +430,8 @@ free_after_compilation (struct function *f)
   f->varasm = NULL;
   f->machine = NULL;
 
-  f->x_temp_slots = NULL;
+  f->x_avail_temp_slots = NULL;
+  f->x_used_temp_slots = NULL;
   f->arg_offset_rtx = NULL;
   f->return_rtx = NULL;
   f->internal_arg_pointer = NULL;
@@ -605,6 +609,82 @@ assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
 {
   return assign_stack_local_1 (mode, size, align, cfun);
 }
+
+
+/* Removes temporary slot TEMP from LIST.  */
+
+static void
+cut_slot_from_list (struct temp_slot *temp, struct temp_slot **list)
+{
+  if (temp->next)
+    temp->next->prev = temp->prev;
+  if (temp->prev)
+    temp->prev->next = temp->next;
+  else
+    *list = temp->next;
+
+  temp->prev = temp->next = NULL;
+}
+
+/* Inserts temporary slot TEMP to LIST.  */
+
+static void
+insert_slot_to_list (struct temp_slot *temp, struct temp_slot **list)
+{
+  temp->next = *list;
+  if (*list)
+    (*list)->prev = temp;
+  temp->prev = NULL;
+  *list = temp;
+}
+
+/* Returns the list of used temp slots at LEVEL.  */
+
+static struct temp_slot **
+temp_slots_at_level (int level)
+{
+  level++;
+
+  if (!used_temp_slots)
+    VARRAY_GENERIC_PTR_INIT (used_temp_slots, 3, "used_temp_slots");
+
+  while (level >= (int) VARRAY_ACTIVE_SIZE (used_temp_slots))
+    VARRAY_PUSH_GENERIC_PTR (used_temp_slots, NULL);
+
+  return (struct temp_slot **) &VARRAY_GENERIC_PTR (used_temp_slots, level);
+}
+
+/* Returns the maximal temporary slot level.  */
+
+static int
+max_slot_level (void)
+{
+  if (!used_temp_slots)
+    return -1;
+
+  return VARRAY_ACTIVE_SIZE (used_temp_slots) - 1;
+}
+
+/* Moves temporary slot TEMP to LEVEL.  */
+
+static void
+move_slot_to_level (struct temp_slot *temp, int level)
+{
+  cut_slot_from_list (temp, temp_slots_at_level (temp->level));
+  insert_slot_to_list (temp, temp_slots_at_level (level));
+  temp->level = level;
+}
+
+/* Make temporary slot TEMP available.  */
+
+static void
+make_slot_available (struct temp_slot *temp)
+{
+  cut_slot_from_list (temp, temp_slots_at_level (temp->level));
+  insert_slot_to_list (temp, &avail_temp_slots);
+  temp->in_use = 0;
+  temp->level = -1;
+}
 
 /* Allocate a temporary stack slot and record it for possible later
    reuse.
@@ -628,7 +708,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
 			    tree type)
 {
   unsigned int align;
-  struct temp_slot *p, *best_p = 0;
+  struct temp_slot *p, *best_p = 0, *selected = NULL, **pp;
   rtx slot;
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
@@ -650,24 +730,30 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
   /* Try to find an available, already-allocated temporary of the proper
      mode which meets the size and alignment requirements.  Choose the
      smallest one with the closest alignment.  */
-  for (p = temp_slots; p; p = p->next)
-    if (p->align >= align && p->size >= size && GET_MODE (p->slot) == mode
-	&& ! p->in_use
-	&& objects_must_conflict_p (p->type, type)
-	&& (best_p == 0 || best_p->size > p->size
-	    || (best_p->size == p->size && best_p->align > p->align)))
-      {
-	if (p->align == align && p->size == size)
-	  {
-	    best_p = 0;
-	    break;
-	  }
-	best_p = p;
-      }
+  for (p = avail_temp_slots; p; p = p->next)
+    {
+      if (p->align >= align && p->size >= size && GET_MODE (p->slot) == mode
+	  && objects_must_conflict_p (p->type, type)
+	  && (best_p == 0 || best_p->size > p->size
+	      || (best_p->size == p->size && best_p->align > p->align)))
+	{
+	  if (p->align == align && p->size == size)
+	    {
+	      selected = p;
+	      cut_slot_from_list (selected, &avail_temp_slots);
+	      best_p = 0;
+	      break;
+	    }
+	  best_p = p;
+	}
+    }
 
   /* Make our best, if any, the one to use.  */
   if (best_p)
     {
+      selected = best_p;
+      cut_slot_from_list (selected, &avail_temp_slots);
+
       /* If there are enough aligned bytes left over, make them into a new
 	 temp_slot so that the extra bytes don't get wasted.  Do this only
 	 for BLKmode slots, so that we can be sure of the alignment.  */
@@ -690,8 +776,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
 	      p->address = 0;
 	      p->rtl_expr = 0;
 	      p->type = best_p->type;
-	      p->next = temp_slots;
-	      temp_slots = p;
+	      insert_slot_to_list (p, &avail_temp_slots);
 
 	      stack_slot_list = gen_rtx_EXPR_LIST (VOIDmode, p->slot,
 						   stack_slot_list);
@@ -700,12 +785,10 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
 	      best_p->full_size = rounded_size;
 	    }
 	}
-
-      p = best_p;
     }
 
   /* If we still didn't find one, make a new temporary.  */
-  if (p == 0)
+  if (selected == 0)
     {
       HOST_WIDE_INT frame_offset_old = frame_offset;
 
@@ -750,10 +833,11 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
       p->full_size = frame_offset - frame_offset_old;
 #endif
       p->address = 0;
-      p->next = temp_slots;
-      temp_slots = p;
+
+      selected = p;
     }
 
+  p = selected;
   p->in_use = 1;
   p->addr_taken = 0;
   p->rtl_expr = seq_rtl_expr;
@@ -775,6 +859,8 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
       p->keep = keep;
     }
 
+  pp = temp_slots_at_level (p->level);
+  insert_slot_to_list (p, pp);
 
   /* Create a new MEM rtx to avoid clobbering MEM flags of old slots.  */
   slot = gen_rtx_MEM (mode, XEXP (p->slot, 0));
@@ -888,8 +974,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
 void
 combine_temp_slots (void)
 {
-  struct temp_slot *p, *q;
-  struct temp_slot *prev_p, *prev_q;
+  struct temp_slot *p, *q, *next, *next_q;
   int num_slots;
 
   /* We can't combine slots, because the information about which slot
@@ -900,52 +985,50 @@ combine_temp_slots (void)
   /* If there are a lot of temp slots, don't do anything unless
      high levels of optimization.  */
   if (! flag_expensive_optimizations)
-    for (p = temp_slots, num_slots = 0; p; p = p->next, num_slots++)
+    for (p = avail_temp_slots, num_slots = 0; p; p = p->next, num_slots++)
       if (num_slots > 100 || (num_slots > 10 && optimize == 0))
 	return;
 
-  for (p = temp_slots, prev_p = 0; p; p = prev_p ? prev_p->next : temp_slots)
+  for (p = avail_temp_slots; p; p = next)
     {
       int delete_p = 0;
 
-      if (! p->in_use && GET_MODE (p->slot) == BLKmode)
-	for (q = p->next, prev_q = p; q; q = prev_q->next)
-	  {
-	    int delete_q = 0;
-	    if (! q->in_use && GET_MODE (q->slot) == BLKmode)
-	      {
-		if (p->base_offset + p->full_size == q->base_offset)
-		  {
-		    /* Q comes after P; combine Q into P.  */
-		    p->size += q->size;
-		    p->full_size += q->full_size;
-		    delete_q = 1;
-		  }
-		else if (q->base_offset + q->full_size == p->base_offset)
-		  {
-		    /* P comes after Q; combine P into Q.  */
-		    q->size += p->size;
-		    q->full_size += p->full_size;
-		    delete_p = 1;
-		    break;
-		  }
-	      }
-	    /* Either delete Q or advance past it.  */
-	    if (delete_q)
-	      prev_q->next = q->next;
-	    else
-	      prev_q = q;
-	  }
+      next = p->next;
+
+      if (GET_MODE (p->slot) != BLKmode)
+	continue;
+
+      for (q = p->next; q; q = next_q)
+	{
+       	  int delete_q = 0;
+
+	  next_q = q->next;
+
+	  if (GET_MODE (q->slot) != BLKmode)
+	    continue;
+
+	  if (p->base_offset + p->full_size == q->base_offset)
+	    {
+	      /* Q comes after P; combine Q into P.  */
+	      p->size += q->size;
+	      p->full_size += q->full_size;
+	      delete_q = 1;
+	    }
+	  else if (q->base_offset + q->full_size == p->base_offset)
+	    {
+	      /* P comes after Q; combine P into Q.  */
+	      q->size += p->size;
+	      q->full_size += p->full_size;
+	      delete_p = 1;
+	      break;
+	    }
+	  if (delete_q)
+	    cut_slot_from_list (q, &avail_temp_slots);
+	}
+
       /* Either delete P or advance past it.  */
       if (delete_p)
-	{
-	  if (prev_p)
-	    prev_p->next = p->next;
-	  else
-	    temp_slots = p->next;
-	}
-      else
-	prev_p = p;
+	cut_slot_from_list (p, &avail_temp_slots);
     }
 }
 
@@ -956,26 +1039,25 @@ find_temp_slot_from_address (rtx x)
 {
   struct temp_slot *p;
   rtx next;
+  int i;
 
-  for (p = temp_slots; p; p = p->next)
-    {
-      if (! p->in_use)
-	continue;
+  for (i = max_slot_level (); i >= 0; i--)
+    for (p = *temp_slots_at_level (i); p; p = p->next)
+      {
+	if (XEXP (p->slot, 0) == x
+	    || p->address == x
+	    || (GET_CODE (x) == PLUS
+		&& XEXP (x, 0) == virtual_stack_vars_rtx
+		&& GET_CODE (XEXP (x, 1)) == CONST_INT
+		&& INTVAL (XEXP (x, 1)) >= p->base_offset
+		&& INTVAL (XEXP (x, 1)) < p->base_offset + p->full_size))
+	  return p;
 
-      else if (XEXP (p->slot, 0) == x
-	       || p->address == x
-	       || (GET_CODE (x) == PLUS
-		   && XEXP (x, 0) == virtual_stack_vars_rtx
-		   && GET_CODE (XEXP (x, 1)) == CONST_INT
-		   && INTVAL (XEXP (x, 1)) >= p->base_offset
-		   && INTVAL (XEXP (x, 1)) < p->base_offset + p->full_size))
-	return p;
-
-      else if (p->address != 0 && GET_CODE (p->address) == EXPR_LIST)
-	for (next = p->address; next; next = XEXP (next, 1))
-	  if (XEXP (next, 0) == x)
-	    return p;
-    }
+	else if (p->address != 0 && GET_CODE (p->address) == EXPR_LIST)
+	  for (next = p->address; next; next = XEXP (next, 1))
+	    if (XEXP (next, 0) == x)
+	      return p;
+      }
 
   /* If we have a sum involving a register, see if it points to a temp
      slot.  */
@@ -1078,15 +1160,19 @@ mark_temp_addr_taken (rtx x)
 void
 preserve_temp_slots (rtx x)
 {
-  struct temp_slot *p = 0;
+  struct temp_slot *p = 0, *next;
 
   /* If there is no result, we still might have some objects whose address
      were taken, so we need to make sure they stay around.  */
   if (x == 0)
     {
-      for (p = temp_slots; p; p = p->next)
-	if (p->in_use && p->level == temp_slot_level && p->addr_taken)
-	  p->level--;
+      for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
+	{
+	  next = p->next;
+
+	  if (p->addr_taken)
+	    move_slot_to_level (p, temp_slot_level - 1);
+	}
 
       return;
     }
@@ -1103,9 +1189,13 @@ preserve_temp_slots (rtx x)
      taken.  */
   if (p == 0 && (GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0))))
     {
-      for (p = temp_slots; p; p = p->next)
-	if (p->in_use && p->level == temp_slot_level && p->addr_taken)
-	  p->level--;
+      for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
+	{
+	  next = p->next;
+
+	  if (p->addr_taken)
+	    move_slot_to_level (p, temp_slot_level - 1);
+	}
 
       return;
     }
@@ -1122,20 +1212,28 @@ preserve_temp_slots (rtx x)
 
       if (p->level == temp_slot_level)
 	{
-	  for (q = temp_slots; q; q = q->next)
-	    if (q != p && q->addr_taken && q->level == p->level)
-	      q->level--;
+	  for (q = *temp_slots_at_level (temp_slot_level); q; q = next)
+	    {
+	      next = q->next;
 
-	  p->level--;
+	      if (p != q && q->addr_taken)
+		move_slot_to_level (q, temp_slot_level - 1);
+	    }
+
+	  move_slot_to_level (p, temp_slot_level - 1);
 	  p->addr_taken = 0;
 	}
       return;
     }
 
   /* Otherwise, preserve all non-kept slots at this level.  */
-  for (p = temp_slots; p; p = p->next)
-    if (p->in_use && p->level == temp_slot_level && ! p->keep)
-      p->level--;
+  for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
+    {
+      next = p->next;
+
+      if (!p->keep)
+	move_slot_to_level (p, temp_slot_level - 1);
+    }
 }
 
 /* X is the result of an RTL_EXPR.  If it is a temporary slot associated
@@ -1158,7 +1256,7 @@ preserve_rtl_expr_result (rtx x)
   p = find_temp_slot_from_address (XEXP (x, 0));
   if (p != 0)
     {
-      p->level = MIN (p->level, temp_slot_level);
+      move_slot_to_level (p, MIN (p->level, temp_slot_level));
       p->rtl_expr = 0;
     }
 
@@ -1175,12 +1273,15 @@ preserve_rtl_expr_result (rtx x)
 void
 free_temp_slots (void)
 {
-  struct temp_slot *p;
+  struct temp_slot *p, *next;
 
-  for (p = temp_slots; p; p = p->next)
-    if (p->in_use && p->level == temp_slot_level && ! p->keep
-	&& p->rtl_expr == 0)
-      p->in_use = 0;
+  for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
+    {
+      next = p->next;
+
+      if (!p->keep && p->rtl_expr == 0)
+	make_slot_available (p);
+    }
 
   combine_temp_slots ();
 }
@@ -1190,37 +1291,26 @@ free_temp_slots (void)
 void
 free_temps_for_rtl_expr (tree t)
 {
-  struct temp_slot *p;
+  struct temp_slot *p, *next;
 
-  for (p = temp_slots; p; p = p->next)
-    if (p->rtl_expr == t)
-      {
-	/* If this slot is below the current TEMP_SLOT_LEVEL, then it
-	   needs to be preserved.  This can happen if a temporary in
-	   the RTL_EXPR was addressed; preserve_temp_slots will move
-	   the temporary into a higher level.  */
-	if (temp_slot_level <= p->level)
-	  p->in_use = 0;
-	else
-	  p->rtl_expr = NULL_TREE;
-      }
+  for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
+    {
+      next = p->next;
+
+      if (p->rtl_expr == t)
+	{
+	  /* If this slot is below the current TEMP_SLOT_LEVEL, then it
+	     needs to be preserved.  This can happen if a temporary in
+	     the RTL_EXPR was addressed; preserve_temp_slots will move
+	     the temporary into a higher level.  */
+	  if (temp_slot_level <= p->level)
+	    make_slot_available (p);
+	  else
+	    p->rtl_expr = NULL_TREE;
+	}
+    }
 
   combine_temp_slots ();
-}
-
-/* Mark all temporaries ever allocated in this function as not suitable
-   for reuse until the current level is exited.  */
-
-void
-mark_all_temps_used (void)
-{
-  struct temp_slot *p;
-
-  for (p = temp_slots; p; p = p->next)
-    {
-      p->in_use = p->keep = 1;
-      p->level = MIN (p->level, temp_slot_level);
-    }
 }
 
 /* Push deeper into the nesting level for stack temporaries.  */
@@ -1237,11 +1327,15 @@ push_temp_slots (void)
 void
 pop_temp_slots (void)
 {
-  struct temp_slot *p;
+  struct temp_slot *p, *next;
 
-  for (p = temp_slots; p; p = p->next)
-    if (p->in_use && p->level == temp_slot_level && p->rtl_expr == 0)
-      p->in_use = 0;
+  for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
+    {
+      next = p->next;
+
+      if (p->rtl_expr == 0)
+	make_slot_available (p);
+    }
 
   combine_temp_slots ();
 
@@ -1254,7 +1348,8 @@ void
 init_temp_slots (void)
 {
   /* We have not allocated any temporaries yet.  */
-  temp_slots = 0;
+  avail_temp_slots = 0;
+  used_temp_slots = 0;
   temp_slot_level = 0;
   var_temp_slot_level = 0;
   target_temp_slot_level = 0;
