@@ -1,3 +1,8 @@
+Mon Aug 12 12:48:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (tablejump): Sign extend the operand.
+	* i386.c (classify_argument): Fix missed case from previous patch.
+
 2002-08-12  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-common.c (STDC_0_IN_SYSTEM_HEADERS, c_common_init): Move
