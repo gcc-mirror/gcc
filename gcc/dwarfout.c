@@ -935,9 +935,6 @@ static void retry_incomplete_types	PARAMS ((void));
 #ifndef FILE_ASM_OP
 #define FILE_ASM_OP		"\t.file\t"
 #endif
-#ifndef VERSION_ASM_OP
-#define VERSION_ASM_OP		"\t.version\t"
-#endif
 #ifndef SET_ASM_OP
 #define SET_ASM_OP		"\t.set\t"
 #endif
@@ -1140,18 +1137,6 @@ static void retry_incomplete_types	PARAMS ((void));
 #endif
 #ifndef BOUND_END_LABEL_FMT
 #define BOUND_END_LABEL_FMT	"*.L_b%u_%u_%c_e"
-#endif
-#ifndef DERIV_BEGIN_LABEL_FMT
-#define DERIV_BEGIN_LABEL_FMT	"*.L_d%u"
-#endif
-#ifndef DERIV_END_LABEL_FMT
-#define DERIV_END_LABEL_FMT	"*.L_d%u_e"
-#endif
-#ifndef SL_BEGIN_LABEL_FMT
-#define SL_BEGIN_LABEL_FMT	"*.L_sl%u"
-#endif
-#ifndef SL_END_LABEL_FMT
-#define SL_END_LABEL_FMT	"*.L_sl%u_e"
 #endif
 #ifndef BODY_BEGIN_LABEL_FMT
 #define BODY_BEGIN_LABEL_FMT	"*.L_b%u"
@@ -3321,6 +3306,13 @@ member_attribute (context)
 }
 
 #if 0
+#ifndef SL_BEGIN_LABEL_FMT
+#define SL_BEGIN_LABEL_FMT	"*.L_sl%u"
+#endif
+#ifndef SL_END_LABEL_FMT
+#define SL_END_LABEL_FMT	"*.L_sl%u_e"
+#endif
+
 static inline void
 string_length_attribute (upper_bound)
      tree upper_bound;
