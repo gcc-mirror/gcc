@@ -33,7 +33,8 @@ SORT=sort		# Could be /bin/sort or /usr/bin/sort
 C_FILE=$1; shift
 H_FILE=$1; shift
 
-# Must unset this, so that the gawk extension RS="" works.
+# Must unset, so that RS="" works in gawk 3.0-3.1.1 (possibly earlier too)
+# Appears to be a gawk bug, RS="" is not an extension
 unset POSIXLY_CORRECT
 
 ${AWK} '
