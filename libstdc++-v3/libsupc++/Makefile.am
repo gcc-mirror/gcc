@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+## Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -34,6 +34,9 @@ noinst_LTLIBRARIES = libsupc++convenience.la
 headers = \
 	exception new typeinfo cxxabi.h exception_defines.h
 
+c_sources = \
+	cp-demangle.c 
+
 sources = \
 	del_op.cc \
 	del_opnt.cc \
@@ -62,8 +65,8 @@ sources = \
 	vec.cc \
 	vterminate.cc
 
-libsupc___la_SOURCES = $(sources)
-libsupc__convenience_la_SOURCES = $(sources)
+libsupc___la_SOURCES = $(sources) $(c_sources)
+libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
 
 glibcxxinstalldir = $(gxx_include_dir)
 glibcxxinstall_HEADERS = $(headers)
@@ -82,6 +85,29 @@ AM_CXXFLAGS = \
 
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"
+
+
+# Use special rules for pulling things out of libiberty.  These
+# objects should be compiled with the "C" compiler, not the C++
+# compiler, and also should not use the C++ includes.
+C_INCLUDES = -I.. -I$(toplevel_srcdir)/libiberty -I$(toplevel_srcdir)/include
+C_COMPILE = \
+	$(CC) $(DEFS) $(C_INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+
+# LTCOMPILE is copied from LTCXXCOMPILE below.
+LTCOMPILE = $(LIBTOOL) --tag CC --tag disable-shared --mode=compile $(CC) \
+	    $(DEFS) $(C_INCLUDES) $(LIBSUPCXX_PICFLAGS) \
+            $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+
+cp-demangle.c:
+	rm -f $@
+	$(LN_S) $(toplevel_srcdir)/libiberty/cp-demangle.c $@
+cp-demangle.lo: cp-demangle.c
+	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+cp-demangle.o: cp-demangle.c
+	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+
 
 # libstdc++ libtool notes
 

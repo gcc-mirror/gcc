@@ -29,14 +29,14 @@ int main()
 
 // 2003/11/07, libstdc++/12736
 verify_demangle("_Z3fooIA6_KiEvA9_KT_rVPrS4_",
-		"void foo<int const [6]>(int const [9][6], int const restrict (* volatile restrict) [9][6])");
+		"void foo<int const [6]>(int const [9][6], int restrict const (* volatile restrict) [9][6])");
 // 2003/11/12, libstdc++/12947
 verify_demangle("_Z1fILi5E1AEvN1CIXqugtT_Li0ELi1ELi2EEE1qE",
                 "void f<5, A>(C<(((5) > (0))) ? (1) : (2)>::q)");
 verify_demangle("_Z1fILi5EEvN1AIXcvimlT_Li22EEE1qE",
                 "void f<5>(A<(int)((5) * (22))>::q)");
 verify_demangle("_Z1fPFYPFiiEiE",
-                "f(int (*(*) [extern \"C\"] (int))(int))");
+                "f(int (*(*)(int))(int))");
 verify_demangle("_Z1fI1XENT_1tES2_",
                 "X::t f<X>(X::t)");
 verify_demangle("_Z1fILi5E1AEvN1CIXstN1T1tEEXszsrS2_1tEE1qE",

@@ -28,7 +28,8 @@ int main()
   using namespace __gnu_test;
 
   // cplus-dem CORE
-  verify_demangle("_X11TransParseAddress", "_X11TransParseAddress");
+  verify_demangle("_X11TransParseAddress",
+		  "error code = -2: invalid mangled name");
 
   return 0;
 }
