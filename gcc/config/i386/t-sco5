@@ -1,0 +1,91 @@
+# The pushl in CTOR initialization interferes with frame pointer elimination.
+CRTSTUFF_T_CFLAGS =-fno-omit-frame-pointer
+CRTSTUFF_T_CFLAGS_S = $(CRTSTUFF_T_CFLAGS) -melf -fPIC 
+
+#
+# Becuase we can be compiling for either elf or coff, we need to create
+# special versions of libgcc.a. It IS possible for this not to be done
+# and let the SCO linker transform the coff objects (which are created
+# by default) into elf objects. However, this is inefficient. So,
+# we create a libgcc-elf.a, which is used in the specs in sco5.h.
+# These are the rules for doing that.
+#
+# NOTE: This is duplicated directly from Makefile.in. If you change it
+# there, be sure to change things here!
+#
+EXTRA_PARTS = libgcc-elf.a crtbegin.o crtend.o crtbeginS.o crtendS.o
+TAROUTOPTS = xpf
+
+libgcc1-elf.a: stamp-crtS stamp-crt libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
+	-rm -f tmplibgcc1-elf.a
+	for name in $(LIB1FUNCS); \
+	do \
+	  echo $${name}; \
+	  rm -f $${name}$(objext); \
+	  $(OLDCC) -DIN_LIBGCC1 -dy $(CCLIBFLAGS) $(INCLUDES) -c -DL$${name} $(srcdir)/libgcc1.c; \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	  mv libgcc1$(objext) $${name}$(objext); \
+	  $(OLDAR) $(OLDAR_FLAGS) tmplibgcc1-elf.a $${name}$(objext); \
+	  rm -f $${name}$(objext); \
+	done
+	for file in .. $(LIB1FUNCS_EXTRA); \
+	do \
+	  if [ x$${file} != x.. ]; then \
+	    name=`echo $${file} | sed -e 's/[.][cS]$$//' -e 's/[.]asm$$//'`; \
+	    echo $${name}; \
+	    if [ $${name}.asm = $${file} ]; then \
+	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
+	    else true; fi; \
+	    $(OLDCC) -DIN_LIBGCC1 -dy $(CCLIBFLAGS) $(INCLUDES) -c $${file}; \
+	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	    $(OLDAR) $(OLDAR_FLAGS) tmplibgcc1-elf.a $${name}$(objext); \
+	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	    rm -f $${name}.s $${name}$(objext); \
+	  else true; \
+	  fi; \
+	done
+	-if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc1-elf.a; else true; fi
+	mv tmplibgcc1-elf.a libgcc1-elf.a
+
+libgcc2-elf.a: stamp-crtS stamp-crt libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
+   machmode.h longlong.h gbl-ctors.h config.status
+	-rm -f tmplibgcc2-elf.a
+	for name in $(LIB2FUNCS); \
+	do \
+	  echo $${name}; \
+	  $(GCC_FOR_TARGET) -melf $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
+	      $(srcdir)/libgcc2.c -o $${name}$(objext); \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	  $(AR) $(AR_FLAGS) tmplibgcc2-elf.a $${name}$(objext); \
+	  rm -f $${name}$(objext); \
+	done
+	for file in .. $(LIB2FUNCS_EXTRA); \
+	do \
+	  if [ x$${file} != x.. ]; then \
+	    name=`echo $${file} | sed -e 's/[.][cS]$$//' -e 's/[.]asm$$//'`; \
+	    oname=` echo $${name} | sed -e 's,.*/,,'`; \
+	    echo $${name}; \
+	    if [ $${name}.asm = $${file} ]; then \
+	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
+	    else true; fi; \
+	    $(GCC_FOR_TARGET) -melf $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
+	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	    $(AR) $(AR_FLAGS) tmplibgcc2-elf.a $${oname}$(objext); \
+	    rm -f $${name}.s $${oname}$(objext); \
+	  else true; \
+	  fi; \
+	done
+	mv tmplibgcc2-elf.a libgcc2-elf.a
+
+# Combine the various libraries into a single library, libgcc.a.
+libgcc-elf.a: libgcc1-elf.a libgcc2-elf.a
+	-rm -rf tmplibgcc-elf.a libgcc-elf.a tmpcopy
+	mkdir tmpcopy
+	-(cd tmpcopy; $(AR) x ../libgcc1-elf.a)
+	-(cd tmpcopy; chmod +w * > /dev/null 2>&1)
+	-(cd tmpcopy; $(AR) x ../libgcc2-elf.a)
+	(cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc-elf.a *$(objext))
+	rm -rf tmpcopy
+	-if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc-elf.a; else true; fi
+	mv tmplibgcc-elf.a libgcc-elf.a
+
