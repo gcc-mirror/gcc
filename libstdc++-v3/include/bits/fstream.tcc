@@ -560,8 +560,8 @@ namespace std
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
       pos_type __ret =  pos_type(off_type(-1)); 
-      bool __testin = _M_mode & ios_base::in;
-      bool __testout = _M_mode & ios_base::out;
+      bool __testin = (ios_base::in & _M_mode & __mode) != 0;
+      bool __testout = (ios_base::out & _M_mode & __mode) != 0;
 
       // Should probably do has_facet checks here.
       int __width = use_facet<__codecvt_type>(_M_buf_locale).encoding();
@@ -569,8 +569,7 @@ namespace std
 	__width = 0;
       bool __testfail = __off != 0 && __width <= 0;
       
-      if (this->is_open() && !__testfail 
-	  && __mode & _M_mode && (__testin || __testout))
+      if (this->is_open() && !__testfail && (__testin || __testout)) 
 	{
 	  // Ditch any pback buffers to avoid confusion.
 	  _M_pback_destroy();
