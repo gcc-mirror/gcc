@@ -263,7 +263,7 @@ libgcj_la_LINK = $(LIBLINK)
 
 ## The .db file.  This rule is only used for native builds, so it is
 ## safe to invoke gcj-dbtool.
-$(db_name): gcj-dbtool
+$(db_name): gcj-dbtool$(EXEEXT)
 ## In case it exists already.
 	@rm -f $(db_name)
 ## We don't actually care if it fails -- if it does, just make an

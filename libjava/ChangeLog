@@ -1,3 +1,9 @@
+2005-03-22  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Makefile.am ($(db_name)): Add $(EXEEXT) suffix to
+	gcj-dbtool dependency
+	* Makefile.in: Regenerated
+
 2005-03-22  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java (usage): Fixed output.

@@ -26559,7 +26559,7 @@ uninstall-info: uninstall-info-recursive
 	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
 
 
-$(db_name): gcj-dbtool
+$(db_name): gcj-dbtool$(EXEEXT)
 	@rm -f $(db_name)
 	./gcj-dbtool -n $(db_name) || touch $(db_name)
 
