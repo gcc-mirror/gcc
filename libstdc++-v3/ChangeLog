@@ -1,3 +1,9 @@
+2001-11-01  Egor Duda  <deo@logos-m.ru>
+
+	* config/os/newlib/bits/ctype_noninline.h
+	(ctype<char>::do_toupper(char __c)): Check for proper character class.
+	(ctype<char>::do_tolower(char __c)): Ditto.
+
 2001-11-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4:  Fix spacing.

@@ -43,7 +43,7 @@
   ctype<char>::do_toupper(char __c) const
   { 
     int __x = __c;
-    return (this->is(ctype_base::upper, __c) ? (__x - 'A' + 'a') : __x);
+    return (this->is(ctype_base::lower, __c) ? (__x - 'a' + 'A') : __x);
   }
 
   const char*
@@ -61,7 +61,7 @@
   ctype<char>::do_tolower(char __c) const
   { 
     int __x = __c;
-    return (this->is(ctype_base::lower, __c) ? (__x - 'A' + 'a') : __x);
+    return (this->is(ctype_base::upper, __c) ? (__x - 'A' + 'a') : __x);
   }
 
   const char* 
