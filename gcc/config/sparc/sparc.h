@@ -1059,16 +1059,19 @@ extern union tree_node *current_function_decl;
 #define REG_OK_FOR_BASE_P(X) (((unsigned) REGNO (X)) - 32 >= 32 && REGNO (X) != 0)
 
 #define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ?						\
-   ((GET_CODE (OP) == MEM				\
-     && memory_address_p (GET_MODE (OP), XEXP (OP, 0))	\
-     && ! symbolic_memory_operand (OP, VOIDmode)))	\
-   : ((C) == 'R' ?					\
-      (GET_CODE (OP) == LO_SUM				\
-       && GET_CODE (XEXP (OP, 0)) == REG		\
-       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))		\
-      : ((C) == 'S'					\
-	 ? CONSTANT_P (OP) || memory_address_p (Pmode, OP) : 0)))
+  ((C) == 'Q'						\
+   ? ((GET_CODE (OP) == MEM				\
+       && memory_address_p (GET_MODE (OP), XEXP (OP, 0))	\
+       && ! symbolic_memory_operand (OP, VOIDmode))	\
+      || (reload_in_progress && GET_CODE (OP) == REG	\
+	  && REGNO (OP) >= FIRST_PSEUDO_REGISTER))	\
+   : (C) == 'R'						\
+   ? (GET_CODE (OP) == LO_SUM				\
+      && GET_CODE (XEXP (OP, 0)) == REG			\
+      && REG_OK_FOR_BASE_P (XEXP (OP, 0)))		\
+   : (C) == 'S'						\
+   ? (CONSTANT_P (OP) || memory_address_p (Pmode, OP))	\
+   : 0)
 
 #else
 
