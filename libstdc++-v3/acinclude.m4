@@ -1161,13 +1161,13 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   fi
   AC_OUTPUT_COMMANDS([d=include/bits; a='[ABCDEFGHIJKLMNOPQRSTUVWXYZ_]'
     rm -f $d/gthr.h $d/gthr-single.h $d/gthr-default.h
-    sed '/^#/s/\('$a$a'*\)/_GLIBCPP_\1/g' <$d/gthr.h-in \
+    sed '/^#/s/\('"$a$a"'*\)/_GLIBCPP_\1/g' <$d/gthr.h-in \
       | sed 's,"gthr-,"bits/gthr-,' >$d/gthr.h
     sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-single.h-in \
-      | sed 's/\(GCC'$a'*_H\)/_GLIBCPP_\1/g' >$d/gthr-single.h
+      | sed 's/\(GCC'"$a"'*_H\)/_GLIBCPP_\1/g' >$d/gthr-single.h
     sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-default.h-in \
-      | sed 's/\(GCC'$a'*_H\)/_GLIBCPP_\1/g' \
-      | sed 's/\('$a'*WEAK\)/_GLIBCPP_\1/g' >$d/gthr-default.h])
+      | sed 's/\(GCC'"$a"'*_H\)/_GLIBCPP_\1/g' \
+      | sed 's/\('"$a"'*WEAK\)/_GLIBCPP_\1/g' >$d/gthr-default.h])
 ])
 
 
