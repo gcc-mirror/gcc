@@ -418,7 +418,7 @@ enum reg_class {
 #undef SIZE_TYPE
 #undef PTRDIFF_TYPE
 #define SIZE_TYPE "long unsigned int"
-#define PTRDIFF_TYPE "long unsigned int"
+#define PTRDIFF_TYPE "long int"
 
 /* Note sizeof (WCHAR_TYPE) must be equal to the value of WCHAR_TYPE_SIZE!  */
 #undef WCHAR_TYPE
