@@ -1,3 +1,7 @@
+2002-03-28  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa-linux.h (LOCAL_LABEL_PREFIX): Define.
+
 Thu Mar 28 16:33:13 2002  Jeffrey A Law  (law@redhat.com)
 
 	* combine.c (simplify_and_const_int): Make sure to apply mask

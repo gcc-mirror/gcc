@@ -119,6 +119,10 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
+/* We want local labels to start with period if made with asm_fprintf.  */
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX "."
+
 /* Define these to generate the Linux/ELF/SysV style of internal
    labels all the time - i.e. to be compatible with
    ASM_GENERATE_INTERNAL_LABEL in <elfos.h>.  Compare these with the
