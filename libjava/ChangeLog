@@ -1,5 +1,10 @@
 2003-07-18  Graydon Hoare  <graydon@redhat.com>
 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c: 
+	Handle missing event cases, connect to "value-changed" signal.
+
+2003-07-18  Graydon Hoare  <graydon@redhat.com>
+
 	* java/awt/geom/CubicCurve2D.java,
 	java/awt/geom/Line2D.java,
 	java/awt/geom/QuadCurve2D.java,
