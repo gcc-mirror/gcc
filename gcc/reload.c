@@ -6193,12 +6193,14 @@ debug_reload ()
       prefix = "\n\t";
       if (reload_secondary_in_icode[r] != CODE_FOR_nothing)
 	{
-	  fprintf (stderr, "%ssecondary_in_icode = %s", prefix, insn_name[r]);
+	  fprintf (stderr, "%ssecondary_in_icode = %s", prefix,
+		   insn_name[reload_secondary_in_icode[r]]);
 	  prefix = ", ";
 	}
 
       if (reload_secondary_out_icode[r] != CODE_FOR_nothing)
-	fprintf (stderr, "%ssecondary_out_icode = %s", prefix, insn_name[r]);
+	fprintf (stderr, "%ssecondary_out_icode = %s", prefix,
+		 insn_name[reload_secondary_out_icode[r]]);
 
       fprintf (stderr, "\n");
     }
