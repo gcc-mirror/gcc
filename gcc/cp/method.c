@@ -1462,7 +1462,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
     }
   else if (code == COND_EXPR)
     {
-      parms = tree_cons (0, xarg2, build_tree_list (NULL_TREE, arg3));
+      parms = tree_cons (NULL_TREE, xarg2, build_tree_list (NULL_TREE, arg3));
       rval = build_method_call (xarg1, fnname, parms, NULL_TREE, flags);
     }
   else if (code == METHOD_CALL_EXPR)
@@ -1561,7 +1561,7 @@ hack_identifier (value, name)
 	 this field was initialized by a base initializer,
 	 we can emit an error message.  */
       TREE_USED (value) = 1;
-      value = build_component_ref (C_C_D, name, 0, 1);
+      value = build_component_ref (C_C_D, name, NULL_TREE, 1);
     }
   else if (really_overloaded_fn (value))
     {
@@ -1775,7 +1775,7 @@ build_component_type_expr (of, component, basetype_path, protect)
 	}
 
       this_this = convert_pointer_to (TREE_TYPE (of), current_class_decl);
-      return build_component_ref (this_this, name, 0, protect);
+      return build_component_ref (this_this, name, NULL_TREE, protect);
     }
   else if (cname)
     return build_offset_ref (cname, name);

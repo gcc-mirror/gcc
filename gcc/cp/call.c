@@ -228,10 +228,10 @@ convert_harshness (type, parmtype, parm)
 	  tree ttl = TYPE_METHOD_BASETYPE (type);
 	  tree ttr = TYPE_METHOD_BASETYPE (parmtype);
 
-	  int b_or_d = get_base_distance (ttr, ttl, 0, 0);
+	  int b_or_d = get_base_distance (ttr, ttl, 0, (tree*)0);
 	  if (b_or_d < 0)
 	    {
-	      b_or_d = get_base_distance (ttl, ttr, 0, 0);
+	      b_or_d = get_base_distance (ttl, ttr, 0, (tree*)0);
 	      if (b_or_d < 0)
 		return EVIL_RETURN (h);
 	      h.distance = -b_or_d;
@@ -361,10 +361,10 @@ convert_harshness (type, parmtype, parm)
 	h.code = 0;
       else
 	{
-	  int b_or_d = get_base_distance (ttr, ttl, 0, 0);
+	  int b_or_d = get_base_distance (ttr, ttl, 0, (tree*)0);
 	  if (b_or_d < 0)
 	    {
-	      b_or_d = get_base_distance (ttl, ttr, 0, 0);
+	      b_or_d = get_base_distance (ttl, ttr, 0, (tree*)0);
 	      if (b_or_d < 0)
 		return EVIL_RETURN (h);
 	      h.distance = -b_or_d;
@@ -551,10 +551,10 @@ convert_harshness (type, parmtype, parm)
 
       if (TREE_CODE (ttl) == RECORD_TYPE && TREE_CODE (ttr) == RECORD_TYPE)
 	{
-	  int b_or_d = get_base_distance (ttl, ttr, 0, 0);
+	  int b_or_d = get_base_distance (ttl, ttr, 0, (tree*)0);
 	  if (b_or_d < 0)
 	    {
-	      b_or_d = get_base_distance (ttr, ttl, 0, 0);
+	      b_or_d = get_base_distance (ttr, ttl, 0, (tree*)0);
 	      if (b_or_d < 0)
 		return EVIL_RETURN (h);
 	      h.distance = -b_or_d;
@@ -611,10 +611,10 @@ convert_harshness (type, parmtype, parm)
 
   if (codel == RECORD_TYPE && coder == RECORD_TYPE)
     {
-      int b_or_d = get_base_distance (type, parmtype, 0, 0);
+      int b_or_d = get_base_distance (type, parmtype, 0, (tree*)0);
       if (b_or_d < 0)
 	{
-	  b_or_d = get_base_distance (parmtype, type, 0, 0);
+	  b_or_d = get_base_distance (parmtype, type, 0, (tree*)0);
 	  if (b_or_d < 0)
 	    return EVIL_RETURN (h);
 	  h.distance = -b_or_d;
@@ -1178,7 +1178,7 @@ build_vfield_ref (datum, type)
     rval = build (COMPONENT_REF, TREE_TYPE (CLASSTYPE_VFIELD (type)),
 		  datum, CLASSTYPE_VFIELD (type));
   else
-    rval = build_component_ref (datum, DECL_NAME (CLASSTYPE_VFIELD (type)), 0, 0);
+    rval = build_component_ref (datum, DECL_NAME (CLASSTYPE_VFIELD (type)), NULL_TREE, 0);
   flag_assume_nonnull_objects = old_assume_nonnull_objects;
 
   return rval;
@@ -1431,7 +1431,7 @@ build_scoped_method_call (exp, basetype, name, parms)
 	  name = build_min_nt (BIT_NOT_EXPR, type);
 	}
       name = build_min_nt (SCOPE_REF, basetype, name);
-      return build_min_nt (METHOD_CALL_EXPR, name, exp, parms, 0);
+      return build_min_nt (METHOD_CALL_EXPR, name, exp, parms, NULL_TREE);
     }
 
   if (TREE_CODE (type) == REFERENCE_TYPE)
@@ -1604,7 +1604,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  name = build_min_nt (BIT_NOT_EXPR, type);
 	}
 
-      return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, 0);
+      return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, NULL_TREE);
     }
 
   /* This is the logic that magically deletes the second argument to
@@ -2089,6 +2089,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		alloca ((len + 1) * sizeof (struct harshness_code));
 
 	      result = build_overload_call (name, friend_parms, 0, cp);
+
 	      /* If it turns out to be the one we were actually looking for
 		 (it was probably a friend function), the return the
 		 good result.  */
@@ -2577,11 +2578,11 @@ build_method_call (instance, name, parms, basetype_path, flags)
    function's new name.  */
 
 tree
-build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
+build_overload_call_real (fnname, parms, flags, final_cp, require_complete)
      tree fnname, parms;
      int flags;
      struct candidate *final_cp;
-     int buildxxx;
+     int require_complete;
 {
   /* must check for overloading here */
   tree functions, function, parm;
@@ -2829,8 +2830,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       if (final_cp)
 	return rval;
 
-      return buildxxx ? build_function_call_real (rval, parms, 0, flags)
-        : build_function_call_real (rval, parms, 1, flags);
+      return build_function_call_real (rval, parms, require_complete, flags);
     }
 
   if (flags & LOOKUP_SPECULATIVELY)
@@ -2843,17 +2843,9 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
   return error_mark_node;
 }
 
+/* This requires a complete type on the result of the call.  */
 tree
 build_overload_call (fnname, parms, flags, final_cp)
-     tree fnname, parms;
-     int flags;
-     struct candidate *final_cp;
-{
-  return build_overload_call_real (fnname, parms, flags, final_cp, 0);
-}
-
-tree
-build_overload_call_maybe (fnname, parms, flags, final_cp)
      tree fnname, parms;
      int flags;
      struct candidate *final_cp;

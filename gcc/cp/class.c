@@ -126,7 +126,7 @@ build_vbase_pointer (exp, type)
 
   name = (char *) alloca (TYPE_NAME_LENGTH (type) + sizeof (VBASE_NAME) + 1);
   sprintf (name, VBASE_NAME_FORMAT, TYPE_NAME_STRING (type));
-  return build_component_ref (exp, get_identifier (name), 0, 0);
+  return build_component_ref (exp, get_identifier (name), NULL_TREE, 0);
 }
 
 /* Is the type of the EXPR, the complete type of the object?

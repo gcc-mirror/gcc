@@ -1494,13 +1494,13 @@ primary:
 		{ $$ = build_offset_ref (OP0 ($$), OP1 ($$)); }
 	| overqualified_id '(' nonnull_exprlist ')'
 		{ if (current_template_parms)
-		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), $3, 0);
+		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), $3, NULL_TREE);
 		  else
 		    $$ = build_member_call (OP0 ($$), OP1 ($$), $3); }
 	| overqualified_id LEFT_RIGHT
 		{ if (current_template_parms)
 		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), 
-				       NULL_TREE, 0);
+				       NULL_TREE, NULL_TREE);
 		  else
 		    $$ = build_member_call (OP0 ($$), OP1 ($$), NULL_TREE); }
 	| object unqualified_id  %prec UNARY

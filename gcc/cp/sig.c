@@ -981,7 +981,7 @@ build_signature_method_call (basetype, instance, function, parms)
       if (flag_vtable_thunks)
 	vfn = aref;
       else
-	vfn = build_component_ref (aref, pfn_identifier, 0, 0);
+	vfn = build_component_ref (aref, pfn_identifier, NULL_TREE, 0);
 
       TREE_TYPE (vfn) = build_pointer_type (TREE_TYPE (function));
 

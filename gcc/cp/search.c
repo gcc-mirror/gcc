@@ -2785,8 +2785,8 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	  assemble_external (vtbl);
 	  aref = build_array_ref (vtbl, idx);
 	  naref = build_array_ref (nvtbl, idx);
-	  old_delta = build_component_ref (aref, delta_identifier, 0, 0);
-	  new_delta = build_component_ref (naref, delta_identifier, 0, 0);
+	  old_delta = build_component_ref (aref, delta_identifier, NULL_TREE, 0);
+	  new_delta = build_component_ref (naref, delta_identifier, NULL_TREE, 0);
 
 	  /* This is a upcast, so we have to add the offset for the
 	     virtual base.  */

@@ -873,11 +873,11 @@ digest_init (type, init, tail)
       else if (flag_traditional)
 	/* Traditionally one can say `char x[100] = 0;'.  */
 	return process_init_constructor (type,
-					 build_nt (CONSTRUCTOR, 0,
-						   tree_cons (0, init, 0)),
-					 0);
+					 build_nt (CONSTRUCTOR, NULL_TREE,
+						   tree_cons (NULL_TREE, init, NULL_TREE)),
+					 (tree*)0);
       if (code != ARRAY_TYPE)
-	return convert_for_initialization (0, type, init, LOOKUP_NORMAL,
+	return convert_for_initialization (NULL_TREE, type, init, LOOKUP_NORMAL,
 					   "initialization", NULL_TREE, 0);
     }
 

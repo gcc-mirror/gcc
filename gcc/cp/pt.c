@@ -1799,7 +1799,7 @@ tsubst (t, args, nargs, in_decl)
     case CALL_EXPR:
       return build_parse_node
 	(CALL_EXPR, tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl), 0);
+	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl), NULL_TREE);
 
     case SCOPE_REF:
       return build_parse_node

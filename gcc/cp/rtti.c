@@ -165,7 +165,7 @@ build_typeid (exp)
 	t = build_vfn_ref ((tree *) 0, exp, integer_zero_node);
       TREE_TYPE (t) = build_pointer_type (tinfo_fn_type);
 
-      t = build (CALL_EXPR, TREE_TYPE (tinfo_fn_type), t, NULL_TREE, 0);
+      t = build (CALL_EXPR, TREE_TYPE (tinfo_fn_type), t, NULL_TREE, NULL_TREE);
       TREE_SIDE_EFFECTS (t) = 1;
       return convert_from_reference (t);
     }
@@ -263,7 +263,7 @@ get_typeid_1 (type)
      tree type;
 {
   tree t = build (CALL_EXPR, TREE_TYPE (tinfo_fn_type),
-		  default_conversion (get_tinfo_fn (type)), NULL_TREE, 0);
+		  default_conversion (get_tinfo_fn (type)), NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (t) = 1;
   return convert_from_reference (t);
 }
@@ -317,7 +317,7 @@ throw_bad_cast ()
 
   pop_obstacks ();
 
-  d = build (CALL_EXPR, void_type_node, default_conversion (d), NULL_TREE, 0);
+  d = build (CALL_EXPR, void_type_node, default_conversion (d), NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (d) = 1;
   return d;
 }
@@ -526,7 +526,7 @@ build_dynamic_cast (type, expr)
 	    }
 	  
           result = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (dcast_fn)),
-			  decay_conversion (dcast_fn), elems, 0);
+			  decay_conversion (dcast_fn), elems, NULL_TREE);
 	  TREE_SIDE_EFFECTS (result) = 1;
 
 	  if (tc == REFERENCE_TYPE)
@@ -611,7 +611,7 @@ expand_si_desc (tdecl, type)
     }
 
   fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, 0);
+	      decay_conversion (fn), elems, NULL_TREE);
   TREE_SIDE_EFFECTS (fn) = 1;
   expand_expr_stmt (fn);
 }
@@ -791,7 +791,7 @@ expand_class_desc (tdecl, type)
     }
 
   fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, 0);
+	      decay_conversion (fn), elems, NULL_TREE);
   TREE_SIDE_EFFECTS (fn) = 1;
   expand_expr_stmt (fn);
 }
@@ -839,7 +839,7 @@ expand_ptr_desc (tdecl, type)
     }
 
   fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, 0);
+	      decay_conversion (fn), elems, NULL_TREE);
   TREE_SIDE_EFFECTS (fn) = 1;
   expand_expr_stmt (fn);
 }
@@ -890,7 +890,7 @@ expand_attr_desc (tdecl, type)
     }
 
   fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, 0);
+	      decay_conversion (fn), elems, NULL_TREE);
   TREE_SIDE_EFFECTS (fn) = 1;
   expand_expr_stmt (fn);
 }
@@ -932,7 +932,7 @@ expand_generic_desc (tdecl, type, fnname)
     }
 
   fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, 0);
+	      decay_conversion (fn), elems, NULL_TREE);
   TREE_SIDE_EFFECTS (fn) = 1;
   expand_expr_stmt (fn);
 }
