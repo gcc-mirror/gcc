@@ -1,3 +1,8 @@
+2004-01-12  Fernando Nasser  <fnasser@redhat.com>
+ 
+	* gnu/java/awt/peer/gtk/TestAWT.java (DialogWindow): Add WindowAdapter
+	to handle Window "Closing" events.
+ 
 2004-01-13  David Jee  <djee@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkContainerPeer.java
