@@ -3673,7 +3673,7 @@ layout_nonempty_base_or_field (record_layout_info rli,
   /* Now that we know where it will be placed, update its
      BINFO_OFFSET.  */
   if (binfo && CLASS_TYPE_P (BINFO_TYPE (binfo)))
-    /* Indirect virtual bases may have a non-zero BINFO_OFFSET at
+    /* Indirect virtual bases may have a nonzero BINFO_OFFSET at
        this point because their BINFO_OFFSET is copied from another
        hierarchy.  Therefore, we may not need to add the entire
        OFFSET.  */
@@ -3684,7 +3684,7 @@ layout_nonempty_base_or_field (record_layout_info rli,
 			     t);
 }
 
-/* Returns true if TYPE is empty and OFFSET is non-zero.  */
+/* Returns true if TYPE is empty and OFFSET is nonzero.  */
 
 static int
 empty_base_at_nonzero_offset_p (tree type,
@@ -3817,7 +3817,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	    CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
 	  /* The check above (used in G++ 3.2) is insufficient  because
 	     an empty class placed at offset zero might itself have an
-	     empty base at a non-zero offset.  */
+	     empty base at a nonzero offset.  */
 	  else if (walk_subobject_offsets (basetype, 
 					   empty_base_at_nonzero_offset_p,
 					   size_zero_node,

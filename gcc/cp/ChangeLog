@@ -1,3 +1,9 @@
+2002-11-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* class.c: Likewise.
+	* decl2.c: Likewise.
+
 2002-11-14  Zack Weinberg  <zack@codesourcery.com>
 
 	* search.c (dfs_push_decls): Do not try to reorder elements
@@ -237,7 +243,7 @@
 	(layout_nonempty_base_or_field): Do not check for conflicts when
 	laying out a virtual base using the GCC 3.2 ABI.
 	(build_base_field): Correct checking for presence of empty classes
-	at non-zero offsets when clearing CLASSTYPE_NEARLY_EMPTY_P.
+	at nonzero offsets when clearing CLASSTYPE_NEARLY_EMPTY_P.
 
 	* class.c (include_empty_classes): Use normalize_rli.
 	(layout_class_type): Likewise.
