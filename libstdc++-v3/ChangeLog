@@ -1,3 +1,12 @@
+2002-09-13  Andy Felt  <afelt@uwsp.edu>
+
+	* docs/html/17_intro/howto.html:  Update link.
+
+2002-09-13  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/run_doxygen:  Massage man page for Iterator_types.3.
+	* docs/html/faq/index.html:  Whitespace fixes.
+
 2002-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libmath/Makefile.am (LIBTOOL): Use --tag CC always for this
