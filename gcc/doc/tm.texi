@@ -4398,9 +4398,9 @@ versions of @code{va_start} must use @code{__builtin_saveregs}, unless
 you use @code{SETUP_INCOMING_VARARGS} (see below) instead.
 
 On some machines, @code{__builtin_saveregs} is open-coded under the
-control of the macro @code{EXPAND_BUILTIN_SAVEREGS}.  On other machines,
-it calls a routine written in assembler language, found in
-@file{libgcc2.c}.
+control of the target hook @code{TARGET_EXPAND_BUILTIN_SAVEREGS}.  On
+other machines, it calls a routine written in assembler language,
+found in @file{libgcc2.c}.
 
 Code generated for the call to @code{__builtin_saveregs} appears at the
 beginning of the function, as opposed to where the call to

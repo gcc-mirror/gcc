@@ -848,34 +848,6 @@ enum reg_class
 /*}}}*/ 
 /*{{{  Implementing the VARARGS Macros.  */ 
 
-/* This macro offers an alternative to using `__builtin_saveregs' and defining
-   the macro `EXPAND_BUILTIN_SAVEREGS'.  Use it to store the anonymous register
-   arguments into the stack so that all the arguments appear to have been
-   passed consecutively on the stack.  Once this is done, you can use the
-   standard implementation of varargs that works for machines that pass all
-   their arguments on the stack.
-
-   The argument ARGS_SO_FAR is the `CUMULATIVE_ARGS' data structure, containing
-   the values that obtain after processing of the named arguments.  The
-   arguments MODE and TYPE describe the last named argument--its machine mode
-   and its data type as a tree node.
-
-   The macro implementation should do two things: first, push onto the stack
-   all the argument registers *not* used for the named arguments, and second,
-   store the size of the data thus pushed into the `int'-valued variable whose
-   name is supplied as the argument PRETEND_ARGS_SIZE.  The value that you
-   store here will serve as additional offset for setting up the stack frame.
-
-   Because you must generate code to push the anonymous arguments at compile
-   time without knowing their data types, `SETUP_INCOMING_VARARGS' is only
-   useful on machines that have just a single category of argument register and
-   use it uniformly for all data types.
-
-   If the argument SECOND_TIME is nonzero, it means that the arguments of the
-   function are being analyzed for the second time.  This happens for an inline
-   function, which is not actually compiled until the end of the source file.
-   The macro `SETUP_INCOMING_VARARGS' should not generate any instructions in
-   this case.  */
 #define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_ARGS_SIZE, SECOND_TIME) \
   if (! SECOND_TIME) \
     fr30_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE)
