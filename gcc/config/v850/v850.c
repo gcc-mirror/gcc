@@ -2805,7 +2805,8 @@ static void
 v850_mark_machine_status (p)
      struct function * p;
 {
-  ggc_mark_rtx (p->machine->ra_rtx);
+  if (p->machine)
+    ggc_mark_rtx (p->machine->ra_rtx);
 }
 
 static void
