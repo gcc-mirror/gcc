@@ -3398,6 +3398,11 @@ main (argc, argv, envp)
       flag_inline_functions = 1;
     }
 
+  /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
+     modify it.  */
+  target_flags = 0;
+  set_target_switch ("");
+
 #ifdef OPTIMIZATION_OPTIONS
   /* Allow default optimizations to be specified on a per-machine basis.  */
   OPTIMIZATION_OPTIONS (optimize);
@@ -3405,9 +3410,6 @@ main (argc, argv, envp)
 
   /* Initialize register usage now so switches may override.  */
   init_reg_sets ();
-
-  target_flags = 0;
-  set_target_switch ("");
 
   for (i = 1; i < argc; i++)
     {
