@@ -159,6 +159,7 @@ c_common_parse_file (set_yydebug)
   cpp_finish_options (parse_in);
 
   yyparse ();
+  free_parser_stacks ();
 }
 
 struct c_fileinfo *
