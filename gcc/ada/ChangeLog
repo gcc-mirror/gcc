@@ -1,3 +1,8 @@
+2001-12-04  Ed Schonberg <schonber@gnat.com>
+
+	* exp_util.adb (Must_Be_Aligned): Return false for a component of a 
+	record that has other packed components.
+
 2001-12-04  Douglass B. Rupp <rupp@gnat.com>
 
 	* adaint.c: Minor cleanups.

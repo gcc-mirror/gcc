@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -2497,6 +2497,30 @@ package body Exp_Util is
    function Must_Be_Aligned (Obj : Node_Id) return Boolean is
       Typ : constant Entity_Id := Etype (Obj);
 
+      function In_Partially_Packed_Record (Comp : Entity_Id) return Boolean;
+      --  If the component is in a record that contains previous packed
+      --  components, consider it unaligned because the back-end might
+      --  choose to pack the rest of the record. Lead to less efficient code,
+      --  but safer vis-a-vis of back-end choices.
+
+      function In_Partially_Packed_Record (Comp : Entity_Id) return Boolean is
+         Rec_Type : constant Entity_Id := Scope (Comp);
+         Prev_Comp : Entity_Id;
+      begin
+         Prev_Comp := First_Entity (Rec_Type);
+         while Present (Prev_Comp) loop
+            if Is_Packed (Etype (Prev_Comp)) then
+               return True;
+
+            elsif Prev_Comp = Comp then
+               return False;
+            end if;
+
+            Next_Entity (Prev_Comp);
+         end loop;
+
+         return False;
+      end  In_Partially_Packed_Record;
    begin
       --  If object is strictly aligned, we can quit now
 
@@ -2535,6 +2559,9 @@ package body Exp_Util is
          --  backend is doing alignment computations).
 
          elsif Present (Component_Clause (Entity (Selector_Name (Obj)))) then
+            return False;
+
+         elsif In_Partially_Packed_Record (Entity (Selector_Name (Obj))) then
             return False;
 
          --  In all other cases, go look at prefix
