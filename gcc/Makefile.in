@@ -3651,7 +3651,7 @@ restagefeedback: unstagefeedback
 # bugs that cause the compiler to crash while building stage 2.
 bubblestrap:
 	if test -f stage_last; then \
-	  LAST=`cat stage_last|sed -e 's/_build//'`; \
+	  LAST=`sed -e 's/_build//' < stage_last`; \
 	  if test "$$LAST" != "stage1"; then \
 	    $(MAKE) $$LAST; \
 	    $(STAMP) $${LAST}_copy; \
