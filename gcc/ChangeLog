@@ -1,3 +1,14 @@
+Wed Sep  8 20:30:42 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* ggc.h (ggc_alloc): New function.
+	(ggc_mark): Likewise.
+	* ggc-simple.c (ggc_any): New structure.
+	(ggc_status): Add anys.
+	(n_anys_collected): New variable.
+	(ggc_alloc): Define.
+	(ggc_mark): Likewise.
+	(ggc_collect): Collect the anys.
+
 Wed Sep  8 20:15:14 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (mark_binding_level): Make static to match prototype.

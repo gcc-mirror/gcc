@@ -74,6 +74,21 @@ struct ggc_string
   char string[1];
 };
 
+/* A generic allocation, with an external mark bit.  */
+
+struct ggc_any
+{
+  struct ggc_any *chain;
+  char mark;
+
+  /* Make sure the data is reasonably aligned.  */
+  union {
+    char c;
+    HOST_WIDE_INT i;
+    long double d;
+  } u;
+};
+
 #define GGC_STRING_MAGIC	((unsigned int)0xa1b2c3d4)
 
 struct ggc_status
@@ -83,6 +98,7 @@ struct ggc_status
   struct ggc_rtvec *vecs;
   struct ggc_tree *trees;
   struct ggc_string *strings;
+  struct ggc_any *anys;
   size_t bytes_alloced_since_gc;
 };
 
@@ -96,6 +112,7 @@ static int n_rtxs_collected;
 static int n_vecs_collected;
 static int n_trees_collected;
 static int n_strings_collected;
+static int n_anys_collected;
 extern int gc_time;
 
 #ifdef GGC_DUMP
@@ -289,6 +306,24 @@ ggc_alloc_string (contents, length)
   return s->string;
 }
 
+/* Like xmalloc, but allocates GC-able memory.  */
+
+void *
+ggc_alloc (bytes)
+     size_t bytes;
+{
+  struct ggc_any *a;
+
+  if (bytes == 0)
+    bytes = 1;
+  bytes += (&((struct ggc_any *) 0)->u.c - (char *) 0);
+
+  a = (struct ggc_any *) xmalloc (bytes);
+  a->chain = ggc_chain->anys;
+  ggc_chain->anys = a;
+
+  return &a->u;
+}
 
 /* Freeing a bit of rtl is as simple as calling free.  */
 
@@ -630,6 +665,18 @@ ggc_mark_string (s)
   *magic = GGC_STRING_MAGIC | 1;
 }
 
+/* Mark P, allocated with ggc_alloc.  */
+
+void
+ggc_mark (p)
+     void *p;
+{
+  struct ggc_any *a;
+  ptrdiff_t d = (&((struct ggc_any *) 0)->u.c - (char *) 0);
+  a = (struct ggc_any *) (((char*) p) - d);
+  a->mark = 1;
+}
+
 /* The top level mark-and-sweep routine.  */
 
 void
@@ -641,7 +688,8 @@ ggc_collect ()
   struct ggc_string *s, **sp;
   struct ggc_root *x;
   struct ggc_status *gs;
-  int time, n_rtxs, n_trees, n_vecs, n_strings;
+  struct ggc_any *a, **ap;
+  int time, n_rtxs, n_trees, n_vecs, n_strings, n_anys;
 
 #ifndef ENABLE_CHECKING
   /* See if it's even worth our while.  */
@@ -665,6 +713,8 @@ ggc_collect ()
 	t->tree.common.gc_mark = 0;
       for (s = gs->strings; s != NULL; s = s->chain)
 	s->magic_mark = GGC_STRING_MAGIC;
+      for (a = gs->anys; a != NULL; a = a->chain)
+	a->mark = 0;
     }
 
   /* Mark through all the roots.  */
@@ -680,6 +730,9 @@ ggc_collect ()
     }
 
   /* Sweep the resulting dead nodes.  */
+
+  /* The RTXs.  */
+
   rp = &ggc_chain->rtxs;
   r = ggc_chain->rtxs;
   n_rtxs = 0;
@@ -698,6 +751,8 @@ ggc_collect ()
     }
   *rp = NULL;
   n_rtxs_collected += n_rtxs;
+
+  /* The vectors.  */
 
   vp = &ggc_chain->vecs;
   v = ggc_chain->vecs;
@@ -718,6 +773,8 @@ ggc_collect ()
   *vp = NULL;
   n_vecs_collected += n_vecs;
 
+  /* The trees.  */
+
   tp = &ggc_chain->trees;
   t = ggc_chain->trees;
   n_trees = 0;
@@ -737,6 +794,8 @@ ggc_collect ()
   *tp = NULL;
   n_trees_collected += n_trees;
 
+  /* The strings.  */
+
   sp = &ggc_chain->strings;
   s = ggc_chain->strings;
   n_strings = 0;
@@ -755,6 +814,27 @@ ggc_collect ()
     }
   *sp = NULL;
   n_strings_collected += n_strings;
+
+  /* The generic data.  */
+
+  ap = &ggc_chain->anys;
+  a = ggc_chain->anys;
+  n_anys = 0;
+  while (a != NULL)
+    {
+      struct ggc_any *chain = a->chain;
+      if (!a->mark)
+	{
+	  free (a);
+	  *ap = chain;
+	  n_anys++;
+	}
+      else
+	ap = &a->chain;
+      a = chain;
+    }
+  n_anys_collected += n_anys;
+
   ggc_chain->bytes_alloced_since_gc = 0;
 
   time = get_run_time () - time;
@@ -763,8 +843,8 @@ ggc_collect ()
   if (!quiet_flag)
     {
       time = (time + 500) / 1000;
-      fprintf (stderr, "%dr,%dv,%dt,%ds %d.%03d}", n_rtxs, n_vecs, n_trees,
-	       n_strings, time / 1000, time % 1000);
+      fprintf (stderr, "%dr,%dv,%dt,%ds,%da %d.%03d}", n_rtxs, n_vecs, 
+	       n_trees, n_strings, n_anys, time / 1000, time % 1000);
     }
 }
 
