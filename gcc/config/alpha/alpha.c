@@ -6345,6 +6345,8 @@ enum alpha_builtin
   ALPHA_BUILTIN_AMASK,
   ALPHA_BUILTIN_IMPLVER,
   ALPHA_BUILTIN_RPCC,
+  ALPHA_BUILTIN_THREAD_POINTER,
+  ALPHA_BUILTIN_SET_THREAD_POINTER,
 
   /* TARGET_MAX */
   ALPHA_BUILTIN_MINUB8,
@@ -6398,6 +6400,8 @@ static unsigned int const code_for_builtin[ALPHA_BUILTIN_max] = {
   CODE_FOR_builtin_amask,
   CODE_FOR_builtin_implver,
   CODE_FOR_builtin_rpcc,
+  CODE_FOR_load_tp,
+  CODE_FOR_set_tp,
 
   /* TARGET_MAX */
   CODE_FOR_builtin_minub8,
@@ -6515,6 +6519,16 @@ alpha_init_builtins ()
   for (i = 0; i < ARRAY_SIZE (two_arg_builtins); ++i, ++p)
     if ((target_flags & p->target_mask) == p->target_mask)
       builtin_function (p->name, ftype, p->code, BUILT_IN_MD, NULL);
+
+  ftype = build_function_type (ptr_type_node, void_list_node);
+  builtin_function ("__builtin_thread_pointer", ftype,
+		    ALPHA_BUILTIN_THREAD_POINTER, BUILT_IN_MD, NULL);
+
+  ftype = build_function_type (void_type_node, tree_cons (NULL_TREE,
+							  ptr_type_node,
+							  void_list_node));
+  builtin_function ("__builtin_set_thread_pointer", ftype,
+		    ALPHA_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD, NULL);
 }
 
 /* Expand an expression EXP that calls a built-in function,
@@ -6539,13 +6553,15 @@ alpha_expand_builtin (exp, target, subtarget, mode, ignore)
   enum insn_code icode;
   rtx op[MAX_ARGS], pat;
   int arity;
-  enum machine_mode tmode;
+  bool nonvoid;
 
   if (fcode >= ALPHA_BUILTIN_max)
     internal_error ("bad builtin fcode");
   icode = code_for_builtin[fcode];
   if (icode == 0)
     internal_error ("bad builtin fcode");
+
+  nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
 
   for (arglist = TREE_OPERAND (exp, 1), arity = 0;
        arglist;
@@ -6559,18 +6575,22 @@ alpha_expand_builtin (exp, target, subtarget, mode, ignore)
       if (arity > MAX_ARGS)
 	return NULL_RTX;
 
-      op[arity] = expand_expr (arg, NULL_RTX, VOIDmode, 0);
+      insn_op = &insn_data[icode].operand[arity + nonvoid];
 
-      insn_op = &insn_data[icode].operand[arity + 1];
+      op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, 0);
+
       if (!(*insn_op->predicate) (op[arity], insn_op->mode))
 	op[arity] = copy_to_mode_reg (insn_op->mode, op[arity]);
     }
 
-  tmode = insn_data[icode].operand[0].mode;
-  if (!target
-      || GET_MODE (target) != tmode
-      || !(*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
+  if (nonvoid)
+    {
+      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      if (!target
+	  || GET_MODE (target) != tmode
+	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+    }
 
   switch (arity)
     {
@@ -6578,7 +6598,10 @@ alpha_expand_builtin (exp, target, subtarget, mode, ignore)
       pat = GEN_FCN (icode) (target);
       break;
     case 1:
-      pat = GEN_FCN (icode) (target, op[0]);
+      if (nonvoid)
+        pat = GEN_FCN (icode) (target, op[0]);
+      else
+	pat = GEN_FCN (icode) (op[0]);
       break;
     case 2:
       pat = GEN_FCN (icode) (target, op[0], op[1]);
@@ -6590,7 +6613,10 @@ alpha_expand_builtin (exp, target, subtarget, mode, ignore)
     return NULL_RTX;
   emit_insn (pat);
 
-  return target;
+  if (nonvoid)
+    return target;
+  else
+    return const0_rtx;
 }
 
 /* This page contains routines that are used to determine what the function

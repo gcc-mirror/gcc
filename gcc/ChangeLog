@@ -1,3 +1,13 @@
+2002-06-11  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (ALPHA_BUILTIN_THREAD_POINTER): New.
+	(ALPHA_BUILTIN_SET_THREAD_POINTER): New.
+	(code_for_builtns): Update.
+	(alpha_init_builtins): Add __builtin_thread_pointer and
+	__builtin_set_thread_pointer.
+	(alpha_expand_builtin): Handle void builtins.
+	* doc/extend.texi (Alpha Built-in Functions): Update.
+
 2002-06-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/6997
