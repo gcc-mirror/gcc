@@ -164,8 +164,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef PRINT_OPERAND
 #undef PRINT_OPERAND_ADDRESS
 #undef FUNCTION_PROFILER
-#undef ASM_GLOBALIZE_LABEL
 #undef ASM_OUTPUT_INTERNAL_LABEL
+#undef GLOBAL_ASM_OP
 
 #define TARGET_VERSION fprintf (stderr, " (68k, SGS/hpux syntax)");
 
@@ -293,6 +293,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DATA_SECTION_ASM_OP "data"
 
 #define	ASCII_DATA_ASM_OP "byte"
+ 
+/* This is the command to make the user-level label named NAME
+   defined for reference from other files.  */
+
+#define GLOBAL_ASM_OP "global"
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -317,12 +322,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
   sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
-
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fputs ("\tglobal ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
 do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\

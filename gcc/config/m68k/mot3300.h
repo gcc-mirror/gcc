@@ -282,12 +282,11 @@ output_file_directive ((FILE), main_input_filename)
  ((N) == 0 || (N) == 8 || (TARGET_68881 && (N) == 16))
 #endif 
  
-/* This is how to output a command to make the user-level label named NAME
+/* This is the command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#undef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fputs ("\tglobal ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
+#undef GLOBAL_ASM_OP
+#define GLOBAL_ASM_OP "global"
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
