@@ -1,3 +1,10 @@
+2004-01-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (function_arg_slotno): Use
+	FLOAT_TYPE_P to detect FP fields in structures.
+	(function_arg_record_value_1): Likewise.
+	(function_arg_record_value_2): Likewise.
+
 2004-01-22  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (allocate_struct_function): Do not initialize expr, emit

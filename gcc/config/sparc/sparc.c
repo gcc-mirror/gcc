@@ -4928,8 +4928,7 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 	    {
 	      if (TREE_CODE (field) == FIELD_DECL)
 		{
-		  if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
-		      && TARGET_FPU)
+		  if (FLOAT_TYPE_P (TREE_TYPE (field)) && TARGET_FPU)
 		    fpregs_p = 1;
 		  else
 		    intregs_p = 1;
@@ -5029,13 +5028,10 @@ function_arg_record_value_1 (tree type, HOST_WIDE_INT startbitpos,
 	    				 bitpos,
 					 parms,
 					 packed_p);
-	  else if ((TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
-		    || (TREE_CODE (TREE_TYPE (field)) == COMPLEX_TYPE
-			&& (TREE_CODE (TREE_TYPE (TREE_TYPE (field)))
-			    == REAL_TYPE)))
-	           && TARGET_FPU
-	           && ! packed_p
-	           && parms->named)
+	  else if (FLOAT_TYPE_P (TREE_TYPE (field))
+		   && TARGET_FPU
+		   && parms->named
+		   && ! packed_p)
 	    {
 	      if (parms->intoffset != -1)
 		{
@@ -5170,13 +5166,10 @@ function_arg_record_value_2 (tree type, HOST_WIDE_INT startbitpos,
 	    				 bitpos,
 					 parms,
 					 packed_p);
-	  else if ((TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
-		    || (TREE_CODE (TREE_TYPE (field)) == COMPLEX_TYPE
-			&& (TREE_CODE (TREE_TYPE (TREE_TYPE (field)))
-			    == REAL_TYPE)))
-	           && TARGET_FPU
-	           && ! packed_p
-	           && parms->named)
+	  else if (FLOAT_TYPE_P (TREE_TYPE (field))
+		   && TARGET_FPU
+		   && parms->named
+		   && ! packed_p)
 	    {
 	      int this_slotno = parms->slotno + bitpos / BITS_PER_WORD;
 	      int regno;
