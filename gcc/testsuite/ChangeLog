@@ -1,3 +1,10 @@
+2003-06-07  H.J. Lu <hongjiu.lu@intel.com>
+
+	* lib/copy-file.exp: New. Implement gcc_copy_files.
+
+	* lib/dg-pch.exp: Load copy-file.exp
+	(dg-pch): Use gcc_copy_files instead of "file copy".
+
 2003-06-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/weak/weak.exp: Simplify.

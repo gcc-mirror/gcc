@@ -14,6 +14,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
+load_lib copy-file.exp
+
 proc dg-pch { subdir test options suffix } {
     global runtests dg-do-what-default
 
@@ -36,7 +38,7 @@ proc dg-pch { subdir test options suffix } {
 	# For the header files, the default is to precompile.
 	set dg-do-what-default precompile
 	catch { file delete "$bname$suffix" }
-	file copy "[file rootname $test]${suffix}s" "$bname$suffix"
+	gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
 	dg-test -keep-output "$bname$suffix" $flags ""
 
 	# For the rest, the default is to compile to .s.
@@ -50,7 +52,7 @@ proc dg-pch { subdir test options suffix } {
 	    file delete "$bname$suffix.gch"
 	    if { [ file exists "$bname.s" ] } {
 		file rename "$bname.s" "$bname.s-gch"
-		file copy "[file rootname $test]${suffix}s" "$bname$suffix"
+		gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
 		dg-test -keep-output $test $flags "-I."
 		set tmp [ diff "$bname.s" "$bname.s-gch" ]
 		if { $tmp == 0 } {
