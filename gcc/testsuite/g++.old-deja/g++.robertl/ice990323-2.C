@@ -25,7 +25,7 @@ void f4()
 	throw A<double, 47, A<int, 36, short> > ("hi michey");
 }
 
-main()
+int main()
 {
 	int flag;
 

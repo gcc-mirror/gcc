@@ -1,3 +1,4 @@
+// Build don't link:
 // check attempting to throw an overloaded function
 
 struct A {
@@ -7,5 +8,5 @@ struct A {
 
 void g()
 {
-	throw &A::f;
+	throw &A::f; // ERROR - insufficient context
 }
