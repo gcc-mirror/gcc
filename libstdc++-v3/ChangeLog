@@ -10,6 +10,8 @@
 	* include/bits/locale_facets.tcc (do_get): Honor $22.2.6.3.3/8 and
 	make sure the number of digits required after the decimal-point
 	(if any) is exactly the value returned by frac_digits().
+	* testsuite/22_locale/money_get/get/char/9.cc: New.
+	* testsuite/22_locale/money_get/get/wchar_t/9.cc: New.
 
 2003-05-27  Jonathan Wakely  <redi@gcc.gnu.org>
 
