@@ -31,7 +31,7 @@
 #define _MMINTRIN_H_INCLUDED
 
 /* The data type intended for user use.  */
-typedef unsigned long long __m64;
+typedef unsigned long long __m64 __attribute__ ((__aligned__ (8)));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef int __v2si __attribute__ ((__mode__ (__V2SI__)));

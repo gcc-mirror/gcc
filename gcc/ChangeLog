@@ -1,5 +1,9 @@
 2002-08-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/mmintrin.h (__m64): Make the type 64-bit aligned.
+
+2002-08-06  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/i386/i386.c (x86_field_alignment): Apply min for all MODE_INT
 	and MODE_CLASS_INT modes.
 
