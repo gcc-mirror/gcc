@@ -27,6 +27,7 @@
 // XXX This test is not working for non-glibc locale models.
 // { dg-do run { xfail *-*-* } }
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 // test string version
 void test01()
 {
@@ -183,6 +184,7 @@ void test01()
   VERIFY( err11 == ios_base::goodbit );
 }
 
+
 // test double/wstring versions
 void test02()
 {
@@ -270,10 +272,13 @@ void test02()
   VERIFY( result3 == digits4 );
   VERIFY( err03 == ios_base::goodbit );
 }
+#endif
 
 int main()
 {
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
+#endif
   return 0;
 }
