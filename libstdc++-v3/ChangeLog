@@ -1,3 +1,8 @@
+2001-02-23  Phil Edwards  <pme@sources.redhat.com>
+
+	c++/2052
+	* include/backward/iostream.h:  Expose std::flush in old headers.
+
 2001-02-23  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* mknumeric_limits: Remove special-casing on target.  Use gcc
