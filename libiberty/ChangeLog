@@ -1,3 +1,8 @@
+2004-12-07  DJ Delorie  <dj@redhat.com>
+
+	* splay-tree.c (splay_tree_delete_helper): Redesign the logic so
+	that recursion (and thus large stack space) is not needed.
+
 2004-11-29  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* pex-unix.c: Fix the spelling of longjmp.
