@@ -1,3 +1,9 @@
+2000-08-24  Greg McGary  <greg@mcgary.org>
+
+	* cppfiles.c (actual_directory): Don't write beyond `dir'
+	when it contains "".
+	* real.c (asctoeg): Stay within bounds of etens[][].
+
 2000-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* dependence.c (dependence_string, direction_string,

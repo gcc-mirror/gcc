@@ -5132,9 +5132,9 @@ asctoeg (ss, y, oprec)
 {
   unsigned EMUSHORT yy[NI], xt[NI], tt[NI];
   int esign, decflg, sgnflg, nexp, exp, prec, lost;
-  int k, trail, c, rndsav;
+  int i, k, trail, c, rndsav;
   EMULONG lexp;
-  unsigned EMUSHORT nsign, *p;
+  unsigned EMUSHORT nsign;
   char *sp, *s, *lstr;
   int base = 10;
 
@@ -5418,14 +5418,14 @@ read_expnt:
 	  nexp -= 4096;
 	}
     }
-  p = &etens[NTEN][0];
   emov (eone, xt);
   exp = 1;
+  i = NTEN;
   do
     {
       if (exp & nexp)
-	emul (p, xt, xt);
-      p -= NE;
+	emul (etens[i], xt, xt);
+      i--;
       exp = exp + exp;
     }
   while (exp <= MAXP);
