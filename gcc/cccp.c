@@ -6177,9 +6177,9 @@ collect_expansion (buf, end, nargs, arglist)
   }
 
   if (!traditional && expected_delimiter == 0) {
-    /* There is no trailing whitespace, so invent some in ANSI mode.
-       But not if "inside a string" (which in ANSI mode
-       happens only for -D option).  */
+    /* If ANSI, put in a newline-space marker to prevent token pasting.
+       But not if "inside a string" (which in ANSI mode happens only for
+       -D option).  */
     *exp_p++ = '\n';
     *exp_p++ = ' ';
   }
