@@ -41,7 +41,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	FATAL_EXIT_CODE		33
 
 /* If not compiled with GNU C, use the builtin alloca.  */
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(_WIN32)
 #include <alloca.h>
 #else
 extern void *alloca ();
