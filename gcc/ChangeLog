@@ -1,5 +1,8 @@
 2003-09-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc (i[34567]86-*-solaris2*, sparc64-*-solaris2*,
+	sparcv9-*-solaris2*, sparc-*-solaris2*): Disable fixproto.
+
 	* config/i386/unix.h: Remove (unused) DEFAULT_ASSEMBLER_DIALECT.
 
 2003-09-26  Loren James Rittle  <ljrittle@acm.org>
