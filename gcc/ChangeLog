@@ -1,3 +1,15 @@
+Tue Jun  9 12:36:16 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (LIB2FUNCS_EH): Define.  Just "_eh" for now.
+	(LIBGCC2_CFLAGS): Remove -fexceptions.
+	(LIB2FUNCS): Remove "_eh".
+	(libgcc2.a): Iterate over LIB2FUNCS_EH and build everything in
+	it with -fexceptions.
+
+	* Makefile.in (local-alloc.o): Depend on insn-attr.h.
+	* local-alloc.c (block_alloc): Avoid creating false 
+	dependencies for targets which use instruction scheduling.
+
 Tue Jun  9 02:40:49 1998  Richard Henderson  <rth@cygnus.com>
 
 	* mips/elf.h (ASM_DECLARE_OBJECT_NAME): Define.
