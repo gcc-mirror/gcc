@@ -419,8 +419,6 @@ initialize_inlined_parameters (id, args, fn)
 	
       /* Make an equivalent VAR_DECL.  */
       var = copy_decl_for_inlining (p, fn, VARRAY_TREE (id->fns, 0));
-      c_apply_type_quals_to_decl (TYPE_QUALS (p), var);
-
       /* Register the VAR_DECL as the equivalent for the PARM_DECL;
 	 that way, when the PARM_DECL is encountered, it will be
 	 automatically replaced by the VAR_DECL.  */
@@ -432,8 +430,6 @@ initialize_inlined_parameters (id, args, fn)
 	 this will not result in an extra copy: the TARGET_EXPR
 	 representing the argument will be bound to VAR, and the
 	 object will be constructed in VAR.  */
-      if (! TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (p)))
-	DECL_INITIAL (var) = TREE_VALUE (a);
       init_stmt = build_min_nt (EXPR_STMT,
 				build (INIT_EXPR, TREE_TYPE (p),
 				       var, value));
