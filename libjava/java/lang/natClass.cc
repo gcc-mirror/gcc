@@ -909,8 +909,8 @@ _Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, int method_idx)
 jboolean
 _Jv_IsAssignableFrom (jclass target, jclass source)
 {
-  if (target == &ObjectClass 
-      || source == target 
+  if (source == target
+      || (target == &ObjectClass && !source->isPrimitive())
       || (source->ancestors != NULL 
           && source->ancestors[source->depth - target->depth] == target))
      return true;
