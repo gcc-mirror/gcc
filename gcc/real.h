@@ -234,6 +234,7 @@ extern const struct real_format ieee_double_format;
 extern const struct real_format mips_double_format;
 extern const struct real_format ieee_extended_motorola_format;
 extern const struct real_format ieee_extended_intel_96_format;
+extern const struct real_format ieee_extended_intel_96_round_53_format;
 extern const struct real_format ieee_extended_intel_128_format;
 extern const struct real_format ibm_extended_format;
 extern const struct real_format mips_extended_format;

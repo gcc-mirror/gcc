@@ -1,3 +1,11 @@
+2003-06-24  Richard Henderson  <rth@redhat.com>
+	    (blame to: Loren James Rittle  <ljrittle@acm.org>)
+
+	* real.h (ieee_extended_intel_96_round_53_format): New.
+	* real.c (ieee_extended_intel_96_round_53_format): New.
+	* config/i386/freebsd.h (SUBTARGET_OVERRIDE_OPTIONS): Use it
+	for XFmode and TFmode.
+
 2003-06-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (4 anonymous patterns): Give internal

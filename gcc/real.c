@@ -3326,6 +3326,25 @@ const struct real_format ieee_extended_intel_128_format =
     true
   };
 
+/* The following caters to i386 systems that set the rounding precision
+   to 53 bits instead of 64, e.g. FreeBSD.  */
+const struct real_format ieee_extended_intel_96_round_53_format = 
+  {
+    encode_ieee_extended,
+    decode_ieee_extended,
+    2,
+    1,
+    53,
+    53,
+    -16381,
+    16384,
+    79,
+    true,
+    true,
+    true,
+    true,
+    true
+  };
 
 /* IBM 128-bit extended precision format: a pair of IEEE double precision
    numbers whose sum is equal to the extended precision value.  The number
