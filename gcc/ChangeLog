@@ -1,3 +1,11 @@
+2002-06-28  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.c (autoinc_mode): New function.
+	(m68hc11_make_autoinc_notes): New function.
+	(m68hc11_split_move): Be very cautious when spliting a move with
+	auto increment/decrement modes because this may result in incompatible
+	directions; add REG_INC notes to the resulting insn for CSE reg.
+
 2002-06-28  Stephane Carrez  <Stephane.Carrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (register_indirect_p): For 68HC12 a constant
