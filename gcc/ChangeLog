@@ -1,3 +1,8 @@
+2001-01-12  Phil Edwards  <pme@sources.redhat.com>
+
+	* extend.texi:  Move C++-extension-related node from the C section
+	  into the C++ section.
+
 2001-01-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* extend.texi: Refer to an array of pointers to functions instead
