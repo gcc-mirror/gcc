@@ -5621,10 +5621,15 @@ int
 get_alias_set (t)
      tree t;
 {
+  /* If we're not doing any lanaguage-specific alias analysis, just
+     assume everything aliases everything else.  */
   if (! flag_strict_aliasing || lang_get_alias_set == 0)
-    /* If we're not doing any lanaguage-specific alias analysis, just
-       assume everything aliases everything else.  */
     return 0;
+
+  /* If this is a type with a known alias set, return it since this must
+     be the correct thing to do.  */
+  else if (TYPE_P (t) && TYPE_ALIAS_SET_KNOWN_P (t))
+    return TYPE_ALIAS_SET (t);
   else
     return (*lang_get_alias_set) (t);
 }

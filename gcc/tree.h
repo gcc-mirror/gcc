@@ -2605,17 +2605,16 @@ extern void rest_of_type_compilation PARAMS ((tree, int));
 extern void push_obstacks_nochange PARAMS ((void));
 
 extern void permanent_allocation PARAMS ((int));
-
 extern void push_momentary PARAMS ((void));
-
 extern void clear_momentary PARAMS ((void));
-
 extern void pop_momentary PARAMS ((void));
-
 extern void end_temporary_allocation PARAMS ((void));
 
 /* Pop the obstack selection stack.  */
 extern void pop_obstacks PARAMS ((void));
+
+/* In alias.c */
+void record_component_aliases		PARAMS ((tree));
 
 /* In tree.c */
 extern int really_constant_p		PARAMS ((tree));
@@ -2654,10 +2653,12 @@ extern void dump_tree_statistics	PARAMS ((void));
 extern void print_obstack_statistics	PARAMS ((const char *,
 						struct obstack *));
 #ifdef BUFSIZ
-extern void print_obstack_name		PARAMS ((char *, FILE *, const char *));
+extern void print_obstack_name		PARAMS ((char *, FILE *,
+						 const char *));
 #endif
 extern void expand_function_end		PARAMS ((const char *, int, int));
 extern void expand_function_start	PARAMS ((tree, int));
+
 extern int real_onep			PARAMS ((tree));
 extern int real_twop			PARAMS ((tree));
 extern void start_identifier_warnings	PARAMS ((void));
@@ -2707,8 +2708,10 @@ extern void print_rtl			PARAMS ((FILE *, struct rtx_def *));
 /* In print-tree.c */
 extern void debug_tree			PARAMS ((tree));
 #ifdef BUFSIZ
-extern void print_node			PARAMS ((FILE *, const char *, tree, int));
-extern void print_node_brief		PARAMS ((FILE *, const char *, tree, int));
+extern void print_node			PARAMS ((FILE *, const char *, tree,
+						 int));
+extern void print_node_brief		PARAMS ((FILE *, const char *, tree,
+						 int));
 extern void indent_to			PARAMS ((FILE *, int));
 #endif
 
@@ -2718,8 +2721,10 @@ extern int apply_args_register_offset		PARAMS ((int));
 extern struct rtx_def *expand_builtin_return_addr
 	PARAMS ((enum built_in_function, int, struct rtx_def *));
 extern void do_pending_stack_adjust		PARAMS ((void));
-extern struct rtx_def *expand_assignment	PARAMS ((tree, tree, int, int));
-extern struct rtx_def *store_expr		PARAMS ((tree, struct rtx_def *,
+extern struct rtx_def *expand_assignment	PARAMS ((tree, tree, int,
+							 int));
+extern struct rtx_def *store_expr		PARAMS ((tree,
+							 struct rtx_def *,
 							int));
 extern void check_max_integer_computation_mode	PARAMS ((tree));
 
@@ -2732,21 +2737,15 @@ extern struct rtx_def *emit_line_note_force	PARAMS ((const char *, int));
 
 /* In calls.c */
 
-/* Flags used by special_function_p.  */
 extern int setjmp_call_p		PARAMS ((tree));
 
-/* In c-typeck.c */
+/* In front end.  */
+
 extern int mark_addressable		PARAMS ((tree));
 extern void incomplete_type_error	PARAMS ((tree, tree));
-
-/* In c-lang.c */
 extern void print_lang_statistics	PARAMS ((void));
-
-/* In c-common.c */
 extern tree truthvalue_conversion	PARAMS ((tree));
 extern void split_specs_attrs		PARAMS ((tree, tree *, tree *));
-
-/* In c-decl.c */
 #ifdef BUFSIZ
 extern void print_lang_decl		PARAMS ((FILE *, tree, int));
 extern void print_lang_type		PARAMS ((FILE *, tree, int));
@@ -2762,7 +2761,7 @@ extern void set_decl_abstract_flags	PARAMS ((tree, int));
 extern void output_inline_function	PARAMS ((tree));
 extern void set_decl_origin_self	PARAMS ((tree));
 
-/* In c-lex.c */
+/* In front end.  */
 extern void set_yydebug			PARAMS ((int));
 
 /* In stor-layout.c */
