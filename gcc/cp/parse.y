@@ -3830,7 +3830,7 @@ bad_parm:
 		    {
 		      if (TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM
 			  || TREE_CODE (TREE_OPERAND ($$, 0)) == BOUND_TEMPLATE_TEMPLATE_PARM)
-			error ("`%E' is not a type, use `typename %E' to make it one", $$);
+			error ("`%E' is not a type, use `typename %E' to make it one", $$, $$);
 		      else
 			error ("no type `%D' in `%T'", TREE_OPERAND ($$, 1), TREE_OPERAND ($$, 0));
 		    }
