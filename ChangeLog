@@ -1,3 +1,9 @@
+2004-10-02  P.J. Darcy  <darcypj@us.ibm.com>
+
+	* ltcf-c.sh (tpf*): Add ld_shlibs=yes.
+	* ltcf-cxx.sh (tpf*): Likewise.
+	* ltconfig (tpf*): Add TPF OS configuration support.
+
 2004-10-01  Bernd Schmidt  <bernds_cb1@t-online.de>
 
 	* MAINTAINERS: Change my email address to my new work account.
