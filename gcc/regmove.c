@@ -291,7 +291,7 @@ mark_flags_life_zones (rtx flags)
 #endif
 	      PUT_MODE (insn, (live ? HImode : VOIDmode));
 
-	      /* In either case, birth is denoted simply by it's presence
+	      /* In either case, birth is denoted simply by its presence
 		 as the destination of a set.  */
 	      flags_set_1_set = 0;
 	      note_stores (PATTERN (insn), flags_set_1, NULL);

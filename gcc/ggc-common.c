@@ -615,7 +615,7 @@ default_gt_pch_use_address (void *base, size_t size, int fd ATTRIBUTE_UNUSED,
 #if HAVE_MMAP_FILE
 /* Default version of HOST_HOOKS_GT_PCH_GET_ADDRESS when mmap is present.
    We temporarily allocate SIZE bytes, and let the kernel place the data
-   whereever it will.  If it worked, that's our spot, if not we're likely
+   wherever it will.  If it worked, that's our spot, if not we're likely
    to be in trouble.  */
 
 void *
@@ -793,9 +793,10 @@ loc_descriptor (const char *name, int line, const char *function)
   return *slot;
 }
 
-/* Record ALLOCATED and OVERHEAD bytes to descritor NAME:LINE (FUNCTION).  */
-void ggc_record_overhead (size_t allocated, size_t overhead,
-			  const char *name, int line, const char *function)
+/* Record ALLOCATED and OVERHEAD bytes to descriptor NAME:LINE (FUNCTION).  */
+void
+ggc_record_overhead (size_t allocated, size_t overhead,
+		     const char *name, int line, const char *function)
 {
   struct loc_descriptor *loc = loc_descriptor (name, line, function);
 

@@ -2409,7 +2409,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	  alg_out->ops * sizeof *alg_out->log);
 }
 
-/* Find the cheapeast way of multiplying a value of mode MODE by VAL.
+/* Find the cheapest way of multiplying a value of mode MODE by VAL.
    Try three variations:
 
        - a shift/add sequence based on VAL itself

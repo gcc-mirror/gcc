@@ -2229,7 +2229,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 					       TREE_TYPE (primop0));
 
       /* In C, if TYPE is an enumeration, then we need to get its
-	 min/max values from it's underlying integral type, not the
+	 min/max values from its underlying integral type, not the
 	 enumerated type itself.  In C++, TYPE_MAX_VALUE and
 	 TYPE_MIN_VALUE have already been set correctly on the
 	 enumeration type.  */

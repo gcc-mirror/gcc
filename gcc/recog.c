@@ -1591,7 +1591,7 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
   return template;
 }
 
-/* Check if an asm_operand matches it's constraints.
+/* Check if an asm_operand matches its constraints.
    Return > 0 if ok, = 0 if bad, < 0 if inconclusive.  */
 
 int

@@ -645,9 +645,9 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
   if (mode == VOIDmode)
     mode = GET_MODE (arg1);
 
-  /* First see if machine description supply us way to reverse the comparison.
-     Give it priority over everything else to allow machine description to do
-     tricks.  */
+  /* First see if machine description supplies us way to reverse the
+     comparison.  Give it priority over everything else to allow
+     machine description to do tricks.  */
   if (GET_MODE_CLASS (mode) == MODE_CC
       && REVERSIBLE_CC_MODE (mode))
     {
