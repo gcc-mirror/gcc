@@ -20,11 +20,12 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 6.3.4.4 unordered_map
-// Array version of insert
+// 6.3.4.6 unordered_multimap
+// range insert
 
 #include <string>
 #include <iterator>
+#include <algorithm>
 #include <tr1/unordered_map>
 #include "testsuite_hooks.h"
 
@@ -32,30 +33,61 @@ bool test __attribute__((unused)) = true;
 
 void test01()
 {
-  typedef std::tr1::unordered_map<std::string, int> Map;
+  typedef std::tr1::unordered_multimap<std::string, int> Map;
   typedef std::pair<const std::string, int> Pair;
 
   Map m;
   VERIFY(m.empty());
 
-  m["red"] = 17;
-  VERIFY(m.size() == 1);
-  VERIFY(m.begin()->first == "red");
-  VERIFY(m.begin()->second == 17);
-  VERIFY(m["red"] == 17);
+  Pair A[5] =
+    {
+      Pair("red", 5),
+      Pair("green", 9),
+      Pair("blue", 3),
+      Pair("cyan", 8),
+      Pair("magenta", 7)
+    };
 
-  m["blue"] = 9;
-  VERIFY(m.size() == 2);
-  VERIFY(m["blue"] == 9);
+  m.insert(A+0, A+5);
+  VERIFY(m.size() == 5);
+  VERIFY(std::distance(m.begin(), m.end()) == 5);
 
-  m["red"] = 5;
-  VERIFY(m.size() == 2);
-  VERIFY(m["red"] == 5);
-  VERIFY(m["blue"] == 9);
+  for (int i = 0; i < 5; ++i)
+    VERIFY(std::find(m.begin(), m.end(), A[i]) != m.end());
+}
+
+void test02()
+{
+  typedef std::tr1::unordered_multimap<std::string, int> Map;
+  typedef std::pair<const std::string, int> Pair;
+
+  Map m;
+  VERIFY(m.empty());
+
+  Pair A[9] =
+    {
+      Pair("red", 5),
+      Pair("green", 9),
+      Pair("red", 19),
+      Pair("blue", 3),
+      Pair("blue", 60),
+      Pair("cyan", 8),
+      Pair("magenta", 7),
+      Pair("blue", 99),
+      Pair("green", 33)
+    };
+
+  m.insert(A+0, A+9);
+  VERIFY(m.size() == 9);
+  VERIFY(std::distance(m.begin(), m.end()) == 9);
+
+  for (int i = 0; i < 9; ++i)
+    VERIFY(std::find(m.begin(), m.end(), A[i]) != m.end());
 }
 
 int main()
 {
   test01();
+  test02();
   return 0;
 }
