@@ -95,12 +95,10 @@ struct arglist {
 #  define HOST_WIDE_INT intmax_t
 #  define unsigned_HOST_WIDE_INT uintmax_t
 # else
-#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
-       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
 #   define HOST_WIDE_INT int
 #  else
-#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
-       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
 #   define HOST_WIDE_INT long
 #  else
 #   define HOST_WIDE_INT long long
