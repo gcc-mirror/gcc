@@ -101,11 +101,6 @@ static rtx saveregs_value;
 /* Similarly for __builtin_apply_args.  */
 static rtx apply_args_value;
 
-/* Nonzero if the machine description has been fixed to accept
-   CONSTANT_P_RTX patterns.  We will emit a warning and continue
-   if we find we must actually use such a beast.  */
-static int can_handle_constant_p;
-
 /* Don't check memory usage, since code is being emitted to check a memory
    usage.  Used when current_function_check_memory_usage is true, to avoid
    infinite recursion.  */
@@ -308,14 +303,6 @@ init_expr_once ()
 	      direct_store[(int) mode] = 1;
 	  }
     }
-
-  /* Find out if CONSTANT_P_RTX is accepted.  */
-  SET_DEST (pat) = gen_rtx_REG (TYPE_MODE (integer_type_node),
-			        FIRST_PSEUDO_REGISTER);
-  SET_SRC (pat) = gen_rtx_CONSTANT_P_RTX (TYPE_MODE (integer_type_node),
-					  SET_DEST (pat));
-  if (recog (pat, insn, &num_clobbers) >= 0)
-    can_handle_constant_p = 1;
 
   end_sequence ();
   obfree (free_point);
@@ -9010,36 +8997,42 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       else
 	{
 	  tree arg = TREE_VALUE (arglist);
+	  rtx tmp;
 
+	  /* We return 1 for a numeric type that's known to be a constant
+	     value at compile-time or for an aggregate type that's a
+	     literal constant.  */
 	  STRIP_NOPS (arg);
-	  if (really_constant_p (arg)
+
+	  /* If we know this is a constant, emit the constant of one.  */
+	  if (TREE_CODE_CLASS (TREE_CODE (arg)) == 'c'
+	      || (TREE_CODE (arg) == CONSTRUCTOR
+		  && TREE_CONSTANT (arg))
 	      || (TREE_CODE (arg) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST))
 	    return const1_rtx;
 
-	  /* Only emit CONSTANT_P_RTX if CSE will be run. 
-	     Moreover, we don't want to expand trees that have side effects,
-	     as the original __builtin_constant_p did not evaluate its      
-	     argument at all, and we would break existing usage by changing 
-	     this.  This quirk was generally useful, eliminating a bit of hair
-	     in the writing of the macros that use this function.  Now the    
-	     same thing can be better accomplished in an inline function.  */
+	  /* If we aren't going to be running CSE or this expression
+	     has side effects, show we don't know it to be a constant.
+	     Likewise if it's a pointer or aggregate type since in those
+	     case we only want literals, since those are only optimized
+	     when generating RTL, not later.  */
+	  if (TREE_SIDE_EFFECTS (arg) || cse_not_expected
+	      || AGGREGATE_TYPE_P (TREE_TYPE (arg))
+	      || POINTER_TYPE_P (TREE_TYPE (arg)))
+	    return const0_rtx;
 
-	  if (! cse_not_expected && ! TREE_SIDE_EFFECTS (arg))
-	    {
-	      /* Lazy fixup of old code: issue a warning and fail the test.  */
-	      if (! can_handle_constant_p)
-		{
-		  warning ("Delayed evaluation of __builtin_constant_p not supported on this target.");
-		  warning ("Please report this as a bug to egcs-bugs@cygnus.com.");
-		  return const0_rtx;
-		}
-	      return gen_rtx_CONSTANT_P_RTX (TYPE_MODE (integer_type_node),
-				             expand_expr (arg, NULL_RTX,
-							  VOIDmode, 0));
-	    }
+	  /* Otherwise, emit (const (constant_p_rtx (ARG))) and let CSE
+	     get a chance to see if it can deduce whether ARG is constant.  */
+	  /* ??? We always generate the CONST in ptr_mode since that's
+	     certain to be valid on this machine, then convert it to
+	     whatever we need.  */
 
-	  return const0_rtx;
+	  tmp = expand_expr (arg, NULL_RTX, VOIDmode, 0);
+	  tmp = gen_rtx_CONSTANT_P_RTX (ptr_mode, tmp);
+	  tmp = gen_rtx_CONST (ptr_mode, tmp);
+	  tmp = convert_to_mode (mode, tmp, 0);
+	  return tmp;
 	}
 
     case BUILT_IN_FRAME_ADDRESS:

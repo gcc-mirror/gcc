@@ -850,9 +850,10 @@ DEF_RTL_EXPR(RANGE_VAR, "range_var", "eti", 'x')
    0 is the live bitmap.  Operand 1 is the original block number.  */
 DEF_RTL_EXPR(RANGE_LIVE, "range_live", "bi", 'x')
 
-/* A unary `__builtin_constant_p' expression.  These are only emitted
-   during RTL generation, and then only if optimize > 0.  They are
-   eliminated by the first CSE pass. */
+/* A unary `__builtin_constant_p' expression.  This RTL code may only be used
+   as an operand of a CONST.  This pattern is only emitted during RTL
+   generation and then only if optimize > 0.  It is converted by the first
+   CSE pass into the appropriate CONST_INT.  */
 DEF_RTL_EXPR(CONSTANT_P_RTX, "constant_p_rtx", "e", 'x')
 
 /*

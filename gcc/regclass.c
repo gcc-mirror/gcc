@@ -2032,8 +2032,12 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
   code = GET_CODE (x);
   switch (code)
     {
-    case CONST_INT:
     case CONST:
+      if (GET_CODE (XEXP (x, 0)) == CONSTANT_P_RTX)
+	reg_scan_mark_refs (XEXP (XEXP (x, 0), 0), insn, note_flag, min_regno);
+      return;
+
+    case CONST_INT:
     case CONST_DOUBLE:
     case CC0:
     case PC:

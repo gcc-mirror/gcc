@@ -1,3 +1,23 @@
+Tue Dec 29 11:32:54 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>:
+
+	* rtl.def (CONSTANT_P_RTX): Clarify commentary.
+	* expr.c (expand_builtin, case BUILT_IN_CONSTANT_P): Rework to
+	consider constant CONSTRUCTOR constant and to defer some cases
+	to cse.
+	* cse.c (fold_rtx, case CONST): Add handling for CONSTANT_P_RTX.
+	* regclass.c (reg_scan_mark_refs, case CONST): Likewise.
+
+Tue Dec 29 11:30:10 1998  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (init_expr_once): Kill can_handle_constant_p recognition.
+	* cse.c (fold_rtx, case 'x'): Remove standalone CONSTANT_P_RTX code.
+
+	* alpha.c (reg_or_6bit_operand): Remove CONSTANT_P_RTX handling.
+	(reg_or_8bit_operand, cint8_operand, add_operand): Likewise.
+	(sext_add_operand, and_operand, or_operand): Likewise.
+	(reg_or_cint_operand, some_operand, input_operand): Likewise.
+	* alpha.h (PREDICATE_CODES): Likewise.
+
 Sat Dec 26 23:26:26 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
