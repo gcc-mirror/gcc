@@ -1,3 +1,13 @@
+2001-08-24  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (check_deprecation): Handle TYPE_DECL in a special case,
+	don't report anything but deprecated class when marked so. Handle
+	VAR_DECL.
+	(patch_method_invocation): Check deprecation on methods and types.
+	(patch_binop): code becomes an enum tree_code, added default: to
+	switch to handle that. Detect division by zero, try to fold and
+	return before using a subroutine.
+
 2001-08-23  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* jcf-parse.c (yyparse): Set magic to 0, don't issue error for a

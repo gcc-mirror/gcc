@@ -9938,18 +9938,23 @@ check_deprecation (wfl, decl)
 	  strcpy (the, "method");
 	  break;
 	case FIELD_DECL:
+	case VAR_DECL:
 	  strcpy (the, "field");
 	  break;
 	case TYPE_DECL:
-	  strcpy (the, "class");
-	  break;
+	  parse_warning_context (wfl, "The class `%s' has been deprecated",
+				 IDENTIFIER_POINTER (DECL_NAME (decl)));
+	  return;
 	default:
 	  abort ();
 	}
-      parse_warning_context 
-	(wfl, "The %s `%s' in class `%s' has been deprecated", 
-	 the, lang_printable_name (decl, 0),
-	 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl)))));
+      /* Don't issue a message if the context as been deprecated as a
+         whole. */
+      if (! CLASS_DEPRECATED (TYPE_NAME (DECL_CONTEXT (decl))))
+	parse_warning_context 
+	  (wfl, "The %s `%s' in class `%s' has been deprecated", 
+	   the, lang_printable_name (decl, 0),
+	   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl)))));
     }
 }
 
@@ -10308,7 +10313,13 @@ patch_method_invocation (patch, primary, where, from_super,
 			   access, what, klass, fct_name, refklass);
       PATCH_METHOD_RETURN_ERROR ();
     }
-  check_deprecation (wfl, list);
+
+  /* Deprecation check: check whether the method being invoked or the
+     instance-being-created's type are deprecated. */
+  if (TREE_CODE (patch) == NEW_CLASS_EXPR)
+    check_deprecation (wfl, TYPE_NAME (DECL_CONTEXT (list)));
+  else
+    check_deprecation (wfl, list);
 
   /* If invoking a innerclass constructor, there are hidden parameters
      to pass */
@@ -13416,7 +13427,7 @@ patch_binop (node, wfl_op1, wfl_op2)
   tree op1_type = TREE_TYPE (op1);
   tree op2_type = TREE_TYPE (op2);
   tree prom_type = NULL_TREE, cn;
-  int code = TREE_CODE (node);
+  enum tree_code code = TREE_CODE (node);
 
   /* If 1, tell the routine that we have to return error_mark_node
      after checking for the initialization of the RHS */
@@ -13462,9 +13473,32 @@ patch_binop (node, wfl_op1, wfl_op2)
 	  break;
 	}
       prom_type = binary_numeric_promotion (op1_type, op2_type, &op1, &op2);
+
+      /* Detect integral division by zero */
+      if ((code == RDIV_EXPR || code == TRUNC_MOD_EXPR)
+	  && TREE_CODE (prom_type) == INTEGER_TYPE
+	  && (op2 == integer_zero_node || op2 == long_zero_node ||
+	      (TREE_CODE (op2) == INTEGER_CST &&
+	       ! TREE_INT_CST_LOW (op2)  && ! TREE_INT_CST_HIGH (op2))))
+	{
+	  parse_error_context (wfl_operator, "Arithmetic exception");
+	  error_found = 1;
+	}
+	  
       /* Change the division operator if necessary */
       if (code == RDIV_EXPR && TREE_CODE (prom_type) == INTEGER_TYPE)
 	TREE_SET_CODE (node, TRUNC_DIV_EXPR);
+
+      /* Before divisions as is disapear, try to simplify and bail if
+         applicable, otherwise we won't perform even simple simplifications
+	 like (1-1)/3. */
+      if (code == RDIV_EXPR && TREE_CONSTANT (op1) && TREE_CONSTANT (op2))
+	{
+	  TREE_TYPE (node) = prom_type;
+	  node = fold (node);
+	  if (TREE_CODE (node) != code)
+	    return node;
+	}
 
       if (TREE_CODE (prom_type) == INTEGER_TYPE
 	  && flag_use_divide_subroutine
@@ -13753,6 +13787,8 @@ patch_binop (node, wfl_op1, wfl_op2)
 	}
       prom_type = boolean_type_node;
       break;
+    default:
+      abort ();
     }
 
   if (error_found)
