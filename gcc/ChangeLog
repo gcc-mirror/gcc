@@ -1,3 +1,7 @@
+2003-01-24  Andreas Schwab  <schwab@suse.de>
+
+	* stor-layout.c (excess_unit_span): Only define if used.
+
 2003-01-24  Jerry Quinn  <jlquinn@optonline.net>
 
 	* gcc/doc/invoke.texi (Optimization Options): List -O levels
