@@ -32,7 +32,7 @@ struct operand_alternative
 {
   /* Pointer to the beginning of the constraint string for this alternative,
      for easier access by alternative number.  */
-  char *constraint;
+  const char *constraint;
 
   /* The register class valid for this alternative (possibly NO_REGS).  */
   enum reg_class class;
@@ -153,7 +153,7 @@ extern int recog_n_alternatives;
 extern enum machine_mode recog_operand_mode[];
 
 /* Indexed by N, gives the constraint string for operand N.  */
-extern char *recog_constraints[];
+extern const char *recog_constraints[];
 
 /* Indexed by N, gives the type (in, out, inout) for operand N.  */
 extern enum op_type recog_op_type[];
@@ -176,9 +176,9 @@ extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALT
 
 /* These are vectors indexed by insn-code.  Details in genoutput.c.  */
 
-extern char *const insn_template[];
+extern const char *const insn_template[];
 
-extern char *(*const insn_outfun[]) ();
+extern const char *(*const insn_outfun[]) ();
 
 extern const int insn_n_operands[];
 
@@ -192,7 +192,7 @@ extern const int insn_n_alternatives[];
    and second by the operand number.  Details in genoutput.c.  */
 
 #ifdef REGISTER_CONSTRAINTS  /* Avoid undef sym in certain broken linkers.  */
-extern char *const insn_operand_constraint[][MAX_RECOG_OPERANDS];
+extern const char *const insn_operand_constraint[][MAX_RECOG_OPERANDS];
 #endif
 
 #ifndef REGISTER_CONSTRAINTS  /* Avoid undef sym in certain broken linkers.  */
@@ -205,4 +205,4 @@ extern const char insn_operand_strict_low[][MAX_RECOG_OPERANDS];
 
 extern int (*const insn_operand_predicate[][MAX_RECOG_OPERANDS]) ();
 
-extern char * insn_name[];
+extern const char * insn_name[];

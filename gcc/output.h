@@ -81,7 +81,7 @@ extern void output_operand_lossage  PROTO((const char *));
 
 /* Output a string of assembler code, substituting insn operands.
    Defined in final.c.  */
-extern void output_asm_insn	PROTO((char *, rtx *));
+extern void output_asm_insn	PROTO((const char *, rtx *));
 
 /* Compute a worst-case reference address of a branch so that it
    can be safely used in the presence of aligned labels.
@@ -245,7 +245,7 @@ extern void assemble_zeros		PROTO((int));
 extern void assemble_align		PROTO((int));
 
 /* Assemble a string constant with the specified C string as contents.  */
-extern void assemble_string		PROTO((char *, int));
+extern void assemble_string		PROTO((const char *, int));
 /* Assemble everything that is needed for a variable or function declaration.
    Not used for automatic variables, and not used for function definitions.
    Should not be called for variables of incomplete structure type.

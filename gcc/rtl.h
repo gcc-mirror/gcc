@@ -1052,7 +1052,9 @@ extern void free_reg_info		PROTO((void));
 
 /* recog.c */
 extern int asm_noperands		PROTO((rtx));
-extern char *decode_asm_operands	PROTO((rtx, rtx *, rtx **, char **, enum machine_mode *));
+extern char *decode_asm_operands	PROTO((rtx, rtx *, rtx **,
+					       const char **,
+					       enum machine_mode *));
 
 extern enum reg_class reg_preferred_class PROTO((int));
 extern enum reg_class reg_alternate_class PROTO((int));

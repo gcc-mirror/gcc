@@ -282,7 +282,7 @@ static int bb_func_label_num	= -1;		/* Current label # for func */
 
 struct bb_str {
   struct bb_str *next;		/* pointer to next string */
-  char *string;			/* string */
+  const char *string;		/* string */
   int label_num;		/* label number */
   int length;			/* string length */
 };
@@ -299,7 +299,7 @@ static int asm_insn_count	PROTO((rtx));
 static void profile_function	PROTO((FILE *));
 static void profile_after_prologue PROTO((FILE *));
 static void add_bb		PROTO((FILE *));
-static int add_bb_string	PROTO((char *, int));
+static int add_bb_string	PROTO((const char *, int));
 static void output_source_line	PROTO((FILE *, rtx));
 static rtx walk_alter_subreg	PROTO((rtx));
 static void output_asm_name	PROTO((void));
@@ -1866,7 +1866,7 @@ add_bb (file)
 
 static int
 add_bb_string (string, perm_p)
-     char *string;
+     const char *string;
      int perm_p;
 {
   int len;
@@ -2395,7 +2395,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       {
 	register rtx body = PATTERN (insn);
 	int insn_code_number;
-	char *template;
+	const char *template;
 #ifdef HAVE_cc0
 	rtx note;
 #endif
@@ -3351,10 +3351,10 @@ output_asm_name ()
 
 void
 output_asm_insn (template, operands)
-     char *template;
+     const char *template;
      rtx *operands;
 {
-  register char *p;
+  register const char *p;
   register int c;
 
   /* An insn may return a null string template

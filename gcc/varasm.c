@@ -1108,7 +1108,7 @@ assemble_align (align)
 
 void
 assemble_string (p, size)
-     char *p;
+     const char *p;
      int size;
 {
   int pos = 0;

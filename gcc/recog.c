@@ -94,7 +94,7 @@ int recog_n_alternatives;
 enum machine_mode recog_operand_mode[MAX_RECOG_OPERANDS];
 
 /* Indexed by N, gives the constraint string for operand N.  */
-char *recog_constraints[MAX_RECOG_OPERANDS];
+const char *recog_constraints[MAX_RECOG_OPERANDS];
 
 /* Indexed by N, gives the type (in, out, inout) for operand N.  */
 enum op_type recog_op_type[MAX_RECOG_OPERANDS];
@@ -162,7 +162,7 @@ check_asm_operands (x)
 {
   int noperands;
   rtx *operands;
-  char **constraints;
+  const char **constraints;
   int i;
 
   /* Post-reload, be more strict with things.  */
@@ -181,13 +181,13 @@ check_asm_operands (x)
     return 1;
 
   operands = (rtx *) alloca (noperands * sizeof (rtx));
-  constraints = (char **) alloca (noperands * sizeof (char *));
+  constraints = (const char **) alloca (noperands * sizeof (char *));
 
   decode_asm_operands (x, operands, NULL_PTR, constraints, NULL_PTR);
 
   for (i = 0; i < noperands; i++)
     {
-      char *c = constraints[i];
+      const char *c = constraints[i];
       if (ISDIGIT ((unsigned char)c[0]))
 	c = constraints[c[0] - '0'];
 
@@ -1422,7 +1422,7 @@ decode_asm_operands (body, operands, operand_locs, constraints, modes)
      rtx body;
      rtx *operands;
      rtx **operand_locs;
-     char **constraints;
+     const char **constraints;
      enum machine_mode *modes;
 {
   register int i;
@@ -2022,7 +2022,7 @@ extract_insn (insn)
 			       recog_constraints, recog_operand_mode);
 	  if (noperands > 0)
 	    {
-	      char *p =  recog_constraints[0];
+	      const char *p =  recog_constraints[0];
 	      recog_n_alternatives = 1;
 	      while (*p)
 		recog_n_alternatives += (*p++ == ',');
@@ -2080,7 +2080,7 @@ preprocess_constraints ()
     {
       int j;
       struct operand_alternative *op_alt;
-      char *p = recog_constraints[i];
+      const char *p = recog_constraints[i];
 
       op_alt = recog_op_alt[i];
 
@@ -2210,7 +2210,7 @@ int
 constrain_operands (strict)
      int strict;
 {
-  char *constraints[MAX_RECOG_OPERANDS];
+  const char *constraints[MAX_RECOG_OPERANDS];
   int matching_operands[MAX_RECOG_OPERANDS];
   int earlyclobber[MAX_RECOG_OPERANDS];
   register int c;
@@ -2239,7 +2239,7 @@ constrain_operands (strict)
 	{
 	  register rtx op = recog_operand[opno];
 	  enum machine_mode mode = GET_MODE (op);
-	  register char *p = constraints[opno];
+	  register const char *p = constraints[opno];
 	  int offset = 0;
 	  int win = 0;
 	  int val;
