@@ -89,6 +89,9 @@ case "${target_os}" in
   irix6.5)
     os_include_dir="config/os/irix/irix6.5"
     ;;
+  mingw32*)
+    os_include_dir="config/os/mingw32"
+    ;;
   netbsd*)
     os_include_dir="config/os/bsd/netbsd"
     ;;
