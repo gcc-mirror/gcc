@@ -501,7 +501,8 @@ in the following sections.
 @gccoptlist{
 -march=@var{architecture-type} @gol
 -mbig-switch  -mdisable-fpregs  -mdisable-indexing @gol
--mfast-indirect-calls  -mgas  -mjump-in-delay @gol
+-mfast-indirect-calls  -mgas  -mgnu-ld -mhp-ld @gol
+-mjump-in-delay -mlinker-opt @gol
 -mlong-load-store  -mno-big-switch  -mno-disable-fpregs @gol
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas @gol
 -mno-jump-in-delay  -mno-long-load-store @gol
@@ -7985,6 +7986,30 @@ Generate the predefine, @code{_SIO}, for server IO.  The default is
 @option{-mwsio}.  This generates the predefines, @code{__hp9000s700},
 @code{__hp9000s700__} and @code{_WSIO}, for workstation IO.  These
 options are available under HP-UX and HI-UX.
+
+@item -mgnu-ld
+@opindex gnu-ld
+Use GNU ld specific options.  This passes @option{-shared} to ld when
+building a shared library.  It is the default when GCC is configured,
+explicitly or implicitly, with the GNU linker.  This option does not
+have any affect on which ld is called, it only changes what parameters
+are passed to that ld.  The ld that is called is determined by the
+@option{--with-ld} configure option, gcc's program search path, and
+finally by the user's @env{PATH}.  The linker used by GCC can be printed
+using @samp{which `gcc -print-prog-name=ld`}.
+
+@item -mhp-ld
+@opindex hp-ld
+Use HP ld specific options.  This passes @option{-b} to ld when building
+a shared library and passes @option{+Accept TypeMismatch} to ld on all
+links.  It is the default when GCC is configured, explicitly or
+implicitly, with the HP linker.  This option does not have any affect on
+which ld is called, it only changes what parameters are passed to that
+ld.  The ld that is called is determined by the @option{--with-ld}
+configure option, gcc's program search path, and finally by the user's
+@env{PATH}.  The linker used by GCC can be printed using @samp{which
+`gcc -print-prog-name=ld`}.
+
 @end table
 
 @node Intel 960 Options

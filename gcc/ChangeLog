@@ -1,5 +1,11 @@
 2002-10-04  Steve Ellcey  <sje@cup.hp.com>
 
+	* doc/invoke.texi (HPPA):  Add -mlinker-opt, -mgnu-ld,
+	and -mhp-ld options to list of options.  Add -mgnu-ld
+	and -mhp-ld option descriptions.
+
+2002-10-04  Steve Ellcey  <sje@cup.hp.com>
+
 	* fixinc/inclhack.def (hpux11_abs):  New.
 	(stdio_va_list): change __va_list__ to __gnuc_va_list.
 	* fixinc/fixincl.x: Rebuild.
