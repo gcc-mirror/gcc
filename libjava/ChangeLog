@@ -1,3 +1,32 @@
+2000-11-17  Tom Tromey  <tromey@cygnus.com>
+
+	* java/text/CollationKey.java: Implement Comparable.
+	(compareTo(Object)): New method.
+	* java/text/Collator.java (compare(Object,Object)): New method.
+	Implement Comparator.
+
+	* java/util/zip/InflaterInputStream.java (available): New method.
+	(close): New method.
+	(read, available, skip, fill): Throw exception if stream closed.
+	* java/util/zip/ZipInputStream.java (read, skip, readFully, fill,
+	getNextEntry): Throw exception if closed.
+
+2000-11-16  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/PushbackReader.java: Merged with Classpath.
+	* java/util/Arrays.java: Updated from Classpath.
+
+	* scripts/blocks.pl: New file.
+	* java/lang/Character.java (Subset): New class.
+	(UnicodeBlock): New class.
+
+	* java/lang/Math.java (toDegrees, toRadians): New methods.
+
+	* java/lang/Float.java: Implement Comparable.
+	(compareTo): New methods.
+	* java/lang/Double.java: Implement Comparable.
+	(compareTo): New methods.
+
 2000-11-16  Warren Levy  <warrenl@cygnus.com>
 
 	* java/beans/PropertyChangeSupport.java (propertyListeners): Made

@@ -1,6 +1,6 @@
 // CollationKey.java - Sort key for locale-sensitive String.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -19,7 +19,7 @@ package java.text;
  * Status: Believed complete and correct.
  */
 
-public final class CollationKey
+public final class CollationKey implements Comparable
 {
   public int compareTo (CollationKey target)
   {
@@ -32,6 +32,11 @@ public final class CollationKey
       }
 
     return key.length - target.key.length;
+  }
+
+  public int compareTo (Object o)
+  {
+    return compareTo ((CollationKey) o);
   }
 
   public boolean equals (Object obj)

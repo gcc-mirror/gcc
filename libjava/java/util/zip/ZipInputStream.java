@@ -35,6 +35,8 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
 
   public ZipEntry getNextEntry () throws IOException
   {
+    if (closed)
+      throw new IOException ("stream closed");
     if (current != null)
       closeEntry();
     if (in.read() != 'P'
@@ -112,6 +114,8 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   // back data.
   protected void fill () throws IOException
   {
+    if (closed)
+      throw new IOException ("stream closed");
     int count = buf.length;
     if (count > compressed_bytes)
       count = compressed_bytes;
@@ -127,9 +131,11 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   {
     return new ZipEntry (name);
   }
-  
+
   public int read (byte[] b, int off, int len)  throws IOException
   {
+    if (closed)
+      throw new IOException ("stream closed");
     if (len > avail)
       len = avail;
     int count;
@@ -149,6 +155,8 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
 
   public long skip (long n)  throws IOException
   {
+    if (closed)
+      throw new IOException ("stream closed");
     if (n > avail)
       n = avail;
     long count;
@@ -160,11 +168,9 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
     return count;
   }
 
-  public int available() {
-    if (closed)
-      return 0;
-    else
-      return 1;
+  public int available()
+  {
+    return closed ? 0 : 1;
   }
 
   private void readFully (byte[] b)  throws IOException
