@@ -9177,8 +9177,8 @@ dump_single_macro (hp, of)
 	switch (ap->stringify) {
 	 case SHARP_TOKEN: fprintf (of, "#"); break;
 	 case WHITE_SHARP_TOKEN: fprintf (of, "# "); break;
-	 case PERCENT_COLON_TOKEN: fprintf (of, "%:"); break;
-	 case WHITE_PERCENT_COLON_TOKEN: fprintf (of, "%: "); break;
+	 case PERCENT_COLON_TOKEN: fprintf (of, "%%:"); break;
+	 case WHITE_PERCENT_COLON_TOKEN: fprintf (of, "%%: "); break;
 	}
       }
       if (ap->raw_before) {
@@ -9193,8 +9193,8 @@ dump_single_macro (hp, of)
 	  switch (ap->raw_before) {
 	   case SHARP_TOKEN: fprintf (of, "##"); break;
 	   case WHITE_SHARP_TOKEN: fprintf (of, "## "); break;
-	   case PERCENT_COLON_TOKEN: fprintf (of, "%:%:"); break;
-	   case WHITE_PERCENT_COLON_TOKEN: fprintf (of, "%:%: "); break;
+	   case PERCENT_COLON_TOKEN: fprintf (of, "%%:%%:"); break;
+	   case WHITE_PERCENT_COLON_TOKEN: fprintf (of, "%%:%%: "); break;
 	  }
 	}
       }
@@ -9205,8 +9205,8 @@ dump_single_macro (hp, of)
       switch (ap->raw_after) {
        case SHARP_TOKEN: fprintf (of, "##"); break;
        case WHITE_SHARP_TOKEN: fprintf (of, " ##"); break;
-       case PERCENT_COLON_TOKEN: fprintf (of, "%:%:"); break;
-       case WHITE_PERCENT_COLON_TOKEN: fprintf (of, " %:%:"); break;
+       case PERCENT_COLON_TOKEN: fprintf (of, "%%:%%:"); break;
+       case WHITE_PERCENT_COLON_TOKEN: fprintf (of, " %%:%%:"); break;
       }
       concat = 1;
     }
