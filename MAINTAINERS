@@ -18,6 +18,7 @@ Jim Wilson					wilson@redhat.com
 			Various Maintainers
 
 sh port			Joern Rennecke		amylaar@redhat.com
+			Alexandre Oliva		aoliva@redhat.com
 v850 port		Nick Clifton		nickc@redhat.com
 v850 port		Michael Meissner	meissner@redhat.com
 arm port		Nick Clifton		nickc@redhat.com
@@ -29,7 +30,7 @@ mcore			Nick Clifton		nickc@redhat.com
 			Jim Dein		jdein@windriver.com
 mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
-mn10300 port		Alexandre Oliva		aoliva@redhat.com
+			Alexandre Oliva		aoliva@redhat.com
 hppa port		Jeff Law		law@redhat.com
 m68hc11 port		Stephane Carrez		Stephane.Carrez@worldnet.fr
 m68k port (?)		Jeff Law		law@redhat.com
@@ -142,7 +143,6 @@ Hans-Peter Nilsson				hp@bitrange.com
 Diego Novillo					dnovillo@redhat.com
 David O'Brien					obrien@FreeBSD.org
 Jeffrey D. Oldham				oldham@codesourcery.com
-Alexandre Oliva					oliva@lsd.ic.unicamp.br
 Alexandre Petit-Bianco				apbianco@redhat.com
 Clinton Popetz					cpopetz@cpopetz.com
 Ken Raeburn					raeburn@redhat.com
