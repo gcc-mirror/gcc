@@ -1,5 +1,8 @@
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
 
+	* alias.c (find_base_value): Add prototype.
+	(true_dependence): Add prototype for function argument.
+
 	* c-aux-info.c (xmalloc): Remove declaration.
 
 Fri Jun 19 20:23:05 1998   Robert Lipe  <robertl@dgii.com>
