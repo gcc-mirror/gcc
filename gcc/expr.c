@@ -10133,6 +10133,11 @@ do_store_flag (exp, target, mode, only_cheap)
 
   arg0 = TREE_OPERAND (exp, 0);
   arg1 = TREE_OPERAND (exp, 1);
+
+  /* Don't crash if the comparison was erroneous.  */
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return const0_rtx;
+
   type = TREE_TYPE (arg0);
   operand_mode = TYPE_MODE (type);
   unsignedp = TREE_UNSIGNED (type);
