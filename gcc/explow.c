@@ -304,8 +304,11 @@ convert_memory_address (to_mode, x)
      enum machine_mode to_mode;
      rtx x;
 {
+  enum machine_mode from_mode = to_mode == ptr_mode ? Pmode : ptr_mode;
   rtx temp;
 
+  /* Here we handle some special cases.  If none of them apply, fall through
+     to the default case.  */
   switch (GET_CODE (x))
     {
     case CONST_INT:
@@ -320,21 +323,25 @@ convert_memory_address (to_mode, x)
       SYMBOL_REF_FLAG (temp) = SYMBOL_REF_FLAG (x);
       return temp;
 
-    case PLUS:
-    case MULT:
-      return gen_rtx (GET_CODE (x), to_mode, 
-		      convert_memory_address (to_mode, XEXP (x, 0)),
-		      convert_memory_address (to_mode, XEXP (x, 1)));
-
     case CONST:
       return gen_rtx (CONST, to_mode, 
 		      convert_memory_address (to_mode, XEXP (x, 0)));
 
-    default:
-      return convert_modes (to_mode,
-			    to_mode == ptr_mode ? Pmode : ptr_mode,
-			    x, POINTERS_EXTEND_UNSIGNED);
+    case PLUS:
+    case MULT:
+      /* For addition the second operand is a small constant, we can safely
+	 permute the converstion and addition operation.  We can always safely
+	 permute them if we are making the address narrower.  */
+      if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
+	  || (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT
+	      && INTVAL (x) + 20000 < 40000))
+	return gen_rtx (GET_CODE (x), to_mode, 
+			convert_memory_address (to_mode, XEXP (x, 0)),
+			convert_memory_address (to_mode, XEXP (x, 1)));
     }
+
+  return convert_modes (to_mode, from_mode,
+			x, POINTERS_EXTEND_UNSIGNED);
 }
 #endif
 
