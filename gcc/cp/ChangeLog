@@ -1,3 +1,8 @@
+2004-09-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (struct lang_decl): Shrink by reordering fields and
+	turning operator_code and fixed_offset into bitfields.
+
 2004-09-29  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* decl.c (duplicate_decls): Merge TREE_DEPRECATED.
