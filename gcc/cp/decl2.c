@@ -2451,6 +2451,30 @@ comdat_linkage (decl)
     DECL_COMDAT (decl) = 1;
 }
 
+/* For win32 we also want to put explicit instantiations in
+   linkonce sections, so that they will be merged with implicit
+   instantiations; otherwise we get duplicate symbol errors.  */
+
+void
+maybe_make_one_only (decl)
+     tree decl;
+{
+  /* This is not necessary on targets that support weak symbols, because
+     the implicit instantiations will defer to the explicit one.  */     
+  if (! supports_one_only () || SUPPORTS_WEAK)
+    return;
+
+  /* We can't set DECL_COMDAT on functions, or finish_file will think
+     we can get away with not emitting them if they aren't used.
+     We can't use make_decl_one_only for variables, because their
+     DECL_INITIAL may not have been set properly yet.  */
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    make_decl_one_only (decl);
+  else
+    comdat_linkage (decl);
+}
+
 /* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
    based on TYPE and other static flags.
 
@@ -2481,9 +2505,8 @@ import_export_vtable (decl, type, final)
 
       /* For WIN32 we also want to put explicit instantiations in
 	 linkonce sections.  */
-      if (CLASSTYPE_EXPLICIT_INSTANTIATION (type)
-	  && supports_one_only () && ! SUPPORTS_WEAK)
-	make_decl_one_only (decl);
+      if (CLASSTYPE_EXPLICIT_INSTANTIATION (type))
+	maybe_make_one_only (decl);
     }
   else
     {
@@ -2769,9 +2792,8 @@ import_export_decl (decl)
 
 	  /* For WIN32 we also want to put explicit instantiations in
 	     linkonce sections.  */
-	  if (CLASSTYPE_EXPLICIT_INSTANTIATION (ctype)
-	      && supports_one_only () && ! SUPPORTS_WEAK)
-	    make_decl_one_only (decl);
+	  if (CLASSTYPE_EXPLICIT_INSTANTIATION (ctype))
+	    maybe_make_one_only (decl);
 	}
       else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
