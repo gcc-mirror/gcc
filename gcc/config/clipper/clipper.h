@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Clipper version.
-   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1993 Free Software Foundation, Inc.
 
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
@@ -38,13 +38,18 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES  \
-  { { "", TARGET_DEFAULT} }
+#define TARGET_SWITCHES		\
+  { { "c400", 1 },		\
+    { "c300", -1 },		\
+    { "", TARGET_DEFAULT} }
+
+#define TARGET_C400 1
+#define TARGET_C300 0
 
 /* Default target_flags if no switches specified.  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
+#define TARGET_DEFAULT TARGET_C300
 #endif
 
 /* Omit frame pointer at -O2.  Inline functions at -O3.  */
@@ -175,7 +180,7 @@ extern int target_flags;
    On the clipper, these are the FP and SP .  */
 #define FIXED_REGISTERS \
 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,\
- 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1} /* FIXME: C300 only */
+ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1} /* Default: C300 */
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -185,7 +190,16 @@ extern int target_flags;
    Aside from that, you can include as many other registers as you like.  */
 #define CALL_USED_REGISTERS \
 {1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,\
- 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1} /* FIXME: C300 only */
+ 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1} /* default: C300 */
+
+/* Zero or more C statements that may conditionally modify two
+   variables `fixed_regs' and `call_used_regs' (both of type `char
+   []') after they have been initialized from the two preceding
+   macros. A C400 has additional floating registers f8 -> f15 */
+#define CONDITIONAL_REGISTER_USAGE	\
+   if (target_flags & TARGET_C400)	\
+     { int i;				\
+       for (i = 24; i < 32; i++) fixed_regs[i] = call_used_regs[i] = 0; }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
