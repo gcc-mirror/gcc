@@ -1153,7 +1153,10 @@ ffeintrin_check_any_ (ffebld arglist)
   return FALSE;
 }
 
-/* Compare name to intrinsic's name.  Uses strcmp on arguments' names.	*/
+/* Compare name to intrinsic's name.  Uses strcmp on arguments' names.
+   The intrinsics table is sorted on the upper case entries; so first
+   compare irrespective of case on the `uc' entry.  If it matches,
+   compare according to the setting of intrinsics case comparison mode.  */
 
 static int
 ffeintrin_cmp_name_ (const void *name, const void *intrinsic)
@@ -1161,8 +1164,22 @@ ffeintrin_cmp_name_ (const void *name, const void *intrinsic)
   const char *const uc = ((const struct _ffeintrin_name_ *) intrinsic)->name_uc;
   const char *const lc = ((const struct _ffeintrin_name_ *) intrinsic)->name_lc;
   const char *const ic = ((const struct _ffeintrin_name_ *) intrinsic)->name_ic;
+  int i;
 
-  return ffesrc_strcmp_2c (ffe_case_intrin (), name, uc, lc, ic);
+  if ((i = strcasecmp (name, uc)) == 0)
+    {
+      switch (ffe_case_intrin ())
+	{
+	case FFE_caseLOWER:
+	  return strcmp(name, lc);
+	case FFE_caseINITCAP:
+	  return strcmp(name, ic);
+	default:
+	  return 0;
+	}
+    }
+
+  return i;
 }
 
 /* Return basic type of intrinsic implementation, based on its
