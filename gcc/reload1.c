@@ -343,6 +343,8 @@ static void forget_old_reloads_1	PROTO((rtx));
 static int reload_reg_class_lower	PROTO((short *, short *));
 static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
 					       enum machine_mode));
+static void clear_reload_reg_in_use	PROTO((int, int, enum reload_type,
+					       enum machine_mode));
 static int reload_reg_free_p		PROTO((int, int, enum reload_type));
 static int reload_reg_free_before_p	PROTO((int, int, enum reload_type));
 static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
@@ -3828,6 +3830,10 @@ static HARD_REG_SET reload_reg_used_in_other_addr;
 /* If reg is in use as a reload reg for any sort of reload.  */
 static HARD_REG_SET reload_reg_used_at_all;
 
+/* If reg is use as an inherited reload.  We just mark the first register
+   in the group.  */
+static HARD_REG_SET reload_reg_used_for_inherit;
+
 /* Mark reg REGNO as in use for a reload of the sort spec'd by OPNUM and
    TYPE. MODE is used to indicate how many consecutive regs are
    actually used.  */
@@ -3880,6 +3886,57 @@ mark_reload_reg_in_use (regno, opnum, type, mode)
 	}
 
       SET_HARD_REG_BIT (reload_reg_used_at_all, i);
+    }
+}
+
+/* Similarly, but show REGNO is no longer in use for a reload.  */
+
+static void
+clear_reload_reg_in_use (regno, opnum, type, mode)
+     int regno;
+     int opnum;
+     enum reload_type type;
+     enum machine_mode mode;
+{
+  int nregs = HARD_REGNO_NREGS (regno, mode);
+  int i;
+
+  for (i = regno; i < nregs + regno; i++)
+    {
+      switch (type)
+	{
+	case RELOAD_OTHER:
+	  CLEAR_HARD_REG_BIT (reload_reg_used, i);
+	  break;
+
+	case RELOAD_FOR_INPUT_ADDRESS:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_input_addr[opnum], i);
+	  break;
+
+	case RELOAD_FOR_OUTPUT_ADDRESS:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], i);
+	  break;
+
+	case RELOAD_FOR_OPERAND_ADDRESS:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_op_addr, i);
+	  break;
+
+	case RELOAD_FOR_OTHER_ADDRESS:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_other_addr, i);
+	  break;
+
+	case RELOAD_FOR_INPUT:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_input[opnum], i);
+	  break;
+
+	case RELOAD_FOR_OUTPUT:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_output[opnum], i);
+	  break;
+
+	case RELOAD_FOR_INSN:
+	  CLEAR_HARD_REG_BIT (reload_reg_used_in_insn, i);
+	  break;
+	}
     }
 }
 
@@ -4300,9 +4357,14 @@ allocate_reload_reg (r, insn, last_reload, noerror)
 				 reload_when_needed[r])
 	      && TEST_HARD_REG_BIT (reg_class_contents[class], spill_regs[i])
 	      && HARD_REGNO_MODE_OK (spill_regs[i], reload_mode[r])
-	      /* Look first for regs to share, then for unshared.  */
-	      && (pass || TEST_HARD_REG_BIT (reload_reg_used_at_all,
-					     spill_regs[i])))
+	      /* Look first for regs to share, then for unshared.  But
+		 don't share regs used for inherited reloads; they are
+		 the ones we want to preserve.  */
+	      && (pass
+		  || (TEST_HARD_REG_BIT (reload_reg_used_at_all,
+					 spill_regs[i])
+		      && ! TEST_HARD_REG_BIT (reload_reg_used_for_inherit,
+					      spill_regs[i]))))
 	    {
 	      int nr = HARD_REGNO_NREGS (spill_regs[i], reload_mode[r]);
 	      /* Avoid the problem where spilling a GENERAL_OR_FP_REG
@@ -4353,19 +4415,15 @@ allocate_reload_reg (r, insn, last_reload, noerror)
       goto failure;
     }
 
-  last_spill_reg = i;
-
-  /* Mark as in use for this insn the reload regs we use for this.  */
-  mark_reload_reg_in_use (spill_regs[i], reload_opnum[r],
-			  reload_when_needed[r], reload_mode[r]);
+  /* I is the index in SPILL_REG_RTX of the reload register we are to
+     allocate.  Get an rtx for it and find its register number.  */
 
   new = spill_reg_rtx[i];
 
   if (new == 0 || GET_MODE (new) != reload_mode[r])
-    spill_reg_rtx[i] = new = gen_rtx (REG, reload_mode[r], spill_regs[i]);
-
-  reload_reg_rtx[r] = new;
-  reload_spill_index[r] = i;
+    spill_reg_rtx[i] = new
+      = gen_rtx (REG, reload_mode[r], spill_regs[i]);
+	    
   regno = true_regnum (new);
 
   /* Detect when the reload reg can't hold the reload mode.
@@ -4385,8 +4443,19 @@ allocate_reload_reg (r, insn, last_reload, noerror)
 	     && ! HARD_REGNO_MODE_OK (regno, test_mode)))
 	if (! (reload_out[r] != 0
 	       && ! HARD_REGNO_MODE_OK (regno, GET_MODE (reload_out[r]))))
-	  /* The reg is OK.  */
-	  return 1;
+	  {
+	    /* The reg is OK.  */
+	    last_spill_reg = i;
+
+	    /* Mark as in use for this insn the reload regs we use
+	       for this.  */
+	    mark_reload_reg_in_use (spill_regs[i], reload_opnum[r],
+				    reload_when_needed[r], reload_mode[r]);
+
+	    reload_reg_rtx[r] = new;
+	    reload_spill_index[r] = i;
+	    return 1;
+	  }
     }
 
   /* The reg is not OK.  */
@@ -4620,6 +4689,8 @@ choose_reload_regs (insn, avoid_return_reg)
 	 Then make a second pass over the reloads to allocate any reloads
 	 that haven't been given registers yet.  */
 
+      CLEAR_HARD_REG_SET (reload_reg_used_for_inherit);
+
       for (j = 0; j < n_reloads; j++)
 	{
 	  register int r = reload_order[j];
@@ -4734,6 +4805,8 @@ choose_reload_regs (insn, avoid_return_reg)
 			  reload_inherited[r] = 1;
 			  reload_inheritance_insn[r] = reg_reloaded_insn[i];
 			  reload_spill_index[r] = i;
+			  SET_HARD_REG_BIT (reload_reg_used_for_inherit,
+					    spill_regs[i]);
 			}
 		    }
 		}
@@ -4820,9 +4893,12 @@ choose_reload_regs (insn, avoid_return_reg)
 		     mark the spill reg as in use for this insn.  */
 		  i = spill_reg_order[regno];
 		  if (i >= 0)
-		    mark_reload_reg_in_use (regno, reload_opnum[r],
-					    reload_when_needed[r],
-					    reload_mode[r]);
+		    {
+		      mark_reload_reg_in_use (regno, reload_opnum[r],
+					      reload_when_needed[r],
+					      reload_mode[r]);
+		      SET_HARD_REG_BIT (reload_reg_used_for_inherit, regno);
+		    }
 		}
 	    }
 
@@ -4961,10 +5037,18 @@ choose_reload_regs (insn, avoid_return_reg)
      optional and not inherited, clear reload_reg_rtx so other
      routines (such as subst_reloads) don't get confused.  */
   for (j = 0; j < n_reloads; j++)
-    if ((reload_optional[j] && ! reload_inherited[j])
-	|| (reload_in[j] == 0 && reload_out[j] == 0
-	    && ! reload_secondary_p[j]))
-      reload_reg_rtx[j] = 0;
+    if (reload_reg_rtx[j] != 0
+	&& ((reload_optional[j] && ! reload_inherited[j])
+	    || (reload_in[j] == 0 && reload_out[j] == 0
+		&& ! reload_secondary_p[j])))
+      {
+	int regno = true_regnum (reload_reg_rtx[j]);
+
+	if (spill_reg_order[regno] >= 0)
+	  clear_reload_reg_in_use (regno, reload_opnum[j],
+				   reload_when_needed[j], reload_mode[j]);
+	reload_reg_rtx[j] = 0;
+      }
 
   /* Record which pseudos and which spill regs have output reloads.  */
   for (j = 0; j < n_reloads; j++)
