@@ -316,11 +316,11 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 /* Define this to change the optimizations performed by default.  */
 
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) c4x_optimization_options(LEVEL,SIZE)
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) c4x_optimization_options(LEVEL, SIZE)
 
 /* Run Time Target Specification  */
 
-#define TARGET_VERSION fprintf (stderr, " (TMS320C[34]x, TI syntax)" );
+#define TARGET_VERSION fprintf (stderr, " (TMS320C[34]x, TI syntax)");
 
 /* Storage Layout  */
 
@@ -588,8 +588,7 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
    local-alloc.c won't allocate pseudos that have these classes as their
    preferred class unless they are "preferred or nothing".  */
 
-#define CLASS_LIKELY_SPILLED_P(CLASS) \
- ((CLASS) == INDEX_REGS)
+#define CLASS_LIKELY_SPILLED_P(CLASS) ((CLASS) == INDEX_REGS)
 
 /* CCmode is wrongly defined in machmode.def  It should have a size
    of UNITS_PER_WORD.  */
@@ -612,9 +611,7 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS) (c4x_caller_save_map[REGNO])
 
-int c4x_hard_regno_mode_ok ();
-#define HARD_REGNO_MODE_OK(REGNO, MODE)  c4x_hard_regno_mode_ok(REGNO, MODE)
-
+#define HARD_REGNO_MODE_OK(REGNO, MODE) c4x_hard_regno_mode_ok(REGNO, MODE)
 
 /* A C expression that is nonzero if it is desirable to choose
    register allocation so as to avoid move instructions between a
@@ -625,7 +622,7 @@ int c4x_hard_regno_mode_ok ();
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 
-#define MODES_TIEABLE_P(MODE1, MODE2)		0
+#define MODES_TIEABLE_P(MODE1, MODE2) 0
 
 
 /* Define the classes of registers for register constraints in the
@@ -1075,7 +1072,7 @@ CUMULATIVE_ARGS;
    other targets such as m68k).  Since we must use stf/sti,
    the profitability is marginal anyway.  */
 
-#define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0
+/* #define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0 */
 
 /* Never pass data by reference.  */
 
@@ -2060,7 +2057,8 @@ dtors_section ()							\
 /* Output float/double constants  QFmode.  */
 
 #define ASM_OUTPUT_BYTE_FLOAT(FILE, VALUE)		\
-{   long l;						\
+  do {							\
+    long l;						\
     char str[30];					\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
     REAL_VALUE_TO_DECIMAL (VALUE, "%20lf", str);	\
@@ -2068,7 +2066,7 @@ dtors_section ()							\
       fprintf (FILE, "\t.word\t0%08xh\t; %s\n", l, str);\
     else						\
       fprintf (FILE, "\t.word\t0%08lxh\t; %s\n", l, str);\
-}
+  } while (0);
 
 /* Output long double constants  HFmode. 
    The first word contains the exponent and first part of the mantissa
@@ -2079,7 +2077,8 @@ dtors_section ()							\
    a LDP for each load.  */
 
 #define ASM_OUTPUT_SHORT_FLOAT(FILE, VALUE)		\
-{   long l[2];						\
+  do {							\
+    long l[2];						\
     char str[30];					\
     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
     REAL_VALUE_TO_DECIMAL (VALUE, "%20lf", str);	\
@@ -2090,16 +2089,17 @@ dtors_section ()							\
     else							\
       fprintf (FILE, "\t.word\t0%08lxh\t; %s\n\t.word\t0%08lxh\n", \
                l[0], str, l[1]);				\
-}
+  } while (0);
 
 #define ASM_OUTPUT_CHAR(FILE, VALUE)			\
-{    fprintf (FILE, "\t.word\t");			\
+  do {							\
+    fprintf (FILE, "\t.word\t");			\
      output_addr_const (FILE, VALUE);			\
      if (GET_CODE (VALUE) != SYMBOL_REF)		\
        fprintf (FILE, " ; 0%08xh\n", INTVAL (VALUE));	\
      else						\
        fputc ('\n', FILE);				\
-}
+  } while (0);
 
 #define ASM_OUTPUT_BYTE(FILE, VALUE)  \
   fprintf (FILE, "\t.word\t0%xh\n", (VALUE))
@@ -2115,32 +2115,32 @@ dtors_section ()							\
 #define NO_DOT_IN_LABEL		/* Only required for TI format */
 
 #define ASM_OUTPUT_LABEL(FILE, NAME)	\
-{ assemble_name (FILE, NAME); fputs (":\n", FILE); }
+do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0);
 
 #define ASM_GLOBALIZE_LABEL(FILE, NAME) \
-{                                       \
+  do {                                  \
     fprintf (FILE, "\t.global\t");	\
     assemble_name (FILE, NAME);		\
     fputs ("\n", FILE); 	        \
-}
+  } while (0);
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
-{                                            	\
+  do {                                         	\
     fprintf (FILE, "\t.ref\t");			\
     assemble_name (FILE, NAME);	             	\
     fputc ('\n', FILE);  	               	\
-}
+  } while (0);
 
 /* A C statement to output on FILE an assembler pseudo-op to
    declare a library function named external.
-   (Only needed to keep asm30 happy for ___divqf3 etc.) */
+   (Only needed to keep asm30 happy for ___divqf3 etc.)  */
 
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)  \
-{						\
+  do {						\
     fprintf (FILE, "\t.ref\t");			\
     assemble_name (FILE, XSTR (FUN, 0));	\
     fprintf (FILE, "\n");			\
-}
+  } while (0);
 
 /* The prefix to add to user-visible assembler symbols.  */
 
