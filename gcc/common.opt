@@ -999,9 +999,6 @@ gxcoff+
 Common JoinedOrMissing
 Generate debug information in extended XCOFF format
 
-m
-Common Joined
-
 o
 Common Joined Separate
 -o <file>	Place output into <file>

@@ -1,3 +1,10 @@
+2005-03-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* common.opt (m): Remove.
+	* opts.c (handle_option): Pass 'm' options to set_target_switch if
+	table lookup fails.
+	(common_handle_option): Remove OPT_m case.
+
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (fold_builtin_bitop): Take decomposed arguments
