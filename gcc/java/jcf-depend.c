@@ -78,22 +78,30 @@ free_entry (entp)
   *entp = NULL;
 }
 
-/* Helper to add to entry list.  */
+/* Helper to add to the end of the entry list.  */
 static void
 add_entry (entp, name)
      struct entry **entp;
      const char *name;
 {
-  struct entry *ent;
+  struct entry *ent, *last;
 
-  for (ent = *entp; ent != NULL; ent = ent->next)
+  for (last = ent = *entp; ent != NULL; last = ent, ent = ent->next)
     if (! strcmp (ent->file, name))
       return;
 
   ent = (struct entry *) xmalloc (sizeof (struct entry));
   ent->file = xstrdup (name);
-  ent->next = *entp;
-  *entp = ent;
+  ent->next = NULL;
+
+  if (last == ent)
+    {
+      // This is only true the first time through, when the entry list
+      // is empty.
+      *entp = ent;
+    }     
+  else
+    last->next = ent;
 }
 
 /* Call this to reset the dependency module.  This is required if
