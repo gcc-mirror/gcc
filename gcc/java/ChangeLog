@@ -1,3 +1,15 @@
+2002-01-14  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/5303:
+	* Make-lang.in (java.install-man): Handle jv-convert man page.
+	(java.generated-manpages): Added jv-convert.1.
+	(java.uninstall): Remove jv-convert.1.
+	(java.maintainer-clean): Likewise.
+	($(srcdir)/java/jv-convert.1): New target.
+	* gcj.texi (Top): Link to jv-convert node.
+	(Individual utilities): Likewise.
+	(Invoking jv-convert): New node.
+
 2001-01-10  Jeff Sturm  <jsturm@one-point.com>
             Martin Kahlert  <martin.kahlert@infineon.com>
 

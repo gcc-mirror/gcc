@@ -34,6 +34,8 @@
 * jcf-dump: (gcj)Invoking jcf-dump.
                             Print information about Java class files
 * gij: (gcj)Invoking gij.   GNU interpreter for Java bytecode
+* jv-convert: (gcj)Invoking jv-convert.
+                            Convert file from one encoding to another
 @end direntry
 @end format
 
@@ -120,6 +122,7 @@ files and object files, and it can read both Java source code and
 * Invoking jv-scan::    Print information about source files
 * Invoking jcf-dump::   Print information about class files
 * Invoking gij::	Interpreting Java bytecodes
+* Invoking jv-convert:: Converting from one encoding to another
 * Resources::		Where to look for more information
 @end menu
 
@@ -765,6 +768,65 @@ Print help, then exit.
 
 @item --version
 Print version number, then exit.
+@end table
+
+@c man end
+
+@node Invoking jv-convert
+@chapter Invoking jv-convert
+
+@c man title jv-convert Convert file from one encoding to another
+
+@c man begin synopsis jv-convert
+@command{jv-convert} [@option{OPTION}] @dots{} [@var{INPUTFILE} [@var{OUTPUTFILE}]]
+@ignore
+
+  [@option{--encoding} @var{name}]
+  [@option{--from} @var{name}]
+  [@option{--to} @var{name}]
+  [@option{-i} @var{file}] [@option{-o} @var{file}]
+  [@option{--reverse}] [@option{--help}] [@option{--version}]
+@end ignore
+@c man end
+
+@c man begin DESCRIPTION jv-convert
+
+@command{jv-convert} is a utility included with @code{libgcj} which
+converts a file from one encoding to another.  It is similar to the Unix
+@command{iconv} utility.
+
+The encodings supported by @command{jv-convert} are platform-dependent.
+Currently there is no way to get a list of all supported encodings.
+
+@c man end
+
+@c man begin OPTIONS jv-convert
+
+@table @gcctabopt
+@item --encoding @var{name}
+@itemx --from @var{name}
+Use @var{name} as the input encoding.  The default is the current
+locale's encoding.
+
+@item --to @var{name}
+Use @var{name} as the output encoding.  The default is the
+@code{JavaSrc} encoding; this is ASCII with @samp{\u} escapes for
+non-ASCII characters.
+
+@item -i @var{file}
+Read from @var{file}.  The default is to read from standard input.
+
+@item -o @var{file}
+Write to @var{file}.  The default is to write to standard output.
+
+@item --reverse
+Swap the input and output encodings.
+
+@item --help
+Print a help message, then exit.
+
+@item --version
+Print version information, then exit.
 @end table
 
 @c man end
