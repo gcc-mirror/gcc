@@ -1,3 +1,11 @@
+2002-08-20  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/URISyntaxException.java: New file.
+	* java/net/SocketTimeoutException.java: New file.
+	* java/net/PortUnreachableException.java: New file.	
+	* Makefile.am: Updated.
+	* Makefile.in: Rebuilt.
+
 2002-08-18  Mark Wielaard  <mark@klomp.org>
 
 	Thanks to Vladimir Puskas <vpuskas@eunet.yu>

@@ -1894,6 +1894,7 @@ java/net/NoRouteToHostException.java \
 java/net/PasswordAuthentication.java \
 java/net/PlainDatagramSocketImpl.java \
 java/net/PlainSocketImpl.java \
+java/net/PortUnreachableException.java \
 java/net/ProtocolException.java	\
 java/net/ServerSocket.java \
 java/net/Socket.java \
@@ -1902,6 +1903,8 @@ java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
 java/net/SocketOptions.java \
 java/net/SocketPermission.java \
+java/net/SocketTimeoutException.java \
+java/net/URISyntaxException.java \
 java/net/URL.java \
 java/net/URLClassLoader.java \
 java/net/URLConnection.java \
