@@ -1,3 +1,8 @@
+2002-09-19  Jim Wilson  <wilson@redhat.com>
+
+	* combine.c (simplify_set): When optimizing a subreg src with a
+	cc0 dest, use GET_MODE (src) for mask instead of inner_mode.
+
 2002-09-19  Dale Johannesen <dalej@apple.com>
 	* combine.c (make_extraction): Don't create
 	invalid subreg.

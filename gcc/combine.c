@@ -5229,7 +5229,7 @@ simplify_set (x)
       if (GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_WIDE_INT
 	  && (nonzero_bits (inner, inner_mode)
 	      < ((unsigned HOST_WIDE_INT) 1
-		 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+		 << (GET_MODE_BITSIZE (GET_MODE (src)) - 1))))
 	{
 	  SUBST (SET_SRC (x), inner);
 	  src = SET_SRC (x);
