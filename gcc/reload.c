@@ -2109,10 +2109,12 @@ immune_p (x, y, ydata)
       /* Constants and stack slots never overlap.  */
       if (CONSTANT_P (xdata.base)
 	  && (ydata.base == frame_pointer_rtx
+	      || ydata.base == hard_frame_pointer_rtx
 	      || ydata.base == stack_pointer_rtx))
 	return 1;
       if (CONSTANT_P (ydata.base)
 	  && (xdata.base == frame_pointer_rtx
+	      || xdata.base == hard_frame_pointer_rtx
 	      || xdata.base == stack_pointer_rtx))
 	return 1;
       /* If either base is variable, we don't know anything.  */
@@ -4083,6 +4085,9 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
      (displacement is too large), compute the sum in a register.  */
   else if (GET_CODE (ad) == PLUS
 	   && (XEXP (ad, 0) == frame_pointer_rtx
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	       || XEXP (ad, 0) == hard_frame_pointer_rtx
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	       || XEXP (ad, 0) == arg_pointer_rtx
 #endif
@@ -4149,6 +4154,9 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
   else if (GET_CODE (ad) == PLUS && GET_CODE (XEXP (ad, 1)) == CONST_INT
 	   && GET_CODE (XEXP (ad, 0)) == PLUS
 	   && (XEXP (XEXP (ad, 0), 0) == frame_pointer_rtx
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	       || XEXP (XEXP (ad, 0), 0) == hard_frame_pointer_rtx
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	       || XEXP (XEXP (ad, 0), 0) == arg_pointer_rtx
 #endif
@@ -4169,6 +4177,9 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
   else if (GET_CODE (ad) == PLUS && GET_CODE (XEXP (ad, 1)) == CONST_INT
 	   && GET_CODE (XEXP (ad, 0)) == PLUS
 	   && (XEXP (XEXP (ad, 0), 1) == frame_pointer_rtx
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	       || XEXP (XEXP (ad, 0), 1) == hard_frame_pointer_rtx
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	       || XEXP (XEXP (ad, 0), 1) == arg_pointer_rtx
 #endif
