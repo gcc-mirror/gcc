@@ -1,5 +1,10 @@
 2002-10-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8287
+	* decl.c (finish_destructor_body): Create the label to jump to
+	when returning from a destructor here.
+	(finish_function_body): Rather than here.
+
 	* semantics.c (finish_alignof): Call complete_type before calling
 	c_alignof.
 	* decl2.c (build_expr_from_tree): Use
