@@ -1,3 +1,8 @@
+2003-07-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10849
+	* g++.dg/template/access12.C: New test.
+
 2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/bprob/bprob.exp (prof_ext): Update.
