@@ -10,9 +10,7 @@
 
 extern "C++" {
 
-#ifdef __HONOR_STD
 namespace std {
-#endif
 
   class bad_alloc : public exception {
   public:
@@ -24,9 +22,7 @@ namespace std {
   typedef void (*new_handler)();
   new_handler set_new_handler (new_handler);
 
-#ifdef __HONOR_STD
 } // namespace std
-#endif
 
 // replaceable signatures
 void *operator new (size_t) throw (std::bad_alloc);

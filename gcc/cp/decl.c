@@ -3503,12 +3503,11 @@ pushdecl (x)
       if (TREE_PUBLIC (x) && TREE_CODE (x) != FUNCTION_DECL)
 	{
 	  tree decl;
-	  tree bindings = binding_for_name (name, current_namespace);
 
-	  if (BINDING_VALUE (bindings) != NULL_TREE
-	      && (DECL_EXTERNAL (BINDING_VALUE (bindings))
-		  || TREE_PUBLIC (BINDING_VALUE (bindings))))
-	    decl = BINDING_VALUE (bindings);
+	  if (IDENTIFIER_NAMESPACE_VALUE (name) != NULL_TREE
+	      && (DECL_EXTERNAL (IDENTIFIER_NAMESPACE_VALUE (name))
+		  || TREE_PUBLIC (IDENTIFIER_NAMESPACE_VALUE (name))))
+	    decl = IDENTIFIER_NAMESPACE_VALUE (name);
 	  else
 	    decl = NULL_TREE;
 
@@ -3527,11 +3526,10 @@ pushdecl (x)
       if (namespace_bindings_p ())
 	{
 	  /* Install a global value.  */
-	  tree bindings = binding_for_name (name, current_namespace);
 
 	  /* If the first global decl has external linkage,
 	     warn if we later see static one.  */
-	  if (BINDING_VALUE (bindings) == NULL_TREE && TREE_PUBLIC (x))
+	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && TREE_PUBLIC (x))
 	    TREE_PUBLIC (name) = 1;
 
 	  /* Don't install an artificial TYPE_DECL if we already have
@@ -3541,9 +3539,10 @@ pushdecl (x)
 	      || ! DECL_ARTIFICIAL (x))
 	    {
 	      if (TREE_CODE (x) == FUNCTION_DECL)
-		my_friendly_assert ((BINDING_VALUE (bindings) == NULL_TREE)
-		                    || BINDING_VALUE (bindings) == x, 378);
-	      BINDING_VALUE (bindings) = x;
+		my_friendly_assert 
+		  ((IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE)
+		  || (IDENTIFIER_GLOBAL_VALUE (name) == x), 378);
+	      SET_IDENTIFIER_NAMESPACE_VALUE (name, x);
 	    }
 
 	  /* Don't forget if the function was used via an implicit decl.  */
@@ -3573,7 +3572,7 @@ pushdecl (x)
 	{
 	  /* Here to install a non-global value.  */
 	  tree oldlocal = IDENTIFIER_LOCAL_VALUE (name);
-	  tree oldglobal = binding_for_name (name, current_namespace);
+	  tree oldglobal = IDENTIFIER_NAMESPACE_VALUE (name);
 
 	  /* Don't install an artificial TYPE_DECL if we already have
 	     another _DECL with that name.  */
@@ -3596,24 +3595,24 @@ pushdecl (x)
 	     have a global definition or declaration for the function.  */
 	  if (oldlocal == NULL_TREE
 	      && DECL_EXTERNAL (x)
-	      && BINDING_VALUE (oldglobal) != NULL_TREE
+	      && oldglobal != NULL_TREE
 	      && TREE_CODE (x) == FUNCTION_DECL
-	      && TREE_CODE (BINDING_VALUE (oldglobal)) == FUNCTION_DECL)
+	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
 	    {
 	      /* We have one.  Their types must agree.  */
-	      if (decls_match (x, BINDING_VALUE (oldglobal)))
+	      if (decls_match (x, oldglobal))
 		/* OK */;
 	      else
 		{
 		  cp_warning ("extern declaration of `%#D' doesn't match", x);
-		  cp_warning_at ("global declaration `%#D'", BINDING_VALUE (oldglobal));
+		  cp_warning_at ("global declaration `%#D'", oldglobal);
 		}
 	    }
 	  /* If we have a local external declaration,
 	     and no file-scope declaration has yet been seen,
 	     then if we later have a file-scope decl it must not be static.  */
 	  if (oldlocal == NULL_TREE
-	      && BINDING_VALUE (oldglobal) == NULL_TREE
+	      && oldglobal == NULL_TREE
 	      && DECL_EXTERNAL (x)
 	      && TREE_PUBLIC (x))
 	    {
@@ -3663,7 +3662,7 @@ pushdecl (x)
 		warnstring = "declaration of `%s' shadows a member of `this'";
 	      else if (oldlocal != NULL_TREE)
 		warnstring = "declaration of `%s' shadows previous local";
-	      else if (BINDING_VALUE (oldglobal) != NULL_TREE)
+	      else if (oldglobal != NULL_TREE)
 		/* XXX shadow warnings in outer-more namespaces */
 		warnstring = "declaration of `%s' shadows global declaration";
 
@@ -4505,7 +4504,6 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	  }
       else if (level->namespace_p)
 	/* Do namespace lookup. */
-	/* XXX: is this a real lookup, considering using-directives etc. ??? */
 	for (tail = current_namespace; 1; tail = CP_DECL_CONTEXT (tail))
 	  {
 	    tree old = binding_for_name (name, tail);
