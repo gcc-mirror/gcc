@@ -43,11 +43,13 @@
 
 @c For consistency, use the following:
 @c - "32-bit" rather than "32 bit" as an adjective.
+@c - American rather than British spelling (in particular -or and -ize).
 @c - "back end" as a noun, "back-end" as an adjective.
 @c - "bit-field" not "bitfield" or "bit field" (following the C and C++
 @c   standards).
 @c - "built-in" as an adjective ("built-in function"), or sometimes
 @c   "built in", not "builtin" (which isn't a word).
+@c - "dependent" as an adjective, and "dependency".
 @c - "front end" as a noun, "front-end" as an adjective.
 @c - "GCC" for the GNU Compiler Collection, both generally
 @c   and as the GNU C Compiler in the context of compiling C;
