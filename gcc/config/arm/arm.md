@@ -3309,10 +3309,8 @@
 
   mem1 = gen_rtx_MEM (QImode, addr);
   MEM_COPY_ATTRIBUTES (mem1, operands[1]);
-  RTX_UNCHANGING_P (mem1) = RTX_UNCHANGING_P (operands[1]);
   mem2 = gen_rtx_MEM (QImode, plus_constant (addr, 1));
   MEM_COPY_ATTRIBUTES (mem2, operands[1]);
-  RTX_UNCHANGING_P (mem2) = RTX_UNCHANGING_P (operands[1]);
   operands[0] = gen_lowpart (SImode, operands[0]);
   operands[1] = mem1;
   operands[2] = gen_reg_rtx (SImode);
@@ -3427,7 +3425,6 @@
     operands[3] = gen_rtx_REG (SImode, REGNO (operands[0]));
     operands[2] = gen_rtx_MEM (QImode, operands[3]);
     MEM_COPY_ATTRIBUTES (operands[2], operands[1]);
-    RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
     operands[1] = XEXP (operands[1], 0);
     if (GET_CODE (operands[1]) == PLUS
 	&& GET_CODE (XEXP (operands[1], 1)) == CONST_INT
@@ -3522,7 +3519,6 @@
 
     operands[2] = gen_rtx_MEM (QImode, operands[0]);
     MEM_COPY_ATTRIBUTES (operands[2], operands[1]);
-    RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
     operands[1] = XEXP (operands[1], 0);
     if (GET_CODE (operands[1]) == PLUS
 	&& GET_CODE (XEXP (operands[1], 1)) == CONST_INT
@@ -4201,7 +4197,6 @@
 		          new = gen_rtx_MEM (SImode,
 				   	     plus_constant (base, new_offset));
 	                  MEM_COPY_ATTRIBUTES (new, operands[1]);
-		          RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
 		          emit_insn (gen_movsi (reg, new));
 		          if (((INTVAL (offset) & 2) != 0)
 			      ^ (BYTES_BIG_ENDIAN ? 1 : 0))
@@ -4237,15 +4232,12 @@
 			      new = gen_rtx_MEM (SImode,
 				  	         plus_constant (base, new_offset));
                               MEM_COPY_ATTRIBUTES (new, operands[1]);
-			      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (operands[1]);
 			      emit_insn (gen_movsi (reg, new));
 			    }
 		          else
 			    {
 			      new = gen_rtx_MEM (SImode, XEXP (operands[1], 0));
 	                      MEM_COPY_ATTRIBUTES (new, operands[1]);
-			      RTX_UNCHANGING_P (new)
-			        = RTX_UNCHANGING_P (operands[1]);
 			      emit_insn (gen_rotated_loadsi (reg, new));
 			    }
 
@@ -4393,10 +4385,8 @@
 
   mem1 = gen_rtx_MEM (QImode, addr);
   MEM_COPY_ATTRIBUTES (mem1, operands[1]);
-  RTX_UNCHANGING_P (mem1) = RTX_UNCHANGING_P (operands[1]);
   mem2 = gen_rtx_MEM (QImode, plus_constant (addr, 1));
   MEM_COPY_ATTRIBUTES (mem2, operands[1]);
-  RTX_UNCHANGING_P (mem2) = RTX_UNCHANGING_P (operands[1]);
   operands[0] = gen_lowpart (SImode, operands[0]);
   operands[1] = mem1;
   operands[2] = gen_reg_rtx (SImode);

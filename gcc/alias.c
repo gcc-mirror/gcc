@@ -586,9 +586,7 @@ canon_rtx (x)
 	{
 	  rtx new = gen_rtx_MEM (GET_MODE (x), addr);
 
-	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (x);
 	  MEM_COPY_ATTRIBUTES (new, x);
-	  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (x);
 	  x = new;
 	}
     }

@@ -760,12 +760,13 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
    not refer to a scalar.*/
 #define MEM_SCALAR_P(RTX) ((RTX)->frame_related)
 
-/* Copy the MEM_VOLATILE_P, MEM_IN_STRUCT_P, and MEM_SCALAR_P
-   attributes from RHS to LHS.  */
+/* Copy the attributes that apply to memory locations from RHS to LHS.  */
 #define MEM_COPY_ATTRIBUTES(LHS, RHS)			\
   (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),		\
    MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),	\
-   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS))
+   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),		\
+   MEM_ALIAS_SET (LHS) = MEM_ALIAS_SET (RHS),		\
+   RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS))
 
 /* If VAL is non-zero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in
    RTX.  Otherwise, vice versa.  Use this macro only when you are

@@ -2130,8 +2130,6 @@ copy_rtx_and_substitute (orig, map, for_lhs)
       PUT_MODE (copy, mode);
       XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map, 0);
       MEM_COPY_ATTRIBUTES (copy, orig);
-      MEM_ALIAS_SET (copy) = MEM_ALIAS_SET (orig);
-      RTX_UNCHANGING_P (copy) = RTX_UNCHANGING_P (orig);
       return copy;
       
     default:

@@ -644,21 +644,17 @@ stabilize (x)
     {
       rtx temp = copy_all_regs (addr);
       rtx mem;
+
       if (GET_CODE (temp) != REG)
 	temp = copy_to_reg (temp);
       mem = gen_rtx_MEM (GET_MODE (x), temp);
 
       /* Mark returned memref with in_struct if it's in an array or
-	 structure.  Copy const and volatile from original memref.  */
+	 structure.  Copy everything else from original memref.  */
 
-      RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (x);
       MEM_COPY_ATTRIBUTES (mem, x);
       if (GET_CODE (addr) == PLUS)
 	MEM_SET_IN_STRUCT_P (mem, 1);
-
-      /* Since the new MEM is just like the old X, it can alias only
-	 the things that X could.  */
-      MEM_ALIAS_SET (mem) = MEM_ALIAS_SET (x);
 
       return mem;
     }

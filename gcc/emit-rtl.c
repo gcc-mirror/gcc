@@ -1283,11 +1283,7 @@ operand_subword (op, i, validate_address, mode)
 	}
 
       new = gen_rtx_MEM (word_mode, addr);
-
       MEM_COPY_ATTRIBUTES (new, op);
-      RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (op);
-      MEM_ALIAS_SET (new) = MEM_ALIAS_SET (op);
-
       return new;
     }
 
@@ -1597,9 +1593,7 @@ change_address (memref, mode, addr)
     return memref;
 
   new = gen_rtx_MEM (mode, addr);
-  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (memref);
   MEM_COPY_ATTRIBUTES (new, memref);
-  MEM_ALIAS_SET (new) = MEM_ALIAS_SET (memref);
   return new;
 }
 
