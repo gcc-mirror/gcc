@@ -1310,34 +1310,25 @@ alter_access (t, fdecl, access)
      tree access;
 {
   tree elem = purpose_member (t, DECL_ACCESS (fdecl));
-  if (elem && TREE_VALUE (elem) != access)
+  if (elem)
     {
-      if (TREE_CODE (TREE_TYPE (fdecl)) == FUNCTION_DECL)
+      if (TREE_VALUE (elem) != access)
 	{
-	  cp_error_at ("conflicting access specifications for method `%D', ignored", TREE_TYPE (fdecl));
+	  if (TREE_CODE (TREE_TYPE (fdecl)) == FUNCTION_DECL)
+	    cp_error_at ("conflicting access specifications for method `%D', ignored", TREE_TYPE (fdecl));
+	  else
+	    error ("conflicting access specifications for field `%s', ignored",
+		   IDENTIFIER_POINTER (DECL_NAME (fdecl)));
 	}
       else
-	error ("conflicting access specifications for field `%s', ignored",
-	       IDENTIFIER_POINTER (DECL_NAME (fdecl)));
+	/* They're changing the access to the same thing they changed
+	   it to before.  That's OK.  */
+	;
     }
-  else if (TREE_PRIVATE (fdecl))
+  else
     {
-      if (access != access_private_node)
-	cp_error_at ("cannot make private `%D' non-private", fdecl);
-      goto alter;
-    }
-  else if (TREE_PROTECTED (fdecl))
-    {
-      if (access != access_protected_node)
-	cp_error_at ("cannot make protected `%D' non-protected", fdecl);
-      goto alter;
-    }
-  /* ARM 11.3: an access declaration may not be used to restrict access
-     to a member that is accessible in the base class.  */
-  else if (access != access_public_node)
-    cp_error_at ("cannot reduce access of public member `%D'", fdecl);
-  else if (elem == NULL_TREE)
-    {
+      enforce_access (TYPE_BINFO (t), fdecl);
+
     alter:
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;

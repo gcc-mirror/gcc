@@ -2,7 +2,7 @@
 // GROUPS passed old-abort
 struct B 
 {
-      void f(char); // ERROR - Cannot reduce access
+      void f(char); 
       void g(char);
 };
   
