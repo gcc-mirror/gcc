@@ -87,6 +87,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "toplev.h"
 
+#ifndef SHIFT_COUNT_TRUNCATED
+#define SHIFT_COUNT_TRUNCATED 0
+#endif
+
 /* It is not safe to use ordinary gen_lowpart in combine.
    Use gen_lowpart_for_combine instead.  See comments there.  */
 #define gen_lowpart dont_use_gen_lowpart_you_dummy
@@ -4691,7 +4695,6 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	return simplify_shift_const (x, code, mode, XEXP (x, 0),
 				     INTVAL (XEXP (x, 1)));
 
-#ifdef SHIFT_COUNT_TRUNCATED
       else if (SHIFT_COUNT_TRUNCATED && GET_CODE (XEXP (x, 1)) != REG)
 	SUBST (XEXP (x, 1),
 	       force_to_mode (XEXP (x, 1), GET_MODE (XEXP (x, 1)),
@@ -4699,8 +4702,6 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 			       << exact_log2 (GET_MODE_BITSIZE (GET_MODE (x))))
 			      - 1,
 			      NULL_RTX, 0));
-#endif
-
       break;
 
     case VEC_SELECT:
@@ -9271,10 +9272,8 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
   /* Make sure and truncate the "natural" shift on the way in.  We don't
      want to do this inside the loop as it makes it more difficult to
      combine shifts.  */
-#ifdef SHIFT_COUNT_TRUNCATED
   if (SHIFT_COUNT_TRUNCATED)
     orig_count &= GET_MODE_BITSIZE (mode) - 1;
-#endif
 
   /* If we were given an invalid count, don't do anything except exactly
      what was requested.  */
@@ -10664,8 +10663,10 @@ simplify_comparison (code, pop0, pop1)
 	     a constant that has only a single bit set and are comparing it
 	     with zero, we can convert this into an equality comparison
 	     between the position and the location of the single bit.  */
-
-	  if (GET_CODE (XEXP (op0, 0)) == CONST_INT
+	  /* Except we can't if SHIFT_COUNT_TRUNCATED is set, since we might
+	     have already reduced the shift count modulo the word size.  */
+	  if (!SHIFT_COUNT_TRUNCATED
+	      && GET_CODE (XEXP (op0, 0)) == CONST_INT
 	      && XEXP (op0, 1) == const1_rtx
 	      && equality_comparison_p && const_op == 0
 	      && (i = exact_log2 (INTVAL (XEXP (op0, 0)))) >= 0)

@@ -1,3 +1,10 @@
+2004-01-23  Richard Henderson  <rth@redhat.com>
+
+        PR opt/12941
+        * combine.c (SHIFT_COUNT_TRUNCATED): Provide default value.
+        (simplify_comparison): Don't simplify (eq (zero_extract c 1 r) 0)
+        if SHIFT_COUNT_TRUNCATED is set.
+
 2004-01-23  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* doc/invoke.texi (Optimize Options): Note that --param arguments
