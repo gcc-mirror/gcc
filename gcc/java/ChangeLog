@@ -1,3 +1,8 @@
+1999-09-02  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (decode_signature_piece): Emit "::" in JArray<>.
+	Handle nested arrays, like `[[I'.
+
 1999-09-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (finish_class): Remove unused parameter, all callers

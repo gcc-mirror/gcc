@@ -695,10 +695,13 @@ decode_signature_piece (stream, signature, limit, need_space)
      int *need_space;
 {
   const char *ctype;
+  int array_depth = 0;
 
   switch (signature[0])
     {
     case '[':
+      /* More spaghetti.  */
+    array_loop:
       for (signature++; (signature < limit
 			 && *signature >= '0'
 			 && *signature <= '9'); signature++)
@@ -713,13 +716,17 @@ decode_signature_piece (stream, signature, limit, need_space)
 	case 'S': ctype = "jshortArray";  goto printit;
 	case 'J': ctype = "jlongArray";  goto printit;
 	case 'Z': ctype = "jbooleanArray";  goto printit;
-	case '[': ctype = "jobjectArray"; goto printit;
-	case 'L':
-	  /* We have to generate a reference to JArray here,
-	     so that our output matches what the compiler
-	     does.  */
-	  ++signature;
+	case '[':
+	  /* We have a nested array.  */
+	  ++array_depth;
 	  fputs ("JArray<", stream);
+	  goto array_loop;
+
+	case 'L':
+	  /* We have to generate a reference to JArray here, so that
+	     our output matches what the compiler does.  */
+	  ++signature;
+	  fputs ("JArray<::", stream);
 	  while (signature < limit && *signature != ';')
 	    {
 	      int ch = UTF8_GET (signature, limit);
@@ -780,6 +787,9 @@ decode_signature_piece (stream, signature, limit, need_space)
       fputs (ctype, stream);
       break;
     }
+
+  while (array_depth-- > 0)
+    fputs ("> *", stream);
 
   return signature;
 }
