@@ -75,7 +75,7 @@ _Jv_FindClassInCache (_Jv_Utf8Const *name)
   jint hash = HASH_UTF (name);
 
   jclass klass;
-  for (klass = loaded_classes[hash]; klass; klass = klass->next)
+  for (klass = loaded_classes[hash]; klass; klass = klass->next_or_version)
     {
       if (_Jv_equalUtf8Consts (name, klass->name))
 	break;
@@ -91,11 +91,11 @@ _Jv_UnregisterClass (jclass the_class)
   jint hash = HASH_UTF(the_class->name);
 
   jclass *klass = &(loaded_classes[hash]);
-  for ( ; *klass; klass = &((*klass)->next))
+  for ( ; *klass; klass = &((*klass)->next_or_version))
     {
       if (*klass == the_class)
 	{
-	  *klass = (*klass)->next;
+	  *klass = (*klass)->next_or_version;
 	  break;
 	}
     }
@@ -122,7 +122,8 @@ _Jv_RegisterClasses (const jclass *classes)
     {
       jclass klass = *classes;
 
-      (*_Jv_RegisterClassHook) (klass);
+      if (_Jv_CheckABIVersion ((unsigned long) klass->next_or_version))
+	(*_Jv_RegisterClassHook) (klass);
     }
 }
 
@@ -135,7 +136,8 @@ _Jv_RegisterClasses_Counted (const jclass * classes, size_t count)
     {
       jclass klass = classes[i];
 
-      (*_Jv_RegisterClassHook) (klass);
+      if (_Jv_CheckABIVersion ((unsigned long) klass->next_or_version))
+	(*_Jv_RegisterClassHook) (klass);
     }
 }
 
@@ -144,12 +146,10 @@ _Jv_RegisterClassHookDefault (jclass klass)
 {
   jint hash = HASH_UTF (klass->name);
 
-  // The BC ABI makes this check unnecessary: we always resolve all
-  // data references via the appropriate class loader, so the kludge
-  // that required this check has gone.
   // If the class is already registered, don't re-register it.
-  jclass check_class = klass->next;
-  while (check_class != NULL)
+  for (jclass check_class = loaded_classes[hash];
+       check_class != NULL;
+       check_class = check_class->next_or_version)
     {
       if (check_class == klass)
 	{
@@ -170,14 +170,12 @@ _Jv_RegisterClassHookDefault (jclass klass)
 	      throw new java::lang::VirtualMachineError (str);
 	    }
 	}
-
-      check_class = check_class->next;
     }
 
   // FIXME: this is really bogus!
   if (! klass->engine)
     klass->engine = &_Jv_soleCompiledEngine;
-  klass->next = loaded_classes[hash];
+  klass->next_or_version = loaded_classes[hash];
   loaded_classes[hash] = klass;
 }
 

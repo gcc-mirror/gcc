@@ -1,3 +1,16 @@
+2005-01-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (next): Updated documentation.  Renamed to
+	'next_or_version'.
+	* java/lang/natClassLoader.cc (_Jv_RegisterClasses): Use
+	_Jv_CheckABIVersion.
+	(_Jv_RegisterClasses_Counted): Likewise.
+	(_Jv_RegisterClassHookDefault): Fix starting condition of
+	duplicate-checking loop.
+	* include/jvm.h (GCJ_VERSION): New define.
+	(GCJ_BINARYCOMPAT_ADDITION): Likewise.
+	(_Jv_CheckABIVersion): New function.
+
 2005-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (libgij_la_LIBADD): Add -L$(here)/.libs.
