@@ -201,7 +201,7 @@ extern const int x86_double_with_add, x86_partial_reg_stall, x86_movx;
 extern const int x86_use_loop, x86_use_fiop, x86_use_mov0;
 extern const int x86_use_cltd, x86_read_modify_write;
 extern const int x86_read_modify, x86_split_long_moves;
-extern const int x86_promote_QImode, x86_single_stringop;
+extern const int x86_promote_QImode, x86_single_stringop, x86_fast_prefix;
 extern const int x86_himode_math, x86_qimode_math, x86_promote_qi_regs;
 extern const int x86_promote_hi_regs, x86_integer_DFmode_moves;
 extern const int x86_add_esp_4, x86_add_esp_8, x86_sub_esp_4, x86_sub_esp_8;
@@ -233,6 +233,7 @@ extern int x86_prefetch_sse;
 #define TARGET_READ_MODIFY_WRITE (x86_read_modify_write & CPUMASK)
 #define TARGET_READ_MODIFY (x86_read_modify & CPUMASK)
 #define TARGET_PROMOTE_QImode (x86_promote_QImode & CPUMASK)
+#define TARGET_FAST_PREFIX (x86_fast_prefix & CPUMASK)
 #define TARGET_SINGLE_STRINGOP (x86_single_stringop & CPUMASK)
 #define TARGET_QIMODE_MATH (x86_qimode_math & CPUMASK)
 #define TARGET_HIMODE_MATH (x86_himode_math & CPUMASK)
@@ -2698,7 +2699,10 @@ do {							\
     TOPLEVEL_COSTS_N_INSNS (ix86_cost->add);				\
 									\
   case FLOAT_EXTEND:							\
-    TOPLEVEL_COSTS_N_INSNS (0);						\
+    if (!TARGET_SSE_MATH						\
+	|| !VALID_SSE_REG_MODE (GET_MODE (X)))				\
+      TOPLEVEL_COSTS_N_INSNS (0);					\
+    break;								\
 									\
   egress_rtx_costs:							\
     break;

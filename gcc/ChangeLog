@@ -1,3 +1,15 @@
+Tue Jun 11 21:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_promote_QImode): Set for Athlon
+	(x86_fast_prefix): New global variable.
+	(x86_arch_always_fancy_math_387): Fix formating.
+	* i386.h (x86_fast_prefix): Declare
+	(TARGET_FAST_PREFIX): define.
+	* i386.md (and to strict_low_part, HI to SI
+	promoting splitter): Use new macro.
+
+	* i386.h (RTX_COSTS): float_extend is not for free for SSE.
+
 2002-06-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (distclean): Delete junk left in testsuite
