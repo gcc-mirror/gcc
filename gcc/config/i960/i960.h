@@ -80,12 +80,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LIB_SPEC "%{!nostdlib:-lcg %{p:-lprof}%{pg:-lgprof}\
 	  %{mka:-lfpg}%{msa:-lfpg}%{mca:-lfpg}%{mcf:-lfpg} -lgnu}"
 
-/* Omit frame pointer at -O2.  Inline functions at -O3.  */
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
+
+/* Do leaf procedure and tail call optimizations for -O2 and higher.  */
 #define OPTIMIZATION_OPTIONS(LEVEL)		\
 {						\
   if ((LEVEL) >= 2)				\
     {						\
-      flag_omit_frame_pointer = 1;		\
       target_flags |= TARGET_FLAG_LEAFPROC;	\
       target_flags |= TARGET_FLAG_TAILCALL;	\
     }						\
