@@ -2217,7 +2217,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/bison.simple"
+#line 3 "/usr/share/misc/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2234,7 +2234,7 @@ static const short yycheck[] = {     3,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -2410,7 +2410,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/share/bison.simple"
+#line 196 "/usr/share/misc/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4675,7 +4675,7 @@ case 493:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/share/bison.simple"
+#line 498 "/usr/share/misc/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -7620,15 +7620,16 @@ read_import_dir (wfl)
 		}
 	      *filename->ptr++ = '/';
 
-	      for (; k < zipf->count;  k++, zipd = ZIPDIR_NEXT (zipd))
+	      for (k = 0; k < zipf->count;  k++, zipd = ZIPDIR_NEXT (zipd))
 		{
 		  char *current_entry = ZIPDIR_FILENAME (zipd);
 		  int current_entry_len = zipd->filename_length;
 
-		  if (strncmp (filename->data, current_entry, 
-			       BUFFER_LENGTH (filename)) != 0)
+		  if (current_entry_len >= BUFFER_LENGTH (filename)
+		      && strncmp (filename->data, current_entry, 
+				  BUFFER_LENGTH (filename)) != 0)
 		    continue;
-		  found += note_possible_classname (current_entry,
+		  found |= note_possible_classname (current_entry,
 						    current_entry_len);
 		}
 	    }
@@ -7661,7 +7662,7 @@ read_import_dir (wfl)
 	      len = strlen (direntp->d_name);
 	      buffer_grow (filename, len+1);
 	      strcpy (filename->ptr, d_name);
-	      found += note_possible_classname (filename->data + entry_length,
+	      found |= note_possible_classname (filename->data + entry_length,
 						package_length+len+1);
 	    }
 	  if (dirp)
