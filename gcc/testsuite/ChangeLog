@@ -1,3 +1,8 @@
+2000-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Nathan Sidwell <nathan@codesourcery.com>
+
+	* gcc.c-torture/compile/20000605-1.c: New test.
+
 2000-06-03  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
         * g77.f-torture/compile/20000601-1.f:  New test.
