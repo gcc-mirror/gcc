@@ -2806,6 +2806,7 @@ typedef struct mips_args {
   {"move_operand", 		{ CONST_INT, CONST_DOUBLE, CONST,	\
 				  SYMBOL_REF, LABEL_REF, SUBREG,	\
 				  REG, MEM}},				\
+  {"stack_operand",		{ MEM }},				\
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST }},		\
   {"fcc_register_operand",	{ REG, SUBREG }},			\

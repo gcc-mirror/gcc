@@ -1,5 +1,12 @@
 2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (PREDICATE_CODES): Add stack_operand.
+	* config/mips/mips.c (stack_operand): New predicate.
+	* config/mips/mips.md: Use it for the destination of mips16 insns
+	that store $31.
+
+2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (*lowsi): Renamed from lowsi.
 	(*lowdi): Likewise lowdi.
 	(*lowsi_mips16, *lowdi_mips16): New patterns.
