@@ -1222,11 +1222,11 @@ transfer_array_component (tree expr, gfc_component * cm)
   gfc_add_block_to_block (&block, &loop.pre);
   gfc_add_block_to_block (&block, &loop.post);
 
-  gfc_cleanup_loop (&loop);
-
   for (n = 0; n < cm->as->rank; n++)
     mpz_clear (ss->shape[n]);
   gfc_free (ss->shape);
+
+  gfc_cleanup_loop (&loop);
 
   return gfc_finish_block (&block);
 }
