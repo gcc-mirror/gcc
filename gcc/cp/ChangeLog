@@ -1,4 +1,11 @@
-2004-0903  Matt Austern  <austern@apple.com>
+2004-09-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* decl.c (grok_declarator): Remove a redundant semicolon.
+
+	* parser.c (cp_parser_decl_specifier_seq, cp_parser_type_specifier):
+	Correct comments describing function parameters.
+
+2004-09-03  Matt Austern  <austern@apple.com>
 	Compile speed improvement.
 	* parser.c (cp_lexer_print_token): Only define if ENABLE_CHECKING set.
 	Otherwise define a stub macro that expands to nothing.

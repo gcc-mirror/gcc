@@ -6420,7 +6420,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (TREE_CODE (decl) == SCOPE_REF)
 	      {
 		tree qualifying_scope = TREE_OPERAND (decl, 0);
-;
+
 		/* It is valid to write:
 
 		   class C { void f(); };

@@ -7126,11 +7126,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 
    Set *DECL_SPECS to a representation of the decl-specifier-seq.
 
-   If FRIEND_IS_NOT_CLASS_P is non-NULL, and the `friend' specifier
-   appears, and the entity that will be a friend is not going to be a
-   class, then *FRIEND_IS_NOT_CLASS_P will be set to TRUE.  Note that
-   even if *FRIEND_IS_NOT_CLASS_P is FALSE, the entity to which
-   friendship is granted might not be a class.
+   The parser flags FLAGS is used to control type-specifier parsing.
 
    *DECLARES_CLASS_OR_ENUM is set to the bitwise or of the following
    flags:
@@ -9227,9 +9223,10 @@ cp_parser_explicit_specialization (cp_parser* parser)
    class-specifier, enum-specifier, or elaborated-type-specifier, a
    TREE_TYPE is returned; otherwise, a TYPE_DECL is returned.
 
-   If IS_FRIEND is TRUE then this type-specifier is being declared a
-   `friend'.  If IS_DECLARATION is TRUE, then this type-specifier is
-   appearing in a decl-specifier-seq.
+   The parser flags FLAGS is used to control type-specifier parsing.
+
+   If IS_DECLARATION is TRUE, then this type-specifier is appearing
+   in a decl-specifier-seq.
 
    If DECLARES_CLASS_OR_ENUM is non-NULL, and the type-specifier is a
    class-specifier, enum-specifier, or elaborated-type-specifier, then
