@@ -1,3 +1,7 @@
+2002-01-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/ctor1.C: Add instantiation.
+
 2002-01-28  Paul Koning  <pkoning@equallogic.com>
 
 	* gcc.c-torture/execute/builtin-prefetch-1.c: Changed first
