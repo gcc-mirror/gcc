@@ -234,7 +234,7 @@ int
 main (int argc, char **argv)
 {
   char buf[MAXNAMELEN];
-  char last_buf[MAXNAMELEN] = "";
+  char last_buf[MAXNAMELEN];
   char kwname[MAXNAMELEN];
   char routine[32];
   char type[32];
@@ -256,6 +256,8 @@ main (int argc, char **argv)
   int cc;
   bool do_exit = FALSE;
 
+  last_buf[0] = '\0';
+  
   for (i = 0; ((size_t) i) < ARRAY_SIZE (names); ++i)
     {				/* Initialize length/name ordered list roots. */
       names[i].first = (name) &names[i];
