@@ -1,8 +1,8 @@
-gcc-ss-@DATE@ is now available on 
-  ftp://gcc.gnu.org/pub/gcc/snapshots/@LONG_DATE@
+gcc-ss-@BRANCH@-@DATE@ is now available on 
+  ftp://gcc.gnu.org/pub/gcc/snapshots/@BRANCH@-@DATE@
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
-This snapshot has been generated from the GCC CVS 3.3 branch.
+This snapshot has been generated from the GCC CVS @BRANCH@ branch.
 
 You'll find:
 
@@ -23,7 +23,7 @@ You'll find:
 
   gcc-java-@DATE@.tar.bz2            The Java front end and runtime.
 
-Diffs from @LAST_DATE@ are available in the diffs/ subdirectory. 
+Diffs from @BRANCH@-@LAST_DATE@ are available in the diffs/ subdirectory. 
 
 
 When a particular snapshot is ready for public consumption the LATEST-IS-

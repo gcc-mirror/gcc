@@ -378,21 +378,21 @@ announce_snapshot() {
   TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
   cd ~ftp/pub/gcc/snapshots
   sed -e "s%@DATE@%$DATE%g" -e "s%@LAST_DATE@%$LAST_DATE%g" \
-    -e "s%@LONG_DATE@%$LONG_DATE%g" \
+    -e "s%@BRANCH@%${BRANCH}%g" \
     -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-README > $$
   mv $$ README
   sed -e "s%@DATE@%$DATE%g" -e "s%@LAST_DATE@%$LAST_DATE%g" \
-    -e "s%@LONG_DATE@%$LONG_DATE%g" \
+    -e "s%@BRANCH@%${BRANCH}%g" \
     -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-index.html > $$
-  mv $$ index.html
+  mv $$ ${BRANCH}-${DATE}/index.html
 
-  touch LATEST-IS-$LONG_DATE
-  rm -f LATEST-IS-$LAST_LONG_DATE
+  touch LATEST-IS-${BRANCH}-${DATE}
+  rm -f LATEST-IS-${BRANCH}-${LAST_DATE}
 
   inform "Sending mail"
 
   export QMAILHOST=gcc.gnu.org
-  mail -s "gcc-ss-$DATE is now available" gcc@gcc.gnu.org < ~ftp/pub/gcc/snapshots/README
+  mail -s "gcc-ss-${BRANCH}-${DATE} is now available" gccadmin@gcc.gnu.org < ~ftp/pub/gcc/snapshots/README
 }
 
 ########################################################################
@@ -585,15 +585,14 @@ else
   # For now snapshots come from the 3.3 branch.
   BRANCH="3.3"
   CVSBRANCH=gcc-3_3-branch
-  FTP_PATH="${FTP_PATH}/snapshots/${BRANCH}-${LONG_DATE}"
+  FTP_PATH="${FTP_PATH}/snapshots/${BRANCH}-${DATE}"
   TAG=gcc-ss-`echo ${BRANCH} | tr '.' '_'`-${DATE}
 
   # Building locally on gcc.gnu.org, we know what the last snapshot date
   # was.
   if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ]; then
     LAST_DATE=`cat ~/.snapshot_date-${BRANCH}`
-    LAST_LONG_DATE=`date --date=$LAST_DATE +%Y-%m-%d`
-    LAST_DIR=~ftp/pub/gcc/snapshots/${LAST_LONG_DATE}
+    LAST_DIR=~ftp/pub/gcc/snapshots/${BRANCH}-${LAST_DATE}
     OLD_TARS=${LAST_DIR}/gcc-${LAST_DATE}.tar.bz2
   fi
 fi
