@@ -368,7 +368,9 @@ __muldi3 (DWtype u, DWtype v)
 
 #if (defined (L_udivdi3) || defined (L_divdi3) || \
      defined (L_umoddi3) || defined (L_moddi3))
+#if defined (sdiv_qrnnd)
 #define L_udiv_w_sdiv
+#endif
 #endif
 
 #ifdef L_udiv_w_sdiv

@@ -1,3 +1,8 @@
+2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* libgcc2.c: Fix __udiv_w_sdiv breakage on platforms that
+	don't define sdiv_qrnnd.
+
 2002-10-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): Simplify
