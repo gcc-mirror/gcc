@@ -54,7 +54,7 @@ public interface PrinterGraphics
   *
   * @return The <code>PrinterJob</code> that is controlling this print job.
   */
-public abstract PrinterJob
+PrinterJob
 getPrinterJob();
 
 } // interface PrinterGraphics
