@@ -1,5 +1,5 @@
 # Under VMS, directory names cannot contain dots.
-version=`echo $(gcc_version) | sed -e 's/\./_/g'`
+version:=$(shell echo $(gcc_version) | sed -e 's/\./_/g')
 
 # Rules for linker and compiler wrappers.  These are only useful on
 # a VMS host.
