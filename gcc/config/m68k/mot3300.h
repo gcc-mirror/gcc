@@ -159,11 +159,6 @@ output_file_directive ((FILE), main_input_filename)
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dm68k -Dunix -DsysV68 -D__motorola__ -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 
-/* Override part of the obstack macros.  */
-
-#define __PTR_TO_INT(P) ((int)(P))
-#define __INT_TO_PTR(P) ((char *)(P))
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k, SGS/AT&T sysV68 syntax)");
 
@@ -184,7 +179,7 @@ output_file_directive ((FILE), main_input_filename)
 #define FUNCTION_VALUE(VALTYPE,FUNC) \
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881 	\
    ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)		\
-   : (TREE_CODE (VALTYPE) == POINTER_TYPE 		\
+   : (POINTER_TYPE_P (VALTYPE)				\
       ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)		\
       : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
 
