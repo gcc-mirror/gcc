@@ -116,7 +116,7 @@ Makefile: Makefile.in ../config.status
 	  $(SHELL) ./config.status
 
 check : fixincl
-	autogen4 -T $(srcdir)/check.tpl $(srcdir)/inclhack.def
+	autogen -T $(srcdir)/check.tpl $(srcdir)/inclhack.def
 	$(SHELL) ./check.sh
 	@echo ; echo "diff of diffs:"
 	@if diff testdir/NEWDIFF $(srcdir)/check.diff ; \
