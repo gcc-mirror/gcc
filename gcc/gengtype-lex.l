@@ -30,6 +30,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "gengtype.h"
 #include "gengtype-yacc.h"
 
+#define YY_INPUT(BUF,RESULT,SIZE) ((RESULT) = macro_input (BUF,SIZE))
+
+static unsigned macro_input (char *buffer, unsigned);
+static void push_macro_expansion (const char *, unsigned,
+				  const char *, unsigned);
 static void update_lineno (const char *l, size_t len);
 
 struct fileloc lexer_line;
@@ -218,6 +223,35 @@ ITYPE	{IWORD}({WS}{IWORD})*
   return ENT_YACCUNION;
 }
 
+^"DEF_VEC_"[[:alnum:]_]*{WS}?"("{WS}?{ID}{WS}?")" {
+  char *macro, *arg;
+  unsigned macro_len, arg_len;
+  char *ptr = yytext;
+  type_p t;
+
+  /* Locate the macro and argument strings.  */
+  macro = ptr;
+  while (*ptr != '(' && !ISSPACE (*ptr))
+    ptr++;
+  macro_len = ptr - macro;
+  while (*ptr == '(' || ISSPACE (*ptr))
+    ptr++;
+  arg = ptr;
+  while (*ptr != ')' && !ISSPACE (*ptr))
+    ptr++;
+  arg_len = ptr - arg;
+
+  /* Push the macro for later expansion.  */
+  push_macro_expansion (macro, macro_len, arg, arg_len);
+
+  /* Create the struct and typedef.  */
+  ptr = xmemdup ("VEC_", 4, 4 + arg_len + 1);
+  memcpy (&ptr[4], arg, arg_len);
+  ptr[4 + arg_len] = 0;
+  t = find_structure (ptr, 0);
+  do_typedef (ptr, t, &lexer_line);
+}
+
 <in_struct>{
 
 "/*"				{ BEGIN(in_struct_comment); }
@@ -229,7 +263,6 @@ ITYPE	{IWORD}({WS}{IWORD})*
 {WS}				{ update_lineno (yytext, yyleng); }
 
 "const"/[^[:alnum:]_]		/* don't care */
-
 "GTY"/[^[:alnum:]_]		{ return GTY_TOKEN; }
 "union"/[^[:alnum:]_]		{ return UNION; }
 "struct"/[^[:alnum:]_]		{ return STRUCT; }
@@ -252,6 +285,28 @@ ITYPE	{IWORD}({WS}{IWORD})*
   yylval.t = create_scalar_type (yytext, len);
   update_lineno (yytext, yyleng);
   return SCALAR;
+}
+
+"VEC"{WS}?"("{WS}?{ID}{WS}?")" {
+  char *macro, *arg;
+  unsigned macro_len, arg_len;
+  char *ptr = yytext;
+
+  macro = ptr;
+  while (*ptr != '(' && !ISSPACE (*ptr))
+    ptr++;
+  macro_len = ptr - macro;
+  while (*ptr == '(' || ISSPACE (*ptr))
+    ptr++;
+  arg = ptr;
+  while (*ptr != ')' && !ISSPACE (*ptr))
+    ptr++;
+  arg_len = ptr - arg;
+  ptr = xmemdup (macro, macro_len, macro_len + arg_len + 2);
+  ptr[macro_len] = '_';
+  memcpy (&ptr[macro_len+1], arg, arg_len);
+  yylval.s = ptr;
+  return ID;
 }
 
 {ID}/[^[:alnum:]_]		{
@@ -339,6 +394,93 @@ ITYPE	{IWORD}({WS}{IWORD})*
 }
 
 %%
+
+/* Deal with the expansion caused by the DEF_VEC_x macros.  */
+
+typedef struct macro
+{
+  const char *name;
+  const char *expansion;
+  struct macro *next;
+} macro_t;
+
+static const macro_t macro_defs[] = 
+{
+#define IN_GENGTYPE 1
+#include "vec.h"
+  {NULL, NULL, NULL}
+};
+
+/* Chain of macro expansions to do at end of scanning.  */
+static macro_t *macro_expns;
+
+/* Push macro NAME (NAME_LEN) with argument ARG (ARG_LEN) onto the
+   expansion queue.  We ensure NAME is known at this point.  */
+
+static void
+push_macro_expansion (const char *name, unsigned name_len,
+		      const char *arg, unsigned arg_len)
+{
+  unsigned ix;
+
+  for (ix = 0; macro_defs[ix].name; ix++)
+    if (strlen (macro_defs[ix].name) == name_len
+        && !memcmp (name, macro_defs[ix].name, name_len))
+      {
+        macro_t *expansion = xmalloc (sizeof (*expansion));
+
+	expansion->next = macro_expns;
+	expansion->name = xmemdup (arg, arg_len, arg_len+1);
+	expansion->expansion = macro_defs[ix].expansion;
+	macro_expns = expansion;
+	return;
+      }
+  error_at_line (&lexer_line, "unrecognized macro `%.*s(%.*s)'",
+		 name_len, name, arg_len, arg);
+}
+
+/* Attempt to read some input.  Use fread until we're at the end of
+   file.  At end of file expand the next queued macro.  We presume the
+   buffer is large enough for the entire expansion.  */
+
+static unsigned
+macro_input (char *buffer, unsigned size)
+{
+  unsigned result;
+
+  result = fread (buffer, 1, size, yyin);
+  if (result)
+    /*NOP*/;
+  else if (ferror (yyin))
+    YY_FATAL_ERROR ("read of source file failed");
+  else if (macro_expns)
+    {
+      const char *expn;
+      unsigned len;
+
+      for (expn = macro_expns->expansion; *expn; expn++)
+        {
+	  if (*expn == '#')
+	    {
+	      if (buffer[result-1] == ' ' && buffer[result-2] == '_')
+	        result--;
+	      len = strlen (macro_expns->name);
+	      memcpy (&buffer[result], macro_expns->name, len);
+	      result += len;
+	    }
+	  else
+	    {
+	      buffer[result++] = *expn;
+	      if (*expn == ';' || *expn == '{')
+	        buffer[result++] = '\n';
+	    }
+        }
+      if (result > size)
+        YY_FATAL_ERROR ("buffer too small to expand macro");
+      macro_expns = macro_expns->next;
+    }
+  return result;
+}
 
 void
 yyerror (const char *s)

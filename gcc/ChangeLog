@@ -1,3 +1,10 @@
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* vec.h, vec.c: New, type safe vector API.
+	* Makefile.in (OBJS-common): Add vec.o.
+	(vec.o): New target.
+	(gengtype-lex.o): Depend on vec.h.
+
 2004-06-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	* fold-const.c (fold_cond_expr_with_comparison): Add ARG1
