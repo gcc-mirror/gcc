@@ -1,3 +1,14 @@
+2004-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+
+	PR target/15301
+	PR target/15302
+	2004-05-17  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (construct_container): Do not produce BLKmode registers.
+	(classify_argument): Properly compute alignment of complex types.
+
 2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/extend.texi: Update WG14 URL.
