@@ -789,6 +789,23 @@ libgcc1-asm.a: libgcc2.ready config.status $(srcdir)/config/$(LIB1ASMSRC)
 	-rm -f libgcc1.S
 	mv tmplibgcc1.a libgcc1-asm.a
 
+# Generate assembly versions of the functions required for libgcc1.
+# You'll still need to massage the code by hand (possibly hacking
+# underscores and local labels) but this will get you started.
+libgcc1.S: libgcc1.c $(CONFIG_H) config.status
+	-rm -f libgcc1.S
+	touch libgcc1.S
+	for name in $(LIB1FUNCS); \
+	do \
+	  echo $${name}; \
+	  $(OLDCC) $(CCLIBFLAGS) $(INCLUDES) -S -DL$${name} $(srcdir)/libgcc1.c; \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	  echo '#ifdef ' L$${name} >> libgcc1.S; \
+	  cat  libgcc1.s >> libgcc1.S; \
+	  echo '#endif /*' L$${name} '*/' >> libgcc1.S; \
+	  echo "" >> libgcc1.S; \
+	done
+
 # Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
 # But recompiling cc1 should not force recompilation of libgcc2.a.
 # If you want to force recompilation, delete libgcc2.a.
