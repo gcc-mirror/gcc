@@ -1573,9 +1573,6 @@ default_conversion (exp)
       if (t != type)
 	return convert (t, exp);
     }
-  if (flag_traditional
-      && TYPE_MAIN_VARIANT (type) == float_type_node)
-    return convert (double_type_node, exp);
 
   return exp;
 }
@@ -3474,18 +3471,12 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  if (pedantic)
-	    pedwarn ("ANSI C++ forbids comparison between pointer and integer");
-	  else if (! flag_traditional)
-	    warning ("comparison between pointer and integer");
+	  pedwarn ("ANSI C++ forbids comparison between pointer and integer");
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
-	  if (pedantic)
-	    pedwarn ("ANSI C++ forbids comparison between pointer and integer");
-	  else if (! flag_traditional)
-	    warning ("comparison between pointer and integer");
+	  pedwarn ("ANSI C++ forbids comparison between pointer and integer");
 	}
       break;
     }
@@ -4493,7 +4484,6 @@ unary_complex_lvalue (code, arg)
 	 is really the representation of a pointer to it.
 	 Here give the representation its true type.  */
       tree t;
-      tree offset;
 
       my_friendly_assert (TREE_CODE (arg) != SCOPE_REF, 313);
 
@@ -4508,6 +4498,9 @@ unary_complex_lvalue (code, arg)
 	return build_unary_op (ADDR_EXPR, t, 0);
       else
 	{
+	  tree type;
+	  tree offset = integer_zero_node;
+
 	  if (TREE_OPERAND (arg, 0)
 	      && (TREE_CODE (TREE_OPERAND (arg, 0)) != NOP_EXPR
 		  || TREE_OPERAND (TREE_OPERAND (arg, 0), 0) != error_mark_node))
@@ -4519,10 +4512,23 @@ unary_complex_lvalue (code, arg)
 		return error_mark_node;
 	      }
 
-	  /* Add in the offset to the right subobject.  */
-	  offset = get_delta_difference (DECL_FIELD_CONTEXT (t), 
-					 TREE_TYPE (TREE_OPERAND (arg, 0)),
-					 0);
+	  type = TREE_TYPE (TREE_OPERAND (arg, 0));
+
+	  if (TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE)
+	    {
+	      /* Add in the offset to the intermediate subobject, if any.  */
+	      offset = get_delta_difference (TYPE_OFFSET_BASETYPE (TREE_TYPE (arg)),
+					     type,
+					     0);
+	      type = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg));
+	    }
+
+	  /* Now in the offset to the final subobject.  */
+	  offset = size_binop (PLUS_EXPR,
+			       offset,
+			       get_delta_difference (DECL_FIELD_CONTEXT (t), 
+						     type,
+						     0));
 
 	  /* Add in the offset to the field.  */
 	  offset = size_binop (PLUS_EXPR, offset,
@@ -6063,13 +6069,13 @@ get_delta_difference (from, to, force)
       if (!force)
 	{
 	  error_not_base_type (from, to);
-	  error ("   in pointer to member function conversion");
+	  error ("   in pointer to member conversion");
 	  return delta;
 	}
       binfo = get_binfo (to, from, 1);
       if (binfo == error_mark_node)
 	{
-	  error ("   in pointer to member function conversion");
+	  error ("   in pointer to member conversion");
 	  return delta;
 	}
       if (binfo == 0)
@@ -6545,31 +6551,6 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 				errtype, type, rhstype);
 		}
 	    }
-	}
-      else if (TREE_CODE (ttr) == OFFSET_TYPE
-	       && TREE_CODE (ttl) != OFFSET_TYPE)
-	{
-	  /* Normally, pointers to different type codes (other
-	     than void) are not compatible, but we perform
-	     some type instantiation if that resolves the
-	     ambiguity of (X Y::*) and (X *).  */
-
-	  if (current_class_ptr)
-	    {
-	      if (TREE_CODE (rhs) == INTEGER_CST)
-		{
-		  rhs = build (PLUS_EXPR, build_pointer_type (TREE_TYPE (ttr)),
-			       current_class_ptr, rhs);
-		  return convert_for_assignment (type, rhs,
-						 errtype, fndecl, parmnum);
-		}
-	    }
-	  if (TREE_CODE (ttl) == METHOD_TYPE)
-	    error ("%s between pointer-to-method and pointer-to-member types",
-		   errtype);
-	  else
-	    error ("%s between pointer and pointer-to-member types", errtype);
-	  return error_mark_node;
 	}
       else
 	{

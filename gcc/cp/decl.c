@@ -562,7 +562,7 @@ struct binding_level
 
     /* List of VAR_DECLS saved from a previous for statement.
        These would be dead in ANSI-conforming code, but might
-       be referenced in traditional code.  */
+       be referenced in ARM-era code.  */
     tree dead_vars_from_for;
 
     /* 1 for the level that holds the parameters of a function.
@@ -591,7 +591,7 @@ struct binding_level
     unsigned namespace_p : 1;
 
     /* True if this level is that of a for-statement where we need to
-       worry about ambiguous (traditional or ANSI) scope rules.  */
+       worry about ambiguous (ARM or ANSI) scope rules.  */
     unsigned is_for_scope : 1;
 
     /* Two bits left for this word.  */
@@ -2067,16 +2067,6 @@ pushtag (name, type, globalize)
 		  newdecl = 1;
 		  d = build_decl (TYPE_DECL, name, type);
 		  SET_DECL_ARTIFICIAL (d);
-#ifdef DWARF_DEBUGGING_INFO
-		  if (write_symbols == DWARF_DEBUG)
-		    {
-		      /* Mark the TYPE_DECL node we created just above as an
-			 gratuitous one.  We need to do this so that dwarfout.c
-			 will understand that it is not supposed to output a
-			 TAG_typedef DIE  for it.  */
-		      DECL_IGNORED_P (d) = 1;
-		    }
-#endif /* DWARF_DEBUGGING_INFO */
 		  set_identifier_type_value_with_scope (name, type, b);
 		}
 	      else
@@ -2103,17 +2093,6 @@ pushtag (name, type, globalize)
 	      newdecl = 1;
 	      d = build_decl (TYPE_DECL, name, type);
 	      SET_DECL_ARTIFICIAL (d);
-#ifdef DWARF_DEBUGGING_INFO
-	      if (write_symbols == DWARF_DEBUG)
-		{
-		  /* Mark the TYPE_DECL node we created just above as an
-		     gratuitous one.  We need to do this so that dwarfout.c
-		     will understand that it is not supposed to output a
-		     TAG_typedef DIE  for it.  */
-		  DECL_IGNORED_P (d) = 1;
-		}
-#endif /* DWARF_DEBUGGING_INFO */
-
 	      TYPE_MAIN_DECL (type) = d;
 	      DECL_CONTEXT (d) = context;
 	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
@@ -2334,9 +2313,6 @@ decls_match (newdecl, olddecl)
    Note that this does not apply to the C++ case of declaring
    a variable `extern const' and then later `const'.
 
-   Don't complain if -traditional, since traditional compilers
-   don't complain.
-
    Don't complain about built-in functions, since they are beyond
    the user's control.  */
 
@@ -2351,8 +2327,7 @@ warn_extern_redeclared_static (newdecl, olddecl)
   static char *implicit_extern_static_warning
     = "`%D' was declared implicitly `extern' and later `static'";
 
-  if (flag_traditional
-      || TREE_CODE (newdecl) == TYPE_DECL)
+  if (TREE_CODE (newdecl) == TYPE_DECL)
     return;
 
   name = DECL_ASSEMBLER_NAME (newdecl);
@@ -2413,14 +2388,9 @@ duplicate_decls (newdecl, olddecl)
 	  && TREE_CODE (TREE_TYPE (olddecl)) == ERROR_MARK))
     types_match = 1;
 
-  if (flag_traditional && TREE_CODE (newdecl) == FUNCTION_DECL
-      && IDENTIFIER_IMPLICIT_DECL (DECL_ASSEMBLER_NAME (newdecl)) == olddecl)
-    /* If -traditional, avoid error for redeclaring fcn
-       after implicit decl.  */
-    ;
-  else if (TREE_CODE (olddecl) == FUNCTION_DECL
-	   && DECL_ARTIFICIAL (olddecl)
-	   && (DECL_BUILT_IN (olddecl) || DECL_BUILT_IN_NONANSI (olddecl)))
+  if (TREE_CODE (olddecl) == FUNCTION_DECL
+      && DECL_ARTIFICIAL (olddecl)
+      && (DECL_BUILT_IN (olddecl) || DECL_BUILT_IN_NONANSI (olddecl)))
     {
       /* If you declare a built-in or predefined function name as static,
 	 the old definition is overridden, but optionally warn this was a
@@ -2917,13 +2887,17 @@ duplicate_decls (newdecl, olddecl)
 
 	  obstack_free (&permanent_obstack, newdecl);
 	}
-      else if (LANG_DECL_PERMANENT (ol))
+      else if (LANG_DECL_PERMANENT (ol) && ol != nl)
 	{
 	  if (DECL_MAIN_VARIANT (olddecl) == olddecl)
 	    {
 	      /* Save these lang_decls that would otherwise be lost.  */
 	      extern tree free_lang_decl_chain;
 	      tree free_lang_decl = (tree) ol;
+
+	      if (DECL_LANG_SPECIFIC (olddecl) == ol)
+		abort ();
+
 	      TREE_CHAIN (free_lang_decl) = free_lang_decl_chain;
 	      free_lang_decl_chain = free_lang_decl;
 	    }
@@ -3159,12 +3133,6 @@ pushdecl (x)
 	      cp_pedwarn_at ("previous external decl of `%#D'", decl);
 	    }
 	}
-
-      /* In PCC-compatibility mode, extern decls of vars with no current decl
-	 take effect at top level no matter where they are.  */
-      if (flag_traditional && DECL_EXTERNAL (x)
-	  && lookup_name (name, 0) == NULL_TREE)
-	b = global_binding_level;
 
       /* This name is new in its binding level.
 	 Install the new declaration and return it.  */
@@ -3625,7 +3593,7 @@ implicitly_declare (functionid)
   /* Save the decl permanently so we can warn if definition follows.
      In ANSI C, warn_implicit is usually false, so the saves little space.
      But in C++, it's usually true, hence the extra code.  */
-  if (temp && (flag_traditional || !warn_implicit || toplevel_bindings_p ()))
+  if (temp && (! warn_implicit || toplevel_bindings_p ()))
     end_temporary_allocation ();
 
   /* We used to reuse an old implicit decl here,
@@ -3637,8 +3605,7 @@ implicitly_declare (functionid)
   TREE_PUBLIC (decl) = 1;
 
   /* ANSI standard says implicit declarations are in the innermost block.
-     So we record the decl in the standard fashion.
-     If flag_traditional is set, pushdecl does it top-level.  */
+     So we record the decl in the standard fashion.  */
   pushdecl (decl);
   rest_of_decl_compilation (decl, NULL_PTR, 0, 0);
 
@@ -4695,8 +4662,6 @@ init_decl_processing ()
   tree decl;
   register tree endlink, int_endlink, double_endlink;
   tree fields[20];
-  /* Either char* or void*.  */
-  tree traditional_ptr_type_node;
   /* Data type of memcpy.  */
   tree memcpy_ftype, strlen_ftype;
   int wchar_type_size;
@@ -4819,13 +4784,10 @@ init_decl_processing ()
   record_builtin_type (RID_MAX, "unsigned short", short_unsigned_type_node);
 
   /* `unsigned long' is the standard type for sizeof.
-     Traditionally, use a signed type.
      Note that stddef.h uses `unsigned long',
      and this must agree, even of long and int are the same size.  */
   sizetype
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
-  if (flag_traditional && TREE_UNSIGNED (sizetype))
-    sizetype = signed_type (sizetype);
 
   ptrdiff_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
@@ -5017,11 +4979,8 @@ init_decl_processing ()
 			   tree_cons (NULL_TREE, const_string_type_node,
 				      endlink));
 
-  traditional_ptr_type_node
-    = (flag_traditional ? string_type_node : ptr_type_node);
-
   memcpy_ftype	/* memcpy prototype */
-    = build_function_type (traditional_ptr_type_node,
+    = build_function_type (ptr_type_node,
 			   tree_cons (NULL_TREE, ptr_type_node,
 				      tree_cons (NULL_TREE, const_ptr_type_node,
 						 tree_cons (NULL_TREE,
@@ -6546,8 +6505,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       /* ??? FIXME: What about nested classes?  */
       int toplev = toplevel_bindings_p () || pseudo_global_level_p ();
       int was_temp
-	= ((flag_traditional
-	    || (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)))
+	= (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)
 	   && allocation_temporary_p ());
 
       if (was_temp)
@@ -6709,7 +6667,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      /* Check to see if the same name is already bound at
 		 the outer level, either because it was directly declared,
 		 or because a dead for-decl got preserved.  In either case,
-		 the code would not have been valid under the traditional
+		 the code would not have been valid under the ARM
 		 scope rules, so clear is_for_scope for the
 		 current_binding_level.
 
@@ -7507,9 +7465,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   else if (decl_context == BITFIELD)
     bitfield = 1, decl_context = FIELD;
 
-  if (flag_traditional && allocation_temporary_p ())
-    end_temporary_allocation ();
-
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
   {
@@ -8059,8 +8014,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   /* Decide whether an integer type is signed or not.
      Optionally treat bitfields as signed by default.  */
   if (RIDBIT_SETP (RID_UNSIGNED, specbits)
-      /* Traditionally, all bitfields are unsigned.  */
-      || (bitfield && flag_traditional)
       || (bitfield && ! flag_signed_bitfields
 	  && (explicit_int || explicit_char
 	      /* A typedef for plain `int' without `signed'
@@ -8659,16 +8612,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			    name);
 	      }
 
-	    /* Traditionally, declaring return type float means double.  */
-
-	    if (flag_traditional
-		&& TYPE_MAIN_VARIANT (type) == float_type_node)
-	      {
-		type = build_type_variant (double_type_node,
-					   TYPE_READONLY (type),
-					   TYPE_VOLATILE (type));
-	      }
-
 	    /* Construct the function type and go to the next
 	       inner layer of declarator.  */
 
@@ -8700,10 +8643,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  }
 	      }
 
-	    /* ANSI seems to say that `const int foo ();'
+	    /* ANSI says that `const int foo ();'
 	       does not make the function foo const.  */
-	    type = build_function_type (type,
-					flag_traditional ? 0 : arg_types);
+	    type = build_function_type (type, arg_types);
 	  }
 	  break;
 
@@ -12030,10 +11972,6 @@ finish_function (lineno, call_poplevel, nested)
   /* Must mark the RESULT_DECL as being in this function.  */
   DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
-  /* Obey `register' declarations if `setjmp' is called in this fn.  */
-  if (flag_traditional && current_function_calls_setjmp)
-    setjmp_protect (DECL_INITIAL (fndecl));
-
   /* Set the BLOCK_SUPERCONTEXT of the outermost function scope to point
      to the FUNCTION_DECL node itself.  */
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
@@ -12108,12 +12046,7 @@ finish_function (lineno, call_poplevel, nested)
       DECL_INITIAL (fndecl) = error_mark_node;
       /* And we need the arguments for template instantiation.  */
       if (! processing_template_decl)
-	{
-	  if (! DECL_CONSTRUCTOR_P (fndecl)
-	      || !(TYPE_USES_VIRTUAL_BASECLASSES
-		   (TYPE_METHOD_BASETYPE (fntype))))
-	    DECL_ARGUMENTS (fndecl) = NULL_TREE;
-	}
+	DECL_ARGUMENTS (fndecl) = NULL_TREE;
     }
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))

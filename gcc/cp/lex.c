@@ -821,8 +821,6 @@ init_lex ()
       UNSET_RESERVED_WORD ("xor");
       UNSET_RESERVED_WORD ("xor_eq");
     }
-  if (! flag_traditional)
-    UNSET_RESERVED_WORD ("overload");
 
   token_count = init_parse ();
   interface_unknown = 1;
@@ -2339,12 +2337,6 @@ readescape (ignore_ptr)
   switch (c)
     {
     case 'x':
-      if (warn_traditional)
-	warning ("the meaning of `\\x' varies with -traditional");
-
-      if (flag_traditional)
-	return c;
-
       code = 0;
       count = 0;
       nonnull = 0;
@@ -2419,11 +2411,6 @@ readescape (ignore_ptr)
       return TARGET_BS;
 
     case 'a':
-      if (warn_traditional)
-	warning ("the meaning of `\\a' varies with -traditional");
-
-      if (flag_traditional)
-	return c;
       return TARGET_BELL;
 
     case 'v':
@@ -3527,7 +3514,6 @@ real_yylex ()
 	    TREE_TYPE (yylval.ttype) = long_long_unsigned_type_node;
 
 	    if (!spec_long && !spec_unsigned
-		&& !(flag_traditional && base != 10)
 		&& int_fits_type_p (yylval.ttype, integer_type_node))
 	      {
 		type = integer_type_node;
@@ -3546,12 +3532,7 @@ real_yylex ()
 	    else if (! spec_long_long
 		     && int_fits_type_p (yylval.ttype,
 					 long_unsigned_type_node))
-	      {
-		if (flag_traditional && !spec_unsigned)
-		  type = long_integer_type_node;
-		else
-		  type = long_unsigned_type_node;
-	      }
+	      type = long_unsigned_type_node;
 
 	    else if (! spec_unsigned
 		     /* Verify value does not overflow into sign bit.  */
@@ -3562,12 +3543,7 @@ real_yylex ()
 
 	    else if (int_fits_type_p (yylval.ttype,
 				      long_long_unsigned_type_node))
-	      {
-		if (flag_traditional && !spec_unsigned)
-		  type = long_long_integer_type_node;
-		else
-		  type = long_long_unsigned_type_node;
-	      }
+	      type = long_long_unsigned_type_node;
 
 	    else
 	      {
@@ -3667,7 +3643,7 @@ real_yylex ()
 	    num_chars = max_chars;
 	    error ("character constant too long");
 	  }
-	else if (num_chars != 1 && ! flag_traditional)
+	else if (num_chars != 1)
 	  warning ("multi-character character constant");
 
 	/* If char type is signed, sign-extend the constant.  */
@@ -4094,22 +4070,7 @@ build_lang_decl (code, name, type)
 	  == TREE_PERMANENT  (t), 234);
   DECL_MAIN_VARIANT (t) = t;
   if (current_lang_name == lang_name_cplusplus)
-    {
-      DECL_LANGUAGE (t) = lang_cplusplus;
-#if 0
-#ifndef NO_AUTO_OVERLOAD
-      if (code == FUNCTION_DECL && name != 0
-	  && ! (IDENTIFIER_LENGTH (name) == 4
-		&& IDENTIFIER_POINTER (name)[0] == 'm'
-		&& strcmp (IDENTIFIER_POINTER (name), "main") == 0)
-	  && ! (IDENTIFIER_LENGTH (name) > 10
-		&& IDENTIFIER_POINTER (name)[0] == '_'
-		&& IDENTIFIER_POINTER (name)[1] == '_'
-		&& strncmp (IDENTIFIER_POINTER (name)+2, "builtin_", 8) == 0))
-	TREE_OVERLOADED (name) = 1;
-#endif
-#endif
-    }
+    DECL_LANGUAGE (t) = lang_cplusplus;
   else if (current_lang_name == lang_name_c)
     DECL_LANGUAGE (t) = lang_c;
   else my_friendly_abort (64);

@@ -42,6 +42,7 @@ extern tree cleanups_this_call;
 static void grok_function_init PROTO((tree, tree));
 void import_export_decl ();
 extern int current_class_depth;
+extern int symout_time;
 
 /* A list of virtual function tables we must make sure to write out.  */
 tree pending_vtables;
@@ -104,7 +105,8 @@ int flag_no_builtin;
 
 int flag_no_nonansi_builtin;
 
-/* Nonzero means do some things the same way PCC does.  */
+/* Nonzero means do some things the same way PCC does.  Only provided so
+   the compiler will link.  */
 
 int flag_traditional;
 
@@ -184,19 +186,10 @@ int warn_cast_qual;
 
 int warn_template_debugging;
 
-/* Warn about traditional constructs whose meanings changed in ANSI C.  */
-
-int warn_traditional;
-
 /* Nonzero means warn about sizeof(function) or addition/subtraction
    of function pointers.  */
 
 int warn_pointer_arith = 1;
-
-/* Nonzero means warn for non-prototype function decls
-   or non-prototyped defs without previous prototype.  */
-
-int warn_strict_prototypes;
 
 /* Nonzero means warn for any function def without prototype decl.  */
 
@@ -439,7 +432,7 @@ lang_decode_option (p)
      char *p;
 {
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
-    flag_traditional = 1, dollars_in_ident = 1, flag_writable_strings = 1,
+    dollars_in_ident = 1, flag_writable_strings = 1,
     flag_this_is_variable = 1, flag_new_for_scope = 0;
   /* The +e options are for cfront compatibility.  They come in as
      `-+eN', to kludge around gcc.c's argument handling.  */
@@ -536,14 +529,10 @@ lang_decode_option (p)
 	warn_write_strings = setting;
       else if (!strcmp (p, "cast-qual"))
 	warn_cast_qual = setting;
-      else if (!strcmp (p, "traditional"))
-	warn_traditional = setting;
       else if (!strcmp (p, "char-subscripts"))
 	warn_char_subscripts = setting;
       else if (!strcmp (p, "pointer-arith"))
 	warn_pointer_arith = setting;
-      else if (!strcmp (p, "strict-prototypes"))
-	warn_strict_prototypes = setting;
       else if (!strcmp (p, "missing-prototypes"))
 	warn_missing_prototypes = setting;
       else if (!strcmp (p, "redundant-decls"))
@@ -1149,8 +1138,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     {
     case 2:
       maxindex = build_binary_op (MINUS_EXPR, size, integer_one_node, 1);
-      if (! flag_traditional)
-	pedwarn ("anachronistic use of array size in vector delete");
+      pedwarn ("anachronistic use of array size in vector delete");
       /* Fall through.  */
     case 1:
       break;
@@ -2777,6 +2765,13 @@ finish_file ()
     {
       tree decl = TREE_VALUE (vars);
 
+#ifdef DWARF_DEBUGGING_INFO
+	/* Output DWARF information for file-scope tentative data object
+	   declarations.  */
+
+	if (write_symbols == DWARF_DEBUG)
+	  TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 1));
+#endif
       if (DECL_TEMPLATE_INSTANTIATION (decl)
 	  && ! DECL_IN_AGGR_P (decl))
 	{
