@@ -4,6 +4,8 @@
 
 Wed Oct 28 00:10:35 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* PROJECTS: Remove entry for local spilling.
+
 	* final.c (cleanup_subreg_operands): New function.
 	(final_scan_insn): Use it.
 	(alter_subreg): Clear the "used" field when we turn a SUBREG into

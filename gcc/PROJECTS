@@ -250,18 +250,6 @@ redundant.  Constraints might permit a decrement and branch
 instruction that checks zeroness to be used when the user has
 specified to exit if negative.
 
-* Smarter reload pass.
-
-The reload pass as currently written can reload values only into registers
-that are reserved for reloading.  This means that in order to use a
-register for reloading it must spill everything out of that register.
-
-It would be straightforward, though complicated, for reload1.c to keep
-track, during its scan, of which hard registers were available at each
-point in the function, and use for reloading even registers that were
-free only at the point they were needed.  This would avoid much spilling
-and make better code.
-
 * Change the type of a variable.
 
 Sometimes a variable is declared as `int', it is assigned only once
