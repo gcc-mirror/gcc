@@ -524,7 +524,7 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
   if (m->libm_name)
     {
       gcc_assert (ts->kind == 4 || ts->kind == 8);
-      snprintf (name, sizeof (name), "%s%s%s", 
+      snprintf (name, sizeof (name), "%s%s%s",
 		ts->type == BT_COMPLEX ? "c" : "",
 		m->name,
 		ts->kind == 4 ? "f" : "");
@@ -683,8 +683,8 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
       if (flag_bounds_check)
         {
           bound = gfc_evaluate_now (bound, &se->pre);
-          cond = fold (build2 (LT_EXPR, boolean_type_node, 
-			       bound, convert (TREE_TYPE (bound), 
+          cond = fold (build2 (LT_EXPR, boolean_type_node,
+			       bound, convert (TREE_TYPE (bound),
 					       integer_zero_node)));
           tmp = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc))];
           tmp = fold (build2 (GE_EXPR, boolean_type_node, bound, tmp));
@@ -1461,7 +1461,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   tmp = fold (build3 (COND_EXPR, gfc_array_index_type, cond,
 		      loop.from[0], tmp));
   gfc_add_modify_expr (&loop.pre, pos, tmp);
-      
+
   gfc_mark_ss_chain_used (arrayss, 1);
   if (maskss)
     gfc_mark_ss_chain_used (maskss, 1);
@@ -1805,12 +1805,12 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
   /* The Fortran standard allows shift widths <= BIT_SIZE(I), whereas
      gcc requires a shift width < BIT_SIZE(I), so we have to catch this
      special case.  */
-  num_bits = convert (TREE_TYPE (arg2),	
+  num_bits = convert (TREE_TYPE (arg2),
 		      build_int_cst (NULL, TYPE_PRECISION (type)));
   cond = fold (build2 (GE_EXPR, boolean_type_node, width,
 		       convert (TREE_TYPE (arg2), num_bits)));
 
-  se->expr = fold (build3 (COND_EXPR, type, cond, 
+  se->expr = fold (build3 (COND_EXPR, type, cond,
 			   convert (type, integer_zero_node),
 			   tmp));
 }
@@ -1916,11 +1916,11 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
       break;
 
     default:
-	if (arg->expr_type == EXPR_VARIABLE 
-	    && (arg->ref == NULL || (arg->ref->next == NULL 
+	if (arg->expr_type == EXPR_VARIABLE
+	    && (arg->ref == NULL || (arg->ref->next == NULL
 				     && arg->ref->type == REF_ARRAY)))
 	  {
-	    /* This doesn't catch all cases. 
+	    /* This doesn't catch all cases.
 	       See http://gcc.gnu.org/ml/fortran/2004-06/msg00165.html
 	       and the surrounding thread.  */
 	    sym = arg->symtree->n.sym;
@@ -2343,9 +2343,9 @@ gfc_conv_intrinsic_verify (gfc_se * se, gfc_expr * expr)
 /* Prepare components and related information of a real number which is
    the first argument of a elemental functions to manipulate reals.  */
 
-static
-void prepare_arg_info (gfc_se * se, gfc_expr * expr, 
-                       real_compnt_info * rcs, int all)
+static void
+prepare_arg_info (gfc_se * se, gfc_expr * expr,
+		  real_compnt_info * rcs, int all)
 {
    tree arg;
    tree masktype;
@@ -2358,7 +2358,7 @@ void prepare_arg_info (gfc_se * se, gfc_expr * expr,
 
    if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
      gfc_todo_error ("Non-IEEE floating format");
-    
+
    gcc_assert (expr->expr_type == EXPR_FUNCTION);
 
    arg = gfc_conv_intrinsic_function_args (se, expr);
@@ -2394,19 +2394,19 @@ void prepare_arg_info (gfc_se * se, gfc_expr * expr,
    rcs->bias = fold (build2 (MINUS_EXPR, masktype, tmp ,one));
 
    if (all)
-   { 
-     /* exponent, and fraction  */
-     tmp = build2 (BIT_AND_EXPR, masktype, arg, rcs->emask);
-     tmp = build2 (RSHIFT_EXPR, masktype, tmp, rcs->fdigits);
-     exponent = gfc_create_var (masktype, "exponent");
-     gfc_add_modify_expr(&se->pre, exponent, tmp);
-     rcs->expn = exponent;
+     {
+       /* exponent, and fraction  */
+       tmp = build2 (BIT_AND_EXPR, masktype, arg, rcs->emask);
+       tmp = build2 (RSHIFT_EXPR, masktype, tmp, rcs->fdigits);
+       exponent = gfc_create_var (masktype, "exponent");
+       gfc_add_modify_expr(&se->pre, exponent, tmp);
+       rcs->expn = exponent;
 
-     tmp = build2 (BIT_AND_EXPR, masktype, arg, rcs->fmask);
-     fraction = gfc_create_var (masktype, "fraction");
-     gfc_add_modify_expr(&se->pre, fraction, tmp);
-     rcs->frac = fraction;
-  }
+       tmp = build2 (BIT_AND_EXPR, masktype, arg, rcs->fmask);
+       fraction = gfc_create_var (masktype, "fraction");
+       gfc_add_modify_expr(&se->pre, fraction, tmp);
+       rcs->frac = fraction;
+     }
 }
 
 /* Build a call to __builtin_clz.  */
@@ -2437,7 +2437,7 @@ call_builtin_clz (tree result_type, tree op0)
    SPACING (X) = POW (2, e-p)
 
    We generate:
-                                                                                
+
     t = expn - fdigits // e - p.
     res = t << fdigits // Form the exponent. Fraction is zero.
     if (t < 0) // The result is out of range. Denormalized case.
@@ -2477,7 +2477,7 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
    So the result's exponent is p. And if X is normalized, X's fraction part
    is the result's fraction. If X is denormalized, to get the X's fraction we
    shift X's fraction part to left until the first '1' is removed.
-   
+
    We generate:
 
     if (expn == 0 && frac == 0)
@@ -2605,7 +2605,7 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
   arglist = gfc_chainon_list (arglist, gfc_build_addr_expr (NULL, len));
   arglist = gfc_chainon_list (arglist, addr);
   arglist = chainon (arglist, tmp);
-  
+
   tmp = gfc_build_function_call (gfor_fndecl_string_trim, arglist);
   gfc_add_expr_to_block (&se->pre, tmp);
 
