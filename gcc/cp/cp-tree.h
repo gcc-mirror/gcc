@@ -213,6 +213,11 @@ extern int flag_rtti;
    stored in the object itself.  */
 #define vbase_offsets_in_vtable_p() (flag_new_abi)
 
+/* Nonzero if displacements to the `this' pointer to use when calling
+   virtual functions in a virtual base class are present in the
+   vtable.  */
+#define vcall_offsets_in_vtable_p() (flag_new_abi)
+
 /* Nonzero if a derived class that needs a vptr should always get one,
    even if a non-primary base class already has one.  For example,
    given:
