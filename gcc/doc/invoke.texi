@@ -3075,15 +3075,12 @@ Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.10.addressof}.
 @item g
 @opindex dg
 Dump after global register allocation, to @file{@var{file}.24.greg}.
-@item h
-@opindex dh
-Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
-@item o
-@opindex do
-Dump after post-reload optimizations, to @file{@var{file}.25.postreload}.
 @item G
 @opindex dG
 Dump after GCSE, to @file{@var{file}.11.gcse}.
+@item h
+@opindex dh
+Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
 @item i
 @opindex di
 Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
@@ -3109,6 +3106,9 @@ Dump after register renumbering, to @file{@var{file}.28.rnreg}.
 @item N
 @opindex dN
 Dump after the register move pass, to @file{@var{file}.21.regmove}.
+@item o
+@opindex do
+Dump after post-reload optimizations, to @file{@var{file}.25.postreload}.
 @item r
 @opindex dr
 Dump after RTL generation, to @file{@var{file}.00.rtl}.
