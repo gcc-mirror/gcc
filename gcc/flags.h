@@ -23,6 +23,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_FLAGS_H
 #define GCC_FLAGS_H
 
+#include "options.h"
+
 enum debug_info_type
 {
   NO_DEBUG,	    /* Write no debug info.  */
@@ -78,22 +80,10 @@ extern int quiet_flag;
 
 extern int mem_report;
 
-/* Don't print warning messages.  -w.  */
-
-extern bool inhibit_warnings;
-
-/* Don't suppress warnings from system headers.  -Wsystem-headers.  */
-
-extern bool warn_system_headers;
-
 /* Do print extra warnings (such as for uninitialized variables).
    -W/-Wextra.  */
 
 extern bool extra_warnings;
-
-/* If -Werror.  */
-
-extern bool warnings_are_errors;
 
 /* Nonzero to warn about unused variables, functions et.al.  Use
    set_Wunused() to update the -Wunused-* flags that correspond to the
@@ -101,56 +91,14 @@ extern bool warnings_are_errors;
 
 extern void set_Wunused (int setting);
 
-extern bool warn_unused_function;
-extern bool warn_unused_label;
-extern bool warn_unused_parameter;
-extern bool warn_unused_variable;
-extern bool warn_unused_value;
-
-/* Nonzero to warn about code which is never reached.  */
-
-extern bool warn_notreached;
-
-/* Nonzero means warn if inline function is too large.  */
-
-extern bool warn_inline;
-
 /* Nonzero to warn about variables used before they are initialized.  */
 
 extern int warn_uninitialized;
-
-/* Nonzero means warn about all declarations which shadow others.  */
-
-extern bool warn_shadow;
-
-/* Warn if a switch on an enum, that does not have a default case,
-   fails to have a case for every enum value.  */
-
-extern bool warn_switch;
-
-/* Warn if a switch does not have a default case.  */
-
-extern bool warn_switch_default;
-
-/* Warn if a switch on an enum fails to have a case for every enum
-   value (regardless of the presence or otherwise of a default case).  */
-
-extern bool warn_switch_enum;
 
 /* Nonzero means warn about function definitions that default the return type
    or that use a null return and have a return-type other than void.  */
 
 extern int warn_return_type;
-
-/* Warn about functions which might be candidates for attribute noreturn.  */
-
-extern bool warn_missing_noreturn;
-
-/* Nonzero means warn about pointer casts that increase the required
-   alignment of the target type (and might therefore lead to a crash
-   due to a misaligned access).  */
-
-extern bool warn_cast_align;
 
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
@@ -158,28 +106,6 @@ extern bool warn_cast_align;
 
 extern bool warn_larger_than;
 extern HOST_WIDE_INT larger_than_size;
-
-/* Warn if a function returns an aggregate,
-   since there are often incompatible calling conventions for doing this.  */
-
-extern bool warn_aggregate_return;
-
-/* Warn if packed attribute on struct is unnecessary and inefficient.  */
-
-extern bool warn_packed;
-
-/* Warn when gcc pads a structure to an alignment boundary.  */
-
-extern bool warn_padded;
-
-/* Warn when an optimization pass is disabled.  */
-
-extern bool warn_disabled_optimization;
-
-/* Nonzero means warn about uses of __attribute__((deprecated)) 
-   declarations.  */
-
-extern bool warn_deprecated_decl;
 
 /* Nonzero means warn about constructs which might not be strict
    aliasing safe.  */
