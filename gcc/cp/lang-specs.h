@@ -30,10 +30,10 @@ Boston, MA 02111-1307, USA.  */
   {"@c++",
 #if USE_CPPLIB
    {
-     "%{E|M|MM:cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+     "%{E|M|MM:cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-	-D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus -D__GNUC_MINOR__=%v2\
+	-D__GNUC__=%v1 -D__GNUG__=%v1 -D__GNUC_MINOR__=%v2 -D__cplusplus\
 	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
 	%{!fno-exceptions:-D__EXCEPTIONS}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
@@ -41,10 +41,10 @@ Boston, MA 02111-1307, USA.  */
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
       %{!E:%{!M:%{!MM:cc1plus %i %1 %2\
-                            -lang-c++ %{nostdinc*} %{C} %{A*} %{I*} %{P} %I\
+                            -lang-c++ %{nostdinc*} %{C} %{A*} %{I*} %{P} %{$} %I\
                             %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-                            -D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus\
-                            -D__GNUC_MINOR__=%v2\
+                            -D__GNUC__=%v1 -D__GNUG__=%v1\
+                            -D__GNUC_MINOR__=%v2} -D__cplusplus\
                             %{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
                             %{!fno-exceptions:-D__EXCEPTIONS}\
                             %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -61,10 +61,10 @@ Boston, MA 02111-1307, USA.  */
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
                       %{!pipe:%g.s} %A\n }}}}"}},
 #else /* ! USE_CPPLIB */
-   {"cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {"cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-	-D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus -D__GNUC_MINOR__=%v2\
+	-D__GNUC__=%v1 -D__GNUG__=%v1 -D__GNUC_MINOR__=%v2 -D__cplusplus\
 	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
 	%{!fno-exceptions:-D__EXCEPTIONS}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\

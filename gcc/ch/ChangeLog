@@ -1,3 +1,7 @@
+1999-05-10 18:21 -0400  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* lang-specs.h: Pass -$ to the preprocessor.
+
 Tue May  4 14:52:53 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* actions.c (chill_expand_assignment): Use powersetlen to calculate the
