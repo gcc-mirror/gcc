@@ -2527,7 +2527,8 @@ finish_id_expression (tree id_expression,
 	  /* If we found a variable, then name lookup during the
 	     instantiation will always resolve to the same VAR_DECL
 	     (or an instantiation thereof).  */
-	  if (TREE_CODE (decl) == VAR_DECL)
+	  if (TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == PARM_DECL)
 	    return decl;
 	  return id_expression;
 	}
