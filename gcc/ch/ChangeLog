@@ -1,3 +1,8 @@
+Tue Jun 13 15:30:46 2000  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
+
+	* Make-lang.in (CHILL.install-common): Use $(INSTALL_SCRIPT), not
+	$(INSTALL_PROGRAM) for chill.install.
+
 2000-06-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (EXPR_H): New dependency variable.
