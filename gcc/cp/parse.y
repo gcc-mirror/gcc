@@ -119,7 +119,13 @@ frob_specs (specs_attrs, lookups)
     current_declspecs = build_tree_list (NULL_TREE, current_declspecs);
   if (have_extern_spec && !used_extern_spec)
     {
-      current_declspecs = tree_cons (NULL_TREE, 
+      /* We have to indicate that there is an "extern", but that it
+         was part of a language specifier.  For instance,
+	 
+    	    extern "C" typedef int (*Ptr) ();
+
+         is well formed.  */
+      current_declspecs = tree_cons (error_mark_node,
 				     get_identifier ("extern"), 
 				     current_declspecs);
       used_extern_spec = 1;

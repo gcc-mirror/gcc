@@ -1,3 +1,11 @@
+2001-12-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR g++/51
+	* parse.y (frob_specs): Indicate it is a language linkage which
+	contained the extern.
+	* decl.c (grokdeclarator): Allow extern language linkage with
+	other specifiers.
+
 2001-12-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/72
