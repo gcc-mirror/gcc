@@ -408,7 +408,8 @@ typedef struct
 
   unsigned in_namelist:1, in_common:1;
   unsigned function:1, subroutine:1, generic:1;
-  unsigned implicit_type:1;	/* Type defined via implicit rules */
+  unsigned implicit_type:1;	/* Type defined via implicit rules.  */
+  unsigned untyped:1;           /* No implicit type could be found.  */
 
   /* Function/subroutine attributes */
   unsigned sequence:1, elemental:1, pure:1, recursive:1;

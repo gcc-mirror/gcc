@@ -11,6 +11,11 @@
 	(gfc_symbol_init_2): Pass second argument to gfc_get_namespace.
 	* trans-common.c (build_common_decl): Likewise.
 
+	* gfortran.h (symbol_attribute): New 'untyped' field, fix comment
+	formatting.
+	* symbol.c (gfc_set_default_type): Issue error only once, by setting
+	and checking 'untyped' attribute.
+
 2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* intrinsic.h, st.c: Update copyright.
