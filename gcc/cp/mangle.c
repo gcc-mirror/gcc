@@ -120,7 +120,7 @@ static tree subst_identifiers[SUBID_MAX];
 
 /* Single-letter codes for builtin integer types, defined in
    <builtin-type>.  These are indexed by integer_type_kind values.  */
-static char
+static const char
 integer_type_codes[itk_none] =
 {
   'c',  /* itk_char */
@@ -134,6 +134,21 @@ integer_type_codes[itk_none] =
   'm',  /* itk_unsigned_long */
   'x',  /* itk_long_long */
   'y'   /* itk_unsigned_long_long */
+};
+
+/* Manglings for the various builtin Java types.  */
+
+static const char *
+java_fundamental_type_codes[jtk_last] = 
+{
+  "jb", /* jtk_byte */
+  "js", /* jtk_short */
+  "ji", /* jtk_int */
+  "jl", /* jtk_long */
+  "jf", /* jtk_float */
+  "jd", /* jtk_double */
+  "jc", /* jtk_char */
+  "jt"  /* jtk_boolean */
 };
 
 /* Functions for handling substitutions.  */
@@ -156,10 +171,11 @@ static void write_prefix PARAMS ((tree));
 static void write_template_prefix PARAMS ((tree));
 static void write_component PARAMS ((tree));
 static void write_unqualified_name PARAMS ((tree));
+static void write_source_name_from_string PARAMS ((const char *));
 static void write_source_name PARAMS ((tree));
 static void write_number PARAMS ((int, int));
 static void write_integer_cst PARAMS ((tree));
-static void write_identifier PARAMS ((char *));
+static void write_identifier PARAMS ((const char *));
 static void write_special_name_constructor PARAMS ((tree));
 static void write_special_name_destructor PARAMS ((tree));
 static void write_type PARAMS ((tree));
@@ -898,6 +914,18 @@ write_unqualified_name (decl)
     write_source_name (DECL_NAME (decl));
 }
 
+/* Non-termial <source-name>.  NAME is a NTBS.
+
+     <source-name> ::= </length/ number> <identifier>  */
+
+static void
+write_source_name_from_string (name)
+     const char *name;
+{
+  write_number (strlen (name), 10);
+  write_identifier (name);
+}
+
 /* Non-termial <source-name>.  IDENTIFIER is an IDENTIFIER_NODE.  
 
      <source-name> ::= </length/ number> <identifier>  */
@@ -969,7 +997,7 @@ write_integer_cst (cst)
 
 static void
 write_identifier (identifier)
-     char *identifier;
+     const char *identifier;
 {
   MANGLE_TRACE ("identifier", identifier);
   write_string (identifier);
@@ -1307,6 +1335,24 @@ static void
 write_builtin_type (type)
      tree type;
 {
+  /* If this is a Java type, mangle it specially, as a vendor
+     extension.  */
+  if (TYPE_FOR_JAVA (type))
+    {
+      java_fundamental_type_kind jtk;
+
+      for (jtk = jtk_first; jtk < jtk_last; ++jtk)
+	if (same_type_p (type, java_fundamental_types[jtk]))
+	  {
+	    /* The `u' indicates a vendor extension.  */
+	    write_char ('u');
+	    write_source_name_from_string (java_fundamental_type_codes[jtk]);
+	    return;
+	  }
+
+      my_friendly_abort (20000609);
+    }
+
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
@@ -1324,7 +1370,7 @@ write_builtin_type (type)
 
       /* TYPE may still be wchar_t, since that isn't in
 	 integer_type_nodes.  */
-      if (type == wchar_type_node)
+      if (same_type_p (type, wchar_type_node))
 	write_char ('w');
       else
 	{
@@ -1332,7 +1378,7 @@ write_builtin_type (type)
 	  /* Assume TYPE is one of the shared integer type nodes.  Find
 	     it in the array of these nodes.  */
 	  for (itk = 0; itk < itk_none; ++itk)
-	    if (type == integer_types[itk])
+	    if (same_type_p (type, integer_types[itk]))
 	      {
 		/* Print the corresponding single-letter code.  */
 		write_char (integer_type_codes[itk]);
@@ -1346,11 +1392,11 @@ write_builtin_type (type)
       break;
 
     case REAL_TYPE:
-      if (type == float_type_node)
+      if (same_type_p (type, float_type_node))
 	write_char ('f');
-      else if (type == double_type_node)
+      else if (same_type_p (type, double_type_node))
 	write_char ('d');
-      else if (type == long_double_type_node)
+      else if (same_type_p (type, long_double_type_node))
 	write_char ('e');
       else
 	my_friendly_abort (20000409);
