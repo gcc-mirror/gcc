@@ -93,9 +93,8 @@ static void cb_define		PARAMS ((cpp_reader *, unsigned int,
 static void cb_undef		PARAMS ((cpp_reader *, unsigned int,
 					 cpp_hashnode *));
 
-const char *
-init_c_lex (filename)
-     const char *filename;
+void
+init_c_lex ()
 {
   struct cpp_callbacks *cb;
   struct c_fileinfo *toplevel;
@@ -135,11 +134,6 @@ init_c_lex (filename)
       cb->define = cb_define;
       cb->undef = cb_undef;
     }
-
-  /* Start it at 0.  */
-  lineno = 0;
-
-  return cpp_read_main_file (parse_in, filename, ident_hash);
 }
 
 /* A thin wrapper around the real parser that initializes the 

@@ -206,15 +206,6 @@ struct cpp_token
 typedef unsigned CPPCHAR_SIGNED_T cppchar_t;
 typedef CPPCHAR_SIGNED_T cppchar_signed_t;
 
-/* Values for opts.dump_macros.
-  dump_only means inhibit output of the preprocessed text
-             and instead output the definitions of all user-defined
-             macros in a form suitable for use as input to cpp.
-   dump_names means pass #define and the macro name through to output.
-   dump_definitions means pass the whole definition (plus #define) through
-*/
-enum { dump_none = 0, dump_only, dump_names, dump_definitions };
-
 /* This structure is nested inside struct cpp_reader, and
    carries all the options visible to the command line.  */
 struct cpp_options
@@ -306,16 +297,9 @@ struct cpp_options
   /* Nonzero means turn warnings into errors.  */
   unsigned char warnings_are_errors;
 
-  /* Nonzero causes output not to be done, but directives such as
-     #define that have side effects are still obeyed.  */
-  unsigned char no_output;
-
   /* Nonzero means we should look for header.gcc files that remap file
      names.  */
   unsigned char remap;
-
-  /* Nonzero means don't output line number information.  */
-  unsigned char no_line_commands;
 
   /* Zero means dollar signs are punctuation.  */
   unsigned char dollars_in_ident;
@@ -338,12 +322,6 @@ struct cpp_options
   /* Nonzero means we're looking at already preprocessed code, so don't
      bother trying to do macro expansion and whatnot.  */
   unsigned char preprocessed;
-
-  /* Nonzero means dump macros in some fashion - see above.  */
-  unsigned char dump_macros;
-
-  /* Nonzero means pass #include lines through to the output.  */
-  unsigned char dump_includes;
 
   /* Print column number in error messages.  */
   unsigned char show_column;
@@ -752,9 +730,6 @@ extern void cpp_prepare_state PARAMS ((cpp_reader *,
 				       struct save_macro_data **));
 extern int cpp_read_state PARAMS ((cpp_reader *, const char *, FILE *,
 				   struct save_macro_data *));
-
-/* In cppmain.c */
-extern void cpp_preprocess_file PARAMS ((cpp_reader *, const char *, FILE *));
 
 #ifdef __cplusplus
 }

@@ -759,7 +759,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
-  c-incpath.o cppdefault.o \
+  c-incpath.o cppdefault.o c-ppoutput.o \
   c-objc-common.o c-dump.o c-pch.o libcpp.a $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
@@ -1234,6 +1234,8 @@ c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(RTL_H) debug.h $(C_TREE_H) c-common.h real.h c-incpath.h cppdefault.h \
     c-pragma.h input.h intl.h flags.h toplev.h output.h \
     mbchar.h $(CPPLIB_H) $(EXPR_H) $(TM_P_H)
+c-ppoutput.o : c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+    c-common.h $(TREE_H) $(CPPLIB_H) cpphash.h $(TM_P_H)
 c-objc-common.o : c-objc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(RTL_H) insn-config.h integrate.h $(EXPR_H) $(C_TREE_H) \
     flags.h toplev.h tree-inline.h diagnostic.h integrate.h $(VARRAY_H) \
@@ -2275,7 +2277,7 @@ PREPROCESSOR_DEFINES = \
   @TARGET_SYSTEM_ROOT_DEFINE@
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
-		cpphash.o cpperror.o cppinit.o cppmain.o \
+		cpphash.o cpperror.o cppinit.o \
 		hashtable.o line-map.o mkdeps.o prefix.o mbchar.o cpppch.o
 
 LIBCPP_DEPS =	$(CPPLIB_H) cpphash.h line-map.h hashtable.h intl.h \
@@ -2287,8 +2289,6 @@ libcpp.a: $(LIBCPP_OBJS)
 	-rm -rf libcpp.a
 	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
 	-$(RANLIB) libcpp.a
-
-cppmain.o:  cppmain.c  $(LIBCPP_DEPS)
 
 cpperror.o: cpperror.c $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(LIBCPP_DEPS)

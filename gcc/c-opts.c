@@ -90,7 +90,6 @@ static void set_std_cxx98 PARAMS ((int));
 static void set_std_c89 PARAMS ((int, int));
 static void set_std_c99 PARAMS ((int));
 static void check_deps_environment_vars PARAMS ((void));
-static void preprocess_file PARAMS ((void));
 static void handle_deferred_opts PARAMS ((void));
 static void sanitize_cpp_opts PARAMS ((void));
 static void add_prefixed_path PARAMS ((const char *, size_t));
@@ -715,7 +714,7 @@ c_common_decode_option (argc, argv)
 	 depends on this.  Preprocessed output does occur if -MD, -MMD
 	 or environment var dependency generation is used.  */
       cpp_opts->deps.style = (code == OPT_M ? DEPS_SYSTEM: DEPS_USER);
-      cpp_opts->no_output = 1;
+      flag_no_output = 1;
       cpp_opts->inhibit_warnings = 1;
       break;
 
@@ -747,7 +746,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_P:
-      cpp_opts->no_line_commands = 1;
+      flag_no_line_commands = 1;
       break;
 
     case OPT_Wabi:
@@ -1500,24 +1499,6 @@ c_common_post_options ()
   return flag_preprocess_only;
 }
 
-/* Preprocess the input file to out_stream.  */
-static void
-preprocess_file ()
-{
-  /* Open the output now.  We must do so even if no_output is on,
-     because there may be other output than from the actual
-     preprocessing (e.g. from -dM).  */
-  if (out_fname[0] == '\0')
-    out_stream = stdout;
-  else
-    out_stream = fopen (out_fname, "w");
-
-  if (out_stream == NULL)
-    fatal_io_error ("opening output file %s", out_fname);
-  else
-    cpp_preprocess_file (parse_in, in_fname, out_stream);
-}
-
 /* Front end initialization common to C, ObjC and C++.  */
 const char *
 c_common_init (filename)
@@ -1535,18 +1516,35 @@ c_common_init (filename)
      cpp_main_file.  */
   cpp_get_callbacks (parse_in)->register_builtins = cb_register_builtins;
 
-  /* NULL is passed up to toplev.c and we exit quickly.  */
   if (flag_preprocess_only)
     {
-      preprocess_file ();
+      /* Open the output now.  We must do so even if flag_no_output is
+	 on, because there may be other output than from the actual
+	 preprocessing (e.g. from -dM).  */
+      if (out_fname[0] == '\0')
+	out_stream = stdout;
+      else
+	out_stream = fopen (out_fname, "w");
+
+      if (out_stream == NULL)
+	fatal_io_error ("opening output file %s", out_fname);
+      else
+	/* Preprocess the input file to out_stream.  */
+	preprocess_file (parse_in, in_fname, out_stream);
+
+      /* Exit quickly in toplev.c.  */
       return NULL;
     }
 
-  /* Do this before initializing pragmas, as then cpplib's hash table
-     has been set up.  NOTE: we are using our own file name here, not
-     the one supplied.  */
-  filename = init_c_lex (in_fname);
+  init_c_lex ();
 
+  /* Start it at 0.  */
+  lineno = 0;
+
+  /* NOTE: we use in_fname here, not the one supplied.  */
+  filename = cpp_read_main_file (parse_in, in_fname, ident_hash);
+
+  /* Has to wait until now so that cpplib has its hash table.  */
   init_pragma ();
 
   return filename;
@@ -1665,16 +1663,16 @@ sanitize_cpp_opts ()
 
   /* -dM and dependencies suppress normal output; do it here so that
      the last -d[MDN] switch overrides earlier ones.  */
-  if (cpp_opts->dump_macros == dump_only)
-    cpp_opts->no_output = 1;
+  if (flag_dump_macros == 'M')
+    flag_no_output = 1;
 
   /* Disable -dD, -dN and -dI if normal output is suppressed.  Allow
      -dM since at least glibc relies on -M -dM to work.  */
-  if (cpp_opts->no_output)
+  if (flag_no_output)
     {
-      if (cpp_opts->dump_macros != dump_only)
-	cpp_opts->dump_macros = dump_none;
-      cpp_opts->dump_includes = 0;
+      if (flag_dump_macros != 'M')
+	flag_dump_macros = 0;
+      flag_dump_includes = 0;
     }
 
   cpp_opts->unsigned_char = !flag_signed_char;
@@ -1769,20 +1767,14 @@ handle_OPT_d (arg)
   while ((c = *arg++) != '\0')
     switch (c)
       {
-      case 'M':
-	cpp_opts->dump_macros = dump_only;
-	break;
-
-      case 'N':
-	cpp_opts->dump_macros = dump_names;
-	break;
-
-      case 'D':
-	cpp_opts->dump_macros = dump_definitions;
+      case 'M':			/* Dump macros only.  */
+      case 'N':			/* Dump names.  */
+      case 'D':			/* Dump definitions.  */
+	flag_dump_macros = c;
 	break;
 
       case 'I':
-	cpp_opts->dump_includes = 1;
+	flag_dump_includes = 1;
 	break;
       }
 }

@@ -240,18 +240,6 @@ struct spec_nodes
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
 };
 
-/* Encapsulates state used to convert a stream of tokens into a text
-   file.  */
-struct printer
-{
-  FILE *outf;			/* Stream to write to.  */
-  const struct line_map *map;	/* Logical to physical line mappings.  */
-  const cpp_token *prev;	/* Previous token.  */
-  const cpp_token *source;	/* Source token for spacing.  */
-  unsigned int line;		/* Line currently being written.  */
-  unsigned char printed;	/* Nonzero if something output at line.  */
-};
-
 /* Represents the contents of a file cpplib has read in.  */
 struct cpp_buffer
 {
@@ -421,9 +409,6 @@ struct cpp_reader
   /* Special nodes - identifiers with predefined significance to the
      preprocessor.  */
   struct spec_nodes spec_nodes;
-
-  /* Used when doing preprocessed output.  */
-  struct printer print;
 
   /* Nonzero means don't look for #include "foo" the source-file
      directory.  */

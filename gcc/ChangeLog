@@ -1,3 +1,27 @@
+2003-03-04  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update.
+	* c-common.c (flag_no_line_commands, flag_no_output,
+	flag_dump_macros, flag_dump_includes): New.
+	* c-common.h (flag_no_line_commands, flag_no_output,
+	flag_dump_macros, flag_dump_includes, preprocess_file): New.
+	(init_c_lex): Update prototype.
+	* c-lex.c (init_c_lex): Update prototype; move some code to
+	c_common_init.
+	* c-opts.c (preprocess_file): Subsume into c_common_init.
+	(c_common_decode_option): Update flags.
+	(c_common_init): Move code from preprocess_file and init_c_lex.
+	(sanitize_cpp_opts): Update.
+	* c-ppoutput.c: New, cppmain.c almost verbatim.
+	* cpphash.h (struct printer): Remove.
+	(struct cpp_reader): Remove print.
+	* cpplib.h (dump_none, dump_only, dump_names, dump_definitions,
+	cpp_preprocess_file): Remove.
+	(struct cpp_options): Remove no_output, no_line_commands, dump_macros
+	and dump_includes.
+	* cppmain.c: Remove.
+	* doc/passes.texi: Update.
+
 2003-03-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* function.c (STACK_ALIGNMENT_NEEDED): New macro.  Default to 1.

@@ -370,6 +370,24 @@ extern int allow_pch;
 
 extern int flag_preprocess_only;
 
+/* Nonzero means don't output line number information.  */
+
+extern char flag_no_line_commands;
+
+/* Nonzero causes -E output not to be done, but directives such as
+   #define that have side effects are still obeyed.  */
+
+extern char flag_no_output;
+
+/* Nonzero means dump macros in some fashion; contains the 'D', 'M' or
+   'N' of the command line switch.  */
+
+extern char flag_dump_macros;
+
+/* Nonzero means pass #include lines through to the output.  */
+
+extern char flag_dump_includes;
+
 /* The file name to which we should write a precompiled header, or
    NULL if no header will be written in this compile.  */
 
@@ -1243,7 +1261,7 @@ extern int c_staticp                            PARAMS ((tree));
 
 extern int c_common_unsafe_for_reeval		PARAMS ((tree));
 
-extern const char *init_c_lex			PARAMS ((const char *));
+extern void init_c_lex				PARAMS ((void));
 
 extern void cb_register_builtins		PARAMS ((cpp_reader *));
 
@@ -1274,5 +1292,8 @@ extern void c_common_read_pch			PARAMS ((cpp_reader *pfile,
 							 int fd,
 							 const char *orig));
 extern void c_common_write_pch			PARAMS ((void));
+extern void preprocess_file			PARAMS ((cpp_reader *,
+							 const char *,
+							 FILE *));
 
 #endif /* ! GCC_C_COMMON_H */
