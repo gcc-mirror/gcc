@@ -1,5 +1,8 @@
 2001-12-21  Richard Henderson  <rth@redhat.com>
 
+	* class.c (compile_resource_file): Set TREE_PUBLIC on the constructor
+	only if the target requires collect2.
+
 	* class.c (build_class_ref): Mark _Jv_fooClass DECL_EXTERNAL.
 
 2001-12-20  Tom Tromey  <tromey@redhat.com>
