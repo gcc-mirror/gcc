@@ -215,7 +215,8 @@ decl_attributes (decl, attributes)
   for (a = attributes; a; a = TREE_CHAIN (a))
     if (!(name = TREE_VALUE (a)))
 	continue;
-    else if (name == get_identifier ("packed"))
+    else if (name == get_identifier ("packed")
+	     || name == get_identifier ("__packed__"))
       {
 	if (TREE_CODE (decl) == FIELD_DECL)
 	  DECL_PACKED (decl) = 1;
@@ -226,7 +227,9 @@ decl_attributes (decl, attributes)
 
       }
     else if (TREE_VALUE (a) == get_identifier ("noreturn")
-	     || TREE_VALUE (a) == get_identifier ("volatile"))
+	     || TREE_VALUE (a) == get_identifier ("__noreturn__")
+	     || TREE_VALUE (a) == get_identifier ("volatile")
+	     || TREE_VALUE (a) == get_identifier ("__volatile__"))
       {
 	if (TREE_CODE (decl) == FUNCTION_DECL)
 	  TREE_THIS_VOLATILE (decl) = 1;
@@ -240,7 +243,8 @@ decl_attributes (decl, attributes)
 	  warning_with_decl (decl, "`%s' attribute ignored",
 			     IDENTIFIER_POINTER (TREE_VALUE (a)));
       }
-    else if (TREE_VALUE (a) == get_identifier ("const"))
+    else if (TREE_VALUE (a) == get_identifier ("const")
+	     || TREE_VALUE (a) == get_identifier ("__const__"))
       {
 	if (TREE_CODE (decl) == FUNCTION_DECL)
 	  TREE_READONLY (decl) = 1;
@@ -253,7 +257,8 @@ decl_attributes (decl, attributes)
 	else
 	  warning_with_decl (decl, "`const' attribute ignored");
       }
-    else if (TREE_VALUE (a) == get_identifier ("transparent_union"))
+    else if (TREE_VALUE (a) == get_identifier ("transparent_union")
+	     || TREE_VALUE (a) == get_identifier ("__transparent_union__"))
       {
 	if (TREE_CODE (decl) == PARM_DECL
 	    && TREE_CODE (type) == UNION_TYPE
@@ -286,7 +291,8 @@ found_attr:;
 		   IDENTIFIER_POINTER (name));
      }
     else if ( args = TREE_CHAIN(name),
-	      !strcmp (IDENTIFIER_POINTER (name = TREE_PURPOSE (name)), "mode")
+	      (!strcmp (IDENTIFIER_POINTER (name = TREE_PURPOSE (name)), "mode")
+	       || !strcmp (IDENTIFIER_POINTER (name), "__mode__"))
 	      && list_length (args) == 1
 	      && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
       {
@@ -313,7 +319,8 @@ found_attr:;
 	if (i == NUM_MACHINE_MODES)
 	  error_with_decl (decl, "unknown machine mode `%s'", specified_name);
       }
-    else if (!strcmp (IDENTIFIER_POINTER (name), "section")
+    else if ((!strcmp (IDENTIFIER_POINTER (name), "section")
+	      || !strcmp (IDENTIFIER_POINTER (name), "__section__"))
 	     && list_length (args) == 1
 	     && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
       {
@@ -340,7 +347,8 @@ found_attr:;
 	error_with_decl (decl, "section attributes are not supported for this target");
 #endif
       }
-    else if (!strcmp (IDENTIFIER_POINTER (name), "aligned")
+    else if ((!strcmp (IDENTIFIER_POINTER (name), "aligned")
+	      || !strcmp (IDENTIFIER_POINTER (name), "__aligned__"))
 	     && list_length (args) == 1
 	     && TREE_CODE (TREE_VALUE (args)) == INTEGER_CST)
       {
@@ -372,7 +380,8 @@ found_attr:;
 	else
 	  DECL_ALIGN (decl) = align;
       }
-    else if (!strcmp (IDENTIFIER_POINTER (name), "format")
+    else if ((!strcmp (IDENTIFIER_POINTER (name), "format")
+	      || !strcmp (IDENTIFIER_POINTER (name), "__format__"))
 	     && list_length (args) == 3
 	     && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE
 	     && TREE_CODE (TREE_VALUE (TREE_CHAIN (args))) == INTEGER_CST
