@@ -10,16 +10,17 @@ details.  */
 
 #include <config.h>
 
-#ifdef USE_WINSOCK
+#ifdef WIN32
 
 #include <windows.h>
 #include <winsock.h>
+#undef STRICT
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN	64
 #endif /* MAXHOSTNAMELEN */
 
-#else
+#else /* WIN32 */
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -42,7 +43,7 @@ details.  */
 #include <netdb.h>
 #endif
 
-#endif /* USE_WINSOCK */
+#endif /* WIN32 */
 
 #include <gcj/cni.h>
 #include <jvm.h>
