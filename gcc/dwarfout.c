@@ -347,7 +347,7 @@ static unsigned lookup_filename ();
    section name must be enclosed in double quotes.  (See sparcv4.h.)  */
 
 #ifndef PUSHSECTION_FORMAT
-#define PUSHSECTION_FORMAT	"%s\t%s\n"
+#define PUSHSECTION_FORMAT	"\t%s\t%s\n"
 #endif
 
 #ifndef DEBUG_SECTION
