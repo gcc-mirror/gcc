@@ -2926,6 +2926,8 @@ example, it allows the compiler to assume arguments to the @code{sqrt}
 function are non-negative numbers and that no floating-point values
 are NaNs.
 
+This option causes the preprocessor macro __FAST_MATH__ to be defined.
+
 This option should never be turned on by any @samp{-O} option since
 it can result in incorrect output for programs which depend on
 an exact implementation of IEEE or ISO rules/specifications for
