@@ -258,9 +258,13 @@ extern struct sarray* __objc_uninstalled_dtable;
 /* Store the passed selector name in the selector record and return its
    selector value (value returned by sel_get_uid).
    Assumes that the calling function has locked down __objc_runtime_mutex. */
+/* is_const parameter tells us if the name and types parameters
+   are really constant or not.  If YES then they are constant and
+   we can just store the pointers.  If NO then we need to copy
+   name and types because the pointers may disappear later on. */
 SEL
 __sel_register_typed_name (const char *name, const char *types, 
-			   struct objc_selector *orig)
+			   struct objc_selector *orig, BOOL is_const)
 {
   struct objc_selector* j;
   sidx i;
@@ -303,7 +307,13 @@ __sel_register_typed_name (const char *name, const char *types,
 	j = __objc_xmalloc (sizeof (struct objc_selector));
 
       j->sel_id = (void*)i;
-      j->sel_types = (const char*)types;
+      /* Can we use the pointer or must copy types?  Don't copy if NULL */
+      if ((is_const) || (types == 0))
+	j->sel_types = (const char*)types;
+      else {
+	j->sel_types = (char *)__objc_xmalloc(strlen(types)+1);
+	strcpy(j->sel_types, types);
+      }
       l = (struct objc_list*)sarray_get (__objc_selector_array, i);
     }
   else
@@ -316,7 +326,13 @@ __sel_register_typed_name (const char *name, const char *types,
 	j = __objc_xmalloc (sizeof (struct objc_selector));
 	
       j->sel_id = (void*)i;
-      j->sel_types = (const char*)types;
+      /* Can we use the pointer or must copy types?  Don't copy if NULL */
+      if ((is_const) || (types == 0))
+	j->sel_types = (const char*)types;
+      else {
+	j->sel_types = (char *)__objc_xmalloc(strlen(types)+1);
+	strcpy(j->sel_types, types);
+      }
       l = 0;
     }
 
@@ -325,11 +341,21 @@ __sel_register_typed_name (const char *name, const char *types,
   
   {
     int is_new = (l == 0);
+    char *new_name;
+
+    /* Can we use the pointer or must copy name?  Don't copy if NULL */
+    if ((is_const) || (name == 0))
+      new_name = name;
+    else {
+      new_name = (char *)__objc_xmalloc(strlen(name)+1);
+      strcpy(new_name, name);
+    }
+
     l = list_cons ((void*)j, l);
-    sarray_at_put_safe (__objc_selector_names, i, (void *) name);
+    sarray_at_put_safe (__objc_selector_names, i, (void *) new_name);
     sarray_at_put_safe (__objc_selector_array, i, (void *) l);
     if (is_new)
-      hash_add (&__objc_selector_hash, (void *) name, (void *) i);
+      hash_add (&__objc_selector_hash, (void *) new_name, (void *) i);
   }
 
   sarray_realloc(__objc_uninstalled_dtable, __objc_selector_max_index+1);
@@ -343,7 +369,9 @@ sel_register_name (const char *name)
   SEL ret;
     
   objc_mutex_lock(__objc_runtime_mutex);
-  ret = __sel_register_typed_name (name, 0, 0);
+  /* Assume that name is not constant static memory and needs to be
+     copied before put into a runtime structure.  is_const == NO */
+  ret = __sel_register_typed_name (name, 0, 0, NO);
   objc_mutex_unlock(__objc_runtime_mutex);
   
   return ret;
@@ -355,7 +383,9 @@ sel_register_typed_name (const char *name, const char *type)
   SEL ret;
     
   objc_mutex_lock(__objc_runtime_mutex);
-  ret = __sel_register_typed_name (name, type, 0);
+  /* Assume that name and type are not constant static memory and need to
+     be copied before put into a runtime structure.  is_const == NO */
+  ret = __sel_register_typed_name (name, type, 0, NO);
   objc_mutex_unlock(__objc_runtime_mutex);
   
   return ret;

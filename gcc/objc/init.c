@@ -65,7 +65,7 @@ BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
 
 extern SEL
 __sel_register_typed_name (const char *name, const char *types, 
-			   struct objc_selector *orig);
+			   struct objc_selector *orig, BOOL is_const);
 
 /* Run through the statics list, removing modules as soon as all its statics
    have been initialized.  */
@@ -183,8 +183,11 @@ __objc_exec_class (Module_t module)
 	  const char *name, *type;
 	  name = (char*)selectors[i].sel_id;
 	  type = (char*)selectors[i].sel_types;
+	  /* Constructors are constant static data so we can safely store
+	     pointers to them in the runtime structures. is_const == YES */
 	  __sel_register_typed_name (name, type, 
-				     (struct objc_selector*)&(selectors[i]));
+				     (struct objc_selector*)&(selectors[i]),
+				     YES);
 	}
     }
 
