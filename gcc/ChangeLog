@@ -1,3 +1,7 @@
+Tue Nov  3 20:50:03 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (SELECT_SECTION): Fix thinko.
+
 Tue Nov  3 17:51:36 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (output_call_frame_info): Comments on last change.

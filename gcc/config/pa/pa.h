@@ -1774,11 +1774,11 @@ while (0)
       && DECL_INITIAL (EXP) \
       && (DECL_INITIAL (EXP) == error_mark_node \
           || TREE_CONSTANT (DECL_INITIAL (EXP))) \
-      && !reloc) \
+      && !RELOC) \
     readonly_data_section (); \
   else if (TREE_CODE_CLASS (TREE_CODE (EXP)) == 'c' \
 	   && !(TREE_CODE (EXP) == STRING_CST && flag_writable_strings) \
-	   && !reloc) \
+	   && !RELOC) \
     readonly_data_section (); \
   else \
     data_section ();
