@@ -165,6 +165,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
+#include "insn-flags.h"
 
 #ifdef STACK_REGS
 
@@ -231,21 +232,45 @@ static rtx
    ? (abort() , -1) : block_number[INSN_UID (INSN)])
 
 extern rtx forced_labels;
-extern rtx gen_jump ();
-extern rtx gen_movdf (), gen_movxf ();
-extern rtx find_regno_note ();
-extern rtx emit_jump_insn_before ();
-extern rtx emit_label_after ();
 
 /* Forward declarations */
 
-static void find_blocks ();
-static uses_reg_or_mem ();
-static void stack_reg_life_analysis ();
-static void record_reg_life_pat ();
-static void change_stack ();
-static void convert_regs ();
-static void dump_stack_info ();
+static void mark_regs_pat		PROTO((rtx, HARD_REG_SET *));
+static void straighten_stack		PROTO((rtx, stack));
+static void record_label_references	PROTO((rtx, rtx));
+static rtx *get_true_reg		PROTO((rtx *));
+static int constrain_asm_operands	PROTO((int, rtx *, char **, int *,
+					       enum reg_class *));
+
+static void record_asm_reg_life		PROTO((rtx,stack, rtx *, char **,
+					       int, int));
+static void record_reg_life_pat		PROTO((rtx, HARD_REG_SET *,
+					       HARD_REG_SET *, int));
+static void get_asm_operand_length	PROTO((rtx, int, int *, int *));
+static void record_reg_life		PROTO((rtx, int, stack));
+static void find_blocks			PROTO((rtx));
+static int uses_reg_or_mem		PROTO((rtx));
+static rtx stack_result			PROTO((tree));
+static void stack_reg_life_analysis	PROTO((rtx, HARD_REG_SET *));
+static void replace_reg			PROTO((rtx *, int));
+static void remove_regno_note		PROTO((rtx, enum reg_note, int));
+static int get_hard_regnum		PROTO((stack, rtx));
+static void delete_insn_for_stacker	PROTO((rtx));
+static rtx emit_pop_insn		PROTO((rtx, stack, rtx, rtx (*) ()));
+static void emit_swap_insn		PROTO((rtx, stack, rtx));
+static void move_for_stack_reg		PROTO((rtx, stack, rtx));
+static void swap_rtx_condition		PROTO((rtx));
+static void compare_for_stack_reg	PROTO((rtx, stack, rtx));
+static void subst_stack_regs_pat	PROTO((rtx, stack, rtx));
+static void subst_asm_stack_regs	PROTO((rtx, stack, rtx *, rtx **,
+					       char **, int, int));
+static void subst_stack_regs		PROTO((rtx, stack));
+static void change_stack		PROTO((rtx, stack, stack, rtx (*) ()));
+
+static void goto_block_pat		PROTO((rtx, stack, rtx));
+static void convert_regs		PROTO((void));
+static void print_blocks		PROTO((FILE *, rtx, rtx));
+static void dump_stack_info		PROTO((FILE *));
 
 /* Mark all registers needed for this pattern.  */
 
@@ -1947,7 +1972,7 @@ move_for_stack_reg (insn, regstack, pat)
     abort ();
 }
 
-void
+static void
 swap_rtx_condition (pat)
      rtx pat;
 {
@@ -3075,6 +3100,7 @@ print_blocks (file, insn, pat)
 
 /* Write information about stack registers and stack blocks into FILE.
    This is part of making a debugging dump.  */
+
 static void
 dump_stack_info (file)
      FILE *file;
