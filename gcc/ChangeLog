@@ -1,4 +1,13 @@
-Mon Mar  3 19:47:26 2003  J"orn Rennecke <joern.rennecke@superh.com>
+Mon Mar  3 20:45:25 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/sh.h (EXTRA_SPECS): Add subtarget_asm_relax_spec and
+	subtarget_asm_isa_spec.
+	(SUBTARGET_ASM_RELAX_SPEC, SUBTARGET_ASM_ISA_SPEC): Define.
+	(ASM_SPEC): Define as SH_ASM_SPEC.
+	(SH_ASM_SPEC): New; take the role of ASM_SPEC, but safe from svr4.h.
+	Use subtarget_asm_relax_spec and subtarget_asm_isa_spec.
+	* config/sh/elf.h (ASM_SPEC): Use SH_ASM_SPEC.
+	(SUBTARGET_ASM_ISA_SPEC): Undef / define.
 
 	* sh.h (OVERRIDE_OPTIONS): Set default values for align_loops
 	and align_jumps if not set.

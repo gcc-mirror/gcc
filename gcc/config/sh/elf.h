@@ -68,9 +68,12 @@ Boston, MA 02111-1307, USA.  */
 
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_SH5 ? "long int" : "int")
+
 /* Pass -ml and -mrelax to the assembler and linker.  */
 #undef ASM_SPEC
-#define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax} \
+#define ASM_SPEC SH_ASM_SPEC
+#undef SUBTARGET_ASM_ISA_SPEC
+#define SUBTARGET_ASM_ISA_SPEC "\
 %{m5-compact:--isa=SHcompact} %{m5-compact-nofpu:--isa=SHcompact} \
 %{m5-32media:--isa=SHmedia --abi=32} %{m5-32media-nofpu:--isa=SHmedia --abi=32} \
 %{m5-64media:--isa=SHmedia --abi=64} %{m5-64media-nofpu:--isa=SHmedia --abi=64}"
