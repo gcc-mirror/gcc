@@ -22,3 +22,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HAVE_ATEXIT
 
 #include "mips/iris3.h"
+
+/* Assembler is said to have trouble with .ascii with escape chars.
+   The quickest way to avoid the problem is not to use .ascii.  */
+#undef ASM_OUTPUT_ASCII
+#define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
+{							\
+  unsigned char *s;					\
+  int i;						\
+  for (i = 0, s = (unsigned char *)(PTR); i < (LEN); s++, i++)	\
+    {							\
+      if ((i % 8) == 0)					\
+	fputs ("\n\t.byte\t", (FILE));			\
+      fprintf ((FILE), "%s0x%x", (i%8?",":""), (unsigned)*s); \
+    }							\
+  fputs ("\n", (FILE));					\
+}
