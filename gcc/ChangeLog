@@ -1,3 +1,16 @@
+2000-09-17  Bernd Schmidt  <bernds@redhat.co.uk>
+
+        * expr.h (emit_library_call, emit_library_call_value): Delete
+	declarations.
+	* rtl.h (enum libcall_type): New.
+	(emit_library_call, emit_library_call_value): Change fn_type arg to
+        be of type enum libcall_type.
+	* calls.c: Likewise for the function definitions.  Several callers
+	throughout changed to use the new enumeration appropriately.
+	(emit_library_call_value_1): Likewise.  Put back code to make libcall
+        blocks of equal form, but only use it for the two new higher
+	enumeration values.
+
 2000-09-16  Mark Mitchell  <mark@codesourcery.com>
 
 	Convert the C front-end to use function-at-a-time mode.

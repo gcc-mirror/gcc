@@ -713,7 +713,7 @@ expand_computed_goto (exp)
   emit_queue ();
   /* Be sure the function is executable.  */
   if (current_function_check_memory_usage)
-    emit_library_call (chkr_check_exec_libfunc, 1,
+    emit_library_call (chkr_check_exec_libfunc, LCT_CONST_MAKE_BLOCK,
 		       VOIDmode, 1, x, ptr_mode);
 
   do_pending_stack_adjust ();

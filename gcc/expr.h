@@ -1017,11 +1017,6 @@ extern void emit_push_insn PARAMS ((rtx, enum machine_mode, tree, rtx,
 				    unsigned int, int, rtx, int, rtx, rtx,
 				    int, rtx));
 
-/* Emit library call.  */
-extern void emit_library_call PARAMS ((rtx, int, enum machine_mode, int, ...));
-extern rtx emit_library_call_value PARAMS ((rtx, rtx, int, enum machine_mode,
-					    int, ...));
-
 /* Expand an assignment that stores the value of FROM into TO. */
 extern rtx expand_assignment PARAMS ((tree, tree, int, int));
 

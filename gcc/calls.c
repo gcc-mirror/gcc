@@ -219,7 +219,8 @@ static rtx rtx_for_function_call		PARAMS ((tree, tree));
 static void load_register_parameters		PARAMS ((struct arg_data *,
 							 int, rtx *, int));
 static int libfunc_nothrow			PARAMS ((rtx));
-static rtx emit_library_call_value_1 		PARAMS ((int, rtx, rtx, int,
+static rtx emit_library_call_value_1 		PARAMS ((int, rtx, rtx,
+							 enum libcall_type,
 							 enum machine_mode,
 							 int, va_list));
 static int special_function_p			PARAMS ((tree, int));
@@ -1678,9 +1679,8 @@ rtx_for_function_call (fndecl, exp)
 	     that this seems safer.  */
 	  funaddr = convert_memory_address (Pmode, funexp);
 #endif
-	  emit_library_call (chkr_check_exec_libfunc, 1,
-			     VOIDmode, 1,
-			     funaddr, Pmode);
+	  emit_library_call (chkr_check_exec_libfunc, LCT_CONST_MAKE_BLOCK,
+			     VOIDmode, 1, funaddr, Pmode);
 	}
       emit_queue ();
     }
@@ -3026,7 +3026,7 @@ expand_call (exp, target, ignore)
 
 	  /* Mark the memory for the aggregate as write-only.  */
 	  if (current_function_check_memory_usage)
-	    emit_library_call (chkr_set_right_libfunc, 1,
+	    emit_library_call (chkr_set_right_libfunc, LCT_CONST_MAKE_BLOCK,
 			       VOIDmode, 3,
 			       structure_value_addr, ptr_mode,
 			       GEN_INT (struct_value_size),
@@ -3465,7 +3465,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      int retval;
      rtx orgfun;
      rtx value;
-     int fn_type;
+     enum libcall_type fn_type;
      enum machine_mode outmode;
      int nargs;
      va_list p;
@@ -3521,9 +3521,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #endif
 #endif
 
-  if (fn_type == 1)
+  if (fn_type == LCT_CONST_MAKE_BLOCK)
     flags |= ECF_CONST;
-  else if (fn_type == 2)
+  else if (fn_type == LCT_PURE_MAKE_BLOCK)
     flags |= ECF_PURE;
   fun = orgfun;
 
@@ -3579,6 +3579,11 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   args_size.var = 0;
 
   count = 0;
+
+  /* Now we are about to start emitting insns that can be deleted
+     if a libcall is deleted.  */
+  if (flags & (ECF_CONST | ECF_PURE))
+    start_sequence ();
 
   push_temp_slots ();
 
@@ -4017,6 +4022,45 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;
 
+  /* If call is cse'able, make appropriate pair of reg-notes around it.
+     Test valreg so we don't crash; may safely ignore `const'
+     if return type is void.  Disable for PARALLEL return values, because
+     we have no way to move such values into a pseudo register.  */
+  if ((flags & (ECF_CONST | ECF_PURE))
+      && valreg != 0 && GET_CODE (valreg) != PARALLEL)
+    {
+      rtx note = 0;
+      rtx temp = gen_reg_rtx (GET_MODE (valreg));
+      rtx insns;
+      int i;
+
+      /* Construct an "equal form" for the value which mentions all the
+	 arguments in order as well as the function name.  */
+      for (i = 0; i < nargs; i++)
+	note = gen_rtx_EXPR_LIST (VOIDmode, argvec[i].value, note);
+      note = gen_rtx_EXPR_LIST (VOIDmode, fun, note);
+
+      insns = get_insns ();
+      end_sequence ();
+
+      if (flags & ECF_PURE)
+	note = gen_rtx_EXPR_LIST (VOIDmode,
+	   gen_rtx_USE (VOIDmode,
+			gen_rtx_MEM (BLKmode,
+				     gen_rtx_SCRATCH (VOIDmode))), note);
+
+      emit_libcall_block (insns, temp, valreg, note);
+
+      valreg = temp;
+    }
+  else if (flags & (ECF_CONST | ECF_PURE))
+    {
+      /* Otherwise, just write out the sequence without a note.  */
+      rtx insns = get_insns ();
+
+      end_sequence ();
+      emit_insns (insns);
+    }
   pop_temp_slots ();
 
   /* Copy the value to the right place.  */
@@ -4098,8 +4142,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
    (use (memory (scratch)).  */
 
 void
-emit_library_call VPARAMS((rtx orgfun, int fn_type, enum machine_mode outmode,
-			   int nargs, ...))
+emit_library_call VPARAMS((rtx orgfun, enum libcall_type fn_type,
+			   enum machine_mode outmode, int nargs, ...))
 {
 #ifndef ANSI_PROTOTYPES
   rtx orgfun;
@@ -4132,7 +4176,8 @@ emit_library_call VPARAMS((rtx orgfun, int fn_type, enum machine_mode outmode,
    If VALUE is nonzero, VALUE is returned.  */
 
 rtx
-emit_library_call_value VPARAMS((rtx orgfun, rtx value, int fn_type,
+emit_library_call_value VPARAMS((rtx orgfun, rtx value,
+				 enum libcall_type fn_type,
 				 enum machine_mode outmode, int nargs, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -4376,8 +4421,8 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
       /* If the value is already in the stack slot, we are done.  */
       if (current_function_check_memory_usage && GET_CODE (arg->stack) == MEM)
 	{
-	  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			     XEXP (arg->stack, 0), Pmode,
+	  emit_library_call (chkr_set_right_libfunc, LCT_CONST_MAKE_BLOCK,
+			     VOIDmode, 3, XEXP (arg->stack, 0), Pmode,
 			     ARGS_SIZE_RTX (arg->size),
 			     TYPE_MODE (sizetype),
 			     GEN_INT (MEMORY_USE_RW),

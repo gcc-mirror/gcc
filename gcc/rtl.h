@@ -1913,11 +1913,21 @@ extern void rrotate_double	PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 					 HOST_WIDE_INT *));
 
 /* In calls.c */
-extern void emit_library_call		PARAMS ((rtx, int, enum machine_mode,
-						  int, ...));
-extern rtx emit_library_call_value	PARAMS ((rtx, rtx, int,
-						 enum machine_mode,
-						 int, ...));
+enum libcall_type
+{
+  LCT_NORMAL = 0,
+  LCT_CONST = 1,
+  LCT_PURE = 2,
+  LCT_CONST_MAKE_BLOCK = 3,
+  LCT_PURE_MAKE_BLOCK = 4
+};
+
+extern void emit_library_call		PARAMS ((rtx, enum libcall_type,
+						 enum machine_mode, int,
+						 ...));
+extern rtx emit_library_call_value	PARAMS ((rtx, rtx, enum libcall_type,
+						 enum machine_mode, int,
+						 ...));
 
 /* In unroll.c */
 extern int set_dominates_use		PARAMS ((int, int, int, rtx, rtx));
