@@ -1,3 +1,9 @@
+Sat Sep 19 01:00:32 1998  Michael Hayes  (mph@elec.canterbury.ac.nz)
+
+	* README.C4X: New file with information about the c4x ports.
+	* ginclude/va-c4x.h: New file for c4x varargs support.
+	* config/c4x: New directory with c4x port files.
+
 Fri Sep 18 22:52:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload.c (find_reloads): Do not replace a pseudo with 
