@@ -2136,6 +2136,8 @@ gnu/java/locale/LocaleInformation_zh_HK.java \
 gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
+gnu/java/net/PlainDatagramSocketImpl.java \
+gnu/java/net/PlainSocketImpl.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/FileLockImpl.java \
 gnu/java/nio/PipeImpl.java \
@@ -2232,8 +2234,6 @@ java/net/NetPermission.java \
 java/net/NetworkInterface.java \
 java/net/NoRouteToHostException.java \
 java/net/PasswordAuthentication.java \
-java/net/PlainDatagramSocketImpl.java \
-java/net/PlainSocketImpl.java \
 java/net/PortUnreachableException.java \
 java/net/ProtocolException.java	\
 java/net/ServerSocket.java \
@@ -2604,6 +2604,8 @@ gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/java/awt/natEmbeddedWindow.cc \
+gnu/java/net/natPlainDatagramSocketImpl.cc \
+gnu/java/net/natPlainSocketImpl.cc \
 gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
 java/io/natFile.cc \
@@ -2632,8 +2634,6 @@ java/lang/reflect/natMethod.cc \
 java/lang/reflect/natProxy.cc \
 java/net/natNetworkInterface.cc \
 java/net/natInetAddress.cc \
-java/net/natPlainDatagramSocketImpl.cc \
-java/net/natPlainSocketImpl.cc \
 java/nio/natDirectByteBufferImpl.cc \
 java/nio/channels/natFileChannelImpl.cc \
 java/text/natCollator.cc \

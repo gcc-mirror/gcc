@@ -1,3 +1,39 @@
+2003-09-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java,
+	java/net/MulticastSocket.java,
+	java/net/ServerSocket.java,
+	java/net/Socket.java:
+	Use gnu.java.net.Plain*SocketImpl instead of
+	java.net.PlainSocketImpl.
+	* java/net/PlainDatagramSocketImpl.java,
+	java/net/PlainSocketImpl.java,
+	java/net/SocketInputStream.java,
+	java/net/SocketOutputStream.java,
+	java/net/natPlainDatagramSocketImplNoNet.cc,
+	java/net/natPlainDatagramSocketImplPosix.cc,
+	java/net/natPlainDatagramSocketImplWin32.cc,
+	java/net/natPlainSocketImplNoNet.cc,
+	java/net/natPlainSocketImplPosix.cc,
+	java/net/natPlainSocketImplWin32.cc:
+	Removed.
+	* gnu/java/net/PlainDatagramSocketImpl.java,
+	gnu/java/net/PlainSocketImpl.java,
+	gnu/java/net/SocketInputStream.java,
+	gnu/java/net/SocketOutputStream.java,
+	gnu/java/net/natPlainDatagramSocketImplNoNet.cc,
+	gnu/java/net/natPlainDatagramSocketImplPosix.cc,
+	gnu/java/net/natPlainDatagramSocketImplWin32.cc,
+	gnu/java/net/natPlainSocketImplNoNet.cc,
+	gnu/java/net/natPlainSocketImplPosix.cc,
+	gnu/java/net/natPlainSocketImplWin32.cc:
+	New files (moved from java/net).
+	* configure.in: Create links for gnu/java/net/natPlain*SocketImpl.cc
+	instead of java/net/natPlain*SocketImpl.cc.
+	* configure: Regenerated.
+	* Makefile.am: Moved files from java/net to gnu/java/net.
+	* Makefile.in: Regenerated.
+
 2003-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure: Regenerate.

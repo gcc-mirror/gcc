@@ -272,13 +272,16 @@ test -d java/lang || mkdir java/lang
 AC_LINK_FILES(java/lang/${PLATFORM}Process.java, java/lang/ConcreteProcess.java)
 AC_LINK_FILES(java/lang/nat${PLATFORM}Process.cc, java/lang/natConcreteProcess.cc)
 
-dnl Likewise for natInetAddress.cc, natNetworkInterface.cc, natPlainSocketImpl.cc
-dnl and natPlainDatagramSocketImpl.cc
+dnl Likewise for natInetAddress.cc and natNetworkInterface.cc.
 test -d java/net || mkdir java/net
 AC_LINK_FILES(java/net/natInetAddress${PLATFORMNET}.cc, java/net/natInetAddress.cc)
 AC_LINK_FILES(java/net/natNetworkInterface${PLATFORMNET}.cc, java/net/natNetworkInterface.cc)
-AC_LINK_FILES(java/net/natPlainSocketImpl${PLATFORMNET}.cc, java/net/natPlainSocketImpl.cc)
-AC_LINK_FILES(java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc, java/net/natPlainDatagramSocketImpl.cc)
+
+dnl Likewise for natPlainSocketImpl.cc and natPlainDatagramSocketImpl.ca.c
+test -d gnu/java || mkdir gnu/java
+test -d gnu/java/net || mkdir gnu/java/net
+AC_LINK_FILES(gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc, gnu/java/net/natPlainSocketImpl.cc)
+AC_LINK_FILES(gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc, gnu/java/net/natPlainDatagramSocketImpl.cc)
 
 case "${host}" in
     *mingw*)

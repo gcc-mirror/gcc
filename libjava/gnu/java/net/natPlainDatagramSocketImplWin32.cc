@@ -8,31 +8,23 @@ details.  */
 
 #include <config.h>
 #include <platform.h>
-
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-#include <errno.h>
 #include <string.h>
 
 #if HAVE_BSTRING_H
-// Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2 
+// Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2
 #include <bstring.h>
 #endif
 
-#include <gcj/cni.h>
+#include <gnu/java/net/PlainDatagramSocketImpl.h>
 #include <java/io/IOException.h>
 #include <java/io/InterruptedIOException.h>
 #include <java/net/BindException.h>
 #include <java/net/SocketException.h>
-#include <java/net/PlainDatagramSocketImpl.h>
 #include <java/net/InetAddress.h>
 #include <java/net/NetworkInterface.h>
 #include <java/net/DatagramPacket.h>
 #include <java/net/PortUnreachableException.h>
+#include <java/net/SocketTimeoutException.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/Object.h>
 #include <java/lang/Boolean.h>
@@ -64,31 +56,29 @@ union InAddr
 #endif
 };
 
-
 // FIXME: routines here and/or in natPlainSocketImpl.cc could throw
 // NoRouteToHostException; also consider UnknownHostException, ConnectException.
 
 void
-java::net::PlainDatagramSocketImpl::create ()
+gnu::java::net::PlainDatagramSocketImpl::create ()
 {
-  int sock = _Jv_socket (AF_INET, SOCK_DGRAM, 0);
+  SOCKET sock = ::socket (AF_INET, SOCK_DGRAM, 0);
 
-  if (sock < 0)
+  if (sock == INVALID_SOCKET)
     {
-      char* strerr = strerror (errno);
-      throw new java::net::SocketException (JvNewStringUTF (strerr));
+      _Jv_ThrowSocketException ();
     }
 
   _Jv_platform_close_on_exec (sock);
 
   // We use fnum in place of fd here.  From leaving fd null we avoid
   // the double close problem in FileDescriptor.finalize.
-  fnum = sock;
+  fnum = (int) sock;
 }
 
 void
-java::net::PlainDatagramSocketImpl::bind (jint lport,
-					  java::net::InetAddress *host)
+gnu::java::net::PlainDatagramSocketImpl::bind (jint lport,
+					  ::java::net::InetAddress *host)
 {
   union SockAddr u;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
@@ -119,9 +109,9 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
     }
 #endif
   else
-    throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
+    throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (_Jv_bind (fnum, ptr, len) == 0)
+  if (::bind (fnum, ptr, len) == 0)
     {
       socklen_t addrlen = sizeof(u);
 
@@ -134,34 +124,34 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
 
       /* Allow broadcast by default. */
       int broadcast = 1;
-      if (::setsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &broadcast, 
+      if (::setsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &broadcast,
                         sizeof (broadcast)) != 0)
         goto error;
 
       return;
     }
 
- error:
-  char* strerr = strerror (errno);
-  throw new java::net::BindException (JvNewStringUTF (strerr));
+error:
+  DWORD dwErrorCode = WSAGetLastError ();
+  throw new ::java::net::BindException (_Jv_WinStrError (dwErrorCode));
 }
 
 void
-java::net::PlainDatagramSocketImpl::connect (java::net::InetAddress *, jint)
+gnu::java::net::PlainDatagramSocketImpl::connect (::java::net::InetAddress *, jint)
 { 
   throw new ::java::lang::InternalError (JvNewStringLatin1 (
-	    "PlainDatagramSocketImpl::connect: not implemented yet"));
+      "PlainDatagramSocketImpl::connect: not implemented yet"));
 }
 
 void
-java::net::PlainDatagramSocketImpl::disconnect ()
+gnu::java::net::PlainDatagramSocketImpl::disconnect ()
 {
   throw new ::java::lang::InternalError (JvNewStringLatin1 (
-	    "PlainDatagramSocketImpl::disconnect: not implemented yet"));
+      "PlainDatagramSocketImpl::disconnect: not implemented yet"));
 }
 
 jint
-java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
+gnu::java::net::PlainDatagramSocketImpl::peek (::java::net::InetAddress *i)
 {
   // FIXME: Deal with Multicast and if the socket is connected.
   union SockAddr u;
@@ -189,21 +179,22 @@ java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
     }
 #endif
   else
-    throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
+    throw new ::java::net::SocketException (JvNewStringUTF ("invalid family"));
 
   i->addr = raddr;
   return rport;
- error:
-  char* strerr = strerror (errno);
+error:
+  DWORD dwErrorCode = WSAGetLastError ();
+  if (dwErrorCode == WSAECONNRESET)
+    throw new ::java::net::PortUnreachableException (_Jv_WinStrError (dwErrorCode));
 
-  if (errno == ECONNREFUSED)
-    throw new PortUnreachableException (JvNewStringUTF (strerr));
-
-  throw new java::io::IOException (JvNewStringUTF (strerr));
+  _Jv_ThrowIOException ();
+  return -1;
+    // we should never get here
 }
 
 jint
-java::net::PlainDatagramSocketImpl::peekData(java::net::DatagramPacket *p)
+gnu::java::net::PlainDatagramSocketImpl::peekData(::java::net::DatagramPacket *p)
 {
   // FIXME: Deal with Multicast and if the socket is connected.
   union SockAddr u;
@@ -211,26 +202,18 @@ java::net::PlainDatagramSocketImpl::peekData(java::net::DatagramPacket *p)
   jbyte *dbytes = elements (p->getData());
   ssize_t retlen = 0;
 
-  // Do timeouts via select since SO_RCVTIMEO is not always available.
-  if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
+  if (timeout > 0)
     {
-      fd_set rset;
-      struct timeval tv;
-      FD_ZERO(&rset);
-      FD_SET(fnum, &rset);
-      tv.tv_sec = timeout / 1000;
-      tv.tv_usec = (timeout % 1000) * 1000;
-      int retval;
-      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+      int nRet= ::setsockopt(fnum, SOL_SOCKET, SO_RCVTIMEO,
+        (char*)&timeout, sizeof(timeout));
+      if (nRet != NO_ERROR)
         goto error;
-      else if (retval == 0)
-        throw new java::io::InterruptedIOException ();
     }
 
   retlen =
     ::recvfrom (fnum, (char *) dbytes, p->getLength(), MSG_PEEK, (sockaddr*) &u,
       &addrlen);
-  if (retlen < 0)
+  if (retlen == SOCKET_ERROR)
     goto error;
   // FIXME: Deal with Multicast addressing and if the socket is connected.
   jbyteArray raddr;
@@ -250,38 +233,42 @@ java::net::PlainDatagramSocketImpl::peekData(java::net::DatagramPacket *p)
     }
 #endif
   else
-    throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
+    throw new ::java::net::SocketException (JvNewStringUTF ("invalid family"));
 
   p->setAddress (new InetAddress (raddr, NULL));
   p->setPort (rport);
   p->setLength ((jint) retlen);
   return rport;
 
- error:
-  char* strerr = strerror (errno);
+error:
+  DWORD dwErrorCode = WSAGetLastError ();
+  if (dwErrorCode == WSAECONNRESET)
+    throw new ::java::net::PortUnreachableException (_Jv_WinStrError (dwErrorCode));
+  else if (dwErrorCode == WSAETIMEDOUT)
+    throw new ::java::net::SocketTimeoutException (_Jv_WinStrError (dwErrorCode));
+  else
+    _Jv_ThrowIOException ();
 
-  if (errno == ECONNREFUSED)
-    throw new PortUnreachableException (JvNewStringUTF (strerr));
-
-  throw new java::io::IOException (JvNewStringUTF (strerr));
+  return -1;
+    // we should never get here
 }
 
 // Close(shutdown) the socket.
 void
-java::net::PlainDatagramSocketImpl::close ()
+gnu::java::net::PlainDatagramSocketImpl::close ()
 {
   // Avoid races from asynchronous finalization.
   JvSynchronize sync (this);
 
   // The method isn't declared to throw anything, so we disregard
   // the return value.
-  _Jv_close (fnum);
+  ::closesocket (fnum);
   fnum = -1;
   timeout = 0;
 }
 
 void
-java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
+gnu::java::net::PlainDatagramSocketImpl::send (::java::net::DatagramPacket *p)
 {
   // FIXME: Deal with Multicast and if the socket is connected.
   jint rport = p->getPort();
@@ -308,21 +295,20 @@ java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
     }
 #endif
   else
-    throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
+    throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
 
   if (::sendto (fnum, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
     return;
 
-  char* strerr = strerror (errno);
+  DWORD dwErrorCode = WSAGetLastError ();
+  if (dwErrorCode == WSAECONNRESET)
+    throw new ::java::net::PortUnreachableException (_Jv_WinStrError (dwErrorCode));
 
-  if (errno == ECONNREFUSED)
-    throw new PortUnreachableException (JvNewStringUTF (strerr));
-
-  throw new java::io::IOException (JvNewStringUTF (strerr));
+  _Jv_ThrowIOException ();
 }
 
 void
-java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
+gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p)
 {
   // FIXME: Deal with Multicast and if the socket is connected.
   union SockAddr u;
@@ -330,20 +316,15 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
   jbyte *dbytes = elements (p->getData());
   ssize_t retlen = 0;
 
-  // Do timeouts via select since SO_RCVTIMEO is not always available.
-  if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
+  if (timeout > 0)
     {
-      fd_set rset;
-      struct timeval tv;
-      FD_ZERO(&rset);
-      FD_SET(fnum, &rset);
-      tv.tv_sec = timeout / 1000;
-      tv.tv_usec = (timeout % 1000) * 1000;
-      int retval;
-      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+      // This implementation doesn't allow specifying an infinite
+      // timeout after specifying a finite one, but Sun's JDK 1.4.1
+      // didn't seem to allow this either....
+      int nRet= ::setsockopt(fnum, SOL_SOCKET, SO_RCVTIMEO,
+        (char*)&timeout, sizeof(timeout));
+      if (nRet != NO_ERROR)
         goto error;
-      else if (retval == 0)
-        throw new java::io::InterruptedIOException ();
     }
 
   retlen =
@@ -369,24 +350,25 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
     }
 #endif
   else
-    throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
+    throw new ::java::net::SocketException (JvNewStringUTF ("invalid family"));
 
-  p->setAddress (new InetAddress (raddr, NULL));
+  p->setAddress (new ::java::net::InetAddress (raddr, NULL));
   p->setPort (rport);
   p->setLength ((jint) retlen);
   return;
 
  error:
-  char* strerr = strerror (errno);
-
-  if (errno == ECONNREFUSED)
-    throw new PortUnreachableException (JvNewStringUTF (strerr));
-
-  throw new java::io::IOException (JvNewStringUTF (strerr));
+  DWORD dwErrorCode = WSAGetLastError();
+  if (dwErrorCode == WSAECONNRESET)
+    throw new ::java::net::PortUnreachableException (_Jv_WinStrError (dwErrorCode));
+  else if (dwErrorCode == WSAETIMEDOUT)
+    throw new ::java::net::SocketTimeoutException (_Jv_WinStrError (dwErrorCode));
+  else
+    throw new ::java::io::IOException (_Jv_WinStrError (dwErrorCode));
 }
 
 void
-java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
+gnu::java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
 {
   // Assumes IPPROTO_IP rather than IPPROTO_IPV6 since socket created is IPv4.
   char val = (char) ttl;
@@ -395,12 +377,11 @@ java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
   if (::setsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, val_len) == 0)
     return;
 
-  char* strerr = strerror (errno);
-  throw new java::io::IOException (JvNewStringUTF (strerr));
+  _Jv_ThrowIOException ();
 }
 
 jint
-java::net::PlainDatagramSocketImpl::getTimeToLive ()
+gnu::java::net::PlainDatagramSocketImpl::getTimeToLive ()
 {
   // Assumes IPPROTO_IP rather than IPPROTO_IPV6 since socket created is IPv4.
   char val;
@@ -409,20 +390,19 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
   if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, &val_len) == 0)
     return ((int) val) & 0xFF;
 
-  char* strerr = strerror (errno);
-  throw new java::io::IOException (JvNewStringUTF (strerr));
+  _Jv_ThrowIOException ();
+
+  return -1;
+    // we should never get here
 }
 
 void
-java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
-                                              java::net::NetworkInterface *,
+gnu::java::net::PlainDatagramSocketImpl::mcastGrp (::java::net::InetAddress *inetaddr,
+                                              ::java::net::NetworkInterface *,
 					      jboolean join)
 {
   // FIXME: implement use of NetworkInterface
-
-  union McastReq u;
   jbyteArray haddress = inetaddr->addr;
-  jbyte *bytes = elements (haddress);
   int len = haddress->length;
   int level, opname;
   const char *ptr;
@@ -436,7 +416,7 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
       memcpy (&u.mreq.imr_multiaddr, bytes, len);
       // FIXME:  If a non-default interface is set, use it; see Stevens p. 501.
       // Maybe not, see note in last paragraph at bottom of Stevens p. 497.
-      u.mreq.imr_interface.s_addr = htonl (INADDR_ANY); 
+      u.mreq.imr_interface.s_addr = htonl (INADDR_ANY);
       len = sizeof (struct ip_mreq);
       ptr = (const char *) &u.mreq;
     }
@@ -464,51 +444,50 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
     }
 #endif
   else
-    throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
+    throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
 
   if (::setsockopt (fnum, level, opname, ptr, len) == 0)
     return;
 
-  char* strerr = strerror (errno);
-  throw new java::io::IOException (JvNewStringUTF (strerr));
+  _Jv_ThrowIOException ();
 }
 
 void
-java::net::PlainDatagramSocketImpl::setOption (jint optID,
-					       java::lang::Object *value)
+gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
+					       ::java::lang::Object *value)
 {
   int val;
   socklen_t val_len = sizeof (val);
 
   if (fnum < 0)
-    throw new java::net::SocketException (JvNewStringUTF ("Socket closed"));
+    throw new ::java::net::SocketException (JvNewStringUTF ("Socket closed"));
 
-  if (_Jv_IsInstanceOf (value, &java::lang::Boolean::class$))
+  if (_Jv_IsInstanceOf (value, &::java::lang::Boolean::class$))
     {
-      java::lang::Boolean *boolobj = 
-        static_cast<java::lang::Boolean *> (value);
+      ::java::lang::Boolean *boolobj = 
+        static_cast< ::java::lang::Boolean *> (value);
       val = boolobj->booleanValue() ? 1 : 0;
     }
-  else if (_Jv_IsInstanceOf (value, &java::lang::Integer::class$))
+  else if (_Jv_IsInstanceOf (value, &::java::lang::Integer::class$))
     {
-      java::lang::Integer *intobj = 
-        static_cast<java::lang::Integer *> (value);          
+      ::java::lang::Integer *intobj = 
+        static_cast< ::java::lang::Integer *> (value);          
       val = (int) intobj->intValue();
     }
   // Else assume value to be an InetAddress for use with IP_MULTICAST_IF.
 
-  switch (optID) 
+  switch (optID)
     {
       case _Jv_TCP_NODELAY_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("TCP_NODELAY not valid for UDP"));
         return;
       case _Jv_SO_LINGER_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("SO_LINGER not valid for UDP"));
         return;
       case _Jv_SO_KEEPALIVE_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("SO_KEEPALIVE not valid for UDP"));
         return;
 
@@ -516,107 +495,96 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
         if (::setsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
                           val_len) != 0)
           goto error;
-	break;
-	
+  break;
+
       case _Jv_SO_OOBINLINE_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("SO_OOBINLINE: not valid for UDP"));
         break;
-	
+
       case _Jv_SO_SNDBUF_ :
       case _Jv_SO_RCVBUF_ :
-#if defined(SO_SNDBUF) && defined(SO_RCVBUF)
         int opt;
         optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
         if (::setsockopt (fnum, SOL_SOCKET, opt, (char *) &val, val_len) != 0)
-	  goto error;    
-#else
-        throw new java::lang::InternalError (
-          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
-#endif 
+    goto error;
         return;
       case _Jv_SO_REUSEADDR_ :
-#if defined(SO_REUSEADDR)
-	if (::setsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
-	    val_len) != 0)
-	  goto error;
-#else
-        throw new java::lang::InternalError (
-          JvNewStringUTF ("SO_REUSEADDR not supported"));
-#endif 
-	return;
+  if (::setsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+      val_len) != 0)
+    goto error;
+  return;
       case _Jv_SO_BINDADDR_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("SO_BINDADDR: read only option"));
         return;
       case _Jv_IP_MULTICAST_IF_ :
-	union InAddr u;
+  union InAddr u;
         jbyteArray haddress;
-	jbyte *bytes;
-	int len;
-	int level, opname;
-	const char *ptr;
+  jbyte *bytes;
+  int len;
+  int level, opname;
+  const char *ptr;
 
-	haddress = ((java::net::InetAddress *) value)->addr;
-	bytes = elements (haddress);
-	len = haddress->length;
-	if (len == 4)
-	  {
-	    level = IPPROTO_IP;
-	    opname = IP_MULTICAST_IF;
-	    memcpy (&u.addr, bytes, len);
-	    len = sizeof (struct in_addr);
-	    ptr = (const char *) &u.addr;
-	  }
+  haddress = ((::java::net::InetAddress *) value)->addr;
+  bytes = elements (haddress);
+  len = haddress->length;
+  if (len == 4)
+    {
+      level = IPPROTO_IP;
+      opname = IP_MULTICAST_IF;
+      memcpy (&u.addr, bytes, len);
+      len = sizeof (struct in_addr);
+      ptr = (const char *) &u.addr;
+    }
 // Tru64 UNIX V5.0 has struct sockaddr_in6, but no IPV6_MULTICAST_IF
 #if defined (HAVE_INET6) && defined (IPV6_MULTICAST_IF)
-	else if (len == 16)
-	  {
-	    level = IPPROTO_IPV6;
-	    opname = IPV6_MULTICAST_IF;
-	    memcpy (&u.addr6, bytes, len);
-	    len = sizeof (struct in6_addr);
-	    ptr = (const char *) &u.addr6;
-	  }
+  else if (len == 16)
+    {
+      level = IPPROTO_IPV6;
+      opname = IPV6_MULTICAST_IF;
+      memcpy (&u.addr6, bytes, len);
+      len = sizeof (struct in6_addr);
+      ptr = (const char *) &u.addr6;
+    }
 #endif
-	else
-	  throw
-	    new java::net::SocketException (JvNewStringUTF ("invalid length"));
+  else
+    throw
+      new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-	if (::setsockopt (fnum, level, opname, ptr, len) != 0)
-	  goto error;
+  if (::setsockopt (fnum, level, opname, ptr, len) != 0)
+    goto error;
         return;
-	
+
       case _Jv_IP_MULTICAST_IF2_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_IF2: not yet implemented"));
         break;
-	
+
       case _Jv_IP_MULTICAST_LOOP_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_LOOP: not yet implemented"));
         break;
-	
+
       case _Jv_IP_TOS_ :
         if (::setsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
-	   val_len) != 0)
-	  goto error;    
-	return;
-	
+     val_len) != 0)
+    goto error;
+  return;
+
       case _Jv_SO_TIMEOUT_ :
-	timeout = val;
+  timeout = val;
         return;
       default :
-        errno = ENOPROTOOPT;
+        WSASetLastError (WSAENOPROTOOPT);
     }
 
  error:
-  char* strerr = strerror (errno);
-  throw new java::net::SocketException (JvNewStringUTF (strerr));
+  _Jv_ThrowSocketException ();
 }
 
-java::lang::Object *
-java::net::PlainDatagramSocketImpl::getOption (jint optID)
+::java::lang::Object *
+gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
 {
   int val;
   socklen_t val_len = sizeof(val);
@@ -626,125 +594,111 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
   switch (optID)
     {
       case _Jv_TCP_NODELAY_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("TCP_NODELAY not valid for UDP"));
         break;
       case _Jv_SO_LINGER_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("SO_LINGER not valid for UDP"));
-        break;    
+        break;
       case _Jv_SO_KEEPALIVE_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("SO_KEEPALIVE not valid for UDP"));
         break;
-	
+
       case _Jv_SO_BROADCAST_ :
-	if (::getsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
-	    &val_len) != 0)
-	  goto error;
-	return new java::lang::Boolean (val != 0);
-	
+  if (::getsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
+      &val_len) != 0)
+    goto error;
+  return new ::java::lang::Boolean (val != 0);
+
       case _Jv_SO_OOBINLINE_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("SO_OOBINLINE not valid for UDP"));
         break;
-      
+
       case _Jv_SO_RCVBUF_ :
       case _Jv_SO_SNDBUF_ :
-#if defined(SO_SNDBUF) && defined(SO_RCVBUF)
         int opt;
         optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
         if (::getsockopt (fnum, SOL_SOCKET, opt, (char *) &val, &val_len) != 0)
-	  goto error;    
+    goto error;
         else
-	  return new java::lang::Integer (val);
-#else
-        throw new java::lang::InternalError (
-          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported"));
-#endif    
-	break;
+    return new ::java::lang::Integer (val);
+  break;
       case _Jv_SO_BINDADDR_:
-	// cache the local address
-	if (localAddress == NULL)
-	  {	
-	    jbyteArray laddr;
-	    if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
-	      goto error;
-	    if (u.address.sin_family == AF_INET)
-	      {
-		laddr = JvNewByteArray (4);
-		memcpy (elements (laddr), &u.address.sin_addr, 4);
-	      }
+  // cache the local address
+  if (localAddress == NULL)
+    {
+      jbyteArray laddr;
+      if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
+        goto error;
+      if (u.address.sin_family == AF_INET)
+        {
+    laddr = JvNewByteArray (4);
+    memcpy (elements (laddr), &u.address.sin_addr, 4);
+        }
 #ifdef HAVE_INET6
             else if (u.address.sin_family == AF_INET6)
-	      {
-		laddr = JvNewByteArray (16);
-		memcpy (elements (laddr), &u.address6.sin6_addr, 16);
-	      }
+        {
+    laddr = JvNewByteArray (16);
+    memcpy (elements (laddr), &u.address6.sin6_addr, 16);
+        }
 #endif
-	    else
-	      throw new java::net::SocketException (
-			      JvNewStringUTF ("invalid family"));
-	    localAddress = new java::net::InetAddress (laddr, NULL);
-	  }
-	return localAddress;  
-	break;
+      else
+        throw new ::java::net::SocketException (
+            JvNewStringUTF ("invalid family"));
+      localAddress = new ::java::net::InetAddress (laddr, NULL);
+    }
+  return localAddress;
+  break;
       case _Jv_SO_REUSEADDR_ :
-#if defined(SO_REUSEADDR)
-	if (::getsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
-	    &val_len) != 0)
-	  goto error;
-	return new java::lang::Boolean (val != 0);
-#else
-        throw new java::lang::InternalError (
-          JvNewStringUTF ("SO_REUSEADDR not supported"));
-#endif 
-	break;
+  if (::getsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+      &val_len) != 0)
+    goto error;
+  return new ::java::lang::Boolean (val != 0);
+  break;
       case _Jv_IP_MULTICAST_IF_ :
-#ifdef HAVE_INET_NTOA
-	struct in_addr inaddr;
-  	socklen_t inaddr_len;
-	char *bytes;
+  struct in_addr inaddr;
+    socklen_t inaddr_len;
+  char *bytes;
 
-  	inaddr_len = sizeof(inaddr);
-	if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_IF, (char *) &inaddr,
-	    &inaddr_len) != 0)
-	  goto error;
+    inaddr_len = sizeof(inaddr);
+  if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_IF, (char *) &inaddr,
+      &inaddr_len) != 0)
+    goto error;
 
-	bytes = inet_ntoa (inaddr);
+  bytes = inet_ntoa (inaddr);
 
-	return java::net::InetAddress::getByName (JvNewStringLatin1 (bytes));
-#else
-	throw new java::net::SocketException (
-	  JvNewStringUTF ("IP_MULTICAST_IF: not available - no inet_ntoa()"));
-#endif
-	break;
+  return ::java::net::InetAddress::getByName (JvNewStringLatin1 (bytes));
+  break;
       case _Jv_SO_TIMEOUT_ :
-	return new java::lang::Integer (timeout);
+	return new ::java::lang::Integer (timeout);
 	break;
 	
       case _Jv_IP_MULTICAST_IF2_ :
-        throw new java::net::SocketException (
+        throw new ::java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_IF2: not yet implemented"));
         break;
-	
+
       case _Jv_IP_MULTICAST_LOOP_ :
-	if (::getsockopt (fnum, SOL_SOCKET, IP_MULTICAST_LOOP, (char *) &val,
-	    &val_len) != 0)
-	  goto error;
-	return new java::lang::Boolean (val != 0);
-	
+  if (::getsockopt (fnum, SOL_SOCKET, IP_MULTICAST_LOOP, (char *) &val,
+      &val_len) != 0)
+    goto error;
+  return new ::java::lang::Boolean (val != 0);
+
       case _Jv_IP_TOS_ :
         if (::getsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
            &val_len) != 0)
           goto error;
-        return new java::lang::Integer (val);
+        return new ::java::lang::Integer (val);
 	
       default :
-	errno = ENOPROTOOPT;
+        WSASetLastError (WSAENOPROTOOPT);
     }
 
- error:
-  char* strerr = strerror (errno);
-  throw new java::net::SocketException (JvNewStringUTF (strerr));
+error:
+  _Jv_ThrowSocketException ();
+  return 0;
+    // we should never get here
 }

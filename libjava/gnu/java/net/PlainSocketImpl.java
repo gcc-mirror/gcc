@@ -1,5 +1,5 @@
 /* PlainSocketImpl.java -- Default socket implementation
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,11 +36,17 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.net;
+package gnu.java.net;
 
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.SocketImpl;
+import java.net.SocketOptions;
 import gnu.classpath.Configuration;
 
 /**
@@ -59,7 +65,7 @@ import gnu.classpath.Configuration;
  * @author Nic Ferrier <nferrier@tapsellferrier.co.uk>
  * @author Aaron M. Renn <arenn@urbanophile.com>
  */
-class PlainSocketImpl extends SocketImpl
+public final class PlainSocketImpl extends SocketImpl
 {
   // Static initializer to load native library.
   static
