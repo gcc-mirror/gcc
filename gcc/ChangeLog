@@ -37,6 +37,13 @@ Wed Sep 22 06:25:15 1999  Jim Kingdon  <http://developer.redhat.com>
 
 Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (floatunssisf2, floatunssidf2): Generate different RTL
+	for TARGET_PA_20.
+	(floatunssidf2_pa20, floatunssisf2_pa20): New patterns for PA2.0
+	code generation.
+	(floatunsdisf2, floatunsdidf2, fixuns_truncsfsi2): Likewise.
+	(fixuns_truncdfsi2, fixuns_truncsfdi2, fixuns_truncdfsi2): Likewise.
+
 	* regclass.c (init_regs): Add "top_of_stack" as a garbage
 	collection root.
 
