@@ -1,3 +1,7 @@
+Wed Mar 17 11:20:29 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* cppfiles.c (PIPE_BUF): #define PIPE_BUF if not defined already.
+
 Wed Mar 17 09:25:06 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * c-lex.c: Don't include setjmp.h.

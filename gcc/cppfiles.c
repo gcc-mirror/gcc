@@ -803,6 +803,10 @@ find_position (start, limit, linep, colp)
    If your file has more than one kind of end-of-line marker, you
    will get messed-up line numbering.  */
 
+#ifndef PIPE_BUF
+#define PIPE_BUF 4096
+#endif
+
 static long
 read_and_prescan (pfile, fp, desc, len)
      cpp_reader *pfile;
