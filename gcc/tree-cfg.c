@@ -1393,7 +1393,7 @@ remove_useless_stmts_cond (tree *stmt_p, struct rus_data *data)
 
   then_clause = COND_EXPR_THEN (*stmt_p);
   else_clause = COND_EXPR_ELSE (*stmt_p);
-  cond = COND_EXPR_COND (*stmt_p);
+  cond = fold (COND_EXPR_COND (*stmt_p));
 
   /* If neither arm does anything at all, we can remove the whole IF.  */
   if (!TREE_SIDE_EFFECTS (then_clause) && !TREE_SIDE_EFFECTS (else_clause))

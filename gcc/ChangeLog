@@ -1,3 +1,7 @@
+2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-cfg.c (remove_useless_stmts_cond): Call fold on COND_EXPR_COND.
+
 2004-12-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-dom.c (record_equivalences_from_phis): Speed up by
