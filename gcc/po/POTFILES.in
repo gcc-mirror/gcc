@@ -614,6 +614,8 @@ dwarf.h
 dwarf2.h
 dwarf2out.c
 dwarfout.c
+dyn-string.c
+dyn-string.h
 emit-rtl.c
 #enquire.c is used only by GCC maintainers and installers
 except.c
