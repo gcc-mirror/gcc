@@ -426,33 +426,16 @@ large_int (op, mode)
     return FALSE;
 
   value = INTVAL (op);
-  if ((value & 0xffff0000) == 0)		/* ior reg,$r0,value */
+  if ((value & ~0x0000ffff) == 0)			/* ior reg,$r0,value */
     return FALSE;
 
-  if ((value & 0xffff0000) == 0xffff0000)	/* subu reg,$r0,value */
+  if (((unsigned long)(value + 32768)) <= 32767)	/* subu reg,$r0,value */
     return FALSE;
 
-  if ((value & 0x0000ffff) == 0)		/* lui reg,value>>16 */
+  if ((value & 0xffff0000) == value)			/* lui reg,value>>16 */
     return FALSE;
 
   return TRUE;
-}
-
-/* Return truth value of whether OP is an integer which can be loaded
-   with an lui instruction.  */
-
-int
-lui_int (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) != CONST_INT)
-    return FALSE;
-
-  if ((INTVAL (op) & 0x0000ffff) == 0)		/* lui reg,value>>16 */
-    return TRUE;
-
-  return FALSE;
 }
 
 /* Return truth value of whether OP is a register or the constant 0.  */
@@ -1066,7 +1049,7 @@ mips_move_1word (operands, insn, unsignedp)
 	    }
 
 	  else if (GP_REG_P (regno0))
-	    ret = "li\t%0,%X1\t\t# %1";
+	    ret = (INTVAL (op1) < 0) ? "li\t%0,%1\t\t# %X1" : "li\t%0,%X1\t\t# %1";
 	}
 
       else if (code1 == CONST_DOUBLE && mode == SFmode)
@@ -4158,10 +4141,10 @@ function_prologue (file, size)
   if (frame_pointer_needed)
     {
       if (tsize <= 32767)
-	fprintf (file, "\taddu\t%s,%s,%d\t# set up frame pointer\n", fp_str, sp_str, tsize);
+	fprintf (file, "\taddu\t%s,%s,%d\t\t# set up frame pointer\n", fp_str, sp_str, tsize);
 
       else
-	fprintf (file, "\taddu\t%s,%s,%s\t# set up frame pointer\n", fp_str, sp_str,
+	fprintf (file, "\taddu\t%s,%s,%s\t\t# set up frame pointer\n", fp_str, sp_str,
 		 reg_names[MIPS_TEMP1_REGNUM]);
     }
 }
