@@ -218,7 +218,8 @@ function_prologue (file, size)
      take any action based on the information.  */
 
   prologue_size = 0;
-  fprintf (file, "/* prologue: frame size=%d */\n", size);
+  fprintf (file, "/* prologue: frame size=" HOST_WIDE_INT_PRINT_DEC " */\n",
+	   size);
   
   /* Unless we're a leaf we need to save the return PC.  */
 
@@ -344,7 +345,8 @@ function_epilogue (file, size)
 
   leaf_func_p = leaf_function_p ();
   epilogue_size = 0;
-  fprintf (file, "/* epilogue: frame size=%d */\n", size);
+  fprintf (file, "/* epilogue: frame size=" HOST_WIDE_INT_PRINT_DEC " */\n",
+	   size);
 
   savelimit = (CHAIN_FRAMES) ? REG_FP : (REG_FP + 2);
   for (reg = 0; reg < savelimit; reg++)
@@ -919,11 +921,11 @@ print_operand (file, x, code)
       switch (code)
 	{
         case 'x':
-	  fprintf (file, "$%x", INTVAL (x) & 0xffff);
+	  fprintf (file, "$%x", (int)(INTVAL (x) & 0xffff));
 	  break;
 
 	case 'b':
-	  fprintf (file, "%d", INTVAL (x)); /* bit selector  */
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x)); /* bit selector  */
 	  break;
 
 	case 'e':		/* "1 << n" - e.g. "exp"  */
@@ -942,11 +944,11 @@ print_operand (file, x, code)
 	  break;
 
 	case 'H':
-	  fprintf (file, "#%d", (INTVAL (x) >> 8) & 0xff);
+	  fprintf (file, "#%d", (int)((INTVAL (x) >> 8) & 0xff));
 	  break;
 
 	case 'L':
-	  fprintf (file, "#%d", INTVAL (x) & 0xff);
+	  fprintf (file, "#%d", (int)(INTVAL (x) & 0xff));
 	  break;
 
 	case 'S':
@@ -962,7 +964,7 @@ print_operand (file, x, code)
 	  break;
 
 	default:
-	  fprintf (file, "#%d", INTVAL (x));
+	  fprintf (file, "#" HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
 	}
       break;
 

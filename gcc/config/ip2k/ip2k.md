@@ -977,7 +977,7 @@
 	  /* Constant can just be or-ed in. */
 	    {
 	      p += sprintf (p, \"mov\\tw,#$%2.2x\;or\\t%%0,w\",
-		            (INTVAL (operands[3]) << pos) & mask & 0xff);
+		            (int) (INTVAL (operands[3]) << pos) & mask & 0xff);
 	      return buff;
 	    }
 

@@ -1,5 +1,9 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* ip2k.c (function_prologue, function_epilogue, print_operand):
+	Fix format specifier warnings.
+	* ip2k.md: Likewise.
+
 	* i960.c (i960_output_function_prologue, i960_print_operand,
 	i960_print_operand_addr): Fix format specifier warnings.
 
