@@ -2665,6 +2665,7 @@ extern int cp_tree_equal			PROTO((tree, tree));
 extern int can_free				PROTO((struct obstack *, tree));
 extern tree mapcar				PROTO((tree, tree (*) (tree)));
 extern void debug_binfo				PROTO((tree));
+extern void push_expression_obstack		PROTO((void));
 #define scratchalloc expralloc
 #define scratch_tree_cons expr_tree_cons
 #define build_scratch_list build_expr_list
