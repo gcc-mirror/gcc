@@ -1822,9 +1822,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 
   if (flag_expensive_optimizations)
     {
-      /* Pass pc_rtx so no substitutions are done, just simplifications.
-	 The cases that we are interested in here do not involve the few
-	 cases were is_replaced is checked.  */
+      /* Pass pc_rtx so no substitutions are done, just simplifications.  */
       if (i1)
 	{
 	  subst_low_cuid = INSN_CUID (i1);
@@ -10049,7 +10047,7 @@ gen_lowpart_for_combine (enum machine_mode mode, rtx x)
 	return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
 
       /* If we want to refer to something bigger than the original memref,
-	 generate a perverse subreg instead.  That will force a reload
+	 generate a paradoxical subreg instead.  That will force a reload
 	 of the original memref X.  */
       if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode))
 	return gen_rtx_SUBREG (mode, x, 0);

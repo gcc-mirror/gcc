@@ -5031,7 +5031,7 @@ cse_insn (rtx insn, rtx libcall_insn)
       /* It is no longer clear why we used to do this, but it doesn't
 	 appear to still be needed.  So let's try without it since this
 	 code hurts cse'ing widened ops.  */
-      /* If source is a perverse subreg (such as QI treated as an SI),
+      /* If source is a paradoxical subreg (such as QI treated as an SI),
 	 treat it as volatile.  It may do the work of an SI in one context
 	 where the extra bits are not being used, but cannot replace an SI
 	 in general.  */

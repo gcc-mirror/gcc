@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    formerly used them.  The JUMP_LABEL info is sometimes looked
    at by later passes.
 
-   The subroutines delete_insn, redirect_jump, and invert_jump are used
+   The subroutines redirect_jump and invert_jump are used
    from other passes as well.  */
 
 #include "config.h"

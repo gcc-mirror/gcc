@@ -1,3 +1,11 @@
+2004-03-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (try_combine):  Do not refer to is_replaced.
+	(gen_lowpart_for_combine):  Perverse subregs now have a
+	more politically correct name.
+	* cse.c (cse_insn): Likewise.
+	* jump.c: Fix bogus reference to delete_insn.
+
 2004-02-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR debug/14328
