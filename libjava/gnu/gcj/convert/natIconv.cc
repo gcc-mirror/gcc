@@ -38,8 +38,9 @@ gnu::gcj::convert::Input_iconv::init (jstring encoding)
 {
 #ifdef HAVE_ICONV
   jsize len = _Jv_GetStringUTFLength (encoding);
-  char buffer[len];
+  char buffer[len + 1];
   _Jv_GetStringUTFRegion (encoding, 0, len, buffer);
+  buffer[len] = '\0';
 
   iconv_t h = iconv_open ("UCS-2", buffer);
   if (h == (iconv_t) -1)
@@ -97,8 +98,9 @@ gnu::gcj::convert::Output_iconv::init (jstring encoding)
 {
 #ifdef HAVE_ICONV
   jsize len = _Jv_GetStringUTFLength (encoding);
-  char buffer[len];
+  char buffer[len + 1];
   _Jv_GetStringUTFRegion (encoding, 0, len, buffer);
+  buffer[len] = '\0';
 
   iconv_t h = iconv_open (buffer, "UCS-2");
   if (h == (iconv_t) -1)
