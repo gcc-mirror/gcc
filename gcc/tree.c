@@ -792,25 +792,26 @@ make_node (code)
       /* All decls in an inline function need to be saved.  */
       if (obstack != &permanent_obstack)
 	obstack = saveable_obstack;
-      /* PARM_DECLs always go on saveable_obstack, not permanent,
-	 even though we may make them before the function turns
-	 on temporary allocation.  */
-      else if (code == PARM_DECL)
+
+      /* PARM_DECLs go on the context of the parent. If this is a nested
+	 function, then we must allocate the PARM_DECL on the parent's
+	 obstack, so that they will live to the end of the parent's
+	 closing brace.  This is neccesary in case we try to inline the
+	 function into its parent.
+
+	 PARM_DECLs of top-level functions do not have this problem.  However,
+	 we allocate them where we put the FUNCTION_DECL for languauges such as
+	 Ada that need to consult some flags in the PARM_DECLs of the function
+	 when calling it.  */
+      else if (code == PARM_DECL && obstack != &permanent_obstack)
 	{
 	  tree context = 0;
 	  if (current_function_decl)
 	    context = decl_function_context (current_function_decl);
-	  /* If this is a nested function, then we must allocate the PARM_DECL
-	     on the parent's saveable_obstack, so that they will live to the
-	     end of the parent's closing brace.  This is neccesary in case we
-	     try to inline the function into its parent.  */
+
 	  if (context)
-	    {
-	      struct function *p = find_function_data (context);
-	      obstack = p->function_maybepermanent_obstack;
-	    }
-	  else
-	    obstack = function_maybepermanent_obstack;
+	    obstack
+	      = find_function_data (context)->function_obstack;
 	}
       break;
 
