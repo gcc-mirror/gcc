@@ -2253,6 +2253,7 @@ extern int canon_true_dependence (rtx, enum machine_mode, rtx, rtx,
 extern int read_dependence (rtx, rtx);
 extern int anti_dependence (rtx, rtx);
 extern int output_dependence (rtx, rtx);
+extern int unchanging_anti_dependence (rtx, rtx);
 extern void mark_constant_function (void);
 extern void init_alias_once (void);
 extern void init_alias_analysis (void);

@@ -1974,13 +1974,6 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	    rtx mem = SET_DEST (set);
 	    rtx canon_mem = canon_rtx (mem);
 
-	    /* This optimization is performed by faking a store to the
-	       memory at the end of the block.  This doesn't work for
-	       unchanging memories because multiple stores to unchanging
-	       memory is illegal and alias analysis doesn't consider it.  */
-	    if (RTX_UNCHANGING_P (canon_mem))
-	      continue;
-
 	    if (XEXP (canon_mem, 0) == frame_pointer_rtx
 		|| (GET_CODE (XEXP (canon_mem, 0)) == PLUS
 		    && XEXP (XEXP (canon_mem, 0), 0) == frame_pointer_rtx
@@ -2152,7 +2145,7 @@ insn_dead_p (struct propagate_block_info *pbi, rtx x, int call_ok,
 	     rtx_equal_p does not check the alias set or flags, we also
 	     must have the potential for them to conflict (anti_dependence).  */
 	  for (temp = pbi->mem_set_list; temp != 0; temp = XEXP (temp, 1))
-	    if (anti_dependence (r, XEXP (temp, 0)))
+	    if (unchanging_anti_dependence (r, XEXP (temp, 0)))
 	      {
 		rtx mem = XEXP (temp, 0);
 
@@ -3730,7 +3723,7 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 	      while (temp)
 		{
 		  next = XEXP (temp, 1);
-		  if (anti_dependence (XEXP (temp, 0), x))
+		  if (unchanging_anti_dependence (XEXP (temp, 0), x))
 		    {
 		      /* Splice temp out of the list.  */
 		      if (prev)

@@ -1,3 +1,18 @@
+2003-09-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/8967
+	* alias.c (write_dependence_p): Modify to take an additional constp
+	argument that controls whether the UNCHANGING_RTX_P flags are used.
+	(anti_dependence, output_dependence): Adjust write_dependence_p
+	callers to pass this additional argument, to return the same result.
+	(unchanging_anti_dependence): New variant of anti_dependence that
+	ignores the UNCHANGING_RTX_P property on memory references.
+	* rtl.h (unchaning_anti_dependence): Prototype here.
+	* flow.c (init_propagate_block): Place fake constant mem writes on
+	the mem_set_list so that dead writes to const variables are deleted.
+	(insn_dead_p): Change anti_dependence to unchanging_anti_dependence.
+	(mark_used_regs): Likewise.
+
 2003-09-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mcore/mcore-protos.h (mcore_r15_operand_p): Declare.
