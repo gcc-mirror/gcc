@@ -566,6 +566,8 @@ singlemove_string (operands)
       return "adds %1,%?r0,%0";
      if((INTVAL (operands[1]) & 0x0000ffff) == 0)
       return "orh %H1,%?r0,%0";
+
+     return "orh %H1,%?r0,%0\n\tor %L1,%0,%0";
    }
   return "mov %1,%0";
 }
