@@ -1,3 +1,12 @@
+1998-11-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct_1): Set things up for 0-width bitfields
+	like we do for others.
+
+	* decl.c (check_tag_decl): New fn.
+	(shadow_tag): Split out from here.
+	* decl2.c (grok_x_components): Call it.
+
 1998-11-22  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c: Lose warn_about_return_type.

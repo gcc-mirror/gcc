@@ -858,17 +858,14 @@ grok_x_components (specs)
   struct pending_inline **p;
   tree t;
 
-  t = groktypename (build_decl_list (strip_attrs (specs), NULL_TREE)); 
-  
-  if (t == NULL_TREE)
-    {
-      cp_error ("invalid member declaration");
-      return;
-    }
+  specs = strip_attrs (specs);
+
+  check_tag_decl (specs);
+  t = groktypename (build_decl_list (specs, NULL_TREE)); 
 
   /* The only case where we need to do anything additional here is an
      anonymous union field, e.g.: `struct S { union { int i; }; };'.  */
-  if (!ANON_UNION_TYPE_P (t))
+  if (t == NULL_TREE || !ANON_UNION_TYPE_P (t))
     return;
 
   fixup_anonymous_union (t);
