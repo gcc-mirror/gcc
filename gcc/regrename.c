@@ -307,62 +307,75 @@ scan_rtx_reg (insn, loc, class, action, type)
   for (p = &open_chains; *p;)
     {
       struct du_chain *this = *p;
-      int regno = REGNO (*this->loc);
-      int nregs = HARD_REGNO_NREGS (regno, GET_MODE (*this->loc));
-      int exact_match = (regno == this_regno && nregs == this_nregs);
 
-      if (regno + nregs <= this_regno
-	  || this_regno + this_nregs <= regno)
+      /* Check if the chain has been terminated if it has then skip to
+	 the next chain.
+
+	 This can happen when we've already appended the location to
+	 the chain in Step 3, but are trying to hide in-out operands
+	 from terminate_write in Step 5.  */
+
+      if (*this->loc == cc0_rtx)
 	p = &this->next_chain;
-      else if (action == mark_read)
-	{
-	  if (! exact_match)
-	    abort ();
-	  if (class == NO_REGS)
-	    abort ();
+      else
+        {
+	  int regno = REGNO (*this->loc);
+	  int nregs = HARD_REGNO_NREGS (regno, GET_MODE (*this->loc));
+	  int exact_match = (regno == this_regno && nregs == this_nregs);
 
-	  this = (struct du_chain *)
-	    obstack_alloc (&rename_obstack, sizeof (struct du_chain));
-	  this->next_use = *p;
-	  this->next_chain = (*p)->next_chain;
-	  this->loc = loc;
-	  this->insn = insn;
-	  this->class = class;
-	  this->need_caller_save_reg = 0;
-	  *p = this;
-	  return;
-	}
-      else if (action != terminate_overlapping_read || ! exact_match)
-	{
-	  struct du_chain *next = this->next_chain;
-
-	  /* Whether the terminated chain can be used for renaming
-	     depends on the action and this being an exact match.
-	     In either case, we remove this element from open_chains.  */
-
-	  if ((action == terminate_dead || action == terminate_write)
-	      && exact_match)
+	  if (regno + nregs <= this_regno
+	      || this_regno + this_nregs <= regno)
+	    p = &this->next_chain;
+	  else if (action == mark_read)
 	    {
-	      this->next_chain = closed_chains;
-	      closed_chains = this;
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file,
-			 "Closing chain %s at insn %d (%s)\n",
-			 reg_names[REGNO (*this->loc)], INSN_UID (insn),
-			 scan_actions_name[(int) action]);
+	      if (! exact_match)
+		abort ();
+	      if (class == NO_REGS)
+		abort ();
+
+	      this = (struct du_chain *)
+		obstack_alloc (&rename_obstack, sizeof (struct du_chain));
+	      this->next_use = *p;
+	      this->next_chain = (*p)->next_chain;
+	      this->loc = loc;
+	      this->insn = insn;
+	      this->class = class;
+	      this->need_caller_save_reg = 0;
+	      *p = this;
+	      return;
+	    }
+	  else if (action != terminate_overlapping_read || ! exact_match)
+	    {
+	      struct du_chain *next = this->next_chain;
+
+	      /* Whether the terminated chain can be used for renaming
+	         depends on the action and this being an exact match.
+	         In either case, we remove this element from open_chains.  */
+
+	      if ((action == terminate_dead || action == terminate_write)
+		  && exact_match)
+		{
+		  this->next_chain = closed_chains;
+		  closed_chains = this;
+		  if (rtl_dump_file)
+		    fprintf (rtl_dump_file,
+			     "Closing chain %s at insn %d (%s)\n",
+			     reg_names[REGNO (*this->loc)], INSN_UID (insn),
+			     scan_actions_name[(int) action]);
+		}
+	      else
+		{
+		  if (rtl_dump_file)
+		    fprintf (rtl_dump_file,
+			     "Discarding chain %s at insn %d (%s)\n",
+			     reg_names[REGNO (*this->loc)], INSN_UID (insn),
+			     scan_actions_name[(int) action]);
+		}
+	      *p = next;
 	    }
 	  else
-	    {
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file,
-			 "Discarding chain %s at insn %d (%s)\n",
-			 reg_names[REGNO (*this->loc)], INSN_UID (insn),
-			 scan_actions_name[(int) action]);
-	    }
-	  *p = next;
+	    p = &this->next_chain;
 	}
-      else
-	p = &this->next_chain;
     }
 }
 
