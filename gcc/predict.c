@@ -295,7 +295,7 @@ expected_value_to_br_prob ()
       cond = simplify_rtx (cond);
 
       /* Turn the condition into a scaled branch probability.  */
-      if (cond == const1_rtx)
+      if (cond == const_true_rtx)
 	cond = GEN_INT (PROB_VERY_LIKELY);
       else if (cond == const0_rtx)
 	cond = GEN_INT (PROB_VERY_UNLIKELY);

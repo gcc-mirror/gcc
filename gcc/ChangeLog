@@ -1,3 +1,8 @@
+2001-06-22  Toshiyasu Morita  (toshiyasu.morita@hsa.hitachi.com)
+
+	* predict.c: (expected_value_to_br_prob): Check for const_true_rtx
+	instead of const1_rtx for true case.
+
 2001-06-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi, doc/contrib.texi, doc/extend.texi,
