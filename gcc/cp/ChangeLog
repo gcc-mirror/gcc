@@ -1,3 +1,7 @@
+2000-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (instantiate_pending_templates): Reset template level.
+
 2000-07-05  Jason Merrill  <jason@redhat.com>
 
 	* call.c (joust): Don't complain about `operator char *()' beating
