@@ -1,3 +1,9 @@
+Mon Mar 12 16:27:56 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c: Commit forgotten hunk in previous patch.
+	(regclass_map): Add extended registers.
+	(dbx_register_map): Add missing frame register.
+
 Mon Mar 12 15:41:08 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (all XFmode patterns except swapxf): Disable for 64bit.
