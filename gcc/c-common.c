@@ -2950,9 +2950,10 @@ c_common_nodes_and_builtins (void)
   lang_hooks.decls.pushdecl (build_decl (TYPE_DECL, NULL_TREE,
 					 intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
-  lang_hooks.decls.pushdecl (build_decl (TYPE_DECL,
-					 get_identifier ("__int128_t"),
-					 intTI_type_node));
+  if (targetm.scalar_mode_supported_p (TImode))
+    lang_hooks.decls.pushdecl (build_decl (TYPE_DECL,
+					   get_identifier ("__int128_t"),
+					   intTI_type_node));
 #endif
   lang_hooks.decls.pushdecl (build_decl (TYPE_DECL, NULL_TREE,
 					 unsigned_intQI_type_node));
@@ -2963,9 +2964,10 @@ c_common_nodes_and_builtins (void)
   lang_hooks.decls.pushdecl (build_decl (TYPE_DECL, NULL_TREE,
 					 unsigned_intDI_type_node));
 #if HOST_BITS_PER_WIDE_INT >= 64
-  lang_hooks.decls.pushdecl (build_decl (TYPE_DECL,
-					 get_identifier ("__uint128_t"),
-					 unsigned_intTI_type_node));
+  if (targetm.scalar_mode_supported_p (TImode))
+    lang_hooks.decls.pushdecl (build_decl (TYPE_DECL,
+					   get_identifier ("__uint128_t"),
+					   unsigned_intTI_type_node));
 #endif
 
   /* Create the widest literal types.  */
