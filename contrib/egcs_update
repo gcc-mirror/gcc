@@ -4,7 +4,18 @@
 # on treating generated files correctly, so that autoconf, bison et
 # al are not required for the ``end'' user.
 #
-# By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, 10.8.1998.
+# By default all command-line options are passed to `cvs update` in
+# addition to $UPDATE_OPTIONS (defined below). If the first parameter
+# reads --nostdflags, $UPDATE_OPTIONS as well as this parameter itself
+# are omitted. 
+# 
+# Examples:
+#
+# contrib/egcs_update -r egcs_latest_snapshot
+# contrib/egcs_update -A
+# contrib/egcs_update --nostdflags -P -r egcs_1_1_branch gcc/testsuite
+#
+# By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
 
 UPDATE_OPTIONS=-P
 # Add -d to create any directories that exist in the repository but not
@@ -20,11 +31,20 @@ if [ ! -d CVS ] || [ ! -f gcc/version.c ]; then
 	exit
 fi
 
+# Check command-line options
+
+if [ x"${1}"x = x"--nostdflags"x ]; then
+    shift
+else
+    set -- $UPDATE_OPTIONS ${1+"$@"}
+fi
+
+
 echo "Pass 1: Updating autoconf and bison generated files"
 find . -name configure.in -o -name '*.y' | xargs cvs -q update
 
 echo "Pass 2: Updating full tree"
-cvs -q update $UPDATE_OPTIONS
+cvs -q update ${1+"$@"}
 
 echo "Pass 3: Fixing local tree"
 touch `find . -name configure -print`
