@@ -1,5 +1,5 @@
 /* Handle exceptions for GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -372,7 +372,17 @@ expand_end_java_handler (range)
   expand_start_all_catch ();
   for ( ; handler != NULL_TREE; handler = TREE_CHAIN (handler))
     {
-      expand_start_catch (TREE_PURPOSE (handler));
+      /* For bytecode we treat exceptions a little unusually.  A
+	 `finally' clause looks like an ordinary exception handler for
+	 Throwable.  The reason for this is that the bytecode has
+	 already expanded the finally logic, and we would have to do
+	 extra (and difficult) work to get this to look like a
+	 gcc-style finally clause.  */
+      tree type = TREE_PURPOSE (handler);
+      if (type == NULL)
+	type = throwable_type_node;
+
+      expand_start_catch (type);
       expand_goto (TREE_VALUE (handler));
       expand_end_catch ();
     }
