@@ -229,8 +229,6 @@ case "$THREADS" in
 	;;
     esac
     ;;
- qt)
-    ;;
  decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
     ;;
@@ -256,17 +254,6 @@ case "$THREADS" in
     # But for now we don't check for it.  We just assume you aren't
     # using MIT pthreads.
     AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT)
-    ;;
-
- qt)
-    THREADDEPS='$(top_builddir)/../qthreads/libgcjcoop.la'
-    # We include the path to the qthreads build directory.
-    # See Makefile.am to understand why.
-    THREADLIBS="$THREADDEPS -L\$(here)/../qthreads/$libsubdir"
-    THREADSPEC='-lgcjcoop'
-    THREADOBJS=quick-threads.lo
-    THREADINCS='-I$(top_srcdir)/../qthreads'
-    THREADH=quick-threads.h
     ;;
 
  none)

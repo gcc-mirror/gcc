@@ -1,5 +1,9 @@
 1999-11-04  Tom Tromey  <tromey@cygnus.com>
 
+	* configure.in: Removed `qt' threads case.
+	* include/quick-threads.h: Removed.
+	* quick-threads.cc: Removed.
+
 	* include/quick-threads.h (_Jv_ThreadCancel): Removed.
 	(_Jv_ThreadDestroy): Likewise.
 	* include/no-threads.h (_Jv_ThreadCancel): Removed.
