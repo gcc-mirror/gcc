@@ -1,3 +1,8 @@
+2003-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/ref5.C: New test.
+	* g++.dg/parse/ptrmem1.C: Likewise.
+
 2003-03-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/special/ecos.exp (gcsec-1.c): Find linker used by gcc.

@@ -6055,9 +6055,8 @@ initialize_reference (type, expr, decl)
       conv = TREE_OPERAND (conv, 0);
       /* If the next conversion is a BASE_CONV, skip that too -- but
 	 remember that the conversion was required.  */
-      if (TREE_CODE (conv) == BASE_CONV)
+      if (TREE_CODE (conv) == BASE_CONV && !NEED_TEMPORARY_P (conv))
 	{
-	  my_friendly_assert (!NEED_TEMPORARY_P (conv), 20030307);
 	  base_conv_type = TREE_TYPE (conv);
 	  conv = TREE_OPERAND (conv, 0);
 	}
