@@ -25,6 +25,10 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "cpplib.h"
 #include <stdio.h>
 
+#ifndef EMACS
+#include "config.h"
+#endif /* not EMACS */
+
 /* Print the file names and line numbers of the #include
    commands which led to the current file.  */
 
@@ -106,7 +110,7 @@ fatal (str, arg)
   fprintf (stderr, "%s: ", progname);
   fprintf (stderr, str, arg);
   fprintf (stderr, "\n");
-  exit (FAILURE_EXIT_CODE);
+  exit (FATAL_EXIT_CODE);
 }
 
 
@@ -119,6 +123,6 @@ cpp_pfatal_with_name (pfile, name)
 #ifdef VMS
   exit (vaxc$errno);
 #else
-  exit (FAILURE_EXIT_CODE);
+  exit (FATAL_EXIT_CODE);
 #endif
 }
