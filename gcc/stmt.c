@@ -842,12 +842,17 @@ expand_goto (label)
 
       /* Search backwards to the jump insn and mark it as a 
 	 non-local goto.  */
-      for (insn = get_last_insn ();
-	   GET_CODE (insn) != JUMP_INSN; 
-	   insn = PREV_INSN (insn))
-	continue;
-      REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
-					  REG_NOTES (insn));
+      for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
+	{
+	  if (GET_CODE (insn) == JUMP_INSN)
+	    {
+	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO,
+						  const0_rtx, REG_NOTES (insn));
+	      break;
+	    }
+	  else if (GET_CODE (insn) == CALL_INSN)
+	      break;
+	}
     }
   else
     expand_goto_internal (label, label_rtx (label), NULL_RTX);

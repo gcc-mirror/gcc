@@ -698,7 +698,7 @@ expand_builtin_longjmp (buf_addr, value)
 	/* We have to pass a value to the nonlocal_goto pattern that will
 	   get copied into the static_chain pointer, but it does not matter
 	   what that value is, because builtin_setjmp does not use it.  */
-	emit_insn (gen_nonlocal_goto (value, fp, stack, lab));
+	emit_insn (gen_nonlocal_goto (value, lab, stack, fp));
       else
 #endif
 	{

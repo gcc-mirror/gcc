@@ -1,4 +1,15 @@
 2001-07-25  Andrew MacLeod  <amacleod@redhat.com>
+	    Janis Johnson  <janis@us.ibm.com>
+
+	* stmt.c (expand_goto): A nonlocal goto can be a call too.
+	* builtins.c (expand_builtin_longjmp): Reverse label and static chain
+	pointer parameters to match documented usage of nonlocal_goto.
+	* config/ia64/ia64.md (nonlocal_goto): Revert label and static chain
+	parameters to their correct order.
+	* config/sparc/sparc.md (nonlocal_goto): Revert label and static chain
+	parameters to their correct order.
+
+2001-07-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/ia64/ia64.h (STRIP_NAME_ENCODING): Strip out '*' as well.
 

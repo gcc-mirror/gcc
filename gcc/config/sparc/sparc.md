@@ -8966,9 +8966,9 @@
 #if 0
   rtx chain = operands[0];
 #endif
-  rtx fp = operands[1];
+  rtx lab = operands[1];
   rtx stack = operands[2];
-  rtx lab = operands[3];
+  rtx fp = operands[3];
   rtx labreg;
 
   /* Trap instruction to flush all the register windows.  */
