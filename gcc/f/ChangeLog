@@ -1,3 +1,7 @@
+2003-11-21  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* .cvsignore: Delete.
+
 2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* Make-lang.in (f77.extraclean): Delete.
