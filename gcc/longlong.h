@@ -443,7 +443,42 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "dmi" ((USItype) (d)))
 
 #else /* not mc68020 */
-#if !defined(__mcf5200__)
+#if defined(__mcoldfire__)
+#define umul_ppmm(xh, xl, a, b) \
+  __asm__ ("| Inlined umul_ppmm\n"					\
+	   "	move%.l	%2,%/d0\n"					\
+	   "	move%.l	%3,%/d1\n"					\
+	   "	move%.l	%/d0,%/d2\n"					\
+	   "	swap	%/d0\n"						\
+	   "	move%.l	%/d1,%/d3\n"					\
+	   "	swap	%/d1\n"						\
+	   "	move%.w	%/d2,%/d4\n"					\
+	   "	mulu	%/d3,%/d4\n"					\
+	   "	mulu	%/d1,%/d2\n"					\
+	   "	mulu	%/d0,%/d3\n"					\
+	   "	mulu	%/d0,%/d1\n"					\
+	   "	move%.l	%/d4,%/d0\n"					\
+	   "	clr%.w	%/d0\n"						\
+	   "	swap	%/d0\n"						\
+	   "	add%.l	%/d0,%/d2\n"					\
+	   "	add%.l	%/d3,%/d2\n"					\
+	   "	jcc	1f\n"						\
+	   "	add%.l	%#65536,%/d1\n"					\
+	   "1:	swap	%/d2\n"						\
+	   "	moveq	%#0,%/d0\n"					\
+	   "	move%.w	%/d2,%/d0\n"					\
+	   "	move%.w	%/d4,%/d2\n"					\
+	   "	move%.l	%/d2,%1\n"					\
+	   "	add%.l	%/d1,%/d0\n"					\
+	   "	move%.l	%/d0,%0"					\
+	   : "=g" ((USItype) (xh)),					\
+	     "=g" ((USItype) (xl))					\
+	   : "g" ((USItype) (a)),					\
+	     "g" ((USItype) (b))					\
+	   : "d0", "d1", "d2", "d3", "d4")
+#define UMUL_TIME 100
+#define UDIV_TIME 400
+#else /* not ColdFire */
 /* %/ inserts REGISTER_PREFIX, %# inserts IMMEDIATE_PREFIX.  */
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("| Inlined umul_ppmm\n"					\
@@ -479,7 +514,7 @@ UDItype __umulsidi3 (USItype, USItype);
 	   : "d0", "d1", "d2", "d3", "d4")
 #define UMUL_TIME 100
 #define UDIV_TIME 400
-#endif /* not mcf5200 */
+#endif /* not ColdFire */
 #endif /* not mc68020 */
 
 /* The '020, '030, '040 and '060 have bitfield insns.
