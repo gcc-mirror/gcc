@@ -1,5 +1,21 @@
 2004-02-26  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileLockImpl.java
+	(finalize): Made protected.
+	* java/nio/channels/FileChannel.java
+	(MapMode.READ_ONLY): Made final.
+	(MapMode.READ_WRITE): Made final.
+	(MapMode.PRIVATE): Made final.
+	* java/nio/channels/SocketChannel.java
+	(open): Simplified code.
+	* java/nio/channels/spi/AbstractSelectableChannel.java
+	(registered): Unused, removed.
+	(keyFor): Check channel is open, only locate key
+	and not add a new one.
+	(register): Don't delete attachments.
+
+2004-02-26  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/ComponentDataBlitOp.java
 	(INSTANCE): Made final.
 	* gnu/java/awt/image/ImageDecoder.java:

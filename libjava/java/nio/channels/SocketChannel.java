@@ -87,11 +87,7 @@ abstract public class SocketChannel extends AbstractSelectableChannel
   public static SocketChannel open (SocketAddress remote) throws IOException
   {
     SocketChannel ch = open ();
-	
-    if (ch.connect (remote))
-      {
-      }
-    
+    ch.connect(remote);
     return ch;
   }
     

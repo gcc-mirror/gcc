@@ -48,7 +48,6 @@ import java.util.ListIterator;
 
 public abstract class AbstractSelectableChannel extends SelectableChannel
 {
-  private int registered;
   private boolean blocking = true;
   private Object LOCK = new Object();
   private SelectorProvider provider;
@@ -135,9 +134,15 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
    */
   public final SelectionKey keyFor(Selector selector)
   {
+    if (! isOpen())
+      return null;
+    
     try
       {
-        return register (selector, 0, null);
+        synchronized(blockingLock())
+	  {
+	    return locate (selector);
+	  }
       }
     catch (Exception e)
       {
@@ -196,7 +201,8 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
 
         if (key != null)
           {
-            key.attach (att);
+	    if (att != null)
+	      key.attach (att);
           }
         else
           {

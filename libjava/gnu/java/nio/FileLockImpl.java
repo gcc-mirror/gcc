@@ -68,7 +68,7 @@ public class FileLockImpl extends FileLock
     this.fd = fd;
   }
 
-  public void finalize()
+  protected void finalize()
   {
     try
       {
