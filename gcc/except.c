@@ -1309,7 +1309,9 @@ start_dynamic_cleanup (func, arg)
 
   /* Update the cleanup chain.  */
 
-  emit_move_insn (dcc, XEXP (buf, 0));
+  x = force_operand (XEXP (buf, 0), dcc);
+  if (x != dcc)
+    emit_move_insn (dcc, x);
 }
 
 /* Emit RTL to start a dynamic handler on the EH runtime dynamic
