@@ -4188,8 +4188,9 @@ strength_reduce (loop, insn_count, flags)
 	      /* Some bivs are incremented with a multi-insn sequence.
 		 The first insn contains the add.  */
 	      next_loc_insn = next->insn;
-	      while (! loc_mentioned_in_p (next->location,
-					   PATTERN (next_loc_insn)))
+	      while (NOTE_P (next_loc_insn)
+		     || ! loc_mentioned_in_p (next->location,
+					      PATTERN (next_loc_insn)))
 		next_loc_insn = PREV_INSN (next_loc_insn);
 
 	      if (next_loc_insn == v->insn)
