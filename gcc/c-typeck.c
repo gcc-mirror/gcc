@@ -3867,6 +3867,24 @@ build_c_cast (type, expr)
 
   return value;
 }
+
+/* Interpret a cast of expression EXPR to type TYPE.  */
+tree
+c_cast_expr (type, expr)
+     tree type, expr;
+{
+  int saved_wsp = warn_strict_prototypes;
+
+  /* This avoids warnings about unprototyped casts on
+     integers.  E.g. "#define SIG_DFL (void(*)())0".  */
+  if (TREE_CODE (expr) == INTEGER_CST)
+    warn_strict_prototypes = 0;
+  type = groktypename (type);
+  warn_strict_prototypes = saved_wsp;
+
+  return build_c_cast (type, expr);
+}
+
 
 /* Build an assignment expression of lvalue LHS from value RHS.
    MODIFYCODE is the code for a binary operator that we use
@@ -6763,6 +6781,33 @@ process_init_element (value)
   constructor_range_stack = 0;
 }
 
+/* Build a simple asm-statement, from one string literal.  */
+tree
+simple_asm_stmt (expr)
+     tree expr;
+{
+  STRIP_NOPS (expr);
+
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
+  if (TREE_CODE (expr) == STRING_CST)
+    {
+      tree stmt;
+
+      if (TREE_CHAIN (expr))
+	expr = combine_strings (expr);
+      stmt = add_stmt (build_stmt (ASM_STMT, NULL_TREE, expr,
+				   NULL_TREE, NULL_TREE,
+				   NULL_TREE));
+      ASM_INPUT_P (stmt) = 1;
+      return stmt;
+    }
+
+  error ("argument of `asm' is not a constant string");
+  return NULL_TREE;
+}
+
 /* Build an asm-statement, whose components are a CV_QUALIFIER, a
    STRING, some OUTPUTS, some INPUTS, and some CLOBBERS.  */
 

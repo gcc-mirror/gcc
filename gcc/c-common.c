@@ -4193,6 +4193,39 @@ c_add_case_label (cases, cond, low_value, high_value)
   return case_label;
 }
 
+/* Finish an expression taking the address of LABEL.  Returns an
+   expression for the address.  */
+
+tree 
+finish_label_address_expr (label)
+     tree label;
+{
+  tree result;
+
+  if (pedantic)
+    {
+      if (c_language == clk_cplusplus)
+	pedwarn ("ISO C++ forbids taking the address of a label");
+      else
+	pedwarn ("ISO C forbids taking the address of a label");
+    }
+
+  label = lookup_label (label);
+  if (label == NULL_TREE)
+    result = null_pointer_node;
+  else
+    {
+      TREE_USED (label) = 1;
+      result = build1 (ADDR_EXPR, ptr_type_node, label);
+      TREE_CONSTANT (result) = 1;
+      /* The current function in not necessarily uninlinable.
+	 Computed gotos are incompatible with inlining, but the value
+	 here could be used only in a diagnostic, for example.  */
+    }
+
+  return result;
+}
+
 /* Mark P (a stmt_tree) for GC.  The use of a `void *' for the
    parameter allows this function to be used as a GC-marking
    function.  */

@@ -1,3 +1,13 @@
+2001-05-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (finish_label_expr): New function, lifted from
+	from cp/semantics.c.
+	* c-common.h (finish_label_expr, lookup_label): New prototypes.
+	* c-parse.in: Move 3 blocks of parser code into new functions.
+	* c-typeck.c (simple_asm_stmt, c_cast_expr): New functions.
+	* c-tree.h (simple_asm_stmt, c_cast_expr): New prototypes.
+	(lookup_label): Remove.
+
 2001-05-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/t-mn10300 (dp-bit.c, fp-bit.c): Don't define

@@ -187,7 +187,6 @@ extern void implicit_decl_warning               PARAMS ((tree));
 extern int  in_parm_level_p                     PARAMS ((void));
 extern void keep_next_level                     PARAMS ((void));
 extern int  kept_level_p                        PARAMS ((void));
-extern tree lookup_label                        PARAMS ((tree));
 extern tree lookup_name                         PARAMS ((tree));
 extern tree lookup_name_current_level		PARAMS ((tree));
 extern tree lookup_name_current_level_global	PARAMS ((tree));
@@ -233,7 +232,8 @@ extern tree parser_build_binary_op              PARAMS ((enum tree_code,
 extern void readonly_warning			PARAMS ((tree, const char *));
 extern tree build_conditional_expr              PARAMS ((tree, tree, tree));
 extern tree build_compound_expr                 PARAMS ((tree));
-extern tree build_c_cast                        PARAMS ((tree, tree));
+extern tree c_cast_expr				PARAMS ((tree, tree));
+extern tree build_c_cast	                PARAMS ((tree, tree));
 extern tree build_modify_expr                   PARAMS ((tree, enum tree_code,
 							 tree));
 extern void store_init_value                    PARAMS ((tree, tree));
@@ -251,6 +251,7 @@ extern void pedwarn_c99				PARAMS ((const char *, ...))
 							ATTRIBUTE_PRINTF_1;
 extern tree c_start_case                        PARAMS ((tree));
 extern void c_finish_case                       PARAMS ((void));
+extern tree simple_asm_stmt			PARAMS ((tree));
 extern tree build_asm_stmt			PARAMS ((tree, tree, tree,
 							 tree, tree));
 

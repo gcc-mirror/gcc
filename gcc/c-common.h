@@ -783,6 +783,12 @@ extern tree c_add_case_label                    PARAMS ((splay_tree,
 
 extern tree build_function_call			PARAMS ((tree, tree));
 
+extern tree finish_label_address_expr		PARAMS ((tree));
+
+/* Same function prototype, but the C and C++ front ends have
+   different implementations.  Used in c-common.c.  */
+extern tree lookup_label			PARAMS ((tree));
+
 /* If this variable is defined to a non-NULL value, it will be called
    after the file has been completely parsed.  The argument will be
    the GLOBAL_NAMESPACE in C++, or the list of top-level declarations

@@ -493,18 +493,7 @@ unary_expr:
 		  overflow_warning ($$); }
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
-		{ tree label = lookup_label ($2);
-		  if (pedantic)
-		    pedwarn ("ISO C forbids `&&'");
-		  if (label == 0)
-		    $$ = null_pointer_node;
-		  else
-		    {
-		      TREE_USED (label) = 1;
-		      $$ = build1 (ADDR_EXPR, ptr_type_node, label);
-		      TREE_CONSTANT ($$) = 1;
-		    }
-		}
+		{ $$ = finish_label_address_expr ($2); }
 /* This seems to be impossible on some machines, so let's turn it off.
    You can use __builtin_next_arg to find the anonymous stack args.
 	| '&' ELLIPSIS
@@ -552,15 +541,7 @@ alignof:
 cast_expr:
 	unary_expr
 	| '(' typename ')' cast_expr  %prec UNARY
-		{ tree type;
-		  int SAVED_warn_strict_prototypes = warn_strict_prototypes;
-		  /* This avoids warnings about unprototyped casts on
-                     integers.  E.g. "#define SIG_DFL (void(*)())0".  */
-		  if (TREE_CODE ($4) == INTEGER_CST)
-		    warn_strict_prototypes = 0;
-		  type = groktypename ($2);
-		  warn_strict_prototypes = SAVED_warn_strict_prototypes;
-		  $$ = build_c_cast (type, $4); }
+		{ $$ = c_cast_expr ($2, $4); }
 	;
 
 expr_no_commas:
@@ -2401,26 +2382,7 @@ stmt:
 		  $$ = c_expand_return ($2); }
 	| ASM_KEYWORD maybe_type_qual '(' expr ')' ';'
 		{ stmt_count++;
-		  STRIP_NOPS ($4);
-		  if ((TREE_CODE ($4) == ADDR_EXPR
-		       && TREE_CODE (TREE_OPERAND ($4, 0)) == STRING_CST)
-		      || TREE_CODE ($4) == STRING_CST)
-		    {
-		      if (TREE_CODE ($4) == ADDR_EXPR)
-			$4 = TREE_OPERAND ($4, 0);
-		      if (TREE_CHAIN ($4))
-			$4 = combine_strings ($4);
-		      $$ = add_stmt (build_stmt (ASM_STMT, NULL_TREE, $4,
-						 NULL_TREE, NULL_TREE,
-						 NULL_TREE));
-		      ASM_INPUT_P ($$) = 1;
-		    }
-		  else
-		    {
-		      error ("argument of `asm' is not a constant string");
-		      $$ = NULL_TREE;
-		    }
-		}
+		  $$ = simple_asm_stmt ($4); }
 	/* This is the case with just output operands.  */
 	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ')' ';'
 		{ stmt_count++;
