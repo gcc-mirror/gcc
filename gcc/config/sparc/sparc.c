@@ -5541,14 +5541,8 @@ function_arg_padding (enum machine_mode mode, tree type)
   if (TARGET_ARCH64 && type != 0 && AGGREGATE_TYPE_P (type))
     return upward;
 
-  /* This is the default definition.  */
-  return (! BYTES_BIG_ENDIAN
-	  ? upward
-	  : ((mode == BLKmode
-	      ? (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-		 && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
-	      : GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
-	     ? downward : upward));
+  /* Fall back to the default.  */
+  return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
 }
 
 /* Handle FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE, and LIBCALL_VALUE macros.

@@ -142,8 +142,7 @@ do {							\
    usually pad upward, but pad short args downward on
    big-endian machines.  */
 
-#ifndef FUNCTION_ARG_PADDING
-#define FUNCTION_ARG_PADDING(MODE, TYPE)				\
+#define DEFAULT_FUNCTION_ARG_PADDING(MODE, TYPE)			\
   (! BYTES_BIG_ENDIAN							\
    ? upward								\
    : (((MODE) == BLKmode						\
@@ -151,6 +150,10 @@ do {							\
 	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT)) \
        : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)			\
       ? downward : upward))
+
+#ifndef FUNCTION_ARG_PADDING
+#define FUNCTION_ARG_PADDING(MODE, TYPE)	\
+  DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE))
 #endif
 
 /* Supply a default definition for FUNCTION_ARG_BOUNDARY.  Normally, we let
