@@ -2996,7 +2996,7 @@ h8300_encode_label (decl)
   newstr = obstack_alloc (saveable_obstack, len + 2);
 
   strcpy (newstr + 1, str);
-  *newstr = '*';
+  *newstr = '&';
   XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 }
 

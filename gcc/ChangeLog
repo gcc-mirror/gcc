@@ -1,3 +1,9 @@
+Sun Dec 13 00:09:47 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* h8300.c (h8300_encode_label): Use '&' for tiny data items.
+	* h8300.h (TINY_DATA_NAME_P): Likewise.
+	(STRIP_NAME_ENCODING): Handle '&'.
+
 Wed Dec  2 01:44:58 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* egcs-1.1.1 released.
