@@ -1,3 +1,7 @@
+Sat Apr 4 23:33:38 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Apr  4 20:16:46 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (asm_output_function_prefix, load_pic_register):
