@@ -3730,11 +3730,20 @@ output_decl (decl, containing_scope)
      register tree decl;
      register tree containing_scope;
 {
+  if (TREE_CODE (decl) == ERROR_MARK)
+    return;
+
+  /* If this ..._DECL node is marked to be ignored, then ignore it.
+     But don't ignore a function definition, since that would screw
+     up our count of blocks, and that it turn will completely screw up the
+     the labels we will reference in subsequent AT_low_pc and AT_high_pc
+     attributes (for subsequent blocks).  */
+
+  if (DECL_IGNORED_P (decl) && TREE_CODE (decl) != FUNCTION_DECL)
+    return;
+
   switch (TREE_CODE (decl))
     {
-    case ERROR_MARK:
-      break;
-
     case CONST_DECL:
       /* The individual enumerators of an enum type get output when we
 	 output the Dwarf representation of the relevant enum type itself.  */
@@ -4077,11 +4086,31 @@ dwarfout_file_scope_decl (decl, set_finalizing)
      register tree decl;
      register int set_finalizing;
 {
+  if (TREE_CODE (decl) == ERROR_MARK)
+    return;
+
+  /* If this ..._DECL node is marked to be ignored, then ignore it.  We
+     gotta hope that the node in question doesn't represent a function
+     definition.  If it does, then totally ignoring it is bound to screw
+     up our count of blocks, and that it turn will completely screw up the
+     the labels we will reference in subsequent AT_low_pc and AT_high_pc
+     attributes (for subsequent blocks).  (It's too bad that BLOCK nodes
+     don't carry their own sequence numbers with them!)  */
+
+  if (DECL_IGNORED_P (decl))
+    {
+      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl) != NULL)
+	abort ();
+      return;
+    }
+
   switch (TREE_CODE (decl))
     {
     case FUNCTION_DECL:
 
-      /* Ignore this FUNCTION_DECL if it refers to a builtin function.  */
+      /* Ignore this FUNCTION_DECL if it refers to a builtin declaration of
+	 a builtin function.  Explicit programmer-supplied declarations of
+	 these same functions should NOT be ignored however.  */
 
       if (TREE_EXTERNAL (decl) && DECL_FUNCTION_CODE (decl))
         return;
