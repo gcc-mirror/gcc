@@ -1,3 +1,7 @@
+2004-08-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (c_sizeof_nowarn): Remove.
+
 2004-08-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (set_array_declarator_type): Rename to
