@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,14 +39,4 @@
 #pragma GCC system_header
 #include <locale.h>
 
-namespace std
-{
-  using ::lconv;
-  extern "C" char* setlocale(int, const char*); 
-  extern "C" struct lconv* localeconv(void);
-}
-
 #endif
-
-
-

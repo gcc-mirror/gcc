@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,22 +38,5 @@
 
 #pragma GCC system_header
 #include <time.h>
-
-namespace std
-{
-  using ::clock_t;
-  using ::time_t;
-  using ::tm;
-
-  extern "C" clock_t clock(void); 
-  extern "C" double difftime(time_t, time_t); 
-  extern "C" time_t mktime(struct tm*); 
-  extern "C" time_t time(time_t*); 
-  extern "C" char* asctime(const struct tm*); 
-  extern "C" char* ctime(const time_t*); 
-  extern "C" struct tm* gmtime(const time_t*); 
-  extern "C" struct tm* localtime(const time_t*); 
-  extern "C" size_t strftime(char*, size_t, const char*, const struct tm*);
-}
 
 #endif
