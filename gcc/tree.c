@@ -5124,5 +5124,8 @@ int
 new_alias_set ()
 {
   static int last_alias_set;
-  return ++last_alias_set;
+  if (flag_strict_aliasing)
+    return ++last_alias_set;
+  else
+    return 0;
 }

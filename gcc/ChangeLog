@@ -1,3 +1,7 @@
+Mon Jan 11 22:54:14 1999  Richard Henderson  <rth@cygnus.com>
+
+	* tree.c (new_alias_set): Return zero if !flag_strict_aliasing.
+
 Mon Jan 11 22:36:01 1999  Richard Henderson  <rth@cygnus.com>
 
 	* basic-block.h (basic_block_head): Rename to x_basic_block_head.
