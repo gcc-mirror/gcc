@@ -27,7 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
-#include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
 #include "tree.h"
@@ -38,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "tm_p.h"
 #include "debug.h"
+#include "output.h"
 #include "target.h"
 #include "target-def.h"
 

@@ -5,6 +5,9 @@
 
 	* config/cris/cris.h (EH_RETURN_DATA_REGNO): Fix formatting.
 
+	* config/cris/cris.c: Include output.h after tree.h but before
+	target.h.
+
 2001-10-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (INTL_TARGETS, POSUB): Delete all references.
