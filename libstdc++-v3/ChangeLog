@@ -1,3 +1,12 @@
+2003-04-15  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/thread/pthread1.cc: Enable for darwin test.
+	* testsuite/thread/pthread2.cc: Same.
+	* testsuite/thread/pthread3.cc: Same.
+	* testsuite/thread/pthread4.cc: Same.
+	* testsuite/thread/pthread5.cc: Same.
+	* testsuite/thread/pthread6.cc: Same.
+ 
 2003-04-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	libstdc++/7680
