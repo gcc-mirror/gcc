@@ -140,7 +140,10 @@ decode (shorts, low, hi)
    that don't belong in the type.
    Yield 1 if a signed overflow occurs, 0 otherwise.
    If OVERFLOW is nonzero, a signed overflow has already occurred
-   in calculating T, so propagate it.  */
+   in calculating T, so propagate it.
+
+   Make the real constant T valid for its type by calling CHECK_FLOAT_VALUE,
+   if it exists.  */
 
 int
 force_fit_type (t, overflow)
@@ -150,7 +153,16 @@ force_fit_type (t, overflow)
   HOST_WIDE_INT low, high;
   register int prec;
 
-  if (TREE_CODE (t) != INTEGER_CST)
+  if (TREE_CODE (t) == REAL_CST)
+    {
+#ifdef CHECK_FLOAT_VALUE
+      CHECK_FLOAT_VALUE (TYPE_MODE (TREE_TYPE (t)), TREE_REAL_CST (t),
+			 overflow);
+#endif
+      return overflow;
+    }
+
+  else if (TREE_CODE (t) != INTEGER_CST)
     return overflow;
 
   low = TREE_INT_CST_LOW (t);
@@ -803,34 +815,19 @@ div_and_round_double (code, uns,
 }
 
 #ifndef REAL_ARITHMETIC
-/* Effectively truncate a real value to represent
-   the nearest possible value in a narrower mode.
-   The result is actually represented in the same data type as the argument,
-   but its value is usually different.  */
+/* Effectively truncate a real value to represent the nearest possible value
+   in a narrower mode.  The result is actually represented in the same data
+   type as the argument, but its value is usually different.
+
+   A trap may occur during the FP operations and it is the responsibility
+   of the calling function to have a handler established.  */
 
 REAL_VALUE_TYPE
 real_value_truncate (mode, arg)
      enum machine_mode mode;
      REAL_VALUE_TYPE arg;
 {
-#ifdef __STDC__
-  /* Make sure the value is actually stored in memory before we turn off
-     the handler.  */
-  volatile
-#endif
-    REAL_VALUE_TYPE value;
-  jmp_buf handler, old_handler;
-  int handled;
-
-  if (setjmp (handler))
-    {
-      error ("floating overflow");
-      return dconst0;
-    }
-  handled = push_float_handler (handler, old_handler);
-  value = REAL_VALUE_TRUNCATE (mode, arg);
-  pop_float_handler (handled, old_handler);
-  return value;
+  return REAL_VALUE_TRUNCATE (mode, arg);
 }
 
 #if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
@@ -1333,18 +1330,19 @@ const_binop (code, arg1, arg2, notrunc)
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
   if (TREE_CODE (arg1) == REAL_CST)
     {
-      REAL_VALUE_TYPE d1;
-      REAL_VALUE_TYPE d2;
+      REAL_VALUE_TYPE d1 = TREE_REAL_CST (arg1);
+      REAL_VALUE_TYPE d2 = TREE_REAL_CST (arg2);
+      int overflow = 0;
       REAL_VALUE_TYPE value;
       tree t;
 
-      d1 = TREE_REAL_CST (arg1);
-      d2 = TREE_REAL_CST (arg2);
       if (setjmp (float_error))
 	{
-	  pedwarn ("floating overflow in constant expression");
-	  return build (code, TREE_TYPE (arg1), arg1, arg2);
+	  t = copy_node (arg1);
+	  overflow = 1;
+	  goto got_float;
 	}
+
       set_float_handler (float_error);
 
 #ifdef REAL_ARITHMETIC
@@ -1387,7 +1385,16 @@ const_binop (code, arg1, arg2, notrunc)
 #endif /* no REAL_ARITHMETIC */
       t = build_real (TREE_TYPE (arg1),
 		      real_value_truncate (TYPE_MODE (TREE_TYPE (arg1)), value));
+    got_float:
       set_float_handler (NULL_PTR);
+
+      TREE_OVERFLOW (t)
+	= (force_fit_type (t, overflow)
+	   | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
+      TREE_CONSTANT_OVERFLOW (t)
+	= TREE_OVERFLOW (t)
+	  | TREE_CONSTANT_OVERFLOW (arg1)
+	  | TREE_CONSTANT_OVERFLOW (arg2);
       return t;
     }
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
@@ -1540,6 +1547,7 @@ fold_convert (t, arg1)
      register tree arg1;
 {
   register tree type = TREE_TYPE (t);
+  int overflow = 0;
 
   if (TREE_CODE (type) == POINTER_TYPE || INTEGRAL_TYPE_P (type))
     {
@@ -1583,10 +1591,8 @@ fold_convert (t, arg1)
 	  u++;
 #endif
 	  if (! (REAL_VALUES_LESS (l, x) && REAL_VALUES_LESS (x, u)))
-	    {
-	      pedwarn ("real constant out of range for integer conversion");
-	      return t;
-	    }
+	    overflow = 1;
+
 #ifndef REAL_ARITHMETIC
 	  {
 	    REAL_VALUE_TYPE d;
@@ -1619,7 +1625,10 @@ fold_convert (t, arg1)
 	  }
 #endif
 	  TREE_TYPE (t) = type;
-	  force_fit_type (t, 0);
+	  TREE_OVERFLOW (t)
+	    = TREE_OVERFLOW (arg1) | force_fit_type (t, overflow);
+	  TREE_CONSTANT_OVERFLOW (t)
+	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	}
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
       TREE_TYPE (t) = type;
@@ -1634,14 +1643,21 @@ fold_convert (t, arg1)
 	{
 	  if (setjmp (float_error))
 	    {
-	      pedwarn ("floating overflow in constant expression");
-	      return t;
+	      overflow = 1;
+	      t = copy_node (arg1);
+	      goto got_it;
 	    }
 	  set_float_handler (float_error);
 
 	  t = build_real (type, real_value_truncate (TYPE_MODE (type),
 						     TREE_REAL_CST (arg1)));
 	  set_float_handler (NULL_PTR);
+
+	got_it:
+	  TREE_OVERFLOW (t)
+	    = TREE_OVERFLOW (arg1) | force_fit_type (t, overflow);
+	  TREE_CONSTANT_OVERFLOW (t)
+	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	  return t;
 	}
     }
