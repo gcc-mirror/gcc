@@ -3549,9 +3549,14 @@ expand_to_temp_buffer (buf, limit, output_marks, assertions)
 
   obuf.length = length * 2 + 100; /* Usually enough.  Why be stingy?  */
   obuf.bufp = obuf.buf = (U_CHAR *) xmalloc (obuf.length);
+  obuf.nominal_fname = 0;
+  obuf.inc = 0;
+  obuf.dir = 0;
   obuf.fname = 0;
   obuf.macro = 0;
+  obuf.if_stack = 0;
   obuf.free_ptr = 0;
+  obuf.system_header_p = 0;
 
   CHECK_DEPTH ({return obuf;});
 
