@@ -20,12 +20,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-# Tell GNU make 3.79 not to run the top level in parallel.  This 
-# prevents contention for $builddir/$target/config.cache, as well
-# as minimizing scatter in file system caches.
-NOTPARALLEL = .NOTPARALLEL
-$(NOTPARALLEL):
-
 VPATH=@srcdir@
 links=@configlinks@
 
@@ -279,7 +273,7 @@ USUAL_AS_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(AS); \
     else \
-       t='$(program_transform_name)'; echo as | sed -e $$t ; \
+       echo as | sed '$(program_transform_name)' ; \
     fi; \
   fi`
 
@@ -293,7 +287,7 @@ USUAL_LD_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(LD); \
     else \
-       t='$(program_transform_name)'; echo ld | sed -e $$t ; \
+       echo ld | sed '$(program_transform_name)' ; \
     fi; \
   fi`
 
@@ -305,7 +299,7 @@ USUAL_DLLTOOL_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(DLLTOOL); \
     else \
-       t='$(program_transform_name)'; echo dlltool | sed -e $$t ; \
+       echo dlltool | sed '$(program_transform_name)' ; \
     fi; \
   fi`
 
@@ -317,7 +311,7 @@ USUAL_WINDRES_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(WINDRES); \
     else \
-       t='$(program_transform_name)'; echo windres | sed -e $$t ; \
+       echo windres | sed '$(program_transform_name)' ; \
     fi; \
   fi`
 
@@ -329,7 +323,7 @@ USUAL_AR_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(AR); \
     else \
-       t='$(program_transform_name)'; echo ar | sed -e $$t ; \
+       echo ar | sed '$(program_transform_name)' ; \
     fi; \
   fi`
 
@@ -345,7 +339,7 @@ USUAL_RANLIB_FOR_TARGET = ` \
          echo ranlib; \
       fi; \
     else \
-       t='$(program_transform_name)'; echo ranlib | sed -e $$t ; \
+       echo ranlib | sed '$(program_transform_name)' ; \
     fi; \
   fi`
 
@@ -359,7 +353,7 @@ USUAL_NM_FOR_TARGET = ` \
     if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
       echo $(NM); \
     else \
-       t='$(program_transform_name)'; echo nm | sed -e $$t ; \
+       echo nm | sed '$(program_transform_name)' ; \
     fi; \
   fi`
 
@@ -7695,19 +7689,30 @@ multilib.ts: maybe-all-gcc
 	echo timestamp > multilib.ts
 
 # Rebuilding Makefile.in, using autogen.
+AUTOGEN = autogen
 $(srcdir)/Makefile.in: # $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
-	cd $(srcdir) && autogen Makefile.def
+	cd $(srcdir) && $(AUTOGEN) Makefile.def
 
 # Rebuilding Makefile.
-Makefile: Makefile.in configure $(gcc_version_trigger)
+Makefile: $(srcdir)/Makefile.in config.status
+	CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+config.status: configure $(gcc_version_trigger)
 	$(SHELL) ./config.status --recheck
 
 # Rebuilding configure.
-configure: configure.in
-	cd $(srcdir) && autoconf
+AUTOCONF = autoconf
+$(srcdir)/configure: $(srcdir)/configure.in $(srcdir)/config/acx.m4
+	cd $(srcdir) && $(AUTOCONF)
 #
 
 .NOEXPORT:
 MAKEOVERRIDES=
+
+# Tell GNU make 3.79 not to run the top level in parallel.  This 
+# prevents contention for $builddir/$target/config.cache, as well
+# as minimizing scatter in file system caches.
+NOTPARALLEL = .NOTPARALLEL
+$(NOTPARALLEL):
 
 # end of Makefile.in
