@@ -1,3 +1,13 @@
+2002-12-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8720
+	* spew.c (remove_last_token): Make sure that last_chunk is set
+	correctly.
+
+	PR c++/8615
+	* error.c (dump_expr): Handle character constants with
+	TREE_OVERFLOW set.
+	
 2002-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	DR 180

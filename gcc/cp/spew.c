@@ -1042,11 +1042,13 @@ remove_last_token (t)
   t->last_pos--;
   if (t->last_pos == 0 && t->last_chunk != t->tokens)
     {
-      struct token_chunk **tc;
-      for (tc = &t->tokens; (*tc)->next != NULL; tc = &(*tc)->next)
-	;
-      *tc = NULL;
-      t->last_pos = ARRAY_SIZE ((*tc)->toks);
+      struct token_chunk *c;
+      c = t->tokens;
+      while (c->next != t->last_chunk)
+	c = c->next;
+      c->next = NULL;
+      t->last_chunk = c;
+      t->last_pos = ARRAY_SIZE (c->toks);
     }
   return result;
 }
