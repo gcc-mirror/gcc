@@ -1,3 +1,10 @@
+Thu Mar 12 08:39:13 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* decl2.c (lang_decode_option): Change j's type to size_t.
+
+	* tree.c (layout_vbasetypes): record_align and desired_align are of
+	type unsigned int; const_size and nonvirtual_const_size likewise.
+
 Wed Mar 11 07:31:08 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (tsubst): Clear TYPE_REFERENCE_TO when creating a

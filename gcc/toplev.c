@@ -3819,7 +3819,7 @@ main (argc, argv, envp)
 
   for (i = 1; i < argc; i++)
     {
-      int j;
+      size_t j;
       /* If this is a language-specific option,
 	 decode it in a language-specific way.  */
       for (j = 0; lang_options[j] != 0; j++)
@@ -4411,7 +4411,7 @@ void
 set_target_switch (name)
      char *name;
 {
-  register int j;
+  register size_t j;
   int valid = 0;
 
   for (j = 0; j < sizeof target_switches / sizeof target_switches[0]; j++)
@@ -4504,7 +4504,7 @@ print_switch_values (file, pos, max, indent, sep, term)
      int pos, max;
      char *indent, *sep, *term;
 {
-  int j, flags;
+  size_t j;
   char **p;
 
   /* Print the options as passed.  */
@@ -4548,7 +4548,6 @@ print_switch_values (file, pos, max, indent, sep, term)
 
   /* Print target specific options.  */
 
-  flags = target_flags;
   for (j = 0; j < sizeof target_switches / sizeof target_switches[0]; j++)
     if (target_switches[j].name[0] != '\0'
 	&& target_switches[j].value > 0
@@ -4557,7 +4556,6 @@ print_switch_values (file, pos, max, indent, sep, term)
       {
 	pos = print_single_switch (file, pos, max, indent, sep, term,
 				   "-m", target_switches[j].name);
-	flags &= ~ target_switches[j].value;
       }
 
 #ifdef TARGET_OPTIONS

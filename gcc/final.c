@@ -3244,7 +3244,7 @@ output_asm_insn (template, operands)
 
 	    if (! (*p >= '0' && *p <= '9'))
 	      output_operand_lossage ("operand number missing after %-letter");
-	    else if (this_is_asm_operands && c >= (unsigned) insn_noperands)
+	    else if (this_is_asm_operands && c >= insn_noperands)
 	      output_operand_lossage ("operand number out of range");
 	    else if (letter == 'l')
 	      output_asm_label (operands[c]);
@@ -3277,7 +3277,7 @@ output_asm_insn (template, operands)
 	else if (*p >= '0' && *p <= '9')
 	  {
 	    c = atoi (p);
-	    if (this_is_asm_operands && c >= (unsigned) insn_noperands)
+	    if (this_is_asm_operands && c >= insn_noperands)
 	      output_operand_lossage ("operand number out of range");
 	    else
 	      output_operand (operands[c], 0);

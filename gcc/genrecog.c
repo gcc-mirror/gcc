@@ -306,7 +306,7 @@ add_to_sequence (pattern, last, position)
   struct decision *this;
   char *newpos;
   register char *fmt;
-  register int i;
+  register size_t i;
   int depth = strlen (position);
   int len;
 
