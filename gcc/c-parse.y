@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 /* To whomever it may concern: I have heard that such a thing was once
    written by AT&T, but I have never seen it.  */
 
-%expect 46
+%expect 51
 
 /* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
@@ -1518,6 +1518,8 @@ absdcl1:  /* a nonempty absolute declarator */
 		{ $$ = build_nt (ARRAY_REF, NULL_TREE, NULL_TREE); }
 	/* ??? It appears we have to support attributes here, however
 	   using prefix_attributes is wrong.  */
+	| attributes setattrs absdcl1
+		{ $$ = $3; }
 	;
 
 /* at least one statement, the first of which parses without error.  */

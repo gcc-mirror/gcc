@@ -31,7 +31,7 @@ ifobjc
 %expect 66
 end ifobjc
 ifc
-%expect 46
+%expect 51
 
 /* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
@@ -1709,6 +1709,8 @@ absdcl1:  /* a nonempty absolute declarator */
 		{ $$ = build_nt (ARRAY_REF, NULL_TREE, NULL_TREE); }
 	/* ??? It appears we have to support attributes here, however
 	   using prefix_attributes is wrong.  */
+	| attributes setattrs absdcl1
+		{ $$ = $3; }
 	;
 
 /* at least one statement, the first of which parses without error.  */

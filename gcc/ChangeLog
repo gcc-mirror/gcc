@@ -1,3 +1,13 @@
+Mon Apr 26 23:28:54 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+                          Donn Terry  <donn@interix.com>
+
+        * c-parse.in (absdcl1): Allow attributes in explicit typespecs.
+        (%expect): Update.
+        * c-parse.y: Regenerate.
+        * c-parse.c: Likewise.
+        * objc/objc-parse.c: Likewise.
+        * objc/objc-parse.y: Likewise.
+
 Mon Apr 26 21:17:41 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* c-pragma.c (push_alignment): Don't ignore alignments greater than
