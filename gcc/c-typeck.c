@@ -441,7 +441,8 @@ comptypes (type1, type2)
 
   /* Suppress errors caused by previously reported errors.  */
 
-  if (t1 == t2 || TREE_CODE (t1) == ERROR_MARK || TREE_CODE (t2) == ERROR_MARK)
+  if (t1 == t2 || !t1 || !t2
+      || TREE_CODE (t1) == ERROR_MARK || TREE_CODE (t2) == ERROR_MARK)
     return 1;
 
   /* Treat an enum type as the integer type of the same width and 

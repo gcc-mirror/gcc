@@ -1,5 +1,7 @@
 Tue Jan 13 22:39:40 1998  Richard Henderson  (rth@cygnus.com)
 
+	* c-typeck.c (comptypes): Exit early on NULL input.
+
 	* haifa-sched.c (schedule_insns): Correctly remove inter-block
 	dependencies after reload.
 
