@@ -30,9 +30,6 @@ extern int m68hc11_initial_elimination_offset PARAMS((int, int));
 
 extern void expand_prologue PARAMS((void));
 extern void expand_epilogue PARAMS((void));
-extern int m68hc11_function_block_profiler PARAMS((FILE*,int));
-
-extern int m68hc11_block_profiler PARAMS((FILE*,int));
 
 extern void m68hc11_asm_file_start PARAMS((FILE*, const char*));
 

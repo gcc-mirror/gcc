@@ -438,26 +438,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
    fprintf (FILE, "\tmovab LP%d,r0\n\tjsb mcount\n", (LABELNO));
 
-/* Output assembler code to FILE to initialize this source file's
-   basic block profiling info, if that has not already been done.  */
-
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\ttstl LPBX0\n\tjneq LPI%d\n\tpushal LPBX0\n\tcalls $1,__bb_init_func\nLPI%d:\n",  \
-	   LABELNO, LABELNO);
-
-/* Output assembler code to FILE to increment the entry-count for
-   the BLOCKNO'th basic block in this source file.  This is a real pain in the
-   sphincter on a VAX, since we do not want to change any of the bits in the
-   processor status word.  The way it is done here, it is pushed onto the stack
-   before any flags have changed, and then the stack is fixed up to account for
-   the fact that the instruction to restore the flags only reads a word.
-   It may seem a bit clumsy, but at least it works.
-*/
-
-#define BLOCK_PROFILER(FILE, BLOCKNO)	\
-  fprintf (FILE, "\tmovpsl -(sp)\n\tmovw (sp),2(sp)\n\taddl2 $2,sp\n\taddl2 $1,LPBX2+%d\n\tbicpsw $255\n\tbispsw (sp)+\n", \
-		4 * BLOCKNO)
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.

@@ -1131,25 +1131,6 @@ m68hc11_unary_operator (op, mode)
     || GET_CODE (op) == SIGN_EXTEND || GET_CODE (op) == ZERO_EXTEND;
 }
 
-
-/* Profiling.  */
-
-int
-m68hc11_block_profiler (out, blockno)
-     FILE *out ATTRIBUTE_UNUSED;
-     int blockno ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
-int
-m68hc11_function_block_profiler (out, block_or_label)
-     FILE *out ATTRIBUTE_UNUSED;
-     int block_or_label ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
 /* Emit the code to build the trampoline used to call a nested function.
    
    68HC11               68HC12

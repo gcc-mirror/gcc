@@ -3587,12 +3587,6 @@ display_help ()
   printf (_("  -Wunused                Enable unused warnings\n"));
   printf (_("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n"));
   printf (_("  -p                      Enable function profiling\n"));
-#if defined (BLOCK_PROFILER) || defined (FUNCTION_BLOCK_PROFILER)
-  printf (_("  -a                      Enable block profiling \n"));
-#endif
-#if defined (BLOCK_PROFILER) || defined (FUNCTION_BLOCK_PROFILER) || defined FUNCTION_BLOCK_PROFILER_EXIT
-  printf (_("  -ax                     Enable jump profiling \n"));
-#endif
   printf (_("  -o <file>               Place output into <file> \n"));
   printf (_("\
   -G <number>             Put global and static data smaller than <number>\n\

@@ -1440,25 +1440,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 	( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
 	  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
-/* Output assembler code to FILE to initialize this source file's
-   basic block profiling info, if that has not already been done.  */
-
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO) \
-{ fprintf (FILE, "\tld	LPBX0,g12\n");			\
-  fprintf (FILE, "\tcmpobne	0,g12,LPY%d\n",LABELNO);\
-  fprintf (FILE, "\tlda	LPBX0,g12\n");			\
-  fprintf (FILE, "\tcall	___bb_init_func\n");	\
-  fprintf (FILE, "LPY%d:\n",LABELNO); }
-
-/* Output assembler code to FILE to increment the entry-count for
-   the BLOCKNO'th basic block in this source file.  */
-
-#define BLOCK_PROFILER(FILE, BLOCKNO) \
-{ int blockn = (BLOCKNO);				\
-  fprintf (FILE, "\tld	LPBX2+%d,g12\n", 4 * blockn);	\
-  fprintf (FILE, "\taddo	g12,1,g12\n");		\
-  fprintf (FILE, "\tst	g12,LPBX2+%d\n", 4 * blockn); }
-
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    For `%' followed by punctuation, CODE is the punctuation and X is null.  */
