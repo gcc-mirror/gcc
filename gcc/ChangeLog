@@ -1,5 +1,9 @@
 2004-02-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa.h (TRAMPOLINE_TEMPLATE, TRAMPOLINE_SIZE, TRAMPOLINE_CODE_SIZE,
+	MIN_CACHELINE_SIZE, INITIALIZE_TRAMPOLINE): Backport fixes from 3.5.
+	* pa.md (anddi3, dcacheflush, icacheflush): Likewise.
+
 	* pa64-hpux.h (LIB_SPEC): Fix linking under HP-UX 11.00 with -p and -pg.
 
 2004-02-27  Ian Lance Taylor  <ian@wasabisystems.com>

@@ -4390,10 +4390,20 @@
   ""
   "
 {
-  if (! register_operand (operands[1], DImode)
-      || ! register_operand (operands[2], DImode))
-    /* Let GCC break this into word-at-a-time operations.  */
-    FAIL;
+  if (TARGET_64BIT)
+    {
+      /* One operand must be a register operand.  */
+      if (!register_operand (operands[1], DImode)
+	  && !register_operand (operands[2], DImode))
+	FAIL;
+    }
+  else
+    {
+      /* Both operands must be register operands.  */
+      if (!register_operand (operands[1], DImode)
+	  || !register_operand (operands[2], DImode))
+	FAIL;
+    }
 }")
 
 (define_insn ""
@@ -7769,29 +7779,58 @@
   return \"\";
 }")
 
-;; Flush the I and D cache line found at the address in operand 0.
+;; Flush the I and D cache lines from the start address (operand0)
+;; to the end address (operand1).  No lines are flushed if the end
+;; address is less than the start address (unsigned).
+;;
+;; Because the range of memory flushed is variable and the size of
+;; a MEM can only be a CONST_INT, the patterns specify that they
+;; perform an unspecified volatile operation on all memory.
+;;
+;; The address range for an icache flush must lie within a single
+;; space on targets with non-equivalent space registers.
+;;
 ;; This is used by the trampoline code for nested functions.
-;; So long as the trampoline itself is less than 32 bytes this
-;; is sufficient.
-
+;;
+;; Operand 0 contains the start address.
+;; Operand 1 contains the end address.
+;; Operand 2 contains the line length to use.
+;; Operands 3 and 4 (icacheflush) are clobbered scratch registers.
 (define_insn "dcacheflush"
-  [(unspec_volatile [(const_int 1)] 0)
-   (use (mem:SI (match_operand 0 "pmode_register_operand" "r")))
-   (use (mem:SI (match_operand 1 "pmode_register_operand" "r")))]
+  [(const_int 1)
+   (unspec_volatile [(mem:BLK (scratch))] 0)
+   (use (match_operand 0 "pmode_register_operand" "r"))
+   (use (match_operand 1 "pmode_register_operand" "r"))
+   (use (match_operand 2 "pmode_register_operand" "r"))
+   (clobber (match_scratch 3 "=&0"))]
   ""
-  "fdc 0(%0)\;fdc 0(%1)\;sync"
+  "*
+{
+  if (TARGET_64BIT)
+    return \"cmpb,*<<=,n %3,%1,.\;fdc,m %2(%3)\;sync\";
+  else
+    return \"cmpb,<<=,n %3,%1,.\;fdc,m %2(%3)\;sync\";
+}"
   [(set_attr "type" "multi")
    (set_attr "length" "12")])
 
 (define_insn "icacheflush"
-  [(unspec_volatile [(const_int 2)] 0)
-   (use (mem:SI (match_operand 0 "pmode_register_operand" "r")))
-   (use (mem:SI (match_operand 1 "pmode_register_operand" "r")))
+  [(const_int 2)
+   (unspec_volatile [(mem:BLK (scratch))] 0)
+   (use (match_operand 0 "pmode_register_operand" "r"))
+   (use (match_operand 1 "pmode_register_operand" "r"))
    (use (match_operand 2 "pmode_register_operand" "r"))
    (clobber (match_operand 3 "pmode_register_operand" "=&r"))
-   (clobber (match_operand 4 "pmode_register_operand" "=&r"))]
+   (clobber (match_operand 4 "pmode_register_operand" "=&r"))
+   (clobber (match_scratch 5 "=&0"))]
   ""
-  "mfsp %%sr0,%4\;ldsid (%2),%3\;mtsp %3,%%sr0\;fic 0(%%sr0,%0)\;fic 0(%%sr0,%1)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop"
+  "*
+{
+  if (TARGET_64BIT)
+    return \"mfsp %%sr0,%4\;ldsid (%5),%3\;mtsp %3,%%sr0\;cmpb,*<<=,n %5,%1,.\;fic,m %2(%%sr0,%5)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop\";
+  else
+    return \"mfsp %%sr0,%4\;ldsid (%5),%3\;mtsp %3,%%sr0\;cmpb,<<=,n %5,%1,.\;fic,m %2(%%sr0,%5)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop\";
+}"
   [(set_attr "type" "multi")
    (set_attr "length" "52")])
 
