@@ -949,11 +949,14 @@
   ""
   "
 {
-  rtx low_src = operand_subword (operands[1], 1, 0, DImode);
-  rtx high_src = operand_subword (operands[1], 0, 0, DImode);
+  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
+  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
 
-  rtx low_dst = operand_subword (operands[0], 1, 1, DImode);
-  rtx high_dst = operand_subword (operands[0], 0, 1, DImode);
+  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
+  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+
+  rtx low_dst = operand_subword (operands[0], low_word, 1, DImode);
+  rtx high_dst = operand_subword (operands[0], high_word, 1, DImode);
 
   emit_insn (gen_clrt ());
   emit_insn (gen_negc (low_dst, low_src));
