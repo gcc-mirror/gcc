@@ -70,7 +70,6 @@ Boston, MA 02111-1307, USA.  */
 /* Include these first, because they may define MIN and MAX.  */
 #include <stdio.h>
 #include <errno.h>
-#include <string.h>
 
 #include "config.h"
 #include "tree.h"
@@ -932,7 +931,7 @@ dbxout_type_methods (type)
 #else
 	      marker = '.';
 #endif
-	      if (strchr (debug_name, marker) != NULL)
+	      if (strchr (debug_name, marker))
 		show_arg_types = 1;
 	      /* Detect ordinary methods because their mangled names
 		 start with the operation name.  */
