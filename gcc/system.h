@@ -247,6 +247,20 @@ extern int sys_nerr;
 extern char *sys_errlist[];
 #endif /* HAVE_STRERROR */
 
+#ifdef HAVE_STRSIGNAL
+# ifdef NEED_DECLARATION_STRSIGNAL
+#  ifndef strsignal
+extern char * strsignal ();
+#  endif
+# endif
+#else /* ! HAVE_STRSIGNAL */
+# ifndef SYS_SIGLIST_DECLARED
+#  ifndef NO_SYS_SIGLIST
+extern char * sys_siglist[];
+#  endif
+# endif
+#endif /* HAVE_STRSIGNAL */
+
 #ifdef HAVE_GETRLIMIT
 # ifdef NEED_DECLARATION_GETRLIMIT
 #  ifndef getrlimit

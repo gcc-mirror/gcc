@@ -186,11 +186,6 @@ enum pass {
   PASS_SECOND				/* with constructors linked in */
 };
 
-#ifndef NO_SYS_SIGLIST
-#ifndef SYS_SIGLIST_DECLARED
-extern char *sys_siglist[];
-#endif
-#endif
 extern char *version_string;
 
 int vflag;				/* true if -v */
@@ -269,6 +264,7 @@ static char *libexts[3] = {"a", "so", NULL};  /* possible library extentions */
 #endif
 
 static char *my_strerror	PROTO((int));
+static const char *my_strsignal	PROTO((int));
 static void handler		PROTO((int));
 static int is_ctor_dtor		PROTO((char *));
 static char *find_a_file	PROTO((struct path_prefix *, char *));
@@ -349,6 +345,29 @@ my_strerror (e)
   sprintf (buffer, "Unknown error %d", e);
   return buffer;
 #endif
+}
+
+static const char *
+my_strsignal (s)
+     int s;
+{
+#ifdef HAVE_STRSIGNAL
+  return strsignal (s);
+#else
+  if (s >= 0 && s < NSIG)
+    {
+# ifdef NO_SYS_SIGLIST
+      static char buffer[30];
+
+      sprintf (buffer, "Unknown signal %d", s);
+      return buffer;
+# else
+      return sys_siglist[s];
+# endif
+    }
+  else
+    return NULL;
+#endif /* HAVE_STRSIGNAL */
 }
 
 /* Delete tempfiles and exit function.  */
@@ -1578,18 +1597,11 @@ collect_wait (prog)
       if (WIFSIGNALED (status))
 	{
 	  int sig = WTERMSIG (status);
-#ifdef NO_SYS_SIGLIST
-	  error ("%s terminated with signal %d %s",
-		 prog,
-		 sig,
-		 (status & 0200) ? ", core dumped" : "");
-#else
 	  error ("%s terminated with signal %d [%s]%s",
 		 prog,
 		 sig,
-		 sys_siglist[sig],
+		 my_strsignal(sig),
 		 (status & 0200) ? ", core dumped" : "");
-#endif
 
 	  collect_exit (FATAL_EXIT_CODE);
 	}

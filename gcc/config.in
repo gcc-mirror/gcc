@@ -70,6 +70,9 @@
 /* Whether strerror must be declared even if <string.h> is included.  */
 #undef NEED_DECLARATION_STRERROR
 
+/* Whether strsignal must be declared even if <string.h> is included.  */
+#undef NEED_DECLARATION_STRSIGNAL
+
 /* Whether getcwd must be declared even if <unistd.h> is included.  */
 #undef NEED_DECLARATION_GETCWD
 
@@ -153,6 +156,9 @@
 
 /* Define if you have the strrchr function.  */
 #undef HAVE_STRRCHR
+
+/* Define if you have the strsignal function.  */
+#undef HAVE_STRSIGNAL
 
 /* Define if you have the strtoul function.  */
 #undef HAVE_STRTOUL
