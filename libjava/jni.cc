@@ -39,6 +39,7 @@ details.  */
 #include <java/lang/OutOfMemoryError.h>
 #include <java/util/Hashtable.h>
 #include <java/lang/Integer.h>
+#include <java/lang/ThreadGroup.h>
 #include <gnu/gcj/jni/NativeThread.h>
 
 #include <gcj/method.h>
