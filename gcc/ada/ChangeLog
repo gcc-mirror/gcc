@@ -1,3 +1,18 @@
+2004-03-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (gnat_to_gnu_entity): Use SUBSTITUTE_PLACEHOLDER_IN_EXPR.
+	* trans.c (tree_transform, emit_index_check): Likewise.
+	* utils.c (build_template): Likewise.
+	(max_size, convert): Remove handling of WITH_RECORD_EXPR.
+	(maybe_unconstrained_array, unchecked_convert): Likewise.
+	* utils2.c (gnat_truthvalue_conversion, build_binary_op): Likewise.
+	(build_unary_op): Likewise.
+	(compare_arrays, build_allocator): Use SUBSTITUTE_PLACEHOLDER_IN_EXPR.
+	(fill_vms_descriptor): Likewise.
+	(build_call_alloc_dealloc): Likewise.
+	ALIGN is unsigned.
+	* gigi.h (build_call_alloc_dealloc): Alignment is unsigned.
+
 2004-03-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR other/14630

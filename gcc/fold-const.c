@@ -2718,11 +2718,6 @@ invert_truthvalue (tree arg)
       return build (COMPOUND_EXPR, type, TREE_OPERAND (arg, 0),
 		    invert_truthvalue (TREE_OPERAND (arg, 1)));
 
-    case WITH_RECORD_EXPR:
-      return build (WITH_RECORD_EXPR, type,
-		    invert_truthvalue (TREE_OPERAND (arg, 0)),
-		    TREE_OPERAND (arg, 1));
-
     case NON_LVALUE_EXPR:
       return invert_truthvalue (TREE_OPERAND (arg, 0));
 
@@ -4558,12 +4553,6 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
 	  return fold (build (tcode, ctype, fold_convert (ctype, t1),
 			      fold_convert (ctype, t2)));
 	}
-      break;
-
-    case WITH_RECORD_EXPR:
-      if ((t1 = extract_muldiv (TREE_OPERAND (t, 0), c, code, wide_type)) != 0)
-	return build (WITH_RECORD_EXPR, TREE_TYPE (t1), t1,
-		      TREE_OPERAND (t, 1));
       break;
 
     case LSHIFT_EXPR:  case RSHIFT_EXPR:

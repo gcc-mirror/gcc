@@ -1211,7 +1211,7 @@ expr_align (tree t)
 
     case SAVE_EXPR:         case COMPOUND_EXPR:       case MODIFY_EXPR:
     case INIT_EXPR:         case TARGET_EXPR:         case WITH_CLEANUP_EXPR:
-    case WITH_RECORD_EXPR:  case CLEANUP_POINT_EXPR:  case UNSAVE_EXPR:
+    case CLEANUP_POINT_EXPR:  case UNSAVE_EXPR:
       /* These don't change the alignment of an object.  */
       return expr_align (TREE_OPERAND (t, 0));
 
@@ -1699,12 +1699,8 @@ contains_placeholder_p (tree exp)
   if (!exp)
     return 0;
 
-  /* If we have a WITH_RECORD_EXPR, it "cancels" any PLACEHOLDER_EXPR
-     in it since it is supplying a value for it.  */
   code = TREE_CODE (exp);
-  if (code == WITH_RECORD_EXPR)
-    return 0;
-  else if (code == PLACEHOLDER_EXPR)
+  if (code == PLACEHOLDER_EXPR)
     return 1;
 
   switch (TREE_CODE_CLASS (code))
@@ -1731,10 +1727,6 @@ contains_placeholder_p (tree exp)
 	  /* Ignoring the first operand isn't quite right, but works best.  */
 	  return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1));
 
-	case RTL_EXPR:
-	case CONSTRUCTOR:
-	  return 0;
-
 	case COND_EXPR:
 	  return (CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0))
 		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1))
@@ -1753,14 +1745,11 @@ contains_placeholder_p (tree exp)
 
 	  return result;
 
-	case CALL_EXPR:
-	  return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1));
-
 	default:
 	  break;
 	}
 
-      switch (TREE_CODE_LENGTH (code))
+      switch (first_rtl_op (code))
 	{
 	case 1:
 	  return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0));
@@ -1954,9 +1943,8 @@ substitute_in_expr (tree exp, tree f, tree r)
   /* We handle TREE_LIST and COMPONENT_REF separately.  */
   if (code == TREE_LIST)
     {
-      op0 = (TREE_CHAIN (exp) == 0
-	     ? 0 : substitute_in_expr (TREE_CHAIN (exp), f, r));
-      op1 = substitute_in_expr (TREE_VALUE (exp), f, r);
+      op0 = SUBSTITUTE_IN_EXPR (TREE_CHAIN (exp), f, r);
+      op1 = SUBSTITUTE_IN_EXPR (TREE_VALUE (exp), f, r);
       if (op0 == TREE_CHAIN (exp) && op1 == TREE_VALUE (exp))
 	return exp;
 
@@ -1979,7 +1967,7 @@ substitute_in_expr (tree exp, tree f, tree r)
      if (TREE_CODE (inner) == PLACEHOLDER_EXPR && TREE_TYPE (inner) == 0)
        return exp;
 
-     op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+     op0 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 0), f, r);
      if (op0 == TREE_OPERAND (exp, 0))
        return exp;
 
@@ -2004,7 +1992,7 @@ substitute_in_expr (tree exp, tree f, tree r)
 	    return exp;
 
 	  case 1:
-	    op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	    op0 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 0), f, r);
 	    if (op0 == TREE_OPERAND (exp, 0))
 	      return exp;
 
@@ -2012,8 +2000,8 @@ substitute_in_expr (tree exp, tree f, tree r)
 	    break;
 
 	  case 2:
-	    op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	    op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	    op0 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 0), f, r);
+	    op1 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 1), f, r);
 
 	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
 	      return exp;
@@ -2022,9 +2010,9 @@ substitute_in_expr (tree exp, tree f, tree r)
 	    break;
 
 	  case 3:
-	    op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	    op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
-	    op2 = substitute_in_expr (TREE_OPERAND (exp, 2), f, r);
+	    op0 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 0), f, r);
+	    op1 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 1), f, r);
+	    op2 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 2), f, r);
 
 	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
 		&& op2 == TREE_OPERAND (exp, 2))
@@ -2044,6 +2032,121 @@ substitute_in_expr (tree exp, tree f, tree r)
 
   TREE_READONLY (new) = TREE_READONLY (exp);
   return new;
+}
+
+/* Similar, but look for a PLACEHOLDER_EXPR in EXP and find a replacement
+   for it within OBJ, a tree that is an object or a chain of references.  */
+
+tree
+substitute_placeholder_in_expr (tree exp, tree obj)
+{
+  enum tree_code code = TREE_CODE (exp);
+  tree op0, op1, op2;
+
+  /* If this is a PLACEHOLDER_EXPR, see if we find a corresponding type
+     in the chain of OBJ.  */
+  if (code == PLACEHOLDER_EXPR)
+    {
+      tree need_type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
+      tree elt;
+
+      for (elt = obj; elt != 0;
+	   elt = ((TREE_CODE (elt) == COMPOUND_EXPR
+		   || TREE_CODE (elt) == COND_EXPR)
+		  ? TREE_OPERAND (elt, 1)
+		  : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
+		  ? TREE_OPERAND (elt, 0) : 0))
+	if (TYPE_MAIN_VARIANT (TREE_TYPE (elt)) == need_type)
+	  return elt;
+
+      for (elt = obj; elt != 0;
+	   elt = ((TREE_CODE (elt) == COMPOUND_EXPR
+		   || TREE_CODE (elt) == COND_EXPR)
+		  ? TREE_OPERAND (elt, 1)
+		  : (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e')
+		  ? TREE_OPERAND (elt, 0) : 0))
+	if (POINTER_TYPE_P (TREE_TYPE (elt))
+	    && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (elt)))
+		== need_type))
+	  return fold (build1 (INDIRECT_REF, need_type, elt));
+
+      /* If we didn't find it, return the original PLACEHOLDER_EXPR.  If it
+	 survives until RTL generation, there will be an error.  */
+      return exp;
+    }
+
+  /* TREE_LIST is special because we need to look at TREE_VALUE
+     and TREE_CHAIN, not TREE_OPERANDS.  */
+  else if (code == TREE_LIST)
+    {
+      op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_CHAIN (exp), obj);
+      op1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_VALUE (exp), obj);
+      if (op0 == TREE_CHAIN (exp) && op1 == TREE_VALUE (exp))
+	return exp;
+
+      return tree_cons (TREE_PURPOSE (exp), op1, op0);
+    }
+  else
+    switch (TREE_CODE_CLASS (code))
+      {
+      case 'c':
+      case 'd':
+      case 'b':
+	return exp;
+
+      case 'x':
+      case '1':
+      case '2':
+      case '<':
+      case 'e':
+      case 'r':
+      case 's':
+	switch (first_rtl_op (code))
+	  {
+	  case 0:
+	    return exp;
+
+	  case 1:
+	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
+	    if (op0 == TREE_OPERAND (exp, 0))
+	      return exp;
+	    else
+	      return fold (build1 (code, TREE_TYPE (exp), op0));
+
+	  case 2:
+	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
+	    op1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 1), obj);
+
+	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
+	      return exp;
+	    else
+	      return fold (build2 (code, TREE_TYPE (exp), op0, op1));
+
+	  case 3:
+	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
+	    op1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 1), obj);
+	    op2 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 2), obj);
+
+	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
+		&& op2 == TREE_OPERAND (exp, 2))
+	      return exp;
+	    else
+	      return fold (build3 (code, TREE_TYPE (exp), op0, op1, op2));
+
+	  default:
+	    abort ();
+	  }
+	break;
+
+      default:
+	abort ();
+      }
 }
 
 /* Stabilize a reference so that we can use it any number of times

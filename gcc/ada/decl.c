@@ -565,12 +565,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
 	  {
 	    if (gnu_expr != 0 && kind == E_Constant)
-	      {
-		gnu_size = TYPE_SIZE (TREE_TYPE (gnu_expr));
-		if (CONTAINS_PLACEHOLDER_P (gnu_size))
-		  gnu_size = build (WITH_RECORD_EXPR, bitsizetype,
-				    gnu_size, gnu_expr);
-	      }
+	      gnu_size
+		= SUBSTITUTE_PLACEHOLDER_IN_EXPR
+		  (TYPE_SIZE (TREE_TYPE (gnu_expr)), gnu_expr);
 
 	    /* We may have no GNU_EXPR because No_Initialization is
 	       set even though there's an Expression.  */

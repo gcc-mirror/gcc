@@ -1,3 +1,30 @@
+2004-03-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (get_alias_set): Remove handling of PLACEHOLDER_EXPR.
+	* emit-rtl.c (component_ref_for_mem_expr): Likewise.
+	(set_mem_attributes_minus_bitpos): Call SUBSTITUTE_PLACEHOLDER_IN_EXPR.
+	* explow.c (expr_size): Likewise.
+	* expr.h (placeholder_list, find_placeholder): Deleted.
+	* expr.c (store_constructor): Likewise.
+	(get_inner_reference): Likewise.  Also don't call find_placeholder.
+	(placeholder_list, find_placeholder): Deleted.
+	(is_aligning_offset): Don't handle WITH_RECORD_EXPR, PLACEHOLDER_EXPR.
+	(expand_expr_real, cases PLACEHOLDER_EXPR, WITH_RECORD_EXPR): Likewise.
+	(highest_pow2_factor, case WITH_RECORD_EXPR): Remove.
+	* dojump.c (do_jump, case WITH_RECORD_EXPR): Likewise.
+	* dwarf2out.c (loc_descriptor_from_tree, case WITH_RECORD_EXPR):
+	Likewise.
+	* fold-const.c (invert_truthvalue, case WITH_RECORD_EXPR): Likewise.
+	(extract_muldiv, case WITH_RECORD_EXPR): Likewise.
+	* tree.c (expr_align, case WITH_RECORD_EXPR): Likewise.
+	(contains_placeholder_p): Don't handle WITH_RECORD_EXPR.
+	Clean up by using first_rtl_op.
+	(substitute_in_expr): Use SUBSTITUTE_IN_EXPR for recursive call.
+	(substitute_placeholder_in_expr): New function.
+	* tree.def (WITH_RECORD_EXPR): Deleted.
+	* tree.h (SUBSTITUTE_IN_EXPR, SUBSTITUTE_PLACEHOLDER_IN_EXPR): New.
+	(substitute_placeholder_in_expr): New.
+
 2004-03-21  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	* dojump.c (prefer_and_bit_test): Fix which part of

@@ -217,15 +217,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
       break;
 
-    case WITH_RECORD_EXPR:
-      /* Put the object on the placeholder list, recurse through our first
-         operand, and pop the list.  */
-      placeholder_list = tree_cons (TREE_OPERAND (exp, 1), NULL_TREE,
-                                    placeholder_list);
-      do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
-      placeholder_list = TREE_CHAIN (placeholder_list);
-      break;
-
 #if 0
       /* This is never less insns than evaluating the PLUS_EXPR followed by
          a test and can be longer if the test is eliminated.  */

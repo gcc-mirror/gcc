@@ -481,7 +481,6 @@ get_alias_set (tree t)
   if (! TYPE_P (t))
     {
       tree inner = t;
-      tree placeholder_ptr = 0;
 
       /* Remove any nops, then give the language a chance to do
 	 something with this tree before we look at it.  */
@@ -491,16 +490,10 @@ get_alias_set (tree t)
 	return set;
 
       /* First see if the actual object referenced is an INDIRECT_REF from a
-	 restrict-qualified pointer or a "void *".  Replace
-	 PLACEHOLDER_EXPRs.  */
-      while (TREE_CODE (inner) == PLACEHOLDER_EXPR
-	     || handled_component_p (inner))
+	 restrict-qualified pointer or a "void *".  */
+      while (handled_component_p (inner))
 	{
-	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
-	    inner = find_placeholder (inner, &placeholder_ptr);
-	  else
-	    inner = TREE_OPERAND (inner, 0);
-
+	  inner = TREE_OPERAND (inner, 0);
 	  STRIP_NOPS (inner);
 	}
 
@@ -546,16 +539,10 @@ get_alias_set (tree t)
 	}
 
       /* Otherwise, pick up the outermost object that we could have a pointer
-	 to, processing conversion and PLACEHOLDER_EXPR as above.  */
-      placeholder_ptr = 0;
-      while (TREE_CODE (t) == PLACEHOLDER_EXPR
-	     || (handled_component_p (t) && ! can_address_p (t)))
+	 to, processing conversions as above.  */
+      while (handled_component_p (t) && ! can_address_p (t))
 	{
-	  if (TREE_CODE (t) == PLACEHOLDER_EXPR)
-	    t = find_placeholder (t, &placeholder_ptr);
-	  else
-	    t = TREE_OPERAND (t, 0);
-
+	  t = TREE_OPERAND (t, 0);
 	  STRIP_NOPS (t);
 	}
 
