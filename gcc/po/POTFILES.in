@@ -186,11 +186,7 @@ config/i386/perform.h
 config/i386/ptx4-i.h
 config/i386/rtems.h
 config/i386/rtemself.h
-config/i386/sco.h
-config/i386/sco4.h
-config/i386/sco4dbx.h
 config/i386/sco5.h
-config/i386/scodbx.h
 config/i386/seq-gas.h
 config/i386/seq-sysv3.h
 config/i386/seq2-sysv3.h

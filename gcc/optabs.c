@@ -4909,23 +4909,6 @@ init_optabs ()
   ggc_add_rtx_root (libfunc_table, LTI_MAX);
 }
 
-#ifdef BROKEN_LDEXP
-
-/* SCO 3.2 apparently has a broken ldexp.  */
-
-double
-ldexp(x,n)
-     double x;
-     int n;
-{
-  if (n > 0)
-    while (n--)
-      x *= 2;
-
-  return x;
-}
-#endif /* BROKEN_LDEXP */
-
 #ifdef HAVE_conditional_trap
 /* The insn generating function can not take an rtx_code argument.
    TRAP_RTX is used as an rtx argument.  Its code is replaced with
