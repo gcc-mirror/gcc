@@ -1,3 +1,7 @@
+Tue May 30 16:45:25 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* floatformat.c: Add name to each floatformat field.
+
 Tue May 30 15:07:52 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (objalloc.o): Depend on config.h
