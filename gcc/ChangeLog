@@ -1,3 +1,11 @@
+2004-09-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tsystem.h (alloca): Provide a default definition.
+
+	Revert:
+	2001-08-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	    * unwind-dw2.c: Call __builtin_alloca, not alloca.
+
 2004-09-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/17558

@@ -117,4 +117,8 @@ extern int errno;
 #define NULL 0
 #endif
 
+/* GCC always provides __builtin_alloca(x).  */
+#undef alloca
+#define alloca(x) __builtin_alloca(x)
+
 #endif /* ! GCC_TSYSTEM_H */
