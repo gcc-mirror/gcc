@@ -1,5 +1,8 @@
 1999-12-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (init_decl_processing): Set flag_inline_trees if
+	!flag_no_inline.
+
 	* cp-tree.h (calls_setjmp_p): Declare.
 	* decl.c (finish_function): Mark functions that call setjmp as
 	uninlinable.

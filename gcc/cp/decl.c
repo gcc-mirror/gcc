@@ -5968,10 +5968,13 @@ init_decl_processing ()
   global_namespace = current_namespace;
   current_lang_name = NULL_TREE;
 
+  /* Adjust various flags based on command-line settings.  */
   if (flag_strict_prototype == 2)
     flag_strict_prototype = pedantic;
   if (! flag_permissive && ! pedantic)
     flag_pedantic_errors = 1;
+  if (!flag_no_inline)
+    flag_inline_trees = 1;
 
   strict_prototypes_lang_c = flag_strict_prototype;
 
