@@ -1,3 +1,7 @@
+2003-05-12  Michael Meissner  <gnu@the-meissners.org>
+
+	* MAINTAINERS: Update my email addresses.
+
 2003-05-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config-ml.in: Propagate INSTALL variables.
