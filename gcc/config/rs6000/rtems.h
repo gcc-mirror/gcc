@@ -1,6 +1,6 @@
 /* Definitions for rtems targetting a PowerPC using elf.
 
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -20,7 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "rs6000/sysv4.h"
+#include "rs6000/eabi.h"
 
 /* Specify predefined symbols in preprocessor.  */
 
