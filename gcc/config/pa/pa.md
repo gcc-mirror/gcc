@@ -2754,7 +2754,17 @@
     op = force_reg (SImode, XEXP (operands[0], 0));
   else
     op = XEXP (operands[0], 0);
-  emit_call_insn (gen_call_internal (op, operands[1]));
+
+  /* Use two different patterns for calls to explicitly named functions
+     and calls through function pointers.  This is necessary as these two
+     types of calls use different calling conventions, and CSE might try
+     to change the named call into an indirect call in some cases (using
+     two patterns keeps CSE from performing this optimization).  */
+  if (GET_CODE (op) == SYMBOL_REF)
+    emit_call_insn (gen_call_internal_symref (op, operands[1]));
+  else
+    emit_call_insn (gen_call_internal_reg (op, operands[1]));
+
   if (flag_pic)
     {
       if (!hppa_save_pic_table_rtx)
@@ -2765,23 +2775,29 @@
   DONE;
 }")
 
-(define_insn "call_internal"
- [(call (mem:SI (match_operand:SI 0 "call_operand_address" "r,S"))
-	(match_operand 1 "" "i,i"))
-  (clobber (reg:SI 2))]
+(define_insn "call_internal_symref"
+ [(call (mem:SI (match_operand:SI 0 "call_operand_address" ""))
+	(match_operand 1 "" "i"))
+  (clobber (reg:SI 2))
+  (use (const_int 0))]
  ""
  "*
 {
-  if (which_alternative == 0)
-    return \"copy %0,22\;.CALL\\tARGW0=GR\;bl $$dyncall,31\;copy 31,2\";
-  else
-    {
-      output_arg_descriptor (insn);
-      return \"bl %0,2%#\";
-    }
+  output_arg_descriptor (insn);
+  return \"bl %0,2%#\";
 }"
- [(set_attr "type" "dyncall,call")
-  (set_attr "length" "3,1")])
+ [(set_attr "type" "call")
+  (set_attr "length" "1")])
+
+(define_insn "call_internal_reg"
+ [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
+	(match_operand 1 "" "i"))
+  (clobber (reg:SI 2))
+  (use (const_int 1))]
+ ""
+ "copy %0,22\;.CALL\\tARGW0=GR\;bl $$dyncall,31\;copy 31,2"
+ [(set_attr "type" "dyncall")
+  (set_attr "length" "3")])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -2798,7 +2814,18 @@
     op = force_reg (SImode, XEXP (operands[1], 0));
   else
     op = XEXP (operands[1], 0);
-  emit_call_insn (gen_call_value_internal (operands[0], op, operands[2]));
+
+  /* Use two different patterns for calls to explicitly named functions
+     and calls through function pointers.  This is necessary as these two
+     types of calls use different calling conventions, and CSE might try
+     to change the named call into an indirect call in some cases (using
+     two patterns keeps CSE from performing this optimization).  */
+  if (GET_CODE (op) == SYMBOL_REF)
+    emit_call_insn (gen_call_value_internal_symref (operands[0], op,
+						    operands[2]));
+  else
+    emit_call_insn (gen_call_value_internal_reg (operands[0], op, operands[2]));
+
   if (flag_pic)
     {
       if (!hppa_save_pic_table_rtx)
@@ -2809,25 +2836,33 @@
   DONE;
 }")
 
-(define_insn "call_value_internal"
-  [(set (match_operand 0 "" "=rfx,rfx")
-	(call (mem:SI (match_operand:SI 1 "call_operand_address" "r,S"))
-	      (match_operand 2 "" "i,i")))
-   (clobber (reg:SI 2))]
+(define_insn "call_value_internal_symref"
+  [(set (match_operand 0 "" "=rfx")
+	(call (mem:SI (match_operand:SI 1 "call_operand_address" ""))
+	      (match_operand 2 "" "i")))
+   (clobber (reg:SI 2))
+   (use (const_int 0))]
   ;;- Don't use operand 1 for most machines.
   ""
   "*
 {
-  if (which_alternative == 0)
-    return \"copy %1,22\;.CALL\\tARGW0=GR\;bl $$dyncall,31\;copy 31,2\";
-  else
-    {
-      output_arg_descriptor (insn);
-      return \"bl %1,2%#\";
-    }
+  output_arg_descriptor (insn);
+  return \"bl %1,2%#\";
 }"
- [(set_attr "type" "dyncall,call")
-  (set_attr "length" "3,1")])
+ [(set_attr "type" "call")
+  (set_attr "length" "1")])
+
+(define_insn "call_value_internal_reg"
+  [(set (match_operand 0 "" "=rfx")
+	(call (mem:SI (match_operand:SI 1 "register_operand" "r"))
+	      (match_operand 2 "" "i")))
+   (clobber (reg:SI 2))
+   (use (const_int 1))]
+  ;;- Don't use operand 1 for most machines.
+  ""
+  "copy %1,22\;.CALL\\tARGW0=GR\;bl $$dyncall,31\;copy 31,2"
+ [(set_attr "type" "dyncall")
+  (set_attr "length" "3")])
 
 (define_insn "nop"
   [(const_int 0)]
