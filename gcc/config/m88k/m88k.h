@@ -1861,9 +1861,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 #define ADDITIONAL_REGISTER_NAMES	{{"psr", 0}, {"cc", 0}}
 
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* Tell when to declare ASM names.  Override svr4.h to provide this hook.  */
 #undef	DECLARE_ASM_NAME
 #define DECLARE_ASM_NAME TARGET_SVR4

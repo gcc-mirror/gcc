@@ -109,9 +109,6 @@ Boston, MA 02111-1307, USA.  */
 #define NO_DOLLAR_IN_LABEL 1
 #endif
 
-/* DBX register number for a given compiler register number */
-#define DBX_REGISTER_NUMBER(REGNO)  (REGNO)
-
 /* Generate DBX debugging information.  riscix.h will undefine this because
    the native assembler does not support stabs. */
 #ifndef DBX_DEBUGGING_INFO

@@ -698,10 +698,6 @@ extern int rs6000_pic_labelno;
 #define	ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
   output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
 
-/* How to renumber registers for dbx and gdb.  */
-
-#define	DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* The USER_LABEL_PREFIX stuff is affected by the -fleading-underscore
    flag.  The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
 

@@ -1758,10 +1758,6 @@ do { long l;						\
 /* Default values provided by GCC should be ok. Assumming that DWARF-2
    frame unwind info is ok for this platform.  */
 
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) \
- ((REGNO))
-
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 

@@ -944,8 +944,6 @@ do { char dstr[30];					\
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#define DBX_REGISTER_NUMBER(REGNO) REGNO
-
 /* GDB always assumes the current function's frame begins at the value
    of the stack pointer upon entry to the current function.  Accessing
    local variables and parameters passed on the stack is done using the

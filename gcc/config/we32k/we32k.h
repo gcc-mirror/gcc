@@ -708,10 +708,6 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",	\
  "r8", "fp", "ap", "psw", "sp", "pcbp", "isp", "pc"	}
 
-/* How to renumber registers for dbx and gdb.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* Output SDB debugging info in response to the -g option.  */
 
 #define SDB_DEBUGGING_INFO

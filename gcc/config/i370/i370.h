@@ -1070,9 +1070,6 @@ enum reg_class
   "0",  "2",  "4",  "6"							\
 }
 
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO)  (REGNO)
-
 #define ASM_FILE_START(FILE)						\
 { fputs ("\tRMODE\tANY\n", FILE);					\
   fputs ("\tCSECT\n", FILE); }
@@ -1628,9 +1625,6 @@ enum reg_class
   "r8",  "r9", "r10", "r11", "r12", "r13", "r14", "r15",		\
   "f0",  "f2",  "f4",  "f6"						\
 }
-
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO)  (REGNO)
 
 /* Print operand XV (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.

@@ -1059,10 +1059,6 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 {"r0", "r1", "r2", "r3", "r4", "r5", "sp", "pc",     \
  "ac0", "ac1", "ac2", "ac3", "ac4", "ac5" }
 
-/* How to renumber registers for dbx and gdb.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 

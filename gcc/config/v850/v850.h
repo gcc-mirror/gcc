@@ -1429,8 +1429,6 @@ do { char dstr[30];					\
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#define DBX_REGISTER_NUMBER(REGNO) REGNO
-
 /* Define to use software floating point emulator for REAL_ARITHMETIC and
    decimal <-> binary conversion. */
 #define REAL_ARITHMETIC

@@ -1039,8 +1039,6 @@ do { char dstr[30];					\
 
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* GDB always assumes the current function's frame begins at the value
    of the stack pointer upon entry to the current function.  Accessing
    local variables and parameters passed on the stack is done using the

@@ -1176,11 +1176,6 @@ readonly_data ()							\
 { {"er0", 0}, {"er1", 1}, {"er2", 2}, {"er3", 3}, {"er4", 4}, \
   {"er5", 5}, {"er6", 6}, {"er7", 7}, {"r7", 7} }
 
-/* How to renumber registers for dbx and gdb.
-   H8/300 needs no change in the numeration.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 #define SDB_DEBUGGING_INFO
 #define SDB_DELIM	"\n"
 

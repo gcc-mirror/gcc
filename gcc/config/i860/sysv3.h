@@ -46,10 +46,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_COMMENT_START "//"
 
-/* Don't renumber the regusters for debugger output.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
 /* Output the special word the System V SDB wants to see just before
    the first word of each function's prologue code.  */
 

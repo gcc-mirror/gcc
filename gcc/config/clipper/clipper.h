@@ -967,12 +967,6 @@ do									      \
  "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", \
  "f9", "f10", "f11", "f12", "f13", "f14", "f15" }
 
-/* How to renumber registers for dbx and gdb.
-   Clipper needs no change in the numeration.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
-
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 
