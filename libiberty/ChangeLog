@@ -1,3 +1,10 @@
+2005-03-01  Jan Beulich  <jbeulich@novell.com>
+
+	* Makefile.in (CFILES): Add unlink-if-ordinary.c
+	(REQUIRED_OFILES): Add unlink-if-ordinary.o.
+	Add dependencies and rule for unlink-if-ordinary.o.
+	* unlink-if-ordinary.c: New.
+
 2005-03-01  Ben Elliston  <bje@au.ibm.com>
 
 	* hashtab.c (htab_find_slot_with_hash): Make function

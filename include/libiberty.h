@@ -163,6 +163,10 @@ extern char *choose_temp_base PARAMS ((void)) ATTRIBUTE_MALLOC;
 
 extern char *make_temp_file PARAMS ((const char *)) ATTRIBUTE_MALLOC;
 
+/* Remove a link to a file unless it is special. */
+
+extern int unlink_if_ordinary PARAMS((const char *));
+
 /* Allocate memory filled with spaces.  Allocates using malloc.  */
 
 extern const char *spaces PARAMS ((int count));
