@@ -279,28 +279,34 @@ namespace std
       const locale& __loc = __io._M_getloc();
       const __cache_type* __lc = __uc(__loc);
       const _CharT* __lit = __lc->_M_atoms_in;
+      char_type __c = char_type();
 
-      // True if a mantissa is found.
-      bool __found_mantissa = false;
+      // True if __beg becomes equal to __end.
+      bool __testeof = __beg == __end;
 
       // First check for sign.
-      if (__beg != __end)
+      if (!__testeof)
 	{
-	  const char_type __c = *__beg;
+	  __c = *__beg;
 	  const bool __plus = __c == __lit[__num_base::_S_iplus];
 	  if ((__plus || __c == __lit[__num_base::_S_iminus])
 	      && !(__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	      && !(__c == __lc->_M_decimal_point))
 	    {
 	      __xtrc += __plus ? '+' : '-';
-	      ++__beg;
+	      if (++__beg != __end)
+		__c = *__beg;
+	      else
+		__testeof = true;
 	    }
 	}
 
+      // True if a mantissa is found.
+      bool __found_mantissa = false;
+
       // Next, look for leading zeros.
-      while (__beg != __end)
+      while (!__testeof)
 	{
-	  const char_type __c = *__beg;
 	  if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
 	      || __c == __lc->_M_decimal_point)
 	    break;
@@ -311,7 +317,10 @@ namespace std
 		  __xtrc += '0';
 		  __found_mantissa = true;
 		}
-	      ++__beg;
+	      if (++__beg != __end)
+		__c = *__beg;
+	      else
+		__testeof = true;
 	    }
 	  else
 	    break;
@@ -324,12 +333,12 @@ namespace std
       if (__lc->_M_use_grouping)
 	__found_grouping.reserve(32);
       int __sep_pos = 0;
+      const char_type* __q;
       const char_type* __lit_zero = __lit + __num_base::_S_izero;
-      while (__beg != __end)
+      while (!__testeof)
         {
 	  // According to 22.2.2.1.2, p8-9, first look for thousands_sep
 	  // and decimal_point.
-	  char_type __c = *__beg;
           if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	    {
 	      if (!__found_dec && !__found_sci)
@@ -340,7 +349,6 @@ namespace std
 		    {
 		      __found_grouping += static_cast<char>(__sep_pos);
 		      __sep_pos = 0;
-		      ++__beg;
 		    }
 		  else
 		    {
@@ -362,50 +370,53 @@ namespace std
 		    __found_grouping += static_cast<char>(__sep_pos);
 		  __xtrc += '.';
 		  __found_dec = true;
-		  ++__beg;
 		}
 	      else
 		break;
 	    }
-          else
+          else if ((__q = __traits_type::find(__lit_zero, 10, __c)))
 	    {
-	      const char_type* __q = __traits_type::find(__lit_zero, 10, __c);
-	      if (__q)
-		{
-		  __xtrc += __num_base::_S_atoms_in[__q - __lit];
-		  __found_mantissa = true;
-		  ++__sep_pos;
-		  ++__beg;
-		}
-	      else if ((__c == __lit[__num_base::_S_ie] 
-			|| __c == __lit[__num_base::_S_iE])
-		       && __found_mantissa && !__found_sci)
-		{
-		  // Scientific notation.
-		  if (__found_grouping.size() && !__found_dec)
-		    __found_grouping += static_cast<char>(__sep_pos);
-		  __xtrc += 'e';
-		  __found_sci = true;
+	      __xtrc += __num_base::_S_atoms_in[__q - __lit];
+	      __found_mantissa = true;
+	      ++__sep_pos;
+	    }
+	  else if ((__c == __lit[__num_base::_S_ie] 
+		    || __c == __lit[__num_base::_S_iE])
+		   && __found_mantissa && !__found_sci)
+	    {
+	      // Scientific notation.
+	      if (__found_grouping.size() && !__found_dec)
+		__found_grouping += static_cast<char>(__sep_pos);
+	      __xtrc += 'e';
+	      __found_sci = true;
 
-		  // Remove optional plus or minus sign, if they exist.
-		  if (++__beg != __end)
-		    {
-		      __c = *__beg;
-		      const bool __plus = __c == __lit[__num_base::_S_iplus];
-		      if ((__plus || __c == __lit[__num_base::_S_iminus])
-			  && !(__lc->_M_use_grouping
-			       && __c == __lc->_M_thousands_sep)
-			  && !(__c == __lc->_M_decimal_point))
-			{
-			  __xtrc += __plus ? '+' : '-';
-			  ++__beg;
-			}
-		    }
+	      // Remove optional plus or minus sign, if they exist.
+	      if (++__beg != __end)
+		{
+		  __c = *__beg;
+		  const bool __plus = __c == __lit[__num_base::_S_iplus];
+		  if ((__plus || __c == __lit[__num_base::_S_iminus])
+		      && !(__lc->_M_use_grouping
+			   && __c == __lc->_M_thousands_sep)
+		      && !(__c == __lc->_M_decimal_point))
+		    __xtrc += __plus ? '+' : '-';
+		  else
+		    continue;
 		}
 	      else
-		// Not a valid input item.
-		break;
+		{
+		  __testeof = true;
+		  break;
+		}
 	    }
+	  else
+	    // Not a valid input item.
+	    break;
+
+	  if (++__beg != __end)
+	    __c = *__beg;
+	  else
+	    __testeof = true;
         }
 
       // Digit grouping is checked. If grouping and found_grouping don't
@@ -423,7 +434,7 @@ namespace std
         }
 
       // Finish up.
-      if (__beg == __end)
+      if (__testeof)
         __err |= ios_base::eofbit;
       return __beg;
     }

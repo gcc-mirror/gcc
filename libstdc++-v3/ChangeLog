@@ -1,3 +1,12 @@
+2004-11-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float):
+	Evaluate *__beg the exact strict minimum number of times; likewise
+	for __beg != __end; in the main parsing loop, call ++__beg in two
+	places only. The former is also a correctness issue, because,
+	according to the standard (22.2.2.1.2, Stage 2), 'in' shall be
+	dereferenced only one time for each increment.
+
 2004-10-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR c++/16728
