@@ -45,11 +45,13 @@
 ;; the address, BBOX, used for branches, EBOX, used for integer
 ;; operations, and FBOX, used for FP operations.
 
-;; Memory delivers its result in three cycles.
+;; Memory delivers its result in three cycles.  Actually return one and
+;; take care of this in adjust_cost, since we want to handle user-defined
+;; memory latencies.
 (define_function_unit "ev4_abox" 1 0
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "ld,ldsym,st"))
-  3 1)
+  1 1)
 
 ;; Branches have no delay cost, but do tie up the unit for two cycles.
 (define_function_unit "ev4_bbox" 1 1
@@ -127,10 +129,11 @@
   1 1)
 
 ;; Memory takes at least 2 clocks, and load cannot dual issue with stores.
+;; Return one from here and fix up with user-defined latencies in adjust_cost.
 (define_function_unit "ev5_ebox" 2 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "ld,ldsym"))
-  2 1)
+  1 1)
 
 (define_function_unit "ev5_e0" 1 0
   (and (eq_attr "cpu" "ev5")
