@@ -549,7 +549,7 @@ rest_of_handle_stack_regs (void)
 		       | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0))
 	  && (flag_reorder_blocks || flag_reorder_blocks_and_partition))
 	{
-	  reorder_basic_blocks ();
+	  reorder_basic_blocks (0);
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
 	}
     }
@@ -734,23 +734,22 @@ static void
 rest_of_handle_reorder_blocks (void)
 {
   bool changed;
+  unsigned int liveness_flags;
+
   open_dump_file (DFI_bbro, current_function_decl);
 
   /* Last attempt to optimize CFG, as scheduling, peepholing and insn
      splitting possibly introduced more crossjumping opportunities.  */
-  changed = cleanup_cfg (CLEANUP_EXPENSIVE
-			 | (!HAVE_conditional_execution
-			    ? CLEANUP_UPDATE_LIFE : 0));
+  liveness_flags = (!HAVE_conditional_execution ? CLEANUP_UPDATE_LIFE : 0);
+  changed = cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
 
   if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
-    tracer ();
+    tracer (liveness_flags);
   if (flag_reorder_blocks || flag_reorder_blocks_and_partition)
-    reorder_basic_blocks ();
+    reorder_basic_blocks (liveness_flags);
   if (flag_reorder_blocks || flag_reorder_blocks_and_partition
       || (flag_sched2_use_traces && flag_schedule_insns_after_reload))
-    changed |= cleanup_cfg (CLEANUP_EXPENSIVE
-			    | (!HAVE_conditional_execution
-			       ? CLEANUP_UPDATE_LIFE : 0));
+    changed |= cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
 
   /* On conditional execution targets we can not update the life cheaply, so
      we deffer the updating to after both cleanups.  This may lose some cases
@@ -897,7 +896,7 @@ rest_of_handle_tracer (void)
   open_dump_file (DFI_tracer, current_function_decl);
   if (dump_file)
     dump_flow_info (dump_file);
-  tracer ();
+  tracer (0);
   cleanup_cfg (CLEANUP_EXPENSIVE);
   reg_scan (get_insns (), max_reg_num (), 0);
   close_dump_file (DFI_tracer, print_rtl_with_bb, get_insns ());
@@ -1353,7 +1352,7 @@ rest_of_handle_loop2 (void)
     dump_flow_info (dump_file);
 
   /* Initialize structures for layout changes.  */
-  cfg_layout_initialize ();
+  cfg_layout_initialize (0);
 
   loops = loop_optimizer_init (dump_file);
 

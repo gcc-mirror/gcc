@@ -5213,7 +5213,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
          use return.  Inserting a jump 'by hand' is extremely messy, so
 	 we take advantage of cfg_layout_finalize using
 	fixup_fallthru_exit_predecessor.  */
-      cfg_layout_initialize ();
+      cfg_layout_initialize (0);
       FOR_EACH_BB (cur_bb)
 	if (cur_bb->index >= 0 && cur_bb->next_bb->index >= 0)
 	  cur_bb->rbi->next = cur_bb->next_bb;

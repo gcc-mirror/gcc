@@ -1,3 +1,20 @@
+2004-07-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR rtl-optimization/16643
+	* cfglayout.h (cfg_layout_initialize): Add a flags parameter.
+	* cfglayout.c (cfg_layout_initialize): Pass it to cleanup_cfg.
+	* basic-block.h (reorder_basic_blocks): Add a flags parameter.
+	* cfglayout.c (reorder_basic_blocks): Pass it to cfg_layout_initialize.
+	(partition_hot_cold_basic_blocks): Pass 0 to cfg_layout_initialize.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	* rtl.h (tracer): Add a flags parameter.
+	* tracer.c (tracer): Pass it to cfg_layout_initialise.
+	* passes.c (rest_of_handle_stack_regs): Pass 0 to reorder_basic_blocks.
+	(rest_of_handle_reorder_blocks): Update calls to tracer and
+	reorder_basic_blocks, passing CLEANUP_UPDATE_LIFE if appropriate.
+	(rest_of_handle_tracer): Pass 0 to tracer.
+	(rest_of_handle_loop2): Pass 0 to cfg_layout_initialize.
+
 2004-07-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (movdi_internal64): Further disparage

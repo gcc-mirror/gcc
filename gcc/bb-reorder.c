@@ -1908,10 +1908,11 @@ fix_edges_for_rarely_executed_code (edge *crossing_edges,
   add_reg_crossing_jump_notes ();
 }
 
-/* Reorder basic blocks.  The main entry point to this file.  */
+/* Reorder basic blocks.  The main entry point to this file.  FLAGS is
+   the set of flags to pass to cfg_layout_initialize().  */
 
 void
-reorder_basic_blocks (void)
+reorder_basic_blocks (unsigned int flags)
 {
   int n_traces;
   int i;
@@ -1925,7 +1926,7 @@ reorder_basic_blocks (void)
 
   timevar_push (TV_REORDER_BLOCKS);
 
-  cfg_layout_initialize ();
+  cfg_layout_initialize (flags);
 
   set_edge_can_fallthru_flag ();
   mark_dfs_back_edges ();
@@ -1999,7 +2000,7 @@ partition_hot_cold_basic_blocks (void)
   
   crossing_edges = xcalloc (max_edges, sizeof (edge));
 
-  cfg_layout_initialize ();
+  cfg_layout_initialize (0);
   
   FOR_EACH_BB (cur_bb)
     if (cur_bb->index >= 0
