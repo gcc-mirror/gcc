@@ -9269,7 +9269,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
   [(set (pc)
 	(mem:DI (plus:DI (sign_extend:DI 
 			  (mult:SI (match_operand:SI 0 "register_operand" "d")
-				  (const_int 4))
+				  (const_int 4)))
 			 (label_ref (match_operand 1 "" "")))))
    (clobber (match_operand:DI 2 "register_operand" "=d"))
    (clobber (reg:DI 31))]
