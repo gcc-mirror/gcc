@@ -1,3 +1,7 @@
+Mon Sep 28 04:11:35 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* cpp.texi: Update for Fortran usage from Craig.
+
 Fri Sep 25 22:09:47 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (function_arg_boundary): Revert accidental change on

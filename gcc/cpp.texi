@@ -42,7 +42,7 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @c @finalout
 @title The C Preprocessor
-@subtitle Last revised March 1997
+@subtitle Last revised September 1998
 @subtitle for GCC version 2
 @author Richard M. Stallman
 @page
@@ -51,8 +51,8 @@ This booklet is eventually intended to form the first chapter of a GNU
 C Language manual.
 
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997 Free
-Software Foundation, Inc.
+Copyright @copyright{} 1987, 1989, 1991-1998
+Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -2594,6 +2594,46 @@ Traditionally, @samp{\} inside a macro argument suppresses the syntactic
 significance of the following character.
 @end itemize
 
+@cindex Fortran
+@cindex unterminated
+Use the @samp{-traditional} option when preprocessing Fortran code,
+so that singlequotes and doublequotes
+within Fortran comment lines
+(which are generally not recognized as such by the preprocessor)
+do not cause diagnostics
+about unterminated character or string constants.
+
+However, this option does not prevent diagnostics
+about unterminated comments
+when a C-style comment appears to start, but not end,
+within Fortran-style commentary.
+
+So, the following Fortran comment lines are accepted with
+@samp{-traditional}:
+
+@smallexample
+C This isn't an unterminated character constant
+C Neither is "20000000000, an octal constant
+C in some dialects of Fortran
+@end smallexample
+
+However, this type of comment line will likely produce a diagnostic,
+or at least unexpected output from the preprocessor,
+due to the unterminated comment:
+
+@smallexample
+C Some Fortran compilers accept /* as starting
+C an inline comment.
+@end smallexample
+
+@cindex g77
+Note that @code{g77} automatically supplies
+the @samp{-traditional} option
+when it invokes the preprocessor.
+However, a future version of @code{g77}
+might use a different, more-Fortran-aware preprocessor
+in place of @code{cpp}.
+
 @item -trigraphs
 @findex -trigraphs
 Process ANSI standard trigraph sequences.  These are three-character
@@ -2778,8 +2818,8 @@ Like @samp{-M} but the dependency information is written to @var{file}.
 This is in addition to compiling the file as specified---@samp{-MD} does
 not inhibit ordinary compilation the way @samp{-M} does.
 
-When invoking gcc, do not specify the @var{file} argument.
-Gcc will create file names made by replacing ".c" with ".d" at
+When invoking @code{gcc}, do not specify the @var{file} argument.
+@code{gcc} will create file names made by replacing ".c" with ".d" at
 the end of the input file names.
 
 In Mach, you can use the utility @code{md} to merge multiple dependency
