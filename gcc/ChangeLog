@@ -1,3 +1,7 @@
+2001-11-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* genextract.c (main): Set ro_loc for peepholes.
+
 Sat Nov 24 17:04:10 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* fix-header.c (main): Move inf_buffer termination and inf_limit
