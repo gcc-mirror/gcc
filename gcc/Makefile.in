@@ -776,6 +776,7 @@ gcc.o: gcc.c $(CONFIG_H) gvarargs.h obstack.h
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target)\" \
+  -DTOOLDIR=\"$(tooldir)/\" \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
 dumpvers: dumpvers.c
@@ -1083,17 +1084,17 @@ genoutput.o : genoutput.c $(RTL_H) config.h
 # with the rules for rtl.o, alloca.o, etc.
 $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)rtl.c
-	sed -e 's/config[.]/hconfig[.]h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
+	sed -e 's/config[.]/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c
 
 $(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)print-rtl.c
-	sed -e 's/config[.]/hconfig[.]h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
+	sed -e 's/config[.]/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c
 
 $(HOST_PREFIX_1)rtlanal.o: $(srcdir)/rtlanal.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)rtlanal.c
-	sed -e 's/config[.]/hconfig[.]h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
+	sed -e 's/config[.]/hconfig.h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtlanal.c
 
 $(HOST_PREFIX_1)alloca.o: alloca.c
@@ -1103,12 +1104,12 @@ $(HOST_PREFIX_1)alloca.o: alloca.c
 
 $(HOST_PREFIX_1)obstack.o: obstack.c
 	rm -f $(HOST_PREFIX)obstack.c
-	sed -e 's/config[.]/hconfig[.]h/' $(srcdir)/obstack.c > $(HOST_PREFIX)obstack.c
+	sed -e 's/config[.]/hconfig.h/' $(srcdir)/obstack.c > $(HOST_PREFIX)obstack.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c
 
 $(HOST_PREFIX_1)malloc.o: malloc.c
 	rm -f $(HOST_PREFIX)malloc.c
-	sed -e 's/config[.]/hconfig[.]h/' $(srcdir)/malloc.c > $(HOST_PREFIX)malloc.c
+	sed -e 's/config[.]/hconfig.h/' $(srcdir)/malloc.c > $(HOST_PREFIX)malloc.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)malloc.c
 
 # This satisfies the dependency that we get if you cross-compile a compiler
@@ -1136,6 +1137,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
+	  -DTOOLDIR=\"$(tooldir)/\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 proto: config.status protoize unprotoize SYSCALLS.c.X
@@ -1424,7 +1426,7 @@ install-common: native install-dir xgcc $(srcdir)/g++ $(srcdir)/c++ $(EXTRA_PART
 	  mv $(bindir)/gcc-$(target)-1 $(bindir)/gcc-$(target); \
 	fi
 # Install protoize if it was compiled.
-	if [ -f protoize ]; \
+	-if [ -f protoize ]; \
 	then \
 	    rm -f $(bindir)/protoize; \
 	    $(INSTALL_PROGRAM) protoize $(bindir)/protoize; \
