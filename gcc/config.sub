@@ -428,6 +428,9 @@ case $basic_machine in
 	ps2)
 		basic_machine=i386-ibm
 		;;
+	rm[46]00)
+		basic_machine=mips-siemens
+		;;
 	rtpc | rtpc-*)
 		basic_machine=romp-ibm
 		;;
@@ -634,6 +637,13 @@ case $os in
 	-ctix* | -uts*)
 		os=-sysv
 		;;
+	# Preserve the version number of sinix5.
+	-sinix5.*)
+		os=`echo $os | sed -e 's|sinix|sysv|'`
+		;;
+	-sinix*)
+		os=-sysv4
+		;;
 	-triton*)
 		os=-sysv3
 		;;
@@ -757,6 +767,9 @@ case $basic_machine in
 		;;
         *-sgi)
 		os=-irix
+		;;
+        *-siemens)
+		os=-sysv4
 		;;
 	*-masscomp)
 		os=-rtu
