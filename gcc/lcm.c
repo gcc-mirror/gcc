@@ -269,6 +269,13 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
      of the optimistic edge.  That will requeue the affected blocks.  */
   sbitmap_vector_ones (later, num_edges);
 
+  /* Note that even though we want an optimistic setting of LATER, we
+     do not want to be overly optimistic.  Consider an outgoing edge from
+     the entry block.  That edge should always have a LATER value the
+     same as EARLIEST for that edge.  */
+  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+    sbitmap_copy (later[(int)e->aux], earliest[(int)e->aux]);
+
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
   for (bb = n_basic_blocks - 1; bb >= 0; bb--)
@@ -597,6 +604,13 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
 
   /* We want a maximal solution.  */
   sbitmap_vector_ones (nearer, num_edges);
+
+  /* Note that even though we want an optimistic setting of NEARER, we
+     do not want to be overly optimistic.  Consider an incoming edge to
+     the exit block.  That edge should always have a NEARER value the
+     same as FARTHEST for that edge.  */
+  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+    sbitmap_copy (nearer[(int)e->aux], farthest[(int)e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit
      from the loop given our optimistic initialization of NEARER.  */
