@@ -44,6 +44,10 @@ tree size_one_node;
    The value is measured in bits.  */
 int maximum_field_alignment;
 
+/* If non-zero, the alignment of a bitsting or (power-)set value, in bits.
+   May be overridden by front-ends.  */
+int set_alignment = 0;
+
 #define GET_MODE_ALIGNMENT(MODE)   \
   MIN (BIGGEST_ALIGNMENT, 	   \
        MAX (1, (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT)))
@@ -896,6 +900,31 @@ layout_type (type)
       TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_PRECISION (type) = GET_MODE_BITSIZE (TYPE_MODE (type));
       TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+      break;
+
+    case SET_TYPE:
+      if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST
+	  || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST)
+	abort();
+      else
+	{
+#ifndef SET_WORD_SIZE
+#define SET_WORD_SIZE BITS_PER_WORD
+#endif
+	  int alignment = set_alignment ? set_alignment : SET_WORD_SIZE;
+	  int size_in_bits =
+	    TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+	      - TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) + 1;
+	  int rounded_size
+	    = ((size_in_bits + alignment - 1) / alignment) * alignment;
+	  if (rounded_size > alignment)
+	    TYPE_MODE (type) = BLKmode;
+	  else
+	    TYPE_MODE (type) = mode_for_size (alignment, MODE_INT, 1);
+	  TYPE_SIZE (type) = size_int (rounded_size);
+	  TYPE_ALIGN (type) = alignment;
+	  TYPE_PRECISION (type) = size_in_bits;
+	}
       break;
 
     case FILE_TYPE:
