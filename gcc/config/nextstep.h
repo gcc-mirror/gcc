@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC
    for NeXTSTEP.
-   Copyright (C) 1989, 90-93, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-93, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -44,6 +44,22 @@ Boston, MA 02111-1307, USA.  */
     { "/LocalDeveloper/Headers/ansi", 0, 0 },		\
     { "/LocalDeveloper/Headers/bsd", 0, 0 },		\
     { "/NextDeveloper/2.0CompatibleHeaders", 0, 0 },	\
+    { STANDARD_INCLUDE_DIR, 0, 0 },			\
+    { "/usr/include/bsd", 0, 0 },			\
+    { 0, 0, 0 }						\
+  }
+#else /* CROSS_COMPILE */
+#undef	INCLUDE_DEFAULTS
+#define INCLUDE_DEFAULTS				\
+  {							\
+    { GPLUSPLUS_INCLUDE_DIR, 1, 1 },			\
+    { LOCAL_INCLUDE_DIR, 0, 1 },			\
+    { GCC_INCLUDE_DIR, 0, 0 },				\
+    { GCC_INCLUDE_DIR "/ansi", 0, 0 },			\
+    { GCC_INCLUDE_DIR "/bsd", 0, 0 },			\
+    { TOOL_INCLUDE_DIR, 0, 1 },				\
+    { TOOL_INCLUDE_DIR "/ansi", 0, 0 },			\
+    { TOOL_INCLUDE_DIR "/bsd", 0, 0 },			\
     { STANDARD_INCLUDE_DIR, 0, 0 },			\
     { "/usr/include/bsd", 0, 0 },			\
     { 0, 0, 0 }						\
