@@ -181,8 +181,6 @@ extern void mips_expand_prologue (void);
 extern void mips_expand_epilogue (int);
 extern int mips_can_use_return_insn (void);
 extern struct rtx_def *mips_function_value (tree, tree, enum machine_mode);
-extern int function_arg_pass_by_reference (const CUMULATIVE_ARGS *,
-					   enum machine_mode, tree, int);
 
 extern bool mips_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);

@@ -735,6 +735,8 @@ static void rs6000_move_block_from_reg (int regno, rtx x, int nregs);
 static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree,
 				    int *, int);
+static bool rs6000_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+				      tree, bool);
 #if TARGET_MACHO
 static void macho_branch_islands (void);
 static void add_compiler_branch_island (tree, tree, int);
@@ -951,6 +953,8 @@ static const char alt_reg_names[][8] =
 #define TARGET_SPLIT_COMPLEX_ARG hook_bool_tree_true
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK rs6000_must_pass_in_stack
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE rs6000_pass_by_reference
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST rs6000_build_builtin_va_list
@@ -5182,10 +5186,10 @@ function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    As an extension to all ABIs, variable sized types are passed by
    reference.  */
 
-int
-function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED, 
-				enum machine_mode mode ATTRIBUTE_UNUSED, 
-				tree type, int named ATTRIBUTE_UNUSED)
+static bool
+rs6000_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED, 
+			  enum machine_mode mode ATTRIBUTE_UNUSED, 
+			  tree type, bool named ATTRIBUTE_UNUSED)
 {
   if ((DEFAULT_ABI == ABI_V4
        && ((type && AGGREGATE_TYPE_P (type))

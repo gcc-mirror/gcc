@@ -611,11 +611,7 @@ struct cum_arg {int nbytes; };
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
 
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  ((TYPE) && int_size_in_bytes (TYPE) > 8)
- 
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) \
-  ((TYPE) && int_size_in_bytes (TYPE) > 8)
+#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 1
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

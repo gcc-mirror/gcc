@@ -67,6 +67,8 @@ static void v850_encode_section_info (tree, rtx, int);
 static bool v850_return_in_memory    (tree, tree);
 static void v850_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
+static bool v850_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+				    tree, bool);
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -129,6 +131,9 @@ static int v850_interrupt_p = FALSE;
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY v850_return_in_memory
 
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE v850_pass_by_reference
+
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS v850_setup_incoming_varargs
 
@@ -178,6 +183,20 @@ override_options (void)
 }
 
 
+static bool
+v850_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+			enum machine_mode mode, tree type,
+			bool named ATTRIBUTE_UNUSED)
+{
+  unsigned HOST_WIDE_INT size;
+
+  if (type)
+    size = int_size_in_bytes (type);
+  else
+    size = GET_MODE_SIZE (mode);
+
+  return size > 8;
+}
 
 /* Return an RTX to represent where a value with mode MODE will be returned
    from a function.  If the result is 0, the argument is pushed.  */

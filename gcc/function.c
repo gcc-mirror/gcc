@@ -2029,9 +2029,8 @@ use_register_for_decl (tree decl)
 /* Return true if TYPE should be passed by invisible reference.  */
 
 bool
-pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
-		   enum machine_mode mode ATTRIBUTE_UNUSED,
-		   tree type, bool named_arg ATTRIBUTE_UNUSED)
+pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+		   tree type, bool named_arg)
 {
   if (type)
     {
@@ -2046,11 +2045,7 @@ pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 	return true;
     }
 
-#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
-  return FUNCTION_ARG_PASS_BY_REFERENCE (*ca, mode, type, named_arg);
-#else
-  return false;
-#endif
+  return targetm.calls.pass_by_reference (ca, mode, type, named_arg);
 }
 
 /* Structures to communicate between the subroutines of assign_parms.

@@ -194,6 +194,8 @@ static bool       mcore_return_in_memory	(tree, tree);
 #define TARGET_RETURN_IN_MEMORY		mcore_return_in_memory
 #undef  TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK	must_pass_in_stack_var_size
+#undef  TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE  hook_pass_by_reference_must_pass_in_stack
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS	mcore_setup_incoming_varargs

@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include <ctype.h>
 #include "target.h"
 #include "target-def.h"
+#include "targhooks.h"
 #include "integrate.h"
 
 #ifndef FRV_INLINE
@@ -329,6 +330,8 @@ static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
 #define TARGET_STRUCT_VALUE_RTX frv_struct_value_rtx
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK frv_must_pass_in_stack
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_must_pass_in_stack
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS frv_expand_builtin_saveregs
@@ -3147,15 +3150,6 @@ frv_function_arg_partial_nregs (CUMULATIVE_ARGS *cum,
 }
 
 
-int
-frv_function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-                                    enum machine_mode mode,
-                                    tree type,
-                                    int named ATTRIBUTE_UNUSED)
-{
-  return targetm.calls.must_pass_in_stack (mode, type);
-}
-
 /* If defined, a C expression that indicates when it is the called function's
    responsibility to make a copy of arguments passed by invisible reference.
    Normally, the caller makes a copy and passes the address of the copy to the

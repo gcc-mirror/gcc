@@ -71,6 +71,8 @@ static bool mn10300_rtx_costs (rtx, int, int, int *);
 static void mn10300_file_start (void);
 static bool mn10300_return_in_memory (tree, tree);
 static rtx mn10300_builtin_saveregs (void);
+static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+				       tree, bool);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -91,9 +93,10 @@ static rtx mn10300_builtin_saveregs (void);
 
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
-
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY mn10300_return_in_memory
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE mn10300_pass_by_reference
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs
@@ -1454,6 +1457,23 @@ mn10300_va_start (tree valist, rtx nextarg)
 {
   nextarg = expand_builtin_saveregs ();
   std_expand_builtin_va_start (valist, nextarg);
+}
+
+/* Return true when a parameter should be passed by reference.  */
+
+static bool
+mn10300_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+			   enum machine_mode mode, tree type,
+			   bool named ATTRIBUTE_UNUSED)
+{
+  unsigned HOST_WIDE_INT size;
+
+  if (type)
+    size = int_size_in_bytes (type);
+  else
+    size = GET_MODE_SIZE (mode);
+
+  return size > 8;
 }
 
 /* Return an RTX to represent where a value with mode MODE will be returned

@@ -2351,9 +2351,6 @@ typedef struct mips_args {
 		? PARM_BOUNDARY						\
 		: GET_MODE_ALIGNMENT(MODE)))
 
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED)
-
 #define FUNCTION_ARG_PADDING(MODE, TYPE)		\
   (mips_pad_arg_upward (MODE, TYPE) ? upward : downward)
 
@@ -2361,8 +2358,7 @@ typedef struct mips_args {
   (mips_pad_reg_upward (MODE, TYPE) ? upward : downward)
 
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
-  (mips_abi == ABI_EABI && (NAMED)					\
-   && FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))
+  (mips_abi == ABI_EABI && (NAMED))
 
 /* True if using EABI and varargs can be passed in floating-point
    registers.  Under these conditions, we need a more complex form

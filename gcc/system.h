@@ -585,7 +585,7 @@ extern int snprintf (char *, size_t, const char *, ...);
 	SETUP_INCOMING_VARARGS EXPAND_BUILTIN_SAVEREGS			\
 	DEFAULT_SHORT_ENUMS SPLIT_COMPLEX_ARGS MD_ASM_CLOBBERS		\
 	HANDLE_PRAGMA_REDEFINE_EXTNAME HANDLE_PRAGMA_EXTERN_PREFIX	\
-	MUST_PASS_IN_STACK
+	MUST_PASS_IN_STACK FUNCTION_ARG_PASS_BY_REFERENCE
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

@@ -139,7 +139,8 @@ static void mmix_file_start (void);
 static void mmix_file_end (void);
 static bool mmix_rtx_costs (rtx, int, int, int *);
 static rtx mmix_struct_value_rtx (tree, int);
-
+static bool mmix_pass_by_reference (const CUMULATIVE_ARGS *,
+				    enum machine_mode, tree, bool);
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
    for a general description.  */
@@ -201,9 +202,10 @@ static rtx mmix_struct_value_rtx (tree, int);
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX mmix_struct_value_rtx
-
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS mmix_setup_incoming_varargs
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE mmix_pass_by_reference
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -590,11 +592,9 @@ mmix_function_arg (const CUMULATIVE_ARGS *argsp,
 /* Returns nonzero for everything that goes by reference, 0 for
    everything that goes by value.  */
 
-int
-mmix_function_arg_pass_by_reference (const CUMULATIVE_ARGS *argsp,
-				     enum machine_mode mode,
-				     tree type,
-				     int named ATTRIBUTE_UNUSED)
+static bool
+mmix_pass_by_reference (const CUMULATIVE_ARGS *argsp, enum machine_mode mode,
+			tree type, bool named ATTRIBUTE_UNUSED)
 {
   /* FIXME: Check: I'm not sure the must_pass_in_stack check is
      necessary.  */

@@ -35,7 +35,6 @@ extern void             iq2000_expand_prologue (void);
 extern void             iq2000_expand_epilogue (void);
 extern void             iq2000_expand_eh_return (rtx);
 extern int              iq2000_can_use_return_insn (void);
-extern int              function_arg_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern int              iq2000_adjust_insn_length (rtx, int);
 extern char *           iq2000_output_conditional_branch (rtx, rtx *, int, int, int, int);
 extern void             print_operand_address (FILE *, rtx);

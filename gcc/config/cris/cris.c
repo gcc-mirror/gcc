@@ -115,6 +115,8 @@ static void cris_init_libfuncs (void);
 
 static bool cris_rtx_costs (rtx, int, int, int *);
 static int cris_address_cost (rtx);
+static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+				    tree, bool);
 
 /* The function cris_target_asm_function_epilogue puts the last insn to
    output here.  It always fits; there won't be a symbol operand.  Used in
@@ -183,12 +185,12 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
-
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX cris_struct_value_rtx
-
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS cris_setup_incoming_varargs
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE cris_pass_by_reference
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3159,6 +3161,19 @@ cris_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
 	       ca->regs, *pretend_arg_size, second_time);
     }
 }
+
+/* Return true if TYPE must be passed by invisible reference.
+   For cris, we pass <= 8 bytes by value, others by reference.  */
+
+static bool
+cris_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+			enum machine_mode mode, tree type,
+			bool named ATTRIBUTE_UNUSED)
+{
+  return (targetm.calls.must_pass_in_stack (mode, type)
+	  || CRIS_FUNCTION_ARG_SIZE (mode, type) > 8);
+}
+
 
 #if 0
 /* Various small functions to replace macros.  Only called from a

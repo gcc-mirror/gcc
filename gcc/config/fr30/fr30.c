@@ -152,6 +152,9 @@ static bool fr30_must_pass_in_stack (enum machine_mode, tree);
 
 #undef  TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#undef  TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_must_pass_in_stack
+
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
 #undef  TARGET_MUST_PASS_IN_STACK

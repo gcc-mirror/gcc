@@ -1472,24 +1472,6 @@ m68hc11_is_trap_symbol (rtx sym)
 
 /* Argument support functions.  */
 
-/* Handle the FUNCTION_ARG_PASS_BY_REFERENCE macro.
-   Arrays are passed by references and other types by value.
-
-   SCz: I tried to pass DImode by reference but it seems that this
-   does not work very well.  */
-int
-m68hc11_function_arg_pass_by_reference (const CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-                                        enum machine_mode mode ATTRIBUTE_UNUSED,
-                                        tree type,
-                                        int named ATTRIBUTE_UNUSED)
-{
-  return ((type && TREE_CODE (type) == ARRAY_TYPE)
-	  /* Consider complex values as aggregates, so care for TCmode.  */
-	  /*|| GET_MODE_SIZE (mode) > 4 SCz, temporary */
-	  /*|| (type && AGGREGATE_TYPE_P (type))) */ );
-}
-
-
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */
 int

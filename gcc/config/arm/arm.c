@@ -157,6 +157,8 @@ static void aof_file_end (void);
 static rtx arm_struct_value_rtx (tree, int);
 static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
+static bool arm_pass_by_reference (CUMULATIVE_ARGS *,
+				   enum machine_mode, tree, bool);
 static bool arm_promote_prototypes (tree);
 static bool arm_default_short_enums (void);
 static bool arm_align_anon_bitfield (void);
@@ -255,6 +257,8 @@ static bool arm_cookie_has_size (void);
 #define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES arm_promote_prototypes
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE arm_pass_by_reference
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX arm_struct_value_rtx
@@ -2396,10 +2400,10 @@ arm_function_arg (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 /* Variable sized types are passed by reference.  This is a GCC
    extension to the ARM ABI.  */
 
-int
-arm_function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-				    enum machine_mode mode ATTRIBUTE_UNUSED,
-				    tree type, int named ATTRIBUTE_UNUSED)
+static bool
+arm_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+		       enum machine_mode mode ATTRIBUTE_UNUSED,
+		       tree type, bool named ATTRIBUTE_UNUSED)
 {
   return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
 }

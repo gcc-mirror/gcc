@@ -99,6 +99,8 @@ static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, int, int, int *);
+static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+				    tree, bool);
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -142,6 +144,8 @@ static bool m32r_rtx_costs (rtx, int, int, int *);
 #define TARGET_SETUP_INCOMING_VARARGS m32r_setup_incoming_varargs
 #undef  TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+#undef  TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE m32r_pass_by_reference
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -969,19 +973,21 @@ large_insn_p (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return get_attr_length (op) != 2;
 }
 
-/* Return nonzero if TYPE must be passed or returned in memory.
-   The m32r treats both directions the same so we handle both directions
-   in this function.  */
+/* Return nonzero if TYPE must be passed by indirect reference.  */
 
-int
-m32r_pass_by_reference (tree type)
+static bool
+m32r_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+			enum machine_mode mode, tree type,
+			bool named ATTRIBUTE_UNUSED)
 {
-  int size = int_size_in_bytes (type);
+  int size;
 
-  if (size < 0 || size > 8)
-    return 1;
+  if (type)
+    size = int_size_in_bytes (type);
+  else
+    size = GET_MODE_SIZE (mode);
 
-  return 0;
+  return (size < 0 || size > 8);
 }
 
 /* Comparisons.  */
@@ -1347,7 +1353,7 @@ function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 static bool
 m32r_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
-  return m32r_pass_by_reference (type);
+  return m32r_pass_by_reference (NULL, TYPE_MODE (type), type, false);
 }
 
 /* Do any needed setup for a variadic function.  For the M32R, we must

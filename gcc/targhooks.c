@@ -168,3 +168,25 @@ default_cxx_get_cookie_size (tree type)
 
   return cookie_size;
 }
+
+/* This version of the TARGET_PASS_BY_REFERENCE hook adds no conditions
+   beyond those mandated by generic code.  */
+
+bool
+hook_pass_by_reference_false (CUMULATIVE_ARGS *c ATTRIBUTE_UNUSED,
+	enum machine_mode mode ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED,
+	bool named_arg ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
+/* Return true if a parameter must be passed by reference.  This version
+   of the TARGET_PASS_BY_REFERENCE hook uses just MUST_PASS_IN_STACK.  */
+
+bool
+hook_pass_by_reference_must_pass_in_stack (CUMULATIVE_ARGS *c ATTRIBUTE_UNUSED,
+	enum machine_mode mode ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED,
+	bool named_arg ATTRIBUTE_UNUSED)
+{
+  return targetm.calls.must_pass_in_stack (mode, type);
+}

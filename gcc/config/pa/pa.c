@@ -143,6 +143,9 @@ static void output_deferred_plabels (void);
 static void pa_hpux_init_libfuncs (void);
 #endif
 static rtx pa_struct_value_rtx (tree, int);
+static bool pa_pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode,
+				  tree, bool);
+
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -267,6 +270,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_RETURN_IN_MEMORY pa_return_in_memory
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE pa_pass_by_reference
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS hppa_builtin_saveregs
@@ -5836,6 +5841,37 @@ secondary_reload_class (enum reg_class class, enum machine_mode mode, rtx in)
     return R1_REGS;
 
   return NO_REGS;
+}
+
+/* In the 32-bit runtime, arguments larger than eight bytes are passed
+   by invisible reference.  As a GCC extension, we also pass anything
+   with a zero or variable size by reference.
+
+   The 64-bit runtime does not describe passing any types by invisible
+   reference.  The internals of GCC can't currently handle passing
+   empty structures, and zero or variable length arrays when they are
+   not passed entirely on the stack or by reference.  Thus, as a GCC
+   extension, we pass these types by reference.  The HP compiler doesn't
+   support these types, so hopefully there shouldn't be any compatibility
+   issues.  This may have to be revisited when HP releases a C99 compiler
+   or updates the ABI.  */
+
+static bool
+pa_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+		      enum machine_mode mode, tree type,
+		      bool named ATTRIBUTE_UNUSED)
+{
+  HOST_WIDE_INT size;
+
+  if (type)
+    size = int_size_in_bytes (type);
+  else
+    size = GET_MODE_SIZE (mode);
+
+  if (TARGET_64BIT)
+    return size <= 0;
+  else
+    return size <= 0 || size > 8;
 }
 
 enum direction

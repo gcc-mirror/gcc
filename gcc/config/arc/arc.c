@@ -102,6 +102,8 @@ static bool arc_rtx_costs (rtx, int, int, int *);
 static int arc_address_cost (rtx);
 static void arc_external_libcall (rtx);
 static bool arc_return_in_memory (tree, tree);
+static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+				   tree, bool);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -138,6 +140,8 @@ static bool arc_return_in_memory (tree, tree);
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY arc_return_in_memory
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE arc_pass_by_reference
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS arc_setup_incoming_varargs
@@ -2333,3 +2337,26 @@ arc_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
       return (size == -1 || size > 8);
     }
 }
+
+/* For ARC, All aggregates and arguments greater than 8 bytes are
+   passed by reference.  */
+
+static bool
+arc_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+		       enum machine_mode mode, tree type,
+		       bool named ATTRIBUTE_UNUSED)
+{
+  unsigned HOST_WIDE_INT size;
+
+  if (type)
+    {
+      if (AGGREGATE_TYPE_P (type))
+	return true;
+      size = int_size_in_bytes (type);
+    }
+  else
+    size = GET_MODE_SIZE (mode);
+
+  return size > 8;
+}
+

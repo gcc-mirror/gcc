@@ -712,14 +712,6 @@ extern const enum reg_class reg_class_from_letter[];
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   mcore_function_arg (CUM, MODE, TYPE, NAMED)
 
-/* A C expression that indicates when an argument must be passed by
-   reference.  If nonzero for an argument, a copy of that argument is
-   made in memory and a pointer to the argument is passed instead of
-   the argument itself.  The pointer is passed in whatever way is
-   appropriate for passing a pointer to that type.  */
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
-  targetm.calls.must_pass_in_stack (MODE, TYPE)
-
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.

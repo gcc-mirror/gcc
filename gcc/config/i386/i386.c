@@ -929,6 +929,8 @@ static bool ix86_rtx_costs (rtx, int, int, int *);
 static int min_insn_size (rtx);
 static tree ix86_md_asm_clobbers (tree clobbers);
 static bool ix86_must_pass_in_stack (enum machine_mode mode, tree type);
+static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+				    tree, bool);
 
 #if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
 static void ix86_svr3_asm_out_constructor (rtx, int);
@@ -1074,6 +1076,8 @@ static void init_ext_80387_constants (void);
 #define TARGET_SETUP_INCOMING_VARARGS ix86_setup_incoming_varargs
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK ix86_must_pass_in_stack
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE ix86_pass_by_reference
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg
@@ -2775,10 +2779,10 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
    the argument itself.  The pointer is passed in whatever way is
    appropriate for passing a pointer to that type.  */
 
-int
-function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-				enum machine_mode mode ATTRIBUTE_UNUSED,
-				tree type, int named ATTRIBUTE_UNUSED)
+static bool
+ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+			enum machine_mode mode ATTRIBUTE_UNUSED,
+			tree type, bool named ATTRIBUTE_UNUSED)
 {
   if (!TARGET_64BIT)
     return 0;

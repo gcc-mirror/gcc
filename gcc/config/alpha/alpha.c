@@ -5922,8 +5922,6 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
 	basereg = 16;
       else if (targetm.calls.must_pass_in_stack (mode, type))
 	return NULL_RTX;
-      else if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
-	basereg = 16;
     }
 #else
 #error Unhandled ABI
@@ -5977,6 +5975,17 @@ alpha_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 
   /* Otherwise types must fit in one register.  */
   return size > UNITS_PER_WORD;
+}
+
+/* Return true if TYPE should be passed by invisible reference.  */
+
+static bool
+alpha_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+			 enum machine_mode mode,
+			 tree type ATTRIBUTE_UNUSED,
+			 bool named ATTRIBUTE_UNUSED)
+{
+  return mode == TFmode || mode == TCmode;
 }
 
 /* Define how to find the value returned by a function.  VALTYPE is the
@@ -10187,6 +10196,8 @@ alpha_init_libfuncs (void)
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_false
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY alpha_return_in_memory
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE alpha_pass_by_reference
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS alpha_setup_incoming_varargs
 #undef TARGET_STRICT_ARGUMENT_NAMING

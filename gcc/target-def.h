@@ -362,6 +362,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_GIMPLIFY_VA_ARG_EXPR std_gimplify_va_arg_expr
 #endif
 
+#define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_false
+
 #define TARGET_LATE_RTL_PROLOGUE_EPILOGUE false
 
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size_or_pad
@@ -373,6 +375,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    TARGET_STRUCT_VALUE_RTX,					\
    TARGET_RETURN_IN_MEMORY,					\
    TARGET_RETURN_IN_MSB,					\
+   TARGET_PASS_BY_REFERENCE,					\
    TARGET_EXPAND_BUILTIN_SAVEREGS,				\
    TARGET_SETUP_INCOMING_VARARGS,				\
    TARGET_STRICT_ARGUMENT_NAMING,				\

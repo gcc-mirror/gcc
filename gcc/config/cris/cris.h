@@ -68,7 +68,6 @@ Boston, MA 02111-1307, USA.  */
 #define CRIS_PLT_GOTOFFSET_SUFFIX ":PLTG"
 #define CRIS_PLT_PCOFFSET_SUFFIX ":PLT"
 
-/* If you tweak this, don't forget to check cris_expand_builtin_va_arg.  */
 #define CRIS_FUNCTION_ARG_SIZE(MODE, TYPE)	\
   ((MODE) != BLKmode ? GET_MODE_SIZE (MODE)	\
    : (unsigned) int_size_in_bytes (TYPE))
@@ -939,13 +938,9 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
 
 /* Node: Register Arguments */
 
-/* The void_type_node is sent as a "closing" call.  We have to stop it
-   since it's invalid to FUNCTION_ARG_PASS_BY_REFERENCE (or was invalid at
-   some time).  */
+/* The void_type_node is sent as a "closing" call.  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)			\
  ((CUM).regs < CRIS_MAX_ARGS_IN_REGS				\
-  && (TYPE) != void_type_node					\
-  && ! FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED)	\
   ? gen_rtx_REG (MODE, (CRIS_FIRST_ARG_REG) + (CUM).regs)	\
   : NULL_RTX)
 
@@ -953,9 +948,8 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
    that an argument is named, since incoming stdarg/varargs arguments are
    pushed onto the stack, and we don't have to check against the "closing"
    void_type_node TYPE parameter.  */
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)			\
- (((NAMED) && (CUM).regs < CRIS_MAX_ARGS_IN_REGS			\
-   && ! FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))	\
+#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)		\
+ ((NAMED) && (CUM).regs < CRIS_MAX_ARGS_IN_REGS			\
   ? gen_rtx_REG (MODE, CRIS_FIRST_ARG_REG + (CUM).regs)		\
   : NULL_RTX)
 
@@ -965,13 +959,6 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
    && CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) > 4			\
    && CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) <= 8)			\
   ? 1 : 0)
-
-/* Structs may be passed by value, but they must not be more than 8
-   bytes long.  If you tweak this, don't forget to adjust
-   cris_expand_builtin_va_arg.  */
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
- (targetm.calls.must_pass_in_stack (MODE, TYPE)				\
-  || CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) > 8)				\
 
 /* Contrary to what you'd believe, defining FUNCTION_ARG_CALLEE_COPIES
    seems like a (small total) loss, at least for gcc-2.7.2 compiling and
@@ -991,11 +978,7 @@ struct cum_args {int regs;};
  ((CUM).regs = 0)
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\
- ((CUM).regs							\
-  = (FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)	\
-     ? (CRIS_MAX_ARGS_IN_REGS) + 1				\
-     : ((CUM).regs						\
-	+ (3 + (CRIS_FUNCTION_ARG_SIZE (MODE, TYPE))) / 4)))
+ ((CUM).regs += (3 + CRIS_FUNCTION_ARG_SIZE (MODE, TYPE)) / 4)
 
 #define FUNCTION_ARG_REGNO_P(REGNO)			\
  ((REGNO) >= CRIS_FIRST_ARG_REG				\

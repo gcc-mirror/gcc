@@ -332,6 +332,8 @@ static rtx sparc_struct_value_rtx (tree, int);
 static bool sparc_return_in_memory (tree, tree);
 static bool sparc_strict_argument_naming (CUMULATIVE_ARGS *);
 static tree sparc_gimplify_va_arg (tree, tree, tree *, tree *);
+static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
+				     enum machine_mode, tree, bool);
 
 /* Option handling.  */
 
@@ -436,6 +438,8 @@ enum processor_type sparc_cpu;
 #define TARGET_RETURN_IN_MEMORY sparc_return_in_memory
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE sparc_pass_by_reference
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS sparc_builtin_saveregs
@@ -5707,8 +5711,8 @@ function_arg_partial_nregs (const struct sparc_args *cum,
     }
   else
     {
-      /* We are guaranteed by function_arg_pass_by_reference that the size
-	 of the argument is not greater than 16 bytes, so we only need to
+      /* We are guaranteed by pass_by_reference that the size of the
+	 argument is not greater than 16 bytes, so we only need to
 	 return 1 if the argument is partially passed in registers.  */
 
       if (type && AGGREGATE_TYPE_P (type))
@@ -5739,16 +5743,16 @@ function_arg_partial_nregs (const struct sparc_args *cum,
   return 0;
 }
 
-/* Handle the FUNCTION_ARG_PASS_BY_REFERENCE macro.
+/* Return true if the argument should be passed by reference.
    !v9: The SPARC ABI stipulates passing struct arguments (of any size) and
    quad-precision floats by invisible reference.
    v9: Aggregates greater than 16 bytes are passed by reference.
    For Pascal, also pass arrays by reference.  */
 
-int
-function_arg_pass_by_reference (const struct sparc_args *cum ATTRIBUTE_UNUSED,
-				enum machine_mode mode, tree type,
-				int named ATTRIBUTE_UNUSED)
+static bool
+sparc_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+			 enum machine_mode mode, tree type,
+			 bool named ATTRIBUTE_UNUSED)
 {
   if (TARGET_ARCH32)
     {
@@ -6003,7 +6007,7 @@ sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   bool indirect;
   tree ptrtype = build_pointer_type (type);
 
-  if (function_arg_pass_by_reference (0, TYPE_MODE (type), type, 0))
+  if (pass_by_reference (NULL, TYPE_MODE (type), type, 0))
     {
       indirect = true;
       size = rsize = UNITS_PER_WORD;

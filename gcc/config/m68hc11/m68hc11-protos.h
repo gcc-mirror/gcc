@@ -123,10 +123,6 @@ extern void m68hc11_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx);
 extern rtx m68hc11_function_arg (const CUMULATIVE_ARGS* ,
                                  enum machine_mode,
                                  tree, int);
-extern int m68hc11_function_arg_pass_by_reference (const CUMULATIVE_ARGS*,
-                                                   enum machine_mode,
-                                                   tree,
-                                                   int);
 extern int m68hc11_function_arg_padding (enum machine_mode, tree);
 
 extern void m68hc11_function_epilogue (FILE*,int);

@@ -1,3 +1,112 @@
+2004-07-13  Richard Henderson  <rth@redhat.com>
+
+	* target.h (struct gcc_target): Add calls.pass_by_reference.
+	* target-def.h (TARGET_PASS_BY_REFERENCE): New.
+	* function.c (pass_by_reference): Use the hook.
+	* system.h (FUNCTION_ARG_PASS_BY_REFERENCE): Poison.
+	* targhooks.c, targhooks.h (hook_pass_by_reference_false): New.
+	(hook_pass_by_reference_must_pass_in_stack): New.
+	* config/alpha/alpha.c (function_arg): Don't query pass-by-ref.
+	(alpha_pass_by_reference): New.
+	(TARGET_PASS_BY_REFERENCE): New.
+	* config/alpha/alpha.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/arc/arc.c (arc_pass_by_reference): New.
+	(TARGET_PASS_BY_REFERENCE): New.
+	* config/arc/arc.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	(FUNCTION_ARG_CALLEE_COPIES): True.
+	* config/arm/arm-protos.h (arm_function_arg_pass_by_reference): Remove.
+	* config/arm/arm.c (TARGET_PASS_BY_REFERENCE): New.
+	(arm_pass_by_reference): Rename from arm_function_arg_pass_by_reference.
+	* config/arm/arm.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/c4x/c4x.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/cris/cris.c (cris_pass_by_reference): New.
+	(TARGET_PASS_BY_REFERENCE): New.
+	* config/cris/cris.h (FUNCTION_ARG): Don't query pass-by-ref.
+	(FUNCTION_INCOMING_ARG, FUNCTION_ARG_ADVANCE): Likewise.
+	(FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/fr30/fr30.c (TARGET_PASS_BY_REFERENCE): New.
+	* config/fr30/fr30.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/frv/frv-protos.h (frv_function_arg_pass_by_reference): Kill.
+	* config/frv/frv.c (TARGET_PASS_BY_REFERENCE): New.
+	(frv_function_arg_pass_by_reference): Remove.
+	* config/frv/frv.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/i386/i386-protos.h (function_arg_pass_by_reference): Remove.
+	* config/i386/i386.c (TARGET_PASS_BY_REFERENCE): New.
+	(ix86_pass_by_reference): Rename from function_arg_pass_by_reference.
+	* config/i386/i386.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/ia64/ia64-protos.h (ia64_function_arg_pass_by_reference): Kill.
+	* config/ia64/ia64.c (TARGET_PASS_BY_REFERENCE): New.
+	(ia64_pass_by_reference): Rename from
+	ia64_function_arg_pass_by_reference.
+	* config/ia64/ia64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/ip2k/ip2k.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/iq2000/iq2000-protos.h (function_arg_pass_by_reference): Kill.
+	* config/iq2000/iq2000.c (TARGET_PASS_BY_REFERENCE): New.
+	(iq2000_pass_by_reference): Rename from function_arg_pass_by_reference.
+	* config/iq2000/iq2000.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	(FUNCTION_ARG_CALLEE_COPIES): Don't reference pass-by-ref.
+	* config/m32r/m32r-protos.h (m32r_pass_by_reference): Remove.
+	* config/m32r/m32r.c (TARGET_PASS_BY_REFERENCE): New.
+	(m32r_pass_by_reference): Adjust prototype.  Make static.
+	Handle mode sizes correctly.
+	* config/m32r/m32r.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c
+	(m68hc11_function_arg_pass_by_reference): Remove.
+	* config/m68hc11/m68hc11.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	(FUNCTION_ARG_CALLEE_COPIES): Don't reference pass-by-ref.
+	* config/mcore/mcore.c (TARGET_PASS_BY_REFERENCE): New.
+	* config/mcore/mcore.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/mips/mips-protos.h (function_arg_pass_by_reference): Remove.
+	* config/mips/mips.c (TARGET_PASS_BY_REFERENCE): New.
+	(mips_va_arg): Use pass_by_reference.
+	(mips_pass_by_reference): Rename from function_arg_pass_by_reference.
+	Handle mode sizes correctly.
+	* config/mips/mips.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+        (FUNCTION_ARG_CALLEE_COPIES): Don't reference pass-by-ref.
+	* config/mmix/mmix-protos.h (mmix_function_arg_pass_by_reference): Kill.
+	* config/mmix/mmix.c (TARGET_PASS_BY_REFERENCE): New.
+	(mmix_pass_by_reference): Rename from
+	mmix_function_arg_pass_by_reference.
+	* config/mmix/mmix.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	(FUNCTION_ARG_CALLEE_COPIES): True.
+	* config/mn10300/mn10300.c (TARGET_PASS_BY_REFERENCE): New.
+	(mn10300_pass_by_reference): New.
+	* config/mn10300/mn10300.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	(FUNCTION_ARG_CALLEE_COPIES): True.
+	* config/pa/pa.c (pa_pass_by_reference): New.
+	(TARGET_PASS_BY_REFERENCE): New.
+	* config/pa/pa.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+        (FUNCTION_ARG_CALLEE_COPIES): True.
+	* config/rs6000/rs6000-protos.h (function_arg_pass_by_reference): Kill.
+	* config/rs6000/rs6000.c (TARGET_PASS_BY_REFERENCE): New.
+	(rs6000_pass_by_reference): Rename from function_arg_pass_by_reference.
+	* config/rs6000/rs6000.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/s390/s390-protos.h (s390_function_arg_pass_by_reference): Kill.
+	* config/s390/s390.c (TARGET_PASS_BY_REFERENCE): New.
+	(s390_pass_by_reference): Rename from
+	s390_function_arg_pass_by_reference.
+	(s390_function_arg_advance): Don't query pass-by-ref.
+	(s390_function_arg): Likewise.
+	(s390_gimplify_va_arg): Use pass_by_reference.
+	(s390_call_saved_register_used): Likewise.
+	* config/s390/s390.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/sh/sh.c (TARGET_PASS_BY_REFERENCE): New.
+	(shcompact_byref, sh_pass_by_reference): New.
+	* config/sh/sh.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	(SHCOMPACT_BYREF): Remove.
+	* config/sparc/sparc-protos.h (function_arg_pass_by_reference): Kill.
+	* config/sparc/sparc.c (TARGET_PASS_BY_REFERENCE): New.
+	(sparc_pass_by_reference): Rename from function_arg_pass_by_reference.
+	(sparc_gimplify_va_arg): Use pass_by_reference.
+	* config/sparc/sparc.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/stormy16/stormy16.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	* config/v850/v850.c (TARGET_PASS_BY_REFERENCE): New.
+	(v850_pass_by_reference): New.
+	* config/v850/v850.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
+	(FUNCTION_ARG_CALLEE_COPIES): True.
+	* doc/tm.texi (TARGET_PASS_BY_REFERENCE): Update from
+	FUNCTION_ARG_PASS_BY_REFERENCE docs.
+
 2004-07-14  Richard Henderson  <rth@redhat.com>
 	    Richard Sandiford  <rsandifo@redhat.com>
 

@@ -455,9 +455,6 @@ enum reg_class {
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == REG_RESULT)
 
-/* Indicate that large structures are passed by reference.  */
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM,MODE,TYPE,NAMED)	0
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 #define EPILOGUE_USES(REGNO) 0
