@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -90,10 +90,9 @@ iterators invalidated are those referring to the deleted node.
 
 namespace std
 { 
-
-typedef bool _Rb_tree_Color_type;
-const _Rb_tree_Color_type _S_rb_tree_red = false;
-const _Rb_tree_Color_type _S_rb_tree_black = true;
+  typedef bool _Rb_tree_Color_type;
+  extern const _Rb_tree_Color_type _S_rb_tree_red; // false
+  extern const _Rb_tree_Color_type _S_rb_tree_black; // true
 
 struct _Rb_tree_node_base
 {

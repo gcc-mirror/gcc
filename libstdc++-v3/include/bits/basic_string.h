@@ -119,7 +119,6 @@ namespace std
       //   4. All fields==0 is an empty string, given the extra storage
       //      beyond-the-end for a null terminator; thus, the shared
       //      empty string representation needs no constructor.
-
       struct _Rep
       {
 	// Types:
