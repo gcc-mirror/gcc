@@ -705,7 +705,7 @@ namespace __gnu_cxx
 	  // Already reserved.
 	  typedef typename __pool_type::_Block_record _Block_record;
 	  _Block_record* __block = __bin._M_first[__thread_id];
-	  __bin._M_first[__thread_id] = __bin._M_first[__thread_id]->_M_next;
+	  __bin._M_first[__thread_id] = __block->_M_next;
 	  
 	  __pool._M_adjust_freelist(__bin, __block, __thread_id);
 	  const __pool_base::_Tune& __options = __pool._M_get_options();
