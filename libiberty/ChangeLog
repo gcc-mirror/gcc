@@ -1,3 +1,9 @@
+2001-10-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* bcmp.c, setenv.c: Use "nonzero" instead of "non-zero".
+	* strtod.c: Use "ISO C" instead of "ANSI C".
+	* functions.texi: Regenerate.
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* alloca.c, clock.c, getcwd.c, getpagesize.c, getpwd.c, index.c,
