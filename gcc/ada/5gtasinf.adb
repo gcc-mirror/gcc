@@ -77,16 +77,14 @@ package body System.Task_Info is
       ---------
 
       function "+" (R : Resource_T) return Resource_Vector_T is
-         Result  : Resource_Vector_T  := NO_RESOURCES;
-
+         Result : Resource_Vector_T  := NO_RESOURCES;
       begin
          Result (Resource_T'Pos (R)) := True;
          return Result;
       end "+";
 
       function "+" (R1, R2 : Resource_T) return Resource_Vector_T is
-         Result  : Resource_Vector_T  := NO_RESOURCES;
-
+         Result : Resource_Vector_T  := NO_RESOURCES;
       begin
          Result (Resource_T'Pos (R1)) := True;
          Result (Resource_T'Pos (R2)) := True;
@@ -94,44 +92,37 @@ package body System.Task_Info is
       end "+";
 
       function "+"
-        (R    : Resource_T;
-         S    : Resource_Vector_T)
-         return Resource_Vector_T
+        (R : Resource_T;
+         S : Resource_Vector_T) return Resource_Vector_T
       is
-         Result  : Resource_Vector_T := S;
-
+         Result : Resource_Vector_T := S;
       begin
          Result (Resource_T'Pos (R)) := True;
          return Result;
       end "+";
 
       function "+"
-        (S    : Resource_Vector_T;
-         R    : Resource_T)
-         return Resource_Vector_T
+        (S : Resource_Vector_T;
+         R : Resource_T) return Resource_Vector_T
       is
-         Result  : Resource_Vector_T :=  S;
-
+         Result : Resource_Vector_T :=  S;
       begin
          Result (Resource_T'Pos (R)) := True;
          return Result;
       end "+";
 
       function "+" (S1, S2 : Resource_Vector_T) return Resource_Vector_T is
-         Result  : Resource_Vector_T;
-
+         Result : Resource_Vector_T;
       begin
          Result :=  S1 or S2;
          return Result;
       end "+";
 
       function "-"
-        (S    : Resource_Vector_T;
-         R    : Resource_T)
-         return Resource_Vector_T
+        (S : Resource_Vector_T;
+         R : Resource_T) return Resource_Vector_T
       is
-         Result  : Resource_Vector_T := S;
-
+         Result : Resource_Vector_T := S;
       begin
          Result (Resource_T'Pos (R)) := False;
          return Result;
@@ -177,21 +168,23 @@ package body System.Task_Info is
          end if;
 
          if Attr.NDPRI /= NDP_NONE then
---  ??? why is that comment out, should it be removed ?
+
+--  ??? why is this commented out, should it be removed ?
 --          if Geteuid /= 0 then
 --             raise Permission_Error;
 --          end if;
 
-            Status := sproc_attr_setprio
-              (Sproc_Attr'Unrestricted_Access,
-               int (Attr.NDPRI));
+            Status :=
+              sproc_attr_setprio
+                (Sproc_Attr'Unrestricted_Access, int (Attr.NDPRI));
          end if;
 
-         Status := sproc_create
-           (Sproc'Unrestricted_Access,
-            Sproc_Attr'Unrestricted_Access,
-            null,
-            System.Null_Address);
+         Status :=
+           sproc_create
+             (Sproc'Unrestricted_Access,
+              Sproc_Attr'Unrestricted_Access,
+              null,
+              System.Null_Address);
 
          if Status /= 0 then
             Status := sproc_attr_destroy (Sproc_Attr'Unrestricted_Access);
@@ -199,7 +192,6 @@ package body System.Task_Info is
          end if;
 
          Status := sproc_attr_destroy (Sproc_Attr'Unrestricted_Access);
-
       end if;
 
       if Status /= 0 then
@@ -217,12 +209,10 @@ package body System.Task_Info is
      (Sproc_Resources : Resource_Vector_T      := NO_RESOURCES;
       CPU             : CPU_Number             := ANY_CPU;
       Resident        : Page_Locking           := NOLOCK;
-      NDPRI           : Non_Degrading_Priority := NDP_NONE)
-      return            sproc_t
+      NDPRI           : Non_Degrading_Priority := NDP_NONE) return sproc_t
    is
       Attr : constant Sproc_Attributes :=
-        (Sproc_Resources, CPU, Resident, NDPRI);
-
+               (Sproc_Resources, CPU, Resident, NDPRI);
    begin
       return New_Sproc (Attr);
    end New_Sproc;
@@ -233,8 +223,7 @@ package body System.Task_Info is
 
    function Unbound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
-      Thread_Timeslice : Duration          := 0.0)
-      return             Thread_Attributes
+      Thread_Timeslice : Duration          := 0.0) return Thread_Attributes
    is
    begin
       return (False, Thread_Resources, Thread_Timeslice);
@@ -265,11 +254,10 @@ package body System.Task_Info is
       CPU              : CPU_Number             := ANY_CPU;
       Resident         : Page_Locking           := NOLOCK;
       NDPRI            : Non_Degrading_Priority := NDP_NONE)
-      return             Thread_Attributes
+      return Thread_Attributes
    is
       Sproc : constant sproc_t := New_Sproc
-        (Sproc_Resources, CPU, Resident, NDPRI);
-
+                (Sproc_Resources, CPU, Resident, NDPRI);
    begin
       return (True, Thread_Resources, Thread_Timeslice, Sproc);
    end Bound_Thread_Attributes;
@@ -280,8 +268,7 @@ package body System.Task_Info is
 
    function New_Unbound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
-      Thread_Timeslice : Duration          := 0.0)
-      return             Task_Info_Type
+      Thread_Timeslice : Duration          := 0.0) return Task_Info_Type
    is
    begin
       return new Thread_Attributes'
@@ -295,8 +282,7 @@ package body System.Task_Info is
    function New_Bound_Thread_Attributes
      (Thread_Resources : Resource_Vector_T := NO_RESOURCES;
       Thread_Timeslice : Duration          := 0.0;
-      Sproc            : sproc_t)
-      return             Task_Info_Type
+      Sproc            : sproc_t) return Task_Info_Type
    is
    begin
       return new Thread_Attributes'
@@ -314,11 +300,10 @@ package body System.Task_Info is
       CPU              : CPU_Number             := ANY_CPU;
       Resident         : Page_Locking           := NOLOCK;
       NDPRI            : Non_Degrading_Priority := NDP_NONE)
-      return             Task_Info_Type
+      return Task_Info_Type
    is
       Sproc : constant sproc_t := New_Sproc
-        (Sproc_Resources, CPU, Resident, NDPRI);
-
+                (Sproc_Resources, CPU, Resident, NDPRI);
    begin
       return new Thread_Attributes'
         (True, Thread_Resources, Thread_Timeslice, Sproc);

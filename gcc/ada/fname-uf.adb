@@ -123,8 +123,8 @@ package body Fname.UF is
    -------------------
 
    function Get_File_Name
-     (Uname   : Unit_Name_Type;
-      Subunit : Boolean;
+     (Uname    : Unit_Name_Type;
+      Subunit  : Boolean;
       May_Fail : Boolean := False) return File_Name_Type
    is
       Unit_Char : Character;
@@ -387,12 +387,12 @@ package body Fname.UF is
 
                   --  If we are in the second search of the table, we accept
                   --  the file name without checking, because we know that
-                  --  the file does not exist.
+                  --  the file does not exist, except when May_Fail is True,
+                  --  in which case we return No_File.
 
                   if No_File_Check then
                      if May_Fail then
                         return No_File;
-
                      else
                         return Fnam;
                      end if;

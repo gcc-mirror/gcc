@@ -297,6 +297,8 @@ package body Impunit is
      "s-assert",    -- System.Assertions
      "s-memory",    -- System.Memory
      "s-parint",    -- System.Partition_Interface
+     "s-restri",    -- System.Restrictions
+     "s-rident",    -- System.Rident
      "s-tasinf",    -- System.Task_Info
      "s-wchcnv",    -- System.Wch_Cnv
      "s-wchcon");   -- System.Wch_Con

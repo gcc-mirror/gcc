@@ -372,7 +372,7 @@ package body Restrict is
         and then Restrictions.Set (No_Protected_Type_Allocators)
         and then Restrictions.Set (No_Local_Protected_Objects)
         and then Restrictions.Set (No_Requeue_Statements)
-        and then Restrictions.Set (No_Task_Attributes)
+        and then Restrictions.Set (No_Task_Attributes_Package)
         and then Restrictions.Set (Max_Asynchronous_Select_Nesting)
         and then Restrictions.Set (Max_Task_Entries)
         and then Restrictions.Set (Max_Protected_Entries)
@@ -472,7 +472,7 @@ package body Restrict is
       Set_Restriction (No_Protected_Type_Allocators, N);
       Set_Restriction (No_Local_Protected_Objects,   N);
       Set_Restriction (No_Requeue_Statements,        N);
-      Set_Restriction (No_Task_Attributes,           N);
+      Set_Restriction (No_Task_Attributes_Package,   N);
 
       --  Set parameter restrictions
 

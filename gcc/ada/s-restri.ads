@@ -39,7 +39,7 @@ package System.Restrictions is
    pragma Discard_Names;
    package Rident is new System.Rident;
 
-   Restrictions : Rident.Restrictions_Info;
+   Run_Time_Restrictions : Rident.Restrictions_Info;
 
    ------------------
    -- Subprograms --

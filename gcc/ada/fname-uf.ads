@@ -44,14 +44,18 @@ package Fname.UF is
    -----------------
 
    function Get_File_Name
-     (Uname   : Unit_Name_Type;
-      Subunit : Boolean;
+     (Uname    : Unit_Name_Type;
+      Subunit  : Boolean;
       May_Fail : Boolean := False) return File_Name_Type;
    --  This function returns the file name that corresponds to a given unit
    --  name, Uname. The Subunit parameter is set True for subunits, and
    --  false for all other kinds of units. The caller is responsible for
    --  ensuring that the unit name meets the requirements given in package
    --  Uname and described above.
+   --  When May_Fail is True, if the file cannot be found, this function
+   --  returns No_File. When it is False, if the file cannot be found,
+   --  a file name compatible with one pattern Source_File_Name pragma is
+   --  returned.
 
    procedure Initialize;
    --  Initialize internal tables. This is called automatically when the

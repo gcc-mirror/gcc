@@ -24,13 +24,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Butil;    use Butil;
-with Debug;    use Debug;
-with Fname;    use Fname;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Osint;    use Osint;
-with Output;   use Output;
+with Butil;  use Butil;
+with Debug;  use Debug;
+with Fname;  use Fname;
+with Namet;  use Namet;
+with Opt;    use Opt;
+with Osint;  use Osint;
+with Output; use Output;
 
 package body ALI is
 
@@ -105,8 +105,7 @@ package body ALI is
       Err          : Boolean;
       Read_Xref    : Boolean := False;
       Read_Lines   : String := "";
-      Ignore_Lines : String := "X")
-      return         ALI_Id
+      Ignore_Lines : String := "X") return ALI_Id
    is
       P         : Text_Ptr := T'First;
       Line      : Logical_Line_Number := 1;
@@ -328,8 +327,10 @@ package body ALI is
       -- Get_Name --
       --------------
 
-      function Get_Name (Lower : Boolean := False;
-                         Ignore_Spaces : Boolean := False) return Name_Id is
+      function Get_Name
+        (Lower         : Boolean := False;
+         Ignore_Spaces : Boolean := False) return Name_Id
+      is
       begin
          Name_Len := 0;
          Skip_Space;

@@ -141,6 +141,16 @@ package body Bindgen is
    procedure Gen_Output_File_C (Filename : String);
    --  Generate output file (C code case)
 
+   procedure Gen_Restrictions_String_1;
+   --  Generate first restrictions string, which consists of the parameters
+   --  the first R line, as described in lib-writ.ads, with the restrictions
+   --  being those for the entire partition (from Cumulative_Restrictions).
+
+   procedure Gen_Restrictions_String_2;
+   --  Generate first restrictions string, which consists of the parameters
+   --  the second R line, as described in lib-writ.ads, with the restrictions
+   --  being those for the entire partition (from Cumulative_Restrictions).
+
    procedure Gen_Versions_Ada;
    --  Output series of definitions for unit versions (Ada code case)
 
@@ -358,13 +368,15 @@ package body Bindgen is
 
          Set_String ("      Restrictions : constant String :=");
          Write_Statement_Buffer;
+
          Set_String ("        """);
+         Gen_Restrictions_String_1;
+         Set_String (""" &");
+         Write_Statement_Buffer;
 
-         for J in All_Restrictions loop
-            null;
-         end loop;
-
-         Set_String (""";");
+         Set_String ("        """);
+         Gen_Restrictions_String_2;
+         Set_String (""" & ASCII.Nul;");
          Write_Statement_Buffer;
          WBI ("");
 
@@ -606,11 +618,8 @@ package body Bindgen is
          --  Generate definition for restrictions string
 
          Set_String ("   const char *restrictions = """);
-
-         for J in All_Restrictions loop
-            null;
-         end loop;
-
+         Gen_Restrictions_String_1;
+         Gen_Restrictions_String_2;
          Set_String (""";");
          Write_Statement_Buffer;
 
@@ -2452,6 +2461,52 @@ package body Bindgen is
 
       Close_Binder_Output;
    end Gen_Output_File_C;
+
+   -------------------------------
+   -- Gen_Restrictions_String_1 --
+   -------------------------------
+
+   procedure Gen_Restrictions_String_1 is
+   begin
+      for R in All_Boolean_Restrictions loop
+         if Cumulative_Restrictions.Set (R) then
+            Set_Char ('r');
+         elsif Cumulative_Restrictions.Violated (R) then
+            Set_Char ('v');
+         else
+            Set_Char ('n');
+         end if;
+      end loop;
+   end Gen_Restrictions_String_1;
+
+   -------------------------------
+   -- Gen_Restrictions_String_2 --
+   -------------------------------
+
+   procedure Gen_Restrictions_String_2 is
+   begin
+      for RP in All_Parameter_Restrictions loop
+         if Cumulative_Restrictions.Set (RP) then
+            Set_Char ('r');
+            Set_Int (Int (Cumulative_Restrictions.Value (RP)));
+         else
+            Set_Char ('n');
+         end if;
+
+         if not Cumulative_Restrictions.Violated (RP)
+           or else RP not in Checked_Parameter_Restrictions
+         then
+            Set_Char ('n');
+         else
+            Set_Char ('v');
+            Set_Int (Int (Cumulative_Restrictions.Count (RP)));
+
+            if Cumulative_Restrictions.Unknown (RP) then
+               Set_Char ('+');
+            end if;
+         end if;
+      end loop;
+   end Gen_Restrictions_String_2;
 
    ----------------------
    -- Gen_Versions_Ada --
