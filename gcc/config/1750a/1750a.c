@@ -117,7 +117,7 @@ output_function_prologue (file, size)
    The function epilogue should not depend on the current stack
    pointer!  It should use the frame pointer only.  This is mandatory
    because of alloca; we also take advantage of it to omit stack
-   adjustments before returning. */
+   adjustments before returning.  */
 
 static void
 output_function_epilogue (file, size)
@@ -157,7 +157,7 @@ notice_update_cc (exp)
       /* Jumps do not alter the cc's.  */
       if (SET_DEST (exp) == pc_rtx)
 	return;
-      /* Moving a register or constant into memory doesn't alter the cc's. */
+      /* Moving a register or constant into memory doesn't alter the cc's.  */
       if (GET_CODE (SET_DEST (exp)) == MEM
 	  && (src_code == REG || src_code == CONST_INT))
 	return;
@@ -182,7 +182,7 @@ notice_update_cc (exp)
 	  cc_status.value1 = SET_SRC (exp);
 	  return;
 	}
-      /* Anything else will set cc_status. */
+      /* Anything else will set cc_status.  */
       cc_status.flags = CC_NO_OVERFLOW;
       cc_status.value1 = SET_SRC (exp);
       cc_status.value2 = SET_DEST (exp);
