@@ -1,5 +1,11 @@
 2003-12-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* system.h (DEFAULT_CALLER_SAVES): Poison.
+	* toplev.c (flag_caller_saves): Always initialize with 0.
+	* doc/tm.texi (DEFAULT_CALLER_SAVES): Remove.
+
+2003-12-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* flow.c (EXIT_IGNORE_STACK): Move to ...
 	* defaults.h (EXIT_IGNORE_STACK): ... here.
 	* dojump.c (clear_pending_stack_adjust): Don't use #ifdef
