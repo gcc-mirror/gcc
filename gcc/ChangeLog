@@ -1,3 +1,9 @@
+Wed Mar 25 13:40:48 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* c-common.c (check_format_info): Initialize type, is_type.  New local
+	integral_format.  Don't warn for 'L' when pedantic.  Do warn for 'L'
+	when pedantic if used with integral format specifier.
+
 Wed Mar 25 16:09:01 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.h (FUNCTION_ARG_PADDING): Cast result to be enum

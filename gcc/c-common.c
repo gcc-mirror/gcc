@@ -379,8 +379,8 @@ void
 decl_attributes (node, attributes, prefix_attributes)
      tree node, attributes, prefix_attributes;
 {
-  tree decl = 0, type;
-  int is_type;
+  tree decl = 0, type = 0;
+  int is_type = 0;
   tree a;
 
   if (attrtab_idx == 0)
@@ -1185,6 +1185,7 @@ check_format_info (info, params)
   int length_char;
   int format_char;
   int format_length;
+  int integral_format;
   tree format_tree;
   tree cur_param;
   tree cur_type;
@@ -1448,7 +1449,7 @@ check_format_info (info, params)
       else if (*format_chars == 'q' || *format_chars == 'L')
 	{
 	  length_char = *format_chars++;
-	  if (pedantic)
+	  if (pedantic && length_char == 'q')
 	    pedwarn ("ANSI C does not support the `%c' length modifier",
 		     length_char);
 	}
@@ -1557,10 +1558,10 @@ check_format_info (info, params)
 	      warning (message);
 	    }
 	}
-      if (precise && index (flag_chars, '0') != 0
-	  && (format_char == 'd' || format_char == 'i'
-	      || format_char == 'o' || format_char == 'u'
-	      || format_char == 'x' || format_char == 'x'))
+      integral_format = (format_char == 'd' || format_char == 'i'
+			 || format_char == 'o' || format_char == 'u'
+			 || format_char == 'x' || format_char == 'x');
+      if (precise && index (flag_chars, '0') != 0 && integral_format)
 	{
 	  sprintf (message,
 		   "`0' flag ignored with precision specifier and `%c' format",
@@ -1575,7 +1576,8 @@ check_format_info (info, params)
 	case 'q': wanted_type = fci->qlen ? *(fci->qlen) : 0; break;
 	case 'L': wanted_type = fci->bigllen ? *(fci->bigllen) : 0; break;
 	}
-      if (wanted_type == 0)
+      if (wanted_type == 0
+	  || (pedantic && length_char == 'L' && integral_format))
 	{
 	  sprintf (message,
 		   "use of `%c' length character with `%c' type character",
