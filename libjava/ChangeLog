@@ -1,3 +1,11 @@
+2004-10-08  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/util/Calendar.java (set): Invalidate DST_OFFSET
+	field as a DST boundary may have been crossed.
+	* java/util/GregorianCalendar.java (add): Throw 
+	IllegalArgumentException on attempt to add to DST_OFFSET or 
+	ZONE_OFFSET fields. Update javadoc.
+
 2004-10-09  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/CharArrayWriter.java

@@ -651,6 +651,10 @@ public abstract class Calendar implements Serializable, Cloneable
 	isSet[HOUR_OF_DAY] = false;
 	break;
       }
+
+    // May have crossed over a DST boundary.
+    if (field != DST_OFFSET && field != ZONE_OFFSET)
+      isSet[DST_OFFSET] = false;
   }
 
   /**
@@ -671,6 +675,8 @@ public abstract class Calendar implements Serializable, Cloneable
     isSet[WEEK_OF_MONTH] = false;
     isSet[DAY_OF_WEEK] = false;
     isSet[DAY_OF_WEEK_IN_MONTH] = false;
+
+    isSet[DST_OFFSET] = false;  // May have crossed a DST boundary.
   }
 
   /**
