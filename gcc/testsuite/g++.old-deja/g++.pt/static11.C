@@ -5,7 +5,7 @@
 // in their dejagnu baseboard description) require that the status is
 // final when exit is entered (or main returns), and not "overruled" by a
 // destructor calling _exit.  It's not really worth it to handle that.
-// Skip if target: mmix-knuth-mmixware
+// Skip if target: mmix-knuth-mmixware xtensa-*-elf*
 
 extern "C" void _exit (int);
 
