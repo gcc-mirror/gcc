@@ -911,9 +911,9 @@ extern char *alpha_function_name;
 
 #define FUNCTION_PROFILER(FILE, LABELNO)			\
     do {							\
-	fputs ("\tlda $27,_mcount\n"				\
-	       "\tjsr $27,($27),_mcount\n"			\
-	       "\tldgp $29,0($26)\n", (FILE));			\
+	fputs ("\tlda $27,_mcount\n", (FILE));			\
+	fputs ("\tjsr $27,($27),_mcount\n", (FILE));		\
+	fputs ("\tldgp $29,0($26)\n", (FILE));			\
     } while (0);
 
 
@@ -924,13 +924,13 @@ extern char *alpha_function_name;
 #define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)			\
     do {							\
 	ASM_OUTPUT_REG_PUSH (FILE, 16);				\
-	fputs (	 "\tlda $16,$PBX32\n"				\
-		 "\tldq $26,0($16)\n"				\
-		 "\tbne $26,1f\n"				\
-		 "\tlda $27,__bb_init_func\n"			\
-		 "\tjsr $26,($27),__bb_init_func\n"		\
-		 "\tldgp $29,0($26)\n"				\
-		 "1:\n", (FILE));				\
+	fputs ("\tlda $16,$PBX32\n", (FILE));			\
+	fputs ("\tldq $26,0($16)\n", (FILE));			\
+	fputs ("\tbne $26,1f\n", (FILE));			\
+	fputs ("\tlda $27,__bb_init_func\n", (FILE));		\
+	fputs ("\tjsr $26,($27),__bb_init_func\n", (FILE));	\
+	fputs ("\tldgp $29,0($26)\n", (FILE));			\
+	fputs ("1:\n", (FILE));					\
 	ASM_OUTPUT_REG_POP (FILE, 16);				\
     } while (0);
 
@@ -940,17 +940,16 @@ extern char *alpha_function_name;
 #define BLOCK_PROFILER(FILE, BLOCKNO)				\
     do {							\
 	int blockn = (BLOCKNO);					\
-	fprintf (FILE,						\
-		 "\tsubq $30,16,$30\n"				\
-		 "\tstq $0,0($30)\n"				\
-		 "\tstq $1,8($30)\n"				\
-		 "\tlda $0,$PBX34\n"				\
-		 "\tldq $1,%d($0)\n"				\
-		 "\taddq $1,1,$1\n"				\
-		 "\tstq $1,%d($0)\n"				\
-		 "\tldq $0,0($30)\n"				\
-		 "\tldq $1,8($30)\n"				\
-		 "\taddq $30,16,$30\n", 8*blockn, 8*blockn);	\
+	fputs ("\tsubq $30,16,$30\n", (FILE));			\
+	fputs ("\tstq $0,0($30)\n", (FILE));			\
+	fputs ("\tstq $1,8($30)\n", (FILE));			\
+	fputs ("\tlda $0,$PBX34\n", (FILE));			\
+	fprintf ((FILE), "\tldq $1,%d($0)\n", 8*blockn);	\
+	fputs ("\taddq $1,1,$1\n", (FILE));			\
+	fprintf ((FILE), "\tstq $1,%d($0)\n", 8*blockn);	\
+	fputs ("\tldq $0,0($30)\n", (FILE));			\
+	fputs ("\tldq $1,8($30)\n", (FILE));			\
+	fputs ("\taddq $30,16,$30\n", (FILE));			\
     } while (0)
 
 
