@@ -1612,8 +1612,18 @@ adjust_address (memref, mode, offset)
 {
   /* For now, this is just a wrapper for change_address, but eventually
      will do memref tracking.  */
-  return
-    change_address (memref, mode, plus_constant (XEXP (memref, 0), offset));
+  rtx addr = XEXP (memref, 0);
+
+  /* If MEMREF is a LO_SUM and the offset is within the size of the
+     object, we can merge it into the LO_SUM.  */
+  if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
+      && offset >= 0 && offset < GET_MODE_SIZE (GET_MODE (memref)))
+    addr = gen_rtx_LO_SUM (mode, XEXP (addr, 0),
+			   plus_constant (XEXP (addr, 1), offset));
+  else
+    addr = plus_constant (addr, offset);
+
+  return change_address (memref, mode, addr);
 }
 
 /* Likewise, but the reference is not required to be valid.  */
@@ -1626,8 +1636,18 @@ adjust_address_nv (memref, mode, offset)
 {
   /* For now, this is just a wrapper for change_address, but eventually
      will do memref tracking.  */
-  return change_address_1 (memref, mode,
-			   plus_constant (XEXP (memref, 0), offset), 0);
+  rtx addr = XEXP (memref, 0);
+
+  /* If MEMREF is a LO_SUM and the offset is within the size of the
+     object, we can merge it into the LO_SUM.  */
+  if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
+      && offset >= 0 && offset < GET_MODE_SIZE (GET_MODE (memref)))
+    addr = gen_rtx_LO_SUM (mode, XEXP (addr, 0),
+			   plus_constant (XEXP (addr, 1), offset));
+  else
+    addr = plus_constant (addr, offset);
+
+  return change_address_1 (memref, mode, addr, 0);
 }
 
 /* Return a memory reference like MEMREF, but with its address changed to

@@ -1,5 +1,9 @@
 Mon Jul  9 06:41:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* emit-rtl.c (adjust_address, adjust_address_nv): Handle an
+	address that is a LO_SUM specially.
+	* explow.c (plus_constant_wide, case LO_SUM): Deleted.
+
 	* c-lang.c (start_cdtor): Remove extra parameter from start_function.
 
 	* emit-rtl.c (adjust_address_nv, replace_equiv_address_nv): New fcns.
