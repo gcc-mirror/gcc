@@ -1,3 +1,7 @@
+1999-08-25  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* thunk1.C: New test.
+
 1999-08-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* dwarf2.C, dwarf3.C: Added XFAIL for Solaris/x86.  Removed
