@@ -1,3 +1,8 @@
+2004-01-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-parse.in (stmts_and_decls): Make label at end of compound
+	statement a hard error.
+
 2004-01-14  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (create_edge): Use local.redefined_extern_inline.

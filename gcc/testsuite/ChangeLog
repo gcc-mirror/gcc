@@ -1,3 +1,12 @@
+2004-01-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/label-compound-stmt-1.c: New test.
+	* gcc.c-torture/compile/950922-1.c,
+	gcc.c-torture/compile/20000211-3.c,
+	gcc.c-torture/compile/20000518-1.c,
+	gcc.c-torture/compile/20021108-1.c: Avoid labels at and of
+	compound statements.
+
 2004-01-14  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* gcc.dg/ppc64-abi-1.c: New test.
