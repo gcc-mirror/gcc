@@ -1,3 +1,8 @@
+2004-08-12  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/extend.texi (AltiVec builtins): Fix description for recent
+	changes.  Update operation list to match current support.
+
 2004-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (struct s390_frame_layout): New struct as element
