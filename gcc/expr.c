@@ -1,6 +1,6 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -212,7 +212,7 @@ static char direct_store[NUM_MACHINE_MODES];
    to perform a structure copy.  */
 #ifndef MOVE_BY_PIECES_P
 #define MOVE_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN) < MOVE_RATIO)
+  (move_by_pieces_ninsns (SIZE, ALIGN) < (unsigned int) MOVE_RATIO)
 #endif
 
 /* This array records the insn_code of insns to perform block moves.  */
@@ -1967,7 +1967,7 @@ emit_group_load (dst, orig_src, ssize, align)
       int shift = 0;
 
       /* Handle trailing fragments that run over the size of the struct.  */
-      if (ssize >= 0 && bytepos + bytelen > ssize)
+      if (ssize >= 0 && bytepos + (HOST_WIDE_INT) bytelen > ssize)
 	{
 	  shift = (bytelen - (ssize - bytepos)) * BITS_PER_UNIT;
 	  bytelen = ssize - bytepos;
@@ -1992,7 +1992,7 @@ emit_group_load (dst, orig_src, ssize, align)
 	  if (bytepos == 0
 	      && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 0))))
 	    tmps[i] = XEXP (src, 0);
-	  else if (bytepos == GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
+	  else if (bytepos == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
 		   && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 1))))
 	    tmps[i] = XEXP (src, 1);
 	  else
@@ -2090,7 +2090,7 @@ emit_group_store (orig_dst, src, ssize, align)
       unsigned int bytelen = GET_MODE_SIZE (mode);
 
       /* Handle trailing fragments that run over the size of the struct.  */
-      if (ssize >= 0 && bytepos + bytelen > ssize)
+      if (ssize >= 0 && bytepos + (HOST_WIDE_INT) bytelen > ssize)
 	{
 	  if (BYTES_BIG_ENDIAN)
 	    {
@@ -2539,7 +2539,7 @@ clear_storage (object, size, align)
      just move a zero.  Otherwise, do this a piece at a time.  */
   if (GET_MODE (object) != BLKmode
       && GET_CODE (size) == CONST_INT
-      && GET_MODE_SIZE (GET_MODE (object)) == INTVAL (size))
+      && GET_MODE_SIZE (GET_MODE (object)) == (unsigned int) INTVAL (size))
     emit_move_insn (object, CONST0_RTX (GET_MODE (object)));
   else
     {
@@ -4151,9 +4151,10 @@ store_expr (exp, target, want_value)
 		{
 		  addr = plus_constant (addr, TREE_STRING_LENGTH (exp));
 		  size = plus_constant (size, -TREE_STRING_LENGTH (exp));
-		  align = MIN (align, (BITS_PER_UNIT
-				       * (INTVAL (copy_size_rtx)
-					  & - INTVAL (copy_size_rtx))));
+		  align = MIN (align,
+			       (unsigned int) (BITS_PER_UNIT
+					       * (INTVAL (copy_size_rtx)
+						  & - INTVAL (copy_size_rtx))));
 		}
 	      else
 		{
@@ -4343,7 +4344,7 @@ store_constructor_field (target, bitsize, bitpos,
       /* Show the alignment may no longer be what it was and update the alias
 	 set, if required.  */
       if (bitpos != 0)
-	align = MIN (align, bitpos & - bitpos);
+	align = MIN (align, (unsigned int) bitpos & - bitpos);
       if (GET_CODE (target) == MEM)
 	MEM_ALIAS_SET (target) = alias_set;
 
@@ -4429,7 +4430,7 @@ store_constructor (exp, target, align, cleared, size)
 		    != fields_length (type))
 		   || mostly_zeros_p (exp))
 	       && (GET_CODE (target) != REG
-		   || GET_MODE_SIZE (GET_MODE (target)) == size))
+		   || (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target)) == size))
 	{
 	  if (! cleared)
 	    clear_storage (target, GEN_INT (size), align);
@@ -5040,7 +5041,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 
       PUT_MODE (blk_object, BLKmode);
 
-      if (bitsize != GET_MODE_BITSIZE (GET_MODE (target)))
+      if (bitsize != (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target)))
 	emit_move_insn (object, target);
 
       store_field (blk_object, bitsize, bitpos, mode, exp, VOIDmode, 0,
@@ -7287,7 +7288,7 @@ expand_expr (exp, target, tmode, modifier)
 			 MIN ((int_size_in_bytes (TREE_TYPE
 						  (TREE_OPERAND (exp, 0)))
 			       * BITS_PER_UNIT),
-			      GET_MODE_BITSIZE (mode)),
+			      (HOST_WIDE_INT) GET_MODE_BITSIZE (mode)),
 			 0, TYPE_MODE (valtype), TREE_OPERAND (exp, 0),
 			 VOIDmode, 0, BITS_PER_UNIT,
 			 int_size_in_bytes (type), 0);
