@@ -1,3 +1,7 @@
+2003-02-07  Andrey Petrov <petrov@netbsd.org>
+
+        * optabs.c (expand_float): Search wider integer modes first.
+
 2003-02-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config.gcc (hppa*-*-linux*): Set MASK_NO_SPACE_REGS in
