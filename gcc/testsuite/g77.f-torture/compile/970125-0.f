@@ -18,6 +18,9 @@ C No options:
 C ../../egcs/gcc/f/info.c:259: failed assertion `ffeinfo_types_[basictype][kindtype] != NULL'
 C -fno-globals -O:
 C ../../egcs/gcc/expr.c:7291: Internal compiler error in function expand_expr
+
+c     Frontend bug fixed by JCB 1998-06-01 com.c &c changes.
+
         integer*4 i4
         integer*8 i8
         integer*8 max4
