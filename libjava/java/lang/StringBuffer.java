@@ -454,7 +454,9 @@ public final class StringBuffer implements Serializable
    */
   public StringBuffer insert (int offset, char[] data)
   {
-    return insert (offset, data, 0, data.length);
+    // One could check if offset is invalid here instead of making sure that
+    // data isn't null before dereferencing, but this works just as well.
+    return insert (offset, data, 0, data == null ? 0 : data.length);
   }
 
   /** Insert the <code>char[]</code> argument into this
