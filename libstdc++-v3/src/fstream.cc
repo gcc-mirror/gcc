@@ -162,9 +162,10 @@ namespace std
 
 		  const char* __eend;
 		  char_type* __iend;
-		  __res_type __r = __cvt.in(_M_state_cur, __buf, 
-					    __buf + __elen, __eend, _M_in_beg, 
-					    _M_in_beg + _M_buf_size, __iend);
+		  codecvt_base::result __r;
+		  __r = __cvt.in(_M_state_cur, __buf, 
+				 __buf + __elen, __eend, _M_in_beg, 
+				 _M_in_beg + _M_buf_size, __iend);
 		  if (__r == codecvt_base::ok)
 		    __ilen = __iend - _M_in_beg;
 		  else 

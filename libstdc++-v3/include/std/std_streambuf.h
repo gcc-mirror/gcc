@@ -278,7 +278,7 @@ namespace std
       // Assumptions:
       // The pback buffer has only moved forward.
       void
-      _M_pback_destroy()
+      _M_pback_destroy() throw()
       {
 	if (_M_pback_init)
 	  {

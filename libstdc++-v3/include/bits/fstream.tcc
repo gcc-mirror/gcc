@@ -58,7 +58,7 @@ namespace std
   template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
-    _M_destroy_internal_buffer()
+    _M_destroy_internal_buffer() throw()
     {
       if (_M_buf_allocated)
 	{
@@ -118,26 +118,34 @@ namespace std
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::__filebuf_type* 
     basic_filebuf<_CharT, _Traits>::
-    close()
+    close() throw()
     {
       __filebuf_type* __ret = NULL;
       if (this->is_open())
 	{
 	  bool __testfail = false;
-	  const int_type __eof = traits_type::eof();
-	  bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-	  if (__testput 
-	      && traits_type::eq_int_type(_M_really_overflow(__eof), __eof))
-	    __testfail = true;
-
-#if 0
-	  // XXX not done
-	  if (_M_last_overflowed)
+	  try
 	    {
-	      _M_output_unshift();
-	      _M_really_overflow(__eof);
-	    }
+	      const int_type __eof = traits_type::eof();
+	      bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
+	      if (__testput 
+		  && traits_type::eq_int_type(_M_really_overflow(__eof), 
+					      __eof))
+		__testfail = true;
+	      
+#if 0
+	      // XXX not done
+	      if (_M_last_overflowed)
+		{
+		  _M_output_unshift();
+		  _M_really_overflow(__eof);
+		}
 #endif
+	    }
+	  catch(...)
+	    {
+	      __testfail = true;
+	    }
 
 	  // NB: Do this here so that re-opened filebufs will be cool...
 	  this->_M_mode = ios_base::openmode(0);
@@ -292,20 +300,23 @@ namespace std
 	  char* __buf = static_cast<char*>(__builtin_alloca(__blen));
 	  char* __bend;
 	  const char_type* __iend;
-	  __res_type __r = __cvt.out(_M_state_cur, __ibuf, __ibuf + __ilen, 
-		 		     __iend, __buf, __buf + __blen, __bend);
+	  codecvt_base::result __r;
+	  __r = __cvt.out(_M_state_cur, __ibuf, __ibuf + __ilen, 
+			  __iend, __buf, __buf + __blen, __bend);
 
 	  if (__r == codecvt_base::ok || __r == codecvt_base::partial)
 	    __blen = __bend - __buf;
-	  // Similarly to the always_noconv case above.
 	  else if (__r == codecvt_base::noconv)
 	    {
+	      // Same as the always_noconv case above.
 	      __buf = reinterpret_cast<char*>(__ibuf);
 	      __blen = __ilen;
 	    }
-	  // Result == error
-	  else 
-	    __blen = 0;
+	  else
+	    {
+	      // Result == error 
+	      __blen = 0;
+	    }
 	  
 	  if (__blen)
 	    {
@@ -321,16 +332,8 @@ namespace std
 	      __r = __cvt.out(_M_state_cur, __iresume, __iresume + __rlen, 
 			      __iend, __buf, __buf + __blen, __bend);
 	      if (__r != codecvt_base::error)
-		__rlen = __bend - __buf;
-	      else
 		{
-		  __rlen = 0;
-		  // Signal to the caller (_M_really_overflow) that
- 		  // codecvt::out eventually failed.
- 		  __elen = 0;
-		}
-	      if (__rlen)
-		{
+		  __rlen = __bend - __buf;
 		  __elen += _M_file.xsputn(__buf, __rlen);
 		  __plen += __rlen;
 		}
@@ -379,7 +382,8 @@ namespace std
 		  char_type __pending = traits_type::to_char_type(__c);
 		  _M_convert_to_external(&__pending, 1, __elen, __plen);
   
-		  // User code must flush when switching modes (thus don't sync).
+		  // User code must flush when switching modes (thus
+		  // don't sync).
 		  if (__elen == __plen && __elen)
 		    {
 		      _M_set_indeterminate();
@@ -431,12 +435,13 @@ namespace std
       bool __testin = (ios_base::in & _M_mode & __mode) != 0;
       bool __testout = (ios_base::out & _M_mode & __mode) != 0;
 
-      // Should probably do has_facet checks here.
-      int __width = use_facet<__codecvt_type>(_M_buf_locale).encoding();
+      int __width = 0;
+      if (has_facet<__codecvt_type>(this->_M_buf_locale))
+	  __width = use_facet<__codecvt_type>(this->_M_buf_locale).encoding();
       if (__width < 0)
 	__width = 0;
-      bool __testfail = __off != 0 && __width <= 0;
-      
+
+      bool __testfail = __off != 0 && __width <= 0;      
       if (this->is_open() && !__testfail && (__testin || __testout)) 
 	{
 	  // Ditch any pback buffers to avoid confusion.
