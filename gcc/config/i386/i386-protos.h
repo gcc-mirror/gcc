@@ -120,7 +120,6 @@ extern const char *output_387_reg_move (rtx, rtx*);
 extern const char *output_fix_trunc (rtx, rtx*);
 extern const char *output_fp_compare (rtx, rtx*, int, int);
 
-extern void i386_dwarf_output_addr_const (FILE*, rtx);
 extern void i386_output_dwarf_dtprel (FILE*, int, rtx);
 
 extern void ix86_expand_clear (rtx);

@@ -2796,12 +2796,6 @@ do {									\
 #define JUMP_TABLES_IN_TEXT_SECTION \
   (!TARGET_64BIT && flag_pic && !HAVE_AS_GOTOFF_IN_DATA)
 
-/* A C statement that outputs an address constant appropriate to
-   for DWARF debugging.  */
-
-#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE, X) \
-  i386_dwarf_output_addr_const ((FILE), (X))
-
 /* Emit a dtp-relative reference to a TLS variable.  */
 
 #ifdef HAVE_AS_TLS
