@@ -1,3 +1,9 @@
+2002-02-18  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/sysv4.h (STARTFILE_SPEC): Use crtbeginT.o for -static.
+	(LINK_EH_SPEC): Define.
+	* config/rs6000/t-ppccomm (EXTRA_MULTILIB_PARTS): Add crtbeginT.o.
+
 2002-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologue): Do not set the

@@ -38,7 +38,7 @@ MULTILIB_MATCHES_SYSV	= mcall-sysv=mcall-sysv-eabi mcall-sysv=mcall-sysv-noeabi 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext) \
-  crtbeginS$(objext) crtendS$(objext) \
+  crtbeginS$(objext) crtendS$(objext) crtbeginT$(objext) \
   ecrti$(objext) ecrtn$(objext) \
   ncrti$(objext) ncrtn$(objext)
 
