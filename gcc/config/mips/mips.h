@@ -3454,14 +3454,6 @@ do {									\
 #define ASM_OUTPUT_SKIP(STREAM,SIZE)					\
   fprintf (STREAM, "\t.space\t%u\n", (SIZE))
 
-
-/* Some RISCOS assemblers don't correctly handle \n in a .ascii directive,
-   so we have separated out this part so that it can be machine dependent.  */
-#ifndef ASM_OUTPUT_NEWLINE
-#define ASM_OUTPUT_NEWLINE(STREAM) \
-  fputs ("\\n", (STREAM));
-#endif
-
 /* This is how to output a string.  */
 #define ASM_OUTPUT_ASCII(STREAM, STRING, LEN)				\
 do {									\
@@ -3482,7 +3474,7 @@ do {									\
 	  break;							\
 									\
 	case TARGET_NEWLINE:						\
-	  ASM_OUTPUT_NEWLINE (STREAM);					\
+	  fputs ("\\n", (STREAM));					\
 	  if (i+1 < len							\
 	      && (((c = string[i+1]) >= '\040' && c <= '~')		\
 		  || c == TARGET_TAB))					\
