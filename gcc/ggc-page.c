@@ -1,5 +1,5 @@
 /* "Bag-of-pages" garbage collector for the GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -147,6 +147,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the indicated ORDER.  */
 #define OBJECTS_PER_PAGE(ORDER) objects_per_page_table[ORDER]
 
+/* The number of objects in P.  */
+#define OBJECTS_IN_PAGE(P) ((P)->bytes / OBJECT_SIZE ((P)->order))
+
 /* The size of an object on a page of the indicated ORDER.  */
 #define OBJECT_SIZE(ORDER) object_size_table[ORDER]
 
@@ -201,6 +204,15 @@ struct max_alignment {
 /* The biggest alignment required.  */
 
 #define MAX_ALIGNMENT (offsetof (struct max_alignment, u))
+
+/* Compute the smallest nonnegative number which when added to X gives
+   a multiple of F.  */
+
+#define ROUND_UP_VALUE(x, f) ((f) - 1 - ((f) - 1 + (x)) % (f))
+
+/* Compute the smallest multiple of F that is >= X.  */
+
+#define ROUND_UP(x, f) (CEIL (x, f) * (f))
 
 /* The Ith entry is the number of objects on a page or order I.  */
 
@@ -1172,7 +1184,7 @@ init_ggc ()
 
       /* If S is not a multiple of the MAX_ALIGNMENT, then round it up
 	 so that we're sure of getting aligned memory.  */
-      s = CEIL (s, MAX_ALIGNMENT) * MAX_ALIGNMENT;
+      s = ROUND_UP (s, MAX_ALIGNMENT);
       object_size_table[order] = s;
     }
 
@@ -1225,7 +1237,7 @@ ggc_recalculate_in_use_p (p)
 
   /* Because the past-the-end bit in in_use_p is always set, we
      pretend there is one additional object.  */
-  num_objects = OBJECTS_PER_PAGE (p->order) + 1;
+  num_objects = OBJECTS_IN_PAGE (p) + 1;
 
   /* Reset the free object count.  */
   p->num_free_objects = num_objects;
@@ -1294,12 +1306,13 @@ clear_marks ()
 
   for (order = 2; order < NUM_ORDERS; order++)
     {
-      size_t num_objects = OBJECTS_PER_PAGE (order);
-      size_t bitmap_size = BITMAP_SIZE (num_objects + 1);
       page_entry *p;
 
       for (p = G.pages[order]; p != NULL; p = p->next)
 	{
+	  size_t num_objects = OBJECTS_IN_PAGE (p);
+	  size_t bitmap_size = BITMAP_SIZE (num_objects + 1);
+
 #ifdef ENABLE_CHECKING
 	  /* The data should be page-aligned.  */
 	  if ((size_t) p->page & (G.pagesize - 1))
@@ -1342,7 +1355,7 @@ sweep_pages ()
 	 placed at the end of the list.  */
       page_entry * const last = G.page_tails[order];
 
-      size_t num_objects = OBJECTS_PER_PAGE (order);
+      size_t num_objects;
       size_t live_objects;
       page_entry *p, *previous;
       int done;
@@ -1358,6 +1371,8 @@ sweep_pages ()
 
 	  /* Loop until all entries have been examined.  */
 	  done = (p == last);
+	  
+	  num_objects = OBJECTS_IN_PAGE (p);
 
 	  /* Add all live objects on this page to the count of
              allocated memory.  */
@@ -1445,12 +1460,12 @@ poison_pages ()
 
   for (order = 2; order < NUM_ORDERS; order++)
     {
-      size_t num_objects = OBJECTS_PER_PAGE (order);
       size_t size = OBJECT_SIZE (order);
       page_entry *p;
 
       for (p = G.pages[order]; p != NULL; p = p->next)
 	{
+	  size_t num_objects;
 	  size_t i;
 
 	  if (p->context_depth != G.context_depth)
@@ -1460,6 +1475,7 @@ poison_pages ()
 	       contexts.  */
 	    continue;
 
+	  num_objects = OBJECTS_IN_PAGE (p);
 	  for (i = 0; i < num_objects; i++)
 	    {
 	      size_t word, bit;
@@ -1581,11 +1597,11 @@ ggc_print_statistics ()
       for (p = G.pages[i]; p; p = p->next)
 	{
 	  allocated += p->bytes;
-	  in_use +=
-	    (OBJECTS_PER_PAGE (i) - p->num_free_objects) * OBJECT_SIZE (i);
+	  in_use += 
+	    (OBJECTS_IN_PAGE (p) - p->num_free_objects) * OBJECT_SIZE (i);
 
 	  overhead += (sizeof (page_entry) - sizeof (long)
-		       + BITMAP_SIZE (OBJECTS_PER_PAGE (i) + 1));
+		       + BITMAP_SIZE (OBJECTS_IN_PAGE (p) + 1));
 	}
       fprintf (stderr, "%-5lu %10lu%c %10lu%c %10lu%c\n",
 	       (unsigned long) OBJECT_SIZE (i),
@@ -1598,4 +1614,226 @@ ggc_print_statistics ()
 	   SCALE (G.bytes_mapped), LABEL (G.bytes_mapped),
 	   SCALE (G.allocated), LABEL(G.allocated),
 	   SCALE (total_overhead), LABEL (total_overhead));
+}
+
+struct ggc_pch_data
+{
+  struct ggc_pch_ondisk 
+  {
+    unsigned totals[NUM_ORDERS];
+  } d;
+  size_t base[NUM_ORDERS];
+  size_t written[NUM_ORDERS];
+};
+
+struct ggc_pch_data *
+init_ggc_pch ()
+{
+  return xcalloc (sizeof (struct ggc_pch_data), 1);
+}
+
+void 
+ggc_pch_count_object (d, x, size)
+     struct ggc_pch_data *d;
+     void *x ATTRIBUTE_UNUSED;
+     size_t size;
+{
+  unsigned order;
+
+  if (size <= 256)
+    order = size_lookup[size];
+  else
+    {
+      order = 9;
+      while (size > OBJECT_SIZE (order))
+	order++;
+    }
+  
+  d->d.totals[order]++;
+}
+     
+size_t
+ggc_pch_total_size (d)
+     struct ggc_pch_data *d;
+{
+  size_t a = 0;
+  unsigned i;
+
+  for (i = 0; i < NUM_ORDERS; i++)
+    a += ROUND_UP (d->d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+  return a;
+}
+
+void
+ggc_pch_this_base (d, base)
+     struct ggc_pch_data *d;
+     void *base;
+{
+  size_t a = (size_t) base;
+  unsigned i;
+  
+  for (i = 0; i < NUM_ORDERS; i++)
+    {
+      d->base[i] = a;
+      a += ROUND_UP (d->d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+    }
+}
+
+
+char *
+ggc_pch_alloc_object (d, x, size)
+     struct ggc_pch_data *d;
+     void *x ATTRIBUTE_UNUSED;
+     size_t size;
+{
+  unsigned order;
+  char *result;
+  
+  if (size <= 256)
+    order = size_lookup[size];
+  else
+    {
+      order = 9;
+      while (size > OBJECT_SIZE (order))
+	order++;
+    }
+
+  result = (char *) d->base[order];
+  d->base[order] += OBJECT_SIZE (order);
+  return result;
+}
+
+void 
+ggc_pch_prepare_write (d, f)
+     struct ggc_pch_data * d ATTRIBUTE_UNUSED;
+     FILE * f ATTRIBUTE_UNUSED;
+{
+  /* Nothing to do.  */
+}
+
+void
+ggc_pch_write_object (d, f, x, newx, size)
+     struct ggc_pch_data * d ATTRIBUTE_UNUSED;
+     FILE *f;
+     void *x;
+     void *newx ATTRIBUTE_UNUSED;
+     size_t size;
+{
+  unsigned order;
+
+  if (size <= 256)
+    order = size_lookup[size];
+  else
+    {
+      order = 9;
+      while (size > OBJECT_SIZE (order))
+	order++;
+    }
+  
+  if (fwrite (x, size, 1, f) != 1)
+    fatal_io_error ("can't write PCH file");
+
+  /* In the current implementation, SIZE is always equal to
+     OBJECT_SIZE (order) and so the fseek is never executed.  */
+  if (size != OBJECT_SIZE (order)
+      && fseek (f, OBJECT_SIZE (order) - size, SEEK_CUR) != 0)
+    fatal_io_error ("can't write PCH file");
+
+  d->written[order]++;
+  if (d->written[order] == d->d.totals[order]
+      && fseek (f, ROUND_UP_VALUE (d->d.totals[order] * OBJECT_SIZE (order),
+				   G.pagesize),
+		SEEK_CUR) != 0)
+    fatal_io_error ("can't write PCH file");
+}
+
+void
+ggc_pch_finish (d, f)
+     struct ggc_pch_data * d;
+     FILE *f;
+{
+  if (fwrite (&d->d, sizeof (d->d), 1, f) != 1)
+    fatal_io_error ("can't write PCH file");
+  free (d);
+}
+
+void
+ggc_pch_read (f, addr)
+     FILE *f;
+     void *addr;
+{
+  struct ggc_pch_ondisk d;
+  unsigned i;
+  char *offs = addr;
+  
+  /* We've just read in a PCH file.  So, every object that used to be allocated
+     is now free.  */
+  clear_marks ();
+#ifdef GGC_POISON
+  poison_pages ();
+#endif
+
+  /* No object read from a PCH file should ever be freed.  So, set the
+     context depth to 1, and set the depth of all the currently-allocated
+     pages to be 1 too.  PCH pages will have depth 0.  */
+  if (G.context_depth != 0)
+    abort ();
+  G.context_depth = 1;
+  for (i = 0; i < NUM_ORDERS; i++)
+    {
+      page_entry *p;
+      for (p = G.pages[i]; p != NULL; p = p->next)
+	p->context_depth = G.context_depth;
+    }
+
+  /* Allocate the appropriate page-table entries for the pages read from
+     the PCH file.  */
+  if (fread (&d, sizeof (d), 1, f) != 1)
+    fatal_io_error ("can't read PCH file");
+  
+  for (i = 0; i < NUM_ORDERS; i++)
+    {
+      struct page_entry *entry;
+      char *pte;
+      size_t bytes;
+      size_t num_objs;
+      size_t j;
+      
+      if (d.totals[i] == 0)
+	continue;
+      
+      bytes = ROUND_UP (d.totals[i] * OBJECT_SIZE (i), G.pagesize);
+      num_objs = bytes / OBJECT_SIZE (i);
+      entry = xcalloc (1, (sizeof (struct page_entry) 
+			   - sizeof (long)
+			   + BITMAP_SIZE (num_objs + 1)));
+      entry->bytes = bytes;
+      entry->page = offs;
+      entry->context_depth = 0;
+      offs += bytes;
+      entry->num_free_objects = 0;
+      entry->order = i;
+
+      for (j = 0; 
+	   j + HOST_BITS_PER_LONG <= num_objs + 1;
+	   j += HOST_BITS_PER_LONG)
+	entry->in_use_p[j / HOST_BITS_PER_LONG] = -1;
+      for (; j < num_objs + 1; j++)
+	entry->in_use_p[j / HOST_BITS_PER_LONG] 
+	  |= 1L << (j % HOST_BITS_PER_LONG);
+
+      for (pte = entry->page; 
+	   pte < entry->page + entry->bytes; 
+	   pte += G.pagesize)
+	set_page_table_entry (pte, entry);
+
+      if (G.page_tails[i] != NULL)
+	G.page_tails[i]->next = entry;
+      else
+	G.pages[i] = entry;
+      G.page_tails[i] = entry;
+    }
+
+  /* Update the statistics.  */
+  G.allocated = G.allocated_last_gc = offs - (char *)addr;
 }

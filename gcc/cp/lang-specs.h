@@ -33,6 +33,19 @@ Boston, MA 02111-1307, USA.  */
   {".c++", "@c++", 0},
   {".C",   "@c++", 0},
   {".CPP", "@c++", 0},
+  {".H",   "@c++-header", 0},
+  {".hh",  "@c++-header", 0},
+  {"@c++-header",
+    "%{E|M|MM:cc1plus -E %{!no-gcc:-D__GNUG__=%v1}\
+       %(cpp_options) %2 %(cpp_debug_options)}\
+     %{!E:%{!M:%{!MM:\
+       %{save-temps:cc1plus -E %{!no-gcc:-D__GNUG__=%v1}\
+		%(cpp_options) %2 %b.ii \n}\
+      cc1plus %{save-temps:-fpreprocessed %b.ii}\
+	      %{!save-temps:%(cpp_unique_options) %{!no-gcc:-D__GNUG__=%v1}}\
+	%(cc1_options) %2 %{+e1*}\
+        -o %g.s %{!o*:--output-pch=%i.pch} %W{o*:--output-pch=%*}%V}}}",
+     CPLUSPLUS_CPP_SPEC},
   {"@c++",
     "%{E|M|MM:cc1plus -E %{!no-gcc:-D__GNUG__=%v1}\
        %(cpp_options) %2 %(cpp_debug_options)}\

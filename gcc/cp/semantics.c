@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions. 
 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.  
 
@@ -35,7 +35,6 @@
 #include "lex.h"
 #include "toplev.h"
 #include "flags.h"
-#include "ggc.h"
 #include "rtl.h"
 #include "expr.h"
 #include "output.h"
@@ -1628,8 +1627,6 @@ finish_translation_unit ()
 
   /* Do file scope __FUNCTION__ et al.  */
   finish_fname_decls ();
-  
-  finish_file ();
 }
 
 /* Finish a template type parameter, specified as AGGR IDENTIFIER.

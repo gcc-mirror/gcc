@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "obstack.h"
 #include "toplev.h"
-#include "ggc.h"
 #include "diagnostic.h"
 
 static tree repo_get_id (tree);

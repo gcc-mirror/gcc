@@ -37,6 +37,10 @@ proc g++-dg-test { prog do_what extra_tool_flags } {
 	    set compile_type "object"
 	    set output_file "[file rootname [file tail $prog]].o"
 	}
+	"precompile" {
+	    set compile_type "precompiled_header"
+	    set output_file "[file tail $prog].pch"
+	}
 	"link" {
 	    set compile_type "executable"
 	    set output_file "[file rootname [file tail $prog]].exe"

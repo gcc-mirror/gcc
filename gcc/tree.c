@@ -136,8 +136,8 @@ void
 init_ttree ()
 {
   /* Initialize the hash table of types.  */
-  type_hash_table = htab_create (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
-				 type_hash_eq, 0);
+  type_hash_table = htab_create_ggc (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
+				     type_hash_eq, 0);
 }
 
 

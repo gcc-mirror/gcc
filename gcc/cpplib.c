@@ -121,6 +121,11 @@ static struct pragma_entry *lookup_pragma_entry
 static struct pragma_entry *insert_pragma_entry
   PARAMS ((cpp_reader *, struct pragma_entry **, const cpp_hashnode *,
 	   pragma_cb));
+static int count_registered_pragmas	PARAMS ((struct pragma_entry *));
+static char ** save_registered_pragmas 
+  PARAMS ((struct pragma_entry *, char **));
+static char ** restore_registered_pragmas 
+  PARAMS ((cpp_reader *, struct pragma_entry *, char **));
 static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
 static void do_pragma_system_header	PARAMS ((cpp_reader *));
@@ -1083,6 +1088,85 @@ _cpp_init_internal_pragmas (pfile)
   cpp_register_pragma (pfile, "GCC", "poison", do_pragma_poison);
   cpp_register_pragma (pfile, "GCC", "system_header", do_pragma_system_header);
   cpp_register_pragma (pfile, "GCC", "dependency", do_pragma_dependency);
+}
+
+/* Return the number of registered pragmas in PE.  */
+
+static int
+count_registered_pragmas (pe)
+     struct pragma_entry *pe;
+{
+  int ct = 0;
+  for (; pe != NULL; pe = pe->next)
+    {
+      if (pe->is_nspace)
+	ct += count_registered_pragmas (pe->u.space);
+      ct++;
+    }
+  return ct;
+}
+
+/* Save into SD the names of the registered pragmas referenced by PE,
+   and return a pointer to the next free space in SD.  */
+
+static char **
+save_registered_pragmas (pe, sd)
+     struct pragma_entry *pe;
+     char **sd;
+{
+  for (; pe != NULL; pe = pe->next)
+    {
+      if (pe->is_nspace)
+	sd = save_registered_pragmas (pe->u.space, sd);
+      *sd++ = xmemdup (HT_STR (&pe->pragma->ident),
+		       HT_LEN (&pe->pragma->ident),
+		       HT_LEN (&pe->pragma->ident) + 1);
+    }
+  return sd;
+}
+
+/* Return a newly-allocated array which saves the names of the
+   registered pragmas.  */
+
+char **
+_cpp_save_pragma_names (pfile)
+     cpp_reader *pfile;
+{
+  int ct = count_registered_pragmas (pfile->pragmas);
+  char **result = xnewvec (char *, ct);
+  (void) save_registered_pragmas (pfile->pragmas, result);
+  return result;
+}
+
+/* Restore from SD the names of the registered pragmas referenced by PE,
+   and return a pointer to the next unused name in SD.  */
+
+static char **
+restore_registered_pragmas (pfile, pe, sd)
+     cpp_reader *pfile;
+     struct pragma_entry *pe;
+     char **sd;
+{
+  for (; pe != NULL; pe = pe->next)
+    {
+      if (pe->is_nspace)
+	sd = restore_registered_pragmas (pfile, pe->u.space, sd);
+      pe->pragma = cpp_lookup (pfile, U *sd, strlen (*sd));
+      free (*sd);
+      sd++;
+    }
+  return sd;
+}
+
+/* Restore the names of the registered pragmas from SAVED.  */
+
+void
+_cpp_restore_pragma_names (pfile, saved)
+     cpp_reader *pfile;
+     char **saved;
+{
+  (void) restore_registered_pragmas (pfile, pfile->pragmas, saved);
+  free (saved);
 }
 
 /* Pragmata handling.  We handle some, and pass the rest on to the

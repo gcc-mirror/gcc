@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "toplev.h"
 #include "expr.h"
-#include "ggc.h"
 #include "diagnostic.h"
 
 extern int inhibit_warnings;

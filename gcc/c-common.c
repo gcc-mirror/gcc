@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-pragma.h"
 #include "rtl.h"
 #include "ggc.h"
+#include "varray.h"
 #include "expr.h"
 #include "c-common.h"
 #include "diagnostic.h"
@@ -190,10 +191,19 @@ enum c_language_kind c_language;
 
 tree c_global_trees[CTI_MAX];
 
+/* Nonzero if we can read a PCH file now.  */
+
+int allow_pch = 1;
+
 /* Switches common to the C front ends.  */
 
 /* Nonzero if prepreprocessing only.  */
 int flag_preprocess_only;
+
+/* The file name to which we should write a precompiled header, or
+   NULL if no header will be written in this compile.  */
+
+const char *pch_file;
 
 /* Nonzero if an ISO standard was selected.  It rejects macros in the
    user's namespace.  */

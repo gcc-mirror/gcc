@@ -48,6 +48,7 @@ end ifc
 #include "c-pragma.h"		/* For YYDEBUG definition, and parse_in.  */
 #include "c-tree.h"
 #include "flags.h"
+#include "varray.h"
 #include "output.h"
 #include "toplev.h"
 #include "ggc.h"
@@ -3555,10 +3556,7 @@ init_reswords ()
   if (!flag_objc)
      mask |= D_OBJC;
 
-  /* It is not necessary to register ridpointers as a GC root, because
-     all the trees it points to are permanently interned in the
-     get_identifier hash anyway.  */
-  ridpointers = (tree *) xcalloc ((int) RID_MAX, sizeof (tree));
+  ridpointers = (tree *) ggc_calloc ((int) RID_MAX, sizeof (tree));
   for (i = 0; i < N_reswords; i++)
     {
       /* If a keyword is disabled, do not enter it into the table

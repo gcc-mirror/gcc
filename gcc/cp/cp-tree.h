@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2003,
    2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_CP_TREE_H
 #define GCC_CP_TREE_H
 
+#include "ggc.h"
 #include "function.h"
 #include "hashtab.h"
 #include "splay-tree.h"
@@ -1182,7 +1183,7 @@ struct lang_type_class GTY(())
   tree as_base;
   tree pure_virtuals;
   tree friend_classes;
-  tree methods;
+  tree GTY ((reorder ("resort_type_method_vec"))) methods;
   tree key_method;
   tree decl_list;
   tree template_info;
@@ -1782,13 +1783,16 @@ struct lang_decl_flags GTY(())
     tree GTY ((tag ("0"))) access;
 
     /* For VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
-    int discriminator;
+    int GTY ((tag ("1"))) discriminator;
 
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
        THUNK_VIRTUAL_OFFSET.  */
     tree GTY((tag ("2"))) virtual_offset;
   } GTY ((desc ("%1.u2sel"))) u2;
 };
+
+/* sorted_fields is sorted based on a pointer, so we need to be able
+   to resort it if pointers get rearranged.  */
 
 struct lang_decl GTY(())
 {
@@ -1827,7 +1831,8 @@ struct lang_decl GTY(())
 	
 	union lang_decl_u3
 	{
-	  tree GTY ((tag ("0"))) sorted_fields;
+	  tree GTY ((tag ("0"), reorder ("resort_sorted_fields"))) 
+	       sorted_fields;
  	  struct cp_token_cache * GTY ((tag ("2"))) pending_inline_info;
 	  struct language_function * GTY ((tag ("1"))) 
 	       saved_language_function;
@@ -3555,7 +3560,7 @@ extern void init_reswords PARAMS ((void));
    opname_tab[(int) MINUS_EXPR] == "-".  */
 extern const char **opname_tab, **assignop_tab;
 
-typedef struct operator_name_info_t
+typedef struct operator_name_info_t GTY(())
 {
   /* The IDENTIFIER_NODE for the operator.  */
   tree identifier;
@@ -3568,9 +3573,11 @@ typedef struct operator_name_info_t
 } operator_name_info_t;
 
 /* A mapping from tree codes to operator name information.  */
-extern operator_name_info_t operator_name_info[];
+extern GTY(()) operator_name_info_t operator_name_info
+  [(int) LAST_CPLUS_TREE_CODE];
 /* Similar, but for assignment operators.  */
-extern operator_name_info_t assignment_operator_name_info[];
+extern GTY(()) operator_name_info_t assignment_operator_name_info
+  [(int) LAST_CPLUS_TREE_CODE];
 
 /* in call.c */
 extern bool check_dtor_name (tree, tree);
@@ -3611,10 +3618,14 @@ extern tree in_charge_arg_for_name (tree);
 
 /* in class.c */
 extern tree build_base_path			PARAMS ((enum tree_code, tree, tree, int));
-extern tree convert_to_base                     (tree, tree, bool);
+extern tree convert_to_base                     PARAMS ((tree, tree, bool));
 extern tree build_vtbl_ref			PARAMS ((tree, tree));
 extern tree build_vfn_ref			PARAMS ((tree, tree));
 extern tree get_vtable_decl                     PARAMS ((tree, int));
+extern void resort_sorted_fields 
+  PARAMS ((void *, void *, gt_pointer_operator, void *));
+extern void resort_type_method_vec
+  PARAMS ((void *, void *, gt_pointer_operator, void *));
 extern void add_method				PARAMS ((tree, tree, int));
 extern int currently_open_class			PARAMS ((tree));
 extern tree currently_open_derived_class	PARAMS ((tree));

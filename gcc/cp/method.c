@@ -1,7 +1,7 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -34,7 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "flags.h"
 #include "toplev.h"
-#include "ggc.h"
 #include "tm_p.h"
 #include "target.h"
 

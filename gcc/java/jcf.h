@@ -55,9 +55,17 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #endif 
 
 struct JCF;
-typedef int (*jcf_filbuf_t) (struct JCF*, int needed);
+typedef int (*jcf_filbuf_t) PARAMS ((struct JCF*, int needed));
 
-typedef struct CPool {
+union cpool_entry GTY(()) {
+  jword GTY ((tag ("0"))) w;
+  tree GTY ((tag ("1"))) t;
+};
+
+#define cpool_entry_is_tree(tag) \
+  (tag & CONSTANT_ResolvedFlag) || tag == CONSTANT_Utf8
+
+typedef struct CPool GTY(()) {
   /* Available number of elements in the constants array, before it
      must be re-allocated. */
   int capacity;
@@ -65,29 +73,33 @@ typedef struct CPool {
   /* The constant_pool_count. */
   int		count;
 
-  uint8*	tags;
+  uint8* GTY((length ("%h.count")))	tags;
 
-  jword*	data;
+  union cpool_entry * GTY((length ("%h.count"),
+			   desc ("cpool_entry_is_tree (%1.tags%a)")))	data;
 } CPool;
 
 struct ZipDirectory;
 
 /* JCF encapsulates the state of reading a Java Class File. */
 
-typedef struct JCF {
-  unsigned char *buffer;
-  unsigned char *buffer_end;
-  unsigned char *read_ptr;
-  unsigned char *read_end;
+typedef struct JCF GTY(()) {
+  unsigned char * GTY ((skip (""))) buffer;
+  unsigned char * GTY ((skip (""))) buffer_end;
+  unsigned char * GTY ((skip (""))) read_ptr;
+  unsigned char * GTY ((skip (""))) read_end;
   int java_source : 1;
   int right_zip : 1;
   int finished : 1;
   jcf_filbuf_t filbuf;
-  void *read_state;
+  PTR GTY ((skip (""))) read_state;
   const char *filename;
   const char *classname;
-  struct ZipDirectory *zipd;	/* Directory entry where it was found */
-  JCF_u2 access_flags, this_class, super_class;
+  /* Directory entry where it was found.  */
+  struct ZipDirectory * GTY ((skip (""))) zipd;
+  JCF_u2 access_flags;
+  JCF_u2 this_class;
+  JCF_u2 super_class;
   CPool cpool;
 } JCF;
 /*typedef JCF*  JCF_FILE;*/
@@ -102,13 +114,13 @@ typedef struct JCF {
 #define JPOOL_SIZE(JCF) CPOOL_COUNT(&(JCF)->cpool)
 #define JPOOL_TAG(JCF, INDEX) ((JCF)->cpool.tags[INDEX])
 /* The INDEX'th constant pool entry as a JCF_u4. */
-#define CPOOL_UINT(CPOOL, INDEX) ((CPOOL)->data[INDEX])
+#define CPOOL_UINT(CPOOL, INDEX) ((CPOOL)->data[INDEX].w)
 #define JPOOL_UINT(JCF, INDEX) CPOOL_UINT(&(JCF)->cpool, INDEX) /*deprecated*/
 /* The first uint16 of the INDEX'th constant pool entry. */
-#define CPOOL_USHORT1(CPOOL, INDEX) ((CPOOL)->data[INDEX] & 0xFFFF)
+#define CPOOL_USHORT1(CPOOL, INDEX) ((CPOOL)->data[INDEX].w & 0xFFFF)
 #define JPOOL_USHORT1(JCF, INDEX) CPOOL_USHORT1(&(JCF)->cpool, INDEX)
 /* The second uint16 of the INDEX'th constant pool entry. */
-#define CPOOL_USHORT2(CPOOL, INDEX) ((CPOOL)->data[INDEX] >> 16)
+#define CPOOL_USHORT2(CPOOL, INDEX) ((CPOOL)->data[INDEX].w >> 16)
 #define JPOOL_USHORT2(JCF, INDEX) CPOOL_USHORT2(&(JCF)->cpool, INDEX)
 #define JPOOL_LONG(JCF, INDEX) \
   WORDS_TO_LONG (JPOOL_UINT(JCF, INDEX), JPOOL_UINT(JCF, (INDEX)+1))
@@ -128,9 +140,10 @@ typedef struct JCF {
 #define CPOOL_INDEX_IN_RANGE(CPOOL, INDEX) \
  ((INDEX) > 0 && (INDEX) < CPOOL_COUNT(CPOOL))
 
-#define CPOOL_FINISH(CPOOL) { \
-  if ((CPOOL)->tags) FREE ((CPOOL)->tags); \
-  if ((CPOOL)->data) FREE ((CPOOL)->data); }
+#define CPOOL_FINISH(CPOOL) {			\
+    (CPOOL)->tags = 0;				\
+    (CPOOL)->data = 0;				\
+  }
 
 #define JCF_FINISH(JCF) { \
   CPOOL_FINISH(&(JCF)->cpool); \

@@ -8,8 +8,6 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision: 1.9 $
-@c                                                                            o
 @c              Copyright (C) 1995-2002 Free Software Foundation              o
 @c                                                                            o
 @c                                                                            o

@@ -62,7 +62,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
     text = (JCF)->read_ptr; \
     save = text[LENGTH]; \
     text[LENGTH] = 0; \
-    (JCF)->cpool.data[INDEX] = (jword) get_identifier (text); \
+    (JCF)->cpool.data[INDEX].t = get_identifier (text); \
     text[LENGTH] = save; \
     JCF_SKIP (JCF, LENGTH); } while (0)
 
@@ -86,7 +86,7 @@ static GTY(()) tree parse_roots[3];
 #define current_file_list parse_roots[2]
 
 /* The Java archive that provides main_class;  the main input file. */
-static struct JCF main_jcf[1];
+static GTY(()) struct JCF * main_jcf;
 
 static struct ZipFile *localToFile;
 
@@ -100,32 +100,8 @@ static void parse_source_file_2 (void);
 static void parse_source_file_3 (void);
 static void parse_class_file (void);
 static void set_source_filename (JCF *, int);
-static void ggc_mark_jcf (void**);
 static void jcf_parse (struct JCF*);
 static void load_inner_classes (tree);
-
-/* Mark (for garbage collection) all the tree nodes that are
-   referenced from JCF's constant pool table. Do that only if the JCF
-   hasn't been marked finished.  */
-
-static void
-ggc_mark_jcf (elt)
-     void **elt;
-{
-  JCF *jcf = *(JCF**) elt;
-  if (jcf != NULL && !jcf->finished)
-    {
-      CPool *cpool = &jcf->cpool;
-      int size = CPOOL_COUNT(cpool);
-      int index;
-      for (index = 1; index < size;  index++)
-	{
-	  int tag = JPOOL_TAG (jcf, index);
-	  if ((tag & CONSTANT_ResolvedFlag) || tag == CONSTANT_Utf8)
-	    ggc_mark_tree ((tree) cpool->data[index]);
-	}
-    }
-}
 
 /* Handle "SourceFile" attribute. */
 
@@ -270,7 +246,7 @@ get_constant (jcf, index)
     goto bad;
   tag = JPOOL_TAG (jcf, index);
   if ((tag & CONSTANT_ResolvedFlag) || tag == CONSTANT_Utf8)
-    return (tree) jcf->cpool.data[index];
+    return jcf->cpool.data[index].t;
   switch (tag)
     {
     case CONSTANT_Integer:
@@ -352,7 +328,7 @@ get_constant (jcf, index)
       goto bad;
     }
   JPOOL_TAG (jcf, index) = tag | CONSTANT_ResolvedFlag;
-  jcf->cpool.data [index] = (jword) value;
+  jcf->cpool.data[index].t = value;
   return value;
  bad:
   internal_error ("bad value constant type %d, index %d", 
@@ -435,7 +411,7 @@ give_name_to_class (jcf, i)
       if (main_input_filename == NULL && jcf == main_jcf)
 	main_input_filename = input_filename;
 
-      jcf->cpool.data[i] = (jword) this_class;
+      jcf->cpool.data[i].t = this_class;
       JPOOL_TAG (jcf, i) = CONSTANT_ResolvedClass;
       return this_class;
     }
@@ -465,11 +441,11 @@ get_class_constant (JCF *jcf , int i)
           tree cname = unmangle_classname (name, nlength);
           type = lookup_class (cname);
 	}
-      jcf->cpool.data[i] = (jword) type;
+      jcf->cpool.data[i].t = type;
       JPOOL_TAG (jcf, i) = CONSTANT_ResolvedClass;
     }
   else
-    type = (tree) jcf->cpool.data[i];
+    type = jcf->cpool.data[i].t;
   return type;
 }
 
@@ -709,8 +685,7 @@ load_inner_classes (cur_class)
 void
 init_outgoing_cpool ()
 {
-  outgoing_cpool = xmalloc (sizeof (struct CPool));
-  memset (outgoing_cpool, 0, sizeof (struct CPool));
+  outgoing_cpool = ggc_alloc_cleared (sizeof (struct CPool));
 }
 
 static void
@@ -1074,7 +1049,7 @@ java_parse_file (set_yydebug)
       if (magic == 0xcafebabe)
 	{
 	  CLASS_FILE_P (node) = 1;
-	  current_jcf = ALLOC (sizeof (JCF));
+	  current_jcf = ggc_alloc (sizeof (JCF));
 	  JCF_ZERO (current_jcf);
 	  current_jcf->read_state = finput;
 	  current_jcf->filbuf = jcf_filbuf_from_stdio;
@@ -1086,6 +1061,7 @@ java_parse_file (set_yydebug)
       else if (magic == (JCF_u4)ZIPMAGIC)
 	{
 	  ZIP_FILE_P (node) = 1;
+	  main_jcf = ggc_alloc (sizeof (JCF));
 	  JCF_ZERO (main_jcf);
 	  main_jcf->read_state = finput;
 	  main_jcf->filbuf = jcf_filbuf_from_stdio;
@@ -1223,7 +1199,7 @@ process_zip_dir (FILE *finput)
 
       class_name = ALLOC (zdir->filename_length+1-6);
       file_name  = ALLOC (zdir->filename_length+1);
-      jcf = ALLOC (sizeof (JCF));
+      jcf = ggc_alloc (sizeof (JCF));
       JCF_ZERO (jcf);
 
       strncpy (class_name, class_name_in_zip_dir, zdir->filename_length-6);
@@ -1255,9 +1231,6 @@ process_zip_dir (FILE *finput)
 void
 init_jcf_parse ()
 {
-  /* Register roots with the garbage collector.  */
-  ggc_add_root (&current_jcf, 1, sizeof (JCF), (void (*)(void *))ggc_mark_jcf);
-
   init_src_parse ();
 }
 

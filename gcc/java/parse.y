@@ -304,13 +304,16 @@ static tree maybe_build_thisn_access_method (tree);
 
 static tree build_outer_field_access (tree, tree);
 static tree build_outer_field_access_methods (tree);
-static tree build_outer_field_access_expr (int, tree, tree, tree, tree);
+static tree build_outer_field_access_expr (int, tree, tree,
+						  tree, tree);
 static tree build_outer_method_access_method (tree);
 static tree build_new_access_id (void);
-static tree build_outer_field_access_method (tree, tree, tree, tree, tree);
+static tree build_outer_field_access_method (tree, tree, tree,
+						    tree, tree);
 
 static int outer_field_access_p (tree, tree);
-static int outer_field_expanded_access_p (tree, tree *, tree *, tree *);
+static int outer_field_expanded_access_p (tree, tree *,
+						 tree *, tree *);
 static tree outer_field_access_fix (tree, tree, tree);
 static tree build_incomplete_class_ref (int, tree);
 static tree patch_incomplete_class_ref (tree);
@@ -321,7 +324,6 @@ static void add_inner_class_fields (tree, tree);
 static tree build_dot_class_method (tree);
 static tree build_dot_class_method_invocation (tree);
 static void create_new_parser_context (int);
-static void mark_parser_ctxt (void *);
 static tree maybe_build_class_init_for_field (tree, tree);
 
 static int attach_init_test_initialization_flags (PTR *, PTR);
@@ -594,18 +596,7 @@ static GTY(()) tree src_parse_roots[1];
 
 %%
 /* 19.2 Production from 2.3: The Syntactic Grammar  */
-goal:
-                {
-		  /* Register static variables with the garbage
-		     collector.  */
-		  ggc_add_root (&ctxp, 1,
-				sizeof (struct parser_ctxt *),
-				mark_parser_ctxt);
-		  ggc_add_root (&ctxp_for_generation, 1,
-				sizeof (struct parser_ctxt *),
-				mark_parser_ctxt);
-		}
-	compilation_unit
+goal:  compilation_unit
 		{}
 ;
 
@@ -2669,7 +2660,7 @@ create_new_parser_context (copy_from_previous)
 {
   struct parser_ctxt *new;
 
-  new =  (struct parser_ctxt *)xmalloc(sizeof (struct parser_ctxt));
+  new =  (struct parser_ctxt *) ggc_alloc (sizeof (struct parser_ctxt));
   if (copy_from_previous)
     {
       memcpy ((PTR)new, (PTR)ctxp, sizeof (struct parser_ctxt));
@@ -2730,8 +2721,6 @@ java_pop_parser_context (generate)
       toFree->next = ctxp_for_generation;
       ctxp_for_generation = toFree;
     }
-  else
-    free (toFree);
 }
 
 /* Create a parser context for the use of saving some global
@@ -2830,10 +2819,6 @@ java_parser_context_resume ()
   /* Re-installed the data for the parsing to carry on */
   memcpy (&ctxp->marker_begining, &old->marker_begining,
 	  (size_t)(&ctxp->marker_end - &ctxp->marker_begining));
-
-  /* Buffer context can now be discarded */
-  free (saver);
-  free (old);
 }
 
 /* Add a new anchor node to which all statement(s) initializing static
@@ -6732,10 +6717,9 @@ process_imports ()
       tree to_be_found = EXPR_WFL_NODE (TREE_PURPOSE (import));
       char *original_name;
 
-      obstack_grow0 (&temporary_obstack,
-		     IDENTIFIER_POINTER (to_be_found),
-		     IDENTIFIER_LENGTH (to_be_found));
-      original_name = obstack_finish (&temporary_obstack);
+      original_name = xmemdup (IDENTIFIER_POINTER (to_be_found),
+			       IDENTIFIER_LENGTH (to_be_found),
+			       IDENTIFIER_LENGTH (to_be_found) + 1);
 
       /* Don't load twice something already defined. */
       if (IDENTIFIER_CLASS_VALUE (to_be_found))
@@ -6771,7 +6755,7 @@ process_imports ()
 	  error_found = 1;
 	}
 
-      obstack_free (&temporary_obstack, original_name);
+      free (original_name);
       if (error_found)
 	return 1;
     }
@@ -16189,42 +16173,6 @@ resolve_qualified_name (name, context)
 {
 }
 #endif
-
-/* Mark P, which is really a `struct parser_ctxt **' for GC.  */
-
-static void
-mark_parser_ctxt (p)
-     void *p;
-{
-  struct parser_ctxt *pc = *((struct parser_ctxt **) p);
-#ifndef JC1_LITE
-  size_t i;
-#endif
-
-  if (!pc)
-    return;
-
-#ifndef JC1_LITE
-  for (i = 0; i < ARRAY_SIZE (pc->modifier_ctx); ++i)
-    ggc_mark_tree (pc->modifier_ctx[i]);
-  ggc_mark_tree (pc->class_type);
-  ggc_mark_tree (pc->function_decl);
-  ggc_mark_tree (pc->package);
-  ggc_mark_tree (pc->class_list);
-  ggc_mark_tree (pc->current_parsed_class);
-  ggc_mark_tree (pc->current_parsed_class_un);
-  ggc_mark_tree (pc->non_static_initialized);
-  ggc_mark_tree (pc->static_initialized);
-  ggc_mark_tree (pc->instance_initializers);
-  ggc_mark_tree (pc->import_list);
-  ggc_mark_tree (pc->import_demand_list);
-  ggc_mark_tree (pc->current_loop);
-  ggc_mark_tree (pc->current_labeled_block);
-#endif /* JC1_LITE */
-
-  if (pc->next)
-    mark_parser_ctxt (&pc->next);
-}
 
 void
 init_src_parse ()

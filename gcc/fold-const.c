@@ -1395,7 +1395,7 @@ size_int_type_wide (number, type)
 
   if (size_htab == 0)
     {
-      size_htab = htab_create (1024, size_htab_hash, size_htab_eq, NULL);
+      size_htab = htab_create_ggc (1024, size_htab_hash, size_htab_eq, NULL);
       new_const = make_node (INTEGER_CST);
     }
 

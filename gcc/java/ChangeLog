@@ -1,3 +1,77 @@
+2003-01-09  Geoffrey Keating  <geoffk@apple.com>
+
+	Merge from pch-branch:
+
+	2002-12-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in (java/gjavah.o): Update dependencies.
+	* gjavah.c: Include ggc.h.
+
+	2002-08-16  Geoffrey Keating  <geoffk@redhat.com>
+
+	* Make-lang.in (GCJH_OBJS): Add ggc-none.o.
+	(JCFDUMP_OBJS): Add ggc-none.o.
+	(java/jcf-dump.o): Depend on GGC_H.
+	* jcf-reader.c (jcf_parse_constant_pool): Use ggc_alloc to allocate
+	CPool substructures.
+	* jcf-parse.c (process_zip_dir): Use ggc_alloc to allocate JCFs.
+	* jcf-dump.c: Include ggc.h.
+
+	2002-08-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* jcf.h (union cpool_entry): New.
+	(struct CPool): Use gengtype to mark.  Change field 'data' to be
+	an array of unions.
+	(struct JCF): Use gengtype to mark.
+	(CPOOL_UINT): Update for new cpool_entry type.
+	(CPOOL_USHORT1): Likewise.
+	(CPOOL_USHORT2): Likewise.
+	(CPOOL_FINISH): Use GC to free cpool subfields.
+	* parse.h (struct parser_ctxt): Mark field current_jcf.
+	* lex.c (java_init_lex): Use GC to allocate struct JCF.
+	* jcf-parse.c (HANDLE_CONSTANT_Utf8): Update for new cpool_entry type.
+	(main_jcf): Use gengtype to mark.
+	(ggc_mark_jcf): Delete.
+	(get_constant): Update for new cpool_entry type.
+	(give_name_to_class): Likewise.
+	(get_class_constant): Likewise.
+	(init_outgoing_cpool): Use GGC to allocate struct CPool.
+	(java_parse_file): Use GGC to allocate struct JCF.
+	(init_jcf_parse): Don't call ggc_add_root.
+	* jcf-reader.c (jcf_parse_constant_pool): Update for new
+	cpool_entry type.
+	* java-tree.h (current_jcf): Use gengtype to mark.
+	(CPOOL_UTF): Update for new cpool_entry type.
+	(outgoing_cpool): Use gengtype to mark.
+	(struct lang_type): GC struct JCF and struct CPool.
+	* config-lang.in (gtfiles): Add jcf.h.
+	* constants.c (find_tree_constant): New.
+	(set_constant_entry): Allocate cpool subfields using GGC.  Update
+	for new cpool_entry type.
+	(find_constant1): Update for new cpool_entry type.
+	(find_constant2): Likewise.
+	(find_utf8_constant): Use find_tree_constant.
+	(find_class_or_string_constant): Remove unnecessary cast to jword.
+	Update for new cpool_entry type.
+	(count_constant_pool_bytes): Update for new cpool_entry type.
+	(write_constant_pool): Likewise.
+	(alloc_name_constant): Use find_tree_constant.
+	(build_constants_constructor): Update for new cpool_entry type.
+
+	2002-08-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* parse.y (mark_parser_ctxt): Delete.
+	(goal): Don't use ggc_add_root.
+	(create_new_parser_context): Use GC to allocate struct parser_ctxt.
+	(java_pop_parser_context): Let GC free parser_ctxt.
+	(java_parser_context_resume): Likewise.
+	* parse.h (struct parser_ctxt): Use gengtype to mark.
+	(ctxp): Likewise.
+	(ctxp_for_generation): Likewise.
+	* lex.h (struct java_lc_s): Mark for gengtype.
+	(java_lexer): Rearrange for gengtype.
+	* config-lang.in (gtfiles): Add lex.h, parse.h.
+
 2003-01-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* All Files: Remove PARAMS macro.

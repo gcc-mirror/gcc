@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2002,
 @c 1999, 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -73,54 +73,22 @@ performed by cpplib, which is covered in separate documentation.  In
 particular, the internals are covered in @xref{Top, ,Cpplib internals,
 cppinternals, Cpplib Internals}.
 
-@c Avoiding overfull is tricky here.
-The source files to parse C are
-@file{c-convert.c},
-@file{c-decl.c},
-@file{c-errors.c},
-@file{c-lang.c},
-@file{c-objc-common.c},
-@file{c-parse.in},
-@file{c-aux-info.c},
-and
-@file{c-typeck.c},
-along with a header file
-@file{c-tree.h}
-and some files shared with Objective-C and C++.
-
-The source files for parsing C++ are in @file{cp/}.
-They are @file{parse.y},
-@file{class.c},
-@file{cvt.c}, @file{decl.c}, @file{decl2.c},
-@file{except.c},
-@file{expr.c}, @file{init.c}, @file{lex.c},
-@file{method.c}, @file{ptree.c},
-@file{search.c}, @file{spew.c},
-@file{semantics.c}, @file{tree.c},
-@file{typeck2.c}, and
-@file{typeck.c}, along with header files @file{cp-tree.def},
-@file{cp-tree.h}, and @file{decl.h}.
-
-The special source files for parsing Objective-C are in @file{objc/}.
-They are @file{objc-act.c}, @file{objc-tree.def}, and @file{objc-act.h}.
-Certain C-specific files are used for this as well.
-
-The files
-@file{c-common.c},
+The source files to parse C are found in the toplevel directory, and
+by convention are named @file{c-*}.  Some of these are also used by
+the other C-like languages: @file{c-common.c},
 @file{c-common.def},
 @file{c-format.c},
 @file{c-opts.c},
 @file{c-pragma.c},
 @file{c-semantics.c},
-and
 @file{c-lex.c},
-along with header files
 @file{c-common.h},
 @file{c-dump.h},
 and
 @file{c-pragma.h},
-are also used for all of the above languages.
 
+Files specific to each language are in subdirectories named after the
+language in question, like @file{ada}, @file{objc}, @file{cp} (for C++).
 
 @cindex Tree optimization
 @item

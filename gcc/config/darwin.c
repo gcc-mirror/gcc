@@ -223,7 +223,7 @@ machopic_define_name (name)
 
 static char function_base[32];
 
-static int current_pic_label_num;
+static GTY(()) int current_pic_label_num;
 
 const char *
 machopic_function_base_name ()

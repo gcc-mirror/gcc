@@ -107,12 +107,12 @@ struct varasm_status GTY(())
 /* Number for making the label on the next
    constant that is stored in memory.  */
 
-int const_labelno;
+static GTY(()) int const_labelno;
 
 /* Number for making the label on the next
    static variable internal to a function.  */
 
-int var_labelno;
+static GTY(()) int var_labelno;
 
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */
@@ -179,7 +179,7 @@ static bool asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
 static void resolve_unique_section	PARAMS ((tree, int, int));
 static void mark_weak                   PARAMS ((tree));
 
-static enum in_section { no_section, in_text, in_data, in_named
+enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
   , in_bss
 #endif
@@ -195,7 +195,8 @@ static enum in_section { no_section, in_text, in_data, in_named
 #ifdef EXTRA_SECTIONS
   , EXTRA_SECTIONS
 #endif
-} in_section = no_section;
+};
+static GTY(()) enum in_section in_section = no_section;
 
 /* Return a nonzero value if DECL has a section attribute.  */
 #ifndef IN_NAMED_SECTION
@@ -205,18 +206,18 @@ static enum in_section { no_section, in_text, in_data, in_named
 #endif
 
 /* Text of section name when in_section == in_named.  */
-static const char *in_named_name;
+static GTY(()) const char *in_named_name;
 
 /* Hash table of flags that have been used for a particular named section.  */
 
-struct in_named_entry
+struct in_named_entry GTY(())
 {
   const char *name;
   unsigned int flags;
   bool declared;
 };
 
-static htab_t in_named_htab;
+static GTY((param_is (struct in_named_entry))) htab_t in_named_htab;
 
 /* Define functions like text_section for any extra sections.  */
 #ifdef EXTRA_SECTION_FUNCTIONS
@@ -379,7 +380,7 @@ set_named_section_flags (section, flags)
 
   if (!entry)
     {
-      entry = (struct in_named_entry *) xmalloc (sizeof (*entry));
+      entry = (struct in_named_entry *) ggc_alloc (sizeof (*entry));
       *slot = entry;
       entry->name = ggc_strdup (section);
       entry->flags = flags;
@@ -2119,7 +2120,7 @@ struct rtx_const GTY(())
   ENUM_BITFIELD(kind) kind : 16;
   ENUM_BITFIELD(machine_mode) mode : 16;
   union rtx_const_un {
-    REAL_VALUE_TYPE du;
+    REAL_VALUE_TYPE GTY ((tag ("4"))) du;
     struct addr_const GTY ((tag ("1"))) addr;
     struct rtx_const_u_di {
       HOST_WIDE_INT high;
@@ -4703,8 +4704,8 @@ init_varasm_once ()
 {
   const_str_htab = htab_create_ggc (128, const_str_htab_hash,
 				    const_str_htab_eq, NULL);
-  in_named_htab = htab_create (31, in_named_entry_hash,
-			       in_named_entry_eq, NULL);
+  in_named_htab = htab_create_ggc (31, in_named_entry_hash,
+				   in_named_entry_eq, NULL);
 
   const_alias_set = new_alias_set ();
 }

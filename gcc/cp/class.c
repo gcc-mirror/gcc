@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "output.h"
 #include "toplev.h"
-#include "ggc.h"
 #include "lex.h"
 #include "target.h"
 
@@ -125,8 +124,10 @@ static tree modify_all_vtables PARAMS ((tree, tree));
 static void determine_primary_base PARAMS ((tree));
 static void finish_struct_methods PARAMS ((tree));
 static void maybe_warn_about_overly_private_class PARAMS ((tree));
-static int field_decl_cmp PARAMS ((const tree *, const tree *));
-static int method_name_cmp PARAMS ((const tree *, const tree *));
+static int field_decl_cmp PARAMS ((const void *, const void *));
+static int resort_field_decl_cmp PARAMS ((const void *, const void *));
+static int method_name_cmp PARAMS ((const void *, const void *));
+static int resort_method_name_cmp PARAMS ((const void *, const void *));
 static void add_implicitly_declared_members PARAMS ((tree, int, int, int));
 static tree fixed_type_or_null PARAMS ((tree, int *, int *));
 static tree resolve_address_of_overloaded_function PARAMS ((tree, tree, int,
@@ -1449,7 +1450,8 @@ mark_primary_virtual_base (base_binfo, type)
    base, then BINFO has no primary base in this graph.  Called from
    mark_primary_bases.  DATA is the most derived type.  */
 
-static tree dfs_unshared_virtual_bases (binfo, data)
+static tree
+dfs_unshared_virtual_bases (binfo, data)
      tree binfo;
      void *data;
 {
@@ -1923,9 +1925,11 @@ maybe_warn_about_overly_private_class (t)
 /* Function to help qsort sort FIELD_DECLs by name order.  */
 
 static int
-field_decl_cmp (x, y)
-     const tree *x, *y;
+field_decl_cmp (x_p, y_p)
+     const void *x_p, *y_p;
 {
+  const tree *const x = x_p;
+  const tree *const y = y_p;
   if (DECL_NAME (*x) == DECL_NAME (*y))
     /* A nontype is "greater" than a type.  */
     return DECL_DECLARES_TYPE_P (*y) - DECL_DECLARES_TYPE_P (*x);
@@ -1938,12 +1942,64 @@ field_decl_cmp (x, y)
   return 1;
 }
 
+static struct {
+  gt_pointer_operator new_value;
+  void *cookie;
+} resort_data;
+
+/* This routine compares two fields like field_decl_cmp but using the
+   pointer operator in resort_data.  */
+
+static int
+resort_field_decl_cmp (x_p, y_p)
+     const void *x_p, *y_p;
+{
+  const tree *const x = x_p;
+  const tree *const y = y_p;
+
+  if (DECL_NAME (*x) == DECL_NAME (*y))
+    /* A nontype is "greater" than a type.  */
+    return DECL_DECLARES_TYPE_P (*y) - DECL_DECLARES_TYPE_P (*x);
+  if (DECL_NAME (*x) == NULL_TREE)
+    return -1;
+  if (DECL_NAME (*y) == NULL_TREE)
+    return 1;
+  {
+    tree d1 = DECL_NAME (*x);
+    tree d2 = DECL_NAME (*y);
+    resort_data.new_value (&d1, resort_data.cookie);
+    resort_data.new_value (&d2, resort_data.cookie);
+    if (d1 < d2)
+      return -1;
+  }
+  return 1;
+}
+
+/* Resort DECL_SORTED_FIELDS because pointers have been reordered.  */
+
+void 
+resort_sorted_fields (obj, orig_obj, new_value, cookie)
+     void *obj;
+     void *orig_obj;
+     gt_pointer_operator new_value;
+     void *cookie;
+{
+  tree sf = obj;
+  resort_data.new_value = new_value;
+  resort_data.cookie = cookie;
+  qsort (&TREE_VEC_ELT (sf, 0), TREE_VEC_LENGTH (sf), sizeof (tree),
+	 resort_field_decl_cmp);
+}
+
 /* Comparison function to compare two TYPE_METHOD_VEC entries by name.  */
 
 static int
-method_name_cmp (m1, m2)
-     const tree *m1, *m2;
+method_name_cmp (m1_p, m2_p)
+     const void *m1_p, *m2_p;
 {
+  const tree *const m1 = m1_p;
+  const tree *const m2 = m2_p;
+  
   if (*m1 == NULL_TREE && *m2 == NULL_TREE)
     return 0;
   if (*m1 == NULL_TREE)
@@ -1953,6 +2009,63 @@ method_name_cmp (m1, m2)
   if (DECL_NAME (OVL_CURRENT (*m1)) < DECL_NAME (OVL_CURRENT (*m2)))
     return -1;
   return 1;
+}
+
+/* This routine compares two fields like method_name_cmp but using the
+   pointer operator in resort_field_decl_data.  */
+
+static int
+resort_method_name_cmp (m1_p, m2_p)
+     const void *m1_p, *m2_p;
+{
+  const tree *const m1 = m1_p;
+  const tree *const m2 = m2_p;
+  if (*m1 == NULL_TREE && *m2 == NULL_TREE)
+    return 0;
+  if (*m1 == NULL_TREE)
+    return -1;
+  if (*m2 == NULL_TREE)
+    return 1;
+  {
+    tree d1 = DECL_NAME (OVL_CURRENT (*m1));
+    tree d2 = DECL_NAME (OVL_CURRENT (*m2));
+    resort_data.new_value (&d1, resort_data.cookie);
+    resort_data.new_value (&d2, resort_data.cookie);
+    if (d1 < d2)
+      return -1;
+  }
+  return 1;
+}
+
+/* Resort TYPE_METHOD_VEC because pointers have been reordered.  */
+
+void 
+resort_type_method_vec (obj, orig_obj, new_value, cookie)
+     void *obj;
+     void *orig_obj;
+     gt_pointer_operator new_value;
+     void *cookie;
+{
+  tree method_vec = obj;
+  int len = TREE_VEC_LENGTH (method_vec);
+  int slot;
+
+  /* The type conversion ops have to live at the front of the vec, so we
+     can't sort them.  */
+  for (slot = 2; slot < len; ++slot)
+    {
+      tree fn = TREE_VEC_ELT (method_vec, slot);
+  
+      if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+	break;
+    }
+  if (len - slot > 1)
+    {
+      resort_data.new_value = new_value;
+      resort_data.cookie = cookie;
+      qsort (&TREE_VEC_ELT (method_vec, slot), len - slot, sizeof (tree),
+	     resort_method_name_cmp);
+    }
 }
 
 /* Warn about duplicate methods in fn_fields.  Also compact method
@@ -2025,7 +2138,7 @@ finish_struct_methods (t)
     }
   if (len - slot > 1)
     qsort (&TREE_VEC_ELT (method_vec, slot), len-slot, sizeof (tree),
-	   (int (*)(const void *, const void *))method_name_cmp);
+	   method_name_cmp);
 }
 
 /* Emit error when a duplicate definition of a type is seen.  Patch up.  */
@@ -5418,7 +5531,7 @@ finish_struct_1 (t)
       tree field_vec = make_tree_vec (n_fields);
       add_fields_to_vec (TYPE_FIELDS (t), field_vec, 0);
       qsort (&TREE_VEC_ELT (field_vec, 0), n_fields, sizeof (tree),
-	     (int (*)(const void *, const void *))field_decl_cmp);
+	     field_decl_cmp);
       if (! DECL_LANG_SPECIFIC (TYPE_MAIN_DECL (t)))
 	retrofit_lang_decl (TYPE_MAIN_DECL (t));
       DECL_SORTED_FIELDS (TYPE_MAIN_DECL (t)) = field_vec;

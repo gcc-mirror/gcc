@@ -36,7 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "toplev.h"
 #include "output.h"
-#include "ggc.h"
 #include "tm_p.h"
 #include "timevar.h"
 #include "diagnostic.h"
@@ -380,10 +379,7 @@ init_reswords ()
   int mask = ((flag_no_asm ? D_ASM : 0)
 	      | (flag_no_gnu_keywords ? D_EXT : 0));
 
-  /* It is not necessary to register ridpointers as a GC root, because
-     all the trees it points to are permanently interned in the
-     get_identifier hash anyway.  */
-  ridpointers = (tree *) xcalloc ((int) RID_MAX, sizeof (tree));
+  ridpointers = (tree *) ggc_calloc ((int) RID_MAX, sizeof (tree));
   for (i = 0; i < ARRAY_SIZE (reswords); i++)
     {
       id = get_identifier (reswords[i].word);

@@ -22,6 +22,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <dirent.h>
 #include "coretypes.h"
 #include "tm.h"
 #include "cpplib.h"
@@ -87,6 +88,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /* This structure is used for the table of all includes.  */
 struct include_file {
   const char *name;		/* actual path name of file */
+  const char *header_name;	/* the original header found */
   const cpp_hashnode *cmacro;	/* macro, if any, preventing reinclusion.  */
   const struct search_path *foundhere;
 				/* location in search path where file was
@@ -98,6 +100,13 @@ struct include_file {
   unsigned short include_count;	/* number of times file has been read */
   unsigned short refcnt;	/* number of stacked buffers using this file */
   unsigned char mapped;		/* file buffer is mmapped */
+  unsigned char pch;		/* 0: file not known to be a PCH.
+				   1: file is a PCH 
+				      (on return from find_include_file).
+				   2: file is not and never will be a valid
+				      precompiled header.
+				   3: file is always a valid precompiled
+				      header.  */
 };
 
 /* Variable length record files on VMS will have a stat size that includes
@@ -118,6 +127,7 @@ struct include_file {
 ((inc)->cmacro && ((inc)->cmacro == NEVER_REREAD \
 		   || (inc)->cmacro->type == NT_MACRO))
 #define NO_INCLUDE_PATH ((struct include_file *) -1)
+#define INCLUDE_PCH_P(F) (((F)->pch & 1) != 0)
 
 static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
@@ -130,6 +140,11 @@ static struct include_file *
 	find_include_file PARAMS ((cpp_reader *, const cpp_token *,
 				   enum include_type));
 static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
+static struct include_file *validate_pch PARAMS ((cpp_reader *,
+						  const char *,
+						  const char *));
+static struct include_file *open_file_pch PARAMS ((cpp_reader *, 
+						   const char *));
 static int read_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static bool stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void purge_cache 	PARAMS ((struct include_file *));
@@ -212,6 +227,7 @@ find_or_create_entry (pfile, fname)
     {
       file = xcnew (struct include_file);
       file->name = name;
+      file->header_name = name;
       file->err_no = errno;
       node = splay_tree_insert (pfile->all_include_files,
 				(splay_tree_key) file->name,
@@ -306,6 +322,89 @@ open_file (pfile, filename)
   return 0;
 }
 
+static struct include_file *
+validate_pch (pfile, filename, pchname)
+     cpp_reader *pfile;
+     const char *filename;
+     const char *pchname;
+{
+  struct include_file * file;
+  
+  file = open_file (pfile, pchname);
+  if (file == NULL)
+    return NULL;
+  if ((file->pch & 2) == 0)
+    file->pch = pfile->cb.valid_pch (pfile, pchname, file->fd);
+  if (INCLUDE_PCH_P (file))
+    {
+      file->header_name = _cpp_simplify_pathname (xstrdup (filename));
+      return file;
+    }
+  close (file->fd);
+  file->fd = -1;
+  return NULL;
+}
+
+
+/* Like open_file, but also look for a precompiled header if (a) one exists
+   and (b) it is valid.  */
+static struct include_file *
+open_file_pch (pfile, filename)
+     cpp_reader *pfile;
+     const char *filename;
+{
+  if (filename[0] != '\0'
+      && pfile->cb.valid_pch != NULL)
+    {
+      size_t namelen = strlen (filename);
+      char *pchname = alloca (namelen + 5);
+      struct include_file * file;
+      splay_tree_node nd;
+      
+      memcpy (pchname, filename, namelen);
+      memcpy (pchname + namelen, ".pch", 5);
+
+      nd = find_or_create_entry (pfile, pchname);
+      file = (struct include_file *) nd->value;
+
+      if (file != NULL)
+	{
+	  if (stat (file->name, &file->st) == 0 && S_ISDIR (file->st.st_mode))
+	    {
+	      DIR * thedir;
+	      struct dirent *d;
+	      size_t subname_len = namelen + 64;
+	      char *subname = xmalloc (subname_len);
+	      
+	      thedir = opendir (pchname);
+	      if (thedir == NULL)
+		return NULL;
+	      memcpy (subname, pchname, namelen + 4);
+	      subname[namelen+4] = '/';
+	      while ((d = readdir (thedir)) != NULL)
+		{
+		  if (strlen (d->d_name) + namelen + 7 > subname_len)
+		    {
+		      subname_len = strlen (d->d_name) + namelen + 64;
+		      subname = xrealloc (subname, subname_len);
+		    }
+		  strcpy (subname + namelen + 5, d->d_name);
+		  file = validate_pch (pfile, filename, subname);
+		  if (file)
+		    break;
+		}
+	      closedir (thedir);
+	      free (subname);
+	    }
+	  else
+	    file = validate_pch (pfile, filename, pchname);
+	  if (file)
+	    return file;
+	}
+    }
+  return open_file (pfile, filename);
+}
+
 /* Place the file referenced by INC into a new buffer on the buffer
    stack, unless there are errors, or the file is not re-included
    because of e.g. multiple-include guards.  Returns true if a buffer
@@ -330,6 +429,15 @@ stack_include_file (pfile, inc)
     {
       if (pfile->buffer || CPP_OPTION (pfile, deps.ignore_main_file) == 0)
 	deps_add_dep (pfile->deps, inc->name);
+    }
+
+  /* PCH files get dealt with immediately.  */
+  if (INCLUDE_PCH_P (inc))
+    {
+      pfile->cb.read_pch (pfile, inc->name, inc->fd, inc->header_name);
+      close (inc->fd);
+      inc->fd = -1;
+      return false;
     }
 
   /* Not in cache?  */
@@ -579,7 +687,7 @@ find_include_file (pfile, header, type)
   char *name, *n;
 
   if (IS_ABSOLUTE_PATHNAME (fname))
-    return open_file (pfile, fname);
+    return open_file_pch (pfile, fname);
 
   /* For #include_next, skip in the search path past the dir in which
      the current file was found, but if it was found via an absolute
@@ -615,7 +723,7 @@ find_include_file (pfile, header, type)
       else
 	n = name;
 
-      file = open_file (pfile, n);
+      file = open_file_pch (pfile, n);
       if (file)
 	{
 	  file->foundhere = path;
@@ -757,6 +865,9 @@ _cpp_read_file (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
+  /* This uses open_file, because we don't allow a PCH to be used as
+     the toplevel compilation (that would prevent re-compiling an
+     existing PCH without deleting it first).  */
   struct include_file *f = open_file (pfile, fname);
 
   if (f == NULL)

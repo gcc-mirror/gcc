@@ -168,7 +168,6 @@ struct builtin_description
 };
 
 static bool rs6000_function_ok_for_sibcall PARAMS ((tree, tree));
-static void rs6000_add_gc_roots PARAMS ((void));
 static int num_insns_constant_wide PARAMS ((HOST_WIDE_INT));
 static void validate_condition_mode 
   PARAMS ((enum rtx_code, enum machine_mode));
@@ -183,8 +182,6 @@ static void rs6000_emit_allocate_stack PARAMS ((HOST_WIDE_INT, int));
 static unsigned rs6000_hash_constant PARAMS ((rtx));
 static unsigned toc_hash_function PARAMS ((const void *));
 static int toc_hash_eq PARAMS ((const void *, const void *));
-static int toc_hash_mark_entry PARAMS ((void **, void *));
-static void toc_hash_mark_table PARAMS ((void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 static struct machine_function * rs6000_init_machine_status PARAMS ((void));
 static bool rs6000_assemble_integer PARAMS ((rtx, unsigned int, int));
@@ -267,6 +264,19 @@ static void is_altivec_return_reg PARAMS ((rtx, void *));
 static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *, int));
 static void altivec_frame_fixup PARAMS ((rtx, rtx, HOST_WIDE_INT));
 static int easy_vector_constant PARAMS ((rtx));
+
+/* Hash table stuff for keeping track of TOC entries.  */
+
+struct toc_hash_struct GTY(())
+{
+  /* `key' will satisfy CONSTANT_P; in fact, it will satisfy
+     ASM_OUTPUT_SPECIAL_POOL_ENTRY_P.  */
+  rtx key;
+  enum machine_mode key_mode;
+  int labelno;
+};
+
+static GTY ((param_is (struct toc_hash_struct))) htab_t toc_hash_table;
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -707,9 +717,6 @@ rs6000_override_options (default_cpu)
   if (TARGET_LONG_DOUBLE_128
       && (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN))
     real_format_for_mode[TFmode - QFmode] = &ibm_extended_format;
-
-  /* Register global variables with the garbage collector.  */
-  rs6000_add_gc_roots ();
 
   /* Allocate an alias set for register saves & restores from stack.  */
   rs6000_sr_alias_set = new_alias_set ();
@@ -11457,19 +11464,6 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 
 */
 
-/* Hash table stuff for keeping track of TOC entries.  */
-
-struct toc_hash_struct 
-{
-  /* `key' will satisfy CONSTANT_P; in fact, it will satisfy
-     ASM_OUTPUT_SPECIAL_POOL_ENTRY_P.  */
-  rtx key;
-  enum machine_mode key_mode;
-  int labelno;
-};
-
-static htab_t toc_hash_table;
-
 /* Hash functions for the hash table.  */
 
 static unsigned
@@ -11570,39 +11564,6 @@ toc_hash_eq (h1, h2)
   return rtx_equal_p (r1, r2);
 }
 
-/* Mark the hash table-entry HASH_ENTRY.  */
-
-static int
-toc_hash_mark_entry (hash_slot, unused)
-     void ** hash_slot;
-     void * unused ATTRIBUTE_UNUSED;
-{
-  const struct toc_hash_struct * hash_entry = 
-    *(const struct toc_hash_struct **) hash_slot;
-  rtx r = hash_entry->key;
-  ggc_set_mark (hash_entry);
-  /* For CODE_LABELS, we don't want to drag in the whole insn chain...  */
-  if (GET_CODE (r) == LABEL_REF)
-    {
-      ggc_set_mark (r);
-      ggc_set_mark (XEXP (r, 0));
-    }
-  else
-    ggc_mark_rtx (r);
-  return 1;
-}
-
-/* Mark all the elements of the TOC hash-table *HT.  */
-
-static void
-toc_hash_mark_table (vht)
-     void *vht;
-{
-  htab_t *ht = vht;
-  
-  htab_traverse (*ht, toc_hash_mark_entry, (void *)0);
-}
-
 /* These are the names given by the C++ front-end to vtables, and
    vtable-like objects.  Ideally, this logic should not be here;
    instead, there should be some programmatic way of inquiring as
@@ -11656,12 +11617,19 @@ output_toc (file, x, labelno, mode)
 
   /* When the linker won't eliminate them, don't output duplicate
      TOC entries (this happens on AIX if there is any kind of TOC,
-     and on SVR4 under -fPIC or -mrelocatable).  */
-  if (TARGET_TOC)
+     and on SVR4 under -fPIC or -mrelocatable).  Don't do this for
+     CODE_LABELs.  */
+  if (TARGET_TOC && GET_CODE (x) != LABEL_REF)
     {
       struct toc_hash_struct *h;
       void * * found;
       
+      /* Create toc_hash_table.  This can't be done at OVERRIDE_OPTIONS
+         time because GGC is not initialised at that point.  */
+      if (toc_hash_table == NULL)
+	toc_hash_table = htab_create_ggc (1021, toc_hash_function, 
+					  toc_hash_eq, NULL);
+
       h = ggc_alloc (sizeof (*h));
       h->key = x;
       h->key_mode = mode;
@@ -12685,17 +12653,6 @@ rs6000_fatal_bad_address (op)
   fatal_insn ("bad address", op);
 }
 
-/* Called to register all of our global variables with the garbage
-   collector.  */
-
-static void
-rs6000_add_gc_roots ()
-{
-  toc_hash_table = htab_create (1021, toc_hash_function, toc_hash_eq, NULL);
-  ggc_add_root (&toc_hash_table, 1, sizeof (toc_hash_table), 
-		toc_hash_mark_table);
-}
-
 #if TARGET_MACHO
 
 #if 0
@@ -13312,3 +13269,4 @@ rs6000_memory_move_cost (mode, class, in)
     return 4 + rs6000_register_move_cost (mode, class, GENERAL_REGS);
 }
 
+#include "gt-rs6000.h"

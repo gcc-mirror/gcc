@@ -5315,14 +5315,14 @@ init_emit_once (line_numbers)
 
   /* Initialize the CONST_INT, CONST_DOUBLE, and memory attribute hash
      tables.  */
-  const_int_htab = htab_create (37, const_int_htab_hash,
-				const_int_htab_eq, NULL);
+  const_int_htab = htab_create_ggc (37, const_int_htab_hash,
+				    const_int_htab_eq, NULL);
 
-  const_double_htab = htab_create (37, const_double_htab_hash,
-				   const_double_htab_eq, NULL);
+  const_double_htab = htab_create_ggc (37, const_double_htab_hash,
+				       const_double_htab_eq, NULL);
 
-  mem_attrs_htab = htab_create (37, mem_attrs_htab_hash,
-				mem_attrs_htab_eq, NULL);
+  mem_attrs_htab = htab_create_ggc (37, mem_attrs_htab_hash,
+				    mem_attrs_htab_eq, NULL);
 
   no_line_numbers = ! line_numbers;
 

@@ -688,38 +688,18 @@ dw2_asm_output_delta_sleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
   VA_CLOSE (ap);
 }
 
-static int mark_indirect_pool_entry PARAMS ((splay_tree_node, void *));
-static void mark_indirect_pool PARAMS ((PTR arg));
 static rtx dw2_force_const_mem PARAMS ((rtx));
 static int dw2_output_indirect_constant_1 PARAMS ((splay_tree_node, void *));
 
-static splay_tree indirect_pool;
+static GTY((param1_is (char *), param2_is (tree))) splay_tree indirect_pool;
+
+static GTY(()) int dw2_const_labelno;
 
 #if defined(HAVE_GAS_HIDDEN) && defined(SUPPORTS_ONE_ONLY)
 # define USE_LINKONCE_INDIRECT 1
 #else
 # define USE_LINKONCE_INDIRECT 0
 #endif
-
-/* Mark all indirect constants for GC.  */
-
-static int
-mark_indirect_pool_entry (node, data)
-     splay_tree_node node;
-     void* data ATTRIBUTE_UNUSED;
-{
-  ggc_mark_tree ((tree) node->value);
-  return 0;
-}
-
-/* Mark all indirect constants for GC.  */
-
-static void
-mark_indirect_pool (arg)
-     PTR arg ATTRIBUTE_UNUSED;
-{
-  splay_tree_foreach (indirect_pool, mark_indirect_pool_entry, NULL);
-}
 
 /* Put X, a SYMBOL_REF, in memory.  Return a SYMBOL_REF to the allocated
    memory.  Differs from force_const_mem in that a single pool is used for
@@ -735,10 +715,7 @@ dw2_force_const_mem (x)
   tree decl;
 
   if (! indirect_pool)
-    {
-      indirect_pool = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
-      ggc_add_root (&indirect_pool, 1, sizeof indirect_pool, mark_indirect_pool);
-    }
+    indirect_pool = splay_tree_new_ggc (splay_tree_compare_pointers);
 
   if (GET_CODE (x) != SYMBOL_REF)
     abort ();
@@ -765,11 +742,10 @@ dw2_force_const_mem (x)
 	}
       else
 	{
-	  extern int const_labelno;
 	  char label[32];
 
-	  ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
-	  ++const_labelno;
+	  ASM_GENERATE_INTERNAL_LABEL (label, "LDFCM", dw2_const_labelno);
+	  ++dw2_const_labelno;
 	  id = get_identifier (label);
 	  decl = build_decl (VAR_DECL, id, ptr_type_node);
 	  DECL_ARTIFICIAL (decl) = 1;
@@ -906,3 +882,5 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
 
   VA_CLOSE (ap);
 }
+
+#include "gt-dwarf2asm.h"

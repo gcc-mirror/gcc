@@ -125,7 +125,7 @@ int current_function_uses_only_leaf_regs;
 int virtuals_instantiated;
 
 /* Assign unique numbers to labels generated for profiling, debugging, etc.  */
-static int funcdef_no;
+static GTY(()) int funcdef_no;
 
 /* These variables hold pointers to functions to create and destroy
    target specific, per-function data structures.  */
