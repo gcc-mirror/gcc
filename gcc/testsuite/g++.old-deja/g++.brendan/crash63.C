@@ -12,4 +12,4 @@ class UnitList
    UnitList (...);
    };
 
-UnitList unit_list (String("keV"));
+UnitList unit_list (String("keV")); // WARNING - cannot pass non-pod
