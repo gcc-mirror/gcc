@@ -2332,6 +2332,11 @@ typedef struct mips_args {
   fprintf (FILE, "\t.set\tat\n");					\
 }
 
+/* No mips port has ever used the profiler counter word, so don't emit it
+   or the label for it.  */
+
+#define NO_PROFILE_COUNTERS 1
+
 /* Define this macro if the code for function profiling should come
    before the function prologue.  Normally, the profiling code comes
    after.  */
