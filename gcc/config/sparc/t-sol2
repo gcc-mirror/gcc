@@ -5,9 +5,6 @@ EXTRA_PARTS=crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o
 # we need to supply our own assembly versions of libgcc1.c files,
 # since the user may not have native 'cc' available
 
-# ??? This is wrong!
-INSTALL_TARGET = install-cross
-
 LIBGCC1 = libgcc1.null
 
 # gmon build rule:
