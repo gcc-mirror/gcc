@@ -1,3 +1,10 @@
+2005-01-28  Ian Lance Taylor  <ian@airs.com>
+
+	PR middle-end/16558
+	PR middle-end/19583
+	* gimple-low.c (block_may_fallthru): TRY_FINALLY_EXPR only falls
+	through if both operands fall through.
+
 2005-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (fold_rtx) <PC>: Don't optimize.
@@ -95,7 +102,7 @@
 	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Only iterate at -O2
 	and better.
 
-2005-01-27  Ian Lance Taylor  <ian@c2micro.com>
+2005-01-27  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/19583
 	* gimple-low.c (try_catch_may_fallthru): New static function.
