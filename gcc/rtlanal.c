@@ -1,5 +1,5 @@
 /* Analyze RTL for C-Compiler
-   Copyright (C) 1987, 88, 9-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1607,16 +1607,20 @@ may_trap_p (x)
     case MOD:
     case UDIV:
     case UMOD:
-      if (! CONSTANT_P (XEXP (x, 1)))
+      if (! CONSTANT_P (XEXP (x, 1))
+	  || GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
 	return 1;
       /* This was const0_rtx, but by not using that,
 	 we can link this file into other programs.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 0)
 	return 1;
+      break;
+
     case EXPR_LIST:
       /* An EXPR_LIST is used to represent a function call.  This
 	 certainly may trap.  */
       return 1;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
