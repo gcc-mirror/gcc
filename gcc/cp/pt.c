@@ -6515,6 +6515,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  SET_DECL_TEMPLATE_PARM_P (r);
 
 	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	type = type_decays_to (type);
 	TREE_TYPE (r) = type;
 	cp_apply_type_quals_to_decl (cp_type_quals (type), r);
 
@@ -11136,6 +11137,7 @@ regenerate_decl_from_template (tree decl, tree tmpl)
 	    DECL_NAME (decl_parm) = DECL_NAME (pattern_parm);
 	  parm_type = tsubst (TREE_TYPE (pattern_parm), args, tf_error,
 			      NULL_TREE);
+	  parm_type = type_decays_to (parm_type);
 	  if (!same_type_p (TREE_TYPE (decl_parm), parm_type))
 	    TREE_TYPE (decl_parm) = parm_type;
 	  decl_parm = TREE_CHAIN (decl_parm);

@@ -1,3 +1,10 @@
+2005-03-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20208
+	* pt.c (tsubst_decl): Apply array-to-pointer and
+	function-to-pointer conversions to function arguments.
+	(regenerate_decl_from_template): Likewise.
+
 2005-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20186
