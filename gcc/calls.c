@@ -114,7 +114,8 @@ calls_alloca (exp)
 
   /* Only expressions and references can contain calls.  */
 
-  if (type != 'e' && type != '<' && type != '1' && type != '2' && type != 'r')
+  if (type != 'e' && type != '<' && type != '1' && type != '2' && type != 'r'
+      && type != 'b')
     return 0;
 
   switch (TREE_CODE (exp))
