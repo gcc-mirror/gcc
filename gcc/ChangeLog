@@ -1,3 +1,10 @@
+Sat Oct 16 13:03:16 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (*absqi2_noclobber, *negqi2_noclobber,
+	*one_cmplqi2_noclobber, *subqi3_noclobber, *andqi3_255_noclobber,
+	*andqi3_65535_noclobber, *andnqi3_noclobber, *xorqi3_noclobber):
+	Add new patterns and associated post-reload splitters.
+
 Sat Oct 16 12:42:12 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_emit_libcall): Use ggc_alloc_string.
