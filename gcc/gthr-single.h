@@ -36,7 +36,7 @@ typedef int __gthread_mutex_t;
 #define __GTHREAD_MUTEX_INIT 0
 
 static inline int
-__gthread_active_p ()
+__gthread_active_p (void)
 {
   return 0;
 }

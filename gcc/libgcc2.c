@@ -675,8 +675,6 @@ __udivmoddi4 (UDItype n, UDItype d, UDItype *rp)
 #endif
 
 #ifdef L_divdi3
-UDItype __udivmoddi4 ();
-
 DItype
 __divdi3 (DItype u, DItype v)
 {
@@ -703,7 +701,6 @@ __divdi3 (DItype u, DItype v)
 #endif
 
 #ifdef L_moddi3
-UDItype __udivmoddi4 ();
 DItype
 __moddi3 (DItype u, DItype v)
 {
@@ -729,7 +726,6 @@ __moddi3 (DItype u, DItype v)
 #endif
 
 #ifdef L_umoddi3
-UDItype __udivmoddi4 ();
 UDItype
 __umoddi3 (UDItype u, UDItype v)
 {
@@ -742,7 +738,6 @@ __umoddi3 (UDItype u, UDItype v)
 #endif
 
 #ifdef L_udivdi3
-UDItype __udivmoddi4 ();
 UDItype
 __udivdi3 (UDItype n, UDItype d)
 {
@@ -1193,7 +1188,7 @@ __gcc_bcmp (unsigned char *s1, unsigned char *s2, size_t size)
 
 #ifdef L__dummy
 void
-__dummy () {}
+__dummy (void) {}
 #endif
 
 #ifdef L_varargs
@@ -1409,7 +1404,7 @@ asm ("___builtin_saveregs:");
 #else /* not __mips__, etc.  */
 
 void *
-__builtin_saveregs ()
+__builtin_saveregs (void)
 {
   abort ();
 }
@@ -1629,7 +1624,7 @@ __bb_exit_func (void)
       for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
 	{
 	  int i;
-	  int func_p	= (ptr->nwords >= sizeof (struct bb)
+	  int func_p	= (ptr->nwords >= (long) sizeof (struct bb)
 			   && ptr->nwords <= 1000
 			   && ptr->functions);
 	  int line_p	= (func_p && ptr->line_nums);
@@ -1658,7 +1653,7 @@ __bb_exit_func (void)
 	      if (cnt_max < ptr->counts[i])
 		cnt_max = ptr->counts[i];
 
-	      if (addr_p && addr_max < ptr->addresses[i])
+	      if (addr_p && (unsigned long) addr_max < ptr->addresses[i])
 		addr_max = ptr->addresses[i];
 
 	      if (line_p && line_max < ptr->line_nums[i])
@@ -1898,7 +1893,7 @@ gclose (FILE *f)
 /* Called once per program.  */
 
 static void
-__bb_exit_trace_func ()
+__bb_exit_trace_func (void)
 {
   FILE *file = fopen ("bb.out", "a");
   struct bb_func *f;
@@ -2093,7 +2088,7 @@ found:        ;
 /* Called once per program.  */
 
 static void
-__bb_init_prg ()
+__bb_init_prg (void)
 {
   FILE *file;
   char buf[BBINBUFSIZE];
@@ -2199,7 +2194,7 @@ __bb_init_prg ()
 /* Called upon entering a basic block.  */
 
 void
-__bb_trace_func ()
+__bb_trace_func (void)
 {
   struct bb_edge *bucket;
 
@@ -2272,7 +2267,7 @@ skip:
 /* Called when returning from a function and `__bb_showret__' is set.  */
 
 static void
-__bb_trace_func_ret ()
+__bb_trace_func_ret (void)
 {
   struct bb_edge *bucket;
 
@@ -2370,7 +2365,7 @@ __bb_init_file (struct bb *blocks)
 /* Called when exiting from a function.  */
 
 void
-__bb_trace_ret ()
+__bb_trace_ret (void)
 {
 
   MACHINE_STATE_SAVE("2")
@@ -2492,7 +2487,7 @@ __clear_cache (char *beg __attribute__((__unused__)),
   int offset;
   void *start_addr
   void *end_addr;
-  typedef (*function_ptr) ();
+  typedef (*function_ptr) (void);
 
 #if (INSN_CACHE_SIZE / INSN_CACHE_LINE_WIDTH) < 16
   /* It's cheaper to clear the whole cache.
@@ -2595,7 +2590,8 @@ __clear_cache (char *beg __attribute__((__unused__)),
 
 #if defined(WINNT) && ! defined(__CYGWIN__) && ! defined (_UWIN)
 
-long getpagesize()
+long
+getpagesize (void)
 {
 #ifdef _ALPHA_
   return 8192;
@@ -2684,7 +2680,7 @@ __enable_execute_stack (char *addr)
 #include <machine/machparam.h>
 
 void
-__enable_execute_stack ()
+__enable_execute_stack (void)
 {
   int fp;
   static unsigned lowest = USRSTACK;
@@ -2711,7 +2707,7 @@ __enable_execute_stack ()
 #include <sys/m88kbcs.h>
 
 void
-__enable_execute_stack ()
+__enable_execute_stack (void)
 {
   int save_errno;
   static unsigned long lowest = USRSTACK;
@@ -2761,7 +2757,7 @@ noerror:\n\
    This is called from FINALIZE_TRAMPOLINE in mot3300.h.  */
 
 void
-__clear_insn_cache ()
+__clear_insn_cache (void)
 {
 #ifdef MCT_TEXT
   int save_errno;
@@ -2792,7 +2788,7 @@ __clear_insn_cache ()
    mremap promises to clear the i-cache.  */
 
 void
-__enable_execute_stack ()
+__enable_execute_stack (void)
 {
   int fp;
   if (mprotect (((unsigned int)&fp/PAGSIZ)*PAGSIZ, PAGSIZ,
@@ -2862,7 +2858,7 @@ extern unsigned char __EH_FRAME_BEGIN__[];
 /* Run all the global destructors on exit from the program.  */
 
 void
-__do_global_dtors ()
+__do_global_dtors (void)
 {
 #ifdef DO_GLOBAL_DTORS_BODY
   DO_GLOBAL_DTORS_BODY;
@@ -2891,7 +2887,7 @@ __do_global_dtors ()
 /* Run all the global constructors on entry to the program.  */
 
 void
-__do_global_ctors ()
+__do_global_ctors (void)
 {
 #ifdef EH_FRAME_SECTION
   {
@@ -2995,8 +2991,8 @@ atexit (func_ptr func)
   return (0);
 }
 
-extern void _cleanup ();
-extern void _exit () __attribute__ ((noreturn));
+extern void _cleanup (void);
+extern void _exit (int) __attribute__ ((__noreturn__));
 
 void 
 exit (int status)
@@ -3042,15 +3038,16 @@ atexit (func_ptr func)
 extern void __default_terminate (void) __attribute__ ((__noreturn__));
 
 void
-__default_terminate ()
+__default_terminate (void)
 {
   abort ();
 }
 
-void (*__terminate_func)() = __default_terminate;
+void (*__terminate_func)(void) __attribute__ ((__noreturn__)) =
+  __default_terminate;
 
 void
-__terminate ()
+__terminate (void)
 {
   (*__terminate_func)();
 }
@@ -3068,7 +3065,7 @@ __throw_type_match (void *catch_type, void *throw_type, void *obj)
 }
 
 void
-__empty ()
+__empty (void)
 {
 }
 
@@ -3082,10 +3079,11 @@ __empty ()
 
 /* Allocate and return a new EH context structure. */
 
-extern void __throw ();
+extern void __throw (void);
 
+#if __GTHREADS
 static void *
-new_eh_context ()
+new_eh_context (void)
 {
   struct eh_full_context {
     struct eh_context c;
@@ -3109,7 +3107,6 @@ new_eh_context ()
   return &ehfc->c;
 }
 
-#if __GTHREADS
 static __gthread_key_t eh_context_key;
 
 /* Destructor for struct eh_context. */
@@ -3124,19 +3121,19 @@ eh_context_free (void *ptr)
 
 /* Pointer to function to return EH context. */
 
-static struct eh_context *eh_context_initialize ();
-static struct eh_context *eh_context_static ();
+static struct eh_context *eh_context_initialize (void);
+static struct eh_context *eh_context_static (void);
 #if __GTHREADS
-static struct eh_context *eh_context_specific ();
+static struct eh_context *eh_context_specific (void);
 #endif
 
-static struct eh_context *(*get_eh_context) () = &eh_context_initialize;
+static struct eh_context *(*get_eh_context) (void) = &eh_context_initialize;
 
 /* Routine to get EH context.
    This one will simply call the function pointer. */
 
 void *
-__get_eh_context ()
+__get_eh_context (void)
 {
   return (void *) (*get_eh_context) ();
 }
@@ -3144,7 +3141,7 @@ __get_eh_context ()
 /* Get and set the language specific info pointer. */
 
 void **
-__get_eh_info ()
+__get_eh_info (void)
 {
   struct eh_context *eh = (*get_eh_context) ();
   return &eh->info;
@@ -3155,7 +3152,7 @@ static int dwarf_reg_size_table_initialized = 0;
 static char dwarf_reg_size_table[FIRST_PSEUDO_REGISTER];
 
 static void
-init_reg_size_table ()
+init_reg_size_table (void)
 {
   __builtin_init_dwarf_reg_size_table (dwarf_reg_size_table);
   dwarf_reg_size_table_initialized = 1;
@@ -3164,7 +3161,7 @@ init_reg_size_table ()
 
 #if __GTHREADS
 static void
-eh_threads_initialize ()
+eh_threads_initialize (void)
 {
   /* Try to create the key.  If it fails, revert to static method,
      otherwise start using thread specific EH contexts. */
@@ -3180,7 +3177,7 @@ eh_threads_initialize ()
    pointer to another routine. */
 
 static struct eh_context *
-eh_context_initialize ()
+eh_context_initialize (void)
 {
 #if __GTHREADS
 
@@ -3220,7 +3217,7 @@ eh_context_initialize ()
 /* Return a static EH context. */
 
 static struct eh_context *
-eh_context_static ()
+eh_context_static (void)
 {
   static struct eh_context eh;
   static int initialized;
@@ -3239,7 +3236,7 @@ eh_context_static ()
 /* Return a thread specific EH context. */
 
 static struct eh_context *
-eh_context_specific ()
+eh_context_specific (void)
 {
   struct eh_context *eh;
   eh = (struct eh_context *) __gthread_getspecific (eh_context_key);
@@ -3268,7 +3265,7 @@ extern void longjmp (void *, int);
    use for exception handling. */
 
 void ***
-__get_dynamic_handler_chain ()
+__get_dynamic_handler_chain (void)
 {
   struct eh_context *eh = (*get_eh_context) ();
   return &eh->dynamic_handler_chain;
@@ -3285,18 +3282,15 @@ __get_dynamic_handler_chain ()
 extern void __sjthrow (void) __attribute__ ((__noreturn__));
 
 void
-__sjthrow ()
+__sjthrow (void)
 {
   struct eh_context *eh = (*get_eh_context) ();
   void ***dhc = &eh->dynamic_handler_chain;
   void *jmpbuf;
   void (*func)(void *, int);
   void *arg;
-  void ***cleanup;
-
-  /* The cleanup chain is one word into the buffer.  Get the cleanup
-     chain.  */
-  cleanup = (void***)&(*dhc)[1];
+  /* The cleanup chain is one word into the buffer.  Get the cleanup chain. */
+  void ***cleanup = (void***)&(*dhc)[1];
 
   /* If there are any cleanups in the chain, run them now.  */
   if (cleanup[0])
@@ -3363,17 +3357,14 @@ __sjthrow ()
 extern void __sjpopnthrow (void) __attribute__ ((__noreturn__));
 
 void
-__sjpopnthrow ()
+__sjpopnthrow (void)
 {
   struct eh_context *eh = (*get_eh_context) ();
   void ***dhc = &eh->dynamic_handler_chain;
   void (*func)(void *, int);
   void *arg;
-  void ***cleanup;
-
-  /* The cleanup chain is one word into the buffer.  Get the cleanup
-     chain.  */
-  cleanup = (void***)&(*dhc)[1];
+  /* The cleanup chain is one word into the buffer.  Get the cleanup chain. */
+  void ***cleanup = (void***)&(*dhc)[1];
 
   /* If there are any cleanups in the chain, run them now.  */
   if (cleanup[0])
@@ -3622,7 +3613,12 @@ in_reg_window (int reg, frame_state *udata)
 #endif
 }
 #else
-static inline int in_reg_window (int reg, frame_state *udata) { return 0; }
+static inline int
+in_reg_window (int reg __attribute__ ((__unused__)),
+	       frame_state *udata __attribute__ ((__unused__)))
+{
+  return 0;
+}
 #endif /* INCOMING_REGNO */
 
 /* Get the address of register REG as saved in UDATA, where SUB_UDATA is a
@@ -3718,7 +3714,7 @@ next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata)
 
 /* Hook to call before __terminate if only cleanup handlers remain. */
 void 
-__unwinding_cleanup ()
+__unwinding_cleanup (void)
 {
 }
 
@@ -3736,19 +3732,16 @@ __unwinding_cleanup ()
    OFFSET_P is where we return the SP adjustment offset.  */
 
 static void *
-throw_helper (eh, pc, my_udata, offset_p)
-     struct eh_context *eh;
-     void *pc;
-     frame_state *my_udata;
-     long *offset_p;
+throw_helper (struct eh_context *eh, void *pc, frame_state *my_udata,
+	      long *offset_p)
 {
   frame_state ustruct2, *udata = &ustruct2;
   frame_state ustruct;
   frame_state *sub_udata = &ustruct;
   void *saved_pc = pc;
   void *handler;
-  void *handler_p;
-  void *pc_p;
+  void *handler_p = 0;
+  void *pc_p = 0;
   frame_state saved_ustruct;
   int new_eh_model;
   int cleanup = 0;
@@ -3919,7 +3912,7 @@ throw_helper (eh, pc, my_udata, offset_p)
 /*extern void __throw(void) __attribute__ ((__noreturn__));*/
 
 void
-__throw ()
+__throw (void)
 {
   struct eh_context *eh = (*get_eh_context) ();
   void *pc, *handler;
@@ -3964,8 +3957,7 @@ label:
 /*extern void __rethrow(void *) __attribute__ ((__noreturn__));*/
 
 void
-__rethrow (index)
-     void *index;
+__rethrow (void *index)
 {
   struct eh_context *eh = (*get_eh_context) ();
   void *pc, *handler;
@@ -4033,7 +4025,7 @@ label:
 extern void __terminate (void) __attribute__ ((__noreturn__));
 
 void
-__pure_virtual ()
+__pure_virtual (void)
 {
 #ifndef inhibit_libc
   write (2, MESSAGE, sizeof (MESSAGE) - 1);
