@@ -1,3 +1,71 @@
+Tue Dec  8 15:32:56 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* eh-common.h (struct eh_context): Add table_index for rethrows.
+
+	* rtl.h (enum reg_note): Add REG_EH_REGION and REG_EH_RETHROW reg notes.
+	(SYMBOL_REF_NEED_ADJUST): New flag indicating symbol needs to be
+	processed when inlined or unrolled (ie duplicated in some way).
+
+	* rtl.c (reg_note_name): Add strings for new reg_note enums.
+
+	* expr.h (rethrow_libfunc): New library decl.
+
+	* optabs.c (rethrow_libfunc): Initialize.
+
+	* except.h (struct eh_entry): Add new field 'rethrow_label'.
+	(new_eh_region_entry): No longer exported from except.c.
+	(duplicate_handlers): Renamed to duplicate_eh_handlers and 
+	different prototype.
+	(rethrow_symbol_map, rethrow_used): New exported functions.
+	(eh_region_from_symbol): New exported function.
+
+	* except.c (create_rethrow_ref): New function to create a single
+	SYMBOL_REF for a rethrow region.  
+	(push_eh_entry): Initialize a rethrow ref.
+	(func_eh_entry): Add a rethrow_label field.
+	(new_eh_region_entry): Make static, and initialize the rethrow entry.
+	(duplicate_eh_handlers): Create a new region, and remap labels/symbols.
+	(eh_region_from_symbol): Find an EH region based on its rethrow symbol.
+	(rethrow_symbol_map): Given a label map, maps a rethrow symbol for 
+	a region into an appropriate new symbol.
+	(rethrow_used): Indicate whether a rethrow symbol has been referenced.
+	(expand_eh_region_end): Don't issue jump around code for new-exceptions.
+	(end_catch_handler): Emit a barrier for new-exceptions since 
+	control can never drop through the end of a catch block.
+	(expand_end_all_catch): new-exceptions never fall through a catch 
+	block.
+	(expand_rethrow): use __rethrow routine for new exceptions.
+	(output_exception_table_entry): Generate rethrow labels, if needed.
+	(output_exception_table): Generate start and end rethrow labels.
+	(init_eh): Create rethrow symbols for beginning and end of table.
+	(scan_region): Don't eliminate EH regions which are the targets of
+	rethrows.
+
+	* flow.c (make_edges): Add different edges for rethrow calls, 
+	identified by having the REG_EH_RETHROW reg label.
+	(delete_unreachable_blocks): Don't delete regions markers which are 
+	the target of a rethrow.
+
+	* integrate.c (save_for_inline_eh_labelmap): New callback routine to 
+	allow save_for_inline_copying to call duplicate_eh_handlers.
+	(save_for_inline_copying): Call duplicate_eh_handlers instead of
+	exposing internal details of exception regions.
+	(copy_for_inline): Check if SYMBOL_REFs need adjustment.
+	(expand_inline_function_eh_labelmap):  New callback routine to 
+	allow expand_inline_function to call duplicate_eh_handlers.
+	(expand_inline_function): Call duplicate_eh_handlers instead of
+	exposing internal details of exception regions.
+	(copy_rtx_and_substitute): Adjust SYMBOL_REFS if SYMBOL_REF_NEED_ADJUST
+	flag is set.
+
+	* libgcc2.c (find_exception_handler): Generalize to enable it to
+	pick up processing where it left off last time for a rethrow.
+	(__unwinding_cleanup): New function. debug hook which is called before
+	unwinding when __throw finds there is nothing but cleanups left.
+	(throw_helper): Common parts of __throw extracted out for reuse.
+	(__throw): Common parts moved to throw_helper.
+	(__rethrow): New function for performing rethrows.
+
 Tue Dec  8 13:11:04 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (current_function_decl): Tweak declaration.

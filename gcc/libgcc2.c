@@ -3468,45 +3468,82 @@ old_find_exception_handler (void *pc, old_exception_table *table)
   return (void *) 0;
 }
 
+/* find_exception_handler finds the correct handler, if there is one, to
+   handle an exception.
+   returns a pointer to the handler which controlled should be transferred
+   to, or NULL if there is nothing left.
+   Parameters:
+   PC - pc where the exception originates. If this is a rethrow, 
+        then this starts out as a pointer to the exception table
+	entry we wish to rethrow out of.
+   TABLE - exception table for the current module.
+   EH_INFO - eh info pointer for this exception.
+   RETHROW - 1 if this is a rethrow. (see incoming value of PC).
+   CLEANUP - returned flag indicating whether this is a cleanup handler.
+*/
 static void *
-find_exception_handler (void *pc, exception_descriptor *table, void *eh_info)
+find_exception_handler (void *pc, exception_descriptor *table, 
+                        __eh_info *eh_info, int rethrow, int *cleanup)
 {
+
+  void *retval = NULL;
+  *cleanup = 1;
   if (table)
     {
+      int pos = 0;
       /* The new model assumed the table is sorted inner-most out so the
          first region we find which matches is the correct one */
 
-      int pos;
-      void *ret;
       exception_table *tab = &(table->table[0]);
 
       /* Subtract 1 from the PC to avoid hitting the next region */
-      pc--;
+      if (rethrow) 
+        {
+          /* pc is actually the region table entry to rethrow out of */
+          pos = ((exception_table *) pc) - tab;
+          pc = ((exception_table *) pc)->end_region - 1;
+
+          /* The label is always on the LAST handler entry for a region, 
+             so we know the next entry is a different region, even if the
+             addresses are the same. Make sure its not end of table tho. */
+          if (tab[pos].start_region != (void *) -1)
+            pos++;
+        }
+      else
+        pc--;
       
       /* We can't do a binary search because the table is in inner-most
          to outermost address ranges within functions */
-      for (pos = 0; tab[pos].start_region != (void *) -1; pos++)
+      for ( ; tab[pos].start_region != (void *) -1; pos++)
         { 
           if (tab[pos].start_region <= pc && tab[pos].end_region > pc)
             {
               if (tab[pos].match_info)
                 {
-                  __eh_matcher matcher = ((__eh_info *)eh_info)->match_function;
+                  __eh_matcher matcher = eh_info->match_function;
                   /* match info but no matcher is NOT a match */
                   if (matcher) 
                     {
-                      ret = (*matcher)(eh_info, tab[pos].match_info, table);
-                      if (ret)
-                        return tab[pos].exception_handler;
+                      void *ret = (*matcher)((void *) eh_info, 
+                                             tab[pos].match_info, table);
+                      if (ret) 
+                        {
+                          if (retval == NULL)
+                            retval = tab[pos].exception_handler;
+                          *cleanup = 0;
+                          break;
+                        }
                     }
                 }
               else
-                return tab[pos].exception_handler;
+                {
+                  if (retval == NULL)
+                    retval = tab[pos].exception_handler;
+                }
             }
         }
     }
-
-  return (void *) 0;
+  return retval;
 }
 #endif /* DWARF2_UNWIND_INFO */
 #endif /* EH_TABLE_LOOKUP */
@@ -3643,54 +3680,47 @@ next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata)
   return caller_udata;
 }
 
-/* We first search for an exception handler, and if we don't find
-   it, we call __terminate on the current stack frame so that we may
-   use the debugger to walk the stack and understand why no handler
-   was found.
-
-   If we find one, then we unwind the frames down to the one that
-   has the handler and transfer control into the handler.  */
-
-/*extern void __throw(void) __attribute__ ((__noreturn__));*/
-
-void
-__throw ()
+/* Hook to call before __terminate if only cleanup handlers remain. */
+void 
+__unwinding_cleanup ()
 {
-  struct eh_context *eh = (*get_eh_context) ();
-  void *saved_pc, *pc, *handler;
-  frame_state ustruct, ustruct2;
-  frame_state *udata = &ustruct;
-  frame_state *sub_udata = &ustruct2;
-  frame_state my_ustruct, *my_udata = &my_ustruct;
-  long args_size;
-  int new_exception_model;
+}
 
-  /* This is required for C++ semantics.  We must call terminate if we
-     try and rethrow an exception, when there is no exception currently
-     active.  */
-  if (! eh->info)
-    __terminate ();
-    
-  /* Start at our stack frame.  */
-label:
-  udata = __frame_state_for (&&label, udata);
-  if (! udata)
-    __terminate ();
+/* throw_helper performs some of the common grunt work for a throw. This
+   routine is called by throw and rethrows. This is pretty much split 
+   out from the old __throw routine. An addition has been added which allows
+   for a dummy call to a routine __unwinding_cleanup() when there are nothing
+   but cleanups remaining. This allows a debugger to examine the state
+   at which the throw was executed, before any cleanups, rather than
+   at the terminate point after the stack has been unwound. */
 
-  /* We need to get the value from the CFA register. */
-  udata->cfa = __builtin_dwarf_cfa ();
+static void *
+throw_helper (eh, pc, my_udata, udata_p)
+     struct eh_context *eh;
+     void *pc;
+     frame_state *my_udata;
+     frame_state **udata_p;
+{
+  frame_state *udata = *udata_p;
+  frame_state ustruct;
+  frame_state *sub_udata = &ustruct;
+  void *saved_pc = pc;
+  void *handler;
+  void *handler_p;
+  void *pc_p;
+  frame_state saved_ustruct;
+  int new_eh_model;
+  int cleanup = 0;
+  int only_cleanup = 0;
+  int rethrow = 0;
+  int saved_state = 0;
+  __eh_info *eh_info = (__eh_info *)eh->info;
 
-  memcpy (my_udata, udata, sizeof (*udata));
+  /* Do we find a handler based on a re-throw PC? */
+  if (eh->table_index != (void *) 0)
+    rethrow = 1;
 
-  /* Do any necessary initialization to access arbitrary stack frames.
-     On the SPARC, this means flushing the register windows.  */
-  __builtin_unwind_init ();
-
-  /* Now reset pc to the right throw point.  */
-  pc = __builtin_extract_return_addr (__builtin_return_address (0)) - 1;
-  saved_pc = pc;
-
-  handler = 0;
+  handler = (void *) 0;
   for (;;)
     { 
       frame_state *p = udata;
@@ -3702,32 +3732,64 @@ label:
 	break;
 
       if (udata->eh_ptr == NULL)
-        new_exception_model = 0;
+        new_eh_model = 0;
       else
-        new_exception_model = (((exception_descriptor *)(udata->eh_ptr))->
+        new_eh_model = (((exception_descriptor *)(udata->eh_ptr))->
                                           runtime_id_field == NEW_EH_RUNTIME);
 
-      if (new_exception_model)
-        handler = find_exception_handler (pc, udata->eh_ptr, eh->info);
+      if (rethrow) 
+        {
+          rethrow = 0;
+          handler = find_exception_handler (eh->table_index, udata->eh_ptr, 
+                                          eh_info, 1, &cleanup);
+          eh->table_index = (void *)0;
+        }
       else
-        handler = old_find_exception_handler (pc, udata->eh_ptr);
+        if (new_eh_model)
+          handler = find_exception_handler (pc, udata->eh_ptr, eh_info, 
+                                            0, &cleanup);
+        else
+          handler = old_find_exception_handler (pc, udata->eh_ptr);
 
-      /* If we found one, we can stop searching.  */
+      /* If we found one, we can stop searching, if its not a cleanup. 
+         for cleanups, we save the state, and keep looking. This allows
+         us to call a debug hook if there are nothing but cleanups left. */
       if (handler)
-	{
-	  args_size = udata->args_size;
-	  break;
-	}
+	if (cleanup)
+	  {
+	    if (!saved_state)
+	      {
+		saved_ustruct = *udata;
+		handler_p = handler;
+		pc_p = pc;
+		saved_state = 1;
+		only_cleanup = 1;
+	      }
+	  }
+	else
+	  {
+	    only_cleanup = 0;
+	    break;
+	  }
 
       /* Otherwise, we continue searching.  We subtract 1 from PC to avoid
 	 hitting the beginning of the next region.  */
       pc = get_return_addr (udata, sub_udata) - 1;
     }
 
+  if (saved_state) 
+    {
+      udata = &saved_ustruct;
+      handler = handler_p;
+      pc = pc_p;
+      if (only_cleanup)
+        __unwinding_cleanup ();
+    }
+
   /* If we haven't found a handler by now, this is an unhandled
      exception.  */
-  if (! handler)
-    __terminate ();
+  if (! handler) 
+    __terminate();
 
   eh->handler_label = handler;
 
@@ -3781,6 +3843,114 @@ label:
 	    copy_reg (i, udata, my_udata);
 	}
     }
+  /* udata now refers to the frame called by the handler frame.  */
+
+  *udata_p = udata;
+  return handler;
+}
+
+
+/* We first search for an exception handler, and if we don't find
+   it, we call __terminate on the current stack frame so that we may
+   use the debugger to walk the stack and understand why no handler
+   was found.
+
+   If we find one, then we unwind the frames down to the one that
+   has the handler and transfer control into the handler.  */
+
+/*extern void __throw(void) __attribute__ ((__noreturn__));*/
+
+void
+__throw ()
+{
+  struct eh_context *eh = (*get_eh_context) ();
+  void *pc, *handler;
+  frame_state ustruct;
+  frame_state *udata = &ustruct;
+  frame_state my_ustruct, *my_udata = &my_ustruct;
+
+  /* This is required for C++ semantics.  We must call terminate if we
+     try and rethrow an exception, when there is no exception currently
+     active.  */
+  if (! eh->info)
+    __terminate ();
+    
+  /* Start at our stack frame.  */
+label:
+  udata = __frame_state_for (&&label, udata);
+  if (! udata)
+    __terminate ();
+
+  /* We need to get the value from the CFA register. */
+  udata->cfa = __builtin_dwarf_cfa ();
+
+  memcpy (my_udata, udata, sizeof (*udata));
+
+  /* Do any necessary initialization to access arbitrary stack frames.
+     On the SPARC, this means flushing the register windows.  */
+  __builtin_unwind_init ();
+
+  /* Now reset pc to the right throw point.  */
+  pc = __builtin_extract_return_addr (__builtin_return_address (0)) - 1;
+
+  handler = throw_helper (eh, pc, my_udata, &udata);
+
+  /* Now go!  */
+
+  __builtin_eh_return ((void *)eh,
+#ifdef STACK_GROWS_DOWNWARD
+		       udata->cfa - my_udata->cfa,
+#else
+		       my_udata->cfa - udata->cfa,
+#endif
+		       handler);
+
+  /* Epilogue:  restore the handler frame's register values and return
+     to the stub.  */
+}
+
+/*extern void __rethrow(void *) __attribute__ ((__noreturn__));*/
+
+void
+__rethrow (index)
+     void *index;
+{
+  struct eh_context *eh = (*get_eh_context) ();
+  void *pc, *handler;
+  frame_state ustruct;
+  frame_state *udata = &ustruct;
+  frame_state my_ustruct, *my_udata = &my_ustruct;
+
+  /* This is required for C++ semantics.  We must call terminate if we
+     try and rethrow an exception, when there is no exception currently
+     active.  */
+  if (! eh->info)
+    __terminate ();
+
+  /* This is the table index we want to rethrow from. The value of
+     the END_REGION label is used for the PC of the throw, and the
+     search begins with the next table entry. */
+  eh->table_index = index;
+    
+  /* Start at our stack frame.  */
+label:
+  udata = __frame_state_for (&&label, udata);
+  if (! udata)
+    __terminate ();
+
+  /* We need to get the value from the CFA register. */
+  udata->cfa = __builtin_dwarf_cfa ();
+
+  memcpy (my_udata, udata, sizeof (*udata));
+
+  /* Do any necessary initialization to access arbitrary stack frames.
+     On the SPARC, this means flushing the register windows.  */
+  __builtin_unwind_init ();
+
+  /* Now reset pc to the right throw point.  */
+  pc = __builtin_extract_return_addr (__builtin_return_address (0)) - 1;
+
+  handler = throw_helper (eh, pc, my_udata, &udata);
 
   /* Now go!  */
 

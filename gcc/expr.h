@@ -443,6 +443,7 @@ extern rtx memset_libfunc;
 extern rtx bzero_libfunc;
 
 extern rtx throw_libfunc;
+extern rtx rethrow_libfunc;
 extern rtx sjthrow_libfunc;
 extern rtx sjpopnthrow_libfunc;
 extern rtx terminate_libfunc;

@@ -65,6 +65,7 @@ struct eh_entry {
   tree finalization;
   int label_used;
   rtx false_label;
+  rtx rethrow_label;
 };
 
 /* A list of EH_ENTRYs. ENTRY is the entry; CHAIN points to the next
@@ -177,13 +178,6 @@ typedef struct handler_info
 } handler_info;
 
 
-/* Add a new eh_entry for this function, The parameter specifies what
-   exception region number NOTE insns use to delimit this range. 
-   The integer returned is uniquely identifies this exception range
-   within an internal table. */
-
-int new_eh_region_entry                         PROTO((int));
-
 /* Add new handler information to an exception range. The  first parameter
    specifies the range number (returned from new_eh_entry()). The second
    parameter specifies the handler.  By default the handler is inserted at
@@ -208,8 +202,19 @@ struct handler_info *get_new_handler            PROTO((rtx, void *));
 /* Make a duplicate of an exception region by copying all the handlers
    for an exception region. Return the new handler index. */
 
-int duplicate_handlers                          PROTO((int, int));
+int duplicate_eh_handlers                       PROTO((int, int, rtx (*)(rtx)));
 
+/* map symbol refs for rethrow */
+
+rtx rethrow_symbol_map                          PROTO((rtx, rtx (*)(rtx)));
+
+/* Is the rethrow label for a region used? */
+
+int rethrow_used                                PROTO((int));
+
+/* Return the region number a this is the rethrow label for. */
+
+int eh_region_from_symbol                       PROTO((rtx));
 
 /* Get a pointer to the first handler in an exception region's list. */
 

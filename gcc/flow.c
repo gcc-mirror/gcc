@@ -721,6 +721,7 @@ make_edges (i)
      int i;
 {
   rtx insn, x;
+  rtx pending_eh_region = NULL_RTX;
 
   /* See if control drops into the next block.  */
   if (i + 1 < n_basic_blocks)
@@ -801,6 +802,40 @@ make_edges (i)
 		}
 	    }
 
+          /* If this is a call with an EH_RETHROW note, then we 
+             know its a rethrow call, and we know exactly where
+             this call can end up going. */
+          else if (GET_CODE (insn) == CALL_INSN
+                    && (note = find_reg_note (insn, REG_EH_RETHROW, NULL_RTX)))
+            {
+              int region = XINT (XEXP (note, 0), 0);
+              /* if nested region is not 0, we know for sure it has been 
+                 processed. If it is zero, we dont know whether its an
+                 outer region, or hasn't been seen yet, so defer it */
+              if (nested_eh_region[region] != 0) 
+                {
+                  /* start with the first region OUTSIDE the one specified 
+                     in the rethrow parameter. (since a rethrow behaves
+                     as if a handler in the region didn't handle the 
+                     exception, so the handlers for the next outer region
+                     are going to get a shot at it.*/
+		  for ( region = nested_eh_region[region]; region; 
+			region = nested_eh_region[region]) 
+		    {
+		      handler_info *ptr = get_first_handler (region);
+		      for ( ; ptr ; ptr = ptr->next)
+                        add_edge_to_label (i, ptr->handler_label);
+		    }
+                }
+              else 
+                {
+                  /* Push this region onto a list, and after we've done the
+                     whole procedure, we'll process everything on the list */
+                  pending_eh_region = gen_rtx_EXPR_LIST (VOIDmode, insn, 
+                                                         pending_eh_region);
+                }
+            }
+
 	  /* If this is a CALL_INSN, then mark it as reaching the active EH
 	     handler for this CALL_INSN.  If we're handling asynchronous
 	     exceptions mark every insn as reaching the active EH handler.
@@ -837,6 +872,24 @@ make_edges (i)
 	    }
 	}
     }
+
+  while (pending_eh_region != NULL_RTX)
+    {
+      rtx insn = XEXP (pending_eh_region, 0);
+      rtx note = find_reg_note (insn, REG_EH_RETHROW, NULL_RTX);
+      int region = XINT (XEXP (note, 0), 0);
+      /* start with the first region OUTSIDE the one specified 
+         in the rethrow parameter */
+      for ( region = nested_eh_region[region]; region; 
+            region = nested_eh_region[region]) 
+        {
+          handler_info *ptr = get_first_handler (region);
+          for ( ; ptr ; ptr = ptr->next)
+            add_edge_to_label (BLOCK_NUM (insn), ptr->handler_label);
+        }
+      pending_eh_region = XEXP (pending_eh_region, 1);
+    }
+
   /* We know something about the structure of the function __throw in
      libgcc2.c.  It is the only function that ever contains eh_stub labels.
      It modifies its return address so that the last block returns to one of
@@ -918,8 +971,9 @@ delete_unreachable_blocks ()
 	      NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
 	    {
 	      int num = CODE_LABEL_NUMBER (insn);
-	      /* A NULL handler indicates a region is no longer needed */
-	      if (get_first_handler (num) == NULL)
+	      /* A NULL handler indicates a region is no longer needed,
+                 unless its the target of a rethrow. */
+	      if (get_first_handler (num) == NULL && !rethrow_used (num))
 		{
 		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (insn) = 0;

@@ -29,6 +29,8 @@ struct eh_context
   void **dynamic_handler_chain;
   /* This is language dependent part of the eh context. */
   void *info;
+  /* This is used to remember where we threw for re-throws */
+  void *table_index;  /* address of exception table entry to rethrow from */
 };
 
 #ifndef EH_TABLE_LOOKUP

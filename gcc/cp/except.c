@@ -249,14 +249,14 @@ call_eh_info ()
 {
   tree fn;
 
-  fn = get_identifier ("__cp_eh_info");
+  fn = get_identifier ("__start_cp_handler");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
       tree t1, t, fields[7];
 
-      /* Declare cp_eh_info * __cp_eh_info (void),
+      /* Declare cp_eh_info * __start_cp_handler (void),
 	 as defined in exception.cc. */
       push_obstacks_nochange ();
       end_temporary_allocation ();
@@ -270,9 +270,11 @@ call_eh_info ()
                     get_identifier ("dynamic_handler_chain"), ptr_type_node);
       fields[2] = build_lang_field_decl (FIELD_DECL, 
                     get_identifier ("info"), ptr_type_node);
+      fields[3] = build_lang_field_decl (FIELD_DECL, 
+                    get_identifier ("table_index"), ptr_type_node);
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
-      finish_builtin_type (t1, "eh_context", fields, 2, ptr_type_node);
+      finish_builtin_type (t1, "eh_context", fields, 3, ptr_type_node);
       t1 = build_pointer_type (t1);
 
       t1= make_lang_type (RECORD_TYPE);
@@ -547,9 +549,6 @@ push_eh_cleanup ()
 {
   int yes;
 
-  expand_expr (build_unary_op (PREINCREMENT_EXPR, get_eh_handlers (), 1),
-	       const0_rtx, VOIDmode, EXPAND_NORMAL);
-
   yes = suspend_momentary ();
   /* All cleanups must last longer than normal.  */
   expand_decl_cleanup (NULL_TREE, do_pop_exception ());
@@ -700,9 +699,6 @@ process_start_catch_block (declspecs, declarator)
 
       /* Fall into the catch all section.  */
     }
-
-  init = build_modify_expr (get_eh_caught (), NOP_EXPR, integer_one_node);
-  expand_expr (init, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   emit_line_note (input_filename, lineno);
 }

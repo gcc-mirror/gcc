@@ -406,6 +406,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "output.h"
 #include "toplev.h"
+#include "obstack.h"
 
 /* One to use setjmp/longjmp method of generating code for exception
    handling.  */
@@ -502,6 +503,15 @@ static rtx eh_return_handler;
 
 rtx eh_return_stub_label;
 
+/* This is used for targets which can call rethrow with an offset instead
+   of an address. This is subtracted from the rethrow label we are
+   interested in. */
+
+static rtx first_rethrow_symbol = NULL_RTX;
+static rtx final_rethrow = NULL_RTX;
+static rtx last_rethrow_symbol = NULL_RTX;
+
+
 /* Prototypes for local functions.  */
 
 static void push_eh_entry	PROTO((struct eh_stack *));
@@ -525,6 +535,29 @@ rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
 /* Various support routines to manipulate the various data structures
    used by the exception handling code.  */
+
+extern struct obstack permanent_obstack;
+
+/* Generate a SYMBOL_REF for rethrow to use */
+static rtx
+create_rethrow_ref (region_num)
+     int region_num;
+{
+  rtx def;
+  char *ptr;
+  char buf[60];
+
+  push_obstacks_nochange ();
+  end_temporary_allocation ();
+
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", region_num);
+  ptr = (char *) obstack_copy0 (&permanent_obstack, buf, strlen (buf));
+  def = gen_rtx_SYMBOL_REF (Pmode, ptr);
+  SYMBOL_REF_NEED_ADJUST (def) = 1;
+
+  pop_obstacks ();
+  return def;
+}
 
 /* Push a label entry onto the given STACK.  */
 
@@ -600,11 +633,16 @@ push_eh_entry (stack)
   struct eh_node *node = (struct eh_node *) xmalloc (sizeof (struct eh_node));
   struct eh_entry *entry = (struct eh_entry *) xmalloc (sizeof (struct eh_entry));
 
-  entry->outer_context = gen_label_rtx ();
+  rtx rlab = gen_exception_label ();
   entry->finalization = NULL_TREE;
   entry->label_used = 0;
-  entry->exception_handler_label = gen_exception_label ();
+  entry->exception_handler_label = rlab;
   entry->false_label = NULL_RTX;
+  if (! flag_new_exceptions)
+    entry->outer_context = gen_label_rtx ();
+  else
+    entry->outer_context = create_rethrow_ref (CODE_LABEL_NUMBER (rlab));
+  entry->rethrow_label = entry->outer_context;
 
   node->entry = entry;
   node->chain = stack->top;
@@ -707,6 +745,7 @@ receive_exception_label (handler_label)
 struct func_eh_entry 
 {
   int range_number;   /* EH region number from EH NOTE insn's */
+  rtx rethrow_label;  /* Label for rethrow */
   struct handler_info *handlers;
 };
 
@@ -719,12 +758,14 @@ static int current_func_eh_entry = 0;
 #define SIZE_FUNC_EH(X)   (sizeof (struct func_eh_entry) * X)
 
 /* Add a new eh_entry for this function, and base it off of the information
-   in the EH_ENTRY parameter. A NULL parameter is invalid. The number
+   in the EH_ENTRY parameter. A NULL parameter is invalid. 
+   OUTER_CONTEXT is a label which is used for rethrowing. The number
    returned is an number which uniquely identifies this exception range. */
 
-int 
-new_eh_region_entry (note_eh_region) 
+static int 
+new_eh_region_entry (note_eh_region, rethrow) 
      int note_eh_region;
+     rtx rethrow;
 {
   if (current_func_eh_entry == num_func_eh_entries) 
     {
@@ -742,6 +783,11 @@ new_eh_region_entry (note_eh_region)
         }
     }
   function_eh_regions[current_func_eh_entry].range_number = note_eh_region;
+  if (rethrow == NULL_RTX)
+    function_eh_regions[current_func_eh_entry].rethrow_label = 
+                                          create_rethrow_ref (note_eh_region);
+  else
+    function_eh_regions[current_func_eh_entry].rethrow_label = rethrow;
   function_eh_regions[current_func_eh_entry].handlers = NULL;
 
   return current_func_eh_entry++;
@@ -929,32 +975,96 @@ clear_function_eh_region ()
 }
 
 /* Make a duplicate of an exception region by copying all the handlers
-   for an exception region. Return the new handler index. */
+   for an exception region. Return the new handler index. The final
+   parameter is a routine which maps old labels to new ones. */
 
 int 
-duplicate_handlers (old_note_eh_region, new_note_eh_region)
+duplicate_eh_handlers (old_note_eh_region, new_note_eh_region, map)
      int old_note_eh_region, new_note_eh_region;
+     rtx (*map)(rtx);
 {
   struct handler_info *ptr, *new_ptr;
   int new_region, region;
+  rtx tmp;
 
   region = find_func_region (old_note_eh_region);
   if (region == -1)
-    error ("Cannot duplicate non-existant exception region.");
+    fatal ("Cannot duplicate non-existant exception region.");
 
-  if (find_func_region (new_note_eh_region) != -1)
-    error ("Cannot duplicate EH region because new note region already exists");
+  /* duplicate_eh_handlers may have been called during a symbol remap. */
+  new_region = find_func_region (new_note_eh_region);
+  if (new_region != -1)
+    return (new_region);
 
-  new_region = new_eh_region_entry (new_note_eh_region);
+  new_region = new_eh_region_entry (new_note_eh_region, NULL_RTX);
+
   ptr = function_eh_regions[region].handlers;
 
   for ( ; ptr; ptr = ptr->next) 
     {
-      new_ptr = get_new_handler (ptr->handler_label, ptr->type_info);
+      new_ptr = get_new_handler (map (ptr->handler_label), ptr->type_info);
       add_new_handler (new_region, new_ptr);
     }
 
   return new_region;
+}
+
+
+/* Given a rethrow symbol, find the EH region number this is for. */
+int 
+eh_region_from_symbol (sym)
+     rtx sym;
+{
+  int x;
+  if (sym == last_rethrow_symbol)
+    return 1;
+  for (x = 0; x < current_func_eh_entry; x++)
+    if (function_eh_regions[x].rethrow_label == sym)
+      return function_eh_regions[x].range_number;
+  return -1;
+}
+
+
+/* When inlining/unrolling, we have to map the symbols passed to
+   __rethrow as well. This performs the remap. If a symbol isn't foiund,
+   the original one is returned. This is not an efficient routine,
+   so don't call it on everything!! */
+rtx 
+rethrow_symbol_map (sym, map)
+     rtx sym;
+     rtx (*map)(rtx);
+{
+  int x, y;
+  for (x = 0; x < current_func_eh_entry; x++)
+    if (function_eh_regions[x].rethrow_label == sym)
+      {
+        /* We've found the original region, now lets determine which region
+           this now maps to. */
+        rtx l1 = function_eh_regions[x].handlers->handler_label;
+        rtx l2 = map (l1);
+        y = CODE_LABEL_NUMBER (l2); /* This is the new region number */
+        x = find_func_region (y);  /* Get the new permanent region */
+        if (x == -1)  /* Hmm, Doesn't exist yet */
+          {
+            x = duplicate_eh_handlers (CODE_LABEL_NUMBER (l1), y, map);
+            /* Since we're mapping it, it must be used. */
+            SYMBOL_REF_USED (function_eh_regions[x].rethrow_label) = 1;
+          }
+        return function_eh_regions[x].rethrow_label;
+      }
+  return sym;
+}
+
+int 
+rethrow_used (region)
+     int region;
+{
+  if (flag_new_exceptions)
+    {
+      rtx lab = function_eh_regions[find_func_region (region)].rethrow_label;
+      return (SYMBOL_REF_USED (lab));
+    }
+  return 0;
 }
 
 
@@ -1410,6 +1520,7 @@ expand_eh_region_end (handler)
 {
   struct eh_entry *entry;
   rtx note;
+  int ret, r;
 
   if (! doing_eh (0))
     return;
@@ -1417,9 +1528,9 @@ expand_eh_region_end (handler)
   entry = pop_eh_entry (&ehstack);
 
   note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
-  NOTE_BLOCK_NUMBER (note)
+  ret = NOTE_BLOCK_NUMBER (note)
     = CODE_LABEL_NUMBER (entry->exception_handler_label);
-  if (exceptions_via_longjmp == 0
+  if (exceptions_via_longjmp == 0 && ! flag_new_exceptions
       /* We share outer_context between regions; only emit it once.  */
       && INSN_UID (entry->outer_context) == 0)
     {
@@ -1439,7 +1550,7 @@ expand_eh_region_end (handler)
   entry->finalization = handler;
 
   /* create region entry in final exception table */
-  new_eh_region_entry (NOTE_BLOCK_NUMBER (note));
+  r = new_eh_region_entry (NOTE_BLOCK_NUMBER (note), entry->rethrow_label);
 
   enqueue_eh_entry (&ehqueue, entry);
 
@@ -1673,8 +1784,14 @@ start_catch_handler (rtime)
 void 
 end_catch_handler ()
 {
-  if (! doing_eh (1) || (flag_new_exceptions && ! exceptions_via_longjmp))
+  if (! doing_eh (1))
     return;
+
+  if (flag_new_exceptions && ! exceptions_via_longjmp) 
+    {
+      emit_barrier ();
+      return;
+    }
   
   /* A NULL label implies the catch clause was a catch all or cleanup */
   if (catchstack.top->entry->false_label == NULL_RTX)
@@ -1786,7 +1903,7 @@ expand_start_all_catch ()
 void
 expand_end_all_catch ()
 {
-  rtx new_catch_clause, outer_context = NULL_RTX;
+  rtx new_catch_clause;
   struct eh_entry *entry;
 
   if (! doing_eh (1))
@@ -1798,11 +1915,17 @@ expand_end_all_catch ()
 
   if (! exceptions_via_longjmp)
     {
-      outer_context = ehstack.top->entry->outer_context;
+      rtx outer_context = ehstack.top->entry->outer_context;
 
       /* Finish the rethrow region.  size_zero_node is just a NOP.  */
       expand_eh_region_end (size_zero_node);
+      /* New exceptions handling models will never have a fall through
+         of a catch clause */
+      if (!flag_new_exceptions)
+        expand_rethrow (outer_context);
     }
+  else 
+    expand_rethrow (NULL_RTX);
 
   /* Code to throw out to outer context, if we fall off end of catch
      handlers.  This is rethrow (Lresume, same id, same obj) in the
@@ -1813,7 +1936,6 @@ expand_end_all_catch ()
      do a "throw" (using the address of Lresume as the point being
      thrown from) so that the outer EH region can then try to process
      the exception.  */
-  expand_rethrow (outer_context);
 
   /* Now we have the complete catch sequence.  */
   new_catch_clause = get_insns ();
@@ -1842,7 +1964,22 @@ expand_rethrow (label)
   if (exceptions_via_longjmp)
     emit_throw ();
   else
-    emit_jump (label);
+    if (flag_new_exceptions)
+      {
+        rtx insn, val;
+        if (label == NULL_RTX)
+          label = last_rethrow_symbol;
+        emit_library_call (rethrow_libfunc, 0, VOIDmode, 1, label, Pmode);
+        SYMBOL_REF_USED (label) = 1;
+        insn = get_last_insn ();
+        val = GEN_INT (eh_region_from_symbol (label));
+        /* Mark the label/symbol on the call. */
+        REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_RETHROW, val,
+                                     REG_NOTES (insn));
+        emit_barrier ();
+      }
+    else
+      emit_jump (label);
 }
 
 /* End all the pending exception regions on protect_list. The handlers
@@ -1976,12 +2113,29 @@ output_exception_table_entry (file, n)
 {
   char buf[256];
   rtx sym;
-  struct handler_info *handler;
+  struct handler_info *handler = get_first_handler (n);
+  int index = find_func_region (n);
+  rtx rethrow;
+  
+ /* form and emit the rethrow label, if needed  */
+  rethrow = function_eh_regions[index].rethrow_label;
+  if (rethrow != NULL_RTX && !flag_new_exceptions)
+      rethrow = NULL_RTX;
+  if (rethrow != NULL_RTX && handler == NULL)
+    if (! SYMBOL_REF_USED (rethrow))
+      rethrow = NULL_RTX;
 
-  handler = get_first_handler (n);
 
-  for ( ; handler != NULL; handler = handler->next)
+  for ( ; handler != NULL || rethrow != NULL_RTX; handler = handler->next)
     {
+      /* rethrow label should indicate the LAST entry for a region */
+      if (rethrow != NULL_RTX && (handler == NULL || handler->next == NULL))
+        {
+          ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", n);
+          assemble_label(buf);
+          rethrow = NULL_RTX;
+        }
+
       ASM_GENERATE_INTERNAL_LABEL (buf, "LEHB", n);
       sym = gen_rtx_SYMBOL_REF (Pmode, buf);
       assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
@@ -1990,12 +2144,15 @@ output_exception_table_entry (file, n)
       sym = gen_rtx_SYMBOL_REF (Pmode, buf);
       assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
       
-      assemble_integer (handler->handler_label, 
-                                         POINTER_SIZE / BITS_PER_UNIT, 1);
+      if (handler == NULL)
+        assemble_integer (GEN_INT (0), POINTER_SIZE / BITS_PER_UNIT, 1);
+      else
+        assemble_integer (handler->handler_label, 
+                          POINTER_SIZE / BITS_PER_UNIT, 1);
 
       if (flag_new_exceptions)
         {
-          if (handler->type_info == NULL)
+          if (handler == NULL || handler->type_info == NULL)
             assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
           else
             if (handler->type_info == CATCH_ALL_TYPE)
@@ -2007,7 +2164,7 @@ output_exception_table_entry (file, n)
         }
       putc ('\n', file);		/* blank line */
       /* We only output the first label under the old scheme */
-      if (! flag_new_exceptions)
+      if (! flag_new_exceptions || handler == NULL)
         break;
     }
 }
@@ -2038,6 +2195,7 @@ void
 output_exception_table ()
 {
   int i;
+  char buf[256];
   extern FILE *asm_out_file;
 
   if (! doing_eh (0) || ! eh_table)
@@ -2062,6 +2220,10 @@ output_exception_table ()
         ;
       if (i != 0)
         assemble_integer (const0_rtx, i , 1);
+
+      /* Generate the label for offset calculations on rethrows */
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", 0);
+      assemble_label(buf);
     }
 
   for (i = 0; i < eh_table_size; ++i)
@@ -2071,6 +2233,9 @@ output_exception_table ()
   clear_function_eh_region ();
 
   /* Ending marker for table.  */
+  /* Generate the label for end of table. */
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LRTH", CODE_LABEL_NUMBER (final_rethrow));
+  assemble_label(buf);
   assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
 
   /* for binary compatability, the old __throw checked the second
@@ -2229,6 +2394,10 @@ check_exception_handler_labels ()
 void
 init_eh ()
 {
+  
+  first_rethrow_symbol = create_rethrow_ref (0);
+  final_rethrow = gen_exception_label ();
+  last_rethrow_symbol = create_rethrow_ref (CODE_LABEL_NUMBER (final_rethrow));
 }
 
 /* Initialize the per-function EH information.  */
@@ -2347,6 +2516,11 @@ scan_region (insn, n, delete_outer)
 
   /* Assume we can delete the region.  */
   int delete = 1;
+
+  int r = find_func_region (n);
+  /* Can't delete something which is rethrown to. */
+  if (SYMBOL_REF_USED((function_eh_regions[r].rethrow_label)))
+    delete = 0;
 
   if (insn == NULL_RTX
       || GET_CODE (insn) != NOTE
