@@ -1,3 +1,11 @@
+2002-01-16  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Do not emit USE
+	insn for GOT register; add REG_MAYBE_DEAD notes instead.
+	config/s390/s390.md (call, call_value): Add GOT register to
+	CALL_INSN_FUNCTION_USAGE where needed.
+	(call_exp, call_value_exp): New.
+
 2002-01-16  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c: General formatting tidy up.
