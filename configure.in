@@ -1321,11 +1321,13 @@ esac
 # If --enable-shared was set, we must set LD_LIBRARY_PATH so that the
 # binutils tools will find libbfd.so.
 if test "${shared}" = "yes" ; then
-  sed -e 's/^SET_LIB_PATH[ 	]*=.*$/SET_LIB_PATH = $(REALLY_SET_LIB_PATH)/' \
-      Makefile > Makefile.tem
-  rm -f Makefile
-  mv -f Makefile.tem Makefile
+  SET_LIB_PATH="\$(REALLY_SET_LIB_PATH)"
+else
+  SET_LIB_PATH=
 fi
+sed -e "s/@SET_LIB_PATH@/${SET_LIB_PATH}/" Makefile > Makefile.tem
+rm -f Makefile
+mv -f Makefile.tem Makefile
 
 
 case "${host}" in
