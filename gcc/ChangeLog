@@ -1,3 +1,9 @@
+2004-11-19  Paul Brook  <paul@codesourcery.com>
+
+	PR target/17735
+	* varasm.c (default_assemble_integer): Allow pointer-sized values.
+	Expand comment.
+
 2004-11-19  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.c (combine_bnp): Add code to handle
