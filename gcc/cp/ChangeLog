@@ -1,3 +1,7 @@
+2001-12-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* parse.y, semantics.c: Similarly.
+
 2001-12-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/87
