@@ -1,3 +1,8 @@
+Wed Feb  9 14:18:08 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* reload1.c (reload) Align stack frame to cfun->stack_alignment_needed,
+	not to BIGGEST_ALIGNMENT.
+
 2000-02-08  Geoff Keating  <geoffk@cygnus.com>
 
 	* dwarf2.h (DW_CFA_GNU_negative_offset_extended): New constant.
