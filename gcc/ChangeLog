@@ -1,3 +1,8 @@
+Mon Oct 27 23:59:26 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_handle_trap_shadows): Don't call get_attr_trap
+	on a CLOBBER.
+
 Mon Oct 27 21:25:20 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (movqi, movhi): Make sure new insns created during reload
