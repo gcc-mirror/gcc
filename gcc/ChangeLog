@@ -1,3 +1,9 @@
+2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/cris/cris.h: Remove EGCS references.
+ 	(CPP_SPEC): Remove "-$".
+	(INIT_CUMULATIVE_ARGS): Adjust parameter name to FNDECL.
+
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/stormy16/stormy16.h (TARGET_CPU_CPP_BUILTINS): Use in
