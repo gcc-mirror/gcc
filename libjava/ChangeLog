@@ -1,5 +1,9 @@
 2000-04-21  Tom Tromey  <tromey@cygnus.com>
 
+	* java/io/PipedInputStream.java, java/io/PipedReader.java,
+	java/io/PipedOutputStream.java, java/io/PipedWriter.java: New
+	version from Classpath.
+
 	Fix for PR libgcj/213:
 	* Makefile.in: Rebuilt.
 	* Makefile.am (gij_SOURCES): Added gij.cc.
