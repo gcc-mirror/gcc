@@ -1,4 +1,5 @@
 /* { dg-do preprocess } */
+/* { dg-options "-fno-show-column" } */
 
 /* Tests for un-terminated conditional diagnostics.
    Copyright (c) 1999 Free Software Foundation.

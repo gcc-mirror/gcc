@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
+	%{fshow-column} %{fno-show-column}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}",
     "%{!M:%{!MM:%{!E:cc1obj %i %1 \
@@ -68,6 +69,7 @@ Boston, MA 02111-1307, USA.  */
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
+	%{fshow-column} %{fno-show-column}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.mi}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
     "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.mi} %1 \

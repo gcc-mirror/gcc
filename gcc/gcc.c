@@ -631,6 +631,7 @@ static struct compiler default_compilers[] =
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
+	%{fshow-column} %{fno-show-column}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
       %{!E:%{!M:%{!MM:cc1 %i %1 \
@@ -667,6 +668,7 @@ static struct compiler default_compilers[] =
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
+	%{fshow-column} %{fno-show-column}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
@@ -695,6 +697,7 @@ static struct compiler default_compilers[] =
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
+	%{fshow-column} %{fno-show-column}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}}\
@@ -713,6 +716,7 @@ static struct compiler default_compilers[] =
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
+	%{fshow-column} %{fno-show-column}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}"}},
@@ -743,6 +747,7 @@ static struct compiler default_compilers[] =
 	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
+	%{fshow-column} %{fno-show-column}\
 	%{fleading-underscore} %{fno-leading-underscore}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",

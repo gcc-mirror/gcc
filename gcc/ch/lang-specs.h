@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
         %{!no-gcc:-D__GNUCHILL__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{!undef:%{!ansi:%p} %P} %{trigraphs}\
+	%{fshow-column} %{fno-show-column}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!E:%g.i}%{E:%W{o*}} \n",
    "%{!E:cc1chill %g.i %1 \

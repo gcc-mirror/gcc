@@ -1,3 +1,8 @@
+2000-04-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp-redef-2.c, gcc.dg/cpp-tradwarn1.c,
+	gcc.dg/cpp-unc.c: Add -fno-show-column to compiler options.
+
 Mon Apr  3 02:35:34 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000403-2.c: New test.

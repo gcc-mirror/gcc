@@ -1,7 +1,7 @@
 /* Test for redefining macros with significant differences.  */
 
 /* { dg-do preprocess }
-   { dg-options "-ansi -pedantic -Wall" } */
+   { dg-options "-ansi -pedantic -Wall -fno-show-column" } */
 
 #define mac(a, b) (a) + (b)
 #define mac(a, b) (a) * (b)
