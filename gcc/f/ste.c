@@ -737,8 +737,9 @@ ffeste_io_dolio_ (ffebld expr)
       num_elements = size_binop (CEIL_DIV_EXPR,
 			TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))), size);
       num_elements = size_binop (CEIL_DIV_EXPR,
-				 num_elements, size_int (TYPE_PRECISION
-							 (char_type_node)));
+				 num_elements,
+				 size_int (TYPE_PRECISION
+					   (char_type_node)));
       num_elements = convert (ffecom_f2c_ftnlen_type_node,
 			      num_elements);
     }
