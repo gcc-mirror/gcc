@@ -75,20 +75,6 @@ public class ClassHelper
     return name.substring(lastInd + 1);
   }
 
-  /**
-   * Strip the last portion of the name (after the last dot).
-   *
-   * @param name the name to get package of
-   * @return the package name, or "" if no package
-   */
-  public static String getPackagePortion(String name)
-  {
-    int lastInd = name.lastIndexOf('.');
-    if (lastInd == -1)
-      return "";
-    return name.substring(0, lastInd);
-  }
-
   /** Cache of methods found in getAllMethods(). */
   private static Map allMethods = new HashMap();
 
