@@ -367,6 +367,9 @@ struct c_lang_decl GTY(()) {
 
 extern c_language_kind c_language;
 
+
+/* Switches common to the C front ends.  */
+
 /* Nonzero if prepreprocessing only.  */
 extern int flag_preprocess_only;
 
@@ -378,10 +381,14 @@ extern int flag_iso;
    and assertions.  */
 extern int flag_undef;
 
-/* Nonzero means give string constants the type `const char *', rather
-   than `char *'.  */
+/* Nonzero means don't recognize the non-ANSI builtin functions.  */
 
-extern int flag_const_strings;
+extern int flag_no_builtin;
+
+/* Nonzero means don't recognize the non-ANSI builtin functions.
+   -ansi sets this.  */
+
+extern int flag_no_nonansi_builtin;
 
 /* Nonzero means give `double' the same size as `float'.  */
 
@@ -394,10 +401,92 @@ extern int flag_short_wchar;
 /* Nonzero means allow Microsoft extensions without warnings or errors.  */
 extern int flag_ms_extensions;
 
+/* Nonzero means don't recognize the keyword `asm'.  */
+
+extern int flag_no_asm;
+
+/* Nonzero means give string constants the type `const char *', as mandated
+   by the standard.  */
+
+extern int flag_const_strings;
+
+/* Nonzero means `$' can be in an identifier.  */
+
+extern int dollars_in_ident;
+
+/* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
+
+extern int flag_signed_bitfields;
+extern int explicit_flag_signed_bitfields;
+
+/* Nonzero means warn about pointer casts that can drop a type qualifier
+   from the pointer target type.  */
+
+extern int warn_cast_qual;
+
+/* Warn about functions which might be candidates for format attributes.  */
+
+extern int warn_missing_format_attribute;
+
+/* Nonzero means warn about sizeof(function) or addition/subtraction
+   of function pointers.  */
+
+extern int warn_pointer_arith;
+
+/* Nonzero means warn for any global function def
+   without separate previous prototype decl.  */
+
+extern int warn_missing_prototypes;
+
+/* Warn if adding () is suggested.  */
+
+extern int warn_parentheses;
+
+/* Warn if initializer is not completely bracketed.  */
+
+extern int warn_missing_braces;
+
+/* Warn about comparison of signed and unsigned values.
+   If -1, neither -Wsign-compare nor -Wno-sign-compare has been specified.  */
+
+extern int warn_sign_compare;
+
+/* Nonzero means warn about usage of long long when `-pedantic'.  */
+
+extern int warn_long_long;
+
+/* Nonzero means warn about deprecated conversion from string constant to
+   `char *'.  */
+
+extern int warn_write_strings;
+
+/* Nonzero means warn about multiple (redundant) decls for the same single
+   variable or function.  */
+
+extern int warn_redundant_decls;
+
+/* Warn about testing equality of floating point numbers. */
+
+extern int warn_float_equal;
+
+/* Warn about a subscript that has type char.  */
+
+extern int warn_char_subscripts;
+
+/* Warn if a type conversion is done that might have confusing results.  */
+
+extern int warn_conversion;
+
+/* Warn about #pragma directives that are not recognised.  */      
+
+extern int warn_unknown_pragmas; /* Tri state variable.  */  
+
 /* Nonzero means warn about use of multicharacter literals.  */
+
 extern int warn_multichar;
 
-/* Warn about *printf or *scanf format/argument anomalies.  */
+/* Warn about format/argument anomalies in calls to formatted I/O functions
+   (*printf, *scanf, strftime, strfmon, etc.).  */
 
 extern int warn_format;
 
@@ -421,26 +510,19 @@ extern int warn_format_nonliteral;
 
 extern int warn_format_security;
 
-/* Warn about NULL being passed to argument slots marked as requiring
-   non-NULL.  */
 
-extern int warn_nonnull;
+/* C/ObjC language option variables.  */
 
-/* Warn about possible violations of sequence point rules.  */
 
-extern int warn_sequence_point;
+/* Nonzero means message about use of implicit function declarations;
+ 1 means warning; 2 means error.  */
 
-/* Warn about functions which might be candidates for format attributes.  */
+extern int mesg_implicit_function_declaration;
 
-extern int warn_missing_format_attribute;
+/* Nonzero means allow type mismatches in conditional expressions;
+   just make their values `void'.  */
 
-/* Nonzero means warn about sizeof (function) or addition/subtraction
-   of function pointers.  */
-
-extern int warn_pointer_arith;
-
-/* Nonzero means to warn about compile-time division by zero.  */
-extern int warn_div_by_zero;
+extern int flag_cond_mismatch;
 
 /* Nonzero means enable C89 Amendment 1 features.  */
 
@@ -450,7 +532,7 @@ extern int flag_isoc94;
 
 extern int flag_isoc99;
 
-/* Nonzero means environment is hosted (i.e., not freestanding) */
+/* Nonzero means that we have builtin functions, and main is an int */
 
 extern int flag_hosted;
 
@@ -459,27 +541,261 @@ extern int flag_hosted;
 
 extern int flag_noniso_default_format_attributes;
 
-/* Nonzero means don't recognize any builtin functions.  */
+/* Nonzero means warn when casting a function call to a type that does
+   not match the return type (e.g. (float)sqrt() or (anything*)malloc()
+   when there is no previous declaration of sqrt or malloc.  */
 
-extern int flag_no_builtin;
+extern int warn_bad_function_cast;
 
-/* Nonzero means don't recognize the non-ANSI builtin functions.
-   -ansi sets this.  */
+/* Warn about traditional constructs whose meanings changed in ANSI C.  */
 
-extern int flag_no_nonansi_builtin;
+extern int warn_traditional;
 
-/* Nonzero means warn about suggesting putting in ()'s.  */
+/* Nonzero means warn for non-prototype function decls
+   or non-prototyped defs without previous prototype.  */
 
-extern int warn_parentheses;
+extern int warn_strict_prototypes;
 
-/* Warn if a type conversion is done that might have confusing results.  */
+/* Nonzero means warn for any global function def
+   without separate previous decl.  */
 
-extern int warn_conversion;
+extern int warn_missing_declarations;
 
-/* Nonzero means warn about usage of long long,
-   when `-pedantic' and not C99.  */
+/* Nonzero means warn about extern declarations of objects not at
+   file-scope level and about *all* declarations of functions (whether
+   extern or static) not at file-scope level.  Note that we exclude
+   implicit function declarations.  To get warnings about those, use
+   -Wimplicit.  */
 
-extern int warn_long_long;
+extern int warn_nested_externs;
+
+/* Warn if main is suspicious.  */
+
+extern int warn_main;
+
+/* Nonzero means warn about possible violations of sequence point rules.  */
+
+extern int warn_sequence_point;
+
+/* Nonzero means to warn about compile-time division by zero.  */
+extern int warn_div_by_zero;
+
+/* Nonzero means warn about use of implicit int.  */
+
+extern int warn_implicit_int;
+
+/* Warn about NULL being passed to argument slots marked as requiring
+   non-NULL.  */ 
+      
+extern int warn_nonnull;
+
+
+/* ObjC language option variables.  */
+
+
+/* Open and close the file for outputting class declarations, if
+   requested (ObjC).  */
+
+extern int flag_gen_declaration;
+
+/* Generate code for GNU or NeXT runtime environment.  */
+
+extern int flag_next_runtime;
+
+/* Tells the compiler that this is a special run.  Do not perform any
+   compiling, instead we are to test some platform dependent features
+   and output a C header file with appropriate definitions.  */
+
+extern int print_struct_values;
+
+/* ???.  Undocumented.  */
+
+const char *constant_string_class_name;
+
+/* Warn if multiple methods are seen for the same selector, but with
+   different argument types.  */
+
+extern int warn_selector;
+
+/* Warn if methods required by a protocol are not implemented in the 
+   class adopting it.  When turned off, methods inherited to that
+   class are also considered implemented.  */
+
+extern int warn_protocol;
+
+
+/* C++ language option variables.  */
+
+
+/* Nonzero means don't recognize any extension keywords.  */
+
+extern int flag_no_gnu_keywords;
+
+/* Nonzero means do emit exported implementations of functions even if
+   they can be inlined.  */
+
+extern int flag_implement_inlines;
+
+/* Nonzero means do emit exported implementations of templates, instead of
+   multiple static copies in each file that needs a definition.  */
+
+extern int flag_external_templates;
+
+/* Nonzero means that the decision to emit or not emit the implementation of a
+   template depends on where the template is instantiated, rather than where
+   it is defined.  */
+
+extern int flag_alt_external_templates;
+
+/* Nonzero means that implicit instantiations will be emitted if needed.  */
+
+extern int flag_implicit_templates;
+
+/* Nonzero means that implicit instantiations of inline templates will be
+   emitted if needed, even if instantiations of non-inline templates
+   aren't.  */
+
+extern int flag_implicit_inline_templates;
+
+/* Nonzero means generate separate instantiation control files and
+   juggle them at link time.  */
+
+extern int flag_use_repository;
+
+/* Nonzero if we want to issue diagnostics that the standard says are not
+   required.  */
+
+extern int flag_optional_diags;
+
+/* Nonzero means we should attempt to elide constructors when possible.  */
+
+extern int flag_elide_constructors;
+
+/* Nonzero means that member functions defined in class scope are
+   inline by default.  */
+
+extern int flag_default_inline;
+
+/* Controls whether compiler generates 'type descriptor' that give
+   run-time type information.  */
+
+extern int flag_rtti;
+
+/* Nonzero if we want to conserve space in the .o files.  We do this
+   by putting uninitialized data and runtime initialized data into
+   .common instead of .data at the expense of not flagging multiple
+   definitions.  */
+
+extern int flag_conserve_space;
+
+/* Nonzero if we want to obey access control semantics.  */
+
+extern int flag_access_control;
+
+/* Nonzero if we want to check the return value of new and avoid calling
+   constructors if it is a null pointer.  */
+
+extern int flag_check_new;
+
+/* Nonzero if we want the new ISO rules for pushing a new scope for `for'
+   initialization variables.
+   0: Old rules, set by -fno-for-scope.
+   2: New ISO rules, set by -ffor-scope.
+   1: Try to implement new ISO rules, but with backup compatibility
+   (and warnings).  This is the default, for now.  */
+
+extern int flag_new_for_scope;
+
+/* Nonzero if we want to emit defined symbols with common-like linkage as
+   weak symbols where possible, in order to conform to C++ semantics.
+   Otherwise, emit them as local symbols.  */
+
+extern int flag_weak;
+
+/* Nonzero to use __cxa_atexit, rather than atexit, to register
+   destructors for local statics and global objects.  */
+
+extern int flag_use_cxa_atexit;
+
+/* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
+
+extern int flag_vtable_gc;
+
+/* Nonzero means make the default pedwarns warnings instead of errors.
+   The value of this flag is ignored if -pedantic is specified.  */
+
+extern int flag_permissive;
+
+/* Nonzero means to implement standard semantics for exception
+   specifications, calling unexpected if an exception is thrown that
+   doesn't match the specification.  Zero means to treat them as
+   assertions and optimize accordingly, but not check them.  */
+
+extern int flag_enforce_eh_specs;
+
+/* Nonzero means warn about implicit declarations.  */
+
+extern int warn_implicit;
+
+/* Nonzero means warn when all ctors or dtors are private, and the class
+   has no friends.  */
+
+extern int warn_ctor_dtor_privacy;
+
+/* Non-zero means warn in function declared in derived class has the
+   same name as a virtual in the base class, but fails to match the
+   type signature of any virtual function in the base class.  */
+
+extern int warn_overloaded_virtual;
+
+/* Non-zero means warn when declaring a class that has a non virtual
+   destructor, when it really ought to have a virtual one.  */
+
+extern int warn_nonvdtor;
+
+/* Non-zero means warn when the compiler will reorder code.  */
+
+extern int warn_reorder;
+
+/* Non-zero means warn when synthesis behavior differs from Cfront's.  */
+
+extern int warn_synth;
+
+/* Non-zero means warn when we convert a pointer to member function
+   into a pointer to (void or function).  */
+
+extern int warn_pmf2ptr;
+
+/* Nonzero means warn about violation of some Effective C++ style rules.  */
+
+extern int warn_ecpp;
+
+/* Nonzero means warn where overload resolution chooses a promotion from
+   unsigned to signed over a conversion to an unsigned of the same size.  */
+
+extern int warn_sign_promo;
+
+/* Nonzero means warn when an old-style cast is used.  */
+
+extern int warn_old_style_cast;
+
+/* Nonzero means warn when non-templatized friend functions are
+   declared within a template */
+
+extern int warn_nontemplate_friend;
+
+/* Nonzero means complain about deprecated features.  */
+
+extern int warn_deprecated;
+
+/* Maximum template instantiation depth.  This limit is rather
+   arbitrary, but it exists to limit the time it takes to notice
+   infinite template instantiations.  */
+
+extern int max_tinst_depth;
+
+
+
 
 /* C types are partitioned into three subsets: object, function, and
    incomplete types.  */

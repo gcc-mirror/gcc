@@ -1,3 +1,11 @@
+2002-08-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cp-tree.h: Move all warning and flag declarations to c-common.h.
+	* decl.c: Move all warning and flag variables to c-common.c.
+	* decl2.c: Move all warning and flag variables to c-common.c.
+	* lex.c (flag_digraphs): Remove.
+	(warn_traditional): Now in c-common.c.
+
 2002-07-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_field_call): Do not look up the field by name.

@@ -317,81 +317,9 @@ extern int current_function_returns_abnormally;
 
 extern int skip_evaluation;
 
-/* Nonzero means `$' can be in an identifier.  */
-
-extern int dollars_in_ident;
-
-/* Nonzero means allow type mismatches in conditional expressions;
-   just make their values `void'.  */
-
-extern int flag_cond_mismatch;
-
-/* Nonzero means don't recognize the keyword `asm'.  */
-
-extern int flag_no_asm;
-
-/* Nonzero means warn about implicit declarations.  */
-
-extern int warn_implicit;
-
-/* Nonzero means warn for all old-style non-prototype function decls.  */
-
-extern int warn_strict_prototypes;
-
-/* Nonzero means warn about multiple (redundant) decls for the same single
-   variable or function.  */
-
-extern int warn_redundant_decls;
-
-/* Nonzero means warn about extern declarations of objects not at
-   file-scope level and about *all* declarations of functions (whether
-   extern or static) not at file-scope level.  Note that we exclude
-   implicit function declarations.  To get warnings about those, use
-   -Wimplicit.  */
-
-extern int warn_nested_externs;
-
-/* Nonzero means warn about pointer casts that can drop a type qualifier
-   from the pointer target type.  */
-
-extern int warn_cast_qual;
-
-/* Nonzero means warn when casting a function call to a type that does
-   not match the return type (e.g. (float)sqrt() or (anything*)malloc()
-   when there is no previous declaration of sqrt or malloc.  */
-
-extern int warn_bad_function_cast;
-
-/* Warn about traditional constructs whose meanings changed in ANSI C.  */
-
-extern int warn_traditional;
-
-/* Warn about a subscript that has type char.  */
-
-extern int warn_char_subscripts;
-
-/* Warn if main is suspicious.  */
-
-extern int warn_main;
-
-/* Warn if initializer is not completely bracketed.  */
-
-extern int warn_missing_braces;
-
-/* Warn about comparison of signed and unsigned values.  */
-
-extern int warn_sign_compare;
-
-/* Warn about testing equality of floating point numbers.  */
-
-extern int warn_float_equal;
-
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;
-
-/* Warn about implicit declarations.  1 = warning, 2 = error.  */
-extern int mesg_implicit_function_declaration;
 
 /* In c-decl.c */
 extern void c_finish_incomplete_decl PARAMS ((tree));
