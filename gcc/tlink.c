@@ -495,6 +495,9 @@ recompile_files ()
 {
   file *f;
 
+  putenv ("COMPILER_PATH");
+  putenv ("LIBRARY_PATH");
+  
   while ((f = file_pop ()) != NULL)
     {
       char *line, *command;
