@@ -4075,6 +4075,11 @@ init_optabs ()
 #ifdef FIXUNS_TRUNCTFSI2_LIBCALL
   fixunstfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);
 #endif
+
+#ifdef INIT_TARGET_OPTABS
+  /* Allow the target to add more libcalls or rename some, etc.  */
+  INIT_TARGET_OPTABS;
+#endif
 }
 
 #ifdef BROKEN_LDEXP
