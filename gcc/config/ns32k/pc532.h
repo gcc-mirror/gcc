@@ -49,6 +49,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    if the bug still exists. */
 
 #undef STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 0
 
 /* Maybe someone needs to know which processor we're running on */
 

@@ -61,6 +61,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define TARGET_MEM_FUNCTIONS
 
+/ * size_t is unsigned int.  */
+
+#define SIZE_TYPE "unsigned int"
+
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
 #define STRUCTURE_SIZE_BOUNDARY 16

@@ -153,11 +153,11 @@ extern int target_flags;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 32
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  National claims that the NS32032
    works without strict alignment, but rumor has it that operands
    crossing a page boundary cause unpredictable results.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 /* If bit field type is int, dont let it cross an int,
    and give entire struct the alignment of an int.  */

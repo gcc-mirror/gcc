@@ -900,10 +900,15 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
       if ((inner_dest != dest
 	   && (reg_overlap_mentioned_p (i2dest, inner_dest)
 	       || (i1dest && reg_overlap_mentioned_p (i1dest, inner_dest))))
-#ifdef SMALL_REGISTER_CLASSES	  
+	  /* This is the same test done in can_combine_p.  */
 	  || (GET_CODE (inner_dest) == REG
-	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER)
+	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
+#ifndef SMALL_REGISTER_CLASSES
+	      && ! HARD_REGNO_MODE_OK (REGNO (inner_dest),
+				       GET_MODE (inner_dest))
 #endif
+	      )
+
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src)))
 	return 0;
 
@@ -3788,11 +3793,9 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	       || (movstrict_optab->handlers[(int) tmode].insn_code
 		   != CODE_FOR_nothing)))
 	  || (GET_CODE (inner) == MEM && pos >= 0
-#ifdef STRICT_ALIGNMENT
-	      && (pos % GET_MODE_ALIGNMENT (tmode)) == 0
-#else
-	      && (pos % BITS_PER_UNIT) == 0
-#endif
+	      && (pos
+		  % (STRICT_ALIGNMENT ? GET_MODE_ALIGNMENT (tmode)
+		     : BITS_PER_UNIT)) == 0
 	      /* We can't do this if we are widening INNER_MODE (it
 		 may not be aligned, for one thing).  */
 	      && GET_MODE_BITSIZE (inner_mode) >= GET_MODE_BITSIZE (tmode)
@@ -4053,7 +4056,7 @@ make_compound_operation (x, in_code)
 	new = make_extraction (mode, XEXP (XEXP (x, 0), 0), -1,
 			       XEXP (XEXP (x, 0), 1), i, 1,
 			       0, in_code == COMPARE);
-#if 0
+
       /* Same as previous, but for (subreg (lshiftrt ...)) in first op.  */
       else if (GET_CODE (XEXP (x, 0)) == SUBREG
 	       && subreg_lowpart_p (XEXP (x, 0))
@@ -4063,7 +4066,6 @@ make_compound_operation (x, in_code)
 			       XEXP (SUBREG_REG (XEXP (x, 0)), 0), -1,
 			       XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
 			       0, in_code == COMPARE);
-#endif
 
       /* One machines without logical shifts, if the operand of the AND is
 	 a logical shift and our mask turns off all the propagated sign
@@ -4195,6 +4197,142 @@ get_pos_from_mask (m, plen)
   return pos;
 }
 
+/* Rewrite X so that it is an expression in MODE.  We only care about the
+   low-order BITS bits so we can ignore AND operations that just clear
+   higher-order bits.
+
+   Also, if REG is non-zero and X is a register equal in value to REG, 
+   replace X with REG.  */
+
+static rtx
+force_to_mode (x, mode, bits, reg)
+     rtx x;
+     enum machine_mode mode;
+     int bits;
+     rtx reg;
+{
+  enum rtx_code code = GET_CODE (x);
+
+  /* If X is narrower than MODE or if BITS is larger than the size of MODE,
+     just get X in the proper mode.  */
+
+  if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode)
+      || bits > GET_MODE_BITSIZE (mode))
+    return gen_lowpart_for_combine (mode, x);
+
+  switch (code)
+    {
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+      x = expand_compound_operation (x);
+      if (GET_CODE (x) != code)
+	return force_to_mode (x, mode, bits, reg);
+      break;
+
+    case REG:
+      if (reg != 0 && (rtx_equal_p (get_last_value (reg), x)
+		       || rtx_equal_p (reg, get_last_value (x))))
+	x = reg;
+      break;
+
+    case CONST_INT:
+      if (bits < HOST_BITS_PER_INT)
+	x = gen_rtx (CONST_INT, VOIDmode,
+		     INTVAL (x) & ((1 << (bits + 1)) - 1));
+      return x;
+
+    case SUBREG:
+      /* Ignore low-order SUBREGs. */
+      if (subreg_lowpart_p (x))
+	return force_to_mode (SUBREG_REG (x), mode, bits, reg);
+      break;
+
+    case AND:
+      /* If this is an AND with a constant.  Otherwise, we fall through to
+	 do the general binary case.  */
+
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	{
+	  int mask = INTVAL (XEXP (x, 1));
+	  int len = exact_log2 (mask + 1);
+	  rtx op = XEXP (x, 0);
+
+	  /* If this is masking some low-order bits, we may be able to
+	     impose a stricter constraint on what bits of the operand are
+	     required.  */
+
+	  op = force_to_mode (op, mode, len > 0 ? MIN (len, bits) : bits,
+			      reg);
+
+	  if (bits < HOST_BITS_PER_INT)
+	    mask &= (1 << (bits + 1)) - 1;
+
+	  x = simplify_and_const_int (x, mode, op, mask);
+
+	  /* If X is still an AND, see if it is an AND with a mask that
+	     is just some low-order bits.  If so, and it is BITS wide (it
+	     can't be wider), we don't need it.  */
+
+	  if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT
+	      && bits < HOST_BITS_PER_INT
+	      && INTVAL (XEXP (x, 1)) == (1 << (bits + 1)) - 1)
+	    x = XEXP (x, 0);
+	  return x;
+	}
+
+      /* ... fall through ... */
+
+    case PLUS:
+    case MINUS:
+    case MULT:
+    case IOR:
+    case XOR:
+      /* For most binary operations, just propagate into the operation and
+	 change the mode.  */
+
+      return gen_binary (code, mode,
+			 force_to_mode (XEXP (x, 0), mode, bits, reg),
+			 force_to_mode (XEXP (x, 1), mode, bits, reg));
+
+    case ASHIFT:
+    case LSHIFT:
+      /* For left shifts, do the same, but just for the first operand.
+	 If the shift count is a constant, we need even fewer bits of the
+	 first operand.  */
+
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) < bits)
+	bits -= INTVAL (XEXP (x, 1));
+
+      return gen_binary (code, mode,
+			 force_to_mode (XEXP (x, 0), mode, bits, reg),
+			 XEXP (x, 1));
+
+    case LSHIFTRT:
+      /* Here we can only do something if the shift count is a constant and
+	 the count plus BITS is no larger than the width of MODE, we can do
+	 the shift in MODE.  */
+
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) + bits <= GET_MODE_BITSIZE (mode))
+	return gen_binary (LSHIFTRT, mode,
+			   force_to_mode (XEXP (x, 0), mode,
+					  bits + INTVAL (XEXP (x, 1)), reg),
+			   XEXP (x, 1));
+      break;
+
+    case NEG:
+    case NOT:
+      /* Handle these similarly to the way we handle most binary operations. */
+      return gen_unary (code, mode,
+			force_to_mode (XEXP (x, 0), mode, bits, reg));
+    }
+
+  /* Otherwise, just do the operation canonically.  */
+  return gen_lowpart_for_combine (mode, x);
+}
+
 /* See if X, a SET operation, can be rewritten as a bit-field assignment.
    Return that assignment if so.
 
@@ -4206,7 +4344,11 @@ make_field_assignment (x)
 {
   rtx dest = SET_DEST (x);
   rtx src = SET_SRC (x);
-  rtx assign = 0;
+  rtx ourdest;
+  rtx assign;
+  int c1, pos, len;
+  rtx other;
+  enum machine_mode mode;
 
   /* If SRC was (and (not (ashift (const_int 1) POS)) DEST), this is
      a clear of a one-bit field.  We will have changed it to
@@ -4216,11 +4358,13 @@ make_field_assignment (x)
   if (GET_CODE (src) == AND && GET_CODE (XEXP (src, 0)) == ROTATE
       && GET_CODE (XEXP (XEXP (src, 0), 0)) == CONST_INT
       && INTVAL (XEXP (XEXP (src, 0), 0)) == -2
-      && rtx_equal_p (dest, XEXP (src, 1)))
+      && (rtx_equal_p (dest, XEXP (src, 1))
+	  || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
+	  || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
     {
       assign = make_extraction (VOIDmode, dest, -1, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
-      src = const0_rtx;
+      return gen_rtx (SET, VOIDmode, assign, const0_rtx);
     }
 
   else if (GET_CODE (src) == AND && GET_CODE (XEXP (src, 0)) == SUBREG
@@ -4229,94 +4373,72 @@ make_field_assignment (x)
 	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (XEXP (src, 0)))))
 	   && GET_CODE (SUBREG_REG (XEXP (src, 0))) == ROTATE
 	   && INTVAL (XEXP (SUBREG_REG (XEXP (src, 0)), 0)) == -2
-	   && rtx_equal_p (dest, XEXP (src, 1)))
+	   && (rtx_equal_p (dest, XEXP (src, 1))
+	       || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
+	       || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
     {
       assign = make_extraction (VOIDmode, dest, -1,
 				XEXP (SUBREG_REG (XEXP (src, 0)), 1),
 				1, 1, 1, 0);
-      src = const0_rtx;
+      return gen_rtx (SET, VOIDmode, assign, const0_rtx);
     }
 
   /* If SRC is (ior (ashift (const_int 1) POS DEST)), this is a set of a
      one-bit field.  */
   else if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 0)) == ASHIFT
 	   && XEXP (XEXP (src, 0), 0) == const1_rtx
-	   && rtx_equal_p (dest, XEXP (src, 1)))
+	   && (rtx_equal_p (dest, XEXP (src, 1))
+	       || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
+	       || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
     {
       assign = make_extraction (VOIDmode, dest, -1, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
-      src = const1_rtx;
+      return gen_rtx (SET, VOIDmode, assign, const1_rtx);
     }
 
-  /* The common case of a constant assignment into a constant-position 
-     field looks like (ior (and DEST C1) C2).  We clear the bits in C1
-     that are present in C2 and C1 must then be the complement of a mask
-     that selects a field.  */
+  /* The other case we handle is assignments into a constant-position
+     field.  They look like (ior (and DEST C1) OTHER).  If C1 represents
+     a mask that has all one bits except for a group of zero bits and
+     OTHER is known to have zeros where C1 has ones, this is such an
+     assignment.  Compute the position and length from C1.  Shift OTHER
+     to the appropriate position, force it to the required mode, and
+     make the extraction.  Check for the AND in both operands.  */
 
-  else if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 1)) == CONST_INT
-	   && GET_CODE (XEXP (src, 0)) == AND
-	   && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT
-	   && GET_MODE_BITSIZE (GET_MODE (dest)) <= HOST_BITS_PER_INT
-	   && rtx_equal_p (XEXP (XEXP (src, 0), 0), dest))
-    {
-      unsigned c1 = INTVAL (XEXP (XEXP (src, 0), 1));
-      unsigned c2 = INTVAL (XEXP (src, 1));
-      int pos, len;
+  if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 0)) == AND
+      && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT
+      && (rtx_equal_p (XEXP (XEXP (src, 0), 0), dest)
+	  || rtx_equal_p (XEXP (XEXP (src, 0), 0), get_last_value (dest))
+	  || rtx_equal_p (get_last_value (XEXP (XEXP (src, 0), 1)), dest)))
+    c1 = INTVAL (XEXP (XEXP (src, 0), 1)), other = XEXP (src, 1);
+  else if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 1)) == AND
+	   && GET_CODE (XEXP (XEXP (src, 1), 1)) == CONST_INT
+	   && (rtx_equal_p (XEXP (XEXP (src, 1), 0), dest)
+	       || rtx_equal_p (XEXP (XEXP (src, 1), 0), get_last_value (dest))
+	       || rtx_equal_p (get_last_value (XEXP (XEXP (src, 1), 0)),
+			       dest)))
+    c1 = INTVAL (XEXP (XEXP (src, 1), 1)), other = XEXP (src, 0);
+  else
+    return x;
 
-      c1 &= ~ c2;
+  pos = get_pos_from_mask (~c1, &len);
+  if (pos < 0 || pos + len > GET_MODE_BITSIZE (GET_MODE (dest))
+      || (c1 & significant_bits (other, GET_MODE (other))) != 0)
+    return x;
 
-      c1 = (~ c1) & GET_MODE_MASK (GET_MODE (dest));
-      if ((pos = get_pos_from_mask (c1, &len)) >= 0)
-	{
-	  assign = make_extraction (VOIDmode, dest, pos, 0, len, 1, 1, 0);
-	  src = gen_rtx (CONST_INT, VOIDmode, c2 >> pos);
-	}
-    }
+  assign = make_extraction (VOIDmode, dest, pos, 0, len, 1, 1, 0);
 
-  /* Finally, see if this is an assignment of a varying item into a fixed
-     field.  This looks like (ior (and DEST C1) (and (ashift SRC POS) C2)),
-     but we have to allow for the operands to be in either order.  */
+  /* The mode to use for the source is the mode of the assignment, or of
+     what is inside a possible STRICT_LOW_PART.  */
+  mode = (GET_CODE (assign) == STRICT_LOW_PART 
+	  ? GET_MODE (XEXP (assign, 0)) : GET_MODE (assign));
 
-  else if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 0)) == AND
-	   && GET_CODE (XEXP (src, 1)) == AND
-	   && GET_MODE_BITSIZE (GET_MODE (dest)) <= HOST_BITS_PER_INT)
-    {
-      rtx mask, other;
+  /* Shift OTHER right POS places and make it the source, restricting it
+     to the proper length and mode.  */
 
-      /* Set MASK to the (and DEST C1) and OTHER to the mask of the shift.  */
-      if (GET_CODE (XEXP (XEXP (src, 0), 0)) == ASHIFT)
-	mask = XEXP (src, 1), other = XEXP (src, 0);
-      else if (GET_CODE (XEXP (XEXP (src, 1), 0)) == ASHIFT)
-	mask = XEXP (src, 0), other = XEXP (src, 1);
-      else
-	return x;
+  src = force_to_mode (simplify_shift_const (0, LSHIFTRT, mode, other, pos),
+		       mode, len, dest);
 
-      if (rtx_equal_p (XEXP (mask, 0), dest)
-	  && GET_CODE (XEXP (mask, 1)) == CONST_INT
-	  && GET_CODE (XEXP (other, 1)) == CONST_INT
-	  && GET_CODE (XEXP (XEXP (other, 0), 1)) == CONST_INT)
-	{
-	  unsigned c1 = INTVAL (XEXP (mask, 1));
-	  unsigned c2 = INTVAL (XEXP (other, 1));
-	  int pos, len;
-
-	  /* The two masks must be complements within the relevant mode,
-	     C2 must select a field, and the shift must move to that
-	     position.  */
-	  if (((c1 % ~c2) & GET_MODE_MASK (GET_MODE (dest))) == 0
-	      && (pos = get_pos_from_mask (c2, &len)) >= 0
-	      && pos == INTVAL (XEXP (XEXP (other, 0), 1)))
-	    {
-	      assign = make_extraction (VOIDmode, dest, pos, 0, len, 1, 1, 0);
-	      src = XEXP (XEXP (other, 0), 0);
-	    }
-	}
-    }
-
-  if (assign)
-    return gen_rtx_combine (SET, VOIDmode, assign, src);
-
-  return x;
+  return gen_rtx_combine (SET, VOIDmode, assign, src);
 }
 
 /* See if X is of the form (+ (* a c) (* b c)) and convert to (* (+ a b) c)
@@ -4338,18 +4460,9 @@ apply_distributive_law (x)
 
   lhs = XEXP (x, 0), rhs = XEXP (x, 1);
 
-  /* If either operand is a primitive or a complex SUBREG,
-     we can't do anything. */
+  /* If either operand is a primitive we can't do anything, so get out fast. */
   if (GET_RTX_CLASS (GET_CODE (lhs)) == 'o'
-      || GET_RTX_CLASS (GET_CODE (rhs)) == 'o'
-      || (GET_CODE (lhs) == SUBREG
-	  && (! subreg_lowpart_p (lhs)
-	      || (GET_MODE_SIZE (GET_MODE (lhs))
-		  >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))))))
-      || (GET_CODE (rhs) == SUBREG
-	  && (! subreg_lowpart_p (rhs)
-	      || (GET_MODE_SIZE (GET_MODE (rhs))
-		  >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (rhs)))))))
+      || GET_RTX_CLASS (GET_CODE (rhs)) == 'o')
     return x;
 
   lhs = expand_compound_operation (lhs);
@@ -4381,9 +4494,22 @@ apply_distributive_law (x)
       break;
 
     case SUBREG:
-      /* This distributes over all operations, provided the inner modes
-	 are the same, but we produce the result slightly differently.  */
-      if (GET_MODE (SUBREG_REG (lhs)) != GET_MODE (SUBREG_REG (rhs)))
+      /* Non-paradoxical SUBREGs distributes over all operations, provided
+	 the inner modes and word numbers are the same, this is an extraction
+	 of a low-order part, and we would not be converting a single-word
+	 operation into a multi-word operation.  The latter test is not
+	 required, but we prevents generating unneeded multi-word operations.
+	 Some of the previous tests are redundant given the latter test, but
+	 are retained because they are required for correctness.
+
+	 We produce the result slightly differently in this case.  */
+
+      if (GET_MODE (SUBREG_REG (lhs)) != GET_MODE (SUBREG_REG (rhs))
+	  || SUBREG_WORD (lhs) != SUBREG_WORD (rhs)
+	  || ! subreg_lowpart_p (lhs)
+	  || (GET_MODE_SIZE (GET_MODE (lhs))
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))))
+	  || GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))) > UNITS_PER_WORD)
 	return x;
 
       tem = gen_binary (code, GET_MODE (SUBREG_REG (lhs)),
@@ -5988,7 +6114,15 @@ gen_lowpart_for_combine (mode, x)
      SUBREG.  Normally, this SUBREG won't match, but some patterns may
      include and explicit SUBREG or we may simplify it further in combine.  */
   else
-    return gen_rtx (SUBREG, mode, x, 0);
+    {
+      int word = 0;
+
+      if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
+	word = ((GET_MODE_SIZE (GET_MODE (x))
+		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
+		/ UNITS_PER_WORD);
+      return gen_rtx (SUBREG, mode, x, word);
+    }
 }
 
 /* Make an rtx expression.  This is a subset of gen_rtx and only supports
@@ -6741,16 +6875,26 @@ simplify_comparison (code, pop0, pop1)
 	      continue;
 	    }
 
-	  /* If we are doing an LT or GE comparison, it means we are testing
+	  /* If we are doing a sign bit comparison, it means we are testing
 	     a particular bit.  Convert it to the appropriate AND.  */
-	  if (const_op == 0 && sign_bit_comparison_p
-	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	  if (sign_bit_comparison_p && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	      && mode_width <= HOST_BITS_PER_INT)
 	    {
 	      op0 = simplify_and_const_int (0, mode, XEXP (op0, 0),
 					    1 << ( mode_width - 1
 						  - INTVAL (XEXP (op0, 1))));
 	      code = (code == LT ? NE : EQ);
+	      continue;
+	    }
+
+	  /* If this an equality comparison with zero and we are shifting
+	     the low bit to the sign bit, we can convert this to an AND of the
+	     low-order bit.  */
+	  if (const_op == 0 && equality_comparison_p
+	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	      && INTVAL (XEXP (op0, 1)) == mode_width - 1)
+	    {
+	      op0 = simplify_and_const_int (0, mode, XEXP (op0, 0), 1);
 	      continue;
 	    }
 	  break;

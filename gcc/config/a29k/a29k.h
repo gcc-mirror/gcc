@@ -186,14 +186,14 @@ extern int target_flags;
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Define this if move instructions will actually fail to work
+/* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.  */
-/* #define STRICT_ALIGNMENT */
+#define STRICT_ALIGNMENT 0
 
-/* Define this if unaligned move instructions are extremely slow.
+/* Set this non-zero if unaligned move instructions are extremely slow.
 
    On the 29k, they trap.  */
-#define SLOW_UNALIGNED_ACCESS
+#define SLOW_UNALIGNED_ACCESS 1
 
 /* Standard register usage.  */
 
