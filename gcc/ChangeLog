@@ -1,3 +1,8 @@
+2002-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* diagnostic.c (diagnostic_kind_text): Const-ify.
+	* gengtype.c (lang_names): Likewise.
+
 Thu Jun 20 17:25:29 CEST 2002  JAn HUbicka  <jh@suse.cz>
 
 	* combine.c (subst): Be prepared for simplify_subreg to return VOIDmode.
