@@ -1,3 +1,6 @@
+// Bug: We were calling f() twice, for both the placement new and placement
+// delete calls.
+
 // { dg-do run }
 
 void* operator new    (unsigned int sz, void*) { return operator new (sz); }
