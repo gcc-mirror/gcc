@@ -710,7 +710,7 @@ do {									\
   if (rs6000_sdata != SDATA_NONE && (SIZE) > 0				\
       && (SIZE) <= g_switch_value)					\
     {									\
-      sdata_section ();							\
+      sbss_section ();							\
       ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
       ASM_OUTPUT_SKIP (FILE, SIZE);					\
