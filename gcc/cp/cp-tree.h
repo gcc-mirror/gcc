@@ -945,10 +945,6 @@ extern int flag_no_asm;
 
 extern int flag_no_gnu_keywords;
 
-/* Nonzero means recognize the named operators from C++98.  */
-
-extern int flag_operator_names;
-
 /* For environments where you can use GNU binutils (as, ld in particular).  */
 
 extern int flag_gnu_binutils;

@@ -328,7 +328,6 @@ struct resword
    _true_.  */
 #define D_EXT		0x01	/* GCC extension */
 #define D_ASM		0x02	/* in C99, but has a switch to turn it off */
-#define D_OPNAME	0x04	/* operator names */
 
 CONSTRAINT(ridbits_fit, RID_LAST_MODIFIER < sizeof(unsigned long) * CHAR_BIT);
 
@@ -368,18 +367,13 @@ static const struct resword reswords[] =
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
   { "asm",		RID_ASM,	D_ASM },
-  { "and",		RID_AND,	D_OPNAME },
-  { "and_eq",		RID_AND_EQ,	D_OPNAME },
   { "auto",		RID_AUTO,	0 },
-  { "bitand",		RID_BITAND,	D_OPNAME },
-  { "bitor",		RID_BITOR,	D_OPNAME },
   { "bool",		RID_BOOL,	0 },
   { "break",		RID_BREAK,	0 },
   { "case",		RID_CASE,	0 },
   { "catch",		RID_CATCH,	0 },
   { "char",		RID_CHAR,	0 },
   { "class",		RID_CLASS,	0 },
-  { "compl",		RID_COMPL,	D_OPNAME },
   { "const",		RID_CONST,	0 },
   { "const_cast",	RID_CONSTCAST,	0 },
   { "continue",		RID_CONTINUE,	0 },
@@ -405,11 +399,7 @@ static const struct resword reswords[] =
   { "mutable",		RID_MUTABLE,	0 },
   { "namespace",	RID_NAMESPACE,	0 },
   { "new",		RID_NEW,	0 },
-  { "not",		RID_NOT,	D_OPNAME },
-  { "not_eq",		RID_NOT_EQ,	D_OPNAME },
   { "operator",		RID_OPERATOR,	0 },
-  { "or",		RID_OR,		D_OPNAME },
-  { "or_eq",		RID_OR_EQ,	D_OPNAME },
   { "private",		RID_PRIVATE,	0 },
   { "protected",	RID_PROTECTED,	0 },
   { "public",		RID_PUBLIC,	0 },
@@ -440,8 +430,6 @@ static const struct resword reswords[] =
   { "volatile",		RID_VOLATILE,	0 },
   { "wchar_t",          RID_WCHAR,	0 },
   { "while",		RID_WHILE,	0 },
-  { "xor",		RID_XOR,	D_OPNAME },
-  { "xor_eq",		RID_XOR_EQ,	D_OPNAME },
 
 };
 
@@ -557,19 +545,6 @@ const short rid_to_yy[RID_MAX] =
   /* RID_REINTCAST */	REINTERPRET_CAST,
   /* RID_STATCAST */	STATIC_CAST,
 
-  /* alternate spellings */
-  /* RID_AND */		ANDAND,
-  /* RID_AND_EQ */	ASSIGN,
-  /* RID_NOT */		'!',
-  /* RID_NOT_EQ */	EQCOMPARE,
-  /* RID_OR */		OROR,
-  /* RID_OR_EQ */	ASSIGN,
-  /* RID_XOR */		'^',
-  /* RID_XOR_EQ */	ASSIGN,
-  /* RID_BITAND */	'&',
-  /* RID_BITOR */	'|',
-  /* RID_COMPL */	'~',
-
   /* Objective C */
   /* RID_ID */			0,
   /* RID_AT_ENCODE */		0,
@@ -591,8 +566,7 @@ init_reswords ()
 {
   unsigned int i;
   tree id;
-  int mask = ((flag_operator_names ? 0 : D_OPNAME)
-	      | (flag_no_asm ? D_ASM : 0)
+  int mask = ((flag_no_asm ? D_ASM : 0)
 	      | (flag_no_gnu_keywords ? D_EXT : 0));
 
   /* It is not necessary to register ridpointers as a GC root, because
