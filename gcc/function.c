@@ -54,6 +54,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "recog.h"
 #include "output.h"
 #include "basic-block.h"
+#include "obstack.h"
+#include "bytecode.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -309,6 +311,10 @@ static int virtuals_instantiated;
    integrate.c  */
 
 extern int rtx_equal_function_value_matters;
+extern tree bc_runtime_type_code ();
+extern rtx bc_build_calldesc ();
+extern char *bc_emit_trampoline ();
+extern char *bc_end_function ();
 
 void fixup_gotos ();
 
@@ -368,6 +374,31 @@ struct temp_slot *temp_slots;
 /* Current nesting level for temporaries.  */
 
 int temp_slot_level;
+
+/* The FUNCTION_DECL node for the current function.  */
+static tree this_function_decl;
+
+/* Callinfo pointer for the current function.  */
+static rtx this_function_callinfo;
+
+/* The label in the bytecode file of this function's actual bytecode.
+   Not an rtx.  */
+static char *this_function_bytecode;
+
+/* The call description vector for the current function.  */
+static rtx this_function_calldesc;
+
+/* Size of the local variables allocated for the current function.  */
+int local_vars_size;
+
+/* Current depth of the bytecode evaluation stack.  */
+int stack_depth;
+
+/* Maximum depth of the evaluation stack in this function.  */
+int max_stack_depth;
+
+/* Current depth in statement expressions.  */
+static int stmt_expr_depth;
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -928,7 +959,12 @@ put_var_into_stack (decl)
   register rtx reg;
   enum machine_mode promoted_mode, decl_mode;
   struct function *function = 0;
-  tree context = decl_function_context (decl);
+  tree context;
+
+  if (output_bytecode)
+    return;
+  
+  context = decl_function_context (decl);
 
   /* Get the current rtl used for this object and it's original mode.  */
   reg = TREE_CODE (decl) == SAVE_EXPR ? SAVE_EXPR_RTL (decl) : DECL_RTL (decl);
@@ -4279,6 +4315,49 @@ all_blocks (block, vector)
   return n_blocks;
 }
 
+/* Build bytecode call descriptor for function SUBR. */
+rtx
+bc_build_calldesc (subr)
+  tree subr;
+{
+  tree calldesc = 0, arg;
+  int nargs = 0;
+
+  /* Build the argument description vector in reverse order.  */
+  DECL_ARGUMENTS (subr) = nreverse (DECL_ARGUMENTS (subr));
+  nargs = 0;
+
+  for (arg = DECL_ARGUMENTS (subr); arg; arg = TREE_CHAIN (arg))
+    {
+      ++nargs;
+
+      calldesc = tree_cons ((tree) 0, size_in_bytes (TREE_TYPE (arg)), calldesc);
+      calldesc = tree_cons ((tree) 0, bc_runtime_type_code (TREE_TYPE (arg)), calldesc);
+    }
+
+  DECL_ARGUMENTS (subr) = nreverse (DECL_ARGUMENTS (subr));
+
+  /* Prepend the function's return type.  */
+  calldesc = tree_cons ((tree) 0,
+			size_in_bytes (TREE_TYPE (TREE_TYPE (subr))),
+			calldesc);
+
+  calldesc = tree_cons ((tree) 0,
+			bc_runtime_type_code (TREE_TYPE (TREE_TYPE (subr))),
+			calldesc);
+
+  /* Prepend the arg count.  */
+  calldesc = tree_cons ((tree) 0, build_int_2 (nargs, 0), calldesc);
+
+  /* Output the call description vector and get its address.  */
+  calldesc = build_nt (CONSTRUCTOR, (tree) 0, calldesc);
+  TREE_TYPE (calldesc) = build_array_type (integer_type_node,
+					   build_index_type (build_int_2 (nargs * 2, 0)));
+
+  return output_constant_def (calldesc);
+}
+
+
 /* Generate RTL for the start of the function SUBR (a FUNCTION_DECL tree node)
    and initialize static variables for generating RTL for the statements
    of the function.  */
@@ -4290,6 +4369,17 @@ init_function_start (subr, filename, line)
      int line;
 {
   char *junk;
+
+  if (output_bytecode)
+    {
+      this_function_decl = subr;
+      this_function_calldesc = bc_build_calldesc (subr);
+      local_vars_size = 0;
+      stack_depth = 0;
+      max_stack_depth = 0;
+      stmt_expr_depth = 0;
+      return;
+    }
 
   init_stmt_for_function ();
 
@@ -4443,12 +4533,98 @@ mark_varargs ()
 void
 expand_main_function ()
 {
+  if (!output_bytecode)
+    {
+      /* The zero below avoids a possible parse error */
+      0;
 #if !defined (INIT_SECTION_ASM_OP) || defined (INVOKE__main)
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, NAME__MAIN), 0,
-		     VOIDmode, 0);
+      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__main"), 0,
+			 VOIDmode, 0);
 #endif /* not INIT_SECTION_ASM_OP or INVOKE__main */
+    }
 }
 
+extern struct obstack permanent_obstack;
+
+/* Expand start of bytecode function. See comment at
+   expand_function_start below for details. */
+
+void
+bc_expand_function_start (subr, parms_have_cleanups)
+  tree subr;
+  int parms_have_cleanups;
+{
+  char label[20], *name;
+  static int nlab;
+  tree thisarg;
+  int argsz;
+
+  if (TREE_PUBLIC (subr))
+    bc_globalize_label (IDENTIFIER_POINTER (DECL_NAME (subr)));
+
+#ifdef DEBUG_PRINT_CODE
+  fprintf (stderr, "\n<func %s>\n", IDENTIFIER_POINTER (DECL_NAME (subr)));
+#endif
+
+  for (argsz = 0, thisarg = DECL_ARGUMENTS (subr); thisarg; thisarg = TREE_CHAIN (thisarg))
+    {
+      if (DECL_RTL (thisarg))
+	abort ();		/* Should be NULL here I think.  */
+      else if (TREE_CONSTANT (DECL_SIZE (thisarg)))
+	{
+	  DECL_RTL (thisarg) = bc_gen_rtx ((char *) 0, argsz, (struct bc_label *) 0);
+	  argsz += TREE_INT_CST_LOW (DECL_SIZE (thisarg));
+	}
+      else
+	{
+	  /* Variable-sized objects are pointers to their storage. */
+	  DECL_RTL (thisarg) = bc_gen_rtx ((char *) 0, argsz, (struct bc_label *) 0);
+	  argsz += POINTER_SIZE;
+	}
+    }
+
+  bc_begin_function (bc_xstrdup (IDENTIFIER_POINTER (DECL_NAME (subr))));
+
+  ASM_GENERATE_INTERNAL_LABEL (label, "LX", nlab);
+
+  ++nlab;
+  name = (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
+  this_function_callinfo = bc_gen_rtx (name, 0, (struct bc_label *) 0);
+  this_function_bytecode = bc_emit_trampoline (this_function_callinfo->label);
+}
+
+
+/* Expand end of bytecode function. See details the comment of
+   expand_function_end(), below. */
+
+void
+bc_expand_function_end ()
+{
+  char *ptrconsts;
+
+  expand_null_return ();
+
+  /* Emit any fixup code. This must be done before the call to
+     to BC_END_FUNCTION (), since that will cause the bytecode
+     segment to be finished off and closed. */
+
+  fixup_gotos (0, 0, 0, 0, 0);
+
+  ptrconsts = bc_end_function ();
+
+  bc_align_const (2 /* INT_ALIGN */);
+
+  /* If this changes also make sure to change bc-interp.h!  */
+
+  bc_emit_const_labeldef (this_function_callinfo->label);
+  bc_emit_const ((char *) &max_stack_depth, sizeof max_stack_depth);
+  bc_emit_const ((char *) &local_vars_size, sizeof local_vars_size);
+  bc_emit_const_labelref (this_function_bytecode, 0);
+  bc_emit_const_labelref (ptrconsts, 0);
+  bc_emit_const_labelref (this_function_calldesc->label, 0);
+}
+
+
 /* Start the RTL for a new function, and set variables used for
    emitting RTL.
    SUBR is the FUNCTION_DECL node.
@@ -4463,6 +4639,12 @@ expand_function_start (subr, parms_have_cleanups)
   register int i;
   tree tem;
   rtx last_ptr;
+
+  if (output_bytecode)
+    {
+      bc_expand_function_start (subr, parms_have_cleanups);
+      return;
+    }
 
   /* Make sure volatile mem refs aren't considered
      valid operands of arithmetic insns.  */
@@ -4657,6 +4839,12 @@ expand_function_end (filename, line)
   tree link;
 
   static rtx initial_trampoline;
+
+  if (output_bytecode)
+    {
+      bc_expand_function_end ();
+      return;
+    }
 
 #ifdef NON_SAVING_SETJMP
   /* Don't put any variables in registers if we call setjmp
