@@ -1,3 +1,11 @@
+2003-11-10  Fariborz Jahanian <fjahanian@apple.com>
+	* config/rs6000/rs6000.h (STACK_SIZE_MODE): Add definition.
+
+	* config/rs6000/rs6000.c (reg_or_mem_operand): Add macho-style
+	address recognition.
+	(macho_lo_sum_memory_operand): Routine to recognize macho-style
+	address recognition.
+
 2003-11-10  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (gen_label_die): Cope with DECL_RTL not set.
