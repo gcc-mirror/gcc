@@ -3,7 +3,8 @@ dnl Initialize configure bits.
 dnl
 dnl GLIBCPP_TOPREL_CONFIGURE
 AC_DEFUN(GLIBCPP_TOPREL_CONFIGURE, [
-  dnl Default to --enable-multilib
+  dnl Default to --enable-multilib (this is also passed by default
+  dnl from the ubercommon-top-level configure)
   AC_ARG_ENABLE(multilib,
   [  --enable-multilib       build hella library versions (default)],
   [case "${enableval}" in
@@ -33,7 +34,7 @@ AC_DEFUN(GLIBCPP_TOPREL_CONFIGURE, [
   AC_CONFIG_AUX_DIR(${srcdir}/$toprel)
   toplevel_srcdir=\${top_srcdir}/$toprel
   AC_SUBST(toplevel_srcdir)
-)]
+])
 
 dnl
 dnl Initialize configure bits.
@@ -41,11 +42,13 @@ dnl
 dnl GLIBCPP_CONFIGURE
 AC_DEFUN(GLIBCPP_CONFIGURE, [
 
+#possibly test for the presence of the compiler sources here?
+
   # Export build and source directories.
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
   # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
-  glibcpp_builddir=`pwd`
+  glibcpp_builddir=`${PWDCMD-pwd}`
   case $srcdir in
   [\\/$]* | ?:[\\/]*) glibcpp_srcdir=${srcdir} ;;
   *) glibcpp_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
@@ -58,7 +61,8 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
 
   AC_PROG_AWK
   # Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.5x, can also
-  # be 'cp -p' if linking isn't available.
+  # be 'cp -p' if linking isn't available.  Uncomment the next line to
+  # force a particular method.
   #ac_cv_prog_LN_S='cp -p'
   AC_PROG_LN_S
 
@@ -188,14 +192,12 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
     AC_EXEEXT
   fi
 
-  . [$]{glibcpp_basedir}/configure.host
-
   case [$]{glibcpp_basedir} in
     /* | [A-Za-z]:[\\/]*) libgcj_flagbasedir=[$]{glibcpp_basedir} ;;
     *) glibcpp_flagbasedir='[$](top_builddir)/'[$]{glibcpp_basedir} ;;
   esac
 
-  # This does for the target what configure.host does for the host.  In
+  # Find platform-specific directories containing configuration info.  In
   # addition to possibly modifying the same flags, it also sets up symlinks.
   GLIBCPP_CHECK_TARGET
 
