@@ -1,5 +1,11 @@
 2004-02-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/14250
+	* cvt.c (build_expr_type_conversion): Type must be complete before
+	looking up for conversions.
+
+2004-02-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/14143
 	* name-lookup.c	(arg_assoc_class): Don't look into template 
 	arguments if it is not a primary template.
