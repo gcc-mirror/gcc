@@ -219,7 +219,8 @@ struct fixup_replacement
   struct fixup_replacement *next;
 };
 
-struct insns_for_mem_entry {
+struct insns_for_mem_entry
+{
   /* The KEY in HE will be a MEM.  */
   struct hash_entry he;
   /* These are the INSNS which reference the MEM.  */
@@ -300,7 +301,6 @@ static unsigned long insns_for_mem_hash PARAMS ((hash_table_key));
 static bool insns_for_mem_comp PARAMS ((hash_table_key, hash_table_key));
 static int insns_for_mem_walk   PARAMS ((rtx *, void *));
 static void compute_insns_for_mem PARAMS ((rtx, rtx, struct hash_table *));
-static void mark_temp_slot PARAMS ((struct temp_slot *));
 static void mark_function_status PARAMS ((struct function *));
 static void maybe_mark_struct_function PARAMS ((void *));
 static void prepare_function_start PARAMS ((void));
@@ -378,7 +378,6 @@ pop_function_context_from (context)
 {
   struct function *p = outer_function_chain;
   struct var_refs_queue *queue;
-  struct var_refs_queue *next;
 
   cfun = p;
   outer_function_chain = p->outer;
@@ -393,13 +392,10 @@ pop_function_context_from (context)
 
   /* Finish doing put_var_into_stack for any of our variables
      which became addressable during the nested function.  */
-  for (queue = p->fixup_var_refs_queue; queue; queue = next)
-    {
-      next = queue->next;
-      fixup_var_refs (queue->modified, queue->promoted_mode,
-		      queue->unsignedp, 0);
-      free (queue);
-    }
+  for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
+    fixup_var_refs (queue->modified, queue->promoted_mode,
+		    queue->unsignedp, 0);
+
   p->fixup_var_refs_queue = 0;
 
   /* Reset variables that have known state during rtx generation.  */
@@ -440,9 +436,6 @@ void
 free_after_compilation (f)
      struct function *f;
 {
-  struct temp_slot *ts;
-  struct temp_slot *next;
-
   free_eh_status (f);
   free_expr_status (f);
   free_emit_status (f);
@@ -454,13 +447,7 @@ free_after_compilation (f)
   if (f->x_parm_reg_stack_loc)
     free (f->x_parm_reg_stack_loc);
 
-  for (ts = f->x_temp_slots; ts; ts = next)
-    {
-      next = ts->next;
-      free (ts);
-    }
   f->x_temp_slots = NULL;
-
   f->arg_offset_rtx = NULL;
   f->return_rtx = NULL;
   f->internal_arg_pointer = NULL;
@@ -487,8 +474,6 @@ free_after_compilation (f)
   f->original_decl_initial = NULL;
   f->inl_last_parm_insn = NULL;
   f->epilogue_delay_list = NULL;
-
-  free (f);
 }
 
 /* Allocate fixed slots in the stack frame of the current function.  */
@@ -701,7 +686,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 
 	  if (best_p->size - rounded_size >= alignment)
 	    {
-	      p = (struct temp_slot *) xmalloc (sizeof (struct temp_slot));
+	      p = (struct temp_slot *) ggc_alloc (sizeof (struct temp_slot));
 	      p->in_use = p->addr_taken = 0;
 	      p->size = best_p->size - rounded_size;
 	      p->base_offset = best_p->base_offset + rounded_size;
@@ -732,7 +717,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
     {
       HOST_WIDE_INT frame_offset_old = frame_offset;
 
-      p = (struct temp_slot *) xmalloc (sizeof (struct temp_slot));
+      p = (struct temp_slot *) ggc_alloc (sizeof (struct temp_slot));
 
       /* We are passing an explicit alignment request to assign_stack_local.
 	 One side effect of that is assign_stack_local will not round SIZE
@@ -936,10 +921,7 @@ combine_temp_slots ()
 	      }
 	    /* Either delete Q or advance past it.  */
 	    if (delete_q)
-	      {
-		prev_q->next = q->next;
-		free (q);
-	      }
+	      prev_q->next = q->next;
 	    else
 	      prev_q = q;
 	  }
@@ -1531,7 +1513,7 @@ schedule_fixup_var_refs (function, reg, type, promoted_mode, ht)
       struct var_refs_queue *temp;
 
       temp
-	= (struct var_refs_queue *) xmalloc (sizeof (struct var_refs_queue));
+	= (struct var_refs_queue *) ggc_alloc (sizeof (struct var_refs_queue));
       temp->modified = reg;
       temp->promoted_mode = promoted_mode;
       temp->unsignedp = unsigned_p;
@@ -1674,6 +1656,7 @@ fixup_var_refs_insns (insn, var, promoted_mode, unsignedp, toplevel)
    N.B. No need for special processing of CALL_PLACEHOLDERs here,
    because the hash table will point straight to the interesting insn
    (inside the CALL_PLACEHOLDER).  */
+
 static void
 fixup_var_refs_insns_with_hash (ht, var, promoted_mode, unsignedp)
      struct hash_table *ht;
@@ -1702,6 +1685,7 @@ fixup_var_refs_insns_with_hash (ht, var, promoted_mode, unsignedp)
    references to, PROMOTED_MODE and UNSIGNEDP describe VAR, and
    TOPLEVEL is nonzero if this is the main insn chain for this
    function.  */
+
 static void
 fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel)
      rtx insn;
@@ -3268,7 +3252,8 @@ insns_for_mem_comp (k1, k2)
   return k1 == k2;
 }
 
-struct insns_for_mem_walk_info {
+struct insns_for_mem_walk_info
+{
   /* The hash table that we are using to record which INSNs use which
      MEMs.  */
   struct hash_table *ht;
@@ -6079,10 +6064,11 @@ number_blocks (fn)
 }
 
 /* Allocate a function structure and reset its contents to the defaults.  */
+
 static void
 prepare_function_start ()
 {
-  cfun = (struct function *) xcalloc (1, sizeof (struct function));
+  cfun = (struct function *) ggc_alloc_cleared (sizeof (struct function));
 
   init_stmt_for_function ();
   init_eh_for_function ();
@@ -7583,29 +7569,14 @@ reposition_prologue_and_epilogue_notes (f)
 #endif /* HAVE_prologue or HAVE_epilogue */
 }
 
-/* Mark T for GC.  */
-
-static void
-mark_temp_slot (t)
-     struct temp_slot *t;
-{
-  while (t)
-    {
-      ggc_mark_rtx (t->slot);
-      ggc_mark_rtx (t->address);
-      ggc_mark_tree (t->rtl_expr);
-      ggc_mark_tree (t->type);
-
-      t = t->next;
-    }
-}
-
 /* Mark P for GC.  */
 
 static void
 mark_function_status (p)
      struct function *p;
 {
+  struct var_refs_queue *q;
+  struct temp_slot *t;
   int i;
   rtx *r;
 
@@ -7636,16 +7607,20 @@ mark_function_status (p)
   ggc_mark_rtx (p->epilogue_delay_list);
   ggc_mark_rtx (p->x_clobber_return_insn);
 
-  mark_temp_slot (p->x_temp_slots);
+  for (t = p->x_temp_slots; t != 0; t = t->next)
+    {
+      ggc_mark (t);
+      ggc_mark_rtx (t->slot);
+      ggc_mark_rtx (t->address);
+      ggc_mark_tree (t->rtl_expr);
+      ggc_mark_tree (t->type);
+    }
 
-  {
-    struct var_refs_queue *q = p->fixup_var_refs_queue;
-    while (q)
-      {
-	ggc_mark_rtx (q->modified);
-	q = q->next;
+  for (q = p->fixup_var_refs_queue; q != 0; q = q->next)
+    {
+      ggc_mark (q);
+      ggc_mark_rtx (q->modified);
       }
-  }
 
   ggc_mark_rtx (p->x_nonlocal_goto_handler_slots);
   ggc_mark_rtx (p->x_nonlocal_goto_handler_labels);
@@ -7658,6 +7633,7 @@ mark_function_status (p)
 /* Mark the struct function pointed to by *ARG for GC, if it is not
    NULL.  This is used to mark the current function and the outer
    function chain.  */
+
 static void
 maybe_mark_struct_function (arg)
      void *arg;
@@ -7671,10 +7647,12 @@ maybe_mark_struct_function (arg)
 }
 
 /* Mark a struct function * for GC.  This is called from ggc-common.c.  */
+
 void
 ggc_mark_struct_function (f)
      struct function *f;
 {
+  ggc_mark (f);
   ggc_mark_tree (f->decl);
 
   mark_function_status (f);

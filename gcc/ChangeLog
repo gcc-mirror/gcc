@@ -1,5 +1,16 @@
 Sun Sep 23 18:19:48 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (pop_function_context_from): var_refs_queue
+	and temp slots now in GC memory.
+	(mark_function_status, free_after_compilation): Likewise;
+	also struct function now in GC memory.
+	(assign_stack_temp_for_type): struct temp_slot now in GC memory.
+	(combine_temp_slots): Likewise.
+	(schedule_fixup_var_refs): var_refs_queue now in GC memory.
+	(prepare_function_start): Use GC memory for struct function.
+	(mark_temp_slot): Deleted.
+	(gcc_mark_struct_function): struct function now in GC memory.
+
 	* fold-const.c (extract_muldiv, case PLUS_EXPR): Only adjust
 	code for division, not modulus.
 
