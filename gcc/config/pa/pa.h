@@ -67,10 +67,7 @@ extern int target_flags;
 
 #define TARGET_LONG_CALLS (target_flags & 16)
 
-/* Disable indexed addressing modes.  Necessary under MACH.
-
-   ??? Some problem with a high bit being set in an address having
-   special meaning to the PA MACH ports.  */
+/* Disable indexed addressing modes.  */
 
 #define TARGET_DISABLE_INDEXING (target_flags & 32)
 
