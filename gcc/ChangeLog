@@ -1,5 +1,9 @@
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Compare
+	against last real insn in basic block.
+	Rework to avoid gotos.
+
 	* Makefile.in (gcse.o): Now includes ggc.h.
 	* gcse.c: Include ggc.h.
 	(want_to_gcse_p): Verify expression can be in SET as valid insn.
