@@ -31,7 +31,7 @@ endif
 
 toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
-data_DATA = libgcj.zip
+data_DATA = libgcj.jar
 
 if NEEDS_DATA_START
 toolexeclib_LIBRARIES = libgcjdata.a
@@ -57,9 +57,9 @@ if CANADIAN
 if NULL_TARGET
 ## In this case, gcj is found outside the build tree.  However, zip is
 ## found in the build tree.
-ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
 else
-ZIP = zip
+ZIP = fastjar
 endif
 GCJH = gcjh
 else # CANADIAN
@@ -68,7 +68,7 @@ else # CANADIAN
 ## definition of GCJ won't work; instead we resort to this ugly
 ## definition that gives us absolute paths.
 GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
-ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
 endif # CANADIAN
 
 GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
@@ -108,7 +108,7 @@ INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 ## ################################################################
 
 ##
-## How to build libgcj.a and libgcj.zip
+## How to build libgcj.a and libgcj.jar
 ##
 
 ## Objects from C++ sources in subdirs.
@@ -129,21 +129,23 @@ libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
 	$(nat_source_files)
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
-libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) \
+libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
-libgcj_la_LDFLAGS = -lsupc++ -rpath $(toolexeclibdir) \
+libgcj_la_LDFLAGS = -L$(here)/../libstdc++-v3/libsupc++ -lsupc++ \
+	-rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LINK = $(LIBLINK)
 
 libgcjx_la_SOURCES = $(x_nat_source_files)
 EXTRA_libgcjx_la_SOURCES = $(x_java_source_files)
-libgcjx_la_DEPENDENCIES = libgcj.zip $(x_javao_files)
+libgcjx_la_DEPENDENCIES = libgcj.jar $(x_javao_files)
 libgcjx_la_LIBADD = $(x_javao_files)
 libgcjx_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
-        -lsupc++ -rpath $(toolexeclibdir) \
+        -L$(here)/../libstdc++-v3/libsupc++ -lsupc++ \
+        -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcjx_la_LINK = $(LIBLINK)
@@ -162,12 +164,12 @@ install-exec-hook:
 ## a .java file with some other class which is caught.  Note that we
 ## only want to create headers for those files which do not have
 ## hand-maintained headers.
-$(java_source_files:.java=.class): libgcj.zip
+$(java_source_files:.java=.class): libgcj.jar
 
-## The .class files for X will not be included in libgcj.zip, but the
-## rule for libgcj.zip will cause all out-of-date .class files to be
+## The .class files for X will not be included in libgcj.jar, but the
+## rule for libgcj.jar will cause all out-of-date .class files to be
 ## built. We need this to generate headers for the nat-files.
-$(x_java_source_files:.java=.class): libgcj.zip
+$(x_java_source_files:.java=.class): libgcj.jar
 
 ## FIXME: this isn't really correct.
 $(built_java_source_files:.java=.class): $(built_java_source_files)
@@ -182,11 +184,11 @@ $(built_java_source_files:.java=.class): $(built_java_source_files)
 
 ## We have the zip file depend on the java sources and not the class
 ## files, because we don't know the names of all the class files.
-## FIXME: this method fails in a peculiar case: if libgcj.zip is
+## FIXME: this method fails in a peculiar case: if libgcj.jar is
 ## up-to-date, and foo.class is removed, and bar.java is touched, then
-## `make libgcj.zip' will not rebuilt foo.class.  That's because
-## libgcj.zip is not out-of-date with respect to foo.java.
-libgcj.zip: $(java_source_files) $(x_java_source_files)
+## `make libgcj.jar' will not rebuilt foo.class.  That's because
+## libgcj.jar is not out-of-date with respect to foo.java.
+libgcj.jar: $(java_source_files) $(x_java_source_files)
 ## Create a list of all Java sources, without exceeding any shell limits.
 	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$(subst $(srcdir)/,,$?),$(shell echo $(source) >> tmp-list))
 ## FIXME: this ought to depend on built_java_source_files, but right
@@ -202,14 +204,14 @@ libgcj.zip: $(java_source_files) $(x_java_source_files)
 	    || case "$$amf" in *=*) exit 1;; *k*) fail=yes ;; *) exit 1;; esac; \
 	done; \
 	test "$$fail" = no
-	-@rm -f tmp-list libgcj.zip
+	-@rm -f tmp-list libgcj.jar
 ## Note that we explicitly want to include directory information.
 	find java gnu -type d -o -type f -name '*.class' | \
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
-	  $(ZIP) libgcj -@ -n .class
+	  $(ZIP) cfM0E@ $@
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
-CLEANFILES = tmp-list libgcj.zip
+CLEANFILES = tmp-list libgcj.jar
 
 clean-local:
 ## We just remove every .class file that was created.
@@ -265,20 +267,20 @@ nat_headers = $(ordinary_java_source_files:.java=.h) \
 
 x_nat_headers = $(x_java_source_files:.java=.h)
 
-java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
+java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		-friend 'void _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar);' \
 		$(basename $<)
 
 ## Our internal main program needs to be able to create a FirstThread.
-gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.zip
+gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'void JvRunMain (jclass, int, const char **);' \
 		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
 		$(basename $<)
 
-java/lang/Thread.h: java/lang/Thread.class libgcj.zip
+java/lang/Thread.h: java/lang/Thread.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend 'extern "Java" { namespace gnu { namespace gcj { namespace jni { class NativeThread; } } } };' \
@@ -289,7 +291,7 @@ java/lang/Thread.h: java/lang/Thread.class libgcj.zip
 		-friend 'class gnu::gcj::jni::NativeThread;' \
 		$(basename $<)
 
-java/lang/String.h: java/lang/String.class libgcj.zip
+java/lang/String.h: java/lang/String.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jchar* _Jv_GetStringChars (jstring str);' \
 	    -friend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
@@ -299,37 +301,37 @@ java/lang/String.h: java/lang/String.class libgcj.zip
 	    -friend 'jstring _Jv_AllocString (jsize);' \
 	    $(basename $<)
 
-java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class libgcj.zip
+java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
-java/lang/reflect/Field.h: java/lang/reflect/Field.class libgcj.zip
+java/lang/reflect/Field.h: java/lang/reflect/Field.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);' \
 	    -friend 'jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
 	    -friend 'class java::lang::Class;' \
 	    $(basename $<)
 
-java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.zip
+java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
-gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.zip
+gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'class java::lang::ClassLoader;' \
 	    $(basename $<)
 
-java/io/ObjectInputStream$$GetField.h: libgcj.zip
+java/io/ObjectInputStream$$GetField.h: libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectInputStream$$GetField'
 
-java/io/ObjectOutputStream$$PutField.h: libgcj.zip
+java/io/ObjectOutputStream$$PutField.h: libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectOutputStream$$PutField'
 
@@ -370,7 +372,7 @@ maintainer-check: libgcj.la
 
 ## This rule can be used to see if the headers are more or less
 ## correct.
-header-check: libgcj.zip $(nat_headers)
+header-check: libgcj.jar $(nat_headers)
 	rm -f htest.cc; \
 	for h in $(nat_headers); do \
 	  echo "#include \"$$h\"" >> htest.cc; \

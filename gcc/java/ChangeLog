@@ -1,3 +1,8 @@
+2000-12-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Make-lang.in (java/jcf-path.o:): libgcj.jar replaces libgcj.zip.
+	jcf-path.c: Likewise.
+
 2000-12-09  Anthony Green  <green@redhat.com>
 
 	* zipfile.h (ZipDirectory): Declare size, uncompressed_size,
