@@ -1,3 +1,7 @@
+2003-10-31  Jan Hubicka  <jh@suse.cz>
+
+	* i386-modes.def: Add XFmode format adjustment.
+
 2003-10-30  Jan Hubicka  <jh@suse.cz>
 
 	* real.c (encode_ieee_extended): Back out previous patch.
