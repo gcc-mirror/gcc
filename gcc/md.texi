@@ -1955,7 +1955,7 @@ Usually, you specify @code{word_mode} for @var{m}.  However, if you can
 generate better code knowing the range of valid lengths is smaller than
 those representable in a full word, you should provide a pattern with a
 mode corresponding to the range of values you can handle efficiently
-(e.g., @code{QImode} for values in the range 0-127; note we avoid number
+(e.g., @code{QImode} for values in the range 0-127; note we avoid numbers
 that appear negative) and also a pattern with @code{word_mode}.
 
 The fourth operand is the known shared alignment of the source and
