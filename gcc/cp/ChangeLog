@@ -1,3 +1,16 @@
+1998-10-28  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (add_function_candidate): Treat conversion functions
+	as coming from the argument's class.
+	* cp-tree.h (DECL_CONV_FN_P): New fn.
+	(DECL_DESTRUCTOR_P): Also check DECL_LANGUAGE.
+	* class.c (add_method): Use DECL_CONV_FN_P.
+	* decl2.c (check_classfn): Likewise.
+	* error.c (dump_function_name): Likewise.
+	(dump_function_decl): Likewise.
+	* pt.c (fn_type_unification): Likewise.
+	* search.c (add_conversions): Likewise.
+
 1998-10-27  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (do_identifier): Also generate LOOKUP_EXPR for RESULT_DECL.

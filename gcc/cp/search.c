@@ -3295,8 +3295,7 @@ add_conversions (binfo)
     {
       tree tmp = TREE_VEC_ELT (method_vec, i);
 
-      if (!tmp
-	  || !IDENTIFIER_TYPENAME_P (DECL_NAME (OVL_CURRENT (tmp))))
+      if (!tmp || ! DECL_CONV_FN_P (OVL_CURRENT (tmp)))
 	break;
       conversions = scratch_tree_cons (binfo, tmp, conversions);
     }

@@ -6565,7 +6565,7 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
 
   parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
 
-  if (IDENTIFIER_TYPENAME_P (DECL_NAME (fn))) 
+  if (DECL_CONV_FN_P (fn))
     {
       /* This is a template conversion operator.  Use the return types
          as well as the argument types.  */

@@ -978,9 +978,9 @@ dump_function_decl (t, v)
       if (DECL_STATIC_FUNCTION_P (t))
 	OB_PUTS ("static ");
     
-      if (! IDENTIFIER_TYPENAME_P (name)
+      if (! DECL_CONV_FN_P (t)
 	  && ! DECL_CONSTRUCTOR_P (t)
-	  && ! DESTRUCTOR_NAME_P (name))
+	  && ! DECL_DESTRUCTOR_P (t))
 	{
 	  dump_type_prefix (TREE_TYPE (fntype), 1, 0);
 	  OB_PUTC (' ');
@@ -1012,7 +1012,7 @@ dump_function_decl (t, v)
 
   OB_PUTC (')');
 
-  if (v && ! IDENTIFIER_TYPENAME_P (name))
+  if (v && ! DECL_CONV_FN_P (t))
     dump_type_suffix (TREE_TYPE (fntype), 1, 0);
 
   if (TREE_CODE (fntype) == METHOD_TYPE)
@@ -1036,15 +1036,12 @@ dump_function_name (t)
 {
   tree name = DECL_NAME (t);
 
-  /* There ought to be a better way to find out whether or not something is
-     a destructor.  */
-  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (t))
-      && DECL_LANGUAGE (t) == lang_cplusplus)
+  if (DECL_DESTRUCTOR_P (t))
     {
       OB_PUTC ('~');
       dump_decl (name, 0);
     }
-  else if (IDENTIFIER_TYPENAME_P (name))
+  else if (DECL_CONV_FN_P (t))
     {
       /* This cannot use the hack that the operator's return
 	 type is stashed off of its name because it may be
