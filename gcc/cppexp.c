@@ -464,8 +464,8 @@ be handled with operator-specific code.  */
 #define FLAG_BITS  8
 #define FLAG_MASK ((1 << FLAG_BITS) - 1)
 #define PRIO_SHIFT (FLAG_BITS + 1)
-#define EXTRACT_PRIO(cnst) (cnst >> FLAG_BITS)
-#define EXTRACT_FLAGS(cnst) (cnst & FLAG_MASK)
+#define EXTRACT_PRIO(CNST) ((CNST) >> FLAG_BITS)
+#define EXTRACT_FLAGS(CNST) ((CNST) & FLAG_MASK)
 
 /* Flags.  */
 #define HAVE_VALUE     (1 << 0)
