@@ -4071,7 +4071,8 @@ free_pre_mem ()
 {
   free (transp);
   free (comp);
-  free (antloc);
+
+  /* ANTLOC and AE_KILL are freed just after pre_lcm finishes.  */
 
   if (pre_optimal)
     free (pre_optimal);
@@ -4088,14 +4089,12 @@ free_pre_mem ()
     free (ae_in);
   if (ae_out)
     free (ae_out);
-  if (ae_kill)
-    free (ae_kill);
   if (u_bitmap)
     free (u_bitmap);
 
-  transp = comp = antloc = NULL;
+  transp = comp = NULL;
   pre_optimal = pre_redundant = pre_insert_map = pre_delete_map = NULL;
-  transpout = ae_in = ae_out = ae_kill = NULL;
+  transpout = ae_in = ae_out = NULL;
   u_bitmap = NULL;
 
 }
@@ -4125,6 +4124,10 @@ compute_pre_data ()
 
   edge_list = pre_edge_lcm (gcse_file, n_exprs, transp, comp, antloc,
 			    ae_kill, &pre_insert_map, &pre_delete_map);
+  free (antloc);
+  antloc = NULL;
+  free (ae_kill);
+  ae_kill = NULL; 
 }
 
 /* PRE utilities */
