@@ -132,7 +132,6 @@ static struct stack_level *decl_stack;
 #endif
 
 static tree grokparms				PROTO((tree, int));
-static tree lookup_nested_type			PROTO((tree, tree));
 static const char *redeclaration_error_message	PROTO((tree, tree));
 
 static struct stack_level *push_decl_level PROTO((struct stack_level *,
@@ -2867,9 +2866,8 @@ pushtag (name, type, globalize)
       if (IDENTIFIER_TYPE_VALUE (name) != type)
         {
           register tree d = NULL_TREE;
-	  int newdecl = 0, in_class = 0;
+	  int in_class = 0;
 	  tree context;
-	  tree c_decl = NULL_TREE;
 
 	  context = type ? TYPE_CONTEXT (type) : NULL_TREE;
 	  if (! context)
@@ -2885,31 +2883,19 @@ pushtag (name, type, globalize)
 		   containing the local class, not the namespace scope.  */
 		context = hack_decl_function_context (get_type_decl (cs));
 	    }
-	  if (context)
-	    c_decl = TREE_CODE (context) == FUNCTION_DECL
-	      ? context : TYPE_MAIN_DECL (context);
-
 	  if (!context)
 	    context = current_namespace;
 
 	  if ((b->pseudo_global && b->level_chain->parm_flag == 2)
 	      || b->parm_flag == 2)
 	    in_class = 1;
-	  else
-	    d = lookup_nested_type (type, c_decl);
 
-	  if (d == NULL_TREE)
-	    {
-	      newdecl = 1;
-	      d = build_decl (TYPE_DECL, name, type);
-	      if (current_lang_name == lang_name_java)
-		TYPE_FOR_JAVA (type) = 1;
-	      SET_DECL_ARTIFICIAL (d);
-	      if (! in_class)
-		set_identifier_type_value_with_scope (name, type, b);
-	    }
-	  else
-	    d = TYPE_MAIN_DECL (d);
+	  d = build_decl (TYPE_DECL, name, type);
+	  if (current_lang_name == lang_name_java)
+	    TYPE_FOR_JAVA (type) = 1;
+	  SET_DECL_ARTIFICIAL (d);
+	  if (! in_class)
+	    set_identifier_type_value_with_scope (name, type, b);
 
 	  TYPE_NAME (type) = d;
 	  DECL_CONTEXT (d) = FROB_CONTEXT (context);
@@ -2919,7 +2905,7 @@ pushtag (name, type, globalize)
 
 	  if (b->parm_flag == 2)
 	    {
-	      if (newdecl && !PROCESSING_REAL_TEMPLATE_DECL_P ())
+	      if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
 		/* Put this TYPE_DECL on the TYPE_FIELDS list for the
 		   class.  But if it's a member template class, we
 		   want the TEMPLATE_DECL, not the TYPE_DECL, so this
@@ -2931,17 +2917,14 @@ pushtag (name, type, globalize)
 	  else
 	    d = pushdecl_with_scope (d, b);
 
-	  if (newdecl)
-	    {
-	      if (ANON_AGGRNAME_P (name))
-		DECL_IGNORED_P (d) = 1;
+	  if (ANON_AGGRNAME_P (name))
+	    DECL_IGNORED_P (d) = 1;
 
-	      TYPE_CONTEXT (type) = DECL_CONTEXT (d);
-	      DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
-	      if (!uses_template_parms (type))
-		DECL_ASSEMBLER_NAME (d)
-		  = get_identifier (build_overload_name (type, 1, 1));
-	    }
+	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
+	  DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
+	  if (!uses_template_parms (type))
+	    DECL_ASSEMBLER_NAME (d)
+	      = get_identifier (build_overload_name (type, 1, 1));
         }
       if (b->parm_flag == 2)
 	{
@@ -5301,48 +5284,6 @@ lookup_tag_reverse (type, name)
   return NULL_TREE;
 }
 
-/* Lookup TYPE in CONTEXT (a chain of nested types or a FUNCTION_DECL).
-   Return the type value, or NULL_TREE if not found.  */
-
-static tree
-lookup_nested_type (type, context)
-     tree type;
-     tree context;
-{
-  if (context == NULL_TREE)
-    return NULL_TREE;
-  while (context)
-    {
-      switch (TREE_CODE (context))
-	{
-	case TYPE_DECL:
-	  {
-	    tree ctype = TREE_TYPE (context);
-	    tree match = value_member (type, CLASSTYPE_TAGS (ctype));
-	    if (match)
-	      return TREE_VALUE (match);
-	    context = DECL_CONTEXT (context);
-
-	    /* When we have a nested class whose member functions have
-	       local types (e.g., a set of enums), we'll arrive here
-	       with the DECL_CONTEXT as the actual RECORD_TYPE node for
-	       the enclosing class.  Instead, we want to make sure we
-	       come back in here with the TYPE_DECL, not the RECORD_TYPE.  */
-	    if (context && TREE_CODE (context) == RECORD_TYPE)
-	      context = TREE_CHAIN (context);
-	  }
-	  break;
-	case FUNCTION_DECL:
-	  if (TYPE_NAME (type) && TYPE_IDENTIFIER (type))
-	    return lookup_name (TYPE_IDENTIFIER (type), 1);
-	  return NULL_TREE;
-	default:
-	  my_friendly_abort (12);
-	}
-    }
-  return NULL_TREE;
-}
-
 /* Look up NAME in the NAMESPACE.  */
 
 tree
