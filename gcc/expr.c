@@ -2971,9 +2971,11 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
       store_field (blk_object, bitsize, bitpos, mode, exp, VOIDmode, 0,
 		   align, total_size);
 
+      /* Even though we aren't returning target, we need to
+	 give it the updated value.  */
       emit_move_insn (target, object);
 
-      return target;
+      return blk_object;
     }
 
   /* If the structure is in a register or if the component
