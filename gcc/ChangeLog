@@ -1,3 +1,8 @@
+2000-03-15  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (arm_output_epilogue): Do not pass %c to
+	asm_fprintf().
+
 2000-03-15  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (open_include_file): New function.
