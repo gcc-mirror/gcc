@@ -909,17 +909,6 @@ switch (get_attr_cc (INSN))						\
 #define DATA_SECTION_ASM_OP "\t.section .data"
 #define BSS_SECTION_ASM_OP  "\t.section .bss"
 
-#define EXTRA_SECTIONS in_user
-
-#define EXTRA_SECTION_FUNCTIONS				\
-void							\
-user_section (name)					\
-    char *name;						\
-{							\
-  fprintf (asm_out_file, "\t.section\t%s\n", name);	\
-  in_section = in_user;					\
-}
-
 #define MAX_TEXT_ALIGN 16
 
 /* How to refer to registers in assembler output.
@@ -933,10 +922,17 @@ user_section (name)					\
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.  */
 #define SDB_DEBUGGING_INFO
 #define SDB_DELIM	"\n"
+
+/* Assemble generic sections.
+   This is currently only used to support section attributes.  */
+
+#define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
+   fprintf (FILE, ".section\t\"%s\"\n", NAME)
+
+/* This is how to output the definition of a user-level label named NAME,
+   such as the label on a static function or variable NAME.  */
 
 #define ASM_OUTPUT_LABEL(FILE,NAME)	\
   do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
@@ -951,9 +947,11 @@ user_section (name)					\
 /*#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
   ASM_OUTPUT_LABEL(FILE, NAME); */
 
-/* This is how to output a reference to a user-level label named NAME.  */
-#define ASM_OUTPUT_LABELREF(FILE, NAME)	\
- asm_output_labelref (FILE, NAME)
+/* This is how to output a reference to a user-level label named NAME.
+   `assemble_name' uses this.  */
+
+#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
+  fprintf (FILE, "_%s", NAME)
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
@@ -1106,10 +1104,3 @@ user_section (name)					\
 #define SUBSI3_LIBCALL "__subsi3"
 
 #define MOVE_RATIO 3
-
-#if 0
-/* This stuff doesn't work currently.  */
-#undef SELECT_SECTION
-#define SELECT_SECTION(DECL,RELOC) select_section(DECL, RELOC)
-#define SELECT_FUNCTION_SECTION(a,b) SELECT_SECTION(a,b)
-#endif
