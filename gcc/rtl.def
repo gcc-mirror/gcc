@@ -385,7 +385,7 @@ DEF_RTL_EXPR(NOTE, "note", "iuusn", 'x')
    it contains helps to build the mapping function between the rtx's of
    the function to be inlined and the current function being expanded.  */
 
-DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEe", 'x')
+DEF_RTL_EXPR(INLINE_HEADER, "inline_header", "iuuuiiiiiieeiiEeEss", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
@@ -760,6 +760,5 @@ DEF_RTL_EXPR(LO_SUM, "lo_sum", "ee", 'o')
 /*
 Local variables:
 mode:c
-version-control: t
 End:
 */
