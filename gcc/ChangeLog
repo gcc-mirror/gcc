@@ -1,3 +1,9 @@
+Fri Feb 25 19:49:08 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (cse_insn): Replace the PATTERN of the insn with an new
+	jump when changing a computed jump into a jump to a known
+	target.
+
 Fri Feb 25 19:22:44 2000  Graham Stott <grahams@rcp.co.uk>
 
 	* i386.md (define_expand "clrstrsi"): Fix typo.
