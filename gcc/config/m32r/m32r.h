@@ -1534,7 +1534,8 @@ L2:     .word STATIC
       fputs ("\n\t.debugsym ", file);					\
       assemble_name (file, label);					\
       putc ('\n', file);						\
-    }									\
+      counter += 1;							\
+     }									\
   while (0)
 
 /* How to refer to registers in assembler output.

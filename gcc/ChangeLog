@@ -1,3 +1,8 @@
+2004-10-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/m32r/m32r.h (DBX_OUTPUT_SOURCE_LINE): Increment line
+	counter.
+
 2004-10-27  Andreas Schwab  <schwab@suse.de>
 
 	* varasm.c (default_stabs_asm_out_destructor): Mark symbol as
