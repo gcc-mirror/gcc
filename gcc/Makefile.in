@@ -684,7 +684,7 @@ OBJS = diagnostic.o \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o \
  mbchar.o dyn-string.o splay-tree.o graph.o sbitmap.o resource.o hash.o \
  predict.o lists.o ggc-common.o $(GGC) simplify-rtx.o ssa.o bb-reorder.o \
- sibcall.o conflict.o timevar.o
+ sibcall.o conflict.o timevar.o ifcvt.o
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -1663,6 +1663,9 @@ timevar.o : timevar.c $(CONFIG_H) system.h $(TIMEVAR_H) flags.h
 regrename.o : regrename.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h \
    $(RECOG_H) function.h resource.h
+ifcvt.o : ifcvt.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
+   flags.h insn-config.h function.h $(RECOG_H) $(BASIC_BLOCK_H) $(EXPR_H) \
+   output.h
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h insn-attr.h insn-codes.h system.h toplev.h function.h
