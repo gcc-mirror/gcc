@@ -1,3 +1,8 @@
+Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (record_active_eh_regions): Terminate loop after finding
+	the last insn in the last basic block.
+
 Wed Sep 22 20:25:00 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md: Delete parallel instruction peepholes.
