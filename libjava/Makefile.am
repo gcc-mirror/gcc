@@ -654,6 +654,7 @@ java/awt/Label.java \
 java/awt/LayoutManager.java \
 java/awt/LayoutManager2.java \
 java/awt/List.java \
+java/awt/MediaTracker.java \
 java/awt/Menu.java \
 java/awt/MenuBar.java \
 java/awt/MenuComponent.java \
