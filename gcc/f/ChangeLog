@@ -1,3 +1,10 @@
+Mon Mar 20 15:49:40 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* f/target.h (FFETARGET_32bit_longs): New.  Define for alpha, sparc64,
+	and ia64.
+	(ffetargetInteger1, ffetargetLogical1, ffetargetReal1, ffetargetReal2,
+	ffetarget_integerdefault_is_magical): Use FFETARGET_32bit_longs.
+
 Fri Mar 10 00:43:55 2000  Jason Merrill  <jason@casey.cygnus.com>
 
 	* com.c (ffecom_stabilize_aggregate_): Don't refer to TREE_RAISES.
