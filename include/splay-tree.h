@@ -99,6 +99,8 @@ extern splay_tree_node splay_tree_insert
 		                        PARAMS((splay_tree,
 					        splay_tree_key,
 					        splay_tree_value));
+extern void splay_tree_remove		PARAMS((splay_tree,
+						splay_tree_key));
 extern splay_tree_node splay_tree_lookup   
                                         PARAMS((splay_tree,
 					        splay_tree_key));
