@@ -1020,6 +1020,7 @@ package Rtsfind is
      RE_RCI_Locator,                     -- System.Partition_Interface
      RE_RCI_Subp_Info,                   -- System.Partition_Interface
      RE_RCI_Subp_Info_Array,             -- System.Partition_Interface
+     RE_Same_Partition,                  -- System.Partition_Interface
      RE_Subprogram_Id,                   -- System.Partition_Interface
      RE_Get_RAS_Info,                    -- System.Partition_Interface
 
@@ -1072,6 +1073,7 @@ package Rtsfind is
      RE_Entity_Of,                       -- System.PolyORB_Interface
      RE_Inc_Usage,                       -- System.PolyORB_Interface
      RE_Set_Ref,                         -- System.PolyORB_Interface
+     RE_Make_Ref,                        -- System.PolyORB_Interface
      RE_Get_Local_Address,               -- System.PolyORB_Interface
      RE_Get_Reference,                   -- System.PolyORB_Interface
      RE_Local_Oid_To_Address,            -- System.PolyORB_Interface
@@ -2099,6 +2101,7 @@ package Rtsfind is
      RE_RCI_Locator                      => System_Partition_Interface,
      RE_RCI_Subp_Info                    => System_Partition_Interface,
      RE_RCI_Subp_Info_Array              => System_Partition_Interface,
+     RE_Same_Partition                   => System_Partition_Interface,
      RE_Subprogram_Id                    => System_Partition_Interface,
      RE_Get_RAS_Info                     => System_Partition_Interface,
 
@@ -2141,6 +2144,7 @@ package Rtsfind is
      RE_Entity_Of                        => System_PolyORB_Interface,
      RE_Inc_Usage                        => System_PolyORB_Interface,
      RE_Set_Ref                          => System_PolyORB_Interface,
+     RE_Make_Ref                         => System_PolyORB_Interface,
      RE_Get_Local_Address                => System_PolyORB_Interface,
      RE_Get_Reference                    => System_PolyORB_Interface,
      RE_Local_Oid_To_Address             => System_PolyORB_Interface,

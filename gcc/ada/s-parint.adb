@@ -306,4 +306,18 @@ package body System.Partition_Interface is
       end if;
    end Run;
 
+   --------------------
+   -- Same_Partition --
+   --------------------
+
+   function Same_Partition
+      (Left  : access RACW_Stub_Type;
+       Right : access RACW_Stub_Type) return Boolean
+   is
+      pragma Unreferenced (Left);
+      pragma Unreferenced (Right);
+   begin
+      return True;
+   end Same_Partition;
+
 end System.Partition_Interface;
