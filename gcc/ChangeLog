@@ -1,3 +1,10 @@
+2004-01-28  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (allocate_struct_function): Do not initialize expr, emit
+	and varasm.
+	(prepare_function_start): Do it here.
+	* c-parse.in (maybe_type_qual): Do not produce line number notes.
+
 2004-01-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/fp-bit.c (pack_d): When using paired doubles to implement
