@@ -8209,7 +8209,7 @@ arm_output_epilogue (really_return)
       if (IS_INTERRUPT (func_type))
 	/* Interrupt handlers will have pushed the
 	   IP onto the stack, so restore it now.  */
-	print_multi_reg (f, "ldmfd\t%r", SP_REGNUM, 1 << IP_REGNUM);
+	print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, 1 << IP_REGNUM);
     }
   else
     {
