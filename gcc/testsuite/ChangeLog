@@ -1,3 +1,7 @@
+2005-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* objc.dg/stabs-1.m (dg-final): Change regexp pattern for hppa SOM.
+
 2005-03-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR rtl-opt/20412
