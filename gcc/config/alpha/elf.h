@@ -71,14 +71,18 @@ do {								\
    .ident string is patterned after the ones produced by native svr4
    C compilers.  */
 
+#undef  IDENT_ASM_OP
 #define IDENT_ASM_OP "\t.ident\t"
 
 #ifdef IDENTIFY_WITH_IDENT
+#undef  ASM_IDENTIFY_GCC
 #define ASM_IDENTIFY_GCC(FILE) /* nothing */
+#undef  ASM_IDENTIFY_LANGUAGE
 #define ASM_IDENTIFY_LANGUAGE(FILE)			\
  fprintf(FILE, "%s\"GCC (%s) %s\"\n", IDENT_ASM_OP,	\
 	 lang_identify(), version_string)
 #else
+#undef  ASM_FILE_END
 #define ASM_FILE_END(FILE)					\
 do {				 				\
      if (!flag_no_ident)					\
@@ -98,6 +102,7 @@ do {				 				\
 /* This is how to allocate empty space in some section.  The .zero
    pseudo-op is used for this on most svr4 assemblers.  */
 
+#undef  SKIP_ASM_OP
 #define SKIP_ASM_OP	"\t.zero\t"
 
 #undef  ASM_OUTPUT_SKIP
@@ -112,6 +117,7 @@ do {				 				\
    make sure that the location counter for the .rodata section gets pro-
    perly re-aligned prior to the actual beginning of the jump table.  */
 
+#undef  ALIGN_ASM_OP
 #define ALIGN_ASM_OP "\t.align\t"
 
 #ifndef ASM_OUTPUT_BEFORE_CASE_LABEL
@@ -130,6 +136,7 @@ do {				 				\
    library routines (e.g. .udiv) be explicitly declared as .globl
    in each assembly file where they are referenced.  */
 
+#undef  ASM_OUTPUT_EXTERNAL_LIBCALL
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)				\
   ASM_GLOBALIZE_LABEL (FILE, XSTR (FUN, 0))
 
@@ -138,6 +145,7 @@ do {				 				\
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
+#undef  COMMON_ASM_OP
 #define COMMON_ASM_OP	"\t.comm\t"
 
 #undef  ASM_OUTPUT_ALIGNED_COMMON
@@ -179,6 +187,7 @@ do {									\
 /* This is the pseudo-op used to generate a 64-bit word of data with a
    specific value in some section.  */
 
+#undef  INT_ASM_OP
 #define INT_ASM_OP		"\t.quad\t"
 
 /* Biggest alignment supported by the object file format of this
@@ -190,6 +199,7 @@ do {									\
    we could only potentially get to 2^60 on suitible hosts.  Due to other
    considerations in varasm, we must restrict this to what fits in an int.  */
 
+#undef  MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT \
   (1 << (HOST_BITS_PER_INT < 64 ? HOST_BITS_PER_INT - 2 : 62))
 
@@ -208,8 +218,10 @@ do {									\
    EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS, SELECT_SECTION, and
    SELECT_RTX_SECTION.  We do both here just to be on the safe side.  */
 
+#undef USE_CONST_SECTION
 #define USE_CONST_SECTION	1
 
+#undef  CONST_SECTION_ASM_OP
 #define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
 
 /* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
@@ -227,12 +239,17 @@ do {									\
    errors unless the .ctors and .dtors sections are marked as writable
    via the SHF_WRITE attribute.)  */
 
+#undef  CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
+#undef  DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
 
 /* Handle the small data sections.  */
+#undef  BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
+#undef  SBSS_SECTION_ASM_OP
 #define SBSS_SECTION_ASM_OP	"\t.section\t.sbss,\"aw\""
+#undef  SDATA_SECTION_ASM_OP
 #define SDATA_SECTION_ASM_OP	"\t.section\t.sdata,\"aw\""
 
 /* On svr4, we *do* have support for the .init and .fini sections, and we
@@ -241,7 +258,9 @@ do {									\
    The definitions say how to change sections to the .init and .fini
    sections.  This is the same for all known svr4 assemblers.  */
 
+#undef  INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP	"\t.section\t.init"
+#undef  FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
 /* A default list of other sections which we might be "in" at any given
@@ -272,6 +291,7 @@ extern void sdata_section		PARAMS ((void));
 #undef  READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION() const_section ()
 
+#undef  CONST_SECTION_FUNCTION
 #define CONST_SECTION_FUNCTION					\
 void								\
 const_section ()						\
@@ -285,6 +305,7 @@ const_section ()						\
     }								\
 }
 
+#undef  SECTION_FUNCTION_TEMPLATE
 #define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)	\
 void FN ()					\
 {						\
@@ -301,6 +322,7 @@ void FN ()					\
 
    We make the section read-only and executable for a function decl,
    read-only for a const data decl, and writable for a non-const data decl.  */
+#undef  ASM_OUTPUT_SECTION_NAME
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
   fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, \
 	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : \
@@ -309,6 +331,7 @@ void FN ()					\
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
+#undef  ASM_OUTPUT_CONSTRUCTOR
 #define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME)				\
   do {									\
     ctors_section ();							\
@@ -319,6 +342,7 @@ void FN ()					\
 
 /* A C statement (sans semicolon) to output an element in the table of
    global destructors.  */
+#undef  ASM_OUTPUT_DESTRUCTOR
 #define ASM_OUTPUT_DESTRUCTOR(FILE, NAME)      				\
   do {									\
     dtors_section ();                   				\
@@ -332,6 +356,7 @@ void FN ()					\
    or a constant of some sort.  RELOC indicates whether forming
    the initial value of DECL requires link-time relocations.  */
 
+#undef  SELECT_SECTION
 #define SELECT_SECTION(DECL, RELOC)					\
 {									\
   if (TREE_CODE (DECL) == STRING_CST)					\
@@ -393,17 +418,21 @@ void FN ()					\
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
+#undef  TYPE_ASM_OP
 #define TYPE_ASM_OP	"\t.type\t"
+#undef  SIZE_ASM_OP
 #define SIZE_ASM_OP	"\t.size\t"
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
+#undef  ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE, NAME) \
   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
        fputc ('\n', FILE); } while (0)
 
 /* This is how we tell the assembler that two symbols have the same value.  */
 
+#undef  ASM_OUTPUT_DEF
 #define ASM_OUTPUT_DEF(FILE, NAME1, NAME2) \
   do { assemble_name(FILE, NAME1); 	 \
        fputs(" = ", FILE);		 \
@@ -416,6 +445,7 @@ void FN ()					\
    is just a default.  You may need to override it in your machine-
    specific tm.h file (depending upon the particulars of your assembler).  */
 
+#undef  TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT	"@%s"
 
 /* Write the extra assembler code needed to declare a function's result.
@@ -433,6 +463,7 @@ void FN ()					\
 
 /* Write the extra assembler code needed to declare an object properly.  */
 
+#undef  ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
   do {								\
     HOST_WIDE_INT size;						\
@@ -462,6 +493,7 @@ void FN ()					\
    size_directive_output was set
    by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
 
+#undef  ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	\
   do {									\
     const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		\
@@ -496,6 +528,7 @@ void FN ()					\
    the i386) don't know about that.  Also, we don't use \v
    since some versions of gas, such as 2.2 did not accept it.  */
 
+#undef  ESCAPES
 #define ESCAPES \
 "\1\1\1\1\1\1\1\1btn\1fr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
 \0\0\"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
@@ -517,7 +550,9 @@ void FN ()					\
    If your target assembler doesn't support the .string directive, you
    should define this to zero.  */
 
+#undef  STRING_LIMIT
 #define STRING_LIMIT	((unsigned) 256)
+#undef  STRING_ASM_OP
 #define STRING_ASM_OP	"\t.string\t"
 
 /* GAS is the only Alpha/ELF assembler.  */

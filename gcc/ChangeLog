@@ -1,3 +1,42 @@
+2000-11-29  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/alpha/elf.h (IDENT_ASM_OP): Protect the #define.
+	(ASM_DECLARE_OBJECT_NAME): Same.
+	(ASM_FILE_END): Same.
+	(ASM_FINISH_DECLARE_OBJECT): Same.
+	(ASM_IDENTIFY_GCC): Same.
+	(ASM_IDENTIFY_LANGUAGE): Same.
+	(ASM_OUTPUT_CONSTRUCTOR): Same.
+	(ASM_OUTPUT_DEF): Same.
+	(ASM_OUTPUT_DESTRUCTOR): Same.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Same.
+	(ASM_OUTPUT_SECTION_NAME): Same.
+	(ASM_WEAKEN_LABEL): Same.
+	(BSS_SECTION_ASM_OP): Same.
+	(COMMON_ASM_OP): Same.
+	(CONST_SECTION_ASM_OP): Same.
+	(CONST_SECTION_FUNCTION): Same.
+	(CTORS_SECTION_ASM_OP): Same.
+	(DTORS_SECTION_ASM_OP): Same.
+	(ESCAPES): Same.
+	(FINI_SECTION_ASM_OP): Same.
+	(IDENT_ASM_OP): Same.
+	(IDENT_ASM_OP): Same.
+	(INIT_SECTION_ASM_OP): Same.
+	(INT_ASM_OP): Same.
+	(MAX_OFILE_ALIGNMENT): Same.
+	(SBSS_SECTION_ASM_OP): Same.
+	(SDATA_SECTION_ASM_OP): Same.
+	(SECTION_FUNCTION_TEMPLATE): Same.
+	(SELECT_SECTION): Same.
+	(SE_CONST_SECTION): Same.
+	(SIZE_ASM_OP): Same.
+	(SKIP_ASM_OP): Same.
+	(STRING_ASM_OP): Same.
+	(STRING_LIMIT): Same.
+	(TYPE_ASM_OP): Same.
+	(TYPE_OPERAND_FMT): Same.
+
 2000-11-29  Neil Booth  <neilb@earthling.net>
 
         * c-decl.c (c_decode_option): Don't handle -lang-objc.
