@@ -885,7 +885,7 @@ fix_with_system (tFixDesc* p_fixd,
       /*
        *  Now add the fix number and file names that may be needed
        */
-      sprintf (pz_scan, " %ld \'%s\' \'%s\' \'%s\'", p_fixd - fixDescList,
+      sprintf (pz_scan, " %ld '%s' '%s' '%s'", p_fixd - fixDescList,
 	       pz_fix_file, pz_file_source, pz_temp_file);
     }
   else /* NOT an "internal" fix: */
@@ -904,7 +904,7 @@ fix_with_system (tFixDesc* p_fixd,
          the following bizarre use of 'cat' only works on DOS boxes.
          It causes the file to be dropped into a temporary file for
          'cat' to read (pipes do not work on DOS).  */
-      tSCC   z_cmd_fmt[] = " \'%s\' | cat > \'%s\'";
+      tSCC   z_cmd_fmt[] = " '%s' | cat > '%s'";
 #else
       /* Don't use positional formatting arguments because some lame-o
          implementations cannot cope  :-(.  */
