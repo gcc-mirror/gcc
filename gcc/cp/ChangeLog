@@ -1,5 +1,12 @@
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
+        PR c++/4933
+        * error.c (dump_expr): Support correctly the COMPOUND_EXPR
+        tree generated within a template. Use dump_expr to dump an
+        expression sizeof.
+
+2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
+
         * mangle.c (write_expression): Exit gracefully when trying to
         mangle a CALL_EXPR.
 
