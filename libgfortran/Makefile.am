@@ -202,7 +202,9 @@ generated/matmul_l8.c
 
 i_transpose_c= \
 generated/transpose_i4.c \
-generated/transpose_i8.c
+generated/transpose_i8.c \
+generated/transpose_c4.c \
+generated/transpose_c8.c
 
 i_shape_c= \
 generated/shape_i4.c \

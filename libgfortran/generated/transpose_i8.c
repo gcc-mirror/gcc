@@ -1,5 +1,5 @@
 /* Implementation of the TRANSPOSE intrinsic
-   Copyright 2003 Free Software Foundation, Inc.
+   Copyright 2003, 2005 Free Software Foundation, Inc.
    Contributed by Tobias Schlüter
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -32,11 +32,11 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
-extern void transpose_8 (gfc_array_i8 * ret, gfc_array_i8 * source);
-export_proto(transpose_8);
+extern void transpose_i8 (gfc_array_i8 * ret, gfc_array_i8 * source);
+export_proto(transpose_i8);
 
 void
-transpose_8 (gfc_array_i8 * ret, gfc_array_i8 * source)
+transpose_i8 (gfc_array_i8 * ret, gfc_array_i8 * source)
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;
