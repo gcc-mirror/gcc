@@ -1787,6 +1787,8 @@ pushdecl (x)
 
 	  /* Maybe warn if shadowing something else.  */
 	  else if (warn_shadow && !TREE_EXTERNAL (x)
+		   /* No shadow warnings for internally generated vars.  */
+		   && !DECL_IGNORED_P (x)
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
@@ -2595,19 +2597,19 @@ init_decl_processing ()
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN, 0);
 #endif
 
-  /* Create the global binding of __NAME__.  */
-  declare_function_name ("top level");
+  /* Create the global bindings of __NAME__ and __PRINTABLE_NAME__.  */
+  declare_function_name ("", "top level");
 
   start_identifier_warnings ();
 
   init_format_info_table ();
 }
 
-/* Make a binding for __NAME__.  */
+/* Make bindings for __NAME__ and __PRINTABLE_NAME__.  */
 
 static void
-declare_function_name (name)
-     char *name;
+declare_function_name (name, printable_name)
+     char *name, *printable_name;
 {
   tree decl, init;
 
@@ -2619,6 +2621,18 @@ declare_function_name (name)
   TREE_READONLY (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   init = build_string (strlen (name) + 1, name);
+  TREE_TYPE (init) = char_array_type_node;
+  DECL_INITIAL (decl) = init;
+  finish_decl (decl, init, NULL_TREE);
+
+  push_obstacks_nochange ();
+  decl = pushdecl (build_decl (VAR_DECL,
+			       get_identifier ("__PRINTABLE_NAME__"),
+			       char_array_type_node));
+  TREE_STATIC (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  init = build_string (strlen (printable_name) + 1, printable_name);
   TREE_TYPE (init) = char_array_type_node;
   DECL_INITIAL (decl) = init;
   finish_decl (decl, init, NULL_TREE);
@@ -5473,8 +5487,17 @@ store_parm_decls ()
   if (c_function_varargs)
     mark_varargs ();
 
-  /* Declare __NAME__ for this function.  */
-  declare_function_name (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+  /* Declare __NAME__ and __PRINTABLE_NAME__ for this function.  */
+  {
+    char *kind = "function";
+    char *name;
+    if (current_function_decl != 0
+	&& TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
+      kind = "method";
+    name = (*decl_printable_name) (current_function_decl, &kind);
+    declare_function_name (name,
+			   IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+  }
 
   /* Set up parameters and prepare for return, for the function.  */
 
