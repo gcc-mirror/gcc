@@ -1801,7 +1801,11 @@ process_command (argc, argv)
 
   n_switches = 0;
   n_infiles = 0;
-  spec_version = version_string;
+
+  /* Default for -V is our version number, ending at first space.  */
+  spec_version = save_string (version_string, strlen (version_string));
+  for (temp = spec_version; *temp && *temp != ' '; temp++);
+  if (*temp) *temp = '\0';
 
   /* Set up the default search paths.  */
 
