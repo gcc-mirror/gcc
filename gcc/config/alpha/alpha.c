@@ -1398,10 +1398,10 @@ output_epilog (file, size)
 	fprintf (file, "\tldq $15,%d($30)\n", fp_offset);
 
       /* Now update the stack pointer, if needed.  This must be done in
-	 one, styalized, instruction.  */
+	 one, stylized, instruction.  */
       if (frame_size > 32768)
 	fprintf (file, "\taddq $28,$30,$30\n");
-      else
+      else if (frame_size != 0)
 	fprintf (file, "\tlda $30,%d($30)\n", frame_size);
 
       /* Finally return to the caller.  */
