@@ -500,6 +500,7 @@ eh_data_format_name (format)
   S(DW_EH_PE_sdata4, "sdata4")
   S(DW_EH_PE_sdata8, "sdata8")
 
+  S(DW_EH_PE_absptr | DW_EH_PE_pcrel, "pcrel")
   S(DW_EH_PE_uleb128 | DW_EH_PE_pcrel, "pcrel uleb128")
   S(DW_EH_PE_udata2 | DW_EH_PE_pcrel, "pcrel udata2")
   S(DW_EH_PE_udata4 | DW_EH_PE_pcrel, "pcrel udata4")
@@ -509,6 +510,7 @@ eh_data_format_name (format)
   S(DW_EH_PE_sdata4 | DW_EH_PE_pcrel, "pcrel sdata4")
   S(DW_EH_PE_sdata8 | DW_EH_PE_pcrel, "pcrel sdata8")
 
+  S(DW_EH_PE_absptr | DW_EH_PE_textrel, "textrel")
   S(DW_EH_PE_uleb128 | DW_EH_PE_textrel, "textrel uleb128")
   S(DW_EH_PE_udata2 | DW_EH_PE_textrel, "textrel udata2")
   S(DW_EH_PE_udata4 | DW_EH_PE_textrel, "textrel udata4")
@@ -518,6 +520,7 @@ eh_data_format_name (format)
   S(DW_EH_PE_sdata4 | DW_EH_PE_textrel, "textrel sdata4")
   S(DW_EH_PE_sdata8 | DW_EH_PE_textrel, "textrel sdata8")
 
+  S(DW_EH_PE_absptr | DW_EH_PE_datarel, "datarel")
   S(DW_EH_PE_uleb128 | DW_EH_PE_datarel, "datarel uleb128")
   S(DW_EH_PE_udata2 | DW_EH_PE_datarel, "datarel udata2")
   S(DW_EH_PE_udata4 | DW_EH_PE_datarel, "datarel udata4")
@@ -527,6 +530,7 @@ eh_data_format_name (format)
   S(DW_EH_PE_sdata4 | DW_EH_PE_datarel, "datarel sdata4")
   S(DW_EH_PE_sdata8 | DW_EH_PE_datarel, "datarel sdata8")
 
+  S(DW_EH_PE_absptr | DW_EH_PE_funcrel, "funcrel")
   S(DW_EH_PE_uleb128 | DW_EH_PE_funcrel, "funcrel uleb128")
   S(DW_EH_PE_udata2 | DW_EH_PE_funcrel, "funcrel udata2")
   S(DW_EH_PE_udata4 | DW_EH_PE_funcrel, "funcrel udata4")
@@ -536,6 +540,8 @@ eh_data_format_name (format)
   S(DW_EH_PE_sdata4 | DW_EH_PE_funcrel, "funcrel sdata4")
   S(DW_EH_PE_sdata8 | DW_EH_PE_funcrel, "funcrel sdata8")
 
+  S(DW_EH_PE_indirect | DW_EH_PE_absptr | DW_EH_PE_pcrel,
+    "indirect pcrel")
   S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_pcrel,
     "indirect pcrel uleb128")
   S(DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_pcrel,
@@ -553,6 +559,8 @@ eh_data_format_name (format)
   S(DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_pcrel,
     "indirect pcrel sdata8")
 
+  S(DW_EH_PE_indirect | DW_EH_PE_absptr | DW_EH_PE_textrel,
+    "indirect textrel")
   S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_textrel,
     "indirect textrel uleb128")
   S(DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_textrel,
@@ -570,6 +578,8 @@ eh_data_format_name (format)
   S(DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_textrel,
     "indirect textrel sdata8")
 
+  S(DW_EH_PE_indirect | DW_EH_PE_absptr | DW_EH_PE_datarel,
+    "indirect datarel")
   S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_datarel,
     "indirect datarel uleb128")
   S(DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_datarel,
@@ -587,6 +597,8 @@ eh_data_format_name (format)
   S(DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_datarel,
     "indirect datarel sdata8")
 
+  S(DW_EH_PE_indirect | DW_EH_PE_absptr | DW_EH_PE_funcrel,
+    "indirect funcrel")
   S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_funcrel,
     "indirect funcrel uleb128")
   S(DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_funcrel,
