@@ -1198,6 +1198,7 @@ uw_init_context_1 (struct _Unwind_Context *context,
 {
   void *ra = __builtin_extract_return_addr (__builtin_return_address (0));
   _Unwind_FrameState fs;
+  _Unwind_Word sp_slot;
 
   memset (context, 0, sizeof (struct _Unwind_Context));
   context->ra = ra;
@@ -1206,7 +1207,8 @@ uw_init_context_1 (struct _Unwind_Context *context,
     abort ();
 
   /* Force the frame state to use the known cfa value.  */
-  _Unwind_SetGRPtr (context, __builtin_dwarf_sp_column (), &outer_cfa);
+  sp_slot = (_Unwind_Ptr) outer_cfa;
+  _Unwind_SetGRPtr (context, __builtin_dwarf_sp_column (), &sp_slot);
   fs.cfa_how = CFA_REG_OFFSET;
   fs.cfa_reg = __builtin_dwarf_sp_column ();
   fs.cfa_offset = 0;
