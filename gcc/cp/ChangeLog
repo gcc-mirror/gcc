@@ -1,5 +1,7 @@
 2000-01-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (start_cleanup_fn): Call pushdecl.
+
 	* call.c (convert_class_to_reference): Fix typos.
 	(build_conditional_expr): Handle errors gracefully.
 	* class.c (push_nested_class): Likewise.
