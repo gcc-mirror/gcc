@@ -1,6 +1,6 @@
 Wed Mar 24 21:42:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	reload1.c (choose_reload_regs): If output-reloading for a
+	* reload1.c (choose_reload_regs): If output-reloading for a
 	simple move insn, try to inherit an equivalence for the input.
 
 1999-02-24  Mike Stump  <mrs@wrs.com>
