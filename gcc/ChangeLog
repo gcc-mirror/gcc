@@ -1,3 +1,8 @@
+2004-07-17  Steven Bosscher  <stevenb@suse.de>
+
+	* final.c (final_scan_insn): Fix broken commit from previous
+	patch.
+
 2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (parser_build_binary_op): Condition warnings for
