@@ -1,3 +1,9 @@
+2005-01-18  Andi Kleen <ak@muc.de>
+
+	* c-typeck.c: (convert_for_assignment): Check warn_pointer_sign.
+	* c.opt (-Wpointer-sign): Add.
+	* doc/invoke.texi: (-Wpointer-sign): Add.
+
 2005-01-18  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.c (override_options): Revert 2004-11-24 change.
