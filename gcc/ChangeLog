@@ -1,3 +1,7 @@
+Mon May 31 09:36:11 1999  Cort Dougan  <cort@cs.nmt.edu>
+
+	* rs6000/linux.h (LINK_SPEC): Use emulation elf32ppclinux.
+
 Sat May 29 19:08:10 1999  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/aout.h (ASM_OUTPUT_ALIGN): Only define if not already 
