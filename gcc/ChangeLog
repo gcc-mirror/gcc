@@ -1,5 +1,10 @@
 2001-08-23  Jason Merrill  <jason_merrill@redhat.com>
 
+	* c-pragma.h: Move weak_syms and weak_decls...
+	* varasm.c: ...here.  Now static.
+	(declare_weak, weak_finish, remove_from_pending_weak_list): Don't
+	depend on HANDLE_PRAGMA_WEAK.
+
 	* c-common.c (c_alignof, c_alignof_expr): Move here...
 	* c-typeck.c: ...from here.
 	* c-tree.h, c-common.h: Adjust.

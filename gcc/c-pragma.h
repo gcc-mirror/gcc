@@ -43,17 +43,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 #ifdef HANDLE_PRAGMA_WEAK
-/* This structure contains any weak symbol declarations waiting to be emitted.  */
-struct weak_syms
-{
-  struct weak_syms * next;
-  const char * name;
-  const char * value;
-};
-
-/* Declared in varasm.c */
-extern struct weak_syms * weak_decls;
-
 extern int add_weak PARAMS ((const char *, const char *));
 #endif /* HANDLE_PRAGMA_WEAK */
 
