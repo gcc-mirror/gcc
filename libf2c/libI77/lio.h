@@ -43,22 +43,22 @@
 
 typedef union
 {
-	signed
-		char	flchar;
-	short	flshort;
-	ftnint	flint;
+  signed char flchar;
+  short flshort;
+  ftnint flint;
 #ifdef Allow_TYQUAD
-	longint fllongint;
+  longint fllongint;
 #endif
-	real	flreal;
-	doublereal	fldouble;
-} flex;
+  real flreal;
+  doublereal fldouble;
+}
+flex;
 extern int f__scale;
-extern int (*f__lioproc)(ftnint*, char*, ftnlen, ftnint);
-extern int l_write(ftnint*, char*, ftnlen, ftnint);
-extern void x_wsne(cilist*);
-extern int c_le(cilist*), (*l_getc)(void), (*l_ungetc)(int,FILE*);
-extern int l_read(ftnint*,char*,ftnlen,ftnint);
-extern integer e_rsle(void), e_wsle(void), s_wsne(cilist*);
-extern int z_rnew(void);
+extern int (*f__lioproc) (ftnint *, char *, ftnlen, ftnint);
+extern int l_write (ftnint *, char *, ftnlen, ftnint);
+extern void x_wsne (cilist *);
+extern int c_le (cilist *), (*l_getc) (void), (*l_ungetc) (int, FILE *);
+extern int l_read (ftnint *, char *, ftnlen, ftnint);
+extern integer e_rsle (void), e_wsle (void), s_wsne (cilist *);
+extern int z_rnew (void);
 extern ftnint L_len;

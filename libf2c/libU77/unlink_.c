@@ -33,16 +33,18 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
-void g_char(const char *a, ftnlen alen, char *b);
+void g_char (const char *a, ftnlen alen, char *b);
 
-integer G77_unlink_0 (const char *str, const ftnlen Lstr)
+integer
+G77_unlink_0 (const char *str, const ftnlen Lstr)
 {
   char *buff;
   char *bp, *blast;
   int i;
 
-  buff = malloc (Lstr+1);
-  if (buff == NULL) return -1;
+  buff = malloc (Lstr + 1);
+  if (buff == NULL)
+    return -1;
   g_char (str, Lstr, buff);
   i = unlink (buff);
   free (buff);

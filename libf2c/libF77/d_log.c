@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double d_log(doublereal *x)
+double
+d_log (doublereal * x)
 {
-return( log(*x) );
+  return (log (*x));
 }

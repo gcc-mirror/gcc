@@ -29,15 +29,16 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 
 #ifndef HAVE_STRERROR
-     extern char *sys_errlist [];
+extern char *sys_errlist[];
 #    define strerror(i) (sys_errlist[i])
 #endif
-extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
-/* Subroutine */ int G77_gerror_0 (char *str, ftnlen Lstr)
+extern void s_copy (register char *a, register char *b, ftnlen la, ftnlen lb);
+/* Subroutine */ int
+G77_gerror_0 (char *str, ftnlen Lstr)
 {
-  char * s;
+  char *s;
 
-  s = strerror(errno);
+  s = strerror (errno);
   s_copy (str, s, Lstr, strlen (s));
   return 0;
 }

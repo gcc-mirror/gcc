@@ -35,21 +35,25 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
-extern integer G77_fnum_0 (integer *lunit);
-extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
-/* Character */ void G77_ttynam_0 (char *ret_val, ftnlen ret_val_len, integer *lunit)
+extern integer G77_fnum_0 (integer * lunit);
+extern void s_copy (register char *a, register char *b, ftnlen la, ftnlen lb);
+/* Character */ void
+G77_ttynam_0 (char *ret_val, ftnlen ret_val_len, integer * lunit)
 {
 #if defined (HAVE_TTYNAME)
   size_t i;
   char *p;
 
   p = ttyname (G77_fnum_0 (lunit));
-  if (p != NULL) {
-    i = strlen (p);
-    s_copy (ret_val, p, ret_val_len, i);
-  } else {
-    s_copy (ret_val, " ", ret_val_len, 1);
-  }
+  if (p != NULL)
+    {
+      i = strlen (p);
+      s_copy (ret_val, p, ret_val_len, i);
+    }
+  else
+    {
+      s_copy (ret_val, " ", ret_val_len, 1);
+    }
 #else
   errno = ENOSYS;
   s_copy (ret_val, " ", ret_val_len, 1);

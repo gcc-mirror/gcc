@@ -1,6 +1,7 @@
 #include "f2c.h"
 
-shortint h_len(char *s, ftnlen n)
+shortint
+h_len (char *s, ftnlen n)
 {
-return(n);
+  return (n);
 }

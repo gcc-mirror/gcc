@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double d_cos(doublereal *x)
+double
+d_cos (doublereal * x)
 {
-return( cos(*x) );
+  return (cos (*x));
 }

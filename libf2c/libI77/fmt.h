@@ -1,8 +1,14 @@
 struct syl
-{	int op;
-	int p1;
-	union { int i[2]; char *s;} p2;
-	};
+{
+  int op;
+  int p1;
+  union
+  {
+    int i[2];
+    char *s;
+  }
+  p2;
+};
 #define RET1 1
 #define REVERT 2
 #define GOTO 3
@@ -39,30 +45,34 @@ struct syl
 #define OM 34
 #define Z 35
 #define ZM 36
-extern int f__pc,f__parenlvl,f__revloc;
+extern int f__pc, f__parenlvl, f__revloc;
 typedef union
-{	real pf;
-	doublereal pd;
-} ufloat;
+{
+  real pf;
+  doublereal pd;
+}
+ufloat;
 typedef union
-{	short is;
-	signed
-		char ic;
-	integer il;
+{
+  short is;
+  signed char ic;
+  integer il;
 #ifdef Allow_TYQUAD
-	longint ili;
+  longint ili;
 #endif
-} Uint;
-extern int (*f__doed)(struct syl*, char*, ftnlen),(*f__doned)(struct syl*);
-extern int (*f__dorevert)(void);
-extern void fmt_bg(void);
-extern int pars_f(char*);
-extern int rd_ed(struct syl*, char*, ftnlen),rd_ned(struct syl*);
-extern int w_ed(struct syl*, char*, ftnlen),w_ned(struct syl*);
-extern int wrt_E(ufloat*, int, int, int, ftnlen);
-extern int wrt_F(ufloat*, int, int, ftnlen);
-extern int wrt_L(Uint*, int, ftnlen);
-extern flag f__cblank,f__cplus,f__workdone, f__nonl;
+}
+Uint;
+extern int (*f__doed) (struct syl *, char *, ftnlen),
+  (*f__doned) (struct syl *);
+extern int (*f__dorevert) (void);
+extern void fmt_bg (void);
+extern int pars_f (char *);
+extern int rd_ed (struct syl *, char *, ftnlen), rd_ned (struct syl *);
+extern int w_ed (struct syl *, char *, ftnlen), w_ned (struct syl *);
+extern int wrt_E (ufloat *, int, int, int, ftnlen);
+extern int wrt_F (ufloat *, int, int, ftnlen);
+extern int wrt_L (Uint *, int, ftnlen);
+extern flag f__cblank, f__cplus, f__workdone, f__nonl;
 extern char *f__fmtbuf;
 extern int f__fmtlen;
 extern int f__scale;
@@ -79,4 +89,4 @@ extern int f__cursor;
 #define TYQUAD 14
 #endif
 
-extern char *f__icvt(longint, int*, int*, int);
+extern char *f__icvt (longint, int *, int *, int);

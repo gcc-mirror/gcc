@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double d_tan(doublereal *x)
+double
+d_tan (doublereal * x)
 {
-return( tan(*x) );
+  return (tan (*x));
 }

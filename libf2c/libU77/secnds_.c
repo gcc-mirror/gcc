@@ -36,16 +36,16 @@ Boston, MA 02111-1307, USA.  */
 
 /* This is a VMS intrinsic. */
 
-double G77_secnds_0 (real *r)
+double
+G77_secnds_0 (real * r)
 {
-    struct tm *lt;
-    time_t clock;
-    float f;
+  struct tm *lt;
+  time_t clock;
+  float f;
 
-    clock = time (NULL);
-    lt = localtime (&clock);
-    f= (3600.0*((real)lt->tm_hour) + 60.0*((real)lt->tm_min) +
-	    (real)lt->tm_sec - *r);
-    return f;
+  clock = time (NULL);
+  lt = localtime (&clock);
+  f = (3600.0 * ((real) lt->tm_hour) + 60.0 * ((real) lt->tm_min) +
+       (real) lt->tm_sec - *r);
+  return f;
 }
-

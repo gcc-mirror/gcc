@@ -23,27 +23,27 @@
 #endif
 #endif
 
- double
-dtime_(float *tarray)
+double
+dtime_ (float *tarray)
 {
 #ifdef USE_CLOCK
 #ifndef CLOCKS_PER_SECOND
 #define CLOCKS_PER_SECOND Hz
 #endif
-	static double t0;
-	double t = clock();
-	tarray[1] = 0;
-	tarray[0] = (t - t0) / CLOCKS_PER_SECOND;
-	t0 = t;
-	return tarray[0];
+  static double t0;
+  double t = clock ();
+  tarray[1] = 0;
+  tarray[0] = (t - t0) / CLOCKS_PER_SECOND;
+  t0 = t;
+  return tarray[0];
 #else
-	struct tms t;
-	static struct tms t0;
+  struct tms t;
+  static struct tms t0;
 
-	times(&t);
-	tarray[0] = (double)(t.tms_utime - t0.tms_utime) / Hz;
-	tarray[1] = (double)(t.tms_stime - t0.tms_stime) / Hz;
-	t0 = t;
-	return tarray[0] + tarray[1];
+  times (&t);
+  tarray[0] = (double) (t.tms_utime - t0.tms_utime) / Hz;
+  tarray[1] = (double) (t.tms_stime - t0.tms_stime) / Hz;
+  t0 = t;
+  return tarray[0] + tarray[1];
 #endif
-	}
+}

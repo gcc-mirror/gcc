@@ -33,14 +33,15 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
-void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
+void s_copy (register char *a, register char *b, ftnlen la, ftnlen lb);
 
-int G77_date_and_time_0 (char *date, char *fftime, char *zone,
-			 integer *values, ftnlen date_len,
-			 ftnlen fftime_len, ftnlen zone_len)
+int
+G77_date_and_time_0 (char *date, char *fftime, char *zone,
+		     integer * values, ftnlen date_len,
+		     ftnlen fftime_len, ftnlen zone_len)
 {
-  time_t lt=time(&lt);
-  struct tm ltime = *localtime(&lt), gtime = *gmtime(&lt);
+  time_t lt = time (&lt);
+  struct tm ltime = *localtime (&lt), gtime = *gmtime (&lt);
   char dat[9], zon[6], ftim[11];
   int i, vals[8];
 
@@ -49,18 +50,18 @@ int G77_date_and_time_0 (char *date, char *fftime, char *zone,
   vals[2] = ltime.tm_mday;
   /* fixme: year boundaries */
   vals[3] = (ltime.tm_min - gtime.tm_min +
-	     60*(ltime.tm_hour - gtime.tm_hour +
-		 24*(ltime.tm_yday -gtime.tm_yday)));
+	     60 * (ltime.tm_hour - gtime.tm_hour +
+		   24 * (ltime.tm_yday - gtime.tm_yday)));
   vals[4] = ltime.tm_hour;
   vals[5] = ltime.tm_min;
   vals[6] = ltime.tm_sec;
-  vals[7] = 0;                  /* no STDC/POSIX way to get this */
+  vals[7] = 0;			/* no STDC/POSIX way to get this */
   /* GNUish way; maybe use `ftime' on other systems. */
 #if HAVE_GETTIMEOFDAY
   {
     struct timeval tp;
 #  if GETTIMEOFDAY_ONE_ARGUMENT
-    if (! gettimeofday (&tp))
+    if (!gettimeofday (&tp))
 #  else
 #    if HAVE_STRUCT_TIMEZONE
     struct timezone tzp;
@@ -70,26 +71,28 @@ int G77_date_and_time_0 (char *date, char *fftime, char *zone,
        HPUX.  Configure checks if gettimeofday actually fails with a
        non-NULL arg and pretends that struct timezone is missing if it
        does fail.  */
-    if (! gettimeofday (&tp, &tzp))
+    if (!gettimeofday (&tp, &tzp))
 #    else
-    if (! gettimeofday (&tp, (void *) 0))
+    if (!gettimeofday (&tp, (void *) 0))
 #    endif /* HAVE_STRUCT_TIMEZONE */
 #  endif /* GETTIMEOFDAY_ONE_ARGUMENT */
-      vals[7] = tp.tv_usec/1000;
+      vals[7] = tp.tv_usec / 1000;
   }
 #endif /* HAVE_GETTIMEOFDAY */
   if (values)			/* null pointer for missing optional */
-    for (i=0; i<=7; i++)
+    for (i = 0; i <= 7; i++)
       values[i] = vals[i];
   sprintf (dat, "%04d%02d%02d", vals[0], vals[1], vals[2]);
-  s_copy(date, dat, date_len, 8);
-  if (zone) {
-    sprintf(zon, "%+03d%02d", vals[3] / 60, abs(vals[3] % 60));
-    s_copy(zone, zon, zone_len, 5);
-  }
-  if (fftime) {
-    sprintf (ftim, "%02d%02d%02d.%03d", vals[4], vals[5], vals[6], vals[7]);
-    s_copy(fftime, ftim, fftime_len, 10);
-  }
+  s_copy (date, dat, date_len, 8);
+  if (zone)
+    {
+      sprintf (zon, "%+03d%02d", vals[3] / 60, abs (vals[3] % 60));
+      s_copy (zone, zon, zone_len, 5);
+    }
+  if (fftime)
+    {
+      sprintf (ftim, "%02d%02d%02d.%03d", vals[4], vals[5], vals[6], vals[7]);
+      s_copy (fftime, ftim, fftime_len, 10);
+    }
   return 0;
 }

@@ -38,24 +38,26 @@ Boston, MA 02111-1307, USA.  */
 /* VMS style: */
 
 /* Subroutine */
-int G77_vxtidate_y2kbug_0 (integer *m, integer *d, integer *y)
+int
+G77_vxtidate_y2kbug_0 (integer * m, integer * d, integer * y)
 {
   struct tm *lt;
   time_t tim;
-  tim = time(NULL);
-  lt = localtime(&tim);
+  tim = time (NULL);
+  lt = localtime (&tim);
   *y = lt->tm_year % 100;
-  *m = lt->tm_mon+1;
+  *m = lt->tm_mon + 1;
   *d = lt->tm_mday;
   return 0;
 }
 
 #ifdef PIC
 extern const char *G77_Non_Y2K_Compliance_Message;
-int G77_vxtidate_y2kbuggy_0 (integer *m, integer *d, integer *y)
+int
+G77_vxtidate_y2kbuggy_0 (integer * m, integer * d, integer * y)
 {
-  extern int G77_abort_0();
+  extern int G77_abort_0 ();
   fprintf (stderr, "%s\n", G77_Non_Y2K_Compliance_Message);
-  G77_abort_0();
+  G77_abort_0 ();
 }
 #endif

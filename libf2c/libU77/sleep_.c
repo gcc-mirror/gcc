@@ -25,7 +25,8 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 
 /* Subroutine */
-int G77_sleep_0 (const integer *seconds)
+int
+G77_sleep_0 (const integer * seconds)
 {
   (void) sleep ((unsigned int) *seconds);
   return 0;

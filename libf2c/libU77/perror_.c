@@ -28,14 +28,15 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
-/* Subroutine */ int G77_perror_0 (const char *str, const ftnlen Lstr)
+/* Subroutine */ int
+G77_perror_0 (const char *str, const ftnlen Lstr)
 {
   char buff[1000];
   char *bp, *blast;
 
   /* same technique as `system' -- what's wrong with malloc? */
   blast = buff + (Lstr < 1000 ? Lstr : 1000);
-  for (bp = buff ; bp<blast && *str!='\0' ; )
+  for (bp = buff; bp < blast && *str != '\0';)
     *bp++ = *str++;
   *bp = '\0';
   perror (buff);

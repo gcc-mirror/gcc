@@ -32,16 +32,18 @@ Boston, MA 02111-1307, USA.  */
 #include "f2c.h"
 
 
-void g_char(const char *a, ftnlen alen, char *b);
+void g_char (const char *a, ftnlen alen, char *b);
 
-integer G77_chdir_0 (const char *name, const ftnlen Lname)
+integer
+G77_chdir_0 (const char *name, const ftnlen Lname)
 {
   char *buff;
   char *bp, *blast;
   int i;
 
-  buff = malloc (Lname+1);
-  if (!buff) return -1;
+  buff = malloc (Lname + 1);
+  if (!buff)
+    return -1;
   g_char (name, Lname, buff);
   i = chdir (buff);
   free (buff);

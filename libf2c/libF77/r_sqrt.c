@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double r_sqrt(real *x)
+double
+r_sqrt (real * x)
 {
-return( sqrt(*x) );
+  return (sqrt (*x));
 }

@@ -26,7 +26,8 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
-integer G77_getuid_0 (void)
+integer
+G77_getuid_0 (void)
 {
 #if defined (HAVE_GETUID)
   return getuid ();

@@ -30,20 +30,22 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
-integer G77_hostnm_0 (char *name, ftnlen Lname)
+integer
+G77_hostnm_0 (char *name, ftnlen Lname)
 {
-    int ret, i;
+  int ret, i;
 
 #if HAVE_GETHOSTNAME
-    ret = gethostname (name, Lname);
-    if (ret==0) {
-	/* Pad with blanks (assuming gethostname will make an error
-           return if it can't fit in the null). */
-	for (i=strlen(name); i<Lname; i++)
-	    name[i] = ' ';
+  ret = gethostname (name, Lname);
+  if (ret == 0)
+    {
+      /* Pad with blanks (assuming gethostname will make an error
+         return if it can't fit in the null). */
+      for (i = strlen (name); i < Lname; i++)
+	name[i] = ' ';
     }
-    return ret;
+  return ret;
 #else
-    return errno = ENOSYS;
+  return errno = ENOSYS;
 #endif
 }

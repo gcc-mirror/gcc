@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double pow_dd(doublereal *ap, doublereal *bp)
+double
+pow_dd (doublereal * ap, doublereal * bp)
 {
-return(pow(*ap, *bp) );
+  return (pow (*ap, *bp));
 }

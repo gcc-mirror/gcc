@@ -34,20 +34,22 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
 #else
-  extern char *getcwd ();
+extern char *getcwd ();
 #endif
 
-extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
-integer G77_getcwd_0 (char *str, const ftnlen Lstr)
+extern void s_copy (register char *a, register char *b, ftnlen la, ftnlen lb);
+integer
+G77_getcwd_0 (char *str, const ftnlen Lstr)
 {
-    int i;
-    char *ret;
+  int i;
+  char *ret;
 
-    ret = getcwd (str, Lstr);
-    if (ret == NULL) return errno;
-    for (i=strlen(str); i<Lstr; i++)
-	str[i] = ' ';
-    return 0;
+  ret = getcwd (str, Lstr);
+  if (ret == NULL)
+    return errno;
+  for (i = strlen (str); i < Lstr; i++)
+    str[i] = ' ';
+  return 0;
 }
 
 #elif HAVE_GETWD		/* HAVE_GETCWD */
@@ -55,25 +57,30 @@ integer G77_getcwd_0 (char *str, const ftnlen Lstr)
 /* getwd usage taken from SunOS4 man */
 
 #  include <sys/param.h>
-  extern char *getwd ();
-extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
-integer G77_getcwd_0 (char *str, const ftnlen Lstr)
+extern char *getwd ();
+extern void s_copy (register char *a, register char *b, ftnlen la, ftnlen lb);
+integer
+G77_getcwd_0 (char *str, const ftnlen Lstr)
 {
   char pathname[MAXPATHLEN];
   size_t l;
 
-  if (getwd (pathname) == NULL) {
-    return errno;
-  } else {
-    s_copy (str, pathname, Lstr, strlen (str));
-    return 0;
-  }
+  if (getwd (pathname) == NULL)
+    {
+      return errno;
+    }
+  else
+    {
+      s_copy (str, pathname, Lstr, strlen (str));
+      return 0;
+    }
 }
 
-#else  /* !HAVE_GETWD && !HAVE_GETCWD */
+#else /* !HAVE_GETWD && !HAVE_GETCWD */
 
-extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
-integer G77_getcwd_0 (char *str, const ftnlen Lstr)
+extern void s_copy (register char *a, register char *b, ftnlen la, ftnlen lb);
+integer
+G77_getcwd_0 (char *str, const ftnlen Lstr)
 {
   return errno = ENOSYS;
 }

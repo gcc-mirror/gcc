@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double d_sin(doublereal *x)
+double
+d_sin (doublereal * x)
 {
-return( sin(*x) );
+  return (sin (*x));
 }

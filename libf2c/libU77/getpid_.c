@@ -25,7 +25,8 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include "f2c.h"
 
-integer G77_getpid_0 (void)
+integer
+G77_getpid_0 (void)
 {
   return getpid ();
 }

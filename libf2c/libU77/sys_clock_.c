@@ -43,26 +43,29 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
-int G77_system_clock_0 (integer *count, integer *count_rate, integer *count_max)
+int
+G77_system_clock_0 (integer * count, integer * count_rate,
+		    integer * count_max)
 {
 #if defined (HAVE_TIMES)
   struct tms buffer;
   unsigned long cnt;
-  if (count_rate) {
+  if (count_rate)
+    {
 #ifdef _SC_CLK_TCK
-    *count_rate = sysconf(_SC_CLK_TCK);
+      *count_rate = sysconf (_SC_CLK_TCK);
 #elif defined CLOCKS_PER_SECOND
-    *count_rate = CLOCKS_PER_SECOND;
+      *count_rate = CLOCKS_PER_SECOND;
 #elif defined CLK_TCK
-    *count_rate = CLK_TCK;
+      *count_rate = CLK_TCK;
 #elif defined HZ
-    *count_rate = HZ;
+      *count_rate = HZ;
 #else
 #error Dont know clock tick length
 #endif
-  }
+    }
   if (count_max)		/* optional arg present? */
-    *count_max = INT_MAX;		/* dubious */
+    *count_max = INT_MAX;	/* dubious */
   cnt = times (&buffer);
   if (cnt > (unsigned long) (INT_MAX))
     *count = INT_MAX;		/* also dubious */

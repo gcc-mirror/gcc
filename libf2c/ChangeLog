@@ -1,3 +1,9 @@
+Sat Jun  1 08:33:14 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libF77/*: Fix formatting.
+	* libI77/*: Likewise.
+	* libU77/*: Likewise.
+
 Fri May 31 21:56:30 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g2c.hin, libF77/d_cnjg.c, libF77/main.c, libF77/r_cnjg.c,

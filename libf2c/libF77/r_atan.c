@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double r_atan(real *x)
+double
+r_atan (real * x)
 {
-return( atan(*x) );
+  return (atan (*x));
 }

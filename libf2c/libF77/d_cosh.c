@@ -2,7 +2,8 @@
 
 #undef abs
 #include <math.h>
-double d_cosh(doublereal *x)
+double
+d_cosh (doublereal * x)
 {
-return( cosh(*x) );
+  return (cosh (*x));
 }

@@ -13,13 +13,13 @@
 #undef min
 #undef max
 #include <stdlib.h>
-extern void f_exit(void);
+extern void f_exit (void);
 
- void
-G77_exit_0 (integer *rc)
+void
+G77_exit_0 (integer * rc)
 {
 #ifdef NO_ONEXIT
-	f_exit();
+  f_exit ();
 #endif
-	exit(*rc);
-	}
+  exit (*rc);
+}

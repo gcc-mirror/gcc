@@ -18,7 +18,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "f2c.h"
 
-double G77_second_0 () {
+double
+G77_second_0 ()
+{
   extern double G77_etime_0 ();
   real tarray[2];
 

@@ -21,15 +21,18 @@ Boston, MA 02111-1307, USA.  */
 
 #include "f2c.h"
 
-integer G77_lnblnk_0 (char *str, ftnlen str_len)
+integer
+G77_lnblnk_0 (char *str, ftnlen str_len)
 {
-    integer ret_val;
-    integer i_len();
+  integer ret_val;
+  integer i_len ();
 
-    for (ret_val = str_len; ret_val >= 1; --ret_val) {
-	if (*(unsigned char *)&str[ret_val - 1] != ' ') {
-	    return ret_val;
+  for (ret_val = str_len; ret_val >= 1; --ret_val)
+    {
+      if (*(unsigned char *) &str[ret_val - 1] != ' ')
+	{
+	  return ret_val;
 	}
     }
-    return ret_val;
+  return ret_val;
 }

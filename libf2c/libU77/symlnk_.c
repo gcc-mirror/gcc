@@ -33,25 +33,30 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
-void g_char(const char *a, ftnlen alen, char *b);
+void g_char (const char *a, ftnlen alen, char *b);
 
-integer G77_symlnk_0 (const char *path1, const char *path2, const ftnlen Lpath1, const ftnlen Lpath2)
+integer
+G77_symlnk_0 (const char *path1, const char *path2, const ftnlen Lpath1,
+	      const ftnlen Lpath2)
 {
 #if HAVE_SYMLINK
   char *buff1, *buff2;
   char *bp, *blast;
   int i;
 
-  buff1 = (char *) malloc (Lpath1+1);
-  if (buff1 == NULL) return -1;
+  buff1 = (char *) malloc (Lpath1 + 1);
+  if (buff1 == NULL)
+    return -1;
   g_char (path1, Lpath1, buff1);
-  buff2 = (char *) malloc (Lpath2+1);
-  if (buff2 == NULL) return -1;
+  buff2 = (char *) malloc (Lpath2 + 1);
+  if (buff2 == NULL)
+    return -1;
   g_char (path2, Lpath2, buff2);
   i = symlink (buff1, buff2);
-  free (buff1); free (buff2);
+  free (buff1);
+  free (buff2);
   return i ? errno : 0;
-#else	/* !HAVE_SYMLINK */
+#else /* !HAVE_SYMLINK */
   return errno = ENOSYS;
-#endif	/* !HAVE_SYMLINK */
+#endif /* !HAVE_SYMLINK */
 }

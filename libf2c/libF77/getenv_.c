@@ -2,7 +2,7 @@
 #undef abs
 #include <stdlib.h>
 #include <string.h>
-extern char *F77_aloc(ftnlen, char*);
+extern char *F77_aloc (ftnlen, char *);
 
 /*
  * getenv - f77 subroutine to return environment variables
@@ -16,32 +16,34 @@ extern char *F77_aloc(ftnlen, char*);
  *		if ENV_NAME is not defined
  */
 
- void
+void
 G77_getenv_0 (char *fname, char *value, ftnlen flen, ftnlen vlen)
 {
-	char buf[256], *ep, *fp;
-	integer i;
+  char buf[256], *ep, *fp;
+  integer i;
 
-	if (flen <= 0)
-		goto add_blanks;
-	for(i = 0; i < sizeof(buf); i++) {
-		if (i == flen || (buf[i] = fname[i]) == ' ') {
-			buf[i] = 0;
-			ep = getenv(buf);
-			goto have_ep;
-			}
-		}
-	while(i < flen && fname[i] != ' ')
-		i++;
-	strncpy(fp = F77_aloc(i+1, "getenv_"), fname, (int)i);
-	fp[i] = 0;
-	ep = getenv(fp);
-	free(fp);
- have_ep:
-	if (ep)
-		while(*ep && vlen-- > 0)
-			*value++ = *ep++;
- add_blanks:
-	while(vlen-- > 0)
-		*value++ = ' ';
+  if (flen <= 0)
+    goto add_blanks;
+  for (i = 0; i < sizeof (buf); i++)
+    {
+      if (i == flen || (buf[i] = fname[i]) == ' ')
+	{
+	  buf[i] = 0;
+	  ep = getenv (buf);
+	  goto have_ep;
 	}
+    }
+  while (i < flen && fname[i] != ' ')
+    i++;
+  strncpy (fp = F77_aloc (i + 1, "getenv_"), fname, (int) i);
+  fp[i] = 0;
+  ep = getenv (fp);
+  free (fp);
+have_ep:
+  if (ep)
+    while (*ep && vlen-- > 0)
+      *value++ = *ep++;
+add_blanks:
+  while (vlen-- > 0)
+    *value++ = ' ';
+}

@@ -43,12 +43,13 @@ Boston, MA 02111-1307, USA.  */
    also a subroutine version.  Of course, the calling convention is
    essentially the same for both. */
 
-/* Character *24 */ void G77_fdate_0 (char *ret_val, ftnlen ret_val_len)
+/* Character *24 */ void
+G77_fdate_0 (char *ret_val, ftnlen ret_val_len)
 {
-    int s_copy ();
-    time_t tloc;
-    tloc = time (NULL);
-    /* Allow a length other than 24 for compatibility with what other
-       systems do, despite it being documented as 24. */
-    s_copy (ret_val, ctime ((time_t *) &tloc), ret_val_len, 24);
+  int s_copy ();
+  time_t tloc;
+  tloc = time (NULL);
+  /* Allow a length other than 24 for compatibility with what other
+     systems do, despite it being documented as 24. */
+  s_copy (ret_val, ctime ((time_t *) & tloc), ret_val_len, 24);
 }

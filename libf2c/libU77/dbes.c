@@ -16,31 +16,43 @@ License along with GNU Fortran; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#if 0 	/* Don't include these unless necessary -- dnp. */
+#if 0				/* Don't include these unless necessary -- dnp. */
 #include "f2c.h"
 #include <math.h>
 
-double G77_dbesj0_0 (const double *x) {
-    return j0 (*x);
+double
+G77_dbesj0_0 (const double *x)
+{
+  return j0 (*x);
 }
 
-double G77_dbesj1_0 (const double *x) {
-    return j1 (*x);
+double
+G77_dbesj1_0 (const double *x)
+{
+  return j1 (*x);
 }
 
-double G77_dbesjn_0 (const integer *n, double *x) {
-     return jn (*n, *x);
- }
-
-double G77_dbesy0_0 (const double *x) {
-    return y0 (*x);
+double
+G77_dbesjn_0 (const integer * n, double *x)
+{
+  return jn (*n, *x);
 }
 
-double G77_dbesy1_0 (const double *x) {
-    return y1 (*x);
+double
+G77_dbesy0_0 (const double *x)
+{
+  return y0 (*x);
 }
 
-double G77_dbesyn_0 (const integer *n, double *x) {
-    return yn (*n, *x);
+double
+G77_dbesy1_0 (const double *x)
+{
+  return y1 (*x);
+}
+
+double
+G77_dbesyn_0 (const integer * n, double *x)
+{
+  return yn (*n, *x);
 }
 #endif
