@@ -1,3 +1,10 @@
+2005-03-29  Richard Henderson  <rth@redhat.com>
+
+	PR c/20519
+	* decl.c (cp_complete_array_type): Rename from complete_array_type.
+	Use the new complete_array_type in c-common.c.  Update all callers.
+	* cp-tree.h (cp_complete_array_type): Update to match.
+
 2005-03-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* typeck.c (build_static_cast_1): Allow scalar_cast between
