@@ -8,6 +8,9 @@ Wed Sep 30 14:27:49 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 
 Wed Sep 30 14:21:39 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-typeck.c (c_expand_asm_operands): Give error if non-lvalue for
+	output operand.
+
 	* libgcc2.c (__bb_init_prg): Properly zero bb_hashbuckets.
 
 Wed Sep 30 11:31:23 1998  Walter Gadeyne  <gadeynew@sebb.bel.alcatel.be>
