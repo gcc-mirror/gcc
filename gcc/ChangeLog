@@ -1,3 +1,9 @@
+2004-10-27  Paul Brook  <paul@codeosurcery.com>
+
+	* configure.ac: Use build_exeext not host_exeext when lookin for
+	target tools.
+	* configure: Regenerate.
+
 2004-10-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*subdf3_cc"): Replaced plus by minus.
