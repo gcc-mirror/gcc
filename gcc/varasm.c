@@ -2008,6 +2008,9 @@ default_assemble_integer (rtx x ATTRIBUTE_UNUSED,
 			  int aligned_p ATTRIBUTE_UNUSED)
 {
   const char *op = integer_asm_op (size, aligned_p);
+  /* Avoid GAS bugs for values > word size.  */
+  if (size > UNITS_PER_WORD)
+    return false;
   return op && (assemble_integer_with_op (op, x), true);
 }
 
