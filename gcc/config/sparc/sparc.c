@@ -111,11 +111,17 @@ static void sparc_init_modes ();
 
 /* Option handling.  */
 
-/* This is assigned the value of -mcpu=.  */
-char *sparc_cpu_string;
+struct sparc_cpu_select sparc_select[] =
+{
+  /* switch	name,		tune	arch */
+  { (char *)0,	"default",	1,	1 },
+  { (char *)0,	"-mcpu=",	1,	1 },
+  { (char *)0,	"-mtune=",	1,	0 },
+  { 0, 0 }
+};
 
-/* CPU type.  This is set from TARGET_CPU_DEFAULT and -mcpu=.  */
-enum attr_cpu sparc_cpu;
+/* CPU type.  This is set from TARGET_CPU_DEFAULT and -m{cpu,tune}=xxx.  */
+enum processor_type sparc_cpu;
 
 /* Validate and override various options, and do some machine dependent
    initialization.  */
@@ -123,77 +129,84 @@ enum attr_cpu sparc_cpu;
 void
 sparc_override_options ()
 {
-  /* Map TARGET_CPU_DEFAULT to value for -mcpu=.  */
+  /* Map TARGET_CPU_DEFAULT to value for -m{arch,tune}=.  */
   static struct cpu_default {
     int cpu;
     char *name;
   } cpu_default[] = {
-    { TARGET_CPU_sparc, "common" },
-    { TARGET_CPU_sparclet, "sparclet" },
-    { TARGET_CPU_sparclite, "sparclite" },
-    { TARGET_CPU_sparc64, "v9" },
-    { 0, 0 }
+    { TARGET_CPU_sparc, "cypress" },
+    { TARGET_CPU_sparclet, "90c701" },
+    { TARGET_CPU_sparclite, "f930" },
+    { TARGET_CPU_sparc64, "ultrasparc" },
+    { 0 }
   };
-  struct cpu_default *m;
-  /* Map -mcpu= names to internally usable values.  */
+  struct cpu_default *def;
+  /* Table of values for -m{cpu,tune}=.  */
   static struct cpu_table {
     char *name;
-    enum attr_cpu cpu;
+    enum processor_type processor;
     int disable;
     int enable;
   } cpu_table[] = {
-    { "common",     CPU_COMMON, MASK_ISA, 0 },
-    { "cypress",    CPU_CYPRESS, MASK_ISA, 0 },
-    /* generic v8 */
-    { "v8",         CPU_V8, MASK_ISA, MASK_V8 },
+    { "v7",         PROCESSOR_V7, MASK_ISA, 0 },
+    { "cypress",    PROCESSOR_CYPRESS, MASK_ISA, 0 },
+    { "v8",         PROCESSOR_V8, MASK_ISA, MASK_V8 },
     /* TI TMS390Z55 supersparc */
-    { "supersparc", CPU_SUPERSPARC, MASK_ISA, MASK_V8 },
-    { "sparclite",  CPU_SPARCLITE, MASK_ISA, MASK_SPARCLITE },
+    { "supersparc", PROCESSOR_SUPERSPARC, MASK_ISA, MASK_V8 },
+    { "sparclite",  PROCESSOR_SPARCLITE, MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no fpu.
        The Fujitsu MB86934 is the recent sparclite chip, with an fpu.  */
-    { "f930",       CPU_SPARCLITE, MASK_ISA+MASK_FPU, MASK_SPARCLITE },
-    { "f934",       CPU_SPARCLITE, MASK_ISA,          MASK_SPARCLITE+MASK_FPU },
+    { "f930",       PROCESSOR_F930, MASK_ISA|MASK_FPU, MASK_SPARCLITE },
+    { "f934",       PROCESSOR_F934, MASK_ISA, MASK_SPARCLITE|MASK_FPU },
+    { "sparclet",   PROCESSOR_SPARCLET, MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */
-    { "sparclet",   CPU_SPARCLET, MASK_ISA, MASK_SPARCLET },
-    /* generic v9 */
-    { "v9",         CPU_V9, MASK_ISA, MASK_V9 },
+    { "90c701",     PROCESSOR_90C701, MASK_ISA, MASK_SPARCLET },
+    /* "v9" is used to specify a true 64 bit architecture.
+       "v8plus" is what Sun calls Solaris2 running on UltraSPARC's.  */
+    { "v8plus",     PROCESSOR_V8PLUS, MASK_ISA, MASK_V9 },
+#if SPARC_ARCH64
+    { "v9",         PROCESSOR_V9, MASK_ISA, MASK_V9 },
+#endif
     /* TI ultrasparc */
-    { "ultrasparc", CPU_ULTRASPARC, MASK_ISA, MASK_V9 },
+    { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9 },
     { 0 }
   };
-  struct cpu_table *p;
+  struct cpu_table *cpu;
+  struct sparc_cpu_select *sel;
 
-  /* If -mcpu=foo wasn't specified, set the default.  */
-  if (! sparc_cpu_string)
-    {
-      for (m = &cpu_default[0]; m->name; ++m)
-	if (m->cpu == TARGET_CPU_DEFAULT)
-	  break;
-      if (! m->name)
-	abort ();
-      sparc_cpu_string = m->name;
-    }
+  /* Set the default.  */
+  for (def = &cpu_default[0]; def->name; ++def)
+    if (def->cpu == TARGET_CPU_DEFAULT)
+      break;
+  if (! def->name)
+    abort ();
+  sparc_select[0].string = def->name;
 
-  /* Set cpu type and isa flags.  */
-  for (p = &cpu_table[0]; p->name; ++p)
+  for (sel = &sparc_select[0]; sel->name; ++sel)
     {
-      if (strcmp (p->name, sparc_cpu_string) == 0)
+      if (sel->string)
 	{
-	  sparc_cpu = p->cpu;
-	  target_flags &= ~p->disable;
-	  target_flags |= p->enable;
-	  break;
+	  for (cpu = &cpu_table[0]; cpu->name; ++cpu)
+	    if (! strcmp (sel->string, cpu->name))
+	      {
+		if (sel->set_tune_p)
+		  sparc_cpu = cpu->processor;
+
+		if (sel->set_arch_p)
+		  {
+		    target_flags &= ~cpu->disable;
+		    target_flags |= cpu->enable;
+		  }
+		break;
+	      }
+
+	  if (! cpu->name)
+	    error ("bad value (%s) for %s switch", sel->string, sel->name);
 	}
     }
-  if (! p->name)
-    error ("bad value (%s) for -mcpu= switch", sparc_cpu_string);
 
-  if ((sparc_cpu == CPU_V9 || sparc_cpu == CPU_ULTRASPARC)
-      && ! SPARC_V9)
-    error ("sparc64 is not supported by this configuration");
-
-  if ((sparc_cpu == CPU_V9 || sparc_cpu == CPU_ULTRASPARC)
-      && TARGET_ARCH32)
+  /* Use the deprecated v8 insns for sparc64 in 32 bit mode.  */
+  if (TARGET_V9 && TARGET_ARCH32)
     target_flags |= MASK_DEPRECATED_V8_INSNS;
 
   /* Do various machine dependent initializations.  */
