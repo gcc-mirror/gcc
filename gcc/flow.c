@@ -174,7 +174,7 @@ static int num_scratch;
 
 /* Indexed by n, giving various register information */
 
-reg_info *reg_n_info;
+varray_type reg_n_info;
 
 /* Size of the reg_n_info table.  */
 
