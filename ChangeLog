@@ -1,3 +1,8 @@
+Mon Sep 28 04:04:27 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Minor cleanups for building in the $(target_alias)
+	subdir.
+
 1998-09-22  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (bootstrap): Set r and s before make all.  Use
