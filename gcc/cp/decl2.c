@@ -268,6 +268,10 @@ int warn_ecpp;
 
 int warn_sign_promo;
 
+/* Nonzero means warn when an old-style cast is used.  */
+
+int warn_old_style_cast;
+
 /* Nonzero means `$' can be in an identifier.
    See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
 
@@ -649,6 +653,8 @@ lang_decode_option (p)
 	warn_ecpp = setting;
       else if (!strcmp (p, "sign-promo"))
 	warn_sign_promo = setting;
+      else if (!strcmp (p, "old-style-cast"))
+	warn_old_style_cast = setting;
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -3374,6 +3380,9 @@ reparse_absdcl_as_casts (decl, expr)
       decl = TREE_OPERAND (decl, 0);
       expr = build_c_cast (type, expr);
     }
+
+  if (warn_old_style_cast)
+    warning ("use of old-style cast");
 
   return expr;
 }
