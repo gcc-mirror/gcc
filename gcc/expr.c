@@ -969,13 +969,13 @@ convert_move (to, from, unsignedp)
       if (from_mode != SImode)
 	from = convert_to_mode (SImode, from, unsignedp);
 
-#ifdef HAVE_truncsipsi
-      if (HAVE_truncsipsi)
+#ifdef HAVE_truncsipsi2
+      if (HAVE_truncsipsi2)
 	{
-	  emit_unop_insn (CODE_FOR_truncsipsi, to, from, UNKNOWN);
+	  emit_unop_insn (CODE_FOR_truncsipsi2, to, from, UNKNOWN);
 	  return;
 	}
-#endif /* HAVE_truncsipsi */
+#endif /* HAVE_truncsipsi2 */
       abort ();
     }
 
@@ -988,13 +988,13 @@ convert_move (to, from, unsignedp)
 	}
       else
 	{
-#ifdef HAVE_extendpsisi
-	  if (HAVE_extendpsisi)
+#ifdef HAVE_extendpsisi2
+	  if (HAVE_extendpsisi2)
 	    {
-	      emit_unop_insn (CODE_FOR_extendpsisi, to, from, UNKNOWN);
+	      emit_unop_insn (CODE_FOR_extendpsisi2, to, from, UNKNOWN);
 	      return;
 	    }
-#endif /* HAVE_extendpsisi */
+#endif /* HAVE_extendpsisi2 */
 	  abort ();
 	}
     }
