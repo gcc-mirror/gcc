@@ -4969,7 +4969,9 @@ simplify_if_then_else (x)
      neither 1 or -1, but it isn't worth checking for.  */
 
   if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
-      && comparison_p && mode != VOIDmode && ! side_effects_p (x))
+      && comparison_p
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && ! side_effects_p (x))
     {
       rtx t = make_compound_operation (true_rtx, SET);
       rtx f = make_compound_operation (false_rtx, SET);
