@@ -212,7 +212,11 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
     glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
     glibcpp_toolexeclibdir='$(libdir)'
   fi
-  glibcpp_toolexeclibdir=$glibcpp_toolexeclibdir/`$CC -print-multi-os-directory`
+  multi_os_directory=`$CC -print-multi-os-directory`
+  case $multi_os_directory in
+  .) ;; # Avoid trailing /.
+  *) glibcpp_toolexeclibdir=$glibcpp_toolexeclibdir/$multi_os_directory ;;
+  esac
 fi
 
 AC_SUBST(glibcpp_prefixdir)

@@ -123,6 +123,9 @@ else
 fi
 if test "$GCC" = yes && $CC -print-multi-os-directory > /dev/null 2>&1; then
   multiosdir=/`$CC -print-multi-os-directory`
+  case $multiosdir in
+    /.) multiosdir= ;; # Avoid trailing /.
+  esac
 else
   multiosdir=
 fi

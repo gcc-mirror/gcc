@@ -1,3 +1,8 @@
+2003-03-12  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in: Avoid trailing /. in toolexeclibdir.
+	* configure: Rebuilt.
+
 2003-03-04  Hans Boehm <Hans.Boehm@hp.com>
 	* include/private/gcconfig.h (GC_data_start): declare when needed.
 	* include/private/gc_priv.h: Include gcconfig.h after ptr_t
