@@ -72,9 +72,6 @@ import javax.swing.plaf.MenuItemUI;
 
 /**
  * DOCUMENT ME!
- *
- * @author $author$
- * @version $Revision: 1.2 $
  */
 public class BasicMenuUI extends BasicMenuItemUI
 {
@@ -272,11 +269,8 @@ public class BasicMenuUI extends BasicMenuItemUI
   }
 
   /**
-  * DOCUMENT ME!
-  *
-  * @author $author$
-  * @version $Revision: 1.2 $
-  */
+   * DOCUMENT ME!
+   */
   protected class MouseInputHandler implements MouseInputListener
   {
     protected MouseInputHandler()

@@ -76,9 +76,6 @@ import javax.swing.plaf.MenuItemUI;
 
 /**
  * DOCUMENT ME!
- *
- * @author $author$
- * @version $Revision: 1.1.2.10 $
  */
 public class BasicMenuItemUI extends MenuItemUI
 {
@@ -724,9 +721,6 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.1.2.10 $
    */
   protected class MouseInputHandler implements MouseInputListener
   {
@@ -821,9 +815,6 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.1.2.10 $
    */
   protected class MenuDragMouseHandler implements MenuDragMouseListener
   {
@@ -866,9 +857,6 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.1.2.10 $
    */
   protected class MenuKeyHandler implements MenuKeyListener
   {
@@ -902,9 +890,6 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.1.2.10 $
    */
   protected class PropertyChangeHandler implements PropertyChangeListener
   {

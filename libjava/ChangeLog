@@ -1,3 +1,19 @@
+2004-06-02  Olga Rodimina  <rodimina@redhat.com>
+
+	* javax/swing/JCheckBoxMenuItem.java:
+	Removed CVS tags.
+	* javax/swing/JMenu.java: Likewise.
+	* javax/swing/JMenuBar.java: Likewise.
+	* javax/swing/JMenuItem.java: Likewise.
+	* javax/swing/JPopupMenu.java: Likewise.
+	* javax/swing/JRadioButtonMenuItem.java: Likewise.
+	* javax/swing/plaf/basic/BasicCheckBoxMenuItemUI.java:Likewise.
+	* javax/swing/plaf/basic/BasicMenuBarUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicMenuItemUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicMenuUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicPopupMenuUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicRadioButtonMenuItemUI.java: Likewise.
+
 2004-06-01  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/ObjectStreamField.java: Cleaned up imports.

@@ -60,9 +60,6 @@ import javax.swing.plaf.MenuItemUI;
 
 /**
  * DOCUMENT ME!
- *
- * @author $author$
- * @version $Revision: 1.3.8.1 $
  */
 public class JMenu extends JMenuItem implements Accessible, MenuElement
 {
@@ -683,9 +680,6 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.3.8.1 $
    */
   protected class AccessibleJMenu extends AccessibleJMenuItem
     implements AccessibleSelection
@@ -811,9 +805,6 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.3.8.1 $
    */
   protected class WinListener extends WindowAdapter implements Serializable
   {
