@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -71,6 +71,9 @@ public class InputStreamReader extends Reader
   {
     synchronized (lock)
       {
+	if (in == null)
+	  throw new IOException("Stream closed");
+
 	if (wpos < wcount)
 	  return true;
 	if (work == null)
@@ -102,6 +105,9 @@ public class InputStreamReader extends Reader
   {
     synchronized (lock)
       {
+	if (in == null)
+	  throw new IOException("Stream closed");
+
 	int wavail = wcount - wpos;
 	if (wavail > 0)
 	  {
@@ -136,6 +142,9 @@ public class InputStreamReader extends Reader
   {
     synchronized (lock)
       {
+	if (in == null)
+	  throw new IOException("Stream closed");
+
 	int wavail = wcount - wpos;
 	if (wavail > 0)
 	  return work[wpos++];
