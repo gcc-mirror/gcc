@@ -1,3 +1,7 @@
+Sun Jan 25 22:22:04 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_expand_block_move): Copy ADDRESSOF to reg.
+
 Sun Jan 25 22:14:28 1998  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (get_run_time): Make sure each case gets its variables.
