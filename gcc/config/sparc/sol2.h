@@ -31,9 +31,11 @@ Boston, MA 02111-1307, USA.  */
 #undef	WINT_TYPE_SIZE
 #define	WINT_TYPE_SIZE BITS_PER_WORD
 
+#define HANDLE_PRAGMA_REDEFINE_EXTNAME 1
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-Dsparc -Dsun -Dunix -D__svr4__ -D__SVR4 \
+"-Dsparc -Dsun -Dunix -D__svr4__ -D__SVR4 -D__PRAGMA_REDEFINE_EXTNAME \
 -Asystem=unix -Asystem=svr4"
 
 #undef CPP_SUBTARGET_SPEC

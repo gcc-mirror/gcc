@@ -1,3 +1,21 @@
+2002-03-22  Richard Henderson  <rth@redhat.com>
+
+	* c-pragma.c (maybe_apply_renaming_pragma): New.
+	(handle_pragma_redefine_extname, pending_redefine_extname): New.
+	(handle_pragma_extern_prefix, pragma_extern_prefix): New.
+	(init_pragma): Register them.
+	* c-pragma.h (maybe_apply_renaming_pragma): Declare.
+	* c-decl.c (finish_decl): Call it.
+	* cp/decl.c (cp_finish_decl): Likewise.
+	* doc/extend.texi: Document the new pragmas.
+ 
+	* config/alpha/osf.h (CPP_SUBTARGET_SPEC): Add __EXTERN_PREFIX.
+	(HANDLE_PRAGMA_EXTERN_PREFIX): New.
+ 
+	* config/i386/sol2.h (CPP_PREDEFINES): Add __PRAGMA_REDEFINE_EXTNAME.
+	(HANDLE_PRAGMA_REDEFINE_EXTNAME): New.
+	* config/sparc/sol2.h: Likewise.
+
 2002-03-22  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa-protos.h (non_acc_reg_operand): Remove.
@@ -88,19 +106,19 @@ Fri Mar 22 16:00:06 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-03-21  Aldy Hernandez  <aldyh@redhat.com>
 
-        * langhooks.c (lhd_tree_inlining_cannot_inline_tree_fn): Check
-        flag_really_no_inline instead of optimize == 0.
+	* langhooks.c (lhd_tree_inlining_cannot_inline_tree_fn): Check
+	flag_really_no_inline instead of optimize == 0.
 
-        * c-objc-common.c (c_cannot_inline_tree_fn): Same.
+	* c-objc-common.c (c_cannot_inline_tree_fn): Same.
 
-        * cp/tree.c (cp_cannot_inline_tree_fn): Same.
+	* cp/tree.c (cp_cannot_inline_tree_fn): Same.
 
-        * flags.h (flag_really_no_inline): New.
+	* flags.h (flag_really_no_inline): New.
 
-        * c-common.c (c_common_post_options): Initialzie
-        flag_really_no_inline.
+	* c-common.c (c_common_post_options): Initialzie
+	flag_really_no_inline.
 
-        * toplev.c (flag_really_no_inline): New.
+	* toplev.c (flag_really_no_inline): New.
 
 2002-03-21  Jakub Jelinek  <jakub@redhat.com>
 
@@ -240,10 +258,10 @@ Thu Mar 21 09:50:48 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2002-03-19  Richard Henderson  <rth@redhat.com>
 
 	PR 5879
-        * except.c (current_function_has_exception_handlers): New.
-        * except.h: Declare it.
-        * sibcall.c (optimize_sibling_and_tail_recursive_call): Use it.
-        Combine tests that disable all sibcalls for the function.
+	* except.c (current_function_has_exception_handlers): New.
+	* except.h: Declare it.
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Use it.
+	Combine tests that disable all sibcalls for the function.
 
 2002-03-19  Richard Henderson  <rth@redhat.com>
 

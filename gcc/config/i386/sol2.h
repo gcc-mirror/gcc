@@ -75,10 +75,11 @@ Boston, MA 02111-1307, USA.  */
 #undef	WINT_TYPE_SIZE
 #define	WINT_TYPE_SIZE BITS_PER_WORD
 
-/* Add "sun" to the list of symbols defined for SVR4.  */
+#define HANDLE_PRAGMA_REDEFINE_EXTNAME 1
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-Dunix -D__svr4__ -D__SVR4 -Dsun -Asystem=svr4"
+  "-Dunix -D__svr4__ -D__SVR4 -Dsun -D__PRAGMA_REDEFINE_EXTNAME -Asystem=svr4"
 
 /* Solaris 2/Intel as chokes on #line directives.  */
 #undef CPP_SPEC
