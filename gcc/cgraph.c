@@ -235,7 +235,7 @@ cgraph_mark_needed_node (node, needed)
       node->reachable = 1;
       if (DECL_SAVED_TREE (node->decl))
 	{
-	  node->aux = cgraph_nodes_queue;
+	  node->next_needed = cgraph_nodes_queue;
 	  cgraph_nodes_queue = node;
         }
     }
@@ -428,7 +428,7 @@ cgraph_varpool_mark_needed_node (struct cgraph_varpool_node *node)
 {
   if (!node->needed && node->finalized)
     {
-      node->aux = cgraph_varpool_nodes_queue;
+      node->next_needed = cgraph_varpool_nodes_queue;
       cgraph_varpool_nodes_queue = node;
     }
   node->needed = 1;
@@ -441,7 +441,7 @@ cgraph_varpool_finalize_decl (tree decl)
 
   if (node->needed && !node->finalized)
     {
-      node->aux = cgraph_varpool_nodes_queue;
+      node->next_needed = cgraph_varpool_nodes_queue;
       cgraph_varpool_nodes_queue = node;
     }
   node->finalized = true;
@@ -469,13 +469,13 @@ cgraph_varpool_assemble_pending_decls ()
       tree decl = cgraph_varpool_nodes_queue->decl;
       struct cgraph_varpool_node *node = cgraph_varpool_nodes_queue;
 
-      cgraph_varpool_nodes_queue = cgraph_varpool_nodes_queue->aux;
+      cgraph_varpool_nodes_queue = cgraph_varpool_nodes_queue->next_needed;
       if (!TREE_ASM_WRITTEN (decl))
 	{
 	  assemble_variable (decl, 0, 1, 0);
 	  changed = true;
 	}
-      node->aux = NULL;
+      node->next_needed = NULL;
     }
   return changed;
 }
