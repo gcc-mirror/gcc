@@ -36,6 +36,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "keyword.h"
 #include "flags.h"
+#include "chartables.h"
 
 /* Function declaration  */
 static char *java_sprint_unicode PARAMS ((struct java_line *, int));
@@ -46,17 +47,17 @@ static int java_is_eol PARAMS ((FILE *, int));
 static tree build_wfl_node PARAMS ((tree));
 #endif
 static void java_store_unicode PARAMS ((struct java_line *, unicode_t, int));
-static unicode_t java_parse_escape_sequence PARAMS ((void));
-static int java_letter_or_digit_p PARAMS ((unicode_t));
-static int java_ignorable_control_p PARAMS ((unicode_t));
-static int java_parse_doc_section PARAMS ((unicode_t));
-static void java_parse_end_comment PARAMS ((unicode_t));
-static unicode_t java_get_unicode PARAMS ((void));
-static unicode_t java_read_unicode PARAMS ((java_lexer *, int *));
-static unicode_t java_read_unicode_collapsing_terminators
-    PARAMS ((java_lexer *, int *));
+static int java_parse_escape_sequence PARAMS ((void));
+static int java_start_char_p PARAMS ((unicode_t));
+static int java_part_char_p PARAMS ((unicode_t));
+static int java_parse_doc_section PARAMS ((int));
+static void java_parse_end_comment PARAMS ((int));
+static int java_get_unicode PARAMS ((void));
+static int java_read_unicode PARAMS ((java_lexer *, int *));
+static int java_read_unicode_collapsing_terminators PARAMS ((java_lexer *,
+							     int *));
 static void java_store_unicode PARAMS ((struct java_line *, unicode_t, int));
-static unicode_t java_read_char PARAMS ((java_lexer *));
+static int java_read_char PARAMS ((java_lexer *));
 static void java_allocate_new_line PARAMS ((void));
 static void java_unget_unicode PARAMS ((void));
 static unicode_t java_sneak_unicode PARAMS ((void));
@@ -217,6 +218,7 @@ java_new_lexer (finput, encoding)
   lex->finput = finput;
   lex->bs_count = 0;
   lex->unget_value = 0;
+  lex->hit_eof = 0;
 
 #ifdef HAVE_ICONV
   lex->handle = iconv_open ("UCS-2", encoding);
@@ -298,7 +300,7 @@ java_destroy_lexer (lex)
   free (lex);
 }
 
-static unicode_t
+static int
 java_read_char (lex)
      java_lexer *lex;
 {
@@ -496,12 +498,12 @@ java_store_unicode (l, c, unicode_escape_p)
   l->unicode_escape_p [l->size++] = unicode_escape_p;
 }
 
-static unicode_t
+static int
 java_read_unicode (lex, unicode_escape_p)
      java_lexer *lex;
      int *unicode_escape_p;
 {
-  unicode_t c;
+  int c;
 
   c = java_read_char (lex);
   *unicode_escape_p = 0;
@@ -549,12 +551,12 @@ java_read_unicode (lex, unicode_escape_p)
   return (unicode_t) '\\';
 }
 
-static unicode_t
+static int
 java_read_unicode_collapsing_terminators (lex, unicode_escape_p)
      java_lexer *lex;
      int *unicode_escape_p;
 {
-  unicode_t c = java_read_unicode (lex, unicode_escape_p);
+  int c = java_read_unicode (lex, unicode_escape_p);
 
   if (c == '\r')
     {
@@ -571,13 +573,18 @@ java_read_unicode_collapsing_terminators (lex, unicode_escape_p)
   return c;
 }
 
-static unicode_t
+static int
 java_get_unicode ()
 {
   /* It's time to read a line when... */
   if (!ctxp->c_line || ctxp->c_line->current == ctxp->c_line->size)
     {
-      unicode_t c;
+      int c;
+      int found_chars = 0;
+
+      if (ctxp->lexer->hit_eof)
+	return UEOF;
+
       java_allocate_new_line ();
       if (ctxp->c_line->line[0] != '\n')
 	{
@@ -586,14 +593,23 @@ java_get_unicode ()
 	      int unicode_escape_p;
 	      c = java_read_unicode_collapsing_terminators (ctxp->lexer,
 							    &unicode_escape_p);
-	      java_store_unicode (ctxp->c_line, c, unicode_escape_p);
-	      if (ctxp->c_line->white_space_only 
-		  && !JAVA_WHITE_SPACE_P (c)
-		  && c != '\n'
-		  && c != UEOF)
-		ctxp->c_line->white_space_only = 0;
+	      if (c != UEOF)
+		{
+		  found_chars = 1;
+		  java_store_unicode (ctxp->c_line, c, unicode_escape_p);
+		  if (ctxp->c_line->white_space_only 
+		      && !JAVA_WHITE_SPACE_P (c)
+		      && c != '\n')
+		    ctxp->c_line->white_space_only = 0;
+		}
 	      if ((c == '\n') || (c == UEOF))
 		break;
+	    }
+
+	  if (c == UEOF && ! found_chars)
+	    {
+	      ctxp->lexer->hit_eof = 1;
+	      return UEOF;
 	    }
 	}
     }
@@ -606,9 +622,8 @@ java_get_unicode ()
  * C is the first character following the '/' and '*'. */
 static void
 java_parse_end_comment (c)
-     unicode_t c;
+     int c;
 {
-
   for ( ;; c = java_get_unicode ())
     {
       switch (c)
@@ -637,7 +652,7 @@ java_parse_end_comment (c)
 
 static int
 java_parse_doc_section (c)
-     unicode_t c;
+     int c;
 {
   int valid_tag = 0, seen_star = 0;
 
@@ -655,10 +670,10 @@ java_parse_doc_section (c)
 	}
       c = java_get_unicode();
     }
-  
+
   if (c == UEOF)
     java_lex_error ("Comment not terminated at end of input", 0);
-  
+
   if (seen_star && (c == '/'))
     return 1;			/* Goto step1 in caller */
 
@@ -673,7 +688,7 @@ java_parse_doc_section (c)
 	  c = java_get_unicode ();
 	  tag [tag_index++] = c;
 	}
-      
+
       if (c == UEOF)
 	java_lex_error ("Comment not terminated at end of input", 0);
       tag [tag_index] = '\0';
@@ -685,28 +700,51 @@ java_parse_doc_section (c)
   return 0;
 }
 
-/* This function to be used only by JAVA_ID_CHAR_P (), otherwise it
-   will return a wrong result.  */
+/* Return true if C is a valid start character for a Java identifier.
+   This is only called if C >= 128 -- smaller values are handled
+   inline.  However, this function handles all values anyway.  */
 static int
-java_letter_or_digit_p (c)
+java_start_char_p (c)
      unicode_t c;
 {
-  return _JAVA_LETTER_OR_DIGIT_P (c);
+  unsigned int hi = c / 256;
+  char *page = type_table[hi];
+  unsigned long val = (unsigned long) page;
+  int flags;
+
+  if ((val & ~ (LETTER_PART | LETTER_START)) != 0)
+    flags = page[c & 255];
+  else
+    flags = val;
+
+  return flags & LETTER_START;
 }
 
-/* This function to be used only by JAVA_ID_CHAR_P ().  */
+/* Return true if C is a valid part character for a Java identifier.
+   This is only called if C >= 128 -- smaller values are handled
+   inline.  However, this function handles all values anyway.  */
 static int
-java_ignorable_control_p (c)
+java_part_char_p (c)
      unicode_t c;
 {
-  return _JAVA_IDENTIFIER_IGNORABLE (c);
+  unsigned int hi = c / 256;
+  char *page = type_table[hi];
+  unsigned long val = (unsigned long) page;
+  int flags;
+
+  if ((val & ~ (LETTER_PART | LETTER_START)) != 0)
+    flags = page[c & 255];
+  else
+    flags = val;
+
+  return flags & LETTER_PART;
 }
 
-static unicode_t
+static int
 java_parse_escape_sequence ()
 {
   unicode_t char_lit;
-  unicode_t c;
+  int c;
 
   switch (c = java_get_unicode ())
     {
@@ -754,8 +792,6 @@ java_parse_escape_sequence ()
 
 	return char_lit;
       }
-    case '\n':
-      return '\n';		/* ULT, caught latter as a specific error */
     default:
       java_lex_error ("Invalid character in escape sequence", 0);
       return JAVA_CHAR_ERROR;
@@ -840,7 +876,8 @@ java_lex (java_lval)
 #endif
      YYSTYPE *java_lval;
 {
-  unicode_t c, first_unicode;
+  int c;
+  unicode_t first_unicode;
   int ascii_index, all_ascii;
   char *string;
 
@@ -863,7 +900,7 @@ java_lex (java_lval)
       if ((c = java_get_unicode ()) == UEOF)
 	return 0;		/* Ok here */
       else
-	java_unget_unicode ();	/* Caught latter at the end the function */
+	java_unget_unicode ();	/* Caught later, at the end of the function */
     }
   /* Handle EOF here */
   if (c == UEOF)	/* Should probably do something here... */
@@ -1189,7 +1226,7 @@ java_lex (java_lval)
   /* Character literals */
   if (c == '\'')
     {
-      unicode_t char_lit;
+      int char_lit;
       if ((c = java_get_unicode ()) == '\\')
 	char_lit = java_parse_escape_sequence ();
       else
@@ -1206,7 +1243,7 @@ java_lex (java_lval)
       if (c != '\'')
 	java_lex_error ("Syntax error in character literal", 0);
 
-      if (c == JAVA_CHAR_ERROR)
+      if (char_lit == JAVA_CHAR_ERROR)
         char_lit = 0;		/* We silently convert it to zero */
 
       JAVA_LEX_CHAR_LIT (char_lit);
@@ -1225,7 +1262,11 @@ java_lex (java_lval)
 	{
 	  if (c == '\\')
 	    c = java_parse_escape_sequence ();
-	  no_error &= (c != JAVA_CHAR_ERROR ? 1 : 0);
+	  if (c == JAVA_CHAR_ERROR)
+	    {
+	      no_error = 0;
+	      c = 0;		/* We silently convert it to zero.  */
+	    }
 	  java_unicode_2_utf8 (c);
 	}
       if (c == '\n' || c == UEOF) /* ULT */
@@ -1469,7 +1510,7 @@ java_lex (java_lval)
   
   /* Keyword, boolean literal or null literal */
   for (first_unicode = c, all_ascii = 1, ascii_index = 0; 
-       JAVA_ID_CHAR_P (c); c = java_get_unicode ())
+       JAVA_PART_CHAR_P (c); c = java_get_unicode ())
     {
       java_unicode_2_utf8 (c);
       if (all_ascii && c >= 128)
@@ -1554,8 +1595,8 @@ java_lex (java_lval)
 	}
     }
   
-  /* We may have and ID here */
-  if (JAVA_ID_CHAR_P(first_unicode) && !JAVA_DIGIT_P (first_unicode))
+  /* We may have an ID here */
+  if (JAVA_START_CHAR_P (first_unicode))
     {
       JAVA_LEX_ID (string);
       java_lval->node = BUILD_ID_WFL (GET_IDENTIFIER (string));

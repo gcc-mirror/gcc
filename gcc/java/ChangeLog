@@ -1,3 +1,30 @@
+2000-11-07  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (JAVA_LEX_C): Added chartables.h.
+	* lex.c (java_ignorable_control_p): Removed.
+	(java_letter_or_digit_p): Removed.
+	(java_start_char_p): New function.
+	(java_read_char): Return `int', not `unicode_t'.  Changed
+	callers.
+	(java_read_unicode): Likewise.
+	(java_read_unicode_collapsing_terminators): Likewise.
+	(java_get_unicode): Likewise.
+	(java_new_lexer): Initialize hit_eof.
+	(java_parse_end_comment): Take `int' argument.
+	(java_parse_doc_section): Likewise.
+	(java_parse_escape_sequence): Don't allow backlash-newline.
+	Return `int'.
+	* lex.h (JAVA_DIGIT_P): Removed.
+	(_JAVA_LETTER_OR_DIGIT_P): Removed.
+	(_JAVA_IDENTIFIER_IGNORABLE): Removed.
+	(JAVA_START_CHAR_P): Renamed from JAVA_ID_CHAR_P.
+	(JAVA_PART_CHAR_P): New macro.
+	(UEOF): Now -1.
+	(JAVA_CHAR_ERROR): Now -2.
+	(java_lexer): New field `hit_eof'.
+	* chartables.h: New file.
+	* gen-table.pl: new file.
+
 2000-11-20  Tom Tromey  <tromey@cygnus.com>
             Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
