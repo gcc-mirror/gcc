@@ -2087,7 +2087,12 @@ life_analysis (f, nregs, file, remove_dead_code)
 
   /* We want alias analysis information for local dead store elimination.  */
   init_alias_analysis ();
+
   life_analysis_1 (f, nregs, remove_dead_code);
+
+  if (! reload_completed)
+    mark_constant_function ();
+
   end_alias_analysis ();
 
   if (file)
