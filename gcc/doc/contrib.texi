@@ -225,7 +225,8 @@ Klaus Kaempf for his ongoing work to make alpha-vms a viable target.
 David Kashtan of SRI adapted GCC to VMS@.
 
 @item
-Geoffrey Keating for his ongoing work to make the PPC work for Linux.
+Geoffrey Keating for his ongoing work to make the PPC work for Linux
+and his automatic regression tester.
 
 @item
 Brendan Kehoe for his ongoing work with g++.
@@ -436,6 +437,9 @@ including valarray implementation and limits support.
 @item
 Joern Rennecke for maintaining the sh port, loop, regmove & reload
 hacking.
+
+@item
+Craig Rodrigues for processing tons of bug reports.
 
 @item
 Gavin Romig-Koch for lots of behind the scenes MIPS work.
@@ -658,6 +662,9 @@ Dave Love
 
 @item
 H.J. Lu
+
+@item
+Brad Lucier
 
 @item
 Mumit Khan

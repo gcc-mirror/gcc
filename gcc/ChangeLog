@@ -1,3 +1,9 @@
+2002-03-20  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Update Geoffrey Keating.
+	Add Craig Rodrigues.
+	Add Brad Lucier to testers.
+
 2002-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/4792
