@@ -424,6 +424,7 @@ in the following sections.
 -mtune=@var{cpu-type} @gol
 -mpower  -mno-power  -mpower2  -mno-power2 @gol
 -mpowerpc  -mpowerpc64  -mno-powerpc @gol
+-maltivec -mno-altivec @gol
 -mpowerpc-gpopt  -mno-powerpc-gpopt @gol
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
 -mnew-mnemonics  -mold-mnemonics @gol
@@ -436,6 +437,7 @@ in the following sections.
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mcall-aix -mcall-sysv -mcall-netbsd @gol
+-mabi=altivec @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
 -msdata=@var{opt}  -mvxworks -G @var{num}}
@@ -6684,6 +6686,15 @@ values for @var{cpu_type} are used for @option{-mtune} as for
 architecture, registers, and mnemonics set by @option{-mcpu}, but the
 scheduling parameters set by @option{-mtune}.
 
+@item -maltivec
+@itemx -mno-altivec
+@opindex maltivec
+@opindex mno-altivec
+These switches enable or disable the use of built-in functions that
+allow access to the AltiVec instruction set.  You may also need to set
+@option{-mabi=altivec} to adjust the current ABI with AltiVec ABI
+enhancements.
+
 @item -mfull-toc
 @itemx -mno-fp-in-toc
 @itemx -mno-sum-in-toc
@@ -6911,6 +6922,12 @@ Linux-based GNU system.
 @opindex mcall-netbsd
 On System V.4 and embedded PowerPC systems compile code for the
 NetBSD operating system.
+
+@item -mabi=altivec
+@opindex mabi=altivec
+Extend the current ABI with AltiVec ABI extensions.  This does not
+change the default ABI, instead it adds the AltiVec ABI extensions to
+the current ABI@.
 
 @item -mprototype
 @itemx -mno-prototype
