@@ -728,11 +728,7 @@ divmod_operator (op, mode)
    a constant.  It must be a valid address.  This means that we can do
    this as an aligned reference plus some offset.
 
-   Take into account what reload will do.
-
-   We could say that out-of-range stack slots are alignable, but that would
-   complicate get_aligned_mem and it isn't worth the trouble since few
-   functions have large stack space.  */
+   Take into account what reload will do.  */
 
 int
 aligned_memory_operand (op, mode)
@@ -747,11 +743,18 @@ aligned_memory_operand (op, mode)
       mode = GET_MODE (op);
     }
 
-  if (reload_in_progress && GET_CODE (op) == REG
-      && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-    op = reg_equiv_mem[REGNO (op)];
+  if (reload_in_progress)
+    {
+      /* This is a stack slot.  The stack pointer is always aligned.
+	 We may have to jump through hoops to get a valid address,
+	 but we can do it.  */
+      if (GET_CODE (op) == REG
+          && REGNO (op) >= FIRST_PSEUDO_REGISTER)
+	return 1;
+    }
 
-  if (GET_CODE (op) != MEM || GET_MODE (op) != mode
+  if (GET_CODE (op) != MEM
+      || GET_MODE (op) != mode
       || ! memory_address_p (mode, XEXP (op, 0)))
     return 0;
 
@@ -899,11 +902,12 @@ direct_return ()
 
 /* REF is an alignable memory location.  Place an aligned SImode
    reference into *PALIGNED_MEM and the number of bits to shift into
-   *PBITNUM.  */
+   *PBITNUM.  SCRATCH is a free register for use in reloading out
+   of range stack slots.  */
 
 void
-get_aligned_mem (ref, paligned_mem, pbitnum)
-     rtx ref;
+get_aligned_mem (ref, scratch, paligned_mem, pbitnum)
+     rtx ref, scratch;
      rtx *paligned_mem, *pbitnum;
 {
   rtx base;
@@ -919,13 +923,48 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
       ref = SUBREG_REG (ref);
     }
 
-  if (GET_CODE (ref) == REG)
-    ref = reg_equiv_mem[REGNO (ref)];
-
   if (reload_in_progress)
-    base = find_replacement (&XEXP (ref, 0));
+    {
+      if (GET_CODE (ref) == REG)
+	{
+	  /* The "simple" case is where the stack slot is in range.  */
+	  if (reg_equiv_mem[REGNO (ref)])
+	    {
+	      ref = reg_equiv_mem[REGNO (ref)];
+	      base = find_replacement (&XEXP (ref, 0));
+	    }
+	  else
+	    {
+	      /* The stack slot isn't in range.  Fix it up as needed.  */
+	      HOST_WIDE_INT hi, lo;
+
+	      base = reg_equiv_address[REGNO (ref)];
+	      if (GET_CODE (base) != PLUS)
+		abort ();
+	      offset += INTVAL (XEXP (base, 1));
+	      base = XEXP (base, 0);
+
+	      lo = ((offset & 0xFFFF) ^ 0x8000) - 0x8000;
+	      hi = (((offset - lo) & 0xFFFFFFFF) ^ 0x80000000) - 0x80000000;
+	      if (hi + lo != offset)
+		abort ();
+	      if (scratch == NULL)
+		abort ();
+
+	      emit_insn (gen_adddi3 (scratch, base, GEN_INT (hi)));
+	      base = scratch;
+	      offset = lo;
+	    }
+	}
+      else
+	base = find_replacement (&XEXP (ref, 0));
+    }
   else
-    base = XEXP (ref, 0);
+    {
+      if (GET_CODE (ref) != MEM)
+	abort ();
+      base = XEXP (ref, 0);
+    }
 
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
@@ -962,13 +1001,27 @@ get_unaligned_address (ref, extra_offset)
       ref = SUBREG_REG (ref);
     }
 
-  if (GET_CODE (ref) == REG)
-    ref = reg_equiv_mem[REGNO (ref)];
-
   if (reload_in_progress)
-    base = find_replacement (&XEXP (ref, 0));
+    {
+      if (GET_CODE (ref) == REG)
+	{
+	  if (reg_equiv_mem[REGNO (ref)])
+            ref = reg_equiv_mem[REGNO (ref)];
+	  else
+	    {
+	      /* The stack slot is out of range.  We should have handled
+		 this as an aligned access -- I wonder why we didn't? */
+	      abort ();
+	    }
+	}
+      base = find_replacement (&XEXP (ref, 0));
+    }
   else
-    base = XEXP (ref, 0);
+    {
+      if (GET_CODE (ref) != MEM)
+	abort ();
+      base = XEXP (ref, 0);
+    }
 
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);

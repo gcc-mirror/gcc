@@ -1,3 +1,12 @@
+Mon Apr 12 03:07:44 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (aligned_memory_operand): Handle out of range stack slots.
+	Take a new SCRATCH argument for the occasion.  Update all callers.
+	(get_unaligned_address): Abort on out of range stack slots.
+	* alpha.md (adddi3 splitter): Check s_p_rtx not REGNO.
+	(reload_inqi): Check for aligned mems before unaligned.
+	(reload_inhi): Likewise.
+
 Mon Apr 12 03:11:30 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (flow_delete_insn): If we delete a CODE_LABEL, also remove
