@@ -674,10 +674,15 @@ write_name (decl, ignore_local_scope)
   else
     context = (DECL_CONTEXT (decl) == NULL) ? NULL : CP_DECL_CONTEXT (decl);
 
-  /* Decls in :: or ::std scope are treated specially.  */
+  /* A decl in :: or ::std scope is treated specially.  The former is
+     mangled using <unscoped-name> or <unscoped-template-name>, the
+     latter with a special substitution.  Also, a name that is
+     directly in a local function scope is also mangled with
+     <unscoped-name> rather than a full <nested-name>.  */
   if (context == NULL 
       || context == global_namespace 
-      || DECL_NAMESPACE_STD_P (context))
+      || DECL_NAMESPACE_STD_P (context)
+      || (ignore_local_scope && TREE_CODE (context) == FUNCTION_DECL))
     {
       tree template_info;
       /* Is this a template instance?  */
@@ -748,8 +753,11 @@ write_unscoped_name (decl)
       write_string ("St");
       write_unqualified_name (decl);
     }
-  /* If not, it should be in the global namespace.  */
-  else if (context == global_namespace || context == NULL)
+  /* If not, it should be either in the global namespace, or directly
+     in a local function scope.  */
+  else if (context == global_namespace 
+	   || context == NULL
+	   || TREE_CODE (context) == FUNCTION_DECL)
     write_unqualified_name (decl);
   else 
     my_friendly_abort (20000521);
