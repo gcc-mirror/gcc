@@ -1,3 +1,10 @@
+2000-07-13  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Add missing files from last check-in:
+	* java/awt/image/ImageConsumer.java: New file.
+	* java/awt/image/ImageProducer.java: New file.
+	* java/awt/image/ImageObserver.java: New file.
+
 2000-07-12  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Merged implementation of java.applet from classpath:
