@@ -7,10 +7,10 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=c99" } */
-/* This test fails on ARM cores because we use a block move to
+/* This test fails on ARM and Xtensa cores because we use a block move to
    initialize "S" in test2, and GCC is not clever enough to eliminate
    the block move.  */
-/* { dg-final { scan-assembler-not "L\\\$?C\[^A-Z\]" { xfail arm-*-* strongarm-*-* xscale-*-* powerpc*-*-aix* } } } */
+/* { dg-final { scan-assembler-not "L\\\$?C\[^A-Z\]" { xfail arm-*-* strongarm-*-* xscale-*-* powerpc*-*-aix* xtensa-*-* } } } */
 
 #define I (__extension__ 1.0iF)
 
