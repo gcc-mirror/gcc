@@ -12,7 +12,11 @@
 #include <objc/objc.h>
 #include <objc/Object.h>
 #include <objc/Protocol.h>
+
+#ifndef __NEXT_RUNTIME__
 #include <objc/encoding.h>
+#endif
+#include "next_mapping.h"
 
 @protocol MyProtocol
 + (bycopy id<MyProtocol>) bycopyMethod;

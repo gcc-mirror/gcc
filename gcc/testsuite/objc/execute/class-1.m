@@ -2,6 +2,8 @@
 #include <objc/objc.h>
 #include <objc/objc-api.h>
 
+#include "next_mapping.h"
+
 /* Tests creating a RootClass */
 
 @interface RootClass

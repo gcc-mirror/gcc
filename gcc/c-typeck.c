@@ -511,8 +511,12 @@ comptypes (tree type1, tree type2, int flags)
   switch (TREE_CODE (t1))
     {
     case POINTER_TYPE:
+      /* We must give ObjC the first crack at comparing pointers, since
+	   protocol qualifiers may be involved.  */
+      if (c_dialect_objc () && (val = objc_comptypes (t1, t2, 0)) >= 0)
+	break;
       val = (TREE_TYPE (t1) == TREE_TYPE (t2)
-	      ? 1 : comptypes (TREE_TYPE (t1), TREE_TYPE (t2), flags));
+	     ? 1 : comptypes (TREE_TYPE (t1), TREE_TYPE (t2), flags));
       break;
 
     case FUNCTION_TYPE:
@@ -560,6 +564,8 @@ comptypes (tree type1, tree type2, int flags)
       }
 
     case RECORD_TYPE:
+      /* We are dealing with two distinct structs.  In assorted Objective-C
+	 corner cases, however, these can still be deemed equivalent.  */
       if (c_dialect_objc () && objc_comptypes (t1, t2, 0) == 1)
 	val = 1;
 
@@ -2927,7 +2933,7 @@ build_c_cast (tree type, tree expr)
   /* The ObjC front-end uses TYPE_MAIN_VARIANT to tie together types differing
      only in <protocol> qualifications.  But when constructing cast expressions,
      the protocols do matter and must be kept around.  */
-  if (!c_dialect_objc () || !objc_is_id (type))
+  if (!c_dialect_objc () || !objc_is_object_ptr (type))
     type = TYPE_MAIN_VARIANT (type);
 
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -3488,6 +3494,7 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
       tree ttl = TREE_TYPE (type);
       tree ttr = TREE_TYPE (rhstype);
       bool is_opaque_pointer;
+      int target_cmp = 0;   /* Cache comp_target_types () result.  */
 
       /* Opaque pointers are treated like void pointers.  */
       is_opaque_pointer = ((*targetm.vector_opaque_p) (type)
@@ -3499,7 +3506,7 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
 	 and vice versa; otherwise, targets must be the same.
 	 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
       if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
-	  || comp_target_types (type, rhstype, 0)
+	  || (target_cmp = comp_target_types (type, rhstype, 0))
 	  || is_opaque_pointer
 	  || (c_common_unsigned_type (TYPE_MAIN_VARIANT (ttl))
 	      == c_common_unsigned_type (TYPE_MAIN_VARIANT (ttr))))
@@ -3525,7 +3532,7 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
 	      /* If this is not a case of ignoring a mismatch in signedness,
 		 no warning.  */
 	      else if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
-		       || comp_target_types (type, rhstype, 0))
+		       || target_cmp)
 		;
 	      /* If there is a mismatch, do warn.  */
 	      else if (pedantic)

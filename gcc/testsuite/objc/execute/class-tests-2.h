@@ -62,6 +62,6 @@ void test_accessor_method (TYPE_OF_OBJECT_WITH_ACCESSOR_METHOD object,
       abort ();
     }  
 }
-#endif CLASS_WITH_ACCESSOR_METHOD
+#endif /* CLASS_WITH_ACCESSOR_METHOD */
 
 

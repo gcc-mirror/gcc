@@ -2,6 +2,8 @@
 #include <objc/objc.h>
 #include <objc/objc-api.h>
 
+#include "next_mapping.h"
+
 /* Tests creating a root class and a subclass with an ivar and
    accessor methods; accessor methods implemented in a separate
    category */
@@ -13,6 +15,9 @@
 @end
 
 @implementation RootClass
+#ifdef __NEXT_RUNTIME__                                   
++ initialize { return self; }
+#endif
 @end
 
 @interface SubClass : RootClass
@@ -49,6 +54,13 @@ int main (void)
   SubClass *object;
 
   test_class_with_superclass ("SubClass", "RootClass");
+
+  /* The NeXT runtime's category implementation is lazy: categories are not attached 
+     to classes until the class is initialized (at +initialize time).  */
+#ifdef __NEXT_RUNTIME__
+  [SubClass initialize];
+#endif
+
   test_that_class_has_instance_method ("SubClass", @selector (setState:));
   test_that_class_has_instance_method ("SubClass", @selector (state));
 

@@ -847,8 +847,16 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       flag_next_runtime = value;
       break;
 
+    case OPT_fnil_receivers:
+      flag_nil_receivers = value;
+      break;
+
     case OPT_fnonansi_builtins:
       flag_no_nonansi_builtin = !value;
+      break;
+
+    case OPT_fobjc_exceptions:
+      flag_objc_exceptions = value;
       break;
 
     case OPT_foperator_names:
@@ -871,6 +879,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->preprocessed = value;
       break;
 
+    case OPT_freplace_objc_classes:
+      flag_replace_objc_classes = value;
+      break;
+      
     case OPT_frepo:
       flag_use_repository = value;
       if (value)
@@ -913,6 +925,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fweak:
       flag_weak = value;
+      break;
+
+    case OPT_fzero_link:
+      flag_zero_link = value;
       break;
 
     case OPT_gen_decls:

@@ -17,6 +17,9 @@
 
   return self;
 }
+#ifdef __NEXT_RUNTIME__                                   
++ initialize { return self; }
+#endif
 @end
 
 

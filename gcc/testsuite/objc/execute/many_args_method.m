@@ -30,6 +30,9 @@
 {
   return [self sumInteger: a  withInteger: b  withInteger: c];
 }
+#ifdef __NEXT_RUNTIME__                                   
++ initialize { return self; }
+#endif
 @end
 
 

@@ -99,7 +99,10 @@ enum rid
   RID_ID,          RID_AT_ENCODE,    RID_AT_END,
   RID_AT_CLASS,    RID_AT_ALIAS,     RID_AT_DEFS,
   RID_AT_PRIVATE,  RID_AT_PROTECTED, RID_AT_PUBLIC,
-  RID_AT_PROTOCOL, RID_AT_SELECTOR,  RID_AT_INTERFACE,
+  RID_AT_PROTOCOL, RID_AT_SELECTOR,  
+  RID_AT_THROW,	   RID_AT_TRY,       RID_AT_CATCH,
+  RID_AT_FINALLY,  RID_AT_SYNCHRONIZED,
+  RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
 
   RID_MAX,
@@ -353,6 +356,25 @@ extern void resort_sorted_fields (void *, void *, gt_pointer_operator,
 /* Nonzero if prepreprocessing only.  */
 
 extern int flag_preprocess_only;
+
+/* Zero means that faster, ...NonNil variants of objc_msgSend...
+   calls will be used in ObjC; passing nil receivers to such calls
+   will most likely result in crashes.  */
+extern int flag_nil_receivers;
+
+/* Nonzero means that we will allow new ObjC exception syntax (@throw,
+   @try, etc.) in source code.  */
+extern int flag_objc_exceptions;
+
+/* Nonzero means that code generation will be altered to support
+   "zero-link" execution.  This currently affects ObjC only, but may
+   affect other languages in the future.  */
+extern int flag_zero_link;
+
+/* Nonzero means emit an '__OBJC, __image_info' for the current translation
+   unit.  It will inform the ObjC runtime that class definition(s) herein
+   contained are to replace one(s) previously loaded.  */
+extern int flag_replace_objc_classes;
 
 /* Nonzero means don't output line number information.  */
 
@@ -1308,6 +1330,19 @@ extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);
 extern int c_estimate_num_insns (tree decl);
 extern bool c_decl_uninit (tree t);
+
+/* The following have been moved here from c-tree.h, since they're needed
+   in the ObjC++ world, too.  What is more, stub-objc.c could use a few
+   prototypes.  */
+extern tree lookup_interface (tree);
+extern tree is_class_name (tree);
+extern tree objc_is_object_ptr (tree);
+extern void objc_check_decl (tree);
+extern int objc_comptypes (tree, tree, int);
+extern tree objc_message_selector (void);
+extern tree lookup_objc_ivar (tree);
+extern void *get_current_scope (void);
+extern void objc_mark_locals_volatile (void *);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);

@@ -346,7 +346,25 @@ int warn_format_nonliteral;
 
 int warn_format_security;
 
+/* Zero means that faster, ...NonNil variants of objc_msgSend...
+   calls will be used in ObjC; passing nil receivers to such calls
+   will most likely result in crashes.  */
+int flag_nil_receivers = 1;
 
+/* Nonzero means that we will allow new ObjC exception syntax (@throw,
+   @try, etc.) in source code.  */
+int flag_objc_exceptions = 0;
+
+/* Nonzero means that code generation will be altered to support
+   "zero-link" execution.  This currently affects ObjC only, but may
+   affect other languages in the future.  */
+int flag_zero_link = 0;
+
+/* Nonzero means emit an '__OBJC, __image_info' for the current translation
+   unit.  It will inform the ObjC runtime that class definition(s) herein
+   contained are to replace one(s) previously loaded.  */
+int flag_replace_objc_classes = 0;
+   
 /* C/ObjC language option variables.  */
 
 

@@ -3,6 +3,11 @@
 /* { dg-do compile } */
 #include <objc/objc.h>
 
+/* The NeXT runtime headers do not define NULL.  */
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
 @protocol MyProtocol
 - (void) method;
 @end

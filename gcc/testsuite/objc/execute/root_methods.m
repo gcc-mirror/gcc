@@ -1,6 +1,8 @@
 /* Contributed by Nicola Pero - Thu Mar  8 16:27:46 CET 2001 */
 #include <objc/objc.h>
 
+#include "next_mapping.h"
+
 /* Test that instance methods of root classes are available as class 
    methods to other classes as well */
 
@@ -16,6 +18,9 @@
 {
   return self;
 }
+#ifdef __NEXT_RUNTIME__                                   
++ initialize { return self; }
+#endif
 @end
 
 @interface NormalClass : RootClass

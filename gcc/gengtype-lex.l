@@ -194,6 +194,8 @@ ITYPE	{IWORD}({WS}{IWORD})*
 
 ^"%{"				{ BEGIN(in_yacc_escape); }
 
+^"@@".*				/* Used for c-parse.in C/ObjC demarcation.  */
+
 {WS}				{ update_lineno (yytext, yyleng); }
 
 "const"/[^[:alnum:]_]		/* don't care */

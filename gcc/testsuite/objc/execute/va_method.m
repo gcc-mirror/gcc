@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero - Thu Mar  8 16:27:46 CET 2001 */
 #include <objc/objc.h>
 #include <objc/objc-api.h>
+#include <stdarg.h>
 
 /* Test method with variable number of arguments */
 
@@ -31,6 +32,9 @@
 
   return sum;
 }
+#ifdef __NEXT_RUNTIME__                                   
++ initialize { return self; }
+#endif
 @end
 
 int main (void)

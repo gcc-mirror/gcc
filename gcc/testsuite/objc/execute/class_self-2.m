@@ -32,6 +32,9 @@ struct d
   
   return u;
 }
+#ifdef __NEXT_RUNTIME__                                   
++ initialize { return self; }
+#endif
 @end
 
 /* The second class */
@@ -54,6 +57,9 @@ struct d
     }
 }
 
+#ifdef __NEXT_RUNTIME__                                   
++ initialize { return self; }
+#endif
 @end
 
 

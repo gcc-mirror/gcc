@@ -1214,6 +1214,8 @@ machopic_select_section (tree exp, int reloc,
 	objc_symbols_section ();
       else if (!strncmp (name, "_OBJC_MODULES", 13))
 	objc_module_info_section ();
+      else if (!strncmp (name, "_OBJC_IMAGE_INFO", 16))
+	objc_image_info_section ();
       else if (!strncmp (name, "_OBJC_PROTOCOL_INSTANCE_METHODS_", 32))
 	objc_cat_inst_meth_section ();
       else if (!strncmp (name, "_OBJC_PROTOCOL_CLASS_METHODS_", 29))

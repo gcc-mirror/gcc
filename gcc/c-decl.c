@@ -410,6 +410,39 @@ pop_scope (void)
   scope_freelist = scope;
 }
 
+/* The Objective-C front-end often needs to determine the current scope.  */
+
+void *
+get_current_scope (void)
+{
+  return current_scope;
+}
+
+/* The following function is used only by Objective-C.  It needs to live here
+   because it accesses the innards of c_scope.  */
+
+void
+objc_mark_locals_volatile (void *enclosing_blk)
+{
+  struct c_scope *scope;
+  
+  for (scope = current_scope; 
+       scope && scope != enclosing_blk;
+       scope = scope->outer)
+    {
+      tree decl;
+      
+      for (decl = scope->names; decl; decl = TREE_CHAIN (decl))
+	{
+	  DECL_REGISTER (decl) = 0;
+	  TREE_THIS_VOLATILE (decl) = 1;
+	}
+      /* Do not climb up past the current function.  */
+      if (scope->function_body)
+	break;
+    }	
+}     
+  
 /* Nonzero if we are currently in the global scope.  */
 
 int
@@ -2718,6 +2751,11 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
   if (init)
     store_init_value (decl, init);
 
+  if (c_dialect_objc () && (TREE_CODE (decl) == VAR_DECL
+		    || TREE_CODE (decl) == FUNCTION_DECL
+		    || TREE_CODE (decl) == FIELD_DECL))
+    objc_check_decl (decl);
+
   /* Deduce size of array from initialization, if not already known */
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == 0
@@ -2909,12 +2947,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
     mark_referenced (DECL_ASSEMBLER_NAME (decl));
 
   if (TREE_CODE (decl) == TYPE_DECL)
-    {
-      /* This is a no-op in c-lang.c or something real in objc-act.c.  */
-      if (c_dialect_objc ())
-	objc_check_decl (decl);
-      rest_of_decl_compilation (decl, NULL, DECL_FILE_SCOPE_P (decl), 0);
-    }
+    rest_of_decl_compilation (decl, NULL, DECL_FILE_SCOPE_P (decl), 0);
 
   /* At the end of a declaration, throw away any variable type sizes
      of types defined inside that declaration.  There is no use
@@ -4778,8 +4811,6 @@ grokfield (tree declarator, tree declspecs, tree width)
   finish_decl (value, NULL_TREE, NULL_TREE);
   DECL_INITIAL (value) = width;
 
-  if (c_dialect_objc ())
-    objc_check_decl (value);
   return value;
 }
 

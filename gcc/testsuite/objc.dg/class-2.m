@@ -10,6 +10,5 @@
 @interface class1 : supclass1
 @end
 
-@implementation class1 : supclass2
-@end  /* { dg-error "conflicting super class name" } */
-/* { dg-error "previous declaration" "" { target *-*-* } 14 } */
+@implementation class1 : supclass2 /* { dg-error "conflicting super class name" } */
+@end /* { dg-error "previous declaration" "" { target *-*-* } 13 } */
