@@ -1871,7 +1871,7 @@ operand_equal_for_comparison_p (arg0, arg1, other)
 {
   int unsignedp1, unsignedpo;
   tree primarg1, primother;
-  int correct_width;
+  unsigned correct_width;
 
   if (operand_equal_p (arg0, arg1, 0))
     return 1;
