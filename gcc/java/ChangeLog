@@ -1,3 +1,8 @@
+2001-06-04  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* expr.c (force_evaluation_order): Match wrapped ctor calls, locate
+	arguments accordingly.
+
 2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcj.texi: Move contents to just after title page.

@@ -3263,16 +3263,31 @@ force_evaluation_order (node)
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (node, 1)))
 	TREE_OPERAND (node, 0) = save_expr (TREE_OPERAND (node, 0));
     }
-  else if (TREE_CODE (node) == CALL_EXPR || TREE_CODE (node) == NEW_CLASS_EXPR)
+  else if (TREE_CODE (node) == CALL_EXPR
+           || TREE_CODE (node) == NEW_CLASS_EXPR
+           || (TREE_CODE (node) == COMPOUND_EXPR
+               && TREE_CODE (TREE_OPERAND (node, 0)) == CALL_EXPR
+               && TREE_CODE (TREE_OPERAND (node, 1)) == SAVE_EXPR)) 
     {
       tree arg, cmp;
 
       if (!TREE_OPERAND (node, 1))
 	return node;
 
+      arg = node;
+      
+      /* Position arg properly, account for wrapped around ctors. */
+      if (TREE_CODE (node) == COMPOUND_EXPR)
+        arg = TREE_OPERAND (node, 0);
+      
+      arg = TREE_OPERAND (arg, 1);
+      
+      /* Not having a list of argument here is an error. */ 
+      if (TREE_CODE (arg) != TREE_LIST)
+        abort ();
+
       /* This reverses the evaluation order. This is a desired effect. */
-      for (cmp = NULL_TREE, arg = TREE_OPERAND (node, 1); 
-	   arg; arg = TREE_CHAIN (arg))
+      for (cmp = NULL_TREE; arg; arg = TREE_CHAIN (arg))
 	{
 	  tree saved = save_expr (force_evaluation_order (TREE_VALUE (arg)));
 	  cmp = (cmp == NULL_TREE ? saved :
