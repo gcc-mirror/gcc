@@ -1,3 +1,16 @@
+2004-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/15383
+	* config/ia64/ia64.c (ia64_expand_compare): Don't check
+	TARGET_HPUX for TFmode compare. Abort if op0 is in TFmode and
+	cmptf_libfunc isn't set.
+	(ia64_init_libfuncs): Rename TFmode libfuncs using the HPUX
+	conventions.
+	(ia64_sysv4_init_libfuncs): New.
+
+	* config/ia64/sysv4.h (TARGET_INIT_LIBFUNCS): New. Defined as
+	ia64_sysv4_init_libfuncs.
+
 2004-05-20  Falk Hueffner  <falk@debian.org>
 
 	PR other/15526

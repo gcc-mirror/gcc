@@ -1,5 +1,8 @@
 /* Override definitions in elfos.h/svr4.h to be correct for IA64.  */
 
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS ia64_sysv4_init_libfuncs
+
 /* We want DWARF2 as specified by the IA64 ABI.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
