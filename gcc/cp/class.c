@@ -1197,7 +1197,7 @@ handle_using_decl (tree using_decl, tree t)
     alter_access (t, fdecl, access);
 }
 
-/* Run through the base clases of T, updating
+/* Run through the base classes of T, updating
    CANT_HAVE_DEFAULT_CTOR_P, CANT_HAVE_CONST_CTOR_P, and
    NO_CONST_ASN_REF_P.  Also set flag bits in T based on properties of
    the bases.  */

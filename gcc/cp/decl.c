@@ -6008,7 +6008,7 @@ check_static_variable_definition (tree decl, tree type)
       error ("invalid in-class initialization of static data member of non-integral type `%T'",
 	     type);
       /* If we just return the declaration, crashes will sometimes
-	 occur.  We therefore return void_type_node, as if this was a
+	 occur.  We therefore return void_type_node, as if this were a
 	 friend declaration, to cause callers to completely ignore
 	 this declaration.  */
       return 1;

@@ -1065,7 +1065,7 @@ typedef enum cp_parser_flags
 
 typedef enum cp_parser_declarator_kind
 {
-  /* We want an abstract declartor.  */
+  /* We want an abstract declarator.  */
   CP_PARSER_DECLARATOR_ABSTRACT,
   /* We want a named declarator.  */
   CP_PARSER_DECLARATOR_NAMED,
@@ -12791,7 +12791,7 @@ cp_parser_base_specifier (cp_parser* parser)
 	  break;
 	}
     }
-  /* It is not uncommon to see programs mechanically, errouneously, use
+  /* It is not uncommon to see programs mechanically, erroneously, use
      the 'typename' keyword to denote (dependent) qualified types
      as base classes.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME))
@@ -15050,7 +15050,7 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   parser->object_scope = NULL_TREE;
 }
 
-/* Add tokens to CACHE until an non-nested END token appears.  */
+/* Add tokens to CACHE until a non-nested END token appears.  */
 
 static void
 cp_parser_cache_group (cp_parser *parser, 

@@ -5477,7 +5477,7 @@ build_ptrmemfunc (tree type, tree pfn, int force)
    given by CST.
 
    ??? There is no consistency as to the types returned for the above
-   values.  Some code acts as if its a sizetype and some as if its
+   values.  Some code acts as if it were a sizetype and some as if it were
    integer_type_node.  */
 
 void

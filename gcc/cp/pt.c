@@ -1092,7 +1092,7 @@ register_specialization (tree spec, tree tmpl, tree args)
 
 			 If there was a definition for the template, but
 			 not for the specialization, we want this to
-			 look as if there is no definition, and vice
+			 look as if there were no definition, and vice
 			 versa.  */
 		      DECL_INITIAL (fn) = NULL_TREE;
 		      duplicate_decls (spec, fn);
@@ -8036,7 +8036,7 @@ tsubst_copy_and_build (tree t,
     {
     case USING_DECL:
       t = DECL_NAME (t);
-      /* Fallthrough.  */
+      /* Fall through.  */
     case IDENTIFIER_NODE:
       {
 	tree decl;
