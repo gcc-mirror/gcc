@@ -1,3 +1,7 @@
+2002-04-17  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite_flags.in (cxxflags):  Also pass @EXTRA_CXX_FLAGS@.
+
 2002-04-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu (__malloc_alloc_template): Add.
