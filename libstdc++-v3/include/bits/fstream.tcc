@@ -73,7 +73,7 @@ namespace std
     basic_filebuf() : __streambuf_type(), _M_file(&_M_lock), 
     _M_state_cur(__state_type()), _M_state_beg(__state_type()), 
     _M_buf(NULL), _M_buf_size(BUFSIZ), _M_buf_allocated(false),
-    _M_last_overflowed(false), _M_pback_cur_save(0),
+    _M_last_overflowed(false), _M_filepos(0), _M_pback_cur_save(0),
     _M_pback_end_save(0), _M_pback_init(false), _M_codecvt(0)
     { 
       this->_M_buf_unified = true; 	  
@@ -125,7 +125,7 @@ namespace std
 	      const bool __testput = this->_M_out_beg < this->_M_out_lim;
 
 	      if (__testput 
-		  && traits_type::eq_int_type(_M_overflow(__eof), __eof))
+		  && traits_type::eq_int_type(this->overflow(), __eof))
 		__testfail = true;
 
 #if 0
@@ -133,7 +133,7 @@ namespace std
 	      if (_M_last_overflowed)
 		{
 		  _M_output_unshift();
-		  _M_overflow(__eof);
+		  this->overflow();
 		}
 #endif
 	    }
@@ -204,7 +204,7 @@ namespace std
 
 	  // Sync internal and external buffers.
 	  if (__testout && this->_M_out_beg < this->_M_out_lim)
-	    _M_overflow();
+	    this->overflow();
 
 	  if (_M_buf_size > 1)
 	    {
@@ -324,64 +324,46 @@ namespace std
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
-    _M_overflow(int_type __c)
-    {
-      int_type __ret = traits_type::eof();
-      const bool __testeof = traits_type::eq_int_type(__c, __ret);
-      const bool __testput = this->_M_out_beg < this->_M_out_lim;
-
-      if (__testput)
- 	{
- 	  // Need to restore current position. The position of the
- 	  // external byte sequence (_M_file) corresponds to
- 	  // _M_filepos, and we need to move it to _M_out_beg for the
- 	  // write.
-	  if (_M_filepos != this->_M_out_beg)
-	    _M_file.seekoff(this->_M_out_beg - _M_filepos, ios_base::cur);
-
-	  // If appropriate, append the overflow char.
-	  if (!__testeof)
-	    *this->_M_out_lim++ = traits_type::to_char_type(__c);
-
-	  // Convert pending sequence to external representation,
-	  // output. 
-	  if (_M_convert_to_external(this->_M_out_beg,
-				     this->_M_out_lim - this->_M_out_beg)
-	      && (!__testeof || (__testeof && !_M_file.sync())))
-	    {
-	      _M_set_buffer(0);
-	      __ret = traits_type::not_eof(__c);
-	    }
-	}
-      _M_last_overflowed = true;	
-      return __ret;
-    }
-
-  template<typename _CharT, typename _Traits>
-    typename basic_filebuf<_CharT, _Traits>::int_type 
-    basic_filebuf<_CharT, _Traits>::
     overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      const bool __testput = this->_M_out_cur < this->_M_out_end;
+      const bool __testeof = traits_type::eq_int_type(__c, __ret);
       const bool __testout = this->_M_mode & ios_base::out;
       
-      // Perhaps set below in _M_overflow.
-      _M_last_overflowed = false;
-
       if (__testout)
 	{
-	  if (traits_type::eq_int_type(__c, traits_type::eof()))
-	    __ret = traits_type::not_eof(__c);
-	  else if (__testput)
+	  if (this->_M_out_beg < this->_M_out_lim)
 	    {
- 	      *this->_M_out_cur = traits_type::to_char_type(__c);
-	      _M_move_out_cur(1);
-	      __ret = traits_type::not_eof(__c);
+	      // Need to restore current position. The position of the
+	      // external byte sequence (_M_file) corresponds to
+	      // _M_filepos, and we need to move it to _M_out_beg for
+	      // the write.
+	      if (_M_filepos != this->_M_out_beg)
+		_M_file.seekoff(this->_M_out_beg - _M_filepos, ios_base::cur);
+
+	      // If appropriate, append the overflow char.
+	      if (!__testeof)
+		*this->_M_out_lim++ = traits_type::to_char_type(__c);
+	      
+	      // Convert pending sequence to external representation,
+	      // output.
+	      if (_M_convert_to_external(this->_M_out_beg,
+					 this->_M_out_lim - this->_M_out_beg)
+		  && (!__testeof || (__testeof && !_M_file.sync())))
+		{
+		  _M_set_buffer(0);
+		  __ret = traits_type::not_eof(__c);
+		}
 	    }
-	  else 
-	    __ret = this->_M_overflow(__c);
+	  else
+	    {
+	      // Unbuffered.
+	      char_type __conv = traits_type::to_char_type(__c);
+	      if (!__testeof && _M_convert_to_external(&__conv, 1))
+		__ret = __c;
+	    }
 	}
+      _M_last_overflowed = true;	
       return __ret;
     }
   

@@ -115,7 +115,7 @@ namespace std
       while (__ret < __n)
 	{
 	  const size_t __buf_len = _M_in_end - _M_in_cur;
-	  if (__buf_len > 0)
+	  if (__buf_len)
 	    {
 	      const size_t __remaining = __n - __ret;
 	      const size_t __len = std::min(__buf_len, __remaining);
@@ -149,7 +149,7 @@ namespace std
       while (__ret < __n)
 	{
 	  const size_t __buf_len = _M_out_end - _M_out_cur;
-	  if (__buf_len > 0)
+	  if (__buf_len)
 	    {
 	      const size_t __remaining = __n - __ret;
 	      const size_t __len = std::min(__buf_len, __remaining);
@@ -161,7 +161,7 @@ namespace std
 
 	  if (__ret < __n)
 	    {
-	      const int_type __c = this->overflow(traits_type::to_int_type(*__s));
+	      int_type __c = this->overflow(traits_type::to_int_type(*__s));
 	      if (!traits_type::eq_int_type(__c, traits_type::eof()))
 		{
 		  ++__ret;

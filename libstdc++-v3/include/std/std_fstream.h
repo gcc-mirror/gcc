@@ -158,7 +158,7 @@ namespace std
        *  @note pbacks of over one character are not currently supported.
        *  @endif
       */
-      char_type			_M_pback[1]; 
+      char_type			_M_pback; 
       char_type*		_M_pback_cur_save;
       char_type*		_M_pback_end_save;
       bool			_M_pback_init; 
@@ -177,7 +177,7 @@ namespace std
 	  {
 	    _M_pback_cur_save = this->_M_in_cur;
 	    _M_pback_end_save = this->_M_in_end;
-	    this->setg(_M_pback, _M_pback, _M_pback + 1);
+	    this->setg(&_M_pback, &_M_pback, &_M_pback + 1);
 	    _M_pback_init = true;
 	  }
       }
@@ -191,8 +191,8 @@ namespace std
 	if (_M_pback_init)
 	  {
 	    // Length _M_in_cur moved in the pback buffer.
-	    const size_t __off_cur = this->_M_in_cur - _M_pback;
-	    this->setg(this->_M_buf, _M_pback_cur_save + __off_cur, 
+	    const size_t __off = this->_M_in_cur == &_M_pback ? 0 : 1;
+	    this->setg(this->_M_buf, _M_pback_cur_save + __off, 
 		       _M_pback_end_save);
 	    _M_pback_init = false;
 	  }
@@ -311,19 +311,6 @@ namespace std
       virtual int_type
       pbackfail(int_type __c = _Traits::eof());
 
-      // NB: For what the standard expects of the overflow function,
-      // see _M_overflow(), below. Because basic_streambuf's
-      // sputc/sputn call overflow directly, and the complications of
-      // this implementation's setting of the initial pointers all
-      // equal to _M_buf when initializing, it seems essential to have
-      // this in actuality be a helper function that checks for the
-      // eccentricities of this implementation, and then call
-      // overflow() if indeed the buffer is full.
-
-      // [documentation is inherited]
-      virtual int_type
-      overflow(int_type __c = _Traits::eof());
-
       // Stroustrup, 1998, p 648
       // The overflow() function is called to transfer characters to the
       // real output destination when the buffer is full. A call to
@@ -336,8 +323,8 @@ namespace std
        *  @doctodo
        *  @endif
       */
-      int_type
-      _M_overflow(int_type __c = _Traits::eof());
+      virtual int_type
+      overflow(int_type __c = _Traits::eof());
 
       // Convert internal byte sequence to external, char-based
       // sequence via codecvt.
@@ -389,7 +376,7 @@ namespace std
 	    off_type __off = this->_M_out_cur - this->_M_out_lim;
 
 	    // _M_file.sync() will be called within
-	    if (traits_type::eq_int_type(_M_overflow(), traits_type::eof()))
+	    if (traits_type::eq_int_type(this->overflow(), traits_type::eof()))
 	      __ret = -1;
 	    else if (__off)
 	      _M_file.seekoff(__off, ios_base::cur);
@@ -444,7 +431,7 @@ namespace std
 
       // This function sets the pointers of the internal buffer, both get
       // and put areas. Typically, __off == _M_in_end - _M_in_beg upon
-      // _M_underflow; __off == 0 upon _M_overflow, seekoff, open, setbuf.
+      // _M_underflow; __off == 0 upon overflow, seekoff, open, setbuf.
       // 
       // NB: _M_out_end - _M_out_beg == _M_buf_size - 1, since _M_buf_size
       // reflects the actual allocated memory and the last cell is reserved
