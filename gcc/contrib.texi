@@ -25,8 +25,9 @@ Gerald Baumgartner added the signature extension to the C++ front-end.
 Neil Booth for various work on cpplib.
 
 @item
-Per Bothner for various improvements to our infrastructure for
-supporting new languages.  Chill and Java.
+Per Bothner for his direction via the steering committee and various
+improvements to our infrastructure for supporting new languages.  Chill
+and Java.
 
 @item
 Devon Bowen helped port GCC to the Tahoe.
@@ -47,14 +48,14 @@ Christian Bruel for improvements to local store elimination.
 Herman A.J. ten Brugge for various fixes.
 
 @item
-Joe Buck for his guidance and leadership via the steering committee.
+Joe Buck for his direction via the steering committee.
 
 @item
 Craig Burley for leadership of the Fortran effort.
 
 @item
 John Carr for his alias work, SPARC hacking, infrastructure improvements,
-direction via the steering committee, loop optimizations, etc.
+previous contributions to the steering committee, loop optimizations, etc.
 
 @item
 Steve Chamberlain wrote the support for the Hitachi SH and H8 processors
@@ -125,8 +126,8 @@ Peter Gerwinski for various bugfixes and the Pascal front end.
 @item
 Anthony Green for his -Os contributions and Java front end work.
 
-@item
-Kaveh Ghazi for overall direction via the steering committee and
+@item 
+Kaveh Ghazi for his direction via the steering committee and
 amazing work to make -W -Wall useful.
 
 @item
@@ -134,8 +135,9 @@ Judy Goldberg for c++ contributions.
 
 @item
 Torbjorn Granlund for various fixes and the c-torture testsuite,
-multiply- and divide-by-constant optimization, improved long long support,
-and improved leaf function register allocation.
+multiply- and divide-by-constant optimization, improved long long
+support, improved leaf function register allocation, and his direction
+via the steering committee.
 
 @item
 Michael K. Gschwind contributed the port to the PDP-11.
@@ -255,12 +257,13 @@ Charles LaBrec contributed the support for the Integrated Solutions
 68020 system.
 
 @item
-Jeff Law for coordinating the entire project, rolling out snapshots
-and releases, handling merges from GCC2, and random but extensive
-hacking.
+Jeff Law for his direction via the steering committee, coordinating the
+entire egcs project and GCC 2.95, rolling out snapshots and releases,
+handling merges from GCC2, reviewing tons of patches that might have
+fallen through the cracks else, and random but extensive hacking.
 
 @item
-Marc Lehmann for his guidance via the steering committee and helping
+Marc Lehmann for his direction via the steering committee and helping
 with analysis and improvements of x86 performance.
 
 @item
@@ -288,7 +291,7 @@ Dave Love for his ongoing work with the Fortran front end and
 runtime libraries.
 
 @item
-H.J. Lu for his contributions to the steering committee, many x86
+H.J. Lu for his previous contributions to the steering committee, many x86
 bug reports, prototype patches, and keeping the Linux ports working.
 
 @item
@@ -311,7 +314,8 @@ Michael Meissner for LRS framework, ia32, m32r, v850, m88k, MIPS powerpc, haifa,
 ECOFF debug support, and other assorted hacking.
 
 @item
-Jason Merrill for leading the g++ effort.
+Jason Merrill for his direction via the steering committee and leading
+the g++ effort.
 
 @item
 Jason Molenda for major help in the care and feeding of all the services
@@ -330,7 +334,7 @@ than 64 bits and for ISO C99 support.
 Bill Moyer for his behind the scenes work on various issues.
 
 @item
-David Miller for overall direction via the steering committee, lots of
+David Miller for his direction via the steering committee, lots of
 SPARC work, improvements in jump.c and interfacing with the Linux kernel
 developers.
 
@@ -338,16 +342,16 @@ developers.
 Gary Miller ported GCC to Charles River Data Systems machines.
 
 @item
-Mark Mitchell for mountains of
-C++ work, load/store hoisting out of
-loops and alias analysis improvements, ISO "restrict" support.
+Mark Mitchell for his direction via the steering committee, mountains
+of C++ work, load/store hoisting out of loops and alias analysis
+improvements, ISO "restrict" support.
 
 @item
 Alan Modra for various Linux bits and testing.
 
 @item
-Toon Moene for overall leadership via the steering committee, and his
-ongoing work to make us make Fortran run fast.
+Toon Moene for his direction via the steering committee, Fortran
+maintainance, and his ongoing work to make us make Fortran run fast.
 
 @item
 Catherine Moore for fixing various ugly problems we have sent her
@@ -396,8 +400,8 @@ Alexandre Petit-Bianco for his Java work.
 Matthias Pfaller for major improvements to the NS32k port.
 
 @item
-Gerald Pfeifer for maintenance of the web pages and pointing out lots
-of problems we need to solve.
+Gerald Pfeifer his direction via the steering committee, maintenance of
+the web pages and pointing out lots of problems we need to solve.
 
 @item
 Ovidiu Predescu for his work on the ObjC front end and runtime libraries.
@@ -550,8 +554,9 @@ Dale Wiles helped port GCC to the Tahoe.
 Zack Weinberg for major work on cpplib and various other bugfixes.
 
 @item
-Jim Wilson for tackling hard problems in various places that nobody else
-wanted to work on, strength reduction and other loop optimizations.
+Jim Wilson for his direction via the steering committee, tackling hard
+problems in various places that nobody else wanted to work on, strength
+reduction and other loop optimizations.
 
 @item
 Carlo Wood for various fixes.
