@@ -570,7 +570,6 @@ propagate_binfo_offsets (binfo, offset)
       else
 	{
 	  int j;
-	  tree base_binfos = BINFO_BASETYPES (base_binfo);
 	  tree delta = NULL_TREE;
 
 	  for (j = i+1; j < n_baselinks; j++)

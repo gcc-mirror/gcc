@@ -200,7 +200,7 @@ DECLARE (cp_error)
   va_list ap;
   INIT;
   if (! cp_silent)
-    cp_thing (error, 0, format, ap);
+    cp_thing ((errorfn *) error, 0, format, ap);
   va_end (ap);
 }
 
@@ -209,7 +209,7 @@ DECLARE (cp_warning)
   va_list ap;
   INIT;
   if (! cp_silent)
-    cp_thing (warning, 0, format, ap);
+    cp_thing ((errorfn *) warning, 0, format, ap);
   va_end (ap);
 }
 

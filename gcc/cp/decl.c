@@ -132,7 +132,6 @@ static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
 static char *redeclaration_error_message	PROTO((tree, tree));
 static tree push_overloaded_decl		PROTO((tree, int));
-static void push_overloaded_decl_top_level	PROTO((tree, int));
 
 static struct stack_level *push_decl_level PROTO((struct stack_level *,
 						  struct obstack *));
@@ -3675,21 +3674,6 @@ pushdecl_top_level (x)
   x = pushdecl_namespace_level (x);
   current_namespace = cur_namespace;
   return x;
-}
-
-/* Like push_overloaded_decl, only it places X in GLOBAL_BINDING_LEVEL,
-   if appropriate.  */
-
-static void
-push_overloaded_decl_top_level (x, forget)
-     tree x;
-     int forget;
-{
-  struct binding_level *b = current_binding_level;
-
-  current_binding_level = global_binding_level;
-  push_overloaded_decl (x, forget);
-  current_binding_level = b;
 }
 
 /* Make the declaration of X appear in CLASS scope.  */

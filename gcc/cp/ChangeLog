@@ -1,3 +1,31 @@
+Tue May 19 10:05:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (parse.o): Depend on toplev.h.
+
+	* class.c (typecode_p): Remove prototype and definition.
+
+	* cp-tree.h (currently_open_class, is_empty_class, member_p):
+	Add prototype.
+
+	* decl.c (push_overloaded_decl_top_level): Remove prototype and
+	definition.
+
+	* errfn.c (cp_error): Cast function pointer `error' to (errorfn *)
+ 	in call to `cp_thing'.
+	(cp_warning): Likewise for function pointer `warning'.
+
+	* except.c (do_function_call): Remove prototype and definition.
+	(call_eh_info): Wrap variable `t1' in macro NEW_EH_MODEL.
+
+	* method.c (is_java_type): Add prototype and make it static.
+
+	* parse.y: Include toplev.h.
+
+	* pt.c (type_unification): Remove unused variable `arg'.
+	(instantiate_decl): likewise for `save_ti'.
+
+	* tree.c (propagate_binfo_offsets): Likewise for `base_binfos'.
+	
 Tue May 19 02:43:25 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (build_member_call): Handle template_ids.

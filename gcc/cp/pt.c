@@ -5671,7 +5671,6 @@ type_unification (tparms, targs, parms, args, targs_in,
      unification_kind_t strict;
      int allow_incomplete;
 {
-  tree arg;
   int* explicit_mask;
   int i;
 
@@ -6965,7 +6964,6 @@ instantiate_decl (d)
   tree args = TI_ARGS (ti);
   tree td;
   tree decl_pattern, code_pattern;
-  tree save_ti;
   int nested = in_function_p ();
   int d_defined;
   int pattern_defined;

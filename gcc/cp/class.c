@@ -90,7 +90,6 @@ static tree get_vfield_name PROTO((tree));
 static void finish_struct_anon PROTO((tree));
 static tree build_vbase_pointer PROTO((tree, tree));
 static int complete_type_p PROTO((tree));
-static int typecode_p PROTO((tree, enum tree_code));
 static tree build_vtable_entry PROTO((tree, tree));
 static tree get_vtable_name PROTO((tree));
 static tree get_derived_offset PROTO((tree, tree));
@@ -1727,16 +1726,6 @@ finish_base_struct (t, b)
   b->rtti = CLASSTYPE_RTTI (BINFO_TYPE (TREE_VEC_ELT (binfos, first_vfn_base_index)));
 
   return first_vfn_base_index;
-}
-
-static int
-typecode_p (type, code)
-     tree type;
-     enum tree_code code;
-{
-  return (TREE_CODE (type) == code
-	  || (TREE_CODE (type) == REFERENCE_TYPE
-	      && TREE_CODE (TREE_TYPE (type)) == code));
 }
 
 /* Set memoizing fields and bits of T (and its variants) for later use.
