@@ -1,3 +1,8 @@
+2004-12-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.host (aix4*|aix5*): Add atomic_word_dir.
+	* config/os/aix/atomic_word.h: New file.
+
 2004-12-27  Jason Merrill  <jason@redhat.com>
 
 	Add memory barriers to the double-checked locking used for static
