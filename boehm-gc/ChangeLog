@@ -1,3 +1,8 @@
+2004-01-07  Dave Jones <davej@redhat.com>
+ 
+	* malloc.c (GC_generic_malloc): Correct initialization typo.
+	* mallocx.c (GC_generic_malloca_ignore_off_page): Ditto.
+
 2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	* include/private/gcconfig.h: Re-install change of 2003-04-16.

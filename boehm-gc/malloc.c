@@ -217,7 +217,7 @@ register int k;
 	GC_words_allocd += lw;
 	UNLOCK();
 	ENABLE_SIGNALS();
-    	if (init & !GC_debugging_started && 0 != result) {
+    	if (init && !GC_debugging_started && 0 != result) {
 	    BZERO(result, n_blocks * HBLKSIZE);
         }
     }
