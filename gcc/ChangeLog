@@ -1,5 +1,8 @@
 2000-09-21  Nick Clifton  <nickc@redhat.com>
 
+	* config/arm/t-arm-elf (MULTILIB_DIRNAMES): Enable multilibs for
+	ARM and THUMB modes.
+
 	* config/mcore/mcore.c: Fix compile time warnings.
 	* config/mcore/mcore-protos.h: Fix compile time warnings. 
 
