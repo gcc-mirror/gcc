@@ -1,3 +1,14 @@
+2003-02-25  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/Intro.3:  Update with new (proper) names.
+	* docs/doxygen/TODO:  Update.
+	* docs/doxygen/run_doxygen:  More comments, fix up man pages.
+	Fake entries for standard typedefs.
+	* docs/doxygen/user.cfg.in:  Turn INLINE_INHERITED_MEMB back on.
+	* docs/html/documentation.html:  Top-level man page is now called
+	C++Intro.
+	* include/std/std_limits.h:  Doxygenate.
+
 2003-02-25  Scott Snyder  <snyder@fnal.gov>
 
 	PR libstdc++/9811

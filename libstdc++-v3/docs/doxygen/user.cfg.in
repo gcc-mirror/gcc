@@ -127,7 +127,7 @@ ALWAYS_DETAILED_SEC    = YES
 # ordinary class members. Constructors, destructors and assignment operators of 
 # the base classes will not be shown.
 
-INLINE_INHERITED_MEMB  = NO
+INLINE_INHERITED_MEMB  = YES
 # pedwards -- this is useful, but ch27 gets huge
 
 # If the FULL_PATH_NAMES tag is set to YES then Doxygen will prepend the full 
