@@ -1,3 +1,8 @@
+Thu Aug  5 02:00:13 1999  Loren Rittle  <ljrittle@acm.org>
+
+	* Makefile.in (MARLINK, MSHLINK): Handle library version
+	number components with more than one numeric digit.
+
 Mon Aug  2 00:40:10 1999  Jeffrey A Law  (law@cygnus.com)
 
 	1999-07-16  Markus Gyger (mgyger@gmu.edu)
