@@ -37,7 +37,7 @@ compilation is specified by a string called a "spec".  */
 #include <sys/stat.h>
 #include <errno.h>
 
-#ifndef _WIN32
+#ifndef NO_SYS_FILE_H
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
 
@@ -1938,7 +1938,7 @@ execute ()
   for (n_commands = 1, i = 0; i < argbuf_index; i++)
     if (strcmp (argbuf[i], "|") == 0)
       {				/* each command.  */
-#if defined (__MSDOS__) || defined (_WIN32) || defined (OS2)
+#if defined (__MSDOS__) || (defined (_WIN32) && ! defined (__CYGWIN32__)) || defined (OS2)
         fatal ("-pipe not supported");
 #endif
 	argbuf[i] = 0;	/* termination of command args.  */
