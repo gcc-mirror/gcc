@@ -2160,8 +2160,12 @@ special_symbol (hp, op)
 
     if (!is_idstart (*ip->bufp))
       goto oops;
-    if (lookup (ip->bufp, -1, -1))
-      buf = " 1 ";
+    {
+      HASHNODE *hp = lookup (ip->bufp, -1, -1);
+
+      if (hp && hp->type != T_UNUSED && hp->type != T_SPEC_DEFINED)
+	buf = " 1 ";
+    }
     while (is_idchar (*ip->bufp))
       ++ip->bufp;
     SKIP_WHITE_SPACE (ip->bufp);
@@ -2509,16 +2513,23 @@ do_define (buf, limit, op)
   }
   sym_length = bp - symname;
   if (sym_length == 0)
-    error ("invalid macro name");
+    {
+      error ("invalid macro name");
+      return;
+    }
   else if (!is_idstart (*symname)) {
     U_CHAR *msg;			/* what pain... */
     msg = (U_CHAR *) alloca (sym_length + 1);
     memcpy (msg, symname, sym_length);
     msg[sym_length] = 0;
     error ("invalid macro name `%s'", msg);
+    return;
   } else {
     if (! strncmp ((const char *)symname, "defined", 7) && sym_length == 7)
-      error ("defining `defined' as a macro");
+      {
+	error ("\"defined\" cannot be used as a macro name");
+	return;
+      }
   }
 
   /* lossage will occur if identifiers or control keywords are broken

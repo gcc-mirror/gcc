@@ -1,3 +1,9 @@
+2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * tradcpp.c (special_symbol): Improve test for definedness,
+        though it is still not perfect.
+        (do_define): Don't define illegal macro names.
+	
 2000-12-07  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/mips/elf.h (ASM_OUTPUT_SECTION_NAME): emit @nobits
