@@ -6222,8 +6222,8 @@ supersparc_adjust_cost (insn, link, dep_insn, cost)
 /* This describes the state of the UltraSPARC pipeline during
    instruction scheduling.  */
 
-#define TMASK(__x)	(1U << ((int)(__x)))
-#define UMASK(__x)	(1U << ((int)(__x)))
+#define TMASK(__x)	((unsigned)1 << ((int)(__x)))
+#define UMASK(__x)	((unsigned)1 << ((int)(__x)))
 
 enum ultra_code { NONE=0, /* no insn at all				*/
 		  IEU0,   /* shifts and conditional moves		*/
@@ -6575,7 +6575,7 @@ ultrasparc_sched_init (dump, sched_verbose)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
 {
-  bzero ((char *) &ultra_pipe_hist, sizeof ultra_pipe_hist);
+  bzero ((char *) ultra_pipe_hist, sizeof ultra_pipe_hist);
   ultra_cur_hist = 0;
   ultra_cycles_elapsed = 0;
   ultra_reorder_called_this_block = 0;
