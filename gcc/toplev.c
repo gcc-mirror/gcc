@@ -4250,9 +4250,6 @@ process_options (void)
 static void
 backend_init (void)
 {
-  /* init_emit_once uses reg_raw_mode and therefore must be called
-     after init_regs which initialized reg_raw_mode.  */
-  init_regs ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
 #ifdef VMS_DEBUGGING_INFO
@@ -4261,6 +4258,8 @@ backend_init (void)
 #endif
 		    || flag_test_coverage
 		    || warn_notreached);
+
+  init_regs ();
   init_fake_stack_mems ();
   init_alias_once ();
   init_loop ();
