@@ -1,3 +1,7 @@
+2004-12-27  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.dg/g77/select_no_compile.f: Remove.
+
 2004-12-27  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/vect/vect-27a.c, gcc.dg/vect/vect-29a.c,
