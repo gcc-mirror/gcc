@@ -1,3 +1,7 @@
+Thu Feb 20 14:39:49 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/20020720-1.x: XFAIL for x86-64.
+
 2003-02-19  Daniel Jacobowitz  <drow@mvista.com>
 
 	* gcc.c-torture/compile/20030219-1.c: New test.
