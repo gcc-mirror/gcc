@@ -174,15 +174,15 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach o
 
 # autoconf2.13's target_alias
 target_noncanonical = @target_noncanonical@
-@XLIB_AWT_TRUE@cond_x_ltlibrary = @XLIB_AWT_TRUE@lib-gnu-awt-xlib.la
-@XLIB_AWT_FALSE@cond_x_ltlibrary = 
+@XLIB_AWT_TRUE@cond_xlib_ltlibrary = @XLIB_AWT_TRUE@lib-gnu-awt-xlib.la
+@XLIB_AWT_FALSE@cond_xlib_ltlibrary = 
 @XLIB_AWT_TRUE@xlib_includes = @XLIB_AWT_TRUE@-I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_noncanonical) -I$(srcdir)/../libstdc++-v3/libsupc++
 @XLIB_AWT_FALSE@xlib_includes = 
 @GTK_AWT_TRUE@cond_gtk_ltlibrary = @GTK_AWT_TRUE@lib-gnu-java-awt-peer-gtk.la
 @GTK_AWT_FALSE@cond_gtk_ltlibrary = 
 
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la lib-org-xml-sax.la lib-org-w3c-dom.la \
-    $(cond_gtk_ltlibrary) $(cond_x_ltlibrary)
+    $(cond_gtk_ltlibrary) $(cond_xlib_ltlibrary)
 
 toolexecmainlib_DATA = libgcj.spec
 
@@ -240,14 +240,14 @@ INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 
 
 nat_files = $(nat_source_files:.cc=.lo)
-x_nat_files = $(x_nat_source_files:.cc=.lo)
+xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 c_files = $(c_source_files:.c=.lo)
 extra_cc_files = $(extra_cc_source_files:.cc=.lo)
 gtk_c_files = $(gtk_c_source_files:.c=.lo)
 javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 
-x_javao_files = $(x_java_source_files:.java=.lo)
+xlib_javao_files = $(xlib_java_source_files:.java=.lo)
 
 libgij_la_SOURCES = gij.cc
 
@@ -370,7 +370,7 @@ gnu/java/awt/peer/gtk/GtkToolkit.java \
 gnu/java/awt/peer/gtk/GtkWindowPeer.java
 
 
-gtk_c_headers = $(patsubst %.java,jniinclude/%.h,$(subst /,_,$(gtk_awt_peer_sources)))
+gtk_jni_headers = $(patsubst %.java,jniinclude/%.h,$(subst /,_,$(gtk_awt_peer_sources)))
 
 lib_gnu_java_awt_peer_gtk_la_SOURCES = \
 $(gtk_awt_peer_sources) \
@@ -384,6 +384,7 @@ jni/classpath/primlib.h
 
 
 lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
+lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers)
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
@@ -455,10 +456,10 @@ lib_org_xml_sax_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 
-lib_gnu_awt_xlib_la_SOURCES = $(x_nat_source_files)
-EXTRA_lib_gnu_awt_xlib_la_SOURCES = $(x_java_source_files)
-lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(x_javao_files)
-lib_gnu_awt_xlib_la_LIBADD = $(x_javao_files)
+lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
+EXTRA_lib_gnu_awt_xlib_la_SOURCES = $(xlib_java_source_files)
+lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(xlib_javao_files)
+lib_gnu_awt_xlib_la_LIBADD = $(xlib_javao_files)
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) \
@@ -472,7 +473,7 @@ all_java_source_files = \
     $(lib_org_xml_sax_la_SOURCES) \
     $(lib_org_w3c_dom_la_SOURCES) \
     $(gtk_awt_peer_sources) \
-    $(x_java_source_files)
+    $(xlib_java_source_files)
 
 
 all_java_class_files = $(all_java_source_files:.java=.class)
@@ -486,7 +487,7 @@ propertyo_files = $(property_files:.properties=.properties.lo)
 
 # Note: The libtool objects are removed by mostlyclean-local
 # because of command-line-length issues.
-MOSTLYCLEANFILES = $(nat_headers) $(x_nat_headers)
+MOSTLYCLEANFILES = $(nat_headers) $(xlib_nat_headers)
 
 CLEANFILES = libgcj-@gcc_version@.jar
 
@@ -511,7 +512,7 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
 nat_headers_install = $(ordinary_nat_headers)
 
-x_nat_headers = $(x_java_source_files:.java=.h)
+xlib_nat_headers = $(xlib_java_source_files:.java=.h)
 
 extra_headers = java/lang/Object.h java/lang/Class.h
 
@@ -2686,7 +2687,7 @@ java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
 
-x_java_source_files = \
+xlib_java_source_files = \
 gnu/gcj/xlib/Clip.java \
 gnu/gcj/xlib/Colormap.java \
 gnu/gcj/xlib/Display.java \
@@ -2723,7 +2724,7 @@ gnu/awt/xlib/XFontPeer.java \
 gnu/awt/xlib/XToolkit.java
 
 
-x_nat_source_files = \
+xlib_nat_source_files = \
 gnu/gcj/xlib/natClip.cc \
 gnu/gcj/xlib/natColormap.cc \
 gnu/gcj/xlib/natDisplay.cc \
@@ -2885,7 +2886,6 @@ org/w3c/dom/traversal/DocumentTraversal.lo \
 org/w3c/dom/traversal/NodeFilter.lo \
 org/w3c/dom/traversal/NodeIterator.lo \
 org/w3c/dom/traversal/TreeWalker.lo
-lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = 
 @GTK_CAIRO_FALSE@lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
 @GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkClasspathFontPeer.lo \
 @GTK_CAIRO_FALSE@gnu/java/awt/peer/gtk/GdkClasspathFontPeerMetrics.lo \
@@ -5458,7 +5458,7 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-$(gtk_c_headers): $(gtk_awt_peer_sources)
+$(gtk_jni_headers): $(gtk_awt_peer_sources)
 	@input=`echo $@ | sed -e 's,jniinclude/,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
 	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
@@ -5506,7 +5506,7 @@ distclean-local:
 
 # Just remove the objects from C++ sources, for testing the C++ compiler.
 clean-nat:
-	rm -f $(nat_files) $(x_nat_files)
+	rm -f $(nat_files) $(xlib_nat_files)
 
 .class.lo:
 	$(GCJCOMPILE) -o $@ $<
@@ -5514,7 +5514,7 @@ clean-nat:
 .java.lo:
 	$(GCJCOMPILE) -o $@ $<
 
-$(nat_files) $(x_nat_files): %.lo: %.cc
+$(nat_files) $(xlib_nat_files): %.lo: %.cc
 	@echo '$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<'; \
 	$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<
 	@-mv $(@:.lo=.pp) $(@:.lo=.d)
@@ -5532,9 +5532,9 @@ $(gtk_c_files): %.lo: %.c
 	$(PEDANTIC_CFLAGS) $(GTK_CFLAGS) $(LIBART_CFLAGS) \
 	$(CAIRO_LIBS) $(PANGOFT2_LIBS) -o $@ $<
 
-$(gtk_c_files): $(gtk_c_headers)
+$(gtk_c_files): $(gtk_jni_headers)
 
-$(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(x_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
+$(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
 $(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
@@ -5559,7 +5559,7 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 .class.h:
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) $(basename $<)
 
-$(ordinary_nat_headers) $(x_nat_headers): %.h: %.class
+$(ordinary_nat_headers) $(xlib_nat_headers): %.h: %.class
 
 java/lang/ClassLoader.h: java/lang/ClassLoader.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
