@@ -289,6 +289,8 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
 		    = (_Jv_InterpMethod *) ic->interpreted_methods[i];
 		  if (im)
 		    {
+                      p = (GC_PTR) im->line_table;
+                      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic);
 		      p = (GC_PTR) im->prepared;
 		      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, ic);
 		    }
