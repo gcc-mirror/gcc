@@ -1,3 +1,8 @@
+Sat Apr 20 02:17:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movsi_1, movhi_1): Force reload to use more flexible
+	alternative.
+
 2002-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/6358
