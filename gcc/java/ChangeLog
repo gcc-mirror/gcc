@@ -1,3 +1,9 @@
+2003-11-24  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Make-lang.in: (java.install-common) Add
+	symlink for $(target_noncanonical)-gcjh for
+	native builds.
+
 2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* Make-lang.in (java.extraclean): Delete.

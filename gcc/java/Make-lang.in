@@ -43,6 +43,7 @@
 # Actual names to use when installing a native compiler.
 JAVA_INSTALL_NAME = `echo gcj|sed '$(program_transform_name)'`
 JAVA_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcj|sed '$(program_transform_name)'`
+GCJH_TARGET_INSTALL_NAME = $(target_noncanonical)-`echo gcjh|sed '$(program_transform_name)'`
 
 # Actual names to use when installing a cross-compiler.
 JAVA_CROSS_NAME = `echo gcj|sed '$(program_transform_cross_name)'`
@@ -179,6 +180,11 @@ check-java :
 # Nothing to do here.
 java.install-normal:
 
+# Install gcj as well as the target-independent tools.
+# For a native build, we special-case gcjh and also install
+# its explicitly-prefixed variant. This allows us to write
+# portable makefiles for both cross builds (where gcjh *must*
+# be explicitly prefixed) and native builds.
 java.install-common: installdirs
 	-if [ -f $(GCJ)$(exeext) ]; then \
 	  if [ -f $(GCJ)-cross$(exeext) ]; then \
@@ -200,6 +206,11 @@ java.install-common: installdirs
 	    rm -f $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
 	    $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
 	    chmod a+x $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
+	    if [ $$tool = gcjh ]; then \
+	      rm -f $(DESTDIR)$(bindir)/$(GCJH_TARGET_INSTALL_NAME)$(exeext); \
+	      ( cd $(DESTDIR)$(bindir) && \
+	        $(LN) $$tool_transformed_name$(exeext) $(GCJH_TARGET_INSTALL_NAME)$(exeext) ); \
+	    fi; \
           fi ; \
        done
 
