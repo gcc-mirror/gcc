@@ -1,3 +1,16 @@
+2001-10-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (tree-inline.o): Depend on newly-included headers.
+	* tree-inline.c: Include headers needed for the functions moved in.
+	(struct inline_data, INSNS_PER_STMT): Moved from cp/optimize.c.
+	(remap_decl, remap_block, copy_scopy_stmt, copy_body_r): Likewise.
+	(copy_body, initialize_inlined_parameters): Likewise.
+	(declare_return_variable, inlinable_function_p): Likewise.
+	(expand_call_inline, expand_calls_inline): Likewise.
+	(optimize_inline_calls, clone_body): Likewise.
+	(walk_tree, walk_tree_without_duplicates): Moved from cp/tree.c.
+	(copy_tree_r, remap_save_expr): Likewise.
+
 2001-10-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (OBJS): Added tree-inline.o.
