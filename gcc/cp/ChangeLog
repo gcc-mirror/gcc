@@ -1,3 +1,10 @@
+1999-09-21  Alex Samuel  <samuel@codesourcery.com>
+
+	* lex.c (internal_filename): New variable.
+	(INTERNAL_FILENAME): New macro.
+	(init_parse): Allocate internal_filename and mark as root.  Use it
+	instead of a string constant.
+
 1999-09-21  Nathan Sidwell  <nathan@acm.org>
 
 	Reimplement dynamic cast and catch matching.

@@ -213,6 +213,11 @@ struct impl_files
 
 static struct impl_files *impl_file_chain;
 
+/* The string used to represent the filename of internally generated
+   tree nodes.  The variable, which is dynamically allocated, should
+   be used; the macro is only used to initialize it.  */
+static char *internal_filename;
+#define INTERNAL_FILENAME ("<internal>")
 
 /* Return something to represent absolute declarators containing a *.
    TARGET is the absolute declarator that the * contains.
@@ -720,10 +725,13 @@ init_parse (filename)
   gcc_obstack_init (&inline_text_obstack);
   inline_text_firstobj = (char *) obstack_alloc (&inline_text_obstack, 0);
 
+  internal_filename = ggc_alloc_string (INTERNAL_FILENAME, 
+					sizeof (INTERNAL_FILENAME));
+
   /* Start it at 0, because check_newline is called at the very beginning
      and will increment it to 1.  */
   lineno = 0;
-  input_filename = "<internal>";
+  input_filename = internal_filename;
   current_function_decl = NULL;
 
   maxtoken = 40;
@@ -915,6 +923,7 @@ init_parse (filename)
 
   ggc_add_tree_root (ansi_opname, LAST_CPLUS_TREE_CODE);
   ggc_add_tree_root (ansi_assopname, LAST_CPLUS_TREE_CODE);
+  ggc_add_string_root (&internal_filename, 1);
   ggc_add_tree_root (ridpointers, RID_MAX);
   ggc_add_tree_root (&defarg_fns, 1);
   ggc_add_tree_root (&defarg_parm, 1);
