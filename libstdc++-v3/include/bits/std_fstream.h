@@ -42,8 +42,8 @@
 #include <bits/std_locale.h>	// For codecvt
 #include <bits/c++threads.h>	// For __mutext_type
 
-namespace std {
-
+namespace std 
+{
   template<typename _CharT, typename _Traits>
     class basic_filebuf : public basic_streambuf<_CharT, _Traits>
     {
@@ -75,9 +75,6 @@ namespace std {
       __state_type		_M_state_cur;
       __state_type 		_M_state_beg; 	
 
-      // Cached value from use_facet.
-      const __codecvt_type*	_M_fcvt;       
-      
       // MT lock inherited from libio or other low-level io library.
       __c_lock          	_M_lock;
 
@@ -89,13 +86,13 @@ namespace std {
       basic_filebuf();
 
       // Non-standard ctor:
-      basic_filebuf(int __fd, const char* __name, ios_base::openmode __mode);
-
+      basic_filebuf(__c_file_type* __f, ios_base::openmode __mode, 
+		    int_type __s = static_cast<int_type>(BUFSIZ));
+ 
       virtual 
       ~basic_filebuf() 
       { 
 	this->close();
-	_M_fcvt = NULL;
 	_M_last_overflowed = false;
       }
 
@@ -403,7 +400,6 @@ namespace std {
 	  setstate (ios_base::failbit); 
       }
     };
-
 } // namespace std
 
 
@@ -414,10 +410,5 @@ namespace std {
 #endif
 #endif
 
-#endif	/* _CPP_FSTREAM */
-
-
-
-
-
+#endif	
 

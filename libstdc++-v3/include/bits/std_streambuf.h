@@ -42,8 +42,8 @@
 #include <bits/localefwd.h>
 #include <bits/ios_base.h>
 
-namespace std {
-
+namespace std
+{
   template<typename _CharT, typename _Traits>
     streamsize
     __copy_streambufs(basic_ios<_CharT, _Traits>& _ios,
@@ -115,9 +115,6 @@ namespace std {
 
       // True iff locale is initialized.
       bool 			_M_buf_locale_init;
-
-      // Cached use_facet<ctype>, which is based on the current locale info.
-      const __ctype_type*	_M_buf_fctype;      
 
       // Necessary bits for putback buffer management. Only used in
       // the basic_filebuf class, as necessary for the standard
@@ -254,17 +251,20 @@ namespace std {
 	  this->setg(_M_buf, _M_buf, _M_buf + __off);
 	if (__testout)
 	  this->setp(_M_buf, _M_buf + __off);
-
       }
 
       bool
       _M_is_indeterminate(void)
       { 
 	bool __ret = false;
-	if (_M_mode & ios_base::in)
-	  __ret = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
-	if (_M_mode & ios_base::out)
-	  __ret = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
+	// Don't return true if unbuffered.
+	if (_M_buf)
+	  {
+	    if (_M_mode & ios_base::in)
+	      __ret = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
+	    if (_M_mode & ios_base::out)
+	      __ret = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
+	  }
 	return __ret;
       }
 
@@ -276,7 +276,6 @@ namespace std {
 	_M_buf_size = 0;
 	_M_buf_size_opt = 0;
 	_M_mode = ios_base::openmode(0);
-	_M_buf_fctype = NULL;
 	_M_buf_locale_init = false;
 
       }
@@ -354,7 +353,7 @@ namespace std {
       {
 	int_type __ret;
 	if (_M_in_cur && _M_in_cur < _M_in_end)
-	  __ret = traits_type::to_int_type(*gptr());
+	  __ret = traits_type::to_int_type(*(this->gptr()));
 	else 
 	  __ret = this->underflow();
 	return __ret;
@@ -387,7 +386,7 @@ namespace std {
       _M_out_end(0), _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
       _M_buf_locale_init(false), _M_pback_size(1), _M_pback(NULL), 
       _M_pback_cur_save(NULL), _M_pback_end_save(NULL), _M_pback_init(false)
-      { _M_buf_fctype = &use_facet<__ctype_type>(this->getloc()); }
+      { }
 
       // Get area:
       char_type* 
@@ -441,10 +440,7 @@ namespace std {
       { 
 	_M_buf_locale_init = true;
 	if (_M_buf_locale != __loc)
-	 {
-	   _M_buf_locale = __loc;
-	   _M_buf_fctype = &use_facet<__ctype_type>(_M_buf_locale); 
-	 }	
+	  _M_buf_locale = __loc;
       }
 
       // Buffer management and positioning:
@@ -536,14 +532,4 @@ namespace std {
 #endif
 
 #endif	/* _CPP_STREAMBUF */
-
-
-
-
-
-
-
-
-
-
 

@@ -41,9 +41,9 @@ bool test01(void)
   csize_type npos = std::string::npos;
   csize_type csz01, csz02;
 
-  const char str_lit01[] = "sailing grand traverse bay
-			    from Elk Rapids to the point reminds me of miles";
-  const std::string str01(str_lit01);
+  // { dg-warning "string literals" "" { xfail *-*-* } 45 }
+  const std::string str01("sailing grand traverse bay
+			    from Elk Rapids to the point reminds me of miles");
   const std::string str02("sailing");
   const std::string str03("grand");
   const std::string str04("traverse");
@@ -124,7 +124,7 @@ bool test01(void)
     getline(istrs02, str10);
     VERIFY( istrs02.fail() );
     VERIFY( istrs02.eof() );
-    VERIFY( str10 == "\t    from Elk Rapids to the point reminds me of miles" );
+    VERIFY( str10 =="\t    from Elk Rapids to the point reminds me of miles" );
   }
   catch(std::exception& fail) {
     VERIFY( false ); // shouldn't throw
@@ -323,10 +323,3 @@ int main()
   test08();
   return 0;
 }
-
-
-
-
-
-
-

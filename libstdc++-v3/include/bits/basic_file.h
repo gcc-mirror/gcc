@@ -44,7 +44,7 @@ namespace std
   // Ulrich is going to make some detailed comment here, explaining
   // all this unpleasantness, providing detailed performance analysis
   // as to why we have to do all this lame vtable hacking instead of a
-  // sane, function-based approach. This verbage will provide a clear
+  // sane, function-based approach. This verbiage will provide a clear
   // and detailed description of the whole object-layout,
   // vtable-swapping, sordid history of this hack.
   template<typename _CharT>
@@ -114,19 +114,20 @@ namespace std
   // Also note that the order and number of virtual functions has to precisely
   // match the order and number in the _IO_jump_t struct defined in libioP.h.
   template<typename _CharT>
-#if _GLIBCPP_BASIC_FILE_INHERITANCE
+#ifdef _GLIBCPP_BASIC_FILE_INHERITANCE
     class __basic_file: public __basic_file_base<_CharT>
 #else
     class __basic_file
 #endif
     {
 #if _GLIBCPP_BASIC_FILE_ENCAPSULATION
-      int 		_M_fileno;
       __c_file_type* 	_M_cfile;
-#endif
-#ifdef _GLIBCPP_USE_WCHAR_T
+      bool 		_M_cfile_created;
+#else
+# ifdef _GLIBCPP_USE_WCHAR_T
       __c_wfile_type	_M_wfile;
-#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+# endif
+#endif 
 
     public:
       __basic_file(__c_lock* __lock = 0);
@@ -135,7 +136,7 @@ namespace std
       _M_open_mode(ios_base::openmode __mode, int& __p_mode, int& __rw_mode, 
 		   char* __c_mode);
       
-      // Eqivalent to the normal fopen function.
+      // Equivalent to the normal fopen function.
       __basic_file* 
       open(const char* __name, ios_base::openmode __mode, int __prot = 0664);
 
@@ -144,16 +145,13 @@ namespace std
       // just sets __c_file_type->_fileno and the respective _flags bits, and
       // returns.
       __basic_file*
-      sys_open(int __fd, ios_base::openmode __mode);
+      sys_open(__c_file_type* __file, ios_base::openmode __mode);
 
       __basic_file* 
       close(); 
 
       bool 
       is_open();
-
-      // Needed by ios_base::sync_with_stdio.
-      int get_fileno(void);
 
       // NB: Must match FILE specific jump table starting here--this
       // means all virtual functions starting with the dtor must match,
@@ -175,26 +173,26 @@ namespace std
       pbackfail(int __c);
 
       // A complex "write" function that sets all of __c_file_type's
-      // ponters and associated data members correctly and manages it's
+      // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamsize 
       xsputn(const _CharT* __s, streamsize __n);
 
       // A complex "read" function that sets all of __c_file_type's
-      // ponters and associated data members correctly and manages it's
+      // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamsize 
       xsgetn(_CharT* __s, streamsize __n);
 
       // A complex "seekoff" function that sets all of __c_file_type's
-      // ponters and associated data members correctly and manages it's
+      // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamoff
       seekoff(streamoff __off, ios_base::seekdir __way,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
       // A complex "seekpos" function that sets all of __c_file_type's
-      // pointers and associated data members correctly and manages it's
+      // pointers and associated data members correctly and manages its
       // relation to the external byte sequence.
       virtual streamoff
       seekpos(streamoff __pos, 
@@ -246,4 +244,3 @@ namespace std
 #include <bits/basic_file_model.h>
 
 #endif	// _CPP_BASIC_FILE
-

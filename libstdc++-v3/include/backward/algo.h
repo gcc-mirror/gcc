@@ -27,85 +27,83 @@
 #ifndef _CPP_BACKWARD_ALGO_H
 #define _CPP_BACKWARD_ALGO_H 1
 
+#include "backward_warning.h"
 #include "algobase.h"
 #include "tempbuf.h"
+#include "iterator.h"
 #include <bits/stl_algo.h>
 #include <bits/stl_numeric.h>
 
-#ifdef __STL_USE_NAMESPACES
-
 // Names from <stl_algo.h>
-using __STD::for_each; 
-using __STD::find; 
-using __STD::find_if; 
-using __STD::adjacent_find; 
-using __STD::count; 
-using __STD::count_if; 
-using __STD::search; 
-using __STD::search_n; 
-using __STD::swap_ranges; 
-using __STD::transform; 
-using __STD::replace; 
-using __STD::replace_if; 
-using __STD::replace_copy; 
-using __STD::replace_copy_if; 
-using __STD::generate; 
-using __STD::generate_n; 
-using __STD::remove; 
-using __STD::remove_if; 
-using __STD::remove_copy; 
-using __STD::remove_copy_if; 
-using __STD::unique; 
-using __STD::unique_copy; 
-using __STD::reverse; 
-using __STD::reverse_copy; 
-using __STD::rotate; 
-using __STD::rotate_copy; 
-using __STD::random_shuffle; 
-using __STD::random_sample; 
-using __STD::random_sample_n; 
-using __STD::partition; 
-using __STD::stable_partition; 
-using __STD::sort; 
-using __STD::stable_sort; 
-using __STD::partial_sort; 
-using __STD::partial_sort_copy; 
-using __STD::nth_element; 
-using __STD::lower_bound; 
-using __STD::upper_bound; 
-using __STD::equal_range; 
-using __STD::binary_search; 
-using __STD::merge; 
-using __STD::inplace_merge; 
-using __STD::includes; 
-using __STD::set_union; 
-using __STD::set_intersection; 
-using __STD::set_difference; 
-using __STD::set_symmetric_difference; 
-using __STD::min_element; 
-using __STD::max_element; 
-using __STD::next_permutation; 
-using __STD::prev_permutation; 
-using __STD::find_first_of; 
-using __STD::find_end; 
-using __STD::is_sorted; 
-using __STD::is_heap; 
+using std::for_each; 
+using std::find; 
+using std::find_if; 
+using std::adjacent_find; 
+using std::count; 
+using std::count_if; 
+using std::search; 
+using std::search_n; 
+using std::swap_ranges; 
+using std::transform; 
+using std::replace; 
+using std::replace_if; 
+using std::replace_copy; 
+using std::replace_copy_if; 
+using std::generate; 
+using std::generate_n; 
+using std::remove; 
+using std::remove_if; 
+using std::remove_copy; 
+using std::remove_copy_if; 
+using std::unique; 
+using std::unique_copy; 
+using std::reverse; 
+using std::reverse_copy; 
+using std::rotate; 
+using std::rotate_copy; 
+using std::random_shuffle; 
+using std::random_sample; 
+using std::random_sample_n; 
+using std::partition; 
+using std::stable_partition; 
+using std::sort; 
+using std::stable_sort; 
+using std::partial_sort; 
+using std::partial_sort_copy; 
+using std::nth_element; 
+using std::lower_bound; 
+using std::upper_bound; 
+using std::equal_range; 
+using std::binary_search; 
+using std::merge; 
+using std::inplace_merge; 
+using std::includes; 
+using std::set_union; 
+using std::set_intersection; 
+using std::set_difference; 
+using std::set_symmetric_difference; 
+using std::min_element; 
+using std::max_element; 
+using std::next_permutation; 
+using std::prev_permutation; 
+using std::find_first_of; 
+using std::find_end; 
+using std::is_sorted; 
+using std::is_heap; 
 
 // Names from stl_heap.h
-using __STD::push_heap;
-using __STD::pop_heap;
-using __STD::make_heap;
-using __STD::sort_heap;
+using std::push_heap;
+using std::pop_heap;
+using std::make_heap;
+using std::sort_heap;
 
 // Names from stl_numeric.h
-using __STD::accumulate; 
-using __STD::inner_product; 
-using __STD::partial_sum; 
-using __STD::adjacent_difference; 
-using __STD::power; 
-using __STD::iota; 
-
-#endif /* __STL_USE_NAMESPACES */
+using std::accumulate; 
+using std::inner_product; 
+using std::partial_sum; 
+using std::adjacent_difference; 
+using std::power; 
+using std::iota; 
 
 #endif /* _CPP_BACKWARD_ALGO_H */
 

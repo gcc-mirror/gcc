@@ -49,28 +49,24 @@ test_01()
   int close_num;
 
   // read (ext)
-  int fd = open(name_01, O_RDONLY);
-  VERIFY( fd >= 0 );
-
+  FILE* f2 = fopen(name_01, "r");
+  VERIFY( f2 != NULL );
   {
-    std::filebuf fb(fd, "double_read", std::ios_base::in);
+    std::filebuf fb(f2, std::ios_base::in, 512);
   }
-  
-  close_num = close(fd);
+  close_num = fclose(f2);
   VERIFY( close_num == 0 );
 
 
   // read (standard)
   FILE* f = fopen(name_01, "r");
   VERIFY( f != NULL );
-
   {
     std::ifstream ifstream1(name_01);
     VERIFY( ifstream1.is_open() );
     std::ios_base::iostate st01 = ifstream1.rdstate();
     VERIFY( st01 == std::ios_base::goodbit );
   }
-  
   close_num = fclose(f);
   VERIFY( close_num == 0 );
 
@@ -89,7 +85,3 @@ main()
   test_01();
   return 0;
 }
-
-
-
-

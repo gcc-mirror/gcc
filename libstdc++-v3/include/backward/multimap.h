@@ -27,12 +27,11 @@
 #ifndef _CPP_BACKWARD_MULTIMAP_H
 #define _CPP_BACKWARD_MULTIMAP_H 1
 
+#include "backward_warning.h"
 #include "tree.h"
-#include <bits/stl_multimap.h>
+#include <bits/std_map.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::multimap;
-#endif /* __STL_USE_NAMESPACES */
+using std::multimap;
 
 #endif /* _CPP_BACKWARD_MULTIMAP_H */
 

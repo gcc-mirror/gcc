@@ -27,13 +27,12 @@
 #ifndef _CPP_BACKWARD_LIST_H
 #define _CPP_BACKWARD_LIST_H 1
 
-#include <bits/stl_algobase.h>
+#include "backward_warning.h"
+#include "algobase.h"
 #include "alloc.h"
 #include <bits/std_list.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::list;
-#endif /* __STL_USE_NAMESPACES */
+using std::list;
 
 #endif /* _CPP_BACKWARD_LIST_H */
 

@@ -27,12 +27,11 @@
 #ifndef _CPP_BACKWARD_MAP_H
 #define _CPP_BACKWARD_MAP_H 1
 
+#include "backward_warning.h"
 #include "tree.h"
-#include <bits/stl_map.h>
+#include <bits/std_map.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::map;
-#endif /* __STL_USE_NAMESPACES */
+using std::map;
 
 #endif /* _CPP_BACKWARD_MAP_H */
 

@@ -28,7 +28,8 @@
 #ifndef _CPP_BACKWARD_IOMANIP_H
 #define _CPP_BACKWARD_IOMANIP_H 1
 
-#include <iostream.h>
+#include "backward_warning.h"
+#include "iostream.h"
 #include <bits/std_iomanip.h>
 
 // These are from <ios> as per [27.4].

@@ -33,11 +33,6 @@
   
 // Information as gleaned from DJGPP <ctype.h>
 
-// DJGPP specific code
-extern unsigned short __dj_type_cflags[];
-extern unsigned char __dj_ctype_toupper[];
-extern unsigned char __dj_ctype_tolower[];
-  
   ctype<char>::ctype(const mask* __table = 0, bool __del = false, 
 	size_t __refs = 0) 
     : __ctype_abstract_base<char>(__refs), 
@@ -45,7 +40,7 @@ extern unsigned char __dj_ctype_tolower[];
       _M_toupper(__dj_ctype_toupper), 
       _M_tolower(__dj_ctype_tolower),
       _M_ctable(NULL), 
-      _M_table(__table == 0 ? __dj_type_cflags : __table) 
+      _M_table(__table == 0 ? __dj_ctype_flags : __table) 
     { }
 
   char

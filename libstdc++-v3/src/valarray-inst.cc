@@ -1,3 +1,36 @@
+// Explicit instantiation file.
+
+// Copyright (C) 2001 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+//
+// ISO C++ 14882:
+//
+
 #include <bits/std_valarray.h>
 
 namespace std
@@ -63,13 +96,13 @@ namespace std
 
         // Process the next multi-index.  The loop ought to be
         // backward since we're making a lexicagraphical visit.
-        ++__t[__n-1];
-        for (size_t __k=__n-1; __k; --__k)
+        ++__t[__n - 1];
+        for (size_t __k2 = __n - 1; __k2; --__k2)
           {
-            if (__t[__k] >= __l[__k])
+            if (__t[__k2] >= __l[__k2])
               {
-                __t[__k] = 0;
-                ++__t[__k-1];
+                __t[__k2] = 0;
+                ++__t[__k2 - 1];
               }
           }
       }
@@ -81,4 +114,5 @@ namespace std
         _M_index(__l.size() == 0 ? 0 : __valarray_product(__l))
   { __gslice_to_index(__o, __l, __s, _M_index); }
   
-}
+} // namespace std
+

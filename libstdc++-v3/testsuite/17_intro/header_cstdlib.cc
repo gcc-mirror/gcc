@@ -22,14 +22,22 @@
 
 #include <cstdlib>
 
-
-int main(void)
+// libstdc++/2190
+void test01()
 {
-  // Make sure size_t is in namespace std
-  std::size_t i = 5;            // { dg-do compile }
-  return 0;
+  long a = std::abs(1L);
+  ldiv_t b = std::div(2L, 1L);
 }
 
+void test02()
+{
+  // Make sure size_t is in namespace std
+  std::size_t i = 5;
+}
 
-
-
+int main()
+{
+  test01();
+  test02();
+  return 0;
+}

@@ -19,17 +19,15 @@
 #ifndef __SGI_STL_STRSTREAM
 #define __SGI_STL_STRSTREAM
 
-#if defined(__sgi) && !defined(__GNUC__) && !defined(_STANDARD_C_PLUS_PLUS)
-#error This header file requires the -LANG:std option
-#endif
-
+#include "backward_warning.h"
 #include <bits/std_iosfwd.h>
 #include <bits/std_ios.h>
 #include <bits/std_istream.h>
 #include <bits/std_ostream.h>
 #include <bits/std_string.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 //----------------------------------------------------------------------
 // Class strstreambuf, a streambuf class that manages an array of char.
@@ -150,7 +148,7 @@ private:
   strstreambuf _M_buf;
 };
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_STRSTREAM */
 

@@ -31,9 +31,10 @@
 #ifndef __SGI_STL_INTERNAL_STACK_H
 #define __SGI_STL_INTERNAL_STACK_H
 
-#include <bits/sequence_concepts.h>
+#include <bits/concept_check.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // Forward declarations of operators == and <, needed for friend declaration.
 
@@ -49,30 +50,20 @@ bool operator<(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y);
 
 
 template <class _Tp, class _Sequence>
-class stack {
-
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_REQUIRES(_Sequence, _BackInsertionSequence);
+class stack
+{
+  // concept requirements
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
+  __glibcpp_class_requires(_Sequence, _BackInsertionSequenceConcept);
   typedef typename _Sequence::value_type _Sequence_value_type;
-  __STL_CLASS_REQUIRES_SAME_TYPE(_Tp, _Sequence_value_type);
+  __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept);
 
-
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _Tp1, class _Seq1>
   friend bool operator== (const stack<_Tp1, _Seq1>&,
                           const stack<_Tp1, _Seq1>&);
   template <class _Tp1, class _Seq1>
   friend bool operator< (const stack<_Tp1, _Seq1>&,
                          const stack<_Tp1, _Seq1>&);
-#else /* __STL_MEMBER_TEMPLATES */
-  friend bool __STD_QUALIFIER
-  operator== __STL_NULL_TMPL_ARGS (const stack&, const stack&);
-  friend bool __STD_QUALIFIER
-  operator< __STL_NULL_TMPL_ARGS (const stack&, const stack&);
-#endif /* __STL_MEMBER_TEMPLATES */
-
 public:
   typedef typename _Sequence::value_type      value_type;
   typedef typename _Sequence::size_type       size_type;
@@ -106,8 +97,6 @@ bool operator<(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
   return __x.c < __y.c;
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
-
 template <class _Tp, class _Seq>
 bool operator!=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
 {
@@ -132,9 +121,7 @@ bool operator>=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
   return !(__x < __y);
 }
 
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
-
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_STACK_H */
 

@@ -142,6 +142,7 @@ test02()
   typedef std::char_traits<char>	traits_type;
 
   bool test = true;
+  // { dg-warning "string literals" "" { xfail *-*-* } 146 }
   const char str_lit01[] = "			    sun*ra 
                             and his myth science arkestra present
                             angles and demons @ play
@@ -200,6 +201,7 @@ test02()
   VERIFY( is_04.gcount() == 64 );
   VERIFY( state1 != state2 );
   VERIFY( state2 == statefail );
+  // { dg-warning "string literals" "" { xfail *-*-* } 205 }
   VERIFY( !traits_type::compare("                            and his myth science arkestra presen", carray1, 65) );
 
   is_04.clear();
@@ -232,6 +234,7 @@ test03()
   typedef std::char_traits<char>	traits_type;
 
   bool test = true;
+  // { dg-warning "string literals" "" { xfail *-*-* } 238 }
   const char str_lit01[] = "   sun*ra 
 			   & his arkestra, featuring john gilmore: 
                          jazz in silhouette: images and forecasts of tomorrow";
@@ -357,6 +360,7 @@ test04()
 int
 test05()
 {
+  // { dg-warning "string literals" "" { xfail *-*-* } 364 }
   const char* charray = "
 a
 aa
@@ -461,7 +465,7 @@ int
 test07()
 {
   bool test = true;
-  const char* tfn = "istream_unformatted-3.txt";
+  const char* tfn = "istream_unformatted-1.txt";
   std::ifstream infile;
   infile.open(tfn);
   VERIFY( !(!infile) );
@@ -491,12 +495,3 @@ main()
 
   return 0;
 }
-
-
-
-
-
-
-
-
-

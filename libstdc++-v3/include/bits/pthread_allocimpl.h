@@ -27,18 +27,17 @@
 // cache lines among processors, with potentially serious performance
 // consequences.
 
+#include <bits/c++config.h>
 #include <bits/std_cerrno.h>
-#include <bits/stl_config.h>
 #include <bits/stl_alloc.h>
 #ifndef __RESTRICT
 #  define __RESTRICT
 #endif
 
-#ifndef __STL_NO_BAD_ALLOC
-#  include <new>
-#endif
+#include <new>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 #define __STL_DATA_ALIGNMENT 8
 
@@ -213,7 +212,7 @@ _Pthread_alloc_template<_Max_size>::_S_get_per_thread_state()
     _Pthread_alloc_per_thread_state<_Max_size> * __result;
     if (!_S_key_initialized) {
         if (pthread_key_create(&_S_key, _S_destructor)) {
-	    __THROW_BAD_ALLOC;  // defined in stl_alloc.h
+	    std::__throw_bad_alloc();  // defined in funcexcept.h
         }
         _S_key_initialized = true;
     }
@@ -221,7 +220,7 @@ _Pthread_alloc_template<_Max_size>::_S_get_per_thread_state()
     __ret_code = pthread_setspecific(_S_key, __result);
     if (__ret_code) {
       if (__ret_code == ENOMEM) {
-	__THROW_BAD_ALLOC;
+	std::__throw_bad_alloc();
       } else {
 	// EINVAL
 	abort();
@@ -377,7 +376,6 @@ template <size_t _Max_size>
 size_t _Pthread_alloc_template<_Max_size>
 ::_S_heap_size = 0;
 
-#ifdef __STL_USE_STD_ALLOCATORS
 
 template <class _Tp>
 class pthread_allocator {
@@ -484,9 +482,7 @@ struct _Alloc_traits<_Tp, pthread_allocator<_Atype> >
 };
 
 
-#endif /* __STL_USE_STD_ALLOCATORS */
-
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* _CPP_BITS_PTHREAD_ALLOCIMPL_H */
 

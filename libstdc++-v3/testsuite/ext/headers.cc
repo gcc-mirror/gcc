@@ -1,6 +1,6 @@
 // 1999-06-23 bkoz 
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,11 +23,9 @@
 // This should include a list of all headers in the extension
 // subdirectory that are meant to be directly included.
 
-#include <ext/bvector>
 #include <ext/hash_map>
 #include <ext/hash_set>
 #include <ext/rope>
 #include <ext/slist>
-#include <ext/tree>
 
 int main() { }

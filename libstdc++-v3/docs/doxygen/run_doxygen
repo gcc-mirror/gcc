@@ -1,6 +1,134 @@
 #!/bin/sh
 
+# Runs doxygen.  Possibly will massage the output files.
+#
+# Synopsis:  run_doxygen --mode=[user|maint]  v3srcdir  v3builddir
+#
+# Originally hacked together by Phil Edwards <pme@sources.redhat.com>
+# $Id: run_doxygen,v 1.4 2001/04/29 01:40:34 pme Exp $
 
-# This file is a placeholder to keep the doxygen subdir in place.  It
-# will be used to test for the presence of doxygen(1) and run it.
+
+# We can check now that the version of doxygen is = this variable.  We need
+# to check for the >= case eventually.
+DOXYVER=1.2.6
+doxygen=
+
+find_doxygen() {
+    testing_version=
+    # thank you goat book
+    set `IFS=:; X="$PATH:/usr/local/bin:/bin:/usr/bin"; echo $X`
+    for dir
+    do
+      # AC_EXEEXT could come in useful here
+      maybedoxy="$dir/doxygen"
+      test -f "$maybedoxy" && testing_version=`$maybedoxy --version`
+      if test -n "$testing_version" && test $testing_version = $DOXYVER; then
+        doxygen="$maybedoxy"
+        break
+      fi
+    done
+    if test -z "$doxygen"; then
+        echo run_doxygen error:  Could not find Doxygen $DOXYVER in path. 1>&2
+        print_usage
+    fi
+}
+
+print_usage() {
+    cat 1>&2 <<EOF
+Usage:  run_doxygen --mode=MODE [<options>] <src-dir> <output-dir>
+      MODE is one of:
+          maint          Generate maintainers' documentation (lots more;
+                             exposes non-public members, etc).
+          user           Generate user-level library documentation.
+
+      more options when i think of them
+
+Note:  Requires Doxygen ${DOXYVER} or later; get it at
+       ftp://ftp.stack.nl/pub/users/dimitri/doxygen-${DOXYVER}.src.tar.gz
+
+EOF
+    exit 1
+}
+
+parse_options() {
+  for o
+  do
+    # Blatantly ripped from autoconf, er, I mean, "gratefully standing
+    # on the shoulders of those giants who have gone before us."
+    case "$o" in
+      -*=*) arg=`echo "$o" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+      *) arg= ;;
+    esac
+
+    case "$o" in
+      --mode=*)
+        mode=$arg ;;
+      --mode | --help | -h)
+        print_usage ;;
+      --version | -v)
+        # Aw, that's so cuuuute... don't ask, I needed it.
+        blank=
+        Id=is
+        echo You expect this dinky script to track a version?  Okay, here
+        echo it $Id: run_doxygen,v 1.4 2001/04/29 01:40:34 pme Exp $blank
+        exit 0
+        ;;
+      *)
+        # this turned out to be a mess, maybe change to --srcdir=, etc
+        if test $srcdir = unset; then
+          srcdir=$o
+        elif test $outdir = unset; then
+          outdir=${o}/docs/doxygen
+        else
+          echo run_doxygen error:  Too many arguments 1>&2
+          exit 1
+        fi
+        ;;
+      esac
+  done
+}
+
+
+# script begins here
+mode=unset
+srcdir=unset
+outdir=unset
+
+parse_options $*
+find_doxygen
+
+if test $srcdir = unset || test $outdir = unset || test $mode = unset; then
+    # this could be better
+    echo run_doxygen error:  You have not given enough information...! 1>&2
+    print_usage
+fi
+
+case x"$mode" in
+    xuser | xmaint)  ;;  # ochen khorosho
+    *)
+      echo run_doxygen error:  $mode is an invalid mode 1>&2
+      exit 1 ;;
+esac
+
+test -d $outdir || (mkdir -p $outdir ; chmod u+w $outdir)
+(
+  set -e
+  cd $srcdir
+  sed -e "s=@outdir@=${outdir}=" \
+      -e "s=@srcdir@=${srcdir}=" \
+      docs/doxygen/${mode}.cfg.in > ${outdir}/${mode}.cfg
+  echo $doxygen ${outdir}/${mode}.cfg
+  $doxygen ${outdir}/${mode}.cfg
+)
+
+# mess with output files here?
+
+echo ::
+echo :: Doxygen output begins with
+echo :: ${outdir}/html_${mode}/index.html
+echo ::
+
+exit 0
+
+# vim:ts=4:et:
 

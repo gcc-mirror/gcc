@@ -1,4 +1,4 @@
-## Makefile for the src subdirectory of the GNU C++ Standard library.
+# Makefile for the src subdirectory of the GNU C++ Standard library.
 ##
 ## Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 ##
@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.71.2.3 2001/02/28 06:45:36 bkoz Exp $
+## $Id: Makefile.am,v 1.84 2001/04/18 01:06:04 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -29,11 +29,10 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
+CXX = @glibcpp_CXX@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
-EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
-
 
 # Compile flags that should be constant throughout the build, both for
 # SUBDIRS and for libstdc++-v3 in general.
@@ -47,7 +46,7 @@ CONFIG_CXXFLAGS = \
 
 # Warning flags to use.
 WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
+	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@
@@ -62,7 +61,7 @@ INCLUDES = \
 	-nostdinc++ \
 	-I$(GLIBCPP_INCLUDE_DIR) $(CSTD_INCLUDES) -I$(top_builddir)/include \
 	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
-	$(TOPLEVEL_INCLUDES)	
+	$(TOPLEVEL_INCLUDES)
 
 base_headers = \
 	bits/cpp_type_traits.h bits/char_traits.h bits/codecvt.h \
@@ -82,7 +81,8 @@ base_headers = \
 	bits/streambuf.tcc bits/basic_file.h \
 	bits/locale_facets.h bits/locale_facets.tcc bits/localefwd.h \
 	bits/stl_pthread_alloc.h bits/pthread_allocimpl.h \
-	bits/stl_threads.h bits/stl_iterator_base.h \
+	bits/stl_threads.h \
+	bits/stl_iterator_base_types.h bits/stl_iterator_base_funcs.h \
 	bits/std_bitset.h bits/std_deque.h bits/std_functional.h \
 	bits/std_iterator.h bits/std_list.h \
 	bits/std_map.h bits/std_memory.h bits/std_numeric.h \
@@ -93,12 +93,11 @@ base_headers = \
 	bits/stl_heap.h bits/stl_iterator.h bits/stl_list.h bits/stl_map.h \
 	bits/stl_multimap.h bits/stl_multiset.h bits/stl_numeric.h \
 	bits/stl_pair.h bits/stl_queue.h bits/stl_raw_storage_iter.h \
-	bits/stl_relops.h bits/stl_set.h \
-	bits/stl_stack.h bits/stl_tempbuf.h \
+	bits/stl_relops.h bits/stl_set.h bits/stl_stack.h bits/stl_tempbuf.h \
 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h \
-	bits/type_traits.h bits/std_algorithm.h \
-	bits/concept_checks.h bits/container_concepts.h \
-	bits/sequence_concepts.h bits/stl_config.h bits/stl_construct.h
+	bits/stl_bvector.h bits/type_traits.h bits/std_algorithm.h \
+	bits/stl_construct.h bits/boost_concept_check.h bits/concept_check.h
+
 
 backward_headers = \
 	backward/complex.h backward/iomanip.h backward/istream.h \
@@ -106,18 +105,18 @@ backward_headers = \
 	backward/algo.h backward/algobase.h backward/alloc.h \
 	backward/bvector.h backward/defalloc.h backward/deque.h \
 	backward/function.h backward/hash_map.h backward/hash_set.h \
-	backward/hashtable.h backward/heap.h backward/iterator.h \
-	backward/list.h backward/map.h backward/multimap.h backward/new.h \
-	backward/multiset.h backward/pair.h backward/iostream.h \
-	backward/rope.h backward/set.h backward/slist.h backward/stack.h \
-	backward/tempbuf.h backward/tree.h backward/vector.h \
-	backward/fstream.h backward/strstream.h backward/strstream
+	backward/hashtable.h backward/heap.h backward/iostream.h \
+	backward/iterator.h backward/list.h backward/map.h \
+	backward/multimap.h backward/new.h backward/multiset.h \
+	backward/pair.h backward/queue.h backward/rope.h backward/set.h \
+	backward/slist.h backward/stack.h backward/tempbuf.h backward/tree.h \
+	backward/vector.h backward/fstream.h backward/strstream.h \
+	backward/strstream backward/backward_warning.h
 
 ext_headers = \
-	ext/ropeimpl.h ext/stl_rope.h \
-	ext/stl_bvector.h ext/stl_hashtable.h ext/stl_hash_fun.h \
-	ext/hash_map ext/hash_set ext/rope ext/slist \
-	ext/tree ext/bvector 
+	ext/rope ext/ropeimpl.h ext/stl_rope.h \
+	ext/slist ext/hash_map ext/hash_set \
+	ext/stl_hashtable.h ext/stl_hash_fun.h 
 
 c_base_headers = \
 	bits/std_cassert.h bits/std_cctype.h bits/std_cerrno.h \
@@ -167,34 +166,34 @@ build_headers = \
 sources = \
 	limitsMEMBERS.cc \
 	stdexcept.cc functexcept.cc bitset.cc \
-        globals.cc \
+	globals.cc \
 	basic_file.cc ios.cc complex_io.cc strstream.cc \
 	c++locale.cc locale.cc localename.cc codecvt.cc \
-	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
+	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc \
+	string-inst.cc wstring-inst.cc 
 
-wstring_sources = \
-	wstring-inst.cc
 
 VPATH += $(top_srcdir) $(top_srcdir)/src
 VPATH += $(GLIBCPP_INCLUDE_DIR) 
 VPATH += $(GLIBCPP_INCLUDE_DIR)/std $(C_INCLUDE_DIR)
 
-# Actual sources for the distro, but don't build these.
-#EXTRA_sources = string-inst.cc 
-
 libstdc___la_SOURCES = $(sources)
-
-libinst_wstring_la_SOURCES = $(wstring_sources)
 
 libstdc___la_LIBADD = \
 	../libmath/libmath.la @libio_la@ \
-	../libsupc++/libsupc++convenience.la \
-	@libinst_wstring_la@
+	../libsupc++/libsupc++convenience.la
 
 libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
 
 libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
 
+
+# Use special rules for the deprecated source files so that they find
+# deprecated include files.
+strstream.lo: strstream.cc
+	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+strstream.o: strstream.cc
+	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
 
 # Make sure cshadow headers are built first.
 if GLIBCPP_USE_CSHADOW
@@ -207,7 +206,7 @@ endif
 $(libstdc___la_OBJECTS): $(CSHADOW_H)
 
 $(top_builddir)/stamp-cshadow: $(top_srcdir)/mkinclosure \
-                               $(top_srcdir)/mkcshadow
+	                       $(top_srcdir)/mkcshadow
 	$(top_srcdir)/mkinclosure \
 	"-I $(top_builddir)/../../gcc/include -I /usr/include -G fcntl.h unistd.h" | $(top_srcdir)/mkcshadow;
 	rm -f  $(top_builddir)/stamp-cshadow 
@@ -236,6 +235,7 @@ install-data-local: myinstalldirs myinstallheaders
 # NB: installation of shadow header directories is not attempted.
 myinstalldirs:
 	if test -z "$(MULTISUBDIR)"; then \
+	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/backward; \
 	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/bits; \
 	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/ext; \
 	$(mkinstalldirs) $(DESTDIR)$(gxx_target_include_dir)/bits; \
@@ -250,19 +250,19 @@ c_incdir = @C_INCLUDE_DIR@
 myinstallheaders: 
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(base_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/"; \
+	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/";\
 	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/; \
 	done; \
 	for i in $(ext_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/"; \
+	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/";\
 	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/; \
 	done; \
 	for i in $(backward_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir); \
+	echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/backward/";\
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/backward/; \
 	done; \
 	for i in $(c_base_headers); do \
-        echo "$(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/"; \
+	echo "$(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/";\
 	  $(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/; \
 	done; \
 	for i in $(std_headers); do \
@@ -270,29 +270,16 @@ myinstallheaders:
 	  $(INSTALL_DATA) $(src_incdir)/std/$$i $(gxx_include_dir); \
 	done; \
 	for i in $(build_headers); do \
-    echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(gxx_target_include_dir)/bits/"; \
-	  $(INSTALL_DATA) $(bld_incdir)/$$i $(gxx_target_include_dir)/bits/; \
+	echo "$(INSTALL_DATA) $(bld_incdir)/$$i \
+	  $(gxx_target_include_dir)/bits/"; $(INSTALL_DATA) \
+	  $(bld_incdir)/$$i $(gxx_target_include_dir)/bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \
-        echo "$(INSTALL_DATA) $$i $(gxx_include_dir)"; \
-          $(INSTALL_DATA) $$i $(gxx_include_dir); \
+	echo "$(INSTALL_DATA) $$i $(gxx_include_dir)"; \
+	  $(INSTALL_DATA) $$i $(gxx_include_dir); \
 	done; \
 	fi;
-
-
-# Use special rules for the deprecated source files so that they find
-# deprecated include files.
-strstream.lo: strstream.cc
-	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
-strstream.o: strstream.cc
-	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
-
-# Make wstring-inst.cc from string-inst.cc
-wstring-inst.o: string-inst.cc
-	$(CXXCOMPILE) -c -DC=wchar_t $< -o $@
-wstring-inst.lo: string-inst.cc
-	$(LTCXXCOMPILE) -c -DC=wchar_t $< -o $@
 
 
 # Alexandre put this in here for some libtool-related reason.
@@ -314,6 +301,10 @@ tmp-libstdc++.INC: Makefile
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion call for it. (ie, --enable-debug)
+#
+# The no-implicit-templates flag will generate unresolved references to
+# the concept-checking symbols.  So we must disable the checks while
+# actually building the library.
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
 	$(LIBSUPCXX_CXXFLAGS) \

@@ -24,25 +24,16 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_BVECTOR_H
-#define _CPP_BACKWARD_BVECTOR_H 1
+#ifndef __SGI_STL_BVECTOR_H
+#define __SGI_STL_BVECTOR_H
 
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
-#include "vector.h"
-#else
-#include "algobase.h"
-#include "alloc.h"
-#endif 
 
-#include <bits/stl_bvector.h>
+#include "backward_warning.h"
+#include <bits/std_vector.h>
 
-#ifdef __STL_USE_NAMESPACES
+using std::bit_vector;
 
-using __STD::bit_vector;
-
-#endif /* __STL_USE_NAMESPACES */
-
-#endif /* _CPP_BACKWARD_BVECTOR_H */
+#endif /* __SGI_STL_BVECTOR_H */
 
 // Local Variables:
 // mode:C++

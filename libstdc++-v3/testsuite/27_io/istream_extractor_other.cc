@@ -1,6 +1,6 @@
 // 1999-07-28 bkoz
 
-// Copyright (C) 1999 Free Software Foundation
+// Copyright (C) 1999, 2001 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,14 +55,6 @@ bool test01() {
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
 
-  // template<_CharT, _Traits>
-  //  basic_istream& operator>>(basic_istream& (*pf) (basic_istream&))
-
-  // template<_CharT, _Traits>
-  //  basic_istream& operator>>(basic_ios& (*pf) (basic_ios&))
-
-  // template<_CharT, _Traits>
-  //  basic_istream& operator>>(ios_base& (*pf) (ios_base&))
 
   // template<_CharT, _Traits>
   //  basic_istream& operator>>(basic_streambuf*)
@@ -184,14 +176,33 @@ bool test02() {
   return test;
 }
 
+void test03() 
+{
+  using namespace std;  
+  bool test = true;
+
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(ios_base& (*pf) (ios_base&))
+  {
+    int i = 0;
+    std::istringstream iss(" 43");
+    iss >> std::noskipws >> i;
+    std::ios::iostate i3 = iss.rdstate();
+    VERIFY ( !iss ); //should set failbit
+  }
+
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(basic_ios& (*pf) (basic_ios&))
+
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(basic_istream& (*pf) (basic_istream&))
+}
+
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }
-
-
-
-
-

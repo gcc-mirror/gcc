@@ -32,7 +32,7 @@
 #ifndef __SGI_STL_INTERNAL_ALGOBASE_H
 #define __SGI_STL_INTERNAL_ALGOBASE_H
 
-#include <bits/stl_config.h>
+#include <bits/c++config.h>
 #ifndef __SGI_STL_INTERNAL_PAIR_H
 #include <bits/stl_pair.h>
 #endif
@@ -45,42 +45,47 @@
 #include <bits/std_cstddef.h>
 #include <new>
 
-#ifdef __STL_USE_NEW_IOSTREAMS 
-#include <iosfwd>
-#else /* __STL_USE_NEW_IOSTREAMS */
 #include <bits/std_iosfwd.h>
-#endif /* __STL_USE_NEW_IOSTREAMS */
-
-#include <bits/stl_iterator_base.h>
+#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
+#include <bits/concept_check.h>
 
-// We pick up concept_checks.h from stl_iterator_base.h.
-
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // swap and iter_swap
 
 template <class _ForwardIter1, class _ForwardIter2, class _Tp>
-inline void __iter_swap(_ForwardIter1 __a, _ForwardIter2 __b, _Tp*) {
+inline void __iter_swap(_ForwardIter1 __a, _ForwardIter2 __b, _Tp*)
+{
   _Tp __tmp = *__a;
   *__a = *__b;
   *__b = __tmp;
 }
 
 template <class _ForwardIter1, class _ForwardIter2>
-inline void iter_swap(_ForwardIter1 __a, _ForwardIter2 __b) {
-  __STL_REQUIRES(_ForwardIter1, _Mutable_ForwardIterator);
-  __STL_REQUIRES(_ForwardIter2, _Mutable_ForwardIterator);
-  __STL_CONVERTIBLE(typename iterator_traits<_ForwardIter1>::value_type,
-                    typename iterator_traits<_ForwardIter2>::value_type);
-  __STL_CONVERTIBLE(typename iterator_traits<_ForwardIter2>::value_type,
-                    typename iterator_traits<_ForwardIter1>::value_type);
-  __iter_swap(__a, __b, __VALUE_TYPE(__a));
+inline void iter_swap(_ForwardIter1 __a, _ForwardIter2 __b)
+{
+  // concept requirements
+  __glibcpp_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIter1>);
+  __glibcpp_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIter2>);
+  __glibcpp_function_requires(_ConvertibleConcept<
+        typename iterator_traits<_ForwardIter1>::value_type,
+        typename iterator_traits<_ForwardIter2>::value_type>);
+  __glibcpp_function_requires(_ConvertibleConcept<
+        typename iterator_traits<_ForwardIter2>::value_type,
+        typename iterator_traits<_ForwardIter1>::value_type>);
+
+  __iter_swap(__a, __b, __value_type(__a));
 }
 
 template <class _Tp>
-inline void swap(_Tp& __a, _Tp& __b) {
-  __STL_REQUIRES(_Tp, _Assignable);
+inline void swap(_Tp& __a, _Tp& __b)
+{
+  // concept requirements
+  __glibcpp_function_requires(_SGIAssignableConcept<_Tp>);
+
   _Tp __tmp = __a;
   __a = __b;
   __b = __tmp;
@@ -89,26 +94,24 @@ inline void swap(_Tp& __a, _Tp& __b) {
 //--------------------------------------------------
 // min and max
 
-#if !defined(__BORLANDC__) || __BORLANDC__ >= 0x540 /* C++ Builder 4.0 */
-
 #undef min
 #undef max
 
 template <class _Tp>
 inline const _Tp& min(const _Tp& __a, const _Tp& __b) {
-  __STL_REQUIRES(_Tp, _LessThanComparable);
+  // concept requirements
+  __glibcpp_function_requires(_LessThanComparableConcept<_Tp>);
   //return __b < __a ? __b : __a;
   if (__b < __a) return __b; return __a;
 }
 
 template <class _Tp>
 inline const _Tp& max(const _Tp& __a, const _Tp& __b) {
-  __STL_REQUIRES(_Tp, _LessThanComparable);
+  // concept requirements
+  __glibcpp_function_requires(_LessThanComparableConcept<_Tp>);
   //return  __a < __b ? __b : __a;
   if (__a < __b) return __b; return __a;
 }
-
-#endif /* __BORLANDC__ */
 
 template <class _Tp, class _Compare>
 inline const _Tp& min(const _Tp& __a, const _Tp& __b, _Compare __comp) {
@@ -156,49 +159,50 @@ __copy(_RandomAccessIter __first, _RandomAccessIter __last,
 
 template <class _Tp>
 inline _Tp*
-__copy_trivial(const _Tp* __first, const _Tp* __last, _Tp* __result) {
+__copy_trivial(const _Tp* __first, const _Tp* __last, _Tp* __result)
+{
   memmove(__result, __first, sizeof(_Tp) * (__last - __first));
   return __result + (__last - __first);
 }
 
-#if defined(__STL_FUNCTION_TMPL_PARTIAL_ORDER)
 
 template <class _InputIter, class _OutputIter>
 inline _OutputIter __copy_aux2(_InputIter __first, _InputIter __last,
-                               _OutputIter __result, __false_type) {
+                               _OutputIter __result, __false_type)
+{
   return __copy(__first, __last, __result,
-                __ITERATOR_CATEGORY(__first),
-                __DISTANCE_TYPE(__first));
+                __iterator_category(__first),
+                __distance_type(__first));
 }
 
 template <class _InputIter, class _OutputIter>
 inline _OutputIter __copy_aux2(_InputIter __first, _InputIter __last,
-                               _OutputIter __result, __true_type) {
+                               _OutputIter __result, __true_type)
+{
   return __copy(__first, __last, __result,
-                __ITERATOR_CATEGORY(__first),
-                __DISTANCE_TYPE(__first));
+                __iterator_category(__first),
+                __distance_type(__first));
 }
-
-#ifndef __USLC__
 
 template <class _Tp>
 inline _Tp* __copy_aux2(_Tp* __first, _Tp* __last, _Tp* __result,
-                        __true_type) {
+                        __true_type)
+{
   return __copy_trivial(__first, __last, __result);
 }
 
-#endif /* __USLC__ */
-
 template <class _Tp>
 inline _Tp* __copy_aux2(const _Tp* __first, const _Tp* __last, _Tp* __result,
-                        __true_type) {
+                        __true_type)
+{
   return __copy_trivial(__first, __last, __result);
 }
 
 
 template <class _InputIter, class _OutputIter, class _Tp>
 inline _OutputIter __copy_aux(_InputIter __first, _InputIter __last,
-                              _OutputIter __result, _Tp*) {
+                              _OutputIter __result, _Tp*)
+{
   typedef typename __type_traits<_Tp>::has_trivial_assignment_operator
           _Trivial;
   return __copy_aux2(__first, __last, __result, _Trivial());
@@ -206,124 +210,47 @@ inline _OutputIter __copy_aux(_InputIter __first, _InputIter __last,
 
 template<typename _InputIter, typename _OutputIter>
 inline _OutputIter __copy_ni2(_InputIter __first, _InputIter __last,
-                               _OutputIter __result, __true_type) {
+                               _OutputIter __result, __true_type)
+{
   return _OutputIter(__copy_aux(__first, __last, __result.base(),
-                                __VALUE_TYPE(__first)));
+                                __value_type(__first)));
 }
 
 template<typename _InputIter, typename _OutputIter>
 inline _OutputIter __copy_ni2(_InputIter __first, _InputIter __last,
-			      _OutputIter __result, __false_type) {
-  return __copy_aux(__first, __last, __result, __VALUE_TYPE(__first));
+			      _OutputIter __result, __false_type)
+{
+  return __copy_aux(__first, __last, __result, __value_type(__first));
 }
 
 template<typename _InputIter, typename _OutputIter>
 inline _OutputIter __copy_ni1(_InputIter __first, _InputIter __last,
-                               _OutputIter __result, __true_type) {
+                               _OutputIter __result, __true_type)
+{
   typedef typename _Is_normal_iterator<_OutputIter>::_Normal __Normal;
   return __copy_ni2(__first.base(), __last.base(), __result, __Normal());
 }
 
 template<typename _InputIter, typename _OutputIter>
 inline _OutputIter __copy_ni1(_InputIter __first, _InputIter __last,
-                               _OutputIter __result, __false_type) {
+                               _OutputIter __result, __false_type)
+{
   typedef typename _Is_normal_iterator<_OutputIter>::_Normal __Normal;
   return __copy_ni2(__first, __last, __result, __Normal());
 }
 
 template <class _InputIter, class _OutputIter>
 inline _OutputIter copy(_InputIter __first, _InputIter __last,
-                        _OutputIter __result) {
-  __STL_REQUIRES(_InputIter, _InputIterator);
-  __STL_REQUIRES(_OutputIter, _OutputIterator);
+                        _OutputIter __result)
+{
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter>);
+  __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
+        typename iterator_traits<_InputIter>::value_type>);
+
    typedef typename _Is_normal_iterator<_InputIter>::_Normal __Normal;
    return __copy_ni1(__first, __last, __result, __Normal());
 }
-
-// Hack for compilers that don't have partial ordering of function templates
-// but do have partial specialization of class templates.
-#elif defined(__STL_CLASS_PARTIAL_SPECIALIZATION)
-
-template <class _InputIter, class _OutputIter, class _BoolType>
-struct __copy_dispatch {
-  static _OutputIter copy(_InputIter __first, _InputIter __last,
-                          _OutputIter __result) {
-    typedef typename iterator_traits<_InputIter>::iterator_category _Category;
-    typedef typename iterator_traits<_InputIter>::difference_type _Distance;
-    return __copy(__first, __last, __result, _Category(), (_Distance*) 0);
-  }
-};
-
-template <class _Tp>
-struct __copy_dispatch<_Tp*, _Tp*, __true_type>
-{
-  static _Tp* copy(const _Tp* __first, const _Tp* __last, _Tp* __result) {
-    return __copy_trivial(__first, __last, __result);
-  }
-};
-
-template <class _Tp>
-struct __copy_dispatch<const _Tp*, _Tp*, __true_type>
-{
-  static _Tp* copy(const _Tp* __first, const _Tp* __last, _Tp* __result) {
-    return __copy_trivial(__first, __last, __result);
-  }
-};
-
-template <class _InputIter, class _OutputIter>
-inline _OutputIter copy(_InputIter __first, _InputIter __last,
-                        _OutputIter __result) {
-  __STL_REQUIRES(_InputIter, _InputIterator);
-  __STL_REQUIRES(_OutputIter, _OutputIterator);
-  typedef typename iterator_traits<_InputIter>::value_type _Tp;
-  typedef typename __type_traits<_Tp>::has_trivial_assignment_operator
-          _Trivial;
-  return __copy_dispatch<_InputIter, _OutputIter, _Trivial>
-    ::copy(__first, __last, __result);
-}
-
-// Fallback for compilers with neither partial ordering nor partial
-// specialization.  Define the faster version for the basic builtin
-// types.
-#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
-template <class _InputIter, class _OutputIter>
-inline _OutputIter copy(_InputIter __first, _InputIter __last,
-                        _OutputIter __result)
-{
-  return __copy(__first, __last, __result,
-                __ITERATOR_CATEGORY(__first),
-                __DISTANCE_TYPE(__first));
-}
-
-#define __SGI_STL_DECLARE_COPY_TRIVIAL(_Tp)                                \
-  inline _Tp* copy(const _Tp* __first, const _Tp* __last, _Tp* __result) { \
-    memmove(__result, __first, sizeof(_Tp) * (__last - __first));          \
-    return __result + (__last - __first);                                  \
-  }
-
-__SGI_STL_DECLARE_COPY_TRIVIAL(char)
-__SGI_STL_DECLARE_COPY_TRIVIAL(signed char)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned char)
-__SGI_STL_DECLARE_COPY_TRIVIAL(short)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned short)
-__SGI_STL_DECLARE_COPY_TRIVIAL(int)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned int)
-__SGI_STL_DECLARE_COPY_TRIVIAL(long)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned long)
-#ifdef __STL_HAS_WCHAR_T
-__SGI_STL_DECLARE_COPY_TRIVIAL(wchar_t)
-#endif
-#ifdef _STL_LONG_LONG
-__SGI_STL_DECLARE_COPY_TRIVIAL(long long)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned long long)
-#endif 
-__SGI_STL_DECLARE_COPY_TRIVIAL(float)
-__SGI_STL_DECLARE_COPY_TRIVIAL(double)
-__SGI_STL_DECLARE_COPY_TRIVIAL(long double)
-
-#undef __SGI_STL_DECLARE_COPY_TRIVIAL
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 //--------------------------------------------------
 // copy_backward
@@ -353,7 +280,6 @@ inline _BidirectionalIter __copy_backward(_RandomAccessIter __first,
   return __result;
 }
 
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION 
 
 // This dispatch class is a workaround for compilers that do not 
 // have partial ordering of function templates.  All we're doing is
@@ -433,26 +359,19 @@ inline _BI2 __copy_backward_input_normal_iterator(_BI1 __first, _BI1 __last,
 }
 
 template <typename _BI1, typename _BI2>
-inline _BI2 copy_backward(_BI1 __first, _BI1 __last, _BI2 __result) {
-  __STL_REQUIRES(_BI1, _BidirectionalIterator);
-  __STL_REQUIRES(_BI2, _Mutable_BidirectionalIterator);
-  __STL_CONVERTIBLE(typename iterator_traits<_BI1>::value_type,
-                    typename iterator_traits<_BI2>::value_type);
+inline _BI2 copy_backward(_BI1 __first, _BI1 __last, _BI2 __result)
+{
+  // concept requirements
+  __glibcpp_function_requires(_BidirectionalIteratorConcept<_BI1>);
+  __glibcpp_function_requires(_Mutable_BidirectionalIteratorConcept<_BI2>);
+  __glibcpp_function_requires(_ConvertibleConcept<
+        typename iterator_traits<_BI1>::value_type,
+        typename iterator_traits<_BI2>::value_type>);
+
   typedef typename _Is_normal_iterator<_BI1>::_Normal __Normal;
   return __copy_backward_input_normal_iterator(__first, __last, __result,
                                                __Normal());
 }
-
-#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
-template <class _BI1, class _BI2>
-inline _BI2 copy_backward(_BI1 __first, _BI1 __last, _BI2 __result) {
-  return __copy_backward(__first, __last, __result,
-                         __ITERATOR_CATEGORY(__first),
-                         __DISTANCE_TYPE(__first));
-}
-
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 //--------------------------------------------------
 // copy_n (not part of the C++ standard)
@@ -482,14 +401,18 @@ template <class _InputIter, class _Size, class _OutputIter>
 inline pair<_InputIter, _OutputIter>
 __copy_n(_InputIter __first, _Size __count, _OutputIter __result) {
   return __copy_n(__first, __count, __result,
-                  __ITERATOR_CATEGORY(__first));
+                  __iterator_category(__first));
 }
 
 template <class _InputIter, class _Size, class _OutputIter>
 inline pair<_InputIter, _OutputIter>
-copy_n(_InputIter __first, _Size __count, _OutputIter __result) {
-  __STL_REQUIRES(_InputIter, _InputIterator);
-  __STL_REQUIRES(_OutputIter, _OutputIterator);
+copy_n(_InputIter __first, _Size __count, _OutputIter __result)
+{
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter>);
+  __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
+        typename iterator_traits<_InputIter>::value_type>);
+
   return __copy_n(__first, __count, __result);
 }
 
@@ -498,15 +421,21 @@ copy_n(_InputIter __first, _Size __count, _OutputIter __result) {
 
 
 template <class _ForwardIter, class _Tp>
-void fill(_ForwardIter __first, _ForwardIter __last, const _Tp& __value) {
-  __STL_REQUIRES(_ForwardIter, _Mutable_ForwardIterator);
+void fill(_ForwardIter __first, _ForwardIter __last, const _Tp& __value)
+{
+  // concept requirements
+  __glibcpp_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIter>);
+
   for ( ; __first != __last; ++__first)
     *__first = __value;
 }
 
 template <class _OutputIter, class _Size, class _Tp>
-_OutputIter fill_n(_OutputIter __first, _Size __n, const _Tp& __value) {
-  __STL_REQUIRES(_OutputIter, _OutputIterator);
+_OutputIter fill_n(_OutputIter __first, _Size __n, const _Tp& __value)
+{
+  // concept requirements
+  __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,_Tp>);
+
   for ( ; __n > 0; --__n, ++__first)
     *__first = __value;
   return __first;
@@ -515,45 +444,48 @@ _OutputIter fill_n(_OutputIter __first, _Size __n, const _Tp& __value) {
 // Specialization: for one-byte types we can use memset.
 
 inline void fill(unsigned char* __first, unsigned char* __last,
-                 const unsigned char& __c) {
+                 const unsigned char& __c)
+{
   unsigned char __tmp = __c;
   memset(__first, __tmp, __last - __first);
 }
 
 inline void fill(signed char* __first, signed char* __last,
-                 const signed char& __c) {
+                 const signed char& __c)
+{
   signed char __tmp = __c;
   memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
 }
 
-inline void fill(char* __first, char* __last, const char& __c) {
+inline void fill(char* __first, char* __last, const char& __c)
+{
   char __tmp = __c;
   memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
-
 template <class _Size>
 inline unsigned char* fill_n(unsigned char* __first, _Size __n,
-                             const unsigned char& __c) {
+                             const unsigned char& __c)
+{
   fill(__first, __first + __n, __c);
   return __first + __n;
 }
 
 template <class _Size>
 inline signed char* fill_n(char* __first, _Size __n,
-                           const signed char& __c) {
+                           const signed char& __c)
+{
   fill(__first, __first + __n, __c);
   return __first + __n;
 }
 
 template <class _Size>
-inline char* fill_n(char* __first, _Size __n, const char& __c) {
+inline char* fill_n(char* __first, _Size __n, const char& __c)
+{
   fill(__first, __first + __n, __c);
   return __first + __n;
 }
 
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 //--------------------------------------------------
 // equal and mismatch
@@ -561,13 +493,16 @@ inline char* fill_n(char* __first, _Size __n, const char& __c) {
 template <class _InputIter1, class _InputIter2>
 pair<_InputIter1, _InputIter2> mismatch(_InputIter1 __first1,
                                         _InputIter1 __last1,
-                                        _InputIter2 __first2) {
-  __STL_REQUIRES(_InputIter1, _InputIterator);
-  __STL_REQUIRES(_InputIter2, _InputIterator);
-  __STL_REQUIRES(typename iterator_traits<_InputIter1>::value_type,
-                 _EqualityComparable);
-  __STL_REQUIRES(typename iterator_traits<_InputIter2>::value_type,
-                 _EqualityComparable);
+                                        _InputIter2 __first2)
+{
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>);
+  __glibcpp_function_requires(_EqualityComparableConcept<
+        typename iterator_traits<_InputIter1>::value_type>);
+  __glibcpp_function_requires(_EqualityComparableConcept<
+        typename iterator_traits<_InputIter2>::value_type>);
+
   while (__first1 != __last1 && *__first1 == *__first2) {
     ++__first1;
     ++__first2;
@@ -579,9 +514,12 @@ template <class _InputIter1, class _InputIter2, class _BinaryPredicate>
 pair<_InputIter1, _InputIter2> mismatch(_InputIter1 __first1,
                                         _InputIter1 __last1,
                                         _InputIter2 __first2,
-                                        _BinaryPredicate __binary_pred) {
-  __STL_REQUIRES(_InputIter1, _InputIterator);
-  __STL_REQUIRES(_InputIter2, _InputIterator);
+                                        _BinaryPredicate __binary_pred)
+{
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>);
+
   while (__first1 != __last1 && __binary_pred(*__first1, *__first2)) {
     ++__first1;
     ++__first2;
@@ -591,13 +529,15 @@ pair<_InputIter1, _InputIter2> mismatch(_InputIter1 __first1,
 
 template <class _InputIter1, class _InputIter2>
 inline bool equal(_InputIter1 __first1, _InputIter1 __last1,
-                  _InputIter2 __first2) {
-  __STL_REQUIRES(_InputIter1, _InputIterator);
-  __STL_REQUIRES(_InputIter2, _InputIterator);
-  __STL_REQUIRES(typename iterator_traits<_InputIter1>::value_type,
-                 _EqualityComparable);
-  __STL_REQUIRES(typename iterator_traits<_InputIter2>::value_type,
-                 _EqualityComparable);
+                  _InputIter2 __first2)
+{
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>);
+  __glibcpp_function_requires(_EqualOpConcept<
+        typename iterator_traits<_InputIter1>::value_type,
+        typename iterator_traits<_InputIter2>::value_type>);
+
   for ( ; __first1 != __last1; ++__first1, ++__first2)
     if (!(*__first1 == *__first2))
       return false;
@@ -606,9 +546,12 @@ inline bool equal(_InputIter1 __first1, _InputIter1 __last1,
 
 template <class _InputIter1, class _InputIter2, class _BinaryPredicate>
 inline bool equal(_InputIter1 __first1, _InputIter1 __last1,
-                  _InputIter2 __first2, _BinaryPredicate __binary_pred) {
-  __STL_REQUIRES(_InputIter1, _InputIterator);
-  __STL_REQUIRES(_InputIter2, _InputIterator);
+                  _InputIter2 __first2, _BinaryPredicate __binary_pred)
+{
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>);
+
   for ( ; __first1 != __last1; ++__first1, ++__first2)
     if (!__binary_pred(*__first1, *__first2))
       return false;
@@ -621,13 +564,16 @@ inline bool equal(_InputIter1 __first1, _InputIter1 __last1,
 
 template <class _InputIter1, class _InputIter2>
 bool lexicographical_compare(_InputIter1 __first1, _InputIter1 __last1,
-                             _InputIter2 __first2, _InputIter2 __last2) {
-  __STL_REQUIRES(_InputIter1, _InputIterator);
-  __STL_REQUIRES(_InputIter2, _InputIterator);
-  __STL_REQUIRES(typename iterator_traits<_InputIter1>::value_type,
-                 _LessThanComparable);
-  __STL_REQUIRES(typename iterator_traits<_InputIter2>::value_type,
-                 _LessThanComparable);
+                             _InputIter2 __first2, _InputIter2 __last2)
+{
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>);
+  __glibcpp_function_requires(_LessThanComparableConcept<
+        typename iterator_traits<_InputIter1>::value_type>);
+  __glibcpp_function_requires(_LessThanComparableConcept<
+        typename iterator_traits<_InputIter2>::value_type>);
+
   for ( ; __first1 != __last1 && __first2 != __last2
         ; ++__first1, ++__first2) {
     if (*__first1 < *__first2)
@@ -641,9 +587,12 @@ bool lexicographical_compare(_InputIter1 __first1, _InputIter1 __last1,
 template <class _InputIter1, class _InputIter2, class _Compare>
 bool lexicographical_compare(_InputIter1 __first1, _InputIter1 __last1,
                              _InputIter2 __first2, _InputIter2 __last2,
-                             _Compare __comp) {
-  __STL_REQUIRES(_InputIter1, _InputIterator);
-  __STL_REQUIRES(_InputIter2, _InputIterator);
+                             _Compare __comp)
+{
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>);
+
   for ( ; __first1 != __last1 && __first2 != __last2
         ; ++__first1, ++__first2) {
     if (__comp(*__first1, *__first2))
@@ -737,16 +686,18 @@ template <class _InputIter1, class _InputIter2>
 int lexicographical_compare_3way(_InputIter1 __first1, _InputIter1 __last1,
                                  _InputIter2 __first2, _InputIter2 __last2)
 {
-  __STL_REQUIRES(_InputIter1, _InputIterator);
-  __STL_REQUIRES(_InputIter2, _InputIterator);
-  __STL_REQUIRES(typename iterator_traits<_InputIter1>::value_type,
-                 _LessThanComparable);
-  __STL_REQUIRES(typename iterator_traits<_InputIter2>::value_type,
-                 _LessThanComparable);
+  // concept requirements
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>);
+  __glibcpp_function_requires(_LessThanComparableConcept<
+        typename iterator_traits<_InputIter1>::value_type>);
+  __glibcpp_function_requires(_LessThanComparableConcept<
+        typename iterator_traits<_InputIter2>::value_type>);
+
   return __lexicographical_compare_3way(__first1, __last1, __first2, __last2);
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_ALGOBASE_H */
 

@@ -21,8 +21,17 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-AUTOMAKE_OPTIONS = 1.3 cygnus dejagnu
+AUTOMAKE_OPTIONS =  foreign dejagnu
 
-DEJATOOL = libstdc++
+DEJATOOL = libstdc++-v3
 
-RUNTEST	= runtest
+EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
+            echo @glibcpp_builddir@/../../expect/expect ; \
+          else echo expect ; fi`
+
+RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
+	       echo @glibcpp_srcdir@/../dejagnu/runtest ; \
+	    else echo runtest; fi`
+
+RUNTESTFLAGS =
+

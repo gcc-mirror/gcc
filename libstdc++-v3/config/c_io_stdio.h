@@ -42,7 +42,6 @@ namespace std
   typedef long  	streamoff;
   typedef ptrdiff_t	streamsize; // Signed integral type
 #if _GLIBCPP_USE_WCHAR_T
-  typedef long  	wstreamoff;
   typedef ptrdiff_t	wstreamsize;
 #endif
   typedef fpos_t  	__c_streampos;
@@ -51,6 +50,7 @@ namespace std
   typedef __mutext_type __c_lock;
 #else
   typedef int          	__c_lock;
+
 #endif
 
 // from basic_file.h

@@ -44,7 +44,8 @@
 #include <bits/stl_vector.h>
 #include <ext/stl_hash_fun.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 template <class _Val>
 struct _Hashtable_node
@@ -92,9 +93,7 @@ struct _Hashtable_iterator {
     : _M_cur(__n), _M_ht(__tab) {}
   _Hashtable_iterator() {}
   reference operator*() const { return _M_cur->_M_val; }
-#ifndef __SGI_STL_NO_ARROW_OPERATOR
   pointer operator->() const { return &(operator*()); }
-#endif /* __SGI_STL_NO_ARROW_OPERATOR */
   iterator& operator++();
   iterator operator++(int);
   bool operator==(const iterator& __it) const
@@ -133,9 +132,7 @@ struct _Hashtable_const_iterator {
   _Hashtable_const_iterator(const iterator& __it) 
     : _M_cur(__it._M_cur), _M_ht(__it._M_ht) {}
   reference operator*() const { return _M_cur->_M_val; }
-#ifndef __SGI_STL_NO_ARROW_OPERATOR
   pointer operator->() const { return &(operator*()); }
-#endif /* __SGI_STL_NO_ARROW_OPERATOR */
   const_iterator& operator++();
   const_iterator operator++(int);
   bool operator==(const const_iterator& __it) const 
@@ -205,7 +202,6 @@ public:
 private:
   typedef _Hashtable_node<_Val> _Node;
 
-#ifdef __STL_USE_STD_ALLOCATORS
 public:
   typedef typename _Alloc_traits<_Val,_Alloc>::allocator_type allocator_type;
   allocator_type get_allocator() const { return _M_node_allocator; }
@@ -213,17 +209,6 @@ private:
   typename _Alloc_traits<_Node, _Alloc>::allocator_type _M_node_allocator;
   _Node* _M_get_node() { return _M_node_allocator.allocate(1); }
   void _M_put_node(_Node* __p) { _M_node_allocator.deallocate(__p, 1); }
-# define __HASH_ALLOC_INIT(__a) _M_node_allocator(__a), 
-#else /* __STL_USE_STD_ALLOCATORS */
-public:
-  typedef _Alloc allocator_type;
-  allocator_type get_allocator() const { return allocator_type(); }
-private:
-  typedef simple_alloc<_Node, _Alloc> _M_node_allocator_type;
-  _Node* _M_get_node() { return _M_node_allocator_type::allocate(1); }
-  void _M_put_node(_Node* __p) { _M_node_allocator_type::deallocate(__p, 1); }
-# define __HASH_ALLOC_INIT(__a)
-#endif /* __STL_USE_STD_ALLOCATORS */
 
 private:
   hasher                _M_hash;
@@ -250,7 +235,7 @@ public:
             const _EqualKey&   __eql,
             const _ExtractKey& __ext,
             const allocator_type& __a = allocator_type())
-    : __HASH_ALLOC_INIT(__a)
+    : _M_node_allocator(__a),
       _M_hash(__hf),
       _M_equals(__eql),
       _M_get_key(__ext),
@@ -264,7 +249,7 @@ public:
             const _HashFcn&    __hf,
             const _EqualKey&   __eql,
             const allocator_type& __a = allocator_type())
-    : __HASH_ALLOC_INIT(__a)
+    : _M_node_allocator(__a),
       _M_hash(__hf),
       _M_equals(__eql),
       _M_get_key(_ExtractKey()),
@@ -275,7 +260,7 @@ public:
   }
 
   hashtable(const hashtable& __ht)
-    : __HASH_ALLOC_INIT(__ht.get_allocator())
+    : _M_node_allocator(__ht.get_allocator()),
       _M_hash(__ht._M_hash),
       _M_equals(__ht._M_equals),
       _M_get_key(__ht._M_get_key),
@@ -284,8 +269,6 @@ public:
   {
     _M_copy_from(__ht);
   }
-
-#undef __HASH_ALLOC_INIT
 
   hashtable& operator= (const hashtable& __ht)
   {
@@ -307,11 +290,11 @@ public:
 
   void swap(hashtable& __ht)
   {
-    __STD::swap(_M_hash, __ht._M_hash);
-    __STD::swap(_M_equals, __ht._M_equals);
-    __STD::swap(_M_get_key, __ht._M_get_key);
+    std::swap(_M_hash, __ht._M_hash);
+    std::swap(_M_equals, __ht._M_equals);
+    std::swap(_M_get_key, __ht._M_get_key);
     _M_buckets.swap(__ht._M_buckets);
-    __STD::swap(_M_num_elements, __ht._M_num_elements);
+    std::swap(_M_num_elements, __ht._M_num_elements);
   }
 
   iterator begin()
@@ -334,15 +317,9 @@ public:
 
   const_iterator end() const { return const_iterator(0, this); }
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _Vl, class _Ky, class _HF, class _Ex, class _Eq, class _Al>
   friend bool operator== (const hashtable<_Vl, _Ky, _HF, _Ex, _Eq, _Al>&,
                           const hashtable<_Vl, _Ky, _HF, _Ex, _Eq, _Al>&);
-#else /* __STL_MEMBER_TEMPLATES */
-  friend bool __STD_QUALIFIER
-  operator== __STL_NULL_TMPL_ARGS (const hashtable&, const hashtable&);
-#endif /* __STL_MEMBER_TEMPLATES */
-
 public:
 
   size_type bucket_count() const { return _M_buckets.size(); }
@@ -373,17 +350,16 @@ public:
   pair<iterator, bool> insert_unique_noresize(const value_type& __obj);
   iterator insert_equal_noresize(const value_type& __obj);
  
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _InputIterator>
   void insert_unique(_InputIterator __f, _InputIterator __l)
   {
-    insert_unique(__f, __l, __ITERATOR_CATEGORY(__f));
+    insert_unique(__f, __l, __iterator_category(__f));
   }
 
   template <class _InputIterator>
   void insert_equal(_InputIterator __f, _InputIterator __l)
   {
-    insert_equal(__f, __l, __ITERATOR_CATEGORY(__f));
+    insert_equal(__f, __l, __iterator_category(__f));
   }
 
   template <class _InputIterator>
@@ -423,42 +399,6 @@ public:
     for ( ; __n > 0; --__n, ++__f)
       insert_equal_noresize(*__f);
   }
-
-#else /* __STL_MEMBER_TEMPLATES */
-  void insert_unique(const value_type* __f, const value_type* __l)
-  {
-    size_type __n = __l - __f;
-    resize(_M_num_elements + __n);
-    for ( ; __n > 0; --__n, ++__f)
-      insert_unique_noresize(*__f);
-  }
-
-  void insert_equal(const value_type* __f, const value_type* __l)
-  {
-    size_type __n = __l - __f;
-    resize(_M_num_elements + __n);
-    for ( ; __n > 0; --__n, ++__f)
-      insert_equal_noresize(*__f);
-  }
-
-  void insert_unique(const_iterator __f, const_iterator __l)
-  {
-    size_type __n = 0;
-    distance(__f, __l, __n);
-    resize(_M_num_elements + __n);
-    for ( ; __n > 0; --__n, ++__f)
-      insert_unique_noresize(*__f);
-  }
-
-  void insert_equal(const_iterator __f, const_iterator __l)
-  {
-    size_type __n = 0;
-    distance(__f, __l, __n);
-    resize(_M_num_elements + __n);
-    for ( ; __n > 0; --__n, ++__f)
-      insert_equal_noresize(*__f);
-  }
-#endif /*__STL_MEMBER_TEMPLATES */
 
   reference find_or_insert(const value_type& __obj);
 
@@ -617,59 +557,6 @@ _Hashtable_const_iterator<_Val,_Key,_HF,_ExK,_EqK,_All>::operator++(int)
   return __tmp;
 }
 
-#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
-
-template <class _Val, class _Key, class _HF, class _ExK, class _EqK, 
-          class _All>
-inline forward_iterator_tag
-iterator_category(const _Hashtable_iterator<_Val,_Key,_HF,_ExK,_EqK,_All>&)
-{
-  return forward_iterator_tag();
-}
-
-template <class _Val, class _Key, class _HF, class _ExK, class _EqK, 
-          class _All>
-inline _Val* 
-value_type(const _Hashtable_iterator<_Val,_Key,_HF,_ExK,_EqK,_All>&)
-{
-  return (_Val*) 0;
-}
-
-template <class _Val, class _Key, class _HF, class _ExK, class _EqK, 
-          class _All>
-inline hashtable<_Val,_Key,_HF,_ExK,_EqK,_All>::difference_type*
-distance_type(const _Hashtable_iterator<_Val,_Key,_HF,_ExK,_EqK,_All>&)
-{
-  return (hashtable<_Val,_Key,_HF,_ExK,_EqK,_All>::difference_type*) 0;
-}
-
-template <class _Val, class _Key, class _HF, class _ExK, class _EqK, 
-          class _All>
-inline forward_iterator_tag
-iterator_category(const _Hashtable_const_iterator<_Val,_Key,_HF,
-                                                  _ExK,_EqK,_All>&)
-{
-  return forward_iterator_tag();
-}
-
-template <class _Val, class _Key, class _HF, class _ExK, class _EqK, 
-          class _All>
-inline _Val* 
-value_type(const _Hashtable_const_iterator<_Val,_Key,_HF,_ExK,_EqK,_All>&)
-{
-  return (_Val*) 0;
-}
-
-template <class _Val, class _Key, class _HF, class _ExK, class _EqK, 
-          class _All>
-inline hashtable<_Val,_Key,_HF,_ExK,_EqK,_All>::difference_type*
-distance_type(const _Hashtable_const_iterator<_Val,_Key,_HF,_ExK,_EqK,_All>&)
-{
-  return (hashtable<_Val,_Key,_HF,_ExK,_EqK,_All>::difference_type*) 0;
-}
-
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
 template <class _Val, class _Key, class _HF, class _Ex, class _Eq, class _All>
 bool operator==(const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht1,
                 const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht2)
@@ -677,7 +564,7 @@ bool operator==(const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht1,
   typedef typename hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>::_Node _Node;
   if (__ht1._M_buckets.size() != __ht2._M_buckets.size())
     return false;
-  for (int __n = 0; __n < __ht1._M_buckets.size(); ++__n) {
+  for (size_t __n = 0; __n < __ht1._M_buckets.size(); ++__n) {
     _Node* __cur1 = __ht1._M_buckets[__n];
     _Node* __cur2 = __ht2._M_buckets[__n];
     for ( ; __cur1 && __cur2 && __cur1->_M_val == __cur2->_M_val;
@@ -688,8 +575,6 @@ bool operator==(const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht1,
   }
   return true;
 }  
-
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
 
 template <class _Val, class _Key, class _HF, class _Ex, class _Eq, class _All>
 inline bool operator!=(const hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>& __ht1,
@@ -703,8 +588,6 @@ inline void swap(hashtable<_Val, _Key, _HF, _Extract, _EqKey, _All>& __ht1,
                  hashtable<_Val, _Key, _HF, _Extract, _EqKey, _All>& __ht2) {
   __ht1.swap(__ht2);
 }
-
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 
 template <class _Val, class _Key, class _HF, class _Ex, class _Eq, class _All>
@@ -1045,7 +928,7 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
   __STL_UNWIND(clear());
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_HASHTABLE_H */
 

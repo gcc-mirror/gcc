@@ -30,6 +30,7 @@
 #ifndef _CPP_BACKWARD_NEW_H
 #define _CPP_BACKWARD_NEW_H 1
 
+#include "backward_warning.h"
 #include <new>
 
 using std::bad_alloc;

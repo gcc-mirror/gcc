@@ -31,7 +31,8 @@
 #ifndef __SGI_STL_INTERNAL_TEMPBUF_H
 #define __SGI_STL_INTERNAL_TEMPBUF_H
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 template <class _Tp>
 pair<_Tp*, ptrdiff_t> 
@@ -50,14 +51,10 @@ __get_temporary_buffer(ptrdiff_t __len, _Tp*)
   return pair<_Tp*, ptrdiff_t>((_Tp*)0, 0);
 }
 
-#ifdef __STL_EXPLICIT_FUNCTION_TMPL_ARGS
-
 template <class _Tp>
 inline pair<_Tp*, ptrdiff_t> get_temporary_buffer(ptrdiff_t __len) {
   return __get_temporary_buffer(__len, (_Tp*) 0);
 }
-
-#endif /* __STL_EXPLICIT_FUNCTION_TMPL_ARGS */
 
 // This overload is not required by the standard; it is an extension.
 // It is supported for backward compatibility with the HP STL, and
@@ -109,12 +106,8 @@ public:
 
   _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last) {
     // Workaround for a __type_traits bug in the pre-7.3 compiler.
-#   if defined(__sgi) && !defined(__GNUC__) && _COMPILER_VERSION < 730
-    typedef typename __type_traits<_Tp>::is_POD_type _Trivial;
-#   else
     typedef typename __type_traits<_Tp>::has_trivial_default_constructor
             _Trivial;
-#   endif
 
     __STL_TRY {
       _M_len = 0;
@@ -141,9 +134,7 @@ private:
 
 template <class _ForwardIterator, 
           class _Tp 
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
                     = typename iterator_traits<_ForwardIterator>::value_type
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
          >
 struct temporary_buffer : public _Temporary_buffer<_ForwardIterator, _Tp>
 {
@@ -152,7 +143,7 @@ struct temporary_buffer : public _Temporary_buffer<_ForwardIterator, _Tp>
   ~temporary_buffer() {}
 };
     
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_TEMPBUF_H */
 

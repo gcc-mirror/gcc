@@ -33,7 +33,8 @@
 
 #include <bits/std_cstring.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // uninitialized_copy
 
@@ -79,7 +80,7 @@ inline _ForwardIter
                      _ForwardIter __result)
 {
   return __uninitialized_copy(__first, __last, __result,
-                              __VALUE_TYPE(__result));
+                              __value_type(__result));
 }
 
 inline char* uninitialized_copy(const char* __first, const char* __last,
@@ -129,7 +130,7 @@ inline pair<_InputIter, _ForwardIter>
 __uninitialized_copy_n(_InputIter __first, _Size __count,
                      _ForwardIter __result) {
   return __uninitialized_copy_n(__first, __count, __result,
-                                __ITERATOR_CATEGORY(__first));
+                                __iterator_category(__first));
 }
 
 template <class _InputIter, class _Size, class _ForwardIter>
@@ -137,7 +138,7 @@ inline pair<_InputIter, _ForwardIter>
 uninitialized_copy_n(_InputIter __first, _Size __count,
                      _ForwardIter __result) {
   return __uninitialized_copy_n(__first, __count, __result,
-                                __ITERATOR_CATEGORY(__first));
+                                __iterator_category(__first));
 }
 
 // Valid if copy construction is equivalent to assignment, and if the
@@ -177,7 +178,7 @@ inline void uninitialized_fill(_ForwardIter __first,
                                _ForwardIter __last, 
                                const _Tp& __x)
 {
-  __uninitialized_fill(__first, __last, __x, __VALUE_TYPE(__first));
+  __uninitialized_fill(__first, __last, __x, __value_type(__first));
 }
 
 // Valid if copy construction is equivalent to assignment, and if the
@@ -216,7 +217,7 @@ template <class _ForwardIter, class _Size, class _Tp>
 inline _ForwardIter 
 uninitialized_fill_n(_ForwardIter __first, _Size __n, const _Tp& __x)
 {
-  return __uninitialized_fill_n(__first, __n, __x, __VALUE_TYPE(__first));
+  return __uninitialized_fill_n(__first, __n, __x, __value_type(__first));
 }
 
 // Extensions: __uninitialized_copy_copy, __uninitialized_copy_fill, 
@@ -272,7 +273,7 @@ __uninitialized_copy_fill(_InputIter __first1, _InputIter __last1,
   __STL_UNWIND(_Destroy(__first2, __mid2));
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* _CPP_BITS_STL_UNINITIALIZED_H */
 

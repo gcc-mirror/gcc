@@ -27,12 +27,11 @@
 #ifndef _CPP_BACKWARD_MULTISET_H
 #define _CPP_BACKWARD_MULTISET_H 1
 
+#include "backward_warning.h"
 #include "tree.h"
-#include <bits/stl_multiset.h>
+#include <bits/std_set.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::multiset;
-#endif /* __STL_USE_NAMESPACES */
+using std::multiset;
 
 #endif /* _CPP_BACKWARD_MULTISET_H */
 

@@ -86,30 +86,27 @@ namespace std
     basic_filebuf() 
     : __streambuf_type(), _M_file(NULL), _M_state_cur(__state_type()), 
     _M_state_beg(__state_type()), _M_last_overflowed(false)
-    { _M_fcvt = &use_facet<__codecvt_type>(this->getloc()); }
+    { }
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
-    basic_filebuf(int __fd, const char* /*__name*/, ios_base::openmode __mode)
+    basic_filebuf(__c_file_type* __f, ios_base::openmode __mode, int_type __s)
     : __streambuf_type(),  _M_file(NULL), _M_state_cur(__state_type()), 
     _M_state_beg(__state_type()), _M_last_overflowed(false)
     {
-      _M_fcvt = &use_facet<__codecvt_type>(this->getloc());
       _M_filebuf_init();
-      _M_file->sys_open(__fd, __mode);
+      _M_file->sys_open(__f, __mode);
       if (this->is_open())
 	{
-	  _M_allocate_buffers();
 	  _M_mode = __mode;
-
-	  // XXX So that istream::getc() will only need to get 1 char,
-	  // as opposed to BUF_SIZE.
-	  if (__fd == 0)
-	    _M_buf_size = 1;
-
-	  this->_M_set_indeterminate();
+	  if (__s)
+	    {
+	      _M_buf_size_opt = __s;
+	      _M_allocate_buffers();
+	      _M_set_indeterminate();
+	    }
 	}
-   }
+    }
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::__filebuf_type* 
@@ -212,7 +209,9 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       bool __testin = _M_mode & ios_base::in;
-      
+      bool __testout = _M_mode & ios_base::out;
+
+      // XXX Should re-enable codecvt bits disabled after 2.90.8.
       if (__testin)
 	{
 	  // Check for pback madness, and if so swich back to the
@@ -227,8 +226,6 @@ namespace std
 
 	  bool __testget = _M_in_cur && _M_in_beg < _M_in_cur;
 	  bool __testinit = _M_is_indeterminate();
-	  bool __testout = _M_mode & ios_base::out;
-
 	  // Sync internal and external buffers.
 	  // NB: __testget -> __testput as _M_buf_unified here.
 	  if (__testget)
@@ -242,7 +239,7 @@ namespace std
 
 	  if (__testinit || __testget)
 	    {
-#if 1
+	      // Assume buffered case, need to refill internal buffers.
 	      streamsize __size = _M_file->xsgetn(_M_in_beg, _M_buf_size);
 	      if (0 < __size)
 		{
@@ -256,53 +253,7 @@ namespace std
 		    {
 		      // XXX Something is wrong, do error checking.
 		    }
-		}
-#else
-	      // 2000-08-04 bkoz disable
-	      // Part one: (Re)fill external buf (_M_file->_IO_*) from
-	      // external byte sequence (whatever physical byte sink or
-	      // FILE actually is.)
-	      __extension__ char_type __conv_buf[_M_buf_size];
-	      streamsize __size = _M_file->xsgetn(__conv_buf, _M_buf_size);
-	      
-	      // Part two: (Re)fill internal buf contents from external buf.
-	      if (0 < __size)
-		{
-		  _M_set_determinate(__size);
-		  
-		  char* __conv_cur = __conv_buf;
-		  _M_state_beg = _M_state_cur;
-		  __res_type __r = _M_fcvt->in(_M_state_cur, 
-					       __conv_buf,
-					       __conv_buf + __size,
-					 const_cast<const char*&>(__conv_cur), 
-					      _M_in_beg, _M_in_end, _M_in_cur);
-	      
-		  if (__r == codecvt_base::partial)
-		    {
-		      // XXX Retry with larger _M_buf size.
-		    }
-		  
-		  // Set pointers to internal and external buffers
-		  // correctly. . .
-		  if (__r != codecvt_base::error)
-		    {
-		      if (__testout)
-			_M_out_cur = _M_in_cur;
-		      __ret = traits_type::to_int_type(*_M_in_cur);
-		    }
-
-		  // Part three: Sync the current internal buffer
-		  // position with the (now overshot) external buffer
-		  // position.  
-		  streamoff __p = _M_file->seekoff(0 - __size, ios_base::cur, 
-						  ios_base::in);
-		  if (__p == -1)
-		    {
-		      // XXX Something is wrong, do error checking.
-		    }
-		}
-#endif	      
+		}	   
 	    }
 	}
       _M_last_overflowed = false;	
@@ -383,12 +334,12 @@ namespace std
     overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      bool __testpos = _M_out_cur && _M_out_cur >= _M_buf + _M_buf_size;
+      bool __testput = _M_out_cur && _M_out_cur < _M_buf + _M_buf_size;
       bool __testout = _M_mode & ios_base::out;
       
       if (__testout)
 	{
-	  if (!__testpos)
+	  if (__testput)
 	    {
 	      *_M_out_cur = traits_type::to_char_type(__c);
 	      _M_out_cur_move(1);
@@ -409,20 +360,24 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-      
-      if (__testput)
+      bool __testunbuffered = _M_file && !_M_buf_size;
+
+      if (__testput || __testunbuffered)
 	{
-	  bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
 #if 1
 	  int __plen = _M_out_end - _M_out_beg;
-	  streamsize __len = _M_file->xsputn(_M_out_beg, __plen);
-	  if (!__testeof)
+	  streamsize __len = 0;
+
+	  if (__plen)
+	    __len = _M_file->xsputn(_M_out_beg, __plen);
+
+	  if (__c !=traits_type::eof())
 	    {
-	      char_type __pending = traits_type::to_char_type(__c);
-	      __len += _M_file->xsputn(&__pending, 1);
-	      ++__plen;
+ 	      char_type __pending = traits_type::to_char_type(__c);
+ 	      __len += _M_file->xsputn(&__pending, 1);
+  	      ++__plen;
 	    }
-	  traits_type::to_char_type(__c);
+
 	  // NB: Need this so that external byte sequence reflects
 	  // internal buffer.
 	  _M_file->sync();
@@ -436,7 +391,7 @@ namespace std
 	  // stack. Convert internal buffer plus __c (ie,
 	  // "pending sequence") to temporary conversion buffer.
 	  int __plen = _M_out_end - _M_out_beg;
-	  __extension__ char_type __pbuf[__plen + 1];	      
+	  char_type* __pbuf = static_cast<char_type*>(__builtin_alloca(sizeof(char_type) * __plen + 1));
 	  traits_type::copy(__pbuf, this->pbase(), __plen);
 	  if (!__testeof)
 	    {
@@ -445,7 +400,7 @@ namespace std
 	    }
 
 	  char_type* __pend;
-	  __extension__ char __conv_buf[__plen];
+	  char* __conv_buf = static_cast<char*>(__builtin_alloca(__plen));
 	  char* __conv_end;
 	  _M_state_beg = _M_state_cur;
 
@@ -486,7 +441,9 @@ namespace std
       bool __testopen = this->is_open();
       bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
       bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
-      int __width = _M_fcvt->encoding();
+
+      // Should probably do has_facet checks here.
+      int __width = use_facet<__codecvt_type>(_M_buf_locale).encoding();
       if (__width < 0)
 	__width = 0;
       bool __testfail = __off != 0  && __width <= 0;
@@ -557,17 +514,13 @@ namespace std
     imbue(const locale& __loc)
     {
       bool __testbeg = gptr() == eback() && pptr() == pbase();
-      bool __teststate = _M_fcvt->encoding() == -1;
-      
-      _M_buf_locale_init = true;
-      if (__testbeg && !__teststate && _M_buf_locale != __loc)
+
+      if (__testbeg && _M_buf_locale != __loc)
 	{
-	  // XXX Will need to save these older values.
 	  _M_buf_locale = __loc;
-	  _M_fcvt = &use_facet<__codecvt_type>(_M_buf_locale);
-	  // XXX Necessary?
-	  _M_buf_fctype = &use_facet<__ctype_type>(_M_buf_locale); 
+	  _M_buf_locale_init = true;
 	}
+
       // NB this may require the reconversion of previously
       // converted chars. This in turn may cause the reconstruction
       // of the original file. YIKES!!
@@ -578,13 +531,5 @@ namespace std
 } // namespace std
 
 #endif // _CPP_BITS_FSTREAM_TCC
-
-
-
-
-
-
-
-
 
 

@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, fstream
 
-#include <fstream>              // { dg-do compile }
+#include <fstream>
 #include <debug_assert.h>
 
 
@@ -28,7 +28,3 @@ int main(void)
 {
   return 0;
 }
-
-
-
-

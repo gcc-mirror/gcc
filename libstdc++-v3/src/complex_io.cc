@@ -147,13 +147,5 @@ namespace std
     operator<<(basic_ostream<wchar_t, char_traits<wchar_t> >&,
                const complex<long double>&);
 #endif //_GLIBCPP_USE_WCHAR_T
-}
-
-
-
-
-
-
-
-
+} // namespace std
 

@@ -326,6 +326,17 @@ void test05()
     nsp.sputc('a');
 }
 
+// test06
+// XXX this should work, doesn't due to compiler limitations.
+#if 0
+namespace gnu 
+{
+  class something_derived;
+}
+
+class gnu::something_derived : std::streambuf { };
+#endif
+
 int main() 
 {
   test01();
@@ -336,16 +347,3 @@ int main()
   test05();
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

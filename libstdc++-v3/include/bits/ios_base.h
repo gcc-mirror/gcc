@@ -36,7 +36,8 @@
 
 #pragma GCC system_header
 
-namespace std {
+namespace std
+{
 
   // The following definitions of bitmask types are enums, not ints,
   // as permitted (but not required) in the standard, in order to provide
@@ -294,17 +295,16 @@ namespace std {
     public:
       Init();
       ~Init();
+      
+      static void
+      _S_ios_create(bool __sync);
+      
+      static void
+      _S_ios_destroy();
+
     private:
       static int 	_S_ios_base_init;
       static bool	_S_synced_with_stdio;
-      filebuf* 		_M_cout;
-      filebuf* 		_M_cin;
-      filebuf* 		_M_cerr;
-#ifdef _GLIBCPP_USE_WCHAR_T
-      wfilebuf* 	_M_wcout;
-      wfilebuf*        	_M_wcin;
-      wfilebuf* 	_M_wcerr;
-#endif
     };
 
     // Fmtflags state:
@@ -567,12 +567,4 @@ namespace std {
 } // namespace std
 
 #endif /* _CPP_BITS_IOSBASE_H */
-
-
-
-
-
-
-
-
 

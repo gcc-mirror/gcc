@@ -14,32 +14,20 @@
 #ifndef _CPP_BACKWARD_ALLOC_H
 #define _CPP_BACKWARD_ALLOC_H 1
 
-#ifndef _CPP_BITS_STL_CONFIG_H
-#include <bits/stl_config.h>
-#endif
-#ifndef _CPP_BITS_STL_ALLOC_H
+#include "backward_warning.h"
+#include <bits/c++config.h>
 #include <bits/stl_alloc.h>
-#endif
 
-#ifdef __STL_USE_NAMESPACES
-
-using __STD::__malloc_alloc_template; 
-using __STD::malloc_alloc; 
-using __STD::simple_alloc; 
-using __STD::debug_alloc; 
+using std::__malloc_alloc_template; 
+using std::malloc_alloc; 
+using std::simple_alloc; 
+using std::debug_alloc; 
 #ifndef __USE_MALLOC
-using __STD::__default_alloc_template; 
+using std::__default_alloc_template; 
 #endif
-using __STD::alloc; 
-using __STD::single_client_alloc; 
-#ifdef __STL_STATIC_TEMPLATE_MEMBER_BUG
-using __STD::__malloc_alloc_oom_handler; 
-#endif /* __STL_STATIC_TEMPLATE_MEMBER_BUG */
-#ifdef __STL_USE_STD_ALLOCATORS 
-using __STD::allocator;
-#endif /* __STL_USE_STD_ALLOCATORS */
-
-#endif /* __STL_USE_NAMESPACES */
+using std::alloc; 
+using std::single_client_alloc; 
+using std::allocator;
 
 #endif /* _CPP_BACKWARD_ALLOC_H */
 

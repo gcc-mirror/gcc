@@ -33,7 +33,8 @@
 
 #include <new>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // construct and destroy.  These functions are not part of the C++ standard,
 // and are provided for backward compatibility with the HP STL. We also
@@ -80,7 +81,7 @@ __destroy(_ForwardIterator __first, _ForwardIterator __last, _Tp*)
 
 template <class _ForwardIterator>
 inline void _Destroy(_ForwardIterator __first, _ForwardIterator __last) {
-  __destroy(__first, __last, __VALUE_TYPE(__first));
+  __destroy(__first, __last, __value_type(__first));
 }
 
 inline void _Destroy(char*, char*) {}
@@ -88,9 +89,7 @@ inline void _Destroy(int*, int*) {}
 inline void _Destroy(long*, long*) {}
 inline void _Destroy(float*, float*) {}
 inline void _Destroy(double*, double*) {}
-#ifdef __STL_HAS_WCHAR_T
 inline void _Destroy(wchar_t*, wchar_t*) {}
-#endif /* __STL_HAS_WCHAR_T */
 
 // --------------------------------------------------
 // Old names from the HP STL.
@@ -115,7 +114,7 @@ inline void destroy(_ForwardIterator __first, _ForwardIterator __last) {
   _Destroy(__first, __last);
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* _CPP_BITS_STL_CONSTRUCT_H */
 

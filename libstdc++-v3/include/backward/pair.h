@@ -27,19 +27,12 @@
 #ifndef _CPP_BACKWARD_PAIR_H
 #define _CPP_BACKWARD_PAIR_H 1
 
-#ifndef _CPP_BITS_STL_CONFIG_H
-#include <bits/stl_config.h>
-#endif
-#ifndef _CPP_BITS_STL_PAIR_H
+#include "backward_warning.h"
+#include <bits/c++config.h>
 #include <bits/stl_pair.h>
-#endif
 
-#ifdef __STL_USE_NAMESPACES
-
-using __STD::pair;
-using __STD::make_pair;
-
-#endif /* __STL_USE_NAMESPACES */
+using std::pair;
+using std::make_pair;
 
 #endif /* _CPP_BACKWARD_PAIR_H */
 

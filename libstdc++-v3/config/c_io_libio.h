@@ -43,11 +43,9 @@ namespace std
 #if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
   typedef _IO_off64_t 	streamoff;
   typedef _IO_fpos64_t 	__c_streampos;
-  typedef _IO_off64_t  	wstreamoff;
 #else
   typedef _IO_off_t 	streamoff;
   typedef _IO_fpos_t 	__c_streampos;
-  typedef _IO_off_t  	wstreamoff;
 #endif
 
 #ifdef _GLIBCPP_USE_THREADS

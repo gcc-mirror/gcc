@@ -32,11 +32,12 @@
 //
 
 #include <bits/c++config.h>
-#include <bits/stl_config.h>
 #include <bits/stl_alloc.h>
 #include <bits/std_vector.h>
+#include <bits/std_ostream.h>
 
-namespace std {
+namespace std
+{
 
   template class __malloc_alloc_template<0>;
 
@@ -49,12 +50,27 @@ namespace std {
     vector<unsigned int>::
     _M_insert_aux(vector<unsigned int>::iterator, unsigned int const &);
 
-#ifdef __STL_USE_CONCEPT_CHECKS
+#ifdef _GLIBCPP_CONCEPT_CHECKS
+  template
+    void __sink_unused_warning<unsigned int>(unsigned int);
 
   template
-    void
-    __sink_unused_warning<unsigned int>(unsigned int);
+    void __sink_unused_warning<locale::facet*>(locale::facet*);
 
-#endif // __STL_USE_CONCEPT_CHECKS
+  template
+    void __sink_unused_warning<char>(char);
 
+  template
+    void __sink_unused_warning<ostreambuf_iterator<char> >
+    (ostreambuf_iterator<char>);
+
+# ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    void __sink_unused_warning<wchar_t>(wchar_t);
+
+  template
+    void __sink_unused_warning<ostreambuf_iterator<wchar_t> > 
+    (ostreambuf_iterator<wchar_t>);
+# endif
+#endif
 } //std

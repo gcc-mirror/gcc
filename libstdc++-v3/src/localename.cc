@@ -31,7 +31,8 @@
 #include <bits/std_vector.h>
 #include <bits/std_stdexcept.h>
 
-namespace std {
+namespace std
+{
   locale::_Impl::
   ~_Impl() throw()
   {
@@ -196,8 +197,5 @@ namespace std {
 	  }
       }
   }
-}
-
-
-
+} // namespace std
 

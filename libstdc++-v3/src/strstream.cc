@@ -24,7 +24,8 @@
 #include <string.h>
 #include <limits.h>
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // strstreambuf constructor, destructor.
 
@@ -175,7 +176,7 @@ strstreambuf::int_type strstreambuf::pbackfail(int_type c)
       gbump(-1);
       return _Traits::not_eof(c);
     }
-    else if (c == (unsigned int)(gptr()[-1])) {   // (u int) added KLUDGE
+    else if (c == static_cast<int_type>(gptr()[-1])) {  // KLUDGE
       gbump(-1);
       return c;
     }
@@ -420,7 +421,7 @@ char* strstream::str()
   return _M_buf.str();
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 // Local Variables:
 // mode:C++

@@ -15,23 +15,15 @@
  *   You should not attempt to use it directly.
  */
 
-# include <bits/std_cstdio.h>     
-
-#ifdef __STL_USE_NEW_IOSTREAMS 
-# include <iostream>
-#else /* __STL_USE_NEW_IOSTREAMS */
-# include <bits/std_iostream.h>
-#endif /* __STL_USE_NEW_IOSTREAMS */
+#include <bits/std_cstdio.h>     
+#include <bits/std_iostream.h>
 
 #ifdef __STL_USE_EXCEPTIONS
 # include <bits/std_stdexcept.h>
 #endif
 
-__STL_BEGIN_NAMESPACE
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma set woff 1174
-#endif
+namespace std
+{
 
 // Set buf_start, buf_end, and buf_ptr appropriately, filling tmp_buf
 // if necessary.  Assumes _M_path_end[leaf_index] and leaf_pos are correct.
@@ -303,26 +295,16 @@ inline void _Rope_RopeRep<_CharT,_Alloc>::_M_free_c_string()
 
 
 template <class _CharT, class _Alloc>
-#ifdef __STL_USE_STD_ALLOCATORS
   inline void _Rope_RopeRep<_CharT,_Alloc>::_S_free_string(_CharT* __s,
 							   size_t __n,
 						           allocator_type __a)
-#else
-  inline void _Rope_RopeRep<_CharT,_Alloc>::_S_free_string(_CharT* __s,
-							   size_t __n)
-#endif
 {
     if (!_S_is_basic_char_type((_CharT*)0)) {
 	destroy(__s, __s + __n);
     }
 //  This has to be a static member, so this gets a bit messy
-#   ifdef __STL_USE_STD_ALLOCATORS
         __a.deallocate(
 	    __s, _Rope_RopeLeaf<_CharT,_Alloc>::_S_rounded_up_size(__n));
-#   else
-	_Data_deallocate(
-	    __s, _Rope_RopeLeaf<_CharT,_Alloc>::_S_rounded_up_size(__n));
-#   endif
 }
 
 
@@ -375,13 +357,8 @@ void _Rope_RopeRep<_CharT,_Alloc>::_M_free_tree()
 #else
 
 template <class _CharT, class _Alloc>
-#ifdef __STL_USE_STD_ALLOCATORS
   inline void _Rope_RopeRep<_CharT,_Alloc>::_S_free_string
 		(const _CharT*, size_t, allocator_type)
-#else
-  inline void _Rope_RopeRep<_CharT,_Alloc>::_S_free_string
-		(const _CharT*, size_t)
-#endif
 {}
 
 #endif
@@ -456,9 +433,7 @@ rope<_CharT,_Alloc>::_S_tree_concat (_RopeRep* __left, _RopeRep* __right)
       _S_new_RopeConcatenation(__left, __right, __left->get_allocator());
     size_t __depth = __result->_M_depth;
     
-#   ifdef __STL_USE_STD_ALLOCATORS
       __stl_assert(__left->get_allocator() == __right->get_allocator());
-#   endif
     if (__depth > 20 && (__result->_M_size < 1000 ||
 			 __depth > _RopeRep::_S_max_rope_depth)) {
         _RopeRep* __balanced;
@@ -791,22 +766,11 @@ class _Rope_find_char_char_consumer : public _Rope_char_consumer<_CharT> {
 	}
 };
 	    
-#ifdef __STL_USE_NEW_IOSTREAMS
   template<class _CharT, class _Traits>
   // Here _CharT is both the stream and rope character type.
-#else
-  template<class _CharT>
-  // Here _CharT is the rope character type.  Unlike in the
-  // above case, we somewhat handle the case in which it doesn't
-  // match the stream character type, i.e. char.
-#endif
 class _Rope_insert_char_consumer : public _Rope_char_consumer<_CharT> {
     private:
-#       ifdef __STL_USE_NEW_IOSTREAMS
 	  typedef basic_ostream<_CharT,_Traits> _Insert_ostream;
-#	else
-	  typedef ostream _Insert_ostream;
-#	endif
 	_Insert_ostream& _M_o;
     public:
 	_Rope_insert_char_consumer(_Insert_ostream& __writer) 
@@ -817,38 +781,15 @@ class _Rope_insert_char_consumer : public _Rope_char_consumer<_CharT> {
 		// Returns true to continue traversal.
 };
 	    
-#ifdef __STL_USE_NEW_IOSTREAMS
-  template<class _CharT, class _Traits>
-  bool _Rope_insert_char_consumer<_CharT, _Traits>::operator()
-                                        (const _CharT* __leaf, size_t __n)
-  {
-    size_t __i;
-    //  We assume that formatting is set up correctly for each element.
-    for (__i = 0; __i < __n; __i++) _M_o.put(__leaf[__i]);
-    return true;
-  }
-
-#else
-  template<class _CharT>
-  bool _Rope_insert_char_consumer<_CharT>::operator()
-					(const _CharT* __leaf, size_t __n)
-  {
-    size_t __i;
-    //  We assume that formatting is set up correctly for each element.
-    for (__i = 0; __i < __n; __i++) _M_o << __leaf[__i];
-    return true;
-  }
-
-
-  __STL_TEMPLATE_NULL
-  inline bool _Rope_insert_char_consumer<char>::operator()
-					(const char* __leaf, size_t __n)
-  {
-    size_t __i;
-    for (__i = 0; __i < __n; __i++) _M_o.put(__leaf[__i]);
-    return true;
-  }
-#endif
+template<class _CharT, class _Traits>
+bool _Rope_insert_char_consumer<_CharT, _Traits>::operator()
+                                      (const _CharT* __leaf, size_t __n)
+{
+  size_t __i;
+  //  We assume that formatting is set up correctly for each element.
+  for (__i = 0; __i < __n; __i++) _M_o.put(__leaf[__i]);
+  return true;
+}
 
 template <class _CharT, class _Alloc>
 bool rope<_CharT, _Alloc>::_S_apply_to_pieces(
@@ -908,12 +849,8 @@ bool rope<_CharT, _Alloc>::_S_apply_to_pieces(
     }
 }
 
-#ifdef __STL_USE_NEW_IOSTREAMS
   template<class _CharT, class _Traits>
   inline void _Rope_fill(basic_ostream<_CharT, _Traits>& __o, size_t __n)
-#else
-  inline void _Rope_fill(ostream& __o, size_t __n)
-#endif
 {
     char __f = __o.fill();
     size_t __i;
@@ -926,25 +863,15 @@ template <class _CharT> inline bool _Rope_is_simple(_CharT*) { return false; }
 inline bool _Rope_is_simple(char*) { return true; }
 inline bool _Rope_is_simple(wchar_t*) { return true; }
 
-#ifdef __STL_USE_NEW_IOSTREAMS
-  template<class _CharT, class _Traits, class _Alloc>
-  basic_ostream<_CharT, _Traits>& operator<<
-					(basic_ostream<_CharT, _Traits>& __o,
-					 const rope<_CharT, _Alloc>& __r)
-#else
-  template<class _CharT, class _Alloc>
-  ostream& operator<< (ostream& __o, const rope<_CharT, _Alloc>& __r)
-#endif
+template<class _CharT, class _Traits, class _Alloc>
+basic_ostream<_CharT, _Traits>& operator<< (basic_ostream<_CharT, _Traits>& __o,
+                                            const rope<_CharT, _Alloc>& __r)
 {
     size_t __w = __o.width();
     bool __left = bool(__o.flags() & ios::left);
     size_t __pad_len;
     size_t __rope_len = __r.size();
-#   ifdef __STL_USE_NEW_IOSTREAMS
       _Rope_insert_char_consumer<_CharT, _Traits> __c(__o);
-#   else
-      _Rope_insert_char_consumer<_CharT> __c(__o);
-#   endif
     bool __is_simple = _Rope_is_simple((_CharT*)0);
     
     if (__rope_len < __w) {
@@ -1575,12 +1502,7 @@ inline void rotate(
 }
 # endif
 
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma reset woff 1174
-#endif
-
-__STL_END_NAMESPACE
+} // namespace std
 
 // Local Variables:
 // mode:C++

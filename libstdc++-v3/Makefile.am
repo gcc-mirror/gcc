@@ -24,25 +24,41 @@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 
-SUBDIRS = libio libmath libsupc++ src
+SUBDIRS = libio libmath libsupc++ src testsuite
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
-# Use $${builddir} instead of $(top_builddir) for arguments to "mkcheck"
-# because then the paths will be full pathnames, not relative
-# pathnames. (-Wl,--rpath seems to like this better.)
-check: $(top_builddir)/mkcheck
+# These two special 'check-script' rules use the bash script 'mkcheck'
+# to do testing. This script is not as portable as the dejagnu test
+# harness, and is thus off by default. It does produce interesting
+# output however, including various performance analysis items like
+# compile time, execution time, and binary size.
+check-script: $(top_builddir)/mkcheck
 	-(chmod + $(top_builddir)/mkcheck; \
-	  srcdir=`cd $(top_srcdir); pwd`; builddir=`pwd`; \
-	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
-	  cd testsuite; $${builddir}/mkcheck 0 $${builddir} $${srcdir})
-
-check-install: $(top_builddir)/mkcheck
-	-(chmod + $(top_builddir)/mkcheck; \
-	  srcdir=`cd $(top_srcdir); pwd`; builddir=`pwd`; \
 	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
 	  cd testsuite; \
-	  $${builddir}/mkcheck 1 $${builddir} $${srcdir} $(prefix))
+	  @glibcpp_builddir@/mkcheck 0)
+
+check-script-install: $(top_builddir)/mkcheck
+	-(chmod + $(top_builddir)/mkcheck; \
+	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
+	  cd testsuite; \
+	  @glibcpp_builddir@/mkcheck 1)
+
+# These two rules might seem messy, but are hella worth it.
+doxygen:
+	-(srcdir=`cd ${top_srcdir}; pwd`; \
+	  outdir=`pwd`; \
+	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
+	            --mode=user $${srcdir} $${outdir})
+
+doxygen-maint:
+	-(srcdir=`cd ${top_srcdir}; pwd`; \
+	  outdir=`pwd`; \
+	  ${srcdir}/docs/doxygen/run_doxygen --mode=maint $${srcdir} $${outdir})
+
+.PHONY: doxygen doxygen-maint
+
 
 # Multilib support.
 MAKEOVERRIDES=
@@ -106,8 +122,6 @@ AM_MAKEFLAGS = \
 	"PICFLAG=$(PICFLAG)" \
 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
-	"EXPECT=$(EXPECT)" \
-	"RUNTEST=$(RUNTEST)" \
 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
 	"exec_prefix=$(exec_prefix)" \
 	"infodir=$(infodir)" \
@@ -117,8 +131,6 @@ AM_MAKEFLAGS = \
 	"tooldir=$(tooldir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"PICFLAG=$(PICFLAG)" \
@@ -128,3 +140,5 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" 
+
+

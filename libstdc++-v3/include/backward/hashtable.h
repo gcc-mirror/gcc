@@ -31,15 +31,14 @@
 #ifndef _CPP_BACKWARD_HASHTABLE_H
 #define _CPP_BACKWARD_HASHTABLE_H 1
 
-#include <bits/stl_hashtable.h>
+#include "backward_warning.h"
+#include <ext/stl_hashtable.h>
 #include "algo.h"
 #include "alloc.h"
 #include "vector.h"
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::hash;
-using __STD::hashtable;
-#endif /* __STL_USE_NAMESPACES */
+using std::hash;
+using std::hashtable;
 
 #endif /* _CPP_BACKWARD_HASHTABLE_H */
 

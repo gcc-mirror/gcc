@@ -27,12 +27,11 @@
 #ifndef _CPP_BACKWARD_SET_H
 #define _CPP_BACKWARD_SET_H 1
 
+#include "backward_warning.h"
 #include "tree.h"
-#include <bits/stl_set.h>
+#include <bits/std_set.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::set;
-#endif /* __STL_USE_NAMESPACES */
+using std::set;
 
 #endif /* _CPP_BACKWARD_SET_H */
 

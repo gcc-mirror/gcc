@@ -27,20 +27,14 @@
 #ifndef _CPP_BACKWARD_HASH_MAP_H
 #define _CPP_BACKWARD_HASH_MAP_H 1
 
-#ifndef _CPP_BITS_STL_HASHTABLE_H
-#include <bits/stl_hashtable.h>
-#endif 
-
+#include "backward_warning.h"
 #include "algobase.h"
-#include <bits/stl_hash_map.h>
+#include <ext/hash_map>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::hash;
-using __STD::hashtable;
-using __STD::hash_map;
-using __STD::hash_multimap;
-#endif /* __STL_USE_NAMESPACES */
-
+using std::hash;
+using std::hashtable;
+using std::hash_map;
+using std::hash_multimap;
 
 #endif /* _CPP_BACKWARD_HASH_MAP_H */
 

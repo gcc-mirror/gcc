@@ -41,7 +41,10 @@
 #ifndef _CPP_BITS_STL_RELOPS_H
 #define _CPP_BITS_STL_RELOPS_H 1
 
-__STL_BEGIN_RELOPS_NAMESPACE
+namespace std
+{
+  namespace rel_ops
+  {
 
 template <class _Tp>
 inline bool operator!=(const _Tp& __x, const _Tp& __y) {
@@ -63,7 +66,8 @@ inline bool operator>=(const _Tp& __x, const _Tp& __y) {
   return !(__x < __y);
 }
 
-__STL_END_RELOPS_NAMESPACE
+  } // namespace rel_ops
+} // namespace std
 
 #endif /* _CPP_BITS_STL_RELOPS_H */
 

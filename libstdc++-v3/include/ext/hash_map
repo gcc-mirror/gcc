@@ -32,13 +32,10 @@
 #define __SGI_STL_INTERNAL_HASH_MAP_H
 
 #include <ext/stl_hashtable.h>
+#include <bits/concept_check.h>
 
-__STL_BEGIN_NAMESPACE
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma set woff 1174
-#pragma set woff 1375
-#endif
+namespace std
+{
 
 // Forward declaration of equality operator; needed for friend declaration.
 
@@ -95,7 +92,6 @@ public:
            const allocator_type& __a = allocator_type())
     : _M_ht(__n, __hf, __eql, __a) {}
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _InputIterator>
   hash_map(_InputIterator __f, _InputIterator __l)
     : _M_ht(100, hasher(), key_equal(), allocator_type())
@@ -116,56 +112,15 @@ public:
     : _M_ht(__n, __hf, __eql, __a)
     { _M_ht.insert_unique(__f, __l); }
 
-#else
-  hash_map(const value_type* __f, const value_type* __l)
-    : _M_ht(100, hasher(), key_equal(), allocator_type())
-    { _M_ht.insert_unique(__f, __l); }
-  hash_map(const value_type* __f, const value_type* __l, size_type __n)
-    : _M_ht(__n, hasher(), key_equal(), allocator_type())
-    { _M_ht.insert_unique(__f, __l); }
-  hash_map(const value_type* __f, const value_type* __l, size_type __n,
-           const hasher& __hf)
-    : _M_ht(__n, __hf, key_equal(), allocator_type())
-    { _M_ht.insert_unique(__f, __l); }
-  hash_map(const value_type* __f, const value_type* __l, size_type __n,
-           const hasher& __hf, const key_equal& __eql,
-           const allocator_type& __a = allocator_type())
-    : _M_ht(__n, __hf, __eql, __a)
-    { _M_ht.insert_unique(__f, __l); }
-
-  hash_map(const_iterator __f, const_iterator __l)
-    : _M_ht(100, hasher(), key_equal(), allocator_type())
-    { _M_ht.insert_unique(__f, __l); }
-  hash_map(const_iterator __f, const_iterator __l, size_type __n)
-    : _M_ht(__n, hasher(), key_equal(), allocator_type())
-    { _M_ht.insert_unique(__f, __l); }
-  hash_map(const_iterator __f, const_iterator __l, size_type __n,
-           const hasher& __hf)
-    : _M_ht(__n, __hf, key_equal(), allocator_type())
-    { _M_ht.insert_unique(__f, __l); }
-  hash_map(const_iterator __f, const_iterator __l, size_type __n,
-           const hasher& __hf, const key_equal& __eql,
-           const allocator_type& __a = allocator_type())
-    : _M_ht(__n, __hf, __eql, __a)
-    { _M_ht.insert_unique(__f, __l); }
-#endif /*__STL_MEMBER_TEMPLATES */
-
 public:
   size_type size() const { return _M_ht.size(); }
   size_type max_size() const { return _M_ht.max_size(); }
   bool empty() const { return _M_ht.empty(); }
   void swap(hash_map& __hs) { _M_ht.swap(__hs._M_ht); }
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _K1, class _T1, class _HF, class _EqK, class _Al>
   friend bool operator== (const hash_map<_K1, _T1, _HF, _EqK, _Al>&,
                           const hash_map<_K1, _T1, _HF, _EqK, _Al>&);
-#else /* __STL_MEMBER_TEMPLATES */
-  friend bool __STD_QUALIFIER
-  operator== __STL_NULL_TMPL_ARGS (const hash_map&, const hash_map&);
-#endif /* __STL_MEMBER_TEMPLATES */
-
-#include <bits/concept_checks.h>
 
   iterator begin() { return _M_ht.begin(); }
   iterator end() { return _M_ht.end(); }
@@ -175,17 +130,9 @@ public:
 public:
   pair<iterator,bool> insert(const value_type& __obj)
     { return _M_ht.insert_unique(__obj); }
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _InputIterator>
   void insert(_InputIterator __f, _InputIterator __l)
     { _M_ht.insert_unique(__f,__l); }
-#else
-  void insert(const value_type* __f, const value_type* __l) {
-    _M_ht.insert_unique(__f,__l);
-  }
-  void insert(const_iterator __f, const_iterator __l)
-    { _M_ht.insert_unique(__f, __l); }
-#endif /*__STL_MEMBER_TEMPLATES */
   pair<iterator,bool> insert_noresize(const value_type& __obj)
     { return _M_ht.insert_unique_noresize(__obj); }    
 
@@ -225,8 +172,6 @@ operator==(const hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
   return __hm1._M_ht == __hm2._M_ht;
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
-
 template <class _Key, class _Tp, class _HashFcn, class _EqlKey, class _Alloc>
 inline bool 
 operator!=(const hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
@@ -241,8 +186,6 @@ swap(hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
 {
   __hm1.swap(__hm2);
 }
-
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 // Forward declaration of equality operator; needed for friend declaration.
 
@@ -260,11 +203,11 @@ operator==(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
 template <class _Key, class _Tp, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multimap
 {
-  // requirements:
-  __STL_CLASS_REQUIRES(_Key, _Assignable);
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_UNARY_FUNCTION_CHECK(_HashFcn, size_t, _Key);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_EqualKey, bool, _Key, _Key);
+  // concept requirements
+  __glibcpp_class_requires(_Key, _SGIAssignableConcept);
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
+  __glibcpp_class_requires3(_HashFcn, size_t, _Key, _UnaryFunctionConcept);
+  __glibcpp_class_requires3(_EqualKey, _Key, _Key, _BinaryPredicateConcept);
 
 private:
   typedef hashtable<pair<const _Key, _Tp>, _Key, _HashFcn,
@@ -306,7 +249,6 @@ public:
                 const allocator_type& __a = allocator_type())
     : _M_ht(__n, __hf, __eql, __a) {}
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _InputIterator>
   hash_multimap(_InputIterator __f, _InputIterator __l)
     : _M_ht(100, hasher(), key_equal(), allocator_type())
@@ -327,54 +269,15 @@ public:
     : _M_ht(__n, __hf, __eql, __a)
     { _M_ht.insert_equal(__f, __l); }
 
-#else
-  hash_multimap(const value_type* __f, const value_type* __l)
-    : _M_ht(100, hasher(), key_equal(), allocator_type())
-    { _M_ht.insert_equal(__f, __l); }
-  hash_multimap(const value_type* __f, const value_type* __l, size_type __n)
-    : _M_ht(__n, hasher(), key_equal(), allocator_type())
-    { _M_ht.insert_equal(__f, __l); }
-  hash_multimap(const value_type* __f, const value_type* __l, size_type __n,
-                const hasher& __hf)
-    : _M_ht(__n, __hf, key_equal(), allocator_type())
-    { _M_ht.insert_equal(__f, __l); }
-  hash_multimap(const value_type* __f, const value_type* __l, size_type __n,
-                const hasher& __hf, const key_equal& __eql,
-                const allocator_type& __a = allocator_type())
-    : _M_ht(__n, __hf, __eql, __a)
-    { _M_ht.insert_equal(__f, __l); }
-
-  hash_multimap(const_iterator __f, const_iterator __l)
-    : _M_ht(100, hasher(), key_equal(), allocator_type())
-    { _M_ht.insert_equal(__f, __l); }
-  hash_multimap(const_iterator __f, const_iterator __l, size_type __n)
-    : _M_ht(__n, hasher(), key_equal(), allocator_type())
-    { _M_ht.insert_equal(__f, __l); }
-  hash_multimap(const_iterator __f, const_iterator __l, size_type __n,
-                const hasher& __hf)
-    : _M_ht(__n, __hf, key_equal(), allocator_type())
-    { _M_ht.insert_equal(__f, __l); }
-  hash_multimap(const_iterator __f, const_iterator __l, size_type __n,
-                const hasher& __hf, const key_equal& __eql,
-                const allocator_type& __a = allocator_type())
-    : _M_ht(__n, __hf, __eql, __a)
-    { _M_ht.insert_equal(__f, __l); }
-#endif /*__STL_MEMBER_TEMPLATES */
-
 public:
   size_type size() const { return _M_ht.size(); }
   size_type max_size() const { return _M_ht.max_size(); }
   bool empty() const { return _M_ht.empty(); }
   void swap(hash_multimap& __hs) { _M_ht.swap(__hs._M_ht); }
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _K1, class _T1, class _HF, class _EqK, class _Al>
   friend bool operator== (const hash_multimap<_K1, _T1, _HF, _EqK, _Al>&,
                           const hash_multimap<_K1, _T1, _HF, _EqK, _Al>&);
-#else /* __STL_MEMBER_TEMPLATES */
-  friend bool __STD_QUALIFIER
-  operator== __STL_NULL_TMPL_ARGS (const hash_multimap&,const hash_multimap&);
-#endif /* __STL_MEMBER_TEMPLATES */
 
   iterator begin() { return _M_ht.begin(); }
   iterator end() { return _M_ht.end(); }
@@ -384,17 +287,9 @@ public:
 public:
   iterator insert(const value_type& __obj) 
     { return _M_ht.insert_equal(__obj); }
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _InputIterator>
   void insert(_InputIterator __f, _InputIterator __l) 
     { _M_ht.insert_equal(__f,__l); }
-#else
-  void insert(const value_type* __f, const value_type* __l) {
-    _M_ht.insert_equal(__f,__l);
-  }
-  void insert(const_iterator __f, const_iterator __l) 
-    { _M_ht.insert_equal(__f, __l); }
-#endif /*__STL_MEMBER_TEMPLATES */
   iterator insert_noresize(const value_type& __obj)
     { return _M_ht.insert_equal_noresize(__obj); }    
 
@@ -431,8 +326,6 @@ operator==(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
   return __hm1._M_ht == __hm2._M_ht;
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
-
 template <class _Key, class _Tp, class _HF, class _EqKey, class _Alloc>
 inline bool 
 operator!=(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
@@ -448,12 +341,9 @@ swap(hash_multimap<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
   __hm1.swap(__hm2);
 }
 
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 // Specialization of insert_iterator so that it will work for hash_map
 // and hash_multimap.
-
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
 
 template <class _Key, class _Tp, class _HashFn,  class _EqKey, class _Alloc>
 class insert_iterator<hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc> > {
@@ -508,14 +398,7 @@ public:
   insert_iterator<_Container>& operator++(int) { return *this; }
 };
 
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma reset woff 1174
-#pragma reset woff 1375
-#endif
-
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_HASH_MAP_H */
 

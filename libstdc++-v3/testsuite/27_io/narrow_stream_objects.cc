@@ -1,6 +1,6 @@
 // 2000-08-02 bkoz
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -93,11 +93,32 @@ test01()
   return 0;
 }
 
+// libstdc++/2523
+void test02()
+{
+  using namespace std;
+  int i;
+  cin >> i;
+  cout << "i == " << i << endl;
+}
+
+// libstdc++/2523
+void test03()
+{
+  using namespace std;
+  ios_base::sync_with_stdio(false);
+
+  int i;
+  cin >> i;
+  cout << "i == " << i << endl;
+}
 
 int 
 main()
 {
   test01();
+
+  // test02();
+  // test03();
   return 0;
 }
-

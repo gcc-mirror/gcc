@@ -27,13 +27,12 @@
 #ifndef _CPP_BACKWARD_VECTOR_H
 #define _CPP_BACKWARD_VECTOR_H 1
 
+#include "backward_warning.h"
 #include "algobase.h"
 #include "alloc.h"  
-#include <bits/stl_vector.h>
+#include <bits/std_vector.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::vector;
-#endif /* __STL_USE_NAMESPACES */
+using std::vector;
 
 #endif /* _CPP_BACKWARD_VECTOR_H */
 

@@ -96,4 +96,3 @@ main()
   testall<long double>();
   return 0;
 }
-

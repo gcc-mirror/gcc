@@ -1,13 +1,13 @@
-2000-11-29
+2001-04-06
 
 Release Notes   
 -------------
-The Standard C++ Library v3, or libstdc++-2.90.x, is an ongoing
+The Standard C++ Library v3, or libstdc++-2.9x, is an ongoing
 project to implement the ISO 14882 Standard C++ library as described
 in chapters 17 through 27 and annex D, as a drop-in replacement
 for the current (ARM-conformant) library.
 
-This is the tenth snapshot of the libstdc++ rewrite.  It is still
+This is the eleventh snapshot of the libstdc++ rewrite.  It is still
 incomplet and incorrekt. It's a lot less incomplete and incorrect than
 some of the earlier snapshots though, and quite usable.
 
@@ -23,55 +23,27 @@ found at the following URL:
 
 New: 
 --- 
-- namespace std:: is now on by default.
-- choice of "C" include strategies, including the shadow header work,
-  or generic global to std mapping of required "C" types.
-- cpu/atomicity.h tweaks, additions of ia64 and arm support.
-- abstraction of atomicity.h header to support notion of os/atomicity.h files.
-- addition of backward header bits
-- use of system_header pragma
-- Conditional use of -Werror
-- preliminary support for new g++ diagnostics capabilities, including
-  -fdiagnostics-show-location=once
-- pedantic and shadow argument warning fixes 
-- Ugly, yet correct mechanism for dealing with "C" math adopted,
-  including the use of builtins.
-- updates and configure/build work to support new libtool
-- addition of strstream 
-- valarray work
-- complex work
-- update to SGI STL 3.3
-- libio sync between glibc/libstdc++-v3. Some divergence since initial
-  merge, but sources remain quite close.
-- IO fixes for alpha
-- wide character work for IO when using libio
-- addition of c_io_stdio and "C" IO abstraction layer.
-- auto_ptr fixes, testsuite additions
-- Attempts to use -ffunction-sections -fdata-sections and
-  --gc-sections, depending on use of GNU ld and specific features. As of
-  late, --gc-sections has been disabled due to problems with it throwing
-  away initialization sections. This work is ongoing.
-- long double support
-- sub directory removal, coherent organization of cpu and os-specific
-  files, consolidation of include directories, integration of the C++
-  support bits for operator new/delete,exceptions, etc. All includes
-  are now either in the include/* hierarchy or in libsupc++'s sub directory.
-- Support for more platforms, including irix and bsd variants.
-- filebuf tweaks to deal with variable-size buffers.
-- filebuf implementation for putbackc, etc. al.
-- ctype rewritten. Includes ctype<char>, ctype<wchar_t>, and others.
-- codecvt rewritten. Includes codecvt<char, char, mbstate_t>,
-  codecvt<wchar_t, char, mbstate_t>. In addition,
-  implementation-defined conversions using iconv are now supported with
-  the __enc_traits partial-specialization of the State template
-  parameter of the codecvt class. In this manner, conversions between
-  encodings such as UCS4, USC2, UNICODE, UNICODEBIG, UNICODELITTLE, etc
-  can be performed.
-- preliminary work on named locales
-- preliminary documentation for locale implementation has been established.
-- Many, many bug fixes.
-- Many, many testsuite additions and consistent VERIFY usage.
-- work on mkcheck to make it more flexible, use libtool, etc.
+- preliminary doxygen documentation has been added. Running "make
+  doxygen" in the libstdc++-v3 build directory will generate HTML
+  documentation that can be used to cross-reference names and files in
+  the library.
+- a dejagnu based testing framework has been added
+- a new implementation of the concept checking code has been ported
+  from the boost libraries.
+- support for -fno-exceptions has been added
+- stdexcept was re-written
+- using deprecated or antiquated headers now gives a warning
+- the stdio interface to iostreams has been tweaked, and now works
+  with synchronized c/c++ io
+- new libsupc++ routines implementing the IA-64 C++ ABI.
+- HPUX configuration files
+- support for AIX added
+- a lot of bugs were fixed.
+- preliminary named locales implemented
+- portability improvements made to generation of <limits>
+- speedups to improve configuration time.
+- DJGPP support added.
+- support for dlopening shared libstdc++
 
 What doesn't:
 -------------
@@ -108,10 +80,11 @@ Development tools:
 ------------------
 
 You will need a recent version of gcc to compile the snapshot of
-libstdc++. The use of CVS g++ is strongly recommended. In addition,
-you may need up-to-date tools for modifying Makefiles and regenerating
-configure scripts: automake (version 1.4), autoconf (version 2.13 and
-higher), and libtool. 
+libstdc++. The use of CVS gcc, or gcc-3_0-branch is strongly
+recommended, which may introduce additional dependencies for
+up-to-date binutils. In addition, you may need up-to-date tools for
+modifying Makefiles and regenerating configure scripts: automake
+(version 1.4), autoconf (version 2.13 and higher), and libtool.
 
 
 

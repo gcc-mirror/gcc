@@ -15,11 +15,10 @@
 #ifndef _CPP_BACKWARD_SLIST_H
 #define _CPP_BACKWARD_SLIST_H 1
 
+#include "backward_warning.h"
 #include <ext/slist>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::slist;
-#endif /* __STL_USE_NAMESPACES */
+using std::slist;
 
 #endif /* _CPP_BACKWARD_SLIST_H */
 

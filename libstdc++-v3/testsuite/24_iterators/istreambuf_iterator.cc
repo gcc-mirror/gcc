@@ -1,6 +1,6 @@
 // 1999-06-28 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -102,7 +102,7 @@ bool test01(void)
 
   std::istringstream istrs02(str01);
   cistreambuf_iter istrb_it28(istrs02);
-  for (int i = 0; i < sizeof(slit01) - 3;)
+  for (int i = 0; i < sizeof(slit01) - 2;)
     {
       c = *++istrb_it28;
       VERIFY( c == slit01[++i] );
@@ -115,11 +115,46 @@ bool test01(void)
   return test;
 }
 
+// libstdc++/2627
+void test02()
+{
+  bool test = true;
+  const std::string s("free the vieques");
+
+  // 1
+  std::string res_postfix;
+  std::istringstream iss01(s);
+  std::istreambuf_iterator<char> isbufit01(iss01);
+  for (int j = 0; j < s.size(); ++j, isbufit01++)
+    res_postfix += *isbufit01;
+
+  // 2
+  std::string res_prefix;
+  std::istringstream iss02(s);
+  std::istreambuf_iterator<char> isbufit02(iss02);
+  for (int j = 0; j < s.size(); ++j, ++isbufit02)
+    res_prefix += *isbufit02;
+
+  // 3 mixed
+  std::string res_mixed;
+  std::istringstream iss03(s);
+  std::istreambuf_iterator<char> isbufit03(iss03);
+  for (int j = 0; j < int(s.size() / 2); ++j)
+    {
+      res_mixed += *isbufit03;
+      ++isbufit03;
+      res_mixed += *isbufit03;
+      isbufit03++;
+    }
+
+  VERIFY ( res_postfix == res_prefix );
+  VERIFY ( res_mixed == res_prefix );
+}
+
 int main()
 {
   test01();
+  test02();
 
   return 0;
 }
-
-

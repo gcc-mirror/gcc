@@ -68,17 +68,13 @@ AS = @AS@
 CC = @CC@
 CPP = @CPP@
 CSHADOW_FLAGS = @CSHADOW_FLAGS@
-CXX = @CXX@
 CXXCPP = @CXXCPP@
-CXX_libstdcxx = @CXX_libstdcxx@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
-GLIBCPP_CFLAGS = @GLIBCPP_CFLAGS@
-GLIBCPP_CXXFLAGS = @GLIBCPP_CXXFLAGS@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBSTRINGOBJS = @LIBSTRINGOBJS@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
@@ -98,15 +94,17 @@ USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
-WFMT_FLAGS = @WFMT_FLAGS@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
+glibcpp_CXX = @glibcpp_CXX@
 glibcpp_basedir = @glibcpp_basedir@
+glibcpp_builddir = @glibcpp_builddir@
+glibcpp_prefixdir = @glibcpp_prefixdir@
+glibcpp_srcdir = @glibcpp_srcdir@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
-libinst_wstring_la = @libinst_wstring_la@
 libio_la = @libio_la@
 toplevel_srcdir = @toplevel_srcdir@
 
@@ -116,6 +114,7 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
+CXX = @glibcpp_CXX@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 
@@ -137,7 +136,7 @@ CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLA
 
 
 # Warning flags to use.
-WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) @WFMT_FLAGS@
+WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES

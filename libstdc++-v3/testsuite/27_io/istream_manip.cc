@@ -70,7 +70,7 @@ bool test01(void)
   VERIFY( !iss02.eof() );
 
   iss01 >> std::ws;
-  VERIFY( iss01.fail() );
+  VERIFY( !iss01.fail() );
   VERIFY( iss01.eof() );
 
 #ifdef DEBUG_ASSERT
@@ -83,9 +83,5 @@ bool test01(void)
 int main()
 { 
   test01();
+  return 0;
 }
-
-
-
-
-

@@ -26,18 +26,14 @@
 #ifndef _CPP_BACKWARD_HEAP_H
 #define _CPP_BACKWARD_HEAP_H 1
 
-#include <bits/stl_config.h>
+#include "backward_warning.h"
+#include <bits/c++config.h>
 #include <bits/stl_heap.h>
 
-#ifdef __STL_USE_NAMESPACES
-
-using __STD::push_heap;
-using __STD::pop_heap;
-using __STD::make_heap;
-using __STD::sort_heap;
-
-#endif /* __STL_USE_NAMESPACES */
-
+using std::push_heap;
+using std::pop_heap;
+using std::make_heap;
+using std::sort_heap;
 
 #endif /* _CPP_BACKWARD_HEAP_H */
 
