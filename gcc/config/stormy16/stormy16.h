@@ -1593,39 +1593,6 @@ enum reg_class
    You need not define this macro if you did not define
    `DELAY_SLOTS_FOR_EPILOGUE'.  */
 /* #define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN, N) */
-
-/* A C compound statement that outputs the assembler code for a thunk function,
-   used to implement C++ virtual function calls with multiple inheritance.  The
-   thunk acts as a wrapper around a virtual function, adjusting the implicit
-   object parameter before handing control off to the real function.
-
-   First, emit code to add the integer DELTA to the location that contains the
-   incoming first argument.  Assume that this argument contains a pointer, and
-   is the one used to pass the `this' pointer in C++.  This is the incoming
-   argument *before* the function prologue, e.g. `%o0' on a sparc.  The
-   addition must preserve the values of all other incoming arguments.
-
-   After the addition, emit code to jump to FUNCTION, which is a
-   `FUNCTION_DECL'.  This is a direct pure jump, not a call, and does not touch
-   the return address.  Hence returning from FUNCTION will return to whoever
-   called the current `thunk'.
-
-   The effect must be as if @var{function} had been called directly
-   with the adjusted first argument.  This macro is responsible for
-   emitting all of the code for a thunk function;
-   TARGET_ASM_FUNCTION_PROLOGUE and TARGET_ASM_FUNCTION_EPILOGUE are
-   not invoked.
-
-   The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been
-   extracted from it.)  It might possibly be useful on some targets, but
-   probably not.
-
-   If you do not define this macro, the target-independent code in the C++
-   frontend will generate a less efficient heavyweight thunk that calls
-   FUNCTION instead of jumping to it.  The generic approach does not support
-   varargs.  */
-#define TARGET_ASM_OUTPUT_MI_THUNK xstormy16_asm_output_mi_thunk
-
 
 /* Generating Code for Profiling.  */
 

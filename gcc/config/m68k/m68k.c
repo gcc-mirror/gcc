@@ -65,6 +65,7 @@ static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int));
 #ifdef CTOR_LIST_BEGIN
 static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
 #endif
+static void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 
 
 /* Alignment to use for loops and jumps */
@@ -121,6 +122,9 @@ int m68k_last_compare_had_fp_operands;
 #define TARGET_ASM_FUNCTION_PROLOGUE m68k_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m68k_output_function_epilogue
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3836,34 +3840,67 @@ m68k_svr3_asm_out_constructor (symbol, priority)
 }
 #endif
 
-void
+static void
 m68k_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
      tree function;
 {
-  if (delta > 0 && delta <= 8)						
+  rtx xops[1];
+  const char *fmt;
+
+  if (delta > 0 && delta <= 8)
     asm_fprintf (file, "\taddq.l %I%d,4(%Rsp)\n", (int) delta);
-  else if (delta < 0 && delta >= -8)					
+  else if (delta < 0 && delta >= -8)
     asm_fprintf (file, "\tsubq.l %I%d,4(%Rsp)\n", (int) -delta);
-  else									
+  else
     {
       asm_fprintf (file, "\tadd.l %I");
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);		
-      asm_fprintf (file, ",4(%Rsp)\n", delta);		
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+      asm_fprintf (file, ",4(%Rsp)\n");
     }
-									
-  if (flag_pic)								
-    {									
-      fprintf (file, "\tbra.l ");					
-      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));	
-      fprintf (file, "@PLTPC\n");					
-    }									
-  else									
-    {									
-      fprintf (file, "\tjmp ");						
-      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));	
-      fprintf (file, "\n");						
-    }									
+
+  xops[0] = DECL_RTL (function);
+
+  /* Logic taken from call patterns in m68k.md.  */
+  if (flag_pic)
+    {
+      if (TARGET_PCREL)
+	fmt = "bra.l %o0";
+      else
+	{
+#ifdef MOTOROLA
+#ifdef HPUX_ASM
+	  fmt = "bra.l %0";
+#else
+#ifdef USE_GAS
+	  fmt = "bra.l %0@PLTPC";
+#else
+	  fmt = "bra %0@PLTPC";
+#endif
+#endif
+#else
+#ifdef USE_GAS
+	  fmt = "bra.l %0";
+#else
+	  fmt = "jbra %0,a1";
+#endif
+#endif
+	}
+    }
+  else
+    {
+#if defined (MOTOROLA) && !defined (USE_GAS)
+#ifdef MOTOROLA_BSR
+      fmt = "bra %0";
+#else
+      fmt = "jmp %0";
+#endif
+#else
+      fmt = "jbra %0";
+#endif
+    }
+
+  output_asm_insn (fmt, xops);
 }

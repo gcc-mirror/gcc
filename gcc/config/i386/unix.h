@@ -65,8 +65,3 @@ Boston, MA 02111-1307, USA.  */
    and returns float values in the 387.  */
 
 #define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
-
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.  */
-#define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
-#define TARGET_ASM_OUTPUT_MI_VCALL_THUNK x86_output_mi_vcall_thunk

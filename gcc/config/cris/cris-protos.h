@@ -52,12 +52,6 @@ extern rtx cris_expand_builtin_va_arg PARAMS ((tree, tree));
 # endif
 #endif /* RTX_CODE */
 
-#ifdef STDIO_INCLUDED
-# ifdef TREE_CODE
-extern void cris_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
-# endif
-#endif
-
 #ifdef GCC_C_PRAGMA_H
 extern void cris_pragma_expand_mul PARAMS ((cpp_reader *));
 #endif

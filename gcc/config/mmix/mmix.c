@@ -130,6 +130,8 @@ static void mmix_target_asm_function_prologue
 static void mmix_target_asm_function_end_prologue PARAMS ((FILE *));
 static void mmix_target_asm_function_epilogue
   PARAMS ((FILE *, HOST_WIDE_INT));
+static void mmix_asm_output_mi_thunk
+  PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
@@ -161,6 +163,9 @@ static void mmix_target_asm_function_epilogue
 #define TARGET_ENCODE_SECTION_INFO  mmix_encode_section_info
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING  mmix_strip_name_encoding
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK mmix_asm_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -772,7 +777,7 @@ mmix_target_asm_function_epilogue (stream, locals_size)
 
 /* TARGET_ASM_OUTPUT_MI_THUNK.  */
 
-void
+static void
 mmix_asm_output_mi_thunk (stream, fndecl, delta, func)
      FILE * stream;
      tree fndecl ATTRIBUTE_UNUSED;

@@ -63,5 +63,3 @@ Boston, MA 02111-1307, USA.  */
 #define DWARF2_UNWIND_INFO 0
 
 #undef ASM_PREFERRED_EH_DATA_FORMAT
-
-/* Default sparc.h does already define TARGET_ASM_OUTPUT_MI_THUNK */

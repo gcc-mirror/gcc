@@ -795,9 +795,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define EPILOGUE_USES(REGNO) \
  ((REGNO) == MMIX_INCOMING_RETURN_ADDRESS_REGNUM)
 
-#define TARGET_ASM_OUTPUT_MI_THUNK mmix_asm_output_mi_thunk
-
-
 /* Node: Profiling */
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
  mmix_function_profiler (FILE, LABELNO)

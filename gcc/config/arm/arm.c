@@ -126,6 +126,8 @@ static void	 arm_encode_section_info	PARAMS ((tree, int));
 #ifdef AOF_ASSEMBLER
 static void	 aof_globalize_label		PARAMS ((FILE *, const char *));
 #endif
+static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
+							 HOST_WIDE_INT, tree));
 
 #undef Hint
 #undef Mmode
@@ -187,6 +189,9 @@ static void	 aof_globalize_label		PARAMS ((FILE *, const char *));
 
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING arm_strip_name_encoding
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK arm_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -11131,7 +11136,10 @@ arm_encode_section_info (decl, first)
 }
 #endif /* !ARM_PE */
 
-void
+/* Output code to add DELTA to the first argument, and then jump
+   to FUNCTION.  Used for C++ multiple inheritance.  */
+
+static void
 arm_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
