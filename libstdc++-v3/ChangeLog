@@ -1,3 +1,7 @@
+2001-12-11  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/ext/allocators.cc:  New file.
+
 2001-12-11  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/locale_facets.tcc (_M_extract_int): Avoid
