@@ -600,44 +600,6 @@ DEF_RTL_EXPR(HIGH, "high", "e", RTX_CONST_OBJ)
    of a constant expression.  */
 DEF_RTL_EXPR(LO_SUM, "lo_sum", "ee", RTX_OBJ)
 
-/* Header for range information.  Operand 0 is the NOTE_INSN_RANGE_BEG insn.
-   Operand 1 is the NOTE_INSN_RANGE_END insn.  Operand 2 is a vector of all of
-   the registers that can be substituted within this range.  Operand 3 is the
-   number of calls in the range.  Operand 4 is the number of insns in the
-   range.  Operand 5 is the unique range number for this range.  Operand 6 is
-   the basic block # of the start of the live range.  Operand 7 is the basic
-   block # of the end of the live range.  Operand 8 is the loop depth.  Operand
-   9 is a bitmap of the registers live at the start of the range.  Operand 10
-   is a bitmap of the registers live at the end of the range.  Operand 11 is
-   marker number for the start of the range.  Operand 12 is the marker number
-   for the end of the range.  */
-DEF_RTL_EXPR(RANGE_INFO, "range_info", "uuEiiiiiibbii", RTX_EXTRA)
-
-/* Registers that can be substituted within the range.  Operand 0 is the
-   original pseudo register number.  Operand 1 will be filled in with the
-   pseudo register the value is copied for the duration of the range.  Operand
-   2 is the number of references within the range to the register.  Operand 3
-   is the number of sets or clobbers of the register in the range.  Operand 4
-   is the number of deaths the register has.  Operand 5 is the copy flags that
-   give the status of whether a copy is needed from the original register to
-   the new register at the beginning of the range, or whether a copy from the
-   new register back to the original at the end of the range.  Operand 6 is the
-   live length.  Operand 7 is the number of calls that this register is live
-   across.  Operand 8 is the symbol node of the variable if the register is a
-   user variable.  Operand 9 is the block node that the variable is declared
-   in if the register is a user variable.  */
-DEF_RTL_EXPR(RANGE_REG, "range_reg", "iiiiiiiitt", RTX_EXTRA)
-
-/* Information about a local variable's ranges.  Operand 0 is an EXPR_LIST of
-   the different ranges a variable is in where it is copied to a different
-   pseudo register.  Operand 1 is the block that the variable is declared in.
-   Operand 2 is the number of distinct ranges.  */
-DEF_RTL_EXPR(RANGE_VAR, "range_var", "eti", RTX_EXTRA)
-
-/* Information about the registers that are live at the current point.  Operand
-   0 is the live bitmap.  Operand 1 is the original block number.  */
-DEF_RTL_EXPR(RANGE_LIVE, "range_live", "bi", RTX_EXTRA)
-
 /* Describes a merge operation between two vector values.
    Operands 0 and 1 are the vectors to be merged, operand 2 is a bitmask
    that specifies where the parts of the result are taken from.  Set bits

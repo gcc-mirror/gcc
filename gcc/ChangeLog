@@ -1,3 +1,7 @@
+2004-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* rtl.def (RANGE_INFO, RANGE_REG, RANGE_VAR, RANGE_LIVE): Kill.
+
 2004-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/symbian.h (LIB_SPEC): Define to empty.
