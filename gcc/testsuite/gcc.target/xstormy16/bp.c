@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler "bp " } } */
+/* { dg-final { scan-assembler "b\[np\] " } } */
 
 #define a_val (*((volatile unsigned char *) 0x7f14))
 #define b_val (*((volatile unsigned char *) 0x7f10))
@@ -30,5 +30,3 @@ bar (void)
 
   return foo ();
 }
-
-
