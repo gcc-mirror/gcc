@@ -103,6 +103,7 @@ struct s390_address
   rtx base;
   rtx indx;
   rtx disp;
+  int pointer;
 };
 
 /* Structure containing information for prologue and epilogue.  */ 
@@ -1125,6 +1126,107 @@ s390_preferred_reload_class (op, class)
   return class;
 }
 
+/* Return the register class of a scratch register needed to
+   load IN into a register of class CLASS in MODE.
+
+   We need a temporary when loading a PLUS expression which
+   is not a legitimate operand of the LOAD ADDRESS instruction.  */
+
+enum reg_class
+s390_secondary_input_reload_class (class, mode, in)
+     enum reg_class class ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
+     rtx in;
+{
+  if (s390_plus_operand (in, mode))
+    return ADDR_REGS;
+
+  return NO_REGS;
+}
+
+/* Return true if OP is a PLUS that is not a legitimate
+   operand for the LA instruction. 
+   OP is the current operation.
+   MODE is the current operation mode.  */
+
+int
+s390_plus_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (!check_mode (op, &mode) || mode != Pmode)
+    return FALSE;
+
+  if (GET_CODE (op) != PLUS)
+    return FALSE;
+
+  if (legitimate_la_operand_p (op))
+    return FALSE;
+
+  return TRUE;
+}
+
+/* Generate code to load SRC, which is PLUS that is not a
+   legitimate operand for the LA instruction, into TARGET.
+   SCRATCH may be used as scratch register.  */
+
+void
+s390_expand_plus_operand (target, src, scratch)
+     register rtx target;
+     register rtx src;
+     register rtx scratch;
+{
+  /* src must be a PLUS; get its two operands.  */
+  rtx sum1, sum2;
+
+  if (GET_CODE (src) != PLUS || GET_MODE (src) != Pmode)
+    abort ();
+
+  sum1 = XEXP (src, 0);
+  sum2 = XEXP (src, 1);
+
+  /* If one of the two operands is equal to the target,
+     make it the first one.  */
+  if (rtx_equal_p (target, sum2))
+    {
+      sum2 = XEXP (src, 0);
+      sum1 = XEXP (src, 1);
+    }
+
+  /* If the first operand is not an address register,
+     we reload it into the target.  */
+  if (true_regnum (sum1) < 1 || true_regnum (sum1) > 15)
+    {
+      emit_move_insn (target, sum1);
+      sum1 = target;
+    }
+
+  /* Likewise for the second operand.  However, take
+     care not to clobber the target if we already used
+     it for the first operand.  Use the scratch instead.  */
+  if (true_regnum (sum2) < 1 || true_regnum (sum2) > 15)
+    {
+      if (!rtx_equal_p (target, sum1))
+        {
+          emit_move_insn (target, sum2);
+          sum2 = target;
+        }
+      else
+        {
+          emit_move_insn (scratch, sum2);
+          sum2 = scratch;
+        }
+    }
+
+  /* Emit the LOAD ADDRESS pattern.  Note that reload of PLUS
+     is only ever performed on addresses, so we can mark the
+     sum as legitimate for LA in any case.  */
+  src = gen_rtx_PLUS (Pmode, sum1, sum2);
+  src = legitimize_la_operand (src);
+  emit_insn (gen_rtx_SET (VOIDmode, target, src));
+}
+
+
 /* Decompose a RTL expression ADDR for a memory address into
    its components, returned in OUT.  The boolean STRICT 
    specifies whether strict register checking applies.
@@ -1145,6 +1247,7 @@ s390_decompose_address (addr, out, strict)
   rtx base = NULL_RTX;
   rtx indx = NULL_RTX;
   rtx disp = NULL_RTX;
+  int pointer = FALSE;
 
   /* Decompose address into base + index + displacement.  */
 
@@ -1198,6 +1301,7 @@ s390_decompose_address (addr, out, strict)
           if (XVECLEN (base, 0) != 1 || XINT (base, 1) != 101)
 	      return FALSE;
 	  base = XVECEXP (base, 0, 0);
+	  pointer = TRUE;
 	}
 
       if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
@@ -1206,6 +1310,16 @@ s390_decompose_address (addr, out, strict)
       if ((strict && ! REG_OK_FOR_BASE_STRICT_P (base))
 	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (base)))
 	  return FALSE;
+    
+      if (REGNO (base) == BASE_REGISTER
+	  || REGNO (base) == STACK_POINTER_REGNUM
+	  || REGNO (base) == FRAME_POINTER_REGNUM
+	  || ((reload_completed || reload_in_progress)
+	      && frame_pointer_needed
+	      && REGNO (base) == HARD_FRAME_POINTER_REGNUM)
+          || (flag_pic
+              && REGNO (base) == PIC_OFFSET_TABLE_REGNUM))
+        pointer = TRUE;
     }
 
   /* Validate index register.  */
@@ -1216,6 +1330,7 @@ s390_decompose_address (addr, out, strict)
           if (XVECLEN (indx, 0) != 1 || XINT (indx, 1) != 101)
 	      return FALSE;
 	  indx = XVECEXP (indx, 0, 0);
+	  pointer = TRUE;
 	}
 
       if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
@@ -1224,6 +1339,16 @@ s390_decompose_address (addr, out, strict)
       if ((strict && ! REG_OK_FOR_BASE_STRICT_P (indx))
 	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (indx)))
 	  return FALSE;
+    
+      if (REGNO (indx) == BASE_REGISTER
+	  || REGNO (indx) == STACK_POINTER_REGNUM
+	  || REGNO (indx) == FRAME_POINTER_REGNUM
+	  || ((reload_completed || reload_in_progress)
+	      && frame_pointer_needed
+	      && REGNO (indx) == HARD_FRAME_POINTER_REGNUM)
+          || (flag_pic
+              && REGNO (indx) == PIC_OFFSET_TABLE_REGNUM))
+        pointer = TRUE;
     }
 
   /* Validate displacement.  */
@@ -1244,6 +1369,8 @@ s390_decompose_address (addr, out, strict)
         {
           if (flag_pic != 1)
             return FALSE;
+
+	  pointer = TRUE;
         }
 
       /* We can convert literal pool addresses to 
@@ -1295,14 +1422,20 @@ s390_decompose_address (addr, out, strict)
 
           if (offset)
             disp = plus_constant (disp, offset);
+
+	  pointer = TRUE;
         }
     }
 
+  if (!base && !indx)
+    pointer = TRUE;
+   
   if (out)
     {
       out->base = base;
       out->indx = indx;
       out->disp = disp;
+      out->pointer = pointer;
     }
 
   return TRUE;
@@ -1332,28 +1465,36 @@ legitimate_la_operand_p (op)
   if (!s390_decompose_address (op, &addr, FALSE))
     return FALSE;
 
-  if (TARGET_64BIT)
+  if (TARGET_64BIT || addr.pointer)
     return TRUE;
 
-  /* Use of the base or stack pointer implies address.  */
-
-  if (addr.base && GET_CODE (addr.base) == REG)
-    {
-      if (REGNO (addr.base) == BASE_REGISTER
-	  || REGNO (addr.base) == STACK_POINTER_REGNUM
-	  || REGNO (addr.base) == FRAME_POINTER_REGNUM)
-        return TRUE;
-    }
-
-  if (addr.indx && GET_CODE (addr.indx) == REG)
-    {
-      if (REGNO (addr.indx) == BASE_REGISTER
-          || REGNO (addr.indx) == STACK_POINTER_REGNUM
-	  || REGNO (addr.base) == FRAME_POINTER_REGNUM)
-        return TRUE;
-    }
-
   return FALSE;
+}
+
+/* Return a modified variant of OP that is guaranteed to
+   be accepted by legitimate_la_operand_p.  */
+
+rtx
+legitimize_la_operand (op)
+     register rtx op;
+{
+  struct s390_address addr;
+  if (!s390_decompose_address (op, &addr, FALSE))
+    abort ();
+
+  if (TARGET_64BIT || addr.pointer)
+    return op;
+
+  if (!addr.base)
+    abort ();
+
+  op = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr.base), 101);
+  if (addr.indx)
+    op = gen_rtx_PLUS (Pmode, op, addr.indx);
+  if (addr.disp)
+    op = gen_rtx_PLUS (Pmode, op, addr.disp);
+
+  return op; 
 }
 
 /* Return a legitimate reference for ORIG (an address) using the

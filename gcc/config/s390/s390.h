@@ -577,6 +577,12 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER]; /* smalled class cont
       (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT ? 2 : 1) :  		\
       (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
+/* We need a secondary reload when loading a PLUS which is 
+   not a valid operand for LOAD ADDRESS.  */
+
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN)	\
+	s390_secondary_input_reload_class ((CLASS), (MODE), (IN))
+
 /* If we are copying between FP registers and anything else, we need a memory
    location.  */
 
@@ -1293,7 +1299,8 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
   {"larl_operand",    { SYMBOL_REF, CONST, CONST_INT, CONST_DOUBLE }},	\
   {"load_multiple_operation", {PARALLEL}},			        \
   {"store_multiple_operation", {PARALLEL}},			        \
-  {"const0_operand",  { CONST_INT, CONST_DOUBLE }},
+  {"const0_operand",  { CONST_INT, CONST_DOUBLE }},			\
+  {"s390_plus_operand", { PLUS }},
 
 
 /* S/390 constant pool breaks the devices in crtstuff.c to control section

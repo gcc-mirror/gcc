@@ -1,5 +1,30 @@
 2002-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390-protos.h (legitimize_la_operand,
+	s390_secondary_input_reload_class, s390_plus_operand,
+	s390_expand_plus_operand): Add prototypes.
+
+	config/s390/s390.c (s390_secondary_input_reload_class,
+	s390_plus_operand, s390_expand_plus_operand): New functions.
+
+	(struct s390_address): New member 'pointer'.
+	(s390_decompose_address): Compute it.
+	(legitimate_la_operand_p): Use it.
+	(legitimize_la_operand): New function.
+	(movti, movdi, movdf splitters): Call it.
+
+	config/s390/s390.h (SECONDARY_INPUT_RELOAD_CLASS): Define.
+	(PREDICATE_CODES): Add s390_plus_operand.
+
+	config/s390/s390.md (adddi3_inv_64, addaddr_ccclobber): Delete.
+	(la_ccclobber): Allow GENERAL_REGS as output operand.
+
+	(reload_load_address, *reload_load_address_reg_0, *la, *do_la_reg_0,
+	*reload_la_64, *reload_la_31 and splitters): Delete, replace by ...
+	(*la_64, *la_31, reload_indi, reload_insi): ... these.
+
+2002-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* gcc/config/s390/s390.h (CRT_CALL_STATIC_FUNCTION): Fixed
 	register names for regular asm () construct.
 
