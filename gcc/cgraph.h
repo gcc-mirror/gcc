@@ -35,6 +35,8 @@ struct cgraph_local_info GTY(())
   /* Set when function can be inlined once (false only for functions calling
      alloca, using varargs and so on).  */
   bool can_inline_once;
+  /* Set once it has been finalized so we consider it to be output.  */
+  bool finalized;
 };
 
 /* Information about the function that needs to be computed globally
