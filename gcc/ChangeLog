@@ -1,3 +1,8 @@
+Thu Jul  2 16:46:36 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* c-decl.c (grokdeclarator): Don't warn about implicit int in
+	`typedef foo = bar'.
+
 Tue Jun 30 18:32:49 1998  Geert Bosch  <bosch@gnat.com>
 
 	* alpha/vxworks.h (LINK_SPEC): Add -taso -T 0.
