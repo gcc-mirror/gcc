@@ -1,3 +1,7 @@
+Sat Jun 19 05:40:07 1999  Philip Blundell <pb@nexus.co.uk>
+
+	* arm.c (arm_reload_in_hi): Invert sense of test on BYTES_BIG_ENDIAN.
+
 Sat Jun 19 05:25:05 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.h (CONDITIONAL_REGISTER_USAGE): If flag_pic, never use
