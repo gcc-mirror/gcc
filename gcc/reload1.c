@@ -655,27 +655,20 @@ reload (first, global, dumpfile)
      Record memory equivalents in reg_mem_equiv so they can
      be substituted eventually by altering the REG-rtx's.  */
 
-  reg_equiv_constant = (rtx *) xmalloc (max_regno * sizeof (rtx));
-  bzero ((char *) reg_equiv_constant, max_regno * sizeof (rtx));
-  reg_equiv_memory_loc = (rtx *) xmalloc (max_regno * sizeof (rtx));
-  bzero ((char *) reg_equiv_memory_loc, max_regno * sizeof (rtx));
-  reg_equiv_mem = (rtx *) xmalloc (max_regno * sizeof (rtx));
-  bzero ((char *) reg_equiv_mem, max_regno * sizeof (rtx));
-  reg_equiv_init = (rtx *) xmalloc (max_regno * sizeof (rtx));
-  bzero ((char *) reg_equiv_init, max_regno * sizeof (rtx));
-  reg_equiv_address = (rtx *) xmalloc (max_regno * sizeof (rtx));
-  bzero ((char *) reg_equiv_address, max_regno * sizeof (rtx));
-  reg_max_ref_width = (int *) xmalloc (max_regno * sizeof (int));
-  bzero ((char *) reg_max_ref_width, max_regno * sizeof (int));
-  reg_old_renumber = (short *) xmalloc (max_regno * sizeof (short));
+  reg_equiv_constant = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_memory_loc = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_mem = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_init = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_address = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_max_ref_width = (int *) xcalloc (max_regno, sizeof (int));
+  reg_old_renumber = (short *) xcalloc (max_regno, sizeof (short));
   bcopy ((PTR) reg_renumber, (PTR) reg_old_renumber, max_regno * sizeof (short));
   pseudo_forbidden_regs
     = (HARD_REG_SET *) xmalloc (max_regno * sizeof (HARD_REG_SET));
   pseudo_previous_regs
-    = (HARD_REG_SET *) xmalloc (max_regno * sizeof (HARD_REG_SET));
+    = (HARD_REG_SET *) xcalloc (max_regno, sizeof (HARD_REG_SET));
 
   CLEAR_HARD_REG_SET (bad_spill_regs_global);
-  bzero ((char *) pseudo_previous_regs, max_regno * sizeof (HARD_REG_SET));
 
   /* Look for REG_EQUIV notes; record what each pseudo is equivalent to.
      Also find all paradoxical subregs and find largest such for each pseudo.
@@ -3731,12 +3724,8 @@ init_elim_table ()
 #endif
 
   if (!reg_eliminate)
-    {
-      reg_eliminate = (struct elim_table *)
-	xmalloc(sizeof(struct elim_table) * NUM_ELIMINABLE_REGS);
-      bzero ((PTR) reg_eliminate,
-	     sizeof(struct elim_table) * NUM_ELIMINABLE_REGS);
-    }
+    reg_eliminate = (struct elim_table *)
+      xcalloc(sizeof(struct elim_table), NUM_ELIMINABLE_REGS);
 
   /* Does this function require a frame pointer?  */
 

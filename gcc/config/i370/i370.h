@@ -1569,12 +1569,7 @@ enum reg_class
   if (!mvs_function_name)						\
     {									\
       mvs_function_name_length = strlen (NAME) * 2;			\
-      mvs_function_name = (char *) malloc (mvs_function_name_length);	\
-      if (mvs_function_name == 0)					\
-	{								\
-	  fatal ("virtual memory exceeded");				\
-	  abort ();							\
-	}								\
+      mvs_function_name = (char *) xmalloc (mvs_function_name_length);	\
     }									\
   if (!strcmp (NAME, "main"))						\
     strcpy (mvs_function_name, "gccmain");				\

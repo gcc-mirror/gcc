@@ -220,36 +220,22 @@ stupid_life_analysis (f, nregs, file)
 
   /* Allocate tables to record info about regs.  */
 
-  reg_where_dead = (int *) xmalloc (nregs * sizeof (int));
-  bzero ((char *) reg_where_dead, nregs * sizeof (int));
-
-  reg_where_born_exact = (int *) xmalloc (nregs * sizeof (int));
-  bzero ((char *) reg_where_born_exact, nregs * sizeof (int));
-
-  reg_where_born_clobber = (int *) xmalloc (nregs * sizeof (int));
-  bzero ((char *) reg_where_born_clobber, nregs * sizeof (int));
-
-  reg_where_dead_chain = (struct insn_chain **) xmalloc (nregs * sizeof (struct insn_chain *));
-  bzero ((char *) reg_where_dead_chain, nregs * sizeof (struct insn_chain *));
- 
-  reg_order = (int *) xmalloc (nregs * sizeof (int));
-  bzero ((char *) reg_order, nregs * sizeof (int));
-
-  regs_change_size = (char *) xmalloc (nregs * sizeof (char));
-  bzero ((char *) regs_change_size, nregs * sizeof (char));
-
-  regs_crosses_setjmp = (char *) xmalloc (nregs * sizeof (char));
-  bzero ((char *) regs_crosses_setjmp, nregs * sizeof (char));
+  reg_where_dead = (int *) xcalloc (nregs, sizeof (int));
+  reg_where_born_exact = (int *) xcalloc (nregs, sizeof (int));
+  reg_where_born_clobber = (int *) xcalloc (nregs, sizeof (int));
+  reg_where_dead_chain = (struct insn_chain **)
+    xcalloc (nregs, sizeof (struct insn_chain *));
+  reg_order = (int *) xcalloc (nregs, sizeof (int));
+  regs_change_size = (char *) xcalloc (nregs, sizeof (char));
+  regs_crosses_setjmp = (char *) xcalloc (nregs, sizeof (char));
 
   /* Allocate the reg_renumber array */
   allocate_reg_info (max_regno, FALSE, TRUE);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     reg_renumber[i] = i;
 
-  after_insn_hard_regs
-    = (HARD_REG_SET *) xmalloc (max_suid * sizeof (HARD_REG_SET));
-
-  bzero ((char *) after_insn_hard_regs, max_suid * sizeof (HARD_REG_SET));
+  after_insn_hard_regs =
+    (HARD_REG_SET *) xcalloc (max_suid, sizeof (HARD_REG_SET));
 
   /* Allocate and zero out many data structures
      that will record the data from lifetime analysis.  */

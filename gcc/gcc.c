@@ -1056,26 +1056,6 @@ translate_options (argcp, argvp)
   *argcp = newindex;
 }
 
-char *
-xstrerror(e)
-     int e;
-{
-#ifdef HAVE_STRERROR
-
-  return strerror(e);
-
-#else
-
-  if (!e)
-    return "errno = 0";
-
-  if (e > 0 && e < sys_nerr)
-    return sys_errlist[e];
-
-  return "errno = ?";
-#endif
-}
-
 static char *
 skip_whitespace (p)
      char *p;
@@ -1181,10 +1161,8 @@ init_spec ()
 
 #ifdef EXTRA_SPECS
   extra_specs = (struct spec_list *)
-    xmalloc (sizeof(struct spec_list) *
+    xcalloc (sizeof(struct spec_list),
 	     (sizeof(extra_specs_1)/sizeof(extra_specs_1[0])));
-  bzero ((PTR) extra_specs, sizeof(struct spec_list) *
-	 (sizeof(extra_specs_1)/sizeof(extra_specs_1[0])));
   
   for (i = (sizeof(extra_specs_1) / sizeof(extra_specs_1[0])) - 1; i >= 0; i--)
     {
@@ -1246,7 +1224,7 @@ set_spec (name, spec)
     {
       /* Not found - make it */
       sl = (struct spec_list *) xmalloc (sizeof (struct spec_list));
-      sl->name = save_string (name, strlen (name));
+      sl->name = xstrdup (name);
       sl->name_len = name_len;
       sl->ptr_spec = &sl->ptr;
       sl->alloc_p = 0;
@@ -1258,7 +1236,7 @@ set_spec (name, spec)
   old_spec = *(sl->ptr_spec);
   *(sl->ptr_spec) = ((spec[0] == '+' && ISSPACE ((unsigned char)spec[1]))
 		     ? concat (old_spec, spec + 1, NULL_PTR)
-		     : save_string (spec, strlen (spec)));
+		     : xstrdup (spec));
 
 #ifdef DEBUG_SPECS
   if (verbose_flag)
@@ -1740,9 +1718,7 @@ record_temp_file (filename, always_delete, fail_delete)
      int always_delete;
      int fail_delete;
 {
-  register char *name;
-  name = xmalloc (strlen (filename) + 1);
-  strcpy (name, filename);
+  register char * const name = xstrdup (filename);
 
   if (always_delete)
     {
@@ -1993,23 +1969,13 @@ find_a_file (pprefix, name, mode)
   int len = pprefix->max_len + strlen (name) + strlen (file_suffix) + 1;
 
 #ifdef DEFAULT_ASSEMBLER
-  if (! strcmp(name, "as") && access (DEFAULT_ASSEMBLER, mode) == 0) {
-    name = DEFAULT_ASSEMBLER;
-    len = strlen(name)+1;
-    temp = xmalloc (len);
-    strcpy (temp, name);
-    return temp;
-  }
+  if (! strcmp(name, "as") && access (DEFAULT_ASSEMBLER, mode) == 0)
+    return xstrdup (DEFAULT_ASSEMBLER);
 #endif
 
 #ifdef DEFAULT_LINKER
-  if (! strcmp(name, "ld") && access (DEFAULT_LINKER, mode) == 0) {
-    name = DEFAULT_LINKER;
-    len = strlen(name)+1;
-    temp = xmalloc (len);
-    strcpy (temp, name);
-    return temp;
-  }
+  if (! strcmp(name, "ld") && access (DEFAULT_LINKER, mode) == 0)
+    return xstrdup (DEFAULT_LINKER);
 #endif
 
   if (machine_suffix)
@@ -2610,8 +2576,8 @@ process_command (argc, argv)
 
   /* Figure compiler version from version string.  */
 
-  compiler_version = temp1 =
-    save_string (version_string, strlen (version_string));
+  compiler_version = temp1 = xstrdup (version_string); 
+
   for (; *temp1; ++temp1)
     {
       if (*temp1 == ' ')
@@ -5026,13 +4992,11 @@ main (argc, argv)
 
   i = n_infiles;
   i += lang_specific_extra_outfiles;
-  outfiles = (const char **) xmalloc (i * sizeof (char *));
-  bzero ((char *) outfiles, i * sizeof (char *));
+  outfiles = (const char **) xcalloc (i, sizeof (char *));
 
   /* Record which files were specified explicitly as link input.  */
 
-  explicit_link_files = xmalloc (n_infiles);
-  bzero (explicit_link_files, n_infiles);
+  explicit_link_files = xcalloc (1, n_infiles);
 
   for (i = 0; (int)i < n_infiles; i++)
     {
@@ -5257,31 +5221,6 @@ lookup_compiler (name, length, language)
   return 0;
 }
 
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR value = (PTR) malloc (size);
-  if (value == 0)
-    fatal ("virtual memory exhausted");
-  return value;
-}
-
-PTR
-xrealloc (old, size)
-  PTR old;
-  size_t size;
-{
-  register PTR ptr;
-  if (old)
-    ptr = (PTR) realloc (old, size);
-  else
-    ptr = (PTR) malloc (size);
-  if (ptr == 0)
-    fatal ("virtual memory exhausted");
-  return ptr;
-}
-
 static char *
 save_string (s, len)
   const char *s;

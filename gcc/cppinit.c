@@ -525,8 +525,8 @@ cpp_options_init (opts)
   opts->cplusplus_comments = 1;
   opts->warn_import = 1;
 
-  opts->pending = (struct cpp_pending *) xmalloc (sizeof (struct cpp_pending));
-  bzero ((char *) opts->pending, sizeof (struct cpp_pending));
+  opts->pending =
+    (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
 }
 
 /* Initialize a cpp_reader structure. */

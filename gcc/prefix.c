@@ -282,7 +282,7 @@ translate_name (name)
   /* Remove any trailing directory separator from what we got.  */
   if (IS_DIR_SEPARATOR (prefix[strlen (prefix) - 1]))
     {
-      char * temp = save_string (prefix, strlen (prefix));
+      char * temp = xstrdup (prefix);
       temp[strlen (temp) - 1] = 0;
       prefix = temp;
     }
@@ -312,28 +312,24 @@ update_path (path, key)
   /* Convert DIR_SEPARATOR_2 to DIR_SEPARATOR. */
   if (DIR_SEPARATOR != DIR_SEPARATOR_2)
     {
-      int i;
-      int len = strlen (path);
-      char *new_path = save_string (path, len);
-      for (i = 0; i < len; i++)
-        if (new_path[i] == DIR_SEPARATOR_2)
-          new_path[i] = DIR_SEPARATOR;
+      char *new_path = xstrdup (path);
       path = new_path;
+      do {
+	if (*new_path == DIR_SEPARATOR_2)
+	  *new_path = DIR_SEPARATOR;
+      } while (*new_path++);
     }
 #endif
       
 #if defined (DIR_SEPARATOR) && !defined (DIR_SEPARATOR_2)
   if (DIR_SEPARATOR != '/')
     {
-      int i;
-      int len = strlen (path);
-      char *new_path = save_string (path, len);
-
-      for (i = 0; i < len; i++)
-        if (new_path[i] == '/')
-          new_path[i] = DIR_SEPARATOR;
-
+      char *new_path = xstrdup (path);
       path = new_path;
+      do {
+	if (*new_path == '/')
+	  *new_path = DIR_SEPARATOR;
+      } while (*newpath++);
     }
 #endif
 

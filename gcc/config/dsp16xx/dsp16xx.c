@@ -1505,8 +1505,7 @@ override_options ()
   if (const_seg_name == (char *) 0)
     const_seg_name = DEFAULT_CONST_SEG_NAME;
   
-  save_chip_name = (char *) xmalloc (strlen(chip_name) + 1);
-  strcpy (save_chip_name, chip_name);
+  save_chip_name = xstrdup (chip_name);
 
   rsect_text = (char *) xmalloc (strlen(".rsect ") + 
 				 strlen(text_seg_name) + 3);

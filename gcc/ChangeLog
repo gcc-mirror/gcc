@@ -1,3 +1,85 @@
+Mon Sep  6 22:31:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-aux-info.c (concat): Don't define.
+
+	* cccp.c (my_strerror): Likewise.  All callers changed to use
+	xstrerror instead.
+	(do_include): Call xstrdup, not xmalloc/strcpy.
+	(grow_outbuf): Don't check if xrealloc returns NULL, it can't.
+	(xmalloc, xrealloc, xcalloc, xstrdup): Don't define.
+
+	* collect2.c (my_strsignal): Likewise.  All callers changed to use
+	strsignal instead.
+	(locatelib): Call xstrdup, not xmalloc/strcpy.
+
+	* 1750a.h (ASM_OUTPUT_INTERNAL_LABEL): Call xmalloc, not malloc.
+
+	* dsp16xx.c (override_options): Call xstrdup, not xmalloc/strcpy.
+
+	* i370.h (ASM_DECLARE_FUNCTION_NAME): Call xmalloc, not malloc.
+
+	* mips.c (build_mips16_call_stub): Call xstrdup, not xmalloc/strcpy.
+
+	* cppinit.c (cpp_options_init): Call xcalloc, not xmalloc/bzero.
+
+	* dwarfout.c (dwarfout_init): Call concat, not xmalloc/strcpy/...
+
+	* except.c (new_eh_region_entry): Call xmalloc/xrealloc, not
+	malloc/realloc.
+	(find_all_handler_type_matches): Likewise.  Don't check return
+	value.
+	(get_new_handler, init_insn_eh_region, process_nestinfo): Call
+	xmalloc, not malloc.
+	(init_eh_nesting_info): Likewise.  Call xcalloc, not xmalloc/bzero.
+
+	* gcc.c (xstrerror, xmalloc, xrealloc): Don't define.
+	(init_spec): Call xcalloc, not xmalloc/bzero.
+	(set_spec): Call xstrdup, not save_string.
+	(record_temp_file): Call xstrdup, not xmalloc/strcpy.
+	(find_a_file): Call xstrdup, not xmalloc/strcpy.
+	(process_command): Call xstrdup, not save_string.
+	(main): Call xcalloc, not xmalloc/bzero.
+
+	* gcov.c (xmalloc): Don't define.
+	(create_program_flow_graph): Call xcalloc, not xmalloc/bzero.
+	(scan_for_source_files): Call xstrdup, not xmalloc/strcpy.
+	(output_data): Call xcalloc, not xmalloc/bzero.
+
+	* haifa-sched.c (schedule_insns): Call xcalloc, not xmalloc/bzero.
+
+	* mips-tdump.c (xmalloc): Don't define.
+	(print_symbol): Call xmalloc, not malloc.
+	(read_tfile): Call xcalloc, not calloc.
+
+	* mips-tfile.c (xfree, my_strsignal, xmalloc, xcalloc, xrealloc):
+	Don't define.  All callers of xfree/my_strsignal changed to use
+	free/strsignal instead.
+	(allocate_cluster): Call xcalloc, not calloc.
+
+	* objc/objc-act.c (lang_init): Call concat, not xmalloc/strcpy/...
+	Fix memory leak, free allocated memory.
+
+	* prefix.c (translate_name): Call xstrdup, not save_string.
+	(update_path): Likewise.
+
+	* profile.c (branch_prob): Call xstrdup, not xmalloc/strcpy.
+
+	* protoize.c (xstrerror, xmalloc, xrealloc, xfree, savestring2):
+	Don't define.  Callers of xfree/savestring2 changed to use
+	free/concat instead.
+
+	* reload1.c (reload): Call xcalloc, not xmalloc/bzero.
+	(init_elim_table): Likewise.
+
+	* resource.c (init_resource_info): Likewise.
+
+	* stupid.c (stupid_life_analysis): Likewise.
+
+	* toplev.c (xmalloc, xcalloc, xrealloc, xstrdup): Don't define.
+	(open_dump_file): Call concat, not xmalloc/strcpy/...
+	(clean_dump_file): Likewise.
+	(compile_file): Call xstrdup, not xmalloc/strcpy.
+
 Mon Sep  6 15:04:55 1999  Richard Henderson  <rth@cygnus.com>
 
 	* v850.h (EXPAND_BUILTIN_VA_ARG): New.

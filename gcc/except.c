@@ -711,14 +711,14 @@ new_eh_region_entry (note_eh_region, rethrow)
       if (num_func_eh_entries == 0)
         {
           function_eh_regions = 
-                        (struct func_eh_entry *) malloc (SIZE_FUNC_EH (50));
+                        (struct func_eh_entry *) xmalloc (SIZE_FUNC_EH (50));
           num_func_eh_entries = 50;
         }
       else
         {
           num_func_eh_entries  = num_func_eh_entries * 3 / 2;
           function_eh_regions = (struct func_eh_entry *) 
-            realloc (function_eh_regions, SIZE_FUNC_EH (num_func_eh_entries));
+            xrealloc (function_eh_regions, SIZE_FUNC_EH (num_func_eh_entries));
         }
     }
   function_eh_regions[current_func_eh_entry].range_number = note_eh_region;
@@ -812,10 +812,7 @@ find_all_handler_type_matches (array)
     return 0;
 
   max_ptr = 100;
-  ptr = (void **)malloc (max_ptr * sizeof (void *));
-
-  if (ptr == NULL)
-    return 0;
+  ptr = (void **) xmalloc (max_ptr * sizeof (void *));
 
   for (x = 0 ; x < current_func_eh_entry; x++)
     {
@@ -839,9 +836,7 @@ find_all_handler_type_matches (array)
               if (n_ptr >= max_ptr) 
                 {
                   max_ptr += max_ptr / 2;
-                  ptr = (void **)realloc (ptr, max_ptr * sizeof (void *));
-                  if (ptr == NULL)
-                    return 0;
+                  ptr = (void **) xrealloc (ptr, max_ptr * sizeof (void *));
                 }
               ptr[n_ptr] = val;
               n_ptr++;
@@ -861,7 +856,7 @@ get_new_handler (handler, typeinfo)
      void *typeinfo;
 {
   struct handler_info* ptr;
-  ptr = (struct handler_info *) malloc (sizeof (struct handler_info));
+  ptr = (struct handler_info *) xmalloc (sizeof (struct handler_info));
   ptr->handler_label = handler;
   ptr->handler_number = CODE_LABEL_NUMBER (handler);
   ptr->type_info = typeinfo;
@@ -2952,7 +2947,7 @@ init_insn_eh_region (first, max_uid)
         max_uid = INSN_UID (insn);
 
   maximum_uid = max_uid;
-  insn_eh_region = (int *) malloc ((max_uid + 1) * sizeof (int));
+  insn_eh_region = (int *) xmalloc ((max_uid + 1) * sizeof (int));
   insn = first;
   set_insn_eh_region (&insn, 0);
 }
@@ -3033,7 +3028,7 @@ process_nestinfo (block, info, nested_eh_region)
     extra = 0;
 
   info->num_handlers[index] = count + extra;
-  info->handlers[index] = (handler_info **) malloc ((count + extra) 
+  info->handlers[index] = (handler_info **) xmalloc ((count + extra) 
   						    * sizeof (handler_info **));
 
   /* First put all our handlers into the list.  */
@@ -3081,9 +3076,8 @@ init_eh_nesting_info ()
   rtx insn;
   int x;
 
-  info = (eh_nesting_info *) malloc (sizeof (eh_nesting_info));
-  info->region_index = (int *) malloc ((max_label_num () + 1) * sizeof (int));
-  bzero ((char *) info->region_index, (max_label_num () + 1) * sizeof (int));
+  info = (eh_nesting_info *) xmalloc (sizeof (eh_nesting_info));
+  info->region_index = (int *) xcalloc ((max_label_num () + 1), sizeof (int));
 
   nested_eh_region = (int *) alloca ((max_label_num () + 1) * sizeof (int));
   bzero ((char *) nested_eh_region, (max_label_num () + 1) * sizeof (int));
@@ -3122,14 +3116,10 @@ init_eh_nesting_info ()
     }
 
   region_count++;
-  info->handlers = (handler_info ***) malloc (region_count 
-					      * sizeof (handler_info ***));
-  info->num_handlers = (int *) malloc (region_count * sizeof (int));
-  info->outer_index = (int *) malloc (region_count * sizeof (int));
-
-  bzero ((char *) info->handlers, region_count * sizeof (rtx *));
-  bzero ((char *) info->num_handlers, region_count * sizeof (int));
-  bzero ((char *) info->outer_index, region_count * sizeof (int));
+  info->handlers = (handler_info ***) xcalloc (region_count,
+					       sizeof (handler_info ***));
+  info->num_handlers = (int *) xcalloc (region_count, sizeof (int));
+  info->outer_index = (int *) xcalloc (region_count, sizeof (int));
 
  /* Now initialize the handler lists for all exception blocks.  */
   for (x = 0; x <= max_label_num (); x++)

@@ -45,67 +45,6 @@ static const char *gen_formal_list_for_func_def PROTO((tree, formals_style));
 static const char *gen_type		PROTO((const char *, tree, formals_style));
 static const char *gen_decl		PROTO((tree, int, formals_style));
 
-/* Concatenate a sequence of strings, returning the result.
-
-   This function is based on the one in libiberty.  */
-
-/* This definition will conflict with the one from prefix.c in
-   libcpp.a when linking cc1 and cc1obj.  So only provide it if we are
-   not using libcpp.a */
-#ifndef USE_CPPLIB
-char *
-concat VPROTO((const char *first, ...))
-{
-  register int length;
-  register char *newstr;
-  register char *end;
-  register const char *arg;
-  va_list args;
-#ifndef ANSI_PROTOTYPES
-  const char *first;
-#endif
-
-  /* First compute the size of the result and get sufficient memory.  */
-
-  VA_START (args, first);
-#ifndef ANSI_PROTOTYPES
-  first = va_arg (args, const char *);
-#endif
-
-  arg = first;
-  length = 0;
-
-  while (arg != 0)
-    {
-      length += strlen (arg);
-      arg = va_arg (args, const char *);
-    }
-
-  newstr = (char *) malloc (length + 1);
-  va_end (args);
-
-  /* Now copy the individual pieces to the result string.  */
-
-  VA_START (args, first);
-#ifndef ANSI_PROTOTYPES
-  first = va_arg (args, char *);
-#endif
-
-  end = newstr;
-  arg = first;
-  while (arg != 0)
-    {
-      while (*arg)
-	*end++ = *arg++;
-      arg = va_arg (args, const char *);
-    }
-  *end = '\000';
-  va_end (args);
-
-  return (newstr);
-}
-#endif /* ! USE_CPPLIB */
-
 /* Given a string representing an entire type or an entire declaration
    which only lacks the actual "data-type" specifier (at its left end),
    affix the data-type specifier to the left end of the given type
