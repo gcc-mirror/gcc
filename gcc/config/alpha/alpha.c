@@ -3421,6 +3421,7 @@ alpha_expand_prologue ()
       HOST_WIDE_INT leftover = frame_size + 4096 - blocks * 8192;
       rtx ptr = gen_rtx_REG (DImode, 22);
       rtx count = gen_rtx_REG (DImode, 23);
+      rtx seq;
 
       emit_move_insn (count, GEN_INT (blocks));
       emit_insn (gen_adddi3 (ptr, stack_pointer_rtx, GEN_INT (4096)));
@@ -3441,33 +3442,37 @@ alpha_expand_prologue ()
 	  /* For NT stack unwind (done by 'reverse execution'), it's
 	     not OK to take the result of a loop, even though the value
 	     is already in ptr, so we reload it via a single operation
-	     and add it to sp.  */
+	     and subtract it to sp. 
+
+	     Yes, that's correct -- we have to reload the whole constant
+	     into a temporary via ldah+lda then subtract from sp.  To
+	     ensure we get ldah+lda, we use a special pattern.  */
 
 	  HOST_WIDE_INT lo, hi;
 	  lo = ((-frame_size & 0xffff) ^ 0x8000) - 0x8000;
 	  hi = -frame_size - lo;
 
-	  FRP (emit_insn (gen_adddi3 (ptr, stack_pointer_rtx, GEN_INT (hi))));
-	  FRP (emit_insn (gen_adddi3 (stack_pointer_rtx, ptr, GEN_INT (lo))));
+	  emit_move_insn (ptr, GEN_INT (hi));
+	  emit_insn (gen_nt_lda (ptr, GEN_INT (lo)));
+	  seq = emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
+				       ptr));
 	}
       else
 	{
-	  rtx seq;
-
 	  seq = emit_insn (gen_adddi3 (stack_pointer_rtx, ptr,
 				       GEN_INT (-leftover)));
-
-	  /* This alternative is special, because the DWARF code cannot
-	     possibly intuit through the loop above.  So we invent this
-	     note it looks at instead.  */
-	  RTX_FRAME_RELATED_P (seq) = 1;
-	  REG_NOTES (seq)
-	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				 gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-				   gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-						 GEN_INT (-frame_size))),
-				 REG_NOTES (seq));
 	}
+
+      /* This alternative is special, because the DWARF code cannot
+         possibly intuit through the loop above.  So we invent this
+         note it looks at instead.  */
+      RTX_FRAME_RELATED_P (seq) = 1;
+      REG_NOTES (seq)
+        = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			     gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			       gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					     GEN_INT (-frame_size))),
+			     REG_NOTES (seq));
     }
 
   /* Cope with very large offsets to the register save area.  */

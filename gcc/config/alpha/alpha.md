@@ -29,6 +29,7 @@
 ;;	3	mskxh
 ;;	4	cvtlq
 ;;	5	cvtql
+;;	6	nt_lda
 ;;	
 ;; UNSPEC_VOLATILE:
 ;;
@@ -5160,6 +5161,16 @@
       operands[2] = ra;
     }
 }")
+
+;; In creating a large stack frame, NT _must_ use ldah+lda to load
+;; the frame size into a register.  We use this pattern to ensure
+;; we get lda instead of addq.
+(define_insn "nt_lda"
+  [(set (match_operand:DI 0 "register_operand" "r")
+	(unspec:DI [(match_dup 0)
+		    (match_operand:DI 1 "const_int_operand" "n")] 6))]
+  ""
+  "lda %0,%1(%0)")
 
 (define_expand "builtin_longjmp"
   [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]
