@@ -26,7 +26,7 @@ $ EDIT :=	edit
 $!
 $!	Compiler options
 $!
-$ CFLAGS =	"/debug/cc1_options=""-mpcc-alignment""/incl=([],[.config])"
+$ CFLAGS =	"/debug/cc1_options=""-mpcc-alignment""/incl=([],[.config.])"
 $! CFLAGS =	"/noopt/incl=([],[.config])"
 $!
 $!	Link options

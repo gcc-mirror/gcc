@@ -19,7 +19,7 @@ $ LINK	:=	link
 $!
 $!	Compiler options
 $!
-$ CFLAGS =	"/debug/incl=([],[.config])"
+$ CFLAGS =	"/debug/incl=([],[.config.])"
 $! CFLAGS =	"/noopt/incl=([],[.config])"	!uncomment for VAXC
 $!
 $!	Link options
