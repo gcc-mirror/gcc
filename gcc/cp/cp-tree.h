@@ -1143,7 +1143,9 @@ struct lang_type
 #define TREE_PARMLIST(NODE) ((NODE)->common.unsigned_flag) /* overloaded! */
 
 /* For FUNCTION_TYPE or METHOD_TYPE, a list of the exceptions that
-   this type can raise.  */
+   this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
+   will be NULL_TREE to indicate a throw specification of `(...)', or,
+   equivalently, no throw specification.  */
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_NONCOPIED_PARTS (NODE)
 
 /* The binding level associated with the namespace.  */
