@@ -1722,6 +1722,11 @@ assemble_real (d, mode)
       ASM_OUTPUT_SHORT_FLOAT (asm_out_file, d);
       break;
 #endif
+#ifdef ASM_OUTPUT_THREE_QUARTER_FLOAT
+    case TQFmode:
+      ASM_OUTPUT_THREE_QUARTER_FLOAT (asm_out_file, d);
+      break;
+#endif
 #ifdef ASM_OUTPUT_FLOAT
     case SFmode:
       ASM_OUTPUT_FLOAT (asm_out_file, d);
