@@ -155,6 +155,127 @@ typedef char * va_list;
 
 
 /*
+ *  This fixes __FD_ZERO bug for glibc-1.0.x
+ */
+fix = {
+    hackname = AAB_fd_zero_glibc_1_0;
+    files    = asm/posix_types.h;
+    select   = 'i[34567]86-*-linux-gnu*';
+
+    /*
+     * Define _POSIX_TYPES_H_WRAPPER at the end of the wrapper, not
+     * the start, so that if #include_next gets another instance of
+     * the wrapper, this will follow the #include_next chain until
+     * we arrive at the real <asm/posix_types.h>.
+     */
+    replace  =
+
+'/* This file fixes __FD_ZERO bug for glibc-1.x. */
+\#ifndef _POSIX_TYPES_H_WRAPPER
+\#include <features.h>
+\#include_next <asm/posix_types.h>
+
+\#if defined(__FD_ZERO) && !defined(__GLIBC__)
+\#undef __FD_ZERO
+\#define __FD_ZERO(fdsetp) \
+  do { \
+    int __d0, __d1; \
+		__asm__ __volatile__("cld ; rep ; stosl" \
+			: "=&c" (__d0), "=&D" (__d1) \
+			: "a" (0), "0" (__FDSET_LONGS), \
+			  "1" ((__kernel_fd_set *) (fdsetp)) :"memory"); \
+  } while (0)
+\#endif
+
+\#define _POSIX_TYPES_H_WRAPPER
+\#endif /* _POSIX_TYPES_H_WRAPPER */
+';
+};
+
+
+/*
+ *  This fixes __FD_ZERO bug for glibc-1.x
+ */
+fix = {
+    hackname = AAB_fd_zero_glibc_1_x;
+    files    = gnu/types.h;
+    select   = 'i[34567]86-*-linux-gnu*';
+
+    /*
+     * Define _TYPES_H_WRAPPER at the end of the wrapper, not
+     * the start, so that if #include_next gets another instance of
+     * the wrapper, this will follow the #include_next chain until
+     * we arrive at the real <gnu/types.h>.
+     */
+    replace  =
+
+'/* This file fixes __FD_ZERO bug for glibc-1.x. */
+\#ifndef _TYPES_H_WRAPPER
+\#include <features.h>
+\#include_next <gnu/types.h>
+
+\#if defined(__FD_ZERO) && !defined(__GLIBC__)
+\#undef __FD_ZERO
+\# define __FD_ZERO(fdsetp) \
+  do { \
+    int __d0, __d1; \
+	__asm__ __volatile__("cld ; rep ; stosl" \
+        	: "=&c" (__d0), "=&D" (__d1) \
+        	: "a" (0), "0" (__FDSET_LONGS), \
+		  "1" ((__fd_set *) (fdsetp)) :"memory"); \
+  } while (0)
+\#endif
+
+\#define _TYPES_H_WRAPPER
+\#endif /* _TYPES_H_WRAPPER */
+';
+};
+
+
+/*
+ *  This fixes __FD_ZERO bug for glibc-2.0.x
+ */
+fix = {
+    hackname = AAB_fd_zero_glibc_2_0;
+    files    = selectbits.h;
+    select   = 'i[34567]86-*-linux-gnu*';
+
+    /*
+     * Define _SELECTBITS_H_WRAPPER at the end of the wrapper, not
+     * the start, so that if #include_next gets another instance of
+     * the wrapper, this will follow the #include_next chain until
+     * we arrive at the real <selectbits.h>.
+     */
+    replace  =
+
+'/* This file fixes __FD_ZERO bug for glibc-2.0.x. */
+\#ifndef _SELECTBITS_H_WRAPPER
+\#include <features.h>
+\#include_next <selectbits.h>
+
+\#if defined(__FD_ZERO) && defined(__GLIBC__) \
+	&& defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \
+	&& __GLIBC_MINOR__ == 0
+\#undef __FD_ZERO
+\#define __FD_ZERO(fdsetp) \
+  do { \
+    int __d0, __d1; \
+  __asm__ __volatile__ ("cld; rep; stosl" \
+                        : "=&c" (__d0), "=&D" (__d1) \
+                        : "a" (0), "0" (sizeof (__fd_set) \
+                                        / sizeof (__fd_mask)), \
+                          "1" ((__fd_mask *) (fdsetp)) \
+                        : "memory"); \
+  } while (0)
+\#endif
+
+\#define _SELECTBITS_H_WRAPPER
+\#endif /* _SELECTBITS_H_WRAPPER */
+';
+};
+
+
+/*
  *  Completely replace <sys/byteorder.h>; with a file that implements gcc's
  *  optimized byteswapping.  Restricted to "SVR4" machines until either
  *  it is shown to be safe to replace this file always, or we get bolder ;-)
@@ -519,6 +640,9 @@ fix = {
  */
 fix = {
     hackname = bad_lval;
+
+    select   = "^[ \t]*#[ \t]*pragma[ \t][ \t]*extern_prefix";
+
     files    = libgen.h;
     files    = dirent.h;
     files    = ftw.h;
@@ -597,56 +721,15 @@ fix = {
 
 
 /*
- *  Remove the double-slash comments
- *  They *must* be removed so it will not create nested comments!!
- *  However, they will *not* be removed if the file name ends with
- *  any of "++", ".hh" or ".H", or if the file name contains "cxx/".
- *
- *  There *used* to be a number of similar problems in various OSes:
-
- *  Turning // comments into normal comments trashes this IRIX 4.0.1
- *  header file, which embeds // comments inside multi-line
- *  comments.  If this looks like the IRIX header file, we refix it by
- *  just throwing away the // comments.
-
- *  Same problem with a file from SunOS 4.1.3 : a header file containing
- *  the string "//" embedded in "/ * * /"
-
- *  There is a similar problem with the VxWorks drv/netif/if_med.h file.
-
- *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
-
- *  Now that we delete the // comments instead of converting them to / * * /,
- *  traditional hacks like irix_bogus_cxx_cmnt, no longer work (which
- *  strangely enough was also used on alpha-dec-osf4.0d).  If we skip the
- *  hack whenever we see ``"//"' ', then the need for the secondary hack
- *  disappears.  Note: it is painful to ensure that the first quote
- *  exists, so we just check for the trailing quote directly abutting
- *  the //.  Note: We should never touch a line that has // completely
- *  within quotes but this is somewhat hard to check for.
-
- *  Ultimately, this fix ought to go inside of C code where
- *  we can do a better analysis on the need and method for fixing.
+ *  Remove the double-slash comments.  The "double_slash" test will
+ *  try to ignore C++ headers by checking for "CC/", "xx/" and "++/"
+ *  in the file name.  There are still the occasional C++ headers
+ *  that have their comments stripped.  Too bad.
  */
 fix = {
     hackname = no_double_slash;
-    /*
-     *  Test that the file-to-fix does not from a C++ directory
-     *  Also, only accept double slashes that are not part of URL's
-     *  and do not appear to be within a single-line C-style comment
-     *  and are not the end of a quoted string.
-     */
-#ifdef NO_C_TESTS
-    test   = ' -z "`echo ${file} | egrep \'(CC|cxx|\+\+)/\'`"';
-    select = '(^|[^:])//[^"*]';
-    sed    = 's,^//.*$,,';
-    sed    = 's,\(/\*.*\)//\(.*\*/\),\1/ /\2,g';
-    sed    = 's,\([^:]\)//[^"].*$,\1,';
-    sed    = 's,[^:]//[^"].*$,,';
-#else
     c_test = "double_slash";
     c_fix  = "no_double_slash";
-#endif
 };
 
 
@@ -659,6 +742,7 @@ fix = {
     files  = "sunwindow/win_cursor.h";
     sed    = "s/ecd.cursor/ecd_cursor/";
 };
+
 
 /*
  *  On SCO OpenServer 5.0.0 through (at least) 5.0.5 <sys/stat.h> contains
@@ -680,7 +764,6 @@ fix = {
         "}\\\n"
         "#endif \/* __cplusplus *\/\\\n";
 };
-
 
 
 /*
