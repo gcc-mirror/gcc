@@ -2463,7 +2463,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      /* If reg_equiv_address is not a constant address, copy it,
 		 since it may be shared.  */
-	      rtx address = reg_equiv_address[regno];
+	      /* We must rerun eliminate_regs, in case the elimination
+		 offsets have changed.  */
+	      rtx address = XEXP (eliminate_regs (reg_equiv_memory_loc[regno],
+						  0, NULL_RTX),
+				  0);
 
 	      if (rtx_varies_p (address))
 		address = copy_rtx (address);
@@ -3880,7 +3884,11 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
       else if (reg_equiv_address[regno] != 0)
 	{
 	  /* If reg_equiv_address varies, it may be shared, so copy it.  */
-	  rtx addr = reg_equiv_address[regno];
+	  /* We must rerun eliminate_regs, in case the elimination
+	     offsets have changed.  */
+	  rtx addr = XEXP (eliminate_regs (reg_equiv_memory_loc[regno], 0,
+					   NULL_RTX),
+			   0);
 
 	  if (rtx_varies_p (addr))
 	    addr = copy_rtx (addr);
@@ -3960,8 +3968,11 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 			   || ! offsettable_memref_p (reg_equiv_mem[regno])))))
 	{
 	  int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
-	  rtx addr = (reg_equiv_address[regno] ? reg_equiv_address[regno]
-		      : XEXP (reg_equiv_mem[regno], 0));
+	  /* We must rerun eliminate_regs, in case the elimination
+	     offsets have changed.  */
+	  rtx addr = XEXP (eliminate_regs (reg_equiv_memory_loc[regno], 0,
+					   NULL_RTX),
+			   0);
 	  if (BYTES_BIG_ENDIAN)
 	    {
 	      int size;
@@ -3998,7 +4009,10 @@ make_memloc (ad, regno)
      int regno;
 {
   register int i;
-  rtx tem = reg_equiv_address[regno];
+  /* We must rerun eliminate_regs, in case the elimination
+     offsets have changed.  */
+  rtx tem = XEXP (eliminate_regs (reg_equiv_memory_loc[regno], 0, NULL_RTX),
+		  0);
 
 #if 0 /* We cannot safely reuse a memloc made here;
 	 if the pseudo appears twice, and its mem needs a reload,
