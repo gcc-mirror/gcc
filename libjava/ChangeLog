@@ -1,3 +1,54 @@
+2003-05-20  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/ByteBufferImpl.java,
+	gnu/java/nio/CharBufferImpl.java,
+	gnu/java/nio/CharViewBufferImpl.java,
+	gnu/java/nio/DirectByteBufferImpl.java,
+	gnu/java/nio/DoubleBufferImpl.java,
+	gnu/java/nio/DoubleViewBufferImpl.java,
+	gnu/java/nio/FloatBufferImpl.java,
+	gnu/java/nio/FloatViewBufferImpl.java,
+	gnu/java/nio/IntBufferImpl.java,
+	gnu/java/nio/IntViewBufferImpl.java,
+	gnu/java/nio/LongBufferImpl.java,
+	gnu/java/nio/LongViewBufferImpl.java,
+	gnu/java/nio/natDirectByteBufferImpl.cc,
+	gnu/java/nio/ShortBufferImpl.java,
+	gnu/java/nio/ShortViewBufferImpl.java:
+	Moved files to java/nio.
+	* gnu/java/nio/SocketChannelImpl.java
+	
+	* java/nio/ByteBuffer.java,
+	java/nio/CharBuffer.java,
+	java/nio/DoubleBuffer.java,
+	java/nio/FloatBuffer.java,
+	java/nio/IntBuffer.java,
+	java/nio/LongBuffer.java,
+	java/nio/ShortBuffer.java:
+	Dont import anything.
+	* java/nio/ByteBufferImpl.java,
+	java/nio/CharBufferImpl.java,
+	java/nio/CharViewBufferImpl.java,
+	java/nio/DirectByteBufferImpl.java,
+	java/nio/DoubleBufferImpl.java,
+	java/nio/DoubleViewBufferImpl.java,
+	java/nio/FloatBufferImpl.java,
+	java/nio/FloatViewBufferImpl.java,
+	java/nio/IntBufferImpl.java,
+	java/nio/IntViewBufferImpl.java,
+	java/nio/LongBufferImpl.java,
+	java/nio/LongViewBufferImpl.java,
+	java/nio/natDirectByteBufferImpl.cc,
+	java/nio/ShortBufferImpl.java,
+	java/nio/ShortViewBufferImpl.java:
+	Moved from gnu/java/nio.
+	* Makefile.am
+	(ordinary_java_source_files): Moved files from gnu/java/nio to
+	java/nio.
+	(nat_source_files): Moved natDirectByteBufferImpl.cc from gnu/java/nio
+	to java/nio.
+	* Makefile.in: Regenerated.
+
 2003-05-19  Michael Koch  <konqueror@gmx.de>
 
 	* java/util/Calendar.java

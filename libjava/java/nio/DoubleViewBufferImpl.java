@@ -1,4 +1,4 @@
-/* LongViewBufferImpl.java -- 
+/* DoubleViewBufferImpl.java -- 
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,29 +36,25 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.nio;
+package java.nio;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.LongBuffer;
-
-class LongViewBufferImpl extends LongBuffer
+class DoubleViewBufferImpl extends DoubleBuffer
 {
   private boolean readOnly;
   private int offset;
   private ByteBuffer bb;
   private ByteOrder endian;
   
-  public LongViewBufferImpl (ByteBuffer bb, boolean readOnly)
+  public DoubleViewBufferImpl (ByteBuffer bb, boolean readOnly)
   {
     super (bb.remaining () >> 3, bb.remaining () >> 3, bb.position (), 0);
     this.bb = bb;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from LongByteBufferImpl and ByteBuffer has changed its endianess ?
+    // FIXME: What if this is called from DoubleByteBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
   }
 
-  public LongViewBufferImpl (ByteBuffer bb, int offset, int capacity,
+  public DoubleViewBufferImpl (ByteBuffer bb, int offset, int capacity,
                                int limit, int position, int mark,
                                boolean readOnly)
   {
@@ -66,36 +62,36 @@ class LongViewBufferImpl extends LongBuffer
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from LongViewBufferImpl and ByteBuffer has changed its endianess ?
+    // FIXME: What if this is called from DoubleViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
   }
 
-  public long get ()
+  public double get ()
   {
-    long result = bb.getLong ((position () << 3) + offset);
+    double result = bb.getDouble ((position () << 3) + offset);
     position (position () + 1);
     return result;
   }
 
-  public long get (int index)
+  public double get (int index)
   {
-    return bb.getLong ((index << 3) + offset);
+    return bb.getDouble ((index << 3) + offset);
   }
 
-  public LongBuffer put (long value)
+  public DoubleBuffer put (double value)
   {
-    bb.putLong ((position () << 3) + offset, value);
+    bb.putDouble ((position () << 3) + offset, value);
     position (position () + 1);
     return this;
   }
   
-  public LongBuffer put (int index, long value)
+  public DoubleBuffer put (int index, double value)
   {
-    bb.putLong ((index << 3) + offset, value);
+    bb.putDouble ((index << 3) + offset, value);
     return this;
   }
 
-  public LongBuffer compact ()
+  public DoubleBuffer compact ()
   {
     if (position () > 0)
       {
@@ -107,8 +103,8 @@ class LongViewBufferImpl extends LongBuffer
               
         for (int i = 0; i < count; i++)
           {
-            bb.putLong ((i >> 3) + offset,
-                          bb.getLong (((i + position ()) >> 3) + offset));
+            bb.putDouble ((i >> 3) + offset,
+                          bb.getDouble (((i + position ()) >> 3) + offset));
           }
 
         position (count);
@@ -118,26 +114,26 @@ class LongViewBufferImpl extends LongBuffer
     return this;
   }
   
-  public LongBuffer duplicate ()
+  public DoubleBuffer duplicate ()
   {
     // Create a copy of this object that shares its content
     // FIXME: mark is not correct
-    return new LongViewBufferImpl (bb, offset, capacity (), limit (),
+    return new DoubleViewBufferImpl (bb, offset, capacity (), limit (),
                                      position (), -1, isReadOnly ());
   }
   
-  public LongBuffer slice ()
+  public DoubleBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
-    return new LongViewBufferImpl (bb, (position () >> 3) + offset,
+    return new DoubleViewBufferImpl (bb, (position () >> 3) + offset,
                                       remaining (), remaining (), 0, -1,
                                      isReadOnly ());
   }
   
-  public LongBuffer asReadOnlyBuffer ()
+  public DoubleBuffer asReadOnlyBuffer ()
   {
     // Create a copy of this object that shares its content and is read-only
-    return new LongViewBufferImpl (bb, (position () >> 3) + offset,
+    return new DoubleViewBufferImpl (bb, (position () >> 3) + offset,
                                      remaining (), remaining (), 0, -1, true);
   }
   

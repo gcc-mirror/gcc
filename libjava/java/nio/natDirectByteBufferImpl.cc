@@ -14,23 +14,23 @@ details.  */
 #include <jvm.h>
 
 #include <gnu/gcj/RawData.h>
-#include <gnu/java/nio/DirectByteBufferImpl.h>
+#include <java/nio/DirectByteBufferImpl.h>
 
 gnu::gcj::RawData*
-gnu::java::nio::DirectByteBufferImpl::allocateImpl (jint capacity)
+java::nio::DirectByteBufferImpl::allocateImpl (jint /*capacity*/)
 {
   // FIXME: implement this
   return 0;
 }
 
 void
-gnu::java::nio::DirectByteBufferImpl::freeImpl (gnu::gcj::RawData* address)
+java::nio::DirectByteBufferImpl::freeImpl (gnu::gcj::RawData* /*address*/)
 {
   // FIXME: implement this
 }
 
 jbyte
-gnu::java::nio::DirectByteBufferImpl::getImpl (jint index)
+java::nio::DirectByteBufferImpl::getImpl (jint /*index*/)
 {
   // FIXME: implement this
   // Dont forget: add offset to index
@@ -38,7 +38,7 @@ gnu::java::nio::DirectByteBufferImpl::getImpl (jint index)
 }
 
 void
-gnu::java::nio::DirectByteBufferImpl::putImpl (jint index, jbyte value)
+java::nio::DirectByteBufferImpl::putImpl (jint /*index*/, jbyte /*value*/)
 {
   // FIXME: implement this
   // Dont forget: add offset to index

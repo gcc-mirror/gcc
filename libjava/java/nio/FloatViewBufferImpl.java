@@ -1,4 +1,4 @@
-/* DoubleViewBufferImpl.java -- 
+/* FloatViewBufferImpl.java -- 
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,66 +36,62 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.nio;
+package java.nio;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.DoubleBuffer;
-
-class DoubleViewBufferImpl extends DoubleBuffer
+class FloatViewBufferImpl extends FloatBuffer
 {
   private boolean readOnly;
   private int offset;
   private ByteBuffer bb;
   private ByteOrder endian;
   
-  public DoubleViewBufferImpl (ByteBuffer bb, boolean readOnly)
+  public FloatViewBufferImpl (ByteBuffer bb, boolean readOnly)
   {
-    super (bb.remaining () >> 3, bb.remaining () >> 3, bb.position (), 0);
+    super (bb.remaining () >> 2, bb.remaining () >> 2, bb.position (), 0);
     this.bb = bb;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from DoubleByteBufferImpl and ByteBuffer has changed its endianess ?
+    // FIXME: What if this is called from FloatByteBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
   }
 
-  public DoubleViewBufferImpl (ByteBuffer bb, int offset, int capacity,
+  public FloatViewBufferImpl (ByteBuffer bb, int offset, int capacity,
                                int limit, int position, int mark,
                                boolean readOnly)
   {
-    super (limit >> 3, limit >> 3, position >> 3, mark >> 3);
+    super (limit >> 2, limit >> 2, position >> 2, mark >> 2);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from DoubleViewBufferImpl and ByteBuffer has changed its endianess ?
+    // FIXME: What if this is called from FloatViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
   }
 
-  public double get ()
+  public float get ()
   {
-    double result = bb.getDouble ((position () << 3) + offset);
+    float result = bb.getFloat ((position () << 2) + offset);
     position (position () + 1);
     return result;
   }
 
-  public double get (int index)
+  public float get (int index)
   {
-    return bb.getDouble ((index << 3) + offset);
+    return bb.getFloat ((index << 2) + offset);
   }
 
-  public DoubleBuffer put (double value)
+  public FloatBuffer put (float value)
   {
-    bb.putDouble ((position () << 3) + offset, value);
+    bb.putFloat ((position () << 2) + offset, value);
     position (position () + 1);
     return this;
   }
   
-  public DoubleBuffer put (int index, double value)
+  public FloatBuffer put (int index, float value)
   {
-    bb.putDouble ((index << 3) + offset, value);
+    bb.putFloat ((index << 2) + offset, value);
     return this;
   }
 
-  public DoubleBuffer compact ()
+  public FloatBuffer compact ()
   {
     if (position () > 0)
       {
@@ -107,8 +103,8 @@ class DoubleViewBufferImpl extends DoubleBuffer
               
         for (int i = 0; i < count; i++)
           {
-            bb.putDouble ((i >> 3) + offset,
-                          bb.getDouble (((i + position ()) >> 3) + offset));
+            bb.putFloat ((i >> 2) + offset,
+                          bb.getFloat (((i + position ()) >> 2) + offset));
           }
 
         position (count);
@@ -118,26 +114,26 @@ class DoubleViewBufferImpl extends DoubleBuffer
     return this;
   }
   
-  public DoubleBuffer duplicate ()
+  public FloatBuffer duplicate ()
   {
     // Create a copy of this object that shares its content
     // FIXME: mark is not correct
-    return new DoubleViewBufferImpl (bb, offset, capacity (), limit (),
+    return new FloatViewBufferImpl (bb, offset, capacity (), limit (),
                                      position (), -1, isReadOnly ());
   }
   
-  public DoubleBuffer slice ()
+  public FloatBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
-    return new DoubleViewBufferImpl (bb, (position () >> 3) + offset,
+    return new FloatViewBufferImpl (bb, (position () >> 2) + offset,
                                       remaining (), remaining (), 0, -1,
                                      isReadOnly ());
   }
   
-  public DoubleBuffer asReadOnlyBuffer ()
+  public FloatBuffer asReadOnlyBuffer ()
   {
     // Create a copy of this object that shares its content and is read-only
-    return new DoubleViewBufferImpl (bb, (position () >> 3) + offset,
+    return new FloatViewBufferImpl (bb, (position () >> 2) + offset,
                                      remaining (), remaining (), 0, -1, true);
   }
   

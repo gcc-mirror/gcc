@@ -1,5 +1,5 @@
-/* ByteBufferImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* DirectByteBufferImpl.java -- 
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,99 +36,75 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.nio;
+package java.nio;
 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ReadOnlyBufferException;
-import java.nio.ShortBuffer;
+import gnu.gcj.RawData;
 
-/**
- * This is a Heap memory implementation
- */
-public final class ByteBufferImpl extends ByteBuffer
+public class DirectByteBufferImpl extends ByteBuffer
 {
+  private RawData address;
+  private int offset;
   private boolean readOnly;
-
-  ByteBufferImpl (int capacity)
-  {
-    this (new byte [capacity], 0, capacity, capacity, 0, -1, false);
-  }
   
-  ByteBufferImpl (byte[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
+  public DirectByteBufferImpl (RawData address, int offset, int capacity,
+                               int limit, int position, int mark,
+                               boolean readOnly)
   {
-    super (buffer, offset, capacity, limit, position, mark);
+    super (capacity, limit, position, mark);
+    this.address = address;
+    this.offset = offset;
     this.readOnly = readOnly;
   }
+
+  private static native RawData allocateImpl (int capacity);
+  private static native void freeImpl (RawData address);
   
-  public ByteBufferImpl (ByteBufferImpl copy)
+  protected void finalize () throws Throwable
   {
-    super (copy.capacity (), copy.limit (), copy.position (), 0);
-    backing_buffer = copy.backing_buffer;
-    readOnly = copy.isReadOnly ();
-  }
-
-  void inc_pos (int toAdd)
-  {
-    position (position () + toAdd);
-  }
-
-  public CharBuffer asCharBuffer ()
-  {
-    return new CharViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
-  }
-
-  public ShortBuffer asShortBuffer ()
-  {
-    return new ShortViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
-  }
-
-  public IntBuffer asIntBuffer ()
-  {
-    return new IntViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
-  }
-
-  public LongBuffer asLongBuffer ()
-  {
-    return new LongViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
-  }
-
-  public FloatBuffer asFloatBuffer ()
-  {
-    return new FloatViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
-  }
-
-  public DoubleBuffer asDoubleBuffer ()
-  {
-    return new DoubleViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
-  }
-
-  public boolean isReadOnly ()
-  {
-    return readOnly;
+    freeImpl (address);
   }
   
-  public ByteBuffer slice ()
+  public static ByteBuffer allocateDirect (int capacity)
   {
-    return new ByteBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
+    RawData address = allocateImpl (capacity);
+
+    if (address == null)
+      throw new InternalError ("Not enough memory to create direct buffer");
+    
+    return new DirectByteBufferImpl (address, 0, capacity, capacity, 0, -1, false);
   }
   
-  public ByteBuffer duplicate ()
+  private native byte getImpl (int index);
+  private native void putImpl (int index, byte value);
+
+  public byte get ()
   {
-    return new ByteBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
+    byte result = getImpl (position () + offset);
+    position (position () + 1);
+    return result;
+  }
+
+  public byte get (int index)
+  {
+    return getImpl (index);
+  }
+
+  public ByteBuffer put (byte value)
+  {
+    putImpl (position (), value);
+    position (position () + 1);
+    return this;
   }
   
-  public ByteBuffer asReadOnlyBuffer ()
+  public ByteBuffer put (int index, byte value)
   {
-    return new ByteBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
+    putImpl (index, value);
+    return this;
   }
   
   public ByteBuffer compact ()
   {
+    // FIXME this can sure be optimized using memcpy()  
     int copied = 0;
     
     while (remaining () > 0)
@@ -140,65 +116,62 @@ public final class ByteBufferImpl extends ByteBuffer
     position (copied);
     return this;
   }
-  
-  public boolean isDirect ()
+
+  public ByteBuffer duplicate ()
   {
-    return false;
+    return new DirectByteBufferImpl (
+      address, offset, capacity (), limit (), position (), -1, isReadOnly ());
   }
 
-  /**
-   * Relative get method. Reads the next <code>byte</code> from the buffer.
-   */
-  final public byte get ()
+  public ByteBuffer slice ()
   {
-    byte result = backing_buffer [position ()];
-    position (position () + 1);
-    return result;
+    return new DirectByteBufferImpl (address, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+  }
+
+  public ByteBuffer asReadOnlyBuffer ()
+  {
+    return new DirectByteBufferImpl (
+      address, offset, capacity (), limit (), position (), -1, true);
+  }
+
+  public boolean isReadOnly ()
+  {
+    return readOnly;
+  }
+
+  public boolean isDirect ()
+  {
+    return true;
+  }
+
+  public CharBuffer asCharBuffer ()
+  {
+    return new CharViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
-  /**
-   * Relative put method. Writes <code>value</code> to the next position
-   * in the buffer.
-   * 
-   * @exception ReadOnlyBufferException If this buffer is read-only.
-   */
-  final public ByteBuffer put (byte value)
+  public DoubleBuffer asDoubleBuffer ()
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-	  	    
-    backing_buffer [position ()] = value;
-    position (position () + 1);
-    return this;
+    return new DoubleViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
-  /**
-   * Absolute get method. Reads the <code>byte</code> at position
-   * <code>index</code>.
-   *
-   * @exception IndexOutOfBoundsException If index is negative or not smaller
-   * than the buffer's limit.
-   */
-  final public byte get (int index)
+  public FloatBuffer asFloatBuffer ()
   {
-    return backing_buffer [index];
+    return new FloatViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
-  /**
-   * Absolute put method. Writes <code>value</value> to position
-   * <code>index</code> in the buffer.
-   *
-   * @exception IndexOutOfBoundsException If index is negative or not smaller
-   * than the buffer's limit.
-   * @exception ReadOnlyBufferException If this buffer is read-only.
-   */
-  final public ByteBuffer put (int index, byte value)
+  public IntBuffer asIntBuffer ()
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    	    
-    backing_buffer [index] = value;
-    return this;
+    return new IntViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+  }
+  
+  public LongBuffer asLongBuffer ()
+  {
+    return new LongViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
+  }
+  
+  public ShortBuffer asShortBuffer ()
+  {
+    return new ShortViewBufferImpl (this, position () + offset, remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
   final public char getChar ()

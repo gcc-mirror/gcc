@@ -194,20 +194,19 @@ public class SocketChannelImpl extends SocketChannel
     int bytes = 0;
     int len = src.position();
 
-    if (src instanceof ByteBufferImpl)
-	    {
-        ByteBufferImpl bi = (ByteBufferImpl) src;
-        byte[]b = bi.array();
-        bytes = SocketWrite(fd, b, 0, len);
-	    }
+    if (src.hasArray ())
+      {
+        byte[] b = src.array ();
+        bytes = SocketWrite (fd, b, 0, len);
+      }
     else
-	    {
-        byte[]b = new byte[len];
-        src.get(b, 0, len);
-        bytes = SocketWrite(fd, b, 0, len);
-	    }
+      {
+        byte[] b = new byte [len];
+        src.get (b, 0, len);
+        bytes = SocketWrite (fd, b, 0, len);
+      }
 		
-	  return bytes;
+    return bytes;
   }
 
   public long write (ByteBuffer[] srcs, int offset, int length)

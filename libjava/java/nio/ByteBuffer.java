@@ -35,10 +35,8 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio;
 
-import gnu.java.nio.ByteBufferImpl;
-import gnu.java.nio.DirectByteBufferImpl;
+package java.nio;
 
 /**
  * @since 1.4
