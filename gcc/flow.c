@@ -5578,6 +5578,7 @@ recompute_reg_usage (f, loop_step)
 {
   rtx insn;
   int i, max_reg;
+  int index;
 
   /* Clear out the old data.  */
   max_reg = max_reg_num ();
@@ -5590,58 +5591,51 @@ recompute_reg_usage (f, loop_step)
   /* Scan each insn in the chain and count how many times each register is
      set/used.  */
   loop_depth = 1;
-  for (insn = f; insn; insn = NEXT_INSN (insn))
+  for (index = 0; index < n_basic_blocks; index++)
     {
-      /* Keep track of loop depth.  */
-      if (GET_CODE (insn) == NOTE)
-	{
-	  /* Look for loop boundaries.  */
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	    loop_depth -= loop_step;
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	    loop_depth += loop_step;
-
-	  /* If we have LOOP_DEPTH == 0, there has been a bookkeeping error. 
-	     Abort now rather than setting register status incorrectly.  */
-	  if (loop_depth == 0)
-	    abort ();
-	}
-      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	{
-	  rtx links;
-
-	  /* This call will increment REG_N_SETS for each SET or CLOBBER
-	     of a register in INSN.  It will also increment REG_N_REFS
-	     by the loop depth for each set of a register in INSN.  */
-	  count_reg_sets (PATTERN (insn));
-
-	  /* count_reg_sets does not detect autoincrement address modes, so
-	     detect them here by looking at the notes attached to INSN.  */
-	  for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
+      basic_block bb = BASIC_BLOCK (index);
+      loop_depth = bb->loop_depth;
+      for (insn = bb->head; insn; insn = NEXT_INSN (insn))
+ 	{
+	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    {
-	      if (REG_NOTE_KIND (links) == REG_INC)
-		/* Count (weighted) references, stores, etc.  This counts a
-		   register twice if it is modified, but that is correct.  */
-		REG_N_SETS (REGNO (XEXP (links, 0)))++;
+	      rtx links;
+
+	      /* This call will increment REG_N_SETS for each SET or CLOBBER
+		 of a register in INSN.  It will also increment REG_N_REFS
+		 by the loop depth for each set of a register in INSN.  */
+	      count_reg_sets (PATTERN (insn));
+
+	      /* count_reg_sets does not detect autoincrement address modes, so
+		 detect them here by looking at the notes attached to INSN.  */
+	      for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
+		{
+		  if (REG_NOTE_KIND (links) == REG_INC)
+		    /* Count (weighted) references, stores, etc.  This counts a
+		       register twice if it is modified, but that is correct.  */
+		    REG_N_SETS (REGNO (XEXP (links, 0)))++;
+		}
+
+	      /* This call will increment REG_N_REFS by the current loop depth for
+		 each reference to a register in INSN.  */
+	      count_reg_references (PATTERN (insn));
+
+	      /* count_reg_references will not include counts for arguments to
+		 function calls, so detect them here by examining the
+		 CALL_INSN_FUNCTION_USAGE data.  */
+	      if (GET_CODE (insn) == CALL_INSN)
+		{
+		  rtx note;
+
+		  for (note = CALL_INSN_FUNCTION_USAGE (insn);
+		       note;
+		       note = XEXP (note, 1))
+		    if (GET_CODE (XEXP (note, 0)) == USE)
+		      count_reg_references (XEXP (XEXP (note, 0), 0));
+		}
 	    }
-
-	  /* This call will increment REG_N_REFS by the current loop depth for
-	     each reference to a register in INSN.  */
-	  count_reg_references (PATTERN (insn));
-
-	  /* count_reg_references will not include counts for arguments to
-	     function calls, so detect them here by examining the
-	     CALL_INSN_FUNCTION_USAGE data.  */
-	  if (GET_CODE (insn) == CALL_INSN)
-	    {
-	      rtx note;
-
-	      for (note = CALL_INSN_FUNCTION_USAGE (insn);
-		   note;
-		   note = XEXP (note, 1))
-		if (GET_CODE (XEXP (note, 0)) == USE)
-		  count_reg_references (XEXP (XEXP (note, 0), 0));
-	    }
+	  if (insn == bb->end)
+	    break;
 	}
     }
 }
