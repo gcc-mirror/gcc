@@ -1153,9 +1153,9 @@ extern struct rtx_def *iq2000_load_reg3;	/* 3rd reg to check for load delay */
 extern struct rtx_def *iq2000_load_reg4;	/* 4th reg to check for load delay */
 
 /* Functions to change what output section we are using.  */
-extern void		rdata_section PARAMS ((void));
-extern void		sdata_section PARAMS ((void));
-extern void		sbss_section PARAMS ((void));
+extern void		rdata_section (void);
+extern void		sdata_section (void);
+extern void		sbss_section (void);
 
 #define BITMASK_UPPER16	((unsigned long)0xffff << 16)	/* 0xffff0000 */
 #define BITMASK_LOWER16	((unsigned long)0xffff)		/* 0x0000ffff */
