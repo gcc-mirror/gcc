@@ -1,4 +1,4 @@
-2003-03-15    <gcc@integrable-solutions.net>
+2003-03-15  Gabriel Dos Reis <gdr@integrable-solutions.net>
 	
 	Compile-time improvement: 2/n.
 	* cp-tree.h (struct cxx_binding): New datatype;
