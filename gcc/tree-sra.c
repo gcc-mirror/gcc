@@ -615,6 +615,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 {
   tree expr = *expr_p;
   tree inner = expr;
+  bool disable_scalarization = false;
 
   /* We're looking to collect a reference expression between EXPR and INNER,
      such that INNER is a scalarizable decl and all other nodes through EXPR
@@ -632,7 +633,10 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	if (is_sra_candidate_decl (inner))
 	  {
 	    struct sra_elt *elt = maybe_lookup_element_for_expr (expr);
-	    fns->use (elt, expr_p, bsi, is_output);
+	    if (disable_scalarization)
+	      elt->cannot_scalarize = true;
+	    else
+	      fns->use (elt, expr_p, bsi, is_output);
 	  }
 	return;
 
@@ -649,14 +653,8 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	   without duplicating too much code.  */
 	if (!is_valid_const_index (inner))
 	  {
-	    if (fns->initial_scan)
-	      {
-		struct sra_elt *elt
-		  = maybe_lookup_element_for_expr (TREE_OPERAND (inner, 0));
-		if (elt)
-		  elt->cannot_scalarize = true;
-	      }
-	    return;
+	    disable_scalarization = true;
+	    goto use_all;
 	  }
 	/* ??? Are we assured that non-constant bounds and stride will have
 	   the same value everywhere?  I don't think Fortran will...  */
