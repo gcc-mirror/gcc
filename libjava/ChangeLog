@@ -1,3 +1,13 @@
+2000-09-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (LIBDATASTARTSPEC): Use `%s' to search for
+	libgcjdata.a.
+	(GCJ): Support single-tree builds.  Add -B`pwd`/ and -I$srcdir.
+	* acinclude.m4: Arrange for automake to not bring in a new
+	libtool.m4 for LT_AC_PROG_GCJ.  AC_SUBST GCJ.
+	* Makefile.am: Leave it up to automake to subst GCJ.
+	* aclocal.m4, configure, Makefile.in: Rebuilt.
+
 2000-09-13  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/natArray.cc (BooleanClass): New define.

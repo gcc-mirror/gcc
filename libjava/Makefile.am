@@ -51,10 +51,8 @@ if CANADIAN
 if NULL_TARGET
 ## In this case, gcj is found outside the build tree.  However, zip is
 ## found in the build tree.
-GCJ = gcj
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
 else
-GCJ = $(target_alias)-gcj
 ZIP = zip
 endif
 GCJH = gcjh
@@ -63,8 +61,6 @@ else # CANADIAN
 ## (due to problems running it in builddir).  In this case the obvious
 ## definition of GCJ won't work; instead we resort to this ugly
 ## definition that gives us absolute paths.
-expanded = `cd $(MULTIBUILDTOP)../$(COMPPATH)/gcc && pwd`
-GCJ = $(expanded)/gcj$(EXEEXT) -B$(expanded)/
 GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
 endif # CANADIAN
