@@ -2697,7 +2697,11 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 	    final_cp->h.code = EVIL_CODE;
 	  return error_mark_node;
 	}
-      if (TREE_CODE (t) == ARRAY_TYPE || TREE_CODE (t) == OFFSET_TYPE)
+      if (TREE_CODE (t) == OFFSET_TYPE)
+#if 0
+      /* This breaks reference-to-array parameters.  */
+	  || TREE_CODE (t) == ARRAY_TYPE
+#endif
 	{
 	  /* Perform the conversion from ARRAY_TYPE to POINTER_TYPE in place.
 	     Also convert OFFSET_TYPE entities to their normal selves.
