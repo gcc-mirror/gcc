@@ -27,7 +27,7 @@ LIB1ASMFUNCS = _mulsi3 \
 	_ashrhi3 _lshrhi3 _lshlhi3 _ashrqi3 _lshlqi3 _map_data _init_bss \
 	_ctor _dtor _far_tramp _call_far _return_far
 
-TARGET_LIBGCC2_CFLAGS = -DUSE_GAS -DIN_GCC
+TARGET_LIBGCC2_CFLAGS = -DUSE_GAS -DIN_GCC -Dinhibit_libc
 
 # C implementation of 32-bit div/mod.
 LIB2FUNCS_EXTRA = $(srcdir)/config/udivmodsi4.c \
@@ -53,7 +53,7 @@ DPBIT = dp-bit.c
 dp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define SMALL_MACHINE' >> dp-bit.c
 	echo '#define CMPtype HItype' >> dp-bit.c
-	echo '#ifdef __LITTLE_ENDIAN__' > dp-bit.c
+	echo '#ifdef __LITTLE_ENDIAN__' >> dp-bit.c
 	echo '#define FLOAT_BIT_ORDER_MISMATCH' >>dp-bit.c
 	echo '#endif' 		>> dp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
