@@ -523,7 +523,14 @@ lookup_field_1 (type, name)
 	  if (temp)
 	    return temp;
 	}
-      if (DECL_NAME (field) == name)
+      if (TREE_CODE (field) == USING_DECL)
+	/* For now, we're just treating member using declarations as
+	   old ARM-style access declarations.  Thus, there's no reason
+	   to return a USING_DECL, and the rest of the compiler can't
+	   handle it.  Once the class is defined, these are purged
+	   from TYPE_FIELDS anyhow; see handle_using_decl.  */
+	;
+      else if (DECL_NAME (field) == name)
 	{
 	  if ((TREE_CODE(field) == VAR_DECL || TREE_CODE(field) == CONST_DECL)
 	      && DECL_ASSEMBLER_NAME (field) != NULL)

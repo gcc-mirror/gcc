@@ -1,4 +1,3 @@
-// execution test - re-initialization of statics XFAIL *-*-*
 // This tests two things:
 // 1. there is an annoying warning.
 // singleton.C:26: warning: `class singleton' only defines private constructors and has no friends

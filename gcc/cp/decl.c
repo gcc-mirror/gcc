@@ -7869,14 +7869,39 @@ expand_static_init (decl, init)
       /* Remember this information until end of file.  */
       push_obstacks (&permanent_obstack, &permanent_obstack);
 
-      /* Emit code to perform this initialization but once.  */
+      /* Emit code to perform this initialization but once.  This code
+	 looks like:
+
+           static int temp = 0;
+           if (!temp) {
+             // Do initialization.
+	     temp = 1;
+	     // Register variable for destruction at end of program.
+	   }
+
+	 Note that the `temp' variable is only set to 1 *after* the
+	 initialization is complete.  This ensures that an exception,
+	 thrown during the construction, will cause the variable to
+	 reinitialized when we pass through this code again, as per:
+	 
+	   [stmt.dcl]
+
+	   If the initialization exits by throwing an exception, the
+	   initialization is not complete, so it will be tried again
+	   the next time control enters the declaration.
+
+         In theory, this process should be thread-safe, too; multiple
+	 threads should not be able to initialize the variable more
+	 than once.  We don't yet attempt to ensure thread-safety.  */
       temp = get_temp_name (integer_type_node, 1);
       rest_of_decl_compilation (temp, NULL_PTR, 0, 0);
+
+      /* Begin the conditional initialization.  */
       expand_start_cond (build_binary_op (EQ_EXPR, temp,
 					  integer_zero_node, 1), 0);
       expand_start_target_temps ();
 
-      expand_assignment (temp, integer_one_node, 0, 0);
+      /* Do the initialization itself.  */
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
 	  || (init && TREE_CODE (init) == TREE_LIST))
 	{
@@ -7886,9 +7911,17 @@ expand_static_init (decl, init)
       else if (init)
 	expand_assignment (decl, init, 0, 0);
 
-      /* Cleanup any temporaries needed for the initial value.  */
+      /* Set TEMP to 1.  */
+      expand_assignment (temp, integer_one_node, 0, 0);
+
+      /* Cleanup any temporaries needed for the initial value.  If
+	 destroying one of the temporaries causes an exception to be
+	 thrown, then the object itself has still been fully
+	 constructed.  */
       expand_end_target_temps ();
 
+      /* Use atexit to register a function for destroying this static
+	 variable.  */
       if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
 	{
 	  tree cleanup, fcall;

@@ -1,3 +1,15 @@
+1998-12-03  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (handle_using_decl): Fix comment.  Don't lookup
+	constructors in base classes.
+	(validate_lhs): Fix typo in comment.
+	* search.c (lookup_field_1): Don't return a USING_DECL.
+	
+	* cp-tree.h (DECL_ACCESS): Improve documentation.
+
+	* decl.c (expand_static_init): Don't set the initialization-done
+	flag until the initialization is done.
+	
 1998-12-02  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl2.c (validate_nonmember_using_decl): Complain about using

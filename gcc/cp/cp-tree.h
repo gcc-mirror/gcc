@@ -1687,8 +1687,12 @@ extern int flag_new_for_scope;
    NULL_TREE.  */
 #define DECL_FRIENDLIST(NODE)		(DECL_INITIAL (NODE))
 
-/* The DECL_ACCESS is used to record under which context
-   special access rules apply.  */
+/* The DECL_ACCESS, if non-NULL, is a TREE_LIST.  The TREE_PURPOSE of
+   each node is a type; the TREE_VALUE is the access granted for this
+   DECL in that type.  The DECL_ACCESS is set by access declarations.
+   For example, if a member that would normally be public in a
+   derived class is made protected, then the derived class and the
+   protected_access_node will appear in the DECL_ACCESS for the node.  */
 #define DECL_ACCESS(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.access)
 
 /* C++: all of these are overloaded!
