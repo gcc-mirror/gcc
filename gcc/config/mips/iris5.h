@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 5.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -119,7 +119,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef MIPS_DEBUGGING_INFO
 
 #undef MACHINE_TYPE
-#define MACHINE_TYPE "SGI running IRIX 5.0"
+#define MACHINE_TYPE "SGI running IRIX 5.x"
+#undef NO_DOLLAR_IN_LABEL
 
 /* -G is incompatible with -KPIC which is the default, so only allow objects
    in the small data section if the user explicitly asks for it.  */
