@@ -105,7 +105,7 @@ cxx_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
       
     case THROW_EXPR:
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
-      return NULL;
+      return const0_rtx;
 
     case MUST_NOT_THROW_EXPR:
       expand_eh_region_start ();
