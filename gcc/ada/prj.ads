@@ -40,6 +40,14 @@ with Types;       use Types;
 
 package Prj is
 
+   Default_Ada_Spec_Suffix : Name_Id := No_Name;
+   --  The Name_Id for the standard GNAT suffix for Ada spec source file
+   --  name ".ads". Initialized by Prj.Initialize.
+
+   Default_Ada_Impl_Suffix : Name_Id := No_Name;
+   --  The Name_Id for the standard GNAT suffix for Ada body source file
+   --  name ".adb". Initialized by Prj.Initialize.
+
    type Put_Line_Access is access procedure (Line : String);
    --  Use to customize error reporting in Prj.Proc and Prj.Nmsc.
 
@@ -465,14 +473,6 @@ package Prj is
    --  imports B, directly or indirectly, Action will be called for A before
    --  it is called for B. With_State may be used by Action to choose a
    --  behavior or to report some global result.
-
-   function Ada_Default_Spec_Suffix return Name_Id;
-   --  Return the Name_Id for the standard GNAT suffix for Ada spec source
-   --  file name ".ads".
-
-   function Ada_Default_Impl_Suffix return Name_Id;
-   --  Return the Name_Id for the standard GNAT suffix for Ada body source
-   --  file name ".adb".
 
 private
 
