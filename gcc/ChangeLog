@@ -1,5 +1,7 @@
 2002-06-13  Jeffrey Law  <law@redhat.com>
 
+	* i386.md (extenddfxf2, extenddftf2): Fix typo/thinko.
+
 	* alias.c (argument_registers): Remove.
 	(init_alias_once): Initialize static_reg_base_value here.  Remove
 	initialization of argument_registers.
