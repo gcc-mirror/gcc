@@ -22,7 +22,6 @@ details.  */
 #include <java/lang/String.h>
 #include <java/lang/Integer.h>
 #include <java/lang/StringBuffer.h>
-#include <java/io/PrintStream.h>
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/ClassCastException.h>
@@ -285,9 +284,6 @@ _Jv_InterpMethod::run (ffi_cif* cif,
   /** handle an exception */
   if ( find_exception (ex, inv) )
     goto next_segment;
-
-  java::lang::System::out->println 
-    (_Jv_NewStringUTF (self->name->data));
 
   return ex;
 }

@@ -1,3 +1,18 @@
+Tue Jan 25 08:51:16 2000  Tom Tromey  <tromey@ferrule.cygnus.com>
+
+	* interpret.cc (run): Don't call println.
+	Don't include PrintStream.h.
+
+	* gcj/field.h (struct _Jv_Field): Use "jshort" as type for
+	nameIndex.  Use "jint" as type for boffset.
+	* java/lang/Class.h (struct _Jv_Method): Made accflags a
+	_Jv_ushort.
+	(Class): Likewise.  Also changed type of method_count,
+	vtable_method_count, size_in_bytes, field_count,
+	static_field_count, interface_count.
+	* gcj/array.h (__JArray): Made `length' a const jsize, not an
+	int.
+
 2000-01-21  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/natConstructor.cc (newInstance): Use
