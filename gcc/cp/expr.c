@@ -148,7 +148,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	    init = convert_from_reference (init);
 
 	    flag_access_control = 0;
-	    expand_aggr_init (slot, init, 0, LOOKUP_ONLYCONVERTING);
+	    expand_aggr_init (slot, init, LOOKUP_ONLYCONVERTING);
 	    flag_access_control = old_ac;
 
 	    if (TYPE_NEEDS_DESTRUCTOR (type))
@@ -304,7 +304,7 @@ extract_scalar_init (decl, init)
 
 int
 extract_init (decl, init)
-     tree decl, init;
+     tree decl ATTRIBUTE_UNUSED, init ATTRIBUTE_UNUSED;
 {
   return 0;
 
@@ -405,8 +405,5 @@ do_case (start, end)
 	    cp_error ("case label `%E' within scope of cleanup or variable array", start);
 	}
     }
-  if (start)
-    define_case_label (label);
-  else
-    define_case_label (NULL_TREE);
+  define_case_label ();
 }

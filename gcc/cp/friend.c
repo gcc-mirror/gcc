@@ -367,7 +367,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	    DECL_CONSTRUCTOR_P (decl) = 1;
 
 	  /* This will set up DECL_ARGUMENTS for us.  */
-	  grokclassfn (ctype, cname, decl, flags, quals);
+	  grokclassfn (ctype, decl, flags, quals);
 
 	  if (is_friend_template)
 	    decl = DECL_TI_TEMPLATE (push_template_decl (decl));

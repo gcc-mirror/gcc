@@ -1773,7 +1773,7 @@ void
 push_namespace (name)
      tree name;
 {
-  tree d;
+  tree d = NULL_TREE;
   int need_new = 1;
   int implicit_use = 0;
   int global = 0;
@@ -4409,8 +4409,7 @@ pop_switch ()
 /* XXX Note decl is never actually used. (bpk) */
 
 void
-define_case_label (decl)
-     tree decl;
+define_case_label ()
 {
   tree cleanup = last_cleanup_this_contour ();
   struct binding_level *b = current_binding_level;
@@ -7537,7 +7536,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		{
 		  emit_line_note (DECL_SOURCE_FILE (decl),
 				  DECL_SOURCE_LINE (decl));
-		  expand_aggr_init (decl, init, 0, flags);
+		  expand_aggr_init (decl, init, flags);
 		}
 
 	      /* Set this to 0 so we can tell whether an aggregate which
@@ -7668,7 +7667,7 @@ expand_static_init (decl, init)
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
 	  || (init && TREE_CODE (init) == TREE_LIST))
 	{
-	  expand_aggr_init (decl, init, 0, 0);
+	  expand_aggr_init (decl, init, 0);
 	  do_pending_stack_adjust ();
 	}
       else if (init)
@@ -8026,7 +8025,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	 the following calls is supposed to do.  */
       DECL_CONSTRUCTOR_P (decl) = 1;
 
-      grokclassfn (ctype, declarator, decl, flags, quals);
+      grokclassfn (ctype, decl, flags, quals);
 
       decl = check_explicit_specialization (orig_declarator, decl,
 					    template_count, 
@@ -8035,7 +8034,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       if (decl == error_mark_node)
 	return error_mark_node;
 
-      if ((! TYPE_FOR_JAVA (ctype) || check_java_method (ctype, decl))
+      if ((! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
 	  && check)
 	{
 	  tmp = check_classfn (ctype, decl);
@@ -8075,7 +8074,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	 This call may change the type of the function (because
 	 of default parameters)!  */
       if (ctype != NULL_TREE)
-	grokclassfn (ctype, cname, decl, flags, quals);
+	grokclassfn (ctype, decl, flags, quals);
 
       decl = check_explicit_specialization (orig_declarator, decl,
 					    template_count, 
@@ -8085,7 +8084,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	return error_mark_node;
 
       if (ctype != NULL_TREE
-	  && (! TYPE_FOR_JAVA (ctype) || check_java_method (ctype, decl))
+	  && (! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
 	  && check)
 	{
 	  tmp = check_classfn (ctype, decl);

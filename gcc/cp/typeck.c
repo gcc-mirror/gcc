@@ -1222,7 +1222,7 @@ common_base_type (tt1, tt2)
 int
 compparms (parms1, parms2, strict)
      tree parms1, parms2;
-     int strict;
+     int strict ATTRIBUTE_UNUSED;
 {
   register tree t1 = parms1, t2 = parms2;
 

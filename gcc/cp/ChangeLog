@@ -1,3 +1,70 @@
+Fri Sep 25 11:45:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (define_case_label): Remove unused parameter.
+	(check_java_method): Likewise.
+	(grokclassfn): Likewise.
+	(expand_aggr_init): Likewise.
+	(build_x_delete): Likewise.
+	(maybe_end_member_template_processing): Likewise.
+	(unshare_base_binfos): Add prototype.
+	(string_conv_p): Likewise.
+	(my_friendly_abort): Mark with ATTRIBUTE_NORETURN.
+
+	* cvt.c (build_up_reference): Remove unused parameter
+ 	`checkconst', all callers changed.
+	(build_type_conversion): Mark parameter `code' with
+	ATTRIBUTE_UNUSED.
+	(build_expr_type_conversion): Initialize variable `conv'.
+
+	* decl.c (push_namespace): Initialize variable `d'.
+  	(define_case_label): Remove unused parameter `decl', all callers
+ 	changed.
+
+	* decl2.c (lang_decode_option): If !USE_CPPLIB, mark parameter
+ 	`argc' with ATTRIBUTE_UNUSED.
+	(grokclassfn): Remove unused parameter `cname', all callers
+ 	changed.
+	(check_java_method): Likewise for parameter `ctype'.
+	(copy_assignment_arg_p): Mark parameter `virtualp' with
+	ATTRIBUTE_UNUSED.
+	(finish_prevtable_vardecl): Likewise for parameter `prev'.
+
+	* expr.c (extract_init): Likewise for parameters `decl' and `init'.
+
+	* init.c (expand_aggr_init_1): Remove unused parameter
+ 	`alias_this', all callers changed.
+	(expand_aggr_init): Likewise.
+	(expand_default_init): Likewise.
+	(build_new_1): Initialize variable `susp'.
+	(build_x_delete): Remove unused parameter `type', all callers
+	changed.
+
+	* lex.c (set_typedecl_interface_info): Mark parameter `prev' with
+	ATTRIBUTE_UNUSED.
+	(readescape): Use (unsigned) value in shift.
+	(real_yylex): Likewise.  Likewise.  Also cast `sizeof' to int when
+	comparing to a signed quantity.
+
+	* pt.c (maybe_end_member_template_processing): Remove unused
+ 	parameter `decl', all callers changed.
+	(check_explicit_specialization): Add braces around empty body in
+	an else-statement.
+	(current_template_args): Initialize variable `args'.
+	(lookup_template_class): Likewise for variable `prev_local_enum'.
+	(tsubst_decl): Likewise for variable `r'.
+	(set_mangled_name_for_template_decl): Initialize variable
+	`context'.
+
+	* spew.c (scan_tokens): Change type of parameter `n' to unsigned.
+	Likewise for variable `i'.
+	(yylex): Initialize variable `trrr'.
+
+	* typeck.c (compparms): Mark variable `strict' with
+	ATTRIBUTE_UNUSED.
+
+	* xref.c (simplify_type): Cast argument of ctype function to
+	`unsigned char'.
+
 1998-09-24  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (language_lvalue_valid): Remove.

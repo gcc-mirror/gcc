@@ -2496,7 +2496,7 @@ extern tree shadow_label			PROTO((tree));
 extern tree define_label			PROTO((char *, int, tree));
 extern void push_switch				PROTO((void));
 extern void pop_switch				PROTO((void));
-extern void define_case_label			PROTO((tree));
+extern void define_case_label			PROTO((void));
 extern tree getdecls				PROTO((void));
 extern tree gettags				PROTO((void));
 #if 0
@@ -2567,14 +2567,14 @@ extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
 extern void cat_namespace_levels                PROTO((void));
 
 /* in decl2.c */
-extern int check_java_method			PROTO((tree, tree));
+extern int check_java_method			PROTO((tree));
 extern int lang_decode_option			PROTO((int, char **));
 extern tree grok_method_quals			PROTO((tree, tree, tree));
 extern void warn_if_unknown_interface		PROTO((tree));
 extern tree grok_x_components			PROTO((tree, tree));
 extern void maybe_retrofit_in_chrg		PROTO((tree));
 extern void maybe_make_one_only			PROTO((tree));
-extern void grokclassfn				PROTO((tree, tree, tree, enum overload_flags, tree));
+extern void grokclassfn				PROTO((tree, tree, enum overload_flags, tree));
 extern tree grok_alignof			PROTO((tree));
 extern tree grok_array_decl			PROTO((tree, tree));
 extern tree delete_sanity			PROTO((tree, tree, int, int));
@@ -2687,7 +2687,7 @@ extern void expand_direct_vtbls_init		PROTO((tree, tree, int, int, tree));
 extern void emit_base_init			PROTO((tree, int));
 extern void check_base_init			PROTO((tree));
 extern void expand_member_init			PROTO((tree, tree, tree));
-extern void expand_aggr_init			PROTO((tree, tree, int, int));
+extern void expand_aggr_init			PROTO((tree, tree, int));
 extern int is_aggr_typedef			PROTO((tree, int));
 extern int is_aggr_type				PROTO((tree, int));
 extern tree get_aggr_from_typedef		PROTO((tree, int));
@@ -2699,7 +2699,7 @@ extern tree decl_constant_value			PROTO((tree));
 extern tree build_new				PROTO((tree, tree, tree, int));
 extern tree build_new_1				PROTO((tree));
 extern tree expand_vec_init			PROTO((tree, tree, tree, tree, int));
-extern tree build_x_delete			PROTO((tree, tree, int, tree));
+extern tree build_x_delete			PROTO((tree, int, tree));
 extern tree build_delete			PROTO((tree, tree, tree, int, int));
 extern tree build_vbase_delete			PROTO((tree, tree));
 extern tree build_vec_delete			PROTO((tree, tree, tree, tree, int));
@@ -2782,7 +2782,7 @@ extern tree tsubst_expr				PROTO ((tree, tree, tree));
 extern tree tsubst_copy				PROTO ((tree, tree, tree));
 extern tree tsubst_chain			PROTO((tree, tree));
 extern void maybe_begin_member_template_processing PROTO((tree));
-extern void maybe_end_member_template_processing PROTO((tree));
+extern void maybe_end_member_template_processing PROTO((void));
 extern tree finish_member_template_decl         PROTO((tree, tree));
 extern void begin_template_parm_list		PROTO((void));
 extern void begin_specialization                PROTO((void));
@@ -2967,6 +2967,7 @@ extern int yylex				PROTO((void));
 extern tree arbitrate_lookup			PROTO((tree, tree, tree));
 
 /* in tree.c */
+extern void unshare_base_binfos			PROTO((tree));
 extern int member_p				PROTO((tree));
 extern int real_lvalue_p			PROTO((tree));
 extern tree build_min				PVPROTO((enum tree_code, tree, ...));
@@ -3041,6 +3042,7 @@ extern void push_expression_obstack		PROTO((void));
   hash_tree_cons (0, 0, 0, (PURPOSE), (VALUE), (CHAIN))
 
 /* in typeck.c */
+extern int string_conv_p			PROTO((tree, tree, int));
 extern tree condition_conversion		PROTO((tree));
 extern tree target_type				PROTO((tree));
 extern tree require_complete_type		PROTO((tree));
@@ -3117,7 +3119,8 @@ extern void readonly_error			PROTO((tree, char *, int));
 extern void abstract_virtuals_error		PROTO((tree, tree));
 extern void signature_error			PROTO((tree, tree));
 extern void incomplete_type_error		PROTO((tree, tree));
-extern void my_friendly_abort			PROTO((int));
+extern void my_friendly_abort			PROTO((int))
+  ATTRIBUTE_NORETURN;
 extern void my_friendly_assert			PROTO((int, int));
 extern tree store_init_value			PROTO((tree, tree));
 extern tree digest_init				PROTO((tree, tree, tree *));
