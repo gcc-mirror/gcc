@@ -1,5 +1,14 @@
 2003-08-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/3765
+	* search.c (dfs_access_in_type): Fix typo in comment.
+	(dfs_accessible_queue_p): Likewise.
+	(dfs_accessible_p): Only terminate when a friend is found.
+	(accessible_p): Return immediately if access_in_type allows
+	access.
+
+2003-08-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/641, c++/11876
 	* friend.c (add_friend): Add complain parameter.
 	(make_friend_class): Likewise.
