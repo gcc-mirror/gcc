@@ -282,35 +282,25 @@ extern int target_flags;
    on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
    defined, is executed once just after all the command options have
-   been parsed. */
+   been parsed.
+  
+   Don't use this macro to turn on various extra optimizations for
+   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
 #define OVERRIDE_OPTIONS override_options ()
 
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)              \
-{                                                     \
-    flag_gnu_linker             = FALSE;              \
-                                                      \
-    if (LEVEL)                                        \
-    {                                                 \
-	flag_omit_frame_pointer = TRUE;               \
-	flag_thread_jumps       = TRUE;               \
-    }                                                 \
-                                                      \
-    if (LEVEL >= 2)                                   \
-    {                                                 \
-        if (! SIZE)                                   \
- 	  flag_strength_reduce       = TRUE;          \
-	flag_cse_follow_jumps        = TRUE;          \
-	flag_cse_skip_blocks         = TRUE;          \
-	flag_expensive_optimizations = TRUE;          \
-	flag_rerun_cse_after_loop    = TRUE;          \
-    }                                                 \
-                                                      \
-    if ((LEVEL >= 3) && ! SIZE)                       \
-    {                                                 \
-       flag_inline_functions = 1;                     \
-    }                                                 \
-}
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)		\
+do							\
+  {							\
+    flag_gnu_linker             = FALSE;		\
+							\
+    if (SIZE)						\
+      {							\
+	flag_strength_reduce    = FALSE;		\
+	flag_inline_functions   = FALSE;		\
+      }							\
+  }							\
+while (0)
 
 /* STORAGE LAYOUT */
 
