@@ -419,9 +419,7 @@ namespace std
     basic_ostream<_CharT, _Traits>::tellp()
     {
       pos_type __ret = pos_type(-1);
-      bool __testok = this->fail() != true;
-      
-      if (__testok)
+      if (!this->fail())
 	__ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::out);
       return __ret;
     }
@@ -431,9 +429,7 @@ namespace std
     basic_ostream<_CharT, _Traits>&
     basic_ostream<_CharT, _Traits>::seekp(pos_type __pos)
     {
-      bool __testok = this->fail() != true;
-      
-      if (__testok)
+      if (!this->fail())
 	{
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
@@ -452,9 +448,7 @@ namespace std
     basic_ostream<_CharT, _Traits>::
     seekp(off_type __off, ios_base::seekdir __d)
     {
-      bool __testok = this->fail() != true;
-      
-      if (__testok)
+      if (!this->fail())
 	{
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?

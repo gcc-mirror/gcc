@@ -560,17 +560,17 @@ namespace std
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
       pos_type __ret =  pos_type(off_type(-1)); 
-      bool __testopen = this->is_open();
-      bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
-      bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
+      bool __testin = _M_mode & ios_base::in;
+      bool __testout = _M_mode & ios_base::out;
 
       // Should probably do has_facet checks here.
       int __width = use_facet<__codecvt_type>(_M_buf_locale).encoding();
       if (__width < 0)
 	__width = 0;
-      bool __testfail = __off != 0  && __width <= 0;
+      bool __testfail = __off != 0 && __width <= 0;
       
-      if (__testopen && !__testfail && (__testin || __testout))
+      if (this->is_open() && !__testfail 
+	  && __mode & _M_mode && (__testin || __testout))
 	{
 	  // Ditch any pback buffers to avoid confusion.
 	  _M_pback_destroy();
@@ -615,13 +615,10 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     seekpos(pos_type __pos, ios_base::openmode __mode)
     {
-      pos_type __ret;
-      off_type __off = __pos;
-
-      __ret = this->seekoff(__off, ios_base::beg, __mode); 
-
-      _M_last_overflowed = false;	
-      return __ret;
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+// 171. Strange seekpos() semantics due to joint position
+      return this->seekoff(off_type(__pos), ios_base::beg, __mode);
+#endif
     }
 
   template<typename _CharT, typename _Traits>
