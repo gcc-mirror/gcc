@@ -1,3 +1,7 @@
+2003-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (do_jump): Handle UNSAVE_EXPR specially.
+
 2003-03-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/10072
