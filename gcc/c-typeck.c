@@ -5331,10 +5331,12 @@ push_init_level (implicit)
 	break;
     }
 
-  /* Structure elements may require alignment.  Do this now
-     if necessary for the subaggregate.  */
+  /* Structure elements may require alignment.  Do this now if necessary
+     for the subaggregate, and if it comes next in sequence.  Don't do
+     this for subaggregates that will go on the pending list.  */
   if (constructor_incremental && constructor_type != 0
-      && TREE_CODE (constructor_type) == RECORD_TYPE && constructor_fields)
+      && TREE_CODE (constructor_type) == RECORD_TYPE && constructor_fields
+      && constructor_fields == constructor_unfilled_fields)
     {
       /* Advance to offset of this element.  */
       if (! tree_int_cst_equal (constructor_bit_index,
