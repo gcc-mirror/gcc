@@ -1,3 +1,13 @@
+2002-09-25  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
+
+	Fix for PR libgcj/7766:
+	* java/util/zip/ZipInputStream.java (entryAtEOF): New field.
+	(getNextEntry): Set it.
+	(closeEntry): Likewise.
+	(read): Likewise.
+	(close): Likewise.
+	(available): Use it.
+
 2002-09-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java
