@@ -832,6 +832,9 @@ prepare_scc_operands (code)
 	}
 
       sh_compare_op0 = force_reg (SImode, sh_compare_op0);
+      if (code != EQ && code != NE && sh_compare_op1 != const0_rtx)
+	sh_compare_op1 = force_reg (SImode, sh_compare_op1);
+
       emit_insn (gen_rtx (SET, VOIDmode,
 			  gen_rtx (REG, SImode, T_REG),
 		   gen_rtx (code, SImode, sh_compare_op0, sh_compare_op1)));
@@ -1141,11 +1144,15 @@ output_branch (logic, insn)
   switch (get_attr_length (insn))
     {
     case 2:
-      /* Simple branch in range -200..+200 bytes */
+      /* A branch with an unfilled delay slot.  */
+    case 4:
+      /* Simple branch in range -252..+258 bytes */
       return logic ? "bt%.	%l0" : "bf%.	%l0";
 
     case 6:
-      /* Branch in range -4000..+4000 bytes */
+      /* A branch with an unfilled delay slot.  */
+    case 8:
+      /* Branch in range -4092..+4098 bytes */
       {
 	rtx oldop = recog_operand[0];
 
@@ -1172,6 +1179,8 @@ output_branch (logic, insn)
       return "";
 
     case 16:
+      /* A branch with an unfilled delay slot.  */
+    case 18:
       /* Branches a long way away */
       {
 	rtx oldop = recog_operand[0];
@@ -1859,8 +1868,11 @@ find_barrier (from)
       /* Count the length of this insn - we assume that all moves will
 	 be 2 bytes long, except the DIs */
 
-      if (GET_CODE (from) == INSN &&
-	  GET_CODE (PATTERN (from)) == SET)
+      if (GET_CODE (from) == INSN
+	  && GET_CODE (PATTERN (from)) == SET
+	  && CONSTANT_P (SET_SRC (PATTERN (from)))
+	  && (GET_CODE (SET_SRC (PATTERN (from))) != CONST_INT
+	      || ! CONST_OK_FOR_I (INTVAL (SET_SRC (PATTERN (from))))))
 	{
 	  rtx src = SET_SRC (PATTERN (from));
 	  if (hi_const (src))
@@ -2474,6 +2486,24 @@ arith_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     {
       if (CONST_OK_FOR_I (INTVAL (op)))
+	return 1;
+    }
+  return 0;
+}
+
+/* Returns 1 if OP is a valid source operand for a compare insn.  */
+
+int
+arith_reg_or_0_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (arith_reg_operand (op, mode))
+    return 1;
+
+  if (GET_CODE (op) == CONST_INT)
+    {
+      if (CONST_OK_FOR_N (INTVAL (op)))
 	return 1;
     }
   return 0;

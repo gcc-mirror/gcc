@@ -71,64 +71,56 @@
 ;; dmpy		double precision integer multiply
 ;; return	rts
 ;; pload	load of pr reg (can't be put into delay slot of rts)
-;; pcloadsi	pc relative load of SI value
-;; pcloadhi 	pc relative load of HI value
+;; pcload	pc relative load of constant value
 ;; rte		return from exception
 ;; sfunc	special function call with known used registers
 
 (define_attr "type" 
- "cbranch,jump,arith,other,load,store,move,smpy,dmpy,return,pload,pcloadsi,pcloadhi,rte,sfunc"
+ "cbranch,jump,arith,other,load,store,move,smpy,dmpy,return,pload,pcload,rte,sfunc"
   (const_string "other"))
 
-; If a conditional branch destination is within -120..120 bytes away 
+; If a conditional branch destination is within -252..258 bytes away 
 ; from the instruction it can be 2 bytes long.  Something in the
-; range -4090..4090 bytes can be 6 bytes long, all other conditional
-; branches are 8 bytes long.
+; range -4090..4100 bytes can be 6 bytes long.  All other conditional
+; branches are 16 bytes long.
 
-; An unconditional jump which can reach forward or back 4k can be 
-; 6 bytes long (including the delay slot).  If it is too big, it
-; must be 10 bytes long.
+; An unconditional jump in the range -4092..4098 can be 2 bytes long.
+; Otherwise, it must be 14 bytes long.
 
-; If a pcrel instruction is within 500 bytes of the constant, then the insn is 
-; 2 bytes long, otherwise 12 bytes
 ; All other instructions are two bytes long by default.
+
+; All positive offsets have an adjustment added, which is the number of bytes
+; difference between this instruction length and the next larger instruction
+; length.  This is because shorten_branches starts with the largest
+; instruction size and then tries to reduce them.
 
 (define_attr "length" "" 
   (cond [(eq_attr "type" "cbranch")
-	 (if_then_else (and (ge (minus (pc) (match_dup 0))
-				(const_int -122))
-			    (le (minus (pc) (match_dup 0))
-				(const_int 122)))
+	 (if_then_else (and (ge (minus (match_dup 0) (pc))
+				(const_int -252))
+			    (le (minus (match_dup 0) (pc))
+				(const_int 262)))
 		       (const_int 2)
-		       (if_then_else (and (ge (minus (pc) (match_dup 0))
+		       (if_then_else (and (ge (minus (match_dup 0) (pc))
 					      (const_int -4090))
-					  (le (minus (pc) (match_dup 0))
-					      (const_int 4090)))
+					  (le (minus (match_dup 0) (pc))
+					      (const_int 4110)))
 				     (const_int 6)
 				     (const_int 16)))
 
 	 (eq_attr "type" "jump")
-	 (if_then_else (and (ge (minus (pc) (match_dup 0))
-				(const_int -4090))
-			    (le (minus (pc) (match_dup 0))
-				(const_int 4090)))
-		       (const_int 4)
-		       (const_int 10))
-	 (eq_attr "type" "pcloadsi")
-	 (if_then_else (gt (pc) (minus (match_dup 0) (const_int 1000)))
+	 (if_then_else (and (ge (minus (match_dup 0) (pc))
+				(const_int -4092))
+			    (le (minus (match_dup 0) (pc))
+				(const_int 4110)))
 		       (const_int 2)
-		       (const_int 12))
-	 (eq_attr "type" "pcloadhi")
-	 (if_then_else (gt (pc) (minus (match_dup 0) (const_int 500)))
-		       (const_int 2)
-		       (const_int 12))
-
+		       (const_int 14))
 	 ] (const_int 2)))
 
 ;; (define_function_unit {name} {num-units} {n-users} {test}
 ;;                       {ready-delay} {issue-delay} [{conflict-list}])
 				      
-(define_function_unit "memory" 1 0 (eq_attr "type" "load,pcloadsi,pcloadhi") 2 2)
+(define_function_unit "memory" 1 0 (eq_attr "type" "load,pcload") 2 2)
 (define_function_unit "mpy"    1 0 (eq_attr "type" "smpy") 7 7)
 (define_function_unit "mpy"    1 0 (eq_attr "type" "dmpy") 9 9)
 
@@ -154,18 +146,14 @@
        (eq_attr "cpu" "sh2,sh3"))
   [(eq_attr "in_delay_slot" "yes") (nil) (nil)])
 
-(define_attr "in_delay_slot" "maybe,yes,no" 
+(define_attr "in_delay_slot" "yes,no" 
   (cond [(eq_attr "type" "cbranch") (const_string "no")
 	 (eq_attr "type" "jump") (const_string "no")
 	 (eq_attr "type" "pload") (const_string "no")
-	 (eq_attr "type" "pcloadsi") (const_string "no")
-	 (eq_attr "type" "pcloadhi") (const_string "no")
+	 (eq_attr "type" "pcload") (const_string "no")
 	 (eq_attr "type" "return") (const_string "no")
 	 (eq_attr "length" "2") (const_string "yes")
-	 (eq_attr "length" "4,6,8,10,12") (const_string "no")
-	 ] (const_string "yes")))
-
-
+	 ] (const_string "no")))
 
 ;; -------------------------------------------------------------------------
 ;; SImode signed integer comparisons
@@ -178,70 +166,46 @@
   ""
   "movt	%0 !movt1")
 
-(define_insn ""
-  [(set (reg:SI 18) (gt:SI (match_operand:SI 0 "arith_reg_operand" "r")
-			   (const_int 0)))]
-  ""
-  "cmp/pl	%0")
-
-(define_insn ""
-  [(set (reg:SI 18) (ge:SI (match_operand:SI 0 "arith_reg_operand" "r")
-			   (const_int 0)))]
-  ""
-  "cmp/pz	%0")
-
-(define_insn "cmpeq_0"
-  [(set (reg:SI 18) (eq:SI (match_operand:SI 0 "arith_reg_operand" "r")
-			   (const_int 0)))]
-  ""
-  "tst	%0,%0 ! t0")
-
 (define_insn "cmpeqsi_t"
-  [(set (reg:SI 18) (eq:SI (match_operand:SI 0 "arith_operand" "r,N,z,r")
-			   (match_operand:SI 1 "arith_operand" "N,r,rI,r")))]
+  [(set (reg:SI 18) (eq:SI (match_operand:SI 0 "arith_reg_operand" "r,z,r")
+			   (match_operand:SI 1 "arith_operand" "N,rI,r")))]
   ""
   "@
-	tst	%0,%0 !t1
-	tst	%1,%1 !t2
+	tst	%0,%0 ! t0
 	cmp/eq	%1,%0
 	cmp/eq	%1,%0")
 
 (define_insn "cmpgtsi_t"
   [(set (reg:SI 18) (gt:SI (match_operand:SI 0 "arith_reg_operand" "r,r")
-			   (match_operand:SI 1 "arith_operand" "N,r")))]
+			   (match_operand:SI 1 "arith_reg_or_0_operand" "r,N")))]
   ""
   "@
-	cmp/pl	%0
-	cmp/gt	%1,%0")
+	cmp/gt	%1,%0
+	cmp/pl	%0")
 
 (define_insn "cmpgesi_t"
   [(set (reg:SI 18) (ge:SI (match_operand:SI 0 "arith_reg_operand" "r,r")
-			   (match_operand:SI 1 "arith_operand" "N,r")))]
+			   (match_operand:SI 1 "arith_reg_or_0_operand" "r,N")))]
   ""
   "@
-	cmp/pz	%0
-	cmp/ge	%1,%0")
-
+	cmp/ge	%1,%0
+	cmp/pz	%0")
 
 ;; -------------------------------------------------------------------------
 ;; SImode unsigned integer comparisons
 ;; -------------------------------------------------------------------------
 
 (define_insn "cmpgeusi_t"
-  [(set (reg:SI 18) (geu:SI (match_operand:SI 0 "arith_reg_operand" "r,r")
-			    (match_operand:SI 1 "arith_operand" "N,r")))]
+  [(set (reg:SI 18) (geu:SI (match_operand:SI 0 "arith_reg_operand" "r")
+			    (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
-  "@
-	cmp/pz	%1
-	cmp/hs	%1,%0")
+  "cmp/hs	%1,%0")
 
 (define_insn "cmpgtusi_t"
-  [(set (reg:SI 18) (gtu:SI (match_operand:SI 0 "arith_operand" "r,r")
-			    (match_operand:SI 1 "arith_operand" "N,r")))]
+  [(set (reg:SI 18) (gtu:SI (match_operand:SI 0 "arith_reg_operand" "r")
+			    (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
-  "@
-	cmp/pl	%1
-	cmp/hi	%1,%0")
+  "cmp/hi	%1,%0")
 
 ;; We save the compare operands in the cmpxx patterns and use them when
 ;; we generate the branch.
@@ -280,8 +244,7 @@
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   ""
   "add	%2,%0"
-  [(set_attr "length" "2")
-   (set_attr "type" "arith")])
+  [(set_attr "type" "arith")])
 
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -334,7 +297,6 @@
   ""
   "jsr	@%0%#"
   [(set_attr "type" "sfunc")
-   (set_attr "length" "4")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_expand "udivsi3"
@@ -367,7 +329,6 @@
   ""
   "jsr	@%0%#"
   [(set_attr "type" "sfunc")
-   (set_attr "length" "4")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_expand "divsi3"
@@ -449,7 +410,6 @@
   ""
   "jsr	@%0%#"
   [(set_attr "type" "sfunc")
-   (set_attr "length" "4")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_expand "mulsi3_call"
@@ -720,7 +680,6 @@
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "in_delay_slot" "no")
-   (set_attr "length" "4")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_expand "ashrsi3"
@@ -832,8 +791,7 @@
 	(neg:SI (plus:SI (reg:SI 18) (match_operand:SI 1 "arith_reg_operand" "r"))))]
   ""
   "negc	%1,%0"
-  [(set_attr "length" "2")
-   (set_attr "type" "arith")])
+  [(set_attr "type" "arith")])
 
 (define_expand "negdi2"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
@@ -1012,7 +970,7 @@
 	lds.l	%1,%0
 	tst	%1,%1\;bt	T%*\;bra	F%*\;sett\;T%*:clrt\;F%*:%^
 	fake %1,%0"
-  [(set_attr "type" "pcloadsi,move,load,move,store,store,move,load,move,move,move")])
+  [(set_attr "type" "pcload,move,load,move,store,store,move,load,move,move,move")])
 			  
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
@@ -1034,8 +992,7 @@
 	movt	%0
 	sts	%1,%0
 	lds	%1,%0"
- [(set_attr "length" "2,2,2,2,2,2")
-  (set_attr "type" "move,load,store,move,move,move")])
+ [(set_attr "type" "move,load,store,move,move,move")])
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
@@ -1056,8 +1013,7 @@
 	fake %1,%0
 	sts	%1,%0
 	lds	%1,%0"
-  [(set_attr "length" "*,2,2,2,2,2,2,2")
-   (set_attr "type" "pcloadhi,move,load,move,store,move,move,move")])
+  [(set_attr "type" "pcload,move,load,move,store,move,move,move")])
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_movdst_operand" "")
@@ -1079,8 +1035,8 @@
   "register_operand (operands[0], DImode)
   || register_operand (operands[1], DImode)"
   "* return output_movedouble (insn, operands, DImode);"
-  [(set_attr "length" "*,4,4,4,4")
-   (set_attr "type" "pcloadsi,move,load,store,move")])
+  [(set_attr "length" "4")
+   (set_attr "type" "pcload,move,load,store,move")])
 
 ;; If the output is a register and the input is memory, we have to be careful
 ;; and see which word needs to be loaded first.
@@ -1373,7 +1329,8 @@
   ""
   "*
 {
-  if (get_attr_length(insn) == 10) 
+  /* The length is 16 if the delay slot is unfilled.  */
+  if (get_attr_length(insn) >= 14) 
     {
       return output_far_jump(insn, operands[0]);
     }
@@ -1393,8 +1350,7 @@
   "TARGET_BSR"
   "bsr	%O0%#"
   [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")
-   (set_attr "length" "4")])
+   (set_attr "in_delay_slot" "no")])
 
 (define_insn "calli"
   [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "r"))
@@ -1403,8 +1359,7 @@
   ""
   "jsr	@%0%#"
   [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")
-   (set_attr "length" "4")])
+   (set_attr "in_delay_slot" "no")])
 
 (define_insn "bsr_value"
   [(set (match_operand 0 "" "=rf")
@@ -1414,8 +1369,7 @@
   "TARGET_BSR"
   "bsr	%O1%#"
   [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")
-   (set_attr "length" "4")])
+   (set_attr "in_delay_slot" "no")])
 
 (define_insn "call_valuei"
   [(set (match_operand 0 "" "=rf")
@@ -1425,8 +1379,7 @@
   ""
   "jsr	@%1%#"
   [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")
-   (set_attr "length" "4")])
+   (set_attr "in_delay_slot" "no")])
 
 (define_expand "call"
   [(parallel[(call (match_operand 0 "arith_reg_operand" "o")
@@ -1449,8 +1402,7 @@
   ""
   "jmp	@%0%#"
   [(set_attr "needs_delay_slot" "yes")
-   (set_attr "in_delay_slot" "no")
-   (set_attr "length" "4")])
+   (set_attr "in_delay_slot" "no")])
 
 
 ;; ------------------------------------------------------------------------
@@ -1507,7 +1459,7 @@
 				(match_operand:SI 1 "arith_operand" "")))
    (set (reg:SI 18)
 	(gtu:SI (match_dup 5)
-		(match_operand:SI 2 "arith_operand" "")))
+		(match_operand:SI 2 "arith_reg_operand" "")))
    (set (pc)
 	(if_then_else (eq (reg:SI 18)
 			  (const_int 1))
@@ -1700,10 +1652,7 @@
    (set (match_operand:SI 2 "register_operand" "=r")
 	(reg:SI 0))]
    ""
-   "mova	%O0,r0\;mov	r0,%1\;mov	r0,%2"
-   [(set_attr "length" "6")
-    (set_attr "in_delay_slot" "no")])
-
+   "mova	%O0,r0\;mov	r0,%1\;mov	r0,%2")
 
 ;; -------------------------------------------------------------------------
 ;; Combine patterns
@@ -1910,8 +1859,7 @@
 	      (clobber (reg:SI 0))])]
   ""
   "jsr	@%0%#"
-  [(set_attr "length" "4")
-   (set_attr "type" "sfunc")
+  [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "block_lump_real"
@@ -1926,8 +1874,7 @@
 	      (clobber (reg:SI 0))])]
   ""
   "jsr	@%0%#"
-  [(set_attr "length" "4")
-   (set_attr "type" "sfunc")
+  [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "mac"
@@ -1952,8 +1899,3 @@
 	       (const_int 0)))]
   "TARGET_SH2"
   "dt	%0")
-  
-	
-	
-	
-	
