@@ -61,10 +61,10 @@ OBJ =	VersionI.o backspace.o close.o dfe.o dolio.o due.o endfile.o err.o \
 	util.o wref.o wrtfmt.o wsfe.o wsle.o wsne.o xwsne.o \
 	ftell_.o
 
-all: ../stamp-libi77
+all: ../s-libi77
 
-../stamp-libi77: $(OBJ)
-	echo timestamp > ../stamp-libi77
+../s-libi77: $(OBJ)
+	echo timestamp > ../s-libi77
 
 archive:
 	$(AR) $(ARFLAGS) $(LIBG2C) $(OBJ)
@@ -149,7 +149,7 @@ clean: mostlyclean
 	rm -f config.log
 
 distclean: clean
-	rm -f config.cache config.status Makefile ../stamp-libi77 configure
+	rm -f config.cache config.status Makefile ../s-libi77 configure
 
 maintainer-clean:
 
