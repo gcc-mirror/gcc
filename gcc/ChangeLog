@@ -1,3 +1,21 @@
+2001-05-23  Zack Weinberg  <zackw@stanford.edu>
+
+	* diagnostic.c (vnotice): Kill.
+	(fnotice): Call vfprintf directly.
+	(diagnostic_for_decl, output_do_verbatim, output_verbatim,
+	verbatim, set_diagnostic_context): Rename string argument to
+	indicate that it is run through gettext.
+	(vbuild_message_string, build_message_string, output_do_printf):
+	Rename string argument to indicate that it is NOT run through
+	gettext.
+	(output_printf, diagnostic_for_decl, fatal_io_error, sorry,
+	output_do_verbatim, set_diagnostic_context, fnotice, _fatal_insn):
+	Run msgid argument through gettext.
+	(default_print_error_function): Run constant strings through
+	gettext when nothing else will.
+	(fatal_error, internal_error, error_recursion): Use fnotice.
+	Present complete sentences to gettext.
+
 2001-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* jump.c (mark_jump_label): Fix thinko in 2001-05-19 change.
