@@ -2807,7 +2807,8 @@ rest_of_compilation (decl)
 	  }
 
       /* If requested, consider whether to make this function inline.  */
-      if (DECL_INLINE (decl) || flag_inline_functions)
+      if ((DECL_INLINE (decl) && !flag_no_inline) 
+	  || flag_inline_functions)
 	{
 	  timevar_push (TV_INTEGRATION);
 	  lose = function_cannot_inline_p (decl);

@@ -337,6 +337,13 @@ struct c_lang_decl {
   (((struct c_lang_decl *) DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))) \
    ->saved_tree)
 
+/* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this is
+     the approximate number of statements in this function.  There is
+     no need for this number to be exact; it is only used in various
+     heuristics regarding optimization.  */
+#define DECL_NUM_STMTS(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
+
 extern void c_mark_lang_decl                    PARAMS ((struct c_lang_decl *));
 
 /* The variant of the C language being processed.  Each C language

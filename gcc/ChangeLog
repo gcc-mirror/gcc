@@ -1,3 +1,18 @@
+2001-03-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (DECL_NUM_STMTS): New macro.
+	* c-decl.c (duplicate_decls): Copy DECL_NUM_STMTS, not
+	DECL_FRAME_SIZE.
+	(pushdecl): Likewise.
+	* c-semantics.c (add_stmt): Update DECL_NUM_STMTS.
+	* integrate.c (expand_inline_function): Don't check
+	DECL_FRAME_SIZE.
+	* print-tree.c (print_node): Don't print it.
+	* toplev.c (rest_of_compilation): Don't try to inline when
+	flag_no_inline is on.
+	* tree.h (DECL_FRAME_SIZE): Remove.
+	(tree_decl): Adjust accordingly.
+	
 Mon Mar 26 15:59:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (truncdfsf2_3, trunctfsf2_2): Change predicate to memory_operand.

@@ -13800,8 +13800,6 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
 	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	}
-      else
-	DECL_FRAME_SIZE (newdecl) = DECL_FRAME_SIZE (olddecl);
 
       DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
       DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);

@@ -1,3 +1,7 @@
+Mon Mar 26 18:13:30 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (duplicate_decls): Don't copy DECL_FRAME_SIZE.
+
 2001-03-22  Zack Weinberg  <zackw@stanford.edu>
 
 	* lang-specs.h: Add zero initializer for cpp_spec field to

@@ -3694,7 +3694,7 @@ duplicate_decls (newdecl, olddecl)
 	      SET_DECL_RTL (newdecl, DECL_RTL (olddecl));
 	    }
 	  else
-	    DECL_FRAME_SIZE (newdecl) = DECL_FRAME_SIZE (olddecl);
+	    DECL_NUM_STMTS (newdecl) = DECL_NUM_STMTS (olddecl);
 
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
 	  if ((DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl)))
@@ -6348,7 +6348,10 @@ init_decl_processing ()
   if (! flag_permissive && ! pedantic)
     flag_pedantic_errors = 1;
   if (!flag_no_inline)
-    flag_inline_trees = 1;
+    {
+      flag_inline_trees = 1;
+      flag_no_inline = 1;
+    }
 
   /* Initially, C.  */
   current_lang_name = lang_name_c;

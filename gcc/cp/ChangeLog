@@ -1,3 +1,25 @@
+2001-03-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (optimize.o): Depend on params.h.
+	(duplicate_decls): Copy DECL_NUM_STMTS, not DECL_FRAME_SIZE.
+	(init_decl_processing): Set flag_no_inline when doing
+	inlining-on-trees.
+	* optimize.c: Include params.h.
+	(struct inline_data): Improve documentation of FNS.  Add
+	FIRST_INLINED_FN, INLINED_STMTS, and CLONING_P.
+	(INSNS_PER_STMT): New macro.
+	(remap_block): Use CLONING_P.
+	(inlinable_function_p): Don't inline big functions.
+	(expand_call_inline): Keep track of how much inlining we've done.
+	(optimize_function): Set FIRST_INLINED_FN.
+	(maybe_clone_body): Set CLONING_P.
+	* semantics.c (simplify_aggr_init_exprs_r): Fix typing problems in
+	tree nodes.
+	(genrtl_finish_function): Clear DECL_DEFER_OUTPUT before calling
+	rest_of_compilation.  Clear DECL_RTL for local variables
+	afterwards.
+	(clear_decl_rtl): New function.
+		
 2001-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* mangle.c (write_discriminator): Use `_0' for discriminator 1,

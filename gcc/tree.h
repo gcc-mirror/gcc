@@ -1396,9 +1396,6 @@ struct tree_type
 #define DECL_INCOMING_RTL(NODE) (PARM_DECL_CHECK (NODE)->decl.u2.r)
 /* For FUNCTION_DECL, if it is inline, holds the saved insn chain.  */
 #define DECL_SAVED_INSNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u2.f)
-/* For FUNCTION_DECL, if it is inline,
-   holds the size of the stack frame, as an integer.  */
-#define DECL_FRAME_SIZE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
 /* For FUNCTION_DECL, if it is built-in,
    this identifies which built-in operation it is.  */
 #define DECL_FUNCTION_CODE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u1.f)
@@ -1691,12 +1688,15 @@ struct tree_decl
   unsigned lang_flag_6 : 1;
   unsigned lang_flag_7 : 1;
 
-  /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
-     If built-in, this is the code for which built-in function.
-     For other kinds of decls, this is DECL_ALIGN and DECL_OFFSET_ALIGN.  */
   union {
-    HOST_WIDE_INT i;
+    /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
+       DECL_FUNCTION_CODE.  */
     enum built_in_function f;
+    /* In a FUNCITON_DECL for which DECL_BUILT_IN does not hold, this
+       is used by language-dependent code.  */
+    HOST_WIDE_INT i;
+    /* DECL_ALIGN and DECL_OFFSET_ALIGN.  (These are not used for
+       FUNCTION_DECLs).  */
     struct {unsigned int align : 24; unsigned int off_align : 8;} a;
   } u1;
 
