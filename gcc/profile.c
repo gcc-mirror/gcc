@@ -84,7 +84,7 @@ struct bb_info {
 #define EDGE_INFO(e)  ((struct edge_info *) (e)->aux)
 #define BB_INFO(b)  ((struct bb_info *) (b)->aux)
 
-/* Counter summary from the last set of coverage counts read. */
+/* Counter summary from the last set of coverage counts read.  */
 
 const struct gcov_ctr_summary *profile_info;
 
@@ -731,7 +731,7 @@ branch_prob ()
 	}
     }
   
-  /* Line numbers. */
+  /* Line numbers.  */
   if (coverage_begin_output ())
     {
       char const *prev_file_name = NULL;

@@ -149,11 +149,11 @@ typedef struct block_info
     struct
     {
       /* Single line graph cycle workspace.  Used for all-blocks
-	 mode. */
+	 mode.  */
       arc_t *arc;
       unsigned ident;
     } cycle; /* Used in all-blocks mode, after blocks are linked onto
-	       lines. */
+	       lines.  */
   } u;
 
   /* Temporary chain for solving graph, and for chaining blocks on one
@@ -218,9 +218,9 @@ typedef struct line_info
   {
     arc_t *branches; 	   /* branches from blocks that end on this
 			      line. Used for branch-counts when not
-			      all-blocks mode. */
+			      all-blocks mode.  */
     block_t *blocks;       /* blocks which start on this line.  Used
-			      in all-blocks mode. */
+			      in all-blocks mode.  */
   } u;
   unsigned exists : 1;
 } line_t;
@@ -1691,7 +1691,7 @@ accumulate_line_counts (src)
 		      arc_t *cycle_arc = arc;
 		      arc_t *probe_arc;
 		      
-		      /* Locate the smallest arc count of the loop. */
+		      /* Locate the smallest arc count of the loop.  */
 		      for (dst = head; (probe_arc = dst->u.cycle.arc);
 			   dst = probe_arc->src)
 			if (cycle_count > probe_arc->count)
@@ -1723,7 +1723,7 @@ accumulate_line_counts (src)
 	      arc = head->u.cycle.arc;
 	      if (arc)
 		{
-		  /* It was not the first vertex. Move onto next arc. */
+		  /* It was not the first vertex. Move onto next arc.  */
 		  head->u.cycle.arc = NULL;
 		  head = arc->src;
 		  arc = arc->succ_next;

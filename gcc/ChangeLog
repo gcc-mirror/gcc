@@ -1,3 +1,28 @@
+2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h: Fix comment formatting.
+	* bt-load.c: Likewise.
+	* builtins.c: Likewise.
+	* c-common.c: Likewise.
+	* c-common.h: Likewise.
+	* c-format.c: Likewise.
+	* coverage.c: Likewise.
+	* cpplib.h: Likewise.
+	* cpppch.c: Likewise.
+	* dbxout.c: Likewise.
+	* diagnostic.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* expr.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* gcc.c: Likewise.
+	* gcov-io.c: Likewise.
+	* gcov-io.h: Likewise.
+	* gcov.c: Likewise.
+	* profile.c: Likewise.
+	* real.h: Likewise.
+	* sched-deps.c: Likewise.
+
 2003-06-23  Roger Sayle  <roger@eyesopen.com>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 

@@ -587,7 +587,7 @@ dbxout_handle_pch (unsigned at_end)
     }
   else
     {
-      /* ... and an EINCL. */
+      /* ... and an EINCL.  */
       dbxout_end_source_file (0);
 
       /* Deal with cases where 'lastfile' was never actually changed.  */

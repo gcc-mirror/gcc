@@ -489,7 +489,7 @@ sched_analyze_1 (deps, x, insn)
              them as writes to get proper dependencies for following
              instructions.  We must handle them as reads to get proper
              dependencies from this to previous instructions.
-             Thus we need to call sched_analyze_2. */
+             Thus we need to call sched_analyze_2.  */
 
 	  sched_analyze_2 (deps, XEXP (dest, 0), insn);  
 	}

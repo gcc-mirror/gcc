@@ -4026,7 +4026,7 @@ expand_builtin_fputs (tree arglist, int ignore, int unlocked)
       {
 	tree string_arg;
 
-	/* If optimizing for size keep fputs. */
+	/* If optimizing for size keep fputs.  */
 	if (optimize_size)
 	  return 0;
 	string_arg = TREE_VALUE (arglist);

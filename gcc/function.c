@@ -6963,7 +6963,7 @@ use_return_register ()
 
 static GTY(()) rtx initial_trampoline;
 
-/* Generate RTL for the end of the current function. */
+/* Generate RTL for the end of the current function.  */
 
 void
 expand_function_end ()
