@@ -1,3 +1,8 @@
+2003-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* com.c (ffecom_sym_transform_): Set tree type of offset
+	to ssizetype.
+
 2003-10-21  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (f/g77.1): Honor $(docobjdir).

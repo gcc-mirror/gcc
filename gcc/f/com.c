@@ -7919,6 +7919,7 @@ ffecom_sym_transform_ (ffesymbol s)
 	      {
 		ffetargetOffset offset;
 		ffestorag cst;
+		tree toffset;
 
 		cst = ffestorag_parent (st);
 		assert (cst == ffesymbol_storage (cs));
@@ -7935,9 +7936,10 @@ ffecom_sym_transform_ (ffesymbol s)
 			     ffecom_1 (ADDR_EXPR,
 				       build_pointer_type (TREE_TYPE (ct)),
 				       ct));
+		toffset = build_int_2 (offset, 0);
+		TREE_TYPE (toffset) = ssizetype;
 		t = ffecom_2 (PLUS_EXPR, TREE_TYPE (t),
-			      t,
-			      build_int_2 (offset, 0));
+			      t, toffset);
 		t = convert (build_pointer_type (type),
 			     t);
 		TREE_CONSTANT (t) = 1;
