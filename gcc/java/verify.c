@@ -173,6 +173,8 @@ merge_types (type1, type2)
 
       if (CLASS_INTERFACE (TYPE_NAME (tt1)))
 	{
+	  /* FIXME: should see if two interfaces have a common
+	     superinterface.  */
 	  if (CLASS_INTERFACE (TYPE_NAME (tt2)))
 	    {
 	      /* This is a kludge, but matches what Sun's verifier does.
@@ -185,7 +187,7 @@ merge_types (type1, type2)
 	      if (can_widen_reference_to (tt2, tt1))
 		return type1;
 	      else
-		return TYPE_UNKNOWN;
+		return object_ptr_type_node;
 	    }
 	}
       else if (CLASS_INTERFACE (TYPE_NAME (tt2)))
@@ -193,7 +195,7 @@ merge_types (type1, type2)
 	  if (can_widen_reference_to (tt1, tt2))
 	    return type2;
 	  else
-	    return TYPE_UNKNOWN;
+	    return object_ptr_type_node;
 	}
 
       type1 = tt1;
