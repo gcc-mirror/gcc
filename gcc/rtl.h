@@ -1292,6 +1292,7 @@ extern int invert_exp			PROTO ((rtx, rtx));
 extern int can_reverse_comparison_p	PROTO ((rtx, rtx));
 extern void delete_for_peephole		PROTO ((rtx, rtx));
 extern int condjump_in_parallel_p	PROTO ((rtx));
+extern void never_reached_warning	PROTO ((rtx));
 
 /* Flags for jump_optimize() */
 #define JUMP_CROSS_JUMP		1

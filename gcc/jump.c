@@ -2149,6 +2149,9 @@ delete_barrier_successors (f)
       if (GET_CODE (insn) == BARRIER)
 	{
 	  insn = NEXT_INSN (insn);
+
+	  never_reached_warning (insn);
+
 	  while (insn != 0 && GET_CODE (insn) != CODE_LABEL)
 	    {
 	      if (GET_CODE (insn) == NOTE
@@ -4243,6 +4246,52 @@ delete_for_peephole (from, to)
      we *do not* delete the BARRIER that follows,
      since the peephole that replaces this sequence
      is also an unconditional jump in that case.  */
+}
+
+/* We have determined that INSN is never reached, and are about to
+   delete it.  Print a warning if the user asked for one.
+
+   To try to make this warning more useful, this should only be called
+   once per basic block not reached, and it only warns when the basic
+   block contains more than one line from the current function, and
+   contains at least one operation.  CSE and inlining can duplicate insns,
+   so it's possible to get spurious warnings from this.  */
+
+void
+never_reached_warning (avoided_insn)
+     rtx avoided_insn;
+{
+  rtx insn;
+  rtx a_line_note = NULL;
+  int two_avoided_lines = 0;
+  int contains_insn = 0;
+  
+  if (! warn_notreached)
+    return;
+
+  /* Scan forwards, looking at LINE_NUMBER notes, until
+     we hit a LABEL or we run out of insns.  */
+  
+  for (insn = avoided_insn; insn != NULL; insn = NEXT_INSN (insn))
+    {
+       if (GET_CODE (insn) == CODE_LABEL)
+	 break;
+       else if (GET_CODE (insn) == NOTE		/* A line number note? */ 
+		&& NOTE_LINE_NUMBER (insn) >= 0)
+	{
+	  if (a_line_note == NULL)
+	    a_line_note = insn;
+	  else
+	    two_avoided_lines |= (NOTE_LINE_NUMBER (a_line_note)
+				  != NOTE_LINE_NUMBER (insn));
+	}
+       else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	 contains_insn = 1;
+    }
+  if (two_avoided_lines && contains_insn)
+    warning_with_file_and_line (NOTE_SOURCE_FILE (a_line_note),
+				NOTE_LINE_NUMBER (a_line_note),
+				"will never be executed");
 }
 
 /* Invert the condition of the jump JUMP, and make it jump

@@ -79,6 +79,10 @@ extern int extra_warnings;
 
 extern int warn_unused;
 
+/* Nonzero to warn about code which is never reached.  */
+
+extern int warn_notreached;
+
 /* Nonzero means warn if inline function is too large.  */
 
 extern int warn_inline;

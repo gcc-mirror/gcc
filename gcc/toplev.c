@@ -1195,6 +1195,10 @@ int warnings_are_errors = 0;
 
 int warn_unused;
 
+/* Nonzero to warn about code which is never reached.  */
+
+int warn_notreached;
+
 /* Nonzero to warn about variables used before they are initialized.  */
 
 int warn_uninitialized;
@@ -1253,6 +1257,8 @@ lang_independent_options W_options[] =
    "Warn about returning structures, unions or arrays" },
   {"cast-align", &warn_cast_align, 1,
    "Warn about pointer casts which increase alignment" },
+  {"unreachable-code", &warn_notreached, 1, 
+   "Warn about code that will never be executed" },
   {"uninitialized", &warn_uninitialized, 1,
    "Warn about unitialized automatic variables"},
   {"inline", &warn_inline, 1,
@@ -2944,7 +2950,8 @@ compile_file (name)
   init_rtl ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
-		  || flag_test_coverage);
+		  || flag_test_coverage
+		  || warn_notreached);
   init_regs ();
   init_decl_processing ();
   init_optabs ();

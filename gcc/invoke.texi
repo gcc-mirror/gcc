@@ -132,8 +132,8 @@ in the following sections.
 -Wparentheses -Wpointer-arith  -Wredundant-decls
 -Wreturn-type -Wshadow  -Wsign-compare  -Wstrict-prototypes  
 -Wswitch  -Wtraditional  
--Wtrigraphs -Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
--Wunknown-pragmas
+-Wtrigraphs -Wundef  -Wuninitialized  -Wunknown-pragmas -Wunreachable-code 
+-Wunused  -Wwrite-strings
 @end smallexample
 
 @item Debugging Options
@@ -1765,6 +1765,27 @@ cases where multiple declaration is valid and changes nothing.
 
 @item -Wnested-externs
 Warn if an @code{extern} declaration is encountered within an function.
+
+@item -Wunreachable-code
+Warn if the compiler detects that code will never be executed.
+
+This option is intended to warn when the compiler detects that at
+least a whole line of source code will never be executed, because
+some condition is never satisfied or because it is after a
+procedure that never returns.
+
+It is possible for this option to produce a warning even though there
+are circumstances under which part of the affected line can be executed,
+so care should be taken when removing apparently-unreachable code.
+
+For instance, when a function is inlined, a warning may mean that the
+line is unreachable in only one inlined copy of the function.  
+
+This option is not made part of @samp{-Wall} because in a debugging
+version of a program there is often substantial code which checks
+correct functioning of the program and is, hopefully, unreachable
+because the program does work.  Another common use of unreachable
+code is to provide behaviour which is selectable at compile-time.
 
 @item -Winline
 Warn if a function can not be inlined, and either it was declared as inline,

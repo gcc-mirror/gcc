@@ -1682,6 +1682,8 @@ delete_block (b)
 
   insn = b->head;
   
+  never_reached_warning (insn);
+
   if (GET_CODE (insn) == CODE_LABEL)
     {
       rtx x, *prev = &exception_handler_labels;
