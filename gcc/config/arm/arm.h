@@ -1703,9 +1703,9 @@ typedef struct
 
    On the ARM, normally the first 16 bytes are passed in registers r0-r3; all
    other arguments are passed on the stack.  If (NAMED == 0) (which happens
-   only in assign_parms, since SETUP_INCOMING_VARARGS is defined), say it is
-   passed in the stack (function_prologue will indeed make it pass in the
-   stack if necessary).  */
+   only in assign_parms, since TARGET_SETUP_INCOMING_VARARGS is
+   defined), say it is passed in the stack (function_prologue will
+   indeed make it pass in the stack if necessary).  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   arm_function_arg (&(CUM), (MODE), (TYPE), (NAMED))
 
@@ -1764,26 +1764,6 @@ typedef struct
   arm_va_arg (valist, type)
 
 
-/* Perform any actions needed for a function that is receiving a variable
-   number of arguments.  CUM is as above.  MODE and TYPE are the mode and type
-   of the current parameter.  PRETEND_SIZE is a variable that should be set to
-   the amount of stack that must be pushed by the prolog to pretend that our
-   caller pushed it.
-
-   Normally, this macro will push all remaining incoming registers on the
-   stack and set PRETEND_SIZE to the length of the registers pushed.
-
-   On the ARM, PRETEND_SIZE is set in order to have the prologue push the last
-   named arg and all anonymous args onto the stack.
-   XXX I know the prologue shouldn't be pushing registers, but it is faster
-   that way.  */
-#define SETUP_INCOMING_VARARGS(CUM, MODE, TYPE, PRETEND_SIZE, NO_RTL)	\
-{									\
-  cfun->machine->uses_anonymous_args = 1;				\
-  if ((CUM).nregs < NUM_ARG_REGS)					\
-    (PRETEND_SIZE) = (NUM_ARG_REGS - (CUM).nregs) * UNITS_PER_WORD;	\
-}
-
 /* If your target environment doesn't prefix user functions with an
    underscore, you may wish to re-define this to prevent any conflicts.
    e.g. AOF may prefix mcount with an underscore.  */
