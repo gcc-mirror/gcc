@@ -126,7 +126,8 @@ extern int		arith32_operand ();
 extern int		arith_operand ();
 extern int		cmp_op ();
 extern int		cmp2_op ();
-extern unsigned long	compute_frame_size ();
+extern long		compute_frame_size ();
+extern int		epilogue_reg_mentioned_p ();
 extern void		expand_block_move ();
 extern int		equality_op ();
 extern int		fcmp_op ();
@@ -482,7 +483,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 31]"
+#define MIPS_VERSION "[AL 1.1, MM 32]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -1229,6 +1230,7 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    scratch register set, and not used for passing and returning
    arguments and any other information used in the calling sequence
    (such as pic).  */
+
 #define MIPS_TEMP1_REGNUM (GP_REG_FIRST + 8)
 #define MIPS_TEMP2_REGNUM (GP_REG_FIRST + 9)
 
@@ -1540,21 +1542,21 @@ extern enum reg_class mips_char_to_class[];
 
 struct mips_frame_info
 {
-  unsigned long total_size;	/* # bytes that the entire frame takes up */
-  unsigned long var_size;	/* # bytes that variables take up */
-  unsigned long args_size;	/* # bytes that outgoing arguments take up */
-  unsigned long extra_size;	/* # bytes of extra gunk */
-  unsigned int  gp_reg_size;	/* # bytes needed to store gp regs */
-  unsigned int  fp_reg_size;	/* # bytes needed to store fp regs */
-  unsigned long mask;		/* mask of saved gp registers */
-  unsigned long fmask;		/* mask of saved fp registers */
-  long		gp_save_offset;	/* offset from vfp to store gp registers */
-  long		fp_save_offset;	/* offset from vfp to store fp registers */
-  unsigned long gp_sp_offset;	/* offset from new sp to store gp registers */
-  unsigned long fp_sp_offset;	/* offset from new sp to store fp registers */
-  int		initialized;	/* != 0 if frame size already calculated */
-  int		num_gp;		/* number of gp registers saved */
-  int		num_fp;		/* number of fp registers saved */
+  long total_size;		/* # bytes that the entire frame takes up */
+  long var_size;		/* # bytes that variables take up */
+  long args_size;		/* # bytes that outgoing arguments take up */
+  long extra_size;		/* # bytes of extra gunk */
+  int  gp_reg_size;		/* # bytes needed to store gp regs */
+  int  fp_reg_size;		/* # bytes needed to store fp regs */
+  long mask;			/* mask of saved gp registers */
+  long fmask;			/* mask of saved fp registers */
+  long gp_save_offset;		/* offset from vfp to store gp registers */
+  long fp_save_offset;		/* offset from vfp to store fp registers */
+  long gp_sp_offset;		/* offset from new sp to store gp registers */
+  long fp_sp_offset;		/* offset from new sp to store fp registers */
+  int  initialized;		/* != 0 if frame size already calculated */
+  int  num_gp;			/* number of gp registers saved */
+  int  num_fp;			/* number of fp registers saved */
 };
 
 extern struct mips_frame_info current_frame_info;
@@ -1896,9 +1898,7 @@ typedef struct mips_args {
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN,N)				\
   (get_attr_dslot (INSN) == DSLOT_NO					\
    && get_attr_length (INSN) == 1					\
-   && ! reg_mentioned_p (stack_pointer_rtx, PATTERN (INSN))		\
-   && ! reg_mentioned_p (frame_pointer_rtx, PATTERN (INSN))		\
-   && ! reg_mentioned_p (arg_pointer_rtx, PATTERN (INSN)))
+   && ! epilogue_reg_mentioned_p (PATTERN (INSN)))
 
 /* Tell prologue and epilogue if register REGNO should be saved / restored.  */
 
