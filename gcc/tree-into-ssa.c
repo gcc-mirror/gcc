@@ -1056,8 +1056,7 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
     }
 
   /* Remove the blocks where we already have the phis.  */
-  bitmap_operation (phi_insertion_points, phi_insertion_points,
-		    def_map->phi_blocks, BITMAP_AND_COMPL);
+  bitmap_and_compl_into (phi_insertion_points, def_map->phi_blocks);
 
   /* Now compute global livein for this variable.  Note this modifies
      def_map->livein_blocks.  */
@@ -1562,7 +1561,7 @@ rewrite_into_ssa (bool all)
       /* Initialize the array of variables to rename.  */
       gcc_assert (vars_to_rename);
 
-      if (bitmap_first_set_bit (vars_to_rename) < 0)
+      if (bitmap_empty_p (vars_to_rename))
 	{
 	  timevar_pop (TV_TREE_SSA_OTHER);
 	  return;

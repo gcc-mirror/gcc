@@ -1034,8 +1034,7 @@ reloads_to_loads (struct rewrite_info *ri, struct ref **refs,
 		}
 	    }
 	  if (num_reloads != old_num_r)
-	    bitmap_operation (ri->need_reload, ri->need_reload, ri->scratch,
-			      BITMAP_AND_COMPL);
+	    bitmap_and_compl_into (ri->need_reload, ri->scratch);
 	}
     }
   ri->num_reloads = num_reloads;
@@ -1163,8 +1162,7 @@ rewrite_program2 (bitmap new_deaths)
 		      ri.num_reloads--;
 		    }
 		}
-	      bitmap_operation (ri.need_reload, ri.need_reload, ri.scratch,
-				BITMAP_AND_COMPL);
+	      bitmap_and_compl_into (ri.need_reload, ri.scratch);
 	      last_bb = BLOCK_FOR_INSN (insn);
 	      last_block_insn = insn;
 	      if (!INSN_P (last_block_insn))
@@ -1397,9 +1395,8 @@ rewrite_program2 (bitmap new_deaths)
 		  bitmap_set_bit (ri.scratch, j);
 		  ri.num_reloads--;
 		}
-	  }
-	  bitmap_operation (ri.need_reload, ri.need_reload, ri.scratch,
-			    BITMAP_AND_COMPL);
+	    }
+	  bitmap_and_compl_into (ri.need_reload, ri.scratch);
 	}
 
       ri.need_load = 1;
@@ -1541,8 +1538,7 @@ detect_web_parts_to_rebuild (void)
      indeed not become member of it again).  */
   live_at_end -= 2;
   for (i = 0; i < (unsigned int) last_basic_block + 2; i++)
-    bitmap_operation (live_at_end[i], live_at_end[i], uses_as_bitmap,
-		      BITMAP_AND_COMPL);
+    bitmap_and_compl_into (live_at_end[i], uses_as_bitmap);
   live_at_end += 2;
 
   if (dump_file && (debug_new_regalloc & DUMP_REBUILD) != 0)

@@ -1657,8 +1657,7 @@ df_bb_rd_local_compute (struct df *df, basic_block bb, bitmap call_killed_defs)
 
       if (CALL_P (insn) && (df->flags & DF_HARD_REGS))
 	{
-	  bitmap_operation (bb_info->rd_kill, bb_info->rd_kill,
-			    call_killed_defs, BITMAP_IOR);
+	  bitmap_ior_into (bb_info->rd_kill, call_killed_defs);
 	  call_seen = 1;
 	}
     }

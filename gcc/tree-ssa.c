@@ -470,8 +470,7 @@ verify_flow_sensitive_alias_info (void)
 
       if (pi->name_mem_tag
 	  && !pi->pt_malloc
-	  && (pi->pt_vars == NULL
-	      || bitmap_first_set_bit (pi->pt_vars) < 0))
+	  && (pi->pt_vars == NULL || bitmap_empty_p (pi->pt_vars)))
 	{
 	  error ("Pointers with a memory tag, should have points-to sets or point to malloc");
 	  goto err;

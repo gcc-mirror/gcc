@@ -356,7 +356,7 @@ tree_ssa_dominator_optimize (void)
 	 interactions between rewriting of _DECL nodes into SSA form
 	 and rewriting SSA_NAME nodes into SSA form after block
 	 duplication and CFG manipulation.  */
-      if (bitmap_first_set_bit (vars_to_rename) >= 0)
+      if (!bitmap_empty_p (vars_to_rename))
 	{
 	  rewrite_into_ssa (false);
 	  bitmap_clear (vars_to_rename);
@@ -367,7 +367,7 @@ tree_ssa_dominator_optimize (void)
 
       /* Removal of statements may make some EH edges dead.  Purge
 	 such edges from the CFG as needed.  */
-      if (bitmap_first_set_bit (need_eh_cleanup) >= 0)
+      if (!bitmap_empty_p (need_eh_cleanup))
 	{
 	  cfg_altered |= tree_purge_all_dead_eh_edges (need_eh_cleanup);
 	  bitmap_zero (need_eh_cleanup);

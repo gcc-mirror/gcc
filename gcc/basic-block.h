@@ -50,21 +50,20 @@ typedef bitmap regset;
 #define REG_SET_EQUAL_P(A, B) bitmap_equal_p (A, B)
 
 /* `and' a register set with a second register set.  */
-#define AND_REG_SET(TO, FROM) bitmap_operation (TO, TO, FROM, BITMAP_AND)
+#define AND_REG_SET(TO, FROM) bitmap_and_into (TO, FROM)
 
 /* `and' the complement of a register set with a register set.  */
-#define AND_COMPL_REG_SET(TO, FROM) \
-  bitmap_operation (TO, TO, FROM, BITMAP_AND_COMPL)
+#define AND_COMPL_REG_SET(TO, FROM) bitmap_and_compl_into (TO, FROM)
 
 /* Inclusive or a register set with a second register set.  */
-#define IOR_REG_SET(TO, FROM) bitmap_operation (TO, TO, FROM, BITMAP_IOR)
+#define IOR_REG_SET(TO, FROM) bitmap_ior_into (TO, FROM)
 
 /* Exclusive or a register set with a second register set.  */
-#define XOR_REG_SET(TO, FROM) bitmap_operation (TO, TO, FROM, BITMAP_XOR)
+#define XOR_REG_SET(TO, FROM) bitmap_xor_into (TO, FROM)
 
 /* Or into TO the register set FROM1 `and'ed with the complement of FROM2.  */
 #define IOR_AND_COMPL_REG_SET(TO, FROM1, FROM2) \
-  bitmap_ior_and_compl (TO, FROM1, FROM2)
+  bitmap_ior_and_compl_into (TO, FROM1, FROM2)
 
 /* Clear a single register in a register set.  */
 #define CLEAR_REGNO_REG_SET(HEAD, REG) bitmap_clear_bit (HEAD, REG)

@@ -1476,8 +1476,7 @@ safe_insert_insn_on_edge (rtx insn, edge e)
   for (x = insn; x; x = NEXT_INSN (x))
     if (INSN_P (x))
       note_stores (PATTERN (x), mark_killed_regs, killed);
-  bitmap_operation (killed, killed, e->dest->global_live_at_start,
-		    BITMAP_AND);
+  bitmap_and_into (killed, e->dest->global_live_at_start);
 
   EXECUTE_IF_SET_IN_REG_SET (killed, 0, regno, rsi)
     {
