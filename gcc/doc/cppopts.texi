@@ -582,13 +582,6 @@ the source line.
 
 The @option{-CC} option is generally used to support lint comments.
 
-@item -gcc
-@opindex gcc
-Define the macros @sc{__gnuc__}, @sc{__gnuc_minor__} and
-@sc{__gnuc_patchlevel__}.  These are defined automatically when you use
-@command{gcc -E}; you can turn them off in that case with
-@option{-no-gcc}.
-
 @item -traditional-cpp
 @opindex traditional-cpp
 Try to imitate the behavior of old-fashioned C preprocessors, as
