@@ -700,7 +700,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-attr.h insn-attrtab.c insn-opinit.c tree-check.h \
  s-flags s-config s-codes s-mlib s-unders s-genrtl \
  s-output s-recog s-emit s-extract s-peep s-check \
- s-attr s-attrtab s-opinit s-crt s-$(T)crtS s-crt0 \
+ s-attr s-attrtab s-opinit s-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
  genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext) \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
@@ -1309,21 +1309,22 @@ $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
 	  -fno-exceptions $(CRTSTUFF_T_CFLAGS) @inhibit_libc@ \
 	  -c $(srcdir)/crtstuff.c -DCRT_END -o $(T)crtend$(objext)
 
-# On some systems we also want to install versions of these files
-# compiled using PIC for use in shared libraries.
-$(T)crtbeginS.o $(T)crtendS.o: s-$(T)crtS ; @true
-
-s-$(T)crtS: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
+# These are versions of crtbegin and crtend for shared libraries.
+$(T)crtbeginS.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
   defaults.h frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
-	  -DCRT_BEGIN -DCRTSTUFFS_O -finhibit-size-directive \
-	  -fno-inline-functions -fno-exceptions @inhibit_libc@ -g0 \
-	  -c $(srcdir)/crtstuff.c -o $(T)crtbeginS$(objext)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
-	  -DCRT_END -DCRTSTUFFS_O -finhibit-size-directive \
-	  -fno-inline-functions -fno-exceptions @inhibit_libc@ -g0 \
-	  -c $(srcdir)/crtstuff.c -o $(T)crtendS$(objext)
-	touch s-$(T)crtS
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
+	  -finhibit-size-directive -fno-inline-functions \
+	  -fno-exceptions $(CRTSTUFF_T_CFLAGS_S) @inhibit_libc@ \
+	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFS_O \
+	  -o $(T)crtbeginS$(objext)
+
+$(T)crtendS.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
+  defaults.h frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
+	  -finhibit-size-directive -fno-inline-functions \
+	  -fno-exceptions $(CRTSTUFF_T_CFLAGS_S) @inhibit_libc@ \
+	  -c $(srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O \
+	  -o $(T)crtendS$(objext)
 
 # Compile the start modules crt0.o and mcrt0.o that are linked with every program
 crt0.o: s-crt0 ; @true
