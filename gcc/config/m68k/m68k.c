@@ -358,8 +358,8 @@ m68k_compute_frame_layout (void)
       for (regno = 16; regno < 24; regno++)
 	if (m68k_save_reg (regno, interrupt_handler))
 	  {
-	    mask |= 1 << (23 - regno);
-	    rmask |= 1 << (regno - 16);
+	    mask |= 1 << (regno - 16);
+	    rmask |= 1 << (23 - regno);
 	    saved++;
 	  }
       current_frame.foffset = saved * 12 /* (TARGET_CFV4E ? 8 : 12) */;
@@ -610,7 +610,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tfmovm %I0x%x,-(%Rsp)\n", current_frame.fpu_mask);
 #else
-	  asm_fprintf (stream, "\tfmovem %I0x%x,%Rsp@-\n", current_frmae.fpu_mask);
+	  asm_fprintf (stream, "\tfmovem %I0x%x,%Rsp@-\n", current_frame.fpu_mask);
 #endif
 	  if (dwarf2out_do_frame ())
 	    {
@@ -695,9 +695,9 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
       else
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l %I0x%x,-(%Rsp)\n", current_frame.reg_mask);
+	  asm_fprintf (stream, "\tmovm.l %I0x%x,-(%Rsp)\n", current_frame.reg_rev_mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %I0x%x,%Rsp@-\n", current_frame.reg_mask);
+	  asm_fprintf (stream, "\tmoveml %I0x%x,%Rsp@-\n", current_frame.reg_rev_mask);
 #endif
 	}
       if (dwarf2out_do_frame ())
@@ -922,7 +922,7 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 #else
               asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
                            reg_names[FRAME_POINTER_REGNUM],
-                           offset + fsize,
+                           current_frame.offset + fsize,
 			   current_frame.reg_mask);
 #endif
 	    }
@@ -1001,7 +1001,7 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size ATTRIBUTE_UNUSED
 	  asm_fprintf (stream, "\tfmovm -%wd(%s),%I0x%x\n",
 		       current_frame.foffset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
-		       current_frame.fpu_mask);
+		       current_frame.fpu_rev_mask);
 #else
 	  asm_fprintf (stream, "\tfmovem %s@(-%wd),%I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
