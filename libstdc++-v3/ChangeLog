@@ -1,3 +1,13 @@
+2004-02-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14071
+	* src/locale_init.cc (locale::global(const locale&)): Use
+	locale::name() in order to decide whether calling setlocale.
+	* testsuite/22_locale/locale/global_locale_objects/14071.cc: New.
+
+	* include/bits/locale_classes.h (locale::_Impl::_M_check_same_name()):
+	Avoid computing &= unnecessarily.
+
 2004-02-09  James E Wilson  <wilson@specifixinc.com>
 
 	PR libstdc++/5625
