@@ -1,5 +1,5 @@
 /* Definitions for SH running Linux-based GNU systems using ELF
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
 
 This file is part of GNU CC.
@@ -23,22 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION  fputs (" (SH GNU/Linux with ELF)", stderr);
 
-/* Return to the original ELF way.  */
-#undef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX ""
-
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
- 
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-  
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "long int"
-   
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
-
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\
    %{fPIC:-D__PIC__ -D__pic__} \
@@ -59,12 +43,12 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sh__ -Dlinux -Asystem=posix"
 
-#undef ASM_SPEC
-#define ASM_SPEC  "%{!mb:-little} %{mrelax:-relax}"
+#undef SUBTARGET_ASM_ENDIAN_SPEC
+#define SUBTARGET_ASM_ENDIAN_SPEC "%{!mb:-little}"
 
 #undef CC1_SPEC
 #define CC1_SPEC \
-  "-musermode %{!mb:-ml} %{!m3e:%{!m4:-m3}}"
+  "-musermode %{!mb:-ml} %{!m3e:%{!m4*:%{!m5*:-m3}}}"
 
 #undef CC1PLUS_SPEC
 #define CC1PLUS_SPEC \
