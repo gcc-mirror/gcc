@@ -1,3 +1,7 @@
+Wed Aug 19 13:10:30 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Wed Aug 19 13:06:47 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* collect2.c (extract_init_priority): Use atoi instead of strtoul.
