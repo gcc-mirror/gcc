@@ -1,3 +1,10 @@
+2003-10-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (INITIALIZE_TRAMPOLINE): Simplify.
+	* config/mips/mips.c (mips_load_got): Assume Pmode == ptr_mode.
+	* config/mips/mips.md (extendsidi2, *extendsidi2): Merge. Don't accept
+	contant operands.
+
 2003-10-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/extend.texi: Fix typos.

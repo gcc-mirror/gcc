@@ -2524,10 +2524,8 @@ typedef struct mips_args {
 									    \
   func_addr = plus_constant (ADDR, 32);					    \
   chain_addr = plus_constant (func_addr, GET_MODE_SIZE (ptr_mode));	    \
-  emit_move_insn (gen_rtx_MEM (ptr_mode, func_addr),			    \
-		  gen_lowpart (ptr_mode, force_reg (Pmode, FUNC)));	    \
-  emit_move_insn (gen_rtx_MEM (ptr_mode, chain_addr),			    \
-		  gen_lowpart (ptr_mode, force_reg (Pmode, CHAIN)));	    \
+  emit_move_insn (gen_rtx_MEM (ptr_mode, func_addr), FUNC);		    \
+  emit_move_insn (gen_rtx_MEM (ptr_mode, chain_addr), CHAIN);		    \
 									    \
   /* Flush both caches.  We need to flush the data cache in case	    \
      the system has a write-back cache.  */				    \

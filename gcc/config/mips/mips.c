@@ -1656,9 +1656,6 @@ mips_load_got (rtx base, rtx addr, int reloc)
   if (reloc != RELOC_CALL16 && reloc != RELOC_CALL_LO)
     RTX_UNCHANGING_P (mem) = 1;
 
-  if (Pmode != ptr_mode)
-    mem = gen_rtx_SIGN_EXTEND (Pmode, mem);
-
   return mem;
 }
 
