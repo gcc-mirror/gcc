@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA. */
 
 #define STANDARD_INCLUDE_COMPONENT "UWIN"
 #define SYSTEM_INCLUDE_DIR "/usr/gnu/include"
+#define MD_STARTFILE_PREFIX "/usr/gnu/lib/"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__i386__ -D_WIN32 -D__WIN32__ \
@@ -62,25 +63,24 @@ Boston, MA 02111-1307, USA. */
 /* Specify a different entry point when linking a DLL */
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{mwindows:--subsystem windows} %{mdll:--dll -e _DllMainCRTStartup@12}"
+  "%{mwindows:--subsystem windows} %{mdll:--dll -e _DllMainCRTStartup@12} \
+  %{!mdll:-u _main}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{mdll:dllcrt2%O%s} %{!mdll:crt2%O%s}"
 
 /* These are PE BFD bug workarounds. Should go away eventually. */
 
+/* Write the extra assembler code needed to declare a function
+   properly.  If we are generating SDB debugging information, this
+   will happen automatically, so we only need to handle other cases.  */
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do									\
     {									\
       if (i386_pe_dllexport_name_p (NAME))				\
-	{								\
-	  drectve_section ();						\
-	  fprintf ((FILE), "\t.ascii \" -export:%s\"\n", 		\
-		   I386_PE_STRIP_ENCODING (NAME));			\
-	  function_section (DECL);					\
-	}								\
-      /* disable i386_pe_declare_function_type for UWIN */		\
+	i386_pe_record_exported_symbol (NAME);				\
+      /* UWIN binutils bug workaround. */				\
       if (0 && write_symbols != SDB_DEBUG)				\
 	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
@@ -89,5 +89,4 @@ Boston, MA 02111-1307, USA. */
 
 #undef ASM_OUTPUT_EXTERNAL
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
-#undef ASM_FILE_END
 
