@@ -1,3 +1,20 @@
+Sun Mar 14 16:22:10 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cse.c (check_fold_consts): New static function.
+	(cfc_args): New struct.
+	(simplify_relational_operation): Use them in call to
+	`do_float_handler'.
+	
+	* toplev.c (do_float_handler): New function to wrap calls to
+	setjmp/set_float_handler.
+
+	* toplev.h (do_float_handler): Add extern prototype.
+
+	* tree.c (build_real_from_int_cst_1): New static function.
+	(brfic_args): New struct.
+	(build_real_from_int_cst): Use them in call to
+	`do_float_handler'.
+
 Sun Mar 14 01:15:06 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

@@ -2389,6 +2389,33 @@ set_float_handler (handler)
     }
 }
 
+/* This is a wrapper function for code which might elicit an
+   arithmetic exception.  That code should be passed in as a function
+   pointer FN, and one argument DATA.  DATA is usually a struct which
+   contains the real input and output for function FN.  This function
+   returns 0 (failure) if longjmp was called (i.e. an exception
+   occured.)  It returns 1 (success) otherwise. */
+
+int
+do_float_handler (fn, data)
+  void (*fn) PROTO ((PTR));
+  PTR data;
+{
+  jmp_buf buf;
+
+  if (setjmp (buf))
+    {
+      /* We got here via longjmp() caused by an exception in function fn() */
+      set_float_handler (NULL);
+      return 0;
+    }
+
+  set_float_handler (buf);
+  (*fn)(data);
+  set_float_handler (NULL);
+  return 1;
+}
+
 /* Specify, in HANDLER, where to longjmp to when a floating arithmetic
    error happens, pushing the previous specification into OLD_HANDLER.
    Return an indication of whether there was a previous handler in effect.  */
