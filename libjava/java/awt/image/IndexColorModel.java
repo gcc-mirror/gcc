@@ -10,7 +10,7 @@ package java.awt.image;
 
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import gnu.gcj.awt.Buffers;
+import gnu.java.awt.Buffers;
 
 /**
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>

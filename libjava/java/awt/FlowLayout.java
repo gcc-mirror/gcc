@@ -1,12 +1,30 @@
 // FlowLayout.java - Grid-based layout engine
 
-/* Copyright (C) 2000, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.awt;
 
@@ -17,6 +35,9 @@ import java.io.Serializable;
  * without horizontal clipping, a new row is started.  This class
  * supports horizontal and vertical gaps.  These are used for spacing
  * between components.
+ *
+ * @author Tom Tromey <tromey@redhat.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class FlowLayout implements LayoutManager, Serializable
 {
@@ -34,6 +55,9 @@ public class FlowLayout implements LayoutManager, Serializable
    * orientation.  */
   public static final int TRAILING = 4;
 
+  // Serialization constant
+  private static final long serialVersionUID = -7262534875583282631L;
+
   /** Add a new component to the layout.  This particular implementation
    * does nothing.
    */
@@ -42,42 +66,60 @@ public class FlowLayout implements LayoutManager, Serializable
     // Nothing.
   }
 
-  /** Return the alignment.  */
+  /**
+   * Returns the current justification value for this object.
+   *
+   * @return The current justification value for this object.
+   */
   public int getAlignment ()
   {
     return align;
   }
 
-  /** Return the horizontal gap.  */
+  /**
+   * Returns the horizontal gap between components.
+   *
+   * @return The horizontal gap between components.
+   */
   public int getHgap ()
   {
     return hgap;
   }
 
-  /** Return the vertical gap.  */
+  /**
+   * Returns the vertical gap between lines of components.
+   *
+   * @return The vertical gap between lines of components.
+   */
   public int getVgap ()
   {
     return vgap;
   }
 
-  /** Create a new FlowLayout with center alignment.
-   * Both gaps are set to 5.
+  /**
+   * Initializes a new instance of <code>FlowLayout</code> with a center
+   * justification and a default horizontal and vertical gap of 5.
    */
   public FlowLayout ()
   {
     this (CENTER, 5, 5);
   }
 
-  /** Create a new FlowLayout with the alignment.
-   * columns.  Both gaps are set to 5.
-   * @param align Alignment
+  /**
+   * Initializes a new instance of <code>FlowLayout</code> with the specified
+   * justification and a default horizontal and vertical gap of 5.
+   *
+   * @param align The justification setting, which should be one of the
+   * contants in this class.
    */
   public FlowLayout (int align)
   {
     this (align, 5, 5);
   }
 
-  /** Create a new FlowLayout with the specified alignment and gaps.
+  /**
+   * Initializes a new instance of <code>FlowLayout</code> with the specified
+   * justification and gap values
    * @param align Alignment
    * @param hgap The horizontal gap
    * @param vgap The vertical gap
@@ -118,12 +160,11 @@ public class FlowLayout implements LayoutManager, Serializable
 	boolean found_one = false;
 	for (j = i; j < num && ! found_one; ++j)
 	  {
-	    // FIXME: this is very inefficient.
-	    Dimension c = comps[i].getPreferredSize ();
-
 	    // Skip invisible items.
 	    if (! comps[i].visible)
 	      continue;
+
+	    Dimension c = comps[i].getPreferredSize ();
 
 	    int next_w = new_w + hgap + c.width;
 	    if (next_w <= d.width || ! found_one)
@@ -157,10 +198,9 @@ public class FlowLayout implements LayoutManager, Serializable
 
 	for (int k = i; i < j; ++k)
 	  {
-	    // FIXME: this is very inefficient.
-	    Dimension c = comps[i].getPreferredSize ();
 	    if (comps[i].visible)
 	      {
+		Dimension c = comps[i].getPreferredSize ();
 		comps[i].setLocation (x, y);
 		x += c.width + vgap;
 	      }
@@ -172,16 +212,22 @@ public class FlowLayout implements LayoutManager, Serializable
       }
   }
 
-  /** Get the minimum layout size of the container.
+  /**
+   * Returns the minimum layout size for the specified container using
+   * this layout.
    * @param cont The parent container
+   * @return The minimum layout size.
    */
   public Dimension minimumLayoutSize (Container cont)
   {
     return getSize (cont, true);
   }
 
-  /** Get the preferred layout size of the container.
+  /**
+   * Returns the preferred layout size for the specified container using
+   * this layout.
    * @param cont The parent container
+   * @return The preferred layout size.
    */
   public Dimension preferredLayoutSize (Container cont)
   {
@@ -197,19 +243,24 @@ public class FlowLayout implements LayoutManager, Serializable
     // Nothing.
   }
 
-  /** Set the alignment.
-   * @param align The alignment
+  /**
+   * Sets the justification value for this object to the specified value.
+   *
+   * @param align The new justification value for this object, which must
+   * be one of the constants in this class.
    */
   public void setAlignment (int align)
   {
     if (align != LEFT && align != RIGHT && align != CENTER
 	&& align != LEADING && align != TRAILING)
-      throw new IllegalArgumentException ("invalid align: " + align);
+      throw new IllegalArgumentException ("invalid alignment: " + align);
     this.align = align;
   }
 
-  /** Set the horizontal gap
-   * @param hgap The horizontal gap
+  /**
+   * Sets the horizontal gap between components to the specified value.
+   *
+   * @param hgap The new horizontal gap between components.
    */
   public void setHgap (int hgap)
   {
@@ -218,8 +269,10 @@ public class FlowLayout implements LayoutManager, Serializable
     this.hgap = hgap;
   }
 
-  /** Set the vertical gap.
-   * @param vgap The vertical gap
+  /**
+   * Sets the vertical gap between lines of components to the specified value.
+   *
+   * @param vgap The new vertical gap.
    */
   public void setVgap (int vgap)
   {
@@ -228,7 +281,9 @@ public class FlowLayout implements LayoutManager, Serializable
     this.vgap = vgap;
   }
 
-  /** Return String description of this object.  */
+  /** Return String description of this object.
+   * @return A string representation of this object.
+   */
   public String toString ()
   {
     return ("[" + getClass ().getName () + ",hgap=" + hgap + ",vgap=" + vgap
@@ -270,9 +325,19 @@ public class FlowLayout implements LayoutManager, Serializable
     return new Dimension (w, h);
   }
 
-  // Alignment.
+  /**
+   * @serial The justification alignment of the lines of components, which
+   * will be one of the constants defined in this class.
+   */
   private int align;
-  // The gaps.
+
+  /**
+   * @serial The horizontal gap between components.
+   */
   private int hgap;
+
+  /**
+   * @serial The vertical gap between lines of components.
+   */
   private int vgap;
 }

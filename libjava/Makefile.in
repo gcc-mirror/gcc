@@ -334,10 +334,10 @@ gnu/awt/j2d/DirectRasterGraphics.java \
 gnu/awt/j2d/Graphics2DImpl.java \
 gnu/awt/j2d/IntegerGraphicsState.java \
 gnu/awt/j2d/MappedRaster.java \
-gnu/gcj/awt/BitMaskExtent.java \
-gnu/gcj/awt/Buffers.java \
-gnu/gcj/awt/ComponentDataBlitOp.java \
-gnu/gcj/awt/GLightweightPeer.java \
+gnu/java/awt/BitMaskExtent.java \
+gnu/java/awt/Buffers.java \
+gnu/java/awt/ComponentDataBlitOp.java \
+gnu/java/awt/GLightweightPeer.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\
@@ -1732,11 +1732,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/awt/xlib/XGraphicsConfiguration.P \
 .deps/gnu/awt/xlib/XPanelPeer.P .deps/gnu/awt/xlib/XToolkit.P \
 .deps/gnu/classpath/Configuration.P .deps/gnu/gcj/Core.P \
-.deps/gnu/gcj/RawData.P .deps/gnu/gcj/awt/BitMaskExtent.P \
-.deps/gnu/gcj/awt/Buffers.P .deps/gnu/gcj/awt/ComponentDataBlitOp.P \
-.deps/gnu/gcj/awt/GLightweightPeer.P \
-.deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
-.deps/gnu/gcj/convert/IOConverter.P \
+.deps/gnu/gcj/RawData.P .deps/gnu/gcj/convert/BytesToUnicode.P \
+.deps/gnu/gcj/convert/Convert.P .deps/gnu/gcj/convert/IOConverter.P \
 .deps/gnu/gcj/convert/Input_8859_1.P \
 .deps/gnu/gcj/convert/Input_ASCII.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \
@@ -1802,6 +1799,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/xlib/natXColor.P .deps/gnu/gcj/xlib/natXConfigureEvent.P \
 .deps/gnu/gcj/xlib/natXException.P .deps/gnu/gcj/xlib/natXExposeEvent.P \
 .deps/gnu/gcj/xlib/natXImage.P .deps/gnu/gcj/xlib/natXUnmapEvent.P \
+.deps/gnu/java/awt/BitMaskExtent.P .deps/gnu/java/awt/Buffers.P \
+.deps/gnu/java/awt/ComponentDataBlitOp.P \
+.deps/gnu/java/awt/GLightweightPeer.P \
 .deps/gnu/java/beans/BeanInfoEmbryo.P \
 .deps/gnu/java/beans/EmptyBeanInfo.P \
 .deps/gnu/java/beans/ExplicitBeanInfo.P \

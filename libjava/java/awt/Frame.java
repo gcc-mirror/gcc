@@ -1,150 +1,459 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Frame.java -- AWT toplevel window
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
-   This file is part of libjava.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.awt;
+
 import java.awt.peer.FramePeer;
+import java.awt.peer.WindowPeer;
+import java.awt.peer.ContainerPeer;
+import java.awt.peer.ComponentPeer;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Vector;
 
-/* A very incomplete placeholder. */
-
-public class Frame extends Window implements MenuContainer
+/**
+  * This class is a top-level window with a title bar and window
+  * decorations.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  */
+public class Frame extends Window implements MenuContainer, Serializable
 {
-  public static final int NORMAL = 0;
-  public static final int ICONIFIED = 1;
 
-  MenuBar menuBar = null;
-  String title;
+/*
+ * Static Variables
+ */
 
-  private transient Image iconImage;
-  private transient boolean isResizable = true;
-  private transient int state = NORMAL;
+/**
+  * Constant for a cross-hair cursor.
+  * @deprecated Use <code>Cursor.CROSSHAIR_CURSOR</code> instead.
+  */
+public static final int CROSSHAIR_CURSOR = Cursor.CROSSHAIR_CURSOR;
 
-  public Frame ()
-  {
-    super();
-  }
+/**
+  * Constant for a cursor over a text field.
+  * @deprecated Use <code>Cursor.TEXT_CURSOR</code> instead.
+  */
+public static final int TEXT_CURSOR = Cursor.TEXT_CURSOR;
 
-  public Frame(GraphicsConfiguration gc)
-  {
-    super(gc);
-  }
+/**
+  * Constant for a cursor to display while waiting for an action to complete.
+  * @deprecated Use <code>Cursor.WAIT_CURSOR</code>.
+  */
+public static final int WAIT_CURSOR = Cursor.WAIT_CURSOR;
 
-  public Frame (String title)
-  {
-    super();
-    setTitle(title);
-  }
+/**
+  * Cursor used over SW corner of window decorations.
+  * @deprecated Use <code>Cursor.SW_RESIZE_CURSOR</code> instead.
+  */
+public static final int SW_RESIZE_CURSOR = Cursor.SW_RESIZE_CURSOR;
 
-  public Frame(String title, GraphicsConfiguration gc)
-  {
-    super(gc);
-    setTitle(title);
-  }
+/**
+  * Cursor used over SE corner of window decorations.
+  * @deprecated Use <code>Cursor.SE_RESIZE_CURSOR</code> instead.
+  */
+public static final int SE_RESIZE_CURSOR = Cursor.SE_RESIZE_CURSOR;
 
-  public String getTitle()
-  {
-    return (title != null) ? title : "";
-  }
+/**
+  * Cursor used over NW corner of window decorations.
+  * @deprecated Use <code>Cursor.NW_RESIZE_CURSOR</code> instead.
+  */
+public static final int NW_RESIZE_CURSOR = Cursor.NW_RESIZE_CURSOR;
+
+/**
+  * Cursor used over NE corner of window decorations.
+  * @deprecated Use <code>Cursor.NE_RESIZE_CURSOR</code> instead.
+  */
+public static final int NE_RESIZE_CURSOR = Cursor.NE_RESIZE_CURSOR;
+
+/**
+  * Cursor used over N edge of window decorations.
+  * @deprecated Use <code>Cursor.N_RESIZE_CURSOR</code> instead.
+  */
+public static final int N_RESIZE_CURSOR = Cursor.N_RESIZE_CURSOR;
+
+/**
+  * Cursor used over S edge of window decorations.
+  * @deprecated Use <code>Cursor.S_RESIZE_CURSOR</code> instead.
+  */
+public static final int S_RESIZE_CURSOR = Cursor.S_RESIZE_CURSOR;
+
+/**
+  * Cursor used over E edge of window decorations.
+  * @deprecated Use <code>Cursor.E_RESIZE_CURSOR</code> instead.
+  */
+public static final int E_RESIZE_CURSOR = Cursor.E_RESIZE_CURSOR;
+
+/**
+  * Cursor used over W edge of window decorations.
+  * @deprecated Use <code>Cursor.W_RESIZE_CURSOR</code> instead.
+  */
+public static final int W_RESIZE_CURSOR = Cursor.W_RESIZE_CURSOR;
+
+/**
+  * Constant for a hand cursor.
+  * @deprecated Use <code>Cursor.HAND_CURSOR</code> instead.
+  */
+public static final int HAND_CURSOR = Cursor.HAND_CURSOR;
+
+/**
+  * Constant for a cursor used during window move operations.
+  * @deprecated Use <code>Cursor.MOVE_CURSOR</code> instead.
+  */
+public static final int MOVE_CURSOR = Cursor.MOVE_CURSOR;
+
+// Serialization version constant
+private static final long serialVersionUID = 2673458971256075116L;
+
+/*************************************************************************/
+
+/*
+ * Instance Variables
+ */
+
+/**
+  * @serial The version of the class data being serialized
+  * // FIXME: what is this value?
+  */
+private int frameSerializedDataVersion;
+
+/**
+  * @serial Image used as the icon when this frame is minimized.
+  */
+private Image icon;
+
+/**
+  * @serial Constant used by the JDK Motif peer set.  Not used in
+  * this implementation.
+  */
+private boolean mbManagement;
+
+/**
+  * @serial The menu bar for this frame.
+  */
+//private MenuBar menuBar = new MenuBar();
+private MenuBar menuBar;
+
+/**
+  * @serial A list of other top-level windows owned by this window.
+  */
+Vector ownedWindows = new Vector();
+
+/**
+  * @serial Indicates whether or not this frame is resizable.
+  */
+private boolean resizable = true;
+
+/**
+  * @serial The state of this frame.
+  * // FIXME: What are the values here?
+  */
+private int state;
+
+/**
+  * @serial The title of the frame.
+  */
+private String title = "";
+
+/*************************************************************************/
+
+/*
+ * Constructors
+ */
+
+/**
+  * Initializes a new instance of <code>Frame</code> that is not visible
+  * and has no title.
+  */
+public
+Frame()
+{
+  this("");
+}
+
+/*************************************************************************/
+
+/**
+  * Initializes a new instance of <code>Frame</code> that is not visible
+  * and has the specified title.
+  *
+  * @param title The title of this frame.
+  */
+public
+Frame(String title)
+{
+  super();
+  System.err.println("returned");
+  this.title = title;
+  System.err.println("end");
+}
+
+public
+Frame(GraphicsConfiguration gc)
+{
+  super(gc);
+}
+
+public
+Frame(String title, GraphicsConfiguration gc)
+{
+  super(gc);
+  setTitle(title);
+}
+
+/*************************************************************************/
+
+/*
+ * Instance Methods
+ */
+
+/**
+  * Returns this frame's title string.
+  *
+  * @return This frame's title string.
+  */
+public String
+getTitle()
+{
+  return(title);
+}
+
+/*************************************************************************/
+
+/*
+ * Sets this frame's title to the specified value.
+ *
+ * @param title The new frame title.
+ */
+public synchronized void
+setTitle(String title)
+{
+  this.title = title;
+  if (peer != null)
+    ((FramePeer) peer).setTitle(title);
+}
+
+/*************************************************************************/
+
+/**
+  * Returns this frame's icon.
+  *
+  * @return This frame's icon, or <code>null</code> if this frame does not
+  * have an icon.
+  */
+public Image
+getIconImage()
+{
+  return(icon);
+}
+
+/*************************************************************************/
+
+/**
+  * Sets this frame's icon to the specified value.
+  *
+  * @icon The new icon for this frame.
+  */
+public synchronized void
+setIconImage(Image icon)
+{
+  this.icon = icon;
+  if (peer != null)
+    ((FramePeer) peer).setIconImage(icon);
+}
+
+/*************************************************************************/
+
+/**
+  * Returns this frame's menu bar.
+  *
+  * @return This frame's menu bar, or <code>null</code> if this frame
+  * does not have a menu bar.
+  */
+public MenuBar
+getMenuBar()
+{
+  return(menuBar);
+}
+
+/*************************************************************************/
+
+/**
+  * Sets this frame's menu bar.
+  *
+  * @param menuBar The new menu bar for this frame.
+  */
+public synchronized void
+setMenuBar(MenuBar menuBar)
+{
+  this.menuBar = menuBar;
+  if (peer != null)
+    ((FramePeer) peer).setMenuBar(menuBar);
+}
+
+/*************************************************************************/
+
+/**
+  * Tests whether or not this frame is resizable.  This will be 
+  * <code>true</code> by default.
+  *
+  * @return <code>true</code> if this frame is resizable, <code>false</code>
+  * otherwise.
+  */
+public boolean
+isResizable()
+{
+  return(resizable);
+}
+
+/*************************************************************************/
+
+/**
+  * Sets the resizability of this frame to the specified value.
+  *
+  * @param resizable <code>true</code> to make the frame resizable,
+  * <code>false</code> to make it non-resizable.
+  */
+public synchronized void
+setResizable(boolean resizable)
+{
+  this.resizable = resizable;
+  if (peer != null)
+    ((FramePeer) peer).setResizable(resizable);
+}
+
+/*************************************************************************/
+
+/**
+  * Returns the cursor type of the cursor for this window.  This will
+  * be one of the constants in this class.
+  *
+  * @return The cursor type for this frame.
+  *
+  * @deprecated Use <code>Component.getCursor()</code> instead.
+  */
+public int
+getCursorType()
+{
+  return(getCursor().getType());
+}
+
+/*************************************************************************/
+
+/**
+  * Sets the cursor for this window to the specified type.  The specified
+  * type should be one of the constants in this class.
+  *
+  * @param type The cursor type.
+  *
+  * @deprecated.  Use <code>Component.setCursor(Cursor)</code> instead.
+  */
+public void
+setCursor(int type)
+{
+  setCursor(new Cursor(type));
+}
+
+/*************************************************************************/
+
+/**
+  * Removes the specified component from this frame's menu.
+  *
+  * @param menu The menu component to remove.
+  */
+public void
+remove(MenuComponent menu)
+{
+  menuBar.remove(menu);
+}
+
+/*************************************************************************/
+
+/**
+  * Notifies this frame that it should create its native peer.
+  */
+public void
+addNotify()
+{
+  if (peer == null)
+    peer = getToolkit ().createFrame (this);
+  super.addNotify();
+}
+
+/*************************************************************************/
+
+/**
+  * Destroys any resources associated with this frame.  This includes
+  * all components in the frame and all owned toplevel windows.
+  */
+public void
+dispose()
+{
+  Enumeration e = ownedWindows.elements();
+  while(e.hasMoreElements())
+    {
+      Window w = (Window)e.nextElement();
+      w.dispose();
+    }
+
+  super.dispose();
+}
+
+/*************************************************************************/
+
+/**
+  * Returns a debugging string describing this window.
+  *
+  * @return A debugging string describing this window.
+  */
+protected String
+paramString()
+{
+  return(getClass().getName());
+}
+
+public int
+getState()
+{
+  /* FIXME: State might have changed in the peer... Must check. */
     
-  public void setTitle (String title)
-  {
-    this.title = title;
-    if (peer != null)
-      ((FramePeer)peer).setTitle(title);
-  }
+  return state;
+}
 
-  public Image getIconImage()
-  {
-    return iconImage;
-  }
-  
-  public void setIconImage(Image image)
-  {
-    iconImage = image;
-    if (peer != null)
-      ((FramePeer) peer).setIconImage(iconImage);
-  }
-
-  protected void finalize() throws Throwable
-  {
-    //frames.remove(this);
-    /* FIXME: This won't work. Finalize will never be called if frames
-       has a reference to the object. We need weak references to
-       implement this correctly. */
-
-    super.finalize();
-  }
-
-  public synchronized void setMenuBar (MenuBar menuBar)
-  { 
-    if (this.menuBar != menuBar)
-      {
-	//this.menuBar.removeNotify();
-	this.menuBar = menuBar;
-	//this.menuBar.addNotify();
-      }	
-
-    if (peer != null)
-      ((FramePeer) peer).setMenuBar(menuBar);
-  }
-  
-  public boolean isResizable()
-  {
-    return isResizable;
-  }
-
-  public void setResizable(boolean resizable)
-  {
-    isResizable = resizable;
-    if (peer != null)
-      ((FramePeer) peer).setResizable(isResizable);
-  }
-
-  public int getState()
-  {
-    /* FIXME: State might have changed in the peer... Must check. */
-    
-    return state;
-  }
-
-
-  public synchronized void addNotify ()
-  {
-    if (peer == null)
-      peer = getToolkit ().createFrame (this);
-    super.addNotify();
-  }
-
-  public boolean postEvent(Event evt) { return false; } // FIXME
- 
-  public void remove(MenuComponent m)
-  {
-    if (m == menuBar)
-      {
-	setMenuBar(null);
-	return;
-      }
-	
-    super.remove(m);
-  }
-  
-  public void removeNotify()
-  {
-    //if ((peer != null) && (menuBar != null)) menuBar.removeNotify();
-    super.removeNotify();
-  }
-    
-  public static Frame[] getFrames()
-  {
-    //Frame[] array = new Frames[frames.size()];
-    //return frames.toArray(array);
+public static Frame[]
+getFrames()
+{
+  //Frame[] array = new Frames[frames.size()];
+  //return frames.toArray(array);
     
     // see finalize() comment
-    String msg = "FIXME: can't be implemented without weak references";
-    throw new UnsupportedOperationException(msg);
-  }
+  String msg = "FIXME: can't be implemented without weak references";
+  throw new UnsupportedOperationException(msg);
 }
+
+} // class Frame 
+

@@ -583,10 +583,10 @@ gnu/awt/j2d/DirectRasterGraphics.java \
 gnu/awt/j2d/Graphics2DImpl.java \
 gnu/awt/j2d/IntegerGraphicsState.java \
 gnu/awt/j2d/MappedRaster.java \
-gnu/gcj/awt/BitMaskExtent.java \
-gnu/gcj/awt/Buffers.java \
-gnu/gcj/awt/ComponentDataBlitOp.java \
-gnu/gcj/awt/GLightweightPeer.java \
+gnu/java/awt/BitMaskExtent.java \
+gnu/java/awt/Buffers.java \
+gnu/java/awt/ComponentDataBlitOp.java \
+gnu/java/awt/GLightweightPeer.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\

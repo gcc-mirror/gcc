@@ -1,5 +1,127 @@
 2002-01-15  Tom Tromey  <tromey@redhat.com>
 
+	Start of AWT merge with Classpath:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Reference files in
+	gnu/java/awt, not gnu/gcj/awt.
+	* java/awt/image/BufferedImage.java: Updated copyright.
+	* java/awt/image/ComponentColorModel.java: Updated copyright.
+	* java/awt/image/ComponentSampleModel.java: Updated copyright.
+	* java/awt/image/DataBuffer.java: Updated copyright.
+	* java/awt/image/DataBufferByte.java: Updated copyright.
+	* java/awt/image/DataBufferInt.java: Updated copyright.
+	* java/awt/image/DataBufferUShort.java: Updated copyright.
+	* java/awt/image/IndexColorModel.java: Updated copyright.
+	* java/awt/image/PackedColorModel.java: Updated copyright.
+	* java/awt/image/Raster.java: Updated copyright.
+	* java/awt/image/RasterOp.java: Updated copyright.
+	* java/awt/image/SampleModel.java: Updated copyright.
+	* java/awt/image/SinglePixelPackedSampleModel.java: Updated copyright.
+	* java/awt/image/WritableRaster.java: Updated copyright.
+	* java/awt/color/ColorSpace.java: Updated copyright.
+	* java/awt/color/ICC_ColorSpace.java: Updated copyright
+	* java/awt/color/ICC_Profile.java: Updated copyright.
+	* java/awt/event/HierarchyBoundsAdapter.java: Updated copyright.
+	* java/awt/event/HierarchyBoundsListener.java: Updated copyright.
+	* java/awt/event/HierarchyEvent.java: Updated copyright.
+	* java/awt/event/HierarchyListener.java: Updated copyright.
+	* java/awt/geom/AffineTransform.java: Updated copyright.
+	* java/awt/geom/Dimension2D.java: Updated copyright.
+	* java/awt/geom/Ellipse2D.java: Updated copyright.
+	* java/awt/geom/IllegalPathStateException.java: Updated copyright.
+	* java/awt/geom/Line2D.java: Updated copyright.
+	* java/awt/geom/NoninvertibleTransformException.java: Updated
+	copyright.
+	* java/awt/geom/PathIterator.java: Updated copyright.
+	* java/awt/geom/Point2D.java: Updated copyright.
+	* java/awt/geom/Rectangle2D.java: Updated copyright.
+	* java/awt/geom/RectangularShape.java: Updated copyright.
+	* java/awt/geom/RoundRectangle2D.java: Updated copyright.
+	* java/awt/Toolkit.java: Updated import for file moves.
+	* java/awt/Rectangle.java: Updated copyright; added javadoc from
+	Classpath.
+	(hashCode): New method from Classpath.
+	* java/awt/Graphics2D.java: Updated copyright.
+	* java/awt/Transparency.java: Updated copyright.
+	* java/awt/Paint.java: Updated copyright.
+	* java/awt/Graphics.java: New version from Classpath.
+	* java/awt/EventDispatchThread.java: Updated copyright.
+	* java/awt/CardLayout.java (layoutContainer): Don't skip invisible
+	children.
+	(gotoComponent): Wrap around on next/previous.
+	* gnu/gcj/awt/BitMaskExtent.java: Removed.
+	* gnu/gcj/awt/Buffers.java: Removed.
+	* gnu/gcj/awt/ComponentDataBlitOp.java: Removed.
+	* gnu/gcj/awt/GLightweightPeer.java: Removed.
+	* gnu/java/awt/BitMaskExtent.java: Added.
+	* gnu/java/awt/Buffers.java: Added.
+	* gnu/java/awt/ComponentDataBlitOp.java: Added.
+	* gnu/java/awt/GLightweightPeer.java: Added.
+	* java/awt/geom/Line2D.java (clone): Ignore
+	CloneNotSupportedException.
+	* gnu/gcj/awt/GLightweightPeer.java (getColorModel): New method.
+	* java/awt/Frame.java: Merged with Classpath.
+	* java/awt/RenderingHints.java: Copyright update.
+	* java/awt/Paint.java: Copyright update.
+	* java/awt/image/DirectColorModel.java: Merged with Classpath.
+	* java/awt/image/ColorModel.java: Merged with Classpath.
+	* java/awt/Window.java (show): New Implementation from Classpath.
+	(isShowing): Use super.isShowing().
+	* java/awt/EventQueue.java: Merged with Classpath.
+	* java/awt/AWTEventMulticaster.java (save): Throw
+	RuntimeException.
+	(saveInternal): Likewise.
+	* java/awt/AWTEvent.java: Now implements Serializable.
+	* java/awt/Event.java: Copyright update.
+	* java/awt/peer/ComponentPeer.java: Merged with Classpath.
+	* java/awt/image/BufferedImage.java: Copyright update.
+	* java/awt/GraphicsConfiguration.java: Copyright update.
+	* java/awt/Component.java: (addNotify): Don't call
+	addNotifyContainerChildren().
+	(addNotifyContainerChildren): Removed.
+	(setPeer): New method from Classpath.
+	(setTreeLock): Likewise.
+	(setVisible): Rewrote.
+	(show): Use it.
+	(hide): Likewise.
+	(validate): Set `valid'.
+	(checkImage(Image,ImageObserver)): Implementation from Classpath.
+	(createImage(ImageProducer)): Likewise.
+	(prepareImage): Likewise.
+	* java/awt/Container.java (addImpl): Handle case where constraint
+	is not a String.  Post event via system event queue.
+	(remove): Post event via system event queue.
+	(validateTree): Only validate child if it is invalid.
+	(getAlignmentX): Call super method as default.
+	(getAlignmentY): Likewise.
+	(addContainerListener): Now synchronized.
+	(removeContainerListener): Likewise.
+	(addNotifyContainerChildren): Now private.
+	* java/awt/ComponentOrientation.java: Updated copyright.  Added
+	@author.
+	* java/awt/FlowLayout.java (serialVersionUID): New field.
+	(setAlignment): Better exception message.
+	(layoutContainer): Don't compute component's preferred size unless
+	we're going to use it.
+	* java/awt/BorderLayout.java (AFTER_LAST_LINE, AFTER_LINE_ENDS,
+	BEFORE_FIRST_LINE, BEFORE_LINE_BEGINS): New constants.
+	(firstLine, lastLine, firstItem, lastItem): New fields.
+	(addLayoutComponent): Handle case where constraints is null.
+	Also, handle relative locations.
+	(removeLayoutComponent): Handle relative locations.
+	(MIN, MAX, PREF): New constants.
+	(calcCompSize): New method.
+	(calcSize): New method.
+	(minimumLayoutSize): Use it.
+	(preferredLayoutSize): Likewise.
+	(maximumLayoutSize): Likewise.
+	(toString): Include more information.
+	(setBounds): New method.
+	(layoutContainer): Use libgcj implementation; extended to handle
+	relative locations.
+
+2002-01-15  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/Float.java (equals): Preserve old code.
 	* java/lang/Double.java (equals): Preserve old code.
 

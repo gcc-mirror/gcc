@@ -14,7 +14,7 @@ import java.beans.*;
 import java.awt.image.*;
 import java.awt.datatransfer.Clipboard;
 import java.util.Hashtable;
-import gnu.gcj.awt.GLightweightPeer;
+import gnu.java.awt.GLightweightPeer;
 
 /* A very incomplete placeholder. */
 

@@ -1,6 +1,6 @@
 // CardLayout.java - Card-based layout engine
 
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -137,14 +137,9 @@ public class CardLayout implements LayoutManager2, Serializable
 
     for (int i = 0; i < num; ++i)
       {
-	if (comps[i].isVisible ())
-	  {
-	    // Only resize the one we care about.
-	    comps[i].setBounds (hgap + ins.left, vgap + ins.top,
-				width - 2 * hgap - ins.left - ins.right,
-				height - 2 * vgap - ins.top - ins.bottom);
-	    break;
-	  }
+	comps[i].setBounds (hgap + ins.left, vgap + ins.top,
+			    width - 2 * hgap - ins.left - ins.right,
+			    height - 2 * vgap - ins.top - ins.bottom);
       }
   }
 
@@ -272,13 +267,13 @@ public class CardLayout implements LayoutManager2, Serializable
 	      {
 		choice = i + 1;
 		if (choice == num)
-		  choice = num - 1;
+		  choice = 0;
 	      }
 	    else if (what == PREV)
 	      {
 		choice = i - 1;
 		if (choice < 0)
-		  choice = 0;
+		  choice = num - 1;
 	      }
 	    else
 	      {
