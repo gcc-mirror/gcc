@@ -1628,13 +1628,14 @@ libcall_dead_p (x, needed, note, insn)
 }
 
 /* Return 1 if register REGNO was used before it was set.
-   In other words, if it is live at function entry.  */
+   In other words, if it is live at function entry.
+   Don't count global regster variables, though.  */
 
 int
 regno_uninitialized (regno)
      int regno;
 {
-  if (n_basic_blocks == 0)
+  if (n_basic_blocks == 0 || global_regs[regno])
     return 0;
 
   return (basic_block_live_at_start[0][regno / REGSET_ELT_BITS]
