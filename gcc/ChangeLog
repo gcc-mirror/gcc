@@ -1,3 +1,8 @@
+Thu Feb 11 01:06:49 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* fold-const.c (range_binop): Take account of the bounded nature
+	of fixed length arithmetic when comparing unbounded ranges.
+
 Wed Feb 10 11:03:22 1999  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alphaev6*): Fix typo in target_cpu_default2.
