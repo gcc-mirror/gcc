@@ -52,14 +52,14 @@
 
   char
   ctype<char>::do_toupper(char __c) const
-  { return _M_toupper[(int) __c]; }
+  { return _M_toupper[static_cast<unsigned char>(__c)]; }
 
   const char*
   ctype<char>::do_toupper(char* __low, const char* __high) const
   {
     while (__low < __high)
       {
-	*__low = _M_toupper[(int) *__low];
+	*__low = _M_toupper[static_cast<unsigned char>(*__low)];
 	++__low;
       }
     return __high;
@@ -67,14 +67,14 @@
 
   char
   ctype<char>::do_tolower(char __c) const
-  { return _M_tolower[(int) __c]; }
+  { return _M_tolower[static_cast<unsigned char>(__c)]; }
 
   const char* 
   ctype<char>::do_tolower(char* __low, const char* __high) const
   {
     while (__low < __high)
       {
-	*__low = _M_tolower[(int) *__low];
+	*__low = _M_tolower[static_cast<unsigned char>(*__low)];
 	++__low;
       }
     return __high;
