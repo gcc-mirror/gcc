@@ -1,3 +1,7 @@
+2000-02-15  Loren Rittle  <ljrittle@acm.org>
+
+	* ginclude/stddef.h: Correct usage of _BSD_RUNE_T_ for FreeBSD.
+
 2000-02-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (TREE_H, collect2.o, gcc.h, mips-tfile.o, cccp.o,

@@ -269,6 +269,13 @@ typedef long ssize_t;
 #ifdef _BSD_RUNE_T_
 #if !defined (_ANSI_SOURCE) && !defined (_POSIX_SOURCE)
 typedef _BSD_RUNE_T_ rune_t;
+#if defined (__FreeBSD__)
+/* Why is this file so hard to maintain properly?  In constrast to
+   the comment above regarding BSD/386 1.1, on FreeBSD for as long
+   as the symbol has existed, _BSD_RUNE_T_ must not stay defined or
+   redundant typedefs will occur when stdlib.h is included after this file. */
+#undef _BSD_RUNE_T_
+#endif
 #endif
 #endif
 #endif
