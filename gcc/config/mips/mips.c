@@ -2628,6 +2628,10 @@ function_arg (cum, mode, type, named)
 	 last real argument, pass back a parallel vector holding each
 	 of the adjustments.  */
 
+      /* ??? function_arg can be called more than once for each argument.
+	 As a result, we compute more adjustments than we need here.
+	 See the CUMULATIVE_ARGS definition in mips.h.  */
+
       if (struct_p && int_size_in_bytes (type) < 4)
 	{
 	  rtx amount = GEN_INT (BITS_PER_WORD
