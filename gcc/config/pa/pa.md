@@ -5155,4 +5155,24 @@
 ;; Out of range and PIC 
 	  (const_int 44)))])
 
+;; On the PA, the PIC register is call clobbered, so it must
+;; be saved & restored around calls by the caller.  If the call
+;; doesn't return normally (nonlocal goto, or an exception is
+;; thrown), then the code at the exception handler label must
+;; restore the PIC register.
+(define_expand "exception_receiver"
+  [(const_int 4)]
+  "!TARGET_PORTABLE_RUNTIME && flag_pic"
+  "
+{
+  /* Load the PIC register from the stack slot (in our caller's
+     frame).  */
+  emit_move_insn (pic_offset_table_rtx,
+		  gen_rtx (MEM, SImode,
+			   plus_constant (stack_pointer_rtx, -32)));
+  emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+  emit_insn (gen_blockage ());
+  DONE;
+}")
+
 
