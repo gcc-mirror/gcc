@@ -106,7 +106,7 @@ static int alpha_sr_alias_set;
 
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1
-  PROTO((rtx, int, int, int, int));
+  PROTO((rtx, int, int, int));
 static rtx alpha_emit_set_const_1
   PROTO((rtx, enum machine_mode, HOST_WIDE_INT, int));
 static void alpha_expand_unaligned_load_words
@@ -877,8 +877,14 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
-  *paligned_mem = change_address (ref, SImode, 
-				  plus_constant (base, offset & ~3));
+  *paligned_mem = gen_rtx_MEM (SImode, plus_constant (base, offset & ~3));
+  MEM_IN_STRUCT_P (*paligned_mem) = MEM_IN_STRUCT_P (ref);
+  MEM_VOLATILE_P (*paligned_mem) = MEM_VOLATILE_P (ref);
+  RTX_UNCHANGING_P (*paligned_mem) = RTX_UNCHANGING_P (ref);
+
+  /* Sadly, we cannot use alias sets here because we may overlap other
+     data in a different alias set.  */
+  /* MEM_ALIAS_SET (*paligned_mem) = MEM_ALIAS_SET (ref); */
 
   *pbitnum = GEN_INT ((offset & 3) * 8);
 }
@@ -922,9 +928,9 @@ get_unaligned_address (ref, extra_offset)
    found in part of X.  */
 
 static void
-alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p, alias_set)
+alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p)
      rtx x;
-     int in_struct_p, volatile_p, unchanging_p, alias_set;
+     int in_struct_p, volatile_p, unchanging_p;
 {
   int i;
 
@@ -934,26 +940,31 @@ alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p, alias_set)
     case PARALLEL:
       for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	alpha_set_memflags_1 (XVECEXP (x, 0, i), in_struct_p, volatile_p,
-			      unchanging_p, alias_set);
+			      unchanging_p);
       break;
 
     case INSN:
       alpha_set_memflags_1 (PATTERN (x), in_struct_p, volatile_p,
-			    unchanging_p, alias_set);
+			    unchanging_p);
       break;
 
     case SET:
       alpha_set_memflags_1 (SET_DEST (x), in_struct_p, volatile_p,
-			    unchanging_p, alias_set);
+			    unchanging_p);
       alpha_set_memflags_1 (SET_SRC (x), in_struct_p, volatile_p,
-			    unchanging_p, alias_set);
+			    unchanging_p);
       break;
 
     case MEM:
       MEM_IN_STRUCT_P (x) = in_struct_p;
       MEM_VOLATILE_P (x) = volatile_p;
       RTX_UNCHANGING_P (x) = unchanging_p;
-      MEM_ALIAS_SET (x) = alias_set;
+      /* Sadly, we cannot use alias sets because the extra aliasing
+	 produced by the AND interferes.  Given that two-byte quantities
+	 are the only thing we would be able to differentiate anyway,
+	 there does not seem to be any point in convoluting the early
+	 out of the alias check.  */
+      /* MEM_ALIAS_SET (x) = alias_set; */
       break;
 
     default:
@@ -972,7 +983,7 @@ alpha_set_memflags (insn, ref)
      rtx insn;
      rtx ref;
 {
-  int in_struct_p, volatile_p, unchanging_p, alias_set;
+  int in_struct_p, volatile_p, unchanging_p;
 
   if (GET_CODE (ref) != MEM)
     return;
@@ -980,16 +991,14 @@ alpha_set_memflags (insn, ref)
   in_struct_p = MEM_IN_STRUCT_P (ref);
   volatile_p = MEM_VOLATILE_P (ref);
   unchanging_p = RTX_UNCHANGING_P (ref);
-  alias_set = MEM_ALIAS_SET (ref);
 
   /* This is only called from alpha.md, after having had something 
      generated from one of the insn patterns.  So if everything is
      zero, the pattern is already up-to-date.  */
-  if (! in_struct_p && ! volatile_p && ! unchanging_p && ! alias_set)
+  if (! in_struct_p && ! volatile_p && ! unchanging_p)
     return;
 
-  alpha_set_memflags_1 (insn, in_struct_p, volatile_p, unchanging_p,
-			alias_set);
+  alpha_set_memflags_1 (insn, in_struct_p, volatile_p, unchanging_p);
 }
 
 /* Try to output insns to set TARGET equal to the constant C if it can be
@@ -4721,17 +4730,17 @@ alpha_align_insns (insns, max_align, next_group, next_nop, gp_in_use)
   /* Let shorten branches care for assigning alignments to code labels.  */
   shorten_branches (insns);
 
+  align = (FUNCTION_BOUNDARY/BITS_PER_UNIT < max_align
+	   ? FUNCTION_BOUNDARY/BITS_PER_UNIT : max_align);
+
   /* Account for the initial GP load, which happens before the scheduled
      prologue we emitted as RTL.  */
   ofs = prev_in_use = 0;
   if (alpha_does_function_need_gp())
     {
-      ofs = 8;
+      ofs = 8 & (align - 1);
       prev_in_use = gp_in_use;
     }
-
-  align = (FUNCTION_BOUNDARY/BITS_PER_UNIT < max_align
-	   ? FUNCTION_BOUNDARY/BITS_PER_UNIT : max_align);
 
   i = insns;
   if (GET_CODE (i) == NOTE)

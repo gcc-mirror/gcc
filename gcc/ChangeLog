@@ -1,3 +1,9 @@
+Wed Sep 23 13:26:02 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (get_aligned_mem): Revert Sep 20 change.
+        (alpha_set_memflags, alpha_set_memflags_1): Likewise.
+	(alpha_align_insns): Properly calculate initial offset wrt max_align.
+
 Wed Sep 23 10:45:44 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (find_barrier): Revert change of Apr 23.  Handle table
