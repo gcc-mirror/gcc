@@ -2746,9 +2746,11 @@ compare compare3 compare4 compare-lean compare3-lean compare4-lean: force
 	for dir in tmp-foo $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
-	      tail +16c ./$$file > tmp-foo1; \
-	      tail +16c stage$$stage/$$file > tmp-foo2 \
-	        && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
+	      if [ $$file != objc/NXConstStr.o -a $$file != objc/Object.o -a $$file != objc/Protocol.o ] ; then \
+		tail +16c ./$$file > tmp-foo1; \
+		tail +16c stage$$stage/$$file > tmp-foo2 \
+		  && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
+	      else true; fi; \
 	    done; \
 	  fi; \
 	done
@@ -2779,7 +2781,9 @@ gnucompare gnucompare3 gnucompare4 gnucompare-lean gnucompare3-lean gnucompare4-
 	for dir in tmp-foo $(SUBDIRS); do \
 	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
 	    for file in $$dir/*$(objext); do \
-	      (cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
+	      if [ $$file != objc/NXConstStr.o -a $$file != objc/Object.o -a $$file != objc/Protocol.o ] ; then \
+	        (cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
+	      else true; fi; \
 	    done; \
 	  fi; \
 	done

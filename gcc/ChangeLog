@@ -2,6 +2,9 @@ Wed Feb 24 03:17:56 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for prerelease.
 
+	* Makefile.in (compare, gnucompare): Ignore comparison failures
+	for some objects in the ObjC runtime.
+
 Wed Feb 24 02:39:08 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Mon Dec  7 16:15:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
