@@ -1,3 +1,11 @@
+2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Move .NOEXPORT, MAKEOVERRIDES up.  Delete unused
+	Make macro.
+	* Makefile.in: Regenerate.
+	* configure.in: Clean up gxx_include_dir logic.
+	* configure: Regenerate.
+
 2003-03-12  Ansgar Esztermann  <ansgar@thphy.uni-duesseldorf.de>
 
 	* MAINTAINERS (Write After Approval): Add myself.

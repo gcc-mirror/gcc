@@ -1,3 +1,10 @@
+2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Eliminate all.indirect.  Update and clean up comments.
+	Rearrange.  Reorganize.
+	* configure.in: Rearrange.
+	* configure: Regenerate.
+
 2003-03-12  Andreas Jaeger  <aj@suse.de>
 
         * c-cppbuiltin.c (cb_register_builtins): Define LP64 builtins for

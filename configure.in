@@ -1541,12 +1541,6 @@ EOF
   esac
 fi
 
-# record if we want runtime library stuff installed in libsubdir.
-# Blank means no.
-if test -z "${enable_version_specific_runtime_libs}"; then
-  enable_version_specific_runtime_libs=no
-fi
-
 # Make sure that the compiler is able to generate an executable.  If it
 # can't, we are probably in trouble.  We don't care whether we can run the
 # executable--we might be using a cross compiler--we only care whether it
@@ -1816,30 +1810,19 @@ target_configargs="--cache-file=../config.cache --host=${target_alias} --build=$
 # Note, if you change the default, make sure to fix both here and in
 # the gcc and libstdc++-v3 subdirectories.
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
-gxx_include_dir=
-if test -n "${with_gxx_include_dir}"; then
-  case "${with_gxx_include_dir}" in
-    yes )
-      echo "configure.in: error: bad value ${withval} given for g++ include directory" 1>&2
-      exit 1
-      ;;
-    no )
-      ;;
-    * )
-      gxx_include_dir=${with_gxx_include_dir}
-      ;;
-  esac
-fi
-if test x${gxx_include_dir} = x; then
-  if test x${enable_version_specific_runtime_libs} = xyes; then
-    gxx_include_dir='${libsubdir}/include/c++'
-  else
-    . ${srcdir}/config.if
-    gxx_include_dir='${prefix}/include/'${libstdcxx_incdir}
-  fi
-else
-  gxx_include_dir=${gxx_include_dir}
-fi
+case "${with_gxx_include_dir}" in
+  yes)
+    AC_MSG_ERROR([--with-gxx-include-dir=[[dir]] requires a directory])
+    ;;
+  no | "")
+    case "${enable_version_specific_runtime_libs}" in
+      yes) gxx_include_dir='${libsubdir}/include/c++' ;;
+      *)
+        . ${srcdir}/config.if
+        gxx_include_dir='${prefix}/include/'${libstdcxx_incdir} ;;
+    esac ;;
+  *) gxx_include_dir=${with_gxx_include_dir} ;;
+esac
 
 FLAGS_FOR_TARGET=
 case " $target_configdirs " in
@@ -1989,7 +1972,6 @@ AC_SUBST(RPATH_ENVVAR)
 AC_SUBST(BUILD_PREFIX)
 AC_SUBST(BUILD_PREFIX_1)
 AC_SUBST(configlinks)
-AC_SUBST(enable_version_specific_runtime_libs)
 AC_SUBST(gcc_version_trigger)
 AC_SUBST(gcc_version)
 AC_SUBST(tooldir)
