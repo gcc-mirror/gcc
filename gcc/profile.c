@@ -413,6 +413,25 @@ output_gcov_string (string, delimiter)
   __write_long (delimiter, bb_file, 4);
 }
 
+/* Return TRUE if this insn must be a tablejump entry insn.  This works for
+   the MIPS port, but may give false negatives for some targets.  */
+
+int
+tablejump_entry_p (insn, label)
+     rtx insn, label;
+{
+  rtx next = next_active_insn (insn);
+  enum rtx_code code = GET_CODE (PATTERN (next));
+
+  if (code != ADDR_DIFF_VEC && code != ADDR_VEC)
+    return 0;
+
+  if (PREV_INSN (next) == XEXP (label, 0))
+    return 1;
+
+  return 0;
+}
+
 /* Instrument and/or analyze program behavior based on program flow graph.
    In either case, this function builds a flow graph for the function being
    compiled.  The flow graph is stored in BB_GRAPH.
@@ -711,10 +730,22 @@ branch_prob (f, dump_file)
 	       We have to handle tablejumps and returns specially anyways, so
 	       we don't check the JUMP_LABEL at all here.  */
 
+	    /* ??? This code should be rewritten.  We need a more elegant way
+	       to find the LABEL_REF.  We need a more elegant way to
+	       differentiate tablejump entries from computed gotos.
+	       We should perhaps reuse code from flow to compute the CFG
+	       instead of trying to compute it here.
+
+	       We can't use current_function_has_computed_jump, because that
+	       is calculated later by flow.  We can't use computed_jump_p,
+	       because that returns true for tablejump entry insns for some
+	       targets, e.g. HPPA and MIPS.  */
+
 	    if (GET_CODE (pattern) == PARALLEL)
 	      {
-		/* This assumes that PARALLEL jumps are tablejump entry
-		   jumps.  */
+		/* This assumes that PARALLEL jumps with a USE are
+		   tablejump entry jumps.  The same assumption can be found
+		   in computed_jump_p.  */
 		/* Make an arc from this jump to the label of the
 		   jump table.  This will instrument the number of
 		   times the switch statement is executed.  */
@@ -755,7 +786,14 @@ branch_prob (f, dump_file)
 		     && GET_CODE (XEXP (tem, 0)) == MEM
 		     && GET_CODE (XEXP (XEXP (tem, 0), 0)) == PLUS
 		     && GET_CODE (XEXP (XEXP (XEXP (tem, 0), 0), 0)) == PC
-		     && GET_CODE (XEXP (tem, 1)) == LABEL_REF)
+		     && GET_CODE (XEXP (tem, 1)) == LABEL_REF
+		     && tablejump_entry_p (insn, XEXP (tem, 1)))
+	      dest = label_to_bb[CODE_LABEL_NUMBER (XEXP (XEXP (tem, 1), 0))];
+	    /* Recognize the MIPS table jump entry.  */
+	    else if (GET_CODE (tem) == PLUS
+		     && GET_CODE (XEXP (tem, 0)) == REG
+		     && GET_CODE (XEXP (tem, 1)) == LABEL_REF
+		     && tablejump_entry_p (insn, XEXP (tem, 1)))
 	      dest = label_to_bb[CODE_LABEL_NUMBER (XEXP (XEXP (tem, 1), 0))];
 	    else
 	      {
