@@ -1,3 +1,7 @@
+2003-12-01  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config.gcc (s390x-ibm-tpf*): Add extra_parts.
+
 2003-12-01  James E Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/ia64.h (FUNCTION_ARG_REGNO_P): Use AR_REG_FIRST not
