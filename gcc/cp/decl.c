@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 #include "target.h"
+#include "c-common.h"
 
 extern const struct attribute_spec *lang_attribute_table;
 
@@ -147,7 +148,6 @@ static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
 static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
 static void store_parm_decls PARAMS ((tree));
 static int cp_missing_noreturn_ok_p PARAMS ((tree));
-static void shadow_warning PARAMS ((const char *, tree, tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -3786,20 +3786,6 @@ duplicate_decls (newdecl, olddecl)
 
   return 1;
 }
-
-/* Output a -Wshadow warning MSGID, if non-NULL, and give the location
-   of the previous declaration.  */
-static void
-shadow_warning (msgid, name, decl)
-     const char *msgid;
-     tree name, decl;
-{
-  warning ("declaration of `%s' shadows %s", IDENTIFIER_POINTER (name), msgid);
-  warning_with_file_and_line (DECL_SOURCE_FILE (decl),
-			      DECL_SOURCE_LINE (decl),
-			      "shadowed declaration is here");
-}
-
 
 /* Record a decl-node X as belonging to the current lexical scope.
    Check for errors (such as an incompatible declaration for the same
