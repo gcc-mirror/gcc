@@ -1940,6 +1940,14 @@ stabilize_reference_1 (e)
       return e;
       
     case '2':
+      /* Division is slow and tends to be compiled with jumps,
+	 especially the division by powers of 2 that is often
+	 found inside of an array reference.  So do it just once.  */
+      if (code == TRUNC_DIV_EXPR || code == TRUNC_MOD_EXPR
+	  || code == FLOOR_DIV_EXPR || code == FLOOR_MOD_EXPR
+	  || code == CEIL_DIV_EXPR || code == CEIL_MOD_EXPR
+	  || code == ROUND_DIV_EXPR || code == ROUND_MOD_EXPR)
+	return save_expr (e);
       /* Recursively stabilize each operand.  */
       result = build_nt (code, stabilize_reference_1 (TREE_OPERAND (e, 0)),
 			 stabilize_reference_1 (TREE_OPERAND (e, 1)));
