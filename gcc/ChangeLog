@@ -1,3 +1,9 @@
+2002-03-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.c (mips_va_arg): Apply big-endianness address
+	offset before loading address of argument passed by transparent
+	reference.
+
 2002-03-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* t-pa64 (LIB1ASMFUNCS, LIB1ASMSRC): Delete.
