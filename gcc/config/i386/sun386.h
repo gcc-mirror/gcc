@@ -70,7 +70,9 @@ do								\
 	}						\
       strncpy (shorter, na, 14);			\
       shorter[14] = 0;					\
-      fprintf (FILE, "\t.file\t\"%s\"\n", shorter);	\
+      fprintf (FILE, "\t.file\t");			\
+      output_quoted_string (FILE, shorter);		\
+      fprintf (FILE, "\n");				\
     }							\
     fprintf (FILE, "\t.version\t\"%s %s\"\n",		\
 	     language_string, version_string);		\

@@ -1311,7 +1311,9 @@ extern char *a29k_function_name;
   for (p = main_input_filename; *p; p++)			\
     if (*p == '/')						\
       after_dir = p + 1;					\
-  fprintf (FILE, "\t.file \"%s\"\n", after_dir);		\
+  fprintf (FILE, "\t.file ");					\
+  output_quoted_string (FILE, after_dir);			\
+  fprintf (FILE, "\n");						\
   fprintf (FILE, "\t.sect .lit,lit\n"); }
 
 /* Output to assembler file text saying following lines
