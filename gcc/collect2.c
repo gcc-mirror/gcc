@@ -1352,13 +1352,13 @@ main (argc, argv)
   unlink (ldout);
 
   /* If -r or they'll be run via some other method, don't build the
-     constructor or destructor list, just return now. */
+     constructor or destructor list, just return now.  */
   if (rflag || ! do_collecting)
     return 0;
 
   /* Examine the namelist with nm and search it for static constructors
      and destructors to call.
-     Write the constructor and destructor tables to a .s file and reload. */
+     Write the constructor and destructor tables to a .s file and reload.  */
 
   scan_prog_file (output_file, PASS_FIRST);
 

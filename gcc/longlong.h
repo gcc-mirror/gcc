@@ -91,65 +91,65 @@
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add %1,%4,%5
 	addc %0,%2,%3"							\
-	   : "=r" ((USItype)(sh)),					\
-	    "=&r" ((USItype)(sl))					\
-	   : "%r" ((USItype)(ah)),					\
-	     "rI" ((USItype)(bh)),					\
-	     "%r" ((USItype)(al)),					\
-	     "rI" ((USItype)(bl)))
+	   : "=r" ((USItype) (sh)),					\
+	    "=&r" ((USItype) (sl))					\
+	   : "%r" ((USItype) (ah)),					\
+	     "rI" ((USItype) (bh)),					\
+	     "%r" ((USItype) (al)),					\
+	     "rI" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("sub %1,%4,%5
 	subc %0,%2,%3"							\
-	   : "=r" ((USItype)(sh)),					\
-	     "=&r" ((USItype)(sl))					\
-	   : "r" ((USItype)(ah)),					\
-	     "rI" ((USItype)(bh)),					\
-	     "r" ((USItype)(al)),					\
-	     "rI" ((USItype)(bl)))
+	   : "=r" ((USItype) (sh)),					\
+	     "=&r" ((USItype) (sl))					\
+	   : "r" ((USItype) (ah)),					\
+	     "rI" ((USItype) (bh)),					\
+	     "r" ((USItype) (al)),					\
+	     "rI" ((USItype) (bl)))
 #define umul_ppmm(xh, xl, m0, m1) \
   do {									\
     USItype __m0 = (m0), __m1 = (m1);					\
     __asm__ ("multiplu %0,%1,%2"					\
-	     : "=r" ((USItype)(xl))					\
+	     : "=r" ((USItype) (xl))					\
 	     : "r" (__m0),						\
 	       "r" (__m1));						\
     __asm__ ("multmu %0,%1,%2"						\
-	     : "=r" ((USItype)(xh))					\
+	     : "=r" ((USItype) (xh))					\
 	     : "r" (__m0),						\
 	       "r" (__m1));						\
   } while (0)
 #define udiv_qrnnd(q, r, n1, n0, d) \
   __asm__ ("dividu %0,%3,%4"						\
-	   : "=r" ((USItype)(q)),					\
-	     "=q" ((USItype)(r))					\
-	   : "1" ((USItype)(n1)),					\
-	     "r" ((USItype)(n0)),					\
-	     "r" ((USItype)(d)))
+	   : "=r" ((USItype) (q)),					\
+	     "=q" ((USItype) (r))					\
+	   : "1" ((USItype) (n1)),					\
+	     "r" ((USItype) (n0)),					\
+	     "r" ((USItype) (d)))
 #define count_leading_zeros(count, x) \
     __asm__ ("clz %0,%1"						\
-	     : "=r" ((USItype)(count))					\
-	     : "r" ((USItype)(x)))
+	     : "=r" ((USItype) (count))					\
+	     : "r" ((USItype) (x)))
 #endif /* __a29k__ */
 
 #if defined (__arm__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("adds	%1, %4, %5
 	adc	%0, %2, %3"						\
-	   : "=r" ((USItype)(sh)),					\
-	     "=&r" ((USItype)(sl))					\
-	   : "%r" ((USItype)(ah)),					\
-	     "rI" ((USItype)(bh)),					\
-	     "%r" ((USItype)(al)),					\
-	     "rI" ((USItype)(bl)))
+	   : "=r" ((USItype) (sh)),					\
+	     "=&r" ((USItype) (sl))					\
+	   : "%r" ((USItype) (ah)),					\
+	     "rI" ((USItype) (bh)),					\
+	     "%r" ((USItype) (al)),					\
+	     "rI" ((USItype) (bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("subs	%1, %4, %5
 	sbc	%0, %2, %3"						\
-	   : "=r" ((USItype)(sh)),					\
-	     "=&r" ((USItype)(sl))					\
-	   : "r" ((USItype)(ah)),					\
-	     "rI" ((USItype)(bh)),					\
-	     "r" ((USItype)(al)),					\
-	     "rI" ((USItype)(bl)))
+	   : "=r" ((USItype) (sh)),					\
+	     "=&r" ((USItype) (sl))					\
+	   : "r" ((USItype) (ah)),					\
+	     "rI" ((USItype) (bh)),					\
+	     "r" ((USItype) (al)),					\
+	     "rI" ((USItype) (bl)))
 #define umul_ppmm(xh, xl, a, b) \
 {register USItype __t0, __t1, __t2;					\
   __asm__ ("%@ Inlined umul_ppmm
