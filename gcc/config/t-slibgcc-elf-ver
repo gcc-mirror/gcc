@@ -2,16 +2,21 @@
 # with the GNU linker.
 
 SHLIB_EXT = .so
+SHLIB_NAME = @shlib_base_name@.so
+SHLIB_SONAME = @shlib_base_name@.so.1
+SHLIB_MAP = @shlib_map_file@
+SHLIB_OBJS = @shlib_objs@
+
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	-Wl,--soname=@shlib_base_name@.so.0 \
-	-Wl,--version-script=@shlib_map_file@ \
-	-o @shlib_base_name@.so @multilib_flags@ @shlib_objs@ -lc && \
-	rm -f @shlib_base_name@.so.0 && \
-	$(LN_S) @shlib_base_name@.so @shlib_base_name@.so.0
+	-Wl,--soname=$(SHLIB_SONAME) \
+	-Wl,--version-script=$(SHLIB_MAP) \
+	-o $(SHLIB_NAME) @multilib_flags@ $(SHLIB_OBJS) -lc && \
+	rm -f $(SHLIB_SONAME) && \
+	$(LN_S) $(SHLIB_NAME) $(SHLIB_SONAME)
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
-SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $$(slibdir)/@shlib_base_name@.so.0; \
-	rm -f $$(slibdir)/@shlib_base_name@.so; \
-	$(LN_S) @shlib_base_name@.so.0 $$(slibdir)/@shlib_base_name@.so
+SHLIB_INSTALL = $(INSTALL_DATA) $(SHLIB_NAME) $$(slibdir)/$(SHLIB_SONAME); \
+	rm -f $$(slibdir)/$(SHLIB_NAME); \
+	$(LN_S) $(SHLIB_SONAME) $$(slibdir)/$(SHLIB_NAME)
 SHLIB_MKMAP = $(srcdir)/mkmap-symver.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver

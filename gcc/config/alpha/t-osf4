@@ -6,13 +6,17 @@ TARGET_LIBGCC2_CFLAGS = -fPIC
 
 # Build a shared libgcc library.
 SHLIB_EXT = .so
+SHLIB_NAME = @shlib_base_name@.so
+SHLIB_SONAME = @shlib_base_name@.so.1
+SHLIB_OBJS = @shlib_objs@
+
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	-Wl,-msym -Wl,-set_version,gcc.0 -Wl,-soname,@shlib_base_name@.so.0 \
-	-o @shlib_base_name@.so @multilib_flags@ @shlib_objs@ -lc && \
-	rm -f @shlib_base_name@.so.0 && \
-	$(LN_S) @shlib_base_name@.so @shlib_base_name@.so.0
+	-Wl,-msym -Wl,-set_version,gcc.1 -Wl,-soname,$(SHLIB_SONAME) \
+	-o $(SHLIB_NAME) @multilib_flags@ $(SHLIB_OBJS) -lc && \
+	rm -f $(SHLIB_SONAME) && \
+	$(LN_S) $(SHLIB_NAME) $(SHLIB_SONAME)
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
-SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $$(slibdir)/@shlib_base_name@.so.0; \
-	rm -f $$(slibdir)/@shlib_base_name@.so; \
-	$(LN_S) @shlib_base_name@.so.0 $$(slibdir)/@shlib_base_name@.so
+SHLIB_INSTALL = $(INSTALL_DATA) $(SHLIB_NAME) $$(slibdir)/$(SHLIB_SONAME); \
+	rm -f $$(slibdir)/$(SHLIB_NAME); \
+	$(LN_S) $(SHLIB_SONAME) $$(slibdir)/$(SHLIB_NAME)

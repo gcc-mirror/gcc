@@ -141,19 +141,8 @@ GCC_3.0 {
   __floattixf
   __floattitf
 
-  # Basic block profile symbols.
-  # ??? Some of these are for `-a', which ought to die.
-  __bb
-  __bb_exit_func
-  __bb_fork_func
-  __bb_init_func
-  __bb_init_trace_func
-  __bb_trace_func
-  __bb_trace_ret
-
-  # ??? Symbols that perhaps unused should be nuked.
+  # Used to deal with trampoline initialization on some platforms
   __clear_cache
-  __gcc_bcmp
 
   # EH symbols
   _Unwind_DeleteException
