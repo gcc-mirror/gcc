@@ -1418,6 +1418,7 @@ mips-sgi-irix6*o32)		# SGI System V.4., IRIX 6, O32 ABI
 	;;
 mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 	tm_file="${tm_file} mips/iris5.h mips/iris6.h"
+	tmake_file="mips/t-iris mips/t-iris5-6 mips/t-iris6"
 	if test x$gas = xyes
 	then
 		tm_file="${tm_file} mips/iris6gas.h"
@@ -1425,8 +1426,8 @@ mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 	if test "x$gnu_ld" = xyes
 	then
 		tm_file="${tm_file} mips/iris6gld.h"
+		tmake_file="$tmake_file mips/t-iris6gld"
 	fi
-	tmake_file="mips/t-iris mips/t-iris5-6 mips/t-iris6"
 	target_cpu_default="MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT"
 	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
 	# See comment in mips/iris5.h file.  Only enabled for O32 ABI

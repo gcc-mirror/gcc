@@ -1,3 +1,21 @@
+2003-11-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (mips-sgi-irix6*): Add t-iris6gld to tmake_file when
+	using GNU ld.
+	* config/mips/iris6.h (IRIX6_STARTFILE_SPEC): New, taking the
+	whole of the previous STARTFILE_SPEC except crtbegin.o%s.
+	(IRIX6_ENDFILE_SPEC): Likewise ENDFILE_SPEC and crtend.o%s.
+	(STARTFILE_SPEC, ENDFILE_SPEC): Define in terms of the above.
+	(SUBTARGET_EXTRA_SPECS): Define.
+	* config/mips/iris6gld.h (LINK_SPEC): Change -init function
+	to __gcc_init and -fini function to __gcc_fini.
+	(STARTFILE_SPEC): Redefine, including irix6-crti.o before crtbegin.o.
+	(ENDFILE_SPEC): Likewise, including irix6-crtn.o after crtend.o.
+	(INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP): Define.
+	* config/mips/t-iris6gld,
+	* config/mips/irix6-crti.asm,
+	* config/mips/irix6-crtn.asm: New files.
+
 2003-11-24  Eric Christopher  <echristo@redhat.com>
 
 	PR C/13014
