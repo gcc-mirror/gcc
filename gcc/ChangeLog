@@ -1,3 +1,12 @@
+2004-09-14  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.c (output_fp_compare): Add generation
+	of ftst instruction.
+	* config/i386/i386.md (*cmpfp_0_sf, cmpfp_0_df, cmpfp_0_xf):
+	Use output_fp_compare () function.
+	(cmpfp_i, *cmpfp_i_sse, *cmpfp_i_sse_only): Fix insn constraint.
+	(fix_truncdi_memory): Remove operands[5] copy.
+
 2004-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.md, config/m68k/m68kelf.h,

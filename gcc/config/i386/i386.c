@@ -7228,15 +7228,20 @@ const char *
 output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
 {
   int stack_top_dies;
-  rtx cmp_op0 = operands[0];
-  rtx cmp_op1 = operands[1];
+  rtx cmp_op0, cmp_op1;
   int is_sse = SSE_REG_P (operands[0]) | SSE_REG_P (operands[1]);
 
   if (eflags_p == 2)
     {
-      cmp_op0 = cmp_op1;
+      cmp_op0 = operands[1];
       cmp_op1 = operands[2];
     }
+  else
+    {
+      cmp_op0 = operands[0];
+      cmp_op1 = operands[1];
+    }
+
   if (is_sse)
     {
       if (GET_MODE (operands[0]) == SFmode)
@@ -7255,6 +7260,17 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
     abort ();
 
   stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
+
+  if (cmp_op1 == CONST0_RTX (GET_MODE (cmp_op1)))
+    {
+      if (stack_top_dies)
+	{
+	  output_asm_insn ("ftst\n\tfnstsw\t%0", operands);
+	  return TARGET_USE_FFREEP ? "ffreep\t%y1" : "fstp\t%y1";
+	}
+      else
+	return "ftst\n\tfnstsw\t%0";
+    }
 
   if (STACK_REG_P (cmp_op1)
       && stack_top_dies
