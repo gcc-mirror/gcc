@@ -1867,6 +1867,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
     {
       lambda_loop newloop;
       basic_block bb;
+      edge exit;
       tree ivvar, ivvarinced, exitcond, stmts;
       enum tree_code testtype;
       tree newupperbound, newlowerbound;
@@ -1908,6 +1909,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 					     type,
 					     new_ivs,
 					     invariants, MIN_EXPR, &stmts);
+      exit = temp->single_exit;
       exitcond = get_loop_exit_condition (temp);
       bb = bb_for_stmt (exitcond);
       bsi = bsi_start (bb);
@@ -1928,14 +1930,13 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       
       testtype = LL_STEP (newloop) >= 0 ? LE_EXPR : GE_EXPR;
       
-      /* Since we don't know which cond_expr part currently points to each
-	 edge, check which one is invariant and make sure we reverse the
-	 comparison if we are trying to replace a <= 50 with 50 >= newiv.
-	 This ensures that we still canonicalize to <invariant> <test>
-	 <induction variable>.  */
-      if (!expr_invariant_in_loop_p (temp, TREE_OPERAND (exitcond, 0)))
+      /* We want to build a conditional where true means exit the loop, and
+	 false means continue the loop.
+	 So swap the testtype if this isn't the way things are.*/
+
+      if (exit->flags & EDGE_FALSE_VALUE)
 	testtype = swap_tree_comparison (testtype);
-	
+
       COND_EXPR_COND (exitcond) = build (testtype,
 					 boolean_type_node,
 					 newupperbound, ivvarinced);
