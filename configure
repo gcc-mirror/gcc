@@ -2537,21 +2537,21 @@ serialization_dependencies=serdep.tmp
 # at the end of the argument list.
 # These will be expanded by make, so quote '$'.
 cat <<\EOF_SED > conftestsed
-s/ --no[^ ]* / /
-s/ --c[a-z-]*[= ][^ ]* / /
-s/ --sr[a-z-]*[= ][^ ]* / /
-s/ --ho[a-z-]*[= ][^ ]* / /
-s/ --bu[a-z-]*[= ][^ ]* / /
-s/ --t[a-z-]*[= ][^ ]* / /
-s/ --program-[pst][a-z-]*[= ][^ ]* / /
-s/ -cache-file[= ][^ ]* / /
-s/ -srcdir[= ][^ ]* / /
-s/ -host[= ][^ ]* / /
-s/ -build[= ][^ ]* / /
-s/ -target[= ][^ ]* / /
-s/ -program-prefix[= ][^ ]* / /
-s/ -program-suffix[= ][^ ]* / /
-s/ -program-transform-name[= ][^ ]* / /
+s/ --no[^ ]*/ /g
+s/ --c[a-z-]*[= ][^ ]*//g
+s/ --sr[a-z-]*[= ][^ ]*//g
+s/ --ho[a-z-]*[= ][^ ]*//g
+s/ --bu[a-z-]*[= ][^ ]*//g
+s/ --t[a-z-]*[= ][^ ]*//g
+s/ --program-[pst][a-z-]*[= ][^ ]*//g
+s/ -cache-file[= ][^ ]*//g
+s/ -srcdir[= ][^ ]*//g
+s/ -host[= ][^ ]*//g
+s/ -build[= ][^ ]*//g
+s/ -target[= ][^ ]*//g
+s/ -program-prefix[= ][^ ]*//g
+s/ -program-suffix[= ][^ ]*//g
+s/ -program-transform-name[= ][^ ]*//g
 s/ [^' -][^ ]* / /
 s/^ *//;s/ *$//
 s,\$,$$,g

@@ -1,3 +1,12 @@
+2004-04-06  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR bootstrap/14760
+	* configure.in: When computing baseargs, strip *all* copies of
+	offending options.  Also, don't match/substitute the trailing space,
+	so that this actually works when two similar options are separated by
+	only one space.
+	* configure: Regenerate.
+
 2004-05-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR bootstrap/15120
