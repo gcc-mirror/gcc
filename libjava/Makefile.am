@@ -33,6 +33,9 @@ toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.jar
 
+## FIXME: Using libdir violates GNU coding standards.
+secdir = $(libdir)/security
+
 ## For now, only on native systems.  FIXME.
 if NATIVE
 bin_PROGRAMS = jv-convert gij rmic rmiregistry
@@ -351,6 +354,13 @@ install-data-local:
 	  if test -f $(srcdir)/$$f; then p=$(srcdir)/$$f; else p=$$f; fi; \
 	  echo " $(INSTALL_DATA) $$p $(DESTDIR)$(includedir)/$$f"; \
 	  $(INSTALL_DATA) $$p $(DESTDIR)$(includedir)/$$f; \
+	done
+## FIXME: the obvious approach using lib_DATA doesn't work with
+## automake 1.4.
+	$(mkinstalldirs) $(DESTDIR)$(secdir)
+	@for f in classpath.security libgcj.security; do \
+	  echo " $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f"; \
+	  $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f; \
 	done
 
 ## ################################################################

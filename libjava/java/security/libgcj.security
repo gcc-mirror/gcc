@@ -1,0 +1,2 @@
+# This properties file is used when looking for gcj-specific
+# security providers.  By default there are none such.
