@@ -735,7 +735,7 @@ dequeue_and_dump (di)
 
     case START_CATCH_STMT:
       dump_stmt (di, t);
-      queue_and_dump_type (di, TREE_TYPE (t));
+      queue_and_dump_type (di, t);
       dump_next_stmt (di, t);
       break;
 
