@@ -1,3 +1,7 @@
+Fri Feb 11 02:59:05 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c, pa.h: Remove trigraph sequences within comments.
+
 Fri Feb 11 02:51:56 2000  Pavel Roskin <pavel_roskin@geocities.com>
 
 	* invoke.texi (PPC Options): -mno-new-mnenomics -> -mold-mnemonics.

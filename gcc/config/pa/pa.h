@@ -429,7 +429,7 @@ extern int target_flags;
    Reg 20-22	= Temporary Registers
    Reg 23-26	= Temporary/Parameter Registers
    Reg 27	= Global Data Pointer (hp)
-   Reg 28	= Temporary/???/Return Value register
+   Reg 28	= Temporary/Return Value register
    Reg 29	= Temporary/Static Chain/Return Value register #2
    Reg 30	= stack pointer
    Reg 31	= Temporary/Millicode Return Pointer (hp)
@@ -609,7 +609,6 @@ extern int target_flags;
 #define ARG_POINTER_REGNUM 3
 
 /* Register in which static-chain is passed to a function.  */
-/* ??? */
 #define STATIC_CHAIN_REGNUM 29
 
 /* Register which holds offset table for position-independent
@@ -812,9 +811,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS, GENERAL_
    Also note that on STACK_GROWS_UPWARD machines (such as this one)
    this is the distance from the frame pointer to the end of the first
    argument, not it's beginning.  To get the real offset of the first
-   argument, the size of the argument must be added.
-
-   ??? Have to check on this.*/
+   argument, the size of the argument must be added.  */
 
 #define FIRST_PARM_OFFSET(FNDECL) -32
 
