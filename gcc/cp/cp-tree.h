@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 struct lang_identifier
 {
   struct tree_identifier ignore;
-  tree global_value, local_value;
+  tree namespace_bindings, local_value;
   tree class_value;
   tree class_template_info;
   struct lang_id2 *x;
@@ -58,8 +58,8 @@ typedef struct
   tree decl;
 } template_parm_index;
 
-#define BINDING_SCOPE(NODE)    (((struct tree_binding*)NODE)->scope)
-#define BINDING_VALUE(NODE)   (((struct tree_binding*)NODE)->value)
+#define BINDING_SCOPE(NODE)	(((struct tree_binding*)NODE)->scope)
+#define BINDING_VALUE(NODE)	(((struct tree_binding*)NODE)->value)
 #define NAMESPACE_BINDING(ID,NS) BINDING_VALUE (binding_for_name (ID, NS))
 #define IDENTIFIER_GLOBAL_VALUE(NODE) \
   NAMESPACE_BINDING (NODE, global_namespace)
@@ -80,7 +80,7 @@ struct tree_binding
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
-  (((struct lang_identifier *)(NODE))->global_value)
+  (((struct lang_identifier *)(NODE))->namespace_bindings)
 #define IDENTIFIER_CLASS_VALUE(NODE)	\
   (((struct lang_identifier *)(NODE))->class_value)
 #define IDENTIFIER_LOCAL_VALUE(NODE)	\

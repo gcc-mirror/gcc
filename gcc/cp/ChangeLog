@@ -1,3 +1,10 @@
+Wed Feb 25 09:51:29 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (get_delta_difference): Give hard error for conversion
+	from virtual base.
+
+	* cp-tree.h: Tweak formatting.
+
 Wed Feb 25 00:35:33 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (push_namespace): Handle redeclaration error.
