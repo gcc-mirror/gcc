@@ -797,13 +797,8 @@ gcc_AC_FUNC_PRINTF_PTR
 gcc_AC_FUNC_MMAP_BLACKLIST
 
 case "${host}" in
-*-*-uwin*)
-  AC_MSG_ERROR([
-*** UWIN may not be used as a host platform because
-*** linking with posix.dll is not allowed by the GNU GPL])
-  ;;
 *-*-*vms*)
-  # Under VMS, vfork works very different than on Unix. The standard test 
+  # Under VMS, vfork works very differently than on Unix. The standard test 
   # won't work, and it isn't easily adaptable. It makes more sense to
   # just force it.
   ac_cv_func_vfork_works=yes
