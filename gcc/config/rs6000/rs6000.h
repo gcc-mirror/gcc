@@ -649,6 +649,10 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 #define FIRST_PSEUDO_REGISTER 77
 
+/* This must not decrease, for backwards compatibility.  If
+   FIRST_PSEUDO_REGISTER increases, this should as well.  */
+#define DWARF_FRAME_REGISTERS 77
+
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
@@ -1261,6 +1265,11 @@ extern int rs6000_sysv_varargs_p;
    On the RS/6000, we define the argument pointer to the start of the fixed
    area.  */
 #define FIRST_PARM_OFFSET(FNDECL) RS6000_SAVE_AREA
+
+/* Offset from the argument pointer register value to the top of
+   stack.  This is different from FIRST_PARM_OFFSET because of the
+   register save area.  */
+#define ARG_POINTER_CFA_OFFSET(FNDECL) 0
 
 /* Define this if stack space is still allocated for a parameter passed
    in a register.  The value is the number of bytes allocated to this
@@ -2671,11 +2680,6 @@ do {									\
 
 #define INCOMING_RETURN_ADDR_RTX   gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
 #define DWARF_FRAME_RETURN_COLUMN  DWARF_FRAME_REGNUM (LINK_REGISTER_REGNUM)
-
-/* These values are set like this for backwards compatibility,
-   and can't be changed no matter how wrong they are :-(.  */
-#define DWARF_FRAME_REGISTERS 77
-#define ARG_POINTER_CFA_OFFSET(FNDECL) 0
 
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007
