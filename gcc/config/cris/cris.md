@@ -496,7 +496,7 @@
   [(set (match_operand:QI 0 "register_operand" "=r,r,r")
 	(mem:QI
 	 (plus:SI (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 2 "cris_bdap_operand" "r>Ri,r,>Ri"))))
+		  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn"))))
    (set (match_operand:SI 3 "register_operand" "=*1,r,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
@@ -519,7 +519,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r,r,r")
 	(mem:HI
 	 (plus:SI (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 2 "cris_bdap_operand" "r>Ri,r,>Ri"))))
+		  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn"))))
    (set (match_operand:SI 3 "register_operand" "=*1,r,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
@@ -542,7 +542,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
 	(mem:SI
 	 (plus:SI (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 2 "cris_bdap_operand" "r>Ri,r,>Ri"))))
+		  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn"))))
    (set (match_operand:SI 3 "register_operand" "=*1,r,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
@@ -671,7 +671,7 @@
 (define_insn "*mov_sideqi_mem"
   [(set (mem:QI
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r>Ri,r,>Ri")))
+		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn")))
 	(match_operand:QI 2 "register_operand" "r,r,r,r"))
    (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r")
 	(plus:SI (match_dup 0)
@@ -696,7 +696,7 @@
 (define_insn "*mov_sidehi_mem"
   [(set (mem:HI
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r>Ri,r,>Ri")))
+		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn")))
 	(match_operand:HI 2 "register_operand" "r,r,r,r"))
    (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r")
 	(plus:SI (match_dup 0)
@@ -721,7 +721,7 @@
 (define_insn "*mov_sidesi_mem"
   [(set (mem:SI
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r>Ri,r,>Ri")))
+		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn")))
 	(match_operand:SI 2 "register_operand" "r,r,r,r"))
    (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r")
 	(plus:SI (match_dup 0)
@@ -786,7 +786,7 @@
 (define_insn "*clear_sidesi"
   [(set (mem:SI
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r,>Ri")))
+		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r,>Rn")))
 	(const_int 0))
    (set (match_operand:SI 2 "register_operand" "=*0,r,r")
 	(plus:SI (match_dup 0)
@@ -826,7 +826,7 @@
 (define_insn "*clear_sidehi"
   [(set (mem:HI
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r,>Ri")))
+		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r,>Rn")))
 	(const_int 0))
    (set (match_operand:SI 2 "register_operand" "=*0,r,r")
 	(plus:SI (match_dup 0)
@@ -866,7 +866,7 @@
 (define_insn "*clear_sideqi"
   [(set (mem:QI
 	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Ri,r,>Ri")))
+		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r,>Rn")))
 	(const_int 0))
    (set (match_operand:SI 2 "register_operand" "=*0,r,r")
 	(plus:SI (match_dup 0)
@@ -1127,7 +1127,7 @@
 	 4 "cris_extend_operator"
 	 [(mem:QI (plus:SI
 		   (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 2 "cris_bdap_operand" "r>Ri,r,>Ri")))]))
+		   (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
    (set (match_operand:SI 3 "register_operand" "=*1,r,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
@@ -1152,7 +1152,7 @@
 	 4 "cris_extend_operator"
 	 [(mem:QI (plus:SI
 		   (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 2 "cris_bdap_operand" "r>Ri,r,>Ri")))]))
+		   (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
    (set (match_operand:SI 3 "register_operand" "=*1,r,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
@@ -1177,7 +1177,7 @@
 	 4 "cris_extend_operator"
 	 [(mem:HI (plus:SI
 		   (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 2 "cris_bdap_operand" "r>Ri,r,>Ri")))]))
+		   (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
    (set (match_operand:SI 3 "register_operand" "=*1,r,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
@@ -1473,7 +1473,7 @@
 	 [(match_operand:QI 1 "register_operand" "0,0,0")
 	  (mem:QI (plus:SI
 		   (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))]))
+		   (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
@@ -1499,7 +1499,7 @@
 	 [(match_operand:HI 1 "register_operand" "0,0,0")
 	  (mem:HI (plus:SI
 		   (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))]))
+		   (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
@@ -1525,7 +1525,7 @@
 	 [(match_operand:SI 1 "register_operand" "0,0,0")
 	  (mem:SI (plus:SI
 		   (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))]))
+		   (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
@@ -1624,7 +1624,7 @@
 	 5 "cris_commutative_orth_op"
 	 [(mem:QI
 	   (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		    (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))
+		    (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))
 	  (match_operand:QI 1 "register_operand" "0,0,0")]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -1650,7 +1650,7 @@
 	 5 "cris_commutative_orth_op"
 	 [(mem:HI
 	   (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		    (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))
+		    (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))
 	  (match_operand:HI 1 "register_operand" "0,0,0")]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -1676,7 +1676,7 @@
 	 5 "cris_commutative_orth_op"
 	 [(mem:SI
 	   (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		    (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))
+		    (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))
 	  (match_operand:SI 1 "register_operand" "0,0,0")]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -1964,7 +1964,7 @@
 	   6 "cris_extend_operator"
 	   [(mem:QI
 	     (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		      (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")
+		      (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")
 		      ))])]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -1993,7 +1993,7 @@
 	   6 "cris_extend_operator"
 	   [(mem:QI
 	     (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		      (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")
+		      (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")
 		      ))])]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -2024,7 +2024,7 @@
 	   6 "cris_extend_operator"
 	   [(mem:HI
 	     (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		      (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")
+		      (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")
 		      ))])]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -2129,7 +2129,7 @@
 	  5 "cris_extend_operator"
 	  [(mem:QI (plus:SI
 		    (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		    (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))])
+		    (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))])
 	 (match_operand:HI 1 "register_operand" "0,0,0")))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -2157,7 +2157,7 @@
 	   5 "cris_extend_operator"
 	   [(mem:QI (plus:SI
 		     (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		     (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))])
+		     (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))])
 	  (match_operand:SI 1 "register_operand" "0,0,0")]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -2186,7 +2186,7 @@
 	   5 "cris_extend_operator"
 	   [(mem:HI (plus:SI
 		     (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		     (match_operand:SI 3 "cris_bdap_operand" "r>Ri,r,>Ri")))])
+		     (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))])
 	  (match_operand:SI 1 "register_operand" "0,0,0")]))
    (set (match_operand:SI 4 "register_operand" "=*2,r,r")
 	(plus:SI (match_dup 2)
@@ -4841,10 +4841,10 @@
 
 (define_peephole
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(match_operand:SI 1 "cris_bdap_biap_operand" "r,>Ri,r,>Ri"))
+	(match_operand:SI 1 "cris_bdap_biap_operand" "r,>Rn,r,>Rn"))
    (set (match_dup 0)
-	(plus:SI (match_operand:SI 2 "cris_bdap_biap_operand" "0,0,r>Ri,r")
-		 (match_operand:SI 3 "cris_bdap_biap_operand" "r>Ri,r,0,0")))
+	(plus:SI (match_operand:SI 2 "cris_bdap_biap_operand" "0,0,r>Rn,r")
+		 (match_operand:SI 3 "cris_bdap_biap_operand" "r>Rn,r,0,0")))
    (set (match_operand 4 "register_operand" "=r,r,r,r")
 	(mem (match_dup 0)))]
   "(rtx_equal_p (operands[2], operands[0])
@@ -4869,10 +4869,10 @@
 
 (define_peephole
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(match_operand:SI 1 "cris_bdap_biap_operand" "r,>Ri,r,>Ri"))
+	(match_operand:SI 1 "cris_bdap_biap_operand" "r,>Rn,r,>Rn"))
    (set (match_dup 0)
-	(plus:SI (match_operand:SI 2 "cris_bdap_biap_operand" "0,0,r>Ri,r")
-		 (match_operand:SI 3 "cris_bdap_biap_operand" "r>Ri,r,0,0")))
+	(plus:SI (match_operand:SI 2 "cris_bdap_biap_operand" "0,0,r>Rn,r")
+		 (match_operand:SI 3 "cris_bdap_biap_operand" "r>Rn,r,0,0")))
    (set (mem (match_dup 0))
 	(match_operand 4 "register_operand" "=r,r,r,r"))]
   "(rtx_equal_p (operands[2], operands[0])
@@ -4899,10 +4899,10 @@
 
 (define_peephole
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(match_operand:SI 1 "cris_bdap_biap_operand" "r,>Ri,r,>Ri"))
+	(match_operand:SI 1 "cris_bdap_biap_operand" "r,>Rn,r,>Rn"))
    (set (match_dup 0)
-	(plus:SI (match_operand:SI 2 "cris_bdap_biap_operand" "0,0,r>Ri,r")
-		 (match_operand:SI 3 "cris_bdap_biap_operand" "r>Ri,r,0,0")))
+	(plus:SI (match_operand:SI 2 "cris_bdap_biap_operand" "0,0,r>Rn,r")
+		 (match_operand:SI 3 "cris_bdap_biap_operand" "r>Rn,r,0,0")))
    (set (match_operand 4 "register_operand" "=r,r,r,r")
 	(match_operator 5 "cris_orthogonal_operator"
 			[(match_dup 3)
@@ -4929,10 +4929,10 @@
 
 (define_peephole
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(match_operand:SI 1 "cris_bdap_biap_operand" "r,>Ri,r,>Ri"))
+	(match_operand:SI 1 "cris_bdap_biap_operand" "r,>Rn,r,>Rn"))
    (set (match_dup 0)
-	(plus:SI (match_operand:SI 2 "cris_bdap_biap_operand" "0,0,r>Ri,r")
-		 (match_operand:SI 3 "cris_bdap_biap_operand" "r>Ri,r,0,0")))
+	(plus:SI (match_operand:SI 2 "cris_bdap_biap_operand" "0,0,r>Rn,r")
+		 (match_operand:SI 3 "cris_bdap_biap_operand" "r>Rn,r,0,0")))
    (set (match_operand 4 "register_operand" "=r,r,r,r")
 	(match_operator 5 "cris_commutative_orth_op"
 			[(mem (match_dup 0))
@@ -5001,8 +5001,8 @@
 (define_peephole
   [(set (match_operand 0 "register_operand" "=r,r,r,r")
 	(mem (plus:SI
-	      (match_operand:SI 1 "cris_bdap_biap_operand" "r,r>Ri,r,r>Ri")
-	      (match_operand:SI 2 "cris_bdap_biap_operand" "r>Ri,r,r>Ri,r"))))
+	      (match_operand:SI 1 "cris_bdap_biap_operand" "r,r>Rn,r,r>Rn")
+	      (match_operand:SI 2 "cris_bdap_biap_operand" "r>Rn,r,r>Rn,r"))))
    (set (match_dup 0)
 	(match_operator 5 "cris_commutative_orth_op"
 			[(match_operand 3 "register_operand" "0,0,r,r")
