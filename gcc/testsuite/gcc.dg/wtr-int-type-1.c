@@ -5,7 +5,7 @@
 /* { dg-options "-std=c99 -Wtraditional" } */
 
 void
-testfunc (void)
+testfunc ()
 {
   long long i;
   

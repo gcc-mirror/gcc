@@ -11,7 +11,8 @@ int foo4;
 typedef int foo5;
 
 void
-testfunc1 (int foo6)
+testfunc1 (foo6)
+     int foo6;
 {
   int foo7;
 
@@ -32,7 +33,8 @@ testfunc1 (int foo6)
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
 void
-testfunc2 (int foo6)
+testfunc2 (foo6)
+     int foo6;
 {
   int foo7;
 

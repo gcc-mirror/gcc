@@ -5,10 +5,10 @@
 /* { dg-options "-Wtraditional" } */
 
 static void testfunc1(void);
-void testfunc1(void) {} /* { dg-warning "non-static.*follows static" "non-static follows static" } */
+void testfunc1() {} /* { dg-warning "non-static.*follows static" "non-static follows static" } */
 
 # 11 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
 static void testfunc2(void);
-void testfunc2(void) {}
+void testfunc2() {}

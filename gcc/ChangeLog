@@ -1,3 +1,17 @@
+2002-07-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-parse.in (parsing_iso_function_signature): New variable.
+	(extdef_1): New, copied from...
+	(extdef): ... here.  Reset parsing_iso_function_signature.
+	(old_style_parm_decls):  Reset parsing_iso_function_signature.
+	(old_style_parm_decls_1): New, copied from old_style_parm_decls.
+	Warn about ISO C style function definitions.
+	(nested_function, notype_nested_function): Reset
+	parsing_iso_function_signature.
+	(parmlist_2): Set parsing_iso_function_signature.
+
+	* doc/invoke.texi (-Wtraditional): Document new behavior.
+
 2002-07-02  Chris Demetriou  <cgd@broadcom.com>
 
 	* config.gcc (mips*el-*-*): Use tm_defines to set

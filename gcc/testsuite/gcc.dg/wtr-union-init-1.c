@@ -11,7 +11,7 @@ union foo
 };
 
 void
-testfunc (void)
+testfunc ()
 {
   /* Note we only warn for non-zero initializers.  */
   static union foo f1 = { 0 };

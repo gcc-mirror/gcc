@@ -5,7 +5,7 @@
 /* { dg-options "-Wtraditional" } */
 
 void
-testfunc (void)
+testfunc ()
 {
   const char *foo;
   

@@ -331,6 +331,8 @@ ifc
 #define OBJC_NEED_RAW_IDENTIFIER(VAL)	/* nothing */
 end ifc
 
+static bool parsing_iso_function_signature;
+
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
@@ -382,6 +384,10 @@ extdefs:
 	;
 
 extdef:
+	extdef_1
+	{ parsing_iso_function_signature = false; } /* Reset after any external definition.  */
+
+extdef_1:
 	fndef
 	| datadef
 ifobjc
@@ -787,7 +793,19 @@ objc_string:
 end ifobjc
 
 old_style_parm_decls:
+	old_style_parm_decls_1
+	{
+	  parsing_iso_function_signature = false; /* Reset after decls.  */
+	}
+
+old_style_parm_decls_1:
 	/* empty */
+	{
+	  if (warn_traditional && !in_system_header
+	      && parsing_iso_function_signature)
+	    warning ("traditional C rejects ISO C style function definitions");
+	  parsing_iso_function_signature = false; /* Reset after warning.  */
+	}
 	| datadecls
 	| datadecls ELLIPSIS
 		/* ... is used here to indicate a varargs function.  */
@@ -1586,6 +1604,7 @@ nested_function:
 		      pop_function_context ();
 		      YYERROR1;
 		    }
+		  parsing_iso_function_signature = false; /* Don't warn about nested functions.  */
 		}
 	   old_style_parm_decls
 		{ store_parm_decls (); }
@@ -1616,6 +1635,7 @@ notype_nested_function:
 		      pop_function_context ();
 		      YYERROR1;
 		    }
+		  parsing_iso_function_signature = false; /* Don't warn about nested functions.  */
 		}
 	  old_style_parm_decls
 		{ store_parm_decls (); }
@@ -2540,7 +2560,9 @@ parmlist_2:  /* empty */
 		  error ("ISO C requires a named argument before `...'");
 		}
 	| parms
-		{ $$ = get_parm_info (1); }
+		{ $$ = get_parm_info (1);
+		  parsing_iso_function_signature = true;
+		}
 	| parms ',' ELLIPSIS
 		{ $$ = get_parm_info (0); }
 	;

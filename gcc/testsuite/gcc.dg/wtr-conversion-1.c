@@ -15,7 +15,7 @@ extern long double ld;
 extern __complex__ double cd;
 
 void
-testfunc1 (void)
+testfunc1 ()
 {
   foo_i (i);
   foo_i (f); /* { dg-warning "as integer rather than floating" "prototype conversion warning" } */
@@ -42,7 +42,7 @@ testfunc1 (void)
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
 void
-testfunc2 (void)
+testfunc2 ()
 {
   foo_i (i);
   foo_i (f);

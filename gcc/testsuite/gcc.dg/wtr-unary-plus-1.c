@@ -5,7 +5,7 @@
 /* { dg-options "-Wtraditional" } */
 
 void
-testfunc (void)
+testfunc ()
 {
   int i;
   
