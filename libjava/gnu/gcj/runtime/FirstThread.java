@@ -8,7 +8,7 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-package java.lang;
+package gnu.gcj.runtime;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>

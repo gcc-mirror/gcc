@@ -82,8 +82,10 @@ GCINCS = @GCINCS@
 GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
+GCTESTSPEC = @GCTESTSPEC@
 INCLTDL = @INCLTDL@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
+LIBGCJTESTSPEC = @LIBGCJTESTSPEC@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
 LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
@@ -107,6 +109,7 @@ ZDEPS = @ZDEPS@
 ZINCS = @ZINCS@
 ZLIBS = @ZLIBS@
 ZLIBSPEC = @ZLIBSPEC@
+ZLIBTESTSPEC = @ZLIBTESTSPEC@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
 
@@ -330,6 +333,7 @@ gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/jni/NativeThread.java \
 gnu/gcj/runtime/VMClassLoader.java \
+gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
@@ -420,7 +424,6 @@ java/lang/Double.java \
 java/lang/Error.java \
 java/lang/Exception.java \
 java/lang/ExceptionInInitializerError.java \
-java/lang/FirstThread.java \
 java/lang/Float.java \
 java/lang/IllegalAccessError.java \
 java/lang/IllegalAccessException.java \
@@ -613,6 +616,7 @@ gnu/gcj/convert/natInput_SJIS.cc \
 gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/jni/natNativeThread.cc \
+gnu/gcj/runtime/natFirstThread.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/lang/natCharacter.cc \
@@ -620,7 +624,6 @@ java/lang/natClass.cc \
 java/lang/natClassLoader.cc \
 java/lang/natConcreteProcess.cc \
 java/lang/natDouble.cc \
-java/lang/natFirstThread.cc \
 java/lang/natFloat.cc \
 java/lang/natMath.cc \
 java/lang/natObject.cc \
@@ -697,7 +700,7 @@ cygnus_hack =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ./include/config.h
-CONFIG_CLEAN_FILES =  libgcj.spec
+CONFIG_CLEAN_FILES =  libgcj.spec libgcj-test.spec
 LIBRARIES =  $(toolexeclib_LIBRARIES)
 
 
@@ -733,12 +736,13 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
 DIST_COMMON =  README COPYING.LIB ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acinclude.m4 aclocal.m4 configure configure.in libgcj.spec.in
+THANKS acinclude.m4 aclocal.m4 configure configure.in \
+libgcj-test.spec.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -764,6 +768,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/protocol/http/Handler.P \
 .deps/gnu/gcj/protocol/jar/Connection.P \
 .deps/gnu/gcj/protocol/jar/Handler.P \
+.deps/gnu/gcj/runtime/FirstThread.P \
 .deps/gnu/gcj/runtime/VMClassLoader.P \
 .deps/gnu/gcj/text/BaseBreakIterator.P \
 .deps/gnu/gcj/text/CharacterBreakIterator.P \
@@ -816,8 +821,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/Compiler.P .deps/java/lang/ConcreteProcess.P \
 .deps/java/lang/Double.P .deps/java/lang/Error.P \
 .deps/java/lang/Exception.P \
-.deps/java/lang/ExceptionInInitializerError.P \
-.deps/java/lang/FirstThread.P .deps/java/lang/Float.P \
+.deps/java/lang/ExceptionInInitializerError.P .deps/java/lang/Float.P \
 .deps/java/lang/IllegalAccessError.P \
 .deps/java/lang/IllegalAccessException.P \
 .deps/java/lang/IllegalArgumentException.P \
@@ -960,6 +964,8 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 mostlyclean-toolexeclibLIBRARIES:
@@ -1282,7 +1288,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -1512,7 +1518,7 @@ java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
 		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		$(basename $<)
 
-java/lang/FirstThread.h: java/lang/FirstThread.class libgcj.zip
+gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'void JvRunMain (jclass, int, const char **);' \
 		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
