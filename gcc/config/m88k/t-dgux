@@ -17,4 +17,4 @@ LIBGCC1 = libgcc1.null
 EXTRA_PARTS=crtbegin.o crtend.o m88kdgux.ld
 
 m88kdgux.ld: $(srcdir)/config/m88k/dgux.ld
-	rm -f m88kdgux.ld; cp $(srcdir)/config/m88k/dgux.ld .
+	rm -f m88kdgux.ld; cp $(srcdir)/config/m88k/dgux.ld ./m88kdgux.ld
