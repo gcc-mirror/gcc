@@ -28,7 +28,7 @@ dispatch (A *obj, int i, int j)
 
 void A::main() {
   dispatch (&a, 0, 0);
-  void (A::*mPtr)(A*) = &A::f1a;
+  void (A::*mPtr)(A*) = (void (A::*)(A*))&A::f1a;
 
   (*(void (*)(A*))PMF2PF(mPtr))(&a);
   (*(void (*)(A*))PMF2PF(f2a))(&a);
@@ -37,7 +37,7 @@ void A::main() {
 int main() {
   a.A::main();
   dispatch (&a, 0, 1);
-  void (A::*mPtr)(A*) = &A::f1b;
+  void (A::*mPtr)(A*) = (void (A::*)(A*))&A::f1b;
 
   (*(void (*)(A*))PMF2PF(a.*mPtr))(&a);
   (*(void (*)(A*))PMF2PF(a.f2a))(&a);

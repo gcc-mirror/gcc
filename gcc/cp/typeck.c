@@ -6428,16 +6428,22 @@ build_ptrmemfunc (type, pfn, force)
     {
       tree ndelta, ndelta2;
       tree e1, e2, e3, n;
+      tree pfn_type;
 
       /* Is is already the right type? */
       if (type == TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))
 	return pfn;
 
+      pfn_type = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn));
+      if (!force
+	  && comp_target_types (type, pfn_type, 0) != 1)
+	cp_error ("conversion to `%T' from `%T'", type, pfn_type);
+
       ndelta = cp_convert (ptrdiff_type_node, build_component_ref (pfn, delta_identifier, NULL_TREE, 0));
       ndelta2 = cp_convert (ptrdiff_type_node, DELTA2_FROM_PTRMEMFUNC (pfn));
       idx = build_component_ref (pfn, index_identifier, NULL_TREE, 0);
 
-      n = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))),
+      n = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (pfn_type)),
 				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
 				force);
 
@@ -6471,19 +6477,15 @@ build_ptrmemfunc (type, pfn, force)
 	  && TREE_CODE (TREE_OPERAND (pfn, 0)) == TREE_LIST))
     return instantiate_type (type, pfn, 1);
 
+  if (!force 
+      && comp_target_types (type, TREE_TYPE (pfn), 0) != 1)
+    cp_error ("conversion to `%T' from `%T'", type, TREE_TYPE (pfn));
+
   /* Allow pointer to member conversions here.  */
   delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn))),
 				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
 				force);
   delta2 = build_binary_op (PLUS_EXPR, delta2, delta, 1);
-
-#if 0
-  /* We need to check the argument types to see if they are compatible
-     (any const or volatile violations.  */
-  something like this:
-  comptype (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (type))),
-	    TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn)))), ?);
-#endif
 
   if (TREE_CODE (TREE_OPERAND (pfn, 0)) != FUNCTION_DECL)
     warning ("assuming pointer to member function is non-virtual");
