@@ -4652,6 +4652,19 @@ make_compound_operation (x, in_code)
 				 code == LSHIFTRT, 0, in_code == COMPARE);
 	}
 
+      /* Similarly for (ashiftrt (neg (ashift FOO C1)) C2).  */
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && GET_CODE (XEXP (x, 0)) == NEG
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ASHIFT
+	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) >= INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)))
+	new = make_extraction (mode,
+			       gen_unary (GET_CODE (XEXP (x, 0)), mode,
+					  XEXP (XEXP (XEXP (x, 0), 0), 0)),
+			       (INTVAL (XEXP (x, 1))
+				- INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))),
+			       NULL_RTX, mode_width - INTVAL (XEXP (x, 1)),
+			       code == LSHIFTRT, 0, in_code == COMPARE);
       break;
     }
 
