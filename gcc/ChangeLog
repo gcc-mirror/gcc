@@ -1,3 +1,7 @@
+2000-06-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (add_c_tree_codes): Fix definition for traditional C.
+
 2000-06-17  Michael Meissner  <meissner@redhat.com>
 
 	* gcc.c (do_spec_1, '%v3' case): Do not abort if patch level is
