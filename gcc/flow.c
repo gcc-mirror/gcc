@@ -1528,6 +1528,99 @@ mark_critical_edges ()
     }
 }
 
+/* Mark the back edges in DFS traversal.
+   Return non-zero if a loop (natural or otherwise) is present.
+   Inspired by Depth_First_Search_PP described in:
+
+     Advanced Compiler Design and Implementation
+     Steven Muchnick
+     Morgan Kaufmann, 1997
+
+   and heavily borrowed from flow_depth_first_order_compute.  */
+
+bool
+mark_dfs_back_edges ()
+{
+  edge *stack;
+  int *pre;
+  int *post;
+  int sp;
+  int prenum = 1;
+  int postnum = 1;
+  sbitmap visited;
+  bool found = false;
+
+  /* Allocate the preorder and postorder number arrays.  */
+  pre = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  post = (int *) xcalloc (n_basic_blocks, sizeof (int));
+
+  /* Allocate stack for back-tracking up CFG.  */
+  stack = (edge *) xmalloc ((n_basic_blocks + 1) * sizeof (edge));
+  sp = 0;
+
+  /* Allocate bitmap to track nodes that have been visited.  */
+  visited = sbitmap_alloc (n_basic_blocks);
+
+  /* None of the nodes in the CFG have been visited yet.  */
+  sbitmap_zero (visited);
+
+  /* Push the first edge on to the stack.  */
+  stack[sp++] = ENTRY_BLOCK_PTR->succ;
+
+  while (sp)
+    {
+      edge e;
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      e = stack[sp - 1];
+      src = e->src;
+      dest = e->dest;
+      e->flags &= ~EDGE_DFS_BACK;
+
+      /* Check if the edge destination has been visited yet.  */
+      if (dest != EXIT_BLOCK_PTR && ! TEST_BIT (visited, dest->index))
+	{
+	  /* Mark that we have visited the destination.  */
+	  SET_BIT (visited, dest->index);
+
+	  pre[dest->index] = prenum++;
+
+	  if (dest->succ)
+	    {
+	      /* Since the DEST node has been visited for the first
+		 time, check its successors.  */
+	      stack[sp++] = dest->succ;
+	    }
+	  else
+	    post[dest->index] = postnum++;
+	}
+      else
+	{
+	  if (dest != EXIT_BLOCK_PTR && src != ENTRY_BLOCK_PTR
+	      && pre[src->index] >= pre[dest->index]
+	      && post[dest->index] == 0)
+	    e->flags |= EDGE_DFS_BACK, found = true;
+
+	  if (! e->succ_next && src != ENTRY_BLOCK_PTR)
+	    post[src->index] = postnum++;
+
+	  if (e->succ_next)
+	    stack[sp - 1] = e->succ_next;
+	  else
+	    sp--;
+	}
+    }
+
+  free (pre);
+  free (post);
+  free (stack);
+  sbitmap_free (visited);
+
+  return found;
+}
+
 /* Split a block BB after insn INSN creating a new fallthru edge.
    Return the new edge.  Note that to keep other parts of the compiler happy,
    this function renumbers all the basic blocks so that the new
@@ -7779,7 +7872,7 @@ dump_edge_info (file, e, do_succ)
   if (e->flags)
     {
       static const char * const bitnames[] = {
-	"fallthru", "crit", "ab", "abcall", "eh", "fake"
+	"fallthru", "crit", "ab", "abcall", "eh", "fake", "dfs_back"
       };
       int comma = 0;
       int i, flags = e->flags;

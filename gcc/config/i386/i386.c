@@ -574,6 +574,7 @@ static HOST_WIDE_INT ix86_GOT_alias_set PARAMS ((void));
 static void ix86_adjust_counter PARAMS ((rtx, HOST_WIDE_INT));
 static rtx ix86_expand_aligntest PARAMS ((rtx, int));
 static void ix86_expand_strlensi_unroll_1 PARAMS ((rtx, rtx));
+static void ix86_output_main_function_alignment_hack PARAMS ((FILE *f, int));
 
 struct ix86_address
 {
@@ -634,6 +635,10 @@ static int ix86_comp_type_attributes PARAMS ((tree, tree));
 							  HOST_WIDE_INT));
 #  undef TARGET_ASM_FUNCTION_PROLOGUE
 #  define TARGET_ASM_FUNCTION_PROLOGUE ix86_osf_output_function_prologue
+#else
+#  undef TARGET_ASM_FUNCTION_PROLOGUE
+#  define TARGET_ASM_FUNCTION_PROLOGUE \
+   ix86_output_main_function_alignment_hack
 #endif
 
 #undef TARGET_ASM_OPEN_PAREN
@@ -10774,4 +10779,46 @@ ix86_memory_move_cost (mode, class, in)
 	return ((in ? ix86_cost->int_load[2] : ix86_cost->int_store[2])
 		* (int) GET_MODE_SIZE (mode) / 4);
     }
+}
+
+/* Most of current runtimes (Jul 2001) do not align stack properly when
+   entering main, so emit an wrapper to align stack before the real main
+   code is called.
+  
+   This can eventually go if we manage to fix the runtimes or teach gcc
+   to dynamically align stack in main automatically.
+
+   Adding check to configure is probably not good idea, as binarry can move
+   from one shared library to older.  */
+
+static void
+ix86_output_main_function_alignment_hack (file, size)
+     FILE *file;
+     int size ATTRIBUTE_UNUSED;
+{
+  rtx label;
+  char buf[256];
+  /* Check that we see main function with maximally 8 bytes of arguments.
+     if so, emit the hack to align stack for runtimes, where this constraint
+     is broken.  */
+  if (strcmp (cfun->name, "main"))
+    return;
+  if (cfun->pops_args || cfun->args_size > 12)
+    return;
+  if (PREFERRED_STACK_BOUNDARY <= 2)
+    return;
+  label = gen_label_rtx ();
+  fprintf (file, "\tpushl\t%%ebp\n");
+  fprintf (file, "\tmovl\t%%esp, %%ebp\n");
+  fprintf (file, "\tandl\t$0xfffffff0, %%esp\n");
+  fprintf (file, "\tpushl\t%%ebp\n");
+  fprintf (file, "\tpushl\t16(%%ebp)\n");
+  fprintf (file, "\tpushl\t12(%%ebp)\n");
+  fprintf (file, "\tpushl\t8(%%ebp)\n");
+  fprintf (file, "\tcall\t");
+  ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (label));
+  assemble_name (file, buf);
+  fprintf (file, "\n\tleave\n");
+  fprintf (file, "\tret\n");
+  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (label));
 }

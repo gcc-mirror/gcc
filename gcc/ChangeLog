@@ -1,3 +1,28 @@
+Mon Jul 30 22:16:08 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_output_main_function_alignment_hack): New function.
+	(TARGET_ASM_FUNCTION_PROLOGUE): Default to it.
+
+	* flow.c (mark_dfs_back_edges): Move from loop_p ; mark back
+	edges by EDGE_DFS_BACK flag.
+	(dump_edge_info): Add dfs_back flag.
+	* basic-block.h (EDGE_DFS_BACK): New constant.
+	(mark_dfs_back_edges): Declare.
+	* alias.c (loop_p): Remove.
+	(mark_constant_function): Use mark_dfs_back_edges.
+
+	* reg-stack.c (block_info_def): Add predecesors counter and stack_out.
+	(reg_to_stack): Call mark_dfs_back_edges; count the predecesors.
+	(compensate_edge): Break out from ...
+	(convert_regs_1): ... here; do smart choosing of stack_out to copy.
+	(convert_regs_2): Set block_done once block is really done;
+	Do updating of the predecesors counts.
+
+	* toplev.c (rest_of_compilation): Recompute block_for_insn
+	before post-reload cfg_cleanup.
+	* function.c (thread_prologue_epilogue_insns):
+	Call set_block_for_new_insns when emitting prologue directly.
+
 2001-07-30  Andreas Jaeger  <aj@suse.de>
 
         * jump.c: Add prototype for mark_modified_reg.
