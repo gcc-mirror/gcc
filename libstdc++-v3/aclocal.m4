@@ -1143,6 +1143,12 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
     	  AC_TRY_RUN([
 	  #define _GNU_SOURCE 1
 	  #include <locale.h>
+	  #include <string.h>
+	  #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+	  extern __typeof(newlocale) __newlocale;
+	  extern __typeof(duplocale) __duplocale;
+	  extern __typeof(strcoll_l) __strcoll_l;
+	  #endif
 	  int main()
 	  {
   	    const char __one[] = "Äuglein Augmen";
@@ -1191,6 +1197,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CMONEY_CC=config/locale/generic/monetary_members.cc
       CNUMERIC_CC=config/locale/generic/numeric_members.cc
       CTIME_CC=config/locale/generic/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
     xgnu)
       AC_MSG_RESULT(gnu)
@@ -1223,6 +1230,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CMONEY_CC=config/locale/gnu/monetary_members.cc
       CNUMERIC_CC=config/locale/gnu/numeric_members.cc
       CTIME_CC=config/locale/gnu/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/gnu/c++locale_internal.h
       ;;
     xieee_1003.1-2001)
       AC_MSG_RESULT(generic)
@@ -1237,6 +1245,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CMONEY_CC=config/locale/generic/monetary_members.cc
       CNUMERIC_CC=config/locale/generic/numeric_members.cc
       CTIME_CC=config/locale/generic/time_members.cc
+      CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
     *)
       echo "$enable_clocale is an unknown locale package" 1>&2
@@ -1260,6 +1269,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   AC_LINK_FILES($CMONEY_CC, src/monetary.cc)
   AC_LINK_FILES($CNUMERIC_CC, src/numeric.cc)
   AC_LINK_FILES($CTIME_CC, src/time.cc)
+  AC_LINK_FILES($CLOCALE_INTERNAL_H, src/c++locale_internal.h)
 ])
 
 

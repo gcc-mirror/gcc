@@ -1739,6 +1739,12 @@ namespace std
     string
     messages<char>::do_get(catalog, int, int, const string&) const;
 
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    wstring
+    messages<wchar_t>::do_get(catalog, int, int, const wstring&) const;
+#endif
+
   // Include host and configuration specific messages virtual functions.
   #include <bits/messages_members.h>
 
