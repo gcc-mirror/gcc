@@ -1,3 +1,9 @@
+1999-11-29  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* fold-const.c [TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT]
+	(target_isinf, target_isnan, target_negative): Add return types to
+	function definitions.
+
 1999-11-29  Bruce Korb  <autogen@linuxbox.com>
 
 	* fixinc/fixincl.c(process): don't skip GLIBC files any more.
