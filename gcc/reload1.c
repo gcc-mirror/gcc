@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -72,10 +72,6 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(x, y) 2
-#endif
-
-#ifndef MEMORY_MOVE_COST
-#define MEMORY_MOVE_COST(x) 4
 #endif
 
 /* During reload_as_needed, element N contains a REG rtx for the hard reg
@@ -6131,7 +6127,8 @@ emit_reload_insns (insn)
 		  && ((REGNO_REG_CLASS (regno) != reload_reg_class[j]
 		       && (REGISTER_MOVE_COST (REGNO_REG_CLASS (regno),
 					       reload_reg_class[j])
-			   >= MEMORY_MOVE_COST (mode)))
+			   >= MEMORY_MOVE_COST (mode, REGNO_REG_CLASS (regno),
+						1)))
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
 		      || (SECONDARY_INPUT_RELOAD_CLASS (reload_reg_class[j],
 							mode, oldequiv)
@@ -8193,13 +8190,15 @@ reload_cse_simplify_set (set, insn)
   if (side_effects_p (src) || true_regnum (src) >= 0)
     return 0;
 
+  dclass = REGNO_REG_CLASS (dreg);
+
   /* If memory loads are cheaper than register copies, don't change
      them.  */
-  if (GET_CODE (src) == MEM && MEMORY_MOVE_COST (GET_MODE (src)) < 2)
+  if (GET_CODE (src) == MEM
+      && MEMORY_MOVE_COST (GET_MODE (src), dclass, 1) < 2)
     return 0;
 
   dest_mode = GET_MODE (SET_DEST (set));
-  dclass = REGNO_REG_CLASS (dreg);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       if (i != dreg
