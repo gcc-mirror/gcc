@@ -18,6 +18,14 @@
 	* gcc.c (execute) [ENABLE_VALGRIND_CHECKING]: Arrange to prepend
 	VALGRIND_PATH -q to each command.
 
+	* ggc-common.c [!ENABLE_VALGRIND_CHECKING] (VALGRIND_DISCARD):
+	Define as empty.
+	(ggc_realloc): Update valgrind annotations.
+	* ggc-page.c [!ENABLE_VALGRIND_CHECKING] (VALGRIND_DISCARD):
+	Define as empty.
+ 	(alloc_anon, free_page, ggc_alloc, poison_pages): Add machinery to
+	valgrind-annotate memory.
+
 2002-11-20  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* recog.c (constrain_operands): Prefer exact match over reloadable

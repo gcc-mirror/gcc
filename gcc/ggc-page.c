@@ -29,6 +29,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "timevar.h"
 #include "params.h"
+#ifdef ENABLE_VALGRIND_CHECKING
+#include <valgrind.h>
+#else
+/* Avoid #ifdef:s when we can help it.  */
+#define VALGRIND_DISCARD(x)
+#endif
 
 /* Prefer MAP_ANON(YMOUS) to /dev/zero, since we don't need to keep a
    file open.  Prefer either to valloc.  */
@@ -524,6 +530,11 @@ alloc_anon (pref, size)
   /* Remember that we allocated this memory.  */
   G.bytes_mapped += size;
 
+  /* Pretend we don't have access to the allocated pages.  We'll enable
+     access to smaller pieces of the area in ggc_alloc.  Discard the
+     handle to avoid handle leak.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (page, size));
+
   return page;
 }
 #endif
@@ -750,6 +761,10 @@ free_page (entry)
 	     "Deallocating page at %p, data %p-%p\n", (PTR) entry,
 	     entry->page, entry->page + entry->bytes - 1);
 
+  /* Mark the page as inaccessible.  Discard the handle to avoid handle
+     leak.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (entry->page, entry->bytes));
+
   set_page_table_entry (entry->page, NULL);
 
 #ifdef USING_MALLOC_PAGE_GROUPS
@@ -943,10 +958,26 @@ ggc_alloc (size)
   result = entry->page + object_offset;
 
 #ifdef ENABLE_GC_CHECKING
+  /* Keep poisoning-by-writing-0xaf the object, in an attempt to keep the
+     exact same semantics in presence of memory bugs, regardless of
+     ENABLE_VALGRIND_CHECKING.  We override this request below.  Drop the
+     handle to avoid handle leak.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (result, OBJECT_SIZE (order)));
+
   /* `Poison' the entire allocated object, including any padding at
      the end.  */
   memset (result, 0xaf, OBJECT_SIZE (order));
+
+  /* Make the bytes after the end of the object unaccessible.  Discard the
+     handle to avoid handle leak.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS ((char *) result + size,
+					    OBJECT_SIZE (order) - size));
 #endif
+
+  /* Tell Valgrind that the memory is there, but its content isn't
+     defined.  The bytes at the end of the object are still marked
+     unaccessible.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (result, size));
 
   /* Keep track of how many bytes are being allocated.  This
      information is used in deciding when to collect.  */
@@ -1433,7 +1464,19 @@ poison_pages ()
 	      word = i / HOST_BITS_PER_LONG;
 	      bit = i % HOST_BITS_PER_LONG;
 	      if (((p->in_use_p[word] >> bit) & 1) == 0)
-		memset (p->page + i * size, 0xa5, size);
+		{
+		  char *object = p->page + i * size;
+
+		  /* Keep poison-by-write when we expect to use Valgrind,
+		     so the exact same memory semantics is kept, in case
+		     there are memory errors.  We override this request
+		     below.  */
+		  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (object, size));
+		  memset (object, 0xa5, size);
+
+		  /* Drop the handle to avoid handle leak.  */
+		  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (object, size));
+		}
 	    }
 	}
     }
